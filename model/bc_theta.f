@@ -113,7 +113,7 @@
                 b_m(IJK, M)    =  ZERO
                 IF(FLUID_AT(EAST_OF(IJK)))THEN
                    IF(EP_s(EAST_OF(IJK),M).LE.DIL_EP_s)THEN
-                     A_m(IJK, e, M) = -ONE
+                     A_m(IJK, e, M) = ONE
                    ELSE
                       IF (BC_JJ_PS(L).EQ.3) THEN
                        Gw = 1d0
@@ -137,7 +137,7 @@
  
                 ELSEIF(FLUID_AT(WEST_OF(IJK)))THEN
                    IF(EP_s(WEST_OF(IJK),M).LE.DIL_EP_s)THEN
-                     A_m(IJK, w, M) = -ONE
+                     A_m(IJK, w, M) = ONE
                    ELSE
                      IF (BC_JJ_PS(L).EQ.3) THEN
                       Gw = 1d0
@@ -160,7 +160,7 @@
  
                 ELSEIF(FLUID_AT(NORTH_OF(IJK)))THEN
                    IF(EP_s(NORTH_OF(IJK),M).LE.DIL_EP_s)THEN
-                     A_m(IJK, n, M) = -ONE
+                     A_m(IJK, n, M) = ONE
                    ELSE
                      IF (BC_JJ_PS(L).EQ.3) THEN
                       Gw = 1d0
@@ -184,7 +184,7 @@
  
                 ELSEIF(FLUID_AT(SOUTH_OF(IJK)))THEN
                    IF(EP_s(SOUTH_OF(IJK),M).LE.DIL_EP_s)THEN
-                     A_m(IJK, s, M) = -ONE
+                     A_m(IJK, s, M) = ONE
                    ELSE
                      IF (BC_JJ_PS(L).EQ.3) THEN
                       Gw = 1d0
@@ -208,7 +208,7 @@
  
                 ELSEIF(FLUID_AT(TOP_OF(IJK)))THEN
                    IF(EP_s(TOP_OF(IJK),M).LE.DIL_EP_s)THEN
-                     A_m(IJK, t, M) = -ONE
+                     A_m(IJK, t, M) = ONE
                    ELSE
                      IF (BC_JJ_PS(L).EQ.3) THEN
                       Gw = 1d0
@@ -231,7 +231,7 @@
  
                 ELSEIF(FLUID_AT(BOTTOM_OF(IJK)))THEN
                    IF(EP_s(BOTTOM_OF(IJK),M).LE.DIL_EP_s)THEN
-                     A_m(IJK, b , M) = -ONE
+                     A_m(IJK, b , M) = ONE
                    ELSE
                      IF (BC_JJ_PS(L).EQ.3) THEN
                       Gw = 1d0
