@@ -104,7 +104,7 @@
       call send_recv(W_S,2)
       call send_recv(THETA_M,2)
       call send_recv(X_S,2)
-      call send_recv(Scalar,2)
+      if(NScalar > 0)call send_recv(Scalar,2)
       call send_recv(GAMA_RG,2)
       call send_recv(T_RG,2)
       call send_recv(GAMA_RS,2)
