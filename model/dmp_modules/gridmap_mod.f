@@ -85,7 +85,7 @@
 	kp = kmin1
 	do kproc=0,nodesk-1
 	   jp = jmin1
-	   do jproc=0,nodesk-1
+	   do jproc=0,nodesj-1
 	      ip = imin1
 	      do iproc=0,nodesi-1
 
