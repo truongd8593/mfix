@@ -701,7 +701,6 @@
       USE matrix 
       USE compar       
       IMPLICIT NONE
-      INCLUDE 'function.inc'
 ! 
 !                      Septadiagonal matrix A_m 
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
@@ -716,6 +715,7 @@
 ! 
 !                      Indices 
       INTEGER          IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP
+      INCLUDE 'function.inc'
        
           IMJK = IM_OF(IJK) 
           IJMK = JM_OF(IJK) 
