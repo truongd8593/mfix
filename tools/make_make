@@ -18,5 +18,6 @@ foreach i (*)
 end
 ../tools/mms.exe
 echo
-echo "mfix.make created"
+echo "mfix_u.make created"
+echo "mfix_l.make created"
 echo
