@@ -17,7 +17,7 @@
 
       integer   :: i , j , k , ijk , L , spx_num , nt , nstep_1
 
-      real      :: time_in_res , time_now , value
+      real      :: time_in_res , time_now , value, time_prev
       real      :: arr(*)
       real*8    :: time_series(*)
 
@@ -47,12 +47,15 @@
       end do
 !
       nt = 0     ! number of times in the series
+      time_prev = 0.0d0
 
  15   continue   ! start of time loop
 !
 !
       call get_same_time (READ_SPX, REC_POINTER,&
                            AT_EOF, TIME_NOW, TIME_REAL, NSTEP_1)
+      if(time_now.le.time_prev) goto 16
+      time_prev = time_now
       if (at_eof(spx_num)) goto 20
       if (time_now .gt. usr_t2) goto 20
 !
@@ -63,6 +66,7 @@
       IJK = FUNIJK(usr_i1,usr_j1,usr_k1)
       time_series(nt+1) = arr(ijk)
       nt = nt + 1
+16    continue
 !
       goto 15
 

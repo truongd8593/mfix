@@ -13,8 +13,8 @@
       real*8, allocatable :: time_series(:), time_series2(:), scratch(:)
 
       allocate (arr(ijkmax2))
-      allocate (time_series(10000))
-      allocate (time_series2(10000))
+      allocate (time_series(100000))
+      allocate (time_series2(100000))
 !
       call init_usr_input
 !
@@ -23,6 +23,7 @@
       if (selection .eq. 0) then
          deallocate(arr)
          deallocate(time_series)
+         deallocate(time_series2)
          return
       end if
 !

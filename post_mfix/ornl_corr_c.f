@@ -192,7 +192,7 @@
       integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
       integer :: lagstep 
 
-      real*8    :: time_series(10000)
+      real*8    :: time_series(100000)
 
       real*8, allocatable    :: tlag(:)
       real*8, allocatable    :: tsym(:)
