@@ -1189,7 +1189,7 @@
 
       ENDIF
 
-      IF (DO_SENDRECV) call send_recv(var,1)
+      IF (DO_SENDRECV) call send_recv(var,2)
 
      ENDIF
 
