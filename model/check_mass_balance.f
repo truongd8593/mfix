@@ -173,11 +173,10 @@
 	        flux_out_X_g(L, N) = flux_out_X_g(L, N) + fout  * dt_prev
                 flux_in_X_g(L, N) = flux_in_X_g(L, N) + fin * dt_prev
               ENDIF 
-	    
-	      Integral_R_g(N) = Integral_R_g(N) + (Accumulation(R_gp(1,N)) - &
-	                                Accumulation_sp(ROX_gc(1,N), X_g(1,N)) )* dt_prev 
             END DO
-	
+	    
+	    Integral_R_g(N) = Integral_R_g(N) + (Accumulation(R_gp(1,N)) - &
+	                                Accumulation_sp(ROX_gc(1,N), X_g(1,N)) )* dt_prev 
           END DO 
 	ENDIF
 
@@ -199,11 +198,10 @@
 	          flux_out_X_s(L, M, N) = flux_out_X_s(L, M, N) + fout  * dt_prev
                   flux_in_X_s(L, M, N) = flux_in_X_s(L, M, N) + fin * dt_prev
                 ENDIF 
-	    
-	        Integral_R_s(M, N) = Integral_R_s(M, N) + (Accumulation(R_sp(1,M,N)) - &
-	                                            Accumulation_sp(ROX_sc(1,M,N), X_s(1,M,N)) )* dt_prev 
               END DO
-	
+	    
+	      Integral_R_s(M, N) = Integral_R_s(M, N) + (Accumulation(R_sp(1,M,N)) - &
+	                                            Accumulation_sp(ROX_sc(1,M,N), X_s(1,M,N)) )* dt_prev 
             END DO 
 	  ENDIF
         END DO 
