@@ -110,5 +110,11 @@
   SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 0.01   100.0               
                                                                                 
   NLOG   = 100                                                                  
-  full_log = .true.                                                             
+  full_log = .true.             
+  
+# DMP control
+  
+  NODESI = 1   NODESJ = 1   NODESK = 1
+
+                                                
                                                                                 

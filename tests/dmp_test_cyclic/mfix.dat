@@ -120,4 +120,9 @@
   NLOG   = 100                                                                  
   full_log = .true.                                                             
   RESID_STRING = 'X001' 'X002' 
-                                                                                
+
+# DMP control
+  
+  NODESI = 1   NODESJ = 1   NODESK = 1
+
+                                      

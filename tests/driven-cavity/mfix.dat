@@ -1,0 +1,101 @@
+#
+#  Driven cavity Simulation
+#
+# Run-control section
+#
+  RUN_NAME = 'CV01'
+  DESCRIPTION = 'Driven cavity'
+  RUN_TYPE = 'new'
+  UNITS = 'cgs'
+
+  ENERGY_EQ = .FALSE.
+  SPECIES_EQ = .FALSE.    .FALSE.
+
+  DISCRETIZE = 7*0
+#
+# Geometry Section
+#
+  COORDINATES = 'Cartesian'
+
+  XLENGTH  = 1.0    IMAX =  98
+  YLENGTH  = 1.0    JMAX =  98
+
+  NO_K     = .TRUE.
+
+  MAX_NIT = 5000
+  TOL_RESID  = 1.E-3
+
+  ur_fac(2) = 0.8
+
+  ur_fac(1) = 0.8                          !pressure
+
+  ur_fac(3) = 0.5                          !u-velocity
+
+  ur_fac(4) = 0.5                          !v-velocity
+
+  GRAVITY = 0.0
+
+#
+# Fluid-phase Section
+#
+  RO_g0 = 1.0
+  MU_g0 = 9.E-3
+  MW_avg = 29.
+#
+# No Solids-phase 
+#
+  MMAX = 0
+
+#
+# Initial Conditions Section
+#
+       !              cavity      
+  IC_X_w           =  0.0 
+  IC_X_e           = 1.0
+  IC_Y_s           =  0.0 
+  IC_Y_n           = 1.0 
+ 
+  IC_EP_g          =  1.0
+ 
+  IC_U_g           =  0.
+  IC_V_g           =  0.
+
+  IC_P_g           =  0.0
+  IC_T_g           = 300.0 
+
+#
+#  Boundary Conditions Section
+#
+       !              Top
+  BC_X_w(4)        =  0.0 
+  BC_X_e(4)        =  1.0
+  BC_Y_s(4)        =  1.0
+  BC_Y_n(4)        =  1.0
+ 
+  BC_TYPE(4)       = 'PSW'
+
+  BC_Uw_g(4)       = 0.1
+  BC_Vw_g(4)       = 0.0 
+
+  BC_Uw_s(4, 1)    = 0.0 
+  BC_Vw_s(4, 1)    = 0.0
+#
+#  Output Control
+#
+  RES_DT = 0.01
+  OUT_DT = 10.
+        !
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
+        !      P_star    V_g  V_s            T_s1 X_s
+        !                W_g  W_s            T_s2
+  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 100.   100. 
+
+  NLOG   = 25
+  FULL_LOG = .TRUE.
+  
+
+# DMP control
+  
+  NODESI = 1   NODESJ = 1   NODESK = 1
+
+
