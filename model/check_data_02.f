@@ -32,6 +32,7 @@
       USE output
       USE leqsol 
       USE geometry
+      USE run
       USE rxns
       IMPLICIT NONE
 !-----------------------------------------------
@@ -55,13 +56,20 @@
          , 1) 
 !
       DO LC = 1, N_SPX
-         IF(nRR == 0 .and. LC == 10) then
-	   IF (SPX_DT(LC)==UNDEFINED)SPX_DT(LC) = large_number 
-	 else 
-           IF (SPX_DT(LC)==UNDEFINED .OR. SPX_DT(LC)<=ZERO) CALL ERROR_ROUTINE (&
+         IF(LC == 10) then
+           IF(nRR == 0) then
+	     IF (SPX_DT(LC)==UNDEFINED)SPX_DT(LC) = large_number
+	     CYCLE
+	   ENDIF 
+	 Else IF(LC == 11) then
+           IF(.not. K_Epsilon) then 
+	     IF (SPX_DT(LC)==UNDEFINED)SPX_DT(LC) = large_number
+	     CYCLE
+	   ENDIF 
+	 ENDIF
+         IF (SPX_DT(LC)==UNDEFINED .OR. SPX_DT(LC)<=ZERO) CALL ERROR_ROUTINE (&
             'check_data_02', 'SPX_DT not specified OR SPX_DT <= 0 in mfix.dat'&
             , 1, 1) 
-	 endif
       END DO 
       IF (NLOG == 0) CALL ERROR_ROUTINE ('check_data_02', &
          'NLOG = 0 in mfix.dat', 1, 1) 
