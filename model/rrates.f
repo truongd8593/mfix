@@ -63,9 +63,26 @@
       INTEGER          IJK
       
       DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX)
-!C
+!
 !-----------------------------------------------
       INCLUDE 'function.inc'
+
+!*******  REMOVE THE FOLLOWING LINES ************************************
+! The following section is provided so that species equation calculations are 
+! NOT accidentally performed with the default routine.
+      CALL START_LOG 
+      WRITE (UNIT_LOG, *)
+      WRITE (UNIT_LOG, *) &
+      'Chemical reactions are not specified in mfix.dat or in rrates.f.  '
+      WRITE (UNIT_LOG, *) &
+      'If you want to solve species equations without chemical reactions '
+      WRITE (UNIT_LOG, *) &
+      'copy rrates.f into the run directory and remove the section in the '
+      WRITE (UNIT_LOG, *) &
+      'file that writes this error message.'
+      CALL END_LOG 
+      call mfix_exit(myPE)  
+!************************************************************************
       
       R_tmp = UNDEFINED
 !
@@ -74,16 +91,6 @@
 !$omp  parallel do private(ijk, R_tmp, L, LM, M, N)
 
       DO IJK = IJKSTART3, IJKEND3 
-      
-         R_gp(IJK, :) = ZERO
-         RoX_gc(IJK, :) = ZERO
-         R_sp(IJK, :, :) = ZERO
-         RoX_sc(IJK, :, :) = ZERO
-         SUM_R_G(IJK) = ZERO 
-         HOR_G(IJK) = ZERO
-         SUM_R_S(IJK, :) = ZERO 
-         HOR_S(IJK, :) = ZERO 
-	 R_PHASE(IJK, :) = ZERO
       
          IF (FLUID_AT(IJK)) THEN 
 !

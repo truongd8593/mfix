@@ -189,7 +189,8 @@
 !
 !  Calculate all the coefficients once before entering the time loop
 !
-      RRATE = .TRUE. 
+      CALL RRATES_INIT(IER)
+      IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
       WALL_TR = .TRUE. 
       M = 0 
       IF (MMAX + 1 > 0) THEN 

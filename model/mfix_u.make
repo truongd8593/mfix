@@ -2,6 +2,59 @@
 	$(FORTRAN_CMD) $(FORT_FLAGS) $<
   
 mfix.exe : \
+    AMBM.mod \
+    BC.mod \
+    BOUNDFUNIJK.mod \
+    COEFF.mod \
+    CONSTANT.mod \
+    CONT.mod \
+    CORNER.mod \
+    DRAG.mod \
+    ENERGY.mod \
+    FLDVAR.mod \
+    FUNCTION.mod \
+    FUNITS.mod \
+    GEOMETRY.mod \
+    IC.mod \
+    INDICES.mod \
+    IS.mod \
+    LEQSOL.mod \
+    MACHINE.mod \
+    MATRIX.mod \
+    OUTPUT.mod \
+    PARALLEL.mod \
+    PARAM1.mod \
+    PARAM.mod \
+    PARSE.mod \
+    PGCOR.mod \
+    PHYSPROP.mod \
+    PSCOR.mod \
+    RESIDUAL.mod \
+    RUN.mod \
+    RXNS.mod \
+    SCALARS.mod \
+    SCALES.mod \
+    TAU_G.mod \
+    TAU_S.mod \
+    TIME_CPU.mod \
+    TMP_ARRAY1.mod \
+    TMP_ARRAY.mod \
+    TOLERANC.mod \
+    TRACE.mod \
+    UR_FACS.mod \
+    USR.mod \
+    VISC_G.mod \
+    VISC_S.mod \
+    VSHEAR.mod \
+    XSI_ARRAY.mod \
+    COMPAR.mod \
+    DBG_UTIL.mod \
+    DEBUG.mod \
+    GRIDMAP.mod \
+    MPI.mod \
+    MPI_UTILITY.mod \
+    PARALLEL_MPI.mod \
+    SENDRECV.mod \
     adjust_a_u_g.$(OBJ_EXT) \
     adjust_a_u_s.$(OBJ_EXT) \
     adjust_a_v_g.$(OBJ_EXT) \
@@ -14,13 +67,10 @@ mfix.exe : \
     adjust_rop.$(OBJ_EXT) \
     adjust_theta.$(OBJ_EXT) \
     allocate_arrays.$(OBJ_EXT) \
-    ambm_mod.$(OBJ_EXT) \
     b_m_p_star.$(OBJ_EXT) \
-    bc_mod.$(OBJ_EXT) \
     bc_phi.$(OBJ_EXT) \
     bc_theta.$(OBJ_EXT) \
     bound_x.$(OBJ_EXT) \
-    boundfunijk_mod.$(OBJ_EXT) \
     cal_d.$(OBJ_EXT) \
     calc_cell.$(OBJ_EXT) \
     calc_coeff.$(OBJ_EXT) \
@@ -61,10 +111,7 @@ mfix.exe : \
     check_data_30.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     check_plane.$(OBJ_EXT) \
-    coeff_mod.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
-    constant_mod.$(OBJ_EXT) \
-    cont_mod.$(OBJ_EXT) \
     conv_dif_phi.$(OBJ_EXT) \
     conv_dif_u_g.$(OBJ_EXT) \
     conv_dif_u_s.$(OBJ_EXT) \
@@ -78,7 +125,6 @@ mfix.exe : \
     conv_source_epp.$(OBJ_EXT) \
     copy_a.$(OBJ_EXT) \
     corner.$(OBJ_EXT) \
-    corner_mod.$(OBJ_EXT) \
     correct_0.$(OBJ_EXT) \
     correct_1.$(OBJ_EXT) \
     dgtsl.$(OBJ_EXT) \
@@ -88,20 +134,14 @@ mfix.exe : \
     discretize.$(OBJ_EXT) \
     display_resid.$(OBJ_EXT) \
     drag_gs.$(OBJ_EXT) \
-    drag_mod.$(OBJ_EXT) \
     drag_ss.$(OBJ_EXT) \
-    energy_mod.$(OBJ_EXT) \
     eosg.$(OBJ_EXT) \
     equal.$(OBJ_EXT) \
     error_routine.$(OBJ_EXT) \
     exchange.$(OBJ_EXT) \
     exit.$(OBJ_EXT) \
-    fldvar_mod.$(OBJ_EXT) \
     flow_to_vel.$(OBJ_EXT) \
-    function_mod.$(OBJ_EXT) \
-    funits_mod.$(OBJ_EXT) \
     g_0.$(OBJ_EXT) \
-    geometry_mod.$(OBJ_EXT) \
     get_bc_area.$(OBJ_EXT) \
     get_data.$(OBJ_EXT) \
     get_eq.$(OBJ_EXT) \
@@ -112,28 +152,22 @@ mfix.exe : \
     get_smass.$(OBJ_EXT) \
     get_stats.$(OBJ_EXT) \
     get_walls_bc.$(OBJ_EXT) \
-    ic_mod.$(OBJ_EXT) \
     in_bin_512.$(OBJ_EXT) \
     in_bin_512i.$(OBJ_EXT) \
-    indices_mod.$(OBJ_EXT) \
     init_ab_m.$(OBJ_EXT) \
     init_fvars.$(OBJ_EXT) \
     init_namelist.$(OBJ_EXT) \
     init_resid.$(OBJ_EXT) \
-    is_mod.$(OBJ_EXT) \
     iterate.$(OBJ_EXT) \
     leq_bicgs.$(OBJ_EXT) \
     leq_gmres.$(OBJ_EXT) \
     leq_sor.$(OBJ_EXT) \
-    leqsol_mod.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
     location.$(OBJ_EXT) \
     location_check.$(OBJ_EXT) \
     machine.$(OBJ_EXT) \
-    machine_mod.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
     mark_phase_4_cor.$(OBJ_EXT) \
-    matrix_mod.$(OBJ_EXT) \
     mfix.$(OBJ_EXT) \
     mod_bc_i.$(OBJ_EXT) \
     mod_bc_j.$(OBJ_EXT) \
@@ -148,32 +182,20 @@ mfix.exe : \
     out_bin_512i.$(OBJ_EXT) \
     out_bin_512r.$(OBJ_EXT) \
     out_bin_r.$(OBJ_EXT) \
-    output_mod.$(OBJ_EXT) \
-    parallel_mod.$(OBJ_EXT) \
-    param1_mod.$(OBJ_EXT) \
-    param_mod.$(OBJ_EXT) \
     parse_line.$(OBJ_EXT) \
-    parse_mod.$(OBJ_EXT) \
     parse_resid_string.$(OBJ_EXT) \
     parse_rxn.$(OBJ_EXT) \
     partial_elim.$(OBJ_EXT) \
-    pgcor_mod.$(OBJ_EXT) \
     physical_prop.$(OBJ_EXT) \
-    physprop_mod.$(OBJ_EXT) \
-    pscor_mod.$(OBJ_EXT) \
     read_namelist.$(OBJ_EXT) \
     read_res0.$(OBJ_EXT) \
     read_res1.$(OBJ_EXT) \
     remove_comment.$(OBJ_EXT) \
     reset_new.$(OBJ_EXT) \
-    residual_mod.$(OBJ_EXT) \
     rrates.$(OBJ_EXT) \
     rrates0.$(OBJ_EXT) \
-    run_mod.$(OBJ_EXT) \
-    rxns_mod.$(OBJ_EXT) \
+    rrates_init.$(OBJ_EXT) \
     scalar_prop.$(OBJ_EXT) \
-    scalars_mod.$(OBJ_EXT) \
-    scales_mod.$(OBJ_EXT) \
     seek_comment.$(OBJ_EXT) \
     seek_end.$(OBJ_EXT) \
     set_bc0.$(OBJ_EXT) \
@@ -215,8 +237,6 @@ mfix.exe : \
     source_v_s.$(OBJ_EXT) \
     source_w_g.$(OBJ_EXT) \
     source_w_s.$(OBJ_EXT) \
-    tau_g_mod.$(OBJ_EXT) \
-    tau_s_mod.$(OBJ_EXT) \
     tau_u_g.$(OBJ_EXT) \
     tau_u_s.$(OBJ_EXT) \
     tau_v_g.$(OBJ_EXT) \
@@ -224,24 +244,17 @@ mfix.exe : \
     tau_w_g.$(OBJ_EXT) \
     tau_w_s.$(OBJ_EXT) \
     test_lin_eq.$(OBJ_EXT) \
-    time_cpu_mod.$(OBJ_EXT) \
     time_march.$(OBJ_EXT) \
-    tmp_array1_mod.$(OBJ_EXT) \
-    tmp_array_mod.$(OBJ_EXT) \
-    toleranc_mod.$(OBJ_EXT) \
-    trace_mod.$(OBJ_EXT) \
     transfer.$(OBJ_EXT) \
     transport_prop.$(OBJ_EXT) \
     undef_2_0.$(OBJ_EXT) \
     under_relax.$(OBJ_EXT) \
     update_old.$(OBJ_EXT) \
-    ur_facs_mod.$(OBJ_EXT) \
     usr0.$(OBJ_EXT) \
     usr1.$(OBJ_EXT) \
     usr2.$(OBJ_EXT) \
     usr3.$(OBJ_EXT) \
     usr_init_namelist.$(OBJ_EXT) \
-    usr_mod.$(OBJ_EXT) \
     usr_write_out0.$(OBJ_EXT) \
     usr_write_out1.$(OBJ_EXT) \
     vavg_u_g.$(OBJ_EXT) \
@@ -253,9 +266,6 @@ mfix.exe : \
     vf_gs_x.$(OBJ_EXT) \
     vf_gs_y.$(OBJ_EXT) \
     vf_gs_z.$(OBJ_EXT) \
-    visc_g_mod.$(OBJ_EXT) \
-    visc_s_mod.$(OBJ_EXT) \
-    vshear_mod.$(OBJ_EXT) \
     write_ab_m.$(OBJ_EXT) \
     write_error.$(OBJ_EXT) \
     write_header.$(OBJ_EXT) \
@@ -270,17 +280,8 @@ mfix.exe : \
     write_usr0.$(OBJ_EXT) \
     write_usr1.$(OBJ_EXT) \
     xerbla.$(OBJ_EXT) \
-    xsi_array_mod.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
-    compar_mod.$(OBJ_EXT) \
-    dbg_util_mod.$(OBJ_EXT) \
-    debug_mod.$(OBJ_EXT) \
-    gridmap_mod.$(OBJ_EXT) \
-    mpi_mod.$(OBJ_EXT) \
-    mpi_utility_mod.$(OBJ_EXT) \
-    parallel_mpi_mod.$(OBJ_EXT) \
-    sendrecv_mod.$(OBJ_EXT) \
     blas90.a 
 	$(LINK_CMD) $(LINK_FLAGS) \
     adjust_a_u_g.$(OBJ_EXT) \
@@ -450,6 +451,7 @@ mfix.exe : \
     residual_mod.$(OBJ_EXT) \
     rrates.$(OBJ_EXT) \
     rrates0.$(OBJ_EXT) \
+    rrates_init.$(OBJ_EXT) \
     run_mod.$(OBJ_EXT) \
     rxns_mod.$(OBJ_EXT) \
     scalar_prop.$(OBJ_EXT) \
@@ -758,8 +760,8 @@ DBG_UTIL.mod : ./dmp_modules/dbg_util_mod.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/dbg_util_mod.f 
 DEBUG.mod : ./dmp_modules/debug_mod.f \
-            DBG_UTIL.mod \
-            FUNITS.mod 
+            FUNITS.mod \
+            DBG_UTIL.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/debug_mod.f 
 GRIDMAP.mod : ./dmp_modules/gridmap_mod.f \
             MPI_UTILITY.mod \
@@ -1357,7 +1359,9 @@ calc_xsi.$(OBJ_EXT) : calc_xsi.f \
             VSHEAR.mod \
             COMPAR.mod \
             SENDRECV.mod \
-            function.inc                                                
+            xsi1.inc                                                     \
+            function.inc                                                 \
+            xsi2.inc                                                    
 check_ab_m.$(OBJ_EXT) : check_ab_m.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1988,7 +1992,8 @@ get_is.$(OBJ_EXT) : get_is.f \
             GEOMETRY.mod \
             IS.mod \
             INDICES.mod \
-            FUNITS.mod 
+            FUNITS.mod \
+            COMPAR.mod 
 get_philoss.$(OBJ_EXT) : get_philoss.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2380,6 +2385,7 @@ reset_new.$(OBJ_EXT) : reset_new.f \
             GEOMETRY.mod \
             INDICES.mod \
             PHYSPROP.mod \
+            TRACE.mod \
             RUN.mod \
             SCALARS.mod 
 rrates.$(OBJ_EXT) : rrates.f \
@@ -2416,6 +2422,17 @@ rrates0.$(OBJ_EXT) : rrates0.f \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
+rrates_init.$(OBJ_EXT) : rrates_init.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            FLDVAR.mod \
+            RXNS.mod \
+            ENERGY.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            function.inc                                                
 scalar_prop.$(OBJ_EXT) : scalar_prop.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2473,7 +2490,8 @@ set_constants.$(OBJ_EXT) : set_constants.f \
             CONSTANT.mod \
             RUN.mod \
             FUNITS.mod \
-            DRAG.mod 
+            DRAG.mod \
+            COMPAR.mod 
 set_constprop.$(OBJ_EXT) : set_constprop.f \
             PARAM.mod \
             PARAM1.mod \
@@ -3237,7 +3255,8 @@ time_march.$(OBJ_EXT) : time_march.f \
             VSHEAR.mod \
             SCALARS.mod \
             DRAG.mod \
-            COMPAR.mod 
+            COMPAR.mod \
+            TIME_CPU.mod 
 transfer.$(OBJ_EXT) : transfer.f \
             PARAM.mod \
             PARAM1.mod \
