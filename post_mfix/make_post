@@ -104,9 +104,9 @@
 	    compile_d="-C -g -qinitauto=FF -qflttrap -freeform $compile_common"
 	    link_d="$compile_d"
 
-            compile=" -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
+            compile=" -g -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
 	    compile2="$compile"
-            link="-O3 -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000
+            link="-g -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000
 -qtune=pwr3 -qcache=auto "
 
  	    MODULE_CODE=1
@@ -160,18 +160,46 @@
             fi
 	    
 	    
-            FORTRAN_CMD=ifort
-            LINK_CMD=ifort 
-	      
-            intel_lib="/opt/intel/lib" 
+            FORTRAN_CMD=ifc
+            LINK_CMD=ifc 
+	       
 	    
             OBJ_EXT=o
             FORTRAN_EXT=f
 
-            compile_d="-I. -g -c -FR -xK -w -assume byterecl -convert big_endian "
-            link_d="-I. -L$intel_lib -lifcore -assume byterecl -convert big_endian"
-            compile="-I. -c -O3 -w -w95 -i_dynamic -ip -FR -assume byterecl -convert big_endian"
-            link="-I. -L$intel_lib -lifcore  -assume byterecl -convert big_endian"
+           #-----------
+	   # Check if Intel Linux compiler portability library is accessible?
+	   #-----------
+            echo
+            echo "checking for Intel compiler portability library, PEPCF90" 
+	    echo "in the default directory /opt/intel/compiler70/ia32/lib"
+            if test -f "/opt/intel/compiler70/ia32/lib/libPEPCF90.a"
+            then
+	        echo
+              #  echo -n "PEPCF90 library found under /opt/intel/compiler70/ia32/lib"
+		intel_lib="/opt/intel/compiler70/ia32/lib"
+            else
+	        intel_dir="/opt/intel"
+	        echo  "Library not found. Enter the directory "
+                echo -n "where Intel Linux compiler is installed [e.g. /opt/intel]: "
+                   read intel_dir
+  	         intel_lib="$intel_dir/compiler70/ia32/lib"  
+
+ 	         if test -d "$intel_lib"
+	         then
+                   echo
+	         else
+	           echo "Directory $intel_lib not found"
+	           exit
+	         fi
+
+            fi
+
+	    
+            compile_d="-g -c -FR -xK -w "
+            link_d="-L$intel_lib -lPEPCF90 "
+            compile="-c -g -w -w95 -i_dynamic -ip -FR"
+            link="-L$intel_lib -lPEPCF90"
             MODULE_CODE=0
 
             ;;
