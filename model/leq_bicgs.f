@@ -162,9 +162,28 @@
       omega(:)  = zero
       rho(:)    = zero
 
+
+
 !     ---------------------------------------------
 !     zero out R,Rtilde, P,Phat, Svec, Shat, Tvec,V
 !     ---------------------------------------------
+      if (use_doloop) then
+
+
+!$omp  parallel do private(ijk)
+      do ijk=ijkstart3,ijkend3
+        R(ijk) = zero
+        Rtilde(ijk) = zero
+        P(ijk) = zero
+        Phat(ijk) = zero
+        Svec(ijk) = zero
+        Shat(ijk) = zero
+        Tvec(ijk) = zero
+        V(ijk) = zero
+      enddo
+
+      else
+
       R(:) = zero
       Rtilde(:) = zero
       P(:) = zero
@@ -174,6 +193,8 @@
       Tvec(:) = zero
       V(:) = zero
 
+      endif
+
 
       TOLMIN = EPSILON( one )
 
@@ -181,7 +202,7 @@
 !
 !     Scale matrix to have unit diagonal
 !
-!$omp parallel do private(i,j,k,ijk,oam,aijmax)
+!$omp parallel do private(ijk,oam,aijmax)
         do k = kstart2,kend2
           do i = istart2,iend2
             do j = jstart2,jend2
@@ -211,15 +232,44 @@
     call MATVEC( Vname, Var, A_M, R )
 
 
-	R(:) = B_m(:) - R(:)
+      if (use_doloop) then
 
-	Rtilde(:) = R(:)
+!$omp   parallel do private(ijk)
+        do ijk=ijkstart3,ijkend3
+	  R(ijk) = B_m(ijk) - R(ijk)
+        enddo
+      else
+	R(:) = B_m(:) - R(:)
+      endif
+
 	
 	if(is_serial) then
-	Rnorm0 = sqrt( dot_product( R, R ) )
+           Rnorm0 = zero
+           if (use_doloop) then
+
+!$omp          parallel do private(ijk) reduction(+:Rnorm0)
+               do ijk=ijkstart3,ijkend3
+                   Rnorm0 = Rnorm0 + R(ijk)*R(ijk)
+               enddo
+           else
+               Rnorm0 = dot_product(R,R)
+           endif
+	  Rnorm0 = sqrt( Rnorm0 )
 	else
 	Rnorm0 = sqrt( dot_product_par( R, R ) )
 	endif
+
+	call random_number(Rtilde(:))
+
+      if (use_doloop) then
+
+!$omp   parallel do private(ijk)
+        do ijk=ijkstart3,ijkend3
+	  Rtilde(ijk) = R(ijk) + (2.0*Rtilde(ijk)-1.0)*1.0e-6*Rnorm0
+        enddo
+      else
+	Rtilde(:) = R(:) + (2.0*Rtilde(:)-1.0)*1.0e-6*Rnorm0
+      endif
 
        if (idebugl >= 1) then
        print*,'leq_bicgs, initial: ', Vname,' resid ', real(Rnorm0)
@@ -231,7 +281,20 @@
     do i=1,itmax
 
         if(is_serial) then
-        rho(i-1) = dot_product( Rtilde, R )
+
+          if (use_doloop) then
+
+
+             RtildexR = zero
+!$omp        parallel do private(ijk) reduction(+:RtildexR)
+             do ijk=ijkstart3,ijkend3
+                RtildexR = RtildexR + Rtilde(ijk) * R(ijk)
+             enddo
+             rho(i-1) = RtildexR
+
+          else
+          rho(i-1) = dot_product( Rtilde, R )
+          endif
         else
         rho(i-1) = dot_product_par( Rtilde, R )
 	endif
@@ -258,12 +321,29 @@
 
         if (i .eq. 1) then
 
-	   P(:) = R(:)
+           if (use_doloop) then
+
+!$omp        parallel do private(ijk)
+             do ijk=ijkstart3,ijkend3
+               P(ijk) = R(ijk)
+             enddo
+           else
+	     P(:) = R(:)
+           endif
 
         else
            beta(i-1) = ( rho(i-1)/rho(i-2) )*( alpha(i-1) / omega(i-1) )
 
-           P(:) = R(:) + beta(i-1)*( P(:) - omega(i-1)*V(:) )
+           if (use_doloop) then
+
+!$omp        parallel do private(ijk)
+             do ijk=ijkstart3,ijkend3
+               P(ijk) = R(ijk) + beta(i-1)*( P(ijk) - omega(i-1)*V(ijk) )
+             enddo
+
+           else
+             P(:) = R(:) + beta(i-1)*( P(:) - omega(i-1)*V(:) )
+           endif
 
 
         endif
@@ -279,7 +359,16 @@
 
             
         if(is_serial) then
-        RtildexV = dot_product( Rtilde, V )
+           if (use_doloop) then
+              RtildexV = zero
+
+!$omp         parallel do private(ijk) reduction(+:RtildexV)
+              do ijk=ijkstart3,ijkend3
+                RtildexV = RtildexV + Rtilde(ijk) * V(ijk)
+              enddo
+           else
+              RtildexV = dot_product( Rtilde, V )
+           endif
         else
         RtildexV = dot_product_par( Rtilde, V )
 	endif 
@@ -288,7 +377,15 @@
 
         alpha(i) = rho(i-1) / RtildexV
 
-        Svec(:) = R(:) - alpha(i) * V(:)
+        if (use_doloop) then
+
+!$omp     parallel do private(ijk)
+          do ijk=ijkstart3,ijkend3
+            Svec(ijk) = R(ijk) - alpha(i) * V(ijk)
+          enddo
+        else
+          Svec(:) = R(:) - alpha(i) * V(:)
+        endif
 
 
 !
@@ -296,7 +393,18 @@
 !       set X(:) = X(:) + alpha(i)*Phat(:) and stop
 !
         if(is_serial) then
-        Snorm = sqrt( dot_product( Svec, Svec ) )
+          if (use_doloop) then
+            Snorm = zero
+
+!$omp       parallel do private(ijk) reduction(+:Snorm)
+            do ijk=ijkstart3,ijkend3
+               Snorm = Snorm + Svec(ijk) * Svec(ijk)
+            enddo
+          else
+          Snorm = dot_product( Svec, Svec )
+
+          endif
+          Snorm = sqrt( Snorm )
         else
         Snorm = sqrt( dot_product_par( Svec, Svec ) )
 	endif
@@ -306,17 +414,47 @@
         if (Snorm <= TOLMIN) then
 
 
+             if (use_doloop) then
+
+!$omp          parallel do private(ijk)
+               do ijk=ijkstart3,ijkend3
+                  Var(ijk) = Var(ijk) + alpha(i)*Phat(ijk)
+               enddo
+
+             else
              Var(:) = Var(:) + alpha(i)*Phat(:)
+             endif
              if (idebugl >= 1) then
 !
 !               Recompute residual norm
 !          
              call MATVEC( Vname, Var, A_m, R )
+
 !            Rnorm = sqrt( dot_product_par( Var, Var ) )
 !            print*,'leq_bicgs, initial: ', Vname,' Vnorm ', real(Rnorm)
+
+             if (use_doloop) then
+!$omp          parallel do private(ijk)
+               do ijk=ijkstart3,ijkend3
+                R(ijk) = B_m(ijk) - R(ijk)
+               enddo
+             else
              R(:) = B_m(:) - R(:)
+             endif
              if(is_serial) then
-             Rnorm = sqrt( dot_product( R, R ) )
+               if (use_doloop) then
+
+                 Rnorm = zero
+
+!$omp            parallel do private(ijk) reduction(+:Rnorm)
+                 do ijk=ijkstart3,ijkend3
+                   Rnorm = Rnorm + R(ijk)*R(ijk)
+                 enddo
+               else
+               Rnorm =  dot_product( R, R ) 
+               endif
+
+               Rnorm = sqrt( Rnorm )
              else
              Rnorm = sqrt( dot_product_par( R, R ) )
 	     endif
@@ -336,23 +474,58 @@
         call MATVEC( Vname, Shat, A_m, Tvec )
 
         if(is_serial) then
-        TxS = dot_product( Tvec(:), Svec(:) )
-        TxT = dot_product( Tvec(:), Tvec(:) )
+          if (use_doloop) then
+
+            TxS = zero
+            TxT = zero
+
+!$omp  parallel do private(ijk) reduction(+:TxS,TxT)
+            do ijk=ijkstart3,ijkend3
+             TxS = TxS + Tvec(ijk)  * Svec(ijk)
+             TxT = TxT + Tvec(ijk)  * Tvec(ijk)
+            enddo
+          else
+          TxS = dot_product( Tvec, Svec )
+          TxT = dot_product( Tvec, Tvec )
+          endif
         else
-        TxS = dot_product_par( Tvec(:), Svec(:) )
-        TxT = dot_product_par( Tvec(:), Tvec(:) )
+        TxS = dot_product_par( Tvec, Svec )
+        TxT = dot_product_par( Tvec, Tvec )
 	endif
         omega(i) = TxS / TxT
 
 
+        if (use_doloop) then
+
+!$omp    parallel do private(ijk)
+         do ijk=ijkstart3,ijkend3
+           Var(ijk) = Var(ijk) +                           &
+              alpha(i)*Phat(ijk) + omega(i)*Shat(ijk)
+
+           R(ijk) = Svec(ijk) - omega(i)*Tvec(ijk)
+         enddo
+
+        else
+
         Var(:) = Var(:) +                           &
               alpha(i)*Phat(:) + omega(i)*Shat(:)
 
-
         R(:) = Svec(:) - omega(i)*Tvec(:)
+        endif
 
         if(is_serial) then
-        Rnorm = sqrt( dot_product(R, R) )
+          if (use_doloop) then
+
+            Rnorm = zero
+
+!$omp       parallel do private(ijk) reduction(+:Rnorm)
+            do ijk=ijkstart3,ijkend3
+               Rnorm = Rnorm + R(ijk) * R(ijk)
+            enddo
+          else
+            Rnorm =  dot_product(R, R )
+          endif
+          Rnorm = sqrt( Rnorm )
         else
         Rnorm = sqrt( dot_product_par(R, R) )
 	endif
@@ -385,9 +558,29 @@
         if (idebugl >= 1) then
 
           call MATVEC( Vname, Var, A_m, R )
+
+          if (use_doloop) then
+
+!$omp  parallel do private(ijk)
+           do ijk=ijkstart3,ijkend3
+             R(ijk) = R(ijk) - B_m(ijk)
+           enddo
+          else
           R(:) = R(:) - B_m(:)
+          endif
+
           if(is_serial) then
-          Rnorm = sqrt( dot_product( R,R) )
+            if (use_doloop) then
+              Rnorm = zero
+
+!$omp         parallel do private(ijk) reduction(+:Rnorm)
+              do ijk=ijkstart3,ijkend3
+                Rnorm = Rnorm + R(ijk) * R(ijk)
+              enddo
+            else
+            Rnorm = dot_product( R,R)
+            endif
+            Rnorm = sqrt( Rnorm )
           else
           Rnorm = sqrt( dot_product_par( R,R) )
 	  endif
@@ -722,10 +915,10 @@
 
       if (do_k) then
 
-!$omp    parallel  do                                        &
-!$omp    private(                                            &  
-!$omp            ijk,i,j,k,                                  &
-!$omp            im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+!$omp    parallel  do &
+!$omp&   private(     &
+!$omp&           ijk,i,j,k, &
+!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
         do k = kstart,kend
         do i = istart,iend
         do j = jstart,jend
@@ -863,7 +1056,7 @@
 
      IF (SETGUESS) THEN
 
-!$omp   parallel do private(i,j,k,  ijk)
+!$omp   parallel do private(i,j,k,ijk)
         do k = kstart3,kend3
         do i = istart3,iend3
         do j = jstart3,jend3
@@ -1233,6 +1426,7 @@
   
       prod = 0.0d0
    
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
       do k = kstart, kend
         do i = istart, iend
           do j = jstart, jend
@@ -1302,6 +1496,8 @@
       USE compar
       USE indices
       USE sendrecv
+
+      use parallel
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1321,6 +1517,7 @@
 !
 !                      Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
+      integer :: ijk
 
       CHARACTER*4 :: CMETHOD
 
@@ -1328,7 +1525,15 @@
 
 ! do nothing or no preconditioning
 
+     if (use_doloop) then
+
+!$omp  parallel do private(ijk)
+       do ijk=ijkstart3,ijkend3
+        var(ijk) = b_m(ijk)
+       enddo
+     else
      var(:) = b_m(:)
+     endif
      call send_recv(var,1)
 
      return
@@ -1346,6 +1551,9 @@
       USE compar
       USE indices
       USE sendrecv
+
+      use parallel
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1372,10 +1580,19 @@
 
     include 'function.inc'
 
+       if (use_doloop) then
+
+!$omp    parallel do private(ijk)
+         do ijk=ijkstart3,ijkend3
+           var(ijk) = zero
+         enddo
+       else
 	var(:) = ZERO
+       endif
 
 ! diagonal scaling
 
+!$omp   parallel do private(i,j,k,ijk)
 	do k=kstart2,kend2
 	do i=istart2,iend2
 	do j=jstart2,jend2
@@ -1825,6 +2042,23 @@
 !     ---------------------------------------------
 !     zero out R,Rtilde, P,Phat, Svec, Shat, Tvec,V
 !     ---------------------------------------------
+
+      if (use_doloop) then
+
+!$omp   parallel do private(ijk)
+        do ijk=ijkstart3,ijkend3
+         R(ijk) = zero
+         Rtilde(ijk) = zero
+         P(ijk) = zero
+         Phat(ijk) = zero
+         Svec(ijk) = zero
+         Shat(ijk) = zero
+         Tvec(ijk) = zero
+         V(ijk) = zero
+        enddo
+
+      else
+
       R(:) = zero
       Rtilde(:) = zero
       P(:) = zero
@@ -1834,6 +2068,8 @@
       Tvec(:) = zero
       V(:) = zero
 
+      endif
+
 
       TOLMIN = EPSILON( one )
 
@@ -1841,7 +2077,7 @@
 !
 !     Scale matrix to have unit diagonal
 !
-!$omp parallel do private(i,j,k,  ijk,oam,aijmax)
+!$omp parallel do private(ijk,oam,aijmax)
         do k = kstart2,kend2
           do i = istart2,iend2
             do j = jstart2,jend2
@@ -1870,16 +2106,45 @@
 
     call MATVECt( Vname, Var, A_M, R )
 
+	if (use_doloop) then
 
-	R(:) = B_m(:) - R(:)
+!$omp	parallel do private(ijk)
+	do ijk=ijkstart3,ijkend3
+	  R(ijk) = B_m(ijk) - R(ijk)
+	enddo
+	else
+        R(:) = B_m(:) - R(:)
+	endif
 
-	Rtilde(:) = R(:)
 	
-	if(is_serial) then
-	Rnorm0 = sqrt( dot_product( R, R ) )
+		if(is_serial) then
+	   Rnorm0 = zero
+	   if (use_doloop) then
+
+!$omp		parallel do private(ijk) reduction(+:Rnorm0)
+		do ijk=ijkstart3,ijkend3
+                   Rnorm0 = Rnorm0 + R(ijk)*R(ijk)
+		enddo
+	   else
+               Rnorm0 = dot_product(R,R)
+	   endif
+	  Rnorm0 = sqrt( Rnorm0 )
 	else
 	Rnorm0 = sqrt( dot_product_par( R, R ) )
 	endif
+
+	call random_number(Rtilde(:))
+
+	if (use_doloop) then
+
+!$omp	parallel do private(ijk)
+	do ijk=ijkstart3,ijkend3
+		Rtilde(ijk) = R(ijk) + (2.0*Rtilde(ijk)-1.0)*1.0e-6*Rnorm0
+	enddo
+      else
+	Rtilde(:) = R(:) + (2.0*Rtilde(:)-1.0)*1.0e-6*Rnorm0
+      endif
+
 
        if (idebugl >= 1) then
        print*,'leq_bicgs, initial: ', Vname,' resid ', real(Rnorm0)
@@ -1891,7 +2156,18 @@
     do i=1,itmax
 
         if(is_serial) then
-        rho(i-1) = dot_product( Rtilde, R )
+           if (use_doloop) then
+               RtildexR = zero
+
+!$omp parallel do private(ijk) reduction(+:RtildexR)
+               do ijk=ijkstart3,ijkend3
+                    RtildexR = RtildexR + Rtilde(ijk) * R(ijk)
+               enddo
+               rho(i-1) = RtildexR
+           else
+             rho(i-1) = dot_product( Rtilde, R )
+           endif
+
         else
         rho(i-1) = dot_product_par( Rtilde, R )
 	endif
@@ -1918,12 +2194,28 @@
 
         if (i .eq. 1) then
 
+          if (use_doloop) then
+
+!$omp   parallel do private(ijk)
+             do ijk=ijkstart3,ijkend3
+               P(ijk) = R(ijk)
+             enddo
+          else
 	   P(:) = R(:)
+          endif
 
         else
            beta(i-1) = ( rho(i-1)/rho(i-2) )*( alpha(i-1) / omega(i-1) )
 
-           P(:) = R(:) + beta(i-1)*( P(:) - omega(i-1)*V(:) )
+           if (use_doloop) then
+
+!$omp        parallel do private(ijk)
+            do ijk=ijkstart3,ijkend3
+              P(ijk) = R(ijk) + beta(i-1)*( P(ijk) - omega(i-1)*V(ijk) )
+            enddo
+           else
+              P(:) = R(:) + beta(i-1)*( P(:) - omega(i-1)*V(:) )
+           endif
 
 
         endif
@@ -1939,7 +2231,15 @@
 
             
         if(is_serial) then
-        RtildexV = dot_product( Rtilde, V )
+         if (use_doloop) then
+           RtildexV = zero
+!$omp      parallel do private(ijk) reduction(+:RtildexV)
+           do ijk=ijkstart3,ijkend3
+             RtildexV = RtildexV + Rtilde(ijk) * V(ijk)
+           enddo
+         else
+           RtildexV = dot_product( Rtilde, V )
+         endif
         else
         RtildexV = dot_product_par( Rtilde, V )
 	endif 
@@ -1948,7 +2248,15 @@
 
         alpha(i) = rho(i-1) / RtildexV
 
+        if (use_doloop) then
+
+!$omp    parallel do private(ijk)
+         do ijk=ijkstart3,ijkend3
+           Svec(ijk) = R(ijk) - alpha(i) * V(ijk)
+         enddo
+        else
         Svec(:) = R(:) - alpha(i) * V(:)
+        endif
 
 
 !
@@ -1956,7 +2264,18 @@
 !       set X(:) = X(:) + alpha(i)*Phat(:) and stop
 !
         if(is_serial) then
-        Snorm = sqrt( dot_product( Svec, Svec ) )
+         if (use_doloop) then
+           Snorm = zero
+
+!$omp      parallel do private(ijk) reduction(+:Snorm)
+           do ijk=ijkstart3,ijkend3
+              Snorm = Snorm + Svec(ijk)*Svec(ijk)
+           enddo
+
+         else
+         Snorm = dot_product( Svec, Svec )
+         endif
+         Snorm = sqrt( Snorm )
         else
         Snorm = sqrt( dot_product_par( Svec, Svec ) )
 	endif
@@ -1966,7 +2285,15 @@
         if (Snorm <= TOLMIN) then
 
 
+          if (use_doloop) then
+
+!$omp      parallel do private(ijk)
+           do ijk=ijkstart3,ijkend3
+             Var(ijk) = Var(ijk) + alpha(i)*Phat(ijk)
+           enddo
+          else
              Var(:) = Var(:) + alpha(i)*Phat(:)
+          endif
              if (idebugl >= 1) then
 !
 !               Recompute residual norm
@@ -1974,9 +2301,30 @@
              call MATVECt( Vname, Var, A_m, R )
 !            Rnorm = sqrt( dot_product_par( Var, Var ) )
 !            print*,'leq_bicgs, initial: ', Vname,' Vnorm ', real(Rnorm)
+
+             if (use_doloop) then
+
+!$omp         parallel do private(ijk)
+              do ijk=ijkstart3,ijkend3
+                R(ijk) = B_m(ijk) - R(ijk)
+              enddo
+             else
              R(:) = B_m(:) - R(:)
+             endif
+
              if(is_serial) then
-             Rnorm = sqrt( dot_product( R, R ) )
+               if (use_doloop) then
+                 Rnorm = zero
+
+!$omp            parallel do private(ijk) reduction(+:Rnorm)
+                 do ijk=ijkstart3,ijkend3
+                    Rnorm = Rnorm + R(ijk) * R(ijk)
+                 enddo
+               else
+               Rnorm = dot_product( R, R )
+               endif
+
+               Rnorm = sqrt( Rnorm )
              else
              Rnorm = sqrt( dot_product_par( R, R ) )
 	     endif
@@ -1996,8 +2344,20 @@
         call MATVECt( Vname, Shat, A_m, Tvec )
 
         if(is_serial) then
-        TxS = dot_product( Tvec(:), Svec(:) )
-        TxT = dot_product( Tvec(:), Tvec(:) )
+          if (use_doloop) then
+            TxS = zero
+            TxT = zero
+
+!$omp parallel do private(ijk) reduction(+:TxS,TxT)
+            do ijk=ijkstart3,ijkend3
+              TxS = TxS + Tvec(ijk) * Svec(ijk)
+              TxT = TxT + Tvec(ijk) * Tvec(ijk)
+            enddo
+
+          else
+           TxS = dot_product( Tvec(:), Svec(:) )
+           TxT = dot_product( Tvec(:), Tvec(:) )
+          endif
         else
         TxS = dot_product_par( Tvec(:), Svec(:) )
         TxT = dot_product_par( Tvec(:), Tvec(:) )
@@ -2005,14 +2365,31 @@
         omega(i) = TxS / TxT
 
 
+        if (use_doloop) then
+
+!$omp    parallel do private(ijk)
+         do ijk=ijkstart3,ijkend3
+          Var(ijk) = Var(ijk) +                           &
+              alpha(i)*Phat(ijk) + omega(i)*Shat(ijk)
+          R(ijk) = Svec(ijk) - omega(i)*Tvec(ijk)
+         enddo
+        else
         Var(:) = Var(:) +                           &
               alpha(i)*Phat(:) + omega(i)*Shat(:)
-
-
         R(:) = Svec(:) - omega(i)*Tvec(:)
+        endif
 
         if(is_serial) then
-        Rnorm = sqrt( dot_product(R, R) )
+         if (use_doloop) then
+           Rnorm = zero
+!$omp      parallel do private(ijk) reduction(+:Rnorm)
+           do ijk=ijkstart3,ijkend3
+             Rnorm = Rnorm + R(ijk) * R(ijk)
+           enddo
+         else
+           Rnorm = dot_product(R, R)
+         endif
+         Rnorm = sqrt( Rnorm )
         else
         Rnorm = sqrt( dot_product_par(R, R) )
 	endif
@@ -2045,9 +2422,30 @@
         if (idebugl >= 1) then
 
           call MATVECt( Vname, Var, A_m, R )
+
+          if (use_doloop) then
+
+!$omp      parallel do private(ijk)
+           do ijk=ijkstart3,ijkend3
+            R(ijk) = R(ijk) - B_m(ijk)
+           enddo
+          
+          else
           R(:) = R(:) - B_m(:)
+          endif
           if(is_serial) then
-          Rnorm = sqrt( dot_product( R,R) )
+
+           if (use_doloop) then
+             Rnorm = zero
+
+!$omp        parallel do private(ijk) reduction(+:Rnorm)
+             do ijk=ijkstart3,ijkend3
+               Rnorm = Rnorm + R(ijk) * R(ijk)
+             enddo
+           else
+             Rnorm =  dot_product( R,R)
+           endif
+           Rnorm = sqrt( Rnorm )
           else
           Rnorm = sqrt( dot_product_par( R,R) )
 	  endif
@@ -2382,10 +2780,10 @@
 
       if (do_k) then
 
-!$omp    parallel  do                                         &
-!$omp    private(                                             &
-!$omp            ijk,i,j,k,                                   &
-!$omp            im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+!$omp    parallel  do &
+!$omp&   private(     &
+!$omp&           ijk,i,j,k, &
+!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
         do k = kstart,kend
         do i = istart,iend
         do j = jstart,jend
@@ -2523,7 +2921,7 @@
 
      IF (SETGUESS) THEN
 
-!$omp   parallel do private(i,j,k,  ijk)
+!$omp   parallel do private(i,j,k,ijk)
         do k = kstart3,kend3
         do i = istart3,iend3
         do j = jstart3,jend3
@@ -2883,6 +3281,7 @@
       USE compar
       USE indices
       USE sendrecv
+      use parallel
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -2902,6 +3301,7 @@
 !
 !                      Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
+      integer :: ijk
 
       CHARACTER*4 :: CMETHOD
 
@@ -2909,7 +3309,15 @@
 
 ! do nothing or no preconditioning
 
+     if (use_doloop) then
+
+!$omp  parallel do private(ijk)
+       do ijk=ijkstart3,ijkend3
+        var(ijk) = b_m(ijk)
+       enddo
+     else
      var(:) = b_m(:)
+     endif
      call send_recv(var,1)
 
      return
@@ -2927,6 +3335,7 @@
       USE compar
       USE indices
       USE sendrecv
+      use parallel
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -2953,10 +3362,19 @@
 
     include 'function.inc'
 
-	var(:) = ZERO
+     if (use_doloop) then
+
+!$omp  parallel do private(ijk)
+       do ijk=ijkstart3,ijkend3
+        var(ijk) = ZERO
+       enddo
+     else
+     var(:) = ZERO
+     endif
 
 ! diagonal scaling
 
+!$omp   parallel do private(i,j,k,ijk)
 	do k=kstart2,kend2
 	do i=istart2,iend2
 	do j=jstart2,jend2

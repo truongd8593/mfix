@@ -128,7 +128,7 @@
 !
 !$omp  parallel do private( I, J, K, IJK, IJKN, ISV, Sdp, Sdps, V0, Vmt, &
 !$omp&  PGN,DRO1,DRO2,DROA, Vbf, MUGA, ROPGA, EPGA,VSH_n,VSH_s,VSH_e,&
-!$omp&  VSH_w,VSH_p,Source_conv ) &
+!$omp&  VSH_w,VSH_p,Source_conv, SRT ) &
 !$omp&  schedule(static)
             DO IJK = ijkstart3, ijkend3
                I = I_OF(IJK) 

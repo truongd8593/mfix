@@ -13,8 +13,8 @@
 !//BUG both MPI_UTILITY (via DEBUG.mod) and FUNITS are USEd in same routine
 !//BUG	integer :: unit_log = 13
 	interface write_debug
-	module procedure write_debug_1i, write_debug_1d, write_debug_0, &
-        write_debug_0i, write_debug_0d, write_debug_0l
+	module procedure write_debug_0i, write_debug_0d, write_debug_0, &
+        write_debug_1i, write_debug_1d, write_debug_0l
 	end interface
 
 
