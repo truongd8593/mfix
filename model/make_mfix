@@ -41,8 +41,6 @@ fi
 echo
 echo "MFIX directory is $mfix"
 echo
-echo "Compiling with $mach_file"
-echo
 
 echo -n "Do you need SMP version? (y/n) [no] "
 read smp_version
@@ -257,6 +255,10 @@ esac
 #
 #------------------------------------------------------------------------
 #
+echo
+echo "Compiling with machine-dependent file $mach_file"
+echo
+
 # prepare for SMP version   
 smp_check="COMPILED_SMP"
 case $smp_version in
@@ -395,7 +397,15 @@ esac
        cmp -s $run_dir/$outfile  $outfile 
        if test $? = 0
        then
-          do_nothing="ok"
+          case $auto_compile in
+             y|Y)
+                  chmod u+w $outfile
+                  cp $run_dir/$outfile $outfile
+                  ;;
+             *)
+                  do_nothing="ok"
+                  ;;
+          esac
        else
           chmod u+w $outfile
           cp $run_dir/$outfile $outfile
@@ -424,7 +434,17 @@ esac
 #
 
   case $dmp_version in
-  n|N )
+  y|Y )
+	echo
+	echo -n '******************************************************'
+	echo
+	echo -n 'Preparing files for your dmp and/or smp compilation'
+	echo
+	echo -n '******************************************************'
+	echo
+    
+    ;;
+  *)
 	echo
 	echo -n '******************************************************'
 	echo
@@ -452,16 +472,6 @@ esac
         else
          cp dmp_modules/gridmap_mod.f dmp_modules/mpi_donothing/
         fi
-    ;;
-  *)
-	echo
-	echo -n '******************************************************'
-	echo
-	echo -n 'Preparing files for your dmp and/or smp compilation'
-	echo
-	echo -n '******************************************************'
-	echo
-    
     ;;
   esac
 
