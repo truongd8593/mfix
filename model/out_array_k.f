@@ -71,14 +71,14 @@
       NCOL = 10 
 !//SP
     IF(CYCLIC_X) then
-      NTAB = (IMAX2-2)/NCOL + 1
+      NTAB = (IMAX2-1)/NCOL + 1
     ELSE
       NTAB = IMAX2/NCOL + 1
     ENDIF
 
 !//SP
     IF(CYCLIC_X) then
-      IF (MOD(IMAX2-2,NCOL) == 0) NTAB = NTAB - 1 
+      IF (MOD(IMAX2-1,NCOL) == 0) NTAB = NTAB - 1 
     ELSE
       IF (MOD(IMAX2,NCOL) == 0) NTAB = NTAB - 1 
     ENDIF
@@ -86,7 +86,7 @@
       DO LL1 = 1, NTAB 
 
 !//SP
-       IF(CYCLIC_X) then
+       IF(CYCLIC_X.AND.LL1.eq.1) then
          IFORM1 = 2 + NCOL*(LL1 - 1) 
        ELSE
          IFORM1 = 1 + NCOL*(LL1 - 1) 
@@ -96,7 +96,7 @@
 
 !//SP
        IF(CYCLIC_X) then
-	 IFORM2 = MIN(IFORM2,IMAX2-2)
+	 IFORM2 = MIN(IFORM2,IMAX2-1)
        ELSE
          IFORM2 = MIN(IFORM2,IMAX2) 
        ENDIF

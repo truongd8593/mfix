@@ -89,7 +89,7 @@
 !
 !  IJKW
 !
-        IF (WALL_AT(IMJK)) THEN 
+        IF (WALL_AT(IMJK).and..not.cyclic_at(IMJK)) THEN 
            IJKW = IJK 
         ELSE 
            IJKW = IMJK 
@@ -101,7 +101,7 @@
 !
 !  IJKE
 !
-        IF (WALL_AT(IPJK)) THEN 
+        IF (WALL_AT(IPJK).and..not.cyclic_at(IPJK)) THEN 
            IJKE = IJK 
         ELSE 
            IJKE = IPJK 
@@ -113,7 +113,7 @@
 !
 !  IJKS
 !
-        IF (WALL_AT(IJMK)) THEN 
+        IF (WALL_AT(IJMK).and..not.cyclic_at(IJMK)) THEN 
            IJKS = IJK 
         ELSE 
            IJKS = IJMK 
@@ -125,7 +125,7 @@
 !
 !  IJKN
 !
-        IF (WALL_AT(IJPK)) THEN 
+        IF (WALL_AT(IJPK).and..not.cyclic_at(IJPK)) THEN 
            IJKN = IJK 
         ELSE 
            IJKN = IJPK 
@@ -137,7 +137,7 @@
 !
 !  IJKB
 !
-        IF (WALL_AT(IJKM)) THEN 
+        IF (WALL_AT(IJKM).and..not.cyclic_at(IJKM)) THEN 
            IJKB = IJK 
         ELSE 
            IJKB = IJKM 
@@ -149,7 +149,7 @@
 !
 !  IJKT
 !
-        IF (WALL_AT(IJKP)) THEN 
+        IF (WALL_AT(IJKP).and..not.cyclic_at(IJKP)) THEN 
            IJKT = IJK 
         ELSE 
            IJKT = IJKP 
