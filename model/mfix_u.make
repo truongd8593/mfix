@@ -267,6 +267,7 @@ mfix.exe : \
     vf_gs_y.$(OBJ_EXT) \
     vf_gs_z.$(OBJ_EXT) \
     write_ab_m.$(OBJ_EXT) \
+    write_ab_m_var.$(OBJ_EXT) \
     write_error.$(OBJ_EXT) \
     write_header.$(OBJ_EXT) \
     write_out0.$(OBJ_EXT) \
@@ -540,6 +541,7 @@ mfix.exe : \
     visc_s_mod.$(OBJ_EXT) \
     vshear_mod.$(OBJ_EXT) \
     write_ab_m.$(OBJ_EXT) \
+    write_ab_m_var.$(OBJ_EXT) \
     write_error.$(OBJ_EXT) \
     write_header.$(OBJ_EXT) \
     write_out0.$(OBJ_EXT) \
@@ -2161,7 +2163,6 @@ machine.$(OBJ_EXT) : machine.f \
             MACHINE.mod \
             PARAM.mod \
             RUN.mod \
-            COMPAR.mod \
             FUNITS.mod 
 make_upper_case.$(OBJ_EXT) : make_upper_case.f 
 mark_phase_4_cor.$(OBJ_EXT) : mark_phase_4_cor.f \
@@ -2520,6 +2521,7 @@ set_flags.$(OBJ_EXT) : set_flags.f \
             PHYSPROP.mod \
             FUNITS.mod \
             COMPAR.mod \
+            SENDRECV.mod \
             MPI_UTILITY.mod \
             function.inc                                                
 set_fluidbed_p.$(OBJ_EXT) : set_fluidbed_p.f \
@@ -3421,6 +3423,15 @@ write_ab_m.$(OBJ_EXT) : write_ab_m.f \
             PARAM.mod \
             PARAM1.mod \
             MATRIX.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            INDICES.mod \
+            function.inc                                                
+write_ab_m_var.$(OBJ_EXT) : write_ab_m_var.f \
+            PARAM.mod \
+            PARAM1.mod \
+            MATRIX.mod \
+            GEOMETRY.mod \
             COMPAR.mod \
             MPI_UTILITY.mod \
             INDICES.mod \

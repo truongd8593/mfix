@@ -167,7 +167,7 @@
 !         Pressure term
             PGN = P_G(IJKN) 
             IF (CYCLIC_Y_PD) THEN 
-               IF (CYCLIC_AT_N(IJK)) PGN = P_G(IJKN) - DELP_Y 
+               IF (JMAP(J_OF(IJK)).EQ.JMAX1)PGN = P_G(IJKN) - DELP_Y 
             ENDIF 
             IF (MODEL_B) THEN 
                SDP = -P_SCALE*(PGN - P_G(IJK))*AXZ(IJK) 
@@ -241,8 +241,6 @@
                *VOL_V(IJK))+B_M(IJK,M) 
          ENDIF 
       END DO 
-!
-      CALL SOURCE_V_G_BC (A_M, B_M, IER) 
 !
       RETURN  
       END SUBROUTINE SOURCE_V_G 
@@ -335,6 +333,7 @@
       INCLUDE 'b_force2.inc'
 !
       M = 0 
+
 !
 !
 !  Set the default boundary conditions
@@ -672,6 +671,7 @@
                J2 = BC_J_N(L) 
                K1 = BC_K_B(L) 
                K2 = BC_K_T(L) 
+!              write(*,*) K1
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2

@@ -72,7 +72,7 @@
       NCORN = 0 
 !
       DO IJK = ijkstart3, ijkend3
-         IF (WALL_AT(IJK)) THEN 
+         IF (WALL_AT(IJK).AND..NOT.CYCLIC_AT(IJK)) THEN 
 !
 !----------------------------------------------------------------
             IMJK = IM_OF(IJK) 

@@ -154,13 +154,16 @@
 
 !-----------------------------------------------
       INCLUDE 'function.inc'
-
+!
       is_serial = numPEs.eq.1
 
       alpha(:)  = zero
       beta(:)   = zero
       omega(:)  = zero
       rho(:)    = zero
+
+!
+
 
 
 
@@ -242,7 +245,6 @@
 	R(:) = B_m(:) - R(:)
       endif
 
-	
 	if(is_serial) then
            Rnorm0 = zero
            if (use_doloop) then
@@ -259,7 +261,7 @@
 	Rnorm0 = sqrt( dot_product_par( R, R ) )
 	endif
 
-	call random_number(Rtilde(:))
+ 	call random_number(Rtilde(:))
 
       if (use_doloop) then
 
@@ -600,6 +602,7 @@
                   IER = -2
             endif
         endif
+
 
         call send_recv(var,2)
         
@@ -1069,7 +1072,7 @@
         enddo
         enddo
 
-     call send_recv(var,1)
+     call send_recv(var,2)
 
      ENDIF
 
@@ -1427,9 +1430,9 @@
       prod = 0.0d0
    
 !$omp parallel do private(i,j,k,ijk) reduction(+:prod)
-      do k = kstart, kend
-        do i = istart, iend
-          do j = jstart, jend
+      do k = kstart1, kend1
+        do i = istart1, iend1
+          do j = jstart1, jend1
    
 !           ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
             ijk = funijk (i,j,k)
@@ -1459,12 +1462,12 @@
         prod = 0.0d0
   
 !$omp parallel do private(i,j,k,ijk) reduction(+:prod)
-        do k = kmin2, kmax2
-          do i = imin2, imax2
-            do j = jmin2, jmax2
+        do k = kmin1, kmax1
+          do i = imin1, imax1
+            do j = jmin1, jmax1
   
 !             ijk = funijk_gl (imap_c(i),jmap_c(j),kmap_c(k))
-              ijk = funijk (i,j,k)
+              ijk = funijk_gl (i,j,k)
   
               prod = prod + r1_g(ijk)*r2_g(ijk)
   
@@ -2934,7 +2937,7 @@
         enddo
         enddo
 
-     call send_recv(var,1)
+     call send_recv(var,2)
 
      ENDIF
 
@@ -3051,7 +3054,7 @@
 
       ENDIF
 
-      IF (DO_SENDRECV) call send_recv(var,1)
+      IF (DO_SENDRECV) call send_recv(var,2)
 
      ENDIF
 

@@ -29,20 +29,20 @@
           call MPI_abort( MPI_COMM_WORLD, ierr)
 	endif
 !
-        if(nodesi.ne.1.and.cyclic_x) then
-	write(*,*) 'the current MFIX version does not support decomposition in the cyclic direction'
-        call MPI_abort( MPI_COMM_WORLD, ierr)
-	endif
+!       if(nodesi.ne.1.and.cyclic_x) then
+!write(*,*) 'the current MFIX version does not support decomposition in the cyclic direction'
+!       call MPI_abort( MPI_COMM_WORLD, ierr)
+!endif
 !
-        if(nodesj.ne.1.and.cyclic_y) then
-        write(*,*) 'the current MFIX version does not support decomposition in the cyclic direction'
+        if(nodesj.ne.1) then
+        write(*,*) 'the current MFIX version does not support decomposition in the j direction'
         call MPI_abort( MPI_COMM_WORLD, ierr)
         endif
 !
-        if(nodesk.ne.1.and.cyclic_z) then
-        write(*,*) 'the current MFIX version does not support decomposition in the cyclic direction'
-        call MPI_abort( MPI_COMM_WORLD, ierr)
-        endif
+!       if(nodesk.ne.1.and.cyclic_z) then
+!       write(*,*) 'the current MFIX version does not support decomposition in the cyclic direction'
+!       call MPI_abort( MPI_COMM_WORLD, ierr)
+!       endif
 !
 !	   Determine the size in i direction and add the remainder sequentially
 

@@ -207,6 +207,8 @@
 !\\   Logical function to determine whether I am on my PE's domain + two &
 !                                                       extra ghost layers
       LOGICAL          IS_ON_myPE_plus2layers
+!\\   Logical function to determine whether I am on my PE's domain - Boundaries
+      LOGICAL          IS_ON_myPE_wobnd
 !
 !                      Maximum of zero or input
       DOUBLE PRECISION ZMAX
@@ -247,6 +249,10 @@
       IS_ON_myPE_owns (LI, LJ, LK) = LI.ge.istart.and.LI.le.iend.and. &
 				LJ.ge.jstart.and.LJ.le.jend.and. &
                                 LK.ge.kstart.and.LK.le.kend
+
+      IS_ON_myPE_wobnd (LI, LJ, LK) = LI.ge.istart1.and.LI.le.iend1.and. &
+                                LJ.ge.jstart1.and.LJ.le.jend1.and. &
+                                LK.ge.kstart1.and.LK.le.kend1
 
       WEST_OF  (IJK)   = IJK + INCREMENT_FOR_w (CELL_CLASS(IJK))
       EAST_OF  (IJK)   = IJK + INCREMENT_FOR_e (CELL_CLASS(IJK))

@@ -110,7 +110,7 @@
 !$omp&  REDUCTION(+:NUM,DEN,NCELLS)  
       DO IJK = ijkstart3, ijkend3
 
-      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
+      IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
          IF (FLUID_AT(IJK)) THEN 
 !
             IJKW = WEST_OF(IJK) 
@@ -154,7 +154,7 @@
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
       DO IJK = ijkstart3, ijkend3
-         IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
+         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
          IF (RESID_IJK(IJK) > MAX_RESID) then
                IJK_RESID = IJK
                MAX_RESID = RESID_IJK( IJK_RESID )
@@ -317,7 +317,7 @@
 !$omp&   NUM1, DEN1) &
 !$omp&   REDUCTION(+:NUM, DEN,NCELLS)  
       DO IJK = ijkstart3, ijkend3
-      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+      IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
          IF (FLUID_AT(IJK) .AND. ABS(VAR(IJK)) > TOL) THEN 
 !
             IMJK = IM_OF(IJK) 
@@ -359,7 +359,7 @@
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
       DO IJK = ijkstart3, ijkend3
-      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+      IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
          IF (RESID_IJK(IJK) > MAX_RESID) THEN               
                IJK_RESID = IJK
                MAX_RESID = RESID_IJK( IJK_RESID )
@@ -512,7 +512,7 @@
       DEN1 = ONE 
 !
       DO IJK = ijkstart3, ijkend3 
-        IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+        IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
       
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -707,7 +707,7 @@
 !$omp&   NUM1, DEN1,VEL) &
 !$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
       DO IJK = ijkstart3, ijkend3
-        IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+        IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
       
          IF (.NOT.IP_AT_E(IJK)) THEN 
 !
@@ -757,7 +757,7 @@
       MAX_RESID = RESID_IJK( IJK_RESID )
 
       DO IJK = ijkstart3, ijkend3
-        IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+        IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
       
           IF (RESID_IJK( IJK ) > MAX_RESID) THEN
               IJK_RESID = IJK
@@ -934,7 +934,7 @@
 !$omp&  VEL,  NUM1, DEN1) &
 !$omp&  REDUCTION(+:NUM, DEN, NCELLS)  
       DO IJK = ijkstart3, ijkend3 
-        IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+        IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
 
          IF (.NOT.IP_AT_N(IJK)) THEN 
 !
@@ -985,7 +985,7 @@
       MAX_RESID = RESID_IJK( IJK_RESID )
       
       DO IJK = ijkstart3, ijkend3
-      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
+      IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
           IF (RESID_IJK( IJK ) > MAX_RESID) THEN
               IJK_RESID = IJK
               MAX_RESID = RESID_IJK( IJK_RESID )
@@ -1159,7 +1159,7 @@
 !$omp&  VEL,  NUM1, DEN1) &
 !$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
       DO IJK = ijkstart3, ijkend3
-      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+      IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
       
          IF (.NOT.IP_AT_T(IJK)) THEN 
 !
@@ -1210,7 +1210,7 @@
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
       DO IJK = ijkstart3, ijkend3
-      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
+      IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
       
           IF (RESID_IJK( IJK ) > MAX_RESID) THEN
               IJK_RESID = IJK

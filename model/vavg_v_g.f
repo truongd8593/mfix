@@ -68,7 +68,7 @@
 
 !!$omp   parallel do private(IJK) reduction(+:SUM_VOL,SUM_V_G)
       DO IJK = IJKSTART3, IJKEND3
-      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK), J_OF(IJK), K_OF(IJK))) CYCLE
+      IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK), J_OF(IJK), K_OF(IJK))) CYCLE
          IF (FLUID_AT(IJK)) THEN 
             SUM_VOL = SUM_VOL + VOL_V(IJK) 
             SUM_V_G = SUM_V_G + V_G(IJK)*EP_G(IJK)*VOL_V(IJK) 

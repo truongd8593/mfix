@@ -161,7 +161,7 @@
 !         Pressure term
             PGT = P_G(IJKT) 
             IF (CYCLIC_Z_PD) THEN 
-               IF (CYCLIC_AT_T(IJK)) PGT = P_G(IJKT) - DELP_Z 
+               IF (KMAP(K_OF(IJK)).EQ.KMAX1) PGT = P_G(IJKT) - DELP_Z 
             ENDIF 
             IF (MODEL_B) THEN 
                SDP = -P_SCALE*(PGT - P_G(IJK))*AXY(IJK) 

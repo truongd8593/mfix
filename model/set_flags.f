@@ -48,6 +48,7 @@
       USE physprop
       USE funits 
       USE compar 
+      USE sendrecv 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -221,6 +222,10 @@
             ENDIF 
 !
          ENDIF 
+      call send_recv(flag,2)
+      call send_recv(flag_t,2)
+      call send_recv(flag_n,2)
+      call send_recv(flag_e,2)
       END DO 
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: SET_FLAGS',/' Message: ICBC_FLAG(',I3,') = ',&
@@ -264,6 +269,7 @@
       USE physprop 
       USE funits 
       USE compar     
+      USE sendrecv     
       USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
@@ -373,6 +379,9 @@
 
     deallocate( flag_temp )
 
+      call send_recv(flag_t,2)
+      call send_recv(flag_n,2)
+      call send_recv(flag_e,2)
       
       RETURN  
       END SUBROUTINE SET_FLAGS1 

@@ -46,7 +46,7 @@
       INTEGER          IER
 !
 !                      Local index
-      INTEGER          L
+      INTEGER          L, IJK1
 !
 !                      Phase index
       INTEGER          M
@@ -64,7 +64,7 @@
       DOUBLE PRECISION b_m(DIMENSION_3, 0:DIMENSION_M)
 
       double precision, allocatable :: array1(:) , array2(:)   !//
-      double precision              :: am(-3:3)                !//
+      double precision, allocatable :: am(:,:)                !//
 !
 !-----------------------------------------------
 !
@@ -74,9 +74,11 @@
       if (myPE == PE_IO) then
          allocate (array1(ijkmax3))    
          allocate (array2(ijkmax3))    
+         allocate (am(ijkmax3,-3:3))    
       else
          allocate (array1(1))          
          allocate (array2(1))          
+         allocate (am(1,-3:3))          
       end if
 
       if (myPE == PE_IO) then
@@ -96,6 +98,10 @@
       call gather(b_m(:,M),array2,root) 
 
 
+      do L = -3,3
+
+      call gather(a_m(:,L,M),array1,root)
+
       DO K = Kmin2, Kmax2
       DO I = Imin2, Imax2
       DO J = Jmin2, Jmax2
@@ -103,18 +109,28 @@
 !     IJK = FUNIJK_GL(IMAP_C(I),JMAP_C(J),KMAP_C(K))
       IJK = FUNIJK_GL(I,J,K)
 
-         do L = -3,3
+      if (myPE == PE_IO) am(ijk,l) = array1(ijk)
 
-            call gather(a_m(:,L,M),array1,root)
-
-            if (myPE == PE_IO) am(l) = array1(ijk)
-         end do
-         if (myPE == PE_IO) WRITE (UNIT_LOG, '(I5, 3(I3), 8(1X,G9.2))') FUNIJK_IO(I,J,K), I, J, K,&
-                                    (AM(L),L=-3,3), array2(IJK) 
 
       END DO 
       END DO 
       END DO 
+
+      end do
+
+      DO K = Kmin2, Kmax2
+      DO I = Imin2, Imax2
+      DO J = Jmin2, Jmax2
+
+      IJK = FUNIJK_GL(I,J,K)
+
+	if (myPE == PE_IO) WRITE (UNIT_LOG, '(I5, 3(I3), 8(1X,G9.2))') FUNIJK_IO(I,J,K), I, J, K,&
+                                    (AM(ijk,L),L=-3,3), array2(IJK)
+
+      END DO
+      END DO
+      END DO
+
       if (myPE == PE_IO) CALL END_LOG 
 
 

@@ -39,6 +39,7 @@
       USE indices
       USE funits 
       USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -196,6 +197,8 @@
 !
          ENDIF 
       END DO 
+ 
+      call send_recv(ICBC_FLAG,2)
 
       RETURN  
  1000 FORMAT(I2.2) 
