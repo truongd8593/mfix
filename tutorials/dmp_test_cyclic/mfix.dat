@@ -9,7 +9,8 @@
   UNITS = 'cgs'                                                                 
   TIME  = 0.0    TSTOP = 1.0   DT = 1.0E-4   DT_max = 0.01
   OUT_DT = 1.0
-  NODESI = 1 NODESJ = 1 NODESK = 2
+  
+  NODESK = 2
                                      
   MOMENTUM_X_EQ= .FALSE.    .FALSE.
   MOMENTUM_Y_EQ= .FALSE.    .FALSE.
@@ -114,10 +115,10 @@
 #                                                                               
   RES_DT = 0.01                                                                 
         !                                                                       
-        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g                           
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g    Theta   Scalar                       
         !      P_star    V_g  V_s            T_s1 X_s                           
         !                W_g  W_s            T_s2                               
-  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 0.01   100.0  
+  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 0.01   100.0  100.0
                                                                                 
   NLOG   = 100                                                                  
   full_log = .true.                                                             
