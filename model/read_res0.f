@@ -61,9 +61,8 @@
       USE toleranc 
       USE leqsol 
       USE scalars
-      USE compar      !// 001 Include MPI header file
-      USE mpi_utility !//
-!     USE dbg_util !//PARDBG
+      USE compar      
+      USE mpi_utility 
 
 
       IMPLICIT NONE
@@ -141,9 +140,6 @@
       READ (UNIT_RES, REC=2) RUN_NAME, ID_MONTH, ID_DAY, ID_YEAR, ID_HOUR, &
          ID_MINUTE, ID_SECOND 
       READ (UNIT_RES, REC=3) NEXT_RECA 
-
-!      write(*,"('(PE ',I2,'): M2B31 ',A20)") myPE,version   !//AIKEPARDBG   
-!      write(*,"('(PE ',I2,'): M2B33 ',I7)") myPE, NEXT_RECA !//AIKEPARDBG   
       
       IF (VERSION == 'RES = 01.00') THEN 
          READ (UNIT_RES, REC=4) IMIN1, JMIN1, KMIN1, IMAX, JMAX, KMAX, IMAX1, &
@@ -220,8 +216,6 @@
        call bcast(DBLPACK,PE_IO) !//PAR_I/O BCAST1d
        call bcast(VERSION,PE_IO) !//PAR_I/O BCAST0c
        call bcast(RUN_NAME,PE_IO) !//PAR_I/O BCAST0c
-!//S need a count variable as arg in bcast so that we can arrange the packing based
-!    on version number and send with a fixed number of arrays
     else
        call bcast(VERSION_NUMBER, PE_IO)  !//PAR_I/O BCAST0r    
        call bcast(INTPACK(1:25),PE_IO)    !//PAR_I/O BCAST1i (receive)
@@ -697,7 +691,6 @@
 	ENDIF
         call bcast(BC_TYPE, PE_IO)   !//PAR_I/O BCAST1c
 
-!//? is ijkmax2 or ijkmax3 the global index? if not change followings
         if (myPE == PE_IO) then
            Allocate(IGTEMP1(IJKMAX2))   !//PAR_I/O ALLOCate INT Global scratch
            Allocate(iGTEMP2(IJKMAX3))   !//PAR_I/O ALLOCate INT Global scratch
@@ -1119,3 +1112,11 @@
       call exitMPI(myPE)
 
       END SUBROUTINE READ_RES0 
+
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 020 New local scratch variables for parallelization
+!// Allocate - DeAllocate scratch arrays
+!// Pack double precision variables before bcasting and then unpack
+!// 400 Added mpi_utility module and other global reduction (bcast) calls

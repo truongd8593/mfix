@@ -34,7 +34,7 @@
       USE fldvar
       USE constant
       USE indices
-      USE compar        !//d
+      USE compar  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -57,17 +57,13 @@
 
 !!$omp parallel do private(ijk) &
 !!$omp schedule(dynamic,chunk_size)
-
-!      write(*,"('(PE ',I2,'): ijkmin1 = ',I5,'   ijkmax1 = ',I5)") & 
-!             myPE,ijkmin1,ijkmax1
-!      write(*,"('(PE ',I2,'): ijkmax2 = ',I5,'   ijend3 = ',I5)") & 
-!             myPE,ijkmax2,ijkend3
-
-!//? make sure FLUID_AT(ijk) gives zero for ghost cells
-!// 350 1025 change do loop limits: ijkmin1,ijkmax2-> ijkstart3, ijkend3    
       DO IJK = ijkstart3, ijkend3 
          IF (.NOT.WALL_AT(IJK)) MW_MIX_G(IJK) = CALC_MW(X_G,DIMENSION_3,IJK,NMAX(0)&
             ,MW_G) 
       END DO 
       RETURN  
       END SUBROUTINE SET_MW_MIX_G 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

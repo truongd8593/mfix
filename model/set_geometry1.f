@@ -31,7 +31,7 @@
       USE geometry
       USE indices
       USE compar
-      USE funits !//AIKEPARDBG
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -53,25 +53,8 @@
 !
 !                      Indices
 !
-!//AIKEPARDBG
-!       do ijk=ijkstart3,ijkend3
-!	 write(UNIT_LOG,"(' I_OF(',I4,') = ',I5, &
-!	              & '  J= ',I5,'  K= ',I5)") &
-!		      & ,IJK,I_OF(ijk),J_OF(ijk),K_OF(ijk)  !//AIKEPARDBG
-!	 write(UNIT_LOG,"(' IP1(',I4,') = ',I5, &
-!	              & '  JP1= ',I5,'  KP1= ',I5)") I_OF(ijk),IP1(I_OF(ijk)), &
-!		      &  JP1(J_OF(IJK)),KP1(K_OF(IJK))  !//AIKEPARDBG
-!       end do
-!      call mfix_exit(myPE) !//AIKEPARDBG       
-
 !!$omp  parallel do private( I, J, K, IP, JP, KP, IJK)  &
 !!$omp  schedule(dynamic,chunk_size)
-!
-!//? Make sure all references to KP are used in 1D arrays otherwise need to
-!//? communicate the calculated values also check prequisites.
-
-
-!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
       DO IJK = ijkstart3, ijkend3
       
 !
@@ -81,10 +64,6 @@
          JP = JP1(J) 
          K = K_OF(IJK) 
          KP = KP1(K) 
-
-!// 200 1108 Check if any of i,j,k is point the 2nd ghost layer
-!//          KP is k+1 which is the problematic due data dependency,
-!//          however, only used in DZ() which is known globally on all PEs	 
 
 	 IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
 	 
@@ -113,3 +92,7 @@
       END DO 
       RETURN  
       END SUBROUTINE SET_GEOMETRY1 
+
+!// Comments on the modifications for DMP version implementation      
+!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 360 Check if i,j,k resides on current processor

@@ -243,7 +243,7 @@
 
 
 !
-!  Initialize d's and e's to zero   !//? pnicol : ??????
+!  Initialize d's and e's to zero   
 !
       DO M = 0, MMAX 
          CALL ZERO_ARRAY (D_E(1,M), IER) 	 
@@ -490,3 +490,4 @@
 !
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization
+!// Additional I/O checks done by root processor

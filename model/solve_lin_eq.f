@@ -29,7 +29,7 @@
       USE param 
       USE param1 
       USE geometry
-      USE compar      !// 001
+      USE compar  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -73,7 +73,6 @@
       INTEGER, PARAMETER :: MAX_IT = 1
 !
 !//SP - Temporary set METHOD = 2
-!     write(*,*) 'entered leq_solve'
       METHOD = 2
 !
       SELECT CASE (METHOD)  
@@ -84,7 +83,7 @@
       CASE (2)  
 !       bicgstab
         call leq_bicgs( VNAME,VAR, A_M(:,:,M), B_M(:,M), SWEEP, TOL, ITMAX,IER)
-!     write(*,*) 'after leq_bicgs in leq_solve'
+
 
       case(3)
         call leq_gmres( VNAME, VAR, A_M(:,:,M), B_M(:,M), &
@@ -104,8 +103,6 @@
         CALL LEQ_LSOR( VNAME, VAR, A_M(:,:,M), B_M(:,M), ITMAX, IER)
 
       CASE DEFAULT 
-!//? need to go over following output to add identification from which PE it is
-!//? coming from or a copy to be sent to *.LOG files
         LINE0(1:14) = 'SOLVE_LIN_EQ: '
 	LINE0(15:80)= VName
         WRITE(LINE1,'(A, I2, A)') &
