@@ -159,7 +159,11 @@
 !
 !---------------  Begin Syamlal and O'Brien ---------------------------
 !         Reynolds number
-            RE = D_P(M)*VREL*RO_G(IJK)/MU_G(IJK) 
+            if(MU_G(IJK) > ZERO)then
+              RE = D_P(M)*VREL*RO_G(IJK)/MU_G(IJK)
+	    else 
+	      RE = LARGE_NUMBER
+	    endif 
 !
 !         Calculate V_rm
 !

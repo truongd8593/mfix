@@ -41,9 +41,6 @@
       LOGICAL NO_IJK, SHIFT 
       CHARACTER AXIS, AXIS_INDEX 
 !//EFD use explicit dimension for DA
-!//SP Temporary fix to make sure that DA(2) is taken care of in the event of
-!     no_k or i or j, where the DIMEN is 1.
-!      DOUBLE PRECISION, DIMENSION(0:DIMEN+1) :: DA 
       DOUBLE PRECISION, DIMENSION(DIMEN) :: DA 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -87,26 +84,27 @@
 ! 2) NUMBER OF CELLS NOT SPECIFIED - calculate NA based on
 !    input that was specified
 !
-      IF (NA == UNDEFINED_I) THEN 
-         IF (DA(2) == UNDEFINED) THEN 
+      IF (NA == UNDEFINED_I) THEN
+        if(no_ijk)then
+	  na = 1
+	else 
+          IF (DA(2) == UNDEFINED) THEN 
             TEMP_STOR = ALENGTH/DA(1) 
             NA = NINT(TEMP_STOR) 
-            LC = 2 
             IF (NA - 1 > 0) THEN 
                DA(2:NA) = DA(1) 
-               LC = NA + 1 
             ENDIF 
-         ELSE 
+          ELSE 
             NA = DIMEN 
             DO LC = 2, DIMEN 
                IF (DA(LC) == UNDEFINED) THEN 
                   NA = LC - 1 
-                  GO TO 300 
+                  EXIT 
                ENDIF 
             END DO 
-         ENDIF 
-  300    CONTINUE 
-         GO TO 700 
+          ENDIF 
+        endif 
+        GO TO 700 
       ENDIF 
 !
       IF (NA>=0 .AND. NA<=DIMEN) THEN 
@@ -115,19 +113,19 @@
 !    input that was specified
 !
          IF (ALENGTH == UNDEFINED) THEN 
-            IF (DA(2) == UNDEFINED) THEN 
-               LC = 2 
+	   if(no_ijk)then
+             ALENGTH = DA(1) 
+	   else
+             IF (DA(2) == UNDEFINED) THEN 
                IF (NA - 1 > 0) THEN 
                   DA(2:NA) = DA(1) 
-                  LC = NA + 1 
                ENDIF 
-            ENDIF 
-            ALENGTH = 0.0 
-            LC = 1 
-            IF (NA > 0) THEN 
+             ENDIF 
+             ALENGTH = 0.0 
+             IF (NA > 0) THEN 
                ALENGTH = SUM(DA(:NA)) 
-               LC = NA + 1 
-            ENDIF 
+             ENDIF
+	   endif 
          ENDIF 
 !
 ! 4) CELL SIZE NOT SPECIFIED - calculate NON_VARIABLE DA based on
@@ -135,22 +133,20 @@
 !
          IF (DA(1) == UNDEFINED) THEN 
             TEMP_STOR = ALENGTH/DBLE(NA) 
-            LC = 1 
             IF (NA > 0) THEN 
                DA(:NA) = TEMP_STOR 
-               LC = NA + 1 
             ENDIF 
          ENDIF 
 !
 ! 5) ALL 3 SPECIFIED
 !
-         IF (DA(2) == UNDEFINED) THEN 
-            LC = 2 
-            IF (NA - 1 > 0) THEN 
+         if(.not.no_ijk)then
+           IF (DA(2) == UNDEFINED) THEN 
+             IF (NA - 1 > 0) THEN 
                DA(2:NA) = DA(1) 
-               LC = NA + 1 
-            ENDIF 
-         ENDIF 
+             ENDIF 
+           ENDIF
+	 endif 
 !
 ! 6) CHECK CONSISTENCY OF AXIS INPUT
 !

@@ -129,7 +129,12 @@
             IF (MU_G0 == UNDEFINED) MU_G(IJK) = 1.7D-4*(T_G(IJK)/273.0)**1.5*(&
                383./(T_G(IJK)+110.)) 
             MU_GT(IJK) = MU_G(IJK) 
-            LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK) 
+            LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
+
+	 ELSE
+            MU_G(IJK)  = ZERO 
+            MU_GT(IJK) = ZERO 
+            LAMBDA_GT(IJK) = ZERO
          ENDIF 
       END DO 
 

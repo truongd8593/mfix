@@ -91,7 +91,11 @@
 !            K_s(IJK, M) = ZERO
 !          ENDIF
 !     An approximate average value for the solids conductivity is 2.5*K_g
-         IF (FLUID_AT(IJK)) K_S(IJK,M) = 2.5*K_G(IJK) 
+         IF (FLUID_AT(IJK)) THEN
+	   K_S(IJK,M) = 2.5*K_G(IJK) 
+	 ELSE
+	   K_S(IJK,M) = ZERO 
+	 ENDIF
       END DO 
 
       CALL send_recv(K_S, 2)     
