@@ -12,13 +12,20 @@
 		recvproc2, recvtag2, xrecv2, recvijk2, &
 		sendproc2, sendtag2, xsend2, sendijk2
 
+        integer,pointer, dimension(:) :: &
+	    send_persistent_request, recv_persistent_request,     &
+	    send_persistent_request1, send_persistent_request2,   &
+	    recv_persistent_request1, recv_persistent_request2
+
 	integer :: nrecv1,nsend1, nrecv2,nsend2
 	logical,parameter :: localfunc=.false.
 
+        logical,parameter :: use_persistent_message=.true.
 
-	double precision, dimension(:), allocatable :: &
+
+	double precision, dimension(:), pointer :: &
 		dsendbuffer, drecvbuffer
-	integer, dimension(:), allocatable :: &
+	integer, dimension(:), pointer :: &
 		isendbuffer, irecvbuffer
 	character, dimension(:), pointer :: &
 		csendbuffer, crecvbuffer
@@ -197,11 +204,15 @@
 !	---------------
 	character(len=80), parameter :: name = 'sendrecv_init'
 
-	character(len=80), allocatable, dimension(:) :: line
+	character(len=80), pointer, dimension(:) :: line
 	integer :: ip, lmax
+
+        integer :: layer,request, source, tag, datatype
 
 	integer :: lidebug
 	integer :: isize,jsize,ksize, ijksize
+        integer :: recvsize1, recvsize2, &
+                   sendsize1, sendsize2
 
 	integer :: iter, i,j,k, ii, jj,kk, &
 		ntotal, icount,ipos, &
@@ -211,13 +222,14 @@
 
 	logical :: isok, isvalid, ismine, is_halobc
 
-	integer, dimension(:,:,:), allocatable :: ijk2proc
+	integer, dimension(:,:,:), pointer :: ijk2proc
         integer, pointer, dimension(:) :: &
 		istartx,iendx, jstartx,jendx, kstartx,kendx, &
 		ncount, &
 		recvproc, recvtag, xrecv, recvijk,  &
 		sendproc, sendtag, xsend, sendijk
 
+        logical, parameter :: jfastest = .true.
 
 
 	integer, parameter :: message_tag_offset = 1000
@@ -234,6 +246,29 @@
 	message_tag(src,dest) = message_tag_offset + (1+src + dest*10*numPEs)
 !//DEEP_BEFORE
 !	include 'function.inc'
+
+
+        nullify( &
+                recvproc1, recvtag1, xrecv1, recvijk1, &
+                sendproc1, sendtag1, xsend1, sendijk1, &
+                recvproc2, recvtag2, xrecv2, recvijk2, &
+                sendproc2, sendtag2, xsend2, sendijk2)
+
+        nullify( &
+                send_persistent_request, recv_persistent_request,   &
+                send_persistent_request1, send_persistent_request2, &
+                recv_persistent_request1, recv_persistent_request2 )
+
+        nullify( dsendbuffer, drecvbuffer )
+        nullify( isendbuffer, irecvbuffer )
+        nullify( csendbuffer, crecvbuffer )
+
+	nullify( &
+                recvrequest, sendrequest, &
+                xrecv,recvproc, recvijk, recvtag, &
+                xsend,sendproc, sendijk, sendtag )
+
+
 
 
 !	--------------------
@@ -581,6 +616,8 @@ do ilayer=1,2
 ! first pass to determine array sizes
 ! -----------------------------------
 
+
+
    ncount(:) = 0
 
    do iproc=0,numPEs-1
@@ -683,25 +720,53 @@ do ilayer=1,2
      icount = 0
 
         do k=kstartx(iproc),kendx(iproc)
-        do j=jstartx(iproc),jendx(iproc)
-        do i=istartx(iproc),iendx(iproc)
 
-          
-	  ii = imap(i)
-	  jj = jmap(j)
-	  kk = kmap(k)
-	  jproc = ijk2proc(ii,jj,kk)
-          ismine = (jproc.eq.myPE)
-          if (ismine) then
-              icount = icount + 1
-	      ijk = funijk(ii,jj,kk)
+        if (jfastest) then
 
-	      ipos = xsend(iter)-1 + icount
-	      sendijk( ipos ) = ijk
-          endif
+           do i=istartx(iproc),iendx(iproc)
+           do j=jstartx(iproc),jendx(iproc)
 
-       enddo
-       enddo
+
+             ii = imap(i)
+             jj = jmap(j)
+             kk = kmap(k)
+             jproc = ijk2proc(ii,jj,kk)
+             ismine = (jproc.eq.myPE)
+             if (ismine) then
+                 icount = icount + 1
+              ijk = funijk(ii,jj,kk)
+
+              ipos = xsend(iter)-1 + icount
+              sendijk( ipos ) = ijk
+             endif
+
+          enddo
+          enddo
+
+
+        else
+
+           do j=jstartx(iproc),jendx(iproc)
+           do i=istartx(iproc),iendx(iproc)
+   
+             
+   	     ii = imap(i)
+   	     jj = jmap(j)
+   	     kk = kmap(k)
+   	     jproc = ijk2proc(ii,jj,kk)
+             ismine = (jproc.eq.myPE)
+             if (ismine) then
+                 icount = icount + 1
+   	      ijk = funijk(ii,jj,kk)
+   
+   	      ipos = xsend(iter)-1 + icount
+   	      sendijk( ipos ) = ijk
+             endif
+   
+          enddo
+          enddo
+
+       endif
        enddo
 
      isvalid = (icount .eq. ncount(iproc))
@@ -827,26 +892,56 @@ do ilayer=1,2
       jproc = recvproc(iter)
 
         do k=kstartx(myPE),kendx(myPE)
-        do j=jstartx(myPE),jendx(myPE)
-        do i=istartx(myPE),iendx(myPE)
 
-          ii = imap(i)
-          jj = jmap(j)
-          kk = kmap(k)
+        if (jfastest) then
 
-          iproc = ijk2proc(ii,jj,kk)
-          is_halobc = (iproc.eq.-1)
+           do i=istartx(myPE),iendx(myPE)
+           do j=jstartx(myPE),jendx(myPE)
 
-          ismine = (iproc.eq.myPE)
-          if ((.not.ismine) .and. (iproc.eq.jproc)) then
+             ii = imap(i)
+             jj = jmap(j)
+             kk = kmap(k)
+
+             iproc = ijk2proc(ii,jj,kk)
+             is_halobc = (iproc.eq.-1)
+
+             ismine = (iproc.eq.myPE)
+             if ((.not.ismine) .and. (iproc.eq.jproc)) then
 
 
-		ijk = funijk( i,j,k)
-		recvijk( ipos ) = ijk
-		ipos = ipos + 1
-          endif
-        enddo
-        enddo
+                ijk = funijk( i,j,k)
+                recvijk( ipos ) = ijk
+                ipos = ipos + 1
+             endif
+           enddo
+           enddo
+
+
+
+        else
+
+           do j=jstartx(myPE),jendx(myPE)
+           do i=istartx(myPE),iendx(myPE)
+   
+             ii = imap(i)
+             jj = jmap(j)
+             kk = kmap(k)
+   
+             iproc = ijk2proc(ii,jj,kk)
+             is_halobc = (iproc.eq.-1)
+   
+             ismine = (iproc.eq.myPE)
+             if ((.not.ismine) .and. (iproc.eq.jproc)) then
+   
+   
+   		ijk = funijk( i,j,k)
+   		recvijk( ipos ) = ijk
+   		ipos = ipos + 1
+             endif
+           enddo
+           enddo
+
+        endif
         enddo
 
    enddo
@@ -905,6 +1000,16 @@ enddo ! do ilayer
 	deallocate( jendx ) 
 	deallocate( kendx ) 
 
+        nullify( ncount )
+        nullify( ijk2proc )
+
+        nullify( istartx )
+        nullify( jstartx )
+        nullify( kstartx )
+        nullify( iendx )
+        nullify( jendx )
+        nullify( kendx )
+
 	
 
     if (lidebug.ge.1) then
@@ -937,6 +1042,7 @@ enddo ! do ilayer
 	enddo
 	call write_error( name, line, lmax )
 	deallocate( line )
+        nullify( line )
 
         lmax = size(recvijk2)
         allocate( line(lmax) )
@@ -960,6 +1066,7 @@ enddo ! do ilayer
         enddo
         call write_error( name, line, lmax )
         deallocate( line )
+        nullify( line )
 
 
         call write_debug( name, ' allocate message buffers ' )
@@ -993,6 +1100,7 @@ enddo ! do ilayer
 
 	call write_error( name, line, lmax )
 	deallocate( line )
+        nullify( line )
 
 
         lmax = size(sendijk2)
@@ -1018,6 +1126,7 @@ enddo ! do ilayer
 
         call write_error( name, line, lmax )
         deallocate( line )
+        nullify( line )
 
 
 
@@ -1028,14 +1137,128 @@ enddo ! do ilayer
 ! ------------------------
 ! allocate message buffers
 ! ------------------------
-	isize = max(1, max(nsend1,nsend2))
-	allocate( sendrequest( isize ) )
 
-	isize = max(1, max(nrecv1,nrecv2))
-	allocate( recvrequest( isize ) )
+
+    isize = max(1,max(nsend1,nsend2))
+    allocate( sendrequest( isize ) )
+    allocate( send_persistent_request1( isize ) )
+    allocate( send_persistent_request2( isize ) )
+
+    isize = max(1,max(nrecv1,nrecv2))
+    allocate( recvrequest( isize ) )
+    allocate( recv_persistent_request1( isize ) )
+    allocate( recv_persistent_request2( isize ) )
 	
+! -----------------------------------
+! preallocate buffers for common case 
+! -----------------------------------
+        recvsize1 = xrecv1( nrecv1+1)-1
+        recvsize2 = xrecv2( nrecv2+1)-1
+
+        isize = max(1,max(recvsize1,recvsize2))
+        allocate( drecvbuffer( isize ) )
+
+        sendsize1 = xsend1( nsend1+1)-1
+        sendsize2 = xsend2( nsend2+1)-1
+
+        isize = max(1,max(sendsize1,sendsize2))
+        allocate( dsendbuffer( isize ) )
 
 
+ if (use_persistent_message) then
+  
+   datatype = MPI_DOUBLE_PRECISION
+
+   do layer=1,2
+
+
+        if (layer.eq.1) then
+          nrecv = nrecv1
+          recvtag =>recvtag1
+          recvproc => recvproc1
+          recvijk => recvijk1
+          xrecv => xrecv1
+
+          nsend = nsend1
+          sendtag => sendtag1
+          sendproc => sendproc1
+          sendijk => sendijk1
+          xsend => xsend1
+
+          send_persistent_request => send_persistent_request1
+          recv_persistent_request => recv_persistent_request1
+
+        else
+          nrecv = nrecv2
+          recvtag =>recvtag2
+          recvproc => recvproc2
+          recvijk => recvijk2
+          xrecv => xrecv2
+
+          nsend = nsend2
+          sendtag => sendtag2
+          sendproc => sendproc2
+          sendijk => sendijk2
+          xsend => xsend2
+
+          send_persistent_request => send_persistent_request2
+          recv_persistent_request => recv_persistent_request2
+
+        endif
+
+
+
+             do ii=1,nrecv
+                j1 = xrecv(ii)
+                j2 = xrecv(ii+1)-1
+                icount = j2-j1+1
+                source = recvproc( ii )
+                tag = recvtag( ii )
+     
+     
+                if (lidebug.ge.2) then
+     
+                     call write_debug(name, 'mpi_recv_init: ii,j1,j2 ', &
+                                             ii,j1,j2 )
+                     call write_debug(name, 'icount, source, tag ', &
+                                             icount,source,tag )
+                endif
+     
+
+                call MPI_RECV_INIT( drecvbuffer(j1), icount, datatype, &
+					source, tag, comm, request, ierror )
+                call MPI_Check( 'sendrecv_begin_1d:MPI_IRECV ', ierror )
+     
+                recv_persistent_request(ii) = request
+             enddo
+
+
+             do ii=1,nsend
+                 j1 = xsend(ii)
+                 j2 = xsend(ii+1)-1
+                  dest = sendproc( ii )
+                  tag = sendtag( ii )
+                  icount = j2-j1+1
+      
+                  if (lidebug.ge.2) then
+      
+                      call write_debug(name, 'mpi_send_init: ii,j1,j2 ', &
+                                         ii,j1,j2)
+                      call write_debug(name, 'icount, dest, tag ', &
+                                         icount,dest,tag )
+                  endif
+      
+      
+                  call MPI_SEND_INIT( dsendbuffer(j1), icount, datatype, &
+                                        dest, tag, &
+                                        comm, request, ierror )
+                 call MPI_Check( 'sendrecv_begin_1d:MPI_SEND_INIT ', ierror )
+      
+                 send_persistent_request( ii ) = request
+              enddo
+         enddo
+
+        endif
 
         if (lidebug.ge.1) then
 	   call write_debug(name, ' end of sendrecv_init ', myPE )
@@ -1081,9 +1304,13 @@ enddo ! do ilayer
 	integer ::  layer, datatype, comm, recvsize, sendsize, &
 		ijk,jj,j1,j2, request, ii,count,source,dest, tag, ierror
 
+
+
+
 	include 'function.inc'
 
-        lidebug = 0
+         lidebug = 0
+
         if (present(idebug)) then
            lidebug = idebug
         endif
@@ -1105,6 +1332,10 @@ enddo ! do ilayer
 	  sendproc => sendproc1
 	  sendijk => sendijk1
 	  xsend => xsend1
+
+          send_persistent_request => send_persistent_request1
+          recv_persistent_request => recv_persistent_request1
+
 	else
 	  nrecv = nrecv2
 	  recvtag =>recvtag2
@@ -1117,6 +1348,10 @@ enddo ! do ilayer
 	  sendproc => sendproc2
 	  sendijk => sendijk2
 	  xsend => xsend2
+
+          send_persistent_request => send_persistent_request2
+          recv_persistent_request => recv_persistent_request2
+
 	endif
 	  
 
@@ -1131,7 +1366,6 @@ enddo ! do ilayer
     if (nrecv.ge.1) then
 	recvsize = xrecv( nrecv+1)-1
 
-	allocate( drecvbuffer( recvsize ) )
 
         if (lidebug.ge.1) then
 		call write_debug( name, 'recvsize, ubound(drecvbuffer,1) ', &
@@ -1151,6 +1385,31 @@ enddo ! do ilayer
 !	-------------
 	datatype = MPI_DOUBLE_PRECISION
 	comm = communicator
+
+     if (use_persistent_message) then
+
+!          ---------------------------------------
+!          persistent request already established
+!          ---------------------------------------
+           if (lidebug.ge.2) then
+	       call write_debug( name,'before startall for recv ',&
+			recv_persistent_request)
+           endif
+
+           call MPI_STARTALL( nrecv, recv_persistent_request, ierror )
+
+           if (lidebug.ge.2) then
+	       call write_debug( name,'after startall for recv, ierror',&
+			ierror)
+           endif
+
+           call MPI_Check( 'sendrecv_begin: MPI_STARTALL ', ierror )
+
+
+     else
+!    ---------
+!    use irecv
+!    ---------
 
 	do ii=1,nrecv
 	   j1 = xrecv(ii)
@@ -1174,6 +1433,7 @@ enddo ! do ilayer
 
 	    recvrequest( ii ) = request
 	enddo
+      endif
 
    endif
 
@@ -1189,7 +1449,6 @@ enddo ! do ilayer
    if (nsend.ge.1) then
         sendsize = xsend( nsend+1)-1
 
-	allocate( dsendbuffer( sendsize ) )
 
         if (lidebug.ge.1) then
 
@@ -1214,6 +1473,38 @@ enddo ! do ilayer
 !	-------------
 	datatype = MPI_DOUBLE_PRECISION
 	comm = communicator
+
+    if (use_persistent_message) then
+
+!       -----------------------------
+!       perform copy into dsendbuffer
+!       -----------------------------
+        j1 = xsend(1)
+        j2 = xsend(nsend+1)-1
+           
+        do jj=j1,j2
+              ijk = sendijk( jj )
+              dsendbuffer( jj )  = X(ijk)
+        enddo
+
+
+
+         if (lidebug.ge.2) then
+	    call write_debug(name,'before mpi_startall send ',&
+		send_persistent_request )
+         endif
+
+         call MPI_STARTALL( nsend, send_persistent_request, ierror )
+
+         if (lidebug .ge.2) then
+	   call write_debug(name,'after mpi_startall send ',&
+		send_persistent_request )
+         endif
+
+         call MPI_Check( 'sendrecv_begin_1d:MPI_STARTALL ', ierror )
+
+
+    else
 
 	do ii=1,nsend
 
@@ -1246,6 +1537,8 @@ enddo ! do ilayer
 
 	   sendrequest( ii ) = request
 	enddo
+
+     endif
 
     endif
 
@@ -1684,6 +1977,8 @@ enddo ! do ilayer
 
 
 	subroutine sendrecv_end_1d( X, idebug )
+        implicit none
+
 	double precision, intent(inout), dimension(:) :: X
 	integer, intent(in), optional :: idebug
 
@@ -1723,7 +2018,7 @@ enddo ! do ilayer
 	integer :: jj,ijk,  jindex, ii,j1,j2, ierror
 
 	integer, dimension(MPI_STATUS_SIZE) :: recv_status
-	integer, dimension(:,:), allocatable :: send_status
+	integer, dimension(:,:), pointer :: send_status
 
 !	---------------
 !	inline function
@@ -1748,11 +2043,19 @@ enddo ! do ilayer
 	endif
 
 	allocate( send_status(MPI_STATUS_SIZE,nsend))
-	call MPI_WAITALL( nsend, sendrequest, send_status, ierror )
-	call MPI_Check( 'sendrecv_end_1d:MPI_WAITALL ', ierror )
-	deallocate( send_status )
 
-	deallocate( dsendbuffer )
+        if (use_persistent_message) then
+	   call MPI_WAITALL( nsend, send_persistent_request, &
+                                    send_status, ierror )
+        else
+	   call MPI_WAITALL( nsend, sendrequest, send_status, ierror )
+        endif
+
+	call MPI_Check( 'sendrecv_end_1d:MPI_WAITALL ', ierror )
+
+	deallocate( send_status )
+        nullify( send_status )
+
 
 	endif
 
@@ -1770,7 +2073,15 @@ enddo ! do ilayer
 
       if (use_waitany) then
 	do ii=1,nrecv
-	   call MPI_WAITANY( nrecv, recvrequest, jindex, recv_status, ierror )
+
+           if (use_persistent_message) then
+	      call MPI_WAITANY( nrecv, recv_persistent_request,  &
+			jindex, recv_status, ierror )
+           else
+	      call MPI_WAITANY( nrecv, recvrequest,   &
+			jindex, recv_status, ierror )
+           endif
+
 	   call MPI_Check( 'sendrecv_end_1d:MPI_WAITANY ', ierror )
 
 	   j1 = xrecv( jindex )
@@ -1786,7 +2097,11 @@ enddo ! do ilayer
 	   enddo
 	enddo
       else 
-	   call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
+           if (use_persistent_message) then
+	      call MPI_WAITALL( nrecv, recv_persistent_request, recv_status, ierror )
+           else
+	      call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
+           endif
 	   call MPI_Check( 'sendrecv_end_1d:MPI_WAITALL recv ', ierror )
 
 	   j1 = xrecv(1)
@@ -1797,7 +2112,6 @@ enddo ! do ilayer
 	   enddo
 	endif
 
-	deallocate( drecvbuffer )
 
 	endif
 
@@ -1806,6 +2120,8 @@ enddo ! do ilayer
 
 
 	subroutine sendrecv_end_1c( X, idebug )
+        implicit none
+
 	character(len=*), intent(inout), dimension(:) :: X
 	integer, intent(in), optional :: idebug
 
@@ -1847,7 +2163,7 @@ enddo ! do ilayer
 	integer :: jj,ijk,  jindex, ii,j1,j2, ierror
 
 	integer, dimension(MPI_STATUS_SIZE) :: recv_status
-	integer, dimension(:,:), allocatable :: send_status
+	integer, dimension(:,:), pointer :: send_status
 
 !	---------------
 !	inline function
@@ -1876,11 +2192,15 @@ enddo ! do ilayer
 
 
 	allocate( send_status(MPI_STATUS_SIZE,nsend))
+
 	call MPI_WAITALL( nsend, sendrequest, send_status, ierror )
 	call MPI_Check( 'sendrecv_end_1c:MPI_WAITALL ', ierror )
+
 	deallocate( send_status )
+        nullify( send_status )
 
 	deallocate( csendbuffer )
+        nullify( csendbuffer )
 
 	endif
 
@@ -1939,6 +2259,7 @@ enddo ! do ilayer
 	endif
 
 	deallocate( crecvbuffer )
+        nullify( crecvbuffer )
 
 	endif
 
@@ -1947,6 +2268,8 @@ enddo ! do ilayer
 
 
 	subroutine sendrecv_end_1i( X, idebug )
+        implicit none
+
 	integer, intent(inout), dimension(:) :: X
 	integer, intent(in), optional :: idebug
 
@@ -1986,7 +2309,7 @@ enddo ! do ilayer
 	integer :: jj,ijk,  jindex, ii,j1,j2, ierror
 
 	integer, dimension(MPI_STATUS_SIZE) :: recv_status
-	integer, dimension(:,:), allocatable :: send_status
+	integer, dimension(:,:), pointer :: send_status
 
 !	---------------
 !	inline function
@@ -2011,11 +2334,15 @@ enddo ! do ilayer
 	endif
 
 	allocate( send_status(MPI_STATUS_SIZE,nsend))
+
 	call MPI_WAITALL( nsend, sendrequest, send_status, ierror )
 	call MPI_Check( 'sendrecv_end_1i:MPI_WAITALL ', ierror )
+
 	deallocate( send_status )
+        nullify( send_status )
 
 	deallocate( isendbuffer )
+        nullify( isendbuffer )
 
 	endif
 
@@ -2061,6 +2388,7 @@ enddo ! do ilayer
 	endif
 
 	deallocate( irecvbuffer )
+        nullify( irecvbuffer )
 
 	endif
 
@@ -2069,6 +2397,8 @@ enddo ! do ilayer
 
 
 	subroutine send_recv_1c( X, ilayer, idebug )
+        implicit none
+
 	character(len=*),  dimension(:), intent(inout) :: X
 	integer, intent(in), optional :: ilayer,idebug
 
@@ -2091,6 +2421,8 @@ enddo ! do ilayer
 	end subroutine send_recv_1c
 
 	subroutine send_recv_1d( X, ilayer, idebug )
+        implicit none
+
 	double precision,  dimension(:), intent(inout) :: X
 	integer, intent(in), optional :: ilayer,idebug
 
@@ -2113,6 +2445,8 @@ enddo ! do ilayer
 	end subroutine send_recv_1d
 
         subroutine send_recv_2d( X, ilayer, idebug )
+        implicit none
+
         double precision,  dimension(:,:), intent(inout) :: X
         integer, intent(in), optional :: ilayer,idebug
 
@@ -2138,6 +2472,8 @@ enddo ! do ilayer
         end subroutine send_recv_2d
 
         subroutine send_recv_3d( X, ilayer, idebug )
+        implicit none
+
         double precision,  dimension(:,:,:), intent(inout) :: X
         integer, intent(in), optional :: ilayer,idebug
 
@@ -2165,6 +2501,8 @@ enddo ! do ilayer
         end subroutine send_recv_3d
 
 	subroutine send_recv_1i( X, ilayer, idebug )
+        implicit none
+
 	integer,  dimension(:), intent(inout) :: X
 	integer, intent(in), optional :: ilayer,idebug
 

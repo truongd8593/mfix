@@ -214,7 +214,7 @@
 ! 
 !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
 !     FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
-      FUNIJK (LI, LJ, LK) = c0 + LJ + (Li-istart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
+      funijk(li,lj,lk) = lj + c0 + li*c1 + lk*c2
 
 !//SP
 !     FUNIJK_PROC(LI, LJ, LK, LIPROC) = 1 + (LI - istart3_all(LIPROC))+ &

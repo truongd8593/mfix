@@ -408,6 +408,8 @@
         c1 = (jend3_all(myPE)-jstart3_all(myPE)+1)
         c2 = (jend3_all(myPE)-jstart3_all(myPE)+1)* (iend3_all(myPE)-istart3_all(myPE)+1)
 
+	c0 =  c0  - c1*istart3_all(myPE) - c2*kstart3_all(myPE)
+
 !	Call to sendrecv_init to set all the communication pattern
 
  	comm = MPI_COMM_WORLD
