@@ -2043,7 +2043,6 @@ enddo ! do ilayer
 		'waiting for sends to complete, nsend  = ', nsend )
 	endif
 
-	allocate( recv_status(MPI_STATUS_SIZE,nsend))
 	allocate( send_status(MPI_STATUS_SIZE,nsend))
 
         if (use_persistent_message) then
@@ -2099,12 +2098,15 @@ enddo ! do ilayer
 	   enddo
 	enddo
       else 
+	   allocate( recv_status(MPI_STATUS_SIZE,nsend))
            if (use_persistent_message) then
 	      call MPI_WAITALL( nrecv, recv_persistent_request, recv_status, ierror )
            else
 	      call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
            endif
 	   call MPI_Check( 'sendrecv_end_1d:MPI_WAITALL recv ', ierror )
+	   deallocate( recv_status )
+           nullify( recv_status )
 
 	   j1 = xrecv(1)
 	   j2 = xrecv( nrecv +1)-1
@@ -2164,7 +2166,8 @@ enddo ! do ilayer
 	integer :: lidebug
 	integer :: jj,ijk,  jindex, ii,j1,j2, ierror
 
-	integer, dimension(MPI_STATUS_SIZE) :: recv_status
+	integer, dimension(MPI_STATUS_SIZE) :: recv_status_any
+	integer, dimension(:,:), pointer :: recv_status
 	integer, dimension(:,:), pointer :: send_status
 
 !	---------------
@@ -2220,7 +2223,7 @@ enddo ! do ilayer
 
       if (use_waitany) then
 	do ii=1,nrecv
-	   call MPI_WAITANY( nrecv, recvrequest, jindex, recv_status, ierror )
+	   call MPI_WAITANY( nrecv, recvrequest, jindex, recv_status_any, ierror )
 	   call MPI_Check( 'sendrecv_end_1c:MPI_WAITANY ', ierror )
 
 	   j1 = xrecv( jindex )
@@ -2242,8 +2245,12 @@ enddo ! do ilayer
 	   enddo
 	enddo
       else 
+	   allocate( recv_status(MPI_STATUS_SIZE,nsend))
 	   call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
 	   call MPI_Check( 'sendrecv_end_1c:MPI_WAITALL recv ', ierror )
+
+           deallocate( recv_status )
+           nullify( recv_status )
 
 	   j1 = xrecv(1)
 	   j2 = xrecv( nrecv +1)-1
@@ -2336,14 +2343,11 @@ enddo ! do ilayer
 		'waiting for sends to complete, nsend  = ', nsend )
 	endif
 
-	allocate( recv_status(MPI_STATUS_SIZE,nsend))
 	allocate( send_status(MPI_STATUS_SIZE,nsend))
 
 	call MPI_WAITALL( nsend, sendrequest, send_status, ierror )
 	call MPI_Check( 'sendrecv_end_1i:MPI_WAITALL ', ierror )
 
-	deallocate( recv_status )
-        nullify( recv_status )
 	deallocate( send_status )
         nullify( send_status )
 
@@ -2382,8 +2386,11 @@ enddo ! do ilayer
 	   enddo
 	enddo
       else 
+	   allocate( recv_status(MPI_STATUS_SIZE,nsend))
 	   call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
 	   call MPI_Check( 'sendrecv_end_1i:MPI_WAITALL recv ', ierror )
+	   deallocate( recv_status )
+           nullify( recv_status )
 
 	   j1 = xrecv(1)
 	   j2 = xrecv( nrecv +1)-1
