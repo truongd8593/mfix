@@ -71,6 +71,7 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       DOUBLE PRECISION, PARAMETER :: ONEMEG = 1048576 
+      INTEGER, PARAMETER :: CALLED_MAX = 250000000 !0 
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -621,7 +622,8 @@
 
             END DO
 
-	IF(CALLED.GT.2500000000) THEN
+!	IF(CALLED.GT.2500000000) THEN
+	IF(CALLED .GT. CALLED_MAX) THEN
 	PRINT *,'TIME =', TIME
 	  STOP
 	END IF
