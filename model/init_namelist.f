@@ -107,6 +107,7 @@
       ENERGY_EQ = .TRUE.
       DEF_COR  =  .FALSE. 
       GRANULAR_ENERGY = .FALSE. 
+      
 ! start peter 7/15
       V_sh=0d0
 !
@@ -137,6 +138,8 @@
       Phase4Scalar(:) = UNDEFINED_I
 
       nRR = 0
+      
+      strong_conservation(:) = .FALSE.
 !
 ! INITIALIZE THE OUTPUT CONTROL SECTION
 !

@@ -45,14 +45,15 @@
 !-----------------------------------------------
 !-----------------------------------------------
 !
-!
-      IF (LEQ_ADJUST .AND. RESID<=TOL_RESID*0.1) THEN 
-         LEQM = LEQ_METHOD_CONV 
-         LEQI = MIN(LEQ_IT_CONV,LEQ_ITL) 
-      ELSE 
+!  The adjustment is disabled, because it was adversely affecting species
+!  conservation
+!      IF (LEQ_ADJUST .AND. RESID<=TOL_RESID*0.1) THEN 
+!         LEQM = LEQ_METHOD_CONV 
+!         LEQI = MIN(LEQ_IT_CONV,LEQ_ITL) 
+!      ELSE 
          LEQM = LEQ_METHODL 
          LEQI = LEQ_ITL 
-      ENDIF 
+!      ENDIF 
 !
       RETURN  
       END SUBROUTINE ADJUST_LEQ 

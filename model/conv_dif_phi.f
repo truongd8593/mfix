@@ -993,6 +993,193 @@
       RETURN  
       END SUBROUTINE DIF_PHI_IS 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name:
+!    CONV_DIF_Phi_Strong(Phi, Dif, Disc, Uf, Vf, Wf, ROPf, M, A_m, B_m, IER)
+!  Purpose: Determine convection diffusion terms for eq Phi C
+!  The center coefficient is negative;                                
+!  See source_Phi_Strong                                                   
+!                                                                      C
+!  Author: M. Syamlal                                 Date: 5-JUN-03  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE CONV_DIF_PHI_Strong(PHI,DIF,DISC,UF,VF,WF,ROPF,M,A_M,B_M,IER) 
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE run
+      USE parallel 
+      USE matrix 
+      USE geometry
+      USE indices
+      USE vshear
+      Use xsi_array
+      USE compar    
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!
+!                      Scalar
+      DOUBLE PRECISION Phi(DIMENSION_3)
+!
+!                      Gamma -- diffusion coefficient
+      DOUBLE PRECISION Dif(DIMENSION_3)
+!
+!                      Discretizationindex
+      INTEGER          Disc
+!
+!                      Velocity components
+      DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3) 
+!
+!                      Macroscopic density
+      DOUBLE PRECISION ROPf(DIMENSION_3)
+!
+!                      Phase index
+      INTEGER          M
+!
+!                      Septadiagonal matrix A_m
+      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
+!
+!                      Vector b_m
+      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
+!
+!                      Error index
+      INTEGER          IER
+!
+!                      Indices
+      INTEGER          I,  J, K, IJK, IPJK, IJPK, IJKE, IJKN,&
+                       IJKP, IJKT
+
+      INTEGER          IMJK, IM, IJKW
+      INTEGER          IJMK, JM, IJKS
+      INTEGER          IJKM, KM, IJKB
+! start loezos
+      INTEGER          I1, J1
+      INTEGER incr
+! end loezos
+
+!
+!                      Difusion parameter
+      DOUBLE PRECISION D_f
+!
+!-----------------------------------------------
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'function.inc'
+      INCLUDE 'fun_avg2.inc'
+      
+
+      call lock_xsi_array
+!
+!  Calculate convection factors
+
+   
+! loezos
+	incr=0		
+! loezos	
+
+      CALL CALC_XSI (DISC, PHI, UF, VF, WF, XSI_E, XSI_N, XSI_T,incr) 
+
+! loezos
+!update V to true velocity      
+
+      IF (SHEAR) THEN
+	 DO IJK = ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) THEN  
+	   VF(IJK)=VF(IJK)+VSH(IJK)	
+          END IF
+        END DO
+      END IF
+! loezos
+
+
+
+!  Calculate convection-diffusion fluxes through each of the faces
+!
+!$omp      parallel do                                               &
+!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,          &
+!$omp&             IJKP, IJKT,    D_f,                        &
+!$omp&             IMJK, IM, IJKW,                                   &
+!$omp&             IJMK, JM,  IJKS,                                  &
+!$omp&             IJKM, KM,  IJKB )                      
+!
+      DO IJK = ijkstart3, ijkend3 
+!
+         IF (FLUID_AT(IJK)) THEN 
+            I = I_OF(IJK) 
+            J = J_OF(IJK) 
+            K = K_OF(IJK) 
+            IJKE = EAST_OF(IJK) 
+            IJKN = NORTH_OF(IJK) 
+            IJKT = TOP_OF(IJK) 
+            IPJK = IP_OF(IJK) 
+            IJPK = JP_OF(IJK) 
+            IJKP = KP_OF(IJK)
+	     
+            A_M(IJK,T,M) = ZERO
+            A_M(IJK,B,M) = ZERO 
+	    
+            A_M(IJK,0,M) = -ROPF(IJK) * VOL(IJK) * oDT
+
+!
+!         East face (i+1/2, j, k)
+            A_M(IJK,E,M) = -(XSI_E(IJK)*ROPF(IJKE)*UF(IJK))*AYZ(IJK) 
+            A_M(IJK,0,M) = A_M(IJK,0,M) - ((ONE-XSI_E(IJK))*ROPF(IJK)*UF(IJK))*AYZ(IJK) 
+!
+!         North face (i, j+1/2, k)
+            A_M(IJK,N,M) = -(XSI_N(IJK)*ROPF(IJKN)*VF(IJK))*AXZ(IJK) 
+            A_M(IJK,0,M) = A_M(IJK,0,M) - ((ONE-XSI_N(IJK))*ROPF(IJK)*VF(IJK))*AXZ(IJK) 
+!
+!         Top face (i, j, k+1/2)
+            IF (DO_K) THEN 
+               A_M(IJK,T,M) = -(XSI_T(IJK)*ROPF(IJKT)*WF(IJK))*AXY(IJK) 
+               A_M(IJK,0,M) = A_M(IJK,0,M) - ((ONE - XSI_T(IJK))*ROPF(IJK)*WF(IJK))*AXY(IJK) 
+            ENDIF 
+!
+!         West face (i-1/2, j, k)
+            IMJK = IM_OF(IJK) 
+!            IF (.NOT.FLUID_AT(IMJK)) THEN 
+               IJKW = WEST_OF(IJK) 
+               A_M(IJK,W,M) = ((ONE - XSI_E(IMJK))*ROPF(IJKW)*UF(IMJK))*AYZ(IMJK) 
+               A_M(IJK,0,M) = A_M(IJK,0,M) + (XSI_E(IMJK)*ROPF(IJK)*UF(IMJK))*AYZ(IMJK) 
+!            ENDIF 
+!
+!         South face (i, j-1/2, k)
+            IJMK = JM_OF(IJK) 
+!            IF (.NOT.FLUID_AT(IJMK)) THEN 
+               IJKS = SOUTH_OF(IJK) 
+               A_M(IJK,S,M) = ((ONE - XSI_N(IJMK))*ROPF(IJKS)*VF(IJMK))*AXZ(IJMK) 
+               A_M(IJK,0,M) = A_M(IJK,0,M) + (XSI_N(IJMK)*ROPF(IJK)*VF(IJMK))*AXZ(IJMK) 
+!            ENDIF 
+
+    
+!         Bottom face (i, j, k-1/2)
+            IF (DO_K) THEN 
+               IJKM = KM_OF(IJK) 
+!               IF (.NOT.FLUID_AT(IJKM)) THEN 
+                  IJKB = BOTTOM_OF(IJK) 
+                  A_M(IJK,B,M) = ((ONE - XSI_T(IJKM))*ROPF(IJKB)*WF(IJKM))*AXY(IJKM) 
+                  A_M(IJK,0,M) = A_M(IJK,0,M) + (XSI_T(IJKM)*ROPF(IJK)*WF(IJKM))*AXY(IJKM) 
+!               ENDIF 
+            ENDIF 
+         ENDIF 
+      END DO 
+      call unlock_xsi_array
+      END SUBROUTINE CONV_DIF_PHI_Strong
