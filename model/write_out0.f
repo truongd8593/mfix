@@ -188,8 +188,8 @@
       WRITE (UNIT_OUT, 1157) P_REF, P_SCALE, GRAVITY 
       WRITE (UNIT_OUT, 1158) 
       WRITE (UNIT_OUT, 1159) (UR_FAC(L),LEQ_IT(L),LEQ_METHOD(L),&
-	                     LEQ_SWEEP(L), LEQ_TOL(L),&
-			     DISCR_NAME(DISCRETIZE(L)),L=1,7) 
+                             LEQ_SWEEP(L), LEQ_TOL(L),&
+                             DISCR_NAME(DISCRETIZE(L)),L=1,7) 
       DO L = 1, DIMENSION_C 
          IF (C(L) /= UNDEFINED) WRITE (UNIT_OUT, 1190) C_NAME(L), L, C(L) 
       END DO 
@@ -473,11 +473,19 @@
       else
          allocate (array1(1))
       end if
+      
+!//AIKEPARDBG
+      write(*,"('(PE ',I2,'): reached before gather in write_out0')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-      call gather (icbc_flag,array1,root)
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-      if (myPE .eq. PE_IO) CALL OUT_ARRAY_C (array1, 'BC/IC condition flags') 
+!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+      call gather (icbc_flag,array1,PE_IO)
+!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+!//AIKEPARDBG
+      write(*,"('(PE ',I2,'): aft gather in write_out0')") myPE    !//AIKEPARDBG
+!     call exitMPI(myPE)   !//AIKEPARDBGSTOP
+      
+      CALL OUT_ARRAY_C (array1, 'BC/IC condition flags') 
       deallocate (array1)
 !
 !  Echo user defined input data
@@ -765,3 +773,4 @@
          'For cells with internal surfaces on more than one side',/7X,&
          'the characters will be over-written in the above order',/1X,A1) 
       END SUBROUTINE WRITE_OUT0 
+      
