@@ -67,27 +67,18 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
-!*******  REMOVE THE FOLLOWING LINES ************************************
+
+!*******  REMOVE THE FOLLOWING LINES to activate the routine **************
 ! The following section is provided so that species equation calculations are 
-! NOT accidentally performed with the default routine.  For solving species
-! equations without chemical reactions simply remove this section (demarkated
-! with asterisks).  
-      CALL START_LOG 
-      IF(DMP_LOG)WRITE (UNIT_LOG, *)
-      IF(DMP_LOG)WRITE (UNIT_LOG, *) &
-      'Species balance equations are being solved; but chemical reactions are'
-      IF(DMP_LOG)WRITE (UNIT_LOG, *) &
-      'not specified in mfix.dat or in rrates.f.  If you want to solve species'
-      IF(DMP_LOG)WRITE (UNIT_LOG, *) &
-      'equations without chemical reactions copy the file mfix/model/rrates.f'
-      IF(DMP_LOG)WRITE (UNIT_LOG, *) &
-      'into the run directory and remove the section in the file that writes'
-      IF(DMP_LOG)WRITE (UNIT_LOG, *) &
-      'this error message.'
-      CALL END_LOG 
-      call mfix_exit(myPE)  
+! NOT accidentally performed with the default routine.  To activate this routine
+! remove the following two lines and insert information in sections 1-4.
+      IER = 1
+      RETURN
+
 !************************************************************************
-      
+
+
+      IER = 0
       R_tmp = UNDEFINED
 !
 !  ---  Remember to include all the local variables here for parallel

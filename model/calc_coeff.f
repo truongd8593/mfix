@@ -31,6 +31,7 @@
       USE param1 
       USE physprop
       USE rxns
+      USE funits 
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
@@ -78,9 +79,21 @@
       IF (RRATE) THEN 
          IF (NO_OF_RXNS > 0) THEN 
             CALL RRATES0 (IER)                   !rxns defined in mfix.dat and rrates0.f 
-         ELSE 
+         ELSE
+	    IER = 0 
             CALL RRATES (IER)                    !rxns defined in rrates.f 
-         ENDIF 
+
+	    IF(IER .EQ. 1) THEN		!error: rrates.f has not been modified
+	      CALL START_LOG 
+              IF(DMP_LOG)WRITE (UNIT_LOG, 1000)
+              CALL END_LOG 
+              call mfix_exit(myPE)  
+	    ENDIF
+
+         ENDIF
+      ELSE
+        !In case mass exchage w/o chemical rxn (e.g., evaporation) occur
+        CALL RRATES (IER)           
       ENDIF 
 !
 !     Calculate interphase momentum, and energy transfers
@@ -107,4 +120,10 @@
          M = MMAX + 1 
       ENDIF 
       RETURN  
+ 1000 FORMAT(/1X,70('*')//' From: CALC_COEFF',/,&
+         ' Species balance equations are being solved; but chemical',/,&
+	 ' reactions are not specified in mfix.dat or in rrates.f.',/,&
+	 ' Copy the file mfix/model/rrates.f into the run directory ',/,&
+	 ' and remove the initial section that returns IER=1.'&
+         ,/1X,70('*')/) 
       END SUBROUTINE CALC_COEFF 
