@@ -92,6 +92,22 @@ sh ~/MFIX/mfix/model/make_mfix < ../in
 cd ..
 # Another case
 echo
+cd fluidBed1_cn
+echo "********************************************************************"
+echo "fluidBed1_cn"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
+cd fluidBed1_4th
+echo "********************************************************************"
+echo "fluidBed1_4th"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
 cd granular_shear
 echo "********************************************************************"
 echo "granular_shear"
