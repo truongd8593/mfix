@@ -194,6 +194,10 @@
 !       endif
 !//end_TEMP
 
+!//SP
+      call send_recv(A_M,2)
+      call send_recv(B_M,2)
+
 
       alpha(:)  = zero
       beta(:)   = zero
@@ -243,6 +247,7 @@
 	Rnorm0 = sqrt( dot_product_par( R, R ) )
 
 
+!      print*,'leq_bicgs, initial: ', Vname,' resid ', real(Rnorm0)
     if (idebugl >= 1) then
        print*,'leq_bicgs, initial: ', Vname,' resid ', real(Rnorm0)
     endif
@@ -253,6 +258,7 @@
     do i=1,itmax
 
         rho(i-1) = dot_product_par( Rtilde, R )
+!      print*,'leq_bicgs, initial: ', Vname,' rho(i-1) ', real(rho(i-1))
 
         if (rho(i-1) .eq. zero) then
 	  if(i /= 1)then
@@ -290,10 +296,10 @@
         call MSOLVE( Vname, P, A_m, Phat, CMETHOD )
 
         call MATVEC( Vname, Phat, A_m, V )
-	call send_recv(V,2)
 
             
         RtildexV = dot_product_par( Rtilde, V )
+!      print*,'leq_bicgs, initial: ', Vname,' RtildexV ', real(RtildexV)
 
         alpha(i) = rho(i-1) / RtildexV
 
@@ -305,23 +311,27 @@
 !       set X(:) = X(:) + alpha(i)*Phat(:) and stop
 !
         Snorm = sqrt( dot_product_par( Svec, Svec ) )
+!      print*,'leq_bicgs, initial: ', Vname,' Snorm ', real(Snorm)
 
         if (Snorm <= TOLMIN) then
 
-!	write(91,*) alpha(i)
-!	write(91,*) Var(ijkstart3:ijkend3)
-!	write(91,*) Phat(ijkstart3:ijkend3)
-!	write(91,*) '**************************'
+ 	write(91,*) alpha(i)
+ 	write(91,*) Var(ijkstart3:ijkend3)
+ 	write(91,*) Phat(ijkstart3:ijkend3)
+ 	write(*,*) '**************************'
 
              Var(ijkstart3:ijkend3) = Var(ijkstart3:ijkend3) + alpha(i)*Phat(ijkstart3:ijkend3)
-             if (idebugl >= 1) then
+!            if (idebugl >= 1) then
 !
 !               Recompute residual norm
 !          
              call MATVEC( Vname, Var, A_m, R )
+             Rnorm = sqrt( dot_product_par( Var, Var ) )
+!      print*,'leq_bicgs, initial: ', Vname,' Vnorm ', real(Rnorm)
              R(ijkstart3:ijkend3) = B_m(ijkstart3:ijkend3) - R(ijkstart3:ijkend3)
+!            endif
              Rnorm = sqrt( dot_product_par( R, R ) )
-             endif
+!      print*,'leq_bicgs, initial: ', Vname,' Rnorm ', real(Rnorm)
 
             EXIT
         endif
@@ -342,7 +352,10 @@
 
         Var(ijkstart3:ijkend3) = Var(ijkstart3:ijkend3) +                           &
               alpha(i)*Phat(ijkstart3:ijkend3) + omega(i)*Shat(ijkstart3:ijkend3)
+	call send_recv(var,2)
+
         R(:) = Svec(:) - omega(i)*Tvec(:)
+	call send_recv(R,2)
         Rnorm = sqrt( dot_product_par(R, R) )
 
         if (idebugl.ge.1) then
@@ -385,6 +398,7 @@
         endif 
 
         isconverged = (real(Rnorm) <= TOL*Rnorm0);
+	write(*,*) '***',iter, isconverged, Rnorm, TOL, Rnorm0, myPE
         IER = 0
         if (.not.isconverged) then
             IER = -1
@@ -611,7 +625,7 @@
       K = 1
 
       DO J=NSTART, NEND
-         IJK = FUNIJK(I,J,K)
+         IJK = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K))
          IM1JK = IM_OF(IJK)
          IP1JK = IP_OF(IJK)
 
@@ -715,7 +729,7 @@
 
 !$omp parallel do private(j,ijk,im1jk,ip1jk,ijkm1,ijkp1)
       DO J=NSTART, NEND
-         IJK = FUNIJK(I,J,K)
+         IJK = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K))
          IM1JK = IM_OF(IJK)
          IP1JK = IP_OF(IJK)
          IJKM1 = KM_OF(IJK)
@@ -1121,11 +1135,12 @@
 
 !
       INTEGER          I,  J, K, IJK, ITER 
+      INTEGER          II,  JJ, KK
       DOUBLE PRECISION oAm
 
       integer :: im1jk,ip1jk, ijm1k,ijp1k, ijkm1,ijkp1
       logical, parameter :: use_send_recv = .true.
-      logical, parameter :: need_distribute_Avar = .false.
+      logical, parameter :: need_distribute_Avar = .true.
 
 
 !-----------------------------------------------
@@ -1157,20 +1172,15 @@
       if (do_k) then
 
 !$omp parallel  do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
-        do k = kstart,kend
-        do j = jstart,jend
-        do i = istart,iend
+        do kk = kstart,kend
+        do jj = jstart,jend
+        do ii = istart,iend
 
-        IJK = funijk(i,j,k)
+        i = imap_c(ii)
+        j = jmap_c(jj)
+        k = kmap_c(kk)
 
-
-           im1jk = im1(i)
-           ip1jk = ip1(i)
-           ijm1k = jm1(j)
-           ijp1k = jp1(j)
-! 
-           ijkm1 = km1(k)
-           ijkp1 = kp1(k)
+        IJK = funijk(imap_c(i),jmap_c(j),kmap_c(k))
 
 
            im1jk = funijk(im1(i),j,k)
@@ -1200,7 +1210,7 @@
 
         k = 1
 
-        IJK = funijk(i,j,k)
+        IJK = funijk(imap_c(i),jmap_c(j),kmap_c(k))
 
 
            im1jk = im_of(ijk)
@@ -1924,13 +1934,13 @@
 
     if(do_global_sum) then
   
-      prod = 0.0
+      prod = 0.0d0
    
       do k = kstart, kend
         do j = jstart, jend
           do i = istart, iend
    
-            ijk = funijk (i,j,k)
+            ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
 
             prod = prod + r1(ijk)*r2(ijk)
    
@@ -1958,7 +1968,7 @@
           do j = jmin2, jmax2
             do i = imin2, imax2
   
-              ijk = funijk_gl (i,j,k)
+              ijk = funijk_gl (imap(i),jmap(j),kmap(k))
   
               prod = prod + r1_g(ijk)*r2_g(ijk)
   
@@ -2019,6 +2029,7 @@
 ! do nothing or no preconditioning
 
      var(:) = b_m(:)
+     call send_recv(var,2)
 
      return
      end subroutine leq_msolve0
@@ -2075,6 +2086,8 @@
 	enddo
 	enddo
 	enddo
+
+     call send_recv(var,2)
 
      return
      end subroutine leq_msolve1

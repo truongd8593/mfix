@@ -83,10 +83,22 @@
 !//SP/ Should be moved elsewhere, done here as a temporary fix to update the 
 !      ghost layers created by processor mapping
       call send_recv(p_g,2)
+      call send_recv(ep_g,2)
       call send_recv(w_s,2)
       call send_recv(w_g,2)
       call send_recv(u_s,2)
       call send_recv(u_g,2)
+      call send_recv(v_s,2)
+      call send_recv(v_g,2)
+      call send_recv(rop_s,2)
+      call send_recv( P_STAR, 2 ) 
+      call send_recv( ROP_G, 2 ) 
+      call send_recv( ROP_S, 2 ) 
+      call send_recv( RO_G, 2 ) 
+      call send_recv( T_G, 2 ) 
+      call send_recv( T_S, 2 ) 
+      call send_recv( X_G, 2 ) 
+      call send_recv( X_S, 2 ) 
 !
       CALL START_LOG 
       ABORT = .FALSE. 

@@ -140,8 +140,8 @@
 !      call prnfield(PHASE_4_P_G,'PHASE_4_P_G','BEF')    !//AIKEPARDBG
 
 !// 400 1120 update the boundaries for recently calculated field vars
-      call send_recv(PHASE_4_P_G,idbg)
-      call send_recv(PHASE_4_P_S,idbg)
+      call send_recv(PHASE_4_P_G,2)
+      call send_recv(PHASE_4_P_S,2)
 
 !      call prnfield(PHASE_4_P_G,'PHASE_4_P_G','AFT')    !//AIKEPARDBG
       

@@ -33,6 +33,7 @@
       USE indices
       USE physprop
       USE compar   !//d
+      USE sendrecv   !//SP
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -73,4 +74,6 @@
          END DO 
       END DO 
       RETURN  
+!//SP
+      call send_recv(TRD_S,2)
       END SUBROUTINE CALC_TRD_S 

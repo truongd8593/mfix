@@ -96,7 +96,7 @@
       ENDIF 
       
 !//SP
-     call global_all_sum(SUM)
+!    call global_all_sum(SUM)
 !
       SUM_T = ZERO 
       IF (ENERGY_EQ) THEN 
@@ -105,7 +105,7 @@
          END DO 
       ENDIF 
 !//SP
-     call global_all_sum(SUM_T)
+!    call global_all_sum(SUM_T)
       SUM_X = ZERO 
       NO_RESID = .FALSE. 
       DO M = 0, MMAX 
@@ -117,7 +117,7 @@
          ENDIF 
       END DO 
 !//SP
-     call global_all_sum(SUM_X)
+!    call global_all_sum(SUM_X)
       IF (NO_RESID) SUM_X = TOL_RESID_X + ONE 
       
 !

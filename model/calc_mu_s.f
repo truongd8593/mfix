@@ -225,6 +225,9 @@
       INCLUDE 's_pr2.inc'
 !
 !
+!//SP Initialize 
+      MU_S(:,:) = ZERO
+      LAMBDA_S(:,:) = ZERO
 !
 !!$omp  parallel do &
 !!$omp& private(IMJPK, I, J, K, IJK,  IMJK, IPJK, IJMK, IJPK, IJKM, &
@@ -248,10 +251,7 @@
 !      DO 200 IJK = ((iend3-istart3+1)*(jend3-jstart3+1)+1), &
 !       ((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1)) - (iend3-istart3+1)*(jend3-jstart3+1)
 !
-!        IF ( FLUID_AT(IJK) ) THEN
-        IF ( .NOT.WALL_AT(IJK) ) THEN
-
- 	
+        IF ( FLUID_AT(IJK) ) THEN
 !
 !------------------------------------------------------------------------
 !          CALL SET_INDEX1(IJK, I, J, K, IMJK, IPJK, IJMK, IJPK,
@@ -439,7 +439,6 @@
  
             LAMBDA_s(IJK, M) = ZERO
             ALPHA_s(IJK, M)  = ZERO
-            P_s(IJK, M)  = ZERO
           ENDIF
          ENDIF
  
@@ -721,18 +720,18 @@
   
 !//? 1112 need to update the boundaries for variables : 
 !// 400 1112 update the boundaries for recently calculated field vars
-      call send_recv(trD_s2,idbg)
-      call send_recv(MU_s,idbg) 
-      call send_recv(Lambda_s,idbg)
-      call send_recv(P_star,idbg) 
-      call send_recv(Alpha_s,idbg)    
-      call send_recv(Theta_m,idbg) 
-      call send_recv(P_s,idbg)  
-      call send_recv(MU_s_c,idbg)                                       
-      call send_recv(Lambda_s_c,idbg) 
-      call send_recv(P_s_c,idbg)    
-      call send_recv(Kth_s,idbg) 
-      call send_recv(Kphi_s,idbg)                      
+      call send_recv(trD_s2,2)
+      call send_recv(MU_s,2) 
+      call send_recv(Lambda_s,2)
+      call send_recv(P_star,2) 
+      call send_recv(Alpha_s,2)    
+      call send_recv(Theta_m,2) 
+      call send_recv(P_s,2)  
+      call send_recv(MU_s_c,2)                                       
+      call send_recv(Lambda_s_c,2) 
+      call send_recv(P_s_c,2)    
+      call send_recv(Kth_s,2) 
+      call send_recv(Kphi_s,2)                      
 !//AIKEPARDBG
 !      write(*,"('(PE ',I2,'): eof CALC_MU_S ')") myPE    !//AIKEPARDBG
 !      call mfix_exit(myPE)   !//AIKEPARDBGSTOP

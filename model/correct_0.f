@@ -88,6 +88,7 @@
       USE indices
       USE physprop
       USE compar        !//d
+      USE sendrecv        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -146,6 +147,11 @@
             ENDIF 
          ENDIF 
       END DO 
+!//SP
+      call send_recv(P_G,2)
+      call send_recv(U_G,2)
+      call send_recv(V_G,2)
+      call send_recv(W_G,2)
       RETURN  
       END SUBROUTINE CORRECT_0G 
 !
@@ -180,6 +186,7 @@
       USE indices
       USE physprop
       USE compar        !//d
+      USE sendrecv        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -234,5 +241,9 @@
             ENDIF 
          END DO 
       END DO 
+!//SP
+      call send_recv(U_S,2)
+      call send_recv(V_S,2)
+      call send_recv(W_S,2)
       RETURN  
       END SUBROUTINE CORRECT_0S 

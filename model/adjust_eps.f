@@ -105,12 +105,12 @@
 !      call prnfield(ROP_G,'ROP_G','BEF')    !//AIKEPARDBG
 
 !// 400 1112 update the boundaries for recently calculated field vars
-      call send_recv(ROP_S,idbg)
-      call send_recv(U_S,idbg) 
-      call send_recv(V_S,idbg) 
-      call send_recv(W_S,idbg) 
-      call send_recv(EP_G,idbg) 
-      call send_recv(ROP_G,idbg)             
+      call send_recv(ROP_S,2)
+      call send_recv(U_S,2) 
+      call send_recv(V_S,2) 
+      call send_recv(W_S,2) 
+      call send_recv(EP_G,2) 
+      call send_recv(ROP_G,2)             
       
 !      call prnfield(ROP_G,'ROP_G','AFT')    !//AIKEPARDBG      
       RETURN  

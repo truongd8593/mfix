@@ -78,7 +78,7 @@
 !//       at certain locations, provided that no data dependency in between.
 
 !// 400 1113 MTP communicate boundaries
-      CALL SEND_RECV(DIF_S, idbg)     
+      CALL SEND_RECV(DIF_S, 2)     
       
       RETURN  
       END SUBROUTINE CALC_DIF_S 

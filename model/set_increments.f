@@ -87,6 +87,8 @@
 !                             determination faster. 
       INTEGER                 DENOTE_CLASS(MAX_CLASS)
 !
+!//SP
+      LOGICAL          TRUEI, TRUEK
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
@@ -99,24 +101,15 @@
       KP1(:) = UNDEFINED_I
       KM1(:) = UNDEFINED_I
 !
-      DO I = ISTART2, IEND2
-         IF (CYCLIC_X.AND.NODESI.EQ.1.AND.DO_I) THEN 
-            IP1(I) = IMAP(IMAP(I)+1)
-            IM1(I) = IMAP(IMAP(I)-1)
+      DO I = ISTART3, IEND3
+ 	 TRUEI = .NOT.(I.EQ.IMIN3.OR.I.EQ.IMIN2.OR.I.EQ.IMAX3.OR.I.EQ.IMAX2)
+         IF (CYCLIC_X.AND.NODESI.EQ.1.AND.DO_I.AND.TRUEI) THEN
+            IP1(I) = IMAP_C(IMAP_C(I)+1)
+            IM1(I) = IMAP_C(IMAP_C(I)-1)
 	 ELSE
             IM1(I) = MAX(ISTART3,I - 1) 
             IP1(I) = MIN(IEND3,I + 1) 
          ENDIF 
-!// IP1(k+1)  etc.,has to be put to undefined_I for error tracking at a later stage....
-!// 200 1107 need to update the values in the 2nd layer of ghost cells	 
-	 if(i == istart2) then
- 	    IM1(i-1) = istart3
-	    IP1(i-1) = ISTART2
-	 endif
-	 if(i == iend2) then
-	    IM1(i+1) = iend2
- 	    IP1(i+1) = iend3
-	 endif	 
 !//AIKEPARDBG
 !         if( i == istart2) &
 !	 write(UNIT_LOG,"(' IM1(',I4,') = ',I5, &
@@ -129,43 +122,25 @@
 !	              & '  IP1= ',I5)") I+1,IM1(i+1),IP1(i+1)  !//AIKEPARDBG
 	 
       END DO 
-      DO J = JSTART2, JEND2
+      DO J = JSTART3, JEND3
          IF (CYCLIC_Y.AND.NODESJ.EQ.1) THEN 
-            JP1(J) = JMAP(JMAP(J)+1)
-            JM1(J) = JMAP(JMAP(J)-1)
+            JP1(J) = JMAP_C(JMAP_C(J)+1)
+            JM1(J) = JMAP_C(JMAP_C(J)-1)
 	 ELSE
             JM1(J) = MAX(JSTART3,J - 1)
             JP1(J) = MIN(JEND3,J + 1)
          ENDIF 
-!// JP1(k+1) etc., has to be put to undefined_I for error tracking at a later stage....
-!// 200 1107 need to update the values in the 2nd layer of ghost cells	 
-	 if(j == jstart2) then
- 	    JM1(j-1) = jstart3
-	    JP1(j-1) = JSTART2
-	 endif
-	 if(j == jend2) then
-	    JM1(j+1) = jend2
- 	    JP1(j+1) = jend3
-	 endif	 	 
       END DO 
-      DO K = KSTART2, KEND2
-         IF (CYCLIC_Z.AND.NODESK.EQ.1.AND.DO_K) THEN 
-            KP1(K) = KMAP(KMAP(K)+1)
-            KM1(K) = KMAP(KMAP(K)-1)
+      DO K = KSTART3, KEND3
+ 	 TRUEK = .NOT.(K.eq.KMIN3.OR.K.eq.KMIN2.OR.K.eq.KMAX3.OR.K.eq.KMAX2)
+         IF (CYCLIC_Z.AND.NODESK.EQ.1.AND.DO_K.AND.TRUEK) THEN
+            KP1(K) = KMAP_C(KMAP_C(K)+1)
+            KM1(K) = KMAP_C(KMAP_C(K)-1)
+	 write(*,*) 'K',K, KP1(K), KM1(K)
 	 ELSE
             KM1(K) = MAX(KSTART3,K - 1)
             KP1(K) = MIN(KEND3,K + 1)
          ENDIF 
-!// KP1(k+1)  etc.,has to be put to undefined_I for error tracking at a later stage....
-!// 200 1107 need to update the values in the 2nd layer of ghost cells	 
-	 if(k == kstart2) then
- 	    kM1(k-1) = kstart3
-	    kP1(k-1) = kSTART2
-	 endif
-	 if(k == kend2) then
-	    kM1(k+1) = kend2
- 	    kP1(k+1) = kend3
-	 endif	 	 
       END DO 
       
       ICLASS = 0 
@@ -181,7 +156,7 @@
                IJK = FUNIJK(I,J,K)               !Find value of IJK 
 !
 !        Fill I, J, K arrays
-               I_OF(IJK) = I 
+               I_OF(IJK) = I
                J_OF(IJK) = J 
                K_OF(IJK) = K 
 

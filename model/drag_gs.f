@@ -149,16 +149,14 @@
 !	     write(*,"('IJK= ',I4,' IMJK= ',I4,' IJMK= ',I4,' IJKM= ',I4)") &
 !	                 IJK,IMJK,IJMK, IJKM    !//AIKEPARDBG
 !	    endif   !//AIKEPARDBG
-!              write(*,"('(PE ',I2,'): at (',I4,',',I4,',',I4,')')") &
-!	           myPE, I_OF(IJK),J_OF(IJK),K_OF(IJKM) !//AIKEPARDBG
 
 !//? Following check may not be necessary due to the above FLUIDorP_FLOW check
 !// 360 1117 Check if  i,j,k-1 resides on this PE
-            IF (.NOT.IS_ON_myPE_plus2layers(I_OF(IJK),J_OF(IJK),K_OF(IJKM))) then
-              write(*,"('(PE ',I2,'): catched KM at (',I4,',',I4,',',I4,')')") &
-	           myPE, I_OF(IJK),J_OF(IJK),K_OF(IJKM) !//AIKEPARDBG
-	      CYCLE
-            ENDIF
+!           IF (.NOT.IS_ON_myPE_plus2layers(I_OF(IJK),J_OF(IJK),K_OF(IJKM))) then
+!             write(*,"('(PE ',I2,'): catched KM at (',I4,',',I4,',',I4,')')") &
+!	           myPE, I_OF(IJK),J_OF(IJK),K_OF(IJKM) !//AIKEPARDBG
+!	      CYCLE
+!            ENDIF
 	    
 !         Calculate velocity components at i, j, k
             UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
@@ -246,7 +244,7 @@
 !       call prnfield(F_GS,'F_GS','BEF')   !//AIKEPARDBG
 
 !// 400 1112 update the boundaries for recently calculated field vars
-      call send_recv(F_GS,idbg)
+      call send_recv(F_GS,2)
 
 !       call prnfield(F_GS,'F_GS','AFT')   !//AIKEPARDBG
       

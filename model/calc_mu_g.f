@@ -120,6 +120,9 @@
       INCLUDE 'ep_s2.inc'
       INCLUDE 'fun_avg2.inc'
 !
+!//SP Initialize 
+      MU_GT(:) = ZERO
+      LAMBDA_GT(:) = ZERO
 !
 !!$omp parallel do private(ijk) schedule(dynamic,chunk_size)
 !// 350 1112 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
@@ -131,7 +134,6 @@
             IF (MU_G0 == UNDEFINED) MU_G(IJK) = 1.7D-4*(T_G(IJK)/273.0)**1.5*(&
                383./(T_G(IJK)+110.)) 
             MU_GT(IJK) = MU_G(IJK) 
-            LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK) 
          ENDIF 
       END DO 
 

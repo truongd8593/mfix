@@ -85,7 +85,7 @@
 
 
       IF(IM1(I).NE.UNDEFINED_I) THEN
-        IMJK = FUNIJK(IM1(I),J,K) 
+        IMJK = BOUND_FUNIJK(IM1(I),J,K) 
 !
 !  IJKW
 !
@@ -97,7 +97,7 @@
       ENDIF
 
       IF(IP1(I).NE.UNDEFINED_I) THEN
-        IPJK = FUNIJK(IP1(I),J,K) 
+        IPJK = BOUND_FUNIJK(IP1(I),J,K) 
 !
 !  IJKE
 !
@@ -109,7 +109,7 @@
       ENDIF
 
       IF(JM1(J).NE.UNDEFINED_I) THEN
-        IJMK = FUNIJK(I,JM1(J),K) 
+        IJMK = BOUND_FUNIJK(I,JM1(J),K) 
 !
 !  IJKS
 !
@@ -121,7 +121,7 @@
       ENDIF
 
       IF(JP1(J).NE.UNDEFINED_I) THEN
-        IJPK = FUNIJK(I,JP1(J),K) 
+        IJPK = BOUND_FUNIJK(I,JP1(J),K) 
 !
 !  IJKN
 !
@@ -133,7 +133,7 @@
       ENDIF
 
       IF(KM1(K).NE.UNDEFINED_I) THEN
-        IJKM = FUNIJK(I,J,KM1(K)) 
+        IJKM = BOUND_FUNIJK(I,J,KM1(K)) 
 !
 !  IJKB
 !
@@ -145,7 +145,7 @@
       ENDIF
 
       IF(KP1(K).NE.UNDEFINED_I) THEN
-        IJKP = FUNIJK(I,J,KP1(K)) 
+        IJKP = BOUND_FUNIJK(I,J,KP1(K)) 
 !
 !  IJKT
 !

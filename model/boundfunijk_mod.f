@@ -29,7 +29,9 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
-      BOUND_FUNIJK  = FUNIJK ( IMAP(LI) , JMAP(LJ) , KMAP(LK)  )
+      BOUND_FUNIJK  = FUNIJK ( MIN( IEND3, MAX (ISTART3, LI) ),&
+                               MIN( JEND3, MAX (JSTART3, LJ) ),&
+                               MIN( KEND3, MAX (KSTART3, LK) ) )
 
       END FUNCTION BOUND_FUNIJK
 

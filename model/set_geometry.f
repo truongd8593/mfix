@@ -49,6 +49,7 @@
       USE param1 
       USE run
       USE geometry
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -90,16 +91,25 @@
       IF (CYCLIC_X) THEN 
          DX(1) = DX(IMAX1) 
          DX(IMAX2) = DX(IMIN1) 
+!//SP
+         DX(0) = DX(IMAX1-1) 
+         DX(IMAX3) = DX(IMIN1+1) 
       ENDIF 
       IF (CYCLIC_Y) THEN 
          DY(1) = DY(JMAX1) 
          DY(JMAX2) = DY(JMIN1) 
+!//SP
+         DY(0) = DY(JMAX1-1) 
+         DY(JMAX3) = DY(JMIN1+1) 
       ENDIF 
 !//D 300 0912 For CYCLIC_Z, dz(1) of PE 0 = dz(kmax1) of PE 1
 !//D          As dz() is the global array for all PEs no modification necessary
       IF (CYCLIC_Z) THEN 
          DZ(1) = DZ(KMAX1) 
          DZ(KMAX2) = DZ(KMIN1) 
+!//SP
+         DZ(0) = DZ(KMAX1-1) 
+         DZ(KMAX3) = DZ(KMIN1+1) 
       ENDIF 
 !
 !//SP Changed the bounds to 0:IMAX3 from 1:IMAX2
@@ -180,6 +190,7 @@
          ENDIF 
 !
          ODZ(K) = ONE/DZ(K) 
+         IF (K == 1) ODZ(K-1) = ONE/DZ(K-1)
       END DO 
       DX_E = HALF*(DX(1)+DX(IMIN1)) 
       DY_N = HALF*(DY(1)+DY(JMIN1)) 
@@ -288,15 +299,24 @@
       IF (CYCLIC_X) THEN 
          FX_E(1) = FX_E(IMAX1) 
          FX_E_BAR(1) = FX_E_BAR(IMAX1) 
+!//SP
+         FX_E(0) = FX_E(IMAX1-1) 
+         FX_E_BAR(0) = FX_E_BAR(IMAX1-1) 
       ENDIF 
       IF (CYCLIC_Y) THEN 
          FY_N(1) = FY_N(JMAX1) 
          FY_N_BAR(1) = FY_N_BAR(JMAX1) 
+!//SP
+         FY_N(0) = FY_N(JMAX1-1) 
+         FY_N_BAR(0) = FY_N_BAR(JMAX1-1) 
       ENDIF 
 !//? should we update the additional ghosts for CYCLIC_Z?      
       IF (CYCLIC_Z) THEN 
          FZ_T(1) = FZ_T(KMAX1) 
          FZ_T_BAR(1) = FZ_T_BAR(KMAX1) 
+!//SP
+         FZ_T(0) = FZ_T(KMAX1-1) 
+         FZ_T_BAR(0) = FZ_T_BAR(KMAX1-1) 
       ENDIF 
 !=====================================================================
 !

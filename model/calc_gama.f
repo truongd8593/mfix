@@ -186,7 +186,7 @@
 !       call prnfield(GAMA_GS,'GAMA_GS','BEF')   !//AIKEPARDBG
 
 !// 400 1112 update the boundaries for recently calculated field vars
-      call send_recv(GAMA_GS,idbg)
+      call send_recv(GAMA_GS,2)
 
 !       call prnfield(GAMA_GS,'GAMA_GS','AFT')   !//AIKEPARDBG
     

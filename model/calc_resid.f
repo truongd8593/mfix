@@ -241,6 +241,8 @@
 
 !                      Indices
       INTEGER          IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
+!SP
+      INTEGER          I, J, K
 
 !                      Numerators and denominators
       DOUBLE PRECISION NUM, NUM1, DEN, DEN1
@@ -283,6 +285,7 @@
 !$omp&   NUM1, DEN1) &
 !$omp&   REDUCTION(+:NUM, DEN,NCELLS)  
       DO IJK = ijkstart3, ijkend3
+      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
          IF (FLUID_AT(IJK) .AND. ABS(VAR(IJK)) > TOL) THEN 
 !
             IMJK = IM_OF(IJK) 
@@ -332,6 +335,7 @@
       MAX_RESID = RESID_IJK( IJK_RESID )
 !// 350 1207 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
       DO IJK = ijkstart3, ijkend3
+      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
          IF (RESID_IJK(IJK) > MAX_RESID) THEN               
                IJK_RESID = IJK
                MAX_RESID = RESID_IJK( IJK_RESID )
@@ -359,7 +363,7 @@
 
 !//SP - call to determine the global IJK location w.r.t. serial version
 
-      IJK_RESID = IJKMAX3
+      IJK_RESID = IJKMAX2
 
       do nproc=0,NumPEs-1
 

@@ -78,7 +78,7 @@
       INCLUDE 'function.inc'
 
 !//SP
-       call send_recv(icbc_flag,2)
+!      call send_recv(icbc_flag,2)
 
 !//AIKEPARDBG
 !      write(*,"('(PE ',I2,'): entered get_flow_bc')") myPE	!//AIKEPARDBG

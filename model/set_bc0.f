@@ -258,11 +258,14 @@
                            IJK3 = IJK 
                            SELECT CASE (BC_PLANE(L))  
                            CASE ('W')  
-                              IJK1 = BOUND_FUNIJK(I - 1,J,K) 
+!//SP - Changed to make consistent approach
+                              IJK1 = BOUND_FUNIJK(IM1(I),J,K) 
                            CASE ('S')  
-                              IJK2 = BOUND_FUNIJK(I,J - 1,K) 
+!//SP - Changed to make consistent approach
+                              IJK2 = BOUND_FUNIJK(I,JM1(J),K) 
                            CASE ('B')  
-                              IJK3 = BOUND_FUNIJK(I,J,K - 1) 
+!//SP - Changed to make consistent approach
+                              IJK3 = BOUND_FUNIJK(I,J,KM1(K)) 
                            END SELECT 
 !
 !             When the boundary plane is W, S, or B the velocity components

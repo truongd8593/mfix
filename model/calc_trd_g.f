@@ -32,6 +32,7 @@
       USE fldvar
       USE indices
       USE compar   !//d
+      USE sendrecv   !//SP
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -70,4 +71,6 @@
          ENDIF 
       END DO 
       RETURN  
+!//SP
+      call send_recv(TRD_G,2)
       END SUBROUTINE CALC_TRD_G 

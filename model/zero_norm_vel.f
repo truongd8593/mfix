@@ -68,10 +68,14 @@
             U_G(IJK) = ZERO 
             V_G(IJK) = ZERO 
             W_G(IJK) = ZERO 
-            IF (.NOT.(CYCLIC_AT(IJK) .AND. I_OF(IJK)==IMAX2)) U_G(IMJK) = ZERO 
-            IF (.NOT.(CYCLIC_AT(IJK) .AND. J_OF(IJK)==JMAX2)) V_G(IJMK) = ZERO 
+!//SP
+            IF (.NOT.(CYCLIC_AT(IJK) .AND. (I_OF(IJK)==IMAX2&
+            .OR.I_OF(IJK)==IMAX3))) U_G(IMJK) = ZERO 
+            IF (.NOT.(CYCLIC_AT(IJK) .AND. (J_OF(IJK)==JMAX2&
+            .OR.J_OF(IJK)==JMAX3))) V_G(IJMK) = ZERO 
 !//? check for subdomain boundary behavior of this if branch assignment	    
-            IF (.NOT.(CYCLIC_AT(IJK) .AND. K_OF(IJK)==KMAX2)) W_G(IJKM) = ZERO 
+            IF (.NOT.(CYCLIC_AT(IJK) .AND. (K_OF(IJK)==KMAX2&
+            .OR.K_OF(IJK)==KMAX3))) W_G(IJKM) = ZERO 
          ENDIF 
       END DO 
       DO M = 1, MMAX 
@@ -108,10 +112,14 @@
                U_S(IJK,M) = ZERO 
                V_S(IJK,M) = ZERO 
                W_S(IJK,M) = ZERO 
-               IF(.NOT.(CYCLIC_AT(IJK).AND.I_OF(IJK)==IMAX2))U_S(IMJK,M)=ZERO 
-               IF(.NOT.(CYCLIC_AT(IJK).AND.J_OF(IJK)==JMAX2))V_S(IJMK,M)=ZERO 
-!//? check for subdomain boundary behavior of this if branch assignment	    	       
-               IF(.NOT.(CYCLIC_AT(IJK).AND.K_OF(IJK)==KMAX2))W_S(IJKM,M)=ZERO 
+!//SP
+               IF (.NOT.(CYCLIC_AT(IJK) .AND. (I_OF(IJK)==IMAX2&
+               .OR.I_OF(IJK)==IMAX3))) U_S(IMJK,M) = ZERO 
+               IF (.NOT.(CYCLIC_AT(IJK) .AND. (J_OF(IJK)==JMAX2&
+               .OR.J_OF(IJK)==JMAX3))) V_S(IJMK,M) = ZERO 
+!//? check for subdomain boundary behavior of this if branch assignment	    
+               IF (.NOT.(CYCLIC_AT(IJK) .AND. (K_OF(IJK)==KMAX2&
+               .OR.K_OF(IJK)==KMAX3))) W_S(IJKM,M) = ZERO 
             ENDIF 
          END DO 
       END DO 

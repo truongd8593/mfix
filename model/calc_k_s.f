@@ -101,7 +101,7 @@
 !//       at certain locations, provided that no data dependency in between.
 
 !// 400 1113 MTP communicate boundaries
-      CALL SEND_RECV(K_S, idbg)     
+      CALL SEND_RECV(K_S, 2)     
     
       RETURN  
       END SUBROUTINE CALC_K_S 

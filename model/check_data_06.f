@@ -134,11 +134,13 @@
 
                IF (DO_K) THEN 
 !// 200 1008 Changed the limits in K BC type label assignment in 2nd layer of ghost cells
-!                  IF (K==1 .OR. K==KMAX2) THEN 
+!                 IF (K==1 .OR. K==KMAX2) THEN 
                   IF (K==KMIN3 .OR. K==KMIN2 .OR. &
  		      K==KMAX2 .OR. K==KMAX3) THEN 		  
+!//SP
                      IF (CYCLIC_Z_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
+!//SP
                      ELSE IF (CYCLIC_Z) THEN 
                         ICBC_FLAG(IJK) = 'c--' 
                      ELSE 
@@ -156,11 +158,13 @@
 !//S      by replacing with JMIN3,JMIN2,JMAX3	       
                IF (DO_J) THEN 
 !// 200 1008 Changed the limits in J, BC type label assignment in 2nd layer of ghost cells
-!                  IF (J==1 .OR. J==JMAX2) THEN
+!                 IF (J==1 .OR. J==JMAX2) THEN
                   IF (J==JMIN3 .OR. J==JMIN2 .OR. &
  		      J==JMAX2 .OR. J==JMAX3) THEN 		  		  
+!//SP
                      IF (CYCLIC_Y_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
+!//SP
                      ELSE IF (CYCLIC_Y) THEN 
                         ICBC_FLAG(IJK) = 'c--' 
                      ELSE 
@@ -172,12 +176,14 @@
 !//S      by replacing with IMIN3,IMIN2,IMAX3	       
                IF (DO_I) THEN 
 !// 200 1008 Changed the limits in I, BC type label assignment in 2nd layer of ghost cells	       
-!                  IF (I==1 .OR. I==IMAX2) THEN
+!                 IF (I==1 .OR. I==IMAX2) THEN
                   IF (I==IMIN3 .OR. I==IMIN2 .OR. &
  		      I==IMAX2 .OR. I==IMAX3) THEN 		  
 		  
+!//SP
                      IF (CYCLIC_X_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
+!//SP
                      ELSE IF (CYCLIC_X) THEN 
                         ICBC_FLAG(IJK) = 'c--' 
                      ELSE 
@@ -728,7 +734,7 @@
       END DO 
 
 !//SP Send Receive
-      call send_recv(icbc_flag,2)
+!     call send_recv(icbc_flag,2)
 
 !      do icvd=1,dimension_ic
 !         write(UNIT_LOG,"(/,'IC_DEFINED(',I4,') = ',L2)") ICVd,IC_DEFINED(ICVd)

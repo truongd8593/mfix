@@ -61,6 +61,7 @@
       USE leqsol 
       USE compar         !//d
       USE mpi_utility    !//d
+      USE sendrecv    !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -92,6 +93,9 @@
 !                      Coefficient of restitution (old symbol)
       DATA DISCR_NAME/'FOUP', 'FOUP', 'Superbee', 'Smart', 'Ultra-Quick', &
          'QUICKEST', 'Muscl', 'VanLeer', 'Minmod'/ 
+
+!     call send_recv(icbc_flag,2)
+!//SP Equivalent of above to fill only the processor boundaries is done in later in this routine
 
       if (myPE.ne.PE_IO) goto 1111
 
@@ -480,6 +484,8 @@
 
 !      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
       call gather (icbc_flag,array1,PE_IO)
+!//SP Filling the processor ghost layer with the correct values
+      call scatter (icbc_flag,array1,PE_IO)
 !      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
 !//AIKEPARDBG
       write(*,"('(PE ',I2,'): aft gather in write_out0')") myPE    !//AIKEPARDBG

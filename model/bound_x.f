@@ -52,7 +52,7 @@
 !//? would it better to replace ARRAY(:) with ARRAY(ijkstart3:ijkend3)??      
 !// 1207 rearrange array indices to remove IJKMAX2 dependency      
 !         ARRAY(:IJKMAX2) = MIN(1.,MAX(0.,ARRAY(:IJKMAX2))) 
-         ARRAY(:) = MIN(1.,MAX(0.,ARRAY(:))) 	 
+         ARRAY(:) = MIN(ONE,MAX(ZERO,ARRAY(:))) 	 
       ENDIF 
       RETURN  
       END SUBROUTINE BOUND_X 

@@ -39,6 +39,7 @@
       USE output
       USE compar           !//
       USE mpi_utility      !//d pnicol : for gather
+      USE sendrecv         !//d pnicol : for gather
 !//d pnicol  ... not needed    USE tmp_array
       IMPLICIT NONE
 !-----------------------------------------------
@@ -83,6 +84,26 @@
          NEXT_REC = NEXT_REC + 1 
       end if
 !
+!\\SP Local Send Receive - need to be moved to source later!!
+      call send_recv(EP_g,2)
+      call send_recv(P_g,2)
+      call send_recv(P_star,2)
+      call send_recv(RO_g,2)
+      call send_recv(ROP_g,2)
+      call send_recv(X_g,2)
+      call send_recv(T_g,2)
+      call send_recv(U_g,2)
+      call send_recv(V_g,2)
+      call send_recv(W_g,2)
+      call send_recv(ROP_S,2)
+      call send_recv(T_S,2)
+      call send_recv(U_S,2)
+      call send_recv(V_S,2)
+      call send_recv(W_S,2)
+      call send_recv(THETA_M,2)
+      call send_recv(X_S,2)
+
+
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (EP_g,array2,root)  !//d pnicol
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here

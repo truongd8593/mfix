@@ -123,7 +123,7 @@
 !  Set the initial conditions.
 !
 !//SP
-      CALL SEND_RECV(FLAG,2)
+!     CALL SEND_RECV(FLAG,2)
 
       DO L = 1, DIMENSION_IC 
          IF (IC_DEFINED(L)) THEN 

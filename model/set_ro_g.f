@@ -100,8 +100,8 @@
 !//  A good check for the execution is to see whether RO_G and ROP_G have
 !//  same values on both PEs although they were calculated independently.
 !//? Mike's implementation but check necessity and also syntax as it give compilation error
-!	CALL SEND_RECV(RO_G, idbg)
-!	CALL SEND_RECV(ROP_G, idbg)
+!	CALL SEND_RECV(RO_G, 2)
+!	CALL SEND_RECV(ROP_G, 2)
 	
 
 !       call prnfield(RO_G,'RO_G','BEF')    !//AIKEPARDBG
