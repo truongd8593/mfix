@@ -1,0 +1,17 @@
+Changes from MFIX4-2 to MFIX2002-3 (Date: 07/22/02)
+
+a) New version number - representing the year and quarter of release.
+b) Parallel capability in the cyclic direction
+c) Changed interface drag_gs.f and drag_ss.f.  To make old drag_gs.f and drag_ss.f 
+   consistent with this change, do the following:
+    * remove F_gs (or F_ss) from the argument list
+    * Add the statement "Use drag" 
+    * delete the dimension statement for drag_gs (or drag_ss)
+d) More user defined variables to control the linear solver (see readme file)
+e) Benchmarked and documented MFIX for all the tests and tutorials on 
+   Linux and Compaq (Look at tests/MFIX_Tests_Benchmarking.html &
+   tutorials/MFIX_Tutorials_Benchmarking.html)
+f) Many bug-fixes - visit 
+   http://www.mfix.org/cgi-bin/cvsweb.cgi/mfix/model/?sortby=date#dirlist
+g) Flushing buffers consistently
+h) Some bug-fixes and additional features in post_mfix
