@@ -1,5 +1,13 @@
 #!/bin/tcsh 
 rm -f */*.RES */*.SP* */*.LOG
+# Another case
+echo
+cd chi-scheme
+echo "********************************************************************"
+echo "chi-scheme"
+tail -20 out1
+cd ..
+# Another case
 echo
 cd cond_conv
 echo "********************************************************************"
@@ -26,6 +34,13 @@ cd cyclic-shear
 echo "********************************************************************"
 echo "cyclic-shear"
 tail -20 out1 
+cd ..
+# Another case
+echo
+cd Driven_Cavity_DES
+echo "********************************************************************"
+echo "Driven_Cavity_DES"
+tail -20 out1
 cd ..
 # Another case
 echo
@@ -106,6 +121,13 @@ tail -20 out1
 cd ..
 # Another case
 echo
+cd Kink_DES
+echo "********************************************************************"
+echo "Kink_DES"
+tail -20 out1
+cd ..
+# Another case
+echo
 cd ozone
 echo "********************************************************************"
 echo "ozone"
@@ -124,6 +146,13 @@ cd phase-change
 echo "********************************************************************"
 echo "phase-change"
 tail -20 out1 
+cd ..
+# Another case
+echo
+cd periodic-flow-fixed-mass-flux
+echo "********************************************************************"
+echo "periodic-flow-fixed-mass-flux"
+tail -20 out1
 cd ..
 # Another case
 echo
@@ -166,6 +195,13 @@ cd tsuji
 echo "********************************************************************"
 echo "tsuji"
 tail -20 out1 
+cd ..
+# Another case
+echo
+cd turbulent_pipe_flow
+echo "********************************************************************"
+echo "turbulent_pipe_flow"
+tail -20 out1
 cd ..
 # Another case
 echo "Testing is over.  Check the output for timing and any errors"

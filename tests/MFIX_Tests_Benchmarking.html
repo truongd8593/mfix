@@ -2,8 +2,6 @@
 <html>
 <head>
   <title>MFIX Tests Benchmarking</title>
-                                                                        
-                                          
   <meta http-equiv="content-type"
  content="text/html; charset=ISO-8859-1">
 </head>
@@ -11,353 +9,535 @@
  vlink="#ff0000">
 <br>
 Simulations in tests directory<br>
-                           
 <table border="1" width="100%" cellpadding="2" cellspacing="2">
-                <tbody>
-                  <tr>
-                    <td>Name </td>
-                    <td>Fluid </td>
-                    <td>Solids </td>
-                    <td>Moment </td>
-                    <td>Energy </td>
-                    <td>Species </td>
-                    <td>Cyclic </td>
-                    <td>Rxns </td>
-                    <td>Transient</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">RSRS <br>
-            (Linux P IV 1.7 GHz) 06/07/02 <br>
-            -Lina<br>
-      <font color="#ff0000">Not Dedicated using Intel Compiler</font><br>
-                  </td>
-             <td valign="top">Linux PIV 1.7 GHz (06/09/03) - Sreekanth<br>
+  <tbody>
+    <tr>
+      <td>Name </td>
+      <td>Fluid </td>
+      <td>Solids </td>
+      <td>Moment </td>
+      <td>Energy </td>
+      <td>Species </td>
+      <td>Cyclic </td>
+      <td>Rxns </td>
+      <td>Transient</td>
+      <td style="vertical-align: top;"><br>
+      <br>
+      <br>
+      <br>
+      <br>
+K_Eps<br>
+      <br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      <br>
+      <br>
+      <br>
+      <br>
+DES<br>
+for Solids <br>
+      <br>
+      </td>
+      <td valign="top"><br>
+      <br>
+COMMENTS<br>
+      </td>
+      <td valign="top">RSRS <br>
+(Linux P IV 1.7 GHz) 06/07/02 <br>
+-Lina<br>
       <font color="#ff0000">Not Dedicated using Intel Compiler</font><br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>cond_conv </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>.</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">1.900 secs<br>
-           165 iters<br>
-                  </td>
-             <td valign="top">1.32 secs<br>
+      <td valign="top">Linux PIV 1.7 GHz (06/09/03) - Sreekanth<br>
+      <font color="#ff0000">Not Dedicated using Intel Compiler</font><br>
+      </td>
+      <td style="vertical-align: top;">Linux PIV 3 GHz <br> ifort 8.034 <br> (06/23/04)
+- Jay Boyalakuntla<br>
+      <font color="#ff0000">Not Dedicated using Intel Compiler</font></td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">chi-scheme</td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">Use chi-scheme<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">68.98 secs<br>
+      </td>
+    </tr>
+    <tr>
+      <td>cond_conv </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>.</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">1.900 secs<br>
+165 iters<br>
+      </td>
+      <td valign="top">1.32 secs<br>
 166 iters<br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>conduction </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>.</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">0.222 secs<br>
-           47 iters<br>
-                  </td>
-             <td valign="top">0.022 secs<br>
+      <td style="vertical-align: top;">0.63 secs<br>
+167 iters<br>
+      </td>
+    </tr>
+    <tr>
+      <td>conduction </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>.</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">0.222 secs<br>
+47 iters<br>
+      </td>
+      <td valign="top">0.022 secs<br>
 14 iters<br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>conduction2 </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>(two layers with jump) </td>
-                                                                        
-    <td valign="top">0.683 secs<br>
-           666 iters<br>
-                  </td>
-             <td valign="top">0.043 secs<br>
+      <td style="vertical-align: top;">0.091 secs<br>
+13 iters<br>
+      </td>
+    </tr>
+    <tr>
+      <td>conduction2 </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td>(two layers with jump) </td>
+      <td valign="top">0.683 secs<br>
+666 iters<br>
+      </td>
+      <td valign="top">0.043 secs<br>
 32<br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>developed_pipe_flow </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>.</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">0.391 secs<br>
-           379 iters<br>
-                  </td>
-             <td valign="top">0.25<br>
+      <td style="vertical-align: top;">0.098 secs<br>
+36 iters<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Driven_Cavity_DES<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">MFIX-DES<br>
+coupling<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">25.57 secs<br>
+      </td>
+    </tr>
+    <tr>
+      <td>developed_pipe_flow </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>.</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">0.391 secs<br>
+379 iters<br>
+      </td>
+      <td valign="top">0.25<br>
 379<br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>developed_pipe_flow1 </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>.</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">0.175 secs<br>
-           2 iters<br>
-                  </td>
-             <td valign="top">0.006 secs<br>
+      <td style="vertical-align: top;">0.17 secs<br>
+379 iters<br>
+      </td>
+    </tr>
+    <tr>
+      <td>developed_pipe_flow1 </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>.</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">0.175 secs<br>
 2 iters<br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>developed_slit_flow </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>.</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">0.483 secs<br>
-           434 iters<br>
-                  </td>
-             <td valign="top">.355<br>
+      <td valign="top">0.006 secs<br>
+2 iters<br>
+      </td>
+      <td style="vertical-align: top;">0.086 secs<br>
+2 iters<br>
+      </td>
+    </tr>
+    <tr>
+      <td>developed_slit_flow </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>.</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">0.483 secs<br>
+434 iters<br>
+      </td>
+      <td valign="top">.355<br>
 434<br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>dmp_test </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">51.811 secs<br>
-                  </td>
-             <td valign="top">18.54 secs<br>
+      <td style="vertical-align: top;">0.21 secs<br>
+434 iters<br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>dmp_test_cyclic </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>X</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">68.271 secs<br>
-                  </td>
-             <td valign="top">18.91 secs<br>
+    </tr>
+    <tr>
+      <td>dmp_test </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X</td>
+      <td style="vertical-align: top;"><br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>driven-cavity </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>.</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">69 Secs<br>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">51.811 secs<br>
+      </td>
+      <td valign="top">18.54 secs<br>
+      </td>
+      <td style="vertical-align: top;">11.15 secs<br>
+      </td>
+    </tr>
+    <tr>
+      <td>dmp_test_cyclic </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">68.271 secs<br>
+      </td>
+      <td valign="top">18.91 secs<br>
+      </td>
+      <td style="vertical-align: top;">11.21 secs<br>
+      </td>
+    </tr>
+    <tr>
+      <td>driven-cavity </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>.</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">69 Secs<br>
 614 iters<br>
-                  </td>
-             <td valign="top">44.87 secs<br>
+      </td>
+      <td valign="top">44.87 secs<br>
 408<br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>granular_shear </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">6815 Secs<br>
-                  </td>
-             <td valign="top"><font color="#000000">49.22</font><br>
+      <td style="vertical-align: top;">22.71 secs<br>
+408 iters<br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>packed_bed </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">18.901 secs<br>
-                  </td>
-             <td valign="top">14.99 secs (Simulation Time=1.0 seconds)<br>
+    </tr>
+    <tr>
+      <td>granular_shear </td>
+      <td>. </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X</td>
+      <td style="vertical-align: top;"><br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>rotary-drum </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>X</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">0.318 secs<br>
-           15 iters<br>
-                  </td>
-             <td valign="top">.881 secs<br>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">6815 Secs<br>
+      </td>
+      <td valign="top"><font color="#000000">49.22</font><br>
+      </td>
+      <td style="vertical-align: top;">42.90 secs<br>
+      </td>
+    </tr>
+    <tr>
+      <td>packed_bed </td>
+      <td>. </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">18.901 secs<br>
+      </td>
+      <td valign="top">14.99 secs (Simulation Time=1.0 seconds)<br>
+      </td>
+      <td style="vertical-align: top;">7.33 secs<br>
+      </td>
+    </tr>
+    <tr>
+      <td>rotary-drum </td>
+      <td>. </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">0.318 secs<br>
 15 iters<br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>settling-tank </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">93996 secs<br>
-                  </td>
-             <td valign="top">119.87 secs (Simulation Time=0.01 seconds)</td>
-                  </tr>
-                  <tr>
-                    <td>simple-2phase </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">8.415 secs<br>
-           68 iters<br>
-                  </td>
-             <td valign="top">9.90 secs<br>
+      <td valign="top">.881 secs<br>
+15 iters<br>
+      </td>
+      <td style="vertical-align: top;">0.22secs<br>
+15 iters<br>
+      </td>
+    </tr>
+    <tr>
+      <td>settling-tank </td>
+      <td>X </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">93996 secs<br>
+      </td>
+      <td valign="top">119.87 secs (Simulation Time=0.01 seconds)</td>
+      <td style="vertical-align: top;">45.04 secs<br>
+12 iters<br>
+      </td>
+    </tr>
+    <tr>
+      <td>simple-2phase </td>
+      <td>X </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">8.415 secs<br>
 68 iters<br>
       </td>
-                  </tr>
-                  <tr>
-                    <td>solid-body-rotation </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>.</td>
-                    <td valign="top"><br>
-                    </td>
-                                                                        
-    <td valign="top">0.200 secs<br>
-           2 iters<br>
-                  </td>
-             <td valign="top">0.005 secs<br>
+      <td valign="top">9.90 secs<br>
+68 iters<br>
+      </td>
+      <td style="vertical-align: top;">4.25 secs<br>
+      </td>
+    </tr>
+    <tr>
+      <td>solid-body-rotation </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>.</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">0.200 secs<br>
 2 iters<br>
       </td>
-                  </tr>
-                                    <tr>
-                    <td>cyclic-shear </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>(Lees-Edwards bc) </td>
-                                                                        
-    <td valign="top">101623 secs<br>
-                  </td>
-             <td valign="top">531.27 secs (Simulation Time=2 seconds)   
-  </td>
-                  </tr>
-                  <tr>
-                    <td>ozone </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>. </td>
-                    <td>X </td>
-                    <td>X </td>
-                    <td>3D Cylindrical </td>
-                                                                        
-    <td valign="top">1877.4 secs<br>
-                  </td>
-             <td valign="top">1655 secs<br>
+      <td valign="top">0.005 secs<br>
+2 iters<br>
       </td>
-                  </tr>
+      <td style="vertical-align: top;">0.085 secs<br>
+2 iters<br>
+      </td>
+    </tr>
+    <tr>
+      <td>cyclic-shear </td>
+      <td>X </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td>(Lees-Edwards bc) </td>
+      <td valign="top">101623 secs<br>
+      </td>
+      <td valign="top">531.27 secs (Simulation Time=2 seconds) </td>
+      <td style="vertical-align: top;">2452.57 secs<br>
+(Re-instate dt_max and dt_fac to get this case converged)<br>
+      </td>
+    </tr>
+    <tr>
+      <td>ozone </td>
+      <td>X </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>X </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td>3D Cylindrical </td>
+      <td valign="top">1877.4 secs<br>
+      </td>
+      <td valign="top">1655 secs<br>
+      </td>
+      <td style="vertical-align: top;">Seg. faults with ifc 8.034 (suspect problem with the compiler as the same case works fine with other architectures and
+      compilers)
+	  <br>1114.50 secs (ifort 7.0)<br>
+(Time = 1E-3 secs)<br>
+      </td>
+    </tr>
     <tr>
       <td valign="top">phase-change<br>
       </td>
@@ -377,11 +557,17 @@ Simulations in tests directory<br>
       </td>
       <td valign="top">X<br>
       </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
       <td valign="top">Gas is produced by sublimation of solids<br>
       </td>
       <td valign="top">X<br>
       </td>
       <td valign="top">170.06 secs<br>
+      </td>
+      <td style="vertical-align: top;">86.55<br>
       </td>
     </tr>
     <tr>
@@ -403,11 +589,17 @@ Simulations in tests directory<br>
       </td>
       <td valign="top">X<br>
       </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
       <td valign="top">Multiple Solids<br>
       </td>
       <td valign="top">X<br>
       </td>
       <td valign="top">34.66 secs<br>
+      </td>
+      <td style="vertical-align: top;">12.55 secs<br>
       </td>
     </tr>
     <tr>
@@ -429,11 +621,17 @@ Simulations in tests directory<br>
       </td>
       <td valign="top">X<br>
       </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
       <td valign="top"><br>
       </td>
       <td valign="top">X<br>
       </td>
       <td valign="top">113.74 secs<br>
+      </td>
+      <td style="vertical-align: top;">53.54 secs<br>
       </td>
     </tr>
     <tr>
@@ -455,11 +653,17 @@ Simulations in tests directory<br>
       </td>
       <td valign="top">X<br>
       </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
       <td valign="top">SI Units<br>
       </td>
       <td valign="top">X<br>
       </td>
       <td valign="top">642.23 secs<br>
+      </td>
+      <td style="vertical-align: top;">288.41 secs<br>
       </td>
     </tr>
     <tr>
@@ -481,11 +685,17 @@ Simulations in tests directory<br>
       </td>
       <td valign="top">X<br>
       </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
       <td valign="top">CN <br>
       </td>
       <td valign="top">X<br>
       </td>
       <td valign="top">1102.83<br>
+      </td>
+      <td style="vertical-align: top;">463.43<br>
       </td>
     </tr>
     <tr>
@@ -507,11 +717,17 @@ Simulations in tests directory<br>
       </td>
       <td valign="top">X<br>
       </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
       <td valign="top">4th Order<br>
       </td>
       <td valign="top">X<br>
       </td>
       <td valign="top">1100.71<br>
+      </td>
+      <td style="vertical-align: top;">469.24 secs<br>
       </td>
     </tr>
     <tr>
@@ -533,30 +749,100 @@ Simulations in tests directory<br>
       </td>
       <td valign="top">X<br>
       </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
       <td valign="top">Hopper flow with multiple solids<br>
       </td>
       <td valign="top">X<br>
       </td>
       <td valign="top">201.89<br>
       </td>
+      <td style="vertical-align: top;">121.81 secs<br>
+      </td>
     </tr>
-                                                                
-  </tbody>              
+    <tr>
+      <td style="vertical-align: top;">Kink_DES<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">.<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">Only DES (not coupled to MFIX)<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">95.54 secs <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">turbulent-pipe-flow<br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">X <br>
+      </td>
+      <td style="vertical-align: top;">X<br>
+      </td>
+      <td style="vertical-align: top;">84.8 secs<br>
+2876 iters<br>
+      </td>
+    </tr>
+  </tbody>
 </table>
-              <br>
-               <br>
-            <br>
-           <br>
-          <br>
-         <br>
-        <br>
-       <br>
-      <br>
-     <br>
-    <br>
-   <br>
-  <br>
- <br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 <br>
 <br>
 <br>

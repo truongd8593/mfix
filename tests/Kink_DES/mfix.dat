@@ -11,7 +11,7 @@
   RUN_TYPE 		= 'new'             
   UNITS 		= 'cgs'
   TIME  		= 0.0			!start time
-  TSTOP 		= 50 
+  TSTOP 		= 1E-4 
   DT 			= 1E-4			!time step
   DT_MAX                = 7.5E-4
  
@@ -119,7 +119,7 @@ ZONES = 1
 ZN1 = 6500				! particles based on size or density etc.
 MN = 10
 RADIUS_EQ = 0.001
-FACTOR = 500000
+FACTOR = 2500
 KN = 4.701E3
 KT = 0
 ETA_DES_N = 1.252E-2

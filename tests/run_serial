@@ -1,5 +1,14 @@
 #!/bin/tcsh 
-rm -f */*.RES */*.SP* */*.LOG
+rm -f */*.RES */*.SP* */*.LOG */*.OUT */*.out */*.*~
+# Another case
+echo
+cd chi-scheme
+echo "********************************************************************"
+echo "chi-scheme"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
 echo
 cd cond_conv
 echo "********************************************************************"
@@ -30,6 +39,14 @@ echo
 cd cyclic-shear
 echo "********************************************************************"
 echo "cyclic-shear"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
+cd Diven_Cavity_DES
+echo "********************************************************************"
+echo "Driven_Cavity_DES"
 sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
@@ -124,6 +141,14 @@ sh ~/MFIX/mfix/model/make_mfix < ../in
 cd ..
 # Another case
 echo
+cd Kink_DES
+echo "********************************************************************"
+echo "Kink_DES"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
 cd ozone
 echo "********************************************************************"
 echo "ozone"
@@ -143,6 +168,14 @@ echo
 cd phase-change
 echo "********************************************************************"
 echo "phase-change"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
+cd periodic-flow-fixed-mass-flux
+echo "********************************************************************"
+echo "periodic-flow-fixed-mass-flux"
 sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
@@ -192,6 +225,14 @@ cd tsuji
 echo "********************************************************************"
 echo "tsuji"
 tsuji
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
+cd turbulent_pipe_flow
+echo "********************************************************************"
+echo "turbulent_pipe_flow"
 sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
