@@ -115,7 +115,11 @@
       DOUBLE PRECISION C_d 
 ! 
 !                      drag coefficient 
-      DOUBLE PRECISION DgA 
+      DOUBLE PRECISION DgA  
+! 
+!                      Gas Laminar viscosity redefined here to set
+!                      viscosity at pressure boundaries
+      DOUBLE PRECISION Mu
 ! 
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
@@ -155,16 +159,37 @@
 !
             VREL = SQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2) 
 !
+!! Laminar viscosity at a pressure boundary is given the value of the fluid cell next to it.
+!! This applies just to the calculation of the drag, in other routines the value of viscosity
+!! at a pressure boundary has always a zero value.
+!
+           IF (P_OUTFLOW_AT(IJK)) THEN
+	      IF( FLUID_AT(EAST_OF(IJK) )) THEN
+	        Mu = MU_G(EAST_OF(IJK))
+	      ELSE IF ( FLUID_AT(WEST_OF(IJK)) ) THEN
+	        Mu = MU_G(WEST_OF(IJK))
+	      ELSE IF ( FLUID_AT(NORTH_OF(IJK)) ) THEN
+	        Mu = MU_G(NORTH_OF(IJK))
+	      ELSE IF ( FLUID_AT(SOUTH_OF(IJK)) ) THEN
+	        Mu = MU_G(SOUTH_OF(IJK))
+	      ELSE IF ( FLUID_AT(TOP_OF(IJK)) ) THEN
+	        Mu = MU_G(TOP_OF(IJK))
+	      ELSE IF ( FLUID_AT(BOTTOM_OF(IJK)) ) THEN
+	        Mu = MU_G(BOTTOM_OF(IJK))
+	      ENDIF
+	   ELSE
+	     Mu = MU_G(IJK)
+	   ENDIF
+	  
+	  
+
+!         Reynolds number
+              RE = D_P(M)*VREL*RO_G(IJK)/Mu
+!
 !         To select one of the following models uncomment (delete) lower
 !         case c's.
 !
 !---------------  Begin Syamlal and O'Brien ---------------------------
-!         Reynolds number
-            if(MU_G(IJK) > ZERO)then
-              RE = D_P(M)*VREL*RO_G(IJK)/MU_G(IJK)
-	    else 
-	      RE = LARGE_NUMBER
-	    endif 
 !
 !         Calculate V_rm
 !
@@ -192,22 +217,22 @@
 !
                IF(TSUJI_DRAG) THEN
                  IF(EP_G(IJK).LE.0.8) THEN
-                    F_GS(IJK,M) = (MU_G(IJK)*EP_S(IJK,M)/(D_P(M)**2))*&
+                    F_GS(IJK,M) = (Mu*EP_S(IJK,M)/(D_P(M)**2))*&
                                    (150*(EP_S(IJK,M)/EP_G(IJK)) + 1.75*RE)
                  ELSE IF(EP_G(IJK).GT.0.8) THEN
                     IF(RE*EP_G(IJK).GT.1000) THEN
-                       F_GS(IJK,M) = 0.75*0.43*MU_G(IJK)*EP_S(IJK,M)*RE/(D_P(M)**2 *&
+                       F_GS(IJK,M) = 0.75*0.43*Mu*EP_S(IJK,M)*RE/(D_P(M)**2 *&
                                                                        EP_G(IJK)**1.7)
                     ELSE IF(RE*EP_G(IJK).LE.1000) THEN
-                            F_GS(IJK,M) = 0.75*C_DSXRET(RE*EP_G(IJK))*MU_G(IJK)*EP_S(IJK,M)*&
+                            F_GS(IJK,M) = 0.75*C_DSXRET(RE*EP_G(IJK))*Mu*EP_S(IJK,M)*&
                                                            RE/(D_P(M)**2 *EP_G(IJK)**1.7)
                     END IF
                  END IF 
                ELSE IF(MODEL_B) THEN 
-                  F_GS(IJK,M) = 0.75*MU_G(IJK)*EP_S(IJK,M)*C_DSXRE(RE/V_RM)/(&
+                  F_GS(IJK,M) = 0.75*Mu*EP_S(IJK,M)*C_DSXRE(RE/V_RM)/(&
                      V_RM*D_P(M)*D_P(M)) 
                ELSE
-                  F_GS(IJK,M) = 0.75*MU_G(IJK)*EP_S(IJK,M)*EP_G(IJK)*C_DSXRE(RE&
+                  F_GS(IJK,M) = 0.75*Mu*EP_S(IJK,M)*EP_G(IJK)*C_DSXRE(RE&
                      /V_RM)/(V_RM*D_P(M)*D_P(M)) 
                ENDIF 
             ENDIF 
@@ -215,11 +240,10 @@
 !
 !-------------------------- Begin Gidaspow --------------------------
 !          IF(EP_g(IJK) .LE. 0.8) THEN
-!            DgA = 150 * (ONE - EP_g(IJK)) * MU_g(IJK) &
+!            DgA = 150 * (ONE - EP_g(IJK)) * Mu &
 !                    / ( EP_g(IJK) * D_p(M)**2 ) &
 !                  + 1.75 * RO_g(IJK) * VREL / D_p(M)
 !          ELSE
-!            Re =  D_p(M) * VREL * ROP_g(IJK) / MU_g(IJK)
 !            IF(Re .LE. 1000)THEN
 !              C_d = (24./(Re+SMALL_NUMBER)) * (ONE + 0.15 * Re**0.687)
 !            ELSE
