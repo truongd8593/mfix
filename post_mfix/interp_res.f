@@ -36,6 +36,7 @@
       Use funits
       Use compar
       Use gridmap ! added
+	  use tmp_array        ! 16-jun-2004
       
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
@@ -227,7 +228,96 @@
       CALL INIT_NAMELIST
       CALL READ_NAMELIST(1)
       call set_max2
+
+
+
+
+	  ! 16-jun-2004 ... can these be put in deallocate_arrays ???
+
+	deallocate( ijksize3_all )
+	deallocate( ijkstart3_all )
+	deallocate( ijkend3_all )
+
+	deallocate( ijksize4_all )
+	deallocate( ijkstart4_all )
+	deallocate( ijkend4_all )
+
+	deallocate( istart_all)
+	deallocate( jstart_all )
+	deallocate( kstart_all )
+
+	deallocate( istart1_all )
+	deallocate( jstart1_all )
+	deallocate( kstart1_all )
+
+	deallocate( istart2_all )
+	deallocate( jstart2_all )
+	deallocate( kstart2_all )
+
+	deallocate( istart3_all )
+	deallocate( jstart3_all )
+	deallocate( kstart3_all )
+
+	deallocate( istart4_all )
+	deallocate( jstart4_all )
+	deallocate( kstart4_all )
+
+	deallocate( iend_all )
+	deallocate( jend_all )
+	deallocate( kend_all )
+
+	deallocate( iend1_all )
+	deallocate( jend1_all )
+	deallocate( kend1_all )
+
+	deallocate( iend2_all )
+	deallocate( jend2_all )
+	deallocate( kend2_all )
+
+	deallocate( iend3_all )
+	deallocate( jend3_all )
+	deallocate( kend3_all )
+	 
+	deallocate( iend4_all )
+	deallocate( jend4_all )
+	deallocate( kend4_all )
+	 
+	deallocate( displs )
+
+        deallocate( imap)
+        deallocate( jmap )
+        deallocate( kmap )
+
+        deallocate( imap_c )
+        deallocate( jmap_c )
+        deallocate( kmap_c )
+
+		deallocate ( tmp4 )
+		deallocate (ArrayLM)
+
+		deallocate ( flag3 )
+		deallocate ( CELL_CLASS3 )
+		deallocate ( I3_OF )
+		deallocate ( J3_OF )
+		deallocate ( K3_OF )
+		deallocate ( Im1_3 )
+		deallocate ( Ip1_3 )
+		deallocate ( Jm1_3 )
+		deallocate ( Jp1_3 )
+		deallocate ( Km1_3 )
+		deallocate ( Kp1_3 )
+
+
+
+
+
+
       call gridmap_init
+
+
+
+
+
       CALL ALLOCATE_ARRAYS
 !
 !  Do initial calculations
