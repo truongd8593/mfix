@@ -173,13 +173,13 @@
        END DO
 !    end if             !//
 !//AIKEPARDBG
-      if(idbg > 1) then        !//AIKEPARDBG
-        write(*,"('(PE ',I2,'): reached dbg stop in time_march')") myPE    !//AIKEPARDBG
+!     if(idbg > 1) then        !//AIKEPARDBG
+!       write(*,"('(PE ',I2,'): reached dbg stop in time_march')") myPE    !//AIKEPARDBG
 !    write(UNIT_LOG,*) 'RES_TIME:',RES_TIME
 !    write(UNIT_LOG,*) 'SPX_TIME:',SPX_TIME    
 !    write(UNIT_LOG,*) 'USR_TIME:',USR_TIME        
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-      endif
+!     endif
   
 !
 !   Parse residual strings
@@ -226,8 +226,8 @@
       IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
 
 !//AIKEPARDBG
-      if(idbg > 1) then        !//AIKEPARDBG
-        write(*,"('(PE ',I2,'): before CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
+!     if(idbg > 1) then        !//AIKEPARDBG
+!       write(*,"('(PE ',I2,'): before CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
 !    write(UNIT_LOG,"('RRATE = ',L2,' WALL_TR = ',L2)") RRATE,WALL_TR   !//AIKEPARDBG
 !    write(UNIT_LOG,*) 'DENSITY: ',DENSITY    !//AIKEPARDBG
 !    write(UNIT_LOG,*) 'SIZE: ',SIZE          !//AIKEPARDBG
@@ -238,7 +238,7 @@
 !    write(UNIT_LOG,*) 'DRAGCOEF: ',DRAGCOEF  !//AIKEPARDBG                  
 !    write(UNIT_LOG,*) 'HEAT_TR: ',HEAT_TR    !//AIKEPARDBG                    
 !        call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-      endif                     !//AIKEPARDBG
+!     endif                     !//AIKEPARDBG
 
 
             
@@ -506,16 +506,16 @@
 !
       CALL CALC_TRD_G (TRD_G, IER) 
 !//SP
-   write(*,"('(PE ',I2,'): reached end of CALC_TRD_G in time_march')") myPE
+!  write(*,"('(PE ',I2,'): reached end of CALC_TRD_G in time_march')") myPE
 
       CALL CALC_TRD_S (TRD_S, IER) 
 !//SP
-    write(*,"('(PE ',I2,'): reached end of CALC_TRD_S in time_march')") myPE
+!   write(*,"('(PE ',I2,'): reached end of CALC_TRD_S in time_march')") myPE
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
     
       CALL CALC_TAU_U_G (TAU_U_G, IER) 
 !//SP
-    write(*,"('(PE ',I2,'): reached end of CALC_TAU_U_G in time_march')") myPE
+!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_U_G in time_march')") myPE
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
     
       CALL CALC_TAU_V_G (TAU_V_G, IER) 
@@ -529,7 +529,7 @@
       CALL CALC_TAU_W_S (TAU_W_S, IER) 
 !   write(*,"('(PE ',I2,'): reached end of CALC_TAU_W_S in time_march')") myPE
 !//SP
-   write(*,"('(PE ',I2,'): reached end of calc routines in time_march')") myPE 
+!  write(*,"('(PE ',I2,'): reached end of calc routines in time_march')") myPE 
 !//SP
 !   call mfix_exit(myPE)   !//SP
 !

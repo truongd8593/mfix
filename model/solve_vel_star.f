@@ -294,7 +294,7 @@
       END DO 
 
 !//AIKEPARDBG
-    write(*,"('(PE ',I2,'): end of V solution in solve_vel_star')") myPE  !//AIKEPARDBG
+!   write(*,"('(PE ',I2,'): end of V solution in solve_vel_star')") myPE  !//AIKEPARDBG
 !    call mfix_exit(myPE)     !//AIKEPARDBG
 
       IF (NO_K)THEN

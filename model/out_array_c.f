@@ -70,7 +70,8 @@
 !
       DO K = 1, KMAX2 
          IJK = FUNIJK_IO(1,1,K) 
-         WRITE (UNIT_OUT, 1100) MESSAGE, K 
+!
+         if(myPE.eq.PE_IO) WRITE (UNIT_OUT, 1100) MESSAGE, K 
          CALL OUT_ARRAY_KC (ARRAY1C(IJK), K) 
       END DO 
  1100 FORMAT(/,1X,A,' at K = ',I4,/) 
