@@ -8,7 +8,7 @@
   RUN_TYPE 		= 'NEW'             
   UNITS 		= 'cgs'
   TIME  		= 0.0			!start time
-  TSTOP 		= 1.0 
+  TSTOP 		= 0.02 
   DT 			= 5E-4			!time step
   DT_MAX                = 7.5E-4
  
@@ -145,10 +145,10 @@ ROs = 2.7
 GRAV(1) = 0
 GRAV(2) = -980 
 GRAV(3) = 0 
+DES_NEIGHBOR_SEARCH = 2
 
 !  DES Logicals
 DISCRETE_ELEMENT = .TRUE.
-DO_QUADTREE = .TRUE.
 WALLDTSPLIT = .TRUE.
 COUPLED_FLOW = .TRUE.
 TSUJI_DRAG = .TRUE.
