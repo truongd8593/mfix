@@ -61,6 +61,7 @@ mfix.exe : \
     check_one_axis.$(OBJ_EXT) \
     check_plane.$(OBJ_EXT) \
     coeff_mod.$(OBJ_EXT) \
+    compar_mod.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     constant_mod.$(OBJ_EXT) \
     cont_mod.$(OBJ_EXT) \
@@ -80,6 +81,7 @@ mfix.exe : \
     corner_mod.$(OBJ_EXT) \
     correct_0.$(OBJ_EXT) \
     correct_1.$(OBJ_EXT) \
+    debug_mod.$(OBJ_EXT) \
     dgtsl.$(OBJ_EXT) \
     dif_u_is.$(OBJ_EXT) \
     dif_v_is.$(OBJ_EXT) \
@@ -145,6 +147,7 @@ mfix.exe : \
     mod_bc_i.$(OBJ_EXT) \
     mod_bc_j.$(OBJ_EXT) \
     mod_bc_k.$(OBJ_EXT) \
+    mpi_mod.$(OBJ_EXT) \
     open_file.$(OBJ_EXT) \
     open_files.$(OBJ_EXT) \
     out_array.$(OBJ_EXT) \
@@ -352,6 +355,7 @@ mfix.exe : \
     check_one_axis.$(OBJ_EXT) \
     check_plane.$(OBJ_EXT) \
     coeff_mod.$(OBJ_EXT) \
+    compar_mod.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     constant_mod.$(OBJ_EXT) \
     cont_mod.$(OBJ_EXT) \
@@ -371,6 +375,7 @@ mfix.exe : \
     corner_mod.$(OBJ_EXT) \
     correct_0.$(OBJ_EXT) \
     correct_1.$(OBJ_EXT) \
+    debug_mod.$(OBJ_EXT) \
     dgtsl.$(OBJ_EXT) \
     dif_u_is.$(OBJ_EXT) \
     dif_v_is.$(OBJ_EXT) \
@@ -436,6 +441,7 @@ mfix.exe : \
     mod_bc_i.$(OBJ_EXT) \
     mod_bc_j.$(OBJ_EXT) \
     mod_bc_k.$(OBJ_EXT) \
+    mpi_mod.$(OBJ_EXT) \
     open_file.$(OBJ_EXT) \
     open_files.$(OBJ_EXT) \
     out_array.$(OBJ_EXT) \
@@ -613,6 +619,9 @@ coeff.mod : coeff_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) coeff_mod.f 
+compar.mod : compar_mod.f \
+            mpi.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) compar_mod.f 
 constant.mod : constant_mod.f \
             param.mod \
             param1.mod 
@@ -625,6 +634,9 @@ corner.mod : corner_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) corner_mod.f 
+debug.mod : debug_mod.f \
+            funits.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) debug_mod.f 
 drag.mod : drag_mod.f \
             param.mod \
             param1.mod 
@@ -675,6 +687,9 @@ matrix.mod : matrix_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) matrix_mod.f 
+mpi.mod : mpi_mod.f \
+            mpif.h                                                      
+	$(FORTRAN_CMD) $(FORT_FLAGS) mpi_mod.f 
 output.mod : output_mod.f \
             param.mod \
             param1.mod 
@@ -769,7 +784,8 @@ xsi_array.mod : xsi_array_mod.f \
 compar.mod : ./dmp_modules/compar_mod.f \
             mpi.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/compar_mod.f 
-debug.mod : ./dmp_modules/debug_mod.f 
+debug.mod : ./dmp_modules/debug_mod.f \
+            funits.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/debug_mod.f 
 gridmap.mod : ./dmp_modules/gridmap_mod.f \
             parallel_mpi.mod \
@@ -780,7 +796,7 @@ gridmap.mod : ./dmp_modules/gridmap_mod.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/gridmap_mod.f 
 mpi.mod : ./dmp_modules/mpi_mod.f \
-            /usr/include/mpif.h                                         
+            mpif.h                                                      
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/mpi_mod.f 
 mpi_utility.mod : ./dmp_modules/mpi_utility_mod.f \
             geometry.mod \
@@ -957,6 +973,8 @@ allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             visc_g.mod \
             visc_s.mod \
             xsi_array.mod \
+            compar.mod \
+            debug.mod \
             dslucs_a.mod \
             dslugm_a.mod \
             igcg_i.mod \
@@ -1361,7 +1379,9 @@ check_data_03.$(OBJ_EXT) : check_data_03.f \
             param.mod \
             param1.mod \
             geometry.mod \
-            funits.mod 
+            funits.mod \
+            compar.mod \
+            mpi_utility.mod 
 check_data_04.$(OBJ_EXT) : check_data_04.f \
             param.mod \
             param1.mod \
@@ -1856,6 +1876,7 @@ equal.$(OBJ_EXT) : equal.f \
             indices.mod \
             physprop.mod 
 error_routine.$(OBJ_EXT) : error_routine.f \
+            funits.mod \
             compar.mod \
             mpi_utility.mod 
 exchange.$(OBJ_EXT) : exchange.f \
@@ -1894,7 +1915,9 @@ get_data.$(OBJ_EXT) : get_data.f \
             param.mod \
             param1.mod \
             run.mod \
-            funits.mod 
+            funits.mod \
+            compar.mod \
+            gridmap.mod 
 get_eq.$(OBJ_EXT) : get_eq.f \
             param.mod \
             param1.mod \
@@ -2130,7 +2153,10 @@ mfix.$(OBJ_EXT) : mfix.f \
             run.mod \
             time_cpu.mod \
             funits.mod \
-            output.mod 
+            output.mod \
+            compar.mod \
+            mpi_utility.mod \
+            parallel_mpi.mod 
 mod_bc_i.$(OBJ_EXT) : mod_bc_i.f \
             param.mod \
             param1.mod \
@@ -2161,11 +2187,12 @@ mod_bc_k.$(OBJ_EXT) : mod_bc_k.f \
             funits.mod \
             compar.mod \
             function.inc                                                
-open_file.$(OBJ_EXT) : open_file.f 
+open_file.$(OBJ_EXT) : open_file.f \
+            compar.mod 
 open_files.$(OBJ_EXT) : open_files.f \
             machine.mod \
             funits.mod \
-            geometry.mod 
+            compar.mod 
 out_array.$(OBJ_EXT) : out_array.f \
             param.mod \
             param1.mod \
@@ -2217,7 +2244,8 @@ out_bin_r.$(OBJ_EXT) : out_bin_r.f \
 parse_line.$(OBJ_EXT) : parse_line.f \
             param.mod \
             param1.mod \
-            parse.mod 
+            parse.mod \
+            compar.mod 
 parse_resid_string.$(OBJ_EXT) : parse_resid_string.f \
             param.mod \
             param1.mod \
@@ -2274,6 +2302,7 @@ read_namelist.$(OBJ_EXT) : read_namelist.f \
             leqsol.mod \
             residual.mod \
             rxns.mod \
+            compar.mod \
             usrnlst.inc                                                  \
             namelist.inc                                                
 read_res0.$(OBJ_EXT) : read_res0.f \
@@ -2292,7 +2321,10 @@ read_res0.$(OBJ_EXT) : read_res0.f \
             ur_facs.mod \
             toleranc.mod \
             leqsol.mod \
-            tmp_array.mod 
+            tmp_array.mod \
+            compar.mod \
+            mpi_utility.mod \
+            dbg_util.mod 
 read_res1.$(OBJ_EXT) : read_res1.f \
             param.mod \
             param1.mod \
@@ -2301,7 +2333,9 @@ read_res1.$(OBJ_EXT) : read_res1.f \
             physprop.mod \
             run.mod \
             funits.mod \
-            tmp_array.mod 
+            tmp_array.mod \
+            compar.mod \
+            mpi_utility.mod 
 remove_comment.$(OBJ_EXT) : remove_comment.f 
 reset_new.$(OBJ_EXT) : reset_new.f \
             param.mod \
@@ -2492,7 +2526,6 @@ set_index1a.$(OBJ_EXT) : set_index1a.f \
             physprop.mod \
             geometry.mod \
             compar.mod \
-            constant.mod \
             fldvar.mod \
             indices.mod \
             boundfunijk.mod \
