@@ -77,10 +77,12 @@
       INCLUDE 'function.inc'
 !
 !
+!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
 !!$omp&  Src, LINE) &
 !!$omp&  schedule(static)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
 !
          IF (FLUID_AT(IJK) .AND. PHASE_4_P_G(IJK)/=M .AND. PHASE_4_P_S(IJK)/=M&
             ) THEN 
@@ -129,5 +131,7 @@
             B_M(IJK,M) = -ROP_S(IJK,M) 
          ENDIF 
       END DO 
+!//? check if need to COMMunicate A_M and B_M?      
+      
       RETURN  
       END SUBROUTINE SOURCE_ROP_S 

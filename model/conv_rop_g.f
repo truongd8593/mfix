@@ -30,6 +30,9 @@
       USE param1 
       USE fldvar
       USE run
+      USE compar     !//
+      USE sendrecv   !// 400
+  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -56,6 +59,11 @@
       ELSE 
          CALL CONV_ROP_G1 (A_M, B_M, IER) 
       ENDIF 
+      
+!// 400 1218 Communicate boundaries   
+      CALL SEND_RECV(A_M, 2)
+      CALL SEND_RECV(B_M, 2)
+            
       RETURN  
       END SUBROUTINE CONV_ROP_G 
 !
@@ -101,6 +109,7 @@
       USE indices
       USE pgcor
       USE compar    !//d
+      USE sendrecv  !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -125,17 +134,24 @@
       INTEGER          IMJK, IJMK, IJKM 
 !-----------------------------------------------
       INCLUDE 'function.inc'
+
+!//? make sure all vars used in following section to calc. A_M are uptodate
+!//  at the boundaries, if necessary insert redundant COMM of them here.
+
 !
 !  Calculate convection fluxes through each of the faces
 !
+!// 350 1218 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !!$omp  parallel do private( J, K, IJK, IPJK, IJPK, IJKP, &
 !!$omp&  IMJK, IJMK, IJKM) &
 !!$omp&  schedule(static)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3 
          IF (PHASE_4_P_G(IJK) /= 0) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
             K = K_OF(IJK) 
+!// 360 1218 Check if current i,j,k resides on this PE	    
+            IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK) 
             IJKP = KP_OF(IJK) 
@@ -165,6 +181,10 @@
             ENDIF 
          ENDIF 
       END DO 
+      
+!//S This COMM could be removed as it is redundant but inserted due fool-proof      
+!// 400 1218 Communicate boundaries         
+      call send_recv(A_M,2)      
       RETURN  
       END SUBROUTINE CONV_ROP_G0 
 !
@@ -211,6 +231,7 @@
       USE pgcor
       Use xsi_array
       USE compar     !//d
+      USE sendrecv   !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -248,14 +269,17 @@
 !
 !  Calculate convection fluxes through each of the faces
 !
+!// 350 1218 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !!$omp  parallel do private( J, K, IJK, IPJK, IJPK, IJKP,  &
 !!$omp&  IMJK, IJMK, IJKM) &
 !!$omp&  schedule(static)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
          IF (PHASE_4_P_G(IJK) /= 0) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
             K = K_OF(IJK) 
+!// 360 1218 Check if current i,j,k resides on this PE	    
+            IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    	    
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK)
             IJKP = KP_OF(IJK) 
@@ -289,6 +313,10 @@
          ENDIF 
       END DO 
       
+!//S This COMM could be removed as it is redundant but inserted due fool-proof      
+!// 400 1218 Communicate boundaries         
+      call send_recv(A_M,2)      
+
       call unlock_xsi_array
       
       RETURN  
