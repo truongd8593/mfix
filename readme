@@ -1392,4 +1392,14 @@ usr_init_namelist.f  -- Initialize user-defined keywords
 usr_mod.f -- User-defined module
 
 
-M. Syamlal\4-13-99
+D.12  Parallelization controls
+Keyword (dimension) Type  Description
+
+NODESI               I  Number of grid blocks in x-direction
+
+NODESJ               I  Number of grid blocks in y-direction
+
+NODESK               I  Number of grid blocks in z-direction
+
+
+M. Syamlal\12-22-99
