@@ -24,36 +24,29 @@
 !
 !
 !                      Minimum value of solids volume fraction tracked
-      DOUBLE PRECISION ZERO_EP_s
-      PARAMETER (ZERO_EP_s = 1.0E-8)
+      DOUBLE PRECISION, PARAMETER          ::  ZERO_EP_s = 1.0E-8
 !
 !                      Small value for species mass fraction for disregarding
 !                      residual calculation
-      DOUBLE PRECISION ZERO_X_gs
-      PARAMETER (ZERO_X_gs = 1.0E-7)
+      DOUBLE PRECISION, PARAMETER          ::  ZERO_X_gs = 1.0E-7
  
 !                      Dilute flow threshold.  When the volume fraction of a
 !                      certain phase in a cell is smaller than this value the
 !                      momentum equation for that phase is not solved in the cell.
-      DOUBLE PRECISION DIL_EP_s
-      PARAMETER (DIL_EP_s = 1.0E-4)
+      DOUBLE PRECISION, PARAMETER          ::  DIL_EP_s = 1.0E-4
 !
 !                      Tolerance used for comparing two numbers for equality
 !                      in function compare(a, b)
-      DOUBLE PRECISION TOL_COM
-      PARAMETER (TOL_COM = 1.0E-4)
+      DOUBLE PRECISION, PARAMETER          ::  TOL_COM = 1.0E-4
 !
 !                      Upper bound for temperatures
-      DOUBLE PRECISION TMAX
-      PARAMETER (TMAX = 4000.)
+      DOUBLE PRECISION, PARAMETER          ::  TMAX = 4000.
 !
 !                      Lower bound for temperatures
-      DOUBLE PRECISION TMIN
-      PARAMETER (TMIN = 250.)
+      DOUBLE PRECISION, PARAMETER          ::  TMIN = 250.
 !
 !                      Reciprocal of a maximum molecular weight
-      DOUBLE PRECISION oMW_MAX
-      PARAMETER (oMW_MAX = 1./500.)
+      DOUBLE PRECISION, PARAMETER          ::  oMW_MAX = (1./500.)
 !
 !  The following quantities can be specified through the input data file, with
 !  namelist inputs of the same name.
@@ -66,6 +59,9 @@
 !
 !                      Tolerance in species eq residuals allowed for convergence
       DOUBLE PRECISION TOL_RESID_X
+!
+!                      Tolerance in scalr eq residuals allowed for convergence
+      DOUBLE PRECISION TOL_RESID_Scalar
 !
 !                      Minimum residual for declaring divergence
       DOUBLE PRECISION TOL_DIVERGE

@@ -166,17 +166,17 @@
 !       write(*,FMT="('File basename for PE ',I3,' is ',A3)") myPE,fbname  !//AIKEPARDBG
 
 !// 500 0805 ensure that mfixXXX.dat exists
-      inquire(file='mfix'//fbname//'.dat',exist=present)
+      inquire(file='mfix.dat',exist=present)
       if(.not.present) then
         write(*,"('(PE ',I3,'): input data file, ',A11,' is missing: run aborted')") &
-            myPE,'mfix'//fbname//'.dat'
+            myPE,'mfix.dat'
         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
       endif
 !
 !
 ! OPEN MFIX ASCII INPUT FILE, AND LOOP THRU IT
 !
-      OPEN(UNIT=UNIT_DAT, FILE='mfix'//fbname//'.dat', STATUS='OLD', ERR=910) !// 500 modified filename
+      OPEN(UNIT=UNIT_DAT, FILE='mfix.dat', STATUS='OLD', ERR=910) !// 500 modified filename
 !
   100 CONTINUE 
       READ (UNIT_DAT, 1100, END=500) LINE_STRING 

@@ -87,14 +87,17 @@
             CALL ZERO_ARRAY (ROX_SC(1,M,N), IER) 
          END DO 
       END DO 
-      
-      
-!!$omp  parallel do private( IJK, L, LM, M, N, LR, ID, stmw, ex, Tr, EP, RATE )    
+  
 
-!//S  Make sure all field variables that are used in following DO loop are 
-!     up to date, e.g. EP_G, T_G, EP_S, T_S
+      DO L = 0, MMAX 
+        DO M = L + 1, MMAX 
+          LM = L + 1 + (M - 1)*M/2 
+          CALL ZERO_ARRAY (R_PHASE(1,LM), IER) 
+        ENDDO
+      ENDDO
 
 !// 350 1112 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
+!!$omp  parallel do private( IJK, L, LM, M, N, LR, ID, stmw, ex, Tr, EP, RATE )
       DO IJK = IJKSTART3, IJKEND3 
       
          IF (FLUID_AT(IJK)) THEN 

@@ -241,26 +241,31 @@
                         IF (ABS(SUM) > TOL_COM) ABORT = .TRUE. 
                      ENDIF 
                   END DO 
-                  DO N = 1, NMAX(0) 
-                     IF (R_GP(IJK,N) < ZERO) THEN 
-                        IF (.NOT.MESSAGE) THEN 
+
+                  IF(SPECIES_EQ(0))THEN
+                    DO N = 1, NMAX(0) 
+                       IF (R_GP(IJK,N) < ZERO) THEN 
+                         IF (.NOT.MESSAGE) THEN 
                            WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
-                        ENDIF 
-                        WRITE (UNIT_LOG, 1103) I, J, K, R_GP(IJK,N), N 
-                        ABORT = .TRUE. 
-                     ENDIF 
-                     IF (ROX_GC(IJK,N) < ZERO) THEN 
-                        IF (.NOT.MESSAGE) THEN 
+                         ENDIF 
+                         WRITE (UNIT_LOG, 1103) I, J, K, R_GP(IJK,N), N 
+                         ABORT = .TRUE. 
+                       ENDIF 
+                       IF (ROX_GC(IJK,N) < ZERO) THEN 
+                         IF (.NOT.MESSAGE) THEN 
                            WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
-                        ENDIF 
-                        WRITE (UNIT_LOG, 1104) I, J, K, ROX_GC(IJK,N), N 
-                        ABORT = .TRUE. 
-                     ENDIF 
-                  END DO 
+                         ENDIF 
+                         WRITE (UNIT_LOG, 1104) I, J, K, ROX_GC(IJK,N), N 
+                         ABORT = .TRUE. 
+                       ENDIF 
+                    END DO 
+                  ENDIF
+
                   DO M = 1, MMAX 
-                     DO N = 1, NMAX(M) 
+                    IF(SPECIES_EQ(M))THEN
+                      DO N = 1, NMAX(M) 
                         IF (R_SP(IJK,M,N) < ZERO) THEN 
                            IF (.NOT.MESSAGE) THEN 
                               WRITE (UNIT_LOG, 1000) TIME 
@@ -277,8 +282,10 @@
                            WRITE(UNIT_LOG,1106)I,J,K,M,ROX_SC(IJK,M,N),N 
                            ABORT = .TRUE. 
                         ENDIF 
-                     END DO 
+                      END DO 
+                    ENDIF
                   END DO 
+
                   IF (SPECIES_EQ(0)) THEN 
                      SUM = ZERO 
                      N = 1 

@@ -294,24 +294,42 @@
       DOUBLE PRECISION BC_C_Theta_m (DIMENSION_BC, DIM_M)
  
 !
-!                      Coefficient in heat transfer boundary condition -- gas
+!                      Coefficient in mass transfer boundary condition -- gas
       DOUBLE PRECISION BC_hw_X_g (DIMENSION_BC, DIM_N_g)
 !
-!                      Coefficient in heat transfer boundary condition -- solids
+!                      Coefficient in mass transfer boundary condition -- solids
       DOUBLE PRECISION BC_hw_X_s (DIMENSION_BC, DIM_M, DIM_N_s)
 !
-!                      Wall temperature in heat transfer boundary  condition -- gas
+!                      Wall value in mass  transfer boundary  condition -- gas
       DOUBLE PRECISION BC_Xw_g (DIMENSION_BC, DIM_N_g)
 !
-!                      Wall temperature in heat transfer boundary condition -- solids
+!                      Wall value in mass transfer boundary condition -- solids
       DOUBLE PRECISION BC_Xw_s (DIMENSION_BC, DIM_M, DIM_N_s)
 !
-!                      Coefficient in heat transfer boundary condition -- gas
+!                      Coefficient in mass transfer boundary condition -- gas
       DOUBLE PRECISION BC_C_X_g (DIMENSION_BC, DIM_N_g)
 !
-!                      Coefficient in heat transfer boundary condition -- solids
+!                      Coefficient in mass transfer boundary condition -- solids
       DOUBLE PRECISION BC_C_X_s (DIMENSION_BC, DIM_M, DIM_N_s)
 !
+!
+!   User-defined Scalars
+!
+! 
+!                      scalar value in a boundary region
+      DOUBLE PRECISION BC_Scalar (DIMENSION_BC, DIM_scalar)
+
+!
+!                      Coefficient in boundary condition
+      DOUBLE PRECISION BC_hw_Scalar (DIMENSION_BC, DIM_scalar)
+
+!
+!                      Coefficient in boundary condition 
+      DOUBLE PRECISION BC_C_Scalar (DIMENSION_BC, DIM_scalar)
+      
+!
+!                      Wall value in boundary  condition
+      DOUBLE PRECISION BC_ScalarW (DIMENSION_BC, DIM_scalar)
 
 
       END MODULE bc                                                                              

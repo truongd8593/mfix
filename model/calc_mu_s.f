@@ -64,6 +64,7 @@
       USE trace
       USE indices
       USE constant
+      Use vshear
       USE compar    !//d
       USE sendrecv  !// 400
       IMPLICIT NONE
@@ -211,7 +212,9 @@
 !
 !
 !                      dg0/dep
-      DOUBLE PRECISION DG_0DNU
+      DOUBLE PRECISION DG_0DNU,SRT
+!                  
+      
 !
 !     Include statement functions
 !
@@ -223,6 +226,22 @@
       INCLUDE 'ep_s2.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 's_pr2.inc'
+     
+      
+! loezos
+      IF (SHEAR) THEN           
+      SRT=(2d0*V_sh/XLENGTH)
+!$omp parallel do private(IJK)
+       Do IJK= ijkstart3, ijkend3         
+          IF (FLUID_AT(IJK)) THEN  	 
+	   V_s(ijk,m)=V_s(IJK,m)+VSH(IJK)	
+	  END IF
+	END DO	
+      END IF	
+! loezo      
+
+
+!
 !
 !
 
@@ -249,6 +268,8 @@
 !       ((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1)) - (iend3-istart3+1)*(jend3-jstart3+1)
 !
         IF ( .NOT.WALL_AT(IJK) ) THEN
+
+ 	
 !
 !------------------------------------------------------------------------
 !          CALL SET_INDEX1(IJK, I, J, K, IMJK, IPJK, IJMK, IJPK,
@@ -281,7 +302,9 @@
           IJMKP = JM_OF(IJKP)
           IJMKM = JM_OF(IJKM)
           IJPKM = JP_OF(IJKM)
- 
+
+	
+
           U_s_N = AVG_Y(                                   &   !i, j+1/2, k
                    AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I),&
                    AVG_X_E(U_s(IMJPK, M), U_s(IJPK, M), I), J&
@@ -298,6 +321,24 @@
                    AVG_X_E(U_s(IMJKM, M), U_s(IJKM, M), I),&
                    AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I), KM&
                  )
+! start loezos
+	IF (SHEAR)  THEN
+	
+          V_s_E = AVG_X(                                 &     !i+1/2, j, k
+                   AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)),&
+                   AVG_Y_N((V_s(IPJMK, M)-VSH(IPJMK)+VSH(IJMK)&
+		    +SRT*1d0/oDX_E(I)),&
+	            (V_s(IPJK, M)-VSH(IPJK)+VSH(IJK)&
+		    +SRT*1d0/oDX_E(I))), I&
+                 )
+          V_s_W = AVG_X(                                 &     !i-1/2, j, k
+                   AVG_Y_N((V_s(IMJMK, M)-VSH(IMJMK)+VSH(IJMK)&
+		   -SRT*1d0/oDX_E(IM1(I))),&
+		 (V_s(IMJK, M)-VSH(IMJK)+VSH(IJK)&
+		-SRT*1d0/oDX_E(IM1(I)))),&
+                   AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)), IM)
+
+	ELSE
           V_s_E = AVG_X(                                 &     !i+1/2, j, k
                    AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)),&
                    AVG_Y_N(V_s(IPJMK, M), V_s(IPJK, M)), I&
@@ -306,6 +347,8 @@
                    AVG_Y_N(V_s(IMJMK, M), V_s(IMJK, M)),&
                    AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)), IM&
                  )
+	END IF
+! end loezos
           V_s_T = AVG_Z(                                 &     !i, j, k+1/2
                    AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)),&
                    AVG_Y_N(V_s(IJMKP, M), V_s(IJKP, M)), K&
@@ -355,9 +398,12 @@
           D_s(3,2) = D_s(2,3)
           D_s(3,3) = ( W_s(IJK,M) - W_s(IJKM,M) ) * (oX(I)*oDZ(K)) +&
                       U_s_C * oX(I)
+
+
 !
 !         Calculate the trace of D_s
           trD_s_C(IJK,M) = D_s(1,1) + D_s(2,2) + D_s(3,3)
+
 !
 !         Calculate trace of the square of D_s
           trD_s2(IJK,M) = 0.D0  !Initialize the totalizer
@@ -436,6 +482,7 @@
  
             LAMBDA_s(IJK, M) = ZERO
             ALPHA_s(IJK, M)  = ZERO
+            P_s(IJK, M)  = ZERO
           ENDIF
          ENDIF
  
@@ -709,8 +756,17 @@
         ENDIF
 !
   200 CONTINUE
-  
-!//? check if all the COMM for following variables is necessary?
+!
+! loezos 
+   IF (SHEAR) THEN
+!$omp parallel do private(IJK)
+      Do IJK= ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) THEN  	 
+	   V_s(IJK,m)=V_s(IJK,m)-VSH(IJK)	
+	 END IF
+      END DO
+   END IF
+! loezos
 
 !//S 1113 try to move this COMM to the end of transport_prop to do all COMMs
 !//       at certain locations, provided that no data dependency in between.

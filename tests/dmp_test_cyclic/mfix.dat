@@ -8,6 +8,7 @@
   RUN_TYPE = 'new'                                                              
   UNITS = 'cgs'                                                                 
   TIME  =0.0  TSTOP = 1.0E-4   DT = 1.0e-4   DT_MAX = 1.0e-4   OUT_DT = 1.0e-4
+#  TIME  =0.0  TSTOP = 1.0   DT = 1.0e-4  
                                      
   MOMENTUM_X_EQ= .FALSE.    .FALSE.
   MOMENTUM_Y_EQ= .FALSE.    .FALSE.
@@ -115,7 +116,7 @@
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g                           
         !      P_star    V_g  V_s            T_s1 X_s                           
         !                W_g  W_s            T_s2                               
-  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 0.01   100.0 
+  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 0.01   100.0 100.
                                                                                 
   NLOG   = 100                                                                  
   full_log = .true.                                                             

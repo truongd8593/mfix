@@ -440,6 +440,11 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
+
+
+! loezos
+	INTEGER  incr
+! loezos
       
       call lock_tmp_array
       call lock_xsi_array
@@ -483,7 +488,13 @@
 !           Top face (i+1/2, j, k+1/2)
          IF (DO_K) WW(IJK) = AVG_X(W_S(IJK,M),W_S(IPJK,M),I) 
       END DO 
-      CALL CALC_XSI (DISCRETIZE(3), U_S(1,M), U, V, WW, XSI_E, XSI_N, XSI_T) 
+
+! loezos
+	incr=1		
+! loezos
+
+      CALL CALC_XSI (DISCRETIZE(3), U_S(1,M), U, V, WW, XSI_E, XSI_N,&
+	XSI_T,incr) 
 !
 !
 !  Calculate convection-diffusion fluxes through each of the faces
@@ -685,6 +696,7 @@
       USE toleranc 
       USE fldvar
       USE output
+      USE vshear
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar   !//d
@@ -731,7 +743,11 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-      
+
+! loezos                     
+      INTEGER incr    
+!loezos
+
       call lock_tmp_array
       call lock_xsi_array
 
@@ -750,6 +766,9 @@
       call send_recv(XSI_T,2)
 !
 !  Calculate convection factors
+
+
+
 !
 !// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 
@@ -760,6 +779,8 @@
          IP = IP1(I) 
          IPJK = IP_OF(IJK) 
          IJKE = EAST_OF(IJK) 
+
+
 !
 !
 !           East face (i+1, j, k)
@@ -773,7 +794,26 @@
 !           Top face (i+1/2, j, k+1/2)
          IF (DO_K) WW(IJK) = AVG_X(W_S(IJK,M),W_S(IPJK,M),I) 
       END DO 
-      CALL CALC_XSI (DISCRETIZE(3), U_S(1,M), U, V, WW, XSI_E, XSI_N, XSI_T) 
+
+! loezos
+	incr=1		
+! loezos
+
+      CALL CALC_XSI (DISCRETIZE(3), U_S(1,M), U, V, WW, XSI_E, XSI_N, XSI_T,&
+	incr) 
+
+! loezos      
+! update to true velocity
+      IF (SHEAR) THEN
+!$omp  parallel do private(IJK)
+        DO IJK = 1, IJKMAX2
+         IF (FLUID_AT(IJK)) THEN  
+	   V(IJK)=V(IJK)+VSHE(IJK)		
+          END IF
+        END DO
+      END IF
+! loezos
+
 !
 !
 !  Calculate convection-diffusion fluxes through each of the faces

@@ -75,6 +75,7 @@
       ID_SECOND = DAT(7)
       
 !     For SGI only
+      ID_NODE = ""
       CALL GETHOSTNAME(ID_NODE,64)
 !
       RETURN
@@ -199,21 +200,16 @@
       end
 !
 
-      subroutine gethostname(id_node,n)
-      implicit none
-      character*(*) id_node
-      integer       n
+      subroutine gethostname(name, namelen)
+      integer namelen
+      character *1 name(namelen)
+      name = " "
       return
       end
       subroutine ran
       return
       end
-!
-      subroutine flush(iunit)
-      implicit none
-      integer iunit
-      return
-      end     
+     
 !
       subroutine flush_bin(iunit,code)
       implicit none
@@ -221,3 +217,13 @@
       call flush(iunit)
       return
       end
+
+! ----------------------------
+! AIX specific utility routine
+! ----------------------------
+      subroutine flush( iunit )
+      integer iunit
+      call flush_(iunit)
+      return
+      end
+

@@ -32,6 +32,7 @@
       USE physprop
       USE fldvar
       USE run
+      USE scalars
       USE funits 
       USE compar             !//d
       USE mpi_utility        !//d
@@ -176,9 +177,22 @@
       IF (CALL_USR) CALL USR_WRITE_OUT1 
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 
-      deallocate (array1)    !//
+      IF(NScalar /= 0) THEN
+        DO LC = 1, NScalar
+         if (myPE == PE_IO) WRITE (UNIT_OUT, 2500) CHAR(12), LC, TIME 
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         call gather (Scalar(:,LC),array1,root)    !//
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'Scalar') 
+        END DO
+      ENDIF
+      
+      deallocate(array1)  !//
 
-
+!
+!             form feed character = CHAR(12)
+      WRITE (UNIT_OUT, '(/1X,1A1)') CHAR(12) 
+      IF (CALL_USR) CALL USR_WRITE_OUT1 
       RETURN  
  1000 FORMAT(1X,A1,/5X,'--- Gas pressure (P_g) at time ',G12.5,' ---',2/) 
  1050 FORMAT(1X,A1,/5X,'--- Solids pressure (P_star) at time ',G12.5,' ---',2/) 
@@ -207,5 +221,6 @@
  2300 FORMAT(1X,A1,/5X,'--- Z-component of Solids Phase-',I1,&
          ' velocity (W_s) at time ',G12.5,' ---',2/) 
  2400 FORMAT(1X,A1,/5X,'--- Granular temperature of Solids Phase-',I1,&
-         ' velocity (W_s) at time ',G12.5,' ---',2/) 
+         ' (Theta_m) at time ',G12.5,' ---',2/) 
+ 2500 FORMAT(1X,A1,/5X,'--- Scalar Field-',I2, ' (Scalar) at time ',G12.5,' ---',2/) 
       END SUBROUTINE WRITE_OUT1 

@@ -389,6 +389,7 @@
       USE physprop
       USE fldvar
       USE output
+      USE vshear
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar   !//d
@@ -448,6 +449,10 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
 
+! loezos
+	INTEGER incr
+! loezos
+
       call lock_tmp_array
       call lock_xsi_array
 
@@ -490,7 +495,12 @@
 !           Top face (i+1/2, j, k+1/2)
          IF (DO_K) WW(IJK) = AVG_X(W_G(IJK),W_G(IPJK),I) 
       END DO 
-      CALL CALC_XSI (DISCRETIZE(3), U_G, U, V, WW, XSI_E, XSI_N, XSI_T) 
+
+! loezos
+	incr=1		
+! loezos
+
+      CALL CALC_XSI (DISCRETIZE(3), U_G, U, V, WW, XSI_E, XSI_N, XSI_T,incr) 
 !
 !
 !  Calculate convection-diffusion fluxes through each of the faces
@@ -689,6 +699,7 @@
       USE physprop
       USE fldvar
       USE output
+      USE vshear
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar   !//d
@@ -732,6 +743,10 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
 
+! loezos                     SHEAR VELOCITY
+      INTEGER incr    
+!loezos
+
       call lock_tmp_array
       call lock_xsi_array
 
@@ -754,13 +769,17 @@
 !
 !// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 
+
 !$omp parallel do private(IJK,I,IP,IPJK,IJKE)
       DO IJK = ijkstart3, ijkend3
 !
          I = I_OF(IJK) 
+	 J=J_OF(IJK)
          IP = IP1(I) 
          IPJK = IP_OF(IJK) 
          IJKE = EAST_OF(IJK) 
+
+
 !
 !
 !           East face (i+1, j, k)
@@ -774,7 +793,26 @@
 !           Top face (i+1/2, j, k+1/2)
          IF (DO_K) WW(IJK) = AVG_X(W_G(IJK),W_G(IPJK),I) 
       END DO 
-      CALL CALC_XSI (DISCRETIZE(3), U_G, U, V, WW, XSI_E, XSI_N, XSI_T) 
+
+! loezos
+	incr=1		
+! loezos
+
+      CALL CALC_XSI (DISCRETIZE(3), U_G, U, V, WW, XSI_E, XSI_N, XSI_T,incr) 
+
+! loezos      
+!update V to true velocity
+      IF (SHEAR) THEN
+!$omp parallel do private(IJK)
+        DO IJK = 1, IJKMAX2
+         IF (FLUID_AT(IJK)) THEN  
+	   V(IJK)=V(IJK)+VSHE(IJK)	
+          END IF
+        END DO
+      END IF
+! loezos
+
+
 !
 !
 !  Calculate convection-diffusion fluxes through each of the faces

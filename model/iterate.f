@@ -43,6 +43,7 @@
       USE visc_g
       USE pgcor
       USE cont
+      USE scalars
       USE compar               !//d
       IMPLICIT NONE
 !-----------------------------------------------
@@ -235,6 +236,11 @@
 
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
+
+!
+!     DIffusion coefficient and source terms for user-defined scalars
+      IF(NScalar /= 0)CALL SCALAR_PROP(IER)
+
 !
 !//AIKEPARDBG
 !    write(*,"('(PE ',I2,'): aft calc_coeff in iterate')") myPE  !//AIKEPARDBG
@@ -324,6 +330,12 @@
 !     Solve species mass balance equations
 !
       CALL SOLVE_SPECIES_EQ (IER) 
+!
+!     Solve other scalar transport equations
+!
+      IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER) 
+
+
 
 !//AIKEPARDBG
 !    write(*,"('(PE ',I2,'): aft solve_species_eq in iterate')") myPE  !//AIKEPARDBG
@@ -460,23 +472,6 @@
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE toleranc 
-      USE run 
-      USE physprop 
-      USE geometry 
-      USE fldvar 
-      USE output 
-      USE indices 
-      USE funits 
-      USE time_cpu 
-      USE pscor 
-      USE coeff 
-      USE leqsol 
-      USE visc_g 
-      USE pgcor 
-      USE cont 
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

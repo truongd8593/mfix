@@ -39,6 +39,7 @@
       USE run
       USE indices
       USE funits 
+      USE scalars
       USE compar      !//AIKEPARDBG      
       USE mpi_utility !//AIKEPARDBG      
       USE sendrecv    !//SP
@@ -514,6 +515,13 @@
 		  ENDIF
                ENDIF 
 
+               DO N = 1, NScalar
+                  IF (IC_Scalar(ICV,N) == UNDEFINED) THEN 
+                     IC_Scalar(ICV,N) = ZERO 
+                  ENDIF 
+               END DO 
+
+
 !
 !//AIKEPARDBGSTOP 0922
 !      write(*,"('(PE ',I2,'): INTERCHK6 in chk_data_06')") myPE !//AIKEPARDBG
@@ -526,8 +534,8 @@
                      ELSE IF (MMAX == 1) THEN 
                         IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*RO_S(M) 
                      ELSE 
-                           WRITE (UNIT_LOG, 1100) 'IC_ROP_s', ICV, M 
-                           STOP  
+                        WRITE (UNIT_LOG, 1100) 'IC_ROP_s', ICV, M 
+                        call mfix_exit(myPE) !// 990 0912 replaced STOP 
                      ENDIF 
                   ENDIF 
                   SUM_EP = SUM_EP + IC_ROP_S(ICV,M)/RO_S(M) 
@@ -698,6 +706,14 @@
                   call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
             END DO 
+	    
+            DO N = 1, NScalar 
+               IF (IC_Scalar(ICV,N) /= UNDEFINED) THEN 
+                  WRITE (UNIT_LOG, 1200) 'Scalar', ICV 
+                  STOP  
+               ENDIF 
+            END DO 
+	    
             DO M = 1, DIMENSION_M 
                IF (IC_ROP_S(ICV,M) /= UNDEFINED) THEN 
                    WRITE (UNIT_LOG, 1300) 'IC_ROP_s', ICV, M 

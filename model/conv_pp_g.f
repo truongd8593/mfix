@@ -419,6 +419,8 @@
 ! 
 !                      local value of A_m 
       DOUBLE PRECISION am 
+      
+      Integer          incr
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -450,7 +452,10 @@
 !
 !  Calculate convection factors
 !
-      CALL CALC_XSI (DISCRETIZE(1), ROP_G, U_G, V_G, W_G, XSI_E, XSI_N, XSI_T) 
+   
+       incr=0	
+       CALL CALC_XSI (DISCRETIZE(1), ROP_G, U_G, V_G, W_G, XSI_E, XSI_N,& 
+	XSI_T,incr) 
 !
 !
 !  Calculate convection fluxes through each of the faces
@@ -528,8 +533,9 @@
 !
 !         Calculate convection factors
 !
+	    incr=0
             CALL CALC_XSI (DISCRETIZE(2), ROP_S(1,M), U_S(1,M), V_S(1,M), W_S(1&
-               ,M), XSI_E, XSI_N, XSI_T) 
+               ,M), XSI_E, XSI_N, XSI_T,incr) 
 !//SP
             DO IJK = IJKSTART3, IJKEND3
 !

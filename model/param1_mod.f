@@ -10,7 +10,7 @@
 !
 !                      Number of single precision .SPx files
       INTEGER          N_SPX
-      PARAMETER        (N_SPX=8)
+      PARAMETER        (N_SPX=9)
 !
 !                      Maximum number of cell classes
       INTEGER          MAX_CLASS

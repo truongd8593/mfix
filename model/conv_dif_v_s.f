@@ -65,6 +65,9 @@
 !-----------------------------------------------
 !
 !
+
+
+
       DO M = 1, MMAX 
         IF  (MOMENTUM_Y_EQ(M)) THEN
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -449,6 +452,10 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 
+! loezos
+	INTEGER  incr
+! loezos
+
       call lock_tmp_array
       call lock_xsi_array
 
@@ -488,7 +495,14 @@
 !           Top face (i, j+1/2, k+1/2)
          IF (DO_K) WW(IJK) = AVG_Y(W_S(IJK,M),W_S(IJPK,M),J) 
       END DO 
-      CALL CALC_XSI (DISCRETIZE(4), V_S(1,M), U, V, WW, XSI_E, XSI_N, XSI_T) 
+
+! loezos
+	incr=2		
+! loezos
+
+
+      CALL CALC_XSI (DISCRETIZE(4), V_S(1,M), U, V, WW, XSI_E, XSI_N, XSI_T,&
+			incr) 
 !
 !
 !  Calculate convection-diffusion fluxes through each of the faces
@@ -690,6 +704,7 @@
       USE toleranc 
       USE fldvar
       USE output
+      USE vshear
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar   !//d
@@ -734,6 +749,9 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
+! start loezos
+      INTEGER incr   
+! end loezos
 
       call lock_tmp_array
       call lock_xsi_array
@@ -759,6 +777,7 @@
 !$omp parallel do private(IJK,J,IJPK,IJKN)
       DO IJK = ijkstart3, ijkend3 
          J = J_OF(IJK) 
+	
          IJPK = JP_OF(IJK) 
          IJKN = NORTH_OF(IJK) 
 !
@@ -774,7 +793,28 @@
 !           Top face (i, j+1/2, k+1/2)
          IF (DO_K) WW(IJK) = AVG_Y(W_S(IJK,M),W_S(IJPK,M),J) 
       END DO 
-      CALL CALC_XSI (DISCRETIZE(4), V_S(1,M), U, V, WW, XSI_E, XSI_N, XSI_T) 
+
+! loezos
+	incr=2		
+! loezos
+
+      CALL CALC_XSI (DISCRETIZE(4), V_S(1,M), U, V, WW, XSI_E, XSI_N, XSI_T,incr) 
+
+
+! loezos      
+! update to true velocity
+      IF (SHEAR) THEN
+!$omp      parallel do private(IJK)
+        DO IJK = 1, IJKMAX2
+         IF (FLUID_AT(IJK)) THEN  
+	   V(IJK)=V(IJK)+VSH(IJK)	
+          END IF
+        END DO
+
+      END IF
+! loezos
+
+
 !
 !
 !  Calculate convection-diffusion fluxes through each of the faces
@@ -888,6 +928,7 @@
             ENDIF 
          ENDIF 
       END DO 
+
 
       call unlock_tmp_array
       call unlock_xsi_array

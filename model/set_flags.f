@@ -344,7 +344,7 @@
          I = I_OF(IJK) 
          J = J_OF(IJK) 
          K = K_OF(IJK) 
-	 IF(.NOT.IS_ON_myPE_OWNS(I,J,K)) CYCLE
+	 IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
          IF (WALL_AT(IJK)) THEN 
             FLAG_E(IJK) = 0 
             FLAG_N(IJK) = 0 
@@ -353,64 +353,36 @@
             FLAG_N(IJMK) = 0 
             FLAG_T(IJKM) = 0 
 !
-            IF (CYCLIC_AT(IJK)) THEN             ! make the upper (E, N, T) bdry 
-!
-!
-               IF (I == IMAX2) THEN              ! permeable
-                  IF (J/=1 .AND. J/=JMAX2) THEN
-                     IF (NO_K) THEN
-                        FLAG_E(IMJK) = 2000
-                     ELSE IF (K/=1 .AND. K/=KMAX2) THEN
-                        FLAG_E(IMJK) = 2000
-                     ENDIF
-                  ENDIF
-               ENDIF
-!
-               IF (J == JMAX2) THEN
-                  IF (I/=1 .AND. I/=IMAX2) THEN
-                     IF (NO_K) THEN
-                        FLAG_N(IJMK) = 2000
-                     ELSE IF (K/=1 .AND. K/=KMAX2) THEN
-                        FLAG_N(IJMK) = 2000
-                     ENDIF
-                  ENDIF
-               ENDIF
-!
-               IF (K == KMAX2) THEN
-                  IF (J/=1 .AND. J/=JMAX2) THEN
-                     IF (I/=1 .AND. I/=IMAX2) FLAG_T(IJKM) = 2000
-                  ENDIF
-               ENDIF
-!
-            ENDIF
+            IF (CYCLIC_AT(IJK)) THEN             ! make the upper (E, N, T) bdry
+
 !//SP
-!              IF (I == IMAX2.OR.I == IMAX3) THEN              ! permeable
-!                 IF ((J/=1.OR.J/=0.) .AND. (J/=JMAX2.OR.J/=JMAX3)) THEN
-!                    IF (NO_K) THEN
-!                       FLAG_E(IMJK) = 2000
-!                    ELSE IF ((K/=1.OR.K/=0) .AND. (K/=KMAX2.OR.K/=KMAX3)) THEN
-!                       FLAG_E(IMJK) = 2000
-!                    ENDIF
-!                 ENDIF
-!              ENDIF
-!
-!              IF (J == JMAX2.OR.J == JMAX3) THEN
-!                 IF ((I/=1.OR.I/=0) .AND. (I/=IMAX2.OR.I/=IMAX3)) THEN
-!                    IF (NO_K) THEN
-!                       FLAG_N(IJMK) = 2000
-!                    ELSE IF ((K/=1.OR.K/=0) .AND. (K/=KMAX2.OR.K/=KMAX3)) THEN
-!                       FLAG_N(IJMK) = 2000
-!                    ENDIF
-!                 ENDIF
-!              ENDIF
-!
-!              IF (K == KMAX2.OR.K == KMAX3) THEN
-!                 IF ((J/=1.OR.J/=0.) .AND. (J/=JMAX2.OR.J/=JMAX3)) THEN
-!                    IF ((I/=1.OR.I/=0) .AND. (I/=IMAX2.OR.I/=IMAX3)) FLAG_T(IJKM) = 2000
-!                 ENDIF
-!              ENDIF
-!
-!           ENDIF
+              IF (I == IMAX2.AND.I == IMAX3) THEN              ! permeable
+                 IF ((J/=1.AND.J/=0.) .AND. (J/=JMAX2.AND.J/=JMAX3)) THEN
+                    IF (NO_K) THEN
+                       FLAG_E(IMJK) = 2000
+                    ELSE IF ((K/=1.AND.K/=0) .AND. (K/=KMAX2.AND.K/=KMAX3)) THEN
+                       FLAG_E(IMJK) = 2000
+                    ENDIF
+                 ENDIF
+              ENDIF
+
+              IF (J == JMAX2.AND.J == JMAX3) THEN
+                 IF ((I/=1.AND.I/=0) .AND. (I/=IMAX2.AND.I/=IMAX3)) THEN
+                    IF (NO_K) THEN
+                       FLAG_N(IJMK) = 2000
+                    ELSE IF ((K/=1.AND.K/=0) .AND. (K/=KMAX2.AND.K/=KMAX3)) THEN
+                       FLAG_N(IJMK) = 2000
+                    ENDIF
+                 ENDIF
+              ENDIF
+
+              IF (K == KMAX2.AND.K == KMAX3) THEN
+                 IF ((J/=1.AND.J/=0.) .AND. (J/=JMAX2.AND.J/=JMAX3)) THEN
+                    IF ((I/=1.AND.I/=0) .AND. (I/=IMAX2.AND.I/=IMAX3)) FLAG_T(IJKM) = 2000
+                 ENDIF
+              ENDIF
+
+           ENDIF
 
 !
          ELSE IF (FLUID_AT(IJK)) THEN 

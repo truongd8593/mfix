@@ -78,7 +78,7 @@
 !$omp&             F2, DF2oDEPs, Pf, Pfmax )
 
           DO 100 IJK = ijkstart3, ijkend3
-            IF(FLUID_AT(IJK))THEN
+            IF(.NOT.WALL_AT(IJK))THEN
  
 ! start anuj 4/20
                DEPs2G_0oDEPs= EP_s(IJK,M)*EP_s(IJK,M)*&

@@ -83,8 +83,7 @@
       program files.  The subdirectories post_mfix and
       animate_mfix contains the files for the respective post-
       processing programs.  The subdirectory tutorials contains
-      the problems discussed in Chapters 7 and 8 of the User's Manual
-      and other example problems.
+      example problems.
 
 
 1.2  Installing the MFIX Code
@@ -103,9 +102,7 @@
 
       	source .login
 
-     so that the aliases are defined.
-
-     This step needs to be done only once.
+     so that the aliases are defined.  This step needs to be done only once.
 
 1.3  Starting a New Run
 
@@ -158,22 +155,10 @@
 1.4  Modifying the Post-processing codes
 
       Executables animate_mfix and post_mfix are included in the
-      animate_mfix and post_mfix directories.  These executables will handle
-      problems with the number of cells in x, y, or z direction less than
-      500 and total number of cells less than 75000.  If the dimensions
-      exceed the above values or user-defined post-processing is desired in
+      animate_mfix and post_mfix directories.  If user-defined post-processing is desired in
       post_mfix create a new executable.
           
-      To make animate_mfix, first change directory to the mfix/animate_mfix
-      directory, and change the dimensions in the param.inc file in that
-      directory.  Then type
-
-           	make
-
-      In SGI machines with R8000 or newer chips this step may not work.
-  
-      To make post_mfix, first change directory to the mfix/post_mfix directory,
-      and change the dimensions in the param.inc file in the directory.  If 
+      To make post_mfix, first change directory to the mfix/post_mfix directory.  If 
       user-defined post-processing is required, modify usr_post.f file in the
       directory.  Then type
 
@@ -575,41 +560,45 @@ TOL_DIVERGE         DP Minimum residual for declaring divergence.  When the flui
                        a low value in the third iteration (e.g. 0.1).  In such
                        cases it is desirable to increase this setting.
 
-LEQ_IT(8)           I  Number of iterations in the linear equation solver.  The
-  [20 for 1 and 2]     seven values are for the seven types of equations:
-  [5 for rest]         1 - gas pressure, 2 - solids volume fraction, 3 - gas and
-                       solids u-momentum, 4 - gas and solids v-momentum,
+LEQ_IT(9)           I  Number of iterations in the linear equation solver.  The
+  [20 for 1 and 2]     nine values are for the nine types of equations:
+  [5 for  2-5]         1 - gas pressure, 2 - solids volume fraction, 3 - gas and
+  [15 for 6-9]          solids u-momentum, 4 - gas and solids v-momentum,
                        5 - gas and solids w-momentum, 6 - temperature,
-                       7 - species mass fractions, 8 - granular temperature.
+                       7 - species mass fractions, 8 - granular temperature,
+		       9 - user-defined scalar.
 		       The same convention holds for
                        LEQ_METHOD, UR_FAC, and DISCRETIZE.  If the residual 
                        of an equation is less than the convergence criterion,
                        MFIX makes LEQ_IT equal to lesser of 5 and the user
                        defined value and LEQ_METHOD equal to 1. 
 
-LEQ_METHOD(8)       I  The method used in the linear equation solver:
+LEQ_METHOD(9)       I  The method used in the linear equation solver:
   1                    Successive over relaxation (SOR)
   2                    BiCGSTAB
   3                    GMRES 
   4                    BiCGSTAB + GMRES 
   [2 for 1,6,7,8]
-  [1 for 2,3,4,5]
+  [1 for 2,3,4,5,9]
  
-LEQ_SWEEP(8)        C  The sweep direction used in the linear equation solver:
+LEQ_SWEEP(9)        C  The sweep direction used in the linear equation solver:
   ['II']               The sweep direction for preconditioning line relaxation.
                        For example, if LEQ_SWEEP = 'III', 3 sweeps with 'do I'
 		       loop, or if LEQ_SWEEP = "IJK", 3 sweeps with 'do I',
 		       'do J', 'do K' loops. (only used by BiCGStab)
 
-LEQ_TOL(8)          DP The tolerance, if used, in linear eq solvers.
+LEQ_TOL(9)          DP The tolerance, if used, in linear eq solvers.
   [1.0D-4]             Used by BiCGStab and GMRES.
 
-UR_FAC(8)           I  Under relaxation factors for seven types of equations.
-  [0.8 for 1,6]        Reducing UR_FAC(2) will help convergence in problems
+UR_FAC(9)           I  Under relaxation factors for seven types of equations.
+  [0.8 for 1,6,9]      Reducing UR_FAC(2) will help convergence in problems
   [0.5 for 2,3,4,5,8]  in which the solids tend to pack.
   [0.75 for 7]
 
-DISCRETIZE(8)       I  Discretization scheme for seven types of equations.
+DEF_COR             L  If true use deferred correction method for implementing higher
+ [.FALSE.]             order discretization, else use down-wind factor method (default).
+
+DISCRETIZE(9)       I  Discretization scheme for seven types of equations.
   [0]                  first order upwinding
    1                   first order upwinding (using down wind factors)
    2                   Superbee (recommended method)
@@ -720,6 +709,14 @@ DELP_Z              DP Fluid pressure drop across ZLENGTH when cyclic boundary
                        condition with pressure drop is imposed in the 
                        Z-direction.
 
+SHEAR               L  If .TRUE. imposes a mean shear on the flow field as a linear
+  [.FALSE.]            function of the 'x' coordinate.  This feature should only be 
+                       used when CYCLIC_X= .TRUE..  Also keyword V_sh needs to be set.
+
+V_sh                DP Specifies the mean 'y' velocity component at the eastern
+                       boundary of the domain(V_sh), and mean 'y' velocity (-V_sh) at
+                       the western boundary of the domain.
+
 
 D.4      Gas Phase
 
@@ -732,6 +729,8 @@ MU_g0               DP Specified constant gas viscosity.
 K_g0                DP Specified constant gas conductivity.
 
 C_pg0               DP Specified constant gas specific heat.
+
+DIF_g0              DP Specified constant gas diffusivity.
 
 MW_AVG              DP Average molecular weight of gas.
 
@@ -755,6 +754,8 @@ MU_s0               DP Specified constant granular viscosity.  If this value is
 K_s0                DP Specified constant solids conductivity.
 
 C_ps0               DP Specified constant solids specific heat.
+
+DIF_s0              DP Specified constant solids diffusivity.
 
 MW_s (m, n)         DP Molecular weight of solids phase-m, species n.
 
@@ -1188,9 +1189,10 @@ sizes are not small enough to resolve a surface specified using physical
 coordinates, MFIX will indicate this problem with an error message.
 
          To specify a large number of internal surfaces in a region, a 3D region
-may be specified. Then add a prefix (X_, Y_, or Z_) to indicate the direction of
-the internal surfaces; e.g., X_IMPERMEABLE specifies impermeable internal
-surfaces parallel to the X coordinate. 
+may be specified.  When IS_Type is specified for such regions, add a prefix
+(X_, Y_, or Z_) to indicate the direction of the internal surfaces;
+e.g., X_IMPERMEABLE specifies impermeable internal surfaces parallel to the
+X coordinate. 
 
          Internal surfaces act as free-slip walls in stress computations.  This
 default condition cannot be changed.
@@ -1246,7 +1248,7 @@ D.9      Output Control
 
 RES_DT              DP Interval at which restart (.RES) file is updated.
 
-SPX_DT(7)           DP Interval at which .SPx files are updated.
+SPX_DT(9)           DP Interval at which .SPx files are updated.
   .SP1                 Void fraction (EP_g)
   .SP2                 Gas pressure, solids pressure (P_g, P_star)
   .SP3                 Gas velocity (U_g, V_g, W_g)
@@ -1255,6 +1257,7 @@ SPX_DT(7)           DP Interval at which .SPx files are updated.
   .SP6                 Gas and solids temperature (T_g, T_s1, T_s2)
   .SP7                 Gas and solids mass fractions (X_g, X_s)
   .SP8                 Granular temperature (G)
+  .SP9                 User defined scalars
 
 OUT_DT              DP Interval at which standard output (.OUT) file is updated.
 
@@ -1275,7 +1278,7 @@ RESID_STRING(8)     C  Specify residuals to be printed as a 4 character strings.
                        The second number specifies the phase (0 for gas).  The
                        last two numbers specify the species index. 
                        e.g., 'P0' - gas pressure, 'R1' - solids phase 1 density,
-                       'X203' - solids phase 2, species 3.
+                       'X001'- gas phase, species 1; 'X203' - solids phase 2, species 3.
 
 D.10 Chemical Reactions
 
@@ -1299,8 +1302,8 @@ following format:
   reaction name: reaction scheme 
              r1: CH4 + 2 O2 -> CO2 + 2H2O
 
-The reaction rate is then entered in the following format starting with the
-keyword rate:
+The reaction rate in g-mol/(m^3.s)is then entered in the following format starting
+with the keyword rate:
   rate     reaction which       preexponen-  Temperature Activation  Concentration
   Keyword  name     temperature tial factor  exponent    temperature dependence
                      (m)           (A)          (n)          (E/R)
@@ -1317,10 +1320,10 @@ rate = A * T_g**n * exp(-(E/R)/T_g)) * EP_g * (RO_g * X_O2/MW_O2)**1.3
 The rate expression may be written on multiple lines.  Reverse reactions are
 denoted by a '<' in the reaction scheme.
 
-The enthalpy change due to reaction is expressed as follows with the keyword DH.
-The default value is zero.
+The enthalpy change due to reaction in cal/g-mol is expressed as follows with
+the keyword DH.  The default value is zero.
   enthalpy change  reaction  enthalpy change 
-  keyword          name      due to reaction
+  keyword          name      due to reaction (cal/g-mol)
   DH               r1:       -191759.0
 
 The enthalpy change is assigned to the phase identified by the index m in the
@@ -1382,6 +1385,9 @@ usr1.f               -- A subroutine that is called once every timestep
 
 usr2.f               -- A subroutine that is called once every iteration
 
+usr3.f               -- A subroutine that is called once every run, after
+                        the time-loop ends
+
 
 usrnlst.inc          -- List of user-defined keywords.  These may be used to
                         enter data through the input data file mfix.dat.
@@ -1389,7 +1395,10 @@ usrnlst.inc          -- List of user-defined keywords.  These may be used to
 usr_init_namelist.f  -- Initialize user-defined keywords
 
 
-usr_mod.f -- User-defined module
+usr_mod.f            -- User-defined module.  Include "Use usr" for using
+                        user-defined variables in this module.  If allocatable
+                        arrays are defined in this module, allocate them in
+                        usr0.f
 
 
 D.12  Parallelization controls

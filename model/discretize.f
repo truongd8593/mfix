@@ -78,10 +78,7 @@
 !
       IF (PHI_C>=ZERO .AND. PHI_C<ONE) THEN      !monotonic region 
          TH = PHI_C/(ONE - PHI_C) 
-!//EFD Nov/10/99
-!//      avoid mixed mode arithmetic
-!//         SMART = HALF*MAX(ZERO,MIN(4.*TH,0.75 + 0.25*TH,2.)) 
-         SMART = HALF*MAX(ZERO,MIN(4.0D0*TH,0.75D0 + 0.25D0*TH,2.0D0))
+         SMART = HALF*MAX(ZERO,MIN(4.0D0*TH,0.75D0 + 0.25D0*TH,2.0D0)) 
       ELSE IF (PHI_C == ONE) THEN 
          SMART = ONE 
       ELSE                                       !first order upwinding 
@@ -197,10 +194,7 @@
 !
       IF (PHI_C>=ZERO .AND. PHI_C<ONE) THEN      !monotonic region 
          TH = PHI_C/(ONE - PHI_C) 
-!//EFD Nov/10/99
-!//      avoid mixed mode arithmetic
-!//         MUSCL = HALF*MAX(ZERO,MIN(2.*TH,(ONE + TH)/2.,2.)) 
-         MUSCL = HALF*MAX(ZERO,MIN(2.0D0*TH,(ONE + TH)/2.0D0,2.0D0))
+         MUSCL = HALF*MAX(ZERO,MIN(2.0D0*TH,(ONE + TH)/2.0D0,2.0D0)) 
       ELSE IF (PHI_C == ONE) THEN 
          MUSCL = ONE 
       ELSE                                       !first order upwinding 
@@ -303,10 +297,7 @@
 !
       IF (PHI_C>=ZERO .AND. PHI_C<ONE) THEN      !monotonic region 
          TH = PHI_C/(ONE - PHI_C) 
-!//EFD Nov/10/99
-!//      avoid mixed mode arithmetic
-!//         UMIST = HALF*MAX(ZERO,MIN(2.*TH,0.75 + 0.25*TH,2.)) 
-         UMIST = HALF*MAX(ZERO,MIN(2.0D0*TH,0.75D0 + 0.25D0*TH,2.0D0))
+         UMIST = HALF*MAX(ZERO,MIN(2.0D0*TH,0.75D0 + 0.25D0*TH,2.0D0)) 
       ELSE IF (PHI_C == ONE) THEN 
          UMIST = ONE 
       ELSE                                       !first order upwinding 

@@ -66,7 +66,7 @@
       INTEGER          NSTEP
 !
 !                      Discretization scheme for different equations
-      INTEGER          DISCRETIZE(8)
+      INTEGER          DISCRETIZE(9)
 !
 !                      RUN ID info
 !
@@ -112,6 +112,12 @@
       LOGICAL	       FRICTION
 !
  
+!
+! start loezos
+!	               If. TRUE. calculate frictional stress terms
+      LOGICAL	       SHEAR
+
+
 !		       If 0: use S:S
 !	               If 1: use the form of Savage to compute S:S
 !		       If 2: use combination of both
@@ -148,6 +154,9 @@
 !
 !
 
+! loezos                     Shear Vel
+      DOUBLE PRECISION V_sh
+! loezos
          common /run_dp/ time      !for Linux
 
       END MODULE run                                                                             

@@ -52,14 +52,12 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-!//SP
-      TRD_S(:,:) = ZERO
 !
       DO M = 1, MMAX 
 !!$omp    parallel do private(ijk,i,j,k,im,imjk,ijmk,ijkm)
 !//SP
       DO IJK = IJKSTART3, IJKEND3
-            IF (FLUID_AT(IJK)) THEN 
+            IF (.NOT.WALL_AT(IJK)) THEN 
                I = I_OF(IJK) 
                J = J_OF(IJK) 
                K = K_OF(IJK) 

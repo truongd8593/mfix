@@ -35,6 +35,7 @@
       USE geometry
       USE run
       USE indices
+      USE usr       !just to ensure that this module gets compiled early on
       USE compar
       USE sendrecv  !// 400
       IMPLICIT NONE

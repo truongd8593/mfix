@@ -47,6 +47,7 @@
       USE run
       USE funits 
       USE scales 
+      USE scalars
       USE boundfunijk 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -218,6 +219,12 @@
                                  NMAX(0)) = BC_X_G(L,:NMAX(0)) 
                               N = NMAX(0) + 1 
                            ENDIF 
+			   
+                           IF (NScalar > 0) THEN 
+                              WHERE (BC_Scalar(L,:NScalar) /= UNDEFINED)&
+			         Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
+                           ENDIF 
+			   
                            DO M = 1, MMAX 
                               IF (BC_ROP_S(L,M) /= UNDEFINED) ROP_S(IJK,M) = &
                                  BC_ROP_S(L,M) 
@@ -238,20 +245,24 @@
                            EP_G(IJK) = BC_EP_G(L) 
                            P_G(IJK) = SCALE(BC_P_G(L)) 
                            T_G(IJK) = BC_T_G(L) 
-                           N = 1 
+ 
                            IF (NMAX(0) > 0) THEN 
                               X_G(IJK,:NMAX(0)) = BC_X_G(L,:NMAX(0)) 
-                              N = NMAX(0) + 1 
                            ENDIF 
+			   
+                           IF (NScalar > 0) THEN 
+                              Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
+                           ENDIF 
+			   
                            DO M = 1, MMAX 
                               ROP_S(IJK,M) = BC_ROP_S(L,M) 
                               T_S(IJK,M) = BC_T_S(L,M) 
                               THETA_M(IJK,M) = BC_THETA_M(L,M) 
-                              N = 1 
+ 
                               IF (NMAX(M) > 0) THEN 
                                  X_S(IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M)) 
-                                 N = NMAX(M) + 1 
                               ENDIF 
+			      
                            END DO 
                            IJK1 = IJK 
                            IJK2 = IJK 

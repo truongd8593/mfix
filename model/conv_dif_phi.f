@@ -464,12 +464,21 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
 
+! loezos
+	INTEGER  incr
+! loezos
+
       call lock_xsi_array
 !
 !  Calculate convection factors
 !
 !
-      CALL CALC_XSI (DISC, PHI, UF, VF, WF, XSI_E, XSI_N, XSI_T) 
+
+! loezos
+	incr=0		
+! loezos
+
+      CALL CALC_XSI (DISC, PHI, UF, VF, WF, XSI_E, XSI_N, XSI_T,incr) 
 !
 !
 !  Calculate convection-diffusion fluxes through each of the faces
@@ -531,6 +540,8 @@
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Top face (i, j, k+1/2)
 !
             	IF (DO_K) THEN
+                  IJKP = KP_OF(IJK) 
+                  IJKT = TOP_OF(IJK)
 	          V_F = WF(IJK)
 		  IF(V_F >= ZERO)THEN
 		  	CONV_FAC = ROPF(IJK)*V_F*AXY(IJK)
@@ -661,7 +672,9 @@
       USE compar
       USE sendrecv
       USE indices
+      USE vshear
       Use xsi_array
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -715,13 +728,36 @@
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
-      
+! start loezos
+
+      INTEGER          I1, J1
+      INTEGER incr
+        
+! end loezos
       call lock_xsi_array
 !
 !  Calculate convection factors
 !
 !
-      CALL CALC_XSI (DISC, PHI, UF, VF, WF, XSI_E, XSI_N, XSI_T) 
+
+! loezos
+	incr=0		
+! loezos	
+ 
+      CALL CALC_XSI (DISC, PHI, UF, VF, WF, XSI_E, XSI_N, XSI_T,incr) 
+
+! loezos
+!update V to true velocity      
+
+      IF (SHEAR) THEN
+        DO IJK = 1, IJKMAX2
+         IF (FLUID_AT(IJK)) THEN  
+	   VF(IJK)=VF(IJK)+VSH(IJK)	
+          END IF
+        END DO
+      END IF
+! loezos
+
 !
 !
 !  Calculate convection-diffusion fluxes through each of the faces
@@ -820,7 +856,17 @@
 !
          ENDIF 
       END DO 
-      
+
+! loezos 
+       IF (SHEAR) THEN
+        Do IJK= 1, IJKMAX2
+
+          IF (FLUID_AT(IJK)) THEN  	 
+	   VF(IJK)=VF(IJK)-VSH(IJK)	
+	  END IF
+         END DO 	
+        END IF
+! loezos      
       call unlock_xsi_array
 
 !

@@ -42,6 +42,7 @@
       USE indices
       USE pgcor
       USE bc
+      USE vshear
       Use xsi_array
       USE compar        !//d
       USE sendrecv     !// 400
@@ -72,7 +73,7 @@
       INTEGER          M, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB 
 ! 
 !                      error message 
-      CHARACTER*80     LINE 
+      CHARACTER*80     LINE(1) 
 ! 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -80,6 +81,8 @@
       DOUBLE PRECISION , EXTERNAL :: DROODP_G 
 !-----------------------------------------------
       INCLUDE 'function.inc'
+! loezos
+      integer incr
 
 !//SP Need to extract i, j, k from ijk_p_g to determine the processor which
 !     acts on ijk_p_g to fix the value of pressure
@@ -95,6 +98,17 @@
         i_of_g(ijk) = ijk - (j_of_g(ijk)-jmin3)*(imax3-imin3+1) - &
                       (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + imin3
 
+! loezos
+! update to true velocity
+      IF (SHEAR) THEN
+!$omp parallel do private(IJK) 
+        DO IJK = 1, IJKMAX2 
+         IF (FLUID_AT(IJK)) THEN  
+	   V_G(IJK)=V_G(IJK)+VSH(IJK)	
+         END IF
+        END DO 
+ 
+      END IF
 
       call lock_xsi_array
 
@@ -144,7 +158,7 @@
 !$omp             critical
                   WRITE (LINE, '(A,I6,A,I1,A,G12.5)') 'Error: At IJK = ', IJK, &
                      ' M = ', 0, ' A = 0 and b = ', B_M(IJK,0) 
-!                  CALL WRITE_ERROR ('SOURCE_Pp_g', LINE, 1) 
+                  CALL WRITE_ERROR ('SOURCE_Pp_g', LINE, 1) 
 !$omp             end critical
                ENDIF 
             ENDIF 
@@ -160,11 +174,25 @@
             B_M(IJK,0) = ZERO 
          ENDIF 
       END DO 
+
+! loezos
+      IF (SHEAR) THEN
+!$omp parallel do private(IJK) 
+       DO IJK = 1, IJKMAX2 
+         IF (FLUID_AT(IJK)) THEN  
+	   V_G(IJK)=V_G(IJK)-VSH(IJK)	
+         END IF
+       END DO 
+      END IF
+! loezos
+
       IF (RO_G0 == UNDEFINED) THEN 
-         CALL CALC_XSI(DISCRETIZE(1),ROP_G,U_G,V_G,W_G,XSI_E,XSI_N,XSI_T) 
 
-!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-
+! loezos
+	incr=0		
+! loezos
+         CALL CALC_XSI(DISCRETIZE(1),ROP_G,U_G,V_G,W_G,XSI_E,XSI_N,XSI_T,incr) 
+	
 !$omp    parallel do                                                     &
 !$omp&   private(IJK,I,J,K,                                       &
 !$omp&            IMJK,IJMK,IJKM,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB)

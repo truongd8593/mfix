@@ -48,6 +48,7 @@
       USE is
       USE tau_g
       USE bc
+      USE vshear
       USE compar        !//d
       USE sendrecv   !// 400      
       IMPLICIT NONE
@@ -105,6 +106,14 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
       INCLUDE 'b_force2.inc'
+
+! loezos 
+      DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
+      DOUBLE PRECISION SRT
+! loezos
+
+!
+
 !
       M = 0 
       IF (.NOT.MOMENTUM_Y_EQ(0)) RETURN  
@@ -112,7 +121,8 @@
 !// 350 1223 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 
 !$omp  parallel do private( I, J, K, IJK, IJKN, ISV, Sdp, V0, Vpm, Vmt, Vbf, &
-!$omp&  PGN, ROGA, MUGA, ROPGA, EPGA ) &
+!$omp&  PGN, ROGA, MUGA, ROPGA, EPGA,VSH_n,VSH_s,VSH_e,VSH_w,&
+!$omp&  VSH_p,Source_conv ) &
 !$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK) 
@@ -196,11 +206,37 @@
                VBF = ROPGA*BFY_G(IJK) 
 !
             ENDIF 
+
+! loezos	 Source terms from convective mom. flux
+	         IF (SHEAR) THEN
+		SRT=(2d0*V_sh/XLENGTH)
+
+		VSH_p=VSH(IJK)
+
+		VSH_n=VSH_p
+		VSH_s=VSH_p		
+
+		VSH_e=VSH(IJK)+SRT*1d0/oDX_E(I)
+		VSH_w=VSH(IJK)-SRT*1d0/oDX_E(IM1(I))
+
+
+		Source_conv=A_M(IJK,N,m)*VSH_n+A_M(IJK,S,m)*VSH_s&
+		+A_M(IJK,W,m)*VSH_w+A_M(IJK,E,m)*VSH_e&
+		-(A_M(IJK,N,m)+A_M(IJK,S,m)+A_M(IJK,W,m)+A_M(IJK,E,m))&
+		*VSH_p
+
+
+		ELSE 
+		Source_conv=0d0
+		END IF
+	
+
 !
 !         Collect the terms
             A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+A_M(IJK,S,M&
                )+A_M(IJK,T,M)+A_M(IJK,B,M)+(V0+VPM+ZMAX(VMT))*VOL_V(IJK)) 
-            B_M(IJK,M) = -(SDP + TAU_V_G(IJK)+((V0+ZMAX((-VMT)))*V_GO(IJK)+VBF)&
+            B_M(IJK,M) = -(SDP + TAU_V_G(IJK)&
+	       +Source_conv+((V0+ZMAX((-VMT)))*V_GO(IJK)+VBF)&
                *VOL_V(IJK))+B_M(IJK,M) 
          ENDIF 
       END DO 

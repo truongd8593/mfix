@@ -54,6 +54,7 @@
       USE is
       USE tau_s
       USE bc
+      USE vshear
       USE compar        !//d
       USE sendrecv   !// 400       
       IMPLICIT NONE
@@ -115,6 +116,11 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
       INCLUDE 'b_force2.inc'
+! loezos
+      DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
+      DOUBLE PRECISION SRT
+! loezos
+
 !
       DO M = 1, MMAX 
          IF (MOMENTUM_Y_EQ(M)) THEN 
@@ -122,7 +128,8 @@
 !// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 
 !$omp  parallel do private( I, J, K, IJK, IJKN, ISV, Sdp, Sdps, V0, Vmt, &
-!$omp&  PGN,DRO1,DRO2,DROA, Vbf, MUGA, ROPGA, EPGA ) &
+!$omp&  PGN,DRO1,DRO2,DROA, Vbf, MUGA, ROPGA, EPGA,VSH_n,VSH_s,VSH_e,&
+!$omp&  VSH_w,VSH_p,Source_conv ) &
 !$omp&  schedule(static)
             DO IJK = ijkstart3, ijkend3
                I = I_OF(IJK) 
@@ -173,6 +180,8 @@
 !
 !           Surface forces
 !
+
+
 !             Pressure term
                   PGN = P_G(IJKN) 
                   IF (CYCLIC_Y_PD) THEN 
@@ -217,18 +226,44 @@
                      VBF = ROPGA*BFY_S(IJK,M) 
 !
                   ENDIF 
+
+! loezos	 Source terms from convective mom. flux
+	        IF (SHEAR) THEN
+
+		SRT=(2d0*V_sh/XLENGTH)        
+		 
+		VSH_p=VSH(IJK)
+
+		VSH_n=VSH_p
+		VSH_s=VSH_p		
+
+		VSH_e=VSH(IJK)+SRT*1d0/oDX_E(I)
+		VSH_w=VSH(IJK)-SRT*1d0/oDX_E(IM1(I))
+
+		Source_conv=A_M(IJK,N,m)*VSH_n+A_M(IJK,S,m)*VSH_s&
+		+A_M(IJK,W,m)*VSH_w+A_M(IJK,E,m)*VSH_e&
+		-(A_M(IJK,N,m)+A_M(IJK,S,m)+A_M(IJK,W,m)+A_M(IJK,E,m))&
+		*VSH_p
+
+		ELSE 
+		Source_conv=0d0
+		END IF
+	
+
+
 !
 !
 !             Collect the terms
                   A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+A_M(&
                      IJK,S,M)+A_M(IJK,T,M)+A_M(IJK,B,M)+(V0+ZMAX(VMT))*VOL_V(&
                      IJK)) 
-                  B_M(IJK,M) = -(SDP + SDPS + TAU_V_S(IJK,M)+((V0+ZMAX((-VMT)))&
+                  B_M(IJK,M) = -(SDP + SDPS + TAU_V_S(IJK,M)&
+		     +Source_conv+((V0+ZMAX((-VMT)))&
                      *V_SO(IJK,M)+VBF)*VOL_V(IJK))+B_M(IJK,M) 
                ENDIF 
-            END DO 
+              END DO
             CALL SOURCE_V_S_BC (A_M, B_M, M, IER) 
-         ENDIF 
+         END IF
       END DO 
 
 !//? probably need to communicate A_M and B_M here or in solve_vel_star in order

@@ -205,3 +205,46 @@
       subroutine pc_quickwin
       return
       end
+!
+!
+      subroutine flush_bin(iunit,code)
+!
+      use funits
+      use run
+      use machine
+!
+      implicit none
+!
+      integer    :: iunit , lc , code , nb , ier
+      CHARACTER  :: EXT*4 , file_name*64 
+!
+      if (code .ne. 1) then
+         call flush(iunit)
+         return
+      end if
+!
+! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
+!
+      DO LC = 1, LEN(RUN_NAME) 
+         IF (RUN_NAME(LC:LC) == ' ') THEN 
+            NB = LC 
+            GO TO 125 
+         ENDIF 
+      END DO 
+      WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
+      STOP  
+ 125  continue
+      lc  = iunit - unit_spx
+      ext = '.SPx'
+      WRITE (EXT(4:4), 1000) LC         
+      close (unit=iunit)
+
+
+
+
+      CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, &
+              'old' , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER)
+!
+ 1000 FORMAT(I1)
+      return
+      end

@@ -18,7 +18,6 @@
       Use coeff
       Use cont
       Use drag
-      Use dsdgmr_a
       Use energy
       Use fldvar
       Use geometry
@@ -28,6 +27,7 @@
       Use pscor
       Use residual
       Use rxns
+      Use scalars
       Use tau_g
       Use tau_s
       Use tmp_array
@@ -36,6 +36,7 @@
       Use visc_g
       Use visc_s
       Use xsi_array
+      Use vshear
       IMPLICIT NONE
       
       INTEGER M
@@ -56,11 +57,11 @@
 !// 375 note that ijksize3)all() also defines the tot. # of cells in a subdomain
 !//     use both to avoid modifying all DIMENSION_3 definitions.
       DIMENSION_3L  = ijksize3_all(myPE)
-      write(*,"('(PE ',I2,'): GLOBAL DIM_3 = ',I6,/, &
-     &           9X,'LOCAL DIM_3  = ',I6)") myPE,DIMENSION_3G,DIMENSION_3 !//AIKEPARDBG
-      write(*,"('(PE ',I2,'): ijksize3_all() = ',I6,/, &
-     &           9X,'DIMENSION_3L  = ',I6)") &
-     &		 myPE,ijksize3_all(myPE),DIMENSION_3L !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): GLOBAL DIM_3 = ',I6,/, &
+!     &           9X,'LOCAL DIM_3  = ',I6)") myPE,DIMENSION_3G,DIMENSION_3 !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): ijksize3_all() = ',I6,/, &
+!     &           9X,'DIMENSION_3L  = ',I6)") &
+!     &		 myPE,ijksize3_all(myPE),DIMENSION_3L !//AIKEPARDBG
       
       DIMENSION_M   = MAX(1, MMAX)
       
@@ -76,6 +77,8 @@
       
       DIMENSION_LM    = (DIMENSION_M * (DIMENSION_M-1) / 2)+1
       DIMENSION_N_all = DIMENSION_N_g + DIMENSION_M * DIMENSION_N_s
+      
+      DIMENSION_Scalar = NScalar
 
 !ambm
       Allocate( A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) )
@@ -148,6 +151,13 @@
       Allocate(  P_staro (DIMENSION_3) )
       Allocate(  THETA_m (DIMENSION_3, DIMENSION_M) )
       Allocate(  THETA_mo (DIMENSION_3, DIMENSION_M) )
+      
+      IF(DIMENSION_Scalar /= 0)then
+        Allocate(  Scalar (DIMENSION_3,  DIMENSION_Scalar) )
+        Allocate(  Scalaro (DIMENSION_3, DIMENSION_Scalar) )
+      
+      ENDIF
+
 
 !geometry
       Allocate(           FLAG (DIMENSION_3) )
@@ -254,6 +264,15 @@
       Allocate(  SPECIES_ID2N(DIMENSION_N_all, 2) )
       Allocate(  SPECIES_N2IDg(DIMENSION_N_g) )
       Allocate(  SPECIES_N2IDs(DIMENSION_M, DIMENSION_N_s) )
+      
+!scalars
+      
+      IF(DIMENSION_Scalar /= 0)then
+        Allocate(  Scalar_c (DIMENSION_3,  DIMENSION_Scalar) )
+        Allocate(  Scalar_p (DIMENSION_3,  DIMENSION_Scalar) )
+        Allocate(  Dif_Scalar (DIMENSION_3, DIMENSION_Scalar) )
+      
+      ENDIF
 
 !tau_g
       Allocate(  TAU_U_g(DIMENSION_3) )
@@ -303,99 +322,18 @@
       Allocate(  Xsi_n(DIMENSION_3) )
       Allocate(  Xsi_t(DIMENSION_3) )
       
+
+!VSH
+      Allocate(  VSH(DIMENSION_3) )
+
+!VSHE
+      Allocate(  VSHE(DIMENSION_3) )
+
 !
 ! array allocation of add on packages, such as linear equation solvers
 !
 
-      CALL Allocate_dsdgmr
-      CALL Allocate_dslucs
-      CALL Allocate_dslugm
-      CALL Allocate_igcg  
      
-      
       RETURN
       END SUBROUTINE ALLOCATE_ARRAYS 
       
-      
-      
-      SUBROUTINE Allocate_dsdgmr
-        USE param 
-        USE param1
-        Use dsdgmr_a
-        IMPLICIT NONE
-      
-
-        LENW = 2+DIMENSION_3*(NSAVE+7)+NSAVE*(NSAVE+3) 
-        NELTMAX = 7*DIMENSION_3 
-        Allocate( IA(NELTMAX) )
-        Allocate( JA(NELTMAX) )
-        Allocate( IWORK(LENIW) )
-        Allocate( A(NELTMAX) )
-        Allocate( RWORK(LENW) )
-      
-      END SUBROUTINE Allocate_dsdgmr
-
-      SUBROUTINE Allocate_dslucs
-        USE param 
-        USE param1
-        Use dslucs_a
-        IMPLICIT NONE
-      
-
-        LENW = 4*DIMENSION_3 + 4*DIMENSION_3 + 8*DIMENSION_3 
-         
-        LENIW = 4*DIMENSION_3 + 4*DIMENSION_3 + 4*DIMENSION_3 + 12 
-         
-        NELTMAX = 7*DIMENSION_3 
-	
-        Allocate( IA(NELTMAX) )
-        Allocate( JA(NELTMAX) )
-        Allocate( IWORK(LENIW) )
-        Allocate( A(NELTMAX) )
-        Allocate( RWORK(LENW) )
-      
-      END SUBROUTINE Allocate_dslucs
-
-      SUBROUTINE Allocate_dslugm
-      
-        USE param 
-        USE param1
-        Use dslugm_a
-        IMPLICIT NONE
-
-        LENW = 2 + DIMENSION_3*(NSAVE + 7) + NSAVE*(NSAVE&
-          + 3) + 4*DIMENSION_3 + 4*DIMENSION_3 
-        LENIW = 4*DIMENSION_3 + 4*DIMENSION_3 + 4*&
-         DIMENSION_3 + 32 
-        NELTMAX = 7*DIMENSION_3 
-	
-        Allocate( IA(NELTMAX) )
-        Allocate( JA(NELTMAX) )
-        Allocate( IWORK(LENIW) )
-        Allocate( A(NELTMAX) )
-        Allocate( RWORK(LENW) )
-      
-      END SUBROUTINE Allocate_dslugm
-      
-      SUBROUTINE Allocate_igcg
-        USE param 
-        USE param1
-        Use igcg_i
-        Use igcg_a
-        IMPLICIT NONE
-      
-
-        DIM_I1 = 1 
-        DIM_I3 = DIMENSION_I 
-        DIM_I9 = DIMENSION_I*DIMENSION_J 
-	
-        Allocate( BD00N(DIMENSION_3) )
-        Allocate( BL09N(DIMENSION_3 + DIM_I9) ) 
-        Allocate( BL03N(DIMENSION_3 + DIM_I3) )  
-        Allocate( BL01N(DIMENSION_3 + DIM_I1) )  
-        Allocate( BU09N(1 - DIM_I9:DIMENSION_3) ) 
-        Allocate( BU03N (1 - DIM_I3:DIMENSION_3) )
-        Allocate( BU01N (1 - DIM_I1:DIMENSION_3))
-
-      
-      END SUBROUTINE Allocate_igcg

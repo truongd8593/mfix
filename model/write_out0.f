@@ -57,6 +57,7 @@
       USE funits 
       USE toleranc 
       USE scales 
+      USE scalars
       USE ur_facs 
       USE leqsol 
       USE compar         !//d
@@ -86,18 +87,13 @@
 !-----------------------------------------------
 
 !
-      character*3, allocatable :: array1(:)   !//d
-!
 !
 !
 !                      Coefficient of restitution (old symbol)
       DATA DISCR_NAME/'FOUP', 'FOUP', 'Superbee', 'Smart', 'Ultra-Quick', &
          'QUICKEST', 'Muscl', 'VanLeer', 'Minmod'/ 
 
-!     call send_recv(icbc_flag,2)
-!//SP Equivalent of above to fill only the processor boundaries is done in later in this routine
-
-      if (myPE.ne.PE_IO) goto 1111
+      if (myPE.ne.PE_IO) return
 
 !
 !  Write Headers for .OUT file
@@ -179,6 +175,12 @@
          WRITE (UNIT_OUT, 1149) ' NOT ' 
       ENDIF 
       IF (MODEL_B) WRITE (UNIT_OUT, 1101) 
+      IF (Nscalar /= 0)THEN
+        WRITE (UNIT_OUT, 1102)NScalar
+        DO L = 1, NScalar
+          WRITE (UNIT_OUT, 1103)L, Phase4Scalar(L)
+        END DO 
+      ENDIF
 !
 !  Physical and numerical parameters
 !
@@ -192,8 +194,8 @@
       WRITE (UNIT_OUT, 1157) P_REF, P_SCALE, GRAVITY 
       WRITE (UNIT_OUT, 1158) 
       WRITE (UNIT_OUT, 1159) (UR_FAC(L),LEQ_IT(L),LEQ_METHOD(L),&
-                             LEQ_SWEEP(L), LEQ_TOL(L),&
-                             DISCR_NAME(DISCRETIZE(L)),L=1,7) 
+	                     LEQ_SWEEP(L), LEQ_TOL(L),&
+			     DISCR_NAME(DISCRETIZE(L)),L=1,9) 
       DO L = 1, DIMENSION_C 
          IF (C(L) /= UNDEFINED) WRITE (UNIT_OUT, 1190) C_NAME(L), L, C(L) 
       END DO 
@@ -465,38 +467,12 @@
       WRITE (UNIT_OUT, 1900) 
       WRITE (UNIT_OUT, 1901) ZERO_EP_S 
       WRITE (UNIT_OUT, 1904) TOL_RESID, TOL_RESID_T, TOL_RESID_X, TOL_DIVERGE 
-      WRITE (UNIT_OUT, 1905) TOL_COM 
-!
-!  Initial and boundary condition flags
-!
-      WRITE (UNIT_OUT, 2000) CHAR(12) 
- 1111 continue
-
-      if (myPE .eq. PE_IO) then
-         allocate (array1(ijkmax3))
-      else
-         allocate (array1(1))
-      end if
-      
-!//AIKEPARDBG
-!     write(*,"('(PE ',I2,'): reached before gather in write_out0')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
-
-!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-      call gather (icbc_flag,array1,PE_IO)
-!//SP Filling the processor ghost layer with the correct values
-      call scatter (icbc_flag,array1,PE_IO)
-!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-!//AIKEPARDBG
-!     write(*,"('(PE ',I2,'): aft gather in write_out0')") myPE    !//AIKEPARDBG
-!     call exitMPI(myPE)   !//AIKEPARDBGSTOP
-      
-      CALL OUT_ARRAY_C (array1, 'BC/IC condition flags') 
-      deallocate (array1)
+      WRITE (UNIT_OUT, 1905) TOL_COM
+      IF(NScalar /= 0)WRITE (UNIT_OUT, 1906) TOL_RESID_Scalar
 !
 !  Echo user defined input data
 !
-      if (myPE .eq. PE_IO) WRITE (UNIT_OUT, '(/,1X,1A1)') CHAR(12) 
+      WRITE (UNIT_OUT, '(/,1X,1A1)') CHAR(12) 
       IF (CALL_USR) CALL USR_WRITE_OUT0 
 !
       RETURN  
@@ -518,6 +494,10 @@
          'Time: ',I2,':',I2,20X,'Date: ',I2,'-',I2,'-',I4) 
  1010 FORMAT(/7X,'Computer : ',A50,/,1X,79('_')) 
  1100 FORMAT(//,3X,'1. RUN CONTROL',/) 
+ 1101 FORMAT(/7X,'* Model B momentum equations are solved')
+ 1102 FORMAT(/7X,'Number of scalars = ', I4,&
+             /7X,'Scalar No.        Carrier Phase (Phase4Scalar)')
+ 1103 FORMAT(/7X, I4,'               ',I4)
  1110 FORMAT(7X,'Run name(RUN_NAME): ',A60) 
  1120 FORMAT(7X,'Brief description of the run (DESCRIPTION) :',/9X,A60) 
  1130 FORMAT(7X,'Units (UNITS) : ',A16) 
@@ -538,7 +518,6 @@
  1147 FORMAT(/7X,'* Solids-',I1,' Species equations are solved.') 
  1148 FORMAT(/7X,'* Solids-',I1,' Species equations are NOT solved.') 
  1149 FORMAT(/7X,'* User-defined subroutines are',A,'called.') 
- 1101 FORMAT(/7X,'* Model B momentum equations are solved') 
 !
  1150 FORMAT(//,3X,'2. PHYSICAL AND NUMERICAL PARAMETERS',/) 
  1151 FORMAT(7X,'Coefficient of restitution (C_e) = ',G12.5) 
@@ -562,7 +541,9 @@
          'V velocity            = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
          'W velocity            = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
          'Energy                = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
-         'Species               = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/) 
+         'Species               = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
+         'Granular Energy       = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
+         'User scalar           = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/) 
  1190 FORMAT(7X,1A20,'- C(',I2,') = ',G12.5) 
 !
  1200 FORMAT(//,3X,'3. GEOMETRY AND DISCRETIZATION',/) 
@@ -747,6 +728,76 @@
          'Maximum average residual (TOL_RESID_X) = ',G12.5,/7X,&
          'Minimum residual at divergence (TOL_DIVERGE) = ',G12.5) 
  1905 FORMAT(7X,'Tolerance for species and energy balances (TOL_COM) = ',G12.5) 
+ 1906 FORMAT(7X,'Tolerance for scalar mass balances (TOL_RESID_Scalar) = ',G12.5) 
+!
+      END SUBROUTINE WRITE_OUT0 
+      
+      SUBROUTINE WRITE_FLAGS
+      USE param
+      USE param1
+      USE funits
+      USE geometry
+      USE indices
+      USE compar         !//d
+      USE mpi_utility    !//d
+      USE sendrecv    !//d
+      IMPLICIT NONE
+      integer ijk
+!
+      character*3, allocatable :: array1(:)   !//d
+      character*4, dimension(:), allocatable :: array2, array3
+      include 'function.inc'
+      
+  
+      if (myPE .eq. PE_IO) then
+         allocate (array1(ijkmax3))
+         allocate (array2(dimension_3))
+         allocate (array3(ijkmax3))
+      else
+         allocate (array1(1))
+         allocate (array2(dimension_3))
+         allocate (array3(1))
+      end if
+      
+!//SP Filling the processor ghost layer with the correct values
+      call gather (icbc_flag,array1,PE_IO)
+      call scatter (icbc_flag,array1,PE_IO)
+      
+!
+!  Superimpose internal surface flags on Initial and boundary condition flags
+!
+      DO ijk = IJKSTART3, IJKEND3
+        array2(ijk) = '    '
+        array2(ijk)(1:3) = icbc_flag(ijk)(1:3)
+        IF (IP_AT_E(IJK)) THEN 
+           array2(IJK)(4:4) = 'E' 
+        ELSE IF (SIP_AT_E(IJK)) THEN 
+           array2(IJK)(4:4) = 'e' 
+        ENDIF 
+!
+        IF (IP_AT_N(IJK)) THEN 
+           array2(IJK)(4:4) = 'N' 
+        ELSE IF (SIP_AT_N(IJK)) THEN 
+           array2(IJK)(4:4) = 'n' 
+        ENDIF 
+!
+        IF (IP_AT_T(IJK)) THEN 
+           array2(IJK)(4:4) = 'T' 
+        ELSE IF (SIP_AT_T(IJK)) THEN 
+           array2(IJK)(4:4) = 't' 
+        ENDIF 
+      ENDDO
+      call gather (array2,array3,PE_IO)
+      
+      if(myPE.eq.PE_IO) then
+        WRITE (UNIT_OUT, 2000) CHAR(12) 
+        CALL OUT_ARRAY_C (array3, 'BC/IC condition flags') 
+        WRITE (UNIT_OUT, *)
+      ENDIF
+      
+      deallocate (array1) 
+      deallocate (array2) 
+      deallocate (array3) 
 !
  2000 FORMAT(//,3X,'11. INITIAL AND BOUNDARY CONDITION FLAGS',/7X,&
          'The initial and boundary conditions specified are shown in',/7X,&
@@ -779,5 +830,7 @@
          '  Top              T                       t       ',/7X,&
          'For cells with internal surfaces on more than one side',/7X,&
          'the characters will be over-written in the above order',/1X,A1) 
-      END SUBROUTINE WRITE_OUT0 
+	 RETURN
+	 END SUBROUTINE WRITE_FLAGS
+
       

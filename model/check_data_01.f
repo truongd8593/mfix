@@ -33,6 +33,7 @@
       USE run
       USE physprop
       USE indices
+      USE scalars
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -43,7 +44,8 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: M 
+      INTEGER :: M, N 
+      Character*80  Line(1)
 !-----------------------------------------------
 !
 !
@@ -95,5 +97,19 @@
          ANY_SPECIES_EQ = ANY_SPECIES_EQ .OR. ANY(SPECIES_EQ(:MMAX)) 
          M = MMAX + 1 
       ENDIF 
+      
+!
+!  Check phase specification for Scalars
+!
+
+      DO N = 1, NScalar
+        IF(Phase4Scalar(N) < 0 .OR. Phase4Scalar(N) > MMAX) THEN
+	  WRITE (Line,'(A, I3, A, I4, A)')&
+	  'Phase4Scalar( ', N, ') = ', Phase4Scalar(N), ' is invalid'
+
+	  CALL ERROR_ROUTINE ('check_data_01', Line, 1, 1) 
+	END IF
+      END DO
+
       RETURN  
       END SUBROUTINE CHECK_DATA_01 

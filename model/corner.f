@@ -264,11 +264,12 @@
             CALL START_LOG 
             WRITE (UNIT_LOG, 1000) 
 !
-            DO L = 1, NCORN 
-               IJK = IJK_CORN(L)           
-               WRITE (UNIT_LOG, 1100) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK)                                           
-            END DO 
-            WRITE (UNIT_LOG, 1300) 
+         DO L = 1, NCORN 
+            IJK = IJK_CORN(L) 
+            WRITE (UNIT_LOG, 1100) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK) 
+         END DO 
+         WRITE (UNIT_LOG, 1300) 
+         CALL END_LOG 
       ENDIF 
 !
       RETURN  

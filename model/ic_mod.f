@@ -154,6 +154,10 @@
       DOUBLE PRECISION IC_T_Rs (DIMENSION_IC, DIM_M)
 !
 !
+! 
+!                      initial scalar value in a region
+      DOUBLE PRECISION IC_Scalar (DIMENSION_IC, DIM_scalar)
+
 
 
       END MODULE ic                                                                              

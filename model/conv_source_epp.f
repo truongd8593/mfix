@@ -149,7 +149,7 @@
       DOUBLE PRECISION Src 
 ! 
 !                      error message 
-      CHARACTER*80     LINE 
+      CHARACTER*80     LINE(1) 
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 's_pr1.inc'
@@ -355,8 +355,7 @@
 !$omp             critical
                   WRITE (LINE, '(A,I6,A,G12.5)') 'Error: At IJK = ', IJK, &
                      ' A = 0 and b = ', B_M(IJK,0) 
-!//SP Having problem to compile this statement on SGI
-!                 CALL WRITE_ERROR ('CONV_SOURCE_EPp0', LINE, 1) 
+                  CALL WRITE_ERROR ('CONV_SOURCE_EPp0', LINE, 1) 
 !$omp             end critical
                ENDIF 
             ENDIF 
@@ -409,7 +408,8 @@
       USE indices
       USE pgcor
       USE pscor
-      Use xsi_array
+      USE xsi_array
+      USE vshear
       USE compar        !//d
 !//SP
       USE sendrecv
@@ -461,6 +461,11 @@
       INCLUDE 's_pr2.inc'
       INCLUDE 'ep_s2.inc'
 
+! loezos
+
+	INTEGER  incr
+! loezos      
+
       call lock_xsi_array
 !
 !\\Extra Sendrecv operations - just to make sure all the variables needed are
@@ -482,10 +487,29 @@
 !
 !  Calculate convection factors
 !
+
+! loezos
+	incr=0		
+! loezos
+
       CALL CALC_XSI (DISCRETIZE(2), ROP_S(1,M), U_S(1,M), V_S(1,M), W_S(1,M), &
-         XSI_E, XSI_N, XSI_T) 
-!//SP
-!    XSI_E, XSI_N and XSI_T are already message passed in calc_xsi
+         XSI_E, XSI_N, XSI_T,incr) 
+
+
+! loezos
+! update to true velocity
+      IF (SHEAR) THEN
+!$omp parallel do private(IJK)  
+       DO IJK = 1, IJKMAX2 
+         IF (FLUID_AT(IJK)) THEN  
+	   V_S(IJK,m)=V_s(IJK,m)+VSH(IJK)	
+         END IF
+       END DO 
+ 
+      END IF
+
+! loezos
+
 !
 !
 !     Calculate convection-diffusion fluxes through each of the faces
@@ -627,7 +651,17 @@
             B_M(IJK,0) = ZERO 
          ENDIF 
       END DO
-       
+
+! loezos
+      IF (SHEAR) THEN
+!$omp parallel do private(IJK)  
+       DO IJK = 1, IJKMAX2 
+         IF (FLUID_AT(IJK)) THEN  
+	   V_S(IJK,m)=V_s(IJK,m)-VSH(IJK)	
+         END IF
+       END DO 
+      END IF
+! loezos       
       call unlock_xsi_array
       
       

@@ -142,6 +142,12 @@
 !                      Previous-time-step value of Granular temperature of mth phase
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  THETA_mo 
 !
+!
+!                      User-defined Scalars
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Scalar 
+!
+!                      Previous time-step value of User-defined Scalars
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Scalaro 
  
 !HPF$ align EP_g(:) with TT(:)
 !HPF$ align EP_go(:) with TT(:)

@@ -45,7 +45,7 @@
 !-----------------------------------------------
 !
 !                       array to print out
-      CHARACTER*3       ARRAY(*)
+      CHARACTER*4       ARRAY(*)
 !
 !                       message to print out
       CHARACTER*(*)     MESSAGE
@@ -58,7 +58,7 @@
 !                       K
       INTEGER           K
 
-      character*3,  allocatable :: array1c(:)   !//d
+      character*4,  allocatable :: array1c(:)   !//d
 
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -71,7 +71,7 @@
       DO K = 1, KMAX2 
          IJK = FUNIJK_IO(1,1,K) 
 !
-         if(myPE.eq.PE_IO) WRITE (UNIT_OUT, 1100) MESSAGE, K 
+         WRITE (UNIT_OUT, 1100) MESSAGE, K 
          CALL OUT_ARRAY_KC (ARRAY1C(IJK), K) 
       END DO 
  1100 FORMAT(/,1X,A,' at K = ',I4,/) 

@@ -37,6 +37,7 @@
       USE geometry
       USE physprop
       USE indices
+      USE scalars
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
@@ -58,7 +59,6 @@
 !                      Species index
       INTEGER          N
 !-----------------------------------------------
-      IJK = 1 
       IF (IJKMAX2 > 0) THEN 
 !// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3
 !//         EP_G(:IJKMAX2) = UNDEFINED       
@@ -76,13 +76,12 @@
             X_G(IJKSTART3:IJKEND3,:NMAX(0)) = ZERO 
             N = NMAX(0) + 1 
          ENDIF 
-!//? what is IJK used for?  leftover from f77-->f90 automatic conversion?	 
-         IJK = IJKMAX2 + 1 
       ENDIF 
+      
+      IF(Nscalar > 0) Scalar(IJKSTART3:IJKEND3,:Nscalar) = ZERO
 
 !!$omp parallel do private(M,IJK,N)
       DO M = 1, MMAX 
-         IJK = 1 
          IF (IJKMAX2 > 0) THEN 
 !// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3
             ROP_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
@@ -96,8 +95,6 @@
                X_S(IJKSTART3:IJKEND3,M,:NMAX(M)) = ZERO 
                N = NMAX(M) + 1 
             ENDIF 
-!//? what is IJK used for? leftover from f77-->f90 automatic conversion?	 	    
-            IJK = IJKMAX2 + 1 
          ENDIF 
       END DO 
       RETURN  

@@ -151,6 +151,31 @@ fi
 
             ;;
 	    
+
+
+    AIX)
+	    mach_file="AIX.F"
+	    
+#           FORTRAN_CMD=mpxlf
+            FORTRAN_CMD=xlf90_r
+            LINK_CMD=xlf90_r
+            libs_d="-lblas "
+            libs="-lblas "
+    
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+	    omp="-qnosave -qsmp=omp"
+            compile_d="-qfree=f90 -c -g "
+            link_d=" "
+            compile=" -qfree=f90 -O -c "
+            compile2="-O -c "
+            link=""
+            MODULE_CODE=1
+	    
+
+            ;;
+	    
+	    
 	         
       *) echo "Sorry, no support for operating system: $opsys"
          echo 
@@ -206,6 +231,7 @@ esac
     then
        echo
     else
+       chmod +w machine.f
        cp $mach_file machine.f
        rm *.o *.a *.mod *.exe
        rm COMPILED.WITH.*
@@ -285,6 +311,7 @@ esac
        then
           do_nothing="ok"
        else
+          chmod u+w $outfile
           cp $run_dir/$outfile $outfile
        fi
 
@@ -322,6 +349,8 @@ esac
 
   case $dbg_version in
   y|Y )
+    echo
+    echo "Execution may be SLOW.  Do not use debug version for production runs!"
     FORT_FLAGS="$mp_flag $compile_d"
     FORT_FLAGS2="$mp_flag $compile_d"
     LINK_FLAGS="$mp_flag $link_d"

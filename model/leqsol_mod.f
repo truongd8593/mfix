@@ -14,6 +14,7 @@
 !     6   T
 !     7   X
 !     8   Th
+!     9   S
 !
 !
 !                      Maximum number of outer iterations
@@ -24,16 +25,16 @@
       LOGICAL          LEQ_ADJUST
 !
 !                      Maximum number of linear equation solver iterations
-      INTEGER          LEQ_IT(8)
+      INTEGER          LEQ_IT(9)
 !
 !                      linear equation solver method
-      INTEGER          LEQ_METHOD(8)
+      INTEGER          LEQ_METHOD(9)
 !
 !                      linear equation solver sweep direction
-      CHARACTER*4 ::   LEQ_SWEEP(8)
+      CHARACTER*4 ::   LEQ_SWEEP(9)
 !
 !                      linear equation solver tolerance
-      DOUBLE PRECISION LEQ_TOL(8)
+      DOUBLE PRECISION LEQ_TOL(9)
 !
 !
 !      COMMON / ITERS_DP /

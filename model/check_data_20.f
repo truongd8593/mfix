@@ -42,6 +42,7 @@
       USE funits 
       USE visc_g
       USE rxns
+      USE scalars
       USE compar   !//d
       USE sendrecv !//d
       IMPLICIT NONE
@@ -221,6 +222,17 @@
                         ENDIF 
                      END DO 
                   ENDIF 
+		  
+                  DO N = 1, NScalar 
+                    IF (Scalar(IJK,N) == UNDEFINED) THEN 
+                      IF (.NOT.ABORT) THEN 
+                        WRITE (UNIT_LOG, 1000) 
+                        ABORT = .TRUE. 
+                      ENDIF 
+                      WRITE (UNIT_LOG, 1012) I, J, K, N, 'Scalar' 
+                    ENDIF 
+                  END DO 
+		     
                   DO M = 1, MMAX 
                      IF (ROP_S(IJK,M) == UNDEFINED) THEN 
                         IF (.NOT.ABORT) THEN 
@@ -329,7 +341,7 @@
                         WRITE (UNIT_LOG, 1050) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1100) I, J, K 
+                     WRITE (UNIT_LOG, 1100) I, J, K, (1.- dif) 
                   ENDIF 
 !
 !  Check whether L_scale is non-zero anywhere
@@ -362,7 +374,7 @@
  1050 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
          ' Message: The sum of volume fractions is not equal to 1',/&
          '          in the following cells:',/4X,'I',T14,'J',T24,'K') 
- 1100 FORMAT(1X,I4,T11,I4,T21,I4,'  Sum of EP .NE. 1') 
+ 1100 FORMAT(1X,I4,T11,I4,T21,I4,'  Sum of EP = ', G12.5, '.NE. 1') 
  1300 FORMAT(/1X,70('*')/) 
  1350 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
          ' Message: Turbulent length scale is nonzero. Specify MU_gmax.',/1X,70&

@@ -40,6 +40,7 @@
       USE bc
       USE indices
       USE funits 
+      USE scalars
       USE compar     !//d
       USE sendrecv   !//SP
       IMPLICIT NONE
@@ -409,6 +410,14 @@
                   WRITE (UNIT_LOG, 1125) BCV 
                   call mfix_exit(myPE)  
                ENDIF 
+	       
+               DO N = 1, NScalar
+                 IF (BC_Scalar(BCV,N) == UNDEFINED) THEN 
+                   WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
+		   STOP
+                 ENDIF 
+               END DO 
+	       
             CASE ('MASS_OUTFLOW')  
                IF (BC_DT_0(BCV) == UNDEFINED) THEN 
                   WRITE (UNIT_LOG, 1000) 'BC_DT_0', BCV 
@@ -605,6 +614,16 @@
                      ENDIF 
                   ENDIF 
                END DO 
+	       
+	       
+               DO N = 1, NScalar
+                 IF (BC_Scalar(BCV,N) == UNDEFINED) THEN 
+                   WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
+		   STOP
+                 ENDIF 
+               END DO 
+	       
+	       
             CASE ('P_OUTFLOW')  
                IF (BC_P_G(BCV) == UNDEFINED) THEN 
                   WRITE (UNIT_LOG, 1000) 'BC_P_g', BCV 
@@ -686,6 +705,15 @@
                   call mfix_exit(myPE)  
                ENDIF 
             END DO 
+	    
+	       
+            DO N = 1, NScalar
+              IF (BC_Scalar(BCV,N) /= UNDEFINED) THEN 
+                WRITE (UNIT_LOG, 1200) 'BC_Scalar', BCV
+	        STOP
+              ENDIF 
+            END DO 
+	    
          ENDIF 
       END DO 
       DO BCV = 1, DIMENSION_BC 
@@ -846,6 +874,27 @@
                      END DO 
                   ENDIF 
                END DO 
+	       
+               DO N = 1, NScalar
+                 IF (BC_HW_Scalar(BCV,N) < ZERO) THEN 
+                   WRITE (UNIT_LOG, 1005) 'BC_hw_Scalar', BCV, N 
+                   STOP  
+                 ENDIF 
+!
+                 IF (BC_HW_Scalar(BCV,N)/=ZERO .AND. BC_Scalarw(BCV,N)==UNDEFINED) &
+                    THEN 
+                    WRITE (UNIT_LOG, 1004) 'BC_ScalarW', BCV, N 
+                    STOP  
+                 ENDIF 
+!
+                 IF (BC_HW_Scalar(BCV,N)/=UNDEFINED .AND. BC_C_Scalar(BCV,N)==&
+                    UNDEFINED) THEN 
+                    WRITE (UNIT_LOG, 1004) 'BC_C_Scalar', BCV, N 
+                    STOP  
+                 ENDIF 
+               END DO 
+	       
+	       
             ENDIF 
          ENDIF 
       END DO 

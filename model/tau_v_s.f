@@ -88,6 +88,10 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
       INCLUDE 'b_force2.inc'
+! loezos
+      DOUBLE PRECISION Source_diff,Diffco_e,Diffco_w
+! loezos
+
 !
 !
       DO M = 1, MMAX 
@@ -97,7 +101,8 @@
 !!$omp& JP,IM,IJPK,IJKW,IJKNW,IMJPK,IJKTN,IJKBN,IJPKM, &
 !!$omp&  IMJK,IJKN,IJKNE,IJMK,IJKT,  &
 !!$omp&  IJKB,IJKM, &
-!!$omp&  SBV,  SSX,SSY,   SSZ) &
+!!$omp&  SBV,  SSX,SSY,   SSZ,&
+!!$omp&  Source_diff, Diffco_e,Diffco_w) 
 !!$omp&  schedule(static)
 
 !//SP
@@ -125,6 +130,8 @@
                IJKBN = NORTH_OF(IJKB) 
                IJKM = KM_OF(IJK) 
                IJPKM = JP_OF(IJKM) 
+
+	
 !
 !       Surface forces
 !
@@ -145,14 +152,33 @@
                   *AXY_V(IJK) - AVG_Y_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJK,M),KM),&
                   AVG_Z_H(MU_S(IJKBN,M),MU_S(IJKN,M),KM),J)*(W_S(IJPKM,M)-W_S(&
                   IJKM,M))*ODY_N(J)*AXY_V(IJKM) 
+
+! loezos    Source terms from shear stress
+		IF (SHEAR) THEN
+	        Diffco_e=AVG_Y_H((AVG_X_H(MU_S(IJK,m),MU_S(IJKE,m),I)),&
+		(AVG_X_H(MU_S(IJKN,m),MU_S(IJKNE,m),I)),J)*AYZ_V(IJK)
+
+	        Diffco_w=AVG_Y_H((AVG_X_H(MU_S(IJK,m),MU_S(IJKW,m),I)),&
+		(AVG_X_H(MU_S(IJKN,m),MU_S(IJKNW,m),I)),J)*AYZ_V(IJKW)
+
+		Source_diff=(2d0*V_sh/XLENGTH)*(Diffco_e-Diffco_w)
+		ELSE
+		Source_diff=0d0
+		END IF
+! loezos
+
 !
 !
 !         Add the terms
-               TAU_V_S(IJK,M) = SBV + SSX + SSY + SSZ 
+               TAU_V_S(IJK,M) = SBV + SSX + SSY + SSZ + Source_diff
+	
             ELSE 
                TAU_V_S(IJK,M) = ZERO 
             ENDIF 
          END DO 
+
+!loezos 	
+
       END DO 
       RETURN  
       END SUBROUTINE CALC_TAU_V_S 

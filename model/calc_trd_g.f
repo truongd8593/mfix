@@ -51,14 +51,12 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-!//SP
-      TRD_G(:) = ZERO
 !
 !!$omp  parallel do private( IJK, I,J,K, IM,IMJK,IJMK,IJKM ) &
 !!$omp& schedule(dynamic,chunk_size)
 !//SP
       DO IJK = IJKSTART3, IJKEND3 
-         IF (FLUID_AT(IJK)) THEN 
+         IF (.NOT.WALL_AT(IJK)) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
             K = K_OF(IJK) 

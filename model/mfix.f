@@ -167,7 +167,8 @@
 !
 !  Write the initial part of the standard output file
 !
-      CALL WRITE_OUT0 
+      CALL WRITE_OUT0
+      CALL WRITE_FLAGS 
 !      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
 !//AIKEPARDBG
 !      write(*,"('(PE ',I2,'): after write_out0 in mfix')") myPE    !//AIKEPARDBG
@@ -352,6 +353,9 @@
 !  intervals of DT
 !
       CALL TIME_MARCH 
+
+!  Call user-defined subroutine after time-loop.
+      IF (CALL_USR) CALL USR3
 !
 !  Get the final value of CPU time.  The difference gives the
 !  CPU time used for the computations.

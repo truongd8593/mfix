@@ -45,6 +45,7 @@
       USE indices
       USE scales 
       USE energy
+      USE scalars
       USE compar        !//d
       USE sendrecv      !//d
       IMPLICIT NONE
@@ -178,6 +179,12 @@
                               NMAX(0)) = IC_X_G(L,:NMAX(0)) 
                            N = NMAX(0) + 1 
                         ENDIF 
+			
+                        IF (NScalar > 0) THEN 
+                           WHERE (IC_Scalar(L,:NScalar) /= UNDEFINED)&
+			     Scalar(IJK,:NScalar) = IC_Scalar(L,:NScalar) 
+                        ENDIF 
+			
                         IF (UGX /= UNDEFINED) U_G(IJK) = UGX 
                         IF (VGX /= UNDEFINED) V_G(IJK) = VGX 
                         IF (WGX /= UNDEFINED) W_G(IJK) = WGX 

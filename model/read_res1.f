@@ -35,7 +35,9 @@
       USE geometry
       USE physprop
       USE run
+      USE scalars
       USE funits 
+      USE energy
       USE compar      !// 001 Include MPI header file
       USE mpi_utility !//
       USE sendrecv    !//
@@ -105,6 +107,7 @@
          ELSE 
             READ (UNIT_RES, REC=NEXT_REC) TIME, NSTEP 
          ENDIF 
+         NEXT_REC = NEXT_REC + 1 
       end if
 !
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
@@ -116,74 +119,24 @@
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
 !
-      if (myPE == PE_IO) then
-        NEXT_REC = NEXT_REC + 1 
-        CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-        CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-      end if
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-      call scatter(EP_G,array2,PE_IO)
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+      call readScatterRes(EP_G,array2, array1, NEXT_REC)
 
-      if (myPE == PE_IO) then
-        CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-        CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-      end if
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-      call scatter(P_G,array2,PE_IO)
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+      call readScatterRes(P_G,array2, array1, NEXT_REC)
 
-      if (myPE == PE_IO) then
-        CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-        CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-      end if
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-      call scatter(P_STAR,array2,PE_IO)
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+      call readScatterRes(P_STAR,array2, array1, NEXT_REC)
 
-      if (myPE == PE_IO) then
-        CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-        CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-      end if
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-      call scatter(RO_G,array2,PE_IO)
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+      call readScatterRes(RO_G,array2, array1, NEXT_REC)
 
-      if (myPE == PE_IO) then
-         CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-         CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-      end if
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-      call scatter(ROP_G,array2,PE_IO)
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+      call readScatterRes(ROP_G,array2, array1, NEXT_REC)
 
-      if (myPE == PE_IO) then
-         CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-         CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-      end if
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-      call scatter(T_G,array2,PE_IO)
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-
+      call readScatterRes(T_G,array2, array1, NEXT_REC)
 !
 
       IF (VERSION_NUMBER < 1.15) THEN 
-         if (myPE == PE_IO) then
-            CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-            CALL convert_from_io_dp(array1, array2, IJKMAX2)
-         end if 
-         call MPI_barrier(MPI_COMM_WORLD,mpierr)
-         call scatter (T_s(:,1),array2,PE_IO)
-         call MPI_barrier(MPI_COMM_WORLD,mpierr)
+         call readScatterRes (T_s(:,1),array2, array1, NEXT_REC)
 
          IF (MMAX >= 2) THEN 
-            if (myPE == PE_IO) then
-               CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-               CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-            end if
-            call MPI_barrier(MPI_COMM_WORLD,mpierr)
-            call scatter (T_s(:,2),array2,PE_IO)
-            call MPI_barrier(MPI_COMM_WORLD,mpierr)
+            call readScatterRes (T_s(:,2),array2, array1, NEXT_REC)
          ELSE 
             if (myPE == PE_IO) &
                    CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
@@ -192,162 +145,66 @@
 
       IF (VERSION_NUMBER >= 1.05) THEN 
          DO N = 1, NMAX(0) 
-            if (myPE == PE_IO) then
-               CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-               CALL convert_from_io_dp(array1, array2, IJKMAX2)
-            end if 
-            call MPI_barrier(MPI_COMM_WORLD,mpierr)
-            call scatter (X_g(:,n),array2,PE_IO)
-            call MPI_barrier(MPI_COMM_WORLD,mpierr)
+            call readScatterRes (X_g(:,n),array2, array1, NEXT_REC)
          END DO 
       ENDIF 
 
-      if (myPE == PE_IO) then
-         CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-         CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-      end if
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-      call scatter(U_G, array2, PE_IO)
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-
-      if (myPE == PE_IO) then
-         CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-         CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-      end if
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-      call scatter(V_G, array2, PE_IO)
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-
-      if (myPE == PE_IO) then
-         CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-         CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-      end if
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-      call scatter(W_G, array2, PE_IO)
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-
+      call readScatterRes(U_G, array2, array1, NEXT_REC)
+      call readScatterRes(V_G, array2, array1, NEXT_REC)
+      call readScatterRes(W_G, array2, array1, NEXT_REC)
 !
       DO LC = 1, MMAX 
-
-         if (myPE == PE_IO) then
-            CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-            CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-         end if
-         call MPI_barrier(MPI_COMM_WORLD,mpierr)
-         call scatter(ROP_S(:,LC), array2, PE_IO)
-         call MPI_barrier(MPI_COMM_WORLD,mpierr)
+         call readScatterRes(ROP_S(:,LC), array2, array1, NEXT_REC)
 
          IF (VERSION_NUMBER >= 1.15) THEN
-            if (myPE == PE_IO) then
-               CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-               CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-            end if
-            call MPI_barrier(MPI_COMM_WORLD,mpierr)
-            call scatter(T_S(:,LC), array2, PE_IO)
-            call MPI_barrier(MPI_COMM_WORLD,mpierr)
+            call readScatterRes(T_S(:,LC), array2, array1, NEXT_REC)
          END IF
-
-         if (myPE == PE_IO) then
-            CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-            CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-         end if
-         call MPI_barrier(MPI_COMM_WORLD,mpierr)
-         call scatter(U_S(:,LC), array2, PE_IO)
-         call MPI_barrier(MPI_COMM_WORLD,mpierr)
-
-         if (myPE == PE_IO) then
-            CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-            CALL convert_from_io_dp(array1, array2, IJKMAX2)
-         end if
-         call MPI_barrier(MPI_COMM_WORLD,mpierr)
-         call scatter(V_S(:,LC), array2, PE_IO)
-         call MPI_barrier(MPI_COMM_WORLD,mpierr)
-
-         if (myPE == PE_IO) then
-            CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-            CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-         end if
-         call MPI_barrier(MPI_COMM_WORLD,mpierr)
-         call scatter(W_S(:,LC), array2, PE_IO)
-         call MPI_barrier(MPI_COMM_WORLD,mpierr)
+         call readScatterRes(U_S(:,LC), array2, array1, NEXT_REC)
+         call readScatterRes(V_S(:,LC), array2, array1, NEXT_REC)
+         call readScatterRes(W_S(:,LC), array2, array1, NEXT_REC)
 
          IF (VERSION_NUMBER >= 1.2) then
-            if (myPE == PE_IO) then
-               CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-               CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-            end if
-            call MPI_barrier(MPI_COMM_WORLD,mpierr)
-            call scatter(THETA_M(:,LC), array2, PE_IO)
-            call MPI_barrier(MPI_COMM_WORLD,mpierr)
+            call readScatterRes(THETA_M(:,LC), array2, array1, NEXT_REC)
          end if
          IF (VERSION_NUMBER >= 1.05) THEN 
             DO N = 1, NMAX(LC) 
-               if (myPE == PE_IO) then
-                  CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-                  CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-               end if
-               call MPI_barrier(MPI_COMM_WORLD,mpierr)
-               call scatter(X_S(:,LC,N), array2, PE_IO)
-               call MPI_barrier(MPI_COMM_WORLD,mpierr)
+               call readScatterRes(X_S(:,LC,N), array2, array1, NEXT_REC)
             END DO 
          ENDIF 
       END DO 
+
+      IF (VERSION_NUMBER >= 1.3) THEN
+        DO N = 1, NScalar 
+          call readScatterRes(Scalar(:,N), array2, array1, NEXT_REC)
+        END DO 
+      ENDIF
+
+      IF (VERSION_NUMBER >= 1.4) THEN
+        call readScatterRes(GAMA_RG, array2, array1, NEXT_REC)
+ 
+        call readScatterRes(T_RG, array2, array1, NEXT_REC)
+
+        DO LC = 1, MMAX 
+          call readScatterRes(GAMA_RS(1,LC), array2, array1, NEXT_REC)
+
+          call readScatterRes(T_RS(1,LC), array2, array1, NEXT_REC)
+
+        ENDDO 
+      ELSE
+        GAMA_RG(:)   = ZERO
+        T_RG (:)     = ZERO
+        GAMA_RS(:,:) = ZERO
+        T_RS(:,:)    = ZERO
+      ENDIF
+
+!------------------------------------------------------------------------
+!
 
 
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
       deallocate( array1 )
       deallocate( array2 )
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
-
-!    else
-
-!//TD need bcast_0c   call bcast(VERSION, PE_IO)        !//PAR_I/O BCAST0c (recv)
-!//TD need bcast_0c	  call bcast(VERSION_NUMBER, PE_IO) !//PAR_I/O BCAST0r (recv)
-!      call bcast(TIME, PE_IO)        !//PAR_I/O BCAST0d (recv)
-!      call bcast(NSTEP, PE_IO)       !//PAR_I/O BCAST0i (recv)
-!      if (VERSION_NUMBER >= 1.12) &
-!         call bcast(DT, PE_IO)       !//PAR_I/O BCAST0d	(recv)
-
-!      call gather(EP_G,dGTEMP2,PE_IO)   !//PAR_I/O GATHER1d
-!      call gather(P_G,dGTEMP2,PE_IO)    !//PAR_I/O GATHER1d
-!      call gather(P_STAR,dGTEMP2,PE_IO) !//PAR_I/O GATHER1d
-!      call gather(RO_G,dGTEMP2,PE_IO)   !//PAR_I/O GATHER1d
-!      call gather(ROP_G,dGTEMP2,PE_IO)  !//PAR_I/O GATHER1d
-!      call gather(T_G,dGTEMP2,PE_IO)    !//PAR_I/O GATHER1d
-!      if (MMAX < 2) then 
-!        call gather(tmp,dGTEMP2,PE_IO)  !//PAR_I/O GATHER1d
-!      endif
-!      call gather(T_S,dGTEMP3,PE_IO)    !//PAR_I/O GATHER2d
-
-!      if (VERSION_NUMBER >= 1.05) then
-!         call gather(X_G, dGTEMP3, PE_IO)     !//PAR_I/O GATHER2d
-!      endif
-
-!      call gather(U_G,dGTEMP2,PE_IO)   !//PAR_I/O GATHER1d
-!      call gather(V_G,dGTEMP2,PE_IO)   !//PAR_I/O GATHER1d
-!      call gather(W_G,dGTEMP2,PE_IO)   !//PAR_I/O GATHER1d
-
-!      DO LC = 1, MMAX 
- !        call gather(ROP_S, dGTEMP3, PE_IO)        !//PAR_I/O GATHER2d
-
-!         IF (VERSION_NUMBER >= 1.15) THEN
-!            call gather(T_S, dGTEMP3, PE_IO)        !//PAR_I/O GATHER2d
- !        END IF
-!         call gather(U_S, dGTEMP3, PE_IO)        !//PAR_I/O GATHER2d
-!         call gather(V_S, dGTEMP3, PE_IO)        !//PAR_I/O GATHER2d
-!         call gather(W_S, dGTEMP3, PE_IO)        !//PAR_I/O GATHER2d
-
-!         IF (VERSION_NUMBER >= 1.2) then
-!              call gather(THETA_M, dGTEMP3, PE_IO)     !//PAR_I/O GATHER2d
-!         end if
-!         IF (VERSION_NUMBER >= 1.05) THEN 
-!            DO N = 1, NMAX(LC) 
-!               call gather(X_S, dGTEMP4, PE_IO)        !//PAR_I/O GATHER2d
-!            END DO 
-!         ENDIF 
-!      END DO
-
-!    endif
 
 
 !//SP
@@ -361,3 +218,25 @@
 
       RETURN  
       END SUBROUTINE READ_RES1 
+      
+      subroutine readScatterRes(VAR, array2, array1, NEXT_REC)
+        USE geometry
+        USE funits 
+        USE compar           !//
+        USE mpi_utility      !//d pnicol : for gather
+        USE sendrecv         !//d pnicol : for gather
+        IMPLICIT NONE
+        double precision, dimension(ijkmax2) :: array1       
+        double precision, dimension(ijkmax3) :: array2     
+        double precision, dimension(DIMENSION_3) :: VAR
+        INTEGER :: NEXT_REC 
+	    
+        if (myPE == PE_IO) then
+          CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+          CALL convert_from_io_dp(array1, array2, IJKMAX2) 
+        end if
+        call MPI_barrier(MPI_COMM_WORLD,mpierr)
+        call scatter(VAR, array2, PE_IO)
+        call MPI_barrier(MPI_COMM_WORLD,mpierr)
+      
+      End subroutine readScatterRes

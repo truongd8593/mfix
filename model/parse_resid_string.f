@@ -65,19 +65,6 @@
 !
 !
 !
-! Initialize resid_prefix
-!
-!
-      RESID_PREFIX(1) = 'P' 
-      RESID_PREFIX(2) = 'R' 
-      RESID_PREFIX(3) = 'U' 
-      RESID_PREFIX(4) = 'V' 
-      RESID_PREFIX(5) = 'W' 
-      RESID_PREFIX(6) = 'T' 
-      RESID_PREFIX(7) = 'G' 
-      RESID_PREFIX(8) = 'X' 
-!
-!
 !
 !  If user did not define any residual strings use default values
 !
@@ -128,14 +115,5 @@
               + ICHAR(RESID_STRING(L)(4:4)) - 48 - 1 
          ENDIF 
       END DO 
-      
-!//AIKEPARDBG      
-!      write(*,"('(PE ',I2,'): reached eof parse_residual_string')") myPE    !//AIKEPARDBG
-!      write(UNIT_LOG,*) 'RESID_PREFIX:',RESID_PREFIX
-!      write(UNIT_LOG,*) 'RESID_STRING:',RESID_STRING
-!      write(UNIT_LOG,*) 'STRING_DEFINED:',STRING_DEFINED
-!      write(UNIT_LOG,*) 'RESID_INDEX:',RESID_INDEX        
-!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-      
       RETURN  
       END SUBROUTINE PARSE_RESID_STRING 

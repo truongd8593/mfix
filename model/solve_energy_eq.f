@@ -194,6 +194,10 @@
 !
       CALL SOLVE_LIN_EQ ('T_g', T_G, A_M, B_M, 0, LEQI, LEQM, &
 	                     LEQ_SWEEP(6), LEQ_TOL(6),IER)  
+
+!       bound the temperature
+         T_g(:) = MIN(TMAX, MAX(TMIN, T_g(:))) 
+
 !        call out_array(T_g, 'T_g')
 !
       DO M = 1, MMAX 
@@ -205,6 +209,10 @@
 !
          CALL SOLVE_LIN_EQ ('T_s', T_S(1,M), A_M, B_M, M, LEQI, LEQM, &
 	                     LEQ_SWEEP(6), LEQ_TOL(6),IER) 
+
+!       bound the temperature
+         T_s(:, M) = MIN(TMAX, MAX(TMIN, T_s(:, M))) 
+
       END DO 
       
       call unlock_ambm

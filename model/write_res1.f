@@ -35,8 +35,10 @@
       USE geometry
       USE physprop
       USE run
+      USE scalars
       USE funits 
       USE output
+      USE energy
       USE compar           !//
       USE mpi_utility      !//d pnicol : for gather
       USE sendrecv         !//d pnicol : for gather
@@ -102,154 +104,76 @@
       call send_recv(W_S,2)
       call send_recv(THETA_M,2)
       call send_recv(X_S,2)
+      call send_recv(Scalar,2)
+      call send_recv(GAMA_RG,2)
+      call send_recv(T_RG,2)
+      call send_recv(GAMA_RS,2)
+      call send_recv(T_RS,2)
 
 
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      call gather (EP_g,array2,root)  !//d pnicol
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      if (myPE.eq.PE_IO) then
-         call convert_to_io_dp(array2,array1,ijkmax2)  
-         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-      end if
+      call gatherWriteRes (EP_g,array2, array1, NEXT_REC)  !//d pnicol
 !
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      call gather (P_g,array2,root)  !//d pnicol
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      if (myPE.eq.PE_IO) then
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC)
-      end if 
+      call gatherWriteRes (P_g,array2, array1, NEXT_REC)  !//d pnicol
 !
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      call gather (P_star,array2,root)  !//d pnicol
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      if (myPE.eq.PE_IO) then
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-      end if
+      call gatherWriteRes (P_star,array2, array1, NEXT_REC)  !//d pnicol
 !
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      call gather (RO_g,array2,root)  !//d pnicol
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      if (myPE.eq.PE_IO) then
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-      end if
+      call gatherWriteRes (RO_g,array2, array1, NEXT_REC)  !//d pnicol
 !
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      call gather (ROP_g,array2,root)  !//d pnicol
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      if (myPE.eq.PE_IO) then
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-      end if
+      call gatherWriteRes (ROP_g,array2, array1, NEXT_REC)  !//d pnicol
 !
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      call gather (T_g,array2,root)  !//d pnicol
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      if (myPE.eq.PE_IO) then
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC)
-      end if 
+      call gatherWriteRes (T_g,array2, array1, NEXT_REC)  !//d pnicol
 !
       DO N = 1, NMAX(0) 
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         call gather (X_g(:,n),array2,root)  !//d pnicol
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         if (myPE.eq.PE_IO) then
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-         end if
+            call gatherWriteRes (X_g(:,n),array2, array1, NEXT_REC)  !//d pnicol
       END DO 
 !
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      call gather (U_g,array2,root)  !//d pnicol
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      if (myPE.eq.PE_IO) then
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-      end if
+      call gatherWriteRes (U_g,array2, array1, NEXT_REC)  !//d pnicol
 !
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      call gather (V_g,array2,root)  !//d pnicol
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      if (myPE.eq.PE_IO) then
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-      end if
+      call gatherWriteRes (V_g,array2, array1, NEXT_REC)  !//d pnicol
 !
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      call gather (W_g,array2,root)  !//d pnicol
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      if (myPE.eq.PE_IO) then
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-      end if
+      call gatherWriteRes (W_g,array2, array1, NEXT_REC)  !//d pnicol
 !
       DO LC = 1, MMAX 
 !
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         call gather (ROP_s(:,LC),array2,root)  !//d pnicol
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         if (myPE.eq.PE_IO) then
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_512 (UNIT_RES,array1 , IJKMAX2, NEXT_REC) 
-         end if
+        call gatherWriteRes (ROP_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
+        
 !
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         call gather (T_s(:,LC),array2,root)  !//d pnicol
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         if (myPE.eq.PE_IO) then
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_512 (UNIT_RES,array1 , IJKMAX2, NEXT_REC) 
-         end if
+        call gatherWriteRes (T_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         call gather (U_s(:,LC),array2,root)  !//d pnicol
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         if (myPE.eq.PE_IO) then
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_512 (UNIT_RES,array1, IJKMAX2, NEXT_REC) 
-         end if
+        call gatherWriteRes (U_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         call gather (V_s(:,LC),array2,root)  !//d pnicol
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         if (myPE.eq.PE_IO) then
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_512 (UNIT_RES,array1 , IJKMAX2, NEXT_REC) 
-         end if
+        call gatherWriteRes (V_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         call gather (W_s(:,LC),array2,root)  !//d pnicol
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         if (myPE.eq.PE_IO) then
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_512 (UNIT_RES,array1, IJKMAX2, NEXT_REC) 
-         end if
+        call gatherWriteRes (W_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         call gather (THETA_M(:,LC),array2,root)  !//d pnicol
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-         if (myPE.eq.PE_IO) then
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_512 (UNIT_RES,array1 , IJKMAX2, NEXT_REC) 
-         end if
+        call gatherWriteRes (THETA_M(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !
          DO N = 1, NMAX(LC) 
-            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-            call gather (X_s(:,LC,N),array2,root)  !//d pnicol
-            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-            if (myPE.eq.PE_IO) then
-               call convert_to_io_dp(array2,array1,ijkmax2)
-               CALL OUT_BIN_512 (UNIT_RES,array1, IJKMAX2, NEXT_REC) 
-            end if
+            call gatherWriteRes (X_s(:,LC,N),array2, array1, NEXT_REC)  !//d pnicol
          END DO 
       END DO 
+!
+!     Version 1.3
+
+      DO LC = 1, NScalar 
+            call gatherWriteRes (Scalar(:,LC),array2, array1, NEXT_REC)  !//d pnicol
+      END DO
+!
+!     Version 1.4 -- write radiation variables in write_res1 
+      call gatherWriteRes (GAMA_RG,array2, array1, NEXT_REC)  !//d pnicol
+ 
+      call gatherWriteRes (T_RG,array2, array1, NEXT_REC)  !//d pnicol
+
+      DO LC = 1, MMAX 
+        call gatherWriteRes (GAMA_RS(1,LC),array2, array1, NEXT_REC)  !//d pnicol
+
+        call gatherWriteRes (T_RS(1,LC),array2, array1, NEXT_REC)  !//d pnicol
+      ENDDO 
+
+!--------------------------------------------------------------------- 
+ 
       if (myPE.eq.PE_IO) CALL FLUSH (UNIT_RES) 
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!
-!//d pnicol      call unlock_tmp_array
 !
       deallocate (array1)  !//d pnicol
       deallocate (array2)  !//d pnicol
@@ -257,3 +181,26 @@
 !
       RETURN  
       END SUBROUTINE WRITE_RES1 
+      
+      subroutine gatherWriteRes(VAR, array2, array1, NEXT_REC)
+        USE geometry
+        USE funits 
+        USE compar           !//
+        USE mpi_utility      !//d pnicol : for gather
+        USE sendrecv         !//d pnicol : for gather
+        IMPLICIT NONE
+        double precision, dimension(ijkmax2) :: array1       
+        double precision, dimension(ijkmax3) :: array2     
+        double precision, dimension(DIMENSION_3) :: VAR    
+        INTEGER :: NEXT_REC 
+
+        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+        call gather (VAR,array2,root)  !//d pnicol
+        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+        if (myPE.eq.PE_IO) then
+           call convert_to_io_dp(array2,array1,ijkmax2)  
+           CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+        end if
+      
+      End subroutine gatherWriteRes
+      

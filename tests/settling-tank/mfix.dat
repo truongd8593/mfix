@@ -13,8 +13,9 @@
   ENERGY_EQ = .FALSE.    ! do not solve energy equations
   SPECIES_EQ = .FALSE.  .FALSE.
 
-  TIME = 0.0 ,  TSTOP = 30.0
-  DT = 1.0E-4
+#  TIME = 0.0   TSTOP = 30.  DT = 1.0E-4
+  TIME = 0.0    TSTOP = 1.0E-5  DT = 1.0E-5
+  
 
 #
 # GEOMETRY SECTION
@@ -91,7 +92,7 @@
          !  EP_g     P_g     U_g   U_s   ROP_s  T_g      X_g
          !           P_star  V_g   V_s          T_s      X_s       G
          !                   W_g   W_s           
-   SPX_DT = 0.1     0.1     0.1   0.1   100.    100.       100.   100.
+   SPX_DT = 0.1     0.1     0.1   0.1   100.    100.       100.   100.  100.
 
    NLOG = 25
 

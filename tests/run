@@ -1,7 +1,11 @@
+#!/bin/csh -f
+echo
 #***********************************************************************************
 # First case
 #***********************************************************************************
 cd cond_conv
+echo "********************************************************************"
+echo "cond_conv"
 #
 # 1 Processor
 #
@@ -11,7 +15,6 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 1 mfix.exe > outrun
 #
@@ -25,8 +28,6 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
-ln -s mfix.dat mfix001.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 2 mfix.exe > outrun
 #
@@ -42,6 +43,8 @@ cd ../
 # Another case
 #***********************************************************************************
 cd conduction
+echo "********************************************************************"
+echo "conduction"
 #
 # 1 Processor
 #
@@ -51,7 +54,6 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 1 mfix.exe > outrun
 #
@@ -65,8 +67,6 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
-ln -s mfix.dat mfix001.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 2 mfix.exe > outrun
 #
@@ -82,6 +82,8 @@ cd ../
 # Another case
 #***********************************************************************************
 cd developed_pipe_flow
+echo "********************************************************************"
+echo "developed_pipe_flow"
 #
 # 1 Processor
 #
@@ -91,7 +93,6 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 1 mfix.exe > outrun
 #
@@ -105,8 +106,6 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
-ln -s mfix.dat mfix001.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 2 mfix.exe > outrun
 #
@@ -121,6 +120,8 @@ cd ../
 #***********************************************************************************
 # Another case
 cd developed_slit_flow
+echo "********************************************************************"
+echo "developed_slit_flow"
 #
 # 1 Processor
 #
@@ -130,7 +131,6 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 1 mfix.exe > outrun
 #
@@ -144,8 +144,6 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
-ln -s mfix.dat mfix001.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 2 mfix.exe > outrun
 #
@@ -161,6 +159,8 @@ cd ../
 # Another case
 #***********************************************************************************
 cd dmp_test
+echo "********************************************************************"
+echo "dmp_test"
 #
 # 1 Processor
 #
@@ -170,7 +170,6 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 1 mfix.exe > outrun
 #
@@ -184,8 +183,6 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
-ln -s mfix.dat mfix001.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 2 mfix.exe > outrun
 #
@@ -202,6 +199,8 @@ cd ../
 #***********************************************************************************
 #***********************************************************************************
 cd dmp_test_cyclic
+echo "********************************************************************"
+echo "dmp_test_cyclic"
 #
 # 1 Processor
 #
@@ -211,7 +210,6 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 1 mfix.exe > outrun
 #
@@ -225,8 +223,6 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
-ln -s mfix.dat mfix001.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 2 mfix.exe > outrun
 #
@@ -242,6 +238,8 @@ cd ../
 # Another case
 #***********************************************************************************
 cd driven-cavity
+echo "********************************************************************"
+echo "driven-cavity"
 #
 # 1 Processor
 #
@@ -251,7 +249,6 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 1 mfix.exe > outrun
 #
@@ -265,8 +262,6 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
-ln -s mfix.dat mfix001.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 2 mfix.exe > outrun
 #
@@ -282,6 +277,8 @@ cd ../
 # Another case
 #***********************************************************************************
 cd granular_shear
+echo "********************************************************************"
+echo "granular_shear"
 #
 # 1 Processor
 #
@@ -291,7 +288,6 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 1 mfix.exe > outrun
 #
@@ -305,49 +301,6 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
-ln -s mfix.dat mfix001.dat
-/bin/cp ../../mfix.exe .
-mpirun -np 2 mfix.exe > outrun
-#
-cd ../
-#
-# Diff the results
-#
-diff 1proc/*.OUT 2proc/*.OUT > outdiff
-#
-cd ../
-#
-#***********************************************************************************
-# Another case
-#***********************************************************************************
-#***********************************************************************************
-cd rotary-drum
-#
-# 1 Processor
-#
-/bin/rm -r 1proc
-mkdir 1proc
-cd 1proc
-/bin/cp ../mfix.dat mfix.dat.bak
-/bin/rm mfix00*.dat
-awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
-/bin/cp ../../mfix.exe .
-mpirun -np 1 mfix.exe > outrun
-#
-cd ../
-#
-# 2 processors
-#
-/bin/rm -r 2proc
-mkdir 2proc
-cd 2proc
-/bin/cp ../mfix.dat mfix.dat.bak
-/bin/rm mfix00*.dat
-awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
-ln -s mfix.dat mfix001.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 2 mfix.exe > outrun
 #
@@ -363,6 +316,8 @@ cd ../
 #***********************************************************************************
 #***********************************************************************************
 cd settling-tank
+echo "********************************************************************"
+echo "settling-tank"
 #
 # 1 Processor
 #
@@ -372,7 +327,6 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 1 mfix.exe > outrun
 #
@@ -386,8 +340,6 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
-ln -s mfix.dat mfix001.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 2 mfix.exe > outrun
 #
@@ -403,6 +355,8 @@ cd ../
 #***********************************************************************************
 #***********************************************************************************
 cd simple-2phase
+echo "********************************************************************"
+echo "simple-2phase"
 #
 # 1 Processor
 #
@@ -412,7 +366,6 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 1 mfix.exe > outrun
 #
@@ -426,8 +379,6 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-ln -s mfix.dat mfix000.dat
-ln -s mfix.dat mfix001.dat
 /bin/cp ../../mfix.exe .
 mpirun -np 2 mfix.exe > outrun
 #
@@ -442,3 +393,4 @@ cd ../
 #***********************************************************************************
 # Testing Over
 #***********************************************************************************
+echo "Testing is over.  Check outdiff file for differences"

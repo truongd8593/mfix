@@ -14,9 +14,9 @@
 !     6   T
 !     7   X
 !     8   Th
-!
+!     9   S	
 !                      Under relaxation factors
-      DOUBLE PRECISION UR_FAC(8)
+      DOUBLE PRECISION UR_FAC(9)
 !
 !
       INTEGER           STEPS_LAST

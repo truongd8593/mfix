@@ -36,6 +36,7 @@
       USE geometry
       USE indices
       USE physprop
+      USE scalars
       USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
@@ -110,6 +111,20 @@
                   ENDIF 
                   P_STAR(IJK) = P_STAR(LFLUID) 
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE 
+		  
+		  DO N = 1, NScalar
+		    M = Phase4Scalar(N)
+		    IF(M == 0)Then
+                      IF (U_G(LFLUID)>=ZERO) THEN 
+		        Scalar(IJK, N) = Scalar(LFLUID, N)
+		      ENDIF
+		    Else
+                      IF (U_s(LFLUID, M)>=ZERO) THEN 
+		        Scalar(IJK, N) = Scalar(LFLUID, N)
+		      ENDIF
+		    Endif
+		  END DO
+		  
                   DO M = 1, MMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (U_S(LFLUID,M) >= ZERO) THEN 
@@ -169,6 +184,20 @@
                   ENDIF 
                   P_STAR(IJK) = P_STAR(LFLUID) 
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE 
+		  
+		  DO N = 1, NScalar
+		    M = Phase4Scalar(N)
+		    IF(M == 0)Then
+                      IF (U_G(LFLUID) <= ZERO) THEN 
+		        Scalar(IJK, N) = Scalar(LFLUID, N)
+		      ENDIF
+		    Else
+                      IF (U_s(LFLUID, M) <= ZERO) THEN 
+		        Scalar(IJK, N) = Scalar(LFLUID, N)
+		      ENDIF
+		    Endif
+		  END DO
+		  
                   DO M = 1, MMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (U_S(IJK,M) <= ZERO) THEN 
@@ -229,6 +258,20 @@
                   ENDIF 
                   P_STAR(IJK) = P_STAR(LFLUID) 
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE 
+		  
+		  DO N = 1, NScalar
+		    M = Phase4Scalar(N)
+		    IF(M == 0)Then
+                      IF (V_G(LFLUID) >= ZERO) THEN 
+		        Scalar(IJK, N) = Scalar(LFLUID, N)
+		      ENDIF
+		    Else
+                      IF (V_s(LFLUID, M) >= ZERO) THEN 
+		        Scalar(IJK, N) = Scalar(LFLUID, N)
+		      ENDIF
+		    Endif
+		  END DO
+		  
                   DO M = 1, MMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (V_S(LFLUID,M) >= 0.) THEN 
@@ -282,6 +325,20 @@
                   ENDIF 
                   P_STAR(IJK) = P_STAR(LFLUID) 
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE 
+		  
+		  DO N = 1, NScalar
+		    M = Phase4Scalar(N)
+		    IF(M == 0)Then
+                      IF (V_G(LFLUID) <= ZERO) THEN 
+		        Scalar(IJK, N) = Scalar(LFLUID, N)
+		      ENDIF
+		    Else
+                      IF (V_s(LFLUID, M) <= ZERO) THEN 
+		        Scalar(IJK, N) = Scalar(LFLUID, N)
+		      ENDIF
+		    Endif
+		  END DO
+		  
                   DO M = 1, MMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (V_S(IJK,M) <= ZERO) THEN 
@@ -338,6 +395,20 @@
                   ENDIF 
                   P_STAR(IJK) = P_STAR(LFLUID) 
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE 
+		  
+		  DO N = 1, NScalar
+		    M = Phase4Scalar(N)
+		    IF(M == 0)Then
+                      IF (W_G(LFLUID) >= ZERO) THEN 
+		        Scalar(IJK, N) = Scalar(LFLUID, N)
+		      ENDIF
+		    Else
+                      IF (W_s(LFLUID, M) >= ZERO) THEN 
+		        Scalar(IJK, N) = Scalar(LFLUID, N)
+		      ENDIF
+		    Endif
+		  END DO
+		  
                   DO M = 1, MMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (W_S(LFLUID,M) >= 0.) THEN 
@@ -391,6 +462,20 @@
                   ENDIF 
                   P_STAR(IJK) = P_STAR(LFLUID) 
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE 
+		  
+		  DO N = 1, NScalar
+		    M = Phase4Scalar(N)
+		    IF(M == 0)Then
+                      IF (W_G(LFLUID) <= ZERO) THEN 
+		        Scalar(IJK, N) = Scalar(LFLUID, N)
+		      ENDIF
+		    Else
+                      IF (W_s(LFLUID, M) <= ZERO) THEN 
+		        Scalar(IJK, N) = Scalar(LFLUID, N)
+		      ENDIF
+		    Endif
+		  END DO
+		  
                   DO M = 1, MMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (W_S(IJK,M) <= ZERO) THEN 

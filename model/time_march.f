@@ -52,6 +52,9 @@
       USE visc_g
       USE visc_s
       USE funits 
+      USE vshear
+      USE scalars
+      USE drag
       USE compar               !//d
       IMPLICIT NONE
 !-----------------------------------------------
@@ -104,7 +107,7 @@
       INTEGER          NIT 
 ! 
 !                      used for activating check_data_30 
-      INTEGER          NCHECK, DNCHECK 
+      INTEGER          NCHECK, DNCHECK,ijk 
 ! 
 !                      dummy logical variable for initializing adjust_dt 
       LOGICAL          dummy 
@@ -144,6 +147,7 @@
          M = MMAX + 1 
       ENDIF 
       DISK(8) = MMAX*DISK_ONE 
+      DISK(9) = NScalar*DISK_ONE
 !
 !
 !
@@ -152,16 +156,16 @@
          RES_TIME = TIME 
          SPX_TIME(:N_SPX) = TIME 
          L = N_SPX + 1 
-       ELSE 
+      ELSE 
          IF (DT /= UNDEFINED) THEN 
             RES_TIME = (INT((TIME + 0.1*DT)/RES_DT) + 1)*RES_DT 
             SPX_TIME(:N_SPX) = (INT((TIME + 0.1*DT)/SPX_DT(:N_SPX))+1)*SPX_DT(:&
                N_SPX) 
             L = N_SPX + 1 
          ENDIF 
-       ENDIF 
+      ENDIF 
 !
-       DO L = 1, DIMENSION_USR 
+      DO L = 1, DIMENSION_USR 
          USR_TIME(L) = UNDEFINED 
          IF (USR_DT(L) /= UNDEFINED) THEN 
             IF (RUN_TYPE == 'NEW') THEN 
@@ -185,11 +189,6 @@
 !   Parse residual strings
 !
       CALL PARSE_RESID_STRING (IER) 
-!
-!  Initialization for the linear equation solver igcg
-!
-!//? ORNL: could you please check the NCOL,NAREA, NVOL settings in this routine
-      CALL IGCG_INIT 
 !
 !  Call user-defined subroutine to set constants, check data, etc.
 !
@@ -240,6 +239,9 @@
 !        call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 !     endif                     !//AIKEPARDBG
 
+      DO M=1, MMAX 
+        CALL ZERO_ARRAY (F_gs(1,M), IER)
+      END DO
 
             
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
@@ -283,6 +285,12 @@
 !   Initialize adjust_ur
  
       dummy = ADJUST_DT(100, 0)
+
+! calculate shear velocities if periodic shear BCs are used
+       IF (SHEAR) THEN
+	call CAL_D(V_sh)
+       END IF
+
 
 !
 !  The TIME loop begins here.............................................

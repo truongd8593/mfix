@@ -375,13 +375,16 @@ C
          IF (LINE(I:I+3).EQ.'USE ' .OR.
      &       LINE(I:I+3).EQ.'Use ' .or. 
      &       LINE(I:I+3).EQ.'use ' ) then
-             iq1 = i + 4
-100          DO J = IQ1+1,60
-                IF (LINE(J:J).EQ.' ' .or.LINE(J:J).EQ.',') THEN
-                   IQ2 = J
-                   GOTO 200
-                END IF
-             END DO
+             If(i .EQ. 1 .OR. LINE(I-1:I-1) .EQ. ' '
+     &	          .OR. LINE(I-1:I-1) .EQ. '	')then
+               iq1 = i + 4
+100            DO J = IQ1+1,60
+                  IF (LINE(J:J).EQ.' ' .or.LINE(J:J).EQ.',') THEN
+                     IQ2 = J
+                     GOTO 200
+                  END IF
+               END DO
+	     ENDIF
          END IF
       END DO
       RETURN

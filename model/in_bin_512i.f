@@ -160,7 +160,7 @@
 !
       implicit none
 !
-      character*3   arr_io(*) , arr_internal(*)
+      character*4   arr_io(*) , arr_internal(*)
       integer       n,i,j,k,ijk,ijk_io
 !
       include 'function.inc'

@@ -270,15 +270,24 @@
       INTEGER          IMJK, IJMK, IJKM 
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      
+
+! loezos
+	INTEGER incr
+! loezos      
+
        call lock_xsi_array
      
 !
 !
 !  Calculate convection factors
 !
+
+! loezos
+	 incr=0
+! loezos
+
       CALL CALC_XSI (DISCRETIZE(2), ROP_S(1,M), U_S(1,M), V_S(1,M), W_S(1,M), &
-         XSI_E, XSI_N, XSI_T) 
+         XSI_E, XSI_N, XSI_T,incr) 
 !
 !     Calculate convection-diffusion fluxes through each of the faces
 !

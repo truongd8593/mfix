@@ -190,3 +190,10 @@
       subroutine pc_quickwin
       return
       end
+!
+      subroutine flush_bin(iunit,code)
+      implicit none
+      integer :: iunit , code
+      call flush(iunit)
+      return
+      end

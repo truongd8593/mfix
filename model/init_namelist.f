@@ -47,6 +47,7 @@
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
+
       USE param 
       USE param1 
       USE run
@@ -104,6 +105,9 @@
       ENERGY_EQ = .TRUE.
       DEF_COR  =  .FALSE. 
       GRANULAR_ENERGY = .FALSE. 
+! start peter 7/15
+      V_sh=0d0
+!
 !
 ! start anuj 04/20
 !
@@ -111,7 +115,13 @@
       SAVAGE = 1 
 ! end anuj 04/20
 !
-      IF (DIM_M + 1 > 0) THEN 
+ 
+! start loezos 
+!
+       SHEAR = .FALSE.
+! end loezos  
+	
+     IF (DIM_M + 1 > 0) THEN 
          MOMENTUM_X_EQ(:DIM_M) = .TRUE. 
          MOMENTUM_Y_EQ(:DIM_M) = .TRUE. 
          MOMENTUM_Z_EQ(:DIM_M) = .TRUE. 
@@ -127,6 +137,7 @@
       DISCRETIZE(6) = 0 
       DISCRETIZE(7) = 0 
       DISCRETIZE(8) = 0 
+      DISCRETIZE(9) = 0 
 !
 ! INITIALIZE THE OUTPUT CONTROL SECTION
 !
@@ -203,6 +214,7 @@
       LEQ_IT(6) = 15 
       LEQ_IT(7) = 15
       LEQ_IT(8) = 15
+      LEQ_IT(9) = 15
       LEQ_METHOD(1) = 2 
       LEQ_METHOD(2) = 1 
       LEQ_METHOD(3) = 1 
@@ -211,6 +223,7 @@
       LEQ_METHOD(6) = 2 
       LEQ_METHOD(7) = 2 
       LEQ_METHOD(8) = 2 
+      LEQ_METHOD(9) = 1 
       LEQ_SWEEP(1) = 'II' 
       LEQ_SWEEP(2) = 'II'  
       LEQ_SWEEP(3) = 'II' 
@@ -219,6 +232,7 @@
       LEQ_SWEEP(6) = 'II'  
       LEQ_SWEEP(7) = 'II' 
       LEQ_SWEEP(8) = 'II'  
+      LEQ_SWEEP(9) = 'II'  
       LEQ_TOL(1) = 1.0D-4 
       LEQ_TOL(2) = 1.0D-4  
       LEQ_TOL(3) = 1.0D-4 
@@ -227,6 +241,7 @@
       LEQ_TOL(6) = 1.0D-4  
       LEQ_TOL(7) = 1.0D-4 
       LEQ_TOL(8) = 1.0D-4  
+      LEQ_TOL(9) = 1.0D-4  
       UR_FAC(1) = 0.8                            !pressure 
       UR_FAC(2) = 0.5                            !rho, ep 
       UR_FAC(3) = 0.5                            !U 
@@ -235,6 +250,7 @@
       UR_FAC(6) = 0.8                            !T 
       UR_FAC(7) = 0.75                           !X 
       UR_FAC(8) = 0.5                            !Th 
+      UR_FAC(8) = 0.9                            !Scalar
 !
 ! INITIALIZE THE GAS PHASE SECTION
 !

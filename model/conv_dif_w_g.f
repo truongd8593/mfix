@@ -428,7 +428,11 @@
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
-      
+ 
+! loezos
+	INTEGER incr
+! loezos
+     
       call lock_tmp_array
       call lock_xsi_array
 
@@ -470,7 +474,13 @@
 !           Top face (i, j, k+1)
          WW(IJK) = AVG_Z_T(W_G(IJK),W_G(IJKP)) 
       END DO 
-      CALL CALC_XSI (DISCRETIZE(5), W_G, U, V, WW, XSI_E, XSI_N, XSI_T) 
+
+! loezos
+	incr=0		
+! loezos
+
+      CALL CALC_XSI (DISCRETIZE(5), W_G, U, V, WW, XSI_E, XSI_N,&
+	 XSI_T,incr) 
 !
 !
 !
@@ -657,6 +667,7 @@
       USE physprop
       USE fldvar
       USE output
+      USE vshear
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar     !//d
@@ -697,7 +708,11 @@
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
-      
+
+! loezos
+	INTEGER incr
+! loezos     
+
       call lock_tmp_array
       call lock_xsi_array
 
@@ -738,7 +753,26 @@
 !           Top face (i, j, k+1)
          WW(IJK) = AVG_Z_T(W_G(IJK),W_G(IJKP)) 
       END DO 
-      CALL CALC_XSI (DISCRETIZE(5), W_G, U, V, WW, XSI_E, XSI_N, XSI_T) 
+
+! loezos
+	incr=0
+! loezos
+
+      CALL CALC_XSI (DISCRETIZE(5), W_G, U, V, WW, XSI_E, XSI_N,&
+               XSI_T,incr) 
+
+! loezos    
+! update to true velocity
+      IF (SHEAR) THEN
+!$omp parallel do private(IJK)  
+        DO IJK = 1, IJKMAX2
+         IF (FLUID_AT(IJK)) THEN  
+	   V(IJK)=V(IJK)+VSH(IJK)	
+          END IF
+        END DO
+      END IF
+! loezos
+
 !
 !
 !

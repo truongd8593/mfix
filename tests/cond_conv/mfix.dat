@@ -37,7 +37,8 @@
   NO_K     = .TRUE.
 
   MAX_NIT = 500
-  UR_FAC(6) = 1.0
+  UR_FAC(6) = 0.5
+  TOL_RESID_T = 1.0E-6
 #
 # Gas-phase Section
 #
@@ -114,7 +115,7 @@
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
         !      P_star    V_g  V_s            T_s1 X_s
         !                W_g  W_s            T_s2
-  SPX_DT = 100.  100.    100.  100. 100.     0.01  100.   100. 
+  SPX_DT = 100.  100.    100.  100. 100.     0.01  100.   100.   100.
 
   NLOG   = 25
   FULL_LOG = .TRUE.

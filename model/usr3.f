@@ -1,11 +1,10 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: USR0                                                   C
-!  Purpose: This routine is called before the time loop starts and is  C
-!           user-definable.  The user may insert code in this routine  C
-!           or call appropriate user defined subroutines.  This        C
-!           can be used for setting constants and checking errors in   C
-!           data.  This routine is not called from an IJK loop, hence  C
+!  Module name: USR3                                                   C
+!  Purpose: This routine is called after the time loop ends and is   
+!           user-definable.  The user may insert code in this routine   
+!           or call appropriate user defined subroutines.  
+!           This routine is not called from an IJK loop, hence  
 !           all indices are undefined.                                 C
 !                                                                      C
 !  Author:                                            Date: dd-mmm-yy  C
@@ -25,7 +24,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE USR0 
+      SUBROUTINE USR3 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
       Use usr
@@ -44,4 +43,4 @@
 !  Insert user-defined code here
 !
       RETURN  
-      END SUBROUTINE USR0 
+      END SUBROUTINE USR3 

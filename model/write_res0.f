@@ -56,6 +56,7 @@
       USE funits 
       USE output
       USE scales 
+      USE scalars
       USE ur_facs 
       USE leqsol 
       USE toleranc 
@@ -103,7 +104,7 @@
 !
 !     Add new data entries at the end of the file and identify version no.
 !------------------------------------------------------------------------
-      VERSION = 'RES = 01.2' 
+      VERSION = 'RES = 01.4' 
 !------------------------------------------------------------------------
 !//SP - Temporarily disabled so that the binary files can be diffed.....
 !
@@ -331,8 +332,17 @@
          CALL OUT_BIN_512 (UNIT_RES, IC_GAMA_RS(1,LC), DIMENSION_IC, NEXT_RECA) 
          CALL OUT_BIN_512 (UNIT_RES, IC_T_RS(1,LC), DIMENSION_IC, NEXT_RECA) 
       END DO 
+!
+!     Version 01.2
       WRITE (UNIT_RES, REC=NEXT_RECA) NORM_G, NORM_S 
       NEXT_RECA = NEXT_RECA + 1 
+!
+!     Version 01.3
+      WRITE (UNIT_RES, REC=NEXT_RECA) NScalar, TOL_RESID_Scalar, DIM_SCALAR  
+      NEXT_RECA = NEXT_RECA + 1 
+      CALL OUT_BIN_512I (UNIT_RES, Phase4Scalar, DIM_SCALAR, NEXT_RECA)
+!
+!     Version 1.4 -- write radiation variables in write_res1 
 !
 !  Add new write statements above this line.  Remember to update NEXT_RECA.
 !  Remember to change the version number near begining of this subroutine.

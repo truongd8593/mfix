@@ -41,6 +41,7 @@
       USE geometry
       USE indices
       USE is
+      USE vshear
       USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
@@ -97,11 +98,27 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
       INCLUDE 'b_force2.inc'
+! loezos
+       INTEGER I1,J1    
+! loezos
 !
-!
+
+
       DO M = 1, MMAX 
 
+! loezos
+! update to true velocity
+      IF (SHEAR) THEN        
+!$omp  parallel do private(IJK)
+        Do IJK= 1, IJKMAX2	 
+          IF (FLUID_AT(IJK)) THEN 
+	   V_S(IJK,m)=V_S(IJK,m)+VSH(IJK)
+          END IF
+        END DO     
+      END IF
+! loezos
 
+	
 !!$omp  parallel do private( IJK, I, IJKE, EPGA, IP, J, JM, K, KM,  &
 !!$omp&  IPJK,IMJK,IJKN,IJKNE,IJKS,IJKSE,IPJMK,IJMK,IJKT,IJKTE,  &
 !!$omp&  IJKB,IJKBE,IJKM,IPJKM, &
@@ -180,6 +197,17 @@
                TAU_U_S(IJK,M) = ZERO 
             ENDIF 
          END DO 
+! loezos 
+       IF (SHEAR) THEN
+!$omp  parallel do private(IJK) 
+        Do  IJK= 1, IJKMAX2
+          IF (FLUID_AT(IJK)) THEN  	 
+	   V_S(IJK,m)=V_S(IJK,m)-VSH(IJK)	
+	  END IF
+         END DO	
+        END IF
+! loezos      
+
       END DO 
       RETURN  
       END SUBROUTINE CALC_TAU_U_S 
