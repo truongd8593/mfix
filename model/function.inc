@@ -327,5 +327,8 @@
                            ICBC_FLAG(IJK)(1:1) .EQ. 's' .OR. &
                            ICBC_FLAG(IJK)(1:1) .EQ. 'c' .OR. &
                            ICBC_FLAG(IJK)(1:1) .EQ. 'C'
-      DEFAULT_WALL_AT(IJK) = ICBC_FLAG(IJK)(2:3) .EQ. '--'
+      DEFAULT_WALL_AT(IJK) = ICBC_FLAG(IJK)(2:3) .EQ. '--' .AND. &
+                             (ICBC_FLAG(IJK)(1:1) .NE. 'c'  .AND. &
+                             ICBC_FLAG(IJK)(1:1) .NE. 'C')
+      
       ZMAX (XXX)       = MAX(XXX, ZERO)
