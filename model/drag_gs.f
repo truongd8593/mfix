@@ -123,21 +123,44 @@
 !     
 !     Gidaspow Reynolds number
       DOUBLE PRECISION Re_g
-!     
+!
+!***********************************************************
+!     Declaration of variables relevant to the Koch and Hill
+!     drag correlation, sof
+!***********************************************************     
 !     Stokes Drag Force
       DOUBLE PRECISION F_STOKES
-!     
-!     Hill Drag Coeff 0
-      DOUBLE PRECISION F_0
-!     
-!     Hill Drag Coeff 1
-      DOUBLE PRECISION F_1
-!     
-!     Hill Drag Coeff 3
-      DOUBLE PRECISION F_3
+!
+!      zero Re function for low Reynolds number
+       DOUBLE PRECISION F_0
+!
+!      inertial function for low Reynolds number
+       DOUBLE PRECISION F_1
+!
+!      zero Re function for high Reynolds number
+       DOUBLE PRECISION F_2
+!
+!      inertial function for high Reynolds number
+       DOUBLE PRECISION F_3
+!      
+!      dimensionless drag force F
+       DOUBLE PRECISION F
+!      
+!      transition Reynolds numbers
+       DOUBLE PRECISION Re_Trans_1, Re_Trans_2
+!      
+!      solids volume fraction
+       DOUBLE PRECISION phi
+!      
+!      weighting factor to compute F_0 and F_2
+       DOUBLE PRECISION w
 !     
 !     Hill and Koch Reynolds number
       DOUBLE PRECISION Re_kh
+!
+!     End of Koch and Hill variables declaration, sof
+!***********************************************************
+!     
 !     Local Coefficients
       DOUBLE PRECISION C2_TMP, C3_TMP
 !     
@@ -313,35 +336,74 @@
 !!!   1) Declared new variables F_STOKES, F_0, F_1, F_3
 !!!   
 !!!   2) Added new drag closure lines
-!!!   
-!!!   3) Uncomment to use
+!!!
+!!!  Clay's implementation was modified by Sof (01-21-2005)
+!!!  for a report explaining these changes contact sof@fluent.com
+!
             ELSE IF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL') then
 !     
-               F_STOKES = 18*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(M)**2
-!     
-               IF(EP_s(IJK,M) .LE. 0.4 .AND. EP_s(IJK,M) .GT. SMALL_NUMBER) THEN
-                  F_0 = (1.0 + 3.0*SQRT(EP_s(IJK,M)/2.0) + (135.0/64.0)*EP_s(IJK,M)*LOG(&
-                  EP_s(IJK,M)) + 17.14*EP_s(IJK,M))/(1.0 + 0.681*EP_s(IJK,M)&
-                  - 8.48*(EP_s(IJK,M))**2 + 8.16*(EP_s(IJK,M))**3)
-               ELSE IF(EP_s(IJK,M) .GT. 0.4 .AND. EP_s(IJK,M) .LE. ONE) THEN
-                  
-                  F_0 = 10*EP_s(IJK,M)/(1-EP_s(IJK,M))**3 ! Carman (1937)
-!     
-               ELSE
-                  F_0 = ZERO
-               ENDIF
-               
-               IF(Re_kh .LT. 20)THEN
-                  F_1 = 0.11 + 5.10E-4*EXP(11.6*EP_s(IJK,M))
-                  
-                  DgA = (F_0 + F_1*Re_kh**2)*F_STOKES
-               ELSE IF(Re_kh .LT. LARGE_NUMBER)THEN
-                  F_3 = 0.0673 + 0.212*EP_s(IJK,M) + 0.0232/(1.0-EP_s(IJK,M))**5
-                  
-                  DgA = (F_0 + F_3*Re_kh)*F_STOKES
-               ELSE
-                  DgA = 0
-               ENDIF
+           F_STOKES = 18*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(M)**2
+	       
+	   phi = EP_s(IJK,M)
+	   w = EXP(-10.0*(0.4-phi)/phi)
+	   
+	   IF(phi > 0.01 .AND. phi < 0.4) THEN
+	    F_0 = (1.0-w) *                                      &
+	              (1.0 + 3.0*dsqrt(phi/2.0) + 135.0/64.0*phi &
+	                *LOG(phi) + 17.14*phi) / (1.0 + 0.681*   &
+	  	        phi - 8.48*phi*phi + 8.16*phi**3) + w *  &
+			10.0*phi/(1.0-phi)**3
+	               
+	   ELSE IF(phi >= 0.4) THEN
+	    F_0 = 10.0*phi/(1.0-phi)**3
+	   ENDIF
+	   
+	   IF(phi > 0.01 .AND. phi <= 0.1) THEN
+	    F_1 = dsqrt(2.0/phi) / 40.0
+	   ELSE IF(phi > 0.1) THEN
+	    F_1 = 0.11 + 5.1D-04 * exp(11.6*phi)
+	   ENDIF
+	   
+	   IF(phi < 0.4) THEN
+	    F_2 = (1.0-w) *                                      &
+	              (1.0 + 3.0*dsqrt(phi/2.0) + 135.0/64.0*phi &
+	                *LOG(phi) + 17.89*phi) / (1.0 + 0.681*   &
+	  	        phi - 11.03*phi*phi + 15.41*phi**3)+ w * &
+			10.0*phi/(1.0-phi)**3
+	   
+	   ELSE
+	    F_2 = 10.0*phi/(1.0-phi)**3
+	   ENDIF
+	   
+	   IF(phi < 0.0953) THEN
+	    F_3 = 0.9351*phi + 0.03667
+	   ELSE
+	    F_3 = 0.0673 + 0.212*phi +0.0232/(1.0-phi)**5
+	   ENDIF
+	   
+	   Re_Trans_1 = (F_2 - 1.0)/(3.0/8.0 - F_3)
+	   Re_Trans_2 = (F_3 + dsqrt(F_3*F_3 - 4.0*F_1 &
+	                 *(F_0-F_2))) / (2.0*F_1)
+	   
+	   IF(phi <= 0.01 .AND. Re_kh <= Re_Trans_1) THEN
+	     F = 1.0 + 3.0/8.0*Re_kh
+	   
+	   ELSE IF(phi > 0.01 .AND. Re_kh <= Re_Trans_2) THEN
+	     F = F_0 + F_1*Re_kh*Re_kh
+	   
+	  
+	   ELSE IF(phi <= 0.01 .AND. Re_kh > Re_Trans_1 .OR.        &
+	           phi >  0.01 .AND. Re_kh > Re_Trans_2) THEN
+	     F = F_2 + F_3*Re_kh
+	  
+	   ELSE
+	     F = zero
+	   ENDIF
+	   
+!  This is a check for phi (or eps_(ijk,m)) to be within physical range
+	   IF(phi < SMALL_NUMBER .OR. phi > ONE) F = zero
+	   
+	   DgA = F * F_STOKES
 !!!   
 !!!   Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
                IF(Model_B)THEN
