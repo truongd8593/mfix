@@ -217,7 +217,7 @@
 !
 !     Scale matrix to have unit diagonal
 !
-!$omp parallel do private(ijk,oam,aijmax)
+!$omp parallel do private(ijk,i,j,k,oam,aijmax)
         do k = kstart2,kend2
           do i = istart2,iend2
             do j = jstart2,jend2
@@ -2106,7 +2106,7 @@
 !
 !     Scale matrix to have unit diagonal
 !
-!$omp parallel do private(ijk,oam,aijmax)
+!$omp parallel do private(ijk,i,j,k,oam,aijmax)
         do k = kstart2,kend2
           do i = istart2,iend2
             do j = jstart2,jend2
