@@ -184,7 +184,11 @@
 	  
 
 !         Reynolds number
+            if(Mu > ZERO)then
               RE = D_P(M)*VREL*RO_G(IJK)/Mu
+	    else 
+	      RE = LARGE_NUMBER
+	    endif
 !
 !         To select one of the following models uncomment (delete) lower
 !         case c's.
