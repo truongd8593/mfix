@@ -14,8 +14,8 @@
                  MM      MM  FF            IIIIII    XX      XX
 
                     Multiphase Flow with Interphase eXchanges
-                                  Version: (V02.40)  
- _______________________________________________________________________________
+                                  Version: 4.1  
+_______________________________________________________________________________
                                NOTICE
      Neither the United States Government nor any agency thereof,
      nor any of their employees, makes any warranty, express or
@@ -34,56 +34,36 @@
       citing the appropriate papers of the developers of the submodels. 
    3. The authors would appreciate receiving any reports of bugs or other
       difficulties with the software, enhancements to the software, and
-      accounts of practical applications of this software.
-       _______________________________________________________________________________
-                  1  Setting Up and Running MFIX on a UNIX Workstation
+      accounts of practical applications of this software. _______________________________________________________________________________
+                  1  Setting Up and Running MFIX on a UNIX/LINUX Workstation
 
 
 1.1  Creating Mfix directory
 
-      1. To read MFIX from a DAT tape, go to the home directory
-      and type 
-
-           tar xvo
-                                OR
-
-         To read MFIX from a 3.5" PC diskette, (binary) FTP the
-      file on the diskette to the workstation disk and give it the
-      file name mfix.tar.Z.  Uncompress the file by typing
-
-           uncompress mfix.tar
-
-
-      Read MFIX files by typing
-
-           tar xvf mfix.tar
-
-                                 OR
-
-         Copy the attachment to the e-mail to a workstationfile 
-      called mfix.tar.Z.uu (Note that some e-mail readers will
-      automatically uudecode attachments.  So the first step below
-      may not be needed).  Decode the ASCII file into binary.
-
-           uudecode mfix.tar.Z.uu
-
-      Uncompress the file
-
-           uncompress mfix.tar
-
-      Read MFIX files by typing
-
-           tar xvf mfix.tar
-
-
+      1. To install MFIX (version m.n) from the tar file, go to the 
+         home directory and type 
+	 
+         gunzip -d mfix.m.n.tar.gz
+         tar xvf mfix.tar
 
       2. The above procedure will create a directory mfix that
-      contains four subdirectories model, post_mfix, animate_mfix,
-      and tutorials.  The subdirectory model contains the MFIX
-      program files.  The subdirectories post_mfix and
-      animate_mfix contains the files for the respective post-
-      processing programs.  The subdirectory tutorials contains
-      example problems.
+      contains the five subdirectories model, post_mfix, tests,
+      tutorials and tools:
+        subdirectory    contents
+         model          MFIX source files
+	 post_mfix      post_mfix source files
+	 tutorials      Several example problems and a pdf
+                        file describing the two tutorials
+			(fluidBed1 and fluidBed2), which
+                        are useful for a new user.
+	 tests          Test simulations used for verifying
+	                the code during development.
+	 tools          Development tools
+	 doc            MFIX manuals in pdf format
+      
+      3.  There is a postprocessing code called ani_mfix that is used 
+      for viewing MFIX results as animations.  The platform dependent executable
+      for this program may be obtained by contacting NETL.
 
 
 1.2  Installing the MFIX Code
@@ -91,7 +71,7 @@
      For convenience, create aliases by adding the following lines to the
      .login file (assuming MFIX was installed in the home directory):
 
-          	alias ani ~/mfix/animate_mfix/animate_mfix
+          	alias ani ~/mfix/ani_mfix/ani_mfix
           	alias post ~/mfix/post_mfix/post_mfix
           	alias mkmfix 'sh ~/mfix/model/make_mfix'
 
@@ -120,6 +100,28 @@
           The MFIX executable file mfix.exe will be created and copied into
           the run-directory.
 
+	  The following options are available for different compilations:
+
+		a) For Shared Memory Executable, input 'y' for the SMP option.
+
+		b) For Serial version, input 'y' for the SERIAL option.
+
+		c) For Debug option, input 'y' for the debug option.
+		
+		d) For forcing recompilation of user defined routines, input 'y'
+		   at this prompt.  In most cases it is not necessary to select
+		   this option.  This option needed in the rare instances when
+		   the run directory contains a module file (e.g., run_mod.f)
+		   and another file (e.g., usr0.f), in which the inserted the
+		   corresponding use statement (e.g., Use run).  The makefile
+		   will not be aware of this dependency (usr0 depends upon run).
+		   So in the above example changes made in run_mod.f will not
+		   cause the (necessary) recompilation of usr0.f, unless this
+		   option is selected.
+
+	  If all the above options are unselected an optimized serial version
+	  executable is produced for that particular platform.
+
      5.   Write an MFIX data file and name it mfix.dat. The key words are listed
           at the end of this file.  Examples are available in the mfix/tutorials
           directory.
@@ -137,27 +139,41 @@
 
 		mfix.exe > screen.log &
 
-          Note that the file screen.log can become very large.
+          (Note that the file screen.log can become very large.)
+	  
+	  If the code was compiled as a SMP version, then the user will be
+	  prompted to enter the number of processors to be used for the run.
+	  
+	  Run the DMP version using
+
+		mpirun -np <Number of Processors> mfix.exe 
+
+		This command may be different on other machines:
+		(e.g., mpprun -n <Number of Processors> mfix.exe)
+
 
      7.   MFIX results can be retrieved, even while the run is in progress.
-          To activate visualization, run animate_mfix by typing
+          To activate visualization, run ani_mfix by typing
 
           ani
+	  
+	  When ani_mfix is used the first time for a run, it will prompt
+	  the user for the name of the restart file.  Enter the name of the
+	  restart file paying attention to the case (e.g. BUB01.RES).
 
-          The program will create the two files animate_mfix.control and
-          animate_mfix.minmax for storing some parameters.
+          The program will create several control files: ani_mfix.con, ani_mfix.ini,
+	  ani_mfix.mm, script.001.
 
      8.   For retrieving and manipulating data and for creating special restart
           files, run the post_processor post_mfix by typing
 
           post
+	  
+	  post_mfix will prompt the user for the run name.  Enter the run name
+	  (e.g. BUB01).
 
 1.4  Modifying the Post-processing codes
 
-      Executables animate_mfix and post_mfix are included in the
-      animate_mfix and post_mfix directories.  If user-defined post-processing is desired in
-      post_mfix create a new executable.
-          
       To make post_mfix, first change directory to the mfix/post_mfix directory.  If 
       user-defined post-processing is required, modify usr_post.f file in the
       directory.  Then type
@@ -174,55 +190,29 @@ _______________________________________________________________________________
             2  Setting Up and Running MFIX on a PC (Windows95 or Windows NT)
 
 
-2.1  Reading the MFIX disk
+2.1  Installing the MFIX Code
 
-      1. Copy the files from the diskettes into a directory, say c:\Mfix. 
-         There are 5 files: mfix.tar.gz, Glu32.dll, Opengl32.dll, tar.exe, 
-         and gunzip.exe.
-
-      2. For installing the software cd to C:\Mfix in a DOS window and
-         type
-
-         gunzip -d mfix.tar.gz
+     1. Create a directory for mfix (e.g., C:\mfix) and copy the tar files
+        into that directory.  In a DOS window select mfix directory and type the
+	following:
+	
+         gunzip -d mfix.m.n.tar.gz
          tar xvf mfix.tar
+	 
+         gunzip -d graphics_dll.tar.gz
+         tar xvf graphics_dll.tar
+	
+	This will create the executables mfix.exe, ani_mfix.exe, and post_mfix.exe
+	and several dll files needed for running ani_mfix.exe.
 
-      3. The above procedure will create a directory winMfix under C:\mfix that
-      contains  four applications, a tutorials subdirectory and four other
-      files.
+     2. For Windows95 (not for Windows NT) copy the files Glu32.dll and
+     Opengl32.dll to the c:\Windows directory.
 
-2.2  Installing the MFIX Code
+     3. Support for compiling the source files under Windows is not available. 
+     
+     4. Running the code under Windows is similar to that described in the 
+        previous section for UNIX/LINUX.
 
-     1.  For Windows95 (not for Windows NT) copy the files Glu32.dll and
-     Opengl32.dll to the Windows directory.
-
-     2.  If the files were not copied into the directory c:\Mfix, edit 
-     winmfix.ini and change c:\mfix to the appropriate directory name.
-
-     3.  For convenience a shortcut may be created and placed on the desk
-     as follows: Click the right mouse button on desktop and select
-      New->Shortcut.  For the command line browse and select winmfix executable
-     (c:\mfix\winmfix.exe).  Then hit Next and Finish.  The icon may
-     be changed by clicking the right mouse button on the WinMfix icon, select
-     properties and the shortcut tab.  Press Change Icon and then browse and 
-     select the icon file (c:\mfix\winmfix.ico).
-
-2.3  Starting an MFIX Run
-
-     1.   Create a (run) directory for a new simulation. 
-
-     2.   Run WinMFIX by double clicking on the WinMfix icon or selecting 
-          winMFix executable from Start->Run.
-
-     3.   Use the File->change run (browse) option of WinMfix to open the run
-          directory.
-
-     4.   Write an MFIX data file and name it mfix.dat. The key words are listed
-          at the end of this file.  Examples are available in the mfix/tutorials
-          directory.  The mfix.dat file may be edited in the WinMfix text interface
-          or using notepad (actions->notepad mfix.dat).
-
-     5.   For the currently selected case, start a simulation actions->run mfix)
-          or view results (actions->animate or actions->post_mfix).
 _______________________________________________________________________________
 
 
@@ -233,11 +223,14 @@ _______________________________________________________________________________
 
 3.1  MFIX Output and Messages
 
-          MFIX output is stored in eight *.SPx binary files.  The restart info
+          MFIX output is stored in nine *.SPx binary files.  The restart info
           is periodically written to the *.RES binary file.  The text file *.OUT
           echos the input, shows the numerical cell distribution, and, if OUT_DT
           is defined, prints the field variables at the specified intervals.  The
           text file *.LOG contains run information.
+
+	  For the DMP version, a LOG file is created for each of the processors and
+	  they are numbered as Name###.LOG.
  
           Messages about the run are written to the .LOG file.  The progress of
           the run will be displayed at the terminal as shown below if the data
@@ -559,6 +552,22 @@ TOL_DIVERGE         DP Minimum residual for declaring divergence.  When the flui
                        in the second iteration (e.g. 1E+8) and then drops down to
                        a low value in the third iteration (e.g. 0.1).  In such
                        cases it is desirable to increase this setting.
+		       
+		       
+The next keywords LEQ_IT, LEQ_METHOD, LEQ_SWEEP, LEQ_TOL, UR_FAC, and DISCRETIZE
+are dimensioned 9 are for the nine types of equations:
+    1 - gas pressure
+    2 - solids volume fraction
+    3 - gas and solids u-momentum
+    4 - gas and solids v-momentum
+    5 - gas and solids w-momentum
+    6 - temperature
+    7- species mass fractions
+    8 - granular temperature
+    9 - user-defined scalar
+
+For example LEQ_IT(3) = 10 will make MFIX use 10 linear equation iterations while
+solving gas and solids u-momentum equation.
 
 LEQ_IT(9)           I  Number of iterations in the linear equation solver.  The
   [20 for 1 and 2]     nine values are for the nine types of equations:
@@ -574,12 +583,8 @@ LEQ_IT(9)           I  Number of iterations in the linear equation solver.  The
                        defined value and LEQ_METHOD equal to 1. 
 
 LEQ_METHOD(9)       I  The method used in the linear equation solver:
-  1                    Successive over relaxation (SOR)
-  2                    BiCGSTAB
-  3                    GMRES 
-  4                    BiCGSTAB + GMRES 
-  [2 for 1,6,7,8]
-  [1 for 2,3,4,5,9]
+  1                    BiCGSTAB
+  [1 for all equations]
  
 LEQ_SWEEP(9)        C  The sweep direction used in the linear equation solver:
   ['II']               The sweep direction for preconditioning line relaxation.
@@ -588,7 +593,7 @@ LEQ_SWEEP(9)        C  The sweep direction used in the linear equation solver:
 		       'do J', 'do K' loops. (only used by BiCGStab)
 
 LEQ_TOL(9)          DP The tolerance, if used, in linear eq solvers.
-  [1.0D-4]             Used by BiCGStab and GMRES.
+  [1.0D-4]             Used by BiCGStab.
 
 UR_FAC(9)           I  Under relaxation factors for seven types of equations.
   [0.8 for 1,6,9]      Reducing UR_FAC(2) will help convergence in problems
@@ -596,7 +601,7 @@ UR_FAC(9)           I  Under relaxation factors for seven types of equations.
   [0.75 for 7]
 
 DEF_COR             L  If true use deferred correction method for implementing higher
- [.FALSE.]             order discretization, else use down-wind factor method (default).
+ [.TRUE.]             order discretization, else use down-wind factor method (default).
 
 DISCRETIZE(9)       I  Discretization scheme for seven types of equations.
   [0]                  first order upwinding
@@ -1405,10 +1410,16 @@ D.12  Parallelization controls
 Keyword (dimension) Type  Description
 
 NODESI               I  Number of grid blocks in x-direction
+ [1]
 
 NODESJ               I  Number of grid blocks in y-direction
+ [1]
 
 NODESK               I  Number of grid blocks in z-direction
+ [1]
+
+NODESI * NODESJ * NODESK must be the same as the number of processors specified using the mpirun (or equivalent command). Otherwise the code will return with an
+error. At this time decomposition in the periodic direction is not allowed.
 
 
-M. Syamlal\12-22-99
+M. Syamlal\08-25-00
