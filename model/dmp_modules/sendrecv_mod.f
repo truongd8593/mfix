@@ -2342,6 +2342,8 @@ enddo ! do ilayer
 	call MPI_WAITALL( nsend, sendrequest, send_status, ierror )
 	call MPI_Check( 'sendrecv_end_1i:MPI_WAITALL ', ierror )
 
+	deallocate( recv_status )
+        nullify( recv_status )
 	deallocate( send_status )
         nullify( send_status )
 
