@@ -226,13 +226,16 @@
       IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
 !
       VISC(0) = RECALC_VISC_G 
-      IF (GRANULAR_ENERGY) THEN 
+! The following if statement was commented to allow calling calc_mu_s even
+! when the algebraic granular equation is solved (not only the PDE form).
+! This may enhance convergence. sof, March-10-2005.
+!      IF (GRANULAR_ENERGY) THEN 
          M = 1 
          IF (MMAX > 0) THEN 
             VISC(1:MMAX) = .TRUE. 
             M = MMAX + 1 
          ENDIF 
-      ENDIF 
+!      ENDIF 
 !
       CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
