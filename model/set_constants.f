@@ -73,10 +73,12 @@
 !
 !  plastic regime stress
 !
-      TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
-      SIN_PHI = SIN(PHI*PI/180.D0) 
-      SIN2_PHI = SIN_PHI*SIN_PHI 
-      F_PHI = (3.0 - 2.0*SIN2_PHI)/3.0 
+      if(mmax > 0) then
+        TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
+        SIN_PHI = SIN(PHI*PI/180.D0) 
+        SIN2_PHI = SIN_PHI*SIN_PHI 
+        F_PHI = (3.0 - 2.0*SIN2_PHI)/3.0 
+      endif
 !
 !  Enter the value of all constants in various units
 !
