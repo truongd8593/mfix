@@ -228,9 +228,9 @@
               fi
 
 	    
-              compile_d="-g -c -FR -xK -w -I. "
+              compile_d="-g -c -FR -xK -w -w95 -I. "
               link_d="-L$intel_lib -lPEPCF90 "
-              compile="-c -O3 - -I.w -w95 -i_dynamic -ip -FR"
+              compile="-c -O3 -I. -w -w95 -i_dynamic -ip -FR"
               link="-I. -L$intel_lib -lPEPCF90"
               MODULE_CODE=0
              fi
