@@ -341,7 +341,7 @@
 			   IF(L == 0)THEN
 		             A_M(IJK,0,M) = A_M(IJK,0,M) - VXF(IJK,M)
 		             B_M(IJK,M)   = B_M(IJK,M)  - VXF(IJK,M) * VAR_G(IJK) 
-			   ELSE
+			   ELSE IF(M .NE. 0) THEN
 		             LM = FUNLM(L,M)	
 		             IF (.NOT.IP_AT_E(IJK)) THEN 
                 	       I = I_OF(IJK) 
@@ -542,7 +542,7 @@
 			   IF(L == 0)THEN
 		             A_M(IJK,0,M) = A_M(IJK,0,M) - VXF(IJK,M)
 		             B_M(IJK,M)   = B_M(IJK,M)  - VXF(IJK,M) * VAR_G(IJK) 
-			   ELSE
+			   ELSE IF(M .NE. 0) THEN
 			     LM = FUNLM(L,M)
 			     IF (.NOT.IP_AT_N(IJK)) THEN 
 			       J = J_OF(IJK) 
@@ -734,7 +734,7 @@
 			   IF(L == 0)THEN
 		             A_M(IJK,0,M) = A_M(IJK,0,M) - VXF(IJK,M)
 		             B_M(IJK,M)   = B_M(IJK,M)  - VXF(IJK,M) * VAR_G(IJK) 
-			   ELSE
+			   ELSE IF(M .NE. 0) THEN
 			     LM = FUNLM(L,M)
 			     IF (.NOT.IP_AT_T(IJK)) THEN 
                		       K = K_OF(IJK) 
