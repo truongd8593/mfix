@@ -154,7 +154,7 @@ ln -sf "$mpi_include/mpif.h" .
 
             compile=" -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
             compile2="$compile"
-            link="$compile"
+            link="-O3 -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qtune=pwr3 -qcache=auto "
 
 #	    ------------------
 #	    flags for inlining
