@@ -6,18 +6,12 @@
 !  template include file.
 !
 !
-!                      Sherwood number
-      DOUBLE PRECISION N_Sh(DIMENSION_3, DIMENSION_M)
-!
 !                      Proximate Analysis
       DOUBLE PRECISION PAFC, PAA
 !
-!                      Function of ash-layer void fraction
-      DOUBLE PRECISION f_EP_A
-!
 !     Double Precision variables
       COMMON / USR_DATA_DP / &
-             N_Sh, PAFC, PAA, f_EP_A
+             PAFC, PAA
 !
 !     Integer variables
 !      COMMON / USR_DATA_I /

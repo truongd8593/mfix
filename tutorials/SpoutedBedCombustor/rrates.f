@@ -63,6 +63,7 @@
       USE toleranc
       USE compar        !//d
       USE sendrecv      !// 400
+      USE usr
       IMPLICIT NONE
       
 !  Define species indices for better program readability
@@ -90,7 +91,7 @@
 !                      cell index
       INTEGER          IJK
       
-      DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX), RXNA
+      DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX)
 !
 !-----------------------------------------------
 !
@@ -99,9 +100,6 @@
       LOGICAL COMPARE
 !
 !  Local Variables
-!
-!                      Local phase index
-      INTEGER          L, LM
 !
 !                      Temperatures, Pressures, Proximate Analysis,
 !                      Rate constants, activation energies,

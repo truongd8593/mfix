@@ -48,7 +48,8 @@
       USE toleranc 
       USE constant
       USE compar 
-      USE funits    
+      USE funits 
+      USE usr   
       IMPLICIT NONE
       INCLUDE 'usrnlst.inc'
 !

@@ -51,6 +51,10 @@
 !
 !  Insert user-defined code here
 !
+
+!     allocate array declared in usrnlst.inc
+      Allocate(  N_Sh (DIMENSION_3, DIMENSION_M) )
+      
         IF(PAFC .EQ. UNDEFINED ) &
           CALL ERROR_ROUTINE ('USR0', 'PAFC not specified', 1, 1)
 !
