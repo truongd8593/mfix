@@ -7,7 +7,8 @@ set dir = $cwd
 foreach i (*)
   if(-d $i)then
     cd $i
-    test -e *.f
+    #test -e *.f
+    ls *.f >tmp.tmp
     if ($status == 0) then
       foreach file (*.f)
         echo "./$i/$file">>$dir/files.lis

@@ -60,13 +60,32 @@ C
       WRITE (31,*) ' '
       WRITE (31,'(A,A)')  'mfix.exe : ' , BACK
 c
-      DO I = 1,NFILES
-         CALL NO_EXT(FN(I),NOEXT,N)
+c put the MODS first in the mfix.exe dependency list
+c
+      DO I = 1,num_mods
+         CALL NO_EXT(f90_mods(i),NOEXT,N)
          CALL NO_PATH(NOEXT, WoPATH, N, N1)
-         WRITE (30,'(A,A,A,A)') '    ' , WoPATH(1:N1),'.$(OBJ_EXT) ',
+         j = index(WoPATH,'_mod.')
+         call make_upper_case(WoPATH(1:n1-4),n1-4)
+         WRITE (30,'(A,A,A,A)') '    ' , WoPATH(1:N1-4),'.mod ',
      &                                     BACK
-         WRITE (31,'(A,A,A,A)') '    ' , WoPATH(1:N1),'.$(OBJ_EXT) ',
+         call make_lower_case(WoPATH(1:n1-4),n1-4)
+         WRITE (31,'(A,A,A,A)') '    ' , WoPATH(1:N1-4),'.mod ',
      &                                     BACK
+      END DO
+c
+c then the other object files
+c
+      DO I = 1,NFILES
+	 j = index(fn(i),'_mod.')
+	 if (j.eq.0) then
+           CALL NO_EXT(FN(I),NOEXT,N)
+           CALL NO_PATH(NOEXT, WoPATH, N, N1)
+           WRITE (30,'(A,A,A,A)') '    ' , WoPATH(1:N1),'.$(OBJ_EXT) ',
+     &                                     BACK
+           WRITE (31,'(A,A,A,A)') '    ' , WoPATH(1:N1),'.$(OBJ_EXT) ',
+     &                                     BACK
+         endif
       END DO
       write (30,'(a)') '    blas90.a '
       write (31,'(a)') '    blas90.a '
@@ -292,11 +311,13 @@ C
       SUBROUTINE FIND_INC(LINE,FNAME,NINC)
       CHARACTER*60 LINE,FNAME , QUOTE*1
 !
-      IF (LINE(1:1).EQ.'C') RETURN
-      IF (LINE(1:1).EQ.'c') RETURN
-      IF (LINE(1:1).EQ.'!') RETURN
+!      IF (LINE(1:1).EQ.'C') RETURN
+!      IF (LINE(1:1).EQ.'c') RETURN
+!      IF (LINE(1:1).EQ.'!') RETURN
+      call find_comment(Line, iend)
       QUOTE = CHAR(39)
-      DO I = 1,45
+!      DO I = 1,45
+      DO I = 1, iend
          IF (LINE(I:I+6).EQ.'INCLUDE' .OR.
      &       LINE(I:I+6).EQ.'include') then
              DO J = I+7,50
@@ -366,17 +387,21 @@ C
 !
       SUBROUTINE FIND_USE(LINE,USENAME,NUSE)
       CHARACTER*60 LINE,USENAME
+      logical, external :: blank_before
 !
-      IF (LINE(1:1).EQ.'C') RETURN
-      IF (LINE(1:1).EQ.'c') RETURN
-      IF (LINE(1:1).EQ.'!') RETURN
+!      IF (LINE(1:1).EQ.'C') RETURN
+!      IF (LINE(1:1).EQ.'c') RETURN
+!      IF (LINE(1:1).EQ.'!') RETURN
+      call find_comment(Line, iend)
       usename = ' '
-      DO I = 1,20
+!      DO I = 1,20
+      DO I = 1,iend
          IF (LINE(I:I+3).EQ.'USE ' .OR.
      &       LINE(I:I+3).EQ.'Use ' .or. 
      &       LINE(I:I+3).EQ.'use ' ) then
-             If(i .EQ. 1 .OR. LINE(I-1:I-1) .EQ. ' '
-     &	          .OR. LINE(I-1:I-1) .EQ. '	')then
+!             If(i .EQ. 1 .OR. LINE(I-1:I-1) .EQ. ' '
+!     &	          .OR. LINE(I-1:I-1) .EQ. '	')then
+             if(blank_before(line, i))then
                iq1 = i + 4
 100            DO J = IQ1+1,60
                   IF (LINE(J:J).EQ.' ' .or.LINE(J:J).EQ.',') THEN
@@ -393,6 +418,30 @@ C
       NUSE = NUSE + 1
       RETURN
       END
+      
+      logical function blank_before(line, i)
+        CHARACTER*60 LINE
+	blank_before = .true.
+	if(i <= 1) return
+	do j = 1, (i-1)
+	  if(line(j:j) .EQ. ' ' .OR. line(j:j) .EQ.  '	')cycle
+	  blank_before = .false.
+	  return
+	enddo
+        return
+      end function blank_before
+      
+      SUBROUTINE find_comment(LINE,iend)
+      CHARACTER*60 LINE
+      iend = 0
+      do i = 1, 60
+        if(line(i:i) .eq. '!')return
+	iend = i
+      enddo
+      return
+      end subroutine find_comment
+      
+     
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: MAKE_UPPER_CASE (LINE_STRING,MAXCOL)                   C
