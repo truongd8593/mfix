@@ -88,8 +88,8 @@
          WRITE (UNIT_LOG,*) ' mfix INTERNAL order'
          WRITE (UNIT_LOG,*) ' '
          WRITE (UNIT_LOG, '(A,A)') &
-           '  IJK  b         s         w         p         e       ', &
-           '  n         t         Source' 
+           '  IJK  I  J  K   b         s         w         p         e       ', &
+           '  n         t        Source' 
       end if
 
 
@@ -111,7 +111,7 @@
             call MPI_Barrier(MPI_COMM_WORLD,mpierr)
             if (myPE == PE_IO) am(l) = array1(ijk)
          end do
-         if (myPE == PE_IO) WRITE (UNIT_LOG, '(I5, 8(1X,G9.2))') IJK, &
+         if (myPE == PE_IO) WRITE (UNIT_LOG, '(I5, 3(I3), 8(1X,G9.2))') IJK, I, J, K,&
                                     (AM(L),L=-3,3), array2(IJK) 
 
       END DO 

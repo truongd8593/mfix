@@ -1002,13 +1002,11 @@ bc_phi.$(OBJ_EXT) : bc_phi.f \
             INDICES.mod \
             BC.mod \
             COMPAR.mod \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 bc_theta.$(OBJ_EXT) : bc_theta.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1027,13 +1025,11 @@ bc_theta.$(OBJ_EXT) : bc_theta.f \
             BC.mod \
             COMPAR.mod \
             MPI_UTILITY.mod \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 bound_x.$(OBJ_EXT) : bound_x.f \
             PARAM.mod \
             PARAM1.mod 
@@ -1055,13 +1051,12 @@ cal_d.$(OBJ_EXT) : cal_d.f \
             TAU_S.mod \
             BC.mod \
             VSHEAR.mod \
-            b_force1.inc                                                 \
+            COMPAR.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 calc_cell.$(OBJ_EXT) : calc_cell.f \
             PARAM.mod \
             PARAM1.mod 
@@ -1555,10 +1550,8 @@ conv_dif_phi.$(OBJ_EXT) : conv_dif_phi.f \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 conv_dif_u_g.$(OBJ_EXT) : conv_dif_u_g.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1838,13 +1831,11 @@ dif_u_is.$(OBJ_EXT) : dif_u_is.f \
             IS.mod \
             COMPAR.mod \
             SENDRECV.mod \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 dif_v_is.$(OBJ_EXT) : dif_v_is.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1861,13 +1852,11 @@ dif_v_is.$(OBJ_EXT) : dif_v_is.f \
             INDICES.mod \
             IS.mod \
             COMPAR.mod \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 dif_w_is.$(OBJ_EXT) : dif_w_is.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1884,13 +1873,11 @@ dif_w_is.$(OBJ_EXT) : dif_w_is.f \
             INDICES.mod \
             IS.mod \
             COMPAR.mod \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 discretize.$(OBJ_EXT) : discretize.f \
             PARAM.mod \
             PARAM1.mod 
@@ -2591,11 +2578,9 @@ set_ic.$(OBJ_EXT) : set_ic.f \
             COMPAR.mod \
             SENDRECV.mod \
             sc_p_g1.inc                                                  \
-            b_force1.inc                                                 \
             s_pr1.inc                                                    \
             function.inc                                                 \
             s_pr2.inc                                                    \
-            b_force2.inc                                                 \
             sc_p_g2.inc                                                 
 set_increments.$(OBJ_EXT) : set_increments.f \
             PARAM.mod \
@@ -3132,13 +3117,11 @@ tau_u_g.$(OBJ_EXT) : tau_u_g.f \
             INDICES.mod \
             IS.mod \
             COMPAR.mod \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 tau_u_s.$(OBJ_EXT) : tau_u_s.f \
             PARAM.mod \
             PARAM1.mod \
@@ -3157,13 +3140,11 @@ tau_u_s.$(OBJ_EXT) : tau_u_s.f \
             IS.mod \
             VSHEAR.mod \
             COMPAR.mod \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 tau_v_g.$(OBJ_EXT) : tau_v_g.f \
             PARAM.mod \
             PARAM1.mod \
@@ -3181,13 +3162,11 @@ tau_v_g.$(OBJ_EXT) : tau_v_g.f \
             INDICES.mod \
             IS.mod \
             COMPAR.mod \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 tau_v_s.$(OBJ_EXT) : tau_v_s.f \
             PARAM.mod \
             PARAM1.mod \
@@ -3205,13 +3184,11 @@ tau_v_s.$(OBJ_EXT) : tau_v_s.f \
             INDICES.mod \
             IS.mod \
             COMPAR.mod \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 tau_w_g.$(OBJ_EXT) : tau_w_g.f \
             PARAM.mod \
             PARAM1.mod \
@@ -3229,13 +3206,11 @@ tau_w_g.$(OBJ_EXT) : tau_w_g.f \
             INDICES.mod \
             IS.mod \
             COMPAR.mod \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 tau_w_s.$(OBJ_EXT) : tau_w_s.f \
             PARAM.mod \
             PARAM1.mod \
@@ -3253,13 +3228,11 @@ tau_w_s.$(OBJ_EXT) : tau_w_s.f \
             INDICES.mod \
             IS.mod \
             COMPAR.mod \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 test_lin_eq.$(OBJ_EXT) : test_lin_eq.f \
             PARAM.mod \
             PARAM1.mod 

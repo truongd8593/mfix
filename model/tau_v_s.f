@@ -81,13 +81,11 @@
       CHARACTER*80     LINE 
 ! 
 !-----------------------------------------------
-      INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'b_force2.inc'
 ! loezos
       DOUBLE PRECISION Source_diff,Diffco_e,Diffco_w
 ! loezos

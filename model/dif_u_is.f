@@ -78,13 +78,11 @@
 !                      Difusion parameter 
       DOUBLE PRECISION D_f 
 !-----------------------------------------------
-      INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'b_force2.inc'
 
 !//? check if this COMM is necessary or extra
 !// 400 1225 COMM A_M

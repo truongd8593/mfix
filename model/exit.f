@@ -13,6 +13,9 @@
       inquire(unit=unit_log,exist=op)
       if(op) close(unit_log)
 
+      inquire(unit=unit_out,exist=op)
+      if(op) close(unit_out)
+
       if (.not. present(myid)) then
          mylid = myPE
       else

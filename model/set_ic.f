@@ -114,11 +114,9 @@
       DOUBLE PRECISION FAC 
 !-----------------------------------------------
       INCLUDE 'sc_p_g1.inc'
-      INCLUDE 'b_force1.inc'
       INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
       INCLUDE 's_pr2.inc'
-      INCLUDE 'b_force2.inc'
       INCLUDE 'sc_p_g2.inc'
 !
 !  Set the initial conditions.

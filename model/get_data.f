@@ -61,7 +61,8 @@
 !                    Shift or not shift DX, DY and DZ values 
       LOGICAL        SHIFT 
 !-----------------------------------------------
-!
+      LOGICAL , EXTERNAL :: COMPARE 
+
 !
 !
 !
@@ -77,7 +78,9 @@
       IF (CYCLIC_X_PD) CYCLIC_X = .TRUE.
       IF (CYCLIC_Y_PD) CYCLIC_Y = .TRUE.
       IF (CYCLIC_Z_PD) CYCLIC_Z = .TRUE.
-
+      IF (COORDINATES=='CYLINDRICAL' .AND. COMPARE(ZLENGTH,8.D0*ATAN(ONE)) &
+          .AND. .NOT.(NO_K) ) &
+         CYCLIC_Z = .TRUE. 
 
 !//AIKEPARDBG
 !      write(*,"('(PE ',I2,'): reached end of read_namelist')") myPE	!//AIKEPARDBG

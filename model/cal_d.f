@@ -37,13 +37,11 @@
                        cnter3(IMIN3:IMAX3,JSTART3:JEND3,KSTART3:KEND3)
 
       INTEGER I1,J1,I,J
-      INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'b_force2.inc'
 
 
       IF (NO_K) THEN
