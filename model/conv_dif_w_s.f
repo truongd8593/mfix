@@ -174,7 +174,7 @@
 !
 !$omp      parallel do 	&
 !$omp&     private(IJK,  I,  J, K, IPJK, IJPK, IJKN, IJKC, KP,	&
-!$omp&             IJKE, IJKTE, IJKP, IJKT, IJKTN, IJK, V_f, D_f,	&
+!$omp&             IJKE, IJKTE, IJKP, IJKT, IJKTN, V_f, D_f,	&
 !$omp&             IMJK, IM, IJKW, IJKWT, IMJKP,	&
 !$omp&             IJMK, JM, IJMKP, IJKS, IJKST,	&
 !$omp&             IJKM, KM, IJKB)

@@ -157,7 +157,7 @@
       M = MCP 
 !$omp    parallel do                                                   &
 !$omp&   private(I, J, K, IJK, IPJK, IJPK, IJKP,                &
-!$omp&           IMJK, IJMK, IJKM, IJKP,                               &
+!$omp&           IMJK, IJMK, IJKM,                               &
 !$omp&           IJKE, IJKW, IJKN, IJKS, IJKT, IJKB,                   &
 !$omp&           K_P, SRC )
       DO IJK = ijkstart3, ijkend3

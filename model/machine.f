@@ -74,8 +74,6 @@
       ID_MINUTE = DAT(6)
       ID_SECOND = DAT(7)
       
-!     For SGI only
-      CALL GETHOSTNAME(ID_NODE,64)
 !
       RETURN
       END

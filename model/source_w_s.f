@@ -123,7 +123,7 @@
          IF (MOMENTUM_Z_EQ(M)) THEN 
 !
 !$omp  parallel do &
-!$omp& private(IJK, I, J, K, IJK, IJKT, EPGA, ISV, &
+!$omp& private(IJK, I, J, K, IJKT, EPGA, ISV, &
 !$omp& PGT,SDP,SDPS,   ROPGA,V0,VMT,   DRO1,DRO2,DROA,VBF, &
 !$omp& IMJK,IJKP,IMJKP,  UGT,VCOA,VCOB, &
 !$omp& IJKE,IJKW,IJKTE,IJKTW,IM,IPJK, &
