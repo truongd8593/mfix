@@ -75,7 +75,7 @@
             X_G(0:IJKMAX3,:NMAX(0)) = ZERO 
             N = NMAX(0) + 1 
          ENDIF 
-!//? what is IJK used for?	 
+!//? what is IJK used for?  leftover from f77-->f90 automatic conversion?	 
          IJK = IJKMAX2 + 1 
       ENDIF 
 
@@ -95,7 +95,7 @@
                X_S(0:IJKMAX3,M,:NMAX(M)) = ZERO 
                N = NMAX(M) + 1 
             ENDIF 
-!//? what is IJK used for?	 	    
+!//? what is IJK used for? leftover from f77-->f90 automatic conversion?	 	    
             IJK = IJKMAX2 + 1 
          ENDIF 
       END DO 

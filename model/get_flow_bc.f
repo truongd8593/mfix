@@ -75,6 +75,25 @@
       LOGICAL X_CONSTANT, Y_CONSTANT, Z_CONSTANT
 !-----------------------------------------------
       INCLUDE 'function.inc'
+
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): entered get_flow_bc')") myPE	!//AIKEPARDBG
+!//AIKEPARDBG dump the ICBC_FLAG in matrix form to verify with serial version
+!      DO K = Kstart3, Kend3                               !//AIKEPARDBG
+!         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
+!	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
+!         DO J = Jstart3, Jend3                            !//AIKEPARDBG
+!           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	
+!           DO I = Istart3, Iend3                          !//AIKEPARDBG
+!             IJK = FUNIJK(I,J,K)                     !//AIKEPARDBG
+!             write(UNIT_LOG,"(2X,A3,$)") ICBC_FLAG(IJK) !//AIKEPARDBG
+!           END DO                                       !//AIKEPARDBG
+!           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
+!         END DO                                         !//AIKEPARDBG
+!      END DO                                            !//AIKEPARDBG
+!      call mfix_exit(myPE)	!//AIKEPARDBG
+
+
 !
 ! FIND THE FLOW SURFACES
 !
@@ -210,11 +229,11 @@
                   DO K = BC_K_B(BCV), BC_K_T(BCV) 
                      DO J = BC_J_S(BCV), BC_J_N(BCV) 
 !// 360 1025 Check if current i,j,k resides on this PE		     
-   		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+   		       IF (.NOT.IS_ON_myPE_plus2layers(I_FLUID,J,K)) CYCLE
 		       
-!// 220 1004 Replaced with global FUNIJK		     
-                        IJK_WALL = FUNIJK_GL(I_WALL,J,K) 
-                        IJK_FLUID = FUNIJK_GL(I_FLUID,J,K) 
+!// 220 1004 Need to use local FUNIJK		     
+                        IJK_WALL = FUNIJK(I_WALL,J,K) 
+                        IJK_FLUID = FUNIJK(I_FLUID,J,K) 
                         IF (.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. ICBC_FLAG(&
                            IJK_FLUID)(1:1)=='.')) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, I_WALL, I_FLUID, J, K, &
@@ -237,11 +256,14 @@
                   ENDIF 
                   DO K = BC_K_B(BCV), BC_K_T(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
+!//? Add filter
+!// 360 1025 Check if current i,j,k resides on this PE		     
+!   		       IF (.NOT.IS_ON_myPE_plus2layers(I_FLUID,J,K)) CYCLE
 !// 360 Check if current k resides on this PE
 		       if(k .ge. kstart3_all(myPE) .AND. k .le. kend3_all(myPE)) then		     
-!// 220 1004 Replaced with global FUNIJK		     
-                        IJK_WALL = FUNIJK_GL(I,J_WALL,K) 
-                        IJK_FLUID = FUNIJK_GL(I,J_FLUID,K) 
+!// 220 1004 Need to use local FUNIJK		     
+                        IJK_WALL = FUNIJK(I,J_WALL,K) 
+                        IJK_FLUID = FUNIJK(I,J_FLUID,K) 
                         IF (.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. ICBC_FLAG(&
                            IJK_FLUID)(1:1)=='.')) THEN 
                            WRITE (UNIT_LOG, 1200) BCV, I, J_WALL, J_FLUID, K, &
@@ -265,9 +287,12 @@
                   ENDIF 
                   DO J = BC_J_S(BCV), BC_J_N(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
-!// 220 1004 Replaced with global FUNIJK		     		     
-                        IJK_WALL = FUNIJK_GL(I,J,K_WALL) 
-                        IJK_FLUID = FUNIJK_GL(I,J,K_FLUID) 
+!//? Add filter
+!// 360 1025 Check if current i,j,k resides on this PE		     
+!   		       IF (.NOT.IS_ON_myPE_plus2layers(I_FLUID,J,K_FLUID)) CYCLE		     
+!// 220 1004 Need to use local FUNIJK		     		     
+                        IJK_WALL = FUNIJK(I,J,K_WALL) 
+                        IJK_FLUID = FUNIJK(I,J,K_FLUID) 
                         IF (.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. ICBC_FLAG(&
                            IJK_FLUID)(1:1)=='.')) THEN 
                            WRITE (UNIT_LOG, 1300) BCV, I, J, K_WALL, K_FLUID, &
@@ -294,9 +319,15 @@
                DO K = BC_K_B(BCV), BC_K_T(BCV) 
                   DO J = BC_J_S(BCV), BC_J_N(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
-!// 220 1004 Replaced with global FUNIJK		     		     
-                        IJK = FUNIJK_GL(I,J,K) 
-                        IF (.NOT.WALL_ICBC_FLAG(IJK)) THEN 
+!//? Add filter
+!// 360 1025 Check if current i,j,k resides on this PE		     
+!   		       IF (.NOT.IS_ON_myPE_plus2layers(I_FLUID,J,K)) CYCLE		     		     
+!// 220 1004 Need to use local FUNIJK as dimension of ICBC_FLAG is DIM_3L		     		     
+                        IJK = FUNIJK(I,J,K) 
+!// 360 1104 Check if current i,j,k resides on this PE before printing error msg			
+!                        IF (.NOT.WALL_ICBC_FLAG(IJK)) THEN 
+                        IF (.NOT.WALL_ICBC_FLAG(IJK).AND. &
+			    & IS_ON_myPE_plus2layers (I, J, K)) THEN 			
                            WRITE (UNIT_LOG, 1500) BCV, ICBC_FLAG(IJK), I, J, K 
                            ERROR = .TRUE. 
                         ENDIF 
@@ -322,6 +353,20 @@
       END DO 
       IF (ERROR) call mfix_exit(myPE)  
 !
+!//AIKEPARDBG dump the ICBC_FLAG in matrix form to verify with serial version
+!      DO K = Kstart3, Kend3                               !//AIKEPARDBG
+!         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
+!	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
+!         DO J = Jstart3, Jend3                            !//AIKEPARDBG
+!           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	
+!           DO I = Istart3, Iend3                          !//AIKEPARDBG
+!             IJK = FUNIJK(I,J,K)                     !//AIKEPARDBG
+!             write(UNIT_LOG,"(2X,A3,$)") ICBC_FLAG(IJK) !//AIKEPARDBG
+!           END DO                                       !//AIKEPARDBG
+!           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
+!         END DO                                         !//AIKEPARDBG
+!      END DO                                            !//AIKEPARDBG
+
       RETURN  
 !
   900 CONTINUE 

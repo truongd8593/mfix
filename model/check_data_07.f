@@ -162,7 +162,7 @@
       
       CALL GET_WALLS_BC 
 
-!//AIKEPARDBGSTOP 0922
+!//AIKEPARDBGSTOP 1016
 !      write(*,"('(PE ',I2,'): aft get_walls_bc in check_data_07')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
@@ -172,8 +172,8 @@
       CALL GET_FLOW_BC 
 
 !//AIKEPARDBGSTOP 0922
-      write(*,"('(PE ',I2,'): aft get_flow_bc in check_data_07')") myPE !//AIKEPARDBG
-      call mfix_exit(myPE) !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft get_flow_bc in check_data_07')") myPE !//AIKEPARDBG
+!      call mfix_exit(myPE) !//AIKEPARDBG
 
 !
 !  Compute area of boundary surfaces
@@ -850,11 +850,11 @@
       IF (RUN_TYPE /= 'NEW') RETURN  
       ERROR = .FALSE. 
 !//d Note that these loops running over only ACTIVE cells, no need to change      
-      DO I = 1, KMAX2 
-         DO J = 1, JMAX2 
-            DO K = 1, IMAX2
-!// 220 1004 Replaced with global FUNIJK		     	     
-               IJK = FUNIJK_GL(K,J,I) 
+      DO I = kstart2, kend2 
+         DO J = jstart2, Jend2 
+            DO K = istart2, Iend2
+!// 220 1004 Need to use local FUNIJK		     	     
+               IJK = FUNIJK(K,J,I) 
                IF (ICBC_FLAG(IJK) == '   ') THEN 
                   IF (.NOT.ERROR) WRITE (UNIT_LOG, 1400) 
                   WRITE (UNIT_LOG, 1410) K, J, I 

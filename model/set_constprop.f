@@ -90,7 +90,7 @@
             IF (IJKMAX2 > 0) THEN 
 !// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3    
                DIF_G(0:IJKMAX3,:NMAX(0)) = DIF_G0 
-!//? what is IJK used for?	       
+!//? what is IJK used for? leftover from f77-->f90 automatic conversion?	       
                IJK = IJKMAX2 + 1 
             ENDIF 
             N = NMAX(0) + 1 
@@ -127,7 +127,7 @@
                IF (IJKMAX2 > 0) THEN 
 !// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3    	       
                   DIF_S(0:IJKMAX3,M,:NMAX(M)) = DIF_S0 
-!//? what is IJK used for?	       		  
+!//? what is IJK used for? leftover from f77-->f90 automatic conversion?	       		  
                   IJK = IJKMAX2 + 1 
                ENDIF 
                N = NMAX(M) + 1 
@@ -142,7 +142,7 @@
             IF (IJKMAX2 > 0) THEN 
 !// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3    	       	    
                F_GS(0:IJKMAX3,:MMAX) = ZERO 
-!//? what is IJK used for?	       		  	       
+!//? what is IJK used for?  leftover from f77-->f90 automatic conversion?	       		  	       
                IJK = IJKMAX2 + 1 
             ENDIF 
             M = MMAX + 1 
@@ -150,8 +150,8 @@
       ENDIF 
 !
 !//AIKEPARDBG
-!     write(*,"('(PE ',I2,'): reached end of  set_constprop')") myPE    !//AIKEPARDBG
-!     call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+!      write(*,"('(PE ',I2,'): reached end of  set_constprop')") myPE    !//AIKEPARDBG
+!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
       RETURN  
       END SUBROUTINE SET_CONSTPROP 

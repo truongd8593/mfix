@@ -149,8 +149,8 @@
 !// 360 1025 Check if current i,j,k resides on this PE
 		    IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
 		     
-!// 220 1004 Replaced with global FUNIJK
-                     IJK = FUNIJK_GL(I,J,K) 
+!// 220 1004 Need to use local FUNIJK
+                     IJK = FUNIJK(I,J,K) 
 		     
                      IF (FLAG(IJK) == 1) THEN 
                         IF (EPGX /= UNDEFINED) EP_G(IJK) = EPGX 

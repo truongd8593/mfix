@@ -176,8 +176,11 @@
                I = IS_I_W(L) 
                DO K = IS_K_B(L), IS_K_T(L) 
                   DO J = IS_J_S(L), IS_J_N(L) 
-!// 220 1004 Replaced with global FUNIJK		  
-                     IJK = FUNIJK_GL(I,J,K) 
+!//? Check the following filter
+!// 360 1025 Check if current i,j,k resides on this PE		     
+   		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+!// 220 1004 Need to use local FUNIJK, size(FLAG_E) = DIMENSION_3L 
+                     IJK = FUNIJK(I,J,K) 
                      FLAG_E(IJK) = FLAGX 
                   END DO 
                END DO 
@@ -186,8 +189,11 @@
                DO I = IS_I_W(L), IS_I_E(L) 
                   DO K = IS_K_B(L), IS_K_T(L) 
                      DO J = IS_J_S(L), IS_J_N(L) 
-!// 220 1004 Replaced with global FUNIJK		     
-                        IJK = FUNIJK_GL(I,J,K) 
+!//? Check the following filter
+!// 360 1025 Check if current i,j,k resides on this PE		     
+   		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+!// 220 1004 Need to use local FUNIJK, size(FLAG_E) = DIMENSION_3L 
+                        IJK = FUNIJK(I,J,K) 
                         FLAG_E(IJK) = FLAGX 
                      END DO 
                   END DO 
@@ -199,8 +205,11 @@
                J = IS_J_S(L) 
                DO K = IS_K_B(L), IS_K_T(L) 
                   DO I = IS_I_W(L), IS_I_E(L) 
-!// 220 1004 Replaced with global FUNIJK		  
-                     IJK = FUNIJK_GL(I,J,K) 
+!//? Check the following filter		  
+!// 360 1025 Check if current i,j,k resides on this PE		     
+   		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		  
+!// 220 1004 Need to use local FUNIJK, size(FLAG_E) = DIMENSION_3L 		
+                     IJK = FUNIJK(I,J,K) 
                      FLAG_N(IJK) = FLAGX 
                   END DO 
                END DO 
@@ -209,8 +218,11 @@
                DO J = IS_J_S(L), IS_J_N(L) 
                   DO K = IS_K_B(L), IS_K_T(L) 
                      DO I = IS_I_W(L), IS_I_E(L) 
-!// 220 1004 Replaced with global FUNIJK		     
-                        IJK = FUNIJK_GL(I,J,K) 
+!//? Check the following filter		     
+!// 360 1025 Check if current i,j,k resides on this PE		     
+   		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
+!// 220 1004 Need to use local FUNIJK, size(FLAG_E) = DIMENSION_3L 
+                        IJK = FUNIJK(I,J,K) 
                         FLAG_N(IJK) = FLAGX 
                      END DO 
                   END DO 
@@ -222,8 +234,11 @@
                K = IS_K_B(L) 
                DO J = IS_J_S(L), IS_J_N(L) 
                   DO I = IS_I_W(L), IS_I_E(L) 
-!// 220 1004 Replaced with global FUNIJK		  
-                     IJK = FUNIJK_GL(I,J,K) 
+!//? Check the following filter		  
+!// 360 1025 Check if current i,j,k resides on this PE		     
+   		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		  
+!// 220 1004 Need to use local FUNIJK		       
+                     IJK = FUNIJK(I,J,K) 
                      FLAG_T(IJK) = FLAGX 
                   END DO 
                END DO 
@@ -232,8 +247,11 @@
                DO K = IS_K_B(L), IS_K_T(L) 
                   DO J = IS_J_S(L), IS_J_N(L) 
                      DO I = IS_I_W(L), IS_I_E(L) 
-!// 220 1004 Replaced with global FUNIJK		     
-                        IJK = FUNIJK_GL(I,J,K) 
+!//? Check the following filter		     
+!// 360 1025 Check if current i,j,k resides on this PE		     
+   		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
+!// 220 1004 Need to use local FUNIJK		     
+                        IJK = FUNIJK(I,J,K) 
                         FLAG_T(IJK) = FLAGX 
                      END DO 
                   END DO 
@@ -366,5 +384,20 @@
                 = 2000 + FLAG(IJKP) 
          ENDIF 
       END DO 
+
+!//AIKEPARDBG dump the FLAG_X in matrix form to verify with serial version
+!      DO K = Kstart3, Kend3                               !//AIKEPARDBG
+!         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
+!	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
+!         DO J = Jstart3, Jend3                            !//AIKEPARDBG
+!           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	
+!           DO I = Istart3, Iend3                          !//AIKEPARDBG
+!             IJK = FUNIJK(I,J,K)                     !//AIKEPARDBG
+!             write(UNIT_LOG,"(2X,A3,$)") FLAG_T(IJK) !//AIKEPARDBG
+!           END DO                                       !//AIKEPARDBG
+!           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
+!         END DO                                         !//AIKEPARDBG
+!      END DO    
+      
       RETURN  
       END SUBROUTINE SET_FLAGS1 

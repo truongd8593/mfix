@@ -76,6 +76,7 @@
 !      write(*,"('(PE ',I2,'): reached end of read_namelist')") myPE	!//AIKEPARDBG
 !      call mfix_exit(myPE)	!//AIKEPARDBG
 
+
 !// 300 0905 Partition the domain and set indices
       call SET_MAX2
       call GRIDMAP_INIT
@@ -84,6 +85,7 @@
 !
 !//? before allocate, must do something with KMAX,DZ(),ZLENGTH for each PEs and also Global values
       CALL ALLOCATE_ARRAYS
+
 
 !//AIKEPARDBG
 !      write(*,"('(PE ',I2,'): aft ALLOCATE_ARRAYS in get_data')") myPE	!//AIKEPARDBG
@@ -147,6 +149,7 @@
 !      write(*,"('(PE ',I2,'): aft call chk_data_01 in get_data')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
+
       CALL CHECK_DATA_02                         ! output_control input 
 !//AIKEPARDBG
 !      write(*,"('(PE ',I2,'): aft call chk_data_02 in get_data')") myPE  !//AIKEPARDBG
@@ -179,7 +182,9 @@
 !      write(*,"('(PE ',I2,'): aft call set_constants in get_data')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
+
       CALL CHECK_DATA_06                         ! initial condition section 
+
 
 !//AIKEPARDBGSTOP 0922
 !      write(*,"('(PE ',I2,'): aft call check_data_06 in get_data')") myPE !//AIKEPARDBG
@@ -189,8 +194,8 @@
       CALL CHECK_DATA_08                         ! Internal surfaces section 
       CALL CHECK_DATA_09                         ! Chemical reactions section 
 !//AIKEPARDBGSTOP 0922
-      write(*,"('(PE ',I2,'): aft call check_data_09 in get_data')") myPE !//AIKEPARDBG
-      call mfix_exit(myPE) !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft call check_data_09 in get_data')") myPE !//AIKEPARDBG
+!      call mfix_exit(myPE) !//AIKEPARDBG
       
 
 !

@@ -134,41 +134,51 @@
 !
       CALL GET_DATA 
 
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft get_data in mfix')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Initialize all field variables as undefined
 !
       CALL INIT_FVARS 
-
 
 !
 !  Set the flags for identifying computational cells
 !
       CALL SET_FLAGS 
 
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft set_flags in mfix')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Set constant physical properties
 !
       CALL SET_CONSTPROP 
-
-!//AIKEPARDBG
-      write(*,"('(PE ',I2,'): reached debug stop in mfix')") myPE !//AIKEPARDBG
-      call exitMPI(myPE)   !//AIKEPARDBGSTOP
       
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft set_constprop in mfix')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
 !
 !
 !  Write the initial part of the standard output file
 !
       CALL WRITE_OUT0 
-
+!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
 !//AIKEPARDBG
-!     call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-!     write(*,"('(PE ',I2,'): reached debug stop in mfix')") myPE !//AIKEPARDBG
-!     call exitMPI(myPE)   !//AIKEPARDBGSTOP
+!      write(*,"('(PE ',I2,'): after write_out0 in mfix')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Write the initial part of the special output file(s)
 !
       CALL WRITE_USR0 
+
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after write_usr0 in mfix')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
       
 !$
 !$    CALL START_LOG 
@@ -189,6 +199,10 @@
 !  Write the initial part of the restart files
 !
          CALL WRITE_RES0 
+!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+!      write(*,"('(PE ',I2,'): after write_res0 in mfix')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
          DO L = 1, N_SPX 
             CALL WRITE_SPX0 (L) 
          END DO 
@@ -233,8 +247,9 @@
       END SELECT 
 !
 !//AIKEPARDBG
-      write(*,"('(PE ',I2,'): reached before dt setting in mfix')") myPE    !//AIKEPARDBG
-      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)   !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after write_XXXX in mfix')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
       IF (DT_TMP /= UNDEFINED) THEN 
          DT = MAX(DT_MIN,MIN(DT_MAX,DT)) 
@@ -252,23 +267,40 @@
 !  using FLAG_E, FLAG_N, and FLAG_T
 !
       CALL SET_FLAGS1 
+
+!      write(*,"('(PE ',I2,'): after set_flags1 in mfix')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Calculate cell volumes and face areas
 !
       CALL SET_GEOMETRY1 
+
+!      write(*,"('(PE ',I2,'): after set_geometry1 in mfix')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Find corner cells and set their face areas to zero
 !
       CALL GET_CORNER_CELLS (IER) 
+
 !
 !  Set initial conditions
 !
       CALL SET_IC 
+
+!      write(*,"('(PE ',I2,'): after set_ic in mfix')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Set boundary conditions
 !
       CALL ZERO_NORM_VEL 
       CALL SET_BC0 
+
+!      write(*,"('(PE ',I2,'): after set_bc0 in mfix')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Set gas mixture molecular weight
 !
@@ -285,6 +317,10 @@
 !  Initialize time dependent boundary conditions
 !
       CALL SET_BC1 
+
+!      write(*,"('(PE ',I2,'): after set_bc1 in mfix')") myPE    !//AIKEPARDBG
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Check the field variable data and report errors.
 !
@@ -296,6 +332,10 @@
       CALL CPU_TIME (CPU1) 
       CPU_NLOG = CPU1 
       TIME_NLOG = TIME - DT 
+
+      write(*,"('(PE ',I2,'): reached beginning of time march in mfix')") myPE    !//AIKEPARDBG
+      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Find the solution of the equations from TIME to TSTOP at
 !  intervals of DT

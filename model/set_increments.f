@@ -107,6 +107,26 @@
             IM1(I) = MAX(ISTART3,I - 1) 
             IP1(I) = MIN(IEND3,I + 1) 
          ENDIF 
+!// 200 1107 need to update the values in the 2nd layer of ghost cells	 
+	 if(i == istart2) then
+	    IM1(i-1) = 0
+	    IP1(i-1) = ISTART2
+	 endif
+	 if(i == iend2) then
+	    IM1(i+1) = iend2
+	    IP1(i+1) = 0
+	 endif	 
+!//AIKEPARDBG
+!         if( i == istart2) &
+!	 write(UNIT_LOG,"(' IM1(',I4,') = ',I5, &
+!	              & '  IP1= ',I5)") I-1,IM1(i-1),IP1(i-1)  !//AIKEPARDBG
+!	 
+!	 write(UNIT_LOG,"(' IM1(',I4,') = ',I5, &
+!	              & '  IP1= ',I5)") I,IM1(i),IP1(i)  !//AIKEPARDBG
+!         if( i == iend2) &
+!	 write(UNIT_LOG,"(' IM1(',I4,') = ',I5, &
+!	              & '  IP1= ',I5)") I+1,IM1(i+1),IP1(i+1)  !//AIKEPARDBG
+	 
       END DO 
       DO J = JSTART2, JEND2
          IF (CYCLIC_Y.AND.NODESJ.EQ.1) THEN 
@@ -116,6 +136,15 @@
             JM1(J) = MAX(JSTART3,J - 1)
             JP1(J) = MIN(JEND3,J + 1)
          ENDIF 
+!// 200 1107 need to update the values in the 2nd layer of ghost cells	 
+	 if(j == jstart2) then
+	    JM1(j-1) = 0
+	    JP1(j-1) = JSTART2
+	 endif
+	 if(j == jend2) then
+	    JM1(j+1) = jend2
+	    JP1(j+1) = 0
+	 endif	 	 
       END DO 
       DO K = KSTART2, KEND2
          IF (CYCLIC_Z.AND.NODESK.EQ.1.AND.DO_K) THEN 
@@ -125,6 +154,15 @@
             KM1(K) = MAX(KSTART3,K - 1)
             KP1(K) = MIN(KEND3,K + 1)
          ENDIF 
+!// 200 1107 need to update the values in the 2nd layer of ghost cells	 
+	 if(k == kstart2) then
+	    kM1(k-1) = 0
+	    kP1(k-1) = kSTART2
+	 endif
+	 if(k == kend2) then
+	    kM1(k+1) = kend2
+	    kP1(k+1) = 0
+	 endif	 	 
       END DO 
       
       ICLASS = 0 
@@ -136,25 +174,31 @@
             DO I = ISTART3, IEND3
 !
 
-!// 220 1004 Replaced with global FUNIJK
-               IJK = FUNIJK_GL(I,J,K)               !Find value of IJK 
+!// 220 1004 Need to use local FUNIJK
+               IJK = FUNIJK(I,J,K)               !Find value of IJK 
 !
 !        Fill I, J, K arrays
                I_OF(IJK) = I 
                J_OF(IJK) = J 
                K_OF(IJK) = K 
+
+!//AIKEPARDBG
+!	 write(UNIT_LOG,"(' I_OF(',I4,') = ',I5, &
+!	              & '  J= ',I5,'  K= ',I5)") ,IJK,I,J,K  !//AIKEPARDBG
 !
             END DO 
          END DO 
       END DO 
+
+!      call mfix_exit(myPE) !//AIKEPARDBG       
 
 !     Loop over all cells (minus the ghost layers)
       DO K = KSTART2, KEND2
          DO J = JSTART2, JEND2
             L100: DO I = ISTART2, IEND2
 !
-!// 220 1004 Replaced with global FUNIJK
-               IJK = FUNIJK_GL(I,J,K)               !Find value of IJK
+!// 220 1004 Need to use local FUNIJK
+               IJK = FUNIJK(I,J,K)               !Find value of IJK
 !
 
 !          Find the the effective cell-center indices for all neighbor cells

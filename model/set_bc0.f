@@ -91,10 +91,14 @@
 !//? 1026 check the pointer location for ijk1 on all PEs and adjust loop counter if necessary
       IJK1 = FUNIJK(IMAX1/2 + 1,JMAX1,KMAX1/2 + 1)
 
+      write(*,"('(PE ',I2,'): IJK1 = ',I5)") myPE,IJK1 !//AIKEPARDBG
+
+!//? what is the function of this DO loop????
 !// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3        
       DO IJK = IJK1, ijkend3 
-         IF (FLUID_AT(IJK)) EXIT  
+         IF (FLUID_AT(IJK)) CYCLE  
       END DO 
+      
       IF (CYCLIC) THEN 
          IJK_P_G = IJK 
       ELSE 
@@ -157,8 +161,10 @@
                DO J = BC_J_S(L), BC_J_N(L) 
                   DO I = BC_I_W(L), BC_I_E(L) 	
 !// 360 1025 Check if current i,j,k resides on this PE		  	  
-		  IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+		  IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
                      IJK = BOUND_FUNIJK(I,J,K) 
+              write(UNIT_LOG,"('IJK= ',I5,'  I= ',I4,' J= ',I4,' K=' I4)") IJK,I,J,K
+		     
                      IF (.NOT.WALL_AT(IJK)) THEN 
 !
                         IF (P_OUTFLOW_AT(IJK) .OR. OUTFLOW_AT(IJK)) THEN 

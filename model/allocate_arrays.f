@@ -56,8 +56,10 @@
 !// 375 note that ijksize3)all() also defines the tot. # of cells in a subdomain
 !//     use both to avoid modifying all DIMENSION_3 definitions.
       DIMENSION_3L  = ijksize3_all(myPE)
-      write(*,"('(PE ',I2,'): GLOBAL DIM_3 = ',I6,/,9X,'LOCAL DIM_3  = ',I6)") myPE,DIMENSION_3G,DIMENSION_3 !//AIKEPARDBG
-      write(*,"('(PE ',I2,'): ijksize3_all() = ',I6,/,9X,'DIMENSION_3L  = ',I6)") &
+      write(*,"('(PE ',I2,'): GLOBAL DIM_3 = ',I6,/, &
+                &9X,'LOCAL DIM_3  = ',I6)") myPE,DIMENSION_3G,DIMENSION_3 !//AIKEPARDBG
+      write(*,"('(PE ',I2,'): ijksize3_all() = ',I6,/, &
+                &9X,'DIMENSION_3L  = ',I6)") &
 		 myPE,ijksize3_all(myPE),DIMENSION_3L !//AIKEPARDBG
       
       DIMENSION_M   = MAX(1, MMAX)
@@ -155,6 +157,7 @@
 !//? 1008 PG generates compilation error for this allocation      
 !//?WEIRD 1004 somehow allocatable causes PG internal error, see geometric_mod
       Allocate(           ICBC_FLAG (DIMENSION_3L) )
+
       Allocate(  oDX (DIMENSION_I) )
       Allocate(  oDY (DIMENSION_J) )
       Allocate(  oDZ (DIMENSION_K) )
@@ -270,7 +273,7 @@
       Allocate(  Array1i(DIMENSION_3) )
  
 !//?WEIRD 1004 somehow allocatable causes PG internal error, see tmp_array_mod
-!      Allocate(  Array1c(DIMENSION_3) )
+      Allocate(  Array1c(DIMENSION_3) )
 
 
 !tmp_array1

@@ -31,6 +31,7 @@
       USE geometry
       USE indices
       USE compar
+      USE funits !//AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -50,14 +51,26 @@
 !
 !                      Indices
 !
+!//AIKEPARDBG
+!       do ijk=ijkstart3,ijkend3
+!	 write(UNIT_LOG,"(' I_OF(',I4,') = ',I5, &
+!	              & '  J= ',I5,'  K= ',I5)") &
+!		      & ,IJK,I_OF(ijk),J_OF(ijk),K_OF(ijk)  !//AIKEPARDBG
+!	 write(UNIT_LOG,"(' IP1(',I4,') = ',I5, &
+!	              & '  JP1= ',I5,'  KP1= ',I5)") I_OF(ijk),IP1(I_OF(ijk)), &
+!		      &  JP1(J_OF(IJK)),KP1(K_OF(IJK))  !//AIKEPARDBG
+!       end do
+!      call mfix_exit(myPE) !//AIKEPARDBG       
+
 !!$omp  parallel do private( I, J, K, IP, JP, KP, IJK)  &
 !!$omp  schedule(dynamic,chunk_size)
 !
 !//? Make sure all references to KP are used in 1D arrays otherwise need to
 !//? communicate the calculated values also check prequisites.
 
+
 !// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-      DO IJK = ijkstart3, ijkend3 
+      DO IJK = ijkstart3, ijkend3
       
 !
          I = I_OF(IJK) 
@@ -66,6 +79,11 @@
          JP = JP1(J) 
          K = K_OF(IJK) 
          KP = KP1(K) 
+
+!// 200 1108 Check if any of i,j,k is point the 2nd ghost layer
+!//          KP is k+1 which is the problematic due data dependency,
+!//          however, only used in DZ() which is known globally on all PEs	 
+	 
 !
          VOL(IJK) = DX(I)*DY(J)*(X(I)*DZ(K)) 
          VOL_U(IJK) = HALF*(DX(I)+DX(IP))*DY(J)*(HALF*(X(I)+X(IP))*DZ(K)) 
@@ -86,6 +104,8 @@
          AXZ_U(IJK) = HALF*(DX(I)+DX(IP))*(HALF*(X(I)+X(IP))*DZ(K)) 
          AXZ_V(IJK) = AXZ(IJK) 
          AXZ_W(IJK) = DX(I)*(X(I)*HALF*(DZ(K)+DZ(KP))) 
+	 
+
       END DO 
       RETURN  
       END SUBROUTINE SET_GEOMETRY1 

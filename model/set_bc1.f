@@ -219,8 +219,8 @@
                         DO I = BC_I_W(L), BC_I_E(L) 
 !// 360 1025 Check if current i,j,k resides on this PE	    
                          IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-!// 220 1004 Replaced with global FUNIJK			
-                           IJK = FUNIJK_GL(I,J,K) 
+!// 220 1004 Need to use local FUNIJK			
+                           IJK = FUNIJK(I,J,K) 
                            SELECT CASE (BC_PLANE(L))  
                            CASE ('W')  
                               IJK2 = IM_OF(IJK) 
@@ -281,8 +281,8 @@
                         DO I = BC_I_W(L), BC_I_E(L)
 !// 360 1025 Check if current i,j,k resides on this PE			 
    		          IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE			
-!// 220 1004 Replaced with global FUNIJK			
-                           IJK = FUNIJK_GL(I,J,K) 
+!// 220 1004 Need to use local FUNIJK			
+                           IJK = FUNIJK(I,J,K) 
                            SELECT CASE (BC_PLANE(L))  
                            CASE ('W')  
                               IJK2 = IM_OF(IJK) 

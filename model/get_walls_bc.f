@@ -67,6 +67,22 @@
       LOGICAL , EXTERNAL :: COMPARE 
 !-----------------------------------------------
       INCLUDE 'function.inc'
+
+
+!//AIKEPARDBG dump the ICBC_FLAG in matrix form to verify with serial version
+!      DO K = Kstart3, Kend3                               !//AIKEPARDBG
+!         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
+!	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
+!         DO J = Jstart3, Jend3                            !//AIKEPARDBG
+!           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	
+!           DO I = Istart3, Iend3                          !//AIKEPARDBG
+!             IJK = FUNIJK(I,J,K)                     !//AIKEPARDBG
+!             write(UNIT_LOG,"(2X,A3,$)") ICBC_FLAG(IJK) !//AIKEPARDBG
+!           END DO                                       !//AIKEPARDBG
+!           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
+!         END DO                                         !//AIKEPARDBG
+!      END DO 
+
 !
 ! FIND THE WALLS
 !
@@ -158,6 +174,7 @@
                      BC_K_T(BCV) = K_T 
                   ENDIF 
                ENDIF 
+
 !
 ! CHECK FOR VALID VALUES
 !
@@ -192,6 +209,36 @@
 !
          ENDIF 
       END DO 
+
+!//AIKEPARDBG dump the ICBC_FLAG in matrix form to verify with serial version
+!      DO K = Kstart3, Kend3                               !//AIKEPARDBG
+!         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
+!	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
+!         DO J = Jstart3, Jend3                            !//AIKEPARDBG
+!           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	
+!           DO I = Istart3, Iend3                          !//AIKEPARDBG
+!             IJK = FUNIJK(I,J,K)                     !//AIKEPARDBG
+!             write(UNIT_LOG,"(2X,A3,$)") ICBC_FLAG(IJK) !//AIKEPARDBG
+!           END DO                                       !//AIKEPARDBG
+!           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
+!         END DO                                         !//AIKEPARDBG
+!      END DO 
+
+!//AIKEPARDBGSTOP 1102
+!      write(*,"('(PE ',I2,'): in 1st DO BCV loop in get_walls_bc')") myPE !//AIKEPARDBG
+!      do bcv=1,dimension_bc
+!         write(UNIT_LOG,"(/,'BC_DEFINED(',I4,') = ',L2)") BCV,BC_DEFINED(BCV)
+!	 if(BC_DEFINED(BCV)) then
+!	 write(UNIT_LOG,"(' BC_K_B(',I4,') = ',I5, &
+!	              & '  BC_K_T= ',I5)") ,BCV,BC_K_B(BCV),BC_K_T(BCV)  !//AIKEPARDBG
+!         write(UNIT_LOG,"(' BC_J_S       = ',I5, &
+!	              & '  BC_J_N= ',I5)") BC_J_S(BCV),BC_J_N(BCV)  !//AIKEPARDBG
+!         write(UNIT_LOG,"(' BC_I_W       = ',I5, &
+!	              & '  BC_I_E= ',I5)") BC_I_W(BCV),BC_I_E(BCV)  !//AIKEPARDBG
+!         write(*,*) BC_I_W(BCV),BC_I_E(BCV)
+!	 endif
+!      end do      	 
+!      call mfix_exit(myPE) !//AIKEPARDBG
       RETURN  
  1000 FORMAT(I2.2) 
 !

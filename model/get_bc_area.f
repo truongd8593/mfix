@@ -31,6 +31,7 @@
       USE param1 
       USE geometry
       USE bc
+      USE compar  !//AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -99,8 +100,13 @@
                      I = BC_I_E(BCV) + 1 
                   ENDIF 
                END DO 
-            ENDIF 
-         ENDIF 
+            ENDIF
+!//AIKEPARDBG dump the BC_AREA to verify with serial version
+!          write(*,"('(PE ',I2,'): BC_AREA(',I4,') = ',E15.4)") myPE,BCV,BC_AREA(BCV)
+	     
+         ENDIF 	 	 
       END DO 
+
+      
       RETURN  
       END SUBROUTINE GET_BC_AREA 

@@ -35,7 +35,7 @@
       USE bc
       USE indices
       USE funits 
-      USE compar   !//
+      USE compar !//AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -454,6 +454,31 @@
          ENDIF 
       END DO 
       IF (CONVERTED .AND. (NO_I .OR. NO_J .OR. NO_K)) WRITE (UNIT_LOG, 1500) 
+
+!//AIKEPARDBGSTOP 1102
+!      write(*,"('(PE ',I2,'): end of flow to vel')") myPE !//AIKEPARDBG
+!      do bcv=1,dimension_bc
+!         write(UNIT_LOG,"(/,'BC_DEFINED(',I4,') = ',L2)") BCV,BC_DEFINED(BCV)
+!	 if(BC_DEFINED(BCV)) then
+!	 write(UNIT_LOG,"(' BC_VOLFLOW_G(',I4,') = ',E15.4, &
+!	              &)") ,BCV,BC_VOLFLOW_G(BCV) !//AIKEPARDBG
+!         write(UNIT_LOG,"(' BC_U_G       = ',E15.4, &
+!	              & '  BC_V_G= ',E15.4,'  BC_W_G= ',E15.4 &
+!		      &  )") BC_U_G(BCV),BC_V_G(BCV),BC_W_G(BCV)  !//AIKEPARDBG
+!	 do m = 1,mmax
+!	 write(UNIT_LOG,"(' BC_VOLFLOW_S(',I4,',',I4') = ',E15.4, &
+!	              &)") ,BCV,M,BC_VOLFLOW_S(BCV,M) !//AIKEPARDBG
+!          write(UNIT_LOG,"(' BC_U_S       = ',E15.4, &
+!	         & '  BC_V_S= ',E15.4,'  BC_W_S= ',E15.4 &
+!		 &  )") BC_U_S(BCV,M),BC_V_S(BCV,M),BC_W_S(BCV,M)  !//AIKEPARDBG
+!         end do
+!         write(UNIT_LOG,"(' BC_I_W       = ',I5, &
+!	              & '  BC_I_E= ',I5)") BC_I_W(BCV),BC_I_E(BCV)  !//AIKEPARDBG
+!         write(*,*) BC_I_W(BCV),BC_I_E(BCV)
+!	 endif
+!      end do      	 
+!      call mfix_exit(myPE) !//AIKEPARDBG
+      
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed volumetric flow is not equal to specified value',/,&

@@ -54,7 +54,7 @@
       INTEGER          IMAX2
 !
 !                      Cell sizes in the x or r direction
-      DOUBLE PRECISION DX (DIM_I)
+      DOUBLE PRECISION DX (0:DIM_I)
 !
 !                      Starting value of X.  This quantity is useful for
 !                      simulating an annular cylindrical region.
@@ -82,7 +82,7 @@
       INTEGER          JMAX2
 !
 !                      Cell sizes in the y direction
-      DOUBLE PRECISION DY (DIM_J)
+      DOUBLE PRECISION DY (0:DIM_J)
 !
 !                      Reactor length in the y direction
       DOUBLE PRECISION YLENGTH
@@ -108,7 +108,7 @@
       INTEGER          KMAX2
 !
 !                      Cell sizes in the z or theta direction
-      DOUBLE PRECISION DZ (DIM_K)
+      DOUBLE PRECISION DZ (0:DIM_K)
 !
 !                      Reactor length in the z or theta direction
       DOUBLE PRECISION ZLENGTH
@@ -141,9 +141,9 @@
       INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG_T 
 !
 !                      Cell flags (bc/ic conditions)
-!//?WEIRD 1004 somehow allocatable causes PG internal error
-       CHARACTER*3, DIMENSION(:), ALLOCATABLE :: ICBC_FLAG
-!     CHARACTER*3, DIMENSION(2744) :: ICBC_FLAG      
+!//?WEIRD 1004 somehow allocatable causes PG internal error, Ed's soln: pointers
+!      CHARACTER*3, DIMENSION(:), ALLOCATABLE :: ICBC_FLAG
+      character*3,  dimension(:), pointer :: icbc_flag      
 !
 !                      1 / dx_i
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDX 

@@ -10,6 +10,9 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
+
+!//N 110599 Evaluation and/or modifications for parallelization was NOT done in this routine
+
       SUBROUTINE CHECK_DATA_09 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
@@ -26,7 +29,7 @@
       USE rxns
       USE indices
       USE funits 
-      USE compar   !//
+      USE compar !//AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
