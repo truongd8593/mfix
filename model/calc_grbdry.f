@@ -342,7 +342,7 @@
                      AVG_Y(Mu_g(IJK2), Mu_g(IJK2N), J_OF(IJK2))
  
           RO_g_avg =&
-                     AVG_Z(RO_g(IJK2), RO_g(IJK2N), J_OF(IJK2))
+                     AVG_Y(RO_g(IJK2), RO_g(IJK2N), J_OF(IJK2))
  
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK2)
           UGC1 = AVG_X_E(&
