@@ -261,7 +261,7 @@
 !
 !     Correct pressure and velocities
 !
-      CALL CORRECT_0 (IER) 
+      IF (RO_G0 /= ZERO) CALL CORRECT_0 (IER) 
 !//SP
       write(*,*) 'after CORRECT_0', myPE, MMAX
 !//AIKEPARDBG

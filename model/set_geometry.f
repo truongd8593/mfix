@@ -124,6 +124,12 @@
             I = IMAX3 + 1 
          ENDIF 
       ELSE IF (CYLINDRICAL) THEN 
+         ODX(0:IMAX3)  = UNDEFINED 
+         OX(0:IMAX3)   = UNDEFINED 
+         OX_E(0:IMAX3) = UNDEFINED 
+         X(0:IMAX3)    = UNDEFINED 
+         X_E(0:IMAX3)  = UNDEFINED 
+
          IF (XMIN == ZERO) THEN 
             ODX(1) = ONE/DX(1) 
             OX(1) = UNDEFINED 

@@ -585,7 +585,7 @@
                         DO I = I1, I2 
                            IJK = FUNIJK(I,J,K) 
                            IM = IM1(I) 
-                           JM = JM1(K) 
+                           JM = JM1(J) 
                            A_M(IJK,E,M) = ZERO 
                            A_M(IJK,W,M) = ZERO 
                            A_M(IJK,N,M) = ZERO 
@@ -865,7 +865,7 @@
             DO I = I1, I2 
                IJK = FUNIJK(I,J,K) 
                IM = IM1(I) 
-               JM = JM1(K) 
+               JM = JM1(J) 
                A_M(IJK,E,M) = ZERO 
                A_M(IJK,W,M) = ZERO 
                A_M(IJK,N,M) = ZERO 

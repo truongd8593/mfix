@@ -88,7 +88,7 @@
       INTEGER                 DENOTE_CLASS(MAX_CLASS)
 !
 !//SP
-      LOGICAL          TRUEI, TRUEK
+      LOGICAL          TRUEI, TRUEJ, TRUEK
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
@@ -123,7 +123,8 @@
 	 
       END DO 
       DO J = JSTART3, JEND3
-         IF (CYCLIC_Y.AND.NODESJ.EQ.1) THEN 
+ 	 TRUEJ = .NOT.(J.EQ.JMIN3.OR.J.EQ.JMIN2.OR.J.EQ.JMAX3.OR.J.EQ.JMAX2)
+         IF (CYCLIC_Y.AND.NODESJ.EQ.1.AND.DO_J.AND.TRUEJ) THEN 
             JP1(J) = JMAP_C(JMAP_C(J)+1)
             JM1(J) = JMAP_C(JMAP_C(J)-1)
 	 ELSE
@@ -136,7 +137,6 @@
          IF (CYCLIC_Z.AND.NODESK.EQ.1.AND.DO_K.AND.TRUEK) THEN
             KP1(K) = KMAP_C(KMAP_C(K)+1)
             KM1(K) = KMAP_C(KMAP_C(K)-1)
-	 write(*,*) 'K',K, KP1(K), KM1(K)
 	 ELSE
             KM1(K) = MAX(KSTART3,K - 1)
             KP1(K) = MIN(KEND3,K + 1)
