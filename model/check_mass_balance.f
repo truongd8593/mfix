@@ -2,7 +2,6 @@
 !                                                                      C
 !  Module name: CHECK_Mass_balance(init)                               C
 !  Purpose: Check global species and elemental balances                C
-!           *** This routine is not parallelized ***                   C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 27-Nov-02  C
 !  Reviewer:                                          Date:            C
@@ -332,7 +331,7 @@
 !                      flux across the plane (composed of many cell faces)
 !                      flux_in: flux from the scalar cell into the rest of the domain
 !                      flux_out: flux into the scalar cell from the rest of the domain
-      DOUBLE PRECISION ::  flux_in, flux_out
+      DOUBLE PRECISION ::  flux_in, flux_out, flux_in_global, flux_out_global
 
       INTEGER ::           IER
 !
@@ -349,6 +348,7 @@
             DO K = K1, K2 
             DO J = J1, J2 
             DO I = I1, I2 
+              IF(.NOT.IS_ON_myPE_owns(I, J, K)) cycle
 
               SELECT CASE (PLANE)  
               CASE ('W')  
@@ -409,6 +409,9 @@
 	    ENDDO
 	    ENDDO
 	    ENDDO
+
+            call global_all_sum(flux_in)
+            call global_all_sum(flux_out)
 	 
       return
       end SUBROUTINE  Calc_mass_flux_sp	 
