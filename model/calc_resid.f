@@ -704,7 +704,12 @@
         END DO
         
 	Err = (accum_new - Accum_resid_g) - (flux_in - flux_out)
-	ErrorPercent(0) = err*100./flux_in
+
+        IF (FLUX_IN.ne.ZERO) THEN
+	   ErrorPercent(0) = err*100./flux_in
+        ELSE
+           ErrorPercent(0) = err*100./SMALL_NUMBER
+        END IF
 	
 	DO M =1, MMAX
           if(dt == UNDEFINED)then
