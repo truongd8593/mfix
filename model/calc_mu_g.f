@@ -39,6 +39,7 @@
       USE constant
       USE compar    !//d
       USE sendrecv  !// 400
+      USE funits !// AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -133,6 +134,10 @@
          ENDIF 
       END DO 
 
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after 1st DO ijk loop in CALC_MU_G ')") myPE    !//AIKEPARDBG
+!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !!$omp parallel do &
 !!$omp$ schedule(dynamic,chunk_size) &
 !!$omp$ private(IJK, I,J,K,IM,JM,KM, &
@@ -149,27 +154,38 @@
 !      ijkmax1_L = ((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1))- ijmax3
 
 !//AIKEPARDBG
-    write(*,"('(PE ',I2,'): IJKMIN1= ',I4,' IJKMAX1= ',I4,' IJMAX2 = ',I4)") &
-           myPE,IJKMIN1,IJKMAX1,IJMAX2    !//AIKEPARDBG
-    write(*,"('(PE ',I2,'): IJMIN1_L= ',I4,' IJKMAX1_L= ',I4,'  IJMAX2_L= ',I4)") &
-           myPE, ((iend3-istart3+1)*(jend3-jstart3+1)+1),   &  
-	  (((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1))- (iend3-istart3+1)*(jend3-jstart3+1)), &
-          ((iend3-istart3+1)*(jend3-jstart3+1)) 
+!    write(*,"('(PE ',I2,'): IJKMIN1= ',I4,' IJKMAX1= ',I4,' IJMAX2 = ',I4)") &
+!           myPE,IJKMIN1,IJKMAX1,IJMAX2    !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): IJMIN1_L= ',I4,' IJKMAX1_L= ',I4,'  IJMAX2_L= ',I4)") &
+!           myPE, ((iend3-istart3+1)*(jend3-jstart3+1)+1),   &  
+!	  (((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1))- (iend3-istart3+1)*(jend3-jstart3+1)), &
+!          ((iend3-istart3+1)*(jend3-jstart3+1)) 
 
 !//? 1112 Make sure all the variables used in following DO loop are up to date
 !//       at the boundaries as it has references to K-1. K-1 on PE 1 at the
 !//       bottom face refers to the top face layer of PE 0!!!
 
-!// 350 changed do loop limits ijkmin1, ijkmax1 ==> ijkmin1_L,ijkmax1_L     
+!// 350 changed do loop limits ijkmin1, ijkmax1 ==> ijkstart3,ijkend3     
 !      DO IJK = IJKMIN1, IJKMAX1 
+      DO IJK = ijkstart3, ijkend3
 !//? replace the crowd once ijmax_L, ijmin1_L, ijmax1_L are defined & set globally
-      DO IJK = ((iend3-istart3+1)*(jend3-jstart3+1)+1), &
-       ((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1)) - (iend3-istart3+1)*(jend3-jstart3+1)
+!      DO IJK = ((iend3-istart3+1)*(jend3-jstart3+1)+1), &
+!       ((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1)) - (iend3-istart3+1)*(jend3-jstart3+1)
+
 
          IF ( .NOT.WALL_AT(IJK) .AND. L_SCALE(IJK)/=ZERO) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
             K = K_OF(IJK) 
+!// 360 1025 Check if current i,j,k resides on this PE	    
+!            IF (.NOT.IS_ON_myPE_owns(I,J,K)) CYCLE
+!/AIKERPARDBG
+!            write(UNIT_LOG,"('(PE ',I2,'): from calc_mu_g ',&                    
+!                & /,9X,'K = ',I6,'  KM = ',I6, &   
+!                & /,9X,'J = ',I6,'  JM = ',I6,&    
+!		& /,9X,'I = ',I6,'  IM = ',I6)") &  !//AIKEPARDBG
+!                & myPE,K,KM,J,JM,I,IM !//AIKEPARDBG
+	    
             IM = IM1(I) 
             JM = JM1(J) 
             KM = KM1(K) 
@@ -215,6 +231,17 @@
                IPJK)),I)                         !i+1/2, j, k 
             W_G_W = AVG_X(AVG_Z_T(W_G(IMJKM),W_G(IMJK)),AVG_Z_T(W_G(IJKM),W_G(&
                IJK)),IM)                         !i-1/2, j, k 
+!/AIKERPARDBG
+!            write(UNIT_LOG,"('U_G_N= ',E12.4 &                    
+!                & ,2X,'U_G_S= ',E12.4,2X,'U_G_T= ',E12.4,2X,'U_G_B= ',E12.4 &   
+!!                & ,/,'V_G_E= ',E12.4,2X,'V_G_W= ',E12.4,2X,'V_G_T= ',E12.4 &    
+!!		& ,2X,'V_G_B= ',E12.4
+!                & ,/,'W_G_N= ',E12.4,2X,'W_G_S= ',E12.4,2X,'W_G_E= ',E12.4 &    
+!		& ,2X,'W_G_W= ',E12.4)") &    !//AIKEPARDBG
+!                  U_G_N,U_G_S,U_G_T,U_G_B, &
+!!		  V_G_E,V_G_W,V_G_T,V_G_B, &
+!		  W_G_N,W_G_S,W_G_E,W_G_W     !//AIKEPARDBG
+
 !
             IF (CYLINDRICAL) THEN 
 !                                                !i, j, k
@@ -225,6 +252,7 @@
                U_G_C = ZERO 
                W_G_C = ZERO 
             ENDIF 
+
 !
 !         Find components of fluid phase strain rate
 !         tensor, D_g, at center of the cell - (i, j, k)
@@ -250,17 +278,21 @@
          ENDIF 
       END DO 
 
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): before COMM in CALC_MU_G ')") myPE    !//AIKEPARDBG
+!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !//S 1113 try to move this COMM to the end of transport_prop to do all COMMs
 !//       at certain locations, provided that no data dependency in between.
 
 !//? 1112 need to update the boundaries for variables : MU_GT,LAMBDA_GT
 !// 400 1112 update the boundaries for recently calculated field vars
-      call send_recv(mu_gt,2)
-      call send_recv(lambda_gt,2) 
+      call send_recv(mu_gt,idbg)
+      call send_recv(lambda_gt,idbg) 
            
 !//AIKEPARDBG
-      write(*,"('(PE ',I2,'): eof CALC_MU_G ')") myPE    !//AIKEPARDBG
-      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+!      write(*,"('(PE ',I2,'): eof CALC_MU_G ')") myPE    !//AIKEPARDBG
+!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
       
       RETURN  
       END SUBROUTINE CALC_MU_G 

@@ -50,6 +50,8 @@
       USE rxns
       USE indices
       USE compar    !//d
+      USE sendrecv  !// 400
+!      USE dbg_util  !//AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -121,7 +123,12 @@
 !!$omp&  WSCM, VREL, Re, LM, FAC ) &
 !!$omp& schedule(dynamic,chunk_size)
 
-            DO IJK = 1, IJKMAX2 
+!//? Make sure all dependent variables used in following DO loop are up to date
+!//? Check overlapping interface values of these vars
+!// 350 1119 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+!        DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3
+	 
                IF (.NOT.WALL_AT(IJK)) THEN 
                   I = I_OF(IJK) 
                   EP_G2 = EP_G(IJK)*EP_G(IJK) 
@@ -175,5 +182,13 @@
             END DO 
          ENDIF 
       END DO 
+
+!       call prnfield(GAMA_GS,'GAMA_GS','BEF')   !//AIKEPARDBG
+
+!// 400 1112 update the boundaries for recently calculated field vars
+      call send_recv(GAMA_GS,idbg)
+
+!       call prnfield(GAMA_GS,'GAMA_GS','AFT')   !//AIKEPARDBG
+    
       RETURN  
       END SUBROUTINE CALC_GAMA 

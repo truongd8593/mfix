@@ -1,3 +1,5 @@
+!//NOMOD 1117 No modifications necessary
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: EXCHANGE(DRAG, HEAT_TR, WALL_TR, IER)                  C
@@ -26,6 +28,7 @@
 !-----------------------------------------------
       USE param 
       USE param1 
+      USE compar  !//AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -52,5 +55,9 @@
       CALL CALC_GAMA (HEAT_TR, IER) 
 !
 !
+!//AIKEPARDBG
+      write(*,"('(PE ',I2,'): eof EXCHANGE')") myPE    !//AIKEPARDBG
+!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
       RETURN  
       END SUBROUTINE EXCHANGE 

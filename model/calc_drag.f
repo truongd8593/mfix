@@ -1,3 +1,4 @@
+!//NOMOD 1117 No modifications necessary
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CALC_DRAG(DRAG, IER)                                   C
@@ -41,6 +42,7 @@
       USE physprop
       USE run
       USE drag
+      USE compar     !//AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -78,5 +80,10 @@
             IF (DRAGD(L,M)) CALL DRAG_SS (L, M, F_SS, IER) 
          END DO 
       END DO 
+
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): eof CALC_DRAG')") myPE    !//AIKEPARDBG
+!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+      
       RETURN  
       END SUBROUTINE CALC_DRAG 

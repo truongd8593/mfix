@@ -226,7 +226,8 @@
 !
 !       Look at 2 through KMAX1 W-momentum cells
       IF (DO_K) THEN 
-!//D 300 0912 no changes in the limits as they run over ACTIVE cells ONLY
+!//D 300 0912 no changes in the limits as they run over ACTIVE cells ONLY 
+!//  and due to 1D arrays are declared globally
          DO K = KMIN1, KMAX1 
             DZ_T = HALF*(DZ(K+1)+DZ(K)) 
             ODZ_T(K) = ONE/DZ_T 

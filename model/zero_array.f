@@ -43,7 +43,9 @@
       INTEGER          IJK
 !
 !                      Array
-      double precision, intent(inout), dimension(:) :: ARRAY
+!// 504 1120 Modified the inherent dimensioning to absolute
+!      double precision, intent(inout), dimension(:) :: ARRAY
+      double precision, intent(inout), dimension(DIMENSION_3) :: ARRAY      
 !
 !-----------------------------------------------
 !

@@ -195,13 +195,13 @@
 
 
 !// 400 1112 update the boundaries for recently calculated field vars
-      CALL SEND_RECV(HOR_G, 2)
-      CALL SEND_RECV(HOR_S, 2)
+      CALL SEND_RECV(HOR_G, idbg)
+      CALL SEND_RECV(HOR_S, idbg)
 !//? check if we need a GLOBAL SUM for the following two as it accumulates sum
 !//  for each species            
-      CALL SEND_RECV(SUM_R_G , 2)
-      CALL SEND_RECV(SUM_R_S, 2)      
-      CALL SEND_RECV(R_PHASE, 2)      
+      CALL SEND_RECV(SUM_R_G , idbg)
+      CALL SEND_RECV(SUM_R_S, idbg)      
+      CALL SEND_RECV(R_PHASE, idbg)      
      
  1000 FORMAT(/1X,70('*')//' From: RRATES',/&
          ' Message: Mass transfer between phases ',I2,' and ',I2,&

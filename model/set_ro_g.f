@@ -41,6 +41,9 @@
       USE constant
       USE indices
       USE compar        !//d
+      USE funits        !//AIKEPARDBG
+      USE sendrecv      !// 400
+!      USE dbg_util      !//AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -87,14 +90,21 @@
             ENDIF 
          END DO 
       ENDIF 
+
+
+!       call prnfield(RO_G,'RO_G','BEF')   !//AIKEPARDBG
+
 !
 !//S No communication is necessary as the RO_G and ROP_G are calculated based
 !//  on already available vars and these portions are already overlapping.
 !//  A good check for the execution is to see whether RO_G and ROP_G have
 !//  same values on both PEs although they were calculated independently.
 !//? Mike's implementation but check necessity and also syntax as it give compilation error
-!	CALL SEND_RECV(RO_G, 2)
-!	CALL SEND_RECV(ROP_G, 2)
+!	CALL SEND_RECV(RO_G, idbg)
+!	CALL SEND_RECV(ROP_G, idbg)
 	
+
+!       call prnfield(RO_G,'RO_G','BEF')    !//AIKEPARDBG
+
       RETURN  
       END SUBROUTINE SET_RO_G 

@@ -241,8 +241,8 @@
          HEAT_TR, WALL_TR, IER) 
 
 !//AIKEPARDBG
-    write(*,"('(PE ',I2,'): aft CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
-    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+!    write(*,"('(PE ',I2,'): aft CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Remove undefined values at wall cells for scalars
@@ -252,17 +252,28 @@
          CALL UNDEF_2_0 (ROP_S(1,M), IER) 
       END DO 
 
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft UNDEF_2_0 in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Initialize d's and e's to zero   !//? pnicol : ??????
 !
+!// 500 1119 Removed IJKMAX2 from the arg. list of ZERO_ARRAY calls based on
+!       modification of Sreekanth for ZERo_ARRAY routine on 11/2/99.
       DO M = 0, MMAX 
-         CALL ZERO_ARRAY (D_E(1,M), IJKMAX2, IER) 
-         CALL ZERO_ARRAY (D_N(1,M), IJKMAX2, IER) 
-         CALL ZERO_ARRAY (D_T(1,M), IJKMAX2, IER) 
+         CALL ZERO_ARRAY (D_E(1,M), IER) 	 
+         CALL ZERO_ARRAY (D_N(1,M), IER) 
+         CALL ZERO_ARRAY (D_T(1,M), IER) 
       END DO 
-      CALL ZERO_ARRAY (E_E, IJKMAX2, IER) 
-      CALL ZERO_ARRAY (E_N, IJKMAX2, IER) 
-      CALL ZERO_ARRAY (E_T, IJKMAX2, IER) 
+      CALL ZERO_ARRAY (E_E, IER) 
+      CALL ZERO_ARRAY (E_N, IER) 
+      CALL ZERO_ARRAY (E_T, IER) 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft ZERO_ARRAY in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 !   Initialize adjust_ur
 !
@@ -273,19 +284,39 @@
 !
   100 CONTINUE 
       IF (CALL_USR) CALL USR1 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft call USR1 in time_march')") myPE    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Remove solids from cells containing very small quantities of solids
 !
       CALL ADJUST_EPS 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft ADJUST_EPS in time_march')") myPE    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Mark the phase whose continuity will be used for forming Pp_g and Pp_s eqs.
 !
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP, DO_P_S, &
          SWITCH_4_P_G, SWITCH_4_P_S, IER) 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft MARK_PHASE_4 in time_march')") myPE    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Set wall boundary conditions and transient flow b.c.'s
 !
       CALL SET_BC1 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft SET_BC1 in time_march')") myPE    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 ! Write standard output, if needed
 !
@@ -400,6 +431,11 @@
          RETURN  
         ENDIF 
       end if                !//
+
+!//AIKEPARDBG
+    write(*,"('(PE ',I2,'): reached end of restart dump in time_march')") myPE    !//AIKEPARDBG
+    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Update previous-time-step values of field variables
 !

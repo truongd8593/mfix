@@ -69,20 +69,22 @@
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
 !
+!// 500 1119 Removed IJKMAX2 from the arg. list of ZERO_ARRAY calls based on
+!       modification of Sreekanth for ZERo_ARRAY routine on 11/2/99.
 !
 !     Initialize arrays to zero
-      CALL ZERO_ARRAY (SUM_R_G, IJKMAX2, IER) 
-      CALL ZERO_ARRAY (HOR_G, IJKMAX2, IER) 
+      CALL ZERO_ARRAY (SUM_R_G, IER) 
+      CALL ZERO_ARRAY (HOR_G, IER) 
       DO N = 1, NMAX(0) 
-         CALL ZERO_ARRAY (R_GP(1,N), IJKMAX2, IER) 
-         CALL ZERO_ARRAY (ROX_GC(1,N), IJKMAX2, IER) 
+         CALL ZERO_ARRAY (R_GP(1,N), IER) 
+         CALL ZERO_ARRAY (ROX_GC(1,N), IER) 
       END DO 
       DO M = 1, MMAX 
-         CALL ZERO_ARRAY (SUM_R_S(1,M), IJKMAX2, IER) 
-         CALL ZERO_ARRAY (HOR_S(1,M), IJKMAX2, IER) 
+         CALL ZERO_ARRAY (SUM_R_S(1,M), IER) 
+         CALL ZERO_ARRAY (HOR_S(1,M), IER) 
          DO N = 1, NMAX(M) 
-            CALL ZERO_ARRAY (R_SP(1,M,N), IJKMAX2, IER) 
-            CALL ZERO_ARRAY (ROX_SC(1,M,N), IJKMAX2, IER) 
+            CALL ZERO_ARRAY (R_SP(1,M,N), IER) 
+            CALL ZERO_ARRAY (ROX_SC(1,M,N), IER) 
          END DO 
       END DO 
       
@@ -271,18 +273,18 @@
 
 
 !// 400 1112 update the boundaries for recently calculated field vars
-      call send_recv(ROX_GC,2)
-      call send_recv(R_GP,2)
-      call send_recv(ROX_SC,2)
-      call send_recv(R_SP,2)      
-      call send_recv(HOR_G,2) 
-      call send_recv(HOR_S,2)   
-      call send_recv(R_TEMP,2)       
-      call send_recv(R_PHASE,2) 
+      call send_recv(ROX_GC,idbg)
+      call send_recv(R_GP,idbg)
+      call send_recv(ROX_SC,idbg)
+      call send_recv(R_SP,idbg)      
+      call send_recv(HOR_G,idbg) 
+      call send_recv(HOR_S,idbg)   
+      call send_recv(R_TEMP,idbg)       
+      call send_recv(R_PHASE,idbg) 
 !//? check if we need a GLOBAL SUM for the following two as it accumulates sum
 !//  for each species      
-      call send_recv(SUM_R_S,2)        
-      call send_recv(SUM_R_G,2)              
+      call send_recv(SUM_R_S,idbg)        
+      call send_recv(SUM_R_G,idbg)              
 
       
       RETURN  

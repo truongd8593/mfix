@@ -34,6 +34,8 @@
       USE physprop
       USE constant
       USE compar        !//d
+      USE sendrecv      !// 400
+      USE dbg_util      !//AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -100,7 +102,10 @@
          SW_S(M) = .FALSE. 
          DO_CONT(M) = .TRUE. 
       END DO 
-      DO IJK = 1, IJKMAX2 
+
+!// 350 1120 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3          
+!      DO IJK = 1, IJKMAX2 
+      DO IJK = IJKstart3, IJKend3
 !
 !
          IF (FLUID_AT(IJK)) THEN 
@@ -131,6 +136,15 @@
             PHASE_4_P_S(IJK) = UNDEFINED_I       !to indicate a non-fluid cell 
          ENDIF 
       END DO 
+
+!      call prnfield(PHASE_4_P_G,'PHASE_4_P_G','BEF')    !//AIKEPARDBG
+
+!// 400 1120 update the boundaries for recently calculated field vars
+      call send_recv(PHASE_4_P_G,idbg)
+      call send_recv(PHASE_4_P_S,idbg)
+
+!      call prnfield(PHASE_4_P_G,'PHASE_4_P_G','AFT')    !//AIKEPARDBG
+      
       TRUE_G = 0 
       TRUE_S = 0 
       IF (SW_G(0)) TRUE_G = TRUE_G + 1 
@@ -173,5 +187,7 @@
 !        IF(SW_g(M) .AND. True_g .EQ. 1)DO_CONT(M) = .FALSE.
 !        IF(SW_s(M) .AND. True_s .EQ. 1)DO_CONT(M) = .FALSE.
 !120   CONTINUE
+
+
       RETURN  
       END SUBROUTINE MARK_PHASE_4_COR 

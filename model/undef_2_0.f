@@ -7,7 +7,8 @@
 !  Author: M. Syamlal                                 Date: 18-JUL-96  C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE UNDEF_2_0(VAR, IER) 
+!//AIKE Changed local variable name from VAR to VARDUM, due to conflict in PG
+      SUBROUTINE UNDEF_2_0(VARDUM, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -17,6 +18,7 @@
       USE param 
       USE param1 
       USE geometry
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -25,7 +27,8 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       INTEGER IER 
-      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: VAR 
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: VARDUM 
+
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -38,10 +41,13 @@
 !  Local variables
 !
 !
-      IJK = 1 
-      IF (IJKMAX2 > 0) THEN 
-         WHERE (VAR(:IJKMAX2) == UNDEFINED) VAR(:IJKMAX2) = ZERO 
-         IJK = IJKMAX2 + 1 
-      ENDIF 
+!      IJK = 1 
+!      IF (IJKEND3 > 0) THEN 
+!// 200 1119 changed :IJKMAX2 --> IJKSTART3:IJKEND3          
+!         WHERE (VAR(:IJKMAX2) == UNDEFINED) VAR(:IJKMAX2) = ZERO 
+!         WHERE (VARDUM(IJKSTART3:IJKEND3) == UNDEFINED) VARDUM(IJKSTART3:IJKEND3) = ZERO 
+         WHERE (VARDUM(1:IJKEND3) == UNDEFINED) VARDUM(1:IJKEND3) = ZERO 
+!         IJK = IJKMAX2 + 1 
+!      ENDIF 
       RETURN  
       END SUBROUTINE UNDEF_2_0 

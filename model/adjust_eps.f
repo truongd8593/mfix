@@ -40,6 +40,8 @@
       USE physprop
       USE run
       USE compar     !//d
+      USE sendrecv   !// 400
+      USE dbg_util   !//AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -65,9 +67,14 @@
       IF (.NOT.(MOMENTUM_X_EQ(1) .AND. MOMENTUM_Y_EQ(1) .AND. MOMENTUM_Z_EQ(1))&
          ) RETURN  
 !
-      DO K = KMIN1, KMAX1 
-         DO J = JMIN1, JMAX1 
-            DO I = IMIN1, IMAX1 
+!// 200 1119 Changed the limits for the triple loop
+!      DO K = KMIN1, KMAX1 
+!         DO J = JMIN1, JMAX1 
+!            DO I = IMIN1, IMAX1 
+      DO K = Kstart1, Kend1 
+         DO J = Jstart1, Jend1 
+            DO I = Istart1, Iend1 
+	    
                IJK = FUNIJK(I,J,K) 
                IF (FLUID_AT(IJK)) THEN 
                   EPSUM = ZERO 
@@ -93,5 +100,18 @@
             END DO 
          END DO 
       END DO 
+      
+      
+!      call prnfield(ROP_G,'ROP_G','BEF')    !//AIKEPARDBG
+
+!// 400 1112 update the boundaries for recently calculated field vars
+      call send_recv(ROP_S,idbg)
+      call send_recv(U_S,idbg) 
+      call send_recv(V_S,idbg) 
+      call send_recv(W_S,idbg) 
+      call send_recv(EP_G,idbg) 
+      call send_recv(ROP_G,idbg)             
+      
+!      call prnfield(ROP_G,'ROP_G','AFT')    !//AIKEPARDBG      
       RETURN  
       END SUBROUTINE ADJUST_EPS 

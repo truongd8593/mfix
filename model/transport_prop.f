@@ -57,11 +57,22 @@
 !
 ! 1.2.1 Fluid viscosity
       IF (VISC(0)) CALL CALC_MU_G (IER) 
+
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after CALC_MU_S in transport_prop')") myPE    !//AIKEPARDBG
+!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 ! 1.2.2 Solids viscosity
       DO M = 1, MMAX 
          IF (VISC(M)) CALL CALC_MU_S (M, IER) 
       END DO 
+
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after CALC_MU_S in transport_prop')") myPE    !//AIKEPARDBG
+!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
+
 !
 ! 1.2.3 Fluid conductivity
       IF (COND(0)) CALL CALC_K_G (IER) 
@@ -78,5 +89,10 @@
       DO M = 1, MMAX 
          IF (DIFF(M)) CALL CALC_DIF_S (M, IER) 
       END DO 
+
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): eof transport_prop')") myPE    !//AIKEPARDBG
+!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+      
       RETURN  
       END SUBROUTINE TRANSPORT_PROP 
