@@ -50,6 +50,7 @@
       USE compar 
       USE sendrecv 
       USE sendrecv3
+      USE boundfunijk
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -63,7 +64,7 @@
  
 ! 
 !                      Indices 
-      INTEGER          I, J, K, IJK 
+      INTEGER          I, J, K, IJK, IJK1 
 ! 
 !                      Local DO loop index for b.c. specification 
       INTEGER          L 
@@ -91,6 +92,42 @@
 ! 107       C      CYCLIC_PD      Cyclic b.c. with pressure drop
 ! Flag values greater than 100 are considered to be wall cells
 ! (see function.inc).
+
+!make the wall cells adjacent to flow boundaries free-slip wall
+! to avoid unphysical strain rates in fluid cells adjacent to the flow boundary 
+!!$omp  parallel do private( IJK) &
+!!$omp&  schedule(static)
+      DO i = istart4, iend4
+         DO j = jstart4, jend4
+	    DO k = kstart4, kend4
+
+              IJK = funijk(i, j, k)
+              SELECT CASE (TRIM(ICBC_FLAG(IJK)(1:1)))  
+                CASE ('p', 'P', 'I', 'O', 'o')
+		  
+                ijk1 = bound_funijk(i+1, j, k)
+		IF(TRIM(ICBC_FLAG(IJK1)(1:1)) == 'W')ICBC_FLAG(IJK1)(1:1)='S'
+		
+                ijk1 = bound_funijk(i-1, j, k)
+ 		IF(TRIM(ICBC_FLAG(IJK1)(1:1)) == 'W')ICBC_FLAG(IJK1)(1:1)='S'
+		
+                ijk1 = bound_funijk(i, j+1, k)
+		IF(TRIM(ICBC_FLAG(IJK1)(1:1)) == 'W')ICBC_FLAG(IJK1)(1:1)='S'
+		
+                ijk1 = bound_funijk(i, j-1, k)
+		IF(TRIM(ICBC_FLAG(IJK1)(1:1)) == 'W')ICBC_FLAG(IJK1)(1:1)='S'
+		
+                ijk1 = bound_funijk(i, j, k+1)
+		IF(TRIM(ICBC_FLAG(IJK1)(1:1)) == 'W')ICBC_FLAG(IJK1)(1:1)='S'
+		
+                ijk1 = bound_funijk(i, j, k-1)
+		IF(TRIM(ICBC_FLAG(IJK1)(1:1)) == 'W')ICBC_FLAG(IJK1)(1:1)='S'
+		
+              END SELECT
+	      
+            END DO 
+          END DO 
+      END DO 
 !
 !!$omp  parallel do private( IJK) &
 !!$omp&  schedule(static)
