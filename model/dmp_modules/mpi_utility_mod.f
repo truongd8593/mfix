@@ -39,60 +39,85 @@
 			  bcast_0l, bcast_1l, bcast_0c, bcast_1c
 	end interface 
 
-	interface global_sum
-	module  procedure global_sum_0i, global_sum_1i, global_sum_2i, global_sum_3i, &
+        interface global_sum
+        module  procedure global_sum_0i, global_sum_1i, global_sum_2i, global_sum_3i, &
                           global_sum_0r, global_sum_1r, global_sum_2r, global_sum_3r, &
                           global_sum_0d, global_sum_1d, global_sum_2d, global_sum_3d
-	end interface 
+        end interface
 
- 	interface global_all_sum
- 	module  procedure global_all_sum_0i, global_all_sum_1i, &
+        interface global_all_sum
+        module  procedure &
+                          global_all_sum_0i, global_all_sum_1i, &
                           global_all_sum_2i, global_all_sum_3i, &
                           global_all_sum_0r, global_all_sum_1r, &
                           global_all_sum_2r, global_all_sum_3r, &
                           global_all_sum_0d, global_all_sum_1d, &
-                          global_all_sum_2d, global_all_sum_3d
- 	end interface 
+                          global_all_sum_2d, global_all_sum_3d, &
+                          global_all_sum_onevar_0i, global_all_sum_onevar_1i, &
+                          global_all_sum_onevar_2i, global_all_sum_onevar_3i, &
+                          global_all_sum_onevar_0r, global_all_sum_onevar_1r, &
+                          global_all_sum_onevar_2r, global_all_sum_onevar_3r, &
+                          global_all_sum_onevar_0d, global_all_sum_onevar_1d, &
+                          global_all_sum_onevar_2d, global_all_sum_onevar_3d
+        end interface
 
-	interface global_min
-	module  procedure global_min_0i, global_min_1i, global_min_2i, global_min_3i, &
+        interface global_min
+        module  procedure global_min_0i, global_min_1i, global_min_2i, global_min_3i, &
                           global_min_0r, global_min_1r, global_min_2r, global_min_3r, &
                           global_min_0d, global_min_1d, global_min_2d, global_min_3d
-	end interface 
+        end interface
 
- 	interface global_all_min
- 	module  procedure global_all_min_0i, global_all_min_1i, &
+        interface global_all_min
+        module  procedure &
+                          global_all_min_0i, global_all_min_1i, &
                           global_all_min_2i, global_all_min_3i, &
                           global_all_min_0r, global_all_min_1r, &
                           global_all_min_2r, global_all_min_3r, &
                           global_all_min_0d, global_all_min_1d, &
-                          global_all_min_2d, global_all_min_3d
- 	end interface 
+                          global_all_min_2d, global_all_min_3d, &
+                          global_all_min_onevar_0i, global_all_min_onevar_1i, &
+                          global_all_min_onevar_2i, global_all_min_onevar_3i, &
+                          global_all_min_onevar_0r, global_all_min_onevar_1r, &
+                          global_all_min_onevar_2r, global_all_min_onevar_3r, &
+                          global_all_min_onevar_0d, global_all_min_onevar_1d, &
+                          global_all_min_onevar_2d, global_all_min_onevar_3d
+        end interface
 
-	interface global_max
-	module  procedure global_max_0i, global_max_1i, global_max_2i, global_max_3i, &
+        interface global_max
+        module  procedure global_max_0i, global_max_1i, global_max_2i, global_max_3i, &
                           global_max_0r, global_max_1r, global_max_2r, global_max_3r, &
                           global_max_0d, global_max_1d, global_max_2d, global_max_3d
-	end interface 
+        end interface
 
- 	interface global_all_max
- 	module  procedure global_all_max_0i, global_all_max_1i, &
+        interface global_all_max
+        module  procedure &
+                          global_all_max_0i, global_all_max_1i, &
                           global_all_max_2i, global_all_max_3i, &
                           global_all_max_0r, global_all_max_1r, &
                           global_all_max_2r, global_all_max_3r, &
                           global_all_max_0d, global_all_max_1d, &
-                          global_all_max_2d, global_all_max_3d
- 	end interface 
+                          global_all_max_2d, global_all_max_3d, &
+                          global_all_max_onevar_0i, global_all_max_onevar_1i, &
+                          global_all_max_onevar_2i, global_all_max_onevar_3i, &
+                          global_all_max_onevar_0r, global_all_max_onevar_1r, &
+                          global_all_max_onevar_2r, global_all_max_onevar_3r, &
+                          global_all_max_onevar_0d, global_all_max_onevar_1d, &
+                          global_all_max_onevar_2d, global_all_max_onevar_3d
+        end interface
 
         interface global_all_and
-        module procedure global_all_and_0d, global_all_and_1d
+        module procedure &
+                global_all_and_0d, global_all_and_1d, &
+                global_all_and_onevar_0d, global_all_and_onevar_1d
         end interface
 
         interface global_all_or
-        module procedure global_all_or_0d, global_all_or_1d
+        module procedure &
+                global_all_or_0d, global_all_or_1d, &
+                global_all_or_onevar_0d, global_all_or_onevar_1d
         end interface
 
-	contains
+        contains
 
 
 !	Routine to scatter gbuf available on root to all the processors
@@ -1779,6 +1804,8 @@
 
         enddo
 
+        deallocate(buffer1)
+
         return
         end subroutine bcast_0c
 
@@ -1836,6 +1863,8 @@
           enddo
 	    buffer(i) = string
         enddo
+
+        deallocate(buffer1)
 
         return
         end subroutine bcast_1c
@@ -2300,6 +2329,122 @@
 
         return
         end subroutine global_sum_3d
+
+        subroutine global_all_sum_onevar_0d( gbuf )
+        doubleprecision, intent(inout) :: gbuf
+        doubleprecision :: lbuf
+
+        lbuf = gbuf
+        call global_all_sum_0d( lbuf, gbuf )
+        return
+        end subroutine global_all_sum_onevar_0d
+
+
+        subroutine global_all_sum_onevar_1d( gbuf )
+        doubleprecision, dimension(:), intent(inout) :: gbuf
+        doubleprecision, dimension(size(gbuf)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_sum_1d( lbuf, gbuf )
+        return
+        end subroutine global_all_sum_onevar_1d
+
+        subroutine global_all_sum_onevar_2d( gbuf )
+        doubleprecision, dimension(:,:), intent(inout) :: gbuf
+        doubleprecision, dimension(size(gbuf,1),size(gbuf,2)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_sum_2d( lbuf, gbuf )
+        return
+        end subroutine global_all_sum_onevar_2d
+
+
+        subroutine global_all_sum_onevar_3d( gbuf )
+        doubleprecision, dimension(:,:,:), intent(inout) :: gbuf
+        doubleprecision, dimension(size(gbuf,1),size(gbuf,2),size(gbuf,3)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_sum_3d( lbuf, gbuf )
+        return
+        end subroutine global_all_sum_onevar_3d
+
+
+
+        subroutine global_all_sum_onevar_0i( gbuf )
+        integer, intent(inout) :: gbuf
+        integer :: lbuf
+
+        lbuf = gbuf
+        call global_all_sum_0i( lbuf, gbuf )
+        return
+        end subroutine global_all_sum_onevar_0i
+
+        subroutine global_all_sum_onevar_1i( gbuf )
+        integer, dimension(:), intent(inout) :: gbuf
+        integer, dimension(size(gbuf)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_sum_1i( lbuf, gbuf )
+        return
+        end subroutine global_all_sum_onevar_1i
+
+        subroutine global_all_sum_onevar_2i( gbuf )
+        integer, dimension(:,:), intent(inout) :: gbuf
+        integer, dimension(size(gbuf,1),size(gbuf,2)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_sum_2i( lbuf, gbuf )
+        return
+        end subroutine global_all_sum_onevar_2i
+
+
+        subroutine global_all_sum_onevar_3i( gbuf )
+        integer, dimension(:,:,:), intent(inout) :: gbuf
+        integer, dimension(size(gbuf,1),size(gbuf,2),size(gbuf,3)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_sum_3i( lbuf, gbuf )
+        return
+        end subroutine global_all_sum_onevar_3i
+
+        subroutine global_all_sum_onevar_0r( gbuf )
+        real, intent(inout) :: gbuf
+        real :: lbuf
+
+        lbuf = gbuf
+        call global_all_sum_0r( lbuf, gbuf )
+        return
+        end subroutine global_all_sum_onevar_0r
+
+
+        subroutine global_all_sum_onevar_1r( gbuf )
+        real, dimension(:), intent(inout) :: gbuf
+        real, dimension(size(gbuf)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_sum_1r( lbuf, gbuf )
+        return
+        end subroutine global_all_sum_onevar_1r
+
+        subroutine global_all_sum_onevar_2r( gbuf )
+        real, dimension(:,:), intent(inout) :: gbuf
+        real, dimension(size(gbuf,1),size(gbuf,2)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_sum_2r( lbuf, gbuf )
+        return
+        end subroutine global_all_sum_onevar_2r
+
+
+        subroutine global_all_sum_onevar_3r( gbuf )
+        real, dimension(:,:,:), intent(inout) :: gbuf
+        real, dimension(size(gbuf,1),size(gbuf,2),size(gbuf,3)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_sum_3r( lbuf, gbuf )
+        return
+        end subroutine global_all_sum_onevar_3r
+
 
         subroutine global_all_sum_0i( lbuf, gbuf, mroot, idebug )
         integer, intent(in) :: lbuf
@@ -3088,6 +3233,125 @@
         return
         end subroutine global_min_3d
 
+        subroutine global_all_min_onevar_0d( gbuf )
+        doubleprecision, intent(inout) :: gbuf
+        doubleprecision :: lbuf
+
+        lbuf = gbuf
+        call global_all_min_0d( lbuf, gbuf )
+        return
+        end subroutine global_all_min_onevar_0d
+
+
+        subroutine global_all_min_onevar_1d( gbuf )
+        doubleprecision, dimension(:), intent(inout) :: gbuf
+        doubleprecision, dimension(size(gbuf)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_min_1d( lbuf, gbuf )
+        return
+        end subroutine global_all_min_onevar_1d
+
+        subroutine global_all_min_onevar_2d( gbuf )
+        doubleprecision, dimension(:,:), intent(inout) :: gbuf
+        doubleprecision, dimension(size(gbuf,1),size(gbuf,2)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_min_2d( lbuf, gbuf )
+        return
+        end subroutine global_all_min_onevar_2d
+
+
+        subroutine global_all_min_onevar_3d( gbuf )
+        doubleprecision, dimension(:,:,:), intent(inout) :: gbuf
+        doubleprecision, dimension(size(gbuf,1),size(gbuf,2),size(gbuf,3)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_min_3d( lbuf, gbuf )
+        return
+        end subroutine global_all_min_onevar_3d
+
+
+
+
+        subroutine global_all_min_onevar_0i( gbuf )
+        integer, intent(inout) :: gbuf
+        integer :: lbuf
+
+        lbuf = gbuf
+        call global_all_min_0i( lbuf, gbuf )
+        return
+        end subroutine global_all_min_onevar_0i
+
+
+        subroutine global_all_min_onevar_1i( gbuf )
+        integer, dimension(:), intent(inout) :: gbuf
+        integer, dimension(size(gbuf)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_min_1i( lbuf, gbuf )
+        return
+        end subroutine global_all_min_onevar_1i
+
+        subroutine global_all_min_onevar_2i( gbuf )
+        integer, dimension(:,:), intent(inout) :: gbuf
+        integer, dimension(size(gbuf,1),size(gbuf,2)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_min_2i( lbuf, gbuf )
+        return
+        end subroutine global_all_min_onevar_2i
+
+
+        subroutine global_all_min_onevar_3i( gbuf )
+        integer, dimension(:,:,:), intent(inout) :: gbuf
+        integer, dimension(size(gbuf,1),size(gbuf,2),size(gbuf,3)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_min_3i( lbuf, gbuf )
+        return
+        end subroutine global_all_min_onevar_3i
+
+        subroutine global_all_min_onevar_0r( gbuf )
+        real, intent(inout) :: gbuf
+        real :: lbuf
+
+        lbuf = gbuf
+        call global_all_min_0r( lbuf, gbuf )
+        return
+        end subroutine global_all_min_onevar_0r
+
+
+        subroutine global_all_min_onevar_1r( gbuf )
+        real, dimension(:), intent(inout) :: gbuf
+        real, dimension(size(gbuf)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_min_1r( lbuf, gbuf )
+        return
+        end subroutine global_all_min_onevar_1r
+
+        subroutine global_all_min_onevar_2r( gbuf )
+        real, dimension(:,:), intent(inout) :: gbuf
+        real, dimension(size(gbuf,1),size(gbuf,2)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_min_2r( lbuf, gbuf )
+        return
+        end subroutine global_all_min_onevar_2r
+
+
+
+        subroutine global_all_min_onevar_3r( gbuf )
+        real, dimension(:,:,:), intent(inout) :: gbuf
+        real, dimension(size(gbuf,1),size(gbuf,2),size(gbuf,3)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_min_3r( lbuf, gbuf )
+        return
+        end subroutine global_all_min_onevar_3r
+
+
         subroutine global_all_min_0i( lbuf, gbuf, mroot, idebug )
         integer, intent(in) :: lbuf
         integer, intent(out) :: gbuf
@@ -3875,6 +4139,124 @@
         return
         end subroutine global_max_3d
 
+        subroutine global_all_max_onevar_0d( gbuf )
+        doubleprecision, intent(inout) :: gbuf
+        doubleprecision :: lbuf
+
+        lbuf = gbuf
+        call global_all_max_0d( lbuf, gbuf )
+        return
+        end subroutine global_all_max_onevar_0d
+
+
+        subroutine global_all_max_onevar_1d( gbuf )
+        doubleprecision, dimension(:), intent(inout) :: gbuf
+        doubleprecision, dimension(size(gbuf)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_max_1d( lbuf, gbuf )
+        return
+        end subroutine global_all_max_onevar_1d
+
+        subroutine global_all_max_onevar_2d( gbuf )
+        doubleprecision, dimension(:,:), intent(inout) :: gbuf
+        doubleprecision, dimension(size(gbuf,1),size(gbuf,2)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_max_2d( lbuf, gbuf )
+        return
+        end subroutine global_all_max_onevar_2d
+
+
+        subroutine global_all_max_onevar_3d( gbuf )
+        doubleprecision, dimension(:,:,:), intent(inout) :: gbuf
+        doubleprecision, dimension(size(gbuf,1),size(gbuf,2),size(gbuf,3)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_max_3d( lbuf, gbuf )
+        return
+        end subroutine global_all_max_onevar_3d
+
+
+
+
+        subroutine global_all_max_onevar_0i( gbuf )
+        integer, intent(inout) :: gbuf
+        integer :: lbuf
+
+        lbuf = gbuf
+        call global_all_max_0i( lbuf, gbuf )
+        return
+        end subroutine global_all_max_onevar_0i
+
+
+        subroutine global_all_max_onevar_1i( gbuf )
+        integer, dimension(:), intent(inout) :: gbuf
+        integer, dimension(size(gbuf)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_max_1i( lbuf, gbuf )
+        return
+        end subroutine global_all_max_onevar_1i
+
+        subroutine global_all_max_onevar_2i( gbuf )
+        integer, dimension(:,:), intent(inout) :: gbuf
+        integer, dimension(size(gbuf,1),size(gbuf,2)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_max_2i( lbuf, gbuf )
+        return
+        end subroutine global_all_max_onevar_2i
+
+
+        subroutine global_all_max_onevar_3i( gbuf )
+        integer, dimension(:,:,:), intent(inout) :: gbuf
+        integer, dimension(size(gbuf,1),size(gbuf,2),size(gbuf,3)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_max_3i( lbuf, gbuf )
+        return
+        end subroutine global_all_max_onevar_3i
+
+        subroutine global_all_max_onevar_0r( gbuf )
+        real, intent(inout) :: gbuf
+        real :: lbuf
+
+        lbuf = gbuf
+        call global_all_max_0r( lbuf, gbuf )
+        return
+        end subroutine global_all_max_onevar_0r
+
+        subroutine global_all_max_onevar_1r( gbuf )
+        real, dimension(:), intent(inout) :: gbuf
+        real, dimension(size(gbuf)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_max_1r( lbuf, gbuf )
+        return
+        end subroutine global_all_max_onevar_1r
+
+        subroutine global_all_max_onevar_2r( gbuf )
+        real, dimension(:,:), intent(inout) :: gbuf
+        real, dimension(size(gbuf,1),size(gbuf,2)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_max_2r( lbuf, gbuf )
+        return
+        end subroutine global_all_max_onevar_2r
+
+
+        subroutine global_all_max_onevar_3r( gbuf )
+        real, dimension(:,:,:), intent(inout) :: gbuf
+        real, dimension(size(gbuf,1),size(gbuf,2),size(gbuf,3)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_max_3r( lbuf, gbuf )
+        return
+        end subroutine global_all_max_onevar_3r
+
+
+
         subroutine global_all_max_0i( lbuf, gbuf, mroot, idebug )
         integer, intent(in) :: lbuf
         integer, intent(out) :: gbuf
@@ -4263,6 +4645,45 @@
         return
         end subroutine global_all_max_3d
 
+
+
+        subroutine global_all_or_onevar_0d( gbuf )
+        logical, intent(inout) :: gbuf
+        logical :: lbuf
+
+        lbuf = gbuf
+        call global_all_or_0d( lbuf, gbuf )
+        return
+        end subroutine global_all_or_onevar_0d
+
+        subroutine global_all_or_onevar_1d( gbuf )
+        logical, dimension(:), intent(inout) :: gbuf
+        logical, dimension(size(gbuf)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_or_1d( lbuf, gbuf )
+        return
+        end subroutine global_all_or_onevar_1d
+
+        subroutine global_all_and_onevar_0d( gbuf )
+        logical, intent(inout) :: gbuf
+        logical :: lbuf
+
+        lbuf = gbuf
+        call global_all_and_0d( lbuf, gbuf )
+        return
+        end subroutine global_all_and_onevar_0d
+
+        subroutine global_all_and_onevar_1d( gbuf )
+        logical, dimension(:), intent(inout) :: gbuf
+        logical, dimension(size(gbuf)) :: lbuf
+
+        lbuf = gbuf
+        call global_all_and_1d( lbuf, gbuf )
+        return
+        end subroutine global_all_and_onevar_1d
+
+
         subroutine global_all_and_0d( lvalue, gvalue, mroot, idebug )
         logical, intent(in) :: lvalue
         logical, intent(out) :: gvalue
@@ -4403,7 +4824,7 @@
         USE funits
         integer, optional, intent(in) :: myid
 
-        INTEGER :: mylid
+        INTEGER :: mylid, ERRORCODE
 
         if (.not. present(myid)) then
            mylid = myPE
@@ -4420,8 +4841,9 @@
          'ABORTING ALL PROCESSES ',/,'*****************', &
          '********************************************',/)
   
-        call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-        write(*,"('(PE ',I2,') : MPI_Barrier return = ',I2)") &
+        call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+        call MPI_ABORT(MPI_COMM_WORLD, ERRORCODE, mpierr)
+        write(*,"('(PE ',I2,') : MPI_ABORT return = ',I2)") &
                mylid,mpierr
   
         call MPI_Finalize(mpierr)
