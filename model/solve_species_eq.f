@@ -46,6 +46,7 @@
       USE rxns
       Use ambm
       USE matrix 
+      USE ChiScheme
       Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
       USE compar       
       USE mpi_utility      
@@ -103,6 +104,7 @@
 !     Fluid phase species mass balance equations
 !
       IF (SPECIES_EQ(0)) THEN 
+          if(chi_scheme) call set_chi(DISCRETIZE(7), X_g, NMAX(0), U_g, V_g, W_g, IER)
          DO LN = 1, NMAX(0) 
             CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER) 
 !$omp    parallel do private(IJK, APO)
@@ -146,6 +148,7 @@
             CALL BOUND_X (X_G(1,LN), IJKMAX2, IER) 
 
          END DO 
+         if(chi_scheme) call unset_chi(IER)
       ENDIF 
 !
 !

@@ -116,13 +116,6 @@
 ! CHECK THE DISCRETIZATION METHDS
 !
 
-      IF (FPFOI) THEN
-         DO L = 1,8
-            IF(DISCRETIZE(L).LE.1) DISCRETIZE(L) = 2
-         END DO
-	 IF(DMP_LOG)WRITE (UNIT_LOG, 1502) 
-      ENDIF
-
 !      IF (DISCRETIZE(1) > 1 .OR. DISCRETIZE(2) > 1) THEN 
 !         DISCRETIZE(1) = 0
 !	 DISCRETIZE(2) = 0
@@ -132,6 +125,22 @@
 !        DEF_COR= .true.
 !	IF(DMP_LOG)WRITE (UNIT_LOG, 1501) 
 !      ENDIF
+
+
+      IF (FPFOI) THEN
+         DO L = 1,8
+            IF(DISCRETIZE(L).LE.1) DISCRETIZE(L) = 2
+         END DO
+	 IF(DMP_LOG)WRITE (UNIT_LOG, 1502) 
+      ENDIF
+      
+      IF(Chi_scheme)THEN
+        IF(DISCRETIZE(7).NE.3 .and. DISCRETIZE(7).NE.5) THEN
+	   IF(DMP_LOG)WRITE (UNIT_LOG, 1503)
+	   CALL Mfix_exit(0) 
+	ENDIF
+
+      ENDIF
 
 
       RETURN  
@@ -144,4 +153,7 @@
  1502 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
          'Discretize>=2 has to be used along with',/&
          'fourth order scheme',G12.5,/1X,70('*')/) 
+ 1503 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
+         'Only schemes 3 and 5 are Chi-scheme enabled for',/&
+	 'species equations [DISCRETIZE(7)].',/1X,70('*')/) 
       END SUBROUTINE CHECK_DATA_01 

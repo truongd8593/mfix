@@ -7,6 +7,7 @@ mfix.exe : \
     boundfunijk3.mod \
     boundfunijk.mod \
     check.mod \
+    chischeme.mod \
     coeff.mod \
     constant.mod \
     cont.mod \
@@ -357,6 +358,7 @@ mfix.exe : \
     check_mod.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     check_plane.$(OBJ_EXT) \
+    chischeme_mod.$(OBJ_EXT) \
     cn_extrapol.$(OBJ_EXT) \
     coeff_mod.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
@@ -626,6 +628,15 @@ check.mod : check_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_mod.f 
+chischeme.mod : chischeme_mod.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            sendrecv.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) chischeme_mod.f 
 coeff.mod : coeff_mod.f \
             param.mod \
             param1.mod 
@@ -1401,6 +1412,7 @@ calc_xsi.$(OBJ_EXT) : calc_xsi.f \
             geometry.mod \
             indices.mod \
             vshear.mod \
+            chischeme.mod \
             compar.mod \
             sendrecv.mod \
             xsi1.inc                                                     \
@@ -1467,6 +1479,7 @@ check_data_03.$(OBJ_EXT) : check_data_03.f \
             param.mod \
             param1.mod \
             geometry.mod \
+            bc.mod \
             funits.mod \
             compar.mod \
             mpi_utility.mod 
@@ -2250,7 +2263,9 @@ iterate.$(OBJ_EXT) : iterate.f \
             cont.mod \
             scalars.mod \
             compar.mod \
-            mpi_utility.mod 
+            mpi_utility.mod \
+            bc.mod \
+            constant.mod 
 k_epsilon_prop.$(OBJ_EXT) : k_epsilon_prop.f \
             param.mod \
             param1.mod \
@@ -3037,6 +3052,7 @@ solve_species_eq.$(OBJ_EXT) : solve_species_eq.f \
             rxns.mod \
             ambm.mod \
             matrix.mod \
+            chischeme.mod \
             tmp_array.mod \
             compar.mod \
             mpi_utility.mod \
@@ -3231,8 +3247,6 @@ source_v_g.$(OBJ_EXT) : source_v_g.f \
             compar.mod \
             sendrecv.mod \
             output.mod \
-            turb.mod \
-            mpi_utility.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -3290,8 +3304,6 @@ source_w_g.$(OBJ_EXT) : source_w_g.f \
             compar.mod \
             sendrecv.mod \
             output.mod \
-            turb.mod \
-            mpi_utility.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \

@@ -7,6 +7,7 @@ mfix.exe : \
     BOUNDFUNIJK3.mod \
     BOUNDFUNIJK.mod \
     CHECK.mod \
+    CHISCHEME.mod \
     COEFF.mod \
     CONSTANT.mod \
     CONT.mod \
@@ -357,6 +358,7 @@ mfix.exe : \
     check_mod.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     check_plane.$(OBJ_EXT) \
+    chischeme_mod.$(OBJ_EXT) \
     cn_extrapol.$(OBJ_EXT) \
     coeff_mod.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
@@ -626,6 +628,15 @@ CHECK.mod : check_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_mod.f 
+CHISCHEME.mod : chischeme_mod.f \
+            PARAM.mod \
+            PARAM1.mod \
+            RUN.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) chischeme_mod.f 
 COEFF.mod : coeff_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -1401,6 +1412,7 @@ calc_xsi.$(OBJ_EXT) : calc_xsi.f \
             GEOMETRY.mod \
             INDICES.mod \
             VSHEAR.mod \
+            CHISCHEME.mod \
             COMPAR.mod \
             SENDRECV.mod \
             xsi1.inc                                                     \
@@ -1467,6 +1479,7 @@ check_data_03.$(OBJ_EXT) : check_data_03.f \
             PARAM.mod \
             PARAM1.mod \
             GEOMETRY.mod \
+            BC.mod \
             FUNITS.mod \
             COMPAR.mod \
             MPI_UTILITY.mod 
@@ -2250,7 +2263,9 @@ iterate.$(OBJ_EXT) : iterate.f \
             CONT.mod \
             SCALARS.mod \
             COMPAR.mod \
-            MPI_UTILITY.mod 
+            MPI_UTILITY.mod \
+            BC.mod \
+            CONSTANT.mod 
 k_epsilon_prop.$(OBJ_EXT) : k_epsilon_prop.f \
             PARAM.mod \
             PARAM1.mod \
@@ -3037,6 +3052,7 @@ solve_species_eq.$(OBJ_EXT) : solve_species_eq.f \
             RXNS.mod \
             AMBM.mod \
             MATRIX.mod \
+            CHISCHEME.mod \
             TMP_ARRAY.mod \
             COMPAR.mod \
             MPI_UTILITY.mod \
@@ -3231,8 +3247,6 @@ source_v_g.$(OBJ_EXT) : source_v_g.f \
             COMPAR.mod \
             SENDRECV.mod \
             OUTPUT.mod \
-            TURB.mod \
-            MPI_UTILITY.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -3290,8 +3304,6 @@ source_w_g.$(OBJ_EXT) : source_w_g.f \
             COMPAR.mod \
             SENDRECV.mod \
             OUTPUT.mod \
-            TURB.mod \
-            MPI_UTILITY.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \

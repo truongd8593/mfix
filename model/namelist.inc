@@ -9,7 +9,7 @@
              GRANULAR_ENERGY,& 
 	     NScalar, Phase4Scalar, &
 	     K_Epsilon, &
-             nRR,  &
+             nRR, chi_scheme, &
 ! start anuj 4/20
              FRICTION, SAVAGE,&
 ! end anuj 4/20

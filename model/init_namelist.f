@@ -140,6 +140,7 @@
       CALL_USR = .FALSE. 
       MODEL_B = .FALSE. 
       DISCRETIZE(:) = 0 
+      Chi_scheme = .FALSE.
       
       NScalar = 0
       Phase4Scalar(:) = UNDEFINED_I

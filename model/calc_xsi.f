@@ -33,6 +33,7 @@
       USE geometry
       USE indices
       USE vshear
+      USE chischeme
       USE compar
       USE sendrecv
       IMPLICIT NONE
@@ -83,7 +84,7 @@
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: PHI_C_OF,  MINMOD, VANLEER, &
-         ULTRA_QUICK, QUICKEST, SUPERBEE, SMART, MUSCL 
+         ULTRA_QUICK, QUICKEST, SUPERBEE, SMART, MUSCL, CHI_SMART, CHI_MUSCL 
 
       include 'xsi1.inc'
       INCLUDE 'function.inc'
@@ -179,7 +180,11 @@
 !
             PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
+            if(Chi_flag) then
+              DWF = Chi_SMART(PHI_C, CHI_e(IJK))
+	    else
             DWF = SMART(PHI_C) 
+	    endif 
 !
             XSI_E(IJK) = XSI(U(IJK),DWF) 
 !
@@ -195,7 +200,11 @@
 !
             PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
-            DWF = SMART(PHI_C) 
+            if(Chi_flag) then
+	      DWF = Chi_SMART(PHI_C, CHI_n(IJK)) 
+	    else
+              DWF = SMART(PHI_C) 
+	    endif
 !
             XSI_N(IJK) = XSI(V(IJK),DWF) 
 !
@@ -212,7 +221,11 @@
 !
                PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
-               DWF = SMART(PHI_C) 
+               if(Chi_flag) then
+	         DWF = Chi_SMART(PHI_C, CHI_t(IJK)) 
+	       else
+                 DWF = SMART(PHI_C) 
+	       endif 
 !
                XSI_T(IJK) = XSI(W(IJK),DWF) 
             ENDIF 
@@ -374,7 +387,11 @@
 !
             PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
-            DWF = MUSCL(PHI_C) 
+            if(Chi_flag) then
+	      DWF = Chi_MUSCL(PHI_C, CHI_e(IJK))
+	    else 
+              DWF = MUSCL(PHI_C) 
+	    endif
 !
             XSI_E(IJK) = XSI(U(IJK),DWF) 
 !
@@ -390,7 +407,11 @@
 !
             PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
-            DWF = MUSCL(PHI_C) 
+            if(Chi_flag) then
+	      DWF = Chi_MUSCL(PHI_C, CHI_n(IJK))
+	    else 
+              DWF = MUSCL(PHI_C) 
+	    endif
 !
             XSI_N(IJK) = XSI(V(IJK),DWF) 
 !
@@ -407,7 +428,11 @@
 !
                PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
-               DWF = MUSCL(PHI_C) 
+               if(Chi_flag) then
+	         DWF = Chi_MUSCL(PHI_C, CHI_t(IJK))
+	       else 
+                 DWF = MUSCL(PHI_C) 
+	       endif
 !
                XSI_T(IJK) = XSI(W(IJK),DWF) 
             ENDIF 
@@ -1014,7 +1039,215 @@
       RETURN
       END SUBROUTINE DW
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-!// 400 Added sendrecv module and send_recv calls for COMMunication
+!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CALC_CHI(DISCR, PHI, U, V, W, CHI_e, CHI_n, CHI_t)     C
+!  Purpose: Determine CHI factors for higher order discretization.
+!  Author: M. Syamlal                                 Date: 4-AUG-03   C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!                                                                      C
+!  Literature/Document References: Darwish and Moukalled (2003)
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE CALC_CHI(DISCR, PHI, U, V, W, CHI_E, CHI_N, CHI_T,incr) 
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE run
+      USE geometry
+      USE indices
+      USE vshear
+      USE compar
+      USE sendrecv
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!
+!                      Error index
+      INTEGER          IER
+!
+!                      discretization method
+      INTEGER          DISCR
+!
+!                      convected quantity
+      DOUBLE PRECISION PHI(DIMENSION_3)
+!
+!                      Velocity components
+      DOUBLE PRECISION U(DIMENSION_3), V(DIMENSION_3), W(DIMENSION_3)
+!
+!                      Convection weighting factors
+      DOUBLE PRECISION CHI_e(DIMENSION_3), CHI_n(DIMENSION_3),&
+                       CHI_t(DIMENSION_3)
+!
+!                      Indices
+      INTEGER          IJK, IJKC, IJKD, IJKU, I, J, K
+
+!
+!                      Error message
+      CHARACTER*80     LINE(1)
+!
+!                      
+      DOUBLE PRECISION DEN, DEN1, PHI_C
+!
+!                      cell widths for QUICKEST
+      DOUBLE PRECISION oDXc, oDXuc, oDYc, oDYuc, oDZc, oDZuc
+
+      INTEGER incr
+!-----------------------------------------------
+!   E x t e r n a l   F u n c t i o n s
+!-----------------------------------------------
+      DOUBLE PRECISION , EXTERNAL :: PHI_C_OF, CHI4SMART, CHI4MUSCL 
+
+      INCLUDE 'function.inc'
+
+
+	IF (SHEAR) THEN			
+! calculate CHI_E,CHI_N,CHI_T when periodic shear BCs are used
+
+!	call CXS(incr,DISCR,U,V,W,PHI,CHI_E,CHI_N,CHI_T)  !need implementation
+         print *,'From CALC_CHI:  "Shear" option not implemented'
+	 Call MFIX_EXIT(0)
+
+
+	ELSE
+!
+!
+      SELECT CASE (DISCR)                        !first order upwinding 
+      CASE (:1)  
+!
+!$omp    parallel do private(IJK)
+         DO IJK = ijkstart3, ijkend3 
+            CHI_E(IJK) = ZERO
+            CHI_N(IJK) = ZERO
+            IF (DO_K) CHI_T(IJK) = ZERO 
+         END DO 
+!      CASE (2)                                   !Superbee 
+      CASE (3)                                   !SMART 
+!
+!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF)
+         DO IJK = ijkstart3, ijkend3
+            IF (U(IJK) >= ZERO) THEN 
+               IJKC = IJK 
+               IJKD = EAST_OF(IJK) 
+               IJKU = WEST_OF(IJKC) 
+            ELSE 
+               IJKC = EAST_OF(IJK) 
+               IJKD = IJK 
+               IJKU = EAST_OF(IJKC) 
+            ENDIF 
+!
+            PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
+!
+            CHI_E(IJK) = CHI4SMART(PHI_C)
+!
+            IF (V(IJK) >= ZERO) THEN 
+               IJKC = IJK 
+               IJKD = NORTH_OF(IJK) 
+               IJKU = SOUTH_OF(IJKC) 
+            ELSE 
+               IJKC = NORTH_OF(IJK) 
+               IJKD = IJK 
+               IJKU = NORTH_OF(IJKC) 
+            ENDIF 
+!
+            PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
+!
+            CHI_N(IJK) = CHI4SMART(PHI_C) 
+!
+            IF (DO_K) THEN 
+               IF (W(IJK) >= ZERO) THEN 
+                  IJKC = IJK 
+                  IJKD = TOP_OF(IJK) 
+                  IJKU = BOTTOM_OF(IJKC) 
+               ELSE 
+                  IJKC = TOP_OF(IJK) 
+                  IJKD = IJK 
+                  IJKU = TOP_OF(IJKC) 
+               ENDIF 
+!
+               PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
+!
+               CHI_T(IJK) = CHI4SMART(PHI_C) 
+            ENDIF 
+         END DO 
+!      CASE (4)                                   !ULTRA-QUICK 
+!      CASE (5)                                   !QUICKEST 
+      CASE (6)                                   !MUSCL 
+
+!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF )
+         DO IJK = ijkstart3, ijkend3
+            IF (U(IJK) >= ZERO) THEN 
+               IJKC = IJK 
+               IJKD = EAST_OF(IJK) 
+               IJKU = WEST_OF(IJKC) 
+            ELSE 
+               IJKC = EAST_OF(IJK) 
+               IJKD = IJK 
+               IJKU = EAST_OF(IJKC) 
+            ENDIF 
+!
+            PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
+!
+            CHI_E(IJK) = CHI4MUSCL(PHI_C) 
+!
+            IF (V(IJK) >= ZERO) THEN 
+               IJKC = IJK 
+               IJKD = NORTH_OF(IJK) 
+               IJKU = SOUTH_OF(IJKC) 
+            ELSE 
+               IJKC = NORTH_OF(IJK) 
+               IJKD = IJK 
+               IJKU = NORTH_OF(IJKC) 
+            ENDIF 
+!
+            PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
+!
+            CHI_N(IJK) = CHI4MUSCL(PHI_C) 
+!
+            IF (DO_K) THEN 
+               IF (W(IJK) >= ZERO) THEN 
+                  IJKC = IJK 
+                  IJKD = TOP_OF(IJK) 
+                  IJKU = BOTTOM_OF(IJKC) 
+               ELSE 
+                  IJKC = TOP_OF(IJK) 
+                  IJKD = IJK 
+                  IJKU = TOP_OF(IJKC) 
+               ENDIF 
+!
+               PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
+!
+               CHI_T(IJK) = CHI4MUSCL(PHI_C) 
+            ENDIF 
+         END DO 
+!      CASE (7)                                   !Van Leer 
+!      CASE (8)                                   !Minmod 
+      CASE DEFAULT                               !Error 
+         WRITE (LINE, '(A,I2,A)') 'Chi-Scheme for DISCRETIZE = ', DISCR, ' not supported.' 
+         CALL WRITE_ERROR ('CALC_CHI', LINE, 1) 
+         CALL MFIX_EXIT(myPE)
+      END SELECT 
+      
+      ENDIF
+
+      call send_recv(CHI_E,2)
+      call send_recv(CHI_N,2)
+      call send_recv(CHI_T,2)
+
+      RETURN  
+      END SUBROUTINE CALC_CHI 

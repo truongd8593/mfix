@@ -73,6 +73,11 @@
       INTEGER          DISCRETIZE(9)
       
 !
+!                      Use Chi scheme for discretizing certain equation sets
+!                       (species mass fractions)
+      LOGICAL          Chi_scheme
+      
+!
 !                      RUN ID info
 !
       INTEGER          ID_MONTH

@@ -87,6 +87,54 @@
 !
       RETURN  
       END FUNCTION SMART 
+
+      DOUBLE PRECISION FUNCTION Chi_SMART (PHI_C, Chi) 
+!	calculate DWF from Chi_SMART scheme
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      DOUBLE PRECISION PHI_C, Chi 
+
+      if((ONE - PHI_C) > small_number)then
+        Chi_SMART = Chi * (3./8. - PHI_C/4.) / (ONE - PHI_C)
+      else
+      Chi_SMART = ONE
+      endif
+
+      RETURN  
+      END FUNCTION Chi_SMART 
+      
+      DOUBLE PRECISION FUNCTION Chi4SMART (PHI_C) 
+!	calculate CHI for SMART scheme
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      DOUBLE PRECISION PHI_C 
+
+      IF(PHI_C > ZERO .AND. PHI_C <= (1./6.))THEN
+        Chi4SMART = 16. * PHI_C/(3. - 2. * PHI_C)
+      ELSEIF(PHI_C > (1./6.) .AND. PHI_C <= (5./6.))THEN
+        Chi4SMART = ONE
+      ELSEIF(PHI_C > (5./6.) .AND. PHI_C <= ONE)THEN
+        Chi4SMART = 8.*(ONE - PHI_C)/(3. - 2. * PHI_C)
+      ELSE
+        Chi4SMART = ZERO
+      ENDIF
+
+      RETURN  
+      END FUNCTION Chi4SMART 
 !
 !
 !
@@ -203,6 +251,54 @@
 !
       RETURN  
       END FUNCTION MUSCL 
+
+      DOUBLE PRECISION FUNCTION Chi_MUSCL (PHI_C, Chi) 
+!	calculate DWF from Chi_MUSCL scheme
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      DOUBLE PRECISION PHI_C, Chi 
+
+      if((ONE - PHI_C) > small_number)then
+        Chi_MUSCL = Chi /(4. * (ONE - PHI_C))
+      else
+        Chi_MUSCL = ONE 
+      endif
+
+      RETURN  
+      END FUNCTION Chi_MUSCL 
+      
+      DOUBLE PRECISION FUNCTION Chi4MUSCL (PHI_C) 
+!	calculate CHI for MUSCL scheme
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      DOUBLE PRECISION PHI_C 
+
+      IF(PHI_C > ZERO .AND. PHI_C <= (1./4.))THEN
+        Chi4MUSCL = 4. * PHI_C
+      ELSEIF(PHI_C > (1./4.) .AND. PHI_C <= (3./4.))THEN
+        Chi4MUSCL = ONE
+      ELSEIF(PHI_C > (3./4.) .AND. PHI_C <= ONE)THEN
+        Chi4MUSCL = 4.*(ONE - PHI_C)
+      ELSE
+        Chi4MUSCL = ZERO
+      ENDIF
+
+      RETURN  
+      END FUNCTION Chi4MUSCL 
 !
 !
 !
