@@ -782,7 +782,7 @@ MPI_UTILITY.mod : ./dmp_modules/mpi_utility_mod.f \
             INDICES.mod \
             FUNITS.mod \
             function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS2) ./dmp_modules/mpi_utility_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/mpi_utility_mod.f 
 PARALLEL_MPI.mod : ./dmp_modules/parallel_mpi_mod.f \
             GEOMETRY.mod \
             COMPAR.mod 

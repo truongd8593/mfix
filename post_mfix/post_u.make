@@ -1205,7 +1205,7 @@ MPI_UTILITY.mod : ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f \
             INDICES.mod \
             FUNITS.mod \
             function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) -eZ -F -DT3E ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f 
 SENDRECV.mod : ../model/dmp_modules/mpi_donothing/sendrecv_mod.f \
             PARALLEL_MPI.mod \
             DEBUG.mod \
