@@ -718,7 +718,9 @@
          'U_s, V_s, W_s (Binary, single precision)',T61,G12.5,/7X,'.SP5',T18,&
          'ROP_s (Binary, single precision)',T61,G12.5,/7X,'.SP6',T18,&
          'T_g, T_s (Binary, single precision)',T61,G12.5,/7X,'.SP7',T18,&
-         'X_g, X_s (Binary, single precision)',T61,G12.5) 
+         'X_g, X_s (Binary, single precision)',T61,G12.5,/7X,'.SP8',T18,&
+         'Theta_m (Binary, single precision)',T61,G12.5,/7X,'.SP9',T18,&
+         'User Scalar (Binary, single precision)',T61,G12.5) 
 !
  1900 FORMAT(//,3X,'10. TOLERANCES',/7X,&
          'The following values are specified in the file TOLERANCE.INC.') 

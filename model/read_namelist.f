@@ -263,19 +263,6 @@
          ENDIF 
       END DO 
 
-!// 300 0809 Perform some checks in the domain decomposition direction, k
-!// 300 0807 need to make sure if numPEs > 1, then there must KMAX > 1 as it is decompition direction
-      if (numPEs > 1 .AND. (KMAX <= 2)) then
-         write(*,"('(PE ',I3,'): Kmax <= 2 -> Decomposition NOT possible!',/,10X,'Aborting the run')") myPE
-!         call mfix_exit(myPE)
-      endif
-
-!// 300 0807 need to make sure if numPEs > 1, then NO_K must be FALSE as it is decompition direction
-      if (numPEs > 1 .AND. NO_K) then
-         write(*,"('(PE ',I3,'): No k direction -> No decomposition!',/,10X,'Aborting the run')") myPE
-!         call mfix_exit(myPE)
-      endif
-
 
 !//AIKEPARDBG debug output to make sure data read from mfix.dat is same on all PEs
 !      open(unit=UNIT_OUT,file='test'//fbname//'.out',status='UNKNOWN')  !//AIKEPARDBG
