@@ -1390,6 +1390,7 @@ check_data_06.$(OBJ_EXT) : check_data_06.f \
             indices.mod \
             funits.mod \
             compar.mod \
+            mpi_utility.mod \
             function.inc                                                
 check_data_07.$(OBJ_EXT) : check_data_07.f \
             param.mod \
@@ -1424,7 +1425,8 @@ check_data_09.$(OBJ_EXT) : check_data_09.f \
             run.mod \
             rxns.mod \
             indices.mod \
-            funits.mod 
+            funits.mod \
+            compar.mod 
 check_data_20.$(OBJ_EXT) : check_data_20.f \
             param.mod \
             param1.mod \
@@ -1460,7 +1462,8 @@ check_one_axis.$(OBJ_EXT) : check_one_axis.f \
             param1.mod \
             funits.mod 
 check_plane.$(OBJ_EXT) : check_plane.f \
-            funits.mod 
+            funits.mod \
+            compar.mod 
 compare.$(OBJ_EXT) : compare.f \
             param.mod \
             param1.mod \
@@ -1876,7 +1879,8 @@ flow_to_vel.$(OBJ_EXT) : flow_to_vel.f \
             run.mod \
             bc.mod \
             indices.mod \
-            funits.mod 
+            funits.mod \
+            compar.mod 
 g_0.$(OBJ_EXT) : g_0.f \
             param.mod \
             param1.mod \
