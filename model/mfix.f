@@ -323,8 +323,7 @@
 !  Find the solution of the equations from TIME to TSTOP at
 !  intervals of DT
 !
-      CALL TIME_MARCH(AUTOMATIC_RESTART) 
-      WRITE(*,*) AUTOMATIC_RESTART, ITER_RESTART
+      CALL TIME_MARCH
       IF(AUTOMATIC_RESTART.AND.ITER_RESTART.LE.10) GOTO 101
 
 !  Call user-defined subroutine after time-loop.

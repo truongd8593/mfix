@@ -107,8 +107,8 @@
 !                      Index corresponding to boundary condition
       INTEGER          L
       
-!              Radial distribution function
-      DOUBLE PRECISION g_0AVG, g0
+!              Average Radial distribution function
+      DOUBLE PRECISION g_0AVG
 !
  
 !  Function subroutines
