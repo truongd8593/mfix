@@ -65,8 +65,10 @@
       IF (.NOT.MOMENTUM_X_EQ(MCP)) RETURN  
 !
 !
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
+
 !!$omp parallel do private(ijk)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
          IF (SIP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN 
             E_E(IJK) = ZERO 
          ELSE 
@@ -150,8 +152,10 @@
       IF (.NOT.MOMENTUM_Y_EQ(MCP)) RETURN  
 !
 !
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !!$omp parallel do private(IJK,I,K)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
          IF (SIP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN 
             E_N(IJK) = ZERO 
          ELSE 
@@ -236,8 +240,10 @@
       IF (.NOT.MOMENTUM_Z_EQ(MCP)) RETURN  
 !
 !
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !!$omp parallel do private(I,J,IJK)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
          IF (SIP_AT_T(IJK) .OR. MFLOW_AT_T(IJK)) THEN 
             E_T(IJK) = ZERO 
          ELSE 

@@ -74,10 +74,12 @@
 !
       IF (MMAX == 1) THEN 
 !
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !$omp  parallel do private( IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
 !$omp&  a0, b0, a1, b1, F10, Saxf0, Saxf1) &
 !$omp&  schedule(static)
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3
             IF (FLUID_AT(IJK)) THEN 
                IF (VXF(IJK,1) > ZERO) THEN 
 !
@@ -202,10 +204,13 @@
       IF (MMAX == 1) THEN 
 !
          IF (MOMENTUM_X_EQ(0) .AND. MOMENTUM_X_EQ(1)) THEN 
+
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+	 
 !$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
 !$omp&  a0, b0, a1, b1, F10, Saxf0, Saxf1) &
 !$omp&  schedule(static)
-            DO IJK = 1, IJKMAX2 
+            DO IJK = ijkstart3, ijkend3
                IF (FLOW_AT_E(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
 !
@@ -246,7 +251,8 @@
                ENDIF 
             END DO 
          ELSE IF (MOMENTUM_X_EQ(0)) THEN 
-            DO IJK = 1, IJKMAX2 
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 
+            DO IJK = ijkstart3, ijkend3 
                IF (FLOW_AT_E(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
 !
@@ -259,7 +265,8 @@
                ENDIF 
             END DO 
          ELSE IF (MOMENTUM_X_EQ(1)) THEN 
-            DO IJK = 1, IJKMAX2 
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 
+            DO IJK = ijkstart3, ijkend3 
                IF (FLOW_AT_E(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
 !
@@ -278,6 +285,8 @@
          CALL WRITE_ERROR ('PARTIAL_ELIM_U', LINE, 1) 
       ENDIF 
 !
+!//? check if COMM of A_M & B_M is necessary?
+
       RETURN  
       END SUBROUTINE PARTIAL_ELIM_U 
 !
@@ -357,10 +366,12 @@
       IF (MMAX == 1) THEN 
 !
          IF (MOMENTUM_Y_EQ(0) .AND. MOMENTUM_Y_EQ(1)) THEN 
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 
+	 
 !$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
 !$omp&  a0, b0, a1, b1, F10, Saxf0, Saxf1) &
 !$omp&  schedule(static)
-            DO IJK = 1, IJKMAX2 
+            DO IJK = ijkstart3, ijkend3
                IF (FLOW_AT_N(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
 !
@@ -401,7 +412,8 @@
                ENDIF 
             END DO 
          ELSE IF (MOMENTUM_Y_EQ(0)) THEN 
-            DO IJK = 1, IJKMAX2 
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 	 
+            DO IJK = ijkstart3, ijkend3
                IF (FLOW_AT_N(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
 !
@@ -414,7 +426,8 @@
                ENDIF 
             END DO 
          ELSE IF (MOMENTUM_Y_EQ(1)) THEN 
-            DO IJK = 1, IJKMAX2 
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 
+            DO IJK = ijkstart3, ijkend3
                IF (FLOW_AT_N(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
 !
@@ -512,10 +525,12 @@
       IF (MMAX == 1) THEN 
 !
          IF (MOMENTUM_Z_EQ(0) .AND. MOMENTUM_Z_EQ(1)) THEN 
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 
+	 
 !$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, &
 !$omp&  a0, b0, a1, b1, F10, Saxf0, Saxf1) &
 !$omp&  schedule(static)
-            DO IJK = 1, IJKMAX2 
+            DO IJK = ijkstart3, ijkend3 
                IF (FLOW_AT_T(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
 !
@@ -556,7 +571,8 @@
                ENDIF 
             END DO 
          ELSE IF (MOMENTUM_Z_EQ(0)) THEN 
-            DO IJK = 1, IJKMAX2 
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 	 
+            DO IJK = ijkstart3, ijkend3
                IF (FLOW_AT_T(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
 !
@@ -569,7 +585,8 @@
                ENDIF 
             END DO 
          ELSE IF (MOMENTUM_Z_EQ(1)) THEN 
-            DO IJK = 1, IJKMAX2 
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 	 
+            DO IJK = ijkstart3, ijkend3
                IF (FLOW_AT_T(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
 !

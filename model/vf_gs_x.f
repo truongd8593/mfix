@@ -28,6 +28,7 @@
       USE indices
       USE physprop
       USE compar        !//d
+      USE sendrecv      !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -58,9 +59,10 @@
       INCLUDE 'fun_avg2.inc'
       DO M = 1, MMAX 
 !
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 
 !$omp  parallel do private(I,IJK,IJKE)
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3
             IF (.NOT.IP_AT_E(IJK)) THEN 
                I = I_OF(IJK) 
                IJKE = EAST_OF(IJK) 
@@ -71,5 +73,9 @@
             ENDIF 
          END DO 
       END DO 
+
+!//? Verify if the following COMM is necessary here (as inserted for fool proof)
+!// 400 Communicate VXF_GS      
+      call send_recv(VXF_GS,2)
       RETURN  
       END SUBROUTINE VF_GS_X 

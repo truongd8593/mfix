@@ -80,7 +80,7 @@
       CALL SEND_RECV(B_M, 2)
 
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): bef dif_u_is in conv_dif_u_g')") myPE  !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): bef dif_w_is in conv_dif_w_g')") myPE  !//AIKEPARDBG
 !    call mfix_exit(myPE)     !//AIKEPARDBG
       
 
@@ -92,7 +92,7 @@
       CALL SEND_RECV(B_M, 2)
 
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft dif_u_is in conv_dif_u_g')") myPE  !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft dif_w_is in conv_dif_w_g')") myPE  !//AIKEPARDBG
 !    call mfix_exit(myPE)     !//AIKEPARDBG
 
       RETURN  

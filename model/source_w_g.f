@@ -494,7 +494,7 @@
                   DO J = J1, J2 
                      DO I = I1, I2 
 !// 360 1223 Check if current i,j,k resides on this PE
-                       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    	    	 		     
+                       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    	    	 		     
                         IJK = FUNIJK(I,J,K) 
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
@@ -527,7 +527,7 @@
                   DO J = J1, J2 
                      DO I = I1, I2
 !// 360 1223 Check if current i,j,k resides on this PE
-                       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE		      
+                       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		      
                         IJK = FUNIJK(I,J,K) 
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
@@ -560,7 +560,7 @@
                   DO J = J1, J2 
                      DO I = I1, I2 
 !// 360 1223 Check if current i,j,k resides on this PE
-                       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE		     
+                       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
                         IJK = FUNIJK(I,J,K) 
                         IM = IM1(I) 
                         JM = JM1(J) 
@@ -644,7 +644,7 @@
                      DO J = J1, J2 
                         DO I = I1, I2
 !// 360 1223 Check if current i,j,k resides on this PE
-                           IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE			 
+                           IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE			 
                            IJK = FUNIJK(I,J,K) 
                            A_M(IJK,E,M) = ZERO 
                            A_M(IJK,W,M) = ZERO 
@@ -670,7 +670,7 @@
                      DO J = J1, J2 
                         DO I = I1, I2
 !// 360 1223 Check if current i,j,k resides on this PE
-                           IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE			 
+                           IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE			 
                            IJK = FUNIJK(I,J,K) 
                            A_M(IJK,E,M) = ZERO 
                            A_M(IJK,W,M) = ZERO 
@@ -704,7 +704,7 @@
                      DO J = J1, J2 
                         DO I = I1, I2 
 !// 360 1223 Check if current i,j,k resides on this PE
-                           IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE			
+                           IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE			
                            IJK = FUNIJK(I,J,K) 
 !
                            IJKP = KP_OF(IJK) 
@@ -731,7 +731,7 @@
                   DO J = J1, J2 
                      DO I = I1, I2 
 !// 360 1223 Check if current i,j,k resides on this PE
-                       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE		     
+                       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
                         IJK = FUNIJK(I,J,K) 
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 

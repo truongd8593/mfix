@@ -96,7 +96,7 @@
       CALL SEND_RECV(B_M, 2)
 
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft dif_u_is in conv_dif_u_g')") myPE  !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft dif_v_is in conv_dif_v_g')") myPE  !//AIKEPARDBG
 !    call mfix_exit(myPE)     !//AIKEPARDBG
 
       RETURN  
@@ -202,13 +202,15 @@
 !
 !     Fluid phase
       M = 0 
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
+      
 !$omp      parallel do                                            &
 !$omp&     private( I,  J, K, IPJK, IJPK, IJKN, IJKC, JP,  &
 !$omp&             IJKE, IJKNE, IJKP, IJKT, IJKTN, IJK, V_f, D_f, &
 !$omp&             IMJK, IM, IJKW, IJKWN, IMJPK,                  &
 !$omp&             IJMK, JM, IJKS,                                &
 !$omp&             IJKM, KM, IJKB, IJKBN, IJPKM )
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
 !
          IF (FLOW_AT_N(IJK)) THEN 
 !
