@@ -2,7 +2,7 @@
 #
   RUN_NAME = 'RISER'
   DESCRIPTION = 'Gas-Particle Flow in a 2D periodic cell'
-  RUN_TYPE = 'NEW'
+  RUN_TYPE = 'new'
   UNITS = 'cgs'
   TIME  = 0.0      TSTOP = 12.0  DT = 1E-3 
   DT_MAX = 0.4e-4

@@ -215,7 +215,7 @@
 		end do
 	else if (l_spx .eq. 7) then
 		do i = 1,nmax(0)
-		   X_g(:,i) = tavg(:,i) / real(tcount)
+		   X_g(:,i) = tavg(:,m,i) / real(tcount)
 		end do
 		do m = 1,mmax
 		   do i = 1,nmax(m)

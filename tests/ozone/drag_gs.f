@@ -21,7 +21,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE DRAG_GS(M, F_GS, IER) 
+      SUBROUTINE DRAG_GS(M, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !-----------------------------------------------
@@ -38,6 +38,7 @@
       USE constant
       USE compar  
       USE sendrecv 
+      USE drag 
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -53,8 +54,6 @@
 !                      Error index 
       INTEGER          IER 
 ! 
-!                      Drag array 
-      DOUBLE PRECISION F_gs(DIMENSION_3, DIMENSION_M) 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -159,7 +158,11 @@
 !
 !---------------  Begin Syamlal and O'Brien ---------------------------
 !         Reynolds number
-            RE = D_P(M)*VREL*RO_G(IJK)/MU_G(IJK) 
+            if(MU_G(IJK) > ZERO)then
+              RE = D_P(M)*VREL*RO_G(IJK)/MU_G(IJK)
+            else
+              RE = LARGE_NUMBER
+            endif
 !
 !         Calculate V_rm
 !

@@ -29,7 +29,7 @@
 
   XLENGTH  =  11.45   	IMAX = 76
   YLENGTH  =  30.00   	JMAX = 112
-  ZLENGTH  =  @(2.*PI)  KMAX = 64
+  ZLENGTH  =  @(2.*PI)  KMAX = 16
 
 #
 # Gas-phase Section

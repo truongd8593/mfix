@@ -11,6 +11,71 @@
     
     case $opsys in
 
+	OSF1)
+            mach_file="OSF1.F"
+
+            FORTRAN_CMD=f90
+            LINK_CMD=f90
+            libs_d="-lcxmlp -lmpi -lelan"
+            libs="-lcxmlp -lmpi -lelan"
+
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-omp"
+            compile_d="-c -I. -I$mpi_include -C -trapuv -g -free -nowarn -assume byterecl -convert big_endian "
+            link_d="-C -g -nowarn -assume byterecl -convert big_endian"
+
+            compile="-c -I. -I$mpi_include -O5 -free -nowarn -assume byterecl -convert big_endian "
+            compile2="-c -I. -I$mpi_include -O5 -free -nowarn -assume byterecl -convert big_endian "
+            link="-O5 -nowarn -assume byterecl -convert big_endian"
+            MODULE_CODE=1
+            ;;
+
+	AIX)
+            mach_file="AIX.F"
+
+	    case $dmp_version in
+	      y|Y )
+	    		FORTRAN_CMD=mpxlf90_r
+	    		LINK_CMD=mpxlf90_r
+            	;;
+              *)
+	    		FORTRAN_CMD=xlf90_r
+	    		LINK_CMD=xlf90_r
+            	;;
+            esac
+
+	    libs_d="-lblas "
+	    libs="-lblas -lesslp2_r"
+
+	    OBJ_EXT=o
+	    FORTRAN_EXT=f
+
+#	    =============================
+#	    use mpxlf90_r or xlf90_r
+#	    for thread safe code
+#	    =============================
+	    omp="-qsmp=omp -qsmp=noauto -qnosave "
+
+#	    =================================
+#	    the module directory cannot be on
+#	    a GPFS parallel file system
+#	    =================================
+
+            compile_common="-c -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -c -I.  -freeform"
+	    compile_d="-C -g -qinitauto=FF -qflttrap -freeform $compile_common"
+	    link_d="$compile_d"
+
+            compile=" -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
+	    compile2="$compile"
+            link="-O3 -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000
+-qtune=pwr3 -qcache=auto "
+
+ 	    MODULE_CODE=1
+            ;;
+
+
+
     Linux)
             echo
             echo "Compiling for Linux computer (Portland group)"
@@ -203,6 +268,19 @@
    esac
 
 echo " "
+
+#Prepare for the current machine
+    mach_check="COMPILED.WITH.$mach_file"
+    if test -f $mach_check
+    then
+       echo
+    else
+       chmod +w machine.f
+	cp $mach_file machine.f
+	rm *.o *.a *.mod *.exe
+	rm COMPILED.WITH.*
+	touch $mach_check
+    fi
 
 #
 #------------------------------------------------------------------------

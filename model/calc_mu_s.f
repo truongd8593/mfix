@@ -589,6 +589,9 @@
 	    ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
               Mu_star = ZERO
 	
+            ELSEIF((RO_s(M)*EP_s(IJK,M)*G_0(IJK,M,M)) .LT. SMALL_NUMBER)THEN
+              Mu_star = Mu
+	      
 	    ELSE
               Mu_star = Mu/(1.+(2d0*SWITCH*F_gs(IJK,M)*Mu/&
                         (RO_s(M)*RO_s(M)*EP_s(IJK,M)*EP_s(IJK,M)&
@@ -707,6 +710,9 @@
 	    ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
               Kth_star = ZERO
 	
+	    ELSEIF((EP_s(IJK,M)*G_0(IJK,M,M)) .LT. SMALL_NUMBER)THEN
+              Kth_star=Kth
+
 	    ELSE
               Kth_star=Kth/(1.+(1.2d0*SWITCH*F_gs(IJK,M)*Kth/&
                        (RO_s(M)*RO_s(M)*EP_s(IJK,M)*EP_s(IJK,M)&
