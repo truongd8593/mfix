@@ -61,50 +61,51 @@
 !
 !                    Indices
 !
+!//SP
 
-      IJK = 1 
-      IF (IJKMAX2 > 0) THEN 
-         EP_GO(:IJKMAX2) = EP_G(:IJKMAX2) 
-         P_GO(:IJKMAX2) = P_G(:IJKMAX2) 
-         P_STARO(:IJKMAX2) = P_STAR(:IJKMAX2) 
-         RO_GO(:IJKMAX2) = RO_G(:IJKMAX2) 
-         ROP_GO(:IJKMAX2) = ROP_G(:IJKMAX2) 
-         U_GO(:IJKMAX2) = U_G(:IJKMAX2) 
-         V_GO(:IJKMAX2) = V_G(:IJKMAX2) 
-         W_GO(:IJKMAX2) = W_G(:IJKMAX2) 
-         IF (ENERGY_EQ) T_GO(:IJKMAX2) = T_G(:IJKMAX2) 
+!     IJK = 1 
+!     IF (IJKMAX2 > 0) THEN 
+         EP_GO(:) = EP_G(:) 
+         P_GO(:) = P_G(:) 
+         P_STARO(:) = P_STAR(:) 
+         RO_GO(:) = RO_G(:) 
+         ROP_GO(:) = ROP_G(:) 
+         U_GO(:) = U_G(:) 
+         V_GO(:) = V_G(:) 
+         W_GO(:) = W_G(:) 
+         IF (ENERGY_EQ) T_GO(:) = T_G(:) 
          IF (SPECIES_EQ(0)) THEN 
             N = 1 
             IF (NMAX(0) > 0) THEN 
-               X_GO(:IJKMAX2,:NMAX(0)) = X_G(:IJKMAX2,:NMAX(0)) 
+               X_GO(:,:NMAX(0)) = X_G(:,:NMAX(0)) 
                N = NMAX(0) + 1 
             ENDIF 
          ENDIF 
-         IJK = IJKMAX2 + 1 
-      ENDIF 
+!        IJK = IJKMAX2 + 1 
+!     ENDIF 
 
 !!$omp parallel do private(M,IJK,N)
       DO M = 1, MMAX 
-         IJK = 1 
-         IF (IJKMAX2 > 0) THEN 
-            ROP_SO(:IJKMAX2,M) = ROP_S(:IJKMAX2,M) 
-            IF (ENERGY_EQ) T_SO(:IJKMAX2,M) = T_S(:IJKMAX2,M) 
+!        IJK = 1 
+!        IF (IJKMAX2 > 0) THEN 
+            ROP_SO(:,M) = ROP_S(:,M) 
+            IF (ENERGY_EQ) T_SO(:,M) = T_S(:,M) 
             IF (GRANULAR_ENERGY) THEN 
-               THETA_MO(:IJKMAX2,M) = THETA_M(:IJKMAX2,M) 
-               TRD_S_CO(:IJKMAX2,M) = TRD_S_C(:IJKMAX2,M) 
+               THETA_MO(:,M) = THETA_M(:,M) 
+               TRD_S_CO(:,M) = TRD_S_C(:,M) 
             ENDIF 
-            U_SO(:IJKMAX2,M) = U_S(:IJKMAX2,M) 
-            V_SO(:IJKMAX2,M) = V_S(:IJKMAX2,M) 
-            W_SO(:IJKMAX2,M) = W_S(:IJKMAX2,M) 
+            U_SO(:,M) = U_S(:,M) 
+            V_SO(:,M) = V_S(:,M) 
+            W_SO(:,M) = W_S(:,M) 
             IF (SPECIES_EQ(M)) THEN 
                N = 1 
                IF (NMAX(M) > 0) THEN 
-                  X_SO(:IJKMAX2,M,:NMAX(M)) = X_S(:IJKMAX2,M,:NMAX(M)) 
+                  X_SO(:,M,:NMAX(M)) = X_S(:,M,:NMAX(M)) 
                   N = NMAX(M) + 1 
                ENDIF 
             ENDIF 
-            IJK = IJKMAX2 + 1 
-         ENDIF 
+!           IJK = IJKMAX2 + 1 
+!        ENDIF 
       END DO 
       RETURN  
       END SUBROUTINE UPDATE_OLD 

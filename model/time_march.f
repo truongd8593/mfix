@@ -451,6 +451,8 @@
 !  Update previous-time-step values of field variables
 !
       CALL UPDATE_OLD 
+!//SP
+    write(*,"('(PE ',I2,'): reached end of update_old in time_march')") myPE    !//SP
 !
 !     Calculate coefficients.  Explicitly set flags for all the quantities
 !     that need to be calculated before calling CALC_COEFF.
@@ -473,17 +475,30 @@
       IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
+!//AIKEPARDBG
+     write(*,"('(PE ',I2,'): aft CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
 !
 !     Calculate the cross terms of the stress tensor
 !
       CALL CALC_TRD_G (TRD_G, IER) 
       CALL CALC_TRD_S (TRD_S, IER) 
       CALL CALC_TAU_U_G (TAU_U_G, IER) 
+!//SP
+    write(*,"('(PE ',I2,'): reached end of CALC_TAU_U_G in time_march')") myPE
       CALL CALC_TAU_V_G (TAU_V_G, IER) 
+    write(*,"('(PE ',I2,'): reached end of CALC_TAU_V_G in time_march')") myPE
       CALL CALC_TAU_W_G (TAU_W_G, IER) 
+    write(*,"('(PE ',I2,'): reached end of CALC_TAU_W_G in time_march')") myPE
       CALL CALC_TAU_U_S (TAU_U_S, IER) 
+    write(*,"('(PE ',I2,'): reached end of CALC_TAU_U_S in time_march')") myPE
       CALL CALC_TAU_V_S (TAU_V_S, IER) 
+    write(*,"('(PE ',I2,'): reached end of CALC_TAU_V_S in time_march')") myPE
       CALL CALC_TAU_W_S (TAU_W_S, IER) 
+    write(*,"('(PE ',I2,'): reached end of CALC_TAU_W_S in time_march')") myPE
+!//SP
+    write(*,"('(PE ',I2,'): reached end of calc routines in time_march')") myPE 
+!//SP
+    call mfix_exit(myPE)   !//SP
 !
 !  Check rates and sums of mass fractions every NLOG time steps
 !

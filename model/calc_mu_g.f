@@ -120,6 +120,9 @@
       INCLUDE 'ep_s2.inc'
       INCLUDE 'fun_avg2.inc'
 !
+!//SP Initialize 
+      MU_GT(:) = ZERO
+      LAMBDA_GT(:) = ZERO
 !
 !!$omp parallel do private(ijk) schedule(dynamic,chunk_size)
 !// 350 1112 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
@@ -173,6 +176,7 @@
 !       ((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1)) - (iend3-istart3+1)*(jend3-jstart3+1)
 
 
+!//SP
          IF ( .NOT.WALL_AT(IJK) .AND. L_SCALE(IJK)/=ZERO) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
@@ -275,6 +279,7 @@
             MU_GT(IJK) = MIN(MU_GMAX,MU_GT(IJK)+2.0*L_SCALE(IJK)*L_SCALE(IJK)*&
                RO_G(IJK)*SQRT(I2_DEVD_G)) 
             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK) 
+	    
          ENDIF 
       END DO 
 
@@ -287,8 +292,8 @@
 
 !//? 1112 need to update the boundaries for variables : MU_GT,LAMBDA_GT
 !// 400 1112 update the boundaries for recently calculated field vars
-      call send_recv(mu_gt,idbg)
-      call send_recv(lambda_gt,idbg) 
+      call send_recv(mu_gt,2)
+      call send_recv(lambda_gt,2) 
            
 !//AIKEPARDBG
 !      write(*,"('(PE ',I2,'): eof CALC_MU_G ')") myPE    !//AIKEPARDBG

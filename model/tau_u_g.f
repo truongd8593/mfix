@@ -105,8 +105,11 @@
 !!$omp&  SBV,  SSX,SSY,  EPMU_GTE,EPMU_GBE, SSZ, &
 !!$omp&  EPMUGA,DWOXDZ,VTZB )
 !!$omp&  schedule(static)
-      DO IJK = 1, IJKMAX2 
+!//SP
+      DO IJK = IJKSTART3, IJKEND3
          I = I_OF(IJK) 
+!//SP
+!	 IF(.NOT.IS_ON_MYPE_plus1layer(I,J_OF(IJK), K_OF(IJK))) cycle
          IJKE = EAST_OF(IJK) 
          EPGA = AVG_X(EP_G(IJK),EP_G(IJKE),I) 
          IF ( .NOT.IP_AT_E(IJK) .AND. EPGA>DIL_EP_S) THEN 
@@ -129,6 +132,7 @@
             IJKBE = EAST_OF(IJKB) 
             IJKM = KM_OF(IJK) 
             IPJKM = IP_OF(IJKM) 
+
 !
 !       Surface forces
 !
@@ -149,7 +153,6 @@
                (IJKBE),MU_GT(IJKE),KM),I) 
             SSZ = EPMU_GTE*(W_G(IPJK)-W_G(IJK))*ODX_E(I)*AXY_U(IJK) - EPMU_GBE*&
                (W_G(IPJKM)-W_G(IJKM))*ODX_E(I)*AXY_U(IJKM) 
-!
 !
 !         Special terms for cylindrical coordinates
             IF (CYLINDRICAL) THEN 

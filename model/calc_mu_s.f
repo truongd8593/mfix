@@ -225,6 +225,9 @@
       INCLUDE 's_pr2.inc'
 !
 !
+!//SP Initialize 
+      MU_S(:,:) = ZERO
+      LAMBDA_S(:,:) = ZERO
 !
 !!$omp  parallel do &
 !!$omp& private(IMJPK, I, J, K, IJK,  IMJK, IPJK, IJMK, IJPK, IJKM, &

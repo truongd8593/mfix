@@ -96,7 +96,8 @@
 !!$omp&  SBV,  SSX,SSY,   SSZ)  &
 !!$omp&  schedule(static)
 
-      DO IJK = 1, IJKMAX2 
+!//SP
+      DO IJK = IJKSTART3, IJKEND3
          J = J_OF(IJK) 
          IJKN = NORTH_OF(IJK) 
          EPGA = AVG_Y(EP_G(IJK),EP_G(IJKN),J) 

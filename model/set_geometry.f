@@ -90,28 +90,18 @@
       IF (CYCLIC_X) THEN 
          DX(1) = DX(IMAX1) 
          DX(IMAX2) = DX(IMIN1) 
-!//SP Additional defs. for ghost layer....
-         DX(IMIN3) = DX(IMAX1-1)
-         DX(IMAX3) = DX(IMIN1+1)
       ENDIF 
       IF (CYCLIC_Y) THEN 
          DY(1) = DY(JMAX1) 
          DY(JMAX2) = DY(JMIN1) 
-!//SP Additional defs. for ghost layer....
-         DY(JMIN3) = DY(JMAX1-1) 
-         DY(JMAX3) = DY(JMIN1+1) 
       ENDIF 
 !//D 300 0912 For CYCLIC_Z, dz(1) of PE 0 = dz(kmax1) of PE 1
 !//D          As dz() is the global array for all PEs no modification necessary
       IF (CYCLIC_Z) THEN 
          DZ(1) = DZ(KMAX1) 
          DZ(KMAX2) = DZ(KMIN1) 
-!//SP Additional defs. for ghost layer....
-         DZ(KMIN3) = DZ(KMAX1-1) 
-         DZ(KMAX3) = DZ(KMIN1+1) 
       ENDIF 
 !
-
 !//SP Changed the bounds to 0:IMAX3 from 1:IMAX2
       IF (COORDINATES == 'CARTESIAN') THEN 
          I = 0 
@@ -128,49 +118,28 @@
             ODX(1) = ONE/DX(1) 
             OX(1) = UNDEFINED 
             OX_E(1) = UNDEFINED 
-!//SP Additional defs. for ghost layer....
-            ODX(IMIN3) = ONE/DX(1)
-            OX(IMIN3) = UNDEFINED
-            OX_E(IMIN3) = UNDEFINED
             IF (DO_I) THEN 
                X(1) = -HALF*DX(1) 
                X_E(1) = 0.0 
-!//SP Additional defs. for ghost layer....
-               X(IMIN3) = -HALF*DX(1) 
-               X_E(IMIN3) = 0.0 
             ELSE 
                X(1) = HALF*DX(1) 
                X_E(1) = DX(1) 
-!//SP Additional defs. for ghost layer....
-               X(IMIN3) = HALF*DX(1) 
-               X_E(IMIN3) = DX(1) 
             ENDIF 
          ELSE 
             IF (DO_I) THEN 
                X_E(1) = XMIN 
                X(1) = XMIN - HALF*DX(1) 
-!//SP Additional defs. for ghost layer....
-               X_E(IMIN3) = XMIN 
-               X(IMIN3) = XMIN - HALF*DX(1) 
             ELSE 
                X_E(1) = XMIN + DX(1) 
                X(1) = XMIN + HALF*DX(1) 
-!//SP Additional defs. for ghost layer....
-               X_E(IMIN3) = XMIN + DX(1) 
-               X(IMIN3) = XMIN + HALF*DX(1) 
             ENDIF 
             OX(1) = ONE/X(1) 
             OX_E(1) = ONE/X_E(1) 
             ODX(1) = ONE/DX(1) 
-!//SP Additional defs. for ghost layer....
-            OX(IMIN3) = ONE/X(1) 
-            OX_E(IMIN3) = ONE/X_E(1) 
-            ODX(IMIN3) = ONE/DX(1) 
          ENDIF 
 !                                                #1 add the DO_I IF block
          IF (DO_I) THEN 
-!//SP Changed the bounds to IMIN2:IMAX3 from IMIN1:IMAX2
-            DO I = IMIN2, IMAX3 
+            DO I = IMIN1, IMAX2 
                X(I) = X(I-1) + (DX(I-1)+DX(I))/2. 
                X_E(I) = X_E(I-1) + DX(I) 
                OX(I) = ONE/X(I) 
@@ -228,18 +197,18 @@
       FY_N_BAR(1) = HALF 
       FZ_T(1) = HALF 
       FZ_T_BAR(1) = HALF 
-!//SP Additional defs. for ghost layer....
-      ODX_E(IMIN3) = ONE/DX_E
-      ODY_N(JMIN3) = ONE/DY_N
-      ODZ_T(KMIN3) = ONE/DZ_T
-      FX(IMIN3) = HALF
-      FX_BAR(IMIN3) = HALF
-      FX_E(IMIN3) = HALF
-      FX_E_BAR(IMIN3) = HALF
-      FY_N(JMIN3) = HALF
-      FY_N_BAR(JMIN3) = HALF
-      FZ_T(KMIN3) = HALF
-      FZ_T_BAR(KMIN3) = HALF
+!//SP For 0
+      ODX_E(0) = ONE/DX_E
+      ODY_N(0) = ONE/DY_N
+      ODZ_T(0) = ONE/DZ_T
+      FX(0) = HALF
+      FX_BAR(0) = HALF
+      FX_E(0) = HALF
+      FX_E_BAR(0) = HALF
+      FY_N(0) = HALF
+      FY_N_BAR(0) = HALF
+      FZ_T(0) = HALF
+      FZ_T_BAR(0) = HALF
 
 !       ..........................................
 !       Look at 2 through IMAX1 U-momentum cells
@@ -270,8 +239,7 @@
 !
 !       Look at 2 through KMAX1 W-momentum cells
       IF (DO_K) THEN 
-!//D 300 0912 no changes in the limits as they run over ACTIVE cells ONLY 
-!//  and due to 1D arrays are declared globally
+!//D 300 0912 no changes in the limits as they run over ACTIVE cells ONLY
          DO K = KMIN1, KMAX1 
             DZ_T = HALF*(DZ(K+1)+DZ(K)) 
             ODZ_T(K) = ONE/DZ_T 
@@ -288,51 +256,47 @@
       ODX_E(IMAX2) = ONE/DX_E 
       ODY_N(JMAX2) = ONE/DY_N 
       ODZ_T(KMAX2) = ONE/DZ_T 
+!//S2D for 2D/3D decomp. do similar add ons for JMAX3, IMAX3 as done in KMAX3 below      
       FX(IMAX2) = HALF 
       FX_BAR(IMAX2) = HALF 
       FX_E(IMAX2) = HALF 
       FX_E_BAR(IMAX2) = HALF 
-!//SP Max3 extensions
-      ODX_E(IMAX3) = ONE/DX_E
-      ODY_N(JMAX3) = ONE/DY_N
-      ODZ_T(KMAX3) = ONE/DZ_T
-      FX(IMAX3) = HALF
-      FX_BAR(IMAX3) = HALF
-      FX_E(IMAX3) = HALF
-      FX_E_BAR(IMAX3) = HALF
       
       FY_N(JMAX2) = HALF 
       FY_N_BAR(JMAX2) = HALF      
-!//SP Max3 extensions
-      FY_N(JMAX3) = HALF 
-      FY_N_BAR(JMAX3) = HALF      
 
       FZ_T(KMAX2) = HALF 
       FZ_T_BAR(KMAX2) = HALF 
 !// 200 0920 need to update values for KMAX3 also             
       FZ_T(KMAX3) = HALF 
       FZ_T_BAR(KMAX3) = HALF 
+
+!//SP FOr IMAX3, JMAX3...
+      ODX_E(IMAX3) = ONE/DX_E
+      ODY_N(JMAX3) = ONE/DY_N
+      ODZ_T(KMAX3) = ONE/DZ_T
+!//S2D for 2D/3D decomp. do similar add ons for JMAX3, IMAX3 as done in KMAX3 below
+      FX(IMAX3) = HALF
+      FX_BAR(IMAX3) = HALF
+      FX_E(IMAX3) = HALF
+      FX_E_BAR(IMAX3) = HALF
+
+      FY_N(JMAX3) = HALF
+      FY_N_BAR(JMAX3) = HALF
+
       
       IF (CYCLIC_X) THEN 
          FX_E(1) = FX_E(IMAX1) 
          FX_E_BAR(1) = FX_E_BAR(IMAX1) 
-!//SP Additional defs. for ghost layer....
-         FX_E(IMIN3) = FX_E(IMAX1-1) 
-         FX_E_BAR(IMIN3) = FX_E_BAR(IMAX1-1) 
       ENDIF 
       IF (CYCLIC_Y) THEN 
          FY_N(1) = FY_N(JMAX1) 
          FY_N_BAR(1) = FY_N_BAR(JMAX1) 
-!//SP Additional defs. for ghost layer....
-         FY_N(JMIN3) = FY_N(JMAX1-1) 
-         FY_N_BAR(JMIN3) = FY_N_BAR(JMAX1-1) 
       ENDIF 
+!//? should we update the additional ghosts for CYCLIC_Z?      
       IF (CYCLIC_Z) THEN 
          FZ_T(1) = FZ_T(KMAX1) 
          FZ_T_BAR(1) = FZ_T_BAR(KMAX1) 
-!//SP Additional defs. for ghost layer....
-         FZ_T(KMIN3) = FZ_T(KMAX1-1) 
-         FZ_T_BAR(KMIN3) = FZ_T_BAR(KMAX1-1) 
       ENDIF 
 !=====================================================================
 !

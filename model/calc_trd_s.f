@@ -51,10 +51,13 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
+!//SP
+      TRD_S(:,:) = ZERO
 !
       DO M = 1, MMAX 
 !!$omp    parallel do private(ijk,i,j,k,im,imjk,ijmk,ijkm)
-         DO IJK = 1, IJKMAX2 
+!//SP
+      DO IJK = IJKSTART3, IJKEND3
             IF (FLUID_AT(IJK)) THEN 
                I = I_OF(IJK) 
                J = J_OF(IJK) 

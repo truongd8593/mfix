@@ -122,6 +122,8 @@
 !
 !  Set the initial conditions.
 !
+!//SP
+      CALL SEND_RECV(FLAG,2)
 
       DO L = 1, DIMENSION_IC 
          IF (IC_DEFINED(L)) THEN 
@@ -153,7 +155,7 @@
 		     
 !// 220 1004 Need to use local FUNIJK
                      IJK = FUNIJK(I,J,K) 
-		     
+
                      IF (FLAG(IJK) == 1) THEN 
                         IF (EPGX /= UNDEFINED) EP_G(IJK) = EPGX 
                         IF (IC_TYPE(L) == 'PATCH') THEN 
@@ -216,5 +218,7 @@
             END DO 
          ENDIF 
       END DO 
+!//SP
+      CALL SEND_RECV(L_SCALE,2)
       RETURN  
       END SUBROUTINE SET_IC 
