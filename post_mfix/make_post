@@ -1,0 +1,172 @@
+#!/bin/bsh -f
+#
+# POST_MFIX script file for executing 'make'
+# M. Syamlal/P.Nicoletti                   9-27-95
+#------------------------------------------------------------------------
+    set `uname -s` ; opsys=$1
+    
+    case $opsys in
+
+    Linux)
+            echo
+            echo "Compiling for Linux computer (Portland group)"
+	    echo "Please wait . . ."
+            echo	    
+	    
+            if test -f COMPILED.FOR.LINUX.PG
+            then
+	        echo
+            else
+                cp LINUX.F machine.f
+                rm *.o
+                rm COMPILED.FOR.*
+                touch COMPILED.FOR.LINUX.PG
+            fi
+	    
+	    
+            FORTRAN_CMD=pgf90
+            LINK_CMD=pgf90
+	       
+	    
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            compile_d="-c -g -byteswapio"
+            link_d="-g"
+            compile="-c -byteswapio"
+            link=" "
+
+            ;;
+	    
+
+      IRIX64) 
+            echo
+            echo "Compiling for SGI IRIX64 computer"
+	    echo "\nPlease wait . . ."
+            echo
+	    
+            if test -f COMPILED.FOR.IRIX64F90
+            then
+	        echo
+            else
+                cp IRIXF90.F machine.f
+                rm *.o
+		rm *.a
+                rm COMPILED.FOR.*
+                touch COMPILED.FOR.IRIX64F90
+            fi
+	    
+	    
+            FORTRAN_CMD=f90
+            LINK_CMD=f90
+	       	    
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            compile_d="-c -g"
+            link_d="-g"
+            compile="-c  -n32 -O3 -mips4"
+            link="-n32 -O3 -mips4"
+
+            ;;
+	    
+      ULTRIX) 
+            echo
+            echo "Compiling for DEC ULTRIX computer"
+	    echo "\nPlease wait . . ."
+            echo
+	    
+            if test -f COMPILED.FOR.ULTRIX
+            then
+	        echo
+            else
+                cp ULTRIX.F machine.f
+                rm *.o
+		rm *.a
+                rm COMPILED.FOR.*
+                touch COMPILED.FOR.ULTRIX
+            fi
+	    
+	    
+            FORTRAN_CMD=f90
+            LINK_CMD=f90
+     
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            compile_d="-c -g -freeform -convert big_endian"
+            link_d="-g -convert big_endian"
+            compile="-c -O2 -freeform -convert big_endian"
+            link="-O2 -convert big_endian"
+
+            ;;
+             
+
+    CYGWIN32_NT)
+            echo
+            echo "Compiling for NT computer (Portland group)"
+	    echo "Please wait . . ."
+            echo	    
+	    
+            if test -f COMPILED.FOR.CYWIN32_NT.PG
+            then
+	        echo
+            else
+                cp PGNT.F machine.f
+                rm *.o
+                rm COMPILED.FOR.*
+                touch COMPILED.FOR.CYWIN32_NT.PG
+            fi
+	    
+	    
+            FORTRAN_CMD=pgf90
+            LINK_CMD=pgf90
+	       	    
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            compile_d="-c -O0 -byteswapio"
+            link_d=" "
+            compile="-c -O0 -byteswapio"
+            link=" "
+
+            ;;
+	    
+   
+   
+      *) echo "no support for operating system: $opsys"
+         echo 
+	 echo "modify  make_post   to add support"
+	 echo
+         exit ;;
+   esac
+
+echo " "
+
+#
+#------------------------------------------------------------------------
+#
+#
+    FORT_FLAGS="$compile_d"
+    LINK_FLAGS="$link_d"
+#
+#
+  export FORT_FLAGS
+  export LINK_FLAGS
+  export LIB_FLAGS
+  export OBJ_EXT
+  export FORTRAN_EXT
+  export FORTRAN_CMD
+  export LINK_CMD
+  
+  make
+  if test $? = 0
+  then
+    echo
+    echo 
+    echo "********************************************"
+    echo "* Compilation successful: post_mfix created*"
+    echo "********************************************"
+    echo 
+  else
+    echo
+    echo
+    echo "*** File post_mfix NOT created."
+    echo 
+  fi

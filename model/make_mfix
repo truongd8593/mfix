@@ -1,0 +1,377 @@
+#!/bin/bsh -f
+#
+# MFIX script file for obtaining user-defined files and
+# executing 'make'
+#  Usage:
+#     1) on unix machines     :  sh    mfix/model/make_mfix
+#     2) on NT using PGI bash :  bash  mfix/model/make_mfix
+#
+# M. Syamlal and P. Nicoletti                  9-27-94
+#
+vers="Version 3.2"
+echo
+echo 
+echo "*******************************************"
+echo "* Creating the MFIX-executable mfix.exe   *"
+echo "*                $vers              *"
+echo "*******************************************"
+echo
+
+#
+# Get run directory name
+#
+set `pwd` ; run_dir=$1
+#
+#  Get path name to mfix directory and cd to mfix directory
+#
+mfix=`echo $0 | sed 's/\/make_mfix//'`
+cd $mfix
+set `pwd` ; mfix=$1
+
+if test $mfix = $run_dir 
+then
+  echo "*** Execute this command from any directory other than the current directory!"
+  echo "*** It is usually executed from a run directory containing user defined files."
+  echo
+  exit
+fi
+
+#
+#------------------------------------------------------------------------
+# Define machine dependent flags and copy machine dependent files
+# Check whether the last compilation was on the same machine.
+# Give a different name for each machine file (IRIXF90.F, ULTRIX.F, etc.)
+
+    set `uname -s` ; opsys=$1
+    
+    case $opsys in
+    
+      IRIX64) 
+	    mach_file="IRIXF90.F"
+
+            FORTRAN_CMD=f90
+            LINK_CMD=f90
+            libs_d=blas90.a
+            libs=blas90.a
+	       
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+	    omp="-mp"
+            compile_d="-c -g -freeform"
+            link_d="-g"
+            compile="-c  -n32 -O3 -mips4 -freeform"
+            compile2="-c  -n32 -O3 -mips4 -freeform"
+            link="-n32 -O3 -mips4"
+            MODULE_CODE=0
+            ;;
+	    
+      ULTRIX) 
+	    mach_file="ULTRIX.F"
+  
+            FORTRAN_CMD=f90
+            LINK_CMD=f90
+            libs_d=blas90.a
+            libs=blas90.a
+	       
+            OBJ_EXT=o
+            FORTRAN_EXT=f90
+	    omp="?"
+            compile_d="-c -g -nowarn -freeform -convert big_endian"
+            link_d="-g -nowarn -convert big_endian"
+            compile="-c -nowarn -O2 -freeform -convert big_endian"
+            compile2="-c -nowarn -O2 -freeform -convert big_endian"
+            link="-O2 -nowarn -convert big_endian"
+            MODULE_CODE=0
+	    
+            ;;
+             
+
+    Linux)
+	    mach_file="LINUX.F"
+	    
+            FORTRAN_CMD=pgf90
+            LINK_CMD=pgf90
+            libs_d=blas90.a
+            libs=blas90.a
+    
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+	    omp="-mp"
+            compile_d="-c -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            link_d="-Mprof=func -g"
+            compile=" -O -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile2="-O1 -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            link=" "
+            MODULE_CODE=1
+	    
+
+            ;;
+	    
+	    
+    CYGWIN32_NT)
+	    mach_file="PGNT.F"
+   
+            FORTRAN_CMD=pgf90
+            LINK_CMD=pgf90
+            libs_d=blas90.a
+            libs=blas90.a
+	       
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+	    omp="-mp"
+            compile_d="-c -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            link_d="-g"
+            compile="-c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile2="-c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            link=" "
+            MODULE_CODE=1
+
+            ;;
+	    
+    CYGWIN_NT-4.0)
+	    mach_file="PGNT.F"
+   
+            FORTRAN_CMD=pgf90
+            LINK_CMD=pgf90
+            libs_d=blas90.a
+            libs=blas90.a
+	       
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+	    omp="-mp"
+            compile_d="-c -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            link_d="-g"
+            compile="-c -O -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile2="-c -O1 -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            link=" "
+            MODULE_CODE=1
+
+            ;;
+	    
+	         
+      *) echo "Sorry, no support for operating system: $opsys"
+         echo 
+	 echo "modify  make_mfix   to add support"
+	 echo
+         exit ;;
+    esac
+#
+#------------------------------------------------------------------------
+#
+
+# get user input
+echo
+echo "MFIX directory is $mfix"
+echo
+echo "Compiling with $mach_file"
+echo
+
+echo -n "Do you need SMP version? (y/n) [no] "
+read smp_version
+
+echo
+echo -n "Do you need debug version? (y/n) [no] "
+read dbg_version
+  
+  
+# prepare for SMP version   
+smp_check="COMPILED_SMP"
+case $smp_version in
+  y|Y )
+            if test -f $smp_check
+            then
+	        echo
+            else
+                rm *.o *.a *.mod *.exe
+                touch $smp_check
+            fi
+    ;;
+  *)
+            if test -f $smp_check
+            then
+                rm *.o *.a *.mod *.exe
+                rm $smp_check
+            else
+	        echo
+            fi
+    ;;
+esac
+
+#Prepare for the current machine	    
+    mach_check="COMPILED.WITH.$mach_file"
+    if test -f $mach_check
+    then
+       echo
+    else
+       cp $mach_file machine.f
+       rm *.o *.a *.mod *.exe
+       rm COMPILED.WITH.*
+       touch $mach_check
+    fi
+
+
+	    
+    
+# create default *.f and *.inc files in model directory, if they do not exist
+  cd $run_dir
+  echo
+  echo "Ignore messages such as \"Cannot access *.f or *.inc\""
+  for i in `ls *.f` 
+  do
+  
+#   Is there a similar file in Mfix/model directory?
+    if test -r $mfix/$i 
+    then
+       outfile=`echo $i | sed 's/\./\.0/'`
+#      Is there default file Mfix/model directory?
+       if test -r $mfix/$outfile
+       then
+          do_nothing="ok"
+      
+       else
+#        Mfix/model directory does not have a default file. create one.
+         cp $mfix/$i $mfix/$outfile
+       fi
+       
+    fi
+  done
+  
+  for i in `ls *.inc` 
+  do
+  
+#   Is there a similar file in Mfix/model directory?
+    if test -r $mfix/$i 
+    then
+       outfile=`echo $i | sed 's/\./\.0/'`
+#      Is there default file Mfix/model directory?
+       if test -r $mfix/$outfile
+       then
+          do_nothing="ok"
+      
+       else
+#        Mfix/model directory does not have a default file. create one.
+         cp $mfix/$i $mfix/$outfile
+       fi
+       
+    else
+      cp $i $mfix 
+      echo "Using nonMfix include file: $i"
+    fi
+  done
+  echo
+#
+#------------------------------------------------------------------------
+#
+# Loop through all *.0* files in mfix/model directory
+  cd $mfix
+
+  echo
+  echo "Files from run directory used for making Mfix:"
+  for i in `ls *.0*`
+  do
+  
+#   The user has a corresponding file
+    outfile=`echo $i | sed 's/\.0/\./'`
+    if test -r $run_dir/$outfile 
+    then
+	echo "   $outfile"
+
+#      User's file different from the .f or .inc file: copy user's file
+       cmp -s $run_dir/$outfile  $outfile 
+       if test $? = 0
+       then
+          do_nothing="ok"
+       else
+          cp $run_dir/$outfile $outfile
+       fi
+
+
+#   User does not have the corresponding file
+    else
+
+#     The .0f or .0inc file different from the .f or .inc file: copy *.0* file
+       cmp -s $i $outfile
+       if test $? = 0
+       then
+          rm $i
+       else
+          mv $i $outfile
+	  touch $outfile
+       fi
+
+    fi
+  done
+  echo
+  
+#
+#------------------------------------------------------------------------
+#
+
+#make_mfix:
+  case $smp_version in
+  y|Y )
+    mp_flag="$omp"
+    ;;
+  *)
+    mp_flag=" "
+    ;;
+  esac
+
+  case $dbg_version in
+  y|Y )
+    FORT_FLAGS="$mp_flag $compile_d"
+    FORT_FLAGS2="$mp_flag $compile_d"
+    LINK_FLAGS="$mp_flag $link_d"
+    LIB_FLAGS="$libs_d"
+    ;;
+  *)
+    FORT_FLAGS="$mp_flag $compile"
+    FORT_FLAGS2="$mp_flag $compile2"
+    LINK_FLAGS="$mp_flag $link"
+    LIB_FLAGS="$libs"
+    ;;
+  esac
+
+  echo "\nPlease wait . . ."
+  
+  export FORT_FLAGS
+  export FORT_FLAGS2
+  export LINK_FLAGS
+  export LIB_FLAGS
+  export OBJ_EXT
+  export FORTRAN_EXT
+  export FORTRAN_CMD
+  export LINK_CMD
+        
+ 
+  case $MODULE_CODE in
+  0)
+       make -f mfix_u.make
+       ;;
+  1)
+       make -f mfix_l.make
+       ;;
+  esac
+
+  if test $? = 0
+  then
+    cp mfix.exe $run_dir
+    echo
+    echo 
+    echo "*******************************************"
+    echo "* Compilation successful: mfix.exe created*"
+    echo "*              $vers                *"
+    echo "*******************************************"
+    echo 
+  else
+    echo
+    echo
+    echo "*** File mfix.exe NOT created."
+    echo 
+  fi
+  
+
+cd $run_dir
+
+
+

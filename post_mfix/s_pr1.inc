@@ -1,0 +1,1 @@
+      DOUBLE PRECISION INV_H, NEG_H, dEPodP_s, dPodEP_s

@@ -1,0 +1,22 @@
+#!/bin/csh -f
+#main
+echo "Creating mfix.make ..."
+cd ../model
+ls -1 *.f>files.lis
+set dir = $cwd
+foreach i (*)
+  if(-d $i)then
+    cd $i
+    test -e *.f
+    if ($status == 0) then
+      foreach file (*.f)
+        echo "./$i/$file">>$dir/files.lis
+      end
+    endif
+    cd ..
+  endif
+end
+../tools/mms.exe
+echo
+echo "mfix.make created"
+echo
