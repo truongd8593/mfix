@@ -86,6 +86,7 @@
 !
 !$      INTEGER num_threads, threads_specified, omp_id
 !$      INTEGER mp_numthreads, omp_get_num_threads
+!$      INTEGER omp_get_thread_num      
       INTEGER IJK
       INCLUDE 'function.inc'
 
