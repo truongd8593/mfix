@@ -117,6 +117,30 @@ ln -sf "$mpi_include/mpif.h" .
 	   opsys="Linux_ifc"
            ;;
        esac    
+
+       if test $opsys = "Linux_ifc"
+       then
+         echo 
+         echo "  Supported Intel Linux Fortran compiler versions:"
+         echo "    1) Intel Linux Fortran Compiler (ifort) version 8.0"
+         echo "    2) Intel Linux Fortran Compiler (ifc) version 7.X" 
+         echo -n "   Enter line number corresponding the compiler version? (1/2) [1] "
+         read ver_compiler
+         case $ver_compiler in
+         1)
+           echo "Intel Linux Fortran Compiler (ifort) version 8.0 selected"
+           intel_ver="Linux_ifc8"
+           ;;
+         2)
+           echo "Intel Linux Fortran Compiler (ifc) version 7.X selected"
+           intel_ver="Linux_ifc7"
+           ;;
+         *)
+           echo "Intel Linux Fortran Compiler (ifort) version 8.0 selected"
+           intel_ver="Linux_ifc8"
+           ;;
+       esac
+       fi
     else
        echo  
     fi
@@ -255,8 +279,8 @@ ln -sf "$mpi_include/mpif.h" .
     Linux_pgi)
 	    mach_file="LINUX.F"
 	    
-            FORTRAN_CMD=mpif90
-            LINK_CMD=mpif90
+            FORTRAN_CMD=pgf90
+            LINK_CMD=pgf90
             libs_d="-lblas blas90.a"
             libs="-lblas blas90.a"
     
@@ -303,8 +327,14 @@ ln -sf "$mpi_include/mpif.h" .
                         LINK_CMD=mpif90
                 ;;
               *)
-                        FORTRAN_CMD=ifc
-                        LINK_CMD=ifc
+                        if test $intel_ver = "Linux_ifc8" 
+                        then
+                           FORTRAN_CMD=ifort
+                           LINK_CMD=ifort
+                        else
+                           FORTRAN_CMD=ifc
+                           LINK_CMD=ifc
+                        fi
                 ;;
             esac
 
@@ -312,12 +342,15 @@ ln -sf "$mpi_include/mpif.h" .
             FORTRAN_EXT=f
             libs=blas90.a 
 	    
-           #-----------
-	   # Check if Intel Linux compiler portability library is accessible?
-	   #-----------
-            echo
-            echo "checking for Intel compiler portability library, PEPCF90" 
-	    echo "in the default directory /opt/intel/compiler70/ia32/lib"
+            if test $intel_ver = "Linux_ifc7"
+            then
+              #-----------
+	      # Check if Intel Linux compiler portability library is accessible?
+	      #-----------
+               echo
+               echo "checking for Intel compiler portability library, PEPCF90" 
+	       echo "in the default directory /opt/intel/compiler70/ia32/lib"
+
             if test -f "/opt/intel/compiler70/ia32/lib/libPEPCF90.a"
             then
 	        echo
@@ -339,7 +372,6 @@ ln -sf "$mpi_include/mpif.h" .
 	         fi
 
             fi
-
 
             if [ "$F_UFMTENDIAN" ]
             then
@@ -373,14 +405,27 @@ ln -sf "$mpi_include/mpif.h" .
               echo "Aborting compilation" 
 	      exit
             fi
-	    
-            compile_common="-c -O3 -w -w95 -i_dynamic -ip -FR"
-            compile_d="-g -c -FR -xK -w " 
+
+            compile_common="-c -O3 axkW -tpp7 -w -w95 -i_dynamic -ip -FR"
+            compile_d="-g -O0 -c -FR -w -d1 -CB " 
             link_d="-L$intel_lib -lPEPCF90 "
             compile="$compile_common"
             compile2="$compile_common"
             link="-L$intel_lib -lPEPCF90"
             MODULE_CODE=0
+            fi
+
+            if test $intel_ver = "Linux_ifc8" 
+            then
+              compile_common="-c -O3 axkW -tpp7 -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"
+              compile_d="-g -c -convert big_endian -assume byterecl -FR -O0 -fpe0 -d1 -CB "
+              link_d=" "
+              compile="$compile_common"
+              compile2="$compile_common"
+              link=" "
+              MODULE_CODE=1
+            fi
+
 	    
 #           ------------------
 #           flags for inlining
