@@ -156,10 +156,12 @@
 	   xbar = EP_s(IJK,1)/(EP_s(IJK,1)+EP_s(IJK,2))
 
 	   if (xbar .LE. ep_s_max_ratio(1,2)) THEN
-	      CALC_EP_star =MAX(0.36d0, (1.-(((ep_s_max(1)-ep_s_max(2))+(1.-d_p_ratio(1,2))*(1-ep_s_max(1))*ep_s_max(2))*(ep_s_max(1)+(1-ep_s_max(1)) &
-        	              *ep_s_max(2))*xbar/ep_s_max(1)+ep_s_max(2))))
+	      CALC_EP_star =MAX(0.36d0, (1.-(((ep_s_max(1)-ep_s_max(2))+&
+              (1.-d_p_ratio(1,2))*(1-ep_s_max(1))*ep_s_max(2))*(ep_s_max(1)+&
+              (1-ep_s_max(1)) *ep_s_max(2))*xbar/ep_s_max(1)+ep_s_max(2))))
      	   else
-    	      CALC_EP_star =MAX(0.36d0, (1.-((1. -d_p_ratio(1,2))*(ep_s_max(1)+(1-ep_s_max(1))*ep_s_max(2))*(1. -xbar) +ep_s_max(1))))
+    	      CALC_EP_star =MAX(0.36d0, (1.-((1. -d_p_ratio(1,2))*(ep_s_max(1)&
+              +(1-ep_s_max(1))*ep_s_max(2))*(1. -xbar) +ep_s_max(1))))
 	   end if
 	else
 	   CALC_EP_star = MIN(ep_s_max(1), ep_s_max(2))

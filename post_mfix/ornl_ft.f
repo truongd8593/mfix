@@ -256,8 +256,8 @@
       real*8 hng !......................... Hanning-window power (input)
       real*8 pi
       integer*4 n !...................................... FFT block size
-      integer*4 k,n2,nu1,l,i,a,b
-      real*8 hn,arg,s,c,kn2,tr,ti,yt
+      integer*4 k,n2,nu1,l,i,a,b, kn2
+      real*8 hn,arg,s,c,tr,ti,yt
 
       pi = 3.141592654
       n = 2 ** nu

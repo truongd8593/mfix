@@ -194,8 +194,7 @@
 !*              removed **2 from scaling of ck by number of differences*
 !***********************************************************************
 
-      subroutine cross_correlation(TSx,TSy,ibeg,iend,lmin,lmax,lstp,lag,& 
-     &                             ccf)
+      subroutine cross_correlation(TSx,TSy,ibeg,iend,lmin,lmax,lstp,lag,ccf)
 
       implicit none
 

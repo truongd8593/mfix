@@ -30,7 +30,7 @@
       write(*,*) 'resolution, but 10-13 are useful values; frequency '
       write(*,*) 'resolution (PSD bin width) is  df = sr / 2**(nu-1))'
       read(*,*) nu
-      write(*,*) 'number of averaging blocks (1 is minimum, 15 is a useful maximum; the constraint is nb <= fix(length(TS)/(2**nu)).)'
+      write(*,*) 'number of averaging blocks (1 is minimum, 15 is a useful max.; the constraint is nb <= fix(length(TS)/(2**nu)).)'
       read(*,*) nb
       write(*,*) 'percentage overlap in blocks [0,10]; typically, use 0'
       read(*,*) ol

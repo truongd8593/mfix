@@ -59,7 +59,7 @@
       real*8 A(MAXDIM,MAXDIM) !........... real symmetric matrix (input)
       integer N !.............................. matrix dimension (input)
       real*8 B(MAXDIM,MAXDIM) !..... transformation of matrix A (output)
-      real eigvec(MAXDIM,MAXDIM) !................ eigenvectors (output)
+      real*8 eigvec(MAXDIM,MAXDIM) !................ eigenvectors (output)
       real*8 RHO !................ small value to represent off-diagonal
       real*8 nu, nufinal !........ dummy values used in norm computation
       integer*4 i,j,q,p !.............................. counting indices
