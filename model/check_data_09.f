@@ -179,8 +179,8 @@
       END DO 
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: CHECK_DATA_09',/' Error: ',&
-         'Reaction scheme for reaction ',I2,' (',A,') not specified',/1X,70('*'&
-         )/) 
+         'Reaction scheme for reaction ',&
+         I2,' (',A,') not specified',/1X,70('*')/) 
  1001 FORMAT(/1X,70('*')//' From: CHECK_DATA_09',/' Error: ',&
          'Undefined molecular weight for ID: ',I2,/,&
 	 '  Total NMAX may be less than the items in SPECIES_NAME.',&

@@ -250,21 +250,20 @@
 !    write(*,"('(PE ',I2,'): aft solve_vel_star in iterate')") myPE  !//AIKEPARDBG
 !    call mfix_exit(myPE)     !//AIKEPARDBG
 
-      write(*,*) RO_G0, myPE
+!     write(*,*) RO_G0, myPE
 !
 !     Solve fluid pressure correction equation
 !
       IF (RO_G0 /= ZERO) CALL SOLVE_PP_G (NORMG, RESG, IER) 
 !//SP
-!    write(*,"('(PE ',I2,'): aft solve_pp_g in iterate')") myPE  !//AIKEPARDBG      
-!    call mfix_exit(myPE)     !//AIKEPARDBG
+!     write(*,*) 'after SOLVE_PP_G', myPE
 !
 !
 !     Correct pressure and velocities
 !
       IF (RO_G0 /= ZERO) CALL CORRECT_0 (IER) 
 !//SP
-!      write(*,*) 'after CORRECT_0', myPE, MMAX
+!     write(*,*) 'after CORRECT_0', myPE, MMAX
 !//AIKEPARDBG
 !    write(*,"('(PE ',I2,'): aft correct_0 in iterate')") myPE  !//AIKEPARDBG
 !    call mfix_exit(myPE)     !//AIKEPARDBG
@@ -273,32 +272,30 @@
 !     Solve solids volume fraction correction equation for close-packed
 !     solids phases
 !
-      IF (MMAX > 0) THEN 
-        CALL CALC_K_CP (K_CP, IER) 
-        CALL SOLVE_EPP (NORMS, RESS, IER) 
-        CALL CORRECT_1 (IER) 
+!     IF (MMAX > 0) THEN 
+!        CALL CALC_K_CP (K_CP, IER) 
+!        CALL SOLVE_EPP (NORMS, RESS, IER) 
+!        CALL CORRECT_1 (IER) 
 !
 ! IER = 0
-        CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
-        IF (IER == 1) THEN 
-           MUSTIT = 2                           !indicates divergence 
-           IF(DT/=UNDEFINED)GO TO 1000 
-        ENDIF 
+!        CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
+!        IF (IER == 1) THEN 
+!           MUSTIT = 2                           !indicates divergence 
+!           IF(DT/=UNDEFINED)GO TO 1000 
+!        ENDIF 
 !
-      ENDIF 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft calc_vol_fr in iterate')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
-
-
+!     ENDIF 
+!
+!//SP
+!     write(*,*) 'after CORRECT_1, etc.,', myPE
 !
 !  Update wall velocities
  
       CALL SET_WALL_BC (IER) 
 !
-!//AIKEPARDBG
-!     write(*,"('(PE ',I2,'): aft set_wall_bc in iterate')") myPE  !//AIKEPARDBG
-!     call mfix_exit(myPE)     !//AIKEPARDBG
+!//SP
+!     write(*,*) 'after SET_WALL_BC, etc.,', myPE
+!
 !     Calculate P_star in cells where solids continuity equation is
 !     solved
 !
@@ -344,7 +341,7 @@
 !
       CALL CHECK_CONVERGENCE (NIT, MUSTIT, IER) 
 !//SP
-      write(*,*) 'after CHECK_CONVERGENCE, etc.,', myPE
+!     write(*,*) 'after CHECK_CONVERGENCE, etc.,', myPE
 !
 !      If not converged continue iterations; else exit subroutine.
 !
@@ -354,7 +351,7 @@
 !
       IF (FULL_LOG) CALL DISPLAY_RESID (NIT, IER) 
 !//SP
-      write(*,*) 'after DISPLAY_RESID, etc.,', myPE
+!     write(*,*) 'after DISPLAY_RESID, etc.,', myPE
       
       IF (MUSTIT == 0) THEN 
          IF (DT==UNDEFINED .AND. NIT==1) GO TO 50!Iterations converged 
@@ -422,7 +419,7 @@
       ENDIF 
 !
 !//SP
-      write(*,*) 'after misc., etc.,', myPE
+!     write(*,*) 'after misc., etc.,', myPE
 !     call mfix_exit
 !
       IF (NIT < MAX_NIT) THEN 
@@ -451,8 +448,9 @@
  5050 FORMAT(5X,'Average ',A,G12.5) 
  5060 FORMAT(5X,'Average ',A,I2,A,G12.5) 
  5100 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT>',I3,' Sm= ',G10.5) 
- 5200 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,': Run diverged/stalled :-('&
-         ) 
+ 5200 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',&
+      I3,': Run diverged/stalled :-(') 
+
       END SUBROUTINE ITERATE 
 !
 !

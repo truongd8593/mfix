@@ -245,7 +245,7 @@
                            WRITE (UNIT_LOG, 1100) BCV, I_WALL, I_FLUID, J, K, &
                               IJK_WALL, ICBC_FLAG(IJK_WALL), IJK_FLUID, &
                               ICBC_FLAG(IJK_FLUID) 
-                           CALL MFIX_EXIT 
+                           CALL MFIX_EXIT(myPE) 
                         ENDIF 
                      END DO 
                   END DO 
@@ -282,7 +282,7 @@
                            WRITE (*, 1200) BCV, I, J_WALL, J_FLUID, K, &
                               IJK_WALL, ICBC_FLAG(IJK_WALL), IJK_FLUID, &
                               ICBC_FLAG(IJK_FLUID) 
-                           CALL MFIX_EXIT 
+                           CALL MFIX_EXIT(myPE) 
                         ENDIF 
 !		       endif
                      END DO 
@@ -312,7 +312,7 @@
                            WRITE (UNIT_LOG, 1300) BCV, I, J, K_WALL, K_FLUID, &
                               IJK_WALL, ICBC_FLAG(IJK_WALL), IJK_FLUID, &
                               ICBC_FLAG(IJK_FLUID) 
-                           CALL MFIX_EXIT 
+                           CALL MFIX_EXIT(myPE) 
                         ENDIF 
                      END DO 
                   END DO 

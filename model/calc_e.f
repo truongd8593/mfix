@@ -34,6 +34,7 @@
       USE run
       USE constant
       USE compar        !//d
+      USE sendrecv        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -81,6 +82,8 @@
 !
          ENDIF 
       END DO 
+!//SP
+      call send_recv(e_e,2)
       RETURN  
       END SUBROUTINE CALC_E_E 
 !
@@ -120,6 +123,7 @@
       USE run
       USE constant
       USE compar    !//d
+      USE sendrecv        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -170,6 +174,8 @@
 !
          ENDIF 
       END DO 
+!//SP
+      call send_recv(e_n,2)
       RETURN  
       END SUBROUTINE CALC_E_N 
 !
@@ -209,6 +215,7 @@
       USE run
       USE constant
       USE compar   !//d
+      USE sendrecv        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -256,5 +263,7 @@
             ENDIF 
          ENDIF 
       END DO 
+!//SP
+      call send_recv(e_t,2)
       RETURN  
       END SUBROUTINE CALC_E_T 

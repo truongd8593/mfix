@@ -302,6 +302,7 @@
       USE physprop 
       USE funits 
       USE compar        !//d
+      USE mpi_utility   !//SP
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -317,8 +318,20 @@
       INTEGER          IJK,  IMJK, IJMK, IJKM, IPJK, IJPK, IJKP 
       INTEGER          I, J, K 
 ! 
+!//SP
+      INTEGER, DIMENSION(:), allocatable :: FLAG_TEMP
+      integer :: flag_size
 !-----------------------------------------------
       INCLUDE 'function.inc'
+!//SP allocate storage for temporary flag arrays
+
+      flag_size = ijkmax3
+      if (myPE.eq.root) then
+          flag_size = ijkmax3
+      endif
+
+      allocate( flag_temp(flag_size) )
+
 !
 !// 350 1025 change do loop limits: 1,ijkmax2->ijkstart3,ijkend3
       DO IJK = ijkstart3,ijkend3
@@ -331,6 +344,7 @@
          I = I_OF(IJK) 
          J = J_OF(IJK) 
          K = K_OF(IJK) 
+	 IF(.NOT.IS_ON_myPE_OWNS(I,J,K)) CYCLE
          IF (WALL_AT(IJK)) THEN 
             FLAG_E(IJK) = 0 
             FLAG_N(IJK) = 0 
@@ -341,33 +355,63 @@
 !
             IF (CYCLIC_AT(IJK)) THEN             ! make the upper (E, N, T) bdry 
 !
-               IF (I == IMAX2) THEN              ! permeable 
-                  IF (J/=1 .AND. J/=JMAX2) THEN 
-                     IF (NO_K) THEN 
-                        FLAG_E(IMJK) = 2000 
-                     ELSE IF (K/=1 .AND. K/=KMAX2) THEN 
-                        FLAG_E(IMJK) = 2000 
-                     ENDIF 
-                  ENDIF 
-               ENDIF 
 !
-               IF (J == JMAX2) THEN 
-                  IF (I/=1 .AND. I/=IMAX2) THEN 
-                     IF (NO_K) THEN 
-                        FLAG_N(IJMK) = 2000 
-                     ELSE IF (K/=1 .AND. K/=KMAX2) THEN 
-                        FLAG_N(IJMK) = 2000 
-                     ENDIF 
-                  ENDIF 
-               ENDIF 
+               IF (I == IMAX2) THEN              ! permeable
+                  IF (J/=1 .AND. J/=JMAX2) THEN
+                     IF (NO_K) THEN
+                        FLAG_E(IMJK) = 2000
+                     ELSE IF (K/=1 .AND. K/=KMAX2) THEN
+                        FLAG_E(IMJK) = 2000
+                     ENDIF
+                  ENDIF
+               ENDIF
 !
-               IF (K == KMAX2) THEN 
-                  IF (J/=1 .AND. J/=JMAX2) THEN 
-                     IF (I/=1 .AND. I/=IMAX2) FLAG_T(IJKM) = 2000 
-                  ENDIF 
-               ENDIF 
+               IF (J == JMAX2) THEN
+                  IF (I/=1 .AND. I/=IMAX2) THEN
+                     IF (NO_K) THEN
+                        FLAG_N(IJMK) = 2000
+                     ELSE IF (K/=1 .AND. K/=KMAX2) THEN
+                        FLAG_N(IJMK) = 2000
+                     ENDIF
+                  ENDIF
+               ENDIF
 !
-            ENDIF 
+               IF (K == KMAX2) THEN
+                  IF (J/=1 .AND. J/=JMAX2) THEN
+                     IF (I/=1 .AND. I/=IMAX2) FLAG_T(IJKM) = 2000
+                  ENDIF
+               ENDIF
+!
+            ENDIF
+!//SP
+!              IF (I == IMAX2.OR.I == IMAX3) THEN              ! permeable
+!                 IF ((J/=1.OR.J/=0.) .AND. (J/=JMAX2.OR.J/=JMAX3)) THEN
+!                    IF (NO_K) THEN
+!                       FLAG_E(IMJK) = 2000
+!                    ELSE IF ((K/=1.OR.K/=0) .AND. (K/=KMAX2.OR.K/=KMAX3)) THEN
+!                       FLAG_E(IMJK) = 2000
+!                    ENDIF
+!                 ENDIF
+!              ENDIF
+!
+!              IF (J == JMAX2.OR.J == JMAX3) THEN
+!                 IF ((I/=1.OR.I/=0) .AND. (I/=IMAX2.OR.I/=IMAX3)) THEN
+!                    IF (NO_K) THEN
+!                       FLAG_N(IJMK) = 2000
+!                    ELSE IF ((K/=1.OR.K/=0) .AND. (K/=KMAX2.OR.K/=KMAX3)) THEN
+!                       FLAG_N(IJMK) = 2000
+!                    ENDIF
+!                 ENDIF
+!              ENDIF
+!
+!              IF (K == KMAX2.OR.K == KMAX3) THEN
+!                 IF ((J/=1.OR.J/=0.) .AND. (J/=JMAX2.OR.J/=JMAX3)) THEN
+!                    IF ((I/=1.OR.I/=0) .AND. (I/=IMAX2.OR.I/=IMAX3)) FLAG_T(IJKM) = 2000
+!                 ENDIF
+!              ENDIF
+!
+!           ENDIF
+
 !
          ELSE IF (FLUID_AT(IJK)) THEN 
             IF ( .NOT.WALL_AT(IMJK) .AND. FLAG_E(IMJK)==UNDEFINED_I) FLAG_E(&
@@ -384,6 +428,20 @@
                 = 2000 + FLAG(IJKP) 
          ENDIF 
       END DO 
+
+!//SP Fill the ghost layers using gather and scatter
+      call gather( flag_e, flag_temp )
+      call scatter( flag_e, flag_temp )
+
+      call gather( flag_n, flag_temp )
+      call scatter( flag_n, flag_temp )
+
+      call gather( flag_t, flag_temp )
+      call scatter( flag_t, flag_temp )
+
+!//SP deallocate storage of temporary flag arrays
+
+    deallocate( flag_temp )
 
 !//AIKEPARDBG dump the FLAG_X in matrix form to verify with serial version
 !      DO K = Kstart3, Kend3                               !//AIKEPARDBG

@@ -59,13 +59,13 @@
       CHARACTER*4 :: CMETHOD
 !-------------------------------------------------
       DOUBLE PRECISION DNRM2
-      EXTERNAL LEQ_MATVEC, LEQ_MSOLVE1
+      EXTERNAL LEQ_MATVEC, LEQ_MSOLVE0
 
 
 !--------------------------------------------------
       
       call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
-                       cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE1, IER )
+                       cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE0, IER )
 
       return
       END SUBROUTINE LEQ_BICGS
@@ -163,7 +163,7 @@
         END FUNCTION DOT_PRODUCT_PAR
         END INTERFACE
 
-        logical, parameter :: do_unit_scaling = .false.
+        logical, parameter :: do_unit_scaling = .true.
 
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -185,13 +185,14 @@
 !       do i = imin2, imax2
 
 !       ijk = funijk_gl(i,j,k)
-!       write(90,*) i,j,k,A_M_tmp(IJK,:), B_M_tmp(IJK)
+!       write(90,*) i,j,k,A_M_tmp(IJK,:), B_M_tmp(IJK), Var(ijk)
 
 !       enddo
 !       enddo
 !       enddo
 
 !       endif
+
 !//end_TEMP
 
 !//SP
@@ -239,13 +240,15 @@
 
     call MATVEC( Vname, Var, A_M, R )
 
+!      call out_array(var,'var')
+!      call out_array(r,'r')
+
 	R(ijkstart3:ijkend3) = B_m(ijkstart3:ijkend3) - R(ijkstart3:ijkend3)
 	call send_recv(R,2)
 
 	Rtilde(:) = R(:)
 	
 	Rnorm0 = sqrt( dot_product_par( R, R ) )
-
 
 !      print*,'leq_bicgs, initial: ', Vname,' resid ', real(Rnorm0)
     if (idebugl >= 1) then
@@ -297,6 +300,11 @@
 
         call MATVEC( Vname, Phat, A_m, V )
 
+!      call out_array(p,'p')
+!      call out_array(phat,'ph')
+!      call out_array(v,'v')
+!     call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+
             
         RtildexV = dot_product_par( Rtilde, V )
 !      print*,'leq_bicgs, initial: ', Vname,' RtildexV ', real(RtildexV)
@@ -345,8 +353,20 @@
         
         call MATVEC( Vname, Shat, A_m, Tvec )
 
-        TxS = dot_product_par( Tvec, Svec )
-        TxT = dot_product_par( Tvec, Tvec )
+!       do k = kmin2, kmax2
+!       do j = jmin2, jmax2
+!       do ii = imin2, imax2
+
+!       IJK = funijk(ii,j,k)
+!       write(90,*) 'initial', ii,j,k,Svec(ijk),Tvec(ijk)
+
+!       enddo
+!       enddo
+!       enddo
+
+
+        TxS = dot_product_par( Tvec(:), Svec(:) )
+        TxT = dot_product_par( Tvec(:), Tvec(:) )
         omega(i) = TxS / TxT
 
 
@@ -406,6 +426,7 @@
                   IER = -2
             endif
         endif
+
         
         return
         end subroutine LEQ_BICGS0
@@ -1031,9 +1052,9 @@
       write(iodev,*) '% ',Vname
 
       write(iodev,*) 'A = sparse( ',ijkmax2,',',ijkmax2,');';
-      do k=1,kmax2
-      do j=1,jmax2
-      do i=1,imax2
+      do k=kstart2,kend2
+      do j=jstart2,jend2
+      do i=istart2,iend2
         ijk = funijk(i,j,k)
 
         if (i-1.ge.1) then 
@@ -1161,6 +1182,8 @@
       else
         if(myPE.eq.root) then
   	     allocate (var_g(1:ijkmax3))
+	     else
+	     allocate (var_g(1:10))
         endif
         call gather(var,var_g)
         call scatter(var,var_g)
@@ -1205,19 +1228,22 @@
 
       else
 !$omp parallel do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
-        do j = jstart,jend
-        do i = istart,iend
+        do jj = jstart2,jend2
+        do ii = istart2,iend2
 
+        i = ii
+        j = jj
         k = 1
 
-        IJK = funijk(imap_c(i),jmap_c(j),kmap_c(k))
+        IJK = funijk(i,j,k)
 
 
            im1jk = im_of(ijk)
            ip1jk = ip_of(ijk)
            ijm1k = jm_of(ijk)
            ijp1k = jp_of(ijk)
- 
+
+!	write(unit_log,*) ii,jj,i_of(im1jk),i_of(ip1jk),j_of(ijm1k),j_of(ijp1k), myPE
 
            AVar(ijk) =      A_m(ijk,-2) * Var(ijm1k)   &
                           + A_m(ijk,-1) * Var(im1jk)   &
@@ -1234,7 +1260,7 @@
       if (need_distribute_Avar) then
 
       if (use_send_recv) then
-	     call send_recv(Avar,2)
+ 	     call send_recv(Avar,2)
       else
 	      call gather(Avar,var_g)
 	      call scatter(Avar,var_g)
@@ -1776,7 +1802,6 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      INTEGER :: NN
       DOUBLE PRECISION, DIMENSION (IMAX2) :: CC,DD,EE,BB
       INTEGER :: NN, INFO, IJK, I
 
@@ -1921,6 +1946,9 @@
     Double Precision function dot_product_par(r1,r2)
 
     use mpi_utility
+    use geometry
+    use compar
+    use indices
 
     implicit none
     double precision, intent(in), dimension(:) :: r1,r2
@@ -1928,7 +1956,7 @@
     DOUBLE PRECISION, allocatable, Dimension(:) :: r1_g, r2_g
     double precision :: prod, prod_gl
     integer :: i, j, k, ijk
-    logical, parameter :: do_global_sum = .true.
+    logical, parameter :: do_global_sum = .false.
 
     include 'function.inc'
 
@@ -1955,6 +1983,9 @@
       if(myPE.eq.root) then
         allocate (r1_g(1:ijkmax3))
         allocate (r2_g(1:ijkmax3))
+      else
+        allocate (r1_g(10))
+        allocate (r2_g(10))
       endif
   
       call gather(r1,r1_g)
@@ -1968,7 +1999,7 @@
           do j = jmin2, jmax2
             do i = imin2, imax2
   
-              ijk = funijk_gl (imap(i),jmap(j),kmap(k))
+              ijk = funijk_gl (imap_c(i),jmap_c(j),kmap_c(k))
   
               prod = prod + r1_g(ijk)*r2_g(ijk)
   
@@ -1981,10 +2012,8 @@
   
       dot_product_par = prod
 
-      if(myPE.eq.root) then
-        deallocate (r1_g)
-        deallocate (r2_g)
-      endif
+      deallocate (r1_g)
+      deallocate (r2_g)
 
     endif
   
@@ -2068,7 +2097,7 @@
 
       CHARACTER*4 :: CMETHOD
 
-	integer :: i,j,k, ijk
+	integer :: i,j,k, ijk 
 
     include 'function.inc'
 
@@ -2076,10 +2105,10 @@
 
 ! diagonal scaling
 
-	do k=kstart,kend
-	do j=jstart,jend
-	do i=istart,iend
-	   
+	do k=kstart2,kend2
+	do j=jstart2,jend2
+	do i=istart2,iend2
+
 	 ijk = funijk( i,j,k )
 	 var(ijk) = b_m(ijk)/A_m(ijk,0)
 

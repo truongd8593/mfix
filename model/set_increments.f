@@ -254,7 +254,6 @@
       END DO 
       RETURN  
 !
-      write(*,*) 'Am I here yet'
 !     WRITE FOLLOWING IF THERE IS AN ERROR IN MODULE
  1000 FORMAT(/70('*')//'From: SET_INCREMENTS'/'Message: The number of',&
          'classes has exceeded the maximum allowed (',I3,').  Increase',&

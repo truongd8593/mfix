@@ -143,7 +143,7 @@
                   IF (IS_TYPE(ISV)(1:1)/='X' .AND. IS_TYPE(ISV)(1:1)/='Y' .AND. &
                      IS_TYPE(ISV)(1:1)/='Z') THEN 
                      WRITE (UNIT_LOG, 1000) ISV, IS_TYPE(ISV)(1:1) 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                   CYCLE  L50 
                ENDIF 

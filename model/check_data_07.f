@@ -266,32 +266,32 @@
                CASE ('W')  
                   IF (BC_U_G(BCV) > ZERO) THEN 
                      WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '<' 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('E')  
                   IF (BC_U_G(BCV) < ZERO) THEN 
                      WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '>' 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('S')  
                   IF (BC_V_G(BCV) > ZERO) THEN 
                      WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '<' 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('N')  
                   IF (BC_V_G(BCV) < ZERO) THEN 
                      WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '>' 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('B')  
                   IF (BC_W_G(BCV) > ZERO) THEN 
                      WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '<' 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('T')  
                   IF (BC_W_G(BCV) < ZERO) THEN 
                      WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '>' 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                END SELECT 
 !
@@ -376,32 +376,32 @@
                   CASE ('W')  
                      IF (BC_U_S(BCV,M) > ZERO) THEN 
                         WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '<' 
-                        CALL MFIX_EXIT 
+                        CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('E')  
                      IF (BC_U_S(BCV,M) < ZERO) THEN 
                         WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '>' 
-                        CALL MFIX_EXIT 
+                        CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('S')  
                      IF (BC_V_S(BCV,M) > ZERO) THEN 
                         WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '<' 
-                        CALL MFIX_EXIT 
+                        CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('N')  
                      IF (BC_V_S(BCV,M) < ZERO) THEN 
                         WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '>' 
-                        CALL MFIX_EXIT 
+                        CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('B')  
                      IF (BC_W_S(BCV,M) > ZERO) THEN 
                         WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '<' 
-                        CALL MFIX_EXIT 
+                        CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('T')  
                      IF (BC_W_S(BCV,M) < ZERO) THEN 
                         WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '>' 
-                        CALL MFIX_EXIT 
+                        CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   END SELECT 
                END DO 
@@ -445,32 +445,32 @@
                CASE ('W')  
                   IF (BC_U_G(BCV) < ZERO) THEN 
                      WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '>' 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('E')  
                   IF (BC_U_G(BCV) > ZERO) THEN 
                      WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '<' 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('S')  
                   IF (BC_V_G(BCV) < ZERO) THEN 
                      WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '>' 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('N')  
                   IF (BC_V_G(BCV) > ZERO) THEN 
                      WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '<' 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('B')  
                   IF (BC_W_G(BCV) < ZERO) THEN 
                      WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '>' 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('T')  
                   IF (BC_W_G(BCV) > ZERO) THEN 
                      WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '<' 
-                     CALL MFIX_EXIT 
+                     CALL MFIX_EXIT(myPE) 
                   ENDIF 
                END SELECT 
                DO M = 1, MMAX 
@@ -505,32 +505,32 @@
                   CASE ('W')  
                      IF (BC_U_S(BCV,M) < ZERO) THEN 
                         WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '>' 
-                        CALL MFIX_EXIT 
+                        CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('E')  
                      IF (BC_U_S(BCV,M) > ZERO) THEN 
                         WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '<' 
-                        CALL MFIX_EXIT 
+                        CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('S')  
                      IF (BC_V_S(BCV,M) < ZERO) THEN 
                         WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '>' 
-                        CALL MFIX_EXIT 
+                        CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('N')  
                      IF (BC_V_S(BCV,M) > ZERO) THEN 
                         WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '<' 
-                        CALL MFIX_EXIT 
+                        CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('B')  
                      IF (BC_W_S(BCV,M) < ZERO) THEN 
                         WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '>' 
-                        CALL MFIX_EXIT 
+                        CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('T')  
                      IF (BC_W_S(BCV,M) > ZERO) THEN 
                         WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '<' 
-                        CALL MFIX_EXIT 
+                        CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   END SELECT 
                END DO 
@@ -919,8 +919,9 @@
  1150 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
          ' - ',A,I1,' should be ',A,' zero.',/1X,70('*')/) 
  1160 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/&
-         ' Message: Boundary condition no',I2,' is a second outflow condition.'&
-         ,/1X,'  Only one outflow is allowed.  Consider using P_OUTFLOW.',/1X,&
+         ' Message: Boundary condition no', &
+         I2,' is a second outflow condition.',/1X,&
+         '  Only one outflow is allowed.  Consider using P_OUTFLOW.',/1X,&
          70('*')/) 
  1200 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
          ') specified',' for an undefined BC location',/1X,70('*')/) 

@@ -728,8 +728,9 @@
 !
  1800 FORMAT(//,3X,'9. OUTPUT DATA FILES:',/7X,'Extension',T18,'Description',&
          T59,'Interval for writing',/7X,'.OUT',T18,'This file (ASCII)',T61,&
-         G12.5,/7X,'.LOG',T18,'Log file containing messages (ASCII)',/7X,'.RES'&
-         ,T18,'Restart file (Binary)',T61,G12.5,/7X,'.SP1',T18,&
+         G12.5,/7X,'.LOG',T18,'Log file containing messages (ASCII)',&
+         /7X,'.RES',&
+         T18,'Restart file (Binary)',T61,G12.5,/7X,'.SP1',T18,&
          'EP_g (Binary, single precision)',T61,G12.5,/7X,'.SP2',T18,&
          'P_g, P_star (Binary, single precision)',T61,G12.5,/7X,'.SP3',T18,&
          'U_g, V_g, W_g (Binary, single precision)',T61,G12.5,/7X,'.SP4',T18,&

@@ -33,6 +33,7 @@
 !//d      USE funits 
       USE compar        !//d
       USE mpi_utility   !//d
+      USE indices       !//SP
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -67,6 +68,9 @@
 !
 !-----------------------------------------------
 !
+!//SP
+      integer i, j, k
+      include 'function.inc'
 
       if (myPE == PE_IO) then
          allocate (array1(ijkmax3))    !//d
@@ -93,17 +97,25 @@
       call gather(b_m(:,M),array2,root) 
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)
 
-      DO IJK = 1, IJKMAX3 
+!//SP
+!     DO IJK = 1, IJKMAX3 
+      DO K = Kmin2, Kmax2
+      DO J = Jmin2, Jmax2
+      DO I = Imin2, Imax2
+
+      IJK = FUNIJK_GL(IMAP_C(I),JMAP_C(J),KMAP_C(K))
 
          do L = -3,3
             call MPI_Barrier(MPI_COMM_WORLD,mpierr)
             call gather(a_m(:,L,M),array1,root)
             call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-            if (myPE == PE_IO) am(l) = a_m(ijk,L,M)
+            if (myPE == PE_IO) am(l) = array1(ijk)
          end do
          if (myPE == PE_IO) WRITE (UNIT_LOG, '(I5, 8(1X,G9.2))') IJK, &
                                     (AM(L),L=-3,3), array2(IJK) 
 
+      END DO 
+      END DO 
       END DO 
       if (myPE == PE_IO) CALL END_LOG 
 

@@ -189,8 +189,9 @@
  1500 FORMAT(1X,A1,/5X,'--- Gas temperature (T_g) at time ',G12.5,' ---',2/) 
  1600 FORMAT(1X,A1,/5X,'--- Solids Phase-',I1,' temperature (T_s)',' at time ',&
          G12.5,' ---',2/) 
- 1710 FORMAT(1X,A1,/5X,'--- Mass fraction of gas species (X_g) ',I2,' at time '&
-         ,G12.5,' ---',2/) 
+ 1710 FORMAT(1X,A1,/5X,'--- Mass fraction of gas species (X_g) ',&
+         I2,' at time ',&
+         G12.5,' ---',2/) 
  1720 FORMAT(1X,A1,/5X,'--- Mass fraction of solids-',I1,' species (X_s)',I2,&
          ' at time ',G12.5,' ---',2/) 
  1800 FORMAT(1X,A1,/5X,'--- X-component of gas velocity (U_g) at time ',G12.5,&

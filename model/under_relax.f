@@ -29,6 +29,7 @@
       USE geometry
       USE indices
       USE compar        !//d
+      USE sendrecv        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -79,6 +80,9 @@
             ENDIF 
          ENDIF 
       END DO 
+!//SP
+      call send_recv(a_m,2)
+      call send_recv(b_m,2)
       RETURN  
       END SUBROUTINE UNDER_RELAX_S 
 !
@@ -114,6 +118,7 @@
       USE geometry
       USE indices
       USE compar        !//d
+      USE sendrecv        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -164,6 +169,9 @@
             ENDIF 
          ENDIF 
       END DO 
+!//SP
+      call send_recv(a_m,2)
+      call send_recv(b_m,2)
       RETURN  
       END SUBROUTINE UNDER_RELAX_U 
 !
@@ -199,6 +207,7 @@
       USE geometry
       USE indices
       USE compar        !//d
+      USE sendrecv        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -249,6 +258,9 @@
             ENDIF 
          ENDIF 
       END DO 
+!//SP
+      call send_recv(a_m,2)
+      call send_recv(b_m,2)
       RETURN  
       END SUBROUTINE UNDER_RELAX_V 
 !
@@ -284,6 +296,7 @@
       USE geometry
       USE indices
       USE compar        !//d
+      USE sendrecv        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -334,5 +347,8 @@
             ENDIF 
          ENDIF 
       END DO 
+!//SP
+      call send_recv(a_m,2)
+      call send_recv(b_m,2)
       RETURN  
       END SUBROUTINE UNDER_RELAX_W 

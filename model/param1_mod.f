@@ -64,15 +64,15 @@
 !
 !                      Zero, nil, zilch, naught, nought, nix, ...
       DOUBLE PRECISION ZERO
-      PARAMETER (ZERO = 0.0)
+      PARAMETER (ZERO = 0.0d0)
 !
 !                      One
       DOUBLE PRECISION ONE
-      PARAMETER (ONE = 1.0)
+      PARAMETER (ONE = 1.0d0)
 !
 !                      1/2
       DOUBLE PRECISION HALF
-      PARAMETER (HALF = 0.5)
+      PARAMETER (HALF = 0.5d0)
 
 
       END MODULE param1                                                                          

@@ -156,6 +156,7 @@
 !//SP
       call global_all_sum(NUM)
       call global_all_sum(DEN)
+      call global_all_sum(NCELLS)
 
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
@@ -379,6 +380,7 @@
 !//SP
       call global_all_sum(NUM)
       call global_all_sum(DEN)
+      call global_all_sum(NCELLS)
 !efd
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
@@ -565,6 +567,7 @@
 !//SP
       call global_all_sum(NUM)
       call global_all_sum(DEN)
+      call global_all_sum(NCELLS)
 
 !//SP
       do nproc=0,NumPEs-1
@@ -789,6 +792,7 @@
 !//SP
       call global_all_sum(NUM)
       call global_all_sum(DEN)
+      call global_all_sum(NCELLS)
 !efd
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
@@ -1025,6 +1029,7 @@
 !//SP
       call global_all_sum(NUM)
       call global_all_sum(DEN)
+      call global_all_sum(NCELLS)
       
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
@@ -1258,6 +1263,7 @@
 !//SP
       call global_all_sum(NUM)
       call global_all_sum(DEN)
+      call global_all_sum(NCELLS)
 !efd
 
       IJK_RESID = 1

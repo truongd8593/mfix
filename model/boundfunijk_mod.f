@@ -2,7 +2,7 @@
 
   CONTAINS
 
-      INTEGER FUNCTION BOUND_FUNIJK(LI, LJ, LK)
+      INTEGER FUNCTION BOUND_FUNIJK(pLI, pLJ, pLK)
 
 !-----------------------------------------------
 !   M o d u l e s
@@ -17,7 +17,7 @@
       IMPLICIT NONE
 !
 !                      Dummy indices for I, J, K
-      INTEGER          LI, LJ, LK
+      INTEGER          pLI, pLJ, pLK
 
 !                      Dummy indices for MINS AND MAXS
       INTEGER          LIMIN, LJMIN, LKMIN, LIMAX, LJMAX, LKMAX
@@ -29,9 +29,9 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
-      BOUND_FUNIJK  = FUNIJK ( MIN( IEND3, MAX (ISTART3, LI) ),&
-                               MIN( JEND3, MAX (JSTART3, LJ) ),&
-                               MIN( KEND3, MAX (KSTART3, LK) ) )
+      BOUND_FUNIJK  = FUNIJK ( MIN( IEND3, MAX (ISTART3, pLI) ),&
+                               MIN( JEND3, MAX (JSTART3, pLJ) ),&
+                               MIN( KEND3, MAX (KSTART3, pLK) ) )
 
       END FUNCTION BOUND_FUNIJK
 

@@ -94,8 +94,8 @@
                  & myPE,Kstart3,Kstart2,Kend3,Jstart3,Jstart2,Jend3, & !//AIKEPARDBG
  		& Istart3,Istart2,Iend3 !//AIKEPARDBG
        write(UNIT_LOG,"('(PE ',I2,'): ',/, &
-                 & /,9X,'IJKstart3 = ',I6,'  IJKend3 = ',I6 &        
-                &  ,/,9X,'IJKstart2 = ',I6,'  IJKend2 = ',I6, &        		 
+                 & /,9X,'IJKstart3 = ',I6,'  IJKend3 = ',I6, &        
+                &   /,9X,'IJKstart2 = ',I6,'  IJKend2 = ',I6 &
                  & )") myPE, ijkstart3,ijkend3
 		 
 
