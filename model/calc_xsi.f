@@ -82,10 +82,12 @@
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: PHI_C_OF, XSI, MINMOD, VANLEER, &
+      DOUBLE PRECISION , EXTERNAL :: PHI_C_OF,  MINMOD, VANLEER, &
          ULTRA_QUICK, QUICKEST, SUPERBEE, SMART, MUSCL 
-!-----------------------------------------------
+
+      include 'xsi1.inc'
       INCLUDE 'function.inc'
+      include 'xsi2.inc'
 
 
 	IF (SHEAR) THEN			
@@ -566,10 +568,11 @@
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: XSI
          
 !-----------------------------------------------
-        INCLUDE 'function.inc'
+      include 'xsi1.inc'
+      INCLUDE 'function.inc'
+      include 'xsi2.inc'
 
 
 	IF (INCR .eq. 2) THEN			!V momentum balance
@@ -862,10 +865,12 @@
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: PHI_C_OF, XSI, MINMOD, VANLEER, &
+      DOUBLE PRECISION , EXTERNAL :: PHI_C_OF,  MINMOD, VANLEER, &
          ULTRA_QUICK, QUICKEST, SUPERBEE, SMART, MUSCL 
 !-----------------------------------------------
+      include 'xsi1.inc'
       INCLUDE 'function.inc'
+      include 'xsi2.inc'
 
       SELECT CASE (DISCR)                        !first order upwinding 
       CASE (:1)  

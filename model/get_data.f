@@ -251,7 +251,7 @@
         IF (NODESI .EQ. UNDEFINED_I .AND. NODESJ .EQ. UNDEFINED_I &
 	    .AND. NODESK .EQ. UNDEFINED_I) THEN
           WRITE (*,*) ' No grid partitioning data (NODESI, NODESJ, or NODESK) in mfix.dat'
-          CALL MFIX_EXIT
+          CALL MFIX_EXIT(myPE)
         END IF
       endif
 !

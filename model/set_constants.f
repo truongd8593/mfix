@@ -44,6 +44,7 @@
       USE run
       USE funits 
       USE drag
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -91,7 +92,7 @@
          GAS_CONST = 8314.56E4 
       ELSE 
          WRITE (UNIT_LOG, 1000) UNITS 
-         CALL MFIX_EXIT 
+         CALL MFIX_EXIT(myPE) 
       ENDIF 
 !
       RETURN  

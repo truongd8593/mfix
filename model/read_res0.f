@@ -113,7 +113,7 @@
     if (myPE == PE_IO ) then
       READ (UNIT_RES, REC=1) VERSION 
       READ (VERSION(6:512), *) VERSION_NUMBER 
-      IF (VERSION_NUMBER > 1.2) THEN 
+      IF (VERSION_NUMBER > 1.4) THEN 
          WRITE (*, *) ' Update Subroutine read_res0' 
          CALL SLUMBER 
 !         STOP  
@@ -326,7 +326,35 @@
 	   IF(IMAX2 == 1)NO_I=.TRUE.
 	   IF(JMAX2 == 1)NO_J=.TRUE.
 	   IF(KMAX2 == 1)NO_K=.TRUE.
-	   call allocate_arrays
+!// 
+!// This is a "fix" for post_mfix ... assumes only 1 processor
+!//
+           write (*,*) ' '
+           write (*,*) ' ********************************************************'
+           write (*,*) ' '
+           write (*,*) ' read_res0 : code valid for running on 1 processor only'
+           write (*,*) ' '
+           write (*,*) ' ********************************************************'
+           write (*,*) ' '
+           IMAX3 = imax2
+           JMAX3 = jmax2
+           KMAX3 = kmax2
+           kend3 = kmax2
+           kstart3 = 1
+           jend3 = jmax2
+           jstart3 = 1
+           iend3 = imax2
+           istart3 = 1
+           ijkmax3 = imax3*jmax3*kmax3
+           allocate (ijksize3_all(0:1))
+           ijksize3_all(:) = ijkmax3
+!//
+!//
+	   call allocate_arrays       !// do for mfix/post_mfix
+!//
+!//
+           deallocate(ijksize3_all)   !// post_mfix "fix"
+  
         ENDIF
 
 !

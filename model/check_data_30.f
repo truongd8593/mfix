@@ -594,7 +594,7 @@
       END DO 
       IF (MESSAGE) WRITE (UNIT_LOG, 1500) 
 !
-      IF (ABORT) CALL MFIX_EXIT 
+      IF (ABORT) CALL MFIX_EXIT(myPE) 
 !
       CALL END_LOG 
       RETURN  

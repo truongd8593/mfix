@@ -30,6 +30,7 @@
       USE is
       USE indices
       USE funits 
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -166,7 +167,7 @@
             IF (IS_TYPE(ISV)(1:1)/='X' .AND. IS_TYPE(ISV)(1:1)/='Y' .AND. IS_TYPE&
                (ISV)(1:1)/='Z') THEN 
                WRITE (UNIT_LOG, 1000) ISV 
-               CALL MFIX_EXIT 
+               CALL MFIX_EXIT(myPE) 
             ENDIF 
          ENDIF 
 !

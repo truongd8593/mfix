@@ -181,7 +181,7 @@
 !
             CALL START_LOG 
             WRITE (UNIT_LOG, 1000) 
-            CALL MFIX_EXIT 
+            CALL MFIX_EXIT(myPE) 
          ENDIF 
       ENDIF 
 !

@@ -294,6 +294,7 @@
 !-----------------------------------------------
       USE param 
       USE param1 
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -315,7 +316,7 @@
       IF (NCORN > MAX_NCORN) THEN 
          WRITE (LINE, '(A)') 'Error: Increase MAX_NCORN in param1.inc.' 
          CALL WRITE_ERROR ('AddCorn', LINE, 1) 
-         CALL MFIX_EXIT 
+         CALL MFIX_EXIT(myPE) 
       ENDIF 
 !
       NOTCORNER = .FALSE. 
