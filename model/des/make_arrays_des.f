@@ -19,7 +19,7 @@
 
 
       IF(ZONES.EQ.1) THEN
-         OPEN(UNIT=10, FILE='pos_input.dat', STATUS='OLD')
+         OPEN(UNIT=10, FILE='particle_input.dat', STATUS='OLD')
 
          DO LN = 1, PARTICLES
 
@@ -40,7 +40,7 @@
 
             PR(LN) = DES_RADIUS(LN) - DES_RADIUS(LN)/FAC
             RO_Sol(LN) = ROs
-            DES_POS_OLD(1,LN) = DES_POS_OLD(1,LN) + 0.45
+            DES_POS_OLD(1,LN) = DES_POS_OLD(1,LN) + 0.1
             DES_POS_OLD(3,LN) = RADIUS_EQ
 
             OMEGA_OLD(1,LN) = 0.0
