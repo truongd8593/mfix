@@ -354,7 +354,7 @@
                 = 2000 + FLAG(IPJK) 
             IF ( .NOT.WALL_AT(IJPK) .AND. FLAG_N(IJK)==UNDEFINED_I) FLAG_N(IJK)&
                 = 2000 + FLAG(IJPK) 
-            IF ( .NOT.WALL_AT(IJKP) .AND. FLAG_T(IJK)==UNDEFINED) FLAG_T(IJK)&
+            IF ( .NOT.WALL_AT(IJKP) .AND. FLAG_T(IJK)==UNDEFINED_I) FLAG_T(IJK)&
                 = 2000 + FLAG(IJKP) 
          ENDIF 
       END DO 
