@@ -66,9 +66,9 @@
 
             PR(LN) = DES_RADIUS(LN) - DES_RADIUS(LN)/FAC
             RO_Sol(LN) = ROs
-            DES_POS_OLD(1,LN) = DES_POS_OLD(1,LN) + 0.1
-            DES_POS_OLD(3,LN) = RADIUS_EQ
-
+            IF(DIMN.EQ.2) THEN
+               DES_POS_OLD(3,LN) = RADIUS_EQ
+            END IF
             OMEGA_OLD(1,LN) = 0.0
             OMEGA_OLD(2,LN) = 0.0
             OMEGA_OLD(3,LN) = 0.0
@@ -159,9 +159,10 @@
       END DO
 
 !     DO LN =1, PARTICLES
-!     PRINT *,(DES_POS_OLD(K,LN), K=1,DIMN), DES_RADIUS(LN), (DES_VEL_OLD(K,LN),K=1,DIMN)
+!     PRINT *,(DES_POS_OLD(K,LN), K=1,NDIM), DES_RADIUS(LN), (DES_VEL_OLD(K,LN),K=1,NDIM)
 !     END DO
 
+      
       RETURN
       END SUBROUTINE MAKE_ARRAYS_DES 
 

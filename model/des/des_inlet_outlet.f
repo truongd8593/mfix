@@ -23,20 +23,12 @@
         INTEGER IJK, NWS, IJ, WALLCHECK, OUT_COUNT, INLET
 !
 !---------------------------------------------------------------------
-! Assignments
-!---------------------------------------------------------------------
-	IF(CALLED.EQ.0) THEN	
-	  DO LL = 1, PARTICLES
-             CALL CFASSIGN(LL)
-	  END DO
-	END IF
-!---------------------------------------------------------------------
 ! Calculate new values
 !---------------------------------------------------------------------
 !
 
         IF (CALLED.EQ.0) THEN
-	PRINT *,'*** INLET - OUTLET ***'
+!	PRINT *,'*** INLET - OUTLET ***'
         INLET = 0
         DO LC = 1, PARTICLES
            DO K = 1, DIMN
@@ -189,9 +181,9 @@
 
 	IF(WALLDTSPLIT) THEN
 	      WALLCHECK = 0
-              nws = 2*DIMN
+              NWS = 2*DIMN
               DO IW = 1, NWS
-	IF(IW.GT.3) THEN
+	      IF(IW.GT.3) THEN
 		 WALLCONTACT = 0
 		 CALL CFWALLCONTACT(IW, LL, S_TIME, WALLCONTACT)
             	 IF(WALLCONTACT.EQ.1) THEN
@@ -206,9 +198,9 @@
 			END DO
 			DES_RADIUS(I) = DES_RADIUS(LL)
                  CALL CFNORMAL(LL, I, NORMAL)
-!                 CALL CFTANGENT(TANGENT, NORMAL)
-                 CALL CFRELVEL(LL, I, VRE, TANGENT)
                  CALL CFTANGENT(TANGENT, NORMAL, VRE)
+                 CALL CFRELVEL(LL, I, VRE, TANGENT)
+!                 CALL CFTANGENT(TANGENT, NORMAL, VRE)
                  CALL CFVRN(Vn, VRE, NORMAL)
                  CALL CFVRT(Vt, VRE, TANGENT)
                  CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)
@@ -217,7 +209,7 @@
 		 CALL CFSLIDEWALL(LL, TANGENT)
                  CALL CFFCTOW(LL, NORMAL)
                  END IF
-	END IF
+	      END IF
 	      END DO
 	END IF
 
@@ -234,19 +226,19 @@
 		          CO = 1
 			  PV(IJK,LL) = 1
                  	  CALL CFNORMAL(LL, I, NORMAL)
-!                 	  CALL CFTANGENT(TANGENT, NORMAL)
+                 	  CALL CFTANGENT(TANGENT, NORMAL, VRE)
                  	  CALL CFRELVEL(LL, I, VRE, TANGENT)
-                          CALL CFTANGENT(TANGENT, NORMAL, VRE)
+!                          CALL CFTANGENT(TANGENT, NORMAL, VRE)
                  	  CALL CFVRN(Vn, VRE, NORMAL)
                  	  CALL CFVRT(Vt, VRE, TANGENT)
-            CALL CFINCREMENTALOVERLAPS(Vn, Vt, OVERLAP_N, OVERLAP_T)
+                          CALL CFINCREMENTALOVERLAPS(Vn, Vt, OVERLAP_N, OVERLAP_T)
 		 	  CALL CFFN(LL, Vn, OVERLAP_N, NORMAL)
 		 	  CALL CFFT(LL, Vt, OVERLAP_T, TANGENT)
 		 	  DO K = 1, DIMN
 		 	     TEMPFN(K) = FN(K,LL) + PFN(K,IJK,LL)
 		 	     TEMPFT(K) = FT(K,LL) + PFT(K,IJK,LL)
 		 	  END DO
-		 	  CALL CFSLIDE(LL, TANGENT, TEMPFN, TEMPFT)
+		 	  CALL CFSLIDE(LL, TANGENT, TEMPFT)
                  	  CALL CFFCTOW(LL, NORMAL)
 			  DO K = 1, DIMN
 			     FC(K,LL) = FC(K,LL) + PFN(K,IJK,LL)
@@ -264,19 +256,19 @@
 			  PN(IJK,LL) = I
 			  PV(IJK,LL) = 1
                  	  CALL CFNORMAL(LL, I, NORMAL)
-!                 	  CALL CFTANGENT(TANGENT, NORMAL)
+                 	  CALL CFTANGENT(TANGENT, NORMAL, VRE)
 			  CALL CFRELVEL(LL, I, VRE, TANGENT)
-                          CALL CFTANGENT(TANGENT, NORMAL, VRE)
+!                          CALL CFTANGENT(TANGENT, NORMAL, VRE)
                  	  CALL CFVRN(Vn, VRE, NORMAL)
                   	  CALL CFVRT(Vt, VRE, TANGENT)
-                 CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)
+                          CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)
 		 	  CALL CFFN(LL, Vn, OVERLAP_N, NORMAL)
 		 	  CALL CFFT(LL, Vt, OVERLAP_T, TANGENT)
 			  DO K = 1, DIMN
 		 	     TEMPFN(K) = FN(K,LL)
 		 	     TEMPFT(K) = FT(K,LL)
 		 	  END DO
-		 	  CALL CFSLIDE(LL, TANGENT, TEMPFN, TEMPFT)
+		 	  CALL CFSLIDE(LL, TANGENT, TEMPFT)
                  	  CALL CFFCTOW(LL, NORMAL)
 			  DO K = 1, DIMN
 			    PFN(K,IJK,LL) = FNS1(K)

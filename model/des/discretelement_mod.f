@@ -18,8 +18,8 @@
       Use param
       Use param1
       
-      parameter (NPARTICLES = 5000)
-      parameter (MAXNEIGHBORS = 12)
+      parameter (NPARTICLES = 10000)
+      parameter (MAXNEIGHBORS = 16)
       parameter (MAXQUADS = 50000)
       parameter (NMQD = 11)
       parameter (NDIM = 3)

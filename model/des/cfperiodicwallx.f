@@ -26,7 +26,7 @@
       
       DO L = 1, PARTICLES
 
-         IF(DES_POS_NEW(1,L).LE.(WX1 + 2.5*RADIUS_EQ)) THEN
+         IF(DES_POS_NEW(1,L).LE.(WX1 + 2*RADIUS_EQ)) THEN
             WW(1) = WW(1) + 1
             WI = WW(1) + 1
             IF(WI.GT.999) THEN
@@ -36,7 +36,7 @@
                WW(WI) = L
             END IF
 
-         ELSE IF(DES_POS_NEW(1,L).GE.(EX2 - 2.5*RADIUS_EQ)) THEN
+         ELSE IF(DES_POS_NEW(1,L).GE.(EX2 - 2*RADIUS_EQ)) THEN
             EW(1) = EW(1) + 1 
             EI = EW(1) + 1
             IF(EI.GT.999) THEN

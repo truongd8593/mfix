@@ -26,19 +26,16 @@
       INTEGER SWALL(1000), NWALL(1000)
 !     
 !---------------------------------------------------------------------
-!     Assignments
-!---------------------------------------------------------------------
-      IF(CALLED.EQ.0) THEN
-         DO LL= 1, PARTICLES
-            CALL CFASSIGN(LL)
-         END DO
-      END IF
-!---------------------------------------------------------------------
 !     Calculate new values
 !---------------------------------------------------------------------
 !     
 
-      IF (CALLED.EQ.0) THEN
+      IF (CALLED.LE.2) THEN
+         DO K = 1, DIMN
+            VRE(K) = 0D0
+            TANGENT(K) = 0D0
+            NORMAL(K) = 0D0
+         END DO
          PRINT *,'**** PERIODIC_WALL_CALC_FORCE_DES ****'
          DO LC = 1, PARTICLES
             DO K = 1, DIMN
@@ -219,9 +216,9 @@
                           END DO
                           DES_RADIUS(I) = DES_RADIUS(LL)
                           CALL CFNORMAL(LL, I, NORMAL)
-!                          CALL CFTANGENT(TANGENT, NORMAL)
-                          CALL CFRELVEL(LL, I, VRE, TANGENT)
                           CALL CFTANGENT(TANGENT, NORMAL, VRE)
+                          CALL CFRELVEL(LL, I, VRE, TANGENT)
+!                          CALL CFTANGENT(TANGENT, NORMAL, VRE)
                           CALL CFVRN(Vn, VRE, NORMAL)
                           CALL CFVRT(Vt, VRE, TANGENT)
                           CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)
@@ -247,9 +244,9 @@
                              CO = 1
                              PV(IJK,LL) = 1
                              CALL CFNORMAL(LL, I, NORMAL)
-!                             CALL CFTANGENT(TANGENT, NORMAL)
-                             CALL CFRELVEL(LL, I, VRE, TANGENT)
                              CALL CFTANGENT(TANGENT, NORMAL, VRE)
+                             CALL CFRELVEL(LL, I, VRE, TANGENT)
+!                             CALL CFTANGENT(TANGENT, NORMAL, VRE)
                              CALL CFVRN(Vn, VRE, NORMAL)
                              CALL CFVRT(Vt, VRE, TANGENT)
                              CALL CFINCREMENTALOVERLAPS(Vn, Vt, OVERLAP_N, OVERLAP_T)
@@ -277,9 +274,9 @@
                        PN(IJK,LL) = I
                        PV(IJK,LL) = 1
                        CALL CFNORMAL(LL, I, NORMAL)
-!                       CALL CFTANGENT(TANGENT, NORMAL)
-                       CALL CFRELVEL(LL, I, VRE, TANGENT)
                        CALL CFTANGENT(TANGENT, NORMAL, VRE)
+                       CALL CFRELVEL(LL, I, VRE, TANGENT)
+!                       CALL CFTANGENT(TANGENT, NORMAL, VRE)
                        CALL CFVRN(Vn, VRE, NORMAL)
                        CALL CFVRT(Vt, VRE, TANGENT)
                        CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)

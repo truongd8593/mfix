@@ -23,24 +23,12 @@
       INTEGER IJK, NWS, IJ, WALLCHECK
 !     
 !---------------------------------------------------------------------
-!     Assignments
-!---------------------------------------------------------------------
-      IF(CALLED.EQ.0) THEN	
-         DO LL = 1, PARTICLES
-            CALL CFASSIGN(LL)
-         END DO
-      END IF
-!---------------------------------------------------------------------
 !     Calculate new values
 !---------------------------------------------------------------------
 !     
 
       IF (CALLED.LE.2) THEN
 !         PRINT *,'*** CALC_DES_FORCE ***'
-!      PRINT *, DIMN, WX1, EX2, BY1, TY2, SZ1, NZ2, PARTICLES, MN, RADIUS_EQ
-!      PRINT *, FACTOR, KN, KT, ETA_DES_N, ETA_DES_T, MEW, KN_W, KT_W
-!      PRINT *, ETA_N_W, ETA_T_W, MEW_W, E_RESTITUTION, DES_GAMMA, DES_F
-!      PRINT *, ZONES, ZN1, ZN2, ZN3, ZN4, DTSOLID
          DO K = 1, NDIM
             VRE(K) = 0D0
             TANGENT(K) = 0D0

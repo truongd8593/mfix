@@ -77,7 +77,8 @@
            DES_POS_NEW(2,II) = TEMPY
            DES_POS_NEW(3,II) = TEMPZ              
       END IF  
-!     PRINT *,'NORMAL', NORM(1), NORM(2), NORM(3)
+
+!      PRINT *,'NORMAL', NORM(1), NORM(2), NORM(3), NORMOD
 
       RETURN
       END SUBROUTINE CFNORMAL 

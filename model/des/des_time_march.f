@@ -70,8 +70,8 @@
 !            WRITE (1,*) CALLED
 !            PRINT *,'D.E.S. COUPLED', CALLED
          ELSE 
-            PC = 200
-!            PRINT *,'D.E.S', CALLED
+            PC = 1150 
+            PRINT *,'D.E.S', CALLED
          END IF
          
          IF(CALLED.LT.4) THEN
@@ -120,8 +120,7 @@
 !               OPEN (UNIT=99, FILE='des_XY10.OUT', STATUS='REPLACE') 
 !               WRITE (99,*) (DES_POS_NEW(K,290)/RADIUS_EQ,K=1,DIMN)
 
-               
-               IF(CALLED.LT.(FACTOR/DT)) THEN
+               IF(CALLED.LT.(FACTOR/DTSOLID)) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-1.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
@@ -129,7 +128,7 @@
                      WRITE (9,*) ((DES_POS_NEW(K,LNN)/RADIUS_EQ),K=1,DIMN),&
                               (DES_VEL_NEW(K,LNN),K=1,DIMN), PR(LNN), RO_Sol(LNN)
                   END DO
-               ELSE IF(CALLED.LT.(2*FACTOR/DT)) THEN
+               ELSE IF(CALLED.LT.(2*FACTOR/DTSOLID)) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-2.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
@@ -137,7 +136,7 @@
                      WRITE (9,*) ((DES_POS_NEW(K,LNN)/RADIUS_EQ),K=1,DIMN),&
                               (DES_VEL_NEW(K,LNN),K=1,DIMN), PR(LNN), RO_Sol(LNN)
                   END DO
-               ELSE IF(CALLED.LT.(3*FACTOR/DT)) THEN
+               ELSE IF(CALLED.LT.(3*FACTOR/DTSOLID)) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-3.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
