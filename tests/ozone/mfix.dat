@@ -27,8 +27,8 @@
 #
   COORDINATES = 'Cylindrical'
 
-  XLENGTH  =  11.45   	IMAX = 76
-  YLENGTH  =  30.00   	JMAX = 112
+  XLENGTH  =  11.45     IMAX = 76
+  YLENGTH  =  30.00     JMAX = 112
   ZLENGTH  =  @(2.*PI)  KMAX = 16
 
 #

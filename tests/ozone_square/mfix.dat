@@ -27,8 +27,8 @@
 #
   COORDINATES = 'CARTESIAN'
 
-  XLENGTH  =  20.28   	IMAX = 36
-  YLENGTH  =  30.00   	JMAX = 112
+  XLENGTH  =  20.28     IMAX = 36
+  YLENGTH  =  30.00     JMAX = 112
   ZLENGTH  =  20.28     KMAX = 36
 
 #

@@ -1,4 +1,4 @@
-#/bin/sh -f
+#!/bin/bsh -f
 #
 # MFIX script file for obtaining user-defined files and
 # executing 'make'
@@ -8,7 +8,7 @@
 #
 # M. Syamlal and P. Nicoletti                  9-27-94
 #
-vers="MFIX2003-1"
+vers="4.1"
 echo
 echo 
 echo "*******************************************"
@@ -87,7 +87,40 @@ ln -sf "$mpi_include/mpif.h" .
 # Give a different name for each machine file (IRIXF90.F, ULTRIX.F, etc.)
 
     set `uname -s` ; opsys=$1
-    
+
+#------------------------------------------------------------------------
+#  Check if the system is a Linux system, if yes then ask the user which 
+#  compiler to use    
+#
+    if test $opsys = "Linux"
+    then
+       echo
+       echo
+       echo "Linux system detected, please select compiler"
+       echo
+       echo "MFIX Compilation directives available for following compilers:"
+       echo " - Intel Linux Fortran Compiler (ifc)"
+       echo " - Portland Group Linux Fortran Compiler (pgf90)"
+       echo -n "Do you want to compile with Intel Linux F90 Compiler? (y/n) [yes] "
+       read lnx_compiler
+       case $lnx_compiler in
+         y|Y ) 
+	   echo "Intel Linux Fortran Compiler selected"
+	   opsys="Linux_ifc"
+           ;;
+         n|N )
+	   echo "Portland Group Linux Fortran Compiler selected" 	      
+	   opsys="Linux_pgi"
+           ;; 
+         *)
+           echo "Intel Linux Fortran Compiler selected"
+	   opsys="Linux_ifc"
+           ;;
+       esac    
+    else
+       echo  
+    fi
+
     case $opsys in
 
       OSF1)
@@ -219,7 +252,7 @@ ln -sf "$mpi_include/mpif.h" .
             ;;
              
 
-    Linux)
+    Linux_pgi)
 	    mach_file="LINUX.F"
 	    
             FORTRAN_CMD=mpif90
@@ -247,10 +280,88 @@ ln -sf "$mpi_include/mpif.h" .
 #            inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
             preinline_flags="  "
 
-
             ;;
 	    
+    Linux_ifc)
+          #-----------
+          # Check if the Intel Linux compiler specific machine.f exists
+	  #-----------
+	    if test -f "$mfix/LINUX_intel.F"
+	    then
+              mach_file="LINUX_intel.F"	     
+	    else
+	      echo LINUX_intel.F "not found in $mfix"
+	      exit
+	    fi
+
+          #-----------	    
+          # Decide to use mpif90 or ifc as the compiler & linker command
+	  #-----------
+            case $dmp_version in
+              y|Y )
+                        FORTRAN_CMD=mpif90
+                        LINK_CMD=mpif90
+                ;;
+              *)
+                        FORTRAN_CMD=ifc
+                        LINK_CMD=ifc
+                ;;
+            esac
+
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            libs=blas90.a 
 	    
+           #-----------
+	   # Check if Intel Linux compiler portability library is accessible?
+	   #-----------
+            echo
+            echo "checking for Intel compiler portability library, PEPCF90" 
+	    echo "in the default directory /opt/intel/compiler70/ia32/lib"
+            if test -f "/opt/intel/compiler70/ia32/lib/libPEPCF90.a"
+            then
+	        echo
+              #  echo -n "PEPCF90 library found under /opt/intel/compiler70/ia32/lib"
+		intel_lib="/opt/intel/compiler70/ia32/lib"
+            else
+	        intel_dir="/opt/intel"
+	        echo  "Library not found. Enter the directory "
+                echo -n "where Intel Linux compiler is installed [e.g. /opt/intel]: "
+                   read intel_dir
+  	         intel_lib="$intel_dir/compiler70/ia32/lib"  
+
+ 	         if test -d "$intel_lib"
+	         then
+                   echo
+	         else
+	           echo "Directory $intel_lib not found"
+	           exit
+	         fi
+
+            fi
+	    
+            compile_common="-c -O3 -w -w95 -i_dynamic -ip -FR"
+            compile_d="-g -c -FR -xK -w " 
+            link_d="-L$intel_lib -lPEPCF90 "
+            compile="$compile_common"
+            compile2="$compile_common"
+            link="-L$intel_lib -lPEPCF90"
+            MODULE_CODE=0
+	    
+#           ------------------
+#           flags for inlining
+#           ------------------
+            inline_objs="compare.o eosg.o discretize.o "
+#           inline_objs=" "
+            inline_files="compare.f eosg.f discretize.f "
+#           inline_files=" "
+            inline_flags=" "
+#            inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
+            preinline_flags="  "
+
+	    
+            ;;
+	    	    
     CYGWIN32_NT)
 	    mach_file="PGNT.F"
    
@@ -314,15 +425,15 @@ case $smp_version in
             then
 	        echo
             else
-                /bin/rm -f *.o *.a *.mod *.exe
+                rm *.o *.a *.mod *.exe
                 touch $smp_check
             fi
     ;;
   *)
             if test -f $smp_check
             then
-                /bin/rm -f *.o *.a *.mod *.exe
-                /bin/rm -f $smp_check
+                rm *.o *.a *.mod *.exe
+                rm $smp_check
             else
 	        echo
             fi
@@ -337,15 +448,15 @@ case $dmp_version in
             then
 	        echo
             else
-                /bin/rm -f *.o *.a *.mod *.exe
+                rm *.o *.a *.mod *.exe
                 touch $dmp_check
             fi
     ;;
   *)
             if test -f $dmp_check
             then
-                /bin/rm -f *.o *.a *.mod *.exe
-                /bin/rm -f $dmp_check
+                rm *.o *.a *.mod *.exe
+                rm $dmp_check
             else
 	        echo
             fi
@@ -359,9 +470,9 @@ esac
        echo
     else
        chmod +w machine.f
-       /bin/cp -f  $mach_file machine.f
-       /bin/rm -f *.o *.a *.mod *.exe
-       /bin/rm -f COMPILED.WITH.*
+       cp $mach_file machine.f
+       rm *.o *.a *.mod *.exe
+       rm COMPILED.WITH.*
        touch $mach_check
     fi
 
@@ -385,7 +496,7 @@ esac
           case $auto_compile in
              y|Y)
                   chmod u+w $outfile
-                  /bin/cp -f  $run_dir/$outfile $outfile
+                  cp $run_dir/$outfile $outfile
                   ;;
              *)
                   do_nothing="ok"
@@ -394,7 +505,7 @@ esac
       
        else
 #        Mfix/model directory does not have a default file. create one.
-         /bin/cp -f  $mfix/$i $mfix/$outfile
+         cp $mfix/$i $mfix/$outfile
        fi
        
     fi
@@ -414,11 +525,11 @@ esac
       
        else
 #        Mfix/model directory does not have a default file. create one.
-         /bin/cp -f  $mfix/$i $mfix/$outfile
+         cp $mfix/$i $mfix/$outfile
        fi
        
     else
-      /bin/cp -f  $i $mfix 
+      cp $i $mfix 
       echo "Using nonMfix include file: $i"
     fi
   done
@@ -447,7 +558,7 @@ esac
           case $auto_compile in
              y|Y)
                   chmod u+w $outfile
-                  /bin/cp -f  $run_dir/$outfile $outfile
+                  cp $run_dir/$outfile $outfile
                   ;;
              *)
                   do_nothing="ok"
@@ -455,7 +566,7 @@ esac
           esac
        else
           chmod u+w $outfile
-          /bin/cp -f  $run_dir/$outfile $outfile
+          cp $run_dir/$outfile $outfile
        fi
 
 
@@ -466,9 +577,9 @@ esac
        cmp -s $i $outfile
        if test $? = 0
        then
-          /bin/rm -f $i
+          rm $i
        else
-          /bin/mv -f $i $outfile
+          mv $i $outfile
 	  touch $outfile
        fi
 
@@ -499,9 +610,9 @@ esac
 	echo
 	echo -n '******************************************************'
 	echo
-        /bin/cp -f  mfix_l.make mfix_l_not.make
+        cp mfix_l.make mfix_l_not.make
 	ex mfix_l_not.make < dmp_modules/ex.commands
-	/bin/cp -f  mfix_u.make mfix_u_not.make
+	cp mfix_u.make mfix_u_not.make
 	ex mfix_u_not.make < dmp_modules/ex.commands
 
         cmp -s dmp_modules/compar_mod.f dmp_modules/mpi_donothing/compar_mod.f 
@@ -509,7 +620,7 @@ esac
         then
 	 echo
         else
- 	 /bin/cp -f  dmp_modules/compar_mod.f dmp_modules/mpi_donothing/
+ 	 cp dmp_modules/compar_mod.f dmp_modules/mpi_donothing/
         fi
 
         cmp -s dmp_modules/gridmap_mod.f dmp_modules/mpi_donothing/gridmap_mod.f 
@@ -517,7 +628,7 @@ esac
         then
 	 echo
         else
-         /bin/cp -f  dmp_modules/gridmap_mod.f dmp_modules/mpi_donothing/
+         cp dmp_modules/gridmap_mod.f dmp_modules/mpi_donothing/
         fi
     ;;
   esac
@@ -661,7 +772,7 @@ esac
 
   if test $? = 0
   then
-    /bin/cp -f  mfix.exe $run_dir
+    cp mfix.exe $run_dir
     echo
 
     case $dmp_version in

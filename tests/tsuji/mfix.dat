@@ -11,30 +11,30 @@
                                                                                 
   RUN_TYPE = 'new'
 
-  TIME  		= 0.				!start time
-  TSTOP 		= 5.
-  DT 			= 1.0E-4			!time step
-  DT_MAX		= 1.0E-4			!max time-step
-  DT_MIN		= 1.0E-7			!min time-step
+  TIME                  = 0.                            !start time
+  TSTOP                 = 5.
+  DT                    = 1.0E-4                        !time step
+  DT_MAX                = 1.0E-4                        !max time-step
+  DT_MIN                = 1.0E-7                        !min time-step
 !!
-  DT_FAC		= 0.9
-  DETECT_STALL		= .TRUE.
-  MAX_NIT		= 20
-  !NORM_s		= 1e-02
-  !NORM_g		= 1e-05
+  DT_FAC                = 0.9
+  DETECT_STALL          = .TRUE.
+  MAX_NIT               = 20
+  !NORM_s               = 1e-02
+  !NORM_g               = 1e-05
                                                                                 
   ENERGY_EQ = .F.                                                               
   SPECIES_EQ = 2*.F.                                                            
   CALL_USR = .TRUE.                                                                
 ! Scalar(ijk,3): Turbulent Kinetic Energy, in solids phase
-  NSCALAR		= 4
-  PHASE4SCALAR(1)	= 0
-  PHASE4SCALAR(2)	= 0
-  PHASE4SCALAR(3)	= 1
-  PHASE4SCALAR(4)	= 1
+  NSCALAR               = 4
+  PHASE4SCALAR(1)       = 0
+  PHASE4SCALAR(2)       = 0
+  PHASE4SCALAR(3)       = 1
+  PHASE4SCALAR(4)       = 1
 !
 ! Under-Relaxation factor for scal. eq.  
-  UR_FAC(9)		= 0.5         
+  UR_FAC(9)             = 0.5         
                                                                                 
 # Physical parameters                                                           
                                                                                 
@@ -52,7 +52,7 @@
   YLENGTH = 200.0                                                                
   JMAX   = 200                                                                  
                                                                                 
-  NO_K     		= .TRUE.                                                               
+  NO_K                  = .TRUE.                                                               
                                                                                 
                                                                                 
 # GAS SECTION                                                                   
@@ -90,10 +90,10 @@
                                                                                 
   IC_U_s(1,1)   =  0.0                                                          
   IC_V_s(1,1)   =  0.0                                                          
-  IC_SCALAR(1,1)	= 1000.			!Initial Value of Scalar #1
-  IC_SCALAR(1,2)	= 10000.                !These values represent a "good" initial cond.
-  IC_SCALAR(1,3)	= 0. 
-  IC_SCALAR(1,4)	= 0.                                                     
+  IC_SCALAR(1,1)        = 1000.                 !Initial Value of Scalar #1
+  IC_SCALAR(1,2)        = 10000.                !These values represent a "good" initial cond.
+  IC_SCALAR(1,3)        = 0. 
+  IC_SCALAR(1,4)        = 0.                                                     
 !                                                                                      
                                                                                 
   IC_T_g        = 294.0                                                         
@@ -120,10 +120,10 @@
   BC_U_s(1,1)   =    0.0                                                        
   BC_V_s(1,1)  =  161.6                                            
                                                   
-  BC_SCALAR(1,1)	= 1000
-  BC_SCALAR(1,2)	= 10000
-  BC_SCALAR(1,3)	= 100.
-  BC_SCALAR(1,4)	= 80.                                                                           
+  BC_SCALAR(1,1)        = 1000
+  BC_SCALAR(1,2)        = 10000
+  BC_SCALAR(1,3)        = 100.
+  BC_SCALAR(1,4)        = 80.                                                                           
 !
        !       Solids inlet                                                        
   BC_x_w(2)     =    4.0                                                        
@@ -144,10 +144,10 @@
   BC_U_s(2,1)   =   -161.6                                                      
   BC_V_s(2,1)  =  0.0                                            
                                                   
-  BC_SCALAR(2,1)	= 1000
-  BC_SCALAR(2,2)	= 10000
-  BC_SCALAR(2,3)	= 100.
-  BC_SCALAR(2,4)	= 80.                                                                           
+  BC_SCALAR(2,1)        = 1000
+  BC_SCALAR(2,2)        = 10000
+  BC_SCALAR(2,3)        = 100.
+  BC_SCALAR(2,4)        = 80.                                                                           
 !
        !       Solid wall                                                        
   BC_x_w(3)     =    0.0                                                        
@@ -156,10 +156,10 @@
   BC_y_n(3)     =   200.0                                                        
                                                                                 
   BC_TYPE(3)    =   'NSW'
-  BC_ScalarW(3,1)	= 0.0 				! Spec. Zero Scal. at Wall
-  BC_ScalarW(3,2)	= 0.0
-  BC_ScalarW(3,3)	= 0.0
-  BC_ScalarW(3,4)	= 0.0   
+  BC_ScalarW(3,1)       = 0.0                           ! Spec. Zero Scal. at Wall
+  BC_ScalarW(3,2)       = 0.0
+  BC_ScalarW(3,3)       = 0.0
+  BC_ScalarW(3,4)       = 0.0   
 !
        !       Solid wall                                                        
   BC_x_w(4)     =    4                                                        
@@ -168,10 +168,10 @@
   BC_y_n(4)     =   200.0                                                        
                                                                                 
   BC_TYPE(4)    =   'NSW'
-  BC_ScalarW(4,1)	= 0.0 				! Spec. Zero Scal. at Wall
-  BC_ScalarW(4,2)	= 0.0
-  BC_ScalarW(4,3)	= 0.0
-  BC_ScalarW(4,4)	= 0.0   
+  BC_ScalarW(4,1)       = 0.0                           ! Spec. Zero Scal. at Wall
+  BC_ScalarW(4,2)       = 0.0
+  BC_ScalarW(4,3)       = 0.0
+  BC_ScalarW(4,4)       = 0.0   
                                                   
 !                Gas-solids outlet   
   BC_x_w(5)     = 0.

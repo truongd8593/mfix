@@ -143,7 +143,7 @@
 
 @( RXNS -- Start chemical reactions input )
 
-	r1:  A ->  3 R
+        r1:  A ->  3 R
 
     !select (uncomment) one of the following rate expressions
 
