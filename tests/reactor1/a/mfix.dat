@@ -23,9 +23,10 @@
    MOMENTUM_Y_EQ =  .TRUE.  .FALSE.  
 
 
-   UR_FAC(7) = 0.7
+    UR_FAC(1) = 0.6
+!    UR_FAC(7) = 0.7
    LEQ_IT = 7*100
-   LEQ_METHOD = 7*3
+!   LEQ_METHOD = 7*3
 
 
 
@@ -33,7 +34,7 @@
 !
   COORDINATES = 'Cylindrical'
 
-  XLENGTH  =  250.0    IMAX =  10
+  XLENGTH  =  250.0    IMAX =  1!0
   YLENGTH  =  800.0    JMAX =  80
 
   NO_K     = .TRUE.

@@ -65,24 +65,14 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
       
+      IER =0
       R_tmp = UNDEFINED
 !
 !  ---  Remember to include all the local variables here for parallel
 !  ---- processing
 !$omp  parallel do private(ijk, R_tmp, L, LM, M, N)
 
-!// 350 1112 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
       DO IJK = IJKSTART3, IJKEND3 
-      
-         R_gp(IJK, :) = ZERO
-         RoX_gc(IJK, :) = ZERO
-         R_sp(IJK, :, :) = ZERO
-         RoX_sc(IJK, :, :) = ZERO
-         SUM_R_G(IJK) = ZERO 
-         HOR_G(IJK) = ZERO
-         SUM_R_S(IJK, :) = ZERO 
-         HOR_S(IJK, :) = ZERO 
-	 R_PHASE(IJK, :) = ZERO
       
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -197,7 +187,15 @@
                IF (NMAX(0) > 0) THEN 
                   SUM_R_G(IJK) = SUM_R_G(IJK) + SUM(R_GP(IJK,:NMAX(0))-ROX_GC(&
                      IJK,:NMAX(0))*X_G(IJK,:NMAX(0))) 
-               ENDIF 
+               ENDIF
+	    ELSE
+	      DO M = 1, MMAX
+	        IF(R_tmp(0,M) .NE. UNDEFINED)THEN
+		  SUM_R_G(IJK) = SUM_R_G(IJK) + R_tmp(0,M)
+		ELSEIF(R_tmp(M,0) .NE. UNDEFINED)THEN
+		  SUM_R_G(IJK) = SUM_R_G(IJK) - R_tmp(M,0)
+		ENDIF
+	      ENDDO 
             ENDIF 
 !
             DO M = 1, MMAX 
@@ -207,6 +205,14 @@
                      SUM_R_S(IJK,M) = SUM_R_S(IJK,M) + SUM(R_SP(IJK,M,:NMAX(M))&
                         -ROX_SC(IJK,M,:NMAX(M))*X_S(IJK,M,:NMAX(M))) 
                   ENDIF 
+	       ELSE
+ 	         DO L = 0, MMAX
+	           IF(R_tmp(M,L) .NE. UNDEFINED)THEN
+		     SUM_R_s(IJK,M) = SUM_R_s(IJK,M) + R_tmp(M,L)
+		   ELSEIF(R_tmp(L,M) .NE. UNDEFINED)THEN
+		     SUM_R_s(IJK,M) = SUM_R_s(IJK,M) - R_tmp(L,M)
+		   ENDIF
+	         ENDDO 
                ENDIF 
             END DO 
 	    
@@ -224,7 +230,7 @@
                      R_PHASE(IJK,LM) = -R_TMP(M,L) 
                   ELSE 
                      CALL START_LOG 
-                     WRITE (UNIT_LOG, 1000) L, M 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) L, M 
                      CALL END_LOG 
                      call mfix_exit(myPE)  
                   ENDIF 
@@ -233,20 +239,7 @@
 	   
          ENDIF 
       END DO 
-      
-!//S 1113 try to move this COMM to the end of transport_prop to do all COMMs
-!//       at certain locations, provided that no data dependency in between.
 
-
-!// 400 1112 update the boundaries for recently calculated field vars
-      CALL SEND_RECV(HOR_G, 2)
-      CALL SEND_RECV(HOR_S, 2)
-!//? check if we need a GLOBAL SUM for the following two as it accumulates sum
-!//  for each species            
-      CALL SEND_RECV(SUM_R_G , 2)
-      CALL SEND_RECV(SUM_R_S, 2)      
-      CALL SEND_RECV(R_PHASE, 2)      
-     
  1000 FORMAT(/1X,70('*')//' From: RRATES',/&
          ' Message: Mass transfer between phases ',I2,' and ',I2,&
          ' (R_tmp) not specified',/1X,70('*')/) 
