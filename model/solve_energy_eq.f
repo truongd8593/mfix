@@ -117,14 +117,18 @@
 
       DO IJK = IJKSTART3, IJKEND3
 !
-         IF (FLUID_AT(IJK)) THEN 
+         IF(.NOT.WALL_AT(IJK))THEN
             ROPXCP(IJK) = ROP_G(IJK)*C_PG(IJK) 
+	 ELSE
+            ROPXCP(IJK) = ZERO 
+	 ENDIF
+	 
+         IF (FLUID_AT(IJK)) THEN 
             APO = ROP_G(IJK)*C_PG(IJK)*VOL(IJK)*ODT 
             S_P(IJK) = APO + S_RPG(IJK)*VOL(IJK) 
             S_C(IJK)=APO*T_GO(IJK)-HOR_G(IJK)*VOL(IJK)+S_RCG(IJK)*VOL(IJK) 
          ELSE 
 !
-            ROPXCP(IJK) = ZERO 
             S_P(IJK) = ZERO 
             S_C(IJK) = ZERO 
 !
@@ -141,8 +145,13 @@
 !
          DO IJK = IJKSTART3, IJKEND3
 !
-            IF (FLUID_AT(IJK)) THEN 
+            IF(.NOT.WALL_AT(IJK))THEN
                ROPXCP(IJK) = ROP_S(IJK,M)*C_PS(IJK,M) 
+	    ELSE
+               ROPXCP(IJK) = ZERO 
+	    ENDIF
+	 
+            IF (FLUID_AT(IJK)) THEN 
                APO = ROP_S(IJK,M)*C_PS(IJK,M)*VOL(IJK)*ODT 
                S_P(IJK) = APO + S_RPS(IJK,M)*VOL(IJK) 
                S_C(IJK) = APO*T_SO(IJK,M) - HOR_S(IJK,M)*VOL(IJK) + S_RCS(IJK,M&
@@ -153,7 +162,6 @@
 !
             ELSE 
 !
-               ROPXCP(IJK) = ZERO 
                S_P(IJK) = ZERO 
                S_C(IJK) = ZERO 
                VXGAMA(IJK,M) = ZERO 
