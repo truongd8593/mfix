@@ -104,7 +104,7 @@
   
       DOUBLE PRECISION TLEFT 
 
-      DOUBLE PRECISION errorpercent
+      DOUBLE PRECISION errorpercent(0:MMAX)
        
       LOGICAL          ABORT_IER
       CHARACTER*4 TUNIT 
@@ -312,7 +312,7 @@
 !     Check for convergence
 !
       call CALC_RESID_MB(1, errorpercent)
-      CALL CHECK_CONVERGENCE (NIT, errorpercent, MUSTIT, IER) 
+      CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT, IER) 
 !
 !      If not converged continue iterations; else exit subroutine.
 !
@@ -338,13 +338,13 @@
 !
 !
             IF (ENERGY_EQ) THEN 
-               WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS, errorpercent, HLOSS, CPU_NOW 
+               WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS, errorpercent(0), HLOSS, CPU_NOW 
                IF(FULL_LOG.and.myPE.eq.PE_IO) &          
-                       WRITE(*,5000)TIME,DT,NIT,SMASS,errorpercent, HLOSS,CPU_NOW        !//
+                       WRITE(*,5000)TIME,DT,NIT,SMASS,errorpercent(0), HLOSS,CPU_NOW        !//
             ELSE 
-               WRITE (UNIT_LOG, 5001) TIME, DT, NIT, SMASS, errorpercent, CPU_NOW 
+               WRITE (UNIT_LOG, 5001) TIME, DT, NIT, SMASS, errorpercent(0), CPU_NOW 
                IF (FULL_LOG .and. myPE.eq.PE_IO) &
-                       WRITE (*, 5001) TIME, DT, NIT, SMASS, errorpercent, CPU_NOW       !//
+                       WRITE (*, 5001) TIME, DT, NIT, SMASS, errorpercent(0), CPU_NOW       !//
             ENDIF 
             CALL START_LOG 
             IF (.NOT.FULL_LOG) THEN 
@@ -377,10 +377,10 @@
          IF (FULL_LOG) THEN 
             CALL START_LOG 
             call CALC_RESID_MB(1, errorpercent)
-            WRITE (UNIT_LOG, 5200) TIME, DT, NIT, errorpercent 
+            WRITE (UNIT_LOG, 5200) TIME, DT, NIT, errorpercent(0) 
             CALL END_LOG 
 
-            if (myPE.eq.PE_IO) WRITE (*, 5200) TIME, DT, NIT, errorpercent   !//
+            if (myPE.eq.PE_IO) WRITE (*, 5200) TIME, DT, NIT, errorpercent(0)   !//
          ENDIF 
          IER = 1 
          RETURN  

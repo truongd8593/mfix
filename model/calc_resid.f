@@ -624,6 +624,7 @@
       USE compar   
       USE mpi_utility   
       USE residual
+      USE rxns
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -639,9 +640,12 @@
       
 !                      Error index
       INTEGER          IER
+      
+!                      Phase index
+      INTEGER          M
 
 !                      Total mass balance error as a % of inflow
-      DOUBLE PRECISION ErrorPercent
+      DOUBLE PRECISION ErrorPercent(0:MMAX)
 
  
 !                      Indices
@@ -658,10 +662,13 @@
 !       Initilaize this routine
 	!Accumulation
         Accum_resid_g = Accumulation(ROP_g)
+	DO M=1, MMAX
+          Accum_resid_s(M) = Accumulation(ROP_s(1,M))
+	END DO
 	return
 	
       else
-	Accum_new = Accumulation(ROP_g) 
+	Accum_new = Accumulation(ROP_g) - Accumulation(SUM_R_g) * dt 
 	
 	flux_out = zero
         flux_in = zero
@@ -674,7 +681,28 @@
         END DO
         
 	Err = (accum_new - Accum_resid_g) - (flux_in - flux_out)
-	ErrorPercent = err*100./flux_in
+	ErrorPercent(0) = err*100./flux_in
+	
+	DO M =1, MMAX
+	  Accum_new = Accumulation(ROP_s(1,M)) - Accumulation(SUM_R_s(1,M)) * dt
+	
+	  flux_out = zero
+          flux_in = zero
+          DO L = 1, DIMENSION_BC
+            IF (BC_DEFINED(L)) THEN
+              call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_s(1,M), V_s(1,M), W_s(1,M), ROP_s(1,M), fin, fout, IER) 
+	      flux_out = flux_out + fout  * dt
+              flux_in = flux_in + fin * dt
+            ENDIF 
+          END DO
+        
+	  Err = (accum_new - Accum_resid_s(M)) - (flux_in - flux_out)
+	  if(flux_in /= ZERO) THEN
+	    ErrorPercent(M) = err*100./flux_in
+	  else
+	    ErrorPercent(M) = err*100./Accum_resid_s(M)
+	  endif
+	END DO
 	
       endif
 

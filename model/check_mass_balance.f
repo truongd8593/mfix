@@ -45,7 +45,7 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !Reporting interval.  To activate this routine define a value (e.g. 0.1) .
-      DOUBLE PRECISION, PARAMETER :: Report_dt = large_number 
+      DOUBLE PRECISION, PARAMETER :: Report_dt = 0.1 !large_number 
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -86,7 +86,7 @@
         start_time = time
         report_time = time + report_dt
 	
-	!initialize flux arrays
+	!initialize flux and reaction rate arrays
         DO L = 1, DIMENSION_BC
 	  flux_out_g(L) = ZERO
 	  flux_in_g(L) = ZERO
@@ -94,12 +94,41 @@
 	    flux_out_X_g(L, N) = ZERO
 	    flux_in_X_g(L, N) = ZERO
           END DO
+	  
+	  DO M = 1, MMAX
+	    flux_out_s(L, M) = ZERO
+	    flux_in_s(L, M) = ZERO
+            DO N = 1, NMAX(M)
+	      flux_out_X_s(L, M, N) = ZERO
+	      flux_in_X_s(L, M, N) = ZERO
+            END DO
+          END DO
+
+        END DO
+
+	Integral_SUM_R_g = ZERO
+        DO N = 1, NMAX(0)
+          Integral_R_g(N) = ZERO
+        END DO
+	
+	DO M = 1, MMAX
+	  Integral_SUM_R_s(M) = ZERO
+          DO N = 1, NMAX(M)
+            Integral_R_s(M, N) = ZERO
+          END DO
         END DO
 
 	!Accumulation
         Accumulation_g = Accumulation(ROP_g)
         DO N = 1, NMAX(0)
 	  Accumulation_X_g(N) = Accumulation_sp(ROP_g, X_g(1, N)) 
+        END DO 
+	
+	DO M = 1, MMAX
+          Accumulation_s(M) = Accumulation(ROP_s(1,M))
+          DO N = 1, NMAX(M)
+	    Accumulation_X_s(M, N) = Accumulation_sp(ROP_s(1, M), X_s(1, M, N)) 
+          END DO 
         END DO 
  
 	return
@@ -115,27 +144,67 @@
             J1 = BC_J_S(L) 
             J2 = BC_J_N(L) 
             K1 = BC_K_B(L) 
-            K2 = BC_K_T(L) 
+            K2 = BC_K_T(L)
+	     
             call Calc_mass_flux(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_g, V_g, W_g, ROP_g, fin, fout, IER) 
 	    flux_out_g(L) = flux_out_g(L) + fout  * dt_prev
             flux_in_g(L) = flux_in_g(L) + fin * dt_prev
+	    
+	    DO M = 1, MMAX
+              call Calc_mass_flux(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_s(1,m), V_s(1,m), W_s(1,m), ROP_s(1,m), fin, fout, IER) 
+	      flux_out_s(L, M) = flux_out_s(L, M) + fout  * dt_prev
+              flux_in_s(L, M) = flux_in_s(L, M) + fin * dt_prev
+	    END DO
+	    
           ENDIF 
         END DO
-        DO N = 1, NMAX(0)
-          DO L = 1, DIMENSION_BC
-            IF (BC_DEFINED(L)) THEN
-              I1 = BC_I_W(L) 
-              I2 = BC_I_E(L) 
-              J1 = BC_J_S(L) 
-              J2 = BC_J_N(L) 
-              K1 = BC_K_B(L) 
-              K2 = BC_K_T(L) 
-              call Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_g, V_g, W_g, ROP_g, X_g(1, N), fin, fout, IER) 
-	      flux_out_X_g(L, N) = flux_out_X_g(L, N) + fout  * dt_prev
-              flux_in_X_g(L, N) = flux_in_X_g(L, N) + fin * dt_prev
-            ENDIF 
-          END DO
 	
+	Integral_SUM_R_g = Integral_SUM_R_g + Accumulation(SUM_R_g) * dt_prev
+	IF(SPECIES_EQ(0))THEN 
+          DO N = 1, NMAX(0)
+            DO L = 1, DIMENSION_BC
+              IF (BC_DEFINED(L)) THEN
+                I1 = BC_I_W(L) 
+                I2 = BC_I_E(L) 
+                J1 = BC_J_S(L) 
+                J2 = BC_J_N(L) 
+                K1 = BC_K_B(L) 
+                K2 = BC_K_T(L) 
+                call Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_g, V_g, W_g, ROP_g, X_g(1, N), fin, fout, IER) 
+	        flux_out_X_g(L, N) = flux_out_X_g(L, N) + fout  * dt_prev
+                flux_in_X_g(L, N) = flux_in_X_g(L, N) + fin * dt_prev
+              ENDIF 
+	    
+	      Integral_R_g(N) = Integral_R_g(N) + (Accumulation(R_gp(1,N)) - &
+	                                Accumulation_sp(ROX_gc(1,N), X_g(1,N)) )* dt_prev 
+            END DO
+	
+          END DO 
+	ENDIF
+
+        DO M = 1, MMAX	
+	  IF(SPECIES_EQ(M))THEN 
+	    Integral_SUM_R_s(M) = Integral_SUM_R_s(M) + Accumulation(SUM_R_s(1,M)) * dt_prev 
+            DO N = 1, NMAX(M)
+              DO L = 1, DIMENSION_BC
+                IF (BC_DEFINED(L)) THEN
+                  I1 = BC_I_W(L) 
+                  I2 = BC_I_E(L) 
+                  J1 = BC_J_S(L) 
+                  J2 = BC_J_N(L) 
+                  K1 = BC_K_B(L) 
+                  K2 = BC_K_T(L) 
+                  call Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_s(1,M), V_s(1,M), W_s(1,M), ROP_s(1,M), X_s(1, M, N), fin, fout, IER) 
+	          flux_out_X_s(L, M, N) = flux_out_X_s(L, M, N) + fout  * dt_prev
+                  flux_in_X_s(L, M, N) = flux_in_X_s(L, M, N) + fin * dt_prev
+                ENDIF 
+	    
+	        Integral_R_s(M, N) = Integral_R_s(M, N) + (Accumulation(R_sp(1,M,N)) - &
+	                                            Accumulation_sp(ROX_sc(1,M,N), X_s(1,M,N)) )* dt_prev 
+              END DO
+	
+            END DO 
+	  ENDIF
         END DO 
       
       endif 
@@ -144,14 +213,14 @@
       if (time >= report_time)then
 	
         CALL START_LOG 
-        WRITE(UNIT_LOG, '(/A,G12.5,A,G12.5)') 'Species balance for interval ', start_time, ' to ', time
+        WRITE(UNIT_LOG, '(/A,G12.5,A,G12.5)') 'Mass balance for interval ', start_time, ' to ', time
 
 	Accumulation_old = Accumulation_g
         Accumulation_g = Accumulation(ROP_g)
-	Accumulation_delta = Accumulation_g - Accumulation_old
-        WRITE(UNIT_LOG, '(A)') 'Total Accumulation (g)'
-        WRITE(UNIT_LOG, '(3(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
-	  Accumulation_g, ', net accu(New - Old) = ', Accumulation_delta
+	Accumulation_delta = Accumulation_g - Accumulation_old - Integral_SUM_R_g
+        WRITE(UNIT_LOG, '(A)') 'Total Fluid Accumulation (g)'
+        WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
+	  Accumulation_g, ', Production = ', Integral_SUM_R_g, ', net accu(New - Old - Production) = ', Accumulation_delta
 	  
         WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
 	Write(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'
@@ -174,17 +243,14 @@
 	Write(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
 	Write(Unit_log, '(A, G12.5, A, G12.5)')'Error (net influx - net accu) = ', &
 	  (flux - Accumulation_delta), ' %Error = ', error_percent
-
-        DO N = 1, NMAX(0)
-	
-          WRITE(UNIT_LOG, '(/A,I2)') 'Gas species - ', N
 	  
-	  Accumulation_old = Accumulation_X_g(N)
-	  Accumulation_X_g(N) = Accumulation_sp(ROP_g, X_g(1, N)) 
-	  Accumulation_delta = Accumulation_X_g(N) - Accumulation_old
-          WRITE(UNIT_LOG, '(A)') 'Species Accumulation (g)'
-          WRITE(UNIT_LOG, '(3(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
-	    Accumulation_X_g(N), ', net accu(New - Old) = ', Accumulation_delta
+	DO M = 1, MMAX
+	  Accumulation_old = Accumulation_s(M)
+          Accumulation_s(M) = Accumulation(ROP_s(1, M))
+	  Accumulation_delta = Accumulation_s(M) - Accumulation_old - Integral_SUM_R_s(M)
+          WRITE(UNIT_LOG, '(/A, I1, A)') 'Total Solids-', M, ' Accumulation (g)'
+          WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
+	    Accumulation_s(M), ', Production = ', Integral_SUM_R_s(M), ', net accu(New - Old - Production) = ', Accumulation_delta
 	  
           WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
 	  Write(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'
@@ -192,23 +258,103 @@
 	  flux_in_tot = zero
 	  flux_out_tot = zero
           DO L = 1, DIMENSION_BC
-	    if(flux_out_X_g(L, N) /= ZERO .OR. flux_in_X_g(L, N) /= ZERO) &
-	      Write(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_X_g(L, N), flux_out_X_g(L, N), &
-	       (flux_in_X_g(L, N)-flux_out_X_g(L, N))
-	    flux = flux + flux_in_X_g(L, N) - flux_out_X_g(L, N)
-	    flux_in_tot = flux_in_tot + flux_in_X_g(L, N)
-	    flux_out_tot = flux_out_tot + flux_out_X_g(L, N)
+	    if(flux_out_s(L,M) /= ZERO .OR. flux_in_s(L,M) /= ZERO) &
+	      Write(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_s(L,M), flux_out_s(L,M), (flux_in_s(L,M)-flux_out_s(L,M))
+	    flux = flux + flux_in_s(L,M) - flux_out_s(L,M)
+	    flux_in_tot = flux_in_tot + flux_in_s(L,M)
+	    flux_out_tot = flux_out_tot + flux_out_s(L,M)
 	  END DO
 	  if((flux - Accumulation_delta) /= zero) then
-	    error_percent = undefined
-	    if(flux_in_tot /= zero) error_percent = (flux - Accumulation_delta)*100./flux_in_tot
+	    if(flux_in_tot /= zero) then
+	      error_percent = (flux - Accumulation_delta)*100./flux_in_tot
+	    else
+	      error_percent = (flux - Accumulation_delta)*100./Accumulation_old
+	    endif
 	  else
 	    error_percent = zero
 	  endif
 	  Write(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
-	  Write(Unit_log, '(A, G12.5, A, I1, A, G12.5)')'Error (net influx - net accu) = ', &
-	    (flux - Accumulation_delta), ' %Error(',N,') = ', error_percent
+	  Write(Unit_log, '(A, G12.5, A, G12.5)')'Error (net influx - net accu) = ', &
+	    (flux - Accumulation_delta), ' %Error = ', error_percent
+	END DO
+
+
+        IF(SPECIES_EQ(0) )THEN
+          DO N = 1, NMAX(0)
+	
+            WRITE(UNIT_LOG, '(/A,I2)') 'Gas species - ', N
 	  
+	    Accumulation_old = Accumulation_X_g(N)
+	    Accumulation_X_g(N) = Accumulation_sp(ROP_g, X_g(1, N)) 
+	    Accumulation_delta = Accumulation_X_g(N) - Accumulation_old - Integral_R_g(N)
+            WRITE(UNIT_LOG, '(A)') 'Species Accumulation (g)'
+            WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
+	      Accumulation_X_g(N), ', Production = ', Integral_R_g(N), ', net accu(New - Old - Production) = ', Accumulation_delta
+	  
+            WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
+	    Write(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'
+	    flux = zero
+	    flux_in_tot = zero
+	    flux_out_tot = zero
+            DO L = 1, DIMENSION_BC
+	      if(flux_out_X_g(L, N) /= ZERO .OR. flux_in_X_g(L, N) /= ZERO) &
+	        Write(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_X_g(L, N), flux_out_X_g(L, N), &
+	       (flux_in_X_g(L, N)-flux_out_X_g(L, N))
+	      flux = flux + flux_in_X_g(L, N) - flux_out_X_g(L, N)
+	      flux_in_tot = flux_in_tot + flux_in_X_g(L, N)
+	      flux_out_tot = flux_out_tot + flux_out_X_g(L, N)
+  	    END DO
+	    if((flux - Accumulation_delta) /= zero) then
+	      error_percent = undefined
+	      if(flux_in_tot /= zero) error_percent = (flux - Accumulation_delta)*100./flux_in_tot
+	    else
+	      error_percent = zero
+	    endif
+	    Write(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
+	    Write(Unit_log, '(A, G12.5, A, I1, A, G12.5)')'Error (net influx - net accu) = ', &
+	     (flux - Accumulation_delta), ' %Error(',N,') = ', error_percent
+	  
+          END DO
+	ENDIF
+	 
+	DO M = 1, MMAX
+          IF(SPECIES_EQ(M) )THEN
+            DO N = 1, NMAX(M)
+	
+              WRITE(UNIT_LOG, '(/A,I1, A, I2)') 'Solids-', M, ' species - ', N
+	  
+	      Accumulation_old = Accumulation_X_s(M,N)
+  	      Accumulation_X_s(M,N) = Accumulation_sp(ROP_s(1,M), X_s(1, M, N)) 
+	      Accumulation_delta = Accumulation_X_s(M,N) - Accumulation_old - Integral_R_s(M,N)
+              WRITE(UNIT_LOG, '(A)') 'Species Accumulation (g)'
+              WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
+	        Accumulation_X_s(M,N), ', Production = ', Integral_R_s(M,N), ', net accu(New - Old - Production) = ', Accumulation_delta
+	  
+              WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
+	      Write(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'
+	      flux = zero
+	      flux_in_tot = zero
+	      flux_out_tot = zero
+              DO L = 1, DIMENSION_BC
+	        if(flux_out_X_s(L, M, N) /= ZERO .OR. flux_in_X_s(L, M, N) /= ZERO) &
+	          Write(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_X_s(L, M, N), flux_out_X_s(L, M, N), &
+	           (flux_in_X_s(L, M, N)-flux_out_X_s(L, M, N))
+	        flux = flux + flux_in_X_s(L, M, N) - flux_out_X_s(L, M, N)
+	        flux_in_tot = flux_in_tot + flux_in_X_s(L, M, N)
+	        flux_out_tot = flux_out_tot + flux_out_X_s(L, M, N)
+	      END DO
+	      if((flux - Accumulation_delta) /= zero) then
+	        error_percent = undefined
+	        if(flux_in_tot /= zero) error_percent = (flux - Accumulation_delta)*100./flux_in_tot
+	      else
+	        error_percent = zero
+	      endif
+	      Write(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
+	      Write(Unit_log, '(A, G12.5, A, I1, A, G12.5)')'Error (net influx - net accu) = ', &
+	        (flux - Accumulation_delta), ' %Error(',N,') = ', error_percent
+	  
+            END DO
+	  ENDIF 
         END DO 
         WRITE(UNIT_LOG, '(/)')
 	CALL END_LOG
@@ -216,13 +362,35 @@
         start_time = time
         report_time = time + report_dt
 	
-	!initialize flux arrays
+	!initialize flux and reaction rate arrays
         DO L = 1, DIMENSION_BC
 	  flux_out_g(L) = ZERO
 	  flux_in_g(L) = ZERO
           DO N = 1, NMAX(0)
 	    flux_out_X_g(L, N) = ZERO
 	    flux_in_X_g(L, N) = ZERO
+          END DO
+	  
+	  DO M = 1, MMAX
+	    flux_out_s(L, M) = ZERO
+	    flux_in_s(L, M) = ZERO
+            DO N = 1, NMAX(M)
+	      flux_out_X_s(L, M, N) = ZERO
+	      flux_in_X_s(L, M, N) = ZERO
+            END DO
+          END DO
+
+        END DO
+
+	Integral_SUM_R_g = ZERO
+        DO N = 1, NMAX(0)
+          Integral_R_g(N) = ZERO
+        END DO
+	
+	DO M = 1, MMAX
+	  Integral_SUM_R_s(M) = ZERO
+          DO N = 1, NMAX(M)
+            Integral_R_s(M, N) = ZERO
           END DO
         END DO
 	
@@ -348,7 +516,7 @@
             DO K = K1, K2 
             DO J = J1, J2 
             DO I = I1, I2 
-              IF(.NOT.IS_ON_myPE_owns(I, J, K) .or. WALL_AT(FUNIJK(I,J,K))) cycle
+              IF(.NOT.IS_ON_myPE_owns(I, J, K)) cycle
 
               SELECT CASE (PLANE)  
               CASE ('W')  
@@ -400,10 +568,10 @@
 		ENDIF
 		
 	      CASE DEFAULT 
-                IER = 1
-                CALL START_LOG 
-                WRITE (UNIT_LOG, '(A, A1)' ) 'From: Calc_mass_flux, Unknown Plane: ', Plane
-                CALL MFIX_EXIT(myPE) 
+!                IER = 1
+!                CALL START_LOG 
+!                WRITE (UNIT_LOG, '(A, A1)' ) 'From: Calc_mass_flux, Unknown Plane: ', Plane
+!                CALL MFIX_EXIT(myPE) 
 		
               END SELECT 
 	    ENDDO
