@@ -9,7 +9,7 @@
 # M. Syamlal and P. Nicoletti                  9-27-94
 #
 vers="2004-3"
-P4_OPTIMIZE=0
+P4_OPTIMIZE=1
 echo
 echo 
 echo "*******************************************"
