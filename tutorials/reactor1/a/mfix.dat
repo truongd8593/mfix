@@ -19,14 +19,14 @@
 
    CALL_USR = .TRUE.    !to activate the user-defined subroutine usr3
   
-   NORM_g = 1.0
+!  NORM_g = 1.0
    MOMENTUM_X_EQ =  .FALSE.  .FALSE.
    MOMENTUM_Y_EQ =  .TRUE.  .FALSE.  
 
 
    UR_FAC(7) = 0.7
    LEQ_IT = 7*100
-   LEQ_METHOD = 7*1
+   LEQ_METHOD = 7*2
    LEQ_SWEEP = 'isis'
 
 
