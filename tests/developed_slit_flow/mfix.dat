@@ -79,9 +79,10 @@
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
         !      P_star    V_g  V_s            T_s1 X_s
         !                W_g  W_s            T_s2
-  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 100.   100. 
+  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 100.   100.
 
   NLOG   = 25
+  RESID_STRING = 'P0'  'U0' 'V0'
   FULL_LOG = .TRUE.
 
 
