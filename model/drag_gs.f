@@ -327,6 +327,25 @@
                
 !--------------------------End Gidaspow --------------------------
 !     
+!--------------------------Begin WEN_YU --------------------------
+            ELSE IF(TRIM(DRAG_TYPE).EQ.'WEN_YU') then
+                IF(Re_G .LE. 1000)THEN
+                   C_d = (24./(Re_G+SMALL_NUMBER)) * (ONE + 0.15 * Re_G**0.687)
+                ELSE
+                   C_d = 0.44
+                ENDIF
+                DgA = 0.75 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65) &
+                  /D_p(M)
+               
+!              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+               IF(Model_B)THEN
+                  F_gs(IJK, M) = DgA * EP_s(IJK, M)/EP_g(IJK)
+               ELSE
+                  F_gs(IJK, M) = DgA * EP_s(IJK, M)
+               ENDIF
+               
+!--------------------------End WEN_YU ----------------------------
+!     
 !--------------------Begin Koch & Hill (2001) --------------------
 !     
 !!!   Added by Clay Sutton (Lehigh University) 7-14-04
