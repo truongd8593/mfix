@@ -121,6 +121,8 @@
 	
 !       end function funijk
 
+!//AIKETIMER 0306
+      REAL starttime,endtimeSet 
 
       END MODULE compar
 

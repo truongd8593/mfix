@@ -227,10 +227,13 @@
 !	inline functions
 !	----------------
 	integer :: message_tag
+	
+!//DEEP moved include function before message_tag declaration
+	include 'function.inc'
 
 	message_tag(src,dest) = message_tag_offset + (1+src + dest*10*numPEs)
-
-	include 'function.inc'
+!//DEEP_BEFORE
+!	include 'function.inc'
 
 
 !	--------------------
