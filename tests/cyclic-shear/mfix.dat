@@ -4,7 +4,7 @@
   DESCRIPTION = 'Gas-Particle Flow in a 2D periodic cell'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-  TIME  = 0.0      TSTOP = 12.0  DT = 1E-3 
+  TIME  = 0.0      TSTOP = 2.0  DT = 1E-3 
 ! DT_MAX = 0.4e-4
 !  DT_FAC=1.0
   ENERGY_EQ = .FALSE.
@@ -27,9 +27,9 @@
    LEQ_METHOD(8) = 2       
    DISCRETIZE = 8*2              ! Superbee discretization scheme
    NORM_s = 1e-1
-   NORM_g = 1e-1
-   DETECT_STALL = .FALSE.
-   MAX_NIT = 25
+#  NORM_g = 1e-1
+#  DETECT_STALL = .FALSE.
+   MAX_NIT = 100
    CALL_USR=.FALSE.
    FRICTION= .FALSE.              
 #
