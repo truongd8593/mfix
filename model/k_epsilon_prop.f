@@ -193,20 +193,11 @@
 !                      Cell center value of U_sm 
       DOUBLE PRECISION USCM 
 ! 
-!                      Cell center value of U_g 
-      DOUBLE PRECISION UGC 
-! 
 !                      Cell center value of V_sm 
       DOUBLE PRECISION VSCM 
 ! 
-!                      Cell center value of V_g 
-      DOUBLE PRECISION VGC 
-! 
 !                      Cell center value of W_sm 
       DOUBLE PRECISION WSCM 
-! 
-!                      Cell center value of W_g 
-      DOUBLE PRECISION WGC 
 ! 
 !                      Magnitude of gas-solids relative velocity 
       DOUBLE PRECISION VREL 
