@@ -241,6 +241,12 @@
 !
       IF (RO_G0 /= ZERO) CALL CORRECT_0 (IER) 
      
+      IF (RO_G0 == UNDEFINED) THEN
+        DENSITY(0) = .TRUE. 
+        CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
+         HEAT_TR, WALL_TR, IER) 
+      ENDIF 
+
 !
 !     Solve solids volume fraction correction equation for close-packed
 !     solids phases
