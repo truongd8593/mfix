@@ -89,6 +89,8 @@
             'For FRICTION=.T., GRANULAR_ENERGY must be turned on', 1, 1) 
          IF (SAVAGE>2 .OR. SAVAGE<0) CALL ERROR_ROUTINE ('check_data_01', &
             'Value of SAVAGE should be 0, 1, or 2', 1, 1) 
+! Schaeffer formulation is not used when friction is used (sof 02/16/2005)
+         SCHAEFFER = .FALSE.      
       ENDIF  
 !
 ! sof: cannot use both Ahmadi and Simonin models at the same time.

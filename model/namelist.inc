@@ -15,6 +15,10 @@
 ! start anuj 4/20
              FRICTION, SAVAGE,&
 ! end anuj 4/20
+!
+! sof (02/16/2005)
+             SCHAEFFER,&
+! end sof
 
 ! start peter 7/15
              SHEAR, V_sh,&

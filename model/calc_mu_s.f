@@ -468,8 +468,8 @@
           LAMBDA_s(IJK,M) = ZERO
 !
  
-! start anuj 4/20
-         IF (.NOT.FRICTION) THEN
+! start anuj 4/20 (modified by sof 02/16/2005)
+         IF (SCHAEFFER) THEN
 ! end anuj 4/20
  
 !GERA*****************

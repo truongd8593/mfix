@@ -129,6 +129,9 @@
       SAVAGE = 1 
 ! end anuj 04/20
 !
+! sof (02/16/2005)
+      SCHAEFFER = .TRUE. 
+! end sof
  
 ! start loezos 
 !

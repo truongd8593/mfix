@@ -141,9 +141,10 @@
 ! Adjusting the values of theta_m to zero when Ep_g < EP_star (Shaeffer, 1987)
 ! This is done here instead of calc_mu_s.f to avoid convergence problems. (sof)
 !
-         DO IJK = ijkstart3, ijkend3
+         IF (SCHAEFFER) THEN
+           DO IJK = ijkstart3, ijkend3
 !
-            IF (FLUID_AT(IJK) .AND. EP_g(IJK) .LT. EP_star) THEN 
+              IF (FLUID_AT(IJK) .AND. EP_g(IJK) .LT. EP_star) THEN 
 !
 
                  A_M(IJK,1,M) = ZERO 
@@ -154,8 +155,9 @@
                  A_M(IJK,-3,M) = ZERO 
                  A_M(IJK,0,M) = -ONE 		  
                  B_M(IJK,M) = ZERO
-	    ENDIF
-	 END DO	 
+	      ENDIF
+	   END DO
+	 ENDIF	 
 ! End of Shaeffer adjustments, sof.
 !
          CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, RESID(RESID_TH,M), &

@@ -163,6 +163,11 @@
 !	               for frictional stress terms
       INTEGER	       SAVAGE		
 ! end anuj 4/20
+!
+! sof: added SCHAEFFER keyword (02/16/2005)
+!	               default set to .TRUE. use Scheffer frictional stress
+      LOGICAL	       SCHAEFFER
+! sof: end
  
 !      parameters for dynamically adjusting time step
  

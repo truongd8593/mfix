@@ -188,6 +188,8 @@
       IF (SIMONIN) WRITE (UNIT_OUT, 1105)
       IF (AHMADI) WRITE (UNIT_OUT, 1106)
       IF (SIMONIN .OR. AHMADI) WRITE (UNIT_OUT, 1107)
+      IF (SCHAEFFER) WRITE (UNIT_OUT, 1108)
+      IF (FRICTION) WRITE (UNIT_OUT, 1109)
 !
 !  Physical and numerical parameters
 !
@@ -515,10 +517,12 @@
              /7X,'Scalar No.        Carrier Phase (Phase4Scalar)')
  1103 FORMAT(/7X, I4,'               ',I4)
  1104 FORMAT(/7X,'* K and Epsilon equations are solved.')
- 1105 FORMAT(/7X,'* Simonin model is being solved')
- 1106 FORMAT(/7X,'* Ahmadi model is being solved')
+ 1105 FORMAT(/7X,'* Simonin model is solved')
+ 1106 FORMAT(/7X,'* Ahmadi model is solved')
  1107 FORMAT(/7X,'** Note: When Simonin or Ahmadi model is solved, K-Epsilon' &
                   ' and granular energy are automatically solved.')
+ 1108 FORMAT(/7X,'* Schaeffer frictional model is solved')
+ 1109 FORMAT(/7X,'* Savage frictional model is solved')
  1110 FORMAT(7X,'Run name(RUN_NAME): ',A60) 
  1120 FORMAT(7X,'Brief description of the run (DESCRIPTION) :',/9X,A60) 
  1130 FORMAT(7X,'Units (UNITS) : ',A16) 
