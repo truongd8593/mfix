@@ -146,7 +146,12 @@
                DO J = IC_J_S(L), IC_J_N(L) 
                   DO I = IC_I_W(L), IC_I_E(L) 
 !
-                     IJK = FUNIJK(I,J,K) 
+!// 360 1025 Check if current i,j,k resides on this PE
+		    IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+		     
+!// 220 1004 Replaced with global FUNIJK
+                     IJK = FUNIJK_GL(I,J,K) 
+		     
                      IF (FLAG(IJK) == 1) THEN 
                         IF (EPGX /= UNDEFINED) EP_G(IJK) = EPGX 
                         IF (IC_TYPE(L) == 'PATCH') THEN 

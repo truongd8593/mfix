@@ -189,8 +189,8 @@
       CALL CHECK_DATA_08                         ! Internal surfaces section 
       CALL CHECK_DATA_09                         ! Chemical reactions section 
 !//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): aft call check_data_09 in get_data')") myPE !//AIKEPARDBG
-!      call mfix_exit(myPE) !//AIKEPARDBG
+      write(*,"('(PE ',I2,'): aft call check_data_09 in get_data')") myPE !//AIKEPARDBG
+      call mfix_exit(myPE) !//AIKEPARDBG
       
 
 !

@@ -94,6 +94,11 @@
             J2 = BC_J_N(L) 
             K1 = BC_K_B(L) 
             K2 = BC_K_T(L) 
+
+!//? make sure you are checking the right cell for residing on current PE
+!// 360 1025 Check if current i,j,k resides on this PE	    
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+            IF (.NOT.IS_ON_myPE_plus2layers(I2,J2,K2)) CYCLE	    
 !
             IF (BC_TYPE(L) == 'MASS_OUTFLOW') THEN 
                CALL SET_OUTFLOW (L, I1, I2, J1, J2, K1, K2) 
@@ -212,7 +217,10 @@
                   DO K = BC_K_B(L), BC_K_T(L) 
                      DO J = BC_J_S(L), BC_J_N(L) 
                         DO I = BC_I_W(L), BC_I_E(L) 
-                           IJK = FUNIJK(I,J,K) 
+!// 360 1025 Check if current i,j,k resides on this PE	    
+                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+!// 220 1004 Replaced with global FUNIJK			
+                           IJK = FUNIJK_GL(I,J,K) 
                            SELECT CASE (BC_PLANE(L))  
                            CASE ('W')  
                               IJK2 = IM_OF(IJK) 
@@ -270,8 +278,11 @@
                   ENDIF 
                   DO K = BC_K_B(L), BC_K_T(L) 
                      DO J = BC_J_S(L), BC_J_N(L) 
-                        DO I = BC_I_W(L), BC_I_E(L) 
-                           IJK = FUNIJK(I,J,K) 
+                        DO I = BC_I_W(L), BC_I_E(L)
+!// 360 1025 Check if current i,j,k resides on this PE			 
+   		          IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE			
+!// 220 1004 Replaced with global FUNIJK			
+                           IJK = FUNIJK_GL(I,J,K) 
                            SELECT CASE (BC_PLANE(L))  
                            CASE ('W')  
                               IJK2 = IM_OF(IJK) 
@@ -331,6 +342,9 @@
             ENDIF 
          ENDIF 
       END DO 
+
+!//? check for dependency along overlapping subdomain interface BCs
+      
       RETURN  
  1000 FORMAT(/,1X,'Average outflow rates at BC No. ',I2,'  At Time = ',G12.5) 
  1100 FORMAT(3X,'Gas : Mass flow = ',G12.5,'     Volumetric flow = ',G12.5) 

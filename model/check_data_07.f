@@ -158,11 +158,23 @@
             call mfix_exit(myPE)  
          ENDIF 
       END DO L50 
+      
+      
       CALL GET_WALLS_BC 
+
+!//AIKEPARDBGSTOP 0922
+!      write(*,"('(PE ',I2,'): aft get_walls_bc in check_data_07')") myPE !//AIKEPARDBG
+!      call mfix_exit(myPE) !//AIKEPARDBG
+
 !
 !  Find and validate i, j, k locations of flow BC's
 !
       CALL GET_FLOW_BC 
+
+!//AIKEPARDBGSTOP 0922
+      write(*,"('(PE ',I2,'): aft get_flow_bc in check_data_07')") myPE !//AIKEPARDBG
+      call mfix_exit(myPE) !//AIKEPARDBG
+
 !
 !  Compute area of boundary surfaces
 !

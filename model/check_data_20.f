@@ -85,10 +85,12 @@
 !
 !  Check whether all field variables are initialized
 !
-      DO K = 1, KMAX2 
-         DO J = 1, JMAX2 
-            DO I = 1, IMAX2 
-               IJK = FUNIJK(I,J,K) 
+!// 350 1025 change do loop limits: 1,kmax2->kmin3,kmax3
+      DO K = kmin3, kmax3 
+         DO J = jmin3, jmax3 
+            DO I = imin3, imax3 
+!// 220 1004 Replaced with global FUNIJK	    
+               IJK = FUNIJK_GL(I,J,K) 
                IF (.NOT.WALL_AT(IJK)) THEN 
                   CALL SET_INDEX1 (IJK, I, J, K, IMJK, IPJK, IJMK, IJPK, IJKM, &
                      IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT, IM, JM, KM) 
@@ -271,10 +273,13 @@
          CALL MFIX_EXIT 
       ENDIF 
 !
-      DO K = 1, KMAX2 
-         DO J = 1, JMAX2 
-            DO I = 1, IMAX2 
-               IJK = FUNIJK(I,J,K) 
+
+!// 350 1025 change do loop limits: 1,kmax2->kmin3,kmax3
+      DO K = kmin3, kmax3 
+         DO J = jmin3, jmax3 
+            DO I = imin3, imax3 
+!// 220 1004 Replaced with global FUNIJK
+               IJK = FUNIJK_GL(I,J,K) 
                IF (FLAG(IJK)==1 .OR. FLAG(IJK)==20) THEN 
 !
 !  Check the sum of volume fractions

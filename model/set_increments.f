@@ -129,12 +129,15 @@
       
       ICLASS = 0 
 !
+!// 350 0916 change do loop limits: 1,kmax2->kmin3,kmax3
 !     Loop over all cells
       DO K = KSTART3, KEND3
          DO J = JSTART3, JEND3
             DO I = ISTART3, IEND3
 !
-               IJK = FUNIJK(I,J,K)               !Find value of IJK 
+
+!// 220 1004 Replaced with global FUNIJK
+               IJK = FUNIJK_GL(I,J,K)               !Find value of IJK 
 !
 !        Fill I, J, K arrays
                I_OF(IJK) = I 
@@ -150,7 +153,8 @@
          DO J = JSTART2, JEND2
             L100: DO I = ISTART2, IEND2
 !
-               IJK = FUNIJK(I,J,K)               !Find value of IJK
+!// 220 1004 Replaced with global FUNIJK
+               IJK = FUNIJK_GL(I,J,K)               !Find value of IJK
 !
 
 !          Find the the effective cell-center indices for all neighbor cells

@@ -71,7 +71,8 @@
 !
       NCORN = 0 
 !
-      DO IJK = 1, IJKMAX2 
+!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+      DO IJK = ijkstart3, ijkend3
          IF (WALL_AT(IJK)) THEN 
 !
 !----------------------------------------------------------------

@@ -52,7 +52,9 @@
       INCLUDE 'function.inc'
 !
 !!$omp  parallel do private( IMJK, IJMK, IJKM)
-      DO IJK = 1, IJKMAX2 
+!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+      DO IJK = ijkstart3, ijkend3
+      
          IF (.NOT.WALL_AT(IJK)) THEN 
             IF (IP_AT_E(IJK)) U_G(IJK) = ZERO 
             IF (IP_AT_N(IJK)) V_G(IJK) = ZERO 
@@ -68,13 +70,16 @@
             W_G(IJK) = ZERO 
             IF (.NOT.(CYCLIC_AT(IJK) .AND. I_OF(IJK)==IMAX2)) U_G(IMJK) = ZERO 
             IF (.NOT.(CYCLIC_AT(IJK) .AND. J_OF(IJK)==JMAX2)) V_G(IJMK) = ZERO 
+!//? check for subdomain boundary behavior of this if branch assignment	    
             IF (.NOT.(CYCLIC_AT(IJK) .AND. K_OF(IJK)==KMAX2)) W_G(IJKM) = ZERO 
          ENDIF 
       END DO 
       DO M = 1, MMAX 
 !
 !!$omp  parallel do private( ISV,  IMJK, IJMK, IJKM)
-         DO IJK = 1, IJKMAX2 
+!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+!         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3
             IF (.NOT.WALL_AT(IJK)) THEN 
                IF (IP_AT_E(IJK)) THEN 
                   U_S(IJK,M) = ZERO 
@@ -105,6 +110,7 @@
                W_S(IJK,M) = ZERO 
                IF(.NOT.(CYCLIC_AT(IJK).AND.I_OF(IJK)==IMAX2))U_S(IMJK,M)=ZERO 
                IF(.NOT.(CYCLIC_AT(IJK).AND.J_OF(IJK)==JMAX2))V_S(IJMK,M)=ZERO 
+!//? check for subdomain boundary behavior of this if branch assignment	    	       
                IF(.NOT.(CYCLIC_AT(IJK).AND.K_OF(IJK)==KMAX2))W_S(IJKM,M)=ZERO 
             ENDIF 
          END DO 

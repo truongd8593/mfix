@@ -169,7 +169,7 @@
                FLAGX = 1000 + L 
             ELSE 
                WRITE (UNIT_LOG, 1100) L 
-               STOP  
+               call mfix_exit(myPE)  
             ENDIF 
             IF (IS_X_W(L)==IS_X_E(L) .AND. DO_I) THEN 
                IS_PLANE(L) = 'E' 
@@ -302,7 +302,8 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-      DO IJK = 1, IJKMAX2 
+!// 350 1025 change do loop limits: 1,ijkmax2->ijkstart3,ijkend3
+      DO IJK = ijkstart3,ijkend3
          IMJK = IM_OF(IJK) 
          IJMK = JM_OF(IJK) 
          IJKM = KM_OF(IJK) 

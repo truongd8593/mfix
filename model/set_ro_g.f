@@ -63,7 +63,14 @@
 
 !!$omp parallel do private(IJK)  
 
-         DO IJK = 1, IJKMAX2 
+!//? 1024 make sure the values of the dependent variables are consistent at the
+!//? overlapping subdomain boundaries, need debug print during testing.
+
+!//? make sure the values in ghosts are set appropriately to avoid the division
+!//? by zero problem in function EOSG
+
+!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+         DO IJK = ijkstart3, ijkend3 
             IF (.NOT.WALL_AT(IJK)) THEN 
                RO_G(IJK) = EOSG(MW_MIX_G(IJK),P_G(IJK),T_G(IJK)) 
                ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
@@ -72,7 +79,8 @@
       ELSE 
 
 !!$omp   parallel do private(ijk)  
-         DO IJK = 1, IJKMAX2 
+!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+         DO IJK = ijkstart3, ijkend3 
             IF (.NOT.WALL_AT(IJK)) THEN 
                RO_G(IJK) = RO_G0 
                ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
@@ -80,5 +88,9 @@
          END DO 
       ENDIF 
 !
+!//? Mike's implementation but check necessity and also syntax as it give compilation error
+!	CALL SEND_RECV(RO_G, 2)
+!	CALL SEND_RECV(ROP_G, 2)
+	
       RETURN  
       END SUBROUTINE SET_RO_G 

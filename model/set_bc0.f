@@ -88,8 +88,11 @@
 !
 !  Setup for cyclic boundary conditions
 !
-      IJK1 = FUNIJK(IMAX1/2 + 1,JMAX1,KMAX1/2 + 1) 
-      DO IJK = IJK1, IJKMAX2 
+!//? 1026 check the pointer location for ijk1 on all PEs and adjust loop counter if necessary
+      IJK1 = FUNIJK(IMAX1/2 + 1,JMAX1,KMAX1/2 + 1)
+
+!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3        
+      DO IJK = IJK1, ijkend3 
          IF (FLUID_AT(IJK)) EXIT  
       END DO 
       IF (CYCLIC) THEN 
@@ -152,8 +155,8 @@
 !
             DO K = BC_K_B(L), BC_K_T(L) 
                DO J = BC_J_S(L), BC_J_N(L) 
-                  DO I = BC_I_W(L), BC_I_E(L) 
-!//	Added to check that the indices lie on the processor domain...
+                  DO I = BC_I_W(L), BC_I_E(L) 	
+!// 360 1025 Check if current i,j,k resides on this PE		  	  
 		  IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                      IJK = BOUND_FUNIJK(I,J,K) 
                      IF (.NOT.WALL_AT(IJK)) THEN 
@@ -252,5 +255,6 @@
             END DO 
          ENDIF 
       END DO 
+!//? check for the variables that require communication due to the cyclic BC along k direction 
       RETURN  
       END SUBROUTINE SET_BC0 

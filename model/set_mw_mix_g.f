@@ -58,7 +58,9 @@
 !!$omp parallel do private(ijk) &
 !!$omp schedule(dynamic,chunk_size)
 
-      DO IJK = IJKMIN1, IJKMAX1 
+!//? equivalent of ijkmin1 and ijkmax1 in terms of ijkstart??, ijkend?? on each PE
+!// 350 1025 change do loop limits: ijkmin1,ijkmax2-> ijkstart3, ijkend3    
+      DO IJK = ijkstart3+2, ijkend3-2 
          IF (FLUID_AT(IJK)) MW_MIX_G(IJK) = CALC_MW(X_G,DIMENSION_3,IJK,NMAX(0)&
             ,MW_G) 
       END DO 

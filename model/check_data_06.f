@@ -77,22 +77,22 @@
 
 !//AIKEPARDBGSTOP 0922
       write(UNIT_LOG,"('(PE ',I2,'): beginning of check_data_06')") myPE       !//AIKEPARDBG
-!     write(UNIT_LOG,"('(PE ',I2,'): from chk_data_06.f ',&                    !//AIKEPARDBG
-!                /,9X,'Kmin3 = ',I6,'  Kmax3 = ',I6,'  Kmax = ',I6, &   !//AIKEPARDBG
-!                /,9X,'Jmin3 = ',I6,'  Jmax3 = ',I6,'  Jmax = ',I6,&    !//AIKEPARDBG
-!                /,9X,'Imin3 = ',I6,'  Imax3 = ',I6,'  Imax = ',I6)") &  !//AIKEPARDBG
-!                myPE,Kmin3,Kmax3,Kmax,Jmin3,Jmax3,Jmax,Imin3,Imax3,Imax !//AIKEPARDBG
-!     write(UNIT_LOG,"('(PE ',I2,'): from chk_data_06.f ' &                    !//AIKEPARDBG
-!                /,9X,'Kstart3 = ',I6,'  Kstart2 = ',I6,'  Kend3 = ',I6 &   !//AIKEPARDBG
-!                /,9X,'Jstart3 = ',I6,'  Jstart2 = ',I6,'  Jend3 = ',I6 &    !//AIKEPARDBG
-!	 /,9X,'Istart3 = ',I6,'  Istart2 = ',I6,'  Iend3 = ',I6 &
-!         )") &  !//AIKEPARDBG
-!                myPE,Kstart3,Kstart2,Kend3,Jstart3,Jstart2,Jend3, & !//AIKEPARDBG
-!             Istart3,Istart2,Iend3 !//AIKEPARDBG
-!     write(UNIT_LOG,"('(PE ',I2,'): ',/, &
-!                /,9X,'IJKstart3 = ',I6,'  IJKend3 = ',I6 &   !//AIKEPARDBG      
-!                 ,/,9X,'IJKstart2 = ',I6,'  IJKend2 = ',I6, &   !//AIKEPARDBG      		 
-!                )") myPE, ijkstart3,ijkend3
+      write(UNIT_LOG,"('(PE ',I2,'): from chk_data_06.f ',&                    !//AIKEPARDBG
+                & /,9X,'Kmin3 = ',I6,'  Kmax3 = ',I6,'  Kmax = ',I6, &   !//AIKEPARDBG
+                & /,9X,'Jmin3 = ',I6,'  Jmax3 = ',I6,'  Jmax = ',I6,&    !//AIKEPARDBG
+		& /,9X,'Imin3 = ',I6,'  Imax3 = ',I6,'  Imax = ',I6)") &  !//AIKEPARDBG
+                & myPE,Kmin3,Kmax3,Kmax,Jmin3,Jmax3,Jmax,Imin3,Imax3,Imax !//AIKEPARDBG
+      write(UNIT_LOG,"('(PE ',I2,'): from chk_data_06.f ' &                    !//AIKEPARDBG
+                & /,9X,'Kstart3 = ',I6,'  Kstart2 = ',I6,'  Kend3 = ',I6 &   !//AIKEPARDBG
+                & /,9X,'Jstart3 = ',I6,'  Jstart2 = ',I6,'  Jend3 = ',I6 &    !//AIKEPARDBG
+		& /,9X,'Istart3 = ',I6,'  Istart2 = ',I6,'  Iend3 = ',I6 &
+		& )") &  !//AIKEPARDBG
+                & myPE,Kstart3,Kstart2,Kend3,Jstart3,Jstart2,Jend3, & !//AIKEPARDBG
+		& Istart3,Istart2,Iend3 !//AIKEPARDBG
+      write(UNIT_LOG,"('(PE ',I2,'): ',/, &
+                & /,9X,'IJKstart3 = ',I6,'  IJKend3 = ',I6 &   !//AIKEPARDBG      
+!               &  ,/,9X,'IJKstart2 = ',I6,'  IJKend2 = ',I6, &   !//AIKEPARDBG      		 
+                & )") myPE, ijkstart3,ijkend3
 		 
       
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
@@ -440,8 +440,8 @@
                ENDIF 
 !
 !//AIKEPARDBGSTOP 0922
-      write(*,"('(PE ',I2,'): INTERCHK5 in chk_data_06')") myPE !//AIKEPARDBG
-      call mfix_exit(myPE) !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): INTERCHK5 in chk_data_06')") myPE !//AIKEPARDBG
+!      call mfix_exit(myPE) !//AIKEPARDBG
 
                SUM = ZERO 
                DO N = 1, NMAX(0) 
@@ -453,16 +453,28 @@
                      IC_X_G(ICV,N) = ZERO 
                   ENDIF 
                END DO 
+
+
                IF (.NOT.COMPARE(ONE,SUM)) THEN 
+
+!      write(*,"('(PE ',I2,'): INTERCHK5b in chk_data_06')") myPE !//AIKEPARDBG	       	       
+!      write(*,"('(PE ',I2,'): R0_G0= ',D12.5,' MW_AVG= ',D12.5)") myPE,RO_G0,MW_AVG !//AIKEPARDBG	       	       
+!      write(*,"('(PE ',I2,'): ONE= ',D12.5,' SUM= ',D12.5)") myPE,ONE,SUM !//AIKEPARDBG	       	       
+!      write(*,*) SPECIES_EQ  !//AIKEPARDBG
+      if(myPE == 1) SPECIES_EQ(0:1) = .FALSE.  !//?AIKEPARDBG 1101
+!      write(*,*) SPECIES_EQ  !//AIKEPARDBG      
                   WRITE (UNIT_LOG, 1055) ICV 
                   IF (SPECIES_EQ(0) .OR. RO_G0==UNDEFINED .AND. MW_AVG==&
-                     UNDEFINED) call mfix_exit(myPE)  
+                     UNDEFINED) then
+		     call mfix_exit(myPE)  
+		  ENDIF
                ENDIF 
+
 !
 !//AIKEPARDBGSTOP 0922
 !      write(*,"('(PE ',I2,'): INTERCHK6 in chk_data_06')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
-
+      if(myPE == 1) GRANULAR_ENERGY = .FALSE.  !//?AIKEPARDBG 1101
                SUM_EP = IC_EP_G(ICV) 
                DO M = 1, MMAX 
                   IF (IC_ROP_S(ICV,M) == UNDEFINED) THEN 
@@ -490,9 +502,13 @@
                         IC_X_S(ICV,M,N) = ZERO 
                      ENDIF 
                   END DO 
+!//AIKEPARDBGSTOP 0922
+!      write(*,"('(PE ',I2,'): INTERCHK7 in chk_data_06')") myPE !//AIKEPARDBG
+!      call mfix_exit(myPE) !//AIKEPARDBG
+		  
                   IF (.NOT.COMPARE(ONE,SUM)) THEN 
                         WRITE (UNIT_LOG, 1120) ICV, M 
-                        IF (SPECIES_EQ(M)) STOP  
+                        IF (SPECIES_EQ(M)) call mfix_exit(myPE)  
                   ENDIF 
                   IF (IC_U_S(ICV,M) == UNDEFINED) THEN 
                      IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_I) THEN 
@@ -502,6 +518,7 @@
                         call mfix_exit(myPE) !// 990 0912 replaced STOP 
                      ENDIF 
                   ENDIF 
+!      write(*,"('(PE ',I2,'): INTERCHK7b in chk_data_06')") myPE !//AIKEPARDBG		  
                   IF (IC_V_S(ICV,M) == UNDEFINED) THEN 
                      IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_J) THEN 
                         IC_V_S(ICV,M) = ZERO 
@@ -529,6 +546,11 @@
                   ENDIF 
 !
 !
+!      write(*,"('(PE ',I2,'): INTERCHK7b in chk_data_06')") myPE !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): ICV= ',I5,'  M= ',I3,' IC_Theta_M= ',E12.5)") &
+!      myPE,icv,m,IC_THETA_M(ICV,M) !//AIKEPARDBG      
+!      write(*,"('(PE ',I2,'): GRAN. EN.= ',L4)") myPE,GRANULAR_ENERGY !//AIKEPARDBG      
+      
                   IF (GRANULAR_ENERGY .AND. IC_THETA_M(ICV,M)==UNDEFINED) THEN 
                      IF (IC_ROP_S(ICV,M) == ZERO) THEN 
                         IC_THETA_M(ICV,M) = ZERO 
@@ -582,12 +604,13 @@
                DO J = IC_J_S(ICV), IC_J_N(ICV) 
                   DO K = IC_I_W(ICV), IC_I_E(ICV) 
 !// 220 1004 Replaced with global FUNIJK		     
-!                     IJK = FUNIJK_GL(K,J,I) 
-                     IJK = FUNIJK(K,J,I) 
-        write(UNIT_LOG,"('(PE ',I2,'): i = ',I5,'  j = ',I5,'  k = ',I5,' ')") myPE,i,j,k
+                     IJK = FUNIJK_GL(K,J,I) 
+!                     IJK = FUNIJK(K,J,I) 
+!        write(UNIT_LOG,"('(PE ',I2,'): i = ',I5,'  j = ',I5,'  k = ',I5, & !//AIKEPARDBG
+!               ' ')") myPE,k,j,i !//AIKEPARDBG
 		     		     
 		     if(IJK /= -99999) then
-               write(*,"('(PE ',I2,'): IJK = ',I6)") myPE,IJK	 !//AIKEPARDBG	     
+!               write(*,"('(PE ',I2,'): IJK = ',I6)") myPE,IJK	 !//AIKEPARDBG	     
 !               call mfix_exit(myPE) !//AIKEPARDBG	       
                      ICBC_FLAG(IJK)(1:1) = '.' 
                      IC2 = MOD(ICV,100) 
@@ -686,12 +709,15 @@
            write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
          END DO                                         !//AIKEPARDBG
       END DO                                            !//AIKEPARDBG
-      do icv=1,dimension_ic
-         write(UNIT_LOG,"('(PE ',I2,'): IC_K_B(',I4,') = ',I5,'  IC_K_T= ',I5)") myPE,ICV,IC_K_B(ICV),IC_K_T(ICV)
-         write(UNIT_LOG,"('(PE ',I2,'): IC_J_S       = ',I5,'  IC_J_N= ',I5)") myPE,IC_J_S(ICV),IC_J_N(ICV)
-         write(UNIT_LOG,"('(PE ',I2,'): IC_I_W       = ',I5,'  IC_I_E= ',I5)") myPE,IC_I_W(ICV),IC_I_E(ICV)      
-      end do      
-      call mfix_exit(myPE) !//AIKEPARDBG
+!      do icv=1,dimension_ic
+!         write(UNIT_LOG,"('(PE ',I2,'): IC_K_B(',I4,') = ',I5, &
+!	                '  IC_K_T= ',I5)") myPE,ICV,IC_K_B(ICV),IC_K_T(ICV)
+!         write(UNIT_LOG,"('(PE ',I2,'): IC_J_S       = ',I5, &
+!	                '  IC_J_N= ',I5)") myPE,IC_J_S(ICV),IC_J_N(ICV)
+!         write(UNIT_LOG,"('(PE ',I2,'): IC_I_W       = ',I5, &
+!	                '  IC_I_E= ',I5)") myPE,IC_I_W(ICV),IC_I_E(ICV)      
+!      end do      
+!      call mfix_exit(myPE) !//AIKEPARDBG
 
 
       RETURN  

@@ -209,6 +209,9 @@
                   ENDIF 
                   DO K = BC_K_B(BCV), BC_K_T(BCV) 
                      DO J = BC_J_S(BCV), BC_J_N(BCV) 
+!// 360 1025 Check if current i,j,k resides on this PE		     
+   		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+		       
 !// 220 1004 Replaced with global FUNIJK		     
                         IJK_WALL = FUNIJK_GL(I_WALL,J,K) 
                         IJK_FLUID = FUNIJK_GL(I_FLUID,J,K) 
@@ -234,6 +237,8 @@
                   ENDIF 
                   DO K = BC_K_B(BCV), BC_K_T(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
+!// 360 Check if current k resides on this PE
+		       if(k .ge. kstart3_all(myPE) .AND. k .le. kend3_all(myPE)) then		     
 !// 220 1004 Replaced with global FUNIJK		     
                         IJK_WALL = FUNIJK_GL(I,J_WALL,K) 
                         IJK_FLUID = FUNIJK_GL(I,J_FLUID,K) 
@@ -244,6 +249,7 @@
                               ICBC_FLAG(IJK_FLUID) 
                            CALL MFIX_EXIT 
                         ENDIF 
+		       endif
                      END DO 
                   END DO 
                ENDIF 

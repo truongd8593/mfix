@@ -30,6 +30,7 @@
       USE run
       USE geometry
       USE indices
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -52,7 +53,12 @@
 !!$omp  parallel do private( I, J, K, IP, JP, KP, IJK)  &
 !!$omp  schedule(dynamic,chunk_size)
 !
-      DO IJK = 1, IJKMAX2 
+!//? Make sure all references to KP are used in 1D arrays otherwise need to
+!//? communicate the calculated values also check prequisites.
+
+!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+      DO IJK = ijkstart3, ijkend3 
+      
 !
          I = I_OF(IJK) 
          IP = IP1(I) 
