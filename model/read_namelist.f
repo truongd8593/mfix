@@ -111,6 +111,9 @@
 !               integer function which returns COMMENT_INDEX
       INTEGER   SEEK_COMMENT 
 !
+!               Line number
+      INTEGER   LINE_NO 
+!
 !                      Coefficient of restitution (old symbol)
       DOUBLE PRECISION e
 
@@ -172,8 +175,10 @@
 !
       OPEN(UNIT=UNIT_DAT, FILE='mfix.dat', STATUS='OLD', ERR=910) 
 !
+      LINE_NO = 0
   100 CONTINUE 
-      READ (UNIT_DAT, 1100, END=500) LINE_STRING 
+      READ (UNIT_DAT, 1100, END=500) LINE_STRING
+      LINE_NO = LINE_NO + 1 
 !
       LINE_LEN = SEEK_COMMENT(LINE_STRING,LEN(LINE_STRING)) - 1 
       CALL REMOVE_COMMENT (LINE_STRING, LINE_LEN + 1, LEN(LINE_STRING)) 
@@ -182,7 +187,7 @@
       IF (BLANK_LINE(LINE_STRING)) GO TO 100     !blank line 
 !
       IF (LINE_TOO_BIG(LINE_STRING,LINE_LEN,MAXCOL) > 0) THEN 
-         WRITE (*, 1300) LINE_STRING 
+         WRITE (*, 1300) LINE_NO, LINE_STRING 
          CALL MFIX_EXIT(myPE) 
       ENDIF 
 !
@@ -262,7 +267,7 @@
       WRITE (*, 1500) 
       CALL MFIX_EXIT(myPE) 
   930 CONTINUE 
-      WRITE (*, 1600) LINE_STRING(1:LINE_LEN) 
+      WRITE (*, 1600) LINE_NO, LINE_STRING(1:LINE_LEN) 
       CALL MFIX_EXIT(myPE) 
 !
  1000 FORMAT(1X,'$INPUT_DATA') 
@@ -270,14 +275,14 @@
  1100 FORMAT(A) 
  1200 FORMAT(1X,'$END') 
  1300 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&
-         'The following line in mfix.dat has data past column 80',/1X,A80,/1X,&
-         70('*')/) 
+         'Line Number:', I4, ' in mfix.dat has data past column 80',&
+	 /1X,A80,/1X,70('*')/) 
  1400 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&
          'Unable to open scratch file',/1X,70('*')/) 
  1500 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&
          'Unable to open mfix.dat file',/1X,70('*')/) 
  1600 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&
-         'Error while reading the following line in mfix.dat',/1X,A80,/1X,&
+         'Error while reading Line Number:', I4, ' in mfix.dat',/1X,A80,/1X,&
          'Possible causes are 1. incorrect format, 2. unknown name,',/1X,&
          '3. the item is dimensioned too small (see PARAM.INC file).',/1X,70(&
          '*')/) 
