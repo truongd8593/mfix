@@ -12,6 +12,8 @@
 !                       Initial value of CPU time.
       DOUBLE PRECISION CPU0
 !
+!			Time for IO
+	DOUBLE PRECISION CPU0_IO, CPU1_IO, CPU_IO
 
 
       END MODULE time_cpu                                                                        

@@ -116,9 +116,6 @@
 !
       CALL GET_RUN_ID 
 !
-!  Get the initial value of CPU time
-!
-      CALL CPU_TIME (CPU0) 
 !
 !   Read input data, check data, do computations for IC and BC locations
 !   and flows, and set geometry parameters such as X, X_E, DToDX, etc.
@@ -287,6 +284,9 @@
       CPU_NLOG = CPU1 
       TIME_NLOG = TIME - DT 
 
+!  Get the initial value of CPU time
+!
+      CALL CPU_TIME (CPU0) 
 !
 !  Find the solution of the equations from TIME to TSTOP at
 !  intervals of DT
@@ -303,7 +303,10 @@
 !
 !  Compute the CPU time and write it out in the .OUT file.
 !
-      CPUTIME_USED = CPU1 - CPU0 
+      CPUTIME_USED = CPU1 - CPU0 - CPU_IO
+      if(myPE.eq.root) then
+      WRITE(*,*) '************** CPU TIME for IO **********************',CPU_IO
+      endif
       CALL WRITE_OUT3 (CPUTIME_USED) 
 
 !// Finalize and terminate MPI

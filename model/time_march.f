@@ -56,6 +56,7 @@
       USE scalars
       USE drag
       USE compar     
+      USE time_cpu     
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -119,9 +120,10 @@
 !-----------------------------------------------
 !
 !
-      FINISH = .FALSE. 
-      NCHECK = NSTEP 
+      FINISH  = .FALSE. 
+      NCHECK  = NSTEP 
       DNCHECK = 1 
+      CPU_IO  = ZERO 
 !
 !  Initialize times for writing outputs
 !
@@ -287,6 +289,7 @@
 !
       CALL SET_BC1 
 
+      CALL CPU_TIME(CPU0_IO)
 !
 ! Write standard output, if needed
 !
@@ -381,6 +384,9 @@
       RES_MSG = .TRUE. 
       SPX_MSG = .TRUE. 
       CALL END_LOG 
+!
+      CALL CPU_TIME(CPU1_IO)
+      CPU_IO = CPU_IO + (CPU1_IO-CPU0_IO)
 !
 !  Write special output, if needed
 !
