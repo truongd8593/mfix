@@ -7,10 +7,6 @@
 !                      from the 1-D indices I, J, and K.
       INTEGER          FUNIJK_GL
 !
-!                      FUNIJK function with bounds on I, J, and K
-!//? BUG 0901 BOUND_FUNIJK is already defined in BOUNDFUNIJK_mod.f
-!      INTEGER          BOUND_FUNIJK
-!
 !                      Function for generating the index for the entries
 !                      to the upper triangle (excluding the diagonal) of
 !                      an (L,M) matrix.

@@ -89,6 +89,7 @@
 !
 !-----------------------------------------------
       INCLUDE 'function.inc'
+
 !//09/02/99 Initialize the default values to Undefined_I
 
       IP1(:) = UNDEFINED_I
@@ -117,7 +118,7 @@
          ENDIF 
       END DO 
       DO K = KSTART2, KEND2
-         IF (CYCLIC_Z.AND.NODESK.EQ.1) THEN 
+         IF (CYCLIC_Z.AND.NODESK.EQ.1.AND.DO_K) THEN 
             KP1(K) = KMAP(KMAP(K)+1)
             KM1(K) = KMAP(KMAP(K)-1)
 	 ELSE
@@ -125,6 +126,7 @@
             KP1(K) = MIN(KEND3,K + 1)
          ENDIF 
       END DO 
+      
       ICLASS = 0 
 !
 !     Loop over all cells

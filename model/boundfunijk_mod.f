@@ -12,7 +12,6 @@
       USE physprop
       USE geometry
       USE compar
-      USE constant
       USE fldvar
       USE indices
       IMPLICIT NONE
@@ -30,32 +29,7 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
-      LIMIN = IMIN2
-      LJMIN = JMIN2
-      LKMIN = KMIN2
-
-      LIMAX = IMAX2
-      LJMAX = JMAX2
-      LKMAX = KMAX2
-
-      IF(CYCLIC_X) THEN
-        LIMIN = IMIN3
-        LIMAX = IMAX3
-      ENDIF
-
-      IF(CYCLIC_Y) THEN
-        LJMIN = JMIN3
-        LJMAX = JMAX3
-      ENDIF
-
-      IF(CYCLIC_Z) THEN
-        LKMIN = KMIN3
-        LKMAX = KMAX3
-      ENDIF
-
-      BOUND_FUNIJK  = FUNIJK ( MIN( LIMAX, MAX (LIMIN, LI) ),&
-                               MIN( LJMAX, MAX (LJMIN, LJ) ),&
-                               MIN( LKMAX, MAX (LKMIN, LK) ) )
+      BOUND_FUNIJK  = FUNIJK ( IMAP(LI) , JMAP(LJ) , KMAP(LK)  )
 
       END FUNCTION BOUND_FUNIJK
 

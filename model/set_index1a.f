@@ -68,8 +68,7 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-!//09/02/99 - Modified calls to BOUND_FUNIJK to have a self 
-!//           consistent formulation - Sreekanth
+!//09/02/99 - Modified calls to BOUND_FUNIJK to have a self consistent formulation - Sreekanth
 !
       IMJK = FUNIJK(IM1(I),J,K) 
       IPJK = FUNIJK(IP1(I),J,K) 
@@ -78,21 +77,20 @@
       IJKM = FUNIJK(I,J,KM1(K)) 
       IJKP = FUNIJK(I,J,KP1(K)) 
 !
-!
 !  IJKW
 !
-       IF (WALL_AT(IMJK)) THEN 
-          IJKW = IJK 
-       ELSE 
+      IF (WALL_AT(IMJK)) THEN 
+         IJKW = IJK 
+      ELSE 
           IJKW = IMJK 
-       ENDIF 
+      ENDIF 
 !
 !  IJKE
 !
       IF (WALL_AT(IPJK)) THEN 
          IJKE = IJK 
       ELSE 
-         IJKE = IPJK 
+          IJKE = IPJK 
       ENDIF 
 !
 !  IJKS

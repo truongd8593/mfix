@@ -26,6 +26,7 @@
       USE param1
       USE matrix
       USE geometry
+      USE compar
       USE indices
       IMPLICIT NONE
 !-----------------------------------------------
@@ -43,16 +44,16 @@
       DOUBLE PRECISION TOL
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3)
+      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
 !
 !                      Vector b_m
-      DOUBLE PRECISION B_m(DIMENSION_3)
+      DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !                      Variable name
       CHARACTER*(*)    Vname
 !
 !                      Variable
-      DOUBLE PRECISION Var(DIMENSION_3)
+      DOUBLE PRECISION Var(ijkstart3:ijkend3)
 
 !                    sweep direction
       CHARACTER*4 :: CMETHOD
@@ -101,8 +102,10 @@
       USE parallel
       USE matrix
       USE geometry
+      USE compar
+      USE mpi_utility
+      USE sendrecv
       USE indices
-      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -120,93 +123,100 @@
       DOUBLE PRECISION TOL
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3)
+      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
 !
 !                      Vector b_m
-      DOUBLE PRECISION B_m(DIMENSION_3)
+      DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !                      Variable name
       CHARACTER*(*)    Vname
 !
 !                      Variable
-      DOUBLE PRECISION Var(DIMENSION_3)
-      
+      DOUBLE PRECISION Var(ijkstart3:ijkend3)
+
 !                    sweep direction
       CHARACTER*4 :: CMETHOD
 
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: idebug = 0
+      INTEGER, PARAMETER :: idebugl = 0
       DOUBLE PRECISION :: ratiotol = 0.2
 
-      DOUBLE PRECISION, DIMENSION(IJKMAX2) ::                       &
+      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) ::                       &
                                 R,Rtilde, P,Phat, Svec, Shat, Tvec,V
       DOUBLE PRECISION, DIMENSION(0:ITMAX+1) :: alpha,beta,omega,rho
       DOUBLE PRECISION :: TxS, TxT, oam,RtildexV,                   &
-		      RtildexR, aijmax, Rnorm, Rnorm0, Snorm, TOLMIN
+		      RtildexR, aijmax, Rnorm, Rnorm0, Snorm, TOLMIN, pnorm
       LOGICAL :: isconverged
-      INTEGER :: i,ijk, itemp, iter
+      INTEGER :: i, ii, j, k, ijk, itemp, iter
 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
+!     DOUBLE PRECISION , EXTERNAL :: DOT_PRODUCT_PAR
       EXTERNAL  MATVEC, MSOLVE
+
+        INTERFACE
+        DOUBLE PRECISION FUNCTION DOT_PRODUCT_PAR( R1, R2 )
+        DOUBLE PRECISION, INTENT(IN), DIMENSION(:) :: R1,R2
+        END FUNCTION DOT_PRODUCT_PAR
+        END INTERFACE
+
+        logical, parameter :: do_unit_scaling = .false.
+
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
 
+      alpha(:)  = zero
+      beta(:)   = zero
+      omega(:)  = zero
+      rho(:)    = zero
+
       TOLMIN = EPSILON( one )
 
+      if (do_unit_scaling) then
 !
 !     Scale matrix to have unit diagonal
 !
 !$omp parallel do private(ijk,oam,aijmax)
-      DO IJK = 1, IJKMAX2
+        do k = kstart2,kend2
+          do j = jstart2,jend2
+            do i = istart2,iend2
 
-         aijmax =                                                 &
-             max(                                                 &
-                 max(                                             &
-		      max( abs(A_M(ijk,-1)), abs(A_M(ijk,1)) ),   &
-		      max( abs(A_M(ijk,-2)), abs(A_M(ijk,2)) )    &
-                     ),                                           &
-                 max(                                             &
-		      max( abs(A_M(ijk,-3)), abs(A_M(ijk,3)) ),   &
-		      abs(A_M(ijk,0))                             &
-                    )                                             &
-               )
-         OAM = one/aijmax
+              IJK = funijk(i,j,k)
+
+
+              aijmax = maxval(abs(A_M(ijk,:)) )
+
+              OAM = one/aijmax
          
-         A_M(IJK,:) = A_M(IJK,:)*OAM
+              A_M(IJK,:) = A_M(IJK,:)*OAM
 
-         B_M(IJK) = B_M(IJK)*OAM
-      END DO
+              B_M(IJK) = B_M(IJK)*OAM
+
+            enddo
+          enddo
+        enddo
+      endif
 
 !
 !    Compute initial residual, assume initial guess in Var
 !    r = b - A*x
 !    rtilde = r
 
+
     call MATVEC( Vname, Var, A_M, R )
 
-    if (USE_DOLOOP) then
+	R(ijkstart3:ijkend3) = B_m(ijkstart3:ijkend3) - R(ijkstart3:ijkend3)
+	call send_recv(R,2)
 
-       Rnorm0 = ZERO
-!$omp  parallel do private(ijk) reduction(+:Rnorm0)
-       do ijk=1,ijkmax2
-            R(ijk) = B_m(ijk) - R(ijk)
-            Rtilde(ijk) = R(ijk)
-            Rnorm0 = Rnorm0 + R(ijk)*R(ijk)
-       enddo
-       Rnorm0 = sqrt( Rnorm0 )
-    else
-
-	R(1:ijkmax2) = B_m(1:ijkmax2) - R(1:ijkmax2)
 	Rtilde(:) = R(:)
-	Rnorm0 = sqrt( dot_product( R(:), R(:) ) )
-    endif
+	
+	Rnorm0 = sqrt( dot_product_par( R, R ) )
 
-    if (idebug >= 1) then
+    if (idebugl >= 1) then
        print*,'leq_bicgs, initial: ', Vname,' resid ', real(Rnorm0)
     endif
 !
@@ -214,18 +224,8 @@
 !
     iter = 1
     do i=1,itmax
-      if (USE_DOLOOP) then
-         RtildexR = ZERO
 
-!$omp    parallel do private(ijk) reduction(+:RtildexR)
-         do ijk = 1, ijkmax2
-           RtildexR = RtildexR + Rtilde(ijk)*R(ijk)
-         enddo
-         rho(i-1) = RtildexR
-
-      else
-        rho(i-1) = dot_product( Rtilde(:), R(:) )
-      endif
+        rho(i-1) = dot_product_par( Rtilde, R )
 
         if (rho(i-1) .eq. zero) then
 	  if(i /= 1)then
@@ -244,24 +244,15 @@
         endif
 
         if (i .eq. 1) then
-           if (USE_DOLOOP) then
-!$omp          parallel do private(ijk)
-               do ijk=1,ijkmax2
-                   P(ijk) = R(ijk)
-               enddo
-           else
-	       P(:) = R(:)
-           endif
+
+	   P(:) = R(:)
+
         else
            beta(i-1) = ( rho(i-1)/rho(i-2) )*( alpha(i-1) / omega(i-1) )
-           if (USE_DOLOOP) then
-!$omp         parallel do private(ijk)
-              do ijk=1,ijkmax2
-                 P(ijk) = R(ijk) + beta(i-1)*( P(ijk) - omega(i-1)*V(ijk) )
-              enddo
-           else
-              P(:) = R(:) + beta(i-1)*( P(:) - omega(i-1)*V(:) )
-           endif
+
+           P(:) = R(:) + beta(i-1)*( P(:) - omega(i-1)*V(:) )
+	   call send_recv(P,2)
+
         endif
 
 !
@@ -271,77 +262,33 @@
         call MSOLVE( Vname, P, A_m, Phat, CMETHOD )
 
         call MATVEC( Vname, Phat, A_m, V )
+	call send_recv(V,2)
 
             
-        if (USE_DOLOOP) then
-           RtildexV = ZERO
-
-!$omp      parallel do private(ijk) reduction(+:RtildexV)
-           do ijk=1,ijkmax2
-               RtildexV = RtildexV + Rtilde(ijk)*V(ijk) 
-           enddo
-
-        else
-           RtildexV = dot_product( Rtilde(:), V(:) )
-        endif
+        RtildexV = dot_product_par( Rtilde, V )
 
         alpha(i) = rho(i-1) / RtildexV
 
-        if (USE_DOLOOP) then
+        Svec(:) = R(:) - alpha(i) * V(:)
+        call send_recv(Svec,2)
 
-!$omp       parallel do private(ijk)
-            do ijk=1,ijkmax2
-              Svec(ijk) = R(ijk) - alpha(i) * V(ijk)
-            enddo
-
-        else
-            Svec(:) = R(:) - alpha(i) * V(:)
-        endif
 
 !
 !       Check norm of Svec(:); if small enough:
 !       set X(:) = X(:) + alpha(i)*Phat(:) and stop
 !
-        if (USE_DOLOOP) then
-           Snorm = ZERO
-
-!$omp      parallel do private(ijk) reduction(+:Snorm)
-           do ijk=1,ijkmax2
-               Snorm = Snorm + Svec(ijk)*Svec(ijk)
-           enddo
-
-        else
-           Snorm = sqrt( dot_product( Svec(:), Svec(:) ) )
-        endif
+        Snorm = sqrt( dot_product_par( Svec, Svec ) )
 
         if (Snorm <= TOLMIN) then
-             if (USE_DOLOOP) then
-!$omp            parallel do private(ijk)
-                 do ijk=1,ijkmax2
-                   Var(ijk) = Var(ijk) + alpha(i)*Phat(ijk)
-                 enddo
-             else
-                Var(1:ijkmax2) = Var(1:ijkmax2) + alpha(i)*Phat(1:ijkmax2)
-             endif
-             if (idebug >= 1) then
+
+             Var(ijkstart3:ijkend3) = Var(ijkstart3:ijkend3) + alpha(i)*Phat(ijkstart3:ijkend3)
+             if (idebugl >= 1) then
 !
 !               Recompute residual norm
 !          
              call MATVEC( Vname, Var, A_m, R )
-             if (USE_DOLOOP) then
-                Rnorm = ZERO
-
-!$omp           parallel do private(ijk) reduction(+:Rnorm)
-                do ijk=1,ijkmax2
-                   R(ijk) = B_m(ijk) - R(ijk)
-                   Rnorm = Rnorm + R(ijk)*R(ijk)
-                enddo
-
-                Rnorm = sqrt( Rnorm )
-             else
-                R(1:ijkmax2) = B_m(1:ijkmax2) - R(1:ijkmax2)
-                Rnorm = sqrt( dot_product( R(:), R(:) ) )
-             endif
+             R(ijkstart3:ijkend3) = B_m(ijkstart3:ijkend3) - R(ijkstart3:ijkend3)
+             Rnorm = sqrt( dot_product_par( R, R ) )
              endif
 
             EXIT
@@ -355,40 +302,23 @@
         
         call MATVEC( Vname, Shat, A_m, Tvec )
 
-        
-        if (USE_DOLOOP) then
-           TxS = ZERO
-           TxT = ZERO
-
-!$omp      parallel do private(ijk) reduction(+:TxS,TxT)
-           do ijk=1,ijkmax2
-             TxS = TxS + Tvec(ijk)*Svec(ijk)
-             TxT = TxT + Tvec(ijk)*Tvec(ijk)
-           enddo
-
-        else
-           TxS = dot_product( Tvec(:), Svec(:) )
-           TxT = dot_product( Tvec(:), Tvec(:) )
-        endif
+        TxS = dot_product_par( Tvec, Svec )
+        TxT = dot_product_par( Tvec, Tvec )
         omega(i) = TxS / TxT
 
 
-        if (USE_DOLOOP) then
+        Var(ijkstart3:ijkend3) = Var(ijkstart3:ijkend3) +                           &
+              alpha(i)*Phat(ijkstart3:ijkend3) + omega(i)*Shat(ijkstart3:ijkend3)
+        R(:) = Svec(:) - omega(i)*Tvec(:)
+        Rnorm = sqrt( dot_product_par(R, R) )
 
-           Rnorm = ZERO
-!$omp      parallel do private(ijk) reduction(+:Rnorm)
-           do ijk=1,ijkmax2
-              Var(ijk) = Var(ijk) + alpha(i)*Phat(ijk) + omega(i)*Shat(ijk)
-              R(ijk) = Svec(ijk) - omega(i)*Tvec(ijk)
-              Rnorm = Rnorm + R(ijk)*R(ijk)
-           enddo
-           Rnorm = sqrt( Rnorm )
-
-        else
-           Var(1:ijkmax2) = Var(1:ijkmax2) +                           &
-                 alpha(i)*Phat(1:ijkmax2) + omega(i)*Shat(1:ijkmax2)
-           R(:) = Svec(:) - omega(i)*Tvec(:)
-           Rnorm = sqrt( dot_product(R(:), R(:)) )
+        if (idebugl.ge.1) then
+           if (myPE.eq.PE_IO) then
+             print*,'iter, Rnorm ', iter, Rnorm, Snorm
+             print*,'alpha(i), omega(i) ', alpha(i), omega(i)
+             print*,'TxS, TxT ', TxS, TxT
+             print*,'RtildexV, rho(i-1) ', RtildexV, rho(i-1)
+           endif
         endif
 
 !       Check convergence; continue if necessary
@@ -405,13 +335,20 @@
         enddo
 
 
-        if (idebug >= 1) then
+        if (idebugl >= 1) then
+
+          call MATVEC( Vname, Var, A_m, R )
+          R(:) = R(:) - B_m(:)
+          Rnorm = sqrt( dot_product_par( R,R) )
+
+          print*,'leq_bicgs: final Rnorm ', Rnorm
+
            print*,'leq_bicgs ratio : ', Vname,' ',iter,     &
                    ' L-2', real(Rnorm/Rnorm0)
-           if (real(Rnorm/Rnorm0) .gt. ratiotol) then
-              call leq_dump( Vname, Var, A_m, B_m )
-	      print*,'Rnorm ', real(Rnorm), ' Rnorm0 ', real(Rnorm0)
-           endif
+!          if (real(Rnorm/Rnorm0) .gt. ratiotol) then
+!             call leq_dump( Vname, Var, A_m, B_m )
+!      print*,'Rnorm ', real(Rnorm), ' Rnorm0 ', real(Rnorm0)
+!          endif
         endif 
 
         isconverged = (real(Rnorm) <= TOL*Rnorm0);
@@ -425,24 +362,7 @@
         
         return
         end subroutine LEQ_BICGS0
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: LEQ_LSOR(Vname, Var, A_m, B_m,  ITMAX, IER)          C
-!  Purpose: Successive line over-relaxation method -- Cyclic bc        C
-!                                                                      C
-!  Author: Ed D'Azevedo                               Date: 21-JAN-99  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE LEQ_LSOR(VNAME, VAR, A_M, B_M,  ITMAX, IER)
 !
 !-----------------------------------------------
@@ -452,8 +372,8 @@
       USE param1
       USE matrix
       USE geometry
+      USE compar
       USE indices
-      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -610,8 +530,9 @@
       USE param1
       USE matrix
       USE geometry
+      USE compar
       USE indices
-      USE compar        !//d
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -624,17 +545,17 @@
 !
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3)
+      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
 !
 !                      Vector b_m
-      DOUBLE PRECISION B_m(DIMENSION_3)
+      DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !                      Variable name
       CHARACTER*(*)    Vname
 
 !
 !                      Variable
-      DOUBLE PRECISION Var(DIMENSION_3)
+      DOUBLE PRECISION Var(ijkstart3:ijkend3)
 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -646,17 +567,17 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      INTEGER :: NN 
-      DOUBLE PRECISION, DIMENSION (JMAX2) :: CC,DD,EE,BB
+      INTEGER :: NSTART, NEND 
+      DOUBLE PRECISION, DIMENSION (JSTART:JEND) :: CC,DD,EE,BB
       INTEGER :: INFO, IJK, J, K, IM1JK, IP1JK
 
       INCLUDE 'function.inc'
 
-
-      NN = JMAX2
+      NEND = JEND
+      NSTART = JSTART
       K = 1
 
-      DO J=1,NN
+      DO J=NSTART, NEND
          IJK = FUNIJK(I,J,K)
          IM1JK = IM_OF(IJK)
          IP1JK = IP_OF(IJK)
@@ -669,10 +590,11 @@
 
      ENDDO
 
-     CC(1) = ZERO
-     EE(NN) = ZERO
+     CC(NSTART) = ZERO
+     EE(NEND) = ZERO
      INFO = 0
-     CALL DGTSL( NN, CC, DD, EE, BB, INFO )
+
+     CALL DGTSL( JEND-JSTART+1, CC, DD, EE, BB, INFO )
 
      IF (INFO.NE.0) THEN
         PRINT *,'VNAME = ', VNAME
@@ -680,7 +602,7 @@
         STOP 'ERROR'
      ENDIF
 
-     DO J=1,NN
+     DO J=NSTART, NEND
         IJK = FUNIJK(I,J,K)
         Var(IJK) =  BB(J) 
      ENDDO
@@ -714,8 +636,9 @@
       USE param1
       USE matrix
       USE geometry
+      USE compar
       USE indices
-      USE compar        !//d
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -727,17 +650,17 @@
       INTEGER          I,K
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3)
+      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
 !
 !                      Vector b_m
-      DOUBLE PRECISION B_m(DIMENSION_3)
+      DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !                      Variable name
       CHARACTER*(*)    Vname
 
 !
 !                      Variable
-      DOUBLE PRECISION Var(DIMENSION_3)
+      DOUBLE PRECISION Var(ijkstart3:ijkend3)
 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -749,22 +672,22 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      INTEGER :: NN 
-      DOUBLE PRECISION, DIMENSION (JMAX2) :: CC,DD,EE,BB
-      INTEGER :: NN, INFO, IJK, J,  IM1JK, IP1JK, IJKM1, IJKP1
+      DOUBLE PRECISION, DIMENSION (JSTART:JEND) :: CC,DD,EE,BB
+      INTEGER :: NSTART, NEND, INFO, IJK, J,  IM1JK, IP1JK, IJKM1, IJKP1
 
       INCLUDE 'function.inc'
 
-      NN = JMAX2
+      NEND = JEND
+      NSTART = JSTART
 
 !$omp parallel do private(j,ijk,im1jk,ip1jk,ijkm1,ijkp1)
-      DO J=1,NN
+      DO J=NSTART, NEND
          IJK = FUNIJK(I,J,K)
          IM1JK = IM_OF(IJK)
          IP1JK = IP_OF(IJK)
          IJKM1 = KM_OF(IJK)
          IJKP1 = KP_OF(IJK)
-
+	
          DD(J) = A_M(IJK,  0)
          CC(J) = A_M(IJK, -2)
          EE(J) = A_M(IJK,  2)
@@ -775,10 +698,10 @@
 
      ENDDO
 
-     CC(1) = ZERO
-     EE(NN) = ZERO
+     CC(NSTART) = ZERO
+     EE(NEND) = ZERO
      INFO = 0
-     CALL DGTSL( NN, CC, DD, EE, BB, INFO )
+     CALL DGTSL( JEND-JSTART+1, CC, DD, EE, BB, INFO )
 
      IF (INFO.NE.0) THEN
         PRINT *,'VNAME = ', VNAME
@@ -786,7 +709,7 @@
         STOP 'ERROR'
      ENDIF
 
-     DO J=1,NN
+      DO J=NSTART, NEND
         IJK = FUNIJK(I,J,K)
         Var(IJK) = BB(J)
      ENDDO
@@ -822,8 +745,8 @@
       USE param1
       USE matrix
       USE geometry
+      USE compar
       USE indices
-      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -843,6 +766,7 @@
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3)
 !
+
 !                      Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3)
 !
@@ -856,7 +780,7 @@
       DOUBLE PRECISION RESID2
 !
 !     max norm of residual vector
-! 
+!
       DOUBLE PRECISION RMAX
 
 !-----------------------------------------------
@@ -870,7 +794,7 @@
 !-----------------------------------------------
 
 !
-      INTEGER          I,  K, IJK, ITER 
+      INTEGER          I,  K, IJK, ITER
 
       double precision resid_ijk
       integer :: im1jk,ip1jk, ijm1k,ijp1k, ijkm1,ijkp1
@@ -880,14 +804,14 @@
       INCLUDE 'function.inc'
 
 
-    
+
 !
 !     Calculate residual
 !
 
       rmax = ZERO
       resid2 = ZERO
-     
+
 
       if (do_k) then
 
@@ -900,7 +824,7 @@
            ip1jk = ip_of(ijk)
            ijm1k = jm_of(ijk)
            ijp1k = jp_of(ijk)
- 
+
            ijkm1 = km_of(ijk)
            ijkp1 = kp_of(ijk)
 
@@ -928,7 +852,7 @@
            ip1jk = ip_of(ijk)
            ijm1k = jm_of(ijk)
            ijp1k = jp_of(ijk)
- 
+
 
            resid_ijk  = abs( B_m(ijk)                  &
                           - A_m(ijk, 0) * Var(ijk)     &
@@ -979,8 +903,8 @@
       USE param1
       USE matrix
       USE geometry
+      USE compar
       USE indices
-      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -990,10 +914,10 @@
 !-----------------------------------------------
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3)
+      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
 !
 !                      Vector b_m
-      DOUBLE PRECISION B_m(DIMENSION_3)
+      DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !
 !
@@ -1001,7 +925,7 @@
       CHARACTER*(*)    Vname
 !
 !                      Variable
-      DOUBLE PRECISION Var(DIMENSION_3)
+      DOUBLE PRECISION Var(ijkstart3:ijkend3)
 !
 !     L-2 norm of residual vector
       DOUBLE PRECISION RESID2
@@ -1026,7 +950,7 @@
       rewind(iodev)
 
       write(iodev,*) '% ', Vname
-      do ijk=1,ijkmax2
+      do ijk=ijkstart3,ijkend3
         write(iodev,9001) ijk,B_m(ijk)
  9001   format('B(',i6,') = ', e14.4, ';')
       enddo
@@ -1042,7 +966,7 @@
 
 
       write(iodev,*) '% ', Vname
-      do ijk=1,ijkmax2
+      do ijk=ijkstart3,ijkend3
         write(iodev,9002) ijk, Var(ijk)
  9002   format('X(',i6,') = ', e14.4, ';' )
       enddo
@@ -1127,8 +1051,10 @@
       USE param1
       USE matrix
       USE geometry
+      USE compar
       USE indices
-      USE compar        !//d
+      USE sendrecv
+      USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1139,16 +1065,18 @@
 !
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3)
+      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
 !
 !                      Vector AVar
-      DOUBLE PRECISION AVar(DIMENSION_3)
+      DOUBLE PRECISION AVar(ijkstart3:ijkend3)
 !
 !                      Variable name
       CHARACTER*(*)    Vname
 !
 !                      Variable
-      DOUBLE PRECISION Var(DIMENSION_3)
+      DOUBLE PRECISION Var(ijkstart3:ijkend3)
+!                      Variable
+      DOUBLE PRECISION, allocatable, Dimension(:) :: Var_g
 !
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -1159,36 +1087,66 @@
 !-----------------------------------------------
 
 !
-      INTEGER          I,  K, IJK, ITER 
+      INTEGER          I,  J, K, IJK, ITER 
       DOUBLE PRECISION oAm
 
-      double precision, dimension (ijkmax2) :: resid
       integer :: im1jk,ip1jk, ijm1k,ijp1k, ijkm1,ijkp1
+      logical, parameter :: use_send_recv = .true.
+      logical, parameter :: need_distribute_Avar = .false.
 
 
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
 
+
+!     Initialize the residual
+
+      Avar(:) = 0.0
     
 !
 !     Calculate residual
 !
 
-     
+      if (use_send_recv) then
+        call send_recv(var,2)
+      else
+        if(myPE.eq.root) then
+  	     allocate (var_g(1:ijkmax3))
+        endif
+        call gather(var,var_g)
+        call scatter(var,var_g)
+
+        call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+      endif
+
 
       if (do_k) then
 
 !$omp parallel  do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
-        do ijk=1,ijkmax2
+        do k = kstart,kend
+        do j = jstart,jend
+        do i = istart,iend
 
-           im1jk = im_of(ijk)
-           ip1jk = ip_of(ijk)
-           ijm1k = jm_of(ijk)
-           ijp1k = jp_of(ijk)
+        IJK = funijk(i,j,k)
+
+
+           im1jk = im1(i)
+           ip1jk = ip1(i)
+           ijm1k = jm1(j)
+           ijp1k = jp1(j)
+! 
+           ijkm1 = km1(k)
+           ijkp1 = kp1(k)
+
+
+           im1jk = funijk(im1(i),j,k)
+           ip1jk = funijk(ip1(i),j,k)
+           ijm1k = funijk(i,jm1(j),k)
+           ijp1k = funijk(i,jp1(j),k)
  
-           ijkm1 = km_of(ijk)
-           ijkp1 = kp_of(ijk)
+           ijkm1 = funijk(i,j,km1(k))
+           ijkp1 = funijk(i,j,kp1(k))
 
            AVar(ijk) =      A_m(ijk,-3) * Var(ijkm1)   &
                           + A_m(ijk,-2) * Var(ijm1k)   &
@@ -1197,11 +1155,20 @@
                           + A_m(ijk, 1) * Var(ip1jk)   &
                           + A_m(ijk, 2) * Var(ijp1k)   &
                           + A_m(ijk, 3) * Var(ijkp1)    
+
+        enddo
+        enddo
         enddo
 
       else
 !$omp parallel do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
-        do ijk=1,ijkmax2
+        do j = jstart,jend
+        do i = istart,iend
+
+        k = 1
+
+        IJK = funijk(i,j,k)
+
 
            im1jk = im_of(ijk)
            ip1jk = ip_of(ijk)
@@ -1216,8 +1183,20 @@
                           + A_m(ijk, 2) * Var(ijp1k)    
 
         enddo
+        enddo
 
 
+      endif
+
+      if (need_distribute_Avar) then
+
+      if (use_send_recv) then
+	     call send_recv(Avar,2)
+      else
+	      call gather(Avar,var_g)
+	      call scatter(Avar,var_g)
+              deallocate( var_g )
+      endif
       endif
 
       return
@@ -1249,8 +1228,9 @@
       USE param1
       USE matrix
       USE geometry
+      USE compar
       USE indices
-      USE compar        !//d
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1260,16 +1240,16 @@
 !-----------------------------------------------
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3)
+      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
 !
 !                      Vector b_m
-      DOUBLE PRECISION B_m(DIMENSION_3)
+      DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !                      Variable name
       CHARACTER*(*)    Vname
 !
 !                      Variable
-      DOUBLE PRECISION Var(DIMENSION_3)
+      DOUBLE PRECISION Var(ijkstart3:ijkend3)
 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -1298,10 +1278,21 @@
      IF (SETGUESS) THEN
 
 !$omp   parallel do private(ijk)
-        DO IJK=1,IJKMAX2
+        do k = kstart3,kend3
+        do j = jstart3,jend3
+        do i = istart3,iend3
+
+        IJK = funijk(i,j,k)
+
            VAR(IJK) = B_M(IJK)
-        ENDDO
+
+        enddo
+        enddo
+        enddo
+
      ENDIF
+
+     call send_recv(var,2)
 
      NITER = LEN( CMETHOD )
 
@@ -1319,16 +1310,8 @@
        IF ( DO_ISWEEP ) THEN
 
 !$omp   parallel do private(I)
-        DO I=1,IMAX2
+        DO I=istart,iend
            CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m  )
-        ENDDO
-
-      ENDIF
-      IF (DO_JSWEEP) THEN
-
-!$omp   parallel do private(J)
-        DO J=1,JMAX2
-           CALL LEQ_JSWEEP( J, Vname, Var, A_m, B_m )
         ENDDO
 
       ENDIF
@@ -1338,40 +1321,24 @@
       IF (DO_ISWEEP) THEN
 
 !$omp   parallel do private(K,I)
-        DO K=1,KMAX2
-          DO I=1,IMAX2
+        DO K=kstart,kend
+          DO I=istart,iend
              CALL LEQ_IKSWEEP( I,K, Vname, Var, A_m, B_m  )
           ENDDO
         ENDDO
       ENDIF
-      IF (DO_JSWEEP) THEN
-
-!$omp   parallel do private(J,K)
-        DO K=1,KMAX2
-          DO J=1,JMAX2
-             CALL LEQ_JKSWEEP( J,K, Vname, Var, A_m, B_m )
-          ENDDO
-        ENDDO
-
-      ENDIF
-      IF (DO_KSWEEP) THEN
-
-!$omp    parallel do private(I,J)
-         DO J=1,JMAX2
-           DO I=1,IMAX2
-             CALL LEQ_IJSWEEP( I,J, Vname, Var, A_m, B_m )
-           ENDDO
-         ENDDO
 
       ENDIF
 
-      ENDIF
+      call send_recv(var,2)
 
       ENDDO
 
 
     RETURN
     END SUBROUTINE LEQ_MSOLVE
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: LEQ_MSOLVE22(Vname, B_m, A_m, Var )                    C
@@ -1398,9 +1365,10 @@
       USE param
       USE param1
       USE matrix
+
       USE geometry
+      USE compar
       USE indices
-      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1436,18 +1404,20 @@
 !
       INTEGER ::   IJK, I , J, K , ITER
       INTEGER, PARAMETER :: NITER = 2
-      
+
       logical, parameter :: setguess = .true.
 
 
       integer :: Lstart,Lend,Linc,L,iplane
-      integer :: ncount,ilevel,nlevel, istart,iend,inode, iposition
+!\\091699\Changed istart -> istartl, iend -> iendl - Sreekanth
+      integer :: ncount,ilevel,nlevel, istartl,iendl,inode, iposition
       integer, allocatable, dimension(:) :: xlist,list
 
       integer, parameter :: idebug = 0
 
       logical :: isfirst = .true.
       logical :: isodd, isvalid
+
       save
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -1467,7 +1437,7 @@
           nlevel = (imax2+jmax2+kmax2)-3+1
           allocate( xlist(nlevel+1) )
           allocate( list(ijkmax2) )
-         
+
 
          ilevel = 1
          xlist(ilevel) = 1
@@ -1496,21 +1466,23 @@
           enddo
 
           if (idebug >= 1) then
-	    print*,'nlevel ', nlevel
-	    do ilevel=1,nlevel
-		print*,'ilevel: ', ilevel
-		istart = xlist(ilevel)
-                iend = xlist(ilevel+1)-1
-                print*, 'istart,iend ', istart,iend
+            print*,'nlevel ', nlevel
 
-                do inode=istart,iend
+!\\091699\Changed istart -> istartl, iend -> iendl - Sreekanth
+            do ilevel=1,nlevel
+                print*,'ilevel: ', ilevel
+                istartl = xlist(ilevel)
+                iendl = xlist(ilevel+1)-1
+                print*, 'istartl,iendl ', istartl,iendl
+
+                do inode=istartl,iendl
                     ijk = list(inode)
-		    i = i_of(ijk)
-		    j = j_of(ijk)
-		    k = k_of(ijk)
-           
+                    i = i_of(ijk)
+                    j = j_of(ijk)
+                    k = k_of(ijk)
+
                     isvalid = (ijk .eq. funijk(i,j,k) )
-		    if ((idebug >= 2) .or. (.not. isvalid)) then
+                    if ((idebug >= 2) .or. (.not. isvalid)) then
                        print*,'i,j,k, ',i,j,k, '  ijk ',ijk
                     endif
                 enddo
@@ -1519,7 +1491,7 @@
 
 
       endif
-        
+
 
 
      DO ITER=1,NITER
@@ -1535,7 +1507,7 @@
          Lend = nlevel
          Linc = 1
       else
-!        backward sweep 
+!        backward sweep
          Lstart = nlevel
          Lend = 1
          Linc = -1
@@ -1543,16 +1515,17 @@
 
       IF (NO_K) THEN
 
+!\\091699\Changed istart -> istartl, iend -> iendl - Sreekanth
          do L=Lstart,Lend,Linc
-            istart = xlist(L)
-            iend = xlist(L+1)-1
+            istartl = xlist(L)
+            iendl = xlist(L+1)-1
 
 !$omp       parallel do private(inode,ijk)
-            do inode=istart,iend
+            do inode=istartl,iendl
                ijk = list(inode)
                Var(ijk) = Var(ijk) + &
                   omega*(                                        &
-			  B_m(ijk) - A_m(ijk,-1)*Var( im_of(ijk) ) &
+                          B_m(ijk) - A_m(ijk,-1)*Var( im_of(ijk) ) &
                                    - A_m(ijk, 1)*Var( ip_of(ijk) ) &
                                    - A_m(ijk,-2)*Var( jm_of(ijk) ) &
                                    - A_m(ijk, 2)*Var( jp_of(ijk) ) &
@@ -1560,22 +1533,23 @@
                           )
             enddo
           enddo
-               
+
 
 
       ELSE
 
 
+!\\091699\Changed istart -> istartl, iend -> iendl - Sreekanth
          do L=Lstart,Lend,Linc
-            istart = xlist(L)
-            iend = xlist(L+1)-1
+            istartl = xlist(L)
+            iendl = xlist(L+1)-1
 
 !$omp       parallel do private(inode,ijk)
-            do inode=istart,iend
+            do inode=istartl,iendl
                ijk = list(inode)
                Var(ijk) = Var(ijk) + &
                   omega*(                                        &
-			  B_m(ijk) - A_m(ijk,-1)*Var( im_of(ijk) ) &
+                          B_m(ijk) - A_m(ijk,-1)*Var( im_of(ijk) ) &
                                    - A_m(ijk, 1)*Var( ip_of(ijk) ) &
                                    - A_m(ijk,-2)*Var( jm_of(ijk) ) &
                                    - A_m(ijk, 2)*Var( jp_of(ijk) ) &
@@ -1621,8 +1595,8 @@
       USE param1
       USE matrix
       USE geometry
+      USE compar
       USE indices
-      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1645,6 +1619,7 @@
 
 !
 !                      Variable
+
       DOUBLE PRECISION Var(DIMENSION_3)
 
 !-----------------------------------------------
@@ -1657,7 +1632,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      INTEGER :: NN 
+      INTEGER :: NN
       DOUBLE PRECISION, DIMENSION (IMAX2) :: CC,DD,EE,BB
       INTEGER :: INFO, IJK, I, K
 
@@ -1692,7 +1667,7 @@
 
      DO I=1,NN
         IJK = FUNIJK(I,J,K)
-        Var(IJK) =  BB(I) 
+        Var(IJK) =  BB(I)
      ENDDO
 
      RETURN
@@ -1724,8 +1699,8 @@
       USE param1
       USE matrix
       USE geometry
+      USE compar
       USE indices
-      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1744,7 +1719,6 @@
 !
 !                      Variable name
       CHARACTER*(*)    Vname
-
 !
 !                      Variable
       DOUBLE PRECISION Var(DIMENSION_3)
@@ -1759,7 +1733,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      INTEGER :: NN 
+      INTEGER :: NN
       DOUBLE PRECISION, DIMENSION (IMAX2) :: CC,DD,EE,BB
       INTEGER :: NN, INFO, IJK, I
 
@@ -1825,8 +1799,8 @@
       USE param1
       USE matrix
       USE geometry
+      USE compar
       USE indices
-      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1860,7 +1834,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      INTEGER :: NN 
+      INTEGER :: NN
       DOUBLE PRECISION, DIMENSION (KMAX2) :: CC,DD,EE,BB
       INTEGER :: NN, INFO, IJK, K
 
@@ -1899,3 +1873,177 @@
 
      RETURN
      END SUBROUTINE  LEQ_IJSWEEP
+
+
+    Double Precision function dot_product_par(r1,r2)
+
+    use mpi_utility
+
+    implicit none
+    double precision, intent(in), dimension(:) :: r1,r2
+!                         Variable
+    DOUBLE PRECISION, allocatable, Dimension(:) :: r1_g, r2_g
+    double precision :: prod, prod_gl
+    integer :: i, j, k, ijk
+    logical, parameter :: do_global_sum = .true.
+
+    include 'function.inc'
+
+    if(do_global_sum) then
+  
+      prod = 0.0
+   
+      do k = kstart, kend
+        do j = jstart, jend
+          do i = istart, iend
+   
+            ijk = funijk (i,j,k)
+
+            prod = prod + r1(ijk)*r2(ijk)
+   
+          enddo
+        enddo
+      enddo
+  
+      call global_all_sum(prod, dot_product_par)
+
+    else
+  
+      if(myPE.eq.root) then
+        allocate (r1_g(1:ijkmax3))
+        allocate (r2_g(1:ijkmax3))
+      endif
+  
+      call gather(r1,r1_g)
+      call gather(r2,r2_g)
+  
+      if(myPE.eq.root) then
+        prod = 0.0d0
+  
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
+        do k = kmin2, kmax2
+          do j = jmin2, jmax2
+            do i = imin2, imax2
+  
+              ijk = funijk_gl (i,j,k)
+  
+              prod = prod + r1_g(ijk)*r2_g(ijk)
+  
+            enddo
+          enddo
+        enddo
+      endif
+  
+      call bcast( prod)
+  
+      dot_product_par = prod
+
+      if(myPE.eq.root) then
+        deallocate (r1_g)
+        deallocate (r2_g)
+      endif
+
+    endif
+  
+    end function dot_product_par
+    
+      SUBROUTINE LEQ_MSOLVE0(VNAME, B_m, A_M, Var, CMETHOD )
+!
+!-----------------------------------------------
+!   M o d u l e s
+!-----------------------------------------------
+      USE param
+      USE param1
+      USE matrix
+      USE geometry
+      USE compar
+      USE indices
+      USE sendrecv
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!
+!                      Septadiagonal matrix A_m
+      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
+!
+!                      Vector b_m
+      DOUBLE PRECISION B_m(ijkstart3:ijkend3)
+!
+!                      Variable name
+      CHARACTER*(*)    Vname
+!
+!                      Variable
+      DOUBLE PRECISION Var(ijkstart3:ijkend3)
+
+      CHARACTER*4 :: CMETHOD
+
+
+
+! do nothing or no preconditioning
+
+     var(:) = b_m(:)
+
+     return
+     end subroutine leq_msolve0
+
+      SUBROUTINE LEQ_msolve1(VNAME, B_m, A_M, Var, CMETHOD )
+!
+!-----------------------------------------------
+!   M o d u l e s
+!-----------------------------------------------
+      USE param
+      USE param1
+      USE matrix
+      USE geometry
+      USE compar
+      USE indices
+      USE sendrecv
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!
+!                      Septadiagonal matrix A_m
+      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
+!
+!                      Vector b_m
+      DOUBLE PRECISION B_m(ijkstart3:ijkend3)
+!
+!                      Variable name
+      CHARACTER*(*)    Vname
+!
+!                      Variable
+      DOUBLE PRECISION Var(ijkstart3:ijkend3)
+
+      CHARACTER*4 :: CMETHOD
+
+	integer :: i,j,k, ijk
+
+    include 'function.inc'
+
+
+
+
+! diagonal scaling
+
+	do k=kstart,kend
+	do j=jstart,jend
+	do i=istart,iend
+	   
+	 ijk = funijk( i,j,k )
+	 var(ijk) = b_m(ijk)/A_m(ijk,0)
+
+	enddo
+	enddo
+	enddo
+
+     return
+     end subroutine leq_msolve1
+
