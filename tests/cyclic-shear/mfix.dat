@@ -101,3 +101,8 @@
 # DMP control
   
   NODESI = 1   NODESJ = 1   NODESK = 1
+  LEQ_IT(1) = 200
+  LEQ_IT(2) = 200
+  UR_FAC(8) = 1.0
+  UR_FAC(9) = 1.0
+  DEF_COR = .TRUE.
