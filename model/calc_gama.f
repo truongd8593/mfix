@@ -124,7 +124,7 @@
 !!$omp& schedule(dynamic,chunk_size)
          DO IJK = ijkstart3, ijkend3
 	 
-               IF (FLUID_AT(IJK)) THEN 
+               IF (FLUIDorP_FLOW_AT(IJK)) THEN 
                   I = I_OF(IJK) 
                   EP_G2 = EP_G(IJK)*EP_G(IJK) 
 !
