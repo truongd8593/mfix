@@ -71,7 +71,8 @@ case $dmp_version in
             else
 	        echo
                 echo -n "input the location of the directory where mpif.h resides"
-                read mpi_include
+                read mpi_include_dir
+		mpi_include = "$mpi_include_dir/mpif.h"
             fi
   ;;
   *)
