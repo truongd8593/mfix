@@ -297,8 +297,8 @@
       CALL SET_WALL_BC (IER) 
 !
 !//AIKEPARDBG
-      write(*,"('(PE ',I2,'): aft set_wall_bc in iterate')") myPE  !//AIKEPARDBG
-      call mfix_exit(myPE)     !//AIKEPARDBG
+!     write(*,"('(PE ',I2,'): aft set_wall_bc in iterate')") myPE  !//AIKEPARDBG
+!     call mfix_exit(myPE)     !//AIKEPARDBG
 !     Calculate P_star in cells where solids continuity equation is
 !     solved
 !
