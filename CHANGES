@@ -1,18 +1,17 @@
- Changes from MFIX2002-3 to MFIX2003-3 (Date: 09/09/03)
+Changes from MFIX2003-3 to MFIX2004-3 (Date: 07/08/03)
+  
 
-    * Crank Nicholson 2nd order time-stepping
-    * Multiparticle capability
-    * Fourth-Order implementation for spatial derivatives
-    * Mass conservation for minor species
-    * Additional convergence check on mass balance 
-    * Updated animate-mfix is available to download from the MFIX website
-    * A new version of MAVIS (3D Visualization tool for MFIX) is available and can be downloaded from http://www.psc.edu/~eschenbe
-    * Enhanced post_mfix with many new features for time-series analysis
-    * like correlations, PSD etc.,
-    * Benchmarked and documented MFIX for all the tests and tutorials on
-    * Linux (Look at tests/MFIX_Tests_Benchmarking.html &
-    * tutorials/MFIX_Tutorials_Benchmarking.html)
-    * Many bug-fixes - visit
-    * http://www.mfix.org/cgi-bin/cvsweb.cgi/mfix/model/?sortby=date#dirlist
-    * Added/modified some test cases and tutorial cases
-    * Updated Readme's in the pdf and html formats in root directory
+    * k-eps turbulence model for gas-phase (check the turbulent_pipe_flow case in tests).
+    * Capability to specify fluid mass-flux for periodic cases (check the periodic-flow-fixed-mass-flux case in tests).
+    * Discrete element simulation (DES) capability; i.e, track particle motion and collisions instead treating particles as a continuum - currently works only in the serial mode (check fluidbed_des in tutorials and Driven_Cavity_DES & kink_DES under tests).
+    * Chi-scheme for ensuring that the species mass fractions add up to one when flux limiters are used.
+    * More accurate formulas for D_0 and D_s have been implemented by S. Dartevelle from LANL (Model A and Model B.)
+    * Updated animate-mfix (to handle new changes and also plot k & eps) is available to download from the MFIX website. Previous versions are archived.
+    * A new and improved version 1.4 of MAVIS (3D Visualization tool for MFIX) is available and can be downloaded from http://www.psc.edu/~eschenbe.
+    * A new converter to translate MFIX data to VTK is available from the download site (thanks mainly to Jim Canon at WVU and Brian Datson at NETL).
+    * Benchmarked and documented MFIX for all the tests and tutorials on Linux (Look at tests/MFIX_Tests_Benchmarking.html & tutorials/MFIX_Tutorials_Benchmarking.html).
+    * Many bug-fixes - visit http://www.mfix.org/cgi-bin/cvsweb.cgi/mfix/model/?sortby=date#dirlist.
+    * Added/modified some test cases and tutorial cases.
+    * Updated Readme's in the pdf and html formats in root directory.
+    * Makefile modified to support Intel's Ifort 8.0 compiler.
+    * Scripts and changes to aid easy compilation with windows visual fortran compiler.
