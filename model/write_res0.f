@@ -89,7 +89,7 @@
 !-----------------------------------------------
 !
       if (myPE.ne.PE_IO) return       !// 
-      allocate (arr1(ijkmax2))        !// 
+      allocate (arr1(ijkmax3))        !// 
       allocate (arr2(ijkmax2))        !// 
 
 !//      call lock_tmp_array          !// no longer using these arrays

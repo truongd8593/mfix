@@ -77,7 +77,7 @@
 !//     call lock_tmp_array
 !
       allocate (array1(ijkmax2))   !//
-      allocate (array2(ijkmax2))   !//
+      allocate (array2(ijkmax3))   !//
 !
 ! ".SP1" FILE         EP_g    [ ROP_g, RO_g  must be calculated ...
 !                                        not written out ]

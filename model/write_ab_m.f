@@ -69,8 +69,8 @@
 !
       if (myPE.ne.PE_IO)  return    !//d only put in ROOT log file
 
-      allocate (array1(ijkmax2))    !//d
-      allocate (array2(ijkmax2))    !//d
+      allocate (array1(ijkmax3))    !//d
+      allocate (array2(ijkmax3))    !//d
 
       CALL START_LOG 
       WRITE (UNIT_LOG,*) ' A_m and B_m arrays below are in the '
@@ -82,9 +82,8 @@
 
 
       call gather(b_m(:,M),array2,root)        !//d
-      DO IJK = 1, IJKMAX2 
+      DO IJK = 1, IJKMAX3 
 
-!// start
          do L = -3,3
             call gather(a_m(:,L,M),array1,root)
             am(l) = a_m(ijk,L,M)
@@ -93,7 +92,6 @@
 !//            IJK,M) 
          WRITE (UNIT_LOG, '(I5, 8(1X,G9.2))') IJK, (AM(L),L=-3,3), array2(IJK) 
 
-!// end
       END DO 
       CALL END_LOG 
 

@@ -53,7 +53,7 @@
 
       if (myPE.ne.PE_IO) return      !//d
 
-      allocate (array1(ijkmax2))     !//d
+      allocate (array1(ijkmax3))     !//d
 !
 !             form feed character = CHAR(12)
 !

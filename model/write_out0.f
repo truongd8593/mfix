@@ -466,7 +466,7 @@
 !  Initial and boundary condition flags
 !
       WRITE (UNIT_OUT, 2000) CHAR(12) 
-      allocate (array1(ijkmax2))            !//
+      allocate (array1(ijkmax3))            !//
       call gather (icbc_flag,array1,root)   !//td pnicol : GATHER FOR CHARS NEEDED
       CALL OUT_ARRAY_C (array1, 'BC/IC condition flags') 
       deallocate (array1)                   !//

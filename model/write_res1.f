@@ -71,7 +71,7 @@
 !//d pnicol      
       if (myPE.ne.PE_IO) return
       allocate (array1(ijkmax2)) 
-      allocate (array2(ijkmax2))  
+      allocate (array2(ijkmax3))  
 
 
       READ (UNIT_RES, REC=3) NEXT_REC 
