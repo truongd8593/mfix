@@ -124,7 +124,7 @@
 !
       IF (RUN_NAME == UNDEFINED_C) THEN 
          WRITE (*, 1000) 
-         CALL MFIX_EXIT 
+         CALL MFIX_EXIT(myPE) 
       ENDIF 
 
 !
