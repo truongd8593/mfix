@@ -176,9 +176,11 @@
                ENDIF 
                V_RM=HALF*(A-0.06*RE+SQRT(3.6E-3*RE*RE+0.12*RE*(2.*B-A)+A*A)) 
 !------------------Begin cluster correction --------------------------
-!     &     * ( ONE + C(1) * exp( -a2*(Re - Re_c)**2
-!     &             - a3*(EP_g(IJK)-ep_c)**2
-!     &        )       * Re * (1. - EP_g(IJK))                )
+!       uncomment the following four lines and comment the above line V_RM=... 
+!               V_RM=HALF*(A-0.06*RE+SQRT(3.6E-3*RE*RE+0.12*RE*(2.*B-A)+A*A)) & 
+!           * ( ONE + C(1) * exp( -a2*(Re - Re_c)**2 &
+!                   - a3*(EP_g(IJK)-ep_c)**2 &
+!              )       * Re * (1. - EP_g(IJK))                )
 !------------------End cluster correction ----------------------------
 !
 !           Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
@@ -195,9 +197,9 @@
 !
 !-------------------------- Begin Gidaspow --------------------------
 !          IF(EP_g(IJK) .LE. 0.8) THEN
-!            DgA = 150 * (ONE - EP_g(IJK)) * MU_g(IJK)
-!     &              / ( EP_g(IJK) * D_p(M)**2 )
-!     &            + 1.75 * RO_g(IJK) * VREL / D_p(M)
+!            DgA = 150 * (ONE - EP_g(IJK)) * MU_g(IJK) &
+!                    / ( EP_g(IJK) * D_p(M)**2 ) &
+!                  + 1.75 * RO_g(IJK) * VREL / D_p(M)
 !          ELSE
 !            Re =  D_p(M) * VREL * ROP_g(IJK) / MU_g(IJK)
 !            IF(Re .LE. 1000)THEN
@@ -205,8 +207,8 @@
 !            ELSE
 !              C_d = 0.44
 !            ENDIF
-!            DgA = 0.75 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65)
-!     &            /D_p(M)
+!            DgA = 0.75 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65) &
+!                  /D_p(M)
 !          ENDIF
 !
 !         Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
