@@ -148,8 +148,9 @@
                ENDIF 
             ENDIF 
             DO I = 1, DIM_BCTYPE 
+               VALID_BC_TYPE(I) = TRIM(VALID_BC_TYPE(I))
                IF (VALID_BC_TYPE(I) == BC_TYPE(BCV)) THEN 
-                  IF (MOD(I,2) == 0) BC_TYPE(BCV) = VALID_BC_TYPE(I-1) 
+                  IF (MOD(I,2) == 0) BC_TYPE(BCV) = VALID_BC_TYPE(I-1)
                   CYCLE  L50 
                ENDIF 
             END DO 
