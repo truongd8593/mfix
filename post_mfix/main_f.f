@@ -1,20 +1,25 @@
       PROGRAM POST_MFIX
-C
+!
       INCLUDE 'xforms.inc'
-C
+!
       DO_XFORMS = .FALSE.
-C
+!
       CALL F_INIT
-C
+!
       STOP
       END
-C
-      SUBROUTINE  CHECK_INTER
-      ENTRY       ADD_TO_RESULTS_BROWSER
-      ENTRY       ADD_TO_SPX_BR
-      ENTRY       SPX_TIME_SELECTED
-      ENTRY       SPX_DESELECT_TIME
+!
+      SUBROUTINE  CHECK_INTER(inter)
+      ENTRY       ADD_TO_RESULTS_BROWSER(line)
+      ENTRY       ADD_TO_SPX_BR(sel,line)
+      ENTRY       SPX_TIME_SELECTED(i1,i2)
+      ENTRY       SPX_DESELECT_TIME(i1)
       ENTRY       GET_PTX_G
+!
+      integer       :: inter , i1 , i2
+      character*(*) :: line
+      logical       :: sel
+!
       RETURN
       END
-C
+!

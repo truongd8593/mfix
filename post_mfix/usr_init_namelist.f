@@ -1,26 +1,35 @@
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: USR_INIT_NAMELIST                                      C
-C  Purpose: initialize user_defined NAMELIST variables                 C
-C                                                                      C
-C  Author:                                            Date:            C
-C  Reviewer:                                          Date:            C
-C                                                                      C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced: None                                          C
-C  Variables modified:                                                 C
-C                                                                      C
-C  Local variables:                                                    C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-C
-      SUBROUTINE USR_INIT_NAMELIST
-C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: USR_INIT_NAMELIST                                      C
+!  Purpose: initialize user_defined NAMELIST variables                 C
+!                                                                      C
+!  Author:                                            Date:            C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: None                                          C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE USR_INIT_NAMELIST 
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Switches: -xf
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
       IMPLICIT NONE
-      INCLUDE 'usrnlst.inc'
-C
-C
-      RETURN
-      END
+      INCLUDE 'usrnlst.inc' 
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+!-----------------------------------------------
+      NAMELIST /USR_INPUT_DATA/DUMMY_DP 
+!
+!
+      RETURN  
+      END SUBROUTINE USR_INIT_NAMELIST 

@@ -1,35 +1,35 @@
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: SET_READ_SPX(READ_SPX,VAR_INDEX,MAP_FILE,COUNT)        C
-C  Purpose: Set READ_SPX and MAP_FILE, based on VAR_INDEX              C
-C                                                                      C
-C  Author: P. Nicoletti                               Date: 05-FEB-92  C
-C  Reviewer:                                                           C
-C                                                                      C
-C  Revision Number:                                                    C
-C  Purpose:                                                            C
-C  Author:                                            Date: dd-mmm-yy  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced: None                                          C
-C  Variables modified: None                                            C
-C                                                                      C
-C  Local variables: None                                               C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: SET_READ_SPX(READ_SPX,VAR_INDEX,MAP_FILE,COUNT)        C
+!  Purpose: Set READ_SPX and MAP_FILE, based on VAR_INDEX              C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 05-FEB-92  C
+!  Reviewer:                                                           C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: None                                          C
+!  Variables modified: None                                            C
+!                                                                      C
+!  Local variables: None                                               C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE SET_READ_SPX(READ_SPX,VAR_INDEX,MAP_FILE,COUNT)
-C
+!
       IMPLICIT NONE
-C
-C Passed arguments
-C
+!
+! Passed arguments
+!
       LOGICAL READ_SPX(*)
       INTEGER MAP_FILE(*)
       INTEGER VAR_INDEX
       INTEGER COUNT
-C
+!
       IF (VAR_INDEX.EQ.01) READ_SPX(1) = .TRUE.
       IF (VAR_INDEX.EQ.02) READ_SPX(2) = .TRUE.
       IF (VAR_INDEX.EQ.03) READ_SPX(2) = .TRUE.
@@ -56,6 +56,6 @@ C
       IF (VAR_INDEX.EQ.11) MAP_FILE(COUNT) = 6
       IF (VAR_INDEX.EQ.12) MAP_FILE(COUNT) = 6
       IF (VAR_INDEX.EQ.13) MAP_FILE(COUNT) = 6
-C
+!
       RETURN
       END

@@ -1,70 +1,71 @@
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: READ_SPX1(READ_SPX1,REC_POINTER,AT_EOF,                C
-C                         TIME_REAL, NSTEP_1)                          c
-C  Purpose: read in the time-dependent restart records (REAL)          C
-C                                                                      C
-C  Author: P. Nicoletti                               Date: 13-DEC-91  C
-C  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date: 24-JAN-92  C
-C                                                                      C
-C  Revision Number:                                                    C
-C  Purpose:                                                            C
-C  Author:                                            Date: dd-mmm-yy  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced: None                                          C
-C  Variables modified: TIME, NSTEP, EP_g, RO_g, P_g, P_star, U_g       C
-C                        V_g, W_g, U_s, V_s, W_s, ROP_s, T_g, T_s1     C
-C                        T_s2, IJKMAX2, MMAX                           C
-C                                                                      C
-C  Local variables:  LC, NEXT_REC, TIME_REAL                           C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-C
-      SUBROUTINE READ_SPX1(READ_SPX,REC_POINTER,AT_EOF,
-     &                     TIME_REAL,NSTEP_1)
-C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: READ_SPX1(READ_SPX1,REC_POINTER,AT_EOF,                C
+!                         TIME_REAL, NSTEP_1)                          c
+!  Purpose: read in the time-dependent restart records (REAL)          C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 13-DEC-91  C
+!  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date: 24-JAN-92  C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: None                                          C
+!  Variables modified: TIME, NSTEP, EP_g, RO_g, P_g, P_star, U_g       C
+!                        V_g, W_g, U_s, V_s, W_s, ROP_s, T_g, T_s1     C
+!                        T_s2, IJKMAX2, MMAX                           C
+!                                                                      C
+!  Local variables:  LC, NEXT_REC, TIME_REAL                           C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE READ_SPX1(READ_SPX,REC_POINTER,AT_EOF, &
+                          TIME_REAL,NSTEP_1)
+!
+!
+      Use param
+      Use param1
+      Use fldvar
+      Use geometry
+      Use physprop
+      Use run
+      Use funits
+      Use post3d
+      Use scalars
       IMPLICIT NONE
-C
-      INCLUDE 'param.inc'
-      INCLUDE 'param1.inc'
-      INCLUDE 'fldvar.inc'
-      INCLUDE 'geometry.inc'
-      INCLUDE 'physprop.inc'
-      INCLUDE 'run.inc'
-      INCLUDE 'funits.inc'
-      INCLUDE 'post3d.inc'
-C
-C passed arguments
-C
-C             flag whether to read a particular SPx file this time step
+!
+! passed arguments
+!
+!             flag whether to read a particular SPx file this time step
       LOGICAL READ_SPX(*)
-C
-C             pointers to next record to read in each file
+!
+!             pointers to next record to read in each file
       INTEGER REC_POINTER(*)
-C
+!
       LOGICAL AT_EOF(*)
       INTEGER NSTEP_1
       REAL    TIME_REAL(*)
 
-C
-C                      Dummy variable for reading T_s2
+!
+!                      Dummy variable for reading T_s2
       DOUBLE PRECISION Tmp(DIMENSION_3)
-C
-C local variables
-C
-C             loop counters
+!
+! local variables
+!
+!             loop counters
       INTEGER LC,N
-C
-C             Pointer to the next record
+!
+!             Pointer to the next record
       INTEGER NEXT_REC
-C
-C
-C ".SP1" FILE         EP_g    [ ROP_g , RO_g must be calculated ...
-C                                        not written out ]
-C
+!
+!
+! ".SP1" FILE         EP_g    [ ROP_g , RO_g must be calculated ...
+!                                        not written out ]
+!
       IF (READ_SPX(1).AND..NOT.AT_EOF(1)) THEN
          IF(.NOT.SPX_OPEN(1)) THEN
            WRITE(*,*)' SP1 file is not open'
@@ -82,9 +83,9 @@ C
          REC_POINTER(1) = NEXT_REC
          NSTEP_1 = NSTEP
       END IF
-C
-C ".SP2" FILE         P_g , P_star
-C
+!
+! ".SP2" FILE         P_g , P_star
+!
       IF (READ_SPX(2).AND..NOT.AT_EOF(2)) THEN
          IF(.NOT.SPX_OPEN(2)) THEN
            WRITE(*,*)' SP2 file is not open'
@@ -102,9 +103,9 @@ C
          CALL IN_BIN_R(UNIT_SPX+2,P_star,IJKMAX2,NEXT_REC)
          REC_POINTER(2) = NEXT_REC
       END IF
-C
-C ".SP3" FILE         U_g , V_g , W_g
-C
+!
+! ".SP3" FILE         U_g , V_g , W_g
+!
       IF (READ_SPX(3).AND..NOT.AT_EOF(3)) THEN
          IF(.NOT.SPX_OPEN(3)) THEN
            WRITE(*,*)' SP3 file is not open'
@@ -123,9 +124,9 @@ C
          CALL IN_BIN_R(UNIT_SPX+3,W_g,IJKMAX2,NEXT_REC)
          REC_POINTER(3) = NEXT_REC
       END IF
-C
-C ".SP4" FILE         U_s , V_s , W_s
-C
+!
+! ".SP4" FILE         U_s , V_s , W_s
+!
       IF (READ_SPX(4).AND..NOT.AT_EOF(4)) THEN
          IF(.NOT.SPX_OPEN(4)) THEN
            WRITE(*,*)' SP4 file is not open'
@@ -146,9 +147,9 @@ C
 100      CONTINUE
          REC_POINTER(4) = NEXT_REC
       END IF
-C
-C ".SP5" FILE         ROP_s
-C
+!
+! ".SP5" FILE         ROP_s
+!
       IF (READ_SPX(5).AND..NOT.AT_EOF(5)) THEN
          IF(.NOT.SPX_OPEN(5)) THEN
            WRITE(*,*)' SP5 file is not open'
@@ -167,9 +168,9 @@ C
 200      CONTINUE
          REC_POINTER(5) = NEXT_REC
       END IF
-C
-C ".SP6" FILE         T_g  , T_s1 , T_s2
-C
+!
+! ".SP6" FILE         T_g  , T_s1 , T_s2
+!
       IF (READ_SPX(6).AND..NOT.AT_EOF(6)) THEN
          IF(.NOT.SPX_OPEN(6)) THEN
            WRITE(*,*)' SP6 file is not open'
@@ -198,10 +199,10 @@ C
          ENDIF
          REC_POINTER(6) = NEXT_REC
       END IF
-C
-C
-C ".SP7" FILE         X_g, X_s
-C
+!
+!
+! ".SP7" FILE         X_g, X_s
+!
       IF (READ_SPX(7).AND..NOT.AT_EOF(7)) THEN
          IF(.NOT.SPX_OPEN(7)) THEN
            WRITE(*,*)' SP7 file is not open'
@@ -225,9 +226,9 @@ C
 300      CONTINUE
          REC_POINTER(7) = NEXT_REC
       END IF
-C
-C ".SP8" FILE         THETA_m
-C
+!
+! ".SP8" FILE         THETA_m
+!
       IF (READ_SPX(8).AND..NOT.AT_EOF(8)) THEN
          IF(.NOT.SPX_OPEN(8)) THEN
            WRITE(*,*)' SP8 file is not open'
@@ -246,6 +247,27 @@ C
 400      CONTINUE
          REC_POINTER(8) = NEXT_REC
       END IF
+!
+! ".SP9" FILE         Scalar
+!
+      IF (READ_SPX(9).AND..NOT.AT_EOF(9)) THEN
+         IF(.NOT.SPX_OPEN(9)) THEN
+           WRITE(*,*)' SP9 file is not open'
+           STOP
+         ENDIF
+         NEXT_REC = REC_POINTER(9)
+         IF (NEXT_REC.EQ.LAST_REC(9)) THEN
+            AT_EOF(9) = .TRUE.
+            RETURN
+         END IF
+         AT_EOF(9) = .FALSE.
+         READ (UNIT_SPX + 9, REC=NEXT_REC) TIME_REAL(9), NSTEP 
+         NEXT_REC = NEXT_REC + 1 
+         DO LC = 1, NScalar 
+            CALL IN_BIN_R (UNIT_SPX + 9,Scalar(1,LC) , IJKMAX2,NEXT_REC) 
+         END DO 
+         REC_POINTER(9) = NEXT_REC
+      ENDIF
 
       RETURN
       END

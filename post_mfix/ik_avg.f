@@ -1,49 +1,49 @@
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: IK_AVG (VAR,VOLUME,AVG,JUSE)                           C
-C  Purpose: Calculate the value of a variable at a specified height -  C
-C           averaged over X & Z (weighted by volume of the cell)       C
-C                                                                      C
-C  Author: P. Nicoletti                               Date: 20-JUL-92  C
-C  Reviewer:                                                           C
-C                                                                      C
-C  Revision Number:                                                    C
-C  Purpose:                                                            C
-C  Author:                                            Date: dd-mmm-yy  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced: IMIN1, IMAX1, KMIN1, KMAX1, FLAG              C
-C  Variables modified: I,K,IJK                                         C
-C                                                                      C
-C  Local variables: TOTVOL                                             C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: IK_AVG (VAR,VOLUME,AVG,JUSE)                           C
+!  Purpose: Calculate the value of a variable at a specified height -  C
+!           averaged over X & Z (weighted by volume of the cell)       C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 20-JUL-92  C
+!  Reviewer:                                                           C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: IMIN1, IMAX1, KMIN1, KMAX1, FLAG              C
+!  Variables modified: I,K,IJK                                         C
+!                                                                      C
+!  Local variables: TOTVOL                                             C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE IK_AVG (VAR,VOLUME,AVG,JUSE)
-C
+!
+      Use param
+      Use param1
+      Use fldvar
+      Use physprop
+      Use indices
+      Use geometry
+!
       IMPLICIT NONE
-C
-      INCLUDE 'param.inc'
-      INCLUDE 'param1.inc'
-      INCLUDE 'fldvar.inc'
-      INCLUDE 'physprop.inc'
-      INCLUDE 'indices.inc'
-      INCLUDE 'geometry.inc'
-C
-C     passed arguments
-C
+!
+!     passed arguments
+!
       DOUBLE PRECISION  VAR(*)
       REAL              VOLUME(*) , AVG
       INTEGER           JUSE
       INTEGER           I, K, IJK
-C
-C     local variables
-C
+!
+!     local variables
+!
       REAL              TOTVOL
-C
+!
       INCLUDE 'function.inc'
-C
+!
       TOTVOL = 0.0
       AVG    = 0.0
       DO K = KMIN1,KMAX1
@@ -55,8 +55,8 @@ C
             END IF
          END DO
       END DO
-C
+!
       AVG = AVG / TOTVOL
-C
+!
       RETURN
       END

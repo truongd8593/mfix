@@ -1,40 +1,40 @@
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: SOL_FLUX                                               C
-C                                                                      C
-C  Purpose: Calculate the time averaged solids flux (2 methods)        C
-C                                                                      C
-C  Author: P. Nicoletti                               Date: 07-JUN-92  C
-C  Reviewer:                                                           C
-C                                                                      C
-C  Revision Number:                                                    C
-C  Purpose:                                                            C
-C  Author:                                            Date: dd-mmm-yy  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced: V_s, EP_g                                     C
-C  Variables modified: PLOT_TYPE, VAR_INDEX, LOC_X, LOC_Y, LOC_Z       C
-C                                                                      C
-C  Local variables: FILE1_INDEX, FILE2_INDEX, NX, NY, NZ               C
-C                   L, NT                                              C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: SOL_FLUX                                               C
+!                                                                      C
+!  Purpose: Calculate the time averaged solids flux (2 methods)        C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 07-JUN-92  C
+!  Reviewer:                                                           C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: V_s, EP_g                                     C
+!  Variables modified: PLOT_TYPE, VAR_INDEX, LOC_X, LOC_Y, LOC_Z       C
+!                                                                      C
+!  Local variables: FILE1_INDEX, FILE2_INDEX, NX, NY, NZ               C
+!                   L, NT                                              C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE SOL_FLUX
-C
+!
+!
+      Use param
+      Use param1
+      Use fldvar
+      Use run
+      Use geometry
+      Use indices
+      Use post3d
+      Use physprop
       IMPLICIT NONE
-C
-      INCLUDE 'param.inc'
-      INCLUDE 'param1.inc'
-      INCLUDE 'fldvar.inc'
-      INCLUDE 'run.inc'
-      INCLUDE 'geometry.inc'
-      INCLUDE 'indices.inc'
-      INCLUDE 'post3d.inc'
-      INCLUDE 'physprop.inc'
       INCLUDE 'xforms.inc'
-C
+!
       DOUBLE PRECISION  TAVG(DIMENSION_3,3)
       REAL              TIME_REAL(N_SPX)
       REAL              TIME_FOUND, TIME_NOW
@@ -43,28 +43,28 @@ C
       INTEGER           REC_POINTER(N_SPX) , L , NT
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX)
       INTEGER           I, J, K, IJK
-C
+!
       INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
-C
+!
       IF (.NOT.DO_XFORMS) THEN
-         WRITE (*,'(A,$)') 
-     &           ' Enter time to start and end time averaging > '
+         WRITE (*,'(A,$)')& 
+                 ' Enter time to start and end time averaging > '
          READ  (*,*) TIME_START, TIME_END
          WRITE (*,'(A,$)')' Enter solids phase number > '
          READ(*,*) M_USE
          CALL GET_FILE_NAME(TEMP_FILE)
       END IF
-C
+!
       OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN')
-C
+!
       DO IJK = 1,IJKMAX2
          TAVG(IJK,1) = ZERO
          TAVG(IJK,2) = ZERO
          TAVG(IJK,3) = ZERO
       END DO
-C
+!
       DO L = 1,N_SPX
          READ_SPX(L)    = .FALSE.
          REC_POINTER(L) = 4
@@ -78,34 +78,34 @@ C
         RETURN
       ENDIF
       NT = 0
-C
+!
 100   CONTINUE
-      CALL GET_SAME_TIME (READ_SPX, REC_POINTER, AT_EOF,
-     &                    TIME_NOW, TIME_REAL, NSTEP_1)
+      CALL GET_SAME_TIME (READ_SPX, REC_POINTER, AT_EOF,&
+                          TIME_NOW, TIME_REAL, NSTEP_1)
       IF (TIME_NOW .LT. ZERO .OR. TIME_NOW .GT. TIME_END) GOTO 200
       IF (TIME_NOW .LT. TIME_START) GOTO 100
       NT = NT + 1
       DO IJK = 1,IJKMAX2
          TAVG(IJK,1) = TAVG(IJK,1) + V_s(IJK,M_USE)
          TAVG(IJK,2) = TAVG(IJK,2) + EP_s(IJK,M_USE)
-         TAVG(IJK,3) = TAVG(IJK,3) + EP_s(IJK,M_USE) *
-     &                                        V_s(IJK,M_USE)
+         TAVG(IJK,3) = TAVG(IJK,3) + EP_s(IJK,M_USE) *&
+                                              V_s(IJK,M_USE)
       END DO
       GOTO 100
-C
+!
 200   IF (NT.EQ.0) THEN
          WRITE (*,*) ' No times found in common'
          RETURN
       END IF
-C
+!
       NX = IMAX1 - IMIN1 + 1
       NY = JMAX1 - JMIN1 + 1
       NZ = KMAX1 - KMIN1 + 1
       WRITE (40,*)' Avg(EP_sm)*Avg(V_sm) and Avg(EP_sm*V_sm) '
-      WRITE (40,'(1X, 2(A, 2X, G12.5))')
-     &   'Start time = ', TIME_start,'End time = ',TIME_end
-      WRITE (40,'(1X, 3(2X, A, I4))')
-     &  'NZ = ', NZ, 'NY = ', NY, 'NX = ', NX
+      WRITE (40,'(1X, 2(A, 2X, G12.5))')&
+         'Start time = ', TIME_start,'End time = ',TIME_end
+      WRITE (40,'(1X, 3(2X, A, I4))')&
+        'NZ = ', NZ, 'NY = ', NY, 'NX = ', NX
       DO K = KMIN1,KMAX1
          DO J = JMIN1,JMAX1
             DO I = IMIN1,IMAX1
@@ -118,9 +118,9 @@ C
          END DO
       END DO
       CLOSE (UNIT=40)
-C
+!
       WRITE(*,*)' Number of data points used = ', NT
       WRITE(*,*)' Avg(EP_sm)*Avg(V_sm) and Avg(EP_sm*V_sm) written'
-C
+!
       RETURN
       END

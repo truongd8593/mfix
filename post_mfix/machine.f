@@ -1,188 +1,252 @@
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: MACHINE_CONS                                           C
-C  Purpose: set the machine constants    ( SGI ONLY )                  C
-C                                                                      C
-C  Author: P. Nicoletti                               Date: 28-JAN-92  C
-C  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date:            C
-C                                                                      C
-C  Revision Number:                                                    C
-C  Purpose:                                                            C
-C  Author:                                            Date: dd-mmm-yy  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced: None                                          C
-C  Variables modified: OPEN_N1, NWORDS_DP, NWORDS_R, N_WORDS_I         C
-C                                                                      C
-C  Local variables: None                                               C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: MACHINE_CONS                                           C
+!  Purpose: set the machine constants    ( SGI ONLY )                  C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 28-JAN-92  C
+!  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date:            C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: None                                          C
+!  Variables modified: OPEN_N1, NWORDS_DP, NWORDS_R, N_WORDS_I         C
+!                                                                      C
+!  Local variables: None                                               C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
       SUBROUTINE MACHINE_CONS
-C
+!
+!
+      Use machine
       IMPLICIT NONE
-C
-      INCLUDE 'machine.inc'
-C
-c      OPEN_N1   = 128
+!
       OPEN_N1   = 512
       NWORDS_DP =  64
       NWORDS_R  = 128
       NWORDS_I  = 128
-C
+!
       RETURN
       END
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: GET_RUN_ID                                             C
-C  Purpose: get the run id for this run  (**** SGI ONLY ****)          C
-C                                                                      C
-C  Author: P. Nicoletti                               Date: 16-DEC-91  C
-C  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date:            C
-C                                                                      C
-C  Revision Number: 1                                                  C
-C  Purpose: add ndoe name                                              C
-C  Author: P.Nicoletti                                Date: 07-FEB-92  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced: None                                          C
-C  Variables modified: ID_MONTH, ID_DAY, ID_YEAR, ID_HOUR, ID_MINUTE   C
-C                      ID_SECOND, ID_NODE                              C
-C                                                                      C
-C  Local variables: TIME_ARRAY                                         C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: GET_RUN_ID                                             C
+!  Purpose: get the run id for this run                                C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 16-DEC-91  C
+!  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date:            C
+!                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: add ndoe name                                              C
+!  Author: P.Nicoletti                                Date: 07-FEB-92  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: None                                          C
+!  Variables modified: ID_MONTH, ID_DAY, ID_YEAR, ID_HOUR, ID_MINUTE   C
+!                      ID_SECOND, ID_NODE                              C
+!                                                                      C
+!  Local variables: TIME_ARRAY                                         C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
       SUBROUTINE GET_RUN_ID
-C
+!
+      USE param
+      USE run
       IMPLICIT NONE
-      INCLUDE 'param.inc'
-      INCLUDE 'run.inc'
-C
-C             temporary array to hold time data
-      INTEGER TIME_ARRAY(3)
-C
-      CALL IDATE (ID_MONTH,ID_DAY,ID_YEAR)
-      CALL ITIME (TIME_ARRAY)
-      ID_HOUR   = TIME_ARRAY(1)
-      ID_MINUTE = TIME_ARRAY(2)
-      ID_SECOND = TIME_ARRAY(3)
-C
+!
+!             temporary array to hold time data
+      INTEGER DAT(8)
+      CHARACTER*10 DATE, TIM, ZONE
+
+      CALL DATE_AND_TIME(DATE, TIM, ZONE, DAT)
+      ID_YEAR   = DAT(1)
+      ID_MONTH  = DAT(2)
+      ID_DAY    = DAT(3)
+      ID_HOUR   = DAT(5)
+      ID_MINUTE = DAT(6)
+      ID_SECOND = DAT(7)
+      
+!     For SGI only
       CALL GETHOSTNAME(ID_NODE,64)
-C
+!
       RETURN
       END
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: CPU_TIME (CPU)                                         C
-C  Purpose: get the CPU time for the run  (**** SGI ONLY ****)         C
-C                                                                      C
-C  Author: P. Nicoletti                               Date: 10-JAN-92  C
-C  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date:            C
-C                                                                      C
-C  Revision Number:                                                    C
-C  Purpose:                                                            C
-C  Author:                                            Date: dd-mmm-yy  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced: None                                          C
-C  Variables modified: None                                            C
-C                                                                      C
-C  Local variables: TA, XT                                             C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CPU_TIME (CPU)                                         C
+!  Purpose: get the CPU time for the run                               C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 10-JAN-92  C
+!  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date:            C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: None                                          C
+!  Variables modified: None                                            C
+!                                                                      C
+!  Local variables: TA, XT                                             C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
       SUBROUTINE CPU_TIME(CPU)
-C
+      USE compar      !// 001 Include MPI header file
+!
       IMPLICIT NONE
-C
-C passed arguments
-C
-C                      cpu time since start of run
+!
+! passed arguments
+!
+!                      cpu time since start of run
       DOUBLE PRECISION CPU
-C
-C local variables
-C
-C                      TA(1) = user cpu time   TA(2) = system cpu time
-      REAL             TA(2) 
-C
-C                      XT = TA(1) + TA(2)
-      REAL             XT
-C
-C                      ETIME is an SGI system function which returns
-C                      the elasped CPU time
-      REAL             ETIME
-C
-      XT  = ETIME(TA)
-      CPU = XT
-C
+!
+! local variables
+!
+!
+!                      TA(1) = user cpu time   TA(2) = system cpu time
+!     REAL             TA(2) 
+!
+!                      XT = TA(1) + TA(2)
+!     REAL             XT
+!
+!                      ETIME is an SGI system function which returns
+!                      the elasped CPU time
+!     REAL             ETIME
+!
+!      XT = MPI_WTIME()
+!      XT  = ETIME(TA)
+!     CPU = XT
+      
+      
+!-------------------------------------------F90
+!                       clock cycle
+       INTEGER           COUNT
+
+!                       number of cycles per second
+       INTEGER           COUNT_RATE
+      
+!                       max number of cycles, after which count is reset to 0
+       INTEGER           COUNT_MAX
+
+       CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
+      
+       CPU           = DBLE(COUNT)/DBLE(COUNT_RATE)
+!
       RETURN
       END
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: START_LOG                                              C
-C  Purpose: does nothing ... for VAX/VMS compatibility (SGI ONLY)      C
-C                                                                      C
-C  Author: P. Nicoletti                               Date: 28-JAN-92  C
-C  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date:            C
-C                                                                      C
-C  Revision Number:                                                    C
-C  Purpose:                                                            C
-C  Author:                                            Date: dd-mmm-yy  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced: None                                          C
-C  Variables modified: None                                            C
-C                                                                      C
-C  Local variables: None                                               C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: START_LOG                                              C
+!  Purpose: does nothing ... for VAX/VMS compatibility (SGI ONLY)      C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 28-JAN-92  C
+!  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date:            C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: None                                          C
+!  Variables modified: None                                            C
+!                                                                      C
+!  Local variables: None                                               C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
       SUBROUTINE START_LOG
       IMPLICIT NONE
       RETURN
       END
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: END_LOG                                                C
-C  Purpose: flushes the log file                                       C
-C                                                                      C
-C  Author: P. Nicoletti                               Date: 28-JAN-92  C
-C  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date:            C
-C                                                                      C
-C  Revision Number:                                                    C
-C  Purpose:                                                            C
-C  Author:                                            Date: dd-mmm-yy  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced: None                                          C
-C  Variables modified: None                                            C
-C                                                                      C
-C  Local variables: None                                               C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: END_LOG                                                C
+!  Purpose: flushes the log file                                       C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 28-JAN-92  C
+!  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date:            C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: None                                          C
+!  Variables modified: None                                            C
+!                                                                      C
+!  Local variables: None                                               C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
       SUBROUTINE END_LOG
+      USE funits
       IMPLICIT NONE
-      INCLUDE 'funits.inc'
       CALL FLUSH (UNIT_LOG)
       RETURN
       END
-c
+!
       subroutine slumber
       return
       end
-c
+!
       subroutine pc_quickwin
+      return
+      end
+!
+!
+      subroutine flush_bin(iunit,code)
+!
+      use funits
+      use run
+      use machine
+!
+      implicit none
+!
+      integer    :: iunit , lc , code , nb , ier
+      CHARACTER  :: EXT*4 , file_name*64 
+!
+      if (code .ne. 1) then
+         call flush(iunit)
+         return
+      end if
+!
+! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
+!
+      DO LC = 1, LEN(RUN_NAME) 
+         IF (RUN_NAME(LC:LC) == ' ') THEN 
+            NB = LC 
+            GO TO 125 
+         ENDIF 
+      END DO 
+      WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
+      STOP  
+ 125  continue
+      lc  = iunit - unit_spx
+      ext = '.SPx'
+      WRITE (EXT(4:4), 1000) LC         
+      close (unit=iunit)
+
+
+
+
+      CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, &
+              'old' , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER)
+!
+ 1000 FORMAT(I1)
       return
       end

@@ -3,6 +3,9 @@
 # POST_MFIX script file for executing 'make'
 # M. Syamlal/P.Nicoletti                   9-27-95
 #------------------------------------------------------------------------
+
+    chmod +w machine.f
+
     set `uname -s` ; opsys=$1
     
     case $opsys in
@@ -17,7 +20,7 @@
             then
 	        echo
             else
-                cp LINUX.F machine.f
+                cp ../model/LINUX.F machine.f
                 rm *.o
                 rm COMPILED.FOR.*
                 touch COMPILED.FOR.LINUX.PG
@@ -30,10 +33,11 @@
 	    
             OBJ_EXT=o
             FORTRAN_EXT=f
-            compile_d="-c -g -byteswapio"
+            compile_d="-c -Mfreeform -Mnosave -Mrecursive -Mreentrant -g -byteswapio"
             link_d="-g"
-            compile="-c -byteswapio"
+            compile="-c -Mfreeform -Mnosave -Mrecursive -Mreentrant -byteswapio"
             link=" "
+            MODULE_CODE=1
 
             ;;
 	    
@@ -48,7 +52,7 @@
             then
 	        echo
             else
-                cp IRIXF90.F machine.f
+                cp ../model/IRIXF90.F machine.f
                 rm *.o
 		rm *.a
                 rm COMPILED.FOR.*
@@ -61,10 +65,11 @@
 	       	    
             OBJ_EXT=o
             FORTRAN_EXT=f
-            compile_d="-c -g"
-            link_d="-g"
-            compile="-c  -n32 -O3 -mips4"
-            link="-n32 -O3 -mips4"
+            compile_d="-c -I../model -g -C -trapuv -freeform"
+            link_d="-g -C -trapuv"
+            compile="-c -I../model -n32 -g -freeform"
+            link="-n32 -g"
+            MODULE_CODE=0
 
             ;;
 	    
@@ -78,7 +83,7 @@
             then
 	        echo
             else
-                cp ULTRIX.F machine.f
+                cp ../model/ULTRIX.F machine.f
                 rm *.o
 		rm *.a
                 rm COMPILED.FOR.*
@@ -95,6 +100,7 @@
             link_d="-g -convert big_endian"
             compile="-c -O2 -freeform -convert big_endian"
             link="-O2 -convert big_endian"
+            MODULE_CODE=0
 
             ;;
              
@@ -109,7 +115,7 @@
             then
 	        echo
             else
-                cp PGNT.F machine.f
+                cp ../model/PGNT.F machine.f
                 rm *.o
                 rm COMPILED.FOR.*
                 touch COMPILED.FOR.CYWIN32_NT.PG
@@ -121,13 +127,45 @@
 	       	    
             OBJ_EXT=o
             FORTRAN_EXT=f
-            compile_d="-c -O0 -byteswapio"
+            compile_d="-c -Mfreeform -Mnosave -Mrecursive -Mreentrant -O0 -byteswapio"
             link_d=" "
-            compile="-c -O0 -byteswapio"
+            compile="-c -Mfreeform -Mnosave -Mrecursive -Mreentrant -O0 -byteswapio"
             link=" "
+            MODULE_CODE=1
 
             ;;
 	    
+    CYGWIN_NT-4.0)
+            echo
+            echo "Compiling for NT computer (Portland group)"
+	    echo "Please wait . . ."
+            echo	    
+	    
+            if test -f COMPILED.FOR.CYWIN_NT-4.0.PG
+            then
+	        echo
+            else
+                cp ../model/PGNT.F machine.f
+                rm *.o
+                rm COMPILED.FOR.*
+                touch COMPILED.FOR.CYWIN_NT-4.0.PG
+            fi
+	    
+	    
+            FORTRAN_CMD=pgf90
+            LINK_CMD=pgf90
+	       	    
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            compile_d="-c -Mfreeform -Mnosave -Mrecursive -Mreentrant -O0 -byteswapio"
+            link_d=" "
+            compile="-c -Mfreeform -Mnosave -Mrecursive -Mreentrant -O0 -byteswapio"
+            link=" "
+            MODULE_CODE=1
+
+            ;;
+	    
+   
    
    
       *) echo "no support for operating system: $opsys"
@@ -143,8 +181,8 @@ echo " "
 #------------------------------------------------------------------------
 #
 #
-    FORT_FLAGS="$compile_d"
-    LINK_FLAGS="$link_d"
+    FORT_FLAGS="$compile"
+    LINK_FLAGS="$link"
 #
 #
   export FORT_FLAGS
@@ -154,19 +192,64 @@ echo " "
   export FORTRAN_EXT
   export FORTRAN_CMD
   export LINK_CMD
-  
-  make
-  if test $? = 0
-  then
+
+
+ cp -p ../model/ep_s1.inc .
+ cp -p ../model/ep_s2.inc .
+ cp -p ../model/fun_avg1.inc .
+ cp -p ../model/fun_avg2.inc .
+ cp -p ../model/s_pr1.inc .
+ cp -p ../model/s_pr2.inc .
+ cp -p ../model/namelist.inc .
+ cp -p ../model/sc_p_g1.inc .
+ cp -p ../model/sc_p_g2.inc .
+
+      
+ case $MODULE_CODE in
+
+      0)
+         make -f post_u.make
+         ;;
+
+      1)  
+         make -f post_l.make
+         ;;
+
+ esac
+ 
+ if test $? = 0
+ then
     echo
     echo 
     echo "********************************************"
     echo "* Compilation successful: post_mfix created*"
     echo "********************************************"
     echo 
-  else
+ else
     echo
     echo
     echo "*** File post_mfix NOT created."
     echo 
-  fi
+ fi
+
+ chmod +w ep_s1.inc
+ chmod +w ep_s2.inc
+ chmod +w fun_avg1.inc
+ chmod +w fun_avg2.inc
+ chmod +w s_pr1.inc
+ chmod +w s_pr2.inc
+ chmod +w namelist.inc
+ chmod +w sc_p_g1.inc
+ chmod +w sc_p_g2.inc
+
+ rm ep_s1.inc
+ rm ep_s2.inc
+ rm fun_avg1.inc
+ rm fun_avg2.inc
+ rm s_pr1.inc
+ rm s_pr2.inc
+ rm namelist.inc
+ rm sc_p_g1.inc
+ rm sc_p_g2.inc
+
+

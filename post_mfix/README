@@ -1,0 +1,9 @@
+1.  All the common files between post_mfix and mfix are stored in the model
+directory.  Only exception is function.inc where fun_ijk is made same as
+funijk_io.  For some unknown reason it is necessary to copy 
+bc_mod.f, ic_mod.f and time_cpu_mod.f into post_mfix directory.
+
+2.  If new variables are added to write_res1, ensure that they are updated
+in interp_res.
+
+3.  DEALLOCATE_ARRAYS deallocates all arrays allocated in ALLOCATE_ARRAYS. Update this routine whenever ALLOCATE_ARRAYS is updated.

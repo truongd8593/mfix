@@ -1,51 +1,51 @@
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: OUT_SPEC_TIME (SPEC_TIME,L,VAR_INDEX,PLOT_TYPE,M_USE)  C
-C  Purpose: Output a variable (or 3 velocities) at a specified time    C
-C                                                                      C
-C  Author: P. Nicoletti                               Date: 01-APR-92  C
-C  Reviewer:                                                           C
-C                                                                      C
-C  Revision Number:                                                    C
-C  Purpose:                                                            C
-C  Author:                                            Date: dd-mmm-yy  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced: IMIN1, IMAX1, JMIN1, JMAX2, KMIN1, KMAX1      C
-C                        EP_g, P_g, P_star, U_g, V_g, W_g, U_s, V_s    C
-C                        W_s, ROP_s, T_g, T_s1, T_s2
-C  Variables modified: I,J,K                                           C
-C                                                                      C
-C  Local variables: L1, NX, NY, NZ                                     C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: OUT_SPEC_TIME (SPEC_TIME,L,VAR_INDEX,PLOT_TYPE,M_USE)  C
+!  Purpose: Output a variable (or 3 velocities) at a specified time    C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 01-APR-92  C
+!  Reviewer:                                                           C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: IMIN1, IMAX1, JMIN1, JMAX2, KMIN1, KMAX1      C
+!                        EP_g, P_g, P_star, U_g, V_g, W_g, U_s, V_s    C
+!                        W_s, ROP_s, T_g, T_s1, T_s2
+!  Variables modified: I,J,K                                           C
+!                                                                      C
+!  Local variables: L1, NX, NY, NZ                                     C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE OUT_SPEC_TIME(SPEC_TIME,L,VAR_INDEX,PLOT_TYPE,M_USE)
-C
+!
+!
+      Use param
+      Use param1
+      Use fldvar
+      Use run
+      Use physprop
+      Use indices
+      Use geometry
       IMPLICIT NONE
-C
-      INCLUDE 'param.inc'
-      INCLUDE 'param1.inc'
-      INCLUDE 'fldvar.inc'
-      INCLUDE 'run.inc'
-      INCLUDE 'physprop.inc'
-      INCLUDE 'indices.inc'
-      INCLUDE 'geometry.inc'
-C
-C     Passed Arguments
-C
+!
+!     Passed Arguments
+!
       REAL      SPEC_TIME
       INTEGER   L, VAR_INDEX , PLOT_TYPE , M_USE
-C
-C     Local variables
-C
+!
+!     Local variables
+!
       INTEGER   NX, NY, NZ
 
       INTEGER   I, J, K, IJK
-C
+!
       INCLUDE 'function.inc'
-C
+!
       NX = IMAX1 - IMIN1 + 1
       NY = JMAX1 - JMIN1 + 1
       NZ = KMAX1 - KMIN1 + 1
@@ -57,8 +57,8 @@ C
                IF (PLOT_TYPE.EQ.5) THEN
                   WRITE (39+L,*) U_g(IJK) , V_g(IJK) , W_g(IJK)
                ELSE IF (PLOT_TYPE.EQ.6) THEN
-                  WRITE (39+L,*) U_s(IJK,M_USE) , V_s(IJK,M_USE) ,
-     &                           W_s(IJK,M_USE)
+                  WRITE (39+L,*) U_s(IJK,M_USE) , V_s(IJK,M_USE) ,&
+                                 W_s(IJK,M_USE)
                ELSE
                   IF (VAR_INDEX.EQ.01) WRITE (39+L,*) EP_g(IJK)
                   IF (VAR_INDEX.EQ.02) WRITE (39+L,*) P_g(IJK)
@@ -78,6 +78,6 @@ C
          END DO
       END DO
       WRITE (39+L,*) SPEC_TIME
-C
+!
       RETURN
       END

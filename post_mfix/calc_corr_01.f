@@ -1,87 +1,94 @@
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: CALC_CORR_01(FINISH)                                   C
-C  Purpose: Calculate correlations between different variables in a    C
-C           fluidized bed hydrodynamic model                           C
-C                                                                      C
-C  Author: M. Syamlal                                 Date: 01-AUG-92  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Revision Number:                                                    C
-C  Purpose:                                                            C
-C  Author:                                            Date: dd-mmm-yy  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced: KMAX2, JMAX2, IMAX2, EP_g, V_g                C
-C  Variables modified: STARTED, NSUM, I, J, K, IJK, SUM_EP_g, SUM_V_g  C
-C                      SUM_EPxEP_g, SUM_VxV_g, AVG_EP_g, AVG_V_g       C
-C                      SDV_EP_g, SDV_V_g                               C
-C                                                                      C
-C  Local variables: SDV_2                                              C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CALC_CORR_01(FINISH)                                   C
+!  Purpose: Calculate correlations between different variables in a    C
+!           fluidized bed hydrodynamic model                           C
+!                                                                      C
+!  Author: M. Syamlal                                 Date: 01-AUG-92  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: KMAX2, JMAX2, IMAX2, EP_g, V_g                C
+!  Variables modified: STARTED, NSUM, I, J, K, IJK, SUM_EP_g, SUM_V_g  C
+!                      SUM_EPxEP_g, SUM_VxV_g, AVG_EP_g, AVG_V_g       C
+!                      SDV_EP_g, SDV_V_g                               C
+!                                                                      C
+!  Local variables: SDV_2                                              C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
       SUBROUTINE CALC_CORR_01(FINISH,INTER)
-C
+!
+!
+	Use param
+	Use param1
+        Use fldvar
+        Use physprop
+        Use geometry
+        Use indices
+        Use correl
+	
       IMPLICIT NONE
-C
-C                      A flag to check whether the subroutine is called for
-C                      the first time.
+!
+!                      A flag to check whether the subroutine is called for
+!                      the first time.
       INTEGER          RAND_NO
       PARAMETER (RAND_NO=946235187)
-C
-      INCLUDE 'param.inc'
-      INCLUDE 'param1.inc'
-      INCLUDE 'fldvar.inc'
-      INCLUDE 'physprop.inc'
-      INCLUDE 'geometry.inc'
-      INCLUDE 'indices.inc'
-      INCLUDE 'correl.inc'
       INCLUDE 'xforms.inc'
-C
-C  passed variables
-C
-C                      Logical variable to tell the subroutine to finish
-C                      calculations. i.e. To compute averages and variances
+!
+!  passed variables
+!
+!                      Logical variable to tell the subroutine to finish
+!                      calculations. i.e. To compute averages and variances
       LOGICAL          FINISH,INTER
-C
-C
-C  local variables
-C
-C                       temporary stograge for SDV**2
+!
+!
+!  local variables
+!
+!                       temporary stograge for SDV**2
       DOUBLE PRECISION  SDV_2
-C
-C                       indices
+!
+!                       indices
       INTEGER           I, J, K, IJK
-C
+!
       INCLUDE 'function.inc'
-C
-C  If finish command is not given, do summations for correlations.
-C
+!
+!  If finish command is not given, do summations for correlations.
+!
       IF(.NOT.FINISH)THEN
-C
-C  First check whether the subroutine is called the first time, by checking
-C  whether the flag STARTED is correctly set to a specific number.  If the
-C  subroutine is called the first time, do initializations.
-C
+!
+!  First check whether the subroutine is called the first time, by checking
+!  whether the flag STARTED is correctly set to a specific number.  If the
+!  subroutine is called the first time, do initializations.
+!
         IF(STARTED .NE. RAND_NO)THEN
+      
+          Allocate(  SUM_EP_g (DIMENSION_3) )
+          Allocate(  SUM_EPxEP_g (DIMENSION_3) )
+          Allocate(  SUM_V_g (DIMENSION_3) )
+          Allocate(  SUM_VxV_g (DIMENSION_3) )
+      
+          Allocate(  AVG_EP_g (DIMENSION_3) )
+          Allocate(  SDV_EP_g (DIMENSION_3) )
+          Allocate(  AVG_V_g  (DIMENSION_3) )
+          Allocate(  SDV_V_g  (DIMENSION_3) )
+
           STARTED = RAND_NO
           NSUM = 0
-        DO 100 K = 1, KMAX2
-        DO 100 J = 1, JMAX2
-        DO 100 I = 1, IMAX2
-          IJK = FUNIJK(I, J, K)
-          SUM_EP_g(IJK) = ZERO
-          SUM_EPxEP_g(IJK) = ZERO
-          SUM_V_g(IJK) = ZERO
-          SUM_VxV_g(IJK) = ZERO
-100     CONTINUE
+          SUM_EP_g(:) = ZERO
+          SUM_EPxEP_g(:) = ZERO
+          SUM_V_g(:) = ZERO
+          SUM_VxV_g(:) = ZERO
         ENDIF
-C
-C       Sum field variable values in all fluid cells
-C
+!
+!       Sum field variable values in all fluid cells
+!
         NSUM = NSUM + 1
         DO 1000 K = 1, KMAX2
         DO 1000 J = 1, JMAX2
@@ -94,10 +101,10 @@ C
             SUM_VxV_g(IJK) = SUM_VxV_g(IJK) + V_g(IJK)**2
           ENDIF
 1000    CONTINUE
-C
-C  If finish command is given, calculate averages, variances,
-C  and correlations
-C
+!
+!  If finish command is given, calculate averages, variances,
+!  and correlations
+!
       ELSE
         IF(NSUM .LE. 0)THEN
           WRITE(*,5000)
@@ -124,7 +131,7 @@ C
 2000    CONTINUE
       ENDIF
       RETURN
-5000  FORMAT(/1X,70('*')//' From: CALC_CORR',
-     &/' Message: Attempting averaging before doing summations',
-     &/1X, 70('*')/)
+5000  FORMAT(/1X,70('*')//' From: CALC_CORR',&
+      /' Message: Attempting averaging before doing summations',&
+      /1X, 70('*')/)
       END

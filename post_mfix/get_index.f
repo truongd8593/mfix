@@ -1,36 +1,36 @@
-CvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-C                                                                      C
-C  Module name: GET_INDEX(A, ARRAY, LMAX, EXT, L1,AC)                  C
-C  Purpose: Get the index for A from ARRAY which is dimensioned LMAX   C
-C           An  index value of 0 indicates error                       C
-C                                                                      C
-C  Author: M. Syamlal                                 Date: 06-DEC-93  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Revision Number:                                                    C
-C  Purpose:                                                            C
-C  Author:                                            Date: dd-mmm-yy  C
-C  Reviewer:                                          Date: dd-mmm-yy  C
-C                                                                      C
-C  Literature/Document References:                                     C
-C                                                                      C
-C  Variables referenced:                                               C
-C  Variables modified:                                                 C
-C                                                                      C
-C  Local variables:                                                    C
-C                                                                      C
-C^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: GET_INDEX(A, ARRAY, LMAX, EXT, L1,AC)                  C
+!  Purpose: Get the index for A from ARRAY which is dimensioned LMAX   C
+!           An  index value of 0 indicates error                       C
+!                                                                      C
+!  Author: M. Syamlal                                 Date: 06-DEC-93  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
       INTEGER FUNCTION GET_INDEX(A, ARRAY, LMAX, EXT, L1, AC)
-C
+!
       IMPLICIT NONE
-C
+!
       INTEGER L, LMAX, L1
       REAL A, ARRAY(LMAX), DIFF_LAST
       LOGICAL EXT
       CHARACTER ANS
       CHARACTER*3 AC
-C
+!
       GET_INDEX = 0
       L1        = 0
       IF( A .LT. ARRAY(1) .OR. A .GT. ARRAY(LMAX)) THEN
@@ -77,6 +77,6 @@ C
           DIFF_LAST = ABS(ARRAY(L) - A)
         ENDIF
 10    CONTINUE
-C
+!
       RETURN
       END
