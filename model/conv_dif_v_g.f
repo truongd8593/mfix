@@ -36,6 +36,9 @@
       USE indices
       USE run
       USE visc_g
+      USE compar    !//AIKEPARDBG
+      USE sendrecv  !// 400
+      
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -78,8 +81,24 @@
         ENDIF 
       ENDIF
 !
+!// 400 1224 COMM A_M and B_M      
+      CALL SEND_RECV(A_M, 2)
+      CALL SEND_RECV(B_M, 2)
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): bef dif_v_is in conv_dif_v_g')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
       CALL DIF_V_IS (MU_GT, A_M, B_M, 0, IER) 
 !
+!// 400 1224 COMM A_M and B_M      
+      CALL SEND_RECV(A_M, 2)
+      CALL SEND_RECV(B_M, 2)
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft dif_u_is in conv_dif_u_g')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
       RETURN  
       END SUBROUTINE CONV_DIF_V_G 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -125,6 +144,8 @@
       USE fldvar
       USE output
       USE compar   !//d
+      USE sendrecv  !// 400
+      
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -164,6 +185,18 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
+
+!//? Check if all these COMMs are necessary, added here as fool-proof approach
+!// 400 1225 Communicate boundaries
+      call send_recv(U_G,2)
+      call send_recv(V_G,2)
+      call send_recv(W_G,2)
+      call send_recv(MU_GT,2)
+      call send_recv(AYZ_V,2)
+      call send_recv(AXZ_V,2)
+      call send_recv(AXY_V,2)      
+      call send_recv(ROP_G,2)            
+
 !
 !  Calculate convection-diffusion fluxes through each of the faces
 !
@@ -184,7 +217,10 @@
             IJKP = KP_OF(IJK) 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
-            K = K_OF(IJK) 
+            K = K_OF(IJK)
+!// 360 1225 Check if current i,j,k resides on this PE	    
+            IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	  
+	     
             IJKN = NORTH_OF(IJK) 
             IF (WALL_AT(IJK)) THEN 
                IJKC = IJKN 
@@ -296,6 +332,9 @@
             ENDIF 
          ENDIF 
       END DO 
+
+!//? Check if need to COMM A_V_G ??      
+
       RETURN  
       END SUBROUTINE STORE_A_V_G0
 
@@ -344,6 +383,8 @@
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar    !//d
+      USE sendrecv  !// 400
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -398,11 +439,28 @@
 
       call lock_tmp_array
       call lock_xsi_array
+
+!//? Check if all these COMMs are necessary, added here as fool-proof approach
+!// 400 1225 Communicate boundaries
+      call send_recv(U_G,2)
+      call send_recv(V_G,2)
+      call send_recv(W_G,2)
+      call send_recv(MU_GT,2)
+      call send_recv(AYZ_V,2)
+      call send_recv(AXZ_V,2)
+      call send_recv(AXY_V,2)      
+      call send_recv(ROP_G,2)
+      call send_recv(XSI_E,2)
+      call send_recv(XSI_N,2)
+      call send_recv(XSI_T,2)      
+
 !
 !  Calculate convection factors
 !
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !$omp parallel do private(IJK,J,IJPK,IJKN)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3 
          J = J_OF(IJK) 
          IJPK = JP_OF(IJK) 
          IJKN = NORTH_OF(IJK) 
@@ -425,6 +483,8 @@
 !  Calculate convection-diffusion fluxes through each of the faces
 !
 !
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !$omp      parallel do                                             &
 !$omp&     private( I,  J, K, IPJK, IJPK, IJKN, IJKC, JP,   &
 !$omp&             IJKE, IJKNE, IJKP, IJKT, IJKTN, IJK,  D_f,      &
@@ -433,7 +493,7 @@
 !$omp&             IJKM, KM, IJKB, IJKBN, IJPKM , &
 !$omp&              MOM_HO, MOM_LO, CONV_FAC,EAST_DC,WEST_DC,NORTH_DC,&
 !$omp&              SOUTH_DC, TOP_DC,BOTTOM_DC)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
 !
          IF (FLOW_AT_N(IJK)) THEN 
 !
@@ -617,6 +677,7 @@
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar   !//d
+      USE sendrecv  !// 400      
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -655,11 +716,27 @@
 
       call lock_tmp_array
       call lock_xsi_array
+
+!//? Check if all these COMMs are necessary, added here as fool-proof approach
+!// 400 1225 Communicate boundaries
+      call send_recv(U_G,2)
+      call send_recv(V_G,2)
+      call send_recv(W_G,2)
+      call send_recv(MU_GT,2)
+      call send_recv(AYZ_V,2)
+      call send_recv(AXZ_V,2)
+      call send_recv(AXY_V,2)      
+      call send_recv(ROP_G,2)
+      call send_recv(XSI_E,2)
+      call send_recv(XSI_N,2)
+      call send_recv(XSI_T,2)
 !
 !  Calculate convection factors
 !
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !$omp parallel do private(IJK,J,IJPK,IJKN)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3 
          J = J_OF(IJK) 
          IJPK = JP_OF(IJK) 
          IJKN = NORTH_OF(IJK) 
@@ -682,13 +759,15 @@
 !  Calculate convection-diffusion fluxes through each of the faces
 !
 !
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !$omp      parallel do                                             &
 !$omp&     private( I,  J, K, IPJK, IJPK, IJKN, IJKC, JP,   &
 !$omp&             IJKE, IJKNE, IJKP, IJKT, IJKTN, IJK,  D_f,      &
 !$omp&             IMJK, IM, IJKW, IJKWN, IMJPK,                   &
 !$omp&             IJMK, JM, IJKS,                                 &
 !$omp&             IJKM, KM, IJKB, IJKBN, IJPKM )
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
 !
          IF (FLOW_AT_N(IJK)) THEN 
 !
@@ -791,6 +870,8 @@
 
       call unlock_tmp_array
       call unlock_xsi_array
+
+!//? check if COMM of A_V_G is necessary?
       
       RETURN  
       END SUBROUTINE STORE_A_V_G1 

@@ -478,6 +478,7 @@
       USE geometry
       USE indices
       USE compar   !//d
+      USE mpi_utility   !//SP      
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -519,7 +520,17 @@
 
 !                      Error message
       CHARACTER*80     LINE
+!//SP
+      INTEGER          I, J, K      
 !-----------------------------------------------
+!// 1207 replaced global 3D dimensioning w/ local 3D dimension for RESID_IJK
+!      double precision, dimension (ijkmax2) :: RESID_IJK
+      double precision, dimension (ijksize3_all(myPE)) :: RESID_IJK
+!//SP
+      DOUBLE PRECISION     MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
+      INTEGER              IJK_RESID_GL(0:numPEs-1), IJK_RESID_L(0:numPEs-1)
+      INTEGER              nproc
+      
       INCLUDE 'function.inc'
 !
       NUM = ZERO 
@@ -529,7 +540,11 @@
 !
       DEN1 = ONE 
 !
-      DO IJK = 1, IJKMAX2 
+!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+      DO IJK = ijkstart3, ijkend3 
+!// 360 1224 Check if current i,j,k resides on this PE      
+      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+      
          IF (FLUID_AT(IJK)) THEN 
 !
             NUM1 = ABS(B_M(IJK,0)) 
@@ -546,6 +561,43 @@
 !
          ENDIF 
       END DO 
+
+!//SP
+      call global_all_sum(NUM)
+      call global_all_sum(DEN)
+
+!//SP
+      do nproc=0,NumPEs-1
+	if(nproc.eq.myPE) then
+	MAX_RESID_L(nproc) = MAX_RESID
+	IJK_RESID_L(nproc) = FUNIJK_IO(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
+	else
+	MAX_RESID_L(nproc) = 0.0
+	IJK_RESID_L(nproc) = 0
+	endif
+      enddo
+
+!//SP - Call to determine the maximum among all the procesors
+      call global_all_max(MAX_RESID)
+
+
+!//SP - Call to collect all the information among all the procesors
+      call global_all_sum(MAX_RESID_L, MAX_RESID_GL)
+      call global_all_sum(IJK_RESID_L, IJK_RESID_GL)
+
+!//SP - call to determine the global IJK location w.r.t. serial version
+
+      IJK_RESID = IJKMAX2
+
+      do nproc=0,NumPEs-1
+
+        if(MAX_RESID_GL(nproc).eq.MAX_RESID.and.IJK_RESID_GL(nproc).lt.IJK_RESID) then
+
+        IJK_RESID = IJK_RESID_GL(nproc)
+
+        endif
+
+      enddo            
       IF (DEN*NORM > ZERO) THEN 
          RESID = NUM/(DEN*NORM) 
          MAX_RESID = NCELLS*MAX_RESID/(DEN*NORM) 
@@ -556,8 +608,8 @@
       ELSE 
          RESID = LARGE_NUMBER 
          MAX_RESID = LARGE_NUMBER 
-         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
-         CALL WRITE_ERROR ('CALC_RESID_pp', LINE, 1) 
+!         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
+!         CALL WRITE_ERROR ('CALC_RESID_pp', LINE, 1) 
       ENDIF 
 !
       RETURN  
@@ -599,6 +651,7 @@
       USE geometry
       USE indices
       USE compar   !//d
+      USE mpi_utility   !//AIKE
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -654,10 +707,20 @@
 
 !                      Error message
       CHARACTER*80     LINE
+!//AIKE
+      INTEGER          I, J, K
+      
 !-----------------------------------------------
 !     Local variables
 !-----------------------------------------------
-      DOUBLE PRECISION RESID_IJK( IJKMAX2 )
+
+!// 1207 replaced global 3D dimensioning w/ local 3D dimension for RESID_IJK
+!      double precision, dimension (ijkmax2) :: RESID_IJK
+      double precision, dimension (ijksize3_all(myPE)) :: RESID_IJK
+!//SP
+      DOUBLE PRECISION     MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
+      INTEGER              IJK_RESID_GL(0:numPEs-1), IJK_RESID_L(0:numPEs-1)
+      INTEGER              nproc
 
 
       INCLUDE 'function.inc'
@@ -667,16 +730,23 @@
       MAX_RESID = -ONE 
       NCELLS = 0 
 !efd
+!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !$omp parallel do private( IJK )
-      DO IJK = 1, IJKMAX2
+      DO IJK = ijkstart3, ijkend3
           RESID_IJK(IJK) = ZERO
       ENDDO
 
 !
+!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+
 !$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
 !$omp&   NUM1, DEN1,VEL) &
 !$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
+
+!// 360 1224 Check if current i,j,k resides on this PE      
+      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+      
          IF (.NOT.IP_AT_E(IJK)) THEN 
 !
             IMJK = IM_OF(IJK) 
@@ -716,19 +786,51 @@
 !
          ENDIF 
       END DO 
-
+!//SP
+      call global_all_sum(NUM)
+      call global_all_sum(DEN)
 !efd
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
-      DO IJK = 1, IJKMAX2
+!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3      
+      DO IJK = ijkstart3, ijkend3
+!// 360 1224 Check if current i,j,k resides on this PE      
+      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+      
           IF (RESID_IJK( IJK ) > MAX_RESID) THEN
               IJK_RESID = IJK
               MAX_RESID = RESID_IJK( IJK_RESID )
           ENDIF
       ENDDO
 
+!//SP
+      do nproc=0,NumPEs-1
+	if(nproc.eq.myPE) then
+	MAX_RESID_L(nproc) = MAX_RESID
+	IJK_RESID_L(nproc) = FUNIJK_IO(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
+	else
+	MAX_RESID_L(nproc) = 0.0
+	IJK_RESID_L(nproc) = 0
+	endif
+      enddo
+
+!//SP - Call to determine the maximum among all the procesors
+      call global_all_max(MAX_RESID)
 
 
+!//SP - Call to collect all the information among all the procesors
+      call global_all_sum(MAX_RESID_L, MAX_RESID_GL)
+      call global_all_sum(IJK_RESID_L, IJK_RESID_GL)
+      
+!//SP - call to determine the global IJK location w.r.t. serial version
+
+      IJK_RESID = IJKMAX2
+
+      do nproc=0,NumPEs-1
+        if(MAX_RESID_GL(nproc).eq.MAX_RESID.and.IJK_RESID_GL(nproc).lt.IJK_RESID) then
+          IJK_RESID = IJK_RESID_GL(nproc)
+        endif
+      enddo
 
       IF (DEN > ZERO) THEN 
          RESID = NUM/DEN 
@@ -740,8 +842,8 @@
       ELSE 
          RESID = LARGE_NUMBER 
          MAX_RESID = LARGE_NUMBER 
-         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
-         CALL WRITE_ERROR ('CALC_RESID_U', LINE, 1) 
+!         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
+!         CALL WRITE_ERROR ('CALC_RESID_U', LINE, 1) 
       ENDIF 
 !
       RETURN  
@@ -783,6 +885,7 @@
       USE geometry
       USE indices
       USE compar    !//d
+      USE mpi_utility   !//AIKE      
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -838,11 +941,20 @@
 
 !                      Error message
       CHARACTER*80     LINE
+!//AIKE
+      INTEGER          I, J, K
+      
 !-----------------------------------------------
 !     Local variables
 !-----------------------------------------------
 !efd
-      DOUBLE PRECISION RESID_IJK( IJKMAX2 )
+!// 1207 replaced global 3D dimensioning w/ local 3D dimension for RESID_IJK
+!      double precision, dimension (ijkmax2) :: RESID_IJK
+      double precision, dimension (ijksize3_all(myPE)) :: RESID_IJK
+!//SP
+      DOUBLE PRECISION     MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
+      INTEGER              IJK_RESID_GL(0:numPEs-1), IJK_RESID_L(0:numPEs-1)
+      INTEGER              nproc
 
 
 
@@ -853,17 +965,23 @@
       MAX_RESID = -ONE 
       NCELLS = 0 
 !efd
+!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !$omp parallel do private( IJK )
-      DO IJK = 1, IJKMAX2
+      DO IJK = ijkstart3, ijkend3
           RESID_IJK(IJK) = ZERO
       ENDDO
 
+!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 
 !
 !$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
 !$omp&  VEL,  NUM1, DEN1) &
 !$omp&  REDUCTION(+:NUM, DEN, NCELLS)  
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3 
+
+!// 360 1224 Check if current i,j,k resides on this PE      
+      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+
          IF (.NOT.IP_AT_N(IJK)) THEN 
 !
             IMJK = IM_OF(IJK) 
@@ -904,17 +1022,51 @@
          ENDIF 
       END DO 
 !efd
+!//SP
+      call global_all_sum(NUM)
+      call global_all_sum(DEN)
+      
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
-      DO IJK = 1, IJKMAX2
+!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3            
+      DO IJK = ijkstart3, ijkend3
+!// 360 1224 Check if current i,j,k resides on this PE      
+      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
           IF (RESID_IJK( IJK ) > MAX_RESID) THEN
               IJK_RESID = IJK
               MAX_RESID = RESID_IJK( IJK_RESID )
           ENDIF
       ENDDO
 
+!//SP
+      do nproc=0,NumPEs-1
+	if(nproc.eq.myPE) then
+	MAX_RESID_L(nproc) = MAX_RESID
+	IJK_RESID_L(nproc) = FUNIJK_IO(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
+	else
+	MAX_RESID_L(nproc) = 0.0
+	IJK_RESID_L(nproc) = 0
+	endif
+      enddo
+
+!//SP - Call to determine the maximum among all the procesors
+      call global_all_max(MAX_RESID)
 
 
+!//SP - Call to collect all the information among all the procesors
+      call global_all_sum(MAX_RESID_L, MAX_RESID_GL)
+      call global_all_sum(IJK_RESID_L, IJK_RESID_GL)
+      
+!//SP - call to determine the global IJK location w.r.t. serial version
+
+      IJK_RESID = IJKMAX2
+      
+      do nproc=0,NumPEs-1
+        if(MAX_RESID_GL(nproc).eq.MAX_RESID.and.IJK_RESID_GL(nproc).lt.IJK_RESID) then
+          IJK_RESID = IJK_RESID_GL(nproc)
+        endif
+      enddo
+      
       IF (DEN > ZERO) THEN 
          RESID = NUM/DEN 
          MAX_RESID = NCELLS*MAX_RESID/DEN 
@@ -925,8 +1077,8 @@
       ELSE 
          RESID = LARGE_NUMBER 
          MAX_RESID = LARGE_NUMBER 
-         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
-         CALL WRITE_ERROR ('CALC_RESID_V', LINE, 1) 
+!         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
+!         CALL WRITE_ERROR ('CALC_RESID_V', LINE, 1) 
       ENDIF 
 !
       RETURN  
@@ -968,6 +1120,7 @@
       USE geometry
       USE indices
       USE compar   !//d
+      USE mpi_utility   !//AIKE      
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1023,12 +1176,19 @@
 
 !                      Error message
       CHARACTER*80     LINE
+!//AIKE
+      INTEGER          I, J, K      
 !-----------------------------------------------
 !     Local variables
 !-----------------------------------------------
 !efd
-      DOUBLE PRECISION RESID_IJK( IJKMAX2 )
-
+!// 1207 replaced global 3D dimensioning w/ local 3D dimension for RESID_IJK
+!      double precision, dimension (ijkmax2) :: RESID_IJK
+      double precision, dimension (ijksize3_all(myPE)) :: RESID_IJK
+!//SP
+      DOUBLE PRECISION     MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
+      INTEGER              IJK_RESID_GL(0:numPEs-1), IJK_RESID_L(0:numPEs-1)
+      INTEGER              nproc
 
 
       INCLUDE 'function.inc'
@@ -1038,18 +1198,23 @@
       MAX_RESID = -ONE 
       NCELLS = 0 
 !efd
+!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !$omp parallel do private( IJK )
-      DO IJK = 1, IJKMAX2
+      DO IJK = ijkstart3, ijkend3
           RESID_IJK(IJK) = ZERO
       ENDDO
 
 !
 
 !
+!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
 !$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
 !$omp&  VEL,  NUM1, DEN1) &
 !$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
+!// 360 1224 Check if current i,j,k resides on this PE      
+      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+      
          IF (.NOT.IP_AT_T(IJK)) THEN 
 !
             IMJK = IM_OF(IJK)
@@ -1090,18 +1255,52 @@
          ENDIF 
       END DO 
 
+!//SP
+      call global_all_sum(NUM)
+      call global_all_sum(DEN)
 !efd
 
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
-      DO IJK = 1, IJKMAX2
+!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3       
+      DO IJK = ijkstart3, ijkend3
+!// 360 1224 Check if current i,j,k resides on this PE      
+      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
+      
           IF (RESID_IJK( IJK ) > MAX_RESID) THEN
               IJK_RESID = IJK
               MAX_RESID = RESID_IJK( IJK_RESID )
           ENDIF
       ENDDO
 
+!//SP
+      do nproc=0,NumPEs-1
+	if(nproc.eq.myPE) then
+	MAX_RESID_L(nproc) = MAX_RESID
+	IJK_RESID_L(nproc) = FUNIJK_IO(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
+	else
+	MAX_RESID_L(nproc) = 0.0
+	IJK_RESID_L(nproc) = 0
+	endif
+      enddo
 
+!//SP - Call to determine the maximum among all the procesors
+      call global_all_max(MAX_RESID)
+
+
+!//SP - Call to collect all the information among all the procesors
+      call global_all_sum(MAX_RESID_L, MAX_RESID_GL)
+      call global_all_sum(IJK_RESID_L, IJK_RESID_GL)
+      
+!//SP - call to determine the global IJK location w.r.t. serial version
+
+      IJK_RESID = IJKMAX2
+      
+      do nproc=0,NumPEs-1
+        if(MAX_RESID_GL(nproc).eq.MAX_RESID.and.IJK_RESID_GL(nproc).lt.IJK_RESID) then
+          IJK_RESID = IJK_RESID_GL(nproc)
+        endif
+      enddo
 
       IF (DEN > ZERO) THEN 
          RESID = NUM/DEN 
@@ -1113,8 +1312,8 @@
       ELSE 
          RESID = LARGE_NUMBER 
          MAX_RESID = LARGE_NUMBER 
-         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
-         CALL WRITE_ERROR ('CALC_RESID_W', LINE, 1) 
+!         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
+!         CALL WRITE_ERROR ('CALC_RESID_W', LINE, 1) 
       ENDIF 
 !
       RETURN  

@@ -44,6 +44,7 @@
       USE bc
       Use xsi_array
       USE compar        !//d
+      USE sendrecv     !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -100,8 +101,9 @@
 !
 !  Calculate convection-diffusion fluxes through each of the faces
 !
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !$omp    parallel do private(IJK, IMJK, IJMK, IJKM, M)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN 
             IMJK = IM_OF(IJK) 
             IJMK = JM_OF(IJK) 
@@ -142,7 +144,7 @@
 !$omp             critical
                   WRITE (LINE, '(A,I6,A,I1,A,G12.5)') 'Error: At IJK = ', IJK, &
                      ' M = ', 0, ' A = 0 and b = ', B_M(IJK,0) 
-                  CALL WRITE_ERROR ('SOURCE_Pp_g', LINE, 1) 
+!                  CALL WRITE_ERROR ('SOURCE_Pp_g', LINE, 1) 
 !$omp             end critical
                ENDIF 
             ENDIF 
@@ -161,10 +163,12 @@
       IF (RO_G0 == UNDEFINED) THEN 
          CALL CALC_XSI(DISCRETIZE(1),ROP_G,U_G,V_G,W_G,XSI_E,XSI_N,XSI_T) 
 
+!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !$omp    parallel do                                                     &
 !$omp&   private(IJK,I,J,K,                                       &
 !$omp&            IMJK,IJMK,IJKM,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB)
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3 
             IF (FLUID_AT(IJK)) THEN 
                I = I_OF(IJK) 
                J = J_OF(IJK) 
@@ -230,5 +234,9 @@
 !
       call unlock_xsi_array
 
+!//? need to COMM A_M and B_M here?
+!// 400 1224 COMM A_M and B_M
+!      call sendrecv(A_M,2)
+!      call sendrecv(B_M,2)
       RETURN  
       END SUBROUTINE SOURCE_PP_G 

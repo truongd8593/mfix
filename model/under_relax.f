@@ -154,7 +154,8 @@
       F1 = ONE/UR 
       F2 = F1 - ONE 
 !
-      DO IJK = 1, IJKMAX2 
+!// 350 1223 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3  
+      DO IJK = ijkstart3, ijkend3 
          IF (FLOW_AT_E(IJK)) THEN 
             AP = A_M(IJK,0,M) 
             IF (AP /= (-ONE)) THEN 
@@ -238,7 +239,8 @@
       F1 = ONE/UR 
       F2 = F1 - ONE 
 !
-      DO IJK = 1, IJKMAX2 
+!// 350 1223 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+      DO IJK = ijkstart3, ijkend3
          IF (FLOW_AT_N(IJK)) THEN 
             AP = A_M(IJK,0,M) 
             IF (AP /= (-ONE)) THEN 
@@ -322,7 +324,8 @@
       F1 = ONE/UR 
       F2 = F1 - ONE 
 !
-      DO IJK = 1, IJKMAX2 
+!// 350 1223 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3  
+      DO IJK = ijkstart3, ijkend3
          IF (FLOW_AT_T(IJK)) THEN 
             AP = A_M(IJK,0,M) 
             IF (AP /= (-ONE)) THEN 

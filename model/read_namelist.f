@@ -230,6 +230,11 @@
       GO TO 100 
 !
   500 CONTINUE 
+
+!//AIKEPARDBGSTOP 0922
+!      write(*,"('(PE ',I2,'): SPECIES_EQ : ',12L2)") myPE,SPECIES_EQ !//AIKEPARDBG
+!      call mfix_exit(myPE) !//AIKEPARDBG	 
+
       CLOSE(UNIT=UNIT_DAT) 
 !
       IF (E /= UNDEFINED) C_E = E 
@@ -261,13 +266,13 @@
 !// 300 0807 need to make sure if numPEs > 1, then there must KMAX > 1 as it is decompition direction
       if (numPEs > 1 .AND. (KMAX <= 2)) then
          write(*,"('(PE ',I3,'): Kmax <= 2 -> Decomposition NOT possible!',/,10X,'Aborting the run')") myPE
-         call mfix_exit(myPE)
+!         call mfix_exit(myPE)
       endif
 
 !// 300 0807 need to make sure if numPEs > 1, then NO_K must be FALSE as it is decompition direction
       if (numPEs > 1 .AND. NO_K) then
          write(*,"('(PE ',I3,'): No k direction -> No decomposition!',/,10X,'Aborting the run')") myPE
-         call mfix_exit(myPE)
+!         call mfix_exit(myPE)
       endif
 
 

@@ -173,11 +173,13 @@
        END DO
 !    end if             !//
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): reached dbg stop in time_march')") myPE    !//AIKEPARDBG
+      if(idbg > 1) then        !//AIKEPARDBG
+        write(*,"('(PE ',I2,'): reached dbg stop in time_march')") myPE    !//AIKEPARDBG
 !    write(UNIT_LOG,*) 'RES_TIME:',RES_TIME
 !    write(UNIT_LOG,*) 'SPX_TIME:',SPX_TIME    
 !    write(UNIT_LOG,*) 'USR_TIME:',USR_TIME        
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+      endif
   
 !
 !   Parse residual strings
@@ -224,7 +226,8 @@
       IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
 
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): before CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
+      if(idbg > 1) then        !//AIKEPARDBG
+        write(*,"('(PE ',I2,'): before CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
 !    write(UNIT_LOG,"('RRATE = ',L2,' WALL_TR = ',L2)") RRATE,WALL_TR   !//AIKEPARDBG
 !    write(UNIT_LOG,*) 'DENSITY: ',DENSITY    !//AIKEPARDBG
 !    write(UNIT_LOG,*) 'SIZE: ',SIZE          !//AIKEPARDBG
@@ -234,12 +237,11 @@
 !    write(UNIT_LOG,*) 'DIFF: ',DIFF          !//AIKEPARDBG          
 !    write(UNIT_LOG,*) 'DRAGCOEF: ',DRAGCOEF  !//AIKEPARDBG                  
 !    write(UNIT_LOG,*) 'HEAT_TR: ',HEAT_TR    !//AIKEPARDBG                    
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+!        call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+      endif                     !//AIKEPARDBG
 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): before CALC_COEFF in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-      
+
+            
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 
@@ -334,6 +336,11 @@
             ENDIF 
          ENDIF 
 !     end if                          !//
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft wrt std out in time_march')") myPE    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 ! Write restart file, if needed
 !
@@ -353,11 +360,15 @@
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME   !//
       ENDIF 
 !
-!   write(*,"('(PE ',I2,'): aft restart dump in time_march')") myPE    !//AIKEPARDBG
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft restart dump in time_march')") myPE    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 ! Write SPx files, if needed
 !
-!\\SP Commented the following
+!//SP Commented the following
 !     if (myPE.eq.PE_IO) then         !//
          ISPX = 0 
          DO L = 1, N_SPX 
@@ -400,7 +411,7 @@
                IF (FULL_LOG) WRITE (*, 1010,  ADVANCE='NO') L 
             ENDIF 
          END DO 
-!\\SP Commented the following
+!//SP Commented the following
 !     end if                         !//
       IF (.NOT.SPX_MSG) THEN 
          DO L = 1, N_SPX - ISPX 
@@ -413,6 +424,11 @@
          WRITE (UNIT_LOG, *) 
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, *)    !//
       ENDIF 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft spx dump in time_march')") myPE    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
       RES_MSG = .TRUE. 
       SPX_MSG = .TRUE. 
@@ -453,7 +469,9 @@
 !
       CALL UPDATE_OLD 
 !//SP
-!   write(*,"('(PE ',I2,'): reached end of update_old in time_march')") myPE    !//SP
+!    write(*,"('(PE ',I2,'): reached end of update_old in time_march')") myPE    !//SP
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 !     Calculate coefficients.  Explicitly set flags for all the quantities
 !     that need to be calculated before calling CALC_COEFF.
@@ -474,22 +492,32 @@
       ENDIF 
       IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
       IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): bef 2nd calc_coeff in time_march')") myPE    !//SP
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft 2nd CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 !
 !     Calculate the cross terms of the stress tensor
 !
       CALL CALC_TRD_G (TRD_G, IER) 
 !//SP
-!   write(*,"('(PE ',I2,'): reached end of CALC_TRD_G in time_march')") myPE
+   write(*,"('(PE ',I2,'): reached end of CALC_TRD_G in time_march')") myPE
+
       CALL CALC_TRD_S (TRD_S, IER) 
 !//SP
-!   write(*,"('(PE ',I2,'): reached end of CALC_TRD_S in time_march')") myPE
+    write(*,"('(PE ',I2,'): reached end of CALC_TRD_S in time_march')") myPE
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+    
       CALL CALC_TAU_U_G (TAU_U_G, IER) 
 !//SP
-!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_U_G in time_march')") myPE
+    write(*,"('(PE ',I2,'): reached end of CALC_TAU_U_G in time_march')") myPE
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+    
       CALL CALC_TAU_V_G (TAU_V_G, IER) 
 !   write(*,"('(PE ',I2,'): reached end of CALC_TAU_V_G in time_march')") myPE
       CALL CALC_TAU_W_G (TAU_W_G, IER) 
@@ -501,7 +529,7 @@
       CALL CALC_TAU_W_S (TAU_W_S, IER) 
 !   write(*,"('(PE ',I2,'): reached end of CALC_TAU_W_S in time_march')") myPE
 !//SP
-!   write(*,"('(PE ',I2,'): reached end of calc routines in time_march')") myPE 
+   write(*,"('(PE ',I2,'): reached end of calc routines in time_march')") myPE 
 !//SP
 !   call mfix_exit(myPE)   !//SP
 !
@@ -515,11 +543,17 @@
 !
 !//SP
 !   write(*,"('(PE ',I2,'): reached end of CHECK_DATA_30 in time_march')") myPE
+!   call mfix_exit(myPE)   !//SP   
 !
 !  Advance the solution in time by iteratively solving the equations
 !
       CALL ITERATE (IER, NIT) 
+
 !
+!//AIKEPARDBG
+!   write(*,"('(PE ',I2,'): aft iterate in time_march')") myPE
+!   call mfix_exit(myPE)   !//SP
+
 !
 !  Adjust time step and reiterate if necessary
 !

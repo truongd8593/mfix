@@ -42,6 +42,7 @@
       USE indices
       USE is
       USE compar        !//d
+      USE sendrecv      !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -84,6 +85,10 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
       INCLUDE 'b_force2.inc'
+
+!//? check if this COMM is necessary or extra
+!// 400 1225 COMM A_M
+!      call send_recv(A_M,2)
 !
 !
 ! Make user defined internal surfaces non-conducting
@@ -97,6 +102,15 @@
             K1 = IS_K_B(L) 
             K2 = IS_K_T(L) 
 !
+!// 1225 - Limit I1, I2 and all to local processor first ghost layer 
+!//       (Sreekanth's approach in dif_phi_is.f)
+	    IF(I1.LE.IEND2)   I1 = MAX(I1, ISTART2)
+            IF(J1.LE.JEND2)   J1 = MAX(J1, JSTART2)
+            IF(K1.LE.KEND2)   K1 = MAX(K1, KSTART2)
+            IF(I2.GE.ISTART2) I2 = MIN(I2, IEND2)
+            IF(J2.GE.JSTART2) J2 = MIN(J2, JEND2)
+            IF(K2.GE.KSTART2) K2 = MIN(K2, KEND2)
+
             IF (IS_PLANE(L) == 'N') THEN 
 !
                DO K = K1, K2 
@@ -140,5 +154,11 @@
             ENDIF 
          ENDIF 
       END DO 
+!
+
+!//? check if this COMM is necessary or extra
+!// 400 1225 COMM A_M
+!      call send_recv(A_M,2)
+      
       RETURN  
       END SUBROUTINE DIF_U_IS 

@@ -43,6 +43,7 @@
       USE leqsol
       Use ambm 
       Use tmp_array1, VxF_gs => Arraym1
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -77,32 +78,68 @@
       INTEGER          LEQM, LEQI 
 !-----------------------------------------------
 !
+!//? 1213 do we still need these array locking?
       call lock_ambm
       call lock_tmp_array1
 
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): entered solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
 
-      IF (MMAX == 0) CALL ZERO_ARRAY (VXF_GS(1,1), IJKMAX2, IER) 
+!// 500 1213 Removed IJKMAX2 from the arg. list of ZERO_ARRAY calls based on
+!       modification of Sreekanth for ZERo_ARRAY routine on 11/2/99
+      IF (MMAX == 0) CALL ZERO_ARRAY (VXF_GS(1,1), IER) 
 !
 !  2.1 Calculate U_m_star and residuals
 !
       DO M = 0, MMAX 
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
       END DO 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): bef conv_dif_u_g in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+      
       CALL CONV_DIF_U_G (A_M, B_M, IER) 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft conv_dif_u_g in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
+
       CALL CONV_DIF_U_S (A_M, B_M, IER) 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft conv_dif_u_s in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
 !
       CALL SOURCE_U_G (A_M, B_M, IER) 
       CALL SOURCE_U_S (A_M, B_M, IER) 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft source_u_X in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
 !
       IF (MMAX > 0) CALL VF_GS_X (F_GS, VXF_GS, IER) 
 !
       CALL CALC_D_E (A_M, VXF_GS, D_E, IER) 
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft calc_d_e in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+      
       IF (MMAX > 0) CALL CALC_E_E (A_M, MCP, E_E, IER) 
 !
       IF (MMAX > 0) CALL PARTIAL_ELIM_U (U_G, U_S, VXF_GS, A_M, B_M, IER) 
 !
       CALL ADJUST_A_U_G (A_M, B_M, IER) 
       CALL ADJUST_A_U_S (A_M, B_M, IER) 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft adjust_a_u_X in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
 !
       IF (MOMENTUM_X_EQ(0)) THEN 
          CALL CALC_RESID_U (U_G, V_G, W_G, A_M, B_M, 0, RESID(RESID_U,0), &
@@ -116,6 +153,11 @@
 !     &    ijk_resid(resid_u, 0)
 !
       ENDIF 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft calc_resid_u (P1) in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+      
 !
       DO M = 1, MMAX 
          IF (MOMENTUM_X_EQ(M)) THEN 
@@ -129,6 +171,8 @@
 !          call write_ab_m(a_m, b_m, ijkmax2, m, ier)
          ENDIF 
       END DO 
+
+      
       IF (MOMENTUM_X_EQ(0)) THEN 
 !        call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, DO_K,
 !     &    ier)
@@ -141,6 +185,10 @@
 !        call out_array(u_g, 'u_g')
       ENDIF 
 !
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft adjust_leq (P1) in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
       DO M = 1, MMAX 
          IF (MOMENTUM_X_EQ(M)) THEN 
 !          call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, M), 1, DO_K,
@@ -153,14 +201,25 @@
 !          call out_array(u_s(1,m), 'u_s')
          ENDIF 
       END DO 
+      
       DO M = 0, MMAX 
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
       END DO 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): end of U solution in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+      
       CALL CONV_DIF_V_G (A_M, B_M, IER) 
       CALL CONV_DIF_V_S (A_M, B_M, IER) 
 !
       CALL SOURCE_V_G (A_M, B_M, IER) 
       CALL SOURCE_V_S (A_M, B_M, IER) 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft source_v_X in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
 !
       IF (MMAX > 0) CALL VF_GS_Y (F_GS, VXF_GS, IER) 
 !
@@ -172,6 +231,10 @@
       CALL ADJUST_A_V_G (A_M, B_M, IER) 
       CALL ADJUST_A_V_S (A_M, B_M, IER) 
 !
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft adjust_a_v_X in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
       IF (MOMENTUM_Y_EQ(0)) THEN 
          CALL CALC_RESID_V (U_G, V_G, W_G, A_M, B_M, 0, RESID(RESID_V,0), &
             MAX_RESID(RESID_V,0), IJK_RESID(RESID_V,0), IER) 
@@ -184,6 +247,10 @@
 !     &    ijk_resid(resid_v, 0)
       ENDIF 
 !
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft calc_resid_v (P1) in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
       DO M = 1, MMAX 
          IF (MOMENTUM_Y_EQ(M)) THEN 
             CALL CALC_RESID_V (U_S(1,M), V_S(1,M), W_S(1,M), A_M, B_M, M, RESID&
@@ -208,6 +275,10 @@
 !        call out_array(v_g, 'v_g')
       ENDIF 
 !
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft adjust_leq for v (P1) in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
       DO M = 1, MMAX 
          IF (MOMENTUM_Y_EQ(M)) THEN 
 !          call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, M), 1, DO_K,
@@ -221,12 +292,18 @@
 !          call out_array(v_s(1,m), 'v_s')
          ENDIF 
       END DO 
+
+!//AIKEPARDBG
+    write(*,"('(PE ',I2,'): end of V solution in solve_vel_star')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
       IF (NO_K)THEN
         call unlock_ambm
         call unlock_tmp_array1
         RETURN  
       ENDIF
 !
+
       DO M = 0, MMAX 
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
       END DO 
@@ -295,7 +372,8 @@
 !          call out_array(w_s(1,m), 'w_s')
          ENDIF 
       END DO 
-      
+
+!//? 1213 do we still need these array locking?
       call unlock_ambm
       call unlock_tmp_array1
 

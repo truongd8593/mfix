@@ -110,6 +110,10 @@
 !-----------------------------------------------
 !
 !
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): beginning of iterate')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
       NIT = 0 
       RESG = ZERO 
       RESS = ZERO 
@@ -131,12 +135,20 @@
       ENDIF 
 !
       LEQ_ADJUST = .FALSE. 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): bef init_resid in iterate')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
 !
 !     Initialize residuals
 !
       CALL INIT_RESID (IER) 
-!//SP
-!     write(*,*) 'after init_resid', myPE
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft init_resid in iterate')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
 !
 !
 !     CPU time left
@@ -164,6 +176,10 @@
       ENDIF 
 !
 !
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): bef iteration loop in iterate')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
 !     Begin iterations
 !
 !------------------------------------------------------------------------------
@@ -193,7 +209,9 @@
 !
       IF (CALL_USR) CALL USR2 
 !//SP
-!     write(*,*) 'after USR2', myPE
+!    write(*,"('(PE ',I2,'): aft USR2 in iterate')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+      
 !
 !
 !     Calculate coefficients.  Explicitly set flags for all the quantities
@@ -211,31 +229,45 @@
          ENDIF 
       ENDIF 
 !
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): bef calc_coeff in iterate')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 !
-!//SP
-!     write(*,*) 'after USR2', myPE
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft calc_coeff in iterate')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+      
 !
 !     Solve strarred velocitiy components
 !
 !//SP
-!     CALL SOLVE_VEL_STAR (IER) 
+      CALL SOLVE_VEL_STAR (IER) 
 !
-!     write(*,*) RO_G0, myPE
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft solve_vel_star in iterate')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
+      write(*,*) RO_G0, myPE
 !
 !     Solve fluid pressure correction equation
 !
       IF (RO_G0 /= ZERO) CALL SOLVE_PP_G (NORMG, RESG, IER) 
 !//SP
-!     write(*,*) 'after SOLVE_PP_G', myPE
+      write(*,*) 'after SOLVE_PP_G', myPE
 !
 !
 !     Correct pressure and velocities
 !
       CALL CORRECT_0 (IER) 
 !//SP
-!     write(*,*) 'after CORRECT_0', myPE, MMAX
+      write(*,*) 'after CORRECT_0', myPE, MMAX
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft correct_0 in iterate')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+      
 !
 !     Solve solids volume fraction correction equation for close-packed
 !     solids phases
@@ -283,12 +315,20 @@
          IF(DT/=UNDEFINED)GO TO 1000 
 !
       ENDIF 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): bef solve_species_eq in iterate')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+      
 !
 !     Solve species mass balance equations
 !
       CALL SOLVE_SPECIES_EQ (IER) 
-!//SP
-!     write(*,*) 'after SOLVE_SPECIES_EQ, etc.,', myPE
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft solve_species_eq in iterate')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+      
 !
 !    User-defined linear equation solver parameters may be adjusted after
 !    the first iteration
@@ -301,7 +341,7 @@
 !
       CALL CHECK_CONVERGENCE (NIT, MUSTIT, IER) 
 !//SP
-!     write(*,*) 'after CHECK_CONVERGENCE, etc.,', myPE
+      write(*,*) 'after CHECK_CONVERGENCE, etc.,', myPE
 !
 !      If not converged continue iterations; else exit subroutine.
 !
@@ -311,7 +351,7 @@
 !
       IF (FULL_LOG) CALL DISPLAY_RESID (NIT, IER) 
 !//SP
-!     write(*,*) 'after DISPLAY_RESID, etc.,', myPE
+      write(*,*) 'after DISPLAY_RESID, etc.,', myPE
       
       IF (MUSTIT == 0) THEN 
          IF (DT==UNDEFINED .AND. NIT==1) GO TO 50!Iterations converged 
@@ -379,7 +419,7 @@
       ENDIF 
 !
 !//SP
-!     write(*,*) 'after misc., etc.,', myPE
+      write(*,*) 'after misc., etc.,', myPE
 !     call mfix_exit
 !
       IF (NIT < MAX_NIT) THEN 

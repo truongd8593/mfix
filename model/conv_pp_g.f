@@ -106,6 +106,7 @@
       USE indices
       USE pgcor
       USE compar    !//d
+      USE sendrecv  !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -138,19 +139,39 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
+      
+!//? Check if all these COMMs are necessary, added here as fool-proof approach
+!// 400 1225 Communicate boundaries
+      call send_recv(U_G,2)
+      call send_recv(V_G,2)
+      call send_recv(W_G,2)
+      call send_recv(AYZ,2)
+      call send_recv(AXZ,2)
+      call send_recv(AXY,2)      
+      call send_recv(ROP_G,2)
+      if(MMAX > 0 ) then
+      call send_recv(U_S,2)
+      call send_recv(V_S,2)
+      call send_recv(W_S,2)      
+      call send_recv(ROP_S,2)                        
+      endif
+
 !
 !  Calculate convection fluxes through each of the faces
-!
+!!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3      
+
 !$omp  parallel do private( I, J, K, IJK, IJKE, IJKN, IJKT, IPJK, IJPK, &
 !$omp&  IJKP, M, AM, &
 !$omp&  IJKW, IJKS, IJKB, IMJK, IJMK, IJKM) &
 !$omp&  schedule(static)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = IJKSTART3, IJKEND3
 !
          IF (FLUID_AT(IJK)) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
             K = K_OF(IJK) 
+!// 360 1224 Check if current i,j,k resides on this PE   	    
+            IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    
             IJKE = EAST_OF(IJK) 
             IJKN = NORTH_OF(IJK) 
             IJKT = TOP_OF(IJK) 
@@ -227,12 +248,15 @@
          ENDIF 
       END DO 
       DO M = 1, MMAX 
-         IF (.NOT.CLOSE_PACKED(M)) THEN 
-            DO IJK = 1, IJKMAX2 
+         IF (.NOT.CLOSE_PACKED(M)) THEN
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3  	  
+            DO IJK = IJKSTART3, IJKEND3
                IF (FLUID_AT(IJK)) THEN 
                   I = I_OF(IJK) 
                   J = J_OF(IJK) 
                   K = K_OF(IJK) 
+!// 360 1224 Check if current i,j,k resides on this PE  		  
+                 IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE		  
                   IJKE = EAST_OF(IJK) 
                   IJKN = NORTH_OF(IJK) 
                   IJKT = TOP_OF(IJK) 
@@ -310,6 +334,9 @@
             END DO 
          ENDIF 
       END DO 
+
+!// 400 1224 COMM A_M
+      call send_recv(A_M,2)      
       RETURN  
       END SUBROUTINE CONV_PP_G0 
 !
@@ -361,6 +388,7 @@
       USE pgcor
       Use xsi_array
       USE compar   !//d
+      USE sendrecv  !// 400 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -398,7 +426,26 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
       
-      
+
+!//? Check if all these COMMs are necessary, added here as fool-proof approach
+!// 400 1225 Communicate boundaries
+      call send_recv(U_G,2)
+      call send_recv(V_G,2)
+      call send_recv(W_G,2)
+      call send_recv(AYZ,2)
+      call send_recv(AXZ,2)
+      call send_recv(AXY,2)      
+      call send_recv(ROP_G,2)
+      call send_recv(XSI_E,2)
+      call send_recv(XSI_N,2)
+      call send_recv(XSI_T,2)
+      if(MMAX > 0 ) then
+      call send_recv(U_S,2)
+      call send_recv(V_S,2)
+      call send_recv(W_S,2)      
+      call send_recv(ROP_S,2)                        
+      endif
+
       call lock_xsi_array
 !
 !  Calculate convection factors
@@ -408,16 +455,19 @@
 !
 !  Calculate convection fluxes through each of the faces
 !
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !$omp  parallel do private( I, J, K, IJK, IJKE, IJKN, IJKT, IPJK, IJPK, &
 !$omp&  IJKP, M, am, &
 !$omp&  IJKW, IJKS, IJKB, IMJK, IJMK, IJKM) &
 !$omp&  schedule(static)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = IJKSTART3, IJKEND3 
 !
          IF (FLUID_AT(IJK)) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
             K = K_OF(IJK) 
+!// 360 1224 Check if current i,j,k resides on this PE  	    
+           IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    
             IJKE = EAST_OF(IJK) 
             IJKN = NORTH_OF(IJK) 
             IJKT = TOP_OF(IJK) 
@@ -547,6 +597,9 @@
       END DO 
       
       call unlock_xsi_array
+ 
+!// 400 1224 COMM A_M      
+      call send_recv(A_M,2)      
            
       RETURN  
       END SUBROUTINE CONV_PP_G1 

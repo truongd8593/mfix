@@ -72,9 +72,13 @@
 !
       IF (MOMENTUM_X_EQ(0) .AND. MOMENTUM_X_EQ(1)) THEN 
 !
+!//I? check any data dependency for I direction decomposition in following loop
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !$omp  parallel do private( I,IJK, IJKE, EPGA, EPSA, FoA0pF, FoA1pF), &
 !$omp&  schedule(static)
-         DO IJK = 1, IJKMAX2 
+
+         DO IJK = ijkstart3, ijkend3
             IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN 
                D_E(IJK,0) = ZERO 
                D_E(IJK,1) = ZERO 
@@ -125,10 +129,12 @@
          END DO 
       ELSE IF (MOMENTUM_X_EQ(0)) THEN 
 
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !$omp    parallel do &
 !$omp&   private( IJK, I, IJKE, EPGA )
 
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3
             IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN 
                D_E(IJK,0) = ZERO 
             ELSE 
@@ -151,10 +157,11 @@
          END DO 
       ELSE IF (MOMENTUM_X_EQ(1)) THEN 
 
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 !$omp    parallel do &
 !$omp&   private( IJK, I, IJKE, EPSA )
 
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3 
             IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN 
                D_E(IJK,1) = ZERO 
             ELSE 
@@ -251,9 +258,12 @@
 !
       IF (MOMENTUM_Y_EQ(0) .AND. MOMENTUM_Y_EQ(1)) THEN 
 !
+!//I? check any data dependency for I direction decomposition in following loop
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !$omp  parallel do private( J, K, IJK, IJKN, EPGA, EPSA, FoA0pF, FoA1pF), &
 !$omp&  schedule(static)
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3 
             IF (IP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN 
                D_N(IJK,0) = ZERO 
                D_N(IJK,1) = ZERO 
@@ -306,9 +316,11 @@
             ENDIF 
          END DO 
       ELSE IF (MOMENTUM_Y_EQ(0)) THEN 
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+      
 !$omp    parallel do &
 !$omp&   private( IJK, I,J,K,  IJKN, EPGA )
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3 
             IF (IP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN 
                D_N(IJK,0) = ZERO 
             ELSE 
@@ -333,9 +345,11 @@
          END DO 
       ELSE IF (MOMENTUM_Y_EQ(1)) THEN 
 
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !$omp    parallel do &
 !$omp&   private( IJK, I,J,K, IJKN, EPGA,EPSA )
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3
             IF (IP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN 
                D_N(IJK,1) = ZERO 
             ELSE 
@@ -435,9 +449,12 @@
 !
       IF (MOMENTUM_Z_EQ(0) .AND. MOMENTUM_Z_EQ(1)) THEN 
 !
+!//I? check any data dependency for I direction decomposition in following loop
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !$omp  parallel do private( J, K, IJK, IJKT, EPGA, EPSA, FoA0pF, FoA1pF), &
 !$omp&  schedule(static)
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3 
             IF (IP_AT_T(IJK) .OR. MFLOW_AT_N(IJK)) THEN 
                D_T(IJK,0) = ZERO 
                D_T(IJK,1) = ZERO 
@@ -490,9 +507,11 @@
             ENDIF 
          END DO 
       ELSE IF (MOMENTUM_Z_EQ(0)) THEN 
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 !$omp    parallel do &
 !$omp&   private( IJK, I,J,K,IJKT, EPGA )
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3
             IF (IP_AT_T(IJK) .OR. MFLOW_AT_N(IJK)) THEN 
                D_T(IJK,0) = ZERO 
             ELSE 
@@ -515,10 +534,12 @@
                ENDIF 
             ENDIF 
          END DO 
-      ELSE IF (MOMENTUM_Z_EQ(1)) THEN 
+      ELSE IF (MOMENTUM_Z_EQ(1)) THEN
+!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+       
 !$omp    parallel do &
 !$omp&   private( IJK, I,J,K, IJKT, EPSA )
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3  
             IF (IP_AT_T(IJK) .OR. MFLOW_AT_N(IJK)) THEN 
                D_T(IJK,1) = ZERO 
             ELSE 
