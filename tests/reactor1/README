@@ -1,5 +1,0 @@
-Steady state plug flow reactor:
-a -- specify the rxn through the input data file mfix.dat
-b -- specify the rxn through user-defined subroutine rrates.f
-
-These cases are somewhat difficult to converge.  Need to play with UR_FAC(1) to effect convergence.
