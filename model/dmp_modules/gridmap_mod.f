@@ -322,6 +322,13 @@
                 cyclic_x, cyclic_y, cyclic_z, idebug=0 )
 	
 
+!//AIKEPARDBGSTOP 0922
+!      write(*,"('(PE ',I2,'): from gridmap_init ',&
+!                 /,9X,'Kmin2 = ',I6,'  Kmax3 = ',I6,'  Kmax = ',I6, &
+!                 /,9X,'Jmin2 = ',I6,'  Jmax3 = ',I6,'  Jmax = ',I6,&
+!		 /,9X,'Imin2 = ',I6,'  Imax3 = ',I6,'  Imax = ',I6)") &
+!                 myPE,Kmin2,Kmax3,Kmax,Jmin2,Jmax3,Jmax,Imin2,Imax3,Imax
+
 	return
 	end subroutine gridmap_init
 
