@@ -51,7 +51,8 @@
       IER = 0 
 !
 !HPF$ independent
-      DO IJK = 1, IJKMAX2 
+!//SP
+      DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN 
             IF (THETA_M(IJK,M) < ZERO_EP_S) THETA_M(IJK,M) = ZERO_EP_S 
 !

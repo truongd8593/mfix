@@ -198,8 +198,13 @@
 			Kcp(IJK) = ZERO	
  
                      ENDIF
+
+	       ENDIF
  
-               ENDIF
+!//SP
+            ELSE
+
+	       Kcp(IJK) = ZERO
  
             ENDIF
  
