@@ -63,7 +63,7 @@
       CALL END_LOG 
 !
       RETURN  
- 1005 FORMAT(1X,'MFIX ',A10,'simulation on computer: ',A20) 
+ 1005 FORMAT(1X,'MFIX (',A10,') simulation on computer: ',A20) 
  1010 FORMAT(1X,'Run name: ',A20,2X,'Time: ',I2,':',I2.0,20X,'Date: ',I2,'-',I2&
          ,'-',I4) 
  1015 FORMAT(72('_')) 

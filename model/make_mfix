@@ -104,9 +104,9 @@ ln -sf "$mpi_include/mpif.h" .
             compile_d="-c -I. -I$mpi_include -C -trapuv -g -free -nowarn -assume byterecl -convert big_endian "
             link_d="-C -g -nowarn -assume byterecl -convert big_endian"
 
-            compile="-c -I. -I$mpi_include -O5 -fast -free -nowarn -assume byterecl -convert big_endian "
-            compile2="-c -I. -I$mpi_include -O5 -fast  -free -nowarn -assume byterecl -convert big_endian "
-            link="-O5 -fast -nowarn -assume byterecl -convert big_endian"
+            compile="-c -I. -I$mpi_include -O4 -free -nowarn -assume byterecl -convert big_endian "
+            compile2="-c -I. -I$mpi_include -O4  -free -nowarn -assume byterecl -convert big_endian "
+            link="-O4 -nowarn -assume byterecl -convert big_endian"
             MODULE_CODE=1
             ;;
 
@@ -129,13 +129,41 @@ ln -sf "$mpi_include/mpif.h" .
 
             OBJ_EXT=o
             FORTRAN_EXT=f
-            omp="-qsmp=omp -qsmp=noauto -qnosave"
-            compile_d="-q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -c -I. -I$mpi_include -C -g -pg -qinitauto=FF -qflttrap -freeform"
-            link_d="-q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -C -g -pg -qinitauto=FF -qflttrap"
 
-            compile="-c -I. -I$mpi_include -O3 -qstrict -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qarch=pwr3 -qtune=pwr3 -qcache=auto -freeform "
-            compile2="-c -I. -I$mpi_include -O3 -qstrict -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qarch=pwr3 -qtune=pwr3 -qcache=auto -freeform "
-            link="-O3 -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qtune=pwr3 -qcache=auto "
+#	    =============================
+#	    use mpxlf90_r or xlf90_r
+#	    for thread safe code
+#	    =============================
+            omp="-qsmp=omp -qsmp=noauto -qnosave "
+
+#	    =================================
+#	    the module directory cannot be on 
+#	    a GPFS parallel file system
+#	    =================================
+	    moddir=/tmp/$USER
+            if test -d $moddir
+	    then
+	    touch $moddir
+	    else
+	    mkdir $moddir
+	    fi
+
+ 	    compile_common="-c -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -c -I.  -freeform -I$moddir -qmoddir=$moddir "
+            compile_d="-C -g -qinitauto=FF -qflttrap -freeform $compile_common"
+            link_d="$compile_d"
+
+            compile=" -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
+            compile2="$compile"
+            link="$compile"
+
+#	    ------------------
+#	    flags for inlining
+#	    ------------------
+	    inline_objs="compare.o eosg.o discretize.o "
+	    inline_files="compare.f eosg.f discretize.f "
+	    inline_flags="-qipa=inline=auto -Q $inline_files"
+	    preinline_flags=" "
+
             MODULE_CODE=1
             ;;
 
@@ -151,13 +179,23 @@ ln -sf "$mpi_include/mpif.h" .
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"
-            compile_d="-c -I. -I$mpi_include -64 -C -trapuv -g -freeform -Inline:must:eosg,compare,phi_c_of,xsi"
-            link_d="-64 -C -g"
+	    compile_common="-c -I. -I$mpi_include -64 -freeform "
+            compile_d="$compile_common -C -trapuv -g "
+            link_d="-IPA -64 -C -g"
 
-            compile="-c -I. -I$mpi_include -64 -O3 -mips4 -freeform -Inline:must:eosg,compare,phi_c_of,xsi"
-            compile2="-c -I. -I$mpi_include -64 -O3 -mips4 -freeform -Inline:must:eosg,compare,phi_c_of,xsi"
-            link="-64 -O3 -mips4"
+            compile="$compile_common -O3 -mips4 "
+            compile2="$compile_common -O1 -mips4 "
+            link="-IPA -64 -O3 -mips4"
             MODULE_CODE=0
+#           ------------------
+#           flags for inlining
+#           ------------------
+            inline_objs="compare.o eosg.o discretize.o "
+            inline_files="compare.f eosg.f discretize.f "
+#            inline_flags=" -INLINE:must=compare_:file=compare.o -INLINE:must=eosg_:file=eosg.o -INLINE:must=phi_c_of_:file=discretize.o"
+	    inline_flags=" -IPA -INLINE:must=compare_,eosg_,phi_c_of_,xsi_:file=compare.o,eosg.o,discretize.o "
+            preinline_flags=" -IPA "
+
             ;;
 	    
       ULTRIX) 
@@ -184,23 +222,30 @@ ln -sf "$mpi_include/mpif.h" .
     Linux)
 	    mach_file="LINUX.F"
 	    
-            FORTRAN_CMD=pgf90
-            LINK_CMD=pgf90
-            libs_d=blas90.a
-            libs=blas90.a
+            FORTRAN_CMD=mpif90
+            LINK_CMD=mpif90
+            libs_d="-lblas blas90.a"
+            libs="-lblas blas90.a"
     
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"
-            compile_d="-c -I. -I$mpi_include -Minline=eosg,compare,phi_c_of,xsi -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
-#            link_d="-Mprof=func -g -L/usr/local/MPI/mpich/lib/LINUX/ch_p4 -lmpich"
-            link_d=" -L/usr/lib -lmpi"
-            compile=" -O -I. -I$mpi_include -Minline=eosg,compare,phi_c_of,xsi -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant "
-            compile2="-O1 -I. -I$mpi_include -Minline=eosg,compare,phi_c_of,xsi -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
-#            link=" -L/usr/local/MPI/mpich/lib/LINUX/ch_p4 -lmpich"
-            link=" -L/usr/lib -lmpi"
+	    compile_common="-c -I.  -Mnosave -Mfreeform -Mrecursive -Mreentrant -byteswapio"
+            compile_d=" -g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk $compile_common"
+            link_d=" "
+            compile=" -O3 -Mdalign $compile_common"
+            compile2="-O1 -Mdalign $compile_common"
+            link="  "
             MODULE_CODE=1
 	    
+#           ------------------
+#           flags for inlining
+#           ------------------
+            inline_objs="compare.o eosg.o discretize.o "
+            inline_files="compare.f eosg.f discretize.f "
+            inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
+            preinline_flags="  "
+
 
             ;;
 	    
@@ -500,14 +545,14 @@ esac
     LIB_FLAGS="$libs_d"
     ;;
   *)
-    FORT_FLAGS="$mp_flag $compile"
-    FORT_FLAGS2="$mp_flag $compile2"
+    FORT_FLAGS="$mp_flag $compile $preinline_flags"
+    FORT_FLAGS2="$mp_flag $compile2 $preinline_flags"
     LINK_FLAGS="$mp_flag $link"
     LIB_FLAGS="$libs"
     ;;
   esac
 
-  echo "\nPlease wait . . ."
+  echo "\n Compiling inline files . . ."
   
   export FORT_FLAGS
   export FORT_FLAGS2
@@ -523,20 +568,91 @@ esac
   0)
   	case $dmp_version in
   	y|Y )
-   	    make -f mfix_u.make
+   	    echo "make -f mfix_u.make $inline_objs"
+   	    make -f mfix_u.make $inline_objs
    	 ;;
   	*)
-   	    make -f mfix_u_not.make
+   	    echo "make -f mfix_u_not.make $inline_objs"
+   	    make -f mfix_u_not.make $inline_objs
    	 ;;
   	esac
    ;;
   1)
   	case $dmp_version in
   	y|Y )
-   	    make -f mfix_l.make
+   	    echo "make -f mfix_l.make $inline_objs"
+   	    make -f mfix_l.make $inline_objs
    	 ;;
   	*)
-   	    make -f mfix_l_not.make
+   	    echo "make -f mfix_l_not.make $inline_objs"
+   	    make -f mfix_l_not.make $inline_objs
+   	 ;;
+  	esac
+   ;;
+  esac
+
+
+  case $smp_version in
+  y|Y )
+    mp_flag="$omp"
+    ;;
+  *)
+    mp_flag=" "
+    ;;
+  esac
+
+  case $dbg_version in
+  y|Y )
+    echo
+    echo "Execution may be SLOW.  Do not use debug version for production runs!"
+    FORT_FLAGS="$mp_flag $compile_d"
+    FORT_FLAGS2="$mp_flag $compile_d"
+    LINK_FLAGS="$mp_flag $link_d"
+    LIB_FLAGS="$libs_d"
+    ;;
+  *)
+    FORT_FLAGS="$mp_flag $compile $inline_flags"
+    FORT_FLAGS2="$mp_flag $compile2 $inline_flags"
+    LINK_FLAGS="$mp_flag $link"
+    LIB_FLAGS="$libs"
+    ;;
+  esac
+
+  echo "\nPlease wait . . ."
+  
+  export FORT_FLAGS
+  export FORT_FLAGS2
+  export LINK_FLAGS
+  export LIB_FLAGS
+  export OBJ_EXT
+  export FORTRAN_EXT
+  export FORTRAN_CMD
+  export LINK_CMD
+
+
+
+  case $MODULE_CODE in
+  0)
+  	case $dmp_version in
+  	y|Y )
+   	    echo "make -f mfix_u.make mfix.exe"
+   	    make -f mfix_u.make mfix.exe
+   	 ;;
+  	*)
+   	    echo "make -f mfix_u_not.make mfix.exe"
+   	    make -f mfix_u_not.make mfix.exe
+   	 ;;
+  	esac
+   ;;
+  1)
+  	case $dmp_version in
+  	y|Y )
+   	    echo "make -f mfix_l.make mfix.exe"
+   	    make -f mfix_l.make mfix.exe
+   	 ;;
+  	*)
+   	    echo "make -f mfix_l_not.make mfix.exe"
+   	    make -f mfix_l_not.make mfix.exe
    	 ;;
   	esac
    ;;
@@ -547,20 +663,20 @@ esac
     cp mfix.exe $run_dir
     echo
 
-  case $dmp_version in
-  y|Y )
+    case $dmp_version in
+    y|Y )
         echo "********************************************************************"
         echo " Compilation successful: mfix.$vers created"
 	echo " To run MFIX type (or equivalent): mpirun -np<# processors> mfix.exe"
         echo "********************************************************************"
-    ;;
-  *)
+      ;;
+    *)
         echo "*******************************************"
         echo " Compilation successful: mfix.$vers created"
 	echo " To run MFIX type: mfix.exe"
         echo "*******************************************"
-    ;;
-  esac
+      ;;
+    esac
 
   else
     echo

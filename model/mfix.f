@@ -94,7 +94,7 @@
 !
 ! set the version.release of the software
 !
-      ID_VERSION = '(V04.10)' 
+      ID_VERSION = '4.1' 
 !
 !   Specify the number of processors to be used
 !

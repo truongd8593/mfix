@@ -451,6 +451,12 @@
       IF (NSTEP == NCHECK) THEN 
          IF (DNCHECK < 256) DNCHECK = DNCHECK*2 
          NCHECK = NCHECK + DNCHECK 
+	 
+!        Upate the reaction rates for checking
+         IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
+	 CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
+         HEAT_TR, WALL_TR, IER) 
+
          CALL CHECK_DATA_30 
       ENDIF 
 !

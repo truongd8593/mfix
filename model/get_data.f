@@ -60,6 +60,7 @@
 ! 
 !                    Shift or not shift DX, DY and DZ values 
       LOGICAL        SHIFT 
+      LOGICAL        CYCLIC_X_BAK, CYCLIC_Y_BAK, CYCLIC_Z_BAK, CYLINDRICAL_BAK
 !-----------------------------------------------
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -79,6 +80,11 @@
 
       CALL CHECK_DATA_00
 
+      CYCLIC_X_BAK = CYCLIC_X
+      CYCLIC_Y_BAK = CYCLIC_Y
+      CYCLIC_Z_BAK = CYCLIC_Z
+      CYLINDRICAL_BAK = CYLINDRICAL
+
       IF (CYCLIC_X_PD) CYCLIC_X = .TRUE.
       IF (CYCLIC_Y_PD) CYCLIC_Y = .TRUE.
       IF (CYCLIC_Z_PD) CYCLIC_Z = .TRUE.
@@ -93,6 +99,18 @@
 !// Partition the domain and set indices
       call SET_MAX2
       call GRIDMAP_INIT
+
+!\\SP Copying back logical variables to original values to retain the structure of the code
+!     For cylindrical case making CYCLIC_Z = .TRUE., makes CYCLIC TRUE in set_geometry and
+!     which in turn leads to fixing the pressure in source_pp_g.
+
+      CYCLIC_X = CYCLIC_X_BAK
+      CYCLIC_Y = CYCLIC_Y_BAK
+      CYCLIC_Z = CYCLIC_Z_BAK
+      CYLINDRICAL = CYLINDRICAL_BAK
+
+
+
 
 !     write(*,*) 'ISTART-IEND'
 !     write(*,*) ISTART3, ISTART2, ISTART, ISTART1, IEND1, IEND, IEND2, IEND3

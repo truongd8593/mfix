@@ -72,19 +72,19 @@
 !      DOUBLE PRECISION, PARAMETER :: TOL = 1.0D-4
       INTEGER, PARAMETER :: MAX_IT = 1
 !
-      INTERFACE
-      SUBROUTINE  leq_bicgs( VNAME,VAR, A_M, B_M, CMETHOD, TOL, ITMAX,IER)
-      INTEGER, INTENT(INOUT) ::          IER
-      INTEGER, INTENT(IN) ::          ITMAX
-      DOUBLE PRECISION, INTENT(IN) ::  TOL
-      DOUBLE PRECISION, INTENT(IN), DIMENSION(:,:) :: A_m
-      DOUBLE PRECISION, INTENT(IN), DIMENSION(:) :: B_m
-      CHARACTER*(*), INTENT(IN) ::    Vname
-      DOUBLE PRECISION, INTENT(INOUT), DIMENSION(:) :: Var
-      CHARACTER*(*), INTENT(INOUT) :: CMETHOD
-      END SUBROUTINE  leq_bicgs
-      END INTERFACE
+      double precision, allocatable, dimension(:,:) :: A_mt
+      logical, parameter :: do_transpose = .true. 
+      integer :: ii, ijk 
 
+
+      if(do_transpose) then	
+        allocate( A_mt(-3:3, ijkstart3:ijkend3 ))
+        do ijk=ijkstart3,ijkend3
+          do ii=-3,3
+               A_mt(ii,ijk) = A_m(ijk,ii,M)
+          enddo
+        enddo
+      endif
 !
 !//SP - Temporary set METHOD = 2
       METHOD = 2
@@ -96,8 +96,15 @@
 !
       CASE (2)  
 !       bicgstab
+      if(do_transpose) then
+        call leq_bicgst( VNAME,VAR, A_Mt(:,:), B_M(:,M), SWEEP, TOL, ITMAX,IER)
+      else 
         call leq_bicgs( VNAME,VAR, A_M(:,:,M), B_M(:,M), SWEEP, TOL, ITMAX,IER)
+      endif
 
+      if(do_transpose) then	
+        deallocate( A_mt )
+      endif
 
       case(3)
         call leq_gmres( VNAME, VAR, A_M(:,:,M), B_M(:,M), &
