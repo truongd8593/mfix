@@ -49,6 +49,7 @@
       USE scales 
       USE scalars
       USE boundfunijk 
+      USE toleranc
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -238,7 +239,11 @@
                            P_G(IJK) = SCALE(BC_P_G(L)) 
 !
                            IF (BC_EP_G(L) /= UNDEFINED) EP_G(IJK) = BC_EP_G(L) 
-                           IF (BC_T_G(L) /= UNDEFINED) T_G(IJK) = BC_T_G(L) 
+                           IF (BC_T_G(L) /= UNDEFINED) then
+			     T_G(IJK) = BC_T_G(L) 
+			   else
+			     T_g(IJK) = TMIN
+			   endif
                            N = 1 
                            IF (NMAX(0) > 0) THEN 
                               WHERE (BC_X_G(L,:NMAX(0)) /= UNDEFINED) X_G(IJK,:&
