@@ -57,6 +57,9 @@
 !//SP
 !     if (myPE.ne.PE_IO) return
 !
+      ADJUST_DT = .FALSE.                     !No need to iterate again
+      IF (DT==UNDEFINED .OR. DT<ZERO) RETURN 
+      
 !     Initialize
       IF (IER == 100) THEN 
          DT_DIR = -1 
