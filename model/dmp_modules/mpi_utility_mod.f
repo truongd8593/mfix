@@ -543,9 +543,9 @@
         character(len=*), intent(out), dimension(:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 
-        character(len=len(lbuf(1))), allocatable, dimension(:) :: gbuf_pack
-        character, allocatable, dimension(:) :: gbuf_pack1,lbuf1
-	character(len=len(lbuf(1))) :: string
+        character(len=4), allocatable, dimension(:) :: gbuf_pack
+        integer, allocatable, dimension(:,:) :: gbuf_pack1,lbuf1
+	character(len=80) :: string
 
         integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
@@ -567,17 +567,21 @@
            lidebug = idebug
         endif
 
-	lenchar = len(lbuf(1))
+        ijk1 = ijkstart3
+        ijk2 = ijkend3
+        string = gbuf(1)
+
+        lenchar = len(trim(string))
 
         if(myPE.eq.lroot) then
 	  allocate(gbuf_pack(sum(ijksize3_all(:))))
-          allocate(gbuf_pack1(sum(ijksize3_all(:))*lenchar))
+          allocate(gbuf_pack1(sum(ijksize3_all(:)),lenchar))
 	else
 	  allocate(gbuf_pack(10))
-	  allocate(gbuf_pack1(10))
+	  allocate(gbuf_pack1(10,lenchar))
 	endif
 
-        allocate(lbuf1(lenchar*size(lbuf)))
+        allocate(lbuf1(ijk1:ijk2,lenchar))
 
         if( myPE.eq.lroot) then
         ioffset = 0
@@ -598,39 +602,22 @@
         endif
 
 	if(myPE.eq.lroot) then
-	icount = 0
 	do i = 1,size(gbuf_pack)
 	  do j = 1,lenchar
 
-	    icount = icount+1
 	    string = gbuf_pack(i)(1:lenchar)
-	    gbuf_pack1(icount) = string(j:j)
+	    gbuf_pack1(i,j) = ichar(string(j:j))
 
 	  enddo
 	enddo
 	endif
 
-        sendtype = MPI_CHARACTER
-        recvtype = sendtype
+        call scatter_2i(lbuf1,gbuf_pack1)
 
-        ijk1 = ijkstart3
-        ijk2 = ijkend3
-
-        recvcnt = ijk2-ijk1+1
-
-!       Call MPI routines
-
-        call MPI_Scatterv( gbuf_pack1, ijksize3_all*lenchar, displs*lenchar, sendtype, &
-                          lbuf1, recvcnt*lenchar, recvtype,  &
-                          lroot, MPI_COMM_WORLD, ierr )
-        call MPI_Check( 'scatter_1c:MPI_Scatterv', ierr )
-
-        icount = 0
-        do i = 1,size(lbuf)
+        do i = ijk1, ijk2
           do j = 1,lenchar
 
-            icount = icount+1
-            lbuf(i)(j:j) = lbuf1(icount)
+            lbuf(i)(j:j) = char(lbuf1(i,j))
 
           enddo
         enddo
@@ -1219,9 +1206,9 @@
         character(len=*), intent(out), dimension(:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-        character(len=len(lbuf(1))), allocatable, dimension(:) :: gbuf_pack
-        character, allocatable, dimension(:) :: gbuf_pack1,lbuf1
-	character(len=len(lbuf(1))) :: string
+        character(len=4), allocatable, dimension(:) :: gbuf_pack
+        integer, allocatable, dimension(:,:) :: gbuf_pack1,lbuf1
+	character(len=80) :: string
 
         integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
@@ -1246,51 +1233,37 @@
            lidebug = idebug
         endif
 
-	lenchar = len(lbuf(1))
-
-        if(myPE.eq.lroot) then
-	allocate(gbuf_pack(sum(ijksize3_all(:))))
-        allocate(gbuf_pack1(sum(ijksize3_all(:))*lenchar))
-	else
-	allocate(gbuf_pack(10))
-	allocate(gbuf_pack1(10))
-	endif
-
-        allocate(lbuf1(lenchar*size(lbuf)))
-
-
-        recvtype = MPI_CHARACTER
-        sendtype = recvtype
 
         ijk1 = ijkstart3
         ijk2 = ijkend3
+	string = gbuf(1)
 
-        sendcnt = ijk2-ijk1+1
+	lenchar = len(trim(string))
 
-        icount = 0
-        do i = 1,size(lbuf)
-	    string = lbuf(i)(1:lenchar)
-          do j = 1,lenchar
+        if(myPE.eq.lroot) then
+	allocate(gbuf_pack(sum(ijksize3_all(:))))
+        allocate(gbuf_pack1(sum(ijksize3_all(:)),lenchar))
+	else
+	allocate(gbuf_pack(10))
+	allocate(gbuf_pack1(10,lenchar))
+	endif
 
-            icount = icount+1
-            lbuf1(icount) = string(j:j)
+        allocate(lbuf1(ijk1:ijk2,lenchar))
 
-          enddo
+	do i = ijk1,ijk2
+           string = lbuf(i)(1:lenchar)
+	   do j = 1,lenchar
+	   lbuf1(i,j) = ichar(string(j:j))
+	   enddo
         enddo
 
-        call MPI_Gatherv( lbuf1, sendcnt*lenchar, sendtype,  &
-                           gbuf_pack1, ijksize3_all*lenchar, displs*lenchar, recvtype, &
-                          lroot, MPI_COMM_WORLD, ierr )
-        call MPI_Check( 'gather_1c:MPI_Gatherv', ierr )
-
+        call gather_2i(lbuf1, gbuf_pack1)
 
 	if(myPE.eq.lroot) then
-        icount = 0
         do i = 1,size(gbuf_pack)
           do j = 1,lenchar
 
-            icount = icount+1
-            string(j:j) = gbuf_pack1(icount)
+            string(j:j) = char(gbuf_pack1(i,j))
 
           enddo
 	  gbuf_pack(i)(1:lenchar) = string(1:lenchar)

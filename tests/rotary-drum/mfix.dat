@@ -9,8 +9,8 @@
   DESCRIPTION = 'Rotary drum'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-#   TIME  =0.0  TSTOP = 1.0E-4   DT = 1.0e-4   DT_MAX = 1.0e-4   OUT_DT = 1.0e-4
-    TIME  =0.0  TSTOP = 0.5  DT = 1.0e-4 
+   TIME  =0.0  TSTOP = 1.0E-4   DT = 1.0e-4   DT_MAX = 1.0e-4   OUT_DT = 1.0e-4
+#   TIME  =0.0  TSTOP = 1.0  DT = 1.0e-4 
   
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE.    .FALSE.
@@ -156,7 +156,7 @@
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g    Theta
         !      P_star    V_g  V_s            T_s1 X_s
         !                W_g  W_s            T_s2
-  SPX_DT = 0.01 0.01     100.  0.01  100.      100. 100.     0.01   100.
+  SPX_DT = 0.01 0.01     100.  0.01  100.      100. 100.     0.01   100. 
 
   FULL_LOG = .TRUE.
   RESID_STRING  = 'P1' 'U1' 'W1' 'G1'
