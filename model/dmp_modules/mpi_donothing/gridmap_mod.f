@@ -22,7 +22,11 @@
 		   kp, kproc, ksize, kremain, ikproc, ierr
 
         if(numPEs.ne.(nodesi*nodesj*nodesk)) then
-        call MPI_abort( MPI_COMM_WORLD, ierr)
+	  write(*,*)'From : gridmap module'
+	  write(*, *) 'nodesi = ', nodesi, '  nodesj = ', nodesj, '  nodesk = ',nodesk
+	  write(*,*) 'number of processors requested = ', numPEs
+	  write(*,*) 'nodesi*nodesj*nodesk must equal the number of processors requested in mpirun'
+          call MPI_abort( MPI_COMM_WORLD, ierr)
 	endif
 !
         if(nodesi.ne.1.and.cyclic_x) then
@@ -403,6 +407,8 @@
         c0 = 1 - jstart3_all(myPE)
         c1 = (jend3_all(myPE)-jstart3_all(myPE)+1)
         c2 = (jend3_all(myPE)-jstart3_all(myPE)+1)* (iend3_all(myPE)-istart3_all(myPE)+1)
+
+	c0 =  c0  - c1*istart3_all(myPE) - c2*kstart3_all(myPE)
 
 !	Call to sendrecv_init to set all the communication pattern
 

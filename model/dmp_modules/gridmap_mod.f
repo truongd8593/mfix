@@ -24,7 +24,7 @@
         if(numPEs.ne.(nodesi*nodesj*nodesk)) then
 	  write(*,*)'From : gridmap module'
 	  write(*, *) 'nodesi = ', nodesi, '  nodesj = ', nodesj, '  nodesk = ',nodesk
-	  write(*,*) 'number of processors requested = ' numPEs
+	  write(*,*) 'number of processors requested = ', numPEs
 	  write(*,*) 'nodesi*nodesj*nodesk must equal the number of processors requested in mpirun'
           call MPI_abort( MPI_COMM_WORLD, ierr)
 	endif
