@@ -9,7 +9,7 @@
 	Units		= 'cgs'
 	Run_type	= 'new'
 	Time		=  0.0
-	Tstop		=  10.0
+	Tstop		=  0.1 
 	DT		= 1.0E-4
 
 

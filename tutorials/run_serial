@@ -18,6 +18,14 @@ sh ~/MFIX/mfix/model/make_mfix < ../in
 cd ..
 # Another case
 echo
+cd FluidBed_DES
+echo "********************************************************************"
+echo "FluidBed_DES"
+sh ~/MFIX/mfix/model/make_mfix < ../../in
+./mfix.exe > out1
+cd ../..
+# Another case
+echo
 cd fluidBed1
 echo "********************************************************************"
 echo "fluidBed1"
@@ -48,4 +56,13 @@ echo "reactor1/b"
 sh ~/MFIX/mfix/model/make_mfix < ../../in
 ./mfix.exe > out1
 cd ../..
+# Another case
+echo
+cd SpoutedBedCombustor
+echo "********************************************************************"
+echo "SpoutedBedCombustor"
+sh ~/MFIX/mfix/model/make_mfix < ../../in
+./mfix.exe > out1
+cd ../..
+
 
