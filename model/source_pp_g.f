@@ -94,10 +94,10 @@
       INCLUDE 'function.inc'
 
         k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
-        j_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1))) &
-                      - 1)/(imax3-imin3+1)) + jmin3
-        i_of_g(ijk) = ijk - (j_of_g(ijk)-jmin3)*(imax3-imin3+1) - &
-                      (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + imin3
+        i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1))) &
+                      - 1)/(jmax3-jmin3+1)) + imin3
+        j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
+                      (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + jmin3
 
 ! loezos
 ! update to true velocity
@@ -246,6 +246,7 @@
    I = I_OF_G(IJK_P_G)
    J = J_OF_G(IJK_P_G)
    K = K_OF_G(IJK_P_G)
+
    IF(IS_ON_myPE_OWNS(I,J,K)) THEN
       IF (IJK_P_G /= UNDEFINED_I) THEN 
          IJK_P_G_LOCAL = FUNIJK(I,J,K)

@@ -523,7 +523,7 @@
       CASE DEFAULT                               !Error 
          WRITE (LINE, '(A,I2,A)') 'DISCRETIZE = ', DISCR, ' not supported.' 
          CALL WRITE_ERROR ('CALC_XSI', LINE, 1) 
-         STOP  
+         CALL MFIX_EXIT(myPE)
       END SELECT 
       
       ENDIF
@@ -1003,7 +1003,7 @@
       CASE DEFAULT                               !Error 
          WRITE (*,*) 'DISCRETIZE = ', DISCR, ' not supported.' 
 
-         STOP  
+         CALL MFIX_EXIT(myPE)
 
       END SELECT 
       RETURN

@@ -50,8 +50,6 @@
 !                    sweep direction
       CHARACTER*(*), INTENT(INOUT) :: CMETHOD
 !
-      INTEGER          IER
-      INTEGER          ITMAX
 !
 !-------------------------------------------------
       DOUBLE PRECISION DNRM2
@@ -60,8 +58,6 @@
 
 !--------------------------------------------------
 
-
-      cmethod = 'RSRS'
       call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
                        cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE, IER )
 
@@ -161,9 +157,7 @@
         END FUNCTION DOT_PRODUCT_PAR
         END INTERFACE
 
-!//AIKE 0201
-        logical, parameter :: do_unit_scaling = .true.
-!       logical, parameter :: do_unit_scaling = .false.
+       logical, parameter :: do_unit_scaling = .true.
 
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -173,6 +167,7 @@
       beta(:)   = zero
       omega(:)  = zero
       rho(:)    = zero
+      var(:)    = zero
 
       TOLMIN = EPSILON( one )
 
@@ -209,20 +204,16 @@
 
     call MATVEC( Vname, Var, A_M, R )
 
-!      call out_array(var,'var')
-!      call out_array(r,'r')
 
 	R(ijkstart3:ijkend3) = B_m(ijkstart3:ijkend3) - R(ijkstart3:ijkend3)
-!	call send_recv(R,2)
 
 	Rtilde(:) = R(:)
 	
 	Rnorm0 = sqrt( dot_product_par( R, R ) )
 
-!      print*,'leq_bicgs, initial: ', Vname,' resid ', real(Rnorm0)
-    if (idebugl >= 1) then
+       if (idebugl >= 1) then
        print*,'leq_bicgs, initial: ', Vname,' resid ', real(Rnorm0)
-    endif
+       endif
 !
 !   Main loop
 !
@@ -230,14 +221,14 @@
     do i=1,itmax
 
         rho(i-1) = dot_product_par( Rtilde, R )
-!      print*,'leq_bicgs, initial: ', Vname,' rho(i-1) ', real(rho(i-1))
+!       print*,'leq_bicgs, initial: ', Vname,' rho(i-1) ', real(rho(i-1))
 
         if (rho(i-1) .eq. zero) then
 	  if(i /= 1)then
 !           ------------
 !           Method fails
 !           ------------
-            !print*, 'leq_bicgs,',Vname,': rho(i-1) == 0 '
+!	  print*, 'leq_bicgs,',Vname,': rho(i-1) == 0 '
 	    ier = -2
 	  else
 !           ------------
@@ -271,14 +262,9 @@
 
         call MATVEC( Vname, Phat, A_m, V )
 
-!      call out_array(p,'p')
-!      call out_array(phat,'ph')
-!      call out_array(v,'v')
-!     call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-
             
         RtildexV = dot_product_par( Rtilde, V )
-!      print*,'leq_bicgs, initial: ', Vname,' RtildexV ', real(RtildexV)
+!       print*,'leq_bicgs, initial: ', Vname,' RtildexV ', real(RtildexV)
 
         alpha(i) = rho(i-1) / RtildexV
 
@@ -290,27 +276,24 @@
 !       set X(:) = X(:) + alpha(i)*Phat(:) and stop
 !
         Snorm = sqrt( dot_product_par( Svec, Svec ) )
-!      print*,'leq_bicgs, initial: ', Vname,' Snorm ', real(Snorm)
+!       print*,'leq_bicgs, initial: ', Vname,' Snorm ', real(Snorm)
+
 
         if (Snorm <= TOLMIN) then
 
-!	write(91,*) alpha(i)
-!	write(91,*) Var(ijkstart3:ijkend3)
-!	write(91,*) Phat(ijkstart3:ijkend3)
-!	write(*,*) '**************************'
 
              Var(ijkstart3:ijkend3) = Var(ijkstart3:ijkend3) + alpha(i)*Phat(ijkstart3:ijkend3)
-!            if (idebugl >= 1) then
+             if (idebugl >= 1) then
 !
 !               Recompute residual norm
 !          
              call MATVEC( Vname, Var, A_m, R )
-             Rnorm = sqrt( dot_product_par( Var, Var ) )
-!      print*,'leq_bicgs, initial: ', Vname,' Vnorm ', real(Rnorm)
+!            Rnorm = sqrt( dot_product_par( Var, Var ) )
+!            print*,'leq_bicgs, initial: ', Vname,' Vnorm ', real(Rnorm)
              R(ijkstart3:ijkend3) = B_m(ijkstart3:ijkend3) - R(ijkstart3:ijkend3)
-!            endif
              Rnorm = sqrt( dot_product_par( R, R ) )
-!      print*,'leq_bicgs, initial: ', Vname,' Rnorm ', real(Rnorm)
+!            print*,'leq_bicgs, initial: ', Vname,' Rnorm ', real(Rnorm)
+             endif
 
             EXIT
         endif
@@ -323,18 +306,6 @@
 
         
         call MATVEC( Vname, Shat, A_m, Tvec )
-
-!       do k = kmin2, kmax2
-!       do j = jmin2, jmax2
-!       do ii = imin2, imax2
-
-!       IJK = funijk(ii,j,k)
-!       write(90,*) 'initial', ii,j,k,Svec(ijk),Tvec(ijk)
-
-!       enddo
-!       enddo
-!       enddo
-
 
         TxS = dot_product_par( Tvec(:), Svec(:) )
         TxT = dot_product_par( Tvec(:), Tvec(:) )
@@ -357,6 +328,8 @@
              print*,'RtildexV, rho(i-1) ', RtildexV, rho(i-1)
            endif
         endif
+
+!	call mfix_exit(myPE)
 
 !       Check convergence; continue if necessary
 !       for continuation, it is necessary that omega(i) .ne. 0
@@ -478,6 +451,7 @@
 
       DO J=NSTART, NEND
          IJK = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K))
+!        IJK = FUNIJK(I,J,K)
          IM1JK = IM_OF(IJK)
          IP1JK = IP_OF(IJK)
 
@@ -585,6 +559,7 @@
       DO J=NSTART, NEND
 
          IJK = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K))
+!        IJK = FUNIJK(I,J,K)
          IM1JK = IM_OF(IJK)
          IP1JK = IP_OF(IJK)
          IJKM1 = KM_OF(IJK)
@@ -692,7 +667,7 @@
       integer :: im1jk,ip1jk, ijm1k,ijp1k, ijkm1,ijkp1
       logical, parameter :: use_send_recv = .true.
       logical, parameter :: need_distribute_Avar = .true.
-      logical, parameter :: use_funijk = .true.
+      logical, parameter :: use_funijk = .false.
 
       integer :: i1,i2, j1,j2, k1,k2, isize,jsize
       integer :: cc, ci, cj, ck
@@ -933,7 +908,7 @@
         enddo
         enddo
 
-!    call send_recv(var,1)
+     call send_recv(var,1)
 
      ENDIF
 
@@ -1293,6 +1268,7 @@
           do j = jstart, jend
    
             ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
+!           ijk = funijk (i,j,k)
 
             prod = prod + r1(ijk)*r2(ijk)
    
@@ -1324,6 +1300,7 @@
             do j = jmin2, jmax2
   
               ijk = funijk_gl (imap_c(i),jmap_c(j),kmap_c(k))
+!             ijk = funijk (i,j,k)
   
               prod = prod + r1_g(ijk)*r2_g(ijk)
   

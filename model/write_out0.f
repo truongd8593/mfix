@@ -760,8 +760,11 @@
          allocate (array2(dimension_3))
          allocate (array3(1))
       end if
+
+!write(*,*) 'ijkmax3', ijkmax3, dimension_3
       
 !//SP Filling the processor ghost layer with the correct values
+
       call gather (icbc_flag,array1,PE_IO)
       call scatter (icbc_flag,array1,PE_IO)
       
@@ -797,6 +800,7 @@
         WRITE (UNIT_OUT, *)
       ENDIF
       
+
       deallocate (array1) 
       deallocate (array2) 
       deallocate (array3) 

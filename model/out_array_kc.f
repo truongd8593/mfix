@@ -96,12 +96,12 @@
             IJ2 = funijk_io(IFORM2,LL2,1) 
 !efd
             WRITE (LINE, 5100) LL2, (ARRAY(LL3),LL3=IJK,IJ2) 
-!            WRITE (LINE, 5100) LL2, (ARRAY(funijk_io(LL3,LL2,1)),LL3=IFORM1,IFORM2)
 
             LL4 = 12 + (IFORM2 - IFORM1 + 1)*5 
             WRITE (UNIT_OUT, '(A)') LINE(1:LL4) 
          END DO 
       END DO 
+
 
  5050 FORMAT(3X,'J',3X,'I=',3X,24(I3,2X)) 
  5100 FORMAT(1X,I3,8X,24(A4,1X)) 

@@ -29,6 +29,7 @@
       USE param1 
       USE parse 
       USE rxns
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -93,7 +94,7 @@
             RXN_NO = GET_RXN_NO(RXN_ID) 
             IF (GOT_RATE(RXN_NO)) THEN 
                WRITE (*, 1010) RXN_ID, LINE(1:LMAX) 
-               STOP  
+               CALL MFIX_EXIT(myPE)
             ELSE 
                GOT_RATE(RXN_NO) = .TRUE. 
             ENDIF 
@@ -101,7 +102,7 @@
          ELSE                                    !rxn identifier not found -- error 
 !
             WRITE (*, 1000) LINE(1:LMAX) 
-            STOP  
+            CALL MFIX_EXIT(myPE)
 !
          ENDIF 
 !
@@ -119,7 +120,7 @@
          ELSE                                    !rxn identifier not found -- error 
 !
             WRITE (*, 1000) LINE(1:LMAX) 
-            STOP  
+            CALL MFIX_EXIT(myPE)
          ENDIF 
 !
          CALL GET_FIELDS (LINE, NF, FIELD, NUM_LEFT, IER) 
@@ -131,7 +132,7 @@
          DELTA_H(RXN_NO) = DO_ARITH(FIELD(IS),LEN(FIELD(IS)),IER) 
          IF (IER /= 0) THEN 
             WRITE (*, 1060) LINE(1:LMAX) 
-            STOP  
+            CALL MFIX_EXIT(myPE)
          ENDIF 
 !
          RETURN  
@@ -152,7 +153,7 @@
             RXN_NO = GET_RXN_NO(RXN_ID) 
             IF (GOT_RXN(RXN_NO)) THEN 
                WRITE (*, 1020) RXN_ID, LINE(1:LMAX) 
-               STOP  
+               CALL MFIX_EXIT(myPE)
             ELSE 
                GOT_RXN(RXN_NO) = .TRUE. 
             ENDIF 
@@ -160,12 +161,12 @@
          ELSE 
 !         rxn identifier not found -- error
             WRITE (*, 1000) LINE(1:LMAX) 
-            STOP  
+            CALL MFIX_EXIT(myPE)
          ENDIF 
       ELSE 
          IF ( .NOT.READING_RXN .AND.  .NOT.READING_RATE) THEN 
             WRITE (*, 1050) LINE(1:LMAX) 
-            STOP  
+            CALL MFIX_EXIT(myPE)
          ENDIF 
 !
       ENDIF 
@@ -192,10 +193,10 @@
 !
             IF (IER == 1) THEN 
                WRITE (*, 1051) FIELD(I), LINE(1:LMAX) 
-               STOP  
+               CALL MFIX_EXIT(myPE)
             ELSE IF (IER == 2) THEN 
                WRITE (*, 1052) FIELD(I), LINE(1:LMAX) 
-               STOP  
+               CALL MFIX_EXIT(myPE)
             ENDIF 
 !
 !                                                !reactant
@@ -207,10 +208,10 @@
 !
             IF (IER == 1) THEN 
                WRITE (*, 1051) FIELD(I), LINE(1:LMAX) 
-               STOP  
+               CALL MFIX_EXIT(myPE)
             ELSE IF (IER == 2) THEN 
                WRITE (*, 1052) FIELD(I), LINE(1:LMAX) 
-               STOP  
+               CALL MFIX_EXIT(myPE)
             ENDIF 
 !
 !                                                !product
@@ -238,7 +239,7 @@
             RATE_M4T(RXN_NO) = DO_ARITH(FIELD(IS),LEN(FIELD(IS)),IER) 
             IF (IER /= 0) THEN 
                WRITE (*, 1060) LINE(1:LMAX) 
-               STOP  
+               CALL MFIX_EXIT(myPE)
             ENDIF 
             FOUND_M4T = .TRUE. 
             IS = IS + 1 
@@ -250,7 +251,7 @@
             RATE_FAC(RXN_NO,1) = DO_ARITH(FIELD(IS),LEN(FIELD(IS)),IER) 
             IF (IER /= 0) THEN 
                WRITE (*, 1062) LINE(1:LMAX) 
-               STOP  
+               CALL MFIX_EXIT(myPE)
             ENDIF 
             FOUND_PREEXP = .TRUE. 
             IS = IS + 1 
@@ -262,7 +263,7 @@
             RATE_FAC(RXN_NO,2) = DO_ARITH(FIELD(IS),LEN(FIELD(IS)),IER) 
             IF (IER /= 0) THEN 
                WRITE (*, 1064) LINE(1:LMAX) 
-               STOP  
+               CALL MFIX_EXIT(myPE)
             ENDIF 
             FOUND_TEXP = .TRUE. 
             IS = IS + 1 
@@ -274,7 +275,7 @@
             RATE_FAC(RXN_NO,3) = DO_ARITH(FIELD(IS),LEN(FIELD(IS)),IER) 
             IF (IER /= 0) THEN 
                WRITE (*, 1066) LINE(1:LMAX) 
-               STOP  
+               CALL MFIX_EXIT(myPE)
             ENDIF 
             FOUND_ACTEMP = .TRUE. 
             IS = IS + 1 
@@ -285,10 +286,10 @@
 !
             IF (IER == 1) THEN 
                WRITE (*, 1051) FIELD(I), LINE(1:LMAX) 
-               STOP  
+               CALL MFIX_EXIT(myPE)
             ELSE IF (IER == 2) THEN 
                WRITE (*, 1052) FIELD(I), LINE(1:LMAX) 
-               STOP  
+               CALL MFIX_EXIT(myPE)
             ENDIF 
 !
             RATE_EXP(RXN_NO,SPECIES_INDEX) = VALUE 
@@ -343,6 +344,7 @@
       USE param1 
       USE parse 
       USE rxns 
+      use compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -381,6 +383,7 @@
       USE param1 
       USE parse 
       USE rxns 
+      use compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -417,6 +420,7 @@
       USE param1 
       USE parse 
       USE rxns 
+      use compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -450,6 +454,7 @@
       USE param1 
       USE parse 
       USE rxns
+      use compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -503,6 +508,7 @@
       USE param1 
       USE parse 
       USE rxns 
+      use compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -525,6 +531,7 @@
       USE param1 
       USE parse 
       USE rxns 
+      use compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -560,6 +567,7 @@
       USE param1 
       USE parse 
       USE rxns 
+      use compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -594,6 +602,7 @@
       USE param1 
       USE parse 
       USE rxns 
+      use compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -637,6 +646,7 @@
       USE param1 
       USE parse 
       USE rxns
+      use compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -666,7 +676,7 @@
       NO_OF_RXNS = NO_OF_RXNS + 1                ! new reaction 
       IF (NO_OF_RXNS > DIMENSION_RXN) THEN 
          WRITE (*, 1010) DIMENSION_RXN 
-         STOP  
+         CALL MFIX_EXIT(myPE)
       ENDIF 
       RXN_NAME(NO_OF_RXNS) = RXN_ID 
       GOT_RXN(NO_OF_RXNS) = .FALSE. 
@@ -701,6 +711,7 @@
       USE param1 
       USE parse 
       USE rxns 
+      use compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -837,6 +848,7 @@
       USE param1 
       USE parse 
       USE rxns
+      use compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -902,6 +914,7 @@
       USE param1 
       USE parse 
       USE rxns
+      use compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -970,6 +983,7 @@
       use param1 
       use parse 
       use rxns 
+      use compar 
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1012,6 +1026,7 @@
       use param1 
       use parse 
       use rxns 
+      use compar 
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1048,6 +1063,7 @@
       USE param1 
       USE parse 
       USE rxns 
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

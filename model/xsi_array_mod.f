@@ -26,7 +26,7 @@ MODULE xsi_array
       SUBROUTINE lock_xsi_array
         IF(xsi_array_locked)Then
 	  Write(*,*)'Error:  Multiple use of xsi_array (xsi_array_mod.f)'
-	  Stop
+	  CALL MFIX_EXIT(myPE)
 	Else
 	  xsi_array_locked = .true.
 	Endif

@@ -530,7 +530,7 @@
             DO N = 1, NScalar 
                IF (IC_Scalar(ICV,N) /= UNDEFINED) THEN 
                   WRITE (UNIT_LOG, 1200) 'Scalar', ICV 
-                  STOP  
+                  CALL MFIX_EXIT(myPE)
                ENDIF 
             END DO 
 	    

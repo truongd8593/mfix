@@ -87,7 +87,7 @@
          LEND = LSTART - 1 + INDEX(LINE(LSTART:LMAX),END_STR) 
          IF (LEND <= LSTART) THEN 
             WRITE (*, 1000) myPE,LINE(LSTART:LMAX) 
-            STOP  
+            CALL MFIX_EXIT(myPE)  
          ENDIF 
 !
          IF (END_RXN(LINE(LSTART:LEND),LEND-LSTART)) THEN 
@@ -347,7 +347,7 @@
       LEND = LSTART - 1 + INDEX(LINE(LSTART:LMAX),END_STR) 
       IF (LEND <= LSTART) THEN 
          WRITE (*, 1000) myPE,LINE(LSTART:LMAX) 
-         STOP  
+         CALL MFIX_EXIT(myPE)  
       ENDIF 
 !
 !    Do the arithmetic
@@ -359,7 +359,7 @@
          IF (LINE(L:L)=='*' .OR. LINE(L:L)=='/' .OR. LINE(L:L)==END_STR) THEN 
             IF (LSUB == 1) THEN 
                WRITE (*, 1015) myPE,LINE(LSTART:LEND) 
-               STOP  
+               CALL MFIX_EXIT(myPE)  
             ENDIF 
             IF (SUB_STR(1:LSUB-1) == 'PI') THEN 
                SUB_VALUE = PI 
@@ -389,7 +389,7 @@
          LDIF = 22 - LENGTH 
          IF (LMAX + LDIF > LEN(LINE)) THEN 
             WRITE (*, 1020) myPE,LINE(1:80) 
-            STOP  
+            CALL MFIX_EXIT(myPE)  
          ENDIF 
          DO L = LMAX, LEND + 1, -1 
             LINE(L+LDIF:L+LDIF) = LINE(L:L) 
@@ -408,7 +408,7 @@
 !
   900 CONTINUE 
       WRITE (*, 1010) myPE, SUB_STR(1:LSUB-1) 
-      STOP  
+      CALL MFIX_EXIT(myPE)  
  1000 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_ARITH',/&
          ' Message: No ending ) found in the input line: ',/9X,A,/1X,70('*')/) 
  1010 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_ARITH',/&

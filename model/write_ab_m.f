@@ -97,10 +97,11 @@
 
 
       DO K = Kmin2, Kmax2
-      DO J = Jmin2, Jmax2
       DO I = Imin2, Imax2
+      DO J = Jmin2, Jmax2
 
-      IJK = FUNIJK_GL(IMAP_C(I),JMAP_C(J),KMAP_C(K))
+!     IJK = FUNIJK_GL(IMAP_C(I),JMAP_C(J),KMAP_C(K))
+      IJK = FUNIJK_GL(I,J,K)
 
          do L = -3,3
 
@@ -108,7 +109,7 @@
 
             if (myPE == PE_IO) am(l) = array1(ijk)
          end do
-         if (myPE == PE_IO) WRITE (UNIT_LOG, '(I5, 3(I3), 8(1X,G9.2))') IJK, I, J, K,&
+         if (myPE == PE_IO) WRITE (UNIT_LOG, '(I5, 3(I3), 8(1X,G9.2))') FUNIJK_IO(I,J,K), I, J, K,&
                                     (AM(L),L=-3,3), array2(IJK) 
 
       END DO 

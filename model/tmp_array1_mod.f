@@ -24,7 +24,7 @@ MODULE tmp_array1
       SUBROUTINE lock_tmp_array1
         IF(tmp_array1_locked)Then
 	  Write(*,*)'Error:  Multiple use of tmp_array1 (tmp_array1_mod.f)'
-	  Stop
+	  CALL MFIX_EXIT(myPE)
 	Else
 	  tmp_array1_locked = .true.
 	Endif

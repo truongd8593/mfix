@@ -96,13 +96,13 @@
             LINE(1) = 'DT < DT_MIN.  Recovery not possible!' 
             IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1) 
             CALL WRITE_ERROR ('ADJUST_DT', LINE, 1) 
-            STOP
+            CALL MFIX_EXIT(myPE)
          ELSE IF (DT_FAC >= ONE) THEN 
             LINE(1) = 'DT_FAC >= 1.  Recovery not possible!' 
 !//SP
             IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1) 
             CALL WRITE_ERROR ('ADJUST_DT', LINE, 1) 
-            STOP  
+            CALL MFIX_EXIT(myPE)
          ELSE 
 !
             DT_DIR = -1 

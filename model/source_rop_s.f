@@ -39,7 +39,7 @@
       USE indices
       USE pgcor
       USE pscor
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -77,8 +77,6 @@
       INCLUDE 'function.inc'
 !
 !
-!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-
 !!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
 !!$omp&  Src, LINE) &
 !!$omp&  schedule(static)
@@ -131,7 +129,10 @@
             B_M(IJK,M) = -ROP_S(IJK,M) 
          ENDIF 
       END DO 
-!//? check if need to COMMunicate A_M and B_M?      
       
       RETURN  
       END SUBROUTINE SOURCE_ROP_S 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

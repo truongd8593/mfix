@@ -115,33 +115,33 @@
 !
 !
 !                      TA(1) = user cpu time   TA(2) = system cpu time
-      REAL             TA(2) 
+!     REAL             TA(2) 
 !
 !                      XT = TA(1) + TA(2)
-      REAL             XT
+!     REAL             XT
 !
 !                      ETIME is an SGI system function which returns
 !                      the elasped CPU time
-      REAL             ETIME
+!     REAL             ETIME
 !
-       XT = MPI_WTIME()
+!      XT = MPI_WTIME()
 !      XT  = ETIME(TA)
-      CPU = XT
+!     CPU = XT
       
       
 !-------------------------------------------F90
 !                       clock cycle
-!      INTEGER           COUNT
+       INTEGER           COUNT
 
 !                       number of cycles per second
-!      INTEGER           COUNT_RATE
+       INTEGER           COUNT_RATE
       
 !                       max number of cycles, after which count is reset to 0
-!      INTEGER           COUNT_MAX
+       INTEGER           COUNT_MAX
 
-!      CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
+       CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
       
-!      CPU           = DBLE(COUNT)/DBLE(COUNT_RATE)
+       CPU           = DBLE(COUNT)/DBLE(COUNT_RATE)
 !
       RETURN
       END

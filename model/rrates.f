@@ -43,7 +43,8 @@
       USE physprop
       USE constant
       USE funits 
-      USE compar  
+      USE compar        !//d
+      USE sendrecv      !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -61,16 +62,17 @@
 !                      cell index
       INTEGER          IJK
       
-      DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX), RXNA
+      DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX)
 !C
 !-----------------------------------------------
       INCLUDE 'function.inc'
       
       R_tmp = UNDEFINED
 !
-!//  ---  Remember to include all the local variables here for parallel
-!//  ---- processing
+!  ---  Remember to include all the local variables here for parallel
+!  ---- processing
 !$omp  parallel do private(ijk, R_tmp, L, LM, M, N)
+
       DO IJK = IJKSTART3, IJKEND3 
       
          R_gp(IJK, :) = ZERO
@@ -101,13 +103,6 @@
 !    factor of epsilon. Note that X_g and X_s are mass fractions
 !
 !
-!              No   1   2    3
-!     GAS Species   O3,  O2, N2
-
-!   a)  O3 -> 1.5 O2
-
-      Rxna = (1. - EP_g(IJK)) * C(1) * (RO_g(IJK)*X_g(IJK,1)/MW_g(1))
-!
 !
 !2222222222222222222222222222222222222222222222222222222222222222222222222222222
 !
@@ -126,19 +121,6 @@
 !    solids phases also.
 !
 !  GAS SPECIES
-!
-!
-
-!    (1) O3
-      IF(X_g(IJK, 1) .GT. ZERO) THEN
-        RoX_gc(IJK, 1) = RXNA  * MW_g(1) / X_g(IJK, 1)
-      ELSE
-        RoX_gc(IJK, 1) = 1.0e-9
-      ENDIF
-
-!     (2) O2
-      R_gp(IJK, 2) = RXNA * MW_g(2) * 1.5
-
 !
 !
 !  SOLIDS SPECIES
@@ -222,13 +204,12 @@
          ENDIF 
       END DO 
       
-     
  1000 FORMAT(/1X,70('*')//' From: RRATES',/&
          ' Message: Mass transfer between phases ',I2,' and ',I2,&
          ' (R_tmp) not specified',/1X,70('*')/) 
       RETURN  
       END SUBROUTINE RRATES 
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

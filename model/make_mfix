@@ -36,6 +36,47 @@ then
   exit
 fi
 
+
+# get user input
+echo
+echo "MFIX directory is $mfix"
+echo
+echo "Compiling with $mach_file"
+echo
+
+echo -n "Do you need SMP version? (y/n) [no] "
+read smp_version
+
+echo
+echo -n "Do you need DMP version? (y/n) [no] "
+read dmp_version
+
+echo
+echo -n "Do you need debug version? (y/n) [no] "
+read dbg_version
+  
+case $dmp_version in
+  y|Y )
+
+  mpi_include="/usr/include/mpif.h"
+
+  echo
+  echo -n "checking for mpi include file in the default directory /usr/include"
+            if test -f $mpi_include
+            then
+	        echo
+                echo -n "using the mpi include file from default directory"
+            else
+	        echo
+                echo -n "input the location of the directory where mpif.h resides"
+                read mpi_include
+            fi
+  ;;
+  *)
+  mpi_include=".."
+  ;;
+esac
+
 #
 #------------------------------------------------------------------------
 # Define machine dependent flags and copy machine dependent files
@@ -46,23 +87,52 @@ fi
     
     case $opsys in
 
+      OSF1)
+            mach_file="OSF1.F"
+
+            FORTRAN_CMD=f90
+            LINK_CMD=f90
+            libs_d="-lcxmlp -lmpi -lelan"
+            libs="-lcxmlp -lmpi -lelan"
+
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-omp"
+            compile_d="-c -I. -I$mpi_include -C -trapuv -g -free -nowarn -assume byterecl -convert big_endian "
+            link_d="-C -g -nowarn -assume byterecl -convert big_endian"
+
+            compile="-c -I. -I$mpi_include -O5 -fast -free -nowarn -assume byterecl -convert big_endian "
+            compile2="-c -I. -I$mpi_include -O5 -fast  -free -nowarn -assume byterecl -convert big_endian "
+            link="-O5 -fast -nowarn -assume byterecl -convert big_endian"
+            MODULE_CODE=1
+            ;;
+
       AIX)
             mach_file="AIX.F"
 
-            FORTRAN_CMD=xlf90_r
-            LINK_CMD=xlf90_r
+            case $dmp_version in
+              y|Y )
+                        FORTRAN_CMD=mpxlf90_r
+                        LINK_CMD=mpxlf90_r
+                ;;
+              *)
+                        FORTRAN_CMD=xlf90_r
+                        LINK_CMD=xlf90_r
+                ;;
+            esac
+
             libs_d="-lblas "
             libs="-lblas -lesslp2_r"
 
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-qsmp=omp -qsmp=noauto -qnosave"
-            compile_d="-q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -c -I. -C -g -pg -qinitauto=FF -qflttrap -freeform"
+            compile_d="-q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -c -I. -I$mpi_include -C -g -pg -qinitauto=FF -qflttrap -freeform"
             link_d="-q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -C -g -pg -qinitauto=FF -qflttrap"
 
-            compile="-c -pg -I. -O3 -qstrict -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qarch=pwr3 -qtune=pwr3 -qcache=auto -freeform "
-            compile2="-c -pg -I. -O3 -qstrict -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qarch=pwr3 -qtune=pwr3 -qcache=auto -freeform "
-            link="-O3 -pg -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qtune=pwr3 -qcache=auto "
+            compile="-c -I. -I$mpi_include -O3 -qstrict -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qarch=pwr3 -qtune=pwr3 -qcache=auto -freeform "
+            compile2="-c -I. -I$mpi_include -O3 -qstrict -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qarch=pwr3 -qtune=pwr3 -qcache=auto -freeform "
+            link="-O3 -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qtune=pwr3 -qcache=auto "
             MODULE_CODE=1
             ;;
 
@@ -72,17 +142,17 @@ fi
 
             FORTRAN_CMD=f90
             LINK_CMD=f90
-            libs_d="-lblas"
-            libs="-lblas"
+            libs_d="-lblas -lmpi"
+            libs="-lblas -lmpi"
 	      
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"
-            compile_d="-c -I. -64 -C -trapuv -g -freeform "
+            compile_d="-c -I. -I$mpi_include -64 -C -trapuv -g -freeform -Inline:must:eosg,compare,phi_c_of,xsi"
             link_d="-64 -C -g"
 
-            compile="-c -I. -64 -O3 -mips4 -freeform "
-            compile2="-c -I. -64 -O3 -mips4 -freeform "
+            compile="-c -I. -I$mpi_include -64 -O3 -mips4 -freeform -Inline:must:eosg,compare,phi_c_of,xsi"
+            compile2="-c -I. -I$mpi_include -64 -O3 -mips4 -freeform -Inline:must:eosg,compare,phi_c_of,xsi"
             link="-64 -O3 -mips4"
             MODULE_CODE=0
             ;;
@@ -98,10 +168,10 @@ fi
             OBJ_EXT=o
             FORTRAN_EXT=f90
 	    omp="?"
-            compile_d="-c -I. -g -nowarn -freeform -convert big_endian"
+            compile_d="-c -I. -I$mpi_include -g -nowarn -freeform -convert big_endian"
             link_d="-g -nowarn -convert big_endian"
-            compile="-c -I. -nowarn -O2 -freeform -convert big_endian"
-            compile2="-c -I. -nowarn -O2 -freeform -convert big_endian"
+            compile="-c -I. -I$mpi_include -nowarn -O2 -freeform -convert big_endian"
+            compile2="-c -I. -I$mpi_include -nowarn -O2 -freeform -convert big_endian"
             link="-O2 -nowarn -convert big_endian"
             MODULE_CODE=0
 	    
@@ -119,11 +189,11 @@ fi
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"
-            compile_d="-c -I. -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile_d="-c -I. -I$mpi_include -Minline=eosg,compare,phi_c_of,xsi -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
 #            link_d="-Mprof=func -g -L/usr/local/MPI/mpich/lib/LINUX/ch_p4 -lmpich"
             link_d=" -L/usr/lib -lmpi"
-            compile=" -O -I. -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant "
-            compile2="-O1 -I. -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile=" -O -I. -I$mpi_include -Minline=eosg,compare,phi_c_of,xsi -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant "
+            compile2="-O1 -I. -I$mpi_include -Minline=eosg,compare,phi_c_of,xsi -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
 #            link=" -L/usr/local/MPI/mpich/lib/LINUX/ch_p4 -lmpich"
             link=" -L/usr/lib -lmpi"
             MODULE_CODE=1
@@ -145,8 +215,8 @@ fi
 	    omp="-mp"
             compile_d="-c -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             link_d="-g"
-            compile="-c -I. -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
-            compile2="-c -I. -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile="-c -I. -I. -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile2="-c -I. -I. -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             link=" "
             MODULE_CODE=1
 
@@ -165,8 +235,8 @@ fi
 	    omp="-mp"
             compile_d="-c -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             link_d="-g"
-            compile="-c -I. -O -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
-            compile2="-c -I. -O1 -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile="-c -I. -I$mpi_include -O -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile2="-c -I. -I$mpi_include -O1 -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             link=" "
             MODULE_CODE=1
 
@@ -183,26 +253,6 @@ fi
 #
 #------------------------------------------------------------------------
 #
-
-# get user input
-echo
-echo "MFIX directory is $mfix"
-echo
-echo "Compiling with $mach_file"
-echo
-
-echo -n "Do you need SMP version? (y/n) [no] "
-read smp_version
-
-echo
-echo -n "Do you need SERIAL version? (y/n) [no] "
-read serial_version
-
-echo
-echo -n "Do you need debug version? (y/n) [no] "
-read dbg_version
-  
-  
 # prepare for SMP version   
 smp_check="COMPILED_SMP"
 case $smp_version in
@@ -226,23 +276,23 @@ case $smp_version in
     ;;
 esac
 
-# prepare for SERIAL version   
-serial_check="COMPILED_SERIAL"
-case $serial_version in
+# prepare for DMP version   
+dmp_check="COMPILED_DMP"
+case $dmp_version in
   y|Y )
-            if test -f $serial_check
+            if test -f $dmp_check
             then
 	        echo
             else
                 rm *.o *.a *.mod *.exe
-                touch $serial_check
+                touch $dmp_check
             fi
     ;;
   *)
-            if test -f $serial_check
+            if test -f $dmp_check
             then
                 rm *.o *.a *.mod *.exe
-                rm $serial_check
+                rm $dmp_check
             else
 	        echo
             fi
@@ -361,30 +411,44 @@ esac
 #------------------------------------------------------------------------
 #
 
-  case $serial_version in
-  y|Y )
+  case $dmp_version in
+  n|N )
+	echo
+	echo -n '******************************************************'
+	echo
+	echo -n 'Preparing files for your serial/smp compilation'
+	echo
+	echo -n '******************************************************'
+	echo
         cp mfix_l.make mfix_l_not.make
-	ex mfix_l_not.make < ex.commands
+	ex mfix_l_not.make < dmp_modules/ex.commands
 	cp mfix_u.make mfix_u_not.make
-	ex mfix_u_not.make < ex.commands
+	ex mfix_u_not.make < dmp_modules/ex.commands
 
-        cmp -s dmp_modules/compar_mod.f mpi_donothing/compar_mod.f 
+        cmp -s dmp_modules/compar_mod.f dmp_modules/mpi_donothing/compar_mod.f 
         if test $? = 0
         then
 	 echo
         else
- 	 cp dmp_modules/compar_mod.f mpi_donothing/
+ 	 cp dmp_modules/compar_mod.f dmp_modules/mpi_donothing/
         fi
 
-        cmp -s dmp_modules/gridmap_mod.f mpi_donothing/gridmap_mod.f 
+        cmp -s dmp_modules/gridmap_mod.f dmp_modules/mpi_donothing/gridmap_mod.f 
         if test $? = 0
         then
 	 echo
         else
-         cp dmp_modules/gridmap_mod.f mpi_donothing/
+         cp dmp_modules/gridmap_mod.f dmp_modules/mpi_donothing/
         fi
     ;;
   *)
+	echo
+	echo -n '******************************************************'
+	echo
+	echo -n 'Preparing files for your dmp and/or smp compilation'
+	echo
+	echo -n '******************************************************'
+	echo
     
     ;;
   esac
@@ -434,22 +498,22 @@ esac
  
   case $MODULE_CODE in
   0)
-  	case $serial_version in
+  	case $dmp_version in
   	y|Y )
-   	    make -f mfix_u_not.make
+   	    make -f mfix_u.make
    	 ;;
   	*)
-   	    make -f mfix_u.make
+   	    make -f mfix_u_not.make
    	 ;;
   	esac
    ;;
   1)
-  	case $serial_version in
+  	case $dmp_version in
   	y|Y )
-   	    make -f mfix_l_not.make
+   	    make -f mfix_l.make
    	 ;;
   	*)
-   	    make -f mfix_l.make
+   	    make -f mfix_l_not.make
    	 ;;
   	esac
    ;;

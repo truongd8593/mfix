@@ -166,9 +166,11 @@
       END DO 
      
       CALL CONV_DIF_V_G (A_M, B_M, IER) 
+!        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       CALL CONV_DIF_V_S (A_M, B_M, IER) 
 !
       CALL SOURCE_V_G (A_M, B_M, IER) 
+!        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       CALL SOURCE_V_S (A_M, B_M, IER) 
 
 !
@@ -179,7 +181,10 @@
 !
       IF (MMAX > 0) CALL PARTIAL_ELIM_V (V_G, V_S, VXF_GS, A_M, B_M, IER) 
 !
-      CALL ADJUST_A_V_G (A_M, B_M, IER) 
+!        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+      CALL ADJUST_A_V_G (A_M, B_M, IER)
+!        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+
       CALL ADJUST_A_V_S (A_M, B_M, IER) 
 !
 

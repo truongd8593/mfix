@@ -402,7 +402,7 @@
                DO N = 1, NScalar
                  IF (BC_Scalar(BCV,N) == UNDEFINED) THEN 
                    WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
-		   STOP
+		   CALL MFIX_EXIT(myPE)
                  ENDIF 
                END DO 
 	       
@@ -607,7 +607,7 @@
                DO N = 1, NScalar
                  IF (BC_Scalar(BCV,N) == UNDEFINED) THEN 
                    WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
-		   STOP
+		   CALL MFIX_EXIT(myPE)
                  ENDIF 
                END DO 
 	       
@@ -698,7 +698,7 @@
             DO N = 1, NScalar
               IF (BC_Scalar(BCV,N) /= UNDEFINED) THEN 
                 WRITE (UNIT_LOG, 1200) 'BC_Scalar', BCV
-	        STOP
+	        CALL MFIX_EXIT(myPE)
               ENDIF 
             END DO 
 	    
@@ -866,19 +866,19 @@
                DO N = 1, NScalar
                  IF (BC_HW_Scalar(BCV,N) < ZERO) THEN 
                    WRITE (UNIT_LOG, 1005) 'BC_hw_Scalar', BCV, N 
-                   STOP  
+                   CALL MFIX_EXIT(myPE)
                  ENDIF 
 !
                  IF (BC_HW_Scalar(BCV,N)/=ZERO .AND. BC_Scalarw(BCV,N)==UNDEFINED) &
                     THEN 
                     WRITE (UNIT_LOG, 1004) 'BC_ScalarW', BCV, N 
-                    STOP  
+                    CALL MFIX_EXIT(myPE)
                  ENDIF 
 !
                  IF (BC_HW_Scalar(BCV,N)/=UNDEFINED .AND. BC_C_Scalar(BCV,N)==&
                     UNDEFINED) THEN 
                     WRITE (UNIT_LOG, 1004) 'BC_C_Scalar', BCV, N 
-                    STOP  
+                    CALL MFIX_EXIT(myPE)
                  ENDIF 
                END DO 
 	       

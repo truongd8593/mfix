@@ -94,6 +94,13 @@
       call SET_MAX2
       call GRIDMAP_INIT
 
+!     write(*,*) 'ISTART-IEND'
+!     write(*,*) ISTART3, ISTART2, ISTART, ISTART1, IEND1, IEND, IEND2, IEND3
+!     write(*,*) 'JSTART-JEND'
+!     write(*,*) JSTART3, JSTART2, JSTART, JSTART1, JEND1, JEND, JEND2, JEND3
+!     write(*,*) 'KSTART-KEND'
+!     write(*,*) KSTART3, KSTART2, KSTART, KSTART1, KEND1, KEND, KEND2, KEND3
+
       CALL ALLOCATE_ARRAYS      
 !
 !

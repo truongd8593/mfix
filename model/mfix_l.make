@@ -758,8 +758,8 @@ dbg_util.mod : ./dmp_modules/dbg_util_mod.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/dbg_util_mod.f 
 debug.mod : ./dmp_modules/debug_mod.f \
-            dbg_util.mod \
-            funits.mod 
+            funits.mod \
+            dbg_util.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/debug_mod.f 
 gridmap.mod : ./dmp_modules/gridmap_mod.f \
             mpi_utility.mod \
@@ -770,8 +770,7 @@ gridmap.mod : ./dmp_modules/gridmap_mod.f \
             indices.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/gridmap_mod.f 
-mpi.mod : ./dmp_modules/mpi_mod.f \
-            mpif.h                                                      
+mpi.mod : ./dmp_modules/mpi_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/mpi_mod.f 
 mpi_utility.mod : ./dmp_modules/mpi_utility_mod.f \
             geometry.mod \
@@ -2396,6 +2395,7 @@ rrates.$(OBJ_EXT) : rrates.f \
             constant.mod \
             funits.mod \
             compar.mod \
+            sendrecv.mod \
             function.inc                                                
 rrates0.$(OBJ_EXT) : rrates0.f \
             param.mod \

@@ -91,7 +91,6 @@
       IF (CYCLIC_X) THEN 
          DX(1) = DX(IMAX1) 
          DX(IMAX2) = DX(IMIN1) 
-!//SP
 	 IF(NODESI.NE.1) THEN
          DX(IMIN3) = DX(IMAX1-1) 
          DX(IMAX3) = DX(IMIN1+1) 
@@ -100,31 +99,26 @@
       IF (CYCLIC_Y) THEN 
          DY(1) = DY(JMAX1) 
          DY(JMAX2) = DY(JMIN1) 
-!//SP
 	 IF(NODESJ.NE.1) THEN
          DY(JMIN3) = DY(JMAX1-1) 
          DY(JMAX3) = DY(JMIN1+1) 
 	 ENDIF
       ENDIF 
-!//D 300 0912 For CYCLIC_Z, dz(1) of PE 0 = dz(kmax1) of PE 1
-!//D          As dz() is the global array for all PEs no modification necessary
       IF (CYCLIC_Z) THEN 
          DZ(1) = DZ(KMAX1) 
          DZ(KMAX2) = DZ(KMIN1) 
-!//SP
 	 IF(NODESK.NE.1) THEN
          DZ(KMIN3) = DZ(KMAX1-1) 
          DZ(KMAX3) = DZ(KMIN1+1) 
 	 ENDIF
       ENDIF 
 !
-!//SP Changed the bounds to 0:IMAX3 from 1:IMAX2
       IF (COORDINATES == 'CARTESIAN') THEN 
             X(IMIN3:IMAX3) = ONE 
             X_E(IMIN3:IMAX3) = ONE 
             OX(IMIN3:IMAX3) = ONE 
             OX_E(IMIN3:IMAX3) = ONE 
-            ODX(IMIN3:IMAX3) = ONE/DX(0:IMAX3) 
+            ODX(IMIN3:IMAX3) = ONE/DX(IMIN3:IMAX3) 
       ELSE IF (CYLINDRICAL) THEN 
          ODX(IMIN3:IMAX3)  = UNDEFINED 
          OX(IMIN3:IMAX3)   = UNDEFINED 
@@ -167,24 +161,18 @@
          ENDIF 
       ENDIF 
 !
-!//SP Changed the bounds to 0:JMAX3 from 1:JMAX2
-!
          ODY(JMIN3:JMAX3) = ONE/DY(JMIN3:JMAX3) 
 
-!// 200 0920 Changed the limit from KMAX2--> KMAX3
-!// SP Modified the logic to incorporate the correct values for second ghost layer.
       DO K = 1, KMAX3 
 !
          IF (K == 1) THEN 
             Z(K) = ZERO - HALF*DZ(K) 
             Z_T(K) = ZERO 
-!// 200 0920 added initializations to take care of z(KMIN3)	    
 	    IF(NODESK.NE.1) THEN
 	    Z(K-1) =Z_T(K) - HALF*DZ(K-1)
             Z_T(K-1) = Z_T(K) - DZ(K-1) 	    
 	    ENDIF
 !
-!// 200 0920 added initializations to take care of z(KMAX3)	    
 !        ELSE IF (K == KMAX3) THEN
 !	    Z(K) =Z_T(K-1) + HALF*DZ(K)
 !           Z_T(K) = Z_T(K-1) + DZ(K) 	    
@@ -217,7 +205,6 @@
       FY_N_BAR(1) = HALF 
       FZ_T(1) = HALF 
       FZ_T_BAR(1) = HALF 
-!//SP For 0
       IF(NODESI.NE.1) THEN
       ODX_E(IMIN3) = ONE/DX_E
       ENDIF
@@ -271,7 +258,6 @@
 !
 !       Look at 2 through KMAX1 W-momentum cells
       IF (DO_K) THEN 
-!//D 300 0912 no changes in the limits as they run over ACTIVE cells ONLY
          DO K = KMIN1, KMAX1 
             DZ_T = HALF*(DZ(K+1)+DZ(K)) 
             ODZ_T(K) = ONE/DZ_T 
@@ -288,7 +274,6 @@
       ODX_E(IMAX2) = ONE/DX_E 
       ODY_N(JMAX2) = ONE/DY_N 
       ODZ_T(KMAX2) = ONE/DZ_T 
-!//S2D for 2D/3D decomp. do similar add ons for JMAX3, IMAX3 as done in KMAX3 below      
       FX(IMAX2) = HALF 
       FX_BAR(IMAX2) = HALF 
       FX_E(IMAX2) = HALF 
@@ -299,15 +284,12 @@
 
       FZ_T(KMAX2) = HALF 
       FZ_T_BAR(KMAX2) = HALF 
-!// 200 0920 need to update values for KMAX3 also             
       FZ_T(KMAX3) = HALF 
       FZ_T_BAR(KMAX3) = HALF 
 
-!//SP FOr IMAX3, JMAX3...
       ODX_E(IMAX3) = ONE/DX_E
       ODY_N(JMAX3) = ONE/DY_N
       ODZ_T(KMAX3) = ONE/DZ_T
-!//S2D for 2D/3D decomp. do similar add ons for JMAX3, IMAX3 as done in KMAX3 below
       FX(IMAX3) = HALF
       FX_BAR(IMAX3) = HALF
       FX_E(IMAX3) = HALF
@@ -320,7 +302,6 @@
       IF (CYCLIC_X) THEN 
          FX_E(1) = FX_E(IMAX1) 
          FX_E_BAR(1) = FX_E_BAR(IMAX1) 
-!//SP
 	 IF(NODESI.NE.1) THEN
          FX_E(IMIN3) = FX_E(IMAX1-1) 
          FX_E_BAR(IMIN3) = FX_E_BAR(IMAX1-1) 
@@ -329,17 +310,14 @@
       IF (CYCLIC_Y) THEN 
          FY_N(1) = FY_N(JMAX1) 
          FY_N_BAR(1) = FY_N_BAR(JMAX1) 
-!//SP
 	 IF(NODESJ.NE.1) THEN
          FY_N(JMIN3) = FY_N(JMAX1-1) 
          FY_N_BAR(JMIN3) = FY_N_BAR(JMAX1-1) 
 	 ENDIF
       ENDIF 
-!//? should we update the additional ghosts for CYCLIC_Z?      
       IF (CYCLIC_Z) THEN 
          FZ_T(1) = FZ_T(KMAX1) 
          FZ_T_BAR(1) = FZ_T_BAR(KMAX1) 
-!//SP
 	 IF(NODESK.NE.1) THEN
          FZ_T(KMIN3) = FZ_T(KMAX1-1) 
          FZ_T_BAR(KMIN3) = FZ_T_BAR(KMAX1-1) 
@@ -349,3 +327,5 @@
 !
       RETURN  
       END SUBROUTINE SET_GEOMETRY 
+!// Comments on the modifications for DMP version implementation
+!// Changed the do loop bounds from 1, imax2 to istart3 to iend3. Initialized imin3, imax3 locations    when extra ghost layers are present
