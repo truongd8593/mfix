@@ -4763,7 +4763,7 @@
 100   	format(/,'*****************',&
           '********************************************',/, &
          '(PE ',I2,') : A fatal error occurred ',/,9X, &
-         'Check *.LOG file for error messages ',/,'*****************', &
+         '*.LOG file may contain other error messages ',/,'*****************', &
          '********************************************',/)
   
         call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
