@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: VF_gs_Y(F_gs, VxF_gs, IER)                             C
+!  Module name: VF_gs_Y(VxF_gs, IER)                             C
 !  Purpose: Calculate the average drag coefficient at i, j+1/2, k and  C
 !           multiply with v-momentum cell volume.                      C
 !                                                                      C
@@ -16,7 +16,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE VF_GS_Y(F_GS, VXF_GS, IER) 
+      SUBROUTINE VF_GS_Y(VXF_GS, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !-----------------------------------------------
@@ -28,6 +28,7 @@
       USE indices
       USE physprop
       USE compar   
+      USE drag   
     
       IMPLICIT NONE
 !-----------------------------------------------
@@ -46,9 +47,6 @@
 ! 
 !                      Index of solids phases 
       INTEGER          M 
-! 
-!                      Drag array 
-      DOUBLE PRECISION F_gs(DIMENSION_3, DIMENSION_M) 
 ! 
 !                      Volume x Drag 
       DOUBLE PRECISION VxF_gs(DIMENSION_3, DIMENSION_M) 

@@ -75,9 +75,9 @@
 !
 !
       DO M = 1, MMAX 
-         IF (DRAGD(0,M) .AND. RO_G0/=ZERO) CALL DRAG_GS (M, F_GS, IER) 
+         IF (DRAGD(0,M) .AND. RO_G0/=ZERO) CALL DRAG_GS (M, IER) 
          DO L = 1, M - 1 
-            IF (DRAGD(L,M)) CALL DRAG_SS (L, M, F_SS, IER) 
+            IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER) 
          END DO 
       END DO 
 

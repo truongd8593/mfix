@@ -425,13 +425,13 @@
 !-----------------------------------------------
 !
 !
-      IF (TLEFT < 3600.) THEN 
+      IF (TLEFT < 3600.0d0) THEN 
          TUNIT = 's' 
       ELSE 
-         TLEFT = TLEFT/3600. 
+         TLEFT = TLEFT/3600.0d0 
          TUNIT = 'h' 
          IF (TLEFT >= 24.) THEN 
-            TLEFT = TLEFT/24. 
+            TLEFT = TLEFT/24.0d0 
             TUNIT = 'days' 
          ENDIF 
       ENDIF 

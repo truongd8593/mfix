@@ -96,7 +96,7 @@
       CALL SOURCE_U_G (A_M, B_M, IER) 
       CALL SOURCE_U_S (A_M, B_M, IER) 
 !
-      IF (MMAX > 0) CALL VF_GS_X (F_GS, VXF_GS, IER) 
+      IF (MMAX > 0) CALL VF_GS_X (VXF_GS, IER) 
 !
       CALL CALC_D_E (A_M, VXF_GS, D_E, IER) 
       
@@ -174,7 +174,7 @@
       CALL SOURCE_V_S (A_M, B_M, IER) 
 
 !
-      IF (MMAX > 0) CALL VF_GS_Y (F_GS, VXF_GS, IER) 
+      IF (MMAX > 0) CALL VF_GS_Y (VXF_GS, IER) 
 !
       CALL CALC_D_N (A_M, VXF_GS, D_N, IER) 
       IF (MMAX > 0) CALL CALC_E_N (A_M, MCP, E_N, IER) 
@@ -265,7 +265,7 @@
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 ! call mfix_exit(myPE)
 !
-      IF (MMAX > 0) CALL VF_GS_Z (F_GS, VXF_GS, IER) 
+      IF (MMAX > 0) CALL VF_GS_Z (VXF_GS, IER) 
 !
       CALL CALC_D_T (A_M, VXF_GS, D_T, IER) 
       IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T, IER) 

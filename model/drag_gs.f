@@ -1,7 +1,7 @@
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: DRAG_gs (M, F_gs, IER)                                 C
+!  Module name: DRAG_gs (M, IER)                                       C
 !  Purpose: Calculate the gas-solids drag coefficient                  C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 20-MAY-96  C
@@ -21,7 +21,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE DRAG_GS(M, F_GS, IER) 
+      SUBROUTINE DRAG_GS(M, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !-----------------------------------------------
@@ -37,6 +37,7 @@
       USE run
       USE constant
       USE compar  
+      USE drag  
       USE sendrecv 
 
       IMPLICIT NONE
@@ -53,8 +54,6 @@
 !                      Error index 
       INTEGER          IER 
 ! 
-!                      Drag array 
-      DOUBLE PRECISION F_gs(DIMENSION_3, DIMENSION_M) 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
