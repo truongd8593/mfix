@@ -871,7 +871,7 @@
       END DO 
 
 !//SP Send Receive
-      call send_recv(icbc_flag,2)
+!     call send_recv(icbc_flag,2)
 
       IF (ERROR) THEN 
          WRITE (UNIT_LOG, 1420) 

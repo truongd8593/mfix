@@ -206,8 +206,8 @@
             WRITE (LINE, 5100) LL2, (ARRAY(LL3),LL3=IJK,IJ2) 
 !            WRITE (LINE, 5100) LL2, (ARRAY(funijk_io(LL3,LL2,1)),LL3=IFORM1,IFORM2)
 
-            IJK = funijk_io(IFORM1,LL2,K) 
-            IJ2 = funijk_io(IFORM2,LL2,K) 
+            IJK = funijk_io(IFORM1,LL2,K_PLANE) 
+            IJ2 = funijk_io(IFORM2,LL2,K_PLANE) 
             LL4 = 12 
             DO LL3 = IJK, IJ2 
                LL4 = LL4 + 4 
