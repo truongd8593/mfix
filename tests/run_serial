@@ -108,6 +108,14 @@ sh ~/MFIX/mfix/model/make_mfix < ../in
 cd ..
 # Another case
 echo
+cd hopper
+echo "********************************************************************"
+echo "hopper"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
 cd granular_shear
 echo "********************************************************************"
 echo "granular_shear"

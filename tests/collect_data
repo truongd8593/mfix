@@ -99,6 +99,13 @@ tail -20 out1
 cd ..
 # Another case
 echo
+cd hopper
+echo "********************************************************************"
+echo "hopper"
+tail -20 out1 
+cd ..
+# Another case
+echo
 cd ozone
 echo "********************************************************************"
 echo "ozone"
