@@ -173,7 +173,7 @@
          CALL WRITE_RES0 
 
          DO L = 1, N_SPX 
-            CALL WRITE_SPX0 (L) 
+            CALL WRITE_SPX0 (L, 0) 
          END DO 
       CASE ('RESTART_1')  
 !
@@ -202,8 +202,8 @@
          CALL WRITE_RES0 
          CALL WRITE_RES1 
          DO L = 1, N_SPX 
-            CALL WRITE_SPX0 (L) 
-            CALL WRITE_SPX1 (L) 
+            CALL WRITE_SPX0 (L, 0) 
+            CALL WRITE_SPX1 (L, 0) 
          END DO 
       CASE DEFAULT 
 !

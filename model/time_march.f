@@ -327,7 +327,7 @@
          DO L = 1, N_SPX 
             IF (DT == UNDEFINED) THEN 
                IF (FINISH) THEN 
-                  CALL WRITE_SPX1 (L) 
+                  CALL WRITE_SPX1 (L, 0) 
                   DISK_TOT = DISK_TOT + DISK(L) 
                   ISPX = ISPX + 1 
 !
@@ -346,7 +346,7 @@
                ENDIF 
             ELSE IF (TIME + 0.1*DT>=SPX_TIME(L) .OR. TIME+0.1*DT>=TSTOP) THEN 
                SPX_TIME(L) = (INT((TIME + 0.1*DT)/SPX_DT(L))+1)*SPX_DT(L) 
-               CALL WRITE_SPX1 (L) 
+               CALL WRITE_SPX1 (L, 0) 
                DISK_TOT = DISK_TOT + DISK(L) 
                ISPX = ISPX + 1 
 !

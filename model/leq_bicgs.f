@@ -132,7 +132,7 @@
                                 R,Rtilde, P,Phat, Svec, Shat, Tvec,V
       DOUBLE PRECISION, DIMENSION(0:ITMAX+1) :: alpha,beta,omega,rho
       DOUBLE PRECISION :: TxS, TxT, oam,RtildexV,                   &
-		      RtildexR, aijmax, Rnorm, Rnorm0, Snorm, TOLMIN, pnorm
+		      RtildexR, aijmax, Rnorm=0, Rnorm0, Snorm, TOLMIN, pnorm
       LOGICAL :: isconverged
       INTEGER :: i, ii, j, k, ijk, itemp, iter
       logical :: is_serial 
@@ -1792,7 +1792,7 @@
                                 R,Rtilde, P,Phat, Svec, Shat, Tvec,V
       DOUBLE PRECISION, DIMENSION(0:ITMAX+1) :: alpha,beta,omega,rho
       DOUBLE PRECISION :: TxS, TxT, oam,RtildexV,                   &
-		      RtildexR, aijmax, Rnorm, Rnorm0, Snorm, TOLMIN, pnorm
+		      RtildexR, aijmax, Rnorm=0, Rnorm0, Snorm, TOLMIN, pnorm
       LOGICAL :: isconverged
       INTEGER :: i, ii, j, k, ijk, itemp, iter
       logical :: is_serial 
