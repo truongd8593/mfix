@@ -63,7 +63,7 @@
       USE scalars
       USE compar      
       USE mpi_utility
-      USE fldvar	!// for scalar and scalaro allocations
+      USE fldvar
 
 
       IMPLICIT NONE
