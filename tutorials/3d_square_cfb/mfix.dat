@@ -1,0 +1,178 @@
+#  CFB model for Grace's CFB
+#  S. Pannala                      Date: 03/3/2002
+#                                                                               
+
+# RUN CONTROL SECTION                                                           
+                                                                                
+  RUN_NAME = 'GR-CFB'                                                            
+  DESCRIPTION = 'Grace CFB - 3D'
+                                                                                
+  UNITS  = 'CGS'                                                                
+                                                                                
+  RUN_TYPE = 'restart_1' 
+  TIME  = 0.0                                                                   
+  TSTOP  = 5.0                                                                  
+  DT  = 20.0e-4                                                                 
+  DT_MAX = 0.2E-3
+                                                                                
+  ENERGY_EQ = .F.                                                               
+  SPECIES_EQ = 2*.F.                                                            
+  CALL_USR = .F.                                                                
+                                                                                
+      
+                                                                                
+# Physical parameters                                                           
+                                                                                
+  e             =  0.8                 ! coefficient of restitution             
+  Phi           =  0.0                 ! angle of internal friction             
+                                                                                
+                                                                                
+# GEOMETRY SECTION                                                              
+                                                                                
+  COORDINATES = 'CARTESIAN'                                                   
+                                                                                
+  XLENGTH =  14.6                                                                
+  IMAX   = 30                                                                   
+                                                                                
+  YLENGTH = 200.0                                                                
+  JMAX   = 200                                                                  
+                                                                                
+  ZLENGTH = 14.6
+  KMAX  = 30                                                                    
+                                                                                
+                                                                                
+# GAS SECTION                                                                   
+                                                                                
+  MW_avg = 29.0                                                                 
+  MU_g0  = 1.8e-4                                                               
+                                                                                
+                                                                                
+# PARTICLE SECTION                                                              
+                                                                                
+  MMAX  = 1                                                                     
+  D_p           =  0.0213
+  RO_s          =  2.640
+                                                                                
+  EP_star       =  0.43                                                          
+                                                                                
+  ur_fac(2) = 0.4                        !solids pr.                            
+                                                                                
+# INITIAL CONDITIONS SECTION                                                    
+                                                                                
+       !           Bed                                                          
+  IC_x_w        =  0.0                                                          
+  IC_x_e        = 14.6
+  IC_y_s        =  0.0                                                          
+  IC_y_n        =200.0                                                          
+  IC_z_b        =  0.0                                                          
+  IC_z_t        = 14.6
+                                                                                
+  IC_ep_g       =  0.9                                                          
+                                                                                
+  IC_P_star =  0.0                                                              
+                                                                                
+  IC_U_g        =   0.0                                                         
+  IC_V_g        =  550.0                                                         
+  IC_W_g        =  0.0                                                          
+                                                                                
+  IC_U_s(1,1)   =  0.0                                                          
+  IC_V_s(1,1)   =  0.0                                                          
+  IC_W_s(1,1)   =  0.0                                                          
+                                                                                
+                                                                                
+  IC_T_g        = 294.0                                                         
+                                                                                
+# BOUNDARY CONDITIONS SECTION                                                   
+                                                                                
+       !                                                                        
+       !       air inlet                                                        
+  BC_x_w(1)     =    0.0                                                        
+  BC_x_e(1)     =   14.6
+  BC_y_s(1)     =    0.0                                                        
+  BC_y_n(1)     =    0.0                                                        
+  BC_z_b(1)     =    0.0                                                        
+  BC_z_t(1)     =   14.6
+                                                                                
+  BC_TYPE(1)    =   'MI'                                                        
+                                                                                
+  BC_ep_g(1)    =   0.9                                                         
+  BC_P_g(1)     =   1151424.5                                                   
+  BC_T_g(1)     =   294.0                                                       
+                                                                                
+  BC_U_g(1) =   0.0                                                            
+  BC_V_g(1) =   550.0                                                            
+  BC_W_g(1) =   0.0                                                             
+                                                                                
+  BC_U_s(1,1)   =    0.0                                                        
+  BC_MASSFLOW_s(1,1)= 0.0                                                       
+  BC_W_s(1,1)   =    0.0                                                        
+      !                                                                         
+      !      solids inlet                                                       
+  BC_x_w(2)     = 14.6
+  BC_x_e(2)     = 14.6
+  BC_y_s(2)     =  4.1
+  BC_y_n(2)     = 18.7
+  BC_z_b(2)     =  0.0
+  BC_z_t(2)     = 14.6
+                                                                                
+  BC_TYPE(2)    ='MI'                                                           
+                                                                                
+  BC_ep_g(2)    = 0.43                                                           
+  BC_P_g(2)     = 1151424.5                                                     
+  BC_T_g(2)     = 294.0                                                         
+                                                                                
+  BC_U_g(2) = 0.0                                                               
+  BC_V_g(2) = 0.0                                                               
+  BC_W_g(2) = 0.0                                                               
+                                                                                
+  BC_MASSFLOW_s(2,1)= @(PI*14.6*14.6*4)
+  BC_V_s(2,1)   =    0.0                                                        
+  BC_W_s(2,1)   =    0.0                                                        
+                                                                                
+!                Gas-solids outlet                                              
+  BC_x_w(5)     = 14.6
+  BC_x_e(5)     = 14.6
+  BC_y_s(5)     = 181.3                                                         
+  BC_y_n(5)     = 195.9
+  BC_z_b(5)     = 0.0
+  BC_z_t(5)     = 14.6
+                                                                                
+  BC_TYPE(5)    = 'Po'                                                          
+                                                                                
+  BC_P_g(5)     =  1151424.5                                                    
+                                                                                
+                                                                                
+# OUTPUT CONTROL SECTION                                                        
+                                                                                
+   RES_DT = 0.01  !OUT_DT = 100.                                                
+         !                                                                      
+         !  EP_g     P_g     U_g   U_s   ROP_s  T_g      X_g    Theta  Scalar                
+         !           P_star  V_g   V_s          T_s1     X_s                    
+         !                   W_g   W_s          T_s2                            
+   SPX_DT = 0.02     0.2     0.2   0.2   100.    100.    100.  100.0    100.       
+                                                                                
+   USR_DT(1) = 0.1                                                              
+                                                                                
+   NLOG = 25                                                                    
+   FULL_LOG = .TRUE.                                                            
+
+# 
+
+ nodesi = 4
+ nodesk = 4
+
+L_scale0 = 1.0
+MU_gmax	 = 0.01
+
+# Maximum iterations for linear solve
+
+LEQ_IT(1) = 50
+LEQ_IT(2) = 50
+LEQ_IT(3) = 50
+LEQ_IT(4) = 50
+LEQ_IT(5) = 50
+LEQ_IT(6) = 50
+LEQ_IT(7) = 50
+LEQ_IT(8) = 50
+LEQ_IT(9) = 50
+
