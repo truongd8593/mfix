@@ -290,62 +290,57 @@
 !
 ! CHECK DIMENSIONS
 !
-      IF (IMAX2 <= DIMENSION_I) THEN 
-         IF (JMAX2 <= DIMENSION_J) THEN 
-            IF (KMAX2 <= DIMENSION_K) THEN 
-               IF (IJKMAX2 <= DIMENSION_3) THEN 
-                  IF (MMAX <= DIMENSION_M) THEN 
-                     IF (DIM_IC <= DIMENSION_IC) THEN 
-                        IF (DIM_BC <= DIMENSION_BC) THEN 
-                           IF (DIM_C <= DIMENSION_C) THEN 
-                              IF (DIM_IS <= DIMENSION_IS) THEN 
-                                 M = 0 
-                                 IF (MMAX + 1 > 0) THEN 
-                                    NMAX(:MMAX) = 1 
-                                    M = MMAX + 1 
-                                 ENDIF 
-                 
-                                 NEXT_RECA = 5 
+      IF (IMAX2 <= DIMENSION_I .AND. JMAX2 <= DIMENSION_J .AND. KMAX2 <= DIMENSION_K &
+     & .AND. IJKMAX2 <= DIMENSION_3 .AND. MMAX <= DIMENSION_M .AND. DIM_IC <= DIMENSION_IC &
+     & .AND. DIM_BC <= DIMENSION_BC .AND. DIM_C <= DIMENSION_C .AND. DIM_IS <=  &
+     & DIMENSION_IS) THEN 
+        M = 0 
+        IF (MMAX + 1 > 0) THEN 
+           NMAX(:MMAX) = 1 
+           M = MMAX + 1 
+        ENDIF 
+
+        NEXT_RECA = 5 
 !
 
 !//AIKEPARDBG Block1
-                                if (myPE == PE_IO) then
+       if (myPE == PE_IO) then
 
-                                  IF (VERSION_NUMBER >= 1.04) THEN 
+         IF (VERSION_NUMBER >= 1.04) THEN 
 
-                                    CALL IN_BIN_512 (UNIT_RES, C, DIM_C, &
-                                       NEXT_RECA) 
-                                    call bcast(C,PE_IO)   !//PAR_I/O BCAST1d user defined constants,C
+           CALL IN_BIN_512 (UNIT_RES, C, DIM_C, &
+              NEXT_RECA) 
+           call bcast(C,PE_IO)   !//PAR_I/O BCAST1d user defined constants,C
 !                                                ! work around for -O3 compiler bug
-                                    NEXT_RECA = 1 + NEXT_RECA 
-                                    NEXT_RECA = NEXT_RECA - 1 
-                                    DO LC = 1, DIM_C 
-                                    READ (UNIT_RES, REC=NEXT_RECA) C_NAME(LC) 
-                                    NEXT_RECA = NEXT_RECA + 1 
-                                    END DO 
-                                    call bcast(C_NAME,PE_IO)  !//PAR_I/O BCAST1c user defined constant names                                    
-                                    call bcast(MMAX,PE_IO)    !//PAR_I/O BCAST0i # of solid phases
-                                    IF (VERSION_NUMBER < 1.12) THEN 
-                                      CALL IN_BIN_512I (UNIT_RES, NMAX, MMAX + 1&
-                                       , NEXT_RECA) 
-                                    ELSE 
-                                      READ (UNIT_RES, REC=NEXT_RECA) (NMAX(L),L=0&
-                                       ,MMAX) 
-                                      NEXT_RECA = NEXT_RECA + 1 
-                                    ENDIF 
-                                    call bcast(NMAX,PE_IO)   !//PAR_I/O BCAST1i total # of gas OR solid species
-                                  ENDIF
+           NEXT_RECA = 1 + NEXT_RECA 
+           NEXT_RECA = NEXT_RECA - 1 
+           DO LC = 1, DIM_C 
+           READ (UNIT_RES, REC=NEXT_RECA) C_NAME(LC) 
+           NEXT_RECA = NEXT_RECA + 1 
+           END DO 
+           call bcast(C_NAME,PE_IO)  !//PAR_I/O BCAST1c user defined constant names                                    
+           call bcast(MMAX,PE_IO)    !//PAR_I/O BCAST0i # of solid phases
+           IF (VERSION_NUMBER < 1.12) THEN 
+             CALL IN_BIN_512I (UNIT_RES, NMAX, MMAX + 1&
+              , NEXT_RECA) 
+           ELSE 
+             READ (UNIT_RES, REC=NEXT_RECA) (NMAX(L),L=0&
+              ,MMAX) 
+             NEXT_RECA = NEXT_RECA + 1 
+           ENDIF 
+           call bcast(NMAX,PE_IO)   !//PAR_I/O BCAST1i total # of gas OR solid species
+         ENDIF
 
-                                else    ! else of if (myPE == PE_IO)
+       else    ! else of if (myPE == PE_IO)
 
-                                  IF (VERSION_NUMBER >= 1.04) THEN 
+         IF (VERSION_NUMBER >= 1.04) THEN 
 
-                                    call bcast(C,PE_IO)      !//PAR_I/O BCAST1d (recv)   
-                                    call bcast(C_NAME,PE_IO) !//PAR_I/O BCAST1c (recv)
-                                    call bcast(MMAX,PE_IO)   !//PAR_I/O BCAST0i (recv)
-                                    call bcast(NMAX,PE_IO)   !//PAR_I/O BCAST1i (recv)
-                                  ENDIF
-                                endif   ! end of if (myPE == PE_IO)
+           call bcast(C,PE_IO)      !//PAR_I/O BCAST1d (recv)   
+           call bcast(C_NAME,PE_IO) !//PAR_I/O BCAST1c (recv)
+           call bcast(MMAX,PE_IO)   !//PAR_I/O BCAST0i (recv)
+           call bcast(NMAX,PE_IO)   !//PAR_I/O BCAST1i (recv)
+         ENDIF
+       endif   ! end of if (myPE == PE_IO)
 
 !//AIKEPARDBG 0906 DEBUGSTOP
 !    write(*,"('(PE ',I2,'): MMAX:',I4)") myPE,MMAX !//AIKEPARDBG
@@ -353,1044 +348,1036 @@
 !    call exitMPI(myPE) !//AIKEPARDBG
 
 
-                                 IF (NMAX(0) <= DIMENSION_N_G) THEN 
-                                    DO M = 1, MMAX 
-                                      IF (NMAX(M) > DIMENSION_N_S) GO TO 900 
-                                    END DO 
+        IF (NMAX(0) <= DIMENSION_N_G) THEN 
+           DO M = 1, MMAX 
+             IF (NMAX(M) > DIMENSION_N_S) GO TO 900 
+           END DO 
 
-                                   if (myPE == PE_IO) then    !//PAR_I/O only PE_IO reads RES file
-                                      CALL IN_BIN_512 (UNIT_RES, DX, IMAX2, &
-                                        NEXT_RECA) 
-                                      call bcast(dx, PE_IO)   !//PAR_I/O BCAST1d
+          if (myPE == PE_IO) then    !//PAR_I/O only PE_IO reads RES file
+             CALL IN_BIN_512 (UNIT_RES, DX, IMAX2, &
+               NEXT_RECA) 
+             call bcast(dx, PE_IO)   !//PAR_I/O BCAST1d
 
-                                      CALL IN_BIN_512 (UNIT_RES, DY, JMAX2, &
-                                        NEXT_RECA) 
-                                      call bcast(dy, PE_IO)   !//PAR_I/O BCAST1d
+             CALL IN_BIN_512 (UNIT_RES, DY, JMAX2, &
+               NEXT_RECA) 
+             call bcast(dy, PE_IO)   !//PAR_I/O BCAST1d
 !//AIKEPARDBGSTOP 0907
     write(*,"('(PE ',I2,'): aft dy in Block2 in read_res0')") myPE !//AIKEPARDBG
     write(UNIT_LOG,*) dy    !//AIKEPARDBG
     call exitMPI(myPE)      !//AIKEPARDBG
 
 !//? 0906 kmax2 or kmax3 is the index for the global dummy array? 
-                                      Allocate( dGTEMP(KMAX3)) !//PAR_I/O ALLOCate R*8 Global scratch
-                                      CALL IN_BIN_512 (UNIT_RES, dGTEMP, KMAX3, &
-                                        NEXT_RECA) 
-                                      call scatter(dz,dGTEMP,PE_IO)   !//PAR_I/O SCATTER1d
-                                      DeAllocate( dGTEMP)
-				      
+             Allocate( dGTEMP(KMAX3)) !//PAR_I/O ALLOCate R*8 Global scratch
+             CALL IN_BIN_512 (UNIT_RES, dGTEMP, KMAX3, &
+               NEXT_RECA) 
+             call scatter(dz,dGTEMP,PE_IO)   !//PAR_I/O SCATTER1d
+             DeAllocate( dGTEMP)
+
 !    call MPI_Barrier(MPI_COMM_WORLD,mpierr)	
     write(*,"('(PE ',I2,'): KMAX3',I2)") myPE, KMAX3 !//AIKEPARDBG
     write(UNIT_LOG,"('(PE ',I2,'): aft dz in Block2 in read_res0')") myPE !//AIKEPARDBG
     write(UNIT_LOG,*) dz    !//AIKEPARDBG
     call exitMPI(myPE)      !//AIKEPARDBG
 
-                                      READ (UNIT_RES, REC=NEXT_RECA) RUN_NAME, &
-                                         DESCRIPTION, UNITS, RUN_TYPE, &
-                                         COORDINATES 
-                                      NEXT_RECA = NEXT_RECA + 1
-                                      call bcast(RUN_NAME,PE_IO)    !//PAR_I/O BCAST0c
-                                      call bcast(DESCRIPTION,PE_IO) !//PAR_I/O BCAST0c
-                                      call bcast(UNITS,PE_IO)       !//PAR_I/O BCAST0c
-                                      call bcast(RUN_TYPE,PE_IO)    !//PAR_I/O BCAST0c
-                                      call bcast(COORDINATES,PE_IO) !//PAR_I/O BCAST0c
+             READ (UNIT_RES, REC=NEXT_RECA) RUN_NAME, &
+                DESCRIPTION, UNITS, RUN_TYPE, &
+                COORDINATES 
+             NEXT_RECA = NEXT_RECA + 1
+             call bcast(RUN_NAME,PE_IO)    !//PAR_I/O BCAST0c
+             call bcast(DESCRIPTION,PE_IO) !//PAR_I/O BCAST0c
+             call bcast(UNITS,PE_IO)       !//PAR_I/O BCAST0c
+             call bcast(RUN_TYPE,PE_IO)    !//PAR_I/O BCAST0c
+             call bcast(COORDINATES,PE_IO) !//PAR_I/O BCAST0c
 
-                                      IF (VERSION=='RES = 01.00' .OR. VERSION==&
-                                         'RES = 01.01') THEN 
-                                         READ (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,&
-                                         MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
-                                         MU_G0, MW_AVG 
-                                      ELSE IF (VERSION == 'RES = 01.02') THEN 
-                                         READ (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,&
-                                         MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
-                                         RO_G0, MU_G0, MW_AVG 
-                                      ELSE IF (VERSION == 'RES = 01.03') THEN 
-                                         READ (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,&
-                                         MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
-                                         RO_G0, MU_G0, MW_AVG 
-                                      ELSE IF (VERSION_NUMBER >= 1.04) THEN 
-                                         READ (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,&
-                                         MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
-                                         RO_G0, MU_G0, MW_AVG 
-                                      ENDIF 
+             IF (VERSION=='RES = 01.00' .OR. VERSION==&
+                'RES = 01.01') THEN 
+                READ (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,&
+                MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
+                MU_G0, MW_AVG 
+             ELSE IF (VERSION == 'RES = 01.02') THEN 
+                READ (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,&
+                MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
+                RO_G0, MU_G0, MW_AVG 
+             ELSE IF (VERSION == 'RES = 01.03') THEN 
+                READ (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,&
+                MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
+                RO_G0, MU_G0, MW_AVG 
+             ELSE IF (VERSION_NUMBER >= 1.04) THEN 
+                READ (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,&
+                MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
+                RO_G0, MU_G0, MW_AVG 
+             ENDIF 
 
-                                      call bcast(D_P, PE_IO)       !//PAR_I/O BCAST1d
-                                      call bcast(RO_S, PE_IO)      !//PAR_I/O BCAST1d
-                                      call bcast(EP_STAR, PE_IO)   !//PAR_I/O BCAST0d
-                                      if (VERSION /= 'RES = 01.00' .OR. VERSION /= &
-                                         'RES = 01.01') &
-                                      call bcast(RO_G0, PE_IO)     !//PAR_I/O BCAST0d
-                                      call bcast(MU_G0, PE_IO)     !//PAR_I/O BCAST0d
-                                      call bcast(MW_AVG, PE_IO)    !//PAR_I/O BCAST0d
+             call bcast(D_P, PE_IO)       !//PAR_I/O BCAST1d
+             call bcast(RO_S, PE_IO)      !//PAR_I/O BCAST1d
+             call bcast(EP_STAR, PE_IO)   !//PAR_I/O BCAST0d
+             if (VERSION /= 'RES = 01.00' .OR. VERSION /= &
+                'RES = 01.01') &
+             call bcast(RO_G0, PE_IO)     !//PAR_I/O BCAST0d
+             call bcast(MU_G0, PE_IO)     !//PAR_I/O BCAST0d
+             call bcast(MW_AVG, PE_IO)    !//PAR_I/O BCAST0d
 
 
-                                      NEXT_RECA = NEXT_RECA + 1 
-!
-                                      IF (VERSION_NUMBER >= 1.04) THEN 
-                                        CALL IN_BIN_512 (UNIT_RES, MW_G, NMAX(0), &
-                                           NEXT_RECA) 
-                                        DO LC = 1, MMAX 
-                                          READ (UNIT_RES, REC=NEXT_RECA) (MW_S(LC,N),&
-                                          N=1,NMAX(LC)) 
-                                          NEXT_RECA = NEXT_RECA + 1 
-                                        END DO 
+             NEXT_RECA = NEXT_RECA + 1 
+
+             IF (VERSION_NUMBER >= 1.04) THEN 
+               CALL IN_BIN_512 (UNIT_RES, MW_G, NMAX(0), &
+                  NEXT_RECA) 
+               DO LC = 1, MMAX 
+                 READ (UNIT_RES, REC=NEXT_RECA) (MW_S(LC,N),&
+                 N=1,NMAX(LC)) 
+                 NEXT_RECA = NEXT_RECA + 1 
+               END DO 
 !//? adding ncount var'ble to bcast may be better instead of bcasts with full array size
-                                        call bcast(MW_G, PE_IO)     !//PAR_I/O BCAST1d
-                                        call bcast(MW_S, PE_IO)     !//PAR_I/O BCAST2d
-                                      ENDIF 
+               call bcast(MW_G, PE_IO)     !//PAR_I/O BCAST1d
+               call bcast(MW_S, PE_IO)     !//PAR_I/O BCAST2d
+             ENDIF 
 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_X_W, DIM_IC, &
-                                         NEXT_RECA)
-                                      CALL IN_BIN_512 (UNIT_RES, IC_X_E, DIM_IC, &
-                                         NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_Y_S, DIM_IC, &
-                                         NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_Y_N, DIM_IC, &
-                                         NEXT_RECA) 
-                                      call bcast(IC_X_W, PE_IO)     !//PAR_I/O BCAST1d
-                                      call bcast(IC_X_E, PE_IO)     !//PAR_I/O BCAST1d
-                                      call bcast(IC_Y_S, PE_IO)     !//PAR_I/O BCAST1d
-                                      call bcast(IC_Y_N, PE_IO)     !//PAR_I/O BCAST1d
-                                      CALL IN_BIN_512 (UNIT_RES, IC_Z_B, DIM_IC, &
-                                         NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_Z_T, DIM_IC, &
-                                         NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IC_X_W, DIM_IC, &
+                NEXT_RECA)
+             CALL IN_BIN_512 (UNIT_RES, IC_X_E, DIM_IC, &
+                NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IC_Y_S, DIM_IC, &
+                NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IC_Y_N, DIM_IC, &
+                NEXT_RECA) 
+             call bcast(IC_X_W, PE_IO)     !//PAR_I/O BCAST1d
+             call bcast(IC_X_E, PE_IO)     !//PAR_I/O BCAST1d
+             call bcast(IC_Y_S, PE_IO)     !//PAR_I/O BCAST1d
+             call bcast(IC_Y_N, PE_IO)     !//PAR_I/O BCAST1d
+             CALL IN_BIN_512 (UNIT_RES, IC_Z_B, DIM_IC, &
+                NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IC_Z_T, DIM_IC, &
+                NEXT_RECA) 
 !//? do we need to bcast to all or only IC_Z_T to last PE, does the interior PE need this info
-                                      call bcast(IC_Z_B, PE_IO)     !//PAR_I/O BCAST1d
-                                      call bcast(IC_Z_T, PE_IO)     !//PAR_I/O BCAST1d
+             call bcast(IC_Z_B, PE_IO)     !//PAR_I/O BCAST1d
+             call bcast(IC_Z_T, PE_IO)     !//PAR_I/O BCAST1d
 
-                                      CALL IN_BIN_512I (UNIT_RES, IC_I_W, DIM_IC&
-                                         , NEXT_RECA) 
-                                      CALL IN_BIN_512I (UNIT_RES, IC_I_E, DIM_IC&
-                                         , NEXT_RECA) 
-                                      CALL IN_BIN_512I (UNIT_RES, IC_J_S, DIM_IC&
-                                         , NEXT_RECA) 
-                                      CALL IN_BIN_512I (UNIT_RES, IC_J_N, DIM_IC&
-                                         , NEXT_RECA)
-                                      call bcast(IC_I_W, PE_IO)     !//PAR_I/O BCAST1i
-                                      call bcast(IC_I_E, PE_IO)     !//PAR_I/O BCAST1i
-                                      call bcast(IC_J_S, PE_IO)     !//PAR_I/O BCAST1i
-                                      call bcast(IC_J_N, PE_IO)     !//PAR_I/O BCAST1i
+             CALL IN_BIN_512I (UNIT_RES, IC_I_W, DIM_IC&
+                , NEXT_RECA) 
+             CALL IN_BIN_512I (UNIT_RES, IC_I_E, DIM_IC&
+                , NEXT_RECA) 
+             CALL IN_BIN_512I (UNIT_RES, IC_J_S, DIM_IC&
+                , NEXT_RECA) 
+             CALL IN_BIN_512I (UNIT_RES, IC_J_N, DIM_IC&
+                , NEXT_RECA)
+             call bcast(IC_I_W, PE_IO)     !//PAR_I/O BCAST1i
+             call bcast(IC_I_E, PE_IO)     !//PAR_I/O BCAST1i
+             call bcast(IC_J_S, PE_IO)     !//PAR_I/O BCAST1i
+             call bcast(IC_J_N, PE_IO)     !//PAR_I/O BCAST1i
 
-                                      CALL IN_BIN_512I (UNIT_RES, IC_K_B, DIM_IC&
-                                         , NEXT_RECA) 
-                                      CALL IN_BIN_512I (UNIT_RES, IC_K_T, DIM_IC&
-                                         , NEXT_RECA) 
+             CALL IN_BIN_512I (UNIT_RES, IC_K_B, DIM_IC&
+                , NEXT_RECA) 
+             CALL IN_BIN_512I (UNIT_RES, IC_K_T, DIM_IC&
+                , NEXT_RECA) 
 !//? do we need to bcast to all or only IC_Z_T to last PE, does the interior PE need this info
-                                      call bcast(IC_K_B, PE_IO)     !//PAR_I/O BCAST1i
-                                      call bcast(IC_K_T, PE_IO)     !//PAR_I/O BCAST1i
+             call bcast(IC_K_B, PE_IO)     !//PAR_I/O BCAST1i
+             call bcast(IC_K_T, PE_IO)     !//PAR_I/O BCAST1i
 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_EP_G, DIM_IC&
-                                         , NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_P_G, DIM_IC, &
-                                         NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_T_G, DIM_IC, &
-                                         NEXT_RECA) 
-                                      call bcast(IC_EP_G, PE_IO)    !//PAR_I/O BCAST1d
-                                      call bcast(IC_P_G, PE_IO)     !//PAR_I/O BCAST1d
-                                      call bcast(IC_T_G, PE_IO)     !//PAR_I/O BCAST1d
+             CALL IN_BIN_512 (UNIT_RES, IC_EP_G, DIM_IC&
+                , NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IC_P_G, DIM_IC, &
+                NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IC_T_G, DIM_IC, &
+                NEXT_RECA) 
+             call bcast(IC_EP_G, PE_IO)    !//PAR_I/O BCAST1d
+             call bcast(IC_P_G, PE_IO)     !//PAR_I/O BCAST1d
+             call bcast(IC_T_G, PE_IO)     !//PAR_I/O BCAST1d
 
-                                      IF (VERSION_NUMBER < 1.15) THEN 
-                                        CALL IN_BIN_512 (UNIT_RES, IC_T_S(1,1), &
-                                        DIM_IC, NEXT_RECA) 
-                                        IF (MMAX >= 2) THEN 
-                                          CALL IN_BIN_512 (UNIT_RES, IC_T_S(1,2), &
-                                           DIM_IC, NEXT_RECA) 
-                                        ELSE 
-                                          CALL IN_BIN_512 (UNIT_RES, IC_TMP, DIM_IC, &
-                                          NEXT_RECA) 
-                                          call bcast(IC_TMP, PE_IO)    !//PAR_I/O BCAST1d
-                                        ENDIF 
-                                        call bcast(IC_T_S, PE_IO)    !//PAR_I/O BCAST2d
+             IF (VERSION_NUMBER < 1.15) THEN 
+               CALL IN_BIN_512 (UNIT_RES, IC_T_S(1,1), &
+               DIM_IC, NEXT_RECA) 
+               IF (MMAX >= 2) THEN 
+                 CALL IN_BIN_512 (UNIT_RES, IC_T_S(1,2), &
+                  DIM_IC, NEXT_RECA) 
+               ELSE 
+                 CALL IN_BIN_512 (UNIT_RES, IC_TMP, DIM_IC, &
+                 NEXT_RECA) 
+                 call bcast(IC_TMP, PE_IO)    !//PAR_I/O BCAST1d
+               ENDIF 
+               call bcast(IC_T_S, PE_IO)    !//PAR_I/O BCAST2d
 
-                                      ENDIF 
+             ENDIF 
 
-                                      IF (VERSION_NUMBER >= 1.04) THEN 
-                                        DO N = 1, NMAX(0) 
-                                          CALL IN_BIN_512 (UNIT_RES, IC_X_G(1,N), &
-                                          DIM_IC, NEXT_RECA) 
-                                        END DO 
-                                        call bcast(IC_X_G, PE_IO)    !//PAR_I/O BCAST2d
-                                      ENDIF 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_U_G, DIM_IC, &
-                                         NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_V_G, DIM_IC, &
-                                         NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_W_G, DIM_IC, &
-                                         NEXT_RECA) 
-                                      call bcast(IC_U_G, PE_IO)    !//PAR_I/O BCAST1d
-                                      call bcast(IC_V_G, PE_IO)    !//PAR_I/O BCAST1d
-                                      call bcast(IC_W_G, PE_IO)    !//PAR_I/O BCAST1d
+             IF (VERSION_NUMBER >= 1.04) THEN 
+               DO N = 1, NMAX(0) 
+                 CALL IN_BIN_512 (UNIT_RES, IC_X_G(1,N), &
+                 DIM_IC, NEXT_RECA) 
+               END DO 
+               call bcast(IC_X_G, PE_IO)    !//PAR_I/O BCAST2d
+             ENDIF 
+             CALL IN_BIN_512 (UNIT_RES, IC_U_G, DIM_IC, &
+                NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IC_V_G, DIM_IC, &
+                NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IC_W_G, DIM_IC, &
+                NEXT_RECA) 
+             call bcast(IC_U_G, PE_IO)    !//PAR_I/O BCAST1d
+             call bcast(IC_V_G, PE_IO)    !//PAR_I/O BCAST1d
+             call bcast(IC_W_G, PE_IO)    !//PAR_I/O BCAST1d
 
-                                      DO LC = 1, MMAX 
-                                        CALL IN_BIN_512 (UNIT_RES, IC_ROP_S(1,LC), &
-                                          DIM_IC, NEXT_RECA) 
-                                        CALL IN_BIN_512 (UNIT_RES, IC_U_S(1,LC), &
-                                          DIM_IC, NEXT_RECA) 
-                                        CALL IN_BIN_512 (UNIT_RES, IC_V_S(1,LC), &
-                                          DIM_IC, NEXT_RECA) 
-                                        CALL IN_BIN_512 (UNIT_RES, IC_W_S(1,LC), &
-                                          DIM_IC, NEXT_RECA) 
-                                        IF (VERSION_NUMBER >= 1.15) CALL IN_BIN_512&
-                                          (UNIT_RES, IC_T_S(1,LC), DIM_IC, &
-                                          NEXT_RECA) 
+             DO LC = 1, MMAX 
+               CALL IN_BIN_512 (UNIT_RES, IC_ROP_S(1,LC), &
+                 DIM_IC, NEXT_RECA) 
+               CALL IN_BIN_512 (UNIT_RES, IC_U_S(1,LC), &
+                 DIM_IC, NEXT_RECA) 
+               CALL IN_BIN_512 (UNIT_RES, IC_V_S(1,LC), &
+                 DIM_IC, NEXT_RECA) 
+               CALL IN_BIN_512 (UNIT_RES, IC_W_S(1,LC), &
+                 DIM_IC, NEXT_RECA) 
+               IF (VERSION_NUMBER >= 1.15) CALL IN_BIN_512&
+                 (UNIT_RES, IC_T_S(1,LC), DIM_IC, &
+                 NEXT_RECA) 
 !
-                                        IF (VERSION_NUMBER >= 1.04) THEN 
-                                          DO N = 1, NMAX(LC) 
-                                            CALL IN_BIN_512 (UNIT_RES, IC_X_S(1,LC,N), &
-                                                DIM_IC, NEXT_RECA) 
-                                          END DO 
-                                        ENDIF 
-                                      END DO 
-                                      call bcast(IC_ROP_S, PE_IO)  !//PAR_I/O BCAST2d
-                                      call bcast(IC_U_S, PE_IO)    !//PAR_I/O BCAST2d
-                                      call bcast(IC_V_S, PE_IO)    !//PAR_I/O BCAST2d
-                                      call bcast(IC_W_S, PE_IO)    !//PAR_I/O BCAST2d
-                                      if (VERSION_NUMBER >= 1.15) &
-                                        call bcast(IC_T_S, PE_IO)  !//PAR_I/O BCAST2d
-                                      if (VERSION_NUMBER >= 1.04) &
-                                        call bcast(IC_X_S, PE_IO)  !//PAR_I/O BCAST3d
+               IF (VERSION_NUMBER >= 1.04) THEN 
+                 DO N = 1, NMAX(LC) 
+                   CALL IN_BIN_512 (UNIT_RES, IC_X_S(1,LC,N), &
+                       DIM_IC, NEXT_RECA) 
+                 END DO 
+               ENDIF 
+             END DO 
+             call bcast(IC_ROP_S, PE_IO)  !//PAR_I/O BCAST2d
+             call bcast(IC_U_S, PE_IO)    !//PAR_I/O BCAST2d
+             call bcast(IC_V_S, PE_IO)    !//PAR_I/O BCAST2d
+             call bcast(IC_W_S, PE_IO)    !//PAR_I/O BCAST2d
+             if (VERSION_NUMBER >= 1.15) &
+               call bcast(IC_T_S, PE_IO)  !//PAR_I/O BCAST2d
+             if (VERSION_NUMBER >= 1.04) &
+               call bcast(IC_X_S, PE_IO)  !//PAR_I/O BCAST3d
 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_X_W, DIM_BC, &
-                                       NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_X_E, DIM_BC, &
-                                       NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_Y_S, DIM_BC, &
-                                       NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_Y_N, DIM_BC, &
-                                       NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_X_W, DIM_BC, &
+              NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_X_E, DIM_BC, &
+              NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_Y_S, DIM_BC, &
+              NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_Y_N, DIM_BC, &
+              NEXT_RECA) 
 
-                                    call bcast(BC_X_W, PE_IO)    !//PAR_I/O BCAST1d
-                                    call bcast(BC_X_E, PE_IO)    !//PAR_I/O BCAST1d
-                                    call bcast(BC_Y_S, PE_IO)    !//PAR_I/O BCAST1d
-                                    call bcast(BC_Y_N, PE_IO)    !//PAR_I/O BCAST1d
+           call bcast(BC_X_W, PE_IO)    !//PAR_I/O BCAST1d
+           call bcast(BC_X_E, PE_IO)    !//PAR_I/O BCAST1d
+           call bcast(BC_Y_S, PE_IO)    !//PAR_I/O BCAST1d
+           call bcast(BC_Y_N, PE_IO)    !//PAR_I/O BCAST1d
 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_Z_B, DIM_BC, &
-                                       NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_Z_T, DIM_BC, &
-                                       NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_Z_B, DIM_BC, &
+              NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_Z_T, DIM_BC, &
+              NEXT_RECA) 
 !//? do we need to bcast to all or only BC_Z_T to last PE, does the interior PE need this info
-                                    call bcast(BC_Z_B, PE_IO)    !//PAR_I/O BCAST1d
-                                    call bcast(BC_Z_T, PE_IO)    !//PAR_I/O BCAST1d
+           call bcast(BC_Z_B, PE_IO)    !//PAR_I/O BCAST1d
+           call bcast(BC_Z_T, PE_IO)    !//PAR_I/O BCAST1d
 
-                                    CALL IN_BIN_512I (UNIT_RES, BC_I_W, DIM_BC&
-                                       , NEXT_RECA) 
-                                    CALL IN_BIN_512I (UNIT_RES, BC_I_E, DIM_BC&
-                                       , NEXT_RECA) 
-                                    CALL IN_BIN_512I (UNIT_RES, BC_J_S, DIM_BC&
-                                       , NEXT_RECA) 
-                                    CALL IN_BIN_512I (UNIT_RES, BC_J_N, DIM_BC&
-                                       , NEXT_RECA) 
+           CALL IN_BIN_512I (UNIT_RES, BC_I_W, DIM_BC&
+              , NEXT_RECA) 
+           CALL IN_BIN_512I (UNIT_RES, BC_I_E, DIM_BC&
+              , NEXT_RECA) 
+           CALL IN_BIN_512I (UNIT_RES, BC_J_S, DIM_BC&
+              , NEXT_RECA) 
+           CALL IN_BIN_512I (UNIT_RES, BC_J_N, DIM_BC&
+              , NEXT_RECA) 
 
-                                    call bcast(BC_I_W, PE_IO)    !//PAR_I/O BCAST1i
-                                    call bcast(BC_I_E, PE_IO)    !//PAR_I/O BCAST1i
-                                    call bcast(BC_J_S, PE_IO)    !//PAR_I/O BCAST1i
-                                    call bcast(BC_J_N, PE_IO)    !//PAR_I/O BCAST1i
+           call bcast(BC_I_W, PE_IO)    !//PAR_I/O BCAST1i
+           call bcast(BC_I_E, PE_IO)    !//PAR_I/O BCAST1i
+           call bcast(BC_J_S, PE_IO)    !//PAR_I/O BCAST1i
+           call bcast(BC_J_N, PE_IO)    !//PAR_I/O BCAST1i
 
-                                    CALL IN_BIN_512I (UNIT_RES, BC_K_B, DIM_BC&
-                                       , NEXT_RECA) 
-                                    CALL IN_BIN_512I (UNIT_RES, BC_K_T, DIM_BC&
-                                       , NEXT_RECA) 
+           CALL IN_BIN_512I (UNIT_RES, BC_K_B, DIM_BC&
+              , NEXT_RECA) 
+           CALL IN_BIN_512I (UNIT_RES, BC_K_T, DIM_BC&
+              , NEXT_RECA) 
 !//? do we need to bcast to all or only BC_K_T to last PE, does the interior PE need this info
-                                    call bcast(BC_K_B, PE_IO)    !//PAR_I/O BCAST1i
-                                    call bcast(BC_K_T, PE_IO)    !//PAR_I/O BCAST1i
+           call bcast(BC_K_B, PE_IO)    !//PAR_I/O BCAST1i
+           call bcast(BC_K_T, PE_IO)    !//PAR_I/O BCAST1i
 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_EP_G, DIM_BC&
-                                       , NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_P_G, DIM_BC, &
-                                       NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_T_G, DIM_BC, &
-                                       NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_EP_G, DIM_BC&
+              , NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_P_G, DIM_BC, &
+              NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_T_G, DIM_BC, &
+              NEXT_RECA) 
 
-                                    call bcast(BC_EP_G, PE_IO)   !//PAR_I/O BCAST1d
-                                    call bcast(BC_P_G, PE_IO)    !//PAR_I/O BCAST1d
-                                    call bcast(BC_T_G, PE_IO)    !//PAR_I/O BCAST1d
+           call bcast(BC_EP_G, PE_IO)   !//PAR_I/O BCAST1d
+           call bcast(BC_P_G, PE_IO)    !//PAR_I/O BCAST1d
+           call bcast(BC_T_G, PE_IO)    !//PAR_I/O BCAST1d
 
-                                    IF (VERSION_NUMBER < 1.15) THEN 
-                                      CALL IN_BIN_512 (UNIT_RES, BC_T_S(1,1), &
-                                       DIM_BC, NEXT_RECA) 
-                                      IF (MMAX >= 2) THEN 
-                                        CALL IN_BIN_512 (UNIT_RES, BC_T_S(1,2), &
-                                             DIM_BC, NEXT_RECA) 
-                                      ELSE 
-                                        CALL IN_BIN_512 (UNIT_RES, BC_TMP, DIM_BC, &
-                                             NEXT_RECA) 
-                                        call bcast(BC_TMP, PE_IO)    !//PAR_I/O BCAST1d
-                                      ENDIF 
-                                      call bcast(BC_T_S, PE_IO)   !//PAR_I/O BCAST2d
-                                    ENDIF 
+           IF (VERSION_NUMBER < 1.15) THEN 
+             CALL IN_BIN_512 (UNIT_RES, BC_T_S(1,1), &
+              DIM_BC, NEXT_RECA) 
+             IF (MMAX >= 2) THEN 
+               CALL IN_BIN_512 (UNIT_RES, BC_T_S(1,2), &
+                    DIM_BC, NEXT_RECA) 
+             ELSE 
+               CALL IN_BIN_512 (UNIT_RES, BC_TMP, DIM_BC, &
+                    NEXT_RECA) 
+               call bcast(BC_TMP, PE_IO)    !//PAR_I/O BCAST1d
+             ENDIF 
+             call bcast(BC_T_S, PE_IO)   !//PAR_I/O BCAST2d
+           ENDIF 
 !
 
 
-                                    IF (VERSION_NUMBER >= 1.04) THEN 
-                                      DO N = 1, NMAX(0) 
-                                        CALL IN_BIN_512 (UNIT_RES, BC_X_G(1,N), &
-                                             DIM_BC, NEXT_RECA) 
-                                      END DO 
-                                      call bcast(BC_X_G, PE_IO)   !//PAR_I/O BCAST2d
-                                    ENDIF 
+           IF (VERSION_NUMBER >= 1.04) THEN 
+             DO N = 1, NMAX(0) 
+               CALL IN_BIN_512 (UNIT_RES, BC_X_G(1,N), &
+                    DIM_BC, NEXT_RECA) 
+             END DO 
+             call bcast(BC_X_G, PE_IO)   !//PAR_I/O BCAST2d
+           ENDIF 
 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_U_G, DIM_BC, &
-                                       NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_V_G, DIM_BC, &
-                                       NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_W_G, DIM_BC, &
-                                       NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_RO_G, DIM_BC&
-                                       , NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_ROP_G, DIM_BC&
-                                       , NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_VOLFLOW_G, &
-                                       DIM_BC, NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_MASSFLOW_G, &
-                                       DIM_BC, NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_U_G, DIM_BC, &
+              NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_V_G, DIM_BC, &
+              NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_W_G, DIM_BC, &
+              NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_RO_G, DIM_BC&
+              , NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_ROP_G, DIM_BC&
+              , NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_VOLFLOW_G, &
+              DIM_BC, NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_MASSFLOW_G, &
+              DIM_BC, NEXT_RECA) 
 
-                                    call bcast(BC_U_G, PE_IO)       !//PAR_I/O BCAST1d
-                                    call bcast(BC_V_G, PE_IO)       !//PAR_I/O BCAST1d
-                                    call bcast(BC_W_G, PE_IO)       !//PAR_I/O BCAST1d
-                                    call bcast(BC_RO_G, PE_IO)      !//PAR_I/O BCAST1d
-                                    call bcast(BC_ROP_G, PE_IO)     !//PAR_I/O BCAST1d
-                                    call bcast(BC_VOLFLOW_G, PE_IO) !//PAR_I/O BCAST1d
-                                    call bcast(BC_MASSFLOW_G, PE_IO)!//PAR_I/O BCAST1d
+           call bcast(BC_U_G, PE_IO)       !//PAR_I/O BCAST1d
+           call bcast(BC_V_G, PE_IO)       !//PAR_I/O BCAST1d
+           call bcast(BC_W_G, PE_IO)       !//PAR_I/O BCAST1d
+           call bcast(BC_RO_G, PE_IO)      !//PAR_I/O BCAST1d
+           call bcast(BC_ROP_G, PE_IO)     !//PAR_I/O BCAST1d
+           call bcast(BC_VOLFLOW_G, PE_IO) !//PAR_I/O BCAST1d
+           call bcast(BC_MASSFLOW_G, PE_IO)!//PAR_I/O BCAST1d
 
-                                    DO LC = 1, MMAX 
-                                      CALL IN_BIN_512 (UNIT_RES, BC_ROP_S(1,LC), &
-                                       DIM_BC, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, BC_U_S(1,LC), &
-                                       DIM_BC, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, BC_V_S(1,LC), &
-                                       DIM_BC, NEXT_RECA) 
+           DO LC = 1, MMAX 
+             CALL IN_BIN_512 (UNIT_RES, BC_ROP_S(1,LC), &
+              DIM_BC, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, BC_U_S(1,LC), &
+              DIM_BC, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, BC_V_S(1,LC), &
+              DIM_BC, NEXT_RECA) 
 !
 ! Note : previous versions did not write out BC_W_s
 !
-                                      IF (VERSION_NUMBER >= 1.04) THEN 
-                                        CALL IN_BIN_512 (UNIT_RES, BC_W_S(1,LC), &
-                                             DIM_BC, NEXT_RECA) 
-                                        IF (VERSION_NUMBER >= 1.15) CALL IN_BIN_512&
-                                           (UNIT_RES, BC_T_S(1,LC), DIM_BC, &
-                                            NEXT_RECA) 
+             IF (VERSION_NUMBER >= 1.04) THEN 
+               CALL IN_BIN_512 (UNIT_RES, BC_W_S(1,LC), &
+                    DIM_BC, NEXT_RECA) 
+               IF (VERSION_NUMBER >= 1.15) CALL IN_BIN_512&
+                  (UNIT_RES, BC_T_S(1,LC), DIM_BC, &
+                   NEXT_RECA) 
 !
-                                        DO N = 1, NMAX(LC) 
-                                          CALL IN_BIN_512 (UNIT_RES, BC_X_S(1,LC,N), &
-                                               DIM_BC, NEXT_RECA) 
-                                        END DO 
-                                      ENDIF 
+               DO N = 1, NMAX(LC) 
+                 CALL IN_BIN_512 (UNIT_RES, BC_X_S(1,LC,N), &
+                      DIM_BC, NEXT_RECA) 
+               END DO 
+             ENDIF 
 !
-                                      CALL IN_BIN_512 (UNIT_RES, BC_VOLFLOW_S(1,&
-                                           LC), DIM_BC, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, BC_MASSFLOW_S(1,&
-                                           LC), DIM_BC, NEXT_RECA) 
-                                    END DO 
+             CALL IN_BIN_512 (UNIT_RES, BC_VOLFLOW_S(1,&
+                  LC), DIM_BC, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, BC_MASSFLOW_S(1,&
+                  LC), DIM_BC, NEXT_RECA) 
+           END DO 
 
-                                    call bcast(BC_ROP_S, PE_IO) !//PAR_I/O BCAST2d
-                                    call bcast(BC_U_S, PE_IO)   !//PAR_I/O BCAST2d
-                                    call bcast(BC_V_S, PE_IO)   !//PAR_I/O BCAST2d
+           call bcast(BC_ROP_S, PE_IO) !//PAR_I/O BCAST2d
+           call bcast(BC_U_S, PE_IO)   !//PAR_I/O BCAST2d
+           call bcast(BC_V_S, PE_IO)   !//PAR_I/O BCAST2d
 
-                                    if (VERSION_NUMBER >= 1.04) then
-                                       call bcast(BC_W_S, PE_IO)   !//PAR_I/O BCAST2d
-                                       if (VERSION_NUMBER >= 1.15)  &
-                                          call bcast(BC_T_S, PE_IO)   !//PAR_I/O BCAST2d
-!
-                                       call bcast(BC_X_S, PE_IO)   !//PAR_I/O BCAST2d
-                                    endif 
-                                    call bcast(BC_VOLFLOW_S, PE_IO)   !//PAR_I/O BCAST2d
-                                    call bcast(BC_MASSFLOW_S, PE_IO)  !//PAR_I/O BCAST2d
+           if (VERSION_NUMBER >= 1.04) then
+              call bcast(BC_W_S, PE_IO)   !//PAR_I/O BCAST2d
+              if (VERSION_NUMBER >= 1.15)  &
+                 call bcast(BC_T_S, PE_IO)   !//PAR_I/O BCAST2d
 
-                                    IF (VERSION == 'RES = 01.00') THEN 
-                                      L = 10 
-                                    ELSE 
-                                      L = DIM_BC 
-                                    ENDIF 
-                                    DO LC = 1, L 
-                                      READ (UNIT_RES, REC=NEXT_RECA) BC_TYPE(LC) 
-                                      NEXT_RECA = NEXT_RECA + 1 
-                                    END DO 
+              call bcast(BC_X_S, PE_IO)   !//PAR_I/O BCAST2d
+           endif 
+           call bcast(BC_VOLFLOW_S, PE_IO)   !//PAR_I/O BCAST2d
+           call bcast(BC_MASSFLOW_S, PE_IO)  !//PAR_I/O BCAST2d
 
-                                    call bcast(BC_TYPE, PE_IO)   !//PAR_I/O BCAST1c
+           IF (VERSION == 'RES = 01.00') THEN 
+             L = 10 
+           ELSE 
+             L = DIM_BC 
+           ENDIF 
+           DO LC = 1, L 
+             READ (UNIT_RES, REC=NEXT_RECA) BC_TYPE(LC) 
+             NEXT_RECA = NEXT_RECA + 1 
+           END DO 
+
+           call bcast(BC_TYPE, PE_IO)   !//PAR_I/O BCAST1c
 
 !//? is ijkmax2 or ijkmax3 the global index? if not change followings
-                                    Allocate(iGTEMP(IJKMAX2))   !//PAR_I/O ALLOCate INT Global scratch
-                                    Allocate(iGTEMP2(IJKMAX2))   !//PAR_I/O ALLOCate INT Global scratch
+           Allocate(iGTEMP(IJKMAX2))   !//PAR_I/O ALLOCate INT Global scratch
+           Allocate(iGTEMP2(IJKMAX2))   !//PAR_I/O ALLOCate INT Global scratch
 
-                                    CALL IN_BIN_512I (UNIT_RES, iGTEMP, IJKMAX2, &
-                                       NEXT_RECA) 
-                                    call convert_from_io_i(iGTEMP,iGTEMP2,ijkmax2)
+           CALL IN_BIN_512I (UNIT_RES, iGTEMP, IJKMAX2, &
+              NEXT_RECA) 
+           call convert_from_io_i(iGTEMP,iGTEMP2,ijkmax2)
 
-                                    call scatter(array1i,iGTEMP2,PE_IO)        !//PAR_I/O SCATTER1d
-                                    DeAllocate (iGTEMP, iGTEMP2)
+           call scatter(array1i,iGTEMP2,PE_IO)        !//PAR_I/O SCATTER1d
+           DeAllocate (iGTEMP, iGTEMP2)
 
 
-                                    IF (VERSION_NUMBER >= 1.04) THEN 
-                                      CALL IN_BIN_512 (UNIT_RES, IS_X_W, DIM_IS, &
-                                       NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IS_X_E, DIM_IS, &
-                                       NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IS_Y_S, DIM_IS, &
-                                       NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IS_Y_N, DIM_IS, &
-                                       NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IS_Z_B, DIM_IS, &
-                                       NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IS_Z_T, DIM_IS, &
-                                       NEXT_RECA) 
-                                      CALL IN_BIN_512I (UNIT_RES, IS_I_W, DIM_IS&
-                                       , NEXT_RECA) 
-                                      CALL IN_BIN_512I (UNIT_RES, IS_I_E, DIM_IS&
-                                       , NEXT_RECA) 
-                                      CALL IN_BIN_512I (UNIT_RES, IS_J_S, DIM_IS&
-                                       , NEXT_RECA) 
-                                      CALL IN_BIN_512I (UNIT_RES, IS_J_N, DIM_IS&
-                                       , NEXT_RECA) 
-                                      CALL IN_BIN_512I (UNIT_RES, IS_K_B, DIM_IS&
-                                       , NEXT_RECA) 
-                                      CALL IN_BIN_512I (UNIT_RES, IS_K_T, DIM_IS&
-                                       , NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IS_PC(1,1), &
-                                       DIM_IS, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IS_PC(1,2), &
-                                       DIM_IS, NEXT_RECA) 
+           IF (VERSION_NUMBER >= 1.04) THEN 
+             CALL IN_BIN_512 (UNIT_RES, IS_X_W, DIM_IS, &
+              NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IS_X_E, DIM_IS, &
+              NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IS_Y_S, DIM_IS, &
+              NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IS_Y_N, DIM_IS, &
+              NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IS_Z_B, DIM_IS, &
+              NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IS_Z_T, DIM_IS, &
+              NEXT_RECA) 
+             CALL IN_BIN_512I (UNIT_RES, IS_I_W, DIM_IS&
+              , NEXT_RECA) 
+             CALL IN_BIN_512I (UNIT_RES, IS_I_E, DIM_IS&
+              , NEXT_RECA) 
+             CALL IN_BIN_512I (UNIT_RES, IS_J_S, DIM_IS&
+              , NEXT_RECA) 
+             CALL IN_BIN_512I (UNIT_RES, IS_J_N, DIM_IS&
+              , NEXT_RECA) 
+             CALL IN_BIN_512I (UNIT_RES, IS_K_B, DIM_IS&
+              , NEXT_RECA) 
+             CALL IN_BIN_512I (UNIT_RES, IS_K_T, DIM_IS&
+              , NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IS_PC(1,1), &
+              DIM_IS, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IS_PC(1,2), &
+              DIM_IS, NEXT_RECA) 
 
-                                      call bcast(IS_X_W, PE_IO)   !//PAR_I/O BCAST1d
-                                      call bcast(IS_X_E, PE_IO)   !//PAR_I/O BCAST1d
-                                      call bcast(IS_Y_S, PE_IO)   !//PAR_I/O BCAST1d
-                                      call bcast(IS_Y_N, PE_IO)   !//PAR_I/O BCAST1d
+             call bcast(IS_X_W, PE_IO)   !//PAR_I/O BCAST1d
+             call bcast(IS_X_E, PE_IO)   !//PAR_I/O BCAST1d
+             call bcast(IS_Y_S, PE_IO)   !//PAR_I/O BCAST1d
+             call bcast(IS_Y_N, PE_IO)   !//PAR_I/O BCAST1d
 !//? do we need to bcast to all or only IS_Z_T to last PE, does the interior PE need this info
-                                      call bcast(IS_Z_B, PE_IO)   !//PAR_I/O BCAST1d
-                                      call bcast(IS_Z_T, PE_IO)   !//PAR_I/O BCAST1d
+             call bcast(IS_Z_B, PE_IO)   !//PAR_I/O BCAST1d
+             call bcast(IS_Z_T, PE_IO)   !//PAR_I/O BCAST1d
 
-                                      call bcast(IS_I_W, PE_IO)   !//PAR_I/O BCAST1i
-                                      call bcast(IS_I_E, PE_IO)   !//PAR_I/O BCAST1i
-                                      call bcast(IS_J_S, PE_IO)   !//PAR_I/O BCAST1i
-                                      call bcast(IS_J_N, PE_IO)   !//PAR_I/O BCAST1i
+             call bcast(IS_I_W, PE_IO)   !//PAR_I/O BCAST1i
+             call bcast(IS_I_E, PE_IO)   !//PAR_I/O BCAST1i
+             call bcast(IS_J_S, PE_IO)   !//PAR_I/O BCAST1i
+             call bcast(IS_J_N, PE_IO)   !//PAR_I/O BCAST1i
 
 
-                                      IF (VERSION_NUMBER >= 1.07) THEN 
-                                        DO LC = 1, MMAX 
-                                          CALL IN_BIN_512 (UNIT_RES, IS_VEL_S(1,LC), &
-                                                DIM_IS, NEXT_RECA) 
-                                        END DO 
-                                        call bcast(IS_VEL_S, PE_IO)   !//PAR_I/O BCAST2d
-                                      ENDIF 
-                                      DO LC = 1, DIM_IS 
-                                        READ (UNIT_RES, REC=NEXT_RECA) IS_TYPE(LC) 
-                                        NEXT_RECA = NEXT_RECA + 1 
-                                      END DO 
-                                      call bcast(IS_TYPE, PE_IO)   !//PAR_I/O BCAST1c
-                                    ENDIF 
+             IF (VERSION_NUMBER >= 1.07) THEN 
+               DO LC = 1, MMAX 
+                 CALL IN_BIN_512 (UNIT_RES, IS_VEL_S(1,LC), &
+                       DIM_IS, NEXT_RECA) 
+               END DO 
+               call bcast(IS_VEL_S, PE_IO)   !//PAR_I/O BCAST2d
+             ENDIF 
+             DO LC = 1, DIM_IS 
+               READ (UNIT_RES, REC=NEXT_RECA) IS_TYPE(LC) 
+               NEXT_RECA = NEXT_RECA + 1 
+             END DO 
+             call bcast(IS_TYPE, PE_IO)   !//PAR_I/O BCAST1c
+           ENDIF 
 !
 !
 !  Additions from new versions of .RES file
 !
-                                    IF (VERSION_NUMBER >= 1.08) THEN 
-                                      READ (UNIT_RES, REC=NEXT_RECA) CYCLIC_X, &
-                                        CYCLIC_Y, CYCLIC_Z, CYCLIC_X_PD, &
-                                        CYCLIC_Y_PD, CYCLIC_Z_PD, DELP_X, DELP_Y&
-                                        , DELP_Z, U_G0, U_S0, V_G0, V_S0, W_G0, &
-                                        W_S0 
-                                      call bcast(CYCLIC_X,PE_IO)     !//PAR_I/O BCAST0l
-                                      call bcast(CYCLIC_Y,PE_IO)     !//PAR_I/O BCAST0l
-                                      call bcast(CYCLIC_Z,PE_IO)     !//PAR_I/O BCAST0l
-                                      call bcast(CYCLIC_X_PD,PE_IO)  !//PAR_I/O BCAST0l
-                                      call bcast(CYCLIC_Y_PD,PE_IO)  !//PAR_I/O BCAST0l
-                                      call bcast(CYCLIC_Z_PD,PE_IO)  !//PAR_I/O BCAST0l
+           IF (VERSION_NUMBER >= 1.08) THEN 
+             READ (UNIT_RES, REC=NEXT_RECA) CYCLIC_X, &
+               CYCLIC_Y, CYCLIC_Z, CYCLIC_X_PD, &
+               CYCLIC_Y_PD, CYCLIC_Z_PD, DELP_X, DELP_Y&
+               , DELP_Z, U_G0, U_S0, V_G0, V_S0, W_G0, &
+               W_S0 
+             call bcast(CYCLIC_X,PE_IO)     !//PAR_I/O BCAST0l
+             call bcast(CYCLIC_Y,PE_IO)     !//PAR_I/O BCAST0l
+             call bcast(CYCLIC_Z,PE_IO)     !//PAR_I/O BCAST0l
+             call bcast(CYCLIC_X_PD,PE_IO)  !//PAR_I/O BCAST0l
+             call bcast(CYCLIC_Y_PD,PE_IO)  !//PAR_I/O BCAST0l
+             call bcast(CYCLIC_Z_PD,PE_IO)  !//PAR_I/O BCAST0l
                                       
-                                      DBLPACK(1) = DELP_X
-                                      DBLPACK(2) = DELP_Y
-                                      DBLPACK(3) = DELP_Z
-                                      DBLPACK(4) = U_G0
-                                      DBLPACK(5) = V_G0
-                                      DBLPACK(6) = W_G0
-                                      call bcast(DBLPACK,PE_IO) !//PAR_I/O BCAST1d
-                                      call bcast(U_S0,PE_IO)    !//PAR_I/O BCAST1d
-                                      call bcast(V_S0,PE_IO)    !//PAR_I/O BCAST1d
-                                      call bcast(W_S0,PE_IO)    !//PAR_I/O BCAST1d
+             DBLPACK(1) = DELP_X
+             DBLPACK(2) = DELP_Y
+             DBLPACK(3) = DELP_Z
+             DBLPACK(4) = U_G0
+             DBLPACK(5) = V_G0
+             DBLPACK(6) = W_G0
+             call bcast(DBLPACK,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(U_S0,PE_IO)    !//PAR_I/O BCAST1d
+             call bcast(V_S0,PE_IO)    !//PAR_I/O BCAST1d
+             call bcast(W_S0,PE_IO)    !//PAR_I/O BCAST1d
 
-                                      NEXT_RECA = NEXT_RECA + 1 
-                                    ENDIF 
+             NEXT_RECA = NEXT_RECA + 1 
+           ENDIF 
                                     
 !
-                                    IF (VERSION_NUMBER >= 1.09) THEN 
-                                      READ (UNIT_RES, REC=NEXT_RECA) TIME, TSTOP&
-                                       , ENERGY_EQ, RES_DT, OUT_DT, NLOG, &
-                                       L_SCALE0, NO_I, NO_J, NO_K, CALL_USR 
+           IF (VERSION_NUMBER >= 1.09) THEN 
+             READ (UNIT_RES, REC=NEXT_RECA) TIME, TSTOP&
+              , ENERGY_EQ, RES_DT, OUT_DT, NLOG, &
+              L_SCALE0, NO_I, NO_J, NO_K, CALL_USR 
 
-                                      call bcast(TIME,PE_IO)    !//PAR_I/O BCAST0d
-                                      call bcast(TSTOP,PE_IO)   !//PAR_I/O BCAST0d
-                                      call bcast(RES_DT,PE_IO)  !//PAR_I/O BCAST0d
-                                      call bcast(OUT_DT,PE_IO)  !//PAR_I/O BCAST0d
-                                      call bcast(L_SCALE0,PE_IO)!//PAR_I/O BCAST0d
-                                      call bcast(NLOG,PE_IO)    !//PAR_I/O BCAST0i
-                                      call bcast(ENERGY_EQ,PE_IO) !//PAR_I/O BCAST0l 
-                                      call bcast(NO_I,PE_IO)      !//PAR_I/O BCAST0l
-                                      call bcast(NO_J,PE_IO)      !//PAR_I/O BCAST0l
-                                      call bcast(NO_K,PE_IO)       !//PAR_I/O BCAST0l
-                                      call bcast(CALL_USR,PE_IO)  !//PAR_I/O BCAST0l
+             call bcast(TIME,PE_IO)    !//PAR_I/O BCAST0d
+             call bcast(TSTOP,PE_IO)   !//PAR_I/O BCAST0d
+             call bcast(RES_DT,PE_IO)  !//PAR_I/O BCAST0d
+             call bcast(OUT_DT,PE_IO)  !//PAR_I/O BCAST0d
+             call bcast(L_SCALE0,PE_IO)!//PAR_I/O BCAST0d
+             call bcast(NLOG,PE_IO)    !//PAR_I/O BCAST0i
+             call bcast(ENERGY_EQ,PE_IO) !//PAR_I/O BCAST0l 
+             call bcast(NO_I,PE_IO)      !//PAR_I/O BCAST0l
+             call bcast(NO_J,PE_IO)      !//PAR_I/O BCAST0l
+             call bcast(NO_K,PE_IO)       !//PAR_I/O BCAST0l
+             call bcast(CALL_USR,PE_IO)  !//PAR_I/O BCAST0l
 
-                                      NEXT_RECA = NEXT_RECA + 1 
-                                      DO LC = 1, N_SPX 
-                                        READ (UNIT_RES, REC=NEXT_RECA) SPX_DT(LC) 
-                                        NEXT_RECA = NEXT_RECA + 1 
-                                      END DO 
+             NEXT_RECA = NEXT_RECA + 1 
+             DO LC = 1, N_SPX 
+               READ (UNIT_RES, REC=NEXT_RECA) SPX_DT(LC) 
+               NEXT_RECA = NEXT_RECA + 1 
+             END DO 
 
-                                      DO LC = 0, MMAX 
-                                        READ (UNIT_RES, REC=NEXT_RECA) SPECIES_EQ(&
-                                                LC) 
-                                        NEXT_RECA = NEXT_RECA + 1 
-                                      END DO 
+             DO LC = 0, MMAX 
+               READ (UNIT_RES, REC=NEXT_RECA) SPECIES_EQ(&
+                       LC) 
+               NEXT_RECA = NEXT_RECA + 1 
+             END DO 
 
-                                      call bcast(SPX_DT,PE_IO) !//PAR_I/O BCAST1d
-                                      call bcast(SPECIES_EQ,PE_IO) !//PAR_I/O BCAST1l (recv)
+             call bcast(SPX_DT,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(SPECIES_EQ,PE_IO) !//PAR_I/O BCAST1l (recv)
 
-                                      CALL IN_BIN_512 (UNIT_RES, USR_DT, &
-                                           DIMENSION_USR, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, USR_X_W, &
-                                           DIMENSION_USR, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, USR_X_E, &
-                                           DIMENSION_USR, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, USR_Y_S, &
-                                           DIMENSION_USR, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, USR_Y_N, &
-                                           DIMENSION_USR, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, USR_Z_B, &
-                                           DIMENSION_USR, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, USR_Z_T, &
-                                           DIMENSION_USR, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, USR_DT, &
+                  DIMENSION_USR, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, USR_X_W, &
+                  DIMENSION_USR, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, USR_X_E, &
+                  DIMENSION_USR, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, USR_Y_S, &
+                  DIMENSION_USR, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, USR_Y_N, &
+                  DIMENSION_USR, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, USR_Z_B, &
+                  DIMENSION_USR, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, USR_Z_T, &
+                  DIMENSION_USR, NEXT_RECA) 
 
-                                      call bcast(USR_DT,PE_IO)  !//PAR_I/O BCAST1d
-                                      call bcast(USR_X_W,PE_IO) !//PAR_I/O BCAST1d
-                                      call bcast(USR_X_E,PE_IO) !//PAR_I/O BCAST1d
-                                      call bcast(USR_Y_S,PE_IO) !//PAR_I/O BCAST1d
-                                      call bcast(USR_Y_N,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(USR_DT,PE_IO)  !//PAR_I/O BCAST1d
+             call bcast(USR_X_W,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(USR_X_E,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(USR_Y_S,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(USR_Y_N,PE_IO) !//PAR_I/O BCAST1d
 !//? do we need to bcast to all or only USR_Z_T to last PE, does the interior PE need this info
-                                      call bcast(USR_Z_B,PE_IO) !//PAR_I/O BCAST1d
-                                      call bcast(USR_Z_T,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(USR_Z_B,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(USR_Z_T,PE_IO) !//PAR_I/O BCAST1d
 
-                                      DO LC = 1, DIMENSION_USR 
-                                        READ (UNIT_RES, REC=NEXT_RECA) USR_FORMAT(&
-                                             LC), USR_EXT(LC), USR_TYPE(LC), USR_VAR(&
-                                             LC) 
-                                        NEXT_RECA = NEXT_RECA + 1 
-                                      END DO 
+             DO LC = 1, DIMENSION_USR 
+               READ (UNIT_RES, REC=NEXT_RECA) USR_FORMAT(&
+                    LC), USR_EXT(LC), USR_TYPE(LC), USR_VAR(&
+                    LC) 
+               NEXT_RECA = NEXT_RECA + 1 
+             END DO 
 
-                                      call bcast(USR_FORMAT,PE_IO) !//PAR_I/O BCAST1c 
-                                      call bcast(USR_EXT,PE_IO) !//PAR_I/O BCAST1c 
-                                      call bcast(USR_TYPE,PE_IO) !//PAR_I/O BCAST1c
-                                      call bcast(USR_VAR,PE_IO) !//PAR_I/O BCAST1c
+             call bcast(USR_FORMAT,PE_IO) !//PAR_I/O BCAST1c 
+             call bcast(USR_EXT,PE_IO) !//PAR_I/O BCAST1c 
+             call bcast(USR_TYPE,PE_IO) !//PAR_I/O BCAST1c
+             call bcast(USR_VAR,PE_IO) !//PAR_I/O BCAST1c
 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_P_STAR, &
-                                           DIM_IC, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_L_SCALE, &
-                                           DIM_IC, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IC_P_STAR, &
+                  DIM_IC, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IC_L_SCALE, &
+                  DIM_IC, NEXT_RECA) 
 
-                                      call bcast(IC_P_STAR,PE_IO) !//PAR_I/O BCAST1d
-                                      call bcast(IC_L_SCALE,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(IC_P_STAR,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(IC_L_SCALE,PE_IO) !//PAR_I/O BCAST1d
 
-                                      DO LC = 1, DIM_IC 
-                                        READ (UNIT_RES, REC=NEXT_RECA) IC_TYPE(LC) 
-                                        NEXT_RECA = NEXT_RECA + 1 
-                                      END DO 
+             DO LC = 1, DIM_IC 
+               READ (UNIT_RES, REC=NEXT_RECA) IC_TYPE(LC) 
+               NEXT_RECA = NEXT_RECA + 1 
+             END DO 
 
-                                      call bcast(IC_TYPE,PE_IO) !//PAR_I/O BCAST1c
+             call bcast(IC_TYPE,PE_IO) !//PAR_I/O BCAST1c
 
-                                      CALL IN_BIN_512 (UNIT_RES, BC_DT_0, DIM_BC&
-                                           , NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, BC_JET_G0, &
-                                           DIM_BC, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, BC_DT_H, DIM_BC&
-                                           , NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, BC_JET_GH, &
-                                           DIM_BC, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, BC_DT_L, DIM_BC&
-                                           , NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, BC_JET_GL, &
-                                           DIM_BC, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, BC_DT_0, DIM_BC&
+                  , NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, BC_JET_G0, &
+                  DIM_BC, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, BC_DT_H, DIM_BC&
+                  , NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, BC_JET_GH, &
+                  DIM_BC, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, BC_DT_L, DIM_BC&
+                  , NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, BC_JET_GL, &
+                  DIM_BC, NEXT_RECA) 
 
-                                      call bcast(BC_DT_0,PE_IO) !//PAR_I/O BCAST1d
-                                      call bcast(BC_DT_H,PE_IO) !//PAR_I/O BCAST1d
-                                      call bcast(BC_DT_L,PE_IO) !//PAR_I/O BCAST1d
-                                      call bcast(BC_JET_G0,PE_IO) !//PAR_I/O BCAST1d
-                                      call bcast(BC_JET_GH,PE_IO) !//PAR_I/O BCAST1d
-                                      call bcast(BC_JET_GL,PE_IO) !//PAR_I/O BCAST1d
-                                    ENDIF 
-
-!
-                                    IF (VERSION_NUMBER >= 1.10) THEN 
-                                    READ (UNIT_RES, REC=NEXT_RECA) MU_GMAX 
-                                    call bcast(MU_GMAX,PE_IO) !//PAR_I/O BCAST0d
-                                    NEXT_RECA = NEXT_RECA + 1 
-                                    ENDIF 
+             call bcast(BC_DT_0,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(BC_DT_H,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(BC_DT_L,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(BC_JET_G0,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(BC_JET_GH,PE_IO) !//PAR_I/O BCAST1d
+             call bcast(BC_JET_GL,PE_IO) !//PAR_I/O BCAST1d
+           ENDIF 
 
 !
-                                    IF (VERSION_NUMBER >= 1.11) THEN 
-                                    READ (UNIT_RES, REC=NEXT_RECA) V_EX, &
-                                       MODEL_B 
-                                    call bcast(V_EX,PE_IO) !//PAR_I/O BCAST0d 
-                                    call bcast(MODEL_B,PE_IO) !//PAR_I/O BCAST0l 
-                                    NEXT_RECA = NEXT_RECA + 1 
-                                    ENDIF 
+           IF (VERSION_NUMBER >= 1.10) THEN 
+           READ (UNIT_RES, REC=NEXT_RECA) MU_GMAX 
+           call bcast(MU_GMAX,PE_IO) !//PAR_I/O BCAST0d
+           NEXT_RECA = NEXT_RECA + 1 
+           ENDIF 
+
 !
-                                    IF (VERSION_NUMBER >= 1.12) THEN 
-                                    READ (UNIT_RES, REC=NEXT_RECA) P_REF, &
-                                       P_SCALE, UR_FAC, TOL_RESID, DT_MAX, &
-                                       DT_MIN, DT_FAC, CLOSE_PACKED, GRAVITY, &
-                                       MU_S0 
+           IF (VERSION_NUMBER >= 1.11) THEN 
+           READ (UNIT_RES, REC=NEXT_RECA) V_EX, &
+              MODEL_B 
+           call bcast(V_EX,PE_IO) !//PAR_I/O BCAST0d 
+           call bcast(MODEL_B,PE_IO) !//PAR_I/O BCAST0l 
+           NEXT_RECA = NEXT_RECA + 1 
+           ENDIF 
+!
+           IF (VERSION_NUMBER >= 1.12) THEN 
+           READ (UNIT_RES, REC=NEXT_RECA) P_REF, &
+              P_SCALE, UR_FAC, TOL_RESID, DT_MAX, &
+              DT_MIN, DT_FAC, CLOSE_PACKED, GRAVITY, &
+              MU_S0 
 !//S may be worth to pack them and then bcast
-                                    call bcast(P_REF,PE_IO) !//PAR_I/O BCAST0d
-                                    call bcast(P_SCALE,PE_IO) !//PAR_I/O BCAST0d
-                                    call bcast(UR_FAC,PE_IO) !//PAR_I/O BCAST0d
-                                    call bcast(TOL_RESID,PE_IO) !//PAR_I/O BCAST0d
-                                    call bcast(DT_MAX,PE_IO) !//PAR_I/O BCAST0d
-                                    call bcast(DT_MIN,PE_IO) !//PAR_I/O BCAST0d
-                                    call bcast(DT_FAC,PE_IO) !//PAR_I/O BCAST0d
-                                    call bcast(GRAVITY,PE_IO) !//PAR_I/O BCAST0d
-                                    call bcast(MU_S0,PE_IO) !//PAR_I/O BCAST0d
-                                    call bcast(CLOSE_PACKED,PE_IO) !//PAR_I/O BCAST0l
+           call bcast(P_REF,PE_IO) !//PAR_I/O BCAST0d
+           call bcast(P_SCALE,PE_IO) !//PAR_I/O BCAST0d
+           call bcast(UR_FAC,PE_IO) !//PAR_I/O BCAST0d
+           call bcast(TOL_RESID,PE_IO) !//PAR_I/O BCAST0d
+           call bcast(DT_MAX,PE_IO) !//PAR_I/O BCAST0d
+           call bcast(DT_MIN,PE_IO) !//PAR_I/O BCAST0d
+           call bcast(DT_FAC,PE_IO) !//PAR_I/O BCAST0d
+           call bcast(GRAVITY,PE_IO) !//PAR_I/O BCAST0d
+           call bcast(MU_S0,PE_IO) !//PAR_I/O BCAST0d
+           call bcast(CLOSE_PACKED,PE_IO) !//PAR_I/O BCAST0l
 
-                                    NEXT_RECA = NEXT_RECA + 1 
+           NEXT_RECA = NEXT_RECA + 1 
 
-                                    READ (UNIT_RES, REC=NEXT_RECA) LEQ_IT, &
-                                       LEQ_METHOD 
-                                    NEXT_RECA = NEXT_RECA + 1 
-                                    call bcast(LEQ_IT,PE_IO)     !//PAR_I/O BCAST1i 
-                                    call bcast(LEQ_METHOD,PE_IO) !//PAR_I/O BCAST1i 
+           READ (UNIT_RES, REC=NEXT_RECA) LEQ_IT, &
+              LEQ_METHOD 
+           NEXT_RECA = NEXT_RECA + 1 
+           call bcast(LEQ_IT,PE_IO)     !//PAR_I/O BCAST1i 
+           call bcast(LEQ_METHOD,PE_IO) !//PAR_I/O BCAST1i 
 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_HW_G, DIM_BC&
-                                       , NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_UW_G, DIM_BC&
-                                       , NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_VW_G, DIM_BC&
-                                       , NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_WW_G, DIM_BC&
-                                       , NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_HW_G, DIM_BC&
+              , NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_UW_G, DIM_BC&
+              , NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_VW_G, DIM_BC&
+              , NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_WW_G, DIM_BC&
+              , NEXT_RECA) 
 
-                                    call bcast(BC_HW_G,PE_IO) !//PAR_I/O BCAST1d 
-                                    call bcast(BC_UW_G,PE_IO) !//PAR_I/O BCAST1d 
-                                    call bcast(BC_VW_G,PE_IO) !//PAR_I/O BCAST1d 
-                                    call bcast(BC_WW_G,PE_IO) !//PAR_I/O BCAST1d 
+           call bcast(BC_HW_G,PE_IO) !//PAR_I/O BCAST1d 
+           call bcast(BC_UW_G,PE_IO) !//PAR_I/O BCAST1d 
+           call bcast(BC_VW_G,PE_IO) !//PAR_I/O BCAST1d 
+           call bcast(BC_WW_G,PE_IO) !//PAR_I/O BCAST1d 
 
 
-                                    DO LC = 1, MMAX 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_HW_S(1,LC), &
-                                       DIM_BC, NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_UW_S(1,LC), &
-                                       DIM_BC, NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_VW_S(1,LC), &
-                                       DIM_BC, NEXT_RECA) 
-                                    CALL IN_BIN_512 (UNIT_RES, BC_WW_S(1,LC), &
-                                       DIM_BC, NEXT_RECA) 
-                                    END DO 
+           DO LC = 1, MMAX 
+           CALL IN_BIN_512 (UNIT_RES, BC_HW_S(1,LC), &
+              DIM_BC, NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_UW_S(1,LC), &
+              DIM_BC, NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_VW_S(1,LC), &
+              DIM_BC, NEXT_RECA) 
+           CALL IN_BIN_512 (UNIT_RES, BC_WW_S(1,LC), &
+              DIM_BC, NEXT_RECA) 
+           END DO 
 
-                                    call bcast(BC_HW_S,PE_IO) !//PAR_I/O BCAST2d 
-                                    call bcast(BC_UW_S,PE_IO) !//PAR_I/O BCAST2d 
-                                    call bcast(BC_VW_S,PE_IO) !//PAR_I/O BCAST2d 
-                                    call bcast(BC_WW_S,PE_IO) !//PAR_I/O BCAST2d 
-                                    ENDIF 
+           call bcast(BC_HW_S,PE_IO) !//PAR_I/O BCAST2d 
+           call bcast(BC_UW_S,PE_IO) !//PAR_I/O BCAST2d 
+           call bcast(BC_VW_S,PE_IO) !//PAR_I/O BCAST2d 
+           call bcast(BC_WW_S,PE_IO) !//PAR_I/O BCAST2d 
+           ENDIF 
 
-                                    LC = 0 
-                                    IF (MMAX + 1 > 0) THEN 
-                                    MOMENTUM_X_EQ(:MMAX) = .TRUE. 
-                                    MOMENTUM_Y_EQ(:MMAX) = .TRUE. 
-                                    MOMENTUM_Z_EQ(:MMAX) = .TRUE. 
-                                    LC = MMAX + 1 
-                                    ENDIF 
-                                    TOL_DIVERGE = 1.E+4 
+           LC = 0 
+           IF (MMAX + 1 > 0) THEN 
+           MOMENTUM_X_EQ(:MMAX) = .TRUE. 
+           MOMENTUM_Y_EQ(:MMAX) = .TRUE. 
+           MOMENTUM_Z_EQ(:MMAX) = .TRUE. 
+           LC = MMAX + 1 
+           ENDIF 
+           TOL_DIVERGE = 1.E+4 
 
-                                    IF (VERSION_NUMBER >= 1.13) THEN 
-                                    READ (UNIT_RES, REC=NEXT_RECA) &
-                                       MOMENTUM_X_EQ, MOMENTUM_Y_EQ, &
-                                       MOMENTUM_Z_EQ, TOL_DIVERGE, DISCRETIZE, &
-                                       FULL_LOG 
+           IF (VERSION_NUMBER >= 1.13) THEN 
+           READ (UNIT_RES, REC=NEXT_RECA) &
+              MOMENTUM_X_EQ, MOMENTUM_Y_EQ, &
+              MOMENTUM_Z_EQ, TOL_DIVERGE, DISCRETIZE, &
+              FULL_LOG 
 
-                                    call bcast(TOL_DIVERGE,PE_IO) !//PAR_I/O BCAST0d 
-                                    call bcast(DISCRETIZE,PE_IO) !//PAR_I/O BCAST1i 
-                                    call bcast(MOMENTUM_X_EQ,PE_IO) !//PAR_I/O BCAST1l 
-                                    call bcast(MOMENTUM_Y_EQ,PE_IO) !//PAR_I/O BCAST1l 
-                                    call bcast(MOMENTUM_Z_EQ,PE_IO) !//PAR_I/O BCAST1l 
-                                    call bcast(FULL_LOG,PE_IO) !//PAR_I/O BCAST0l 
+           call bcast(TOL_DIVERGE,PE_IO) !//PAR_I/O BCAST0d 
+           call bcast(DISCRETIZE,PE_IO) !//PAR_I/O BCAST1i 
+           call bcast(MOMENTUM_X_EQ,PE_IO) !//PAR_I/O BCAST1l 
+           call bcast(MOMENTUM_Y_EQ,PE_IO) !//PAR_I/O BCAST1l 
+           call bcast(MOMENTUM_Z_EQ,PE_IO) !//PAR_I/O BCAST1l 
+           call bcast(FULL_LOG,PE_IO) !//PAR_I/O BCAST0l 
 
-                                    NEXT_RECA = NEXT_RECA + 1 
-                                    ENDIF 
+           NEXT_RECA = NEXT_RECA + 1 
+           ENDIF 
 !
-                                    IF (VERSION_NUMBER >= 1.14) THEN 
-                                      READ (UNIT_RES, REC=NEXT_RECA) DETECT_STALL 
-                                      call bcast(DETECT_STALL,PE_IO) !//PAR_I/O BCAST0l 
-                                      NEXT_RECA = NEXT_RECA + 1 
-                                    ENDIF 
+           IF (VERSION_NUMBER >= 1.14) THEN 
+             READ (UNIT_RES, REC=NEXT_RECA) DETECT_STALL 
+             call bcast(DETECT_STALL,PE_IO) !//PAR_I/O BCAST0l 
+             NEXT_RECA = NEXT_RECA + 1 
+           ENDIF 
 !
-                                    IF (VERSION_NUMBER >= 1.15) THEN 
-                                      READ (UNIT_RES, REC=NEXT_RECA) K_G0, K_S0, &
-                                       C_PG0, C_PS0, TOL_RESID_T, TOL_RESID_X 
-                                      NEXT_RECA = NEXT_RECA + 1 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_GAMA_RG, &
-                                       DIM_IC, NEXT_RECA) 
-                                      CALL IN_BIN_512 (UNIT_RES, IC_T_RG, DIM_IC&
-                                       , NEXT_RECA) 
+           IF (VERSION_NUMBER >= 1.15) THEN 
+             READ (UNIT_RES, REC=NEXT_RECA) K_G0, K_S0, &
+              C_PG0, C_PS0, TOL_RESID_T, TOL_RESID_X 
+             NEXT_RECA = NEXT_RECA + 1 
+             CALL IN_BIN_512 (UNIT_RES, IC_GAMA_RG, &
+              DIM_IC, NEXT_RECA) 
+             CALL IN_BIN_512 (UNIT_RES, IC_T_RG, DIM_IC&
+              , NEXT_RECA) 
 !//S may be worth to pack them and then bcast
-                                      call bcast(K_G0,PE_IO) !//PAR_I/O BCAST0d 
-                                      call bcast(K_S0,PE_IO) !//PAR_I/O BCAST0d 
-                                      call bcast(C_PG0,PE_IO) !//PAR_I/O BCAST0d 
-                                      call bcast(C_PS0,PE_IO) !//PAR_I/O BCAST0d 
-                                      call bcast(TOL_RESID_T,PE_IO) !//PAR_I/O BCAST0d
-                                      call bcast(TOL_RESID_X,PE_IO) !//PAR_I/O BCAST0d 
+             call bcast(K_G0,PE_IO) !//PAR_I/O BCAST0d 
+             call bcast(K_S0,PE_IO) !//PAR_I/O BCAST0d 
+             call bcast(C_PG0,PE_IO) !//PAR_I/O BCAST0d 
+             call bcast(C_PS0,PE_IO) !//PAR_I/O BCAST0d 
+             call bcast(TOL_RESID_T,PE_IO) !//PAR_I/O BCAST0d
+             call bcast(TOL_RESID_X,PE_IO) !//PAR_I/O BCAST0d 
 
-                                      call bcast(IC_GAMA_RG,PE_IO) !//PAR_I/O BCAST1d 
-                                      call bcast(IC_T_RG,PE_IO) !//PAR_I/O BCAST1d 
+             call bcast(IC_GAMA_RG,PE_IO) !//PAR_I/O BCAST1d 
+             call bcast(IC_T_RG,PE_IO) !//PAR_I/O BCAST1d 
 
-                                      DO LC = 1, MMAX 
-                                       CALL IN_BIN_512 (UNIT_RES, IC_GAMA_RS(1,LC)&
-                                       , DIM_IC, NEXT_RECA) 
-                                       CALL IN_BIN_512 (UNIT_RES, IC_T_RS(1,LC), &
-                                       DIM_IC, NEXT_RECA) 
-                                      END DO 
-                                      call bcast(IC_GAMA_RS,PE_IO) !//PAR_I/O BCAST2d 
-                                      call bcast(IC_T_RS,PE_IO) !//PAR_I/O BCAST2d 
+             DO LC = 1, MMAX 
+              CALL IN_BIN_512 (UNIT_RES, IC_GAMA_RS(1,LC)&
+              , DIM_IC, NEXT_RECA) 
+              CALL IN_BIN_512 (UNIT_RES, IC_T_RS(1,LC), &
+              DIM_IC, NEXT_RECA) 
+             END DO 
+             call bcast(IC_GAMA_RS,PE_IO) !//PAR_I/O BCAST2d 
+             call bcast(IC_T_RS,PE_IO) !//PAR_I/O BCAST2d 
 
-                                    ENDIF 
+           ENDIF 
 !
-                                    IF (VERSION_NUMBER >= 1.2) THEN 
-                                      READ (UNIT_RES, REC=NEXT_RECA) NORM_G, &
-                                        NORM_S 
-                                      call bcast(NORM_G,PE_IO) !//PAR_I/O BCAST0d 
-                                      call bcast(NORM_S,PE_IO) !//PAR_I/O BCAST0d 
+           IF (VERSION_NUMBER >= 1.2) THEN 
+             READ (UNIT_RES, REC=NEXT_RECA) NORM_G, &
+               NORM_S 
+             call bcast(NORM_G,PE_IO) !//PAR_I/O BCAST0d 
+             call bcast(NORM_S,PE_IO) !//PAR_I/O BCAST0d 
 
-                                      NEXT_RECA = NEXT_RECA + 1 
-                                    ENDIF 
+             NEXT_RECA = NEXT_RECA + 1 
+           ENDIF 
 !
 !  Add new read statements above this line.  Remember to update NEXT_RECA.
 !  Remember to update the version number check near begining of this subroutine.
 !------------------------------------------------------------------------------
 !
-                                    READ (UNIT_RES, REC=3) NEXT_RECA 
+           READ (UNIT_RES, REC=3) NEXT_RECA 
 
 
-                               else    ! else of if (myPE == PE_IO) from Block 2
+      else    ! else of if (myPE == PE_IO) from Block 2
 			       			       
-                                    call bcast(dx, PE_IO)         !//PAR_I/O BCAST1d (recv)
+           call bcast(dx, PE_IO)         !//PAR_I/O BCAST1d (recv)
 
-                                    call bcast(dy, PE_IO)         !//PAR_I/O BCAST1d (recv)
+           call bcast(dy, PE_IO)         !//PAR_I/O BCAST1d (recv)
 !//AIKEPARDBGSTOP 0907
     write(*,"('(PE ',I2,'): aft dy in Block2 in read_res0')") myPE !//AIKEPARDBG
     write(UNIT_LOG,*) dy  !//AIKEPARDBG  
     call exitMPI(myPE)    !//AIKEPARDBG
 
-                                    call gather(dz,dGTEMP,PE_IO)  !//PAR_I/O GATHER1d  (recv)
+           call gather(dz,dGTEMP,PE_IO)  !//PAR_I/O GATHER1d  (recv)
 !    call MPI_Barrier(MPI_COMM_WORLD,mpierr)					    
     write(*,"('(PE ',I2,'): KMAX3',I2)") myPE, KMAX3 !//AIKEPARDBG
     write(UNIT_LOG,"('(PE ',I2,'): aft dz in Block2 in read_res0')") myPE !//AIKEPARDBG
     write(UNIT_LOG,*) dz    !//AIKEPARDBG
     call exitMPI(myPE)      !//AIKEPARDBG
 				    
-                                    call bcast(RUN_NAME,PE_IO)    !//PAR_I/O BCAST0c (recv)
-                                    call bcast(DESCRIPTION,PE_IO) !//PAR_I/O BCAST0c (recv)
-                                    call bcast(UNITS,PE_IO)       !//PAR_I/O BCAST0c (recv)
-                                    call bcast(RUN_TYPE,PE_IO)    !//PAR_I/O BCAST0c (recv)
-                                    call bcast(COORDINATES,PE_IO) !//PAR_I/O BCAST0c (recv)
-                                    call bcast(D_P, PE_IO)       !//PAR_I/O BCAST1d (recv)
-                                    call bcast(RO_S, PE_IO)      !//PAR_I/O BCAST1d (recv)
-                                    call bcast(EP_STAR, PE_IO)   !//PAR_I/O BCAST0d (recv)
-                                    if (VERSION /= 'RES = 01.00' .OR. VERSION /= &
-                                         'RES = 01.01') &
-                                    call bcast(RO_G0, PE_IO)     !//PAR_I/O BCAST0d (recv)
-                                    call bcast(MU_G0, PE_IO)     !//PAR_I/O BCAST0d (recv)
-                                    call bcast(MW_AVG, PE_IO)    !//PAR_I/O BCAST0d (recv)
-                                    if (VERSION_NUMBER >= 1.04) then
-                                       call bcast(MW_G, PE_IO)     !//PAR_I/O BCAST1d (recv)
-                                       call bcast(MW_S, PE_IO)     !//PAR_I/O BCAST2d (recv)
-                                    endif
-                                    call bcast(IC_X_W, PE_IO)     !//PAR_I/O BCAST1d (recv)
-                                    call bcast(IC_X_E, PE_IO)     !//PAR_I/O BCAST1d (recv)
-                                    call bcast(IC_Y_S, PE_IO)     !//PAR_I/O BCAST1d (recv)
-                                    call bcast(IC_Y_N, PE_IO)     !//PAR_I/O BCAST1d (recv)
+           call bcast(RUN_NAME,PE_IO)    !//PAR_I/O BCAST0c (recv)
+           call bcast(DESCRIPTION,PE_IO) !//PAR_I/O BCAST0c (recv)
+           call bcast(UNITS,PE_IO)       !//PAR_I/O BCAST0c (recv)
+           call bcast(RUN_TYPE,PE_IO)    !//PAR_I/O BCAST0c (recv)
+           call bcast(COORDINATES,PE_IO) !//PAR_I/O BCAST0c (recv)
+           call bcast(D_P, PE_IO)       !//PAR_I/O BCAST1d (recv)
+           call bcast(RO_S, PE_IO)      !//PAR_I/O BCAST1d (recv)
+           call bcast(EP_STAR, PE_IO)   !//PAR_I/O BCAST0d (recv)
+           if (VERSION /= 'RES = 01.00' .OR. VERSION /= &
+                'RES = 01.01') &
+           call bcast(RO_G0, PE_IO)     !//PAR_I/O BCAST0d (recv)
+           call bcast(MU_G0, PE_IO)     !//PAR_I/O BCAST0d (recv)
+           call bcast(MW_AVG, PE_IO)    !//PAR_I/O BCAST0d (recv)
+           if (VERSION_NUMBER >= 1.04) then
+              call bcast(MW_G, PE_IO)     !//PAR_I/O BCAST1d (recv)
+              call bcast(MW_S, PE_IO)     !//PAR_I/O BCAST2d (recv)
+           endif
+           call bcast(IC_X_W, PE_IO)     !//PAR_I/O BCAST1d (recv)
+           call bcast(IC_X_E, PE_IO)     !//PAR_I/O BCAST1d (recv)
+           call bcast(IC_Y_S, PE_IO)     !//PAR_I/O BCAST1d (recv)
+           call bcast(IC_Y_N, PE_IO)     !//PAR_I/O BCAST1d (recv)
 !//? do we need to bcast to all or only Z_T to last PE
-                                    call bcast(IC_Z_B, PE_IO)     !//PAR_I/O BCAST1d (recv)
-                                    call bcast(IC_Z_T, PE_IO)     !//PAR_I/O BCAST1d (recv)
+           call bcast(IC_Z_B, PE_IO)     !//PAR_I/O BCAST1d (recv)
+           call bcast(IC_Z_T, PE_IO)     !//PAR_I/O BCAST1d (recv)
 
-                                    call bcast(IC_I_W, PE_IO)     !//PAR_I/O BCAST1i (recv)
-                                    call bcast(IC_I_E, PE_IO)     !//PAR_I/O BCAST1i (recv)
-                                    call bcast(IC_J_S, PE_IO)     !//PAR_I/O BCAST1i (recv)
-                                    call bcast(IC_J_N, PE_IO)     !//PAR_I/O BCAST1i (recv)
+           call bcast(IC_I_W, PE_IO)     !//PAR_I/O BCAST1i (recv)
+           call bcast(IC_I_E, PE_IO)     !//PAR_I/O BCAST1i (recv)
+           call bcast(IC_J_S, PE_IO)     !//PAR_I/O BCAST1i (recv)
+           call bcast(IC_J_N, PE_IO)     !//PAR_I/O BCAST1i (recv)
 
 !//? do we need to bcast to all or only IC_Z_T to last PE, does the interior PE need this info
-                                    call bcast(IC_K_B, PE_IO)     !//PAR_I/O BCAST1i (recv)
-                                    call bcast(IC_K_T, PE_IO)     !//PAR_I/O BCAST1i (recv)
+           call bcast(IC_K_B, PE_IO)     !//PAR_I/O BCAST1i (recv)
+           call bcast(IC_K_T, PE_IO)     !//PAR_I/O BCAST1i (recv)
 
-                                    call bcast(IC_EP_G, PE_IO)    !//PAR_I/O BCAST1d (recv)
-                                    call bcast(IC_P_G, PE_IO)     !//PAR_I/O BCAST1d (recv)
-                                    call bcast(IC_T_G, PE_IO)     !//PAR_I/O BCAST1d (recv)
+           call bcast(IC_EP_G, PE_IO)    !//PAR_I/O BCAST1d (recv)
+           call bcast(IC_P_G, PE_IO)     !//PAR_I/O BCAST1d (recv)
+           call bcast(IC_T_G, PE_IO)     !//PAR_I/O BCAST1d (recv)
 
-                                    if (VERSION_NUMBER < 1.15) then
-                                       IF (MMAX < 2) THEN 
-                                         call bcast(IC_TMP, PE_IO) !//PAR_I/O BCAST1d (recv)
-                                       ENDIF 
-                                       call bcast(IC_T_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
-                                    endif
+           if (VERSION_NUMBER < 1.15) then
+              IF (MMAX < 2) THEN 
+                call bcast(IC_TMP, PE_IO) !//PAR_I/O BCAST1d (recv)
+              ENDIF 
+              call bcast(IC_T_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
+           endif
 
-                                    if (VERSION_NUMBER >= 1.04) then
-                                       call bcast(IC_X_G, PE_IO)   !//PAR_I/O BCAST2d (recv)
-                                    endif
+           if (VERSION_NUMBER >= 1.04) then
+              call bcast(IC_X_G, PE_IO)   !//PAR_I/O BCAST2d (recv)
+           endif
 
-                                    call bcast(IC_U_G, PE_IO)    !//PAR_I/O BCAST1d (recv)
-                                    call bcast(IC_V_G, PE_IO)    !//PAR_I/O BCAST1d (recv)
-                                    call bcast(IC_W_G, PE_IO)    !//PAR_I/O BCAST1d (recv)
+           call bcast(IC_U_G, PE_IO)    !//PAR_I/O BCAST1d (recv)
+           call bcast(IC_V_G, PE_IO)    !//PAR_I/O BCAST1d (recv)
+           call bcast(IC_W_G, PE_IO)    !//PAR_I/O BCAST1d (recv)
 
-                                    call bcast(IC_ROP_S, PE_IO)  !//PAR_I/O BCAST2d (recv)
-                                    call bcast(IC_U_S, PE_IO)    !//PAR_I/O BCAST2d (recv)
-                                    call bcast(IC_V_S, PE_IO)    !//PAR_I/O BCAST2d (recv)
-                                    call bcast(IC_W_S, PE_IO)    !//PAR_I/O BCAST2d (recv)
-                                    if (VERSION_NUMBER >= 1.15) &
-                                       call bcast(IC_T_S, PE_IO)  !//PAR_I/O BCAST2d (recv)
-                                    if (VERSION_NUMBER >= 1.04) &
-                                       call bcast(IC_X_S, PE_IO)  !//PAR_I/O BCAST3d (recv)
+           call bcast(IC_ROP_S, PE_IO)  !//PAR_I/O BCAST2d (recv)
+           call bcast(IC_U_S, PE_IO)    !//PAR_I/O BCAST2d (recv)
+           call bcast(IC_V_S, PE_IO)    !//PAR_I/O BCAST2d (recv)
+           call bcast(IC_W_S, PE_IO)    !//PAR_I/O BCAST2d (recv)
+           if (VERSION_NUMBER >= 1.15) &
+              call bcast(IC_T_S, PE_IO)  !//PAR_I/O BCAST2d (recv)
+           if (VERSION_NUMBER >= 1.04) &
+              call bcast(IC_X_S, PE_IO)  !//PAR_I/O BCAST3d (recv)
 
-                                    call bcast(BC_X_W, PE_IO)    !//PAR_I/O BCAST1d (recv)
-                                    call bcast(BC_X_E, PE_IO)    !//PAR_I/O BCAST1d (recv)
-                                    call bcast(BC_Y_S, PE_IO)    !//PAR_I/O BCAST1d (recv)
-                                    call bcast(BC_Y_N, PE_IO)    !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_X_W, PE_IO)    !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_X_E, PE_IO)    !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_Y_S, PE_IO)    !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_Y_N, PE_IO)    !//PAR_I/O BCAST1d (recv)
 
 !//? do we need to bcast to all or only BC_Z_T to last PE, does the interior PE need this info
-                                    call bcast(BC_Z_B, PE_IO)    !//PAR_I/O BCAST1d (recv)
-                                    call bcast(BC_Z_T, PE_IO)    !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_Z_B, PE_IO)    !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_Z_T, PE_IO)    !//PAR_I/O BCAST1d (recv)
 
-                                    call bcast(BC_I_W, PE_IO)    !//PAR_I/O BCAST1i (recv)
-                                    call bcast(BC_I_E, PE_IO)    !//PAR_I/O BCAST1i (recv)
-                                    call bcast(BC_J_S, PE_IO)    !//PAR_I/O BCAST1i (recv)
-                                    call bcast(BC_J_N, PE_IO)    !//PAR_I/O BCAST1i (recv)
+           call bcast(BC_I_W, PE_IO)    !//PAR_I/O BCAST1i (recv)
+           call bcast(BC_I_E, PE_IO)    !//PAR_I/O BCAST1i (recv)
+           call bcast(BC_J_S, PE_IO)    !//PAR_I/O BCAST1i (recv)
+           call bcast(BC_J_N, PE_IO)    !//PAR_I/O BCAST1i (recv)
 
 !//? do we need to bcast to all or only BC_K_T to last PE, does the interior PE need this info
-                                    call bcast(BC_K_B, PE_IO)    !//PAR_I/O BCAST1i (recv)
-                                    call bcast(BC_K_T, PE_IO)    !//PAR_I/O BCAST1i (recv)
+           call bcast(BC_K_B, PE_IO)    !//PAR_I/O BCAST1i (recv)
+           call bcast(BC_K_T, PE_IO)    !//PAR_I/O BCAST1i (recv)
 
-                                    call bcast(BC_EP_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
-                                    call bcast(BC_P_G, PE_IO)    !//PAR_I/O BCAST1d (recv)
-                                    call bcast(BC_T_G, PE_IO)    !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_EP_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_P_G, PE_IO)    !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_T_G, PE_IO)    !//PAR_I/O BCAST1d (recv)
 
 
-                                    IF (VERSION_NUMBER < 1.15) THEN 
-                                      IF (MMAX < 2) THEN 
-                                        call bcast(BC_TMP, PE_IO)    !//PAR_I/O BCAST1d (recv)
-                                      ENDIF 
-                                      call bcast(BC_T_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
-                                    ENDIF 
+           IF (VERSION_NUMBER < 1.15) THEN 
+             IF (MMAX < 2) THEN 
+               call bcast(BC_TMP, PE_IO)    !//PAR_I/O BCAST1d (recv)
+             ENDIF 
+             call bcast(BC_T_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
+           ENDIF 
 !
-                                    IF (VERSION_NUMBER >= 1.04) THEN 
-                                      call bcast(BC_X_G, PE_IO)   !//PAR_I/O BCAST2d (recv)
-                                    ENDIF 
+           IF (VERSION_NUMBER >= 1.04) THEN 
+             call bcast(BC_X_G, PE_IO)   !//PAR_I/O BCAST2d (recv)
+           ENDIF 
 
-                                    call bcast(BC_U_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
-                                    call bcast(BC_V_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
-                                    call bcast(BC_W_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
-                                    call bcast(BC_RO_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
-                                    call bcast(BC_ROP_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
-                                    call bcast(BC_VOLFLOW_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
-                                    call bcast(BC_MASSFLOW_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_U_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_V_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_W_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_RO_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_ROP_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_VOLFLOW_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
+           call bcast(BC_MASSFLOW_G, PE_IO)   !//PAR_I/O BCAST1d (recv)
 
-                                    call bcast(BC_ROP_S, PE_IO) !//PAR_I/O BCAST2d (recv)
-                                    call bcast(BC_U_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
-                                    call bcast(BC_V_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
+           call bcast(BC_ROP_S, PE_IO) !//PAR_I/O BCAST2d (recv)
+           call bcast(BC_U_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
+           call bcast(BC_V_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
 
-                                    if (VERSION_NUMBER >= 1.04) then
-                                       call bcast(BC_W_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
-                                       if (VERSION_NUMBER >= 1.15)  &
-                                          call bcast(BC_T_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
-!
-                                       call bcast(BC_X_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
-                                    endif 
-                                    call bcast(BC_VOLFLOW_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
-                                    call bcast(BC_MASSFLOW_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
+           if (VERSION_NUMBER >= 1.04) then
+              call bcast(BC_W_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
+              if (VERSION_NUMBER >= 1.15)  &
+                 call bcast(BC_T_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
 
-                                    call bcast(BC_TYPE, PE_IO)   !//PAR_I/O BCAST1c (recv)
+              call bcast(BC_X_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
+           endif 
+           call bcast(BC_VOLFLOW_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
+           call bcast(BC_MASSFLOW_S, PE_IO)   !//PAR_I/O BCAST2d (recv)
 
-                                    call gather(array1i,iGTEMP2,PE_IO)  !//PAR_I/O GATHER1d
+           call bcast(BC_TYPE, PE_IO)   !//PAR_I/O BCAST1c (recv)
 
-                                    IF (VERSION_NUMBER >= 1.04) THEN 
+           call gather(array1i,iGTEMP2,PE_IO)  !//PAR_I/O GATHER1d
 
-                                      call bcast(IS_X_W, PE_IO)   !//PAR_I/O BCAST1d (recv)
-                                      call bcast(IS_X_E, PE_IO)   !//PAR_I/O BCAST1d (recv)
-                                      call bcast(IS_Y_S, PE_IO)   !//PAR_I/O BCAST1d (recv)
-                                      call bcast(IS_Y_N, PE_IO)   !//PAR_I/O BCAST1d (recv)
+           IF (VERSION_NUMBER >= 1.04) THEN 
+
+             call bcast(IS_X_W, PE_IO)   !//PAR_I/O BCAST1d (recv)
+             call bcast(IS_X_E, PE_IO)   !//PAR_I/O BCAST1d (recv)
+             call bcast(IS_Y_S, PE_IO)   !//PAR_I/O BCAST1d (recv)
+             call bcast(IS_Y_N, PE_IO)   !//PAR_I/O BCAST1d (recv)
 !//? do we need to bcast to all or only IS_Z_T to last PE, does the interior PE need this info
-                                      call bcast(IS_Z_B, PE_IO)   !//PAR_I/O BCAST1d (recv)
-                                      call bcast(IS_Z_T, PE_IO)   !//PAR_I/O BCAST1d (recv)
+             call bcast(IS_Z_B, PE_IO)   !//PAR_I/O BCAST1d (recv)
+             call bcast(IS_Z_T, PE_IO)   !//PAR_I/O BCAST1d (recv)
 
-                                      call bcast(IS_I_W, PE_IO)   !//PAR_I/O BCAST1i (recv)
-                                      call bcast(IS_I_E, PE_IO)   !//PAR_I/O BCAST1i (recv)
-                                      call bcast(IS_J_S, PE_IO)   !//PAR_I/O BCAST1i (recv)
-                                      call bcast(IS_J_N, PE_IO)   !//PAR_I/O BCAST1i (recv)
+             call bcast(IS_I_W, PE_IO)   !//PAR_I/O BCAST1i (recv)
+             call bcast(IS_I_E, PE_IO)   !//PAR_I/O BCAST1i (recv)
+             call bcast(IS_J_S, PE_IO)   !//PAR_I/O BCAST1i (recv)
+             call bcast(IS_J_N, PE_IO)   !//PAR_I/O BCAST1i (recv)
 
-                                      IF (VERSION_NUMBER >= 1.07) & 
-                                        call bcast(IS_VEL_S, PE_IO)!//PAR_I/O BCAST2d  (recv)
-                                      
-                                      call bcast(IS_TYPE, PE_IO)   !//PAR_I/O BCAST1c (recv)
-                                    ENDIF 
+             IF (VERSION_NUMBER >= 1.07) & 
+               call bcast(IS_VEL_S, PE_IO)!//PAR_I/O BCAST2d  (recv)
+             
+             call bcast(IS_TYPE, PE_IO)   !//PAR_I/O BCAST1c (recv)
+           ENDIF 
 
-                                    if (VERSION_NUMBER >= 1.08) then
-                                      call bcast(CYCLIC_X,PE_IO)     !//PAR_I/O BCAST0l
-                                      call bcast(CYCLIC_Y,PE_IO)     !//PAR_I/O BCAST0l
-                                      call bcast(CYCLIC_Z,PE_IO)     !//PAR_I/O BCAST0l
-                                      call bcast(CYCLIC_X_PD,PE_IO)  !//PAR_I/O BCAST0l
-                                      call bcast(CYCLIC_Y_PD,PE_IO)  !//PAR_I/O BCAST0l
-                                      call bcast(CYCLIC_Z_PD,PE_IO)  !//PAR_I/O BCAST0l                                    
-                                      call bcast(DBLPACK,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      DELP_X = DBLPACK(1)
-                                      DELP_Y = DBLPACK(2) 
-                                      DELP_Z = DBLPACK(3)
-                                      U_G0 = DBLPACK(4)
-                                      V_G0 = DBLPACK(5)
-                                      W_G0 = DBLPACK(6)
+           if (VERSION_NUMBER >= 1.08) then
+             call bcast(CYCLIC_X,PE_IO)     !//PAR_I/O BCAST0l
+             call bcast(CYCLIC_Y,PE_IO)     !//PAR_I/O BCAST0l
+             call bcast(CYCLIC_Z,PE_IO)     !//PAR_I/O BCAST0l
+             call bcast(CYCLIC_X_PD,PE_IO)  !//PAR_I/O BCAST0l
+             call bcast(CYCLIC_Y_PD,PE_IO)  !//PAR_I/O BCAST0l
+             call bcast(CYCLIC_Z_PD,PE_IO)  !//PAR_I/O BCAST0l                                    
+             call bcast(DBLPACK,PE_IO) !//PAR_I/O BCAST1d (recv)
+             DELP_X = DBLPACK(1)
+             DELP_Y = DBLPACK(2) 
+             DELP_Z = DBLPACK(3)
+             U_G0 = DBLPACK(4)
+             V_G0 = DBLPACK(5)
+             W_G0 = DBLPACK(6)
 
-                                      call bcast(U_S0,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(V_S0,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(W_S0,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                    endif
+             call bcast(U_S0,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(V_S0,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(W_S0,PE_IO) !//PAR_I/O BCAST1d (recv)
+           endif
 
 
-                                    IF (VERSION_NUMBER >= 1.09) THEN 
-                                      call bcast(TIME,PE_IO)    !//PAR_I/O BCAST0d (recv)
-                                      call bcast(TSTOP,PE_IO)   !//PAR_I/O BCAST0d (recv)
-                                      call bcast(RES_DT,PE_IO)  !//PAR_I/O BCAST0d (recv)
-                                      call bcast(OUT_DT,PE_IO)  !//PAR_I/O BCAST0d (recv)
-                                      call bcast(L_SCALE0,PE_IO)!//PAR_I/O BCAST0d (recv)
-                                      call bcast(NLOG,PE_IO)    !//PAR_I/O BCAST0i (recv)
-                                      call bcast(ENERGY_EQ,PE_IO)!//PAR_I/O BCAST0l (recv)
-                                      call bcast(NO_I,PE_IO)     !//PAR_I/O BCAST0l (recv)
-                                      call bcast(NO_J,PE_IO)     !//PAR_I/O BCAST0l (recv)
-                                      call bcast(NO_K,PE_IO)      !//PAR_I/O BCAST0l (recv)
-                                      call bcast(CALL_USR,PE_IO) !//PAR_I/O BCAST0l (recv)
+           IF (VERSION_NUMBER >= 1.09) THEN 
+             call bcast(TIME,PE_IO)    !//PAR_I/O BCAST0d (recv)
+             call bcast(TSTOP,PE_IO)   !//PAR_I/O BCAST0d (recv)
+             call bcast(RES_DT,PE_IO)  !//PAR_I/O BCAST0d (recv)
+             call bcast(OUT_DT,PE_IO)  !//PAR_I/O BCAST0d (recv)
+             call bcast(L_SCALE0,PE_IO)!//PAR_I/O BCAST0d (recv)
+             call bcast(NLOG,PE_IO)    !//PAR_I/O BCAST0i (recv)
+             call bcast(ENERGY_EQ,PE_IO)!//PAR_I/O BCAST0l (recv)
+             call bcast(NO_I,PE_IO)     !//PAR_I/O BCAST0l (recv)
+             call bcast(NO_J,PE_IO)     !//PAR_I/O BCAST0l (recv)
+             call bcast(NO_K,PE_IO)      !//PAR_I/O BCAST0l (recv)
+             call bcast(CALL_USR,PE_IO) !//PAR_I/O BCAST0l (recv)
 
-                                      call bcast(SPX_DT,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(SPECIES_EQ,PE_IO) !//PAR_I/O BCAST1l (recv)
+             call bcast(SPX_DT,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(SPECIES_EQ,PE_IO) !//PAR_I/O BCAST1l (recv)
 
-                                      call bcast(USR_DT,PE_IO)  !//PAR_I/O BCAST1d (recv)
-                                      call bcast(USR_X_W,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(USR_X_E,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(USR_Y_S,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(USR_Y_N,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(USR_DT,PE_IO)  !//PAR_I/O BCAST1d (recv)
+             call bcast(USR_X_W,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(USR_X_E,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(USR_Y_S,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(USR_Y_N,PE_IO) !//PAR_I/O BCAST1d (recv)
 !//? do we need to bcast to all or only USR_Z_T to last PE, does the interior PE need this info
-                                      call bcast(USR_Z_B,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(USR_Z_T,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(USR_Z_B,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(USR_Z_T,PE_IO) !//PAR_I/O BCAST1d (recv)
 
 
-                                      call bcast(USR_FORMAT,PE_IO) !//PAR_I/O BCAST1c (recv)
-                                      call bcast(USR_EXT,PE_IO) !//PAR_I/O BCAST1c (recv)
-                                      call bcast(USR_TYPE,PE_IO) !//PAR_I/O BCAST1c (recv)
-                                      call bcast(USR_VAR,PE_IO) !//PAR_I/O BCAST1c (recv)
+             call bcast(USR_FORMAT,PE_IO) !//PAR_I/O BCAST1c (recv)
+             call bcast(USR_EXT,PE_IO) !//PAR_I/O BCAST1c (recv)
+             call bcast(USR_TYPE,PE_IO) !//PAR_I/O BCAST1c (recv)
+             call bcast(USR_VAR,PE_IO) !//PAR_I/O BCAST1c (recv)
 
 
-                                      call bcast(IC_P_STAR,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(IC_L_SCALE,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(IC_P_STAR,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(IC_L_SCALE,PE_IO) !//PAR_I/O BCAST1d (recv)
 
-                                      call bcast(IC_TYPE,PE_IO) !//PAR_I/O BCAST1c
+             call bcast(IC_TYPE,PE_IO) !//PAR_I/O BCAST1c
 
-                                      call bcast(BC_DT_0,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(BC_DT_H,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(BC_DT_L,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(BC_JET_G0,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(BC_JET_GH,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                      call bcast(BC_JET_GL,PE_IO) !//PAR_I/O BCAST1d (recv)
-                                    ENDIF 
+             call bcast(BC_DT_0,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(BC_DT_H,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(BC_DT_L,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(BC_JET_G0,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(BC_JET_GH,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(BC_JET_GL,PE_IO) !//PAR_I/O BCAST1d (recv)
+           ENDIF 
 
-                                    IF (VERSION_NUMBER >= 1.10) &
-                                       call bcast(MU_GMAX,PE_IO) !//PAR_I/O BCAST0d (recv)
+           IF (VERSION_NUMBER >= 1.10) &
+              call bcast(MU_GMAX,PE_IO) !//PAR_I/O BCAST0d (recv)
+
+           IF (VERSION_NUMBER >= 1.11) THEN 
+           call bcast(V_EX,PE_IO) !//PAR_I/O BCAST0d (recv)
+           call bcast(MODEL_B,PE_IO) !//PAR_I/O BCAST0l (recv)
+           ENDIF 
 !
-                                    IF (VERSION_NUMBER >= 1.11) THEN 
-                                    call bcast(V_EX,PE_IO) !//PAR_I/O BCAST0d (recv)
-                                    call bcast(MODEL_B,PE_IO) !//PAR_I/O BCAST0l (recv)
-                                    ENDIF 
-!
-                                    IF (VERSION_NUMBER >= 1.12) THEN 
+           IF (VERSION_NUMBER >= 1.12) THEN 
 !//S may be worth to pack them and then bcast
-                                     call bcast(P_REF,PE_IO) !//PAR_I/O BCAST0d (recv)
-                                     call bcast(P_SCALE,PE_IO) !//PAR_I/O BCAST0d (recv)
-                                     call bcast(UR_FAC,PE_IO) !//PAR_I/O BCAST0d (recv)
-                                     call bcast(TOL_RESID,PE_IO) !//PAR_I/O BCAST0d (recv)
-                                     call bcast(DT_MAX,PE_IO) !//PAR_I/O BCAST0d (recv)
-                                     call bcast(DT_MIN,PE_IO) !//PAR_I/O BCAST0d (recv)
-                                     call bcast(DT_FAC,PE_IO) !//PAR_I/O BCAST0d (recv)
-                                     call bcast(GRAVITY,PE_IO) !//PAR_I/O BCAST0d (recv)
-                                     call bcast(MU_S0,PE_IO) !//PAR_I/O BCAST0d (recv)
-                                     call bcast(CLOSE_PACKED,PE_IO) !//PAR_I/O BCAST0l (recv)
+            call bcast(P_REF,PE_IO) !//PAR_I/O BCAST0d (recv)
+            call bcast(P_SCALE,PE_IO) !//PAR_I/O BCAST0d (recv)
+            call bcast(UR_FAC,PE_IO) !//PAR_I/O BCAST0d (recv)
+            call bcast(TOL_RESID,PE_IO) !//PAR_I/O BCAST0d (recv)
+            call bcast(DT_MAX,PE_IO) !//PAR_I/O BCAST0d (recv)
+            call bcast(DT_MIN,PE_IO) !//PAR_I/O BCAST0d (recv)
+            call bcast(DT_FAC,PE_IO) !//PAR_I/O BCAST0d (recv)
+            call bcast(GRAVITY,PE_IO) !//PAR_I/O BCAST0d (recv)
+            call bcast(MU_S0,PE_IO) !//PAR_I/O BCAST0d (recv)
+            call bcast(CLOSE_PACKED,PE_IO) !//PAR_I/O BCAST0l (recv)
 
-                                     call bcast(LEQ_IT,PE_IO)     !//PAR_I/O BCAST1i (recv) 
-                                     call bcast(LEQ_METHOD,PE_IO) !//PAR_I/O BCAST1i (recv) 
+            call bcast(LEQ_IT,PE_IO)     !//PAR_I/O BCAST1i (recv) 
+            call bcast(LEQ_METHOD,PE_IO) !//PAR_I/O BCAST1i (recv) 
 
-                                     call bcast(BC_HW_G,PE_IO) !//PAR_I/O BCAST1d (recv) 
-                                     call bcast(BC_UW_G,PE_IO) !//PAR_I/O BCAST1d (recv) 
-                                     call bcast(BC_VW_G,PE_IO) !//PAR_I/O BCAST1d (recv) 
-                                     call bcast(BC_WW_G,PE_IO) !//PAR_I/O BCAST1d (recv)
+            call bcast(BC_HW_G,PE_IO) !//PAR_I/O BCAST1d (recv) 
+            call bcast(BC_UW_G,PE_IO) !//PAR_I/O BCAST1d (recv) 
+            call bcast(BC_VW_G,PE_IO) !//PAR_I/O BCAST1d (recv) 
+            call bcast(BC_WW_G,PE_IO) !//PAR_I/O BCAST1d (recv)
 
-                                     call bcast(BC_HW_S,PE_IO) !//PAR_I/O BCAST2d (recv) 
-                                     call bcast(BC_UW_S,PE_IO) !//PAR_I/O BCAST2d (recv) 
-                                     call bcast(BC_VW_S,PE_IO) !//PAR_I/O BCAST2d (recv) 
-                                     call bcast(BC_WW_S,PE_IO) !//PAR_I/O BCAST2d (recv) 
-                                    ENDIF 
+            call bcast(BC_HW_S,PE_IO) !//PAR_I/O BCAST2d (recv) 
+            call bcast(BC_UW_S,PE_IO) !//PAR_I/O BCAST2d (recv) 
+            call bcast(BC_VW_S,PE_IO) !//PAR_I/O BCAST2d (recv) 
+            call bcast(BC_WW_S,PE_IO) !//PAR_I/O BCAST2d (recv) 
+           ENDIF 
 
-                                    LC = 0 
-                                    IF (MMAX + 1 > 0) THEN 
-                                    MOMENTUM_X_EQ(:MMAX) = .TRUE. 
-                                    MOMENTUM_Y_EQ(:MMAX) = .TRUE. 
-                                    MOMENTUM_Z_EQ(:MMAX) = .TRUE. 
-                                    LC = MMAX + 1 
-                                    ENDIF 
-                                    TOL_DIVERGE = 1.E+4 
+           LC = 0 
+           IF (MMAX + 1 > 0) THEN 
+           MOMENTUM_X_EQ(:MMAX) = .TRUE. 
+           MOMENTUM_Y_EQ(:MMAX) = .TRUE. 
+           MOMENTUM_Z_EQ(:MMAX) = .TRUE. 
+           LC = MMAX + 1 
+           ENDIF 
+           TOL_DIVERGE = 1.E+4 
 
-                                    IF (VERSION_NUMBER >= 1.13) THEN 
-                                    call bcast(TOL_DIVERGE,PE_IO) !//PAR_I/O BCAST0d (recv) 
-                                    call bcast(DISCRETIZE,PE_IO) !//PAR_I/O BCAST1i (recv) 
-                                    call bcast(MOMENTUM_X_EQ,PE_IO) !//PAR_I/O BCAST1l (recv) 
-                                    call bcast(MOMENTUM_Y_EQ,PE_IO) !//PAR_I/O BCAST1l (recv) 
-                                    call bcast(MOMENTUM_Z_EQ,PE_IO) !//PAR_I/O BCAST1l (recv) 
-                                    call bcast(FULL_LOG,PE_IO) !//PAR_I/O BCAST0l (recv) 
-                                    ENDIF 
+           IF (VERSION_NUMBER >= 1.13) THEN 
+           call bcast(TOL_DIVERGE,PE_IO) !//PAR_I/O BCAST0d (recv) 
+           call bcast(DISCRETIZE,PE_IO) !//PAR_I/O BCAST1i (recv) 
+           call bcast(MOMENTUM_X_EQ,PE_IO) !//PAR_I/O BCAST1l (recv) 
+           call bcast(MOMENTUM_Y_EQ,PE_IO) !//PAR_I/O BCAST1l (recv) 
+           call bcast(MOMENTUM_Z_EQ,PE_IO) !//PAR_I/O BCAST1l (recv) 
+           call bcast(FULL_LOG,PE_IO) !//PAR_I/O BCAST0l (recv) 
+           ENDIF 
 !
-                                    IF (VERSION_NUMBER >= 1.14) THEN 
-                                      call bcast(DETECT_STALL,PE_IO) !//PAR_I/O BCAST0l (recv) 
-                                    ENDIF 
+           IF (VERSION_NUMBER >= 1.14) THEN 
+             call bcast(DETECT_STALL,PE_IO) !//PAR_I/O BCAST0l (recv) 
+           ENDIF 
 !
-                                    IF (VERSION_NUMBER >= 1.15) THEN 
+           IF (VERSION_NUMBER >= 1.15) THEN 
 !//S may be worth to pack them and then bcast
-                                      call bcast(K_G0,PE_IO) !//PAR_I/O BCAST0d (recv) 
-                                      call bcast(K_S0,PE_IO) !//PAR_I/O BCAST0d (recv) 
-                                      call bcast(C_PG0,PE_IO) !//PAR_I/O BCAST0d (recv) 
-                                      call bcast(C_PS0,PE_IO) !//PAR_I/O BCAST0d (recv) 
-                                      call bcast(TOL_RESID_T,PE_IO) !//PAR_I/O BCAST0d (recv)
-                                      call bcast(TOL_RESID_X,PE_IO) !//PAR_I/O BCAST0d (recv) 
+             call bcast(K_G0,PE_IO) !//PAR_I/O BCAST0d (recv) 
+             call bcast(K_S0,PE_IO) !//PAR_I/O BCAST0d (recv) 
+             call bcast(C_PG0,PE_IO) !//PAR_I/O BCAST0d (recv) 
+             call bcast(C_PS0,PE_IO) !//PAR_I/O BCAST0d (recv) 
+             call bcast(TOL_RESID_T,PE_IO) !//PAR_I/O BCAST0d (recv)
+             call bcast(TOL_RESID_X,PE_IO) !//PAR_I/O BCAST0d (recv) 
 
-                                      call bcast(IC_GAMA_RG,PE_IO) !//PAR_I/O BCAST1d (recv) 
-                                      call bcast(IC_T_RG,PE_IO) !//PAR_I/O BCAST1d (recv)
+             call bcast(IC_GAMA_RG,PE_IO) !//PAR_I/O BCAST1d (recv) 
+             call bcast(IC_T_RG,PE_IO) !//PAR_I/O BCAST1d (recv)
 
-                                      call bcast(IC_GAMA_RS,PE_IO) !//PAR_I/O BCAST2d (recv) 
-                                      call bcast(IC_T_RS,PE_IO) !//PAR_I/O BCAST2d (recv) 
-                                    ENDIF 
+             call bcast(IC_GAMA_RS,PE_IO) !//PAR_I/O BCAST2d (recv) 
+             call bcast(IC_T_RS,PE_IO) !//PAR_I/O BCAST2d (recv) 
+           ENDIF 
 !
-                                    IF (VERSION_NUMBER >= 1.2) THEN 
-                                      call bcast(NORM_G,PE_IO) !//PAR_I/O BCAST0d (recv) 
-                                      call bcast(NORM_S,PE_IO) !//PAR_I/O BCAST0d (recv) 
-                                    ENDIF 
+           IF (VERSION_NUMBER >= 1.2) THEN 
+             call bcast(NORM_G,PE_IO) !//PAR_I/O BCAST0d (recv) 
+             call bcast(NORM_S,PE_IO) !//PAR_I/O BCAST0d (recv) 
+           ENDIF 
 
 
-                                    endif  ! end of if (myPE == PE_IO)
+           endif  ! end of if (myPE == PE_IO)
 
 !
 !  Since the value of UNDEFINED was changed ...
 !
-                                    IF (RO_G0 >= 1E30) RO_G0 = UNDEFINED 
-                                    IF (MU_G0 >= 1E30) MU_G0 = UNDEFINED 
-                                    IF (MW_AVG >= 1E30) MW_AVG = UNDEFINED 
-                                    IF (C_E >= 1E30) C_E = UNDEFINED 
+           IF (RO_G0 >= 1E30) RO_G0 = UNDEFINED 
+           IF (MU_G0 >= 1E30) MU_G0 = UNDEFINED 
+           IF (MW_AVG >= 1E30) MW_AVG = UNDEFINED 
+           IF (C_E >= 1E30) C_E = UNDEFINED 
 !
-                                    call unlock_tmp_array
-                                    RETURN  
+           call unlock_tmp_array
+           RETURN  
 !
 ! HERE IF DIMENSION ERROR
 !
-                                 ENDIF 
-                              ENDIF 
-                           ENDIF 
-                        ENDIF 
-                     ENDIF 
-                  ENDIF 
-               ENDIF 
-            ENDIF 
-         ENDIF 
+	ENDIF
       ENDIF 
   900 CONTINUE 
       WRITE (*, *) ' ' 
