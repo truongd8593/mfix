@@ -583,6 +583,103 @@
 !
       RETURN  
       END SUBROUTINE CALC_RESID_PP 
+
+!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CALC_RESID_mb(INIT, ErrorPercent)                      C
+!  Purpose: Calculate overall mass balance error                       C
+!                                                                      C
+!                                                                      C
+!  Author: M. Syamlal                                 Date: 9-DEC-02   C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE CALC_RESID_MB(INIT, ErrorPercent) 
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Switches: -xf
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE fldvar
+      USE parallel 
+      USE geometry
+      USE indices
+      USE run
+      USE bc
+      USE constant
+      USE physprop
+      USE compar   
+      USE mpi_utility   
+      USE residual
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!
+!
+!                      Flag to check whether this is an initialization call
+!                      0 -> initialize old accumulation; 1 -> calc residual
+      INTEGER          init
+      
+!                      Error index
+      INTEGER          IER
+
+!                      Total mass balance error as a % of inflow
+      DOUBLE PRECISION ErrorPercent
+
+ 
+!                      Indices
+      INTEGER          L, IJK
+
+      DOUBLE PRECISION flux_in, flux_out, fin, fout, err, accum_new
+
+!     functions      
+      DOUBLE PRECISION Accumulation
+    
+      INCLUDE 'function.inc'
+
+      if(init == 0) then
+!       Initilaize this routine
+	!Accumulation
+        Accum_resid_g = Accumulation(ROP_g)
+	return
+	
+      else
+	Accum_new = Accumulation(ROP_g) 
+	
+	flux_out = zero
+        flux_in = zero
+        DO L = 1, DIMENSION_BC
+          IF (BC_DEFINED(L)) THEN
+            call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_g, V_g, W_g, ROP_g, fin, fout, IER) 
+	    flux_out = flux_out + fout  * dt
+            flux_in = flux_in + fin * dt
+          ENDIF 
+        END DO
+        
+	Err = (accum_new - Accum_resid_g) - (flux_in - flux_out)
+	ErrorPercent = err*100./flux_in
+	
+      endif
+
+      RETURN  
+      END SUBROUTINE CALC_RESID_MB 
 !
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC

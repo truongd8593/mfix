@@ -195,7 +195,7 @@
       M = 0 
       IF (MMAX + 1 > 0) THEN 
          DENSITY(:MMAX) = .TRUE. 
-         PSIZE(:MMAX) = .TRUE. 
+         SIZE(:MMAX) = .TRUE. 
          IF (ENERGY_EQ) THEN 
             SP_HEAT(:MMAX) = .TRUE. 
             COND(:MMAX) = .TRUE. 
@@ -222,7 +222,7 @@
         CALL ZERO_ARRAY (F_gs(1,M), IER)
       END DO
 
-      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
+      CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 
 !
@@ -256,6 +256,9 @@
 	call CAL_D(V_sh)
        END IF
 
+! Initialize check_mass_balance.  This routine is not active by default.  Specify a
+! reporting interval (hard-wired in the routine) to activate the routine.
+      Call check_mass_balance (0)
 
 !
 !  The TIME loop begins here.............................................
@@ -301,14 +304,14 @@
          IF (FINISH) THEN 
             CALL WRITE_RES1 
             RES_MSG = .FALSE. 
-            IF(DMP_LOG)WRITE (UNIT_LOG, '('' t='',F10.4, ''  Wrote RES;'')', ADVANCE='NO') TIME 
+            WRITE (UNIT_LOG, '('' t='',F10.4, ''  Wrote RES;'')', ADVANCE='NO') TIME 
             IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME  !//
          ENDIF 
       ELSE IF (TIME + 0.1*DT>=RES_TIME .OR. TIME+0.1*DT>=TSTOP) THEN 
          RES_TIME = (INT((TIME + 0.1*DT)/RES_DT) + 1)*RES_DT 
          CALL WRITE_RES1 
          RES_MSG = .FALSE. 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME 
+         WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME 
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME   !//
       ENDIF 
 !
@@ -326,15 +329,15 @@
 !
                   IF (SPX_MSG) THEN 
                      IF (RES_MSG) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME 
+                        WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME 
                         IF (FULL_LOG) WRITE (*, 1001,  ADVANCE='NO') TIME 
                      ELSE 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1002,  ADVANCE='NO') 
+                        WRITE (UNIT_LOG, 1002,  ADVANCE='NO') 
                         IF (FULL_LOG) WRITE (*, 1002,  ADVANCE='NO') 
                      ENDIF 
                      SPX_MSG = .FALSE. 
                   ENDIF 
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1010,  ADVANCE='NO') L 
+                  WRITE (UNIT_LOG, 1010,  ADVANCE='NO') L 
                   IF (FULL_LOG) WRITE (*, 1010,  ADVANCE='NO') L 
                ENDIF 
             ELSE IF (TIME + 0.1*DT>=SPX_TIME(L) .OR. TIME+0.1*DT>=TSTOP) THEN 
@@ -345,28 +348,28 @@
 !
                IF (SPX_MSG) THEN 
                   IF (RES_MSG) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME 
+                     WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME 
                      IF (FULL_LOG) WRITE (*, 1001,  ADVANCE='NO') TIME 
                   ELSE 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1002,  ADVANCE='NO') 
+                     WRITE (UNIT_LOG, 1002,  ADVANCE='NO') 
                      IF (FULL_LOG) WRITE (*, 1002,  ADVANCE='NO') 
                   ENDIF 
                   SPX_MSG = .FALSE. 
                ENDIF 
-               IF(DMP_LOG)WRITE (UNIT_LOG, 1010,  ADVANCE='NO') L 
+               WRITE (UNIT_LOG, 1010,  ADVANCE='NO') L 
                IF (FULL_LOG) WRITE (*, 1010,  ADVANCE='NO') L 
             ENDIF 
          END DO 
 
       IF (.NOT.SPX_MSG) THEN 
          DO L = 1, N_SPX - ISPX 
-            IF(DMP_LOG)WRITE (UNIT_LOG, '(A,$)') '   ' 
+            WRITE (UNIT_LOG, '(A,$)') '   ' 
             IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, '(A,$)') '   '  !//
          END DO 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1015) DISK_TOT 
+         WRITE (UNIT_LOG, 1015) DISK_TOT 
          IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, 1015) DISK_TOT    !//
       ELSE IF (.NOT.RES_MSG) THEN 
-         IF(DMP_LOG)WRITE (UNIT_LOG, *) 
+         WRITE (UNIT_LOG, *) 
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, *)    !//
       ENDIF 
 
@@ -426,7 +429,7 @@
       IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
       IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
 
-      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
+      CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 !
 !     Calculate the cross terms of the stress tensor
@@ -450,11 +453,12 @@
 	 
 !        Upate the reaction rates for checking
          IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
-	 CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
+	 CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 
          CALL CHECK_DATA_30 
       ENDIF 
+      
 !
 !  Advance the solution in time by iteratively solving the equations
 !
@@ -466,6 +470,11 @@
       DO WHILE(ADJUST_DT(IER,NIT)) 
          CALL ITERATE (IER, NIT) 
       END DO 
+      
+! Check over mass and elemental balances.  This routine is not active by default.
+! Edit the routine and specify a reporting interval to activate it.
+      Call check_mass_balance (1)
+
 !
 !  Advance the time step and continue
 !

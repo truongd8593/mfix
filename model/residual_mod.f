@@ -52,5 +52,7 @@
       INTEGER          RESID_INDEX(MAX_RESID_INDEX, 2)
 !
 
+!                        fluid accumulation, for checking the over-all fluid mass balance
+        DOUBLE PRECISION accum_resid_g
 
       END MODULE residual                                                                        

@@ -104,6 +104,8 @@
   
       DOUBLE PRECISION TLEFT 
 
+      DOUBLE PRECISION errorpercent
+       
       LOGICAL          ABORT_IER
       CHARACTER*4 TUNIT 
 !-----------------------------------------------
@@ -115,7 +117,7 @@
 !-----------------------------------------------
 !
 !
-
+      DT_prev = DT
       NIT = 0 
       RESG = ZERO 
       RESS = ZERO 
@@ -169,6 +171,8 @@
 !
 !
 
+      call CALC_RESID_MB(0, errorpercent)
+
 !     Begin iterations
 !
 !------------------------------------------------------------------------------
@@ -214,7 +218,7 @@
          ENDIF 
       ENDIF 
 !
-      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
+      CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 
 !
@@ -305,10 +309,10 @@
       IF (.NOT.CYCLIC) LEQ_ADJUST = .TRUE. 
 !
 !
-!
 !     Check for convergence
 !
-      CALL CHECK_CONVERGENCE (NIT, MUSTIT, IER) 
+      call CALC_RESID_MB(1, errorpercent)
+      CALL CHECK_CONVERGENCE (NIT, errorpercent, MUSTIT, IER) 
 !
 !      If not converged continue iterations; else exit subroutine.
 !
@@ -328,37 +332,38 @@
             TIME_NLOG = TIME 
 !
             CPU_NOW = CPU_NOW - CPU0 
+            call CALC_RESID_MB(1, errorpercent)
             CALL GET_SMASS (SMASS) 
             IF (ENERGY_EQ) CALL GET_HLOSS (HLOSS) 
 !
 !
             IF (ENERGY_EQ) THEN 
-               IF(DMP_LOG)WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS, HLOSS, CPU_NOW 
+               WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS, errorpercent, HLOSS, CPU_NOW 
                IF(FULL_LOG.and.myPE.eq.PE_IO) &          
-                       WRITE(*,5000)TIME,DT,NIT,SMASS,HLOSS,CPU_NOW        !//
+                       WRITE(*,5000)TIME,DT,NIT,SMASS,errorpercent, HLOSS,CPU_NOW        !//
             ELSE 
-               IF(DMP_LOG)WRITE (UNIT_LOG, 5001) TIME, DT, NIT, SMASS, CPU_NOW 
+               WRITE (UNIT_LOG, 5001) TIME, DT, NIT, SMASS, errorpercent, CPU_NOW 
                IF (FULL_LOG .and. myPE.eq.PE_IO) &
-                       WRITE (*, 5001) TIME, DT, NIT, SMASS, CPU_NOW       !//
+                       WRITE (*, 5001) TIME, DT, NIT, SMASS, errorpercent, CPU_NOW       !//
             ENDIF 
             CALL START_LOG 
             IF (.NOT.FULL_LOG) THEN 
                TLEFT = (TSTOP - TIME)*CPUOS 
                CALL GET_TUNIT (TLEFT, TUNIT) 
-               IF(DMP_LOG)WRITE (UNIT_LOG, '(46X, A, F9.3, 1X, A)') '    CPU time left = '&
+               WRITE (UNIT_LOG, '(46X, A, F9.3, 1X, A)') '    CPU time left = '&
                   , TLEFT, TUNIT 
             ENDIF 
 !
             IF (CYCLIC_X .OR. CYCLIC_Y .OR. CYCLIC_Z) THEN 
-               IF (DO_I .AND. DMP_LOG)WRITE (UNIT_LOG, 5050) 'U_g = ', VAVG_U_G() 
-               IF (DO_J .AND. DMP_LOG)WRITE (UNIT_LOG, 5050) 'V_g = ', VAVG_V_G() 
-               IF (DO_K .AND. DMP_LOG)WRITE (UNIT_LOG, 5050) 'W_g = ', VAVG_W_G() 
+               IF (DO_I) WRITE (UNIT_LOG, 5050) 'U_g = ', VAVG_U_G() 
+               IF (DO_J) WRITE (UNIT_LOG, 5050) 'V_g = ', VAVG_V_G() 
+               IF (DO_K) WRITE (UNIT_LOG, 5050) 'W_g = ', VAVG_W_G() 
                DO M = 1, MMAX 
-                  IF (DO_I .AND. DMP_LOG)WRITE (UNIT_LOG, 5060) 'U_s(', M, ') = ', VAVG_U_S(&
+                  IF (DO_I) WRITE (UNIT_LOG, 5060) 'U_s(', M, ') = ', VAVG_U_S(&
                      M) 
-                  IF (DO_J .AND. DMP_LOG)WRITE (UNIT_LOG, 5060) 'V_s(', M, ') = ', VAVG_V_S(&
+                  IF (DO_J) WRITE (UNIT_LOG, 5060) 'V_s(', M, ') = ', VAVG_V_S(&
                      M) 
-                  IF (DO_K .AND. DMP_LOG)WRITE (UNIT_LOG, 5060) 'W_s(', M, ') = ', VAVG_W_S(&
+                  IF (DO_K) WRITE (UNIT_LOG, 5060) 'W_s(', M, ') = ', VAVG_W_S(&
                      M) 
                END DO 
             ENDIF 
@@ -371,10 +376,11 @@
       ELSE IF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN 
          IF (FULL_LOG) THEN 
             CALL START_LOG 
-            IF(DMP_LOG)WRITE (UNIT_LOG, 5200) TIME, DT, NIT 
+            call CALC_RESID_MB(1, errorpercent)
+            WRITE (UNIT_LOG, 5200) TIME, DT, NIT, errorpercent 
             CALL END_LOG 
 
-            if (myPE.eq.PE_IO) WRITE (*, 5200) TIME, DT, NIT   !//
+            if (myPE.eq.PE_IO) WRITE (*, 5200) TIME, DT, NIT, errorpercent   !//
          ENDIF 
          IER = 1 
          RETURN  
@@ -392,20 +398,20 @@
       CALL GET_SMASS (SMASS) 
       if (myPE.eq.PE_IO) WRITE (UNIT_OUT, 5100) TIME, DT, NIT, SMASS    !//
       CALL START_LOG 
-      IF(DMP_LOG)WRITE (UNIT_LOG, 5100) TIME, DT, NIT, SMASS 
+      WRITE (UNIT_LOG, 5100) TIME, DT, NIT, SMASS 
       CALL END_LOG 
 !
       IER = 0 
       RETURN  
- 5000 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,' Sm=',G10.5,' Hl=',G12.5,&
-         T67,'CPU=',F8.0,' s') 
- 5001 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,' Sm=',G10.5,T67,'CPU=',F8.0&
+ 5000 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,' Sm=',G10.5,'MbErr%=', G10.4,' Hl=',G12.5,&
+         T84,'CPU=',F8.0,' s') 
+ 5001 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,' Sm=',G10.5,'MbErr%=', G10.4,T84,'CPU=',F8.0&
          ,' s') 
  5050 FORMAT(5X,'Average ',A,G12.5) 
  5060 FORMAT(5X,'Average ',A,I2,A,G12.5) 
- 5100 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT>',I3,' Sm= ',G10.5) 
+ 5100 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT>',I3,' Sm= ',G10.5, 'MbErr%=', G10.4) 
  5200 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',&
-      I3,': Run diverged/stalled :-(') 
+      I3,'MbErr%=', G10.4, ': Run diverged/stalled :-(') 
 
       END SUBROUTINE ITERATE 
 !

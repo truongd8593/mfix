@@ -149,6 +149,10 @@
 !                      Time step adjustment factor (<1.0)
       DOUBLE PRECISION DT_FAC
 !
+!                      The previous time step used in iterate (before it is
+!                      changed by adjust_dt)
+      DOUBLE PRECISION DT_prev
+!
 !                      If .TRUE. reduce time step when residuals do not decrease
       LOGICAL          DETECT_STALL
 !

@@ -59,20 +59,15 @@
 !                      Solids phase 
       INTEGER          M 
 ! 
+!                      Functions 
+      DOUBLE PRECISION Accumulation 
+! 
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
       SMASS = ZERO 
       DO M = 1, MMAX 
-         SUM = ZERO 
-
-!!$omp$   parallel do private(IJK) &
-!!$omp&   reduction(+:SUM)
-         DO IJK = ijkstart3, ijkend3 
-	 IF(.NOT.IS_ON_myPE_owns(I_OF(IJK), J_OF(IJK), K_OF(IJK))) cycle
-            IF (FLUID_AT(IJK)) SUM = SUM + ROP_S(IJK,M)*VOL(IJK) 
-         END DO 
-         SMASS = SMASS + SUM 
+         SMASS = SMASS + Accumulation(ROP_s(1, M))
       END DO 
 
       call global_all_sum(smass)

@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CHECK_CONVERGENCE(NIT, MUSTIT, IER)                    C
+!  Module name: CHECK_CONVERGENCE(NIT, errorpercent, MUSTIT, IER)      C
 !  Purpose: Monitor convergence                                        C
 !                                                                      C
 !                                                                      C
@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CHECK_CONVERGENCE(NIT, MUSTIT, IER) 
+      SUBROUTINE CHECK_CONVERGENCE(NIT, errorpercent, MUSTIT, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -40,6 +40,11 @@
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!Maximum % error allowed in fluid continuity
+      DOUBLE PRECISION, PARAMETER :: MaxErrorPercent = 1.0E-6  
+!-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
@@ -52,6 +57,9 @@
 !                      Error index
       INTEGER          IER
 !
+!                      %error in fluid mass balance
+      DOUBLE PRECISION errorpercent
+!!
 !                      sum of residuals
       DOUBLE PRECISION SUM, SUM_T, SUM_X
 !
@@ -67,7 +75,11 @@
 !-----------------------------------------------
 !
 !//SP
-      SUM = RESID(RESID_P,0) 
+      if(abs(errorpercent) > MaxErrorPercent)then
+        SUM = RESID(RESID_P,0) 
+      else
+        SUM = zero
+      endif
       if(MMAX > 0) SUM = SUM + RESID(RESID_P,1) 
 !
       DO M = 0, MMAX 
@@ -160,6 +172,11 @@
 !
 !    total residual
 !
+      IF(NIT == 1) THEN
+        MUSTIT = 1
+	RETURN
+      ENDIF
+      
       IF(SUM<=TOL_RESID .AND. SUM_T<=TOL_RESID_T .AND. &
          RESID(RESID_sc,0)<=TOL_RESID_Scalar .AND. SUM_X<=TOL_RESID_X)THEN 
          MUSTIT = 0                              !converged 

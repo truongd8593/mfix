@@ -5,6 +5,7 @@ mfix.exe : \
     AMBM.mod \
     BC.mod \
     BOUNDFUNIJK.mod \
+    CHECK.mod \
     COEFF.mod \
     CONSTANT.mod \
     CONT.mod \
@@ -108,6 +109,7 @@ mfix.exe : \
     check_data_09.$(OBJ_EXT) \
     check_data_20.$(OBJ_EXT) \
     check_data_30.$(OBJ_EXT) \
+    check_mass_balance.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     check_plane.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
@@ -341,6 +343,8 @@ mfix.exe : \
     check_data_09.$(OBJ_EXT) \
     check_data_20.$(OBJ_EXT) \
     check_data_30.$(OBJ_EXT) \
+    check_mass_balance.$(OBJ_EXT) \
+    check_mod.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     check_plane.$(OBJ_EXT) \
     coeff_mod.$(OBJ_EXT) \
@@ -590,6 +594,10 @@ BOUNDFUNIJK.mod : boundfunijk_mod.f \
             INDICES.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) boundfunijk_mod.f 
+CHECK.mod : check_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) check_mod.f 
 COEFF.mod : coeff_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -1499,6 +1507,24 @@ check_data_30.$(OBJ_EXT) : check_data_30.f \
             FUNITS.mod \
             COMPAR.mod \
             MPI_UTILITY.mod \
+            function.inc                                                
+check_mass_balance.$(OBJ_EXT) : check_mass_balance.f \
+            PARAM.mod \
+            PARAM1.mod \
+            TOLERANC.mod \
+            FLDVAR.mod \
+            RXNS.mod \
+            GEOMETRY.mod \
+            RUN.mod \
+            BC.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            INDICES.mod \
+            FUNITS.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            CHECK.mod \
+            PARALLEL.mod \
             function.inc                                                
 check_one_axis.$(OBJ_EXT) : check_one_axis.f \
             PARAM.mod \

@@ -247,7 +247,7 @@
       UR_FAC(4) = 0.5                            !V 
       UR_FAC(5) = 0.5                            !W 
       UR_FAC(6) = 0.8                            !T 
-      UR_FAC(7) = 0.75                           !X 
+      UR_FAC(7) = 1.0                            !X 
       UR_FAC(8) = 0.5                            !Th 
       UR_FAC(9) = 0.8                            !Scalar
 !

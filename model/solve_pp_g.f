@@ -101,7 +101,9 @@
 !  Solve P_g_prime equation
 !
 !
-      CALL ADJUST_LEQ(RESID(RESID_P,0),LEQ_IT(1),LEQ_METHOD(1),LEQI,LEQM,IER) 
+       LEQI = LEQ_IT(1)
+       LEQM = LEQ_METHOD(1)
+!      CALL ADJUST_LEQ(RESID(RESID_P,0),LEQ_IT(1),LEQ_METHOD(1),LEQI,LEQM,IER) 
 !
       CALL SOLVE_LIN_EQ ('Pp_g', PP_G, A_M, B_M, 0, LEQI, LEQM, &
 	                     LEQ_SWEEP(1), LEQ_TOL(1),IER) 
