@@ -647,6 +647,9 @@
 !                      Total mass balance error as a % of inflow
       DOUBLE PRECISION ErrorPercent(0:MMAX)
 
+!                      Locally define dt, so that this routine works when dt is not defined
+      DOUBLE PRECISION dt_local
+
  
 !                      Indices
       INTEGER          L, IJK
@@ -658,17 +661,35 @@
     
       INCLUDE 'function.inc'
 
+      if(dt == UNDEFINED)then
+        dt_local = ONE
+      else
+        dt_local = dt
+      endif
+
       if(init == 0) then
 !       Initilaize this routine
 	!Accumulation
-        Accum_resid_g = Accumulation(ROP_g)
+        if(dt == UNDEFINED)then
+          Accum_resid_g = ZERO
+        else
+          Accum_resid_g = Accumulation(ROP_g)
+        endif
 	DO M=1, MMAX
-          Accum_resid_s(M) = Accumulation(ROP_s(1,M))
+          if(dt == UNDEFINED)then
+            Accum_resid_s(M) = ZERO
+	  else
+            Accum_resid_s(M) = Accumulation(ROP_s(1,M))
+	  endif
 	END DO
 	return
 	
       else
-	Accum_new = Accumulation(ROP_g) - Accumulation(SUM_R_g) * dt 
+        if(dt == UNDEFINED)then
+	  Accum_new = - Accumulation(SUM_R_g) * dt_local
+	else
+	  Accum_new = Accumulation(ROP_g) - Accumulation(SUM_R_g) * dt_local
+	endif 
 	
 	flux_out = zero
         flux_in = zero
@@ -677,8 +698,8 @@
             call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), & 
             BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_g, V_g, W_g, &
             ROP_g, fin, fout, IER) 
-	    flux_out = flux_out + fout  * dt
-            flux_in = flux_in + fin * dt
+	    flux_out = flux_out + fout  * dt_local
+            flux_in = flux_in + fin * dt_local
           ENDIF 
         END DO
         
@@ -686,7 +707,11 @@
 	ErrorPercent(0) = err*100./flux_in
 	
 	DO M =1, MMAX
-	  Accum_new = Accumulation(ROP_s(1,M)) - Accumulation(SUM_R_s(1,M)) * dt
+          if(dt == UNDEFINED)then
+	    Accum_new =  - Accumulation(SUM_R_s(1,M)) * dt_local
+	  else
+	    Accum_new = Accumulation(ROP_s(1,M)) - Accumulation(SUM_R_s(1,M)) * dt_local
+	  endif
 	
 	  flux_out = zero
           flux_in = zero
@@ -695,8 +720,8 @@
               call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), &
               BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_s(1,M), V_s(1,M), W_s(1,M), &
               ROP_s(1,M), fin, fout, IER) 
-	      flux_out = flux_out + fout  * dt
-              flux_in = flux_in + fin * dt
+	      flux_out = flux_out + fout  * dt_local
+              flux_in = flux_in + fin * dt_local
             ENDIF 
           END DO
         
