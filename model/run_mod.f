@@ -122,6 +122,10 @@
 !
 !                      If .TRUE. use Model-B momentum equations
       LOGICAL          Model_B
+!                      Options are syam_obrien (default), Umf corrected
+!                      (if C(2) and C(3) are defined), gidaspow,
+!                      koch_hill
+      CHARACTER(64)    DRAG_TYPE
 !
 ! start anuj 4/20
 !	               If. TRUE. calculate frictional stress terms

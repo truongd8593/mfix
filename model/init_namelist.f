@@ -129,11 +129,13 @@
 ! start loezos 
 !
        SHEAR = .FALSE.
+              
+! end loezos  
+!
+       DRAG_TYPE = 'SYAM_OBRIEN'
 
 !AE TIME 041601 Set the default to 1st order accurate time implementation
        CN_ON = .FALSE.
-              
-! end loezos  
 	
       IF (DIM_M + 1 > 0) THEN 
          MOMENTUM_X_EQ(:DIM_M) = .TRUE. 
