@@ -13,7 +13,7 @@
 		sendproc2, sendtag2, xsend2, sendijk2
 
 	integer :: nrecv1,nsend1, nrecv2,nsend2
-	logical,parameter :: localfunc=.true.
+	logical,parameter :: localfunc=.false.
 
 
 	double precision, dimension(:), allocatable :: &
@@ -205,7 +205,7 @@
 
 	integer :: iter, i,j,k, ii, jj,kk, &
 		ntotal, icount,ipos, &
-		isize, ilayer,        i1,i2,  j1,j2, k1,k2,  &
+		ilayer,        i1,i2,  j1,j2, k1,k2,  &
 		ijk, ijk2, iproc, jproc, src,dest, &
 		ierror
 

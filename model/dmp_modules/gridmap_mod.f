@@ -356,8 +356,8 @@
 
 !       Setup coefficients of FUINIJK
 
-        c0 = 1 - istart3_all(myPE)
-        c1 = (iend3_all(myPE)-istart3_all(myPE)+1)
+        c0 = 1 - jstart3_all(myPE)
+        c1 = (jend3_all(myPE)-jstart3_all(myPE)+1)
         c2 = (jend3_all(myPE)-jstart3_all(myPE)+1)* (iend3_all(myPE)-istart3_all(myPE)+1)
 
 !	Call to sendrecv_init to set all the communication pattern

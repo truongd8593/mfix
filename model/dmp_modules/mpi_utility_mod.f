@@ -130,7 +130,7 @@
 	integer, allocatable, dimension(:) :: gbuf_pack
 
 	integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
-	integer :: i,j,k,ibuffer,iproc
+	integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
         include 'function.inc'
 
@@ -155,18 +155,20 @@
 	endif
 
 	if( myPE.eq.lroot) then
-        ibuffer = 0
+        ioffset = 0
           do iproc = 0,numPEs-1
+            ibuffer = 0
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
-                  ibuffer = ibuffer + 1
+                  ibuffer = funijk_proc(i,j,k,iproc) + ioffset
                   gbuf_pack(ibuffer) = gbuf(funijk_gl(i,j,k))
                 
                 enddo
               enddo
             enddo
+            ioffset = ibuffer
           enddo
 	endif 
 
@@ -268,7 +270,7 @@
         real, allocatable, dimension(:) :: gbuf_pack
 
 	integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
-        integer :: i,j,k,ibuffer,iproc
+        integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
         include 'function.inc'
 
@@ -291,18 +293,20 @@
 	endif
 
         if( myPE.eq.lroot) then
-        ibuffer = 0
+        ioffset = 0
           do iproc = 0,numPEs-1
+            ibuffer = 0
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
-                  ibuffer = ibuffer + 1
+                  ibuffer = funijk_proc(i,j,k,iproc) + ioffset
                   gbuf_pack(ibuffer) = gbuf(funijk_gl(i,j,k))
 
                 enddo
               enddo
             enddo
+            ioffset = ibuffer
           enddo
         endif
 
@@ -404,7 +408,7 @@
         double precision, allocatable, dimension(:) :: gbuf_pack
 
 	integer :: sendtype, recvtype, ijk1,ijk2,recvcnt, ierr,lroot, lidebug
-        integer :: i,j,k,ibuffer,iproc
+        integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
         include 'function.inc'
 
@@ -427,18 +431,20 @@
 	endif
 
         if( myPE.eq.lroot) then
-        ibuffer = 0
+        ioffset = 0
           do iproc = 0,numPEs-1
+            ibuffer = 0
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
-                  ibuffer = ibuffer + 1
+                  ibuffer = funijk_proc(i,j,k,iproc) + ioffset
                   gbuf_pack(ibuffer) = gbuf(funijk_gl(i,j,k))
 
                 enddo
               enddo
             enddo
+            ioffset = ibuffer
           enddo
         endif
 
@@ -542,7 +548,7 @@
 	character(len=len(lbuf(1))) :: string
 
         integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
-        integer :: i,j,k,ibuffer,iproc
+        integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
         integer :: lenchar, icount
         include 'function.inc'
@@ -574,18 +580,20 @@
         allocate(lbuf1(lenchar*size(lbuf)))
 
         if( myPE.eq.lroot) then
-        ibuffer = 0
+        ioffset = 0
           do iproc = 0,numPEs-1
+            ibuffer = 0
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
-                  ibuffer = ibuffer + 1
+                  ibuffer = funijk_proc(i,j,k,iproc) + ioffset
                   gbuf_pack(ibuffer)(1:lenchar) = gbuf(funijk_gl(i,j,k))(1:lenchar)
 
                 enddo
               enddo
             enddo
+            ioffset = ibuffer
           enddo
         endif
 
@@ -643,7 +651,7 @@
         logical, allocatable, dimension(:) :: gbuf_pack
 
         integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
-        integer :: i,j,k,ibuffer,iproc
+        integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
         include 'function.inc'
 
@@ -668,18 +676,20 @@
 	endif
 
         if( myPE.eq.lroot) then
-        ibuffer = 0
+        ioffset = 0
           do iproc = 0,numPEs-1
+            ibuffer = 0
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
-                  ibuffer = ibuffer + 1
+                  ibuffer = funijk_proc(i,j,k,iproc) + ioffset
                   gbuf_pack(ibuffer) = gbuf(funijk_gl(i,j,k))
 
                 enddo
               enddo
             enddo
+            ioffset = ibuffer
           enddo
         endif
 
@@ -716,7 +726,7 @@
         integer, allocatable, dimension(:) :: gbuf_pack
 
 	integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
-        integer :: i,j,k,ibuffer,iproc
+        integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk, ijk_gl
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
 	logical :: isok_k,isok_j,isok_i, isinterior 
@@ -757,8 +767,9 @@
 	call MPI_Check( 'gather_1i:MPI_Gatherv', ierr )
 
         if( myPE.eq.lroot) then
-        ibuffer = 0
+	ioffset = 0
           do iproc = 0,numPEs-1
+            ibuffer = 0
             istartl = istart1_all(iproc)
             iendl = iend1_all(iproc)
             jstartl = jstart1_all(iproc)
@@ -777,7 +788,7 @@
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
-                  ibuffer = ibuffer + 1
+                  ibuffer = funijk_proc(i,j,k,iproc) + ioffset
                   isok_k = (kstartl <= k) .and. (k <=kendl)
                   isok_j = (jstartl <= j) .and. (j <=jendl)
                   isok_i = (istartl <= i) .and. (i <=iendl)
@@ -792,6 +803,7 @@
                 enddo
               enddo
             enddo
+	    ioffset = ibuffer
           enddo
         endif
 
@@ -880,7 +892,7 @@
         real, allocatable, dimension(:) :: gbuf_pack
 
 	integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
-        integer :: i,j,k,ibuffer,iproc
+        integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk, ijk_gl
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         logical :: isok_k,isok_j,isok_i, isinterior
@@ -919,8 +931,9 @@
 	call MPI_Check( 'gather_1r:MPI_Gatherv', ierr )
 
         if( myPE.eq.lroot) then
-        ibuffer = 0
+        ioffset = 0
           do iproc = 0,numPEs-1
+            ibuffer = 0
             istartl = istart1_all(iproc)
             iendl = iend1_all(iproc)
             jstartl = jstart1_all(iproc)
@@ -939,7 +952,7 @@
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
-                  ibuffer = ibuffer + 1
+                  ibuffer = funijk_proc(i,j,k,iproc) + ioffset
                   isok_k = (kstartl <= k) .and. (k <=kendl)
                   isok_j = (jstartl <= j) .and. (j <=jendl)
                   isok_i = (istartl <= i) .and. (i <=iendl)
@@ -954,6 +967,7 @@
                 enddo
               enddo
             enddo
+            ioffset = ibuffer
           enddo
         endif
 
@@ -1043,7 +1057,7 @@
         double precision, allocatable, dimension(:) :: gbuf_pack
 
 	integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
-        integer :: i,j,k,ibuffer,iproc
+        integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk, ijk_gl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
@@ -1083,8 +1097,9 @@
 	call MPI_Check( 'gather_1d:MPI_Gatherv', ierr )
 
         if( myPE.eq.lroot) then
-        ibuffer = 0
+        ioffset = 0
           do iproc = 0,numPEs-1
+            ibuffer = 0
             istartl = istart1_all(iproc)
             iendl = iend1_all(iproc)
             jstartl = jstart1_all(iproc)
@@ -1103,7 +1118,7 @@
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
-                  ibuffer = ibuffer + 1
+                  ibuffer = funijk_proc(i,j,k,iproc) + ioffset
                   isok_k = (kstartl <= k) .and. (k <=kendl)
                   isok_j = (jstartl <= j) .and. (j <=jendl)
                   isok_i = (istartl <= i) .and. (i <=iendl)
@@ -1118,6 +1133,7 @@
                 enddo
               enddo
             enddo
+            ioffset = ibuffer
           enddo
         endif
 
@@ -1208,7 +1224,7 @@
 	character(len=len(lbuf(1))) :: string
 
         integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
-        integer :: i,j,k,ibuffer,iproc
+        integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk, ijk_gl
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         integer :: lenchar, icount
@@ -1283,8 +1299,9 @@
 	endif
 
         if( myPE.eq.lroot) then
-        ibuffer = 0
+        ioffset = 0
           do iproc = 0,numPEs-1
+            ibuffer = 0
             istartl = istart1_all(iproc)
             iendl = iend1_all(iproc)
             jstartl = jstart1_all(iproc)
@@ -1303,7 +1320,7 @@
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
-                  ibuffer = ibuffer + 1
+                  ibuffer = funijk_proc(i,j,k,iproc) + ioffset
                   isok_k = (kstartl <= k) .and. (k <=kendl)
                   isok_j = (jstartl <= j) .and. (j <=jendl)
                   isok_i = (istartl <= i) .and. (i <=iendl)
@@ -1319,6 +1336,7 @@
                 enddo
               enddo
             enddo
+            ioffset = ibuffer
           enddo
         endif
 
@@ -1339,7 +1357,7 @@
         logical, allocatable, dimension(:) :: gbuf_pack
 
         integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
-        integer :: i,j,k,ibuffer,iproc
+        integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk, ijk_gl
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         logical :: isok_k,isok_j,isok_i, isinterior
@@ -1380,8 +1398,9 @@
         call MPI_Check( 'gather_1l:MPI_Gatherv', ierr )
 
         if( myPE.eq.lroot) then
-        ibuffer = 0
+        ioffset = 0
           do iproc = 0,numPEs-1
+            ibuffer = 0
             istartl = istart1_all(iproc)
             iendl = iend1_all(iproc)
             jstartl = jstart1_all(iproc)
@@ -1400,7 +1419,7 @@
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
-                  ibuffer = ibuffer + 1
+                  ibuffer = funijk_proc(i,j,k,iproc) + ioffset
                   isok_k = (kstartl <= k) .and. (k <=kendl)
                   isok_j = (jstartl <= j) .and. (j <=jendl)
                   isok_i = (istartl <= i) .and. (i <=iendl)
@@ -1415,6 +1434,7 @@
                 enddo
               enddo
             enddo
+            ioffset = ibuffer
           enddo
         endif
 
