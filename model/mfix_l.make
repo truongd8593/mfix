@@ -51,6 +51,7 @@ mfix.exe : \
     visc_s.mod \
     vshear.mod \
     xsi_array.mod \
+    discretelement.mod \
     compar.mod \
     dbg_util.mod \
     debug.mod \
@@ -294,6 +295,49 @@ mfix.exe : \
     xerbla.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
+    calc_force_des.$(OBJ_EXT) \
+    cfassign.$(OBJ_EXT) \
+    cffctow.$(OBJ_EXT) \
+    cffn.$(OBJ_EXT) \
+    cffnwall.$(OBJ_EXT) \
+    cfft.$(OBJ_EXT) \
+    cfftwall.$(OBJ_EXT) \
+    cfincrementaloverlaps.$(OBJ_EXT) \
+    cfnewvalues.$(OBJ_EXT) \
+    cfnocontact.$(OBJ_EXT) \
+    cfnormal.$(OBJ_EXT) \
+    cfoutofbox.$(OBJ_EXT) \
+    cfperiodicwallneighbourx.$(OBJ_EXT) \
+    cfperiodicwallneighboury.$(OBJ_EXT) \
+    cfperiodicwallneighbourz.$(OBJ_EXT) \
+    cfperiodicwallx.$(OBJ_EXT) \
+    cfperiodicwally.$(OBJ_EXT) \
+    cfperiodicwallz.$(OBJ_EXT) \
+    cfrelvel.$(OBJ_EXT) \
+    cfslide.$(OBJ_EXT) \
+    cfslidewall.$(OBJ_EXT) \
+    cftangent.$(OBJ_EXT) \
+    cftotaloverlaps.$(OBJ_EXT) \
+    cfupdateold.$(OBJ_EXT) \
+    cfvrn.$(OBJ_EXT) \
+    cfvrt.$(OBJ_EXT) \
+    cfwallcontact.$(OBJ_EXT) \
+    cfwallposvel.$(OBJ_EXT) \
+    des_calc_d.$(OBJ_EXT) \
+    des_granular_temperature.$(OBJ_EXT) \
+    des_init_namelist.$(OBJ_EXT) \
+    des_inlet_outlet.$(OBJ_EXT) \
+    drag_fgs.$(OBJ_EXT) \
+    gas_drag.$(OBJ_EXT) \
+    make_arrays_des.$(OBJ_EXT) \
+    neighbour.$(OBJ_EXT) \
+    nsquare.$(OBJ_EXT) \
+    octree.$(OBJ_EXT) \
+    particles_in_cell.$(OBJ_EXT) \
+    periodic_wall_calc_force_des.$(OBJ_EXT) \
+    pressure_drop.$(OBJ_EXT) \
+    print_vel.$(OBJ_EXT) \
+    quadtree.$(OBJ_EXT) \
     blas90.a 
 	$(LINK_CMD) $(LINK_FLAGS) \
     adjust_a_u_g.$(OBJ_EXT) \
@@ -579,6 +623,50 @@ mfix.exe : \
     xsi_array_mod.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
+    calc_force_des.$(OBJ_EXT) \
+    cfassign.$(OBJ_EXT) \
+    cffctow.$(OBJ_EXT) \
+    cffn.$(OBJ_EXT) \
+    cffnwall.$(OBJ_EXT) \
+    cfft.$(OBJ_EXT) \
+    cfftwall.$(OBJ_EXT) \
+    cfincrementaloverlaps.$(OBJ_EXT) \
+    cfnewvalues.$(OBJ_EXT) \
+    cfnocontact.$(OBJ_EXT) \
+    cfnormal.$(OBJ_EXT) \
+    cfoutofbox.$(OBJ_EXT) \
+    cfperiodicwallneighbourx.$(OBJ_EXT) \
+    cfperiodicwallneighboury.$(OBJ_EXT) \
+    cfperiodicwallneighbourz.$(OBJ_EXT) \
+    cfperiodicwallx.$(OBJ_EXT) \
+    cfperiodicwally.$(OBJ_EXT) \
+    cfperiodicwallz.$(OBJ_EXT) \
+    cfrelvel.$(OBJ_EXT) \
+    cfslide.$(OBJ_EXT) \
+    cfslidewall.$(OBJ_EXT) \
+    cftangent.$(OBJ_EXT) \
+    cftotaloverlaps.$(OBJ_EXT) \
+    cfupdateold.$(OBJ_EXT) \
+    cfvrn.$(OBJ_EXT) \
+    cfvrt.$(OBJ_EXT) \
+    cfwallcontact.$(OBJ_EXT) \
+    cfwallposvel.$(OBJ_EXT) \
+    des_calc_d.$(OBJ_EXT) \
+    des_granular_temperature.$(OBJ_EXT) \
+    des_init_namelist.$(OBJ_EXT) \
+    des_inlet_outlet.$(OBJ_EXT) \
+    discretelement_mod.$(OBJ_EXT) \
+    drag_fgs.$(OBJ_EXT) \
+    gas_drag.$(OBJ_EXT) \
+    make_arrays_des.$(OBJ_EXT) \
+    neighbour.$(OBJ_EXT) \
+    nsquare.$(OBJ_EXT) \
+    octree.$(OBJ_EXT) \
+    particles_in_cell.$(OBJ_EXT) \
+    periodic_wall_calc_force_des.$(OBJ_EXT) \
+    pressure_drop.$(OBJ_EXT) \
+    print_vel.$(OBJ_EXT) \
+    quadtree.$(OBJ_EXT) \
     compar_mod.$(OBJ_EXT) \
     dbg_util_mod.$(OBJ_EXT) \
     debug_mod.$(OBJ_EXT) \
@@ -800,6 +888,10 @@ xsi_array.mod : xsi_array_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) xsi_array_mod.f 
+discretelement.mod : ./des/discretelement_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/discretelement_mod.f 
 compar.mod : ./dmp_modules/compar_mod.f \
             mpi.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/compar_mod.f 
@@ -1147,7 +1239,8 @@ calc_drag.$(OBJ_EXT) : calc_drag.f \
             physprop.mod \
             run.mod \
             drag.mod \
-            compar.mod 
+            compar.mod \
+            discretelement.mod 
 calc_e.$(OBJ_EXT) : calc_e.f \
             param.mod \
             param1.mod \
@@ -1474,6 +1567,7 @@ check_data_02.$(OBJ_EXT) : check_data_02.f \
             output.mod \
             leqsol.mod \
             geometry.mod \
+            run.mod \
             rxns.mod 
 check_data_03.$(OBJ_EXT) : check_data_03.f \
             param.mod \
@@ -2023,6 +2117,7 @@ drag_gs.$(OBJ_EXT) : drag_gs.f \
             compar.mod \
             drag.mod \
             sendrecv.mod \
+            discretelement.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -2264,6 +2359,7 @@ iterate.$(OBJ_EXT) : iterate.f \
             scalars.mod \
             compar.mod \
             mpi_utility.mod \
+            discretelement.mod \
             bc.mod \
             constant.mod 
 k_epsilon_prop.$(OBJ_EXT) : k_epsilon_prop.f \
@@ -2525,8 +2621,10 @@ read_namelist.$(OBJ_EXT) : read_namelist.f \
             scalars.mod \
             compar.mod \
             parallel.mod \
+            discretelement.mod \
             usrnlst.inc                                                  \
-            namelist.inc                                                
+            namelist.inc                                                 \
+            des/desnamelist.inc                                         
 read_res0.$(OBJ_EXT) : read_res0.f \
             param.mod \
             param1.mod \
@@ -2918,6 +3016,7 @@ solve_energy_eq.$(OBJ_EXT) : solve_energy_eq.f \
             tmp_array.mod \
             tmp_array1.mod \
             compar.mod \
+            discretelement.mod \
             radtn1.inc                                                   \
             ep_s1.inc                                                    \
             function.inc                                                 \
@@ -3079,7 +3178,8 @@ solve_vel_star.$(OBJ_EXT) : solve_vel_star.f \
             ambm.mod \
             tmp_array1.mod \
             tmp_array.mod \
-            compar.mod 
+            compar.mod \
+            discretelement.mod 
 source_granular_energy.$(OBJ_EXT) : source_granular_energy.f \
             param.mod \
             param1.mod \
@@ -3508,7 +3608,8 @@ time_march.$(OBJ_EXT) : time_march.f \
             drag.mod \
             rxns.mod \
             compar.mod \
-            time_cpu.mod 
+            time_cpu.mod \
+            discretelement.mod 
 transfer.$(OBJ_EXT) : transfer.f \
             param.mod \
             param1.mod \
@@ -3816,3 +3917,300 @@ zero_norm_vel.$(OBJ_EXT) : zero_norm_vel.f \
             is.mod \
             compar.mod \
             function.inc                                                
+calc_force_des.$(OBJ_EXT) : ./des/calc_force_des.f \
+            discretelement.mod \
+            geometry.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_force_des.f 
+cfassign.$(OBJ_EXT) : ./des/cfassign.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfassign.f 
+cffctow.$(OBJ_EXT) : ./des/cffctow.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cffctow.f 
+cffn.$(OBJ_EXT) : ./des/cffn.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cffn.f 
+cffnwall.$(OBJ_EXT) : ./des/cffnwall.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cffnwall.f 
+cfft.$(OBJ_EXT) : ./des/cfft.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfft.f 
+cfftwall.$(OBJ_EXT) : ./des/cfftwall.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfftwall.f 
+cfincrementaloverlaps.$(OBJ_EXT) : ./des/cfincrementaloverlaps.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfincrementaloverlaps.f 
+cfnewvalues.$(OBJ_EXT) : ./des/cfnewvalues.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            compar.mod \
+            sendrecv.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_g.mod \
+            rxns.mod \
+            run.mod \
+            geometry.mod \
+            indices.mod \
+            drag.mod \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnewvalues.f 
+cfnocontact.$(OBJ_EXT) : ./des/cfnocontact.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnocontact.f 
+cfnormal.$(OBJ_EXT) : ./des/cfnormal.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnormal.f 
+cfoutofbox.$(OBJ_EXT) : ./des/cfoutofbox.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfoutofbox.f 
+cfperiodicwallneighbourx.$(OBJ_EXT) : ./des/cfperiodicwallneighbourx.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallneighbourx.f 
+cfperiodicwallneighboury.$(OBJ_EXT) : ./des/cfperiodicwallneighboury.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallneighboury.f 
+cfperiodicwallneighbourz.$(OBJ_EXT) : ./des/cfperiodicwallneighbourz.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallneighbourz.f 
+cfperiodicwallx.$(OBJ_EXT) : ./des/cfperiodicwallx.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallx.f 
+cfperiodicwally.$(OBJ_EXT) : ./des/cfperiodicwally.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwally.f 
+cfperiodicwallz.$(OBJ_EXT) : ./des/cfperiodicwallz.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallz.f 
+cfrelvel.$(OBJ_EXT) : ./des/cfrelvel.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfrelvel.f 
+cfslide.$(OBJ_EXT) : ./des/cfslide.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfslide.f 
+cfslidewall.$(OBJ_EXT) : ./des/cfslidewall.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfslidewall.f 
+cftangent.$(OBJ_EXT) : ./des/cftangent.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cftangent.f 
+cftotaloverlaps.$(OBJ_EXT) : ./des/cftotaloverlaps.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cftotaloverlaps.f 
+cfupdateold.$(OBJ_EXT) : ./des/cfupdateold.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfupdateold.f 
+cfvrn.$(OBJ_EXT) : ./des/cfvrn.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfvrn.f 
+cfvrt.$(OBJ_EXT) : ./des/cfvrt.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfvrt.f 
+cfwallcontact.$(OBJ_EXT) : ./des/cfwallcontact.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
+            compar.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfwallcontact.f 
+cfwallposvel.$(OBJ_EXT) : ./des/cfwallposvel.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
+            compar.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfwallposvel.f 
+des_calc_d.$(OBJ_EXT) : ./des/des_calc_d.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            run.mod \
+            scales.mod \
+            compar.mod \
+            sendrecv.mod \
+            discretelement.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_calc_d.f 
+des_granular_temperature.$(OBJ_EXT) : ./des/des_granular_temperature.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
+            compar.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_granular_temperature.f 
+des_init_namelist.$(OBJ_EXT) : ./des/des_init_namelist.f \
+            discretelement.mod \
+            des/desnamelist.inc                                         
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_namelist.f 
+des_inlet_outlet.$(OBJ_EXT) : ./des/des_inlet_outlet.f \
+            discretelement.mod \
+            geometry.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_inlet_outlet.f 
+drag_fgs.$(OBJ_EXT) : ./des/drag_fgs.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_g.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            tau_g.mod \
+            bc.mod \
+            compar.mod \
+            sendrecv.mod \
+            discretelement.mod \
+            drag.mod \
+            function.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/drag_fgs.f 
+gas_drag.$(OBJ_EXT) : ./des/gas_drag.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_g.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            tau_g.mod \
+            bc.mod \
+            compar.mod \
+            sendrecv.mod \
+            discretelement.mod \
+            drag.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/gas_drag.f 
+make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/make_arrays_des.f 
+neighbour.$(OBJ_EXT) : ./des/neighbour.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/neighbour.f 
+nsquare.$(OBJ_EXT) : ./des/nsquare.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/nsquare.f 
+octree.$(OBJ_EXT) : ./des/octree.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/octree.f 
+particles_in_cell.$(OBJ_EXT) : ./des/particles_in_cell.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
+            compar.mod \
+            sendrecv.mod \
+            function.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/particles_in_cell.f 
+periodic_wall_calc_force_des.$(OBJ_EXT) : ./des/periodic_wall_calc_force_des.f \
+            discretelement.mod \
+            geometry.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/periodic_wall_calc_force_des.f 
+pressure_drop.$(OBJ_EXT) : ./des/pressure_drop.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
+            compar.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/pressure_drop.f 
+print_vel.$(OBJ_EXT) : ./des/print_vel.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/print_vel.f 
+quadtree.$(OBJ_EXT) : ./des/quadtree.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
+            compar.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/quadtree.f 
