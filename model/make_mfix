@@ -57,11 +57,11 @@ fi
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"
-            compile_d="-c -64 -trapuv -g -freeform"
+            compile_d="-c -I. -64 -trapuv -g -freeform"
             link_d="-64 -g"
 
-            compile="-c  -64 -O3 -mips4 -freeform"
-            compile2="-c  -64 -O3 -mips4 -freeform"
+            compile="-c -I. -64 -O3 -mips4 -freeform"
+            compile2="-c -I. -64 -O3 -mips4 -freeform"
             link="-64 -O3 -mips4"
             MODULE_CODE=0
             ;;
@@ -77,10 +77,10 @@ fi
             OBJ_EXT=o
             FORTRAN_EXT=f90
 	    omp="?"
-            compile_d="-c -g -nowarn -freeform -convert big_endian"
+            compile_d="-c -I. -g -nowarn -freeform -convert big_endian"
             link_d="-g -nowarn -convert big_endian"
-            compile="-c -nowarn -O2 -freeform -convert big_endian"
-            compile2="-c -nowarn -O2 -freeform -convert big_endian"
+            compile="-c -I. -nowarn -O2 -freeform -convert big_endian"
+            compile2="-c -I. -nowarn -O2 -freeform -convert big_endian"
             link="-O2 -nowarn -convert big_endian"
             MODULE_CODE=0
 	    
@@ -98,10 +98,10 @@ fi
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"
-            compile_d="-c -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile_d="-c -I. -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             link_d="-Mprof=func -g"
-            compile=" -O -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
-            compile2="-O1 -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile=" -O -I. -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile2="-O1 -I. -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             link=" "
             MODULE_CODE=1
 	    
@@ -122,8 +122,8 @@ fi
 	    omp="-mp"
             compile_d="-c -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             link_d="-g"
-            compile="-c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
-            compile2="-c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile="-c -I. -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile2="-c -I. -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             link=" "
             MODULE_CODE=1
 
@@ -142,8 +142,8 @@ fi
 	    omp="-mp"
             compile_d="-c -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             link_d="-g"
-            compile="-c -O -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
-            compile2="-c -O1 -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile="-c -I. -O -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile2="-c -I. -O1 -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             link=" "
             MODULE_CODE=1
 
