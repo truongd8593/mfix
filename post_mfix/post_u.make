@@ -22,6 +22,7 @@ post_mfix : \
     PARALLEL.mod \
     PARAM1.mod \
     PARAM.mod \
+    DISCRETELEMENT.mod \
     PARSE.mod \
     PGCOR.mod \
     PHYSPROP.mod \
@@ -160,7 +161,8 @@ post_mfix : \
     ornl_filt.$(OBJ_EXT) \
     ornl_filt_c.$(OBJ_EXT) \
     ornl_zone.$(OBJ_EXT) \
-    ornl_sym.$(OBJ_EXT) 
+    ornl_sym.$(OBJ_EXT) \
+    des_init_namelist.$(OBJ_EXT)
 	$(LINK_CMD) $(LINK_FLAGS) \
     ambm_mod.$(OBJ_EXT) \
     bc_mod.$(OBJ_EXT) \
@@ -224,6 +226,7 @@ post_mfix : \
     check_data_05.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
+    discretelement_mod.$(OBJ_EXT) \
     deallocate_arrays.$(OBJ_EXT) \
     eosg.$(OBJ_EXT) \
     error_routine.$(OBJ_EXT) \
@@ -321,6 +324,7 @@ post_mfix : \
     mpi_utility_mod.$(OBJ_EXT)                     \
     parallel_mpi_mod.$(OBJ_EXT)                    \
     sendrecv_mod.$(OBJ_EXT)                        \
+    des_init_namelist.$(OBJ_EXT)                   \
   -o post_mfix $(LIB_FLAGS)
   
 AMBM.mod : ../model/ambm_mod.f \
@@ -1296,3 +1300,7 @@ write_error.$(OBJ_EXT) : ../model/write_error.f \
             PARAM1.mod \
             FUNITS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_error.f 
+DISCRETELEMENT.mod : ../model/des/discretelement_mod.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/discretelement_mod.f
+des_init_namelist.$(OBJ_EXT) : ../model/des/des_init_namelist.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_init_namelist.f
