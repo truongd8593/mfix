@@ -165,7 +165,7 @@
       do nproc=0,NumPEs-1
 	if(nproc.eq.myPE) then
 	MAX_RESID_L(nproc) = MAX_RESID
-	IJK_RESID_L(nproc) = FUNIJK_IO(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
+	IJK_RESID_L(nproc) = FUNIJK_GL(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
 	else
 	MAX_RESID_L(nproc) = 0.0
 	IJK_RESID_L(nproc) = 0
@@ -370,7 +370,7 @@
       do nproc=0,NumPEs-1
 	if(nproc.eq.myPE) then
 	MAX_RESID_L(nproc) = MAX_RESID
-	IJK_RESID_L(nproc) = FUNIJK_IO(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
+	IJK_RESID_L(nproc) = FUNIJK_GL(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
 	else
 	MAX_RESID_L(nproc) = 0.0
 	IJK_RESID_L(nproc) = 0
@@ -540,7 +540,7 @@
       do nproc=0,NumPEs-1
 	if(nproc.eq.myPE) then
 	MAX_RESID_L(nproc) = MAX_RESID
-	IJK_RESID_L(nproc) = FUNIJK_IO(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
+	IJK_RESID_L(nproc) = FUNIJK_GL(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
 	else
 	MAX_RESID_L(nproc) = 0.0
 	IJK_RESID_L(nproc) = 0
@@ -769,7 +769,7 @@
       do nproc=0,NumPEs-1
 	if(nproc.eq.myPE) then
 	MAX_RESID_L(nproc) = MAX_RESID
-	IJK_RESID_L(nproc) = FUNIJK_IO(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
+	IJK_RESID_L(nproc) = FUNIJK_GL(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
 	else
 	MAX_RESID_L(nproc) = 0.0
 	IJK_RESID_L(nproc) = 0
@@ -996,7 +996,7 @@
       do nproc=0,NumPEs-1
 	if(nproc.eq.myPE) then
 	MAX_RESID_L(nproc) = MAX_RESID
-	IJK_RESID_L(nproc) = FUNIJK_IO(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
+	IJK_RESID_L(nproc) = FUNIJK_GL(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
 	else
 	MAX_RESID_L(nproc) = 0.0
 	IJK_RESID_L(nproc) = 0
@@ -1222,7 +1222,7 @@
       do nproc=0,NumPEs-1
 	if(nproc.eq.myPE) then
 	MAX_RESID_L(nproc) = MAX_RESID
-	IJK_RESID_L(nproc) = FUNIJK_IO(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
+	IJK_RESID_L(nproc) = FUNIJK_GL(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
 	else
 	MAX_RESID_L(nproc) = 0.0
 	IJK_RESID_L(nproc) = 0
