@@ -35,7 +35,8 @@
       USE physprop
       USE indices
       USE funits 
-      USE tmp_array
+!//d      USE tmp_array
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -57,11 +58,16 @@
 !
 !                       loop counter
       INTEGER           K
+
+      double precision,  allocatable :: array1(:)   !//d
 !
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-      call lock_tmp_array
+!//d      call lock_tmp_array
+
+      allocate (array1(ijkmax2))    !//d
+
       call convert_to_io_dp(array,array1,ijkmax2)
 
       DO K = 1, KMAX2 
@@ -71,7 +77,10 @@
       END DO 
  1100 FORMAT(/,1X,A,' at K = ',I4,/) 
 
-      call unlock_tmp_array
+
+      deallocate (array1)   !//d
+
+!//d      call unlock_tmp_array
 !
       RETURN  
       END SUBROUTINE OUT_ARRAY 

@@ -29,6 +29,7 @@
       USE run
       USE visc_s
       USE trace
+      USE compar    !//d
       IMPLICIT NONE
  
       INTEGER          IJK, M
@@ -229,6 +230,7 @@
       USE run
       USE visc_s
       USE trace
+      USE compar   !//d
       IMPLICIT NONE
 !
 !                      solids volume fraction

@@ -102,6 +102,7 @@
 !
       use geometry
       use indices
+      USE compar        !//d
 !
       implicit none
 !
@@ -128,6 +129,7 @@
 !
       use geometry
       use indices
+      USE compar        !//d
 !
       implicit none
 !
@@ -154,6 +156,7 @@
 !
       use geometry
       use indices
+      USE compar        !//d
 !
       implicit none
 !

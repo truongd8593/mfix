@@ -51,9 +51,9 @@ fi
 
             FORTRAN_CMD=f90
             LINK_CMD=f90
-            libs_d=blas90.a
-            libs=blas90.a
-	       
+            libs_d="blas90.a -lmpi"
+            libs="blas90.a -lmpi"
+	      
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"

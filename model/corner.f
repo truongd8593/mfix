@@ -2,7 +2,7 @@
 !                                                                      C
 !  Module name: GET_CORNER_CELLS(IER)                                  C
 !  Purpose: Identify wall cells with more than one fulid cell as       C
-!           a neighbor.  No heat mass, momentum, or energy transfer    C C           is allowed to such cells to avoid ambiguity.
+!           a neighbor.  No heat mass, momentum, or energy transfer    C          is allowed to such cells to avoid ambiguity.
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 08-JUL-98  C
 !  Reviewer:                                          Date:            C
@@ -34,6 +34,7 @@
       USE matrix 
       USE corner
       USE funits 
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -259,15 +260,14 @@
          ENDIF 
       END DO 
       IF (NCORN > 0) THEN 
-         CALL START_LOG 
-         WRITE (UNIT_LOG, 1000) 
+            CALL START_LOG 
+            WRITE (UNIT_LOG, 1000) 
 !
-         DO L = 1, NCORN 
-            IJK = IJK_CORN(L) 
-            WRITE (UNIT_LOG, 1100) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK) 
-         END DO 
-         WRITE (UNIT_LOG, 1300) 
-         CALL END_LOG 
+            DO L = 1, NCORN 
+               IJK = IJK_CORN(L)           
+               WRITE (UNIT_LOG, 1100) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK)                                           
+            END DO 
+            WRITE (UNIT_LOG, 1300) 
       ENDIF 
 !
       RETURN  

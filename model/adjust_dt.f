@@ -24,9 +24,12 @@
 !-----------------------------------------------
       USE param 
       USE param1 
-      USE funits 
+!//d      USE funits 
       USE run
       USE output
+      USE compar       !//d
+      USE mpi_utility  !//d
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -50,8 +53,8 @@
 !-----------------------------------------------
 !
 !
-!
-!
+!//  only do this routine if the root processor
+      if (myPE.ne.PE_IO) return
 !
 !     Initialize
       IF (IER == 100) THEN 
@@ -89,7 +92,7 @@
             LINE(1) = 'DT < DT_MIN.  Recovery not possible!' 
             IF (FULL_LOG) WRITE (*, *) LINE(1) 
             CALL WRITE_ERROR ('ADJUST_DT', LINE, 1) 
-            STOP  
+            STOP
          ELSE IF (DT_FAC >= ONE) THEN 
             LINE(1) = 'DT_FAC >= 1.  Recovery not possible!' 
             IF (FULL_LOG) WRITE (*, *) LINE(1) 
@@ -125,6 +128,11 @@
       ENDIF 
 !
       ODT = ONE/DT 
+
+!
+!//
+      call bcast (dt,root)
+      call bcast (odt,root)
 !
       RETURN  
       END FUNCTION ADJUST_DT 

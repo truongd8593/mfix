@@ -102,6 +102,7 @@
       USE matrix
       USE geometry
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -452,6 +453,7 @@
       USE matrix
       USE geometry
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -609,6 +611,7 @@
       USE matrix
       USE geometry
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -712,6 +715,7 @@
       USE matrix
       USE geometry
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -819,6 +823,7 @@
       USE matrix
       USE geometry
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -975,6 +980,7 @@
       USE matrix
       USE geometry
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1122,6 +1128,7 @@
       USE matrix
       USE geometry
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1243,6 +1250,7 @@
       USE matrix
       USE geometry
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1392,6 +1400,7 @@
       USE matrix
       USE geometry
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1613,6 +1622,7 @@
       USE matrix
       USE geometry
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1715,6 +1725,7 @@
       USE matrix
       USE geometry
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1815,6 +1826,7 @@
       USE matrix
       USE geometry
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

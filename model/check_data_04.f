@@ -53,7 +53,7 @@
       IF (MMAX<0 .OR. MMAX>DIMENSION_M) THEN 
          CALL ERROR_ROUTINE ('check_data_04', &
             'MMAX not specified or unphysical', 0, 2) 
-         WRITE (UNIT_LOG, 1000) MMAX, DIMENSION_M 
+            WRITE (UNIT_LOG, 1000) MMAX, DIMENSION_M 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !
@@ -64,7 +64,7 @@
             IF (SPECIES_EQ(LC)) THEN 
                CALL ERROR_ROUTINE ('check_data_04', &
                   'Number of species not specified', 0, 2) 
-               WRITE (UNIT_LOG, 1045) LC 
+                  WRITE (UNIT_LOG, 1045) LC 
                CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
             ELSE 
                NMAX(LC) = 1 
@@ -72,7 +72,7 @@
          ENDIF 
          IF (NMAX(LC) > DIMENSION_N_S) THEN 
             CALL ERROR_ROUTINE ('check_data_04', 'NMAX is too large', 0, 2) 
-            WRITE (UNIT_LOG, 1050) LC, NMAX, DIMENSION_N_S 
+               WRITE (UNIT_LOG, 1050) LC, NMAX, DIMENSION_N_S 
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       END DO 
@@ -93,7 +93,7 @@
          IF (D_P(LC)<ZERO .OR. D_P(LC)==UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
                'D_p not specified or unphysical', 0, 2) 
-            WRITE (UNIT_LOG, 1100) LC, D_P(LC) 
+               WRITE (UNIT_LOG, 1100) LC, D_P(LC) 
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       END DO 
@@ -101,7 +101,7 @@
          IF (D_P(LC) /= UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
                'too many D_p values specified', 0, 2) 
-            WRITE (UNIT_LOG, 1200) LC, D_P(LC), MMAX 
+               WRITE (UNIT_LOG, 1200) LC, D_P(LC), MMAX
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       END DO 
@@ -109,7 +109,7 @@
          IF (RO_S(LC)<ZERO .OR. RO_S(LC)==UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
                'RO_s not specified or unphysical', 0, 2) 
-            WRITE (UNIT_LOG, 1300) LC, RO_S(LC) 
+               WRITE (UNIT_LOG, 1300) LC, RO_S(LC) 
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       END DO 
@@ -117,7 +117,7 @@
          IF (RO_S(LC) /= UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
                'too many RO_s values specified', 0, 2) 
-            WRITE (UNIT_LOG, 1400) LC, RO_S(LC), MMAX 
+               WRITE (UNIT_LOG, 1400) LC, RO_S(LC), MMAX 
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       END DO 
@@ -127,7 +127,7 @@
                IF (MW_S(LC,N) == UNDEFINED) THEN 
                   CALL ERROR_ROUTINE ('check_data_04', &
                      'Species molecular weight undefined', 0, 2) 
-                  WRITE (UNIT_LOG, 1410) LC, N 
+                     WRITE (UNIT_LOG, 1410) LC, N 
                   CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
                ENDIF 
             END DO 
@@ -135,7 +135,7 @@
                IF (MW_S(LC,N) /= UNDEFINED) THEN 
                   CALL ERROR_ROUTINE ('check_data_04', &
                      'MW_s defined for N > NMAX(m)', 0, 2) 
-                  WRITE (UNIT_LOG, 1410) LC, N 
+                     WRITE (UNIT_LOG, 1410) LC, N 
                   CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
                ENDIF 
             END DO 
@@ -147,7 +147,7 @@
 !
             IF (.NOT.CLOSE_PACKED(LC)) THEN 
                CALL ERROR_ROUTINE ('check_data_04', ' ', 0, 2) 
-               WRITE (UNIT_LOG, 1420) LC 
+                  WRITE (UNIT_LOG, 1420) LC
                CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
 !
             ENDIF 

@@ -18,6 +18,7 @@
       USE run
       USE output
       USE funits 
+      USE compar       !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -42,7 +43,7 @@
       WRITE (UNIT_LOG, 1005) ID_VERSION, ID_NODE 
       WRITE(UNIT_LOG,1010)RUN_NAME,ID_HOUR,ID_MINUTE,ID_MONTH,ID_DAY,ID_YEAR 
 !
-      IF (FULL_LOG) THEN 
+      IF (FULL_LOG .and. myPE.eq.PE_IO) THEN    !//d
          WRITE (*, *) ' ' 
          WRITE (*, 1005) ID_VERSION, ID_NODE 
          WRITE(*,1010)RUN_NAME,ID_HOUR,ID_MINUTE,ID_MONTH,ID_DAY,ID_YEAR 
@@ -53,7 +54,7 @@
       MEMORY = 9. + (8.*DIMENSION_3/ONEMEG)*(95. + 32.*DIMENSION_M + 4.*&
          DIMENSION_N_G + 4.*DIMENSION_M*DIMENSION_N_S) 
       WRITE (UNIT_LOG, '(1X,A,F7.2,A)') 'Memory required: ', MEMORY, ' Mb' 
-      IF (FULL_LOG) THEN 
+      IF (FULL_LOG .and. myPE.eq.PE_IO) THEN     !//d
          WRITE (*, '(1X,A,F7.2,A)') 'Memory required: ', MEMORY, ' Mb' 
          WRITE (*, 1015) 
       ENDIF 

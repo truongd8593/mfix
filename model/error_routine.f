@@ -27,7 +27,9 @@
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
-      USE funits 
+!//d      USE funits 
+      USE compar        !//d
+      USE mpi_utility   !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -65,7 +67,7 @@
       IF (ACTION_CODE == 0) THEN 
          RETURN  
       ELSE 
-         STOP  
+         call exitMPI(myPE)       !//d
       ENDIF 
 !
  1000 FORMAT(1X,70('*'),/,/,1X,'From : ',A,/,1X,'Message : ',A) 

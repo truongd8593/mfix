@@ -26,6 +26,7 @@
       USE visc_s
       USE geometry
       USE indices
+      USE compar     !//d
       IMPLICIT NONE
 
 !  Function subroutines

@@ -74,6 +74,7 @@
       USE toleranc 
       USE geometry
       USE indices
+      USE compar      !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

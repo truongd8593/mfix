@@ -32,6 +32,7 @@
       USE geometry
       USE indices
       USE bc
+      USE compar   !//d
       IMPLICIT NONE
 !
 !  Function subroutines

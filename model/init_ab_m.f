@@ -17,7 +17,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE INIT_AB_M(A_M, B_M, IJKMAX2, M, IER) 
+      SUBROUTINE INIT_AB_M(A_M, B_M, IJKMAX2A, M, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -49,7 +49,7 @@
       INTEGER          IJK
 !
 !                      Maximum dimension
-      INTEGER          IJKMAX2
+      INTEGER          IJKMAX2A
 !
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
@@ -60,10 +60,10 @@
 !-----------------------------------------------
 !
       IJK = 1 
-      IF (IJKMAX2 > 0) THEN 
+      IF (IJKMAX2A > 0) THEN 
        IF (USE_DOLOOP) THEN
 !$omp    parallel do private( IJK )
-         DO IJK = 1, IJKMAX2
+         DO IJK = 1, IJKMAX2A
            A_M(IJK,B,M) = ZERO
            A_M(IJK,S,M) = ZERO
            A_M(IJK,W,M) = ZERO
@@ -75,15 +75,15 @@
            B_M(IJK,M) = ZERO
          ENDDO
        ELSE
-         A_M(:IJKMAX2,B,M) = ZERO 
-         A_M(:IJKMAX2,S,M) = ZERO 
-         A_M(:IJKMAX2,W,M) = ZERO 
-         A_M(:IJKMAX2,0,M) = -ONE 
-         A_M(:IJKMAX2,E,M) = ZERO 
-         A_M(:IJKMAX2,N,M) = ZERO 
-         A_M(:IJKMAX2,T,M) = ZERO 
-         B_M(:IJKMAX2,M) = ZERO 
-         IJK = IJKMAX2 + 1 
+         A_M(:IJKMAX2A,B,M) = ZERO 
+         A_M(:IJKMAX2A,S,M) = ZERO 
+         A_M(:IJKMAX2A,W,M) = ZERO 
+         A_M(:IJKMAX2A,0,M) = -ONE 
+         A_M(:IJKMAX2A,E,M) = ZERO 
+         A_M(:IJKMAX2A,N,M) = ZERO 
+         A_M(:IJKMAX2A,T,M) = ZERO 
+         B_M(:IJKMAX2A,M) = ZERO 
+         IJK = IJKMAX2A + 1 
        ENDIF
       ENDIF 
       RETURN  

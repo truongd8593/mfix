@@ -273,6 +273,13 @@ mfix.exe : \
     xsi_array_mod.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
+    compar_mod.$(OBJ_EXT) \
+    debug_mod.$(OBJ_EXT) \
+    gridmap_mod.$(OBJ_EXT) \
+    mpi_mod.$(OBJ_EXT) \
+    mpi_utility_mod.$(OBJ_EXT) \
+    parallel_mpi_mod.$(OBJ_EXT) \
+    sendrecv_mod.$(OBJ_EXT) \
     igcg.$(OBJ_EXT) \
     igcg_i_mod.$(OBJ_EXT) \
     dcgs.$(OBJ_EXT) \
@@ -556,6 +563,13 @@ mfix.exe : \
     xsi_array_mod.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
+    compar_mod.$(OBJ_EXT) \
+    debug_mod.$(OBJ_EXT) \
+    gridmap_mod.$(OBJ_EXT) \
+    mpi_mod.$(OBJ_EXT) \
+    mpi_utility_mod.$(OBJ_EXT) \
+    parallel_mpi_mod.$(OBJ_EXT) \
+    sendrecv_mod.$(OBJ_EXT) \
     igcg.$(OBJ_EXT) \
     igcg_i_mod.$(OBJ_EXT) \
     dcgs.$(OBJ_EXT) \
@@ -574,7 +588,9 @@ BLAS.o : BLAS.F
 	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F
 ambm.mod : ambm_mod.f \
             param.mod \
-            param1.mod 
+            param1.mod \
+            compar.mod \
+            mpi_utility.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ambm_mod.f 
 bc.mod : bc_mod.f \
             param.mod \
@@ -737,6 +753,44 @@ xsi_array.mod : xsi_array_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) xsi_array_mod.f 
+compar.mod : ./dmp_modules/compar_mod.f \
+            mpi.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/compar_mod.f 
+debug.mod : ./dmp_modules/debug_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/debug_mod.f 
+gridmap.mod : ./dmp_modules/gridmap_mod.f \
+            parallel_mpi.mod \
+            geometry.mod \
+            sendrecv.mod \
+            compar.mod \
+            indices.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/gridmap_mod.f 
+mpi.mod : ./dmp_modules/mpi_mod.f \
+            /usr/include/mpif.h                                         
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/mpi_mod.f 
+mpi_utility.mod : ./dmp_modules/mpi_utility_mod.f \
+            geometry.mod \
+            compar.mod \
+            parallel_mpi.mod \
+            debug.mod \
+            indices.mod \
+            funits.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/mpi_utility_mod.f 
+parallel_mpi.mod : ./dmp_modules/parallel_mpi_mod.f \
+            geometry.mod \
+            compar.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/parallel_mpi_mod.f 
+sendrecv.mod : ./dmp_modules/sendrecv_mod.f \
+            parallel_mpi.mod \
+            debug.mod \
+            geometry.mod \
+            compar.mod \
+            indices.mod \
+            mpi.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/sendrecv_mod.f 
 igcg_i.mod : ./leq_igcg/igcg_i_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./leq_igcg/igcg_i_mod.f 
 solblk.mod : ./leq_slap/solblk_mod.f 
@@ -750,6 +804,7 @@ adjust_a_u_g.$(OBJ_EXT) : adjust_a_u_g.f \
             geometry.mod \
             run.mod \
             indices.mod \
+            compar.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -763,6 +818,7 @@ adjust_a_u_s.$(OBJ_EXT) : adjust_a_u_s.f \
             geometry.mod \
             run.mod \
             indices.mod \
+            compar.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -775,6 +831,7 @@ adjust_a_v_g.$(OBJ_EXT) : adjust_a_v_g.f \
             geometry.mod \
             run.mod \
             indices.mod \
+            compar.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -788,6 +845,7 @@ adjust_a_v_s.$(OBJ_EXT) : adjust_a_v_s.f \
             geometry.mod \
             run.mod \
             indices.mod \
+            compar.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -800,6 +858,7 @@ adjust_a_w_g.$(OBJ_EXT) : adjust_a_w_g.f \
             geometry.mod \
             run.mod \
             indices.mod \
+            compar.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -813,15 +872,17 @@ adjust_a_w_s.$(OBJ_EXT) : adjust_a_w_s.f \
             geometry.mod \
             run.mod \
             indices.mod \
+            compar.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
 adjust_dt.$(OBJ_EXT) : adjust_dt.f \
             param.mod \
             param1.mod \
-            funits.mod \
             run.mod \
-            output.mod 
+            output.mod \
+            compar.mod \
+            mpi_utility.mod 
 adjust_eps.$(OBJ_EXT) : adjust_eps.f \
             param.mod \
             param1.mod \
@@ -832,6 +893,7 @@ adjust_eps.$(OBJ_EXT) : adjust_eps.f \
             indices.mod \
             physprop.mod \
             run.mod \
+            compar.mod \
             function.inc                                                
 adjust_leq.$(OBJ_EXT) : adjust_leq.f \
             param.mod \
@@ -843,6 +905,7 @@ adjust_rop.$(OBJ_EXT) : adjust_rop.f \
             param1.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 adjust_theta.$(OBJ_EXT) : adjust_theta.f \
             param.mod \
@@ -854,6 +917,7 @@ adjust_theta.$(OBJ_EXT) : adjust_theta.f \
             indices.mod \
             physprop.mod \
             run.mod \
+            compar.mod \
             function.inc                                                
 allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             param.mod \
@@ -896,6 +960,7 @@ b_m_p_star.$(OBJ_EXT) : b_m_p_star.f \
             toleranc.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -919,6 +984,7 @@ bc_phi.$(OBJ_EXT) : bc_phi.f \
             output.mod \
             indices.mod \
             bc.mod \
+            compar.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -942,6 +1008,8 @@ bc_theta.$(OBJ_EXT) : bc_theta.f \
             output.mod \
             indices.mod \
             bc.mod \
+            compar.mod \
+            mpi_utility.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -970,6 +1038,7 @@ calc_d.$(OBJ_EXT) : calc_d.f \
             physprop.mod \
             run.mod \
             scales.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -984,6 +1053,7 @@ calc_dif_g.$(OBJ_EXT) : calc_dif_g.f \
             geometry.mod \
             indices.mod \
             constant.mod \
+            compar.mod \
             function.inc                                                
 calc_dif_s.$(OBJ_EXT) : calc_dif_s.f \
             param.mod \
@@ -995,6 +1065,7 @@ calc_dif_s.$(OBJ_EXT) : calc_dif_s.f \
             indices.mod \
             constant.mod \
             toleranc.mod \
+            compar.mod \
             function.inc                                                
 calc_drag.$(OBJ_EXT) : calc_drag.f \
             param.mod \
@@ -1016,6 +1087,7 @@ calc_e.$(OBJ_EXT) : calc_e.f \
             physprop.mod \
             run.mod \
             constant.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1031,6 +1103,7 @@ calc_gama.$(OBJ_EXT) : calc_gama.f \
             energy.mod \
             rxns.mod \
             indices.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -1043,6 +1116,7 @@ calc_grbdry.$(OBJ_EXT) : calc_grbdry.f \
             visc_s.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1060,6 +1134,7 @@ calc_k_cp.$(OBJ_EXT) : calc_k_cp.f \
             run.mod \
             visc_s.mod \
             trace.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             s_pr1.inc                                                    \
             function.inc                                                 \
@@ -1074,6 +1149,7 @@ calc_k_g.$(OBJ_EXT) : calc_k_g.f \
             geometry.mod \
             indices.mod \
             constant.mod \
+            compar.mod \
             function.inc                                                
 calc_k_s.$(OBJ_EXT) : calc_k_s.f \
             param.mod \
@@ -1085,6 +1161,7 @@ calc_k_s.$(OBJ_EXT) : calc_k_s.f \
             indices.mod \
             constant.mod \
             toleranc.mod \
+            compar.mod \
             function.inc                                                
 calc_mu_g.$(OBJ_EXT) : calc_mu_g.f \
             param.mod \
@@ -1097,6 +1174,7 @@ calc_mu_g.$(OBJ_EXT) : calc_mu_g.f \
             visc_s.mod \
             indices.mod \
             constant.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1116,6 +1194,7 @@ calc_mu_s.$(OBJ_EXT) : calc_mu_s.f \
             trace.mod \
             indices.mod \
             constant.mod \
+            compar.mod \
             s_pr1.inc                                                    \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -1135,6 +1214,7 @@ calc_outflow.$(OBJ_EXT) : calc_outflow.f \
             indices.mod \
             physprop.mod \
             geometry.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -1150,6 +1230,7 @@ calc_p_star.$(OBJ_EXT) : calc_p_star.f \
             pscor.mod \
             ur_facs.mod \
             residual.mod \
+            compar.mod \
             s_pr1.inc                                                    \
             function.inc                                                 \
             s_pr2.inc                                                   
@@ -1160,6 +1241,7 @@ calc_resid.$(OBJ_EXT) : calc_resid.f \
             parallel.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 calc_s_ddot_s.$(OBJ_EXT) : calc_s_ddot_s.f \
             param.mod \
@@ -1168,6 +1250,7 @@ calc_s_ddot_s.$(OBJ_EXT) : calc_s_ddot_s.f \
             fldvar.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -1178,6 +1261,7 @@ calc_trd_g.$(OBJ_EXT) : calc_trd_g.f \
             geometry.mod \
             fldvar.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 calc_trd_s.$(OBJ_EXT) : calc_trd_s.f \
             param.mod \
@@ -1187,6 +1271,7 @@ calc_trd_s.$(OBJ_EXT) : calc_trd_s.f \
             fldvar.mod \
             indices.mod \
             physprop.mod \
+            compar.mod \
             function.inc                                                
 calc_u_friction.$(OBJ_EXT) : calc_u_friction.f \
             param.mod \
@@ -1198,6 +1283,7 @@ calc_u_friction.$(OBJ_EXT) : calc_u_friction.f \
             geometry.mod \
             indices.mod \
             bc.mod \
+            compar.mod \
             run.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -1214,6 +1300,7 @@ calc_vol_fr.$(OBJ_EXT) : calc_vol_fr.f \
             constant.mod \
             pgcor.mod \
             pscor.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             s_pr1.inc                                                    \
             function.inc                                                 \
@@ -1226,6 +1313,7 @@ calc_xsi.$(OBJ_EXT) : calc_xsi.f \
             run.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 check_ab_m.$(OBJ_EXT) : check_ab_m.f \
             param.mod \
@@ -1233,6 +1321,7 @@ check_ab_m.$(OBJ_EXT) : check_ab_m.f \
             matrix.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 check_convergence.$(OBJ_EXT) : check_convergence.f \
             param.mod \
@@ -1285,6 +1374,7 @@ check_data_06.$(OBJ_EXT) : check_data_06.f \
             run.mod \
             indices.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 check_data_07.$(OBJ_EXT) : check_data_07.f \
             param.mod \
@@ -1296,6 +1386,7 @@ check_data_07.$(OBJ_EXT) : check_data_07.f \
             bc.mod \
             indices.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 check_data_08.$(OBJ_EXT) : check_data_08.f \
             param.mod \
@@ -1307,6 +1398,7 @@ check_data_08.$(OBJ_EXT) : check_data_08.f \
             is.mod \
             indices.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 check_data_09.$(OBJ_EXT) : check_data_09.f \
             param.mod \
@@ -1331,6 +1423,7 @@ check_data_20.$(OBJ_EXT) : check_data_20.f \
             funits.mod \
             visc_g.mod \
             rxns.mod \
+            compar.mod \
             function.inc                                                
 check_data_30.$(OBJ_EXT) : check_data_30.f \
             param.mod \
@@ -1345,6 +1438,7 @@ check_data_30.$(OBJ_EXT) : check_data_30.f \
             physprop.mod \
             indices.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 check_one_axis.$(OBJ_EXT) : check_one_axis.f \
             param.mod \
@@ -1358,6 +1452,7 @@ compare.$(OBJ_EXT) : compare.f \
             toleranc.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 conv_dif_phi.$(OBJ_EXT) : conv_dif_phi.f \
             param.mod \
@@ -1368,6 +1463,7 @@ conv_dif_phi.$(OBJ_EXT) : conv_dif_phi.f \
             toleranc.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             xsi_array.mod \
             scales.mod \
             constant.mod \
@@ -1396,6 +1492,7 @@ conv_dif_u_g.$(OBJ_EXT) : conv_dif_u_g.f \
             physprop.mod \
             fldvar.mod \
             output.mod \
+            compar.mod \
             xsi_array.mod \
             tmp_array.mod \
             ep_s1.inc                                                    \
@@ -1416,6 +1513,7 @@ conv_dif_u_s.$(OBJ_EXT) : conv_dif_u_s.f \
             toleranc.mod \
             fldvar.mod \
             output.mod \
+            compar.mod \
             xsi_array.mod \
             tmp_array.mod \
             ep_s1.inc                                                    \
@@ -1436,6 +1534,7 @@ conv_dif_v_g.$(OBJ_EXT) : conv_dif_v_g.f \
             physprop.mod \
             fldvar.mod \
             output.mod \
+            compar.mod \
             xsi_array.mod \
             tmp_array.mod \
             ep_s1.inc                                                    \
@@ -1456,6 +1555,7 @@ conv_dif_v_s.$(OBJ_EXT) : conv_dif_v_s.f \
             toleranc.mod \
             fldvar.mod \
             output.mod \
+            compar.mod \
             xsi_array.mod \
             tmp_array.mod \
             ep_s1.inc                                                    \
@@ -1476,6 +1576,7 @@ conv_dif_w_g.$(OBJ_EXT) : conv_dif_w_g.f \
             physprop.mod \
             fldvar.mod \
             output.mod \
+            compar.mod \
             xsi_array.mod \
             tmp_array.mod \
             ep_s1.inc                                                    \
@@ -1496,6 +1597,7 @@ conv_dif_w_s.$(OBJ_EXT) : conv_dif_w_s.f \
             toleranc.mod \
             fldvar.mod \
             output.mod \
+            compar.mod \
             xsi_array.mod \
             tmp_array.mod \
             ep_s1.inc                                                    \
@@ -1514,6 +1616,7 @@ conv_pp_g.$(OBJ_EXT) : conv_pp_g.f \
             geometry.mod \
             indices.mod \
             pgcor.mod \
+            compar.mod \
             xsi_array.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -1531,6 +1634,7 @@ conv_rop_g.$(OBJ_EXT) : conv_rop_g.f \
             geometry.mod \
             indices.mod \
             pgcor.mod \
+            compar.mod \
             xsi_array.mod \
             function.inc                                                
 conv_rop_s.$(OBJ_EXT) : conv_rop_s.f \
@@ -1545,6 +1649,7 @@ conv_rop_s.$(OBJ_EXT) : conv_rop_s.f \
             indices.mod \
             pgcor.mod \
             pscor.mod \
+            compar.mod \
             xsi_array.mod \
             function.inc                                                
 conv_source_epp.$(OBJ_EXT) : conv_source_epp.f \
@@ -1561,6 +1666,7 @@ conv_source_epp.$(OBJ_EXT) : conv_source_epp.f \
             indices.mod \
             pgcor.mod \
             pscor.mod \
+            compar.mod \
             xsi_array.mod \
             ep_s1.inc                                                    \
             s_pr1.inc                                                    \
@@ -1574,6 +1680,7 @@ copy_a.$(OBJ_EXT) : copy_a.f \
             matrix.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             physprop.mod \
             function.inc                                                
 corner.$(OBJ_EXT) : corner.f \
@@ -1585,6 +1692,7 @@ corner.$(OBJ_EXT) : corner.f \
             matrix.mod \
             corner.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 correct_0.$(OBJ_EXT) : correct_0.f \
             param.mod \
@@ -1595,6 +1703,7 @@ correct_0.$(OBJ_EXT) : correct_0.f \
             geometry.mod \
             indices.mod \
             physprop.mod \
+            compar.mod \
             function.inc                                                
 correct_1.$(OBJ_EXT) : correct_1.f \
             param.mod \
@@ -1606,6 +1715,7 @@ correct_1.$(OBJ_EXT) : correct_1.f \
             pscor.mod \
             ur_facs.mod \
             constant.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             s_pr1.inc                                                    \
             function.inc                                                 \
@@ -1627,6 +1737,7 @@ dif_u_is.$(OBJ_EXT) : dif_u_is.f \
             output.mod \
             indices.mod \
             is.mod \
+            compar.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -1649,6 +1760,7 @@ dif_v_is.$(OBJ_EXT) : dif_v_is.f \
             output.mod \
             indices.mod \
             is.mod \
+            compar.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -1671,6 +1783,7 @@ dif_w_is.$(OBJ_EXT) : dif_w_is.f \
             output.mod \
             indices.mod \
             is.mod \
+            compar.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -1686,7 +1799,8 @@ display_resid.$(OBJ_EXT) : display_resid.f \
             param1.mod \
             physprop.mod \
             residual.mod \
-            fldvar.mod 
+            fldvar.mod \
+            compar.mod 
 drag_gs.$(OBJ_EXT) : drag_gs.f \
             param.mod \
             param1.mod \
@@ -1696,6 +1810,7 @@ drag_gs.$(OBJ_EXT) : drag_gs.f \
             indices.mod \
             physprop.mod \
             run.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1710,6 +1825,7 @@ drag_ss.$(OBJ_EXT) : drag_ss.f \
             geometry.mod \
             indices.mod \
             physprop.mod \
+            compar.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -1727,7 +1843,8 @@ equal.$(OBJ_EXT) : equal.f \
             indices.mod \
             physprop.mod 
 error_routine.$(OBJ_EXT) : error_routine.f \
-            funits.mod 
+            compar.mod \
+            mpi_utility.mod 
 exchange.$(OBJ_EXT) : exchange.f \
             param.mod \
             param1.mod 
@@ -1749,6 +1866,7 @@ g_0.$(OBJ_EXT) : g_0.f \
             fldvar.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -1778,6 +1896,7 @@ get_flow_bc.$(OBJ_EXT) : get_flow_bc.f \
             bc.mod \
             indices.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 get_hloss.$(OBJ_EXT) : get_hloss.f \
             param.mod \
@@ -1804,6 +1923,7 @@ get_philoss.$(OBJ_EXT) : get_philoss.f \
             bc.mod \
             indices.mod \
             energy.mod \
+            compar.mod \
             function.inc                                                
 get_smass.$(OBJ_EXT) : get_smass.f \
             param.mod \
@@ -1813,6 +1933,7 @@ get_smass.$(OBJ_EXT) : get_smass.f \
             geometry.mod \
             fldvar.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 get_stats.$(OBJ_EXT) : get_stats.f \
             param.mod \
@@ -1824,6 +1945,7 @@ get_stats.$(OBJ_EXT) : get_stats.f \
             funits.mod \
             residual.mod \
             run.mod \
+            compar.mod \
             function.inc                                                
 get_walls_bc.$(OBJ_EXT) : get_walls_bc.f \
             param.mod \
@@ -1834,12 +1956,19 @@ get_walls_bc.$(OBJ_EXT) : get_walls_bc.f \
             bc.mod \
             indices.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 in_bin_512.$(OBJ_EXT) : in_bin_512.f \
             machine.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
 in_bin_512i.$(OBJ_EXT) : in_bin_512i.f \
             machine.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
 init_ab_m.$(OBJ_EXT) : init_ab_m.f \
             param.mod \
@@ -1896,7 +2025,8 @@ iterate.$(OBJ_EXT) : iterate.f \
             leqsol.mod \
             visc_g.mod \
             pgcor.mod \
-            cont.mod 
+            cont.mod \
+            compar.mod 
 leq_bicgs.$(OBJ_EXT) : leq_bicgs.f \
             param.mod \
             param1.mod \
@@ -1904,6 +2034,7 @@ leq_bicgs.$(OBJ_EXT) : leq_bicgs.f \
             geometry.mod \
             indices.mod \
             parallel.mod \
+            compar.mod \
             function.inc                                                
 leq_dsdgmr.$(OBJ_EXT) : leq_dsdgmr.f \
             param.mod \
@@ -1911,6 +2042,7 @@ leq_dsdgmr.$(OBJ_EXT) : leq_dsdgmr.f \
             geometry.mod \
             indices.mod \
             dsdgmr_a.mod \
+            compar.mod \
             function.inc                                                
 leq_dslucs.$(OBJ_EXT) : leq_dslucs.f \
             param.mod \
@@ -1918,6 +2050,7 @@ leq_dslucs.$(OBJ_EXT) : leq_dslucs.f \
             geometry.mod \
             indices.mod \
             dslucs_a.mod \
+            compar.mod \
             function.inc                                                
 leq_dslugm.$(OBJ_EXT) : leq_dslugm.f \
             param.mod \
@@ -1925,6 +2058,7 @@ leq_dslugm.$(OBJ_EXT) : leq_dslugm.f \
             geometry.mod \
             indices.mod \
             dslugm_a.mod \
+            compar.mod \
             function.inc                                                
 leq_gmres.$(OBJ_EXT) : leq_gmres.f \
             param.mod \
@@ -1945,6 +2079,7 @@ leq_sor.$(OBJ_EXT) : leq_sor.f \
             matrix.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 line_too_big.$(OBJ_EXT) : line_too_big.f 
 location.$(OBJ_EXT) : location.f \
@@ -1969,6 +2104,7 @@ mark_phase_4_cor.$(OBJ_EXT) : mark_phase_4_cor.f \
             fldvar.mod \
             physprop.mod \
             constant.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -1988,6 +2124,7 @@ mod_bc_i.$(OBJ_EXT) : mod_bc_i.f \
             physprop.mod \
             indices.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 mod_bc_j.$(OBJ_EXT) : mod_bc_j.f \
             param.mod \
@@ -1997,6 +2134,7 @@ mod_bc_j.$(OBJ_EXT) : mod_bc_j.f \
             physprop.mod \
             indices.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 mod_bc_k.$(OBJ_EXT) : mod_bc_k.f \
             param.mod \
@@ -2006,11 +2144,13 @@ mod_bc_k.$(OBJ_EXT) : mod_bc_k.f \
             physprop.mod \
             indices.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 open_file.$(OBJ_EXT) : open_file.f 
 open_files.$(OBJ_EXT) : open_files.f \
             machine.mod \
-            funits.mod 
+            funits.mod \
+            geometry.mod 
 out_array.$(OBJ_EXT) : out_array.f \
             param.mod \
             param1.mod \
@@ -2020,6 +2160,7 @@ out_array.$(OBJ_EXT) : out_array.f \
             indices.mod \
             funits.mod \
             tmp_array.mod \
+            compar.mod \
             function.inc                                                
 out_array_c.$(OBJ_EXT) : out_array_c.f \
             param.mod \
@@ -2030,6 +2171,7 @@ out_array_c.$(OBJ_EXT) : out_array_c.f \
             indices.mod \
             funits.mod \
             tmp_array.mod \
+            compar.mod \
             function.inc                                                
 out_array_k.$(OBJ_EXT) : out_array_k.f \
             param.mod \
@@ -2039,6 +2181,7 @@ out_array_k.$(OBJ_EXT) : out_array_k.f \
             physprop.mod \
             indices.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 out_array_kc.$(OBJ_EXT) : out_array_kc.f \
             param.mod \
@@ -2048,6 +2191,7 @@ out_array_kc.$(OBJ_EXT) : out_array_kc.f \
             physprop.mod \
             indices.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 out_bin_512.$(OBJ_EXT) : out_bin_512.f \
             machine.mod 
@@ -2079,6 +2223,7 @@ partial_elim.$(OBJ_EXT) : partial_elim.f \
             matrix.mod \
             physprop.mod \
             indices.mod \
+            compar.mod \
             run.mod \
             function.inc                                                
 physical_prop.$(OBJ_EXT) : physical_prop.f \
@@ -2092,6 +2237,7 @@ physical_prop.$(OBJ_EXT) : physical_prop.f \
             run.mod \
             toleranc.mod \
             constant.mod \
+            compar.mod \
             cp_fun1.inc                                                  \
             function.inc                                                 \
             cp_fun2.inc                                                 
@@ -2166,6 +2312,7 @@ rrates.$(OBJ_EXT) : rrates.f \
             physprop.mod \
             constant.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 rrates0.$(OBJ_EXT) : rrates0.f \
             param.mod \
@@ -2180,6 +2327,7 @@ rrates0.$(OBJ_EXT) : rrates0.f \
             physprop.mod \
             constant.mod \
             funits.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -2196,6 +2344,7 @@ set_bc0.$(OBJ_EXT) : set_bc0.f \
             run.mod \
             funits.mod \
             scales.mod \
+            compar.mod \
             sc_p_g1.inc                                                  \
             function.inc                                                 \
             sc_p_g2.inc                                                 
@@ -2209,6 +2358,7 @@ set_bc1.$(OBJ_EXT) : set_bc1.f \
             physprop.mod \
             run.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 set_constants.$(OBJ_EXT) : set_constants.f \
             param.mod \
@@ -2237,6 +2387,7 @@ set_constprop.$(OBJ_EXT) : set_constprop.f \
             run.mod \
             funits.mod \
             drag.mod \
+            compar.mod \
             function.inc                                                
 set_flags.$(OBJ_EXT) : set_flags.f \
             param.mod \
@@ -2249,6 +2400,7 @@ set_flags.$(OBJ_EXT) : set_flags.f \
             indices.mod \
             physprop.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 set_fluidbed_p.$(OBJ_EXT) : set_fluidbed_p.f \
             param.mod \
@@ -2262,6 +2414,7 @@ set_fluidbed_p.$(OBJ_EXT) : set_fluidbed_p.f \
             indices.mod \
             funits.mod \
             scales.mod \
+            compar.mod \
             sc_p_g1.inc                                                  \
             b_force1.inc                                                 \
             function.inc                                                 \
@@ -2291,6 +2444,7 @@ set_ic.$(OBJ_EXT) : set_ic.f \
             indices.mod \
             scales.mod \
             energy.mod \
+            compar.mod \
             sc_p_g1.inc                                                  \
             b_force1.inc                                                 \
             s_pr1.inc                                                    \
@@ -2306,6 +2460,7 @@ set_increments.$(OBJ_EXT) : set_increments.f \
             physprop.mod \
             fldvar.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 set_index1.$(OBJ_EXT) : set_index1.f \
             param.mod \
@@ -2315,6 +2470,7 @@ set_index1.$(OBJ_EXT) : set_index1.f \
             geometry.mod \
             constant.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 set_index1a.$(OBJ_EXT) : set_index1a.f \
             param.mod \
@@ -2324,6 +2480,7 @@ set_index1a.$(OBJ_EXT) : set_index1a.f \
             constant.mod \
             fldvar.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 set_l_scale.$(OBJ_EXT) : set_l_scale.f \
             param.mod \
@@ -2346,6 +2503,7 @@ set_mw_mix_g.$(OBJ_EXT) : set_mw_mix_g.f \
             fldvar.mod \
             constant.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 set_outflow.$(OBJ_EXT) : set_outflow.f \
             param.mod \
@@ -2355,6 +2513,7 @@ set_outflow.$(OBJ_EXT) : set_outflow.f \
             geometry.mod \
             indices.mod \
             physprop.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -2367,6 +2526,7 @@ set_ro_g.$(OBJ_EXT) : set_ro_g.f \
             fldvar.mod \
             constant.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 set_wall_bc.$(OBJ_EXT) : set_wall_bc.f \
             param.mod \
@@ -2378,6 +2538,7 @@ set_wall_bc.$(OBJ_EXT) : set_wall_bc.f \
             physprop.mod \
             run.mod \
             funits.mod \
+            compar.mod \
             function.inc                                                
 shift_dxyz.$(OBJ_EXT) : shift_dxyz.f \
             param.mod \
@@ -2416,6 +2577,7 @@ solve_energy_eq.$(OBJ_EXT) : solve_energy_eq.f \
             ambm.mod \
             tmp_array.mod \
             tmp_array1.mod \
+            compar.mod \
             radtn1.inc                                                   \
             ep_s1.inc                                                    \
             function.inc                                                 \
@@ -2452,6 +2614,7 @@ solve_granular_energy.$(OBJ_EXT) : solve_granular_energy.f \
             rxns.mod \
             ambm.mod \
             tmp_array.mod \
+            compar.mod \
             radtn1.inc                                                   \
             ep_s1.inc                                                    \
             function.inc                                                 \
@@ -2493,6 +2656,7 @@ solve_species_eq.$(OBJ_EXT) : solve_species_eq.f \
             rxns.mod \
             ambm.mod \
             tmp_array.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -2527,6 +2691,7 @@ source_granular_energy.$(OBJ_EXT) : source_granular_energy.f \
             trace.mod \
             indices.mod \
             constant.mod \
+            compar.mod \
             s_pr1.inc                                                    \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -2550,6 +2715,7 @@ source_phi.$(OBJ_EXT) : source_phi.f \
             indices.mod \
             is.mod \
             tau_s.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -2569,6 +2735,7 @@ source_pp_g.$(OBJ_EXT) : source_pp_g.f \
             pgcor.mod \
             bc.mod \
             xsi_array.mod \
+            compar.mod \
             function.inc                                                
 source_rop_g.$(OBJ_EXT) : source_rop_g.f \
             param.mod \
@@ -2581,6 +2748,7 @@ source_rop_g.$(OBJ_EXT) : source_rop_g.f \
             geometry.mod \
             indices.mod \
             pgcor.mod \
+            compar.mod \
             function.inc                                                
 source_rop_s.$(OBJ_EXT) : source_rop_s.f \
             param.mod \
@@ -2594,6 +2762,7 @@ source_rop_s.$(OBJ_EXT) : source_rop_s.f \
             indices.mod \
             pgcor.mod \
             pscor.mod \
+            compar.mod \
             function.inc                                                
 source_u_g.$(OBJ_EXT) : source_u_g.f \
             param.mod \
@@ -2613,6 +2782,7 @@ source_u_g.$(OBJ_EXT) : source_u_g.f \
             is.mod \
             tau_g.mod \
             bc.mod \
+            compar.mod \
             output.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -2639,6 +2809,7 @@ source_u_s.$(OBJ_EXT) : source_u_s.f \
             is.mod \
             tau_s.mod \
             bc.mod \
+            compar.mod \
             output.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -2665,6 +2836,7 @@ source_v_g.$(OBJ_EXT) : source_v_g.f \
             is.mod \
             tau_g.mod \
             bc.mod \
+            compar.mod \
             output.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -2691,6 +2863,7 @@ source_v_s.$(OBJ_EXT) : source_v_s.f \
             is.mod \
             tau_s.mod \
             bc.mod \
+            compar.mod \
             output.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -2717,6 +2890,7 @@ source_w_g.$(OBJ_EXT) : source_w_g.f \
             is.mod \
             tau_g.mod \
             bc.mod \
+            compar.mod \
             output.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -2743,6 +2917,7 @@ source_w_s.$(OBJ_EXT) : source_w_s.f \
             is.mod \
             tau_s.mod \
             bc.mod \
+            compar.mod \
             output.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -2767,6 +2942,7 @@ tau_u_g.$(OBJ_EXT) : tau_u_g.f \
             geometry.mod \
             indices.mod \
             is.mod \
+            compar.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -2790,6 +2966,7 @@ tau_u_s.$(OBJ_EXT) : tau_u_s.f \
             geometry.mod \
             indices.mod \
             is.mod \
+            compar.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -2813,6 +2990,7 @@ tau_v_g.$(OBJ_EXT) : tau_v_g.f \
             geometry.mod \
             indices.mod \
             is.mod \
+            compar.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -2836,6 +3014,7 @@ tau_v_s.$(OBJ_EXT) : tau_v_s.f \
             geometry.mod \
             indices.mod \
             is.mod \
+            compar.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -2859,6 +3038,7 @@ tau_w_g.$(OBJ_EXT) : tau_w_g.f \
             geometry.mod \
             indices.mod \
             is.mod \
+            compar.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -2882,6 +3062,7 @@ tau_w_s.$(OBJ_EXT) : tau_w_s.f \
             geometry.mod \
             indices.mod \
             is.mod \
+            compar.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -2908,7 +3089,8 @@ time_march.$(OBJ_EXT) : time_march.f \
             tau_s.mod \
             visc_g.mod \
             visc_s.mod \
-            funits.mod 
+            funits.mod \
+            compar.mod 
 transfer.$(OBJ_EXT) : transfer.f \
             param.mod \
             param1.mod \
@@ -2932,6 +3114,7 @@ under_relax.$(OBJ_EXT) : under_relax.f \
             param1.mod \
             geometry.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 update_old.$(OBJ_EXT) : update_old.f \
             param.mod \
@@ -2960,6 +3143,7 @@ vavg_u_g.$(OBJ_EXT) : vavg_u_g.f \
             geometry.mod \
             physprop.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 vavg_u_s.$(OBJ_EXT) : vavg_u_s.f \
             param.mod \
@@ -2970,6 +3154,7 @@ vavg_u_s.$(OBJ_EXT) : vavg_u_s.f \
             geometry.mod \
             physprop.mod \
             indices.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -2982,6 +3167,7 @@ vavg_v_g.$(OBJ_EXT) : vavg_v_g.f \
             geometry.mod \
             physprop.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 vavg_v_s.$(OBJ_EXT) : vavg_v_s.f \
             param.mod \
@@ -2992,6 +3178,7 @@ vavg_v_s.$(OBJ_EXT) : vavg_v_s.f \
             geometry.mod \
             physprop.mod \
             indices.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -3004,6 +3191,7 @@ vavg_w_g.$(OBJ_EXT) : vavg_w_g.f \
             geometry.mod \
             physprop.mod \
             indices.mod \
+            compar.mod \
             function.inc                                                
 vavg_w_s.$(OBJ_EXT) : vavg_w_s.f \
             param.mod \
@@ -3014,6 +3202,7 @@ vavg_w_s.$(OBJ_EXT) : vavg_w_s.f \
             geometry.mod \
             physprop.mod \
             indices.mod \
+            compar.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -3023,6 +3212,7 @@ vf_gs_x.$(OBJ_EXT) : vf_gs_x.f \
             geometry.mod \
             indices.mod \
             physprop.mod \
+            compar.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -3032,6 +3222,7 @@ vf_gs_y.$(OBJ_EXT) : vf_gs_y.f \
             geometry.mod \
             indices.mod \
             physprop.mod \
+            compar.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -3041,6 +3232,7 @@ vf_gs_z.$(OBJ_EXT) : vf_gs_z.f \
             geometry.mod \
             indices.mod \
             physprop.mod \
+            compar.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -3048,7 +3240,8 @@ write_ab_m.$(OBJ_EXT) : write_ab_m.f \
             param.mod \
             param1.mod \
             matrix.mod \
-            funits.mod 
+            compar.mod \
+            mpi_utility.mod 
 write_error.$(OBJ_EXT) : write_error.f \
             param.mod \
             param1.mod \
@@ -3058,7 +3251,8 @@ write_header.$(OBJ_EXT) : write_header.f \
             param1.mod \
             run.mod \
             output.mod \
-            funits.mod 
+            funits.mod \
+            compar.mod 
 write_out0.$(OBJ_EXT) : write_out0.f \
             param.mod \
             param1.mod \
@@ -3076,16 +3270,21 @@ write_out0.$(OBJ_EXT) : write_out0.f \
             toleranc.mod \
             scales.mod \
             ur_facs.mod \
-            leqsol.mod 
+            leqsol.mod \
+            compar.mod \
+            mpi_utility.mod 
 write_out1.$(OBJ_EXT) : write_out1.f \
             param.mod \
             param1.mod \
             physprop.mod \
             fldvar.mod \
             run.mod \
-            funits.mod 
+            funits.mod \
+            compar.mod \
+            mpi_utility.mod 
 write_out3.$(OBJ_EXT) : write_out3.f \
-            funits.mod 
+            funits.mod \
+            compar.mod 
 write_res0.$(OBJ_EXT) : write_res0.f \
             param.mod \
             param1.mod \
@@ -3102,7 +3301,8 @@ write_res0.$(OBJ_EXT) : write_res0.f \
             ur_facs.mod \
             leqsol.mod \
             toleranc.mod \
-            tmp_array.mod 
+            compar.mod \
+            mpi_utility.mod 
 write_res1.$(OBJ_EXT) : write_res1.f \
             param.mod \
             param1.mod \
@@ -3112,12 +3312,15 @@ write_res1.$(OBJ_EXT) : write_res1.f \
             run.mod \
             funits.mod \
             output.mod \
-            tmp_array.mod 
+            compar.mod \
+            mpi_utility.mod 
 write_spx0.$(OBJ_EXT) : write_spx0.f \
             param.mod \
             param1.mod \
             run.mod \
-            funits.mod 
+            funits.mod \
+            compar.mod \
+            mpi_utility.mod 
 write_spx1.$(OBJ_EXT) : write_spx1.f \
             param.mod \
             param1.mod \
@@ -3127,7 +3330,8 @@ write_spx1.$(OBJ_EXT) : write_spx1.f \
             run.mod \
             funits.mod \
             output.mod \
-            tmp_array.mod 
+            compar.mod \
+            mpi_utility.mod 
 write_table.$(OBJ_EXT) : write_table.f \
             param.mod \
             param1.mod \
@@ -3146,6 +3350,7 @@ zero_norm_vel.$(OBJ_EXT) : zero_norm_vel.f \
             fldvar.mod \
             indices.mod \
             is.mod \
+            compar.mod \
             function.inc                                                
 igcg.$(OBJ_EXT) : ./leq_igcg/igcg.f \
             param.mod \

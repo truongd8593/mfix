@@ -43,6 +43,7 @@
       USE visc_g
       USE pgcor
       USE cont
+      USE compar               !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -138,7 +139,7 @@
 !
 !     CPU time left
 !
-      IF (FULL_LOG) THEN 
+      IF (FULL_LOG .and. myPE.eq.PE_IO) THEN      !//
          TLEFT = (TSTOP - TIME)*CPUOS 
          CALL GET_TUNIT (TLEFT, TUNIT) 
 !
@@ -299,10 +300,12 @@
 !
             IF (ENERGY_EQ) THEN 
                WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS, HLOSS, CPU_NOW 
-               IF(FULL_LOG)WRITE(*,5000)TIME,DT,NIT,SMASS,HLOSS,CPU_NOW 
+               IF(FULL_LOG.and.myPE.eq.PE_IO) &          
+                       WRITE(*,5000)TIME,DT,NIT,SMASS,HLOSS,CPU_NOW        !//
             ELSE 
                WRITE (UNIT_LOG, 5001) TIME, DT, NIT, SMASS, CPU_NOW 
-               IF (FULL_LOG) WRITE (*, 5001) TIME, DT, NIT, SMASS, CPU_NOW 
+               IF (FULL_LOG .and. myPE.eq.PE_IO) &
+                       WRITE (*, 5001) TIME, DT, NIT, SMASS, CPU_NOW       !//
             ENDIF 
             CALL START_LOG 
             IF (.NOT.FULL_LOG) THEN 
@@ -336,7 +339,11 @@
             CALL START_LOG 
             WRITE (UNIT_LOG, 5200) TIME, DT, NIT 
             CALL END_LOG 
-            WRITE (*, 5200) TIME, DT, NIT 
+
+!//? pnicol : NIT below is only for PE_IO ... can other
+!//?          processors have different NIT.  Ans if so,
+!//?          what do we want to print out (MAX ?)
+            if (myPE.eq.PE_IO) WRITE (*, 5200) TIME, DT, NIT   !//
          ENDIF 
          IER = 1 
          RETURN  
@@ -352,7 +359,10 @@
 !     End iterations
 !
       CALL GET_SMASS (SMASS) 
-      WRITE (UNIT_OUT, 5100) TIME, DT, NIT, SMASS 
+!//? pnicol : NIT below is only for PE_IO ... can other
+!//?          processors have different NIT.  Ans if so,
+!//?          what do we want to print out (MAX ?)
+      if (myPE.eq.PE_IO) WRITE (UNIT_OUT, 5100) TIME, DT, NIT, SMASS    !//
       CALL START_LOG 
       WRITE (UNIT_LOG, 5100) TIME, DT, NIT, SMASS 
       CALL END_LOG 

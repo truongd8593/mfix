@@ -45,6 +45,7 @@
 !
 !-----------------------------------------------
 !
+
       CALL START_LOG 
       WRITE (UNIT_LOG, 1000) NAME 
       DO L = 1, LMAX 

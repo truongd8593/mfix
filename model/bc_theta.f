@@ -36,6 +36,8 @@
       USE output
       USE indices
       USE bc
+      USE compar         !//d
+      use mpi_utility    !//d
       IMPLICIT NONE
 !
 !  Function subroutines
@@ -298,6 +300,8 @@
       USE geometry
       USE indices
       USE bc
+      USE compar         !//d
+      use mpi_utility    !//d
       IMPLICIT NONE
 !
 !  Function subroutines
@@ -344,7 +348,7 @@
  
 !
 !                      Error message
-      CHARACTER*80     LINE
+      CHARACTER*80     LINE(1)
 !
 !                      Index corresponding to boundary condition
       INTEGER          L
@@ -550,9 +554,9 @@
  
  
       ELSE
-         WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
-         CALL WRITE_ERROR('CALC_THETA_BC', LINE, 1)
-	 STOP
+        WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
+        CALL WRITE_ERROR('CALC_THETA_BC', LINE, 1)
+	call exitMPI(myPE)            !//d
       ENDIF
  
       CALL THETA_Hw_Cw(EP_avg,TH_avg,Mu_g_avg,RO_g_avg,VREL,VSLIPSQ,M,&
@@ -593,6 +597,7 @@
       USE fldvar
       USE toleranc 
       USE bc
+      USE compar      !//d
       IMPLICIT NONE
  
 !
@@ -657,8 +662,10 @@
  
       IF(TH .LE. ZERO)THEN
         TH = 1e-8
-	WRITE(*,*)'Warning: Negative granular temp at wall set to 1e-8'
-!        CALL WRITE_ERROR('THETA_HW_CW', LINE, 1)
+        if (myPE.eq.PE_IO) then   !//??????  pnicol : on any PE ????
+	   WRITE(*,*)'Warning: Negative granular temp at wall set to 1e-8'
+!          CALL WRITE_ERROR('THETA_HW_CW', LINE, 1)
+        end if
       ENDIF
  
 !     In F_2 and Mu a DSQRT(T) has been left out as it appears in both

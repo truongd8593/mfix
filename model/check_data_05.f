@@ -33,6 +33,7 @@
       USE funits 
       USE run
       USE indices
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -62,8 +63,8 @@
             NMAX(0) = 1 
          ENDIF 
       ELSE IF (NMAX(0) > DIMENSION_N_G) THEN 
-         CALL ERROR_ROUTINE ('CHECK_DATA_05', 'NMAX(0) is too large', 0, 2) 
-         WRITE (UNIT_LOG, 1000) NMAX(0), DIMENSION_N_G 
+         CALL ERROR_ROUTINE ('CHECK_DATA_05', 'NMAX(0) is too large', 0, 2)
+            WRITE (UNIT_LOG, 1000) NMAX(0), DIMENSION_N_G 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !
@@ -72,7 +73,7 @@
       IF (MU_G0 <= ZERO) THEN 
          CALL ERROR_ROUTINE ('CHECK_DATA_05', 'MU_g0 value is unphysical', 0, 2&
             ) 
-         WRITE (UNIT_LOG, 1100) MU_G0 
+            WRITE (UNIT_LOG, 1100) MU_G0 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !
@@ -81,7 +82,7 @@
       IF (MU_S0 < ZERO) THEN 
          CALL ERROR_ROUTINE ('CHECK_DATA_05', 'MU_s0 value is unphysical', 0, 2&
             ) 
-         WRITE (UNIT_LOG, 1110) MU_S0 
+            WRITE (UNIT_LOG, 1110) MU_S0 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !
@@ -89,7 +90,7 @@
 !
       IF (K_G0 < ZERO) THEN 
          CALL ERROR_ROUTINE ('CHECK_DATA_05', 'K_g0 value is unphysical', 0, 2) 
-         WRITE (UNIT_LOG, 1110) K_G0 
+            WRITE (UNIT_LOG, 1110) K_G0 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !
@@ -97,7 +98,7 @@
 !
       IF (K_S0 < ZERO) THEN 
          CALL ERROR_ROUTINE ('CHECK_DATA_05', 'K_s0 value is unphysical', 0, 2) 
-         WRITE (UNIT_LOG, 1110) K_S0 
+            WRITE (UNIT_LOG, 1110) K_S0 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !
@@ -106,7 +107,7 @@
       IF (C_PG0 < ZERO) THEN 
          CALL ERROR_ROUTINE ('CHECK_DATA_05', 'C_pg0 value is unphysical', 0, 2&
             ) 
-         WRITE (UNIT_LOG, 1110) C_PG0 
+            WRITE (UNIT_LOG, 1110) C_PG0 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !
@@ -115,7 +116,7 @@
       IF (C_PS0 < ZERO) THEN 
          CALL ERROR_ROUTINE ('CHECK_DATA_05', 'C_ps0 value is unphysical', 0, 2&
             ) 
-         WRITE (UNIT_LOG, 1110) C_PS0 
+            WRITE (UNIT_LOG, 1110) C_PS0 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !
@@ -124,7 +125,7 @@
       IF (DIF_G0 < ZERO) THEN 
          CALL ERROR_ROUTINE ('CHECK_DATA_05', 'DIF_g0 value is unphysical', 0, &
             2) 
-         WRITE (UNIT_LOG, 1110) DIF_G0 
+            WRITE (UNIT_LOG, 1110) DIF_G0 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !
@@ -133,30 +134,30 @@
       IF (DIF_S0 < ZERO) THEN 
          CALL ERROR_ROUTINE ('CHECK_DATA_05', 'DIF_s0 value is unphysical', 0, &
             2) 
-         WRITE (UNIT_LOG, 1110) DIF_S0 
+            WRITE (UNIT_LOG, 1110) DIF_S0 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !
 ! CHECK MW_AVG
 !
       IF (SPECIES_EQ(0)) THEN 
-         IF (MW_AVG /= UNDEFINED) THEN 
-            WRITE (UNIT_LOG, 1410) 
-            MW_AVG = UNDEFINED 
-         ENDIF 
+            IF (MW_AVG /= UNDEFINED) THEN 
+               WRITE (UNIT_LOG, 1410) 
+               MW_AVG = UNDEFINED 
+            ENDIF 
       ELSE 
          IF (RO_G0 == UNDEFINED) THEN 
             IF (MW_AVG <= ZERO) THEN 
                CALL ERROR_ROUTINE ('CHECK_DATA_05', 'MW_AVG is unphysical', 0, &
                   2) 
-               WRITE (UNIT_LOG, 1200) MW_AVG 
+                  WRITE (UNIT_LOG, 1200) MW_AVG 
                CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
             ENDIF 
          ELSE 
             IF (RO_G0 < ZERO) THEN 
                CALL ERROR_ROUTINE ('CHECK_DATA_05', &
                   'Value of RO_g0 is unphysical', 0, 2) 
-               WRITE (UNIT_LOG, 1300) RO_G0 
+                  WRITE (UNIT_LOG, 1300) RO_G0 
                CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
             ENDIF 
             IF (MW_AVG /= UNDEFINED) WRITE (UNIT_LOG, 1400) 
@@ -170,7 +171,7 @@
             IF (MW_G(N) == UNDEFINED) THEN 
                CALL ERROR_ROUTINE ('CHECK_DATA_05', &
                   'Value of MW_g not specified', 0, 2) 
-               WRITE (UNIT_LOG, 1500) N 
+                  WRITE (UNIT_LOG, 1500) N 
                CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
             ENDIF 
          END DO 
@@ -178,7 +179,7 @@
             IF (MW_G(N) /= UNDEFINED) THEN 
                CALL ERROR_ROUTINE ('CHECK_DATA_05', &
                   'MW_g defined for N > NMAX(0)', 0, 2) 
-               WRITE (UNIT_LOG, 1501) N 
+                  WRITE (UNIT_LOG, 1501) N 
                CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
             ENDIF 
          END DO 

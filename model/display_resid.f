@@ -31,6 +31,7 @@
       USE physprop
       USE residual
       USE fldvar
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -54,6 +55,7 @@
 ! 
   
 !
+      if (myPE.ne.PE_IO) return    !//???? only for root ????
 !
       IF (NIT == 1) THEN 
          WRITE (*, '(A, $)') '  Nit' 

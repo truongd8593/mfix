@@ -33,6 +33,7 @@
       USE pscor
       USE ur_facs 
       USE constant
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

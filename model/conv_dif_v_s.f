@@ -129,6 +129,7 @@
       USE toleranc 
       USE fldvar
       USE output
+      USE compar    !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -344,6 +345,7 @@
       USE output
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
+      USE compar    !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -632,6 +634,7 @@
       USE output
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
+      USE compar   !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

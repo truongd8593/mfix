@@ -1,6 +1,3 @@
-!
-!
-!
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: TIME_MARCH                                             C
@@ -55,6 +52,7 @@
       USE visc_g
       USE visc_s
       USE funits 
+      USE compar               !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -149,20 +147,21 @@
 !
 !
 !
-      IF (RUN_TYPE == 'NEW') THEN 
+      if (myPE.eq.PE_IO) then        !//
+       IF (RUN_TYPE == 'NEW') THEN 
          RES_TIME = TIME 
          SPX_TIME(:N_SPX) = TIME 
          L = N_SPX + 1 
-      ELSE 
+       ELSE 
          IF (DT /= UNDEFINED) THEN 
             RES_TIME = (INT((TIME + 0.1*DT)/RES_DT) + 1)*RES_DT 
             SPX_TIME(:N_SPX) = (INT((TIME + 0.1*DT)/SPX_DT(:N_SPX))+1)*SPX_DT(:&
                N_SPX) 
             L = N_SPX + 1 
          ENDIF 
-      ENDIF 
+       ENDIF 
 !
-      DO L = 1, DIMENSION_USR 
+       DO L = 1, DIMENSION_USR 
          USR_TIME(L) = UNDEFINED 
          IF (USR_DT(L) /= UNDEFINED) THEN 
             IF (RUN_TYPE == 'NEW') THEN 
@@ -171,7 +170,8 @@
                USR_TIME(L) = (INT((TIME + 0.1*DT)/USR_DT(L))+1)*USR_DT(L) 
             ENDIF 
          ENDIF 
-      END DO 
+       END DO
+    end if             !//
 !
 !   Parse residual strings
 !
@@ -225,7 +225,7 @@
       END DO 
 
 !
-!  Initialize d's and e's to zero
+!  Initialize d's and e's to zero   !//? pnicol : ??????
 !
       DO M = 0, MMAX 
          CALL ZERO_ARRAY (D_E(1,M), IJKMAX2, IER) 
@@ -261,14 +261,16 @@
 !
 ! Write standard output, if needed
 !
-      IF (OUT_DT /= UNDEFINED) THEN 
-         IF (DT == UNDEFINED) THEN 
-            CALL WRITE_OUT1 
-         ELSE IF (TIME + 0.1*DT>=OUT_TIME .OR. TIME+0.1*DT>=TSTOP) THEN 
-            OUT_TIME = (INT((TIME + 0.1*DT)/OUT_DT) + 1)*OUT_DT 
-            CALL WRITE_OUT1 
+      if (myPE.eq.PE_IO) then       !//
+         IF (OUT_DT /= UNDEFINED) THEN 
+            IF (DT == UNDEFINED) THEN 
+               CALL WRITE_OUT1 
+            ELSE IF (TIME + 0.1*DT>=OUT_TIME .OR. TIME+0.1*DT>=TSTOP) THEN 
+               OUT_TIME = (INT((TIME + 0.1*DT)/OUT_DT) + 1)*OUT_DT 
+               CALL WRITE_OUT1 
+            ENDIF 
          ENDIF 
-      ENDIF 
+      end if                          !//
 !
 ! Write restart file, if needed
 !
@@ -278,22 +280,42 @@
             CALL WRITE_RES1 
             RES_MSG = .FALSE. 
             WRITE (UNIT_LOG, '('' t='',F10.4, ''  Wrote RES;'')', ADVANCE='NO') TIME 
-            IF (FULL_LOG) WRITE (*, 1000,  ADVANCE='NO') TIME 
+            IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME  !//
          ENDIF 
       ELSE IF (TIME + 0.1*DT>=RES_TIME .OR. TIME+0.1*DT>=TSTOP) THEN 
          RES_TIME = (INT((TIME + 0.1*DT)/RES_DT) + 1)*RES_DT 
          CALL WRITE_RES1 
          RES_MSG = .FALSE. 
          WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME 
-         IF (FULL_LOG) WRITE (*, 1000,  ADVANCE='NO') TIME 
+         IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME   !//
       ENDIF 
 !
 ! Write SPx files, if needed
 !
-      ISPX = 0 
-      DO L = 1, N_SPX 
-         IF (DT == UNDEFINED) THEN 
-            IF (FINISH) THEN 
+      if (myPE.eq.PE_IO) then         !//
+         ISPX = 0 
+         DO L = 1, N_SPX 
+            IF (DT == UNDEFINED) THEN 
+               IF (FINISH) THEN 
+                  CALL WRITE_SPX1 (L) 
+                  DISK_TOT = DISK_TOT + DISK(L) 
+                  ISPX = ISPX + 1 
+!
+                  IF (SPX_MSG) THEN 
+                     IF (RES_MSG) THEN 
+                        WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME 
+                        IF (FULL_LOG) WRITE (*, 1001,  ADVANCE='NO') TIME 
+                     ELSE 
+                        WRITE (UNIT_LOG, 1002,  ADVANCE='NO') 
+                        IF (FULL_LOG) WRITE (*, 1002,  ADVANCE='NO') 
+                     ENDIF 
+                     SPX_MSG = .FALSE. 
+                  ENDIF 
+                  WRITE (UNIT_LOG, 1010,  ADVANCE='NO') L 
+                  IF (FULL_LOG) WRITE (*, 1010,  ADVANCE='NO') L 
+               ENDIF 
+            ELSE IF (TIME + 0.1*DT>=SPX_TIME(L) .OR. TIME+0.1*DT>=TSTOP) THEN 
+               SPX_TIME(L) = (INT((TIME + 0.1*DT)/SPX_DT(L))+1)*SPX_DT(L) 
                CALL WRITE_SPX1 (L) 
                DISK_TOT = DISK_TOT + DISK(L) 
                ISPX = ISPX + 1 
@@ -311,36 +333,18 @@
                WRITE (UNIT_LOG, 1010,  ADVANCE='NO') L 
                IF (FULL_LOG) WRITE (*, 1010,  ADVANCE='NO') L 
             ENDIF 
-         ELSE IF (TIME + 0.1*DT>=SPX_TIME(L) .OR. TIME+0.1*DT>=TSTOP) THEN 
-            SPX_TIME(L) = (INT((TIME + 0.1*DT)/SPX_DT(L))+1)*SPX_DT(L) 
-            CALL WRITE_SPX1 (L) 
-            DISK_TOT = DISK_TOT + DISK(L) 
-            ISPX = ISPX + 1 
-!
-            IF (SPX_MSG) THEN 
-               IF (RES_MSG) THEN 
-                  WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME 
-                  IF (FULL_LOG) WRITE (*, 1001,  ADVANCE='NO') TIME 
-               ELSE 
-                  WRITE (UNIT_LOG, 1002,  ADVANCE='NO') 
-                  IF (FULL_LOG) WRITE (*, 1002,  ADVANCE='NO') 
-               ENDIF 
-               SPX_MSG = .FALSE. 
-            ENDIF 
-            WRITE (UNIT_LOG, 1010,  ADVANCE='NO') L 
-            IF (FULL_LOG) WRITE (*, 1010,  ADVANCE='NO') L 
-         ENDIF 
-      END DO 
+         END DO 
+      end if                         !//
       IF (.NOT.SPX_MSG) THEN 
          DO L = 1, N_SPX - ISPX 
             WRITE (UNIT_LOG, '(A,$)') '   ' 
-            IF (FULL_LOG) WRITE (*, '(A,$)') '   ' 
+            IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, '(A,$)') '   '  !//
          END DO 
          WRITE (UNIT_LOG, 1015) DISK_TOT 
-         IF (FULL_LOG) WRITE (*, 1015) DISK_TOT 
+         IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, 1015) DISK_TOT    !//
       ELSE IF (.NOT.RES_MSG) THEN 
          WRITE (UNIT_LOG, *) 
-         IF (FULL_LOG) WRITE (*, *) 
+         IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, *)    !//
       ENDIF 
 !
       RES_MSG = .TRUE. 
@@ -349,23 +353,25 @@
 !
 !  Write special output, if needed
 !
-      DO L = 1, DIMENSION_USR 
+      if (myPE.eq.PE_IO) then           !//
+        DO L = 1, DIMENSION_USR 
          IF (DT == UNDEFINED) THEN 
             IF (FINISH) CALL WRITE_USR1 (L) 
          ELSE IF (USR_TIME(L)/=UNDEFINED .AND. TIME+0.1*DT>=USR_TIME(L)) THEN 
             USR_TIME(L) = (INT((TIME + 0.1*DT)/USR_DT(L))+1)*USR_DT(L) 
             CALL WRITE_USR1 (L) 
          ENDIF 
-      END DO 
-      IF (DT == UNDEFINED) THEN 
+        END DO 
+        IF (DT == UNDEFINED) THEN 
          IF (FINISH) THEN 
             RETURN  
          ELSE 
             FINISH = .TRUE. 
          ENDIF 
-      ELSE IF (TIME + 0.1*DT >= TSTOP) THEN 
+        ELSE IF (TIME + 0.1*DT >= TSTOP) THEN 
          RETURN  
-      ENDIF 
+        ENDIF 
+      end if                !//
 !
 !  Update previous-time-step values of field variables
 !

@@ -64,6 +64,7 @@
       USE trace
       USE indices
       USE constant
+      USE compar    !//d
       IMPLICIT NONE
 !                      Maximum value of solids viscosity in poise
       DOUBLE PRECISION MAX_MU_s

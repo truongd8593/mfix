@@ -32,6 +32,8 @@
       USE param1 
       USE run
       USE funits 
+      USE compar           !// 
+      USE mpi_utility      !//
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -51,6 +53,8 @@
       CHARACTER :: VERSION*512 
 !-----------------------------------------------
 !
+!
+      if (myPE.ne.PE_IO) return    !// 
 !
       VERSION = 'SPx = 02.00' 
       WRITE (VERSION(3:3), 1000) L 

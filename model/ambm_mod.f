@@ -2,6 +2,8 @@ MODULE ambm
 
       Use param
       Use param1
+      Use compar        !//d
+      use mpi_utility   !//d
 
 
 ! IMPORTANT:  For using these arrays in a subroutine
@@ -26,9 +28,14 @@ MODULE ambm
       
    CONTAINS
       SUBROUTINE lock_ambm
-        IF(ambm_locked)Then
-	  Write(*,*)'Error:  Multiple use of ambm (ambm_mod.f)'
-	  Stop
+        IF(ambm_locked)Then          
+          if (myPE.eq.PE_IO) then  !//  ??? probable not correct ??? pnicol
+                                    !//  ??? check on per node ???
+                                    !//  ??? is it OK for more than one
+                                    !//  ??? node to lock_ambm  ?????
+	     Write(*,*)'Error:  Multiple use of ambm (ambm_mod.f)'
+	     call exitMPI(myPE)    !//
+          end if                    !//
 	Else
 	  ambm_locked = .true.
 	Endif

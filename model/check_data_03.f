@@ -47,6 +47,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !-----------------------------------------------
+
       IF (XMIN < ZERO) WRITE (UNIT_LOG, 990) 
 !
 ! If no variation in a direction is considered, the number of cells in
@@ -54,8 +55,8 @@
 !
       IF (NO_I) THEN 
 !
-         WRITE (UNIT_LOG, 995)                   !disabled 
-         STOP  
+         WRITE (UNIT_LOG, 995) 
+         STOP
 !
 !        IF(IMAX .EQ. UNDEFINED_I) IMAX = 1
 !        IF(DX(1) .EQ. UNDEFINED .AND. XLENGTH .EQ. UNDEFINED) THEN
@@ -65,8 +66,8 @@
       ENDIF 
       IF (NO_J) THEN 
 !
-         WRITE (UNIT_LOG, 996)                   !disabled 
-         STOP  
+            WRITE (UNIT_LOG, 996)  
+            STOP
 !
 !        IF(JMAX .EQ. UNDEFINED_I) JMAX = 1
 !        IF(DY(1) .EQ. UNDEFINED .AND. YLENGTH .EQ. UNDEFINED) THEN
@@ -87,16 +88,16 @@
          ENDIF 
       ENDIF 
       IF (NO_I .AND. IMAX>1) THEN 
-         WRITE (UNIT_LOG, 1000) 
-         STOP  
+            WRITE (UNIT_LOG, 1000) 
+            STOP  
       ENDIF 
       IF (NO_J .AND. JMAX>1) THEN 
-         WRITE (UNIT_LOG, 1100) 
-         STOP  
+            WRITE (UNIT_LOG, 1100) 
+            STOP  
       ENDIF 
       IF (NO_K .AND. KMAX>1) THEN 
-         WRITE (UNIT_LOG, 1200) 
-         STOP  
+            WRITE (UNIT_LOG, 1200) 
+            STOP  
       ENDIF 
 !
 ! CHECK THE DATA FOR THE INDIVIDUAL AXES
@@ -116,14 +117,14 @@
       IF (COORDINATES == 'CYLINDRICAL') THEN 
          CYLINDRICAL = .TRUE. 
          IF (CYCLIC_X .OR. CYCLIC_X_PD) THEN 
-            WRITE (UNIT_LOG, 1250) 
-            STOP  
+               WRITE (UNIT_LOG, 1250) 
+               STOP 
          ENDIF 
       ELSE IF (COORDINATES == 'CARTESIAN') THEN 
          CYLINDRICAL = .FALSE. 
       ELSE 
-         WRITE (UNIT_LOG, 1300) 
-         STOP  
+            WRITE (UNIT_LOG, 1300) 
+            STOP  
       ENDIF 
 !
 ! calculate IMAX1, IMAX2, etc. and shift the DX,DY,DZ arrays to take into
@@ -136,22 +137,22 @@
 !
       IF (CYCLIC_X .OR. CYCLIC_X_PD) THEN 
          IF (DX(IMIN1) /= DX(IMAX1)) THEN 
-            WRITE (UNIT_LOG, 1400) DX(IMIN1), DX(IMAX1) 
-            STOP  
+               WRITE (UNIT_LOG, 1400) DX(IMIN1), DX(IMAX1) 
+               STOP 
          ENDIF 
       ENDIF 
 !
       IF (CYCLIC_Y .OR. CYCLIC_Y_PD) THEN 
          IF (DY(JMIN1) /= DY(JMAX1)) THEN 
-            WRITE (UNIT_LOG, 1410) DY(JMIN1), DY(JMAX1) 
-            STOP  
+               WRITE (UNIT_LOG, 1410) DY(JMIN1), DY(JMAX1) 
+               STOP  
          ENDIF 
       ENDIF 
 !
       IF (CYCLIC_Z .OR. CYCLIC_Z_PD .OR. CYLINDRICAL) THEN 
          IF (DZ(KMIN1) /= DZ(KMAX1)) THEN 
-            WRITE (UNIT_LOG, 1420) DZ(KMIN1), DZ(KMAX1) 
-            STOP  
+               WRITE (UNIT_LOG, 1420) DZ(KMIN1), DZ(KMAX1) 
+               STOP 
          ENDIF 
       ENDIF 
 !
@@ -159,11 +160,11 @@
 !
       IF (IJKMAX2 > DIMENSION_3) THEN 
          CALL ERROR_ROUTINE ('check_data_03', 'dimension error', 0, 2) 
-         WRITE (UNIT_LOG, *) '(IMAX+2)*(JMAX+2)*(KMAX+2) = ', IJKMAX2 
-         WRITE (UNIT_LOG, *) 'DIMENSION_3 in param.inc = ', DIMENSION_3 
-         WRITE (UNIT_LOG, *) 'modify param.inc and recompile .... or' 
-         WRITE (UNIT_LOG, *) 'change dimensions in mfix.dat', &
-            ' ... whichever is appropriate' 
+            WRITE (UNIT_LOG, *) '(IMAX+2)*(JMAX+2)*(KMAX+2) = ', IJKMAX2 
+            WRITE (UNIT_LOG, *) 'DIMENSION_3 in param.inc = ', DIMENSION_3 
+            WRITE (UNIT_LOG, *) 'modify param.inc and recompile .... or' 
+            WRITE (UNIT_LOG, *) 'change dimensions in mfix.dat', &
+               ' ... whichever is appropriate' 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !

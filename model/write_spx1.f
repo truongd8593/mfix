@@ -37,7 +37,9 @@
       USE run
       USE funits 
       USE output
-      USE tmp_array
+      USE compar           !//
+      USE mpi_utility      !//
+!//       USE tmp_array
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -57,6 +59,10 @@
 !
 ! local variables
 !
+!//
+      double precision, allocatable :: array1(:)     !//
+      double precision, allocatable :: array2(:)     !//
+
 !             loop counters
       INTEGER LC, N
 !
@@ -67,8 +73,11 @@
       INTEGER  NUM_REC
 !-----------------------------------------------
 
-      call lock_tmp_array
+      if (myPE.ne.PE_IO) return    !//
+!//     call lock_tmp_array
 !
+      allocate (array1(ijkmax2))   !//
+      allocate (array2(ijkmax2))   !//
 !
 ! ".SP1" FILE         EP_g    [ ROP_g, RO_g  must be calculated ...
 !                                        not written out ]
@@ -79,7 +88,8 @@
          NUM_REC = NEXT_REC 
          WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
          NEXT_REC = NEXT_REC + 1 
-         call convert_to_io_dp(EP_g,array1,ijkmax2)
+         call gather (EP_g,array2,root)   !//
+         call convert_to_io_dp(array2,array1,ijkmax2)
          CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
          NUM_REC = NEXT_REC - NUM_REC 
          WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
@@ -92,9 +102,11 @@
          NUM_REC = NEXT_REC 
          WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
          NEXT_REC = NEXT_REC + 1 
-         call convert_to_io_dp(P_g,array1,ijkmax2)
+         call gather (P_g,array2,root)   !//
+         call convert_to_io_dp(array2,array1,ijkmax2)
          CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
-         call convert_to_io_dp(P_STAR,array1,ijkmax2)
+         call gather (P_star,array2,root)   !//
+         call convert_to_io_dp(array2,array1,ijkmax2)
          CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
          NUM_REC = NEXT_REC - NUM_REC 
          WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
@@ -107,11 +119,14 @@
          NUM_REC = NEXT_REC 
          WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
          NEXT_REC = NEXT_REC + 1 
-         call convert_to_io_dp(U_g,array1,ijkmax2)
+         call gather (U_g,array2,root)   !//
+         call convert_to_io_dp(array2,array1,ijkmax2)
          CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
-         call convert_to_io_dp(V_g,array1,ijkmax2)
+         call gather (V_g,array2,root)   !//
+         call convert_to_io_dp(array2,array1,ijkmax2)
          CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
-         call convert_to_io_dp(W_g,array1,ijkmax2)
+         call gather (W_g,array2,root)   !//
+         call convert_to_io_dp(array2,array1,ijkmax2)
          CALL OUT_BIN_R (UNIT_SPX + L,array1, IJKMAX2, NEXT_REC) 
          NUM_REC = NEXT_REC - NUM_REC 
          WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
@@ -125,11 +140,14 @@
          WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
          NEXT_REC = NEXT_REC + 1 
          DO LC = 1, MMAX 
-            call convert_to_io_dp(U_S(1,LC),array1,ijkmax2)
+            call gather (U_s(:,LC),array2,root)   !//
+            call convert_to_io_dp(array2,array1,ijkmax2)
             CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
-            call convert_to_io_dp(V_S(1,LC),array1,ijkmax2)
+            call gather (V_s(:,LC),array2,root)   !//
+            call convert_to_io_dp(array2,array1,ijkmax2)
             CALL OUT_BIN_R (UNIT_SPX + L,array1 , IJKMAX2, NEXT_REC) 
-            call convert_to_io_dp(W_S(1,LC),array1,ijkmax2)
+            call gather (W_s(:,LC),array2,root)   !//
+            call convert_to_io_dp(array2,array1,ijkmax2)
             CALL OUT_BIN_R (UNIT_SPX + L,array1, IJKMAX2, NEXT_REC) 
          END DO 
          NUM_REC = NEXT_REC - NUM_REC 
@@ -144,7 +162,8 @@
          WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
          NEXT_REC = NEXT_REC + 1 
          DO LC = 1, MMAX 
-            call convert_to_io_dp(ROP_S(1,LC),array1,ijkmax2)
+            call gather (ROP_s(:,LC),array2,root)   !//
+            call convert_to_io_dp(array2,array1,ijkmax2)
             CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
          END DO 
          NUM_REC = NEXT_REC - NUM_REC 
@@ -158,10 +177,12 @@
          NUM_REC = NEXT_REC 
          WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
          NEXT_REC = NEXT_REC + 1 
-         call convert_to_io_dp(T_g,array1,ijkmax2)
+         call gather (T_g,array2,root)   !//
+         call convert_to_io_dp(array2,array1,ijkmax2)
          CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
          DO LC = 1, MMAX 
-            call convert_to_io_dp(T_S(1,LC),array1,ijkmax2)
+            call gather (T_s(:,LC),array2,root)   !//
+            call convert_to_io_dp(array2,array1,ijkmax2)
             CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
          END DO 
          NUM_REC = NEXT_REC - NUM_REC 
@@ -176,12 +197,14 @@
          WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
          NEXT_REC = NEXT_REC + 1 
          DO N = 1, NMAX(0) 
-            call convert_to_io_dp(X_G(1,N),array1,ijkmax2)
+            call gather (X_G(:,N),array2,root)   !//
+            call convert_to_io_dp(array2,array1,ijkmax2)
             CALL OUT_BIN_R (UNIT_SPX + L,array1 , IJKMAX2, NEXT_REC) 
          END DO 
          DO LC = 1, MMAX 
             DO N = 1, NMAX(LC) 
-               call convert_to_io_dp(X_S(1,LC,N),array1,ijkmax2)
+               call gather (X_s(:,LC,N),array2,root)  !//
+               call convert_to_io_dp(array2,array1,ijkmax2)
                CALL OUT_BIN_R (UNIT_SPX + L,array1, IJKMAX2, NEXT_REC) 
             END DO 
          END DO 
@@ -197,7 +220,8 @@
          WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
          NEXT_REC = NEXT_REC + 1 
          DO LC = 1, MMAX 
-            call convert_to_io_dp(THETA_M(1,LC),array1,ijkmax2)
+            call gather (THETA_m(:,LC),array2,root)   !//
+            call convert_to_io_dp(array2,array1,ijkmax2)
             CALL OUT_BIN_R (UNIT_SPX + L,array1 , IJKMAX2, NEXT_REC) 
          END DO 
          NUM_REC = NEXT_REC - NUM_REC 
@@ -207,7 +231,10 @@
 !
       END SELECT 
 
-      call unlock_tmp_array
+!//      call unlock_tmp_array
+!
+      deallocate (array1)    !//
+      deallocate (array2)    !//
 !
       RETURN  
       END SUBROUTINE WRITE_SPX1 

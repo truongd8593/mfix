@@ -39,6 +39,7 @@
       USE indices
       USE pgcor
       USE pscor
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

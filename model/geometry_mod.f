@@ -278,6 +278,10 @@
 !
 !
           common /geometry_i/imin1, imax1, jmin1, jmax1 !for Linux 
+
+!     ADDED FOLLOWING VARIABLES TO TAKE CARE OF THE NEW CONVENTION - Pannala - 08/11/99
+
+      INTEGER IMIN3,JMIN3,KMIN3,IMAX3,JMAX3,KMAX3, IMIN2, JMIN2, KMIN2
  
  
 !HPF$ align FLAG(:) with TT(:)

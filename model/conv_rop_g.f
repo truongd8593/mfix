@@ -100,6 +100,7 @@
       USE geometry
       USE indices
       USE pgcor
+      USE compar    !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -209,6 +210,7 @@
       USE indices
       USE pgcor
       Use xsi_array
+      USE compar     !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

@@ -20,7 +20,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX) 
+      SUBROUTINE OPEN_FILES(RUN_NAME, RUN_TYPE, NN_SPX) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -29,6 +29,7 @@
 !-----------------------------------------------
       USE machine 
       USE funits 
+      USE geometry           !//
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -44,7 +45,7 @@
       CHARACTER*(*) RUN_TYPE
 !
 !                   number of single precision output files (param.inc)
-      INTEGER       N_SPX
+      INTEGER       NN_SPX
 !
 ! local variables
 !
@@ -66,6 +67,7 @@
 !
 ! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
 !
+
       DO LC = 1, LEN(RUN_NAME) 
          IF (RUN_NAME(LC:LC) == ' ') THEN 
             NB = LC 
@@ -107,7 +109,7 @@
             GO TO 600 
          ENDIF 
 !
-         DO LC = 1, N_SPX 
+         DO LC = 1, NN_SPX 
             WRITE (EXT(4:4), 1000) LC 
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'NEW'&
                , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
@@ -120,7 +122,7 @@
             WRITE (*, 1002) FILE_NAME 
             GO TO 600 
          ENDIF 
-         DO LC = 1, N_SPX 
+         DO LC = 1, NN_SPX 
             WRITE (EXT(4:4), 1000) LC 
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'OLD'&
                , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
@@ -133,7 +135,7 @@
             WRITE (*, 1002) FILE_NAME 
             GO TO 600 
          ENDIF 
-         DO LC = 1, N_SPX 
+         DO LC = 1, NN_SPX 
             WRITE (EXT(4:4), 1000) LC 
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'NEW'&
                , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 

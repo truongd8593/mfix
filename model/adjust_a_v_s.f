@@ -36,6 +36,7 @@
       USE geometry
       USE run
       USE indices
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

@@ -46,6 +46,7 @@
       USE rxns
       Use ambm
       Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

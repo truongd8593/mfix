@@ -47,18 +47,23 @@
 ! local variables
 !
 !                      single precision version of ARRAY
-      REAL             ARRAY_REAL(DIMENSION_3)
+!//     REAL             ARRAY_REAL(DIMENSION_3)
 !
+      real, allocatable :: array_real(:)    ! pnicol
 !                      loop counter
       INTEGER          LC
 !-----------------------------------------------
 !
+      allocate (array_real(ijkmax2))   !//
+
       LC = 1 
       IF (IJKMAX2 > 0) THEN 
          ARRAY_REAL(:IJKMAX2) = SNGL(ARRAY(:IJKMAX2)) 
          LC = IJKMAX2 + 1 
       ENDIF 
       CALL OUT_BIN_512R (IUNIT, ARRAY_REAL, IJKMAX2, NEXT_REC) 
+
+      deallocate (array_real)        !//
 !
       RETURN  
       END SUBROUTINE OUT_BIN_R 

@@ -28,6 +28,7 @@
 !   M o d u l e s 
 !-----------------------------------------------
       USE funits 
+      USE compar     !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -38,17 +39,21 @@
 !-----------------------------------------------
 !-----------------------------------------------
 !
-      WRITE (*, 1000) 
-      WRITE (*, *) ' ' 
-      WRITE (*, *) ' Total CPU time used = ', CPU, 'seconds' 
-      WRITE (*, *) ' ' 
-      WRITE (*, 1000) 
+      if (myPE.eq.PE_IO) then   !//d
+
+         WRITE (*, 1000) 
+         WRITE (*, *) ' ' 
+         WRITE (*, *) ' Total CPU time used = ', CPU, 'seconds' 
+         WRITE (*, *) ' ' 
+         WRITE (*, 1000) 
 !C
-      WRITE (UNIT_OUT, 1000) 
-      WRITE (UNIT_OUT, *) ' ' 
-      WRITE (UNIT_OUT, *) ' Total CPU time used = ', CPU, 'seconds' 
-      WRITE (UNIT_OUT, *) ' ' 
-      WRITE (UNIT_OUT, 1000) 
+         WRITE (UNIT_OUT, 1000) 
+         WRITE (UNIT_OUT, *) ' ' 
+         WRITE (UNIT_OUT, *) ' Total CPU time used = ', CPU, 'seconds' 
+         WRITE (UNIT_OUT, *) ' ' 
+         WRITE (UNIT_OUT, 1000) 
+
+      end if                      !//
 !
       CALL START_LOG 
       WRITE (UNIT_LOG, 1000) 

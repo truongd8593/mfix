@@ -59,7 +59,9 @@
       USE ur_facs 
       USE leqsol 
       USE toleranc 
-      USE tmp_array
+      USE compar           !//
+      USE mpi_utility      !// for gather
+!//       USE tmp_array    !// no longer using these arrays
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -71,6 +73,10 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !
+!//  ... temporary arrays
+!
+      integer, allocatable :: arr1(:)
+      integer, allocatable :: arr2(:)
 !
 !                loop counters
       INTEGER :: LC, L, N
@@ -82,7 +88,11 @@
       CHARACTER :: VERSION*512 
 !-----------------------------------------------
 !
-      call lock_tmp_array      
+      if (myPE.ne.PE_IO) return       !// 
+      allocate (arr1(ijkmax2))        !// 
+      allocate (arr2(ijkmax2))        !// 
+
+!//      call lock_tmp_array          !// no longer using these arrays
 !
       NEXT_RECA = 5 
 !
@@ -102,16 +112,13 @@
       CALL OUT_BIN_512 (UNIT_RES, C, DIMENSION_C, NEXT_RECA) 
       NEXT_RECA = 1 + NEXT_RECA                  ! work around for -O3 compiler bug 
       NEXT_RECA = NEXT_RECA - 1 
-!      write(*,*)next_reca
       DO LC = 1, DIMENSION_C 
-!        write(*,*)next_reca,LC
          WRITE (UNIT_RES, REC=NEXT_RECA) C_NAME(LC) 
          NEXT_RECA = NEXT_RECA + 1 
       END DO 
       WRITE (UNIT_RES, REC=NEXT_RECA) (NMAX(L),L=0,MMAX) 
       NEXT_RECA = NEXT_RECA + 1 
 !
-!      CALL OUT_BIN_512I (UNIT_RES, NMAX, MMAX+1, NEXT_RECA)
       CALL OUT_BIN_512 (UNIT_RES, DX, IMAX2, NEXT_RECA) 
       CALL OUT_BIN_512 (UNIT_RES, DY, JMAX2, NEXT_RECA) 
       CALL OUT_BIN_512 (UNIT_RES, DZ, KMAX2, NEXT_RECA) 
@@ -201,8 +208,9 @@
          NEXT_RECA = NEXT_RECA + 1 
       END DO 
 !
-      call convert_to_io_i(flag,array1i,ijkmax2)
-      CALL OUT_BIN_512I (UNIT_RES, array1i, IJKMAX2, NEXT_RECA) 
+      call gather (flag,arr1,root)                               !// 
+      call convert_to_io_i(arr1,arr2,ijkmax2)                    !//
+      CALL OUT_BIN_512I (UNIT_RES, arr2, IJKMAX2, NEXT_RECA)     !//
 !
       CALL OUT_BIN_512 (UNIT_RES, IS_X_W, DIMENSION_IS, NEXT_RECA) 
       CALL OUT_BIN_512 (UNIT_RES, IS_X_E, DIMENSION_IS, NEXT_RECA) 
@@ -320,6 +328,10 @@
 !---------------------------------------------------------------------------
       WRITE (UNIT_RES, REC=3) NEXT_RECA 
       CALL FLUSH (UNIT_RES) 
-      call unlock_tmp_array
+
+!//      call unlock_tmp_array   
+      deallocate (arr1)              !//
+      deallocate (arr2)              !//
+
       RETURN  
       END SUBROUTINE WRITE_RES0 

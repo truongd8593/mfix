@@ -48,6 +48,7 @@
       Use tmp_array, S_p => ARRAY1, S_C => ARRAY2, EPs => ARRAY3, &
                      ROPxCp => ARRAY4
       Use tmp_array1, VxGama => ARRAYm1
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

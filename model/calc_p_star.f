@@ -34,6 +34,7 @@
       USE pscor
       USE ur_facs 
       USE residual
+      USE compar     !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

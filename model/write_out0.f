@@ -20,13 +20,13 @@
 !                        MW_AVG, IC_DEFINED, IC_X_w, IC_X_e, IC_Y_s    C
 !                        IC_Z_b, IC_Z_t, IC_I_w, IC_I_e, IC_J_s        C
 !                        IC_J_n, IC_K_b, IC_K_t, IC_EP_g, IC_P_g       C
-!                        IC_U_g, IC_V_g, IC_W_g, IC_ROP_s, IC_T_s     C
-!                        IC_U_s, IC_V_s, IC_W_s, BC_DEFINED   C
+!                        IC_U_g, IC_V_g, IC_W_g, IC_ROP_s, IC_T_s      C
+!                        IC_U_s, IC_V_s, IC_W_s, BC_DEFINED            C
 !                        BC_TYPE, BC_X_w, BC_X_e, BC_Y_s, BC_Y_n       C
 !                        BC_Z_b, BC_Z_t, BC_I_w, BC_I_e, BC_J_s        C
 !                        BC_J_n, BC_Z_b, BC_Z_t, BC_EP_g, BC_P_g       C
 !                        BC_T_g, BC_U_g, BC_V_g, BC_W_g, BC_ROP_s      C
-!                        BC_T_s, BC_U_s, BC_V_s, BC_W_s      C
+!                        BC_T_s, BC_U_s, BC_V_s, BC_W_s                C
 !                        ICBC_FLAG, IMIN1, JMIN1, KMIN1, ID_NODE       C
 !                        ID_VERSION, RO_g0                             C
 !  Variables modified: M                                               C
@@ -59,6 +59,8 @@
       USE scales 
       USE ur_facs 
       USE leqsol 
+      USE compar         !//d
+      USE mpi_utility    !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -81,12 +83,18 @@
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: LOCATION 
 !-----------------------------------------------
+
+!
+      character*3, allocatable :: array1(:)   !//d
 !
 !
 !
 !                      Coefficient of restitution (old symbol)
       DATA DISCR_NAME/'FOUP', 'FOUP', 'Superbee', 'Smart', 'Ultra-Quick', &
          'QUICKEST', 'Muscl', 'VanLeer', 'Minmod'/ 
+
+      if (myPE.ne.PE_IO) return   !//d
+
 !
 !  Write Headers for .OUT file
 !
@@ -458,7 +466,10 @@
 !  Initial and boundary condition flags
 !
       WRITE (UNIT_OUT, 2000) CHAR(12) 
-      CALL OUT_ARRAY_C (ICBC_FLAG, 'BC/IC condition flags') 
+      allocate (array1(ijkmax2))            !//
+      call gather (icbc_flag,array1,root)   !//td pnicol : GATHER FOR CHARS NEEDED
+      CALL OUT_ARRAY_C (array1, 'BC/IC condition flags') 
+      deallocate (array1)                   !//
 !
 !  Echo user defined input data
 !

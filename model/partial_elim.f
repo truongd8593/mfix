@@ -32,6 +32,7 @@
       USE matrix 
       USE physprop
       USE indices
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -159,6 +160,7 @@
       USE physprop
       USE indices
       USE run
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -313,6 +315,7 @@
       USE physprop
       USE indices
       USE run
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -467,6 +470,7 @@
       USE physprop
       USE indices
       USE run
+      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
