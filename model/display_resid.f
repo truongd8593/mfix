@@ -32,6 +32,7 @@
       USE residual
       USE fldvar
       USE compar
+      USE geometry
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -52,7 +53,20 @@
 ! 
 !                      Phase index 
       INTEGER          M 
+!                      Print Location of Max_Resid
+      LOGICAL,PARAMETER:: Print_ijk=.FALSE.
 ! 
+!       ----------------------------------------------------------
+!       inline functions for determining i, j, k for global ijk_resid
+!       -----------------------------------------------------------
+        integer i_of_g,j_of_g,k_of_g, ijk
+
+        k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
+        i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1))) &
+                      - 1)/(jmax3-jmin3+1)) + imin3
+        j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
+                      (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + jmin3
+
   
 !
       if (myPE.ne.PE_IO) return   
@@ -84,12 +98,16 @@
 !
 !
 !     Display maximum values of residuals
-!      WRITE(*,'(A, G12.3, I6, A, G12.3, I6, A, G12.3)')
-!     & " Max Res/IJK: P_g: ", MAX_RESID(RESID_P, 0),
-!     & IJK_RESID(RESID_P, 0),
-!     & " P_s: ", MAX_RESID(RESID_p, 1),
-!     & IJK_RESID(RESID_p, 1),
-!     & " P_star=",  P_star(IJK_RESID(RESID_p, 1))
+      IF(PRINT_IJK) WRITE(*,'(A, G12.3, 3I6, A, G12.3, 3I6, A, G12.3)') &
+      & " Max Res/IJK: P_g: ", MAX_RESID(RESID_P, 0), &
+      & I_OF_G(IJK_RESID(RESID_P, 0)), &
+      & J_OF_G(IJK_RESID(RESID_P, 0)), &
+      & K_OF_G(IJK_RESID(RESID_P, 0)), &
+      & " P_s: ", MAX_RESID(RESID_p, 1), &
+      & I_OF_G(IJK_RESID(RESID_p, 1)), &
+      & J_OF_G(IJK_RESID(RESID_p, 1)), &
+      & K_OF_G(IJK_RESID(RESID_p, 1)), &
+      & " P_star=",  P_star(IJK_RESID(RESID_p, 1))
 !
       RETURN  
       END SUBROUTINE DISPLAY_RESID 
