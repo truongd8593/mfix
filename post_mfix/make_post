@@ -293,7 +293,7 @@ read delete_files
   case $delete_files in
   y|Y )
     echo "deleting files . . ."
-#   rm ../model/*.o ../model/*.mod ../model/*.a
+    /bin/rm -f ../model/*.o ../model/*.mod ../model/*.a
     /bin/rm -f *.o *.mod
     ;;
   *)
