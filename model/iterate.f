@@ -45,6 +45,7 @@
       USE cont
       USE scalars
       USE compar               !//d
+      USE mpi_utility               !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -102,6 +103,8 @@
       DOUBLE PRECISION RESs 
   
       DOUBLE PRECISION TLEFT 
+!//SP
+      LOGICAL          ABORT_IER
       CHARACTER*4 TUNIT 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -286,7 +289,11 @@
 !
 ! IER = 0
          CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
-         IF (IER == 1) THEN 
+!//SP
+	 abort_ier = ier.eq.1
+	 call global_all_or(abort_ier)
+         IF (abort_ier) THEN 
+	    ier = 1
             MUSTIT = 2                           !indicates divergence 
             IF(DT/=UNDEFINED)GO TO 1000 
          ENDIF 
@@ -317,7 +324,12 @@
 !
       IER = 0
       IF (GRANULAR_ENERGY) CALL SOLVE_GRANULAR_ENERGY (IER) 
-      IF (IER == 1) THEN 
+!//SP
+!     write(*,*) 'after GRANULAR_ENERGY', myPE, IER
+      abort_ier = ier.eq.1
+      call global_all_or(abort_ier)
+      IF (abort_ier) THEN
+         ier = 1
          MUSTIT = 2                              !indicates divergence 
          IF(DT/=UNDEFINED)GO TO 1000 
 !
@@ -330,11 +342,17 @@
 !
 !     Solve species mass balance equations
 !
+!//SP
+!     write(*,*) 'before SOLVE_SPECIES_EQ', myPE, IER
       CALL SOLVE_SPECIES_EQ (IER) 
+!     write(*,*) 'after SOLVE_SPECIES_EQ', myPE, IER
 !
 !     Solve other scalar transport equations
 !
+!//SP
+!     write(*,*) 'before SOLVE_Scalar_EQ', myPE, IER
       IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER) 
+!     write(*,*) 'after SOLVE_Scalar_EQ', myPE, IER
 
 
 
@@ -351,10 +369,12 @@
 !
 !
 !     Check for convergence
+!//SP
+!     write(*,*) 'before CHECK_CONVERGENCE, etc.,', myPE, NIT, MUSTIT, IER
 !
       CALL CHECK_CONVERGENCE (NIT, MUSTIT, IER) 
 !//SP
-!     write(*,*) 'after CHECK_CONVERGENCE, etc.,', myPE
+!     write(*,*) 'after CHECK_CONVERGENCE, etc.,', myPE, NIT, MUSTIT, IER
 !
 !      If not converged continue iterations; else exit subroutine.
 !

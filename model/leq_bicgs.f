@@ -174,6 +174,7 @@
 
 !//TEMP - SP
 !       write(*,*) 'before gather in conv_dif_phi'
+!	if(VNAME == 'Pp_g') then
 !       CALL gather(A_M, A_M_tmp)
 !       CALL gather(B_M, B_M_tmp)
 !       write(*,*) 'after gather in conv_dif_phi'
@@ -185,13 +186,21 @@
 !       do i = imin2, imax2
 
 !       ijk = funijk_gl(i,j,k)
-!       write(90,*) i,j,k,A_M_tmp(IJK,:), B_M_tmp(IJK), Var(ijk)
+!       write(*,*) i,j,k,ijk,A_M_tmp(IJK,:), B_M_tmp(IJK)
+!       write(90,*) i,j,k,A_M_tmp(IJK,:), B_M_tmp(IJK)
 
 !       enddo
 !       enddo
 !       enddo
+
 
 !       endif
+!call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+!if(myPE.eq.root) then
+!close(90)
+!endif
+!call mfix_exit(myPE)
+!endif
 
 !//end_TEMP
 
@@ -298,7 +307,7 @@
 !       V(:) = A*Phat(:)
 !       
 
-        call MSOLVE( Vname, P, A_m, Phat, CMETHOD )
+        call MSOLVE( Vname, P, A_m, Phat, CMETHOD)
 
         call MATVEC( Vname, Phat, A_m, V )
 
@@ -350,7 +359,7 @@
 !       Solve M Shat(:) = Svec(:)
 !       Tvec(:) = A * Shat(:)
 !
-        call MSOLVE( Vname, Svec, A_m, Shat, CMETHOD )
+        call MSOLVE( Vname, Svec, A_m, Shat, CMETHOD)
 
         
         call MATVEC( Vname, Shat, A_m, Tvec )
@@ -593,7 +602,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE LEQ_ISWEEP(I,Vname, VAR, A_M, B_M )
+      SUBROUTINE LEQ_ISWEEP(I,Vname, VAR, A_M, B_M)
 
 !-----------------------------------------------
 !   M o d u l e s
@@ -604,7 +613,9 @@
       USE geometry
       USE compar
       USE indices
+      USE funits
       USE sendrecv
+      USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -641,6 +652,7 @@
 
       INTEGER :: NSTART, NEND 
       DOUBLE PRECISION, DIMENSION (JSTART:JEND) :: CC,DD,EE,BB
+      DOUBLE PRECISION, DIMENSION (1:JEND-JSTART) :: DL, DU
       INTEGER :: INFO, IJK, J, K, IM1JK, IP1JK
 
       INCLUDE 'function.inc'
@@ -664,14 +676,15 @@
 
      CC(NSTART) = ZERO
      EE(NEND) = ZERO
+     DL(1:JEND-JSTART) = CC(NSTART+1:NEND)
+     DU(1:JEND-JSTART) = EE(NSTART:NEND-1)
      INFO = 0
 
-     CALL DGTSL( JEND-JSTART+1, CC, DD, EE, BB, INFO )
+!    CALL DGTSL( JEND-JSTART+1, CC, DD, EE, BB, INFO )
+     CALL DGTSV( JEND-JSTART+1, 1, DL, DD, DU, BB,  JEND-JSTART+1, INFO )
 
      IF (INFO.NE.0) THEN
-        PRINT *,'VNAME = ', VNAME
-        PRINT*,'DGTSL RETURNS INFO = ', INFO
-        STOP 'ERROR'
+	RETURN
      ENDIF
 
      DO J=NSTART, NEND
@@ -709,8 +722,10 @@
       USE matrix
       USE geometry
       USE compar
+      USE funits
       USE indices
       USE sendrecv
+      USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -733,6 +748,7 @@
 !
 !                      Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
+!
 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -744,21 +760,60 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      DOUBLE PRECISION, DIMENSION (JSTART:JEND) :: CC,DD,EE,BB
+      DOUBLE PRECISION, DIMENSION (JSTART:JEND) :: CC,DD,EE, BB
+      DOUBLE PRECISION, DIMENSION (1:JEND-JSTART) :: DL, DU
       INTEGER :: NSTART, NEND, INFO, IJK, J,  IM1JK, IP1JK, IJKM1, IJKP1
+      logical, parameter :: use_funijk = .false.
+      integer :: ccc, ci, cj, ck
+
+      integer :: ijk_c, im1jk_c,ip1jk_c, ijm1k_c,ijp1k_c, ijkm1_c,ijkp1_c
+
 
       INCLUDE 'function.inc'
+
+        if (use_funijk) then
+        i = istart3
+        j = jstart3
+        k = kstart3
+        cj = funijk(i,j+1,k) - funijk(i,j,k)
+        ck = funijk(i,j,k+1)-funijk(i,j,k)
+        ci = funijk(i+1,j,k) - funijk(i,j,k)
+        ccc = funijk(i,j,k) - (ci*i + cj*j  + ck*k)
+
+        ijk_c   = (ccc + ck*k + ci*i)
+        im1jk_c = (ccc + ck*k + ci*im1(i))
+        ip1jk_c = (ccc + ck*k + ci*ip1(i))
+
+        ijkm1_c = (ccc + ck*km1(k) + ci*i)
+        ijkp1_c = (ccc + ck*kp1(k) + ci*i)
+	endif
+
 
       NEND = JEND
       NSTART = JSTART
 
-!$omp parallel do private(j,ijk,im1jk,ip1jk,ijkm1,ijkp1)
+!!$omp parallel do private(j,ijk,im1jk,ip1jk,ijkm1,ijkp1)
       DO J=NSTART, NEND
+        if (use_funijk) then
+
+
+            ijk   = ijk_c   + cj*j
+
+            im1jk = im1jk_c + cj*j
+            ip1jk = ip1jk_c + cj*j
+
+            ijkm1 = ijkm1_c + cj*j
+            ijkp1 = ijkp1_c + cj*j
+
+        else
+
          IJK = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K))
          IM1JK = IM_OF(IJK)
          IP1JK = IP_OF(IJK)
          IJKM1 = KM_OF(IJK)
          IJKP1 = KP_OF(IJK)
+
+	endif
 	
          DD(J) = A_M(IJK,  0)
          CC(J) = A_M(IJK, -2)
@@ -772,17 +827,25 @@
 
      CC(NSTART) = ZERO
      EE(NEND) = ZERO
+     DL(1:JEND-JSTART) = CC(NSTART+1:NEND)
+     DU(1:JEND-JSTART) = EE(NSTART:NEND-1)
      INFO = 0
-     CALL DGTSL( JEND-JSTART+1, CC, DD, EE, BB, INFO )
+!    CALL DGTSL( JEND-JSTART+1, CC, DD, EE, BB, INFO )
+     CALL DGTSV( JEND-JSTART+1, 1, DL, DD, DU, BB,  JEND-JSTART+1, INFO )
 
      IF (INFO.NE.0) THEN
-        PRINT *,'VNAME = ', VNAME
-        PRINT*,'DGTSL RETURNS INFO = ', INFO
-        STOP 'ERROR'
+	write(*,*) 'leq_iksweep',INFO, myPE
+        RETURN
      ENDIF
 
+
       DO J=NSTART, NEND
+        if (use_funijk) then
+            ijk   = ijk_c   + cj*j
+	else
         IJK = FUNIJK(I,J,K)
+	endif
+
         Var(IJK) = BB(J)
      ENDDO
 
@@ -1201,6 +1264,7 @@
 !       call MPI_Barrier(MPI_COMM_WORLD,mpierr)
 !     endif
 
+        if (use_funijk) then
         i = istart3
         j = jstart3
         k = kstart3
@@ -1212,11 +1276,14 @@
         endif
         ci = funijk(i+1,j,k) - funijk(i,j,k)
         cc = funijk(i,j,k) - (ci*i + cj*j  + ck*k)
+	endif
 
       if (do_k) then
 
-!$omp parallel  do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
-!$omp parallel  do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+!$omp    parallel  do &
+!$omp&   private(ijk_c,im1jk_c,ip1jk_c,ijm1k_c,ijp1k_c,ijkm1_c,&
+!$omp&           ijkp1_c,ijk,k,i, &
+!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
         do k = kstart,kend
         do i = istart,iend
 
@@ -1272,9 +1339,9 @@
         enddo
 
       else
-!$omp parallel do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
-        do i = istart2,iend2
-        do j = jstart2,jend2
+!$omp parallel do private(i,j,k,ijk,   im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+        do i = istart,iend
+        do j = jstart,jend
 
         k = 1
 
@@ -1312,7 +1379,7 @@
       END SUBROUTINE LEQ_MATVEC
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: LEQ_MSOLVE(Vname, B_m, A_m, Var, CMETHOD )
+!  Module name: LEQ_MSOLVE(Vname, B_m, A_m, Var, CMETHOD)
 !  Purpose: Successive line over-relaxation method -- Cyclic bc        C
 !                                                                      C
 !  Author: Ed D'Azevedo                               Date: 21-JAN-99  C
@@ -1328,7 +1395,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_MSOLVE(VNAME, B_m, A_M, Var, CMETHOD )
+      SUBROUTINE LEQ_MSOLVE(VNAME, B_m, A_M, Var, CMETHOD)
 !
 !-----------------------------------------------
 !   M o d u l e s
@@ -1359,6 +1426,7 @@
 !
 !                      Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
+
 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -1399,9 +1467,9 @@
         enddo
         enddo
 
-     ENDIF
+     call send_recv(var,1)
 
-     call send_recv(var,2)
+     ENDIF
 
      NITER = LEN( CMETHOD )
 
@@ -1420,7 +1488,7 @@
 
 !$omp   parallel do private(I)
         DO I=istart,iend
-           CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m  )
+           CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
         ENDDO
 
       ENDIF
@@ -1432,7 +1500,7 @@
 !$omp   parallel do private(K,I)
         DO K=kstart,kend
           DO I=istart,iend
-             CALL LEQ_IKSWEEP( I,K, Vname, Var, A_m, B_m  )
+             CALL LEQ_IKSWEEP( I,K, Vname, Var, A_m, B_m )
           ENDDO
         ENDDO
       ENDIF
@@ -1704,6 +1772,7 @@
       USE param1
       USE matrix
       USE geometry
+      USE funits
       USE compar
       USE indices
       IMPLICIT NONE
@@ -1767,11 +1836,12 @@
      EE(NN) = ZERO
      INFO = 0
      CALL DGTSL( NN, CC, DD, EE, BB, INFO )
+!    CALL DGTSV( JEND-JSTART+1, 1, DL, DD, EE, BB,  JEND-JSTART+1, INFO )
 
      IF (INFO.NE.0) THEN
-        PRINT *,'VNAME = ', VNAME
-        PRINT*,'DGTSL RETURNS INFO = ', INFO
-        STOP 'ERROR'
+        write(unit_log,*) 'VNAME = ', VNAME
+        write(unit_log,*) 'DGTSV RETURNS INFO = ', INFO
+        call mfix_exit(myPE)
      ENDIF
 
      DO I=1,NN
@@ -1808,6 +1878,7 @@
       USE param1
       USE matrix
       USE geometry
+      USE funits
       USE compar
       USE indices
       IMPLICIT NONE
@@ -1864,13 +1935,15 @@
 
      CC(1) = ZERO
      EE(NN) = ZERO
+!    DL(1:NEND-1) = CC(2:NEND)
      INFO = 0
      CALL DGTSL( NN, CC, DD, EE, BB, INFO )
+!    CALL DGTSV( JEND-JSTART+1, 1, DL, DD, EE, BB,  JEND-JSTART+1, INFO )
 
      IF (INFO.NE.0) THEN
-        PRINT *,'VNAME = ', VNAME
-        PRINT*,'DGTSL RETURNS INFO = ', INFO
-        STOP 'ERROR'
+        write(unit_log,*) 'VNAME = ', VNAME
+        write(unit_log,*) 'DGTSV RETURNS INFO = ', INFO
+        call mfix_exit(myPE)
      ENDIF
 
      DO I=1,NN
@@ -1907,6 +1980,7 @@
       USE param1
       USE matrix
       USE geometry
+      USE funits
       USE compar
       USE indices
       IMPLICIT NONE
@@ -1964,13 +2038,15 @@
 
      CC(1) = ZERO
      EE(NN) = ZERO
+!    DL(1:NEND-1) = CC(2:NEND)
      INFO = 0
      CALL DGTSL( NN, CC, DD, EE, BB, INFO )
+!    CALL DGTSV( JEND-JSTART+1, 1, DL, DD, EE, BB,  JEND-JSTART+1, INFO )
 
      IF (INFO.NE.0) THEN
-        PRINT *,'VNAME = ', VNAME
-        PRINT*,'DGTSL RETURNS INFO = ', INFO
-        STOP 'ERROR'
+        write(unit_log,*) 'VNAME = ', VNAME
+        write(unit_log,*) 'DGTSV RETURNS INFO = ', INFO
+        call mfix_exit(myPE)
      ENDIF
 
      DO K=1,NN
@@ -2160,3 +2236,265 @@
      return
      end subroutine leq_msolve1
 
+      SUBROUTINE DGTSV( N, NRHS, DL, D, DU, B, LDB, INFO )
+!
+!  -- LAPACK routine (version 3.0) --
+!     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+!     Courant Institute, Argonne National Lab, and Rice University
+!     October 31, 1999
+!
+!     .. Scalar Arguments ..
+      INTEGER            INFO, LDB, N, NRHS
+!     ..
+!     .. Array Arguments ..
+      DOUBLE PRECISION   B( LDB, * ), D( * ), DL( * ), DU( * )
+!     ..
+!
+!  Purpose
+!  =======
+!
+!  DGTSV  solves the equation
+!
+!     A*X = B,
+!
+!  where A is an n by n tridiagonal matrix, by Gaussian elimination with
+!  partial pivoting.
+!
+!  Note that the equation  A'*X = B  may be solved by interchanging the
+!  order of the arguments DU and DL.
+!
+!  Arguments
+!  =========
+!
+!  N       (input) INTEGER
+!          The order of the matrix A.  N >= 0.
+!
+!  NRHS    (input) INTEGER
+!          The number of right hand sides, i.e., the number of columns
+!          of the matrix B.  NRHS >= 0.
+!
+!  DL      (input/output) DOUBLE PRECISION array, dimension (N-1)
+!          On entry, DL must contain the (n-1) sub-diagonal elements of
+!          A.
+!
+!          On exit, DL is overwritten by the (n-2) elements of the
+!          second super-diagonal of the upper triangular matrix U from
+!          the LU factorization of A, in DL(1), ..., DL(n-2).
+!
+!  D       (input/output) DOUBLE PRECISION array, dimension (N)
+!          On entry, D must contain the diagonal elements of A.
+!
+!          On exit, D is overwritten by the n diagonal elements of U.
+!
+!  DU      (input/output) DOUBLE PRECISION array, dimension (N-1)
+!          On entry, DU must contain the (n-1) super-diagonal elements
+!          of A.
+!
+!          On exit, DU is overwritten by the (n-1) elements of the first
+!          super-diagonal of U.
+!
+!  B       (input/output) DOUBLE PRECISION array, dimension (LDB,NRHS)
+!          On entry, the N by NRHS matrix of right hand side matrix B.
+!          On exit, if INFO = 0, the N by NRHS solution matrix X.
+!
+!  LDB     (input) INTEGER
+!          The leading dimension of the array B.  LDB >= max(1,N).
+!
+!  INFO    (output) INTEGER
+!          = 0: successful exit
+!          < 0: if INFO = -i, the i-th argument had an illegal value
+!          > 0: if INFO = i, U(i,i) is exactly zero, and the solution
+!               has not been computed.  The factorization has not been
+!               completed unless i = N.
+!
+!  =====================================================================
+!
+!     .. Parameters ..
+      DOUBLE PRECISION   ZERO
+      PARAMETER          ( ZERO = 0.0D+0 )
+!     ..
+!     .. Local Scalars ..
+      INTEGER            I, J
+      DOUBLE PRECISION   FACT, TEMP
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC          ABS, MAX
+!     ..
+!     .. External Subroutines ..
+      EXTERNAL           XERBLA
+!     ..
+!     .. Executable Statements ..
+!
+      INFO = 0
+      IF( N.LT.0 ) THEN
+         INFO = -1
+      ELSE IF( NRHS.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDB.LT.MAX( 1, N ) ) THEN
+         INFO = -7
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGTSV ', -INFO )
+         RETURN
+      END IF
+!
+      IF( N.EQ.0 ) RETURN
+!
+      IF( NRHS.EQ.1 ) THEN
+         DO 10 I = 1, N - 2
+            IF( ABS( D( I ) ).GE.ABS( DL( I ) ) ) THEN
+!
+!              No row interchange required
+!
+               IF( D( I ).NE.ZERO ) THEN
+                  FACT = DL( I ) / D( I )
+                  D( I+1 ) = D( I+1 ) - FACT*DU( I )
+                  B( I+1, 1 ) = B( I+1, 1 ) - FACT*B( I, 1 )
+               ELSE
+                  INFO = I
+                  RETURN
+               END IF
+               DL( I ) = ZERO
+            ELSE
+!
+!              Interchange rows I and I+1
+!
+               FACT = D( I ) / DL( I )
+               D( I ) = DL( I )
+               TEMP = D( I+1 )
+               D( I+1 ) = DU( I ) - FACT*TEMP
+               DL( I ) = DU( I+1 )
+               DU( I+1 ) = -FACT*DL( I )
+               DU( I ) = TEMP
+               TEMP = B( I, 1 )
+               B( I, 1 ) = B( I+1, 1 )
+               B( I+1, 1 ) = TEMP - FACT*B( I+1, 1 )
+            END IF
+   10    CONTINUE
+         IF( N.GT.1 ) THEN
+            I = N - 1
+            IF( ABS( D( I ) ).GE.ABS( DL( I ) ) ) THEN
+               IF( D( I ).NE.ZERO ) THEN
+                  FACT = DL( I ) / D( I )
+                  D( I+1 ) = D( I+1 ) - FACT*DU( I )
+                  B( I+1, 1 ) = B( I+1, 1 ) - FACT*B( I, 1 )
+               ELSE
+                  INFO = I
+                  RETURN
+               END IF
+            ELSE
+               FACT = D( I ) / DL( I )
+               D( I ) = DL( I )
+               TEMP = D( I+1 )
+               D( I+1 ) = DU( I ) - FACT*TEMP
+               DU( I ) = TEMP
+               TEMP = B( I, 1 )
+               B( I, 1 ) = B( I+1, 1 )
+               B( I+1, 1 ) = TEMP - FACT*B( I+1, 1 )
+            END IF
+         END IF
+         IF( D( N ).EQ.ZERO ) THEN
+            INFO = N
+            RETURN
+         END IF
+      ELSE
+         DO 40 I = 1, N - 2
+            IF( ABS( D( I ) ).GE.ABS( DL( I ) ) ) THEN
+!
+!              No row interchange required
+!
+               IF( D( I ).NE.ZERO ) THEN
+                  FACT = DL( I ) / D( I )
+                  D( I+1 ) = D( I+1 ) - FACT*DU( I )
+                  DO 20 J = 1, NRHS
+                     B( I+1, J ) = B( I+1, J ) - FACT*B( I, J )
+   20             CONTINUE
+               ELSE
+                  INFO = I
+                  RETURN
+               END IF
+               DL( I ) = ZERO
+            ELSE
+!
+!              Interchange rows I and I+1
+!
+               FACT = D( I ) / DL( I )
+               D( I ) = DL( I )
+               TEMP = D( I+1 )
+               D( I+1 ) = DU( I ) - FACT*TEMP
+               DL( I ) = DU( I+1 )
+               DU( I+1 ) = -FACT*DL( I )
+               DU( I ) = TEMP
+               DO 30 J = 1, NRHS
+                  TEMP = B( I, J )
+                  B( I, J ) = B( I+1, J )
+                  B( I+1, J ) = TEMP - FACT*B( I+1, J )
+   30          CONTINUE
+            END IF
+   40    CONTINUE
+         IF( N.GT.1 ) THEN
+            I = N - 1
+            IF( ABS( D( I ) ).GE.ABS( DL( I ) ) ) THEN
+               IF( D( I ).NE.ZERO ) THEN
+                  FACT = DL( I ) / D( I )
+                  D( I+1 ) = D( I+1 ) - FACT*DU( I )
+                  DO 50 J = 1, NRHS
+                     B( I+1, J ) = B( I+1, J ) - FACT*B( I, J )
+   50             CONTINUE
+               ELSE
+                  INFO = I
+                  RETURN
+               END IF
+            ELSE
+               FACT = D( I ) / DL( I )
+               D( I ) = DL( I )
+               TEMP = D( I+1 )
+               D( I+1 ) = DU( I ) - FACT*TEMP
+               DU( I ) = TEMP
+               DO 60 J = 1, NRHS
+                  TEMP = B( I, J )
+                  B( I, J ) = B( I+1, J )
+                  B( I+1, J ) = TEMP - FACT*B( I+1, J )
+   60          CONTINUE
+            END IF
+         END IF
+         IF( D( N ).EQ.ZERO ) THEN
+            INFO = N
+            RETURN
+         END IF
+      END IF
+!
+!     Back solve with the matrix U from the factorization.
+!
+      IF( NRHS.LE.2 ) THEN
+         J = 1
+   70    CONTINUE
+         B( N, J ) = B( N, J ) / D( N )
+         IF( N.GT.1 ) &
+            B( N-1, J ) = ( B( N-1, J )-DU( N-1 )*B( N, J ) ) / D( N-1 )
+         DO 80 I = N - 2, 1, -1
+            B( I, J ) = ( B( I, J )-DU( I )*B( I+1, J )-DL( I )* &
+                        B( I+2, J ) ) / D( I )
+   80    CONTINUE
+         IF( J.LT.NRHS ) THEN
+            J = J + 1
+            GO TO 70
+         END IF
+      ELSE
+         DO 100 J = 1, NRHS
+            B( N, J ) = B( N, J ) / D( N )
+            IF( N.GT.1 ) &
+               B( N-1, J ) = ( B( N-1, J )-DU( N-1 )*B( N, J ) ) / &
+                             D( N-1 )
+            DO 90 I = N - 2, 1, -1
+               B( I, J ) = ( B( I, J )-DU( I )*B( I+1, J )-DL( I )*&
+                           B( I+2, J ) ) / D( I )
+   90       CONTINUE
+  100    CONTINUE
+      END IF
+!
+      RETURN
+!
+!     End of DGTSV
+!
+      END SUBROUTINE DGTSV
