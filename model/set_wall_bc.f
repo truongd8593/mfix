@@ -221,7 +221,8 @@
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SET_WALL_BC1(I1, I2, J1, J2, K1, K2, BC_JJ_PSL, SIGN)  C
+!  Module name: SET_WALL_BC1(II1, II2, JJ1, JJ2, KK1, KK2, BC_JJ_PSL, &C
+!                                                SIGN)                 C
 !  Purpose: Set U, V, and W components for the specified cells by      C
 !           copying the same or negative values from near by fluid cellC
 !                                                                      C
@@ -240,11 +241,12 @@
 !                                                                      C
 !  Variables modified: I, J, K, V_g, W_g, U_g                          C
 !                                                                      C
-!  Local variables: SIGN, LWALL, LFLUID                                C
+!  Local variables: SIGN, LWALL, LFLUID, I1, I2, J1, J2, K1, K2        C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE SET_WALL_BC1(I1, I2, J1, J2, K1, K2, BC_JJ_PSL, SIGN) 
+      SUBROUTINE SET_WALL_BC1(II1, II2, JJ1, JJ2, KK1, KK2, &
+                                           BC_JJ_PSL, SIGN) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -270,22 +272,22 @@
 !-----------------------------------------------
 ! 
 !                      Starting I index 
-      INTEGER          I1 
+      INTEGER          II1 
 ! 
 !                      Ending I index 
-      INTEGER          I2 
+      INTEGER          II2 
 ! 
 !                      Starting J index 
-      INTEGER          J1 
+      INTEGER          JJ1 
 ! 
 !                      Ending J index 
-      INTEGER          J2 
+      INTEGER          JJ2 
 ! 
 !                      Starting K index 
-      INTEGER          K1 
+      INTEGER          KK1 
 ! 
 !                      Ending K index 
-      INTEGER          K2 
+      INTEGER          KK2 
   
 !                      Johnson-Jackson boundary condition: 0= no, 1=yes 
       INTEGER          BC_JJ_PSL 
@@ -296,6 +298,7 @@
 !                      Local indices near wall cell 
       INTEGER          I, J, K 
       INTEGER          IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP 
+      INTEGER          I1, I2, J1, J2, K1, K2
   
 !                      Locall index for a fluid cell near the wall cell 
       INTEGER          LFLUID 
@@ -304,6 +307,14 @@
       INCLUDE 'function.inc'
 !
 !// Limit I1, I2 and all to local processor first ghost layer
+
+      I1 = II1
+      I2 = II2
+      J1 = JJ1
+      J2 = JJ2
+      K1 = KK1
+      K2 = KK2
+
       IF(I1.LE.IEND2)   I1 = MAX(I1, ISTART2)
       IF(J1.LE.JEND2)   J1 = MAX(J1, JSTART2)
       IF(K1.LE.KEND2)   K1 = MAX(K1, KSTART2)
