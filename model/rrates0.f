@@ -165,18 +165,24 @@
 !
                            ELSE 
 !                                            !consumption
-                              EX = RATE_EXP(LR,ID) 
-                              IF (EX <= ONE) THEN 
-                                 IF (X_G(IJK,N) > SMALL_NUMBER) ROX_GC(IJK,N)&
-                                     = ROX_GC(IJK,N) - RATE(LR)*STMW/X_G(IJK,N) 
-                              ELSE 
-                                 R_GP(IJK,N) = R_GP(IJK,N) - (EX - ONE)*RATE(LR&
-                                    )*STMW 
-!
-                                 IF (X_G(IJK,N) > SMALL_NUMBER) ROX_GC(IJK,N)&
-                                     = ROX_GC(IJK,N) - EX*RATE(LR)*STMW/X_G(IJK&
-                                    ,N) 
-                              ENDIF 
+                              IF (X_G(IJK,N) > SMALL_NUMBER) ROX_GC(IJK,N)&
+                                     = ROX_GC(IJK,N) - RATE(LR)*STMW/X_G(IJK,N)
+				     
+			      ! Although the following is a better linearization of the
+			      ! reaction term than the above, it makes the calculation of SUM_R_G
+			      ! nearly impossible and makes the rates calculated here inconsistent
+			      ! with the rrates.f way of implementing reaction rates.  So it is not chosen.
+                              !EX = RATE_EXP(LR,ID) 
+                              !IF (EX <= ONE) THEN 
+                              !   IF (X_G(IJK,N) > SMALL_NUMBER) ROX_GC(IJK,N)&
+                              !       = ROX_GC(IJK,N) - RATE(LR)*STMW/X_G(IJK,N) 
+                              !ELSE 
+                              !   R_GP(IJK,N) = R_GP(IJK,N) - (EX - ONE)*RATE(LR&
+                              !      )*STMW 
+                              !   IF (X_G(IJK,N) > SMALL_NUMBER) ROX_GC(IJK,N)&
+                              !       = ROX_GC(IJK,N) - EX*RATE(LR)*STMW/X_G(IJK&
+                              !      ,N) 
+                              !ENDIF 
 !
                            ENDIF 
                         ELSE 
@@ -186,19 +192,23 @@
                            ELSE 
 !                                            !consumption
 !
-                              EX = RATE_EXP(LR,ID) 
-                              IF (EX <= ONE) THEN 
-                                 IF (X_S(IJK,M,N) > SMALL_NUMBER) ROX_SC(IJK,M,&
+                              IF (X_S(IJK,M,N) > SMALL_NUMBER) ROX_SC(IJK,M,&
                                     N) = ROX_SC(IJK,M,N) - RATE(LR)*STMW/X_S(&
-                                    IJK,M,N) 
-                              ELSE 
-                                 R_SP(IJK,M,N) = R_SP(IJK,M,N) - (EX - ONE)*&
-                                    RATE(LR)*STMW 
-!
-                                 IF (X_S(IJK,M,N) > SMALL_NUMBER) ROX_SC(IJK,M,&
-                                    N) = ROX_SC(IJK,M,N) - EX*RATE(LR)*STMW/X_S&
-                                    (IJK,M,N) 
-                              ENDIF 
+                                         IJK,M,N)
+					 
+			      ! see the comments in the gas-section above.
+                              !EX = RATE_EXP(LR,ID) 
+                              !IF (EX <= ONE) THEN 
+                              !   IF (X_S(IJK,M,N) > SMALL_NUMBER) ROX_SC(IJK,M,&
+                              !      N) = ROX_SC(IJK,M,N) - RATE(LR)*STMW/X_S(&
+                              !      IJK,M,N) 
+                              !ELSE 
+                              !   R_SP(IJK,M,N) = R_SP(IJK,M,N) - (EX - ONE)*&
+                              !      RATE(LR)*STMW 
+                              !   IF (X_S(IJK,M,N) > SMALL_NUMBER) ROX_SC(IJK,M,&
+                              !      N) = ROX_SC(IJK,M,N) - EX*RATE(LR)*STMW/X_S&
+                              !      (IJK,M,N) 
+                              !ENDIF 
 !
                            ENDIF 
                         ENDIF 
