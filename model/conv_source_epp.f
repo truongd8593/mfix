@@ -500,7 +500,8 @@
 ! update to true velocity
       IF (SHEAR) THEN
 !$omp parallel do private(IJK)  
-       DO IJK = 1, IJKMAX2 
+!//SP
+	 DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN  
 	   V_S(IJK,m)=V_s(IJK,m)+VSH(IJK)	
          END IF
@@ -655,7 +656,8 @@
 ! loezos
       IF (SHEAR) THEN
 !$omp parallel do private(IJK)  
-       DO IJK = 1, IJKMAX2 
+!//SP
+	 DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN  
 	   V_S(IJK,m)=V_s(IJK,m)-VSH(IJK)	
          END IF

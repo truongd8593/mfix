@@ -152,6 +152,7 @@
 !
          ENDIF 
       END DO 
+      stop
 !efd
 !//SP
       call global_all_sum(NUM)
@@ -560,9 +561,11 @@
 !
             NUM = NUM + NUM1 
             DEN = DEN + DEN1 
+	    print *, ijk, num1, den1
 !
          ENDIF 
-      END DO 
+      END DO
+      stop 
 
 !//SP
       call global_all_sum(NUM)

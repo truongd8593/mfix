@@ -750,7 +750,8 @@
 !update V to true velocity      
 
       IF (SHEAR) THEN
-        DO IJK = 1, IJKMAX2
+!//SP
+	 DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN  
 	   VF(IJK)=VF(IJK)+VSH(IJK)	
           END IF
@@ -859,7 +860,8 @@
 
 ! loezos 
        IF (SHEAR) THEN
-        Do IJK= 1, IJKMAX2
+!//SP
+	 DO IJK = IJKSTART3, IJKEND3
 
           IF (FLUID_AT(IJK)) THEN  	 
 	   VF(IJK)=VF(IJK)-VSH(IJK)	

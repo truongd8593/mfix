@@ -51,7 +51,7 @@
       INCLUDE 'function.inc'
 !
 !HPF$ independent
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3 
          IF (FLUID_AT(IJK)) ROP(IJK) = DMAX1(ZERO,ROP(IJK)) 
       END DO 
       RETURN  

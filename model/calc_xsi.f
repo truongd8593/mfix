@@ -568,6 +568,7 @@
       USE indices
       USE vshear
       USE compar    !//d
+!//SP
       USE sendrecv
       IMPLICIT NONE
 
