@@ -136,6 +136,7 @@ post_mfix : \
     sol_flux.$(OBJ_EXT) \
     strcmp.$(OBJ_EXT) \
     streqs.$(OBJ_EXT) \
+    time_avg.$(OBJ_EXT) \
     usr_init_namelist.$(OBJ_EXT) \
     usr_input.$(OBJ_EXT) \
     usr_post.$(OBJ_EXT) \
