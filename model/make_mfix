@@ -12,6 +12,20 @@ vers="2004-3"
 # Flag variable for compiling with Pentium 4 specific optimization flags   
 # Set to 0 to avoid Pentium 4 specific optimizations
 P4_OPTIMIZE=1
+#
+#============ TAU related settings ===================
+# Flag variable to enable TAU automatic instrumentation for performance
+# profiling
+#USE_TAU=1
+  # ***** I M P O R T A N T
+  # MUST set the TAUROOTDIR environment variable to a valid path of TAU installation
+  # if USE_TAU is enabled.
+  TAUROOTDIR=/mnt/home/ACTS/halow/TAU/tau
+  # MUST set the PDTROOTDIR environment variable to a valid path of PDToolkit installation
+  # if USE_TAU is enabled.
+  PDTROOTDIR=/mnt/home/ACTS/halow/TAU/pdt
+  # *****
+#========== end of TAU related settings ==============  
 echo
 echo 
 echo "*******************************************"
@@ -104,11 +118,41 @@ case $dmp_version in
   ;;
   *)
   mpi_include="$mfix/dmp_modules/mpi_donothing"
+  echo " "
+  echo " "
+  echo "-------------- W  A  R  N  I  N  G ---------------------"
+  echo "Current configuration of MFIX makefile for TAU can be only used in dmp mode"
+  echo "Continuing with compilation without TAU directives"
+  echo "--------------------------------------------------------"
+  echo " "
+  echo " "
+  unset USE_TAU
   ;;
 esac
 ln -sf "$mpi_include/mpif.h" .
 
-
+#-----
+# Check if the mpif.h header is LAM/MPI header file or MPICH
+# if it is determined to be LAM/MPI then terminate compilation with a msg
+#-----
+  if [ "$USE_TAU" ]
+  then
+    if grep 'LAM' $mfix/mpif.h >/dev/null ; then
+      echo " "
+      echo "-------------- M P I  L I B R A R Y  E R R O R ----------"
+      echo " USE_TAU flag was enabled in make_mfix for inserting TAU profiling" 
+      echo " directives automatically during compilation."
+      echo " "
+      echo " Current installation of TAU only works with MPICH library!"
+      echo " MPI header file, mpif.h was determined to be LAM/MPI header file!"
+      echo " Please either change your MPI settings to point for MPICH library"
+      echo " (if you would like to have TAU profiling) or "
+      echo " disable USE_TAU flag at line 19 of make_mfix"
+      echo "--------------------------------------------------------"
+      echo " "
+      exit
+    fi 
+  fi
 #------------------------------------------------------------------------
 #  Check if the system is a Linux system, if yes then ask the user which 
 #  compiler to use    
@@ -125,15 +169,18 @@ ln -sf "$mpi_include/mpif.h" .
        echo -n "Do you want to compile with Intel Linux F90 Compiler? (y/n) [yes] "
        read lnx_compiler
        case $lnx_compiler in
-         y|Y ) 
+         y|Y )
+	   echo " " 
 	   echo "Intel Linux Fortran Compiler selected"
 	   opsys="Linux_ifc"
            ;;
          n|N )
+	   echo " "
 	   echo "Portland Group Linux Fortran Compiler selected" 	      
 	   opsys="Linux_pgi"
            ;; 
          *)
+	   echo " "
            echo "Intel Linux Fortran Compiler selected"
 	   opsys="Linux_ifc"
            ;;
@@ -149,14 +196,17 @@ ln -sf "$mpi_include/mpif.h" .
          read ver_compiler
          case $ver_compiler in
          1)
+	   echo " "
            echo "Intel Linux Fortran Compiler (ifort) version 8.0 selected"
            intel_ver="Linux_ifc8"
            ;;
          2)
+	   echo " "
            echo "Intel Linux Fortran Compiler (ifc) version 7.X selected"
            intel_ver="Linux_ifc7"
            ;;
          *)
+	   echo " "
            echo "Intel Linux Fortran Compiler (ifort) version 8.0 selected"
            intel_ver="Linux_ifc8"
            ;;
@@ -338,7 +388,6 @@ ln -sf "$mpi_include/mpif.h" .
 	      echo LINUX_intel.F "not found in $mfix"
 	      exit
 	    fi
-
           #-----------	    
           # Decide to use mpif90 or ifc as the compiler & linker command
 	  #-----------
@@ -787,8 +836,292 @@ esac
   export FORTRAN_EXT
   export FORTRAN_CMD
   export LINK_CMD
-        
+  if [ "$USE_TAU" ]
+  then  
+    export USE_TAU
+  fi
  
+#------------------------------------------------------------------------
+#   T A U  P e r f o r m a n c e   P r o f i l i n g   directives
+#------------------------------------------------------------------------
+#
+
+  if [ "$USE_TAU" ]
+  then
+    echo " "
+    echo "************************************************************************"
+    echo "Preparing for parsing source code and automatic instrumentation with TAU"
+    echo "************************************************************************"  
+    inst_moved=0
+    miss_dir=0
+  #----
+  # Check if TAU directory is valid or not  
+  #----
+     if test -d "$TAUROOTDIR"
+     then
+        echo
+	export TAUROOTDIR
+     else
+        echo 
+        echo "TAU directory $TAUROOTDIR can not be found."
+     echo "Please set TAUROOTDIR environment variable at the top of"
+     echo "model/make_mfix file to a valid path. Aborting compilation."
+     echo
+     exit
+     fi
+  #----
+  # Check if PDToolkit directory is valid or not
+  #----
+     if test -d "$PDTROOTDIR"
+     then
+        echo
+	export PDTROOTDIR
+     else
+        echo 
+        echo "PDToolkit directory $PDTROOTDIR can not be found."
+        echo "Please set PDTROOTDIR environment variable at the top of"
+        echo "model/make_mfix file to a valid path. Aborting compilation."
+        echo
+        exit
+     fi
+   #----
+   # Create the directive and environment variable block for TAU specific settings
+   #----
+     OUTfile=tausettings
+     echo "ifdef USE_TAU" > $OUTfile
+     echo "  include \$(TAUROOTDIR)/include/Makefile" >> $OUTfile 
+     echo "  MYOPTIONS=-optVerbose -optKeepFiles -optPDBFile=mfix_merged.pdb -optTauSelectFile=select.tau " >> $OUTfile
+     echo "  FORTRAN_CMD=\$(TAU_COMPILER) \$(MYOPTIONS) \$(TAU_F90)" >> $OUTfile
+     echo "  FORTRAN77_CMD=\$(TAU_COMPILER) \$(MYOPTIONS) \$(TAU_F90)" >> $OUTfile
+     echo "  LINK_CMD=\$(FORTRAN_CMD)" >> $OUTfile
+     echo "  LIB_FLAGS = -lm" >> $OUTfile                    
+     echo "  LINK_FLAGS =" >> $OUTfile    
+     echo "endif" >> $OUTfile    
+     echo " " >> $OUTfile                   
+
+
+   SRCDIR=.
+   
+   #----
+   # Create the select.tau for selecting the routines for TAU_instrumentor
+   #----
+   if test -r $SRCDIR/select.tau
+   then   
+     echo " "
+     echo " *******"
+     echo " * select.tau file for TAU_instrumentor found, excluding the files"   
+     echo " * and subroutines listed in select.tau for instrumentation"        
+     echo " *******"
+     echo " "
+   else
+     SELfile=select.tau
+     echo "# Selective instrumentation: Specify an exclude/include list of routines/files." > $SELfile
+     echo "#BEGIN_EXCLUDE_LIST" >> $SELfile
+     echo "#void quicksort(int *, int, int)" >> $SELfile
+     echo "#void interchange(int *, int *)" >> $SELfile
+     echo "#END_EXCLUDE_LIST" >> $SELfile               
+     echo "# " >> $SELfile
+     echo "# If an include list is specified, the routines in the list will be the only" >> $SELfile          
+     echo "# routines that are instrumented." >> $SELfile          
+     echo "# To specify an include list ( a list of routines that will be instrumented)" >> $SELfile          
+     echo "# remove the leading # to uncomment the following lines" >> $SELfile          
+     echo "#BEGIN_INCLUDE_LIST" >> $SELfile                    
+     echo "#int main(int, char **)" >> $SELfile          
+     echo "#int select_" >> $SELfile          
+     echo "#END_INCLUDE_LIST" >> $SELfile          
+     echo "# " >> $SELfile          
+     echo "# TAU also accepts file include/exclude lists that may be specified with" >> $SELfile          
+     echo "# wildcard characters (* and ?) to exclude/include routines in specific files." >> $SELfile          
+     echo "# These options may be used in conjunction with the routine include/exclude" >> $SELfile          
+     echo "# lists as shown above. Uncomment the # to make the rule active." >> $SELfile          
+     echo "# " >> $SELfile          
+     echo "#" >> $SELfile          
+     echo "#====================================================================" >> $SELfile          
+     echo "# EITHER INCLUDE OR EXCLUDE LISTS SHOULD BE SPECIFIED, BUT NOT BOTH.!!!!!" >> $SELfile          
+     echo "#====================================================================" >> $SELfile          
+     echo "#BEGIN_FILE_INCLUDE_LIST" >> $SELfile          
+     echo "#Main.cpp" >> $SELfile          
+     echo "#Foo?.c" >> $SELfile          
+     echo "#*.C" >> $SELfile               
+     echo "#adjust_a_u_g.f" >> $SELfile          
+     echo "#END_FILE_INCLUDE_LIST" >> $SELfile          
+     echo "# Instruments routines in Main.cpp, Foo?.c and *.C files only" >> $SELfile          
+     echo "#" >> $SELfile          
+     echo "# Use BEGIN_[FILE]_INCLUDE_LIST with END_[FILE]_INCLUDE_LIST" >> $SELfile          
+     echo "BEGIN_FILE_EXCLUDE_LIST" >> $SELfile          
+     echo "#f*.c" >> $SELfile          
+     echo "#impl?.C" >> $SELfile          
+     echo "#calc_d.f" >> $SELfile          
+     echo "#leq_bicgs.f" >> $SELfile          
+     echo "#vf_gs_x.f" >> $SELfile          
+     echo "#vf_gs_y.f" >> $SELfile          
+     echo "#vf_gs_z.f" >> $SELfile          
+     echo "END_FILE_EXCLUDE_LIST" >> $SELfile          
+     echo "# excludes files f*.c and impl?.C (such as implA.C, foo.c)." >> $SELfile          
+     echo " " >> $SELfile
+   fi          
+                         
+
+   
+ #----
+ # Check if mfix_merged.pdb exists and user still wants to run the parser
+ #----
+   parse_contin=y
+   if test -r $SRCDIR/mfix_merged.pdb
+   then
+     echo " "
+     echo " *******"
+     echo " * Resultant file from previous PDToolkit parsing was found: $SRCDIR/mfix_merged.pdb"
+      ls -als $SRCDIR/mfix_merged.pdb
+      echo " * Continuing with parsing will overwrite the existing file,"
+      echo -n " * Do you want to continue? (y/n) [no]"
+      read parse_contin
+      echo " "
+      echo $parse_contin
+    fi
+      case $parse_contin in
+        y|Y )
+       # Inform user if overwriting an existing *.pdb else print nothing
+          if test -r $SRCDIR/mfix_merged.pdb
+          then
+            echo " * Overwriting the previously generated mfix_merged.pdb"
+          fi
+       #----
+       # Check if any TAU instrumented file (*.inst.f) exists in the source directory 
+       # before attempting to parse with PDToolkit parser
+       #----
+          for i in `ls *.f`
+          do
+            outfile=`echo $i | sed 's/\./\.inst./'`              
+            if test -r $SRCDIR/$outfile
+            then
+	      echo " "
+              echo "   !-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!"
+              echo "    TAU instrumented file found in source directory: $SRCDIR/$outfile"
+	      echo "   Temporarily moving all instrumented files (*.inst.f) to "
+	      echo "   $SRCDIR/inst_files_temporary before running PDT parser"
+              echo "   !-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!"	   
+   	      echo " "
+         #----
+         # Create a temporary location to store the *.inst.f files during parsing
+         #----
+              if test -d $SRCDIR/inst_files_temporary
+              then
+	        touch $SRCDIR/inst_files_temporary
+	      else
+	        mkdir $SRCDIR/inst_files_temporary
+	      fi
+         #----
+	 # Move the previously instrumented files (*.inst.f) to temporary location
+         #----
+	      mv $SRCDIR/*.inst.f $SRCDIR/inst_files_temporary
+	      mv $SRCDIR/*.inst.F $SRCDIR/inst_files_temporary
+	      inst_moved=1	   
+	    fi
+	    break
+          done
+
+     #----
+     # Parse all of source files for building MFIX to generate mfix_merged.pdb
+     #----
+          echo " "
+          echo " *******"
+          echo " * Checking subdirectories before parsing"
+          if test -d $SRCDIR/dmp_modules
+          then     
+            echo " *   model/dmp_modules found"
+          else
+            echo "  Missing model/dmp_modules directory! Abort compilation"
+	    miss_dir=1
+	    break
+          fi
+          if test -d $SRCDIR/des
+          then     
+            echo " *   model/des found"
+          else
+            echo "  Missing model/des directory! Abort compilation"
+	    miss_dir=1
+	    break
+          fi       
+          if test $miss_dir = 0
+          then
+            $PDTROOTDIR/linux/bin/f95parse -I$SRCDIR -I$SRCDIR/des \
+              $SRCDIR/*.f $SRCDIR/dmp_modules/*.f $SRCDIR/des/*.f -R free \
+             -o$SRCDIR/mfix_merged.pdb        
+          fi
+       ;;
+        n|N )
+           echo " * Keeping the previously generated mfix_merged.pdb"
+       ;;         
+        *)
+           echo " * Keeping the previously generated mfix_merged.pdb"     
+       ;;
+      esac
+     echo " *******"
+    #---- 
+    # Move back the TAU instrumented files (*.inst.f) from the temporary location
+    # and remove the temporary directory created for storing these files during parsing
+    #----
+     if test $inst_moved = 1
+     then
+      mv $SRCDIR/inst_files_temporary/*.inst.f $SRCDIR
+      mv $SRCDIR/inst_files_temporary/*.inst.F $SRCDIR
+      rm -f -r $SRCDIR/inst_files_temporary    
+     fi
+
+     if test $miss_dir = 1
+     then
+       exit
+     fi
+#----
+# Patch the mfix_?.make makefile with the necessary directives for TAU automatic instrumentation     
+#----
+  case $MODULE_CODE in
+  0)
+    NEWMakfile=$SRCDIR/mfix_u.make
+    #
+    # Check if the existing mfix_?.make already includes TAU directives or not
+    if grep '^ifdef USE_TAU' $NEWMakfile >/dev/null ; then
+      echo " "
+      echo " " 
+      echo " *******"
+      echo " * Makefile $NEWMakfile already includes directives for TAU"
+    else
+      echo " "
+      echo " " 
+      echo " *******"
+      echo " * Updating the makefile $NEWMakfile to include directives for TAU"
+      cp -f -r $NEWMakfile $SRCDIR/mfix_u.make_ORG
+      cat $OUTfile > $NEWMakfile
+      cat $SRCDIR/mfix_u.make_ORG >> $NEWMakfile
+      rm -f -r $SRCDIR/$OUTfile
+    fi
+   ;;
+  1)
+    NEWMakfile=$SRCDIR/mfix_l.make
+    if grep '^ifdef USE_TAU' $NEWMakfile >/dev/null ; then 
+      echo " "
+      echo " " 
+      echo " *******"
+      echo " * Makefile $NEWMakfile already includes directives for TAU"
+    else
+      echo " "
+      echo " " 
+      echo " *******"
+      echo " * Updating the makefile $NEWMakfile to include directives for TAU"
+      cp -f -r $NEWMakfile $SRCDIR/mfix_l.make_ORG
+      cat $OUTfile > $NEWMakfile
+      cat $SRCDIR/mfix_l.make_ORG >> $NEWMakfile
+      rm -f -r $SRCDIR/$OUTfile
+    fi
+   ;;
+  esac
+  fi
+  echo " *******"
+  echo " "
+# ----------------------------------
+# End of TAU related modifications
+# ----------------------------------
   case $MODULE_CODE in
   0)
   	case $dmp_version in
@@ -853,9 +1186,11 @@ esac
   export FORTRAN_EXT
   export FORTRAN_CMD
   export LINK_CMD
-
-
-
+  if [ "$USE_TAU" ]
+  then  
+    export USE_TAU
+  fi
+ 
   case $MODULE_CODE in
   0)
   	case $dmp_version in
