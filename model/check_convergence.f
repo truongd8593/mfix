@@ -72,6 +72,7 @@
       LOGICAL          NO_RESID
 !-----------------------------------------------
 !
+!//SP
       SUM = RESID(RESID_P,0) 
       if(MMAX > 0) SUM = SUM + RESID(RESID_P,1) 
 !

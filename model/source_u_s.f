@@ -517,8 +517,8 @@
                      END DO 
                   END DO 
 !//AIKEPARDBG
-    write(*,"('(PE ',I2,'): aft Part 1 in source_u_s')") myPE  !//AIKEPARDBG
-    call mfix_exit(myPE)     !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft Part 1 in source_u_s')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
 		  
                ELSE                              !Johnson and Jackson partial slip 
 !
@@ -563,8 +563,8 @@
                      END DO 
                   END DO 
 !//AIKEPARDBG
-    write(*,"('(PE ',I2,'): aft Part 2 in source_u_s')") myPE  !//AIKEPARDBG
-    call mfix_exit(myPE)     !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft Part 2 in source_u_s')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
 		  
                ELSE                              !Johnson and Jackson partial slip 
 !
@@ -646,8 +646,8 @@
                      END DO 
                   END DO 
 !//AIKEPARDBG
-    write(*,"('(PE ',I2,'): aft Part 3 in source_u_s')") myPE  !//AIKEPARDBG
-    call mfix_exit(myPE)     !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft Part 3 in source_u_s')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
 		  
                ELSE                              !Johnson and Jackson partial slip 
 !

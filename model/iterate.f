@@ -272,19 +272,19 @@
 !     Solve solids volume fraction correction equation for close-packed
 !     solids phases
 !
-!     IF (MMAX > 0) THEN 
-!        CALL CALC_K_CP (K_CP, IER) 
-!        CALL SOLVE_EPP (NORMS, RESS, IER) 
-!        CALL CORRECT_1 (IER) 
+      IF (MMAX > 0) THEN 
+         CALL CALC_K_CP (K_CP, IER) 
+         CALL SOLVE_EPP (NORMS, RESS, IER) 
+         CALL CORRECT_1 (IER) 
 !
 ! IER = 0
-!        CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
-!        IF (IER == 1) THEN 
-!           MUSTIT = 2                           !indicates divergence 
-!           IF(DT/=UNDEFINED)GO TO 1000 
-!        ENDIF 
-!
-!     ENDIF 
+         CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
+         IF (IER == 1) THEN 
+            MUSTIT = 2                           !indicates divergence 
+            IF(DT/=UNDEFINED)GO TO 1000 
+         ENDIF 
+ 
+      ENDIF 
 !
 !//SP
 !     write(*,*) 'after CORRECT_1, etc.,', myPE
