@@ -15,3 +15,4 @@ settling-tank		X	X	X	.	.	.	.	X
 simple-2phase		X	X	X	.	.	.	.	X
 reactor1		X	.	.	.	X	.	X	.
 cyclic-shear		X	X	X	.	.	.	.	X  (Lees-Edwards bc)
+ozone			X	X	X	.	X	.	X	X  3D cylindrical
