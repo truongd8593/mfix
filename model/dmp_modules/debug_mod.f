@@ -1,14 +1,16 @@
 	module debug
-	implicit none
+!//BUGFIX 0904 added funits module here for declaration of UNIT_LOG
+        USE funits
+       	implicit none
 
 	integer :: idebug = 0
 
 	interface assert
 	module procedure assert_i, assert_d, assert_i2, assert_d2
 	end interface
-
-	integer :: unit_log = 13
-
+!//BUG 0904 unit_log declaration shouldn't be here, it causes conflict when
+!//BUG both MPI_UTILITY (via DEBUG.mod) and FUNITS are USEd in same routine
+!//BUG	integer :: unit_log = 13
 	interface write_debug
 	module procedure write_debug_1i, write_debug_1d, write_debug_0, &
         write_debug_0i, write_debug_0d, write_debug_0l
@@ -286,7 +288,7 @@
          WRITE (UNIT_LOG, 1010) LINE(L)
       END DO
       WRITE (UNIT_LOG, 1020)
-      call flush(unit_log)
+      call flush(UNIT_LOG)
 
       RETURN
  1000 FORMAT(1X,70('*'),/,/,1X,'From : ',A)
