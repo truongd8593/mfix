@@ -123,6 +123,10 @@
 	allocate( ijkstart3_all(0:numPEs-1) )
 	allocate( ijkend3_all(0:numPEs-1) )
 
+	allocate( ijksize4_all(0:numPEs-1) )
+	allocate( ijkstart4_all(0:numPEs-1) )
+	allocate( ijkend4_all(0:numPEs-1) )
+
 	allocate( istart_all(0:numPEs-1) )
 	allocate( jstart_all(0:numPEs-1) )
 	allocate( kstart_all(0:numPEs-1) )
@@ -138,6 +142,10 @@
 	allocate( istart3_all(0:numPEs-1) )
 	allocate( jstart3_all(0:numPEs-1) )
 	allocate( kstart3_all(0:numPEs-1) )
+
+	allocate( istart4_all(0:numPEs-1) )
+	allocate( jstart4_all(0:numPEs-1) )
+	allocate( kstart4_all(0:numPEs-1) )
 
 	allocate( iend_all(0:numPEs-1) )
 	allocate( jend_all(0:numPEs-1) )
@@ -155,6 +163,10 @@
 	allocate( jend3_all(0:numPEs-1) )
 	allocate( kend3_all(0:numPEs-1) )
 	 
+	allocate( iend4_all(0:numPEs-1) )
+	allocate( jend4_all(0:numPEs-1) )
+	allocate( kend4_all(0:numPEs-1) )
+	 
 	allocate( displs(0:numPEs-1) )
 
 	call partition
@@ -169,28 +181,35 @@
 	   istart2_all(iproc) = max(imin1-1,min(imax1+1,istart1_all(iproc)-1))
 	   if(nodesi.ne.1) then
  	   istart3_all(iproc) = max(imin1-2,min(imax1+2,istart2_all(iproc)-1))
+ 	   istart4_all(iproc) = max(imin1-3,min(imax1+3,istart3_all(iproc)-1))
 	   else
 	   istart3_all(iproc) = istart2_all(iproc)
+	   istart4_all(iproc) = istart3_all(iproc)
 	   endif
 
 	   jstart2_all(iproc) = max(jmin1-1,min(jmax1+1,jstart1_all(iproc)-1))
            if(nodesj.ne.1) then
  	   jstart3_all(iproc) = max(jmin1-2,min(jmax1+2,jstart2_all(iproc)-1))
+ 	   jstart4_all(iproc) = max(jmin1-3,min(jmax1+3,jstart3_all(iproc)-1))
 	   else
 	   jstart3_all(iproc) = jstart2_all(iproc)
+	   jstart4_all(iproc) = jstart3_all(iproc)
            endif
 
 	   if(no_k) then
 	   kstart2_all(iproc) = kstart1_all(iproc)
 	   kstart3_all(iproc) = kstart1_all(iproc)
+	   kstart4_all(iproc) = kstart1_all(iproc)
 
 	   else
 
 	   kstart2_all(iproc) = max(kmin1-1,min(kmax1+1,kstart1_all(iproc)-1))
            if(nodesk.ne.1) then
  	   kstart3_all(iproc) = max(kmin1-2,min(kmax1+2,kstart2_all(iproc)-1))
+ 	   kstart4_all(iproc) = max(kmin1-3,min(kmax1+3,kstart3_all(iproc)-1))
 	   else
 	   kstart3_all(iproc) =  kstart2_all(iproc)
+	   kstart4_all(iproc) =  kstart3_all(iproc)
 	   endif
 
 	   endif
@@ -200,22 +219,27 @@
 
            if(nodesi.ne.1) then
 	   iend3_all(iproc) = max(imin1-2,min(imax1+2,iend2_all(iproc)+1))
+	   iend4_all(iproc) = max(imin1-3,min(imax1+3,iend3_all(iproc)+1))
 	   else
 	   iend3_all(iproc) = iend2_all(iproc)
+	   iend4_all(iproc) = iend3_all(iproc)
 	   endif
 
 	   jend2_all(iproc) = max(jmin1-1,min(jmax1+1,jend1_all(iproc)+1))
 
            if(nodesj.ne.1) then
 	   jend3_all(iproc) = max(jmin1-2,min(jmax1+2,jend2_all(iproc)+1))
+	   jend4_all(iproc) = max(jmin1-3,min(jmax1+3,jend3_all(iproc)+1))
 	   else
 	   jend3_all(iproc) = jend2_all(iproc)
+	   jend4_all(iproc) = jend3_all(iproc)
 	   endif
 
            if(no_k) then
 
            kend2_all(iproc) = kend1_all(iproc)
 	   kend3_all(iproc) = kend1_all(iproc)
+	   kend4_all(iproc) = kend1_all(iproc)
 
 	   else
 
@@ -223,8 +247,10 @@
 
            if(nodesk.ne.1) then
 	   kend3_all(iproc) = max(kmin1-2,min(kmax1+2,kend2_all(iproc)+1))
+	   kend4_all(iproc) = max(kmin1-3,min(kmax1+3,kend3_all(iproc)+1))
 	   else
 	   kend3_all(iproc) = kend2_all(iproc)
+	   kend4_all(iproc) = kend3_all(iproc)
 	   endif
 
 	   endif
@@ -242,11 +268,19 @@
            + (kend3_all(iproc)-kstart3_all(iproc))*(jend3_all(iproc)-jstart3_all(iproc)+1)* &
              (iend3_all(iproc)-istart3_all(iproc)+1)
 
+	   ijkstart4_all(iproc) = 1
+
+ 	   ijkend4_all(iproc) =  1 + (iend4_all(iproc) - istart4_all(iproc)) &
+           + (jend4_all(iproc)-jstart4_all(iproc))*(iend4_all(iproc)-istart4_all(iproc)+1) &
+           + (kend4_all(iproc)-kstart4_all(iproc))*(jend4_all(iproc)-jstart4_all(iproc)+1)* &
+             (iend4_all(iproc)-istart4_all(iproc)+1)
+
 	enddo
 
 	do iproc=0,numPEs-1
 
 	   ijksize3_all(iproc) = ijkend3_all(iproc) - ijkstart3_all(iproc) + 1
+	   ijksize4_all(iproc) = ijkend4_all(iproc) - ijkstart4_all(iproc) + 1
 
 	enddo
 
@@ -257,10 +291,12 @@
 	enddo
 
 	ijkstart3 = ijkstart3_all(myPE)
-
 	ijkend3   = ijkend3_all(myPE)
-	   
 	ijksize3  = ijksize3_all(myPE)
+
+	ijkstart4 = ijkstart4_all(myPE)
+	ijkend4   = ijkend4_all(myPE)
+	ijksize4  = ijksize4_all(myPE)
 
 	istart1   = istart1_all(myPE)
 	iend1     = iend1_all(myPE)
@@ -283,6 +319,13 @@
 	kstart3   = kstart3_all(myPE)
 	kend3     = kend3_all(myPE)
 
+	istart4   = istart4_all(myPE)
+	iend4     = iend4_all(myPE)
+	jstart4   = jstart4_all(myPE)
+	jend4     = jend4_all(myPE)
+	kstart4   = kstart4_all(myPE)
+	kend4     = kend4_all(myPE)
+
 !	Setup mapping to take care of cyclic boundary conditions
 
 !       -----------------------------------
@@ -291,23 +334,23 @@
 !       indirection arrays
 !       -----------------------------------
 
-        allocate( imap( imin3:imax3 ) )
-        allocate( jmap( jmin3:jmax3 ) )
-        allocate( kmap( kmin3:kmax3 ) )
+        allocate( imap( imin4:imax4 ) )
+        allocate( jmap( jmin4:jmax4 ) )
+        allocate( kmap( kmin4:kmax4 ) )
 
-        allocate( imap_c( imin3:imax3 ) )
-        allocate( jmap_c( jmin3:jmax3 ) )
-        allocate( kmap_c( kmin3:kmax3 ) )
+        allocate( imap_c( imin4:imax4 ) )
+        allocate( jmap_c( jmin4:jmax4 ) )
+        allocate( kmap_c( kmin4:kmax4 ) )
 
-        do kk=kmin3,kmax3
+        do kk=kmin4,kmax4
           kmap(kk) = kk
         enddo
 
-        do jj=jmin3,jmax3
+        do jj=jmin4,jmax4
           jmap(jj) = jj
         enddo
 
-        do ii=imin3,imax3
+        do ii=imin4,imax4
           imap(ii) = ii
         enddo
 
@@ -320,6 +363,12 @@
            if (kmin3.lt.kmin2) then
                 kmap(kmin3) = kmap(kmin2)-1
            endif
+           if (kmax4.gt.kmax3) then
+                kmap(kmax4) = kmap(kmax3)+1
+           endif
+           if (kmin4.lt.kmin3) then
+                kmap(kmin4) = kmap(kmin3)-1
+           endif
         endif
 
         if (cyclic_y) then
@@ -330,6 +379,12 @@
            endif
            if (jmin3.lt.jmin2) then
                 jmap(jmin3) = jmap(jmin2)-1
+           endif
+           if (jmax4.gt.jmax3) then
+                jmap(jmax4) = jmap(jmax3)+1
+           endif
+           if (jmin4.lt.jmin3) then
+                jmap(jmin4) = jmap(jmin3)-1
            endif
         endif
 
@@ -342,17 +397,23 @@
            if (imin3.lt.imin2) then
                 imap(imin3) = imap(imin2)-1
            endif
+           if (imax4.gt.imax3) then
+                imap(imax4) = imap(imax3)+1
+           endif
+           if (imin4.lt.imin3) then
+                imap(imin4) = imap(imin3)-1
+           endif
         endif
 
-        do kk=kmin3,kmax3
+        do kk=kmin4,kmax4
           kmap_c(kk) = kk
         enddo
 
-        do jj=jmin3,jmax3
+        do jj=jmin4,jmax4
           jmap_c(jj) = jj
         enddo
 
-        do ii=imin3,imax3
+        do ii=imin4,imax4
           imap_c(ii) = ii
         enddo
 
@@ -365,6 +426,12 @@
            if (kmin3.lt.kmin2) then
                 kmap_c(kmin3) = kmap_c(kmin2)-1
            endif
+           if (kmax4.gt.kmax3) then
+                kmap_c(kmax4) = kmap_c(kmax3)+1
+           endif
+           if (kmin4.lt.kmin3) then
+                kmap_c(kmin4) = kmap_c(kmin3)-1
+           endif
         endif
 
         if (cyclic_y.and.nodesj.eq.1) then
@@ -376,6 +443,12 @@
            if (jmin3.lt.jmin2) then
                 jmap_c(jmin3) = jmap_c(jmin2)-1
            endif
+           if (jmax4.gt.jmax3) then
+                jmap_c(jmax4) = jmap_c(jmax3)+1
+           endif
+           if (jmin4.lt.jmin3) then
+                jmap_c(jmin4) = jmap_c(jmin3)-1
+           endif
         endif
 
         if (cyclic_x.and.nodesi.eq.1) then
@@ -386,6 +459,12 @@
            endif
            if (imin3.lt.imin2) then
                 imap_c(imin3) = imap_c(imin2)-1
+           endif
+           if (imax4.gt.imax3) then
+                imap_c(imax4) = imap_c(imax3)+1
+           endif
+           if (imin4.lt.imin3) then
+                imap_c(imin4) = imap_c(imin3)-1
            endif
         endif
 
@@ -426,6 +505,14 @@
         c2 = (jend3_all(myPE)-jstart3_all(myPE)+1)* (iend3_all(myPE)-istart3_all(myPE)+1)
 
 	c0 =  c0  - c1*istart3_all(myPE) - c2*kstart3_all(myPE)
+
+!       Setup coefficients of FUINIJK3
+
+        c0_3 = 1 - jstart4_all(myPE)
+        c1_3 = (jend4_all(myPE)-jstart4_all(myPE)+1)
+        c2_3 = (jend4_all(myPE)-jstart4_all(myPE)+1)* (iend4_all(myPE)-istart4_all(myPE)+1)
+
+	c0_3 =  c0_3  - c1_3*istart4_all(myPE) - c2_3*kstart4_all(myPE)
 
 !	Call to sendrecv_init to set all the communication pattern
 

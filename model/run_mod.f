@@ -93,6 +93,9 @@
 !                      If .TRUE. use the deferred correction method
       LOGICAL          DEF_COR
 !
+!                      If .TRUE. use the fourth order interpolation
+      LOGICAL          FPFOI
+!
 !                      If .TRUE. solve granular energy equations
       LOGICAL          GRANULAR_ENERGY
 !
@@ -153,6 +156,9 @@
 !                      The previous time step used in iterate (before it is
 !                      changed by adjust_dt)
       DOUBLE PRECISION DT_prev
+!
+!                      Slope limiter parameter (0 < C _FAC <= 1.0)
+      DOUBLE PRECISION C_FAC
 !
 !                      If .TRUE. reduce time step when residuals do not decrease
       LOGICAL          DETECT_STALL

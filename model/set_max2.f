@@ -48,6 +48,9 @@
          IMIN2 = 1 
          IMIN3 = 1 
          IMAX3 = 1 
+!// 4th order variables definition
+         IMIN4 = 1 
+         IMAX4 = 1 
       ELSE 
          IMIN1 = 2 
          IMAX1 = IMAX + 1 
@@ -57,9 +60,15 @@
 	 IF(NODESI.NE.1) THEN
          IMIN3 = 0 
          IMAX3 = IMAX + 3 	 
+!// 4th order variables definition
+         IMIN4 = -1 
+         IMAX4 = IMAX + 4 	 
 	 ELSE
 	 IMIN3 = IMIN2
 	 IMAX3 = IMAX2
+!// 4th order variables definition
+	 IMIN4 = IMIN3
+	 IMAX4 = IMAX3
 	 ENDIF
       ENDIF 
 !
@@ -71,6 +80,9 @@
          JMIN2 = 1 
          JMIN3 = 1 
          JMAX3 = 1 	 
+!// 4th order variables definition
+         JMIN4 = 1 
+         JMAX4 = 1 	 
       ELSE 
          JMIN1 = 2 
          JMAX1 = JMAX + 1 
@@ -80,9 +92,15 @@
          IF(NODESJ.NE.1) THEN
          JMIN3 = 0
          JMAX3 = JMAX + 3
+!// 4th order variables definition
+         JMIN4 = -1
+         JMAX4 = JMAX + 4
          ELSE
          JMIN3 = JMIN2
          JMAX3 = JMAX2
+!// 4th order variables definition
+         JMIN4 = JMIN3
+         JMAX4 = JMAX3
          ENDIF
       ENDIF 
 !
@@ -94,6 +112,9 @@
          KMIN2 = 1 
          KMIN3 = 1 
          KMAX3 = 1 	 
+!// 4th order variables definition
+         KMIN4 = 1 
+         KMAX4 = 1 	 
       ELSE 
          KMIN1 = 2 
          KMAX1 = KMAX + 1 
@@ -103,9 +124,15 @@
          IF(NODESK.NE.1) THEN
          KMIN3 = 0
          KMAX3 = KMAX + 3
+!// 4th order variables definition
+         KMIN4 = -1
+         KMAX4 = KMAX + 4
          ELSE
          KMIN3 = KMIN2
          KMAX3 = KMAX2
+!// 4th order variables definition
+         KMIN4 = KMIN3
+         KMAX4 = KMAX3
          ENDIF
       ENDIF 
 !
@@ -129,6 +156,8 @@
 !// 300 0912 initialization of IJKMAX3
 !      IJKMAX3 = IMAX3*JMAX3*KMAX3
       IJKMAX3 = (IMAX3-IMIN3+1)*(JMAX3-JMIN3+1)*(KMAX3-KMIN3+1)
+!// 4th order variables definition
+      IJKMAX4 = (IMAX4-IMIN4+1)*(JMAX4-JMIN4+1)*(KMAX4-KMIN4+1)
       
       
       RETURN  

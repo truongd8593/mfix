@@ -1,10 +1,10 @@
-	Module compar
+        Module compar
 
-	use mpi
+        use mpi
 
 !       Variables to be declared for parallel information. Added by
 !       Ed and Sreekanth on 06/22/99. Removed from geometry_mod and put
-!	in COMPAR module with some additional variables used by AEOLUS
+!       in COMPAR module with some additional variables used by AEOLUS
 
 !       myPE - my processor id (it varies from 0 to nproc-1)
 !
@@ -12,9 +12,9 @@
 
         integer :: myPE, numPEs
 
-!	mpierr - used by AEOLUS for error checking
+!       mpierr - used by AEOLUS for error checking
 
-	INTEGER :: mpierr
+        INTEGER :: mpierr
 
 !//PAR_I/O 0811 specify the rank of the PE to be used for I/O
         INTEGER :: PE_IO = 0
@@ -75,30 +75,48 @@
                 kend_all,kend1_all,kend2_all,kend3_all, &
                 ijksize3_all, displs
 
-!	Variables used for mapping i, j, k to ii, jj, kk to take care of cyclic conditions...
+! Variables used for mapping i, j, k to ii, jj, 
+! kk to take care of cyclic conditions...
 
-	integer, allocatable,dimension(:) :: imap, jmap, kmap
-	integer, allocatable,dimension(:) :: imap_c, jmap_c, kmap_c
+        integer, allocatable,dimension(:) :: imap, jmap, kmap
+        integer, allocatable,dimension(:) :: imap_c, jmap_c, kmap_c
 
         integer :: &
-                ijksize3, ijkstart3,ijkend3, istart3, iend3, jstart3, jend3, &
+                ijksize3, ijkstart3,ijkend3, &
+                istart3, iend3, jstart3, jend3, &
                 kstart3, kend3, istart2, iend2, jstart2, jend2, &
                 kstart2, kend2, istart1, iend1, jstart1, jend1, &
                 kstart1, kend1
 
         integer :: istart, iend, jstart, jend, kstart, kend
 
-!	Variables added at Aytekin's request on 09/01/99 for some code implementation
+!        Variables used for fourth order methods
+
+        integer, allocatable,dimension(:) ::  & 
+                ijkstart4_all,ijkend4_all, ijksize4_all,&
+                istart4_all, jstart4_all, kstart4_all, &
+                iend4_all, jend4_all, kend4_all
+        integer :: &
+                istart4, jstart4, kstart4, &
+                iend4, jend4, kend4, &
+                ijkstart4,ijkend4,ijksize4
+
+!   Variables added at Aytekin's request on 09/01/99 
+!   for some code implementation
 
 !// 500 0803 declaration for storing filebasename, e.g. mfix000.dat
-    	CHARACTER(len=3) :: fbname
-    	INTEGER :: idbg = 1
+        CHARACTER(len=3) :: fbname
+        INTEGER :: idbg = 1
 
 !       Funijk coefficients
 
         integer :: c0, c1, c2
 
-!	contains
+!       Funijk3 coefficients
+
+        integer :: c0_3, c1_3, c2_3
+
+!       contains
 
 !       integer function funijk(i,j,k)
 !       integer,  intent(in):: i,j,k
@@ -114,7 +132,6 @@
 !            the return of this function calls needs to be checked.
 !         call mfix_exit(myPE)
 !        FUNIJK = -99999
-	 
 !        else
 
 !       FUNIJK = 1 + (I - istart3_all(myPE)) &
@@ -122,7 +139,6 @@
 !     + (K-kstart3_all(myPE))*(jend3_all(myPE)-jstart3_all(myPE)+1)* &
 !       (iend3_all(myPE)-istart3_all(myPE)+1)
 !       endif
-	
 !       end function funijk
 
 

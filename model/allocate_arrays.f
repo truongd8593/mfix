@@ -49,6 +49,7 @@
       DIMENSION_3G   = IJKMAX3            
       DIMENSION_3L  = ijksize3_all(myPE)      
       DIMENSION_M   = MAX(1, MMAX)
+      DIMENSION_4   = (kend4-kstart4+1)*(jend4-jstart4+1)*(iend4-istart4+1)
       
       DIMENSION_N_g = 1
       IF(NMAX(0) .NE. UNDEFINED_I)DIMENSION_N_g = NMAX(0)
@@ -274,6 +275,7 @@
       Allocate(  Array4(DIMENSION_3) )
       Allocate(  Array1i(DIMENSION_3) ) 
       Allocate(  Array1c(DIMENSION_3) )
+      Allocate(  TMP4(DIMENSION_4) )
 
 
 !tmp_array1
@@ -313,6 +315,20 @@
 !
 ! array allocation of add on packages, such as linear equation solvers
 !
+
+! array allocation for higher order implementation
+      Allocate(           FLAG3 (DIMENSION_4) )
+      Allocate(           CELL_CLASS3 (DIMENSION_4) )
+      Allocate(           I3_OF (DIMENSION_4) )
+      Allocate(           J3_OF (DIMENSION_4) )
+      Allocate(           K3_OF (DIMENSION_4) )
+      Allocate(           Im1_3 (0:DIMENSION_I) )
+      Allocate(           Ip1_3 (0:DIMENSION_I) )
+      Allocate(           Jm1_3 (0:DIMENSION_J) )
+      Allocate(           Jp1_3 (0:DIMENSION_J) )
+      Allocate(           Km1_3 (0:DIMENSION_K) )
+      Allocate(           Kp1_3 (0:DIMENSION_K) )
+ 
 
      
       RETURN

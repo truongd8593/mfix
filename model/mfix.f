@@ -239,6 +239,11 @@
 !
       CALL SET_INCREMENTS 
 !
+!
+!  Set arrays for computing indices for higher order scheme
+!
+      CALL SET_INCREMENTS3 
+!
 !  Set the flags for wall surfaces impermeable and identify flow boundaries
 !  using FLAG_E, FLAG_N, and FLAG_T
 !

@@ -354,6 +354,8 @@
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar   
+      USE sendrecv
+      USE sendrecv3
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -375,6 +377,8 @@
       INTEGER          IMJK, IM, IJKW
       INTEGER          IJMK, JM, IPJMK, IJKS, IJKSE
       INTEGER          IJKM, KM, IPJKM, IJKB, IJKBE
+      INTEGER          IJK4, IPPP, IPPP4, JPPP, JPPP4, KPPP, KPPP4
+      INTEGER          IMMM, IMMM4, JMMM, JMMM4, KMMM, KMMM4
 !
 ! loezos
 	INTEGER incr
@@ -409,11 +413,20 @@
 !
 !
 !-----------------------------------------------
+!
+!---------------------------------------------------------------
+!	EXTERNAL FUNCTIONS
+!---------------------------------------------------------------
+	DOUBLE PRECISION , EXTERNAL :: FPFOI_OF
+!---------------------------------------------------------------
+!
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
+      INCLUDE 'function3.inc'
 
 
+      call lock_tmp4_array
       call lock_tmp_array
       call lock_xsi_array
 
@@ -421,6 +434,19 @@
 !
 !  Calculate convection factors
 !
+!
+! Send recv the third ghost layer
+      IF ( FPFOI ) THEN
+         Do IJK = ijkstart3, ijkend3
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+            IJK4 = funijk3(I,J,K)
+            TMP4(IJK4) = U_G(IJK)
+         ENDDO
+         CALL send_recv3(tmp4)
+      ENDIF
+
 !$omp parallel do private(IJK,I,IP,IPJK,IJKE)
        DO IJK = ijkstart3, ijkend3
 !
@@ -465,9 +491,29 @@
             I = I_OF(IJK) 
             J = J_OF(IJK) 
             K = K_OF(IJK) 
-            IPJK = IP_OF(IJK) 
-            IJPK = JP_OF(IJK) 
+            IPJK = IP_OF(IJK)
+            IMJK = IM_OF(IJK)
+            IJPK = JP_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IJKP = KP_OF(IJK)
+            IJKM = KM_OF(IJK) 
             IJKE = EAST_OF(IJK) 
+!
+!           Third Ghost layer information
+            IPPP  = IP_OF(IP_OF(IPJK))
+            IPPP4 = funijk3(I_OF(IPPP), J_OF(IPPP), K_OF(IPPP))
+            IMMM  = IM_OF(IM_OF(IMJK))
+            IMMM4 = funijk3(I_OF(IMMM), J_OF(IMMM), K_OF(IMMM))
+            JPPP  = JP_OF(JP_OF(IJPK))
+            JPPP4 = funijk3(I_OF(JPPP), J_OF(JPPP), K_OF(JPPP))
+            JMMM  = JM_OF(JM_OF(IJMK))
+            JMMM4 = funijk3(I_OF(JMMM), J_OF(JMMM), K_OF(JMMM))
+            KPPP  = KP_OF(KP_OF(IJKP))
+            KPPP4 = funijk3(K_OF(IPPP), J_OF(KPPP), K_OF(KPPP))
+            KMMM  = KM_OF(KM_OF(IJKM))
+            KMMM4 = funijk3(I_OF(KMMM), J_OF(KMMM), K_OF(KMMM))
+!
+!
             IF (WALL_AT(IJK)) THEN 
                IJKC = IJKE 
             ELSE 
@@ -480,26 +526,54 @@
 !           DEFERRED CORRECTION CONTRIBUTION AT THE East face (i+1, j, k)
 !
 		IF(U(IJK) >= ZERO)THEN
-	            CONV_FAC = AVG_X(ROP_G(IJK),ROP_G(IJKE),I)*U(IJK)*AYZ_U(IJK) 
+	            CONV_FAC=AVG_X(ROP_G(IJK),ROP_G(IJKE),I)*U(IJK)*AYZ_U(IJK) 
 		    MOM_LO = U_G(IJK)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_G(IPJK), U_G(IJK), & 
+                            U_G(IMJK), U_G(IM_OF(IMJK)))
+                     ELSE
+                     ENDIF
 		ELSE
 		    CONV_FAC = AVG_X(ROP_G(IJKE),ROP_G(EAST_OF(IJKE)),IP)&
                                *U(IJK)*AYZ_U(IJK)
 		    MOM_LO = U_G(IPJK)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_G(IJK), U_G(IPJK), & 
+                            U_G(IP_OF(IPJK)), TMP4(IPPP4))
+                     ELSE
+                     ENDIF
 		ENDIF
-		MOM_HO = XSI_E(IJK)*U_G(IPJK)+(1.0-XSI_E(IJK))*U_G(IJK)
+                     IF (.NOT. FPFOI ) THEN
+		      MOM_HO = XSI_E(IJK)*U_G(IPJK)+ &
+                               (1.0-XSI_E(IJK))*U_G(IJK)
+                     ELSE
+                     ENDIF
 		EAST_DC = CONV_FAC*(MOM_LO-MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE North face (i+1/2, j+1/2, k)
 !            
 		IF(V(IJK) >= ZERO)THEN
-	            CONV_FAC = AVG_X(ROP_G(IJKC),ROP_G(IJKE),I)*V(IJK)*AXZ_U(IJK) 
+	            CONV_FAC=AVG_X(ROP_G(IJKC),ROP_G(IJKE),I)*V(IJK)*AXZ_U(IJK) 
 		    MOM_LO = U_G(IJK)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_G(IJPK), U_G(IJK), & 
+                            U_G(IJMK), U_G(JM_OF(IJMK)))
+                     ELSE
+                     ENDIF
 		ELSE
-		    CONV_FAC = AVG_X(ROP_G(IJKN),ROP_G(IJKNE),I)*V(IJK)*AXZ_U(IJK)
+		   CONV_FAC=AVG_X(ROP_G(IJKN),ROP_G(IJKNE),I)*V(IJK)*AXZ_U(IJK)
 		    MOM_LO = U_G(IJPK)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJPK), & 
+                            U_G(JP_OF(IJPK)), TMP4(JPPP4))
+                     ELSE
+                     ENDIF
 		ENDIF
-		MOM_HO = XSI_N(IJK)*U_G(IJPK)+(1.0-XSI_N(IJK))*U_G(IJK)
+                     IF (.NOT. FPFOI ) THEN
+		      MOM_HO = XSI_N(IJK)*U_G(IJPK)+ &
+                                 (1.0-XSI_N(IJK))*U_G(IJK)
+                     ELSE
+                     ENDIF
 		NORTH_DC = CONV_FAC*(MOM_LO-MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Top face (i+1/2, j, k+1/2)
@@ -509,13 +583,27 @@
                 IJKT = TOP_OF(IJK) 
                 IJKTE = EAST_OF(IJKT) 
 		IF(WW(IJK) >= ZERO)THEN
-	           CONV_FAC = AVG_X(ROP_G(IJKC),ROP_G(IJKE),I)*WW(IJK)*AXY_U(IJK) 
+	           CONV_FAC=AVG_X(ROP_G(IJKC),ROP_G(IJKE),I)*WW(IJK)*AXY_U(IJK) 
 		   MOM_LO = U_G(IJK)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_G(IJKP), U_G(IJK), & 
+                            U_G(IJKM), U_G(KM_OF(IJKM)))
+                     ELSE
+                     ENDIF
 		ELSE
-		   CONV_FAC = AVG_X(ROP_G(IJKT),ROP_G(IJKTE),I)*WW(IJK)*AXY_U(IJK)
+		  CONV_FAC=AVG_X(ROP_G(IJKT),ROP_G(IJKTE),I)*WW(IJK)*AXY_U(IJK)
 		   MOM_LO = U_G(IJKP)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJKP), & 
+                            U_G(KP_OF(IJKP)), TMP4(KPPP4))
+                     ELSE
+                     ENDIF
 		ENDIF
-		MOM_HO = XSI_T(IJK)*U_G(IJKP)+(1.0-XSI_T(IJK))*U_G(IJK)
+                     IF (.NOT. FPFOI ) THEN
+		      MOM_HO = XSI_T(IJK)*U_G(IJKP)+ &
+                               (1.0-XSI_T(IJK))*U_G(IJK)
+                     ELSE
+                     ENDIF
 		TOP_DC = CONV_FAC*(MOM_LO-MOM_HO)
 		
 	    ELSE
@@ -529,15 +617,27 @@
             IM = IM1(I) 
             IJKW = WEST_OF(IJK)
 	    IF(U(IMJK) >= ZERO)THEN
-	      CONV_FAC = AVG_X(ROP_G(IJKW),ROP_G(IJK),IM)*U(IMJK)*AYZ_U(IMJK) 
+	      CONV_FAC=AVG_X(ROP_G(IJKW),ROP_G(IJK),IM)*U(IMJK)*AYZ_U(IMJK) 
 	      MOM_LO = U_G(IMJK)
-	      
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_G(IJK), U_G(IMJK), & 
+                            U_G(IM_OF(IMJK)), TMP4(IMMM4))
+                     ELSE
+                     ENDIF	      
 	    ELSE
-	      CONV_FAC = AVG_X(ROP_G(IJK),ROP_G(IJKE),I)*U(IMJK)*AYZ_U(IMJK)
+	      CONV_FAC=AVG_X(ROP_G(IJK),ROP_G(IJKE),I)*U(IMJK)*AYZ_U(IMJK)
 	      MOM_LO = U_G(IJK)
-	      
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_G(IMJK), U_G(IJK), & 
+                            U_G(IPJK), U_G(IP_OF(IPJK)))
+                     ELSE
+                     ENDIF	      
 	    ENDIF
-	    MOM_HO = XSI_E(IMJK)*U_G(IJK)+(1.0-XSI_E(IMJK))*U_G(IMJK)
+                     IF (.NOT. FPFOI ) THEN
+	              MOM_HO = XSI_E(IMJK)*U_G(IJK)+ &
+                               (1.0-XSI_E(IMJK))*U_G(IMJK)
+                     ELSE
+                     ENDIF
 	    WEST_DC = CONV_FAC*(MOM_LO-MOM_HO)
 
 !
@@ -549,13 +649,27 @@
             IJKS = SOUTH_OF(IJK) 
             IJKSE = EAST_OF(IJKS) 
  	    IF(V(IJMK) >= ZERO)THEN
-	      CONV_FAC = AVG_X(ROP_G(IJKS),ROP_G(IJKSE),I)*V(IJMK)*AXZ_U(IJMK) 
+	      CONV_FAC=AVG_X(ROP_G(IJKS),ROP_G(IJKSE),I)*V(IJMK)*AXZ_U(IJMK) 
 	      MOM_LO = U_G(IJMK)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJMK), & 
+                            U_G(JM_OF(IJMK)), TMP4(JMMM4))
+                     ELSE
+                     ENDIF
 	    ELSE
-	      CONV_FAC = AVG_X(ROP_G(IJK),ROP_G(IJKE),I)*V(IJMK)*AXZ_U(IJMK)
+	      CONV_FAC=AVG_X(ROP_G(IJK),ROP_G(IJKE),I)*V(IJMK)*AXZ_U(IJMK)
 	      MOM_LO = U_G(IJK)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_G(IJMK), U_G(IJK), & 
+                            U_G(IJPK), U_G(JP_OF(IJPK)))
+                     ELSE
+                     ENDIF
 	    ENDIF
-	    MOM_HO = XSI_N(IJMK)*U_G(IJK)+(1.0-XSI_N(IJMK))*U_G(IJMK)
+                     IF (.NOT. FPFOI ) THEN
+	              MOM_HO = XSI_N(IJMK)*U_G(IJK)+ &
+                              (1.0-XSI_N(IJMK))*U_G(IJMK)
+                     ELSE
+                     ENDIF
 	    SOUTH_DC = CONV_FAC*(MOM_LO-MOM_HO)
 	    
 !
@@ -568,13 +682,27 @@
                IJKB = BOTTOM_OF(IJK) 
                IJKBE = EAST_OF(IJKB)
 	       IF(WW(IJK) >= ZERO)THEN
-	         CONV_FAC = AVG_X(ROP_G(IJKB),ROP_G(IJKBE),I)*WW(IJK)*AXY_U(IJKM) 
+	         CONV_FAC=AVG_X(ROP_G(IJKB),ROP_G(IJKBE),I)*WW(IJK)*AXY_U(IJKM) 
 		 MOM_LO = U_G(IJKM)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJKM), & 
+                            U_G(KM_OF(IJKM)), TMP4(KMMM4))
+                     ELSE
+                     ENDIF
 	       ELSE
-		 CONV_FAC = AVG_X(ROP_G(IJK),ROP_G(IJKE),I)*WW(IJK)*AXY_U(IJKM)
+		 CONV_FAC=AVG_X(ROP_G(IJK),ROP_G(IJKE),I)*WW(IJK)*AXY_U(IJKM)
 		 MOM_LO = U_G(IJK)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_G(IJKM), U_G(IJK), & 
+                            U_G(IJKP), U_G(KP_OF(IJKP)))
+                     ELSE
+                     ENDIF
 	       ENDIF
-	       MOM_HO = XSI_T(IJKM)*U_G(IJK)+(1.0-XSI_T(IJKM))*U_G(IJKM)
+                     IF (.NOT. FPFOI ) THEN
+	              MOM_HO = XSI_T(IJKM)*U_G(IJK)+ &
+                               (1.0-XSI_T(IJKM))*U_G(IJKM)
+                     ELSE
+                     ENDIF
 	       BOTTOM_DC = CONV_FAC*(MOM_LO-MOM_HO)
             ELSE
 	       BOTTOM_DC = ZERO
@@ -590,6 +718,7 @@
          ENDIF 
       END DO 
 
+      call unlock_tmp4_array
       call unlock_tmp_array
       call unlock_xsi_array
       

@@ -49,6 +49,7 @@
       USE funits 
       USE compar 
       USE sendrecv 
+      USE sendrecv3
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -72,6 +73,7 @@
 ! 
 !-----------------------------------------------
       INCLUDE 'function.inc'
+      INCLUDE 'function3.inc'
 !
 !  Cell flag definitions
 !  FLAG  ICBC_FLAG BC_TYPE        Cell type
@@ -135,7 +137,56 @@
          FLAG_T(IJK) = UNDEFINED_I 
       END DO 
 
+!
+!  Setting up flags for the higher-order implementation.
+!
 
+      call send_recv(flag)
+
+      DO i = istart3, iend3
+         DO j = jstart3, jend3
+	    DO k = kstart3, kend3
+
+	       Flag3(funijk3(i,j,k)) = Flag(funijk(i,j,k))
+
+            END DO
+         END DO
+      END DO
+
+
+      DO i = istart4, iend4
+         DO j = jstart4, jend4
+	    DO k = kstart4, kend4
+
+	       If(i.eq.istart4.and.istart4.ne.istart3) then
+	       Flag3(funijk3(i,j,k)) = Flag3(funijk3(i+1,j,k))
+	       endif
+
+	       If(j.eq.jstart4.and.kstart4.ne.kstart3) then
+	       Flag3(funijk3(i,j,k)) = Flag3(funijk3(i,j+1,k))
+	       endif
+
+	       If(k.eq.kstart4.and.kstart4.ne.kstart3) then
+	       Flag3(funijk3(i,j,k)) = Flag3(funijk3(i,j,k+1))
+	       endif
+
+	       If(i.eq.iend4.and.iend4.ne.iend3) then
+	       Flag3(funijk3(i,j,k)) = Flag3(funijk3(i-1,j,k))
+	       endif
+
+	       If(j.eq.jend4.and.jend4.ne.jend3) then
+	       Flag3(funijk3(i,j,k)) = Flag3(funijk3(i,j-1,k))
+	       endif
+
+	       If(k.eq.kend4.and.kend4.ne.kend3) then
+	       Flag3(funijk3(i,j,k)) = Flag3(funijk3(i,j,k-1))
+	       endif
+
+            END DO
+         END DO
+      END DO
+
+      call send_recv3(flag3)
 
       DO L = 1, DIMENSION_IS 
 !

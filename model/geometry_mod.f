@@ -131,6 +131,9 @@
 !                      Cell flags.
       INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG 
 !
+!                      Cell flags with 3rd layer.
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG3 
+!
 !                      Flag for the East surface
       INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG_E 
 !
@@ -288,6 +291,9 @@
 
       INTEGER IMIN3,JMIN3,KMIN3,IMAX3,JMAX3,KMAX3, IMIN2, JMIN2, KMIN2
  
+!     ADDED FOLLOWING VARIABLES TO TAKE CARE OF 4th order discretization in parallel
+
+      INTEGER IMIN4,JMIN4,KMIN4,IMAX4,JMAX4,KMAX4, IJKMAX4, IJKMIN4
  
 !!!HPF$ align FLAG(:) with TT(:)
 !!!HPF$ align FLAG_E(:) with TT(:)

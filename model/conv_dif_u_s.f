@@ -356,6 +356,8 @@
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar  
+      USE sendrecv
+      USE sendrecv3
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -377,6 +379,8 @@
       INTEGER          IMJK, IM, IJKW 
       INTEGER          IJMK, JM, IPJMK, IJKS, IJKSE 
       INTEGER          IJKM, KM, IPJKM, IJKB, IJKBE 
+      INTEGER          IJK4, IPPP, IPPP4, JPPP, JPPP4, KPPP, KPPP4
+      INTEGER          IMMM, IMMM4, JMMM, JMMM4, KMMM, KMMM4
 ! 
 !                      Solids phase 
       INTEGER          M 
@@ -411,6 +415,13 @@
         DOUBLE PRECISION  TOP_DC
         DOUBLE PRECISION  BOTTOM_DC
 !
+!
+!
+!---------------------------------------------------------------
+!	EXTERNAL FUNCTIONS
+!---------------------------------------------------------------
+	DOUBLE PRECISION , EXTERNAL :: FPFOI_OF
+!---------------------------------------------------------------
 ! 
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
@@ -418,6 +429,10 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
+      INCLUDE 'function3.inc'
+
+
+      call lock_tmp4_array
 
       
       call lock_tmp_array
@@ -425,6 +440,19 @@
 !
 !  Calculate convection factors
 !
+!
+! Send recv the third ghost layer
+      IF ( FPFOI ) THEN
+         Do IJK = ijkstart3, ijkend3
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+            IJK4 = funijk3(I,J,K)
+            TMP4(IJK4) = U_S(IJK,M)
+         ENDDO
+         CALL send_recv3(tmp4)
+      ENDIF
+
 !
 !$omp parallel do private(IJK,I,IP,IPJK,IJKE)
       DO IJK = ijkstart3, ijkend3
@@ -470,10 +498,30 @@
          IF (FLOW_AT_E(IJK)) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
-            K = K_OF(IJK) 
-            IPJK = IP_OF(IJK) 
-            IJPK = JP_OF(IJK) 
+            K = K_OF(IJK)
+            IPJK = IP_OF(IJK)
+            IMJK = IM_OF(IJK)
+            IJPK = JP_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IJKP = KP_OF(IJK)
+            IJKM = KM_OF(IJK)
             IJKE = EAST_OF(IJK) 
+!
+!           Third Ghost layer information
+            IPPP  = IP_OF(IP_OF(IPJK))
+            IPPP4 = funijk3(I_OF(IPPP), J_OF(IPPP), K_OF(IPPP))
+            IMMM  = IM_OF(IM_OF(IMJK))
+            IMMM4 = funijk3(I_OF(IMMM), J_OF(IMMM), K_OF(IMMM))
+            JPPP  = JP_OF(JP_OF(IJPK))
+            JPPP4 = funijk3(I_OF(JPPP), J_OF(JPPP), K_OF(JPPP))
+            JMMM  = JM_OF(JM_OF(IJMK))
+            JMMM4 = funijk3(I_OF(JMMM), J_OF(JMMM), K_OF(JMMM))
+            KPPP  = KP_OF(KP_OF(IJKP))
+            KPPP4 = funijk3(K_OF(IPPP), J_OF(KPPP), K_OF(KPPP))
+            KMMM  = KM_OF(KM_OF(IJKM))
+            KMMM4 = funijk3(I_OF(KMMM), J_OF(KMMM), K_OF(KMMM))
+!
+!
             IF (WALL_AT(IJK)) THEN 
                IJKC = IJKE 
             ELSE 
@@ -489,12 +537,26 @@
 	           CONV_FAC = AVG_X(ROP_S(IJK,M),ROP_S(IJKE,M),I)&
 		               *U(IJK)*AYZ_U(IJK) 
 		   MOM_LO = U_S(IJK,M)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_S(IPJK,M), U_S(IJK,M), & 
+                            U_S(IMJK,M), U_S(IM_OF(IMJK),M))
+                     ELSE
+                     ENDIF
 		ELSE
 		   CONV_FAC = AVG_X(ROP_S(IJKE,M),ROP_S(EAST_OF(IJKE),M),IP)&
                               *U(IJK)*AYZ_U(IJK)
 		   MOM_LO = U_S(IPJK,M)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_S(IJK,M), U_S(IPJK,M), & 
+                            U_S(IP_OF(IPJK),M), TMP4(IPPP4))
+                     ELSE
+                     ENDIF
 		ENDIF
-		MOM_HO = XSI_E(IJK)*U_S(IPJK,M)+(1.0-XSI_E(IJK))*U_S(IJK,M)
+                     IF (.NOT. FPFOI ) THEN
+		      MOM_HO = XSI_E(IJK)*U_S(IPJK,M)+ &
+                                (1.0-XSI_E(IJK))*U_S(IJK,M)
+                     ELSE
+                     ENDIF
 		EAST_DC = CONV_FAC*(MOM_LO-MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE North face (i+1/2, j+1/2, k)
@@ -503,12 +565,26 @@
 	            CONV_FAC = AVG_X(ROP_S(IJKC,M),ROP_S(IJKE,M),I)&
 		              *V(IJK)*AXZ_U(IJK) 
 		    MOM_LO = U_S(IJK,M)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_S(IJPK,M), U_S(IJK,M), & 
+                            U_S(IJMK,M), U_S(JM_OF(IJMK),M))
+                     ELSE
+                     ENDIF
 		ELSE
 		    CONV_FAC = AVG_X(ROP_S(IJKN,M),ROP_S(IJKNE,M),I)&
 		              *V(IJK)*AXZ_U(IJK)
 		    MOM_LO = U_S(IJPK,M)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_S(IJK,M), U_S(IJPK,M), & 
+                            U_S(JP_OF(IJPK),M), TMP4(JPPP4))
+                     ELSE
+                     ENDIF
 		ENDIF
-		MOM_HO = XSI_N(IJK)*U_S(IJPK,M)+(1.0-XSI_N(IJK))*U_S(IJK,M)
+                     IF (.NOT. FPFOI ) THEN
+		      MOM_HO = XSI_N(IJK)*U_S(IJPK,M)+ &
+                              (1.0-XSI_N(IJK))*U_S(IJK,M)
+                     ELSE
+                     ENDIF
 		NORTH_DC = CONV_FAC*(MOM_LO-MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Top face (i+1/2, j, k+1/2)
@@ -521,12 +597,26 @@
 	          CONV_FAC = AVG_X(ROP_S(IJKC,M),ROP_S(IJKE,M),I)&
 		             *WW(IJK)*AXY_U(IJK) 
 		  MOM_LO = U_S(IJK,M)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_S(IJKP,M), U_S(IJK,M), & 
+                            U_S(IJKM,M), U_S(KM_OF(IJKM),M))
+                     ELSE
+                     ENDIF
 	       ELSE
 		 CONV_FAC = AVG_X(ROP_S(IJKT,M),ROP_S(IJKTE,M),I)&
 		           *WW(IJK)*AXY_U(IJK)
 		 MOM_LO = U_S(IJKP,M)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_S(IJK,M), U_S(IJKP,M), & 
+                            U_S(KP_OF(IJKP),M), TMP4(KPPP4))
+                     ELSE
+                     ENDIF
 	       ENDIF
-	       MOM_HO = XSI_T(IJK)*U_S(IJKP,M)+(1.0-XSI_T(IJK))*U_S(IJK,M)
+                     IF (.NOT. FPFOI ) THEN
+	              MOM_HO = XSI_T(IJK)*U_S(IJKP,M)+ &
+                                 (1.0-XSI_T(IJK))*U_S(IJK,M)
+                     ELSE
+                     ENDIF
 	       TOP_DC = CONV_FAC*(MOM_LO-MOM_HO)
 	    ELSE
 	       TOP_DC = ZERO
@@ -542,11 +632,25 @@
 	      CONV_FAC = AVG_X(ROP_S(IJKW,M),ROP_S(IJK,M),IM)&
 	                 *U(IMJK)*AYZ_U(IMJK) 
 	      MOM_LO = U_S(IMJK,M)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_S(IJK,M), U_S(IMJK,M), & 
+                            U_S(IM_OF(IMJK),M), TMP4(IMMM4))
+                     ELSE
+                     ENDIF	  
 	    ELSE
-	      CONV_FAC = AVG_X(ROP_S(IJK,M),ROP_S(IJKE,M),I)*U(IMJK)*AYZ_U(IMJK)
+	      CONV_FAC=AVG_X(ROP_S(IJK,M),ROP_S(IJKE,M),I)*U(IMJK)*AYZ_U(IMJK)
 	      MOM_LO = U_S(IJK,M)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_S(IMJK,M), U_S(IJK,M), & 
+                            U_S(IPJK,M), U_S(IP_OF(IPJK),M))
+                     ELSE
+                     ENDIF	
 	    ENDIF
-	    MOM_HO = XSI_E(IMJK)*U_S(IJK,M)+(1.0-XSI_E(IMJK))*U_S(IMJK,M)
+                     IF (.NOT. FPFOI ) THEN
+	              MOM_HO = XSI_E(IMJK)*U_S(IJK,M)+ &
+                               (1.0-XSI_E(IMJK))*U_S(IMJK,M)
+                     ELSE
+                     ENDIF
 	    WEST_DC = CONV_FAC*(MOM_LO-MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE South face (i+1/2, j-1/2, k)
@@ -560,12 +664,26 @@
 	       CONV_FAC = AVG_X(ROP_S(IJKS,M),ROP_S(IJKSE,M),I)&
 	                  *V(IJMK)*AXZ_U(IJMK) 
 	       MOM_LO = U_S(IJMK,M)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_S(IJK,M), U_S(IJMK,M), & 
+                            U_S(JM_OF(IJMK),M), TMP4(JMMM4))
+                     ELSE
+                     ENDIF
 	    ELSE
 	       CONV_FAC = AVG_X(ROP_S(IJK,M),ROP_S(IJKE,M),I)&
 		           *V(IJMK)*AXZ_U(IJMK)
 	       MOM_LO = U_S(IJK,M)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_S(IJMK,M), U_S(IJK,M), & 
+                            U_S(IJPK,M), U_S(JP_OF(IJPK),M))
+                     ELSE
+                     ENDIF
 	    ENDIF
-	    MOM_HO = XSI_N(IJMK)*U_S(IJK,M)+(1.0-XSI_N(IJMK))*U_S(IJMK,M)
+                     IF (.NOT. FPFOI ) THEN
+	              MOM_HO = XSI_N(IJMK)*U_S(IJK,M)+ &
+                               (1.0-XSI_N(IJMK))*U_S(IJMK,M)
+                     ELSE
+                     ENDIF
 	    SOUTH_DC = CONV_FAC*(MOM_LO-MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Bottom face (i+1/2, j, k-1/2)
@@ -580,12 +698,26 @@
 	            CONV_FAC = AVG_X(ROP_S(IJKB,M),ROP_S(IJKBE,M),I)&
 		               *WW(IJK)*AXY_U(IJKM) 
 		    MOM_LO = U_S(IJKM,M)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_S(IJK,M), U_S(IJKM,M), & 
+                            U_S(KM_OF(IJKM),M), TMP4(KMMM4))
+                     ELSE
+                     ENDIF
 	       ELSE
 		    CONV_FAC = AVG_X(ROP_S(IJK,M),ROP_S(IJKE,M),I)&
 		               *WW(IJK)*AXY_U(IJKM)
 		    MOM_LO = U_S(IJK,M)
+                     IF ( FPFOI ) THEN
+                      MOM_HO = FPFOI_OF(U_S(IJKM,M), U_S(IJK,M), & 
+                            U_S(IJKP,M), U_S(KP_OF(IJKP),M))
+                     ELSE
+                     ENDIF
 	       ENDIF
-	       MOM_HO = XSI_T(IJKM)*U_S(IJK,M)+(1.0-XSI_T(IJKM))*U_S(IJKM,M)
+                     IF (.NOT. FPFOI ) THEN
+	              MOM_HO = XSI_T(IJKM)*U_S(IJK,M)+ &
+                               (1.0-XSI_T(IJKM))*U_S(IJKM,M)
+                     ELSE
+                     ENDIF
 	       BOTTOM_DC = CONV_FAC*(MOM_LO-MOM_HO)
             ELSE
 	       BOTTOM_DC = ZERO
@@ -599,6 +731,7 @@
          ENDIF 
       END DO 
      
+      call unlock_tmp4_array
       call unlock_tmp_array
       call unlock_xsi_array
       

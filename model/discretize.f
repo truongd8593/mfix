@@ -374,3 +374,90 @@
 !
       RETURN  
       END FUNCTION PHI_C_OF 
+!
+!
+      DOUBLE PRECISION FUNCTION FPFOI_OF (PHI_D, PHI_C, &
+                       PHI_U, PHI_UU) 
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      DOUBLE PRECISION PHI_D, PHI_C, PHI_U, PHI_UU
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+	DOUBLE PRECISION , EXTERNAL :: UNIV_LIMITER_OF
+!-----------------------------------------------
+!   E x t e r n a l   F u n c t i o n s
+!-----------------------------------------------
+!-----------------------------------------------
+!
+      FPFOI_OF = PHI_C + (5.0/16.0)*(PHI_D - PHI_C) + &
+                         (1.0/4.0)*(PHI_C - PHI_U) - &
+                         (1.0/16.0)*(PHI_U - PHI_UU)
+!
+!	LIMIT THE HIGH ORDER INTERPOLATION
+!
+      FPFOI_OF = UNIV_LIMITER_OF(FPFOI_OF , PHI_D, PHI_C, PHI_U)
+      RETURN  
+      END FUNCTION FPFOI_OF 
+!
+!
+      DOUBLE PRECISION FUNCTION UNIV_LIMITER_OF (PHI_TEMP, PHI_D, PHI_C, &
+                                                   PHI_U)
+! 
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1
+      USE run
+!      USE fldvar
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      DOUBLE PRECISION PHI_TEMP, PHI_D, PHI_C, PHI_U
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+	DOUBLE PRECISION PHI_REF, DEL, CURV
+!-----------------------------------------------
+!   E x t e r n a l   F u n c t i o n s
+!-----------------------------------------------
+!-----------------------------------------------
+!
+!
+      	DEL = PHI_D - PHI_U
+      	CURV = PHI_D - 2.0*PHI_C + PHI_U
+      IF (ABS (CURV) >= ABS (DEL)) THEN     ! NON-MONOTONIC
+      	UNIV_LIMITER_OF = PHI_C
+      ELSE
+        PHI_REF = PHI_U + (PHI_C-PHI_U)/C_FAC
+       IF (DEL > ZERO) THEN
+         IF (PHI_TEMP < PHI_C)UNIV_LIMITER_OF = PHI_C
+         IF (PHI_TEMP > MIN(PHI_REF,PHI_D)) &
+                      UNIV_LIMITER_OF = MIN(PHI_REF,PHI_D)
+         IF (PHI_TEMP >= PHI_C .AND. PHI_TEMP <= MIN(PHI_REF,PHI_D)) &
+                      UNIV_LIMITER_OF = PHI_TEMP
+       ELSE
+         IF (PHI_TEMP > PHI_C)UNIV_LIMITER_OF = PHI_C
+         IF (PHI_TEMP < MAX(PHI_REF,PHI_D)) &
+                      UNIV_LIMITER_OF = MAX(PHI_REF,PHI_D)
+         IF (PHI_TEMP >= MAX(PHI_REF,PHI_D) .AND. PHI_TEMP <= PHI_C) &
+                      UNIV_LIMITER_OF = PHI_TEMP
+       ENDIF
+      ENDIF
+      RETURN  
+      END FUNCTION UNIV_LIMITER_OF 

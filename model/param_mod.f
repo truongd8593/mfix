@@ -18,6 +18,9 @@
 !
 !                      Maximum number of computational cells
       INTEGER          DIMENSION_3
+!                      Maximum number of computational cells for 
+!                      higher order implementation
+      INTEGER          DIMENSION_4
 !      PARAMETER (DIMENSION_3 =918)
 !//375 1025 added two new global and local subdomain size variables
       INTEGER          DIMENSION_3L, DIMENSION_3G

@@ -43,6 +43,14 @@
       INTEGER          INCREMENT_FOR_km(MAX_CLASS)
       INTEGER          INCREMENT_FOR_kp(MAX_CLASS)
 !
+!                      Increments used for index computation of 3rd layer
+      INTEGER          INCREMENT3_FOR_im(MAX_CLASS)
+      INTEGER          INCREMENT3_FOR_ip(MAX_CLASS)
+      INTEGER          INCREMENT3_FOR_jm(MAX_CLASS)
+      INTEGER          INCREMENT3_FOR_jp(MAX_CLASS)
+      INTEGER          INCREMENT3_FOR_km(MAX_CLASS)
+      INTEGER          INCREMENT3_FOR_kp(MAX_CLASS)
+!
 !                      Store LM index values
       INTEGER, DIMENSION(:, :), ALLOCATABLE ::           STORE_LM 
 !
@@ -76,6 +84,36 @@
 !                      Store (K + 1)'s
       INTEGER, DIMENSION(:), ALLOCATABLE ::           Kp1 
 !
+!
+!                      Identification of the cell class for higher order scheme
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           CELL_CLASS3
+!
+!                      I
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           I3_OF
+!
+!                      J
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           J3_OF
+!
+!                      K
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           K3_OF
+!
+!                      Store (I - 1)'s
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           Im1_3
+!
+!                      Store (I + 1)'s
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           Ip1_3
+!
+!                      Store (J - 1)'s
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           Jm1_3
+!
+!                      Store (J + 1)'s
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           Jp1_3
+!
+!                      Store (K - 1)'s
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           Km1_3
+!
+!                      Store (K + 1)'s
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           Kp1_3
  
  
 !!!!HPF$ distribute CELL_CLASS(block)

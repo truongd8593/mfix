@@ -3,8 +3,8 @@
 ! 1.1 Run control section
 !
              RUN_NAME, DESCRIPTION, UNITS, RUN_TYPE, TIME, TSTOP,&
-             DT, ENERGY_EQ, DEF_COR, SPECIES_EQ, CALL_USR, MODEL_B,&
-             DT_MAX, DT_MIN, DT_FAC, DETECT_STALL,&
+             DT, ENERGY_EQ, DEF_COR, C_FAC, FPFOI, SPECIES_EQ, &
+             CALL_USR, MODEL_B, DT_MAX, DT_MIN, DT_FAC, DETECT_STALL,&
              MOMENTUM_X_EQ, MOMENTUM_Y_EQ,MOMENTUM_Z_EQ, DISCRETIZE,&
              GRANULAR_ENERGY,& 
 	     NScalar, Phase4Scalar, &

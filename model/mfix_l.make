@@ -4,6 +4,7 @@
 mfix.exe : \
     ambm.mod \
     bc.mod \
+    boundfunijk3.mod \
     boundfunijk.mod \
     check.mod \
     coeff.mod \
@@ -55,6 +56,7 @@ mfix.exe : \
     mpi.mod \
     mpi_utility.mod \
     parallel_mpi.mod \
+    sendrecv3.mod \
     sendrecv.mod \
     adjust_a_u_g.$(OBJ_EXT) \
     adjust_a_u_s.$(OBJ_EXT) \
@@ -210,8 +212,10 @@ mfix.exe : \
     set_geometry1.$(OBJ_EXT) \
     set_ic.$(OBJ_EXT) \
     set_increments.$(OBJ_EXT) \
+    set_increments3.$(OBJ_EXT) \
     set_index1.$(OBJ_EXT) \
     set_index1a.$(OBJ_EXT) \
+    set_index1a3.$(OBJ_EXT) \
     set_l_scale.$(OBJ_EXT) \
     set_max2.$(OBJ_EXT) \
     set_mw_mix_g.$(OBJ_EXT) \
@@ -305,6 +309,7 @@ mfix.exe : \
     bc_phi.$(OBJ_EXT) \
     bc_theta.$(OBJ_EXT) \
     bound_x.$(OBJ_EXT) \
+    boundfunijk3_mod.$(OBJ_EXT) \
     boundfunijk_mod.$(OBJ_EXT) \
     cal_d.$(OBJ_EXT) \
     calc_cell.$(OBJ_EXT) \
@@ -474,8 +479,10 @@ mfix.exe : \
     set_geometry1.$(OBJ_EXT) \
     set_ic.$(OBJ_EXT) \
     set_increments.$(OBJ_EXT) \
+    set_increments3.$(OBJ_EXT) \
     set_index1.$(OBJ_EXT) \
     set_index1a.$(OBJ_EXT) \
+    set_index1a3.$(OBJ_EXT) \
     set_l_scale.$(OBJ_EXT) \
     set_max2.$(OBJ_EXT) \
     set_mw_mix_g.$(OBJ_EXT) \
@@ -569,6 +576,7 @@ mfix.exe : \
     mpi_mod.$(OBJ_EXT) \
     mpi_utility_mod.$(OBJ_EXT) \
     parallel_mpi_mod.$(OBJ_EXT) \
+    sendrecv3_mod.$(OBJ_EXT) \
     sendrecv_mod.$(OBJ_EXT) \
   -o mfix.exe $(LIB_FLAGS)
   
@@ -586,6 +594,16 @@ bc.mod : bc_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) bc_mod.f 
+boundfunijk3.mod : boundfunijk3_mod.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            geometry.mod \
+            compar.mod \
+            fldvar.mod \
+            indices.mod \
+            function3.inc                                               
+	$(FORTRAN_CMD) $(FORT_FLAGS) boundfunijk3_mod.f 
 boundfunijk.mod : boundfunijk_mod.f \
             param.mod \
             param1.mod \
@@ -798,6 +816,15 @@ parallel_mpi.mod : ./dmp_modules/parallel_mpi_mod.f \
             geometry.mod \
             compar.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/parallel_mpi_mod.f 
+sendrecv3.mod : ./dmp_modules/sendrecv3_mod.f \
+            parallel_mpi.mod \
+            debug.mod \
+            geometry.mod \
+            compar.mod \
+            indices.mod \
+            mpi.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/sendrecv3_mod.f 
 sendrecv.mod : ./dmp_modules/sendrecv_mod.f \
             parallel_mpi.mod \
             debug.mod \
@@ -2548,8 +2575,10 @@ set_flags.$(OBJ_EXT) : set_flags.f \
             funits.mod \
             compar.mod \
             sendrecv.mod \
+            sendrecv3.mod \
             mpi_utility.mod \
-            function.inc                                                
+            function.inc                                                 \
+            function3.inc                                               
 set_fluidbed_p.$(OBJ_EXT) : set_fluidbed_p.f \
             param.mod \
             param1.mod \
@@ -2615,6 +2644,17 @@ set_increments.$(OBJ_EXT) : set_increments.f \
             fldvar.mod \
             funits.mod \
             function.inc                                                
+set_increments3.$(OBJ_EXT) : set_increments3.f \
+            param.mod \
+            param1.mod \
+            indices.mod \
+            geometry.mod \
+            compar.mod \
+            physprop.mod \
+            fldvar.mod \
+            funits.mod \
+            function.inc                                                 \
+            function3.inc                                               
 set_index1.$(OBJ_EXT) : set_index1.f \
             param.mod \
             param1.mod \
@@ -2634,6 +2674,16 @@ set_index1a.$(OBJ_EXT) : set_index1a.f \
             fldvar.mod \
             indices.mod \
             boundfunijk.mod \
+            function.inc                                                
+set_index1a3.$(OBJ_EXT) : set_index1a3.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            geometry.mod \
+            compar.mod \
+            fldvar.mod \
+            indices.mod \
+            boundfunijk3.mod \
             function.inc                                                
 set_l_scale.$(OBJ_EXT) : set_l_scale.f \
             param.mod \
@@ -2780,7 +2830,8 @@ solve_lin_eq.$(OBJ_EXT) : solve_lin_eq.f \
             param.mod \
             param1.mod \
             geometry.mod \
-            compar.mod 
+            compar.mod \
+            funits.mod 
 solve_pp_g.$(OBJ_EXT) : solve_pp_g.f \
             param.mod \
             param1.mod \

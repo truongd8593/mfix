@@ -1442,9 +1442,9 @@
       prod = 0.0d0
    
 !$omp parallel do private(i,j,k,ijk) reduction(+:prod)
-      do k = kstart, kend
-        do i = istart, iend
-          do j = jstart, jend
+      do k = kstart1, kend1
+        do i = istart1, iend1
+          do j = jstart1, jend1
    
             ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
 !           ijk = funijk (i,j,k)
@@ -1474,9 +1474,9 @@
         prod = 0.0d0
   
 !$omp parallel do private(i,j,k,ijk) reduction(+:prod)
-        do k = kmin2, kmax2
-          do i = imin2, imax2
-            do j = jmin2, jmax2
+        do k = kmin1, kmax1
+          do i = imin1, imax1
+            do j = jmin1, jmax1
   
               ijk = funijk_gl (imap_c(i),jmap_c(j),kmap_c(k))
 !             ijk = funijk_gl (i,j,k)

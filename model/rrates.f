@@ -76,9 +76,6 @@
       RETURN
 
 !************************************************************************
-
-
-      IER = 0
       R_tmp = UNDEFINED
 !
 !  ---  Remember to include all the local variables here for parallel
