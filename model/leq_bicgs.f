@@ -148,7 +148,6 @@
 		      RtildexR, aijmax, Rnorm=0, Rnorm0, Snorm, TOLMIN, pnorm
       LOGICAL :: isconverged
       INTEGER :: i, ii, j, k, ijk, itemp, iter
-      logical :: is_serial 
 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -168,7 +167,7 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-      is_serial = numPEs.eq.1
+      is_serial = numPEs.eq.1.and.is_serial
 
       alpha(:)  = zero
       beta(:)   = zero
@@ -2043,7 +2042,6 @@
 		      RtildexR, aijmax, Rnorm=0, Rnorm0, Snorm, TOLMIN, pnorm
       LOGICAL :: isconverged
       INTEGER :: i, ii, j, k, ijk, itemp, iter
-      logical :: is_serial 
 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -2063,7 +2061,7 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
-      is_serial = numPEs.eq.1
+      is_serial = numPEs.eq.1.and.is_serial
 
       alpha(:)  = zero
       beta(:)   = zero

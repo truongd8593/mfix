@@ -68,6 +68,7 @@
       USE rxns
       USE scalars
       USE compar
+      USE parallel
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -426,6 +427,9 @@
       NODESI = UNDEFINED_I
       NODESJ = UNDEFINED_I
       NODESK = UNDEFINED_I
+
+      IS_SERIAL = .TRUE.
+      USE_DOLOOP = .FALSE.
 
       CALL USR_INIT_NAMELIST 
 !

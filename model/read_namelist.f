@@ -77,6 +77,7 @@
       USE rxns
       USE scalars
       USE compar    
+      USE parallel    
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
