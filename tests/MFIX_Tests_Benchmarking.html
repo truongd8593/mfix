@@ -1,0 +1,386 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>MFIX Tests Benchmarking</title>
+  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+</head>
+<body text="#000000" bgcolor="#33ccff" link="#0000ff" alink="#000088" vlink="#ff0000">
+Simulations in tests directory<br>
+<table border="1" width="100%" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td>Name </td>
+      <td>Fluid </td>
+      <td>Solids </td>
+      <td>Moment </td>
+      <td>Energy </td>
+      <td>Species </td>
+      <td>Cyclic </td>
+      <td>Rxns </td>
+      <td>Transient</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">RSRS (Compaq EV67)<br>
+02/18/02<br>
+-Sreekanth<br>
+      </td>
+      <td valign="top">ISIS (Compaq EV67)<br>
+02/18/02 -Sreekanth<br>
+      </td>
+      <td valign="top">Comments<br>
+      </td>
+    </tr>
+    <tr>
+      <td>cond_conv </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>.</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">2.58 secs<br>
+169 Iters.<br>
+      </td>
+      <td valign="top">.<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>conduction </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>.</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">0.49 Secs<br>
+49 iters.<br>
+      </td>
+      <td valign="top">.<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>conduction2 </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>(two layers with jump) </td>
+      <td>.77 Secs<br>
+666 iters.<br>
+      </td>
+      <td>.<br>
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>developed_pipe_flow </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>.</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">0.44 Secs<br>
+379 iters.<br>
+      </td>
+      <td valign="top">.<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>developed_pipe_flow1 </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>.</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">0.1 secs<br>
+2 iters.<br>
+      </td>
+      <td valign="top">.<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>developed_slit_flow </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>.</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">0.57 Secs<br>
+437 iters.<br>
+      </td>
+      <td valign="top">.<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>dmp_test </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">59.33 Secs<br>
+      </td>
+      <td valign="top">.<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>dmp_test_cyclic </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">75.58 Secs<br>
+      </td>
+      <td valign="top">.<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>driven-cavity </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>.</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">57.37 Secs<br>
+614 iters.<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>granular_shear </td>
+      <td>. </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><font color="#ff6666">Diverged</font><br>
+      <font color="#ff6666">@</font><br>
+      <font color="#ff6666">0.73E-01</font> <br>
+      </td>
+      <td valign="top"><font color="#ff6666">Diverged @<br>
+ 0.18</font><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>packed_bed </td>
+      <td>. </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">29.51 Secs<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>rotary-drum </td>
+      <td>. </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">1598.90 Secs<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>settling-tank </td>
+      <td>X </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><font color="#ff6666">Diverged @ 0.109E-4</font><br>
+      </td>
+      <td valign="top"><font color="#009900">Running!!<br>
+      </font></td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>simple-2phase </td>
+      <td>X </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><font color="#ff6666">Diverged @0.1E-3</font><br>
+      </td>
+      <td valign="top"><font color="#ff6666">Diverged @0.1E-3</font><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>solid-body-rotation </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>.</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">9.58 Secs<br>
+2 iters.<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>reactor1 </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>.</td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">See tests in tutorials<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>cyclic-shear </td>
+      <td>X </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>. </td>
+      <td>X </td>
+      <td>(Lees-Edwards bc) </td>
+      <td><font color="#3333ff"><font color="#009900">Running!!</font><br>
+      </font></td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>ozone </td>
+      <td>X </td>
+      <td>X </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>. </td>
+      <td>X </td>
+      <td>X </td>
+      <td>3D Cylindrical </td>
+      <td><font color="#009900">Running!!</font><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</body>
+</html>
