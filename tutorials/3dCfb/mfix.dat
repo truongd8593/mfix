@@ -149,10 +149,10 @@
                                                                                 
    RES_DT = 0.01  !OUT_DT = 100.                                                
          !                                                                      
-         !  EP_g     P_g     U_g   U_s   ROP_s  T_g      X_g                    
+         !  EP_g     P_g     U_g   U_s   ROP_s  T_g      X_g    Theta  Scalar                
          !           P_star  V_g   V_s          T_s1     X_s                    
          !                   W_g   W_s          T_s2                            
-   SPX_DT = 0.02     0.2     0.2   0.2   100.    100.    100.  100.0            
+   SPX_DT = 0.02     0.2     0.2   0.2   100.    100.    100.  100.0    100.       
                                                                                 
    USR_DT(1) = 0.1                                                              
                                                                                 
