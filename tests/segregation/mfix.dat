@@ -1,6 +1,15 @@
 !  Fluidized Bed Simulation with Particle Segregation
 !                                                                               
 !  bub01 - fluidized bed with a central jet with particle segregation
+! 
+! ****************** Reference ************************************
+! Goldschmidt, M.J.V., Kuipers, J.A.M., and van Swaiij, W.P.M., (2001),
+! Segregation in Dense Gas-Fluidised Beds: Validation of Multi-Fluid
+! Continuum Model with Non-intrusive Digital Image Analysis
+! Measurements, 10th Engineering Foundation Conference on Fluidization,
+! Beijing, China, May 20-25, pp.795-802
+! **********************************************************************
+
                            
 ! Run-control section                                                                                                   
   RUN_NAME              = 'RONG'             
