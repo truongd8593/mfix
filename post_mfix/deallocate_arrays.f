@@ -50,7 +50,7 @@
 !coeff
       
       Deallocate( DENSITY )
-      Deallocate( SIZE )
+      Deallocate( PSIZE )
       Deallocate( SP_HEAT )
       Deallocate( VISC )
       Deallocate( COND )
