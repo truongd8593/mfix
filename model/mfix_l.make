@@ -90,9 +90,6 @@ mfix.exe : \
     drag_gs.$(OBJ_EXT) \
     drag_mod.$(OBJ_EXT) \
     drag_ss.$(OBJ_EXT) \
-    dsdgmr_a_mod.$(OBJ_EXT) \
-    dslucs_a_mod.$(OBJ_EXT) \
-    dslugm_a_mod.$(OBJ_EXT) \
     energy_mod.$(OBJ_EXT) \
     eosg.$(OBJ_EXT) \
     equal.$(OBJ_EXT) \
@@ -116,7 +113,6 @@ mfix.exe : \
     get_stats.$(OBJ_EXT) \
     get_walls_bc.$(OBJ_EXT) \
     ic_mod.$(OBJ_EXT) \
-    igcg_a_mod.$(OBJ_EXT) \
     in_bin_512.$(OBJ_EXT) \
     in_bin_512i.$(OBJ_EXT) \
     indices_mod.$(OBJ_EXT) \
@@ -375,9 +371,6 @@ mfix.exe : \
     drag_gs.$(OBJ_EXT) \
     drag_mod.$(OBJ_EXT) \
     drag_ss.$(OBJ_EXT) \
-    dsdgmr_a_mod.$(OBJ_EXT) \
-    dslucs_a_mod.$(OBJ_EXT) \
-    dslugm_a_mod.$(OBJ_EXT) \
     energy_mod.$(OBJ_EXT) \
     eosg.$(OBJ_EXT) \
     equal.$(OBJ_EXT) \
@@ -401,7 +394,6 @@ mfix.exe : \
     get_stats.$(OBJ_EXT) \
     get_walls_bc.$(OBJ_EXT) \
     ic_mod.$(OBJ_EXT) \
-    igcg_a_mod.$(OBJ_EXT) \
     in_bin_512.$(OBJ_EXT) \
     in_bin_512i.$(OBJ_EXT) \
     indices_mod.$(OBJ_EXT) \
@@ -616,12 +608,6 @@ drag.mod : drag_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) drag_mod.f 
-dsdgmr_a.mod : dsdgmr_a_mod.f 
-	$(FORTRAN_CMD) $(FORT_FLAGS) dsdgmr_a_mod.f 
-dslucs_a.mod : dslucs_a_mod.f 
-	$(FORTRAN_CMD) $(FORT_FLAGS) dslucs_a_mod.f 
-dslugm_a.mod : dslugm_a_mod.f 
-	$(FORTRAN_CMD) $(FORT_FLAGS) dslugm_a_mod.f 
 energy.mod : energy_mod.f \
             param.mod \
             param1.mod 
@@ -642,8 +628,6 @@ ic.mod : ic_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ic_mod.f 
-igcg_a.mod : igcg_a_mod.f 
-	$(FORTRAN_CMD) $(FORT_FLAGS) igcg_a_mod.f 
 indices.mod : indices_mod.f \
             param.mod \
             param1.mod 
@@ -774,9 +758,11 @@ dbg_util.mod : ./dmp_modules/dbg_util_mod.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/dbg_util_mod.f 
 debug.mod : ./dmp_modules/debug_mod.f \
+            dbg_util.mod \
             funits.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/debug_mod.f 
 gridmap.mod : ./dmp_modules/gridmap_mod.f \
+            mpi_utility.mod \
             parallel_mpi.mod \
             geometry.mod \
             sendrecv.mod \
@@ -785,7 +771,7 @@ gridmap.mod : ./dmp_modules/gridmap_mod.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/gridmap_mod.f 
 mpi.mod : ./dmp_modules/mpi_mod.f \
-            /usr/include/mpif.h                                         
+            mpif.h                                                      
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/mpi_mod.f 
 mpi_utility.mod : ./dmp_modules/mpi_utility_mod.f \
             geometry.mod \
@@ -2170,6 +2156,7 @@ machine.$(OBJ_EXT) : machine.f \
             machine.mod \
             param.mod \
             run.mod \
+            compar.mod \
             funits.mod 
 make_upper_case.$(OBJ_EXT) : make_upper_case.f 
 mark_phase_4_cor.$(OBJ_EXT) : mark_phase_4_cor.f \
@@ -2550,7 +2537,6 @@ set_geometry1.$(OBJ_EXT) : set_geometry1.f \
             geometry.mod \
             indices.mod \
             compar.mod \
-            funits.mod \
             function.inc                                                
 set_ic.$(OBJ_EXT) : set_ic.f \
             param.mod \
@@ -2614,7 +2600,8 @@ set_l_scale.$(OBJ_EXT) : set_l_scale.f \
 set_max2.$(OBJ_EXT) : set_max2.f \
             param.mod \
             param1.mod \
-            geometry.mod 
+            geometry.mod \
+            compar.mod 
 set_mw_mix_g.$(OBJ_EXT) : set_mw_mix_g.f \
             param.mod \
             param1.mod \
@@ -2649,8 +2636,6 @@ set_ro_g.$(OBJ_EXT) : set_ro_g.f \
             constant.mod \
             indices.mod \
             compar.mod \
-            funits.mod \
-            sendrecv.mod \
             function.inc                                                
 set_wall_bc.$(OBJ_EXT) : set_wall_bc.f \
             param.mod \
@@ -3389,7 +3374,6 @@ vf_gs_x.$(OBJ_EXT) : vf_gs_x.f \
             indices.mod \
             physprop.mod \
             compar.mod \
-            sendrecv.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -3400,7 +3384,6 @@ vf_gs_y.$(OBJ_EXT) : vf_gs_y.f \
             indices.mod \
             physprop.mod \
             compar.mod \
-            sendrecv.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -3411,7 +3394,6 @@ vf_gs_z.$(OBJ_EXT) : vf_gs_z.f \
             indices.mod \
             physprop.mod \
             compar.mod \
-            sendrecv.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
