@@ -214,6 +214,9 @@
 ! 
 !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
 !     FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
+!      funijk(li,lj,lk) = lj + c0 + li*c1 + lk*c2
+      FUNIJK_IO (LI, LJ, LK) = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
+      FUNIJK (LI, LJ, LK) = FUNIJK_IO (LI, LJ, LK)
 
 !//SP
 !     FUNIJK_PROC(LI, LJ, LK, LIPROC) = 1 + (LI - istart3_all(LIPROC))+ &
@@ -232,9 +235,8 @@
       FUNIJK_GL (LI, LJ, LK) = 1 + (LJ - jmin3) + (LI-imin3)*(jmax3-jmin3+1) &
       + (LK-kmin3)*(jmax3-jmin3+1)*(imax3-imin3+1)
 
-      FUNIJK_IO (LI, LJ, LK) = 1 + (LI - imin2) + (LJ-jmin2)*(imax2-imin2+1) &
-      + (LK-kmin2)*(jmax2-jmin2+1)*(imax2-imin2+1)
-      funijk(li,lj,lk) = FUNIJK_IO (LI, LJ, LK)
+!      FUNIJK_IO (LI, LJ, LK) = 1 + (LI - imin2) + (LJ-jmin2)*(imax2-imin2+1) &
+!      + (LK-kmin2)*(jmax2-jmin2+1)*(imax2-imin2+1)
 
       IS_ON_myPE_plus2layers (LI, LJ, LK) = LI.ge.istart3.and.LI.le.iend3.and. &
 				LJ.ge.jstart3.and.LJ.le.jend3.and. &
