@@ -1476,13 +1476,14 @@ conv_dif_phi.$(OBJ_EXT) : conv_dif_phi.f \
             param.mod \
             param1.mod \
             run.mod \
+            geometry.mod \
+            compar.mod \
+            sendrecv.mod \
+            xsi_array.mod \
             parallel.mod \
             matrix.mod \
             toleranc.mod \
-            geometry.mod \
             indices.mod \
-            compar.mod \
-            xsi_array.mod \
             scales.mod \
             constant.mod \
             physprop.mod \

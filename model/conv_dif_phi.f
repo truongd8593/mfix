@@ -32,6 +32,10 @@
       USE param 
       USE param1
       USE run 
+      USE geometry
+      USE compar
+      USE sendrecv
+      Use xsi_array
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -68,6 +72,22 @@
 !                      Error index
       INTEGER          IER
 !
+!\\Extra Sendrecv operations - just to make sure all the variables needed are
+!  are passed - can be optimized later - Sreekanth - 102199
+
+      call send_recv(UF,2)
+      call send_recv(VF,2)
+      call send_recv(WF,2)
+      call send_recv(ROPF,2)
+      call send_recv(PHI,2)
+      call send_recv(DIF,2)
+      call send_recv(AXY,2)
+      call send_recv(AXZ,2)
+      call send_recv(AYZ,2)
+      call send_recv(XSI_E,2)
+      call send_recv(XSI_N,2)
+      call send_recv(XSI_T,2)
+!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !	IF DEFERRED CORRECTION IS USED WITH THE SCALAR TRANSPORT EQN.
@@ -85,8 +105,20 @@
             CALL CONV_DIF_PHI1(PHI,DIF,DISC,UF,VF,WF,ROPF,M,A_M,B_M,IER) 
           ENDIF
 	ENDIF 
+
+!//09/28/99 - Send Recv. A_M and B_M
+
+	CALL SEND_RECV(A_M, 2)
+	CALL SEND_RECV(B_M, 2)
 	
         CALL DIF_PHI_IS (DIF, A_M, B_M, M, IER)
+
+!//09/28/99 - Send Recv. A_M and B_M - Duplication here, the earlier send recv can be removed
+!	      after careful review.....
+
+	CALL SEND_RECV(A_M, 2)
+	CALL SEND_RECV(B_M, 2)
+	
         RETURN  
       END SUBROUTINE CONV_DIF_PHI 
 !
@@ -129,8 +161,9 @@
       USE toleranc 
       USE run
       USE geometry
+      USE compar
+      USE sendrecv
       USE indices
-      USE compar   !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -194,13 +227,18 @@
 !!$omp&             IMJK, IM, IJKW,                                  &
 !!$omp&             IJMK, JM, IJKS,                                  &
 !!$omp&             IJKM, KM,  IJKB)                     
-      DO IJK = 1, IJKMAX2 
+
+!
+      DO IJK = IJKSTART3, IJKEND3
+!
+!\\102199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+       I = I_OF(IJK)
+       J = J_OF(IJK)
+       K = K_OF(IJK)
+       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
          IF (FLUID_AT(IJK)) THEN 
 !
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK) 
             IJKE = EAST_OF(IJK) 
@@ -293,6 +331,12 @@
 !
          ENDIF
       END DO 
+!
+!\\Sendrecv operations - just to make sure all the variables computed are
+!  are passed and updated locally - fool-proof approach - Sreekanth - 102199
+
+      call send_recv(A_M,2)
+!
       RETURN  
       END SUBROUTINE CONV_DIF_PHI0 
 
@@ -336,9 +380,10 @@
       USE toleranc 
       USE run
       USE geometry
+      USE compar
+      USE sendrecv
       USE indices
       Use xsi_array
-      USE compar    !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -432,13 +477,18 @@
 !!$omp&             IJMK, IJKS,                                  &
 !!$omp&             IJKM, IJKB, PHI_HO, PHI_LO, CONV_FAC,       &
 !!$omp&             EAST_DC, WEST_DC, NORTH_DC, SOUTH_DC, TOP_DC, BOTTOM_DC)                     
-      DO IJK = 1, IJKMAX2 
+!
+
+      DO IJK = IJKSTART3, IJKEND3
+!
+!\\102199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+       I = I_OF(IJK)
+       J = J_OF(IJK)
+       K = K_OF(IJK)
+       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
          IF (FLUID_AT(IJK)) THEN 
 !
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK) 
             IJKE = EAST_OF(IJK) 
@@ -552,6 +602,12 @@
       END DO 
       call unlock_xsi_array
 !
+!
+!\\Sendrecv operations - just to make sure all the variables computed are
+!  are passed and updated locally - fool-proof approach - Sreekanth - 102199
+
+      call send_recv(B_M,2)
+!
       RETURN  
       END SUBROUTINE CONV_DIF_PHI_DC 
 !
@@ -597,9 +653,10 @@
       USE toleranc 
       USE run
       USE geometry
+      USE compar
+      USE sendrecv
       USE indices
       Use xsi_array
-      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -670,13 +727,19 @@
 !!$omp&             IMJK, IM, IJKW,                                   &
 !!$omp&             IJMK, JM,  IJKS,                                  &
 !!$omp&             IJKM, KM,  IJKB )                      
-      DO IJK = 1, IJKMAX2 
+!
+!
+!
+      DO IJK = IJKSTART3, IJKEND3
+!
+!\\102199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+       I = I_OF(IJK) 
+       J = J_OF(IJK) 
+       K = K_OF(IJK) 
+       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
          IF (FLUID_AT(IJK)) THEN 
 !
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK) 
             IJKE = EAST_OF(IJK) 
@@ -755,6 +818,12 @@
       
       call unlock_xsi_array
 
+!
+!\\Sendrecv operations - just to make sure all the variables computed are
+!  are passed and updated locally - fool-proof approach - Sreekanth - 102199
+
+      call send_recv(A_M,2)
+!
       RETURN  
       END SUBROUTINE CONV_DIF_PHI1 
 !
@@ -794,6 +863,8 @@
       USE toleranc 
       USE run
       USE geometry
+      USE compar
+      USE sendrecv
       USE indices
       USE scales 
       USE constant
@@ -802,7 +873,6 @@
       USE visc_s
       USE output
       USE is
-      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -844,6 +914,10 @@
       INCLUDE 'ep_s2.inc'
       INCLUDE 'b_force2.inc'
 !
+!\\Extra Sendrecv operations - just to make sure all the variables needed are
+!  are passed - can be optimized later - Sreekanth - 102199
+
+      call send_recv(A_M,2)
 !
 ! Make user defined internal surfaces non-conducting
 !
@@ -855,6 +929,25 @@
             J2 = IS_J_N(L) 
             K1 = IS_K_B(L) 
             K2 = IS_K_T(L) 
+
+!\\09/28/99 - Limit I1, I2 and all to local processor first ghost layer
+
+	    IF(I1.LE.IEND2)   I1 = MAX(I1, ISTART2)
+
+            IF(J1.LE.JEND2)   J1 = MAX(J1, JSTART2)
+
+            IF(K1.LE.KEND2)   K1 = MAX(K1, KSTART2)
+
+            IF(I2.GE.ISTART2) I2 = MIN(I2, IEND2)
+
+            IF(J2.GE.JSTART2) J2 = MIN(J2, JEND2)
+
+            IF(K2.GE.KSTART2) K2 = MIN(K2, KEND2)
+
+!//End of limiting to the first ghost cells of the processor....
+
+!
+
             DO K = K1, K2 
                DO J = J1, J2 
                   DO I = I1, I2 
@@ -899,5 +992,11 @@
             END DO 
          ENDIF 
       END DO 
+!
+!\\Sendrecv operations - just to make sure all the variables computed are
+!  are passed and updated locally - fool-proof approach - Sreekanth - 102199
+
+      call send_recv(A_M,2)
+!
       RETURN  
       END SUBROUTINE DIF_PHI_IS 
