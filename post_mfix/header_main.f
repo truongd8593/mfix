@@ -55,6 +55,8 @@
       WRITE (*,*)&
         '  7   - Write a new SPx file with selected records'
       WRITE (*,*)&
+        '  8   - Write new SPx files with time averaged data'
+      WRITE (*,*)&
         ' *************************************************'
 !
       CALL GET_SELECTION (SELECTION)

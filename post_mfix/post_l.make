@@ -136,6 +136,7 @@ post_mfix : \
     sol_flux.$(OBJ_EXT) \
     strcmp.$(OBJ_EXT) \
     streqs.$(OBJ_EXT) \
+    time_avg.$(OBJ_EXT) \
     usr_init_namelist.$(OBJ_EXT) \
     usr_post.$(OBJ_EXT) \
     usr_write_out1.$(OBJ_EXT) \
@@ -270,6 +271,7 @@ post_mfix : \
     sol_flux.$(OBJ_EXT) \
     strcmp.$(OBJ_EXT) \
     streqs.$(OBJ_EXT) \
+    time_avg.$(OBJ_EXT) \
     usr_init_namelist.$(OBJ_EXT) \
     usr_post.$(OBJ_EXT) \
     usr_write_out1.$(OBJ_EXT) \
@@ -1098,6 +1100,8 @@ sol_flux.$(OBJ_EXT) : sol_flux.f \
             ep_s2.inc                                                   
 strcmp.$(OBJ_EXT) : strcmp.f 
 streqs.$(OBJ_EXT) : streqs.f 
+time_avg.$(OBJ_EXT) : time_avg.f \
+            param.mod
 usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             usrnlst.inc                                                 
 usr_post.$(OBJ_EXT) : usr_post.f \
