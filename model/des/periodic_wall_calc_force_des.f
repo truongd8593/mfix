@@ -301,6 +301,12 @@
 
            END DO
 
+!!COHESION
+        IF(USE_COHESION)THEN
+          CALL CALC_COHESIVE_FORCES
+        END IF
+!!COHESION
+
            IF(DES_CONTINUUM_COUPLED) THEN
               CALL DRAG_FGS(PARTICLES)
            END IF

@@ -50,8 +50,16 @@
 !-----------------------------------------------
 !     
       INTEGER          K, PC, PC1, NN, LNN, I, J
+      LOGICAL ALREADY_EXISTS
+
+
 !     
 !      CALLED = 0
+
+!      PRINT *, 'COUPLED_FLOW',COUPLED_FLOW
+
+      DTSOLID = DT/FACTOR
+
       IF(COUPLED_FLOW) THEN            
          IF(TIME.GE.(DTSOLID)) THEN
             FACTOR = 20 
@@ -63,12 +71,21 @@
       PRINT *,'Discrete Element Simulation is called', FACTOR,' times.'
 
       DO NN = 1, FACTOR
+
+!!COHESION
+         IF(CALLED.eq.0)THEN
+            CALL INITIALIZE_COHESION_PARAMETERS
+            IF(USE_COHESION)THEN
+                CALL INITIALIZE_COH_INT_SEARCH
+            END IF
+         END IF
+!!COHESION
       
          IF(DES_CONTINUUM_COUPLED) THEN
             PC = 50*FACTOR
 !            OPEN (UNIT=1, FILE='called.out', STATUS='REPLACE')
 !            WRITE (1,*) CALLED
-!            PRINT *,'D.E.S. COUPLED', CALLED
+            PRINT *,'D.E.S. COUPLED', CALLED
          ELSE 
             PC = 1150 
             PRINT *,'D.E.S', CALLED
@@ -166,6 +183,7 @@
             PCOUNT = PCOUNT + 1
          END IF
          CALLED = CALLED + 1
+
 
       END DO
 

@@ -982,7 +982,7 @@
       DOUBLE PRECISION g0, G_0
  
 !              Constants in Simonin model
-      DOUBLE PRECISION Sigma_c, Tau_2_c, Tau_12_st, Nu_t, Sigma_c
+      DOUBLE PRECISION Sigma_c, Tau_2_c, Tau_12_st, Nu_t
       DOUBLE PRECISION Tau_2, zeta_c_2, MU_2_T_Kin, Mu_2_Col
  
 !     In F_2 and Mu a DSQRT(T) has been left out as it appears in both

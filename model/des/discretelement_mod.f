@@ -81,4 +81,121 @@
       LOGICAL TSUJI_DRAG
       LOGICAL KUIPERS_DRAG
 
+
+!  Square-well potential parameters
+      DOUBLE PRECISION WELL_WIDTH(NPARTICLES)
+      DOUBLE PRECISION WELL_DEPTH(NPARTICLES)
+
+!  Well depth read in from mfix.dat
+      DOUBLE PRECISION MASTER_WELL_DEPTH
+      DOUBLE PRECISION MASTER_WALL_WELL_DEPTH
+
+!  Ratio of well width to inner radius
+      DOUBLE PRECISION RADIUS_RATIO
+      DOUBLE PRECISION WALL_RADIUS_RATIO
+
+!  Array of linked partners
+      INTEGER LINKS(MAXNEIGHBORS, NPARTICLES)
+
+!  Array of agglomerated partners
+      INTEGER AGGS(MAXNEIGHBORS, NPARTICLES)
+
+!  Does particle have at least one linked partner
+      INTEGER IS_LINKED(NPARTICLES)
+
+!  Switch to turn cohesion on and off
+      LOGICAL USE_COHESION      
+
+!  Switch to turn square well on and off
+      LOGICAL SQUARE_WELL
+
+!  Switch to run debuggin on and off
+      INTEGER COHESION_DEBUG
+      INTEGER COHESION_DEBUG_START
+
+!  Specific particle to target in debugging
+      INTEGER COH_DEBUG_PARTICLE
+
+!  Specific time step to target in debugging
+      INTEGER COH_DEBUG_STEP
+
+!  1x2 array to hold the last two interacing particles
+      INTEGER LAST_COLLISION(2)
+
+!  Parameters to control writing of animation file
+      INTEGER ANIMATION_WRITE_INTERVAL
+      INTEGER ANIMATION_WRITE_COUNTER
+      DOUBLE PRECISION TIME_FACTOR
+      INTEGER MAX_ANIMATOR_STEP
+      INTEGER MIN_ANIMATOR_STEP
+
+!  Parameters to control writing of single particle log and collision log
+      INTEGER MAX_LOG_STEP
+      INTEGER MIN_LOG_STEP
+
+!  Does particle have at least one aggloerated partner
+      INTEGER IS_AGGLOMERATED(NPARTICLES)
+
+!  Number of particle that is followed by single particle log
+      INTEGER FOCUS_PARTICLE
+
+!  Number of search grids in the x-direction
+      INTEGER SEARCH_GRIDS(3)
+
+!  Matrix of particles in each search grid
+      INTEGER PART_IN_GRID(100, 100, 100, 50)
+
+!  Matrix location of particle 
+      INTEGER PART_GRID(4,NPARTICLES)
+
+!  Maximum number of particles in a search grid
+      INTEGER MAX_PART_IN_GRID
+
+!  Size of search grids
+      DouBLE PRECISION SEARCH_GRID_SIZE(3)
+
+!  Use new algorithm for inelastic collisions
+      LOGICAL USE_COL_MW
+
+!  Van der Waals constants
+      LOGICAL VAN_DER_WAALS
+      DOUBLE PRECISION HAMAKER_CONSTANT
+      DOUBLE PRECISION VDW_INNER_CUTOFF       ! (in cm)
+      DOUBLE PRECISION VDW_OUTER_CUTOFF
+      DOUBLE PRECISION WALL_HAMAKER_CONSTANT
+      DOUBLE PRECISION WALL_VDW_INNER_CUTOFF
+      DOUBLE PRECISION WALL_VDW_OUTER_CUTOFF
+      DOUBLE PRECISION SURFACE_ENERGY
+      DOUBLE PRECISION WALL_SURFACE_ENERGY
+
+
+!  Parameters to control Rhodes (2001) cohesion model (10/16/03)
+      LOGICAL RHODES_COHESION
+      DOUBLE PRECISION RHODES_COHESION_FACTOR
+      DOUBLE PRECISION RHODES_COHESION_FACTOR_WALL
+      DOUBLE PRECISION RHODES_COHESION_LENGTH_SCALE
+      DOUBLE PRECISION RHODES_COHESION_LENGTH_SCALE_WALL
+
+
+!  Variables used in net force measurements
+      LOGICAL RECORD_NET_FORCES
+      INTEGER VERTICAL_NET_FORCE_BINS
+      DOUBLE PRECISION NET_FORCE_COUNTER
+      DOUBLE PRECISION VERTICAL_NET_FORCE_INCREMENT
+      DOUBLE PRECISION NET_FORCE_TIME_INCREMENT
+      DOUBLE PRECISION TIME_AT_PREVIOUS_NET_FORCE
+      DOUBLE PRECISION NET_PART_TAN_FORCE(2,20)       !Contributions to net
+      DOUBLE PRECISION NET_WALL_TAN_FORCE(2,20)       !  force in x- and y-
+      DOUBLE PRECISION NET_PART_NORM_FORCE(2,20)      !  directions from up to
+      DOUBLE PRECISION NET_WALL_NORM_FORCE(2,20)      !  20 different heights
+      DOUBLE PRECISION NET_GRAVITY_FORCE(2,20)
+      DOUBLE PRECISION NET_PART_COH_FORCE(2,20)
+      DOUBLE PRECISION NET_WALL_COH_FORCE(2,20)
+      DOUBLE PRECISION NET_FLUID_DRAG_FORCE(2,20)
+      DOUBLE PRECISION NET_PRESSURE_FORCE(2,20)
+      INTEGER APP_COH_DIST_INT
+      INTEGER CAP_COH_DIST_INT
+      INTEGER ESC_COH_DIST_INT
+
+
       END MODULE DISCRETELEMENT

@@ -295,6 +295,22 @@ mfix.exe : \
     xerbla.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
+    add_part_to_link_list.$(OBJ_EXT) \
+    calc_app_coh_force.$(OBJ_EXT) \
+    calc_cap_coh_force.$(OBJ_EXT) \
+    calc_cohesive_forces.$(OBJ_EXT) \
+    calc_esc_coh_force.$(OBJ_EXT) \
+    calc_square_well.$(OBJ_EXT) \
+    calc_van_der_waals.$(OBJ_EXT) \
+    check_link.$(OBJ_EXT) \
+    check_sw_wall_interaction.$(OBJ_EXT) \
+    check_vdw_wall_interaction.$(OBJ_EXT) \
+    initialize_cohesion_parameters.$(OBJ_EXT) \
+    initialize_coh_int_search.$(OBJ_EXT) \
+    linked_interaction_eval.$(OBJ_EXT) \
+    remove_part_from_link_list.$(OBJ_EXT) \
+    unlinked_interaction_eval.$(OBJ_EXT) \
+    update_search_grids.$(OBJ_EXT) \
     calc_force_des.$(OBJ_EXT) \
     cfassign.$(OBJ_EXT) \
     cffctow.$(OBJ_EXT) \
@@ -624,6 +640,22 @@ mfix.exe : \
     xsi_array_mod.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
+    add_part_to_link_list.$(OBJ_EXT) \
+    calc_app_coh_force.$(OBJ_EXT) \
+    calc_cap_coh_force.$(OBJ_EXT) \
+    calc_cohesive_forces.$(OBJ_EXT) \
+    calc_esc_coh_force.$(OBJ_EXT) \
+    calc_square_well.$(OBJ_EXT) \
+    calc_van_der_waals.$(OBJ_EXT) \
+    check_link.$(OBJ_EXT) \
+    check_sw_wall_interaction.$(OBJ_EXT) \
+    check_vdw_wall_interaction.$(OBJ_EXT) \
+    initialize_cohesion_parameters.$(OBJ_EXT) \
+    initialize_coh_int_search.$(OBJ_EXT) \
+    linked_interaction_eval.$(OBJ_EXT) \
+    remove_part_from_link_list.$(OBJ_EXT) \
+    unlinked_interaction_eval.$(OBJ_EXT) \
+    update_search_grids.$(OBJ_EXT) \
     calc_force_des.$(OBJ_EXT) \
     cfassign.$(OBJ_EXT) \
     cffctow.$(OBJ_EXT) \
@@ -913,6 +945,7 @@ gridmap.mod : ./dmp_modules/gridmap_mod.f \
             geometry.mod \
             sendrecv.mod \
             compar.mod \
+            run.mod \
             indices.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/gridmap_mod.f 
@@ -1149,6 +1182,7 @@ bc_theta.$(OBJ_EXT) : bc_theta.f \
             bc.mod \
             compar.mod \
             mpi_utility.mod \
+            turb.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1281,9 +1315,12 @@ calc_grbdry.$(OBJ_EXT) : calc_grbdry.f \
             constant.mod \
             physprop.mod \
             fldvar.mod \
+            run.mod \
+            turb.mod \
             visc_s.mod \
             geometry.mod \
             indices.mod \
+            bc.mod \
             compar.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -1347,8 +1384,11 @@ calc_mu_g.$(OBJ_EXT) : calc_mu_g.f \
             visc_s.mod \
             indices.mod \
             constant.mod \
+            toleranc.mod \
             compar.mod \
+            drag.mod \
             run.mod \
+            turb.mod \
             sendrecv.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -1367,8 +1407,10 @@ calc_mu_s.$(OBJ_EXT) : calc_mu_s.f \
             visc_g.mod \
             visc_s.mod \
             trace.mod \
+            turb.mod \
             indices.mod \
             constant.mod \
+            toleranc.mod \
             vshear.mod \
             compar.mod \
             sendrecv.mod \
@@ -1471,12 +1513,13 @@ calc_u_friction.$(OBJ_EXT) : calc_u_friction.f \
             constant.mod \
             physprop.mod \
             fldvar.mod \
+            run.mod \
+            turb.mod \
             visc_s.mod \
             geometry.mod \
             indices.mod \
             bc.mod \
             compar.mod \
-            run.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1558,6 +1601,7 @@ check_convergence.$(OBJ_EXT) : check_convergence.f \
 check_data_01.$(OBJ_EXT) : check_data_01.f \
             param.mod \
             param1.mod \
+            constant.mod \
             run.mod \
             physprop.mod \
             indices.mod \
@@ -2186,7 +2230,9 @@ g_0.$(OBJ_EXT) : g_0.f \
             compar.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
-            ep_s2.inc                                                   
+            ep_s2.inc                                                    \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
 get_bc_area.$(OBJ_EXT) : get_bc_area.f \
             param.mod \
             param1.mod \
@@ -2385,7 +2431,6 @@ k_epsilon_prop.$(OBJ_EXT) : k_epsilon_prop.f \
             compar.mod \
             tau_g.mod \
             sendrecv.mod \
-            time_cpu.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -2749,6 +2794,7 @@ set_bc0.$(OBJ_EXT) : set_bc0.f \
             scales.mod \
             scalars.mod \
             boundfunijk.mod \
+            toleranc.mod \
             sc_p_g1.inc                                                  \
             function.inc                                                 \
             sc_p_g2.inc                                                 
@@ -2808,6 +2854,7 @@ set_flags.$(OBJ_EXT) : set_flags.f \
             compar.mod \
             sendrecv.mod \
             sendrecv3.mod \
+            boundfunijk.mod \
             mpi_utility.mod \
             function.inc                                                 \
             function3.inc                                               
@@ -3042,6 +3089,7 @@ solve_granular_energy.$(OBJ_EXT) : solve_granular_energy.f \
             physprop.mod \
             geometry.mod \
             fldvar.mod \
+            constant.mod \
             output.mod \
             indices.mod \
             drag.mod \
@@ -3187,14 +3235,17 @@ source_granular_energy.$(OBJ_EXT) : source_granular_energy.f \
             param1.mod \
             parallel.mod \
             physprop.mod \
+            run.mod \
             drag.mod \
             geometry.mod \
             fldvar.mod \
             visc_g.mod \
             visc_s.mod \
             trace.mod \
+            turb.mod \
             indices.mod \
             constant.mod \
+            toleranc.mod \
             compar.mod \
             s_pr1.inc                                                    \
             ep_s1.inc                                                    \
@@ -3667,6 +3718,7 @@ usr_write_out1.$(OBJ_EXT) : usr_write_out1.f
 vavg_u_g.$(OBJ_EXT) : vavg_u_g.f \
             param.mod \
             param1.mod \
+            run.mod \
             parallel.mod \
             fldvar.mod \
             bc.mod \
@@ -3693,6 +3745,7 @@ vavg_u_s.$(OBJ_EXT) : vavg_u_s.f \
 vavg_v_g.$(OBJ_EXT) : vavg_v_g.f \
             param.mod \
             param1.mod \
+            run.mod \
             parallel.mod \
             fldvar.mod \
             bc.mod \
@@ -3719,6 +3772,7 @@ vavg_v_s.$(OBJ_EXT) : vavg_v_s.f \
 vavg_w_g.$(OBJ_EXT) : vavg_w_g.f \
             param.mod \
             param1.mod \
+            run.mod \
             parallel.mod \
             fldvar.mod \
             bc.mod \
@@ -3919,6 +3973,58 @@ zero_norm_vel.$(OBJ_EXT) : zero_norm_vel.f \
             is.mod \
             compar.mod \
             function.inc                                                
+add_part_to_link_list.$(OBJ_EXT) : ./cohesion/add_part_to_link_list.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/add_part_to_link_list.f 
+calc_app_coh_force.$(OBJ_EXT) : ./cohesion/calc_app_coh_force.f \
+            discretelement.mod \
+            run.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_app_coh_force.f 
+calc_cap_coh_force.$(OBJ_EXT) : ./cohesion/calc_cap_coh_force.f \
+            discretelement.mod \
+            run.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_cap_coh_force.f 
+calc_cohesive_forces.$(OBJ_EXT) : ./cohesion/calc_cohesive_forces.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_cohesive_forces.f 
+calc_esc_coh_force.$(OBJ_EXT) : ./cohesion/calc_esc_coh_force.f \
+            discretelement.mod \
+            run.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_esc_coh_force.f 
+calc_square_well.$(OBJ_EXT) : ./cohesion/calc_square_well.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_square_well.f 
+calc_van_der_waals.$(OBJ_EXT) : ./cohesion/calc_van_der_waals.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_van_der_waals.f 
+check_link.$(OBJ_EXT) : ./cohesion/check_link.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_link.f 
+check_sw_wall_interaction.$(OBJ_EXT) : ./cohesion/check_sw_wall_interaction.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_sw_wall_interaction.f 
+check_vdw_wall_interaction.$(OBJ_EXT) : ./cohesion/check_vdw_wall_interaction.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_vdw_wall_interaction.f 
+initialize_cohesion_parameters.$(OBJ_EXT) : ./cohesion/initialize_cohesion_parameters.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/initialize_cohesion_parameters.f 
+initialize_coh_int_search.$(OBJ_EXT) : ./cohesion/initialize_coh_int_search.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/initialize_coh_int_search.f 
+linked_interaction_eval.$(OBJ_EXT) : ./cohesion/linked_interaction_eval.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/linked_interaction_eval.f 
+remove_part_from_link_list.$(OBJ_EXT) : ./cohesion/remove_part_from_link_list.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/remove_part_from_link_list.f 
+unlinked_interaction_eval.$(OBJ_EXT) : ./cohesion/unlinked_interaction_eval.f \
+            discretelement.mod \
+            run.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/unlinked_interaction_eval.f 
+update_search_grids.$(OBJ_EXT) : ./cohesion/update_search_grids.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/update_search_grids.f 
 calc_force_des.$(OBJ_EXT) : ./des/calc_force_des.f \
             discretelement.mod \
             geometry.mod 
@@ -4163,6 +4269,8 @@ gas_drag.$(OBJ_EXT) : ./des/gas_drag.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/gas_drag.f 
 make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
+            funits.mod \
+            compar.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/make_arrays_des.f 
 neighbour.$(OBJ_EXT) : ./des/neighbour.f \

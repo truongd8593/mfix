@@ -21,6 +21,7 @@
       DOUBLE PRECISION TANGENT(NDIM)
       DOUBLE PRECISION Vn, Vt, S_TIME
       INTEGER IJK, NWS, IJ, WALLCHECK
+      LOGICAL ALREADY_EXISTS
 !     
 !---------------------------------------------------------------------
 !     Calculate new values
@@ -183,6 +184,21 @@
                        CALL CFFTWALL(LL, Vt, OVERLAP_T, TANGENT)
                        CALL CFSLIDEWALL(LL, TANGENT)
                        CALL CFFCTOW(LL, NORMAL)
+!--DEBUGGING
+      !!impulse is effectively doubled for wall interactions
+      IF(LL.eq.FOCUS_PARTICLE)THEN
+      INQUIRE(FILE='debug_file',EXIST=ALREADY_EXISTS)
+      IF(ALREADY_EXISTS)THEN
+        OPEN(UNIT=1,FILE='debug_file',STATUS='OLD',POSITION='APPEND')
+        WRITE(1,'(A)')'CALC_FORCE-WALL'
+      ELSE
+         OPEN(UNIT=1,FILE='debug_file',STATUS='NEW')
+        WRITE(1,'(A)')'CALC_FORCE-WALL'
+      END IF
+      CLOSE (1)
+      END IF
+!--END DEBUGGING
+
                     END IF
                  END DO
               END IF
@@ -247,6 +263,29 @@
                           PFT(K,IJK,LL) = FTS1(K)
                        END DO
 		    END IF
+
+!--DEBUGGING
+      !!impulse is effectively doubled for wall interactions
+      IF(LL.eq.FOCUS_PARTICLE)THEN
+      INQUIRE(FILE='debug_file',EXIST=ALREADY_EXISTS)
+      IF(ALREADY_EXISTS)THEN
+        OPEN(UNIT=1,FILE='debug_file',STATUS='OLD',POSITION='APPEND')
+        WRITE(1,'(A,I5)')'CALC FORCE -- NEIGHBOR',II
+        WRITE(1,'(1X,L5)')DES_CONTINUUM_COUPLED
+        WRITE(1,'(2(1x,A,E12.5))')&
+            'FNx=',FN(1,LL)&
+            ,'FNy=',FN(2,LL)
+      ELSE
+        OPEN(UNIT=1,FILE='debug_file',STATUS='NEW')
+        WRITE(1,'(A,I5)')'CALC FORCE -- NEIGHBOR',II
+        WRITE(1,'(1X,L5)')DES_CONTINUUM_COUPLED
+        WRITE(1,'(2(1x,A,E12.5))')&
+            'FNx=',FN(1,LL)&
+            ,'FNy=',FN(2,LL)
+      END IF
+      CLOSE (1)
+      END IF
+!--END DEBUGGING
                  END DO
               END IF
 
@@ -259,6 +298,13 @@
            IF(DES_CONTINUUM_COUPLED) THEN
               CALL DRAG_FGS(PARTICLES)
            END IF
+
+!!COHESION
+        IF(USE_COHESION)THEN
+          CALL CALC_COHESIVE_FORCES
+        END IF
+!!COHESION
+
 
 !-------------------------------------------------------------------
 !     Update old values with new values
