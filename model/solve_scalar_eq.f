@@ -116,7 +116,7 @@
           DO IJK = IJKSTART3, IJKEND3
 !
                IF (FLUID_AT(IJK)) THEN 
-                  APO = ROP_G(IJK)*VOL(IJK)*ODT 
+                  APO = ROP_GO(IJK)*VOL(IJK)*ODT 
                   S_P(IJK) = APO + (  ZMAX(SUM_R_G(IJK)) &
 		                    + Scalar_p(IJK, N)      )*VOL(IJK) 
                   S_C(IJK) =   APO*ScalarO(IJK,N) &
@@ -172,7 +172,7 @@
             DO IJK = IJKSTART3, IJKEND3
 !
                IF (FLUID_AT(IJK)) THEN 
-                  APO = ROP_s(IJK, M)*VOL(IJK)*ODT 
+                  APO = ROP_sO(IJK, M)*VOL(IJK)*ODT 
                   S_P(IJK) = APO + (  ZMAX(SUM_R_s(IJK, M)) &
 		                    + Scalar_p(IJK, N)       )*VOL(IJK) 
                   S_C(IJK) =   APO*ScalarO(IJK,N) &

@@ -113,7 +113,7 @@
                      S_P(IJK) = (ROX_GC(IJK,LN))*VOL(IJK) 
 		     S_C(IJK) = ROP_GO(IJK)*VOL(IJK)*ODT*X_GO(IJK,LN) + R_GP(IJK,LN)*VOL(IJK) 
 		   else 
-                     APO = ROP_G(IJK)*VOL(IJK)*ODT 
+                     APO = ROP_GO(IJK)*VOL(IJK)*ODT 
                      S_P(IJK) = APO + (ZMAX(SUM_R_G(IJK))+ROX_GC(IJK,LN))*VOL(IJK) 
                      S_C(IJK) = APO*X_GO(IJK,LN) + X_G(IJK,LN)*ZMAX((-SUM_R_G(IJK)))&
                       *VOL(IJK) + R_GP(IJK,LN)*VOL(IJK)
@@ -183,7 +183,7 @@
                       S_P(IJK) = (ROX_SC(IJK,M,LN))*VOL(IJK) 
 		      S_C(IJK) = ROP_SO(IJK,M)*VOL(IJK)*ODT*X_SO(IJK,M,LN) + R_SP(IJK,M,LN)*VOL(IJK)
 		    else 
-                      APO = ROP_S(IJK,M)*VOL(IJK)*ODT 
+                      APO = ROP_SO(IJK,M)*VOL(IJK)*ODT 
                       S_P(IJK) = APO + (ZMAX(SUM_R_S(IJK,M))+ROX_SC(IJK,M,LN))*&
                         VOL(IJK) 
                       S_C(IJK) = APO*X_SO(IJK,M,LN) + X_S(IJK,M,LN)*ZMAX((-SUM_R_S&

@@ -124,7 +124,7 @@
 	 ENDIF
 	 
          IF (FLUID_AT(IJK)) THEN 
-            APO = ROP_G(IJK)*C_PG(IJK)*VOL(IJK)*ODT 
+            APO = ROP_GO(IJK)*C_PG(IJK)*VOL(IJK)*ODT 
             S_P(IJK) = APO + S_RPG(IJK)*VOL(IJK) 
             S_C(IJK)=APO*T_GO(IJK)-HOR_G(IJK)*VOL(IJK)+S_RCG(IJK)*VOL(IJK) 
          ELSE 
@@ -152,7 +152,7 @@
 	    ENDIF
 	 
             IF (FLUID_AT(IJK)) THEN 
-               APO = ROP_S(IJK,M)*C_PS(IJK,M)*VOL(IJK)*ODT 
+               APO = ROP_SO(IJK,M)*C_PS(IJK,M)*VOL(IJK)*ODT 
                S_P(IJK) = APO + S_RPS(IJK,M)*VOL(IJK) 
                S_C(IJK) = APO*T_SO(IJK,M) - HOR_S(IJK,M)*VOL(IJK) + S_RCS(IJK,M&
                   )*VOL(IJK) 
