@@ -189,6 +189,7 @@ mfix.exe : \
     set_fluidbed_p.$(OBJ_EXT) \
     set_geometry.$(OBJ_EXT) \
     set_geometry1.$(OBJ_EXT) \
+    set_ic.$(OBJ_EXT) \
     set_increments.$(OBJ_EXT) \
     set_index1.$(OBJ_EXT) \
     set_index1a.$(OBJ_EXT) \
@@ -480,6 +481,7 @@ mfix.exe : \
     set_fluidbed_p.$(OBJ_EXT) \
     set_geometry.$(OBJ_EXT) \
     set_geometry1.$(OBJ_EXT) \
+    set_ic.$(OBJ_EXT) \
     set_increments.$(OBJ_EXT) \
     set_index1.$(OBJ_EXT) \
     set_index1a.$(OBJ_EXT) \
@@ -1273,6 +1275,7 @@ calc_resid.$(OBJ_EXT) : calc_resid.f \
             geometry.mod \
             indices.mod \
             compar.mod \
+            mpi_utility.mod \
             function.inc                                                
 calc_s_ddot_s.$(OBJ_EXT) : calc_s_ddot_s.f \
             param.mod \
@@ -1362,7 +1365,8 @@ check_convergence.$(OBJ_EXT) : check_convergence.f \
             physprop.mod \
             run.mod \
             residual.mod \
-            toleranc.mod 
+            toleranc.mod \
+            mpi_utility.mod 
 check_data_01.$(OBJ_EXT) : check_data_01.f \
             param.mod \
             param1.mod \
@@ -1477,6 +1481,7 @@ check_data_30.$(OBJ_EXT) : check_data_30.f \
             indices.mod \
             funits.mod \
             compar.mod \
+            mpi_utility.mod \
             function.inc                                                
 check_one_axis.$(OBJ_EXT) : check_one_axis.f \
             param.mod \
@@ -1497,15 +1502,15 @@ conv_dif_phi.$(OBJ_EXT) : conv_dif_phi.f \
             param.mod \
             param1.mod \
             run.mod \
-            compar.mod \
-            mpi_utility.mod \
             geometry.mod \
-            xsi_array.mod \
+            compar.mod \
             sendrecv.mod \
+            xsi_array.mod \
+            mpi_utility.mod \
+            indices.mod \
             parallel.mod \
             matrix.mod \
             toleranc.mod \
-            indices.mod \
             scales.mod \
             constant.mod \
             physprop.mod \
@@ -1986,6 +1991,7 @@ get_smass.$(OBJ_EXT) : get_smass.f \
             fldvar.mod \
             indices.mod \
             compar.mod \
+            mpi_utility.mod \
             function.inc                                                
 get_stats.$(OBJ_EXT) : get_stats.f \
             param.mod \
@@ -2026,7 +2032,8 @@ init_ab_m.$(OBJ_EXT) : init_ab_m.f \
             param.mod \
             param1.mod \
             matrix.mod \
-            parallel.mod 
+            parallel.mod \
+            compar.mod 
 init_fvars.$(OBJ_EXT) : init_fvars.f \
             param.mod \
             param1.mod \
@@ -2055,6 +2062,7 @@ init_namelist.$(OBJ_EXT) : init_namelist.f \
             leqsol.mod \
             residual.mod \
             rxns.mod \
+            compar.mod \
             namelist.inc                                                
 init_resid.$(OBJ_EXT) : init_resid.f \
             param.mod \
@@ -2715,7 +2723,8 @@ solve_granular_energy.$(OBJ_EXT) : solve_granular_energy.f \
 solve_lin_eq.$(OBJ_EXT) : solve_lin_eq.f \
             param.mod \
             param1.mod \
-            geometry.mod 
+            geometry.mod \
+            compar.mod 
 solve_pp_g.$(OBJ_EXT) : solve_pp_g.f \
             param.mod \
             param1.mod \

@@ -72,6 +72,8 @@
       CALL INIT_NAMELIST 
       CALL READ_NAMELIST (0) 
 
+      CALL CHECK_DATA_00
+
 !//AIKEPARDBG
 !      write(*,"('(PE ',I2,'): reached end of read_namelist')") myPE	!//AIKEPARDBG
 !      call mfix_exit(myPE)	!//AIKEPARDBG
@@ -209,5 +211,67 @@
  1000 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
          'RUN_NAME not specified in mfix.dat',/1X,70('*')/) 
       END SUBROUTINE GET_DATA 
-
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CHECK_DATA_00                                          C
+!  Purpose: check the distributed parallel namelist variables          C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 14-DEC-99  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:  NODESI , NODESJ , NODESK                     C
+!                         DT, RUN_TYPE                                 C
+!  Variables modified: None                                            C
+!                                                                      C
+!  Local variables: None                                               C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE CHECK_DATA_00
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Switches: -xf
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param1 
+      USE compar
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+!
+!-----------------------------------------------
+!
+      IF (NODESI .EQ. UNDEFINED_I) THEN
+          WRITE (*,*) ' NODESI not found in MFIX.DAT'
+          CALL MFIX_EXIT
+      END IF
+!
+      IF (NODESJ .EQ. UNDEFINED_I) THEN
+          WRITE (*,*) ' NODESJ not found in MFIX.DAT'
+          CALL MFIX_EXIT
+      END IF
+!
+      IF (NODESK .EQ. UNDEFINED_I) THEN
+          WRITE (*,*) ' NODESK not found in MFIX.DAT'
+          CALL MFIX_EXIT
+      END IF
+!
+!
+      RETURN  
+      END SUBROUTINE CHECK_DATA_00
+ 

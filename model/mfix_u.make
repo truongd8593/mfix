@@ -1275,6 +1275,7 @@ calc_resid.$(OBJ_EXT) : calc_resid.f \
             GEOMETRY.mod \
             INDICES.mod \
             COMPAR.mod \
+            MPI_UTILITY.mod \
             function.inc                                                
 calc_s_ddot_s.$(OBJ_EXT) : calc_s_ddot_s.f \
             PARAM.mod \
@@ -1364,7 +1365,8 @@ check_convergence.$(OBJ_EXT) : check_convergence.f \
             PHYSPROP.mod \
             RUN.mod \
             RESIDUAL.mod \
-            TOLERANC.mod 
+            TOLERANC.mod \
+            MPI_UTILITY.mod 
 check_data_01.$(OBJ_EXT) : check_data_01.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1479,6 +1481,7 @@ check_data_30.$(OBJ_EXT) : check_data_30.f \
             INDICES.mod \
             FUNITS.mod \
             COMPAR.mod \
+            MPI_UTILITY.mod \
             function.inc                                                
 check_one_axis.$(OBJ_EXT) : check_one_axis.f \
             PARAM.mod \
@@ -1499,15 +1502,15 @@ conv_dif_phi.$(OBJ_EXT) : conv_dif_phi.f \
             PARAM.mod \
             PARAM1.mod \
             RUN.mod \
-            COMPAR.mod \
-            MPI_UTILITY.mod \
             GEOMETRY.mod \
-            XSI_ARRAY.mod \
+            COMPAR.mod \
             SENDRECV.mod \
+            XSI_ARRAY.mod \
+            MPI_UTILITY.mod \
+            INDICES.mod \
             PARALLEL.mod \
             MATRIX.mod \
             TOLERANC.mod \
-            INDICES.mod \
             SCALES.mod \
             CONSTANT.mod \
             PHYSPROP.mod \
@@ -1988,6 +1991,7 @@ get_smass.$(OBJ_EXT) : get_smass.f \
             FLDVAR.mod \
             INDICES.mod \
             COMPAR.mod \
+            MPI_UTILITY.mod \
             function.inc                                                
 get_stats.$(OBJ_EXT) : get_stats.f \
             PARAM.mod \
@@ -2028,7 +2032,8 @@ init_ab_m.$(OBJ_EXT) : init_ab_m.f \
             PARAM.mod \
             PARAM1.mod \
             MATRIX.mod \
-            PARALLEL.mod 
+            PARALLEL.mod \
+            COMPAR.mod 
 init_fvars.$(OBJ_EXT) : init_fvars.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2057,6 +2062,7 @@ init_namelist.$(OBJ_EXT) : init_namelist.f \
             LEQSOL.mod \
             RESIDUAL.mod \
             RXNS.mod \
+            COMPAR.mod \
             namelist.inc                                                
 init_resid.$(OBJ_EXT) : init_resid.f \
             PARAM.mod \
@@ -2717,7 +2723,8 @@ solve_granular_energy.$(OBJ_EXT) : solve_granular_energy.f \
 solve_lin_eq.$(OBJ_EXT) : solve_lin_eq.f \
             PARAM.mod \
             PARAM1.mod \
-            GEOMETRY.mod 
+            GEOMETRY.mod \
+            COMPAR.mod 
 solve_pp_g.$(OBJ_EXT) : solve_pp_g.f \
             PARAM.mod \
             PARAM1.mod \

@@ -85,4 +85,8 @@
 !
 ! 1.10 Chemical reactions
 !
-             SPECIES_NAME
+             SPECIES_NAME, &
+!
+! 1.11 distributed parallel
+!
+             NODESI , NODESJ , NODESK

@@ -65,6 +65,7 @@
       USE leqsol 
       USE residual
       USE rxns
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -407,6 +408,11 @@
       DO LC = 1, DIM_N_ALL
          SPECIES_NAME(LC) = UNDEFINED_C 
       END DO 
+
+      NODESI = UNDEFINED_I
+      NODESJ = UNDEFINED_I
+      NODESK = UNDEFINED_I
+
       CALL USR_INIT_NAMELIST 
 !
       RETURN  

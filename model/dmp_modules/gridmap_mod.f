@@ -83,15 +83,15 @@
 
 !       ******************************************************************
 
-        nodesj = 1
+!        nodesj = 1
 
-        if(no_k) then
-        nodesi = numPEs
-        nodesk = 1
-        else
-        nodesi = 1
-        nodesk = numPEs
-        endif
+!        if(no_k) then
+!        nodesi = numPEs
+!        nodesk = 1
+!        else
+!        nodesi = 1
+!        nodesk = numPEs
+!        endif
 
 	allocate( ijksize3_all(0:numPEs-1) )
 
