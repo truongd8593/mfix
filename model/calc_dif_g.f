@@ -35,6 +35,7 @@
       USE constant
       USE compar
       USE sendrecv
+      USE run
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -48,10 +49,17 @@
 !
 !                      Indices
       INTEGER          IJK, N
+      
+      DOUBLE PRECISION	Dab
 !
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
+!
+!     Gas diffusion coefficient
+!     Bird, Stewart, and Lightfoot (1960) -- CO2--N2 at 298.2 K
+      Dab = 0.165       !cm^2/s
+      IF(UNITS == 'SI') Dab = Dab*0.0001   !m^2/s
 !
       IF (DIF_G0 /= UNDEFINED) RETURN  
 !!$omp  parallel do private(ijk) &
@@ -59,9 +67,7 @@
       DO N = 1, NMAX(0) 
          DO IJK = IJKSTART3, IJKEND3 	 
             IF (FLUID_AT(IJK)) THEN 
-!           Gas diffusion coefficient
-!           Bird, Stewart, and Lightfoot (1960) -- CO2--N2 at 298.2 K
-               DIF_G(IJK,N) = ROP_G(IJK)*0.165 
+               DIF_G(IJK,N) = ROP_G(IJK)*Dab 
             ELSE 
                DIF_G(IJK,N) = ZERO 
             ENDIF 

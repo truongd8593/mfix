@@ -130,6 +130,9 @@
 !                      Excluded volume (Boyle-Massoudi stress tensor)
       DOUBLE PRECISION V_ex
 !
+!
+!S. Dartevelle:        constant to convert the frictional-plastic Pressure dyne/cm2 --> Pa
+      DOUBLE PRECISION to_SI
 
 
       END MODULE constant                                                                        

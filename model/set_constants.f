@@ -15,6 +15,11 @@
 !  Author: W. Sams                                    Date: 03-MAY-93  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
+!  Revision Number: 3                                                  C
+!  Purpose: Add to_SI to change from CGS to SI in some routines        C
+!  Author: S. Dartevelle                              Date: 03-MAY-02  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced: UNITS                                         C
@@ -22,7 +27,7 @@
 !  Variables modified: G, GAS_CONST, K_scale, Pi, SQRT_Pi, SQRT_3,     C
 !                      ETA, D_p3, oD_p3, MASS_s                        C
 !                                                                      C
-!  Local variables: IJK
+!  Local variables: IJK                                                C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
@@ -63,9 +68,7 @@
 !   Note that the cell flags are not set when this routine is called.
 !
 !
-!
 !  Dimensionless constants
-!
       PI = 4.*ATAN(ONE) 
       SQRT_PI = SQRT(PI) 
       K_SCALE = .08 
@@ -73,7 +76,7 @@
       ETA = (1D0 + C_E)*0.5D0 
 !
 !  plastic regime stress
-!
+!Angle given in degree but calculated in radian within the fortran codes
       if(mmax > 0) then
         TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
         SIN_PHI = SIN(PHI*PI/180.D0) 
@@ -81,17 +84,17 @@
         F_PHI = (3.0 - 2.0*SIN2_PHI)/3.0 
       endif
 !
-!  Enter the value of all constants in various units
-!
-      IF (UNITS == 'SI') THEN 
-!                                                ! m/s^2         (Perry and Green,
-         IF (GRAVITY == UNDEFINED) GRAVITY = 9.80665 
-         GAS_CONST = 8314.56                     ! Pa.m^3/kmol.K (Perry and Green, 1984) 
-      ELSE IF (UNITS == 'CGS') THEN 
-         IF (GRAVITY == UNDEFINED) GRAVITY = 980.665 
-         GAS_CONST = 8314.56E4 
+!  Enter the value of all constants in various units (CGS or SI)
+      IF (UNITS == 'SI') THEN
+         IF (GRAVITY == UNDEFINED) GRAVITY = 9.80665 ! m/s2
+         GAS_CONST = 8314.56                     !Pa.m3/kmol.K, or kg m2/s2 kmol K (Perry and Green, 1984)
+         to_SI = 0.1                             !to convert dyne/cm2 to Pa, see s_pr2.inc, see calc_mu_g.f
+      ELSE IF (UNITS == 'CGS') THEN
+         IF (GRAVITY == UNDEFINED) GRAVITY = 980.665 !cm/s2
+         GAS_CONST = 8314.56E4                   !g.cm2/s2.mol.K
+         to_SI = ONE                             !does not do anything in CGS,  see s_pr2.inc, see calc_mu_g.f
       ELSE 
-         WRITE (UNIT_LOG, 1000) UNITS 
+         WRITE (UNIT_LOG, 1000) UNITS
          CALL MFIX_EXIT(myPE) 
       ENDIF 
 !

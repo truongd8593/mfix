@@ -12,6 +12,11 @@
 !  Author:                                            Date: dd-mmm-yy  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
+!  Revision Number: 2                                                  C
+!  Purpose: allow SI unit                                              C
+!  Author: S. Dartevelle                              Date: 01-Jul-02  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced:                                               C
@@ -37,7 +42,8 @@
       USE visc_s
       USE indices
       USE constant
-      USE compar    
+      USE compar
+	  USE run          !S. Dartevelle
       USE sendrecv  
       IMPLICIT NONE
 !-----------------------------------------------
@@ -61,7 +67,6 @@
                       IM, JM, KM
       INTEGER          IMJPK, IMJMK, IMJKP, IMJKM, IPJKM, IPJMK, IJMKP, &
                       IJMKM, IJPKM
-
 !
 !                      Strain rate tensor components for mth solids phase
       DOUBLE PRECISION D_g(3,3)
@@ -126,8 +131,8 @@
 !
 !  Molecular viscosity
 !
-            IF (MU_G0 == UNDEFINED) MU_G(IJK) = 1.7D-4*(T_G(IJK)/273.0)**1.5*(&
-               383./(T_G(IJK)+110.)) 
+         IF (MU_G0 == UNDEFINED) MU_G(IJK) = to_SI*1.7D-4*(T_G(IJK)/273.0)**1.5*(&
+               383./(T_G(IJK)+110.))   !in Poise or Pa.s
             MU_GT(IJK) = MU_G(IJK) 
             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
 
@@ -220,6 +225,7 @@
             D_G(3,1) = D_G(1,3) 
             D_G(3,2) = D_G(2,3) 
             D_G(3,3) = (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) + U_G_C*OX(I) 
+!
 !
 !         Calculate the second invariant of the deviator of D_g
 !

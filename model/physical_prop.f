@@ -11,6 +11,11 @@
 !  Author: M. Syamlal                                 Date: 23-APR-96  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
+!  Revision Number: 2                                                  C
+!  Purpose: allow SI                                                   C
+!  Author: S. Dartevelle                              Date: 01-Jul-02  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
 !  Literature/Document References:                                     C
 !    Perry, R.H., and C.H. Chilton, Chemical Engineer's Handbook, 5th  C
 !      edition, McGraw-Hill Kogakusha, Tokyo, 1973.                    C
@@ -79,44 +84,54 @@
 !
             IF (DENSITY(0)) THEN 
                IF (MW_AVG == UNDEFINED) THEN 
-!              Average molecular weight
+!              Average molecular weight: Xg1/Mw1 + Xg2/Mw2 + Xg3/Mw3 + ....
 !              -----------------------------------------------------
 !               MW = CALC_MW(X_g, DIMENSION_3, IJK, NMAX(0), MW_g)
-                  MW = ZERO 
-                  N = 1 
-                  IF (NMAX(0) > 0) THEN 
-                     MW = MW + SUM(X_G(IJK,:NMAX(0))/MW_G(:NMAX(0))) 
-                     N = NMAX(0) + 1 
-                  ENDIF 
-                  MW = ONE/MAX(MW,OMW_MAX) 
+                  MW = ZERO
+                  N = 1
+                  IF (NMAX(0) > 0) THEN
+                     MW = MW + SUM(X_G(IJK,:NMAX(0))/MW_G(:NMAX(0)))
+                     N = NMAX(0) + 1
+                  ENDIF
+                  MW = ONE/MAX(MW,OMW_MAX)
 !              -----------------------------------------------------
-                  MW_MIX_G(IJK) = MW 
-                  RO_G(IJK) = EOSG(MW,P_G(IJK),T_G(IJK)) 
-                  ROP_G(IJK) = RO_G(IJK)*EP_G(IJK) 
-               ELSE 
-                  RO_G(IJK) = EOSG(MW_AVG,P_G(IJK),T_G(IJK)) 
-                  ROP_G(IJK) = RO_G(IJK)*EP_G(IJK) 
-               ENDIF 
-            ENDIF 
+                  MW_MIX_G(IJK) = MW
+                  RO_G(IJK) = EOSG(MW,P_G(IJK),T_G(IJK))
+                  ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
+               ELSE
+                  RO_G(IJK) = EOSG(MW_AVG,P_G(IJK),T_G(IJK))
+                  ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
+               ENDIF
+            ENDIF
 !
-!           Constant pressure spcific heat of air in cal/g.K
 !
+!1 Cal = 4.183925 J
+!
+!           Constant pressure specific heat of air in cal/g.K
             IF (SP_HEAT(0) .AND. C_PG0==UNDEFINED) C_PG(IJK) = 0.767*CPN2(T_G(&
-               IJK)) + 0.233*CPO2(T_G(IJK)) 
+               IJK)) + 0.233*CPO2(T_G(IJK))
+!
+!to SI, S. Dartevelle
+         IF (UNITS == 'SI') C_PG(IJK) = 4183.925*C_PG(IJK)    !in J/kg K
+!
+!
          ENDIF 
       END DO 
-      
-
+!
       DO M = 1, MMAX 
 !
 !$omp  parallel do private(IJK)  
          DO IJK = IJKSTART3, IJKEND3 
             IF (.NOT.WALL_AT(IJK)) THEN 
 !
-!             Specific heat of solids (Coal) in cal/g.K
+!             Specific heat of solids (Coal = 0.3 cal/g.K)
 !             Perry & Chilton(1973) -- Table 3-201 on page 3-136
+!             Specific heat of solids (Ash =  0.310713 cal/g.K)
+!             Dobran et al., 1991
+               IF (SP_HEAT(M) .AND. C_PS0==UNDEFINED) C_PS(IJK,M) = 0.310713
+!to SI, S. Dartevelle
+               IF (UNITS == 'SI') C_PS(IJK,M) = 4183.925*C_PS(IJK,M)    !in J/kg K
 !
-               IF (SP_HEAT(M) .AND. C_PS0==UNDEFINED) C_PS(IJK,M) = 0.3 
             ENDIF 
          END DO 
       END DO 

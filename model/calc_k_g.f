@@ -6,6 +6,10 @@
 !  Author:M. Syamlal                                  Date: 24-APR-96  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: allow SI unit                                              C
+!  Author: S. Dartevelle                              Date: 01-Jul-02  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -34,6 +38,7 @@
       USE indices
       USE constant
       USE compar
+	  USE run       !S. Dartevelle
       USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
@@ -52,6 +57,8 @@
       INCLUDE 'function.inc'
 !
 !
+!1 Cal = 4.183925 J
+!
       IF (K_G0 /= UNDEFINED) RETURN  
 
 !!$omp parallel do private(ijk) &
@@ -61,10 +68,13 @@
 !           Gas conductivity (air) in cal/s.cm.K
 !           Bird, Stewart, and Lightfoot (1960) -- Temperature dependence from formula
 !           8.3-12 on p. 255 and conductivity value at 300 K from p. 263
-            K_G(IJK) = 6.02D-5*SQRT(T_G(IJK)/300.) 
+            K_G(IJK) = 6.02D-5*SQRT(T_G(IJK)/300.)
          ELSE 
             K_G(IJK) = ZERO 
-         ENDIF 
+         ENDIF
+!to SI, S. Dartevelle
+         IF (UNITS == 'SI') K_G(IJK) = 418.3925*K_G(IJK)      !J/s.m.K
+!
       END DO 
 
       CALL send_recv(K_G, 2)     

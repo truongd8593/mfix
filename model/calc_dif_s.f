@@ -36,6 +36,7 @@
       USE toleranc 
       USE compar
       USE sendrecv
+      USE run
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -52,10 +53,14 @@
 !
 !                      Solids phase
       INTEGER          M
+      
+      DOUBLE PRECISION	Dab
 !
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
+      Dab = ZERO       !cm^2/s
+      IF(UNITS == 'SI') Dab = Dab*0.0001   !m^2/s
 !
       IF (DIF_s0  /= UNDEFINED) RETURN  
 
@@ -65,7 +70,7 @@
       DO N = 1, NMAX(M) 
          DO IJK = IJKSTART3, IJKEND3 	 
             IF (FLUID_AT(IJK)) THEN 
-               DIF_S(IJK,M,N) = ROP_S(IJK,M)*ZERO 
+               DIF_S(IJK,M,N) = ROP_S(IJK,M)*Dab 
             ELSE 
                DIF_S(IJK,M,N) = ZERO 
             ENDIF 

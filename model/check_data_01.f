@@ -6,9 +6,9 @@
 !  Author: P. Nicoletti                               Date: 27-NOV-91  C
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
 !                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
+!  Revision Number: 1                                                  C
+!  Purpose: allow Si unit                                              C
+!  Author: S. Dartevelle                              Date: 01-Jul-02  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Literature/Document References:                                     C
@@ -55,7 +55,7 @@
 !
       IF (DESCRIPTION == UNDEFINED_C) DESCRIPTION = ' ' 
 !
-      IF (UNITS /= 'CGS') CALL ERROR_ROUTINE ('check_data_01', &
+      IF ( (UNITS /= 'CGS').AND. (UNITS /= 'SI') ) CALL ERROR_ROUTINE ('check_data_01', &
          'UNITS not specified or illegal in mfix.dat', 1, 1) 
 !
       IF (DT /= UNDEFINED) THEN 
