@@ -15,6 +15,7 @@
   DT 			= 1.0E-4			!time step
   ENERGY_EQ 		= .FALSE.			!do not solve energy eq
   SPECIES_EQ 		= .FALSE.    .FALSE. 	.FALSE.	!do not solve species eq
+  DETECT_STALL          = .FALSE.
 
 
 ! Geometry Section                                                              
