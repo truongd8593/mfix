@@ -1100,7 +1100,7 @@ sol_flux.$(OBJ_EXT) : sol_flux.f \
             ep_s2.inc                                                   
 strcmp.$(OBJ_EXT) : strcmp.f 
 streqs.$(OBJ_EXT) : streqs.f 
-time_avg.$(OBJ_EXT) : tiem_avg.f \
+time_avg.$(OBJ_EXT) : time_avg.f \
             PARAM.mod
 usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             usrnlst.inc                                                 

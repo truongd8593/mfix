@@ -79,7 +79,7 @@
 	do l_spx = 1,n_spx	! for now
       IF (.NOT.DO_XFORMS) THEN
 	write (*,*) ' process old SPx file : ' , l_spx
-	write (temp_file(nb+3:nb+3),'(i1)'),l_spx
+	write (temp_file(nb+3:nb+3),'(i1)')l_spx
          OPEN (UNIT=UNIT_SPX+L_SPX+unit_add,FILE=TEMP_FILE, &
             STATUS='NEW',&
             RECL=OPEN_N1,ACCESS='DIRECT',FORM='UNFORMATTED',ERR=101)
