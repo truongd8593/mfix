@@ -225,10 +225,10 @@
          END DO 
 	 
 !\\SP Global Sum
- 	 call global_all_sum(bed_weight,bed_weight)
- 	 call global_all_sum(area,area)
+ 	 call global_all_sum(bed_weight)
+ 	 call global_all_sum(area)
          IF (AREA /= 0.0) BED_WEIGHT = BED_WEIGHT/AREA 
-!	 call global_all_sum(bed_weight,bed_weight)
+!	 call global_all_sum(bed_weight)
 ! bed_weight = bed_weight/numPEs
 !\\SP\
 ! PJ = 0.0d0

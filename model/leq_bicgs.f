@@ -168,6 +168,32 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
+!//TEMP - Arrays
+!     DOUBLE PRECISION A_m_tmp(1:ijkmax3, -3:3 )
+!     DOUBLE PRECISION B_m_tmp(1:ijkmax3)
+
+!//TEMP - SP
+!       write(*,*) 'before gather in conv_dif_phi'
+!       CALL gather(A_M, A_M_tmp)
+!       CALL gather(B_M, B_M_tmp)
+!       write(*,*) 'after gather in conv_dif_phi'
+
+!       if(myPE.eq.root) then
+
+!       do k = kmin2, kmax2
+!       do j = jmin2, jmax2
+!       do i = imin2, imax2
+
+!       ijk = funijk_gl(i,j,k)
+!       write(90,*) i,j,k,A_M_tmp(IJK,:), B_M_tmp(IJK)
+
+!       enddo
+!       enddo
+!       enddo
+
+!       endif
+!//end_TEMP
+
 
       alpha(:)  = zero
       beta(:)   = zero
@@ -216,6 +242,7 @@
 	
 	Rnorm0 = sqrt( dot_product_par( R, R ) )
 
+
     if (idebugl >= 1) then
        print*,'leq_bicgs, initial: ', Vname,' resid ', real(Rnorm0)
     endif
@@ -259,6 +286,7 @@
 !       Solve M Phat(:) = P(:)
 !       V(:) = A*Phat(:)
 !       
+
         call MSOLVE( Vname, P, A_m, Phat, CMETHOD )
 
         call MATVEC( Vname, Phat, A_m, V )
@@ -272,7 +300,6 @@
         Svec(:) = R(:) - alpha(i) * V(:)
         call send_recv(Svec,2)
 
-
 !
 !       Check norm of Svec(:); if small enough:
 !       set X(:) = X(:) + alpha(i)*Phat(:) and stop
@@ -280,6 +307,11 @@
         Snorm = sqrt( dot_product_par( Svec, Svec ) )
 
         if (Snorm <= TOLMIN) then
+
+!	write(91,*) alpha(i)
+!	write(91,*) Var(ijkstart3:ijkend3)
+!	write(91,*) Phat(ijkstart3:ijkend3)
+!	write(91,*) '**************************'
 
              Var(ijkstart3:ijkend3) = Var(ijkstart3:ijkend3) + alpha(i)*Phat(ijkstart3:ijkend3)
              if (idebugl >= 1) then
@@ -299,6 +331,7 @@
 !       Tvec(:) = A * Shat(:)
 !
         call MSOLVE( Vname, Svec, A_m, Shat, CMETHOD )
+
         
         call MATVEC( Vname, Shat, A_m, Tvec )
 
@@ -2028,8 +2061,7 @@
 
     include 'function.inc'
 
-
-
+	var(:) = ZERO
 
 ! diagonal scaling
 

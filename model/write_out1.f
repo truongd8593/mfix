@@ -129,19 +129,22 @@
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (U_g,array1,root)    !//
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      if (myPE == PE_IO) CALL OUT_ARRAY (U_G, 'U_g') 
+!//SP - Changed U_G to array1
+      if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'U_g') 
 !
       if (myPE == PE_IO) WRITE (UNIT_OUT, 1900) CHAR(12), TIME 
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (V_g,array1,root)    !//
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      if (myPE == PE_IO) CALL OUT_ARRAY (V_G, 'V_g') 
+!//SP - Changed V_G to array1
+      if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'V_g') 
 !
       if (myPE == PE_IO) WRITE (UNIT_OUT, 2000) CHAR(12), TIME 
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (W_g,array1,root)    !//
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-      if (myPE == PE_IO) CALL OUT_ARRAY (W_G, 'W_g') 
+!//SP - Changed W_G to array1
+      if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'W_g') 
 !
       DO LC = 1, MMAX 
          if (myPE == PE_IO) WRITE (UNIT_OUT, 2100) CHAR(12), LC, TIME 

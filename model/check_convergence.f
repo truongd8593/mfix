@@ -40,6 +40,7 @@
       USE run
       USE residual
       USE toleranc 
+      USE mpi_utility !//SP
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -94,9 +95,8 @@
          END DO 
       ENDIF 
       
-!//? probably need a global sum for SUM at this point and bcast to all PEs??      
-!    call MPI_ALLREDUCE(SUM,SUM,....) or it's equivalent from wrappers
-!//? may be worthwhile to gather all these global sums at the end of this routine
+!//SP
+     call global_all_sum(SUM)
 !
       SUM_T = ZERO 
       IF (ENERGY_EQ) THEN 
@@ -104,8 +104,8 @@
             SUM_T = SUM_T + RESID(RESID_T,M) 
          END DO 
       ENDIF 
-!//? probably need a global sum for SUM_T at this point and bcast to all PEs??
-!
+!//SP
+     call global_all_sum(SUM_T)
       SUM_X = ZERO 
       NO_RESID = .FALSE. 
       DO M = 0, MMAX 
@@ -116,13 +116,10 @@
             END DO 
          ENDIF 
       END DO 
+!//SP
+     call global_all_sum(SUM_X)
       IF (NO_RESID) SUM_X = TOL_RESID_X + ONE 
       
-!//? probably need a global sum for SUM_X at this point and bcast to all PEs??
-
-
-!//? we need to have the information for global residuals (i.e., through all
-!//? subdomains) for all variables and then proceed with the following.
 !
 !  Find the variable with maximum residual
 !

@@ -32,16 +32,13 @@
       USE param 
       USE param1
       USE run 
-!<<<<<<< conv_dif_phi.f
-      USE compar
-      USE mpi_utility
-      USE geometry
-      USE xsi_array
-!=======
       USE geometry
       USE compar
       USE sendrecv
       Use xsi_array
+!//SP
+      USE mpi_utility
+      USE indices
 !>>>>>>> 1.3
       IMPLICIT NONE
 !-----------------------------------------------
@@ -78,6 +75,7 @@
 !
 !                      Error index
       INTEGER          IER
+
 !
 !\\Extra Sendrecv operations - just to make sure all the variables needed are
 !  are passed - can be optimized later - Sreekanth - 102199
@@ -125,7 +123,7 @@
 
 	CALL SEND_RECV(A_M, 2)
 	CALL SEND_RECV(B_M, 2)
-	
+
         RETURN  
       END SUBROUTINE CONV_DIF_PHI 
 !

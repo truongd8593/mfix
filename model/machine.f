@@ -109,29 +109,37 @@
 !
 !                      cpu time since start of run
       DOUBLE PRECISION CPU
-      
-      INTEGER, SAVE :: COUNT_OLD=0, WRAP=0
 !
 ! local variables
 !
-
+!
+!                      TA(1) = user cpu time   TA(2) = system cpu time
+      REAL             TA(2) 
+!
+!                      XT = TA(1) + TA(2)
+      REAL             XT
+!
+!                      ETIME is an SGI system function which returns
+!                      the elasped CPU time
+      REAL             ETIME
+!
+      XT  = ETIME(TA)
+      CPU = XT
+      
+      
+!-------------------------------------------F90
 !                       clock cycle
-      INTEGER           COUNT
+!      INTEGER           COUNT
 
 !                       number of cycles per second
-      INTEGER           COUNT_RATE
+!      INTEGER           COUNT_RATE
       
 !                       max number of cycles, after which count is reset to 0
-      INTEGER           COUNT_MAX
+!      INTEGER           COUNT_MAX
 
-      CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
-      IF(COUNT_OLD .GT. COUNT) THEN
-        WRAP = WRAP + 1
-      ENDIF
-      COUNT_OLD = COUNT
+!      CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
       
-      CPU           = DBLE(COUNT)/DBLE(COUNT_RATE) &
-                     + DBLE(WRAP) * DBLE(COUNT_MAX)/DBLE(COUNT_RATE)
+!      CPU           = DBLE(COUNT)/DBLE(COUNT_RATE)
 !
       RETURN
       END
@@ -197,12 +205,3 @@
       subroutine pc_quickwin
       return
       end
-!
-
-      subroutine gethostname
-      return
-      end
-      subroutine ran
-      return
-      end
-     

@@ -323,7 +323,8 @@
 !
 ! Write standard output, if needed
 !
-      if (myPE.eq.PE_IO) then       !//
+!//SP
+!     if (myPE.eq.PE_IO) then       !//
          IF (OUT_DT /= UNDEFINED) THEN 
             IF (DT == UNDEFINED) THEN 
                CALL WRITE_OUT1 
@@ -332,7 +333,7 @@
                CALL WRITE_OUT1 
             ENDIF 
          ENDIF 
-      end if                          !//
+!     end if                          !//
 !
 ! Write restart file, if needed
 !
@@ -496,9 +497,9 @@
       CALL CALC_TAU_W_S (TAU_W_S, IER) 
     write(*,"('(PE ',I2,'): reached end of CALC_TAU_W_S in time_march')") myPE
 !//SP
-    write(*,"('(PE ',I2,'): reached end of calc routines in time_march')") myPE 
+!   write(*,"('(PE ',I2,'): reached end of calc routines in time_march')") myPE 
 !//SP
-    call mfix_exit(myPE)   !//SP
+!   call mfix_exit(myPE)   !//SP
 !
 !  Check rates and sums of mass fractions every NLOG time steps
 !
@@ -507,6 +508,9 @@
          NCHECK = NCHECK + DNCHECK 
          CALL CHECK_DATA_30 
       ENDIF 
+!
+!//SP
+    write(*,"('(PE ',I2,'): reached end of CHECK_DATA_30 in time_march')") myPE
 !
 !  Advance the solution in time by iteratively solving the equations
 !

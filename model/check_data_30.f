@@ -39,6 +39,7 @@
       USE indices
       USE funits 
       USE compar    !//d
+      USE mpi_utility    !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -147,9 +148,10 @@
       CALL START_LOG 
       ABORT = .FALSE. 
       MESSAGE = .FALSE. 
-      DO K = 1, KMAX2 
-         DO J = 1, JMAX2 
-            DO I = 1, IMAX2 
+!//SP
+      DO K = KSTART2, KEND2 
+         DO J = JSTART2, JEND2 
+            DO I = ISTART2, IEND2 
                IJK = FUNIJK(I,J,K) 
                IF (.NOT.WALL_AT(IJK)) THEN 
 !
@@ -441,6 +443,8 @@
          END DO 
       END DO 
       IF (MESSAGE_X_G) THEN 
+!//SP Global
+	 call global_all_sum(COUNT_G)
          SUM_COUNT = 0 
          DO L = 1, 9 
             SUM_COUNT = SUM_COUNT + COUNT_G(L) 
@@ -455,6 +459,8 @@
 !
       DO M = 1, MMAX 
          IF (MESSAGE_X_S(M)) THEN 
+!//SP Global
+            call global_all_sum(COUNT_S)
             SUM_COUNT = 0 
             DO L = 1, 9 
                SUM_COUNT = SUM_COUNT + COUNT_S(M,L) 

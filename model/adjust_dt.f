@@ -54,7 +54,8 @@
 !
 !
 !//  only do this routine if the root processor
-      if (myPE.ne.PE_IO) return
+!//SP
+!     if (myPE.ne.PE_IO) return
 !
 !     Initialize
       IF (IER == 100) THEN 
@@ -78,7 +79,9 @@
             ELSE 
                DT = DT*DT_FAC 
             ENDIF 
-            IF (FULL_LOG) WRITE (*, *) 'DT = ', DT, '  NIT/s = ', NINT(NITOS) 
+!//SP
+            IF (FULL_LOG.and.myPE.eq.PE_IO) &
+            WRITE (*, *) 'DT = ', DT, '  NIT/s = ', NINT(NITOS) 
          ELSE 
             STEPS_TOT = STEPS_TOT + 1 
             NIT_TOT = NIT_TOT + NIT 
@@ -89,13 +92,15 @@
       ELSE 
 !
          IF (DT < DT_MIN) THEN 
+!//SP
             LINE(1) = 'DT < DT_MIN.  Recovery not possible!' 
-            IF (FULL_LOG) WRITE (*, *) LINE(1) 
+            IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1) 
             CALL WRITE_ERROR ('ADJUST_DT', LINE, 1) 
             STOP
          ELSE IF (DT_FAC >= ONE) THEN 
             LINE(1) = 'DT_FAC >= 1.  Recovery not possible!' 
-            IF (FULL_LOG) WRITE (*, *) LINE(1) 
+!//SP
+            IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1) 
             CALL WRITE_ERROR ('ADJUST_DT', LINE, 1) 
             STOP  
          ELSE 
@@ -108,8 +113,11 @@
             DT = DT*DT_FAC 
 !
             IF (FULL_LOG) THEN 
+!//SP
+	      IF(myPE.eq.PE_IO) then
                WRITE (*, '(12X,A,G11.5,9X,A)') ' Dt=', DT, &
                   ' Recovered            :-)' 
+	      ENDIF
 !
                CALL START_LOG 
                WRITE (UNIT_LOG, '(12X,A,G11.5,9X,A)') ' Dt=', DT, &

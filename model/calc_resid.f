@@ -201,7 +201,8 @@
       USE parallel 
       USE geometry
       USE indices
-      USE compar   !//d
+      USE compar        !//d
+      USE mpi_utility   !//SP
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -255,6 +256,10 @@
 !// 1207 replaced global 3D dimensioning w/ local 3D dimension for RESID_IJK
 !      double precision, dimension (ijkmax2) :: RESID_IJK
       double precision, dimension (ijksize3_all(myPE)) :: RESID_IJK
+!//SP
+      DOUBLE PRECISION     MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
+      INTEGER              IJK_RESID_GL(0:numPEs-1), IJK_RESID_L(0:numPEs-1)
+      INTEGER              nproc
 
       INCLUDE 'function.inc'
 !
@@ -319,6 +324,9 @@
 !
          ENDIF 
       END DO 
+!//SP
+      call global_all_sum(NUM)
+      call global_all_sum(DEN)
 !efd
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
@@ -330,8 +338,38 @@
          ENDIF
       ENDDO
 
+!//SP
+      do nproc=0,NumPEs-1
+	if(nproc.eq.myPE) then
+	MAX_RESID_L(nproc) = MAX_RESID
+	IJK_RESID_L(nproc) = FUNIJK_IO(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
+	else
+	MAX_RESID_L(nproc) = 0.0
+	IJK_RESID_L(nproc) = 0
+	endif
+      enddo
+
+!//SP - Call to determine the maximum among all the procesors
+      call global_all_max(MAX_RESID)
 
 
+!//SP - Call to collect all the information among all the procesors
+      call global_all_sum(MAX_RESID_L, MAX_RESID_GL)
+      call global_all_sum(IJK_RESID_L, IJK_RESID_GL)
+
+!//SP - call to determine the global IJK location w.r.t. serial version
+
+      IJK_RESID = IJKMAX3
+
+      do nproc=0,NumPEs-1
+
+        if(MAX_RESID_GL(nproc).eq.MAX_RESID.and.IJK_RESID_GL(nproc).lt.IJK_RESID) then
+
+        IJK_RESID = IJK_RESID_GL(nproc)
+
+        endif
+
+      enddo
 
       IF (DEN > ZERO) THEN 
          RESID = NUM/DEN 

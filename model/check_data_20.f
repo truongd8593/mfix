@@ -287,7 +287,6 @@
             END DO 
          END DO 
       END DO 
-	write(*,*) 'pass1', myPE
       IF (ABORT) THEN 
          WRITE (UNIT_LOG, 1300) 
          CALL MFIX_EXIT 

@@ -89,7 +89,8 @@
       CASE (:1)  
 !
 !$omp    parallel do private(IJK)
-         DO IJK = 1, IJKMAX2 
+!//SP
+         DO IJK = IJKSTART3, IJKEND3 
 !
             XSI_E(IJK) = XSI(U(IJK),ZERO) 
             XSI_N(IJK) = XSI(V(IJK),ZERO) 
@@ -98,7 +99,8 @@
       CASE (2)                                   !Superbee 
 
 !$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF)
-         DO IJK = 1, IJKMAX2 
+!//SP
+         DO IJK = IJKSTART3, IJKEND3
 !
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -153,7 +155,8 @@
       CASE (3)                                   !SMART 
 !
 !$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF)
-         DO IJK = 1, IJKMAX2 
+!//SP
+         DO IJK = IJKSTART3, IJKEND3
 !
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -208,7 +211,8 @@
       CASE (4)                                   !ULTRA-QUICK 
 
 !$omp    parallel do private(IJK, I,J,K, IJKC,IJKD,IJKU, PHI_C,DWF,CF)
-         DO IJK = 1, IJKMAX2 
+!//SP
+         DO IJK = IJKSTART3, IJKEND3
 !
             I = I_OF(IJK) 
             IF (U(IJK) >= ZERO) THEN 
@@ -275,7 +279,8 @@
 !$omp&   private(IJK,I,J,K, IJKC,IJKD,IJKU, &
 !$omp&           ODXC,ODXUC, PHI_C,CF,DWF, &
 !$omp&           ODYC,ODYUC,  ODZC,ODZUC )
-         DO IJK = 1, IJKMAX2 
+!//SP
+         DO IJK = IJKSTART3, IJKEND3
 !
             I = I_OF(IJK) 
             IF (U(IJK) >= ZERO) THEN 
@@ -351,7 +356,8 @@
       CASE (6)                                   !MUSCL 
 
 !$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF )
-         DO IJK = 1, IJKMAX2 
+!//SP
+         DO IJK = IJKSTART3, IJKEND3
 !
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -407,7 +413,8 @@
 
 
 !$omp    parallel do private( IJK, IJKC,IJKD,IJKU,  PHI_C,DWF )
-         DO IJK = 1, IJKMAX2 
+!//SP
+         DO IJK = IJKSTART3, IJKEND3
 !
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -462,7 +469,8 @@
       CASE (8)                                   !Minmod 
 
 !$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF )
-         DO IJK = 1, IJKMAX2 
+!//SP
+         DO IJK = IJKSTART3, IJKEND3
 !
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 

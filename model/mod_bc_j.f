@@ -65,10 +65,10 @@
 !// SP
     IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
       bcast_root = myPE
-      call global_all_sum(bcast_root,bcast_root)
+      call global_all_sum(bcast_root)
     ELSE
       bcast_root = 0
-      call global_all_sum(bcast_root,bcast_root)
+      call global_all_sum(bcast_root)
     ENDIF
 
     IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
@@ -89,7 +89,7 @@
       ENDIF 
     ENDIF
 
-!// SP
+!/SP
       CALL bcast(J_S,bcast_root)
       CALL bcast(J_N,bcast_root)
       CALL bcast(PLANE,bcast_root)

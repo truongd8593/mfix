@@ -135,21 +135,30 @@
 !     Initialize residuals
 !
       CALL INIT_RESID (IER) 
+!//SP
+      write(*,*) 'after init_resid', myPE
 !
 !
 !     CPU time left
 !
-      IF (FULL_LOG .and. myPE.eq.PE_IO) THEN      !//
+!//SP
+      IF (FULL_LOG) THEN      !//
          TLEFT = (TSTOP - TIME)*CPUOS 
          CALL GET_TUNIT (TLEFT, TUNIT) 
 !
          IF (DT == UNDEFINED) THEN 
             CALL GET_SMASS (SMASS) 
-            WRITE (*, '(/A,G10.5, A,F9.3,1X,A)') ' Starting solids mass = ', &
-               SMASS, '    CPU time left = ', TLEFT, TUNIT 
+!//SP
+	    IF(myPE.eq.PE_IO) THEN
+              WRITE (*, '(/A,G10.5, A,F9.3,1X,A)') ' Starting solids mass = ', &
+                 SMASS, '    CPU time left = ', TLEFT, TUNIT 
+	    ENDIF
          ELSE 
-            WRITE (*, '(/A,G12.5, A,G12.5, A,F9.3,1X,A)') ' Time = ', TIME, &
-               '  Dt = ', DT, '    CPU time left = ', TLEFT, TUNIT 
+!//SP
+            IF(myPE.eq.PE_IO) THEN
+              WRITE (*, '(/A,G12.5, A,G12.5, A,F9.3,1X,A)') ' Time = ', TIME, &
+                 '  Dt = ', DT, '    CPU time left = ', TLEFT, TUNIT 
+	    ENDIF
 !
          ENDIF 
       ENDIF 
@@ -183,6 +192,8 @@
 !     every iteration
 !
       IF (CALL_USR) CALL USR2 
+!//SP
+      write(*,*) 'after USR2', myPE
 !
 !
 !     Calculate coefficients.  Explicitly set flags for all the quantities
@@ -203,48 +214,60 @@
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 !
+!//SP
+      write(*,*) 'after USR2', myPE
 !
 !     Solve strarred velocitiy components
 !
-      CALL SOLVE_VEL_STAR (IER) 
+!//SP
+!     CALL SOLVE_VEL_STAR (IER) 
 !
+      write(*,*) RO_G0, myPE
 !
 !     Solve fluid pressure correction equation
 !
       IF (RO_G0 /= ZERO) CALL SOLVE_PP_G (NORMG, RESG, IER) 
+!//SP
+      write(*,*) 'after SOLVE_PP_G', myPE
 !
 !
 !     Correct pressure and velocities
 !
       CALL CORRECT_0 (IER) 
+!//SP
+      write(*,*) 'after CORRECT_0', myPE, MMAX
 !
 !     Solve solids volume fraction correction equation for close-packed
 !     solids phases
 !
-      IF (MMAX > 0) THEN 
-         CALL CALC_K_CP (K_CP, IER) 
-         CALL SOLVE_EPP (NORMS, RESS, IER) 
-         CALL CORRECT_1 (IER) 
+!     IF (MMAX > 0) THEN 
+!        CALL CALC_K_CP (K_CP, IER) 
+!        CALL SOLVE_EPP (NORMS, RESS, IER) 
+!        CALL CORRECT_1 (IER) 
 !
-	 IER = 0
-         CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
-         IF (IER == 1) THEN 
-            MUSTIT = 2                           !indicates divergence 
-            IF(DT/=UNDEFINED)GO TO 1000 
-         ENDIF 
+! IER = 0
+!        CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
+!        IF (IER == 1) THEN 
+!           MUSTIT = 2                           !indicates divergence 
+!           IF(DT/=UNDEFINED)GO TO 1000 
+!        ENDIF 
 !
-      ENDIF 
+!     ENDIF 
 !
+!//SP
+!     write(*,*) 'after CORRECT_1, etc.,', myPE
 !
 !  Update wall velocities
 !
-      CALL SET_WALL_BC (IER) 
+!     CALL SET_WALL_BC (IER) 
 !
+!//SP
+!     write(*,*) 'after SET_WALL_BC, etc.,', myPE
 !
 !     Calculate P_star in cells where solids continuity equation is
 !     solved
 !
-      IF (MMAX > 0) CALL CALC_P_STAR (EP_G, P_STAR, IER) 
+!     IF (MMAX > 0) CALL CALC_P_STAR (EP_G, P_STAR, IER) 
 !
 !
 !     Solve energy equations
@@ -264,6 +287,8 @@
 !     Solve species mass balance equations
 !
       CALL SOLVE_SPECIES_EQ (IER) 
+!//SP
+      write(*,*) 'after SOLVE_SPECIES_EQ, etc.,', myPE
 !
 !    User-defined linear equation solver parameters may be adjusted after
 !    the first iteration
@@ -275,6 +300,8 @@
 !     Check for convergence
 !
       CALL CHECK_CONVERGENCE (NIT, MUSTIT, IER) 
+!//SP
+      write(*,*) 'after CHECK_CONVERGENCE, etc.,', myPE
 !
 !      If not converged continue iterations; else exit subroutine.
 !
@@ -283,6 +310,8 @@
 !     Display residuals
 !
       IF (FULL_LOG) CALL DISPLAY_RESID (NIT, IER) 
+!//SP
+      write(*,*) 'after DISPLAY_RESID, etc.,', myPE
       
       IF (MUSTIT == 0) THEN 
          IF (DT==UNDEFINED .AND. NIT==1) GO TO 50!Iterations converged 
@@ -349,6 +378,9 @@
          RETURN  
       ENDIF 
 !
+!//SP
+      write(*,*) 'after misc., etc.,', myPE
+!     call mfix_exit
 !
       IF (NIT < MAX_NIT) THEN 
          MUSTIT = 0 

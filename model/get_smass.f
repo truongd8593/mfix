@@ -38,6 +38,7 @@
       USE fldvar
       USE indices
       USE compar        !//d
+      USE mpi_utility        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -67,10 +68,15 @@
 
 !!$omp$   parallel do private(IJK) &
 !!$omp&   reduction(+:SUM)
-         DO IJK = IJKMIN1, IJKMAX1 
+!//SP IJKMIN1, IJKMAX1 ---> ijkstart3, ijkend3
+         DO IJK = IJKSTART3, IJKEND3 
+	 IF(.NOT.IS_ON_myPE_owns(I_OF(IJK), J_OF(IJK), K_OF(IJK))) cycle
             IF (FLUID_AT(IJK)) SUM = SUM + ROP_S(IJK,M)*VOL(IJK) 
          END DO 
          SMASS = SMASS + SUM 
       END DO 
+!//SP
+      call global_all_sum(smass)
+      
       RETURN  
       END SUBROUTINE GET_SMASS 
