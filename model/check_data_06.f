@@ -600,11 +600,11 @@
 !//? WE NEED to make sure that if do loop limits yield to a IJK not residing
 !//? on the current PE's subdomain, then this loop will attempt to assign 
 !//? ijk values out of the current subdomain on each PE.
-            DO I = IC_K_B(ICV), IC_K_T(ICV) 
+            DO K = IC_K_B(ICV), IC_K_T(ICV) 
                DO J = IC_J_S(ICV), IC_J_N(ICV) 
-                  DO K = IC_I_W(ICV), IC_I_E(ICV) 
+                  DO I = IC_I_W(ICV), IC_I_E(ICV) 
 !// 220 1004 Replaced with global FUNIJK		     
-                     IJK = FUNIJK_GL(K,J,I) 
+                     IJK = FUNIJK_GL(I,J,K) 
 !                     IJK = FUNIJK(K,J,I) 
 !        write(UNIT_LOG,"('(PE ',I2,'): i = ',I5,'  j = ',I5,'  k = ',I5, & !//AIKEPARDBG
 !               ' ')") myPE,k,j,i !//AIKEPARDBG
