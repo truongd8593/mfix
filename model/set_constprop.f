@@ -42,6 +42,18 @@
       INTEGER :: IJK, M, N 
 !-----------------------------------------------
       INCLUDE 'function.inc'
+
+! Initialize transport coefficients to zero everywhere
+
+      MU_gt(:) = ZERO
+      LAMBDA_GT(:) = ZERO
+      MU_s(:, :) = ZERO
+      LAMBDA_s_c(:, :) = ZERO
+      LAMBDA_s(:, :) = ZERO
+      K_g(:) = ZERO
+      K_s(:, :) = ZERO
+      DIF_g(:, :) = ZERO
+      DIF_S(:, :, :) = ZERO 
 !
       IF (ENERGY_EQ .OR. L_SCALE0/=ZERO) THEN 
          RECALC_VISC_G = .TRUE. 
