@@ -67,8 +67,8 @@
          Z_CONSTANT = .TRUE. 
 !
          IF (IS_X_W(ISV)/=UNDEFINED .AND. IS_X_E(ISV)/=UNDEFINED) THEN 
-            CALL CALC_CELL (IS_X_W(ISV), DX, IMAX, I_W) 
-            CALL CALC_CELL (IS_X_E(ISV), DX, IMAX, I_E) 
+            CALL CALC_CELL (XMIN, IS_X_W(ISV), DX, IMAX, I_W) 
+            CALL CALC_CELL (XMIN, IS_X_E(ISV), DX, IMAX, I_E) 
             IF (IS_X_W(ISV) /= IS_X_E(ISV)) THEN 
                X_CONSTANT = .FALSE. 
                I_W = I_W + 1 
@@ -97,8 +97,8 @@
          ENDIF 
 !
          IF (IS_Y_S(ISV)/=UNDEFINED .AND. IS_Y_N(ISV)/=UNDEFINED) THEN 
-            CALL CALC_CELL (IS_Y_S(ISV), DY, JMAX, J_S) 
-            CALL CALC_CELL (IS_Y_N(ISV), DY, JMAX, J_N) 
+            CALL CALC_CELL (ZERO, IS_Y_S(ISV), DY, JMAX, J_S) 
+            CALL CALC_CELL (ZERO, IS_Y_N(ISV), DY, JMAX, J_N) 
             IF (IS_Y_S(ISV) /= IS_Y_N(ISV)) THEN 
                Y_CONSTANT = .FALSE. 
                J_S = J_S + 1 
@@ -127,8 +127,8 @@
          ENDIF 
 !
          IF (IS_Z_B(ISV)/=UNDEFINED .AND. IS_Z_T(ISV)/=UNDEFINED) THEN 
-            CALL CALC_CELL (IS_Z_B(ISV), DZ, KMAX, K_B) 
-            CALL CALC_CELL (IS_Z_T(ISV), DZ, KMAX, K_T) 
+            CALL CALC_CELL (ZERO, IS_Z_B(ISV), DZ, KMAX, K_B) 
+            CALL CALC_CELL (ZERO, IS_Z_T(ISV), DZ, KMAX, K_T) 
             IF (IS_Z_B(ISV) /= IS_Z_T(ISV)) THEN 
                Z_CONSTANT = .FALSE. 
                K_B = K_B + 1 

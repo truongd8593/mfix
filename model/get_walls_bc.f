@@ -83,9 +83,9 @@
                      I_W = 1 
                      I_E = 1 
                   ELSE 
-                     CALL CALC_CELL (BC_X_W(BCV), DX, IMAX, I_W) 
+                     CALL CALC_CELL (XMIN, BC_X_W(BCV), DX, IMAX, I_W) 
                      I_W = I_W + 1 
-                     CALL CALC_CELL (BC_X_E(BCV), DX, IMAX, I_E) 
+                     CALL CALC_CELL (XMIN, BC_X_E(BCV), DX, IMAX, I_E) 
                      IF (BC_X_W(BCV) == BC_X_E(BCV)) THEN 
                         IF (COMPARE(BC_X_W(BCV),XMIN)) THEN 
                            I_W = 1 
@@ -111,9 +111,9 @@
                      J_S = 1 
                      J_N = 1 
                   ELSE 
-                     CALL CALC_CELL (BC_Y_S(BCV), DY, JMAX, J_S) 
+                     CALL CALC_CELL (ZERO, BC_Y_S(BCV), DY, JMAX, J_S) 
                      J_S = J_S + 1 
-                     CALL CALC_CELL (BC_Y_N(BCV), DY, JMAX, J_N) 
+                     CALL CALC_CELL (ZERO, BC_Y_N(BCV), DY, JMAX, J_N) 
                      IF (BC_Y_S(BCV) == BC_Y_N(BCV)) THEN 
                         IF (COMPARE(BC_Y_S(BCV),ZERO)) THEN 
                            J_S = 1 
@@ -139,9 +139,9 @@
                      K_B = 1 
                      K_T = 1 
                   ELSE 
-                     CALL CALC_CELL (BC_Z_B(BCV), DZ, KMAX, K_B) 
+                     CALL CALC_CELL (ZERO, BC_Z_B(BCV), DZ, KMAX, K_B) 
                      K_B = K_B + 1 
-                     CALL CALC_CELL (BC_Z_T(BCV), DZ, KMAX, K_T) 
+                     CALL CALC_CELL (ZERO, BC_Z_T(BCV), DZ, KMAX, K_T) 
                      IF (BC_Z_B(BCV) == BC_Z_T(BCV)) THEN 
                         IF (COMPARE(BC_Z_B(BCV),ZERO)) THEN 
                            K_B = 1 

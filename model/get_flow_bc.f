@@ -94,8 +94,8 @@
                Z_CONSTANT = .TRUE. 
 !
                IF (BC_X_W(BCV)/=UNDEFINED .AND. BC_X_E(BCV)/=UNDEFINED) THEN 
-                  CALL CALC_CELL (BC_X_W(BCV), DX, IMAX, I_W) 
-                  CALL CALC_CELL (BC_X_E(BCV), DX, IMAX, I_E) 
+                  CALL CALC_CELL (XMIN, BC_X_W(BCV), DX, IMAX, I_W) 
+                  CALL CALC_CELL (XMIN, BC_X_E(BCV), DX, IMAX, I_E) 
                   IF (BC_X_W(BCV) /= BC_X_E(BCV)) THEN 
                      X_CONSTANT = .FALSE. 
                      I_W = I_W + 1 
@@ -125,8 +125,8 @@
                ENDIF 
 !
                IF (BC_Y_S(BCV)/=UNDEFINED .AND. BC_Y_N(BCV)/=UNDEFINED) THEN 
-                  CALL CALC_CELL (BC_Y_S(BCV), DY, JMAX, J_S) 
-                  CALL CALC_CELL (BC_Y_N(BCV), DY, JMAX, J_N) 
+                  CALL CALC_CELL (ZERO, BC_Y_S(BCV), DY, JMAX, J_S) 
+                  CALL CALC_CELL (ZERO, BC_Y_N(BCV), DY, JMAX, J_N) 
                   IF (BC_Y_S(BCV) /= BC_Y_N(BCV)) THEN 
                      Y_CONSTANT = .FALSE. 
                      J_S = J_S + 1 
@@ -156,8 +156,8 @@
                ENDIF 
 !
                IF (BC_Z_B(BCV)/=UNDEFINED .AND. BC_Z_T(BCV)/=UNDEFINED) THEN 
-                  CALL CALC_CELL (BC_Z_B(BCV), DZ, KMAX, K_B) 
-                  CALL CALC_CELL (BC_Z_T(BCV), DZ, KMAX, K_T) 
+                  CALL CALC_CELL (ZERO, BC_Z_B(BCV), DZ, KMAX, K_B) 
+                  CALL CALC_CELL (ZERO, BC_Z_T(BCV), DZ, KMAX, K_T) 
                   IF (BC_Z_B(BCV) /= BC_Z_T(BCV)) THEN 
                      Z_CONSTANT = .FALSE. 
                      K_B = K_B + 1 

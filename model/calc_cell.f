@@ -1,7 +1,7 @@
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CALC_CELL (REACTOR_LOC,D_DIR,N_DIR,CELL_LOC)           C
+!  Module name: CALC_CELL (RMIN, REACTOR_LOC,D_DIR,N_DIR,CELL_LOC)     C
 !  Purpose: calculate the cell index for a reactor location            C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 02-DEC-91  C
@@ -21,7 +21,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_CELL(REACTOR_LOC, D_DIR, N_DIR, CELL_LOC) 
+      SUBROUTINE CALC_CELL(RMIN, REACTOR_LOC, D_DIR, N_DIR, CELL_LOC) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !-----------------------------------------------
@@ -36,6 +36,9 @@
 !
 ! passed arguments
 !
+!    RMIN       - starting value of the axis -- XMIN need not be zero,
+!                   YMIN and ZMIN are assumed to be zero
+!
 !    REACTOR_LOC - location along one of the axis for which the cell
 !                  index is to be found
 !    D_DIR       - cell lengths (DX,DY,DZ)
@@ -47,7 +50,7 @@
 !    CELL_START -  start coordinate for cell
 !    CELL_END   -  end   coordinate for cell
       INTEGER N_DIR, CELL_LOC 
-      DOUBLE PRECISION REACTOR_LOC 
+      DOUBLE PRECISION RMIN, REACTOR_LOC 
 
       DOUBLE PRECISION, DIMENSION(0:(N_DIR+3)) :: D_DIR 
 !-----------------------------------------------
@@ -61,7 +64,7 @@
 !-----------------------------------------------
 !
       CELL_LOC = -1 
-      CELL_START = ZERO 
+      CELL_START = RMIN 
       DO LC = 2, N_DIR + 1 
          CELL_END = CELL_START + D_DIR(LC) 
          IF (REACTOR_LOC <= CELL_START + HALF*D_DIR(LC)) THEN 
@@ -93,8 +96,8 @@
 !-----------------------------------------------
 !
 ! passed arguments
-!    RMIN       - starting value -- XMIN need not be zero, YMIN and ZMIN are
-!                 assumed to be zero
+!    RMIN       - starting value of the axis -- XMIN need not be zero,
+!                   YMIN and ZMIN are assumed to be zero
 !
 !    REACTOR_LOC - location along one of the axis for which the cell
 !                  index is to be found
