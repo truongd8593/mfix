@@ -202,7 +202,7 @@ post_mfix : \
     tmp_array_mod.$(OBJ_EXT) \
     toleranc_mod.$(OBJ_EXT) \
     trace_mod.$(OBJ_EXT) \
-    turb_mod$(OBJ_EXT) \
+    turb_mod.$(OBJ_EXT) \
     ur_facs_mod.$(OBJ_EXT) \
     visc_g_mod.$(OBJ_EXT) \
     visc_s_mod.$(OBJ_EXT) \
@@ -324,6 +324,7 @@ post_mfix : \
     parallel_mpi_mod.$(OBJ_EXT)                    \
     sendrecv_mod.$(OBJ_EXT)                        \
     des_init_namelist.$(OBJ_EXT)                   \
+    discretelement_mod.$(OBJ_EXT)                  \
   -o post_mfix $(LIB_FLAGS)
   
 ambm.mod : ../model/ambm_mod.f \
@@ -1301,6 +1302,6 @@ write_error.$(OBJ_EXT) : ../model/write_error.f \
             funits.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_error.f 
 discretelement.mod : ../model/des/discretelement_mod.f
-        $(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/discretelement_mod.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/discretelement_mod.f
 des_init_namelist.$(OBJ_EXT) : ../model/des/des_init_namelist.f
-        $(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_init_namelist.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_init_namelist.f 
