@@ -1,4 +1,5 @@
 Module MPI
-!include '/usr/include/mpif.h'
-include 'mpif.h'  !// 001 Include MPI header file
+  !include '/usr/local/MPI/mpich/include/mpif.h'
+  include '/usr/include/mpif.h'
+  !include 'mpif.h'  
 End Module MPI
