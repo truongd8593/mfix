@@ -220,8 +220,8 @@
       P_REF = ZERO 
       P_SCALE = ONE 
       MAX_NIT = 500 
-      LEQ_IT(1) = 200 
-      LEQ_IT(2) = 200 
+      LEQ_IT(1) = 20 
+      LEQ_IT(2) = 20 
       LEQ_IT(3) = 5 
       LEQ_IT(4) = 5 
       LEQ_IT(5) = 5 
@@ -264,8 +264,8 @@
       UR_FAC(5) = 0.5                            !W 
       UR_FAC(6) = 1.0                            !T 
       UR_FAC(7) = 1.0                            !X 
-      UR_FAC(8) = 1.0                            !Th 
-      UR_FAC(9) = 1.0                            !Scalar
+      UR_FAC(8) = 0.5                            !Th 
+      UR_FAC(9) = 0.8                            !Scalar
 !
 ! INITIALIZE THE GAS PHASE SECTION
 !

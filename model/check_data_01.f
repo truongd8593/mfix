@@ -123,15 +123,15 @@
 	 IF(DMP_LOG)WRITE (UNIT_LOG, 1502) 
       ENDIF
 
-      IF (DISCRETIZE(1) > 1 .OR. DISCRETIZE(2) > 1) THEN 
-         DISCRETIZE(1) = 0
-	 DISCRETIZE(2) = 0
-	 IF(DMP_LOG)WRITE (UNIT_LOG, 1500) 
-      ENDIF 
-      IF (.not.DEF_COR) THEN 
-        DEF_COR= .true.
-	IF(DMP_LOG)WRITE (UNIT_LOG, 1501) 
-      ENDIF
+!      IF (DISCRETIZE(1) > 1 .OR. DISCRETIZE(2) > 1) THEN 
+!         DISCRETIZE(1) = 0
+!	 DISCRETIZE(2) = 0
+!	 IF(DMP_LOG)WRITE (UNIT_LOG, 1500) 
+!      ENDIF 
+!      IF (.not.DEF_COR) THEN 
+!        DEF_COR= .true.
+!	IF(DMP_LOG)WRITE (UNIT_LOG, 1501) 
+!      ENDIF
 
 
       RETURN  
