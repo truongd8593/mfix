@@ -54,6 +54,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
+      LOGICAL COMPARE 
 !-----------------------------------------------
       IF (XMIN < ZERO) WRITE (UNIT_LOG, 990) 
 !
@@ -87,14 +88,27 @@
 
       IF (NO_K) THEN 
          IF (KMAX == UNDEFINED_I) KMAX = 1 
-         IF (DZ(1)==UNDEFINED .AND. ZLENGTH==UNDEFINED) THEN 
-            IF (COORDINATES == 'CYLINDRICAL') THEN 
-               DZ(1) = 8.*ATAN(ONE) 
-               ZLENGTH = 8.*ATAN(ONE) 
-            ELSE 
-               DZ(1) = ONE 
-               ZLENGTH = ONE 
-            ENDIF 
+         IF (DZ(1)==UNDEFINED)THEN
+	    IF(ZLENGTH==UNDEFINED) THEN 
+              IF (COORDINATES == 'CYLINDRICAL') THEN 
+                DZ(1) = 8.*ATAN(ONE) 
+                ZLENGTH = 8.*ATAN(ONE) 
+              ELSE 
+                DZ(1) = ONE 
+                ZLENGTH = ONE 
+              ENDIF
+	    ELSE
+	      DZ(1) = ZLENGTH 
+	    ENDIF
+	 ELSE
+	    IF(ZLENGTH==UNDEFINED) THEN
+	      ZLENGTH = DZ(1)
+	    ELSE
+	      IF(.NOT.COMPARE(ZLENGTH,DZ(1)))THEN
+                WRITE (UNIT_LOG, 997) 
+                call mfix_exit(myPE) 
+	      ENDIF
+	    ENDIF 
          ENDIF 
       ENDIF 
       IF (NO_I .AND. IMAX>1) THEN 
@@ -201,6 +215,8 @@
   996 FORMAT(/1X,70('*')//' From: CHECK_DATA_03',/' Error: ',&
          'This has been disabled.  Use one cell in J direction',/&
          ' and make the North and South walls free-slip',70('*')/) 
+  997 FORMAT(/1X,70('*')//' From: CHECK_DATA_03',/' Error: ',&
+         'DZ(1) and ZLENGTH are not equal!  (Recall NO_K=.true.)' ,70('*')/) 
  1000 FORMAT(/1X,70('*')//' From: CHECK_DATA_03',/' Message: ',&
          'IMAX should be 1, since NO_I is true',/1X,70('*')/) 
  1100 FORMAT(/1X,70('*')//' From: CHECK_DATA_03',/' Message: ',&
