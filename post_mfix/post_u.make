@@ -39,6 +39,7 @@ post_mfix : \
     TMP_ARRAY.mod \
     TOLERANC.mod \
     TRACE.mod \
+    TURB.mod \
     UR_FACS.mod \
     VISC_G.mod \
     VISC_S.mod \
@@ -199,6 +200,7 @@ post_mfix : \
     tmp_array_mod.$(OBJ_EXT) \
     toleranc_mod.$(OBJ_EXT) \
     trace_mod.$(OBJ_EXT) \
+    turb_mod.$(OBJ_EXT) \
     ur_facs_mod.$(OBJ_EXT) \
     visc_g_mod.$(OBJ_EXT) \
     visc_s_mod.$(OBJ_EXT) \
@@ -461,6 +463,10 @@ TRACE.mod : ../model/trace_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/trace_mod.f 
+TURB.mod : ../model/turb_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/turb_mod.f 
 UR_FACS.mod : ../model/ur_facs_mod.f \
             PARAM.mod \
             PARAM1.mod 

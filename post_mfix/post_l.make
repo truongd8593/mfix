@@ -39,6 +39,7 @@ post_mfix : \
     tmp_array.mod \
     toleranc.mod \
     trace.mod \
+    turb.mod \
     ur_facs.mod \
     visc_g.mod \
     visc_s.mod \
@@ -199,6 +200,7 @@ post_mfix : \
     tmp_array_mod.$(OBJ_EXT) \
     toleranc_mod.$(OBJ_EXT) \
     trace_mod.$(OBJ_EXT) \
+    turb_mod$(OBJ_EXT) \
     ur_facs_mod.$(OBJ_EXT) \
     visc_g_mod.$(OBJ_EXT) \
     visc_s_mod.$(OBJ_EXT) \
@@ -461,6 +463,10 @@ trace.mod : ../model/trace_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/trace_mod.f 
+turb.mod : ../model/turb_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/turb_mod.f 
 ur_facs.mod : ../model/ur_facs_mod.f \
             param.mod \
             param1.mod 
@@ -503,6 +509,7 @@ allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             tmp_array.mod \
             tmp_array1.mod \
             trace.mod \
+            turb.mod \
             visc_g.mod \
             visc_s.mod \
             xsi_array.mod \

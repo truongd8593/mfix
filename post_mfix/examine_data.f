@@ -37,7 +37,7 @@
       
       IMPLICIT NONE
       INTEGER  N_VAR
-      PARAMETER (N_VAR=50)
+      PARAMETER (N_VAR=52)
       INCLUDE 'xforms.inc'
 !
       CHARACTER*80 LINE
@@ -104,8 +104,11 @@
 !                   42      43     44    45     46     47
                    'KE_g', 'KE_s','P_s','PE_g','PE_s','BERN_s', &
      
-!                   48		49          50
-         	   'Theta_m', 'Scalar' , 'RRates'/
+!                   48		49          50          51
+         	   'Theta_m', 'Scalar' , 'RRates' , 'K_Turb_G', &
+
+!                   52		   
+		   'E_Turb_G'/
 
 
       DZ_T(K) = HALF * (DZ(K) + DZ(Kp1(K)))
@@ -362,6 +365,21 @@
         ENDIF
       ENDIF
 !
+      IF(VAR_NO .EQ. 51)THEN
+        IF( .NOT. K_Epsilon) THEN
+          WRITE(*,'(A)')' K_Turb_G not found'
+          GOTO 20
+        ENDIF
+      ENDIF
+!
+      IF(VAR_NO .EQ. 52)THEN
+        IF( .NOT. K_Epsilon) THEN
+          WRITE(*,'(A)')' E_Turb_G not found'
+          GOTO 20
+        ENDIF
+      ENDIF
+!
+!
  5500 CONTINUE
 !
 !
@@ -464,6 +482,14 @@
 
       IF(VAR_NO .EQ. 50 ) THEN
         READ_SPX(10) = .TRUE.    ! Reaction Rates
+      ENDIF
+
+      IF(VAR_NO .EQ. 51 ) THEN
+        READ_SPX(11) = .TRUE.    ! K_Turb_G
+      ENDIF
+
+      IF(VAR_NO .EQ. 52 ) THEN
+        READ_SPX(11) = .TRUE.    ! E_Turb_G
       ENDIF
 !
 !  Open P_g, T_g, and X_g files, if gas density needs to be determined
@@ -1098,6 +1124,10 @@
           VALUE_TMP = Scalar(IJK, N)
        ELSEIF(VAR_NO .EQ. 50)THEN
           VALUE_TMP = ReactionRates(IJK, N)
+       ELSEIF(VAR_NO .EQ. 51)THEN
+          VALUE_TMP = K_Turb_G(IJK)
+       ELSEIF(VAR_NO .EQ. 52)THEN
+          VALUE_TMP = E_Turb_G(IJK)
         ENDIF
 	
 	
@@ -1466,7 +1496,7 @@
       IF(FILE_NAME(1:1) .EQ. '*')THEN
         IF (.NOT.DO_XFORMS) WRITE(*,*) LINE(1:NCHARS)
       ELSE
-        WRITE(40,*) LINE
+        WRITE(40,*) LINE(1:NCHARS)
       ENDIF
       RETURN
       END
@@ -1508,6 +1538,8 @@
         '   Scalar    - User defined scalar', &
         '   RRates    - Reaction Rate data (SPA)' , &
         '   Gas species mass flow rates, g/s', &
+        '   K_Turb_G    - Turbulent kinetic energy', &
+        '   E_Turb_G    - Dissipation of turbulence', &
         '   XFLOW_gx  - in X direction', &
         '   XFLOW_gy  - in Y direction', &
         '   XFLOW_gz  - in Z direction', &

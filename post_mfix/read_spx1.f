@@ -292,6 +292,30 @@
          end do
          REC_POINTER(10) = NEXT_REC 
       END IF
+!
+! ".SP11" FILE         Scalar
+!
+      IF (READ_SPX(11).AND..NOT.AT_EOF(11)) THEN
+         IF(.NOT.SPX_OPEN(11)) THEN
+           WRITE(*,*)' SP11 file is not open'
+           STOP
+         ENDIF
+         NEXT_REC = REC_POINTER(11)
+         IF (NEXT_REC.EQ.LAST_REC(11)) THEN
+            AT_EOF(11) = .TRUE.
+            RETURN
+         END IF
+         AT_EOF(11) = .FALSE.
+         READ (UNIT_SPX + 11, REC=NEXT_REC) TIME_REAL(11), NSTEP 
+         NEXT_REC = NEXT_REC + 1 
+         
+	 IF(K_Epsilon) THEN 
+           CALL IN_BIN_R (UNIT_SPX + 11,K_Turb_G , IJKMAX2,NEXT_REC) 
+           CALL IN_BIN_R (UNIT_SPX + 11,E_Turb_G , IJKMAX2,NEXT_REC)
+	 ENDIF
+         REC_POINTER(11) = NEXT_REC
+      ENDIF
+
 
       RETURN
       END
