@@ -69,17 +69,21 @@
 
 !*******  REMOVE THE FOLLOWING LINES ************************************
 ! The following section is provided so that species equation calculations are 
-! NOT accidentally performed with the default routine.
+! NOT accidentally performed with the default routine.  For solving species
+! equations without chemical reactions simply remove this section (demarkated
+! with asterisks).  
       CALL START_LOG 
       WRITE (UNIT_LOG, *)
       WRITE (UNIT_LOG, *) &
-      'Chemical reactions are not specified in mfix.dat or in rrates.f.  '
+      'Species balance equations are being solved; but chemical reactions are'
       WRITE (UNIT_LOG, *) &
-      'If you want to solve species equations without chemical reactions '
+      'not specified in mfix.dat or in rrates.f.  If you want to solve species'
       WRITE (UNIT_LOG, *) &
-      'copy rrates.f into the run directory and remove the section in the '
+      'equations without chemical reactions copy the file mfix/model/rrates.f'
       WRITE (UNIT_LOG, *) &
-      'file that writes this error message.'
+      'into the run directory and remove the section in the file that writes'
+      WRITE (UNIT_LOG, *) &
+      'this error message.'
       CALL END_LOG 
       call mfix_exit(myPE)  
 !************************************************************************
