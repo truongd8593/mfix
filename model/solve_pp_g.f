@@ -69,7 +69,10 @@
 !     If gas momentum equations in x and y directions are not solved return
 !
       CALL ZERO_ARRAY (PP_G, IJKMAX2, IER) 
-      IF (.NOT.(MOMENTUM_X_EQ(0) .OR. MOMENTUM_Y_EQ(0))) RETURN  
+      IF (.NOT.(MOMENTUM_X_EQ(0) .OR. MOMENTUM_Y_EQ(0))) THEN
+        call unlock_ambm
+        RETURN  
+      ENDIF
 !
 !  Form the sparse matrix equation
 !
