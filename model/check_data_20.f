@@ -86,11 +86,13 @@
 !  Check whether all field variables are initialized
 !
 !// 350 1025 change do loop limits: 1,kmax2->kmin3,kmax3
-      DO K = kmin3, kmax3 
-         DO J = jmin3, jmax3 
-            DO I = imin3, imax3 
-!// 220 1004 Replaced with global FUNIJK	    
-               IJK = FUNIJK_GL(I,J,K) 
+      DO K = kstart2, kend2 
+         DO J = jstart2, jend2 
+            DO I = istart2, iend2 
+!// 360 1025 Check if current i,j,k resides on this PE	    
+	       IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    
+!// 220 1004 Need to use local FUNIJK	    
+               IJK = FUNIJK(I,J,K) 
                IF (.NOT.WALL_AT(IJK)) THEN 
                   CALL SET_INDEX1 (IJK, I, J, K, IMJK, IPJK, IJMK, IJPK, IJKM, &
                      IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT, IM, JM, KM) 
@@ -167,7 +169,9 @@
                      ENDIF 
                      WRITE (UNIT_LOG, 1010) I, J, K, 'V_g' 
                   ENDIF 
-                  IF (W_G(IJKM) == UNDEFINED) THEN 
+!//AIKE 1105 bypass the check if k-1 = kstart3 (i.e. ghost cell)
+!                  IF (W_G(IJKM) == UNDEFINED) THEN 		  
+                  IF (W_G(IJKM) == UNDEFINED.AND.(K-1) /= kstart3) THEN 
                      IF (.NOT.ABORT) THEN 
                         WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
@@ -238,7 +242,9 @@
                         ENDIF 
                         WRITE (UNIT_LOG, 1011) I, J, K, M, 'V_s' 
                      ENDIF 
-                     IF (W_S(IJKM,M) == UNDEFINED) THEN 
+!//AIKE 1105 bypass the check if k-1 = kstart3 (i.e. ghost cell)
+!                     IF (W_S(IJKM,M) == UNDEFINED) THEN 
+                     IF (W_S(IJKM,M) == UNDEFINED.AND.(K-1) /= kstart3) THEN
                         IF (.NOT.ABORT) THEN 
                            WRITE (UNIT_LOG, 1000) 
                            ABORT = .TRUE. 
@@ -275,11 +281,13 @@
 !
 
 !// 350 1025 change do loop limits: 1,kmax2->kmin3,kmax3
-      DO K = kmin3, kmax3 
-         DO J = jmin3, jmax3 
-            DO I = imin3, imax3 
-!// 220 1004 Replaced with global FUNIJK
-               IJK = FUNIJK_GL(I,J,K) 
+      DO K = kstart2, kend2 
+         DO J = jstart2, jend2 
+            DO I = istart2, iend2 
+!// 360 1025 Check if current i,j,k resides on this PE	    
+	       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    
+!// 220 1004 Need to use local FUNIJK
+               IJK = FUNIJK(I,J,K) 
                IF (FLAG(IJK)==1 .OR. FLAG(IJK)==20) THEN 
 !
 !  Check the sum of volume fractions
