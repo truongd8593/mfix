@@ -64,7 +64,8 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: COMPARE 
+      LOGICAL :: COMPARE, TRUE_CORNER 
+      LOGICAL :: TRUE_CORNER_1, TRUE_CORNER_2 
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
@@ -81,10 +82,21 @@
       IJKN = UNDEFINED_I
       IJKB = UNDEFINED_I
       IJKT = UNDEFINED_I
+      TRUE_CORNER = .FALSE.
 
 
       IF(IM1(I).NE.UNDEFINED_I) THEN
-        IMJK = BOUND_FUNIJK(IM1(I),J,K) 
+        TRUE_CORNER_1 = (WALL_AT(BOUND_FUNIJK(I,JM1(J),K)).OR.&
+           WALL_AT(BOUND_FUNIJK(I,J,KM1(K))))
+        TRUE_CORNER_2 = (WALL_AT(BOUND_FUNIJK(I,JP1(J),K)).OR.&
+           WALL_AT(BOUND_FUNIJK(I,J,KP1(K))))
+        TRUE_CORNER = TRUE_CORNER_1.OR.TRUE_CORNER_2
+        TRUE_CORNER = TRUE_CORNER.AND.I_OF(IJK).EQ.IMIN2
+        IF(WALL_AT(IJK).AND.TRUE_CORNER) THEN
+           IMJK = IJK
+        ELSE
+           IMJK = BOUND_FUNIJK(IM1(I),J,K) 
+        ENDIF
 !
 !  IJKW
 !
@@ -96,7 +108,17 @@
       ENDIF
 
       IF(IP1(I).NE.UNDEFINED_I) THEN
-        IPJK = BOUND_FUNIJK(IP1(I),J,K) 
+        TRUE_CORNER_1 = (WALL_AT(BOUND_FUNIJK(I,JM1(J),K)).OR.&
+           WALL_AT(BOUND_FUNIJK(I,J,KM1(K))))
+        TRUE_CORNER_2 = (WALL_AT(BOUND_FUNIJK(I,JP1(J),K)).OR.&
+           WALL_AT(BOUND_FUNIJK(I,J,KP1(K))))
+        TRUE_CORNER = TRUE_CORNER_1.OR.TRUE_CORNER_2
+        TRUE_CORNER = TRUE_CORNER.AND.I_OF(IJK).EQ.IMAX2
+        IF(WALL_AT(IJK).AND.TRUE_CORNER) THEN
+           IPJK = IJK
+        ELSE
+           IPJK = BOUND_FUNIJK(IP1(I),J,K) 
+        ENDIF
 !
 !  IJKE
 !
@@ -108,7 +130,17 @@
       ENDIF
 
       IF(JM1(J).NE.UNDEFINED_I) THEN
-        IJMK = BOUND_FUNIJK(I,JM1(J),K) 
+        TRUE_CORNER_1 = (WALL_AT(BOUND_FUNIJK(IM1(I),J,K)).OR.&
+           WALL_AT(BOUND_FUNIJK(I,J,KM1(K))))
+        TRUE_CORNER_2 = (WALL_AT(BOUND_FUNIJK(IP1(I),J,K)).OR.&
+           WALL_AT(BOUND_FUNIJK(I,J,KP1(K))))
+        TRUE_CORNER = TRUE_CORNER_1.OR.TRUE_CORNER_2
+        TRUE_CORNER = TRUE_CORNER.AND.I_OF(IJK).EQ.JMIN2
+        IF(WALL_AT(IJK).AND.TRUE_CORNER) THEN
+           IJMK = IJK
+        ELSE
+           IJMK = BOUND_FUNIJK(I,JM1(J),K) 
+        ENDIF
 !
 !  IJKS
 !
@@ -120,7 +152,17 @@
       ENDIF
 
       IF(JP1(J).NE.UNDEFINED_I) THEN
-        IJPK = BOUND_FUNIJK(I,JP1(J),K) 
+        TRUE_CORNER_1 = (WALL_AT(BOUND_FUNIJK(IM1(I),J,K)).OR.&
+           WALL_AT(BOUND_FUNIJK(I,J,KM1(K))))
+        TRUE_CORNER_2 = (WALL_AT(BOUND_FUNIJK(IP1(I),J,K)).OR.&
+           WALL_AT(BOUND_FUNIJK(I,J,KP1(K))))
+        TRUE_CORNER = TRUE_CORNER_1.OR.TRUE_CORNER_2
+        TRUE_CORNER = TRUE_CORNER.AND.I_OF(IJK).EQ.JMAX2
+        IF(WALL_AT(IJK).AND.TRUE_CORNER) THEN
+           IJPK = IJK
+        ELSE
+           IJPK = BOUND_FUNIJK(I,JP1(J),K) 
+        ENDIF
 !
 !  IJKN
 !
@@ -132,7 +174,17 @@
       ENDIF
 
       IF(KM1(K).NE.UNDEFINED_I) THEN
-        IJKM = BOUND_FUNIJK(I,J,KM1(K)) 
+        TRUE_CORNER_1 = (WALL_AT(BOUND_FUNIJK(IM1(I),J,K)).OR.&
+           WALL_AT(BOUND_FUNIJK(I,JM1(J),K)))
+        TRUE_CORNER_2 = (WALL_AT(BOUND_FUNIJK(IP1(I),J,K)).OR.&
+           WALL_AT(BOUND_FUNIJK(I,JP1(K),K)))
+        TRUE_CORNER = TRUE_CORNER_1.OR.TRUE_CORNER_2
+        TRUE_CORNER = TRUE_CORNER.AND.I_OF(IJK).EQ.KMIN2
+        IF(WALL_AT(IJK).AND.TRUE_CORNER) THEN
+           IJKM = IJK
+        ELSE
+           IJKM = BOUND_FUNIJK(I,J,KM1(K)) 
+        ENDIF
 !
 !  IJKB
 !
@@ -144,7 +196,17 @@
       ENDIF
 
       IF(KP1(K).NE.UNDEFINED_I) THEN
-        IJKP = BOUND_FUNIJK(I,J,KP1(K)) 
+        TRUE_CORNER_1 = (WALL_AT(BOUND_FUNIJK(IM1(I),J,K)).OR.&
+           WALL_AT(BOUND_FUNIJK(I,JM1(J),K)))
+        TRUE_CORNER_2 = (WALL_AT(BOUND_FUNIJK(IP1(I),J,K)).OR.&
+           WALL_AT(BOUND_FUNIJK(I,JP1(K),K)))
+        TRUE_CORNER = TRUE_CORNER_1.OR.TRUE_CORNER_2
+        TRUE_CORNER = TRUE_CORNER.AND.I_OF(IJK).EQ.KMAX2
+        IF(WALL_AT(IJK).AND.TRUE_CORNER) THEN
+           IJKP = IJK
+        ELSE
+           IJKP = BOUND_FUNIJK(I,J,KP1(K)) 
+        ENDIF
 !
 !  IJKT
 !
