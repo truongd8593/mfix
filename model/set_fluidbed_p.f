@@ -196,10 +196,8 @@
          BED_WEIGHT = 0.0 
          AREA = 0.0 
          DO K = KMIN1, KMAX1 
-!// Bound Checking
-	    IF(K.LT.KSTART.OR.K.GT.KEND) CYCLE
             DO I = IMIN1, IMAX1 
-	       IF(I.LT.ISTART.OR.I.GT.IEND) CYCLE
+	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                IJK = FUNIJK(I,J,K) 
                IF (FLUID_AT(IJK)) THEN 
                   IF (COORDINATES == 'CARTESIAN') THEN 
@@ -230,10 +228,8 @@
 
          PJ = PJ + BED_WEIGHT 
          DO K = KMIN1, KMAX1
-!// Bound Checking
-	    IF(K.LT.KSTART.OR.K.GT.KEND) CYCLE
             DO I = IMIN1, IMAX1 
-	       IF(I.LT.ISTART.OR.I.GT.IEND) CYCLE
+	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                IJK = FUNIJK(I,J,K) 
                IF(FLUID_AT(IJK).AND.P_G(IJK)==UNDEFINED)P_G(IJK)=SCALE(PJ) 
             END DO 
