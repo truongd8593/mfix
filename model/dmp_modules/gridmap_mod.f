@@ -22,10 +22,24 @@
 		   kp, kproc, ksize, kremain, ikproc, ierr
 
         if(numPEs.ne.(nodesi*nodesj*nodesk)) then
-	write(*,*) 'incorrect distribution of processors'
-    call MPI_abort( MPI_COMM_WORLD, ierr)
+        call MPI_abort( MPI_COMM_WORLD, ierr)
 	endif
-
+!
+        if(nodesi.ne.1.and.cyclic_x) then
+	write(*,*) 'the current MFIX version does not support decomposition in the cyclic direction'
+        call MPI_abort( MPI_COMM_WORLD, ierr)
+	endif
+!
+        if(nodesj.ne.1.and.cyclic_y) then
+        write(*,*) 'the current MFIX version does not support decomposition in the cyclic direction'
+        call MPI_abort( MPI_COMM_WORLD, ierr)
+        endif
+!
+        if(nodesk.ne.1.and.cyclic_z) then
+        write(*,*) 'the current MFIX version does not support decomposition in the cyclic direction'
+        call MPI_abort( MPI_COMM_WORLD, ierr)
+        endif
+!
 !	   Determine the size in i direction and add the remainder sequentially
 
 	isize = (imax1-imin1+1)/nodesi
@@ -218,6 +232,7 @@
 	displs(0) = 0
 	do iproc=1,numPEs-1
 	displs(iproc) = displs(iproc-1)+ijksize3_all(iproc-1)
+!	write(*,*) 'displ',displs(iproc),iproc, ijksize3_all(iproc)
 	enddo
 
 	ijkstart3 = ijkstart3_all(myPE)
@@ -397,11 +412,11 @@
 	
 
 !//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): from gridmap_init ',&
-!                 /,9X,'Kmin2 = ',I6,'  Kmax3 = ',I6,'  Kmax = ',I6, &
-!                 /,9X,'Jmin2 = ',I6,'  Jmax3 = ',I6,'  Jmax = ',I6,&
-!		 /,9X,'Imin2 = ',I6,'  Imax3 = ',I6,'  Imax = ',I6)") &
-!                 myPE,Kmin2,Kmax3,Kmax,Jmin2,Jmax3,Jmax,Imin2,Imax3,Imax
+!       write(*,"('(PE ',I2,'): from gridmap_init ',&
+!     &            /,9X,'Kmin2 = ',I6,'  Kmax3 = ',I6,'  Kmax = ',I6, &
+!     &            /,9X,'Jmin2 = ',I6,'  Jmax3 = ',I6,'  Jmax = ',I6,&
+!     & 		 /,9X,'Imin2 = ',I6,'  Imax3 = ',I6,'  Imax = ',I6)") &
+!     &             myPE,Kmin2,Kmax3,Kmax,Jmin2,Jmax3,Jmax,Imin2,Imax3,Imax
 
 	return
 	end subroutine gridmap_init

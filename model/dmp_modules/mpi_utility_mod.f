@@ -543,8 +543,7 @@
         character(len=*), intent(out), dimension(:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 
-        character(len=4), allocatable, dimension(:) :: gbuf_pack
-        integer, allocatable, dimension(:,:) :: gbuf_pack1,lbuf1
+        integer, allocatable, dimension(:,:) :: gbuf_pack,lbuf1
 	character(len=80) :: string
 
         integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
@@ -574,45 +573,25 @@
         lenchar = len(trim(string))
 
         if(myPE.eq.lroot) then
-	  allocate(gbuf_pack(sum(ijksize3_all(:))))
-          allocate(gbuf_pack1(sum(ijksize3_all(:)),lenchar))
+          allocate(gbuf_pack(ijkmax3,lenchar))
 	else
-	  allocate(gbuf_pack(10))
-	  allocate(gbuf_pack1(10,lenchar))
+	  allocate(gbuf_pack(10,lenchar))
 	endif
 
         allocate(lbuf1(ijk1:ijk2,lenchar))
 
-        if( myPE.eq.lroot) then
-        ioffset = 0
-          do iproc = 0,numPEs-1
-            ibuffer = 0
-            do k = kstart3_all(iproc), kend3_all(iproc)
-              do j = jstart3_all(iproc), jend3_all(iproc)
-                do i = istart3_all(iproc), iend3_all(iproc)
-
-                  ibuffer = funijk_proc(i,j,k,iproc) + ioffset
-                  gbuf_pack(ibuffer)(1:lenchar) = gbuf(funijk_gl(i,j,k))(1:lenchar)
-
-                enddo
-              enddo
-            enddo
-            ioffset = ibuffer
-          enddo
-        endif
-
 	if(myPE.eq.lroot) then
-	do i = 1,size(gbuf_pack)
+	do i = 1,ijkmax3
 	  do j = 1,lenchar
 
-	    string = gbuf_pack(i)(1:lenchar)
-	    gbuf_pack1(i,j) = ichar(string(j:j))
+	    string = gbuf(i)(1:lenchar)
+	    gbuf_pack(i,j) = ichar(string(j:j))
 
 	  enddo
 	enddo
 	endif
 
-        call scatter_2i(lbuf1,gbuf_pack1)
+        call scatter_2i(lbuf1,gbuf_pack)
 
         do i = ijk1, ijk2
           do j = 1,lenchar
@@ -623,7 +602,6 @@
         enddo
 
         deallocate(gbuf_pack)
-        deallocate(gbuf_pack1)
         deallocate(lbuf1)
 
         return
@@ -1206,8 +1184,7 @@
         character(len=*), intent(out), dimension(:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-        character(len=4), allocatable, dimension(:) :: gbuf_pack
-        integer, allocatable, dimension(:,:) :: gbuf_pack1,lbuf1
+        integer, allocatable, dimension(:,:) :: gbuf_pack,lbuf1
 	character(len=80) :: string
 
         integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
@@ -1241,11 +1218,9 @@
 	lenchar = len(trim(string))
 
         if(myPE.eq.lroot) then
-	allocate(gbuf_pack(sum(ijksize3_all(:))))
-        allocate(gbuf_pack1(sum(ijksize3_all(:)),lenchar))
+        allocate(gbuf_pack(ijkmax3,lenchar))
 	else
-	allocate(gbuf_pack(10))
-	allocate(gbuf_pack1(10,lenchar))
+	allocate(gbuf_pack(10,lenchar))
 	endif
 
         allocate(lbuf1(ijk1:ijk2,lenchar))
@@ -1257,64 +1232,21 @@
 	   enddo
         enddo
 
-        call gather_2i(lbuf1, gbuf_pack1)
+        call gather_2i(lbuf1, gbuf_pack)
 
 	if(myPE.eq.lroot) then
-        do i = 1,size(gbuf_pack)
+        do i = 1,ijkmax3
           do j = 1,lenchar
 
-            string(j:j) = char(gbuf_pack1(i,j))
+            string(j:j) = char(gbuf_pack(i,j))
 
           enddo
-	  gbuf_pack(i)(1:lenchar) = string(1:lenchar)
+	  gbuf(i)(1:lenchar) = string(1:lenchar)
 
         enddo
 	endif
 
-        if( myPE.eq.lroot) then
-        ioffset = 0
-          do iproc = 0,numPEs-1
-            ibuffer = 0
-            istartl = istart1_all(iproc)
-            iendl = iend1_all(iproc)
-            jstartl = jstart1_all(iproc)
-            jendl = jend1_all(iproc)
-            kstartl = kstart1_all(iproc)
-            kendl = kend1_all(iproc)
-
-            if(istart3_all(iproc).eq.imin3) istartl = istart3_all(iproc)
-            if(iend3_all(iproc).eq.imax3) iendl = iend3_all(iproc)
-            if(jstart3_all(iproc).eq.jmin3) jstartl = jstart3_all(iproc)
-            if(jend3_all(iproc).eq.jmax3) jendl = jend3_all(iproc)
-            if(kstart3_all(iproc).eq.kmin3) kstartl = kstart3_all(iproc)
-            if(kend3_all(iproc).eq.kmax3) kendl = kend3_all(iproc)
-
-            do k = kstart3_all(iproc), kend3_all(iproc)
-              do j = jstart3_all(iproc), jend3_all(iproc)
-                do i = istart3_all(iproc), iend3_all(iproc)
-
-                  ibuffer = funijk_proc(i,j,k,iproc) + ioffset
-                  isok_k = (kstartl <= k) .and. (k <=kendl)
-                  isok_j = (jstartl <= j) .and. (j <=jendl)
-                  isok_i = (istartl <= i) .and. (i <=iendl)
-
-                  need_copy = isok_k .and. isok_j .and. isok_i
-
-                  if (need_copy) then
-                      ijk_gl = funijk_gl(i,j,k)
-		      string = gbuf_pack(ibuffer)(1:lenchar)
-                      gbuf( ijk_gl )(1:lenchar) = string
-                  endif
-
-                enddo
-              enddo
-            enddo
-            ioffset = ibuffer
-          enddo
-        endif
-
         deallocate(gbuf_pack)
-        deallocate(gbuf_pack1)
         deallocate(lbuf1)
 
 
