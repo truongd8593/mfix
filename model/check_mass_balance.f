@@ -194,7 +194,9 @@
                   J2 = BC_J_N(L) 
                   K1 = BC_K_B(L) 
                   K2 = BC_K_T(L) 
-                  call Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_s(1,M), V_s(1,M), W_s(1,M), ROP_s(1,M), X_s(1, M, N), fin, fout, IER) 
+                  call Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, BC_PLANE(L), &
+                  U_s(1,M), V_s(1,M), W_s(1,M), ROP_s(1,M), X_s(1, M, N), fin, fout, &
+                  IER) 
 	          flux_out_X_s(L, M, N) = flux_out_X_s(L, M, N) + fout  * dt_prev
                   flux_in_X_s(L, M, N) = flux_in_X_s(L, M, N) + fin * dt_prev
                 ENDIF 

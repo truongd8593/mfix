@@ -674,7 +674,9 @@
         flux_in = zero
         DO L = 1, DIMENSION_BC
           IF (BC_DEFINED(L)) THEN
-            call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_g, V_g, W_g, ROP_g, fin, fout, IER) 
+            call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), & 
+            BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_g, V_g, W_g, &
+            ROP_g, fin, fout, IER) 
 	    flux_out = flux_out + fout  * dt
             flux_in = flux_in + fin * dt
           ENDIF 
@@ -690,7 +692,9 @@
           flux_in = zero
           DO L = 1, DIMENSION_BC
             IF (BC_DEFINED(L)) THEN
-              call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_s(1,M), V_s(1,M), W_s(1,M), ROP_s(1,M), fin, fout, IER) 
+              call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), &
+              BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_s(1,M), V_s(1,M), W_s(1,M), &
+              ROP_s(1,M), fin, fout, IER) 
 	      flux_out = flux_out + fout  * dt
               flux_in = flux_in + fin * dt
             ENDIF 
