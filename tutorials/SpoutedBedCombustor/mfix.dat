@@ -1,0 +1,231 @@
+#
+#  Spouted Bed Combustor
+#
+# Author:  E.F. Modeler            Date: 9-28-94
+
+! 1. Run control
+	Run_name	= 'sbc01'
+	Description	= 'Spouted Bed Combustor'
+	Units		= 'cgs'
+	Run_type	= 'new'
+	Time		=  0.0
+	Tstop		=  10.0
+	DT		= 1.0E-4
+
+
+ 	ENERGY_EQ	= .T.
+	SPECIES_EQ	= .T.  .T.  .T.
+	CALL_USR	= .T.
+
+! 2. User defined constants
+	C		=  0.9	    			1.0E2
+	C_NAME		='Ash fraction threshold' 'Pseudo reaction const.'
+	PAFC		= 0.6
+
+! 3. Geometry
+	Coordinates	= 'Cylindrical'
+
+	IMAX		= 19
+	DX 		= 4*0.5, .59, .69, .81, .91, 11*1.0
+
+	JMAX		= 60
+	YLENGTH		= 150.0
+
+	NO_K		= .T.
+
+! 4. Gas phase
+	NMAX(0)		= 4
+        !  Gas species   O2   CO   CO2   N2
+	MW_g		= 32.  28.  44.   28.
+	
+
+! 5. Solids phase
+	MMAX		= 2
+	D_P		= .1	.1
+	RO_s		= 1.0	1.0
+
+	NMAX(1)		= 2	2
+	MW_s(1,1)	= 12.	12.
+	MW_s(1,2)	= 56.	56.
+
+	EP_star		= 0.5
+	e		= 0.8
+	C_f		= 0.1
+	Phi		= 30.0
+
+! 6. Initial conditions
+                       !   Bed		!freeboard
+	IC_X_w		=  2*0.0
+	IC_X_e		= 2*16.0
+	IC_Y_s		=  0.0		50.
+	IC_Y_n		= 50.		150.0
+
+	IC_EP_g		=  0.5		1.0
+	IC_P_Star	=  2*0.0
+	IC_ROP_s(1,1)	=  0.5		0.0
+	IC_ROP_s(1,2)	=  2*0.0
+
+	IC_T_g		= 2*1050.0
+	IC_T_s(1,1)	= 2*1050.0
+	IC_T_s(1,2)	= 2*1050.0
+
+	IC_U_g		=  2*0.0
+	IC_V_g		= 2*30.0
+
+	IC_U_s(1,1)	=  2*0.0
+	IC_V_s(1,1)	=  2*1.0
+
+	IC_X_g(1,1)	=  2*0.0
+	IC_X_g(1,2)	=  2*0.0
+	IC_X_g(1,3)	=  2*0.0
+	IC_X_g(1,4)	=  2*1.0
+
+	IC_X_s(1,1,1)	=  2*0.1
+	IC_X_s(1,1,2)	=  2*0.9
+
+
+! 7. Boundary conditions
+			  !Jet		annulus		outlet
+	BC_X_w		=  0.0		1.0		  0.0
+	BC_X_e		=  1.0		6.0		  3.0
+	BC_Y_s		=  0.0		0.0		150.0
+	BC_Y_n		=  0.0		0.0		150.0
+
+	BC_TYPE		= 'MI'		'MI'		'PO'
+
+	BC_EP_g		= 0.9		1.0
+	BC_P_g		= 3.04E7	3.04E7		3.04E7
+	BC_ROP_s(1,1)	= 0.0
+	BC_ROP_s(1,2)	= 0.1
+
+	BC_T_g		= 300.0		300.0
+	BC_T_s(1,1)	= 300.0
+	BC_T_s(1,2)	= 300.0
+
+	BC_U_g		=  0.0		0.0
+	BC_MASSFLOW_g	= 10.		116.
+	
+
+	BC_U_s(1,2)	=  0.0		0.0
+	BC_MASSFLOW_s(1,2)= 18.		0.0
+
+ 	BC_X_g(1,1)	=  0.2		0.2
+	BC_X_g(1,2)	=  0.0		0.0
+	BC_X_g(1,3)	=  0.0		0.0
+ 	BC_X_g(1,4)	=  0.8		0.8
+
+	BC_X_s(1,2,1)	=  0.6
+	BC_X_s(1,2,2)	=  0.4
+
+                         !  Define Obstacles
+			 !  1        2        3        4         5
+	BC_X_w(20)	= 6.0      7.0      8.0      9.0      10.0
+	BC_X_e(20)	= 7.0      8.0      9.0     10.0      11.0
+	BC_Y_s(20)	= 0.0      0.0      0.0      0.0       0.0
+	BC_Y_n(20)	=12.5     15.0     17.5     20.0      22.5
+	BC_TYPE(20)	='NSW'    'NSW'    'NSW'    'NSW'    'NSW'
+ 	BC_hw_T_g(20)	= 5*0.
+	BC_C_T_g(20)	= 5*0.
+ 	BC_hw_T_s(20,1)	= 5*0.
+	BC_C_T_s(20,1)	= 5*0.
+ 	BC_hw_T_s(20,2)	= 5*0.
+	BC_C_T_s(20,2)	= 5*0.
+	BC_hw_X_g(20,1)= 5*0.
+	BC_C_X_g(20,1)	= 5*0.
+	BC_hw_X_g(20,2)= 5*0.
+	BC_C_X_g(20,2)	= 5*0.
+	BC_hw_X_g(20,3)= 5*0.
+	BC_C_X_g(20,3)	= 5*0.
+	BC_hw_X_g(20,4)= 5*0.
+	BC_C_X_g(20,4)	= 5*0.
+	BC_hw_X_s(20,1,1)= 5*0.
+	BC_C_X_s(20,1,1)= 5*0.
+	BC_hw_X_s(20,1,2)= 5*0.
+	BC_C_X_s(20,1,2)= 5*0.
+	BC_hw_X_s(20,2,1)= 5*0.
+	BC_C_X_s(20,2,1)= 5*0.
+	BC_hw_X_s(20,2,2)= 5*0.
+	BC_C_X_s(20,2,2)= 5*0.
+
+			 ! 6        7        8        9         10
+	BC_X_w(25)	= 11.0    12.0     13.0     14.0      15.0
+	BC_X_e(25)	= 12.0    13.0     14.0     15.0      16.0
+	BC_Y_s(25)	=  0.0     0.0      0.0      0.0       0.0
+	BC_Y_n(25)	= 87.5    90.0     92.5     95.0      97.5
+	BC_TYPE(25)	='NSW'    'NSW'    'NSW'    'NSW'    'NSW'
+ 	BC_hw_T_g(25)	= 5*0.
+	BC_C_T_g(25)	= 5*0.
+ 	BC_hw_T_s(25,1)	= 5*0.
+	BC_C_T_s(25,1)	= 5*0.
+ 	BC_hw_T_s(25,2)	= 5*0.
+	BC_C_T_s(25,2)	= 5*0.
+	BC_hw_X_g(25,1)= 5*0.
+	BC_C_X_g(25,1)	= 5*0.
+	BC_hw_X_g(25,2)= 5*0.
+	BC_C_X_g(25,2)	= 5*0.
+	BC_hw_X_g(25,3)= 5*0.
+	BC_C_X_g(25,3)	= 5*0.
+	BC_hw_X_g(25,4)= 5*0.
+	BC_C_X_g(25,4)	= 5*0.
+	BC_hw_X_s(25,1,1)= 5*0.
+	BC_C_X_s(25,1,1)= 5*0.
+	BC_hw_X_s(25,1,2)= 5*0.
+	BC_C_X_s(25,1,2)= 5*0.
+	BC_hw_X_s(25,2,1)= 5*0.
+	BC_C_X_s(25,2,1)= 5*0.
+	BC_hw_X_s(25,2,2)= 5*0.
+	BC_C_X_s(25,2,2)= 5*0.
+
+			! 11       12       13   14    15    16    17
+	BC_X_w(30)	=  9.0     10.0    11.0  12.0  13.0  14.0  15.0
+	BC_X_e(30)	= 10.0     11.0    12.0  13.0  14.0  15.0  16.0
+	BC_Y_s(30)	=147.5    145.0   142.50 140.  137.5 135.  132.5
+	BC_Y_n(30)	=7*150.0   
+	BC_TYPE(30)	=7*'NSW'
+ 	BC_hw_T_g(30)	= 7*0.
+	BC_C_T_g(30)	= 7*0.
+ 	BC_hw_T_s(30,1)	= 7*0.
+	BC_C_T_s(30,1)	= 7*0.
+ 	BC_hw_T_s(30,2)	= 7*0.
+	BC_C_T_s(30,2)	= 7*0.
+	BC_hw_X_g(30,1)= 7*0.
+	BC_C_X_g(30,1)	= 7*0.
+	BC_hw_X_g(30,2)= 7*0.
+	BC_C_X_g(30,2)	= 7*0.
+	BC_hw_X_g(30,3)= 7*0.
+	BC_C_X_g(30,3)	= 7*0.
+	BC_hw_X_g(30,4)= 7*0.
+	BC_C_X_g(30,4)	= 7*0.
+	BC_hw_X_s(30,1,1)= 7*0.
+	BC_C_X_s(30,1,1)= 7*0.
+	BC_hw_X_s(30,1,2)= 7*0.
+	BC_C_X_s(30,1,2)= 7*0.
+	BC_hw_X_s(30,2,1)= 7*0.
+	BC_C_X_s(30,2,1)= 7*0.
+	BC_hw_X_s(30,2,2)= 7*0.
+	BC_C_X_s(30,2,2)= 7*0.
+
+
+!8. Internal surfaces
+	IS_X_w		=  1.0
+	IS_X_e		=  1.0
+	IS_Y_s		=  0.0
+	IS_Y_n		= 12.5
+
+	IS_TYPE		= 'IP'
+
+
+!9. Output control
+
+!Use the following to check mass balance for debugging initial runs.
+!For production runs comment out the line to disable this feature,
+!as it slows down the simulation.
+	Report_mass_balance_dt = 1.0  
+	  
+	nRR		= 7      !number reaction rates written out to .SPA
+        OUT_DT 		= 100.
+	RES_DT		=  0.01
+	SPX_DT		= 10*0.1
+	NLOG		=   100
+	FULL_LOG	= .T.
+	resid_string    = "P0", "V0", "V1", "V2", "T0", "T1", "T2"
