@@ -103,4 +103,8 @@
 !
 ! 1.12 Preconditioner
 !
-	     LEQ_PC
+	     LEQ_PC, &
+
+! 1.13 Parallel related
+
+	     IS_SERIAL, USE_DOLOOP
