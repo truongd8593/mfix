@@ -92,6 +92,7 @@
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
+                        IF(.NOT.IS_ON_myPE_Owns(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
                         IF (FLUID_AT(EAST_OF(IJK))) THEN 
                            IJKE = EAST_OF(IJK) 
