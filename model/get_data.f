@@ -248,26 +248,16 @@
 !-----------------------------------------------
 !
       if( numPEs > 1 ) then
-        IF (NODESI .EQ. UNDEFINED_I) THEN
-          WRITE (*,*) ' NODESI not found in MFIX.DAT'
+        IF (NODESI .EQ. UNDEFINED_I .AND. NODESJ .EQ. UNDEFINED_I &
+	    .AND. NODESK .EQ. UNDEFINED_I) THEN
+          WRITE (*,*) ' No grid partitioning data (NODESI, NODESJ, or NODESK) in mfix.dat'
           CALL MFIX_EXIT
         END IF
-!
-        IF (NODESJ .EQ. UNDEFINED_I) THEN
-          WRITE (*,*) ' NODESJ not found in MFIX.DAT'
-          CALL MFIX_EXIT
-        END IF
-!
-        IF (NODESK .EQ. UNDEFINED_I) THEN
-          WRITE (*,*) ' NODESK not found in MFIX.DAT'
-          CALL MFIX_EXIT
-        END IF
-      else
-        nodesi = 1
-        nodesj = 1
-        nodesk = 1
-	
       endif
+!
+      IF (NODESI .EQ. UNDEFINED_I) NODESI = 1
+      IF (NODESJ .EQ. UNDEFINED_I) NODESJ = 1
+      IF (NODESK .EQ. UNDEFINED_I) NODESK = 1
 !
 !
       RETURN  

@@ -130,7 +130,11 @@
 !
 !  Calculate Prandtl number
 !
-                  PR1O3 = (C_PG(IJK)*MU_G(IJK)/K_G(IJK))**(1./3.) 
+                  if(K_G(IJK) > ZERO) then
+                    PR1O3 = (C_PG(IJK)*MU_G(IJK)/K_G(IJK))**(1./3.) 
+		  else
+                    PR1O3 = LARGE_NUMBER 
+		  endif
 !
 !  Calculate velocity components at the cell center for gas phase
 !

@@ -50,10 +50,10 @@
 !
 !
       IF (DO_I) THEN 
-	 DX(IMAX3) = DX(IMAX)
-	 DX(IMAX2) = DX(IMAX)
+	 DX(IMAX3) = DX(IMAX-1)
+	 DX(IMAX2) = DX(IMAX-1)
 	 DO LC = IMAX1, IMIN1, -1
-	    DX(LC) = DX(LC-1)
+	    DX(LC) = DX(LC-2)
 	 ENDDO
          DX(IMIN2) = DX(IMIN1) 
          DX(IMIN3) =DX(IMIN2)	 	 
@@ -61,10 +61,10 @@
 !
 
       IF (DO_J) THEN 
-	 DY(JMAX3) = DY(JMAX)	 	 
-         DY(JMAX2) = DY(JMAX) 
+	 DY(JMAX3) = DY(JMAX-1)	 	 
+         DY(JMAX2) = DY(JMAX-1) 
          DO LC = JMAX1, JMIN1, -1
-            DY(LC) = DY(LC-1)
+            DY(LC) = DY(LC-2)
          ENDDO
          DY(JMIN2) = DY(JMIN1) 
          DY(JMIN3) =DY(JMIN2)	 	 
@@ -73,13 +73,13 @@
 !
       IF (DO_K) THEN 
 	 
-         DZ(KMAX3) = DZ(KMAX) 
-         DZ(KMAX2) = DZ(KMAX) 
+         DZ(KMAX3) = DZ(KMAX-1) 
+         DZ(KMAX2) = DZ(KMAX-1) 
          DO LC = KMAX1, KMIN1, -1
-            DZ(LC) = DZ(LC-1)
+            DZ(LC) = DZ(LC-2)
          ENDDO
          DZ(KMIN2) = DZ(KMIN1) 
-        DZ(KMIN3) =DZ(KMIN2)	 
+         DZ(KMIN3) =DZ(KMIN2)	 
       ENDIF 
 !
       RETURN  

@@ -104,7 +104,7 @@
       DT_FAC = 0.9 
       DETECT_STALL = .TRUE. 
       ENERGY_EQ = .TRUE.
-      DEF_COR  =  .FALSE. 
+      DEF_COR  =  .TRUE. 
       GRANULAR_ENERGY = .FALSE. 
 ! start peter 7/15
       V_sh=0d0
