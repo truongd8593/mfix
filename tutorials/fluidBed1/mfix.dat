@@ -8,10 +8,10 @@
                                                                                
   RUN_NAME 		= 'BUB01'             
   DESCRIPTION 		= 'fluid bed with jet'          
-  RUN_TYPE 		= 'restart_1'             
+  RUN_TYPE 		= 'new'             
   UNITS 		= 'cgs'
-  TIME  		= 2.0				!start time
-  TSTOP 		= 2.1
+  TIME  		= 0.0				!start time
+  TSTOP 		= 2.0
   DT 			= 1.0E-4			!time step
   ENERGY_EQ 		= .FALSE.			!do not solve energy eq
   SPECIES_EQ 		= .FALSE.    .FALSE. 		!do not solve species eq
