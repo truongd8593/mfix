@@ -107,7 +107,7 @@
 !
             SELECT CASE (TRIM(BC_TYPE(L)))
             CASE ('FREE_SLIP_WALL')  
-!
+!  Because of a 7-30-04 mod it is no longer necessary to pass the sign as ONE or -ONE 
 !  Set velocities for the range of boundary cells.  Use 1.0 as the sign
 !  to make the velocity at the cell equal to that at the fluid cell.
 !
@@ -292,7 +292,7 @@
 !                      Johnson-Jackson boundary condition: 0= no, 1=yes 
       INTEGER          BC_JJ_PSL 
 ! 
-!                      Sign with legal values +1 or -1 
+!                      Sign with legal values +1 or -1; No need to pass this because of 7-30-04 modification
       DOUBLE PRECISION SIGN 
 ! 
 !                      Local indices near wall cell 
@@ -325,7 +325,15 @@
       DO K = K1, K2 
          DO J = J1, J2 
             DO I = I1, I2 
-               IJK = FUNIJK(I,J,K) 
+               IJK = FUNIJK(I,J,K)
+	       
+	       !7-30-04 modification 
+	       IF(NS_WALL_AT(IJK))THEN
+	         SIGN = -ONE
+	       ELSE
+                 SIGN = ONE
+	       ENDIF
+	       
                IF (WALL_AT(IJK)) THEN 
                   IMJK = IM_OF(IJK) 
                   IJMK = JM_OF(IJK) 
