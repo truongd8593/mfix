@@ -1213,7 +1213,7 @@
 
         ijk1 = ijkstart3
         ijk2 = ijkend3
-	string = gbuf(1)
+	string = lbuf(1)
 
 	lenchar = len(trim(string))
 
