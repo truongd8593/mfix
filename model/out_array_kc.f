@@ -35,6 +35,7 @@
       USE indices
       USE funits 
       USE compar        !//d
+      USE mpi_utility   !//EFD to use gather
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -70,15 +71,123 @@
 !
 !                      start 'IJ' and end 'IJ' for a given 'J' to print out
       INTEGER          IJK , IJ2
+!    
 !-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+!//EFD create global versions of flag arrays
+      INTEGER, DIMENSION(:), allocatable :: FLAG_E_G, FLAG_N_G, FLAG_T_G, FLAG_TEMP
+      integer :: i,j,k, ijk_io, ijk_gl, flag_size
+
+!//SP Global Functions
+!                      Logical function to identify IP at East of the cell
+      LOGICAL          IP_AT_E_G
+!
+!                      Logical function to identify IP at North of the cell
+      LOGICAL          IP_AT_N_G
+!
+!                      Logical function to identify IP at Top of the cell
+      LOGICAL          IP_AT_T_G
+!
+!                      Logical function to identify IP at East of the cell
+      LOGICAL          SIP_AT_E_G
+!
+!                      Logical function to identify IP at North of the cell
+      LOGICAL          SIP_AT_N_G
+!
+!                      Logical function to identify IP at Top of the cell
+      LOGICAL          SIP_AT_T_G
+!
+
+
+      IP_AT_E_G(IJK)     = FLAG_E_G(IJK) .LT. 1000
+      IP_AT_N_G(IJK)     = FLAG_N_G(IJK) .LT. 1000
+      IP_AT_T_G(IJK)     = FLAG_T_G(IJK) .LT. 1000
+      SIP_AT_E_G(IJK)    = (FLAG_E_G(IJK) .LT. 2000)
+      SIP_AT_N_G(IJK)    = (FLAG_N_G(IJK) .LT. 2000)
+      SIP_AT_T_G(IJK)    = (FLAG_T_G(IJK) .LT. 2000)
+
       INCLUDE 'function.inc'
+
+!//EFD allocate storage for temporary flag arrays
+
+      flag_size = 1
+      if (myPE.eq.root) then
+          flag_size = ijkmax3
+      endif
+
+      allocate( flag_e_g(flag_size) )
+      allocate( flag_n_g(flag_size) )
+      allocate( flag_t_g(flag_size) )
+      allocate( flag_temp(flag_size) )
+
+      flag_e_g(:) = undefined_i
+      flag_n_g(:) = undefined_i
+      flag_t_g(:) = undefined_i
+      flag_temp(:) = undefined_i
+
+      
+
+      call gather( flag_e, flag_e_g )
+      call gather( flag_n, flag_n_g )
+      call gather( flag_t, flag_t_g )
+
+
+!//EFD
+!//     reorder to conform with funijk_io
+  if (myPE.eq.PE_IO) then
+ 
+      flag_temp(:) = flag_e_g(:)
+
+      do k=kmin2,kmax2
+      do j=jmin2,jmax2
+      do i=imin2,imax2
+          ijk_io = funijk_io(i,j,k)
+          ijk_gl = funijk_gl(i,j,k) 
+          
+          flag_e_g(ijk_io) = flag_temp( ijk_gl )
+      enddo
+      enddo
+      enddo
+
+
+	  
+      flag_temp(:) = flag_n_g(:)
+
+      do k=kmin2,kmax2
+      do j=jmin2,jmax2
+      do i=imin2,imax2
+          ijk_io = funijk_io(i,j,k)
+          ijk_gl = funijk_gl(i,j,k)
+          
+          flag_n_g(ijk_io) = flag_temp( ijk_gl )
+      enddo
+      enddo
+      enddo
+
+
+      flag_temp(:) = flag_t_g(:)
+
+      do k=kmin2,kmax2
+      do j=jmin2,jmax2
+      do i=imin2,imax2
+          ijk_io = funijk_io(i,j,k)
+          ijk_gl = funijk_gl(i,j,k)
+          
+          flag_t_g(ijk_io) = flag_temp( ijk_gl )
+      enddo
+      enddo
+      enddo
+
+      
+      
+      
+
+
 !
 ! NOTE:  IF NCOL IS CHANGED TO A NUMBER GREATER THAN 30, THEN THE "30"
 !        IN FORMATS 5050 AND 5100 MUST BE CHANGED TO THAT NUMBER.
 !
-!//TD - Temporarily disable because of some problems with global and local incompatibility of
-!       ip_at_e and so on - Sreekanth on 11/11/99
-      RETURN
       NCOL = 30 
       NTAB = IMAX2/NCOL + 1 
       IF (MOD(IMAX2,NCOL) == 0) NTAB = NTAB - 1 
@@ -92,8 +201,8 @@
             IJK = funijk_io(IFORM1,LL2,1) 
             IJ2 = funijk_io(IFORM2,LL2,1) 
 !efd
-!            WRITE (LINE, 5100) LL2, (ARRAY(LL3),LL3=IJK,IJ2) 
-            WRITE (LINE, 5100) LL2, (ARRAY(funijk_io(LL3,LL2,1)),LL3=IFORM1,IFORM2)
+            WRITE (LINE, 5100) LL2, (ARRAY(LL3),LL3=IJK,IJ2) 
+!            WRITE (LINE, 5100) LL2, (ARRAY(funijk_io(LL3,LL2,1)),LL3=IFORM1,IFORM2)
 
             IJK = funijk_io(IFORM1,LL2,K) 
             IJ2 = funijk_io(IFORM2,LL2,K) 
@@ -101,27 +210,44 @@
             DO LL3 = IJK, IJ2 
                LL4 = LL4 + 4 
 !
-               IF (IP_AT_E(LL3)) THEN 
+!//SP Global Functions
+               IF (IP_AT_E_G(LL3)) THEN 
                   LINE(LL4:LL4) = 'E' 
-               ELSE IF (SIP_AT_E(LL3)) THEN 
+               ELSE IF (SIP_AT_E_G(LL3)) THEN 
                   LINE(LL4:LL4) = 'e' 
                ENDIF 
 !
-               IF (IP_AT_N(LL3)) THEN 
+!//SP Global Functions
+               IF (IP_AT_N_G(LL3)) THEN 
                   LINE(LL4:LL4) = 'N' 
-               ELSE IF (SIP_AT_N(LL3)) THEN 
+               ELSE IF (SIP_AT_N_G(LL3)) THEN 
                   LINE(LL4:LL4) = 'n' 
                ENDIF 
 !
-               IF (IP_AT_T(LL3)) THEN 
+!//SP Global Functions
+               IF (IP_AT_T_G(LL3)) THEN 
                   LINE(LL4:LL4) = 'T' 
-               ELSE IF (SIP_AT_T(LL3)) THEN 
+               ELSE IF (SIP_AT_T_G(LL3)) THEN 
                   LINE(LL4:LL4) = 't' 
                ENDIF 
             END DO 
            WRITE (UNIT_OUT, '(A)') LINE(1:LL4) 
          END DO 
       END DO 
+    endif
+
+
+!//EFD deallocate storage of temporary flag arrays
+
+    deallocate( flag_e_g )
+    deallocate( flag_n_g )
+    deallocate( flag_t_g )
+    deallocate( flag_temp )
+
+
+
+
+
  5050 FORMAT(3X,'J',3X,'I=',3X,30(I3,1X)) 
  5100 FORMAT(1X,I3,8X,30(A3,1X)) 
       RETURN  
