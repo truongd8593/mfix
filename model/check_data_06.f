@@ -121,7 +121,7 @@
        DO K = Kstart3, Kend3       
          DO J = Jstart3, Jend3 
            DO I = Istart3, Iend3 
-!// 220 1004 Use local FUNIJK as ICBC_FLAG is dimensioned DIMENSION_3L		     
+!// 220 1004 Need to use local FUNIJK as ICBC_FLAG is dimensioned DIMENSION_3L		     
                IJK = FUNIJK(I,J,K)
                IF (RUN_TYPE == 'NEW') THEN 
                   ICBC_FLAG(IJK) = '   ' 
@@ -630,11 +630,14 @@
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
 
+!//? WE NEED to make sure that if do loop limits yield to a IJK not residing
+!//? on the current PE's subdomain, then this loop will attempt to assign 
+!//? ijk values out of the current subdomain on each PE.
             DO K = IC_K_B(ICV), IC_K_T(ICV) 
                DO J = IC_J_S(ICV), IC_J_N(ICV) 
                   DO I = IC_I_W(ICV), IC_I_E(ICV) 
-!// Check if current i,j,k resides on this PE		  
- 		  IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	
+!// 360 1025 Check if current i,j,k resides on this PE		  
+		  IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	
 	  
 !// 220 1004 Need to use local FUNIJK when setting ICBC_FLAG on each PE
                      IJK = FUNIJK(I,J,K) 
