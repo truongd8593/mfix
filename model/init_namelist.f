@@ -105,7 +105,7 @@
       DT_FAC = 0.9 
       DETECT_STALL = .TRUE. 
       ENERGY_EQ = .TRUE.
-      DEF_COR  =  .FALSE. 
+      DEF_COR  =  .TRUE. 
       GRANULAR_ENERGY = .FALSE. 
       
 ! start peter 7/15
@@ -210,8 +210,8 @@
       P_REF = ZERO 
       P_SCALE = ONE 
       MAX_NIT = 500 
-      LEQ_IT(1) = 20 
-      LEQ_IT(2) = 20 
+      LEQ_IT(1) = 200 
+      LEQ_IT(2) = 200 
       LEQ_IT(3) = 5 
       LEQ_IT(4) = 5 
       LEQ_IT(5) = 5 
@@ -252,10 +252,10 @@
       UR_FAC(3) = 0.5                            !U 
       UR_FAC(4) = 0.5                            !V 
       UR_FAC(5) = 0.5                            !W 
-      UR_FAC(6) = 0.8                            !T 
+      UR_FAC(6) = 1.0                            !T 
       UR_FAC(7) = 1.0                            !X 
-      UR_FAC(8) = 0.5                            !Th 
-      UR_FAC(9) = 0.8                            !Scalar
+      UR_FAC(8) = 1.0                            !Th 
+      UR_FAC(9) = 1.0                            !Scalar
 !
 ! INITIALIZE THE GAS PHASE SECTION
 !

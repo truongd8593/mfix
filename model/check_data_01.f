@@ -34,6 +34,7 @@
       USE physprop
       USE indices
       USE scalars
+      USE funits
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -110,6 +111,27 @@
 	  CALL ERROR_ROUTINE ('check_data_01', Line, 1, 1) 
 	END IF
       END DO
+      
+!
+! CHECK THE DISCRETIZATION METHDS
+!
+
+      IF (DISCRETIZE(1) > 1 .OR. DISCRETIZE(2) > 1) THEN 
+         DISCRETIZE(1) = 0
+	 DISCRETIZE(2) = 0
+	 IF(DMP_LOG)WRITE (UNIT_LOG, 1500) 
+      ENDIF 
+      IF (.not.DEF_COR) THEN 
+        DEF_COR= .true.
+	IF(DMP_LOG)WRITE (UNIT_LOG, 1501) 
+      ENDIF
+
 
       RETURN  
+ 1500 FORMAT(/1X,70('*')//' From: CHECK_DATA_03',/' Message: ',&
+         'Continuity equations can be discretized only with FOUP.',/&
+         'DISCRETIZE (1 or 2 or both) reset to 0.',G12.5,/1X,70('*')/) 
+ 1501 FORMAT(/1X,70('*')//' From: CHECK_DATA_03',/' Message: ',&
+         'Only deferred correction method can be used.',/&
+         'DEF_COR reset to .true.',G12.5,/1X,70('*')/) 
       END SUBROUTINE CHECK_DATA_01 
