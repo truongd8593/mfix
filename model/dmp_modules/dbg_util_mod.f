@@ -92,15 +92,17 @@
       return
       end subroutine dbgprn_1r
 
-      subroutine prnfield_1d (gbuf,varname,flag)       
+      subroutine prnfield_1d (gbuf,varname,flagl)       
       double precision, intent(in), dimension(:) :: gbuf
-      character(len=3), intent(in)   :: flag
+      character(len=3), intent(in)   :: flagl
       character(len=*), intent(in)   :: varname
       integer :: ldbg = 35
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
+      integer ijk
+      include 'function.inc'
 
-       OPEN(unit=ldbg,file=flag//fbname//'.LOG',status='UNKNOWN')
+       OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname
        DO K = kstart3, kend3                               !//AIKEPARDBG
          write(ldbg,"('K = ',I5)") K                !//AIKEPARDBG 
@@ -117,15 +119,17 @@
       end subroutine prnfield_1d
 
 
-      subroutine prnfield_1r (gbuf,varname,flag)       
+      subroutine prnfield_1r (gbuf,varname,flagl)       
       real, intent(in), dimension(:) :: gbuf
-      character(len=3), intent(in)   :: flag
+      character(len=3), intent(in)   :: flagl
       character(len=*), intent(in)   :: varname
       integer :: ldbg = 35
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
+      integer ijk
+      include 'function.inc'
 
-       OPEN(unit=ldbg,file=flag//fbname//'.LOG',status='UNKNOWN')
+       OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname
        DO K = kstart3, kend3                               !//AIKEPARDBG
          write(ldbg,"('K = ',I5)") K                !//AIKEPARDBG 
@@ -141,15 +145,17 @@
        close(35)             
       end subroutine prnfield_1r
 
-      subroutine prnfield_2d (gbuf,varname,flag)       
+      subroutine prnfield_2d (gbuf,varname,flagl)       
       double precision, intent(in), dimension(:,:) :: gbuf
-      character(len=3), intent(in)   :: flag
+      character(len=3), intent(in)   :: flagl
       character(len=*), intent(in)   :: varname
       integer :: ldbg = 35
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
+      integer ijk
+      include 'function.inc'
 
-       OPEN(unit=ldbg,file=flag//fbname//'.LOG',status='UNKNOWN')
+       OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname
        DO K = kstart3, kend3                               !//AIKEPARDBG
          write(ldbg,"('K = ',I5)") K                !//AIKEPARDBG 

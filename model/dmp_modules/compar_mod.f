@@ -84,38 +84,42 @@
 
         integer :: istart, iend, jstart, jend, kstart, kend
 
+!       Funijk coefficients
+
+	integer :: c0, c1, c2
+
 !	Variables added at Aytekin's request on 09/01/99 for some code implementation
 
 !// 500 0803 declaration for storing filebasename, e.g. mfix000.dat
     	CHARACTER(len=3) :: fbname
     	INTEGER :: idbg = 1
 
-	contains
+!contains
 
-        integer function funijk(i,j,k)
-        integer,  intent(in):: i,j,k
+!       integer function funijk(i,j,k)
+!       integer,  intent(in):: i,j,k
 
-        if(i.lt.istart3_all(myPE).or.i.gt.iend3_all(myPE).or. &
-         j.lt.jstart3_all(myPE).or.j.gt.jend3_all(myPE).or. &
-         k.lt.kstart3_all(myPE).or.k.gt.kend3_all(myPE)) then
+!       if(i.lt.istart3_all(myPE).or.i.gt.iend3_all(myPE).or. &
+!        j.lt.jstart3_all(myPE).or.j.gt.jend3_all(myPE).or. &
+!        k.lt.kstart3_all(myPE).or.k.gt.kend3_all(myPE)) then
 
-         write(*,"('(PE ',I2,'): i = ',I5,'  j = ',I5,'  k = ',I5&
-           &,' DOES NOT reside on this PE')") myPE,i,j,k
+!        write(*,"('(PE ',I2,'): i = ',I5,'  j = ',I5,'  k = ',I5&
+!          &,' DOES NOT reside on this PE')") myPE,i,j,k
 !// 375 1028 added a mechanism which assigns FUNIJK=-99999 if the current cell
 !            is not residing on the associated processor's subdomain.
 !            the return of this function calls needs to be checked.
-          call mfix_exit(myPE)
+!         call mfix_exit(myPE)
 !        FUNIJK = -99999
 	 
-         else
+!        else
 
-        FUNIJK = 1 + (I - istart3_all(myPE)) &
-      + (J-jstart3_all(myPE))*(iend3_all(myPE)-istart3_all(myPE)+1) &
-      + (K-kstart3_all(myPE))*(jend3_all(myPE)-jstart3_all(myPE)+1)* &
-        (iend3_all(myPE)-istart3_all(myPE)+1)
-        endif
+!       FUNIJK = 1 + (I - istart3_all(myPE)) &
+!     + (J-jstart3_all(myPE))*(iend3_all(myPE)-istart3_all(myPE)+1) &
+!     + (K-kstart3_all(myPE))*(jend3_all(myPE)-jstart3_all(myPE)+1)* &
+!       (iend3_all(myPE)-istart3_all(myPE)+1)
+!       endif
 	
-        end function funijk
+!       end function funijk
 
 
       END MODULE compar
