@@ -1162,6 +1162,12 @@
       integer :: im1jk,ip1jk, ijm1k,ijp1k, ijkm1,ijkp1
       logical, parameter :: use_send_recv = .true.
       logical, parameter :: need_distribute_Avar = .true.
+      logical, parameter :: use_funijk = .true.
+
+      integer :: i1,i2, j1,j2, k1,k2, isize,jsize
+      integer :: cc, ci, cj, ck
+
+      integer :: ijk_c, im1jk_c,ip1jk_c, ijm1k_c,ijp1k_c, ijkm1_c,ijkp1_c
 
 
 !-----------------------------------------------
@@ -1191,28 +1197,64 @@
         call MPI_Barrier(MPI_COMM_WORLD,mpierr)
       endif
 
+        i = istart3
+        j = jstart3
+        k = kstart3
+        cj = funijk( i,j+1,k) - funijk(i,j,k)
+        if (no_k) then
+            ck = 0
+        else
+            ck = funijk(i,j,k+1)-funijk(i,j,k)
+        endif
+        ci = funijk(i+1,j,k) - funijk(i,j,k)
+        cc = funijk(i,j,k) - (ci*i + cj*j  + ck*k)
 
       if (do_k) then
 
 !$omp parallel  do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
-        do kk = kstart,kend
-        do jj = jstart,jend
-        do ii = istart,iend
+!$omp parallel  do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+        do k = kstart,kend
+        do j = jstart,jend
 
-        i = imap_c(ii)
-        j = jmap_c(jj)
-        k = kmap_c(kk)
+            ijk_c   = (cc + ck*k + cj*j)
+            im1jk_c = (cc + ck*k + cj*j)
+            ip1jk_c = (cc + ck*k + cj*j)
 
-        IJK = funijk(imap_c(i),jmap_c(j),kmap_c(k))
+            ijm1k_c = (cc + ck*k + cj*jm1(j))
+            ijp1k_c = (cc + ck*k + cj*jp1(j))
+
+            ijkm1_c = (cc + ck*km1(k) + cj*j)
+            ijkp1_c = (cc + ck*kp1(k) + cj*j)
+
+        do i = istart,iend
 
 
-           im1jk = funijk(im1(i),j,k)
-           ip1jk = funijk(ip1(i),j,k)
-           ijm1k = funijk(i,jm1(j),k)
-           ijp1k = funijk(i,jp1(j),k)
- 
-           ijkm1 = funijk(i,j,km1(k))
-           ijkp1 = funijk(i,j,kp1(k))
+        if (use_funijk) then
+
+
+            ijk   = ijk_c   + ci*i
+
+            im1jk = im1jk_c + ci*im1(i)
+            ip1jk = ip1jk_c + ci*ip1(i)
+
+            ijm1k = ijm1k_c + ci*i
+            ijp1k = ijp1k_c + ci*i
+
+            ijkm1 = ijkm1_c + ci*i
+            ijkp1 = ijkp1_c + ci*i
+
+        else
+           IJK = funijk(i,j,k)
+
+           im1jk = im_of(ijk)
+           ip1jk = ip_of(ijk)
+           ijm1k = jm_of(ijk)
+           ijp1k = jp_of(ijk)
+!
+           ijkm1 = km_of(ijk)
+           ijkp1 = kp_of(ijk)
+        endif
+
 
            AVar(ijk) =      A_m(ijk,-3) * Var(ijkm1)   &
                           + A_m(ijk,-2) * Var(ijm1k)   &
@@ -1220,7 +1262,7 @@
                           + A_m(ijk, 0) * Var(ijk)     &
                           + A_m(ijk, 1) * Var(ip1jk)   &
                           + A_m(ijk, 2) * Var(ijp1k)   &
-                          + A_m(ijk, 3) * Var(ijkp1)    
+                          + A_m(ijk, 3) * Var(ijkp1)
 
         enddo
         enddo
@@ -1228,11 +1270,9 @@
 
       else
 !$omp parallel do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
-        do jj = jstart2,jend2
-        do ii = istart2,iend2
+        do j = jstart2,jend2
+        do i = istart2,iend2
 
-        i = ii
-        j = jj
         k = 1
 
         IJK = funijk(i,j,k)
@@ -1242,14 +1282,11 @@
            ip1jk = ip_of(ijk)
            ijm1k = jm_of(ijk)
            ijp1k = jp_of(ijk)
-
-!	write(unit_log,*) ii,jj,i_of(im1jk),i_of(ip1jk),j_of(ijm1k),j_of(ijp1k), myPE
-
            AVar(ijk) =      A_m(ijk,-2) * Var(ijm1k)   &
                           + A_m(ijk,-1) * Var(im1jk)   &
                           + A_m(ijk, 0) * Var(ijk)     &
                           + A_m(ijk, 1) * Var(ip1jk)   &
-                          + A_m(ijk, 2) * Var(ijp1k)    
+                          + A_m(ijk, 2) * Var(ijp1k)
 
         enddo
         enddo

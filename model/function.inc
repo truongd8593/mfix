@@ -3,7 +3,7 @@
 !                      Function for generating the LOCAL 3-D array index IJK
 !                      from the 1-D indices I, J, and K.
 !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
-!     INTEGER          FUNIJK
+      INTEGER          FUNIJK
 !                      Function for generating the GLOBAL 3-D array index IJK
 !                      from the 1-D indices I, J, and K.
       INTEGER          FUNIJK_GL
@@ -205,10 +205,7 @@
 !
 ! 
 !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
-!     FUNIJK (LI, LJ, LK) = 1 + (LI - istart3_all(myPE)) &
-!     + (LJ-jstart3_all(myPE))*(iend3_all(myPE)-istart3_all(myPE)+1) &
-!     + (LK-kstart3_all(myPE))*(jend3_all(myPE)-jstart3_all(myPE)+1)* &
-!       (iend3_all(myPE)-istart3_all(myPE)+1)
+      FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
 
       FUNIJK_GL (LI, LJ, LK) = 1 + (LI - imin3) + (LJ-jmin3)*(imax3-imin3+1) &
       + (LK-kmin3)*(jmax3-jmin3+1)*(imax3-imin3+1)
