@@ -36,6 +36,8 @@
       USE physprop
       USE indices
       USE compar        !//d
+      USE mpi_utility   !//SP
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -66,12 +68,18 @@
 
 !!$omp   parallel do private(IJK) reduction(+:SUM_VOL,SUM_V_G)
 
-      DO IJK = IJKMIN1, IJKMAX1 
+!//SP
+      DO IJK = IJKSTART3, IJKEND3
+      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK), J_OF(IJK), K_OF(IJK))) CYCLE
          IF (FLUID_AT(IJK)) THEN 
             SUM_VOL = SUM_VOL + VOL_V(IJK) 
             SUM_V_G = SUM_V_G + V_G(IJK)*EP_G(IJK)*VOL_V(IJK) 
          ENDIF 
       END DO 
+!//SP
+      CALL GLOBAL_ALL_SUM(SUM_VOL)
+      CALL GLOBAL_ALL_SUM(SUM_V_G)
+
       VAVG_V_G = SUM_V_G/SUM_VOL 
 !
       RETURN  

@@ -157,7 +157,9 @@
          END DO 
       ENDIF 
 !4/29/94
-      RETURN  
+!//SP
+!     RETURN  
+      GOTO 100
 !
 !  Search for an outflow boundary condition where pressure is specified
 !
@@ -175,7 +177,9 @@
             DO IJK = IJKSTART3, IJKEND3 
                IF (FLUID_AT(IJK)) P_G(IJK) = ZERO 
             END DO 
-            RETURN  
+!//SP
+!           RETURN  
+            GOTO 100  
          ELSE 
 !
 !         Error condition -- no pressure outflow boundary condition is specified
@@ -243,6 +247,8 @@
             END DO 
          END DO 
       END DO 
+!//SP
+  100 CONTINUE
 !//SP
       call send_recv(P_G,2)
 

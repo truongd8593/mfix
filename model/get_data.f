@@ -73,6 +73,11 @@
       CALL READ_NAMELIST (0) 
 
       CALL CHECK_DATA_00
+!//SP The following have to be moved here are cyclic_y etc. is needed in gridmap_init
+      IF (CYCLIC_X_PD) CYCLIC_X = .TRUE.
+      IF (CYCLIC_Y_PD) CYCLIC_Y = .TRUE.
+      IF (CYCLIC_Z_PD) CYCLIC_Z = .TRUE.
+
 
 !//AIKEPARDBG
 !      write(*,"('(PE ',I2,'): reached end of read_namelist')") myPE	!//AIKEPARDBG
