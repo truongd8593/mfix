@@ -4,7 +4,7 @@
 
 # RUN CONTROL SECTION                                                           
                                                                                 
-  RUN_NAME = 'GR-CFB'                                                            
+  RUN_NAME = 'Tsuji-CFB'                                                            
   DESCRIPTION = 'Tsuji CFB - 2D'
                                                                                 
   UNITS  = 'CGS'                                                                
@@ -12,7 +12,7 @@
   RUN_TYPE = 'new'
 
   TIME                  = 0.                            !start time
-  TSTOP                 = 5.
+  TSTOP                 = 1.0e-2
   DT                    = 1.0E-4                        !time step
   DT_MAX                = 1.0E-4                        !max time-step
   DT_MIN                = 1.0E-7                        !min time-step

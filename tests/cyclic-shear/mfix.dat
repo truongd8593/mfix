@@ -5,7 +5,7 @@
   RUN_TYPE = 'new'
   UNITS = 'cgs'
   TIME  = 0.0      TSTOP = 12.0  DT = 1E-3 
-  DT_MAX = 0.4e-4
+! DT_MAX = 0.4e-4
 !  DT_FAC=1.0
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE.     .FALSE.
@@ -24,7 +24,7 @@
 
    DELP_Y =592.9885122!  299.0439851 
    TOL_RESID = 1e-4
-   LEQ_METHOD(8) = 1       
+   LEQ_METHOD(8) = 2       
    DISCRETIZE = 8*2              ! Superbee discretization scheme
    NORM_s = 1e-1
    NORM_g = 1e-1
@@ -101,31 +101,3 @@
 # DMP control
   
   NODESI = 1   NODESJ = 1   NODESK = 1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
