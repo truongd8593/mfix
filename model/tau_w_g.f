@@ -183,7 +183,9 @@
                VXZ = AVG_Z(MU_GT(IJK),MU_GT(IJKT),K)*OX(I)*HALF*((U_G(IJKP)-U_G&
                   (IJK))*OX_E(I)*ODZ_T(K)+DUODZ) 
 !
-            ELSE 
+            ELSE
+	       STE = ZERO
+	       STW = ZERO
                VXZ = ZERO 
             ENDIF 
 !

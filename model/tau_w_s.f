@@ -192,6 +192,8 @@
                      ,M)-U_S(IJK,M))*OX_E(I)*ODZ_T(K)+DUODZ) 
 !
                ELSE 
+	          STE = ZERO
+	          STW = ZERO
                   VXZ = ZERO 
                ENDIF 
 !
