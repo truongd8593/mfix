@@ -10,13 +10,39 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE MAKE_ARRAYS_DES(PARTS)
-      
+
+      USE funits
+      USE compar      
       USE discretelement
       IMPLICIT NONE
       
       INTEGER LN, K, PARTS, FAC
+      INTEGER CHECK_MPI
       DOUBLE PRECISION  DUMMY
 
+       CHECK_MPI = NODESI * NODESJ * NODESK
+       IF((CHECK_MPI.NE.1).AND.(DISCRETE_ELEMENT)) THEN
+          WRITE (UNIT_LOG, *) ' '
+          WRITE (UNIT_LOG, *) 'DES being run on multiple processors. STOP'
+          PRINT *,'DES should only be run serially on one processor.'
+          STOP
+       END IF
+     
+       IF(DES_NEIGHBOR_SEARCH.EQ.UNDEFINED_I) THEN
+          DES_NEIGHBOR_SEARCH = 1
+          PRINT *,'DES neighbor search is not selected'
+          PRINT *,'Default N-Square search will be implemented'
+       END IF
+       IF(DES_NEIGHBOR_SEARCH.EQ.1) THEN
+          DO_NSQUARE = .TRUE.
+          PRINT *,'N-SQUARE Search'
+       ELSE IF(DES_NEIGHBOR_SEARCH.EQ.2) THEN
+          DO_QUADTREE = .TRUE.
+          PRINT *,'QUADTREE Search'
+       ELSE IF(DES_NEIGHBOR_SEARCH.EQ.3) THEN
+          DO_OCTREE = .TRUE.
+          PRINT *,'OCTREE Search'
+       END IF
 
       IF(ZONES.EQ.1) THEN
          OPEN(UNIT=10, FILE='particle_input.dat', STATUS='OLD')
