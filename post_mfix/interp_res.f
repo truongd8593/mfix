@@ -226,6 +226,9 @@
       CALL DEALLOCATE_ARRAYS
       
       CALL INIT_NAMELIST
+      NODESI = 1
+      NODESJ = 1
+      NODESK = 1
       CALL READ_NAMELIST(1)
       call set_max2
 
