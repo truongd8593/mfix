@@ -212,7 +212,7 @@
                   ),I) 
                VCF = ROPGA*WGE**2*OX_E(I) 
 !
-!           Tau_zz/X
+!           -(2mu/x)*(u/x) part of Tau_zz/X
                EPMUGA = AVG_X(MU_GT(IJK),MU_GT(IJKE),I) 
                VTZA = 2.*EPMUGA*OX_E(I)*OX_E(I) 
             ELSE 

@@ -64,7 +64,7 @@
 !                      Indices 
       INTEGER          IJK, J, I, IM, IJKP, IMJK, IJKN, IJKNT, IJKS,& 
                        IJKST, IJMKP, IJMK, IJKE, IJKTE, IJKW, IJKTW,& 
-                       IMJKP, K, IJKT, JM, KP, IJKM 
+                       IMJKP, K, IJKT, JM, KP, IJKM, IPJK 
 ! 
 !                      Phase index 
       INTEGER          M 
@@ -82,7 +82,7 @@
       DOUBLE PRECISION dWoXdz, duodz 
 ! 
 !                      Source terms (Surface) 
-      DOUBLE PRECISION Sbv, Ssx, Ssy, Ssz 
+      DOUBLE PRECISION Ste, Stw, Sbv, Ssx, Ssy, Ssz 
 ! 
 !                      Source terms (Volumetric) 
       DOUBLE PRECISION Vxz 
@@ -103,10 +103,10 @@
 !!$omp  parallel do private( IJK, I, IJKE, EPGA,  J,  K,   &
 !!$omp&  JM,IJKP,IJKNT,IJKS,IJKST,IJMKP,IJKTE,IJKTW,IMJKP,KP, &
 !!$omp&  DUODZ,VXZ, &
-!!$omp&  IM,IJKW, &
+!!$omp&  IM,IJKW, IPJK,&
 !!$omp&  IMJK,IJKN,IJMK,IJKT,  &
 !!$omp&  IJKM, &
-!!$omp&  SBV,  SSX,SSY,   SSZ) &
+!!$omp&  STE, STW, SBV,  SSX,SSY,   SSZ) &
 !!$omp&  schedule(static)
       DO IJK = IJKSTART3, IJKEND3
             K = K_OF(IJK) 
@@ -160,12 +160,29 @@
 !         Special terms for cylindrical coordinates
                IF (CYLINDRICAL) THEN 
 !
-!           modify Szz
+!           modify Szz to include integral of (1/x)*(d/dz)(2*u/x)
                   SSZ = SSZ + MU_S(IJKT,M)*(U_S(IJKP,M)+U_S(IMJKP,M))*OX(I)*&
                      AXY_W(IJK) - MU_S(IJK,M)*(U_S(IJK,M)+U_S(IMJK,M))*OX(I)*&
                      AXY_W(IJKM) 
 !
-!           part of tau_xz/X
+!           Term from tau_xz: intergral of (1/x)*(d/dx)(x*mu*((1/x)*du/dz))
+                     IJKE = EAST_OF(IJK) 
+                     IJKW = WEST_OF(IJK) 
+                     IJKTE = TOP_OF(IJKE) 
+                     IJKTW = TOP_OF(IJKW) 
+                     IM = IM1(I) 
+                     IPJK = IP_OF(IJK) 
+!
+                     STE = HALF*AVG_Z_H(AVG_X_H(MU_S(IJK,M),MU_S(IJKE,M),I),&
+                        AVG_X_H(MU_S(IJKT,M),MU_S(IJKTE,M),I),K)*OX_E(I)*AYZ_W(&
+                        IJK)*(U_S(IJKP,M)-U_S(IJK,M))*ODZ_T(K) 
+!
+                     STW = HALF*AVG_Z_H(AVG_X_H(MU_S(IJKW,M),MU_S(IJK,M),IM),&
+                        AVG_X_H(MU_S(IJKTW,M),MU_S(IJKT,M),IM),K)*DY(J)*(HALF*(&
+                        DZ(K)+DZ(KP1(K)))) * (U_S(IMJKP,M)-U_S(IMJK,M))*ODZ_T(K)
+			!same as oX_E(IM)*AYZ_W(IMJK), but avoids singularity
+!
+!           (mu_s/x)* part of tau_xz/X
                   IF (OX_E(IM) /= UNDEFINED) THEN 
                      DUODZ = (U_S(IMJKP,M)-U_S(IMJK,M))*OX_E(IM)*ODZ_T(K) 
                   ELSE 
@@ -179,7 +196,7 @@
                ENDIF 
 !
 !         Add the terms
-               TAU_W_S(IJK,M) = SBV + SSX + SSY + SSZ + VXZ*VOL_W(IJK) 
+               TAU_W_S(IJK,M) = (STE-STW) + SBV + SSX + SSY + SSZ + VXZ*VOL_W(IJK) 
             ELSE 
                TAU_W_S(IJK,M) = ZERO 
             ENDIF 

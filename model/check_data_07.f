@@ -665,7 +665,7 @@
                   call mfix_exit(myPE)  
                ENDIF 
             END DO 
-            DO M = 1, DIMENSION_M 
+            DO M = 1, MMAX 
                IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
                   WRITE (UNIT_LOG, 1300) 'BC_ROP_s', BCV, M 
                   call mfix_exit(myPE)  

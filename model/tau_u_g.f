@@ -153,12 +153,12 @@
 !         Special terms for cylindrical coordinates
             IF (CYLINDRICAL) THEN 
 !
-!           modify Ssz
+!           modify Ssz: integral of (1/x) (d/dz) (mu*(-w/x))
                SSZ = SSZ - (EPMU_GTE*(HALF*(W_G(IPJK)+W_G(IJK))*OX_E(I))*AXY_U(&
                   IJK)-EPMU_GBE*(HALF*(W_G(IPJKM)+W_G(IJKM))*OX_E(I))*AXY_U(&
                   IJKM)) 
 !
-!           Tau_zz/X
+!           -(2mu/x)*(1/x)*dw/dz part of Tau_zz/X
                EPMUGA = AVG_X(MU_G(IJK),MU_G(IJKE),I) 
                DWOXDZ = HALF*((W_G(IJK)-W_G(IJKM))*OX(I)*ODZ(K)+(W_G(IPJK)-W_G(&
                   IPJKM))*OX(IP)*ODZ(K)) 

@@ -202,6 +202,13 @@
             ENDIF 
 !
 !         Special terms for cylindrical coordinates
+               VCOA = ZERO 
+               VCOB = ZERO 
+               SXZB = ZERO 
+               VXZA = ZERO 
+               VXZB = ZERO 
+	       CTE  = ZERO
+	       CTW  = ZERO
             IF (CYLINDRICAL) THEN 
 !
 !           Coriolis force
@@ -218,7 +225,7 @@
                   VCOB = -ROPGA*UGT*W_G(IJK)*OX(I) 
                ENDIF 
 !
-!           Term from tau_xz
+!           Term from tau_xz: intergral of (1/x)*(d/dx)(x*mu*(-w/x))
                IJKE = EAST_OF(IJK) 
                IJKW = WEST_OF(IJK) 
                IJKTE = TOP_OF(IJKE) 
@@ -231,28 +238,16 @@
 !
                CTW = HALF*AVG_Z_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJK),IM),AVG_X_H(&
                   MU_GT(IJKTW),MU_GT(IJKT),IM),K)*DY(J)*(HALF*(DZ(K)+DZ(KP1(K))&
-                  )) 
+                  )) !same as oX_E(IM)*AYZ_W(IMJK), but avoids singularity
 !
-!
-               IF (CTE > CTW) THEN 
-                  SXZB = ZERO 
-                  A_M(IJK,E,M) = A_M(IJK,E,M) + CTE 
-                  A_M(IJK,W,M) = A_M(IJK,W,M) - CTW 
-               ELSE 
-                  SXZB = W_G(IJK)*(CTW - CTE) + W_G(IPJK)*CTE - W_G(IMJK)*CTW 
-               ENDIF 
-!
-!           part of tau_xz/x
+!           (mu/x)*(dw/dx) part of tau_xz/x
                EPMUOX = AVG_Z(MU_GT(IJK),MU_GT(IJKT),K)*OX(I) 
+               VXZB = ZERO 
+               A_M(IJK,E,M) = A_M(IJK,E,M) + HALF*EPMUOX*ODX_E(I)*VOL_W(IJK) 
+               A_M(IJK,W,M) = A_M(IJK,W,M) - HALF*EPMUOX*ODX_E(IM)*VOL_W(IJK) 
+!
+!           -(mu/x)*(w/x) part of tau_xz/x
                VXZA = EPMUOX*OX(I) 
-               IF (ODX_E(I) > ODX_E(IM)) THEN 
-                  VXZB = ZERO 
-                  A_M(IJK,E,M) = A_M(IJK,E,M) + HALF*EPMUOX*ODX_E(I)*VOL_W(IJK) 
-                  A_M(IJK,W,M)=A_M(IJK,W,M)-HALF*EPMUOX*ODX_E(IM)*VOL_W(IJK) 
-               ELSE 
-                  VXZB = W_G(IJK)*HALF*EPMUOX*(ODX_E(IM)-ODX_E(I)) + W_G(IPJK)*&
-                     HALF*EPMUOX*ODX_E(I) - W_G(IMJK)*HALF*EPMUOX*ODX_E(IM) 
-               ENDIF 
             ELSE 
                VCOA = ZERO 
                VCOB = ZERO 
@@ -263,8 +258,11 @@
 !
 !         Collect the terms
             A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+A_M(IJK,S,M&
-               )+A_M(IJK,T,M)+A_M(IJK,B,M)+(V0+VPM+ZMAX(VMT)+VCOA+VXZA)*VOL_W(&
-               IJK)) 
+               )+A_M(IJK,T,M)+A_M(IJK,B,M)+(V0+VPM+ZMAX(VMT)+VCOA + VXZA)*VOL_W(&
+               IJK) + CTE - CTW) 
+            A_M(IJK,E,M) = A_M(IJK,E,M) - CTE
+            A_M(IJK,W,M) = A_M(IJK,W,M) + CTW 
+	       
             B_M(IJK,M) = -(SDP + TAU_W_G(IJK)+SXZB+((V0+ZMAX((-VMT)))*W_GO(IJK)&
                +VBF+VCOB+VXZB)*VOL_W(IJK)) + B_M(IJK, M) 
          ENDIF 
