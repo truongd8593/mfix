@@ -146,32 +146,41 @@
 !     the gas phase.
 !
             HOR_G(IJK) = ZERO 
-            M = 1 
             IF (MMAX > 0) THEN 
                HOR_S(IJK,:MMAX) = ZERO 
-               M = MMAX + 1 
             ENDIF 
+
+!
+!==============================================================================
+!
+!     No user input is required below this line
+!-----------------------------------------------------------------------------
+!   Determine g/(cm^3.s) of mass generation for each of the phases by adding
+!   the reaction rates of all the individual species.
+
+            SUM_R_G(IJK) = ZERO 
             IF (SPECIES_EQ(0)) THEN 
-               SUM_R_G(IJK) = ZERO 
-               N = 1 
                IF (NMAX(0) > 0) THEN 
                   SUM_R_G(IJK) = SUM_R_G(IJK) + SUM(R_GP(IJK,:NMAX(0))-ROX_GC(&
                      IJK,:NMAX(0))*X_G(IJK,:NMAX(0))) 
-                  N = NMAX(0) + 1 
                ENDIF 
             ENDIF 
 !
             DO M = 1, MMAX 
+               SUM_R_S(IJK,M) = ZERO 
                IF (SPECIES_EQ(M)) THEN 
-                  SUM_R_S(IJK,M) = ZERO 
-                  N = 1 
                   IF (NMAX(M) > 0) THEN 
                      SUM_R_S(IJK,M) = SUM_R_S(IJK,M) + SUM(R_SP(IJK,M,:NMAX(M))&
                         -ROX_SC(IJK,M,:NMAX(M))*X_S(IJK,M,:NMAX(M))) 
-                     N = NMAX(M) + 1 
                   ENDIF 
                ENDIF 
             END DO 
+	    
+!
+!
+!     Store R_tmp values in an array.  Only store the upper triangle without
+!     the diagonal of R_tmp array.
+!
             DO L = 0, MMAX 
                DO M = L + 1, MMAX 
                   LM = L + 1 + (M - 1)*M/2 
@@ -187,6 +196,28 @@
                   ENDIF 
                END DO 
             END DO 
+
+	 ELSE
+!           In non-fluid cells	 
+            R_gp(IJK, :NMAX(0)) = ZERO
+            RoX_gc(IJK, :NMAX(0)) = ZERO
+	    DO M = 1, MMAX
+              R_sp(IJK, M, :NMAX(M)) = ZERO
+              RoX_sc(IJK, M, :NMAX(M)) = ZERO
+	    ENDDO
+            SUM_R_G(IJK) = ZERO 
+            HOR_G(IJK) = ZERO
+            IF (MMAX > 0) THEN 
+               SUM_R_S(IJK,:MMAX) = ZERO 
+               HOR_S(IJK,:MMAX) = ZERO 
+            ENDIF 
+            DO L = 0, MMAX 
+               DO M = L + 1, MMAX 
+                  LM = L + 1 + (M - 1)*M/2 
+		  R_PHASE(IJK, LM) = ZERO
+	       ENDDO
+	    ENDDO
+	   
          ENDIF 
       END DO 
       
