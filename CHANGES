@@ -2,19 +2,26 @@ Changes from MFIX4-2 to MFIX2002-3 (Date: 07/22/02)
 
 a) New version number - representing the year and quarter of release.
 b) Parallel capability in the cyclic direction
-c) Changed interface drag_gs.f and drag_ss.f.  To make old drag_gs.f and drag_ss.f 
+c) Changed interface drag_gs.f and drag_ss.f.  All drag related arrays are 
+   defined in drag_mod.f so that they are not defined at multiple places for 
+   efficiency and easy usability. To make old drag_gs.f and drag_ss.f 
    consistent with this change, do the following:
     * remove F_gs (or F_ss) from the argument list
     * Add the statement "Use drag" 
     * delete the dimension statement for drag_gs (or drag_ss)
-d) More user defined variables to control the linear solver (see readme file)
+d) More user defined variables (LEQ_PC, IS_SERIAL) to control the linear solver 
+   (see readme file)
 e) Benchmarked and documented MFIX for all the tests and tutorials on 
    Linux and Compaq (Look at tests/MFIX_Tests_Benchmarking.html &
    tutorials/MFIX_Tutorials_Benchmarking.html)
 f) Many bug-fixes - visit 
    http://www.mfix.org/cgi-bin/cvsweb.cgi/mfix/model/?sortby=date#dirlist
-g) Flushing buffers consistently
-h) Some bug-fixes and additional features in post_mfix
-i) Added complex-chemistry directory and an example coal gasifier to the base directory
-j) Added some test cases and tutorial cases
-k) Updated Readme's in the pdf and html formats
+g) Flushing buffers consistently. This was done as some of the file buffers 
+   were not flushed on certain architectures when the code exits.
+h) Some bug-fixes (e.g. mass and volume flux calculations correct) and 
+   additional features (e.g. time average of SPX files) in post_mfix
+i) Added complex-chemistry directory and an example coal gasifier to the base 
+   directory
+j) Added/modified some test cases and tutorial cases
+k) Updated Readme's in the pdf and html formats are distributed along with the
+   code
