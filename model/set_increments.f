@@ -52,10 +52,10 @@
       USE param1 
       USE indices
       USE geometry
+      USE compar
       USE physprop
       USE fldvar
       USE funits 
-      USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -91,36 +91,39 @@
       INCLUDE 'function.inc'
 !
 !
-      DO I = 1, IMAX2 
-         IM1(I) = MAX(1,I - 1) 
-         IP1(I) = MIN(IMAX2,I + 1) 
-         IF (CYCLIC_X) THEN 
-            IF (I == IMAX1) IP1(I) = IMIN1 
-            IF (I == 2) IM1(I) = IMAX1 
+      DO I = ISTART3, IEND3
+         IF (CYCLIC_X.AND.NODESI.EQ.1) THEN 
+            IP1(I) = IMAP(IMAP(I)+1)
+            IM1(I) = IMAP(IMAP(I)-1)
+	 ELSE
+            IM1(I) = MAX(ISTART3,I - 1) 
+            IP1(I) = MIN(IEND3,I + 1) 
          ENDIF 
       END DO 
-      DO J = 1, JMAX2 
-         JM1(J) = MAX(1,J - 1) 
-         JP1(J) = MIN(JMAX2,J + 1) 
-         IF (CYCLIC_Y) THEN 
-            IF (J == JMAX1) JP1(J) = JMIN1 
-            IF (J == 2) JM1(J) = JMAX1 
+      DO J = JSTART3, JEND3
+         IF (CYCLIC_Y.AND.NODESJ.EQ.1) THEN 
+            JP1(J) = JMAP(JMAP(J)+1)
+            JM1(J) = JMAP(JMAP(J)-1)
+	 ELSE
+            JM1(J) = MAX(JSTART3,J - 1)
+            JP1(J) = MIN(JEND3,J + 1)
          ENDIF 
       END DO 
-      DO K = 1, KMAX2 
-         KM1(K) = MAX(1,K - 1) 
-         KP1(K) = MIN(KMAX2,K + 1) 
-         IF (CYCLIC_Z) THEN 
-            IF (K == KMAX1) KP1(K) = KMIN1 
-            IF (K == 2) KM1(K) = KMAX1 
+      DO K = KSTART3, KEND3
+         IF (CYCLIC_Z.AND.NODESK.EQ.1) THEN 
+            KP1(K) = KMAP(KMAP(K)+1)
+            KM1(K) = KMAP(KMAP(K)-1)
+	 ELSE
+            KM1(K) = MAX(KSTART3,K - 1)
+            KP1(K) = MIN(KEND3,K + 1)
          ENDIF 
       END DO 
       ICLASS = 0 
 !
 !     Loop over all cells
-      DO K = 1, KMAX2 
-         DO J = 1, JMAX2 
-            L100: DO I = 1, IMAX2 
+      DO K = KSTART3, KEND3
+         DO J = JSTART3, JEND3
+            L100: DO I = ISTART3, IEND3
 !
                IJK = FUNIJK(I,J,K)               !Find value of IJK 
 !

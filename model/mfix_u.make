@@ -20,6 +20,7 @@ mfix.exe : \
     bc_phi.$(OBJ_EXT) \
     bc_theta.$(OBJ_EXT) \
     bound_x.$(OBJ_EXT) \
+    boundfunijk_mod.$(OBJ_EXT) \
     calc_cell.$(OBJ_EXT) \
     calc_coeff.$(OBJ_EXT) \
     calc_d.$(OBJ_EXT) \
@@ -310,6 +311,7 @@ mfix.exe : \
     bc_phi.$(OBJ_EXT) \
     bc_theta.$(OBJ_EXT) \
     bound_x.$(OBJ_EXT) \
+    boundfunijk_mod.$(OBJ_EXT) \
     calc_cell.$(OBJ_EXT) \
     calc_coeff.$(OBJ_EXT) \
     calc_d.$(OBJ_EXT) \
@@ -596,6 +598,17 @@ BC.mod : bc_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) bc_mod.f 
+BOUNDFUNIJK.mod : boundfunijk_mod.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            CONSTANT.mod \
+            FLDVAR.mod \
+            INDICES.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) boundfunijk_mod.f 
 COEFF.mod : coeff_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -1848,7 +1861,9 @@ error_routine.$(OBJ_EXT) : error_routine.f \
 exchange.$(OBJ_EXT) : exchange.f \
             PARAM.mod \
             PARAM1.mod 
-exit.$(OBJ_EXT) : exit.f 
+exit.$(OBJ_EXT) : exit.f \
+            COMPAR.mod \
+            MPI_UTILITY.mod 
 flow_to_vel.$(OBJ_EXT) : flow_to_vel.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2159,7 +2174,6 @@ out_array.$(OBJ_EXT) : out_array.f \
             PHYSPROP.mod \
             INDICES.mod \
             FUNITS.mod \
-            TMP_ARRAY.mod \
             COMPAR.mod \
             function.inc                                                
 out_array_c.$(OBJ_EXT) : out_array_c.f \
@@ -2170,7 +2184,6 @@ out_array_c.$(OBJ_EXT) : out_array_c.f \
             PHYSPROP.mod \
             INDICES.mod \
             FUNITS.mod \
-            TMP_ARRAY.mod \
             COMPAR.mod \
             function.inc                                                
 out_array_k.$(OBJ_EXT) : out_array_k.f \
@@ -2337,6 +2350,7 @@ set_bc0.$(OBJ_EXT) : set_bc0.f \
             PARAM.mod \
             PARAM1.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             PHYSPROP.mod \
             BC.mod \
             FLDVAR.mod \
@@ -2344,7 +2358,7 @@ set_bc0.$(OBJ_EXT) : set_bc0.f \
             RUN.mod \
             FUNITS.mod \
             SCALES.mod \
-            COMPAR.mod \
+            BOUNDFUNIJK.mod \
             sc_p_g1.inc                                                  \
             function.inc                                                 \
             sc_p_g2.inc                                                 
@@ -2457,10 +2471,10 @@ set_increments.$(OBJ_EXT) : set_increments.f \
             PARAM1.mod \
             INDICES.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             PHYSPROP.mod \
             FLDVAR.mod \
             FUNITS.mod \
-            COMPAR.mod \
             function.inc                                                
 set_index1.$(OBJ_EXT) : set_index1.f \
             PARAM.mod \
@@ -2477,10 +2491,11 @@ set_index1a.$(OBJ_EXT) : set_index1a.f \
             PARAM1.mod \
             PHYSPROP.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             CONSTANT.mod \
             FLDVAR.mod \
             INDICES.mod \
-            COMPAR.mod \
+            BOUNDFUNIJK.mod \
             function.inc                                                
 set_l_scale.$(OBJ_EXT) : set_l_scale.f \
             PARAM.mod \

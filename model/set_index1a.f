@@ -45,10 +45,11 @@
       USE param1 
       USE physprop
       USE geometry
+      USE compar
       USE constant
       USE fldvar
       USE indices
-      USE compar        !//d
+      USE boundfunijk
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -78,15 +79,15 @@
 !
 ! Modify indices as needed to allow cyclic boundary conditions
 !
-      IF (CYCLIC_X) THEN 
+      IF (CYCLIC_X.AND.NODESI==1) THEN 
          IF (I == IMAX1) IPJK = BOUND_FUNIJK(IMIN1,J,K) 
          IF (I == IMIN1) IMJK = BOUND_FUNIJK(IMAX1,J,K) 
       ENDIF 
-      IF (CYCLIC_Y) THEN 
+      IF (CYCLIC_Y.AND.NODESJ==1) THEN 
          IF (J == JMAX1) IJPK = BOUND_FUNIJK(I,JMIN1,K) 
          IF (J == JMIN1) IJMK = BOUND_FUNIJK(I,JMAX1,K) 
       ENDIF 
-      IF (CYCLIC_Z) THEN 
+      IF (CYCLIC_Z.AND.NODESK==1) THEN 
          IF (K == KMAX1) IJKP = BOUND_FUNIJK(I,J,KMIN1) 
          IF (K == KMIN1) IJKM = BOUND_FUNIJK(I,J,KMAX1) 
       ENDIF 
@@ -141,3 +142,4 @@
 !
       RETURN  
       END SUBROUTINE SET_INDEX1A 
+
