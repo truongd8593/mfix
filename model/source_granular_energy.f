@@ -129,9 +129,9 @@
 !---------------------------------------------------------------------
 !
       SOURCELHS = (SWITCH*3.*F_GS(IJK,M)+(48./DSQRT(PI))*ETA*(1.-ETA)*ROP_S(IJK&
-         ,M)*EP_S(IJK,M)*G_0(IJK,M,M)*DSQRT(THETA_M(IJK,M))/D_P(M)+(ROP_S(IJK,M&
-         )*(1D0+4.*ETA*EP_S(IJK,M)*G_0(IJK,M,M)))*ZMAX(TRD_S_C(IJK,M))+ZMAX((-&
-         LAMBDA_S_C(IJK,M)))*TRD_S_C(IJK,M)**2/DSQRT(THETA_M(IJK,M)+&
+         ,M)*EP_S(IJK,M)*G_0(IJK,M,M)*DSQRT(THETA_M(IJK,M))/D_P(M)+ &
+	 P_S_C(IJK,M)*ZMAX((TRD_S_C(IJK,M)))/(THETA_M(IJK,M)+SMALL_NUMBER) &
+	 +ZMAX((-LAMBDA_S_C(IJK,M)))*TRD_S_C(IJK,M)**2/(THETA_M(IJK,M)+&
          SMALL_NUMBER))*VOL(IJK) 
 !
       RETURN  
