@@ -90,7 +90,7 @@
                         IF (COMPARE(BC_X_W(BCV),XMIN)) THEN 
                            I_W = 1 
                            I_E = 1 
-                        ELSE IF (COMPARE(BC_X_W(BCV),XLENGTH)) THEN 
+                        ELSE IF (COMPARE(BC_X_W(BCV),XMIN+XLENGTH)) THEN 
                            I_W = IMAX2 
                            I_E = IMAX2 
                         ENDIF 
