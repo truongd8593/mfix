@@ -163,17 +163,22 @@
                     IF (WALL_AT(IJK)) THEN
                       IF(BC_Tw_g(L) /= UNDEFINED)&
 			         T_g(IJK) = BC_Tw_g(L) 
-                      WHERE(BC_Tw_s(L,:MMAX) /= UNDEFINED)&
+		      IF(MMAX > 0) & 
+                        WHERE(BC_Tw_s(L,:MMAX) /= UNDEFINED)&
 			         T_s(IJK,:MMAX) = BC_Tw_s(L,:MMAX) 
-                      WHERE(BC_Thetaw_m(L,:MMAX) /= UNDEFINED)&
+		      IF(MMAX > 0) & 
+                        WHERE(BC_Thetaw_m(L,:MMAX) /= UNDEFINED)&
 			         Theta_m(IJK,:MMAX) = BC_Thetaw_m(L,:MMAX) 
-                      WHERE (BC_Xw_G(L,:NMAX(0)) /= UNDEFINED) X_G(IJK,:&
+		      IF(NMAX(0) > 0) & 
+                        WHERE (BC_Xw_G(L,:NMAX(0)) /= UNDEFINED) X_G(IJK,:&
                                  NMAX(0)) = BC_Xw_G(L,:NMAX(0))
 		      DO M = 1, MMAX 
-                        WHERE (BC_Xw_s(L, M, :NMAX(M)) /= UNDEFINED) X_s(IJK,M,:&
+		        IF(NMAX(M) > 0) & 
+                          WHERE (BC_Xw_s(L, M, :NMAX(M)) /= UNDEFINED) X_s(IJK,M,:&
                                  NMAX(M)) = BC_Xw_s(L, M, :NMAX(M))
-		      ENDDO 
-                      WHERE (BC_ScalarW(L,:NScalar) /= UNDEFINED)&
+		      ENDDO
+		      IF(NScalar > 0) & 
+                        WHERE (BC_ScalarW(L,:NScalar) /= UNDEFINED)&
 			         Scalar(IJK,:NScalar) = BC_ScalarW(L,:NScalar) 
 		    END IF
 		    
