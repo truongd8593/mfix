@@ -14,7 +14,6 @@
     Linux)
             echo
             echo "Compiling for Linux computer (Portland group)"
-	    echo "Please wait . . ."
             echo	    
 	    
             if test -f COMPILED.FOR.LINUX.PG
@@ -46,7 +45,6 @@
       IRIX64) 
             echo
             echo "Compiling for SGI IRIX64 computer"
-	    echo "\nPlease wait . . ."
             echo
 	    
             if test -f COMPILED.FOR.IRIX64F90
@@ -77,7 +75,6 @@
       ULTRIX) 
             echo
             echo "Compiling for DEC ULTRIX computer"
-	    echo "\nPlease wait . . ."
             echo
 	    
             if test -f COMPILED.FOR.ULTRIX
@@ -109,7 +106,6 @@
     CYGWIN32_NT)
             echo
             echo "Compiling for NT computer (Portland group)"
-	    echo "Please wait . . ."
             echo	    
 	    
             if test -f COMPILED.FOR.CYWIN32_NT.PG
@@ -139,7 +135,6 @@
     CYGWIN_NT-4.0)
             echo
             echo "Compiling for NT computer (Portland group)"
-	    echo "Please wait . . ."
             echo	    
 	    
             if test -f COMPILED.FOR.CYWIN_NT-4.0.PG
@@ -177,6 +172,29 @@
    esac
 
 echo " "
+
+#
+#------------------------------------------------------------------------
+# delete *.o *.mod and *.a files from model directory
+echo "IMPORTANT: execute this makefile by typing \"sh make_post\" "
+echo
+echo
+echo -n "Object files (*.o, *.mod, *.a) in mfix/model will be deleted. Continue? (y/n) [no] "
+read delete_files
+  case $delete_files in
+  y|Y )
+    echo "deleting files . . ."
+    rm ../model/*.o ../model/*.mod ../model/*.a
+    rm *.o *.mod
+    ;;
+  *)
+    exit
+    ;;
+  esac
+
+  echo
+  echo "Please wait . . ."
+
 
 #
 #------------------------------------------------------------------------
