@@ -1409,6 +1409,7 @@ check_data_06.$(OBJ_EXT) : check_data_06.f \
             funits.mod \
             compar.mod \
             mpi_utility.mod \
+            sendrecv.mod \
             function.inc                                                
 check_data_07.$(OBJ_EXT) : check_data_07.f \
             param.mod \
@@ -1421,6 +1422,7 @@ check_data_07.$(OBJ_EXT) : check_data_07.f \
             indices.mod \
             funits.mod \
             compar.mod \
+            sendrecv.mod \
             function.inc                                                
 check_data_08.$(OBJ_EXT) : check_data_08.f \
             param.mod \
@@ -1946,6 +1948,7 @@ get_flow_bc.$(OBJ_EXT) : get_flow_bc.f \
             indices.mod \
             funits.mod \
             compar.mod \
+            sendrecv.mod \
             function.inc                                                
 get_hloss.$(OBJ_EXT) : get_hloss.f \
             param.mod \
@@ -2188,6 +2191,7 @@ mod_bc_i.$(OBJ_EXT) : mod_bc_i.f \
             indices.mod \
             funits.mod \
             compar.mod \
+            mpi_utility.mod \
             function.inc                                                
 mod_bc_j.$(OBJ_EXT) : mod_bc_j.f \
             param.mod \
@@ -2198,6 +2202,7 @@ mod_bc_j.$(OBJ_EXT) : mod_bc_j.f \
             indices.mod \
             funits.mod \
             compar.mod \
+            mpi_utility.mod \
             function.inc                                                
 mod_bc_k.$(OBJ_EXT) : mod_bc_k.f \
             param.mod \
@@ -2208,6 +2213,7 @@ mod_bc_k.$(OBJ_EXT) : mod_bc_k.f \
             indices.mod \
             funits.mod \
             compar.mod \
+            mpi_utility.mod \
             function.inc                                                
 open_file.$(OBJ_EXT) : open_file.f \
             compar.mod 
@@ -2413,6 +2419,7 @@ set_bc0.$(OBJ_EXT) : set_bc0.f \
             param1.mod \
             geometry.mod \
             compar.mod \
+            mpi_utility.mod \
             physprop.mod \
             bc.mod \
             fldvar.mod \
