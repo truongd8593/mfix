@@ -39,16 +39,26 @@
       IMPLICIT NONE
       
       INTEGER M
+
 !// 300 0912 Relocated set_max2 call to get_data before calling gridmap_init
 !//TD 0912      CALL SET_MAX2
 
-!// 200 1008 adjust the max values based on new limits, i.e. IMAX--> IMAX3 etc
+!// 200 1008 adjust the max values based on new limits, i.e. IMAX--> IMAX3 etc.
       DIMENSION_I   = IMAX3
       DIMENSION_J   = JMAX3
       DIMENSION_K   = KMAX3
-      DIMENSION_3   = ijkend3 - ijkstart3 + 1
-
-!      write(*,"('(PE ',I2,'): DIM_3 = ',I6)") myPE,DIMENSION_3 !//AIKEPARDBG
+!// 375 1025 there shouldn't be any full size arrays
+!      DIMENSION_3   = IJKMAX3
+      DIMENSION_3   = (kend3-kstart3+1)*(jend3-jstart3+1)*(iend3-istart3+1)
+!// 375 1025 Define a parameter for the total number of all cells in global domain      
+      DIMENSION_3G   = IJKMAX3            
+!// 375 1025 Define a parameter for the total number of all cells in a subdomain
+!// 375 note that ijksize3)all() also defines the tot. # of cells in a subdomain
+!//     use both to avoid modifying all DIMENSION_3 definitions.
+      DIMENSION_3L  = ijksize3_all(myPE)
+      write(*,"('(PE ',I2,'): GLOBAL DIM_3 = ',I6,/,9X,'LOCAL DIM_3  = ',I6)") myPE,DIMENSION_3G,DIMENSION_3 !//AIKEPARDBG
+      write(*,"('(PE ',I2,'): ijksize3_all() = ',I6,/,9X,'DIMENSION_3L  = ',I6)") &
+		 myPE,ijksize3_all(myPE),DIMENSION_3L !//AIKEPARDBG
       
       DIMENSION_M   = MAX(1, MMAX)
       
@@ -142,7 +152,9 @@
       Allocate(           FLAG_E (DIMENSION_3) )
       Allocate(           FLAG_N (DIMENSION_3) )
       Allocate(           FLAG_T (DIMENSION_3) )
-      Allocate(           ICBC_FLAG (DIMENSION_3) )
+!//? 1008 PG generates compilation error for this allocation      
+!//?WEIRD 1004 somehow allocatable causes PG internal error, see geometric_mod
+      Allocate(           ICBC_FLAG (DIMENSION_3L) )
       Allocate(  oDX (DIMENSION_I) )
       Allocate(  oDY (DIMENSION_J) )
       Allocate(  oDZ (DIMENSION_K) )
@@ -256,7 +268,10 @@
       Allocate(  Array3(DIMENSION_3) )
       Allocate(  Array4(DIMENSION_3) )
       Allocate(  Array1i(DIMENSION_3) )
-      Allocate(  Array1c(DIMENSION_3) )
+ 
+!//?WEIRD 1004 somehow allocatable causes PG internal error, see tmp_array_mod
+!      Allocate(  Array1c(DIMENSION_3) )
+
 
 !tmp_array1
       Allocate(  Arraym1(DIMENSION_3, DIMENSION_M) )
@@ -294,6 +309,7 @@
       CALL Allocate_dslugm
       CALL Allocate_igcg  
      
+      
       RETURN
       END SUBROUTINE ALLOCATE_ARRAYS 
       

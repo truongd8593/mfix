@@ -22,6 +22,8 @@
 !                      Maximum number of computational cells
       INTEGER          DIMENSION_3
 !      PARAMETER (DIMENSION_3 =918)
+!//375 1025 added two new global and local subdomain size variables
+      INTEGER          DIMENSION_3L, DIMENSION_3G
 !
 !                      Maximum number of solids phases
       INTEGER          DIMENSION_M

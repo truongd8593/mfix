@@ -76,17 +76,32 @@
 !
 
 !//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): beginning of check_data_06')") myPE       !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): from chk_data_06.f ',&                    !//AIKEPARDBG
-!                 /,9X,'Kmin3 = ',I6,'  Kmax3 = ',I6,'  Kmax = ',I6, &   !//AIKEPARDBG
-!                 /,9X,'Jmin3 = ',I6,'  Jmax3 = ',I6,'  Jmax = ',I6,&    !//AIKEPARDBG
-!		 /,9X,'Imin3 = ',I6,'  Imax3 = ',I6,'  Imax = ',I6)") &  !//AIKEPARDBG
-!                 myPE,Kmin3,Kmax3,Kmax,Jmin3,Jmax3,Jmax,Imin3,Imax3,Imax !//AIKEPARDBG
+      write(UNIT_LOG,"('(PE ',I2,'): beginning of check_data_06')") myPE       !//AIKEPARDBG
+!     write(UNIT_LOG,"('(PE ',I2,'): from chk_data_06.f ',&                    !//AIKEPARDBG
+!                /,9X,'Kmin3 = ',I6,'  Kmax3 = ',I6,'  Kmax = ',I6, &   !//AIKEPARDBG
+!                /,9X,'Jmin3 = ',I6,'  Jmax3 = ',I6,'  Jmax = ',I6,&    !//AIKEPARDBG
+!                /,9X,'Imin3 = ',I6,'  Imax3 = ',I6,'  Imax = ',I6)") &  !//AIKEPARDBG
+!                myPE,Kmin3,Kmax3,Kmax,Jmin3,Jmax3,Jmax,Imin3,Imax3,Imax !//AIKEPARDBG
+!     write(UNIT_LOG,"('(PE ',I2,'): from chk_data_06.f ' &                    !//AIKEPARDBG
+!                /,9X,'Kstart3 = ',I6,'  Kstart2 = ',I6,'  Kend3 = ',I6 &   !//AIKEPARDBG
+!                /,9X,'Jstart3 = ',I6,'  Jstart2 = ',I6,'  Jend3 = ',I6 &    !//AIKEPARDBG
+!	 /,9X,'Istart3 = ',I6,'  Istart2 = ',I6,'  Iend3 = ',I6 &
+!         )") &  !//AIKEPARDBG
+!                myPE,Kstart3,Kstart2,Kend3,Jstart3,Jstart2,Jend3, & !//AIKEPARDBG
+!             Istart3,Istart2,Iend3 !//AIKEPARDBG
+!     write(UNIT_LOG,"('(PE ',I2,'): ',/, &
+!                /,9X,'IJKstart3 = ',I6,'  IJKend3 = ',I6 &   !//AIKEPARDBG      
+!                 ,/,9X,'IJKstart2 = ',I6,'  IJKend2 = ',I6, &   !//AIKEPARDBG      		 
+!                )") myPE, ijkstart3,ijkend3
+		 
+      
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
-!// 200 1008 Changed the limits for the DO loop
-      DO K = KMIN3, KMAX3 
-         DO J = JMIN3, JMAX3 
-           DO I = IMIN3, IMAX3 
+!// 200 1008 Changed the limits for the DO loop KMIN3-->kstart3, KMAX3-->Kend3
+!     DO K = KMIN3, KMAX3 
+       DO K = Kstart3, Kend3       
+         DO J = Jstart3, Jend3 
+           DO I = Istart3, Iend3 
 !// 220 1004 Replaced with global FUNIJK		     
                IJK = FUNIJK_GL(I,J,K)
 
@@ -171,18 +186,18 @@
 !      if (myPE == 0) &
 !      CALL OUT_ARRAY_C (ICBC_FLAG, 'BC/IC condition flags')  
 !//AIKEPARDBG dump the ICBC_FLAG in matrix form to verify with serial version
-!      DO K = KMIN3, KMAX3                               !//AIKEPARDBG
-!         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
-!	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
-!         DO J = JMIN3, JMAX3                            !//AIKEPARDBG
-!           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	 
-!           DO I = IMIN3, IMAX3                          !//AIKEPARDBG
-!             IJK = FUNIJK_GL(I,J,K)                     !//AIKEPARDBG
-!             write(UNIT_LOG,"(2X,A3,$)") ICBC_FLAG(IJK) !//AIKEPARDBG
-!           END DO                                       !//AIKEPARDBG
-!           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
-!         END DO                                         !//AIKEPARDBG
-!      END DO                                            !//AIKEPARDBG
+!       DO K = kstart3, kend3                               !//AIKEPARDBG
+!          write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
+! 	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
+!          DO J = jstart3, Jend3                            !//AIKEPARDBG
+!            write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	 
+!            DO I = istart3, Iend3                          !//AIKEPARDBG
+!              IJK = FUNIJK_GL(I,J,K)                     !//AIKEPARDBG
+!              write(UNIT_LOG,"(2X,A3,$)") ICBC_FLAG(IJK) !//AIKEPARDBG
+!            END DO                                       !//AIKEPARDBG
+!            write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
+!          END DO                                         !//AIKEPARDBG
+!       END DO                                            !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
       
       DO ICV = 1, DIMENSION_IC 
@@ -294,6 +309,9 @@
          ENDIF 
 !
 !//D 1008 Calc_cell runs over KMAX so no modification due DDECOMP
+!//? we may need to flag out the situations where IC_Z_T(ICV) or IC_K_T() may
+!//? not be on this processors, flaggging out such circumstances may be worth.
+!//? see the following loop where this check is done for the global domain!!!
          IF (IC_Z_B(ICV)/=UNDEFINED .AND. IC_Z_T(ICV)/=UNDEFINED) THEN 
             IF (NO_K) THEN 
                K_B = 1 
@@ -340,6 +358,9 @@
             IF (IC_J_S(ICV)<JMIN1 .OR. IC_J_S(ICV)>JMAX1) GO TO 900 
             IF (IC_J_N(ICV)<JMIN1 .OR. IC_J_N(ICV)>JMAX1) GO TO 900 
 !//D 1008 no changes for DDECOMP as this performs reality check w/ bndaries	    
+!//? sanity check should be also based on kstart1 and kend1 so that the
+!//? IC_Z_T() etc. not residing on current PE may be flagged easily here,i.e.
+!//?        IF (IC_K_B(ICV)<kstart1 .OR. IC_K_B(ICV)>Kend1) GO TO 900 
             IF (IC_K_B(ICV)<KMIN1 .OR. IC_K_B(ICV)>KMAX1) GO TO 900 
             IF (IC_K_T(ICV)<KMIN1 .OR. IC_K_T(ICV)>KMAX1) GO TO 900 
 
@@ -419,8 +440,8 @@
                ENDIF 
 !
 !//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): INTERCHK5 in chk_data_06')") myPE !//AIKEPARDBG
-!      call mfix_exit(myPE) !//AIKEPARDBG
+      write(*,"('(PE ',I2,'): INTERCHK5 in chk_data_06')") myPE !//AIKEPARDBG
+      call mfix_exit(myPE) !//AIKEPARDBG
 
                SUM = ZERO 
                DO N = 1, NMAX(0) 
@@ -435,7 +456,7 @@
                IF (.NOT.COMPARE(ONE,SUM)) THEN 
                   WRITE (UNIT_LOG, 1055) ICV 
                   IF (SPECIES_EQ(0) .OR. RO_G0==UNDEFINED .AND. MW_AVG==&
-                     UNDEFINED) STOP  
+                     UNDEFINED) call mfix_exit(myPE)  
                ENDIF 
 !
 !//AIKEPARDBGSTOP 0922
@@ -554,16 +575,24 @@
 !		 IC_I_W(ICV), IC_I_E(ICV)                        !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
+!//? WE NEED to make sure that if do loop limits yield to a IJK not residing
+!//? on the current PE's subdomain, then this loop will attempt to assign 
+!//? ijk values out of the current subdomain on each PE.
             DO I = IC_K_B(ICV), IC_K_T(ICV) 
                DO J = IC_J_S(ICV), IC_J_N(ICV) 
                   DO K = IC_I_W(ICV), IC_I_E(ICV) 
 !// 220 1004 Replaced with global FUNIJK		     
-                     IJK = FUNIJK_GL(K,J,I) 
-!               write(*,"('(PE ',I2,'): IJK = ',I6)") myPE,IJK	 !//AIKEPARDBG	     
+!                     IJK = FUNIJK_GL(K,J,I) 
+                     IJK = FUNIJK(K,J,I) 
+        write(UNIT_LOG,"('(PE ',I2,'): i = ',I5,'  j = ',I5,'  k = ',I5,' ')") myPE,i,j,k
+		     		     
+		     if(IJK /= -99999) then
+               write(*,"('(PE ',I2,'): IJK = ',I6)") myPE,IJK	 !//AIKEPARDBG	     
 !               call mfix_exit(myPE) !//AIKEPARDBG	       
                      ICBC_FLAG(IJK)(1:1) = '.' 
                      IC2 = MOD(ICV,100) 
                      WRITE (ICBC_FLAG(IJK)(2:3), 1150) IC2 
+		     endif
                   END DO 
                END DO 
             END DO 
@@ -645,19 +674,24 @@
 !//AIKEPARDBGSTOP 0922
 !      write(*,"('(PE ',I2,'): end of chk_data_06')") myPE !//AIKEPARDBG
 !//AIKEPARDBG dump the ICBC_FLAG in matrix form to verify with serial version
-!      DO K = KMIN3, KMAX3                               !//AIKEPARDBG
-!         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
-!	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
-!         DO J = JMIN3, JMAX3                            !//AIKEPARDBG
-!           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	 
-!           DO I = IMIN3, IMAX3                          !//AIKEPARDBG
-!             IJK = FUNIJK_GL(I,J,K)                     !//AIKEPARDBG
-!             write(UNIT_LOG,"(2X,A3,$)") ICBC_FLAG(IJK) !//AIKEPARDBG
-!           END DO                                       !//AIKEPARDBG
-!           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
-!         END DO                                         !//AIKEPARDBG
-!      END DO                                            !//AIKEPARDBG
-!      call mfix_exit(myPE) !//AIKEPARDBG
+      DO K = Kstart3, Kend3                               !//AIKEPARDBG
+         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
+	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
+         DO J = Jstart3, Jend3                            !//AIKEPARDBG
+           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	
+           DO I = Istart3, Iend3                          !//AIKEPARDBG
+             IJK = FUNIJK_GL(I,J,K)                     !//AIKEPARDBG
+             write(UNIT_LOG,"(2X,A3,$)") ICBC_FLAG(IJK) !//AIKEPARDBG
+           END DO                                       !//AIKEPARDBG
+           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
+         END DO                                         !//AIKEPARDBG
+      END DO                                            !//AIKEPARDBG
+      do icv=1,dimension_ic
+         write(UNIT_LOG,"('(PE ',I2,'): IC_K_B(',I4,') = ',I5,'  IC_K_T= ',I5)") myPE,ICV,IC_K_B(ICV),IC_K_T(ICV)
+         write(UNIT_LOG,"('(PE ',I2,'): IC_J_S       = ',I5,'  IC_J_N= ',I5)") myPE,IC_J_S(ICV),IC_J_N(ICV)
+         write(UNIT_LOG,"('(PE ',I2,'): IC_I_W       = ',I5,'  IC_I_E= ',I5)") myPE,IC_I_W(ICV),IC_I_E(ICV)      
+      end do      
+      call mfix_exit(myPE) !//AIKEPARDBG
 
 
       RETURN  

@@ -141,7 +141,9 @@
       INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG_T 
 !
 !                      Cell flags (bc/ic conditions)
-      CHARACTER*3, DIMENSION(:), ALLOCATABLE :: ICBC_FLAG
+!//?WEIRD 1004 somehow allocatable causes PG internal error
+       CHARACTER*3, DIMENSION(:), ALLOCATABLE :: ICBC_FLAG
+!     CHARACTER*3, DIMENSION(2744) :: ICBC_FLAG      
 !
 !                      1 / dx_i
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDX 

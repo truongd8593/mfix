@@ -171,16 +171,29 @@
 !
 ! CHECK THE TOTAL DIMENSION
 !
-!//? ijkmax2 should be replaced with ijkmax3??? for total dimension check
-!      IF (IJKMAX2 > DIMENSION_3) THEN 
-!         CALL ERROR_ROUTINE ('check_data_03', 'dimension error', 0, 2) 
-!         WRITE (UNIT_LOG, *) '(IMAX+2)*(JMAX+2)*(KMAX+2) = ', IJKMAX2 
-!         WRITE (UNIT_LOG, *) 'DIMENSION_3 in param.inc = ', DIMENSION_3 
-!         WRITE (UNIT_LOG, *) 'modify param.inc and recompile .... or' 
-!         WRITE (UNIT_LOG, *) 'change dimensions in mfix.dat', &
-!            ' ... whichever is appropriate' 
-!         CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
-!      ENDIF 
+
+!// 375 1025 replace DIMENSION_3 with DIMENSION_3G, IJKMAX2 with IJKMAX3
+      IF (IJKMAX3 > DIMENSION_3G) THEN 
+         CALL ERROR_ROUTINE ('check_data_03', 'global dimension error', 0, 2) 
+         WRITE (UNIT_LOG, *) '(IMAX+2+1)*(JMAX+2+1)*(KMAX+2+1) = ', IJKMAX3 
+         WRITE (UNIT_LOG, *) 'DIMENSION_3 in allocate_arrays = ', DIMENSION_3G 
+         WRITE (UNIT_LOG, *) 'modify allocate_arrays and recompile .... or' 
+         WRITE (UNIT_LOG, *) 'change dimensions in mfix.dat', &
+            ' ... whichever is appropriate' 
+         CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
+      ENDIF 
+!// 375 1025 Added new check for IJKsize3_all() > DIMENSION_3=DIMENSION_3L
+      IF (IJKsize3_all(myPE) > DIMENSION_3) THEN 
+         CALL ERROR_ROUTINE ('check_data_03', 'subdomain dimension error', 0, 2) 
+         WRITE (UNIT_LOG, *) &
+	 '(Iend3-Istart3+1)*(Jend3-Jstart3+1)*(Kend3-Kstart3+1) = ', IJKsize3 
+         WRITE (UNIT_LOG, *) 'DIMENSION_3 in allocate_arrays = ', DIMENSION_3 
+         WRITE (UNIT_LOG, *) 'modify allocated_arrays and recompile .... or' 
+         WRITE (UNIT_LOG, *) 'change dimensions in mfix.dat', &
+            ' ... whichever is appropriate' 
+         CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
+      ENDIF 
+      
 !
       RETURN  
   990 FORMAT(/1X,70('*')//' From: CHECK_DATA_03',/' Message: ',&

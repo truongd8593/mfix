@@ -98,17 +98,22 @@
          j.lt.jstart3_all(myPE).or.j.gt.jend3_all(myPE).or. &
          k.lt.kstart3_all(myPE).or.k.gt.kend3_all(myPE)) then
 
-        write(*,*) 'i or j or k do not belong to the processor'
-
-        call mfix_exit(myPE)
-        endif
-
+!       write(*,"('(PE ',I2,'): i = ',I5,'  j = ',I5,'  k = ',I5&
+!              ,' DOES NOT reside on this PE')") myPE,i,j,k
+!// 375 1028 added a mechanism which assigns FUNIJK=-99999 if the current cell
+!            is not residing on the associated processor's subdomain.
+!            the return of this function calls needs to be checked.
+!        call mfix_exit(myPE)
+         FUNIJK = -99999
+	 
+         else
 
         FUNIJK = 1 + (I - istart3_all(myPE)) &
       + (J-jstart3_all(myPE))*(iend3_all(myPE)-istart3_all(myPE)+1) &
       + (K-kstart3_all(myPE))*(jend3_all(myPE)-jstart3_all(myPE)+1)* &
         (iend3_all(myPE)-istart3_all(myPE)+1)
-
+        endif
+	
         end function funijk
 
 
