@@ -128,7 +128,7 @@
          CALL CONV_DIF_PHI (THETA_M(1,M), KTH_S(1,M), DISCRETIZE(8), U_S(1,M), &
             V_S(1,M), W_S(1,M), ROPXCP, M, A_M, B_M, IER) 
 !
-         CALL BC_PHI (BC_THETA_M(1,M), BC_THETAW_M(1,M), BC_HW_THETA_M(1,M), &
+         CALL BC_PHI (THETA_M(1,M), BC_THETA_M(1,M), BC_THETAW_M(1,M), BC_HW_THETA_M(1,M), &
             BC_C_THETA_M(1,M), M, A_M, B_M, IER) 
 !
          CALL BC_THETA (M, A_M, B_M, IER)        !override bc settings if 

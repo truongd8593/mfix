@@ -126,7 +126,7 @@
                W_G, ROP_G, 0, A_M, B_M, IER)
 
 !
-            CALL BC_PHI (BC_X_G(1,LN), BC_XW_G(1,LN), BC_HW_X_G(1,LN), BC_C_X_G(1,&
+            CALL BC_PHI (X_G(1,LN), BC_X_G(1,LN), BC_XW_G(1,LN), BC_HW_X_G(1,LN), BC_C_X_G(1,&
                LN), 0, A_M, B_M, IER) 
 !
             CALL SOURCE_PHI (S_P, S_C, EP_G, X_G(1,LN), 0, A_M, B_M, IER)
@@ -184,7 +184,7 @@
                CALL CONV_DIF_PHI (X_S(1,M,LN), DIF_S(1,M,LN), DISCRETIZE(7), U_S(&
                   1,M), V_S(1,M), W_S(1,M), ROP_S(1,M), M, A_M, B_M, IER)
 !
-               CALL BC_PHI (BC_X_S(1,M,LN), BC_XW_S(1,M,LN), BC_HW_X_S(1,M,LN), &
+               CALL BC_PHI (X_S(1,M,LN), BC_X_S(1,M,LN), BC_XW_S(1,M,LN), BC_HW_X_S(1,M,LN), &
                   BC_C_X_S(1,M,LN), M, A_M, B_M, IER) 
 !
 !

@@ -1,11 +1,15 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: BC_phi(BC_phif, BC_Phiw, BC_hw_Phi, BC_C_Phi, M,       C
+!  Module name: BC_phi(VAR, BC_phif, BC_Phiw, BC_hw_Phi, BC_C_Phi, M,  C
 !                              A_m, B_m, IER)                          C
 !  Purpose: Set up the phi boundary conditions                         C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 30-APR-97  C
 !  Reviewer:                                          Date:            C
+!                                                                      C
+!  Author: M. Syamlal                                 Date: 14-APR-04  C
+!  Reviewer:                                          Date:            C
+!  Purpose: include the variable (VAR) in the interface                C
 !                                                                      C
 !                                                                      C
 !  Literature/Document References:                                     C
@@ -17,7 +21,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE BC_PHI(BC_PHIF,BC_PHIW,BC_HW_PHI,BC_C_PHI,M,A_M,B_M,IER) 
+      SUBROUTINE BC_PHI(VAR, BC_PHIF,BC_PHIW,BC_HW_PHI,BC_C_PHI,M,A_M,B_M,IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -62,6 +66,9 @@
 !
 !                      Solids phase
       INTEGER          M
+!
+!                      The field variable being solved for
+      DOUBLE PRECISION VAR(DIMENSION_3)
 !
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
@@ -243,7 +250,7 @@
                         A_M(IJK,T,M) = ZERO 
                         A_M(IJK,B,M) = ZERO 
                         A_M(IJK,0,M) = -ONE 
-                        B_M(IJK,M) = ZERO 
+                        B_M(IJK,M) = VAR(IJK) 
                         IF (FLUID_AT(EAST_OF(IJK))) THEN 
                            IF (BC_HW_PHI(L) == UNDEFINED) THEN 
                               A_M(IJK,E,M) = -HALF 
@@ -388,8 +395,9 @@
                         A_M(IJK,S,M) = ZERO 
                         A_M(IJK,T,M) = ZERO 
                         A_M(IJK,B,M) = ZERO 
-                        A_M(IJK,0,M) = -ONE 
-                        B_M(IJK,M) = -BC_PHIF(L) 
+                        A_M(IJK,0,M) = -ONE
+!                        B_M(IJK,M) = -BC_PHIF(L)  !does not allow the profile to be changed, e.g., from usr1
+                        B_M(IJK,M) = -VAR(IJK)
                      END DO 
                   END DO 
                END DO 

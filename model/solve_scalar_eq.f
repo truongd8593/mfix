@@ -135,7 +135,7 @@
 	                       U_G, V_G, W_G, ROP_G, M, A_M, B_M, IER) 
 !
 !
-            CALL BC_PHI (BC_Scalar(1,N), BC_ScalarW(1,N), BC_HW_Scalar(1,N), &
+            CALL BC_PHI (Scalar(1,N), BC_Scalar(1,N), BC_ScalarW(1,N), BC_HW_Scalar(1,N), &
 	                 BC_C_Scalar(1,N), M, A_M, B_M, IER) 
 !
 !
@@ -194,7 +194,7 @@
 			       A_M, B_M, IER) 
 !
 !
-            CALL BC_PHI (BC_Scalar(1,N), BC_ScalarW(1,N), BC_HW_Scalar(1,N), &
+            CALL BC_PHI (Scalar(1,N), BC_Scalar(1,N), BC_ScalarW(1,N), BC_HW_Scalar(1,N), &
 	                 BC_C_Scalar(1,N), M, A_M, B_M, IER) 
 !
 !
