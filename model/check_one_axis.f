@@ -41,7 +41,11 @@
       LOGICAL NO_IJK, SHIFT 
       CHARACTER AXIS, AXIS_INDEX 
 !//EFD use explicit dimension for DA
-      DOUBLE PRECISION, DIMENSION(0:DIMEN+1) :: DA 
+!     DA should be dimensioned DA(DIMEN) rather than DA(0:DIMEN+1) to be able to use
+!     the logic from previous versions that assumed DA(1) as the first element.  An error
+!     check has been added to ensure that DX, DY and DZ definitions in mfix.dat starts
+!     with the zeroth element; i.e. DA(1).
+      DOUBLE PRECISION, DIMENSION(DIMEN) :: DA 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -68,6 +72,16 @@
 !    TEMP_STOR     - TEMPORARY STORAGE
 !    LC            - LOOP COUNTER
 !
+!
+! 0) Ensure that if DA is defined then it starts with DA(1); i.e. DX(0), DY(0) or DZ(0)
+!
+      if(.not.no_ijk)then
+        IF( DA(2) /= UNDEFINED .AND. DA(1) == UNDEFINED) THEN
+          CALL ERROR_ROUTINE ('check_one_axis', 'AXIS error', 0, 2) 
+          WRITE (UNIT_LOG, 1001) AXIS
+          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
+        ENDIF
+      endif
 !
 ! 1) MAKE SURE AT LEAST TWO OF NA, ALENGTH, DA ARE SPECIFIED
 !
@@ -198,6 +212,7 @@
  1000 FORMAT(1X,'not enough info supplied for ',A1,'-axis',/,1X,&
          'AT LEAST TWO of      ',A1,'LENTGH , D',A1,' , ',A1,&
          'MAX     must be specified') 
+ 1001 FORMAT(1X, 'The grid specification must start with D',A1,'(0)') 
  1100 FORMAT(1X,'BAD VALUE FOR ',A1,'MAX = ',I6,/,1X,'DIMENSION_',A1,&
          ' IN param.inc = ',I6,/,1X,A1,&
          'MAX+2 must be less than or equal to DIMENSION_',A1) 
