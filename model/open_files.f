@@ -123,7 +123,7 @@
 !
 !
         EXT = '.SPx' 
-        SELECT CASE (RUN_TYPE)  
+        SELECT CASE (TRIM(RUN_TYPE))  
         CASE ('NEW')  
           CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, 'NEW', &
             'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 

@@ -175,7 +175,7 @@
       CALL PC_QUICKWIN 
 !
       DT_TMP = DT 
-      SELECT CASE (RUN_TYPE)  
+      SELECT CASE (TRIM(RUN_TYPE))  
       CASE ('NEW')  
 !
 !  Write the initial part of the restart files
