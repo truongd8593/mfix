@@ -5,7 +5,7 @@ cd cond_conv
 echo "********************************************************************"
 echo "cond_conv"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -14,7 +14,7 @@ echo "********************************************************************"
 echo "conduction"
 conduction
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -23,7 +23,7 @@ echo "********************************************************************"
 echo "conduction2"
 conduction2
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -31,7 +31,7 @@ cd cyclic-shear
 echo "********************************************************************"
 echo "cyclic-shear"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -39,7 +39,7 @@ cd developed_pipe_flow
 echo "********************************************************************"
 echo "developed_pipe_flow"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -47,7 +47,7 @@ cd developed_pipe_flow1
 echo "********************************************************************"
 echo "developed_pipe_flow1"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -55,7 +55,7 @@ cd developed_slit_flow
 echo "********************************************************************"
 echo "developed_slit_flow"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -64,7 +64,7 @@ echo "********************************************************************"
 echo "dmp_test"
 dmp_test
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -72,7 +72,7 @@ cd dmp_test_cyclic
 echo "********************************************************************"
 echo "dmp_test_cyclic"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -80,7 +80,7 @@ cd driven-cavity
 echo "********************************************************************"
 echo "driven-cavity"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -88,7 +88,7 @@ cd fluidBed1SI
 echo "********************************************************************"
 echo "fluidBed1SI"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -96,7 +96,7 @@ cd granular_shear
 echo "********************************************************************"
 echo "granular_shear"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -104,7 +104,7 @@ cd ozone
 echo "********************************************************************"
 echo "ozone"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -112,7 +112,7 @@ cd ozone_square
 echo "********************************************************************"
 echo "ozone_square"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -120,7 +120,7 @@ cd packed-bed
 echo "********************************************************************"
 echo "packed-bed"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -128,7 +128,7 @@ cd phase-change
 echo "********************************************************************"
 echo "phase-change"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -136,7 +136,7 @@ cd rotary-drum
 echo "********************************************************************"
 echo "rotary-drum"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -144,7 +144,7 @@ cd segregation
 echo "********************************************************************"
 echo "segregation"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -152,7 +152,7 @@ cd settling-tank
 echo "********************************************************************"
 echo "settling-tank"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -160,7 +160,7 @@ cd simple-2phase
 echo "********************************************************************"
 echo "simple-2phase"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -168,7 +168,7 @@ cd solid-body-rotation
 echo "********************************************************************"
 echo "solid-body-rotation"
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo
@@ -177,7 +177,7 @@ echo "********************************************************************"
 echo "tsuji"
 tsuji
 sh ~/MFIX/mfix/model/make_mfix < ../in
-./mfix.exe
+./mfix.exe > out1
 cd ..
 # Another case
 echo "Testing is over.  Check the output for timing and any errors"
