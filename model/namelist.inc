@@ -96,6 +96,7 @@
              BC_hw_Scalar, BC_Scalarw, BC_C_Scalar,&
              BC_Scalar,&
 	     BC_K_Turb_G, BC_E_Turb_G, &
+	     Flux_g, &
 !
 ! 1.9 Internal surfaces section
 !

@@ -145,6 +145,8 @@
 !
       CALL INIT_RESID (IER) 
 
+!	Initialize the routine for holding gas mass flux constant with cyclic bc
+      IF(CYCLIC) CALL GoalSeekMassFlux(0, 0, .false.)
 !
 !
 !     CPU time left
@@ -350,6 +352,11 @@
 !
       call CALC_RESID_MB(1, errorpercent)
       CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT, IER) 
+      
+      IF(CYCLIC)THEN
+        IF(MUSTIT==0 .OR. NIT >= MAX_NIT) CALL GoalSeekMassFlux(NIT, MUSTIT, .true.)
+      ENDIF
+
 !
 !      If not converged continue iterations; else exit subroutine.
 !
@@ -482,6 +489,103 @@
       RETURN  
       END SUBROUTINE GET_TUNIT 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 020 New local variables for parallelization : abort_ier
+
+
+!  Purpose:  In the following module the mass flux across a periodic domain
+!            with pressure drop is held constant at a user-specified value.  
+!            This module is activated only if the user specifies a value for
+!            the keyword Flux_g in the datafile.
+      subroutine GoalSeekMassFlux(NIT, MUSTIT, doit)
+
+      USE bc
+      USE geometry
+      USE constant
+      USE compar   
+      IMPLICIT NONE
+
+      INTEGER, PARAMETER :: MAXOUTIT = 500
+      DOUBLE PRECISION, PARAMETER          :: omega = 0.9
+      DOUBLE PRECISION, PARAMETER          :: TOL = 1E-3
+      
+      INTEGER :: NIT, MUSTIT
+      INTEGER, SAVE :: OUTIT
+      
+      LOGICAl :: doit
+      LOGICAl, SAVE :: firstPass = .true.
+      
+      DOUBLE PRECISION, Save  :: mdot_n, mdot_nm1, delp_n, delp_nm1, err
+      DOUBLE PRECISION          :: mdot_0, delp_xyz 
+      
+      CHARACTER, Save  :: Direction
+      
+      DOUBLE PRECISION , EXTERNAL :: VAVG_Flux_U_G, VAVG_Flux_V_G, VAVG_Flux_W_G
+      
+      IF(CYCLIC_X_MF)THEN
+        delp_n = delp_x
+      ELSEIF(CYCLIC_Y_MF)THEN
+        delp_n = delp_y
+      ELSEIF(CYCLIC_Z_MF)THEN
+        delp_n = delp_z
+      ELSE
+        return
+      ENDIF
+     
+      if(.not.doit) then
+        OUTIT = 0
+	return
+      endif
+      
+      OUTIT = OUTIT + 1
+      if(OUTIT > MAXOUTIT) then
+        Write(*,5400) MAXOUTIT
+        call mfix_exit(0)
+      endif
+      
+      mdot_0 = Flux_g
+      
+      
+      ! calculate the average gas mass flux and error
+      IF(CYCLIC_X_MF)THEN
+        mdot_n = VAVG_Flux_U_G()
+      ELSEIF(CYCLIC_Y_MF)THEN
+        mdot_n = VAVG_Flux_V_G()
+      ELSEIF(CYCLIC_Z_MF)THEN
+        mdot_n = VAVG_Flux_W_G()
+      ENDIF
+ 
+      err = abs((mdot_n - mdot_0)/mdot_0)
+      if( err < TOL)then
+        MUSTIT = 0
+      else
+        MUSTIT = 1
+	NIT = 1
+      endif
+      
+      ! correct delp
+      if(.not.firstPass)then
+        delp_xyz = delp_n - omega * (delp_n - delp_nm1) * (mdot_n - mdot_0) &
+	                   / (mdot_n - mdot_nm1)
+      else
+        firstPass=.false.
+        delp_xyz = delp_n*0.99
+      endif
+      IF(myPE.eq.PE_IO) Write(*,5500) OUTIT, err, delp_xyz, mdot_n
+     
+      mdot_nm1 = mdot_n
+      delp_nm1 = delp_n
+      
+      IF(CYCLIC_X_MF)THEN
+        delp_x = delp_xyz
+      ELSEIF(CYCLIC_Y_MF)THEN
+        delp_y = delp_xyz
+      ELSEIF(CYCLIC_Z_MF)THEN
+        delp_z = delp_xyz
+      ENDIF
+      
+      return
+5400 FORMAT(/1X,70('*')//' From: GoalSeekMassFlux',/&
+      ' Message: Number of outer iterations exceeded ', I4,/1X,70('*')/) 
+5500  Format('  MassFluxIteration:', I4, ' Err=', G12.5, ' DelP=', G12.5, ' Flux=', G12.5)
+     
+    
+      end subroutine GoalSeekMassFlux

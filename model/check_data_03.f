@@ -37,6 +37,7 @@
       USE param 
       USE param1 
       USE geometry
+      USE bc
       USE funits 
       USE compar
       USE mpi_utility
@@ -157,9 +158,26 @@
 !
 !      CALL SET_MAX2    ... moved to allocate_arrays
       IF (SHIFT) CALL SHIFT_DXYZ                 !only for new and restart_1 runs 
+
+
+!
+!  Determine the cyclic direction with a specified mass flux
+!
+      CYCLIC_X_MF = .FALSE. 
+      CYCLIC_Y_MF = .FALSE. 
+      CYCLIC_Z_MF = .FALSE. 
+      IF (CYCLIC_X_PD ) THEN
+        IF(Flux_g .NE. UNDEFINED) CYCLIC_X_MF = .TRUE. 
+      ELSE IF (CYCLIC_Y_PD ) THEN
+        IF(Flux_g .NE. UNDEFINED) CYCLIC_Y_MF = .TRUE. 
+      ELSE IF (CYCLIC_Z_PD ) THEN
+        IF(Flux_g .NE. UNDEFINED) CYCLIC_Z_MF = .TRUE. 
+      ENDIF
+
 !
 !  Ensure that the cell sizes across cyclic boundaries are comparable
 !
+      	
       IF (CYCLIC_X .OR. CYCLIC_X_PD) THEN 
          IF (DX(IMIN1) /= DX(IMAX1)) THEN 
             IF(DMP_LOG)WRITE (UNIT_LOG, 1400) DX(IMIN1), DX(IMAX1) 

@@ -209,6 +209,15 @@
 !                      Variable to flag periodic bc with pressure drop in Z
       LOGICAL          CYCLIC_Z_PD
 !
+!                      Variable to flag periodic bc with mass flux in X
+      LOGICAL          CYCLIC_X_MF
+!
+!                      Variable to flag periodic bc with mass flux in Y
+      LOGICAL          CYCLIC_Y_MF
+!
+!                      Variable to flag periodic bc with mass flux in Z
+      LOGICAL          CYCLIC_Z_MF
+!
 !                      Variable to flag cylindrical coordinates
       LOGICAL          CYLINDRICAL
 !

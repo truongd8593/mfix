@@ -218,6 +218,11 @@
 !                      Pressure drop specified for cyclic b.c. in Z
       DOUBLE PRECISION DELP_Z
 !
+!                      Specified mass flux (e.g., g/cm^2.s) in the cyclic 
+!                      direction with specified pressure drop (only one 
+!                      direction is allowed).
+      DOUBLE PRECISION Flux_g
+!
 !                      Average gas velocity in X direction (for cyclic bc)
       DOUBLE PRECISION U_g0
 !

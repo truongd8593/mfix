@@ -333,6 +333,7 @@
       DELP_X = UNDEFINED 
       DELP_Y = UNDEFINED 
       DELP_Z = UNDEFINED 
+      Flux_g = UNDEFINED 
       U_G0 = UNDEFINED 
       V_G0 = UNDEFINED 
       W_G0 = UNDEFINED 

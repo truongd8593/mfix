@@ -83,7 +83,71 @@
       RETURN  
       END FUNCTION VAVG_V_G 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-!// 400 Added mpi_utility module and other global reduction (sum) calls
+
+
+      DOUBLE PRECISION FUNCTION VAVG_Flux_V_G () 
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Switches: -xf
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE parallel 
+      USE fldvar
+      USE bc
+      USE geometry
+      USE physprop
+      USE indices
+      USE compar       
+      USE mpi_utility   
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+! 
+!                      Indices 
+      INTEGER          IJK 
+! 
+!                      Integral of V_g*EP_g for entire volume 
+      DOUBLE PRECISION SUM_V_g 
+! 
+!                      Total volume of computational cells 
+      DOUBLE PRECISION SUM_AREA 
+! 
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+!
+!  Integrate the velocity values for the whole domain
+!
+      SUM_V_G = ZERO 
+      SUM_AREA = ZERO 
+
+!!$omp   parallel do private(IJK) reduction(+:SUM_AREA,SUM_V_G)
+      DO IJK = IJKSTART3, IJKEND3
+      IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK), J_OF(IJK), K_OF(IJK))) CYCLE
+         IF (FLUID_AT(IJK)) THEN 
+	   IF(V_g(IJK) > ZERO) THEN
+             SUM_V_G = SUM_V_G + V_G(IJK)*ROP_G(IJK)*AXZ(IJK) 
+	   ELSE
+             SUM_V_G = SUM_V_G + V_G(IJK)*ROP_G(NORTH_OF(IJK))*AXZ(IJK) 
+	   ENDIF
+           SUM_AREA = SUM_AREA + AXZ(IJK)
+         ENDIF 
+      END DO 
+
+      CALL GLOBAL_ALL_SUM(SUM_AREA)
+      CALL GLOBAL_ALL_SUM(SUM_V_G)
+
+      VAVG_Flux_V_G = SUM_V_G/SUM_AREA 
+!
+      RETURN  
+      END FUNCTION VAVG_Flux_V_G 
