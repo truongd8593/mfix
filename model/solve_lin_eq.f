@@ -76,6 +76,14 @@
       logical, parameter :: do_transpose = .true. 
       integer :: ii, ijk 
 
+!
+!
+      SELECT CASE (METHOD)  
+      CASE (1)  
+!       Successive over relaxation method from Templates
+        CALL LEQ_SOR (VNAME, VAR, A_M, B_M, M, ITMAX, IER) 
+!
+      CASE (2)  
 
       if(do_transpose) then	
         allocate( A_mt(-3:3, ijkstart3:ijkend3 ))
@@ -86,16 +94,6 @@
           enddo
         enddo
       endif
-!
-!//SP - Temporary set METHOD = 2
-      METHOD = 2
-!
-      SELECT CASE (METHOD)  
-      CASE (1)  
-!       Successive over relaxation method from Templates
-        CALL LEQ_SOR (VNAME, VAR, A_M, B_M, M, ITMAX, IER) 
-!
-      CASE (2)  
 !       bicgstab
       if(do_transpose) then
         call leq_bicgst( VNAME,VAR, A_Mt(:,:), B_M(:,M), SWEEP, TOL, ITMAX,IER)
