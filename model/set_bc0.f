@@ -150,24 +150,55 @@
       DO L = 1, DIMENSION_BC 
          IF (BC_DEFINED(L)) THEN 
             IF (BC_TYPE(L)=='FREE_SLIP_WALL' .OR. BC_TYPE(L)=='NO_SLIP_WALL'&
-                .OR. BC_TYPE(L)=='PAR_SLIP_WALL') CYCLE  
+                .OR. BC_TYPE(L)=='PAR_SLIP_WALL') THEN
 !
-!         Initialization for time dependent mass inflow
+!             Initialization of wall boundary conditions. These are not the
+!             real values in the wall cells, only iniitial guesses
+              DO K = BC_K_B(L), BC_K_T(L) 
+                DO J = BC_J_S(L), BC_J_N(L) 
+                  DO I = BC_I_W(L), BC_I_E(L) 	
+		    IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                    IJK = BOUND_FUNIJK(I,J,K) 
+		     
+                    IF (WALL_AT(IJK)) THEN
+                      IF(BC_Tw_g(L) /= UNDEFINED)&
+			         T_g(IJK) = BC_Tw_g(L) 
+                      WHERE(BC_Tw_s(L,:MMAX) /= UNDEFINED)&
+			         T_s(IJK,:MMAX) = BC_Tw_s(L,:MMAX) 
+                      WHERE(BC_Thetaw_m(L,:MMAX) /= UNDEFINED)&
+			         Theta_m(IJK,:MMAX) = BC_Thetaw_m(L,:MMAX) 
+                      WHERE (BC_Xw_G(L,:NMAX(0)) /= UNDEFINED) X_G(IJK,:&
+                                 NMAX(0)) = BC_Xw_G(L,:NMAX(0))
+		      DO M = 1, MMAX 
+                        WHERE (BC_Xw_s(L, M, :NMAX(M)) /= UNDEFINED) X_s(IJK,M,:&
+                                 NMAX(M)) = BC_Xw_s(L, M, :NMAX(M))
+		      ENDDO 
+                      WHERE (BC_ScalarW(L,:NScalar) /= UNDEFINED)&
+			         Scalar(IJK,:NScalar) = BC_ScalarW(L,:NScalar) 
+		    END IF
+		    
+		  END DO
+		END DO
+	      END DO
+              
+	    ELSE  
 !
-            BC_JET_G(L) = UNDEFINED 
-            IF (BC_DT_0(L) /= UNDEFINED) THEN 
-               BC_TIME(L) = TIME + BC_DT_0(L) 
-               BC_OUT_N(L) = 0 
-               BC_MOUT_G(L) = ZERO 
-               BC_VOUT_G(L) = ZERO 
-               M = 1 
-               IF (MMAX > 0) THEN 
+!             Initialization for time dependent mass inflow
+!
+              BC_JET_G(L) = UNDEFINED 
+              IF (BC_DT_0(L) /= UNDEFINED) THEN 
+                BC_TIME(L) = TIME + BC_DT_0(L) 
+                BC_OUT_N(L) = 0 
+                BC_MOUT_G(L) = ZERO 
+                BC_VOUT_G(L) = ZERO 
+                M = 1 
+                IF (MMAX > 0) THEN 
                   BC_MOUT_S(L,:MMAX) = ZERO 
                   BC_VOUT_S(L,:MMAX) = ZERO 
                   M = MMAX + 1 
-               ENDIF 
-               BC_JET_G(L) = BC_JET_G0(L) 
-               IF (BC_JET_G(L) /= UNDEFINED) THEN 
+                ENDIF 
+                BC_JET_G(L) = BC_JET_G0(L) 
+                IF (BC_JET_G(L) /= UNDEFINED) THEN 
                   SELECT CASE (BC_PLANE(L))  
                   CASE ('W')  
                      BC_U_G(L) = BC_JET_G(L) 
@@ -182,17 +213,17 @@
                   CASE ('T')  
                      BC_W_G(L) = BC_JET_G(L) 
                   END SELECT 
-               ENDIF 
-            ELSE 
-               BC_TIME(L) = UNDEFINED 
-            ENDIF 
+                ENDIF 
+              ELSE 
+                BC_TIME(L) = UNDEFINED 
+              ENDIF 
 !
-!         set the field variables with bc variables
+!             set the field variables with bc variables
 !
-            DO K = BC_K_B(L), BC_K_T(L) 
-               DO J = BC_J_S(L), BC_J_N(L) 
+              DO K = BC_K_B(L), BC_K_T(L) 
+                DO J = BC_J_S(L), BC_J_N(L) 
                   DO I = BC_I_W(L), BC_I_E(L) 	
-		  IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+		    IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                      IJK = BOUND_FUNIJK(I,J,K) 
 		     
                      IF (.NOT.WALL_AT(IJK)) THEN 
@@ -300,9 +331,10 @@
                         ENDIF 
                      ENDIF 
 		     
-                  END DO 
-               END DO 
-            END DO 
+                   END DO 
+                 END DO 
+              END DO 
+            ENDIF 
          ENDIF 
       END DO 
       RETURN  
