@@ -30,61 +30,61 @@ represents that its use would not infringe privately owned rights.
 
                               Table of Contents
 
-1  Setting Up and Running MFIX on a UNIX/LINUX Workstation *
+1  Setting Up and Running MFIX on a UNIX/LINUX Workstation *
 
-     1.1  Creating MFIX Directory *
+     1.1  Creating MFIX Directory *
 
-     1.2  Installing the MFIX Code *
+     1.2  Installing the MFIX Code *
 
-     1.3  Starting a New Run *
+     1.3  Starting a New Run *
 
-     1.4  Modifying the Post-Processing Codes *
+     1.4  Modifying the Post-Processing Codes *
 
-2  Setting Up and Running MFIX on a PC (Windows 95/98/NT) *
+2  Setting Up and Running MFIX on a PC (Windows 95/98/NT) *
 
-     2.1 Installing the MFIX Code *
+     2.1 Installing the MFIX Code *
 
-3  MFIX at Run Time *
+3  MFIX at Run Time *
 
-     3.1  MFIX Output and Messages *
+     3.1  MFIX Output and Messages *
 
-     3.2  Restarting a Run *
+     3.2  Restarting a Run *
 
-     3.3  When the Run Does Not Converge *
+     3.3  When the Run Does Not Converge *
 
-4  Keywords in Input Data File (mfix.dat) *
+4  Keywords in Input Data File (mfix.dat) *
 
-     4.1  Run Control *
+     4.1  Run Control *
 
-     4.2  Physical and Numerical Parameters *
+     4.2  Physical and Numerical Parameters *
 
-     4.3  Geometry and Discretization *
+     4.3  Geometry and Discretization *
 
-     4.4  Gas Phase *
+     4.4  Gas Phase *
 
-     4.5  Solids Phase *
+     4.5  Solids Phase *
 
-     4.6  Initial Conditions *
+     4.6  Initial Conditions *
 
-     4.7  Boundary Conditions *
+     4.7  Boundary Conditions *
 
-     4.8  Internal Surfaces *
+     4.8  Internal Surfaces *
 
-     4.9  Output Control *
+     4.9  Output Control *
 
-     4.10  Chemical Reactions *
+     4.10  Chemical Reactions *
 
-     4.11  User-Defined Subroutines *
+     4.11  User-Defined Subroutines *
 
-     4.12  Parallelization Controls *
-
-
-
-         1  Setting Up and Running MFIX on a UNIX/LINUX Workstation
+     4.12  Parallelization Controls *
 
 
 
-1.1  Creating MFIX Directory
+         1  Setting Up and Running MFIX on a UNIX/LINUX Workstation
+
+
+
+1.1  Creating MFIX Directory
 
 To install MFIX (version m.n) from the tar file, go to the home directory
 and type
@@ -119,7 +119,7 @@ subdirectories: doc, model, post_mfix, tests, tutorials, and tools:
 The postprocessing code ani_mfix is used to view MFIX results as animations.
 Contact NETL for the platform-dependent executable for this program.
 
-1.2  Installing the MFIX Code
+1.2  Installing the MFIX Code
 
 For convenience, create aliases by adding the following lines to the .login
 file (assuming MFIX was installed in the home directory):
@@ -136,7 +136,7 @@ or post, and the mfix make file can be activated by typing mkmfix.
 For the first time, the user should logout and login or type: source .login
 so that the aliases are defined. This step needs to be done only once.
 
-1.3  Starting a New Run
+1.3  Starting a New Run
 
 Create a separate subdirectory for each run.
 
@@ -195,7 +195,7 @@ To retrieve and manipulate data and to create special restart files, run the
 post_processor post_mfix by typing post. post_mfix will prompt the user for
 the run name. Enter the run name (e.g., BUB01).
 
-1.4  Modifying the Post-Processing Codes
+1.4  Modifying the Post-Processing Codes
 
 To make post_mfix, first change the directory to the mfix/post_mfix
 directory. If user-defined post-processing is required, modify the
@@ -204,9 +204,9 @@ mfix/model is required for creating a post_mfix executable.
 
 
 
-         2  Setting Up and Running MFIX on a PC (Windows 95/98/NT)
+         2  Setting Up and Running MFIX on a PC (Windows 95/98/NT)
 
-2.1 Installing the MFIX Code
+2.1 Installing the MFIX Code
 
 Create a directory for MFIX (e.g., C:\mfix) and copy the tar files into that
 directory. In a DOS window, select mfix directory and type the following:
@@ -236,9 +236,9 @@ of this document for UNIX/LINUX.
 
 
 
-                            3  MFIX at Run Time
+                            3  MFIX at Run Time
 
-3.1  MFIX Output and Messages
+3.1  MFIX Output and Messages
 
 MFIX output is stored in nine *.SPx binary files. The restart info is
 periodically written to the *.RES binary file. The text file *.OUT echos the
@@ -328,7 +328,7 @@ A message is written to the .LOG file whenever the .RES and .SPx files are
 written. This message also shows an approximate value of the cumulative disk
 space usage in megabytes.
 
-3.2  Restarting a Run
+3.2  Restarting a Run
 
 A run is restarted by rerunning MFIX after typing RUN_TYPE = 'restart_1' in
 mfix.dat. The old .OUT file will be overwritten. The .LOG messages will be
@@ -336,7 +336,7 @@ appended to the old .LOG file.
 
 There are three other types of restarts; refer to the Appendix for details.
 
-3.3  When the Run Does Not Converge
+3.3  When the Run Does Not Converge
 
 Initial non-convergence: Ensure that the initial conditions are physically
 realistic. If in the initial time step, the run displays NaN (Not-a-Number)
@@ -362,7 +362,7 @@ and ULTRA-QUICK.
 
 
 
-                 4  Keywords in Input Data File (mfix.dat)
+                 4  Keywords in Input Data File (mfix.dat)
 
 
 
@@ -389,7 +389,7 @@ The symbols used in the table are as follows:
 
 
 
-4.1  Run Control
+4.1  Run Control
 
  Keyword (dimension)      Type  Description
 
@@ -508,23 +508,23 @@ solids stress models as shown below:
 
 GRANULAR_ENERGY = .FALSE.
 
-                    EP_g < EP_star > Schaeffer
+                    EP_g < EP_star > Schaeffer
 
-                    EP_g >= EP_star > viscous (algebraic)
+                    EP_g >= EP_star > viscous (algebraic)
 
 GRANULAR_ENERGY = .TRUE.
 
 FRICTION = .TRUE.
 
-                    EP_s(IJK,M) > EPS_f_min > Princeton + viscous (pde)
+                    EP_s(IJK,M) > EPS_f_min > Princeton + viscous (pde)
 
-                    EP_s(IJK,M) < EP_f_min > viscous (pde)
+                    EP_s(IJK,M) < EP_f_min > viscous (pde)
 
 FRICTION = .FALSE.
 
-                    EP_g < EP_star > Schaeffer + viscous (pde)
+                    EP_g < EP_star > Schaeffer + viscous (pde)
 
-                    EP_g >= EP_star > viscous (pde)
+                    EP_g >= EP_star > viscous (pde)
 
 
 
@@ -561,7 +561,7 @@ FRICTION = .FALSE.
 
 
 
-4.2  Physical and Numerical Parameters
+4.2  Physical and Numerical Parameters
 
  Keyword (dimension)   Type    Description
 
@@ -766,7 +766,7 @@ while solving the gas and solids u-momentum equation (Equation Type =3).
 
 
 
-4.3  Geometry and Discretization
+4.3  Geometry and Discretization
 
 For 2D simulations, the thickness of the third direction specified should be
 exact if mass or volumetric flow rates, rather than velocities, are
@@ -903,7 +903,7 @@ specified at the boundaries.
 
 
 
-4.4  Gas Phase
+4.4  Gas Phase
 
  Keyword (dimension)     Type   Description
 
@@ -929,7 +929,7 @@ specified at the boundaries.
 
 
 
-4.5  Solids Phase
+4.5  Solids Phase
 
  Keyword (dimension)      Type   Description
 
@@ -965,7 +965,7 @@ specified at the boundaries.
 
 
 
-4.6  Initial Conditions
+4.6  Initial Conditions
 
 Each initial condition (IC) is specified over a rectangular region (or
 pie-shaped for cylindrical coordinates) that corresponds to the scalar
@@ -1090,7 +1090,7 @@ the conditions specified for the higher IC number.
 
 
 
-4.7  Boundary Conditions
+4.7  Boundary Conditions
 
 Boundary conditions (BC) are specified over flow planes or 2D surfaces that
 are normal to one of the coordinate directions and coincide with a face of
@@ -1458,7 +1458,7 @@ may be required for mass outflow conditions.
 
 
 
-4.8  Internal Surfaces
+4.8  Internal Surfaces
 
 Internal surfaces (IS) are normal to one of the coordinate directions and
 coincide with one of the faces of the scalar control volume. One of the
@@ -1528,7 +1528,7 @@ default condition cannot be changed.
 
 
 
-4.9  Output Control
+4.9  Output Control
 
  Keyword (dimension)     Type   Description
 
@@ -1587,7 +1587,7 @@ default condition cannot be changed.
 
 
 
-4.10  Chemical Reactions
+4.10  Chemical Reactions
 
 Chemical reactions can be specified in two ways: in the data file, or in the
 subroutine rrates. If reactions are specified in the data file, MFIX uses
@@ -1651,7 +1651,7 @@ the rate expression.
 
 The following is an example of an athermal reversible reaction.
 
-@( RXNS  Start chemical reactions input )
+@( RXNS  Start chemical reactions input )
 
 A2R: A <--> R
 
@@ -1661,7 +1661,7 @@ rate A2R<: 0 2.5E41 0 14897 [R]
 
 DH A2R: 0.0
 
-@( END  End chemical reactions input )
+@( END  End chemical reactions input )
 
 All the reaction schemes must be specified in the data file. All the
 reaction rate expressions and enthalpy changes need not be specified in the
@@ -1671,7 +1671,7 @@ rrates0.
 
 
 
-4.11  User-Defined Subroutines
+4.11  User-Defined Subroutines
 
 The user may modify any *.f or *.inc file in MFIX. To modify a file, first
 copy it from the mfix/model directory into the run directory. Modify only
@@ -1738,7 +1738,7 @@ in the data file:
 
 
 
-4.12  Parallelization Controls
+4.12  Parallelization Controls
 
  Keyword (dimension)     Type   Description
 
