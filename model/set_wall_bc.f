@@ -105,7 +105,7 @@
             K1 = BC_K_B(L) 
             K2 = BC_K_T(L) 
 !
-            SELECT CASE (BC_TYPE(L))  
+            SELECT CASE (TRIM(BC_TYPE(L)))
             CASE ('FREE_SLIP_WALL')  
 !
 !  Set velocities for the range of boundary cells.  Use 1.0 as the sign

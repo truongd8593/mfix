@@ -324,7 +324,7 @@
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1500) BCV, ICBC_FLAG(IJK), I, J, K 
                            ERROR = .TRUE. 
                         ENDIF 
-                        SELECT CASE (BC_TYPE(BCV))  
+                        SELECT CASE (TRIM(BC_TYPE(BCV)))
                         CASE ('P_OUTFLOW')  
                            ICBC_FLAG(IJK)(1:1) = 'P' 
                         CASE ('MASS_INFLOW')  

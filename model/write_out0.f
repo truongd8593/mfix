@@ -344,7 +344,7 @@
          IF (BC_DEFINED(L)) THEN 
             WRITE (UNIT_OUT, 1610) L 
             WRITE (UNIT_OUT, 1611) BC_TYPE(L) 
-            SELECT CASE (BC_TYPE(L))  
+            SELECT CASE (TRIM(BC_TYPE(L)))
             CASE ('MASS_INFLOW')  
                WRITE (UNIT_OUT, 1612) 
             CASE ('MASS_OUTFLOW')  

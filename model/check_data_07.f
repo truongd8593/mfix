@@ -222,7 +222,7 @@
 !
 !         Check the specification of physical quantities for inflow cells.
 !
-            SELECT CASE (BC_TYPE(BCV))  
+            SELECT CASE (TRIM(BC_TYPE(BCV)))
             CASE ('MASS_INFLOW')  
                IF (BC_U_G(BCV) == UNDEFINED) THEN 
                   IF (NO_I) THEN 
