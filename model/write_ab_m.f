@@ -67,34 +67,47 @@
 !
 !-----------------------------------------------
 !
-      if (myPE.ne.PE_IO)  return    !//d only put in ROOT log file
 
-      allocate (array1(ijkmax3))    !//d
-      allocate (array2(ijkmax3))    !//d
+      if (myPE == PE_IO) then
+         allocate (array1(ijkmax3))    !//d
+         allocate (array2(ijkmax3))    !//d
+      else
+         allocate (array1(1))          !//d
+         allocate (array2(1))          !//d
+      end if
 
-      CALL START_LOG 
-      WRITE (UNIT_LOG,*) ' A_m and B_m arrays below are in the '
-      WRITE (UNIT_LOG,*) ' mfix INTERNAL order'
-      WRITE (UNIT_LOG,*) ' '
-      WRITE (UNIT_LOG, '(A,A)') &
-         '  IJK  b         s         w         p         e       ', &
-         '  n         t         Source' 
+      if (myPE == PE_IO) then
+         CALL START_LOG 
+         WRITE (UNIT_LOG,*) ' Note : write_am_m is VERY inefficient '
+         WRITE (UNIT_LOG,*) '  '
+         WRITE (UNIT_LOG,*) ' A_m and B_m arrays below are in the '
+         WRITE (UNIT_LOG,*) ' mfix INTERNAL order'
+         WRITE (UNIT_LOG,*) ' '
+         WRITE (UNIT_LOG, '(A,A)') &
+           '  IJK  b         s         w         p         e       ', &
+           '  n         t         Source' 
+      end if
 
 
-      call gather(b_m(:,M),array2,root)        !//d
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+      call gather(b_m(:,M),array2,root) 
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+
       DO IJK = 1, IJKMAX3 
 
          do L = -3,3
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)
             call gather(a_m(:,L,M),array1,root)
-            am(l) = a_m(ijk,L,M)
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+            if (myPE == PE_IO) am(l) = a_m(ijk,L,M)
          end do
-!//         WRITE (UNIT_LOG, '(I5, 8(1X,G9.2))') IJK, (A_M(IJK,L,M),L=-3,3), B_M(&
-!//            IJK,M) 
-         WRITE (UNIT_LOG, '(I5, 8(1X,G9.2))') IJK, (AM(L),L=-3,3), array2(IJK) 
+         if (myPE == PE_IO) WRITE (UNIT_LOG, '(I5, 8(1X,G9.2))') IJK, &
+                                    (AM(L),L=-3,3), array2(IJK) 
 
       END DO 
-      CALL END_LOG 
+      if (myPE == PE_IO) CALL END_LOG 
 
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
       deallocate (array1)    !//
       deallocate (array2)    !//
 

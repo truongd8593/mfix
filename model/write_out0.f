@@ -93,7 +93,7 @@
       DATA DISCR_NAME/'FOUP', 'FOUP', 'Superbee', 'Smart', 'Ultra-Quick', &
          'QUICKEST', 'Muscl', 'VanLeer', 'Minmod'/ 
 
-      if (myPE.ne.PE_IO) return   !//d
+      if (myPE.ne.PE_IO) goto 1111
 
 !
 !  Write Headers for .OUT file
@@ -466,14 +466,23 @@
 !  Initial and boundary condition flags
 !
       WRITE (UNIT_OUT, 2000) CHAR(12) 
-      allocate (array1(ijkmax3))            !//
-      call gather (icbc_flag,array1,root)   !//td pnicol : GATHER FOR CHARS NEEDED
-      CALL OUT_ARRAY_C (array1, 'BC/IC condition flags') 
-      deallocate (array1)                   !//
+ 1111 continue
+
+      if (myPE .eq. PE_IO) then
+         allocate (array1(ijkmax3))
+      else
+         allocate (array1(1))
+      end if
+
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+      call gather (icbc_flag,array1,root)
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+      if (myPE .eq. PE_IO) CALL OUT_ARRAY_C (array1, 'BC/IC condition flags') 
+      deallocate (array1)
 !
 !  Echo user defined input data
 !
-      WRITE (UNIT_OUT, '(/,1X,1A1)') CHAR(12) 
+      if (myPE .eq. PE_IO) WRITE (UNIT_OUT, '(/,1X,1A1)') CHAR(12) 
       IF (CALL_USR) CALL USR_WRITE_OUT0 
 !
       RETURN  

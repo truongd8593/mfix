@@ -46,7 +46,7 @@
       DIMENSION_I   = IMAX3
       DIMENSION_J   = JMAX3
       DIMENSION_K   = KMAX3
-      DIMENSION_3   = IJKMAX3
+      DIMENSION_3   = ijkend3 - ijkstart3 + 1
 
 !      write(*,"('(PE ',I2,'): DIM_3 = ',I6)") myPE,DIMENSION_3 !//AIKEPARDBG
       
