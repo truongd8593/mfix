@@ -99,10 +99,10 @@ fi
             FORTRAN_EXT=f
 	    omp="-mp"
             compile_d="-c -I. -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
-            link_d="-Mprof=func -g -lmpi"
+            link_d="-Mprof=func -g -L/usr/local/MPI/mpich/lib/LINUX/ch_p4 -lmpich"
             compile=" -O -I. -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             compile2="-O1 -I. -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
-            link=" -lmpi "
+            link=" -L/usr/local/MPI/mpich/lib/LINUX/ch_p4 -lmpich"
             MODULE_CODE=1
 	    
 
