@@ -63,6 +63,7 @@ post_mfix : \
     calc_ep_g.$(OBJ_EXT) \
     calc_mu_s.$(OBJ_EXT) \
     calc_mw.$(OBJ_EXT) \
+    calc_p_star.$(OBJ_EXT) \
     calc_quantities.$(OBJ_EXT) \
     calc_ro_g.$(OBJ_EXT) \
     calc_vol.$(OBJ_EXT) \
@@ -212,6 +213,7 @@ post_mfix : \
     calc_ep_g.$(OBJ_EXT) \
     calc_mu_s.$(OBJ_EXT) \
     calc_mw.$(OBJ_EXT) \
+    calc_p_star.$(OBJ_EXT) \
     calc_quantities.$(OBJ_EXT) \
     calc_ro_g.$(OBJ_EXT) \
     calc_vol.$(OBJ_EXT) \
@@ -567,6 +569,20 @@ calc_mw.$(OBJ_EXT) : ../model/calc_mw.f \
             PARAM1.mod \
             TOLERANC.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/calc_mw.f 
+calc_p_star.$(OBJ_EXT) : ../model/calc_p_star.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            PHYSPROP.mod \
+            CONSTANT.mod \
+            PGCOR.mod \
+            PSCOR.mod \
+            UR_FACS.mod \
+            RESIDUAL.mod \
+            COMPAR.mod
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/calc_p_star.f
 calc_quantities.$(OBJ_EXT) : calc_quantities.f \
             PARAM.mod \
             PARAM1.mod \
