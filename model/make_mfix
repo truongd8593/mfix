@@ -60,25 +60,25 @@ read auto_compile
 case $dmp_version in
   y|Y )
 
-  mpi_include="/usr/include/mpif.h"
+  mpi_include="/usr/include"
 
   echo
-  echo -n "checking for mpi include file in the default directory /usr/include"
+  echo -n "checking for mpif.h in the default directory $mpi_include"
             if test -f $mpi_include
             then
 	        echo
-                echo -n "using the mpi include file from default directory"
+                echo -n "using mpif.h from $mpi_include"
             else
 	        echo
                 echo -n "input the location of the directory where mpif.h resides"
-                read mpi_include_dir
-		mpi_include = "$mpi_include_dir/mpif.h"
+                read mpi_include
             fi
   ;;
   *)
-  mpi_include=".."
+  mpi_include="$mfix/dmp_modules/mpi_donothing"
   ;;
 esac
+ln -sf "$mpi_include/mpif.h" .
 
 #
 #------------------------------------------------------------------------
