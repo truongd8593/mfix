@@ -9,6 +9,8 @@
 # M. Syamlal and P. Nicoletti                  9-27-94
 #
 vers="2004-3"
+# Flag variable for compiling with Pentium 4 specific optimization flags   
+# Set to 0 to avoid Pentium 4 specific optimizations
 P4_OPTIMIZE=1
 echo
 echo 
@@ -71,7 +73,7 @@ then
   echo "Note that, default optimization flags are for "
   echo "           Pentium 4 processors ONLY! "
   echo "You can enable non-Pentium 4 specific optimization flags "
-  echo "by editing line 12 in model/make_mfix to set : "
+  echo "by editing line 14 in model/make_mfix to set : "
   echo "P4_OPTIMIZE=0 "
   echo "--------------------------------------------------------"  
   echo 
