@@ -441,7 +441,7 @@
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                               MESSAGE = .TRUE. 
                            ENDIF 
-                           WRITE(UNIT_LOG,1106)I,J,K,M,ROX_SC(IJK,M,N),N 
+                           IF(DMP_LOG)WRITE(UNIT_LOG,1106)I,J,K,M,ROX_SC(IJK,M,N),N 
                            ABORT = .TRUE. 
                         ENDIF 
                       END DO 

@@ -289,7 +289,7 @@
 !
                      IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
                         IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_S(BCV,M))) THEN 
-                           WRITE(UNIT_LOG,1200)BCV,VOLFLOW,M,BC_VOLFLOW_S(BCV,M) 
+                           IF(DMP_LOG)WRITE(UNIT_LOG,1200)BCV,VOLFLOW,M,BC_VOLFLOW_S(BCV,M) 
                            call mfix_exit(myPE)  
                         ENDIF 
                      ELSE 

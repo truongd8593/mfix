@@ -321,7 +321,7 @@
                      DO M = 1, MMAX 
                         BC_MOUT_S(L,M) = ABS(BC_MOUT_S(L,M))/BC_OUT_N(L) 
                         BC_VOUT_S(L,M) = ABS(BC_VOUT_S(L,M))/BC_OUT_N(L) 
-                        WRITE(UNIT_LOG,1200)M,BC_MOUT_S(L,M),BC_VOUT_S(L,M) 
+                        IF(DMP_LOG)WRITE(UNIT_LOG,1200)M,BC_MOUT_S(L,M),BC_VOUT_S(L,M) 
                         BC_MOUT_S(L,M) = ZERO 
                         BC_VOUT_S(L,M) = ZERO 
                      END DO 

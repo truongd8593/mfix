@@ -213,10 +213,10 @@
       IF(DMP_LOG)WRITE (UNIT_LOG, '(A, G12.3, A, I6)') ' Maximum P_star = ', PS, &
          '  Location = ', IJK_PS 
 !
-!      WRITE(UNIT_LOG,'(A, G12.3, A, I6)')
+!      IF(DMP_LOG)WRITE(UNIT_LOG,'(A, G12.3, A, I6)')
 !     & " Maximum P_g residual = ", MAX_RESID(RESID_P, 0),
 !     & "  Location = ", IJK_RESID(RESID_P, 0)
-!      WRITE(UNIT_LOG,'(A, G12.3, A, I6)')
+!      IF(DMP_LOG)WRITE(UNIT_LOG,'(A, G12.3, A, I6)')
 !     & " Maximum P_s residual = ", MAX_RESID(RESID_p, 1),
 !     & "  Location = ", IJK_RESID(RESID_p, 1)
 !
