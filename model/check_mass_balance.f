@@ -348,7 +348,7 @@
             DO K = K1, K2 
             DO J = J1, J2 
             DO I = I1, I2 
-              IF(.NOT.IS_ON_myPE_owns(I, J, K)) cycle
+              IF(.NOT.IS_ON_myPE_owns(I, J, K) .or. WALL_AT(FUNIJK(I,J,K))) cycle
 
               SELECT CASE (PLANE)  
               CASE ('W')  
