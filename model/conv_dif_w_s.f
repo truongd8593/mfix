@@ -68,7 +68,7 @@
 !
           IF (DEF_COR) THEN
 	    CALL STORE_A_W_S0 (A_M(1,-3,M), M, IER) 
-	    CALL STORE_A_W_SDC (A_M(1,-3,M), M, B_M, IER)
+	    IF (DISCRETIZE(5) > 1)CALL STORE_A_W_SDC (A_M(1,-3,M), M, B_M, IER)
           ELSE
 !	   NO DEFERRED CORRECTION IS TO BE USED TO SOLVE FOR W_S
 !

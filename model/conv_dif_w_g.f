@@ -64,7 +64,7 @@
 !	IF DEFERRED CORRECTION IS USED TO SOLVE W_G
       IF (DEF_COR) THEN
 	CALL STORE_A_W_G0 (A_M(1,-3,0), IER) 
-	CALL STORE_A_W_GDC (A_M(1,-3,0), B_M(1,0), IER)
+	IF (DISCRETIZE(5) > 1)CALL STORE_A_W_GDC (A_M(1,-3,0), B_M(1,0), IER)
       ELSE  
 !
         IF (DISCRETIZE(5) == 0) THEN               ! 0 & 1 => FOUP 

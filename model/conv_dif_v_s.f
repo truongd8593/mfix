@@ -74,7 +74,7 @@
 !	IF DEFERRED CORRECTION IS USED TO SOLVE V_S
            IF (DEF_COR) THEN
 	     CALL STORE_A_V_S0 (A_M(1,-3,M), M, IER)
-	     CALL STORE_A_V_SDC (A_M(1,-3,M), M, B_M, IER)
+	     IF (DISCRETIZE(4) > 1)CALL STORE_A_V_SDC (A_M(1,-3,M), M, B_M, IER)
            ELSE    
 !
              IF (DISCRETIZE(4) == 0) THEN         ! 0 & 1 => FOUP 
