@@ -155,13 +155,13 @@
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g    Theta
         !      P_star    V_g  V_s            T_s1 X_s
         !                W_g  W_s            T_s2
-  SPX_DT = 0.01 0.01     100.  0.01  100.      100. 100.     0.01  100.
+  SPX_DT = 0.01 0.01     100.  0.01  100.      100. 100.     0.01
 
   FULL_LOG = .TRUE.
   RESID_STRING  = 'P1' 'U1' 'W1' 'G1'
   
 # DMP control
   
-  #NODESI = 1   NODESJ = 1   NODESK = 1
+  NODESI = 1   NODESJ = 1   NODESK = 1
 
 
