@@ -1,0 +1,46 @@
+#!/bin/tcsh 
+# Script to collect the timings of all the tutorial cases
+rm -f */*.RES */*.SP* */*.LOG */*.OUT */*/*.RES */*/*.SP* */*/*.LOG */*/*.OUT
+echo
+cd 3dCfb
+echo "********************************************************************"
+echo "3dCfb"
+tail -20 out1 
+cd ..
+# Another case
+echo
+cd 3dFluidbed
+echo "********************************************************************"
+echo "3dFluidbed"
+tail -20 out1 
+cd ..
+# Another case
+echo
+cd fluidbed1
+echo "********************************************************************"
+echo "fluidbed1"
+tail -20 out1 
+cd ..
+# Another case
+echo
+cd fluidbed2
+echo "********************************************************************"
+echo "fluidbed2"
+tail -20 out1 
+cd ..
+# Another case
+echo
+cd reactor1/a
+echo "********************************************************************"
+echo "reactor1/a"
+tail -20 out1 
+cd ../..
+# Another case
+echo
+cd reactor1/b
+echo
+"********************************************************************"
+echo "reactor1/b"
+tail -20 out1 
+cd ../..
+

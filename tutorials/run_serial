@@ -1,0 +1,52 @@
+#!/bin/tcsh 
+# Script to run all the tutorial cases in serial
+rm -f */*.RES */*.SP* */*.LOG */*.OUT */*/*.RES */*/*.SP* */*/*.LOG */*/*.OUT
+echo
+cd 3dCfb
+echo "********************************************************************"
+echo "3dCfb"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
+cd 3dFluidbed
+echo "********************************************************************"
+echo "3dFluidbed"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
+cd fluidbed1
+echo "********************************************************************"
+echo "fluidbed1"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
+cd fluidbed2
+echo "********************************************************************"
+echo "fluidbed2"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
+cd reactor1/a
+echo "********************************************************************"
+echo "reactor1/a"
+sh ~/MFIX/mfix/model/make_mfix < ../../in
+./mfix.exe > out1
+cd ../..
+# Another case
+echo
+cd reactor1/b
+echo
+"********************************************************************"
+echo "reactor1/b"
+sh ~/MFIX/mfix/model/make_mfix < ../../in
+./mfix.exe > out1
+cd ../..
+
