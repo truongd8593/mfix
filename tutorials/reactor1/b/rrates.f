@@ -65,6 +65,7 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
       
+      IER =0
       R_tmp = UNDEFINED
 !
 !  ---  Remember to include all the local variables here for parallel
@@ -186,7 +187,15 @@
                IF (NMAX(0) > 0) THEN 
                   SUM_R_G(IJK) = SUM_R_G(IJK) + SUM(R_GP(IJK,:NMAX(0))-ROX_GC(&
                      IJK,:NMAX(0))*X_G(IJK,:NMAX(0))) 
-               ENDIF 
+               ENDIF
+	    ELSE
+	      DO M = 1, MMAX
+	        IF(R_tmp(0,M) .NE. UNDEFINED)THEN
+		  SUM_R_G(IJK) = SUM_R_G(IJK) + R_tmp(0,M)
+		ELSEIF(R_tmp(M,0) .NE. UNDEFINED)THEN
+		  SUM_R_G(IJK) = SUM_R_G(IJK) - R_tmp(M,0)
+		ENDIF
+	      ENDDO 
             ENDIF 
 !
             DO M = 1, MMAX 
@@ -196,6 +205,14 @@
                      SUM_R_S(IJK,M) = SUM_R_S(IJK,M) + SUM(R_SP(IJK,M,:NMAX(M))&
                         -ROX_SC(IJK,M,:NMAX(M))*X_S(IJK,M,:NMAX(M))) 
                   ENDIF 
+	       ELSE
+ 	         DO L = 0, MMAX
+	           IF(R_tmp(M,L) .NE. UNDEFINED)THEN
+		     SUM_R_s(IJK,M) = SUM_R_s(IJK,M) + R_tmp(M,L)
+		   ELSEIF(R_tmp(L,M) .NE. UNDEFINED)THEN
+		     SUM_R_s(IJK,M) = SUM_R_s(IJK,M) - R_tmp(L,M)
+		   ENDIF
+	         ENDDO 
                ENDIF 
             END DO 
 	    
@@ -213,7 +230,7 @@
                      R_PHASE(IJK,LM) = -R_TMP(M,L) 
                   ELSE 
                      CALL START_LOG 
-                     WRITE (UNIT_LOG, 1000) L, M 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) L, M 
                      CALL END_LOG 
                      call mfix_exit(myPE)  
                   ENDIF 
@@ -222,13 +239,9 @@
 	   
          ENDIF 
       END DO 
-      
+
  1000 FORMAT(/1X,70('*')//' From: RRATES',/&
          ' Message: Mass transfer between phases ',I2,' and ',I2,&
          ' (R_tmp) not specified',/1X,70('*')/) 
       RETURN  
       END SUBROUTINE RRATES 
-
-!// Comments on the modifications for DMP version implementation
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
