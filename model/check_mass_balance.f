@@ -45,7 +45,7 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !Reporting interval.  To activate this routine define a value (e.g. 0.1) .
-      DOUBLE PRECISION, PARAMETER :: Report_dt = 0.1 !large_number 
+      DOUBLE PRECISION, PARAMETER :: Report_dt = large_number 
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
