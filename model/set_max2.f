@@ -71,12 +71,15 @@
 !
       IJMAX2 = IMAX2*JMAX2 
       IJKMAX2 = IMAX2*JMAX2*KMAX2 
+
       IF (DO_K) THEN 
          IJKMIN1 = IJMAX2 + 1 
          IJKMAX1 = IJKMAX2 - IJMAX2 
+         ijkmax3 = (imax2+1)*(jmax2+1)*(kmax2+1)
       ELSE 
          IJKMIN1 = IMAX2 + 1 
          IJKMAX1 = IJKMAX2 - IMAX2 
+         ijkmax3 = (imax2+1)*(jmax2+1)
       ENDIF 
 !
       RETURN  

@@ -125,6 +125,9 @@
 !                      IJKMAX2 - IJMAX2
       INTEGER          IJKMAX1
 !
+!                      (IMAX2+1) * (JMAX2+1) * (KMAX2+1)
+      INTEGER          IJKMAX3
+!
 !                      Cell flags.
       INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG 
 !
