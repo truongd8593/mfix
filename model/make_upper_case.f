@@ -101,6 +101,7 @@
 !-----------------------------------------------
 !
       CHARACTER, PARAMETER          :: TAB = CHAR(9)
+      CHARACTER, PARAMETER          :: CRET = CHAR(13)
 
 !                   input line to change to uppercase
       CHARACTER*(*) LINE_STRING
@@ -118,6 +119,7 @@
 !
       DO L = 1, MAXCOL 
         if(LINE_STRING(L:L) .eq. TAB) LINE_STRING(L:L) = ' ' 
+        if(LINE_STRING(L:L) .eq. CRET) LINE_STRING(L:L) = ' ' 
       END DO 
       RETURN  
       END SUBROUTINE REPLACE_TAB 
