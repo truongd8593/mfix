@@ -123,15 +123,15 @@
 !
  
  
-!HPF$ align MU_g(:) with TT(:)
-!HPF$ align C_pg(:) with TT(:)
-!HPF$ align C_ps(:, *) with TT(:)
-!HPF$ align K_g(:) with TT(:)
-!HPF$ align K_s(:, *) with TT(:)
-!HPF$ align Kth_s(:, *) with TT(:)
-!HPF$ align Kphi_s(:, *) with TT(:)
-!HPF$ align DIF_g(:, *) with TT(:)
-!HPF$ align DIF_s(:, *, *) with TT(:)
-!HPF$ align MW_MIX_g(:) with TT(:)
+!!!HPF$ align MU_g(:) with TT(:)
+!!!HPF$ align C_pg(:) with TT(:)
+!!!HPF$ align C_ps(:, *) with TT(:)
+!!!HPF$ align K_g(:) with TT(:)
+!!!HPF$ align K_s(:, *) with TT(:)
+!!!HPF$ align Kth_s(:, *) with TT(:)
+!!!HPF$ align Kphi_s(:, *) with TT(:)
+!!!HPF$ align DIF_g(:, *) with TT(:)
+!!!HPF$ align DIF_s(:, *, *) with TT(:)
+!!!HPF$ align MW_MIX_g(:) with TT(:)
 
       END MODULE physprop

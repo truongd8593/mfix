@@ -41,6 +41,11 @@
 !                      DX, DY, or DZ Array to be written
 
 
+!                      Starting array index
+      INTEGER          LSTART
+!
+!                      Ending array index
+      INTEGER          LEND
 !//EFD Nov/11, avoid use of (*) 
 !//      DOUBLE PRECISION ARRAY(*)
       DOUBLE PRECISION ARRAY((LSTART-1):(LEND+1))
@@ -48,11 +53,6 @@
 !                      Starting value of distance
       DOUBLE PRECISION DIST_MIN
 !
-!                      Starting array index
-      INTEGER          LSTART
-!
-!                      Ending array index
-      INTEGER          LEND
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------

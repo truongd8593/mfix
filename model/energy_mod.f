@@ -29,12 +29,12 @@
 !
  
  
-!HPF$ align HOR_g(:) with TT(:)
-!HPF$ align HOR_s(:, *) with TT(:)
-!HPF$ align GAMA_gs(:, *) with TT(:)
-!HPF$ align GAMA_Rg(:) with TT(:)
-!HPF$ align GAMA_Rs(:, *) with TT(:)
-!HPF$ align T_Rg(:) with TT(:)
-!HPF$ align T_Rs(:, *) with TT(:)
+!!!HPF$ align HOR_g(:) with TT(:)
+!!!HPF$ align HOR_s(:, *) with TT(:)
+!!!HPF$ align GAMA_gs(:, *) with TT(:)
+!!!HPF$ align GAMA_Rg(:) with TT(:)
+!!!HPF$ align GAMA_Rs(:, *) with TT(:)
+!!!HPF$ align T_Rg(:) with TT(:)
+!!!HPF$ align T_Rs(:, *) with TT(:)
 
       END MODULE energy

@@ -55,9 +55,9 @@
 !                      Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
 
-!HPF$ align Var(:) with TT(:)
-!HPF$ align A_m(:,*,*) with TT(:)
-!HPF$ align B_m(:,*) with TT(:)
+!!!HPF$ align Var(:) with TT(:)
+!!!HPF$ align A_m(:,*,*) with TT(:)
+!!!HPF$ align B_m(:,*) with TT(:)
 
 !                      Phase index
       INTEGER          M

@@ -31,11 +31,11 @@
  
  
  
-!HPF$ align trD_s(:, *) with TT(:)
-!HPF$ align MU_s(:, *) with TT(:)
-!HPF$ align LAMBDA_s(:, *) with TT(:)
-!HPF$ align ALPHA_s(:, *) with TT(:)
-!HPF$ align MU_s_c(:, *) with TT(:)
-!HPF$ align LAMBDA_s_c(:, *) with TT(:)
+!!!HPF$ align trD_s(:, *) with TT(:)
+!!!HPF$ align MU_s(:, *) with TT(:)
+!!!HPF$ align LAMBDA_s(:, *) with TT(:)
+!!!HPF$ align ALPHA_s(:, *) with TT(:)
+!!!HPF$ align MU_s_c(:, *) with TT(:)
+!!!HPF$ align LAMBDA_s_c(:, *) with TT(:)
 
       END MODULE visc_s

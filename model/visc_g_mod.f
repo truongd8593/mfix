@@ -25,9 +25,9 @@
  
  
  
-!HPF$ align trD_g(:) with TT(:)
-!HPF$ align MU_gt(:) with TT(:)
-!HPF$ align LAMBDA_gt(:) with TT(:)
-!HPF$ align L_scale(:) with TT(:)
+!!!HPF$ align trD_g(:) with TT(:)
+!!!HPF$ align MU_gt(:) with TT(:)
+!!!HPF$ align LAMBDA_gt(:) with TT(:)
+!!!HPF$ align L_scale(:) with TT(:)
 
       END MODULE visc_g

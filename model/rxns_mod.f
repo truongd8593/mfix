@@ -95,12 +95,12 @@
 !
  
  
-!HPF$ align R_gp(:, *) with TT(:)
-!HPF$ align R_sp(:, *, *) with TT(:)
-!HPF$ align RoX_gc(:, *) with TT(:)
-!HPF$ align RoX_sc(:, *, *) with TT(:)
-!HPF$ align SUM_R_g(:) with TT(:)
-!HPF$ align SUM_R_s(:, *) with TT(:)
-!HPF$ align R_phase(:, *) with TT(:)
+!!!HPF$ align R_gp(:, *) with TT(:)
+!!!HPF$ align R_sp(:, *, *) with TT(:)
+!!!HPF$ align RoX_gc(:, *) with TT(:)
+!!!HPF$ align RoX_sc(:, *, *) with TT(:)
+!!!HPF$ align SUM_R_g(:) with TT(:)
+!!!HPF$ align SUM_R_s(:, *) with TT(:)
+!!!HPF$ align R_phase(:, *) with TT(:)
 
       END MODULE rxns

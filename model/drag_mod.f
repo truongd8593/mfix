@@ -34,7 +34,7 @@
 !                   temporary storage: Volume x average at momentum cell centers
 !      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  VxF_gs
  
-!HPF$ align F_gs(:, *) with TT(:)
-!HPF$ align F_ss(:, *) with TT(:)
+!!!HPF$ align F_gs(:, *) with TT(:)
+!!!HPF$ align F_ss(:, *) with TT(:)
 
       END MODULE drag

@@ -22,12 +22,12 @@ MODULE tmp_array
 !   CHARACTER*3, DIMENSION(4704):: ARRAY1C
       character*3,  dimension(:), pointer :: ARRAY1C     
    
-!HPF$ align Array1(:) with TT(:)
-!HPF$ align Array2(:) with TT(:)
-!HPF$ align Array3(:) with TT(:)
-!HPF$ align Array4(:) with TT(:)
-!HPF$ align Array1i(:) with TT(:)
-!HPF$ align Array1c(:) with TT(:)
+!!!HPF$ align Array1(:) with TT(:)
+!!!HPF$ align Array2(:) with TT(:)
+!!!HPF$ align Array3(:) with TT(:)
+!!!HPF$ align Array4(:) with TT(:)
+!!!HPF$ align Array1i(:) with TT(:)
+!!!HPF$ align Array1c(:) with TT(:)
 
       
    LOGICAL :: tmp_array_locked = .false.

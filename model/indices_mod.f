@@ -78,9 +78,9 @@
 !
  
  
-!!HPF$ distribute CELL_CLASS(block)
-!!HPF$ distribute I_OF(block)
-!!HPF$ distribute J_OF(block)
-!!HPF$ distribute K_OF(block)
+!!!!HPF$ distribute CELL_CLASS(block)
+!!!!HPF$ distribute I_OF(block)
+!!!!HPF$ distribute J_OF(block)
+!!!!HPF$ distribute K_OF(block)
 
       END MODULE indices

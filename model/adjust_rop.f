@@ -50,7 +50,7 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-!HPF$ independent
+!!!HPF$ independent
       DO IJK = ijkstart3, ijkend3 
          IF (FLUID_AT(IJK)) ROP(IJK) = DMAX1(ZERO,ROP(IJK)) 
       END DO 

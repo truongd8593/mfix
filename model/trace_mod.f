@@ -16,8 +16,8 @@
  
  
  
-!HPF$ align trD_s_C(:, *) with TT(:)
-!HPF$ align trD_s2(:, *) with TT(:)
-!HPF$ align trD_s_Co(:, *) with TT(:)
+!!!HPF$ align trD_s_C(:, *) with TT(:)
+!!!HPF$ align trD_s2(:, *) with TT(:)
+!!!HPF$ align trD_s_Co(:, *) with TT(:)
 
       END MODULE trace

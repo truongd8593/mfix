@@ -95,6 +95,6 @@
 !
 
 
-!HPF$ TEMPLATE TT(1000)
-!HPF$ DISTRIBUTE TT(BLOCK)
+!!!HPF$ TEMPLATE TT(1000)
+!!!HPF$ DISTRIBUTE TT(BLOCK)
       END MODULE param                                                                           

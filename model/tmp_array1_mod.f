@@ -15,7 +15,7 @@ MODULE tmp_array1
    DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: &
       ARRAYm1
 
-!HPF$ align Arraym1(:, *) with TT(:)
+!!!HPF$ align Arraym1(:, *) with TT(:)
 
       
    LOGICAL :: tmp_array1_locked = .false.

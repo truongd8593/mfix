@@ -449,8 +449,8 @@
             END DO 
          END DO 
       END DO 
+      call global_all_or(MESSAGE_X_G)
       IF (MESSAGE_X_G) THEN 
-!//SP Global
 	 call global_all_sum(COUNT_G)
          SUM_COUNT = 0 
          DO L = 1, 9 
@@ -465,9 +465,9 @@
       ENDIF 
 !
       DO M = 1, MMAX 
+         call global_all_or(MESSAGE_X_S(M))
          IF (MESSAGE_X_S(M)) THEN 
-!//SP Global
-            call global_all_sum(COUNT_S)
+            call global_all_sum(COUNT_S(M,:))
             SUM_COUNT = 0 
             DO L = 1, 9 
                SUM_COUNT = SUM_COUNT + COUNT_S(M,L) 

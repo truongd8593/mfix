@@ -39,12 +39,12 @@
 !
  
  
-!HPF$ align e_e(:) with TT(:)
-!HPF$ align e_n(:) with TT(:)
-!HPF$ align e_t(:) with TT(:)
-!HPF$ align K_cp(:) with TT(:)
-!HPF$ align EPp(:) with TT(:)
-!HPF$ align PHASE_4_P_s(:) with TT(:)
+!!!HPF$ align e_e(:) with TT(:)
+!!!HPF$ align e_n(:) with TT(:)
+!!!HPF$ align e_t(:) with TT(:)
+!!!HPF$ align K_cp(:) with TT(:)
+!!!HPF$ align EPp(:) with TT(:)
+!!!HPF$ align PHASE_4_P_s(:) with TT(:)
 
 
       END MODULE pscor

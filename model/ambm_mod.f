@@ -19,8 +19,8 @@ MODULE ambm
       DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: A_m
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: B_m
 
-!HPF$ align A_m(:, *, *) with TT(:)
-!HPF$ align B_m(:, *) with TT(:)
+!!!HPF$ align A_m(:, *, *) with TT(:)
+!!!HPF$ align B_m(:, *) with TT(:)
 
 
       

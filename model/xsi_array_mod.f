@@ -15,9 +15,9 @@ MODULE xsi_array
    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: &
       XSI_e, XSI_n, XSI_t
 
-!HPF$ align Xsi_e(:) with TT(:)
-!HPF$ align Xsi_n(:) with TT(:)
-!HPF$ align Xsi_t(:) with TT(:)
+!!!HPF$ align Xsi_e(:) with TT(:)
+!!!HPF$ align Xsi_n(:) with TT(:)
+!!!HPF$ align Xsi_t(:) with TT(:)
 
 
    LOGICAL :: xsi_array_locked = .false.

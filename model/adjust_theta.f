@@ -50,7 +50,7 @@
 !
       IER = 0 
 !
-!HPF$ independent
+!!!HPF$ independent
 !//SP
       DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN 

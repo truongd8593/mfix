@@ -50,8 +50,8 @@
 !                      Gas volume fraction
       DOUBLE PRECISION EP_g(DIMENSION_3)
 
-!HPF$ align P_star(:) with TT(:)
-!HPF$ align EP_g(:) with TT(:)
+!!!HPF$ align P_star(:) with TT(:)
+!!!HPF$ align EP_g(:) with TT(:)
 
 !
 !                      error index
@@ -71,7 +71,7 @@
 !// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 
 !!$omp parallel do private(ijk)
-!HPF$ independent
+!!!HPF$ independent
       DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN 
 !

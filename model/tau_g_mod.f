@@ -12,9 +12,9 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  TAU_W_g
  
  
-!HPF$ align TAU_U_g(:) with TT(:)
-!HPF$ align TAU_V_g(:) with TT(:)
-!HPF$ align TAU_W_g(:) with TT(:)
+!!!HPF$ align TAU_U_g(:) with TT(:)
+!!!HPF$ align TAU_V_g(:) with TT(:)
+!!!HPF$ align TAU_W_g(:) with TT(:)
 
  
       END MODULE tau_g

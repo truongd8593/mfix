@@ -27,10 +27,10 @@
 !
  
  
-!HPF$ align d_e(:, *) with TT(:)
-!HPF$ align d_n(:, *) with TT(:)
-!HPF$ align d_t(:, *) with TT(:)
-!HPF$ align Pp_g(:) with TT(:)
-!HPF$ align PHASE_4_P_g(:) with TT(:)
+!!!HPF$ align d_e(:, *) with TT(:)
+!!!HPF$ align d_n(:, *) with TT(:)
+!!!HPF$ align d_t(:, *) with TT(:)
+!!!HPF$ align Pp_g(:) with TT(:)
+!!!HPF$ align PHASE_4_P_g(:) with TT(:)
 
       END MODULE pgcor
