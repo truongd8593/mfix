@@ -46,6 +46,32 @@
     else
        echo  
     fi
+
+    if test $opsys = "Linux_ifc"
+    then
+         echo
+         echo "  Supported Intel Linux Fortran compiler versions:"
+         echo "    1) Intel Linux Fortran Compiler (ifort) version 8.0"
+         echo "    2) Intel Linux Fortran Compiler (ifc) version 7.X"
+         echo -n "   Enter line number corresponding the compiler version? (1/2) [1] "
+         read ver_compiler
+         case $ver_compiler in
+         1)
+           echo "Intel Linux Fortran Compiler (ifort) version 8.0 selected"
+           intel_ver="Linux_ifc8"
+           ;;
+         2)
+           echo "Intel Linux Fortran Compiler (ifc) version 7.X selected"
+           intel_ver="Linux_ifc7"
+           ;;
+         *)
+           echo "Intel Linux Fortran Compiler (ifort) version 8.0 selected"
+           intel_ver="Linux_ifc8"
+           ;;
+         esac
+    else
+       echo
+    fi
     
     case $opsys in
 
@@ -104,9 +130,9 @@
 	    compile_d="-C -g -qinitauto=FF -qflttrap -freeform $compile_common"
 	    link_d="$compile_d"
 
-            compile=" -g -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
+            compile=" -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
 	    compile2="$compile"
-            link="-g -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000
+            link="-O3 -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000
 -qtune=pwr3 -qcache=auto "
 
  	    MODULE_CODE=1
@@ -159,30 +185,37 @@
                 touch COMPILED.FOR.LINUX.IFC
             fi
 	    
-	    
-            FORTRAN_CMD=ifc
-            LINK_CMD=ifc 
+            if test $intel_ver = "Linux_ifc8"
+            then
+              FORTRAN_CMD=ifort
+              LINK_CMD=ifort
+            else
+              FORTRAN_CMD=ifc
+              LINK_CMD=ifc
+            fi    
 	       
 	    
             OBJ_EXT=o
             FORTRAN_EXT=f
 
-           #-----------
-	   # Check if Intel Linux compiler portability library is accessible?
-	   #-----------
-            echo
-            echo "checking for Intel compiler portability library, PEPCF90" 
-	    echo "in the default directory /opt/intel/compiler70/ia32/lib"
-            if test -f "/opt/intel/compiler70/ia32/lib/libPEPCF90.a"
+            if test $intel_ver = "Linux_ifc7"
             then
-	        echo
+              #-----------
+              # Check if Intel Linux compiler portability library is accessible?
+	      #-----------
+              echo
+              echo "checking for Intel compiler portability library, PEPCF90" 
+	      echo "in the default directory /opt/intel/compiler70/ia32/lib"
+              if test -f "/opt/intel/compiler70/ia32/lib/libPEPCF90.a"
+              then
+	         echo
               #  echo -n "PEPCF90 library found under /opt/intel/compiler70/ia32/lib"
-		intel_lib="/opt/intel/compiler70/ia32/lib"
-            else
-	        intel_dir="/opt/intel"
-	        echo  "Library not found. Enter the directory "
-                echo -n "where Intel Linux compiler is installed [e.g. /opt/intel]: "
-                   read intel_dir
+		 intel_lib="/opt/intel/compiler70/ia32/lib"
+              else
+	         intel_dir="/opt/intel"
+	         echo  "Library not found. Enter the directory "
+                 echo -n "where Intel Linux compiler is installed [e.g. /opt/intel]: "
+                 read intel_dir
   	         intel_lib="$intel_dir/compiler70/ia32/lib"  
 
  	         if test -d "$intel_lib"
@@ -192,15 +225,26 @@
 	           echo "Directory $intel_lib not found"
 	           exit
 	         fi
-
-            fi
+              fi
 
 	    
-            compile_d="-g -c -FR -xK -w "
-            link_d="-L$intel_lib -lPEPCF90 "
-            compile="-c -g -w -w95 -i_dynamic -ip -FR"
-            link="-L$intel_lib -lPEPCF90"
-            MODULE_CODE=0
+              compile_d="-g -c -FR -xK -w -I. "
+              link_d="-L$intel_lib -lPEPCF90 "
+              compile="-c -O3 - -I.w -w95 -i_dynamic -ip -FR"
+              link="-I. -L$intel_lib -lPEPCF90"
+              MODULE_CODE=0
+             fi
+
+             if test $intel_ver = "Linux_ifc8"
+             then
+                compile_common="-c -O3 -axKW -tpp7 -w -w95 -I. -i_dynamic -ip -convert big_endian -assume byterecl -FR"
+                compile_d="-g -c -convert big_endian -assume byterecl -FR -O0 -fpe0 -d1 -CB "
+                link_d="-I."
+                compile="$compile_common"
+                compile2="$compile_common"
+                link="-I."
+                MODULE_CODE=1
+              fi
 
             ;;
 	    
@@ -443,7 +487,7 @@ read delete_files
  /bin/cp -f -p ../model/namelist.inc .
  /bin/cp -f -p ../model/sc_p_g1.inc .
  /bin/cp -f -p ../model/sc_p_g2.inc .
- /bin/cp -f -p ../model/des/desnamelist.inc des
+ /bin/cp -f -p ../model/des/desnamelist.inc des/
 
       
  case $MODULE_CODE in
