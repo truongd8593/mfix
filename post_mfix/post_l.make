@@ -136,15 +136,28 @@ post_mfix : \
     sol_flux.$(OBJ_EXT) \
     strcmp.$(OBJ_EXT) \
     streqs.$(OBJ_EXT) \
-    time_avg.$(OBJ_EXT) \
     usr_init_namelist.$(OBJ_EXT) \
+    usr_input.$(OBJ_EXT) \
     usr_post.$(OBJ_EXT) \
     usr_write_out1.$(OBJ_EXT) \
     write_out1.$(OBJ_EXT) \
     write_res0.$(OBJ_EXT) \
     write_res1.$(OBJ_EXT) \
     write_spx0.$(OBJ_EXT) \
-    write_spx1.$(OBJ_EXT)
+    write_spx1.$(OBJ_EXT) \
+    ornl_header.$(OBJ_EXT) \
+    ornl_util.$(OBJ_EXT) \
+    ornl_stats.$(OBJ_EXT) \
+    ornl_stats_c.$(OBJ_EXT) \
+    ornl_corr.$(OBJ_EXT) \
+    ornl_corr_c.$(OBJ_EXT) \
+    ornl_pca.$(OBJ_EXT) \
+    ornl_ft.$(OBJ_EXT) \
+    ornl_ft_c.$(OBJ_EXT) \
+    ornl_filt.$(OBJ_EXT) \
+    ornl_filt_c.$(OBJ_EXT) \
+    ornl_zone.$(OBJ_EXT) \
+    ornl_sym.$(OBJ_EXT) 
 	$(LINK_CMD) $(LINK_FLAGS) \
     ambm_mod.$(OBJ_EXT) \
     bc_mod.$(OBJ_EXT) \
@@ -273,6 +286,7 @@ post_mfix : \
     streqs.$(OBJ_EXT) \
     time_avg.$(OBJ_EXT) \
     usr_init_namelist.$(OBJ_EXT) \
+    usr_input.$(OBJ_EXT) \
     usr_post.$(OBJ_EXT) \
     usr_write_out1.$(OBJ_EXT) \
     write_error.$(OBJ_EXT)                               \
@@ -281,6 +295,19 @@ post_mfix : \
     write_res1.$(OBJ_EXT) \
     write_spx0.$(OBJ_EXT) \
     write_spx1.$(OBJ_EXT) \
+    ornl_header.$(OBJ_EXT) \
+    ornl_util.$(OBJ_EXT) \
+    ornl_stats.$(OBJ_EXT) \
+    ornl_stats_c.$(OBJ_EXT) \
+    ornl_corr.$(OBJ_EXT) \
+    ornl_corr_c.$(OBJ_EXT) \
+    ornl_pca.$(OBJ_EXT) \
+    ornl_ft.$(OBJ_EXT) \
+    ornl_ft_c.$(OBJ_EXT) \
+    ornl_zone.$(OBJ_EXT) \
+    ornl_filt.$(OBJ_EXT) \
+    ornl_filt_c.$(OBJ_EXT) \
+    ornl_sym.$(OBJ_EXT) \
     debug_mod.$(OBJ_EXT)                           \
     compar_mod.$(OBJ_EXT)                          \
     dbg_util_mod.$(OBJ_EXT)                        \
@@ -1174,6 +1201,15 @@ write_spx1.$(OBJ_EXT) : ../model/write_spx1.f \
             scalars.mod \
             tmp_array.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_spx1.f 
+usr_input.$(OBJ_EXT) : usr_input.f \
+            physprop.mod  \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            indices.mod \
+            compar.mod \
+            constant.mod \
+            post3d.mod
 compar.mod : ../model/dmp_modules/mpi_donothing/compar_mod.f \
             mpi.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/compar_mod.f 

@@ -57,6 +57,8 @@
       WRITE (*,*)&
         '  8   - Write new SPx files with time averaged data'
       WRITE (*,*)&
+        '  9   - Perform ORNL calculations'
+      WRITE (*,*)&
         ' *************************************************'
 !
       CALL GET_SELECTION (SELECTION)

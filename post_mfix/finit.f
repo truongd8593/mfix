@@ -168,6 +168,8 @@
         CALL SELECT_SPX_REC
       ELSEIF (SELECTION.EQ.8) THEN
         CALL TIME_AVG
+      ELSEIF (SELECTION.EQ.9) THEN
+        CALL ornl_routines
       ENDIF
       GOTO 50
       END
