@@ -3,15 +3,20 @@
                                                        
 # Run-control section   
 #                                                                               
-  RUN_NAME = 'BUB02'                                                            
-  DESCRIPTION = 'Bubbling Fluidized Bed Simulation'                             
+  RUN_NAME = 'STC00'                                                            
+  DESCRIPTION = 'Species transport with cyclic bc'                             
   RUN_TYPE = 'new'                                                              
   UNITS = 'cgs'                                                                 
-  TIME  =0.0  TSTOP = 1.0E-4   DT = 1.0e-4   DT_MAX = 1.0e-4   OUT_DT = 1.0e-4
+  TIME  = 0.0    TSTOP = 1.0   DT = 1.0E-4   DT_max = 0.01
+  OUT_DT = 1.0
+  NODESI = 1 NODESJ = 1 NODESK = 2
                                      
   MOMENTUM_X_EQ= .FALSE.    .FALSE.
   MOMENTUM_Y_EQ= .FALSE.    .FALSE.
   MOMENTUM_Z_EQ= .FALSE.    .FALSE.
+
+  CYCLIC_X = .true.
+  CYCLIC_Z = .true.
 
   ENERGY_EQ  = .FALSE.                                                           
   SPECIES_EQ = .TRUE.    .FALSE.                                               
@@ -56,9 +61,9 @@
                                                                                 
   IC_EP_g          =  0.42            1.0                                       
                                                                                 
-  IC_U_g           =  0.0             0.0                                       
-  IC_V_g           =@(25.9/0.42)     25.9                                       
-  IC_W_g           =  0.0             0.0                                       
+  IC_U_g           =  40.0             40.0
+  IC_V_g           =@(25.9/0.42)     25.9
+  IC_W_g           =  40.0             40.0
                                                                                 
   IC_U_s(1,1)      =  0.0             0.0                                       
   IC_V_s(1,1)      =  0.0             0.0                                       
@@ -68,7 +73,18 @@
                                                                                 
   IC_P_star        =  0.0             0.0                                       
   IC_T_g           = 300.0          300.0                                       
-                                                                                
+
+
+  ! south-west corner with species 2 concentration                                                                                
+  IC_X_w(5)           =  0.0                                 
+  IC_X_e(5)           =  2.0                             
+  IC_Y_s(5)           =  0.0                                   
+  IC_Y_n(5)           = 10.0                                      
+  IC_Z_b(5)           =  0.0                                 
+  IC_Z_t(5)           =  2.                           
+  IC_X_g(5,1)         =  0.0 
+  IC_X_g(5,2)         =  1.0
+  IC_TYPE(5)          = 'PATCH' 
 #                                                                               
 #  Boundary Conditions Section                                                  
 #                                                                               
@@ -87,18 +103,12 @@
   BC_U_g           =  0.0    0.0                                                
   BC_V_g           = 25.9   25.9                                                
   BC_W_g           =  0.0    0.0                                                
-  BC_X_g(1,1)      =  0.0    1.0                                       
-  BC_X_g(1,2)      =  1.0    0.0                                       
+  BC_X_g(1,1)      =  1.0    1.0                                       
                                                                                 
   BC_P_g           = 1.013E6  1.013E6   1.013E6                                 
   BC_T_g           = 300.0   300.0                                              
-                                                                                
-  BC_Jet_g0        = 25.9                                                       
-  BC_DT_0          =  0.0                                                       
-  BC_Jet_gh        =100.0                                                       
-  BC_DT_h          =  0.2                                                       
-  BC_Jet_gl        = 25.9                                                       
-  BC_DT_l          =  0.9                                                       
+
+
 #                                                                               
 #  Output Control                                                               
 #                                                                               
@@ -107,14 +117,9 @@
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g                           
         !      P_star    V_g  V_s            T_s1 X_s                           
         !                W_g  W_s            T_s2                               
-  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 0.01   100.0               
+  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 0.01   100.0  
                                                                                 
   NLOG   = 100                                                                  
-  full_log = .true.             
-  
-# DMP control
-  
-  NODESI = 1   NODESJ = 1   NODESK = 1
-
-                                                
+  full_log = .true.                                                             
+  RESID_STRING = 'X001' 'X002' 
                                                                                 

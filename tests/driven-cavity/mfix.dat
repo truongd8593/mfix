@@ -7,7 +7,7 @@
   DESCRIPTION = 'Driven cavity'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-
+  TIME  =0.0  TSTOP = 1.0E-4   DT = 1.0e-4   DT_MAX = 1.0e-4   OUT_DT = 1.0e-4
   MOMENTUM_X_EQ(1) = .FALSE.
   MOMENTUM_Y_EQ(1) = .FALSE.
   MOMENTUM_Z_EQ(1) = .FALSE.
