@@ -52,6 +52,8 @@
       USE funits 
       USE scales 
       USE compar        !//d
+      USE mpi_utility   !//d
+      USE sendrecv      !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -221,7 +223,15 @@
                ENDIF 
             END DO 
          END DO 
+	 
+!\\SP Global Sum
+ 	 call global_all_sum(bed_weight,bed_weight)
+ 	 call global_all_sum(area,area)
          IF (AREA /= 0.0) BED_WEIGHT = BED_WEIGHT/AREA 
+!	 call global_all_sum(bed_weight,bed_weight)
+! bed_weight = bed_weight/numPEs
+!\\SP\
+! PJ = 0.0d0
          PJ = PJ + BED_WEIGHT 
          DO K = KMIN1, KMAX1
 !\\SP Bound Checking!!

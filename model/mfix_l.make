@@ -2361,9 +2361,9 @@ read_res1.$(OBJ_EXT) : read_res1.f \
             physprop.mod \
             run.mod \
             funits.mod \
-            tmp_array.mod \
             compar.mod \
-            mpi_utility.mod 
+            mpi_utility.mod \
+            sendrecv.mod 
 remove_comment.$(OBJ_EXT) : remove_comment.f 
 reset_new.$(OBJ_EXT) : reset_new.f \
             param.mod \
@@ -2493,6 +2493,8 @@ set_fluidbed_p.$(OBJ_EXT) : set_fluidbed_p.f \
             funits.mod \
             scales.mod \
             compar.mod \
+            mpi_utility.mod \
+            sendrecv.mod \
             sc_p_g1.inc                                                  \
             b_force1.inc                                                 \
             function.inc                                                 \

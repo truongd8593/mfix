@@ -38,6 +38,7 @@
       USE funits 
       USE compar      !// 001 Include MPI header file
       USE mpi_utility !//
+      USE sendrecv    !//
 !//TD      USE dbg_utility !//PARDBG
       IMPLICIT NONE
 !-----------------------------------------------
@@ -81,6 +82,10 @@
          allocate (array1(1))
          allocate (array2(1))
       end if
+
+!//SP
+      array1(:) = Undefined
+      array2(:) = Undefined
 
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
 !
@@ -303,7 +308,7 @@
 !      if (VERSION_NUMBER >= 1.12) &
 !         call bcast(DT, PE_IO)       !//PAR_I/O BCAST0d	(recv)
 
-!!      call gather(EP_G,dGTEMP2,PE_IO)   !//PAR_I/O GATHER1d
+!      call gather(EP_G,dGTEMP2,PE_IO)   !//PAR_I/O GATHER1d
 !      call gather(P_G,dGTEMP2,PE_IO)    !//PAR_I/O GATHER1d
 !      call gather(P_STAR,dGTEMP2,PE_IO) !//PAR_I/O GATHER1d
 !      call gather(RO_G,dGTEMP2,PE_IO)   !//PAR_I/O GATHER1d
@@ -345,7 +350,10 @@
 !    endif
 
 
-
+!//SP
+      call send_recv(rop_g)
+      call send_recv(ro_g)
+      call send_recv(rop_s)
 
 
       IF (DT_FAC == ONE) DT = DT_SAVE 
