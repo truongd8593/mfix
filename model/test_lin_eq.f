@@ -37,7 +37,6 @@
 !-----------------------------------------------
       INTEGER TEST  !=0 use the passed A_m; =1 construct a random A_m 
       INTEGER IER 
-      INTEGER IJK, IpJK, ImJK, IJpK, IJmK, IJKp, IJKm
       DOUBLE PRECISION, DIMENSION(DIMENSION_3,-3:3) :: A_M 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -45,7 +44,8 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ISEED, IJK, IJKERR 
+      INTEGER :: ISEED, IJKERR 
+      INTEGER IJK, IpJK, ImJK, IJpK, IJmK, IJKp, IJKm
       DOUBLE PRECISION, DIMENSION(DIMENSION_3,-3:3) :: Am 
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: Bm, X_ACT, X_SOL 
       DOUBLE PRECISION :: ERR, ERRMAX, ERRSUM, XSUM 
