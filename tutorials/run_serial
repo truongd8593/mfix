@@ -18,17 +18,17 @@ sh ~/MFIX/mfix/model/make_mfix < ../in
 cd ..
 # Another case
 echo
-cd fluidbed1
+cd fluidBed1
 echo "********************************************************************"
-echo "fluidbed1"
+echo "fluidBed1"
 sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
 echo
-cd fluidbed2
+cd fluidBed2
 echo "********************************************************************"
-echo "fluidbed2"
+echo "fluidBed2"
 sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
@@ -43,8 +43,7 @@ cd ../..
 # Another case
 echo
 cd reactor1/b
-echo
-"********************************************************************"
+echo "********************************************************************"
 echo "reactor1/b"
 sh ~/MFIX/mfix/model/make_mfix < ../../in
 ./mfix.exe > out1
