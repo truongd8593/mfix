@@ -89,7 +89,7 @@
             IJK = 1 
             IF (IJKMAX2 > 0) THEN 
 !// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3    
-               DIF_G(0:IJKMAX3,:NMAX(0)) = DIF_G0 
+               DIF_G(IJKSTART3:IJKEND3,:NMAX(0)) = DIF_G0 
 !//? what is IJK used for? leftover from f77-->f90 automatic conversion?	       
                IJK = IJKMAX2 + 1 
             ENDIF 
@@ -126,7 +126,7 @@
                IJK = 1 
                IF (IJKMAX2 > 0) THEN 
 !// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3    	       
-                  DIF_S(0:IJKMAX3,M,:NMAX(M)) = DIF_S0 
+                  DIF_S(IJKSTART3:IJKEND3,M,:NMAX(M)) = DIF_S0 
 !//? what is IJK used for? leftover from f77-->f90 automatic conversion?	       		  
                   IJK = IJKMAX2 + 1 
                ENDIF 
@@ -141,7 +141,7 @@
             IJK = 1 
             IF (IJKMAX2 > 0) THEN 
 !// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3    	       	    
-               F_GS(0:IJKMAX3,:MMAX) = ZERO 
+               F_GS(IJKSTART3:IJKEND3,:MMAX) = ZERO 
 !//? what is IJK used for?  leftover from f77-->f90 automatic conversion?	       		  	       
                IJK = IJKMAX2 + 1 
             ENDIF 

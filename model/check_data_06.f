@@ -133,7 +133,7 @@
 !// 200 1008 Changed the limits in K BC type label assignment in 2nd layer of ghost cells
 !                  IF (K==1 .OR. K==KMAX2) THEN 
                   IF (K==KMIN3 .OR. K==KMIN2 .OR. &
-		      K==KMAX2 .OR. K==KMAX3) THEN 		  
+ 		      K==KMAX2 .OR. K==KMAX3) THEN 		  
                      IF (CYCLIC_Z_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
                      ELSE IF (CYCLIC_Z) THEN 
@@ -153,8 +153,9 @@
 !//S      by replacing with JMIN3,JMIN2,JMAX3	       
                IF (DO_J) THEN 
 !// 200 1008 Changed the limits in J, BC type label assignment in 2nd layer of ghost cells
+!                  IF (J==1 .OR. J==JMAX2) THEN
                   IF (J==JMIN3 .OR. J==JMIN2 .OR. &
-		      J==JMAX2 .OR. J==JMAX3) THEN 		  		  
+ 		      J==JMAX2 .OR. J==JMAX3) THEN 		  		  
                      IF (CYCLIC_Y_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
                      ELSE IF (CYCLIC_Y) THEN 
@@ -168,8 +169,9 @@
 !//S      by replacing with IMIN3,IMIN2,IMAX3	       
                IF (DO_I) THEN 
 !// 200 1008 Changed the limits in I, BC type label assignment in 2nd layer of ghost cells	       
+!                  IF (I==1 .OR. I==IMAX2) THEN
                   IF (I==IMIN3 .OR. I==IMIN2 .OR. &
-		      I==IMAX2 .OR. I==IMAX3) THEN 		  
+ 		      I==IMAX2 .OR. I==IMAX3) THEN 		  
 		  
                      IF (CYCLIC_X_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
@@ -188,8 +190,8 @@
 !               IF ((I==1 .OR. I==IMAX2) .AND. (J==1 .OR. J==JMAX2) .AND. (K==1&
 !                   .OR. K==KMAX2)) THEN 
                IF ((I==IMIN3 .OR. I==IMIN2 .OR. I==IMAX2 .OR. I==IMAX3) .AND. &
-	           (J==JMIN3 .OR. J==JMIN2 .OR. J==JMAX2 .OR. J==JMIN3) .AND. &
-		   (K==KMIN3 .OR. K==KMIN2 .OR. K==KMAX2 .OR. K==KMAX3)) THEN 		   
+ 	           (J==JMIN3 .OR. J==JMIN2 .OR. J==JMAX2 .OR. J==JMIN3) .AND. &
+ 		   (K==KMIN3 .OR. K==KMIN2 .OR. K==KMAX2 .OR. K==KMAX3)) THEN 		   
                   IF (ICBC_FLAG(IJK) /= 'S--') ICBC_FLAG(IJK) = 'W--' 
 		  
                ENDIF 
@@ -620,13 +622,13 @@
 
 !//AIKEPARDBGSTOP 0922
 !      write(*,"('(PE ',I2,'): INTERCHK9 in chk_data_06')") myPE !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): from chk_data_06.f at ICV = ',I6,&!//AIKEPARDBG
-!                 /,9X,'IC_K_B = ',I6,'  IC_K_T = ',I6, &        !//AIKEPARDBG
-!                 /,9X,'IC_J_S = ',I6,'  IC_J_N = ',I6, &        !//AIKEPARDBG
-!		 /,9X,'IC_I_W = ',I6,'  IC_I_E = ',I6)") &       !//AIKEPARDBG
-!                 myPE,ICV,IC_K_B(ICV), IC_K_T(ICV),&            !//AIKEPARDBG
-!		 IC_J_S(ICV), IC_J_N(ICV),&                      !//AIKEPARDBG
-!		 IC_I_W(ICV), IC_I_E(ICV)                        !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): from chk_data_06.f at ICV = ',I6,&
+!    &                  /,9X,'IC_K_B = ',I6,'  IC_K_T = ',I6, & 
+!    &                  /,9X,'IC_J_S = ',I6,'  IC_J_N = ',I6, &
+!    & 		 /,9X,'IC_I_W = ',I6,'  IC_I_E = ',I6)") &    
+!    &                  myPE,ICV,IC_K_B(ICV), IC_K_T(ICV),&  
+!    & 		 IC_J_S(ICV), IC_J_N(ICV),&                 
+!    & 		 IC_I_W(ICV), IC_I_E(ICV)                        !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
 
@@ -637,7 +639,7 @@
                DO J = IC_J_S(ICV), IC_J_N(ICV) 
                   DO I = IC_I_W(ICV), IC_I_E(ICV) 
 !// 360 1025 Check if current i,j,k resides on this PE		  
-		  IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	
+ 		  IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	
 	  
 !// 220 1004 Need to use local FUNIJK when setting ICBC_FLAG on each PE
                      IJK = FUNIJK(I,J,K) 

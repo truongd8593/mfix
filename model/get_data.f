@@ -88,7 +88,7 @@
 
 
 !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): aft ALLOCATE_ARRAYS in get_data')") myPE	!//AIKEPARDBG
+       write(*,"('(PE ',I2,'): aft ALLOCATE_ARRAYS in get_data')") myPE	!//AIKEPARDBG
 !      call mfix_exit(myPE)	!//AIKEPARDBG
       
 !
@@ -132,7 +132,7 @@
       ENDIF 
 
 !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): end of RUN_TYPE branches in get_data')") myPE	!//AIKEPARDBG
+       write(*,"('(PE ',I2,'): end of RUN_TYPE branches in get_data')") myPE	!//AIKEPARDBG
 !      call mfix_exit(myPE)	!//AIKEPARDBG
 
 !
@@ -146,18 +146,18 @@
 !
       CALL CHECK_DATA_01                         ! run_control input 
 !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): aft call chk_data_01 in get_data')") myPE !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): aft call chk_data_01 in get_data')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
 
       CALL CHECK_DATA_02                         ! output_control input 
 !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): aft call chk_data_02 in get_data')") myPE  !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): aft call chk_data_02 in get_data')") myPE  !//AIKEPARDBG
 !      call mfix_exit(myPE)  !//AIKEPARDBG
 
       CALL CHECK_DATA_03 (SHIFT)                 ! geometry input 
 !//AIKEPARDBGSTOP 0907
-!      write(*,"('(PE ',I2,'): aft call chk_data_03 in get_data')") myPE !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): aft call chk_data_03 in get_data')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
 !
@@ -179,7 +179,7 @@
       CALL SET_CONSTANTS 
 !
 !//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): aft call set_constants in get_data')") myPE !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): aft call set_constants in get_data')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
 
@@ -187,14 +187,16 @@
 
 
 !//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): aft call check_data_06 in get_data')") myPE !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): aft call check_data_06 in get_data')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
       CALL CHECK_DATA_07                         ! boundary condition section 
+!//AIKEPARDBGSTOP 0922
+       write(*,"('(PE ',I2,'): aft call check_data_07 in get_data')") myPE !//AIKEPARDBG
       CALL CHECK_DATA_08                         ! Internal surfaces section 
       CALL CHECK_DATA_09                         ! Chemical reactions section 
 !//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): aft call check_data_09 in get_data')") myPE !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): aft call check_data_09 in get_data')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
       
 

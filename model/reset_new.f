@@ -46,50 +46,42 @@
 !-----------------------------------------------
 !
 !
+!//EFD Nov 11, convert (:IJKMAX2) to just (:)
+!// let the compiler determine the array bounds
 !
 !
-!                    Indices
-!
-      IJK = 1 
-      IF (IJKMAX2 > 0) THEN 
-         EP_G(:IJKMAX2) = EP_GO(:IJKMAX2) 
-         P_G(:IJKMAX2) = P_GO(:IJKMAX2) 
-         P_STAR(:IJKMAX2) = P_STARO(:IJKMAX2) 
-         RO_G(:IJKMAX2) = RO_GO(:IJKMAX2) 
-         ROP_G(:IJKMAX2) = ROP_GO(:IJKMAX2) 
-         U_G(:IJKMAX2) = U_GO(:IJKMAX2) 
-         V_G(:IJKMAX2) = V_GO(:IJKMAX2) 
-         W_G(:IJKMAX2) = W_GO(:IJKMAX2) 
-         IF (ENERGY_EQ) T_G(:IJKMAX2) = T_GO(:IJKMAX2) 
+         EP_G(:) = EP_GO(:) 
+         P_G(:) = P_GO(:) 
+         P_STAR(:) = P_STARO(:) 
+         RO_G(:) = RO_GO(:) 
+         ROP_G(:) = ROP_GO(:) 
+         U_G(:) = U_GO(:) 
+         V_G(:) = V_GO(:) 
+         W_G(:) = W_GO(:) 
+         IF (ENERGY_EQ) T_G(:) = T_GO(:) 
          IF (SPECIES_EQ(0)) THEN 
             N = 1 
             IF (NMAX(0) > 0) THEN 
-               X_G(:IJKMAX2,:NMAX(0)) = X_GO(:IJKMAX2,:NMAX(0)) 
+               X_G(:,:NMAX(0)) = X_GO(:,:NMAX(0)) 
                N = NMAX(0) + 1 
             ENDIF 
-         ENDIF 
-         IJK = IJKMAX2 + 1 
-      ENDIF 
+          ENDIF 
       DO M = 1, MMAX 
 
 
-         IJK = 1 
-         IF (IJKMAX2 > 0) THEN 
-            ROP_S(:IJKMAX2,M) = ROP_SO(:IJKMAX2,M) 
-            THETA_M(:IJKMAX2,M) = THETA_MO(:IJKMAX2,M) 
-            IF (ENERGY_EQ) T_S(:IJKMAX2,M) = T_SO(:IJKMAX2,M) 
-            U_S(:IJKMAX2,M) = U_SO(:IJKMAX2,M) 
-            V_S(:IJKMAX2,M) = V_SO(:IJKMAX2,M) 
-            W_S(:IJKMAX2,M) = W_SO(:IJKMAX2,M) 
+            ROP_S(:,M) = ROP_SO(:,M) 
+            THETA_M(:,M) = THETA_MO(:,M) 
+            IF (ENERGY_EQ) T_S(:,M) = T_SO(:,M) 
+            U_S(:,M) = U_SO(:,M) 
+            V_S(:,M) = V_SO(:,M) 
+            W_S(:,M) = W_SO(:,M) 
             IF (SPECIES_EQ(M)) THEN 
                N = 1 
                IF (NMAX(M) > 0) THEN 
-                  X_S(:IJKMAX2,M,:NMAX(M)) = X_SO(:IJKMAX2,M,:NMAX(M)) 
+                  X_S(:,M,:NMAX(M)) = X_SO(:,M,:NMAX(M)) 
                   N = NMAX(M) + 1 
                ENDIF 
             ENDIF 
-            IJK = IJKMAX2 + 1 
-         ENDIF 
       END DO 
       RETURN  
       END SUBROUTINE RESET_NEW 

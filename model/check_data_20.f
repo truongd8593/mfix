@@ -43,6 +43,7 @@
       USE visc_g
       USE rxns
       USE compar   !//d
+      USE sendrecv !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -79,6 +80,12 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
+!//SP/ Should be moved elsewhere, done here as a temporary fix to update the 
+!      ghost layers created by processor mapping
+      call send_recv(p_g,2)
+      call send_recv(w_s,2)
+      call send_recv(w_g,2)
+!
       CALL START_LOG 
       ABORT = .FALSE. 
       NONZERO = .FALSE. 
@@ -90,7 +97,8 @@
          DO J = jstart2, jend2 
             DO I = istart2, iend2 
 !// 360 1025 Check if current i,j,k resides on this PE	    
-	       IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    
+!	       IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    
+!// SP - Not needed as the loop indices are already correct
 !// 220 1004 Need to use local FUNIJK	    
                IJK = FUNIJK(I,J,K) 
                IF (.NOT.WALL_AT(IJK)) THEN 
@@ -170,8 +178,9 @@
                      WRITE (UNIT_LOG, 1010) I, J, K, 'V_g' 
                   ENDIF 
 !//AIKE 1105 bypass the check if k-1 = kstart3 (i.e. ghost cell)
-!                  IF (W_G(IJKM) == UNDEFINED) THEN 		  
-                  IF (W_G(IJKM) == UNDEFINED.AND.(K-1) /= kstart3) THEN 
+!//SP Uncommented
+                  IF (W_G(IJKM) == UNDEFINED) THEN 		  
+!                 IF (W_G(IJKM) == UNDEFINED.AND.(K-1) /= kstart3) THEN 
                      IF (.NOT.ABORT) THEN 
                         WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
@@ -243,8 +252,9 @@
                         WRITE (UNIT_LOG, 1011) I, J, K, M, 'V_s' 
                      ENDIF 
 !//AIKE 1105 bypass the check if k-1 = kstart3 (i.e. ghost cell)
-!                     IF (W_S(IJKM,M) == UNDEFINED) THEN 
-                     IF (W_S(IJKM,M) == UNDEFINED.AND.(K-1) /= kstart3) THEN
+!//SP Uncommented
+                     IF (W_S(IJKM,M) == UNDEFINED) THEN 
+!                    IF (W_S(IJKM,M) == UNDEFINED.AND.(K-1) /= kstart3) THEN
                         IF (.NOT.ABORT) THEN 
                            WRITE (UNIT_LOG, 1000) 
                            ABORT = .TRUE. 
@@ -285,7 +295,8 @@
          DO J = jstart2, jend2 
             DO I = istart2, iend2 
 !// 360 1025 Check if current i,j,k resides on this PE	    
-	       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    
+!	       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    
+!//SP Not needed as the loops are already in limits
 !// 220 1004 Need to use local FUNIJK
                IJK = FUNIJK(I,J,K) 
                IF (FLAG(IJK)==1 .OR. FLAG(IJK)==20) THEN 

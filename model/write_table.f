@@ -39,7 +39,11 @@
       CHARACTER*(*)    LEGEND(3)
 !
 !                      DX, DY, or DZ Array to be written
-      DOUBLE PRECISION ARRAY(*)
+
+
+!//EFD Nov/11, avoid use of (*) 
+!//      DOUBLE PRECISION ARRAY(*)
+      DOUBLE PRECISION ARRAY((LSTART-1):(LEND+1))
 !
 !                      Starting value of distance
       DOUBLE PRECISION DIST_MIN

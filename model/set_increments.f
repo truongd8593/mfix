@@ -107,14 +107,15 @@
             IM1(I) = MAX(ISTART3,I - 1) 
             IP1(I) = MIN(IEND3,I + 1) 
          ENDIF 
+!// IP1(k+1)  etc.,has to be put to undefined_I for error tracking at a later stage....
 !// 200 1107 need to update the values in the 2nd layer of ghost cells	 
 	 if(i == istart2) then
-	    IM1(i-1) = 0
+ 	    IM1(i-1) = istart3
 	    IP1(i-1) = ISTART2
 	 endif
 	 if(i == iend2) then
 	    IM1(i+1) = iend2
-	    IP1(i+1) = 0
+ 	    IP1(i+1) = iend3
 	 endif	 
 !//AIKEPARDBG
 !         if( i == istart2) &
@@ -136,14 +137,15 @@
             JM1(J) = MAX(JSTART3,J - 1)
             JP1(J) = MIN(JEND3,J + 1)
          ENDIF 
+!// JP1(k+1) etc., has to be put to undefined_I for error tracking at a later stage....
 !// 200 1107 need to update the values in the 2nd layer of ghost cells	 
 	 if(j == jstart2) then
-	    JM1(j-1) = 0
+ 	    JM1(j-1) = jstart3
 	    JP1(j-1) = JSTART2
 	 endif
 	 if(j == jend2) then
 	    JM1(j+1) = jend2
-	    JP1(j+1) = 0
+ 	    JP1(j+1) = jend3
 	 endif	 	 
       END DO 
       DO K = KSTART2, KEND2
@@ -154,14 +156,15 @@
             KM1(K) = MAX(KSTART3,K - 1)
             KP1(K) = MIN(KEND3,K + 1)
          ENDIF 
+!// KP1(k+1)  etc.,has to be put to undefined_I for error tracking at a later stage....
 !// 200 1107 need to update the values in the 2nd layer of ghost cells	 
 	 if(k == kstart2) then
-	    kM1(k-1) = 0
+ 	    kM1(k-1) = kstart3
 	    kP1(k-1) = kSTART2
 	 endif
 	 if(k == kend2) then
 	    kM1(k+1) = kend2
-	    kP1(k+1) = 0
+ 	    kP1(k+1) = kend3
 	 endif	 	 
       END DO 
       
@@ -193,9 +196,9 @@
 !      call mfix_exit(myPE) !//AIKEPARDBG       
 
 !     Loop over all cells (minus the ghost layers)
-      DO K = KSTART2, KEND2
-         DO J = JSTART2, JEND2
-            L100: DO I = ISTART2, IEND2
+      DO K = KSTART3, KEND3
+         DO J = JSTART3, JEND3
+            L100: DO I = ISTART3, IEND3
 !
 !// 220 1004 Need to use local FUNIJK
                IJK = FUNIJK(I,J,K)               !Find value of IJK
@@ -276,6 +279,7 @@
       END DO 
       RETURN  
 !
+      write(*,*) 'Am I here yet'
 !     WRITE FOLLOWING IF THERE IS AN ERROR IN MODULE
  1000 FORMAT(/70('*')//'From: SET_INCREMENTS'/'Message: The number of',&
          'classes has exceeded the maximum allowed (',I3,').  Increase',&

@@ -25,6 +25,8 @@
 !  Variables modified: P_g, IJK, I, J, K                               C
 !                                                                      C
 !  Local variables: PJ, BED_WEIGHT, AREA, dAREA                        C
+!//SP
+!  IS_ON_MYPE_K, IS_ON_MYPE_I
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
@@ -82,6 +84,9 @@
 ! 
 !                      Average pressure drop per unit length 
       DOUBLE PRECISION DPoDX, DPoDY, DPoDZ 
+!//SP
+!     Bound Checking
+      LOGICAL IS_ON_MYPE_K, IS_ON_MYPE_I
 ! 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -109,6 +114,8 @@
             PJ = PJ + DPODX*HALF*(DX(I)+DX(I+1)) 
             DO K = KMIN1, KMAX1 
                DO J = JMIN1, JMAX1 
+!\\ Bound Checking
+	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                   IJK = FUNIJK(I,J,K) 
                   IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ) 
                END DO 
@@ -123,6 +130,8 @@
             PJ = PJ + DPODY*HALF*(DY(J)+DY(J+1)) 
             DO K = KMIN1, KMAX1 
                DO I = IMIN1, IMAX1 
+!\\ Bound Checking
+	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                   IJK = FUNIJK(I,J,K) 
                   IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ) 
                END DO 
@@ -137,6 +146,8 @@
             PJ = PJ + DPODZ*HALF*(DZ(K)+DZ(K+1)) 
             DO J = JMIN1, JMAX1 
                DO I = IMIN1, IMAX1 
+!\\ Bound Checking
+	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                   IJK = FUNIJK(I,J,K) 
                   IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ) 
                END DO 
@@ -158,7 +169,8 @@
 !
 !         If incompressible flow set P_g to zero.
 !
-            DO IJK = 1, IJKMAX2 
+!\\SP Changed the bounds from 1, ijkmax2
+            DO IJK = IJKSTART3, IJKEND3 
                IF (FLUID_AT(IJK)) P_G(IJK) = ZERO 
             END DO 
             RETURN  
@@ -183,7 +195,10 @@
          BED_WEIGHT = 0.0 
          AREA = 0.0 
          DO K = KMIN1, KMAX1 
+!\\SP Bound Checking!!
+	    IF(K.LT.KSTART.OR.K.GT.KEND) CYCLE
             DO I = IMIN1, IMAX1 
+	       IF(I.LT.ISTART.OR.I.GT.IEND) CYCLE
                IJK = FUNIJK(I,J,K) 
                IF (FLUID_AT(IJK)) THEN 
                   IF (COORDINATES == 'CARTESIAN') THEN 
@@ -208,13 +223,17 @@
          END DO 
          IF (AREA /= 0.0) BED_WEIGHT = BED_WEIGHT/AREA 
          PJ = PJ + BED_WEIGHT 
-         DO K = KMIN1, KMAX1 
+         DO K = KMIN1, KMAX1
+!\\SP Bound Checking!!
+	    IF(K.LT.KSTART.OR.K.GT.KEND) CYCLE
             DO I = IMIN1, IMAX1 
+	       IF(I.LT.ISTART.OR.I.GT.IEND) CYCLE
                IJK = FUNIJK(I,J,K) 
                IF(FLUID_AT(IJK).AND.P_G(IJK)==UNDEFINED)P_G(IJK)=SCALE(PJ) 
             END DO 
          END DO 
       END DO 
+!
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: SET_FLUIDBED_P'/' Message: Outflow ',&
          'pressure boundary condition (P_OUTFLOW) not found.',/&

@@ -37,7 +37,9 @@
       DOUBLE PRECISION XMIN
 !
 !                      Cell sizes (DX, DY, or DZ)
-      DOUBLE PRECISION DX(*)
+!//EFD Nov/11 avoid using dx(*)
+!//      DOUBLE PRECISION DX(*)
+      DOUBLE PRECISION DX(0:L2)
 !
 !  Local variables
 !
@@ -48,8 +50,14 @@
       LOCATION = XMIN - HALF*DX(1) 
       L = 2 
       IF (L2 - 1 > 0) THEN 
-         LOCATION = LOCATION + SUM(HALF*(DX(:L2-1)+DX(2:L2))) 
-         L = L2 + 1 
+
+!//EFD      since indexing of dx starts from 0
+!//         using DX(1:(L2-1)) instead of DX(:,L2)
+!//         LOCATION = LOCATION + SUM(HALF*(DX(:L2-1)+DX(2:L2)))
+
+         LOCATION = LOCATION + SUM(HALF*(DX(1:(L2-1))+DX(2:L2)))
+         L = L2 + 1
+
       ENDIF 
       RETURN  
       END FUNCTION LOCATION 

@@ -76,6 +76,9 @@
 ! NOTE:  IF NCOL IS CHANGED TO A NUMBER GREATER THAN 30, THEN THE "30"
 !        IN FORMATS 5050 AND 5100 MUST BE CHANGED TO THAT NUMBER.
 !
+!//TD - Temporarily disable because of some problems with global and local incompatibility of
+!       ip_at_e and so on - Sreekanth on 11/11/99
+      RETURN
       NCOL = 30 
       NTAB = IMAX2/NCOL + 1 
       IF (MOD(IMAX2,NCOL) == 0) NTAB = NTAB - 1 

@@ -163,7 +163,7 @@
       CALL GET_WALLS_BC 
 
 !//AIKEPARDBGSTOP 1016
-!      write(*,"('(PE ',I2,'): aft get_walls_bc in check_data_07')") myPE !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): aft get_walls_bc in check_data_07')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
 !
@@ -172,7 +172,7 @@
       CALL GET_FLOW_BC 
 
 !//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): aft get_flow_bc in check_data_07')") myPE !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): aft get_flow_bc in check_data_07')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
 !
@@ -180,6 +180,7 @@
 !
       CALL GET_BC_AREA 
 !
+       write(*,"('(PE ',I2,'): aft get_bc_area is check_data_07')") myPE !//AIKEPARDBG
 !
       DO BCV = 1, DIMENSION_BC 
          IF (BC_DEFINED(BCV)) THEN 
@@ -847,17 +848,21 @@
             ENDIF 
          ENDIF 
       END DO 
-      IF (RUN_TYPE /= 'NEW') RETURN  
+!
+!      write(*,"('(PE ',I2,'): aft flow_to_vel1 is check_data_07')") myPE !//AIKEPARDBG
+!      write(*,*) 'runtype',RUN_TYPE(1:3)
+!
+      IF (RUN_TYPE(1:3) /= 'NEW') RETURN  
       ERROR = .FALSE. 
 !//d Note that these loops running over only ACTIVE cells, no need to change      
-      DO I = kstart2, kend2 
+      DO K = kstart2, kend2 
          DO J = jstart2, Jend2 
-            DO K = istart2, Iend2
+            DO I = istart2, Iend2
 !// 220 1004 Need to use local FUNIJK		     	     
-               IJK = FUNIJK(K,J,I) 
+               IJK = FUNIJK(I,J,K) 
                IF (ICBC_FLAG(IJK) == '   ') THEN 
                   IF (.NOT.ERROR) WRITE (UNIT_LOG, 1400) 
-                  WRITE (UNIT_LOG, 1410) K, J, I 
+                  WRITE (UNIT_LOG, 1410) I, J, K 
                   ERROR = .TRUE. 
                ENDIF 
             END DO 

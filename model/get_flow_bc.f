@@ -230,6 +230,7 @@
                      DO J = BC_J_S(BCV), BC_J_N(BCV) 
 !// 360 1025 Check if current i,j,k resides on this PE		     
    		       IF (.NOT.IS_ON_myPE_plus2layers(I_FLUID,J,K)) CYCLE
+   		       IF (.NOT.IS_ON_myPE_plus2layers(I_WALL,J,K)) CYCLE
 		       
 !// 220 1004 Need to use local FUNIJK		     
                         IJK_WALL = FUNIJK(I_WALL,J,K) 
@@ -258,7 +259,8 @@
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
 !//? Add filter
 !// 360 1025 Check if current i,j,k resides on this PE		     
-!   		       IF (.NOT.IS_ON_myPE_plus2layers(I_FLUID,J,K)) CYCLE
+    		       IF (.NOT.IS_ON_myPE_plus2layers(I,J_FLUID,K)) CYCLE
+    		       IF (.NOT.IS_ON_myPE_plus2layers(I,J_WALL,K)) CYCLE
 !// 360 Check if current k resides on this PE
 		       if(k .ge. kstart3_all(myPE) .AND. k .le. kend3_all(myPE)) then		     
 !// 220 1004 Need to use local FUNIJK		     
@@ -289,7 +291,8 @@
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
 !//? Add filter
 !// 360 1025 Check if current i,j,k resides on this PE		     
-!   		       IF (.NOT.IS_ON_myPE_plus2layers(I_FLUID,J,K_FLUID)) CYCLE		     
+    		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K_FLUID)) CYCLE
+    		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K_WALL)) CYCLE		     
 !// 220 1004 Need to use local FUNIJK		     		     
                         IJK_WALL = FUNIJK(I,J,K_WALL) 
                         IJK_FLUID = FUNIJK(I,J,K_FLUID) 
@@ -321,13 +324,12 @@
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
 !//? Add filter
 !// 360 1025 Check if current i,j,k resides on this PE		     
-!   		       IF (.NOT.IS_ON_myPE_plus2layers(I_FLUID,J,K)) CYCLE		     		     
+    		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     		     
 !// 220 1004 Need to use local FUNIJK as dimension of ICBC_FLAG is DIM_3L		     		     
                         IJK = FUNIJK(I,J,K) 
 !// 360 1104 Check if current i,j,k resides on this PE before printing error msg			
 !                        IF (.NOT.WALL_ICBC_FLAG(IJK)) THEN 
-                        IF (.NOT.WALL_ICBC_FLAG(IJK).AND. &
-			    & IS_ON_myPE_plus2layers (I, J, K)) THEN 			
+                        IF (.NOT.WALL_ICBC_FLAG(IJK)) THEN 			
                            WRITE (UNIT_LOG, 1500) BCV, ICBC_FLAG(IJK), I, J, K 
                            ERROR = .TRUE. 
                         ENDIF 

@@ -37,17 +37,24 @@
 !                      Mass fraction array's Ist dimension
       INTEGER          DIM
 !
-!                      Mass fraction array
-      DOUBLE PRECISION X_g(DIM, *)
-!
-!                      Moleculare weight array
-      DOUBLE PRECISION MW_g(*)
-!
-!                      Mass fraction array Ist index
-      INTEGER          L
 !
 !                      Max of X_g array 2nd index and MW_g array index
       INTEGER          NMAX
+!
+!                      Mass fraction array
+!
+!//EFD Nov 11, avoid use of '*'
+!//      DOUBLE PRECISION X_g(DIM, *)
+      DOUBLE PRECISION X_g(DIM, NMAX)
+!
+!                      Moleculare weight array
+!
+!//EFD Nov 11, avoid use of '*'
+!//      DOUBLE PRECISION MW_g(*)
+      DOUBLE PRECISION MW_g(NMAX)
+!
+!                      Mass fraction array Ist index
+      INTEGER          L
 !
 !  Local variable
 !

@@ -104,7 +104,7 @@
 
 !//? 0906 temporarily setting KMAX3 here, need to find a better place to initialize it
 !      KMAX3 = KMAX2 + 1
-      KMAX3 = KMAX2
+!     KMAX3 = KMAX2
 !-----------------------------------------------
 
 !      call lock_tmp_array

@@ -32,6 +32,7 @@
       USE visc_g
       USE geometry
       USE indices
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -47,11 +48,11 @@
 !
       IJK = 1 
       
-      IF (IJKMAX2 > 0) THEN 
+!     IF (IJKMAX2 > 0) THEN 
 !// 200 0922 changed :IJKMAX2 --> 0:IJKMAX3      
-         L_SCALE(0:IJKMAX3) = L_SCALE0 
+         L_SCALE(IJKSTART3:IJKEND3) = L_SCALE0 
 !//? what is IJK used for? modification for IJKMAX3 is valid or not?	 
-         IJK = IJKMAX3 + 1 
-      ENDIF 
+!        IJK = IJKMAX3 + 1 
+!     ENDIF 
       RETURN  
       END SUBROUTINE SET_L_SCALE 

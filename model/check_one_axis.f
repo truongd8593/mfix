@@ -40,7 +40,10 @@
       DOUBLE PRECISION ALENGTH 
       LOGICAL NO_IJK, SHIFT 
       CHARACTER AXIS, AXIS_INDEX 
-      DOUBLE PRECISION, DIMENSION(*) :: DA 
+!//EFD use explicit dimension for DA
+!//SP Temporary fix to make sure that DA(2) is taken care of in the event of
+!     no_k or i or j, where the DIMEN is 1.
+      DOUBLE PRECISION, DIMENSION(0:DIMEN+1) :: DA 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------

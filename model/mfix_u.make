@@ -1441,6 +1441,7 @@ check_data_20.$(OBJ_EXT) : check_data_20.f \
             VISC_G.mod \
             RXNS.mod \
             COMPAR.mod \
+            SENDRECV.mod \
             function.inc                                                
 check_data_30.$(OBJ_EXT) : check_data_30.f \
             PARAM.mod \
@@ -1476,10 +1477,11 @@ conv_dif_phi.$(OBJ_EXT) : conv_dif_phi.f \
             PARAM.mod \
             PARAM1.mod \
             RUN.mod \
-            GEOMETRY.mod \
             COMPAR.mod \
-            SENDRECV.mod \
+            MPI_UTILITY.mod \
+            GEOMETRY.mod \
             XSI_ARRAY.mod \
+            SENDRECV.mod \
             PARALLEL.mod \
             MATRIX.mod \
             TOLERANC.mod \
@@ -1897,7 +1899,8 @@ get_bc_area.$(OBJ_EXT) : get_bc_area.f \
             PARAM.mod \
             PARAM1.mod \
             GEOMETRY.mod \
-            BC.mod 
+            BC.mod \
+            COMPAR.mod 
 get_data.$(OBJ_EXT) : get_data.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2007,7 +2010,8 @@ init_fvars.$(OBJ_EXT) : init_fvars.f \
             FLDVAR.mod \
             GEOMETRY.mod \
             PHYSPROP.mod \
-            INDICES.mod 
+            INDICES.mod \
+            COMPAR.mod 
 init_namelist.$(OBJ_EXT) : init_namelist.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2473,7 +2477,10 @@ set_geometry1.$(OBJ_EXT) : set_geometry1.f \
             PARALLEL.mod \
             RUN.mod \
             GEOMETRY.mod \
-            INDICES.mod 
+            INDICES.mod \
+            COMPAR.mod \
+            FUNITS.mod \
+            function.inc                                                
 set_ic.$(OBJ_EXT) : set_ic.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2487,6 +2494,7 @@ set_ic.$(OBJ_EXT) : set_ic.f \
             SCALES.mod \
             ENERGY.mod \
             COMPAR.mod \
+            SENDRECV.mod \
             sc_p_g1.inc                                                  \
             b_force1.inc                                                 \
             s_pr1.inc                                                    \
@@ -2531,7 +2539,8 @@ set_l_scale.$(OBJ_EXT) : set_l_scale.f \
             CONSTANT.mod \
             VISC_G.mod \
             GEOMETRY.mod \
-            INDICES.mod 
+            INDICES.mod \
+            COMPAR.mod 
 set_max2.$(OBJ_EXT) : set_max2.f \
             PARAM.mod \
             PARAM1.mod \

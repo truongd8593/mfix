@@ -46,6 +46,7 @@
       USE scales 
       USE energy
       USE compar        !//d
+      USE sendrecv      !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -121,6 +122,7 @@
 !
 !  Set the initial conditions.
 !
+
       DO L = 1, DIMENSION_IC 
          IF (IC_DEFINED(L)) THEN 
             EPGX = IC_EP_G(L) 

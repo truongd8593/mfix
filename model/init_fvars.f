@@ -37,6 +37,7 @@
       USE geometry
       USE physprop
       USE indices
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -61,18 +62,18 @@
       IF (IJKMAX2 > 0) THEN 
 !// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3
 !//         EP_G(:IJKMAX2) = UNDEFINED       
-         EP_G(0:IJKMAX3) = UNDEFINED 
-         P_G(0:IJKMAX3) = UNDEFINED 
-         P_STAR(0:IJKMAX3) = ZERO 
-         RO_G(0:IJKMAX3) = UNDEFINED 
-         ROP_G(0:IJKMAX3) = UNDEFINED 
-         T_G(0:IJKMAX3) = ZERO 
-         U_G(0:IJKMAX3) = UNDEFINED 
-         V_G(0:IJKMAX3) = UNDEFINED 
-         W_G(0:IJKMAX3) = UNDEFINED 
+         EP_G(IJKSTART3:IJKEND3) = UNDEFINED 
+         P_G(IJKSTART3:IJKEND3) = UNDEFINED 
+         P_STAR(IJKSTART3:IJKEND3) = ZERO 
+         RO_G(IJKSTART3:IJKEND3) = UNDEFINED 
+         ROP_G(IJKSTART3:IJKEND3) = UNDEFINED 
+         T_G(IJKSTART3:IJKEND3) = ZERO 
+         U_G(IJKSTART3:IJKEND3) = UNDEFINED 
+         V_G(IJKSTART3:IJKEND3) = UNDEFINED 
+         W_G(IJKSTART3:IJKEND3) = UNDEFINED 
          N = 1 
          IF (NMAX(0) > 0) THEN 
-            X_G(0:IJKMAX3,:NMAX(0)) = ZERO 
+            X_G(IJKSTART3:IJKEND3,:NMAX(0)) = ZERO 
             N = NMAX(0) + 1 
          ENDIF 
 !//? what is IJK used for?  leftover from f77-->f90 automatic conversion?	 
@@ -84,15 +85,15 @@
          IJK = 1 
          IF (IJKMAX2 > 0) THEN 
 !// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3
-            ROP_S(0:IJKMAX3,M) = UNDEFINED 
-            T_S(0:IJKMAX3,M) = ZERO 
-            THETA_M(0:IJKMAX3,M) = ZERO 
-            U_S(0:IJKMAX3,M) = UNDEFINED 
-            V_S(0:IJKMAX3,M) = UNDEFINED 
-            W_S(0:IJKMAX3,M) = UNDEFINED 
+            ROP_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
+            T_S(IJKSTART3:IJKEND3,M) = ZERO 
+            THETA_M(IJKSTART3:IJKEND3,M) = ZERO 
+            U_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
+            V_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
+            W_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
             N = 1 
             IF (NMAX(M) > 0) THEN 
-               X_S(0:IJKMAX3,M,:NMAX(M)) = ZERO 
+               X_S(IJKSTART3:IJKEND3,M,:NMAX(M)) = ZERO 
                N = NMAX(M) + 1 
             ENDIF 
 !//? what is IJK used for? leftover from f77-->f90 automatic conversion?	 	    

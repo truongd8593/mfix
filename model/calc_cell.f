@@ -48,7 +48,8 @@
 !    CELL_END   -  end   coordinate for cell
       INTEGER N_DIR, CELL_LOC 
       DOUBLE PRECISION REACTOR_LOC 
-      DOUBLE PRECISION, DIMENSION(*) :: D_DIR 
+!//EFD Nov/10, do not use dimension(*) for d_dir
+      DOUBLE PRECISION, DIMENSION(0:(N_DIR+3)) :: D_DIR 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -105,7 +106,10 @@
 !
       INTEGER CELL_LOC 
       DOUBLE PRECISION RMIN, REACTOR_LOC 
-      DOUBLE PRECISION, DIMENSION(*) :: D_DIR 
+!//EFD Nov/11 avoid using dx(*)
+!//   DOUBLE PRECISION, DIMENSION(*) :: D_DIR
+      DOUBLE PRECISION, DIMENSION(0:CELL_LOC) :: D_DIR
+!  
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------

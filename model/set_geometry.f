@@ -102,15 +102,16 @@
          DZ(KMAX2) = DZ(KMIN1) 
       ENDIF 
 !
+!//SP Changed the bounds to 0:IMAX3 from 1:IMAX2
       IF (COORDINATES == 'CARTESIAN') THEN 
-         I = 1 
-         IF (IMAX2 > 0) THEN 
-            X(:IMAX2) = ONE 
-            X_E(:IMAX2) = ONE 
-            OX(:IMAX2) = ONE 
-            OX_E(:IMAX2) = ONE 
-            ODX(:IMAX2) = ONE/DX(:IMAX2) 
-            I = IMAX2 + 1 
+         I = 0 
+         IF (IMAX3 > 0) THEN 
+            X(0:IMAX3) = ONE 
+            X_E(0:IMAX3) = ONE 
+            OX(0:IMAX3) = ONE 
+            OX_E(0:IMAX3) = ONE 
+            ODX(0:IMAX3) = ONE/DX(0:IMAX3) 
+            I = IMAX3 + 1 
          ENDIF 
       ELSE IF (CYLINDRICAL) THEN 
          IF (XMIN == ZERO) THEN 
@@ -148,26 +149,29 @@
          ENDIF 
       ENDIF 
 !
-      J = 1 
+!//SP Changed the bounds to 0:JMAX3 from 1:JMAX2
+!
+      J = 0 
       IF (JMAX2 > 0) THEN 
-         ODY(:JMAX2) = ONE/DY(:JMAX2) 
-         J = JMAX2 + 1 
+         ODY(0:JMAX3) = ONE/DY(0:JMAX3) 
+         J = JMAX3 + 1 
       ENDIF 
 
 !// 200 0920 Changed the limit from KMAX2--> KMAX3
+!// SP Modified the logic to incorporate the correct values for second ghost layer.
       DO K = 1, KMAX3 
 !
          IF (K == 1) THEN 
             Z(K) = ZERO - HALF*DZ(K) 
             Z_T(K) = ZERO 
 !// 200 0920 added initializations to take care of z(KMIN3)	    
-	    Z(K-1) =Z(K)
-            Z_T(K-1) = Z_T(K) 	    
+	    Z(K-1) =Z_T(K) - HALF*DZ(K-1)
+            Z_T(K-1) = Z_T(K) - DZ(K-1) 	    
 !
 !// 200 0920 added initializations to take care of z(KMAX3)	    
-         ELSE IF (K == KMAX3) THEN
-	    Z(K) =Z(K-1)
-            Z_T(K) = Z_T(K-1) 	    
+!        ELSE IF (K == KMAX3) THEN
+!	    Z(K) =Z_T(K-1) + HALF*DZ(K)
+!           Z_T(K) = Z_T(K-1) + DZ(K) 	    
 	    
          ELSE
             Z(K) = Z_T(K-1) + HALF*DZ(K) 

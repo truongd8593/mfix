@@ -113,17 +113,18 @@
 ! CHECK THE DATA FOR THE INDIVIDUAL AXES
 ! this must be changed if something other than 'NEW' or 'RESTART_1'
 !
+
       CALL CHECK_ONE_AXIS (IMAX, DIMENSION_I, XLENGTH, DX, 'X', 'I', NO_I, &
-         SHIFT) 
+         SHIFT)
       CALL CHECK_ONE_AXIS (JMAX, DIMENSION_J, YLENGTH, DY, 'Y', 'J', NO_J, &
-         SHIFT) 
+         SHIFT)
 !//? any modifications to be done for K direction check
       CALL CHECK_ONE_AXIS (KMAX, DIMENSION_K, ZLENGTH, DZ, 'Z', 'K', NO_K, &
-         SHIFT) 
+         SHIFT)
 !
-      DO_I = .NOT.NO_I 
-      DO_J = .NOT.NO_J 
-      DO_K = .NOT.NO_K 
+      DO_I = .NOT.NO_I
+      DO_J = .NOT.NO_J
+      DO_K = .NOT.NO_K
 !
       IF (COORDINATES == 'CYLINDRICAL') THEN 
          CYLINDRICAL = .TRUE. 

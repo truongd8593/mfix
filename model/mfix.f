@@ -135,7 +135,7 @@
       CALL GET_DATA 
 
 !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): aft get_data in mfix')") myPE    !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): aft get_data in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -149,7 +149,7 @@
       CALL SET_FLAGS 
 
 !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): aft set_flags in mfix')") myPE    !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): aft set_flags in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -307,21 +307,27 @@
 !  Set gas mixture molecular weight
 !
       CALL SET_MW_MIX_G 
+
+       write(*,"('(PE ',I2,'): after set_mw_mix_g in mfix')") myPE    !//AIKEPARDBG
 !
 !  Set the pressure field for a fluidized bed
 !
       IF (RUN_TYPE == 'NEW') CALL SET_FLUIDBED_P 
+
+       write(*,"('(PE ',I2,'): after set_fluidbed_p in mfix')") myPE    !//AIKEPARDBG
 !
 !  Initialize gas densities
 !
       CALL SET_RO_G 
+
+       write(*,"('(PE ',I2,'): after set_ro_g in mfix')") myPE    !//AIKEPARDBG
 !
 !  Initialize time dependent boundary conditions
 !
       CALL SET_BC1 
 
        write(*,"('(PE ',I2,'): after set_bc1 in mfix')") myPE    !//AIKEPARDBG
-       call exitMPI(myPE)   !//AIKEPARDBGSTOP
+!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Check the field variable data and report errors.

@@ -47,6 +47,8 @@
       INTEGER          I, J, K, IP, JP, KP, IJK 
 ! 
 !-----------------------------------------------
+!-----------------------------------------------
+      INCLUDE 'function.inc'
 !
 !
 !                      Indices
@@ -83,6 +85,8 @@
 !// 200 1108 Check if any of i,j,k is point the 2nd ghost layer
 !//          KP is k+1 which is the problematic due data dependency,
 !//          however, only used in DZ() which is known globally on all PEs	 
+
+	 IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
 	 
 !
          VOL(IJK) = DX(I)*DY(J)*(X(I)*DZ(K)) 

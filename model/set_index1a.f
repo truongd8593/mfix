@@ -70,60 +70,91 @@
 !
 !//09/02/99 - Modified calls to BOUND_FUNIJK to have a self consistent formulation - Sreekanth
 !
-      IMJK = FUNIJK(IM1(I),J,K) 
-      IPJK = FUNIJK(IP1(I),J,K) 
-      IJMK = FUNIJK(I,JM1(J),K) 
-      IJPK = FUNIJK(I,JP1(J),K) 
-      IJKM = FUNIJK(I,J,KM1(K)) 
-      IJKP = FUNIJK(I,J,KP1(K)) 
+      IMJK = UNDEFINED_I
+      IPJK = UNDEFINED_I
+      IJMK = UNDEFINED_I
+      IJPK = UNDEFINED_I
+      IJKM = UNDEFINED_I
+      IJKP = UNDEFINED_I
+      IJKW = UNDEFINED_I
+      IJKE = UNDEFINED_I
+      IJKS = UNDEFINED_I
+      IJKN = UNDEFINED_I
+      IJKB = UNDEFINED_I
+      IJKT = UNDEFINED_I
+
+
+      IF(IM1(I).NE.UNDEFINED_I) THEN
+        IMJK = FUNIJK(IM1(I),J,K) 
 !
 !  IJKW
 !
-      IF (WALL_AT(IMJK)) THEN 
-         IJKW = IJK 
-      ELSE 
-          IJKW = IMJK 
-      ENDIF 
+        IF (WALL_AT(IMJK)) THEN 
+           IJKW = IJK 
+        ELSE 
+           IJKW = IMJK 
+        ENDIF 
+      ENDIF
+
+      IF(IP1(I).NE.UNDEFINED_I) THEN
+        IPJK = FUNIJK(IP1(I),J,K) 
 !
 !  IJKE
 !
-      IF (WALL_AT(IPJK)) THEN 
-         IJKE = IJK 
-      ELSE 
-          IJKE = IPJK 
-      ENDIF 
+        IF (WALL_AT(IPJK)) THEN 
+           IJKE = IJK 
+        ELSE 
+           IJKE = IPJK 
+        ENDIF 
+      ENDIF
+
+      IF(JM1(J).NE.UNDEFINED_I) THEN
+        IJMK = FUNIJK(I,JM1(J),K) 
 !
 !  IJKS
 !
-      IF (WALL_AT(IJMK)) THEN 
-         IJKS = IJK 
-      ELSE 
-          IJKS = IJMK 
-      ENDIF 
+        IF (WALL_AT(IJMK)) THEN 
+           IJKS = IJK 
+        ELSE 
+           IJKS = IJMK 
+        ENDIF 
+      ENDIF
+
+      IF(JP1(J).NE.UNDEFINED_I) THEN
+        IJPK = FUNIJK(I,JP1(J),K) 
 !
 !  IJKN
 !
-      IF (WALL_AT(IJPK)) THEN 
-         IJKN = IJK 
-      ELSE 
-          IJKN = IJPK 
-      ENDIF 
+        IF (WALL_AT(IJPK)) THEN 
+           IJKN = IJK 
+        ELSE 
+           IJKN = IJPK 
+        ENDIF 
+      ENDIF
+
+      IF(KM1(K).NE.UNDEFINED_I) THEN
+        IJKM = FUNIJK(I,J,KM1(K)) 
 !
 !  IJKB
 !
-      IF (WALL_AT(IJKM)) THEN 
-         IJKB = IJK 
-      ELSE 
-          IJKB = IJKM 
-      ENDIF 
+        IF (WALL_AT(IJKM)) THEN 
+           IJKB = IJK 
+        ELSE 
+           IJKB = IJKM 
+        ENDIF 
+      ENDIF
+
+      IF(KP1(K).NE.UNDEFINED_I) THEN
+        IJKP = FUNIJK(I,J,KP1(K)) 
 !
 !  IJKT
 !
-      IF (WALL_AT(IJKP)) THEN 
-         IJKT = IJK 
-      ELSE 
-          IJKT = IJKP 
-      ENDIF 
+        IF (WALL_AT(IJKP)) THEN 
+           IJKT = IJK 
+        ELSE 
+           IJKT = IJKP 
+        ENDIF 
+      ENDIF
 !
       RETURN  
       END SUBROUTINE SET_INDEX1A 
