@@ -1139,7 +1139,7 @@
 !      CASE (2)                                   !Superbee 
       CASE (3)                                   !SMART 
 !
-!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF)
+!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C)
          DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -1189,7 +1189,7 @@
 !      CASE (5)                                   !QUICKEST 
       CASE (6)                                   !MUSCL 
 
-!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF )
+!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C )
          DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
