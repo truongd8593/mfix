@@ -1,6 +1,9 @@
       MODULE funits
 
-
+!           Whether this processor should write the log file in DMP mode.
+!           Usually this flag is true only for PE_IO.  All the PEs may be forced
+!           to write a log file by setting ENABLE_DMP_LOG to .true. in output_mod.f.
+      LOGICAL :: DMP_LOG
 !
 !              .DAT unit number
       INTEGER  UNIT_DAT

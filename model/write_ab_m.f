@@ -83,12 +83,12 @@
 
       if (myPE == PE_IO) then
          CALL START_LOG 
-         WRITE (UNIT_LOG,*) ' Note : write_am_m is VERY inefficient '
-         WRITE (UNIT_LOG,*) '  '
-         WRITE (UNIT_LOG,*) ' A_m and B_m arrays below are in the '
-         WRITE (UNIT_LOG,*) ' mfix INTERNAL order'
-         WRITE (UNIT_LOG,*) ' '
-         WRITE (UNIT_LOG, '(A,A)') &
+         IF(DMP_LOG)WRITE (UNIT_LOG,*) ' Note : write_am_m is VERY inefficient '
+         IF(DMP_LOG)WRITE (UNIT_LOG,*) '  '
+         IF(DMP_LOG)WRITE (UNIT_LOG,*) ' A_m and B_m arrays below are in the '
+         IF(DMP_LOG)WRITE (UNIT_LOG,*) ' mfix INTERNAL order'
+         IF(DMP_LOG)WRITE (UNIT_LOG,*) ' '
+         IF(DMP_LOG)WRITE (UNIT_LOG, '(A,A)') &
            '  IJK  I  J  K   b         s         w         p         e       ', &
            '  n         t        Source' 
       end if
@@ -124,7 +124,7 @@
 
       IJK = FUNIJK_GL(I,J,K)
 
-	if (myPE == PE_IO) WRITE (UNIT_LOG, '(I5, 3(I3), 8(1X,G9.2))') FUNIJK_IO(I,J,K), I, J, K,&
+	if (myPE == PE_IO .AND. DMP_LOG)WRITE (UNIT_LOG, '(I5, 3(I3), 8(1X,G9.2))') FUNIJK_IO(I,J,K), I, J, K,&
                                     (AM(ijk,L),L=-3,3), array2(IJK)
 
       END DO

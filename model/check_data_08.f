@@ -86,7 +86,7 @@
                IF (NO_I) THEN 
                   IS_X_W(ISV) = ZERO 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'IS_X_w and IS_I_w ', ISV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IS_X_w and IS_I_w ', ISV 
                   call mfix_exit(myPE)  
                ENDIF 
             ENDIF 
@@ -94,7 +94,7 @@
                IF (NO_I) THEN 
                   IS_X_E(ISV) = XLENGTH 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'IS_X_e and IS_I_e ', ISV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IS_X_e and IS_I_e ', ISV 
                   call mfix_exit(myPE)		  
                ENDIF 
             ENDIF 
@@ -102,7 +102,7 @@
                IF (NO_J) THEN 
                   IS_Y_S(ISV) = ZERO 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'IS_Y_s and IS_J_s ', ISV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IS_Y_s and IS_J_s ', ISV 
                   call mfix_exit(myPE)		  
                ENDIF 
             ENDIF 
@@ -110,7 +110,7 @@
                IF (NO_J) THEN 
                   IS_Y_N(ISV) = YLENGTH 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'IS_Y_n and IS_J_n ', ISV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IS_Y_n and IS_J_n ', ISV 
                   call mfix_exit(myPE)
                ENDIF 
             ENDIF 
@@ -118,7 +118,7 @@
                IF (NO_K) THEN 
                   IS_Z_B(ISV) = ZERO 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'IS_Z_b and IS_K_b ', ISV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IS_Z_b and IS_K_b ', ISV 
                   call mfix_exit(myPE)
                ENDIF 
             ENDIF 
@@ -126,7 +126,7 @@
                IF (NO_K) THEN 
                   IS_Z_T(ISV) = ZLENGTH 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'IS_Z_t and IS_K_t ', ISV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IS_Z_t and IS_K_t ', ISV 
                   call mfix_exit(myPE)
                ENDIF 
             ENDIF 
@@ -139,14 +139,14 @@
                   IF (MOD(I,2) == 0) IS_TYPE(ISV)(3:16) = VALID_IS_TYPE(I-1) 
                   IF (IS_TYPE(ISV)(1:1)/='X' .AND. IS_TYPE(ISV)(1:1)/='Y' .AND. &
                      IS_TYPE(ISV)(1:1)/='Z') THEN 
-                     WRITE (UNIT_LOG, 1000) ISV, IS_TYPE(ISV)(1:1) 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) ISV, IS_TYPE(ISV)(1:1) 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                   CYCLE  L50 
                ENDIF 
             END DO 
-            WRITE (UNIT_LOG, 1001) ISV, IS_TYPE(ISV) 
-            WRITE (UNIT_LOG, 1002) VALID_IS_TYPE 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1001) ISV, IS_TYPE(ISV) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1002) VALID_IS_TYPE 
             call mfix_exit(myPE)  
          ENDIF 
       END DO L50 
@@ -160,15 +160,15 @@
             IF (IS_TYPE(ISV)=='SEMIPERMEABLE' .OR. IS_TYPE(ISV)(3:15)==&
                'SEMIPERMEABLE') THEN 
                IF (IS_PC(ISV,1) == UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1005) 'IS_PC', ISV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1005) 'IS_PC', ISV 
                   call mfix_exit(myPE)  
                ENDIF 
                IF (IS_PC(ISV,1) == ZERO) THEN 
-                  WRITE (UNIT_LOG, 1006) 'IS_PC', ISV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1006) 'IS_PC', ISV 
                   call mfix_exit(myPE)  
                ENDIF 
                IF (IS_PC(ISV,2) == UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1010) 'IS_PC', ISV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1010) 'IS_PC', ISV 
                   call mfix_exit(myPE)  
                ENDIF 
             ENDIF 
@@ -177,11 +177,11 @@
 ! make sure IS_PC is not specified for undefined IS
 !
             IF (IS_PC(ISV,1) /= LARGE_NUMBER) THEN 
-               WRITE (UNIT_LOG, 1200) 'IS_PC', ISV 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IS_PC', ISV 
                call mfix_exit(myPE)  
             ENDIF 
             IF (IS_PC(ISV,2) /= ZERO) THEN 
-               WRITE (UNIT_LOG, 1210) 'IS_PC', ISV 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1210) 'IS_PC', ISV 
                call mfix_exit(myPE)  
             ENDIF 
          ENDIF 

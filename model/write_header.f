@@ -39,9 +39,9 @@
 !
       CALL START_LOG 
 !
-      WRITE (UNIT_LOG, *) ' ' 
-      WRITE (UNIT_LOG, 1005) ID_VERSION, ID_NODE 
-      WRITE(UNIT_LOG,1010)RUN_NAME,ID_HOUR,ID_MINUTE,ID_MONTH,ID_DAY,ID_YEAR 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' ' 
+      IF(DMP_LOG)WRITE (UNIT_LOG, 1005) ID_VERSION, ID_NODE 
+      IF(DMP_LOG)WRITE (UNIT_LOG,1010)RUN_NAME,ID_HOUR,ID_MINUTE,ID_MONTH,ID_DAY,ID_YEAR 
 !
       IF (FULL_LOG .and. myPE.eq.PE_IO) THEN    !//d
          WRITE (*, *) ' ' 
@@ -53,13 +53,13 @@
 !
       MEMORY = 9. + (8.*DIMENSION_3/ONEMEG)*(95. + 32.*DIMENSION_M + 4.*&
          DIMENSION_N_G + 4.*DIMENSION_M*DIMENSION_N_S) 
-      WRITE (UNIT_LOG, '(1X,A,F7.2,A)') 'Memory required: ', MEMORY, ' Mb' 
+      IF(DMP_LOG)WRITE (UNIT_LOG, '(1X,A,F7.2,A)') 'Memory required: ', MEMORY, ' Mb' 
       IF (FULL_LOG .and. myPE.eq.PE_IO) THEN     !//d
          WRITE (*, '(1X,A,F7.2,A)') 'Memory required: ', MEMORY, ' Mb' 
          WRITE (*, 1015) 
       ENDIF 
 !
-      WRITE (UNIT_LOG, 1015) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, 1015) 
       CALL END_LOG 
 !
       RETURN  

@@ -123,7 +123,7 @@
 	      ENDIF
 !
                CALL START_LOG 
-               WRITE (UNIT_LOG, '(12X,A,G11.5,9X,A)') ' Dt=', DT, &
+               IF(DMP_LOG)WRITE (UNIT_LOG, '(12X,A,G11.5,9X,A)') ' Dt=', DT, &
                   ' Recovered            :-)' 
                CALL END_LOG 
             ENDIF 

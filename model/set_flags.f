@@ -121,7 +121,7 @@
 
 !Access to only one thread at a time
 !!$omp       critical
-            WRITE (UNIT_LOG, 1000) IJK, ICBC_FLAG(IJK) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) IJK, ICBC_FLAG(IJK) 
             call mfix_exit(myPE)
 !!$omp       end critical
          END SELECT 
@@ -149,7 +149,7 @@
                   'SEMIPERMEABLE') THEN 
                FLAGX = 1000 + L 
             ELSE 
-               WRITE (UNIT_LOG, 1100) L 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1100) L 
                call mfix_exit(myPE)  
             ENDIF 
             IF (IS_X_W(L)==IS_X_E(L) .AND. DO_I) THEN 

@@ -78,7 +78,7 @@
       if(.not.no_ijk)then
         IF( DA(2) /= UNDEFINED .AND. DA(1) == UNDEFINED) THEN
           CALL ERROR_ROUTINE ('check_one_axis', 'AXIS error', 0, 2) 
-          WRITE (UNIT_LOG, 1001) AXIS
+          IF(DMP_LOG)WRITE (UNIT_LOG, 1001) AXIS
           CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
         ENDIF
       endif
@@ -91,7 +91,7 @@
       IF (DA(1) /= UNDEFINED) N_SPECIFIED = N_SPECIFIED + 1 
       IF (N_SPECIFIED < 2) THEN 
          CALL ERROR_ROUTINE ('check_one_axis', 'AXIS error', 0, 2) 
-         WRITE (UNIT_LOG, 1000) AXIS, AXIS, AXIS, AXIS_INDEX 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) AXIS, AXIS, AXIS, AXIS_INDEX 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !
@@ -168,7 +168,7 @@
   700 CONTINUE 
       IF (NA<0 .OR.  .NOT.NO_IJK .AND. NA>DIMEN-2) THEN 
          CALL ERROR_ROUTINE ('check_one_axis', 'AXIS error', 0, 2) 
-         WRITE (UNIT_LOG, 1100) AXIS_INDEX, NA, AXIS_INDEX, DIMEN, AXIS_INDEX, &
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1100) AXIS_INDEX, NA, AXIS_INDEX, DIMEN, AXIS_INDEX, &
             AXIS_INDEX 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
@@ -177,25 +177,25 @@
       DO LC = 1, NA 
          IF (DA(LC)<=0.0 .OR. DA(LC)==UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_one_axis', 'AXIS error', 0, 2) 
-            WRITE (UNIT_LOG, 1200) AXIS, LC 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1200) AXIS, LC 
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
          TEMP_STOR = TEMP_STOR + DA(LC) 
       END DO 
       IF (ALENGTH <= 0.0) THEN 
          CALL ERROR_ROUTINE ('check_one_axis', 'AXIS error', 0, 2) 
-         WRITE (UNIT_LOG, 1300) AXIS 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1300) AXIS 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
       TEMP_STOR = 100.0*ABS(TEMP_STOR - ALENGTH)/ALENGTH 
       IF (TEMP_STOR > PERCENT_ERROR) THEN 
          CALL ERROR_ROUTINE ('check_one_axis', 'AXIS error', 0, 2) 
-         WRITE (UNIT_LOG, 1400) AXIS, AXIS 
-         WRITE (UNIT_LOG, *) ' %(AXIS_LENGTH - SUM(DAs))/AXIS_LENGTH = ', &
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1400) AXIS, AXIS 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' %(AXIS_LENGTH - SUM(DAs))/AXIS_LENGTH = ', &
             TEMP_STOR 
-         WRITE (UNIT_LOG, *) ' AXIS LENGTH = ', ALENGTH 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' AXIS LENGTH = ', ALENGTH 
          DO LC = 1, NA 
-            WRITE (UNIT_LOG, *) ' next DA = ', DA(LC) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, *) ' next DA = ', DA(LC) 
          END DO 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
@@ -203,7 +203,7 @@
       DO LC = NA + 1, DIMEN 
          IF (SHIFT .AND. DA(LC)/=UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_one_axis', 'AXIS error', 0, 2) 
-            WRITE (UNIT_LOG, 1500) AXIS, LC, AXIS_INDEX, NA 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1500) AXIS, LC, AXIS_INDEX, NA 
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       END DO 

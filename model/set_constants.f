@@ -94,7 +94,7 @@
          GAS_CONST = 8314.56E4                   !g.cm2/s2.mol.K
          to_SI = ONE                             !does not do anything in CGS,  see s_pr2.inc, see calc_mu_g.f
       ELSE 
-         WRITE (UNIT_LOG, 1000) UNITS
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) UNITS
          CALL MFIX_EXIT(myPE) 
       ENDIF 
 !

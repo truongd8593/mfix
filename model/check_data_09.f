@@ -81,7 +81,7 @@
 !
 !       Is a reaction defined in data file?
          IF (.NOT.GOT_RXN(L)) THEN 
-            WRITE (UNIT_LOG, 1000) L, RXN_NAME(L) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) L, RXN_NAME(L) 
             call mfix_exit(myPE)  
          ENDIF 
 !
@@ -91,14 +91,14 @@
             STOICHXMW(L,:N_ALL) = STOICH(L,:N_ALL)*MW_ALL(:N_ALL) 
             DO ID = 1, N_ALL 
 	       IF(STOICH(L,ID) /= ZERO .AND. MW_ALL(ID) == UNDEFINED)THEN
-                 WRITE (UNIT_LOG, 1001) ID
+                 IF(DMP_LOG)WRITE (UNIT_LOG, 1001) ID
 		 call mfix_exit(myPE) 
 	       ENDIF
                SUM = SUM + STOICHXMW(L,ID) 
             END DO 
          ENDIF 
          IF (.NOT.COMPARE(SUM,ZERO)) THEN 
-            WRITE (UNIT_LOG, 1010) L, RXN_NAME(L) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1010) L, RXN_NAME(L) 
             call mfix_exit(myPE)  
          ENDIF 
 !
@@ -108,21 +108,21 @@
 !         Phase index must be between 0 and MMAX
 !
             IF (RATE_M4T(L)<0 .OR. RATE_M4T(L)>MMAX) THEN 
-               WRITE (UNIT_LOG, 1012) L, RXN_NAME(L), RATE_M4T(L) 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1012) L, RXN_NAME(L), RATE_M4T(L) 
                call mfix_exit(myPE)  
             ENDIF 
 !
 !
 !         Preexponential factor should be positive
             IF (RATE_FAC(L,1) < ZERO) THEN 
-               WRITE (UNIT_LOG, 1014) L, RXN_NAME(L), RATE_FAC(L,1) 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1014) L, RXN_NAME(L), RATE_FAC(L,1) 
                call mfix_exit(myPE)  
             ENDIF 
 !
 !
 !         Activation temperature should be positive
             IF (RATE_FAC(L,3) < ZERO) THEN 
-               WRITE (UNIT_LOG, 1016) L, RXN_NAME(L), RATE_FAC(L,3) 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1016) L, RXN_NAME(L), RATE_FAC(L,3) 
                call mfix_exit(myPE)  
             ENDIF 
 !
@@ -168,7 +168,7 @@
             END DO 
          ELSE 
             IF (POS/=0 .AND. NEG/=0) THEN 
-               WRITE (UNIT_LOG, 1020) L, RXN_NAME(L) 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1020) L, RXN_NAME(L) 
                call mfix_exit(myPE)
 	    ELSE   !no interphase transfer
 	      R_TEMP(L,:MMAX,:MMAX)  = ZERO

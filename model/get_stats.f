@@ -200,17 +200,17 @@
          END DO 
       END DO 
       CALL START_LOG 
-      WRITE (UNIT_LOG, *) 'Gas phase:' 
-      WRITE (UNIT_LOG, '(A, G12.3, A, I6, A, I1)') ' Minimum Courant No = ', &
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) 'Gas phase:' 
+      IF(DMP_LOG)WRITE (UNIT_LOG, '(A, G12.3, A, I6, A, I1)') ' Minimum Courant No = ', &
          NC_G*ODT, '  Location = ', IJK_NC_G, '  Direction = ', DIR_G 
 !
       DO M = 1, MMAX 
-         WRITE (UNIT_LOG, '(A, I2, A)') ' Solids phase (', M, '):' 
-         WRITE (UNIT_LOG, '(A, G12.3, A, I6, A, I1)') ' Minimum Courant No = '&
+         IF(DMP_LOG)WRITE (UNIT_LOG, '(A, I2, A)') ' Solids phase (', M, '):' 
+         IF(DMP_LOG)WRITE (UNIT_LOG, '(A, G12.3, A, I6, A, I1)') ' Minimum Courant No = '&
             , NC_S(M)*ODT, '  Location = ', IJK_NC_S(M), '  Direction = ', &
             DIR_S(M) 
       END DO 
-      WRITE (UNIT_LOG, '(A, G12.3, A, I6)') ' Maximum P_star = ', PS, &
+      IF(DMP_LOG)WRITE (UNIT_LOG, '(A, G12.3, A, I6)') ' Maximum P_star = ', PS, &
          '  Location = ', IJK_PS 
 !
 !      WRITE(UNIT_LOG,'(A, G12.3, A, I6)')
@@ -220,7 +220,7 @@
 !     & " Maximum P_s residual = ", MAX_RESID(RESID_p, 1),
 !     & "  Location = ", IJK_RESID(RESID_p, 1)
 !
-      WRITE (UNIT_LOG, *) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) 
 !
       CALL END_LOG 
 !

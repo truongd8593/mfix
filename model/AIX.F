@@ -188,7 +188,7 @@
       SUBROUTINE END_LOG
       USE funits
       IMPLICIT NONE
-      CALL FLUSH (UNIT_LOG)
+      IF(DMP_LOG)CALL FLUSH (UNIT_LOG)
       RETURN
       END
 !

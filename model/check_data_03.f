@@ -56,14 +56,14 @@
 !-----------------------------------------------
       LOGICAL COMPARE 
 !-----------------------------------------------
-      IF (XMIN < ZERO) WRITE (UNIT_LOG, 990) 
+      IF (XMIN < ZERO .AND. DMP_LOG)WRITE (UNIT_LOG, 990) 
 !
 ! If no variation in a direction is considered, the number of cells in
 ! that direction should be 1
 !
       IF (NO_I) THEN 
 !
-         WRITE (UNIT_LOG, 995)                   !disabled 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 995)                   !disabled 
          call mfix_exit(myPE)
 !
 !        IF(IMAX .EQ. UNDEFINED_I) IMAX = 1
@@ -74,7 +74,7 @@
       ENDIF 
       IF (NO_J) THEN 
 !
-         WRITE (UNIT_LOG, 996)                   !disabled 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 996)                   !disabled 
          call mfix_exit(myPE) 
 
 !
@@ -105,22 +105,22 @@
 	      ZLENGTH = DZ(1)
 	    ELSE
 	      IF(.NOT.COMPARE(ZLENGTH,DZ(1)))THEN
-                WRITE (UNIT_LOG, 997) 
+                IF(DMP_LOG)WRITE (UNIT_LOG, 997) 
                 call mfix_exit(myPE) 
 	      ENDIF
 	    ENDIF 
          ENDIF 
       ENDIF 
       IF (NO_I .AND. IMAX>1) THEN 
-         WRITE (UNIT_LOG, 1000) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
          call mfix_exit(myPE) 
       ENDIF 
       IF (NO_J .AND. JMAX>1) THEN 
-         WRITE (UNIT_LOG, 1100) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 
          call mfix_exit(myPE) 
       ENDIF 
       IF (NO_K .AND. KMAX>1) THEN 
-         WRITE (UNIT_LOG, 1200) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 
          call mfix_exit(myPE) 
       ENDIF 
 !
@@ -142,13 +142,13 @@
       IF (COORDINATES == 'CYLINDRICAL') THEN 
          CYLINDRICAL = .TRUE. 
          IF (CYCLIC_X .OR. CYCLIC_X_PD) THEN 
-            WRITE (UNIT_LOG, 1250) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1250) 
             call mfix_exit(myPE) 
          ENDIF 
       ELSE IF (COORDINATES == 'CARTESIAN') THEN 
          CYLINDRICAL = .FALSE. 
       ELSE 
-         WRITE (UNIT_LOG, 1300) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 
          call mfix_exit(myPE) 
       ENDIF 
 !
@@ -162,21 +162,21 @@
 !
       IF (CYCLIC_X .OR. CYCLIC_X_PD) THEN 
          IF (DX(IMIN1) /= DX(IMAX1)) THEN 
-            WRITE (UNIT_LOG, 1400) DX(IMIN1), DX(IMAX1) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1400) DX(IMIN1), DX(IMAX1) 
             call mfix_exit(myPE) 
          ENDIF 
       ENDIF 
 !
       IF (CYCLIC_Y .OR. CYCLIC_Y_PD) THEN 
          IF (DY(JMIN1) /= DY(JMAX1)) THEN 
-            WRITE (UNIT_LOG, 1410) DY(JMIN1), DY(JMAX1) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1410) DY(JMIN1), DY(JMAX1) 
             call mfix_exit(myPE) 
          ENDIF 
       ENDIF 
 !
       IF (CYCLIC_Z .OR. CYCLIC_Z_PD .OR. CYLINDRICAL) THEN 
          IF (DZ(KMIN1) /= DZ(KMAX1)) THEN 
-            WRITE (UNIT_LOG, 1420) DZ(KMIN1), DZ(KMAX1) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1420) DZ(KMIN1), DZ(KMAX1) 
             call mfix_exit(myPE) 
          ENDIF 
       ENDIF 
@@ -187,20 +187,20 @@
 
       IF (IJKMAX3 > DIMENSION_3G) THEN 
          CALL ERROR_ROUTINE ('check_data_03', 'global dimension error', 0, 2) 
-         WRITE (UNIT_LOG, *) '(IMAX+2+1)*(JMAX+2+1)*(KMAX+2+1) = ', IJKMAX3 
-         WRITE (UNIT_LOG, *) 'DIMENSION_3 in allocate_arrays = ', DIMENSION_3G 
-         WRITE (UNIT_LOG, *) 'modify allocate_arrays and recompile .... or' 
-         WRITE (UNIT_LOG, *) 'change dimensions in mfix.dat', &
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) '(IMAX+2+1)*(JMAX+2+1)*(KMAX+2+1) = ', IJKMAX3 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) 'DIMENSION_3 in allocate_arrays = ', DIMENSION_3G 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) 'modify allocate_arrays and recompile .... or' 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) 'change dimensions in mfix.dat', &
             ' ... whichever is appropriate' 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
       IF (IJKsize3_all(myPE) > DIMENSION_3) THEN 
          CALL ERROR_ROUTINE ('check_data_03', 'subdomain dimension error', 0, 2) 
-         WRITE (UNIT_LOG, *) &
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) &
 	 '(Iend3-Istart3+1)*(Jend3-Jstart3+1)*(Kend3-Kstart3+1) = ', IJKsize3 
-         WRITE (UNIT_LOG, *) 'DIMENSION_3 in allocate_arrays = ', DIMENSION_3 
-         WRITE (UNIT_LOG, *) 'modify allocated_arrays and recompile .... or' 
-         WRITE (UNIT_LOG, *) 'change dimensions in mfix.dat', &
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) 'DIMENSION_3 in allocate_arrays = ', DIMENSION_3 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) 'modify allocated_arrays and recompile .... or' 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) 'change dimensions in mfix.dat', &
             ' ... whichever is appropriate' 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 

@@ -180,7 +180,7 @@
 !         Error condition -- no pressure outflow boundary condition is specified
 !
             CALL START_LOG 
-            WRITE (UNIT_LOG, 1000) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
             CALL MFIX_EXIT(myPE) 
          ENDIF 
       ENDIF 

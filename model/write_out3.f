@@ -56,11 +56,11 @@
       end if                      !//
 !
       CALL START_LOG 
-      WRITE (UNIT_LOG, 1000) 
-      WRITE (UNIT_LOG, *) ' ' 
-      WRITE (UNIT_LOG, *) ' Total CPU time used = ', CPU, 'seconds' 
-      WRITE (UNIT_LOG, *) ' ' 
-      WRITE (UNIT_LOG, 1000) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' ' 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' Total CPU time used = ', CPU, 'seconds' 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' ' 
+      IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
       CALL END_LOG 
 !
       RETURN  

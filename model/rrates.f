@@ -73,16 +73,16 @@
 ! equations without chemical reactions simply remove this section (demarkated
 ! with asterisks).  
       CALL START_LOG 
-      WRITE (UNIT_LOG, *)
-      WRITE (UNIT_LOG, *) &
+      IF(DMP_LOG)WRITE (UNIT_LOG, *)
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) &
       'Species balance equations are being solved; but chemical reactions are'
-      WRITE (UNIT_LOG, *) &
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) &
       'not specified in mfix.dat or in rrates.f.  If you want to solve species'
-      WRITE (UNIT_LOG, *) &
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) &
       'equations without chemical reactions copy the file mfix/model/rrates.f'
-      WRITE (UNIT_LOG, *) &
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) &
       'into the run directory and remove the section in the file that writes'
-      WRITE (UNIT_LOG, *) &
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) &
       'this error message.'
       CALL END_LOG 
       call mfix_exit(myPE)  
@@ -205,7 +205,7 @@
                      R_PHASE(IJK,LM) = -R_TMP(M,L) 
                   ELSE 
                      CALL START_LOG 
-                     WRITE (UNIT_LOG, 1000) L, M 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) L, M 
                      CALL END_LOG 
                      call mfix_exit(myPE)  
                   ENDIF 

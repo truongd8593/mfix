@@ -81,7 +81,7 @@
          I_E = I_E + 1 
          PLANE = 'W' 
       ELSE 
-         WRITE (UNIT_LOG, 1000) BC, I_W, I_E, J_S, K_B, ICBC_FLAG(IJK1), &
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) BC, I_W, I_E, J_S, K_B, ICBC_FLAG(IJK1), &
             ICBC_FLAG(IJK) 
          call mfix_exit(myPE)  
       ENDIF 

@@ -162,7 +162,7 @@
 !
                ICLASS = ICLASS + 1               !Increment the ICLASS counter 
                IF (ICLASS > MAX_CLASS) THEN 
-                  WRITE (UNIT_LOG, 1000) MAX_CLASS 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) MAX_CLASS 
                   CALL MFIX_EXIT(myPE) 
                ENDIF 
                INCREMENT_FOR_N(ICLASS) = IJKN - IJK 

@@ -47,11 +47,11 @@
 !
 
       CALL START_LOG 
-      WRITE (UNIT_LOG, 1000) NAME 
+      IF(DMP_LOG)WRITE (UNIT_LOG, 1000) NAME 
       DO L = 1, LMAX 
-         WRITE (UNIT_LOG, 1010) LINE(L) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1010) LINE(L) 
       END DO 
-      WRITE (UNIT_LOG, 1020) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, 1020) 
       CALL END_LOG 
       RETURN  
  1000 FORMAT(1X,70('*'),/,/,1X,'From : ',A) 

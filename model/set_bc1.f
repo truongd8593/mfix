@@ -109,12 +109,12 @@
                   BC_MOUT_G(L) = ABS(BC_MOUT_G(L))/BC_OUT_N(L) 
                   BC_VOUT_G(L) = ABS(BC_VOUT_G(L))/BC_OUT_N(L) 
                   CALL START_LOG 
-                  WRITE (UNIT_LOG, 1000) L, TIME 
-                  WRITE (UNIT_LOG, 1100) BC_MOUT_G(L), BC_VOUT_G(L) 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) L, TIME 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1100) BC_MOUT_G(L), BC_VOUT_G(L) 
                   DO M = 1, MMAX 
                      BC_MOUT_S(L,M) = ABS(BC_MOUT_S(L,M))/BC_OUT_N(L) 
                      BC_VOUT_S(L,M) = ABS(BC_VOUT_S(L,M))/BC_OUT_N(L) 
-                     WRITE (UNIT_LOG, 1200) M, BC_MOUT_S(L,M), BC_VOUT_S(L,M) 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1200) M, BC_MOUT_S(L,M), BC_VOUT_S(L,M) 
                   END DO 
                   CALL END_LOG 
                   BC_OUT_N(L) = 0 
@@ -314,8 +314,8 @@
                      BC_MOUT_G(L) = ABS(BC_MOUT_G(L))/BC_OUT_N(L) 
                      BC_VOUT_G(L) = ABS(BC_VOUT_G(L))/BC_OUT_N(L) 
                      CALL START_LOG 
-                     WRITE (UNIT_LOG, 1000) L, TIME 
-                     WRITE (UNIT_LOG, 1100) BC_MOUT_G(L), BC_VOUT_G(L) 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) L, TIME 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1100) BC_MOUT_G(L), BC_VOUT_G(L) 
                      BC_MOUT_G(L) = ZERO 
                      BC_VOUT_G(L) = ZERO 
                      DO M = 1, MMAX 

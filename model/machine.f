@@ -76,8 +76,9 @@
       ID_SECOND = DAT(7)
       
 !     For SGI only
-      ID_NODE = ""
-      CALL GETHOSTNAME(ID_NODE,64)
+!      CALL GETHOSTNAME(ID_NODE,64)
+!     For Linux with Portland Group compilers
+      call hostnm(ID_NODE)      
 !
       RETURN
       END
@@ -201,12 +202,7 @@
       end
 !
 
-      subroutine gethostname(name, namelen)
-      integer namelen
-      character *1 name(namelen)
-      name = " "
-      return
-      end
+      
       subroutine ran
       return
       end
@@ -214,14 +210,13 @@
 !
       subroutine flush_bin(iunit)
       implicit none
-      integer :: iunit
+      integer :: iunit 
       call flush(iunit)
       return
       end
-
       subroutine flush_res(iunit)
       implicit none
-      integer :: iunit
+      integer :: iunit 
       call flush(iunit)
       return
       end

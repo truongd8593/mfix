@@ -97,72 +97,74 @@
 	NBL = NB + 3
       endif
 !
-      CALL OPEN_FILE (LOGFILE, NBL, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
-        'SEQUENTIAL', 'FORMATTED', 132, IER) 
-      IF (IER /= 0) THEN 
-        CALL OPEN_FILE (LOGFILE, NBL, UNIT_LOG, '.LOG', FILE_NAME, 'OLD', &
+      IF(DMP_LOG)Then
+        CALL OPEN_FILE (LOGFILE, NBL, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
           'SEQUENTIAL', 'FORMATTED', 132, IER) 
-        IF (IER /= 0) GO TO 500
-        DO WHILE(IER ==0)
-          READ(UNIT_LOG,'(a)', IOSTAT = IER)ANS
-        ENDDO
-        BACKSPACE(UNIT_LOG)
+        IF (IER /= 0) THEN 
+          CALL OPEN_FILE (LOGFILE, NBL, UNIT_LOG, '.LOG', FILE_NAME, 'OLD', &
+            'SEQUENTIAL', 'FORMATTED', 132, IER) 
+          IF (IER /= 0) GO TO 500
+          DO WHILE(IER ==0)
+            READ(UNIT_LOG,'(a)', IOSTAT = IER)ANS
+          ENDDO
+          BACKSPACE(UNIT_LOG)
+        ENDIF
       ENDIF
 
 !//PAR_I/O only PE 0 opens the ASCI output (.out), restart (.res) and species (.spX) files 
       if ( myPE == PE_IO ) then
 !
-      CALL OPEN_FILE (RUN_NAME, NB, UNIT_OUT, '.OUT', FILE_NAME, 'UNKNOWN', &
+        CALL OPEN_FILE (RUN_NAME, NB, UNIT_OUT, '.OUT', FILE_NAME, 'UNKNOWN', &
          'SEQUENTIAL', 'FORMATTED', 132, IER) 
 !
 !
-      EXT = '.SPx' 
-      SELECT CASE (RUN_TYPE)  
-      CASE ('NEW')  
-         CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, 'NEW', &
+        EXT = '.SPx' 
+        SELECT CASE (RUN_TYPE)  
+        CASE ('NEW')  
+          CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, 'NEW', &
             'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-         IF (IER /= 0) THEN 
+          IF (IER /= 0) THEN 
             WRITE (*, 1001) FILE_NAME 
             GO TO 600 
-         ENDIF 
+          ENDIF 
 
-         DO LC = 1, N_SPX 
+          DO LC = 1, N_SPX 
             WRITE (EXT(4:4), 1000) LC 
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'NEW'&
                , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
             IF (IER /= 0) GO TO 500 
-         END DO 
-      CASE ('RESTART_1')  
-         CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, 'OLD', &
+          END DO 
+        CASE ('RESTART_1')  
+          CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, 'OLD', &
             'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-         IF (IER /= 0) THEN 
+          IF (IER /= 0) THEN 
             WRITE (*, 1002) FILE_NAME 
             GO TO 600 
-         ENDIF 
-         DO LC = 1, N_SPX 
+          ENDIF 
+          DO LC = 1, N_SPX 
             WRITE (EXT(4:4), 1000) LC 
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'OLD'&
                , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
             IF (IER /= 0) GO TO 500 
-         END DO 
-      CASE ('RESTART_2')  
-         CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, 'OLD', &
+          END DO 
+        CASE ('RESTART_2')  
+          CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, 'OLD', &
             'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-         IF (IER /= 0) THEN 
+          IF (IER /= 0) THEN 
             WRITE (*, 1002) FILE_NAME 
             GO TO 600 
-         ENDIF 
-         DO LC = 1, N_SPX 
+          ENDIF 
+          DO LC = 1, N_SPX 
             WRITE (EXT(4:4), 1000) LC 
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'NEW'&
                , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
             IF (IER /= 0) GO TO 500 
-         END DO 
-      CASE DEFAULT 
-         WRITE (*, *) ' OPEN_FILES: DO NOT KNOW HOW TO PROCESS' 
-         WRITE (*, *) ' RUN_TYPE in the input file' 
-         call mfix_exit(myPE) 
-      END SELECT 
+          END DO 
+        CASE DEFAULT 
+          WRITE (*, *) ' OPEN_FILES: DO NOT KNOW HOW TO PROCESS' 
+          WRITE (*, *) ' RUN_TYPE in the input file' 
+          call mfix_exit(myPE) 
+        END SELECT 
       endif   ! end of myPE=PE_IO if block
 
       RETURN  

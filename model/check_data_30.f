@@ -200,38 +200,38 @@
 		 !  cells
                    IF(MU_gt(IJK) /= ZERO) THEN
                      IF (.NOT.MESSAGE) THEN 
-                        WRITE (UNIT_LOG, 1000) TIME 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                         MESSAGE = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1140) I, J, K, MU_gt(IJK), 'MU_gt' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, MU_gt(IJK), 'MU_gt' 
                      ABORT = .TRUE. 
 		   ENDIF
 		   
                    IF(LAMBDA_gt(IJK) /= ZERO) THEN
                      IF (.NOT.MESSAGE) THEN 
-                        WRITE (UNIT_LOG, 1000) TIME 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                         MESSAGE = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1140) I, J, K, LAMBDA_gt(IJK), 'LAMBDA_gt' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, LAMBDA_gt(IJK), 'LAMBDA_gt' 
                      ABORT = .TRUE. 
 		   ENDIF
 		   
                    IF(K_g(IJK) /= ZERO) THEN
                      IF (.NOT.MESSAGE) THEN 
-                        WRITE (UNIT_LOG, 1000) TIME 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                         MESSAGE = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1140) I, J, K, K_g(IJK), 'K_g' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, K_g(IJK), 'K_g' 
                      ABORT = .TRUE. 
 		   ENDIF
 		   
 		   DO N = 1, NMAX(0)
                      IF( DIF_g(IJK, N) /= ZERO) THEN
                        IF (.NOT.MESSAGE) THEN 
-                         WRITE (UNIT_LOG, 1000) TIME 
+                         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                          MESSAGE = .TRUE. 
                        ENDIF 
-                       WRITE (UNIT_LOG, 1140) I, J, K, DIF_g(IJK, N), 'DIF_g' 
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, DIF_g(IJK, N), 'DIF_g' 
                        ABORT = .TRUE. 
 		     ENDIF
 		   ENDDO
@@ -239,38 +239,38 @@
 		   DO M = 1, MMAX
                      IF(MU_s(IJK, M) /= ZERO) THEN
                        IF (.NOT.MESSAGE) THEN 
-                          WRITE (UNIT_LOG, 1000) TIME 
+                          IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                           MESSAGE = .TRUE. 
                        ENDIF 
-                       WRITE (UNIT_LOG, 1140) I, J, K, MU_s(IJK, M), 'MU_s' 
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, MU_s(IJK, M), 'MU_s' 
                        ABORT = .TRUE. 
     		     ENDIF
 		   
                      IF(LAMBDA_s(IJK, M) /= ZERO) THEN
                        IF (.NOT.MESSAGE) THEN 
-                         WRITE (UNIT_LOG, 1000) TIME 
+                         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                          MESSAGE = .TRUE. 
                        ENDIF 
-                       WRITE (UNIT_LOG, 1140) I, J, K, LAMBDA_s(IJK, M), 'LAMBDA_s' 
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, LAMBDA_s(IJK, M), 'LAMBDA_s' 
                        ABORT = .TRUE. 
 	  	     ENDIF
 		   
                      IF(K_s(IJK, M) /= ZERO) THEN
                        IF (.NOT.MESSAGE) THEN 
-                         WRITE (UNIT_LOG, 1000) TIME 
+                         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                          MESSAGE = .TRUE. 
                        ENDIF 
-                       WRITE (UNIT_LOG, 1140) I, J, K, K_s(IJK, M), 'K_s' 
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, K_s(IJK, M), 'K_s' 
                        ABORT = .TRUE. 
 		     ENDIF
 		   
 		     DO N = 1, NMAX(M)
                        IF( DIF_s(IJK, M, N) /= ZERO) THEN
                          IF (.NOT.MESSAGE) THEN 
-                           WRITE (UNIT_LOG, 1000) TIME 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                          ENDIF 
-                         WRITE (UNIT_LOG, 1140) I, J, K, DIF_s(IJK, M, N), 'DIF_s' 
+                         IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, DIF_s(IJK, M, N), 'DIF_s' 
                          ABORT = .TRUE. 
 		       ENDIF
 		     ENDDO
@@ -284,38 +284,38 @@
 !
                   IF (MU_G(IJK) < ZERO) THEN 
                      IF (.NOT.MESSAGE) THEN 
-                        WRITE (UNIT_LOG, 1000) TIME 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                         MESSAGE = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1110) I, J, K, MU_G(IJK) 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1110) I, J, K, MU_G(IJK) 
                      ABORT = .TRUE. 
                   ENDIF 
 !
                   IF (MW_MIX_G(IJK) <= ZERO) THEN 
                      IF (.NOT.MESSAGE) THEN 
-                        WRITE (UNIT_LOG, 1000) TIME 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                         MESSAGE = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1111) I, J, K, MW_MIX_G(IJK) 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1111) I, J, K, MW_MIX_G(IJK) 
                      ABORT = .TRUE. 
                   ENDIF 
 !
                   IF (ENERGY_EQ) THEN 
                      IF (K_G(IJK) < ZERO) THEN 
                         IF (.NOT.MESSAGE) THEN 
-                           WRITE (UNIT_LOG, 1000) TIME 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1120) I, J, K, K_G(IJK) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1120) I, J, K, K_G(IJK) 
                         ABORT = .TRUE. 
                      ENDIF 
 !
                      IF (C_PG(IJK) <= ZERO) THEN 
                         IF (.NOT.MESSAGE) THEN 
-                           WRITE (UNIT_LOG, 1000) TIME 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1130) I, J, K, C_PG(IJK) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1130) I, J, K, C_PG(IJK) 
                         ABORT = .TRUE. 
                      ENDIF 
                   ENDIF 
@@ -323,10 +323,10 @@
 		  DO N = 1, NMAX(0)
                     IF( DIF_g(IJK, N) < ZERO) THEN
                       IF (.NOT.MESSAGE) THEN 
-                        WRITE (UNIT_LOG, 1000) TIME 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                         MESSAGE = .TRUE. 
                       ENDIF 
-                      WRITE (UNIT_LOG, 1131) I, J, K, DIF_g(IJK, N) 
+                      IF(DMP_LOG)WRITE (UNIT_LOG, 1131) I, J, K, DIF_g(IJK, N) 
                       ABORT = .TRUE. 
 		    ENDIF
 		  ENDDO
@@ -349,10 +349,10 @@
 		       K_RXNSUM_MAX = k
 		     endif
                      IF (.NOT.MESSAGE) THEN 
-                        WRITE (UNIT_LOG, 1000) TIME 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                         MESSAGE = .TRUE. 
                      ENDIF 
-!                     WRITE (UNIT_LOG, 1100) I, J, K, SUM 
+!                     IF(DMP_LOG)WRITE (UNIT_LOG, 1100) I, J, K, SUM 
                      IF (ABS(SUM) > TOL_COM) then
 		       COUNT_RXNSUM1 = COUNT_RXNSUM1 + 1
 		       ABORT = .TRUE.
@@ -388,10 +388,10 @@
 		          K_masstr_MAX(L) = k
 		        endif
                         IF (.NOT.MESSAGE) THEN 
-                           WRITE (UNIT_LOG, 1000) TIME 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-!                        WRITE (UNIT_LOG, 1101) I, J, K, L, SUM 
+!                        IF(DMP_LOG)WRITE (UNIT_LOG, 1101) I, J, K, L, SUM 
                         IF (ABS(SUM) > TOL_COM) then
 		          COUNT_masstr1(L) = COUNT_masstr1(L) + 1
 			  ABORT = .TRUE. 
@@ -408,18 +408,18 @@
                     DO N = 1, NMAX(0) 
                        IF (R_GP(IJK,N) < ZERO) THEN 
                          IF (.NOT.MESSAGE) THEN 
-                           WRITE (UNIT_LOG, 1000) TIME 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                          ENDIF 
-                         WRITE (UNIT_LOG, 1103) I, J, K, R_GP(IJK,N), N 
+                         IF(DMP_LOG)WRITE (UNIT_LOG, 1103) I, J, K, R_GP(IJK,N), N 
                          ABORT = .TRUE. 
                        ENDIF 
                        IF (ROX_GC(IJK,N) < ZERO) THEN 
                          IF (.NOT.MESSAGE) THEN 
-                           WRITE (UNIT_LOG, 1000) TIME 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                          ENDIF 
-                         WRITE (UNIT_LOG, 1104) I, J, K, ROX_GC(IJK,N), N 
+                         IF(DMP_LOG)WRITE (UNIT_LOG, 1104) I, J, K, ROX_GC(IJK,N), N 
                          ABORT = .TRUE. 
                        ENDIF 
                     END DO 
@@ -430,15 +430,15 @@
                       DO N = 1, NMAX(M) 
                         IF (R_SP(IJK,M,N) < ZERO) THEN 
                            IF (.NOT.MESSAGE) THEN 
-                              WRITE (UNIT_LOG, 1000) TIME 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                               MESSAGE = .TRUE. 
                            ENDIF 
-                           WRITE (UNIT_LOG, 1105) I, J, K, M, R_SP(IJK,M,N), N 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1105) I, J, K, M, R_SP(IJK,M,N), N 
                            ABORT = .TRUE. 
                         ENDIF 
                         IF (ROX_SC(IJK,M,N) < ZERO) THEN 
                            IF (.NOT.MESSAGE) THEN 
-                              WRITE (UNIT_LOG, 1000) TIME 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                               MESSAGE = .TRUE. 
                            ENDIF 
                            WRITE(UNIT_LOG,1106)I,J,K,M,ROX_SC(IJK,M,N),N 
@@ -462,7 +462,7 @@
                      ENDIF 
                      IF (ABS(ONE - SUM) > TOL_COM) THEN 
                         IF (.NOT.MESSAGE) THEN 
-                           WRITE (UNIT_LOG, 1000) TIME 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
                         MESSAGE_X_G = .TRUE. 
@@ -516,7 +516,7 @@
                         IF (ROP_S(IJK,M) /= ZERO) THEN 
                            IF (ABS(ONE - SUM) > TOL_COM) THEN 
                               IF (.NOT.MESSAGE) THEN 
-                                 WRITE (UNIT_LOG, 1000) TIME 
+                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                                  MESSAGE = .TRUE. 
                               ENDIF 
                               MESSAGE_X_S(M) = .TRUE. 
@@ -565,38 +565,38 @@
 !
                      IF (MU_S(IJK,M) < ZERO) THEN 
                         IF (.NOT.MESSAGE) THEN 
-                           WRITE (UNIT_LOG, 1000) TIME 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1310) I, J, K, M, MU_S(IJK,M) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1310) I, J, K, M, MU_S(IJK,M) 
                         ABORT = .TRUE. 
                      ENDIF 
 !
                      IF (ENERGY_EQ) THEN 
                         IF (K_S(IJK,M) < ZERO) THEN 
                            IF (.NOT.MESSAGE) THEN 
-                              WRITE (UNIT_LOG, 1000) TIME 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                               MESSAGE = .TRUE. 
                            ENDIF 
-                           WRITE (UNIT_LOG, 1320) I, J, K, M, K_S(IJK,M) 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1320) I, J, K, M, K_S(IJK,M) 
                            ABORT = .TRUE. 
                         ENDIF 
 !
                         IF (C_PS(IJK,M) <= ZERO) THEN 
                            IF (.NOT.MESSAGE) THEN 
-                              WRITE (UNIT_LOG, 1000) TIME 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                               MESSAGE = .TRUE. 
                            ENDIF 
-                           WRITE (UNIT_LOG, 1330) I, J, K, M, C_PS(IJK,M) 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1330) I, J, K, M, C_PS(IJK,M) 
                            ABORT = .TRUE. 
                         ENDIF 
 !
                         IF (T_S(IJK,M)<=TMIN .OR. T_S(IJK,M)>=TMAX) THEN 
                            IF (.NOT.MESSAGE) THEN 
-                              WRITE (UNIT_LOG, 1000) TIME 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                               MESSAGE = .TRUE. 
                            ENDIF 
-                           WRITE (UNIT_LOG, 1410) I, J, K, M, T_S(IJK,M) 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1410) I, J, K, M, T_S(IJK,M) 
                            ABORT = .TRUE. 
                         ENDIF 
                      ENDIF 
@@ -604,10 +604,10 @@
 		     DO N = 1, NMAX(M)
                        IF( DIF_s(IJK, M, N) < ZERO) THEN
                          IF (.NOT.MESSAGE) THEN 
-                           WRITE (UNIT_LOG, 1000) TIME 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                          ENDIF 
-                         WRITE (UNIT_LOG, 1331) I, J, K, M, DIF_s(IJK, M, N) 
+                         IF(DMP_LOG)WRITE (UNIT_LOG, 1331) I, J, K, M, DIF_s(IJK, M, N) 
                          ABORT = .TRUE. 
 		       ENDIF
 		     ENDDO
@@ -615,10 +615,10 @@
                   IF (ENERGY_EQ) THEN 
                      IF (T_G(IJK)<=TMIN .OR. T_G(IJK)>=TMAX) THEN 
                         IF (.NOT.MESSAGE) THEN 
-                           WRITE (UNIT_LOG, 1000) TIME 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1400) I, J, K, T_G(IJK) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1400) I, J, K, T_G(IJK) 
                         ABORT = .TRUE. 
                      ENDIF 
                   ENDIF 
@@ -632,7 +632,7 @@
       IF (MESSAGE_rxnsum) THEN 
 	 call global_all_sum(COUNT_RXNSUM0)
 	 call global_all_sum(COUNT_RXNSUM1)
-         WRITE (UNIT_LOG, 1415) COUNT_RXNSUM0, COUNT_RXNSUM1, RXNSUM_MAX, &
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1415) COUNT_RXNSUM0, COUNT_RXNSUM1, RXNSUM_MAX, &
 	                        I_RXNSUM_MAX, J_RXNSUM_MAX, K_RXNSUM_MAX 
       ENDIF 
 
@@ -641,7 +641,7 @@
         IF (MESSAGE_masstr(L)) THEN 
 	   call global_all_sum(COUNT_masstr0(L))
 	   call global_all_sum(COUNT_masstr1(L))
-           WRITE (UNIT_LOG, 1420) L, COUNT_masstr0(L), COUNT_masstr1(L),&
+           IF(DMP_LOG)WRITE (UNIT_LOG, 1420) L, COUNT_masstr0(L), COUNT_masstr1(L),&
 	         masstr_MAX(L), &
 	         I_masstr_MAX(L), J_masstr_MAX(L), K_masstr_MAX(L) 
         ENDIF 
@@ -654,12 +654,12 @@
          DO L = 1, 9 
             SUM_COUNT = SUM_COUNT + COUNT_G(L) 
          END DO 
-         WRITE (UNIT_LOG, 1430) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1430) 
          FR_COUNT = DBLE(COUNT_G)/DBLE(SUM_COUNT) 
          L = 10 
-         WRITE (UNIT_LOG, 1432) (COUNT_G(L),FR_COUNT(L),L=1,9) 
-         WRITE (UNIT_LOG, 1434) SUM_MIN_G, I_MIN_G, J_MIN_G, K_MIN_G 
-         WRITE (UNIT_LOG, 1436) SUM_MAX_G, I_MAX_G, J_MAX_G, K_MAX_G 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1432) (COUNT_G(L),FR_COUNT(L),L=1,9) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1434) SUM_MIN_G, I_MIN_G, J_MIN_G, K_MIN_G 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1436) SUM_MAX_G, I_MAX_G, J_MAX_G, K_MAX_G 
       ENDIF 
 !
       DO M = 1, MMAX 
@@ -671,17 +671,17 @@
                SUM_COUNT = SUM_COUNT + COUNT_S(M,L) 
             END DO 
             L = 10 
-            WRITE (UNIT_LOG, 1440) M 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1440) M 
             FR_COUNT = DBLE(COUNT_S(M,:))/DBLE(SUM_COUNT) 
             L = 10 
-            WRITE (UNIT_LOG, 1442) (COUNT_S(M,L),FR_COUNT(L),L=1,9) 
-            WRITE (UNIT_LOG, 1444) SUM_MIN_S(M), I_MIN_S(M), J_MIN_S(M), &
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1442) (COUNT_S(M,L),FR_COUNT(L),L=1,9) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1444) SUM_MIN_S(M), I_MIN_S(M), J_MIN_S(M), &
                K_MIN_S(M) 
-            WRITE (UNIT_LOG, 1446) SUM_MAX_S(M), I_MAX_S(M), J_MAX_S(M), &
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1446) SUM_MAX_S(M), I_MAX_S(M), J_MAX_S(M), &
                K_MAX_S(M) 
          ENDIF 
       END DO 
-      IF (MESSAGE) WRITE (UNIT_LOG, 1500) 
+      IF (MESSAGE .AND. DMP_LOG)WRITE (UNIT_LOG, 1500) 
 !
       IF (ABORT) CALL MFIX_EXIT(myPE) 
 !

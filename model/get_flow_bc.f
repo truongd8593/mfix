@@ -218,7 +218,7 @@
                         IJK_FLUID = FUNIJK(I_FLUID,J,K) 
                         IF (.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. ICBC_FLAG(&
                            IJK_FLUID)(1:1)=='.')) THEN 
-                           WRITE (UNIT_LOG, 1100) BCV, I_WALL, I_FLUID, J, K, &
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) BCV, I_WALL, I_FLUID, J, K, &
                               IJK_WALL, ICBC_FLAG(IJK_WALL), IJK_FLUID, &
                               ICBC_FLAG(IJK_FLUID) 
                            CALL MFIX_EXIT(myPE) 
@@ -244,7 +244,7 @@
                         IJK_FLUID = FUNIJK(I,J_FLUID,K) 
                         IF (.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. ICBC_FLAG(&
                            IJK_FLUID)(1:1)=='.')) THEN 
-                           WRITE (UNIT_LOG, 1200) BCV, I, J_WALL, J_FLUID, K, &
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1200) BCV, I, J_WALL, J_FLUID, K, &
                               IJK_WALL, ICBC_FLAG(IJK_WALL), IJK_FLUID, &
                               ICBC_FLAG(IJK_FLUID) 
                            WRITE (*, 1200) BCV, I, J_WALL, J_FLUID, K, &
@@ -273,7 +273,7 @@
                         IJK_FLUID = FUNIJK(I,J,K_FLUID) 
                         IF (.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. ICBC_FLAG(&
                            IJK_FLUID)(1:1)=='.')) THEN 
-                           WRITE (UNIT_LOG, 1300) BCV, I, J, K_WALL, K_FLUID, &
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, I, J, K_WALL, K_FLUID, &
                               IJK_WALL, ICBC_FLAG(IJK_WALL), IJK_FLUID, &
                               ICBC_FLAG(IJK_FLUID) 
                            CALL MFIX_EXIT(myPE) 
@@ -321,7 +321,7 @@
     		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     		     
                         IJK = FUNIJK(I,J,K) 
                         IF (.NOT.WALL_ICBC_FLAG(IJK)) THEN 			
-                           WRITE (UNIT_LOG, 1500) BCV, ICBC_FLAG(IJK), I, J, K 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1500) BCV, ICBC_FLAG(IJK), I, J, K 
                            ERROR = .TRUE. 
                         ENDIF 
                         SELECT CASE (BC_TYPE(BCV))  
@@ -357,13 +357,13 @@
 ! NOTE: WANT TO PRINT OUT ALL THE VALUES HERE ...
 !
       CALL ERROR_ROUTINE ('GET_FLOW_BC', 'Invalid BC location specified', 0, 2) 
-      WRITE (UNIT_LOG, *) ' BC number = ', BCV 
-      WRITE (UNIT_LOG, *) ' BC_I_w(BCV) = ', BC_I_W(BCV) 
-      WRITE (UNIT_LOG, *) ' BC_I_e(BCV) = ', BC_I_E(BCV) 
-      WRITE (UNIT_LOG, *) ' BC_J_s(BCV) = ', BC_J_S(BCV) 
-      WRITE (UNIT_LOG, *) ' BC_J_n(BCV) = ', BC_J_N(BCV) 
-      WRITE (UNIT_LOG, *) ' BC_K_b(BCV) = ', BC_K_B(BCV) 
-      WRITE (UNIT_LOG, *) ' BC_K_t(BCV) = ', BC_K_T(BCV) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' BC number = ', BCV 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' BC_I_w(BCV) = ', BC_I_W(BCV) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' BC_I_e(BCV) = ', BC_I_E(BCV) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' BC_J_s(BCV) = ', BC_J_S(BCV) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' BC_J_n(BCV) = ', BC_J_N(BCV) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' BC_K_b(BCV) = ', BC_K_B(BCV) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' BC_K_t(BCV) = ', BC_K_T(BCV) 
       CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       RETURN  
  1100 FORMAT(/70('*')//' From: GET_FLOW_BC'/'Message: Boundary ','condition ',&

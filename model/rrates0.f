@@ -206,7 +206,7 @@
                      ENDIF 
                   END DO 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) LR, RXN_NAME(LR) 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) LR, RXN_NAME(LR) 
                   call mfix_exit(myPE)  
                ENDIF 
             END DO 
@@ -256,7 +256,7 @@
                            (LR) 
                      ELSE 
                         CALL START_LOG 
-                        WRITE (UNIT_LOG, 1010) L, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1010) L, M 
                         CALL END_LOG 
                         call mfix_exit(myPE)  
                      ENDIF 

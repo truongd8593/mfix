@@ -102,7 +102,7 @@
                IF (NO_I) THEN 
                   BC_X_W(BCV) = ZERO 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'BC_X_w and BC_I_w ', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_X_w and BC_I_w ', BCV 
                   call mfix_exit(myPE)		  
                ENDIF 
             ENDIF 
@@ -110,7 +110,7 @@
                IF (NO_I) THEN 
                   BC_X_E(BCV) = XLENGTH 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'BC_X_e and BC_I_e ', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_X_e and BC_I_e ', BCV 
                   call mfix_exit(myPE)		  
                ENDIF 
             ENDIF 
@@ -118,7 +118,7 @@
                IF (NO_J) THEN 
                   BC_Y_S(BCV) = ZERO 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'BC_Y_s and BC_J_s ', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Y_s and BC_J_s ', BCV 
                   call mfix_exit(myPE)
                ENDIF 
             ENDIF 
@@ -126,7 +126,7 @@
                IF (NO_J) THEN 
                   BC_Y_N(BCV) = YLENGTH 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'BC_Y_n and BC_J_n ', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Y_n and BC_J_n ', BCV 
                   call mfix_exit(myPE)		  		  
                ENDIF 
             ENDIF 
@@ -135,7 +135,7 @@
                IF (NO_K) THEN 
                   BC_Z_B(BCV) = ZERO 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'BC_Z_b and BC_K_b ', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Z_b and BC_K_b ', BCV 
                   call mfix_exit(myPE)		  
                ENDIF 
             ENDIF 
@@ -143,7 +143,7 @@
                IF (NO_K) THEN 
                   BC_Z_T(BCV) = ZLENGTH 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'BC_Z_t and BC_K_t ', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Z_t and BC_K_t ', BCV 
                   call mfix_exit(myPE)		  
                ENDIF 
             ENDIF 
@@ -153,8 +153,8 @@
                   CYCLE  L50 
                ENDIF 
             END DO 
-            WRITE (UNIT_LOG, 1001) BCV, BC_TYPE(BCV) 
-            WRITE (UNIT_LOG, 1002) VALID_BC_TYPE 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1001) BCV, BC_TYPE(BCV) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1002) VALID_BC_TYPE 
             call mfix_exit(myPE)  
          ENDIF 
       END DO L50 
@@ -179,19 +179,19 @@
 !
             IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
                IF (BC_EP_G(BCV) == UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1000) 'BC_EP_g', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_EP_g', BCV 
                   call mfix_exit(myPE)		  
                ENDIF 
                IF (BC_P_G(BCV)==UNDEFINED .AND. RO_G0==UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1000) 'BC_P_g', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_P_g', BCV 
                   call mfix_exit(myPE)		  
                ELSE IF (BC_P_G(BCV)<=ZERO .AND. RO_G0==UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1010) BCV, BC_P_G(BCV) 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1010) BCV, BC_P_G(BCV) 
                   call mfix_exit(myPE)		  
                ENDIF 
                IF ((ENERGY_EQ .OR. RO_G0==UNDEFINED .OR. MU_G0==UNDEFINED)&
                    .AND. BC_T_G(BCV)==UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1000) 'BC_T_g', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_T_g', BCV 
                   call mfix_exit(myPE)		  
                ENDIF 
                IF (SPECIES_EQ(0) .OR. RO_G0==UNDEFINED .AND. MW_AVG==UNDEFINED&
@@ -202,12 +202,12 @@
                   END DO 
                   DO N = 1, NMAX(0) 
                      IF (BC_X_G(BCV,N) == UNDEFINED) THEN 
-                        IF (.NOT.COMPARE(ONE,SUM)) WRITE (UNIT_LOG, 1060) BCV, N 
+                        IF (.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)WRITE (UNIT_LOG, 1060) BCV, N 
                         BC_X_G(BCV,N) = ZERO 
                      ENDIF 
                   END DO 
                   IF (.NOT.COMPARE(ONE,SUM)) THEN 
-                     WRITE (UNIT_LOG, 1065) BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1065) BCV 
                      call mfix_exit(myPE)		     
                   ENDIF 
                ENDIF 
@@ -228,7 +228,7 @@
                   IF (NO_I) THEN 
                      BC_U_G(BCV) = ZERO 
                   ELSE 
-                     WRITE (UNIT_LOG, 1000) 'BC_U_g', BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_U_g', BCV 
                      call mfix_exit(myPE)		     
                   ENDIF 
                ENDIF 
@@ -236,7 +236,7 @@
                   IF (NO_J) THEN 
                      BC_V_G(BCV) = ZERO 
                   ELSE 
-                     WRITE (UNIT_LOG, 1000) 'BC_V_g', BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_V_g', BCV 
                      call mfix_exit(myPE)		     
                   ENDIF 
                ENDIF 
@@ -244,7 +244,7 @@
                   IF (NO_K) THEN 
                      BC_W_G(BCV) = ZERO 
                   ELSE 
-                     WRITE (UNIT_LOG, 1000) 'BC_W_g', BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_W_g', BCV 
                      call mfix_exit(myPE)		     
                   ENDIF 
                ENDIF 
@@ -254,32 +254,32 @@
                SELECT CASE (BC_PLANE(BCV))  
                CASE ('W')  
                   IF (BC_U_G(BCV) > ZERO) THEN 
-                     WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '<' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '<' 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('E')  
                   IF (BC_U_G(BCV) < ZERO) THEN 
-                     WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '>' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '>' 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('S')  
                   IF (BC_V_G(BCV) > ZERO) THEN 
-                     WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '<' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '<' 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('N')  
                   IF (BC_V_G(BCV) < ZERO) THEN 
-                     WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '>' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '>' 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('B')  
                   IF (BC_W_G(BCV) > ZERO) THEN 
-                     WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '<' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '<' 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('T')  
                   IF (BC_W_G(BCV) < ZERO) THEN 
-                     WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '>' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '>' 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                END SELECT 
@@ -292,7 +292,7 @@
                      ELSE IF (MMAX == 1) THEN 
                         BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M) 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'BC_ROP_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_ROP_s', BCV, M 
                         call mfix_exit(myPE)			
                      ENDIF 
                   ENDIF 
@@ -308,12 +308,12 @@
                      ENDIF 
                      DO N = 1, NMAX(M) 
                         IF (BC_X_S(BCV,M,N) == UNDEFINED) THEN 
-                           IF(.NOT.COMPARE(ONE,SUM))WRITE(UNIT_LOG,1110)BCV,M,N 
+                           IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)WRITE (UNIT_LOG,1110)BCV,M,N 
                            BC_X_S(BCV,M,N) = ZERO 
                         ENDIF 
                      END DO 
                      IF (.NOT.COMPARE(ONE,SUM)) THEN 
-                        WRITE (UNIT_LOG, 1120) BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1120) BCV, M 
                         call mfix_exit(myPE)			
                      ENDIF 
                   ENDIF 
@@ -321,7 +321,7 @@
                      IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_I) THEN 
                         BC_U_S(BCV,M) = ZERO 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'BC_U_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_U_s', BCV, M 
                         call mfix_exit(myPE)			
                      ENDIF 
                   ENDIF 
@@ -329,7 +329,7 @@
                      IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_J) THEN 
                         BC_V_S(BCV,M) = ZERO 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'BC_V_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_V_s', BCV, M 
                         call mfix_exit(myPE)			
                      ENDIF 
                   ENDIF 
@@ -337,7 +337,7 @@
                      IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_K) THEN 
                         BC_W_S(BCV,M) = ZERO 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'BC_W_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_W_s', BCV, M 
                         call mfix_exit(myPE)			
                      ENDIF 
                   ENDIF 
@@ -345,7 +345,7 @@
                      IF (BC_ROP_S(BCV,M) == ZERO) THEN 
                         BC_T_S(BCV,M) = BC_T_G(BCV) 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'BC_T_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_T_s', BCV, M 
                         call mfix_exit(myPE)			
                      ENDIF 
                   ENDIF 
@@ -354,7 +354,7 @@
                      IF (BC_ROP_S(BCV,M) == ZERO) THEN 
                         BC_THETA_M(BCV,M) = ZERO 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'BC_Theta_m', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Theta_m', BCV, M 
                         call mfix_exit(myPE)
                      ENDIF 
                   ENDIF 
@@ -364,58 +364,58 @@
                   SELECT CASE (BC_PLANE(BCV))  
                   CASE ('W')  
                      IF (BC_U_S(BCV,M) > ZERO) THEN 
-                        WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '<' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '<' 
                         CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('E')  
                      IF (BC_U_S(BCV,M) < ZERO) THEN 
-                        WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '>' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '>' 
                         CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('S')  
                      IF (BC_V_S(BCV,M) > ZERO) THEN 
-                        WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '<' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '<' 
                         CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('N')  
                      IF (BC_V_S(BCV,M) < ZERO) THEN 
-                        WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '>' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '>' 
                         CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('B')  
                      IF (BC_W_S(BCV,M) > ZERO) THEN 
-                        WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '<' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '<' 
                         CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('T')  
                      IF (BC_W_S(BCV,M) < ZERO) THEN 
-                        WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '>' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '>' 
                         CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   END SELECT 
                END DO 
                IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
-                  WRITE (UNIT_LOG, 1125) BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1125) BCV 
                   call mfix_exit(myPE)  
                ENDIF 
 	       
                DO N = 1, NScalar
                  IF (BC_Scalar(BCV,N) == UNDEFINED) THEN 
-                   WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
 		   CALL MFIX_EXIT(myPE)
                  ENDIF 
                END DO 
 	       
             CASE ('MASS_OUTFLOW')  
                IF (BC_DT_0(BCV) == UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1000) 'BC_DT_0', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_DT_0', BCV 
                   call mfix_exit(myPE)  
                ENDIF 
                IF (BC_U_G(BCV) == UNDEFINED) THEN 
                   IF (NO_I) THEN 
                      BC_U_G(BCV) = ZERO 
                   ELSE 
-                     WRITE (UNIT_LOG, 1000) 'BC_U_g', BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_U_g', BCV 
                      call mfix_exit(myPE)  
                   ENDIF 
                ENDIF 
@@ -423,7 +423,7 @@
                   IF (NO_J) THEN 
                      BC_V_G(BCV) = ZERO 
                   ELSE 
-                     WRITE (UNIT_LOG, 1000) 'BC_V_g', BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_V_g', BCV 
                      call mfix_exit(myPE)  
                   ENDIF 
                ENDIF 
@@ -431,7 +431,7 @@
                   IF (NO_K) THEN 
                      BC_W_G(BCV) = ZERO 
                   ELSE 
-                     WRITE (UNIT_LOG, 1000) 'BC_W_g', BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_W_g', BCV 
                      call mfix_exit(myPE)  
                   ENDIF 
                ENDIF 
@@ -441,32 +441,32 @@
                SELECT CASE (BC_PLANE(BCV))  
                CASE ('W')  
                   IF (BC_U_G(BCV) < ZERO) THEN 
-                     WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '>' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '>' 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('E')  
                   IF (BC_U_G(BCV) > ZERO) THEN 
-                     WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '<' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '<' 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('S')  
                   IF (BC_V_G(BCV) < ZERO) THEN 
-                     WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '>' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '>' 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('N')  
                   IF (BC_V_G(BCV) > ZERO) THEN 
-                     WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '<' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '<' 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('B')  
                   IF (BC_W_G(BCV) < ZERO) THEN 
-                     WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '>' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '>' 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                CASE ('T')  
                   IF (BC_W_G(BCV) > ZERO) THEN 
-                     WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '<' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '<' 
                      CALL MFIX_EXIT(myPE) 
                   ENDIF 
                END SELECT 
@@ -475,7 +475,7 @@
                      IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_I) THEN 
                         BC_U_S(BCV,M) = ZERO 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'BC_U_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_U_s', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
                   ENDIF 
@@ -483,7 +483,7 @@
                      IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_J) THEN 
                         BC_V_S(BCV,M) = ZERO 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'BC_V_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_V_s', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
                   ENDIF 
@@ -491,7 +491,7 @@
                      IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_K) THEN 
                         BC_W_S(BCV,M) = ZERO 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'BC_W_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_W_s', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
                   ENDIF 
@@ -501,51 +501,51 @@
                   SELECT CASE (BC_PLANE(BCV))  
                   CASE ('W')  
                      IF (BC_U_S(BCV,M) < ZERO) THEN 
-                        WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '>' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '>' 
                         CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('E')  
                      IF (BC_U_S(BCV,M) > ZERO) THEN 
-                        WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '<' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '<' 
                         CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('S')  
                      IF (BC_V_S(BCV,M) < ZERO) THEN 
-                        WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '>' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '>' 
                         CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('N')  
                      IF (BC_V_S(BCV,M) > ZERO) THEN 
-                        WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '<' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '<' 
                         CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('B')  
                      IF (BC_W_S(BCV,M) < ZERO) THEN 
-                        WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '>' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '>' 
                         CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   CASE ('T')  
                      IF (BC_W_S(BCV,M) > ZERO) THEN 
-                        WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '<' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '<' 
                         CALL MFIX_EXIT(myPE) 
                      ENDIF 
                   END SELECT 
                END DO 
             CASE ('P_INFLOW')  
                IF (BC_EP_G(BCV) == UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1000) 'BC_EP_g', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_EP_g', BCV 
                   call mfix_exit(myPE)  
                ENDIF 
                IF (BC_P_G(BCV) == UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1000) 'BC_P_g', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_P_g', BCV 
                   call mfix_exit(myPE)  
                ELSE IF (BC_P_G(BCV)<=ZERO .AND. RO_G0==UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1010) BCV, BC_P_G(BCV) 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1010) BCV, BC_P_G(BCV) 
                   call mfix_exit(myPE)  
                ENDIF 
                IF ((ENERGY_EQ .OR. RO_G0==UNDEFINED .OR. MU_G0==UNDEFINED)&
                    .AND. BC_T_G(BCV)==UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1000) 'BC_T_g', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_T_g', BCV 
                   call mfix_exit(myPE)  
                ENDIF 
                IF (SPECIES_EQ(0)) THEN 
@@ -553,12 +553,12 @@
                   DO N = 1, NMAX(0) 
                      SUM = SUM + BC_X_G(BCV,N) 
                      IF (BC_X_G(BCV,N) == UNDEFINED) THEN 
-                        WRITE (UNIT_LOG, 1060) BCV, N 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1060) BCV, N 
                         call mfix_exit(myPE)  
                      ENDIF 
                   END DO 
                   IF (.NOT.COMPARE(ONE,SUM)) THEN 
-                     WRITE (UNIT_LOG, 1065) BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1065) BCV 
                      call mfix_exit(myPE)  
                   ENDIF 
                ENDIF 
@@ -569,7 +569,7 @@
                      ELSE IF (MMAX == 1) THEN 
                         BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M) 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'BC_ROP_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_ROP_s', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
                   ENDIF 
@@ -577,7 +577,7 @@
                      IF (BC_ROP_S(BCV,M) == ZERO) THEN 
                         BC_T_S(BCV,M) = BC_T_G(BCV) 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'BC_T_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_T_s', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
                   ENDIF 
@@ -588,7 +588,7 @@
                            IF (BC_ROP_S(BCV,M) == ZERO) THEN 
                               BC_X_S(BCV,M,N) = ZERO 
                            ELSE 
-                              WRITE (UNIT_LOG, 1110) BCV, M, N 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1110) BCV, M, N 
                               call mfix_exit(myPE)  
                            ENDIF 
                         ENDIF 
@@ -596,7 +596,7 @@
                      END DO 
                      IF (.NOT.COMPARE(ONE,SUM)) THEN 
                         IF (SUM /= ZERO) THEN 
-                           WRITE (UNIT_LOG, 1120) BCV, M 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1120) BCV, M 
                            call mfix_exit(myPE)  
                         ENDIF 
                      ENDIF 
@@ -606,7 +606,7 @@
 	       
                DO N = 1, NScalar
                  IF (BC_Scalar(BCV,N) == UNDEFINED) THEN 
-                   WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
 		   CALL MFIX_EXIT(myPE)
                  ENDIF 
                END DO 
@@ -614,10 +614,10 @@
 	       
             CASE ('P_OUTFLOW')  
                IF (BC_P_G(BCV) == UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1000) 'BC_P_g', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_P_g', BCV 
                   call mfix_exit(myPE)  
                ELSE IF (BC_P_G(BCV)<=ZERO .AND. RO_G0==UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1010) BCV, BC_P_G(BCV) 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1010) BCV, BC_P_G(BCV) 
                   call mfix_exit(myPE)  
                ENDIF 
 !
@@ -625,7 +625,7 @@
                IF (.NOT.ERROR) THEN 
                   ERROR = .TRUE. 
                ELSE 
-                  WRITE (UNIT_LOG, 1160) BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1160) BCV 
                   call mfix_exit(myPE)  
                ENDIF 
 !
@@ -636,60 +636,60 @@
 !  Check whether BC values are specified for undefined BC locations
 !
             IF (BC_U_G(BCV) /= UNDEFINED) THEN 
-               WRITE (UNIT_LOG, 1200) 'BC_U_g', BCV 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'BC_U_g', BCV 
                call mfix_exit(myPE)  
             ENDIF 
             IF (BC_V_G(BCV) /= UNDEFINED) THEN 
-               WRITE (UNIT_LOG, 1200) 'BC_V_g', BCV 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'BC_V_g', BCV 
                call mfix_exit(myPE)  
             ENDIF 
             IF (BC_W_G(BCV) /= UNDEFINED) THEN 
-               WRITE (UNIT_LOG, 1200) 'BC_W_g', BCV 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'BC_W_g', BCV 
                call mfix_exit(myPE)  
             ENDIF 
             IF (BC_EP_G(BCV) /= UNDEFINED) THEN 
-               WRITE (UNIT_LOG, 1200) 'BC_EP_g', BCV 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'BC_EP_g', BCV 
                call mfix_exit(myPE)  
             ENDIF 
             IF (BC_P_G(BCV) /= UNDEFINED) THEN 
-               WRITE (UNIT_LOG, 1200) 'BC_P_g', BCV 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'BC_P_g', BCV 
                call mfix_exit(myPE)  
             ENDIF 
             IF (BC_T_G(BCV) /= UNDEFINED) THEN 
-               WRITE (UNIT_LOG, 1200) 'BC_T_g', BCV 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'BC_T_g', BCV 
                call mfix_exit(myPE)  
             ENDIF 
             DO N = 1, DIMENSION_N_G 
                IF (BC_X_G(BCV,N) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1200) 'X_g', BCV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'X_g', BCV 
                   call mfix_exit(myPE)  
                ENDIF 
             END DO 
             DO M = 1, MMAX 
                IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1300) 'BC_ROP_s', BCV, M 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'BC_ROP_s', BCV, M 
                   call mfix_exit(myPE)  
                ENDIF 
                DO N = 1, DIMENSION_N_S 
                   IF (BC_X_S(BCV,M,N) /= UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1300) 'BC_X_s', BCV, M 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'BC_X_s', BCV, M 
                      call mfix_exit(myPE)  
                   ENDIF 
                END DO 
                IF (BC_U_S(BCV,M) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1300) 'BC_U_s', BCV, M 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'BC_U_s', BCV, M 
                   call mfix_exit(myPE)  
                ENDIF 
                IF (BC_V_S(BCV,M) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1300) 'BC_V_s', BCV, M 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'BC_V_s', BCV, M 
                   call mfix_exit(myPE)  
                ENDIF 
                IF (BC_W_S(BCV,M) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1300) 'BC_W_s', BCV, M 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'BC_W_s', BCV, M 
                   call mfix_exit(myPE)  
                ENDIF 
                IF (BC_T_S(BCV,M) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1300) 'BC_T_s', BCV, M 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'BC_T_s', BCV, M 
                   call mfix_exit(myPE)  
                ENDIF 
             END DO 
@@ -697,7 +697,7 @@
 	       
             DO N = 1, NScalar
               IF (BC_Scalar(BCV,N) /= UNDEFINED) THEN 
-                WRITE (UNIT_LOG, 1200) 'BC_Scalar', BCV
+                IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'BC_Scalar', BCV
 	        CALL MFIX_EXIT(myPE)
               ENDIF 
             END DO 
@@ -718,16 +718,16 @@
                 .OR. BC_TYPE(BCV)=='PAR_SLIP_WALL') THEN 
                IF (BC_TYPE(BCV) == 'PAR_SLIP_WALL') THEN 
                   IF (BC_UW_G(BCV) == UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1000) 'BC_Uw_g', BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Uw_g', BCV 
                      call mfix_exit(myPE)  
                   ENDIF 
                   IF (BC_VW_G(BCV) == UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1000) 'BC_Vw_g', BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Vw_g', BCV 
                      call mfix_exit(myPE)  
                   ENDIF 
                   IF (.NOT.NO_K) THEN 
                      IF (BC_WW_G(BCV) == UNDEFINED) THEN 
-                        WRITE (UNIT_LOG, 1000) 'BC_Ww_g', BCV 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Ww_g', BCV 
                         call mfix_exit(myPE)  
                      ENDIF 
                   ELSE 
@@ -738,16 +738,16 @@
                IF (BC_TYPE(BCV)=='PAR_SLIP_WALL' .OR. BC_JJ_PS(BCV)==1) THEN 
                   DO M = 1, MMAX
                      IF (BC_UW_S(BCV,M) == UNDEFINED) THEN 
-                        WRITE (UNIT_LOG, 1100) 'BC_Uw_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Uw_s', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
                      IF (BC_VW_S(BCV,M) == UNDEFINED) THEN 
-                        WRITE (UNIT_LOG, 1100) 'BC_Vw_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Vw_s', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
                      IF (.NOT.NO_K) THEN 
                         IF (BC_WW_S(BCV,M) == UNDEFINED) THEN 
-                           WRITE (UNIT_LOG, 1100) 'BC_Ww_s', BCV, M 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Ww_s', BCV, M 
                            call mfix_exit(myPE)  
                         ENDIF 
                      ELSE 
@@ -759,37 +759,37 @@
                IF (ENERGY_EQ) THEN 
 !
                   IF (BC_HW_T_G(BCV) < ZERO) THEN 
-                     WRITE (UNIT_LOG, 1003) 'BC_hw_T_g', BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1003) 'BC_hw_T_g', BCV 
                      call mfix_exit(myPE)  
                   ENDIF 
 !
                   IF (BC_HW_T_G(BCV)/=ZERO .AND. BC_TW_G(BCV)==UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1000) 'BC_Tw_g', BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Tw_g', BCV 
                      call mfix_exit(myPE)  
                   ENDIF 
 !
                   IF (BC_HW_T_G(BCV)/=UNDEFINED .AND. BC_C_T_G(BCV)==UNDEFINED) &
                      THEN 
-                     WRITE (UNIT_LOG, 1000) 'BC_C_T_g', BCV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_C_T_g', BCV 
                      call mfix_exit(myPE)  
                   ENDIF 
 !
                   DO M = 1, MMAX 
 !
                      IF (BC_HW_T_S(BCV,M) < ZERO) THEN 
-                        WRITE (UNIT_LOG, 1103) 'BC_hw_T_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1103) 'BC_hw_T_s', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
 !
                      IF (BC_HW_T_S(BCV,M)/=ZERO .AND. BC_TW_S(BCV,M)==UNDEFINED) &
                         THEN 
-                        WRITE (UNIT_LOG, 1100) 'BC_Tw_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Tw_s', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
 !
                      IF (BC_HW_T_S(BCV,M)/=UNDEFINED .AND. BC_C_T_S(BCV,M)==&
                         UNDEFINED) THEN 
-                        WRITE (UNIT_LOG, 1100) 'BC_C_T_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_C_T_s', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
                   END DO 
@@ -800,19 +800,19 @@
                   DO M = 1, MMAX 
 !
                      IF (BC_HW_THETA_M(BCV,M) < ZERO) THEN 
-                        WRITE (UNIT_LOG, 1103) 'BC_hw_Theta_m', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1103) 'BC_hw_Theta_m', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
 !
                      IF (BC_HW_THETA_M(BCV,M)/=ZERO .AND. BC_THETAW_M(BCV,M)==&
                         UNDEFINED) THEN 
-                        WRITE (UNIT_LOG, 1100) 'BC_Thetaw_m', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Thetaw_m', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
 !
                      IF (BC_HW_THETA_M(BCV,M)/=UNDEFINED .AND. BC_C_THETA_M(BCV,M&
                         )==UNDEFINED) THEN 
-                        WRITE (UNIT_LOG, 1100) 'BC_C_Theta_m', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_C_Theta_m', BCV, M 
                         call mfix_exit(myPE)  
                      ENDIF 
                   END DO 
@@ -822,19 +822,19 @@
                IF (SPECIES_EQ(0)) THEN 
                   DO N = 1, NMAX(0) 
                      IF (BC_HW_X_G(BCV,N) < ZERO) THEN 
-                        WRITE (UNIT_LOG, 1005) 'BC_hw_X_g', BCV, N 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1005) 'BC_hw_X_g', BCV, N 
                         call mfix_exit(myPE)  
                      ENDIF 
 !
                      IF (BC_HW_X_G(BCV,N)/=ZERO .AND. BC_XW_G(BCV,N)==UNDEFINED) &
                         THEN 
-                        WRITE (UNIT_LOG, 1004) 'BC_Xw_g', BCV, N 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Xw_g', BCV, N 
                         call mfix_exit(myPE)  
                      ENDIF 
 !
                      IF (BC_HW_X_G(BCV,N)/=UNDEFINED .AND. BC_C_X_G(BCV,N)==&
                         UNDEFINED) THEN 
-                        WRITE (UNIT_LOG, 1004) 'BC_C_X_g', BCV, N 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_C_X_g', BCV, N 
                         call mfix_exit(myPE)  
                      ENDIF 
                   END DO 
@@ -844,19 +844,19 @@
                   IF (SPECIES_EQ(M)) THEN 
                      DO N = 1, NMAX(M) 
                         IF (BC_HW_X_S(BCV,M,N) < ZERO) THEN 
-                           WRITE (UNIT_LOG, 1105) 'BC_hw_X_s', BCV, M, N 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1105) 'BC_hw_X_s', BCV, M, N 
                            call mfix_exit(myPE)  
                         ENDIF 
 !
                         IF (BC_HW_X_S(BCV,M,N)/=ZERO .AND. BC_XW_S(BCV,M,N)==&
                            UNDEFINED) THEN 
-                           WRITE (UNIT_LOG, 1104) 'BC_Xw_s', BCV, M, N 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1104) 'BC_Xw_s', BCV, M, N 
                            call mfix_exit(myPE)  
                         ENDIF 
 !
                         IF (BC_HW_X_S(BCV,M,N)/=UNDEFINED .AND. BC_C_X_S(BCV,M,N)&
                            ==UNDEFINED) THEN 
-                           WRITE (UNIT_LOG, 1104) 'BC_C_X_s', BCV, M, N 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1104) 'BC_C_X_s', BCV, M, N 
                            call mfix_exit(myPE)  
                         ENDIF 
                      END DO 
@@ -865,19 +865,19 @@
 	       
                DO N = 1, NScalar
                  IF (BC_HW_Scalar(BCV,N) < ZERO) THEN 
-                   WRITE (UNIT_LOG, 1005) 'BC_hw_Scalar', BCV, N 
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1005) 'BC_hw_Scalar', BCV, N 
                    CALL MFIX_EXIT(myPE)
                  ENDIF 
 !
                  IF (BC_HW_Scalar(BCV,N)/=ZERO .AND. BC_Scalarw(BCV,N)==UNDEFINED) &
                     THEN 
-                    WRITE (UNIT_LOG, 1004) 'BC_ScalarW', BCV, N 
+                    IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_ScalarW', BCV, N 
                     CALL MFIX_EXIT(myPE)
                  ENDIF 
 !
                  IF (BC_HW_Scalar(BCV,N)/=UNDEFINED .AND. BC_C_Scalar(BCV,N)==&
                     UNDEFINED) THEN 
-                    WRITE (UNIT_LOG, 1004) 'BC_C_Scalar', BCV, N 
+                    IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_C_Scalar', BCV, N 
                     CALL MFIX_EXIT(myPE)
                  ENDIF 
                END DO 
@@ -895,8 +895,8 @@
             DO I = istart2, Iend2
                IJK = FUNIJK(I,J,K) 
                IF (ICBC_FLAG(IJK) == '   ') THEN 
-                  IF (.NOT.ERROR) WRITE (UNIT_LOG, 1400) 
-                  WRITE (UNIT_LOG, 1410) I, J, K 
+                  IF (.NOT.ERROR .AND. DMP_LOG)WRITE (UNIT_LOG, 1400) 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1410) I, J, K 
                   ERROR = .TRUE. 
                ENDIF 
             END DO 
@@ -907,7 +907,7 @@
       call send_recv(icbc_flag,2)
 
       IF (ERROR) THEN 
-         WRITE (UNIT_LOG, 1420) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1420) 
          call mfix_exit(myPE)  
       ENDIF 
 !

@@ -333,11 +333,11 @@
 !
 !
             IF (ENERGY_EQ) THEN 
-               WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS, HLOSS, CPU_NOW 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS, HLOSS, CPU_NOW 
                IF(FULL_LOG.and.myPE.eq.PE_IO) &          
                        WRITE(*,5000)TIME,DT,NIT,SMASS,HLOSS,CPU_NOW        !//
             ELSE 
-               WRITE (UNIT_LOG, 5001) TIME, DT, NIT, SMASS, CPU_NOW 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 5001) TIME, DT, NIT, SMASS, CPU_NOW 
                IF (FULL_LOG .and. myPE.eq.PE_IO) &
                        WRITE (*, 5001) TIME, DT, NIT, SMASS, CPU_NOW       !//
             ENDIF 
@@ -345,20 +345,20 @@
             IF (.NOT.FULL_LOG) THEN 
                TLEFT = (TSTOP - TIME)*CPUOS 
                CALL GET_TUNIT (TLEFT, TUNIT) 
-               WRITE (UNIT_LOG, '(46X, A, F9.3, 1X, A)') '    CPU time left = '&
+               IF(DMP_LOG)WRITE (UNIT_LOG, '(46X, A, F9.3, 1X, A)') '    CPU time left = '&
                   , TLEFT, TUNIT 
             ENDIF 
 !
             IF (CYCLIC_X .OR. CYCLIC_Y .OR. CYCLIC_Z) THEN 
-               IF (DO_I) WRITE (UNIT_LOG, 5050) 'U_g = ', VAVG_U_G() 
-               IF (DO_J) WRITE (UNIT_LOG, 5050) 'V_g = ', VAVG_V_G() 
-               IF (DO_K) WRITE (UNIT_LOG, 5050) 'W_g = ', VAVG_W_G() 
+               IF (DO_I .AND. DMP_LOG)WRITE (UNIT_LOG, 5050) 'U_g = ', VAVG_U_G() 
+               IF (DO_J .AND. DMP_LOG)WRITE (UNIT_LOG, 5050) 'V_g = ', VAVG_V_G() 
+               IF (DO_K .AND. DMP_LOG)WRITE (UNIT_LOG, 5050) 'W_g = ', VAVG_W_G() 
                DO M = 1, MMAX 
-                  IF (DO_I) WRITE (UNIT_LOG, 5060) 'U_s(', M, ') = ', VAVG_U_S(&
+                  IF (DO_I .AND. DMP_LOG)WRITE (UNIT_LOG, 5060) 'U_s(', M, ') = ', VAVG_U_S(&
                      M) 
-                  IF (DO_J) WRITE (UNIT_LOG, 5060) 'V_s(', M, ') = ', VAVG_V_S(&
+                  IF (DO_J .AND. DMP_LOG)WRITE (UNIT_LOG, 5060) 'V_s(', M, ') = ', VAVG_V_S(&
                      M) 
-                  IF (DO_K) WRITE (UNIT_LOG, 5060) 'W_s(', M, ') = ', VAVG_W_S(&
+                  IF (DO_K .AND. DMP_LOG)WRITE (UNIT_LOG, 5060) 'W_s(', M, ') = ', VAVG_W_S(&
                      M) 
                END DO 
             ENDIF 
@@ -371,7 +371,7 @@
       ELSE IF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN 
          IF (FULL_LOG) THEN 
             CALL START_LOG 
-            WRITE (UNIT_LOG, 5200) TIME, DT, NIT 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 5200) TIME, DT, NIT 
             CALL END_LOG 
 
             if (myPE.eq.PE_IO) WRITE (*, 5200) TIME, DT, NIT   !//
@@ -392,7 +392,7 @@
       CALL GET_SMASS (SMASS) 
       if (myPE.eq.PE_IO) WRITE (UNIT_OUT, 5100) TIME, DT, NIT, SMASS    !//
       CALL START_LOG 
-      WRITE (UNIT_LOG, 5100) TIME, DT, NIT, SMASS 
+      IF(DMP_LOG)WRITE (UNIT_LOG, 5100) TIME, DT, NIT, SMASS 
       CALL END_LOG 
 !
       IER = 0 

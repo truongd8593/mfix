@@ -92,6 +92,15 @@
 
 !// 010 Initialize MPI & get ranks & total PEs employed
     call parallel_init
+    
+    ! we want only PE_IO to write out common error messages
+    if(enable_dmp_log)then
+      dmp_log = .true.
+    elseif(mype == pe_io) then
+      dmp_log = .true.
+    else
+      dmp_log = .false.
+    endif
 !
 ! set the version.release of the software
 !
@@ -155,9 +164,9 @@
       
 !$
 !$    CALL START_LOG 
-!$    WRITE (UNIT_LOG, *) ' '  
-!$    WRITE (UNIT_LOG, *) ' Number of processors used = ', threads_specified  
-!$    WRITE (UNIT_LOG, *) ' '  
+!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '  
+!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' Number of processors used = ', threads_specified  
+!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '  
 !$    CALL END_LOG 
 
 !
@@ -183,7 +192,7 @@
          CALL READ_RES1 
 !
          CALL START_LOG 
-         WRITE (UNIT_LOG, 1010) TIME, NSTEP 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1010) TIME, NSTEP 
          CALL END_LOG 
          WRITE (UNIT_OUT, 1010) TIME, NSTEP 
          IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP 
@@ -195,7 +204,7 @@
          TIME = TIME_SAVE 
 !
          CALL START_LOG 
-         WRITE (UNIT_LOG, 1010) TIME, NSTEP 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1010) TIME, NSTEP 
          CALL END_LOG 
          WRITE (UNIT_OUT, 1010) TIME, NSTEP 
          IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP 
@@ -209,8 +218,8 @@
       CASE DEFAULT 
 !
          CALL START_LOG 
-         WRITE (UNIT_LOG, *) ' MFIX: Do not know how to process' 
-         WRITE (UNIT_LOG, *) ' RUN_TYPE in data file' 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' MFIX: Do not know how to process' 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' RUN_TYPE in data file' 
          CALL END_LOG 
          call mfix_exit(myPE)  
 !

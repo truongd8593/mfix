@@ -166,7 +166,7 @@
          ELSE 
             IF (IS_TYPE(ISV)(1:1)/='X' .AND. IS_TYPE(ISV)(1:1)/='Y' .AND. IS_TYPE&
                (ISV)(1:1)/='Z') THEN 
-               WRITE (UNIT_LOG, 1000) ISV 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1000) ISV 
                CALL MFIX_EXIT(myPE) 
             ENDIF 
          ENDIF 
@@ -188,13 +188,13 @@
 !
   900 CONTINUE 
       CALL ERROR_ROUTINE ('GET_IS', 'Invalid IS location specified', 0, 2) 
-      WRITE (UNIT_LOG, *) ' IS number = ', ISV 
-      WRITE (UNIT_LOG, *) ' IS_I_w(ISV) = ', IS_I_W(ISV) 
-      WRITE (UNIT_LOG, *) ' IS_I_e(ISV) = ', IS_I_E(ISV) 
-      WRITE (UNIT_LOG, *) ' IS_J_s(ISV) = ', IS_J_S(ISV) 
-      WRITE (UNIT_LOG, *) ' IS_J_n(ISV) = ', IS_J_N(ISV) 
-      WRITE (UNIT_LOG, *) ' IS_K_b(ISV) = ', IS_K_B(ISV) 
-      WRITE (UNIT_LOG, *) ' IS_K_t(ISV) = ', IS_K_T(ISV) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IS number = ', ISV 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IS_I_w(ISV) = ', IS_I_W(ISV) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IS_I_e(ISV) = ', IS_I_E(ISV) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IS_J_s(ISV) = ', IS_J_S(ISV) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IS_J_n(ISV) = ', IS_J_N(ISV) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IS_K_b(ISV) = ', IS_K_B(ISV) 
+      IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IS_K_t(ISV) = ', IS_K_T(ISV) 
       CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: GET_IS','     IS # = ',I2,/&

@@ -114,101 +114,101 @@
                      IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT, IM, JM, KM) 
                   IF (EP_G(IJK) == UNDEFINED) THEN 
                      IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1000) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1010) I, J, K, 'EP_g' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1010) I, J, K, 'EP_g' 
                   ENDIF 
                   IF (P_G(IJK) == UNDEFINED) THEN 
                      IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1000) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1010) I, J, K, 'P_g' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1010) I, J, K, 'P_g' 
                   ENDIF 
                   IF (P_STAR(IJK) == UNDEFINED) THEN 
                      IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1000) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1010) I, J, K, 'P_star' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1010) I, J, K, 'P_star' 
                   ENDIF 
                   IF (RO_G(IJK) == UNDEFINED) THEN 
                      IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1000) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1010) I, J, K, 'RO_g' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1010) I, J, K, 'RO_g' 
                   ENDIF 
                   IF (ROP_G(IJK) == UNDEFINED) THEN 
                      IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1000) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1010) I, J, K, 'ROP_g' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1010) I, J, K, 'ROP_g' 
                   ENDIF 
                   IF (T_G(IJK) == UNDEFINED) THEN 
                      IF (ENERGY_EQ .OR. RO_G0==UNDEFINED .OR. MU_G0==UNDEFINED&
                         ) THEN 
                         IF (.NOT.ABORT) THEN 
-                           WRITE (UNIT_LOG, 1000) 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                            ABORT = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1010) I, J, K, 'T_g' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1010) I, J, K, 'T_g' 
                      ENDIF 
                   ENDIF 
                   IF (U_G(IMJK) == UNDEFINED) THEN 
                      IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1000) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1010) I - 1, J, K, 'U_g' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1010) I - 1, J, K, 'U_g' 
                   ENDIF 
                   IF (U_G(IJK)==UNDEFINED .AND. I/=IMAX2) THEN 
                      IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1000) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1010) I, J, K, 'U_g' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1010) I, J, K, 'U_g' 
                   ENDIF 
                   IF (V_G(IJMK) == UNDEFINED) THEN 
                      IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1000) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1010) I, J - 1, K, 'V_g' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1010) I, J - 1, K, 'V_g' 
                   ENDIF 
                   IF (V_G(IJK)==UNDEFINED .AND. J/=JMAX2) THEN 
                      IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1000) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1010) I, J, K, 'V_g' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1010) I, J, K, 'V_g' 
                   ENDIF 
 
                   IF (W_G(IJKM) == UNDEFINED) THEN 		  
                      IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1000) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1010) I, J, K - 1, 'W_g' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1010) I, J, K - 1, 'W_g' 
                   ENDIF 
                   IF (W_G(IJK)==UNDEFINED .AND. K/=KMAX2) THEN 
                      IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1000) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1010) I, J, K, 'W_g' 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1010) I, J, K, 'W_g' 
                   ENDIF 
                   IF (SPECIES_EQ(0) .OR. RO_G0==UNDEFINED .AND. MW_AVG==&
                      UNDEFINED) THEN 
                      DO N = 1, NMAX(0) 
                         IF (X_G(IJK,N) == UNDEFINED) THEN 
                            IF (.NOT.ABORT) THEN 
-                              WRITE (UNIT_LOG, 1000) 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                               ABORT = .TRUE. 
                            ENDIF 
-                           WRITE (UNIT_LOG, 1012) I, J, K, N, 'X_g' 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1012) I, J, K, N, 'X_g' 
                         ENDIF 
                      END DO 
                   ENDIF 
@@ -216,80 +216,80 @@
                   DO N = 1, NScalar 
                     IF (Scalar(IJK,N) == UNDEFINED) THEN 
                       IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1000) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
                       ENDIF 
-                      WRITE (UNIT_LOG, 1012) I, J, K, N, 'Scalar' 
+                      IF(DMP_LOG)WRITE (UNIT_LOG, 1012) I, J, K, N, 'Scalar' 
                     ENDIF 
                   END DO 
 		     
                   DO M = 1, MMAX 
                      IF (ROP_S(IJK,M) == UNDEFINED) THEN 
                         IF (.NOT.ABORT) THEN 
-                           WRITE (UNIT_LOG, 1000) 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                            ABORT = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1011) I, J, K, M, 'ROP_s' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1011) I, J, K, M, 'ROP_s' 
                      ENDIF 
                      IF (T_S(IJK,M) == UNDEFINED) THEN 
                         IF (ENERGY_EQ) THEN 
                            IF (.NOT.ABORT) THEN 
-                              WRITE (UNIT_LOG, 1000) 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                               ABORT = .TRUE. 
                            ENDIF 
-                           WRITE (UNIT_LOG, 1011) I, J, K, M, 'T_s' 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1011) I, J, K, M, 'T_s' 
                         ENDIF 
                      ENDIF 
                      IF (U_S(IMJK,M) == UNDEFINED) THEN 
                         IF (.NOT.ABORT) THEN 
-                           WRITE (UNIT_LOG, 1000) 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                            ABORT = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1011) I - 1, J, K, M, 'U_s' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1011) I - 1, J, K, M, 'U_s' 
                      ENDIF 
                      IF (U_S(IJK,M)==UNDEFINED .AND. I/=IMAX2) THEN 
                         IF (.NOT.ABORT) THEN 
-                           WRITE (UNIT_LOG, 1000) 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                            ABORT = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1011) I, J, K, M, 'U_s' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1011) I, J, K, M, 'U_s' 
                      ENDIF 
                      IF (V_S(IJMK,M) == UNDEFINED) THEN 
                         IF (.NOT.ABORT) THEN 
-                           WRITE (UNIT_LOG, 1000) 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                            ABORT = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1011) I, J - 1, K, M, 'V_s' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1011) I, J - 1, K, M, 'V_s' 
                      ENDIF 
                      IF (V_S(IJK,M)==UNDEFINED .AND. J/=JMAX2) THEN 
                         IF (.NOT.ABORT) THEN 
-                           WRITE (UNIT_LOG, 1000) 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                            ABORT = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1011) I, J, K, M, 'V_s' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1011) I, J, K, M, 'V_s' 
                      ENDIF 
                      IF (W_S(IJKM,M) == UNDEFINED) THEN 
                         IF (.NOT.ABORT) THEN 
-                           WRITE (UNIT_LOG, 1000) 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                            ABORT = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1011) I, J, K - 1, M, 'W_s' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1011) I, J, K - 1, M, 'W_s' 
                      ENDIF 
                      IF (W_S(IJK,M)==UNDEFINED .AND. K/=KMAX2) THEN 
                         IF (.NOT.ABORT) THEN 
-                           WRITE (UNIT_LOG, 1000) 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                            ABORT = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1011) I, J, K, M, 'W_s' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1011) I, J, K, M, 'W_s' 
                      ENDIF 
                      IF (SPECIES_EQ(M)) THEN 
                         DO N = 1, NMAX(M) 
                            IF (X_S(IJK,M,N) == UNDEFINED) THEN 
                               IF (.NOT.ABORT) THEN 
-                                 WRITE (UNIT_LOG, 1000) 
+                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
                                  ABORT = .TRUE. 
                               ENDIF 
-                              WRITE (UNIT_LOG, 1013) I, J, K, M, N, 'X_s' 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1013) I, J, K, M, N, 'X_s' 
                            ENDIF 
                         END DO 
                      ENDIF 
@@ -299,7 +299,7 @@
          END DO 
       END DO 
       IF (ABORT) THEN 
-         WRITE (UNIT_LOG, 1300) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 
          CALL MFIX_EXIT(myPE)
       ENDIF 
 !
@@ -319,10 +319,10 @@
                   ENDIF 
                   IF (ABS(DIF) > ZERO_EP_S) THEN 
                      IF (.NOT.ABORT) THEN 
-                        WRITE (UNIT_LOG, 1050) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1050) 
                         ABORT = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1100) I, J, K, (1.- dif) 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1100) I, J, K, (1.- dif) 
                   ENDIF 
 !
 !  Check whether L_scale is non-zero anywhere
@@ -333,14 +333,14 @@
          END DO 
       END DO 
       IF (ABORT) THEN 
-         WRITE (UNIT_LOG, 1300) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 
          CALL MFIX_EXIT (myPE)
       ENDIF 
 !
 !  Check whether MU_gmax is specified
 !
       IF (NONZERO .AND. MU_GMAX==UNDEFINED) THEN 
-         WRITE (UNIT_LOG, 1350) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1350) 
          CALL MFIX_EXIT(myPE) 
       ENDIF 
 

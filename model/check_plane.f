@@ -62,7 +62,7 @@
       IF (Z_CONSTANT) N = N - 1 
 !
       IF (N /= 2) THEN 
-         WRITE (UNIT_LOG, 1000) NAME, BC 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) NAME, BC 
          call mfix_exit(myPE) 
       ENDIF 
 !

@@ -165,7 +165,7 @@
                IF (NO_I) THEN 
                   IC_X_W(ICV) = ZERO 
                ELSE 
-                     WRITE (UNIT_LOG, 1000) 'IC_X_w and IC_I_w ', ICV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_X_w and IC_I_w ', ICV 
                      call mfix_exit(myPE) 
                ENDIF 
             ENDIF 
@@ -173,7 +173,7 @@
                IF (NO_I) THEN 
                   IC_X_E(ICV) = XLENGTH 
                ELSE 
-                 WRITE (UNIT_LOG, 1000) 'IC_X_e and IC_I_e ', ICV 
+                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_X_e and IC_I_e ', ICV 
                  call mfix_exit(myPE) 
                ENDIF 
             ENDIF 
@@ -181,7 +181,7 @@
                IF (NO_J) THEN 
                   IC_Y_S(ICV) = ZERO 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'IC_Y_s and IC_J_s ', ICV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_Y_s and IC_J_s ', ICV 
                   call mfix_exit(myPE) 
                ENDIF 
             ENDIF 
@@ -189,7 +189,7 @@
                IF (NO_J) THEN 
                   IC_Y_N(ICV) = YLENGTH 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'IC_Y_n and IC_J_n ', ICV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_Y_n and IC_J_n ', ICV 
                   call mfix_exit(myPE) 
                ENDIF 
             ENDIF 
@@ -197,7 +197,7 @@
                IF (NO_K) THEN 
                   IC_Z_B(ICV) = ZERO 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'IC_Z_b and IC_K_b ', ICV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_Z_b and IC_K_b ', ICV 
                   call mfix_exit(myPE) 
                ENDIF 
             ENDIF 
@@ -205,7 +205,7 @@
                IF (NO_K) THEN 
                   IC_Z_T(ICV) = ZLENGTH 
                ELSE 
-                  WRITE (UNIT_LOG, 1000) 'IC_Z_t and IC_K_t ', ICV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_Z_t and IC_K_t ', ICV 
                   call mfix_exit(myPE) 
                ENDIF 
             ENDIF 
@@ -301,7 +301,7 @@
                   IF (NO_I) THEN 
                      IC_U_G(ICV) = ZERO 
                   ELSE 
-                     WRITE (UNIT_LOG, 1000) 'IC_U_g', ICV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_U_g', ICV 
                      call mfix_exit(myPE) 
                   ENDIF 
                ENDIF 
@@ -310,7 +310,7 @@
                   IF (NO_J) THEN 
                      IC_V_G(ICV) = ZERO 
                   ELSE 
-                     WRITE (UNIT_LOG, 1000) 'IC_V_g', ICV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_V_g', ICV 
                      call mfix_exit(myPE) 
                   ENDIF 
                ENDIF 
@@ -318,18 +318,18 @@
                   IF (NO_K) THEN 
                      IC_W_G(ICV) = ZERO 
                   ELSE 
-                     WRITE (UNIT_LOG, 1000) 'IC_W_g', ICV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_W_g', ICV 
                      call mfix_exit(myPE) 
                   ENDIF 
                ENDIF 
 	       
                IF (IC_EP_G(ICV) == UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1000) 'IC_EP_g', ICV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_EP_g', ICV 
                   call mfix_exit(myPE) 
                ENDIF 
                IF (IC_P_G(ICV) /= UNDEFINED) THEN 
                   IF (RO_G0==UNDEFINED .AND. IC_P_G(ICV)<=ZERO) THEN 
-                     WRITE (UNIT_LOG, 1010) ICV, IC_P_G(ICV) 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1010) ICV, IC_P_G(ICV) 
                      call mfix_exit(myPE) 
                   ENDIF 
                ENDIF 
@@ -337,17 +337,17 @@
 !
                IF ((ENERGY_EQ .OR. RO_G0==UNDEFINED .OR. MU_G0==UNDEFINED)&
                    .AND. IC_T_G(ICV)==UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1000) 'IC_T_g', ICV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_T_g', ICV 
                      call mfix_exit(myPE) 
                ENDIF 
 !
                IF (ENERGY_EQ) THEN 
                   IF (IC_GAMA_RG(ICV) < ZERO) THEN 
-                     WRITE (UNIT_LOG, 1001) 'IC_GAMA_Rg', ICV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1001) 'IC_GAMA_Rg', ICV 
                      call mfix_exit(myPE) 
                   ELSE IF (IC_GAMA_RG(ICV) > ZERO) THEN 
                      IF (IC_T_RG(ICV) == UNDEFINED) THEN 
-                       WRITE (UNIT_LOG, 1000) 'IC_T_Rg', ICV 
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_T_Rg', ICV 
                        call mfix_exit(myPE) 
                      ENDIF 
                   ENDIF 
@@ -359,14 +359,14 @@
                END DO 
                DO N = 1, NMAX(0) 
                   IF (IC_X_G(ICV,N) == UNDEFINED) THEN 
-                     IF (.NOT.COMPARE(ONE,SUM)) WRITE (UNIT_LOG, 1050) ICV, N 
+                     IF (.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)WRITE (UNIT_LOG, 1050) ICV, N 
                      IC_X_G(ICV,N) = ZERO 
                   ENDIF 
                END DO 
 
 
                IF (.NOT.COMPARE(ONE,SUM)) THEN 
-                  WRITE (UNIT_LOG, 1055) ICV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1055) ICV 
                   IF (SPECIES_EQ(0) .OR. RO_G0==UNDEFINED .AND. MW_AVG==&
                      UNDEFINED) then
 		     call mfix_exit(myPE)  
@@ -387,7 +387,7 @@
                      ELSE IF (MMAX == 1) THEN 
                         IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*RO_S(M) 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'IC_ROP_s', ICV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_ROP_s', ICV, M 
                         call mfix_exit(myPE) 
                      ENDIF 
                   ENDIF 
@@ -402,20 +402,20 @@
                   ENDIF 
                   DO N = 1, NMAX(M) 
                      IF (IC_X_S(ICV,M,N) == UNDEFINED) THEN 
-                        IF(.NOT.COMPARE(ONE,SUM))WRITE(UNIT_LOG,1110)ICV,M,N 
+                        IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)WRITE (UNIT_LOG, 1110)ICV,M,N 
                         IC_X_S(ICV,M,N) = ZERO 
                      ENDIF 
                   END DO 
 
                   IF (.NOT.COMPARE(ONE,SUM)) THEN 
-                        WRITE (UNIT_LOG, 1120) ICV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1120) ICV, M 
                         IF (SPECIES_EQ(M)) call mfix_exit(myPE)  
                   ENDIF 
                   IF (IC_U_S(ICV,M) == UNDEFINED) THEN 
                      IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_I) THEN 
                         IC_U_S(ICV,M) = ZERO 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'IC_U_s', ICV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_U_s', ICV, M 
                         call mfix_exit(myPE) 
                      ENDIF 
                   ENDIF 
@@ -424,7 +424,7 @@
                      IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_J) THEN 
                         IC_V_S(ICV,M) = ZERO 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'IC_V_s', ICV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_V_s', ICV, M 
                         call mfix_exit(myPE) 
                      ENDIF 
                   ENDIF 
@@ -432,7 +432,7 @@
                      IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_K) THEN 
                         IC_W_S(ICV,M) = ZERO 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'IC_W_s', ICV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_W_s', ICV, M 
                         call mfix_exit(myPE) 
                      ENDIF 
                   ENDIF 
@@ -441,7 +441,7 @@
                      IF (IC_ROP_S(ICV,M) == ZERO) THEN 
                         IC_T_S(ICV,M) = IC_T_G(ICV) 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'IC_T_s', ICV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_T_s', ICV, M 
                         call mfix_exit(myPE) 
                      ENDIF 
                   ENDIF 
@@ -451,18 +451,18 @@
                      IF (IC_ROP_S(ICV,M) == ZERO) THEN 
                         IC_THETA_M(ICV,M) = ZERO 
                      ELSE 
-                        WRITE (UNIT_LOG, 1100) 'IC_Theta_m', ICV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_Theta_m', ICV, M 
                         call mfix_exit(myPE) 
                      ENDIF 
                   ENDIF 
 !
                   IF (ENERGY_EQ) THEN 
                      IF (IC_GAMA_RS(ICV,M) < ZERO) THEN 
-                        WRITE (UNIT_LOG, 1101) 'IC_GAMA_Rs', ICV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1101) 'IC_GAMA_Rs', ICV, M 
                         call mfix_exit(myPE) 
                      ELSE IF (IC_GAMA_RS(ICV,M) > ZERO) THEN 
                         IF (IC_T_RS(ICV,M) == UNDEFINED) THEN 
-                           WRITE (UNIT_LOG, 1100) 'IC_T_Rs', ICV, M 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_T_Rs', ICV, M 
                            call mfix_exit(myPE) 
                         ENDIF 
                      ENDIF 
@@ -470,7 +470,7 @@
                END DO 
 
                IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
-                     WRITE (UNIT_LOG, 1125) ICV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1125) ICV 
                      call mfix_exit(myPE)
                ENDIF 
 !
@@ -497,72 +497,72 @@
 !  initial conditions
 !
             IF (IC_U_G(ICV) /= UNDEFINED) THEN 
-                WRITE (UNIT_LOG, 1200) 'IC_U_g', ICV 
+                IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_U_g', ICV 
                 call mfix_exit(myPE) 
             ENDIF 
             IF (IC_V_G(ICV) /= UNDEFINED) THEN 
-                WRITE (UNIT_LOG, 1200) 'IC_V_g', ICV 
+                IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_V_g', ICV 
                 call mfix_exit(myPE) 
             ENDIF 
             IF (IC_W_G(ICV) /= UNDEFINED) THEN 
-                WRITE (UNIT_LOG, 1200) 'IC_W_g', ICV 
+                IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_W_g', ICV 
                 call mfix_exit(myPE) 
             ENDIF 
             IF (IC_EP_G(ICV) /= UNDEFINED) THEN 
-                WRITE (UNIT_LOG, 1200) 'IC_EP_g', ICV 
+                IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_EP_g', ICV 
                 call mfix_exit(myPE) 
             ENDIF 
             IF (IC_T_G(ICV) /= UNDEFINED) THEN 
-                WRITE (UNIT_LOG, 1200) 'IC_T_g', ICV 
+                IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_T_g', ICV 
                 call mfix_exit(myPE) 
             ENDIF 
             IF (IC_T_RG(ICV) /= UNDEFINED) THEN 
-                WRITE (UNIT_LOG, 1200) 'IC_T_Rg', ICV 
+                IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_T_Rg', ICV 
                 call mfix_exit(myPE) 
             ENDIF 
             DO N = 1, DIMENSION_N_G 
                IF (IC_X_G(ICV,N) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1200) 'IC_X_g', ICV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_X_g', ICV 
                   call mfix_exit(myPE) 
                ENDIF 
             END DO 
 	    
             DO N = 1, NScalar 
                IF (IC_Scalar(ICV,N) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1200) 'IC_Scalar', ICV 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_Scalar', ICV 
                   CALL MFIX_EXIT(myPE)
                ENDIF 
             END DO 
 	    
             DO M = 1, DIMENSION_M 
                IF (IC_ROP_S(ICV,M) /= UNDEFINED) THEN 
-                   WRITE (UNIT_LOG, 1300) 'IC_ROP_s', ICV, M 
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_ROP_s', ICV, M 
                    call mfix_exit(myPE) 
                ENDIF 
                DO N = 1, DIMENSION_N_S 
                   IF (IC_X_S(ICV,M,N) /= UNDEFINED) THEN 
-                      WRITE (UNIT_LOG, 1300) 'IC_X_s', ICV, M 
+                      IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_X_s', ICV, M 
                       call mfix_exit(myPE) 
                   ENDIF 
                END DO 
                IF (IC_U_S(ICV,M) /= UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1300) 'IC_U_s', ICV, M 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_U_s', ICV, M 
                      call mfix_exit(myPE) 
                ENDIF 
                IF (IC_V_S(ICV,M) /= UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1300) 'IC_V_s', ICV, M 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_V_s', ICV, M 
                      call mfix_exit(myPE) 
                ENDIF 
                IF (IC_W_S(ICV,M) /= UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1300) 'IC_W_s', ICV, M 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_W_s', ICV, M 
                      call mfix_exit(myPE) 
                ENDIF 
                IF (IC_T_S(ICV,M) /= UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1300) 'IC_T_s', ICV, M 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_T_s', ICV, M 
                      call mfix_exit(myPE) 
                ENDIF 
                IF (IC_T_RS(ICV,M) /= UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1300) 'IC_T_Rs', ICV, M 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_T_Rs', ICV, M 
                      call mfix_exit(myPE) 
                ENDIF 
             END DO 
@@ -579,13 +579,13 @@
 !
   900 CONTINUE 
       CALL ERROR_ROUTINE ('check_data_06', 'Invalid IC region specified', 0, 2) 
-         WRITE (UNIT_LOG, *) ' IC number = ', ICV
-         WRITE (UNIT_LOG, *) ' IC_I_w(ICV) = ', IC_I_W(ICV) 
-         WRITE (UNIT_LOG, *) ' IC_I_e(ICV) = ', IC_I_E(ICV) 
-         WRITE (UNIT_LOG, *) ' IC_J_s(ICV) = ', IC_J_S(ICV) 
-         WRITE (UNIT_LOG, *) ' IC_J_n(ICV) = ', IC_J_N(ICV) 
-         WRITE (UNIT_LOG, *) ' IC_K_b(ICV) = ', IC_K_B(ICV) 
-         WRITE (UNIT_LOG, *) ' IC_K_t(ICV) = ', IC_K_T(ICV) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IC number = ', ICV
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IC_I_w(ICV) = ', IC_I_W(ICV) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IC_I_e(ICV) = ', IC_I_E(ICV) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IC_J_s(ICV) = ', IC_J_S(ICV) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IC_J_n(ICV) = ', IC_J_N(ICV) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IC_K_b(ICV) = ', IC_K_B(ICV) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IC_K_t(ICV) = ', IC_K_T(ICV) 
       CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
 !
  1000 FORMAT(/1X,70('*')//' From: CHECK_DATA_06',/' Message: ',A,'(',I2,&

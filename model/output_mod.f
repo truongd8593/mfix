@@ -116,6 +116,11 @@
       INTEGER          NLOG_HEADER
       LOGICAL          LOG_HEADER
 !
+!
+!              User defined flag to enable log file writing from each processor in DMP mode
+!              If .false. only PE_IO writes the log file
+      LOGICAL, PARAMETER          :: ENABLE_DMP_LOG = .FALSE.
+
 
 
       END MODULE output                                                                          

@@ -69,7 +69,7 @@
          call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
                           cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE0, IER )
       else
-         write(unit_log,*) 'preconditioner option not found - check mfix.dat and readme'
+         IF(DMP_LOG)WRITE (UNIT_LOG,*) 'preconditioner option not found - check mfix.dat and readme'
          call mfix_exit(myPE)
       endif
 
@@ -1301,8 +1301,8 @@
 !    CALL DGTSV( JEND-JSTART+1, 1, DL, DD, EE, BB,  JEND-JSTART+1, INFO )
 
      IF (INFO.NE.0) THEN
-        write(unit_log,*) 'VNAME = ', VNAME
-        write(unit_log,*) 'DGTSV RETURNS INFO = ', INFO
+        IF(DMP_LOG)WRITE (UNIT_LOG,*) 'VNAME = ', VNAME
+        IF(DMP_LOG)WRITE (UNIT_LOG,*) 'DGTSV RETURNS INFO = ', INFO
         call mfix_exit(myPE)
      ENDIF
 
@@ -1404,8 +1404,8 @@
 !    CALL DGTSV( JEND-JSTART+1, 1, DL, DD, EE, BB,  JEND-JSTART+1, INFO )
 
      IF (INFO.NE.0) THEN
-        write(unit_log,*) 'VNAME = ', VNAME
-        write(unit_log,*) 'DGTSV RETURNS INFO = ', INFO
+        IF(DMP_LOG)WRITE (UNIT_LOG,*) 'VNAME = ', VNAME
+        IF(DMP_LOG)WRITE (UNIT_LOG,*) 'DGTSV RETURNS INFO = ', INFO
         call mfix_exit(myPE)
      ENDIF
 
@@ -1960,7 +1960,7 @@
 	 call LEQ_BICGS0t( Vname, Var, A_m, B_m,				&
 			  cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVE0t, IER )
       else
-    		write(unit_log,*) 'preconditioner option not found - check mfix.dat and readme', leq_pc
+    		IF(DMP_LOG)WRITE (UNIT_LOG,*) 'preconditioner option not found - check mfix.dat and readme', leq_pc
 	 call mfix_exit(myPE)
       endif
 
@@ -3180,8 +3180,8 @@
 !    CALL DGTSV( JEND-JSTART+1, 1, DL, DD, EE, BB,  JEND-JSTART+1, INFO )
 
      IF (INFO.NE.0) THEN
-        write(unit_log,*) 'VNAME = ', VNAME
-        write(unit_log,*) 'DGTSV RETURNS INFO = ', INFO
+        IF(DMP_LOG)WRITE (UNIT_LOG,*) 'VNAME = ', VNAME
+        IF(DMP_LOG)WRITE (UNIT_LOG,*) 'DGTSV RETURNS INFO = ', INFO
         call mfix_exit(myPE)
      ENDIF
 
@@ -3283,8 +3283,8 @@
 !    CALL DGTSV( JEND-JSTART+1, 1, DL, DD, EE, BB,  JEND-JSTART+1, INFO )
 
      IF (INFO.NE.0) THEN
-        write(unit_log,*) 'VNAME = ', VNAME
-        write(unit_log,*) 'DGTSV RETURNS INFO = ', INFO
+        IF(DMP_LOG)WRITE (UNIT_LOG,*) 'VNAME = ', VNAME
+        IF(DMP_LOG)WRITE (UNIT_LOG,*) 'DGTSV RETURNS INFO = ', INFO
         call mfix_exit(myPE)
      ENDIF
 
