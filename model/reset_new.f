@@ -32,6 +32,7 @@
       USE geometry
       USE indices
       USE physprop
+      USE trace
       USE run
       USE scalars
       IMPLICIT NONE
@@ -61,7 +62,9 @@
       W_G(:) = W_GO(:) 
       IF (ENERGY_EQ) T_G(:) = T_GO(:) 
       IF (SPECIES_EQ(0)) THEN 
-        X_G(:,:NMAX(0)) = X_GO(:,:NMAX(0)) 
+        IF (NMAX(0) > 0) THEN 
+          X_G(:,:NMAX(0)) = X_GO(:,:NMAX(0)) 
+        ENDIF 
       ENDIF 
       
       IF (NScalar > 0) THEN 
@@ -70,13 +73,18 @@
 
       DO M = 1, MMAX 
         ROP_S(:,M) = ROP_SO(:,M) 
-        THETA_M(:,M) = THETA_MO(:,M) 
         IF (ENERGY_EQ) T_S(:,M) = T_SO(:,M) 
+        IF (GRANULAR_ENERGY) THEN 
+          THETA_M(:,M) = THETA_MO(:,M) 
+          TRD_S_C(:,M) = TRD_S_CO(:,M)
+	ENDIF 
         U_S(:,M) = U_SO(:,M) 
         V_S(:,M) = V_SO(:,M) 
         W_S(:,M) = W_SO(:,M) 
         IF (SPECIES_EQ(M)) THEN 
-          X_S(:,M,:NMAX(M)) = X_SO(:,M,:NMAX(M)) 
+          IF (NMAX(M) > 0) THEN 
+            X_S(:,M,:NMAX(M)) = X_SO(:,M,:NMAX(M)) 
+          ENDIF 
         ENDIF 
       END DO 
       RETURN  

@@ -430,7 +430,7 @@
       DOUBLE PRECISION ROP_sf 
 ! 
 !                      error message 
-      CHARACTER*80     LINE 
+      CHARACTER*80     LINE(1) 
 ! 
 !                      Convection weighting factors 
 !      DOUBLE PRECISION XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),& 
@@ -600,10 +600,10 @@
                   B_M(IJK,0) = ZERO              ! Use existing value 
                ELSE 
 !$omp             critical
-                  WRITE (LINE, '(A,I6,A,G12.5)') 'Error: At IJK = ', IJK, &
+                  WRITE (LINE(1), '(A,I6,A,G12.5)') 'Error: At IJK = ', IJK, &
                      ' A = 0 and b = ', B_M(IJK,0) 
 !//SP Having problem to compile this statement on SGI
-!                 CALL WRITE_ERROR ('CONV_SOURCE_EPp1', LINE, 1) 
+                  CALL WRITE_ERROR ('CONV_SOURCE_EPp1', LINE, 1) 
 !$omp             end critical
                ENDIF 
             ENDIF 

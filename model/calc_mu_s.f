@@ -435,7 +435,7 @@
  
  
           IF(EP_g(IJK) .LT. EP_star) THEN
-             P_star(IJK) = Neg_H(EP_g(IJK))
+!             P_star(IJK) = Neg_H(EP_g(IJK))
 !
 !  Plastic-flow stress tensor
 !
@@ -471,6 +471,7 @@
             LAMBDA_s(IJK, M) = ZERO
             ALPHA_s(IJK, M)  = ZERO
             P_s(IJK, M)  = ZERO
+	    THETA_m(IJK, M) = ZERO
           ENDIF
          ENDIF
  
@@ -548,7 +549,7 @@
                              / ( 2. * K_4m )
               EP_s2xTHETA = EP_sxSQRTHETA * EP_sxSQRTHETA
  
-              IF(EP_s(IJK,M) .NE. ZERO)THEN
+              IF(EP_s(IJK,M) > SMALL_NUMBER)THEN
 !start      kapil&anuj 01/19/98
 !               Find pseudo-thermal temperature in the Mth solids phase
                 THETA_m(IJK,M) = EP_s2xTHETA/(EP_s(IJK,M)*EP_s(IJK,M))
