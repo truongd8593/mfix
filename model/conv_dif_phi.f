@@ -32,17 +32,17 @@
       USE param 
       USE param1
       USE run 
-<<<<<<< conv_dif_phi.f
+!<<<<<<< conv_dif_phi.f
       USE compar
       USE mpi_utility
       USE geometry
       USE xsi_array
-=======
+!=======
       USE geometry
       USE compar
       USE sendrecv
       Use xsi_array
->>>>>>> 1.3
+!>>>>>>> 1.3
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -484,27 +484,15 @@
 !!$omp&             IJMK, IJKS,                                  &
 !!$omp&             IJKM, IJKB, PHI_HO, PHI_LO, CONV_FAC,       &
 !!$omp&             EAST_DC, WEST_DC, NORTH_DC, SOUTH_DC, TOP_DC, BOTTOM_DC)                     
-<<<<<<< conv_dif_phi.f
 !
 
       DO IJK = IJKSTART3, IJKEND3
 !
-\\102199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+!\\102199\Sreekanth - Determining whether IJK falls within 1 ghost layer........
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
        IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
-=======
-!
-
-      DO IJK = IJKSTART3, IJKEND3
-!
-!\\102199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
-       I = I_OF(IJK)
-       J = J_OF(IJK)
-       K = K_OF(IJK)
-       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
->>>>>>> 1.3
 !
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -747,29 +735,16 @@
 !!$omp&             IJMK, JM,  IJKS,                                  &
 !!$omp&             IJKM, KM,  IJKB )                      
 !
-<<<<<<< conv_dif_phi.f
 !
 !
       DO IJK = IJKSTART3, IJKEND3
 !
-\\102199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+!\\102199\Sreekanth - Determining whether IJK falls within 1 ghost layer........
        I = I_OF(IJK) 
        J = J_OF(IJK) 
        K = K_OF(IJK) 
        IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
-=======
-!
-!
-      DO IJK = IJKSTART3, IJKEND3
-!
-!\\102199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
-       I = I_OF(IJK) 
-       J = J_OF(IJK) 
-       K = K_OF(IJK) 
-       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
-!
->>>>>>> 1.3
          IF (FLUID_AT(IJK)) THEN 
 !
             IPJK = IP_OF(IJK) 
