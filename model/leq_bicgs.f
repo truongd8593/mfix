@@ -59,13 +59,13 @@
       CHARACTER*4 :: CMETHOD
 !-------------------------------------------------
       DOUBLE PRECISION DNRM2
-      EXTERNAL LEQ_MATVEC, LEQ_MSOLVE
+      EXTERNAL LEQ_MATVEC, LEQ_MSOLVE1
 
 
 !--------------------------------------------------
       
       call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
-                       cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE, IER )
+                       cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE1, IER )
 
       return
       END SUBROUTINE LEQ_BICGS
