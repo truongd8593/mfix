@@ -1,0 +1,131 @@
+# Run-control section
+#
+  RUN_NAME = 'RISER'
+  DESCRIPTION = 'Gas-Particle Flow in a 2D periodic cell'
+  RUN_TYPE = 'NEW'
+  UNITS = 'cgs'
+  TIME  = 0.0      TSTOP = 12.0  DT = 1E-3 
+  DT_MAX = 0.4e-4
+!  DT_FAC=1.0
+  ENERGY_EQ = .FALSE.
+  SPECIES_EQ = .FALSE.     .FALSE.
+
+   GRANULAR_ENERGY = .TRUE.
+
+   MOMENTUM_X_EQ =  .TRUE.  .TRUE.
+   MOMENTUM_Y_EQ =  .TRUE.  .TRUE.
+        
+   CYCLIC_Y_PD = .TRUE. 
+!   CYCLIC_Y   = .TRUE.
+   CYCLIC_X    = .TRUE.
+
+   SHEAR=.TRUE.
+   V_sh=5d0
+
+   DELP_Y =592.9885122!  299.0439851 
+   TOL_RESID = 1e-4
+   LEQ_METHOD(8) = 1       
+   DISCRETIZE = 8*2              ! Superbee discretization scheme
+   NORM_s = 1e-1
+   NORM_g = 1e-1
+   DETECT_STALL = .FALSE.
+   MAX_NIT = 25
+   CALL_USR=.FALSE.
+   FRICTION= .FALSE.              
+#
+# Geometry Section
+#
+  COORDINATES = 'Cartesian'
+
+  XLENGTH  =   1.0    IMAX = 16
+  YLENGTH  =   4.0    JMAX = 64
+
+  NO_K     = .TRUE.
+
+#
+# Gas-phase Section
+#
+  RO_g0 = 1.3e-3
+  MU_g0 = 1.8E-4
+  MW_avg  = 29.
+#
+# Solids-phase Section
+#
+  RO_s         = 1.5
+  D_p          = 0.0075 
+  CLOSE_PACKED = .TRUE.
+
+  e       = 0.9
+  Phi     = 28.5              
+  Phi_w   = 18.0
+  EP_star = 0.15           
+#
+# Initial Conditions Section
+#
+
+  IC_X_w           =  0.0     
+  IC_X_e           =  1.0  
+  IC_Y_s           =  0.0   
+  IC_Y_n           =  4.0  
+ 
+  IC_EP_g          =  0.90 
+ 
+  IC_U_g           =  0.0      
+  IC_V_g           =  0.0  
+  IC_T_g           =  300.0 
+  IC_P_g           =  0.    
+
+  IC_U_s      =       0.0  
+  IC_V_s      =       0.0           
+  IC_Theta_m  =       1.0   
+
+  IC_P_star        =  0.0   
+
+
+
+#
+#  Output Control
+#
+  RES_DT = 0.005
+  OUT_DT = 1.0
+        !
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g   Theta_m
+        !      P_star    V_g  V_s            T_s1 X_s
+        !                W_g  W_s            T_s2
+  SPX_DT = 0.02 0.02     0.02 0.02 100.      100. 100.    0.02  100.
+
+  FULL_LOG = .TRUE.
+  RESID_STRING  = 'P0' 'P1' 'U0' 'U1' 'V0' 'V1' 'G1'
+
+
+# DMP control
+  
+  NODESI = 1   NODESJ = 1   NODESK = 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
