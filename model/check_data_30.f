@@ -117,9 +117,61 @@
 !                      Do-loop counter
       INTEGER          L, LM
 !
+!                      There is a discrepancy in rxn sums
+      LOGICAL          MESSAGE_rxnsum
+!
+!                      maximum discrepancy in rxn sums
+      DOUBLE PRECISION RXNSUM_MAX
+!
+!                      Location of maximum discrepancy in rxn sums
+      INTEGER          I_RXNSUM_MAX, J_RXNSUM_MAX, K_RXNSUM_MAX
+!
+!                      Distribution of the sum of gas species mass fractions
+      INTEGER          COUNT_RXNSUM0, COUNT_RXNSUM1
+!
+!                      There is a discrepancy in rxn sums
+      LOGICAL          MESSAGE_rxnsum
+!
+!                      maximum discrepancy in rxn sums
+      DOUBLE PRECISION RXNSUM_MAX
+!
+!                      Location of maximum discrepancy in rxn sums
+      INTEGER          I_RXNSUM_MAX, J_RXNSUM_MAX, K_RXNSUM_MAX
+!
+!                      number of cells with minor and major discrepancy
+      INTEGER          COUNT_RXNSUM0, COUNT_RXNSUM1
+
+!
+!                      There is a discrepancy in interphase mass transfer
+      LOGICAL          MESSAGE_masstr(0:DIMENSION_M)
+!
+!                      maximum discrepancy in interphase mass transfer
+      DOUBLE PRECISION masstr_MAX(0:DIMENSION_M)
+!
+!                      Location of maximum discrepancy in interphase mass transfer
+      INTEGER          I_masstr_MAX(0:DIMENSION_M), J_masstr_MAX(0:DIMENSION_M),&
+                       K_masstr_MAX(0:DIMENSION_M)
+!
+!                      number of cells with minor and major discrepancy
+      INTEGER          COUNT_masstr0(0:DIMENSION_M), COUNT_masstr1(0:DIMENSION_M)
+!
 !-----------------------------------------------
       INCLUDE 'function.inc'
+
 !
+      MESSAGE_rxnsum = .false.
+      RXNSUM_MAX     = ZERO
+      COUNT_RXNSUM0  = 0
+      COUNT_RXNSUM1  = 0
+
+      DO L = 0, MMAX
+        MESSAGE_masstr(L) = .false.
+        masstr_MAX(L)     = ZERO
+        COUNT_masstr0(L)  = 0
+        COUNT_masstr1(L)  = 0
+      END DO 
+!
+
       MESSAGE_X_G = .FALSE. 
       I_MIN_G = 0 
       J_MIN_G = 0 
@@ -296,20 +348,30 @@
 !  Sum of over all reaction rates for phases should be zero
 !
                   SUM = SUM_R_G(IJK) 
-                  M = 1 
                   IF (MMAX > 0) THEN 
                      DO M = 1, MMAX 
                         SUM = SUM + SUM_R_S(IJK,M) 
                      END DO 
-                     M = MMAX + 1 
                   ENDIF 
-                  IF (ABS(SUM) > SMALL_NUMBER) THEN 
+                  IF (ABS(SUM) > SMALL_NUMBER) THEN
+                     MESSAGE_rxnsum = .true.
+		     if(abs(sum) > abs(RXNSUM_MAX))then
+		       RXNSUM_MAX   = sum
+		       I_RXNSUM_MAX = i
+		       J_RXNSUM_MAX = j
+		       K_RXNSUM_MAX = k
+		     endif
                      IF (.NOT.MESSAGE) THEN 
                         WRITE (UNIT_LOG, 1000) TIME 
                         MESSAGE = .TRUE. 
                      ENDIF 
-                     WRITE (UNIT_LOG, 1100) I, J, K, SUM 
-                     IF (ABS(SUM) > TOL_COM) ABORT = .TRUE. 
+!                     WRITE (UNIT_LOG, 1100) I, J, K, SUM 
+                     IF (ABS(SUM) > TOL_COM) then
+		       COUNT_RXNSUM1 = COUNT_RXNSUM1 + 1
+		       ABORT = .TRUE.
+		     else
+		       COUNT_RXNSUM0 = COUNT_RXNSUM0 + 1
+		     endif
                   ENDIF 
 !
 !  The net production of each phase should match the total mass transferred
@@ -330,16 +392,31 @@
                            SUM = SUM + R_PHASE(IJK,LM) 
                         ENDIF 
                      END DO 
-                     IF (ABS(SUM) > SMALL_NUMBER) THEN 
+                     IF (ABS(SUM) > SMALL_NUMBER) THEN
+		        MESSAGE_masstr(L) = .true. 
+		        if(abs(sum) > abs(masstr_MAX(L)))then
+		          masstr_MAX(L)   = sum
+		          I_masstr_MAX(L) = i
+		          J_masstr_MAX(L) = j
+		          K_masstr_MAX(L) = k
+		        endif
                         IF (.NOT.MESSAGE) THEN 
                            WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-                        WRITE (UNIT_LOG, 1101) I, J, K, L, SUM 
-                        IF (ABS(SUM) > TOL_COM) ABORT = .TRUE. 
+!                        WRITE (UNIT_LOG, 1101) I, J, K, L, SUM 
+                        IF (ABS(SUM) > TOL_COM) then
+		          COUNT_masstr1(L) = COUNT_masstr1(L) + 1
+			  ABORT = .TRUE. 
+			ELSE
+		          COUNT_masstr0(L) = COUNT_masstr0(L) + 1
+			ENDIF
                      ENDIF 
                   END DO 
 
+!
+!  R_gp, RoX_gc, R_sp, and RoX_sc must be non-negative
+!
                   IF(SPECIES_EQ(0))THEN
                     DO N = 1, NMAX(0) 
                        IF (R_GP(IJK,N) < ZERO) THEN 
@@ -384,6 +461,9 @@
                     ENDIF
                   END DO 
 
+!
+!  Sum of gas mass fractions should be one
+!
                   IF (SPECIES_EQ(0)) THEN 
                      SUM = ZERO 
                      N = 1 
@@ -557,7 +637,27 @@
                ENDIF 
             END DO 
          END DO 
-      END DO 
+      END DO
+       
+      call global_all_or(MESSAGE_rxnsum)
+      IF (MESSAGE_rxnsum) THEN 
+	 call global_all_sum(COUNT_RXNSUM0)
+	 call global_all_sum(COUNT_RXNSUM1)
+         WRITE (UNIT_LOG, 1415) COUNT_RXNSUM0, COUNT_RXNSUM1, RXNSUM_MAX, &
+	                        I_RXNSUM_MAX, J_RXNSUM_MAX, K_RXNSUM_MAX 
+      ENDIF 
+
+      DO L = 0, MMAX
+        call global_all_or(MESSAGE_masstr(L))
+        IF (MESSAGE_masstr(L)) THEN 
+	   call global_all_sum(COUNT_masstr0(L))
+	   call global_all_sum(COUNT_masstr1(L))
+           WRITE (UNIT_LOG, 1420) L, COUNT_masstr0(L), COUNT_masstr1(L),&
+	         masstr_MAX(L), &
+	         I_masstr_MAX(L), J_masstr_MAX(L), K_masstr_MAX(L) 
+        ENDIF 
+      ENDDO
+      
       call global_all_or(MESSAGE_X_G)
       IF (MESSAGE_X_G) THEN 
 	 call global_all_sum(COUNT_G)
@@ -628,6 +728,18 @@
  1331 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  DIF_s .LT. 0') 
  1400 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  T_g .EQ. TMIN or TMAX') 
  1410 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  T_s .EQ. TMIN or TMAX') 
+ 1415 FORMAT(//1X,'Sum of all the reaction rates is not zero!',/,1X,&
+         'Number of cells with discrepancy < error tolerance = ',I5,/,1X,&
+         'Number of cells with discrepancy > error tolerance = ',I5,/,1X,&
+         'Maximum discrepancy = ',G12.5,/,1X,&
+         'Location of maximum discrepancy: I = ',I4, '  J = ', I4, '  K = ', I4&
+	 ) 
+ 1420 FORMAT(//1X,'Production of phase ', I2, ' not equal to total mass transfer from other phases!',/,1X,&
+         'Number of cells with discrepancy < error tolerance = ',I5,/,1X,&
+         'Number of cells with discrepancy > error tolerance = ',I5,/,1X,&
+         'Maximum discrepancy = ',G12.5,/,1X,&
+         'Location of maximum discrepancy: I = ',I4, '  J = ', I4, '  K = ', I4&
+	 ) 
  1430 FORMAT(//1X,'Statistics of sum of gas species mass fraction',/,1X,&
          'Sum of X_g',9X,'No of cells',2X,'Distribution') 
  1432 FORMAT(1X,'<0.9',T20,I4,T33,G12.5,/,1X,'0.9    - 0.99',T20,I4,T33,G12.5,/&
