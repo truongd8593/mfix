@@ -57,9 +57,9 @@
 !//     use both to avoid modifying all DIMENSION_3 definitions.
       DIMENSION_3L  = ijksize3_all(myPE)
       write(*,"('(PE ',I2,'): GLOBAL DIM_3 = ',I6,/, &
-                &9X,'LOCAL DIM_3  = ',I6)") myPE,DIMENSION_3G,DIMENSION_3 !//AIKEPARDBG
+                 9X,'LOCAL DIM_3  = ',I6)") myPE,DIMENSION_3G,DIMENSION_3 !//AIKEPARDBG
       write(*,"('(PE ',I2,'): ijksize3_all() = ',I6,/, &
-                &9X,'DIMENSION_3L  = ',I6)") &
+                 9X,'DIMENSION_3L  = ',I6)") &
 		 myPE,ijksize3_all(myPE),DIMENSION_3L !//AIKEPARDBG
       
       DIMENSION_M   = MAX(1, MMAX)
