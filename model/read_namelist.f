@@ -188,6 +188,7 @@
 !
 !
       CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN) 
+      CALL REPLACE_TAB (LINE_STRING, LINE_LEN) 
 !
 !
 !  Complete arithmetic operations and expand line
