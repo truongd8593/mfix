@@ -197,7 +197,6 @@ echo " "
  cp -p ../model/ep_s2.inc .
  cp -p ../model/fun_avg1.inc .
  cp -p ../model/fun_avg2.inc .
- cp -p ../model/function.inc .
  cp -p ../model/s_pr1.inc .
  cp -p ../model/s_pr2.inc .
  cp -p ../model/namelist.inc .
@@ -236,7 +235,6 @@ echo " "
  chmod +w ep_s2.inc
  chmod +w fun_avg1.inc
  chmod +w fun_avg2.inc
- chmod +w function.inc
  chmod +w s_pr1.inc
  chmod +w s_pr2.inc
  chmod +w namelist.inc
@@ -247,7 +245,6 @@ echo " "
  rm ep_s2.inc
  rm fun_avg1.inc
  rm fun_avg2.inc
- rm function.inc
  rm s_pr1.inc
  rm s_pr2.inc
  rm namelist.inc
