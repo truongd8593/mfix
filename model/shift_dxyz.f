@@ -69,6 +69,8 @@
          DY(1) = DY(JMIN1) 
       ENDIF 
 !
+!//? do we need modify dz shift w.r.t. additional ghost layers introduced for
+!//? for MFIX/MPI, in particular, at kmax3, kmin2,kmin1
       IF (DO_K) THEN 
          DZ(KMAX2) = DZ(KMAX) 
          LC = KMAX1 
