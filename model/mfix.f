@@ -16,6 +16,14 @@
 !  Author: M. Syamlal                                 Date: 14-MAY-92  C
 !  Reviewer: W. Rogers                                Date: 11-DEC-92  C
 !                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:  Modifications for initializing & finalizing MPI through   C
+!            parallel_mpi module developed by ORNL and also starts     C
+!            the MPI Timer (MPI_WTIME)                                 C
+!
+!  Author:   Aeolus Res. Inc.                         Date: 01-AUG-99  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced: RUN_TYPE                                      C
@@ -38,10 +46,14 @@
       USE time_cpu 
       USE funits 
       USE output
+      USE compar      !// 001 Include MPI header file
+      USE mpi_utility !//     added for exitMPI calls for debugging     
+      USE parallel_mpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
+
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -73,6 +85,17 @@
 !
 !$      INTEGER num_threads, threads_specified
 !$      INTEGER mp_numthreads, omp_get_num_threads
+
+!// 010 Initialize MPI & get ranks & total PEs employed
+    call parallel_init
+!//PARDBG 0801 Printout total PEs and also signal each alive PE
+    if(myPE == 0) then
+        write(*,"('Total number of PEs  :',I3)") numPEs
+    endif
+    write(*,"('Hello, I am PE :',I2)") myPE
+
+
+
 !
 ! set the version.release of the software
 !
@@ -100,12 +123,19 @@
 !
 !  Get the initial value of CPU time
 !
-      CALL CPU_TIME (CPU0) 
+
+!// 888 Start MPI's own clock to measure wall time
+!      CALL CPU_TIME (CPU0) 
+      CPU0 = MPI_WTIME()
+
 !
 !   Read input data, check data, do computations for IC and BC locations
 !   and flows, and set geometry parameters such as X, X_E, DToDX, etc.
 !
       CALL GET_DATA 
+
+      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Initialize all field variables as undefined
 !
@@ -259,15 +289,23 @@
 !  Get the final value of CPU time.  The difference gives the
 !  CPU time used for the computations.
 !
-      CALL CPU_TIME (CPU1) 
+
+!// 888 Read time from MPI's own clock to measure wall time
+!      CALL CPU_TIME (CPU1) 
+      CPU1 = MPI_WTIME()
 !
 !  Compute the CPU time and write it out in the .OUT file.
 !
       CPUTIME_USED = CPU1 - CPU0 
       CALL WRITE_OUT3 (CPUTIME_USED) 
+
+!// 010 Finalize and terminate MPI
+      call parallel_fin
+            
       STOP  
  1000 FORMAT(/1X,'MFIX ',A,' Simulation:'/) 
  1010 FORMAT(/1X,70('*')//' From: MFIX',/&
          ' Message: Read in data from .RES file for TIME = ',G12.5,/&
          ' Time step number (NSTEP) =',I7,/1X,70('*')/) 
       END PROGRAM MFIX 
+      
