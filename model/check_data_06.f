@@ -522,14 +522,14 @@
             ENDIF 
             DO N = 1, DIMENSION_N_G 
                IF (IC_X_G(ICV,N) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1200) 'X_g', ICV 
+                  WRITE (UNIT_LOG, 1200) 'IC_X_g', ICV 
                   call mfix_exit(myPE) 
                ENDIF 
             END DO 
 	    
             DO N = 1, NScalar 
                IF (IC_Scalar(ICV,N) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1200) 'Scalar', ICV 
+                  WRITE (UNIT_LOG, 1200) 'IC_Scalar', ICV 
                   CALL MFIX_EXIT(myPE)
                ENDIF 
             END DO 

@@ -59,7 +59,7 @@
              IC_U_g, IC_U_s, IC_V_g, IC_V_s, IC_W_g, IC_W_s,&
              IC_X_g, IC_X_s, IC_TYPE, IC_P_star, IC_L_scale,&
              IC_GAMA_Rg, IC_T_Rg, IC_GAMA_Rs, IC_T_Rs,&
-             IC_Theta_m,&
+             IC_Theta_m, IC_Scalar,&
 !
 ! 1.8 Boundary conditions section
 !
@@ -84,6 +84,8 @@
              BC_hw_Theta_m, BC_Thetaw_m, BC_C_Theta_m,&
              BC_Theta_m,&
 !end   kapil anuj 01/19/98
+             BC_hw_Scalar, BC_Scalarw, BC_C_Scalar,&
+             BC_Scalar,&
 !
 ! 1.9 Internal surfaces section
 !

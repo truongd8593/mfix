@@ -233,7 +233,7 @@ ln -sf "$mpi_include/mpif.h" .
 	    compile_common="-c -I.  -Mnosave -Mfreeform -Mrecursive -Mreentrant -byteswapio"
             compile_d=" -g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk $compile_common"
             link_d=" "
-            compile=" -O3 -Mdalign $compile_common"
+            compile=" -O -Mdalign $compile_common"
             compile2="-O1 -Mdalign $compile_common"
             link="  "
             MODULE_CODE=1
@@ -243,7 +243,8 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
             inline_objs="compare.o eosg.o discretize.o "
             inline_files="compare.f eosg.f discretize.f "
-            inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
+            inline_flags=" "
+#            inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
             preinline_flags="  "
 
 

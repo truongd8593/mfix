@@ -303,6 +303,7 @@
          IC_W_S(LC,:DIM_M) = UNDEFINED 
          IC_T_S(LC,:DIM_M) = UNDEFINED 
          IC_THETA_M(LC,:DIM_M) = UNDEFINED 
+         IC_SCALAR(LC,:DIM_SCALAR) = UNDEFINED 
          IC_GAMA_RS(LC,:DIM_M) = ZERO 
          IC_T_RS(LC,:DIM_M) = UNDEFINED 
 !         IC_X_S(LC,1,1+:DIM_N_S+) = UNDEFINED 
@@ -385,15 +386,14 @@
          BC_HW_THETA_M(LC,:DIM_M) = UNDEFINED 
          BC_THETAW_M(LC,:DIM_M) = UNDEFINED 
          BC_C_THETA_M(LC,:DIM_M) = UNDEFINED 
-!         BC_THETA_M(LC,:DIM_M) = UNDEFINED 
 !
-!         BC_X_S(LC,1,1+:DIM_N_S+) = UNDEFINED 
-!         BC_HW_X_S(LC,1,1+:DIM_N_S+) = UNDEFINED 
-!         BC_XW_S(LC,1,1+:DIM_N_S+) = UNDEFINED 
-!         BC_C_X_S(LC,1,1+:DIM_N_S+) = UNDEFINED 
+         BC_HW_Scalar(LC,:DIM_SCALAR) = UNDEFINED 
+         BC_ScalarW(LC,:DIM_SCALAR) = UNDEFINED 
+         BC_C_Scalar(LC,:DIM_SCALAR) = UNDEFINED 
       END DO 
 !   
       BC_THETA_M = UNDEFINED 
+      BC_Scalar = UNDEFINED 
       BC_X_S = UNDEFINED 
       BC_HW_X_S = UNDEFINED 
       BC_XW_S = UNDEFINED 
