@@ -57,11 +57,12 @@ fi
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"
-            compile_d="-c -g -freeform"
-            link_d="-g"
-            compile="-c  -n32 -O3 -mips4 -freeform"
-            compile2="-c  -n32 -O3 -mips4 -freeform"
-            link="-n32 -O3 -mips4"
+            compile_d="-c -64 -trapuv -g -freeform"
+            link_d="-64 -g"
+
+            compile="-c  -64 -O3 -mips4 -freeform"
+            compile2="-c  -64 -O3 -mips4 -freeform"
+            link="-64 -O3 -mips4"
             MODULE_CODE=0
             ;;
 	    

@@ -61,7 +61,6 @@ mfix.exe : \
     check_one_axis.$(OBJ_EXT) \
     check_plane.$(OBJ_EXT) \
     coeff_mod.$(OBJ_EXT) \
-    compar_mod.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     constant_mod.$(OBJ_EXT) \
     cont_mod.$(OBJ_EXT) \
@@ -81,7 +80,6 @@ mfix.exe : \
     corner_mod.$(OBJ_EXT) \
     correct_0.$(OBJ_EXT) \
     correct_1.$(OBJ_EXT) \
-    debug_mod.$(OBJ_EXT) \
     dgtsl.$(OBJ_EXT) \
     dif_u_is.$(OBJ_EXT) \
     dif_v_is.$(OBJ_EXT) \
@@ -147,7 +145,6 @@ mfix.exe : \
     mod_bc_i.$(OBJ_EXT) \
     mod_bc_j.$(OBJ_EXT) \
     mod_bc_k.$(OBJ_EXT) \
-    mpi_mod.$(OBJ_EXT) \
     open_file.$(OBJ_EXT) \
     open_files.$(OBJ_EXT) \
     out_array.$(OBJ_EXT) \
@@ -355,7 +352,6 @@ mfix.exe : \
     check_one_axis.$(OBJ_EXT) \
     check_plane.$(OBJ_EXT) \
     coeff_mod.$(OBJ_EXT) \
-    compar_mod.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     constant_mod.$(OBJ_EXT) \
     cont_mod.$(OBJ_EXT) \
@@ -375,7 +371,6 @@ mfix.exe : \
     corner_mod.$(OBJ_EXT) \
     correct_0.$(OBJ_EXT) \
     correct_1.$(OBJ_EXT) \
-    debug_mod.$(OBJ_EXT) \
     dgtsl.$(OBJ_EXT) \
     dif_u_is.$(OBJ_EXT) \
     dif_v_is.$(OBJ_EXT) \
@@ -441,7 +436,6 @@ mfix.exe : \
     mod_bc_i.$(OBJ_EXT) \
     mod_bc_j.$(OBJ_EXT) \
     mod_bc_k.$(OBJ_EXT) \
-    mpi_mod.$(OBJ_EXT) \
     open_file.$(OBJ_EXT) \
     open_files.$(OBJ_EXT) \
     out_array.$(OBJ_EXT) \
@@ -619,9 +613,6 @@ coeff.mod : coeff_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) coeff_mod.f 
-compar.mod : compar_mod.f \
-            mpi.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) compar_mod.f 
 constant.mod : constant_mod.f \
             param.mod \
             param1.mod 
@@ -634,9 +625,6 @@ corner.mod : corner_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) corner_mod.f 
-debug.mod : debug_mod.f \
-            funits.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) debug_mod.f 
 drag.mod : drag_mod.f \
             param.mod \
             param1.mod 
@@ -687,9 +675,6 @@ matrix.mod : matrix_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) matrix_mod.f 
-mpi.mod : mpi_mod.f \
-            mpif.h                                                      
-	$(FORTRAN_CMD) $(FORT_FLAGS) mpi_mod.f 
 output.mod : output_mod.f \
             param.mod \
             param1.mod 
@@ -796,7 +781,7 @@ gridmap.mod : ./dmp_modules/gridmap_mod.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/gridmap_mod.f 
 mpi.mod : ./dmp_modules/mpi_mod.f \
-            mpif.h                                                      
+            /usr/include/mpif.h                                         
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/mpi_mod.f 
 mpi_utility.mod : ./dmp_modules/mpi_utility_mod.f \
             geometry.mod \
@@ -973,8 +958,6 @@ allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             visc_g.mod \
             visc_s.mod \
             xsi_array.mod \
-            compar.mod \
-            debug.mod \
             dslucs_a.mod \
             dslugm_a.mod \
             igcg_i.mod \
@@ -2323,8 +2306,7 @@ read_res0.$(OBJ_EXT) : read_res0.f \
             leqsol.mod \
             tmp_array.mod \
             compar.mod \
-            mpi_utility.mod \
-            dbg_util.mod 
+            mpi_utility.mod 
 read_res1.$(OBJ_EXT) : read_res1.f \
             param.mod \
             param1.mod \
