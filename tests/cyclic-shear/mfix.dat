@@ -5,8 +5,8 @@
   RUN_TYPE = 'new'
   UNITS = 'cgs'
   TIME  = 0.0      TSTOP = 2.0  DT = 1E-3 
-! DT_MAX = 0.4e-4
-!  DT_FAC=1.0
+  DT_MAX = 0.4e-4
+  DT_FAC=1.0
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE.     .FALSE.
 
