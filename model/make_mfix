@@ -425,15 +425,15 @@ case $smp_version in
             then
 	        echo
             else
-                rm *.o *.a *.mod *.exe
+                /bin/rm -f *.o *.a *.mod *.exe
                 touch $smp_check
             fi
     ;;
   *)
             if test -f $smp_check
             then
-                rm *.o *.a *.mod *.exe
-                rm $smp_check
+                /bin/rm -f *.o *.a *.mod *.exe
+                /bin/rm -f $smp_check
             else
 	        echo
             fi
@@ -448,15 +448,15 @@ case $dmp_version in
             then
 	        echo
             else
-                rm *.o *.a *.mod *.exe
+                /bin/rm -f *.o *.a *.mod *.exe
                 touch $dmp_check
             fi
     ;;
   *)
             if test -f $dmp_check
             then
-                rm *.o *.a *.mod *.exe
-                rm $dmp_check
+                /bin/rm -f *.o *.a *.mod *.exe
+                /bin/rm -f $dmp_check
             else
 	        echo
             fi
@@ -470,9 +470,9 @@ esac
        echo
     else
        chmod +w machine.f
-       cp $mach_file machine.f
-       rm *.o *.a *.mod *.exe
-       rm COMPILED.WITH.*
+       /bin/cp -f $mach_file machine.f
+       /bin/rm -f *.o *.a *.mod *.exe
+       /bin/rm -f COMPILED.WITH.*
        touch $mach_check
     fi
 
@@ -496,7 +496,7 @@ esac
           case $auto_compile in
              y|Y)
                   chmod u+w $outfile
-                  cp $run_dir/$outfile $outfile
+                  /bin/cp -f $run_dir/$outfile $outfile
                   ;;
              *)
                   do_nothing="ok"
@@ -505,7 +505,7 @@ esac
       
        else
 #        Mfix/model directory does not have a default file. create one.
-         cp $mfix/$i $mfix/$outfile
+         /bin/cp -f $mfix/$i $mfix/$outfile
        fi
        
     fi
@@ -525,11 +525,11 @@ esac
       
        else
 #        Mfix/model directory does not have a default file. create one.
-         cp $mfix/$i $mfix/$outfile
+         /bin/cp -f $mfix/$i $mfix/$outfile
        fi
        
     else
-      cp $i $mfix 
+      /bin/cp -f $i $mfix 
       echo "Using nonMfix include file: $i"
     fi
   done
@@ -558,7 +558,7 @@ esac
           case $auto_compile in
              y|Y)
                   chmod u+w $outfile
-                  cp $run_dir/$outfile $outfile
+                  /bin/cp -f $run_dir/$outfile $outfile
                   ;;
              *)
                   do_nothing="ok"
@@ -566,7 +566,7 @@ esac
           esac
        else
           chmod u+w $outfile
-          cp $run_dir/$outfile $outfile
+          /bin/cp -f $run_dir/$outfile $outfile
        fi
 
 
@@ -577,9 +577,9 @@ esac
        cmp -s $i $outfile
        if test $? = 0
        then
-          rm $i
+          /bin/rm -f $i
        else
-          mv $i $outfile
+          /bin/mv -f $i $outfile
 	  touch $outfile
        fi
 
@@ -610,9 +610,9 @@ esac
 	echo
 	echo -n '******************************************************'
 	echo
-        cp mfix_l.make mfix_l_not.make
+        /bin/cp -f mfix_l.make mfix_l_not.make
 	ex mfix_l_not.make < dmp_modules/ex.commands
-	cp mfix_u.make mfix_u_not.make
+	/bin/cp -f mfix_u.make mfix_u_not.make
 	ex mfix_u_not.make < dmp_modules/ex.commands
 
         cmp -s dmp_modules/compar_mod.f dmp_modules/mpi_donothing/compar_mod.f 
@@ -620,7 +620,7 @@ esac
         then
 	 echo
         else
- 	 cp dmp_modules/compar_mod.f dmp_modules/mpi_donothing/
+ 	 /bin/cp -f dmp_modules/compar_mod.f dmp_modules/mpi_donothing/
         fi
 
         cmp -s dmp_modules/gridmap_mod.f dmp_modules/mpi_donothing/gridmap_mod.f 
@@ -628,7 +628,7 @@ esac
         then
 	 echo
         else
-         cp dmp_modules/gridmap_mod.f dmp_modules/mpi_donothing/
+         /bin/cp -f dmp_modules/gridmap_mod.f dmp_modules/mpi_donothing/
         fi
     ;;
   esac
@@ -772,7 +772,7 @@ esac
 
   if test $? = 0
   then
-    cp mfix.exe $run_dir
+    /bin/cp -f mfix.exe $run_dir
     echo
 
     case $dmp_version in

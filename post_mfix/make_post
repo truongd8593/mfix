@@ -85,9 +85,9 @@
             then
 	        echo
             else
-                cp ../model/LINUX.F machine.f
-                rm *.o
-                rm COMPILED.FOR.*
+                /bin/cp -f ../model/LINUX.F machine.f
+                /bin/rm -f *.o
+                /bin/rm -f COMPILED.FOR.*
                 touch COMPILED.FOR.LINUX.PG
             fi
 	    
@@ -116,10 +116,10 @@
             then
                 echo
             else
-                cp ../model/CRAYT3E.F machine.f
-                rm *.o
-                rm *.a
-                rm COMPILED.FOR.*
+                /bin/cp -f ../model/CRAYT3E.F machine.f
+                /bin/rm -f *.o
+                /bin/rm -f *.a
+                /bin/rm -f COMPILED.FOR.*
                 touch COMPILED.FOR.CRAYT3EF90
             fi
 
@@ -147,10 +147,10 @@
             then
 	        echo
             else
-                cp ../model/IRIXF90.F machine.f
-                rm *.o
-		rm *.a
-                rm COMPILED.FOR.*
+                /bin/cp -f ../model/IRIXF90.F machine.f
+                /bin/rm -f *.o
+		/bin/rm -f *.a
+                /bin/rm -f COMPILED.FOR.*
                 touch COMPILED.FOR.IRIX64F90
             fi
 	    
@@ -177,10 +177,10 @@
             then
 	        echo
             else
-                cp ../model/ULTRIX.F machine.f
-                rm *.o
-		rm *.a
-                rm COMPILED.FOR.*
+                /bin/cp -f ../model/ULTRIX.F machine.f
+                /bin/rm -f *.o
+		/bin/rm -f *.a
+                /bin/rm -f COMPILED.FOR.*
                 touch COMPILED.FOR.ULTRIX
             fi
 	    
@@ -208,9 +208,9 @@
             then
 	        echo
             else
-                cp ../model/PGNT.F machine.f
-                rm *.o
-                rm COMPILED.FOR.*
+                /bin/cp -f ../model/PGNT.F machine.f
+                /bin/rm -f *.o
+                /bin/rm -f COMPILED.FOR.*
                 touch COMPILED.FOR.CYWIN32_NT.PG
             fi
 	    
@@ -237,9 +237,9 @@
             then
 	        echo
             else
-                cp ../model/PGNT.F machine.f
-                rm *.o
-                rm COMPILED.FOR.*
+                /bin/cp -f ../model/PGNT.F machine.f
+                /bin/rm -f *.o
+                /bin/rm -f COMPILED.FOR.*
                 touch COMPILED.FOR.CYWIN_NT-4.0.PG
             fi
 	    
@@ -276,9 +276,9 @@ echo " "
        echo
     else
        chmod +w machine.f
-	cp ../model/$mach_file machine.f
-	rm *.o *.a *.mod *.exe
-	rm COMPILED.WITH.*
+	/bin/cp -f ../model/$mach_file machine.f
+	/bin/rm -f *.o *.a *.mod *.exe
+	/bin/rm -f COMPILED.WITH.*
 	touch $mach_check
     fi
 
@@ -294,7 +294,7 @@ read delete_files
   y|Y )
     echo "deleting files . . ."
 #   rm ../model/*.o ../model/*.mod ../model/*.a
-    rm *.o *.mod
+    /bin/rm -f *.o *.mod
     ;;
   *)
     exit
@@ -318,9 +318,9 @@ read delete_files
       
        else
 #        Mfix/model directory does not have a default file. create one.
-         cp "../model/function.inc" "../model/function.0inc"
+         /bin/cp -f "../model/function.inc" "../model/function.0inc"
        fi
-       cp "./function.inc" "../model/function.inc"
+       /bin/cp -f "./function.inc" "../model/function.inc"
 
 #------------------------------------------------------------------------
 #
@@ -336,15 +336,15 @@ read delete_files
   export FORTRAN_CMD
   export LINK_CMD
 
- cp -p ../model/ep_s1.inc .
- cp -p ../model/ep_s2.inc .
- cp -p ../model/fun_avg1.inc .
- cp -p ../model/fun_avg2.inc .
- cp -p ../model/s_pr1.inc .
- cp -p ../model/s_pr2.inc .
- cp -p ../model/namelist.inc .
- cp -p ../model/sc_p_g1.inc .
- cp -p ../model/sc_p_g2.inc .
+ /bin/cp -f -p ../model/ep_s1.inc .
+ /bin/cp -f -p ../model/ep_s2.inc .
+ /bin/cp -f -p ../model/fun_avg1.inc .
+ /bin/cp -f -p ../model/fun_avg2.inc .
+ /bin/cp -f -p ../model/s_pr1.inc .
+ /bin/cp -f -p ../model/s_pr2.inc .
+ /bin/cp -f -p ../model/namelist.inc .
+ /bin/cp -f -p ../model/sc_p_g1.inc .
+ /bin/cp -f -p ../model/sc_p_g2.inc .
 
       
  case $MODULE_CODE in
@@ -375,7 +375,7 @@ read delete_files
  fi
  
 # Restore the function.inc file in the model directory
-  mv "../model/function.0inc" "../model/function.inc"
+  /bin/mv -f "../model/function.0inc" "../model/function.inc"
 
  chmod +w ep_s1.inc
  chmod +w ep_s2.inc
@@ -387,14 +387,14 @@ read delete_files
  chmod +w sc_p_g1.inc
  chmod +w sc_p_g2.inc
 
- rm ep_s1.inc
- rm ep_s2.inc
- rm fun_avg1.inc
- rm fun_avg2.inc
- rm s_pr1.inc
- rm s_pr2.inc
- rm namelist.inc
- rm sc_p_g1.inc
- rm sc_p_g2.inc
+ /bin/rm -f ep_s1.inc
+ /bin/rm -f ep_s2.inc
+ /bin/rm -f fun_avg1.inc
+ /bin/rm -f fun_avg2.inc
+ /bin/rm -f s_pr1.inc
+ /bin/rm -f s_pr2.inc
+ /bin/rm -f namelist.inc
+ /bin/rm -f sc_p_g1.inc
+ /bin/rm -f sc_p_g2.inc
 
 
