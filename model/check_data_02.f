@@ -32,6 +32,7 @@
       USE output
       USE leqsol 
       USE geometry
+      USE rxns
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -53,10 +54,14 @@
          'check_data_02', 'RES_DT not specified OR RES_DT <= 0 in mfix.dat', 1&
          , 1) 
 !
-      DO LC = 1, N_SPX 
-         IF (SPX_DT(LC)==UNDEFINED .OR. SPX_DT(LC)<=ZERO) CALL ERROR_ROUTINE (&
+      DO LC = 1, N_SPX
+         IF(nRR == 0 .and. LC == 10) then
+	   IF (SPX_DT(LC)==UNDEFINED)SPX_DT(LC) = large_number 
+	 else 
+           IF (SPX_DT(LC)==UNDEFINED .OR. SPX_DT(LC)<=ZERO) CALL ERROR_ROUTINE (&
             'check_data_02', 'SPX_DT not specified OR SPX_DT <= 0 in mfix.dat'&
             , 1, 1) 
+	 endif
       END DO 
       IF (NLOG == 0) CALL ERROR_ROUTINE ('check_data_02', &
          'NLOG = 0 in mfix.dat', 1, 1) 
