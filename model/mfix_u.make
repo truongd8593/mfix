@@ -327,6 +327,7 @@ mfix.exe : \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
     des_inlet_outlet.$(OBJ_EXT) \
+    des_time_march.$(OBJ_EXT) \
     drag_fgs.$(OBJ_EXT) \
     gas_drag.$(OBJ_EXT) \
     make_arrays_des.$(OBJ_EXT) \
@@ -655,6 +656,7 @@ mfix.exe : \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
     des_inlet_outlet.$(OBJ_EXT) \
+    des_time_march.$(OBJ_EXT) \
     discretelement_mod.$(OBJ_EXT) \
     drag_fgs.$(OBJ_EXT) \
     gas_drag.$(OBJ_EXT) \
@@ -4085,6 +4087,31 @@ des_inlet_outlet.$(OBJ_EXT) : ./des/des_inlet_outlet.f \
             DISCRETELEMENT.mod \
             GEOMETRY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_inlet_outlet.f 
+des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
+            PARAM.mod \
+            PARAM1.mod \
+            RUN.mod \
+            OUTPUT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            GEOMETRY.mod \
+            PGCOR.mod \
+            PSCOR.mod \
+            CONT.mod \
+            COEFF.mod \
+            TAU_G.mod \
+            TAU_S.mod \
+            VISC_G.mod \
+            VISC_S.mod \
+            FUNITS.mod \
+            VSHEAR.mod \
+            SCALARS.mod \
+            DRAG.mod \
+            RXNS.mod \
+            COMPAR.mod \
+            TIME_CPU.mod \
+            DISCRETELEMENT.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_time_march.f 
 drag_fgs.$(OBJ_EXT) : ./des/drag_fgs.f \
             PARAM.mod \
             PARAM1.mod \
