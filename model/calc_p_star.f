@@ -35,6 +35,7 @@
       USE ur_facs 
       USE residual
       USE compar     !//d
+      USE sendrecv   !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -67,10 +68,11 @@
 !
 !
 !
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 
 !!$omp parallel do private(ijk)
 !HPF$ independent
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN 
 !
             IF (EP_G(IJK) < EP_STAR) THEN 
@@ -80,5 +82,8 @@
             ENDIF 
          ENDIF 
       END DO 
+      
+!// 400 COMM P_STAR
+      call send_recv (P_STAR,2)      
       RETURN  
       END SUBROUTINE CALC_P_STAR 

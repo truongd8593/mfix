@@ -256,14 +256,15 @@
 !
       IF (RO_G0 /= ZERO) CALL SOLVE_PP_G (NORMG, RESG, IER) 
 !//SP
-      write(*,*) 'after SOLVE_PP_G', myPE
+!    write(*,"('(PE ',I2,'): aft solve_pp_g in iterate')") myPE  !//AIKEPARDBG      
+!    call mfix_exit(myPE)     !//AIKEPARDBG
 !
 !
 !     Correct pressure and velocities
 !
       IF (RO_G0 /= ZERO) CALL CORRECT_0 (IER) 
 !//SP
-      write(*,*) 'after CORRECT_0', myPE, MMAX
+!      write(*,*) 'after CORRECT_0', myPE, MMAX
 !//AIKEPARDBG
 !    write(*,"('(PE ',I2,'): aft correct_0 in iterate')") myPE  !//AIKEPARDBG
 !    call mfix_exit(myPE)     !//AIKEPARDBG
@@ -272,34 +273,36 @@
 !     Solve solids volume fraction correction equation for close-packed
 !     solids phases
 !
-!     IF (MMAX > 0) THEN 
-!        CALL CALC_K_CP (K_CP, IER) 
-!        CALL SOLVE_EPP (NORMS, RESS, IER) 
-!        CALL CORRECT_1 (IER) 
+      IF (MMAX > 0) THEN 
+        CALL CALC_K_CP (K_CP, IER) 
+        CALL SOLVE_EPP (NORMS, RESS, IER) 
+        CALL CORRECT_1 (IER) 
 !
 ! IER = 0
-!        CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
-!        IF (IER == 1) THEN 
-!           MUSTIT = 2                           !indicates divergence 
-!           IF(DT/=UNDEFINED)GO TO 1000 
-!        ENDIF 
+        CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
+        IF (IER == 1) THEN 
+           MUSTIT = 2                           !indicates divergence 
+           IF(DT/=UNDEFINED)GO TO 1000 
+        ENDIF 
 !
-!     ENDIF 
-!
-!//SP
-!     write(*,*) 'after CORRECT_1, etc.,', myPE
+      ENDIF 
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft calc_vol_fr in iterate')") myPE  !//AIKEPARDBG
+!    call mfix_exit(myPE)     !//AIKEPARDBG
+
+
 !
 !  Update wall velocities
  
       CALL SET_WALL_BC (IER) 
 !
-!//SP
-!     write(*,*) 'after SET_WALL_BC, etc.,', myPE
-!
+!//AIKEPARDBG
+      write(*,"('(PE ',I2,'): aft set_wall_bc in iterate')") myPE  !//AIKEPARDBG
+      call mfix_exit(myPE)     !//AIKEPARDBG
 !     Calculate P_star in cells where solids continuity equation is
 !     solved
 !
-!     IF (MMAX > 0) CALL CALC_P_STAR (EP_G, P_STAR, IER) 
+      IF (MMAX > 0) CALL CALC_P_STAR (EP_G, P_STAR, IER) 
 !
 !
 !     Solve energy equations

@@ -822,6 +822,9 @@
       DO K = K1, K2 
          DO J = J1, J2 
             DO I = I1, I2 
+!// 360 1229 Check if current i,j,k resides on this PE		     
+               IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
+	    
                IJK = FUNIJK(I,J,K) 
                IM = IM1(I) 
                KM = KM1(K) 

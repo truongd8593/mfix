@@ -30,6 +30,7 @@
       USE visc_s
       USE trace
       USE compar    !//d
+      USE sendrecv   !// 400
       IMPLICIT NONE
  
       INTEGER          IJK, M
@@ -54,17 +55,29 @@
       INCLUDE 's_pr2.inc'
       INCLUDE 'ep_s2.inc'
  
- 
+
+!//? 1229 Check if any of the field variables used in following loop
+!         need to be updated beforehand
+
+
+
+        
 !      DO 200 M = 1, MMAX
         M = Mcp
+
+!//AIKEPARDBG
+!       write(*,"('(PE ',I2,'): CLOSE PACK= ',L2)") myPE,CLOSE_PACKED(M)  !//AIKEPARDBG
+       	
         IF(CLOSE_PACKED(M)) THEN
+
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 
 !$omp     parallel do  firstprivate(M) &
 !$omp&    private( IJK, DEPs2G_0oDEPs, &
 !$omp&             Pc, DPcoDEPS,  Mu, Mu_b, Mu_zeta, ZETA, &
 !$omp&             F2, DF2oDEPs, Pf, Pfmax )
 
-          DO 100 IJK = 1, IJKMAX2
+          DO 100 IJK = ijkstart3, ijkend3
             IF(FLUID_AT(IJK))THEN
  
 ! start anuj 4/20
@@ -195,6 +208,10 @@
 !   end anuj 4/20
  
 ! 200   CONTINUE
+
+!//? Check if this could be moved to other location with other COMMs
+!// 400 1229 COMM Kcp
+      CALL SEND_RECV(Kcp, 2)
       RETURN
       END
  

@@ -34,6 +34,7 @@
       USE ur_facs 
       USE constant
       USE compar        !//d
+      USE sendrecv      !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -69,10 +70,11 @@
       M = MCP 
       IF (CLOSE_PACKED(M)) THEN 
 !
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
 !$omp    parallel do &
 !$omp&   private( IJK, EPCOR )
 
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3
             IF (FLUID_AT(IJK)) THEN 
                EPCOR = EP_S(IJK,M) + EPP(IJK) 
                IF (EPCOR>EP_S_CP .AND. EPP(IJK)>ZERO) THEN 
@@ -83,10 +85,12 @@
             ENDIF 
          END DO 
 
+!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
+
 !$omp    parallel do &
 !$omp&   private( IJK, PP_P, IJKE, IJKN, IJKT )
 
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3
             IF (FLUID_AT(IJK)) THEN 
 !
                PP_P = K_CP(IJK)*EPP(IJK) 
@@ -112,5 +116,11 @@
          END DO 
       ENDIF 
 !200   CONTINUE
+!// 400 0105 COMM calculated vars
+      call send_recv(EPP,2)
+      call send_recv(ROP_S,2)
+      call send_recv(U_S,2)
+      call send_recv(V_S,2)
+      call send_recv(W_S,2)
       RETURN  
       END SUBROUTINE CORRECT_1 
