@@ -105,7 +105,7 @@
       DO M = 1, MMAX 
 !
 !
-         DO IJK = 1, IJKMAX2 
+         DO IJK = IJKSTART3, IJKEND3
 !
             IF (FLUID_AT(IJK)) THEN 
 !

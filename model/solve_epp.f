@@ -68,7 +68,8 @@
 !  Form the sparse matrix equation
 !
       CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER) 
-      CALL ZERO_ARRAY (EPP, IJKMAX2, IER) 
+!//SP
+      CALL ZERO_ARRAY (EPP, IER) 
 !
       CALL CONV_SOURCE_EPP (A_M, B_M, IER) 
 !

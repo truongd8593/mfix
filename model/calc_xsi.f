@@ -33,6 +33,8 @@
       USE geometry
       USE indices
       USE compar    !//d
+!//SP
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -525,8 +527,13 @@
          END DO 
       CASE DEFAULT                               !Error 
          WRITE (LINE, '(A,I2,A)') 'DISCRETIZE = ', DISCR, ' not supported.' 
-         CALL WRITE_ERROR ('CALC_XSI', LINE, 1) 
+!//SP Having problem to compile this statement on SGI
+!        CALL WRITE_ERROR ('CALC_XSI', LINE, 1) 
          STOP  
       END SELECT 
+!//SP
+      call send_recv(XSI_E,2)
+      call send_recv(XSI_N,2)
+      call send_recv(XSI_T,2)
       RETURN  
       END SUBROUTINE CALC_XSI 

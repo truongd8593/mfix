@@ -114,7 +114,8 @@
       DO M = 0, MMAX 
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
       END DO 
-      DO IJK = 1, IJKMAX2 
+!//SP
+      DO IJK = IJKSTART3, IJKEND3
 !
          IF (FLUID_AT(IJK)) THEN 
             ROPXCP(IJK) = ROP_G(IJK)*C_PG(IJK) 
@@ -138,7 +139,7 @@
 !
       DO M = 1, MMAX 
 !
-         DO IJK = 1, IJKMAX2 
+         DO IJK = IJKSTART3, IJKEND3
 !
             IF (FLUID_AT(IJK)) THEN 
                ROPXCP(IJK) = ROP_S(IJK,M)*C_PS(IJK,M) 

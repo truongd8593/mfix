@@ -30,6 +30,12 @@
       USE param1 
       USE fldvar
       USE run
+!//SP
+      USE geometry
+      USE compar
+      USE sendrecv
+      Use xsi_array
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -57,6 +63,12 @@
       ELSE 
          CALL CONV_SOURCE_EPP1 (A_M, B_M, IER) 
       ENDIF 
+
+!//12/21/99 - Send Recv. A_M and B_M
+
+        CALL SEND_RECV(A_M, 2)
+        CALL SEND_RECV(B_M, 2)
+
       RETURN  
       END SUBROUTINE CONV_SOURCE_EPP 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -101,6 +113,9 @@
       USE pgcor
       USE pscor
       USE compar        !//d
+!//SP
+      USE sendrecv
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -142,6 +157,22 @@
       INCLUDE 's_pr2.inc'
       INCLUDE 'ep_s2.inc'
 !
+!
+!\\Extra Sendrecv operations - just to make sure all the variables needed are
+!  are passed - can be optimized later - Sreekanth - 102199
+
+      call send_recv(U_S,2)
+      call send_recv(V_S,2)
+      call send_recv(W_S,2)
+      call send_recv(ROP_S,2)
+      call send_recv(K_CP,2)
+      call send_recv(E_E,2)
+      call send_recv(E_N,2)
+      call send_recv(E_T,2)
+      call send_recv(AXY,2)
+      call send_recv(AXZ,2)
+      call send_recv(AYZ,2)
+!
 !     Calculate convection-diffusion fluxes through each of the faces
 !
       M = MCP 
@@ -150,11 +181,15 @@
 !$omp&           IMJK, IJMK, IJKM, IJKP,                               &
 !$omp&           IJKE, IJKW, IJKN, IJKS, IJKT, IJKB,                   &
 !$omp&           K_P, SRC )
-      DO IJK = 1, IJKMAX2 
+!//SP
+      DO IJK = IJKSTART3, IJKEND3
+!\\122199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+       I = I_OF(IJK)
+       J = J_OF(IJK)
+       K = K_OF(IJK)
+       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+!
          IF (FLUID_AT(IJK)) THEN 
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK) 
             IJKP = KP_OF(IJK) 
@@ -320,7 +355,8 @@
 !$omp             critical
                   WRITE (LINE, '(A,I6,A,G12.5)') 'Error: At IJK = ', IJK, &
                      ' A = 0 and b = ', B_M(IJK,0) 
-                  CALL WRITE_ERROR ('CONV_SOURCE_EPp0', LINE, 1) 
+!//SP Having problem to compile this statement on SGI
+!                 CALL WRITE_ERROR ('CONV_SOURCE_EPp0', LINE, 1) 
 !$omp             end critical
                ENDIF 
             ENDIF 
@@ -375,6 +411,8 @@
       USE pscor
       Use xsi_array
       USE compar        !//d
+!//SP
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -424,6 +462,20 @@
       INCLUDE 'ep_s2.inc'
 
       call lock_xsi_array
+!
+!\\Extra Sendrecv operations - just to make sure all the variables needed are
+!  are passed - can be optimized later - Sreekanth - 122199
+      call send_recv(U_S,2)
+      call send_recv(V_S,2)
+      call send_recv(W_S,2)
+      call send_recv(ROP_S,2)
+      call send_recv(K_CP,2)
+      call send_recv(E_E,2)
+      call send_recv(E_N,2)
+      call send_recv(E_T,2)
+      call send_recv(AXY,2)
+      call send_recv(AXZ,2)
+      call send_recv(AYZ,2)
 
 !
       M = MCP 
@@ -432,6 +484,9 @@
 !
       CALL CALC_XSI (DISCRETIZE(2), ROP_S(1,M), U_S(1,M), V_S(1,M), W_S(1,M), &
          XSI_E, XSI_N, XSI_T) 
+!//SP
+!    XSI_E, XSI_N and XSI_T are already message passed in calc_xsi
+!
 !
 !     Calculate convection-diffusion fluxes through each of the faces
 !
@@ -439,11 +494,15 @@
 !$omp&   private(I, J, K, IJK, IPJK, IJPK, IJKP,                &
 !$omp&           IMJK, IJMK, IJKM, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB, &
 !$omp&           K_P,ROP_SF,SRC )
-      DO IJK = 1, IJKMAX2 
+!//SP
+      DO IJK = IJKSTART3, IJKEND3
+!\\122199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+       I = I_OF(IJK)
+       J = J_OF(IJK)
+       K = K_OF(IJK)
+       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+!
          IF (FLUID_AT(IJK)) THEN 
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK) 
             IJKP = KP_OF(IJK) 
@@ -558,7 +617,8 @@
 !$omp             critical
                   WRITE (LINE, '(A,I6,A,G12.5)') 'Error: At IJK = ', IJK, &
                      ' A = 0 and b = ', B_M(IJK,0) 
-                  CALL WRITE_ERROR ('CONV_SOURCE_EPp1', LINE, 1) 
+!//SP Having problem to compile this statement on SGI
+!                 CALL WRITE_ERROR ('CONV_SOURCE_EPp1', LINE, 1) 
 !$omp             end critical
                ENDIF 
             ENDIF 
