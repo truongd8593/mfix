@@ -736,7 +736,7 @@
                ENDIF 
 !
                IF (BC_TYPE(BCV)=='PAR_SLIP_WALL' .OR. BC_JJ_PS(BCV)==1) THEN 
-                  DO M = 1, DIMENSION_M 
+                  DO M = 1, MMAX
                      IF (BC_UW_S(BCV,M) == UNDEFINED) THEN 
                         WRITE (UNIT_LOG, 1100) 'BC_Uw_s', BCV, M 
                         call mfix_exit(myPE)  
