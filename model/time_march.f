@@ -195,7 +195,7 @@
       M = 0 
       IF (MMAX + 1 > 0) THEN 
          DENSITY(:MMAX) = .TRUE. 
-         SIZE(:MMAX) = .TRUE. 
+         PSIZE(:MMAX) = .TRUE. 
          IF (ENERGY_EQ) THEN 
             SP_HEAT(:MMAX) = .TRUE. 
             COND(:MMAX) = .TRUE. 
@@ -222,7 +222,7 @@
         CALL ZERO_ARRAY (F_gs(1,M), IER)
       END DO
 
-      CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
+      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 
 !
@@ -429,7 +429,7 @@
       IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
       IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
 
-      CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
+      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 !
 !     Calculate the cross terms of the stress tensor
@@ -453,7 +453,7 @@
 	 
 !        Upate the reaction rates for checking
          IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
-	 CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
+	 CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 
          CALL CHECK_DATA_30 
