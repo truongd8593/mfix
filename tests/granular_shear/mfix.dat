@@ -7,8 +7,7 @@
   DESCRIPTION = 'Granular shear flow'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-#   TIME  =0.0  TSTOP = 1.0E-4   DT = 1.0e-4   DT_MAX = 1.0e-4   OUT_DT = 1.0e-4
-     TIME  =0.0  TSTOP = 1.0   DT = 1.0e-4 
+  TIME  =0.0  TSTOP = 10.0   DT = 1.0e-4 
   DT_MIN = 1.0e-7
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE.     .FALSE.
@@ -43,9 +42,14 @@
   D_p          = 0.01 
   CLOSE_PACKED = .TRUE.
 
-  e       = 0.8
+  C_e       = 1.0   !restitution coefficients
+  C_e       = 1.0   !  particle-particle collisions
+  e_w       = 0.8   !  particle-wall collisions
+  
+  PHIP    = 0.5     ! specularity coefficient              
+  
   Phi     = 0.0
-  EP_star = 0.5               
+  EP_star = 0.5 
 #
 # Initial Conditions Section
 #
@@ -55,14 +59,14 @@
   IC_Y_s           =  0.0
   IC_Y_n           = 1.0
  
-  IC_EP_g          = 0.5
+  IC_EP_g          = 0.7
  
   IC_U_g           =   0.0
   IC_V_g           =  0.0
 
-  IC_U_s      = 1.0
+  IC_U_s      = 10.0
   IC_V_s      = 0.0
-  IC_Theta_m  = 0.01
+  IC_Theta_m  = 0.5
 
   IC_P_star        =  0.0
 
@@ -78,14 +82,14 @@
  
   BC_TYPE          =  'MI'       'PO'
 
-  BC_EP_g          =  0.5 
+  BC_EP_g          =  0.7 
  
   BC_U_g           =  0.0
   BC_V_g           =  0.0 
  
-  BC_U_s           =  1.0
+  BC_U_s           =  10.0
   BC_V_s           =  0.0  
-  BC_Theta_m       =  0.01  
+  BC_Theta_m       =  0.5  
   
   BC_P_g           = 2*0.
 
@@ -101,7 +105,7 @@
   BC_Uw_s(5,1)     =    0.0  
   BC_Vw_s(5,1)     =    0.0 
   BC_Ww_s(5,1)     =    0.0
-  BC_Thetaw_m(5,1) =    0.01  ! granular temp is 0.01 at wall
+  BC_Thetaw_m(5,1) =    0.5  
 
        !                North wall
   BC_X_w(6)      =        0.0
@@ -114,7 +118,7 @@
   BC_Uw_s(6,1)     =      0.0
   BC_Vw_s(6,1)     =      0.0
   BC_Ww_s(6,1)     =      0.0
-  BC_Thetaw_m(6,1) =      0.01   ! granular temp is 0.01 at wall
+  BC_Thetaw_m(6,1) =      0.5   
 
 
 #
