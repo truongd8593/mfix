@@ -693,6 +693,7 @@
 	integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc
         integer :: ijk, ijk_gl
+        integer :: istart, iend, jstart, jend, kstart, kend
 	logical :: isok_k,isok_j,isok_i, isinterior 
 	logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
         include 'function.inc'
@@ -733,24 +734,31 @@
         if( myPE.eq.lroot) then
         ibuffer = 0
           do iproc = 0,numPEs-1
+            istart = istart1_all(iproc)
+            iend = iend1_all(iproc)
+            jstart = jstart1_all(iproc)
+            jend = jend1_all(iproc)
+            kstart = kstart1_all(iproc)
+            kend = kend1_all(iproc)
+
+            if(istart3_all(iproc).eq.imin3) istart = istart3_all(iproc)
+            if(iend3_all(iproc).eq.imax3) iend = iend3_all(iproc)
+            if(jstart3_all(iproc).eq.jmin3) jstart = jstart3_all(iproc)
+            if(jend3_all(iproc).eq.jmax3) jend = jend3_all(iproc)
+            if(kstart3_all(iproc).eq.kmin3) kstart = kstart3_all(iproc)
+            if(kend3_all(iproc).eq.kmax3) kend = kend3_all(iproc)
+
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
                   ibuffer = ibuffer + 1
-                  isok_k = (kstart1_all(iproc) <= k) .and. (k <=kend1_all(iproc))
-                  isok_j = (jstart1_all(iproc) <= j) .and. (j <=jend1_all(iproc))
-                  isok_k = (istart1_all(iproc) <= i) .and. (i <=iend1_all(iproc))
+                  isok_k = (kstart <= k) .and. (k <=kend)
+                  isok_j = (jstart <= j) .and. (j <=jend)
+                  isok_i = (istart <= i) .and. (i <=iend)
 
-                  isinterior = isok_k .and. isok_j .and. isok_i
+                  need_copy = isok_k .and. isok_j .and. isok_i
 
-                  isbc_k = (k <= kmin1) .or. (k >= kmax1)
-                  isbc_j = (j <= jmin1) .or. (j >= jmax1)
-                  isbc_i = (i <= imin1) .or. (i >= imax1)
-
-                  isboundary = isbc_k .or. isbc_j .or. isbc_i
-
-                  need_copy = isinterior .or. isboundary
                   if (need_copy) then
                       ijk_gl = funijk_gl(i,j,k)
                       gbuf( ijk_gl ) = gbuf_pack(ibuffer)
@@ -761,6 +769,7 @@
             enddo
           enddo
         endif
+
 
         deallocate(gbuf_pack)
 
@@ -848,6 +857,7 @@
 	integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc
         integer :: ijk, ijk_gl
+        integer :: istart, iend, jstart, jend, kstart, kend
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
         include 'function.inc'
@@ -886,24 +896,31 @@
         if( myPE.eq.lroot) then
         ibuffer = 0
           do iproc = 0,numPEs-1
+            istart = istart1_all(iproc)
+            iend = iend1_all(iproc)
+            jstart = jstart1_all(iproc)
+            jend = jend1_all(iproc)
+            kstart = kstart1_all(iproc)
+            kend = kend1_all(iproc)
+
+            if(istart3_all(iproc).eq.imin3) istart = istart3_all(iproc)
+            if(iend3_all(iproc).eq.imax3) iend = iend3_all(iproc)
+            if(jstart3_all(iproc).eq.jmin3) jstart = jstart3_all(iproc)
+            if(jend3_all(iproc).eq.jmax3) jend = jend3_all(iproc)
+            if(kstart3_all(iproc).eq.kmin3) kstart = kstart3_all(iproc)
+            if(kend3_all(iproc).eq.kmax3) kend = kend3_all(iproc)
+
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
                   ibuffer = ibuffer + 1
-                  isok_k = (kstart1_all(iproc) <= k) .and. (k <=kend1_all(iproc))
-                  isok_j = (jstart1_all(iproc) <= j) .and. (j <=jend1_all(iproc))
-                  isok_k = (istart1_all(iproc) <= i) .and. (i <=iend1_all(iproc))
+                  isok_k = (kstart <= k) .and. (k <=kend)
+                  isok_j = (jstart <= j) .and. (j <=jend)
+                  isok_i = (istart <= i) .and. (i <=iend)
 
-                  isinterior = isok_k .and. isok_j .and. isok_i
+                  need_copy = isok_k .and. isok_j .and. isok_i
 
-                  isbc_k = (k <= kmin1) .or. (k >= kmax1)
-                  isbc_j = (j <= jmin1) .or. (j >= jmax1)
-                  isbc_i = (i <= imin1) .or. (i >= imax1)
-
-                  isboundary = isbc_k .or. isbc_j .or. isbc_i
-
-                  need_copy = isinterior .or. isboundary
                   if (need_copy) then
                       ijk_gl = funijk_gl(i,j,k)
                       gbuf( ijk_gl ) = gbuf_pack(ibuffer)
@@ -914,6 +931,7 @@
             enddo
           enddo
         endif
+
 
         deallocate(gbuf_pack)
 
@@ -1004,6 +1022,8 @@
         integer :: ijk, ijk_gl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
+        integer :: istart, iend, jstart, jend, kstart, kend
+
         include 'function.inc'
 
 	if (.not. present(mroot)) then
@@ -1040,24 +1060,31 @@
         if( myPE.eq.lroot) then
         ibuffer = 0
           do iproc = 0,numPEs-1
+            istart = istart1_all(iproc)
+            iend = iend1_all(iproc)
+            jstart = jstart1_all(iproc)
+            jend = jend1_all(iproc)
+            kstart = kstart1_all(iproc)
+            kend = kend1_all(iproc)
+
+            if(istart3_all(iproc).eq.imin3) istart = istart3_all(iproc)
+            if(iend3_all(iproc).eq.imax3) iend = iend3_all(iproc)
+            if(jstart3_all(iproc).eq.jmin3) jstart = jstart3_all(iproc)
+            if(jend3_all(iproc).eq.jmax3) jend = jend3_all(iproc)
+            if(kstart3_all(iproc).eq.kmin3) kstart = kstart3_all(iproc)
+            if(kend3_all(iproc).eq.kmax3) kend = kend3_all(iproc)
+
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
                   ibuffer = ibuffer + 1
-                  isok_k = (kstart1_all(iproc) <= k) .and. (k <=kend1_all(iproc))
-                  isok_j = (jstart1_all(iproc) <= j) .and. (j <=jend1_all(iproc))
-                  isok_k = (istart1_all(iproc) <= i) .and. (i <=iend1_all(iproc))
+                  isok_k = (kstart <= k) .and. (k <=kend)
+                  isok_j = (jstart <= j) .and. (j <=jend)
+                  isok_i = (istart <= i) .and. (i <=iend)
 
-                  isinterior = isok_k .and. isok_j .and. isok_i
+                  need_copy = isok_k .and. isok_j .and. isok_i
 
-                  isbc_k = (k <= kmin1) .or. (k >= kmax1)
-                  isbc_j = (j <= jmin1) .or. (j >= jmax1)
-                  isbc_i = (i <= imin1) .or. (i >= imax1)
-
-                  isboundary = isbc_k .or. isbc_j .or. isbc_i
-
-                  need_copy = isinterior .or. isboundary
                   if (need_copy) then
                       ijk_gl = funijk_gl(i,j,k)
                       gbuf( ijk_gl ) = gbuf_pack(ibuffer)
@@ -1158,6 +1185,7 @@
         integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc
         integer :: ijk, ijk_gl
+        integer :: istart, iend, jstart, jend, kstart, kend
         integer :: lenchar, icount
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
@@ -1232,22 +1260,31 @@
         if( myPE.eq.lroot) then
         ibuffer = 0
           do iproc = 0,numPEs-1
+            istart = istart1_all(iproc)
+            iend = iend1_all(iproc)
+            jstart = jstart1_all(iproc)
+            jend = jend1_all(iproc)
+            kstart = kstart1_all(iproc)
+            kend = kend1_all(iproc)
+
+            if(istart3_all(iproc).eq.imin3) istart = istart3_all(iproc)
+            if(iend3_all(iproc).eq.imax3) iend = iend3_all(iproc)
+            if(jstart3_all(iproc).eq.jmin3) jstart = jstart3_all(iproc)
+            if(jend3_all(iproc).eq.jmax3) jend = jend3_all(iproc)
+            if(kstart3_all(iproc).eq.kmin3) kstart = kstart3_all(iproc)
+            if(kend3_all(iproc).eq.kmax3) kend = kend3_all(iproc)
+
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
                   ibuffer = ibuffer + 1
-                  isok_k = (kstart1_all(iproc) <= k) .and. (k <=kend1_all(iproc))
-                  isok_j = (jstart1_all(iproc) <= j) .and. (j <=jend1_all(iproc))
-                  isok_k = (istart1_all(iproc) <= i) .and. (i <=iend1_all(iproc))
+                  isok_k = (kstart <= k) .and. (k <=kend)
+                  isok_j = (jstart <= j) .and. (j <=jend)
+                  isok_i = (istart <= i) .and. (i <=iend)
 
-                  isinterior = isok_k .and. isok_j .and. isok_i
-                  isbc_k = (k <= kmin1) .or. (k >= kmax1)
-                  isbc_j = (j <= jmin1) .or. (j >= jmax1)
-                  isbc_i = (i <= imin1) .or. (i >= imax1)
+                  need_copy = isok_k .and. isok_j .and. isok_i
 
-                  isboundary = isbc_k .or. isbc_j .or. isbc_i
-                  need_copy = isinterior .or. isboundary
                   if (need_copy) then
                       ijk_gl = funijk_gl(i,j,k)
 		      string = gbuf_pack(ibuffer)(1:lenchar)
@@ -1279,6 +1316,7 @@
         integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc
         integer :: ijk, ijk_gl
+        integer :: istart, iend, jstart, jend, kstart, kend
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
         include 'function.inc'
@@ -1319,24 +1357,31 @@
         if( myPE.eq.lroot) then
         ibuffer = 0
           do iproc = 0,numPEs-1
+            istart = istart1_all(iproc)
+            iend = iend1_all(iproc)
+            jstart = jstart1_all(iproc)
+            jend = jend1_all(iproc)
+            kstart = kstart1_all(iproc)
+            kend = kend1_all(iproc)
+
+            if(istart3_all(iproc).eq.imin3) istart = istart3_all(iproc)
+            if(iend3_all(iproc).eq.imax3) iend = iend3_all(iproc)
+            if(jstart3_all(iproc).eq.jmin3) jstart = jstart3_all(iproc)
+            if(jend3_all(iproc).eq.jmax3) jend = jend3_all(iproc)
+            if(kstart3_all(iproc).eq.kmin3) kstart = kstart3_all(iproc)
+            if(kend3_all(iproc).eq.kmax3) kend = kend3_all(iproc)
+
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
                   ibuffer = ibuffer + 1
-                  isok_k = (kstart1_all(iproc) <= k) .and. (k <=kend1_all(iproc))
-                  isok_j = (jstart1_all(iproc) <= j) .and. (j <=jend1_all(iproc))
-                  isok_k = (istart1_all(iproc) <= i) .and. (i <=iend1_all(iproc))
+                  isok_k = (kstart <= k) .and. (k <=kend)
+                  isok_j = (jstart <= j) .and. (j <=jend)
+                  isok_i = (istart <= i) .and. (i <=iend)
 
-                  isinterior = isok_k .and. isok_j .and. isok_i
+                  need_copy = isok_k .and. isok_j .and. isok_i
 
-                  isbc_k = (k <= kmin1) .or. (k >= kmax1)
-                  isbc_j = (j <= jmin1) .or. (j >= jmax1)
-                  isbc_i = (i <= imin1) .or. (i >= imax1)
-
-                  isboundary = isbc_k .or. isbc_j .or. isbc_i
-
-                  need_copy = isinterior .or. isboundary
                   if (need_copy) then
                       ijk_gl = funijk_gl(i,j,k)
                       gbuf( ijk_gl ) = gbuf_pack(ibuffer)

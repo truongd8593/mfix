@@ -207,10 +207,7 @@
 		ntotal, icount,ipos, &
 		isize, ilayer,        i1,i2,  j1,j2, k1,k2,  &
 		ijk, ijk2, iproc, jproc, src,dest, &
-		ierror, &
-	        kstart1,kend1,  jstart1,jend1, istart1,iend1, &
-	        kstart2,kend2,  jstart2,jend2, istart2,iend2, &
-	        kstart3,kend3,  jstart3,jend3, istart3,iend3
+		ierror
 
 	logical :: isok, isvalid, ismine, is_halobc
 
@@ -252,53 +249,135 @@
 	call MPI_Check( 'sendrecv_init:MPI_COMM_RANK ', ierror )
 
 !	---------------------------
-!	determine bounds of domain
+!	check obtain bounds of domain
 !	---------------------------
 
 
-	kstart1 = minval( kstart1_all(:) )
-	kstart2 = minval( kstart2_all(:) )
-	kstart3 = minval( kstart3_all(:) )
-	kend1 = maxval( kend1_all(:) )
-	kend2 = maxval( kend2_all(:) )
-	kend3 = maxval( kend3_all(:) )
+!       -----------------------
+!	check bounds for k-axis
+!       -----------------------
+        call assert( kmin1 .eq. minval( kstart1_all(:) ), &
+		'** sendrecv_init: invalid kmin1, ' // &
+                ' kmin1, minval(kstart1_all(:)) ', &
+                  kmin1, minval(kstart1_all(:)) )
 
-	jstart1 = minval( jstart1_all(:) )
-	jstart2 = minval( jstart2_all(:) )
-	jstart3 = minval( jstart3_all(:) )
-	jend1 = maxval( jend1_all(:) )
-	jend2 = maxval( jend2_all(:) )
-	jend3 = maxval( jend3_all(:) )
+        call assert( kmin2 .eq. minval( kstart2_all(:) ), &
+		'** sendrecv_init: invalid kmin2, ' // &
+                ' kmin2, minval(kstart2_all(:)) ', &
+                  kmin2, minval(kstart2_all(:)) )
 
-
-	istart1 = minval( istart1_all(:) )
-	istart2 = minval( istart2_all(:) )
-	istart3 = minval( istart3_all(:) )
-	iend1 = maxval( iend1_all(:) )
-	iend2 = maxval( iend2_all(:) )
-	iend3 = maxval( iend3_all(:) )
+        call assert( kmin3 .eq. minval( kstart3_all(:) ), &
+		'** sendrecv_init: invalid kmin3, ' // &
+                ' kmin3, minval(kstart3_all(:)) ', &
+                  kmin3, minval(kstart3_all(:)) )
 
 
-	call assert( jstart1 .le. jend1, &
-		'** sendrecv_init: jstart1,jend1 ', jstart1,jend1 )
-	call assert( jstart2 .le. jend2, &
-		'** sendrecv_init: jstart2,jend2 ', jstart2,jend2 )
-	call assert( jstart3 .le. jend3, &
-		'** sendrecv_init: jstart3,jend3 ', jstart3,jend3 )
+        call assert( kmax1 .eq. maxval( kend1_all(:) ), &
+                '** sendrecv_init: invalid kmax1, ' // &
+                ' kmax1, maxval(kend1_all(:)) ', &
+                  kmax1, maxval(kend1_all(:)) )
+
+        call assert( kmax2 .eq. maxval( kend2_all(:) ), &
+                '** sendrecv_init: invalid kmax2, ' // &
+                ' kmax2, maxval(kend2_all(:)) ', &
+                  kmax2, maxval(kend2_all(:)) )
+
+        call assert( kmax3 .eq. maxval( kend3_all(:) ), &
+                '** sendrecv_init: invalid kmax3, ' // &
+                ' kmax3, maxval(kend3_all(:)) ', &
+                  kmax3, maxval(kend3_all(:)) )
+
+!       -----------------------
+!       check bounds for j-axis
+!       -----------------------
+        call assert( jmin1 .eq. minval( jstart1_all(:) ), &
+                '** sendrecv_init: invalid jmin1, ' // &
+                ' jmin1, minval(jstart1_all(:)) ', &
+                  jmin1, minval(jstart1_all(:)) )
+
+        call assert( jmin2 .eq. minval( jstart2_all(:) ), &
+                '** sendrecv_init: invalid jmin2, ' // &
+                ' jmin2, minval(jstart2_all(:)) ', &
+                  jmin2, minval(jstart2_all(:)) )
+
+        call assert( jmin3 .eq. minval( jstart3_all(:) ), &
+                '** sendrecv_init: invalid jmin3, ' // &
+                ' jmin3, minval(jstart3_all(:)) ', &
+                  jmin3, minval(jstart3_all(:)) )
+
+
+        call assert( jmax1 .eq. maxval( jend1_all(:) ), &
+                '** sendrecv_init: invalid jmax1, ' // &
+                ' jmax1, maxval(jend1_all(:)) ', &
+                  jmax1, maxval(jend1_all(:)) )
+
+        call assert( jmax2 .eq. maxval( jend2_all(:) ), &
+                '** sendrecv_init: invalid jmax2, ' // &
+                ' jmax2, maxval(jend2_all(:)) ', &
+                  jmax2, maxval(jend2_all(:)) )
+
+        call assert( jmax3 .eq. maxval( jend3_all(:) ), &
+                '** sendrecv_init: invalid jmax3, ' // &
+                ' jmax3, maxval(jend3_all(:)) ', &
+                  jmax3, maxval(jend3_all(:)) )
+
+!       -----------------------
+!       check bounds for i-axis
+!       -----------------------
+        call assert( imin1 .eq. minval( istart1_all(:) ), &
+                '** sendrecv_init: invalid imin1, ' // &
+                ' imin1, minval(istart1_all(:)) ', &
+                  imin1, minval(istart1_all(:)) )
+
+        call assert( imin2 .eq. minval( istart2_all(:) ), &
+                '** sendrecv_init: invalid imin2, ' // &
+                ' imin2, minval(istart2_all(:)) ', &
+                  imin2, minval(istart2_all(:)) )
+
+        call assert( imin3 .eq. minval( istart3_all(:) ), &
+                '** sendrecv_init: invalid imin3, ' // &
+                ' imin3, minval(istart3_all(:)) ', &
+                  imin3, minval(istart3_all(:)) )
+
+
+        call assert( imax1 .eq. maxval( iend1_all(:) ), &
+                '** sendrecv_init: invalid imax1, ' // &
+                ' imax1, maxval(iend1_all(:)) ', &
+                  imax1, maxval(iend1_all(:)) )
+
+        call assert( imax2 .eq. maxval( iend2_all(:) ), &
+                '** sendrecv_init: invalid imax2, ' // &
+                ' imax2, maxval(iend2_all(:)) ', &
+                  imax2, maxval(iend2_all(:)) )
+
+        call assert( imax3 .eq. maxval( iend3_all(:) ), &
+                '** sendrecv_init: invalid imax3, ' // &
+                ' imax3, maxval(iend3_all(:)) ', &
+                  imax3, maxval(iend3_all(:)) )
+
+
+        
+
+	call assert( jmin1 .le. jmax1, &
+		'** sendrecv_init: jmin1,jmax1 ', jmin1,jmax1 )
+	call assert( jmin2 .le. jmax2, &
+		'** sendrecv_init: jmin2,jmax2 ', jmin2,jmax2 )
+	call assert( jmin3 .le. jmax3, &
+		'** sendrecv_init: jmin3,jmax3 ', jmin3,jmax3 )
 	
-	call assert( kstart1 .le. kend1, &
-		'** sendrecv_init: kstart1,kend1 ', kstart1,kend1 )
-	call assert( kstart2 .le. kend2, &
-		'** sendrecv_init: kstart2,kend2 ', kstart2,kend2 )
-	call assert( kstart3 .le. kend3, &
-		'** sendrecv_init: kstart3,kend3 ', kstart3,kend3 )
+	call assert( kmin1 .le. kmax1, &
+		'** sendrecv_init: kmin1,kmax1 ', kmin1,kmax1 )
+	call assert( kmin2 .le. kmax2, &
+		'** sendrecv_init: kmin2,kmax2 ', kmin2,kmax2 )
+	call assert( kmin3 .le. kmax3, &
+		'** sendrecv_init: kmin3,kmax3 ', kmin3,kmax3 )
 	
-	call assert( istart1 .le. iend1, &
-		'** sendrecv_init: istart1,iend1 ', istart1,iend1 )
-	call assert( istart2 .le. iend2, &
-		'** sendrecv_init: istart2,iend2 ', istart2,iend2 )
-	call assert( istart3 .le. iend3, &
-		'** sendrecv_init: istart3,iend3 ', istart3,iend3 )
+	call assert( imin1 .le. imax1, &
+		'** sendrecv_init: imin1,imax1 ', imin1,imax1 )
+	call assert( imin2 .le. imax2, &
+		'** sendrecv_init: imin2,imax2 ', imin2,imax2 )
+	call assert( imin3 .le. imax3, &
+		'** sendrecv_init: imin3,imax3 ', imin3,imax3 )
 	
 	
 	
@@ -307,12 +386,12 @@
 
 
 
-	k1 = min( kstart1, min(kstart2, kstart3) )
-	k2 = max( kend1, max(kend2, kend3) )
-	j1 = min( jstart1, min(jstart2, jstart3) )
-	j2 = max( jend1, max(jend2, jend3) )
-	i1 = min( istart1, min(istart2, istart3) )
-	i2 = max( iend1, max(iend2, iend3) )
+	k1 = min( kmin1, min(kmin2, kmin3) )
+	k2 = max( kmax1, max(kmax2, kmax3) )
+	j1 = min( jmin1, min(jmin2, jmin3) )
+	j2 = max( jmax1, max(jmax2, jmax3) )
+	i1 = min( imin1, min(imin2, imin3) )
+	i2 = max( imax1, max(imax2, imax3) )
 
 	allocate( ijk2proc( i1:i2, j1:j2, k1:k2 ) )
 
@@ -374,12 +453,24 @@
 !	--------------------------------------------------
 	do iproc=0,numPEs-1
 
-	   i1 = istart1_all(iproc)
-	   i2 = iend1_all(iproc)
-	   j1 = jstart1_all(iproc)
-	   j2 = jend1_all(iproc)
-	   k1 = kstart1_all(iproc)
-	   k2 = kend1_all(iproc)
+
+
+
+           i1 = istart1_all(iproc)
+           i2 = iend1_all(iproc)
+           j1 = jstart1_all(iproc)
+           j2 = jend1_all(iproc)
+           k1 = kstart1_all(iproc)
+           k2 = kend1_all(iproc)
+
+           if(istart3_all(iproc).eq.imin3) i1 = istart3_all(iproc)
+           if(iend3_all(iproc).eq.imax3) i2 = iend3_all(iproc)
+           if(jstart3_all(iproc).eq.jmin3) j1 = jstart3_all(iproc)
+           if(jend3_all(iproc).eq.jmax3) j2 = jend3_all(iproc)
+           if(kstart3_all(iproc).eq.kmin3) k1 = kstart3_all(iproc)
+           if(kend3_all(iproc).eq.kmax3) k2 = kend3_all(iproc)
+
+
 
 
 	   do k=k1,k2
@@ -392,9 +483,9 @@
 
 	enddo
 
-	do k=kstart1,kend1
-	do j=jstart1,jend1
-	do i=istart1,iend1
+	do k=lbound(ijk2proc,3),ubound(ijk2proc,3)
+	do j=lbound(ijk2proc,2),ubound(ijk2proc,2)
+	do i=lbound(ijk2proc,1),ubound(ijk2proc,1)
 	  isvalid = (ijk2proc(i,j,k) .eq. 1)
 	  if (.not.isvalid) then
 
@@ -402,7 +493,7 @@
 		call write_debug(name, 'i,j,k ',i,j,k )
 		call write_debug(name, 'ijk2proc(i,j,k) ', ijk2proc(i,j,k))
 
-		stop '** error ** '
+		call mfix_exit( myPE )
 	  endif
 	enddo
 	enddo
@@ -410,12 +501,23 @@
 
 	ijk2proc(:,:,:) = -1
 	do iproc=0,numPEs-1
+
+
+
            i1 = istart1_all(iproc)
            i2 = iend1_all(iproc)
            j1 = jstart1_all(iproc)
            j2 = jend1_all(iproc)
            k1 = kstart1_all(iproc)
            k2 = kend1_all(iproc)
+
+           if(istart3_all(iproc).eq.imin3) i1 = istart3_all(iproc)
+           if(iend3_all(iproc).eq.imax3) i2 = iend3_all(iproc)
+           if(jstart3_all(iproc).eq.jmin3) j1 = jstart3_all(iproc)
+           if(jend3_all(iproc).eq.jmax3) j2 = jend3_all(iproc)
+           if(kstart3_all(iproc).eq.kmin3) k1 = kstart3_all(iproc)
+           if(kend3_all(iproc).eq.kmax3) k2 = kend3_all(iproc)
+
 
 
 	   do k=k1,k2
@@ -600,7 +702,8 @@ do ilayer=1,2
        enddo
 
      isvalid = (icount .eq. ncount(iproc))
-     call assert( isvalid, '** sendrecv_init: icount != ncount(iproc) ', iproc)
+     call assert( isvalid, &
+           '** sendrecv_init: icount != ncount(iproc) ', iproc)
 
    enddo
 
@@ -654,11 +757,15 @@ do ilayer=1,2
 
 	  iproc = ijk2proc(ii,jj,kk)
 	  is_halobc = (iproc.eq.-1)
-          ismine = (iproc.eq.myPE) .or. is_halobc
+          ismine = (iproc.eq.myPE) 
           if (.not.ismine) then
 
-	      isvalid = (0 .le. iproc) .and. (iproc.le.numPEs-1)
-	      call assert( isvalid,'** sendrecv_init: invalid iproc ',iproc)
+	      isvalid = (0 .le. iproc) .and. &
+                        (iproc.le.numPEs-1) .and. &
+                        (iproc.ne.myPE)
+
+	      call assert( isvalid, &
+                    '** sendrecv_init: invalid iproc ',iproc)
 
               ncount(iproc) = ncount(iproc) + 1
           endif
@@ -726,7 +833,8 @@ do ilayer=1,2
 
           iproc = ijk2proc(ii,jj,kk)
           is_halobc = (iproc.eq.-1)
-          ismine = (iproc.eq.myPE).or.(is_halobc)
+
+          ismine = (iproc.eq.myPE)
           if ((.not.ismine) .and. (iproc.eq.jproc)) then
 
 
@@ -820,7 +928,8 @@ enddo ! do ilayer
 	   k = k_of(ijk)
 	   endif
 	   write(line(ip),9001) ii,ijk, i,j,k
- 9001      format('recvijk1( ', i6,') = ', i6, '( ', i6,',',i6,',',i6,') ')
+ 9001      format('recvijk1( ', i6,') = ', &
+                     i6, '( ', i6,',',i6,',',i6,') ')
            ip = ip + 1
 	enddo
 	call write_error( name, line, lmax )
@@ -842,7 +951,8 @@ enddo ! do ilayer
            endif
 
            write(line(ip),9101) ii,ijk, i,j,k
- 9101      format('recvijk2( ', i6,') = ', i6, '( ', i6,',',i6,',',i6,') ')
+ 9101      format('recvijk2( ', i6,') = ', &
+                      i6, '( ', i6,',',i6,',',i6,') ')
            ip = ip + 1
         enddo
         call write_error( name, line, lmax )
@@ -873,7 +983,8 @@ enddo ! do ilayer
            endif
 
            write(line(ip),9002) ii,ijk,   i,j,k
- 9002      format('sendijk1( ', i6,') = ', i6, '( ', i6,',',i6,',',i6,') ')
+ 9002      format('sendijk1( ', i6,') = ', &
+                        i6, '( ', i6,',',i6,',',i6,') ')
 	   ip = ip + 1
         enddo
 
@@ -897,7 +1008,8 @@ enddo ! do ilayer
            endif
 
            write(line(ip),9102) ii,ijk,   i,j,k
- 9102      format('sendijk2( ', i6,') = ', i6, '( ', i6,',',i6,',',i6,') ')
+ 9102      format('sendijk2( ', i6,') = ', &
+                           i6, '( ', i6,',',i6,',',i6,') ')
            ip = ip + 1
         enddo
 
@@ -923,7 +1035,7 @@ enddo ! do ilayer
 
 
         if (lidebug.ge.1) then
-		call write_debug(name, ' end of sendrecv_init ', myPE )
+	   call write_debug(name, ' end of sendrecv_init ', myPE )
         endif
 	
 	end subroutine sendrecv_init
@@ -1078,7 +1190,8 @@ enddo ! do ilayer
 
         if (lidebug.ge.1) then
 
-                call write_debug( name, 'sendsize, ubound(dsendbuffer,1) ', &
+                call write_debug( name, &
+                        'sendsize, ubound(dsendbuffer,1) ', &
                         sendsize, ubound(dsendbuffer,1) )
 
                 call write_debug( name, 'ubound(xsend,1) ', &
@@ -1217,7 +1330,8 @@ enddo ! do ilayer
 !   --------------------------
 
     if (lidebug.ge.1) then
-	call write_debug(name, 'post asynchronous receives, nrecv = ', nrecv )
+	call write_debug(name, &
+              'post asynchronous receives, nrecv = ', nrecv )
     endif
 
     if (nrecv.ge.1) then
@@ -1225,7 +1339,8 @@ enddo ! do ilayer
 	allocate( irecvbuffer( recvsize ) )
 
         if (lidebug.ge.1) then
-		call write_debug( name, 'recvsize, ubound(irecvbuffer,1) ', &
+		call write_debug( name, &
+                        'recvsize, ubound(irecvbuffer,1) ', &
 			recvsize, ubound(irecvbuffer,1) )
 
 		call write_debug( name, 'ubound(xrecv,1) ', &

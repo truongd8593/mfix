@@ -63,12 +63,12 @@
 !
         integer, allocatable,dimension(:) ::  &
                 ijkstart3_all,ijkend3_all,    &
-                istart1_all,istart2_all,istart3_all, &
-                jstart1_all,jstart2_all,jstart3_all, &
-                kstart1_all,kstart2_all,kstart3_all, &
-                iend1_all,iend2_all,iend3_all, &
-                jend1_all,jend2_all,jend3_all, &
-                kend1_all,kend2_all,kend3_all, &
+                istart_all,istart1_all,istart2_all,istart3_all, &
+                jstart_all,jstart1_all,jstart2_all,jstart3_all, &
+                kstart_all,kstart1_all,kstart2_all,kstart3_all, &
+                iend_all,iend1_all,iend2_all,iend3_all, &
+                jend_all,jend1_all,jend2_all,jend3_all, &
+                kend_all,kend1_all,kend2_all,kend3_all, &
                 ijksize3_all, displs
 
 !	Variables used for mapping i, j, k to ii, jj, kk to take care of cyclic conditions...
@@ -80,6 +80,8 @@
                 kstart3, kend3, istart2, iend2, jstart2, jend2, &
                 kstart2, kend2, istart1, iend1, jstart1, jend1, &
                 kstart1, kend1
+
+        integer :: istart, iend, jstart, jend, kstart, kend
 
 !	Variables added at Aytekin's request on 09/01/99 for some code implementation
 

@@ -40,7 +40,6 @@
 
 !          Determine the size in k direction and add the remainder sequentially
 
-	write(*,*) kmax1, kmin1, nodesk
 	ksize = (kmax1-kmin1+1)/nodesk
 	ksize1_all(0:nodesk-1) = ksize
 
@@ -100,6 +99,10 @@
 
 	allocate( ijkend3_all(0:numPEs-1) )
 
+	allocate( istart_all(0:numPEs-1) )
+	allocate( jstart_all(0:numPEs-1) )
+	allocate( kstart_all(0:numPEs-1) )
+
 	allocate( istart1_all(0:numPEs-1) )
 	allocate( jstart1_all(0:numPEs-1) )
 	allocate( kstart1_all(0:numPEs-1) )
@@ -111,6 +114,10 @@
 	allocate( istart3_all(0:numPEs-1) )
 	allocate( jstart3_all(0:numPEs-1) )
 	allocate( kstart3_all(0:numPEs-1) )
+
+	allocate( iend_all(0:numPEs-1) )
+	allocate( jend_all(0:numPEs-1) )
+	allocate( kend_all(0:numPEs-1) )
 
 	allocate( iend1_all(0:numPEs-1) )
 	allocate( jend1_all(0:numPEs-1) )
@@ -175,18 +182,18 @@
 
 	do iproc=0,numPEs-1
 
+	   ijkstart3_all(iproc) = 1
 
-	   ijkstart3_all(iproc) = funijk( istart3_all(iproc),  &
-                                          jstart3_all(iproc),  &
-                                          kstart3_all(iproc) )
- 	   ijkend3_all(iproc) = funijk( iend3_all(iproc),  &
-                                           jend3_all(iproc),  &
-                                           kend3_all(iproc) )
+ 	   ijkend3_all(iproc) =  1 + (iend3_all(iproc) - istart3_all(iproc)) &
+           + (jend3_all(iproc)-jstart3_all(iproc))*(iend3_all(iproc)-istart3_all(iproc)+1) &
+           + (kend3_all(iproc)-kstart3_all(iproc))*(jend3_all(iproc)-jstart3_all(iproc)+1)* &
+             (iend3_all(iproc)-istart3_all(iproc)+1)
+
 	enddo
 
 	do iproc=0,numPEs-1
 
-	   ijksize3_all(iproc) = ijkend3_all(iproc) - ijkstart3_all(iproc)+1
+	   ijksize3_all(iproc) = ijkend3_all(iproc) - ijkstart3_all(iproc) + 1
 
 	enddo
 
@@ -278,6 +285,35 @@
                 imap(imin3) = imap(imin2)-1
            endif
         endif
+
+!	Defining new set of varaibles to define upper and lower bound of the indices to include 
+!	actual physical boundaries of the problem
+
+	do iproc = 0, numPEs-1
+
+        istart = istart1
+        iend = iend1
+        jstart = jstart1
+        jend = jend1
+        kstart = kstart1
+        kend = kend1
+    
+        if(istart3.eq.imin3) istart = istart2
+        if(iend3.eq.imax3) iend = iend2
+        if(jstart3.eq.jmin3) jstart = jstart2
+        if(jend3.eq.jmax3) jend = jend2
+        if(kstart3.eq.kmin3) kstart = kstart2
+        if(kend3.eq.kmax3) kend = kend2
+
+	istart_all(iproc) = istart
+	iend_all(iproc)   = iend
+	jstart_all(iproc) = jstart
+	jend_all(iproc)   = jend
+	kstart_all(iproc) = kstart
+	kend_all(iproc)   = kend
+
+	enddo
+
 
 !	Call to sendrecv_init to set all the communication pattern
 
