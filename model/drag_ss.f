@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: DRAG_ss(L, M, F_ss, IER)                               C
+!  Module name: DRAG_ss(L, M, IER)                                     C
 !  Purpose: This module computes the coefficient of drag between       C
 !           solids phase m and solids phase l                          C
 !                                                                      C
@@ -86,8 +86,6 @@
 !                      Drag coefficient 
       DOUBLE PRECISION CONST 
 ! 
-!                      Drag array 
-      DOUBLE PRECISION F_ss(DIMENSION_3, DIMENSION_LM) 
 ! 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
