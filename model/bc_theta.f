@@ -96,28 +96,12 @@
             J2 = BC_J_n(L)
             K1 = BC_K_b(L)
             K2 = BC_K_t(L)
-
-!//SP/12/21/99 - Limit I1, I2 and all to local processor first ghost layer
-
-            IF(I1.LE.IEND2)   I1 = MAX(I1, ISTART2)
-
-            IF(J1.LE.JEND2)   J1 = MAX(J1, JSTART2)
-
-            IF(K1.LE.KEND2)   K1 = MAX(K1, KSTART2)
-
-            IF(I2.GE.ISTART2) I2 = MIN(I2, IEND2)
-
-            IF(J2.GE.JSTART2) J2 = MIN(J2, JEND2)
-
-            IF(K2.GE.KSTART2) K2 = MIN(K2, KEND2)
-
-!//End of limiting to the first ghost cells of the processor....
-
-
             IF(BC_JJ_PS(L).GT.0) THEN
               DO 120 K = K1, K2
               DO 110 J = J1, J2
               DO 100 I = I1, I2
+!// 360 0105 Check if current i,j,k resides on this PE	    
+	       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	      
                 IJK   = FUNIJK(I, J, K)
                 IM    = Im1(I)
                 JM    = Jm1(J)
@@ -616,8 +600,6 @@
       USE toleranc 
       USE bc
       USE compar      !//d
-!//SP
-      USE mpi_utility 
       IMPLICIT NONE
  
 !
@@ -679,30 +661,14 @@
 !
 !                      Index corresponding to boundary condition
       INTEGER          L
-!//SP
-      LOGICAL NEGATIVE_GRAN_TEMP
-      INTEGER PE_NEGATIVE_GRAN_TEMP
  
-!//SP Modified the code to check for TH <= ZERO and the information is communicated to
-!//SP root processor to write it out!! The processor on which this condition is failing 
-!//SP is also printed
       IF(TH .LE. ZERO)THEN
-        NEGATIVE_GRAN_TEMP = .TRUE.
-        PE_NEGATIVE_GRAN_TEMP = myPE
         TH = 1e-8
-!       CALL WRITE_ERROR('THETA_HW_CW', LINE, 1)
-      ELSE
-	PE_NEGATIVE_GRAN_TEMP = 0
+        if (myPE.eq.PE_IO) then   !//??????  pnicol : on any PE ????
+	   WRITE(*,*)'Warning: Negative granular temp at wall set to 1e-8'
+!          CALL WRITE_ERROR('THETA_HW_CW', LINE, 1)
+        end if
       ENDIF
-
-      CALL GLOBAL_ALL_OR(NEGATIVE_GRAN_TEMP)
-      CALL GLOBAL_ALL_SUM(PE_NEGATIVE_GRAN_TEMP)
-
-      IF(NEGATIVE_GRAN_TEMP) THEN
-        if (myPE.eq.PE_IO) WRITE(*,*)'Warning: Negative granular temp at wall set to &
-     &  1e-8 on processor', '    ',PE_NEGATIVE_GRAN_TEMP
-      ENDIF
-
  
 !     In F_2 and Mu a DSQRT(T) has been left out as it appears in both
 !     terms and thus cancels out upon dividing the former by the latter

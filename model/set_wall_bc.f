@@ -125,23 +125,40 @@
             END SELECT 
          ENDIF 
       END DO 
+      
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): part1 in set_wall_bc')") myPE  !//AIKEPARDBG
+!      call mfix_exit(myPE)     !//AIKEPARDBG
+      
       K1 = 1 
 
 !//SP
       DO J1 = JSTART3, JEND3
          DO I1 = ISTART3, IEND3
+!      DO J1 = Jmin3, Jmax3
+!         DO I1 = Imin3, Imax3	 
 !!/SP
             IF(K1.NE.KSTART2)   EXIT
+!// 360 0105 Check if current i,j,k resides on this PE	    
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
                , 0, (-ONE)) 
          END DO 
       END DO 
+
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft k1=1 blk in set_wall_bc')") myPE  !//AIKEPARDBG
+!      call mfix_exit(myPE)     !//AIKEPARDBG
+      
       K1 = KMAX2 
       DO J1 = JSTART3, JEND3
          DO I1 = ISTART3, IEND3
 !!/SP
             IF(K1.NE.KEND2)   EXIT
+!// 360 0105 Check if current i,j,k resides on this PE	    
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
+	    
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
                , 0, (-ONE)) 
@@ -152,6 +169,9 @@
          DO I1 = ISTART3, IEND3
 !!/SP
             IF(J1.NE.JSTART2)   EXIT
+!// 360 0105 Check if current i,j,k resides on this PE	    
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
+	    
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
                , 0, (-ONE)) 
@@ -162,6 +182,9 @@
          DO I1 = ISTART3, IEND3
 !!/SP
             IF(J1.NE.JEND2)   EXIT
+!// 360 0105 Check if current i,j,k resides on this PE	    
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
+	    
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
                , 0, (-ONE)) 
@@ -172,7 +195,10 @@
          DO J1 = JSTART3, JEND3
 !!/SP
             IF(I1.NE.ISTART2)   EXIT
+!// 360 0105 Check if current i,j,k resides on this PE	    
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
             IJK = FUNIJK(I1,J1,K1) 
+
 !
             IF (DEFAULT_WALL_AT(IJK)) THEN 
 !
@@ -199,6 +225,9 @@
          DO J1 = JSTART3, JEND3
 !!/SP
             IF(I1.NE.IEND2)   EXIT
+!// 360 0105 Check if current i,j,k resides on this PE	    
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
+	    
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
                , 0, (-ONE)) 
@@ -310,6 +339,8 @@
       DO K = K1, K2 
          DO J = J1, J2 
             DO I = I1, I2 
+!// 360 1229 Check if current i,j,k resides on this PE
+!   	       IF (.NOT.IS_ON_myPE_plus1layers(I1,J1,K1)) CYCLE	    
                IJK = FUNIJK(I,J,K) 
                IF (WALL_AT(IJK)) THEN 
                   IMJK = IM_OF(IJK) 
