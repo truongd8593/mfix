@@ -66,6 +66,7 @@
       USE leqsol 
       USE residual
       USE rxns
+      USE scalars
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
@@ -129,15 +130,10 @@
       ENDIF 
       CALL_USR = .FALSE. 
       MODEL_B = .FALSE. 
-      DISCRETIZE(1) = 0 
-      DISCRETIZE(2) = 0 
-      DISCRETIZE(3) = 0 
-      DISCRETIZE(4) = 0 
-      DISCRETIZE(5) = 0 
-      DISCRETIZE(6) = 0 
-      DISCRETIZE(7) = 0 
-      DISCRETIZE(8) = 0 
-      DISCRETIZE(9) = 0 
+      DISCRETIZE(:) = 0 
+      
+      NScalar = 0
+      Phase4Scalar(:) = UNDEFINED_I
 !
 ! INITIALIZE THE OUTPUT CONTROL SECTION
 !
@@ -250,7 +246,7 @@
       UR_FAC(6) = 0.8                            !T 
       UR_FAC(7) = 0.75                           !X 
       UR_FAC(8) = 0.5                            !Th 
-      UR_FAC(8) = 0.9                            !Scalar
+      UR_FAC(9) = 0.8                            !Scalar
 !
 ! INITIALIZE THE GAS PHASE SECTION
 !

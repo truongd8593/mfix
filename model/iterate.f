@@ -108,6 +108,7 @@
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, VAVG_U_S, &
          VAVG_V_S, VAVG_W_S 
+	 external cpu_time   !use the subroutine from machine.f
 !-----------------------------------------------
 !
 !
@@ -368,7 +369,7 @@
       IF (MUSTIT == 0) THEN 
          IF (DT==UNDEFINED .AND. NIT==1) GO TO 50!Iterations converged 
          IF (MOD(NSTEP,NLOG) == 0) THEN 
-            CALL CPU_TIME (CPU_NOW) 
+            CALL CPU_TIME (CPU_NOW)
 !
             CPUOS = (CPU_NOW - CPU_NLOG)/(TIME - TIME_NLOG) 
             CPU_NLOG = CPU_NOW 

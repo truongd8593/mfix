@@ -81,6 +81,7 @@
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
+      external cpu_time
 !-----------------------------------------------
 !
 !$      INTEGER num_threads, threads_specified
@@ -127,9 +128,7 @@
 !
 
 !// 888 Start MPI's own clock to measure wall time
-!      CALL CPU_TIME (CPU0) 
-      CPU0 = MPI_WTIME()
-
+      CALL CPU_TIME (CPU0) 
 !
 !   Read input data, check data, do computations for IC and BC locations
 !   and flows, and set geometry parameters such as X, X_E, DToDX, etc.
@@ -362,8 +361,7 @@
 !
 
 !// 888 Read time from MPI's own clock to measure wall time
-!      CALL CPU_TIME (CPU1) 
-      CPU1 = MPI_WTIME()
+      CALL CPU_TIME (CPU1) 
 !
 !  Compute the CPU time and write it out in the .OUT file.
 !

@@ -7,9 +7,17 @@
              DT_MAX, DT_MIN, DT_FAC, DETECT_STALL,&
              MOMENTUM_X_EQ, MOMENTUM_Y_EQ,MOMENTUM_Z_EQ, DISCRETIZE,&
              GRANULAR_ENERGY,& 
+	     NScalar, Phase4Scalar, &
 ! start anuj 4/20
              FRICTION, SAVAGE,&
 ! end anuj 4/20
+
+! start peter 7/15
+             SHEAR, V_sh,&
+! end peter 7/15
+
+
+
 !
 ! 1.2 Output control section
 !

@@ -102,6 +102,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE CPU_TIME(CPU)
+      USE compar      !// 001 Include MPI header file
 !
       IMPLICIT NONE
 !
@@ -123,7 +124,8 @@
 !                      the elasped CPU time
       REAL             ETIME
 !
-      XT  = ETIME(TA)
+       XT = MPI_WTIME()
+!      XT  = ETIME(TA)
       CPU = XT
       
       

@@ -78,6 +78,7 @@
       USE leqsol 
       USE residual
       USE rxns
+      USE scalars
       USE compar      !// 001 Include MPI header file
       IMPLICIT NONE
 !-----------------------------------------------
