@@ -83,16 +83,6 @@
 
 !       ******************************************************************
 
-!        nodesj = 1
-
-!        if(no_k) then
-!        nodesi = numPEs
-!        nodesk = 1
-!        else
-!        nodesi = 1
-!        nodesk = numPEs
-!        endif
-
 	allocate( ijksize3_all(0:numPEs-1) )
 
 	allocate( ijkstart3_all(0:numPEs-1) )
@@ -241,6 +231,10 @@
         allocate( jmap( jmin3:jmax3 ) )
         allocate( kmap( kmin3:kmax3 ) )
 
+        allocate( imap_c( imin3:imax3 ) )
+        allocate( jmap_c( jmin3:jmax3 ) )
+        allocate( kmap_c( kmin3:kmax3 ) )
+
         do kk=kmin3,kmax3
           kmap(kk) = kk
         enddo
@@ -285,6 +279,52 @@
                 imap(imin3) = imap(imin2)-1
            endif
         endif
+
+        do kk=kmin3,kmax3
+          kmap_c(kk) = kk
+        enddo
+
+        do jj=jmin3,jmax3
+          jmap_c(jj) = jj
+        enddo
+
+        do ii=imin3,imax3
+          imap_c(ii) = ii
+        enddo
+
+        if (cyclic_z.and.nodesk.eq.1) then
+           kmap_c( kmax2 ) = kmin1
+           kmap_c( kmin2 ) = kmax1
+           if (kmax3.gt.kmax2) then
+                kmap_c(kmax3) = kmap_c(kmax2)+1
+           endif
+           if (kmin3.lt.kmin2) then
+                kmap_c(kmin3) = kmap_c(kmin2)-1
+           endif
+        endif
+
+        if (cyclic_y.and.nodesj.eq.1) then
+           jmap_c( jmax2 ) = jmin1
+           jmap_c( jmin2 ) = jmax1
+           if (jmax3.gt.jmax2) then
+                jmap_c(jmax3) = jmap_c(jmax2)+1
+           endif
+           if (jmin3.lt.jmin2) then
+                jmap_c(jmin3) = jmap_c(jmin2)-1
+           endif
+        endif
+
+        if (cyclic_x.and.nodesi.eq.1) then
+           imap_c( imax2 ) = imin1
+           imap_c( imin2 ) = imax1
+           if (imax3.gt.imax2) then
+                imap_c(imax3) = imap_c(imax2)+1
+           endif
+           if (imin3.lt.imin2) then
+                imap_c(imin3) = imap_c(imin2)-1
+           endif
+        endif
+
 
 !	Defining new set of varaibles to define upper and lower bound of the indices to include 
 !	actual physical boundaries of the problem

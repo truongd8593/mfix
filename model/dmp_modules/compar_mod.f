@@ -74,6 +74,7 @@
 !	Variables used for mapping i, j, k to ii, jj, kk to take care of cyclic conditions...
 
 	integer, allocatable,dimension(:) :: imap, jmap, kmap
+	integer, allocatable,dimension(:) :: imap_c, jmap_c, kmap_c
 
         integer :: &
                 ijksize3, ijkstart3,ijkend3, istart3, iend3, jstart3, jend3, &
