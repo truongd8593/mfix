@@ -33,6 +33,7 @@
       USE physprop
       USE geometry
       USE fldvar
+      USE constant
       USE output
       USE indices
       USE drag
@@ -135,6 +136,27 @@
 !                                        Johnson-Jackson bcs are specified
 !
          CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M, IER) 
+!
+!
+! Adjusting the values of theta_m to zero when Ep_g < EP_star (Shaeffer, 1987)
+! This is done here instead of calc_mu_s.f to avoid convergence problems. (sof)
+!
+         DO IJK = ijkstart3, ijkend3
+!
+            IF (FLUID_AT(IJK) .AND. EP_g(IJK) .LT. EP_star) THEN 
+!
+
+                 A_M(IJK,1,M) = ZERO 
+                 A_M(IJK,-1,M) = ZERO 
+                 A_M(IJK,2,M) = ZERO 
+                 A_M(IJK,-2,M) = ZERO 
+                 A_M(IJK,3,M) = ZERO 
+                 A_M(IJK,-3,M) = ZERO 
+                 A_M(IJK,0,M) = -ONE 		  
+                 B_M(IJK,M) = ZERO
+	    ENDIF
+	 END DO	 
+! End of Shaeffer adjustments, sof.
 !
          CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, RESID(RESID_TH,M), &
             MAX_RESID(RESID_TH,M), IJK_RESID(RESID_TH,M), ZERO, IER) 

@@ -472,7 +472,10 @@
             LAMBDA_s(IJK, M) = ZERO
             ALPHA_s(IJK, M)  = ZERO
             P_s(IJK, M)  = ZERO
-	    THETA_m(IJK, M) = ZERO
+!
+! when solving for the granular energy equation (PDE) setting theta = 0 is done 
+! in solve_granular_energy.f to avoid convergence problems. (sof)
+	    IF(.NOT.GRANULAR_ENERGY) THETA_m(IJK, M) = ZERO
           ENDIF
          ENDIF
  
