@@ -276,6 +276,7 @@
       Allocate(  Array1i(DIMENSION_3) ) 
       Allocate(  Array1c(DIMENSION_3) )
       Allocate(  TMP4(DIMENSION_4) )
+      Allocate(  ArrayLM (DIMENSION_3, DIMENSION_LM) )  !S. Dartevelle, LANL, Feb. 2004
 
 
 !tmp_array1

@@ -54,8 +54,8 @@
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
-      DO M = 1, MMAX 
-!
+
+      DO M = 1, MMAX
 !$omp parallel do private(K, IJK, IJKT)
          DO IJK = ijkstart3, ijkend3
             IF (.NOT.IP_AT_T(IJK)) THEN 
@@ -71,6 +71,84 @@
             
       RETURN  
       END SUBROUTINE VF_GS_Z 
+!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: VF_SS_Z(VxF_ss, IER)                                   C
+!  Purpose: Calculate the average Solid-Solid drag coefficient at      C
+!           i, j, k+1/2 and multiply with W-momentum cell volume.      C
+!                                                                      C
+!  Author: S. Dartevelle, LANL                        Date: 28-FEB-04  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE VF_SS_Z(VXF_SS, IER)
+!
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Switches: -xf
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param
+      USE param1
+      USE geometry
+      USE indices
+      USE physprop
+      USE compar
+      USE drag
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+! 
+! 
+!                      Error index 
+      INTEGER          IER
+! 
+!                      Indices 
+      INTEGER          K, IJK, IJKT
+! 
+!                      Index of both solids phases 
+      INTEGER          L, M, LM
+! 
+!                      Volume x Drag 
+      DOUBLE PRECISION VxF_SS(DIMENSION_3, DIMENSION_LM)
+! 
+!-----------------------------------------------
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'function.inc'
+      INCLUDE 'fun_avg2.inc'
+!
+  DO M = 1, MMAX
+    DO L = 1, MMAX
+      LM = FUNLM(L,M)
+	  IF (L .NE. M) THEN
+!$omp  parallel do private(K,IJK,IJKT)
+            DO IJK = ijkstart3, ijkend3
+              IF (.NOT.IP_AT_T(IJK)) THEN
+                K = K_OF(IJK)
+                IJKT = TOP_OF(IJK)
+                VXF_SS(IJK,LM) = AVG_Z(F_SS(IJK,LM),F_SS(IJKT,LM),K)*VOL_W(IJK)
+              ELSE     !Impermeable wall
+                VXF_SS(IJK,LM) = ZERO
+              ENDIF
+            END DO
+      ENDIF
+    END DO
+  END DO
+!
+ RETURN
+ END SUBROUTINE VF_SS_Z
 
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization

@@ -7,6 +7,13 @@
 !  Author: M. Syamlal                                 Date: 25-APR-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Revision Number: 2                                                  C
+!  Purpose: allow multiparticle in D_E, D_N and D_T claculations       C
+!           and account for the averaged Solid-Solid drag              C
+!                                                                      C
+!  Author: S. Dartevelle, LANL                        Date: 28-FEb-04  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -41,8 +48,9 @@
       USE pgcor
       USE pscor
       USE leqsol
-      Use ambm 
-      Use tmp_array1, VxF_gs => Arraym1
+      Use ambm
+      Use tmp_array1,  VxF_gs => Arraym1
+      Use tmp_array,  VxF_ss => ArrayLM     !S. Dartevelle, LANL, MARCH 2004
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
@@ -80,8 +88,10 @@
 !
       call lock_ambm
       call lock_tmp_array1
-
-      IF (MMAX == 0) CALL ZERO_ARRAY (VXF_GS(1,1), IER) 
+      call lock_tmp_array2
+!
+      IF (MMAX == 0) CALL ZERO_ARRAY (VXF_GS(1,1), IER)
+	  IF (MMAX == 1) CALL ZERO_ARRAY (VXF_SS(1,1), IER)
 !
 !  2.1 Calculate U_m_star and residuals
 !
@@ -96,10 +106,11 @@
       CALL SOURCE_U_G (A_M, B_M, IER) 
       CALL SOURCE_U_S (A_M, B_M, IER) 
 !
-      IF (MMAX > 0) CALL VF_GS_X (VXF_GS, IER) 
+      IF (MMAX > 0) CALL VF_GS_X (VXF_GS, IER)
+      IF (MMAX > 0) CALL VF_SS_X (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
 !
-      CALL CALC_D_E (A_M, VXF_GS, D_E, IER) 
-      
+      CALL CALC_D_E (A_M, VXF_GS, VXF_SS, D_E, IER)  !S. Dartevelle, LANL, Feb.2004
+!  
       IF (MMAX > 0) CALL CALC_E_E (A_M, MCP, E_E, IER) 
 !
       IF (MMAX > 0) CALL PARTIAL_ELIM_U (U_G, U_S, VXF_GS, A_M, B_M, IER) 
@@ -174,9 +185,11 @@
       CALL SOURCE_V_S (A_M, B_M, IER) 
 
 !
-      IF (MMAX > 0) CALL VF_GS_Y (VXF_GS, IER) 
+      IF (MMAX > 0) CALL VF_GS_Y (VXF_GS, IER)
+      IF (MMAX > 0) CALL VF_SS_Y (VXF_SS, IER)    !S. Dartevelle, LANL, Feb.2004
 !
-      CALL CALC_D_N (A_M, VXF_GS, D_N, IER) 
+      CALL CALC_D_N (A_M, VXF_GS, VXF_SS, D_N, IER)   !S. Dartevelle, LANL, Feb.2004
+!
       IF (MMAX > 0) CALL CALC_E_N (A_M, MCP, E_N, IER) 
 !
       IF (MMAX > 0) CALL PARTIAL_ELIM_V (V_G, V_S, VXF_GS, A_M, B_M, IER) 
@@ -242,7 +255,8 @@
       IF (NO_K)THEN
         call unlock_ambm
         call unlock_tmp_array1
-        RETURN  
+	call unlock_tmp_array2
+        RETURN
       ENDIF
 !
 
@@ -265,9 +279,11 @@
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 ! call mfix_exit(myPE)
 !
-      IF (MMAX > 0) CALL VF_GS_Z (VXF_GS, IER) 
+      IF (MMAX > 0) CALL VF_GS_Z (VXF_GS, IER)
+      IF (MMAX > 0) CALL VF_SS_Z (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
 !
-      CALL CALC_D_T (A_M, VXF_GS, D_T, IER) 
+      CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER)  !S. Dartevelle, LANL, Feb.2004
+!
       IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T, IER) 
 !
       IF (MMAX > 0) CALL PARTIAL_ELIM_W (W_G, W_S, VXF_GS, A_M, B_M, IER) 
@@ -325,6 +341,7 @@
 
       call unlock_ambm
       call unlock_tmp_array1
+      call unlock_tmp_array2
 
       RETURN  
       END SUBROUTINE SOLVE_VEL_STAR 

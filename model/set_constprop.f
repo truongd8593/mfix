@@ -53,7 +53,9 @@
       K_g(:) = ZERO
       K_s(:, :) = ZERO
       DIF_g(:, :) = ZERO
-      DIF_S(:, :, :) = ZERO 
+      DIF_S(:, :, :) = ZERO
+      F_GS(:,:) = ZERO                 !S. Dartevelle, LANL, 2004
+      F_SS(:,:) = ZERO                 !S. Dartevelle, LANL, 2004
 !
       IF (ENERGY_EQ .OR. L_SCALE0/=ZERO) THEN 
          RECALC_VISC_G = .TRUE. 

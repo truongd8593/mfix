@@ -15,6 +15,10 @@ MODULE tmp_array
    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: &
       ARRAY1, ARRAY2, ARRAY3,  ARRAY4
 
+!  temporary storage array of dimension (IJK, LM)
+   DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: &
+      ArrayLM
+      
 !  temporary storage for 4th order scheme
    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP4
 
@@ -32,6 +36,7 @@ MODULE tmp_array
 
       
    LOGICAL :: tmp_array_locked = .false.
+   LOGICAL :: tmp_array2_locked = .FALSE.
    LOGICAL :: tmp4_array_locked = .false.
       
    CONTAINS
@@ -48,9 +53,22 @@ MODULE tmp_array
         tmp_array_locked = .false.
       END SUBROUTINE unlock_tmp_array
       
+      SUBROUTINE lock_tmp_array2
+        IF(tmp_array2_locked) THEN
+	  Write(*,*)'Error:  Multiple use of tmp_array2 (tmp_array_mod.f)'
+	  CALL MFIX_EXIT(myPE)
+	ELSE
+	  tmp_array2_locked = .true.
+	ENDIF
+      END SUBROUTINE lock_tmp_array2
+      
+      SUBROUTINE unlock_tmp_array2
+        tmp_array2_locked = .false.
+      END SUBROUTINE unlock_tmp_array2
+      
       SUBROUTINE lock_tmp4_array
         IF(tmp4_array_locked)Then
-	  Write(*,*)'Error:  Multiple use of tmp_array (tmp4_array_mod.f)'
+	  Write(*,*)'Error:  Multiple use of tmp_array4 (tmp_array_mod.f)'
 	  CALL MFIX_EXIT(myPE)
 	Else
 	  tmp4_array_locked = .true.
