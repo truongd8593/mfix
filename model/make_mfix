@@ -104,8 +104,8 @@ ln -sf "$mpi_include/mpif.h" .
             compile_d="-c -I. -I$mpi_include -C -trapuv -g -free -nowarn -assume byterecl -convert big_endian "
             link_d="-C -g -nowarn -assume byterecl -convert big_endian"
 
-            compile="-c -I. -I$mpi_include -O4 -fpe4 -free -nowarn -assume byterecl -convert big_endian "
-            compile2="-c -I. -I$mpi_include -O4  -fpe4 -free -nowarn -assume byterecl -convert big_endian "
+            compile="-c -I. -I$mpi_include -O5 -free -nowarn -assume byterecl -convert big_endian "
+            compile2="-c -I. -I$mpi_include -O5  -free -nowarn -assume byterecl -convert big_endian "
             link="-O4 -nowarn -assume byterecl -convert big_endian"
             MODULE_CODE=1
             ;;
