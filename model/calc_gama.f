@@ -151,7 +151,13 @@
 !  Calculate the magnitude of gas-solids relative velocity
 !
                   VREL=SQRT((UGC-USCM)**2+(VGC-VSCM)**2+(WGC-WSCM)**2) 
-                  RE = EP_G(IJK)*D_P(M)*VREL*RO_G(IJK)/MU_G(IJK) 
+		  
+                  if(MU_G(IJK) > ZERO)then
+                     RE = EP_G(IJK)*D_P(M)*VREL*RO_G(IJK)/MU_G(IJK)                     
+                  else 
+	             RE = LARGE_NUMBER
+                  endif		  		  
+
 !
 !  Calculate gas-solids heat transfer coefficient (Gunn 1978)
 !
