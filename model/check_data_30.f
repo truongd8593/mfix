@@ -129,19 +129,6 @@
 !                      Distribution of the sum of gas species mass fractions
       INTEGER          COUNT_RXNSUM0, COUNT_RXNSUM1
 !
-!                      There is a discrepancy in rxn sums
-      LOGICAL          MESSAGE_rxnsum
-!
-!                      maximum discrepancy in rxn sums
-      DOUBLE PRECISION RXNSUM_MAX
-!
-!                      Location of maximum discrepancy in rxn sums
-      INTEGER          I_RXNSUM_MAX, J_RXNSUM_MAX, K_RXNSUM_MAX
-!
-!                      number of cells with minor and major discrepancy
-      INTEGER          COUNT_RXNSUM0, COUNT_RXNSUM1
-
-!
 !                      There is a discrepancy in interphase mass transfer
       LOGICAL          MESSAGE_masstr(0:DIMENSION_M)
 !
