@@ -236,6 +236,9 @@
 !    write(UNIT_LOG,*) 'HEAT_TR: ',HEAT_TR    !//AIKEPARDBG                    
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
+!//AIKEPARDBG
+     write(*,"('(PE ',I2,'): before CALC_COEFF in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
       
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
@@ -349,9 +352,12 @@
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME   !//
       ENDIF 
 !
+    write(*,"('(PE ',I2,'): aft restart dump in time_march')") myPE    !//AIKEPARDBG
+!
 ! Write SPx files, if needed
 !
-      if (myPE.eq.PE_IO) then         !//
+!\\SP Commented the following
+!     if (myPE.eq.PE_IO) then         !//
          ISPX = 0 
          DO L = 1, N_SPX 
             IF (DT == UNDEFINED) THEN 
@@ -393,7 +399,8 @@
                IF (FULL_LOG) WRITE (*, 1010,  ADVANCE='NO') L 
             ENDIF 
          END DO 
-      end if                         !//
+!\\SP Commented the following
+!     end if                         !//
       IF (.NOT.SPX_MSG) THEN 
          DO L = 1, N_SPX - ISPX 
             WRITE (UNIT_LOG, '(A,$)') '   ' 

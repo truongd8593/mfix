@@ -76,6 +76,16 @@
 !// 350 1112 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
       DO IJK = IJKSTART3, IJKEND3 
       
+         R_gp(IJK, :) = ZERO
+         RoX_gc(IJK, :) = ZERO
+         R_sp(IJK, :, :) = ZERO
+         RoX_sc(IJK, :, :) = ZERO
+         SUM_R_G(IJK) = ZERO 
+         HOR_G(IJK) = ZERO
+         SUM_R_S(IJK, :) = ZERO 
+         HOR_S(IJK, :) = ZERO 
+	 R_PHASE(IJK, :) = ZERO
+      
          IF (FLUID_AT(IJK)) THEN 
 !
 !
@@ -145,11 +155,6 @@
 !     CO formation is assigned to the solid phase and CO2 formation from CO to
 !     the gas phase.
 !
-            HOR_G(IJK) = ZERO 
-            IF (MMAX > 0) THEN 
-               HOR_S(IJK,:MMAX) = ZERO 
-            ENDIF 
-
 !
 !==============================================================================
 !
@@ -196,27 +201,6 @@
                   ENDIF 
                END DO 
             END DO 
-
-	 ELSE
-!           In non-fluid cells	 
-            R_gp(IJK, :NMAX(0)) = ZERO
-            RoX_gc(IJK, :NMAX(0)) = ZERO
-	    DO M = 1, MMAX
-              R_sp(IJK, M, :NMAX(M)) = ZERO
-              RoX_sc(IJK, M, :NMAX(M)) = ZERO
-	    ENDDO
-            SUM_R_G(IJK) = ZERO 
-            HOR_G(IJK) = ZERO
-            IF (MMAX > 0) THEN 
-               SUM_R_S(IJK,:MMAX) = ZERO 
-               HOR_S(IJK,:MMAX) = ZERO 
-            ENDIF 
-            DO L = 0, MMAX 
-               DO M = L + 1, MMAX 
-                  LM = L + 1 + (M - 1)*M/2 
-		  R_PHASE(IJK, LM) = ZERO
-	       ENDDO
-	    ENDDO
 	   
          ENDIF 
       END DO 
@@ -226,13 +210,13 @@
 
 
 !// 400 1112 update the boundaries for recently calculated field vars
-      CALL SEND_RECV(HOR_G, idbg)
-      CALL SEND_RECV(HOR_S, idbg)
+      CALL SEND_RECV(HOR_G, 2)
+      CALL SEND_RECV(HOR_S, 2)
 !//? check if we need a GLOBAL SUM for the following two as it accumulates sum
 !//  for each species            
-      CALL SEND_RECV(SUM_R_G , idbg)
-      CALL SEND_RECV(SUM_R_S, idbg)      
-      CALL SEND_RECV(R_PHASE, idbg)      
+      CALL SEND_RECV(SUM_R_G , 2)
+      CALL SEND_RECV(SUM_R_S, 2)      
+      CALL SEND_RECV(R_PHASE, 2)      
      
  1000 FORMAT(/1X,70('*')//' From: RRATES',/&
          ' Message: Mass transfer between phases ',I2,' and ',I2,&
