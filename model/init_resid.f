@@ -1,3 +1,4 @@
+!//NOMOD 1201 No modifications necessary
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: INIT_RESID(IER)                                        C

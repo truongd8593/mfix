@@ -189,7 +189,6 @@ mfix.exe : \
     set_fluidbed_p.$(OBJ_EXT) \
     set_geometry.$(OBJ_EXT) \
     set_geometry1.$(OBJ_EXT) \
-    set_ic.$(OBJ_EXT) \
     set_increments.$(OBJ_EXT) \
     set_index1.$(OBJ_EXT) \
     set_index1a.$(OBJ_EXT) \
@@ -481,7 +480,6 @@ mfix.exe : \
     set_fluidbed_p.$(OBJ_EXT) \
     set_geometry.$(OBJ_EXT) \
     set_geometry1.$(OBJ_EXT) \
-    set_ic.$(OBJ_EXT) \
     set_increments.$(OBJ_EXT) \
     set_index1.$(OBJ_EXT) \
     set_index1a.$(OBJ_EXT) \

@@ -89,7 +89,7 @@
       ENDIF 
     ENDIF
 
-!/SP
+!// SP
       CALL bcast(J_S,bcast_root)
       CALL bcast(J_N,bcast_root)
       CALL bcast(PLANE,bcast_root)

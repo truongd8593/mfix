@@ -84,9 +84,11 @@
 !  Set up the default walls as non-conducting.
 !
       IF (DO_K) THEN 
-         K1 = 1 
-         DO J1 = 1, JMAX2 
-            DO I1 = 1, IMAX2 
+!// 1206 change K1=1 to K1=kmin3      
+         K1 = kmin3 
+!// 350 1206 change do loop limits: 1,jmax2->jmin3,jmax3	 
+         DO J1 = jmin3, jmax3 
+            DO I1 = imin3, imax3 
                IJK = FUNIJK(I1,J1,K1) 
                IF (DEFAULT_WALL_AT(IJK)) THEN 
 !
@@ -103,9 +105,11 @@
                ENDIF 
             END DO 
          END DO 
-         K1 = KMAX2 
-         DO J1 = 1, JMAX2 
-            DO I1 = 1, IMAX2 
+!// 1206 change K1=KMAX2 to K1=kmax3      	 
+         K1 = KMAX3 
+!// 350 1206 change do loop limits: 1,jmax2->jmin3,jmax3	 	 
+         DO J1 = jmin3, jmax3 
+            DO I1 = imin3, imax3 
                IJK = FUNIJK(I1,J1,K1) 
                IF (DEFAULT_WALL_AT(IJK)) THEN 
 !
@@ -124,9 +128,11 @@
          END DO 
       ENDIF 
 !
-      J1 = 1 
-      DO K1 = 1, KMAX2 
-         DO I1 = 1, IMAX2 
+!// 1206 change J1=1 to J1=jmin3      	 
+      J1 = jmin3 
+!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3	 	       
+      DO K1 = kmin3, kmax3 
+         DO I1 = imin3, imax3 
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) THEN 
 !
@@ -143,9 +149,12 @@
             ENDIF 
          END DO 
       END DO 
-      J1 = JMAX2 
-      DO K1 = 1, KMAX2 
-         DO I1 = 1, IMAX2 
+      
+!// 1206 change J1=1 to J1=jmax3      	       
+      J1 = JMAX3 
+!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3      
+      DO K1 = kmin3, kmax3 
+         DO I1 = imin3, imax3 
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) THEN 
 !
@@ -162,9 +171,12 @@
             ENDIF 
          END DO 
       END DO 
-      I1 = 1 
-      DO K1 = 1, KMAX2 
-         DO J1 = 1, JMAX2 
+
+!// 1206 change I1=1 to I1=imin3      	             
+      I1 = imin3 
+!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3      
+      DO K1 = kmin3, kmax3 
+         DO J1 = jmin3, jmax3 
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) THEN 
 !
@@ -181,9 +193,12 @@
             ENDIF 
          END DO 
       END DO 
-      I1 = IMAX2 
-      DO K1 = 1, KMAX2 
-         DO J1 = 1, JMAX2 
+
+!// 1206 change I1=1 to I1=imax3      	                   
+      I1 = IMAX3 
+!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3      
+      DO K1 = kmin3, kmax3 
+         DO J1 = jmin3, jmax3 
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) THEN 
 !
@@ -216,8 +231,10 @@
                K2 = BC_K_T(L) 
                DO K = K1, K2 
                   DO J = J1, J2 
-                     DO I = I1, I2 
+                     DO I = I1, I2 		     
                         IJK = FUNIJK(I,J,K) 
+!//? may need to add a filter to check if IJK resides on the current PE			
+!	       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IM = IM1(I) 
                         JM = JM1(J) 
                         KM = KM1(K) 
@@ -325,6 +342,8 @@
                   DO J = J1, J2 
                      DO I = I1, I2 
                         IJK = FUNIJK(I,J,K) 
+!//? may need to add a filter to check if IJK resides on the current PE			
+!	       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
                         A_M(IJK,N,M) = ZERO 
@@ -363,6 +382,8 @@
                   DO J = J1, J2 
                      DO I = I1, I2 
                         IJK = FUNIJK(I,J,K) 
+!//? may need to add a filter to check if IJK resides on the current PE			
+!	       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE			
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
                         A_M(IJK,N,M) = ZERO 
@@ -377,5 +398,7 @@
             ENDIF 
          ENDIF 
       END DO 
+
+!//? check if COMMunication of A_M and B_M is necessary at this point?      
       RETURN  
       END SUBROUTINE BC_PHI 

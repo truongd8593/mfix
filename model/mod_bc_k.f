@@ -61,7 +61,7 @@
       INCLUDE 'function.inc'
 !
 !// 220 1004 Replaced with global FUNIJK
-!//SP
+!// SP
     IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
       bcast_root = myPE
       call global_all_sum(bcast_root,bcast_root)
@@ -89,7 +89,7 @@
       ENDIF 
     ENDIF
 
-!/SP
+!// SP
       CALL bcast(K_B,bcast_root)
       CALL bcast(K_T,bcast_root)
       CALL bcast(PLANE,bcast_root)

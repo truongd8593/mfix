@@ -91,7 +91,8 @@
       INCLUDE 'ep_s2.inc'
 !
 !
-      DO IJK = 1, IJKMAX2 
+!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+      DO IJK = ijkstart3, ijkend3 
 !
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -126,5 +127,6 @@
 	    ENDIF 
          ENDIF 
       END DO 
+!//? check if need to COMMunicate A_M and B_M?      
       RETURN  
       END SUBROUTINE SOURCE_PHI 

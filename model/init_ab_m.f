@@ -59,11 +59,13 @@
 !
 !-----------------------------------------------
 !
-      IJK = 1 
+!      IJK = 1 
       IF (IJKMAX2A > 0) THEN 
        IF (USE_DOLOOP) THEN
+!// 350 1206 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3       
 !$omp    parallel do private( IJK )
-         DO IJK = 1, IJKMAX2A
+!         DO IJK = 1, IJKMAX2A
+         DO IJK = ijkstart3, ijkend3
            A_M(IJK,B,M) = ZERO
            A_M(IJK,S,M) = ZERO
            A_M(IJK,W,M) = ZERO
@@ -75,15 +77,17 @@
            B_M(IJK,M) = ZERO
          ENDDO
        ELSE
-         A_M(:IJKMAX2A,B,M) = ZERO 
-         A_M(:IJKMAX2A,S,M) = ZERO 
-         A_M(:IJKMAX2A,W,M) = ZERO 
-         A_M(:IJKMAX2A,0,M) = -ONE 
-         A_M(:IJKMAX2A,E,M) = ZERO 
-         A_M(:IJKMAX2A,N,M) = ZERO 
-         A_M(:IJKMAX2A,T,M) = ZERO 
-         B_M(:IJKMAX2A,M) = ZERO 
-         IJK = IJKMAX2A + 1 
+!// 1206 Removed the index :IJKMAX2A for array initialization
+         A_M(:,B,M) = ZERO 
+         A_M(:,S,M) = ZERO 
+         A_M(:,W,M) = ZERO 
+         A_M(:,0,M) = -ONE 
+         A_M(:,E,M) = ZERO 
+         A_M(:,N,M) = ZERO 
+         A_M(:,T,M) = ZERO 
+         B_M(:,M) = ZERO 
+
+!         IJK = IJKMAX2A + 1 
        ENDIF
       ENDIF 
       RETURN  

@@ -129,8 +129,9 @@
 !  Underrelax pressure correction.  Velocity corrections should not be
 !  underrelaxed, so that the continuity eq. is satisfied.
 !
+!// 350 1206 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 !$omp    parallel do private(IJK,IJKE,IJKN,IJKT)
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3 
          IF (FLUIDORP_FLOW_AT(IJK)) THEN 
             P_G(IJK) = P_G(IJK) + UR_FAC*PP_G(IJK) 
 !
@@ -140,6 +141,7 @@
             V_G(IJK) = V_G(IJK) - D_N(IJK,0)*(PP_G(IJKN)-PP_G(IJK)) 
             IF (DO_K) THEN 
                IJKT = TOP_OF(IJK) 
+!//? make sure vars using IJKT on PE0 contains correct values from PE1 : PP_G	       
                W_G(IJK) = W_G(IJK) - D_T(IJK,0)*(PP_G(IJKT)-PP_G(IJK)) 
             ENDIF 
          ENDIF 
@@ -215,8 +217,9 @@
 !  underrelaxed, so that the continuity eq. is satisfied.
 !
       DO M = 1, MMAX 
+!// 350 1206 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 !$omp    parallel do private(IJK,IJKE,IJKN,IJKT)
-         DO IJK = 1, IJKMAX2 
+         DO IJK = ijkstart3, ijkend3
             IF (FLUIDORP_FLOW_AT(IJK)) THEN 
 !
                IJKE = EAST_OF(IJK) 
@@ -225,6 +228,7 @@
                V_S(IJK,M) = V_S(IJK,M) - D_N(IJK,M)*(PP_G(IJKN)-PP_G(IJK)) 
                IF (DO_K) THEN 
                   IJKT = TOP_OF(IJK) 
+!//? make sure vars using IJKT on PE0 contains correct values from PE1: PP_G	       		  
                   W_S(IJK,M) = W_S(IJK,M) - D_T(IJK,M)*(PP_G(IJKT)-PP_G(IJK)) 
                ENDIF 
             ENDIF 
