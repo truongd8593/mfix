@@ -183,6 +183,7 @@
  1000 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
          'RUN_NAME not specified in mfix.dat',/1X,70('*')/) 
       END SUBROUTINE GET_DATA 
+      
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CHECK_DATA_00                                          C
@@ -228,20 +229,27 @@
 !
 !-----------------------------------------------
 !
-      IF (NODESI .EQ. UNDEFINED_I) THEN
+      if( numPEs > 1 ) then
+        IF (NODESI .EQ. UNDEFINED_I) THEN
           WRITE (*,*) ' NODESI not found in MFIX.DAT'
           CALL MFIX_EXIT
-      END IF
+        END IF
 !
-      IF (NODESJ .EQ. UNDEFINED_I) THEN
+        IF (NODESJ .EQ. UNDEFINED_I) THEN
           WRITE (*,*) ' NODESJ not found in MFIX.DAT'
           CALL MFIX_EXIT
-      END IF
+        END IF
 !
-      IF (NODESK .EQ. UNDEFINED_I) THEN
+        IF (NODESK .EQ. UNDEFINED_I) THEN
           WRITE (*,*) ' NODESK not found in MFIX.DAT'
           CALL MFIX_EXIT
-      END IF
+        END IF
+      else
+        nodesi = 1
+        nodesj = 1
+        nodesk = 1
+	
+      endif
 !
 !
       RETURN  
