@@ -19,7 +19,8 @@
 	integer, dimension(0:nodesk-1) :: ksize1_all
 
 	integer :: ip, iproc, isize, iremain, &
-		   kp, kproc, ksize, kremain, ikproc, ierr
+		   kp, kproc, ksize, kremain, &
+                   jp, jproc, jsize, jremain, ijkproc, ierr
 
         if(numPEs.ne.(nodesi*nodesj*nodesk)) then
 	  write(*,*)'From : gridmap module'
@@ -29,20 +30,22 @@
           call MPI_abort( MPI_COMM_WORLD, ierr)
 	endif
 !
-!       if(nodesi.ne.1.and.cyclic_x) then
-!write(*,*) 'the current MFIX version does not support decomposition in the cyclic direction'
-!       call MPI_abort( MPI_COMM_WORLD, ierr)
-!endif
-!
-        if(nodesj.ne.1) then
-        write(*,*) 'the current MFIX version does not support decomposition in the j direction'
-        call MPI_abort( MPI_COMM_WORLD, ierr)
+        if(nodesi.ne.1.and.cyclic_x) then
+        nlayers_bicgs = 2
         endif
 !
-!       if(nodesk.ne.1.and.cyclic_z) then
-!       write(*,*) 'the current MFIX version does not support decomposition in the cyclic direction'
-!       call MPI_abort( MPI_COMM_WORLD, ierr)
-!       endif
+        if(nodesj.ne.1) then
+        write(*,*) 'the preconditioner for the linear solver might not be very efficient with decomposition in y direction'
+        endif
+!
+        if(nodesj.ne.1.and.cyclic_y) then
+        nlayers_bicgs = 2
+        endif
+!
+!
+        if(nodesk.ne.1.and.cyclic_z) then
+        nlayers_bicgs = 2
+        endif
 !
 !	   Determine the size in i direction and add the remainder sequentially
 
@@ -54,8 +57,16 @@
 	    isize1_all( 0:(iremain-1) ) = isize + 1
 	endif
 
-	jstart1_all(0:numPEs-1) = jmin1
-	jend1_all(0:numPEs-1)   = jmax1
+!	   Determine the size in i direction and add the remainder sequentially
+
+	jsize = (jmax1-jmin1+1)/nodesj
+	jsize1_all(0:nodesj-1) = jsize
+
+	jremain = (jmax1-jmin1+1) - nodesj*jsize
+	if (jremain.ge.1) then
+	    jsize1_all( 0:(jremain-1) ) = jsize + 1
+	endif
+
 
 !          Determine the size in k direction and add the remainder sequentially
 
@@ -67,23 +78,29 @@
 	    ksize1_all( 0:(kremain-1) ) = ksize + 1
 	endif
 
-!	The following is general for 1-d or 2-d decompostion
-!       Determining  istart and kstart for all the processors
+!	The following is general for 1-d or 2-d or 3-d decompostion
+!       Determining  istart, jstart and kstart for all the processors
 
-	ikproc = 0
+	ijkproc = 0
 	kp = kmin1
 	do kproc=0,nodesk-1
-	   ip = imin1
-	   do iproc=0,nodesi-1
+	   jp = jmin1
+	   do jproc=0,nodesj-1
+	      ip = imin1
+	      do iproc=0,nodesi-1
 
-	      istart1_all(ikproc) = ip + sum(isize1_all(0:iproc-1))
-	      iend1_all(ikproc) = istart1_all(ikproc) + isize1_all(iproc)-1
+	         istart1_all(ijkproc) = ip + sum(isize1_all(0:iproc-1))
+	         iend1_all(ijkproc) = istart1_all(ijkproc) + isize1_all(iproc)-1
 
-	      kstart1_all(ikproc) = kp + sum(ksize1_all(0:kproc-1))
-	      kend1_all(ikproc) = kstart1_all(ikproc) + ksize1_all(kproc)-1
+   	         jstart1_all(ijkproc) = jp + sum(jsize1_all(0:jproc-1))
+	         jend1_all(ijkproc) = jstart1_all(ijkproc) + jsize1_all(jproc)-1
 
-	      ikproc = ikproc+1
+	         kstart1_all(ijkproc) = kp + sum(ksize1_all(0:kproc-1))
+	         kend1_all(ijkproc) = kstart1_all(ijkproc) + ksize1_all(kproc)-1
 
+	         ijkproc = ijkproc+1
+
+	      enddo
 	   enddo
 	enddo
 

@@ -36,6 +36,10 @@
 
         data root /0/
 
+!	nlayers_bicgs - Number of layers for send_recv in bicgs
+
+        integer :: nlayers_bicgs = 1
+
 !       istart1_all contains the starting i value for all the processors
 !       excluding the ghost regions. istart2_all is for
 !       one extra ghost layer and istart3_all is for two ghost layers.
