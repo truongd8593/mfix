@@ -12,7 +12,7 @@
       PARAMETER (chunk_size=8)
 
       LOGICAL          USE_DOLOOP
-      PARAMETER( USE_DOLOOP=.TRUE. )
+      PARAMETER (USE_DOLOOP=.FALSE.)
 
 
       END MODULE parallel                                                                        

@@ -36,6 +36,8 @@
 !                      linear equation solver tolerance
       DOUBLE PRECISION LEQ_TOL(9)
 !
+!		       Preconditioner option
+      CHARACTER*4 ::   LEQ_PC
 !
 !      COMMON / ITERS_DP /
 !     &

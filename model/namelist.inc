@@ -99,4 +99,8 @@
 !
 ! 1.11 distributed parallel
 !
-             NODESI , NODESJ , NODESK
+             NODESI , NODESJ , NODESK, &
+!
+! 1.12 Preconditioner
+!
+	     LEQ_PC

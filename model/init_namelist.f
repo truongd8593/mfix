@@ -239,6 +239,7 @@
       LEQ_TOL(7) = 1.0D-4 
       LEQ_TOL(8) = 1.0D-4  
       LEQ_TOL(9) = 1.0D-4  
+      LEQ_PC     = 'LINE'
       UR_FAC(1) = 0.8                            !pressure 
       UR_FAC(2) = 0.5                            !rho, ep 
       UR_FAC(3) = 0.5                            !U 

@@ -28,6 +28,8 @@
       USE geometry
       USE compar
       USE indices
+      USE leqsol
+      USE funits
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -52,13 +54,24 @@
 !
 !-------------------------------------------------
       DOUBLE PRECISION DNRM2
-      EXTERNAL LEQ_MATVEC, LEQ_MSOLVE
+      EXTERNAL LEQ_MATVEC, LEQ_MSOLVE, LEQ_MSOLVE0, LEQ_MSOLVE1
 
 
 !--------------------------------------------------
 
-      call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
-                       cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE, IER )
+      if(leq_pc.eq.'LINE') then
+         call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
+                          cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE, IER )
+      elseif(leq_pc.eq.'DIAG') then
+         call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
+                          cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE1, IER )
+      elseif(leq_pc.eq.'NONE') then
+         call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
+                          cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE0, IER )
+      else
+         write(unit_log,*) 'preconditioner option not found - check mfix.dat and readme'
+         call mfix_exit(myPE)
+      endif
 
       return
       END SUBROUTINE LEQ_BICGS
@@ -267,14 +280,14 @@
 
 !$omp   parallel do private(ijk)
         do ijk=ijkstart3,ijkend3
-	  Rtilde(ijk) = R(ijk) + (2.0*Rtilde(ijk)-1.0)*1.0e-6*Rnorm0
+	  Rtilde(ijk) = R(ijk) + (2.0d0*Rtilde(ijk)-1.0d0)*1.0d-6*Rnorm0
         enddo
       else
-	Rtilde(:) = R(:) + (2.0*Rtilde(:)-1.0)*1.0e-6*Rnorm0
+	Rtilde(:) = R(:) + (2.0d0*Rtilde(:)-1.0d0)*1.0d-6*Rnorm0
       endif
 
        if (idebugl >= 1) then
-       print*,'leq_bicgs, initial: ', Vname,' resid ', real(Rnorm0)
+       if(myPE.eq.0) print*,'leq_bicgs, initial: ', Vname,' resid ', Rnorm0
        endif
 !
 !   Main loop
@@ -301,7 +314,7 @@
         rho(i-1) = dot_product_par( Rtilde, R )
 	endif
 
-!       print*,'leq_bicgs, initial: ', Vname,' rho(i-1) ', real(rho(i-1))
+!       print*,'leq_bicgs, initial: ', Vname,' rho(i-1) ', rho(i-1)
 
         if (rho(i-1) .eq. zero) then
 	  if(i /= 1)then
@@ -317,7 +330,7 @@
             ier = 0
 	  endif
 
-          call send_recv(var,nlayers_bicgs)
+          call send_recv(var,2)
 	  return
         endif
 
@@ -375,7 +388,7 @@
         RtildexV = dot_product_par( Rtilde, V )
 	endif 
 
-!       print*,'leq_bicgs, initial: ', Vname,' RtildexV ', real(RtildexV)
+!       print*,'leq_bicgs, initial: ', Vname,' RtildexV ', RtildexV
 
         alpha(i) = rho(i-1) / RtildexV
 
@@ -433,7 +446,7 @@
              call MATVEC( Vname, Var, A_m, R )
 
 !            Rnorm = sqrt( dot_product_par( Var, Var ) )
-!            print*,'leq_bicgs, initial: ', Vname,' Vnorm ', real(Rnorm)
+!            print*,'leq_bicgs, initial: ', Vname,' Vnorm ', Rnorm
 
              if (use_doloop) then
 !$omp          parallel do private(ijk)
@@ -460,7 +473,7 @@
              else
              Rnorm = sqrt( dot_product_par( R, R ) )
 	     endif
-!            print*,'leq_bicgs, initial: ', Vname,' Rnorm ', real(Rnorm)
+!            print*,'leq_bicgs, initial: ', Vname,' Rnorm ', Rnorm
              endif
 
             EXIT
@@ -587,10 +600,10 @@
           Rnorm = sqrt( dot_product_par( R,R) )
 	  endif
 
-          print*,'leq_bicgs: final Rnorm ', Rnorm
+          if(myPE.eq.0) print*,'leq_bicgs: final Rnorm ', Rnorm
 
-           print*,'leq_bicgs ratio : ', Vname,' ',iter,     &
-                   ' L-2', real(Rnorm/Rnorm0)
+          if(myPE.eq.0)  print*,'leq_bicgs ratio : ', Vname,' ',iter,     &
+                   ' L-2', Rnorm/Rnorm0
         endif 
 
         isconverged = (real(Rnorm) <= TOL*Rnorm0);
@@ -604,7 +617,7 @@
         endif
 
 
-        call send_recv(var,nlayers_bicgs)
+        call send_recv(var,2)
         
         return
         end subroutine LEQ_BICGS0
@@ -1462,12 +1475,12 @@
         prod = 0.0d0
   
 !$omp parallel do private(i,j,k,ijk) reduction(+:prod)
-        do k = kmin1, kmax1
-          do i = imin1, imax1
-            do j = jmin1, jmax1
+        do k = kmin2, kmax2
+          do i = imin2, imax2
+            do j = jmin2, jmax2
   
-!             ijk = funijk_gl (imap_c(i),jmap_c(j),kmap_c(k))
-              ijk = funijk_gl (i,j,k)
+              ijk = funijk_gl (imap_c(i),jmap_c(j),kmap_c(k))
+!             ijk = funijk_gl (i,j,k)
   
               prod = prod + r1_g(ijk)*r2_g(ijk)
   
@@ -1905,6 +1918,8 @@
       USE geometry
       USE compar
       USE indices
+      USE leqsol
+      USE funits
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1929,13 +1944,26 @@
 !
 !-------------------------------------------------
       DOUBLE PRECISION DNRM2
-      EXTERNAL LEQ_MATVECt, LEQ_MSOLVEt
+      EXTERNAL LEQ_MATVECt, LEQ_MSOLVEt, LEQ_MSOLVE0t, LEQ_MSOLVE1t
 
 
 !--------------------------------------------------
+	
+!--------------------------------------------------
 
-      call LEQ_BICGS0t( Vname, Var, A_m, B_m,                        &
-                       cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVEt, IER )
+      if(leq_pc.eq.'LINE') then
+	 call LEQ_BICGS0t( Vname, Var, A_m, B_m,				&
+			  cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVEt, IER )
+      elseif(leq_pc.eq.'DIAG') then
+	 call LEQ_BICGS0t( Vname, Var, A_m, B_m,				&
+			  cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVE1t, IER )
+      elseif(leq_pc.eq.'NONE') then
+	 call LEQ_BICGS0t( Vname, Var, A_m, B_m,				&
+			  cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVE0t, IER )
+      else
+    		write(unit_log,*) 'preconditioner option not found - check mfix.dat and readme', leq_pc
+	 call mfix_exit(myPE)
+      endif
 
       return
       END SUBROUTINE LEQ_BICGSt
@@ -2136,21 +2164,21 @@
 	Rnorm0 = sqrt( dot_product_par( R, R ) )
 	endif
 
-	call random_number(Rtilde(:))
+ 	call random_number(Rtilde(:))
 
 	if (use_doloop) then
 
 !$omp	parallel do private(ijk)
 	do ijk=ijkstart3,ijkend3
-		Rtilde(ijk) = R(ijk) + (2.0*Rtilde(ijk)-1.0)*1.0e-6*Rnorm0
+		Rtilde(ijk) = R(ijk) + (2.0d0*Rtilde(ijk)-1.0d0)*1.0d-6*Rnorm0
 	enddo
       else
-	Rtilde(:) = R(:) + (2.0*Rtilde(:)-1.0)*1.0e-6*Rnorm0
+	Rtilde(:) = R(:) + (2.0d0*Rtilde(:)-1.0d0)*1.0d-6*Rnorm0
       endif
 
 
        if (idebugl >= 1) then
-       print*,'leq_bicgs, initial: ', Vname,' resid ', real(Rnorm0)
+       if(myPE.eq.0) print*,'leq_bicgs, initial: ', Vname,' resid ', Rnorm0
        endif
 !
 !   Main loop
@@ -2175,7 +2203,7 @@
         rho(i-1) = dot_product_par( Rtilde, R )
 	endif
 
-!       print*,'leq_bicgs, initial: ', Vname,' rho(i-1) ', real(rho(i-1))
+!       print*,'leq_bicgs, initial: ', Vname,' rho(i-1) ', rho(i-1)
 
         if (rho(i-1) .eq. zero) then
 	  if(i /= 1)then
@@ -2191,7 +2219,7 @@
             ier = 0
 	  endif
 
-          call send_recv(var,nlayers_bicgs)
+          call send_recv(var,2)
 	  return
         endif
 
@@ -2247,7 +2275,7 @@
         RtildexV = dot_product_par( Rtilde, V )
 	endif 
 
-!       print*,'leq_bicgs, initial: ', Vname,' RtildexV ', real(RtildexV)
+!       print*,'leq_bicgs, initial: ', Vname,' RtildexV ', RtildexV
 
         alpha(i) = rho(i-1) / RtildexV
 
@@ -2282,7 +2310,7 @@
         else
         Snorm = sqrt( dot_product_par( Svec, Svec ) )
 	endif
-!       print*,'leq_bicgs, initial: ', Vname,' Snorm ', real(Snorm)
+!       print*,'leq_bicgs, initial: ', Vname,' Snorm ', Snorm
 
 
         if (Snorm <= TOLMIN) then
@@ -2303,7 +2331,7 @@
 !          
              call MATVECt( Vname, Var, A_m, R )
 !            Rnorm = sqrt( dot_product_par( Var, Var ) )
-!            print*,'leq_bicgs, initial: ', Vname,' Vnorm ', real(Rnorm)
+!            print*,'leq_bicgs, initial: ', Vname,' Vnorm ', Rnorm
 
              if (use_doloop) then
 
@@ -2331,7 +2359,7 @@
              else
              Rnorm = sqrt( dot_product_par( R, R ) )
 	     endif
-!            print*,'leq_bicgs, initial: ', Vname,' Rnorm ', real(Rnorm)
+!            print*,'leq_bicgs, initial: ', Vname,' Rnorm ', Rnorm
              endif
 
             EXIT
@@ -2453,10 +2481,10 @@
           Rnorm = sqrt( dot_product_par( R,R) )
 	  endif
 
-          print*,'leq_bicgs: final Rnorm ', Rnorm
+          if(myPE.eq.0) print*,'leq_bicgs: final Rnorm ', Rnorm
 
-           print*,'leq_bicgs ratio : ', Vname,' ',iter,     &
-                   ' L-2', real(Rnorm/Rnorm0)
+          if(myPE.eq.0)  print*,'leq_bicgs ratio : ', Vname,' ',iter,     &
+                   ' L-2', Rnorm/Rnorm0
         endif 
 
         isconverged = (real(Rnorm) <= TOL*Rnorm0);
@@ -2469,7 +2497,7 @@
             endif
         endif
 
-        call send_recv(var,nlayers_bicgs)
+        call send_recv(var,2)
         
         return
         end subroutine LEQ_BICGS0t
