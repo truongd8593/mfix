@@ -70,6 +70,7 @@
 ! Initialize the icbc_flag array.  If not a NEW run then do not
 ! check the initial conditions.
 !
+!//? LIMITS : what are the limits for the following Do i,j,k loops
       DO K = 1, KMAX2 
          DO J = 1, JMAX2 
             DO I = 1, IMAX2 
@@ -143,47 +144,47 @@
                   IC_X_W(ICV) = ZERO 
                ELSE 
                      WRITE (UNIT_LOG, 1000) 'IC_X_w and IC_I_w ', ICV 
-                     STOP  
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP so that all PEs are aborted
                ENDIF 
             ENDIF 
             IF (IC_X_E(ICV)==UNDEFINED .AND. IC_I_E(ICV)==UNDEFINED_I) THEN 
                IF (NO_I) THEN 
                   IC_X_E(ICV) = XLENGTH 
                ELSE 
-                      WRITE (UNIT_LOG, 1000) 'IC_X_e and IC_I_e ', ICV 
-                     STOP  
+                 WRITE (UNIT_LOG, 1000) 'IC_X_e and IC_I_e ', ICV 
+                 call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
             ENDIF 
             IF (IC_Y_S(ICV)==UNDEFINED .AND. IC_J_S(ICV)==UNDEFINED_I) THEN 
                IF (NO_J) THEN 
                   IC_Y_S(ICV) = ZERO 
                ELSE 
-                     WRITE (UNIT_LOG, 1000) 'IC_Y_s and IC_J_s ', ICV 
-                     STOP 
+                  WRITE (UNIT_LOG, 1000) 'IC_Y_s and IC_J_s ', ICV 
+                  call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
             ENDIF 
             IF (IC_Y_N(ICV)==UNDEFINED .AND. IC_J_N(ICV)==UNDEFINED_I) THEN 
                IF (NO_J) THEN 
                   IC_Y_N(ICV) = YLENGTH 
                ELSE 
-                     WRITE (UNIT_LOG, 1000) 'IC_Y_n and IC_J_n ', ICV 
-                     STOP  
+                  WRITE (UNIT_LOG, 1000) 'IC_Y_n and IC_J_n ', ICV 
+                  call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
             ENDIF 
             IF (IC_Z_B(ICV)==UNDEFINED .AND. IC_K_B(ICV)==UNDEFINED_I) THEN 
                IF (NO_K) THEN 
                   IC_Z_B(ICV) = ZERO 
                ELSE 
-                     WRITE (UNIT_LOG, 1000) 'IC_Z_b and IC_K_b ', ICV 
-                     STOP 
+                  WRITE (UNIT_LOG, 1000) 'IC_Z_b and IC_K_b ', ICV 
+                  call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
             ENDIF 
             IF (IC_Z_T(ICV)==UNDEFINED .AND. IC_K_T(ICV)==UNDEFINED_I) THEN 
                IF (NO_K) THEN 
                   IC_Z_T(ICV) = ZLENGTH 
                ELSE 
-                     WRITE (UNIT_LOG, 1000) 'IC_Z_t and IC_K_t ', ICV 
-                     STOP 
+                  WRITE (UNIT_LOG, 1000) 'IC_Z_t and IC_K_t ', ICV 
+                  call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
             ENDIF 
          ENDIF 
@@ -274,51 +275,51 @@
                   IF (NO_I) THEN 
                      IC_U_G(ICV) = ZERO 
                   ELSE 
-                        WRITE (UNIT_LOG, 1000) 'IC_U_g', ICV 
-                        STOP 
+                     WRITE (UNIT_LOG, 1000) 'IC_U_g', ICV 
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP 
                   ENDIF 
                ENDIF 
                IF (IC_V_G(ICV) == UNDEFINED) THEN 
                   IF (NO_J) THEN 
                      IC_V_G(ICV) = ZERO 
                   ELSE 
-                        WRITE (UNIT_LOG, 1000) 'IC_V_g', ICV 
-                        STOP
+                     WRITE (UNIT_LOG, 1000) 'IC_V_g', ICV 
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP 
                   ENDIF 
                ENDIF 
                IF (IC_W_G(ICV) == UNDEFINED) THEN 
                   IF (NO_K) THEN 
                      IC_W_G(ICV) = ZERO 
                   ELSE 
-                        WRITE (UNIT_LOG, 1000) 'IC_W_g', ICV 
-                        STOP
+                     WRITE (UNIT_LOG, 1000) 'IC_W_g', ICV 
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP 
                   ENDIF 
                ENDIF 
                IF (IC_EP_G(ICV) == UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1000) 'IC_EP_g', ICV 
-                     STOP
+                  WRITE (UNIT_LOG, 1000) 'IC_EP_g', ICV 
+                  call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
                IF (IC_P_G(ICV) /= UNDEFINED) THEN 
                   IF (RO_G0==UNDEFINED .AND. IC_P_G(ICV)<=ZERO) THEN 
                      WRITE (UNIT_LOG, 1010) ICV, IC_P_G(ICV) 
-                     STOP  
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP 
                   ENDIF 
                ENDIF 
 !
                IF ((ENERGY_EQ .OR. RO_G0==UNDEFINED .OR. MU_G0==UNDEFINED)&
                    .AND. IC_T_G(ICV)==UNDEFINED) THEN 
                      WRITE (UNIT_LOG, 1000) 'IC_T_g', ICV 
-                     STOP  
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
 !
                IF (ENERGY_EQ) THEN 
                   IF (IC_GAMA_RG(ICV) < ZERO) THEN 
-                        WRITE (UNIT_LOG, 1001) 'IC_GAMA_Rg', ICV 
-                        STOP 
+                     WRITE (UNIT_LOG, 1001) 'IC_GAMA_Rg', ICV 
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP 
                   ELSE IF (IC_GAMA_RG(ICV) > ZERO) THEN 
                      IF (IC_T_RG(ICV) == UNDEFINED) THEN 
-                           WRITE (UNIT_LOG, 1000) 'IC_T_Rg', ICV 
-                           STOP
+                       WRITE (UNIT_LOG, 1000) 'IC_T_Rg', ICV 
+                       call mfix_exit(myPE) !// 990 0912 replaced STOP 
                      ENDIF 
                   ENDIF 
                ENDIF 
@@ -374,24 +375,24 @@
                      IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_I) THEN 
                         IC_U_S(ICV,M) = ZERO 
                      ELSE 
-                           WRITE (UNIT_LOG, 1100) 'IC_U_s', ICV, M 
-                           STOP 
+                        WRITE (UNIT_LOG, 1100) 'IC_U_s', ICV, M 
+                        call mfix_exit(myPE) !// 990 0912 replaced STOP 
                      ENDIF 
                   ENDIF 
                   IF (IC_V_S(ICV,M) == UNDEFINED) THEN 
                      IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_J) THEN 
                         IC_V_S(ICV,M) = ZERO 
                      ELSE 
-                           WRITE (UNIT_LOG, 1100) 'IC_V_s', ICV, M 
-                           STOP
+                        WRITE (UNIT_LOG, 1100) 'IC_V_s', ICV, M 
+                        call mfix_exit(myPE) !// 990 0912 replaced STOP 
                      ENDIF 
                   ENDIF 
                   IF (IC_W_S(ICV,M) == UNDEFINED) THEN 
                      IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_K) THEN 
                         IC_W_S(ICV,M) = ZERO 
                      ELSE 
-                           WRITE (UNIT_LOG, 1100) 'IC_W_s', ICV, M 
-                           STOP 
+                        WRITE (UNIT_LOG, 1100) 'IC_W_s', ICV, M 
+                        call mfix_exit(myPE) !// 990 0912 replaced STOP 
                      ENDIF 
                   ENDIF 
 !
@@ -399,8 +400,8 @@
                      IF (IC_ROP_S(ICV,M) == ZERO) THEN 
                         IC_T_S(ICV,M) = IC_T_G(ICV) 
                      ELSE 
-                           WRITE (UNIT_LOG, 1100) 'IC_T_s', ICV, M 
-                           STOP 
+                        WRITE (UNIT_LOG, 1100) 'IC_T_s', ICV, M 
+                        call mfix_exit(myPE) !// 990 0912 replaced STOP 
                      ENDIF 
                   ENDIF 
 !
@@ -409,26 +410,26 @@
                      IF (IC_ROP_S(ICV,M) == ZERO) THEN 
                         IC_THETA_M(ICV,M) = ZERO 
                      ELSE 
-                           WRITE (UNIT_LOG, 1100) 'IC_Theta_m', ICV, M 
-                           STOP  
+                        WRITE (UNIT_LOG, 1100) 'IC_Theta_m', ICV, M 
+                        call mfix_exit(myPE) !// 990 0912 replaced STOP 
                      ENDIF 
                   ENDIF 
 !
                   IF (ENERGY_EQ) THEN 
                      IF (IC_GAMA_RS(ICV,M) < ZERO) THEN 
-                           WRITE (UNIT_LOG, 1101) 'IC_GAMA_Rs', ICV, M 
-                           STOP 
+                        WRITE (UNIT_LOG, 1101) 'IC_GAMA_Rs', ICV, M 
+                        call mfix_exit(myPE) !// 990 0912 replaced STOP 
                      ELSE IF (IC_GAMA_RS(ICV,M) > ZERO) THEN 
                         IF (IC_T_RS(ICV,M) == UNDEFINED) THEN 
-                              WRITE (UNIT_LOG, 1100) 'IC_T_Rs', ICV, M 
-                              STOP 
+                           WRITE (UNIT_LOG, 1100) 'IC_T_Rs', ICV, M 
+                           call mfix_exit(myPE) !// 990 0912 replaced STOP 
                         ENDIF 
                      ENDIF 
                   ENDIF 
                END DO 
                IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
                      WRITE (UNIT_LOG, 1125) ICV 
-                     STOP  
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
 !
 !  Set ICBC flag
@@ -450,65 +451,65 @@
 !  initial conditions
 !
             IF (IC_U_G(ICV) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1200) 'IC_U_g', ICV 
-                  STOP
+                WRITE (UNIT_LOG, 1200) 'IC_U_g', ICV 
+                call mfix_exit(myPE) !// 990 0912 replaced STOP 
             ENDIF 
             IF (IC_V_G(ICV) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1200) 'IC_V_g', ICV 
-                  STOP 
+                WRITE (UNIT_LOG, 1200) 'IC_V_g', ICV 
+                call mfix_exit(myPE) !// 990 0912 replaced STOP 
             ENDIF 
             IF (IC_W_G(ICV) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1200) 'IC_W_g', ICV 
-                  STOP 
+                WRITE (UNIT_LOG, 1200) 'IC_W_g', ICV 
+                call mfix_exit(myPE) !// 990 0912 replaced STOP 
             ENDIF 
             IF (IC_EP_G(ICV) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1200) 'IC_EP_g', ICV 
-                  STOP  
+                WRITE (UNIT_LOG, 1200) 'IC_EP_g', ICV 
+                call mfix_exit(myPE) !// 990 0912 replaced STOP 
             ENDIF 
             IF (IC_T_G(ICV) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1200) 'IC_T_g', ICV 
-                  STOP 
+                WRITE (UNIT_LOG, 1200) 'IC_T_g', ICV 
+                call mfix_exit(myPE) !// 990 0912 replaced STOP 
             ENDIF 
             IF (IC_T_RG(ICV) /= UNDEFINED) THEN 
-                  WRITE (UNIT_LOG, 1200) 'IC_T_Rg', ICV 
-                  STOP 
+                WRITE (UNIT_LOG, 1200) 'IC_T_Rg', ICV 
+                call mfix_exit(myPE) !// 990 0912 replaced STOP 
             ENDIF 
             DO N = 1, DIMENSION_N_G 
                IF (IC_X_G(ICV,N) /= UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1200) 'X_g', ICV 
-                     STOP 
+                  WRITE (UNIT_LOG, 1200) 'X_g', ICV 
+                  call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
             END DO 
             DO M = 1, DIMENSION_M 
                IF (IC_ROP_S(ICV,M) /= UNDEFINED) THEN 
-                     WRITE (UNIT_LOG, 1300) 'IC_ROP_s', ICV, M 
-                     STOP  
+                   WRITE (UNIT_LOG, 1300) 'IC_ROP_s', ICV, M 
+                   call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
                DO N = 1, DIMENSION_N_S 
                   IF (IC_X_S(ICV,M,N) /= UNDEFINED) THEN 
-                        WRITE (UNIT_LOG, 1300) 'IC_X_s', ICV, M 
-                        STOP  
+                      WRITE (UNIT_LOG, 1300) 'IC_X_s', ICV, M 
+                      call mfix_exit(myPE) !// 990 0912 replaced STOP 
                   ENDIF 
                END DO 
                IF (IC_U_S(ICV,M) /= UNDEFINED) THEN 
                      WRITE (UNIT_LOG, 1300) 'IC_U_s', ICV, M 
-                     STOP 
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
                IF (IC_V_S(ICV,M) /= UNDEFINED) THEN 
                      WRITE (UNIT_LOG, 1300) 'IC_V_s', ICV, M 
-                     STOP  
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
                IF (IC_W_S(ICV,M) /= UNDEFINED) THEN 
                      WRITE (UNIT_LOG, 1300) 'IC_W_s', ICV, M 
-                     STOP 
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
                IF (IC_T_S(ICV,M) /= UNDEFINED) THEN 
                      WRITE (UNIT_LOG, 1300) 'IC_T_s', ICV, M 
-                     STOP  
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
                IF (IC_T_RS(ICV,M) /= UNDEFINED) THEN 
                      WRITE (UNIT_LOG, 1300) 'IC_T_Rs', ICV, M 
-                     STOP  
+                     call mfix_exit(myPE) !// 990 0912 replaced STOP 
                ENDIF 
             END DO 
          ENDIF 

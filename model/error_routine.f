@@ -9,8 +9,10 @@
 !  Reviewer: W. Rogers, M. Syamlal, S. Venkatesan     Date: 29-JAN-92  C
 !                                                                      C
 !  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
+!  Purpose:  Added myPE identifier in outputs and also replace STOP    C
+!            with mfix_exit() to abort all processors                  C
+!                                                                      C
+!  Author:   Aeolus Res. Inc.                         Date: 04-SEP-99  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Literature/Document References:                                     C
@@ -27,9 +29,9 @@
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
-!//d      USE funits 
-      USE compar        !//d
-      USE mpi_utility   !//d
+      USE funits 
+      USE compar      !// 001 Include MPI header file
+      USE mpi_utility !//     added for exitMPI calls
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -58,19 +60,24 @@
 !
 ! WRITE OUT HEADER INFO , UNLESS MESSAGE_CODE = 3
 !
-      IF (MESSAGE_CODE /= 3) WRITE (UNIT_LOG, 1000) CALL_ROUTINE, MESSAGE 
+!//PAR_I/O added myPE in error printouts
+      IF (MESSAGE_CODE /= 3) WRITE (UNIT_LOG, 1000) myPE,CALL_ROUTINE, MESSAGE 
 !
 ! WRITE OUT TRAILER INFO, UNLESS MESSAGE_CODE = 2
 !
-      IF (MESSAGE_CODE /= 2) WRITE (UNIT_LOG, 1100) ABORT_CONT 
+!//PAR_I/O added myPE in error printouts
+      IF (MESSAGE_CODE /= 2) WRITE (UNIT_LOG, 1100) myPE,ABORT_CONT 
 !
       IF (ACTION_CODE == 0) THEN 
          RETURN  
       ELSE 
-         call exitMPI(myPE)       !//d
+!// 990 0807 replaced STOP so that all PEs are aborted, not only the current one
+          call mfix_exit(myPE)
       ENDIF 
 !
- 1000 FORMAT(1X,70('*'),/,/,1X,'From : ',A,/,1X,'Message : ',A) 
- 1100 FORMAT(1X,'Program execution ',A,/,/,1X,70('*')) 
+!//PAR_I/O modified the ouput format to print myPE number
+ 1000 FORMAT(1X,70('*'),/,/,1X,'(PE ',I3,'): From : ',A,/,11X,'Message : ',A) 
+ 1100 FORMAT(1X,'(PE ',I3,'): Program execution ',A,/,/,1X,70('*')) 
 !
       END SUBROUTINE ERROR_ROUTINE 
+      

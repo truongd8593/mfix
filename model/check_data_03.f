@@ -7,6 +7,12 @@
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
 !                                                                      C
 !  Revision Number:                                                    C
+!  Purpose:  Replaced STOP with mfix_exit() to abort all processors    C
+!                                                                      C
+!  Author:   Aeolus Res. Inc.                         Date: 07-AUG-99  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Revision Number:                                                    C
 !  Purpose:                                                            C
 !  Author:                                            Date: dd-mmm-yy  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
@@ -32,6 +38,8 @@
       USE param1 
       USE geometry
       USE funits 
+      USE compar      !// 001 Include MPI header file
+      USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -47,7 +55,6 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !-----------------------------------------------
-
       IF (XMIN < ZERO) WRITE (UNIT_LOG, 990) 
 !
 ! If no variation in a direction is considered, the number of cells in
@@ -55,8 +62,8 @@
 !
       IF (NO_I) THEN 
 !
-         WRITE (UNIT_LOG, 995) 
-         STOP
+         WRITE (UNIT_LOG, 995)                   !disabled 
+         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
 !
 !        IF(IMAX .EQ. UNDEFINED_I) IMAX = 1
 !        IF(DX(1) .EQ. UNDEFINED .AND. XLENGTH .EQ. UNDEFINED) THEN
@@ -66,8 +73,9 @@
       ENDIF 
       IF (NO_J) THEN 
 !
-            WRITE (UNIT_LOG, 996)  
-            STOP
+         WRITE (UNIT_LOG, 996)                   !disabled 
+         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+
 !
 !        IF(JMAX .EQ. UNDEFINED_I) JMAX = 1
 !        IF(DY(1) .EQ. UNDEFINED .AND. YLENGTH .EQ. UNDEFINED) THEN
@@ -75,6 +83,8 @@
 !          YLENGTH = ONE
 !        ENDIF
       ENDIF 
+
+
       IF (NO_K) THEN 
          IF (KMAX == UNDEFINED_I) KMAX = 1 
          IF (DZ(1)==UNDEFINED .AND. ZLENGTH==UNDEFINED) THEN 
@@ -88,16 +98,16 @@
          ENDIF 
       ENDIF 
       IF (NO_I .AND. IMAX>1) THEN 
-            WRITE (UNIT_LOG, 1000) 
-            STOP  
+         WRITE (UNIT_LOG, 1000) 
+         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
       ENDIF 
       IF (NO_J .AND. JMAX>1) THEN 
-            WRITE (UNIT_LOG, 1100) 
-            STOP  
+         WRITE (UNIT_LOG, 1100) 
+         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
       ENDIF 
       IF (NO_K .AND. KMAX>1) THEN 
-            WRITE (UNIT_LOG, 1200) 
-            STOP  
+         WRITE (UNIT_LOG, 1200) 
+         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
       ENDIF 
 !
 ! CHECK THE DATA FOR THE INDIVIDUAL AXES
@@ -107,6 +117,7 @@
          SHIFT) 
       CALL CHECK_ONE_AXIS (JMAX, DIMENSION_J, YLENGTH, DY, 'Y', 'J', NO_J, &
          SHIFT) 
+!//? any modifications to be done for K direction check
       CALL CHECK_ONE_AXIS (KMAX, DIMENSION_K, ZLENGTH, DZ, 'Z', 'K', NO_K, &
          SHIFT) 
 !
@@ -117,14 +128,14 @@
       IF (COORDINATES == 'CYLINDRICAL') THEN 
          CYLINDRICAL = .TRUE. 
          IF (CYCLIC_X .OR. CYCLIC_X_PD) THEN 
-               WRITE (UNIT_LOG, 1250) 
-               STOP 
+            WRITE (UNIT_LOG, 1250) 
+            call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
          ENDIF 
       ELSE IF (COORDINATES == 'CARTESIAN') THEN 
          CYLINDRICAL = .FALSE. 
       ELSE 
-            WRITE (UNIT_LOG, 1300) 
-            STOP  
+         WRITE (UNIT_LOG, 1300) 
+         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
       ENDIF 
 !
 ! calculate IMAX1, IMAX2, etc. and shift the DX,DY,DZ arrays to take into
@@ -137,34 +148,37 @@
 !
       IF (CYCLIC_X .OR. CYCLIC_X_PD) THEN 
          IF (DX(IMIN1) /= DX(IMAX1)) THEN 
-               WRITE (UNIT_LOG, 1400) DX(IMIN1), DX(IMAX1) 
-               STOP 
+            WRITE (UNIT_LOG, 1400) DX(IMIN1), DX(IMAX1) 
+            call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
          ENDIF 
       ENDIF 
 !
       IF (CYCLIC_Y .OR. CYCLIC_Y_PD) THEN 
          IF (DY(JMIN1) /= DY(JMAX1)) THEN 
-               WRITE (UNIT_LOG, 1410) DY(JMIN1), DY(JMAX1) 
-               STOP  
+            WRITE (UNIT_LOG, 1410) DY(JMIN1), DY(JMAX1) 
+            call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
          ENDIF 
       ENDIF 
 !
+!//? for cyclic BC along decomposition direction, DZ(KMAX1) will come from last PE!!!
+!//? at this stage are we permitting for CYCLIC_Z?
       IF (CYCLIC_Z .OR. CYCLIC_Z_PD .OR. CYLINDRICAL) THEN 
          IF (DZ(KMIN1) /= DZ(KMAX1)) THEN 
-               WRITE (UNIT_LOG, 1420) DZ(KMIN1), DZ(KMAX1) 
-               STOP 
+            WRITE (UNIT_LOG, 1420) DZ(KMIN1), DZ(KMAX1) 
+            call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
          ENDIF 
       ENDIF 
 !
 ! CHECK THE TOTAL DIMENSION
 !
+!//? ijkmax2 should be replaced with ijkmax3??? for total dimension check
       IF (IJKMAX2 > DIMENSION_3) THEN 
          CALL ERROR_ROUTINE ('check_data_03', 'dimension error', 0, 2) 
-            WRITE (UNIT_LOG, *) '(IMAX+2)*(JMAX+2)*(KMAX+2) = ', IJKMAX2 
-            WRITE (UNIT_LOG, *) 'DIMENSION_3 in param.inc = ', DIMENSION_3 
-            WRITE (UNIT_LOG, *) 'modify param.inc and recompile .... or' 
-            WRITE (UNIT_LOG, *) 'change dimensions in mfix.dat', &
-               ' ... whichever is appropriate' 
+         WRITE (UNIT_LOG, *) '(IMAX+2)*(JMAX+2)*(KMAX+2) = ', IJKMAX2 
+         WRITE (UNIT_LOG, *) 'DIMENSION_3 in param.inc = ', DIMENSION_3 
+         WRITE (UNIT_LOG, *) 'modify param.inc and recompile .... or' 
+         WRITE (UNIT_LOG, *) 'change dimensions in mfix.dat', &
+            ' ... whichever is appropriate' 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
 !
@@ -197,3 +211,4 @@
          'Cells adjacent to cyclic boundaries must be of same size:',/&
          'DZ(KMIN1) = ',G12.5,'     DZ(KMAX1) = ',G12.5,/1X,70('*')/) 
       END SUBROUTINE CHECK_DATA_03 
+      
