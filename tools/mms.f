@@ -373,7 +373,8 @@ C
       usename = ' '
       DO I = 1,20
          IF (LINE(I:I+3).EQ.'USE ' .OR.
-     &       LINE(I:I+3).EQ.'Use ') then
+     &       LINE(I:I+3).EQ.'Use ' .or. 
+     &       LINE(I:I+3).EQ.'use ' ) then
              iq1 = i + 4
 100          DO J = IQ1+1,60
                 IF (LINE(J:J).EQ.' ' .or.LINE(J:J).EQ.',') THEN
