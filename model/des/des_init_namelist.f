@@ -158,6 +158,8 @@
                   RADIUS_EQ = UNDEFINED
                   NQUAD = UNDEFINED_I
                   DIMN = UNDEFINED_I
+                  DES_NEIGHBOR_SEARCH = UNDEFINED_I 
+! DES_SEARCH takes values 1 (for n-square), 2(for quadtree) and 3(for octree)
 
                   RETURN
                   END SUBROUTINE DES_INIT_NAMELIST
