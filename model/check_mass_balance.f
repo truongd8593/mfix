@@ -305,7 +305,11 @@
   	    END DO
 	    if((flux - Accumulation_delta) /= zero) then
 	      error_percent = undefined
-	      if(flux_in_tot /= zero) error_percent = (flux - Accumulation_delta)*100./flux_in_tot
+	      if(flux_in_tot /= zero) then
+	        error_percent = (flux - Accumulation_delta)*100./flux_in_tot
+	      elseif (Integral_R_g(N) /= zero) then
+	        error_percent = (flux - Accumulation_delta)*100./Integral_R_g(N)
+	      endif
 	    else
 	      error_percent = zero
 	    endif
@@ -344,7 +348,11 @@
 	      END DO
 	      if((flux - Accumulation_delta) /= zero) then
 	        error_percent = undefined
-	        if(flux_in_tot /= zero) error_percent = (flux - Accumulation_delta)*100./flux_in_tot
+	        if(flux_in_tot /= zero) then
+		  error_percent = (flux - Accumulation_delta)*100./flux_in_tot
+		elseif (Integral_R_s(M,N) /= zero)then
+		  error_percent = (flux - Accumulation_delta)*100./Integral_R_s(M,N)
+		endif 
 	      else
 	        error_percent = zero
 	      endif
