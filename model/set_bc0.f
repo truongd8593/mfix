@@ -91,7 +91,7 @@
 !//? 1026 check the pointer location for ijk1 on all PEs and adjust loop counter if necessary
       IJK1 = FUNIJK(IMAX1/2 + 1,JMAX1,KMAX1/2 + 1)
 
-      write(*,"('(PE ',I2,'): IJK1 = ',I5)") myPE,IJK1 !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): IJK1 = ',I5)") myPE,IJK1 !//AIKEPARDBG
 
 !//? what is the function of this DO loop????
 !// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3        
@@ -163,7 +163,10 @@
 !// 360 1025 Check if current i,j,k resides on this PE		  	  
 		  IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
                      IJK = BOUND_FUNIJK(I,J,K) 
-              write(UNIT_LOG,"('IJK= ',I5,'  I= ',I4,' J= ',I4,' K=' I4)") IJK,I,J,K
+!//AIKEPARDBG
+!              write(UNIT_LOG,"('P1:set_bc0 for EP_G: IJK= ',I5,'  I= ',I4,&
+!	      & ' J=',I4,' K=',I4,' BC_EP_G=',E12.4,' EP_G=',E12.4)") &
+!	          IJK,I,J,K,BC_EP_G(L),EP_G(IJK) !//AIKEPARDBG
 		     
                      IF (.NOT.WALL_AT(IJK)) THEN 
 !
@@ -256,6 +259,11 @@
                            ENDIF 
                         ENDIF 
                      ENDIF 
+!//AIKEPARDBG		     
+!              write(UNIT_LOG,"('P2:set_bc0 for EP_G: IJK= ',I5,'  I= ',I4,&
+!	      & ' J=',I4,' K=',I4,' BC_EP_G=',E12.4,' EP_G=',E12.4)") &
+!	          IJK,I,J,K,BC_EP_G(L),EP_G(IJK)  !//AIKEPARDBG
+		     
                   END DO 
                END DO 
             END DO 
