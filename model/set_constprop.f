@@ -75,29 +75,15 @@
             MW_MIX_G(IJK) = ZERO 
          ELSE 
             IF (RO_G0 /= UNDEFINED) RO_G(IJK) = RO_G0 
-            IF (MU_G0 /= UNDEFINED) MU_G(IJK) = MU_G0 
-            IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0 
             IF (C_PG0 /= UNDEFINED) C_PG(IJK) = C_PG0 
             IF (MW_AVG /= UNDEFINED) MW_MIX_G(IJK) = MW_AVG 
+	    IF(FLUID_AT(IJK)) THEN
+              IF (MU_G0 /= UNDEFINED) MU_G(IJK) = MU_G0 
+              IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0 
+              IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0 
+	    ENDIF
          ENDIF 
-         HOR_G(IJK) = ZERO 
-	 
-	 DO M = 1, MMAX
-           HOR_S(IJK,M) = ZERO 
-	 END DO
       END DO 
-      
-      IF (DIF_G0 /= UNDEFINED) THEN 
-         N = 1 
-         IF (NMAX(0) > 0) THEN 
-            IJK = 1 
-            IF (IJKMAX2 > 0) THEN 
-               DIF_G(IJKSTART3:IJKEND3,:NMAX(0)) = DIF_G0 
-               IJK = IJKMAX2 + 1 
-            ENDIF 
-            N = NMAX(0) + 1 
-         ENDIF 
-      ENDIF 
 !
       DO M = 1, MMAX 
          DO IJK = ijkstart3, ijkend3
@@ -109,39 +95,27 @@
                K_S(IJK,M) = ZERO 
                C_PS(IJK,M) = ZERO 
             ELSE 
-               IF (MU_S0 /= UNDEFINED) THEN 
-                  P_S(IJK,M) = ZERO 
-                  MU_S(IJK,M) = MU_S0 
-                  LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M) 
-                  ALPHA_S(IJK,M) = ZERO 
-               ENDIF 
-               IF (K_S0 /= UNDEFINED) K_S(IJK,M) = K_S0 
                IF (C_PS0 /= UNDEFINED) C_PS(IJK,M) = C_PS0 
+	       IF(FLUID_AT(IJK))THEN
+                 IF (MU_S0 /= UNDEFINED) THEN 
+                    P_S(IJK,M) = ZERO 
+                    MU_S(IJK,M) = MU_S0 
+                    LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M) 
+                    ALPHA_S(IJK,M) = ZERO 
+                 ENDIF 
+                 IF (K_S0 /= UNDEFINED) K_S(IJK,M) = K_S0 
+                 IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0 
+	       ENDIF
             ENDIF 
          END DO 
 	 
-         IF (DIF_S0 /= UNDEFINED) THEN 
-            N = 1 
-            IF (NMAX(M) > 0) THEN 
-               IJK = 1 
-               IF (IJKMAX2 > 0) THEN 
-                  DIF_S(IJKSTART3:IJKEND3,M,:NMAX(M)) = DIF_S0 
-                  IJK = IJKMAX2 + 1 
-               ENDIF 
-               N = NMAX(M) + 1 
-            ENDIF 
-         ENDIF 
       END DO 
       
       IF (RO_G0 == ZERO) THEN 
-         M = 1 
          IF (MMAX > 0) THEN 
-            IJK = 1 
             IF (IJKMAX2 > 0) THEN 
                F_GS(IJKSTART3:IJKEND3,:MMAX) = ZERO 
-               IJK = IJKMAX2 + 1 
             ENDIF 
-            M = MMAX + 1 
          ENDIF 
       ENDIF 
 !
