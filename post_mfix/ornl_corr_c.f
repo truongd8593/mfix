@@ -22,6 +22,7 @@
       real*8    :: time_series(*)
 
       real*8, allocatable    :: acf(:,:)
+      integer, allocatable   :: lags(:)
 
       include 'function.inc'
 
@@ -30,8 +31,9 @@
 
       i = abs(maxlag-minlag) + 1
       allocate ( acf(2,i) )
+      allocate ( lags(i) )
 
-      call auto_correlation(time_series,1,nt,minlag,maxlag,acf)
+      call auto_correlation(time_series,1,nt,minlag,maxlag,lagstep,lags,acf)
 
 
       if (usr_fname(1:1) .eq. '*') then
@@ -74,6 +76,7 @@
       end do ! k
 
       deallocate (acf)
+      deallocate (lags)
 
  !
       return

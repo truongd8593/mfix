@@ -45,7 +45,7 @@
       if (selection .eq. 2) then
          call do_low_pass(time_series,nt)
          call do_low_pass(time_series2,nt2)
-         call do_cross_corr(time_series, nt, time_series2,nt2)
+         call do_cross_corr(time_series, time_series2, nt)
       end if
 !
       call header_daw(selection,0,5)
