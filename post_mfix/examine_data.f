@@ -31,12 +31,13 @@
       Use run
       Use geometry
       Use post3d
+      Use rxns
       Use scalars
       Use compar
       
       IMPLICIT NONE
       INTEGER  N_VAR
-      PARAMETER (N_VAR=49)
+      PARAMETER (N_VAR=50)
       INCLUDE 'xforms.inc'
 !
       CHARACTER*80 LINE
@@ -103,8 +104,8 @@
 !                   42      43     44    45     46     47
                    'KE_g', 'KE_s','P_s','PE_g','PE_s','BERN_s', &
      
-!                   48		49
-         	   'Theta_m', 'Scalar' /
+!                   48		49          50
+         	   'Theta_m', 'Scalar' , 'RRates'/
 
 
       DZ_T(K) = HALF * (DZ(K) + DZ(Kp1(K)))
@@ -338,6 +339,28 @@
         ENDIF
       ENDIF
 !
+      IF(VAR_NO .EQ. 50)THEN
+        IF(nRR .LE. 0) THEN
+          write(*,'(i40)')nRR
+          WRITE(*,'(A)')' No Reaction Rate data found'
+          GOTO 20
+        ENDIF
+        IF(N .GT. nRR)N = 1
+229     WRITE(*,'(A,I2,A,$)') ' Reaction Rate: (', N, ') > '
+        READ(*,'(1A60)',ERR=229) STRING
+        IF(STRING(1:1) .EQ. '?') THEN
+          CALL HELP(32)
+          GOTO 229
+        ENDIF
+        L3 = 1
+        CALL GET_SUBSTR(STRING, L3, SUBSTR)
+        IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=229)N
+        IF(N .GT. nRR) THEN
+          WRITE(*,*)' Value should not exceed ', nRR
+          N = nRR
+          GOTO 229
+        ENDIF
+      ENDIF
 !
  5500 CONTINUE
 !
@@ -437,6 +460,10 @@
 
       IF(VAR_NO .EQ. 49 ) THEN
         READ_SPX(9) = .TRUE.    ! Scalar
+      ENDIF
+
+      IF(VAR_NO .EQ. 50 ) THEN
+        READ_SPX(10) = .TRUE.    ! Reaction Rates
       ENDIF
 !
 !  Open P_g, T_g, and X_g files, if gas density needs to be determined
@@ -1069,6 +1096,8 @@
           VALUE_TMP = Theta_m(IJK, M)
         ELSEIF(VAR_NO .EQ. 49)THEN
           VALUE_TMP = Scalar(IJK, N)
+       ELSEIF(VAR_NO .EQ. 50)THEN
+          VALUE_TMP = ReactionRates(IJK, N)
         ENDIF
 	
 	
@@ -1477,6 +1506,7 @@
         '   X_g       - Gas species mass fraction', &
         '   X_s       - Solids species mass fraction', &
         '   Scalar    - User defined scalar', &
+        '   RRates    - Reaction Rate data (SPA)' , &
         '   Gas species mass flow rates, g/s', &
         '   XFLOW_gx  - in X direction', &
         '   XFLOW_gy  - in Y direction', &
@@ -1533,6 +1563,8 @@
       ELSEIF(N .EQ. 31)THEN
         WRITE(*,*)' Intensive variables, such as EP_g, are averaged'
         WRITE(*,*)' Extensive variables, such as VFLOW_gy, are summed'
+      ELSEIF(N .EQ. 32)THEN
+        WRITE(*,*)' Enter the Reaction Rate index'
       ELSEIF(N .EQ. 40)THEN
         WRITE(*,*)' Enter the starting and ending values of J'
       ELSEIF(N .EQ. 41)THEN

@@ -31,6 +31,7 @@
       Use physprop
       Use fldvar
       Use scalars
+      Use rxns
 !
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
@@ -54,6 +55,10 @@
       INTEGER L, L_SPX , LL , M , i , NB
       integer :: unit_add = 10
 !
+      CHARACTER     EXT_END*35
+!-----------------------------------------------
+
+      ext_end = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 !
       ERROR  = .FALSE.
       SELECT = .TRUE.
@@ -78,14 +83,15 @@
 
 	do l_spx = 1,n_spx	! for now
       IF (.NOT.DO_XFORMS) THEN
+        write (*,*) ' '
 	write (*,*) ' process old SPx file : ' , l_spx
-	write (temp_file(nb+3:nb+3),'(i1)')l_spx
+        temp_file(nb+3:nb+3) = ext_end(l_spx:l_spx)
          OPEN (UNIT=UNIT_SPX+L_SPX+unit_add,FILE=TEMP_FILE, &
             STATUS='NEW',&
             RECL=OPEN_N1,ACCESS='DIRECT',FORM='UNFORMATTED',ERR=101)
       END IF
 !
-! allocate variables as needed
+! allocate variables as needed  (what if no scalars or nRR ??)
 !
 	if (l_spx .eq. 1) then			! ep_g
 		allocate (tavg(ijkmax2,1,1))
@@ -109,8 +115,14 @@
 		allocate (tavgs(ijkmax2,mmax,solmax))
 	else if (l_spx .eq. 8) then		! THETA_m
 		allocate (tavg(ijkmax2,MMAX,1))
-	else if (l_spx .eq. 9) then		! Scalars
+	else if (l_spx .eq. 9 .and. nscalar.gt.0) then		! Scalars
 		allocate (tavg(ijkmax2,nscalar,1))		
+	else if (l_spx .eq. 10 .and. nRR.gt.0) then		! ReactionRate
+		allocate (tavg(ijkmax2,nRR,1))		
+	else if (l_spx .eq. 9 .and. nscalar.eq.0) then		! Scalars
+		allocate (tavg(ijkmax2,1,1))		
+	else if (l_spx .eq. 10 .and. nRR.eq.0) then		! ReactionRate
+		allocate (tavg(ijkmax2,1,1))		
 	end if
 	tavg(:,:,:) = 0.0
 	if ( (l_spx.eq.6) .or. (l_spx.eq.7) ) tavgs(:,:,:) = 0.0
@@ -124,7 +136,7 @@
         AT_EOF(L) = .FALSE.
 20    CONTINUE
       READ_SPX(L_SPX) = .TRUE.
-	tcount = 0
+      tcount = 0
 !
       L = 0
 100   continue
@@ -178,6 +190,10 @@
 			do m = 1,nscalar
 			   tavg(:,m,1) = tavg(:,m,1) + Scalar(:,m)
 			end do
+		else if (l_spx .eq. 10) then
+			do m = 1,nRR
+			   tavg(:,m,1) = tavg(:,m,1) + ReactionRates(:,m)
+			end do
 		end if
 
               !  write (*,*) 'processed data ... time = ' , time_real(l_spx)
@@ -215,7 +231,7 @@
 		end do
 	else if (l_spx .eq. 7) then
 		do i = 1,nmax(0)
-		   X_g(:,i) = tavg(:,m,i) / real(tcount)
+		   X_g(:,i) = tavg(:,i,1) / real(tcount)
 		end do
 		do m = 1,mmax
 		   do i = 1,nmax(m)
@@ -230,6 +246,10 @@
 		do m = 1,nscalar
 		   Scalar(:,m) = tavg(:,m,1) / real(tcount)
 		end do
+	else if (l_spx .eq. 10) then
+		do m = 1,nRR
+		   ReactionRates(:,m) = tavg(:,m,1) / real(tcount)
+		end do
 	end if
       CALL WRITE_SPX1(L_SPX,unit_add)
 !	time = 1.0
@@ -237,10 +257,11 @@
 	deallocate(tavg)
 	if ( (l_spx.eq.6) .or. (l_spx.eq.7) ) deallocate(tavgs)
       CLOSE(UNIT_SPX+L_SPX+unit_add)
-      WRITE(*,*)
       WRITE (*,*) ' number of records processed = ' , tcount
-      WRITE(*,*) 'time averaged file written >' , temp_file
+      WRITE(*,*) ' time averaged file written >' , temp_file(1:nb+3)
  101	continue
 	end do ! loop of l_spx
+      write (*,*) ' '
+      write (*,*) ' '
       RETURN
       END

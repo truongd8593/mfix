@@ -36,6 +36,7 @@
       Use funits
       Use post3d
       Use scalars
+      Use rxns
       IMPLICIT NONE
 !
 ! passed arguments
@@ -268,6 +269,29 @@
          END DO 
          REC_POINTER(9) = NEXT_REC
       ENDIF
+
+
+!     spa : ReactionRates
+
+      IF (READ_SPX(10).AND..NOT.AT_EOF(10)) THEN
+         IF(.NOT.SPX_OPEN(10)) THEN
+           WRITE(*,*)' SPA file is not open'
+           STOP
+         ENDIF
+         NEXT_REC = REC_POINTER(10)
+         IF (NEXT_REC.GE.LAST_REC(10)) THEN
+            AT_EOF(10) = .TRUE.
+            RETURN
+         END IF
+         AT_EOF(10) = .FALSE.
+         READ (UNIT_SPX+10,REC=NEXT_REC) TIME_REAL(10) , NSTEP
+         NEXT_REC = NEXT_REC + 1
+         DO N = 1, nRR
+           CALL IN_BIN_R(UNIT_SPX+10,ReactionRates(1,N),IJKMAX2, &
+							NEXT_REC)
+         end do
+         REC_POINTER(10) = NEXT_REC 
+      END IF
 
       RETURN
       END

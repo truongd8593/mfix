@@ -396,6 +396,10 @@
 !
 !                   Number of files to be opened
       INTEGER       NO_FILES
+      CHARACTER     EXT_END*35
+!-----------------------------------------------
+
+      ext_end = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 !
       OPEN_FILEP = .FALSE.
 !
@@ -437,7 +441,7 @@
 !
       EXT = '.SPx'
       DO 200 LC = 1,N_SPX
-        WRITE (EXT(4:4),1000) LC
+        ext(4:4) = ext_end(LC:LC)
         FILE_NAME          = ' '
         FILE_NAME(1:NB-1)  = RUN_NAME(1:NB-1)
         FILE_NAME(NB:NB+3) = EXT(1:4)

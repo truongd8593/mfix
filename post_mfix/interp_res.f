@@ -31,6 +31,7 @@
       Use fldvar
       Use post3d
       Use run
+      Use rxns
       Use scalars
       Use funits
       Use compar
@@ -60,6 +61,9 @@
       DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE ::  &
         Scalar_OLD
 	  
+      DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE ::  &
+        ReactionRates_OLD
+
       DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE ::  &
         THETA_M_OLD, &
         T_s_OLD, &
@@ -110,6 +114,7 @@
       Allocate(  X_g_OLD(DIMENSION_3, DIMENSION_N_g) )
       
       if(Nscalar > 0) Allocate( Scalar_OLD(DIMENSION_3, NScalar) )
+      if(nRR > 0) Allocate( ReactionRates_OLD(DIMENSION_3,nRR) )
       
       Allocate(  T_s_OLD(DIMENSION_3, DIMENSION_M) )
       Allocate(  THETA_M_OLD(DIMENSION_3, DIMENSION_M) )
@@ -182,6 +187,14 @@
           GAMA_RS_OLD(IJK, LC) = GAMA_RS(IJK, LC)
           T_RS_OLD(IJK, LC) = T_RS(IJK, LC)
         ENDDO 
+
+!
+!       Version 1.5
+        DO LC = 1, nRR 
+          ReactionRates_OLD (IJK, LC) = ReactionRates (IJK, LC) 
+        END DO
+
+
 100   CONTINUE
 
       DO 105 I = 1, IMAX2
@@ -437,6 +450,13 @@
           GAMA_RS(IJK, LC) = GAMA_RS_OLD(IJK_OLD, LC) 
           T_RS(IJK, LC) = T_RS_OLD(IJK_OLD, LC)
         ENDDO 
+
+!
+!       Version 1.5
+
+        DO LC = 1, nRR 
+          ReactionRates (IJK, LC) = ReactionRates_OLD (IJK_OLD, LC) 
+        END DO
 
 500   CONTINUE
 !
