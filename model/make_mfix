@@ -54,6 +54,10 @@ read dmp_version
 echo
 echo -n "Do you need debug version? (y/n) [no] "
 read dbg_version
+
+echo
+echo -n "Force re-compilation of source files in run directory? (y/n) [no] "
+read auto_compile
   
 case $dmp_version in
   y|Y )
@@ -329,7 +333,15 @@ esac
 #      Is there default file Mfix/model directory?
        if test -r $mfix/$outfile
        then
-          do_nothing="ok"
+          case $auto_compile in
+             y|Y)
+                  chmod u+w $outfile
+                  cp $run_dir/$outfile $outfile
+                  ;;
+             *)
+                  do_nothing="ok"
+                  ;;
+          esac
       
        else
 #        Mfix/model directory does not have a default file. create one.
