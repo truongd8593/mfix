@@ -158,7 +158,7 @@
       CALL SET_CONSTPROP 
       
 !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): aft set_constprop in mfix')") myPE    !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): aft set_constprop in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -168,7 +168,7 @@
       CALL WRITE_OUT0 
 !      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
 !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): after write_out0 in mfix')") myPE    !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): after write_out0 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -177,7 +177,7 @@
       CALL WRITE_USR0 
 
 !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): after write_usr0 in mfix')") myPE    !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): after write_usr0 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
       
 !$
@@ -200,7 +200,7 @@
 !
          CALL WRITE_RES0 
 !      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-!      write(*,"('(PE ',I2,'): after write_res0 in mfix')") myPE    !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): after write_res0 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
          DO L = 1, N_SPX 
@@ -247,8 +247,8 @@
       END SELECT 
 !
 !//AIKEPARDBG
-!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)   !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): after write_XXXX in mfix')") myPE    !//AIKEPARDBG
+       call MPI_Barrier(MPI_COMM_WORLD,mpierr)   !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): after write_XXXX in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
       IF (DT_TMP /= UNDEFINED) THEN 
@@ -263,12 +263,14 @@
 !
       CALL SET_INCREMENTS 
 !
+       write(*,"('(PE ',I2,'): after set_increments in mfix')") myPE    !//AIKEPARDBG
+!
 !  Set the flags for wall surfaces impermeable and identify flow boundaries
 !  using FLAG_E, FLAG_N, and FLAG_T
 !
       CALL SET_FLAGS1 
 
-!      write(*,"('(PE ',I2,'): after set_flags1 in mfix')") myPE    !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): after set_flags1 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -276,7 +278,7 @@
 !
       CALL SET_GEOMETRY1 
 
-!      write(*,"('(PE ',I2,'): after set_geometry1 in mfix')") myPE    !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): after set_geometry1 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -289,7 +291,7 @@
 !
       CALL SET_IC 
 
-!      write(*,"('(PE ',I2,'): after set_ic in mfix')") myPE    !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): after set_ic in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -298,7 +300,7 @@
       CALL ZERO_NORM_VEL 
       CALL SET_BC0 
 
-!      write(*,"('(PE ',I2,'): after set_bc0 in mfix')") myPE    !//AIKEPARDBG
+       write(*,"('(PE ',I2,'): after set_bc0 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -318,8 +320,8 @@
 !
       CALL SET_BC1 
 
-!      write(*,"('(PE ',I2,'): after set_bc1 in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+       write(*,"('(PE ',I2,'): after set_bc1 in mfix')") myPE    !//AIKEPARDBG
+       call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Check the field variable data and report errors.
