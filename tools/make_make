@@ -18,7 +18,14 @@ foreach i (*)
   endif
 end
 ../tools/mms.exe
-echo
-echo "mfix_u.make created"
-echo "mfix_l.make created"
-echo
+if ($status == 0) then
+  echo
+  echo "mfix_u.make created"
+  echo "mfix_l.make created"
+  echo
+else
+  echo
+  echo "*** make files not created ***"
+  echo "Perhaps mms.exe needs to be created (f90 -o mms.exe mms.f)"
+  echo
+endif
