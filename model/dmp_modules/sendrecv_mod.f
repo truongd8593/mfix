@@ -50,7 +50,7 @@
 
         interface send_recv
         module procedure &
-                send_recv_1d, &
+                send_recv_1d, send_recv_2d, send_recv_3d, &
                 send_recv_1i, &
                 send_recv_1c
         end interface
@@ -2109,6 +2109,57 @@ enddo ! do ilayer
 	return 
 	end subroutine send_recv_1d
 
+        subroutine send_recv_2d( X, ilayer, idebug )
+        double precision,  dimension(:,:), intent(inout) :: X
+        integer, intent(in), optional :: ilayer,idebug
+
+        integer :: lidebug, layer
+	integer :: j
+
+        lidebug = 0
+        if (present(idebug)) then
+           lidebug = idebug
+        endif
+
+        layer = 1
+        if (present(ilayer)) then
+           layer = ilayer
+        endif
+
+	do j=lbound(X,2),ubound(X,2)
+          call sendrecv_begin(X(:,j),layer,lidebug)
+          call sendrecv_end( X(:,j), lidebug )
+	enddo
+
+        return
+        end subroutine send_recv_2d
+
+        subroutine send_recv_3d( X, ilayer, idebug )
+        double precision,  dimension(:,:,:), intent(inout) :: X
+        integer, intent(in), optional :: ilayer,idebug
+
+        integer :: lidebug, layer
+        integer :: j,k
+
+        lidebug = 0
+        if (present(idebug)) then
+           lidebug = idebug
+        endif
+
+        layer = 1
+        if (present(ilayer)) then
+           layer = ilayer
+        endif
+
+        do k=lbound(X,3),ubound(X,3)
+        do j=lbound(X,2),ubound(X,2)
+          call sendrecv_begin(X(:,j,k),layer,lidebug)
+          call sendrecv_end( X(:,j,k), lidebug )
+        enddo
+	enddo
+
+        return
+        end subroutine send_recv_3d
 
 	subroutine send_recv_1i( X, ilayer, idebug )
 	integer,  dimension(:), intent(inout) :: X

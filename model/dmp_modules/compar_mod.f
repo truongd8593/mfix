@@ -89,5 +89,28 @@
     	CHARACTER(len=3) :: fbname
     	INTEGER :: idbg = 1
 
+	contains
+
+        integer function funijk(i,j,k)
+        integer,  intent(in):: i,j,k
+
+        if(i.lt.istart3_all(myPE).or.i.gt.iend3_all(myPE).or. &
+         j.lt.jstart3_all(myPE).or.j.gt.jend3_all(myPE).or. &
+         k.lt.kstart3_all(myPE).or.k.gt.kend3_all(myPE)) then
+
+        write(*,*) 'i or j or k do not belong to the processor'
+
+        call mfix_exit(myPE)
+        endif
+
+
+        FUNIJK = 1 + (I - istart3_all(myPE)) &
+      + (J-jstart3_all(myPE))*(iend3_all(myPE)-istart3_all(myPE)+1) &
+      + (K-kstart3_all(myPE))*(jend3_all(myPE)-jstart3_all(myPE)+1)* &
+        (iend3_all(myPE)-istart3_all(myPE)+1)
+
+        end function funijk
+
+
       END MODULE compar
 
