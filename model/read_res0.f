@@ -355,7 +355,7 @@
 !//
 !//
            nScalar = 0                !// since NScalar is not read in
-           doingPost = .true.         !// untill later
+           doingPost = .true.         !// until later
 
 	   call allocate_arrays       !// do for mfix/post_mfix
 !//
@@ -367,13 +367,29 @@
 !
 
         if (myPE == PE_IO) then
-	  CALL IN_BIN_512 (UNIT_RES, DX, IMAX2, &
-               NEXT_RECA)
-          CALL IN_BIN_512 (UNIT_RES, DY, JMAX2, &
-               NEXT_RECA) 
-          CALL IN_BIN_512 (UNIT_RES, DZ, KMAX3, &
-               NEXT_RECA) 
+	  CALL IN_BIN_512 (UNIT_RES, DX, IMAX2, NEXT_RECA)
+          CALL IN_BIN_512 (UNIT_RES, DY, JMAX2, NEXT_RECA) 
+          CALL IN_BIN_512 (UNIT_RES, DZ, KMAX2, NEXT_RECA) 
 	endif
+
+! 
+! the RES file for version <= 1.4 write out : dx(1) to dx(imax2)
+! but reads starting at dx(0). Need to shift the arrays for
+! proper pos-processing etc.
+!
+       if (version_number < 1.41) then 
+           do L = imax2,1,-1
+              dx(L) = dx(L-1)
+           end do
+           do L = jmax2,1,-1
+              dy(L) = dy(L-1)
+           end do
+           do L = kmax2,1,-1
+              dz(L) = dz(L-1)
+           end do
+        end if
+
+
         call bcast(dx, PE_IO)   !//PAR_I/O BCAST1d
         call bcast(dy, PE_IO)   !//PAR_I/O BCAST1d
         call bcast(dz, PE_IO)   !//PAR_I/O BCAST1d
