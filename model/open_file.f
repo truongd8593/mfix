@@ -24,6 +24,8 @@
          OPEN_ACCESS, OPEN_FORM, IRECL, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
+      USE compar      !// 001 Include MPI header file
+      
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -58,18 +60,31 @@
 !
 !                     record length
       INTEGER         IRECL
+!//PAR_I/O added dummy integer to count for 3 chrs in PE number
+      INTEGER    ::   DUMPE = 0
 !-----------------------------------------------
 !
-
+    
       FILE_NAME = ' ' 
       FILE_NAME(1:NB-1) = RUN_NAME(1:NB-1) 
-      FILE_NAME(NB:NB+3) = EXT(1:4) 
+!//PAR_I/O modify the filename for XXX.LOG format for all PEs
+      if( numPEs>1.AND.(EXT(1:4) == '.LOG') ) then
+        DUMPE = 3
+        FILE_NAME(NB:NB+3+DUMPE) = fbname//EXT(1:4) 
+        write(*,"('(PE ',I3,'): File name is :',A)") myPE, FILE_NAME(1:NB+6)
+      else
+        FILE_NAME(NB:NB+3) = EXT(1:4) 
+      endif
 !
       IF (OPEN_ACCESS == 'DIRECT') THEN 
-         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3), STATUS=OPEN_STAT, RECL=IRECL, ACCESS=&
+!//AIKEPARDBG implemented a bypass to avoid erasing files each time I start for debugging
+!         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3), STATUS=OPEN_STAT, RECL=IRECL, ACCESS=&
+         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3), STATUS='UNKNOWN', RECL=IRECL, ACCESS=&
             OPEN_ACCESS, FORM=OPEN_FORM, ERR=100) 
       ELSE 
-         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3), STATUS=OPEN_STAT, ACCESS=OPEN_ACCESS&
+!//AIKEPARDBG implemented a bypass to avoid erasing files each time I start for debugging
+!         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3+DUMPE), STATUS=OPEN_STAT, ACCESS=OPEN_ACCESS&
+         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3+DUMPE), STATUS='UNKNOWN', ACCESS=OPEN_ACCESS&
             , FORM=OPEN_FORM, ERR=100) 
       ENDIF 
       IER = 0 
@@ -79,3 +94,4 @@
       IER = 1 
       RETURN  
       END SUBROUTINE OPEN_FILE 
+      

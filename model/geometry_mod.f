@@ -43,6 +43,13 @@
 !
 !                      Starting index in the x or r direction
       INTEGER          IMIN1
+      
+!// 300 0912   IMIN2 : Index of the ghost cell added due to original MFIX
+      INTEGER          IMIN2
+
+!// 300 0912   IMIN3 : Index of the ghost cell added due to MFIX/MPI
+      INTEGER          IMIN3
+
 !
 !                      Number of cells in the x or r direction
       INTEGER          IMAX
@@ -52,6 +59,9 @@
 !
 !                      Number of cells in the x or r direction + 2
       INTEGER          IMAX2
+!
+!// 300 0912   IMAX3 : Total number of cells in x or r direction (incl ghost cells)
+      INTEGER          IMAX3
 !
 !                      Cell sizes in the x or r direction
       DOUBLE PRECISION DX (DIM_I)
@@ -71,6 +81,13 @@
 !
 !                      Starting index in the y direction
       INTEGER          JMIN1
+
+!// 300 0912   JMIN2 : Index of the ghost cell added due to original MFIX
+      INTEGER          JMIN2
+
+!// 300 0912   JMIN3 : Index of the ghost cell added due to MFIX/MPI
+      INTEGER          JMIN3
+
 !
 !                      Number of cells in the y direction
       INTEGER          JMAX
@@ -80,6 +97,10 @@
 !
 !                      Number of cells in the y direction + 2
       INTEGER          JMAX2
+
+!// 300 0912   JMAX3 : Index of the ghost cell added due to MFIX/MPI
+      INTEGER          JMAX3
+
 !
 !                      Cell sizes in the y direction
       DOUBLE PRECISION DY (DIM_J)
@@ -97,6 +118,13 @@
 !
 !                      Starting index in the z or theta direction
       INTEGER          KMIN1
+
+!// 300 0912   KMIN2 : Index of the ghost cell added due to original MFIX
+      INTEGER          KMIN2
+
+!// 300 0912   KMIN3 : Index of the ghost cell added due to MFIX/MPI
+      INTEGER          KMIN3
+
 !
 !                      Number of cells in the z or theta direction
       INTEGER          KMAX
@@ -106,6 +134,10 @@
 !
 !                      Number of cells in the z or theta direction + 2
       INTEGER          KMAX2
+
+!// 300 0912   KMAX3 : Index of the ghost cell added due to MFIX/MPI
+      INTEGER          KMAX3
+      
 !
 !                      Cell sizes in the z or theta direction
       DOUBLE PRECISION DZ (DIM_K)
@@ -118,15 +150,16 @@
 !
 !                      IMAX2 * JMAX2 * KMAX2
       INTEGER          IJKMAX2
+
+!// 300 0912 IJKMAX3 : Total number of cells in the domain (added due to MFIX/MPI)
+      INTEGER          IJKMAX3
+
 !
 !                      IJMAX2 + 1
       INTEGER          IJKMIN1
 !
 !                      IJKMAX2 - IJMAX2
       INTEGER          IJKMAX1
-!
-!                      (IMAX2+1) * (JMAX2+1) * (KMAX2+1)
-      INTEGER          IJKMAX3
 !
 !                      Cell flags.
       INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG 
@@ -282,9 +315,9 @@
 !
           common /geometry_i/imin1, imax1, jmin1, jmax1 !for Linux 
 
+!//AIKE 0912 moved the declarations above within the relevant declarations
 !     ADDED FOLLOWING VARIABLES TO TAKE CARE OF THE NEW CONVENTION - Pannala - 08/11/99
-
-      INTEGER IMIN3,JMIN3,KMIN3,IMAX3,JMAX3,KMAX3, IMIN2, JMIN2, KMIN2
+!      INTEGER IMIN3,JMIN3,KMIN3,IMAX3,JMAX3,KMAX3, IMIN2, JMIN2, KMIN2
  
  
 !HPF$ align FLAG(:) with TT(:)

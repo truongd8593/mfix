@@ -95,6 +95,8 @@
          DY(1) = DY(JMAX1) 
          DY(JMAX2) = DY(JMIN1) 
       ENDIF 
+!// 300 0912 For CYCLIC_Z, dz(1) of PE 0 = dz(kmax1) of PE 1
+!//          As dz() is the global array for all PEs no modification necessary
       IF (CYCLIC_Z) THEN 
          DZ(1) = DZ(KMAX1) 
          DZ(KMAX2) = DZ(KMIN1) 
@@ -151,6 +153,7 @@
          ODY(:JMAX2) = ONE/DY(:JMAX2) 
          J = JMAX2 + 1 
       ENDIF 
+!//? LIMITS : need to change the limits? kmax2 -> kmax3???
       DO K = 1, KMAX2 
 !
          IF (K == 1) THEN 
@@ -210,6 +213,7 @@
 !
 !       Look at 2 through KMAX1 W-momentum cells
       IF (DO_K) THEN 
+!// 300 0912 no changes in the limits as they run over ACTIVE cells ONLY
          DO K = KMIN1, KMAX1 
             DZ_T = HALF*(DZ(K+1)+DZ(K)) 
             ODZ_T(K) = ONE/DZ_T 
@@ -217,6 +221,7 @@
             FZ_T_BAR(K) = ONE - FZ_T(K) 
          END DO 
       ENDIF 
+
 !       ..........................................
 !       Look at last U-, V-, and W-momentum cells
       DX_E = DX(IMAX2) 
@@ -230,6 +235,7 @@
       FX_E(IMAX2) = HALF 
       FX_E_BAR(IMAX2) = HALF 
       FY_N(JMAX2) = HALF 
+!//? LIMITS: do we need to update values for KMAX3 also?      
       FY_N_BAR(JMAX2) = HALF 
       FZ_T(KMAX2) = HALF 
       FZ_T_BAR(KMAX2) = HALF 

@@ -89,9 +89,16 @@
 !
 !-----------------------------------------------
       INCLUDE 'function.inc'
+!//09/02/99 Initialize the default values to Undefined_I
+
+      IP1(:) = UNDEFINED_I
+      IM1(:) = UNDEFINED_I
+      JP1(:) = UNDEFINED_I
+      JM1(:) = UNDEFINED_I
+      KP1(:) = UNDEFINED_I
+      KM1(:) = UNDEFINED_I
 !
-!
-      DO I = ISTART3, IEND3
+      DO I = ISTART2, IEND2
          IF (CYCLIC_X.AND.NODESI.EQ.1) THEN 
             IP1(I) = IMAP(IMAP(I)+1)
             IM1(I) = IMAP(IMAP(I)-1)
@@ -100,7 +107,7 @@
             IP1(I) = MIN(IEND3,I + 1) 
          ENDIF 
       END DO 
-      DO J = JSTART3, JEND3
+      DO J = JSTART2, JEND2
          IF (CYCLIC_Y.AND.NODESJ.EQ.1) THEN 
             JP1(J) = JMAP(JMAP(J)+1)
             JM1(J) = JMAP(JMAP(J)-1)
@@ -109,7 +116,7 @@
             JP1(J) = MIN(JEND3,J + 1)
          ENDIF 
       END DO 
-      DO K = KSTART3, KEND3
+      DO K = KSTART2, KEND2
          IF (CYCLIC_Z.AND.NODESK.EQ.1) THEN 
             KP1(K) = KMAP(KMAP(K)+1)
             KM1(K) = KMAP(KMAP(K)-1)
@@ -123,7 +130,7 @@
 !     Loop over all cells
       DO K = KSTART3, KEND3
          DO J = JSTART3, JEND3
-            L100: DO I = ISTART3, IEND3
+            DO I = ISTART3, IEND3
 !
                IJK = FUNIJK(I,J,K)               !Find value of IJK 
 !
@@ -132,6 +139,18 @@
                J_OF(IJK) = J 
                K_OF(IJK) = K 
 !
+            END DO 
+         END DO 
+      END DO 
+
+!     Loop over all cells (minus the ghost layers)
+      DO K = KSTART2, KEND2
+         DO J = JSTART2, JEND2
+            L100: DO I = ISTART2, IEND2
+!
+               IJK = FUNIJK(I,J,K)               !Find value of IJK
+!
+
 !          Find the the effective cell-center indices for all neighbor cells
                CALL SET_INDEX1A (I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, &
                   IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT) 

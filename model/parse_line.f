@@ -29,6 +29,7 @@
       USE param 
       USE param1 
       USE parse 
+      USE compar      !// 001 Include MPI header file
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -85,12 +86,12 @@
 !
          LEND = LSTART - 1 + INDEX(LINE(LSTART:LMAX),END_STR) 
          IF (LEND <= LSTART) THEN 
-            WRITE (*, 1000) LINE(LSTART:LMAX) 
+            WRITE (*, 1000) myPE,LINE(LSTART:LMAX) !//PAR_I/O added myPE
             STOP  
          ENDIF 
 !
          IF (END_RXN(LINE(LSTART:LEND),LEND-LSTART)) THEN 
-            IF (.NOT.RXN_FLAG) WRITE (*, 1010) LINE(1:LMAX) 
+            IF (.NOT.RXN_FLAG) WRITE (*, 1010) myPE,LINE(1:LMAX) !//PAR_I/O added myPE
 !
             IF (READING_RATE) CALL CLOSE_READING_RATE 
             IF (READING_RXN) CALL CLOSE_READING_RXN 
@@ -122,9 +123,10 @@
       READ_FLAG = .TRUE. 
 !
       RETURN  
- 1000 FORMAT(/1X,70('*')//' From: PARSE_LINE',/&
+!//PARDBG added myPE
+ 1000 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_LINE',/&
          ' Message: No ending ) found in the input line: ',/9X,A,/1X,70('*')/) 
- 1010 FORMAT(/1X,70('*')//' From: PARSE_LINE',/&
+ 1010 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_LINE',/&
          ' Message: END keyword before a start keyword in line: ',/9X,A,/1X,70(&
          '*')/) 
       END SUBROUTINE PARSE_LINE 
@@ -281,6 +283,7 @@
       USE param 
       USE param1 
       USE parse 
+      USE compar      !// 001 Include MPI header file
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -343,7 +346,7 @@
 !
       LEND = LSTART - 1 + INDEX(LINE(LSTART:LMAX),END_STR) 
       IF (LEND <= LSTART) THEN 
-         WRITE (*, 1000) LINE(LSTART:LMAX) 
+         WRITE (*, 1000) myPE,LINE(LSTART:LMAX) !//PAR_I/O added myPE
          STOP  
       ENDIF 
 !
@@ -355,7 +358,7 @@
       DO L = LSTART + 2, LEND 
          IF (LINE(L:L)=='*' .OR. LINE(L:L)=='/' .OR. LINE(L:L)==END_STR) THEN 
             IF (LSUB == 1) THEN 
-               WRITE (*, 1015) LINE(LSTART:LEND) 
+               WRITE (*, 1015) myPE,LINE(LSTART:LEND) !//PAR_I/O added myPE
                STOP  
             ENDIF 
             IF (SUB_STR(1:LSUB-1) == 'PI') THEN 
@@ -385,7 +388,7 @@
          LMAX = SEEK_END(LINE,LEN(LINE)) 
          LDIF = 22 - LENGTH 
          IF (LMAX + LDIF > LEN(LINE)) THEN 
-            WRITE (*, 1020) LINE(1:80) 
+            WRITE (*, 1020) myPE,LINE(1:80) !//PAR_I/O added myPE
             STOP  
          ENDIF 
          DO L = LMAX, LEND + 1, -1 
@@ -404,15 +407,15 @@
       GO TO 10 
 !
   900 CONTINUE 
-      WRITE (*, 1010) SUB_STR(1:LSUB-1) 
+      WRITE (*, 1010) myPE, SUB_STR(1:LSUB-1) !//PAR_I/O added myPE
       STOP  
- 1000 FORMAT(/1X,70('*')//' From: PARSE_ARITH',/&
+ 1000 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_ARITH',/&
          ' Message: No ending ) found in the input line: ',/9X,A,/1X,70('*')/) 
- 1010 FORMAT(/1X,70('*')//' From: PARSE_ARITH',/&
+ 1010 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_ARITH',/&
          ' Message: Error reading the input string: ',/9X,A,/1X,70('*')/) 
- 1015 FORMAT(/1X,70('*')//' From: PARSE_ARITH',/&
+ 1015 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_ARITH',/&
          ' Message: Invalid operator in the input string: ',/9X,A,/1X,70('*')/) 
- 1020 FORMAT(/1X,70('*')//' From: PARSE_ARITH',/&
+ 1020 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_ARITH',/&
          ' Message: Too many arithmetic operations in the line: ',/1X,A,/1X,70(&
          '*')/) 
       END SUBROUTINE PARSE_ARITH 

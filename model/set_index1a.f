@@ -46,7 +46,6 @@
       USE physprop
       USE geometry
       USE compar
-      USE constant
       USE fldvar
       USE indices
       USE boundfunijk
@@ -69,36 +68,24 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
+!//09/02/99 - Modified calls to BOUND_FUNIJK to have a self 
+!//           consistent formulation - Sreekanth
 !
-      IMJK = BOUND_FUNIJK(I - 1,J,K) 
-      IPJK = BOUND_FUNIJK(I + 1,J,K) 
-      IJMK = BOUND_FUNIJK(I,J - 1,K) 
-      IJPK = BOUND_FUNIJK(I,J + 1,K) 
-      IJKM = BOUND_FUNIJK(I,J,K - 1) 
-      IJKP = BOUND_FUNIJK(I,J,K + 1) 
+      IMJK = FUNIJK(IM1(I),J,K) 
+      IPJK = FUNIJK(IP1(I),J,K) 
+      IJMK = FUNIJK(I,JM1(J),K) 
+      IJPK = FUNIJK(I,JP1(J),K) 
+      IJKM = FUNIJK(I,J,KM1(K)) 
+      IJKP = FUNIJK(I,J,KP1(K)) 
 !
-! Modify indices as needed to allow cyclic boundary conditions
-!
-      IF (CYCLIC_X.AND.NODESI==1) THEN 
-         IF (I == IMAX1) IPJK = BOUND_FUNIJK(IMIN1,J,K) 
-         IF (I == IMIN1) IMJK = BOUND_FUNIJK(IMAX1,J,K) 
-      ENDIF 
-      IF (CYCLIC_Y.AND.NODESJ==1) THEN 
-         IF (J == JMAX1) IJPK = BOUND_FUNIJK(I,JMIN1,K) 
-         IF (J == JMIN1) IJMK = BOUND_FUNIJK(I,JMAX1,K) 
-      ENDIF 
-      IF (CYCLIC_Z.AND.NODESK==1) THEN 
-         IF (K == KMAX1) IJKP = BOUND_FUNIJK(I,J,KMIN1) 
-         IF (K == KMIN1) IJKM = BOUND_FUNIJK(I,J,KMAX1) 
-      ENDIF 
 !
 !  IJKW
 !
-      IF (WALL_AT(IMJK)) THEN 
-         IJKW = IJK 
-      ELSE 
-         IJKW = IMJK 
-      ENDIF 
+       IF (WALL_AT(IMJK)) THEN 
+          IJKW = IJK 
+       ELSE 
+          IJKW = IMJK 
+       ENDIF 
 !
 !  IJKE
 !
@@ -113,7 +100,7 @@
       IF (WALL_AT(IJMK)) THEN 
          IJKS = IJK 
       ELSE 
-         IJKS = IJMK 
+          IJKS = IJMK 
       ENDIF 
 !
 !  IJKN
@@ -121,7 +108,7 @@
       IF (WALL_AT(IJPK)) THEN 
          IJKN = IJK 
       ELSE 
-         IJKN = IJPK 
+          IJKN = IJPK 
       ENDIF 
 !
 !  IJKB
@@ -129,7 +116,7 @@
       IF (WALL_AT(IJKM)) THEN 
          IJKB = IJK 
       ELSE 
-         IJKB = IJKM 
+          IJKB = IJKM 
       ENDIF 
 !
 !  IJKT
@@ -137,7 +124,7 @@
       IF (WALL_AT(IJKP)) THEN 
          IJKT = IJK 
       ELSE 
-         IJKT = IJKP 
+          IJKT = IJKP 
       ENDIF 
 !
       RETURN  

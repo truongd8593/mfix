@@ -20,7 +20,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE OPEN_FILES(RUN_NAME, RUN_TYPE, NN_SPX) 
+      SUBROUTINE OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -29,7 +29,8 @@
 !-----------------------------------------------
       USE machine 
       USE funits 
-      USE geometry           !//
+      USE compar      !// 001 Include MPI header file
+      
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -45,7 +46,7 @@
       CHARACTER*(*) RUN_TYPE
 !
 !                   number of single precision output files (param.inc)
-      INTEGER       NN_SPX
+      INTEGER       N_SPX
 !
 ! local variables
 !
@@ -68,6 +69,7 @@
 ! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
 !
 
+!//PAR_I/O all PEs must exec this check in order to avoid Bcast of NB
       DO LC = 1, LEN(RUN_NAME) 
          IF (RUN_NAME(LC:LC) == ' ') THEN 
             NB = LC 
@@ -75,25 +77,32 @@
          ENDIF 
       END DO 
       WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
-      STOP  
+!      STOP  
+      call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
 !
   125 CONTINUE 
       IF (NB + 4 > LEN(FILE_NAME)) THEN 
          WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
-         STOP  
+!         STOP  
+      call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
       ENDIF 
+
 !
+!//PAR_I/O modifications to create XXX.log are done in OPEN_FILE()
       CALL OPEN_FILE (RUN_NAME, NB, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
          'SEQUENTIAL', 'FORMATTED', 132, IER) 
       IF (IER /= 0) THEN 
-         CALL OPEN_FILE (RUN_NAME, NB, UNIT_LOG, '.LOG', FILE_NAME, 'OLD', &
+         CALL OPEN_FILE (RUN_NAME, NB+3, UNIT_LOG, '.LOG', FILE_NAME, 'OLD', &
             'SEQUENTIAL', 'FORMATTED', 132, IER) 
          IF (IER /= 0) GO TO 500
-	 DO WHILE(IER ==0)
-	   READ(UNIT_LOG,'(a)', IOSTAT = IER)ANS
-	 ENDDO
-	 BACKSPACE(UNIT_LOG) 
+     DO WHILE(IER ==0)
+       READ(UNIT_LOG,'(a)', IOSTAT = IER)ANS
+     ENDDO
+     BACKSPACE(UNIT_LOG) 
       ENDIF 
+
+!//PAR_I/O only PE 0 opens the ASCI output (.out), restart (.res) and species (.spX) files 
+      if ( myPE == PE_IO ) then
 !
       CALL OPEN_FILE (RUN_NAME, NB, UNIT_OUT, '.OUT', FILE_NAME, 'UNKNOWN', &
          'SEQUENTIAL', 'FORMATTED', 132, IER) 
@@ -108,8 +117,8 @@
             WRITE (*, 1001) FILE_NAME 
             GO TO 600 
          ENDIF 
-!
-         DO LC = 1, NN_SPX 
+
+         DO LC = 1, N_SPX 
             WRITE (EXT(4:4), 1000) LC 
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'NEW'&
                , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
@@ -122,7 +131,7 @@
             WRITE (*, 1002) FILE_NAME 
             GO TO 600 
          ENDIF 
-         DO LC = 1, NN_SPX 
+         DO LC = 1, N_SPX 
             WRITE (EXT(4:4), 1000) LC 
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'OLD'&
                , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
@@ -135,7 +144,7 @@
             WRITE (*, 1002) FILE_NAME 
             GO TO 600 
          ENDIF 
-         DO LC = 1, NN_SPX 
+         DO LC = 1, N_SPX 
             WRITE (EXT(4:4), 1000) LC 
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'NEW'&
                , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
@@ -144,14 +153,22 @@
       CASE DEFAULT 
          WRITE (*, *) ' OPEN_FILES: DO NOT KNOW HOW TO PROCESS' 
          WRITE (*, *) ' RUN_TYPE in the input file' 
-         STOP  
+!         STOP  
+         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
       END SELECT 
+      endif   ! end of myPE=PE_IO if block
+
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): reached end of open_files')") myPE	!//AIKEPARDBG
+!      call mfix_exit(myPE)	!//AIKEPARDBG
+
       RETURN  
   500 CONTINUE 
-      WRITE (*, 1100) FILE_NAME 
+      WRITE (*, 1100) myPE,FILE_NAME  !//PAR_I/O added myPE for output
   600 CONTINUE 
       CALL SLUMBER 
-      STOP  
+!      STOP  
+      call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
 !
  1000 FORMAT(I1) 
  1001 FORMAT(/70('*')//' From: OPEN_FILES',/&
@@ -160,6 +177,6 @@
  1002 FORMAT(/70('*')//' From: OPEN_FILES',/&
          ' Error: RESTART run -- .RES file should be in the run directory'/&
          ' Cannot open existing file -- ',A,/70('*')/) 
- 1100 FORMAT(/70('*')//' From: OPEN_FILES',/' Error: Cannot open file -- ',A,/&
+ 1100 FORMAT(/70('*')//'(PE ',I3,'): From: OPEN_FILES',/' Error: Cannot open file -- ',A,/&
          70('*')/) 
       END SUBROUTINE OPEN_FILES 

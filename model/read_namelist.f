@@ -7,6 +7,19 @@
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
 !                                                                      C
 !  Revision Number:                                                    C
+!  Purpose:  Modifications for generating 3 character filebasename,    C
+!            for each PE, i.e., XXX000.LOG, XXX001.LOG                 C
+!            Each PE reads it's own mfix.dat, e.g.                     C
+!                for PE 0 : mfix000.dat, for PE 1 : mfix001.dat etc.   C
+!            Added checks to inquire whether mfixXXX.dat exists or not C           
+!            Modifications for preliminary checks for NO_K = TRUE AND  C
+!            number of processors (numPEs) > 1 situation               C
+!            (see comment line : !// 300 0809)                         C
+!                                                                      C
+!  Author:   Aeolus Res. Inc.                         Date: 05-AUG-99  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!
+!  Revision Number:                                                    C
 !  Purpose:                                                            C
 !  Author:                                            Date: dd-mmm-yy  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
@@ -65,6 +78,7 @@
       USE leqsol 
       USE residual
       USE rxns
+      USE compar      !// 001 Include MPI header file
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -112,11 +126,15 @@
 !                      blank line function
       LOGICAL          BLANK_LINE
       INTEGER   L
+!// 500 0805 define local variables, i1, i10, i100 for generating filebasename
+      INTEGER :: i1, i10, i100
+      LOGICAL :: present
+
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      INTEGER , EXTERNAL :: LINE_TOO_BIG, SEEK_COMMENT 
-      LOGICAL , EXTERNAL :: BLANK_LINE 
+!      INTEGER , EXTERNAL :: LINE_TOO_BIG, SEEK_COMMENT 
+!      LOGICAL , EXTERNAL :: BLANK_LINE 
 !-----------------------------------------------
 !
 
@@ -131,11 +149,34 @@
       READ_FLAG = .TRUE. 
 !
       NO_OF_RXNS = 0 
+
+!// 500 0805 Generate the decimals for file basename for each PE (max 999 PEs!)
+      i100 = int(myPE/100)
+      i10  = int((myPE-i100*100)/10)
+      i1   = int((myPE-i100*100-i10*10)/1)
+
+      i100 = i100 + 48
+      i10  = i10  + 48
+      i1   = i1   + 48
+!// 500 0805 generate filebasename for each active PE
+      fbname=char(i100)//char(i10)//char(i1)
+
+!//AIKEPARDBG
+!      if(idbgpar.ge.1)&                     !//AIKEPARDBG
+!       write(*,FMT="('File basename for PE ',I3,' is ',A3)") myPE,fbname  !//AIKEPARDBG
+
+!// 500 0805 ensure that mfixXXX.dat exists
+      inquire(file='mfix'//fbname//'.dat',exist=present)
+      if(.not.present) then
+        write(*,"('(PE ',I3,'): input data file, ',A11,' is missing: run aborted')") &
+            myPE,'mfix'//fbname//'.dat'
+        call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+      endif
 !
 !
 ! OPEN MFIX ASCII INPUT FILE, AND LOOP THRU IT
 !
-      OPEN(UNIT=UNIT_DAT, FILE='mfix.dat', STATUS='OLD', ERR=910) 
+      OPEN(UNIT=UNIT_DAT, FILE='mfix'//fbname//'.dat', STATUS='OLD', ERR=910) !// 500 modified filename
 !
   100 CONTINUE 
       READ (UNIT_DAT, 1100, END=500) LINE_STRING 
@@ -148,6 +189,7 @@
 !
       IF (LINE_TOO_BIG(LINE_STRING,LINE_LEN,MAXCOL) > 0) THEN 
          WRITE (*, 1300) LINE_STRING 
+!//  MPI_Exit
          CALL MFIX_EXIT 
       ENDIF 
 !
@@ -198,8 +240,9 @@
 !
          IF (.NOT.GOT_RATE(L)) THEN 
 !
-            WRITE (*, 1610) RXN_NAME(L) 
-            STOP  
+            WRITE (*, 1610) myPE,RXN_NAME(L) !//PAR_I/O added processor id for output
+!            STOP  
+             call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
 !
          ENDIF 
 !
@@ -207,11 +250,34 @@
 !
          IF (.NOT.GOT_RXN(L)) THEN 
 !
-            WRITE (*, 1620) RXN_NAME(L) 
-            STOP  
+            WRITE (*, 1620) myPE,RXN_NAME(L) !//PAR_I/O added processor id for output
+!            STOP  
+             call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
 !
          ENDIF 
       END DO 
+
+!// 300 0809 Perform some checks in the domain decomposition direction, k
+!// 300 0807 need to make sure if numPEs > 1, then there must KMAX > 1 as it is decompition direction
+      if (numPEs > 1 .AND. (KMAX <= 2)) then
+         write(*,"('(PE ',I3,'): Kmax <= 2 -> Decomposition NOT possible!',/,10X,'Aborting the run')") myPE
+         call mfix_exit(myPE)
+      endif
+
+!// 300 0807 need to make sure if numPEs > 1, then NO_K must be FALSE as it is decompition direction
+      if (numPEs > 1 .AND. NO_K) then
+         write(*,"('(PE ',I3,'): No k direction -> No decomposition!',/,10X,'Aborting the run')") myPE
+         call mfix_exit(myPE)
+      endif
+
+
+!//AIKEPARDBG debug output to make sure data read from mfix.dat is same on all PEs
+!      open(unit=UNIT_OUT,file='test'//fbname//'.out',status='UNKNOWN')  !//AIKEPARDBG
+!      CALL WRITE_OUT0                                  !//AIKEPARDBG
+!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)			!//AIKEPARDBG
+!      write(*,"('(PE ',I3,'): reached end of read_namelist')") myPE	!//AIKEPARDBG
+!      call mfix_exit(myPE)								!//AIKEPARDBG
+
       RETURN  
 !
 ! HERE IF AN ERROR OCCURED OPENNING/READING THE FILES
@@ -242,9 +308,9 @@
          'Possible causes are 1. incorrect format, 2. unknown name,',/1X,&
          '3. the item is dimensioned too small (see PARAM.INC file).',/1X,70(&
          '*')/) 
- 1610 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&
+ 1610 FORMAT(/1X,70('*')//'(PE ',I3,'): From: READ_NAMELIST',/' Message: ',&
          'No rxn rate defined for rxn: ',A,/1X,70('*')/) 
- 1620 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&
+ 1620 FORMAT(/1X,70('*')//'(PE ',I3,'): From: READ_NAMELIST',/' Message: ',&
          'No stoichiometry defined for rxn: ',A,/1X,70('*')/) 
 !
       END SUBROUTINE READ_NAMELIST 
@@ -267,7 +333,7 @@
 !
       blank_line = .FALSE. 
       do l = 1, len(line) 
-         if (line(l:l)/=' ' .and. line(l:l)/='	') return  
+       if (line(l:l)/=' ' .and. line(l:l)/='    ') return
       end do 
 !
       blank_line = .TRUE. 
