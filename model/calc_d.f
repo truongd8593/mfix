@@ -94,7 +94,7 @@
                         )*FOA1PF) 
                      D_E(IJK,1) = FOA1PF*D_E(IJK,0) 
                   ELSE 
-                     IF ((-A_M(IJK,0,1)) > SMALL_NUMBER) THEN 
+                     IF ((-A_M(IJK,0,0)) > SMALL_NUMBER) THEN 
                         D_E(IJK,0) = P_SCALE*AYZ(IJK)/(-A_M(IJK,0,0)) 
                      ELSE 
                         D_E(IJK,0) = ZERO 
@@ -276,7 +276,7 @@
                      D_N(IJK,1) = FOA1PF*D_N(IJK,0) 
 !
                   ELSE 
-                     IF ((-A_M(IJK,0,1)) > SMALL_NUMBER) THEN 
+                     IF ((-A_M(IJK,0,0)) > SMALL_NUMBER) THEN 
                         D_N(IJK,0) = P_SCALE*AXZ(IJK)/(-A_M(IJK,0,0)) 
                      ELSE 
                         D_N(IJK,0) = ZERO 
@@ -462,7 +462,7 @@
                      D_T(IJK,1) = FOA1PF*D_T(IJK,0) 
 !
                   ELSE 
-                     IF ((-A_M(IJK,0,1)) > SMALL_NUMBER) THEN 
+                     IF ((-A_M(IJK,0,0)) > SMALL_NUMBER) THEN 
                         D_T(IJK,0) = P_SCALE*AXY(IJK)/(-A_M(IJK,0,0)) 
                      ELSE 
                         D_T(IJK,0) = ZERO 
