@@ -1,4 +1,5 @@
 	module gridmap
+	use mpi_utility
 	use parallel_mpi
 	use geometry
 	use sendrecv
@@ -22,7 +23,7 @@
 
         if(numPEs.ne.(nodesi*nodesj*nodesk)) then
 	write(*,*) 'incorrect distribution of processors'
-	call MPI_abort( MPI_COMM_WORLD, ierr)
+    call MPI_abort( MPI_COMM_WORLD, ierr)
 	endif
 
 !	   Determine the size in i direction and add the remainder sequentially
@@ -84,9 +85,7 @@
 !       ******************************************************************
 
 	allocate( ijksize3_all(0:numPEs-1) )
-
 	allocate( ijkstart3_all(0:numPEs-1) )
-
 	allocate( ijkend3_all(0:numPEs-1) )
 
 	allocate( istart_all(0:numPEs-1) )
@@ -133,10 +132,18 @@
 	do iproc=0,numPEs-1
 
 	   istart2_all(iproc) = max(imin1-1,min(imax1+1,istart1_all(iproc)-1))
-	   istart3_all(iproc) = max(imin1-2,min(imax1+2,istart2_all(iproc)-1))
+	   if(nodesi.ne.1) then
+ 	   istart3_all(iproc) = max(imin1-2,min(imax1+2,istart2_all(iproc)-1))
+	   else
+	   istart3_all(iproc) = istart2_all(iproc)
+	   endif
 
 	   jstart2_all(iproc) = max(jmin1-1,min(jmax1+1,jstart1_all(iproc)-1))
-	   jstart3_all(iproc) = max(jmin1-2,min(jmax1+2,jstart2_all(iproc)-1))
+           if(nodesj.ne.1) then
+ 	   jstart3_all(iproc) = max(jmin1-2,min(jmax1+2,jstart2_all(iproc)-1))
+	   else
+	   jstart3_all(iproc) = jstart2_all(iproc)
+           endif
 
 	   if(no_k) then
 	   kstart2_all(iproc) = kstart1_all(iproc)
@@ -145,25 +152,46 @@
 	   else
 
 	   kstart2_all(iproc) = max(kmin1-1,min(kmax1+1,kstart1_all(iproc)-1))
-	   kstart3_all(iproc) = max(kmin1-2,min(kmax1+2,kstart2_all(iproc)-1))
+           if(nodesk.ne.1) then
+ 	   kstart3_all(iproc) = max(kmin1-2,min(kmax1+2,kstart2_all(iproc)-1))
+	   else
+	   kstart3_all(iproc) =  kstart2_all(iproc)
+	   endif
 
 	   endif
 
 
 	   iend2_all(iproc) = max(imin1-1,min(imax1+1,iend1_all(iproc)+1))
+
+           if(nodesi.ne.1) then
 	   iend3_all(iproc) = max(imin1-2,min(imax1+2,iend2_all(iproc)+1))
+	   else
+	   iend3_all(iproc) = iend2_all(iproc)
+	   endif
 
 	   jend2_all(iproc) = max(jmin1-1,min(jmax1+1,jend1_all(iproc)+1))
+
+           if(nodesj.ne.1) then
 	   jend3_all(iproc) = max(jmin1-2,min(jmax1+2,jend2_all(iproc)+1))
+	   else
+	   jend3_all(iproc) = jend2_all(iproc)
+	   endif
 
            if(no_k) then
+
            kend2_all(iproc) = kend1_all(iproc)
 	   kend3_all(iproc) = kend1_all(iproc)
 
 	   else
 
 	   kend2_all(iproc) = max(kmin1-1,min(kmax1+1,kend1_all(iproc)+1))
+
+           if(nodesk.ne.1) then
 	   kend3_all(iproc) = max(kmin1-2,min(kmax1+2,kend2_all(iproc)+1))
+	   else
+	   kend3_all(iproc) = kend2_all(iproc)
+	   endif
+
 	   endif
 
 	enddo
@@ -354,6 +382,7 @@
 
 	enddo
 
+
 !       Setup coefficients of FUINIJK
 
         c0 = 1 - jstart3_all(myPE)
@@ -362,7 +391,7 @@
 
 !	Call to sendrecv_init to set all the communication pattern
 
-	comm = MPI_COMM_WORLD
+ 	comm = MPI_COMM_WORLD
         call sendrecv_init( comm, &
                 cyclic_x, cyclic_y, cyclic_z, idebug=0 )
 	

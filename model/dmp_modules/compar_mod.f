@@ -84,17 +84,17 @@
 
         integer :: istart, iend, jstart, jend, kstart, kend
 
-!       Funijk coefficients
-
-	integer :: c0, c1, c2
-
 !	Variables added at Aytekin's request on 09/01/99 for some code implementation
 
 !// 500 0803 declaration for storing filebasename, e.g. mfix000.dat
     	CHARACTER(len=3) :: fbname
     	INTEGER :: idbg = 1
 
-!contains
+!       Funijk coefficients
+
+        integer :: c0, c1, c2
+
+!	contains
 
 !       integer function funijk(i,j,k)
 !       integer,  intent(in):: i,j,k
@@ -121,8 +121,6 @@
 	
 !       end function funijk
 
-!//AIKETIMER 0306
-      REAL starttime,endtimeSet 
 
       END MODULE compar
 
