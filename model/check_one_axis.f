@@ -41,7 +41,7 @@
       LOGICAL NO_IJK, SHIFT 
       CHARACTER AXIS, AXIS_INDEX 
 !//EFD use explicit dimension for DA
-      DOUBLE PRECISION, DIMENSION(DIMEN) :: DA 
+      DOUBLE PRECISION, DIMENSION(0:DIMEN+1) :: DA 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
