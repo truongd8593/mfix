@@ -115,7 +115,8 @@
       IF (SPECIES_EQ(0)) THEN 
          DO N = 1, NMAX(0) 
             CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER) 
-            DO IJK = 1, IJKMAX2 
+!// 350 1206 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3	    
+            DO IJK = ijkstart3, ijkend3 
 !
                IF (FLUID_AT(IJK)) THEN 
                   APO = ROP_G(IJK)*VOL(IJK)*ODT 
@@ -129,6 +130,7 @@
 !
                ENDIF 
             END DO 
+!//? check with Sreekanth for availability of conv_dif_phi implementation	    
             CALL CONV_DIF_PHI (X_G(1,N), DIF_G(1,N), DISCRETIZE(7), U_G, V_G, &
                W_G, ROP_G, 0, A_M, B_M, IER) 
 !
@@ -177,7 +179,8 @@
 !
                CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
 !
-               DO IJK = 1, IJKMAX2 
+!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+               DO IJK = ijkstart3, ijkend3 
 !
                   IF (FLUID_AT(IJK)) THEN 
 !
