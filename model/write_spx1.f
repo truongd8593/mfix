@@ -72,161 +72,256 @@
 !              Number of records written each time step
       INTEGER  NUM_REC
 !-----------------------------------------------
-
-      if (myPE.ne.PE_IO) return    !//
-!//     call lock_tmp_array
 !
-      allocate (array1(ijkmax2))   !//
-      allocate (array2(ijkmax3))   !//
+      if (myPE .eq.PE_IO) then
+         allocate (array1(ijkmax2))   !//
+         allocate (array2(ijkmax3))   !//
+      else
+         allocate (array1(1))   !//
+         allocate (array2(1))   !//
+      end if
 !
 ! ".SP1" FILE         EP_g    [ ROP_g, RO_g  must be calculated ...
 !                                        not written out ]
 !
       SELECT CASE (L)  
       CASE (1)  
-         READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         NUM_REC = NEXT_REC 
-         WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
-         NEXT_REC = NEXT_REC + 1 
-         call gather (EP_g,array2,root)   !//
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
-         NUM_REC = NEXT_REC - NUM_REC 
-         WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         CALL FLUSH (UNIT_SPX + L) 
+         if (myPE.eq.PE_IO) then 
+            READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            NUM_REC = NEXT_REC 
+            WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
+            NEXT_REC = NEXT_REC + 1 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         call gather (EP_g,array2,root,1)   !//
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE .eq. PE_IO) then
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+            NUM_REC = NEXT_REC - NUM_REC 
+            WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            CALL FLUSH (UNIT_SPX + L) 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP2" FILE         P_g , P_star
 !
       CASE (2)  
-         READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         NUM_REC = NEXT_REC 
-         WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
-         NEXT_REC = NEXT_REC + 1 
+         if (myPE.eq.PE_IO) then 
+            READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            NUM_REC = NEXT_REC 
+            WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
+            NEXT_REC = NEXT_REC + 1 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          call gather (P_g,array2,root)   !//
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then 
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          call gather (P_star,array2,root)   !//
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
-         NUM_REC = NEXT_REC - NUM_REC 
-         WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         CALL FLUSH (UNIT_SPX + L) 
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then 
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+            NUM_REC = NEXT_REC - NUM_REC 
+            WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            CALL FLUSH (UNIT_SPX + L) 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP3" FILE         U_g , V_g , W_g
 !
       CASE (3)  
-         READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         NUM_REC = NEXT_REC 
-         WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
-         NEXT_REC = NEXT_REC + 1 
+         if (myPE.eq.PE_IO) then 
+            READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            NUM_REC = NEXT_REC 
+            WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
+            NEXT_REC = NEXT_REC + 1
+         end if 
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          call gather (U_g,array2,root)   !//
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          call gather (V_g,array2,root)   !//
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          call gather (W_g,array2,root)   !//
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_R (UNIT_SPX + L,array1, IJKMAX2, NEXT_REC) 
-         NUM_REC = NEXT_REC - NUM_REC 
-         WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         CALL FLUSH (UNIT_SPX + L) 
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_R (UNIT_SPX + L,array1, IJKMAX2, NEXT_REC) 
+            NUM_REC = NEXT_REC - NUM_REC 
+            WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            CALL FLUSH (UNIT_SPX + L) 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP4" FILE         U_s , V_s , W_s
 !
       CASE (4)  
-         READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         NUM_REC = NEXT_REC 
-         WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
-         NEXT_REC = NEXT_REC + 1 
+         if (myPE.eq.PE_IO) then
+            READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            NUM_REC = NEXT_REC 
+            WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
+            NEXT_REC = NEXT_REC + 1 
+         end if
          DO LC = 1, MMAX 
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
             call gather (U_s(:,LC),array2,root)   !//
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+            if (myPE.eq.PE_IO) then
+               call convert_to_io_dp(array2,array1,ijkmax2)
+               CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+            end if
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
             call gather (V_s(:,LC),array2,root)   !//
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_R (UNIT_SPX + L,array1 , IJKMAX2, NEXT_REC) 
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+            if (myPE.eq.PE_IO) then
+               call convert_to_io_dp(array2,array1,ijkmax2)
+               CALL OUT_BIN_R (UNIT_SPX + L,array1 , IJKMAX2, NEXT_REC) 
+            end if
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
             call gather (W_s(:,LC),array2,root)   !//
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_R (UNIT_SPX + L,array1, IJKMAX2, NEXT_REC) 
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+            if (myPE.eq.PE_IO) then
+               call convert_to_io_dp(array2,array1,ijkmax2)
+               CALL OUT_BIN_R (UNIT_SPX + L,array1, IJKMAX2, NEXT_REC) 
+            end if
          END DO 
-         NUM_REC = NEXT_REC - NUM_REC 
-         WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         CALL FLUSH (UNIT_SPX + L) 
+         if (myPE.eq.PE_IO) then
+            NUM_REC = NEXT_REC - NUM_REC 
+            WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            CALL FLUSH (UNIT_SPX + L) 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP5" FILE         ROP_s
 !
       CASE (5)  
-         READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         NUM_REC = NEXT_REC 
-         WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
-         NEXT_REC = NEXT_REC + 1 
+         if (myPE.eq.PE_IO) then
+            READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            NUM_REC = NEXT_REC 
+            WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
+            NEXT_REC = NEXT_REC + 1 
+         end if
          DO LC = 1, MMAX 
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
             call gather (ROP_s(:,LC),array2,root)   !//
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+            if (myPE.eq.PE_IO) then
+               call convert_to_io_dp(array2,array1,ijkmax2)
+               CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+            end if
          END DO 
-         NUM_REC = NEXT_REC - NUM_REC 
-         WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         CALL FLUSH (UNIT_SPX + L) 
+         if (myPE.eq.PE_IO) then
+            NUM_REC = NEXT_REC - NUM_REC 
+            WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            CALL FLUSH (UNIT_SPX + L) 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP6" FILE         T_g  , T_s
 !
       CASE (6)  
-         READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         NUM_REC = NEXT_REC 
-         WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
-         NEXT_REC = NEXT_REC + 1 
+         if (myPE.eq.PE_IO) then
+            READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            NUM_REC = NEXT_REC 
+            WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
+            NEXT_REC = NEXT_REC + 1 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          call gather (T_g,array2,root)   !//
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
-         DO LC = 1, MMAX 
-            call gather (T_s(:,LC),array2,root)   !//
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then
             call convert_to_io_dp(array2,array1,ijkmax2)
             CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+         end if
+         DO LC = 1, MMAX 
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+            call gather (T_s(:,LC),array2,root)   !//
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+            if (myPE.eq.PE_IO) then
+               call convert_to_io_dp(array2,array1,ijkmax2)
+               CALL OUT_BIN_R (UNIT_SPX + L, array1, IJKMAX2, NEXT_REC) 
+            end if
          END DO 
-         NUM_REC = NEXT_REC - NUM_REC 
-         WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         CALL FLUSH (UNIT_SPX + L) 
+         if (myPE.eq.PE_IO) then
+            NUM_REC = NEXT_REC - NUM_REC 
+            WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            CALL FLUSH (UNIT_SPX + L) 
+         end if
 !
 ! ".SP7" FILE         X_g, X_s
 !
       CASE (7)  
-         READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         NUM_REC = NEXT_REC 
-         WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
-         NEXT_REC = NEXT_REC + 1 
+         if (myPE.eq.PE_IO) then
+            READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            NUM_REC = NEXT_REC 
+            WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
+            NEXT_REC = NEXT_REC + 1 
+         end if
          DO N = 1, NMAX(0) 
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
             call gather (X_G(:,N),array2,root)   !//
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_R (UNIT_SPX + L,array1 , IJKMAX2, NEXT_REC) 
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+            if (myPE.eq.PE_IO) then
+               call convert_to_io_dp(array2,array1,ijkmax2)
+               CALL OUT_BIN_R (UNIT_SPX + L,array1 , IJKMAX2, NEXT_REC) 
+            end if
          END DO 
          DO LC = 1, MMAX 
             DO N = 1, NMAX(LC) 
+               call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
                call gather (X_s(:,LC,N),array2,root)  !//
-               call convert_to_io_dp(array2,array1,ijkmax2)
-               CALL OUT_BIN_R (UNIT_SPX + L,array1, IJKMAX2, NEXT_REC) 
+               call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+               if (myPE.eq.PE_IO) then
+                  call convert_to_io_dp(array2,array1,ijkmax2)
+                  CALL OUT_BIN_R (UNIT_SPX + L,array1, IJKMAX2, NEXT_REC) 
+               end if
             END DO 
          END DO 
-         NUM_REC = NEXT_REC - NUM_REC 
-         WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         CALL FLUSH (UNIT_SPX + L) 
+         if (myPE.eq.PE_IO) then
+            NUM_REC = NEXT_REC - NUM_REC 
+            WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            CALL FLUSH (UNIT_SPX + L) 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP8" FILE         THETA_m
 !
       CASE (8)  
-         READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         NUM_REC = NEXT_REC 
-         WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
-         NEXT_REC = NEXT_REC + 1 
+         if (myPE.eq.PE_IO) then
+            READ (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            NUM_REC = NEXT_REC 
+            WRITE (UNIT_SPX + L, REC=NEXT_REC) REAL(TIME), NSTEP 
+            NEXT_REC = NEXT_REC + 1
+         end if 
          DO LC = 1, MMAX 
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
             call gather (THETA_m(:,LC),array2,root)   !//
-            call convert_to_io_dp(array2,array1,ijkmax2)
-            CALL OUT_BIN_R (UNIT_SPX + L,array1 , IJKMAX2, NEXT_REC) 
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+            if (myPE.eq.PE_IO) then
+               call convert_to_io_dp(array2,array1,ijkmax2)
+               CALL OUT_BIN_R (UNIT_SPX + L,array1 , IJKMAX2, NEXT_REC) 
+            end if
          END DO 
-         NUM_REC = NEXT_REC - NUM_REC 
-         WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
-         CALL FLUSH (UNIT_SPX + L) 
+         if (myPE.eq.PE_IO) then
+            NUM_REC = NEXT_REC - NUM_REC 
+            WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
+            CALL FLUSH (UNIT_SPX + L) 
+         end if
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 !
       END SELECT 
