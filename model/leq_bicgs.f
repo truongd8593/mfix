@@ -181,7 +181,7 @@
 !
 !     Scale matrix to have unit diagonal
 !
-!$omp parallel do private(ijk,oam,aijmax)
+!$omp parallel do private(i,j,k,ijk,oam,aijmax)
         do k = kstart2,kend2
           do i = istart2,iend2
             do j = jstart2,jend2
@@ -722,10 +722,10 @@
 
       if (do_k) then
 
-!$omp    parallel  do &
-!$omp&   private(
-!$omp&           ijk,i,j,k, &
-!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+!$omp    parallel  do                                        &
+!$omp    private(                                            &  
+!$omp            ijk,i,j,k,                                  &
+!$omp            im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
         do k = kstart,kend
         do i = istart,iend
         do j = jstart,jend
@@ -863,7 +863,7 @@
 
      IF (SETGUESS) THEN
 
-!$omp   parallel do private(ijk)
+!$omp   parallel do private(i,j,k,  ijk)
         do k = kstart3,kend3
         do i = istart3,iend3
         do j = jstart3,jend3
@@ -1841,7 +1841,7 @@
 !
 !     Scale matrix to have unit diagonal
 !
-!$omp parallel do private(ijk,oam,aijmax)
+!$omp parallel do private(i,j,k,  ijk,oam,aijmax)
         do k = kstart2,kend2
           do i = istart2,iend2
             do j = jstart2,jend2
@@ -2382,10 +2382,10 @@
 
       if (do_k) then
 
-!$omp    parallel  do &
-!$omp&   private(
-!$omp&           ijk,i,j,k, &
-!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+!$omp    parallel  do                                         &
+!$omp    private(                                             &
+!$omp            ijk,i,j,k,                                   &
+!$omp            im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
         do k = kstart,kend
         do i = istart,iend
         do j = jstart,jend
@@ -2523,7 +2523,7 @@
 
      IF (SETGUESS) THEN
 
-!$omp   parallel do private(ijk)
+!$omp   parallel do private(i,j,k,  ijk)
         do k = kstart3,kend3
         do i = istart3,iend3
         do j = jstart3,jend3
