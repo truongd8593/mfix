@@ -57,7 +57,7 @@
       INCLUDE 'function.inc'
 !
 !
-      IF (K_S0 /= UNDEFINED) RETURN  
+      IF (DIF_s0  /= UNDEFINED) RETURN  
 
 !!$omp  parallel do private(n,ijk) &
 !!$omp& schedule(dynamic,chunk_size)
