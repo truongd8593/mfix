@@ -8,12 +8,12 @@
 #
 # M. Syamlal and P. Nicoletti                  9-27-94
 #
-vers="Version 4.1"
+vers="4.1"
 echo
 echo 
 echo "*******************************************"
 echo "* Creating the MFIX-executable mfix.exe   *"
-echo "*                $vers              *"
+echo "*                Version $vers              *"
 echo "*******************************************"
 echo
 
@@ -546,12 +546,22 @@ esac
   then
     cp mfix.exe $run_dir
     echo
-    echo 
-    echo "*******************************************"
-    echo "* Compilation successful: mfix.exe created*"
-    echo "*              $vers                *"
-    echo "*******************************************"
-    echo 
+
+  case $dmp_version in
+  y|Y )
+        echo "********************************************************************"
+        echo " Compilation successful: mfix.$vers created"
+	echo " To run MFIX type (or equivalent): mpirun -np<# processors> mfix.exe"
+        echo "********************************************************************"
+    ;;
+  *)
+        echo "*******************************************"
+        echo " Compilation successful: mfix.$vers created"
+	echo " To run MFIX type: mfix.exe"
+        echo "*******************************************"
+    ;;
+  esac
+
   else
     echo
     echo
