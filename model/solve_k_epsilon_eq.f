@@ -232,7 +232,7 @@
 
             END DO   
     
-            CALL CONV_DIF_PHI (E_Turb_G, DIF_E_Turb_G, DISCRETIZE(8), &
+            CALL CONV_DIF_PHI (E_Turb_G, DIF_E_Turb_G, DISCRETIZE(9), &
                                U_G, V_G, W_G, ROP_G, M, A_M, B_M, IER) 
 !
 !
@@ -327,7 +327,7 @@
             CALL ADJUST_LEQ (res1, LEQ_IT(9), LEQ_METHOD(9), &
                LEQI, LEQM, IER) 
 !
-            write(Vname, '(A,I2)')'K_Turb_G'
+            write(Vname, '(A,I2)')'E_Turb_G'
             CALL SOLVE_LIN_EQ (Vname, E_Turb_G, A_M, B_M, M, LEQI, LEQM, &
                              LEQ_SWEEP(9), LEQ_TOL(9),IER) 
 !          call out_array(E_Turb_G, Vname)
