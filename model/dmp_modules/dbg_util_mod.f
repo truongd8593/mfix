@@ -126,7 +126,7 @@
 !      integer, optional, intent(in) :: mroot, idebug
 
        OPEN(unit=ldbg,file=flag//fbname//'.LOG',status='UNKNOWN')
-       write(ldbg,"('Dumping variable : ',varname)") 
+       write(ldbg,"('Dumping variable : ',A10)") varname
        DO K = kstart3, kend3                               !//AIKEPARDBG
          write(ldbg,"('K = ',I5)") K                !//AIKEPARDBG 
  	 write(ldbg,"(12X,14(I3,11X))") (I,i=Istart3,Iend3)  !//AIKEPARDBG
