@@ -8,7 +8,7 @@
 #
 # M. Syamlal and P. Nicoletti                  9-27-94
 #
-vers="2003-3"
+vers="2004-3"
 echo
 echo 
 echo "*******************************************"
@@ -406,23 +406,23 @@ ln -sf "$mpi_include/mpif.h" .
 	      exit
             fi
 
-            compile_common="-c -O3 axkW -tpp7 -w -w95 -i_dynamic -ip -FR"
-            compile_d="-g -O0 -c -FR -w -d1 -CB " 
-            link_d="-L$intel_lib -lPEPCF90 "
+            compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -FR"
+            compile_d="-g -O0 -c -FR -I. -w -d1 -CB " 
+            link_d="-I. -L$intel_lib -lPEPCF90 "
             compile="$compile_common"
             compile2="$compile_common"
-            link="-L$intel_lib -lPEPCF90"
+            link="-I. -L$intel_lib -lPEPCF90"
             MODULE_CODE=0
             fi
 
             if test $intel_ver = "Linux_ifc8" 
             then
-              compile_common="-c -O3 axkW -tpp7 -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"
-              compile_d="-g -c -convert big_endian -assume byterecl -FR -O0 -fpe0 -d1 -CB "
-              link_d=" "
+              compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"
+              compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB "
+              link_d="-I.  "
               compile="$compile_common"
               compile2="$compile_common"
-              link=" "
+              link="-I.  "
               MODULE_CODE=1
             fi
 
