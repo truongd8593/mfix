@@ -1,6 +1,6 @@
 Simulations in tests directory
 
-Name			Gas	Solids	Moment	Energy	Species	Cyclic	Transient
+Name			Fluid	Solids	Moment	Energy	Species	Cyclic	Transient
 cond_conv 		X	.	X	X	.	.	.
 conduction		X	.	.	X	.	.	.
 developed_pipe_flow	X	.	X	.	.	X	.
@@ -10,3 +10,5 @@ dmp_test_cyclic		X	X	.	.	X	X	X
 driven-cavity		X	.	X	.	.	.	.
 granular_shear		.	X	X	.	.	.	X
 rotary-drum		.	X	X	.	.	X	X
+settling-tank		X	X	X	.	.	.	X
+simple-2phase		X	X	X	.	.	.	X
