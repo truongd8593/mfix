@@ -748,19 +748,19 @@
            IJK2T= TOP_OF(IJK2)
            IJKP2= KP_OF(IJK2)
            IPJKP2= IP_OF(IJKP2)
-          g0 = g_0AVG(IJK2, IJKP2, 'Z', K_OF(IJK2), M, M)
+          g0 = g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, M)
           EP_avg =&
-                AVG_Z(EP_s(IJK2, M), EP_s(IJKP2, M), K_OF(IJK2))
+                AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
  
           TH_avg = AVG_Z(&
                 AVG_X(Theta_m(IJK2,M),Theta_m(IJK1, M),I_OF(IJK2)),&
                 AVG_X(Theta_m(IJKP2,M),Theta_m(IPJKP2, M),I_OF(IJKP2)),&
                 K_OF(IJK2))
           Mu_g_avg =&
-                AVG_Z(Mu_g(IJK2), Mu_g(IJKP2), K_OF(IJK2))
+                AVG_Z(Mu_g(IJK2), Mu_g(IJK2T), K_OF(IJK2))
  
           RO_g_avg =&
-                AVG_Z(RO_g(IJK2), RO_g(IJKP2), K_OF(IJK2))
+                AVG_Z(RO_g(IJK2), RO_g(IJK2T), K_OF(IJK2))
  
 !         Calculate velocity components at i+1/2,j,k+1/2 relative to IJK2
           UGC  = AVG_Z(U_g(IJK2), U_g(IJKP2), K_OF(IJK2))
