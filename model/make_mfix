@@ -110,26 +110,6 @@ ln -sf "$mpi_include/mpif.h" .
             MODULE_CODE=1
             ;;
 
-      sn6301)
-            mach_file="CRAYT3E.F"
-
-            FORTRAN_CMD=f90
-            LINK_CMD=f90
-            libs_d=""
-            libs=""
-
-            OBJ_EXT=o
-            FORTRAN_EXT=f
-            omp=""
-            compile_d="-c -g -f free -d p -e mui -eZ -F -DT3E -O ieeeconform -M 801"
-            link_d="-lapp"
-
-            compile="-c -g -f free -d p -e mui -O ieeeconform -M 801"
-            compile2="-c  -g -f free -d p -e mui -eZ -F -DT3E -O ieeeconform -M 801"
-            link="-lapp"
-            MODULE_CODE=0
-            ;;
-
       AIX)
             mach_file="AIX.F"
 
@@ -242,8 +222,8 @@ ln -sf "$mpi_include/mpif.h" .
     Linux)
 	    mach_file="LINUX.F"
 	    
-            FORTRAN_CMD=pgf90
-            LINK_CMD=pgf90
+            FORTRAN_CMD=mpif90
+            LINK_CMD=mpif90
             libs_d="-lblas blas90.a"
             libs="-lblas blas90.a"
     
@@ -251,8 +231,7 @@ ln -sf "$mpi_include/mpif.h" .
             FORTRAN_EXT=f
 	    omp="-mp"
 	    compile_common="-c -I.  -Mnosave -Mfreeform -Mrecursive -Mreentrant -byteswapio"
-#          compile_d=" -v -c -g -ffree"
-             compile_d=" -g -c -I. -Mfreeform -byteswapio"
+            compile_d=" -g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk $compile_common"
             link_d=" "
             compile=" -O -Mdalign $compile_common"
             compile2="-O1 -Mdalign $compile_common"
@@ -262,10 +241,8 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
 #           flags for inlining
 #           ------------------
-#            inline_objs="compare.o eosg.o discretize.o "
-#            inline_files="compare.f eosg.f discretize.f "
-            inline_objs=" "
-            inline_files=" "	    
+            inline_objs="compare.o eosg.o discretize.o "
+            inline_files="compare.f eosg.f discretize.f "
             inline_flags=" "
 #            inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
             preinline_flags="  "
