@@ -79,7 +79,7 @@
 	subroutine gridmap_init
 	
 	integer :: iproc 
-	integer :: ijk, ii, jj, kk, idbg, comm
+	integer :: ijk, ii, jj, kk, idebug, comm
 	include 'function.inc'
 
 !       ******************************************************************
@@ -282,10 +282,8 @@
 !	Call to sendrecv_init to set all the communication pattern
 
 	comm = MPI_COMM_WORLD
-!!!!//???        call sendrecv_init( comm, &
-!!!!//???                cyclic_x, cyclic_y, cyclic_z, itrace=0 )
         call sendrecv_init( comm, &
-                cyclic_x, cyclic_y, cyclic_z, idbg=0)
+                cyclic_x, cyclic_y, cyclic_z, idebug=0 )
 	
 
 	return

@@ -81,5 +81,11 @@
                 kstart2, kend2, istart1, iend1, jstart1, jend1, &
                 kstart1, kend1
 
+!	Variables added at Aytekin's request on 09/01/99 for some code implementation
+
+!// 500 0803 declaration for storing filebasename, e.g. mfix000.dat
+    	CHARACTER(len=3) :: fbname
+    	INTEGER :: idbg = 1
+
       END MODULE compar
 

@@ -179,13 +179,13 @@
 
 	subroutine sendrecv_init( 	 &
 		comm,			 &
-		cyclic_i,cyclic_j,cyclic_k, idbg )
+		cyclic_i,cyclic_j,cyclic_k, idebug )
         implicit none
 
 	integer, intent(in) :: comm
 	logical,intent(in) :: cyclic_i,cyclic_j,cyclic_k
 
-	integer, intent(in), optional :: idbg
+	integer, intent(in), optional :: idebug
 
 !	-------------------------------------
 !	set up tables and data structures for
@@ -200,7 +200,7 @@
 	character(len=80), allocatable, dimension(:) :: line
 	integer :: ip, lmax
 
-	integer :: idebug
+	integer :: lidebug
 	integer :: isize,jsize,ksize, ijksize
 
 	integer :: iter, i,j,k, ii, jj,kk, &
@@ -239,9 +239,9 @@
 !	--------------------
 !	initialize variables
 !	--------------------
-	idebug = 0
-	if (present(idbg)) then
-	  idebug = idbg
+	lidebug = 0
+	if (present(idebug)) then
+	  lidebug = idebug
 	endif
 
 	communicator = comm
@@ -350,7 +350,7 @@
 	endif ! Local Function
 
 	
-	if (idebug.ge.1) then
+	if (lidebug.ge.1) then
 	   call write_debug( name, 'imap ', imap )
 	   call write_debug( name, 'jmap ', jmap )
 	   call write_debug( name, 'kmap ', kmap )
@@ -460,7 +460,7 @@ do ilayer=1,2
 
 
 
-   if (idebug.ge.1) then
+   if (lidebug.ge.1) then
 	call write_debug(name, 'determine send schedule ', myPE )
    endif
 
@@ -534,7 +534,7 @@ do ilayer=1,2
       endif
    enddo
 
-   if (idebug.ge.1) then
+   if (lidebug.ge.1) then
 	call write_debug( name, 'ncount = ', ncount )
 	call write_debug( name, 'nsend, ntotal ', nsend, ntotal )
    endif
@@ -606,7 +606,7 @@ do ilayer=1,2
 
 
 
-   if (idebug.ge.1) then
+   if (lidebug.ge.1) then
 	call write_debug(name, 'determine recv schedule ', myPE )
    endif
 
@@ -707,7 +707,7 @@ do ilayer=1,2
 ! ----------------------------
 ! second pass to fill in array
 ! ----------------------------
-   if (idebug.ge.1) then
+   if (lidebug.ge.1) then
 	call write_debug( name, 'recv second pass ', myPE )
    endif
 
@@ -796,7 +796,7 @@ enddo ! do ilayer
 
 	
 
-    if (idebug.ge.1) then
+    if (lidebug.ge.1) then
 
 	call write_debug( name, ' allocate message buffers ' )
 	call write_debug( name, 'nrecv1 ', nrecv1 )
@@ -922,7 +922,7 @@ enddo ! do ilayer
 
 
 
-        if (idebug.ge.1) then
+        if (lidebug.ge.1) then
 		call write_debug(name, ' end of sendrecv_init ', myPE )
         endif
 	
@@ -930,12 +930,12 @@ enddo ! do ilayer
 
 
 
-	subroutine sendrecv_begin_1d( X, ilayer, idbg )
+	subroutine sendrecv_begin_1d( X, ilayer, idebug )
         implicit none
 
 	integer, intent(in),optional :: ilayer
 	double precision, intent(inout), dimension(:) :: X
-	integer, intent(in), optional :: idbg
+	integer, intent(in), optional :: idebug
 
 !	interface
 !
@@ -961,16 +961,16 @@ enddo ! do ilayer
 !	---------------
 	character(len=80), parameter :: name = 'sendrecv_begin_1d'
 
-        integer :: idebug
+        integer :: lidebug
 
 	integer ::  layer, datatype, comm, recvsize, sendsize, &
 		ijk,jj,j1,j2, request, ii,count,source,dest, tag, ierror
 
 	include 'function.inc'
 
-        idebug = 0
-        if (present(idbg)) then
-           idebug = idbg
+        lidebug = 0
+        if (present(idebug)) then
+           lidebug = idebug
         endif
 
 	layer = 1
@@ -1009,7 +1009,7 @@ enddo ! do ilayer
 !   post asynchronous receives
 !   --------------------------
 
-    if (idebug.ge.1) then
+    if (lidebug.ge.1) then
 	call write_debug(name, 'post asynchronous receives, nrecv = ', nrecv )
     endif
 
@@ -1018,7 +1018,7 @@ enddo ! do ilayer
 
 	allocate( drecvbuffer( recvsize ) )
 
-        if (idebug.ge.1) then
+        if (lidebug.ge.1) then
 		call write_debug( name, 'recvsize, ubound(drecvbuffer,1) ', &
 			recvsize, ubound(drecvbuffer,1) )
 
@@ -1045,7 +1045,7 @@ enddo ! do ilayer
 	   tag = recvtag( ii )
 
 
-           if (idebug.ge.2) then
+           if (lidebug.ge.2) then
 
 		call write_debug(name, 'mpi_irecv: ii,j1,j2 ', ii,j1,j2 )
 		call write_debug(name, 'count, source, tag ', &
@@ -1066,7 +1066,7 @@ enddo ! do ilayer
 !  post asynchronous sends
 !  -----------------------
 
-   if (idebug.ge.1) then
+   if (lidebug.ge.1) then
 
 	call write_debug(name, 'post asynchronous sends ')
    endif
@@ -1076,7 +1076,7 @@ enddo ! do ilayer
 
 	allocate( dsendbuffer( sendsize ) )
 
-        if (idebug.ge.1) then
+        if (lidebug.ge.1) then
 
                 call write_debug( name, 'sendsize, ubound(dsendbuffer,1) ', &
                         sendsize, ubound(dsendbuffer,1) )
@@ -1117,7 +1117,7 @@ enddo ! do ilayer
 	    dest = sendproc( ii )
 	    tag = sendtag( ii )
 
-	    if (idebug.ge.2) then
+	    if (lidebug.ge.2) then
 
 		call write_debug(name, 'mpi_isend: ii,j1,j2 ', ii,j1,j2)
 		call write_debug(name, 'count, dest, tag ', count,dest,tag )
@@ -1137,12 +1137,12 @@ enddo ! do ilayer
 	end subroutine sendrecv_begin_1d
 
 
-	subroutine sendrecv_begin_1i( X, ilayer, idbg )
+	subroutine sendrecv_begin_1i( X, ilayer, idebug )
         implicit none
 
 	integer, intent(in),optional :: ilayer
 	integer, intent(inout), dimension(:) :: X
-	integer, intent(in), optional :: idbg
+	integer, intent(in), optional :: idebug
 
 !	interface
 !
@@ -1168,16 +1168,16 @@ enddo ! do ilayer
 !	---------------
 	character(len=80), parameter :: name = 'sendrecv_begin_1i'
 
-        integer :: idebug
+        integer :: lidebug
 
 	integer ::  layer, datatype, comm, recvsize, sendsize, &
 		ijk,jj,j1,j2, request, ii,count,source,dest, tag, ierror
 
 	include 'function.inc'
 
-        idebug = 0
-        if (present(idbg)) then
-           idebug = idbg
+        lidebug = 0
+        if (present(idebug)) then
+           lidebug = idebug
         endif
 
 	layer = 1
@@ -1216,7 +1216,7 @@ enddo ! do ilayer
 !   post asynchronous receives
 !   --------------------------
 
-    if (idebug.ge.1) then
+    if (lidebug.ge.1) then
 	call write_debug(name, 'post asynchronous receives, nrecv = ', nrecv )
     endif
 
@@ -1224,7 +1224,7 @@ enddo ! do ilayer
 	recvsize = xrecv( nrecv+1)-1
 	allocate( irecvbuffer( recvsize ) )
 
-        if (idebug.ge.1) then
+        if (lidebug.ge.1) then
 		call write_debug( name, 'recvsize, ubound(irecvbuffer,1) ', &
 			recvsize, ubound(irecvbuffer,1) )
 
@@ -1251,7 +1251,7 @@ enddo ! do ilayer
 	   tag = recvtag( ii )
 
 
-           if (idebug.ge.2) then
+           if (lidebug.ge.2) then
 
 		call write_debug(name, 'mpi_irecv: ii,j1,j2 ', ii,j1,j2 )
 		call write_debug(name, 'count, source, tag ', &
@@ -1272,7 +1272,7 @@ enddo ! do ilayer
 !  post asynchronous sends
 !  -----------------------
 
-   if (idebug.ge.1) then
+   if (lidebug.ge.1) then
 
 	call write_debug(name, 'post asynchronous sends ')
    endif
@@ -1281,7 +1281,7 @@ enddo ! do ilayer
         sendsize = xsend( nsend+1)-1
 	allocate( isendbuffer( sendsize ) )
 
-        if (idebug.ge.1) then
+        if (lidebug.ge.1) then
 
                 call write_debug( name, 'sendsize, ubound(isendbuffer,1) ', &
                         sendsize, ubound(isendbuffer,1) )
@@ -1322,7 +1322,7 @@ enddo ! do ilayer
 	    dest = sendproc( ii )
 	    tag = sendtag( ii )
 
-	    if (idebug.ge.2) then
+	    if (lidebug.ge.2) then
 
 		call write_debug(name, 'mpi_isend: ii,j1,j2 ', ii,j1,j2)
 		call write_debug(name, 'count, dest, tag ', count,dest,tag )
@@ -1342,12 +1342,12 @@ enddo ! do ilayer
 	end subroutine sendrecv_begin_1i
 
 
-	subroutine sendrecv_begin_1c( X, ilayer, idbg )
+	subroutine sendrecv_begin_1c( X, ilayer, idebug )
         implicit none
 
 	integer, intent(in),optional :: ilayer
 	character(len=*), intent(inout), dimension(:) :: X
-	integer, intent(in), optional :: idbg
+	integer, intent(in), optional :: idebug
 
 !	interface
 !
@@ -1373,7 +1373,7 @@ enddo ! do ilayer
 !	---------------
 	character(len=80), parameter :: name = 'sendrecv_begin_1c'
 
-        integer :: idebug
+        integer :: lidebug
 
 	integer ::  layer, datatype, comm, recvsize, sendsize, &
 		ijk,jj,j1,j2, request, ii,count,source,dest, tag, ierror
@@ -1382,9 +1382,9 @@ enddo ! do ilayer
 
 	include 'function.inc'
 
-        idebug = 0
-        if (present(idbg)) then
-           idebug = idbg
+        lidebug = 0
+        if (present(idebug)) then
+           lidebug = idebug
         endif
 
 	layer = 1
@@ -1426,7 +1426,7 @@ enddo ! do ilayer
 !   post asynchronous receives
 !   --------------------------
 
-    if (idebug.ge.1) then
+    if (lidebug.ge.1) then
 	call write_debug(name, 'post asynchronous receives, nrecv = ', nrecv )
     endif
 
@@ -1435,7 +1435,7 @@ enddo ! do ilayer
 
 	allocate( crecvbuffer( recvsize*clen ) )
 
-        if (idebug.ge.1) then
+        if (lidebug.ge.1) then
 		call write_debug( name, 'recvsize, ubound(crecvbuffer,1) ', &
 			recvsize, ubound(crecvbuffer,1) )
 
@@ -1465,7 +1465,7 @@ enddo ! do ilayer
 	   tag = recvtag( ii )
 
 
-           if (idebug.ge.2) then
+           if (lidebug.ge.2) then
 
 		call write_debug(name, 'mpi_irecv: ii,j1,j2 ', ii,j1,j2 )
 		call write_debug(name, 'count, source, tag ', &
@@ -1487,7 +1487,7 @@ enddo ! do ilayer
 !  post asynchronous sends
 !  -----------------------
 
-   if (idebug.ge.1) then
+   if (lidebug.ge.1) then
 
 	call write_debug(name, 'post asynchronous sends ')
    endif
@@ -1497,7 +1497,7 @@ enddo ! do ilayer
 
 	allocate( csendbuffer( sendsize*clen ) )
 
-        if (idebug.ge.1) then
+        if (lidebug.ge.1) then
 
                 call write_debug( name, 'sendsize, ubound(csendbuffer,1) ', &
                         sendsize, ubound(csendbuffer,1) )
@@ -1544,7 +1544,7 @@ enddo ! do ilayer
 	    dest = sendproc( ii )
 	    tag = sendtag( ii )
 
-	    if (idebug.ge.2) then
+	    if (lidebug.ge.2) then
 
 		call write_debug(name, 'mpi_isend: ii,j1,j2 ', ii,j1,j2)
 		call write_debug(name, 'count, dest, tag ', count,dest,tag )
@@ -1565,9 +1565,9 @@ enddo ! do ilayer
 	end subroutine sendrecv_begin_1c
 
 
-	subroutine sendrecv_end_1d( X, idbg )
+	subroutine sendrecv_end_1d( X, idebug )
 	double precision, intent(inout), dimension(:) :: X
-	integer, intent(in), optional :: idbg
+	integer, intent(in), optional :: idebug
 
 	interface
 
@@ -1601,7 +1601,7 @@ enddo ! do ilayer
 
 	logical, parameter :: use_waitany = .false.
 
-	integer :: idebug
+	integer :: lidebug
 	integer :: jj,ijk,  jindex, ii,j1,j2, ierror
 
 	integer, dimension(MPI_STATUS_SIZE) :: recv_status
@@ -1616,14 +1616,14 @@ enddo ! do ilayer
 !	wait for sends to complete
 !	--------------------------
 
-	idebug = 0
-	if (present(idbg)) then
-	   idebug = idbg
+	lidebug = 0
+	if (present(idebug)) then
+	   lidebug = idebug
 	endif
 
 	if (nsend .ge.1) then
 
-	if (idebug.ge.1) then
+	if (lidebug.ge.1) then
 
 	   call write_debug(name, &
 		'waiting for sends to complete, nsend  = ', nsend )
@@ -1644,7 +1644,7 @@ enddo ! do ilayer
 !	--------------------------
 	if (nrecv.ge.1) then
 
-	if (idebug.ge.1) then
+	if (lidebug.ge.1) then
 
 	   call write_debug( name, &
 		'waiting for receives to complete, nrecv =  ', nrecv )
@@ -1658,7 +1658,7 @@ enddo ! do ilayer
 	   j1 = xrecv( jindex )
 	   j2 = xrecv( jindex + 1)-1
 
-	   if (idebug.ge.2) then
+	   if (lidebug.ge.2) then
 		call write_debug(name, 'jindex, j1,j2 ', jindex,j1,j2 )
 	   endif
 
@@ -1687,9 +1687,9 @@ enddo ! do ilayer
 	end subroutine sendrecv_end_1d
 
 
-	subroutine sendrecv_end_1c( X, idbg )
+	subroutine sendrecv_end_1c( X, idebug )
 	character(len=*), intent(inout), dimension(:) :: X
-	integer, intent(in), optional :: idbg
+	integer, intent(in), optional :: idebug
 
 	interface
 
@@ -1725,7 +1725,7 @@ enddo ! do ilayer
 
 	logical, parameter :: use_waitany = .false.
 
-	integer :: idebug
+	integer :: lidebug
 	integer :: jj,ijk,  jindex, ii,j1,j2, ierror
 
 	integer, dimension(MPI_STATUS_SIZE) :: recv_status
@@ -1740,9 +1740,9 @@ enddo ! do ilayer
 !	wait for sends to complete
 !	--------------------------
 
-	idebug = 0
-	if (present(idbg)) then
-	   idebug = idbg
+	lidebug = 0
+	if (present(idebug)) then
+	   lidebug = idebug
 	endif
 
 	jpos = lbound(X,1)
@@ -1750,7 +1750,7 @@ enddo ! do ilayer
 
 	if (nsend .ge.1) then
 
-	if (idebug.ge.1) then
+	if (lidebug.ge.1) then
 
 	   call write_debug(name, &
 		'waiting for sends to complete, nsend  = ', nsend )
@@ -1772,7 +1772,7 @@ enddo ! do ilayer
 !	--------------------------
 	if (nrecv.ge.1) then
 
-	if (idebug.ge.1) then
+	if (lidebug.ge.1) then
 
 	   call write_debug( name, &
 		'waiting for receives to complete, nrecv =  ', nrecv )
@@ -1786,7 +1786,7 @@ enddo ! do ilayer
 	   j1 = xrecv( jindex )
 	   j2 = xrecv( jindex + 1)-1
 
-	   if (idebug.ge.2) then
+	   if (lidebug.ge.2) then
 		call write_debug(name, 'jindex, j1,j2 ', jindex,j1,j2 )
 	   endif
 
@@ -1828,9 +1828,9 @@ enddo ! do ilayer
 	end subroutine sendrecv_end_1c
 
 
-	subroutine sendrecv_end_1i( X, idbg )
+	subroutine sendrecv_end_1i( X, idebug )
 	integer, intent(inout), dimension(:) :: X
-	integer, intent(in), optional :: idbg
+	integer, intent(in), optional :: idebug
 
 	interface
 
@@ -1864,7 +1864,7 @@ enddo ! do ilayer
 
 	logical, parameter :: use_waitany = .false.
 
-	integer :: idebug
+	integer :: lidebug
 	integer :: jj,ijk,  jindex, ii,j1,j2, ierror
 
 	integer, dimension(MPI_STATUS_SIZE) :: recv_status
@@ -1879,14 +1879,14 @@ enddo ! do ilayer
 !	wait for sends to complete
 !	--------------------------
 
-	idebug = 0
-	if (present(idbg)) then
-	   idebug = idbg
+	lidebug = 0
+	if (present(idebug)) then
+	   lidebug = idebug
 	endif
 
 	if (nsend .ge.1) then
 
-	if (idebug.ge.1) then
+	if (lidebug.ge.1) then
 
 	   call write_debug(name, &
 		'waiting for sends to complete, nsend  = ', nsend )
@@ -1907,7 +1907,7 @@ enddo ! do ilayer
 !	--------------------------
 	if (nrecv.ge.1) then
 
-	if (idebug.ge.1) then
+	if (lidebug.ge.1) then
 
 	   call write_debug( name, &
 		'waiting for receives to complete, nrecv =  ', nrecv )
@@ -1921,7 +1921,7 @@ enddo ! do ilayer
 	   j1 = xrecv( jindex )
 	   j2 = xrecv( jindex + 1)-1
 
-	   if (idebug.ge.2) then
+	   if (lidebug.ge.2) then
 		call write_debug(name, 'jindex, j1,j2 ', jindex,j1,j2 )
 	   endif
 
@@ -1950,15 +1950,15 @@ enddo ! do ilayer
 	end subroutine sendrecv_end_1i
 
 
-	subroutine send_recv_1c( X, ilayer, idbg )
+	subroutine send_recv_1c( X, ilayer, idebug )
 	character(len=*),  dimension(:), intent(inout) :: X
-	integer, intent(in), optional :: ilayer,idbg
+	integer, intent(in), optional :: ilayer,idebug
 
-	integer :: idebug, layer
+	integer :: lidebug, layer
 
-	idebug = 0
-	if (present(idbg)) then
-	   idebug = idbg
+	lidebug = 0
+	if (present(idebug)) then
+	   lidebug = idebug
 	endif
 
 	layer = 1
@@ -1966,21 +1966,21 @@ enddo ! do ilayer
 	   layer = ilayer
 	endif
 
-	call sendrecv_begin(X,layer,idebug)
-	call sendrecv_end( X, idebug )
+	call sendrecv_begin(X,layer,lidebug)
+	call sendrecv_end( X, lidebug )
 
 	return 
 	end subroutine send_recv_1c
 
-	subroutine send_recv_1d( X, ilayer, idbg )
+	subroutine send_recv_1d( X, ilayer, idebug )
 	double precision,  dimension(:), intent(inout) :: X
-	integer, intent(in), optional :: ilayer,idbg
+	integer, intent(in), optional :: ilayer,idebug
 
-	integer :: idebug, layer
+	integer :: lidebug, layer
 
-	idebug = 0
-	if (present(idbg)) then
-	   idebug = idbg
+	lidebug = 0
+	if (present(idebug)) then
+	   lidebug = idebug
 	endif
 
 	layer = 1
@@ -1988,22 +1988,22 @@ enddo ! do ilayer
 	   layer = ilayer
 	endif
 
-	call sendrecv_begin(X,layer,idebug)
-	call sendrecv_end( X, idebug )
+	call sendrecv_begin(X,layer,lidebug)
+	call sendrecv_end( X, lidebug )
 
 	return 
 	end subroutine send_recv_1d
 
 
-	subroutine send_recv_1i( X, ilayer, idbg )
+	subroutine send_recv_1i( X, ilayer, idebug )
 	integer,  dimension(:), intent(inout) :: X
-	integer, intent(in), optional :: ilayer,idbg
+	integer, intent(in), optional :: ilayer,idebug
 
-	integer :: idebug, layer
+	integer :: lidebug, layer
 
-	idebug = 0
-	if (present(idbg)) then
-	   idebug = idbg
+	lidebug = 0
+	if (present(idebug)) then
+	   lidebug = idebug
 	endif
 
 	layer = 1
@@ -2011,8 +2011,8 @@ enddo ! do ilayer
 	   layer = ilayer
 	endif
 
-	call sendrecv_begin(X,layer,idebug)
-	call sendrecv_end( X, idebug )
+	call sendrecv_begin(X,layer,lidebug)
+	call sendrecv_end( X, lidebug )
 
 	return 
 	end subroutine send_recv_1i
