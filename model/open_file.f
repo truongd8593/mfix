@@ -24,7 +24,7 @@
          OPEN_ACCESS, OPEN_FORM, IRECL, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
-      USE compar      !// 001 Include MPI header file
+      USE compar 
       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -78,13 +78,13 @@
 !
       IF (OPEN_ACCESS == 'DIRECT') THEN 
 !//AIKEPARDBG implemented a bypass to avoid erasing files each time I start for debugging
-!         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3), STATUS=OPEN_STAT, RECL=IRECL, ACCESS=&
-         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3), STATUS='UNKNOWN', RECL=IRECL, ACCESS=&
+         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3), STATUS=OPEN_STAT, RECL=IRECL, ACCESS=&
+!         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3), STATUS='UNKNOWN', RECL=IRECL, ACCESS=&
             OPEN_ACCESS, FORM=OPEN_FORM, ERR=100) 
       ELSE 
 !//AIKEPARDBG implemented a bypass to avoid erasing files each time I start for debugging
-!         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3+DUMPE), STATUS=OPEN_STAT, ACCESS=OPEN_ACCESS&
-         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3+DUMPE), STATUS='UNKNOWN', ACCESS=OPEN_ACCESS&
+         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3+DUMPE), STATUS=OPEN_STAT, ACCESS=OPEN_ACCESS&
+!         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3+DUMPE), STATUS='UNKNOWN', ACCESS=OPEN_ACCESS&
             , FORM=OPEN_FORM, ERR=100) 
       ENDIF 
       IER = 0 
@@ -95,3 +95,5 @@
       RETURN  
       END SUBROUTINE OPEN_FILE 
       
+!// Comments on the modifications for DMP version implementation      
+!//PAR_I/O added three digit processor number in XXX.LOG files.

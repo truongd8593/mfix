@@ -26,7 +26,7 @@
       USE visc_s
       USE geometry
       USE indices
-      USE compar     !//d
+      USE compar
       IMPLICIT NONE
 
 !  Function subroutines
@@ -803,3 +803,6 @@
  
       RETURN
       END
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization 

@@ -34,8 +34,7 @@
       USE pscor
       USE ur_facs 
       USE residual
-      USE compar     !//d
-      USE sendrecv   !// 400
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -68,8 +67,6 @@
 !
 !
 !
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-
 !!$omp parallel do private(ijk)
 !!!HPF$ independent
       DO IJK = ijkstart3, ijkend3
@@ -83,7 +80,9 @@
          ENDIF 
       END DO 
       
-!// 400 COMM P_STAR
-!!!      call send_recv (P_STAR,2)      
       RETURN  
       END SUBROUTINE CALC_P_STAR 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

@@ -141,7 +141,7 @@
       INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG_T 
 !
 !                      Cell flags (bc/ic conditions)
-!//?WEIRD 1004 somehow allocatable causes PG internal error, Ed's soln: pointers
+!//PG allocatable type causes PG internal error, Ed's soln: pointers
 !      CHARACTER*3, DIMENSION(:), ALLOCATABLE :: ICBC_FLAG
       character*3,  dimension(:), pointer :: icbc_flag      
 !
@@ -312,3 +312,6 @@
 !!!HPF$ align VOL_W(:) with TT(:)
 
       END MODULE geometry
+      
+!// Comments on the modifications for DMP version implementation      
+!//PG allocatable type causes PG internal error, Ed's soln: pointers

@@ -44,8 +44,8 @@
       USE physprop
       USE constant
       USE funits 
-      USE compar        !//d
-      USE sendrecv      !// 400
+      USE compar 
+      USE sendrecv 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -69,8 +69,6 @@
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
 !
-!// 500 1119 Removed IJKMAX2 from the arg. list of ZERO_ARRAY calls based on
-!       modification of Sreekanth for ZERo_ARRAY routine on 11/2/99.
 !
 !     Initialize arrays to zero
       CALL ZERO_ARRAY (SUM_R_G, IER) 
@@ -96,9 +94,8 @@
         ENDDO
       ENDDO
 
-!// 350 1112 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
 !!$omp  parallel do private( IJK, L, LM, M, N, LR, ID, stmw, ex, Tr, EP, RATE )
-      DO IJK = IJKSTART3, IJKEND3 
+      DO IJK = ijkstart3, ijkend3 
       
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -268,27 +265,6 @@
             END DO 
          ENDIF 
       END DO 
-
-
-
-!//S 1113 try to move this COMM to the end of transport_prop to do all COMMs
-!//       at certain locations, provided that no data dependency in between.
-
-
-!// 400 1112 update the boundaries for recently calculated field vars
-!!!!      call send_recv(ROX_GC,2)
-!!!!      call send_recv(R_GP,2)
-!!!!      call send_recv(ROX_SC,2)
-!!!!      call send_recv(R_SP,2)      
-!!!!      call send_recv(HOR_G,2) 
-!!!!      call send_recv(HOR_S,2)   
-!!!!      call send_recv(R_TEMP,2)       
-!!!!      call send_recv(R_PHASE,2) 
-!//? check if we need a GLOBAL SUM for the following two as it accumulates sum
-!//  for each species      
-!!!!      call send_recv(SUM_R_S,2)        
-!!!!      call send_recv(SUM_R_G,2)              
-
       
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: RRATES0',/' Error: ',&
@@ -299,3 +275,7 @@
          ' (R_temp) not specified',/1X,70('*')/) 
 !
       END SUBROUTINE RRATES0 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

@@ -41,8 +41,7 @@
       USE output
       USE indices
       USE is
-      USE compar        !//d
-      USE sendrecv      !// 400
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -83,10 +82,6 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-
-!//? check if this COMM is necessary or extra
-!// 400 1225 COMM A_M
-!      call send_recv(A_M,2)
 !
 !
 ! Make user defined internal surfaces non-conducting
@@ -100,8 +95,6 @@
             K1 = IS_K_B(L) 
             K2 = IS_K_T(L) 
 !
-!// 1225 - Limit I1, I2 and all to local processor first ghost layer 
-!//       (Sreekanth's approach in dif_phi_is.f)
 	    IF(I1.LE.IEND2)   I1 = MAX(I1, ISTART2)
             IF(J1.LE.JEND2)   J1 = MAX(J1, JSTART2)
             IF(K1.LE.KEND2)   K1 = MAX(K1, KSTART2)
@@ -153,10 +146,10 @@
          ENDIF 
       END DO 
 !
-
-!//? check if this COMM is necessary or extra
-!// 400 1225 COMM A_M
-!      call send_recv(A_M,2)
       
       RETURN  
       END SUBROUTINE DIF_U_IS 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 300 Limit I1, I2 and all to local processor first ghost layer

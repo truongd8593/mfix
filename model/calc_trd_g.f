@@ -31,8 +31,8 @@
       USE geometry
       USE fldvar
       USE indices
-      USE compar   !//d
-      USE sendrecv   !//SP
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -54,8 +54,7 @@
 !
 !!$omp  parallel do private( IJK, I,J,K, IM,IMJK,IJMK,IJKM ) &
 !!$omp& schedule(dynamic,chunk_size)
-!//SP
-      DO IJK = IJKSTART3, IJKEND3 
+      DO IJK = ijkstart3, ijkend3 
          IF (.NOT.WALL_AT(IJK)) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
@@ -68,6 +67,11 @@
                V_G(IJK)-V_G(IJMK))*ODY(J) + (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) 
          ENDIF 
       END DO 
-!!!      call send_recv(TRD_G,2)
+
       RETURN  
       END SUBROUTINE CALC_TRD_G 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+

@@ -29,7 +29,7 @@
 !-----------------------------------------------
       USE machine 
       USE funits 
-      USE compar      !// 001 Include MPI header file
+      USE compar 
       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -77,14 +77,12 @@
          ENDIF 
       END DO 
       WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
-!      STOP  
-      call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+      call mfix_exit(myPE) 
 !
   125 CONTINUE 
       IF (NB + 4 > LEN(FILE_NAME)) THEN 
          WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
-!         STOP  
-      call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+         call mfix_exit(myPE) 
       ENDIF 
 
 !
@@ -95,10 +93,10 @@
          CALL OPEN_FILE (RUN_NAME, NB+3, UNIT_LOG, '.LOG', FILE_NAME, 'OLD', &
             'SEQUENTIAL', 'FORMATTED', 132, IER) 
          IF (IER /= 0) GO TO 500
-     DO WHILE(IER ==0)
+      DO WHILE(IER ==0)
        READ(UNIT_LOG,'(a)', IOSTAT = IER)ANS
-     ENDDO
-     BACKSPACE(UNIT_LOG) 
+      ENDDO
+      BACKSPACE(UNIT_LOG) 
       ENDIF 
 
 !//PAR_I/O only PE 0 opens the ASCI output (.out), restart (.res) and species (.spX) files 
@@ -153,22 +151,16 @@
       CASE DEFAULT 
          WRITE (*, *) ' OPEN_FILES: DO NOT KNOW HOW TO PROCESS' 
          WRITE (*, *) ' RUN_TYPE in the input file' 
-!         STOP  
-         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+         call mfix_exit(myPE) 
       END SELECT 
       endif   ! end of myPE=PE_IO if block
-
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): reached end of open_files')") myPE	!//AIKEPARDBG
-!      call mfix_exit(myPE)	!//AIKEPARDBG
 
       RETURN  
   500 CONTINUE 
       WRITE (*, 1100) myPE,FILE_NAME  !//PAR_I/O added myPE for output
   600 CONTINUE 
       CALL SLUMBER 
-!      STOP  
-      call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+      call mfix_exit(myPE) 
 !
  1000 FORMAT(I1) 
  1001 FORMAT(/70('*')//' From: OPEN_FILES',/&
@@ -180,3 +172,8 @@
  1100 FORMAT(/70('*')//'(PE ',I3,'): From: OPEN_FILES',/' Error: Cannot open file -- ',A,/&
          70('*')/) 
       END SUBROUTINE OPEN_FILES 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!//PAR_I/O Root Processor handles all file I/O except the LOG files
+!// 990 Replace STOP with mfix_exit(myPE) to terminate all processors

@@ -34,8 +34,8 @@
       USE physprop
       USE indices
       USE funits 
-      USE compar        !//d
-      USE mpi_utility   !//d
+      USE compar 
+      USE mpi_utility 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -60,8 +60,6 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-!// 220 1004 Replaced with global FUNIJK
-!// SP
 !// SP
     IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
       bcast_root = myPE
@@ -102,3 +100,7 @@
          ' fluid cell:',/5X,A3,5X,A3,/&
          ' May be no IC was specified for the fluid cell.',/70('*')/) 
       END SUBROUTINE MOD_BC_I 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 400 Added mpi_utility module and other global reduction (bcast) calls

@@ -32,7 +32,7 @@
       USE matrix 
       USE physprop
       USE indices
-      USE compar        !//d
+      USE compar  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -74,7 +74,7 @@
 !
       IF (MMAX == 1) THEN 
 !
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+
 
 !$omp  parallel do private( IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
 !$omp&  a0, b0, a1, b1, F10, Saxf0, Saxf1) &
@@ -162,7 +162,7 @@
       USE physprop
       USE indices
       USE run
-      USE compar        !//d
+      USE compar       
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -204,8 +204,6 @@
       IF (MMAX == 1) THEN 
 !
          IF (MOMENTUM_X_EQ(0) .AND. MOMENTUM_X_EQ(1)) THEN 
-
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 	 
 !$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
 !$omp&  a0, b0, a1, b1, F10, Saxf0, Saxf1) &
@@ -251,7 +249,6 @@
                ENDIF 
             END DO 
          ELSE IF (MOMENTUM_X_EQ(0)) THEN 
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 
             DO IJK = ijkstart3, ijkend3 
                IF (FLOW_AT_E(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
@@ -265,7 +262,6 @@
                ENDIF 
             END DO 
          ELSE IF (MOMENTUM_X_EQ(1)) THEN 
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 
             DO IJK = ijkstart3, ijkend3 
                IF (FLOW_AT_E(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
@@ -284,8 +280,6 @@
          WRITE (LINE, *) 'Error: Cannot do partial elimination for M > 1' 
          CALL WRITE_ERROR ('PARTIAL_ELIM_U', LINE, 1) 
       ENDIF 
-!
-!//? check if COMM of A_M & B_M is necessary?
 
       RETURN  
       END SUBROUTINE PARTIAL_ELIM_U 
@@ -324,7 +318,7 @@
       USE physprop
       USE indices
       USE run
-      USE compar        !//d
+      USE compar     
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -366,8 +360,7 @@
       IF (MMAX == 1) THEN 
 !
          IF (MOMENTUM_Y_EQ(0) .AND. MOMENTUM_Y_EQ(1)) THEN 
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 
-	 
+
 !$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
 !$omp&  a0, b0, a1, b1, F10, Saxf0, Saxf1) &
 !$omp&  schedule(static)
@@ -412,7 +405,7 @@
                ENDIF 
             END DO 
          ELSE IF (MOMENTUM_Y_EQ(0)) THEN 
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 	 
+
             DO IJK = ijkstart3, ijkend3
                IF (FLOW_AT_N(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
@@ -426,7 +419,7 @@
                ENDIF 
             END DO 
          ELSE IF (MOMENTUM_Y_EQ(1)) THEN 
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 
+
             DO IJK = ijkstart3, ijkend3
                IF (FLOW_AT_N(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
@@ -483,7 +476,7 @@
       USE physprop
       USE indices
       USE run
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -525,7 +518,6 @@
       IF (MMAX == 1) THEN 
 !
          IF (MOMENTUM_Z_EQ(0) .AND. MOMENTUM_Z_EQ(1)) THEN 
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 
 	 
 !$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, &
 !$omp&  a0, b0, a1, b1, F10, Saxf0, Saxf1) &
@@ -571,7 +563,7 @@
                ENDIF 
             END DO 
          ELSE IF (MOMENTUM_Z_EQ(0)) THEN 
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 	 
+
             DO IJK = ijkstart3, ijkend3
                IF (FLOW_AT_T(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
@@ -585,7 +577,7 @@
                ENDIF 
             END DO 
          ELSE IF (MOMENTUM_Z_EQ(1)) THEN 
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    	 	 
+
             DO IJK = ijkstart3, ijkend3
                IF (FLOW_AT_T(IJK)) THEN 
                   IF (VXF(IJK,1) > ZERO) THEN 
@@ -607,3 +599,8 @@
 !
       RETURN  
       END SUBROUTINE PARTIAL_ELIM_W 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+

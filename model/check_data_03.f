@@ -38,7 +38,7 @@
       USE param1 
       USE geometry
       USE funits 
-      USE compar      !// 001 Include MPI header file
+      USE compar
       USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
@@ -63,7 +63,7 @@
       IF (NO_I) THEN 
 !
          WRITE (UNIT_LOG, 995)                   !disabled 
-         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+         call mfix_exit(myPE)
 !
 !        IF(IMAX .EQ. UNDEFINED_I) IMAX = 1
 !        IF(DX(1) .EQ. UNDEFINED .AND. XLENGTH .EQ. UNDEFINED) THEN
@@ -74,7 +74,7 @@
       IF (NO_J) THEN 
 !
          WRITE (UNIT_LOG, 996)                   !disabled 
-         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+         call mfix_exit(myPE) 
 
 !
 !        IF(JMAX .EQ. UNDEFINED_I) JMAX = 1
@@ -99,15 +99,15 @@
       ENDIF 
       IF (NO_I .AND. IMAX>1) THEN 
          WRITE (UNIT_LOG, 1000) 
-         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+         call mfix_exit(myPE) 
       ENDIF 
       IF (NO_J .AND. JMAX>1) THEN 
          WRITE (UNIT_LOG, 1100) 
-         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+         call mfix_exit(myPE) 
       ENDIF 
       IF (NO_K .AND. KMAX>1) THEN 
          WRITE (UNIT_LOG, 1200) 
-         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+         call mfix_exit(myPE) 
       ENDIF 
 !
 ! CHECK THE DATA FOR THE INDIVIDUAL AXES
@@ -118,7 +118,6 @@
          SHIFT)
       CALL CHECK_ONE_AXIS (JMAX, DIMENSION_J, YLENGTH, DY, 'Y', 'J', NO_J, &
          SHIFT)
-!//? any modifications to be done for K direction check
       CALL CHECK_ONE_AXIS (KMAX, DIMENSION_K, ZLENGTH, DZ, 'Z', 'K', NO_K, &
          SHIFT)
 !
@@ -130,13 +129,13 @@
          CYLINDRICAL = .TRUE. 
          IF (CYCLIC_X .OR. CYCLIC_X_PD) THEN 
             WRITE (UNIT_LOG, 1250) 
-            call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+            call mfix_exit(myPE) 
          ENDIF 
       ELSE IF (COORDINATES == 'CARTESIAN') THEN 
          CYLINDRICAL = .FALSE. 
       ELSE 
          WRITE (UNIT_LOG, 1300) 
-         call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+         call mfix_exit(myPE) 
       ENDIF 
 !
 ! calculate IMAX1, IMAX2, etc. and shift the DX,DY,DZ arrays to take into
@@ -150,30 +149,28 @@
       IF (CYCLIC_X .OR. CYCLIC_X_PD) THEN 
          IF (DX(IMIN1) /= DX(IMAX1)) THEN 
             WRITE (UNIT_LOG, 1400) DX(IMIN1), DX(IMAX1) 
-            call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+            call mfix_exit(myPE) 
          ENDIF 
       ENDIF 
 !
       IF (CYCLIC_Y .OR. CYCLIC_Y_PD) THEN 
          IF (DY(JMIN1) /= DY(JMAX1)) THEN 
             WRITE (UNIT_LOG, 1410) DY(JMIN1), DY(JMAX1) 
-            call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+            call mfix_exit(myPE) 
          ENDIF 
       ENDIF 
 !
-!//? for cyclic BC along decomposition direction, DZ(KMAX1) will come from last PE!!!
-!//? at this stage are we permitting for CYCLIC_Z?
       IF (CYCLIC_Z .OR. CYCLIC_Z_PD .OR. CYLINDRICAL) THEN 
          IF (DZ(KMIN1) /= DZ(KMAX1)) THEN 
             WRITE (UNIT_LOG, 1420) DZ(KMIN1), DZ(KMAX1) 
-            call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+            call mfix_exit(myPE) 
          ENDIF 
       ENDIF 
 !
 ! CHECK THE TOTAL DIMENSION
 !
 
-!// 375 1025 replace DIMENSION_3 with DIMENSION_3G, IJKMAX2 with IJKMAX3
+
       IF (IJKMAX3 > DIMENSION_3G) THEN 
          CALL ERROR_ROUTINE ('check_data_03', 'global dimension error', 0, 2) 
          WRITE (UNIT_LOG, *) '(IMAX+2+1)*(JMAX+2+1)*(KMAX+2+1) = ', IJKMAX3 
@@ -183,7 +180,6 @@
             ' ... whichever is appropriate' 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
-!// 375 1025 Added new check for IJKsize3_all() > DIMENSION_3=DIMENSION_3L
       IF (IJKsize3_all(myPE) > DIMENSION_3) THEN 
          CALL ERROR_ROUTINE ('check_data_03', 'subdomain dimension error', 0, 2) 
          WRITE (UNIT_LOG, *) &
@@ -225,4 +221,8 @@
          'Cells adjacent to cyclic boundaries must be of same size:',/&
          'DZ(KMIN1) = ',G12.5,'     DZ(KMAX1) = ',G12.5,/1X,70('*')/) 
       END SUBROUTINE CHECK_DATA_03 
-      
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 375 Added new check for IJKsize3_all() > DIMENSION_3=DIMENSION_3L
+!// 990 Replace STOP with exitMPI

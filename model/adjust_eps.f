@@ -39,9 +39,8 @@
       USE indices
       USE physprop
       USE run
-      USE compar     !//d
-      USE sendrecv   !// 400
-      USE dbg_util   !//AIKEPARDBG
+      USE compar     
+      USE sendrecv 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -67,10 +66,6 @@
       IF (.NOT.(MOMENTUM_X_EQ(1) .AND. MOMENTUM_Y_EQ(1) .AND. MOMENTUM_Z_EQ(1))&
          ) RETURN  
 !
-!// 200 1119 Changed the limits for the triple loop
-!      DO K = KMIN1, KMAX1 
-!         DO J = JMIN1, JMAX1 
-!            DO I = IMIN1, IMAX1 
       DO K = Kstart1, Kend1 
          DO J = Jstart1, Jend1 
             DO I = Istart1, Iend1 
@@ -99,12 +94,9 @@
                ENDIF 
             END DO 
          END DO 
-      END DO 
-      
-      
-!      call prnfield(ROP_G,'ROP_G','BEF')    !//AIKEPARDBG
+      END DO            
 
-!// 400 1112 update the boundaries for recently calculated field vars
+!// Communicate field variables calculated in the do i,j,k loop
       call send_recv(ROP_S,2)
       call send_recv(U_S,2) 
       call send_recv(V_S,2) 
@@ -112,6 +104,10 @@
       call send_recv(EP_G,2) 
       call send_recv(ROP_G,2)             
       
-!      call prnfield(ROP_G,'ROP_G','AFT')    !//AIKEPARDBG      
       RETURN  
       END SUBROUTINE ADJUST_EPS 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization 
+!// 200 1119 Changed the limits for the triple loop, do k=kmin1,kmax1=>kstart1,kend1
+!// 400 Added sendrecv module and send_recv calls for COMMunication

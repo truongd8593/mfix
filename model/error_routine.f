@@ -30,8 +30,8 @@
 !   M o d u l e s 
 !-----------------------------------------------
       USE funits 
-      USE compar      !// 001 Include MPI header file
-      USE mpi_utility !//     added for exitMPI calls
+      USE compar 
+      USE mpi_utility 
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -60,24 +60,24 @@
 !
 ! WRITE OUT HEADER INFO , UNLESS MESSAGE_CODE = 3
 !
-!//PAR_I/O added myPE in error printouts
       IF (MESSAGE_CODE /= 3) WRITE (UNIT_LOG, 1000) myPE,CALL_ROUTINE, MESSAGE 
 !
 ! WRITE OUT TRAILER INFO, UNLESS MESSAGE_CODE = 2
 !
-!//PAR_I/O added myPE in error printouts
       IF (MESSAGE_CODE /= 2) WRITE (UNIT_LOG, 1100) myPE,ABORT_CONT 
 !
       IF (ACTION_CODE == 0) THEN 
          RETURN  
       ELSE 
-!// 990 0807 replaced STOP so that all PEs are aborted, not only the current one
           call mfix_exit(myPE)
       ENDIF 
 !
-!//PAR_I/O modified the ouput format to print myPE number
  1000 FORMAT(1X,70('*'),/,/,1X,'(PE ',I3,'): From : ',A,/,11X,'Message : ',A) 
  1100 FORMAT(1X,'(PE ',I3,'): Program execution ',A,/,/,1X,70('*')) 
 !
       END SUBROUTINE ERROR_ROUTINE 
       
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 800 Parallel I/O related modifications (added myPE print in msgs)
+!// 990 Replace STOP with exitMPI to terminate all processors

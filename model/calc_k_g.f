@@ -33,8 +33,8 @@
       USE geometry
       USE indices
       USE constant
-      USE compar    !//d
-      USE sendrecv  !// 400
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -56,9 +56,7 @@
 
 !!$omp parallel do private(ijk) &
 !!$omp& schedule(dynamic,chunk_size)
-
-!// 350 1112 MTP changed do loop limits 1,ijkmax2 ==> ijkstart3, ijkend3
-      DO IJK = IJKSTART3, IJKEND3      
+      DO IJK = ijkstart3, ijkend3      
          IF (FLUID_AT(IJK)) THEN 
 	 write(*,*) 'T_G',T_G(IJK), I_OF(IJK), J_OF(IJK), K_OF(IJK)
 !           Gas conductivity (air) in cal/s.cm.K
@@ -70,11 +68,12 @@
          ENDIF 
       END DO 
 
-!//S 1113 try to move this COMM to the end of transport_prop to do all COMMs
-!//       at certain locations, provided that no data dependency in between.
-      
-!// 400 1113 MTP communicate boundaries
-      CALL SEND_RECV(K_G, 2)     
+      CALL send_recv(K_G, 2)     
       
       RETURN  
       END SUBROUTINE CALC_K_G 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization 
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 400 Added sendrecv module and send_recv calls for COMMunication

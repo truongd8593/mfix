@@ -1,9 +1,3 @@
-!//? either we bcast all necessary info to root PE and then let it proceed with
-!//? convergence check or let all PEs execute following conv. check provided 
-!//? that all have the same residuals (which is the global residuals for each
-!//? variable thru out the domain?) what do you think Sreekanth?
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CHECK_CONVERGENCE(NIT, MUSTIT, IER)                    C
@@ -40,7 +34,7 @@
       USE run
       USE residual
       USE toleranc 
-      USE mpi_utility !//SP
+      USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -183,3 +177,6 @@
 !
       RETURN  
       END SUBROUTINE CHECK_CONVERGENCE 
+      
+!// Comments on the modifications for DMP version implementation            
+!// 400 Added mpi_utility module and other global reduction (bcast) calls

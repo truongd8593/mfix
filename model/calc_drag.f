@@ -42,7 +42,7 @@
       USE physprop
       USE run
       USE drag
-      USE compar     !//AIKEPARDBG
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -81,9 +81,5 @@
          END DO 
       END DO 
 
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): eof CALC_DRAG')") myPE    !//AIKEPARDBG
-!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-      
       RETURN  
       END SUBROUTINE CALC_DRAG 

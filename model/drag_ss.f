@@ -31,9 +31,8 @@
       USE geometry
       USE indices
       USE physprop
-      USE compar        !//d
-      USE sendrecv      !// 400
-!      USE dbg_util      !//AIKEPARDBG
+      USE compar 
+      USE sendrecv 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -109,9 +108,6 @@
 !!$omp&  USCM, VSCM, WSCM, &
 !!$omp&  VREL, USCL, VSCL, WSCL) &
 !!$omp&  schedule(static)
-
-!// 350 1119 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-!      DO IJK = 1, IJKMAX2 
       DO IJK = ijkstart3, ijkend3
       
          IF (.NOT.WALL_AT(IJK)) THEN 
@@ -145,13 +141,10 @@
 !
          ENDIF 
       END DO 
-      
-!       call prnfield(F_SS,'F_SS','BEF')   !//AIKEPARDBG
-
-!// 400 1112 update the boundaries for recently calculated field vars
-!!!!      call send_recv(F_SS,2)
-
-!       call prnfield(F_SS,'F_SS','AFT')   !//AIKEPARDBG
-     
+           
       RETURN  
       END SUBROUTINE DRAG_SS 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

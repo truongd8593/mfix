@@ -31,7 +31,7 @@
       USE matrix 
       USE geometry
       USE indices
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -103,7 +103,7 @@
       USE geometry
       USE indices
       USE physprop
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -139,3 +139,6 @@
       ENDIF 
       RETURN  
       END SUBROUTINE COPY_A_S 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

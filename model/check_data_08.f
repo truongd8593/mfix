@@ -19,8 +19,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
 !
-!//N 110599 Evaluation and/or modifications for parallelization was NOT done in this routine
-
       SUBROUTINE CHECK_DATA_08 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
@@ -37,7 +35,7 @@
       USE is
       USE indices
       USE funits 
-      USE compar   !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -65,7 +63,6 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
       
-!//? DID NOT PERFORMED A TEST WITH INTERNAL SURF. YET
 
 !
 ! DETERMINE WHICH INTERNAL SURFACE INDICES HAVE VALUES
@@ -208,3 +205,7 @@
  1210 FORMAT(/1X,70('*')//' From: CHECK_DATA_08',/' Message: ',A,'(',I2,&
          ',2) specified',' for an undefined IS location',/1X,70('*')/) 
       END SUBROUTINE CHECK_DATA_08 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 990 Replace STOP with exitMPI to terminate all processors

@@ -38,7 +38,7 @@
       USE bc
       USE indices
       USE energy
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -159,3 +159,6 @@
       END DO 
       RETURN  
       END SUBROUTINE GET_PHILOSS 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

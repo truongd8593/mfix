@@ -33,8 +33,8 @@
       USE physprop
       USE run
       USE constant
-      USE compar        !//d
-      USE sendrecv        !//d
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -66,8 +66,6 @@
       IF (.NOT.MOMENTUM_X_EQ(MCP)) RETURN  
 !
 !
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
-
 !!$omp parallel do private(ijk)
       DO IJK = ijkstart3, ijkend3
          IF (SIP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN 
@@ -82,8 +80,6 @@
 !
          ENDIF 
       END DO 
-!//SP
-!!!      call send_recv(e_e,2)
       RETURN  
       END SUBROUTINE CALC_E_E 
 !
@@ -122,8 +118,8 @@
       USE physprop
       USE run
       USE constant
-      USE compar    !//d
-      USE sendrecv        !//d
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -156,8 +152,6 @@
       IF (.NOT.MOMENTUM_Y_EQ(MCP)) RETURN  
 !
 !
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-
 !!$omp parallel do private(IJK,I,K)
       DO IJK = ijkstart3, ijkend3
          IF (SIP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN 
@@ -174,8 +168,6 @@
 !
          ENDIF 
       END DO 
-!//SP
-!!!      call send_recv(e_n,2)
       RETURN  
       END SUBROUTINE CALC_E_N 
 !
@@ -214,8 +206,8 @@
       USE physprop
       USE run
       USE constant
-      USE compar   !//d
-      USE sendrecv        !//d
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -247,8 +239,6 @@
       IF (.NOT.MOMENTUM_Z_EQ(MCP)) RETURN  
 !
 !
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-
 !!$omp parallel do private(I,J,IJK)
       DO IJK = ijkstart3, ijkend3
          IF (SIP_AT_T(IJK) .OR. MFLOW_AT_T(IJK)) THEN 
@@ -263,7 +253,6 @@
             ENDIF 
          ENDIF 
       END DO 
-!//SP
-!!!      call send_recv(e_t,2)
       RETURN  
       END SUBROUTINE CALC_E_T 
+

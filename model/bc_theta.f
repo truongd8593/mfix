@@ -36,8 +36,8 @@
       USE output
       USE indices
       USE bc
-      USE compar         !//d
-      use mpi_utility    !//d
+      USE compar         
+      USE mpi_utility    
       IMPLICIT NONE
 !
 !  Function subroutines
@@ -98,8 +98,7 @@
               DO 120 K = K1, K2
               DO 110 J = J1, J2
               DO 100 I = I1, I2
-!// 360 0105 Check if current i,j,k resides on this PE	    
-	       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	      
+	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	      
                 IJK   = FUNIJK(I, J, K)
                 IM    = Im1(I)
                 JM    = Jm1(J)
@@ -300,8 +299,8 @@
       USE geometry
       USE indices
       USE bc
-      USE compar         !//d
-      use mpi_utility    !//d
+      USE compar         
+      USE mpi_utility    
       IMPLICIT NONE
 !
 !  Function subroutines
@@ -556,7 +555,7 @@
       ELSE
         WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
         CALL WRITE_ERROR('CALC_THETA_BC', LINE, 1)
-	call exitMPI(myPE)            !//d
+	call exitMPI(myPE)          
       ENDIF
  
       CALL THETA_Hw_Cw(EP_avg,TH_avg,Mu_g_avg,RO_g_avg,VREL,VSLIPSQ,M,&
@@ -662,7 +661,8 @@
  
       IF(TH .LE. ZERO)THEN
         TH = 1e-8
-        if (myPE.eq.PE_IO) then   !//??????  pnicol : on any PE ????
+
+        if (myPE.eq.PE_IO) then   
 	   WRITE(*,*)'Warning: Negative granular temp at wall set to 1e-8'
 !          CALL WRITE_ERROR('THETA_HW_CW', LINE, 1)
         end if
@@ -720,3 +720,8 @@
  
       RETURN
       END
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization 
+!// 360 Check if i,j,k resides on current processor
+!// Termination by the designated I/O processor	

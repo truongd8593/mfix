@@ -33,7 +33,7 @@
       USE fldvar
       USE geometry
       USE indices
-      USE compar   !//d
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1031,7 +1031,7 @@
       USE fldvar
       USE geometry
       USE indices
-      USE compar    !//d
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

@@ -102,7 +102,7 @@
 !
       use geometry
       use indices
-      USE compar        !//d
+      USE compar    
 !
       implicit none
 !
@@ -129,7 +129,7 @@
 !
       use geometry
       use indices
-      USE compar        !//d
+      USE compar      
 !
       implicit none
 !
@@ -150,3 +150,6 @@
 !
       return
       end
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

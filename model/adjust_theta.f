@@ -25,7 +25,8 @@
       USE indices
       USE physprop
       USE run
-      USE compar      !//d
+      USE compar
+      
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -51,7 +52,6 @@
       IER = 0 
 !
 !!!HPF$ independent
-!//SP
       DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN 
             IF (THETA_M(IJK,M) < ZERO_EP_S) THETA_M(IJK,M) = ZERO_EP_S 
@@ -60,3 +60,7 @@
       END DO 
       RETURN  
       END SUBROUTINE ADJUST_THETA 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization 
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

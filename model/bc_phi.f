@@ -41,7 +41,7 @@
       USE output
       USE indices
       USE bc
-      USE compar    !//d
+      USE compar    
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -83,7 +83,6 @@
 !
       IF (DO_K) THEN 
          K1 = 1 
-!// 350 1206 change do loop limits: 1,jmax2->jmin3,jmax3	 
          DO J1 = jmin3, jmax3 
             DO I1 = imin3, imax3 
 !//SP ----> Not very efficient - can check only for K
@@ -105,7 +104,6 @@
             END DO 
          END DO 
          K1 = KMAX2 
-!// 350 1206 change do loop limits: 1,jmax2->jmin3,jmax3	 	 
          DO J1 = jmin3, jmax3 
             DO I1 = imin3, imax3 
 !//SP ----> Not very efficient - can check only for K
@@ -129,7 +127,6 @@
       ENDIF 
 !
       J1 = 1 
-!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3	 	       
       DO K1 = kmin3, kmax3 
          DO I1 = imin3, imax3 
 !//SP ----> Not very efficient - can check only for J
@@ -152,7 +149,6 @@
       END DO 
       
       J1 = JMAX2 
-!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3      
       DO K1 = kmin3, kmax3 
          DO I1 = imin3, imax3 
 !//SP ----> Not very efficient - can check only for J
@@ -175,7 +171,6 @@
       END DO 
 
       I1 = imin2 
-!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3      
       DO K1 = kmin3, kmax3 
          DO J1 = jmin3, jmax3 
 !//SP ----> Not very efficient - can check only for I
@@ -198,7 +193,6 @@
       END DO 
 
       I1 = IMAX2 
-!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3      
       DO K1 = kmin3, kmax3 
          DO J1 = jmin3, jmax3 
 !//SP ----> Not very efficient - can check only for I
@@ -236,9 +230,7 @@
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 		     
-!//SP
                	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-!
                         IJK = FUNIJK(I,J,K) 
                         IM = IM1(I) 
                         JM = JM1(J) 
@@ -346,9 +338,7 @@
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
-!//SP
  	       	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-!
                         IJK = FUNIJK(I,J,K) 
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
@@ -387,9 +377,7 @@
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
-!//SP
  	                IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE			
-!
                         IJK = FUNIJK(I,J,K) 
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
@@ -406,6 +394,11 @@
          ENDIF 
       END DO 
 
-!//? check if COMMunication of A_M and B_M is necessary at this point?      
+
       RETURN  
       END SUBROUTINE BC_PHI 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization 
+!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3      
+!// 360 Check if i,j,k resides on current processor

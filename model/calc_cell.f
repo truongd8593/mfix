@@ -48,7 +48,7 @@
 !    CELL_END   -  end   coordinate for cell
       INTEGER N_DIR, CELL_LOC 
       DOUBLE PRECISION REACTOR_LOC 
-!//EFD Nov/10, do not use dimension(*) for d_dir
+
       DOUBLE PRECISION, DIMENSION(0:(N_DIR+3)) :: D_DIR 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -106,8 +106,7 @@
 !
       INTEGER CELL_LOC 
       DOUBLE PRECISION RMIN, REACTOR_LOC 
-!//EFD Nov/11 avoid using dx(*)
-!//   DOUBLE PRECISION, DIMENSION(*) :: D_DIR
+
       DOUBLE PRECISION, DIMENSION(0:CELL_LOC) :: D_DIR
 !  
 !-----------------------------------------------
@@ -127,3 +126,6 @@
       ENDIF 
       RETURN  
       END SUBROUTINE CALC_LOC 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 100 EFD Replaced inheritance based dimensioning of arrays, i.e. D_DIR(*) 

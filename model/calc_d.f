@@ -33,8 +33,8 @@
       USE physprop
       USE run
       USE scales 
-      USE compar     !//d
-      USE sendrecv     !//d
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -73,12 +73,8 @@
 !
       IF (MOMENTUM_X_EQ(0) .AND. MOMENTUM_X_EQ(1)) THEN 
 !
-!//I? check any data dependency for I direction decomposition in following loop
-!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-
 !$omp  parallel do private( I,IJK, IJKE, EPGA, EPSA, FoA0pF, FoA1pF), &
 !$omp&  schedule(static)
-
          DO IJK = ijkstart3, ijkend3
             IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN 
                D_E(IJK,0) = ZERO 
@@ -130,11 +126,8 @@
          END DO 
       ELSE IF (MOMENTUM_X_EQ(0)) THEN 
 
-!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-
 !$omp    parallel do &
 !$omp&   private( IJK, I, IJKE, EPGA )
-
          DO IJK = ijkstart3, ijkend3
             IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN 
                D_E(IJK,0) = ZERO 
@@ -158,10 +151,8 @@
          END DO 
       ELSE IF (MOMENTUM_X_EQ(1)) THEN 
 
-!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 !$omp    parallel do &
 !$omp&   private( IJK, I, IJKE, EPSA )
-
          DO IJK = ijkstart3, ijkend3 
             IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN 
                D_E(IJK,1) = ZERO 
@@ -183,8 +174,6 @@
             ENDIF 
          END DO 
       ENDIF 
-!//SP
-!!!      call send_recv(d_e,2)
       RETURN  
       END SUBROUTINE CALC_D_E 
 !
@@ -224,8 +213,8 @@
       USE physprop
       USE run
       USE scales 
-      USE compar   !//d
-      USE sendrecv     !//d
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -262,9 +251,6 @@
 !
       IF (MOMENTUM_Y_EQ(0) .AND. MOMENTUM_Y_EQ(1)) THEN 
 !
-!//I? check any data dependency for I direction decomposition in following loop
-!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-
 !$omp  parallel do private( J, K, IJK, IJKN, EPGA, EPSA, FoA0pF, FoA1pF), &
 !$omp&  schedule(static)
          DO IJK = ijkstart3, ijkend3 
@@ -320,8 +306,7 @@
             ENDIF 
          END DO 
       ELSE IF (MOMENTUM_Y_EQ(0)) THEN 
-!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-      
+
 !$omp    parallel do &
 !$omp&   private( IJK, I,J,K,  IJKN, EPGA )
          DO IJK = ijkstart3, ijkend3 
@@ -349,8 +334,6 @@
          END DO 
       ELSE IF (MOMENTUM_Y_EQ(1)) THEN 
 
-!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-
 !$omp    parallel do &
 !$omp&   private( IJK, I,J,K, IJKN, EPGA,EPSA )
          DO IJK = ijkstart3, ijkend3
@@ -377,8 +360,6 @@
             ENDIF 
          END DO 
       ENDIF 
-!//SP
-!!!      call send_recv(d_n,2)
       RETURN  
       END SUBROUTINE CALC_D_N 
 !
@@ -418,8 +399,8 @@
       USE physprop
       USE run
       USE scales 
-      USE compar    !//d
-      USE sendrecv     !//d
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -456,9 +437,6 @@
 !
       IF (MOMENTUM_Z_EQ(0) .AND. MOMENTUM_Z_EQ(1)) THEN 
 !
-!//I? check any data dependency for I direction decomposition in following loop
-!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-
 !$omp  parallel do private( J, K, IJK, IJKT, EPGA, EPSA, FoA0pF, FoA1pF), &
 !$omp&  schedule(static)
          DO IJK = ijkstart3, ijkend3 
@@ -514,7 +492,6 @@
             ENDIF 
          END DO 
       ELSE IF (MOMENTUM_Z_EQ(0)) THEN 
-!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 
 !$omp    parallel do &
 !$omp&   private( IJK, I,J,K,IJKT, EPGA )
@@ -542,7 +519,6 @@
             ENDIF 
          END DO 
       ELSE IF (MOMENTUM_Z_EQ(1)) THEN
-!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
        
 !$omp    parallel do &
 !$omp&   private( IJK, I,J,K, IJKT, EPSA )
@@ -569,7 +545,10 @@
             ENDIF 
          END DO 
       ENDIF 
-!//SP
-!!!      call send_recv(d_t,2)
       RETURN  
       END SUBROUTINE CALC_D_T 
+
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization 
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

@@ -107,6 +107,7 @@ mfix.exe : \
     geometry_mod.$(OBJ_EXT) \
     get_bc_area.$(OBJ_EXT) \
     get_data.$(OBJ_EXT) \
+    get_data_ORG.$(OBJ_EXT) \
     get_eq.$(OBJ_EXT) \
     get_flow_bc.$(OBJ_EXT) \
     get_hloss.$(OBJ_EXT) \
@@ -273,6 +274,7 @@ mfix.exe : \
     write_table.$(OBJ_EXT) \
     write_usr0.$(OBJ_EXT) \
     write_usr1.$(OBJ_EXT) \
+    xerbla.$(OBJ_EXT) \
     xsi_array_mod.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
@@ -391,6 +393,7 @@ mfix.exe : \
     geometry_mod.$(OBJ_EXT) \
     get_bc_area.$(OBJ_EXT) \
     get_data.$(OBJ_EXT) \
+    get_data_ORG.$(OBJ_EXT) \
     get_eq.$(OBJ_EXT) \
     get_flow_bc.$(OBJ_EXT) \
     get_hloss.$(OBJ_EXT) \
@@ -557,6 +560,7 @@ mfix.exe : \
     write_table.$(OBJ_EXT) \
     write_usr0.$(OBJ_EXT) \
     write_usr1.$(OBJ_EXT) \
+    xerbla.$(OBJ_EXT) \
     xsi_array_mod.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
@@ -890,7 +894,6 @@ adjust_a_w_s.$(OBJ_EXT) : adjust_a_w_s.f \
             GEOMETRY.mod \
             RUN.mod \
             INDICES.mod \
-            COMPAR.mod \
             SENDRECV.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -914,7 +917,6 @@ adjust_eps.$(OBJ_EXT) : adjust_eps.f \
             RUN.mod \
             COMPAR.mod \
             SENDRECV.mod \
-            DBG_UTIL.mod \
             function.inc                                                
 adjust_leq.$(OBJ_EXT) : adjust_leq.f \
             PARAM.mod \
@@ -1224,7 +1226,6 @@ calc_mu_g.$(OBJ_EXT) : calc_mu_g.f \
             CONSTANT.mod \
             COMPAR.mod \
             SENDRECV.mod \
-            FUNITS.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1283,7 +1284,6 @@ calc_p_star.$(OBJ_EXT) : calc_p_star.f \
             UR_FACS.mod \
             RESIDUAL.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             s_pr1.inc                                                    \
             function.inc                                                 \
             s_pr2.inc                                                   
@@ -1503,6 +1503,7 @@ check_data_30.$(OBJ_EXT) : check_data_30.f \
             FLDVAR.mod \
             RXNS.mod \
             VISC_S.mod \
+            VISC_G.mod \
             GEOMETRY.mod \
             RUN.mod \
             CONSTANT.mod \
@@ -1563,7 +1564,6 @@ conv_dif_u_g.$(OBJ_EXT) : conv_dif_u_g.f \
             RUN.mod \
             VISC_G.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             TOLERANC.mod \
             PHYSPROP.mod \
             FLDVAR.mod \
@@ -1587,7 +1587,6 @@ conv_dif_u_s.$(OBJ_EXT) : conv_dif_u_s.f \
             PHYSPROP.mod \
             VISC_S.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             TOLERANC.mod \
             FLDVAR.mod \
             OUTPUT.mod \
@@ -1609,7 +1608,6 @@ conv_dif_v_g.$(OBJ_EXT) : conv_dif_v_g.f \
             RUN.mod \
             VISC_G.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             TOLERANC.mod \
             PHYSPROP.mod \
             FLDVAR.mod \
@@ -1633,7 +1631,6 @@ conv_dif_v_s.$(OBJ_EXT) : conv_dif_v_s.f \
             PHYSPROP.mod \
             VISC_S.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             TOLERANC.mod \
             FLDVAR.mod \
             OUTPUT.mod \
@@ -1655,7 +1652,6 @@ conv_dif_w_g.$(OBJ_EXT) : conv_dif_w_g.f \
             RUN.mod \
             VISC_G.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             TOLERANC.mod \
             PHYSPROP.mod \
             FLDVAR.mod \
@@ -1679,7 +1675,6 @@ conv_dif_w_s.$(OBJ_EXT) : conv_dif_w_s.f \
             PHYSPROP.mod \
             VISC_S.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             TOLERANC.mod \
             FLDVAR.mod \
             OUTPUT.mod \
@@ -1703,7 +1698,6 @@ conv_pp_g.$(OBJ_EXT) : conv_pp_g.f \
             INDICES.mod \
             PGCOR.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             XSI_ARRAY.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -1716,7 +1710,6 @@ conv_rop_g.$(OBJ_EXT) : conv_rop_g.f \
             FLDVAR.mod \
             RUN.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             PARALLEL.mod \
             MATRIX.mod \
             PHYSPROP.mod \
@@ -1731,7 +1724,6 @@ conv_rop_s.$(OBJ_EXT) : conv_rop_s.f \
             FLDVAR.mod \
             RUN.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             PARALLEL.mod \
             MATRIX.mod \
             PHYSPROP.mod \
@@ -1795,7 +1787,6 @@ correct_0.$(OBJ_EXT) : correct_0.f \
             INDICES.mod \
             PHYSPROP.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             function.inc                                                
 correct_1.$(OBJ_EXT) : correct_1.f \
             PARAM.mod \
@@ -1831,7 +1822,6 @@ dif_u_is.$(OBJ_EXT) : dif_u_is.f \
             INDICES.mod \
             IS.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1898,6 +1888,7 @@ drag_gs.$(OBJ_EXT) : drag_gs.f \
             INDICES.mod \
             PHYSPROP.mod \
             RUN.mod \
+            CONSTANT.mod \
             COMPAR.mod \
             SENDRECV.mod \
             ep_s1.inc                                                    \
@@ -1973,6 +1964,13 @@ get_bc_area.$(OBJ_EXT) : get_bc_area.f \
             BC.mod \
             COMPAR.mod 
 get_data.$(OBJ_EXT) : get_data.f \
+            PARAM.mod \
+            PARAM1.mod \
+            RUN.mod \
+            FUNITS.mod \
+            COMPAR.mod \
+            GRIDMAP.mod 
+get_data_ORG.$(OBJ_EXT) : get_data_ORG.f \
             PARAM.mod \
             PARAM1.mod \
             RUN.mod \
@@ -2133,7 +2131,8 @@ iterate.$(OBJ_EXT) : iterate.f \
             PGCOR.mod \
             CONT.mod \
             SCALARS.mod \
-            COMPAR.mod 
+            COMPAR.mod \
+            MPI_UTILITY.mod 
 leq_bicgs.$(OBJ_EXT) : leq_bicgs.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2144,6 +2143,7 @@ leq_bicgs.$(OBJ_EXT) : leq_bicgs.f \
             PARALLEL.mod \
             MPI_UTILITY.mod \
             SENDRECV.mod \
+            FUNITS.mod \
             function.inc                                                
 leq_gmres.$(OBJ_EXT) : leq_gmres.f \
             PARAM.mod \
@@ -2179,7 +2179,6 @@ machine.$(OBJ_EXT) : machine.f \
             MACHINE.mod \
             PARAM.mod \
             RUN.mod \
-            COMPAR.mod \
             FUNITS.mod 
 make_upper_case.$(OBJ_EXT) : make_upper_case.f 
 mark_phase_4_cor.$(OBJ_EXT) : mark_phase_4_cor.f \
@@ -2191,8 +2190,6 @@ mark_phase_4_cor.$(OBJ_EXT) : mark_phase_4_cor.f \
             PHYSPROP.mod \
             CONSTANT.mod \
             COMPAR.mod \
-            SENDRECV.mod \
-            DBG_UTIL.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -2337,7 +2334,6 @@ physical_prop.$(OBJ_EXT) : physical_prop.f \
             CONSTANT.mod \
             COMPAR.mod \
             FUNITS.mod \
-            SENDRECV.mod \
             cp_fun1.inc                                                  \
             function.inc                                                 \
             cp_fun2.inc                                                 
@@ -2422,7 +2418,6 @@ rrates.$(OBJ_EXT) : rrates.f \
             CONSTANT.mod \
             FUNITS.mod \
             COMPAR.mod \
-            SENDRECV.mod \
             function.inc                                                
 rrates0.$(OBJ_EXT) : rrates0.f \
             PARAM.mod \
@@ -3121,6 +3116,7 @@ tau_u_g.$(OBJ_EXT) : tau_u_g.f \
             INDICES.mod \
             IS.mod \
             COMPAR.mod \
+            SENDRECV.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -3143,6 +3139,7 @@ tau_u_s.$(OBJ_EXT) : tau_u_s.f \
             INDICES.mod \
             IS.mod \
             VSHEAR.mod \
+            SENDRECV.mod \
             COMPAR.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -3165,6 +3162,7 @@ tau_v_g.$(OBJ_EXT) : tau_v_g.f \
             GEOMETRY.mod \
             INDICES.mod \
             IS.mod \
+            SENDRECV.mod \
             COMPAR.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -3187,6 +3185,7 @@ tau_v_s.$(OBJ_EXT) : tau_v_s.f \
             GEOMETRY.mod \
             INDICES.mod \
             IS.mod \
+            SENDRECV.mod \
             COMPAR.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -3209,6 +3208,7 @@ tau_w_g.$(OBJ_EXT) : tau_w_g.f \
             GEOMETRY.mod \
             INDICES.mod \
             IS.mod \
+            SENDRECV.mod \
             COMPAR.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -3231,6 +3231,7 @@ tau_w_s.$(OBJ_EXT) : tau_w_s.f \
             GEOMETRY.mod \
             INDICES.mod \
             IS.mod \
+            SENDRECV.mod \
             COMPAR.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -3539,6 +3540,8 @@ write_table.$(OBJ_EXT) : write_table.f \
             FUNITS.mod 
 write_usr0.$(OBJ_EXT) : write_usr0.f 
 write_usr1.$(OBJ_EXT) : write_usr1.f 
+xerbla.$(OBJ_EXT) : xerbla.f \
+            COMPAR.mod 
 zero_array.$(OBJ_EXT) : zero_array.f \
             PARAM.mod \
             PARAM1.mod 

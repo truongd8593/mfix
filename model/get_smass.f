@@ -37,8 +37,8 @@
       USE geometry
       USE fldvar
       USE indices
-      USE compar        !//d
-      USE mpi_utility        !//d
+      USE compar 
+      USE mpi_utility 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -68,15 +68,20 @@
 
 !!$omp$   parallel do private(IJK) &
 !!$omp&   reduction(+:SUM)
-!//SP IJKMIN1, IJKMAX1 ---> ijkstart3, ijkend3
-         DO IJK = IJKSTART3, IJKEND3 
+         DO IJK = ijkstart3, ijkend3 
 	 IF(.NOT.IS_ON_myPE_owns(I_OF(IJK), J_OF(IJK), K_OF(IJK))) cycle
             IF (FLUID_AT(IJK)) SUM = SUM + ROP_S(IJK,M)*VOL(IJK) 
          END DO 
          SMASS = SMASS + SUM 
       END DO 
-!//SP
+
       call global_all_sum(smass)
       
       RETURN  
       END SUBROUTINE GET_SMASS 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 400 Added mpi_utility module and other global reduction (global_all_sum) call
+

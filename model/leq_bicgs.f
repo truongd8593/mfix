@@ -163,7 +163,9 @@
         END FUNCTION DOT_PRODUCT_PAR
         END INTERFACE
 
+!//AIKE 0201
         logical, parameter :: do_unit_scaling = .true.
+!       logical, parameter :: do_unit_scaling = .false.
 
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -487,7 +489,9 @@
 !
 !                      OVERRELAXATION FACTOR
       DOUBLE PRECISION, PARAMETER :: OMEGA = 1.2
+!//AIKE 0201
       logical, parameter :: need_scale = .false.
+!     logical, parameter :: need_scale = .true.
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

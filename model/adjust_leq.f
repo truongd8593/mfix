@@ -46,9 +46,6 @@
 !-----------------------------------------------
 !
 !
-!//? do we need to enforce all PEs to issue same parameters for LEQ solver?
-!//? following branch is dependent to RESIDual where each PE may have different
-!//? do we store the global residual or local residual on each PE in RESID var?
       IF (LEQ_ADJUST .AND. RESID<=TOL_RESID*0.1) THEN 
          LEQM = LEQ_METHOD_CONV 
          LEQI = MIN(LEQ_IT_CONV,LEQ_ITL) 

@@ -49,9 +49,9 @@
       USE energy
       USE rxns
       USE indices
-      USE compar    !//d
-      USE sendrecv  !// 400
-!      USE dbg_util  !//AIKEPARDBG
+      USE compar    
+      USE sendrecv  
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -122,11 +122,6 @@
 !!$omp& private(I, IJK, M, EP_g2, Pr1o3, UGC, VGC, WGC, USCM, VSCM, &
 !!$omp&  WSCM, VREL, Re, LM, FAC ) &
 !!$omp& schedule(dynamic,chunk_size)
-
-!//? Make sure all dependent variables used in following DO loop are up to date
-!//? Check overlapping interface values of these vars
-!// 350 1119 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-!        DO IJK = 1, IJKMAX2 
          DO IJK = ijkstart3, ijkend3
 	 
                IF (.NOT.WALL_AT(IJK)) THEN 
@@ -183,12 +178,13 @@
          ENDIF 
       END DO 
 
-!       call prnfield(GAMA_GS,'GAMA_GS','BEF')   !//AIKEPARDBG
-
-!// 400 1112 update the boundaries for recently calculated field vars
       call send_recv(GAMA_GS,2)
 
-!       call prnfield(GAMA_GS,'GAMA_GS','AFT')   !//AIKEPARDBG
-    
       RETURN  
       END SUBROUTINE CALC_GAMA 
+
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization 
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 400 Added sendrecv module and send_recv calls for COMMunication

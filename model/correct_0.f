@@ -87,8 +87,7 @@
       USE geometry
       USE indices
       USE physprop
-      USE compar        !//d
-      USE sendrecv        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -130,7 +129,6 @@
 !  Underrelax pressure correction.  Velocity corrections should not be
 !  underrelaxed, so that the continuity eq. is satisfied.
 !
-!// 350 1206 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 !$omp    parallel do private(IJK,IJKE,IJKN,IJKT)
       DO IJK = ijkstart3, ijkend3 
          IF (FLUIDORP_FLOW_AT(IJK)) THEN 
@@ -142,16 +140,11 @@
             V_G(IJK) = V_G(IJK) - D_N(IJK,0)*(PP_G(IJKN)-PP_G(IJK)) 
             IF (DO_K) THEN 
                IJKT = TOP_OF(IJK) 
-!//? make sure vars using IJKT on PE0 contains correct values from PE1 : PP_G	       
                W_G(IJK) = W_G(IJK) - D_T(IJK,0)*(PP_G(IJKT)-PP_G(IJK)) 
             ENDIF 
          ENDIF 
       END DO 
-!//SP
-!!!!      call send_recv(P_G,2)
-!!!!      call send_recv(U_G,2)
-!!!!      call send_recv(V_G,2)
-!!!!      call send_recv(W_G,2)
+
       RETURN  
       END SUBROUTINE CORRECT_0G 
 !
@@ -185,8 +178,7 @@
       USE geometry
       USE indices
       USE physprop
-      USE compar        !//d
-      USE sendrecv        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -224,7 +216,6 @@
 !  underrelaxed, so that the continuity eq. is satisfied.
 !
       DO M = 1, MMAX 
-!// 350 1206 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
 !$omp    parallel do private(IJK,IJKE,IJKN,IJKT)
          DO IJK = ijkstart3, ijkend3
             IF (FLUIDORP_FLOW_AT(IJK)) THEN 
@@ -235,15 +226,14 @@
                V_S(IJK,M) = V_S(IJK,M) - D_N(IJK,M)*(PP_G(IJKN)-PP_G(IJK)) 
                IF (DO_K) THEN 
                   IJKT = TOP_OF(IJK) 
-!//? make sure vars using IJKT on PE0 contains correct values from PE1: PP_G	       		  
                   W_S(IJK,M) = W_S(IJK,M) - D_T(IJK,M)*(PP_G(IJKT)-PP_G(IJK)) 
                ENDIF 
             ENDIF 
          END DO 
       END DO 
-!//SP
-!!!!      call send_recv(U_S,2)
-!!!!      call send_recv(V_S,2)
-!!!!      call send_recv(W_S,2)
       RETURN  
       END SUBROUTINE CORRECT_0S 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

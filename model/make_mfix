@@ -58,10 +58,14 @@ fi
             FORTRAN_EXT=f
 	    omp="-mp"
             compile_d="-c -I. -64 -C -trapuv -g -freeform "
+#AIKE
+            compile_d3="-c -I. -64 -trapuv -g -freeform "
             link_d="-64 -C -g"
 
             compile="-c -I. -64 -O3 -mips4 -freeform "
             compile2="-c -I. -64 -O3 -mips4 -freeform "
+#AIKE
+            compile3="-c -I. -64 -O3 -mips4 -freeform "
             link="-64 -O3 -mips4"
             MODULE_CODE=0
             ;;
@@ -355,12 +359,16 @@ esac
     echo "Execution may be SLOW.  Do not use debug version for production runs!"
     FORT_FLAGS="$mp_flag $compile_d"
     FORT_FLAGS2="$mp_flag $compile_d"
+#AIKE
+    FORT_FLAGS3="$mp_flag $compile_d3"
     LINK_FLAGS="$mp_flag $link_d"
     LIB_FLAGS="$libs_d"
     ;;
   *)
     FORT_FLAGS="$mp_flag $compile"
     FORT_FLAGS2="$mp_flag $compile2"
+#AIKE
+    FORT_FLAGS3="$mp_flag $compile3"
     LINK_FLAGS="$mp_flag $link"
     LIB_FLAGS="$libs"
     ;;
@@ -370,6 +378,8 @@ esac
   
   export FORT_FLAGS
   export FORT_FLAGS2
+#AIKE
+  export FORT_FLAGS3
   export LINK_FLAGS
   export LIB_FLAGS
   export OBJ_EXT

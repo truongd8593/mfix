@@ -32,8 +32,8 @@
       USE fldvar
       USE indices
       USE physprop
-      USE compar   !//d
-      USE sendrecv   !//SP
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -55,8 +55,7 @@
 !
       DO M = 1, MMAX 
 !!$omp    parallel do private(ijk,i,j,k,im,imjk,ijmk,ijkm)
-!//SP
-      DO IJK = IJKSTART3, IJKEND3
+      DO IJK = ijkstart3, ijkend3
             IF (.NOT.WALL_AT(IJK)) THEN 
                I = I_OF(IJK) 
                J = J_OF(IJK) 
@@ -71,6 +70,9 @@
             ENDIF 
          END DO 
       END DO 
-!//SP
-!!!      call send_recv(TRD_S,2)
+
       END SUBROUTINE CALC_TRD_S 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

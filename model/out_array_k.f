@@ -33,7 +33,7 @@
       USE physprop
       USE indices
       USE funits 
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

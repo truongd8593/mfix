@@ -22,12 +22,12 @@
       USE tau_s
       USE bc
       USE vshear
-!//SP
       USE compar
 
       DOUBLE PRECISION V_sh,dis
 !     DOUBLE PRECISION xdist(IMAX2,JMAX2)
 !     DOUBLE PRECISION xdist3(IMAX2,JMAX2,KMAX2),cnter3(IMAX2,JMAX2,KMAX2)
+
 !//SP Note the rational behind using global direction in I direction. This is to ensure
 !     correctness in the way distances are calculated in the serial version and also
 !     to give the capability to perform calculations over additional ghost layers in
@@ -47,9 +47,7 @@
       IF (NO_K) THEN
 
 !calculate distances
-!     Do  J1= 1, JMAX2
-!//SP
-      Do  J1= JSTART3, JEND3
+      DO  J1= JSTART3, JEND3
        	xdist(1,J1)=1d0/(ODX(1))
        	if(imin3.ne.imin2) xdist(IMIN3,J1)=-1d0/(ODX(IMIN3))
  	DO  I1 = 2, IMAX3
@@ -57,9 +55,7 @@
         END DO
       END DO 
 
-!    Do  IJK= 1, IJKMAX2
-!//SP
-     Do  IJK= IJKSTART3, IJKEND3
+      DO  IJK= ijkstart3, ijkend3
           I = I_OF(IJK)
           J = J_OF(IJK)	
 	 
@@ -80,24 +76,18 @@
       ELSE
 
 !calculate distances
-!     Do K1=1,KMAX2      
-!     Do  J1= 1, JMAX2
-!//SP
-      Do K1=KSTART3,KEND3      
-      Do  J1= JSTART3, JEND3
-       
-	xdist3(1,J1,K1)=1d0/(ODX(1))
-       	if(imin3.ne.imin2) xdist(IMIN3,J1)=-1d0/(ODX(IMIN3))
-	DO  I1 = 2, IMAX3
-	xdist3(I1,J1,K1)=1d0/(ODX(I1))+xdist3((I1-1),J1,K1)
-        END DO
-      END DO 
+      DO K1=KSTART3,KEND3      
+        DO J1= JSTART3, JEND3       
+	  xdist3(1,J1,K1)=1d0/(ODX(1))
+       	  if(imin3.ne.imin2) xdist(IMIN3,J1)=-1d0/(ODX(IMIN3))
+	  DO  I1 = 2, IMAX3
+	   xdist3(I1,J1,K1)=1d0/(ODX(I1))+xdist3((I1-1),J1,K1)
+          END DO
+        END DO 
       END DO
 
 
-!    Do  IJK= 1, IJKMAX2
-!//SP
-     Do  IJK= IJKSTART3, IJKEND3
+      DO  IJK= ijkstart3, ijkend3
           I = I_OF(IJK)
           J = J_OF(IJK)	
 	  K = K_OF(IJK)
@@ -118,3 +108,9 @@
       END IF
       RETURN
       END SUBROUTINE CAL_D
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 350 1206 change do loop limits: 1,kmax2->kstart3,kend3      
+

@@ -33,8 +33,8 @@
       USE constant
       USE pgcor
       USE pscor
-      USE compar  !//d
-      USE sendrecv    !// 400
+      USE compar 
+      USE sendrecv 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -81,9 +81,6 @@
 !
       IER = 0 
 !
-!
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-
 !$omp  parallel do private( Mcp, EPcp, SUM, Mf, M) &
 !$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
@@ -128,10 +125,14 @@
          ENDIF 
       END DO 
 
-!// 400 0105 COMM updated vars
-      CALL SEND_RECV(EP_G, 2)
-      CALL SEND_RECV(ROP_G, 2)
-      CALL SEND_RECV(ROP_S, 2)
+      CALL send_recv(EP_G, 2)
+      CALL send_recv(ROP_G, 2)
+      CALL send_recv(ROP_S, 2)
       
       RETURN  
       END SUBROUTINE CALC_VOL_FR 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 400 Added sendrecv module and send_recv calls for COMMunication

@@ -41,7 +41,7 @@
       USE output
       USE indices
       USE is
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -137,3 +137,6 @@
       END DO 
       RETURN  
       END SUBROUTINE DIF_W_IS 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

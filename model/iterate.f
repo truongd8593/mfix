@@ -44,8 +44,8 @@
       USE pgcor
       USE cont
       USE scalars
-      USE compar               !//d
-      USE mpi_utility               !//d
+      USE compar   
+      USE mpi_utility 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -115,9 +115,6 @@
 !-----------------------------------------------
 !
 !
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): beginning of iterate')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
 
       NIT = 0 
       RESG = ZERO 
@@ -141,18 +138,10 @@
 !
       LEQ_ADJUST = .FALSE. 
 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): bef init_resid in iterate')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
-
 !
 !     Initialize residuals
 !
       CALL INIT_RESID (IER) 
-
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft init_resid in iterate')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
 
 !
 !
@@ -181,9 +170,6 @@
       ENDIF 
 !
 !
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): bef iteration loop in iterate')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
 
 !     Begin iterations
 !
@@ -212,11 +198,7 @@
 !     Call user-defined subroutine to set quantities that need to be updated
 !     every iteration
 !
-      IF (CALL_USR) CALL USR2 
-!//SP
-!    write(*,"('(PE ',I2,'): aft USR2 in iterate')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
-      
+      IF (CALL_USR) CALL USR2       
 !
 !
 !     Calculate coefficients.  Explicitly set flags for all the quantities
@@ -234,10 +216,6 @@
          ENDIF 
       ENDIF 
 !
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): bef calc_coeff in iterate')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
-
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 
@@ -245,39 +223,22 @@
 !     DIffusion coefficient and source terms for user-defined scalars
       IF(NScalar /= 0)CALL SCALAR_PROP(IER)
 
-!
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft calc_coeff in iterate')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
-      
+!      
 !
 !     Solve strarred velocitiy components
 !
-!//SP
-      CALL SOLVE_VEL_STAR (IER) 
-!
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft solve_vel_star in iterate')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
 
-!     write(*,*) RO_G0, myPE
+      CALL SOLVE_VEL_STAR (IER) 
 !
 !     Solve fluid pressure correction equation
 !
       IF (RO_G0 /= ZERO) CALL SOLVE_PP_G (NORMG, RESG, IER) 
-!//SP
-!     write(*,*) 'after SOLVE_PP_G', myPE
 !
 !
 !     Correct pressure and velocities
 !
       IF (RO_G0 /= ZERO) CALL CORRECT_0 (IER) 
-!//SP
-!     write(*,*) 'after CORRECT_0', myPE, MMAX
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft correct_0 in iterate')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
-      
+     
 !
 !     Solve solids volume fraction correction equation for close-packed
 !     solids phases
@@ -300,15 +261,10 @@
  
       ENDIF 
 !
-!//SP
-!     write(*,*) 'after CORRECT_1, etc.,', myPE
-!
 !  Update wall velocities
  
       CALL SET_WALL_BC (IER) 
 !
-!//SP
-!     write(*,*) 'after SET_WALL_BC, etc.,', myPE
 !
 !     Calculate P_star in cells where solids continuity equation is
 !     solved
@@ -324,8 +280,7 @@
 !
       IER = 0
       IF (GRANULAR_ENERGY) CALL SOLVE_GRANULAR_ENERGY (IER) 
-!//SP
-!     write(*,*) 'after GRANULAR_ENERGY', myPE, IER
+
       abort_ier = ier.eq.1
       call global_all_or(abort_ier)
       IF (abort_ier) THEN
@@ -335,30 +290,15 @@
 !
       ENDIF 
 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): bef solve_species_eq in iterate')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
       
 !
 !     Solve species mass balance equations
 !
-!//SP
-!     write(*,*) 'before SOLVE_SPECIES_EQ', myPE, IER
       CALL SOLVE_SPECIES_EQ (IER) 
-!     write(*,*) 'after SOLVE_SPECIES_EQ', myPE, IER
 !
 !     Solve other scalar transport equations
 !
-!//SP
-!     write(*,*) 'before SOLVE_Scalar_EQ', myPE, IER
       IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER) 
-!     write(*,*) 'after SOLVE_Scalar_EQ', myPE, IER
-
-
-
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft solve_species_eq in iterate')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
       
 !
 !    User-defined linear equation solver parameters may be adjusted after
@@ -369,12 +309,8 @@
 !
 !
 !     Check for convergence
-!//SP
-!     write(*,*) 'before CHECK_CONVERGENCE, etc.,', myPE, NIT, MUSTIT, IER
 !
       CALL CHECK_CONVERGENCE (NIT, MUSTIT, IER) 
-!//SP
-!     write(*,*) 'after CHECK_CONVERGENCE, etc.,', myPE, NIT, MUSTIT, IER
 !
 !      If not converged continue iterations; else exit subroutine.
 !
@@ -383,8 +319,6 @@
 !     Display residuals
 !
       IF (FULL_LOG) CALL DISPLAY_RESID (NIT, IER) 
-!//SP
-!     write(*,*) 'after DISPLAY_RESID, etc.,', myPE
       
       IF (MUSTIT == 0) THEN 
          IF (DT==UNDEFINED .AND. NIT==1) GO TO 50!Iterations converged 
@@ -442,18 +376,12 @@
             WRITE (UNIT_LOG, 5200) TIME, DT, NIT 
             CALL END_LOG 
 
-!//? pnicol : NIT below is only for PE_IO ... can other
-!//?          processors have different NIT.  Ans if so,
-!//?          what do we want to print out (MAX ?)
             if (myPE.eq.PE_IO) WRITE (*, 5200) TIME, DT, NIT   !//
          ENDIF 
          IER = 1 
          RETURN  
       ENDIF 
 !
-!//SP
-!     write(*,*) 'after misc., etc.,', myPE
-!     call mfix_exit
 !
       IF (NIT < MAX_NIT) THEN 
          MUSTIT = 0 
@@ -464,9 +392,6 @@
 !     End iterations
 !
       CALL GET_SMASS (SMASS) 
-!//? pnicol : NIT below is only for PE_IO ... can other
-!//?          processors have different NIT.  Ans if so,
-!//?          what do we want to print out (MAX ?)
       if (myPE.eq.PE_IO) WRITE (UNIT_OUT, 5100) TIME, DT, NIT, SMASS    !//
       CALL START_LOG 
       WRITE (UNIT_LOG, 5100) TIME, DT, NIT, SMASS 
@@ -515,3 +440,6 @@
 !
       RETURN  
       END SUBROUTINE GET_TUNIT 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

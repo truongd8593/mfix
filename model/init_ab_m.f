@@ -29,9 +29,8 @@
       USE param 
       USE param1 
       USE matrix 
-!efd
       USE parallel
-      USE compar   !//
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -63,9 +62,7 @@
 !      IJK = 1 
       IF (IJKMAX2A > 0) THEN 
        IF (USE_DOLOOP) THEN
-!// 350 1206 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3       
 !$omp    parallel do private( IJK )
-!         DO IJK = 1, IJKMAX2A
          DO IJK = ijkstart3, ijkend3
            A_M(IJK,B,M) = ZERO
            A_M(IJK,S,M) = ZERO
@@ -78,7 +75,6 @@
            B_M(IJK,M) = ZERO
          ENDDO
        ELSE
-!// 1206 Removed the index :IJKMAX2A for array initialization
          A_M(:,B,M) = ZERO 
          A_M(:,S,M) = ZERO 
          A_M(:,W,M) = ZERO 
@@ -93,3 +89,9 @@
       ENDIF 
       RETURN  
       END SUBROUTINE INIT_AB_M 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 120 Replaced the index for initialization, :IJKMAX2A => : 
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!

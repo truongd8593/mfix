@@ -34,7 +34,7 @@
       USE matrix 
       USE corner
       USE funits 
-      USE compar        !//d
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -71,7 +71,6 @@
 !
       NCORN = 0 
 !
-!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
       DO IJK = ijkstart3, ijkend3
          IF (WALL_AT(IJK)) THEN 
 !
@@ -323,3 +322,8 @@
 !
       RETURN  
       END SUBROUTINE ADDCORN 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+

@@ -31,7 +31,7 @@
       USE matrix 
       USE geometry
       USE indices
-      USE compar   !//d
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -66,7 +66,7 @@
       INCLUDE 'function.inc'
 !
       IER = 0 
-      DO IJK = IJKSTART3, IJKEND3
+      DO IJK = ijkstart3, ijkend3
          IF (.NOT.WALL_AT(IJK)) THEN 
             IF (A_M(IJK,B,M) < ZERO) THEN 
                IF (ABS(A_M(IJK,B,M)) > SMALL_NUMBER) THEN 
@@ -154,5 +154,10 @@
   500 CONTINUE 
       IER = 1 
       CALL WRITE_AB_M (A_M, B_M, IJKMAX2, M, IER) 
-      STOP  
+      call mfix_exit(myPE)
       END SUBROUTINE CHECK_AB_M 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 990 Replace STOP with exitMPI

@@ -43,14 +43,10 @@
 !
 !                      Mass fraction array
 !
-!//EFD Nov 11, avoid use of '*'
-!//      DOUBLE PRECISION X_g(DIM, *)
       DOUBLE PRECISION X_g(DIM, NMAX)
 !
 !                      Moleculare weight array
 !
-!//EFD Nov 11, avoid use of '*'
-!//      DOUBLE PRECISION MW_g(*)
       DOUBLE PRECISION MW_g(NMAX)
 !
 !                      Mass fraction array Ist index
@@ -73,3 +69,6 @@
 !
       RETURN  
       END FUNCTION CALC_MW 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 100 EFD Replaced inheritance based dimensioning of arrays, i.e. X_g(*),MW_g(*)

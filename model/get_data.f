@@ -20,7 +20,7 @@
 !  Purpose:  call GRIDMAP_INIT to handle the domain decomposition and  C
 !            arrangement of all appropriate indices.                   C
 !            Introduced MPI_Barrier for RESTART file read situation    C
-!            (see comment !//S 0815 )
+!            (see comment !//S  )
 !
 !  Author:   Aeolus Res. Inc.                         Date: 04-SEP-99  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
@@ -45,7 +45,7 @@
       USE run
       USE funits 
       USE compar      
-      USE gridmap     !// 300 Domain decomposition partioner
+      USE gridmap
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -61,8 +61,12 @@
 !                    Shift or not shift DX, DY and DZ values 
       LOGICAL        SHIFT 
 !-----------------------------------------------
-      LOGICAL , EXTERNAL :: COMPARE 
-
+!-----------------------------------------------
+!   E x t e r n a l   F u n c t i o n s
+!-----------------------------------------------
+      LOGICAL , EXTERNAL :: COMPARE
+!-----------------------------------------------
+!
 !
 !
 !
@@ -78,29 +82,20 @@
       IF (CYCLIC_X_PD) CYCLIC_X = .TRUE.
       IF (CYCLIC_Y_PD) CYCLIC_Y = .TRUE.
       IF (CYCLIC_Z_PD) CYCLIC_Z = .TRUE.
-      IF (COORDINATES=='CYLINDRICAL' .AND. COMPARE(ZLENGTH,8.D0*ATAN(ONE)) &
-          .AND. .NOT.(NO_K) ) &
-         CYCLIC_Z = .TRUE. 
 
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): reached end of read_namelist')") myPE	!//AIKEPARDBG
-!      call mfix_exit(myPE)	!//AIKEPARDBG
+!//SP 0201 Sreekanth's recomm. for rotary-drum
+      DO_K = .NOT.NO_K
+!
+      IF (COORDINATES == 'CYLINDRICAL') CYLINDRICAL = .TRUE.
 
+      IF (CYLINDRICAL .AND. COMPARE(ZLENGTH,8.D0*ATAN(ONE)) .AND. DO_K) &
+         CYCLIC_Z = .TRUE.
 
-!// 300 0905 Partition the domain and set indices
+!// 300 Partition the domain and set indices
       call SET_MAX2
       call GRIDMAP_INIT
-!//? 0906 GRIDMAP_INIT gives following error:
-!//?          Assertion error: ** sendrecv_init: invalid kk  9
-!
-!//? before allocate, must do something with KMAX,DZ(),ZLENGTH for each PEs and also Global values
-      CALL ALLOCATE_ARRAYS
 
-
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): aft ALLOCATE_ARRAYS in get_data')") myPE	!//AIKEPARDBG
-!      call mfix_exit(myPE)	!//AIKEPARDBG
-      
+      CALL ALLOCATE_ARRAYS      
 !
 !
       IF (RUN_NAME == UNDEFINED_C) THEN 
@@ -112,16 +107,11 @@
 ! open files
 !
 
-!//S 0815 May be worth to replace following MPI_Barrier calls with a wrapper
-!//S      equivalent to avoid direct inclusion of MPI library thru out the source code
-
       IF (RUN_TYPE == 'RESTART_3') THEN 
          RUN_TYPE = 'RESTART_1' 
          CALL OPEN_FILES (RUN_NAME, RUN_TYPE, N_SPX) 
          CALL READ_RES0
-
-!         write(*,"('(PE ',I2,'): aft READ_RES0')") myPE	!//AIKEPARDBG
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
 
          CALL READ_NAMELIST (0)                  ! to modify the .RES data with .DAT data 
          RUN_TYPE = 'RESTART_1' 
@@ -131,7 +121,7 @@
          CALL OPEN_FILES (RUN_NAME, RUN_TYPE, N_SPX) 
 
          CALL READ_RES0  
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
 
          CALL READ_NAMELIST (0)              ! to modify the .RES data with .DAT data 
          RUN_TYPE = 'RESTART_2' 
@@ -140,10 +130,6 @@
          CALL OPEN_FILES (RUN_NAME, RUN_TYPE, N_SPX) 
          SHIFT = .TRUE. 
       ENDIF 
-
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): end of RUN_TYPE branches in get_data')") myPE	!//AIKEPARDBG
-!      call mfix_exit(myPE)	!//AIKEPARDBG
 
 !
 ! write header in the .LOG file
@@ -155,20 +141,11 @@
       CALL START_LOG 
 !
       CALL CHECK_DATA_01                         ! run_control input 
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): aft call chk_data_01 in get_data')") myPE !//AIKEPARDBG
-!      call mfix_exit(myPE) !//AIKEPARDBG
 
 
       CALL CHECK_DATA_02                         ! output_control input 
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): aft call chk_data_02 in get_data')") myPE  !//AIKEPARDBG
-!      call mfix_exit(myPE)  !//AIKEPARDBG
 
       CALL CHECK_DATA_03 (SHIFT)                 ! geometry input 
-!//AIKEPARDBGSTOP 0907
-!      write(*,"('(PE ',I2,'): aft call chk_data_03 in get_data')") myPE !//AIKEPARDBG
-!      call mfix_exit(myPE) !//AIKEPARDBG
 
 !
 !  Set X, X_E, oX, oX_E ... etc.
@@ -177,10 +154,6 @@
 !
       CALL SET_L_SCALE 
 !
-!//AIKEPARDBGSTOP 0920
-!      write(*,"('(PE ',I2,'): aft call set_L_scale in get_data')") myPE !//AIKEPARDBG
-!      call mfix_exit(myPE) !//AIKEPARDBG
-
       CALL CHECK_DATA_04                         ! solid phase section 
       CALL CHECK_DATA_05                         ! gas phase section 
 !
@@ -188,27 +161,12 @@
 !
       CALL SET_CONSTANTS 
 !
-!//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): aft call set_constants in get_data')") myPE !//AIKEPARDBG
-!      call mfix_exit(myPE) !//AIKEPARDBG
-
 
       CALL CHECK_DATA_06                         ! initial condition section 
 
-
-!//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): aft call check_data_06 in get_data')") myPE !//AIKEPARDBG
-!      call mfix_exit(myPE) !//AIKEPARDBG
-
       CALL CHECK_DATA_07                         ! boundary condition section 
-!//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): aft call check_data_07 in get_data')") myPE !//AIKEPARDBG
       CALL CHECK_DATA_08                         ! Internal surfaces section 
-      CALL CHECK_DATA_09                         ! Chemical reactions section 
-!//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): aft call check_data_09 in get_data')") myPE !//AIKEPARDBG
-!      call mfix_exit(myPE) !//AIKEPARDBG
-      
+      CALL CHECK_DATA_09                         ! Chemical reactions section       
 
 !
 ! close .LOG file
@@ -283,3 +241,8 @@
       RETURN  
       END SUBROUTINE CHECK_DATA_00
  
+!// Comments on the modifications for DMP version implementation      
+!// 300 Partition the domain and set indices
+!//PAR_I/O enforce barrier here
+!//S 0815 May be worth to replace following MPI_Barrier calls with a wrapper
+!//S      equivalent to avoid direct inclusion of MPI library thru out the source code

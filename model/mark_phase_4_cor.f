@@ -33,9 +33,7 @@
       USE fldvar
       USE physprop
       USE constant
-      USE compar        !//d
-      USE sendrecv      !// 400
-      USE dbg_util      !//AIKEPARDBG
+      USE compar       
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -103,9 +101,7 @@
          DO_CONT(M) = .TRUE. 
       END DO 
 
-!// 350 1120 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3          
-!      DO IJK = 1, IJKMAX2 
-      DO IJK = IJKstart3, IJKend3
+      DO IJK = ijkstart3, ijkend3
 !
 !
          IF (FLUID_AT(IJK)) THEN 
@@ -136,14 +132,6 @@
             PHASE_4_P_S(IJK) = UNDEFINED_I       !to indicate a non-fluid cell 
          ENDIF 
       END DO 
-
-!      call prnfield(PHASE_4_P_G,'PHASE_4_P_G','BEF')    !//AIKEPARDBG
-
-!// 400 1120 update the boundaries for recently calculated field vars
-!!!!      call send_recv(PHASE_4_P_G,2)
-!!!!      call send_recv(PHASE_4_P_S,2)
-
-!      call prnfield(PHASE_4_P_G,'PHASE_4_P_G','AFT')    !//AIKEPARDBG
       
       TRUE_G = 0 
       TRUE_S = 0 
@@ -191,3 +179,8 @@
 
       RETURN  
       END SUBROUTINE MARK_PHASE_4_COR 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!

@@ -30,8 +30,8 @@
       USE param1 
       USE physprop
       USE residual
-      USE funits  !//AIKEPARDBG for UNIT_LOG defn
-      USE compar  !//AIKEPARDBG
+      USE funits  
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -117,3 +117,6 @@
       END DO 
       RETURN  
       END SUBROUTINE PARSE_RESID_STRING 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

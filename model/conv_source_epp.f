@@ -30,7 +30,6 @@
       USE param1 
       USE fldvar
       USE run
-!//SP
       USE geometry
       USE compar
       USE sendrecv
@@ -64,10 +63,6 @@
          CALL CONV_SOURCE_EPP1 (A_M, B_M, IER) 
       ENDIF 
 
-!//12/21/99 - Send Recv. A_M and B_M
-
-!!!        CALL SEND_RECV(A_M, 2)
-!!!        CALL SEND_RECV(B_M, 2)
 
       RETURN  
       END SUBROUTINE CONV_SOURCE_EPP 
@@ -112,8 +107,7 @@
       USE indices
       USE pgcor
       USE pscor
-      USE compar        !//d
-!//SP
+      USE compar
       USE sendrecv
 
       IMPLICIT NONE
@@ -158,21 +152,6 @@
       INCLUDE 'ep_s2.inc'
 !
 !
-!\\Extra Sendrecv operations - just to make sure all the variables needed are
-!  are passed - can be optimized later - Sreekanth - 102199
-
-!!!      call send_recv(U_S,2)
-!!!      call send_recv(V_S,2)
-!!!      call send_recv(W_S,2)
-!!!      call send_recv(ROP_S,2)
-!!!      call send_recv(K_CP,2)
-!!!      call send_recv(E_E,2)
-!!!      call send_recv(E_N,2)
-!!!      call send_recv(E_T,2)
-!!!      call send_recv(AXY,2)
-!!!      call send_recv(AXZ,2)
-!!!      call send_recv(AYZ,2)
-!
 !     Calculate convection-diffusion fluxes through each of the faces
 !
       M = MCP 
@@ -181,9 +160,8 @@
 !$omp&           IMJK, IJMK, IJKM, IJKP,                               &
 !$omp&           IJKE, IJKW, IJKN, IJKS, IJKT, IJKB,                   &
 !$omp&           K_P, SRC )
-!//SP
-      DO IJK = IJKSTART3, IJKEND3
-!\\122199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+      DO IJK = ijkstart3, ijkend3
+!//SP 122199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
@@ -410,8 +388,7 @@
       USE pscor
       USE xsi_array
       USE vshear
-      USE compar        !//d
-!//SP
+      USE compar
       USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
@@ -467,20 +444,6 @@
 ! loezos      
 
       call lock_xsi_array
-!
-!\\Extra Sendrecv operations - just to make sure all the variables needed are
-!  are passed - can be optimized later - Sreekanth - 122199
-!!!      call send_recv(U_S,2)
-!!!      call send_recv(V_S,2)
-!!!      call send_recv(W_S,2)
-!!!      call send_recv(ROP_S,2)
-!!!      call send_recv(K_CP,2)
-!!!      call send_recv(E_E,2)
-!!!      call send_recv(E_N,2)
-!!!      call send_recv(E_T,2)
-!!!      call send_recv(AXY,2)
-!!!      call send_recv(AXZ,2)
-!!!      call send_recv(AYZ,2)
 
 !
       M = MCP 
@@ -500,8 +463,7 @@
 ! update to true velocity
       IF (SHEAR) THEN
 !$omp parallel do private(IJK)  
-!//SP
-	 DO IJK = IJKSTART3, IJKEND3
+	 DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN  
 	   V_S(IJK,m)=V_s(IJK,m)+VSH(IJK)	
          END IF
@@ -519,9 +481,8 @@
 !$omp&   private(I, J, K, IJK, IPJK, IJPK, IJKP,                &
 !$omp&           IMJK, IJMK, IJKM, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB, &
 !$omp&           K_P,ROP_SF,SRC )
-!//SP
-      DO IJK = IJKSTART3, IJKEND3
-!\\122199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+      DO IJK = ijkstart3, ijkend3
+!//SP 122199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
@@ -656,8 +617,7 @@
 ! loezos
       IF (SHEAR) THEN
 !$omp parallel do private(IJK)  
-!//SP
-	 DO IJK = IJKSTART3, IJKEND3
+	 DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN  
 	   V_S(IJK,m)=V_s(IJK,m)-VSH(IJK)	
          END IF
@@ -669,3 +629,8 @@
       
       RETURN  
       END SUBROUTINE CONV_SOURCE_EPP1 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+

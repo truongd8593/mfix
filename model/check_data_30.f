@@ -39,8 +39,8 @@
       USE physprop
       USE indices
       USE funits 
-      USE compar    !//d
-      USE mpi_utility    !//d
+      USE compar 
+      USE mpi_utility  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -149,7 +149,7 @@
       CALL START_LOG 
       ABORT = .FALSE. 
       MESSAGE = .FALSE. 
-!//SP
+
       DO K = KSTART2, KEND2 
          DO J = JSTART2, JEND2 
             DO I = ISTART2, IEND2 
@@ -625,3 +625,7 @@
  1446 FORMAT(/1X,'Maximum sum of X_s=',G12.5,'  at I=',I4,'  J=',I4,'  K=',I4) 
  1500 FORMAT(/1X,70('*')/) 
       END SUBROUTINE CHECK_DATA_30 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 change do loop limits: 1,kmax2->kmin3,kmax3      

@@ -36,7 +36,7 @@
       USE fldvar
       USE geometry
       USE indices
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -186,3 +186,6 @@
 !  End Carnahan-Starling derivative
       RETURN  
       END FUNCTION DG_0DNU 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

@@ -28,7 +28,7 @@
 !   M o d u l e s 
 !-----------------------------------------------
       USE funits 
-      USE compar   !//
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -70,3 +70,7 @@
  1000 FORMAT(/70('*')//' From: CHECK_PLANE',/'Message: ',A,' No ',I3,&
          ' is not a plane',/70('*')/) 
       END SUBROUTINE CHECK_PLANE 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 990 Replace STOP with exitMPI to terminate all processors

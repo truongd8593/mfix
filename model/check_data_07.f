@@ -41,8 +41,8 @@
       USE indices
       USE funits 
       USE scalars
-      USE compar     !//d
-      USE sendrecv   !//SP
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -130,9 +130,7 @@
                   call mfix_exit(myPE)		  		  
                ENDIF 
             ENDIF 
-!//? Need a mechanism that will distinguish the B.Cs along z based on PE # 
-!    as we are enforcing all 1D arrays to be same on all PEs, each processor
-!    will BC_Z_T(1...DIMENSION_BC) same 	    
+
             IF (BC_Z_B(BCV)==UNDEFINED .AND. BC_K_B(BCV)==UNDEFINED_I) THEN 
                IF (NO_K) THEN 
                   BC_Z_B(BCV) = ZERO 
@@ -164,25 +162,15 @@
       
       CALL GET_WALLS_BC 
 
-!//AIKEPARDBGSTOP 1016
-!      write(*,"('(PE ',I2,'): aft get_walls_bc in check_data_07')") myPE !//AIKEPARDBG
-!      call mfix_exit(myPE) !//AIKEPARDBG
-
 !
 !  Find and validate i, j, k locations of flow BC's
 !
       CALL GET_FLOW_BC 
 
-!//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): aft get_flow_bc in check_data_07')") myPE !//AIKEPARDBG
-!      call mfix_exit(myPE) !//AIKEPARDBG
-
 !
 !  Compute area of boundary surfaces
 !
       CALL GET_BC_AREA 
-!
-!      write(*,"('(PE ',I2,'): aft get_bc_area is check_data_07')") myPE !//AIKEPARDBG
 !
       DO BCV = 1, DIMENSION_BC 
          IF (BC_DEFINED(BCV)) THEN 
@@ -899,16 +887,12 @@
          ENDIF 
       END DO 
 !
-!      write(*,"('(PE ',I2,'): aft flow_to_vel1 is check_data_07')") myPE !//AIKEPARDBG
-!      write(*,*) 'runtype',RUN_TYPE(1:3)
-!
       IF (RUN_TYPE(1:3) /= 'NEW') RETURN  
       ERROR = .FALSE. 
-!//d Note that these loops running over only ACTIVE cells, no need to change      
+
       DO K = kstart2, kend2 
          DO J = jstart2, Jend2 
             DO I = istart2, Iend2
-!// 220 1004 Need to use local FUNIJK		     	     
                IJK = FUNIJK(I,J,K) 
                IF (ICBC_FLAG(IJK) == '   ') THEN 
                   IF (.NOT.ERROR) WRITE (UNIT_LOG, 1400) 
@@ -982,3 +966,9 @@
  1410 FORMAT(I5,3X,I5,3X,I5) 
  1420 FORMAT(/1X,70('*')/) 
       END SUBROUTINE CHECK_DATA_07 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 220 Use local FUNIJK for triple DO i,j,k loop
+!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3      
+!// 990 Replace STOP with exitMPI to terminate all processors

@@ -33,8 +33,7 @@
       USE geometry
       USE indices
       USE vshear
-      USE compar    !//d
-!//SP
+      USE compar
       USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
@@ -102,9 +101,7 @@
       CASE (:1)  
 !
 !$omp    parallel do private(IJK)
-!//SP
-         DO IJK = IJKSTART3, IJKEND3 
-!
+         DO IJK = ijkstart3, ijkend3 
             XSI_E(IJK) = XSI(U(IJK),ZERO) 
             XSI_N(IJK) = XSI(V(IJK),ZERO) 
             IF (DO_K) XSI_T(IJK) = XSI(W(IJK),ZERO) 
@@ -112,9 +109,7 @@
       CASE (2)                                   !Superbee 
 
 !$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF)
-!//SP
-         DO IJK = IJKSTART3, IJKEND3
-!
+         DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
                IJKD = EAST_OF(IJK) 
@@ -169,9 +164,7 @@
       CASE (3)                                   !SMART 
 !
 !$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF)
-!//SP
-         DO IJK = IJKSTART3, IJKEND3
-!
+         DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
                IJKD = EAST_OF(IJK) 
@@ -225,9 +218,7 @@
       CASE (4)                                   !ULTRA-QUICK 
 
 !$omp    parallel do private(IJK, I,J,K, IJKC,IJKD,IJKU, PHI_C,DWF,CF)
-!//SP
-         DO IJK = IJKSTART3, IJKEND3
-!
+         DO IJK = ijkstart3, ijkend3
             I = I_OF(IJK) 
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -293,9 +284,7 @@
 !$omp&   private(IJK,I,J,K, IJKC,IJKD,IJKU, &
 !$omp&           ODXC,ODXUC, PHI_C,CF,DWF, &
 !$omp&           ODYC,ODYUC,  ODZC,ODZUC )
-!//SP
-         DO IJK = IJKSTART3, IJKEND3
-!
+         DO IJK = ijkstart3, ijkend3
             I = I_OF(IJK) 
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -370,9 +359,7 @@
       CASE (6)                                   !MUSCL 
 
 !$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF )
-!//SP
-         DO IJK = IJKSTART3, IJKEND3
-!
+         DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
                IJKD = EAST_OF(IJK) 
@@ -427,9 +414,7 @@
 
 
 !$omp    parallel do private( IJK, IJKC,IJKD,IJKU,  PHI_C,DWF )
-!//SP
-         DO IJK = IJKSTART3, IJKEND3
-!
+         DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
                IJKD = EAST_OF(IJK) 
@@ -483,9 +468,7 @@
       CASE (8)                                   !Minmod 
 
 !$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF )
-!//SP
-         DO IJK = IJKSTART3, IJKEND3
-!
+         DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
                IJKD = EAST_OF(IJK) 
@@ -544,10 +527,11 @@
       END SELECT 
       
       ENDIF
-!//SP
+
       call send_recv(XSI_E,2)
       call send_recv(XSI_N,2)
       call send_recv(XSI_T,2)
+
       RETURN  
       END SUBROUTINE CALC_XSI 
 
@@ -557,7 +541,7 @@
 !BC's.  Uses true velocities.
 
 
-	SUBROUTINE CXS(INCR,DISCR,U,V,W,PHI,XSI_E,XSI_N,XSI_T)
+      SUBROUTINE CXS(INCR,DISCR,U,V,W,PHI,XSI_E,XSI_N,XSI_T)
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -567,8 +551,7 @@
       USE geometry
       USE indices
       USE vshear
-      USE compar    !//d
-!//SP
+      USE compar
       USE sendrecv
       IMPLICIT NONE
 
@@ -595,8 +578,7 @@
 !$omp    parallel do private(IJK, IJKC,IJKD,IJKU,DWFE,DWFN,DWFT,&
 !$omp&	PHICU,PHIDU,PHIUU,PHICV,PHIDV,PHIUV,PHICW,PHIDW,PHIUW,I)&
 !$omp&  shared(DISCR)
-!//SP
-        DO IJK = IJKSTART3, IJKEND3
+        DO IJK = ijkstart3, ijkend3
 
 	I=I_OF(IJK)
 	V(IJK)=V(IJK)+VSH(IJK)
@@ -674,8 +656,7 @@
 !$omp    parallel do private(IJK, IJKC,IJKD,IJKU,DWFE,DWFN,DWFT,&
 !$omp&	PHICU,PHIDU,PHIUU,PHICV,PHIDV,PHIUV,PHICW,PHIDW,PHIUW,I)&
 !$omp&  shared(DISCR)
-!//SP   
-        DO IJK = IJKSTART3, IJKEND3
+        DO IJK = ijkstart3, ijkend3
 
 	V(IJK)=V(IJK)+VSHE(IJK)
             IF (U(IJK) >= ZERO) THEN 
@@ -750,8 +731,7 @@
 !$omp    parallel do private(IJK, IJKC,IJKD,IJKU,DWFE,DWFN,DWFT,&
 !$omp&	PHICU,PHIDU,PHIUU,PHICV,PHIDV,PHIUV,PHICW,PHIDW,PHIUW,I)&
 !$omp&  shared(DISCR)
-!//SP   
-        DO IJK = IJKSTART3, IJKEND3
+        DO IJK = ijkstart3, ijkend3
 
 	V(IJK)=V(IJK)+VSH(IJK)
             IF (U(IJK) >= ZERO) THEN 
@@ -825,10 +805,10 @@
 	write(*,*) 'INCR ERROR'
 	END IF
 
-!//SP
         call send_recv(XSI_E,2)
         call send_recv(XSI_N,2)
         call send_recv(XSI_T,2)
+!//SP
 !        not needed, because VSH is first added and then subtracted from V
 !        so that there is no net change in V
 !        call send_recv(V,2)  
@@ -854,9 +834,8 @@
       USE run
       USE geometry
       USE indices
-      USE vshear
-      
-      USE compar    !//d
+      USE vshear      
+      USE compar
       USE sendrecv
       
       IMPLICIT NONE
@@ -1027,5 +1006,10 @@
          STOP  
 
       END SELECT 
-	RETURN
-	END SUBROUTINE DW
+      RETURN
+      END SUBROUTINE DW
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 400 Added sendrecv module and send_recv calls for COMMunication

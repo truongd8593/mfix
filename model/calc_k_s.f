@@ -31,8 +31,8 @@
       USE indices
       USE constant
       USE toleranc 
-      USE compar     !//d
-      USE sendrecv   !// 400
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -74,10 +74,7 @@
 
 !!$omp parallel do private(IJK,B,R_km,BoR,L_rm) &
 !!$omp& schedule(dynamic,chunk_size)
-
-
-!// 350 1112 MTP changed do loop limits 1,ijkmax2 ==> ijkstart3, ijkend3
-      DO IJK = IJKSTART3, IJKEND3            
+      DO IJK = ijkstart3, ijkend3            
 !
 !     Solids conductivity in cal/s.cm.K
 !     Bauer & Schlunder's (1978) theory
@@ -97,11 +94,12 @@
          IF (FLUID_AT(IJK)) K_S(IJK,M) = 2.5*K_G(IJK) 
       END DO 
 
-!//S 1113 try to move this COMM to the end of transport_prop to do all COMMs
-!//       at certain locations, provided that no data dependency in between.
-
-!// 400 1113 MTP communicate boundaries
-      CALL SEND_RECV(K_S, 2)     
+      CALL send_recv(K_S, 2)     
     
       RETURN  
       END SUBROUTINE CALC_K_S 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization 
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 400 Added sendrecv module and send_recv calls for COMMunication

@@ -11,10 +11,7 @@
 !            for each PE, i.e., XXX000.LOG, XXX001.LOG                 C
 !            Each PE reads it's own mfix.dat, e.g.                     C
 !                for PE 0 : mfix000.dat, for PE 1 : mfix001.dat etc.   C
-!            Added checks to inquire whether mfixXXX.dat exists or not C           
-!            Modifications for preliminary checks for NO_K = TRUE AND  C
-!            number of processors (numPEs) > 1 situation               C
-!            (see comment line : !// 300 0809)                         C
+!            Added checks to inquire whether mfix.dat exists or not    C           
 !                                                                      C
 !  Author:   Aeolus Res. Inc.                         Date: 05-AUG-99  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
@@ -79,7 +76,7 @@
       USE residual
       USE rxns
       USE scalars
-      USE compar      !// 001 Include MPI header file
+      USE compar    
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -127,7 +124,7 @@
 !                      blank line function
       LOGICAL          BLANK_LINE
       INTEGER   L
-!// 500 0805 define local variables, i1, i10, i100 for generating filebasename
+!// New variables for generating filebasename with processor id, i.e., XXX.LOG
       INTEGER :: i1, i10, i100
       LOGICAL :: present
 
@@ -151,7 +148,7 @@
 !
       NO_OF_RXNS = 0 
 
-!// 500 0805 Generate the decimals for file basename for each PE (max 999 PEs!)
+!//PAR_I/O Generate file basename for LOG files
       i100 = int(myPE/100)
       i10  = int((myPE-i100*100)/10)
       i1   = int((myPE-i100*100-i10*10)/1)
@@ -159,25 +156,20 @@
       i100 = i100 + 48
       i10  = i10  + 48
       i1   = i1   + 48
-!// 500 0805 generate filebasename for each active PE
+
       fbname=char(i100)//char(i10)//char(i1)
 
-!//AIKEPARDBG
-!      if(idbgpar.ge.1)&                     !//AIKEPARDBG
-!       write(*,FMT="('File basename for PE ',I3,' is ',A3)") myPE,fbname  !//AIKEPARDBG
-
-!// 500 0805 ensure that mfixXXX.dat exists
       inquire(file='mfix.dat',exist=present)
       if(.not.present) then
         write(*,"('(PE ',I3,'): input data file, ',A11,' is missing: run aborted')") &
             myPE,'mfix.dat'
-        call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+        call mfix_exit(myPE) 
       endif
 !
 !
 ! OPEN MFIX ASCII INPUT FILE, AND LOOP THRU IT
 !
-      OPEN(UNIT=UNIT_DAT, FILE='mfix.dat', STATUS='OLD', ERR=910) !// 500 modified filename
+      OPEN(UNIT=UNIT_DAT, FILE='mfix.dat', STATUS='OLD', ERR=910) 
 !
   100 CONTINUE 
       READ (UNIT_DAT, 1100, END=500) LINE_STRING 
@@ -190,7 +182,6 @@
 !
       IF (LINE_TOO_BIG(LINE_STRING,LINE_LEN,MAXCOL) > 0) THEN 
          WRITE (*, 1300) LINE_STRING 
-!//  MPI_Exit
          CALL MFIX_EXIT(myPE) 
       ENDIF 
 !
@@ -232,9 +223,6 @@
 !
   500 CONTINUE 
 
-!//AIKEPARDBGSTOP 0922
-!      write(*,"('(PE ',I2,'): SPECIES_EQ : ',12L2)") myPE,SPECIES_EQ !//AIKEPARDBG
-!      call mfix_exit(myPE) !//AIKEPARDBG	 
 
       CLOSE(UNIT=UNIT_DAT) 
 !
@@ -246,9 +234,8 @@
 !
          IF (.NOT.GOT_RATE(L)) THEN 
 !
-            WRITE (*, 1610) myPE,RXN_NAME(L) !//PAR_I/O added processor id for output
-!            STOP  
-             call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+            WRITE (*, 1610) myPE,RXN_NAME(L) 
+             call mfix_exit(myPE) 
 !
          ENDIF 
 !
@@ -256,20 +243,11 @@
 !
          IF (.NOT.GOT_RXN(L)) THEN 
 !
-            WRITE (*, 1620) myPE,RXN_NAME(L) !//PAR_I/O added processor id for output
-!            STOP  
-             call mfix_exit(myPE) !// 990 0807 Abort all PEs, not only the current one
+            WRITE (*, 1620) myPE,RXN_NAME(L) 
+             call mfix_exit(myPE) 
 !
          ENDIF 
       END DO 
-
-
-!//AIKEPARDBG debug output to make sure data read from mfix.dat is same on all PEs
-!      open(unit=UNIT_OUT,file='test'//fbname//'.out',status='UNKNOWN')  !//AIKEPARDBG
-!      CALL WRITE_OUT0                                  !//AIKEPARDBG
-!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)			!//AIKEPARDBG
-!      write(*,"('(PE ',I3,'): reached end of read_namelist')") myPE	!//AIKEPARDBG
-!      call mfix_exit(myPE)								!//AIKEPARDBG
 
       RETURN  
 !
@@ -333,3 +311,9 @@
       return  
 !
       end function blank_line 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 020 New local variables for parallelization: i1, i10, i100, PRESENT
+!// 990 Replace STOP with mfix_exit(myPE) to terminate all processors
+!//PAR_I/O added myPE stamp

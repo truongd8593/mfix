@@ -36,8 +36,7 @@
       USE geometry
       USE run
       USE indices
-      USE compar        !//d
-      USE sendrecv  !// 400      
+      USE sendrecv   
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -68,8 +67,6 @@
       DO M = 1, MMAX 
          IF (MOMENTUM_Z_EQ(M)) THEN 
 !
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-
 !!$omp  parallel do private(IJK,IJKT,IJKM)
             DO IJK = ijkstart3, ijkend3
                IF (ABS(A_M(IJK,0,M)) < SMALL_NUMBER) THEN 
@@ -101,10 +98,9 @@
             END DO 
          ENDIF 
       END DO 
-
-!// 400 1225 COMM A_M & B_M
-!!!      call send_recv(A_M,2)
-!!!      call send_recv(B_M,2)      
-      
       RETURN  
       END SUBROUTINE ADJUST_A_W_S 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 400 Added sendrecv module for COMMunication

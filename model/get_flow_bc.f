@@ -38,8 +38,8 @@
       USE bc
       USE indices
       USE funits 
-      USE compar        !//d
-      USE sendrecv      !//SP
+      USE compar
+      USE sendrecv 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -76,27 +76,6 @@
       LOGICAL X_CONSTANT, Y_CONSTANT, Z_CONSTANT
 !-----------------------------------------------
       INCLUDE 'function.inc'
-
-!//SP
-!      call send_recv(icbc_flag,2)
-
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): entered get_flow_bc')") myPE	!//AIKEPARDBG
-!//AIKEPARDBG dump the ICBC_FLAG in matrix form to verify with serial version
-!      DO K = Kstart3, Kend3                               !//AIKEPARDBG
-!         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
-!	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
-!         DO J = Jstart3, Jend3                            !//AIKEPARDBG
-!           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	
-!           DO I = Istart3, Iend3                          !//AIKEPARDBG
-!             IJK = FUNIJK(I,J,K)                     !//AIKEPARDBG
-!             write(UNIT_LOG,"(2X,A3,$)") ICBC_FLAG(IJK) !//AIKEPARDBG
-!           END DO                                       !//AIKEPARDBG
-!           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
-!         END DO                                         !//AIKEPARDBG
-!      END DO                                            !//AIKEPARDBG
-!      call mfix_exit(myPE)	!//AIKEPARDBG
-
 
 !
 ! FIND THE FLOW SURFACES
@@ -233,11 +212,8 @@
                   ENDIF 
                   DO K = BC_K_B(BCV), BC_K_T(BCV) 
                      DO J = BC_J_S(BCV), BC_J_N(BCV) 
-!// 360 1025 Check if current i,j,k resides on this PE		     
    		       IF (.NOT.IS_ON_myPE_plus2layers(I_FLUID,J,K)) CYCLE
-   		       IF (.NOT.IS_ON_myPE_plus2layers(I_WALL,J,K)) CYCLE
-		       
-!// 220 1004 Need to use local FUNIJK		     
+   		       IF (.NOT.IS_ON_myPE_plus2layers(I_WALL,J,K)) CYCLE		       
                         IJK_WALL = FUNIJK(I_WALL,J,K) 
                         IJK_FLUID = FUNIJK(I_FLUID,J,K) 
                         IF (.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. ICBC_FLAG(&
@@ -262,16 +238,8 @@
                   ENDIF 
                   DO K = BC_K_B(BCV), BC_K_T(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
-!//? Add filter
-!// 360 1025 Check if current i,j,k resides on this PE		     
     		       IF (.NOT.IS_ON_myPE_plus2layers(I,J_FLUID,K)) CYCLE
     		       IF (.NOT.IS_ON_myPE_plus2layers(I,J_WALL,K)) CYCLE
-!//SP
-!     write(*,*) 'pass1', myPE, BCV, K, I
-!// 360 Check if current k resides on this PE
-!//SP
-!		       if(k .ge. kstart3_all(myPE) .AND. k .le. kend3_all(myPE)) then		     
-!// 220 1004 Need to use local FUNIJK		     
                         IJK_WALL = FUNIJK(I,J_WALL,K) 
                         IJK_FLUID = FUNIJK(I,J_FLUID,K) 
                         IF (.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. ICBC_FLAG(&
@@ -284,7 +252,6 @@
                               ICBC_FLAG(IJK_FLUID) 
                            CALL MFIX_EXIT(myPE) 
                         ENDIF 
-!		       endif
                      END DO 
                   END DO 
                ENDIF 
@@ -300,11 +267,8 @@
                   ENDIF 
                   DO J = BC_J_S(BCV), BC_J_N(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
-!//? Add filter
-!// 360 1025 Check if current i,j,k resides on this PE		     
     		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K_FLUID)) CYCLE
     		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K_WALL)) CYCLE		     
-!// 220 1004 Need to use local FUNIJK		     		     
                         IJK_WALL = FUNIJK(I,J,K_WALL) 
                         IJK_FLUID = FUNIJK(I,J,K_FLUID) 
                         IF (.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. ICBC_FLAG(&
@@ -333,13 +297,8 @@
                DO K = BC_K_B(BCV), BC_K_T(BCV) 
                   DO J = BC_J_S(BCV), BC_J_N(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
-!//? Add filter
-!// 360 1025 Check if current i,j,k resides on this PE		     
     		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     		     
-!// 220 1004 Need to use local FUNIJK as dimension of ICBC_FLAG is DIM_3L		     		     
                         IJK = FUNIJK(I,J,K) 
-!// 360 1104 Check if current i,j,k resides on this PE before printing error msg			
-!                        IF (.NOT.WALL_ICBC_FLAG(IJK)) THEN 
                         IF (.NOT.WALL_ICBC_FLAG(IJK)) THEN 			
                            WRITE (UNIT_LOG, 1500) BCV, ICBC_FLAG(IJK), I, J, K 
                            ERROR = .TRUE. 
@@ -367,20 +326,6 @@
 
 
       IF (ERROR) call mfix_exit(myPE)  
-!
-!//AIKEPARDBG dump the ICBC_FLAG in matrix form to verify with serial version
-!      DO K = Kstart3, Kend3                               !//AIKEPARDBG
-!         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
-!	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
-!         DO J = Jstart3, Jend3                            !//AIKEPARDBG
-!           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	
-!           DO I = Istart3, Iend3                          !//AIKEPARDBG
-!             IJK = FUNIJK(I,J,K)                     !//AIKEPARDBG
-!             write(UNIT_LOG,"(2X,A3,$)") ICBC_FLAG(IJK) !//AIKEPARDBG
-!           END DO                                       !//AIKEPARDBG
-!           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
-!         END DO                                         !//AIKEPARDBG
-!      END DO                                            !//AIKEPARDBG
 
       RETURN  
 !
@@ -418,3 +363,8 @@
          I3,' overlaps boundary condition ',A3,' at'/' I = ',I3,'  J = ',I3,&
          '  K = ',I3/70('*')/) 
       END SUBROUTINE GET_FLOW_BC 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 220 Use local FUNIJK for triple DO i,j,k loop
+!// 360 Check if i,j,k resides on current processor

@@ -31,7 +31,7 @@
       USE physprop
       USE residual
       USE fldvar
-      USE compar        !//d
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -55,7 +55,7 @@
 ! 
   
 !
-      if (myPE.ne.PE_IO) return    !//???? only for root ????
+      if (myPE.ne.PE_IO) return   
 !
       IF (NIT == 1) THEN 
          WRITE (*, '(A, $)') '  Nit' 
@@ -93,3 +93,6 @@
 !
       RETURN  
       END SUBROUTINE DISPLAY_RESID 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

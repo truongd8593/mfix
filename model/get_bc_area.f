@@ -31,7 +31,7 @@
       USE param1 
       USE geometry
       USE bc
-      USE compar  !//AIKEPARDBG
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -51,12 +51,6 @@
 !-----------------------------------------------
 !
 
-
-!//? make sure each PE has acurate data to calculate the area of boundary 
-!//?      surfaces that are extending adjacent PE subdomains!!! otherwise need
-!//?      need GLOBAL REDUCTION COMM
-!//? pay attention for i & j constant planes especially as they go thru several
-!//? subdomains!!!
       DO BCV = 1, DIMENSION_BC 
          IF (BC_DEFINED(BCV)) THEN 
             BC_AREA(BCV) = ZERO 
@@ -100,13 +94,13 @@
                      I = BC_I_E(BCV) + 1 
                   ENDIF 
                END DO 
-            ENDIF
-!//AIKEPARDBG dump the BC_AREA to verify with serial version
-!          write(*,"('(PE ',I2,'): BC_AREA(',I4,') = ',E15.4)") myPE,BCV,BC_AREA(BCV)
-	     
+            ENDIF	     
          ENDIF 	 	 
       END DO 
 
       
       RETURN  
       END SUBROUTINE GET_BC_AREA 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

@@ -39,7 +39,7 @@
       USE funits 
       USE residual
       USE run
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -226,3 +226,7 @@
 !
       RETURN  
       END SUBROUTINE GET_STATS 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!//? DO loop limits still running between IJKMIN1, IJKMAX1

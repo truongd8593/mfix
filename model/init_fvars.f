@@ -60,8 +60,6 @@
       INTEGER          N
 !-----------------------------------------------
       IF (IJKMAX2 > 0) THEN 
-!// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3
-!//         EP_G(:IJKMAX2) = UNDEFINED       
          EP_G(IJKSTART3:IJKEND3) = UNDEFINED 
          P_G(IJKSTART3:IJKEND3) = UNDEFINED 
          P_STAR(IJKSTART3:IJKEND3) = ZERO 
@@ -83,7 +81,6 @@
 !!$omp parallel do private(M,IJK,N)
       DO M = 1, MMAX 
          IF (IJKMAX2 > 0) THEN 
-!// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3
             ROP_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
             T_S(IJKSTART3:IJKEND3,M) = ZERO 
             THETA_M(IJKSTART3:IJKEND3,M) = ZERO 
@@ -99,3 +96,7 @@
       END DO 
       RETURN  
       END SUBROUTINE INIT_FVARS 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 120 Replaced the index for initialization :ijkmax2 --> IJKSTART3:IJKEND3

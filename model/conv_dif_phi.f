@@ -42,10 +42,8 @@
       USE compar
       USE sendrecv
       Use xsi_array
-!//SP
       USE mpi_utility
       USE indices
-!>>>>>>> 1.3
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -83,21 +81,7 @@
       INTEGER          IER
 
 !
-!\\Extra Sendrecv operations - just to make sure all the variables needed are
-!  are passed - can be optimized later - Sreekanth - 102199
 
-!!!!      call send_recv(UF,2)
-!!!!      call send_recv(VF,2)
-!!!!      call send_recv(WF,2)
-!!!!      call send_recv(ROPF,2)
-!!!!      call send_recv(PHI,2)
-!!!!      call send_recv(DIF,2)
-!!!!      call send_recv(AXY,2)
-!!!!      call send_recv(AXZ,2)
-!!!!      call send_recv(AYZ,2)
-!!!!      call send_recv(XSI_E,2)
-!!!!      call send_recv(XSI_N,2)
-!!!!      call send_recv(XSI_T,2)
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -116,19 +100,8 @@
             CALL CONV_DIF_PHI1(PHI,DIF,DISC,UF,VF,WF,ROPF,M,A_M,B_M,IER) 
           ENDIF
 	ENDIF 
-
-!//09/28/99 - Send Recv. A_M and B_M
-
-!!!!	CALL SEND_RECV(A_M, 2)
-!!!!	CALL SEND_RECV(B_M, 2)
 	
         CALL DIF_PHI_IS (DIF, A_M, B_M, M, IER)
-
-!//09/28/99 - Send Recv. A_M and B_M - Duplication here, the earlier send recv can be removed
-!	      after careful review.....
-
-!!!!	CALL SEND_RECV(A_M, 2)
-!!!!	CALL SEND_RECV(B_M, 2)
 
         RETURN  
       END SUBROUTINE CONV_DIF_PHI 
@@ -238,11 +211,9 @@
 !!$omp&             IMJK, IM, IJKW,                                  &
 !!$omp&             IJMK, JM, IJKS,                                  &
 !!$omp&             IJKM, KM,  IJKB)                     
-
+      DO IJK = ijkstart3, ijkend3
 !
-      DO IJK = IJKSTART3, IJKEND3
-!
-!\\102199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+!//SP 102199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
@@ -343,11 +314,6 @@
          ENDIF
       END DO 
 !
-!\\Sendrecv operations - just to make sure all the variables computed are
-!  are passed and updated locally - fool-proof approach - Sreekanth - 102199
-
-!!!!      call send_recv(A_M,2)
-!
       RETURN  
       END SUBROUTINE CONV_DIF_PHI0 
 
@@ -437,6 +403,11 @@
       INTEGER          IMJK, IJKW
       INTEGER          IJMK, IJKS
       INTEGER          IJKM, IJKB
+
+! loezos
+      INTEGER  incr
+! loezos
+
 !
 !                      Difusion parameter
       DOUBLE PRECISION D_f
@@ -470,9 +441,6 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
 
-! loezos
-	INTEGER  incr
-! loezos
 
       call lock_xsi_array
 !
@@ -498,10 +466,9 @@
 !!$omp&             IJKM, IJKB, PHI_HO, PHI_LO, CONV_FAC,       &
 !!$omp&             EAST_DC, WEST_DC, NORTH_DC, SOUTH_DC, TOP_DC, BOTTOM_DC)                     
 !
-
-      DO IJK = IJKSTART3, IJKEND3
+      DO IJK = ijkstart3, ijkend3
 !
-!\\102199\Sreekanth - Determining whether IJK falls within 1 ghost layer........
+!//SP 102199\Sreekanth - Determining whether IJK falls within 1 ghost layer........
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
@@ -625,11 +592,6 @@
       call unlock_xsi_array
 !
 !
-!\\Sendrecv operations - just to make sure all the variables computed are
-!  are passed and updated locally - fool-proof approach - Sreekanth - 102199
-
-!!!!      call send_recv(B_M,2)
-!
       RETURN  
       END SUBROUTINE CONV_DIF_PHI_DC 
 !
@@ -723,6 +685,11 @@
       INTEGER          IMJK, IM, IJKW
       INTEGER          IJMK, JM, IJKS
       INTEGER          IJKM, KM, IJKB
+! start loezos
+      INTEGER          I1, J1
+      INTEGER incr
+! end loezos
+
 !
 !                      Difusion parameter
       DOUBLE PRECISION D_f
@@ -734,12 +701,6 @@
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
-! start loezos
-
-      INTEGER          I1, J1
-      INTEGER incr
-        
-! end loezos
       call lock_xsi_array
 !
 !  Calculate convection factors
@@ -756,8 +717,7 @@
 !update V to true velocity      
 
       IF (SHEAR) THEN
-!//SP
-	 DO IJK = IJKSTART3, IJKEND3
+	 DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN  
 	   VF(IJK)=VF(IJK)+VSH(IJK)	
           END IF
@@ -778,9 +738,9 @@
 !
 !
 !
-      DO IJK = IJKSTART3, IJKEND3
+      DO IJK = ijkstart3, ijkend3
 !
-!\\102199\Sreekanth - Determining whether IJK falls within 1 ghost layer........
+!//SP 102199\Sreekanth - Determining whether IJK falls within 1 ghost layer........
        I = I_OF(IJK) 
        J = J_OF(IJK) 
        K = K_OF(IJK) 
@@ -867,8 +827,7 @@
 ! loezos 
        IF (SHEAR) THEN
 !//SP
-	 DO IJK = IJKSTART3, IJKEND3
-
+	 DO IJK = ijkstart3, ijkend3
           IF (FLUID_AT(IJK)) THEN  	 
 	   VF(IJK)=VF(IJK)-VSH(IJK)	
 	  END IF
@@ -877,11 +836,6 @@
 ! loezos      
       call unlock_xsi_array
 
-!
-!\\Sendrecv operations - just to make sure all the variables computed are
-!  are passed and updated locally - fool-proof approach - Sreekanth - 102199
-
-!!!!      call send_recv(A_M,2)
 !
       RETURN  
       END SUBROUTINE CONV_DIF_PHI1 
@@ -971,11 +925,6 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
-!\\Extra Sendrecv operations - just to make sure all the variables needed are
-!  are passed - can be optimized later - Sreekanth - 102199
-
-!!!!      call send_recv(A_M,2)
-!
 ! Make user defined internal surfaces non-conducting
 !
       DO L = 1, DIMENSION_IS 
@@ -987,7 +936,7 @@
             K1 = IS_K_B(L) 
             K2 = IS_K_T(L) 
 
-!\\09/28/99 - Limit I1, I2 and all to local processor first ghost layer
+!//SP 09/28/99 - Limit I1, I2 and all to local processor first ghost layer
 
 	    IF(I1.LE.IEND2)   I1 = MAX(I1, ISTART2)
 
@@ -1001,10 +950,7 @@
 
             IF(K2.GE.KSTART2) K2 = MIN(K2, KEND2)
 
-!//End of limiting to the first ghost cells of the processor....
-
-!
-
+!//SP End of limiting to the first ghost cells of the processor....
             DO K = K1, K2 
                DO J = J1, J2 
                   DO I = I1, I2 
@@ -1050,10 +996,9 @@
          ENDIF 
       END DO 
 !
-!\\Sendrecv operations - just to make sure all the variables computed are
-!  are passed and updated locally - fool-proof approach - Sreekanth - 102199
-
-!!!!      call send_recv(A_M,2)
-!
       RETURN  
       END SUBROUTINE DIF_PHI_IS 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

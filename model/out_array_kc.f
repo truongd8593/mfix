@@ -34,8 +34,8 @@
       USE physprop
       USE indices
       USE funits 
-      USE compar        !//d
-      USE mpi_utility   !//EFD to use gather
+      USE compar  
+      USE mpi_utility 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

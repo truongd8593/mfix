@@ -43,8 +43,8 @@
       USE visc_g
       USE rxns
       USE scalars
-      USE compar   !//d
-      USE sendrecv !//d
+      USE compar 
+      USE sendrecv 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -107,14 +107,9 @@
 !
 !  Check whether all field variables are initialized
 !
-!// 350 1025 change do loop limits: 1,kmax2->kmin3,kmax3
       DO K = kstart2, kend2 
          DO J = jstart2, jend2 
             DO I = istart2, iend2 
-!// 360 1025 Check if current i,j,k resides on this PE	    
-!	       IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    
-!// SP - Not needed as the loop indices are already correct
-!// 220 1004 Need to use local FUNIJK	    
                IJK = FUNIJK(I,J,K) 
                IF (.NOT.WALL_AT(IJK)) THEN 
                   CALL SET_INDEX1 (IJK, I, J, K, IMJK, IPJK, IJMK, IJPK, IJKM, &
@@ -192,11 +187,8 @@
                      ENDIF 
                      WRITE (UNIT_LOG, 1010) I, J, K, 'V_g' 
                   ENDIF 
-!//AIKE 1105 bypass the check if k-1 = kstart3 (i.e. ghost cell)
-!//SP Uncommented
-!
+
                   IF (W_G(IJKM) == UNDEFINED) THEN 		  
-!                 IF (W_G(IJKM) == UNDEFINED.AND.(K-1) /= kstart3) THEN 
                      IF (.NOT.ABORT) THEN 
                         WRITE (UNIT_LOG, 1000) 
                         ABORT = .TRUE. 
@@ -278,10 +270,7 @@
                         ENDIF 
                         WRITE (UNIT_LOG, 1011) I, J, K, M, 'V_s' 
                      ENDIF 
-!//AIKE 1105 bypass the check if k-1 = kstart3 (i.e. ghost cell)
-!//SP Uncommented
                      IF (W_S(IJKM,M) == UNDEFINED) THEN 
-!                    IF (W_S(IJKM,M) == UNDEFINED.AND.(K-1) /= kstart3) THEN
                         IF (.NOT.ABORT) THEN 
                            WRITE (UNIT_LOG, 1000) 
                            ABORT = .TRUE. 
@@ -316,15 +305,9 @@
          CALL MFIX_EXIT 
       ENDIF 
 !
-
-!// 350 1025 change do loop limits: 1,kmax2->kmin3,kmax3
       DO K = kstart2, kend2 
          DO J = jstart2, jend2 
             DO I = istart2, iend2 
-!// 360 1025 Check if current i,j,k resides on this PE	    
-!	       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    
-!//SP Not needed as the loops are already in limits
-!// 220 1004 Need to use local FUNIJK
                IJK = FUNIJK(I,J,K) 
                IF (FLAG(IJK)==1 .OR. FLAG(IJK)==20) THEN 
 !
@@ -360,7 +343,7 @@
 !
       IF (NONZERO .AND. MU_GMAX==UNDEFINED) THEN 
          WRITE (UNIT_LOG, 1350) 
-         CALL MFIX_EXIT 
+         CALL MFIX_EXIT(myPE) 
       ENDIF 
 
       CALL END_LOG 
@@ -380,3 +363,9 @@
          ' Message: Turbulent length scale is nonzero. Specify MU_gmax.',/1X,70&
          ('*')/) 
       END SUBROUTINE CHECK_DATA_20 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 220 Use local FUNIJK for triple DO i,j,k loop
+!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3      
+!// 990 Replace STOP with exitMPI to terminate all processors

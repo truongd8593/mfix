@@ -32,8 +32,8 @@
       USE parallel 
       USE geometry
       USE indices
-      USE compar   !//d
-      USE mpi_utility   !//AIKE      
+      USE compar
+      USE mpi_utility 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -73,7 +73,7 @@
  
 !                      Indices
       INTEGER          IJK, IJKW, IJKS, IJKB, IJKE, IJKN, IJKT
-!//AIKE
+
       INTEGER          I, J, K      
 
 !                      Numerators and denominators
@@ -87,9 +87,6 @@
 !-----------------------------------------------
 !     Local variables
 !-----------------------------------------------
-!// 1207 replaced global 3D dimensioning w/ local 3D dimension for RESID_IJK
-!efd
-!      DOUBLE PRECISION RESID_IJK( IJKMAX2 )
       double precision, dimension (ijksize3_all(myPE)) :: RESID_IJK
 !//SP
       DOUBLE PRECISION     MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
@@ -103,19 +100,16 @@
       MAX_RESID = -ONE 
       NCELLS = 0 
 
-!efd
-!// 350 1218 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
           RESID_IJK(IJK) = ZERO
       ENDDO
 !
-!// 350 1218 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !$omp  parallel do private( IJK, IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
 !$omp&  NUM1, DEN1) &
 !$omp&  REDUCTION(+:NUM,DEN,NCELLS)  
       DO IJK = ijkstart3, ijkend3
-!// 360 1218 Check if current i,j,k resides on this PE      
+
       IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -160,10 +154,8 @@
 
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
-!// 350 1218 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3      
       DO IJK = ijkstart3, ijkend3
-!// 360 1218 Check if current i,j,k resides on this PE      
-      IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
+         IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
          IF (RESID_IJK(IJK) > MAX_RESID) then
                IJK_RESID = IJK
                MAX_RESID = RESID_IJK( IJK_RESID )
@@ -181,14 +173,14 @@
 	endif
       enddo
 
-!//SP - Call to determine the maximum among all the procesors
+!//SP Call to determine the maximum among all the procesors
       call global_all_max(MAX_RESID)
 
-!//SP - Call to collect all the information among all the procesors
+!//SP Call to collect all the information among all the procesors
       call global_all_sum(MAX_RESID_L, MAX_RESID_GL)
       call global_all_sum(IJK_RESID_L, IJK_RESID_GL)
 
-!//SP - call to determine the global IJK location w.r.t. serial version
+!//SP Call to determine the global IJK location w.r.t. serial version
       IJK_RESID = IJKMAX2
 
       do nproc=0,NumPEs-1
@@ -205,9 +197,6 @@
          MAX_RESID = ZERO 
          IJK_RESID = 0 
       ELSE 
-!//? why changed to UNDEFINED?
-!         RESID = LARGE_NUMBER 
-!         MAX_RESID = LARGE_NUMBER 
          RESID = UNDEFINED 
          MAX_RESID = UNDEFINED 
 !         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
@@ -250,8 +239,8 @@
       USE parallel 
       USE geometry
       USE indices
-      USE compar        !//d
-      USE mpi_utility   !//SP
+      USE compar      
+      USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -304,8 +293,6 @@
 !-----------------------------------------------
 !     Local variables
 !-----------------------------------------------
-!// 1207 replaced global 3D dimensioning w/ local 3D dimension for RESID_IJK
-!      double precision, dimension (ijkmax2) :: RESID_IJK
       double precision, dimension (ijksize3_all(myPE)) :: RESID_IJK
 !//SP
       DOUBLE PRECISION     MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
@@ -319,22 +306,18 @@
       MAX_RESID = -ONE 
       NCELLS = 0 
 
-!efd
-!// 350 1207 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
           RESID_IJK(IJK) = ZERO
       ENDDO
 
 !
-!// 350 1207 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !$omp    parallel do &
 !$omp&   private(   IJK,     &
 !$omp&   IMJK,IJMK,IPJK,IJPK, IJKM,IJKP, &
 !$omp&   NUM1, DEN1) &
 !$omp&   REDUCTION(+:NUM, DEN,NCELLS)  
       DO IJK = ijkstart3, ijkend3
-!// 360 1218 Check if current i,j,k resides on this PE      
       IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
          IF (FLUID_AT(IJK) .AND. ABS(VAR(IJK)) > TOL) THEN 
 !
@@ -343,20 +326,12 @@
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK) 
 !
-!//I? need to make sure VAR(IMJK) & IPJK contains correct values at the edges of
-!//  of the subdomain boundaries for 1D decomp along I direction
-
-!//J? need to make sure VAR(IJMK) & IJPK contains correct values at the edges of
-!//  of the subdomain boundaries for 1D decomp along J direction
             NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*VAR(IJK)+A_M(IJK,E,M)*VAR(IPJK)+&
                A_M(IJK,W,M)*VAR(IMJK)+A_M(IJK,N,M)*VAR(IJPK)+A_M(IJK,S,M)*VAR(&
                IJMK)) 
             IF (DO_K) THEN 
                IJKM = KM_OF(IJK) 
                IJKP = KP_OF(IJK) 
-!
-!//? need to make sure VAR(IJKM) & IJKP contains correct values at the edges of
-!//  of the subdomain boundaries
                NUM1 = NUM1 - (A_M(IJK,T,M)*VAR(IJKP)+A_M(IJK,B,M)*VAR(IJKM)) 
             ENDIF 
 !
@@ -384,9 +359,7 @@
 !efd
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
-!// 350 1207 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
       DO IJK = ijkstart3, ijkend3
-!// 360 1218 Check if current i,j,k resides on this PE      
       IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
          IF (RESID_IJK(IJK) > MAX_RESID) THEN               
                IJK_RESID = IJK
@@ -1181,14 +1154,11 @@
 
 !                      Error message
       CHARACTER*80     LINE
-!//AIKE
+
       INTEGER          I, J, K      
 !-----------------------------------------------
 !     Local variables
 !-----------------------------------------------
-!efd
-!// 1207 replaced global 3D dimensioning w/ local 3D dimension for RESID_IJK
-!      double precision, dimension (ijkmax2) :: RESID_IJK
       double precision, dimension (ijksize3_all(myPE)) :: RESID_IJK
 !//SP
       DOUBLE PRECISION     MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
@@ -1202,22 +1172,17 @@
       DEN = ZERO 
       MAX_RESID = -ONE 
       NCELLS = 0 
-!efd
-!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+
 !$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
           RESID_IJK(IJK) = ZERO
       ENDDO
 
 !
-
-!
-!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
 !$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
 !$omp&  VEL,  NUM1, DEN1) &
 !$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
       DO IJK = ijkstart3, ijkend3
-!// 360 1224 Check if current i,j,k resides on this PE      
       IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
       
          IF (.NOT.IP_AT_T(IJK)) THEN 
@@ -1268,9 +1233,7 @@
 
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
-!// 350 1224 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3       
       DO IJK = ijkstart3, ijkend3
-!// 360 1224 Check if current i,j,k resides on this PE      
       IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
       
           IF (RESID_IJK( IJK ) > MAX_RESID) THEN
@@ -1324,3 +1287,10 @@
 !
       RETURN  
       END SUBROUTINE CALC_RESID_W 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 020 New local variables for parallelization, I,J,K,MAX_RESID_XX,IJK_RESID_XX,nproc
+!// 050 Replace global array size with  subdomain array size, RESID_IJK
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 360 Check if i,j,k resides on current processor

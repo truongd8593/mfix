@@ -30,7 +30,7 @@
       USE param1 
       USE geometry
       USE indices
-      USE compar       !//d
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -56,3 +56,7 @@
       END DO 
       RETURN  
       END SUBROUTINE ADJUST_ROP 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization 
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

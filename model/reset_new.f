@@ -50,9 +50,6 @@
 !-----------------------------------------------
 !
 !
-!//EFD Nov 11, convert (:IJKMAX2) to just (:)
-!// let the compiler determine the array bounds
-!
 !
       EP_G(:) = EP_GO(:) 
       P_G(:) = P_GO(:) 
@@ -84,3 +81,6 @@
       END DO 
       RETURN  
       END SUBROUTINE RESET_NEW 
+
+!// Comments on the modifications for DMP version implementation      
+!// 120 Replaced the index for initialization: (:IJKMAX2) to just (:)

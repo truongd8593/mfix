@@ -27,8 +27,8 @@
 !//d      USE funits 
       USE run
       USE output
-      USE compar       !//d
-      USE mpi_utility  !//d
+      USE compar      
+      USE mpi_utility
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -138,9 +138,12 @@
       ODT = ONE/DT 
 
 !
-!//
       call bcast (dt,root)
       call bcast (odt,root)
 !
       RETURN  
       END FUNCTION ADJUST_DT 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization 
+!// 400 Added mpi_utility module and other global reduction (bcast) calls

@@ -34,8 +34,7 @@
       USE physprop
       USE indices
       USE funits 
-!//d      USE tmp_array
-      USE compar        !//d
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -58,14 +57,14 @@
 !                       K
       INTEGER           K
 
-      character*4,  allocatable :: array1c(:)   !//d
+      character*4,  allocatable :: array1c(:)  
 
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
 !//d      call lock_tmp_array
 
-      allocate (array1c(ijkmax2))    !//d
+      allocate (array1c(ijkmax2))  
       call convert_to_io_c(array,array1c,ijkmax2)
 !
       DO K = 1, KMAX2 
@@ -77,7 +76,11 @@
  1100 FORMAT(/,1X,A,' at K = ',I4,/) 
 !
 !//d      call unlock_tmp_array
-      deallocate (array1c)    !//d
+      deallocate (array1c) 
 
       RETURN  
       END SUBROUTINE OUT_ARRAY_C 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 020 New local variables for parallelization, array1c(ijkmax2)
