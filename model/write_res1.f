@@ -66,98 +66,173 @@
       INTEGER :: NEXT_REC 
 !-----------------------------------------------
 !
-!//d pnicol : not needed     call lock_tmp_array
 
 !//d pnicol      
-      if (myPE.ne.PE_IO) return
-      allocate (array1(ijkmax2)) 
-      allocate (array2(ijkmax3))  
+      if (myPE.eq.PE_IO) then
+         allocate (array1(ijkmax2)) 
+         allocate (array2(ijkmax3))  
+      else
+         allocate (array1(1)) 
+         allocate (array2(1))  
+      end if
 
 
-      READ (UNIT_RES, REC=3) NEXT_REC 
-      WRITE (UNIT_RES, REC=NEXT_REC) TIME, DT, NSTEP 
-      NEXT_REC = NEXT_REC + 1 
+      if (myPE.eq.PE_IO) then
+         READ (UNIT_RES, REC=3) NEXT_REC 
+         WRITE (UNIT_RES, REC=NEXT_REC) TIME, DT, NSTEP 
+         NEXT_REC = NEXT_REC + 1 
+      end if
 !
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (EP_g,array2,root)  !//d pnicol
-      call convert_to_io_dp(array2,array1,ijkmax2)  
-      CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      if (myPE.eq.PE_IO) then
+         call convert_to_io_dp(array2,array1,ijkmax2)  
+         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+      end if
 !
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (P_g,array2,root)  !//d pnicol
-      call convert_to_io_dp(array2,array1,ijkmax2)
-      CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      if (myPE.eq.PE_IO) then
+         call convert_to_io_dp(array2,array1,ijkmax2)
+         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC)
+      end if 
 !
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (P_star,array2,root)  !//d pnicol
-      call convert_to_io_dp(array2,array1,ijkmax2)
-      CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-!
-      call gather (RO_g,array2,root)  !//d pnicol
-      call convert_to_io_dp(array2,array1,ijkmax2)
-      CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-!
-      call gather (ROP_g,array2,root)  !//d pnicol
-      call convert_to_io_dp(array2,array1,ijkmax2)
-      CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-!
-      call gather (T_g,array2,root)  !//d pnicol
-      call convert_to_io_dp(array2,array1,ijkmax2)
-      CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-!
-      DO N = 1, NMAX(0) 
-         call gather (X_g(:,n),array2,root)  !//d pnicol
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      if (myPE.eq.PE_IO) then
          call convert_to_io_dp(array2,array1,ijkmax2)
          CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+      end if
+!
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      call gather (RO_g,array2,root)  !//d pnicol
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      if (myPE.eq.PE_IO) then
+         call convert_to_io_dp(array2,array1,ijkmax2)
+         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+      end if
+!
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      call gather (ROP_g,array2,root)  !//d pnicol
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      if (myPE.eq.PE_IO) then
+         call convert_to_io_dp(array2,array1,ijkmax2)
+         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+      end if
+!
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      call gather (T_g,array2,root)  !//d pnicol
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      if (myPE.eq.PE_IO) then
+         call convert_to_io_dp(array2,array1,ijkmax2)
+         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC)
+      end if 
+!
+      DO N = 1, NMAX(0) 
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         call gather (X_g(:,n),array2,root)  !//d pnicol
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+         end if
       END DO 
 !
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (U_g,array2,root)  !//d pnicol
-      call convert_to_io_dp(array2,array1,ijkmax2)
-      CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      if (myPE.eq.PE_IO) then
+         call convert_to_io_dp(array2,array1,ijkmax2)
+         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+      end if
 !
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (V_g,array2,root)  !//d pnicol
-      call convert_to_io_dp(array2,array1,ijkmax2)
-      CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      if (myPE.eq.PE_IO) then
+         call convert_to_io_dp(array2,array1,ijkmax2)
+         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+      end if
 !
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (W_g,array2,root)  !//d pnicol
-      call convert_to_io_dp(array2,array1,ijkmax2)
-      CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      if (myPE.eq.PE_IO) then
+         call convert_to_io_dp(array2,array1,ijkmax2)
+         CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+      end if
 !
       DO LC = 1, MMAX 
 !
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          call gather (ROP_s(:,LC),array2,root)  !//d pnicol
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES,array1 , IJKMAX2, NEXT_REC) 
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_512 (UNIT_RES,array1 , IJKMAX2, NEXT_REC) 
+         end if
 !
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          call gather (T_s(:,LC),array2,root)  !//d pnicol
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES,array1 , IJKMAX2, NEXT_REC) 
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_512 (UNIT_RES,array1 , IJKMAX2, NEXT_REC) 
+         end if
 !
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          call gather (U_s(:,LC),array2,root)  !//d pnicol
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES,array1, IJKMAX2, NEXT_REC) 
-!
-         call gather (V_s(:,LC),array2,root)  !//d pnicol
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES,array1 , IJKMAX2, NEXT_REC) 
-!
-         call gather (W_s(:,LC),array2,root)  !//d pnicol
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES,array1, IJKMAX2, NEXT_REC) 
-!
-         call gather (THETA_M(:,LC),array2,root)  !//d pnicol
-         call convert_to_io_dp(array2,array1,ijkmax2)
-         CALL OUT_BIN_512 (UNIT_RES,array1 , IJKMAX2, NEXT_REC) 
-!
-         DO N = 1, NMAX(LC) 
-            call gather (X_s(:,LC,N),array2,root)  !//d pnicol
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then
             call convert_to_io_dp(array2,array1,ijkmax2)
             CALL OUT_BIN_512 (UNIT_RES,array1, IJKMAX2, NEXT_REC) 
+         end if
+!
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         call gather (V_s(:,LC),array2,root)  !//d pnicol
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_512 (UNIT_RES,array1 , IJKMAX2, NEXT_REC) 
+         end if
+!
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         call gather (W_s(:,LC),array2,root)  !//d pnicol
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_512 (UNIT_RES,array1, IJKMAX2, NEXT_REC) 
+         end if
+!
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         call gather (THETA_M(:,LC),array2,root)  !//d pnicol
+         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_512 (UNIT_RES,array1 , IJKMAX2, NEXT_REC) 
+         end if
+!
+         DO N = 1, NMAX(LC) 
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+            call gather (X_s(:,LC,N),array2,root)  !//d pnicol
+            call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+            if (myPE.eq.PE_IO) then
+               call convert_to_io_dp(array2,array1,ijkmax2)
+               CALL OUT_BIN_512 (UNIT_RES,array1, IJKMAX2, NEXT_REC) 
+            end if
          END DO 
       END DO 
-      CALL FLUSH (UNIT_RES) 
+      if (myPE.eq.PE_IO) CALL FLUSH (UNIT_RES) 
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 !//d pnicol      call unlock_tmp_array
 !
       deallocate (array1)  !//d pnicol
       deallocate (array2)  !//d pnicol
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
       RETURN  
       END SUBROUTINE WRITE_RES1 

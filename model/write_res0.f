@@ -88,11 +88,15 @@
       CHARACTER :: VERSION*512 
 !-----------------------------------------------
 !
-      if (myPE.ne.PE_IO) return       !// 
-      allocate (arr1(ijkmax3))        !// 
-      allocate (arr2(ijkmax2))        !// 
+      if (myPE.eq.PE_IO) then
+         allocate (arr1(ijkmax3))        !// 
+         allocate (arr2(ijkmax2))        !// 
+      else
+         allocate (arr1(1))              !// 
+         allocate (arr2(1))              !// 
+         goto 1100
+      end if
 
-!//      call lock_tmp_array          !// no longer using these arrays
 !
       NEXT_RECA = 5 
 !
@@ -208,7 +212,11 @@
          NEXT_RECA = NEXT_RECA + 1 
       END DO 
 !
+ 1100 continue
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (flag,arr1,root)                               !// 
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      if (myPE .ne. PE_IO) goto 1200
       call convert_to_io_i(arr1,arr2,ijkmax2)                    !//
       CALL OUT_BIN_512I (UNIT_RES, arr2, IJKMAX2, NEXT_RECA)     !//
 !
@@ -329,7 +337,8 @@
       WRITE (UNIT_RES, REC=3) NEXT_RECA 
       CALL FLUSH (UNIT_RES) 
 
-!//      call unlock_tmp_array   
+ 1200 continue
+
       deallocate (arr1)              !//
       deallocate (arr2)              !//
 
