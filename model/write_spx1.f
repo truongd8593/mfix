@@ -105,7 +105,7 @@
          if (myPE .eq. PE_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
-            if(unit_add == 0) CALL FLUSH (uspx + L) 
+            if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
@@ -123,7 +123,7 @@
          if (myPE.eq.PE_IO) then 
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
-            if(unit_add == 0) CALL FLUSH (uspx + L) 
+            if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
@@ -142,7 +142,7 @@
          if (myPE.eq.PE_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
-            if(unit_add == 0) CALL FLUSH (uspx + L) 
+            if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
@@ -163,7 +163,7 @@
          if (myPE.eq.PE_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
-            if(unit_add == 0) CALL FLUSH (uspx + L) 
+            if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
@@ -182,7 +182,7 @@
          if (myPE.eq.PE_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
-            if(unit_add == 0) CALL FLUSH (uspx + L) 
+            if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
@@ -202,7 +202,7 @@
          if (myPE.eq.PE_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
-            if(unit_add == 0) CALL FLUSH (uspx + L) 
+            if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
          end if
 !
 ! ".SP7" FILE         X_g, X_s
@@ -225,7 +225,7 @@
          if (myPE.eq.PE_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
-            if(unit_add == 0) CALL FLUSH (uspx + L) 
+            if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
@@ -244,7 +244,7 @@
          if (myPE.eq.PE_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
-            if(unit_add == 0) CALL FLUSH (uspx + L) 
+            if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
@@ -263,7 +263,7 @@
          if (myPE.eq.PE_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
-            if(unit_add == 0) CALL FLUSH (uspx + L) 
+            if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !

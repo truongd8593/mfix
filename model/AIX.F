@@ -30,6 +30,7 @@
       NWORDS_DP =  64
       NWORDS_R  = 128
       NWORDS_I  = 128
+      JUST_FLUSH = .TRUE.
 !
       RETURN
       END
@@ -211,13 +212,19 @@
       end
      
 !
-      subroutine flush_bin(iunit,code)
+      subroutine flush_bin(iunit)
       implicit none
-      integer :: iunit , code
-      call flush(iunit)
+      integer :: iunit
+      call flush_(iunit)
       return
       end
 
+      subroutine flush_res(iunit)
+      implicit none
+      integer :: iunit
+      call flush_(iunit)
+      return
+      end
 ! ----------------------------
 ! AIX specific utility routine
 ! ----------------------------

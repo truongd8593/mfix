@@ -74,6 +74,8 @@
       ID_MINUTE = DAT(6)
       ID_SECOND = DAT(7)
       
+!     For SGI only
+      CALL GETHOSTNAME(ID_NODE,64)
 !
       RETURN
       END
@@ -113,33 +115,33 @@
 !
 !
 !                      TA(1) = user cpu time   TA(2) = system cpu time
-      REAL             TA(2) 
+!     REAL             TA(2) 
 !
 !                      XT = TA(1) + TA(2)
-      REAL             XT
+!     REAL             XT
 !
 !                      ETIME is an SGI system function which returns
 !                      the elasped CPU time
-      REAL             ETIME
+!     REAL             ETIME
 !
 !      XT = MPI_WTIME()
-       XT  = ETIME(TA)
-       CPU = XT
+!      XT  = ETIME(TA)
+!     CPU = XT
       
       
 !-------------------------------------------F90
 !                       clock cycle
-!      INTEGER           COUNT
+       INTEGER           COUNT
 
 !                       number of cycles per second
-!      INTEGER           COUNT_RATE
+       INTEGER           COUNT_RATE
       
 !                       max number of cycles, after which count is reset to 0
-!      INTEGER           COUNT_MAX
+       INTEGER           COUNT_MAX
 
-!      CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
+       CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
       
-!      CPU           = DBLE(COUNT)/DBLE(COUNT_RATE)
+       CPU           = DBLE(COUNT)/DBLE(COUNT_RATE)
 !
       RETURN
       END
@@ -212,7 +214,6 @@
       use funits
       use run
       use machine
-      use compar
 !
       implicit none
 !
@@ -233,7 +234,7 @@
          ENDIF 
       END DO 
       WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
-      CALL MFIX_EXIT(myPE)  
+      STOP  
  125  continue
       lc  = iunit - unit_spx
       ext = '.SPx'

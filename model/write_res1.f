@@ -172,7 +172,7 @@
 
 !--------------------------------------------------------------------- 
  
-      if (myPE.eq.PE_IO) CALL FLUSH (UNIT_RES) 
+      if (myPE.eq.PE_IO) CALL FLUSH_res (UNIT_RES) 
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
       deallocate (array1)  !//d pnicol

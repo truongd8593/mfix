@@ -30,6 +30,7 @@
       NWORDS_DP =  64
       NWORDS_R  = 128
       NWORDS_I  = 128
+      JUST_FLUSH = .false.
 !
       RETURN
       END
@@ -209,7 +210,7 @@
       end
 !
 !
-      subroutine flush_bin(iunit,code)
+      subroutine flush_bin(iunit)
 !
       use funits
       use run
@@ -217,13 +218,9 @@
 !
       implicit none
 !
-      integer    :: iunit , lc , code , nb , ier
+      integer    :: iunit , lc  , nb , ier
       CHARACTER  :: EXT*4 , file_name*64 
-!
-      if (code .ne. 1) then
-         call flush(iunit)
-         return
-      end if
+
 !
 ! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
 !
@@ -241,10 +238,40 @@
       WRITE (EXT(4:4), 1000) LC         
       close (unit=iunit)
 
-
-
-
       CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, &
+              'old' , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER)
+!
+ 1000 FORMAT(I1)
+      return
+      end
+!
+!
+      subroutine flush_res(iunit)
+!
+      use funits
+      use run
+      use machine
+!
+      implicit none
+!
+      integer    :: iunit , lc , nb , ier
+      CHARACTER  :: EXT*4 , file_name*64 
+!
+! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
+!
+      DO LC = 1, LEN(RUN_NAME) 
+         IF (RUN_NAME(LC:LC) == ' ') THEN 
+            NB = LC 
+            GO TO 125 
+         ENDIF 
+      END DO 
+      WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
+      STOP  
+ 125  continue
+      close (unit=iunit)
+!
+      ext = '.RES'
+      CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, EXT, FILE_NAME, &
               'old' , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER)
 !
  1000 FORMAT(I1)

@@ -18,6 +18,7 @@
 !              number of INTEGER words in 512 bytes
       INTEGER  NWORDS_I
 !
+      LOGICAL :: JUST_FLUSH = .TRUE.
 
 
       END MODULE machine                                                                         

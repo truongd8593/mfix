@@ -30,6 +30,7 @@
       NWORDS_DP =  64
       NWORDS_R  = 128
       NWORDS_I  = 128
+      JUST_FLUSH = .TRUE.
 !
       RETURN
       END
@@ -215,9 +216,14 @@
       return
       end     
 !
-      subroutine flush_bin(iunit,code)
+      subroutine flush_bin(iunit)
       implicit none
       integer :: iunit , code
       call flush(iunit)
+      return
+      end
+      subroutine flush_res(iunit)
+      implicit none
+      integer :: iunit 
       return
       end
