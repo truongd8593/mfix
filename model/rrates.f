@@ -178,7 +178,15 @@
                IF (NMAX(0) > 0) THEN 
                   SUM_R_G(IJK) = SUM_R_G(IJK) + SUM(R_GP(IJK,:NMAX(0))-ROX_GC(&
                      IJK,:NMAX(0))*X_G(IJK,:NMAX(0))) 
-               ENDIF 
+               ENDIF
+	    ELSE
+	      DO M = 1, MMAX
+	        IF(R_tmp(0,M) .NE. UNDEFINED)THEN
+		  SUM_R_G(IJK) = SUM_R_G(IJK) + R_tmp(0,M)
+		ELSEIF(R_tmp(M,0) .NE. UNDEFINED)THEN
+		  SUM_R_G(IJK) = SUM_R_G(IJK) - R_tmp(M,0)
+		ENDIF
+	      ENDDO 
             ENDIF 
 !
             DO M = 1, MMAX 
@@ -188,6 +196,14 @@
                      SUM_R_S(IJK,M) = SUM_R_S(IJK,M) + SUM(R_SP(IJK,M,:NMAX(M))&
                         -ROX_SC(IJK,M,:NMAX(M))*X_S(IJK,M,:NMAX(M))) 
                   ENDIF 
+	       ELSE
+ 	         DO L = 0, MMAX
+	           IF(R_tmp(M,L) .NE. UNDEFINED)THEN
+		     SUM_R_s(IJK,M) = SUM_R_s(IJK,M) + R_tmp(M,L)
+		   ELSEIF(R_tmp(L,M) .NE. UNDEFINED)THEN
+		     SUM_R_s(IJK,M) = SUM_R_s(IJK,M) - R_tmp(L,M)
+		   ENDIF
+	         ENDDO 
                ENDIF 
             END DO 
 	    
