@@ -242,6 +242,8 @@
          ENDIF 
       END DO 
 !
+      CALL SOURCE_V_G_BC(A_M, B_M, IER)
+!
       RETURN  
       END SUBROUTINE SOURCE_V_G 
 !
