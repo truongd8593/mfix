@@ -243,7 +243,7 @@
 	endif
 	Write(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
 	Write(Unit_log, '(A, G12.5, A, G12.5)')'Error (net influx - net accu) = ', &
-	  (flux - Accumulation_delta), ' %Error = ', error_percent
+	  (flux - Accumulation_delta), ' %Error_g = ', error_percent
 	  
 	DO M = 1, MMAX
 	  Accumulation_old = Accumulation_s(M)
@@ -275,8 +275,8 @@
 	    error_percent = zero
 	  endif
 	  Write(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
-	  Write(Unit_log, '(A, G12.5, A, G12.5)')'Error (net influx - net accu) = ', &
-	    (flux - Accumulation_delta), ' %Error = ', error_percent
+	  Write(Unit_log, '(A, G12.5, A, I1, A, G12.5)')'Error (net influx - net accu) = ', &
+	    (flux - Accumulation_delta), ' %Error_',M,' = ', error_percent
 	END DO
 
 
@@ -312,8 +312,8 @@
 	      error_percent = zero
 	    endif
 	    Write(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
-	    Write(Unit_log, '(A, G12.5, A, I1, A, G12.5)')'Error (net influx - net accu) = ', &
-	     (flux - Accumulation_delta), ' %Error(',N,') = ', error_percent
+	    Write(Unit_log, '(A, G12.5, A, I2, A, G12.5)')'Error (net influx - net accu) = ', &
+	     (flux - Accumulation_delta), ' %Error_g(',N,') = ', error_percent
 	  
           END DO
 	ENDIF
@@ -351,8 +351,8 @@
 	        error_percent = zero
 	      endif
 	      Write(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
-	      Write(Unit_log, '(A, G12.5, A, I1, A, G12.5)')'Error (net influx - net accu) = ', &
-	        (flux - Accumulation_delta), ' %Error(',N,') = ', error_percent
+	      Write(Unit_log, '(A, G12.5, A, I1, A, I2, A, G12.5)')'Error (net influx - net accu) = ', &
+	        (flux - Accumulation_delta), ' %Error_',M,'(',N,') = ', error_percent
 	  
             END DO
 	  ENDIF 
@@ -691,3 +691,49 @@
       RETURN  
       END FUNCTION Accumulation_sp 
     
+    
+    
+      DOUBLE PRECISION FUNCTION check_conservation (Phi, A_m, B_m, IJK, IER)
+      USE param 
+      USE param1 
+      USE geometry
+      USE indices
+      USE matrix 
+      USE compar       
+      IMPLICIT NONE
+      INCLUDE 'function.inc'
+! 
+!                      Septadiagonal matrix A_m 
+      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
+! 
+!                      Vector b_m 
+      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
+      
+      DOUBLE PRECISION Phi(DIMENSION_3)
+  
+!                      Error index 
+      INTEGER          IER 
+! 
+!                      Indices 
+      INTEGER          IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP
+       
+          IMJK = IM_OF(IJK) 
+          IJMK = JM_OF(IJK) 
+          IJKM = KM_OF(IJK) 
+          IPJK = IP_OF(IJK) 
+          IJPK = JP_OF(IJK) 
+          IJKP = KP_OF(IJK) 
+
+           check_conservation =  Phi(IJK) * A_m(IJK, 0, 0)  &
+	           + Phi(IPJK) * A_m(IJK, E, 0) &
+	           + Phi(IMJK) * A_m(IJK, W, 0) &
+	           + Phi(IJPK) * A_m(IJK, N, 0) &
+	           + Phi(IJMK) * A_m(IJK, S, 0) &
+	           + Phi(IJKP) * A_m(IJK, T, 0) &
+	           + Phi(IJKM) * A_m(IJK, B, 0) &
+		   - B_m(IJK,0)
+
+      END FUNCTION check_conservation 
+
+
+
