@@ -62,7 +62,8 @@
       USE leqsol 
       USE scalars
       USE compar      
-      USE mpi_utility 
+      USE mpi_utility
+      USE fldvar	!// for scalar and scalaro allocations
 
 
       IMPLICIT NONE
@@ -95,6 +96,8 @@
 !
 !                Read an array dimension
       INTEGER :: DIM_tmp
+!
+      logical :: doingPost
 
 !//PAR_I/O 0814 declare global scratch arrays
       INTEGER, ALLOCATABLE, DIMENSION(:) :: IGTEMP1,iGTEMP2    !//PAR_I/O declare integer Global SCRatch array
@@ -104,6 +107,7 @@
       INTEGER, ALLOCATABLE, DIMENSION(:) :: INTPACK           !//PAR_I/O packing array for integers
       DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: DBLPACK  !//PAR_I/O packing array for doubles    
 
+      doingPost = .false.
 !
 !  1) Check to ensure that this subroutine was updated.
 !  2) Initialize missing constants from earlier versions.
@@ -350,6 +354,9 @@
            ijksize3_all(:) = ijkmax3
 !//
 !//
+           nScalar = 0                !// since NScalar is not read in
+           doingPost = .true.         !// untill later
+
 	   call allocate_arrays       !// do for mfix/post_mfix
 !//
 !//
@@ -1097,7 +1104,15 @@
             READ (UNIT_RES, REC=NEXT_RECA) NScalar, TOL_RESID_Scalar, DIM_tmp  
             NEXT_RECA = NEXT_RECA + 1 
             CALL IN_BIN_512I (UNIT_RES, Phase4Scalar, DIM_tmp, NEXT_RECA)
-	  ENDIF
+            !
+            ! post mfix fix ...
+            !
+            if (doingPost .and. nscalar.gt.0) then
+               DIMENSION_Scalar = NScalar
+               Allocate(  Scalar (DIMENSION_3,  DIMENSION_Scalar) )
+               Allocate(  Scalaro (DIMENSION_3, DIMENSION_Scalar) )
+            end if
+ 	  ENDIF
           call bcast(NScalar,PE_IO) !//PAR_I/O BCAST0d 
           call bcast(TOL_RESID_Scalar,PE_IO) !//PAR_I/O BCAST0d 
           call bcast(Phase4Scalar,PE_IO) !//PAR_I/O BCAST0d 
