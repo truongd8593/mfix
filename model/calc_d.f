@@ -1,3 +1,6 @@
+!TO DO:
+! Upgrade the formula for d (Eq. D.12 in MFIX numerics manual).
+! This is only for improving the computational speed.
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CALC_d_e(A_m, VxF_gs, d_e, IER)                        C

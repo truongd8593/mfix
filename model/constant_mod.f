@@ -28,7 +28,10 @@
       Use param
       Use param1
 
-
+!       multiple particle sizes
+        DOUBLE PRECISION ep_s_max(DIM_M)  !maximum packing volume fraction for particles, typically 0.6
+	DOUBLE PRECISION ep_s_max_ratio(DIM_M, DIM_M), d_p_ratio(DIM_M, DIM_M)
+	
 !     ALPHA = parameter in equation for mu_s
 !
 !     SWITCH enables us to turn on/off the modification to the

@@ -165,7 +165,7 @@
       DOUBLE PRECISION D_f 
 ! 
 !                      Septadiagonal matrix A_V_s 
-      DOUBLE PRECISION A_V_s(DIMENSION_3, -3:3, DIMENSION_M) 
+      DOUBLE PRECISION A_V_s(DIMENSION_3, -3:3, M:M) 
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -383,7 +383,7 @@
       DOUBLE PRECISION D_f 
 ! 
 !                      Septadiagonal matrix A_V_s 
-      DOUBLE PRECISION A_V_s(DIMENSION_3, -3:3, DIMENSION_M)
+      DOUBLE PRECISION A_V_s(DIMENSION_3, -3:3, M:M)
 !
 !                      Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
@@ -684,7 +684,7 @@
       DOUBLE PRECISION D_f 
 ! 
 !                      Septadiagonal matrix A_V_s 
-      DOUBLE PRECISION A_V_s(DIMENSION_3, -3:3, DIMENSION_M) 
+      DOUBLE PRECISION A_V_s(DIMENSION_3, -3:3, M:M) 
 ! 
 !                      Convection weighting factors 
 !      DOUBLE PRECISION XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),& 

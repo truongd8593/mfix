@@ -198,7 +198,8 @@
 ! end anuj 04/20
 !                      Use to compute MU_s(IJK,M) & Kth_S(IJK,M)
       DOUBLE PRECISION Mu, Mu_b, Mu_star, MUs, Kth, Kth_star
- 
+
+      double precision calc_ep_star
  
  
 !     SWITCH enables us to turn on/off the modification to the
@@ -237,9 +238,7 @@
 	  END IF
 	END DO	
       END IF	
-! loezo      
-
-
+! loezos      
 !
 !
 !
@@ -432,7 +431,9 @@
          IF (.NOT.FRICTION) THEN
 ! end anuj 4/20
  
- 
+!GERA*****************
+ 	if (MMAX >= 2) EP_star = Calc_ep_star(ijk, ier)
+!*********END GERA*************
  
           IF(EP_g(IJK) .LT. EP_star) THEN
 !             P_star(IJK) = Neg_H(EP_g(IJK))

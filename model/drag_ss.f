@@ -1,3 +1,5 @@
+!TO DO
+! Non-dimensionalize C(10) and define it as an input variable
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: DRAG_ss(L, M, IER)                                     C
@@ -86,7 +88,6 @@
 !                      Drag coefficient 
       DOUBLE PRECISION CONST 
 ! 
-! 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -137,8 +138,14 @@
 !
 !
             F_SS(IJK,LM) = CONST*ROP_S(IJK,L)*ROP_S(IJK,M)*G_0(IJK,L,M)*VREL 
+
+!	    Account for particle-particle drag due to enduring contact in a close-packed system.
+	    IF(CLOSE_PACKED(M) .AND. CLOSE_PACKED(L) .AND. (MMAX >= 2))&
+	   F_SS(IJK,LM) = F_SS(IJK,LM) + C(10)* P_star(IJK)
 !
-         ENDIF 
+!
+!END GERA**********
+       END IF
       END DO 
            
       RETURN  

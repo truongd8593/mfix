@@ -1,3 +1,6 @@
+!TO DO:
+! Check the formulation based on MCp
+!
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CALC_e_e(A_m,  e_e, IER)                               C

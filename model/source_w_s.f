@@ -73,7 +73,8 @@
       INTEGER          IJKE, IJKW, IJKTE, IJKTW, IM, IPJK 
 ! 
 !                      Phase index 
-      INTEGER          M 
+      INTEGER          M,MM 
+      DOUBLE PRECISION   SUM_EPS_CP 
 ! 
 !                      Internal surface 
       INTEGER          ISV 
@@ -180,7 +181,7 @@
 !             Pressure term
                   PGT = P_G(IJKT) 
                   IF (CYCLIC_Z_PD) THEN 
-                     IF (KMAP(K_OF(IJK)).EQ.KMAX1) PGT = P_G(IJKT) - DELP_Z 
+                     IF (CYCLIC_AT_T(IJK)) PGT = P_G(IJKT) - DELP_Z 
                   ENDIF 
                   IF (MODEL_B) THEN 
                      SDP = ZERO 
@@ -191,7 +192,14 @@
                   ENDIF 
 !
                   IF (CLOSE_PACKED(M)) THEN 
-                     SDPS = -((P_S(IJKT,M)-P_S(IJK,M))+(P_STAR(IJKT)-P_STAR(IJK&
+		     SUM_EPS_CP=0.0 
+		     DO MM=1,MMAX
+		       IF (CLOSE_PACKED(MM))&
+			     SUM_EPS_CP=SUM_EPS_CP+EP_S(IJK,MM)
+		     END DO
+		     SUM_EPS_CP = Max(SUM_EPS_CP, small_number)
+                     SDPS = -((P_S(IJKT,M)-P_S(IJK,M))+(EP_S(IJK,M)/SUM_EPS_CP)*&
+		     (P_STAR(IJKT)-P_STAR(IJK&
                         )))*AXY(IJK) 
                   ELSE 
                      SDPS = -(P_S(IJKT,M)-P_S(IJK,M))*AXY(IJK) 

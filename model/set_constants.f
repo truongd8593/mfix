@@ -1,3 +1,5 @@
+!TO DO
+!  define ep_s_max as an input variable
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SET_CONSTANTS                                          C
@@ -67,6 +69,18 @@
 !
 !   Note that the cell flags are not set when this routine is called.
 !
+!
+!       For multiple particle types
+        ep_s_max(1) = 1. - C(11)  ! maximum packing volume fraction for spheres, typically 0.6
+	ep_s_max(2) = 1. - C(11) ! maximum packing volume fraction for solids, typically 0.6
+
+	if (d_p(2) .GT. d_p(1)) then
+	  d_p_ratio(1,2) = (d_p(1)/d_p(2))**0.5
+	else
+	  d_p_ratio(1,2) = (d_p(2)/d_p(1))**0.5
+	end if
+	ep_s_max_ratio(1,2) = ep_s_max(1)/(ep_s_max(1)+(1.-ep_s_max(1))*ep_s_max(2))  ! refer to Syam's dissertation
+	
 !
 !  Dimensionless constants
       PI = 4.*ATAN(ONE) 

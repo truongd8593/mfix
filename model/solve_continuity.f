@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SOLVE_CONTINUITY(IER)                                  C
+!  Module name: SOLVE_CONTINUITY(M,IER)                                  C
 !  Purpose: Solve for volume fractions                                 C
 !                                                                      C
 !                                                                      C
@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE SOLVE_CONTINUITY(IER) 
+      SUBROUTINE SOLVE_CONTINUITY(M,IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -56,6 +56,8 @@
 ! 
 !                      phase index 
       INTEGER          M 
+!                      solids volume fraction residual
+      DOUBLE PRECISION RESs         
 ! 
 !                      Septadiagonal matrix A_m 
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
@@ -71,7 +73,7 @@
 
       call lock_ambm
 
-      IF (DO_CONT(0)) THEN 
+      IF (M==0) THEN 
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER) 
 !
          CALL CONV_ROP_G (A_M, B_M, IER) 
@@ -96,21 +98,19 @@
 	                     LEQ_SWEEP(2), LEQ_TOL(2),IER) 
          CALL ADJUST_ROP (ROP_G, IER) 
 !        call out_array(ROP_g, 'rop_g')
-      ENDIF 
+      ELSE 
 !
 !
-      DO M = 1, MMAX 
-         IF (DO_CONT(M)) THEN 
             CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
             CALL CONV_ROP_S (A_M, B_M, M, IER) 
             CALL SOURCE_ROP_S (A_M, B_M, M, IER) 
             CALL CALC_RESID_C (ROP_S(1,M), A_M, B_M, M, RESID(RESID_RO,M), &
                MAX_RESID(RESID_RO,M), IJK_RESID(RESID_RO,M), IER) 
-!
+            RESS = RESID(RESID_RO,M) 
+
 !          call check_ab_m(a_m, b_m, m, .true., ier)
-!          write(*,*)
-!     &    resid(resid_ro, m), max_resid(resid_ro, m),
-!     &    ijk_resid(resid_ro, m)
+!          write(*,*)'solve_cont=',resid(resid_ro, m),max_resid(resid_ro, m),&
+!        ijk_resid(resid_ro, m),m
 !          call write_ab_m(a_m, b_m, ijkmax2, m, ier)
 !          call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, M), 1,
 !     &      DO_K, ier)
@@ -122,8 +122,7 @@
 	                     LEQ_SWEEP(2), LEQ_TOL(2),IER) 
             CALL ADJUST_ROP (ROP_S(1,M), IER) 
 !          call out_array(rop_s(1,m), 'rop_s')
-         ENDIF 
-      END DO 
+      ENDIF 
       
       call unlock_ambm
 

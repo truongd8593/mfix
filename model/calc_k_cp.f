@@ -1,3 +1,7 @@
+!TO DO:
+!1. Kcp needs to be defined for each solids phase (?).
+!2. The part of Kcp from P_star should be based on the sum of EP_s of
+!     close-packed solids.
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CALC_K_cp(Kcp, IER)                                    C
@@ -48,14 +52,15 @@
       DOUBLE PRECISION Pc, DPcoDEPs, Mu, Mu_b, Mu_zeta, ZETA
       DOUBLE PRECISION F2, DF2oDEPs, DEPs2G_0oDEPs, Pf, Pfmax
       DOUBLE PRECISION  DZETAoDEPs, DG_0DNU
- 
+      double precision calc_ep_star
+      
       INCLUDE 'ep_s1.inc'
       INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
       INCLUDE 's_pr2.inc'
       INCLUDE 'ep_s2.inc'
- 
-        
+
+
 !      DO 200 M = 1, MMAX
         M = Mcp
 
@@ -177,21 +182,21 @@
  
  
                ELSE ! FRICTION = .FALSE.
+!GERA*****************************
+                 if (MMAX >= 2)EP_star = Calc_ep_star(IJK, IER)
+!GERA_END************************* 
+                 IF(EP_g(IJK) .LT. EP_star) THEN
+                    Kcp(IJK) = dPodEP_s(EP_s(IJK, M))
  
-                     IF(EP_g(IJK) .LT. EP_star) THEN
-                        Kcp(IJK) = dPodEP_s(EP_s(IJK, M))
+		 ELSE
+ 		    Kcp(IJK) = ZERO	
  
-		     ELSE
- 
-			Kcp(IJK) = ZERO	
- 
-                     ENDIF
+                 ENDIF
 
 	       ENDIF
  
 !//SP
             ELSE
-
 	       Kcp(IJK) = ZERO
  
             ENDIF

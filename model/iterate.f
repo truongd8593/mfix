@@ -251,13 +251,27 @@
 !     Solve solids volume fraction correction equation for close-packed
 !     solids phases
 !
-      IF (MMAX > 0) THEN 
-         CALL CALC_K_CP (K_CP, IER) 
-         CALL SOLVE_EPP (NORMS, RESS, IER) 
-         CALL CORRECT_1 (IER) 
-!
-! IER = 0
-         CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
+      IF (MMAX > 0) THEN
+        IF(MMAX == 1)THEN
+          CALL CALC_K_CP (K_CP, IER)
+	  CALL SOLVE_EPP (NORMS, RESS, IER)
+          CALL CORRECT_1 (IER) 
+        ELSE
+          DO M=1,MMAX 
+!   	    IF (M .EQ. MCp) THEN !Volume fraction correction technique for multiparticle types is 
+   	    IF (.FALSE.) THEN    !not implemented.  This will only slow down convergence.
+              CALL CALC_K_CP (K_CP, IER)
+	      CALL SOLVE_EPP (NORMS, RESS, IER)
+              CALL CORRECT_1 (IER) 
+
+      	    ELSE
+	      CALL SOLVE_CONTINUITY(M,IER)
+	             
+	    ENDIF
+	  END DO
+        ENDIF
+
+        CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
 
 	 abort_ier = ier.eq.1
 	 call global_all_or(abort_ier)
@@ -267,7 +281,8 @@
             IF(DT/=UNDEFINED)GO TO 1000 
          ENDIF 
  
-      ENDIF 
+      ENDIF
+      
 !
 !  Update wall velocities
  

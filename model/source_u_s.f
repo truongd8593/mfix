@@ -73,7 +73,8 @@
       INTEGER          I, IJK, IJKE, IJKM, IPJK, IPJKM 
 ! 
 !                      Phase index 
-      INTEGER          M 
+      INTEGER          M,MM 
+      DOUBLE PRECISION   SUM_EPS_CP
 ! 
 !                      Internal surface number 
       INTEGER          ISV 
@@ -121,7 +122,7 @@
 !
 !$omp  parallel do private( IJK, IJKE, ISV, Sdp, Sdps, V0, Vmt, Vbf, &
 !$omp&  I,PGE,DRO1,DRO2,DROA, IJKM,IPJK,IPJKM,  WSE,VCF,EPMUGA,VTZA, &
-!$omp&  EPSA, ROPSA, LINE) &
+!$omp&  EPSA, ROPSA, LINE,SUM_EPS_CP,MM) &
 !$omp&  schedule(static)
             DO IJK = ijkstart3, ijkend3 
 !
@@ -176,7 +177,7 @@
 !             Pressure terms
                   PGE = P_G(IJKE) 
                   IF (CYCLIC_X_PD) THEN 
-                     IF (IMAP(I_OF(IJK)).EQ.IMAX1) PGE = P_G(IJKE) - DELP_X 
+                     IF (CYCLIC_AT_E(IJK)) PGE = P_G(IJKE) - DELP_X 
                   ENDIF 
                   IF (MODEL_B) THEN 
                      SDP = ZERO 
@@ -187,7 +188,14 @@
                   ENDIF 
 !
                   IF (CLOSE_PACKED(M)) THEN 
-                     SDPS = -((P_S(IJKE,M)-P_S(IJK,M))+(P_STAR(IJKE)-P_STAR(IJK&
+		     SUM_EPS_CP=0.0 
+		     DO MM=1,MMAX
+		       IF (CLOSE_PACKED(MM))&
+			     SUM_EPS_CP=SUM_EPS_CP+EP_S(IJK,MM)
+		     END DO
+		     SUM_EPS_CP = Max(SUM_EPS_CP, small_number)
+                     SDPS = -((P_S(IJKE,M)-P_S(IJK,M))+(EP_S(IJK,M)/SUM_EPS_CP)*&
+			(P_STAR(IJKE)-P_STAR(IJK&
                         )))*AYZ(IJK) 
                   ELSE 
                      SDPS = -(P_S(IJKE,M)-P_S(IJK,M))*AYZ(IJK) 

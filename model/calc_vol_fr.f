@@ -1,3 +1,7 @@
+!TO DO:
+!Check the formulation based on MCp.  The pressure correction
+!should be based on all close-packed solids?
+! Now PHASE_4_P_S(IJK) is undefined.
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CALC_VOL_FR(P_star, RO_g, ROP_g, EP_g, ROP_s, IER)     C
