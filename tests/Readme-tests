@@ -4,6 +4,7 @@ Name			Fluid	Solids	Moment	Energy	Species	Cyclic	Transient
 cond_conv 		X	.	X	X	.	.	.
 conduction		X	.	.	X	.	.	.
 developed_pipe_flow	X	.	X	.	.	X	.
+developed_pipe_flow1	X	.	X	.	.	X	.
 developed_slit_flow	X	.	X	.	.	X	.
 dmp_test		X	X	.	.	X	.	X
 dmp_test_cyclic		X	X	.	.	X	X	X
