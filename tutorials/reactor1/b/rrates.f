@@ -73,16 +73,6 @@
 
       DO IJK = IJKSTART3, IJKEND3 
       
-         R_gp(IJK, :) = ZERO
-         RoX_gc(IJK, :) = ZERO
-         R_sp(IJK, :, :) = ZERO
-         RoX_sc(IJK, :, :) = ZERO
-         SUM_R_G(IJK) = ZERO 
-         HOR_G(IJK) = ZERO
-         SUM_R_S(IJK, :) = ZERO 
-         HOR_S(IJK, :) = ZERO 
-	 R_PHASE(IJK, :) = ZERO
-      
          IF (FLUID_AT(IJK)) THEN 
 !
 !
