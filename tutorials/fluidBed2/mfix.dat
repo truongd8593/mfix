@@ -1,92 +1,119 @@
-#                                                                               
-#  Bubbling Fluidized Bed Simulation                                            
-#  7-23-97                                                                      
-#                                                                               
-#     9.5 h on Octane, 11 Mb storage                                             #                                                                               
-# Run-control section                                                           
-#                                                                               
-  RUN_NAME = 'FAST'                                                             
-  DESCRIPTION = 'Fast bubble'                                                   
-  RUN_TYPE = 'new'                                                              
-  UNITS = 'cgs'                                                                 
-  TIME  = 0.0    TSTOP = 1.0    DT = 1.0E-4                                     
-  ENERGY_EQ = .FALSE.                                                           
-  SPECIES_EQ = .FALSE.    .FALSE.  
+!                                                                               
+!  Bubbling Fluidized Bed Simulation                                            
+!                                                                               
+!  bub02 - uniform fluidization 
+
+!  CPU time on R10000 Octane - 2494 s, Storage = 1.34 Mb
+                          
+! Run-control section                                                           
+                                                                               
+  RUN_NAME 		= 'BUB02'             
+  DESCRIPTION 		= 'uniform fluidization'          
+  RUN_TYPE 		= 'new'             
+  UNITS 		= 'cgs'
+  TIME  		= 0.0				!start time
+  TSTOP 		= 2.0
+  DT 			= 1.0E-4			!time step
+  ENERGY_EQ 		= .FALSE.			!do not solve energy eq
+  SPECIES_EQ 		= .FALSE.    .FALSE. 		!do not solve species eq
+
+                                                                               
+! Geometry Section                                                              
+                                                                               
+  COORDINATES 		= 'cylindrical' 
+  XLENGTH  		=   7.0				!radius
+  IMAX 			=   7 				!cells in i direction
+  YLENGTH  		= 100.0				!height
+  JMAX 			= 100 				!cells in j direction
+  NO_K     		= .TRUE. 			!2D, no k direction
+
+                                                                               
+! Gas-phase Section                                                             
+ 
+  MU_g0 		= 1.8E-4			!constant gas viscosity
+  RO_g0			= 1.2E-3			!constant gas density
+
+ 
+! Solids-phase Section                                                          
+  
+  RO_s    		= 2.0				!solids density
+  D_p     		= 0.04				!particle diameter     
+  e       		= 0.8 				!restitution coefficient
+  Phi    		=30.0				!angle of internal friction
+  EP_star 		= 0.42				!void fraction at minimum
+							!  fluidization
+
+  
+! Initial Conditions Section                                                    
+  
+    ! 1. bed                                      
+  IC_X_w(1)           	=  0.0				!lower half of the domain
+  IC_X_e(1)           	=  7.0				! 0 < x < 7, 0 < y < 50
+  IC_Y_s(1)          	=  0.0
+  IC_Y_n(1)           	= 50.0 
+                                			!initial values in the region
+  IC_EP_g(1)          	=  0.42				!void fraction	
+  IC_U_g(1)           	=  0.0				!radial gas velocity
+  IC_V_g(1)          	= 61.7				!axial gas velocity
+  IC_U_s(1,1)      	=  0.0				!radial solids velocity 
+  IC_V_s(1,1)      	=  0.0 				!axial solids velocity
+
+
+    !  2. Freeboard                                       
+  IC_X_w(2)           	=   0.0				!upper half of the domain 
+  IC_X_e(2)           	=   7.0				! 0 < x < 7, 50 < y < 100
+  IC_Y_s(2)           	=  50.0
+  IC_Y_n(2)           	= 100.0
+                                  
+  IC_EP_g(2)         	=   1.0                                  
+  IC_U_g(2)           	=   0.0
+  IC_V_g(2)           	=  25.9                                 
+  IC_U_s(2,1)      	=   0.0
+  IC_V_s(2,1)      	=   0.0                                  
                                                                                 
-  DISCRETIZE = 7*2                                                              
-#                                                                               
-# Geometry Section                                                              
-#                                                                               
-  COORDINATES = 'Cartesian'                                                     
+!  Boundary Conditions Section                                                  
+            
+       ! 1. Distributor flow                                       
+  BC_X_w(1)		=  0.0				!gas distributor plate
+  BC_X_e(1)		=  7.0				! 0 < x < 7, y = 0
+  BC_Y_s(1)		=  0.0 
+  BC_Y_n(1)		=  0.0
+
+  BC_TYPE(1)		= 'MI'				!specified mass inflow 
+
+  BC_EP_g(1)		=  1.0 
+  BC_U_g(1)		=  0.0 
+  BC_V_g(1)		= 40.0 
+  BC_P_g(1)		=  0.0			
+
+                                            
+       ! 2. Exit
+  BC_X_w(2)		=   0.0				!top exit
+  BC_X_e(2)		=   7.0				! 0 < x < 7, y = 100
+  BC_Y_s(2)		=  100.0
+  BC_Y_n(2)		=  100.0
+
+  BC_TYPE(2)		=  'PO' 			!specified pressure outflow
+  BC_P_g(2)		=  0.0                                 
                                                                                 
-  XLENGTH  =  39.37   IMAX = 124                                                
-  YLENGTH  =  58.44   JMAX = 108                                                
-                                                                                
-  NO_K     = .TRUE.                                                             
-#                                                                               
-# Gas-phase Section                                                             
-#                                                                               
-  MU_g0 = 1.8E-4                                                                
-  MW_avg = 29.                                                                  
-#                                                                               
-# Solids-phase Section                                                          
-#                                                                               
-  RO_s    = 2.7                                                                 
-  D_p     = 0.02                                                                
-                                                                                
-  e       = 0.9                                                                 
-  Phi     = 40.0                                                                
-  EP_star = 0.40                                                                
-#                                                                               
-# Initial Conditions Section                                                    
-#                                                                               
-       !              Bed       Freeboard                                       
-  IC_X_w           =  0.0             0.0                                       
-  IC_X_e           = 39.37           39.37                                      
-  IC_Y_s           =  0.0            29.22                                      
-  IC_Y_n           = 29.22           58.44                                      
-                                                                                
-                                                                                
-  IC_EP_g          =  0.4           1.0                                         
-                                                                                
-  IC_U_g           =  0.0             0.0                                       
-  IC_V_g           =@(4.066/0.4)      4.066                                     
-                                                                                
-  IC_U_s(1,1)      =  0.0             0.0                                       
-  IC_V_s(1,1)      =  0.0             0.0                                       
-                                                                                
-  IC_P_star        =  0.0             0.0                                       
-  IC_T_g           = 297.           297.                                        
-                                                                                
-#                                                                               
-#  Boundary Conditions Section                                                  
-#                                                                               
-       !             Grid    Jet     Grid     Exit                              
-  BC_X_w           =  0.0   19.05    20.32     0.0                              
-  BC_X_e           = 19.05  20.32    39.37    39.37                             
-  BC_Y_s           =  0.0    0.0      0.0     58.44                             
-  BC_Y_n           =  0.0    0.0      0.0     58.44                             
-                                                                                
-  BC_TYPE          = 'MI'   'MI'      'MI'     'PO'                             
-                                                                                
-  BC_EP_g          =  1.0    1.0      1.0                                       
-                                                                                
-  BC_U_g           =  0.0    0.0      0.0                                       
-  BC_V_g           =  4.066  155.0     4.066                                    
-                                                                                
-  BC_P_g           = 4*1.01E6                                                   
-  BC_T_g           = 4*297.                                                     
-                                                                                
-#                                                                               
-#  Output Control                                                               
-#                                                                               
-  RES_DT = 0.01                                                                 
-        !                                                                       
-        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g                           
-        !      P_star    V_g  V_s            T_s1 X_s                           
-        !                W_g  W_s            T_s2                               
-  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 100.  100.0                   
-                                                                                
-  NLOG   = 100                                                                  
-  full_log = .true.                                                             
+!                                                                               
+!  Output Control                                                               
+!                  
+  OUT_DT 		= 10. 				!write text file BUB02.OUT
+							!  every 10 s
+  RES_DT 		= 0.01				!write binary restart file
+							!  BUB02.RES every 0.01 s
+  NLOG   		= 25 				!write logfile BUB02.LOG 
+							!every 25 time steps
+  FULL_LOG 		= .TRUE. 			!display residuals on screen
+
+
+!SPX_DT values determine how often SPx files are written.  Here BUB02.SP1, which
+!contains void fraction (EP_g), is written every 0.01 s, BUB02.SP2, which contains
+! gas and solids pressure (P_g, P_star), is written every 0.1 s, and so forth.
+!
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
+        !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
+        !                W_g  W_s
+  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 100.   100.0     100.        
                                                                                 
