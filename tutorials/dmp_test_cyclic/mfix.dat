@@ -14,6 +14,7 @@
   MOMENTUM_Z_EQ= .FALSE.    .FALSE.
 
   CYCLIC_X = .true.
+  CYCLIC_Z = .true.
 
   ENERGY_EQ  = .FALSE.                                                           
   SPECIES_EQ = .TRUE.    .FALSE.                                               
@@ -60,7 +61,7 @@
                                                                                 
   IC_U_g           =  40.0             40.0
   IC_V_g           =@(25.9/0.42)     25.9
-  IC_W_g           =  0.0             0.0                                       
+  IC_W_g           =  40.0             40.0
                                                                                 
   IC_U_s(1,1)      =  0.0             0.0                                       
   IC_V_s(1,1)      =  0.0             0.0                                       
@@ -78,7 +79,7 @@
   IC_Y_s(5)           =  0.0                                   
   IC_Y_n(5)           = 10.0                                      
   IC_Z_b(5)           =  0.0                                 
-  IC_Z_t(5)           = 20.                           
+  IC_Z_t(5)           =  2.                           
   IC_X_g(5,1)         =  0.0 
   IC_X_g(5,2)         =  1.0
   IC_TYPE(5)          = 'PATCH' 
@@ -114,7 +115,7 @@
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g                           
         !      P_star    V_g  V_s            T_s1 X_s                           
         !                W_g  W_s            T_s2                               
-  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 0.01   100.0     
+  SPX_DT = 0.01 0.1      0.1  0.1  100.      100. 0.01   100.0  
                                                                                 
   NLOG   = 100                                                                  
   full_log = .true.                                                             
