@@ -222,7 +222,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SET_WALL_BC1(II1, II2, JJ1, JJ2, KK1, KK2, BC_JJ_PSL, &C
-!                                                SIGN)                 C
+!                                                SIGN0)                C
 !  Purpose: Set U, V, and W components for the specified cells by      C
 !           copying the same or negative values from near by fluid cellC
 !                                                                      C
@@ -246,7 +246,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE SET_WALL_BC1(II1, II2, JJ1, JJ2, KK1, KK2, &
-                                           BC_JJ_PSL, SIGN) 
+                                           BC_JJ_PSL, SIGN0) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -292,8 +292,9 @@
 !                      Johnson-Jackson boundary condition: 0= no, 1=yes 
       INTEGER          BC_JJ_PSL 
 ! 
-!                      Sign with legal values +1 or -1; No need to pass this because of 7-30-04 modification
-      DOUBLE PRECISION SIGN 
+!                      Sign with legal values +1 or -1; The passed variable (SIGN0)
+!                      is not needed because of 7-30-04 modification
+      DOUBLE PRECISION SIGN0, SIGN 
 ! 
 !                      Local indices near wall cell 
       INTEGER          I, J, K 
