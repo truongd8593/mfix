@@ -343,12 +343,12 @@
       Allocate(           I3_OF (DIMENSION_4) )
       Allocate(           J3_OF (DIMENSION_4) )
       Allocate(           K3_OF (DIMENSION_4) )
-      Allocate(           Im1_3 (0:DIMENSION_I) )
-      Allocate(           Ip1_3 (0:DIMENSION_I) )
-      Allocate(           Jm1_3 (0:DIMENSION_J) )
-      Allocate(           Jp1_3 (0:DIMENSION_J) )
-      Allocate(           Km1_3 (0:DIMENSION_K) )
-      Allocate(           Kp1_3 (0:DIMENSION_K) )
+      Allocate(           Im1_3 (-1:DIMENSION_I+1) )
+      Allocate(           Ip1_3 (-1:DIMENSION_I+1) )
+      Allocate(           Jm1_3 (-1:DIMENSION_J+1) )
+      Allocate(           Jp1_3 (-1:DIMENSION_J+1) )
+      Allocate(           Km1_3 (-1:DIMENSION_K+1) )
+      Allocate(           Kp1_3 (-1:DIMENSION_K+1) )
  
 
      

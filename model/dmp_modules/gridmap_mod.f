@@ -4,6 +4,7 @@
 	use geometry
 	use sendrecv
 	use compar
+	use run
 	use indices
 	implicit none
 
@@ -257,7 +258,16 @@
 
 	enddo
 
-
+	if(.not.fpfoi) then
+	   do iproc=0,numPEs-1
+	      istart4_all(iproc) = istart3_all(iproc)
+	      jstart4_all(iproc) = jstart3_all(iproc)
+	      kstart4_all(iproc) = kstart3_all(iproc)
+	      iend4_all(iproc)   = iend3_all(iproc)
+	      jend4_all(iproc)   = jend3_all(iproc)
+	      kend4_all(iproc)   = kend3_all(iproc)
+	   end do
+	end if
 
 	do iproc=0,numPEs-1
 
