@@ -34,6 +34,7 @@
       Use scalars
       Use funits
       Use compar
+      Use gridmap ! added
       
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
@@ -212,7 +213,8 @@
       
       CALL INIT_NAMELIST
       CALL READ_NAMELIST(1)
-      
+      call set_max2
+      call gridmap_init
       CALL ALLOCATE_ARRAYS
 !
 !  Do initial calculations
