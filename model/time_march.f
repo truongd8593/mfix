@@ -236,12 +236,15 @@
 !    write(UNIT_LOG,*) 'HEAT_TR: ',HEAT_TR    !//AIKEPARDBG                    
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
+!//AIKEPARDBG
+     write(*,"('(PE ',I2,'): before CALC_COEFF in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
       
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
+     write(*,"('(PE ',I2,'): aft CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -253,7 +256,7 @@
       END DO 
 
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft UNDEF_2_0 in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
+     write(*,"('(PE ',I2,'): aft UNDEF_2_0 in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -271,13 +274,13 @@
       CALL ZERO_ARRAY (E_T, IER) 
 
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft ZERO_ARRAY in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
+     write(*,"('(PE ',I2,'): aft ZERO_ARRAY in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
 !   Initialize adjust_ur
 !
-      dummy = ADJUST_DT(100, 0)
+!     dummy = ADJUST_DT(100, 0)
 
 !
 !  The TIME loop begins here.............................................
@@ -286,7 +289,7 @@
       IF (CALL_USR) CALL USR1 
 
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft call USR1 in time_march')") myPE    !//AIKEPARDBG
+     write(*,"('(PE ',I2,'): aft call USR1 in time_march')") myPE    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -295,7 +298,7 @@
       CALL ADJUST_EPS 
 
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft ADJUST_EPS in time_march')") myPE    !//AIKEPARDBG
+     write(*,"('(PE ',I2,'): aft ADJUST_EPS in time_march')") myPE    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -305,7 +308,7 @@
          SWITCH_4_P_G, SWITCH_4_P_S, IER) 
 
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft MARK_PHASE_4 in time_march')") myPE    !//AIKEPARDBG
+     write(*,"('(PE ',I2,'): aft MARK_PHASE_4 in time_march')") myPE    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -314,7 +317,7 @@
       CALL SET_BC1 
 
 !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft SET_BC1 in time_march')") myPE    !//AIKEPARDBG
+     write(*,"('(PE ',I2,'): aft SET_BC1 in time_march')") myPE    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -349,9 +352,12 @@
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME   !//
       ENDIF 
 !
+    write(*,"('(PE ',I2,'): aft restart dump in time_march')") myPE    !//AIKEPARDBG
+!
 ! Write SPx files, if needed
 !
-      if (myPE.eq.PE_IO) then         !//
+!\\SP Commented the following
+!     if (myPE.eq.PE_IO) then         !//
          ISPX = 0 
          DO L = 1, N_SPX 
             IF (DT == UNDEFINED) THEN 
@@ -393,7 +399,8 @@
                IF (FULL_LOG) WRITE (*, 1010,  ADVANCE='NO') L 
             ENDIF 
          END DO 
-      end if                         !//
+!\\SP Commented the following
+!     end if                         !//
       IF (.NOT.SPX_MSG) THEN 
          DO L = 1, N_SPX - ISPX 
             WRITE (UNIT_LOG, '(A,$)') '   ' 
@@ -412,13 +419,16 @@
 !
 !  Write special output, if needed
 !
-      if (myPE.eq.PE_IO) then           !//
+!//SP
+!     if (myPE.eq.PE_IO) then           !//
         DO L = 1, DIMENSION_USR 
          IF (DT == UNDEFINED) THEN 
-            IF (FINISH) CALL WRITE_USR1 (L) 
+!//SP   
+            IF (FINISH.and.myPE.eq.PE_IO) CALL WRITE_USR1 (L) 
          ELSE IF (USR_TIME(L)/=UNDEFINED .AND. TIME+0.1*DT>=USR_TIME(L)) THEN 
             USR_TIME(L) = (INT((TIME + 0.1*DT)/USR_DT(L))+1)*USR_DT(L) 
-            CALL WRITE_USR1 (L) 
+!//SP
+            if (myPE.eq.PE_IO) CALL WRITE_USR1 (L) 
          ENDIF 
         END DO 
         IF (DT == UNDEFINED) THEN 
@@ -430,11 +440,12 @@
         ELSE IF (TIME + 0.1*DT >= TSTOP) THEN 
          RETURN  
         ENDIF 
-      end if                !//
+!//SP
+!     end if                !//
 
 !//AIKEPARDBG
-    write(*,"('(PE ',I2,'): reached end of restart dump in time_march')") myPE    !//AIKEPARDBG
-    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+!   write(*,"('(PE ',I2,'): reached end of restart dump in time_march')") myPE    !//AIKEPARDBG
+!   call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Update previous-time-step values of field variables
