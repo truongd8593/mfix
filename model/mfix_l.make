@@ -604,7 +604,6 @@ boundfunijk.mod : boundfunijk_mod.f \
             physprop.mod \
             geometry.mod \
             compar.mod \
-            constant.mod \
             fldvar.mod \
             indices.mod \
             function.inc                                                
@@ -2053,9 +2052,11 @@ leq_bicgs.$(OBJ_EXT) : leq_bicgs.f \
             param1.mod \
             matrix.mod \
             geometry.mod \
+            compar.mod \
             indices.mod \
             parallel.mod \
-            compar.mod \
+            mpi_utility.mod \
+            sendrecv.mod \
             function.inc                                                
 leq_dsdgmr.$(OBJ_EXT) : leq_dsdgmr.f \
             param.mod \
@@ -2087,7 +2088,13 @@ leq_gmres.$(OBJ_EXT) : leq_gmres.f \
             matrix.mod \
             geometry.mod \
             indices.mod \
-            parallel.mod 
+            debug.mod \
+            compar.mod \
+            mpi_utility.mod \
+            parallel.mod \
+            funits.mod \
+            gridmap.mod \
+            function.inc                                                
 leq_igcg.$(OBJ_EXT) : leq_igcg.f \
             param.mod \
             param1.mod \
