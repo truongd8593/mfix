@@ -12,10 +12,13 @@
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Literature/Document References:                                     C
-!  O. Levenspiel, "Chemical Reaction Engineering," Wiley Eastern,   
-!       New Delhi (1974)                                        
+!                                                                      C
+!  Variables referenced: MMAX, IJK, T_g, T_s1, D_p, X_g, X_s, EP_g,    C
+!            P_g, HOR_g, HOR_s                                         C
 !                                                                      C
 !                                                                      C
+!  Variables modified: M, N, R_gp, R_sp, RoX_gc, RoX_sc, SUM_R_g,      C
+!                      SUM_R_s                                         C
 !                                                                      C
 !  Local variables:                                                    C
 !                                                                      C
@@ -60,11 +63,22 @@
       INTEGER          IJK
       
       DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX)
-      DOUBLE PRECISION RXNA
 !
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      
+
+
+!*******  REMOVE THE FOLLOWING LINES to activate the routine **************
+! The following section is provided so that species equation calculations are 
+! NOT accidentally performed with the default routine.  To activate this routine
+! remove the following two lines and insert information in sections 1-4.
+      IER = 1
+      RETURN
+
+!************************************************************************
+
+
+      IER = 0
       R_tmp = UNDEFINED
 !
 !  ---  Remember to include all the local variables here for parallel
@@ -90,20 +104,6 @@
 !    example, the rate term of a gas phase reaction will have a multiplicative
 !    factor of epsilon. Note that X_g and X_s are mass fractions
 !
-!              No   1   2    3
-!     GAS Species   A,  R, Inert
-
-!  a)   A -> 3R
-!       Levenspiel (p. 111, Example 4)
-!            converting the rate expression given by Levenspiel for use here
-!           -rA = 1E-2 * C_A^0.5 g-mol/L.s    (C_A is in mol/L)
-!               = 1E-3 * 1E-2 * C_A^0.5 g-mol/cm^3.s
-!               = EP_g * 1E-3 * 1E-2 * C_A^0.5 g-mol/cm^3.s (in reactor volume)
-!               = EP_g * 1E-3 * 1E-2 * C_A^0.5 g-mol/cm^3.s (in reactor volume)
-!               = EP_g * 1E-3 * 1E-2 * (1.E3*RO_g*X_A/M_A)^0.5 g-mol/cm^3.s (in reactor volume)
-
-        Rxna = EP_g(IJK) * C(1) * (RO_g(IJK)*X_g(IJK,1)/Mw_g(1))**C(2)
-
 !
 !
 !2222222222222222222222222222222222222222222222222222222222222222222222222222222
@@ -121,23 +121,6 @@
 !    If the slope is not known analytically a small value such as 1.0e-9 may
 !    instead be used.  A similar procedure is used for all the species in the
 !    solids phases also.
-
-!  (1) A
-      R_gp(IJK, 1) = ZERO
-      IF(X_g(IJK, 1) .GT. ZERO) THEN
-        RoX_gc(IJK, 1) = RXNA  * MW_g(1) / X_g(IJK, 1)
-      ELSE
-        RoX_gc(IJK, 1) = 1.0e-9
-      ENDIF
-
-!  (2) R
-      R_gp(IJK, 2) = 3. * RXNA * MW_g(2)
-      RoX_gc(IJK, 2) = ZERO
-
-!  (3) Inert
-      R_gp(IJK, 3) = ZERO
-      RoX_gc(IJK, 3) = ZERO
-
 !
 !  GAS SPECIES
 !
@@ -186,7 +169,15 @@
                IF (NMAX(0) > 0) THEN 
                   SUM_R_G(IJK) = SUM_R_G(IJK) + SUM(R_GP(IJK,:NMAX(0))-ROX_GC(&
                      IJK,:NMAX(0))*X_G(IJK,:NMAX(0))) 
-               ENDIF 
+               ENDIF
+	    ELSE
+	      DO M = 1, MMAX
+	        IF(R_tmp(0,M) .NE. UNDEFINED)THEN
+		  SUM_R_G(IJK) = SUM_R_G(IJK) + R_tmp(0,M)
+		ELSEIF(R_tmp(M,0) .NE. UNDEFINED)THEN
+		  SUM_R_G(IJK) = SUM_R_G(IJK) - R_tmp(M,0)
+		ENDIF
+	      ENDDO 
             ENDIF 
 !
             DO M = 1, MMAX 
@@ -196,6 +187,14 @@
                      SUM_R_S(IJK,M) = SUM_R_S(IJK,M) + SUM(R_SP(IJK,M,:NMAX(M))&
                         -ROX_SC(IJK,M,:NMAX(M))*X_S(IJK,M,:NMAX(M))) 
                   ENDIF 
+	       ELSE
+ 	         DO L = 0, MMAX
+	           IF(R_tmp(M,L) .NE. UNDEFINED)THEN
+		     SUM_R_s(IJK,M) = SUM_R_s(IJK,M) + R_tmp(M,L)
+		   ELSEIF(R_tmp(L,M) .NE. UNDEFINED)THEN
+		     SUM_R_s(IJK,M) = SUM_R_s(IJK,M) - R_tmp(L,M)
+		   ENDIF
+	         ENDDO 
                ENDIF 
             END DO 
 	    
@@ -213,7 +212,7 @@
                      R_PHASE(IJK,LM) = -R_TMP(M,L) 
                   ELSE 
                      CALL START_LOG 
-                     WRITE (UNIT_LOG, 1000) L, M 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) L, M 
                      CALL END_LOG 
                      call mfix_exit(myPE)  
                   ENDIF 
