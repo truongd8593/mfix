@@ -482,6 +482,7 @@
                      DO I = I1, I2 
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    	    	 		     
                         IJK = FUNIJK(I,J,K) 
+                        IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
                         A_M(IJK,N,M) = ZERO 
@@ -514,6 +515,7 @@
                      DO I = I1, I2
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		      
                         IJK = FUNIJK(I,J,K) 
+                        IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
                         A_M(IJK,N,M) = ZERO 
@@ -546,6 +548,7 @@
                      DO I = I1, I2 
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
                         IJK = FUNIJK(I,J,K) 
+                        IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
                         IM = IM1(I) 
                         JM = JM1(J) 
                         A_M(IJK,E,M) = ZERO 
@@ -713,15 +716,16 @@
                      DO I = I1, I2 
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
                         IJK = FUNIJK(I,J,K) 
-                        A_M(IJK,E,M) = ZERO 
-                        A_M(IJK,W,M) = ZERO 
-                        A_M(IJK,N,M) = ZERO 
-                        A_M(IJK,S,M) = ZERO 
-                        A_M(IJK,T,M) = ZERO 
-                        A_M(IJK,B,M) = ZERO 
-                        A_M(IJK,0,M) = -ONE 
-                        B_M(IJK,M) = -W_G(IJK) 
-                        IF (BC_PLANE(L) == 'B') THEN 
+                        IF (BC_PLANE(L) == 'T') THEN 
+                          A_M(IJK,E,M) = ZERO 
+                          A_M(IJK,W,M) = ZERO 
+                          A_M(IJK,N,M) = ZERO 
+                          A_M(IJK,S,M) = ZERO 
+                          A_M(IJK,T,M) = ZERO 
+                          A_M(IJK,B,M) = ZERO 
+                          A_M(IJK,0,M) = -ONE 
+                          B_M(IJK,M) = -W_G(IJK) 
+                        ELSEIF (BC_PLANE(L) == 'B') THEN 
                            IJKB = BOTTOM_OF(IJK) 
                            A_M(IJKB,E,M) = ZERO 
                            A_M(IJKB,W,M) = ZERO 
