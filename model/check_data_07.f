@@ -41,6 +41,7 @@
       USE indices
       USE funits 
       USE compar     !//d
+      USE sendrecv   !//SP
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -868,6 +869,10 @@
             END DO 
          END DO 
       END DO 
+
+!//SP Send Receive
+      call send_recv(icbc_flag,2)
+
       IF (ERROR) THEN 
          WRITE (UNIT_LOG, 1420) 
          call mfix_exit(myPE)  

@@ -342,7 +342,7 @@
       TIME_NLOG = TIME - DT 
 
       write(*,"('(PE ',I2,'): reached beginning of time march in mfix')") myPE    !//AIKEPARDBG
-      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+!     call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Find the solution of the equations from TIME to TSTOP at

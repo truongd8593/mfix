@@ -85,6 +85,8 @@
       call send_recv(p_g,2)
       call send_recv(w_s,2)
       call send_recv(w_g,2)
+      call send_recv(u_s,2)
+      call send_recv(u_g,2)
 !
       CALL START_LOG 
       ABORT = .FALSE. 
@@ -179,6 +181,7 @@
                   ENDIF 
 !//AIKE 1105 bypass the check if k-1 = kstart3 (i.e. ghost cell)
 !//SP Uncommented
+!
                   IF (W_G(IJKM) == UNDEFINED) THEN 		  
 !                 IF (W_G(IJKM) == UNDEFINED.AND.(K-1) /= kstart3) THEN 
                      IF (.NOT.ABORT) THEN 
@@ -284,6 +287,7 @@
             END DO 
          END DO 
       END DO 
+	write(*,*) 'pass1', myPE
       IF (ABORT) THEN 
          WRITE (UNIT_LOG, 1300) 
          CALL MFIX_EXIT 

@@ -191,6 +191,7 @@
                DO K = BC_K_B(BCV), BC_K_T(BCV) 
                   DO J = BC_J_S(BCV), BC_J_N(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
+	                IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
                         SELECT CASE (BC_TYPE(BCV))  
                         CASE ('FREE_SLIP_WALL')  

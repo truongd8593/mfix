@@ -79,7 +79,22 @@
       DOUBLE PRECISION , EXTERNAL :: DROODP_G 
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      
+
+!//SP Need to extract i, j, k from ijk_p_g to determine the processor which
+!     acts on ijk_p_g to fix the value of pressure
+!       ----------------------------------------------------------
+!       inline functions for determining i, j, k for global ijk_p_g
+!       -----------------------------------------------------------
+        integer i_of_g,j_of_g,k_of_g
+        integer ijk_p_g_local
+
+        k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
+        j_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1))) &
+                      - 1)/(imax3-imin3+1)) + jmin3
+        i_of_g(ijk) = ijk - (j_of_g(ijk)-jmin3)*(imax3-imin3+1) - &
+                      (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + imin3
+
+
       call lock_xsi_array
 
 !
@@ -195,16 +210,23 @@
 !  Specify P' to zero at a certain location for incompressible flows and
 !  cyclic boundary conditions.
 !
+!//SP/ Parallel implementation of fixing a pressure at a point
+   I = I_OF_G(IJK_P_G)
+   J = J_OF_G(IJK_P_G)
+   K = K_OF_G(IJK_P_G)
+   IF(IS_ON_myPE_OWNS(I,J,K)) THEN
       IF (IJK_P_G /= UNDEFINED_I) THEN 
-         A_M(IJK_P_G,E,0) = ZERO 
-         A_M(IJK_P_G,W,0) = ZERO 
-         A_M(IJK_P_G,N,0) = ZERO 
-         A_M(IJK_P_G,S,0) = ZERO 
-         A_M(IJK_P_G,T,0) = ZERO 
-         A_M(IJK_P_G,B,0) = ZERO 
-         A_M(IJK_P_G,0,0) = -ONE 
-         B_M(IJK_P_G,0) = ZERO 
+         IJK_P_G_LOCAL = FUNIJK(I,J,K)
+         A_M(IJK_P_G_LOCAL,E,0) = ZERO 
+         A_M(IJK_P_G_LOCAL,W,0) = ZERO 
+         A_M(IJK_P_G_LOCAL,N,0) = ZERO 
+         A_M(IJK_P_G_LOCAL,S,0) = ZERO 
+         A_M(IJK_P_G_LOCAL,T,0) = ZERO 
+         A_M(IJK_P_G_LOCAL,B,0) = ZERO 
+         A_M(IJK_P_G_LOCAL,0,0) = -ONE 
+         B_M(IJK_P_G_LOCAL,0) = ZERO 
       ENDIF 
+   ENDIF
 !
       call unlock_xsi_array
 

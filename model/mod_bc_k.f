@@ -35,6 +35,7 @@
       USE indices
       USE funits 
       USE compar        !//d
+      USE mpi_utility   !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -55,13 +56,23 @@
 ! local variables
 !
 !              'IJK' indices
-      INTEGER  IJK1 , IJK
+      INTEGER  IJK1 , IJK, bcast_root
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
 !// 220 1004 Replaced with global FUNIJK
-      IJK1 = FUNIJK_GL(I_W,J_S,K_B) 
-      IJK = FUNIJK_GL(I_W,J_S,K_B + 1) 
+!//SP
+    IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
+      bcast_root = myPE
+      call global_all_sum(bcast_root,bcast_root)
+    ELSE
+      bcast_root = 0
+      call global_all_sum(bcast_root,bcast_root)
+    ENDIF
+
+    IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
+      IJK1 = FUNIJK(I_W,J_S,K_B) 
+      IJK = FUNIJK(I_W,J_S,K_B + 1) 
       
       IF (WALL_ICBC_FLAG(IJK1) .AND. ICBC_FLAG(IJK)(1:1)=='.') THEN 
          K_B = K_B 
@@ -76,6 +87,12 @@
             ICBC_FLAG(IJK) 
          call mfix_exit(myPE)  
       ENDIF 
+    ENDIF
+
+!/SP
+      CALL bcast(K_B,bcast_root)
+      CALL bcast(K_T,bcast_root)
+      CALL bcast(PLANE,bcast_root)
 !
       RETURN  
  1000 FORMAT(/70('*')//'From: MOD_BC_K'/'Message: Cannot locate the ',&

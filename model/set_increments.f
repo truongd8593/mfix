@@ -100,7 +100,7 @@
       KM1(:) = UNDEFINED_I
 !
       DO I = ISTART2, IEND2
-         IF (CYCLIC_X.AND.NODESI.EQ.1) THEN 
+         IF (CYCLIC_X.AND.NODESI.EQ.1.AND.DO_I) THEN 
             IP1(I) = IMAP(IMAP(I)+1)
             IM1(I) = IMAP(IMAP(I)-1)
 	 ELSE

@@ -39,6 +39,7 @@
       USE indices
       USE funits 
       USE compar        !//d
+      USE sendrecv      !//SP
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -76,6 +77,9 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
+!//SP
+       call send_recv(icbc_flag,2)
+
 !//AIKEPARDBG
 !      write(*,"('(PE ',I2,'): entered get_flow_bc')") myPE	!//AIKEPARDBG
 !//AIKEPARDBG dump the ICBC_FLAG in matrix form to verify with serial version
@@ -101,6 +105,7 @@
 !
       DO BCV = 1, DIMENSION_BC 
 !
+
          IF (BC_DEFINED(BCV)) THEN 
             IF (.NOT.(BC_TYPE(BCV)=='FREE_SLIP_WALL' .OR. BC_TYPE(BCV)==&
                'NO_SLIP_WALL' .OR. BC_TYPE(BCV)=='PAR_SLIP_WALL')) THEN 
@@ -261,8 +266,11 @@
 !// 360 1025 Check if current i,j,k resides on this PE		     
     		       IF (.NOT.IS_ON_myPE_plus2layers(I,J_FLUID,K)) CYCLE
     		       IF (.NOT.IS_ON_myPE_plus2layers(I,J_WALL,K)) CYCLE
+!//SP
+!     write(*,*) 'pass1', myPE, BCV, K, I
 !// 360 Check if current k resides on this PE
-		       if(k .ge. kstart3_all(myPE) .AND. k .le. kend3_all(myPE)) then		     
+!//SP
+!		       if(k .ge. kstart3_all(myPE) .AND. k .le. kend3_all(myPE)) then		     
 !// 220 1004 Need to use local FUNIJK		     
                         IJK_WALL = FUNIJK(I,J_WALL,K) 
                         IJK_FLUID = FUNIJK(I,J_FLUID,K) 
@@ -271,9 +279,12 @@
                            WRITE (UNIT_LOG, 1200) BCV, I, J_WALL, J_FLUID, K, &
                               IJK_WALL, ICBC_FLAG(IJK_WALL), IJK_FLUID, &
                               ICBC_FLAG(IJK_FLUID) 
+                           WRITE (*, 1200) BCV, I, J_WALL, J_FLUID, K, &
+                              IJK_WALL, ICBC_FLAG(IJK_WALL), IJK_FLUID, &
+                              ICBC_FLAG(IJK_FLUID) 
                            CALL MFIX_EXIT 
                         ENDIF 
-		       endif
+!		       endif
                      END DO 
                   END DO 
                ENDIF 
@@ -353,6 +364,8 @@
             ENDIF 
          ENDIF 
       END DO 
+
+
       IF (ERROR) call mfix_exit(myPE)  
 !
 !//AIKEPARDBG dump the ICBC_FLAG in matrix form to verify with serial version

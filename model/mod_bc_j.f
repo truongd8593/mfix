@@ -35,6 +35,7 @@
       USE indices
       USE funits 
       USE compar        !//d
+      USE mpi_utility   !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -55,13 +56,24 @@
 ! local variables
 !
 !              'IJK' indices
-      INTEGER  IJK1 , IJK
+      INTEGER  IJK1 , IJK, bcast_root
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
 !// 220 1004 Replaced with global FUNIJK
-      IJK1 = FUNIJK_GL(I_W,J_S,K_B) 
-      IJK = FUNIJK_GL(I_W,J_S + 1,K_B) 
+!// SP Local FUNIJK has to be used instead of global
+!// SP
+    IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
+      bcast_root = myPE
+      call global_all_sum(bcast_root,bcast_root)
+    ELSE
+      bcast_root = 0
+      call global_all_sum(bcast_root,bcast_root)
+    ENDIF
+
+    IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
+      IJK1 = FUNIJK(I_W,J_S,K_B) 
+      IJK = FUNIJK(I_W,J_S + 1,K_B) 
       IF (WALL_ICBC_FLAG(IJK1) .AND. ICBC_FLAG(IJK)(1:1)=='.') THEN 
          J_S = J_S 
          J_N = J_N 
@@ -75,12 +87,20 @@
             ICBC_FLAG(IJK) 
          call mfix_exit(myPE) 
       ENDIF 
+    ENDIF
+
+!/SP
+      CALL bcast(J_S,bcast_root)
+      CALL bcast(J_N,bcast_root)
+      CALL bcast(PLANE,bcast_root)
+
+
 !
       RETURN  
- 1000 FORMAT(/70('*')//'From: MOD_BC_J'/'Message: Cannot locate the ',&
-         'flow plane for boundary condition ',I3,/' I West   = ',I3,/&
-         ' J South  = ',I3,/' J North  = ',I3,/' K Bottom = ',I3,/&
-         ' One of the following should be a wall cell and the other a',&
-         ' fluid cell:',/5X,A3,5X,A3,/&
-         ' May be no IC was specified for the fluid cell.',/70('*')/) 
+ 1000 FORMAT(/70('*')//'From: MOD_BC_J'/'Message: Cannot locate the ',& 
+      'flow plane for boundary condition ',I3,/' I West   = ',I3,/& 
+      ' J South  = ',I3,/' J North  = ',I3,/' K Bottom = ',I3,/& 
+      ' One of the following should be a wall cell and the other a',& 
+      ' fluid cell:',/5X,A3,5X,A3,/& 
+      ' May be no IC was specified for the fluid cell.',/70('*')/) 
       END SUBROUTINE MOD_BC_J 

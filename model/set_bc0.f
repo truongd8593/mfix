@@ -38,7 +38,8 @@
       USE param 
       USE param1 
       USE geometry
-      USE compar
+      USE compar       !//
+      USE mpi_utility  !//
       USE physprop
       USE bc
       USE fldvar
@@ -82,21 +83,39 @@
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW 
 !-----------------------------------------------
+!----------------------------------------------
+!   Temporary variable //SP - To gather fluid_at
+!----------------------------------------------
+      
+      INTEGER, DIMENSION(:), ALLOCATABLE :: FLAG_G
+!//SP  Logical function to identify a fluid cell in global coordiantes
+      LOGICAL          FLUID_AT_G
+
       INCLUDE 'sc_p_g1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'sc_p_g2.inc'
+! Global function to determine FLUID_AT_G
+      FLUID_AT_G(IJK)    = FLAG_G(IJK) .EQ. 1
 !
 !  Setup for cyclic boundary conditions
 !
 !//? 1026 check the pointer location for ijk1 on all PEs and adjust loop counter if necessary
-      IJK1 = FUNIJK(IMAX1/2 + 1,JMAX1,KMAX1/2 + 1)
+!//SP Modifications so that the present computation is performed only on the root processor
+!//SP and broadcasted everywhere!!
 
+    IF(myPE.eq.root) then
+
+!//SP Allocate temp var
+      ALLOCATE(FLAG_G(IJKMAX3))
+      CALL GATHER(FLAG, FLAG_G, root)
+      IJK1 = FUNIJK_GL(IMAX1/2 + 1,JMAX1,KMAX1/2 + 1)
 !      write(*,"('(PE ',I2,'): IJK1 = ',I5)") myPE,IJK1 !//AIKEPARDBG
 
-!//? what is the function of this DO loop????
-!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3        
-      DO IJK = IJK1, ijkend3 
-         IF (FLUID_AT(IJK)) CYCLE  
+!//SP Exact implementation as in the serial code. In the serial version CYCLE has to be
+!     replaced by EXIT to have the same meaning as in the original version
+!
+      DO IJK = IJK1, ijkmax3 
+         IF (FLUID_AT_G(IJK)) EXIT  
       END DO 
       
       IF (CYCLIC) THEN 
@@ -112,6 +131,22 @@
             IJK_P_G = UNDEFINED_I 
          ENDIF 
       ENDIF 
+
+    ELSE ! myPE.eq.root
+
+      ALLOCATE(FLAG_G(1))
+      CALL GATHER(FLAG, FLAG_G, root)
+
+    ENDIF ! myPE.eq.root
+
+!//SP Deallocate storage
+
+      DEALLOCATE(FLAG_G)
+
+!//SP Broadcast the values
+
+      CALL BCAST(PJ)
+      CALL BCAST(IJK_P_G)
 !
 !  Set the boundary conditions.
 !
@@ -161,7 +196,8 @@
                DO J = BC_J_S(L), BC_J_N(L) 
                   DO I = BC_I_W(L), BC_I_E(L) 	
 !// 360 1025 Check if current i,j,k resides on this PE		  	  
-		  IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+!// SP - Changed to two layers
+		  IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                      IJK = BOUND_FUNIJK(I,J,K) 
 !//AIKEPARDBG
 !              write(UNIT_LOG,"('P1:set_bc0 for EP_G: IJK= ',I5,'  I= ',I4,&

@@ -41,6 +41,7 @@
       USE funits 
       USE compar      !//AIKEPARDBG      
       USE mpi_utility !//AIKEPARDBG      
+      USE sendrecv    !//SP
       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -77,23 +78,25 @@
 !
 
 !//AIKEPARDBGSTOP 0922
-!      write(UNIT_LOG,"('(PE ',I2,'): beginning of check_data_06')") myPE       !//AIKEPARDBG
-!      write(UNIT_LOG,"('(PE ',I2,'): from chk_data_06.f ',&                    
-!                & /,9X,'Kmin3 = ',I6,'  Kmax3 = ',I6,'  Kmax = ',I6, &   
-!                & /,9X,'Jmin3 = ',I6,'  Jmax3 = ',I6,'  Jmax = ',I6,&    
-!		& /,9X,'Imin3 = ',I6,'  Imax3 = ',I6,'  Imax = ',I6)") &  !//AIKEPARDBG
-!                & myPE,Kmin3,Kmax3,Kmax,Jmin3,Jmax3,Jmax,Imin3,Imax3,Imax !//AIKEPARDBG
-!      write(UNIT_LOG,"('(PE ',I2,'): from chk_data_06.f ' &                    
-!                & /,9X,'Kstart3 = ',I6,'  Kstart2 = ',I6,'  Kend3 = ',I6 &   
-!                & /,9X,'Jstart3 = ',I6,'  Jstart2 = ',I6,'  Jend3 = ',I6 &    
-!		& /,9X,'Istart3 = ',I6,'  Istart2 = ',I6,'  Iend3 = ',I6 &
-!		& )") &  !//AIKEPARDBG
-!                & myPE,Kstart3,Kstart2,Kend3,Jstart3,Jstart2,Jend3, & !//AIKEPARDBG
-!		& Istart3,Istart2,Iend3 !//AIKEPARDBG
-!      write(UNIT_LOG,"('(PE ',I2,'): ',/, &
-!                & /,9X,'IJKstart3 = ',I6,'  IJKend3 = ',I6 &        
-!               &  ,/,9X,'IJKstart2 = ',I6,'  IJKend2 = ',I6, &        		 
-!                & )") myPE, ijkstart3,ijkend3
+       write(*,*) '*********** I am here $$^%&%&%%&%%%'
+       write(*,"('(PE ',I2,'): beginning of check_data_06')") myPE       !//AIKEPARDBG
+       write(UNIT_LOG,"('(PE ',I2,'): beginning of check_data_06')") myPE       !//AIKEPARDBG
+       write(UNIT_LOG,"('(PE ',I2,'): from chk_data_06.f ',&                    
+                 & /,9X,'Kmin3 = ',I6,'  Kmax3 = ',I6,'  Kmax = ',I6, &   
+                 & /,9X,'Jmin3 = ',I6,'  Jmax3 = ',I6,'  Jmax = ',I6,&    
+ 		& /,9X,'Imin3 = ',I6,'  Imax3 = ',I6,'  Imax = ',I6)") &  !//AIKEPARDBG
+                 & myPE,Kmin3,Kmax3,Kmax,Jmin3,Jmax3,Jmax,Imin3,Imax3,Imax !//AIKEPARDBG
+       write(UNIT_LOG,"('(PE ',I2,'): from chk_data_06.f ' &                    
+                 & /,9X,'Kstart3 = ',I6,'  Kstart2 = ',I6,'  Kend3 = ',I6 &   
+                 & /,9X,'Jstart3 = ',I6,'  Jstart2 = ',I6,'  Jend3 = ',I6 &    
+ 		& /,9X,'Istart3 = ',I6,'  Istart2 = ',I6,'  Iend3 = ',I6 &
+ 		& )") &  !//AIKEPARDBG
+                 & myPE,Kstart3,Kstart2,Kend3,Jstart3,Jstart2,Jend3, & !//AIKEPARDBG
+ 		& Istart3,Istart2,Iend3 !//AIKEPARDBG
+       write(UNIT_LOG,"('(PE ',I2,'): ',/, &
+                 & /,9X,'IJKstart3 = ',I6,'  IJKend3 = ',I6 &        
+                &  ,/,9X,'IJKstart2 = ',I6,'  IJKend2 = ',I6, &        		 
+                 & )") myPE, ijkstart3,ijkend3
 		 
 
 !//AIKEPARDBGSTOP 1025 dump the FUNIJK tables with indices and coords into LOG
@@ -723,6 +726,9 @@
             END DO 
          ENDIF 
       END DO 
+
+!//SP Send Receive
+      call send_recv(icbc_flag,2)
 
 !      do icvd=1,dimension_ic
 !         write(UNIT_LOG,"(/,'IC_DEFINED(',I4,') = ',L2)") ICVd,IC_DEFINED(ICVd)
