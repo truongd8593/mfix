@@ -70,11 +70,20 @@
 
       call convert_to_io_dp(array,array1,ijkmax2)
 
+!!/SP
+    IF(CYCLIC_Z) then
+      DO K = 2, KMAX1 
+         IJK = FUNIJK_IO(1,1,K) 
+         WRITE (UNIT_OUT, 1100) MESSAGE, K 
+         CALL OUT_ARRAY_K (ARRAY1(IJK)) 
+      END DO 
+    ELSE
       DO K = 1, KMAX2 
          IJK = FUNIJK_IO(1,1,K) 
          WRITE (UNIT_OUT, 1100) MESSAGE, K 
          CALL OUT_ARRAY_K (ARRAY1(IJK)) 
       END DO 
+    ENDIF
  1100 FORMAT(/,1X,A,' at K = ',I4,/) 
 
 
