@@ -81,5 +81,11 @@
 !     Disabled Successive Over relaxation method
 !
 
+      write(*,*) '****************error*****************'
+      write(*,*) 'Successive Over relaxation method has been deprecated'
+      write(*,*) '**************************************'
+
+      call mfix_exit(myPE)
+
       RETURN  
       END SUBROUTINE LEQ_SOR 

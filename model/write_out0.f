@@ -80,6 +80,7 @@
       DOUBLE PRECISION :: E 
       CHARACTER, DIMENSION(3) :: LEGEND*3 
       CHARACTER, DIMENSION(0:8) :: DISCR_NAME*12 
+      CHARACTER, DIMENSION(0:8) :: DISCR_NAME1*12 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -91,6 +92,8 @@
 !
 !                      Coefficient of restitution (old symbol)
       DATA DISCR_NAME/'FOUP', 'FOUP', 'Superbee', 'Smart', 'Ultra-Quick', &
+         'QUICKEST', 'Muscl', 'VanLeer', 'Minmod'/ 
+      DATA DISCR_NAME/'FOUP', 'FOUP', 'Fourth Order', 'Smart', 'Ultra-Quick', &
          'QUICKEST', 'Muscl', 'VanLeer', 'Minmod'/ 
 
       if (myPE.ne.PE_IO) return
@@ -193,9 +196,16 @@
       IF (V_EX /= ZERO) WRITE (UNIT_OUT, 1156) V_EX 
       WRITE (UNIT_OUT, 1157) P_REF, P_SCALE, GRAVITY 
       WRITE (UNIT_OUT, 1158) 
-      WRITE (UNIT_OUT, 1159) (UR_FAC(L),LEQ_IT(L),LEQ_METHOD(L),&
+      IF(FPFOI) THEN
+         WRITE (UNIT_OUT, 1159) (UR_FAC(L),LEQ_IT(L),LEQ_METHOD(L),&
+	                     LEQ_SWEEP(L), LEQ_TOL(L),&
+			     DISCR_NAME1(DISCRETIZE(L)),L=1,9) 
+      ELSE
+         WRITE (UNIT_OUT, 1159) (UR_FAC(L),LEQ_IT(L),LEQ_METHOD(L),&
 	                     LEQ_SWEEP(L), LEQ_TOL(L),&
 			     DISCR_NAME(DISCRETIZE(L)),L=1,9) 
+      ENDIF
+
       DO L = 1, DIMENSION_C 
          IF (C(L) /= UNDEFINED) WRITE (UNIT_OUT, 1190) C_NAME(L), L, C(L) 
       END DO 

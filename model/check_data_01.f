@@ -45,7 +45,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: M, N 
+      INTEGER :: M, N, L 
       Character*80  Line(1)
 !-----------------------------------------------
 !
@@ -116,6 +116,13 @@
 ! CHECK THE DISCRETIZATION METHDS
 !
 
+      IF (FPFOI) THEN
+         DO L = 1,8
+            IF(DISCRETIZE(L).LE.1) DISCRETIZE(L) = 2
+         END DO
+	 IF(DMP_LOG)WRITE (UNIT_LOG, 1502) 
+      ENDIF
+
       IF (DISCRETIZE(1) > 1 .OR. DISCRETIZE(2) > 1) THEN 
          DISCRETIZE(1) = 0
 	 DISCRETIZE(2) = 0
@@ -128,10 +135,13 @@
 
 
       RETURN  
- 1500 FORMAT(/1X,70('*')//' From: CHECK_DATA_03',/' Message: ',&
+ 1500 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
          'Continuity equations can be discretized only with FOUP.',/&
          'DISCRETIZE (1 or 2 or both) reset to 0.',G12.5,/1X,70('*')/) 
- 1501 FORMAT(/1X,70('*')//' From: CHECK_DATA_03',/' Message: ',&
+ 1501 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
          'Only deferred correction method can be used.',/&
          'DEF_COR reset to .true.',G12.5,/1X,70('*')/) 
+ 1502 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
+         'Discretize>=2 has to be used along with',/&
+         'fourth order scheme',G12.5,/1X,70('*')/) 
       END SUBROUTINE CHECK_DATA_01 

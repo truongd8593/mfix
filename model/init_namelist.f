@@ -106,7 +106,7 @@
       DETECT_STALL = .TRUE. 
       ENERGY_EQ = .TRUE.
       DEF_COR  =  .FALSE. 
-      C_FAC = UNDEFINED
+      C_FAC = 0.5d0
       FPFOI = .FALSE.
       GRANULAR_ENERGY = .FALSE. 
       
