@@ -75,7 +75,9 @@
       ID_SECOND = DAT(7)
       
 !     For SGI only
-      CALL GETHOSTNAME(ID_NODE,64)
+!      CALL GETHOSTNAME(ID_NODE,64)
+!     For Linux with Portland Group compilers
+      call hostnm(ID_NODE)      
 !
       RETURN
       END
@@ -199,12 +201,7 @@
       end
 !
 
-      subroutine gethostname(ID,N)
-      character*(*) :: ID
-      integer       :: N
-      ID = 'Linux Computer'
-      return
-      end
+      
       subroutine ran
       return
       end
