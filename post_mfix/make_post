@@ -16,11 +16,11 @@
             echo "Compiling for Linux computer (Portland group)"
             echo	    
 	    
+            cp ../model/LINUX.F machine.f
             if test -f COMPILED.FOR.LINUX.PG
             then
 	        echo
             else
-                cp ../model/LINUX.F machine.f
                 rm *.o
                 rm COMPILED.FOR.*
                 touch COMPILED.FOR.LINUX.PG
@@ -47,11 +47,11 @@
             echo "Compiling for SGI IRIX64 computer"
             echo
 	    
+            cp ../model/IRIXF90.F machine.f
             if test -f COMPILED.FOR.IRIX64F90
             then
 	        echo
             else
-                cp ../model/IRIXF90.F machine.f
                 rm *.o
 		rm *.a
                 rm COMPILED.FOR.*
@@ -77,11 +77,11 @@
             echo "Compiling for DEC ULTRIX computer"
             echo
 	    
+            cp ../model/ULTRIX.F machine.f
             if test -f COMPILED.FOR.ULTRIX
             then
 	        echo
             else
-                cp ../model/ULTRIX.F machine.f
                 rm *.o
 		rm *.a
                 rm COMPILED.FOR.*
@@ -108,11 +108,11 @@
             echo "Compiling for NT computer (Portland group)"
             echo	    
 	    
+            cp ../model/PGNT.F machine.f
             if test -f COMPILED.FOR.CYWIN32_NT.PG
             then
 	        echo
             else
-                cp ../model/PGNT.F machine.f
                 rm *.o
                 rm COMPILED.FOR.*
                 touch COMPILED.FOR.CYWIN32_NT.PG
@@ -137,11 +137,11 @@
             echo "Compiling for NT computer (Portland group)"
             echo	    
 	    
+            cp ../model/PGNT.F machine.f
             if test -f COMPILED.FOR.CYWIN_NT-4.0.PG
             then
 	        echo
             else
-                cp ../model/PGNT.F machine.f
                 rm *.o
                 rm COMPILED.FOR.*
                 touch COMPILED.FOR.CYWIN_NT-4.0.PG
