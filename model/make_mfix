@@ -9,6 +9,7 @@
 # M. Syamlal and P. Nicoletti                  9-27-94
 #
 vers="2004-3"
+P4_OPTIMIZE=0
 echo
 echo 
 echo "*******************************************"
@@ -49,10 +50,35 @@ echo
 echo -n "Do you need DMP version? (y/n) [no] "
 read dmp_version
 
-echo
+#
+#------------------------------------------------------------------------
+# Define machine dependent flags and copy machine dependent files
+# Check whether the last compilation was on the same machine.
+# Give a different name for each machine file (IRIXF90.F, ULTRIX.F, etc.)
+
+    set `uname -s` ; opsys=$1
+
+#------------------------------------------------------------------------
+#  Check if the system is a Linux system, to display WARNING message 
+if test $opsys = "Linux"
+then
+  echo
+  echo "-------------- W  A  R  N  I  N  G ---------------------"
+  echo "      For compiling on Linux with Intel compilers: "
+  echo "           ----------------------------                 "
+  echo "MFIX will be compiled with applicable optimization flags"
+  echo "if the next question is answered [no]. "
+  echo "Note that, default optimization flags are for "
+  echo "           Pentium 4 processors ONLY! "
+  echo "You can enable non-Pentium 4 specific optimization flags "
+  echo "by editing line 12 in model/make_mfix to set : "
+  echo "P4_OPTIMIZE=0 "
+  echo "--------------------------------------------------------"  
+  echo 
+fi
+
 echo -n "Do you need debug version? (y/n) [no] "
 read dbg_version
-
 echo
 echo -n "Force re-compilation of source files in run directory? (y/n) [no] "
 read auto_compile
@@ -80,13 +106,6 @@ case $dmp_version in
 esac
 ln -sf "$mpi_include/mpif.h" .
 
-#
-#------------------------------------------------------------------------
-# Define machine dependent flags and copy machine dependent files
-# Check whether the last compilation was on the same machine.
-# Give a different name for each machine file (IRIXF90.F, ULTRIX.F, etc.)
-
-    set `uname -s` ; opsys=$1
 
 #------------------------------------------------------------------------
 #  Check if the system is a Linux system, if yes then ask the user which 
@@ -406,7 +425,14 @@ ln -sf "$mpi_include/mpif.h" .
 	      exit
             fi
 
-            compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -FR"
+
+         # Switch to general optimization flags if not compiling on Pentium 4 architecture 
+            if [ $P4_OPTIMIZE -eq 0 ]
+	    then
+               compile_common="-c -O3 -I. -w -w95 -i_dynamic -ip -FR"
+	    else
+	       compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -FR"
+	    fi
             compile_d="-g -O0 -c -FR -I. -w -d1 -CB " 
             link_d="-I. -L$intel_lib -lPEPCF90 "
             compile="$compile_common"
@@ -417,7 +443,13 @@ ln -sf "$mpi_include/mpif.h" .
 
             if test $intel_ver = "Linux_ifc8" 
             then
-              compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"
+         # Switch to general optimization flags if not compiling on Pentium 4 architecture 
+              if [ $P4_OPTIMIZE -eq 0 ]
+	      then
+                compile_common="-c -O3 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"
+	      else
+                compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"	      
+	      fi
               compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB "
               link_d="-I.  "
               compile="$compile_common"
