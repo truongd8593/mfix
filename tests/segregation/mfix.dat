@@ -12,20 +12,19 @@
 
                            
 ! Run-control section                                                                                                   
-  RUN_NAME              = 'RONG'             
+  RUN_NAME              = 'SGE'             
   DESCRIPTION           = 'particle segregation'
   RUN_TYPE              = 'new'             
   UNITS                 = 'cgs'
   TIME                  = 0.0                           !start time
-  TSTOP                 = 1.0E-2
+  TSTOP                 = 2.0E-2
   DT                    = 1.0E-4                        !time step
-!  DT_FAC         = 1.
-!  DT_MAX=       1.0e-4
-  DETECT_STALL = .FALSE
-  CLOSE_PACKED  = .TRUE.  .TRUE.
-    ENERGY_EQ           = .FALSE.                       !do not 
+  DT_MAX                = 1.0e-4
+  DETECT_STALL          = .FALSE
+  CLOSE_PACKED          = .TRUE.  .TRUE.
+  ENERGY_EQ             = .FALSE.                         !do not 
   SPECIES_EQ            = .FALSE.    .FALSE.    .FALSE. !do not s
-        DISCRETIZE  =   7*2
+  DISCRETIZE            =   7*2
                                                                                
 ! Geometry Section                                                              
                                                                                
@@ -35,8 +34,9 @@
   YLENGTH       = 30.0                          !height
   JMAX          = 30                            !cells in j direction
   NO_K          = .TRUE.                        !2D, no k direction
-  C(10)         = 0.3
-                                                                               
+  SEGREGATION_SLOPE_COEFFICIENT    = 0.3	!used in calculating the initial slope of segregation: see Gera et al. (2003)
+  MAX_SOLID_1_PACKING		   = 0.6            !  maximum solid packing of phases 0.6 
+  MAX_SOLID_2_PACKING		   = 0.6            !  maximum solid packing of phases 0.6                                                                            
 ! Gas-phase Section                                                             
  
   MU_g0                 = 1.8E-4                !constant gas viscosity
@@ -51,26 +51,25 @@
   e                     = 0.97d0                !restitution coefficient
   C_f                   = 0.1d0
   Phi                   = 55.d0                 !angle of internal friction
-  EP_star               = 0.4d0                 !void fraction at minimum
-  C(11)                 = 0.4                   !0.4
+  EP_star               = 0.4d0                 !void fraction at minimum -> redundant for binary mixture
 !                                               !  fluidization  
 ! Initial Conditions Section                                                    
 ! 
     ! 1. bed           
   IC_X_w(1)             =  0.0                  !lower half of the domain
-  IC_X_e(1)             =  15.0                 ! 0 < x < 7, 0 < y < 50
+  IC_X_e(1)             =  15.0                 ! 0 < x < 15, 0 < y < 15
   IC_Y_s(1)             =  0.0
   IC_Y_n(1)             =  15.0                 !initial values in the region
   IC_EP_g(1)            =  0.41d0               !void fraction
-  IC_ROP_s(1,1)         =  0.74458              !0.69685!0.7602d0
-  IC_ROP_s(1,2)         =  0.74458d0            !0.69685!0.7602d0 
+  IC_ROP_s(1,1)         =  0.74458              !ro_s(1)*ep_s(1)
+  IC_ROP_s(1,2)         =  0.74458d0            !ro_s(2)*ep_s(2) 
   
   IC_U_g(1)             =  0.0                  !radial gas velocity
   IC_V_g(1)             =  0.0                  !axial gas velocity
-  IC_U_s(1,1)           =  0.0                  !radial solids velocity 
-  IC_V_s(1,1)           =  0.0                  !axial solids velocity
-  IC_U_s(1,2)           =  0.0                  !radial solids velocity
-  IC_V_s(1,2)           =  0.0 
+  IC_U_s(1,1)           =  0.0                  !radial solids_1 velocity 
+  IC_V_s(1,1)           =  0.0                  !axial solids_1 velocity
+  IC_U_s(1,2)           =  0.0                  !radial solids_2 velocity
+  IC_V_s(1,2)           =  0.0 			!axial solids_2 velocity
 
     !  2. Freeboard     
   IC_X_w(2)             =  0.0 
@@ -86,52 +85,41 @@
   IC_V_s(2,1)           =  0.0 
   IC_U_s(2,2)           =  0.0
   IC_V_s(2,2)           =  0.0  
+
 !  Boundary Conditions Section   
   
-       ! 1. Central jet     
-  BC_X_w(1)             =  0.0                  !central jet
-  BC_X_e(1)             =  10.0                 ! 0 < x < 1, y = 0
+       ! 1. Distributor jet     
+  BC_X_w(1)             =  0.0          !Distributor
+  BC_X_e(1)             =  15.0         ! 0 < x < 15, y = 0
   BC_Y_s(1)             =  0.0 
   BC_Y_n(1)             =  0.0
 
-  BC_TYPE(1)            = 'MI'                  !specified mass inflow 
+  BC_TYPE(1)            = 'MI'          !specified mass inflow 
 
   BC_EP_g(1)            =  1.0 
   BC_U_g(1)             =  0.0 
   BC_V_g(1)             =  110.0
   BC_P_g(1)             =  0.0
 
-       ! 2. Distributor flow    
-  BC_X_w(2)             =  10.0         !gas distributor plate
-  BC_X_e(2)             =  15.0         ! 1 < x < 7, y = 0
-  BC_Y_s(2)             =  0.0 
-  BC_Y_n(2)             =  0.0
-
-  BC_TYPE(2)            = 'MI'          !specified mass inflow 
-
-  BC_EP_g(2)            =  1.0 
-  BC_U_g(2)             =  0.0 
-  BC_V_g(2)             =  110.0! 110.0 
-  BC_P_g(2)             =  0.0  
              
-       ! 3. Exit
-  BC_X_w(3)             = 0.0           !top exit
-  BC_X_e(3)             = 15.0          ! 0 < x < 7, y = 100
-  BC_Y_s(3)             = 30.0
-  BC_Y_n(3)             = 30.0 
-  BC_TYPE(3)            = 'PO'          !specified pressure outflow
-  BC_P_g(3)             = 0.0       
+       ! 2. Exit
+  BC_X_w(2)             = 0.0           !top exit
+  BC_X_e(2)             = 15.0          ! 0 < x < 15, y = 30
+  BC_Y_s(2)             = 30.0
+  BC_Y_n(2)             = 30.0 
+  BC_TYPE(2)            = 'PO'          !specified pressure outflow
+  BC_P_g(2)             = 0.0       
 !   
 !  Output Control  
 !   
-  OUT_DT                = 1.            !write text file BUB01.OUT
+  OUT_DT                = 1.            !write text file SGE01.OUT
   RES_DT                = 0.01          !write binary restart file
-!  BUB01.RES every 0.01 s
-  NLOG                  = 25            !write logfile BUB01.LOG 
+!  SGE01.RES every 0.01 s
+  NLOG                  = 25            !write logfile SGE01.LOG 
 !every 25 time steps
   FULL_LOG              = .TRUE.        !display residuals on screen
 
-!SPX_DT values determine how often SPx files are written.  Here BUB01.SP1, which
+!SPX_DT values determine how often SPx files are written.  Here SGE01.SP1, which
 !contains void fraction (EP_g), is written every 0.01 s, 
 ! gas and solids pressure (P_g, P_star), is written every 
 !
