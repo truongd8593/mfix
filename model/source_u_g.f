@@ -235,8 +235,8 @@
 !
 !//? probably need to communicate A_M and B_M here or in solve_vel_star in order
 !//? collect the COMMs
-      CALL SEND_RECV(A_M, 2)
-      CALL SEND_RECV(B_M, 2)
+!!!      CALL SEND_RECV(A_M, 2)
+!!!      CALL SEND_RECV(B_M, 2)
 
       RETURN  
       END SUBROUTINE SOURCE_U_G 

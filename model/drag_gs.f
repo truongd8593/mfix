@@ -35,6 +35,7 @@
       USE indices
       USE physprop
       USE run
+      USE constant
       USE compar        !//d
       USE sendrecv      !// 400
 !      USE dbg_util      !//AIKEPARDBG
@@ -186,9 +187,9 @@
             ELSE 
                A = EP_G(IJK)**4.14 
                IF (EP_G(IJK) <= 0.85) THEN 
-                  B = 0.8*EP_G(IJK)**1.28 
+                  B = C(2)*EP_G(IJK)**1.28 ! coeff adjusted to match Umf
                ELSE 
-                  B = EP_G(IJK)**2.65 
+                  B = EP_G(IJK)**(C(3))  ! exp adjusted for fn. continuity
                ENDIF 
                V_RM=HALF*(A-0.06*RE+SQRT(3.6E-3*RE*RE+0.12*RE*(2.*B-A)+A*A)) 
 !------------------Begin cluster correction --------------------------
@@ -244,7 +245,7 @@
 !       call prnfield(F_GS,'F_GS','BEF')   !//AIKEPARDBG
 
 !// 400 1112 update the boundaries for recently calculated field vars
-      call send_recv(F_GS,2)
+!!!!      call send_recv(F_GS,2)
 
 !       call prnfield(F_GS,'F_GS','AFT')   !//AIKEPARDBG
       

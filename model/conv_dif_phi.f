@@ -80,18 +80,18 @@
 !\\Extra Sendrecv operations - just to make sure all the variables needed are
 !  are passed - can be optimized later - Sreekanth - 102199
 
-      call send_recv(UF,2)
-      call send_recv(VF,2)
-      call send_recv(WF,2)
-      call send_recv(ROPF,2)
-      call send_recv(PHI,2)
-      call send_recv(DIF,2)
-      call send_recv(AXY,2)
-      call send_recv(AXZ,2)
-      call send_recv(AYZ,2)
-      call send_recv(XSI_E,2)
-      call send_recv(XSI_N,2)
-      call send_recv(XSI_T,2)
+!!!!      call send_recv(UF,2)
+!!!!      call send_recv(VF,2)
+!!!!      call send_recv(WF,2)
+!!!!      call send_recv(ROPF,2)
+!!!!      call send_recv(PHI,2)
+!!!!      call send_recv(DIF,2)
+!!!!      call send_recv(AXY,2)
+!!!!      call send_recv(AXZ,2)
+!!!!      call send_recv(AYZ,2)
+!!!!      call send_recv(XSI_E,2)
+!!!!      call send_recv(XSI_N,2)
+!!!!      call send_recv(XSI_T,2)
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -113,16 +113,16 @@
 
 !//09/28/99 - Send Recv. A_M and B_M
 
-	CALL SEND_RECV(A_M, 2)
-	CALL SEND_RECV(B_M, 2)
+!!!!	CALL SEND_RECV(A_M, 2)
+!!!!	CALL SEND_RECV(B_M, 2)
 	
         CALL DIF_PHI_IS (DIF, A_M, B_M, M, IER)
 
 !//09/28/99 - Send Recv. A_M and B_M - Duplication here, the earlier send recv can be removed
 !	      after careful review.....
 
-	CALL SEND_RECV(A_M, 2)
-	CALL SEND_RECV(B_M, 2)
+!!!!	CALL SEND_RECV(A_M, 2)
+!!!!	CALL SEND_RECV(B_M, 2)
 
         RETURN  
       END SUBROUTINE CONV_DIF_PHI 
@@ -240,7 +240,7 @@
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
-       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+!!!!       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -340,7 +340,7 @@
 !\\Sendrecv operations - just to make sure all the variables computed are
 !  are passed and updated locally - fool-proof approach - Sreekanth - 102199
 
-      call send_recv(A_M,2)
+!!!!      call send_recv(A_M,2)
 !
       RETURN  
       END SUBROUTINE CONV_DIF_PHI0 
@@ -499,7 +499,7 @@
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
-       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+!!!!       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -622,7 +622,7 @@
 !\\Sendrecv operations - just to make sure all the variables computed are
 !  are passed and updated locally - fool-proof approach - Sreekanth - 102199
 
-      call send_recv(B_M,2)
+!!!!      call send_recv(B_M,2)
 !
       RETURN  
       END SUBROUTINE CONV_DIF_PHI_DC 
@@ -778,7 +778,7 @@
        I = I_OF(IJK) 
        J = J_OF(IJK) 
        K = K_OF(IJK) 
-       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+!!!!       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -875,7 +875,7 @@
 !\\Sendrecv operations - just to make sure all the variables computed are
 !  are passed and updated locally - fool-proof approach - Sreekanth - 102199
 
-      call send_recv(A_M,2)
+!!!!      call send_recv(A_M,2)
 !
       RETURN  
       END SUBROUTINE CONV_DIF_PHI1 
@@ -968,7 +968,7 @@
 !\\Extra Sendrecv operations - just to make sure all the variables needed are
 !  are passed - can be optimized later - Sreekanth - 102199
 
-      call send_recv(A_M,2)
+!!!!      call send_recv(A_M,2)
 !
 ! Make user defined internal surfaces non-conducting
 !
@@ -1047,7 +1047,7 @@
 !\\Sendrecv operations - just to make sure all the variables computed are
 !  are passed and updated locally - fool-proof approach - Sreekanth - 102199
 
-      call send_recv(A_M,2)
+!!!!      call send_recv(A_M,2)
 !
       RETURN  
       END SUBROUTINE DIF_PHI_IS 

@@ -276,18 +276,18 @@
 
 
 !// 400 1112 update the boundaries for recently calculated field vars
-      call send_recv(ROX_GC,2)
-      call send_recv(R_GP,2)
-      call send_recv(ROX_SC,2)
-      call send_recv(R_SP,2)      
-      call send_recv(HOR_G,2) 
-      call send_recv(HOR_S,2)   
-      call send_recv(R_TEMP,2)       
-      call send_recv(R_PHASE,2) 
+!!!!      call send_recv(ROX_GC,2)
+!!!!      call send_recv(R_GP,2)
+!!!!      call send_recv(ROX_SC,2)
+!!!!      call send_recv(R_SP,2)      
+!!!!      call send_recv(HOR_G,2) 
+!!!!      call send_recv(HOR_S,2)   
+!!!!      call send_recv(R_TEMP,2)       
+!!!!      call send_recv(R_PHASE,2) 
 !//? check if we need a GLOBAL SUM for the following two as it accumulates sum
 !//  for each species      
-      call send_recv(SUM_R_S,2)        
-      call send_recv(SUM_R_G,2)              
+!!!!      call send_recv(SUM_R_S,2)        
+!!!!      call send_recv(SUM_R_G,2)              
 
       
       RETURN  

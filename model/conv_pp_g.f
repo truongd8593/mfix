@@ -142,18 +142,18 @@
       
 !//? Check if all these COMMs are necessary, added here as fool-proof approach
 !// 400 1225 Communicate boundaries
-      call send_recv(U_G,2)
-      call send_recv(V_G,2)
-      call send_recv(W_G,2)
-      call send_recv(AYZ,2)
-      call send_recv(AXZ,2)
-      call send_recv(AXY,2)      
-      call send_recv(ROP_G,2)
+!!!      call send_recv(U_G,2)
+!!!      call send_recv(V_G,2)
+!!!      call send_recv(W_G,2)
+!!!      call send_recv(AYZ,2)
+!!!      call send_recv(AXZ,2)
+!!!      call send_recv(AXY,2)      
+!!!      call send_recv(ROP_G,2)
       if(MMAX > 0 ) then
-      call send_recv(U_S,2)
-      call send_recv(V_S,2)
-      call send_recv(W_S,2)      
-      call send_recv(ROP_S,2)                        
+!!!      call send_recv(U_S,2)
+!!!      call send_recv(V_S,2)
+!!!      call send_recv(W_S,2)      
+!!!      call send_recv(ROP_S,2)                        
       endif
 
 !
@@ -171,7 +171,7 @@
             J = J_OF(IJK) 
             K = K_OF(IJK) 
 !// 360 1224 Check if current i,j,k resides on this PE   	    
-            IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    
+!!!            IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    
             IJKE = EAST_OF(IJK) 
             IJKN = NORTH_OF(IJK) 
             IJKT = TOP_OF(IJK) 
@@ -256,7 +256,7 @@
                   J = J_OF(IJK) 
                   K = K_OF(IJK) 
 !// 360 1224 Check if current i,j,k resides on this PE  		  
-                 IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE		  
+!!!                 IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE		  
                   IJKE = EAST_OF(IJK) 
                   IJKN = NORTH_OF(IJK) 
                   IJKT = TOP_OF(IJK) 
@@ -336,7 +336,7 @@
       END DO 
 
 !// 400 1224 COMM A_M
-      call send_recv(A_M,2)      
+!!!      call send_recv(A_M,2)      
       RETURN  
       END SUBROUTINE CONV_PP_G0 
 !
@@ -431,21 +431,21 @@
 
 !//? Check if all these COMMs are necessary, added here as fool-proof approach
 !// 400 1225 Communicate boundaries
-      call send_recv(U_G,2)
-      call send_recv(V_G,2)
-      call send_recv(W_G,2)
-      call send_recv(AYZ,2)
-      call send_recv(AXZ,2)
-      call send_recv(AXY,2)      
-      call send_recv(ROP_G,2)
-      call send_recv(XSI_E,2)
-      call send_recv(XSI_N,2)
-      call send_recv(XSI_T,2)
+!!!      call send_recv(U_G,2)
+!!!      call send_recv(V_G,2)
+!!!      call send_recv(W_G,2)
+!!!      call send_recv(AYZ,2)
+!!!      call send_recv(AXZ,2)
+!!!      call send_recv(AXY,2)      
+!!!      call send_recv(ROP_G,2)
+!!!      call send_recv(XSI_E,2)
+!!!      call send_recv(XSI_N,2)
+!!!      call send_recv(XSI_T,2)
       if(MMAX > 0 ) then
-      call send_recv(U_S,2)
-      call send_recv(V_S,2)
-      call send_recv(W_S,2)      
-      call send_recv(ROP_S,2)                        
+!!!      call send_recv(U_S,2)
+!!!      call send_recv(V_S,2)
+!!!      call send_recv(W_S,2)      
+!!!      call send_recv(ROP_S,2)                        
       endif
 
       call lock_xsi_array
@@ -472,7 +472,7 @@
             J = J_OF(IJK) 
             K = K_OF(IJK) 
 !// 360 1224 Check if current i,j,k resides on this PE  	    
-           IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    
+!!!           IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    
             IJKE = EAST_OF(IJK) 
             IJKN = NORTH_OF(IJK) 
             IJKT = TOP_OF(IJK) 
@@ -606,7 +606,7 @@
       call unlock_xsi_array
  
 !// 400 1224 COMM A_M      
-      call send_recv(A_M,2)      
+!!!      call send_recv(A_M,2)      
            
       RETURN  
       END SUBROUTINE CONV_PP_G1 

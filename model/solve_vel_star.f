@@ -308,10 +308,20 @@
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
       END DO 
       CALL CONV_DIF_W_G (A_M, B_M, IER) 
+!
+!        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       CALL CONV_DIF_W_S (A_M, B_M, IER) 
 !
+!        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!         
       CALL SOURCE_W_G (A_M, B_M, IER) 
+
+!        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!         
       CALL SOURCE_W_S (A_M, B_M, IER) 
+!
+!        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+! call mfix_exit(myPE)
 !
       IF (MMAX > 0) CALL VF_GS_Z (F_GS, VXF_GS, IER) 
 !
@@ -329,8 +339,6 @@
          CALL UNDER_RELAX_W (W_G, A_M, B_M, 0, UR_FAC(5), IER) 
 !
 !        call check_ab_m(a_m, b_m, 0, .false., ier)
-!        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-!        write(*,*)
 !     &      resid(resid_w, 0), max_resid(resid_w, 0),
 !     &      ijk_resid(resid_w, 0)
       ENDIF 

@@ -81,8 +81,8 @@
          ENDIF 
       END DO 
 !//SP
-      call send_recv(a_m,2)
-      call send_recv(b_m,2)
+!!!!      call send_recv(a_m,2)
+!!!!      call send_recv(b_m,2)
       RETURN  
       END SUBROUTINE UNDER_RELAX_S 
 !
@@ -170,8 +170,8 @@
          ENDIF 
       END DO 
 !//SP
-      call send_recv(a_m,2)
-      call send_recv(b_m,2)
+!!!!      call send_recv(a_m,2)
+!!!!      call send_recv(b_m,2)
       RETURN  
       END SUBROUTINE UNDER_RELAX_U 
 !
@@ -259,8 +259,8 @@
          ENDIF 
       END DO 
 !//SP
-      call send_recv(a_m,2)
-      call send_recv(b_m,2)
+!!!!      call send_recv(a_m,2)
+!!!!      call send_recv(b_m,2)
       RETURN  
       END SUBROUTINE UNDER_RELAX_V 
 !
@@ -348,7 +348,7 @@
          ENDIF 
       END DO 
 !//SP
-      call send_recv(a_m,2)
-      call send_recv(b_m,2)
+!!!!      call send_recv(a_m,2)
+!!!!      call send_recv(b_m,2)
       RETURN  
       END SUBROUTINE UNDER_RELAX_W 

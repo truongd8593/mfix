@@ -41,6 +41,7 @@
       USE geometry
       USE indices
       USE is
+      USE sendrecv        !//d
       USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
@@ -145,5 +146,6 @@
             TAU_V_G(IJK) = ZERO 
          ENDIF 
       END DO 
+      call send_recv(tau_v_g,2)
       RETURN  
       END SUBROUTINE CALC_TAU_V_G 

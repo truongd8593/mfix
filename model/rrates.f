@@ -62,7 +62,7 @@
 !                      cell index
       INTEGER          IJK
       
-      DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX)
+      DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX), RXNA
 !C
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -104,6 +104,13 @@
 !    factor of epsilon. Note that X_g and X_s are mass fractions
 !
 !
+!              No   1   2    3
+!     GAS Species   O3,  O2, N2
+
+!   a)  O3 -> 1.5 O2
+
+      Rxna = (1. - EP_g(IJK)) * C(1) * (RO_g(IJK)*X_g(IJK,1)/MW_g(1))
+!
 !
 !2222222222222222222222222222222222222222222222222222222222222222222222222222222
 !
@@ -122,6 +129,19 @@
 !    solids phases also.
 !
 !  GAS SPECIES
+!
+!
+
+!    (1) O3
+      IF(X_g(IJK, 1) .GT. ZERO) THEN
+        RoX_gc(IJK, 1) = RXNA  * MW_g(1) / X_g(IJK, 1)
+      ELSE
+        RoX_gc(IJK, 1) = 1.0e-9
+      ENDIF
+
+!     (2) O2
+      R_gp(IJK, 2) = RXNA * MW_g(2) * 1.5
+
 !
 !
 !  SOLIDS SPECIES
@@ -210,13 +230,13 @@
 
 
 !// 400 1112 update the boundaries for recently calculated field vars
-      CALL SEND_RECV(HOR_G, 2)
-      CALL SEND_RECV(HOR_S, 2)
+!!!!      CALL SEND_RECV(HOR_G, 2)
+!!!!      CALL SEND_RECV(HOR_S, 2)
 !//? check if we need a GLOBAL SUM for the following two as it accumulates sum
 !//  for each species            
-      CALL SEND_RECV(SUM_R_G , 2)
-      CALL SEND_RECV(SUM_R_S, 2)      
-      CALL SEND_RECV(R_PHASE, 2)      
+!!!!      CALL SEND_RECV(SUM_R_G , 2)
+!!!!      CALL SEND_RECV(SUM_R_S, 2)      
+!!!!      CALL SEND_RECV(R_PHASE, 2)      
      
  1000 FORMAT(/1X,70('*')//' From: RRATES',/&
          ' Message: Mass transfer between phases ',I2,' and ',I2,&

@@ -253,8 +253,8 @@
 
 !//? verify the location of the COMM
 !//? verify whether in the do M=1,MMAX lopp for each M, or out of the loop
-      CALL SEND_RECV(A_M, 2)
-      CALL SEND_RECV(B_M, 2)
+!!!      CALL SEND_RECV(A_M, 2)
+!!!      CALL SEND_RECV(B_M, 2)
 
       END DO 
 

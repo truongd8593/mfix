@@ -106,8 +106,8 @@
       END DO 
       
 !// 400 1225 COMM A_M & B_M
-      call send_recv(A_M,2)
-      call send_recv(B_M,2)            
+!!!!      call send_recv(A_M,2)
+!!!!      call send_recv(B_M,2)            
       
       RETURN  
       END SUBROUTINE ADJUST_A_U_G 

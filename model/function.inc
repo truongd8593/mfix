@@ -4,6 +4,9 @@
 !                      from the 1-D indices I, J, and K.
 !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
       INTEGER          FUNIJK
+!                      Function for generating the LOCAL 3-D array index IJK
+!                      from the 1-D indices I, J, K and IPROC.
+      INTEGER          FUNIJK_PROC
 !                      Function for generating the GLOBAL 3-D array index IJK
 !                      from the 1-D indices I, J, and K.
       INTEGER          FUNIJK_GL
@@ -25,6 +28,8 @@
 
 !                      Dummy indices for I, J, K
       INTEGER          LI, LJ, LK
+!                      Dummy indices for IPROC
+      INTEGER          LIPROC
 !
 !                      Function for calculating IJKW
       INTEGER          WEST_OF
@@ -205,9 +210,24 @@
 !
 ! 
 !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
-      FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
+!     FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
+      FUNIJK (LI, LJ, LK) = c0 + LJ + (Li-istart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
 
-      FUNIJK_GL (LI, LJ, LK) = 1 + (LI - imin3) + (LJ-jmin3)*(imax3-imin3+1) &
+!//SP
+!     FUNIJK_PROC(LI, LJ, LK, LIPROC) = 1 + (LI - istart3_all(LIPROC))+ &
+!     (LJ-jstart3_all(LIPROC))*(iend3_all(LIPROC)-istart3_all(LIPROC)+1) &
+!     + (LK-kstart3_all(LIPROC))*(jend3_all(LIPROC)-jstart3_all(LIPROC)+1)* &
+!     (iend3_all(LIPROC)-istart3_all(LIPROC)+1) 
+
+      FUNIJK_PROC(LI, LJ, LK, LIPROC) = 1 + (LJ - jstart3_all(LIPROC))+ &
+      (LI-Istart3_all(LIPROC))*(jend3_all(LIPROC)-jstart3_all(LIPROC)+1) &
+      + (LK-kstart3_all(LIPROC))*(jend3_all(LIPROC)-jstart3_all(LIPROC)+1)* &
+      (iend3_all(LIPROC)-istart3_all(LIPROC)+1) 
+
+!     FUNIJK_GL (LI, LJ, LK) = 1 + (LI - imin3) + (LJ-jmin3)*(imax3-imin3+1) &
+!     + (LK-kmin3)*(jmax3-jmin3+1)*(imax3-imin3+1)
+!
+      FUNIJK_GL (LI, LJ, LK) = 1 + (LJ - jmin3) + (LI-imin3)*(jmax3-jmin3+1) &
       + (LK-kmin3)*(jmax3-jmin3+1)*(imax3-imin3+1)
 
       FUNIJK_IO (LI, LJ, LK) = 1 + (LI - imin2) + (LJ-jmin2)*(imax2-imin2+1) &
@@ -217,9 +237,9 @@
 				LJ.ge.jstart3.and.LJ.le.jend3.and. &
                                 LK.ge.kstart3.and.LK.le.kend3
 
-      IS_ON_myPE_plus1layer (LI, LJ, LK) = LI.ge.istart2.and.LI.le.iend2.and. &
-				LJ.ge.jstart2.and.LJ.le.jend2.and. &
-                                LK.ge.kstart2.and.LK.le.kend2
+      IS_ON_myPE_plus1layer (LI, LJ, LK) = LI.ge.istart2.and.LI.le.iend2.and. & 
+      					   LJ.ge.jstart2.and.LJ.le.jend2.and. & 
+      					   LK.ge.kstart2.and.LK.le.kend2
 
       IS_ON_myPE_owns (LI, LJ, LK) = LI.ge.istart.and.LI.le.iend.and. &
 				LJ.ge.jstart.and.LJ.le.jend.and. &
@@ -276,7 +296,7 @@
       PS_WALL_AT(IJK)  = FLAG(IJK) .EQ. 102
       CYCLIC_AT(IJK)   = FLAG(IJK) .EQ. 106 .OR. &
                         FLAG(IJK) .EQ. 107
-      WALL_AT(IJK)     = FLAG(IJK) .GE. 100
+      WALL_AT(IJK)     = FLAG(IJK) .GE. 100 
       IP_AT_E(IJK)     = FLAG_E(IJK) .LT. 1000
       IP_AT_N(IJK)     = FLAG_N(IJK) .LT. 1000
       IP_AT_T(IJK)     = FLAG_T(IJK) .LT. 1000

@@ -68,7 +68,7 @@
                V_G(IJK)-V_G(IJMK))*ODY(J) + (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) 
          ENDIF 
       END DO 
-      RETURN  
 !//SP
-      call send_recv(TRD_G,2)
+!!!      call send_recv(TRD_G,2)
+      RETURN  
       END SUBROUTINE CALC_TRD_G 

@@ -84,6 +84,6 @@
       END DO 
       
 !// 400 COMM P_STAR
-      call send_recv (P_STAR,2)      
+!!!      call send_recv (P_STAR,2)      
       RETURN  
       END SUBROUTINE CALC_P_STAR 

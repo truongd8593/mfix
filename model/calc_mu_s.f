@@ -773,18 +773,18 @@
   
 !//? 1112 need to update the boundaries for variables : 
 !// 400 1112 update the boundaries for recently calculated field vars
-      call send_recv(trD_s2,2)
-      call send_recv(MU_s,2) 
-      call send_recv(Lambda_s,2)
-      call send_recv(P_star,2) 
-      call send_recv(Alpha_s,2)    
-      call send_recv(Theta_m,2) 
-      call send_recv(P_s,2)  
-      call send_recv(MU_s_c,2)                                       
-      call send_recv(Lambda_s_c,2) 
-      call send_recv(P_s_c,2)    
-      call send_recv(Kth_s,2) 
-      call send_recv(Kphi_s,2)                      
+!!!      call send_recv(trD_s2,2)
+!!!      call send_recv(MU_s,2) 
+!!!      call send_recv(Lambda_s,2)
+!!!      call send_recv(P_star,2) 
+!!!      call send_recv(Alpha_s,2)    
+!!!      call send_recv(Theta_m,2) 
+!!!      call send_recv(P_s,2)  
+!!!      call send_recv(MU_s_c,2)                                       
+!!!      call send_recv(Lambda_s_c,2) 
+!!!      call send_recv(P_s_c,2)    
+!!!      call send_recv(Kth_s,2) 
+!!!      call send_recv(Kphi_s,2)                      
 !//AIKEPARDBG
 !      write(*,"('(PE ',I2,'): eof CALC_MU_S ')") myPE    !//AIKEPARDBG
 !      call mfix_exit(myPE)   !//AIKEPARDBGSTOP

@@ -62,8 +62,8 @@
       ENDIF 
 
 !// 400 1218 Communicate boundaries   
-      CALL SEND_RECV(A_M, 2)
-      CALL SEND_RECV(B_M, 2)
+!!!      CALL SEND_RECV(A_M, 2)
+!!!      CALL SEND_RECV(B_M, 2)
       
       RETURN  
       END SUBROUTINE CONV_ROP_S 
@@ -154,7 +154,7 @@
             J = J_OF(IJK) 
             K = K_OF(IJK) 
 !// 360 1218 Check if current i,j,k resides on this PE	    
-            IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    	    
+!!!            IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    	    
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK) 
             IJKP = KP_OF(IJK) 
@@ -190,7 +190,7 @@
 
 !//S This COMM could be removed as it is redundant but inserted due fool-proof      
 !// 400 1218 Communicate boundaries         
-      call send_recv(A_M,2)      
+!!!      call send_recv(A_M,2)      
       
       RETURN  
       END SUBROUTINE CONV_ROP_S0 
@@ -301,7 +301,7 @@
             J = J_OF(IJK) 
             K = K_OF(IJK) 
 !// 360 1218 Check if current i,j,k resides on this PE	    
-            IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    	    
+!!!            IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	    	    
 	    
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK) 
@@ -338,7 +338,7 @@
 
 !//S This COMM could be removed as it is redundant but inserted due fool-proof      
 !// 400 1218 Communicate boundaries         
-      call send_recv(A_M,2)      
+!!!      call send_recv(A_M,2)      
       
       call unlock_xsi_array
       

@@ -184,7 +184,7 @@
          END DO 
       ENDIF 
 !//SP
-      call send_recv(d_e,2)
+!!!      call send_recv(d_e,2)
       RETURN  
       END SUBROUTINE CALC_D_E 
 !
@@ -378,7 +378,7 @@
          END DO 
       ENDIF 
 !//SP
-      call send_recv(d_n,2)
+!!!      call send_recv(d_n,2)
       RETURN  
       END SUBROUTINE CALC_D_N 
 !
@@ -570,6 +570,6 @@
          END DO 
       ENDIF 
 !//SP
-      call send_recv(d_t,2)
+!!!      call send_recv(d_t,2)
       RETURN  
       END SUBROUTINE CALC_D_T 

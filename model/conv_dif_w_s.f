@@ -81,8 +81,8 @@
           ENDIF
 !
 !// 400 1213 COMM A_M and B_M      
-      CALL SEND_RECV(A_M, 2)
-      CALL SEND_RECV(B_M, 2)
+!!!      CALL SEND_RECV(A_M, 2)
+!!!      CALL SEND_RECV(B_M, 2)
 
 !//AIKEPARDBG
 !    write(*,"('(PE ',I2,'): bef dif_u_is in conv_dif_w_s')") myPE  !//AIKEPARDBG
@@ -92,8 +92,8 @@
 !
 !//? Check if the following COMM is extra or not?
 !// 400 1213 COMM A_M and B_M      
-      CALL SEND_RECV(A_M, 2)
-      CALL SEND_RECV(B_M, 2)
+!!!      CALL SEND_RECV(A_M, 2)
+!!!      CALL SEND_RECV(B_M, 2)
 
 !//AIKEPARDBG
 !    write(*,"('(PE ',I2,'): aft dif_u_is in conv_dif_w_s')") myPE  !//AIKEPARDBG
@@ -187,14 +187,14 @@
 
 !//? Check if all these COMMs are necessary, added here as fool-proof approach
 !// 400 1225 Communicate boundaries
-      call send_recv(U_S,2)
-      call send_recv(V_S,2)
-      call send_recv(W_S,2)
-      call send_recv(MU_S,2)
-      call send_recv(AYZ_W,2)
-      call send_recv(AXZ_W,2)
-      call send_recv(AXY_W,2)      
-      call send_recv(ROP_S,2)  
+!!!      call send_recv(U_S,2)
+!!!      call send_recv(V_S,2)
+!!!      call send_recv(W_S,2)
+!!!      call send_recv(MU_S,2)
+!!!      call send_recv(AYZ_W,2)
+!!!      call send_recv(AXZ_W,2)
+!!!      call send_recv(AXY_W,2)      
+!!!      call send_recv(ROP_S,2)  
 !
 !  Calculate convection-diffusion fluxes through each of the faces
 !
@@ -214,7 +214,7 @@
             J = J_OF(IJK) 
             K = K_OF(IJK) 
 !// 360 1225 Check if current i,j,k resides on this PE	    
-            IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	  
+!!!            IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	  
 	    
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK) 
@@ -448,17 +448,17 @@
 
 !//? Check if all these COMMs are necessary, added here as fool-proof approach
 !// 400 1225 Communicate boundaries
-      call send_recv(U_S,2)
-      call send_recv(V_S,2)
-      call send_recv(W_S,2)
-      call send_recv(MU_S,2)
-      call send_recv(AYZ_W,2)
-      call send_recv(AXZ_W,2)
-      call send_recv(AXY_W,2)      
-      call send_recv(ROP_S,2)
-      call send_recv(XSI_E,2)
-      call send_recv(XSI_N,2)
-      call send_recv(XSI_T,2)      
+!!!      call send_recv(U_S,2)
+!!!      call send_recv(V_S,2)
+!!!      call send_recv(W_S,2)
+!!!      call send_recv(MU_S,2)
+!!!      call send_recv(AYZ_W,2)
+!!!      call send_recv(AXZ_W,2)
+!!!      call send_recv(AXY_W,2)      
+!!!      call send_recv(ROP_S,2)
+!!!      call send_recv(XSI_E,2)
+!!!      call send_recv(XSI_N,2)
+!!!      call send_recv(XSI_T,2)      
 
 !
 !  Calculate convection factors
@@ -740,17 +740,17 @@
       
 !//? Check if all these COMMs are necessary, added here as fool-proof approach
 !// 400 1225 Communicate boundaries
-      call send_recv(U_S,2)
-      call send_recv(V_S,2)
-      call send_recv(W_S,2)
-      call send_recv(MU_S,2)
-      call send_recv(AYZ_W,2)
-      call send_recv(AXZ_W,2)
-      call send_recv(AXY_W,2)      
-      call send_recv(ROP_S,2)
-      call send_recv(XSI_E,2)
-      call send_recv(XSI_N,2)
-      call send_recv(XSI_T,2)      
+!!!      call send_recv(U_S,2)
+!!!      call send_recv(V_S,2)
+!!!      call send_recv(W_S,2)
+!!!      call send_recv(MU_S,2)
+!!!      call send_recv(AYZ_W,2)
+!!!      call send_recv(AXZ_W,2)
+!!!      call send_recv(AXY_W,2)      
+!!!      call send_recv(ROP_S,2)
+!!!      call send_recv(XSI_E,2)
+!!!      call send_recv(XSI_N,2)
+!!!      call send_recv(XSI_T,2)      
 !
 !  Calculate convection factors
 !

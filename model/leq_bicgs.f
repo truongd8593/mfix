@@ -196,8 +196,8 @@
 !//end_TEMP
 
 !//SP
-      call send_recv(A_M,2)
-      call send_recv(B_M,2)
+!     call send_recv(A_M,2)
+!     call send_recv(B_M,2)
 
 
       alpha(:)  = zero
@@ -213,8 +213,8 @@
 !
 !$omp parallel do private(ijk,oam,aijmax)
         do k = kstart2,kend2
-          do j = jstart2,jend2
-            do i = istart2,iend2
+          do i = istart2,iend2
+            do j = jstart2,jend2
 
               IJK = funijk(i,j,k)
 
@@ -244,7 +244,7 @@
 !      call out_array(r,'r')
 
 	R(ijkstart3:ijkend3) = B_m(ijkstart3:ijkend3) - R(ijkstart3:ijkend3)
-	call send_recv(R,2)
+!	call send_recv(R,2)
 
 	Rtilde(:) = R(:)
 	
@@ -276,6 +276,8 @@
 !           ------------
             ier = 0
 	  endif
+!//SP - Send Receive two updated ghostlayers of Var to every processor
+          call send_recv(var,2)
 	  return
         endif
 
@@ -287,7 +289,7 @@
            beta(i-1) = ( rho(i-1)/rho(i-2) )*( alpha(i-1) / omega(i-1) )
 
            P(:) = R(:) + beta(i-1)*( P(:) - omega(i-1)*V(:) )
-	   call send_recv(P,2)
+!	   call send_recv(P,2)
 
         endif
 
@@ -312,7 +314,7 @@
         alpha(i) = rho(i-1) / RtildexV
 
         Svec(:) = R(:) - alpha(i) * V(:)
-        call send_recv(Svec,2)
+!       call send_recv(Svec,2)
 
 !
 !       Check norm of Svec(:); if small enough:
@@ -372,10 +374,10 @@
 
         Var(ijkstart3:ijkend3) = Var(ijkstart3:ijkend3) +                           &
               alpha(i)*Phat(ijkstart3:ijkend3) + omega(i)*Shat(ijkstart3:ijkend3)
-	call send_recv(var,2)
+!	call send_recv(var,2)
 
         R(:) = Svec(:) - omega(i)*Tvec(:)
-	call send_recv(R,2)
+!	call send_recv(R,2)
         Rnorm = sqrt( dot_product_par(R, R) )
 
         if (idebugl.ge.1) then
@@ -427,6 +429,8 @@
             endif
         endif
 
+!//SP - Send Receive two updated ghostlayers of Var to every processor
+        call send_recv(var,2)
         
         return
         end subroutine LEQ_BICGS0
@@ -1183,19 +1187,19 @@
 !     Calculate residual
 !
 
-      if (use_send_recv) then
-        call send_recv(var,2)
-      else
-        if(myPE.eq.root) then
-  	     allocate (var_g(1:ijkmax3))
-	     else
-	     allocate (var_g(1:10))
-        endif
-        call gather(var,var_g)
-        call scatter(var,var_g)
+!     if (use_send_recv) then
+!       call send_recv(var,2)
+!     else
+!       if(myPE.eq.root) then
+! 	     allocate (var_g(1:ijkmax3))
+!     else
+!     allocate (var_g(1:10))
+!       endif
+!       call gather(var,var_g)
+!       call scatter(var,var_g)
 
-        call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-      endif
+!       call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+!     endif
 
         i = istart3
         j = jstart3
@@ -1214,34 +1218,33 @@
 !$omp parallel  do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
 !$omp parallel  do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
         do k = kstart,kend
-        do j = jstart,jend
-
-            ijk_c   = (cc + ck*k + cj*j)
-            im1jk_c = (cc + ck*k + cj*j)
-            ip1jk_c = (cc + ck*k + cj*j)
-
-            ijm1k_c = (cc + ck*k + cj*jm1(j))
-            ijp1k_c = (cc + ck*k + cj*jp1(j))
-
-            ijkm1_c = (cc + ck*km1(k) + cj*j)
-            ijkp1_c = (cc + ck*kp1(k) + cj*j)
-
         do i = istart,iend
 
+            ijk_c   = (cc + ck*k + ci*i)
+            im1jk_c = (cc + ck*k + ci*im1(i))
+            ip1jk_c = (cc + ck*k + ci*ip1(i))
+
+            ijm1k_c = (cc + ck*k + ci*i)
+            ijp1k_c = (cc + ck*k + ci*i)
+
+            ijkm1_c = (cc + ck*km1(k) + ci*i)
+            ijkp1_c = (cc + ck*kp1(k) + ci*i)
+
+        do j = jstart,jend
 
         if (use_funijk) then
 
 
-            ijk   = ijk_c   + ci*i
+            ijk   = ijk_c   + cj*j
 
-            im1jk = im1jk_c + ci*im1(i)
-            ip1jk = ip1jk_c + ci*ip1(i)
+            im1jk = im1jk_c + cj*j
+            ip1jk = ip1jk_c + cj*j
 
-            ijm1k = ijm1k_c + ci*i
-            ijp1k = ijp1k_c + ci*i
+            ijm1k = ijm1k_c + cj*jm1(j)
+            ijp1k = ijp1k_c + cj*jp1(j)
 
-            ijkm1 = ijkm1_c + ci*i
-            ijkp1 = ijkp1_c + ci*i
+            ijkm1 = ijkm1_c + cj*j
+            ijkp1 = ijkp1_c + cj*j
 
         else
            IJK = funijk(i,j,k)
@@ -1270,8 +1273,8 @@
 
       else
 !$omp parallel do private(im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
-        do j = jstart2,jend2
         do i = istart2,iend2
+        do j = jstart2,jend2
 
         k = 1
 
@@ -1297,7 +1300,7 @@
       if (need_distribute_Avar) then
 
       if (use_send_recv) then
- 	     call send_recv(Avar,2)
+ 	     call send_recv(Avar,1)
       else
 	      call gather(Avar,var_g)
 	      call scatter(Avar,var_g)
@@ -1385,8 +1388,8 @@
 
 !$omp   parallel do private(ijk)
         do k = kstart3,kend3
-        do j = jstart3,jend3
         do i = istart3,iend3
+        do j = jstart3,jend3
 
         IJK = funijk(i,j,k)
 
@@ -1436,7 +1439,7 @@
 
       ENDIF
 
-      call send_recv(var,2)
+      call send_recv(var,1)
 
       ENDDO
 
@@ -1939,7 +1942,6 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      INTEGER :: NN
       DOUBLE PRECISION, DIMENSION (KMAX2) :: CC,DD,EE,BB
       INTEGER :: NN, INFO, IJK, K
 
@@ -1993,7 +1995,7 @@
     DOUBLE PRECISION, allocatable, Dimension(:) :: r1_g, r2_g
     double precision :: prod, prod_gl
     integer :: i, j, k, ijk
-    logical, parameter :: do_global_sum = .false.
+    logical, parameter :: do_global_sum = .true.
 
     include 'function.inc'
 
@@ -2002,8 +2004,8 @@
       prod = 0.0d0
    
       do k = kstart, kend
-        do j = jstart, jend
-          do i = istart, iend
+        do i = istart, iend
+          do j = jstart, jend
    
             ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
 
@@ -2033,8 +2035,8 @@
   
 !$omp parallel do private(i,j,k,ijk) reduction(+:prod)
         do k = kmin2, kmax2
-          do j = jmin2, jmax2
-            do i = imin2, imax2
+          do i = imin2, imax2
+            do j = jmin2, jmax2
   
               ijk = funijk_gl (imap_c(i),jmap_c(j),kmap_c(k))
   
@@ -2095,7 +2097,7 @@
 ! do nothing or no preconditioning
 
      var(:) = b_m(:)
-     call send_recv(var,2)
+     call send_recv(var,1)
 
      return
      end subroutine leq_msolve0
@@ -2143,8 +2145,8 @@
 ! diagonal scaling
 
 	do k=kstart2,kend2
-	do j=jstart2,jend2
 	do i=istart2,iend2
+	do j=jstart2,jend2
 
 	 ijk = funijk( i,j,k )
 	 var(ijk) = b_m(ijk)/A_m(ijk,0)
@@ -2153,7 +2155,7 @@
 	enddo
 	enddo
 
-     call send_recv(var,2)
+     call send_recv(var,1)
 
      return
      end subroutine leq_msolve1

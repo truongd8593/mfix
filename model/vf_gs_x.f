@@ -76,6 +76,6 @@
 
 !//? Verify if the following COMM is necessary here (as inserted for fool proof)
 !// 400 Communicate VXF_GS      
-      call send_recv(VXF_GS,2)
+!!!!      call send_recv(VXF_GS,2)
       RETURN  
       END SUBROUTINE VF_GS_X 

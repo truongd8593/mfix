@@ -290,8 +290,8 @@
 
 !//? 1112 need to update the boundaries for variables : MU_GT,LAMBDA_GT
 !// 400 1112 update the boundaries for recently calculated field vars
-      call send_recv(mu_gt,2)
-      call send_recv(lambda_gt,2) 
+!!!      call send_recv(mu_gt,2)
+!!!      call send_recv(lambda_gt,2) 
            
 !//AIKEPARDBG
 !      write(*,"('(PE ',I2,'): eof CALC_MU_G ')") myPE    !//AIKEPARDBG

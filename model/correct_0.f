@@ -148,10 +148,10 @@
          ENDIF 
       END DO 
 !//SP
-      call send_recv(P_G,2)
-      call send_recv(U_G,2)
-      call send_recv(V_G,2)
-      call send_recv(W_G,2)
+!!!!      call send_recv(P_G,2)
+!!!!      call send_recv(U_G,2)
+!!!!      call send_recv(V_G,2)
+!!!!      call send_recv(W_G,2)
       RETURN  
       END SUBROUTINE CORRECT_0G 
 !
@@ -242,8 +242,8 @@
          END DO 
       END DO 
 !//SP
-      call send_recv(U_S,2)
-      call send_recv(V_S,2)
-      call send_recv(W_S,2)
+!!!!      call send_recv(U_S,2)
+!!!!      call send_recv(V_S,2)
+!!!!      call send_recv(W_S,2)
       RETURN  
       END SUBROUTINE CORRECT_0S 

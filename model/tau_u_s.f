@@ -42,6 +42,7 @@
       USE indices
       USE is
       USE vshear
+      USE sendrecv        !//d
       USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
@@ -209,5 +210,6 @@
 ! loezos      
 
       END DO 
+      call send_recv(tau_u_s,2)
       RETURN  
       END SUBROUTINE CALC_TAU_U_S 

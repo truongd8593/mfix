@@ -42,6 +42,7 @@
       USE indices
       USE is
       USE compar        !//d
+      USE sendrecv        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -176,4 +177,5 @@
          ENDIF 
       END DO 
       RETURN  
+!     call send_recv(tau_u_g,2)
       END SUBROUTINE CALC_TAU_U_G 

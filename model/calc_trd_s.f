@@ -73,5 +73,5 @@
       END DO 
       RETURN  
 !//SP
-      call send_recv(TRD_S,2)
+!!!      call send_recv(TRD_S,2)
       END SUBROUTINE CALC_TRD_S 

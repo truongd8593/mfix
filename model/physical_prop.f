@@ -137,11 +137,11 @@
       END DO 
 
 !// 400 1112 MTP Communicate boundaries for MW_MIX_G, RO_G, ROP_G, C_PG, C_S  
-      CALL SEND_RECV(MW_MIX_G, 2)
-      CALL SEND_RECV(RO_G, 2)
-      CALL SEND_RECV(ROP_G, 2)
-      CALL SEND_RECV(C_PG, 2)
-      CALL SEND_RECV(C_PS, 2)      
+!!!!      CALL SEND_RECV(MW_MIX_G, 2)
+!!!!      CALL SEND_RECV(RO_G, 2)
+!!!!      CALL SEND_RECV(ROP_G, 2)
+!!!!      CALL SEND_RECV(C_PG, 2)
+!!!!      CALL SEND_RECV(C_PS, 2)      
       
       RETURN  
       END SUBROUTINE PHYSICAL_PROP 

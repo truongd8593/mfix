@@ -117,10 +117,10 @@
       ENDIF 
 !200   CONTINUE
 !// 400 0105 COMM calculated vars
-      call send_recv(EPP,2)
-      call send_recv(ROP_S,2)
-      call send_recv(U_S,2)
-      call send_recv(V_S,2)
-      call send_recv(W_S,2)
+!!!      call send_recv(EPP,2)
+!!!      call send_recv(ROP_S,2)
+!!!      call send_recv(U_S,2)
+!!!      call send_recv(V_S,2)
+!!!      call send_recv(W_S,2)
       RETURN  
       END SUBROUTINE CORRECT_1 

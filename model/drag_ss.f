@@ -149,7 +149,7 @@
 !       call prnfield(F_SS,'F_SS','BEF')   !//AIKEPARDBG
 
 !// 400 1112 update the boundaries for recently calculated field vars
-      call send_recv(F_SS,2)
+!!!!      call send_recv(F_SS,2)
 
 !       call prnfield(F_SS,'F_SS','AFT')   !//AIKEPARDBG
      

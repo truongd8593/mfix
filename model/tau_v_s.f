@@ -41,6 +41,7 @@
       USE geometry
       USE indices
       USE is
+      USE sendrecv        !//d
       USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
@@ -178,5 +179,6 @@
 !loezos 	
 
       END DO 
+      call send_recv(tau_v_s,2)
       RETURN  
       END SUBROUTINE CALC_TAU_V_S 

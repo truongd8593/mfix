@@ -66,8 +66,8 @@
 
 !//12/21/99 - Send Recv. A_M and B_M
 
-        CALL SEND_RECV(A_M, 2)
-        CALL SEND_RECV(B_M, 2)
+!!!        CALL SEND_RECV(A_M, 2)
+!!!        CALL SEND_RECV(B_M, 2)
 
       RETURN  
       END SUBROUTINE CONV_SOURCE_EPP 
@@ -161,17 +161,17 @@
 !\\Extra Sendrecv operations - just to make sure all the variables needed are
 !  are passed - can be optimized later - Sreekanth - 102199
 
-      call send_recv(U_S,2)
-      call send_recv(V_S,2)
-      call send_recv(W_S,2)
-      call send_recv(ROP_S,2)
-      call send_recv(K_CP,2)
-      call send_recv(E_E,2)
-      call send_recv(E_N,2)
-      call send_recv(E_T,2)
-      call send_recv(AXY,2)
-      call send_recv(AXZ,2)
-      call send_recv(AYZ,2)
+!!!      call send_recv(U_S,2)
+!!!      call send_recv(V_S,2)
+!!!      call send_recv(W_S,2)
+!!!      call send_recv(ROP_S,2)
+!!!      call send_recv(K_CP,2)
+!!!      call send_recv(E_E,2)
+!!!      call send_recv(E_N,2)
+!!!      call send_recv(E_T,2)
+!!!      call send_recv(AXY,2)
+!!!      call send_recv(AXZ,2)
+!!!      call send_recv(AYZ,2)
 !
 !     Calculate convection-diffusion fluxes through each of the faces
 !
@@ -187,7 +187,7 @@
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
-       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+!!!       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
          IF (FLUID_AT(IJK)) THEN 
             IPJK = IP_OF(IJK) 
@@ -470,17 +470,17 @@
 !
 !\\Extra Sendrecv operations - just to make sure all the variables needed are
 !  are passed - can be optimized later - Sreekanth - 122199
-      call send_recv(U_S,2)
-      call send_recv(V_S,2)
-      call send_recv(W_S,2)
-      call send_recv(ROP_S,2)
-      call send_recv(K_CP,2)
-      call send_recv(E_E,2)
-      call send_recv(E_N,2)
-      call send_recv(E_T,2)
-      call send_recv(AXY,2)
-      call send_recv(AXZ,2)
-      call send_recv(AYZ,2)
+!!!      call send_recv(U_S,2)
+!!!      call send_recv(V_S,2)
+!!!      call send_recv(W_S,2)
+!!!      call send_recv(ROP_S,2)
+!!!      call send_recv(K_CP,2)
+!!!      call send_recv(E_E,2)
+!!!      call send_recv(E_N,2)
+!!!      call send_recv(E_T,2)
+!!!      call send_recv(AXY,2)
+!!!      call send_recv(AXZ,2)
+!!!      call send_recv(AYZ,2)
 
 !
       M = MCP 
@@ -525,7 +525,7 @@
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
-       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+!!!       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
          IF (FLUID_AT(IJK)) THEN 
             IPJK = IP_OF(IJK) 
