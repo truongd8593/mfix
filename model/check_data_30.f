@@ -32,6 +32,7 @@
       USE fldvar
       USE rxns
       USE visc_s
+      USE visc_g
       USE geometry
       USE run
       USE constant
@@ -154,6 +155,91 @@
             DO I = ISTART2, IEND2 
                IJK = FUNIJK(I,J,K) 
                IF (.NOT.WALL_AT(IJK)) THEN 
+	       
+	         IF(FLOW_AT(IJK)) THEN
+		 !  The diffusivities must be zero in inflow and outflow
+		 !  cells
+                   IF(MU_gt(IJK) /= ZERO) THEN
+                     IF (.NOT.MESSAGE) THEN 
+                        WRITE (UNIT_LOG, 1000) TIME 
+                        MESSAGE = .TRUE. 
+                     ENDIF 
+                     WRITE (UNIT_LOG, 1140) I, J, K, MU_gt(IJK), 'MU_gt' 
+                     ABORT = .TRUE. 
+		   ENDIF
+		   
+                   IF(LAMBDA_gt(IJK) /= ZERO) THEN
+                     IF (.NOT.MESSAGE) THEN 
+                        WRITE (UNIT_LOG, 1000) TIME 
+                        MESSAGE = .TRUE. 
+                     ENDIF 
+                     WRITE (UNIT_LOG, 1140) I, J, K, LAMBDA_gt(IJK), 'LAMBDA_gt' 
+                     ABORT = .TRUE. 
+		   ENDIF
+		   
+                   IF(K_g(IJK) /= ZERO) THEN
+                     IF (.NOT.MESSAGE) THEN 
+                        WRITE (UNIT_LOG, 1000) TIME 
+                        MESSAGE = .TRUE. 
+                     ENDIF 
+                     WRITE (UNIT_LOG, 1140) I, J, K, K_g(IJK), 'K_g' 
+                     ABORT = .TRUE. 
+		   ENDIF
+		   
+		   DO N = 1, NMAX(0)
+                     IF( DIF_g(IJK, N) /= ZERO) THEN
+                       IF (.NOT.MESSAGE) THEN 
+                         WRITE (UNIT_LOG, 1000) TIME 
+                         MESSAGE = .TRUE. 
+                       ENDIF 
+                       WRITE (UNIT_LOG, 1140) I, J, K, DIF_g(IJK, N), 'DIF_g' 
+                       ABORT = .TRUE. 
+		     ENDIF
+		   ENDDO
+		   
+		   DO M = 1, MMAX
+                     IF(MU_s(IJK, M) /= ZERO) THEN
+                       IF (.NOT.MESSAGE) THEN 
+                          WRITE (UNIT_LOG, 1000) TIME 
+                          MESSAGE = .TRUE. 
+                       ENDIF 
+                       WRITE (UNIT_LOG, 1140) I, J, K, MU_s(IJK, M), 'MU_s' 
+                       ABORT = .TRUE. 
+    		     ENDIF
+		   
+                     IF(LAMBDA_s(IJK, M) /= ZERO) THEN
+                       IF (.NOT.MESSAGE) THEN 
+                         WRITE (UNIT_LOG, 1000) TIME 
+                         MESSAGE = .TRUE. 
+                       ENDIF 
+                       WRITE (UNIT_LOG, 1140) I, J, K, LAMBDA_s(IJK, M), 'LAMBDA_s' 
+                       ABORT = .TRUE. 
+	  	     ENDIF
+		   
+                     IF(K_s(IJK, M) /= ZERO) THEN
+                       IF (.NOT.MESSAGE) THEN 
+                         WRITE (UNIT_LOG, 1000) TIME 
+                         MESSAGE = .TRUE. 
+                       ENDIF 
+                       WRITE (UNIT_LOG, 1140) I, J, K, K_s(IJK, M), 'K_s' 
+                       ABORT = .TRUE. 
+		     ENDIF
+		   
+		     DO N = 1, NMAX(M)
+                       IF( DIF_s(IJK, M, N) /= ZERO) THEN
+                         IF (.NOT.MESSAGE) THEN 
+                           WRITE (UNIT_LOG, 1000) TIME 
+                           MESSAGE = .TRUE. 
+                         ENDIF 
+                         WRITE (UNIT_LOG, 1140) I, J, K, DIF_s(IJK, M, N), 'DIF_s' 
+                         ABORT = .TRUE. 
+		       ENDIF
+		     ENDDO
+		   	   
+		   ENDDO
+		   
+	   
+		 ENDIF
 !
 !   Gas viscosity, conductivity and specific heat must be positive
 !
@@ -509,6 +595,7 @@
  1111 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  MW_MIX_g .LE. 0') 
  1120 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  K_g .LT. 0') 
  1130 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  C_pg .LE. 0') 
+ 1140 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,A,' .NE. 0 in a flow boundary') 
  1200 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  Sum of X_g .NE. 1') 
  1300 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  Sum of X_s .NE. 1') 
  1310 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  MU_s .LT. 0') 

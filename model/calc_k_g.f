@@ -59,7 +59,7 @@
 
 !// 350 1112 MTP changed do loop limits 1,ijkmax2 ==> ijkstart3, ijkend3
       DO IJK = IJKSTART3, IJKEND3      
-         IF (.NOT.WALL_AT(IJK)) THEN 
+         IF (FLUID_AT(IJK)) THEN 
 	 write(*,*) 'T_G',T_G(IJK), I_OF(IJK), J_OF(IJK), K_OF(IJK)
 !           Gas conductivity (air) in cal/s.cm.K
 !           Bird, Stewart, and Lightfoot (1960) -- Temperature dependence from formula

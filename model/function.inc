@@ -121,6 +121,9 @@
 !                      OUTFLOW_AT 
       LOGICAL          OUTFLOW_AT
 !
+!                      FLOW_AT 
+      LOGICAL          FLOW_AT
+!
 !                      Logical function to identify default walls
       LOGICAL          DEFAULT_WALL_AT
 !
@@ -291,6 +294,7 @@
       P_OUTFLOW_AT(IJK)= FLAG(IJK) .EQ. 11
       MASS_OUTFLOW_AT(IJK)= FLAG(IJK) .EQ. 21
       OUTFLOW_AT(IJK)  = FLAG(IJK) .EQ. 31
+      FLOW_AT(IJK)     = FLAG(IJK) .GE. 10 .AND. FLAG(IJK) .LE. 31
       NS_WALL_AT(IJK)  = FLAG(IJK) .EQ. 100
       FS_WALL_AT(IJK)  = FLAG(IJK) .EQ. 101
       PS_WALL_AT(IJK)  = FLAG(IJK) .EQ. 102

@@ -242,8 +242,18 @@
       DO M=1, MMAX 
         CALL ZERO_ARRAY (F_gs(1,M), IER)
       END DO
+! Initialize transport coefficients to zero everywhere
 
-            
+      MU_gt(:) = ZERO
+      LAMBDA_GT(:) = ZERO
+      MU_s(:, :) = ZERO
+      LAMBDA_s_c(:, :) = ZERO
+      LAMBDA_s(:, :) = ZERO
+      K_g(:) = ZERO
+      K_s(:, :) = ZERO
+      DIF_g(:, :) = ZERO
+      DIF_S(:, :, :) = ZERO 
+
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 

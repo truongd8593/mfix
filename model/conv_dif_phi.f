@@ -5,6 +5,12 @@
 !  Purpose: Determine convection diffusion terms for a sclar phi       C
 !  The off-diagonal coefficients calculated here must be positive. The C
 !  center coefficient and the source vector are negative;              C
+
+!  The diffusion at the flow boundaries is prevented by setting the 
+!  diffusion coefficients at boundary cells to zero and then using a 
+!  harmonic average to calculate the boundary diffusivity.  The value
+!  diffusivities at the boundaries are checked in check_data_30.  Ensure
+!  that harmonic avergaing is used in this routine. 
 !  See source_phi                                                      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 21-APR-97  C

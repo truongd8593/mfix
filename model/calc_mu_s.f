@@ -267,7 +267,7 @@
 !      DO 200 IJK = ((iend3-istart3+1)*(jend3-jstart3+1)+1), &
 !       ((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1)) - (iend3-istart3+1)*(jend3-jstart3+1)
 !
-        IF ( .NOT.WALL_AT(IJK) ) THEN
+        IF ( FLUID_AT(IJK) ) THEN
 
  	
 !

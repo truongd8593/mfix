@@ -124,7 +124,7 @@
 !!$omp parallel do private(ijk) schedule(dynamic,chunk_size)
 !// 350 1112 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
       DO IJK = IJKSTART3, IJKEND3 
-         IF (.NOT.WALL_AT(IJK)) THEN 
+         IF (FLUID_AT(IJK)) THEN 
 !
 !  Molecular viscosity
 !
@@ -175,7 +175,7 @@
 
 
 !//SP
-         IF ( .NOT.WALL_AT(IJK) .AND. L_SCALE(IJK)/=ZERO) THEN 
+         IF ( FLUID_AT(IJK) .AND. L_SCALE(IJK)/=ZERO) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
             K = K_OF(IJK) 

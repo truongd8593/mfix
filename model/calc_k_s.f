@@ -94,7 +94,7 @@
 !            K_s(IJK, M) = ZERO
 !          ENDIF
 !     An approximate average value for the solids conductivity is 2.5*K_g
-         IF (.NOT.WALL_AT(IJK)) K_S(IJK,M) = 2.5*K_G(IJK) 
+         IF (FLUID_AT(IJK)) K_S(IJK,M) = 2.5*K_G(IJK) 
       END DO 
 
 !//S 1113 try to move this COMM to the end of transport_prop to do all COMMs

@@ -66,7 +66,7 @@
 !// 350 1112 MTP changed do loop limits 1,ijkmax2 ==> ijkstart3, ijkend3
          DO IJK = IJKSTART3, IJKEND3 	 
 	 
-            IF (.NOT.WALL_AT(IJK)) THEN 
+            IF (FLUID_AT(IJK)) THEN 
                DIF_S(IJK,M,N) = ROP_S(IJK,M)*ZERO 
             ELSE 
                DIF_S(IJK,M,N) = ZERO 
