@@ -160,15 +160,15 @@
 	flux_in_tot = zero
 	flux_out_tot = zero
         DO L = 1, DIMENSION_BC
-	  if(flux_out_g(L) <> ZERO .OR. flux_in_g(L) <> ZERO) &
+	  if(flux_out_g(L) /= ZERO .OR. flux_in_g(L) /= ZERO) &
 	    Write(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_g(L), flux_out_g(L), (flux_in_g(L)-flux_out_g(L))
 	  flux = flux + flux_in_g(L) - flux_out_g(L)
 	  flux_in_tot = flux_in_tot + flux_in_g(L)
 	  flux_out_tot = flux_out_tot + flux_out_g(L)
 	END DO
-	if((flux - Accumulation_delta) <> zero) then
+	if((flux - Accumulation_delta) /= zero) then
 	  error_percent = undefined
-	  if(flux_in_tot <> zero) error_percent = (flux - Accumulation_delta)*100./flux_in_tot
+	  if(flux_in_tot /= zero) error_percent = (flux - Accumulation_delta)*100./flux_in_tot
 	else
 	  error_percent = zero
 	endif
@@ -193,16 +193,16 @@
 	  flux_in_tot = zero
 	  flux_out_tot = zero
           DO L = 1, DIMENSION_BC
-	    if(flux_out_X_g(L, N) <> ZERO .OR. flux_in_X_g(L, N) <> ZERO) &
+	    if(flux_out_X_g(L, N) /= ZERO .OR. flux_in_X_g(L, N) /= ZERO) &
 	      Write(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_X_g(L, N), flux_out_X_g(L, N), &
 	       (flux_in_X_g(L, N)-flux_out_X_g(L, N))
 	    flux = flux + flux_in_X_g(L, N) - flux_out_X_g(L, N)
 	    flux_in_tot = flux_in_tot + flux_in_X_g(L, N)
 	    flux_out_tot = flux_out_tot + flux_out_X_g(L, N)
 	  END DO
-	  if((flux - Accumulation_delta) <> zero) then
+	  if((flux - Accumulation_delta) /= zero) then
 	    error_percent = undefined
-	    if(flux_in_tot <> zero) error_percent = (flux - Accumulation_delta)*100./flux_in_tot
+	    if(flux_in_tot /= zero) error_percent = (flux - Accumulation_delta)*100./flux_in_tot
 	  else
 	    error_percent = zero
 	  endif
