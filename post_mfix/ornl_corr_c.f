@@ -112,15 +112,15 @@
       include 'function.inc'
 
 !
-      write (*,*) ' enter minlag , maxlag'
-      read  (*,*) minlag , maxlag
+      write (*,*) ' enter minlag , maxlag, lagstep'
+      read  (*,*) minlag , maxlag, lagstep
 !
       i = abs(maxlag-minlag) + 1
       allocate ( ccf(2,i) )
       allocate ( lags(i) )
 
       call cross_correlation(time_series,time_series2,1,nt, &
-                                        minlag,maxlag,lags,ccf)
+                                        minlag,maxlag,lagstep,lags,ccf)
 
 !
 
