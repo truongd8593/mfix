@@ -46,8 +46,11 @@
       USE visc_s
       USE indices
       USE constant
+      USE toleranc
       USE compar
+      USE drag
       USE run          !S. Dartevelle
+      USE turb
       USE sendrecv  
       IMPLICIT NONE
 !-----------------------------------------------
@@ -68,7 +71,7 @@
       INTEGER          IER
 !                      Indices
       INTEGER          I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
-                      IM, JM, KM
+                      IM, JM, KM, M !sof added M
       INTEGER          IMJPK, IMJMK, IMJKP, IMJKM, IPJKM, IPJMK, IJMKP, &
                       IJMKM, IJPKM
 !
@@ -124,6 +127,9 @@
 !
 !                      Constant in turbulent viscosity formulation
       DOUBLE PRECISION C_MU
+!
+!                      particle relaxation time
+      DOUBLE PRECISION Tau_12_st
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -132,6 +138,7 @@
       INCLUDE 'fun_avg2.inc'
 !
       C_MU = 9D-02
+      M = 1 ! for solids phase
 !
 !!$omp parallel do private(ijk) schedule(dynamic,chunk_size)
       DO IJK = ijkstart3, ijkend3 
@@ -146,6 +153,32 @@
              LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
 
 	   IF (K_Epsilon) THEN
+
+! I'm not very confident about this correction in Peirano paper, but it's made
+! available here, uncomment to use it. sof@fluent.com --> 02/01/05
+!	   
+!	     IF(SIMONIN) THEN
+!	       Tau_12_st = Ep_s(IJK,M)*RO_s(M)/(F_GS(IJK,1)+small_number)
+!	       X_21 = Ep_s(IJK,M)*RO_s(M)/(EP_g(IJK)*RO_g(IJK))
+!
+! new definition of C_mu (equation A.12, Peirano et al. (2002) Powder tech. 122,69-82)
+!	       
+!	       IF( K_12(ijk)/(2.0*K_Turb_G(IJK)) < ONE) THEN
+!	         C_MU = C_MU/(ONE+ 0.314*X_21 / ( (Tau_1(ijk)/(Tau_12_st + small_number)) &
+!	                    *(ONE - K_12(ijk)/(2.0*K_Turb_G(IJK))) ))
+!	       ELSE
+!		 C_MU = C_MU
+!	       ENDIF
+!
+! On the other hand, I used this correction found in Ahmadi paper (Cao and Ahmadi)	       
+	     IF(AHMADI) THEN
+	       IF(Ep_s(IJK,M) > DIL_EP_S .AND. F_GS(IJK,1) > small_number) THEN
+	         Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
+	         C_MU = C_MU*(ONE/(ONE+Tau_12_st/Tau_1(ijk)*(EP_s(IJK,M)/EPS_max)**3))
+	       ELSE
+	         C_MU = C_MU
+	       ENDIF
+	     ENDIF
 
 ! Definition of the turbulent viscosity
 !	     

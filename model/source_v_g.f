@@ -454,7 +454,7 @@
       END DO 
       DO L = 1, DIMENSION_BC 
          IF (BC_DEFINED(L)) THEN 
-            IF (BC_TYPE(L) == 'NO_SLIP_WALL') THEN 
+            IF (BC_TYPE(L) == 'NO_SLIP_WALL' .AND. .NOT. K_Epsilon) THEN 
                I1 = BC_I_W(L) 
                I2 = BC_I_E(L) 
                J1 = BC_J_S(L) 
@@ -487,7 +487,7 @@
                      END DO 
                   END DO 
                END DO 
-            ELSE IF (BC_TYPE(L) == 'FREE_SLIP_WALL') THEN 
+            ELSE IF (BC_TYPE(L) == 'FREE_SLIP_WALL' .AND. .NOT. K_Epsilon) THEN 
                I1 = BC_I_W(L) 
                I2 = BC_I_E(L) 
                J1 = BC_J_S(L) 
@@ -520,7 +520,7 @@
                      END DO 
                   END DO 
                END DO 
-            ELSE IF (BC_TYPE(L) == 'PAR_SLIP_WALL') THEN 
+            ELSE IF (BC_TYPE(L) == 'PAR_SLIP_WALL' .AND. .NOT. K_Epsilon) THEN 
                I1 = BC_I_W(L) 
                I2 = BC_I_E(L) 
                J1 = BC_J_S(L) 
@@ -544,14 +544,7 @@
                         A_M(IJK,0,M) = -ONE 
                         B_M(IJK,M) = ZERO 
                         IF (FLUID_AT(EAST_OF(IJK))) THEN 
-                           
-			   IF(K_Epsilon) THEN
-			     CALL Wall_Function(IJK,EAST_OF(IJK),ODX_E(I),W_F_Slip)
-                             A_M(IJK,E,M) = W_F_Slip
-                             A_M(IJK,0,M) = -ONE 
-                             B_M(IJK,M) = -BC_VW_G(L)			     
-			   
-			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
+                           IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,E,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_VW_G(L) 
@@ -561,14 +554,7 @@
                               B_M(IJK,M) = -BC_HW_G(L)*BC_VW_G(L) 
                            ENDIF 
                         ELSE IF (FLUID_AT(WEST_OF(IJK))) THEN  
-                           
-			   IF(K_Epsilon) THEN
-			     CALL Wall_Function(IJK,WEST_OF(IJK),ODX_E(IM),W_F_Slip)
-                             A_M(IJK,W,M) = W_F_Slip
-                             A_M(IJK,0,M) = -ONE 
-                             B_M(IJK,M) = -BC_VW_G(L)			     
-			   
-			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
+                           IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,W,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_VW_G(L) 
@@ -578,14 +564,7 @@
                               B_M(IJK,M) = -BC_HW_G(L)*BC_VW_G(L) 
                            ENDIF 
                         ELSE IF (FLUID_AT(TOP_OF(IJK))) THEN   
-                           
-			   IF(K_Epsilon) THEN
-			     CALL Wall_Function(IJK,TOP_OF(IJK),ODZ_T(K)*OX(I),W_F_Slip)
-                             A_M(IJK,T,M) = W_F_Slip
-                             A_M(IJK,0,M) = -ONE 
-                             B_M(IJK,M) = -BC_VW_G(L)			     
-			   
-			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
+                           IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,T,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_VW_G(L) 
@@ -595,14 +574,7 @@
                               B_M(IJK,M) = -BC_HW_G(L)*BC_VW_G(L) 
                            ENDIF 
                         ELSE IF (FLUID_AT(BOTTOM_OF(IJK))) THEN    
-                           
-			   IF(K_Epsilon) THEN
-			     CALL Wall_Function(IJK,BOTTOM_OF(IJK),ODZ_T(KM)*OX(I),W_F_Slip)
-                             A_M(IJK,B,M) = W_F_Slip
-                             A_M(IJK,0,M) = -ONE 
-                             B_M(IJK,M) = -BC_VW_G(L)			     
-			   
-			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
+                           IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,B,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_VW_G(L) 
@@ -614,7 +586,59 @@
                         ENDIF 
                      END DO 
                   END DO 
-               END DO 
+               END DO  
+! wall functions for V-momentum are specify in this section of the code
+            ELSE IF (BC_TYPE(L) == 'PAR_SLIP_WALL'   .OR.  &
+	             BC_TYPE(L) == 'NO_SLIP_WALL'    .OR.  &
+		     BC_TYPE(L) == 'FREE_SLIP_WALL'  .AND. &
+		     K_Epsilon                            )THEN
+               I1 = BC_I_W(L) 
+               I2 = BC_I_E(L) 
+               J1 = BC_J_S(L) 
+               J2 = BC_J_N(L) 
+               K1 = BC_K_B(L) 
+               K2 = BC_K_T(L) 
+               DO K = K1, K2 
+                  DO J = J1, J2 
+                     DO I = I1, I2 
+               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE     		     
+                        IJK = FUNIJK(I,J,K) 
+                        IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
+                        IM = IM1(I) 
+                        KM = KM1(K) 
+                        A_M(IJK,E,M) = ZERO 
+                        A_M(IJK,W,M) = ZERO 
+                        A_M(IJK,N,M) = ZERO 
+                        A_M(IJK,S,M) = ZERO 
+                        A_M(IJK,T,M) = ZERO 
+                        A_M(IJK,B,M) = ZERO 
+                        A_M(IJK,0,M) = -ONE 
+                        B_M(IJK,M) = ZERO 
+                        IF (FLUID_AT(EAST_OF(IJK))) THEN
+			     CALL Wall_Function(IJK,EAST_OF(IJK),ODX_E(I),W_F_Slip)
+                             A_M(IJK,E,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             IF (BC_TYPE(L) == 'PAR_SLIP_WALL') B_M(IJK,M) = -BC_VW_G(L)
+                        ELSE IF (FLUID_AT(WEST_OF(IJK))) THEN
+			     CALL Wall_Function(IJK,WEST_OF(IJK),ODX_E(IM),W_F_Slip)
+                             A_M(IJK,W,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             IF (BC_TYPE(L) == 'PAR_SLIP_WALL') B_M(IJK,M) = -BC_VW_G(L) 
+                        ELSE IF (FLUID_AT(TOP_OF(IJK))) THEN
+			     CALL Wall_Function(IJK,TOP_OF(IJK),ODZ_T(K)*OX(I),W_F_Slip)
+                             A_M(IJK,T,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             IF (BC_TYPE(L) == 'PAR_SLIP_WALL') B_M(IJK,M) = -BC_VW_G(L) 
+                        ELSE IF (FLUID_AT(BOTTOM_OF(IJK))) THEN
+			     CALL Wall_Function(IJK,BOTTOM_OF(IJK),ODZ_T(KM)*OX(I),W_F_Slip)
+                             A_M(IJK,B,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             IF (BC_TYPE(L) == 'PAR_SLIP_WALL') B_M(IJK,M) = -BC_VW_G(L) 
+                        ENDIF 
+                     END DO 
+                  END DO 
+               END DO
+! end of wall functions 
             ELSE IF (BC_TYPE(L)=='P_INFLOW' .OR. BC_TYPE(L)=='P_OUTFLOW') THEN 
                IF (BC_PLANE(L) == 'S') THEN 
                   I1 = BC_I_W(L) 

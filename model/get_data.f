@@ -118,6 +118,13 @@
 !     write(*,*) JSTART3, JSTART2, JSTART, JSTART1, JEND1, JEND, JEND2, JEND3
 !     write(*,*) 'KSTART-KEND'
 !     write(*,*) KSTART3, KSTART2, KSTART, KSTART1, KEND1, KEND, KEND2, KEND3
+!
+! MUST use k-epsilon model and granular temperature PDE with Simonin
+! and Ahmadi models (must be done before allocate_arrays). Sof --> 02/01/05
+      IF(SIMONIN .OR. AHMADI) THEN
+        K_Epsilon = .TRUE.
+	GRANULAR_ENERGY = .TRUE.
+      ENDIF
 
       CALL ALLOCATE_ARRAYS      
 !

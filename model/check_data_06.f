@@ -380,10 +380,15 @@
                END DO  
                
 	       IF(K_Epsilon) THEN
-	       
-                  IF (IC_K_Turb_G(ICV) == UNDEFINED) IC_K_Turb_G(ICV) = ZERO 
+                  IF (IC_K_Turb_G(ICV) == UNDEFINED) THEN 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_K_Turb_G', ICV 
+                     call mfix_exit(myPE) 
+                  ENDIF
 
-                  IF (IC_E_Turb_G(ICV) == UNDEFINED) IC_E_Turb_G(ICV) = ZERO 
+                  IF (IC_E_Turb_G(ICV) == UNDEFINED) THEN 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_E_Turb_G', ICV 
+                     call mfix_exit(myPE) 
+                  ENDIF
 
 	       ENDIF
 
@@ -454,7 +459,6 @@
                      ENDIF 
                   ENDIF 
 !
-      
                   IF (GRANULAR_ENERGY .AND. IC_THETA_M(ICV,M)==UNDEFINED) THEN 
                      IF (IC_ROP_S(ICV,M) == ZERO) THEN 
                         IC_THETA_M(ICV,M) = ZERO 
@@ -544,13 +548,13 @@
 	    
 	    IF( K_Epsilon ) THEN
                IF (IC_K_Turb_G(ICV) /= UNDEFINED) THEN 
-              !    IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_K_Turb_G', ICV 
-              !    CALL MFIX_EXIT(myPE)
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_K_Turb_G', ICV 
+                  CALL MFIX_EXIT(myPE)
                ENDIF 
 	    
                IF (IC_E_Turb_G(ICV) /= UNDEFINED) THEN 
-             !     IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_E_Turb_G', ICV 
-              !    CALL MFIX_EXIT(myPE)
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_E_Turb_G', ICV 
+                  CALL MFIX_EXIT(myPE)
                ENDIF 
 	    ENDIF
             

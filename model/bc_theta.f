@@ -295,6 +295,8 @@
       USE constant
       USE physprop
       USE fldvar
+      USE run
+      USE turb
       USE visc_s
       USE geometry
       USE indices
@@ -321,6 +323,9 @@
 !
 !                      Average scalars
       DOUBLE PRECISION EP_avg, TH_avg, Mu_g_avg, RO_g_avg
+!
+!                      Average Simonin variables
+      DOUBLE PRECISION K_12_avg, Tau_12_avg
 !
 !                      The location (e,w,n...) of fluid cell
       CHARACTER        FCELL
@@ -376,6 +381,15 @@
         TH_avg = AVG_Y(Theta_m(IJK1, M),Theta_m(IJK2, M),J_OF(IJK1))
         Mu_g_avg = Mu_g(IJK2)
         RO_g_avg = RO_g(IJK2)
+
+	IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin model (sof)
+          K_12_avg = K_12(IJK2)	    
+          Tau_12_avg = Tau_12(IJK2)
+	ELSE
+	  K_12_avg = ZERO    
+          Tau_12_avg = ZERO
+	ENDIF
  
 !     Calculate velocity components at i, j+1/2, k (relative to IJK1)
         UGC  = AVG_Y(AVG_X_E(U_g(IM_OF(IJK1)),U_g(IJK1),I_OF(IJK1)),&
@@ -408,6 +422,15 @@
         TH_avg = AVG_Y(Theta_m(IJK2, M),Theta_m(IJK1, M),J_OF(IJK2))
         Mu_g_avg = Mu_g(IJK2)
         RO_g_avg = RO_g(IJK2)
+
+	IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin model (sof)
+          K_12_avg = K_12(IJK2)	    
+          Tau_12_avg = Tau_12(IJK2)
+	ELSE
+	  K_12_avg = ZERO    
+          Tau_12_avg = ZERO
+	ENDIF
  
 !     Calculate velocity components at i, j+1/2, k (relative to IJK2)
         UGC  = AVG_Y(AVG_X_E(U_g(IM_OF(IJK2)),U_g(IJK2),I_OF(IJK2)),&
@@ -439,6 +462,15 @@
         TH_avg = AVG_X(Theta_m(IJK1, M),Theta_m(IJK2, M),I_OF(IJK1))
         Mu_g_avg = Mu_g(IJK2)
         RO_g_avg = RO_g(IJK2)
+
+	IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin model (sof)
+          K_12_avg = K_12(IJK2)	    
+          Tau_12_avg = Tau_12(IJK2)
+	ELSE
+	  K_12_avg = ZERO    
+          Tau_12_avg = ZERO
+	ENDIF
  
 !     Calculate velocity components at i+1/2, j, k (relative to IJK1)
         UGC  = U_g(IJK1)
@@ -471,6 +503,15 @@
         TH_avg = AVG_X(Theta_m(IJK2, M),Theta_m(IJK1, M),I_OF(IJK2))
         Mu_g_avg = Mu_g(IJK2)
         RO_g_avg = RO_g(IJK2)
+
+	IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin model (sof)
+          K_12_avg = K_12(IJK2)	    
+          Tau_12_avg = Tau_12(IJK2)
+	ELSE
+	  K_12_avg = ZERO    
+          Tau_12_avg = ZERO
+	ENDIF
  
 !     Calculate velocity components at i+1/2, j, k (relative to IJK2)
         UGC  = U_g(IJK2)
@@ -503,6 +544,15 @@
         TH_avg = AVG_Z(Theta_m(IJK1, M),Theta_m(IJK2, M),K_OF(IJK1))
         Mu_g_avg = Mu_g(IJK2)
         RO_g_avg = RO_g(IJK2)
+
+	IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin model (sof)
+          K_12_avg = K_12(IJK2)	    
+          Tau_12_avg = Tau_12(IJK2)
+	ELSE
+	  K_12_avg = ZERO    
+          Tau_12_avg = ZERO
+	ENDIF
  
 !     Calculate velocity components at i, j, k+1/2 (relative to IJK1)
         UGC  = AVG_Z(AVG_X_E(U_g(IM_OF(IJK1)),U_g(IJK1),I_OF(IJK1)),&
@@ -536,6 +586,15 @@
         TH_avg = AVG_Z(Theta_m(IJK2, M),Theta_m(IJK1, M),K_OF(IJK2))
         Mu_g_avg = Mu_g(IJK2)
         RO_g_avg = RO_g(IJK2)
+
+	IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin model (sof)
+          K_12_avg = K_12(IJK2)	    
+          Tau_12_avg = Tau_12(IJK2)
+	ELSE
+	  K_12_avg = ZERO    
+          Tau_12_avg = ZERO
+	ENDIF
  
 !     Calculate velocity components at i, j, k+1/2 (relative to IJK2)
         UGC  = AVG_Z(AVG_X_E(U_g(IM_OF(IJK2)),U_g(IJK2),I_OF(IJK2)),&
@@ -567,8 +626,8 @@
 	call exitMPI(myPE)          
       ENDIF
  
-      CALL THETA_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg,VREL,VSLIPSQ,M,&
-                       Gw,Hw,Cw,L)
+      CALL THETA_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg,K_12_avg,Tau_12_avg,&
+                       VREL,VSLIPSQ,M,Gw,Hw,Cw,L)
 !
       RETURN
       END
@@ -576,8 +635,9 @@
  
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SUBROUTINE THETA_HW_CW(g0,EPS, TH, Mu_g_avg, RO_g_avg,    C
-!                                      VREL,VSLIPSQ,M,GW,HW,CW,L)      C
+!  Module name: SUBROUTINE THETA_HW_CW(g0,EPS, TH, Mu_g_avg, RO_g_avg, C
+!                                      K_12_avg,Tau_12_avg,            C
+!                                       VREL,VSLIPSQ,M,GW,HW,CW,L)     C
 !  Purpose: Subroutine for hw and cw                                   C
 !                                                                      C
 !  Author: Kapil Agrawal, Princeton University         Date: 15-MAR-98 C
@@ -592,15 +652,24 @@
 !  Local variables: F_2, Mu_s, Mu, Mu_b, Mu_g_avg, RO_g_avg,           C
 !                   VREL, C_d, Beta                                    C
 !                                                                      C
+!  Modified: Sofiane Benyahia, Fluent Inc.             Date: 02-FEB-05 C
+!  Purpose: Include conductivity defined by Simonin and Ahmadi         C
+!           Also included Jenkins small frictional limit               C
+!                                                                      C
+!  Literature/Document References: See calcmu_s.f for ref. on Simonin  C
+!  and Ahmadi models; for Jenkins BC: Jenkins and Louge, Phys. fluids  C
+!  9 (10), 2835. See equation (3) in the paper                         C
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE THETA_HW_CW(g0,EPS,TH,Mu_g_avg,RO_g_avg,VREL,VSLIPSQ,M,&
-                             GW,HW,CW,L)
+      SUBROUTINE THETA_HW_CW(g0,EPS,TH,Mu_g_avg,RO_g_avg,K_12_avg,Tau_12_avg,&
+                             VREL,VSLIPSQ,M,GW,HW,CW,L)
  
 
       USE param 
       USE param1 
       USE physprop
+      USE run
       USE constant
       USE fldvar
       USE toleranc 
@@ -641,6 +710,9 @@
 !              Average gas density
       DOUBLE PRECISION RO_g_avg
  
+!              Average cross-correlation K_12 and lagrangian integral time-scale
+      DOUBLE PRECISION K_12_avg, Tau_12_avg
+ 
 !              Average gas viscosity
       DOUBLE PRECISION Mu_g_avg
  
@@ -655,11 +727,13 @@
       DOUBLE PRECISION Beta0
  
 !              Coefficients in boundary conditions
-      DOUBLE PRECISION GW, HW, CW
- 
- 
+      DOUBLE PRECISION GW, HW, CW 
+!
 !              Radial distribution function
-      DOUBLE PRECISION G_0, g0
+      DOUBLE PRECISION G_0, g0 
+!
+!              Local parameters for Simonin model
+      DOUBLE PRECISION Zeta_c, Omega_c, Tau_2_c, Kappa_kin, Kappa_Col, Tau_12_st
  
 !
 !                      Error message
@@ -690,8 +764,12 @@
       ELSE
          C_d = 0.44d0
       ENDIF
-      Beta = SWITCH*0.75d0*C_d*Ro_g_avg*(1-EPS)*EPS*VREL&
+      Beta = 0.75d0*C_d*Ro_g_avg*(1-EPS)*EPS*VREL&
                 *((1-EPS)**(-2.65d0))/D_p(M)
+! particle relaxation time
+      Tau_12_st = EPS*RO_s(M)/(Beta+small_number)
+      
+      Beta = SWITCH*Beta
  
 !     SWITCH enables us to turn on/off the modification to the
 !     particulate phase viscosity. If we want to simulate gas-particle
@@ -716,15 +794,70 @@
             *(1d0 + (12d0/5.)*Eta*Eta*(4d0*Eta-3d0)*EPS*G_0)&
            + (64d0/(25d0*Pi))*(41d0-33d0*Eta)*((Eta*EPS)**2)*G_0)
  
+      IF(SIMONIN) THEN
+!
+        Zeta_c  = (ONE+ C_e)*(49.d0-33.d0*C_e)/100.d0
+
+        Omega_c = 3.d0*(ONE+ C_e)**2 *(2.d0*C_e-ONE)/5.d0 
+!
+        Tau_2_c = D_P(M)/(6.d0*EpS*G_0 &
+                 *DSQRT(16.d0*(TH+Small_number)/PI))
+
+! Defining Simonin's Solids Turbulent Kinetic diffusivity: Kappa
+  
+        Kappa_kin = (9.d0/10.d0*K_12_avg*(Tau_12_avg/Tau_12_st) &
+	            + 3.0/2.0 * Th*(ONE+ Omega_c*EPS*G_0))/     &
+                   (9.d0/(5.d0*Tau_12_st) + zeta_c/Tau_2_c)
+!
+        Kappa_Col = 18.d0/5.d0*EPS*G_0*Eta* (Kappa_kin+ &
+                     5.d0/9.d0*D_p(M)*DSQRT(Th/PI))
+!
+	K_1 =  EPS*RO_s(M)*(Kappa_kin + Kappa_Col)
+ 
+      ELSE IF(AHMADI) THEN
+        K_1 =  0.1306*RO_s(M)*D_p(M)*(ONE+C_e**2)* (  &
+	       ONE/G_0+4.8*EPS+12.1184 *EPS*EPS*G_0 )*DSQRT(Th)
+!
+      ENDIF !for simonin or ahmadi models
+      
       GW = K_1
+      
+! modify HW and CW if Jenkins BC is used (sof)    
  
-      HW = (Pi*DSQRT(3d0)/(4.*EPS_max))*(1d0-e_w*e_w)*RO_s(M)*EPS*G_0*&
-         DSQRT(TH)
+      IF(JENKINS) THEN
+
+        IF(AHMADI) THEN
+! Ahmadi model uses different solids pressure model
+!
+          HW = 3./8.*DSQRT(3.*TH)*((1d0-e_w))&
+               *RO_s(M)*EPS*((ONE + 4.0*EPS*G_0) + HALF*(ONE -C_e*C_e))
+!
+! the coefficient mu in Jenkins paper is defined as tan_Phi_w, that's how
+! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
+! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
+!
+	  CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21./16.*DSQRT(3.*TH)    &
+               *RO_s(M)*EPS*((ONE + 4.0*EPS*G_0) + HALF*(ONE -C_e*C_e))*TH
+
+        ELSE  ! Simonin or granular models use same solids pressure
+
+          HW = 3./8.*DSQRT(3.*Th)*((1d0-e_w))&
+               *RO_s(M)*EPS*(1d0+ 4.*Eta*EPs*G_0)
+	  CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21./16.*DSQRT(3.*TH)    &
+	       *RO_s(M)*EPS*(1d0+ 4.*Eta*EPs*G_0)*TH
+!
+        ENDIF !for Ahmadi
+!
+      ELSE ! no change to the original code if Jenkins BC not used
+      
+        HW = (Pi*DSQRT(3d0)/(4.*EPS_max))*(1d0-e_w*e_w)*RO_s(M)*EPS*G_0*&
+           DSQRT(TH)
  
-      CW = (Pi*DSQRT(3d0)/(6.*EPS_max))*PHIP*RO_s(M)*EPS*G_0*DSQRT(TH)&
-         *VSLIPSQ
- 
-      IF (BC_JJ_PS(L).EQ.2) CW=0d0
+        CW = (Pi*DSQRT(3d0)/(6.*EPS_max))*PHIP*RO_s(M)*EPS*G_0*DSQRT(TH)&
+           *VSLIPSQ
+        IF (BC_JJ_PS(L).EQ.2) CW=0d0
+!
+      ENDIF ! for Jenkins
  
  
       RETURN

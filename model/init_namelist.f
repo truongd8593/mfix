@@ -114,6 +114,9 @@
       FPFOI = .FALSE.
       GRANULAR_ENERGY = .FALSE.
       K_Epsilon = .FALSE.
+      SIMONIN = .FALSE.
+      AHMADI = .FALSE.
+      JENKINS = .FALSE.
       AUTOMATIC_RESTART = .FALSE.
       ITER_RESTART = 1
 ! start peter 7/15
@@ -334,6 +337,10 @@
          IC_T_S(LC,:DIM_M) = UNDEFINED 
          IC_THETA_M(LC,:DIM_M) = UNDEFINED 
          IC_SCALAR(LC,:DIM_SCALAR) = UNDEFINED 
+! sof: force users to set initial values for K and Epsilon. 
+         IC_K_Turb_G(LC) = UNDEFINED  
+         IC_E_Turb_G(LC) = UNDEFINED
+! sof: end
          IC_GAMA_RS(LC,:DIM_M) = ZERO 
          IC_T_RS(LC,:DIM_M) = UNDEFINED 
 !         IC_X_S(LC,1,1+:DIM_N_S+) = UNDEFINED 
@@ -424,7 +431,11 @@
       END DO 
 !   
       BC_THETA_M = UNDEFINED 
-      BC_Scalar = UNDEFINED 
+      BC_Scalar = UNDEFINED
+! sof: force users to set inlet BC for K and Epsilon  
+      BC_K_Turb_G = UNDEFINED  
+      BC_E_Turb_G = UNDEFINED 
+! sof: end
       BC_X_S = UNDEFINED 
       BC_HW_X_S = UNDEFINED 
       BC_XW_S = UNDEFINED 

@@ -117,6 +117,17 @@
 !                      If .TRUE. solve K_Epsilon turbulence eq.
       LOGICAL          K_Epsilon
 !
+!                      If .TRUE. use Simonin model (k_epsilon will
+!                      automatically be set to true in check_data_02.
+      LOGICAL          SIMONIN
+!
+!                      If .TRUE. use Ahmadi model (k_epsilon will
+!                      automatically be set to true in check_data_02.
+      LOGICAL          AHMADI
+!
+!                      If .TRUE. use Jenkins small friction BC
+      LOGICAL          JENKINS
+!
 !                      If .TRUE. solve species balance equations
       LOGICAL          SPECIES_EQ(0:DIM_M)
 !

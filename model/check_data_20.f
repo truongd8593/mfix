@@ -323,7 +323,40 @@
                         ABORT = .TRUE. 
                      ENDIF 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1100) I, J, K, (1.- dif) 
-                  ENDIF 
+                  ENDIF  
+!
+! EP_g must be >= ep_star to use Ahmadi or Simonin models. I did not
+! change this for all cases because someone may consider a purely granular flow,
+! i.e. with no fluid, in which case ep_s may equal eps_max. That is not the case
+! when using turbulence models that require the presence of a fluid phase.
+! (sof)
+		  IF (MMAX > 0) THEN 
+		    IF ((AHMADI .OR. SIMONIN) .AND. EP_G(IJK) < EP_star) THEN 
+                       IF (.NOT.ABORT) THEN 
+                          IF(DMP_LOG)WRITE (UNIT_LOG, 1060) 
+                          ABORT = .TRUE. 
+                       ENDIF 
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 1150) I, J, K
+                    ENDIF  
+!
+! ep_s cannot exceed eps_max for all models, (sof)
+		    IF (EP_G(IJK) < (1. - Eps_max)) THEN 
+                       IF (.NOT.ABORT) THEN 
+                          IF(DMP_LOG)WRITE (UNIT_LOG, 1070) 
+                          ABORT = .TRUE. 
+                       ENDIF 
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 1150) I, J, K
+                    ENDIF    
+!
+! ep_g cannot exceed unity for all models, (sof)
+		    IF (EP_G(IJK) > 1.0) THEN 
+                       IF (.NOT.ABORT) THEN 
+                          IF(DMP_LOG)WRITE (UNIT_LOG, 1080) 
+                          ABORT = .TRUE. 
+                       ENDIF 
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 1150) I, J, K
+                    ENDIF  
+		  ENDIF ! for MMAX > 0
 !
 !  Check whether L_scale is non-zero anywhere
 !
@@ -347,7 +380,7 @@
 !  Check whether MU_gmax is specified for turbulence (sof)
 !
       IF (K_Epsilon .AND. MU_GMAX==UNDEFINED) THEN 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1350) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1360) 
          CALL MFIX_EXIT(myPE) 
       ENDIF 
       
@@ -362,11 +395,24 @@
  1050 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
          ' Message: The sum of volume fractions is not equal to 1',/&
          '          in the following cells:',/4X,'I',T14,'J',T24,'K') 
- 1100 FORMAT(1X,I4,T11,I4,T21,I4,'  Sum of EP = ', G12.5, '.NE. 1') 
+ 1060 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
+         ' Message: EP_g is less than EP_star ',/&
+         '          in the following cells:',/4X,'I',T14,'J',T24,'K') 
+ 1070 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
+         ' Message: EP_g is less than (1.0-Eps_max) ',/&
+         '          in the following cells:',/4X,'I',T14,'J',T24,'K') 
+ 1080 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
+         ' Message: EP_g is greater than one ',/&
+         '          in the following cells:',/4X,'I',T14,'J',T24,'K')
+ 1100 FORMAT(1X,I4,T11,I4,T21,I4,'  Sum of EP = ', G12.5, '.NE. 1')  
+ 1150 FORMAT(1X,I4,T11,I4,T21,I4) 
  1300 FORMAT(/1X,70('*')/) 
  1350 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
          ' Message: Turbulent length scale is nonzero. Specify MU_gmax.',/1X,70&
-         ('*')/) 
+         ('*')/)  
+ 1360 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
+         ' Message: K_Epsilon model is used. Specify MU_gmax in mfix.dat.',/1X,70&
+         ('*')/)
       END SUBROUTINE CHECK_DATA_20 
 
 !// Comments on the modifications for DMP version implementation      

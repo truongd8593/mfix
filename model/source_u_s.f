@@ -774,6 +774,8 @@
 !  Variables modified:                                                 C
 !                                                                      C
 !  Local variables:                                                    C
+!  Modified: S. Benyahia, Fluent Inc.                 Date: 02-FEB-05  C
+!      Added the argument L to calc_grbdry                             C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
@@ -867,7 +869,7 @@
                      ELSE 
                         IF (BC_JJ_PS(L) == 1) THEN 
                            CALL CALC_GRBDRY (IJK, NORTH_OF(IJK), 'N', 'U', M, &
-                              HW) 
+                              L, HW) 
                            GW = 1D0 
                            CW = HW*BC_UW_S(L,M) 
                         ELSE IF (BC_JJ_PS(L) == 2) THEN 
@@ -895,7 +897,7 @@
                      ELSE 
                         IF (BC_JJ_PS(L) == 1) THEN 
                            CALL CALC_GRBDRY (IJK, SOUTH_OF(IJK), 'S', 'U', M, &
-                              HW) 
+                              L, HW) 
                            GW = 1D0 
                            CW = HW*BC_UW_S(L,M) 
                         ELSE IF (BC_JJ_PS(L) == 2) THEN 
@@ -922,7 +924,7 @@
                            , GW, HW, CW) 
                      ELSE 
                         IF (BC_JJ_PS(L) == 1) THEN 
-                           CALL CALC_GRBDRY (IJK, TOP_OF(IJK), 'T', 'U', M, HW) 
+                           CALL CALC_GRBDRY (IJK, TOP_OF(IJK), 'T', 'U', M, L, HW) 
                            GW = 1D0 
                            CW = HW*BC_UW_S(L,M) 
                         ELSE IF (BC_JJ_PS(L) == 2) THEN 
@@ -950,7 +952,7 @@
                      ELSE 
                         IF (BC_JJ_PS(L) == 1) THEN 
                            CALL CALC_GRBDRY (IJK, BOTTOM_OF(IJK), 'B', 'U', M, &
-                              HW) 
+                              L, HW) 
                            GW = 1D0 
                            CW = HW*BC_UW_S(L,M) 
                         ELSE IF (BC_JJ_PS(L) == 2) THEN 

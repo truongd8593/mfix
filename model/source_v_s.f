@@ -785,6 +785,8 @@
 !  Variables modified:                                                 C
 !                                                                      C
 !  Local variables:                                                    C
+!  Modified: S. Benyahia, Fluent Inc.                 Date: 02-FEB-05  C
+!      Added the argument L to calc_grbdry                             C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
@@ -874,8 +876,8 @@
                            , GW, HW, CW) 
                      ELSE 
                         IF (BC_JJ_PS(L) == 1) THEN 
-                           CALL CALC_GRBDRY (IJK, EAST_OF(IJK), 'E', 'V', M, HW&
-                              ) 
+                           CALL CALC_GRBDRY (IJK, EAST_OF(IJK), 'E', 'V', M, L,&
+			      HW)
                            GW = 1D0 
                            CW = HW*BC_VW_S(L,M) 
                         ELSE IF (BC_JJ_PS(L) == 2) THEN 
@@ -902,8 +904,8 @@
                            , GW, HW, CW) 
                      ELSE 
                         IF (BC_JJ_PS(L) == 1) THEN 
-                           CALL CALC_GRBDRY (IJK, WEST_OF(IJK), 'W', 'V', M, HW&
-                              ) 
+                           CALL CALC_GRBDRY (IJK, WEST_OF(IJK), 'W', 'V', M, L,&
+                              HW) 
                            GW = 1D0 
                            CW = HW*BC_VW_S(L,M) 
                         ELSE IF (BC_JJ_PS(L) == 2) THEN 
@@ -930,7 +932,7 @@
                            , GW, HW, CW) 
                      ELSE 
                         IF (BC_JJ_PS(L) == 1) THEN 
-                           CALL CALC_GRBDRY (IJK, TOP_OF(IJK), 'T', 'V', M, HW) 
+                           CALL CALC_GRBDRY (IJK, TOP_OF(IJK), 'T', 'V', M, L, HW) 
                            GW = 1D0 
                            CW = HW*BC_VW_S(L,M) 
                         ELSE IF (BC_JJ_PS(L) == 2) THEN 
@@ -958,7 +960,7 @@
                      ELSE 
                         IF (BC_JJ_PS(L) == 1) THEN 
                            CALL CALC_GRBDRY (IJK, BOTTOM_OF(IJK), 'B', 'V', M, &
-                              HW) 
+                              L, HW) 
                            GW = 1D0 
                            CW = HW*BC_VW_S(L,M) 
                         ELSE IF (BC_JJ_PS(L) == 2) THEN 

@@ -28,14 +28,17 @@
       USE param1 
       USE parallel 
       USE physprop
+      USE run
       USE drag
       USE geometry
       USE fldvar
       USE visc_g
       USE visc_s
       USE trace
+      USE turb
       USE indices
       USE constant
+      USE toleranc
       USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
@@ -57,6 +60,9 @@
 !                      Source terms to be kept on lhs
       DOUBLE PRECISION sourcelhs
 !
+!                      Particle relaxation time
+      DOUBLE PRECISION Tau_12_st
+!
 !                      Slip velocity
       DOUBLE PRECISION VSLIP
 !-----------------------------------------------
@@ -77,15 +83,30 @@
       K = K_OF(IJK) 
 !
       SOURCERHS = (ZMAX(LAMBDA_S_C(IJK,M))*TRD_S_C(IJK,M)**2+2.*MU_S_C(IJK,M)*&
-         TRD_S2(IJK,M)+P_S_C(IJK,M)*ZMAX((-TRD_S_C(IJK,M))))*VOL(IJK) 
+         TRD_S2(IJK,M)+P_S_C(IJK,M)*ZMAX((-TRD_S_C(IJK,M))))*VOL(IJK)  
 !
-      VSLIP = (U_S(IJK,M)-U_G(IJK))**2 + (V_S(IJK,M)-V_G(IJK))**2 + (W_S(IJK,M)&
-         -W_G(IJK))**2 
-      VSLIP = DSQRT(VSLIP) 
+      IF(SIMONIN) THEN
+        SOURCERHS = SOURCERHS +  F_GS(IJK,M)*K_12(IJK)*VOL(IJK)
 !
-      SOURCERHS = SOURCERHS + (SWITCH*81D0*EP_S(IJK,M)*(MU_G(IJK)*VSLIP)**2D0/(&
-         G_0(IJK,M,M)*D_P(M)**3D0*RO_S(M)*(PI*THETA_M(IJK,M)+SMALL_NUMBER)**&
-         0.5D0))*VOL(IJK) 
+      ELSE IF(AHMADI) THEN
+	IF(Ep_s(IJK,M) > DIL_EP_S .AND. F_GS(IJK,1) > small_number) THEN
+          Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
+	  SOURCERHS = SOURCERHS + 2.D+0*F_GS(IJK,M)* (ONE/(ONE+Tau_12_st/  &
+                      (Tau_1(ijk)+small_number)))*K_Turb_G(IJK)*VOL(IJK)
+	ELSE
+	  SOURCERHS = SOURCERHS
+	ENDIF
+!
+      ELSE ! no modifications done to the original KTGF
+!
+        VSLIP = (U_S(IJK,M)-U_G(IJK))**2 + (V_S(IJK,M)-V_G(IJK))**2 + (W_S(IJK,M)&
+           -W_G(IJK))**2 
+        VSLIP = DSQRT(VSLIP) 
+!
+        SOURCERHS = SOURCERHS + (SWITCH*81D0*EP_S(IJK,M)*(MU_G(IJK)*VSLIP)**2D0/(&
+           G_0(IJK,M,M)*D_P(M)**3D0*RO_S(M)*(PI*THETA_M(IJK,M)+SMALL_NUMBER)**&
+           0.5D0))*VOL(IJK) 
+      ENDIF
 !
 !---------------------------------------------------------------------
 !  The following lines are commented out since Kphi_s has been set to zero
@@ -128,11 +149,19 @@
 !     &    *AXY(KM_OF(IJK))
 !---------------------------------------------------------------------
 !
-      SOURCELHS = (SWITCH*3.*F_GS(IJK,M)+(48./DSQRT(PI))*ETA*(1.-ETA)*ROP_S(IJK&
+      SOURCELHS = ((48./DSQRT(PI))*ETA*(1.-ETA)*ROP_S(IJK&
          ,M)*EP_S(IJK,M)*G_0(IJK,M,M)*DSQRT(THETA_M(IJK,M))/D_P(M)+ &
 	 P_S_C(IJK,M)*ZMAX((TRD_S_C(IJK,M)))/(THETA_M(IJK,M)+SMALL_NUMBER) &
 	 +ZMAX((-LAMBDA_S_C(IJK,M)))*TRD_S_C(IJK,M)**2/(THETA_M(IJK,M)+&
-         SMALL_NUMBER))*VOL(IJK) 
+         SMALL_NUMBER))*VOL(IJK)  
+!
+      IF(SIMONIN .OR. AHMADI) THEN
+        SOURCELHS = SOURCELHS +  3.0 *F_GS(IJK,M)*VOL(IJK)
+!
+      ELSE ! no modifications done to the original KTGF
+!
+        SOURCELHS = SOURCELHS + SWITCH *3.0 *F_GS(IJK,M)*VOL(IJK)
+      ENDIF
 !
       RETURN  
       END SUBROUTINE SOURCE_GRANULAR_ENERGY 

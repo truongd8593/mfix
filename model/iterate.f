@@ -306,8 +306,10 @@
       END IF
 !
 !  Update wall velocities
+!  modified by sof to force wall functions even when NSW or FSW are declared
+!  default wall BC will still be treated as NSW and no wall functions will be used
  
-      CALL SET_WALL_BC (IER) 
+      IF(.NOT. K_EPSILON) CALL SET_WALL_BC (IER) 
 !
 !
 !     Calculate P_star in cells where solids continuity equation is

@@ -28,6 +28,8 @@
       USE constant
       USE physprop
       USE fldvar
+      USE run
+      USE turb
       USE visc_s
       USE geometry
       USE indices
@@ -110,6 +112,12 @@
 !              Average Radial distribution function
       DOUBLE PRECISION g_0AVG
 !
+!                      Average Simonin and Ahmadi variables (sof)
+      DOUBLE PRECISION K_12_avg, Tau_12_avg, Tau_1_avg
+!
+!              slip velocity between wall and particles for Jenkins bc (sof)
+      DOUBLE PRECISION VSLIP
+!
  
 !  Function subroutines
  
@@ -160,6 +168,17 @@
               J_OF(IJK1))
           Mu_g_avg = AVG_X(Mu_g(IJK2), Mu_g(IJK2E), I_OF(IJK2))
           RO_g_avg = AVG_X(RO_g(IJK2), RO_g(IJK2E), I_OF(IJK2))
+
+	  IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin and Ahmadi model (sof)
+            K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))	    
+            Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))	    
+            Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
+	  ELSE
+	    K_12_avg = ZERO    
+            Tau_12_avg = ZERO	    
+            Tau_1_avg = ZERO
+	  ENDIF
  
 !         Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)
           UGC  = AVG_Y(U_g(IJK1), U_g(IJK2),J_OF(IJK1))
@@ -185,12 +204,16 @@
 !
           VREL =&
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
+!
+! slip velocity for use in Jenkins bc (sof)	  
+	  VSLIP= ABS(USCM-BC_Uw_s(L, M))
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL, M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
+			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Uw_s(L, M), gw, hw,cw)
  
  
@@ -209,6 +232,17 @@
           Mu_g_avg = AVG_X(Mu_g(IJK2), Mu_g(IJK2E), I_OF(IJK2))
  
           RO_g_avg = AVG_X(RO_g(IJK2), RO_g(IJK2E), I_OF(IJK2))
+
+	  IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin and Ahmadi model (sof)
+            K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))	    
+            Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))	    
+            Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
+	  ELSE
+	    K_12_avg = ZERO    
+            Tau_12_avg = ZERO	    
+            Tau_1_avg = ZERO
+	  ENDIF
  
 !         Calculate velocity components at i+1/2, j+1/2, k relative to IJK2
           UGC  = AVG_Y(U_g(IJK2),U_g(IJK1),J_OF(IJK2))
@@ -234,12 +268,16 @@
 !
           VREL =&
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
+!
+! slip velocity for use in Jenkins bc (sof)	  
+	  VSLIP= ABS(USCM-BC_Uw_s(L, M))
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL, M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
+			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Uw_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'T')THEN
@@ -259,6 +297,17 @@
  
           RO_g_avg =&
                 AVG_X(RO_g(IJK2), RO_g(IJK2E), I_OF(IJK2))
+
+	  IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin and Ahmadi model (sof)
+            K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))	    
+            Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))	    
+            Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
+	  ELSE
+	    K_12_avg = ZERO    
+            Tau_12_avg = ZERO	    
+            Tau_1_avg = ZERO
+	  ENDIF
  
 !         Calculate velocity components at i+1/2,j,k-1/2 relative to IJK2
           UGC  = AVG_Z(U_g(IJK1), U_g(IJK2), K_OF(IJK1))
@@ -284,12 +333,16 @@
 !
           VREL =&
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
+!
+! slip velocity for use in Jenkins bc (sof)	  
+	  VSLIP= ABS(USCM-BC_Uw_s(L, M))
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
+			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Uw_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'B')THEN
@@ -309,6 +362,17 @@
  
           RO_g_avg =&
                 AVG_X(RO_g(IJK2), RO_g(IJK2E), I_OF(IJK2))
+
+	  IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin and Ahmadi model (sof)
+            K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))	    
+            Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))	    
+            Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
+	  ELSE
+	    K_12_avg = ZERO    
+            Tau_12_avg = ZERO	    
+            Tau_1_avg = ZERO
+	  ENDIF
  
 !         Calculate velocity components at i+1/2,j,k-1/2 relative to IJK1
           UGC  = AVG_Z(U_g(IJK2), U_g(IJK1), K_OF(IJK2))
@@ -334,12 +398,16 @@
 !
           VREL =&
             DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
+!
+! slip velocity for use in Jenkins bc (sof)	  
+	  VSLIP= ABS(USCM-BC_Uw_s(L, M))
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
+			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Uw_s(L, M), gw, hw,cw)
  
         ELSE
@@ -365,6 +433,17 @@
  
           RO_g_avg =&
                      AVG_Y(RO_g(IJK2), RO_g(IJK2N), J_OF(IJK2))
+
+	  IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin and Ahmadi model (sof)
+            K_12_avg = AVG_Y(K_12(IJK2), K_12(IJK2N), J_OF(IJK2))	    
+            Tau_12_avg = AVG_Y(Tau_12(IJK2), Tau_12(IJK2N), J_OF(IJK2))	    
+            Tau_1_avg = AVG_Y(Tau_1(IJK2), Tau_1(IJK2N), J_OF(IJK2))
+	  ELSE
+	    K_12_avg = ZERO    
+            Tau_12_avg = ZERO	    
+            Tau_1_avg = ZERO
+	  ENDIF
  
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK1)
           UGC1 = AVG_X_E(&
@@ -399,12 +478,16 @@
 !
           VREL =&
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
+!
+! slip velocity for use in Jenkins bc (sof)	  
+	  VSLIP = ABS(VSCM-BC_Vw_s(L, M))
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
+			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Vw_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'B')THEN
@@ -424,6 +507,17 @@
  
           RO_g_avg =&
                      AVG_Z(RO_g(IJK2), RO_g(IJK2N), J_OF(IJK2))
+
+	  IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin and Ahmadi model (sof)
+            K_12_avg = AVG_Y(K_12(IJK2), K_12(IJK2N), J_OF(IJK2))	    
+            Tau_12_avg = AVG_Y(Tau_12(IJK2), Tau_12(IJK2N), J_OF(IJK2))	    
+            Tau_1_avg = AVG_Y(Tau_1(IJK2), Tau_1(IJK2N), J_OF(IJK2))
+	  ELSE
+	    K_12_avg = ZERO    
+            Tau_12_avg = ZERO	    
+            Tau_1_avg = ZERO
+	  ENDIF
  
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK2)
           UGC1 = AVG_X_E(&
@@ -458,12 +552,16 @@
 !
           VREL =&
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
+!
+! slip velocity for use in Jenkins bc (sof)	  
+	  VSLIP = ABS(VSCM-BC_Vw_s(L, M))
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
+			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Vw_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'E')THEN
@@ -483,6 +581,17 @@
  
           RO_g_avg =&
                 AVG_Y(RO_g(IJK2), RO_g(IJK2N), J_OF(IJK2))
+
+	  IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin and Ahmadi model (sof)
+            K_12_avg = AVG_Y(K_12(IJK2), K_12(IJK2N), J_OF(IJK2))	    
+            Tau_12_avg = AVG_Y(Tau_12(IJK2), Tau_12(IJK2N), J_OF(IJK2))	    
+            Tau_1_avg = AVG_Y(Tau_1(IJK2), Tau_1(IJK2N), J_OF(IJK2))
+	  ELSE
+	    K_12_avg = ZERO    
+            Tau_12_avg = ZERO	    
+            Tau_1_avg = ZERO
+	  ENDIF
  
  
 !         Calculate velocity components at i+1/2,j+1/2,k relative to IJK1
@@ -509,12 +618,16 @@
 !
           VREL =&
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
+!
+! slip velocity for use in Jenkins bc (sof)	  
+	  VSLIP = ABS(VSCM-BC_Vw_s(L, M))
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
+			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Vw_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'W')THEN
@@ -535,6 +648,17 @@
  
           RO_g_avg =&
                 AVG_Y(RO_g(IJK2), RO_g(IJK2N), J_OF(IJK2))
+
+	  IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin and Ahmadi model (sof)
+            K_12_avg = AVG_Y(K_12(IJK2), K_12(IJK2N), J_OF(IJK2))	    
+            Tau_12_avg = AVG_Y(Tau_12(IJK2), Tau_12(IJK2N), J_OF(IJK2))	    
+            Tau_1_avg = AVG_Y(Tau_1(IJK2), Tau_1(IJK2N), J_OF(IJK2))
+	  ELSE
+	    K_12_avg = ZERO    
+            Tau_12_avg = ZERO	    
+            Tau_1_avg = ZERO
+	  ENDIF
  
  
 !         Calculate velocity components at i+1/2,j+1/2,k relative to IJK2
@@ -561,12 +685,16 @@
 !
           VREL =&
             DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
+!
+! slip velocity for use in Jenkins bc (sof)	  
+	  VSLIP = ABS(VSCM-BC_Vw_s(L, M))
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
+			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Vw_s(L, M), gw, hw,cw)
  
         ELSE
@@ -592,6 +720,17 @@
  
           RO_g_avg =&
                      AVG_Z(RO_g(IJK2), RO_g(IJK2T), K_OF(IJK2))
+
+	  IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin and Ahmadi model (sof)
+            K_12_avg = AVG_Z(K_12(IJK2), K_12(IJK2T), K_OF(IJK2))	    
+            Tau_12_avg = AVG_Z(Tau_12(IJK2), Tau_12(IJK2T), K_OF(IJK2))	    
+            Tau_1_avg = AVG_Z(Tau_1(IJK2), Tau_1(IJK2T), K_OF(IJK2))
+	  ELSE
+	    K_12_avg = ZERO    
+            Tau_12_avg = ZERO	    
+            Tau_1_avg = ZERO
+	  ENDIF
  
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK1)
           UGC1 = AVG_X_E(&
@@ -626,12 +765,16 @@
 !
           VREL =&
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
+!
+! slip velocity for use in Jenkins bc (sof)	  
+	  VSLIP = ABS(WSCM-BC_Ww_s(L, M))
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
+			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Ww_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'S')THEN
@@ -651,6 +794,17 @@
  
           RO_g_avg =&
                      AVG_Z(RO_g(IJK2), RO_g(IJK2T), K_OF(IJK2))
+
+	  IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin and Ahmadi model (sof)
+            K_12_avg = AVG_Z(K_12(IJK2), K_12(IJK2T), K_OF(IJK2))	    
+            Tau_12_avg = AVG_Z(Tau_12(IJK2), Tau_12(IJK2T), K_OF(IJK2))	    
+            Tau_1_avg = AVG_Z(Tau_1(IJK2), Tau_1(IJK2T), K_OF(IJK2))
+	  ELSE
+	    K_12_avg = ZERO    
+            Tau_12_avg = ZERO	    
+            Tau_1_avg = ZERO
+	  ENDIF
  
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK2)
           UGC1 = AVG_X_E(&
@@ -685,12 +839,16 @@
 !
           VREL =&
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
+!
+! slip velocity for use in Jenkins bc (sof)	  
+	  VSLIP = ABS(WSCM-BC_Ww_s(L, M))
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
+			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Ww_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'E')THEN
@@ -710,6 +868,17 @@
  
           RO_g_avg =&
                 AVG_Z(RO_g(IJK2), RO_g(IJK2T), K_OF(IJK2))
+
+	  IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin and Ahmadi model (sof)
+            K_12_avg = AVG_Z(K_12(IJK2), K_12(IJK2T), K_OF(IJK2))	    
+            Tau_12_avg = AVG_Z(Tau_12(IJK2), Tau_12(IJK2T), K_OF(IJK2))	    
+            Tau_1_avg = AVG_Z(Tau_1(IJK2), Tau_1(IJK2T), K_OF(IJK2))
+	  ELSE
+	    K_12_avg = ZERO    
+            Tau_12_avg = ZERO	    
+            Tau_1_avg = ZERO
+	  ENDIF
  
  
 !         Calculate velocity components at i+1/2,j,k+1/2 relative to IJK1
@@ -736,12 +905,16 @@
 !
           VREL =&
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
+!
+! slip velocity for use in Jenkins bc (sof)	  
+	  VSLIP = ABS(WSCM-BC_Ww_s(L, M))
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
+			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Ww_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'W')THEN
@@ -761,6 +934,17 @@
  
           RO_g_avg =&
                 AVG_Z(RO_g(IJK2), RO_g(IJK2T), K_OF(IJK2))
+
+	  IF(SIMONIN .OR. AHMADI) THEN
+! added for Simonin and Ahmadi model (sof)
+            K_12_avg = AVG_Z(K_12(IJK2), K_12(IJK2T), K_OF(IJK2))	    
+            Tau_12_avg = AVG_Z(Tau_12(IJK2), Tau_12(IJK2T), K_OF(IJK2))	    
+            Tau_1_avg = AVG_Z(Tau_1(IJK2), Tau_1(IJK2T), K_OF(IJK2))
+	  ELSE
+	    K_12_avg = ZERO    
+            Tau_12_avg = ZERO	    
+            Tau_1_avg = ZERO
+	  ENDIF
  
 !         Calculate velocity components at i+1/2,j,k+1/2 relative to IJK2
           UGC  = AVG_Z(U_g(IJK2), U_g(IJKP2), K_OF(IJK2))
@@ -786,12 +970,16 @@
 !
           VREL =&
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
+!
+! slip velocity for use in Jenkins bc (sof)	  
+	  VSLIP = ABS(WSCM-BC_Ww_s(L, M))
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
+			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Ww_s(L, M), gw, hw,cw)
  
         ELSE
@@ -814,6 +1002,7 @@
 !  Module name: CALC_Gw_Hw_Cw(g0, EPS, TH, Mu_g_avg, RO_g_avg, VREL, M C
 !                             DEL_U, S_S, S_dd, VEL, W_VEL,            C
 !                             gw, hw,cw)                               C
+!                       +K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP  (sof)  C
 !                                                                      C
 !  Purpose: Calculate Gw, Hw, and Cw                                   C
 !                                                                      C
@@ -828,10 +1017,20 @@
 !                                                                      C
 !  Local variables:                                                    C
 !                                                                      C
+!  Modified: Sofiane Benyahia, Fluent Inc.             Date: 03-FEB-05 C
+!  Purpose: Include conductivity defined by Simonin and Ahmadi         C
+!           Also included Jenkins small frictional limit               C
+!                                                                      C
+!  Literature/Document References: See calcmu_s.f for ref. on Simonin  C
+!  and Ahmadi models; for Jenkins BC: Jenkins and Louge, Phys. fluids  C
+!  9 (10), 2835. See equation (2) in the paper                         C
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
  
       SUBROUTINE CALC_Gw_Hw_Cw(g0,EPS,TH,Mu_g_avg,RO_g_avg, VREL, M,&
-                               DEL_U, S_S, S_dd, VEL, W_VEL, gw, hw,cw)
+                               DEL_U, S_S, S_dd, VEL, &
+			       K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
+			       W_VEL, gw, hw,cw)
 
       USE param 
       USE param1 
@@ -894,9 +1093,15 @@
  
 !              Magnitude of slip velocity
       DOUBLE PRECISION VREL
+!
+!              slip velocity between wall and particles for Jenkins bc (sof)
+      DOUBLE PRECISION VSLIP
  
 !              Average gas density
       DOUBLE PRECISION RO_g_avg
+ 
+!              Average cross-correlation K_12 and time-scales (sof)
+      DOUBLE PRECISION K_12_avg, Tau_12_avg, Tau_1_avg
  
 !              Average gas viscosity
       DOUBLE PRECISION Mu_g_avg
@@ -919,6 +1124,10 @@
 !              Radial distribution function
       DOUBLE PRECISION g0, G_0
  
+!              Constants in Simonin model
+      DOUBLE PRECISION Sigma_c, Tau_2_c, Tau_12_st, Nu_t, Sigma_c
+      DOUBLE PRECISION Tau_2, zeta_c_2, MU_2_T_Kin, Mu_2_Col
+ 
 !                      Error message
       CHARACTER*80     LINE
  
@@ -928,11 +1137,42 @@
 !     Calculating collisional part of stress
  
       G_0 = g0
+      
+! modify F_2 if Jenkins BC is used (sof)    
  
-      F_2 = (PHIP*DSQRT(3d0)*Pi*RO_s(M)*EPS*G_0*DSQRT(TH))&
-            /(6d0*EPS_max)
+      IF(JENKINS) THEN
+!
+        IF (VSLIP <= small_number) THEN
+! if solids velocity field is initialized to zero, use free slip bc
+	  F_2 = zero
+!
+	ELSE
+          IF(AHMADI) THEN
+! Ahmadi model uses different solids pressure model
+!
+! the coefficient mu in Jenkins paper is defined as tan_Phi_w, that's how
+! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
+! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
+!
+            F_2 = tan_Phi_w*RO_s(M)*EPS* &
+	          ((ONE + 4.0*EPS*G_0) + HALF*(ONE -C_e*C_e))*TH/VSLIP
+!
+! here F_2 divided by VSLIP to use the same bc as Johnson&Jackson
+!
+          ELSE  ! Simonin or granular models use same solids pressure
+            F_2 = tan_Phi_w*RO_s(M)*EPS*(1d0+ 4. * Eta *EPs*G_0)*TH/VSLIP
+	  ENDIF !for Ahmadi
+!
+	ENDIF ! for vslip < small_number
+!
+      ELSE ! no change to the original code if Jenkins BC not used
  
-      Mu = (5d0*DSQRT(Pi)*D_p(M)*RO_s(M)*DSQRT(TH))/96d0
+        F_2 = (PHIP*DSQRT(3d0*TH)*Pi*RO_s(M)*EPS*G_0)&
+              /(6d0*EPS_max)
+!
+      ENDIF !for Jenkins
+ 
+      Mu = (5d0*DSQRT(Pi*TH)*D_p(M)*RO_s(M))/96d0
  
       Mu_b = (256d0*Mu*EPS*EPS*G_0)/(5d0*Pi)
  
@@ -942,8 +1182,12 @@
       ELSE
          C_d = 0.44d0
       ENDIF
-      Beta = SWITCH*0.75d0*C_d*Ro_g_avg*(1-EPS)*EPS*VREL&
+      Beta = 0.75d0*C_d*Ro_g_avg*(1-EPS)*EPS*VREL&
                 *((1-EPS)**(-2.65d0))/D_p(M)
+! particle relaxation time
+      Tau_12_st = EPS*RO_s(M)/(Beta+small_number)
+      
+      Beta = SWITCH*Beta
  
 !     SWITCH enables us to turn on/off the modification to the
 !     particulate phase viscosity. If we want to simulate gas-particle
@@ -966,6 +1210,29 @@
              (1d0+1.6d0*Eta*EPS*G_0)*&
              (1d0+1.6d0*Eta*(3d0*Eta-2d0)*EPS*G_0) +&
              (0.6d0*Mu_b*Eta))
+ 
+      IF(SIMONIN) THEN !see calc_mu_s for explanation of these definitions
+!
+        Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
+        Tau_2_c = D_P(M)/(6.d0*EPS*G_0*DSQRT(16.d0*(TH+Small_number)/PI))
+	zeta_c_2= 2./5.*(ONE+ C_e)*(3.d0*C_e-ONE)
+	Nu_t =  Tau_12_avg/Tau_12_st
+        Tau_2 = ONE/(2./Tau_12_st+Sigma_c/Tau_2_c)
+!
+	MU_2_T_Kin = (2.0/3.0*K_12_avg*Nu_t + TH * &
+                     (ONE+ zeta_c_2*EPS*G_0))*Tau_2
+!
+	Mu_2_Col = 8./5.*EPS*G_0*Eta* (MU_2_T_Kin+ &
+                   D_p(M)*DSQRT(TH/PI))
+!
+	Mu_s = EPS*RO_s(M)*(MU_2_T_Kin + Mu_2_Col)
+!
+      ELSE IF(AHMADI) THEN
+!
+	Mu_s = ONE/(ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS/EPS_max)**3)&
+	       *0.1045*(ONE/G_0+3.2*EPS+12.1824*G_0*EPS*EPS)          &
+	       *D_p(M)*RO_s(M)* DSQRT(TH)
+      ENDIF
  
 !     Calculating frictional terms
  

@@ -248,6 +248,14 @@
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_W_g', BCV 
                      call mfix_exit(myPE)		     
                   ENDIF 
+               ENDIF  
+               IF (K_Epsilon .AND. BC_K_Turb_G(BCV) == UNDEFINED) THEN
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_K_Turb_G', BCV 
+                  call mfix_exit(myPE) 
+               ENDIF   
+               IF (K_Epsilon .AND. BC_E_Turb_G(BCV) == UNDEFINED) THEN
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_E_Turb_G', BCV 
+                  call mfix_exit(myPE) 
                ENDIF 
 !
 !           Check whether the bc velocity components have the correct sign
@@ -405,19 +413,7 @@
                    IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
 		   CALL MFIX_EXIT(myPE)
                  ENDIF 
-               END DO  
-	       
-	       IF(K_Epsilon) THEN
-                 IF (BC_K_Turb_G(BCV) == UNDEFINED) THEN 
-                   IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_K_Turb_G', BCV
-		   CALL MFIX_EXIT(myPE)
-                 ENDIF
-	       
-                 IF (BC_E_Turb_G(BCV) == UNDEFINED) THEN 
-                   IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_E_Turb_G', BCV
-		   CALL MFIX_EXIT(myPE)
-                 ENDIF
-	       ENDIF
+               END DO
 	       
             CASE ('MASS_OUTFLOW')  
                IF (BC_DT_0(BCV) == UNDEFINED) THEN 
@@ -622,19 +618,7 @@
                    IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
 		   CALL MFIX_EXIT(myPE)
                  ENDIF 
-               END DO  
-	       
-	       IF(K_Epsilon) THEN
-                 IF (BC_K_Turb_G(BCV) == UNDEFINED) THEN 
-                   IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_K_Turb_G', BCV
-		   CALL MFIX_EXIT(myPE)
-                 ENDIF
-	       
-                 IF (BC_E_Turb_G(BCV) == UNDEFINED) THEN 
-                   IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_E_Turb_G', BCV 
-		   CALL MFIX_EXIT(myPE)
-                 ENDIF
-	       ENDIF
+               END DO
 	       
 	       
             CASE ('P_OUTFLOW')  
@@ -727,17 +711,7 @@
               ENDIF 
             END DO 
 	   
-	       IF(K_Epsilon) THEN
-                 IF (BC_K_Turb_G(BCV) == UNDEFINED) THEN 
-                   IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'BC_K_Turb_G', BCV 
-		   CALL MFIX_EXIT(myPE)
-                 ENDIF
-	       
-                 IF (BC_E_Turb_G(BCV) == UNDEFINED) THEN 
-                   IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'BC_E_Turb_G', BCV
-		   CALL MFIX_EXIT(myPE)
-                 ENDIF
-	       ENDIF  
+  
          ENDIF 
       END DO 
       DO BCV = 1, DIMENSION_BC 
@@ -749,6 +723,8 @@
             ELSE 
                IF (BC_JJ_PS(BCV) == UNDEFINED_I) BC_JJ_PS(BCV) = 0 
             ENDIF 
+! Set Jenkins default specification, modify BC_JJ accordingly
+            IF (GRANULAR_ENERGY .AND. JENKINS) BC_JJ_PS(BCV) = 1
 !
             IF (BC_TYPE(BCV)=='FREE_SLIP_WALL' .OR. BC_TYPE(BCV)=='NO_SLIP_WALL'&
                 .OR. BC_TYPE(BCV)=='PAR_SLIP_WALL') THEN 

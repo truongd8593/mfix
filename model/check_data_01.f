@@ -30,6 +30,7 @@
 !-----------------------------------------------
       USE param 
       USE param1 
+      USE constant 
       USE run
       USE physprop
       USE indices
@@ -88,7 +89,15 @@
             'For FRICTION=.T., GRANULAR_ENERGY must be turned on', 1, 1) 
          IF (SAVAGE>2 .OR. SAVAGE<0) CALL ERROR_ROUTINE ('check_data_01', &
             'Value of SAVAGE should be 0, 1, or 2', 1, 1) 
-      ENDIF 
+      ENDIF  
+!
+! sof: cannot use both Ahmadi and Simonin models at the same time.
+      IF (AHMADI .AND. SIMONIN) CALL ERROR_ROUTINE ('check_data_01', &
+            'Cannot set both AHMADI = .T. and SIMONIN = .T.', 1, 1)  
+!
+! sof: cannot use both L_scale0 and K-epsilon models at the same time.
+      IF (K_Epsilon .AND. L_SCALE0/=ZERO) CALL ERROR_ROUTINE ('check_data_01', &
+            'Cannot set both K_Epsilon = .T. and L_SCALE0 /= ZERO', 1, 1)
 !
 !  Set variable ANY_SPECIES_EQ
 !

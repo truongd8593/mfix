@@ -277,6 +277,13 @@
         Allocate(  Dif_E_Turb_G (DIMENSION_3) )
       
       ENDIF
+! Simonin or Ahmadi model
+
+      IF(SIMONIN .OR. AHMADI)then
+        Allocate(  K_12 (DIMENSION_3) )
+	Allocate(  Tau_12 (DIMENSION_3) )
+        Allocate(  Tau_1 (DIMENSION_3) )
+      ENDIF
 
 !tau_g
       Allocate(  TAU_U_g(DIMENSION_3) )

@@ -33,7 +33,20 @@
 !  Revision Number:7                                                   C
 !  Purpose: Add calculation of frictional stress terms                 C
 !                                                                      C
+!  Author: Sofiane Benyahia, Fluent Inc.      Date: 02-01-05           C
+!  Revision Number:8                                                   C
+!  Purpose: Add Simonin and Ahmadi models                              C
+!                                                                      C
 !  Literature/Document References:                                     C
+!  1- Simonin, O., 1996. Combustion and turbulence in two-phase flows. C
+!     Von Karman institute for fluid dynamics, lecture series 1996-02  C
+!  2- Balzer, G., Simonin, O., Boelle, A., and Lavieville, J., 1996.   C
+!     A unifying modelling approach for the numerical prediction of    C
+!     dilute and dense gas-solid two phase flow. CFB5, 5th int. conf.  C
+!     on circulating fluidized beds, Beijing, China.                   C
+!  3- Cao, J. and Ahmadi, G., 1995. Gas-particle two-phase turbulent   C
+!     flow in a vertical duct. Int. J. Multiphase Flow, vol. 21 No. 6  C
+!     pp. 1203-1228.                                                   C
 !                                                                      C
 !  Variables referenced: U_s, V_s, W_s, IMAX2, JMAX2, KMAX2, DX, DY,   C
 !                        DZ, IMJPK, IMJK, IPJMK, IPJK, IJMK, IJKP,     C
@@ -62,8 +75,10 @@
       USE visc_g
       USE visc_s
       USE trace
+      USE turb
       USE indices
       USE constant
+      USE toleranc
       Use vshear
       USE compar
       USE sendrecv
@@ -140,6 +155,12 @@
 !                      Calculated for Cylindrical coordinates only.
       DOUBLE PRECISION W_s_C
 !
+!                      Cell center value of solids and gas velocities 
+      DOUBLE PRECISION USCM, UGC, VSCM, VGC, WSCM, WGC 
+! 
+!                      Magnitude of gas-solids relative velocity 
+      DOUBLE PRECISION VREL
+!
 !                      Value of EP_s * SQRT( THETA )for Mth solids phase
 !                      continuum
       DOUBLE PRECISION EP_sxSQRTHETA
@@ -200,7 +221,12 @@
       DOUBLE PRECISION Mu, Mu_b, Mu_star, MUs, Kth, Kth_star
 
       double precision calc_ep_star
- 
+!
+!                       defining parametrs for Simonin and Ahmadi models
+      DOUBLE PRECISION Tau_12_st, Tau_2_c, Tau_2, Zeta_r, Cos_Theta, C_Beta
+      DOUBLE PRECISION Sigma_c, Zeta_c, Omega_c, Zeta_c_2, C_mu, X_21, Nu_t
+      DOUBLE PRECISION MU_2_T_Kin, Mu_2_Col, Kappa_kin, Kappa_Col
+      DOUBLE PRECISION DGA, C_d, Re
  
 !     SWITCH enables us to turn on/off the modification to the
 !     particulate phase viscosity. If we want to simulate gas-particle
@@ -399,8 +425,23 @@
               trD_s2(IJK,M) = trD_s2(IJK,M) + D_s(I1,I2)*D_s(I1,I2)
    10       CONTINUE
    20     CONTINUE
- 
- 
+!
+! Start definition of Relative Velocity
+!
+!         Calculate velocity components at i, j, k
+            UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
+            VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
+            WGC = AVG_Z_T(W_G(IJKM),W_G(IJK)) 
+            USCM = AVG_X_E(U_S(IMJK,1),U_S(IJK,1),I) 
+            VSCM = AVG_Y_N(V_S(IJMK,1),V_S(IJK,1)) 
+            WSCM = AVG_Z_T(W_S(IJKM,1),W_S(IJK,1)) 
+!
+!         magnitude of gas-solids relative velocity
+!
+	    VREL = SQRT((UGC - USCM)**2 + &
+	                (VGC - VSCM)**2 + &
+			(WGC - WSCM)**2)
+!
 ! start anuj 04/20
  
 !  GRANULAR_ENERGY
@@ -478,11 +519,100 @@
 	    IF(.NOT.GRANULAR_ENERGY) THETA_m(IJK, M) = ZERO
           ENDIF
          ENDIF
- 
- 
- 
- 
- 
+!           end Schaeffer
+!
+!
+!
+! Define some time scales and constants related to Simonin and Ahmadi models
+!
+          IF(SIMONIN .OR. AHMADI) THEN
+	    C_mu = 9.0D-02
+! particle relaxation time. For very dilute flows avoid singularity by
+! redefining the drag as single partilce drag
+!
+	    IF(Ep_s(IJK,M) > DIL_EP_S .AND. F_GS(IJK,1) > small_number) THEN
+	      Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
+	    ELSE !for dilute flows, drag equals single particle drag law
+	      Re = D_P(M)*VREL*ROP_G(IJK)/(MU_G(IJK) + small_number)
+              IF(Re .LE. 1000)THEN
+                C_d = (24./(Re+SMALL_NUMBER)) * (ONE + 0.15 * Re**0.687)
+              ELSE
+                C_d = 0.44
+              ENDIF
+	      DgA = 0.75 * C_d * VREL * ROP_g(IJK) / D_p(M)
+	      Tau_12_st = RO_s(M)/DgA
+	    ENDIF !for dilute flows
+	      
+	      
+! time scale of turbulent eddies
+	    Tau_1(ijk) = 3.d0/2.d0*C_MU*K_Turb_G(IJK)/(E_Turb_G(IJK)+small_number)
+	  ENDIF
+!
+! Define some time scales and constants and K_12 related to Simonin model only	  
+!
+          IF(SIMONIN) THEN
+! This is Zeta_r**2 as defined by Simonin
+            Zeta_r = 3.0d0 * VREL**2 / (2.0d0*K_Turb_G(IJK)+small_number)
+!
+! parameters for defining Tau_12: time-scale of the fluid turbulent motion
+! viewed by the particles (crossing trajectory effect)
+!
+            IF(SQRT(USCM**2+VSCM**2+WSCM**2) .GT. zero) THEN
+              Cos_Theta = ((UGC-USCM)*USCM+(VGC-VSCM)*VSCM+(WGC-WSCM)*WSCM)/ &
+                          (SQRT((UGC-USCM)**2+(VGC-VSCM)**2+(WGC-WSCM)**2)*  &
+                           SQRT(USCM**2+VSCM**2+WSCM**2))
+            ELSE
+	      Cos_Theta = ONE
+	    ENDIF
+
+            C_Beta = 1.8d0 - 1.35d0*Cos_Theta**2
+!	    
+! Lagrangian Integral time scale: Tau_12	    
+            Tau_12(ijk) = Tau_1(ijk)/sqrt(ONE+C_Beta*Zeta_r)
+!
+! Defining the inter-particle collision time
+!
+	    IF(Ep_s(IJK,M) > DIL_EP_S) THEN
+              Tau_2_c = D_P(M)/(6.d0*Ep_s(IJK,M)*G_0(IJK,M,M) &
+                       *DSQRT(16.d0*(Theta_m(ijk,m)+Small_number)/PI))
+	    ELSE ! assign it a large number
+	      Tau_2_c = LARGE_NUMBER
+	    ENDIF
+! 
+            Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
+!	
+! Zeta_c: const. to be used in the K_2 Diffusion coefficient.
+            Zeta_c  = (ONE+ C_e)*(49.d0-33.d0*C_e)/100.d0
+
+            Omega_c = 3.d0*(ONE+ C_e)**2 *(2.d0*C_e-ONE)/5.d0
+
+            Zeta_c_2= 2./5.*(ONE+ C_e)*(3.d0*C_e-ONE)
+
+! mixed time scale in the generalized Simonin theory (switch between dilute
+! and kinetic theory formulation of the stresses)
+            Tau_2 = ONE/(2./Tau_12_st+Sigma_c/Tau_2_c)
+!
+! The ratio of densities
+            X_21 = Ep_s(IJK,M)*RO_s(M)/(EP_g(IJK)*RO_g(IJK))
+!
+! The ratio of these two time scales.
+            Nu_t =  Tau_12(ijk)/Tau_12_st
+!
+! Definition of an "algebraic" form of of Simonin K_12 PDE. This is obtained
+! by equating the dissipation term to the exchange terms in the PDE and 
+! neglecting all other terms, i.e. production, convection and diffusion.
+! This works because Tau_12 is very small for heavy particles
+
+            K_12(ijk) = Nu_t / (ONE+Nu_t*(ONE+X_21)) * &
+                       (2.d+0 *K_Turb_G(IJK) + 3.d+0 *X_21*theta_m(ijk,m))
+!  Realizability Criteria         
+	    IF(K_12(ijk) > DSQRT(6.0*K_Turb_G(IJK)*theta_m(ijk,m))) THEN
+	      K_12(ijk) = DSQRT(6.0*K_Turb_G(IJK)*theta_m(ijk,m))
+	    ENDIF
+!
+          ENDIF ! for Simonin
+!
+!
 !
 !  Viscous-flow stress tensor
 !
@@ -576,13 +706,24 @@
 	    ENDIF
  
           ELSE	!granular energy transport equation
+	        ! This is also used whith Simonin or Ahmadi models
  
  
 !           Find pressure in the Mth solids phase
             P_s(IJK,M) = ROP_s(IJK,M)*(1d0+ 4. * Eta *&
                            EP_s(IJK,M)*G_0(IJK,M,M))*Theta_m(IJK,M)
 !
-            Mu = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(M)*RO_s(M))/96d0
+! implement Simonin (same as granular) and Ahmadi solids pressures
+            IF(SIMONIN) THEN
+	      P_s(IJK,M) = P_s(IJK,M) ! no changes to solids pressure
+	    ELSE IF(AHMADI) THEN
+	      P_s(IJK,M) = ROP_s(IJK,M)*Theta_m(IJK,M) * ( (ONE + 4.0* &
+	                   EP_s(IJK,M)*G_0(IJK,M,M)) + HALF*(ONE - C_e*C_e) )
+	    ENDIF
+
+! find bulk and shear viscosity
+!	    
+	    Mu = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(M)*RO_s(M))/96d0
  
             Mu_b = (256d0*Mu*EP_s(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M))&
                      /(5d0*Pi)
@@ -608,8 +749,44 @@
                    G_0(IJK,M,M)))*(1d0+1.6d0*Eta*EP_s(IJK,M)*&
                    G_0(IJK,M,M))*(1d0+1.6d0*Eta*(3d0*Eta-2d0)*&
                    EP_s(IJK,M)*G_0(IJK,M,M))+(0.6d0*Mu_b*Eta))
+!
+! implement Simonin and Ahmadi solids viscosities
+            IF(SIMONIN) THEN
+!
+! Defining Simonin solids turbulent Kinetic (MU_2_T_Kin) and collisional (Mu_2_Col)
+! viscosities
+	      MU_2_T_Kin = (2.0/3.0*K_12(ijk)*Nu_t + Theta_m(IJK,M) * &
+                          (ONE+ zeta_c_2*EP_s(IJK,M)*G_0(IJK,M,M)))*Tau_2
+!
+	      Mu_2_Col = 8./5.*EP_s(IJK,M)*G_0(IJK,M,M)*Eta* (MU_2_T_Kin+ &
+                         D_p(M)*DSQRT(Theta_m(IJK,M)/PI))
+!
+              Mu_b = 5.d0/3.d0*EP_s(IJK,M)*RO_s(M)*Mu_2_Col
+!
+	      Mus = EP_s(IJK,M)*RO_s(M)*(MU_2_T_Kin + Mu_2_Col)
+            
+	    ELSE IF(AHMADI) THEN
+!
+! Defining Ahmadi shear and bulk viscosities. Ahmadi coefficient 0.0853 in C_mu
+! was replaced by 0.1567 to include 3/2*sqrt(3/2) because K = 3/2 Theta_m
+!
+	      Mus = ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/EPS_max)**3)&
+	         *0.1045*(ONE/G_0(IJK,M,M)+3.2*EP_s(IJK,M)+12.1824*   &
+		 G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M))*D_p(M)*RO_s(M)*  &
+		 DSQRT(Theta_m(IJK,M))
+!
+! This is a guess of what Mu_b might be by taking 5/3 of the collisional viscosity
+! contribution. In this case col. visc. is the eps^2 contribution to mus. This
+! might be changed later if communications with Ahmadi reveals a diffrent appoach
+!
+	      Mu_b = 5./3.* &
+	         ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/EPS_max)**3)&
+	         *0.1045*(12.1824*G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M)) &
+		 *D_p(M)*RO_s(M)* DSQRT(Theta_m(IJK,M))
+            
+	    ENDIF !for simonin or ahmadi viscosity
  
- 
+!
 ! start anuj 04/20
 !           calculate frictional stress
  
@@ -731,6 +908,32 @@
                   + (64d0/(25d0*Pi)) * (41d0-33d0*Eta) *&
                      (Eta*EP_s(IJK,M))**2 * G_0(IJK,M,M)&
               )
+!
+! implement Simonin and Ahmadi solids conductivities
+            IF(SIMONIN) THEN
+
+! Defining Simonin's Solids Turbulent Kinetic diffusivity: Kappa
+  
+              Kappa_kin = (9.d0/10.d0*K_12(ijk)*Nu_t + 3.0/2.0 * &
+                 Theta_m(IJK,M)*(ONE+ Omega_c*EP_s(IJK,M)*G_0(IJK,M,M)))/&
+                 (9.d0/(5.d0*Tau_12_st) + zeta_c/Tau_2_c)
+          
+              Kappa_Col = 18.d0/5.d0*EP_s(IJK,M)*G_0(IJK,M,M)*Eta* (Kappa_kin+ &
+                     5.d0/9.d0*D_p(M)*DSQRT(Theta_m(IJK,M)/PI))
+  
+              Kth_s(IJK,M) =  EP_s(IJK,M)*RO_s(M)*(Kappa_kin + Kappa_Col)
+!
+            ELSE IF(AHMADI) THEN
+
+! Defining Ahmadi conductivity from his equation 42 in Cao and Ahmadi 1995 paper
+! note the constant 0.0711 is now 0.1306 because K = 3/2 theta_m
+!
+	      Kth_s(IJK,M) = 0.1306*RO_s(M)*D_p(M)*(ONE+C_e**2)* (  &
+	                   ONE/G_0(IJK,M,M)+4.8*EP_s(IJK,M)+12.1184 &
+			   *EP_s(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M) )  &
+			   *DSQRT(Theta_m(IJK,M))
+!
+            ENDIF
  
 !
 !     granular 'conductivity' in the Mth solids phase associated

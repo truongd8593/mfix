@@ -73,15 +73,15 @@
          W_G(IJKSTART3:IJKEND3) = UNDEFINED 
          IF (NMAX(0) > 0) THEN 
             X_G(IJKSTART3:IJKEND3,:NMAX(0)) = ZERO 
-         ENDIF 
-      ENDIF 
+         ENDIF  
       
-      IF(Nscalar > 0) Scalar(IJKSTART3:IJKEND3,:Nscalar) = ZERO
-      IF(nRR > 0) ReactionRates(IJKSTART3:IJKEND3,:nRR) = ZERO
+         IF(Nscalar > 0) Scalar(IJKSTART3:IJKEND3,:Nscalar) = ZERO
+         IF(nRR > 0) ReactionRates(IJKSTART3:IJKEND3,:nRR) = ZERO
 
-      IF(K_Epsilon) THEN
-        K_Turb_G(IJKSTART3:IJKEND3) = ZERO
-        E_Turb_G(IJKSTART3:IJKEND3) = ZERO
+         IF(K_Epsilon) THEN
+           K_Turb_G(IJKSTART3:IJKEND3) = ZERO
+           E_Turb_G(IJKSTART3:IJKEND3) = ZERO
+         ENDIF
       ENDIF
 
 !!$omp parallel do private(M,IJK,N)
