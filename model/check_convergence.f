@@ -72,7 +72,8 @@
       LOGICAL          NO_RESID
 !-----------------------------------------------
 !
-      SUM = RESID(RESID_P,0) + RESID(RESID_P,1) 
+      SUM = RESID(RESID_P,0) 
+      if(MMAX > 0) SUM = SUM + RESID(RESID_P,1) 
 !
       DO M = 0, MMAX 
          SUM = SUM + RESID(RESID_RO,M) 
