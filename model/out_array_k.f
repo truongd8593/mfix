@@ -69,13 +69,38 @@
 !        IN FORMATS 5050 AND 5100 MUST BE CHANGED TO THAT NUMBER.
 !
       NCOL = 10 
-      NTAB = IMAX2/NCOL + 1 
+!//SP
+    IF(CYCLIC_X) then
+      NTAB = (IMAX2-2)/NCOL + 1
+    ELSE
+      NTAB = IMAX2/NCOL + 1
+    ENDIF
+
+!//SP
+    IF(CYCLIC_X) then
+      IF (MOD(IMAX2-2,NCOL) == 0) NTAB = NTAB - 1 
+    ELSE
       IF (MOD(IMAX2,NCOL) == 0) NTAB = NTAB - 1 
+    ENDIF
 !
       DO LL1 = 1, NTAB 
+
+!//SP
+       IF(CYCLIC_X) then
+         IFORM1 = 2 + NCOL*(LL1 - 1) 
+       ELSE
          IFORM1 = 1 + NCOL*(LL1 - 1) 
+       ENDIF
+
          IFORM2 = NCOL*LL1 
+
+!//SP
+       IF(CYCLIC_X) then
+	 IFORM2 = MIN(IFORM2,IMAX2-2)
+       ELSE
          IFORM2 = MIN(IFORM2,IMAX2) 
+       ENDIF
+
          WRITE (UNIT_OUT, 5050) (LL3,LL3=IFORM1,IFORM2) 
          DO LL2 = JMAX2, 1, -1 
             IJK = funijk_io(IFORM1,LL2,1) 
