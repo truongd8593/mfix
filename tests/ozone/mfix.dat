@@ -10,7 +10,7 @@
   DESCRIPTION = 'Ozone decomposition - 8 cm/s, fine, 3d'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-  TIME  = 0.0    TSTOP = 0.10e-2     DT = 0.2E-3    
+  TIME  = 0.0    TSTOP = 0.20e-2     DT = 0.2E-3    
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .TRUE.    .FALSE.
 
@@ -29,7 +29,7 @@
 
   XLENGTH  =  11.45   	IMAX = 76
   YLENGTH  =  30.00   	JMAX = 112
-  ZLENGTH  =  @(2.*PI)  KMAX = 16
+  ZLENGTH  =  @(2.*PI)  KMAX = 64
 
 #
 # Gas-phase Section
