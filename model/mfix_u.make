@@ -758,8 +758,8 @@ DBG_UTIL.mod : ./dmp_modules/dbg_util_mod.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/dbg_util_mod.f 
 DEBUG.mod : ./dmp_modules/debug_mod.f \
-            FUNITS.mod \
-            DBG_UTIL.mod 
+            DBG_UTIL.mod \
+            FUNITS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/debug_mod.f 
 GRIDMAP.mod : ./dmp_modules/gridmap_mod.f \
             MPI_UTILITY.mod \
@@ -771,7 +771,7 @@ GRIDMAP.mod : ./dmp_modules/gridmap_mod.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/gridmap_mod.f 
 MPI.mod : ./dmp_modules/mpi_mod.f \
-            /usr/include/mpif.h                                         
+            mpif.h                                                      
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/mpi_mod.f 
 MPI_UTILITY.mod : ./dmp_modules/mpi_utility_mod.f \
             GEOMETRY.mod \
@@ -2216,8 +2216,7 @@ mod_bc_k.$(OBJ_EXT) : mod_bc_k.f \
             COMPAR.mod \
             MPI_UTILITY.mod \
             function.inc                                                
-open_file.$(OBJ_EXT) : open_file.f \
-            COMPAR.mod 
+open_file.$(OBJ_EXT) : open_file.f 
 open_files.$(OBJ_EXT) : open_files.f \
             MACHINE.mod \
             FUNITS.mod \
@@ -2287,7 +2286,8 @@ parse_rxn.$(OBJ_EXT) : parse_rxn.f \
             PARAM.mod \
             PARAM1.mod \
             PARSE.mod \
-            RXNS.mod 
+            RXNS.mod \
+            COMPAR.mod 
 partial_elim.$(OBJ_EXT) : partial_elim.f \
             PARAM.mod \
             PARAM1.mod \

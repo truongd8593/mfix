@@ -243,7 +243,7 @@
 !
 !   Gas viscosity, conductivity and specific heat must be positive
 !
-                  IF (MU_G(IJK) <= ZERO) THEN 
+                  IF (MU_G(IJK) < ZERO) THEN 
                      IF (.NOT.MESSAGE) THEN 
                         WRITE (UNIT_LOG, 1000) TIME 
                         MESSAGE = .TRUE. 
@@ -280,6 +280,18 @@
                         ABORT = .TRUE. 
                      ENDIF 
                   ENDIF 
+		   
+		  DO N = 1, NMAX(0)
+                    IF( DIF_g(IJK, N) < ZERO) THEN
+                      IF (.NOT.MESSAGE) THEN 
+                        WRITE (UNIT_LOG, 1000) TIME 
+                        MESSAGE = .TRUE. 
+                      ENDIF 
+                      WRITE (UNIT_LOG, 1131) I, J, K, DIF_g(IJK, N) 
+                      ABORT = .TRUE. 
+		    ENDIF
+		  ENDDO
+		   
 !
 !  Sum of over all reaction rates for phases should be zero
 !
@@ -520,6 +532,17 @@
                            WRITE (UNIT_LOG, 1410) I, J, K, M, T_S(IJK,M) 
                         ENDIF 
                      ENDIF 
+		     
+		     DO N = 1, NMAX(M)
+                       IF( DIF_s(IJK, M, N) < ZERO) THEN
+                         IF (.NOT.MESSAGE) THEN 
+                           WRITE (UNIT_LOG, 1000) TIME 
+                           MESSAGE = .TRUE. 
+                         ENDIF 
+                         WRITE (UNIT_LOG, 1331) I, J, K, M, DIF_s(IJK, M, N) 
+                         ABORT = .TRUE. 
+		       ENDIF
+		     ENDDO
                   END DO 
                   IF (ENERGY_EQ) THEN 
                      IF (T_G(IJK)<=TMIN .OR. T_G(IJK)>=TMAX) THEN 
@@ -591,16 +614,18 @@
  1104 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  RoX_gc<0 for N=',I2) 
  1105 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  R_sp < 0 for N=',I2) 
  1106 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  RoX_sc<0 for N=',I2) 
- 1110 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  MU_g .LE. 0') 
+ 1110 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  MU_g .LT. 0') 
  1111 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  MW_MIX_g .LE. 0') 
  1120 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  K_g .LT. 0') 
  1130 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  C_pg .LE. 0') 
+ 1131 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  DIF_g .LT. 0') 
  1140 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,A,' .NE. 0 in a flow boundary') 
  1200 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  Sum of X_g .NE. 1') 
  1300 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  Sum of X_s .NE. 1') 
  1310 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  MU_s .LT. 0') 
  1320 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  K_s .LT. 0') 
  1330 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  C_ps .LE. 0') 
+ 1331 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  DIF_s .LT. 0') 
  1400 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  T_g .EQ. TMIN or TMAX') 
  1410 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  T_s .EQ. TMIN or TMAX') 
  1430 FORMAT(//1X,'Statistics of sum of gas species mass fraction',/,1X,&

@@ -64,13 +64,13 @@ case $dmp_version in
 
   echo
   echo -n "checking for mpif.h in the default directory $mpi_include"
-            if test -f $mpi_include
+            if test -f "$mpi_include/mpif.h"
             then
 	        echo
                 echo -n "using mpif.h from $mpi_include"
             else
 	        echo
-                echo -n "input the location of the directory where mpif.h resides"
+                echo -n "input the location of the directory where mpif.h resides: "
                 read mpi_include
             fi
   ;;

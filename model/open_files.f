@@ -59,11 +59,15 @@
 !                   run_name + extension
       CHARACTER     FILE_NAME*64
 !
+!
+!                   Log file name: dmp mode adds processor no to file name
+      CHARACTER     LOGFILE*60
+!
 !                   Loop counter
       INTEGER       LC
 !
 !                   index to first blank character in run_name
-      INTEGER       NB
+      INTEGER       NB, NBL
 !-----------------------------------------------
 !
 ! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
@@ -74,30 +78,36 @@
          IF (RUN_NAME(LC:LC) == ' ') THEN 
             NB = LC 
             GO TO 125 
-         ENDIF 
+         ENDIF
+	 LOGFILE(LC:LC) = RUN_NAME(LC:LC) 
       END DO 
       WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
       call mfix_exit(myPE) 
 !
   125 CONTINUE 
-      IF (NB + 4 > LEN(FILE_NAME)) THEN 
+      IF (NB + 7 > LEN(FILE_NAME)) THEN 
          WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
          call mfix_exit(myPE) 
       ENDIF 
 
 !
-!//PAR_I/O modifications to create XXX.log are done in OPEN_FILE()
-      CALL OPEN_FILE (RUN_NAME, NB, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
-         'SEQUENTIAL', 'FORMATTED', 132, IER) 
+      NBL = NB
+      if( numPEs > 1 ) then
+        write(LOGFILE(NB:NB+3),'(I3.3)') myPE
+	NBL = NB + 3
+      endif
+!
+      CALL OPEN_FILE (LOGFILE, NBL, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
+        'SEQUENTIAL', 'FORMATTED', 132, IER) 
       IF (IER /= 0) THEN 
-         CALL OPEN_FILE (RUN_NAME, NB+3, UNIT_LOG, '.LOG', FILE_NAME, 'OLD', &
-            'SEQUENTIAL', 'FORMATTED', 132, IER) 
-         IF (IER /= 0) GO TO 500
-      DO WHILE(IER ==0)
-       READ(UNIT_LOG,'(a)', IOSTAT = IER)ANS
-      ENDDO
-      BACKSPACE(UNIT_LOG) 
-      ENDIF 
+        CALL OPEN_FILE (LOGFILE, NBL, UNIT_LOG, '.LOG', FILE_NAME, 'OLD', &
+          'SEQUENTIAL', 'FORMATTED', 132, IER) 
+        IF (IER /= 0) GO TO 500
+        DO WHILE(IER ==0)
+          READ(UNIT_LOG,'(a)', IOSTAT = IER)ANS
+        ENDDO
+        BACKSPACE(UNIT_LOG)
+      ENDIF
 
 !//PAR_I/O only PE 0 opens the ASCI output (.out), restart (.res) and species (.spX) files 
       if ( myPE == PE_IO ) then
