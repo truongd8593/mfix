@@ -242,8 +242,9 @@
                 link_d="-I."
                 compile="$compile_common"
                 compile2="$compile_common"
-                link="-I."
+                link="-I. -L/opt/intel/lib/ -lsvml"
                 MODULE_CODE=1
+                LIB_FLAGS="-L/opt/intel/lib/ -lsvml"
               fi
 
             ;;
