@@ -1,0 +1,5477 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
+	<TITLE>MFIX</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.0  (Linux)">
+	<META NAME="AUTHOR" CONTENT="Sreekanth Pannala">
+	<META NAME="CREATED" CONTENT="20020325;18280000">
+	<META NAME="CHANGED" CONTENT="20020722;15364300">
+	<STYLE>
+	<!--
+		@page { size: 21.59cm 27.94cm; margin: 2.54cm }
+		A:link { color: #0000ff }
+		A:visited { color: #800080 }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" TEXT="#000000" LINK="#0000ff" VLINK="#800080">
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000"><FONT SIZE=7><B>MFIX</B></FONT></FONT></P>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000"><FONT SIZE=6><B>Multiphase
+Flow with Interphase eXchanges</B></FONT></FONT></P>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000"><FONT SIZE=6><B>Version
+MFIX-2002-3 (Date: 07/22/02)</B></FONT></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><B>Notice</B></P>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=2>Neither
+the United States Government nor any agency thereof, nor any of their
+employees, makes any warranty, express or implied, or assumes any
+legal liability or responsibility for the accuracy, completeness, or
+usefulness of any information, apparatus, product, or process
+disclosed or represents that its use would not infringe privately
+owned rights.</FONT></P>
+<UL>
+	<LI><P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=2>MFIX
+	is provided without any user support for applications in the user<FONT FACE="WP TypographicSymbols">=</FONT>
+	s immediate organization. It should not be redistributed in whole or
+	in part.</FONT> 
+	</P>
+	<LI><P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=2>The
+	use of MFIX is to be acknowledged in any published paper based on
+	computations using this software by citing the MFIX theory manual.
+	Some of the submodels are being developed by researchers outside of
+	NETL. The use of such submodels is to be acknowledged by citing the
+	appropriate papers of the developers of the submodels.</FONT> 
+	</P>
+	<LI><P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=2>The
+	authors would appreciate receiving any reports of bugs or other
+	difficulties with the software, enhancements to the software, and
+	accounts of practical applications of this software.</FONT> 
+	</P>
+</UL>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=6>Table
+of Contents</FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">1&nbsp; <B>Setting
+Up and Running MFIX on a UNIX/LINUX Workstation</B> 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+1.1&nbsp; Creating MFIX Directory 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+1.2&nbsp; Installing the MFIX Code 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+1.3&nbsp; Starting a New Run 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+1.4&nbsp; Modifying the Post-Processing Codes 
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">2&nbsp; <B>Setting
+Up and Running MFIX on a PC (Windows 95/98/NT)</B> 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+2.1 Installing the MFIX Code 
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">3&nbsp; <B>MFIX
+at Run Time</B> 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+3.1&nbsp; MFIX Output and Messages 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+3.2&nbsp; Restarting a Run 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+3.3&nbsp; When the Run Does Not Converge 
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">4&nbsp; <B>Keywords
+in Input Data File (<I>mfix.dat</I>)</B> 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+4.1&nbsp; Run Control 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+4.2&nbsp; Physical and Numerical Parameters 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+4.3&nbsp; Geometry and Discretization 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+4.4&nbsp; Gas Phase 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+4.5&nbsp; Solids Phase 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+4.6&nbsp; Initial Conditions 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+4.7&nbsp; Boundary Conditions 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+4.8&nbsp; Internal Surfaces 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+4.9&nbsp; Output Control 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+4.10&nbsp; Chemical Reactions 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+4.11&nbsp; User-Defined Subroutines 
+</P>
+<P STYLE="margin-left: 0.64cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+4.12&nbsp; Parallelization Controls 
+</P>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#000080"><FONT SIZE=6><B>&nbsp;</B></FONT></FONT></P>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#000080"><FONT SIZE=6><B>1&nbsp;
+Setting Up and Running MFIX on a UNIX/LINUX Workstation</B></FONT></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>1.1&nbsp;
+Creating MFIX Directory</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">To install MFIX
+(version m.n) from the tar file, go to the home directory and type 
+</P>
+<P STYLE="margin-left: 1.27cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+<B>gunzip -d mfix.tar.gz</B></P>
+<P STYLE="margin-left: 1.27cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+<B>tar xvf mfix.tar</B></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">This procedure
+will create the directory mfix, which contains six subdirectories:
+<I>doc, model, post_mfix, tests, tutorials, and tools</I>:</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<CENTER>
+	<TABLE WIDTH=439 BORDER=3 BORDERCOLOR="#000000" CELLPADDING=7 CELLSPACING=0>
+		<COL WIDTH=127>
+		<COL WIDTH=279>
+		<TR VALIGN=TOP>
+			<TD WIDTH=127>
+				<P STYLE="margin-top: 0.18cm"><FONT SIZE=4><B>Subdirectory</B></FONT></P>
+			</TD>
+			<TD WIDTH=279>
+				<P STYLE="margin-top: 0.18cm"><FONT SIZE=4><B>Contents</B></FONT></P>
+			</TD>
+		</TR>
+		<TR></TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=127>
+				<P STYLE="margin-top: 0.18cm">model</P>
+			</TD>
+			<TD WIDTH=279>
+				<P STYLE="margin-top: 0.18cm">MFIX source files</P>
+			</TD>
+		</TR>
+		<TR></TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=127>
+				<P STYLE="margin-top: 0.18cm">post_mfix</P>
+			</TD>
+			<TD WIDTH=279>
+				<P STYLE="margin-top: 0.18cm">Post_mfix source files</P>
+			</TD>
+		</TR>
+		<TR></TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=127>
+				<P STYLE="margin-top: 0.18cm">tutorials</P>
+			</TD>
+			<TD WIDTH=279>
+				<P STYLE="margin-top: 0.18cm">Several example problems and a pdf
+				file describing the two tutorials (fluidBed1 and fluidBed2),
+				which are useful for a new user</P>
+			</TD>
+		</TR>
+		<TR></TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=127>
+				<P STYLE="margin-top: 0.18cm">tests</P>
+			</TD>
+			<TD WIDTH=279>
+				<P STYLE="margin-top: 0.18cm">test simulations used to verify the
+				code during development</P>
+			</TD>
+		</TR>
+		<TR></TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=127>
+				<P STYLE="margin-top: 0.18cm">tools</P>
+			</TD>
+			<TD WIDTH=279>
+				<P STYLE="margin-top: 0.18cm">development tools</P>
+			</TD>
+		</TR>
+		<TR></TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=127>
+				<P STYLE="margin-top: 0.18cm">doc</P>
+			</TD>
+			<TD WIDTH=279>
+				<P STYLE="margin-top: 0.18cm">MFIX manuals in pdf format</P>
+			</TD>
+		</TR>
+		<TR></TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=127>
+				<P STYLE="margin-top: 0.18cm">Complex-chemistry</P>
+			</TD>
+			<TD WIDTH=279>
+				<P STYLE="margin-top: 0.18cm">An example coal gasifier case is
+				provided dealing with complex chemistry</P>
+			</TD>
+		</TR>
+	</TABLE>
+</CENTER>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The
+postprocessing code <I>ani_mfix</I> is used to view MFIX results as
+animations. A linux binary is available on the download page.</P>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>1.2&nbsp;
+Installing the MFIX Code</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">For convenience,
+create aliases by adding the following lines to the <I>.login</I>
+file (assuming MFIX was installed in the home directory):</P>
+<P STYLE="margin-left: 2.54cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+alias ani ~/mfix/ani_mfix/ani_mfix</P>
+<P STYLE="margin-left: 2.54cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+alias post ~/mfix/post_mfix/post_mfix</P>
+<P STYLE="margin-left: 2.54cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+alias mkmfix <FONT FACE="WP TypographicSymbols">&gt;</FONT>sh
+~/mfix/model/make_mfix</P>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Then
+the post-processors can be activated from any directory by typing <B>ani</B>
+or <B>post</B>, and the mfix make file can be activated by typing
+<B>mkmfix</B>.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">For the first
+time, the user should logout and login or type: <B>source .login</B>
+so that the aliases are defined. This step needs to be done only
+once.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>1.3&nbsp;
+Starting a New Run</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Create a
+separate subdirectory for each run. 
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">If you want to
+modify MFIX subroutines, do the following. Copy the subroutine from
+the <I>mfix/model</I> directory into the run directory. Modify the
+file copied to the run directory. Do <U>not</U> modify the files in
+the <I>mfix/model</I> directory.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Create an MFIX
+executable file by typing <B>mkmfix</B>. The MFIX executable file
+<I>mfix.exe</I> will be created and copied into the run-directory.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The following
+options are available for different compilations:</P>
+<OL>
+	<LI><P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">For Shared
+	Memory Executable, input <B><FONT FACE="WP TypographicSymbols">&gt;</FONT></B>y<FONT FACE="WP TypographicSymbols">=</FONT>
+	for the SMP option.</P>
+	<LI><P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">For
+	Distributed Memory Executable , input <FONT FACE="WP TypographicSymbols">&gt;</FONT>y<FONT FACE="WP TypographicSymbols">=</FONT>
+	for the DMP option.</P>
+	<LI><P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">For Debug
+	option, input<B> </B><FONT FACE="WP TypographicSymbols">&gt;</FONT>
+	y<FONT FACE="WP TypographicSymbols">=</FONT> for the debug option.</P>
+	<LI><P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">To force
+	recompilation of user defined routines, input <FONT FACE="WP TypographicSymbols">&gt;</FONT>y<FONT FACE="WP TypographicSymbols">=</FONT>
+	at this prompt. In most cases it is not necessary to select this
+	option. This option is needed only in the rare instances when the
+	run directory contains a module file (e.g., <I>run_mod.f</I>) and
+	another file (e.g., <I>usr0.f</I>), in which the corresponding use
+	statement has been inserted (e.g., use run). The makefile will not
+	be aware of this dependency (<I>usr0</I> depends upon <I>run</I>).
+	So, in this example, changes made in <I>run_mod.f</I> will not cause
+	the (necessary) recompilation of <I>usr0.f</I>, unless this option
+	is selected.</P>
+</OL>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">If all the above
+options are unselected, an optimized serial version executable is
+produced for that particular platform.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Write an MFIX
+data file and name it <I>mfix.dat</I>. The key words are listed at
+the end of this file. Examples are available in the <I>mfix/tutorials</I>
+directory.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Run MFIX by
+typing <B>mfix.exe</B>, or run in batch mode by typing <B>mfix.exe &amp;</B>,
+or run in batch mode with the screen output redirected to a file
+(FULL_LOG = .TRUE. in the data file), for example, <I>screen.log</I>
+, by typing <B>mfix.exe &gt; screen.log &amp;</B>. (Note that the
+file <I>screen.log</I> can become very large.)</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">If the code was
+compiled as a SMP version, then you will be prompted to enter the
+number of processors to be used for the run.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Run the DMP
+version using <B>mpirun -np &lt;Number of Processors&gt; mfix.exe</B>
+. This command may be different on other machines (e.g., <B>mpprun -n
+&lt;Number of Processors&gt; mfix.exe</B>).</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">MFIX results can
+be retrieved, even while the run is in progress. To activate
+visualization, run <I>ani_mfix</I> by typing <B>ani</B>. When
+<I>ani_mfix</I> is used the first time for a run, you will be
+prompted for the name of the restart file. Enter the name of the
+restart file paying attention to the case (e.g., <I>BUB01.RES</I>).</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The program will
+create several control files: <I>ani_mfix.con</I>, <I>ani_mfix.ini</I>,
+<I>ani_mfix.mm</I>, <I>script.001</I>.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">To retrieve and
+manipulate data and to create special restart files, run the
+post_processor <I>post_mfix</I> by typing <B>post</B>. <I>post_mfix</I>
+will prompt the user for the run name. Enter the run name (e.g<I>.,
+BUB01</I> ).</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>1.4&nbsp;
+Modifying the Post-Processing Codes</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">To make
+<I>post_mfix</I>, first change the directory to the <I>mfix/post_mfix</I>
+directory. If user-defined post-processing is required, modify the
+<I>usr_post.f</I> file in the directory. Then type <B>make_post</B>.
+Note that the <I>mfix/model</I> is required for creating a <I>post_mfix</I>
+executable.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#000080"><FONT SIZE=6><B>2&nbsp;
+Setting Up and Running MFIX on a PC (Windows 95/98/NT)</B></FONT></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>2.1
+Installing the MFIX Code</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">This is not very
+well supported and please see our download page for special remarks
+and also earlier postings on mfix-help mailing list.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR>&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#000080"><FONT SIZE=6><B>3&nbsp;
+MFIX at Run Time</B></FONT></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>3.1&nbsp;
+MFIX Output and Messages</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">MFIX output is
+stored in nine <I>*.SPx</I> binary files. The restart info is
+periodically written to the <I>*.RES</I> binary file. The text file
+<I>*.OUT</I> echos the input, shows the numerical cell distribution,
+and, if OUT_DT is defined, prints the field variables at the
+specified intervals. 
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The text file
+<I>*.LOG</I> contains run information. For the DMP version, a LOG
+file is created for each of the processors and they are numbered as
+<I>Name###.LOG</I>.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Messages about
+the run are written to the <I>.LOG</I> file. The progress of the run
+will be displayed at the terminal as shown below if the data file
+specifies FULL_LOG = .TRUE.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Time = 0.92965
+Dt = 0.13930E-02 CPU time left = 54.672 s</P>
+<TABLE WIDTH=514 BORDER=0 CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=24>
+	<COL WIDTH=55>
+	<COL WIDTH=60>
+	<COL WIDTH=55>
+	<COL WIDTH=55>
+	<COL WIDTH=55>
+	<COL WIDTH=55>
+	<COL WIDTH=60>
+	<TR VALIGN=TOP>
+		<TD WIDTH=24>
+			<P STYLE="margin-top: 0.18cm">Nit</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">P0</P>
+		</TD>
+		<TD WIDTH=60>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">P1</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">U0</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">V0</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">U1</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">V1</P>
+		</TD>
+		<TD WIDTH=60>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">Max Res</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=24>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">1</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">1.5E-02</P>
+		</TD>
+		<TD WIDTH=60>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">2.5E+01</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">1.3E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">3.3E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">3.2E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">6.3E-03</P>
+		</TD>
+		<TD WIDTH=60>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">P0</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=24>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">2</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">1.</P>
+		</TD>
+		<TD WIDTH=60>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">5.0E-02</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">2.8E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">6.3E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">2.5E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">3.8E-03</P>
+		</TD>
+		<TD WIDTH=60>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">P1</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=24>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">3</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">0.1</P>
+		</TD>
+		<TD WIDTH=60>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">2.1E-02</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">1.2E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">3.7E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">1.1E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">1.8E-03</P>
+		</TD>
+		<TD WIDTH=60>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">P0</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=24>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">4</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">5.2E-02</P>
+		</TD>
+		<TD WIDTH=60>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">8.1E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">6.5E-04</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">2.1E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">4.8E-04</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">8.6E-04</P>
+		</TD>
+		<TD WIDTH=60>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">P0</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=24>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">5</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">3.0E-02</P>
+		</TD>
+		<TD WIDTH=60>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">3.9E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">4.1E-04</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">1.3E-03</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">2.5E-04</P>
+		</TD>
+		<TD WIDTH=55>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">4.3E-04</P>
+		</TD>
+		<TD WIDTH=60>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">P0</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The first line
+shows the time, the time-step, and the CPU time remaining to complete
+the run. The CPU time remaining is not accurate, especially in the
+beginning of the run. For each time-step, the normalized residuals
+for various equations are written out every iteration.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">MFIX uses a
+variable time step, which is automatically adjusted within
+user-defined limits to reduce the run time. At large values of Dt,
+the iterations may not converge. When this happens, the time step
+size is successively reduced until convergence is obtained. Messages
+about divergence and recovery are displayed on the terminal and in
+the <I>.LOG</I> file, if FULL_LOG = .TRUE.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The subsequent
+lines display the iteration number, the normalized residuals for
+various equations (e.g., gas continuity, solids continuity, x and y
+gas momentum, and x and y solids momentum), and the equation with the
+maximum residual. The residuals P0 and P1 are normalized only when
+Nit&gt;1. The residuals displayed can be selected with the keyword
+RESID_STRING.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">MFIX reports
+errors while reading the data file, while processing input data, and
+during the run time. Errors in reading the data file and in opening
+files are reported to the terminal. All other errors are reported in
+the <I>.LOG</I> file.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">While reporting
+errors in reading the data file, MFIX displays the offending line of
+input, so that the error can be easily detected. The possible causes
+of error are (1) incorrect format for the name-list input, (2)
+unknown (misspelt) variable name, or (3) the dimension of the
+name-list item is too small. For example, if the dimension of DX is
+set as 5000 (DIM_I in <I>param_mod.f</I> ), and if the input data
+file contains an entry DX(5001), MFIX will report an input processing
+error.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">While processing
+the input data, MFIX will report errors if the data specified is
+insufficient or physically unrealistic. MFIX will supply default
+values only when it is certain that giving a default value is
+reasonable.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">An occasional
+input-processing error is the inability to determine the flow plane
+for a boundary condition. The boundary planes defined in the input
+data file must have a wall-cell on one side and a fluid-cell on the
+other side. If the initial condition is not specified for the
+fluid-cell, MFIX will not recognize the cell as a fluid-cell and,
+hence, MFIX will be unable to determine the flow plane.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Every NLOG (see
+Appendix ) number of time steps, MFIX monitors whether the mass
+fractions add up to 1.0; the overall reaction rates add up to zero;
+the viscosities, conductivities, and specific heats are greater than
+zero; and the temperatures are within the specified limits. A message
+will be printed out if any errors are encountered. The run may be
+aborted depending upon the severity of the error. Every NLOG time
+step, MFIX will print out the number of iterations during the
+previous time step and the total solids inventory in the reactor.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">For the
+specified mass-outflow condition, after the elapse of time BC_DT_0,
+MFIX prints out time-averaged mass flow rates. For cyclic boundary
+conditions, MFIX will print out the volume averaged mass fluxes every
+NLOG time step.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">A message is
+written to the <I>.LOG</I> file whenever the <I>.RES</I> and <I>.SPx</I>
+files are written. This message also shows an approximate value of
+the cumulative disk space usage in megabytes.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>3.2&nbsp;
+Restarting a Run</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">A run is
+restarted by rerunning MFIX after typing RUN_TYPE = 'restart_1' in
+<I>mfix.dat</I>. The old <I>.OUT</I> file will be overwritten. The
+<I>.LOG</I> messages will be appended to the old <I>.LOG</I> file.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">There are three
+other types of restarts; refer to the Appendix for details.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>3.3&nbsp;
+When the Run Does Not Converge</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Initial
+non-convergence: Ensure that the initial conditions are physically
+realistic. If in the initial time step, the run displays NaN
+(Not-a-Number) for any residual, reduce the initial time step, since
+automatic time step reduction will become ineffective. If time step
+reductions do not help, recheck the problem setup.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Holding the time
+step constant (DT_FAC=1) and ignoring the stalling of iterations
+(DETECT_STALL=.FALSE.) may help in overcoming initial nonconvergence.
+Often a better initial condition will aid convergence. For example,
+using a hydrostatic rather than a uniform pressure distribution as
+the initial condition will aid convergence in fluidized-bed
+simulations.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">If there are
+computational regions where the solids tend to compact (i.e., solids
+volume fraction less than EP_star), the convergence can be improved
+by reducing UR_FAC(2) below the default value of 0.5.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Convergence is
+often difficult with higher order discretization methods. First order
+upwinding may be used to overcome initial transients and then the
+higher order method may be turned on. Also, higher-order methods such
+as van Leer and minmod give faster convergence than methods such as
+superbee and ULTRA-QUICK. 
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><B><FONT SIZE=6><FONT COLOR="#000080">4&nbsp;
+Keywords in Input Data File (<I>mfix.dat</I>)</FONT></FONT></B></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">[ ] indicates
+the default value.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The symbols used
+in the table are as follows:</P>
+<TABLE WIDTH=578 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=80>
+	<COL WIDTH=231>
+	<COL WIDTH=86>
+	<COL WIDTH=132>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P STYLE="margin-top: 0.18cm"><B>Dimension</B></P>
+		</TD>
+		<TD WIDTH=231>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+		<TD WIDTH=86>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=132>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=80 VALIGN=TOP>
+			<P STYLE="margin-top: 0.18cm">1</P>
+		</TD>
+		<TD WIDTH=231>
+			<P STYLE="margin-top: 0.18cm">Cell number in x, y, or z direction</P>
+		</TD>
+		<TD WIDTH=86 VALIGN=TOP>
+			<P STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=132 VALIGN=TOP>
+			<P STYLE="margin-top: 0.18cm">Character</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P STYLE="margin-top: 0.18cm">m</P>
+		</TD>
+		<TD WIDTH=231>
+			<P STYLE="margin-top: 0.18cm">Solids-phase number</P>
+		</TD>
+		<TD WIDTH=86>
+			<P STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=132>
+			<P STYLE="margin-top: 0.18cm">Double Precision</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80 HEIGHT=9>
+			<P STYLE="margin-top: 0.18cm">n</P>
+		</TD>
+		<TD WIDTH=231>
+			<P STYLE="margin-top: 0.18cm">Species number</P>
+		</TD>
+		<TD WIDTH=86>
+			<P STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=132>
+			<P STYLE="margin-top: 0.18cm">Integer</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P STYLE="margin-top: 0.18cm">ic</P>
+		</TD>
+		<TD WIDTH=231>
+			<P STYLE="margin-top: 0.18cm">Initial condition number</P>
+		</TD>
+		<TD WIDTH=86>
+			<P STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=132>
+			<P STYLE="margin-top: 0.18cm">Logical</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P STYLE="margin-top: 0.18cm">bc</P>
+		</TD>
+		<TD WIDTH=231>
+			<P STYLE="margin-top: 0.18cm">Boundary condition number</P>
+		</TD>
+		<TD WIDTH=86>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=132>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P STYLE="margin-top: 0.18cm">is</P>
+		</TD>
+		<TD WIDTH=231>
+			<P STYLE="margin-top: 0.18cm">Internal surface number</P>
+		</TD>
+		<TD WIDTH=86>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=132>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P STYLE="margin-top: 0.18cm">usr</P>
+		</TD>
+		<TD WIDTH=231>
+			<P STYLE="margin-top: 0.18cm">User-defined output number</P>
+		</TD>
+		<TD WIDTH=86>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=132>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>4.1&nbsp;
+Run Control</B></FONT></P>
+<TABLE WIDTH=566 BORDER=3 BORDERCOLOR="#008000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=156>
+	<COL WIDTH=38>
+	<COL WIDTH=330>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">RUN_NAME</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Name used to create output files.
+			The name should be legal after extensions are added to it; e.g.,
+			for run name BUB01, the output files BUB01.LOG, BUB01.OUT,
+			BUB01.RES, etc., will be created.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">DESCRIPTION</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Problem description in 60
+			characters.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">UNITS</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Units for data input and output.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[CGS]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">All input and output in CGS units.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">RUN_TYPE</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Type of run.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">NEW</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">New run.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">RESTART_1</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Normal restart run. Initial
+			conditions from .RES file.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">RESTART_2</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Start a new run with initial
+			conditions from a .RES file created from another run.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">RESTART_3</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Continue old run as in RESTART_1,
+			but any input data not given in mfix.dat is read from the .RES
+			file.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">RESTART_4</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Start a new run as in RESTART_2, but
+			any input data not given in mfix.dat is read from the .RES file.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">TIME</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Start-time of the run.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">TSTOP</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Stop-time of the run.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">DT</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Starting time step. If DT is not
+			defined, a steady-state calculation will be performed.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">DT_MAX
+			</FONT>
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1.0]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Maximum time step.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">DT_MIN
+			</FONT>
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1E-6]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Minimum time step.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">DT_FAC
+			</FONT>
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0.9]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Factor for
+			adjusting time step. Should be less than 1.</P>
+			<P STYLE="margin-top: 0.18cm">Use a value of 1 to hold the time
+			step constant.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">DETECT_STALL</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.TRUE.]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Reduce time step if the residuals
+			sum does not decrease.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.FALSE.</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Do not reduce time step for stalled
+			iterations.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">MODEL_B</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Momentum equations. 
+			</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE.]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Model A</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.TRUE.</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Model B</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">MOMENTUM_X_EQ(m)</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">(m=0 indicates gas phase)</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.TRUE.]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Solve X-momentum equations of phase
+			m.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.FALSE.</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Do not solve
+			X-momentum equations of phase m. 
+			</P>
+			<P STYLE="margin-top: 0.18cm">Beware of inconsistencies when the
+			momentum equations are turned off; e.g., 2-D developing flow with
+			only Y-momentum should not specify no-slip-walls.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">MOMENTUM_Y_EQ(m)</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">(m=0 indicates gas phase)</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.TRUE.]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Solve Y-momentum equations of phase
+			m.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.FALSE.</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Do not solve Y-momentum equations of
+			phase m.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">MOMENTUM_Z_EQ(m)</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">(m=0 indicates gas phase)</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.TRUE.]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Solve Z-momentum equations of phase
+			m.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.FALSE.</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Do not solve Z-momentum equations of
+			phase m.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">ENERGY_EQ</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.TRUE.]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Solve energy equations</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.FALSE.</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">So not solve energy euqations</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">SPECIES_EQ(m)</FONT></P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">(m=0 indicates gas phase)</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.TRUE.]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Solve species equations of phase m.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.FALSE.</P>
+		</TD>
+		<TD WIDTH=38>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Do not solve species equations of
+			phase m.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">GRANULAR_ENERGY</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE.]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Use the granular energy transport
+			equation (pde) as opposed to the algebraic (alg) equation
+			formulation.</P>
+		</TD>
+	</TR>
+	<TR></TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=156>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">FRICTION</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE.]</P>
+		</TD>
+		<TD WIDTH=38>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=330>
+			<P STYLE="margin-top: 0.18cm">Use the Schaeffer model when
+			.FALSE., or use the Princeton model when .TRUE.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The combination
+of the keywords GRANULAR_ENERGY and FRICTION invokes different</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">solids stress
+models as shown below:</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">GRANULAR_ENERGY
+= .FALSE.</P>
+<P STYLE="margin-left: 2.54cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+EP_g &lt; EP_star &gt; Schaeffer</P>
+<P STYLE="margin-left: 2.54cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+EP_g &gt;= EP_star &gt; viscous (algebraic)</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">GRANULAR_ENERGY
+= .TRUE. 
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">FRICTION =
+.TRUE.</P>
+<P STYLE="margin-left: 2.54cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+EP_s(IJK,M) &gt; EPS_f_min &gt; Princeton + viscous (pde)</P>
+<P STYLE="margin-left: 2.54cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+EP_s(IJK,M) &lt; EP_f_min &gt; viscous (pde)</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">FRICTION =
+.FALSE.</P>
+<P STYLE="margin-left: 2.54cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+EP_g &lt; EP_star &gt; Schaeffer + viscous (pde)</P>
+<P STYLE="margin-left: 2.54cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+EP_g &gt;= EP_star &gt; viscous (pde)</P>
+<P ALIGN=CENTER STYLE="margin-left: 2.54cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+&nbsp;</P>
+<P ALIGN=CENTER STYLE="margin-left: 2.54cm; margin-top: 0.18cm; margin-bottom: 0.18cm">
+&nbsp;</P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=160>
+	<COL WIDTH=40>
+	<COL WIDTH=334>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">SAVAGE</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">For a term appearing in the
+			frictional stress model invoked with FRICTION = .TRUE.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">0</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Use S:S in the frictional stress
+			model.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Use an alternate form suggested by
+			Savage.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">2</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">An appropriate combination of the
+			above two forms.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">Nscalar</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Number of scalar equations to be
+			solved.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">Phase4Scalar(n)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">The index of the phase that convects
+			scalar n. Use 0 for gas phase; e.g., Phase4Scalar(3)=0 means
+			Scalar no. 3 will be convected by gas phase.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">CALL_USR</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.TRUE.</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Call user-defined subroutines.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE.]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Do not call user-defined
+			subroutines.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>4.2&nbsp;
+Physical and Numerical Parameters</B></FONT></P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=143>
+	<COL WIDTH=46>
+	<COL WIDTH=345>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">C(100)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">User defined constants.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">C_NAME(100)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Name of user-defined constants (20
+			characters long). These character strings are used only to
+			identify user-defined constants ( c ) in the .OUT file.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">C_e</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Coefficient of restitution for
+			particle-particle collisions. (MFIX 1.94 keyword _e_).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">e_w</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1.0]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Coefficient of restitution for
+			particle-wall collisions.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">PHIP</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0.6]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Specularity coefficient associated
+			with particle-wall collisions.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">C_f</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Coefficient of friction between the
+			particles of two solids phases.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">Phi</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Angle of internal friction (in
+			degrees). Set this value to zero to turn off plastic regime stress
+			calculations.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">L_scale0</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0.0]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Value of turbulent length
+			initialized. This may be overwritten in specific regions with the
+			keyword IC_L_scale.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">Mu_gmax</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Maximum value of the turbulent
+			viscosity of the fluid.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">V_ex </FONT>
+			</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Excluded volume in Boyle-Massoudi
+			stress.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0.0]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">B-M stress is turned off.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">P_ref</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0.0]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Reference pressure.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">P_scale</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1.0]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Scale factor for pressure.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">GRAVITY</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Gravitational acceleration.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[980.7]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">By default, the gravity force acts
+			in the _ve y-direction. Modify file b_force2.inc to change the
+			body force term.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">MAX_NIT</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[500]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Maximum number of iterations.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">NORM_g</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[Use the residual from
+			the first iteration.]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Factor to normalize the gas
+			continuity equation residual. 
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">NORM_s</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[Use the residual from
+			the first iteration.]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Factor to normalize the solids
+			continuity equation residual. 
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">TOL_RESID</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1E-3]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Maximum residual at convergence
+			(continuity+momentum).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">TOL_RESID_T</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1E-4]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Maximum residual at convergence
+			(energy).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">TOL_RESID_X
+			</FONT>
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1E-4]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Maximum residual at convergence
+			(species balance).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">TOL_RESID_Scalar</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1E-4]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Maximum residual at convergence
+			(scalar balances.)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">TOL_DIVERGE</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1E+4]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Minimum residual for declaring
+			divergence. When the fluid is incompressible, the velocity
+			residuals take large values in the second iteration (e.g., 1E+8)
+			and then drop down to a low value in the third iteration (e.g.,
+			0.1). In such cases, it is desirable to increase this setting.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The next
+keywords LEQ_IT, LEQ_METHOD, LEQ_SWEEP, LEQ_TOL, UR_FAC, and
+DISCRETIZE are dimensioned for the nine types of equations:</P>
+<CENTER>
+	<TABLE WIDTH=266 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+		<COL WIDTH=51>
+		<COL WIDTH=189>
+		<TR VALIGN=TOP>
+			<TD WIDTH=51>
+				<P STYLE="margin-top: 0.18cm">Index</P>
+			</TD>
+			<TD WIDTH=189>
+				<P STYLE="margin-top: 0.18cm">Equation Type</P>
+			</TD>
+		</TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=51>
+				<P STYLE="margin-top: 0.18cm">1 
+				</P>
+			</TD>
+			<TD WIDTH=189>
+				<P STYLE="margin-top: 0.18cm">gas pressure</P>
+			</TD>
+		</TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=51>
+				<P STYLE="margin-top: 0.18cm">2 
+				</P>
+			</TD>
+			<TD WIDTH=189>
+				<P STYLE="margin-top: 0.18cm">solids volume fraction</P>
+			</TD>
+		</TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=51>
+				<P STYLE="margin-top: 0.18cm">3 
+				</P>
+			</TD>
+			<TD WIDTH=189>
+				<P STYLE="margin-top: 0.18cm">gas and solids v-momentum</P>
+			</TD>
+		</TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=51>
+				<P STYLE="margin-top: 0.18cm">5 
+				</P>
+			</TD>
+			<TD WIDTH=189>
+				<P STYLE="margin-top: 0.18cm">gas and solids w-momentum</P>
+			</TD>
+		</TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=51>
+				<P STYLE="margin-top: 0.18cm">6 
+				</P>
+			</TD>
+			<TD WIDTH=189>
+				<P STYLE="margin-top: 0.18cm">temperature</P>
+			</TD>
+		</TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=51>
+				<P STYLE="margin-top: 0.18cm">7 
+				</P>
+			</TD>
+			<TD WIDTH=189>
+				<P STYLE="margin-top: 0.18cm">species mass fractions</P>
+			</TD>
+		</TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=51>
+				<P STYLE="margin-top: 0.18cm">8 
+				</P>
+			</TD>
+			<TD WIDTH=189>
+				<P STYLE="margin-top: 0.18cm">granular temperature</P>
+			</TD>
+		</TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=51>
+				<P STYLE="margin-top: 0.18cm">9 
+				</P>
+			</TD>
+			<TD WIDTH=189>
+				<P STYLE="margin-top: 0.18cm">user-defined scalar</P>
+			</TD>
+		</TR>
+	</TABLE>
+</CENTER>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">For example,
+LEQ_IT(3) = 10 will make MFIX use 10 linear equation iterations while
+solving the gas and solids u-momentum equation (Equation Type =3).</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<TABLE WIDTH=566 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=153>
+	<COL WIDTH=39>
+	<COL WIDTH=335>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=39>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">LEQ_IT(9)</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">[20
+			for 1 and 2]</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">[5
+			for 2-5]</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[15 for 6-9]</P>
+		</TD>
+		<TD WIDTH=39>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Number of
+			iterations in the linear equation solver. The nine values are for
+			the nine types of equations noted above.</P>
+			<P STYLE="margin-top: 0.18cm">The same convention holds for
+			LEQ_METHOD, UR_FAC, and DISCRETIZE. If the residual of an equation
+			is less than the convergence criterion, MFIX makes LEQ_IT equal to
+			the lesser of 5 and the user-defined value and LEQ_METHOD equal to
+			1.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">LEQ_METHOD(9)</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1 for all equations]</P>
+		</TD>
+		<TD WIDTH=39>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The method
+			used in the linear equation solver:</P>
+			<P STYLE="margin-top: 0.18cm">1. BiCGSTAB.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">LEQ_SWEEP(9)</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[RSRS]</P>
+		</TD>
+		<TD WIDTH=39>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">The sweep direction used in the
+			linear equation solver. The sweep direction for preconditioning
+			line relaxation; e.g., if LEQ_SWEEP = &quot;ISIS&quot;, 1 sweep
+			with do IK loop followed by send_recv (repeated twice), or if
+			LEQ_SWEEP = &quot;RSRS&quot;,1 red-black sweep with do IK loop
+			followed by send_recv (repeated twice) . Only used by BiCGSTAB.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">LEQ_TOL(9)</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1.0D-4]</P>
+		</TD>
+		<TD WIDTH=39>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">The tolerance, if used, in linear
+			equation solvers. Only used by BiCGSTAB.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">LEQ_PC</FONT><BR>&nbsp;
+			&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+			&nbsp;<BR><BR><BR>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+			&nbsp; &nbsp; &nbsp; &nbsp;[LINE]<BR><BR>
+			</P>
+		</TD>
+		<TD WIDTH=39>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">C</P>
+			<P STYLE="margin-top: 0.18cm"><BR><BR>
+			</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">The preconditioner used for the
+			sweeps in the linear solver<BR>LINE - Line relaxation<BR>DIAG -
+			Diagonal Scaling<BR>NONE - No preconditioner</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">UR_FAC(9)</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">[0.8
+			for 1, 6, 9]</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">[0.5
+			for 2, 3, 4, 5, 8]</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0.75 for 7]</P>
+		</TD>
+		<TD WIDTH=39>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Under
+			relaxation factors for seven types of equations.</P>
+			<P STYLE="margin-top: 0.18cm">Reducing UR_FAC(2) will help
+			convergence in problems in which the solids tend to pack.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">DEF_COR</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.TRUE.] 
+			</P>
+		</TD>
+		<TD WIDTH=39>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">If true, use deferred correction
+			method for implementing higher order discretization. Otherwise,
+			use down-wind factor method (default).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">DISCRETIZE(9)</FONT></P>
+		</TD>
+		<TD WIDTH=39>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">Discretization scheme for seven
+			types of equations.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0]</P>
+		</TD>
+		<TD WIDTH=39>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">First-order upwinding.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">1</P>
+		</TD>
+		<TD WIDTH=39>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">First-order upwinding (using
+			down-wind factors).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">2</P>
+		</TD>
+		<TD WIDTH=39>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">Superbee (recommended method).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">3</P>
+		</TD>
+		<TD WIDTH=39>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">SMART.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">4</P>
+		</TD>
+		<TD WIDTH=39>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">ULTRA-QUICK.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">5</P>
+		</TD>
+		<TD WIDTH=39>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">QUICKEST (does not work).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">6</P>
+		</TD>
+		<TD WIDTH=39>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">MUSCL.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">7</P>
+		</TD>
+		<TD WIDTH=39>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">van Leer.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">8</P>
+		</TD>
+		<TD WIDTH=39>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm">Minmod.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=153>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=39>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=335>
+			<P STYLE="margin-top: 0.18cm"><BR>
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>4.3&nbsp;
+Geometry and Discretization</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">For 2D
+simulations, the thickness of the third direction specified should be
+exact if mass or volumetric flow rates, rather than velocities, are
+specified at the boundaries.</P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=155>
+	<COL WIDTH=34>
+	<COL WIDTH=345>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">COORDINATES</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Coordinates used in the simulation.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">CARTESIAN</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Cartesian coordinates.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">CYLINDRICAL</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Cylindrical coordinates.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">NO_I</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">(Do not use.)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE.]</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">X (r) direction is considered.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.TRUE.</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">X (r) direction is not considered.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IMAX</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Number of cells in the x (r)
+			direction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">DX (l)</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Cell sizes in the x (r) direction.
+			(Use uniform mesh size with second-order discretization methods.)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">XMIN</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">The inner radius in the simulation
+			of an annular cylindrical region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">XLENGTH</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Reactor length in the x (r)
+			direction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">NO_J</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">(Do not use.)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE]</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">y direction is considered.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.TRUE.</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">y direction is not considered.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">JMAX</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Number of cells in the y direction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">DY (1)</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Cell sizes in the y direction. (Use
+			uniform mesh size with second-order discretization methods.)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">YLENGTH</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Reactor length in the y direction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">NO_K</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE.]</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">z ( ) direction is considered.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.TRUE.</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">z ( ) direction is not considered.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">KMAX</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Number of cells in the z ( )
+			direction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">DZ (1)</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Cell sizes in the z ( ) direction.
+			(Use uniform mesh size with second-order discretization methods.)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">ZLENGTH</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Reactor length in the z ( )
+			direction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">CYCLIC_X</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Flag for making the x-direction
+			cyclic without pressure drop. No other boundary conditions for the
+			x-direction should be specified.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE.]</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">No cyclic condition at X-boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.TRUE.</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Cyclic condition at X-boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">CYCLIC_X_PD</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Flag for making the x-direction
+			cyclic with pressure drop. No other boundary conditions for the
+			x-direction should be specified.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE.]</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">No cyclic condition at X-boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.TRUE.</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Cyclic condition with pressure drop
+			at X-boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">DELP_X</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Fluid pressure drop across XLENGTH
+			when a cyclic boundary condition with pressure drop is imposed in
+			the x-direction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">CYCLIC_Y</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Flag for making the y-direction
+			cyclic without pressure drop. No other boundary conditions for the
+			y-direction should be specified.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE.]</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">No cyclic condition at Y-boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.TRUE.</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Cyclic condition at X-boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">CYCLIC_Y_PD</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Flag for making the y-direction
+			cyclic with pressure drop. No other boundary conditions for the
+			y-direction should be specified.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE.]</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">No cyclic condition at Y-boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.TRUE.</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Cyclic condition with pressure drop
+			at Y-boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">DELP_Y</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Fluid pressure drop across YLENGTH
+			when a cyclic boundary condition with pressure drop is imposed in
+			the y-direction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">CYCLIC_Z</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Flag for making the z-direction
+			cyclic without pressure drop. No other boundary conditions for the
+			z-direction should be specified.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE.]</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">No cyclic condition at Z-boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.TRUE.</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Cyclic condition at Z-boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">CYCLIC_Z_PD</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Flag for making the z-direction
+			cyclic with pressure drop. No other boundary conditions for the
+			z-direction should be specified.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE.]</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">No cyclic condition at Z-boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.TRUE.</P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Cyclic condition with pressure drop
+			at Z-boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">DELP_Z</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Fluid pressure drop across ZLENGTH
+			when a cyclic boundary condition with pressure drop is imposed in
+			the z-direction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">SHEAR</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">If .TRUE. imposes a mean shear on
+			the flow field as a linear function of _x_ coordinate. This
+			feature should only be used when CYCLIC_X=.TRUE. Also, the keyword
+			V-sh needs to be set.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">V_sh</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=345>
+			<P STYLE="margin-top: 0.18cm">Specifies the mean _y_ velocity
+			component at the eastern boundary of the domain (V_sh), and the
+			mean _y_ velocity (-V_sh) at the western boundary of the domain.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>4.4&nbsp;
+Gas Phase</B></FONT></P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=160>
+	<COL WIDTH=34>
+	<COL WIDTH=340>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">RO_g0</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Specified constant gas density. This
+			value may be set to zero to make the drag zero and to simulate
+			granular flow in a vacuum.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">MU_g0</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Specified constant gas viscosity.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">K_g0</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Specified constant gas conductivity.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">C_pg0</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Specified constant gas specific
+			heat.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">DIF_g0</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Specified constant gas diffusivity.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">MW_AVG</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Average molecular weight of gas.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">MW_g (n)</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Molecular weight of gas species n.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>4.5&nbsp;
+Solids Phase</B></FONT></P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=166>
+	<COL WIDTH=34>
+	<COL WIDTH=334>
+	<TR VALIGN=TOP>
+		<TD WIDTH=166>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=166>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">MMAX</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Number of solids phases.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=166>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">D_p (m)</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Particle diameters.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=166>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">RO_s (m)</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Particle densities.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=166>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">NMAX (m)</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Number of species in phase m. Note
+			that m=0 indicates gas phase.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=166>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">MU_s0</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Specified constant granular
+			viscosity. If this value is specified, then the kinetic theory
+			calculation is turned off and P_s = 0 and Lambda_s = -2/3 MU_s0.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=166>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">K_s0</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Specified constant solids
+			conductivity.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=166>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">C_ps0</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Specified constant solids specific
+			heat.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=166>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">DIF_s0</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Specified constant solids
+			diffusivity.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=166>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">MW_s (m,n)</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Molecular weight of solids phase-m,
+			species n.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=166>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">EP_star</FONT></P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Packed bed void fraction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=166>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">CLOSE_PACKED
+			(m)</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.TRUE.]</P>
+		</TD>
+		<TD WIDTH=34>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Indiates whether the solids phase
+			forms a packed bed with a void fraction EP_star.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>4.6&nbsp;
+Initial Conditions</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Each initial
+condition (IC) is specified over a rectangular region (or pie-shaped
+for cylindrical coordinates) that corresponds to the scalar numerical
+grid. These are 3D regions: X_w X_e, Y_s Y_n, and Z_t Z_b. The region
+is defined by the constant coordinates of each of the six faces,
+which may be specified as the physical coordinates or the cell
+indices. The 
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">physical
+coordinates are easier to specify than the cell indices. If cell
+sizes are not small enough to resolve a region specified using
+physical coordinates, MFIX will indicate this problem with an error
+message.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">In cylindrical
+coordinates, when the theta direction crosses the 0 value, split that
+region into two regions: e.g., Split a region spanning 1.9 pi to 0.1
+pi as 1.9 pi to 2 pi and 0 to 0.1 pi.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Two initial
+condition regions may overlap. When an overlap occurs, MFIX uses the
+conditions specified for the higher IC number.</P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=160>
+	<COL WIDTH=40>
+	<COL WIDTH=334>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_X_w (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">x coordinate of the west face.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_X_e (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">x coordinate of the east face.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_Y_s (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">y coordinate of the south face.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_Y_n (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">y coordinate of the north face.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_Z_b (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">z coordinate of the bottom face.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_Z_t (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">z coordinate of the top face.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_I_w (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">i index of the west-most wall.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_I_e (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">i index of the east-most wall.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_J_s (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">j index of the south-most wall.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_J_n (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">j index of the north-most wall.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_K_b (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">k index of the bottom-most wall.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_K_t (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">k index of the top-most wall.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_TYPE (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Type of initial condition. Mainly
+			used in restart runs to overwrite values read from the .RES file
+			by specifying it as _PATCH_. The user needs to be careful when
+			using the _PATCH_ option, since the values from the .RES file are
+			overwritten and no error checking is done for the patched values.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_EP_g (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial void fraction in the IC
+			region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_P_g (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial gas pressure in the IC
+			region. If this quantity is not specified, MFIX will set up a
+			hydrostatic pressure profile, which varies only in the
+			y-direction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_P_star (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial solids pressure in the IC
+			region. Usually, this value is specified as zero.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_L_scale
+			(ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Turbulence length scale in the IC
+			region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_ROP_s (ic,
+			m)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial macroscopic density of
+			solids phase-m in the IC region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_T_g (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial gas phase temperature in the
+			IC region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_T_s (ic, m)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial solids phase-m temperature
+			in the IC region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_Theta_m
+			(ic, m)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial solids phase-m granular
+			temperature in the IC region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">IC_GAMA_Rg
+			(ic)</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas phase radiation coefficient in
+			the IC region. Modify file radtn2.inc to change the source term.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_T_Rg (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas phase radiation temperature in
+			the IC region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">IC_GAMA_Rs
+			(ic, m)</FONT> 
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Solids phase-m radiation coefficient
+			in the IC region. Modify file radtn2.inc to change the source
+			term.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_T_Rs (ic,
+			m)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Solids phase-m radiation temperature
+			in the IC region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_U_g (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial x-component of gas velocity
+			in the IC region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_U_s (ic, m)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial x-component of solids-phase
+			velocity in the IC region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_V_g (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial y-component of gas velocity
+			in the IC region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_V_s (ic, m)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial y-component of solids-phase
+			velocity in the IC region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_W_g (ic)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial z-component of gas velocity
+			in the IC region.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IC_W_s (ic, m)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial z-component of solids-phase
+			velocity in the IC region</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">IC_X_g
+			(ic, n)</FONT> 
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial mass fraction of gas species
+			n.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">IC_X_s
+			(ic, m, n)</FONT> 
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial mass fraction of solids
+			phase-m, species n.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">IC_SOLAR
+			(ic, n)</FONT> 
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Initial value of Scalar n.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>4.7&nbsp;
+Boundary Conditions</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Boundary
+conditions (BC) are specified over flow planes or 2D surfaces that
+are normal to one of the coordinate directions and coincide with a
+face of the scalar control-volume. The values for one of the three
+pairs of coordinates are equal. The surface is defined by the
+constant coordinates of each of the four edges, which can be
+specified with physical coordinates or cell indices, and the two
+equal values for the direction normal to the face, which can only be
+specified with physical coordinates. If cell sizes are not small
+enough to resolve a surface specified using physical coordinates,
+MFIX will indicate this problem with an error message.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">A flow plane
+must have a wall cell (or an outside boundary) on one side and a flow
+cell on the other side.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The BC section
+is also used to specify obstacles in the flow domain. Obstacles are
+3D regions, just as for the IC regions: X_w X_e, Y_s Y_n, and Z_t
+Z_b. By default the outside boundary is initialized as no-slip walls.
+For cylindrical coordinates the axis is initialized as a free-slip
+wall.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Two boundary
+surfaces must not intersect. Two obstacle regions may intersect.</P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=155>
+	<COL WIDTH=46>
+	<COL WIDTH=334>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_X_w (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">x coordinate of the west face or
+			edge.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_X_e (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">x coordinate of the east face or
+			edge.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Y_s (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">y coordinate of the south face or
+			edge.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Y_n (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">y coordinate of the north face or
+			edge.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Z_b (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">z coordinate of the bottom face or
+			edge.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Z_t (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">z coordinate of the top face or
+			edge.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_I_w (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">i index of the west-most cell.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_I_e (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">i index of the east-most cell.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_J_s (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">i index of the south-most cell.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_J_n (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">i index of the north-most cell.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_K_b (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">i index of the bottom-most cell.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_K_t (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">i index of the top-most cell.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_TYPE (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Type of boundary:</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">DUMMY</P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">The specified boundary condition is
+			ignored. This is useful for turning off some boundary conditions
+			without having to delete them from the file.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">MASS_INFLOW or MI</P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Mass inflow rates for gas and solids
+			phases are specified at the boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">MASS_OUTFLOW or MO</P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">The specified values of gas and
+			solids mass outflow rates at the boundary are maintained,
+			approximately. This condition should be used sparingly for minor
+			outflows, when the bulk of the outflow is occurring through other
+			constant pressure outflow boundaries.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">P_INFLOW or PI</P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Inflow from a boundary at a
+			specified constant pressure. To specify as the west, south, or
+			bottom end of the computational region, add a layer of wall cells
+			to the west, south, or bottom of the PI cells.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">P_OUTFLOW or PO</P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Outflow to a boundary at a specified
+			constant pressure. To specify as the west, south, or bottom end of
+			the computational region, add a layer of wall cells to the west,
+			south, or bottom of the PO cells.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">FREE_SLIP_WALL or FSW</P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Velocity gradients at the wall
+			vanish. If BC_JJ_PS is equal to 1, Johnson-Jackson bc is used for
+			solids.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">NO_SLIP_WALL or NSW</P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">All components of the velocity
+			vanish at the wall. If BC_JJ_PS is equal to 1, Johnson-Jackson bc
+			is used for solids.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">PAR_SLIP_WALL or PSW</P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Partial slip
+			at the wall implemented as dv/dn + hw (v _ vw) = 0, where n is the
+			normal pointing from the fluid into the wall. 
+			</P>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The
+			coefficients hw and vw should be specified. Hw = 0 =&gt; free
+			slip; hw = <FONT FACE="Symbol, serif">&#61605;</FONT> ; and vw =&gt;
+			0 . no slip. To set hw = oo, leave it unspecified.</P>
+			<P STYLE="margin-top: 0.18cm">If BC_JJ_PS is equal to 1,
+			Johnson-Jackson boundary condition is used for solids.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=4><B>Specifications
+for WALL boundary conditions:</B></FONT></P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=155>
+	<COL WIDTH=46>
+	<COL WIDTH=334>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT SIZE=4><B>Momentum Equation</B></FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Partial slip
+			at the wall implemented as dv/dn + hw (v _ vw) = 0, where n is the
+			normal pointing from the fluid into the wall. 
+			</P>
+			<P STYLE="margin-top: 0.18cm">The coefficients hw and vw should be
+			specified. Hw = 0 =&gt; free slip; hw = <FONT FACE="Symbol, serif">&#61605;</FONT>
+			; and vw =&gt; 0 . no slip. To set hw = oo, leave it unspecified.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">BC_hw_g
+			(bc)</FONT> 
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[<FONT FACE="Symbol, serif">&#61605;</FONT>
+			]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas phase hw for partial slip
+			boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">BC_hw_s
+			(bc, m)</FONT> 
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[<FONT FACE="Symbol, serif">&#61605;</FONT>
+			]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Solids phase hw for partial slip
+			boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Uw_g (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas phase Uw for partial slip
+			boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Uw_s (bc,
+			m)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Solids phase Uw for partial slip
+			boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Vw_g (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas phase Vw for partial slip
+			boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Vw_s (bc,
+			m)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Solids phase Vw for partial slip
+			boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Ww_g (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas phase Ww for partial slip
+			boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Ww_s (bc,
+			m)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Solids phase Ww for partial slip
+			boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_JJ_PS (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">1: Use Johnson and Jackson partial
+			slip bc. 0: Do not use Johnson and Jackson partial slip bc.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">If granular energy transport
+			equation is not solved.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">If granular
+			energy transport equation is solved.</P>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT SIZE=4><B>Granular Energy
+			Equation</B></FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">The granular energy boundary
+			condition is implemented as dT/dn + hw (T _ Tw) = c, where n is
+			the normal pointing from the fluid into the wall. If Johnson and
+			Jackson partial slip bc is used, the coefficients hw and c are
+			calculated. Otherwise, they must be specified. Hw = 0 =&gt;
+			specified heat flux; hw = <FONT FACE="Symbol, serif">&#61605;</FONT>
+			=&gt; specified temperature boundary condition. To set hw = <FONT FACE="Symbol, serif">&#61605;</FONT>
+			, leave it unspecified and give a value for Tw.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Thetaw_m
+			(bc, m)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Tw for granular energy bc.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">BC_hw_Theta_m
+			(bc, m)</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[<FONT FACE="Symbol, serif">&#61605;</FONT>
+			]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Hw for granular energy bc.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_C_Theta_m
+			(bc, m) </FONT>
+			</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">c for
+			granular energy bc.</P>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT SIZE=4><B>Gas and Solids
+			Energy Equations</B></FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The thermal
+			boundary condition implemented as dT/dn + hw (T _ Tw) = c, where n
+			is the normal pointing from the fluid into the wall. 
+			</P>
+			<P STYLE="margin-top: 0.18cm">The coefficients hw, Tw, and c
+			should be specified. Hw = 0 =&gt; specified heat flux; hw = <FONT FACE="Symbol, serif">&#61605;</FONT>
+			=&gt; specified temperature boundary condition. To set hw = <FONT FACE="Symbol, serif">&#61605;</FONT>
+			, leave it unspecified and give a value for Tw.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">BC_hw_T_g
+			(bc)</FONT> 
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[<FONT FACE="Symbol, serif">&#61605;</FONT>
+			]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas phase hw for heat transfer.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">BC_hw_T_s
+			(bc, m)</FONT> 
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[<FONT FACE="Symbol, serif">&#61605;</FONT>
+			]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Solids phase hw for heat transfer.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Tw_g (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas phase Tw for heat transfer.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Tw_s (bc,
+			m)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Solids phase Tw for heat transfer.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_C_T_g (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas phase C for heat transfer.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_C_T_s (bc,
+			m)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Solids phase
+			C for heat transfer.</P>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT SIZE=4><B>Gas and Solids
+			Species Equations</B></FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The species
+			diffusion boundary condition is implemented as dX/dn + hw (X _ Xw)
+			= c, where n is the normal pointing from the fluid into the wall. 
+			</P>
+			<P STYLE="margin-top: 0.18cm">The coefficients hw, Xw, and c
+			should be specified. Hw = 0 =&gt; specified species diffusion
+			flux; hw = <FONT FACE="Symbol, serif">&#61605;</FONT> =&gt;
+			specified species concentration at the boundary. To set hw = <FONT FACE="Symbol, serif">&#61605;</FONT>
+			, leave it unspecified and give a value for Xw.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">BC_hwX_g
+			(bc, n)</FONT> 
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[<FONT FACE="Symbol, serif">&#61605;</FONT>
+			]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The species
+			diffusion boundary condition is implemented as dX/dn + hw (X _ Xw)
+			= c, where n is the normal pointing from the fluid into the wall. 
+			</P>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The
+			coefficients hw, Xw, and c should be specified. Hw = 0 =&gt;
+			specified species diffusion flux; hw = <FONT FACE="Symbol, serif">&#61605;</FONT>
+			=&gt; specified species concentration at the boundary. To set hw =
+			<FONT FACE="Symbol, serif">&#61605;</FONT> , leave it unspecified
+			and give a value for Xw.</P>
+			<P STYLE="margin-top: 0.18cm">Gas phase hw for mass transfer.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">BC_hw_X_s
+			(bc, m, n)</FONT> 
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[<FONT FACE="Symbol, serif">&#61605;</FONT>
+			]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Solids phase hw for mass transfer.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Xw_g (bc,
+			n)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas phase Xw for mass transfer.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Xw_s (bc,
+			m, n)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Solids phase Xw for mass transfer.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_C_X_g (bc,
+			n)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas phase C for mass transfer.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_C_X_s (bc,
+			m, n)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Solids phase
+			C for mass transfer.</P>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT SIZE=4><B>Scalar Transport
+			Equations</B></FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The scalar
+			boundary condition is implemented as dS/dn + hw (S _ Sw) = C,
+			where n is the normal pointing from the fluid into the wall. 
+			</P>
+			<P STYLE="margin-top: 0.18cm">The coefficients hw, Sw, and c
+			should be specified. Hw = 0 =&gt; specified species diffusion
+			flux; hw = <FONT FACE="Symbol, serif">&#61605;</FONT> =&gt;
+			specified species concentration at the boundary. To set hw = <FONT FACE="Symbol, serif">&#61605;</FONT>
+			, leave it unspecified and give a value for Sw.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">BC_hw_Scalar
+			(bc, n)</FONT> 
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[<FONT FACE="Symbol, serif">&#61605;</FONT>
+			]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">hw for scalar transfer at the
+			boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_ScalarW
+			(bc, n)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Xw for scalar transfer at the
+			boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_C_Scalar
+			(bc, n)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">C for scalar transfer at the
+			boundary.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>Specifications
+for FLOW boundary conditions:</B></FONT></P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=155>
+	<COL WIDTH=46>
+	<COL WIDTH=334>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_EP_g (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Void fraction at the BC plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_P_g (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas pressure at the BC plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_ROP_s (bc,
+			m)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Macroscopic density of solids phase
+			at the BC plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_T_g (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Gas phase temperature at the BC
+			plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_T_s (bc, m)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Solids phase-m temperature at the BC
+			plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Theta_m
+			(bc, m)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Solids phase-m granular temperature
+			at the BC plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">BC_X_g
+			(bc, n) </FONT>
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Mass fraction of gas species n at
+			the BC plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">BC_X_s
+			(bc, m, n) </FONT>
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[0]</P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Mass fraction of solids phase-m,
+			species n at the BC plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_U_g (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">x-component of gas velocity at the
+			BC plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_U_s (bc, m)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">x-component of solids-phase velocity
+			at the BC plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_V_g (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">y-component of gas velocity at the
+			BC plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_V_s (bc, m)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">y-component of solids-phase velocity
+			at the BC plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_W_g (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">z-component of gas velocity at the
+			BC plane.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_W_s (bc, m)</FONT></P>
+		</TD>
+		<TD WIDTH=46>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">z-component of solids-phase velocity
+			at the BC plane.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">For a mass
+inflow boundary, instead of specifying the normal velocity at a
+boundary, the gas and solids flow rates may be specified as the
+volumetric or mass flow rates. If the volumetric or mass flow rate is
+specified, MFIX will calculate the velocity normal to the boundary.
+The velocity calculated by MFIX, however, may differ from the
+velocity calculated based on the physical dimensions of the port
+because the simulated dimensions may not be exactly equal to the
+physical dimensions. Specify positive values for all the flow rates.
+MFIX will assign the correct sign to the computed velocity values.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">If the mass or
+volumetric flow rate is specified for a mass outflow boundary
+condition, then at every interval BC_DT_0, MFIX will adjust the
+normal velocity so that the average computed-outflow rate is equal to
+the specified value. The user is cautioned, however, that if
+unrealistic mass flow rates are specified, the computations may
+become unstable. It is better to specify the</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">velocity at the
+mass outflow boundary, if some amount of fluctuation in the mass
+outflow rate is tolerable.</P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=155>
+	<COL WIDTH=40>
+	<COL WIDTH=340>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_VOLFLOW_g
+			(bc)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Gas volumetric flow rate through the
+			boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_VOLFLOW_s
+			(bc, m)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Solids volumetric flow rate through
+			the boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_MASSFLOW_g
+			(bc)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Gas mass flow rate through the
+			boundary.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_MASSFLOW_s
+			(bc, m)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Solids mass flow rate through the
+			boundary.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">MFIX allows the
+specification of a transient jet with its velocity fluctuating
+between two values. The jet conditions will override the steady
+condition specified for the normal velocity. Therefore, if there is
+no transient jet, do not specify any of the following, except
+BC_DT_0, which may be required for mass outflow conditions.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=155>
+	<COL WIDTH=40>
+	<COL WIDTH=340>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_DT_0 (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The interval
+			at the beginning when the normal velocity at the boundary is equal
+			to BC_Jet_g0. When restarting, run this value and BC_Jet_g0 should
+			be specified such that the transient jet continues correctly. MFIX
+			does not store the jet conditions.</P>
+			<P STYLE="margin-top: 0.18cm">For MASS_OUTFLOW boundary
+			conditions, BC_DT_0 is the time period to average and print the
+			outflow rates. The adjustment of velocities to get a specified
+			mass or volumetric flow rate is based on the average outflow rate.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Jet_g0</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Value of normal velocity during the
+			initial interval BC_DT_0.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_DT_h (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">The interval when normal velocity is
+			equal to BC_Jet_gh.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Jet_gh (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Value of normal velocity during the
+			interval BC_DT_h.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_DT_1 (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">The interval when normal velocity is
+			equal to BC_Jet_g1.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">BC_Jet_g1 (bc)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Value of normal velocity during the
+			interval BC_DT_1.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>4.8&nbsp;
+Internal Surfaces</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Internal
+surfaces (IS) are normal to one of the coordinate directions and
+coincide with one of the faces of the scalar control volume. One of
+the three pairs of coordinates is equal. The surface is defined by
+the constant coordinates of each of the four edges, which can be
+specified with physical coordinates or cell indices, and the two
+equal values for the direction normal to the face, which can only be
+specified with physical coordinates. If cell sizes are not small
+enough to resolve a surface specified using physical coordinates,
+MFIX will indicate this problem with an error message.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">To specify a
+large number of internal surfaces in a region, a 3D region may be
+specified. When IS_Type is specified for such regions, add a prefix
+(X_, Y_, or Z_) to indicate the direction of the internal surfaces;
+e.g., X_IMPERMEABLE specifies impermeable internal surfaces parallel
+to the X coordinate. 
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Internal
+surfaces act as free-slip walls in stress computations. This default
+condition cannot be changed.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=155>
+	<COL WIDTH=40>
+	<COL WIDTH=340>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_X_w (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">x coordinate of the west face or
+			edge.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_X_e (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">x coordinate of the east face or
+			edge.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_Y_s (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">y coordinate of the south face or
+			edge</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_Y_n (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">y coordinate of the north face or
+			edge</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_Z_b (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">z coordinate of the bottom face or
+			edge</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_Z_t (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">z coordinate of the top face or edge</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_I_w (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">i index of the west-most cell.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_I_e (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">i index of the east-most cell</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_J_s (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">j index of the south-most cell</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_J_n (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">j index of the north-most cell</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_K_b (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">k index of the bottom-most cell</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_K_t (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">k index of the top-most cell</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_TYPE (is)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Type of internal surface:</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">IMPERMEABLE or IP</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">No gas or solids flow through the
+			surface. 
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">SEMIPERMEABLE or SP</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Only gas flows through the surface.
+			Solids velocity is zero or a user-specified fixed value.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">IS_PC
+			(is, 2)</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">(*,
+			1) = 1.E32</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">(*, 2) = 0.0</P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">1: permeability; 2: Inertial
+			resistance coefficient. These values need to be specified for
+			semipermeable surfaces only. The thickness used for pressure drop
+			computation is that of the momentum cell (DX_e, DY_n, or DZ_t). To
+			turn off the resistance, use a large value for permeability
+			(1.E32) and a small value for the inertial resistance coefficient
+			(0.0).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">IS_VEL (is, m)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Value of fixed solids velocity
+			through semipermeable surfaces.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>4.9&nbsp;
+Output Control</B></FONT></P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=155>
+	<COL WIDTH=40>
+	<COL WIDTH=340>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">RES_DT</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Interval at which restart (.RES)
+			file is updated.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">SPX_DT (9)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Interval at which .SPX files are
+			updated.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.SP1</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Void fraction (EP_g).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.SP2</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Gas pressure, solids pressure (P_g,
+			P_star).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.SP3</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Gas velocity (U_g, V_g, W_g).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.SP4</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Solids velocity (U_s, V_s, W_s).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.SP5</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Solids density (ROP_s).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.SP6</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Gas and solids temperature (T_g,
+			T_s1, T_s2).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.SP7</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Gas and solids mass fractions (X_g,
+			X-s).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.SP8</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Granular temperature (G).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">.SP9</P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm">&nbsp;</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">User defined scalars.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">OUT_DT</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Interval at which standard output
+			(.OUT) file is updated.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">USR_DT (5)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DP</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Interval at which user-defined
+			outputs are written from the subroutine WRITE_USR1.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">NLOG</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[25]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Interval in number of time steps at
+			which .LOG file is written.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">FULL_LOG
+			</FONT>
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[.FALSE]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">L</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">If true, display the residuals on
+			the screen and messages about convergence on the screen and in the
+			.LOG file.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">RESID_STRING
+			(8)</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Specify
+			resideuals to be printed as 4-character strings. 
+			</P>
+			<P STYLE="margin-top: 0.18cm">First character specifies the field
+			variable: P - pressure, R - density, U - u velocity, V - v
+			velocity, W - w velocity, T - temperature, X _ species mass
+			fraction, G - Granular temperature. The second number specifies
+			the phase (0 for gas). The last two numbers specify the species
+			index; e.g., 'P0' - gas pressure, 'R1' - solids phase 1 density,
+			'X001'- gas phase, species 1; 'X203' _ solids phase 2, species 3.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>4.10&nbsp;
+Chemical Reactions</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">Chemical
+reactions can be specified in two ways: in the data file, or in the
+subroutine rrates. If reactions are specified in the data file, MFIX
+uses the subroutine rrates0 to calculate all the required quantities.
+The user need not modify rrates0. If the chemical reactions are not
+specified in the data file, the user must program them into the
+subroutine rrates.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">To define
+chemical reactions through the data file, first define species names
+with the following key word.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><BR><BR>
+</P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=160>
+	<COL WIDTH=40>
+	<COL WIDTH=334>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=160>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000">SPECIES_NAME</FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">C</P>
+		</TD>
+		<TD WIDTH=334>
+			<P STYLE="margin-top: 0.18cm">Names of gas and solids phase
+			species. The first NMAX(0) are the names of gas species. The next
+			NMAX(1) are the names of solids phase-1 species, and so on. All
+			the names should be unique.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The reactions
+are specified in a reaction block beginning with the string @(RXNS)
+and ending with the string @(END). The reactions are entered in the
+following format: reaction name: reaction scheme. r1: CH4 + 2 O2 <FONT FACE="Wingdings">&#61664;</FONT>
+CO2 + 2H2O</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The reaction
+rate in g-mol/(m^3.s)is then entered in the following format,
+starting with the keyword rate:</P>
+<TABLE WIDTH=566 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=65>
+	<COL WIDTH=39>
+	<COL WIDTH=47>
+	<COL WIDTH=79>
+	<COL WIDTH=79>
+	<COL WIDTH=85>
+	<COL WIDTH=84>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P STYLE="margin-top: 0.18cm"><B>Keyword</B></P>
+		</TD>
+		<TD WIDTH=39>
+			<P STYLE="margin-top: 0.18cm"><B>Name</B></P>
+		</TD>
+		<TD WIDTH=47>
+			<P STYLE="margin-top: 0.18cm"><B>Phase index for Temp </B>(m)</P>
+		</TD>
+		<TD WIDTH=79>
+			<P STYLE="margin-top: 0.18cm"><B>Preexponen-tial Factor </B>(A)</P>
+		</TD>
+		<TD WIDTH=79>
+			<P STYLE="margin-top: 0.18cm"><B>Tempera-ture Expo-nent </B>(n)</P>
+		</TD>
+		<TD WIDTH=85>
+			<P STYLE="margin-top: 0.18cm"><B>Activation Temperature </B>(E/R)</P>
+		</TD>
+		<TD WIDTH=84>
+			<P STYLE="margin-top: 0.18cm"><B>Concentraton Dependence</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">Rate</P>
+		</TD>
+		<TD WIDTH=39>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">r1:</P>
+		</TD>
+		<TD WIDTH=47>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">0</P>
+		</TD>
+		<TD WIDTH=79>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">6.7E12</P>
+		</TD>
+		<TD WIDTH=79>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">0</P>
+		</TD>
+		<TD WIDTH=85>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">24358.</P>
+		</TD>
+		<TD WIDTH=84>
+			<P STYLE="margin-top: 0.18cm">[O2]^1.3 [CH4]^0.2</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The index m is
+used to identify the phase temperature to be used in the rate
+expression, to assign the enthalpy change caused by the reaction, and
+to determine the phase volume fraction to be used in the rate
+expression. m=0 is fluid phase, m=1 is solids phase 1, and so on. The
+rest of the input appears in the rate expression as follows: 
+</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">rate = A *
+T_g**n * exp(-(E/R)/T_g)) * EP_g * (RO_g * X_O2/MW_O2)**1.3 * (RO_g *
+X_CH$/MW_CH4)**0.2</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The rate
+expression may be written on multiple lines. Reverse reactions are
+denoted by a '&lt;' in the reaction scheme.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The enthalpy
+change caused by the reaction in cal/g-mol is expressed as follows
+with the keyword DH. The default value is zero.</P>
+<TABLE WIDTH=584 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=143>
+	<COL WIDTH=115>
+	<COL WIDTH=288>
+	<TR VALIGN=TOP>
+		<TD WIDTH=143>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><B>Enthalpy
+			Change </B>
+			</P>
+			<P STYLE="margin-top: 0.18cm"><B>Keyword</B></P>
+		</TD>
+		<TD WIDTH=115>
+			<P STYLE="margin-top: 0.18cm"><B>Reaction Name</B></P>
+		</TD>
+		<TD WIDTH=288>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><B>Enthalpy
+			Change Caused by Reaction </B>
+			</P>
+			<P STYLE="margin-top: 0.18cm">(cal/g-mol)</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=143 VALIGN=TOP>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">DH</P>
+		</TD>
+		<TD WIDTH=115 VALIGN=TOP>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">r1:</P>
+		</TD>
+		<TD WIDTH=288 VALIGN=BOTTOM SDVAL="-191759" SDNUM="1033;">
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">-191759</P>
+		</TD>
+	</TR>
+</TABLE>
+<P ALIGN=CENTER STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The
+enthalpy change is assigned to the phase identified by the index m in
+the rate expression.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The following is
+an example of an athermal reversible reaction.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">@( RXNS&nbsp;
+Start chemical reactions input )</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">A2R: A &lt;--&gt;
+R</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">rate A2R: 0
+1.2E17 0 5837 [A]</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">rate A2R&lt;: 0
+2.5E41 0 14897 [R]</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">DH A2R: 0.0</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">@( END&nbsp; End
+chemical reactions input )</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">All the reaction
+schemes must be specified in the data file. All the reaction rate
+expressions and enthalpy changes need not be specified in the data
+file, however. If a rate expression or an enthalpy change is missing
+from the data file, that information must be added to the subroutine
+rrates0.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>4.11&nbsp;
+User-Defined Subroutines</B></FONT></P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The user may
+modify any *.f or *.inc file in MFIX. To modify a file, first copy it
+from the mfix/model directory into the run directory. Modify only
+this copy in the run directory; do <B>NOT</B> modify the original
+files in mfix/model. Then, invoke the 'sh make_mfix' command from the
+run directory. The make_mfix messages will identify the files from
+the run directory used to create the MFIX executable. All the (MFIX
+and non-MFIX) *.inc files from the run directory will be used to
+create the MFIX executable. Only MFIX *.f files from the run
+directory will be used, however. Non-MFIX *.f files in the run
+directory will be ignored. To use new Fortran files, include them in
+one of the MFIX *.f files.</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The following is
+a list of MFIX files that are usually modified to include chemical
+reactions and user defined scalars:</P>
+<TABLE WIDTH=578 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=195>
+	<COL WIDTH=357>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">rrates.f</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">Chemical reation rates and heats of
+			reaction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">transport_prop.f</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">Transport properties.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">physical_prop.f</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">Physical properties.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">scalar_prop.f</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">Properties and source terms in
+			scalar transport equations.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">The following
+routines are used for writing user-defined output:</P>
+<TABLE WIDTH=578 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=195>
+	<COL WIDTH=357>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">write_usr0.f</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">Called once during the run. Can be
+			used for opening user-defined files.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">write_usr1.f</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">Called at intervals defined by
+			USR_DT.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">To activate the
+calls to the following three routines, set call_usr = .TRUE. in the
+data file:</P>
+<TABLE WIDTH=578 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=195>
+	<COL WIDTH=357>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">usr0.f</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">A subroutine that is called once
+			every run, just before the time-loop begins.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">usr1.f</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">A subroutine that is called once
+			every timestep.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">usr2.f</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">A subroutine that is called once
+			every iteration.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">usr3.f</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">A subroutine that is called once
+			every run, after the time-loop ends.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">usrnlst.inc</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">List of user-defined keywords. These
+			may be used to enter data through the input data file mfix.dat.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">usr_init_namelist.f</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">Initialize user-defined keywords.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=195>
+			<P STYLE="margin-top: 0.18cm">usr_mod.f</P>
+		</TD>
+		<TD WIDTH=357>
+			<P STYLE="margin-top: 0.18cm">User-defined module. Include &quot;Use
+			usr&quot; to use user-defined variables in this module. If
+			allocatable arrays are defined in this module, allocate them in
+			usr0.f.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT SIZE=5><B>4.12&nbsp;
+Parallelization Controls</B></FONT></P>
+<TABLE WIDTH=572 BORDER=1 BORDERCOLOR="#000000" CELLPADDING=6 CELLSPACING=0>
+	<COL WIDTH=155>
+	<COL WIDTH=40>
+	<COL WIDTH=340>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm"><FONT COLOR="#800000"><B>Keyword
+			(dimension)</B></FONT></P>
+		</TD>
+		<TD WIDTH=40>
+			<P STYLE="margin-top: 0.18cm"><B>Type</B></P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">NODESI</FONT></P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Number of grid blocks in
+			x-direction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">NODESJ
+			</FONT>
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Number of grid blocks in
+			y-direction.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=155>
+			<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm"><FONT COLOR="#800000">NODESK
+			</FONT>
+			</P>
+			<P ALIGN=RIGHT STYLE="margin-top: 0.18cm">[1]</P>
+		</TD>
+		<TD WIDTH=40>
+			<P ALIGN=CENTER STYLE="margin-top: 0.18cm">I</P>
+		</TD>
+		<TD WIDTH=340>
+			<P STYLE="margin-top: 0.18cm">Number of grid blocks in
+			z-direction.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">&nbsp;</P>
+<P STYLE="margin-top: 0.18cm; margin-bottom: 0.18cm">NODESI * NODESJ
+* NODESK must be the same as the number of processors specified using
+the mpirun (or equivalent command). Otherwise the code will return
+with an error.</P>
+</BODY>
+</HTML>
