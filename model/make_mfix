@@ -134,8 +134,8 @@ ln -sf "$mpi_include/mpif.h" .
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-omp"
-            compile_d="-c -I. -I$mpi_include -C -trapuv -g -free -assume byterecl -convert big_endian "
-            link_d="-C -g -assume byterecl -convert big_endian"
+            compile_d="-c -I. -I$mpi_include -C -trapuv -g -free -nowarn -assume byterecl -convert big_endian "
+            link_d="-C -g -nowarn -assume byterecl -convert big_endian"
 
             compile="-c -I. -I$mpi_include -O5 -free -nowarn -assume byterecl -convert big_endian "
             compile2="-c -I. -I$mpi_include -O5 -free -nowarn -assume byterecl -convert big_endian "
@@ -338,6 +338,40 @@ ln -sf "$mpi_include/mpif.h" .
 	           exit
 	         fi
 
+            fi
+
+
+            if [ "$F_UFMTENDIAN" ]
+            then
+              #echo "Environment variable, F_UFMTENDIAN is found"
+
+              if ( expr "$F_UFMTENDIAN" = "big" )
+              then
+                 echo "***********************************"
+                 echo "Intel Big Endian environment is set"
+                 echo "***********************************"
+              else
+                 echo "F_UFMTENDIAN environment variable  IS NOT set to big endian!"
+                 echo "Check the current value of F_UFMTENDIAN variable by:"
+		 echo "echo \$F_UFMTENDIAN"
+		 echo "then issue the following Cshell command at the prompt and "
+                 echo "recompile:"
+                 echo "setenv F_UFMTENDIAN big for csh/tcsh"
+                 echo "export F_UFMTENDIAN=big for ksh/bash"
+		 echo " "
+                 echo "Aborting compilation"
+		 exit
+              fi
+
+            else
+              echo "Environment variable for big endian IS NOT set!"
+              echo "Issue the following Cshell command at the prompt and "
+              echo "then recompile:"
+              echo "setenv F_UFMTENDIAN big for csh/tcsh"
+              echo "export F_UFMTENDIAN=big for ksh/bash"
+	      echo " "
+              echo "Aborting compilation" 
+	      exit
             fi
 	    
             compile_common="-c -O3 -w -w95 -i_dynamic -ip -FR"

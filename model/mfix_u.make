@@ -114,6 +114,7 @@ mfix.exe : \
     check_mass_balance.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     check_plane.$(OBJ_EXT) \
+    cn_extrapol.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     conv_dif_phi.$(OBJ_EXT) \
     conv_dif_u_g.$(OBJ_EXT) \
@@ -352,6 +353,7 @@ mfix.exe : \
     check_mod.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     check_plane.$(OBJ_EXT) \
+    cn_extrapol.$(OBJ_EXT) \
     coeff_mod.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     constant_mod.$(OBJ_EXT) \
@@ -1560,6 +1562,22 @@ check_one_axis.$(OBJ_EXT) : check_one_axis.f \
 check_plane.$(OBJ_EXT) : check_plane.f \
             FUNITS.mod \
             COMPAR.mod 
+cn_extrapol.$(OBJ_EXT) : cn_extrapol.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            MATRIX.mod \
+            SCALES.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            SCALARS.mod \
+            TRACE.mod \
+            RUN.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            function.inc                                                
 compare.$(OBJ_EXT) : compare.f \
             PARAM.mod \
             PARAM1.mod \

@@ -119,6 +119,9 @@
       if (VERSION_NUMBER >= 1.12) call bcast(DT, PE_IO)   !//PAR_I/O BCAST0d	     
 !      call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
+!AE TIME 091501 Store the timestep counter level at the begin of RESTART run
+      NSTEPRST = NSTEP
+
 !
       call readScatterRes(EP_G,array2, array1, NEXT_REC)
 

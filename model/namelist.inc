@@ -17,8 +17,8 @@
              SHEAR, V_sh,&
 ! end peter 7/15
 
-
-
+!AE TIME 043001  added new logical flag var for 2nd order time into NAMELIST
+             CN_ON,&
 !
 ! 1.2 Output control section
 !

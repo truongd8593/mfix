@@ -65,6 +65,10 @@
 !                      Number of times steps completed.
       INTEGER          NSTEP
 !
+!AE TIME 091501   Declare a new variable to use on CN with RESTART cases
+!                      Number of time steps when restart file was read
+      INTEGER          NSTEPRST      
+!
 !                      Discretization scheme for different equations
       INTEGER          DISCRETIZE(9)
       
@@ -121,6 +125,8 @@
 !	               If. TRUE. calculate frictional stress terms
       LOGICAL	       SHEAR
 
+!AE TIME 041601        If .TRUE. activate 2nd order accurate time implementation
+      LOGICAL          CN_ON
 
 !		       If 0: use S:S
 !	               If 1: use the form of Savage to compute S:S

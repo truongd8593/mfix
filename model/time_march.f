@@ -463,9 +463,17 @@
 
          CALL CHECK_DATA_30 
       ENDIF 
-      
+
+!AE TIME 041601 Double the timestep for 2nd order accurate time implementation
+!      IF ((CN_ON.AND.NSTEP>1)) THEN
+      IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
+          (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
+         DT = 0.5*DT
+	 ODT = ODT * 2.0
+      ENDIF      
+
 !
-!  Advance the solution in time by iteratively solving the equations
+!  Advance the solution in time by iteratively solving the equations 
 !
       CALL ITERATE (IER, NIT) 
 
@@ -483,10 +491,31 @@
 !
 !  Advance the time step and continue
 !
+
+!AE TIME 041601 Double the timestep for 2nd order accurate time implementation
+!      IF (CN_ON.AND.NSTEP>1) then 
+      IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
+          (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
+         DT = 2.*DT      
+	 ODT = ODT * 0.5
+      ENDIF      
+
+!AE TIME 043001 Perform the explicit extrapolation for CN implementation
+!      IF (CN_ON.AND.NSTEP>1) then
+      IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
+          (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN     
+         CALL CN_EXTRAPOL
+      ENDIF
+
       IF (DT /= UNDEFINED) THEN 
          TIME = TIME + DT 
          NSTEP = NSTEP + 1 
       ENDIF 
+
+!AIKEDEBUG 081101
+!      write (*,"('Compute the Courant number')") 
+!      call get_stats(IER)
+     	   
       CALL FLUSH (6) 
       GO TO 100 
 !

@@ -60,6 +60,7 @@
       ADJUST_DT = .FALSE.                     !No need to iterate again
       IF (DT==UNDEFINED .OR. DT<ZERO) RETURN 
       
+
 !     Initialize
       IF (IER == 100) THEN 
          DT_DIR = -1 
@@ -69,6 +70,14 @@
 !
 !     Iterate gave converged results
       ELSE IF (IER == 0) THEN 
+
+!AE TIME 041601 Set back the timestep to original size which was
+!               halved previously for 2nd order accurate time implementation
+!         IF (CN_ON.AND.NSTEP>1) DT = 2.*DT      
+         IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
+          (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
+	     DT = 2.*DT      
+
          IF (STEPS_TOT >= STEPS_MIN) THEN 
             NITOS_NEW = DBLE(NIT_TOT)/(STEPS_TOT*DT) 
             IF (NITOS_NEW > NITOS) DT_DIR = DT_DIR*(-1) 
@@ -90,10 +99,25 @@
             NIT_TOT = NIT_TOT + NIT 
          ENDIF 
          ADJUST_DT = .FALSE.                     !No need to iterate again 
+
+!AE TIME 041601 Cut the timestep into half for 2nd order accurate time implementation
+!         IF (CN_ON.AND.NSTEP>1) DT = 0.5*DT      
+         IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
+          (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
+	      DT = 0.5*DT      
+
+
 !
 !     No convergence in iterate
       ELSE 
 !
+!AE TIME 041601 Set back the timestep to original size which was
+!               halved previously for 2nd order accurate time implementation
+!         IF (CN_ON.AND.NSTEP>1) DT = 2.*DT      
+         IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
+          (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
+              DT = 2.*DT 
+
          IF (DT < DT_MIN) THEN 
 !//SP
             LINE(1) = 'DT < DT_MIN.  Recovery not possible!' 
@@ -130,6 +154,12 @@
 !
             CALL RESET_NEW 
             ADJUST_DT = .TRUE.                   !Iterate again with new dt 
+
+!AE TIME 041601 Cut the timestep into half for 2nd order accurate time implementation
+!            IF (CN_ON.AND.NSTEP>1) DT = 0.5*DT      
+            IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
+              (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
+	          DT = 0.5*DT      
          ENDIF 
 !
 !
@@ -137,6 +167,10 @@
 !        call get_stats(IER)
 !
       ENDIF 
+
+!AIKEDEBUG Get the min. Courant number displayed.
+!      call get_stats(IER)
+
 !
       ODT = ONE/DT 
 
