@@ -285,20 +285,20 @@
 !
 ! Extend the boundaries for cyclic implementation
 !
-               IF (BC_I_W(BCV).EQ.2.AND.BC_I_E(BCV).EQ.IMAX2-1.&
-                   AND.CYCLIC_X.AND.NODESI.NE.1) THEN
+               IF (BC_I_W(BCV).EQ.2.AND.BC_I_E(BCV).EQ.IMAX2-1 &
+                   .AND.CYCLIC_X.AND.NODESI.NE.1) THEN
                    BC_I_W(BCV) = 1
                    BC_I_E(BCV) = IMAX2
                ENDIF
 !
-               IF (BC_J_S(BCV).EQ.2.AND.BC_J_N(BCV).EQ.JMAX2-1.&
-                   AND.CYCLIC_Y.AND.NODESJ.NE.1) THEN
+               IF (BC_J_S(BCV).EQ.2.AND.BC_J_N(BCV).EQ.JMAX2-1 &
+                   .AND.CYCLIC_Y.AND.NODESJ.NE.1) THEN
                    BC_J_S(BCV) = 1
                    BC_J_N(BCV) = JMAX2
                ENDIF
 !
-               IF (BC_K_B(BCV).EQ.2.AND.BC_K_T(BCV).EQ.KMAX2-1.&
-                   AND.CYCLIC_Z.AND.NODESK.NE.1) THEN
+               IF (BC_K_B(BCV).EQ.2.AND.BC_K_T(BCV).EQ.KMAX2-1 &
+                   .AND.CYCLIC_Z.AND.NODESK.NE.1) THEN
                    BC_K_B(BCV) = 1
                    BC_K_T(BCV) = KMAX2
                ENDIF
