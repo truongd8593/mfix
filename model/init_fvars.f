@@ -66,14 +66,12 @@
          P_STAR(IJKSTART3:IJKEND3) = ZERO 
          RO_G(IJKSTART3:IJKEND3) = UNDEFINED 
          ROP_G(IJKSTART3:IJKEND3) = UNDEFINED 
-         T_G(IJKSTART3:IJKEND3) = UNDEFINED 
+         T_G(IJKSTART3:IJKEND3) = ZERO 
          U_G(IJKSTART3:IJKEND3) = UNDEFINED 
          V_G(IJKSTART3:IJKEND3) = UNDEFINED 
          W_G(IJKSTART3:IJKEND3) = UNDEFINED 
-         N = 1 
          IF (NMAX(0) > 0) THEN 
             X_G(IJKSTART3:IJKEND3,:NMAX(0)) = ZERO 
-            N = NMAX(0) + 1 
          ENDIF 
       ENDIF 
       
@@ -92,10 +90,8 @@
             W_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
 	    P_S(IJKSTART3:IJKEND3,M) = UNDEFINED
 	    KTH_S(IJKSTART3:IJKEND3,M) = UNDEFINED
-            N = 1 
             IF (NMAX(M) > 0) THEN 
                X_S(IJKSTART3:IJKEND3,M,:NMAX(M)) = ZERO 
-               N = NMAX(M) + 1 
             ENDIF 
          ENDIF 
       END DO 
