@@ -123,7 +123,7 @@
        SHEAR = .FALSE.
 ! end loezos  
 	
-     IF (DIM_M + 1 > 0) THEN 
+      IF (DIM_M + 1 > 0) THEN 
          MOMENTUM_X_EQ(:DIM_M) = .TRUE. 
          MOMENTUM_Y_EQ(:DIM_M) = .TRUE. 
          MOMENTUM_Z_EQ(:DIM_M) = .TRUE. 
@@ -135,6 +135,8 @@
       
       NScalar = 0
       Phase4Scalar(:) = UNDEFINED_I
+
+      nRR = 0
 !
 ! INITIALIZE THE OUTPUT CONTROL SECTION
 !

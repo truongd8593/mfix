@@ -61,6 +61,7 @@
       USE toleranc 
       USE leqsol 
       USE scalars
+      USE rxns
       USE compar      
       USE mpi_utility
       USE fldvar
@@ -98,6 +99,7 @@
       INTEGER :: DIM_tmp
 !
       logical :: doingPost
+      integer :: n_spx_res
 
 !//PAR_I/O 0814 declare global scratch arrays
       INTEGER, ALLOCATABLE, DIMENSION(:) :: IGTEMP1,iGTEMP2    !//PAR_I/O declare integer Global SCRatch array
@@ -117,7 +119,7 @@
     if (myPE == PE_IO ) then
       READ (UNIT_RES, REC=1) VERSION 
       READ (VERSION(6:512), *) VERSION_NUMBER 
-      IF (VERSION_NUMBER > 1.4) THEN 
+      IF (VERSION_NUMBER > 1.5) THEN 
          WRITE (*, *) ' Update Subroutine read_res0' 
          CALL SLUMBER 
 !         STOP  
@@ -354,7 +356,8 @@
            ijksize3_all(:) = ijkmax3
 !//
 !//
-           nScalar = 0                !// since NScalar is not read in
+           nScalar = 0                !// since NScalar
+           nRR     = 0                !// and NRR not read
            doingPost = .true.         !// until later
 
 	   call allocate_arrays       !// do for mfix/post_mfix
@@ -870,6 +873,18 @@
           call bcast(CALL_USR,PE_IO)  !//PAR_I/O BCAST0l
 
           if (myPE == PE_IO) then
+             if (version_number >= 1.50) then
+                read (unit_res,rec=next_reca) n_spx_res
+                next_reca = next_reca + 1
+                if (n_spx_res > n_spx) then
+                   write (*,*) ' n_spx too small '
+                   write (*,*) ' n_spx = ' , n_spx
+                   write (*,*) ' n_spx must equal ' , n_spx_res
+                   call exitMPI(myPE)  !// 990 0807 Abort all PEs, not only the current one
+                end if
+             else
+                n_spx_res = 9
+             end if
              DO LC = 1, N_SPX 
                READ (UNIT_RES, REC=NEXT_RECA) SPX_DT(LC) 
                NEXT_RECA = NEXT_RECA + 1 
@@ -1136,8 +1151,20 @@
           NScalar = 0 
         ENDIF 
 !
-!           Version 1.4 -- read radiation variables in read_res1 
+!           Version 1.4 -- read radiation variables in read_res1
 !
+        IF (VERSION_NUMBER >= 1.499) THEN 
+          if (myPE == PE_IO) then
+            READ (UNIT_RES, REC=NEXT_RECA) nRR 
+            NEXT_RECA = NEXT_RECA + 1 
+            if (doingPost .and. nRR.gt.0) then
+               Allocate( ReactionRates(DIMENSION_3, nRR) )
+            end if
+	  ENDIF
+          call bcast(nRR,PE_IO) !//PAR_I/O BCAST0d 
+        ELSE
+          nRR = 0 
+        ENDIF 
 !
 !  Add new read statements above this line.  Remember to update NEXT_RECA.
 !  Remember to update the version number check near begining of this subroutine.

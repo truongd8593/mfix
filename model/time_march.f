@@ -55,6 +55,7 @@
       USE vshear
       USE scalars
       USE drag
+      USE rxns
       USE compar     
       USE time_cpu     
       IMPLICIT NONE
@@ -112,6 +113,8 @@
 ! 
 !                      dummy logical variable for initializing adjust_dt 
       LOGICAL          dummy 
+
+      CHARACTER        EXT_END*35
 ! 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -119,6 +122,7 @@
       LOGICAL , EXTERNAL :: ADJUST_DT 
 !-----------------------------------------------
 !
+      EXT_END = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 !
       FINISH  = .FALSE. 
       NCHECK  = NSTEP 
@@ -150,6 +154,7 @@
       ENDIF 
       DISK(8) = MMAX*DISK_ONE 
       DISK(9) = NScalar*DISK_ONE
+      DISK(10) = nRR*DISK_ONE
 !
 !
 !
@@ -337,8 +342,8 @@
                      ENDIF 
                      SPX_MSG = .FALSE. 
                   ENDIF 
-                  WRITE (UNIT_LOG, 1010,  ADVANCE='NO') L 
-                  IF (FULL_LOG) WRITE (*, 1010,  ADVANCE='NO') L 
+                  WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
+                  IF (FULL_LOG) WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
                ENDIF 
             ELSE IF (TIME + 0.1*DT>=SPX_TIME(L) .OR. TIME+0.1*DT>=TSTOP) THEN 
                SPX_TIME(L) = (INT((TIME + 0.1*DT)/SPX_DT(L))+1)*SPX_DT(L) 
@@ -356,8 +361,8 @@
                   ENDIF 
                   SPX_MSG = .FALSE. 
                ENDIF 
-               WRITE (UNIT_LOG, 1010,  ADVANCE='NO') L 
-               IF (FULL_LOG) WRITE (*, 1010,  ADVANCE='NO') L 
+                  WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
+                  IF (FULL_LOG) WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
             ENDIF 
          END DO 
 
@@ -496,6 +501,7 @@
  1001 FORMAT(' t=',F10.4,'  Wrote      SPx:') 
  1002 FORMAT(' SPx:') 
  1010 FORMAT(I2,',') 
+ 1011 FORMAT(A2,',') 
  1015 FORMAT(14X,'Disk=',F7.2,' Mb') 
       END SUBROUTINE TIME_MARCH 
 !

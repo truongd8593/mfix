@@ -57,6 +57,7 @@
       USE output
       USE scales 
       USE scalars
+      USE rxns
       USE ur_facs 
       USE leqsol 
       USE toleranc 
@@ -104,7 +105,7 @@
 !
 !     Add new data entries at the end of the file and identify version no.
 !------------------------------------------------------------------------
-      VERSION = 'RES = 01.4' 
+      VERSION = 'RES = 01.5' 
 !------------------------------------------------------------------------
 !//SP - Temporarily disabled so that the binary files can be diffed.....
 !
@@ -256,7 +257,9 @@
 !     Version 01.09
       WRITE (UNIT_RES, REC=NEXT_RECA) TIME, TSTOP, ENERGY_EQ, RES_DT, OUT_DT, &
          NLOG, L_SCALE0, NO_I, NO_J, NO_K, CALL_USR 
-      NEXT_RECA = NEXT_RECA + 1 
+      NEXT_RECA = NEXT_RECA + 1
+      write (unit_res,rec=next_reca) n_spx 
+      NEXT_RECA = NEXT_RECA + 1
       DO LC = 1, N_SPX 
          WRITE (UNIT_RES, REC=NEXT_RECA) SPX_DT(LC) 
          NEXT_RECA = NEXT_RECA + 1 
@@ -343,6 +346,12 @@
       CALL OUT_BIN_512I (UNIT_RES, Phase4Scalar, DIM_SCALAR, NEXT_RECA)
 !
 !     Version 1.4 -- write radiation variables in write_res1 
+
+!
+!     Version 1.5 -- write nRR
+      WRITE (UNIT_RES, REC=NEXT_RECA) nRR  
+      NEXT_RECA = NEXT_RECA + 1 
+
 !
 !  Add new write statements above this line.  Remember to update NEXT_RECA.
 !  Remember to change the version number near begining of this subroutine.

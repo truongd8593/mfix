@@ -68,7 +68,11 @@
 !
 !                   index to first blank character in run_name
       INTEGER       NB, NBL
+
+      CHARACTER     EXT_END*35
 !-----------------------------------------------
+
+      ext_end = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 !
 ! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
 !
@@ -129,7 +133,7 @@
           ENDIF 
 
           DO LC = 1, N_SPX 
-            WRITE (EXT(4:4), 1000) LC 
+            ext(4:4) = ext_end(LC:LC)
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'NEW'&
                , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
             IF (IER /= 0) GO TO 500 
@@ -142,7 +146,7 @@
             GO TO 600 
           ENDIF 
           DO LC = 1, N_SPX 
-            WRITE (EXT(4:4), 1000) LC 
+            ext(4:4) = ext_end(LC:LC)
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'OLD'&
                , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
             IF (IER /= 0) GO TO 500 
@@ -155,7 +159,7 @@
             GO TO 600 
           ENDIF 
           DO LC = 1, N_SPX 
-            WRITE (EXT(4:4), 1000) LC 
+            ext(4:4) = ext_end(LC:LC)
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'NEW'&
                , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
             IF (IER /= 0) GO TO 500 

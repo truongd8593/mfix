@@ -34,6 +34,7 @@
       USE run
       USE scalars
       USE funits 
+      USE rxns
       USE compar             !//d
       USE mpi_utility        !//d
       IMPLICIT NONE
@@ -184,6 +185,16 @@
          call gather (Scalar(:,LC),array1,root)    !//
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'Scalar') 
+        END DO
+      ENDIF
+
+      IF(nRR /= 0) THEN
+        DO LC = 1, nRR
+         if (myPE == PE_IO) WRITE (UNIT_OUT, 2500) CHAR(12), LC, TIME 
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         call gather (ReactionRates(:,LC),array1,root)    !//
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'RRates') 
         END DO
       ENDIF
       

@@ -38,6 +38,7 @@
       USE funits 
       USE scalars
       USE output
+      USE rxns
       USE compar           !//
       USE mpi_utility      !//
 !//       USE tmp_array
@@ -267,6 +268,22 @@
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
+      CASE (10)
+
+         if (myPE.eq.PE_IO) then
+            READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
+            NUM_REC = NEXT_REC 
+            WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
+            NEXT_REC = NEXT_REC + 1
+         end if 
+         DO LC = 1, nRR
+            call gatherWriteSpx (ReactionRates(:,LC),array2, array1, uspx+L, NEXT_REC) 
+         END DO 
+         if (myPE.eq.PE_IO) then
+            NUM_REC = NEXT_REC - NUM_REC 
+            WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
+            if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
+         end if
 !
       CASE DEFAULT
             LINE(1) = 'Unknown SPx file index' 

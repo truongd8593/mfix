@@ -36,6 +36,7 @@
       USE physprop
       USE run
       USE scalars
+      USE rxns
       USE funits 
       USE output
       USE energy
@@ -109,6 +110,7 @@
       call send_recv(T_RG,2)
       call send_recv(GAMA_RS,2)
       call send_recv(T_RS,2)
+      if(nRR > 0)call send_recv(ReactionRates,2)
 
 
       call gatherWriteRes (EP_g,array2, array1, NEXT_REC)  !//d pnicol
@@ -170,6 +172,11 @@
         call gatherWriteRes (T_RS(1,LC),array2, array1, NEXT_REC)  !//d pnicol
       ENDDO 
 
+!
+!     Version 1.5
+      DO LC = 1, nRR 
+            call gatherWriteRes (ReactionRates(:,LC),array2, array1, NEXT_REC)  !//d pnicol
+      END DO
 !--------------------------------------------------------------------- 
  
       if (myPE.eq.PE_IO) CALL FLUSH_res (UNIT_RES) 

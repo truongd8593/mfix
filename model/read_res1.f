@@ -35,6 +35,7 @@
       USE geometry
       USE physprop
       USE run
+      USE rxns
       USE scalars
       USE funits 
       USE energy
@@ -197,6 +198,12 @@
         T_RS(:,:)    = ZERO
       ENDIF
 
+
+      IF (VERSION_NUMBER >= 1.5) THEN
+        DO N = 1, nRR 
+          call readScatterRes(ReactionRates(:,N), array2, array1, NEXT_REC)
+        END DO 
+      ENDIF
 !------------------------------------------------------------------------
 !
 

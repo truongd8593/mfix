@@ -38,6 +38,7 @@
       USE physprop
       USE indices
       USE scalars
+      USE rxns
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
@@ -77,6 +78,7 @@
       ENDIF 
       
       IF(Nscalar > 0) Scalar(IJKSTART3:IJKEND3,:Nscalar) = ZERO
+      IF(nRR > 0) ReactionRates(IJKSTART3:IJKEND3,:nRR) = ZERO
 
 !!$omp parallel do private(M,IJK,N)
       DO M = 1, MMAX 

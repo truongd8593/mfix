@@ -235,6 +235,7 @@
       Allocate( IJK_RESID(NRESID, 0:DIMENSION_M) )
  
 !rxns
+      if (nRR .gt. 0) Allocate( ReactionRates(DIMENSION_3,nRR) )
       Allocate(  R_gp (DIMENSION_3, DIMENSION_N_g) )
       Allocate(  R_sp (DIMENSION_3, DIMENSION_M, DIMENSION_N_s) )
       Allocate(  RoX_gc (DIMENSION_3, DIMENSION_N_g) )

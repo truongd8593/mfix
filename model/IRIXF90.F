@@ -220,6 +220,9 @@
 !
       integer    :: iunit , lc  , nb , ier
       CHARACTER  :: EXT*4 , file_name*64 
+      character  :: ext_end*35
+
+      ext_end = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 !
 ! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
@@ -235,13 +238,12 @@
  125  continue
       lc  = iunit - unit_spx
       ext = '.SPx'
-      WRITE (EXT(4:4), 1000) LC         
+      ext(4:4) = ext_end(LC:LC)         
       close (unit=iunit)
 
       CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, &
               'old' , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER)
 !
- 1000 FORMAT(I1)
       return
       end
 !

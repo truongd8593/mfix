@@ -6,6 +6,9 @@
  
  
 !
+!                      reaction rates
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  ReactionRates 
+!
 !                      Rate of production of gas species
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  R_gp 
 !
@@ -31,6 +34,7 @@
 !                      Molecular weight of all species: MW_g and MW_s
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MW_all 
 !
+      INTEGER :: nRR ! number of ReactionRates
 !                      total number of species
       INTEGER          N_all
 !
