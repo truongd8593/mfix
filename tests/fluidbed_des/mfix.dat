@@ -1,21 +1,19 @@
-!  In gas_drag.f VCOR = VOL(IJK)
-!  Bubbling Fluidized Bed Simulation                                            
-!  doing single phase with phase subroutines included. checking with previous  and with supplementary jets.             
-!  bub01 - fluidized bed with a central jet                                      
-!  CPU time on R10000 Octane - 1804 s, Storage = 1.34 Mb    
+!  Bubbling Fluidized Bed Simulation
+!  DES for solid phase and Kinetic theory of gas phase                                            
+!  Fluidized bed with a central jet                                      
                            
 ! Run-control section                                                           
   RUN_NAME 		= 'DES_FLUIDIZED_BED'             
   DESCRIPTION 		= 'fluid bed with jet'          
   RUN_TYPE 		= 'NEW'             
   UNITS 		= 'cgs'
-  TIME  		= 0.0				!start time
-  TSTOP 		= 5 
+  TIME  		= 0.0			!start time
+  TSTOP 		= 1.0 
   DT 			= 5E-4			!time step
   DT_MAX                = 7.5E-4
  
-  ENERGY_EQ 		= .FALSE.			!do not solve energy eq
-  SPECIES_EQ 		= .FALSE.    .FALSE. 		!do not solve species eq
+  ENERGY_EQ 		= .FALSE.		!do not solve energy eq
+  SPECIES_EQ 		= .FALSE.    .FALSE. 	!do not solve species eq
 
   MOMENTUM_X_EQ(1) = .FALSE.
   MOMENTUM_Y_EQ(1) = .FALSE.
@@ -31,12 +29,12 @@
 ! Geometry Section                                                      
                                                                          
   COORDINATES 		= 'cartesian' 
-  XLENGTH  		=   15.0		        !X length	
+  XLENGTH  		=   15.0	        !X length	
   IMAX 			=   15			!cells in i direction
-  YLENGTH  		=   90.0			!height
+  YLENGTH  		=   90.0		!height
   JMAX 			=   45 			!cells in j direction
 
-  NO_K     		= .TRUE. 			!2D, no k direction
+  NO_K     		= .TRUE. 		!2D, no k direction
 
   GRAVITY = 980
                                                                              
@@ -50,10 +48,10 @@
 
 
   RO_s    		= 2.7			!solids density
-  D_p     		= 0.4		!particle diameter
+  D_p     		= 0.4			!particle diameter
   e       		= 0.9 			!restitution coefficient
-  Phi    		= 30.0		!angle of internal friction
-  EP_star 		= 0.42		!void fraction at minimum
+  Phi    		= 30.0			!angle of internal friction
+  EP_star 		= 0.42			!void fraction at minimum
 						!  fluidization
 
   
@@ -61,26 +59,26 @@
 
     ! 1. bed
   IC_X_w(1)           	=  0.0				!domain
-  IC_X_e(1)           	=  15.0		! 0 < x < 15, 0 < y < 100
+  IC_X_e(1)           	=  15.0		! 0 < x < 15, 0 < y < 30
   IC_Y_s(1)          	=  0.0
   IC_Y_n(1)           	=  30.0
-                                	!initial values in the region
-  IC_EP_g(1)          	=  0.42		!void fraction
-  IC_U_g(1)           	=  0.0		!radial gas velocity
-  IC_V_g(1)          	=  650.0	!axial gas velocity
+                                	! initial values in the region
+  IC_EP_g(1)          	=  0.42		! void fraction
+  IC_U_g(1)           	=  0.0		! x-dir gas velocity
+  IC_V_g(1)          	=  650.0	! y-dir gas velocity
 
   IC_U_s(1,1) = 0.0
   IC_V_s(1,1) = 0.0
 
       ! 2. freeboard
   IC_X_w(2)           	=  0.0			!domain
-  IC_X_e(2)           	=  15.0		! 0 < x < 15, 0 < y < 100
+  IC_X_e(2)           	=  15.0		! 0 < x < 15, 30 < y < 90
   IC_Y_s(2)          	=  30.0
   IC_Y_n(2)           	=  90.0
-                                	!initial values in the region
-  IC_EP_g(2)          	=  1.0		!void fraction
-  IC_U_g(2)           	=  0.0		!radial gas velocity
-  IC_V_g(2)          	=  280.0	!axial gas velocity
+                                	! initial values in the region
+  IC_EP_g(2)          	=  1.0		! void fraction
+  IC_U_g(2)           	=  0.0		! x-dir gas velocity
+  IC_V_g(2)          	=  280.0	! y-dir gas velocity
 
   IC_U_s(2,1) = 0.0
   IC_V_s(2,1) = 0.0
@@ -90,21 +88,21 @@
 !  Boundary Conditions Section
 
       ! 1. Central jet
-  BC_X_w(1)		=  7.0				!central jet
-  BC_X_e(1)		=  8.0			! 7 < x < 8, y = 0
+  BC_X_w(1)		=  7.0		! central jet
+  BC_X_e(1)		=  8.0		! 7 < x < 8, y = 0
   BC_Y_s(1)		=  0.0
   BC_Y_n(1)		=  0.0
   BC_TYPE(1)		= 'MI'		!specified mass inflow
 
   BC_EP_g(1)		=  1.0
   BC_U_g(1)		=  0.0
-  BC_V_g(1)		=  4200 		!inlet jet vel
+  BC_V_g(1)		=  4200 	!inlet jet vel
   BC_P_g(1)		=  0.0
 
 
        ! 2. Exit
-  BC_X_w(2)		=  0.0				!top exit
-  BC_X_e(2)		=  15.0	        ! 0 < x < 15, y = 100
+  BC_X_w(2)		=  0.0		! top exit
+  BC_X_e(2)		=  15.0	        ! 0 < x < 15, y = 90
   BC_Y_s(2)		=  90.0
   BC_Y_n(2)		=  90.0
   BC_TYPE(2)		=  'PO' 	!specified pressure outflow
@@ -125,11 +123,8 @@ SZ1 =0
 NZ2 = 0.9
 DTSOLID = 0.00005
 PARTICLES = 2400
-ZONES = 1
-ZN1 = 2400
-ZN2 = 0
-ZN3 = 0
-ZN4 = 0
+ZONES = 1				! # of zones for to differentiate 
+ZN1 = 2400				! particles based on size or density etc.
 MN = 10
 RADIUS_EQ = 0.21
 FACTOR = 2010
@@ -153,19 +148,10 @@ GRAV(3) = 0
 
 !  DES Logicals
 DISCRETE_ELEMENT = .TRUE.
-DO_NSQUARE = .FALSE.
 DO_QUADTREE = .TRUE.
 WALLDTSPLIT = .TRUE.
-DES_PERIODIC_WALLS = .FALSE.
-DES_PERIODIC_WALLS_X = .FALSE.
-DES_PERIODIC_WALLS_Y = .FALSE.
-DES_PERIODIC_WALLS_Z = .FALSE.
-INLET_OUTLET = .FALSE.
-DES_CONTINUUM_COUPLED = .FALSE.
 COUPLED_FLOW = .TRUE.
 TSUJI_DRAG = .TRUE.
-KUIPERS_DRAG = .FALSE.
-EQUIVALENT_RADIUS = .FALSE.  
 
 ! End DES Input
 
