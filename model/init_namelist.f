@@ -222,6 +222,7 @@
       TOL_RESID_X = 1.0E-4 
       TOL_RESID_Scalar = 1.0E-4
       TOL_RESID_K_Epsilon = 1.0E-4
+      TOL_RESID_Th = 1.0E-4
       TOL_DIVERGE = 1.0E+4 
       V_EX = ZERO 
       P_REF = ZERO 

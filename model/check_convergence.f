@@ -61,7 +61,7 @@
       DOUBLE PRECISION errorpercent
 !!
 !                      sum of residuals
-      DOUBLE PRECISION SUM, SUM_T, SUM_X
+      DOUBLE PRECISION SUM, SUM_T, SUM_X, SUM_Th
 !
 !                      max of residuals
       DOUBLE PRECISION maxres
@@ -97,9 +97,10 @@
          END DO 
       ENDIF 
 !
+      SUM_Th = zero
       IF (GRANULAR_ENERGY) THEN 
          DO M = 1, MMAX 
-            SUM = SUM + RESID(RESID_TH,M) 
+            SUM_Th = SUM_Th + RESID(RESID_TH,M) 
          END DO 
       ENDIF 
       
@@ -179,11 +180,13 @@
       
       IF(SUM<=TOL_RESID .AND. SUM_T<=TOL_RESID_T .AND. &
          RESID(RESID_sc,0)<=TOL_RESID_Scalar .AND. SUM_X<=TOL_RESID_X &
-	  .AND. RESID(RESID_ke,0)<=TOL_RESID_K_Epsilon)THEN 
+	  .AND. RESID(RESID_ke,0)<=TOL_RESID_K_Epsilon &
+          .AND. SUM_Th <=TOL_RESID_Th)THEN 
          MUSTIT = 0                              !converged 
       ELSE IF (SUM>=TOL_DIVERGE .OR. SUM_T>=TOL_DIVERGE .OR.&
                 RESID(RESID_sc,0)>= TOL_DIVERGE .OR. SUM_X>=TOL_DIVERGE&
-            .OR. RESID(RESID_ke,0)>= TOL_DIVERGE ) THEN 
+            .OR. RESID(RESID_ke,0)>= TOL_DIVERGE &
+            .OR. SUM_Th >= TOL_DIVERGE ) THEN 
          IF (NIT /= 1) THEN 
             MUSTIT = 2                           !diverged 
          ELSE 

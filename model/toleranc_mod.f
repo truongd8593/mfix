@@ -66,6 +66,9 @@
 !                      Tolerance in K & Epsilon eq residuals allowed for convergence
       DOUBLE PRECISION TOL_RESID_K_Epsilon
 !
+!                      Tolerance in Granular Temperature eq residuals allowed for convergence
+      DOUBLE PRECISION TOL_RESID_Th
+!
 !                      Minimum residual for declaring divergence
       DOUBLE PRECISION TOL_DIVERGE
 !

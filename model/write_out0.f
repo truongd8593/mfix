@@ -481,6 +481,7 @@
       WRITE (UNIT_OUT, 1905) TOL_COM
       IF(NScalar /= 0)WRITE (UNIT_OUT, 1906) TOL_RESID_Scalar
       IF(K_Epsilon)WRITE (UNIT_OUT, 1907) TOL_RESID_K_Epsilon
+      IF(GRANULAR_ENERGY)WRITE (UNIT_OUT, 1908) TOL_RESID_Th
 !
 !  Echo user defined input data
 !
@@ -744,7 +745,8 @@
          'Minimum residual at divergence (TOL_DIVERGE) = ',G12.5) 
  1905 FORMAT(7X,'Tolerance for species and energy balances (TOL_COM) = ',G12.5) 
  1906 FORMAT(7X,'Tolerance for scalar mass balances (TOL_RESID_Scalar) = ',G12.5)  
- 1907 FORMAT(7X,'Tolerance for K-Epsilon balances (TOL_RESID_K_Epsilon) = ',G12.5)
+ 1907 FORMAT(7X,'Tolerance for K-Epsilon balances (TOL_RESID_K_Epsilon) = ',G12.5)  
+ 1908 FORMAT(7X,'Tolerance for Granular Temp.  balances (TOL_RESID_Th) = ',G12.5)
 !
       END SUBROUTINE WRITE_OUT0 
       
