@@ -31,6 +31,7 @@
       Use run
       Use constant
       Use funits
+      Use compar
 !
       IMPLICIT NONE
       INCLUDE 'xforms.inc'

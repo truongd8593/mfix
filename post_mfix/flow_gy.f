@@ -28,6 +28,7 @@
       Use indices
       Use physprop
       Use geometry
+      Use compar
       IMPLICIT NONE
 !
       INTEGER I, J, K, IJK, IJPK
@@ -73,6 +74,7 @@
       Use indices
       Use physprop
       Use geometry
+      Use compar
       IMPLICIT NONE
 !
       INTEGER I, J, K, IJK, IJPK
@@ -124,6 +126,7 @@
       Use indices
       Use physprop
       Use geometry
+      Use compar
       IMPLICIT NONE
 !
       INTEGER IJK, IJPK
@@ -175,6 +178,7 @@
       Use indices
       Use physprop
       Use geometry
+      Use compar
       IMPLICIT NONE
 !
       INTEGER I, J, K, IJK, N, IJPK

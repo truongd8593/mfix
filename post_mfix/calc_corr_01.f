@@ -33,6 +33,7 @@
         Use geometry
         Use indices
         Use correl
+        Use compar
 	
       IMPLICIT NONE
 !

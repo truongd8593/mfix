@@ -28,6 +28,7 @@
       Use indices
       Use physprop
       Use geometry
+      Use compar
       
       IMPLICIT NONE
 !

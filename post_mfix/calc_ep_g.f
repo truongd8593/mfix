@@ -40,6 +40,7 @@
 !     Indices
 !
       Use indices
+      Use compar
       
       
       IMPLICIT NONE

@@ -32,6 +32,7 @@
       Use fldvar
       Use physprop
       Use post3d
+      Use compar
 
       IMPLICIT NONE
 !

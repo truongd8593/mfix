@@ -368,6 +368,7 @@
       Use post3d
       Use machine
       Use funits
+      Use compar
 !
       IMPLICIT NONE
 !
@@ -489,6 +490,7 @@
       Use physprop
       Use indices
       Use funits
+      Use compar
 !
       IMPLICIT NONE
 !
@@ -551,6 +553,7 @@
       Use physprop
       Use indices
       Use funits
+      Use compar
 !
       IMPLICIT NONE
 !
@@ -612,6 +615,7 @@
       Use physprop
       Use indices
       Use funits
+      Use compar
 !
       IMPLICIT NONE
 !
@@ -694,6 +698,7 @@
       Use physprop
       Use indices
       Use funits
+      Use compar
 !
       IMPLICIT NONE
 !
@@ -1091,6 +1096,7 @@
 !
       use geometry
       use indices
+      use compar
 !
       implicit none
 !
@@ -1117,6 +1123,7 @@
 !
       use geometry
       use indices
+      use compar
 !
       implicit none
 !
@@ -1144,6 +1151,7 @@
 !
       use geometry
       use indices
+      use compar
 !
       implicit none
 !
@@ -1170,6 +1178,7 @@
 !
       use geometry
       use indices
+      use compar
 !
       implicit none
 !
@@ -1196,6 +1205,7 @@
 !
       use geometry
       use indices
+      use compar
 !
       implicit none
 !

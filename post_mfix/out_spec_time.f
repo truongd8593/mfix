@@ -31,6 +31,7 @@
       Use physprop
       Use indices
       Use geometry
+      Use compar
       IMPLICIT NONE
 !
 !     Passed Arguments

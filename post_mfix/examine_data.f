@@ -32,6 +32,7 @@
       Use geometry
       Use post3d
       Use scalars
+      Use compar
       
       IMPLICIT NONE
       INTEGER  N_VAR

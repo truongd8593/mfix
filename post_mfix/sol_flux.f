@@ -32,6 +32,8 @@
       Use indices
       Use post3d
       Use physprop
+      Use compar
+
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
 !

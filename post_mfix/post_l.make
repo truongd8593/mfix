@@ -1067,7 +1067,6 @@ set_index1a.$(OBJ_EXT) : ../model/set_index1a.f \
             physprop.mod \
             geometry.mod \
             compar.mod \
-            constant.mod \
             fldvar.mod \
             indices.mod \
             boundfunijk.mod                              \
