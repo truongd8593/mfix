@@ -42,6 +42,9 @@ echo
 echo "MFIX directory is $mfix"
 echo
 
+echo "IMPORTANT: execute this makefile by typing \"sh make_mfix\" "
+echo
+
 echo -n "Do you need SMP version? (y/n) [no] "
 read smp_version
 
