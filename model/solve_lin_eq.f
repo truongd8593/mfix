@@ -29,6 +29,7 @@
       USE param 
       USE param1 
       USE geometry
+      USE compar      !// 001
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -99,12 +100,14 @@
         CALL LEQ_LSOR( VNAME, VAR, A_M(:,:,M), B_M(:,M), ITMAX, IER)
 
       CASE DEFAULT 
+!//? need to go over following output to add identification from which PE it is
+!//? coming from or a copy to be sent to *.LOG files
         LINE0(1:14) = 'SOLVE_LIN_EQ: '
 	LINE0(15:80)= VName
         WRITE(LINE1,'(A, I2, A)') &
              'Error: LEQ_METHOD = ', METHOD, ' is invalid'
         CALL WRITE_ERROR(LINE0, LINE1, 1)
-        STOP
+        call mfix_exit(myPE)
       END SELECT 
       RETURN  
       END SUBROUTINE SOLVE_LIN_EQ 

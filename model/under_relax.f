@@ -69,7 +69,8 @@
       F1 = ONE/UR 
       F2 = F1 - ONE 
 !
-      DO IJK = 1, IJKMAX2 
+!// 350 1207 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+      DO IJK = ijkstart3, ijkend3 
          IF (FLUID_AT(IJK)) THEN 
             AP = A_M(IJK,0,M) 
             IF (AP /= (-ONE)) THEN 

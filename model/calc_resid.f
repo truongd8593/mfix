@@ -252,8 +252,9 @@
 !-----------------------------------------------
 !     Local variables
 !-----------------------------------------------
-      double precision, dimension (ijkmax2) :: RESID_IJK
-
+!// 1207 replaced global 3D dimensioning w/ local 3D dimension for RESID_IJK
+!      double precision, dimension (ijkmax2) :: RESID_IJK
+      double precision, dimension (ijksize3_all(myPE)) :: RESID_IJK
 
       INCLUDE 'function.inc'
 !
@@ -263,18 +264,20 @@
       NCELLS = 0 
 
 !efd
+!// 350 1207 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !$omp parallel do private( IJK )
-      DO IJK = 1, IJKMAX2
+      DO IJK = ijkstart3, ijkend3
           RESID_IJK(IJK) = ZERO
       ENDDO
 
 !
+!// 350 1207 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !$omp    parallel do &
 !$omp&   private(   IJK,     &
 !$omp&   IMJK,IJMK,IPJK,IJPK, IJKM,IJKP, &
 !$omp&   NUM1, DEN1) &
 !$omp&   REDUCTION(+:NUM, DEN,NCELLS)  
-      DO IJK = 1, IJKMAX2 
+      DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK) .AND. ABS(VAR(IJK)) > TOL) THEN 
 !
             IMJK = IM_OF(IJK) 
@@ -282,6 +285,11 @@
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK) 
 !
+!//I? need to make sure VAR(IMJK) & IPJK contains correct values at the edges of
+!//  of the subdomain boundaries for 1D decomp along I direction
+
+!//J? need to make sure VAR(IJMK) & IJPK contains correct values at the edges of
+!//  of the subdomain boundaries for 1D decomp along J direction
             NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*VAR(IJK)+A_M(IJK,E,M)*VAR(IPJK)+&
                A_M(IJK,W,M)*VAR(IMJK)+A_M(IJK,N,M)*VAR(IJPK)+A_M(IJK,S,M)*VAR(&
                IJMK)) 
@@ -289,6 +297,8 @@
                IJKM = KM_OF(IJK) 
                IJKP = KP_OF(IJK) 
 !
+!//? need to make sure VAR(IJKM) & IJKP contains correct values at the edges of
+!//  of the subdomain boundaries
                NUM1 = NUM1 - (A_M(IJK,T,M)*VAR(IJKP)+A_M(IJK,B,M)*VAR(IJKM)) 
             ENDIF 
 !
@@ -312,7 +322,8 @@
 !efd
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
-      DO IJK = 1, IJKMAX2
+!// 350 1207 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+      DO IJK = ijkstart3, ijkend3
          IF (RESID_IJK(IJK) > MAX_RESID) THEN               
                IJK_RESID = IJK
                MAX_RESID = RESID_IJK( IJK_RESID )

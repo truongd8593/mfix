@@ -1,3 +1,9 @@
+!//? either we bcast all necessary info to root PE and then let it proceed with
+!//? convergence check or let all PEs execute following conv. check provided 
+!//? that all have the same residuals (which is the global residuals for each
+!//? variable thru out the domain?) what do you think Sreekanth?
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CHECK_CONVERGENCE(NIT, MUSTIT, IER)                    C
@@ -87,6 +93,10 @@
             SUM = SUM + RESID(RESID_TH,M) 
          END DO 
       ENDIF 
+      
+!//? probably need a global sum for SUM at this point and bcast to all PEs??      
+!    call MPI_ALLREDUCE(SUM,SUM,....) or it's equivalent from wrappers
+!//? may be worthwhile to gather all these global sums at the end of this routine
 !
       SUM_T = ZERO 
       IF (ENERGY_EQ) THEN 
@@ -94,6 +104,7 @@
             SUM_T = SUM_T + RESID(RESID_T,M) 
          END DO 
       ENDIF 
+!//? probably need a global sum for SUM_T at this point and bcast to all PEs??
 !
       SUM_X = ZERO 
       NO_RESID = .FALSE. 
@@ -106,6 +117,12 @@
          ENDIF 
       END DO 
       IF (NO_RESID) SUM_X = TOL_RESID_X + ONE 
+      
+!//? probably need a global sum for SUM_X at this point and bcast to all PEs??
+
+
+!//? we need to have the information for global residuals (i.e., through all
+!//? subdomains) for all variables and then proceed with the following.
 !
 !  Find the variable with maximum residual
 !
