@@ -164,7 +164,7 @@
       CALL GET_WALLS_BC 
 
 !//AIKEPARDBGSTOP 1016
-       write(*,"('(PE ',I2,'): aft get_walls_bc in check_data_07')") myPE !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft get_walls_bc in check_data_07')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
 !
@@ -173,7 +173,7 @@
       CALL GET_FLOW_BC 
 
 !//AIKEPARDBGSTOP 0922
-       write(*,"('(PE ',I2,'): aft get_flow_bc in check_data_07')") myPE !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft get_flow_bc in check_data_07')") myPE !//AIKEPARDBG
 !      call mfix_exit(myPE) !//AIKEPARDBG
 
 !
@@ -181,7 +181,7 @@
 !
       CALL GET_BC_AREA 
 !
-       write(*,"('(PE ',I2,'): aft get_bc_area is check_data_07')") myPE !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft get_bc_area is check_data_07')") myPE !//AIKEPARDBG
 !
       DO BCV = 1, DIMENSION_BC 
          IF (BC_DEFINED(BCV)) THEN 

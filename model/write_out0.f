@@ -479,7 +479,7 @@
       end if
       
 !//AIKEPARDBG
-      write(*,"('(PE ',I2,'): reached before gather in write_out0')") myPE    !//AIKEPARDBG
+!     write(*,"('(PE ',I2,'): reached before gather in write_out0')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
@@ -488,7 +488,7 @@
       call scatter (icbc_flag,array1,PE_IO)
 !      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
 !//AIKEPARDBG
-      write(*,"('(PE ',I2,'): aft gather in write_out0')") myPE    !//AIKEPARDBG
+!     write(*,"('(PE ',I2,'): aft gather in write_out0')") myPE    !//AIKEPARDBG
 !     call exitMPI(myPE)   !//AIKEPARDBGSTOP
       
       CALL OUT_ARRAY_C (array1, 'BC/IC condition flags') 

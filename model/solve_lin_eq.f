@@ -73,7 +73,7 @@
       INTEGER, PARAMETER :: MAX_IT = 1
 !
 !//SP - Temporary set METHOD = 2
-      write(*,*) 'entered leq_solve'
+!     write(*,*) 'entered leq_solve'
       METHOD = 2
 !
       SELECT CASE (METHOD)  
@@ -84,7 +84,7 @@
       CASE (2)  
 !       bicgstab
         call leq_bicgs( VNAME,VAR, A_M(:,:,M), B_M(:,M), SWEEP, TOL, ITMAX,IER)
-      write(*,*) 'after leq_bicgs in leq_solve'
+!     write(*,*) 'after leq_bicgs in leq_solve'
 
       case(3)
         call leq_gmres( VNAME, VAR, A_M(:,:,M), B_M(:,M), &

@@ -56,7 +56,7 @@
 !
 !
 !//AIKEPARDBG
-      write(*,"('(PE ',I2,'): eof EXCHANGE')") myPE    !//AIKEPARDBG
+!     write(*,"('(PE ',I2,'): eof EXCHANGE')") myPE    !//AIKEPARDBG
 !      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
       RETURN  

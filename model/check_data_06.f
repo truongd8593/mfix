@@ -78,8 +78,8 @@
 !
 
 !//AIKEPARDBGSTOP 0922
-       write(*,*) '*********** I am here $$^%&%&%%&%%%'
-       write(*,"('(PE ',I2,'): beginning of check_data_06')") myPE       !//AIKEPARDBG
+!      write(*,*) '*********** I am here $$^%&%&%%&%%%'
+!      write(*,"('(PE ',I2,'): beginning of check_data_06')") myPE       !//AIKEPARDBG
        write(UNIT_LOG,"('(PE ',I2,'): beginning of check_data_06')") myPE       !//AIKEPARDBG
        write(UNIT_LOG,"('(PE ',I2,'): from chk_data_06.f ',&                    
                  & /,9X,'Kmin3 = ',I6,'  Kmax3 = ',I6,'  Kmax = ',I6, &   

@@ -85,14 +85,16 @@
 !
 !$      INTEGER num_threads, threads_specified
 !$      INTEGER mp_numthreads, omp_get_num_threads
+      INTEGER IJK
+      INCLUDE 'function.inc'
 
 !// 010 Initialize MPI & get ranks & total PEs employed
     call parallel_init
 !//PARDBG 0801 Printout total PEs and also signal each alive PE
-    if(myPE == 0) then
-        write(*,"('Total number of PEs  :',I3)") numPEs
-    endif
-    write(*,"('Hello, I am PE :',I2)") myPE
+!   if(myPE == 0) then
+!       write(*,"('Total number of PEs  :',I3)") numPEs
+!   endif
+!   write(*,"('Hello, I am PE :',I2)") myPE
 
 
 
@@ -135,7 +137,7 @@
       CALL GET_DATA 
 
 !//AIKEPARDBG
-       write(*,"('(PE ',I2,'): aft get_data in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft get_data in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -149,7 +151,7 @@
       CALL SET_FLAGS 
 
 !//AIKEPARDBG
-       write(*,"('(PE ',I2,'): aft set_flags in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft set_flags in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -158,7 +160,7 @@
       CALL SET_CONSTPROP 
       
 !//AIKEPARDBG
-       write(*,"('(PE ',I2,'): aft set_constprop in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft set_constprop in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -168,7 +170,7 @@
       CALL WRITE_OUT0 
 !      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
 !//AIKEPARDBG
-       write(*,"('(PE ',I2,'): after write_out0 in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after write_out0 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -177,7 +179,7 @@
       CALL WRITE_USR0 
 
 !//AIKEPARDBG
-       write(*,"('(PE ',I2,'): after write_usr0 in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after write_usr0 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
       
 !$
@@ -200,7 +202,7 @@
 !
          CALL WRITE_RES0 
 !      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-       write(*,"('(PE ',I2,'): after write_res0 in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after write_res0 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
          DO L = 1, N_SPX 
@@ -248,7 +250,7 @@
 !
 !//AIKEPARDBG
        call MPI_Barrier(MPI_COMM_WORLD,mpierr)   !//AIKEPARDBG
-       write(*,"('(PE ',I2,'): after write_XXXX in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after write_XXXX in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
       IF (DT_TMP /= UNDEFINED) THEN 
@@ -263,14 +265,14 @@
 !
       CALL SET_INCREMENTS 
 !
-       write(*,"('(PE ',I2,'): after set_increments in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after set_increments in mfix')") myPE    !//AIKEPARDBG
 !
 !  Set the flags for wall surfaces impermeable and identify flow boundaries
 !  using FLAG_E, FLAG_N, and FLAG_T
 !
       CALL SET_FLAGS1 
 
-       write(*,"('(PE ',I2,'): after set_flags1 in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after set_flags1 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -278,7 +280,7 @@
 !
       CALL SET_GEOMETRY1 
 
-       write(*,"('(PE ',I2,'): after set_geometry1 in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after set_geometry1 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -286,12 +288,13 @@
 !
       CALL GET_CORNER_CELLS (IER) 
 
+!      write(*,"('(PE ',I2,'): after get_corner_cells in mfix')") myPE    !//AIKEPARDBG
 !
 !  Set initial conditions
 !
       CALL SET_IC 
 
-       write(*,"('(PE ',I2,'): after set_ic in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after set_ic in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -300,7 +303,7 @@
       CALL ZERO_NORM_VEL 
       CALL SET_BC0 
 
-       write(*,"('(PE ',I2,'): after set_bc0 in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after set_bc0 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -308,25 +311,25 @@
 !
       CALL SET_MW_MIX_G 
 
-       write(*,"('(PE ',I2,'): after set_mw_mix_g in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after set_mw_mix_g in mfix')") myPE    !//AIKEPARDBG
 !
 !  Set the pressure field for a fluidized bed
 !
       IF (RUN_TYPE == 'NEW') CALL SET_FLUIDBED_P 
 
-       write(*,"('(PE ',I2,'): after set_fluidbed_p in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after set_fluidbed_p in mfix')") myPE    !//AIKEPARDBG
 !
 !  Initialize gas densities
 !
       CALL SET_RO_G 
 
-       write(*,"('(PE ',I2,'): after set_ro_g in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after set_ro_g in mfix')") myPE    !//AIKEPARDBG
 !
 !  Initialize time dependent boundary conditions
 !
       CALL SET_BC1 
 
-       write(*,"('(PE ',I2,'): after set_bc1 in mfix')") myPE    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): after set_bc1 in mfix')") myPE    !//AIKEPARDBG
 !      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -341,7 +344,7 @@
       CPU_NLOG = CPU1 
       TIME_NLOG = TIME - DT 
 
-      write(*,"('(PE ',I2,'): reached beginning of time march in mfix')") myPE    !//AIKEPARDBG
+!     write(*,"('(PE ',I2,'): reached beginning of time march in mfix')") myPE    !//AIKEPARDBG
 !     call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !

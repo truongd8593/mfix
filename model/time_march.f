@@ -237,14 +237,14 @@
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !//AIKEPARDBG
-     write(*,"('(PE ',I2,'): before CALC_COEFF in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): before CALC_COEFF in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
       
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 
 !//AIKEPARDBG
-     write(*,"('(PE ',I2,'): aft CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -256,7 +256,7 @@
       END DO 
 
 !//AIKEPARDBG
-     write(*,"('(PE ',I2,'): aft UNDEF_2_0 in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft UNDEF_2_0 in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -274,13 +274,13 @@
       CALL ZERO_ARRAY (E_T, IER) 
 
 !//AIKEPARDBG
-     write(*,"('(PE ',I2,'): aft ZERO_ARRAY in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft ZERO_ARRAY in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
 !   Initialize adjust_ur
-!
-!     dummy = ADJUST_DT(100, 0)
+ 
+      dummy = ADJUST_DT(100, 0)
 
 !
 !  The TIME loop begins here.............................................
@@ -289,7 +289,7 @@
       IF (CALL_USR) CALL USR1 
 
 !//AIKEPARDBG
-     write(*,"('(PE ',I2,'): aft call USR1 in time_march')") myPE    !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft call USR1 in time_march')") myPE    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -298,7 +298,7 @@
       CALL ADJUST_EPS 
 
 !//AIKEPARDBG
-     write(*,"('(PE ',I2,'): aft ADJUST_EPS in time_march')") myPE    !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft ADJUST_EPS in time_march')") myPE    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -308,7 +308,7 @@
          SWITCH_4_P_G, SWITCH_4_P_S, IER) 
 
 !//AIKEPARDBG
-     write(*,"('(PE ',I2,'): aft MARK_PHASE_4 in time_march')") myPE    !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft MARK_PHASE_4 in time_march')") myPE    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -317,7 +317,7 @@
       CALL SET_BC1 
 
 !//AIKEPARDBG
-     write(*,"('(PE ',I2,'): aft SET_BC1 in time_march')") myPE    !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft SET_BC1 in time_march')") myPE    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -353,7 +353,7 @@
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME   !//
       ENDIF 
 !
-    write(*,"('(PE ',I2,'): aft restart dump in time_march')") myPE    !//AIKEPARDBG
+!   write(*,"('(PE ',I2,'): aft restart dump in time_march')") myPE    !//AIKEPARDBG
 !
 ! Write SPx files, if needed
 !
@@ -453,7 +453,7 @@
 !
       CALL UPDATE_OLD 
 !//SP
-    write(*,"('(PE ',I2,'): reached end of update_old in time_march')") myPE    !//SP
+!   write(*,"('(PE ',I2,'): reached end of update_old in time_march')") myPE    !//SP
 !
 !     Calculate coefficients.  Explicitly set flags for all the quantities
 !     that need to be calculated before calling CALC_COEFF.
@@ -477,25 +477,29 @@
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 !//AIKEPARDBG
-     write(*,"('(PE ',I2,'): aft CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): aft CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
 !
 !     Calculate the cross terms of the stress tensor
 !
       CALL CALC_TRD_G (TRD_G, IER) 
+!//SP
+!   write(*,"('(PE ',I2,'): reached end of CALC_TRD_G in time_march')") myPE
       CALL CALC_TRD_S (TRD_S, IER) 
+!//SP
+!   write(*,"('(PE ',I2,'): reached end of CALC_TRD_S in time_march')") myPE
       CALL CALC_TAU_U_G (TAU_U_G, IER) 
 !//SP
-    write(*,"('(PE ',I2,'): reached end of CALC_TAU_U_G in time_march')") myPE
+!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_U_G in time_march')") myPE
       CALL CALC_TAU_V_G (TAU_V_G, IER) 
-    write(*,"('(PE ',I2,'): reached end of CALC_TAU_V_G in time_march')") myPE
+!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_V_G in time_march')") myPE
       CALL CALC_TAU_W_G (TAU_W_G, IER) 
-    write(*,"('(PE ',I2,'): reached end of CALC_TAU_W_G in time_march')") myPE
+!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_W_G in time_march')") myPE
       CALL CALC_TAU_U_S (TAU_U_S, IER) 
-    write(*,"('(PE ',I2,'): reached end of CALC_TAU_U_S in time_march')") myPE
+!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_U_S in time_march')") myPE
       CALL CALC_TAU_V_S (TAU_V_S, IER) 
-    write(*,"('(PE ',I2,'): reached end of CALC_TAU_V_S in time_march')") myPE
+!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_V_S in time_march')") myPE
       CALL CALC_TAU_W_S (TAU_W_S, IER) 
-    write(*,"('(PE ',I2,'): reached end of CALC_TAU_W_S in time_march')") myPE
+!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_W_S in time_march')") myPE
 !//SP
 !   write(*,"('(PE ',I2,'): reached end of calc routines in time_march')") myPE 
 !//SP
@@ -510,7 +514,7 @@
       ENDIF 
 !
 !//SP
-    write(*,"('(PE ',I2,'): reached end of CHECK_DATA_30 in time_march')") myPE
+!   write(*,"('(PE ',I2,'): reached end of CHECK_DATA_30 in time_march')") myPE
 !
 !  Advance the solution in time by iteratively solving the equations
 !

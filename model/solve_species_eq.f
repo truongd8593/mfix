@@ -47,6 +47,8 @@
       Use ambm
       Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
       USE compar        !//d
+      USE mpi_utility        !//d
+      USE sendrecv        !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -105,12 +107,16 @@
       INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
+!//TEMP - Arrays
+!    DOUBLE PRECISION A_m_tmp(1:ijkmax3, -3:3 )
+!    DOUBLE PRECISION B_m_tmp(1:ijkmax3)
+!    INTEGER          I,J,K
       
       call lock_ambm
       call lock_tmp_array
 
 !//SP
-      write(*,*) 'entered solve_species',myPE
+!     write(*,*) 'entered solve_species',myPE
  
 !
 !     Fluid phase species mass balance equations
@@ -137,18 +143,54 @@
                W_G, ROP_G, 0, A_M, B_M, IER) 
 !
 !//SP
-	    write(*,*) 'aft CONV_DIF_PHI in solve_species', myPE
+!	    write(*,*) 'aft CONV_DIF_PHI in solve_species', myPE
+!      if(nodesk.eq.1) then
+!      do k = kmin3, kmax3
+!      do j = jmin3, jmax3
+!      do i = imin3, imax3
+
+!      A_M(IJK,:,0) = A_M(FUNIJK(imap(i), jmap(j), kmap(k)),:,0)
+
+!      enddo
+!      enddo
+!      enddo
+!      endif
+
+!      call send_recv(A_M,2)
+
+!//TEMP - SP
+!      write(*,*) 'before gather in conv_dif_phi'
+!      CALL gather(A_M(:,:,0), A_M_tmp)
+!      CALL gather(B_M(:,0), B_M_tmp)
+!      write(*,*) 'after gather in conv_dif_phi'
+
+!      if(myPE.eq.root) then
+
+!      do k = kmin2, kmax2
+!      do j = jmin2, jmax2
+!      do i = imin2, imax2
+
+!      ijk = funijk_gl(i,j,k)
+!      write(97,*) i,j,k,A_M_tmp(IJK,:), B_M_tmp(IJK)
+
+!      enddo
+!      enddo
+!      enddo
+
+!      endif
+!//end_TEMP
+
 !
             CALL BC_PHI (BC_X_G(1,N), BC_XW_G(1,N), BC_HW_X_G(1,N), BC_C_X_G(1,&
                N), 0, A_M, B_M, IER) 
 !
 !//SP
-	    write(*,*) 'aft BC_PHI in solve_species', myPE
+!	    write(*,*) 'aft BC_PHI in solve_species', myPE
 !
             CALL SOURCE_PHI (S_P, S_C, EP_G, X_G(1,N), 0, A_M, B_M, IER) 
 !
 !//SP
-	    write(*,*) 'aft source_phi in solve_species', myPE
+!	    write(*,*) 'aft source_phi in solve_species', myPE
 !//SP
 !           call mfix_exit(myPE)   !//SP
 
@@ -157,11 +199,11 @@
                MAX_RESID(RESID_X+(N-1),0), IJK_RESID(RESID_X+(N-1),0), &
 	       ZERO_X_GS, IER) 
 !//SP
-	    write(*,*) 'aft CALC_RESID_S in solve_species', myPE
+!	    write(*,*) 'aft CALC_RESID_S in solve_species', myPE
 !
             CALL UNDER_RELAX_S (X_G(1,N), A_M, B_M, 0, UR_FAC(7), IER) 
 !//SP
-            write(*,*) 'aft UNDER_RELAX_S in solve_species', myPE
+!           write(*,*) 'aft UNDER_RELAX_S in solve_species', myPE
 !
 !          call check_ab_m(a_m, b_m, 0, .false., ier)
 !          call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
@@ -175,17 +217,17 @@
             CALL ADJUST_LEQ (RESID(RESID_X+(N-1),0), LEQ_IT(7), LEQ_METHOD(7), &
                LEQI, LEQM, IER) 
 !//SP
-            write(*,*) 'aft ADJUST_LEQ in solve_species', myPE
+!           write(*,*) 'aft ADJUST_LEQ in solve_species', myPE
 !
             CALL SOLVE_LIN_EQ ('X_g', X_G(1,N), A_M, B_M, 0, LEQI, LEQM, &
 	                     LEQ_SWEEP(7), LEQ_TOL(7),IER) 
 !//SP
-            write(*,*) 'aft SOLVE_LIN_EQ in solve_species', myPE
+!           write(*,*) 'aft SOLVE_LIN_EQ in solve_species', myPE
 !	    call mfix_exit
 !          call out_array(X_g(1, N), 'X_g')
             CALL BOUND_X (X_G(1,N), IJKMAX2, IER) 
 !//SP
-            write(*,*) 'aft BOUND_X in solve_species', myPE
+!           write(*,*) 'aft BOUND_X in solve_species', myPE
 !
          END DO 
       ENDIF 

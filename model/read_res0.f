@@ -362,7 +362,7 @@
                NEXT_RECA) 
              call bcast(dy, PE_IO)   !//PAR_I/O BCAST1d
 !//AIKEPARDBGSTOP 0907
-    write(*,"('(PE ',I2,'): aft dy in Block2 in read_res0')") myPE !//AIKEPARDBG
+!   write(*,"('(PE ',I2,'): aft dy in Block2 in read_res0')") myPE !//AIKEPARDBG
     write(UNIT_LOG,*) dy    !//AIKEPARDBG
     call exitMPI(myPE)      !//AIKEPARDBG
 
@@ -374,7 +374,7 @@
              DeAllocate( dGTEMP)
 
 !    call MPI_Barrier(MPI_COMM_WORLD,mpierr)	
-    write(*,"('(PE ',I2,'): KMAX3',I2)") myPE, KMAX3 !//AIKEPARDBG
+!   write(*,"('(PE ',I2,'): KMAX3',I2)") myPE, KMAX3 !//AIKEPARDBG
     write(UNIT_LOG,"('(PE ',I2,'): aft dz in Block2 in read_res0')") myPE !//AIKEPARDBG
     write(UNIT_LOG,*) dz    !//AIKEPARDBG
     call exitMPI(myPE)      !//AIKEPARDBG
@@ -1063,13 +1063,13 @@
 
            call bcast(dy, PE_IO)         !//PAR_I/O BCAST1d (recv)
 !//AIKEPARDBGSTOP 0907
-    write(*,"('(PE ',I2,'): aft dy in Block2 in read_res0')") myPE !//AIKEPARDBG
+!   write(*,"('(PE ',I2,'): aft dy in Block2 in read_res0')") myPE !//AIKEPARDBG
     write(UNIT_LOG,*) dy  !//AIKEPARDBG  
     call exitMPI(myPE)    !//AIKEPARDBG
 
            call gather(dz,dGTEMP,PE_IO)  !//PAR_I/O GATHER1d  (recv)
 !    call MPI_Barrier(MPI_COMM_WORLD,mpierr)					    
-    write(*,"('(PE ',I2,'): KMAX3',I2)") myPE, KMAX3 !//AIKEPARDBG
+!   write(*,"('(PE ',I2,'): KMAX3',I2)") myPE, KMAX3 !//AIKEPARDBG
     write(UNIT_LOG,"('(PE ',I2,'): aft dz in Block2 in read_res0')") myPE !//AIKEPARDBG
     write(UNIT_LOG,*) dz    !//AIKEPARDBG
     call exitMPI(myPE)      !//AIKEPARDBG

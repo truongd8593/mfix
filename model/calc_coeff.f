@@ -72,7 +72,7 @@
       CALL PHYSICAL_PROP (DENSITY, SIZE, SP_HEAT, IER) 
 
 !//AIKEPARDBG
-    write(*,"('(PE ',I2,'): aft PHYSICAL_PROP in CALC_COEFF, IER=',I4)") myPE,IER    !//AIKEPARDBG
+!   write(*,"('(PE ',I2,'): aft PHYSICAL_PROP in CALC_COEFF, IER=',I4)") myPE,IER    !//AIKEPARDBG
 
 
 !
@@ -81,7 +81,7 @@
       CALL TRANSPORT_PROP (VISC, COND, DIFF, IER) 
 
 !//AIKEPARDBG
-    write(*,"('(PE ',I2,'): aft TRANSPORT_PROP in CALC_COEFF, IER=',I4)") myPE,IER    !//AIKEPARDBG
+!   write(*,"('(PE ',I2,'): aft TRANSPORT_PROP in CALC_COEFF, IER=',I4)") myPE,IER    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
@@ -95,13 +95,14 @@
          ENDIF 
       ENDIF 
 !//AIKEPARDBG
-    write(*,"('(PE ',I2,'): aft RRATES calls in CALC_COEFF, IER=',I4)") myPE,IER    !//AIKEPARDBG
+!   write(*,"('(PE ',I2,'): aft RRATES calls in CALC_COEFF, IER=',I4)") myPE,IER    !//AIKEPARDBG
 !    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
       
 !
 !     Calculate interphase momentum, and energy transfers
 !
       CALL EXCHANGE (DRAG, HEAT_TR, WALL_TR, IER) 
+!   write(*,"('(PE ',I2,'): aft EXCHANGE calls in CALC_COEFF, IER=',I4)") myPE,IER    !//AIKEPARDBG
 !
 !     Reset all flags.  The flags need to be set every time this routine is
 !     called.

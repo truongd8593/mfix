@@ -136,7 +136,7 @@
 !
       CALL INIT_RESID (IER) 
 !//SP
-      write(*,*) 'after init_resid', myPE
+!     write(*,*) 'after init_resid', myPE
 !
 !
 !     CPU time left
@@ -193,7 +193,7 @@
 !
       IF (CALL_USR) CALL USR2 
 !//SP
-      write(*,*) 'after USR2', myPE
+!     write(*,*) 'after USR2', myPE
 !
 !
 !     Calculate coefficients.  Explicitly set flags for all the quantities
@@ -215,27 +215,27 @@
          HEAT_TR, WALL_TR, IER) 
 !
 !//SP
-      write(*,*) 'after USR2', myPE
+!     write(*,*) 'after USR2', myPE
 !
 !     Solve strarred velocitiy components
 !
 !//SP
 !     CALL SOLVE_VEL_STAR (IER) 
 !
-      write(*,*) RO_G0, myPE
+!     write(*,*) RO_G0, myPE
 !
 !     Solve fluid pressure correction equation
 !
       IF (RO_G0 /= ZERO) CALL SOLVE_PP_G (NORMG, RESG, IER) 
 !//SP
-      write(*,*) 'after SOLVE_PP_G', myPE
+!     write(*,*) 'after SOLVE_PP_G', myPE
 !
 !
 !     Correct pressure and velocities
 !
       CALL CORRECT_0 (IER) 
 !//SP
-      write(*,*) 'after CORRECT_0', myPE, MMAX
+!     write(*,*) 'after CORRECT_0', myPE, MMAX
 !
 !     Solve solids volume fraction correction equation for close-packed
 !     solids phases
@@ -288,7 +288,7 @@
 !
       CALL SOLVE_SPECIES_EQ (IER) 
 !//SP
-      write(*,*) 'after SOLVE_SPECIES_EQ, etc.,', myPE
+!     write(*,*) 'after SOLVE_SPECIES_EQ, etc.,', myPE
 !
 !    User-defined linear equation solver parameters may be adjusted after
 !    the first iteration
@@ -301,7 +301,7 @@
 !
       CALL CHECK_CONVERGENCE (NIT, MUSTIT, IER) 
 !//SP
-      write(*,*) 'after CHECK_CONVERGENCE, etc.,', myPE
+!     write(*,*) 'after CHECK_CONVERGENCE, etc.,', myPE
 !
 !      If not converged continue iterations; else exit subroutine.
 !
@@ -311,7 +311,7 @@
 !
       IF (FULL_LOG) CALL DISPLAY_RESID (NIT, IER) 
 !//SP
-      write(*,*) 'after DISPLAY_RESID, etc.,', myPE
+!     write(*,*) 'after DISPLAY_RESID, etc.,', myPE
       
       IF (MUSTIT == 0) THEN 
          IF (DT==UNDEFINED .AND. NIT==1) GO TO 50!Iterations converged 
@@ -379,7 +379,7 @@
       ENDIF 
 !
 !//SP
-      write(*,*) 'after misc., etc.,', myPE
+!     write(*,*) 'after misc., etc.,', myPE
 !     call mfix_exit
 !
       IF (NIT < MAX_NIT) THEN 

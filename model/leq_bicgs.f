@@ -315,10 +315,10 @@
 
         if (Snorm <= TOLMIN) then
 
- 	write(91,*) alpha(i)
- 	write(91,*) Var(ijkstart3:ijkend3)
- 	write(91,*) Phat(ijkstart3:ijkend3)
- 	write(*,*) '**************************'
+!	write(91,*) alpha(i)
+!	write(91,*) Var(ijkstart3:ijkend3)
+!	write(91,*) Phat(ijkstart3:ijkend3)
+!	write(*,*) '**************************'
 
              Var(ijkstart3:ijkend3) = Var(ijkstart3:ijkend3) + alpha(i)*Phat(ijkstart3:ijkend3)
 !            if (idebugl >= 1) then
@@ -398,7 +398,7 @@
         endif 
 
         isconverged = (real(Rnorm) <= TOL*Rnorm0);
-	write(*,*) '***',iter, isconverged, Rnorm, TOL, Rnorm0, myPE
+!	write(*,*) '***',iter, isconverged, Rnorm, TOL, Rnorm0, myPE
         IER = 0
         if (.not.isconverged) then
             IER = -1

@@ -61,6 +61,7 @@
       USE toleranc 
       USE compar           !//
       USE mpi_utility      !// for gather
+      USE sendrecv         !// for filling the boundary information
 !//       USE tmp_array    !// no longer using these arrays
       IMPLICIT NONE
 !-----------------------------------------------
@@ -104,6 +105,7 @@
 !------------------------------------------------------------------------
       VERSION = 'RES = 01.2' 
 !------------------------------------------------------------------------
+!//SP - Temporarily disabled so that the binary files can be diffed.....
 !
       WRITE (UNIT_RES, REC=1) VERSION 
       WRITE (UNIT_RES, REC=2) RUN_NAME, ID_MONTH, ID_DAY, ID_YEAR, ID_HOUR, &
@@ -123,9 +125,9 @@
       WRITE (UNIT_RES, REC=NEXT_RECA) (NMAX(L),L=0,MMAX) 
       NEXT_RECA = NEXT_RECA + 1 
 !
-      CALL OUT_BIN_512 (UNIT_RES, DX, IMAX2, NEXT_RECA) 
-      CALL OUT_BIN_512 (UNIT_RES, DY, JMAX2, NEXT_RECA) 
-      CALL OUT_BIN_512 (UNIT_RES, DZ, KMAX2, NEXT_RECA) 
+      CALL OUT_BIN_512 (UNIT_RES, DX(1), IMAX2, NEXT_RECA) 
+      CALL OUT_BIN_512 (UNIT_RES, DY(1), JMAX2, NEXT_RECA) 
+      CALL OUT_BIN_512 (UNIT_RES, DZ(1), KMAX2, NEXT_RECA) 
       WRITE (UNIT_RES, REC=NEXT_RECA) RUN_NAME, DESCRIPTION, UNITS, RUN_TYPE, &
          COORDINATES 
       NEXT_RECA = NEXT_RECA + 1 
@@ -174,6 +176,7 @@
       CALL OUT_BIN_512 (UNIT_RES, BC_Y_N, DIMENSION_BC, NEXT_RECA) 
       CALL OUT_BIN_512 (UNIT_RES, BC_Z_B, DIMENSION_BC, NEXT_RECA) 
       CALL OUT_BIN_512 (UNIT_RES, BC_Z_T, DIMENSION_BC, NEXT_RECA) 
+      
       CALL OUT_BIN_512I (UNIT_RES, BC_I_W, DIMENSION_BC, NEXT_RECA) 
       CALL OUT_BIN_512I (UNIT_RES, BC_I_E, DIMENSION_BC, NEXT_RECA) 
       CALL OUT_BIN_512I (UNIT_RES, BC_J_S, DIMENSION_BC, NEXT_RECA) 
@@ -213,9 +216,12 @@
       END DO 
 !
  1100 continue
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!     call send_recv (flag,2)
       call gather (flag,arr1,root)                               !// 
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!//SP To take care of filling the processor ghost layers with the correct values
+      call scatter (flag,arr1,root)                               !// 
+!     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       if (myPE .ne. PE_IO) goto 1200
       call convert_to_io_i(arr1,arr2,ijkmax2)                    !//
       CALL OUT_BIN_512I (UNIT_RES, arr2, IJKMAX2, NEXT_RECA)     !//
