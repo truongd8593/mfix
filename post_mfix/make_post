@@ -276,7 +276,7 @@ echo " "
        echo
     else
        chmod +w machine.f
-	cp $mach_file machine.f
+	cp ../model/$mach_file machine.f
 	rm *.o *.a *.mod *.exe
 	rm COMPILED.WITH.*
 	touch $mach_check
