@@ -113,8 +113,9 @@
                CALL SOURCE_GRANULAR_ENERGY (SOURCELHS, SOURCERHS, IJK, M, IER) 
                ROPXCP(IJK) = 1.5D0*ROP_S(IJK,M) 
                APO = 1.5D0*ROP_SO(IJK,M)*VOL(IJK)*ODT 
-               S_P(IJK) = APO + SOURCELHS 
-               S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS 
+               S_P(IJK) = APO + SOURCELHS + ZMAX(SUM_R_S(IJK,M)) * VOL(IJK) 
+               S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS + &
+	                  THETA_M(IJK,M)*ZMAX((-SUM_R_S(IJK,M))) * VOL(IJK)
                EPS(IJK) = EP_S(IJK,M) 
 !
             ELSE 

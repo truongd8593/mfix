@@ -80,7 +80,8 @@
 !
 !  ---  Remember to include all the local variables here for parallel
 !  ---- processing
-!$omp  parallel do private(ijk, R_tmp, L, LM, M, N)
+!$omp  parallel do firstprivate(R_tmp), &
+!$omp  parallel do private(ijk, L, LM, M, N)
 
       DO IJK = IJKSTART3, IJKEND3 
       
