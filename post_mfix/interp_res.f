@@ -36,7 +36,7 @@
       Use funits
       Use compar
       Use gridmap ! added
-	  use tmp_array        ! 16-jun-2004
+          use tmp_array        ! 16-jun-2004
       
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
@@ -52,7 +52,7 @@
         EP_g_OLD, P_g_OLD, &
         P_star_OLD, RO_g_OLD, &
         ROP_g_OLD, T_g_OLD, &
-	U_g_OLD, &
+        U_g_OLD, &
         V_g_OLD, W_g_OLD, &
         GAMA_RG_OLD, T_RG_OLD
 
@@ -61,7 +61,7 @@
 
       DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE ::  &
         Scalar_OLD
-	  
+          
       DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE ::  &
         ReactionRates_OLD
 
@@ -76,7 +76,7 @@
 
       DOUBLE PRECISION , DIMENSION(:,:,:), ALLOCATABLE ::  &
         X_s_OLD
-	
+        
       DOUBLE PRECISION TIME_OLD
       REAL &
         XDIST_SC_OLD(DIM_I), XDIST_VEC_OLD(DIM_I), &
@@ -168,7 +168,7 @@
           U_s_OLD(IJK, M)   = U_s(IJK, M)
           V_s_OLD(IJK, M)   = V_s(IJK, M)
           W_s_OLD(IJK, M)   = W_s(IJK, M)
-	  Theta_m_OLD(IJK, M) = Theta_m(IJK, M)
+          Theta_m_OLD(IJK, M) = Theta_m(IJK, M)
           DO 85 N = 1, NMAX(M)
             X_s_OLD(IJK, M, N) = X_s(IJK, M, N)
 85        CONTINUE
@@ -235,57 +235,57 @@
 
 
 
-	  ! 16-jun-2004 ... can these be put in deallocate_arrays ???
+          ! 16-jun-2004 ... can these be put in deallocate_arrays ???
 
-	deallocate( ijksize3_all )
-	deallocate( ijkstart3_all )
-	deallocate( ijkend3_all )
+        deallocate( ijksize3_all )
+        deallocate( ijkstart3_all )
+        deallocate( ijkend3_all )
 
-	deallocate( ijksize4_all )
-	deallocate( ijkstart4_all )
-	deallocate( ijkend4_all )
+        deallocate( ijksize4_all )
+        deallocate( ijkstart4_all )
+        deallocate( ijkend4_all )
 
-	deallocate( istart_all)
-	deallocate( jstart_all )
-	deallocate( kstart_all )
+        deallocate( istart_all)
+        deallocate( jstart_all )
+        deallocate( kstart_all )
 
-	deallocate( istart1_all )
-	deallocate( jstart1_all )
-	deallocate( kstart1_all )
+        deallocate( istart1_all )
+        deallocate( jstart1_all )
+        deallocate( kstart1_all )
 
-	deallocate( istart2_all )
-	deallocate( jstart2_all )
-	deallocate( kstart2_all )
+        deallocate( istart2_all )
+        deallocate( jstart2_all )
+        deallocate( kstart2_all )
 
-	deallocate( istart3_all )
-	deallocate( jstart3_all )
-	deallocate( kstart3_all )
+        deallocate( istart3_all )
+        deallocate( jstart3_all )
+        deallocate( kstart3_all )
 
-	deallocate( istart4_all )
-	deallocate( jstart4_all )
-	deallocate( kstart4_all )
+        deallocate( istart4_all )
+        deallocate( jstart4_all )
+        deallocate( kstart4_all )
 
-	deallocate( iend_all )
-	deallocate( jend_all )
-	deallocate( kend_all )
+        deallocate( iend_all )
+        deallocate( jend_all )
+        deallocate( kend_all )
 
-	deallocate( iend1_all )
-	deallocate( jend1_all )
-	deallocate( kend1_all )
+        deallocate( iend1_all )
+        deallocate( jend1_all )
+        deallocate( kend1_all )
 
-	deallocate( iend2_all )
-	deallocate( jend2_all )
-	deallocate( kend2_all )
+        deallocate( iend2_all )
+        deallocate( jend2_all )
+        deallocate( kend2_all )
 
-	deallocate( iend3_all )
-	deallocate( jend3_all )
-	deallocate( kend3_all )
-	 
-	deallocate( iend4_all )
-	deallocate( jend4_all )
-	deallocate( kend4_all )
-	 
-	deallocate( displs )
+        deallocate( iend3_all )
+        deallocate( jend3_all )
+        deallocate( kend3_all )
+         
+        deallocate( iend4_all )
+        deallocate( jend4_all )
+        deallocate( kend4_all )
+         
+        deallocate( displs )
 
         deallocate( imap)
         deallocate( jmap )
@@ -295,20 +295,20 @@
         deallocate( jmap_c )
         deallocate( kmap_c )
 
-		deallocate ( tmp4 )
-		deallocate (ArrayLM)
+                deallocate ( tmp4 )
+                deallocate (ArrayLM)
 
-		deallocate ( flag3 )
-		deallocate ( CELL_CLASS3 )
-		deallocate ( I3_OF )
-		deallocate ( J3_OF )
-		deallocate ( K3_OF )
-		deallocate ( Im1_3 )
-		deallocate ( Ip1_3 )
-		deallocate ( Jm1_3 )
-		deallocate ( Jp1_3 )
-		deallocate ( Km1_3 )
-		deallocate ( Kp1_3 )
+                deallocate ( flag3 )
+                deallocate ( CELL_CLASS3 )
+                deallocate ( I3_OF )
+                deallocate ( J3_OF )
+                deallocate ( K3_OF )
+                deallocate ( Im1_3 )
+                deallocate ( Ip1_3 )
+                deallocate ( Jm1_3 )
+                deallocate ( Jp1_3 )
+                deallocate ( Km1_3 )
+                deallocate ( Kp1_3 )
 
 
 
@@ -362,55 +362,55 @@
       DO 500 J = 1, JMAX2
       DO 500 I = 1, IMAX2
         IJK = FUNIJK(I, J, K)
-	INTERNAL = .TRUE.
+        INTERNAL = .TRUE.
 !
 !  compute I, J, and K for the old coordinate system
 !
         IF(I .EQ. 1)THEN
           I_OLD = 1
           IV_OLD = 1
-	  IF(.NOT.NO_I) INTERNAL = .FALSE.
-	ELSEIF(I .EQ. IMAX2) THEN
+          IF(.NOT.NO_I) INTERNAL = .FALSE.
+        ELSEIF(I .EQ. IMAX2) THEN
           I_OLD  = IMAX2_OLD
           IV_OLD = IMAX2_OLD
-	  IF(.NOT.NO_I) INTERNAL = .FALSE.
-	ELSE
+          IF(.NOT.NO_I) INTERNAL = .FALSE.
+        ELSE
           I_OLD = GET_INDEX &
                (XDIST_SC(I), XDIST_SC_OLD, IMAX2_OLD, EXT_I, I1,'X')
           IV_OLD= GET_INDEX &
                (XDIST_VEC(I), XDIST_VEC_OLD, IMAX2_OLD, EXT_I, I1,'X_E')
-	ENDIF
-	
+        ENDIF
+        
         IF(J .EQ. 1)THEN
           J_OLD = 1
           JV_OLD = 1
-	  IF(.NOT.NO_J) INTERNAL = .FALSE.
-	ELSEIF(J .EQ. JMAX2) THEN
+          IF(.NOT.NO_J) INTERNAL = .FALSE.
+        ELSEIF(J .EQ. JMAX2) THEN
           J_OLD = JMAX2_OLD
           JV_OLD = JMAX2_OLD
-	  IF(.NOT.NO_J) INTERNAL = .FALSE.
-	ELSE
+          IF(.NOT.NO_J) INTERNAL = .FALSE.
+        ELSE
           J_OLD = GET_INDEX &
                (YDIST_SC(J), YDIST_SC_OLD, JMAX2_OLD, EXT_J, J1,'Y')
           JV_OLD= GET_INDEX &
                (YDIST_VEC(J), YDIST_VEC_OLD, JMAX2_OLD, EXT_J, J1,'Y_N')
-	ENDIF
-	
+        ENDIF
+        
         IF(K .EQ. 1)THEN
           K_OLD = 1
           KV_OLD = 1
-	  IF(.NOT.NO_K) INTERNAL = .FALSE.
-	ELSEIF(K .EQ. KMAX2) THEN
+          IF(.NOT.NO_K) INTERNAL = .FALSE.
+        ELSEIF(K .EQ. KMAX2) THEN
           K_OLD = KMAX2_OLD
           KV_OLD = KMAX2_OLD
-	  IF(.NOT.NO_K) INTERNAL = .FALSE.
-	ELSE
+          IF(.NOT.NO_K) INTERNAL = .FALSE.
+        ELSE
           K_OLD = GET_INDEX &
                (ZDIST_SC(K), ZDIST_SC_OLD, KMAX2_OLD, EXT_K, K1,'Z')
           KV_OLD= GET_INDEX &
                (ZDIST_VEC(K), ZDIST_VEC_OLD, KMAX2_OLD, EXT_K, K1,'Z_T')
-	ENDIF
-	
+        ENDIF
+        
         IJK_OLD  = I_OLD + (J_OLD - 1) * IMAX2_OLD &
                   + (K_OLD - 1) * IJMAX2_OLD
 !
@@ -447,7 +447,7 @@
             IF(FLAG_OLD(IJK_OLD) .LT. 100)EXIT
 380       CONTINUE
         ENDIF
-	
+        
         IVJK_OLD = IV_OLD + (J_OLD - 1) * IMAX2_OLD &
                   + (K_OLD - 1) * IJMAX2_OLD
         IJVK_OLD = I_OLD + (JV_OLD - 1) * IMAX2_OLD &
