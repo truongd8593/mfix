@@ -597,6 +597,7 @@
                               MESSAGE = .TRUE. 
                            ENDIF 
                            WRITE (UNIT_LOG, 1410) I, J, K, M, T_S(IJK,M) 
+                           ABORT = .TRUE. 
                         ENDIF 
                      ENDIF 
 		     
@@ -618,6 +619,7 @@
                            MESSAGE = .TRUE. 
                         ENDIF 
                         WRITE (UNIT_LOG, 1400) I, J, K, T_G(IJK) 
+                        ABORT = .TRUE. 
                      ENDIF 
                   ENDIF 
 !
