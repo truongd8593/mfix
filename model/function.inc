@@ -191,7 +191,13 @@
       LOGICAL          NO_IS_AT_T
 !\\   Added to determine whether I am on my PE  
 !\\   Logical function to determine whether I am on my PE's domain 
-      LOGICAL          IS_ON_myPE
+      LOGICAL          IS_ON_myPE_owns
+!\\   Logical function to determine whether I am on my PE's domain + one &
+!                                                       extra ghost layer
+      LOGICAL          IS_ON_myPE_plus1layer
+!\\   Logical function to determine whether I am on my PE's domain + two &
+!                                                       extra ghost layers
+      LOGICAL          IS_ON_myPE_plus2layers
 !
 !                      Maximum of zero or input
       DOUBLE PRECISION ZMAX
@@ -208,9 +214,17 @@
       FUNIJK_IO (LI, LJ, LK) = 1 + (LI - imin3) + (LJ-jmin3)*(imax3-imin3+1) &
       + (LK-kmin3)*(jmax3-jmin3+1)*(imax3-imin3+1)
 
-      IS_ON_myPE (LI, LJ, LK) = LI.ge.imin3.and.LI.le.imax3.and. &
-				LJ.ge.jmin3.and.LJ.le.jmax3.and. &
-                                LK.ge.kmin3.and.LK.le.kmax3
+      IS_ON_myPE_plus2layers (LI, LJ, LK) = LI.ge.istart3.and.LI.le.iend3.and. &
+				LJ.ge.jstart3.and.LJ.le.jend3.and. &
+                                LK.ge.kstart3.and.LK.le.kend3
+
+      IS_ON_myPE_plus1layer (LI, LJ, LK) = LI.ge.istart2.and.LI.le.iend2.and. &
+				LJ.ge.jstart2.and.LJ.le.jend2.and. &
+                                LK.ge.kstart2.and.LK.le.kend2
+
+      IS_ON_myPE_owns (LI, LJ, LK) = LI.ge.istart.and.LI.le.iend.and. &
+				LJ.ge.jstart.and.LJ.le.jend.and. &
+                                LK.ge.kstart.and.LK.le.kend
 
       WEST_OF  (IJK)   = IJK + INCREMENT_FOR_w (CELL_CLASS(IJK))
       EAST_OF  (IJK)   = IJK + INCREMENT_FOR_e (CELL_CLASS(IJK))

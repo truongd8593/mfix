@@ -154,7 +154,7 @@
                DO J = BC_J_S(L), BC_J_N(L) 
                   DO I = BC_I_W(L), BC_I_E(L) 
 !//	Added to check that the indices lie on the processor domain...
-		  IF (.NOT.IS_ON_myPE(I,J,K)) CYCLE
+		  IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                      IJK = BOUND_FUNIJK(I,J,K) 
                      IF (.NOT.WALL_AT(IJK)) THEN 
 !
