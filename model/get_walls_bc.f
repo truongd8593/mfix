@@ -180,7 +180,7 @@
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
 	                IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
-                        SELECT CASE (BC_TYPE(BCV))  
+                        SELECT CASE (TRIM(BC_TYPE(BCV)))  
                         CASE ('FREE_SLIP_WALL')  
                            ICBC_FLAG(IJK)(1:1) = 'S' 
                         CASE ('NO_SLIP_WALL')  
