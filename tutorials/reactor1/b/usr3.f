@@ -33,6 +33,7 @@
       USE geometry
       USE indices
       Use usr
+      USe compar
       IMPLICIT NONE
 !-----------------------------------------------
 !

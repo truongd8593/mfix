@@ -40,6 +40,8 @@
       USE physprop
       USE constant
       USE funits 
+      USE compar        !//d
+      USE sendrecv      !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -67,8 +69,20 @@
 !
 !  ---  Remember to include all the local variables here for parallel
 !  ---- processing
-!$omp  parallel do private(ijk, R_tmp, L, LM, M, N, rxna)
-      DO IJK = 1, IJKMAX2 
+!$omp  parallel do private(ijk, R_tmp, L, LM, M, N)
+
+      DO IJK = IJKSTART3, IJKEND3 
+      
+         R_gp(IJK, :) = ZERO
+         RoX_gc(IJK, :) = ZERO
+         R_sp(IJK, :, :) = ZERO
+         RoX_sc(IJK, :, :) = ZERO
+         SUM_R_G(IJK) = ZERO 
+         HOR_G(IJK) = ZERO
+         SUM_R_S(IJK, :) = ZERO 
+         HOR_S(IJK, :) = ZERO 
+	 R_PHASE(IJK, :) = ZERO
+      
          IF (FLUID_AT(IJK)) THEN 
 !
 !
@@ -156,7 +170,7 @@
 !     R_tmp(1,0) -- needs to be specified.
 !
 !
-      R_tmp(0,1) =  ZERO
+      if(MMAX > 0) R_tmp(0,1) =  ZERO
 !
 !4444444444444444444444444444444444444444444444444444444444444444444444444444444
 !
@@ -169,11 +183,6 @@
 !     CO formation is assigned to the solid phase and CO2 formation from CO to
 !     the gas phase.
 !
-            HOR_G(IJK) = ZERO 
-            IF (MMAX > 0) THEN 
-               HOR_S(IJK,:MMAX) = ZERO 
-            ENDIF 
-
 !
 !==============================================================================
 !
@@ -182,8 +191,8 @@
 !   Determine g/(cm^3.s) of mass generation for each of the phases by adding
 !   the reaction rates of all the individual species.
 
+            SUM_R_G(IJK) = ZERO 
             IF (SPECIES_EQ(0)) THEN 
-               SUM_R_G(IJK) = ZERO 
                IF (NMAX(0) > 0) THEN 
                   SUM_R_G(IJK) = SUM_R_G(IJK) + SUM(R_GP(IJK,:NMAX(0))-ROX_GC(&
                      IJK,:NMAX(0))*X_G(IJK,:NMAX(0))) 
@@ -191,8 +200,8 @@
             ENDIF 
 !
             DO M = 1, MMAX 
+               SUM_R_S(IJK,M) = ZERO 
                IF (SPECIES_EQ(M)) THEN 
-                  SUM_R_S(IJK,M) = ZERO 
                   IF (NMAX(M) > 0) THEN 
                      SUM_R_S(IJK,M) = SUM_R_S(IJK,M) + SUM(R_SP(IJK,M,:NMAX(M))&
                         -ROX_SC(IJK,M,:NMAX(M))*X_S(IJK,M,:NMAX(M))) 
@@ -216,14 +225,20 @@
                      CALL START_LOG 
                      WRITE (UNIT_LOG, 1000) L, M 
                      CALL END_LOG 
-                     STOP  
+                     call mfix_exit(myPE)  
                   ENDIF 
                END DO 
             END DO 
+	   
          ENDIF 
       END DO 
+      
  1000 FORMAT(/1X,70('*')//' From: RRATES',/&
          ' Message: Mass transfer between phases ',I2,' and ',I2,&
          ' (R_tmp) not specified',/1X,70('*')/) 
       RETURN  
       END SUBROUTINE RRATES 
+
+!// Comments on the modifications for DMP version implementation
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
