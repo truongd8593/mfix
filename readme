@@ -1067,7 +1067,7 @@ BC_C_X_s(bc, m, n)  DP  Solids phase C for mass transfer
 
 
 
-                        Scalr boundary condition is implemented as
+                        Scalar boundary condition is implemented as
                         dS/dn + hw (S - Sw) = c, where n is the normal pointing
                         from the fluid into the wall.
                         The coefficients hw, Sw, and c should be specified.
@@ -1103,6 +1103,8 @@ BC_Theta_m(bc, m)   DP Solids phase-m granular temperature at the BC plane.
 
 BC_X_g (bc, n)      DP Mass fraction of gas species n at the BC plane.
    [0]
+BC_Scalar(bc, n)    DP Scalar-n value at the BC plane.
+
 
 
 Keyword (dimension) Type  Description
