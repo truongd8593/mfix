@@ -20,8 +20,6 @@ g) Flushing buffers consistently. This was done as some of the file buffers
    were not flushed on certain architectures when the code exits.
 h) Some bug-fixes (e.g. mass and volume flux calculations correct) and 
    additional features (e.g. time average of SPX files) in post_mfix
-i) Added complex-chemistry directory and an example coal gasifier to the base 
-   directory
-j) Added/modified some test cases and tutorial cases
-k) Updated Readme's in the pdf and html formats are distributed along with the
+i) Added/modified some test cases and tutorial cases
+j) Updated Readme's in the pdf and html formats are distributed along with the
    code
