@@ -1,1427 +1,1762 @@
-                 MM      MM  FFFFFFFFFF    IIIIII    XX      XX
-                 MM      MM  FFFFFFFFFF    IIIIII    XX      XX
-                 MMMM  MMMM  FF              II      XX      XX
-                 MMMM  MMMM  FF              II      XX      XX
-                 MM  MM  MM  FF              II        XX  XX  
-                 MM  MM  MM  FF              II        XX  XX  
-                 MM      MM  FFFFFFFF        II          XX    
-                 MM      MM  FFFFFFFF        II          XX    
-                 MM      MM  FF              II        XX  XX  
-                 MM      MM  FF              II        XX  XX  
-                 MM      MM  FF              II      XX      XX
-                 MM      MM  FF              II      XX      XX
-                 MM      MM  FF            IIIIII    XX      XX
-                 MM      MM  FF            IIIIII    XX      XX
-
-                    Multiphase Flow with Interphase eXchanges
-                                  Version: 4.1  
-_______________________________________________________________________________
-                               NOTICE
-     Neither the United States Government nor any agency thereof,
-     nor any of their employees, makes any warranty, express or
-     implied, or assumes any legal liability or responsibility for the
-     accuracy, completeness, or  usefulness of any information, apparatus,
-     product, or process disclosed or represents that its use would not
-     infringe privately owned rights.
-
-   1. MFIX is provided without any user support for applications in the user's
-      immediate organization. It should not be redistributed in whole or in
-      part.
-   2. The use of MFIX is to be acknowledged in any published paper
-      based on computations using this software by citing the MFIX theory
-      manual.  Some of the submodels are being developed by researchers
-      outside of FETC.  The use of such submodels is to be acknowledged by
-      citing the appropriate papers of the developers of the submodels. 
-   3. The authors would appreciate receiving any reports of bugs or other
-      difficulties with the software, enhancements to the software, and
-      accounts of practical applications of this software. _______________________________________________________________________________
-                  1  Setting Up and Running MFIX on a UNIX/LINUX Workstation
-
-
-1.1  Creating Mfix directory
-
-      1. To install MFIX (version m.n) from the tar file, go to the 
-         home directory and type 
-	 
-         gunzip -d mfix.m.n.tar.gz
-         tar xvf mfix.tar
-
-      2. The above procedure will create a directory mfix that
-      contains the five subdirectories model, post_mfix, tests,
-      tutorials and tools:
-        subdirectory    contents
-         model          MFIX source files
-	 post_mfix      post_mfix source files
-	 tutorials      Several example problems and a pdf
-                        file describing the two tutorials
-			(fluidBed1 and fluidBed2), which
-                        are useful for a new user.
-	 tests          Test simulations used for verifying
-	                the code during development.
-	 tools          Development tools
-	 doc            MFIX manuals in pdf format
-      
-      3.  There is a postprocessing code called ani_mfix that is used 
-      for viewing MFIX results as animations.  The platform dependent executable
-      for this program may be obtained by contacting NETL.
-
-
-1.2  Installing the MFIX Code
-
-     For convenience, create aliases by adding the following lines to the
-     .login file (assuming MFIX was installed in the home directory):
-
-          	alias ani ~/mfix/ani_mfix/ani_mfix
-          	alias post ~/mfix/post_mfix/post_mfix
-          	alias mkmfix 'sh ~/mfix/model/make_mfix'
-
-     Then the post-processors can be activated from any directory by typing 
-     ani or post and mfix make file can be activated by typing mkmfix.
-
-     For the first time, the user should logout and login or type
-
-      	source .login
-
-     so that the aliases are defined.  This step needs to be done only once.
-
-1.3  Starting a New Run
+                                    MFIX
 
-     1.   A separate subdirectory should be created for each run. 
+                  Multiphase Flow with Interphase eXchanges
 
-     2.   If the user wants to modify mfix subroutines do the following.  Copy
-          the subroutine from mfix/model directory into the run directory.  
-          Modify the file copied to the run directory. Do NOT modify the files
-          in mfix/model directory.
-	  
-     3.   Create an MFIX executable file by typing
+                                 Version 4.1
 
-          	mkmfix
 
-          The MFIX executable file mfix.exe will be created and copied into
-          the run-directory.
 
-	  The following options are available for different compilations:
+                                   Notice
 
-		a) For Shared Memory Executable, input 'y' for the SMP option.
+Neither the United States Government nor any agency thereof, nor any of
+their employees, makes any warranty, express or implied, or assumes any
+legal liability or responsibility for the accuracy, completeness, or
+usefulness of any information, apparatus, product, or process disclosed or
+represents that its use would not infringe privately owned rights.
 
-		b) For Serial version, input 'y' for the SERIAL option.
+   * MFIX is provided without any user support for applications in the
+     user=s immediate organization. It should not be redistributed in whole
+     or in part.
 
-		c) For Debug option, input 'y' for the debug option.
-		
-		d) For forcing recompilation of user defined routines, input 'y'
-		   at this prompt.  In most cases it is not necessary to select
-		   this option.  This option needed in the rare instances when
-		   the run directory contains a module file (e.g., run_mod.f)
-		   and another file (e.g., usr0.f), in which the inserted the
-		   corresponding use statement (e.g., Use run).  The makefile
-		   will not be aware of this dependency (usr0 depends upon run).
-		   So in the above example changes made in run_mod.f will not
-		   cause the (necessary) recompilation of usr0.f, unless this
-		   option is selected.
+   * The use of MFIX is to be acknowledged in any published paper based on
+     computations using this software by citing the MFIX theory manual. Some
+     of the submodels are being developed by researchers outside of NETL.
+     The use of such submodels is to be acknowledged by citing the
+     appropriate papers of the developers of the submodels.
 
-	  If all the above options are unselected an optimized serial version
-	  executable is produced for that particular platform.
+   * The authors would appreciate receiving any reports of bugs or other
+     difficulties with the software, enhancements to the software, and
+     accounts of practical applications of this software.
 
-     5.   Write an MFIX data file and name it mfix.dat. The key words are listed
-          at the end of this file.  Examples are available in the mfix/tutorials
-          directory.
+                              Table of Contents
 
-     6.   Run MFIX by typing
+1  Setting Up and Running MFIX on a UNIX/LINUX Workstation *
 
-          	mfix.exe
+     1.1  Creating MFIX Directory *
 
-          or run in batch mode by typing
+     1.2  Installing the MFIX Code *
 
-		mfix.exe &
+     1.3  Starting a New Run *
 
-          or run in batch mode with the screen output redirected to a 
-          file (FULL_LOG = .TRUE. in the data file), say screen.log, by typing
+     1.4  Modifying the Post-Processing Codes *
 
-		mfix.exe > screen.log &
+2  Setting Up and Running MFIX on a PC (Windows 95/98/NT) *
 
-          (Note that the file screen.log can become very large.)
-	  
-	  If the code was compiled as a SMP version, then the user will be
-	  prompted to enter the number of processors to be used for the run.
-	  
-	  Run the DMP version using
+     2.1 Installing the MFIX Code *
 
-		mpirun -np <Number of Processors> mfix.exe 
+3  MFIX at Run Time *
 
-		This command may be different on other machines:
-		(e.g., mpprun -n <Number of Processors> mfix.exe)
+     3.1  MFIX Output and Messages *
 
+     3.2  Restarting a Run *
 
-     7.   MFIX results can be retrieved, even while the run is in progress.
-          To activate visualization, run ani_mfix by typing
+     3.3  When the Run Does Not Converge *
 
-          ani
-	  
-	  When ani_mfix is used the first time for a run, it will prompt
-	  the user for the name of the restart file.  Enter the name of the
-	  restart file paying attention to the case (e.g. BUB01.RES).
+4  Keywords in Input Data File (mfix.dat) *
 
-          The program will create several control files: ani_mfix.con, ani_mfix.ini,
-	  ani_mfix.mm, script.001.
+     4.1  Run Control *
 
-     8.   For retrieving and manipulating data and for creating special restart
-          files, run the post_processor post_mfix by typing
+     4.2  Physical and Numerical Parameters *
 
-          post
-	  
-	  post_mfix will prompt the user for the run name.  Enter the run name
-	  (e.g. BUB01).
+     4.3  Geometry and Discretization *
 
-1.4  Modifying the Post-processing codes
+     4.4  Gas Phase *
 
-      To make post_mfix, first change directory to the mfix/post_mfix directory.  If 
-      user-defined post-processing is required, modify usr_post.f file in the
-      directory.  Then type
+     4.5  Solids Phase *
 
-          	make_post
+     4.6  Initial Conditions *
 
+     4.7  Boundary Conditions *
 
-_______________________________________________________________________________
+     4.8  Internal Surfaces *
 
+     4.9  Output Control *
 
+     4.10  Chemical Reactions *
 
+     4.11  User-Defined Subroutines *
 
+     4.12  Parallelization Controls *
 
-            2  Setting Up and Running MFIX on a PC (Windows95 or Windows NT)
 
 
-2.1  Installing the MFIX Code
+         1  Setting Up and Running MFIX on a UNIX/LINUX Workstation
 
-     1. Create a directory for mfix (e.g., C:\mfix) and copy the tar files
-        into that directory.  In a DOS window select mfix directory and type the
-	following:
-	
-         gunzip -d mfix.m.n.tar.gz
-         tar xvf mfix.tar
-	 
-         gunzip -d graphics_dll.tar.gz
-         tar xvf graphics_dll.tar
-	
-	This will create the executables mfix.exe, ani_mfix.exe, and post_mfix.exe
-	and several dll files needed for running ani_mfix.exe.
 
-     2. For Windows95 (not for Windows NT) copy the files Glu32.dll and
-     Opengl32.dll to the c:\Windows directory.
 
-     3. Support for compiling the source files under Windows is not available. 
-     
-     4. Running the code under Windows is similar to that described in the 
-        previous section for UNIX/LINUX.
+1.1  Creating MFIX Directory
 
-_______________________________________________________________________________
+To install MFIX (version m.n) from the tar file, go to the home directory
+and type
 
+          gunzip -d mfix.m.n.tar.gz
 
+          tar xvf mfix.tar
 
+This procedure will create the directory mfix, which contains six
+subdirectories: doc, model, post_mfix, tests, tutorials, and tools:
 
-                                  3  MFIX at run time
+                              Contents
 
+          Subdirectory
 
-3.1  MFIX Output and Messages
+          model               MFIX source files
 
-          MFIX output is stored in nine *.SPx binary files.  The restart info
-          is periodically written to the *.RES binary file.  The text file *.OUT
-          echos the input, shows the numerical cell distribution, and, if OUT_DT
-          is defined, prints the field variables at the specified intervals.  The
-          text file *.LOG contains run information.
+          post_mfix           Post_mfix source files
 
-	  For the DMP version, a LOG file is created for each of the processors and
-	  they are numbered as Name###.LOG.
- 
-          Messages about the run are written to the .LOG file.  The progress of
-          the run will be displayed at the terminal as shown below if the data
-          file specifies FULL_LOG = .TRUE.
+          tutorials           Several example problems and a pdf
+                              file describing the two tutorials
+                              (fluidBed1 and fluidBed2), which are
+                              useful for a new user
 
- Time =  0.92965      Dt =  0.13930E-02    CPU time left =    54.672 s   
-  Nit     P0       P1       U0       V0       U1       V1    Max res
-    1  1.5E-02  2.5E+01  1.3E-03  3.3E-03  3.2E-03  6.3E-03  P0  
-    2   1.      5.0E-02  2.8E-03  6.3E-03  2.5E-03  3.8E-03  P1  
-    3  0.1      2.1E-02  1.2E-03  3.7E-03  1.1E-03  1.8E-03  P0  
-    4  5.2E-02  8.1E-03  6.5E-04  2.1E-03  4.8E-04  8.6E-04  P0  
-    5  3.0E-02  3.9E-03  4.1E-04  1.3E-03  2.5E-04  4.3E-04  P0  
+          tests               test simulations used to verify the
+                              code during development
 
-          The first line shows the time, the time-step, and the CPU time  
-          remaining for completing the run.  The CPU time remaining is not very
-          accurate, especially in the beginning of the run.  For each time-step
-          the normalized residuals for for various equations are written out
-          every iteration.
+          tools               development tools
 
-          MFIX uses variable time step.  The time step is automatically within
-          user-defined limits to reduce the run time.  At large values of Dt
-          the iterations may not converge.  When this happens the time step
-          size is successively reduced till convergence is obtained.  Messages
-          about divergence and recovery are displayed on the terminal and in the
-          .LOG file, if FULL_LOG = .TRUE.
+          doc                 MFIX manuals in pdf format
 
-          The subsequent lines display the iteration number, the normalized 
-          residuals for various equations (e.g., gas continuity, solids 
-          continuity, x and y gas momentum, and x and y solids momentum), and
-          the equation with the maximum residual.  The residuals P0 and P1 are
-          normalized only when Nit>1.  The residuals displayed can be selected
-          with the keyword RESID_STRING.
+The postprocessing code ani_mfix is used to view MFIX results as animations.
+Contact NETL for the platform-dependent executable for this program.
 
+1.2  Installing the MFIX Code
 
-     MFIX reports errors while reading the data file, while processing input 
-     data, and during the run time.  Errors in reading the data file and in 
-     opening files are reported to the terminal.  All other errors are reported 
-     in the .LOG file.
+For convenience, create aliases by adding the following lines to the .login
+file (assuming MFIX was installed in the home directory):
 
-     While reporting errors in reading the data file, MFIX displays the 
-     offending line of input, so that the error can be easily detected.  The
-     possible causes of error are incorrect format for the name-list input,
-     unknown (misspelt) variable name, or the dimension of the name list item is
-     too small.  For example, if the dimension of DX is 10, and if the input
-     data file contains an entry DX(11), MFIX will report an input processing
-     error.
+                    alias ani ~/mfix/ani_mfix/ani_mfix
 
-     While processing the input data MFIX will report errors if the data
-     specified is insufficient or physically unrealistic.  MFIX will supply
-     default values only when it is certain that giving a default value is
-     reasonable.
+                    alias post ~/mfix/post_mfix/post_mfix
 
-     An occasional input-processing error is the inability to determine the flow
-     plane for a boundary condition.  The boundary planes defined in the input
-     data file must have a wall-cell on one side and a fluid-cell on the other
-     side.  If the initial condition is not specified for the fluid-cell, MFIX
-     will not recognize the cell as a fluid-cell and, hence, MFIX will be unable
-     to determine the flow plane.
+                    alias mkmfix >sh ~/mfix/model/make_mfix=
 
-     Every NLOG (see Appendix D) number of time steps, MFIX monitors whether the
-     mass fractions add up to 1.0, the overall reaction rates add up to zero, 
-     the viscosities, conductivities, and specific heats are greater than zero,
-     and the temperatures are within the specified limits.  A message will be
-     printed out if any errors are encountered.  The run may be aborted 
-     depending upon the severity of the error.  Every NLOG time steps, MFIX
-     will print out the number of iterations during the previous time step and
-     the total solids inventory in the reactor.
+Then the post-processors can be activated from any directory by typing ani
+or post, and the mfix make file can be activated by typing mkmfix.
 
-     For the specified mass-outflow condition, after the elapse of time 
-     BC_DT_0, MFIX prints out time-averaged mass flow rates.  For cyclic
-     boundary conditions, MFIX will print out the volume averaged mass fluxes
-     every NLOG time steps.
+For the first time, the user should logout and login or type: source .login
+so that the aliases are defined. This step needs to be done only once.
 
-     A message is written to the .LOG file whenever the .RES and .SPx files are
-     written.  This message also shows an approximate value of the cumulative
-     disk space usage in Megabytes.
+1.3  Starting a New Run
 
-3.2  Restarting a Run
+Create a separate subdirectory for each run.
 
-     A run is restarted by rerunning mfix after making  RUN_TYPE = 'restart_1'
-     in mfix.dat.  The old .OUT file will be overwritten.  The .LOG messages
-     will be appended to the old .LOG file.
+If you want to modify MFIX subroutines, do the following. Copy the
+subroutine from the mfix/model directory into the run directory. Modify the
+file copied to the run directory. Do not modify the files in the mfix/model
+directory.
 
-     There are three other types of restarts.  Refer to Appendix D for details.
+Create an MFIX executable file by typing mkmfix. The MFIX executable file
+mfix.exe will be created and copied into the run-directory.
 
-3.3  When the run does not converge ...
+The following options are available for different compilations:
 
-     Initial nonconvergence: Ensure that the initial conditions are physically
-     realistic.  If in the initial time step the run displays nan (not alpha
-     numeric)for any residual, reduce the initial time step, since automatic 
-     time step reduction will become ineffective.  If time step reductions do
-     not help recheck the problem set up.
+  1. For Shared Memory Executable, input >y= for the SMP option.
+  2. For Distributed Memory Executable , input >y= for the DMP option.
+  3. For Debug option, input >y= for the debug option.
+  4. To force recompilation of user defined routines, input >y= at this
+     prompt. In most cases it is not necessary to select this option. This
+     option is needed only in the rare instances when the run directory
+     contains a module file (e.g., run_mod.f) and another file (e.g.,
+     usr0.f), in which the corresponding use statement has been inserted
+     (e.g., use run). The makefile will not be aware of this dependency
+     (usr0 depends upon run). So, in this example, changes made in run_mod.f
+     will not cause the (necessary) recompilation of usr0.f, unless this
+     option is selected.
 
-     Holding the time step constant (DT_FAC=1) and ignoring the stalling of
-     iterations (DETECT_STALL=.FALSE.) may help in overcoming initial
-     nonconvergence.
+If all the above options are unselected, an optimized serial version
+executable is produced for that particular platform.
 
-     Often a better initial condition will aid convergence.  For example, using
-     a hydrostatic rather than a uniform pressure distribution as the initial
-     condition will aid convergence in fluidized-bed simulations.
+Write an MFIX data file and name it mfix.dat. The key words are listed at
+the end of this file. Examples are available in the mfix/tutorials
+directory.
 
-     If there are computational regions where the solids tend to compact
-     (i.e. solids volume fraction less than EP_star) the convergence can be
-     improved by reducing UR_FAC(2) below the default value of 0.5.
+Run MFIX by typing mfix.exe, or run in batch mode by typing mfix.exe &, or
+run in batch mode with the screen output redirected to a file (FULL_LOG =
+.TRUE. in the data file), for example, screen.log, by typing mfix.exe >
+screen.log &. (Note that the file screen.log can become very large.)
 
-     The convergence is often difficult with higher order discretization
-     methods.  First order upwinding may be used to overcome initial transients
-     and then the higher order method may be turned on.  Also higher-order 
-     methods such as van Leer and minmod give faster convergence than methods
-     such as superbee and ULTRA-QUICK. 
+If the code was compiled as a SMP version, then you will be prompted to
+enter the number of processors to be used for the run.
 
-  _______________________________________________________________________________
+Run the DMP version using mpirun -np <Number of Processors> mfix.exe. This
+command may be different on other machines (e.g., mpprun -n <Number of
+Processors> mfix.exe).
 
-             Appendix D.  Keywords in Input Data File
+MFIX results can be retrieved, even while the run is in progress. To
+activate visualization, run ani_mfix by typing ani. When ani_mfix is used
+the first time for a run, you will be prompted for the name of the restart
+file. Enter the name of the restart file paying attention to the case (e.g.,
+BUB01.RES).
 
+The program will create several control files: ani_mfix.con, ani_mfix.ini,
+ani_mfix.mm, script.001.
 
-   [] indicates the default value.
+To retrieve and manipulate data and to create special restart files, run the
+post_processor post_mfix by typing post. post_mfix will prompt the user for
+the run name. Enter the run name (e.g., BUB01).
+
+1.4  Modifying the Post-Processing Codes
+
+To make post_mfix, first change the directory to the mfix/post_mfix
+directory. If user-defined post-processing is required, modify the
+usr_post.f file in the directory. Then type make_post. Note that the
+mfix/model is required for creating a post_mfix executable.
+
+
+
+         2  Setting Up and Running MFIX on a PC (Windows 95/98/NT)
+
+2.1 Installing the MFIX Code
+
+Create a directory for MFIX (e.g., C:\mfix) and copy the tar files into that
+directory. In a DOS window, select mfix directory and type the following:
+
+                    gunzip -d mfix.m.n.tar.gz
+
+                    tar xvf mfix.tar
+
+                    gunzip -d graphics_dll.tar.gz
+
+                    tar xvf graphics_dll.tar
+
+This will create the executables mfix.exe, ani_mfix.exe, and post_mfix.exe
+and several dll files needed for running ani_mfix.exe.
+
+For Windows95 (not for Windows NT), copy the files Glu32.dll and
+Opengl32.dll to the c:\Windows directory.
+
+Support for compiling the source files under Windows is not available.
+
+Running the code under Windows is similar to that described in the Section 1
+of this document for UNIX/LINUX.
+
+
+
+
+
+
+
+                            3  MFIX at Run Time
+
+3.1  MFIX Output and Messages
+
+MFIX output is stored in nine *.SPx binary files. The restart info is
+periodically written to the *.RES binary file. The text file *.OUT echos the
+input, shows the numerical cell distribution, and, if OUT_DT is defined,
+prints the field variables at the specified intervals.
+
+The text file *.LOG contains run information. For the DMP version, a LOG
+file is created for each of the processors and they are numbered as
+Name###.LOG.
+
+Messages about the run are written to the .LOG file. The progress of the run
+will be displayed at the terminal as shown below if the data file specifies
+FULL_LOG = .TRUE.
+
+Time = 0.92965 Dt = 0.13930E-02 CPU time left = 54.672 s
+
+ Nit    P0        P1       U0        V0       U1       V1     Max Res
+
+  1   1.5E-02  2.5E+01   1.3E-03  3.3E-03  3.2E-03  6.3E-03      P0
+
+  2     1.     5.0E-02   2.8E-03  6.3E-03  2.5E-03  3.8E-03      P1
+
+  3     0.1    2.1E-02   1.2E-03  3.7E-03  1.1E-03  1.8E-03      P0
+
+  4   5.2E-02  8.1E-03   6.5E-04  2.1E-03  4.8E-04  8.6E-04      P0
+
+  5   3.0E-02  3.9E-03   4.1E-04  1.3E-03  2.5E-04  4.3E-04      P0
+
+The first line shows the time, the time-step, and the CPU time remaining to
+complete the run. The CPU time remaining is not accurate, especially in the
+beginning of the run. For each time-step, the normalized residuals for
+various equations are written out every iteration.
+
+MFIX uses a variable time step, which is automatically adjusted within
+user-defined limits to reduce the run time. At large values of Dt, the
+iterations may not converge. When this happens, the time step size is
+successively reduced until convergence is obtained. Messages about
+divergence and recovery are displayed on the terminal and in the .LOG file,
+if FULL_LOG = .TRUE.
+
+The subsequent lines display the iteration number, the normalized residuals
+for various equations (e.g., gas continuity, solids continuity, x and y gas
+momentum, and x and y solids momentum), and the equation with the maximum
+residual. The residuals P0 and P1 are normalized only when Nit>1. The
+residuals displayed can be selected with the keyword RESID_STRING.
+
+MFIX reports errors while reading the data file, while processing input
+data, and during the run time. Errors in reading the data file and in
+opening files are reported to the terminal. All other errors are reported in
+the .LOG file.
+
+While reporting errors in reading the data file, MFIX displays the offending
+line of input, so that the error can be easily detected. The possible causes
+of error are (1) incorrect format for the name-list input, (2) unknown
+(misspelt) variable name, or (3) the dimension of the name-list item is too
+small. For example, if the dimension of DX is set as 5000 (DIM_I in
+param_mod.f), and if the input data file contains an entry DX(5001), MFIX
+will report an input processing error.
+
+While processing the input data, MFIX will report errors if the data
+specified is insufficient or physically unrealistic. MFIX will supply
+default values only when it is certain that giving a default value is
+reasonable.
+
+An occasional input-processing error is the inability to determine the flow
+plane for a boundary condition. The boundary planes defined in the input
+data file must have a wall-cell on one side and a fluid-cell on the other
+side. If the initial condition is not specified for the fluid-cell, MFIX
+will not recognize the cell as a fluid-cell and, hence, MFIX will be unable
+to determine the flow plane.
+
+Every NLOG (see Appendix ) number of time steps, MFIX monitors whether the
+mass fractions add up to 1.0; the overall reaction rates add up to zero; the
+viscosities, conductivities, and specific heats are greater than zero; and
+the temperatures are within the specified limits. A message will be printed
+out if any errors are encountered. The run may be aborted depending upon the
+severity of the error. Every NLOG time step, MFIX will print out the number
+of iterations during the previous time step and the total solids inventory
+in the reactor.
+
+For the specified mass-outflow condition, after the elapse of time BC_DT_0,
+MFIX prints out time-averaged mass flow rates. For cyclic boundary
+conditions, MFIX will print out the volume averaged mass fluxes every NLOG
+time step.
+
+A message is written to the .LOG file whenever the .RES and .SPx files are
+written. This message also shows an approximate value of the cumulative disk
+space usage in megabytes.
+
+3.2  Restarting a Run
+
+A run is restarted by rerunning MFIX after typing RUN_TYPE = 'restart_1' in
+mfix.dat. The old .OUT file will be overwritten. The .LOG messages will be
+appended to the old .LOG file.
+
+There are three other types of restarts; refer to the Appendix for details.
+
+3.3  When the Run Does Not Converge
+
+Initial non-convergence: Ensure that the initial conditions are physically
+realistic. If in the initial time step, the run displays NaN (Not-a-Number)
+for any residual, reduce the initial time step, since automatic time step
+reduction will become ineffective. If time step reductions do not help,
+recheck the problem setup.
+
+Holding the time step constant (DT_FAC=1) and ignoring the stalling of
+iterations (DETECT_STALL=.FALSE.) may help in overcoming initial
+nonconvergence. Often a better initial condition will aid convergence. For
+example, using a hydrostatic rather than a uniform pressure distribution as
+the initial condition will aid convergence in fluidized-bed simulations.
+
+If there are computational regions where the solids tend to compact (i.e.,
+solids volume fraction less than EP_star), the convergence can be improved
+by reducing UR_FAC(2) below the default value of 0.5.
+
+Convergence is often difficult with higher order discretization methods.
+First order upwinding may be used to overcome initial transients and then
+the higher order method may be turned on. Also, higher-order methods such as
+van Leer and minmod give faster convergence than methods such as superbee
+and ULTRA-QUICK.
+
+
+
+                 4  Keywords in Input Data File (mfix.dat)
+
+
+
+[ ] indicates the default value.
 
 The symbols used in the table are as follows:
-     (dimension)
-         l          Cell number in x, y, or z direction
-         m          Solids-phase number
-         n          Species number
-        ic          Initial condition number
-        bc          Boundary condition number
-        is          Internal surface number
-       usr          User-defined output number
 
-       Type
-        C      Character
-        DP          Double Precision
-        I      Integer
-        L      Logical
+ Dimension    Description                      Type          Description
 
-D.1  Run Control
+ 1            Cell number in x, y, or z        C             Character
+              direction
 
-Keyword (dimension) Type  Description
+ m            Solids-phase number              DP            Double Precision
 
-RUN_NAME            C  Name used for creating output files.  The name should be
-                       legal after extensions are added to it., e.g., for run 
-                       name BUB01, the output files BUB01.LOG, BUB01.OUT,
-                       BUB01.RES, etc., will be created.
+ n            Species number                   I             Integer
 
-DESCRIPTION         C  Problem description in 60 characters.
+ ic           Initial condition number         L             Logical
 
-UNITS               C  Units for data input and output.
-  [CGS]                     All input and output in CGS units.
+ bc           Boundary condition number
 
-RUN_TYPE            C  Type of run.
-  NEW                     New run
-  RESTART_1               Normal restart run.  Initial conditions from .RES file.
-  RESTART_2               Start a new run with initial conditions from a .RES
-                          file created from another run.
-  RESTART_3               Continue old run as in RESTART_1, but any input data
-                          not given in mfix.dat is read from the .RES file.
-  RESTART_4               Start a new run as in RESTART_2, but any input data
-                          not given in mfix.dat is read from the .RES file.
+ is           Internal surface number
 
-TIME                DP Start-time of the run.
+ usr          User-defined output number
 
 
-Keyword (dimension) Type  Description
 
-TSTOP               DP Stop-time of the run.
+4.1  Run Control
 
-DT                  DP Starting time step.  If DT is not defined a steady state
-                       calculation will be performed.
+ Keyword (dimension)      Type  Description
 
-DT_MAX              DP Maximum time step
-  [1.0]
+ RUN_NAME                  C    Name used to create output files. The name
+                                should be legal after extensions are added to
+                                it; e.g., for run name BUB01, the output files
+                                BUB01.LOG, BUB01.OUT, BUB01.RES, etc., will be
+                                created.
 
-DT_MIN              DP Minimum time step
-  [1E-6]
+ DESCRIPTION               C    Problem description in 60 characters.
 
-DT_FAC              DP Factor for adjusting time step. Should be less than 1.
-  [0.9]                Use a value of 1 to hold the time step constant.
+ UNITS                     C    Units for data input and output.
 
-DETECT_STALL        L   
-  [.TRUE.]             Reduce time step if the residuals sum does not decrease.
-  .FALSE.              Do not reduce time step for stalled iterations.
+                  [CGS]         All input and output in CGS units.
 
-MODEL_B             L  Momentum equations
-  [.FALSE.]            Model A
-  .TRUE.               Model B
+ RUN_TYPE                  C    Type of run.
 
-                       Beware of inconsistencies, when the momentum equations
-                       are turned off; e.g., 2-D developing flow with only
-                       Y-momentum should not specify no-slip-walls.
-MOMENTUM_X_EQ(m)    L  (m=0 indicates gas phase)
-  [.TRUE.]             Solve X-momentum equations of phase m.
-  .FALSE.              Do not X-momentum equations of phase m.
+                    NEW         New run.
 
-MOMENTUM_Y_EQ(m)    L  (m=0 indicates gas phase)
-  [.TRUE.]             Solve Y-momentum equations of phase m.
-  .FALSE.              Do not Y-momentum equations of phase m.
+              RESTART_1         Normal restart run. Initial conditions from
+                                .RES file.
 
-MOMENTUM_Z_EQ(m)    L  (m=0 indicates gas phase)
-  [.TRUE.]             Solve Z-momentum equations of phase m.
-  .FALSE.              Do not Z-momentum equations of phase m.
+              RESTART_2         Start a new run with initial conditions from a
+                                .RES file created from another run.
 
-ENERGY_EQ           L
-  [.TRUE.]             Solve energy equations.
-  .FALSE.              Do not solve energy equations.
+              RESTART_3         Continue old run as in RESTART_1, but any
+                                input data not given in mfix.dat is read from
+                                the .RES file.
 
-SPECIES_EQ(m)       L  (m=0 indicates gas phase)
-  [.TRUE.]             Solve species equations of phase m.
-  .FALSE.              Do not species equations of phase m.
-  
+              RESTART_4         Start a new run as in RESTART_2, but any input
+                                data not given in mfix.dat is read from the
+                                .RES file.
 
+ TIME                      DP   Start-time of the run.
 
-GRANULAR_ENERGY     L  Use the granular energy transport equation (pde) as
-   [.FALSE.]           opposed to the algebraic (alg) equation formulation.
+ TSTOP                     DP   Stop-time of the run.
 
+ DT                        DP   Starting time step. If DT is not defined, a
+                                steady-state calculation will be performed.
 
-FRICTION            L  Use the Schaeffer model when .false. or use the Princeton
-   [.FALSE.]           model when .true.
+ DT_MAX                    DP   Maximum time step.
 
-The combination of the keywords GRANULAR_ENERGY and FRICTION invokes different
-solids stress models as shown in the table below:
+                  [1.0]
 
-                       
-  GRANULAR_ENERGY = .FALSE.                             
-         EP_g < EP_star   -->    Schaeffer
-         EP_g >= EP_star  -->    viscous (algebraic)
+ DT_MIN                    DP   Minimum time step.
 
-  GRANULAR_ENERGY = .TRUE. 
+                 [1E-6]
 
-        FRICTION = .TRUE.                  
-              EP_s(IJK,M) > EPS_f_min  -->  Princeton + viscous(pde)
-              EP_s(IJK,M) < EP_f_min   -->  viscous (pde)
+ DT_FAC                    DP   Factor for adjusting time step. Should be less
+                                than 1.
+                  [0.9]
+                                Use a value of 1 to hold the time step
+                                constant.
 
-        FRICTION = .FALSE.                 
-              EP_g < EP_star  -->  Schaeffer + viscous(pde)
-              EP_g >= EP_star -->  viscous (pde)
-
-SAVAGE              I  For a term appearing in the frictional stress model 
-                       invoked with FRICTION = .TRUE.
-   0                   Use S:S in the frictional stress model
-  [1]	               Use an alternate form suggested by Savage
-   2                   An approximate combination of the above two forms 
-
-NScalar             I  Number of scalar equations to be solved
- [0]
- 
-Phase4Scalar(n)     I  The index of the phase which convects Scalar n.
-                       Use 0 for gas phase.  For example, Phase4Scalar(3)=0
-		       means Scalar#3 will be convected by gas phase.
-
-
-CALL_USR            L
-  .TRUE.               Call user-defined subroutines.
-  [.FALSE.]            Do not call user-defined subroutines.
-
-D.2      Physical and Numerical Parameters
-
-C(100)              DP User defined constants.
-
-C_NAME(100)         C  Name of user-defined constants (20 characters long). 
-                       These character strings are used only for identifying 
-                       user-defined constants (C) in the .OUT file.
-
-C_e                 DP Coefficient of restitution for particle-particle 
-                       collisions. (MFIX 1.94 keyword 'e').
-		       
-e_w                 DP Coefficient of restitution for particle-wall collisions.
-  [1.0]
-
-PHIP                DP Specularity coefficient associated with particle wall 
-  [0.6]                collisions.
-
-C_f                 DP Coefficient of friction between the particles of two 
-                       solids phases.
-
-Phi                 DP Angle of internal friction (in degrees).  Set this value
-                       to zero to turn off plastic regime stress calculations.
-
-L_scale0            DP Value of turbulent length initialized.  This may be 
-  [0.0]                overwritten in specific regions with the keyword
-                       IC_L_scale. 
-
-Mu_gmax             DP Maximum value of the turbulent viscosity of the fluid.
-
-V_ex                DP Excluded volume in Boyle-Massoudi stress
-  [0.0]                B-M stress is turned off.
-
-P_ref               DP Reference pressure.
-  [0.0]
-
-P_scale             DP scale factor for pressure.
-  [1.0]
-
-GRAVITY             DP Gravitational acceleration.
-  [980.7]              By default the gravity force acts in the -ve y-direction.
-                       Modify file b_force2.inc for changing the body force term.
-
-MAX_NIT             I  Maximum number of iterations.
-  [500]
-
-NORM_g              DP Factor for normalizing gas continuity eq. residual
-  [Use the residual from first iteration]
-
-NORM_s              DP Factor for normalizing solids continuity eq. residual
-  [Use the residual from first iteration]
- 
-TOL_RESID           DP Maximum residual at convergence (continuity+momentum).
-  [1E-3]
-
-TOL_RESID_T         DP Maximum residual at convergence (energy).
-  [1E-4]
-
-TOL_RESID_X         DP Maximum residual at convergence (species balances).
-  [1E-4]
-
-TOL_RESID_Scalar    DP Maximum residual at convergence (Scalar balances).
-  [1E-4]
-
-TOL_DIVERGE         DP Minimum residual for declaring divergence.  When the fluid
-  [1E+4]               is incompressible the velocity residuals take large values
-                       in the second iteration (e.g. 1E+8) and then drops down to
-                       a low value in the third iteration (e.g. 0.1).  In such
-                       cases it is desirable to increase this setting.
-		       
-		       
-The next keywords LEQ_IT, LEQ_METHOD, LEQ_SWEEP, LEQ_TOL, UR_FAC, and DISCRETIZE
-are dimensioned 9 are for the nine types of equations:
-    1 - gas pressure
-    2 - solids volume fraction
-    3 - gas and solids u-momentum
-    4 - gas and solids v-momentum
-    5 - gas and solids w-momentum
-    6 - temperature
-    7- species mass fractions
-    8 - granular temperature
-    9 - user-defined scalar
+ DETECT_STALL              L
 
-For example LEQ_IT(3) = 10 will make MFIX use 10 linear equation iterations while
-solving gas and solids u-momentum equation.
+               [.TRUE.]         Reduce time step if the residuals sum does not
+                                decrease.
 
-LEQ_IT(9)           I  Number of iterations in the linear equation solver.  The
-  [20 for 1 and 2]     nine values are for the nine types of equations:
-  [5 for  2-5]         1 - gas pressure, 2 - solids volume fraction, 3 - gas and
-  [15 for 6-9]          solids u-momentum, 4 - gas and solids v-momentum,
-                       5 - gas and solids w-momentum, 6 - temperature,
-                       7 - species mass fractions, 8 - granular temperature,
-		       9 - user-defined scalar.
-		       The same convention holds for
-                       LEQ_METHOD, UR_FAC, and DISCRETIZE.  If the residual 
-                       of an equation is less than the convergence criterion,
-                       MFIX makes LEQ_IT equal to lesser of 5 and the user
-                       defined value and LEQ_METHOD equal to 1. 
+                .FALSE.         Do not reduce time step for stalled
+                                iterations.
 
-LEQ_METHOD(9)       I  The method used in the linear equation solver:
-  1                    BiCGSTAB
-  [1 for all equations]
- 
-LEQ_SWEEP(9)        C  The sweep direction used in the linear equation solver:
-  ['II']               The sweep direction for preconditioning line relaxation.
-                       For example, if LEQ_SWEEP = 'III', 3 sweeps with 'do I'
-		       loop, or if LEQ_SWEEP = "IJK", 3 sweeps with 'do I',
-		       'do J', 'do K' loops. (only used by BiCGStab)
-
-LEQ_TOL(9)          DP The tolerance, if used, in linear eq solvers.
-  [1.0D-4]             Used by BiCGStab.
+ MODEL_B                   L    Momentum equations.
 
-UR_FAC(9)           I  Under relaxation factors for seven types of equations.
-  [0.8 for 1,6,9]      Reducing UR_FAC(2) will help convergence in problems
-  [0.5 for 2,3,4,5,8]  in which the solids tend to pack.
-  [0.75 for 7]
-
-DEF_COR             L  If true use deferred correction method for implementing higher
- [.TRUE.]             order discretization, else use down-wind factor method (default).
-
-DISCRETIZE(9)       I  Discretization scheme for seven types of equations.
-  [0]                  first order upwinding
-   1                   first order upwinding (using down wind factors)
-   2                   Superbee (recommended method)
-   3                   SMART
-   4                   ULTRA-QUICK
-   5                   QUICKEST (does not work)
-   6                   MUSCL
-   7                   van Leer
-   8                   Minmod
-
-D.3      Geometry and Discretization
-
-         For 2D simulations the thickness of the third direction specified 
-should be exact, if mass or volumetric flow rates, rather than the velocities,
-are specified at the boundaries.
-
-Keyword (dimension) Type  Description
-
-COORDINATES         C  Coordinates used in the simulation.
-  CARTESIAN               Cartesian coordinates
-  CYLINDRICAL             Cylindrical coordinates
+              [.FALSE.]         Model A
 
-NO_I                L  (Do not use)
-  [.FALSE.]            x (r) direction is considered.
-  .TRUE.               x (r) direction is not considered.
+                 .TRUE.         Model B
 
-IMAX                I  Number of cells in the x (r) direction.
+ MOMENTUM_X_EQ(m)          L    (m=0 indicates gas phase)
 
-DX (l)              DP Cell sizes in the x (r) direction. (Use uniform mesh size
-                       with second order discretization methods)
+               [.TRUE.]         Solve X-momentum equations of phase m.
 
-XMIN                DP The inner radius in the simulation of an annular 
-                       cylindrical region.
+                .FALSE.         Do not solve X-momentum equations of phase m.
 
-XLENGTH             DP Reactor length in the x (r) direction.
+                                Beware of inconsistencies when the momentum
+                                equations are turned off; e.g., 2-D developing
+                                flow with only Y-momentum should not specify
+                                no-slip-walls.
 
+ MOMENTUM_Y_EQ(m)          L    (m=0 indicates gas phase)
 
-NO_J                L  (Do not use)  
-  [.FALSE.]            y direction is considered.
-  .TRUE.               y direction is not considered.
+               [.TRUE.]         Solve Y-momentum equations of phase m.
 
-JMAX                I  Number of cells in the y direction.
+                .FALSE.         Do not solve Y-momentum equations of phase m.
 
-DY (l)              DP Cell sizes in the y direction. (Use uniform mesh size
-                       with second order discretization methods)
+ MOMENTUM_Z_EQ(m)          L    (m=0 indicates gas phase)
 
-YLENGTH             DP Reactor length in the y direction.
+               [.TRUE.]         Solve Z-momentum equations of phase m.
 
-NO_K                L  
-  [.FALSE.]            z ( ) direction is considered.
-  .TRUE.               z ( ) direction is not considered.
+                .FALSE.         Do not solve Z-momentum equations of phase m.
 
-KMAX                I  Number of cells in the z ( ) direction.
+ ENERGY_EQ                 L
 
-DZ (l)              DP Cell sizes in the z ( ) direction. (Use uniform mesh size
-                       with second order discretization methods)
+               [.TRUE.]         Solve energy equations
 
-ZLENGTH             DP Reactor length in the z ( ) direction.
+                .FALSE.         So not solve energy euqations
 
+ SPECIES_EQ(m)             L    (m=0 indicates gas phase)
 
-Keyword (dimension) Type  Description
+               [.TRUE.]         Solve species equations of phase m.
 
-CYCLIC_X            L  Flag for making the x-direction cyclic with out pressure
-                       drop. No other boundary conditions for x-direction should
-                       be specified.
-  [.FALSE.]            No cyclic condition at X-boundary.
-  .TRUE.               Cyclic condition at X-boundary.
+                .FALSE.         Do not solve species equations of phase m.
 
-CYCLIC_X_PD         L  Flag for making the x-direction cyclic with pressure
-                       drop. No other boundary conditions for x-direction should
-                       be specified.
-  [.FALSE.]            No cyclic condition at X-boundary.
-  .TRUE.               Cyclic condition with pressure drop at X-boundary.
+ GRANULAR_ENERGY           L    Use the granular energy transport equation
+                                (pde) as opposed to the algebraic (alg)
+              [.FALSE.]         equation formulation.
 
-DELP_X              DP Fluid pressure drop across XLENGTH when a cyclic boundary
-                       condition with pressure drop is imposed in the
-                       X-direction.
+ FRICTION                  L    Use the Schaeffer model when .FALSE., or use
+                                the Princeton model when .TRUE.
+              [.FALSE.]
 
-CYCLIC_Y            L  Flag for making the y-direction cyclic with out pressure
-                       drop. No other boundary conditions for y-direction should
-                       be specified.
-  [.FALSE.]            No cyclic condition at Y-boundary.
-  .TRUE.               Cyclic condition at Y-boundary.
+The combination of the keywords GRANULAR_ENERGY and FRICTION invokes
+different
 
-CYCLIC_Y_PD         L  Flag for making the y-direction cyclic with pressure
-                       drop. No other boundary conditions for y-direction should
-                       be specified.
-  [.FALSE.]            No cyclic condition at Y-boundary.
-  .TRUE.               Cyclic condition with pressure drop at Y-boundary.
+solids stress models as shown below:
 
-DELP_Y              DP Fluid pressure drop across YLENGTH when cyclic boundary
-                       condition with pressure drop is imposed in the
-                       Y-direction.
+GRANULAR_ENERGY = .FALSE.
 
-CYCLIC_Z            L  Flag for making the z-direction cyclic with out pressure
-                       drop. No other boundary conditions for z-direction should
-                       be specified.
-  [.FALSE.]            No cyclic condition at Z-boundary.
-  .TRUE.               Cyclic condition at Z-boundary.
+                    EP_g < EP_star > Schaeffer
 
-CYCLIC_Z_PD         L  Flag for making the z-direction cyclic with pressure
-                       drop. No other boundary conditions for z-direction should
-                       be specified.
-  [.FALSE.]            No cyclic condition at Z-boundary.
-  .TRUE.               Cyclic condition with pressure drop at Z-boundary.
+                    EP_g >= EP_star > viscous (algebraic)
 
-DELP_Z              DP Fluid pressure drop across ZLENGTH when cyclic boundary
-                       condition with pressure drop is imposed in the 
-                       Z-direction.
+GRANULAR_ENERGY = .TRUE.
 
-SHEAR               L  If .TRUE. imposes a mean shear on the flow field as a linear
-  [.FALSE.]            function of the 'x' coordinate.  This feature should only be 
-                       used when CYCLIC_X= .TRUE..  Also keyword V_sh needs to be set.
+FRICTION = .TRUE.
 
-V_sh                DP Specifies the mean 'y' velocity component at the eastern
-                       boundary of the domain(V_sh), and mean 'y' velocity (-V_sh) at
-                       the western boundary of the domain.
+                    EP_s(IJK,M) > EPS_f_min > Princeton + viscous (pde)
 
+                    EP_s(IJK,M) < EP_f_min > viscous (pde)
 
-D.4      Gas Phase
+FRICTION = .FALSE.
 
-RO_g0               DP Specified constant gas density.  This value may be set to
-                       zero to make the drag zero and simulate granular flow in
-                       vacuum.
+                    EP_g < EP_star > Schaeffer + viscous (pde)
 
-MU_g0               DP Specified constant gas viscosity.
+                    EP_g >= EP_star > viscous (pde)
 
-K_g0                DP Specified constant gas conductivity.
 
-C_pg0               DP Specified constant gas specific heat.
 
-DIF_g0              DP Specified constant gas diffusivity.
 
-MW_AVG              DP Average molecular weight of gas.
 
-MW_g (n)            DP Molecular weight of gas species n.
+ Keyword (dimension)     Type    Description
 
-D.5      Solids Phase
+ SAVAGE                    I     For a term appearing in the frictional stress
+                                 model invoked with FRICTION = .TRUE.
 
-MMAX                I  Number of solids phases.
+                      0          Use S:S in the frictional stress model.
 
-D_p (m)             DP Particle diameters.
+                    [1]          Use an alternate form suggested by Savage.
 
-RO_s (m)            DP Particle densities.
+                      2          An appropriate combination of the above two
+                                 forms.
 
-NMAX (m)            I  Number of species in phase m.  Note that m=0 indicates
-                       gas phase.
+ Nscalar                   I     Number of scalar equations to be solved.
 
-MU_s0               DP Specified constant granular viscosity.  If this value is
-                       specified then the kinetic theory calculation is turned
-                       off and P_s = 0 and Lambda_s = -2/3 MU_s0
+                    [0]
 
-K_s0                DP Specified constant solids conductivity.
+ Phase4Scalar(n)           I     The index of the phase that convects scalar n.
+                                 Use 0 for gas phase; e.g., Phase4Scalar(3)=0
+                                 means Scalar no. 3 will be convected by gas
+                                 phase.
 
-C_ps0               DP Specified constant solids specific heat.
+ CALL_USR                  L
 
-DIF_s0              DP Specified constant solids diffusivity.
+                 .TRUE.          Call user-defined subroutines.
 
-MW_s (m, n)         DP Molecular weight of solids phase-m, species n.
+              [.FALSE.]          Do not call user-defined subroutines.
 
-EP_star             DP Packed bed void fraction.
 
-CLOSE_PACKED (m)    L  Indicates whether the solids phase forms a packed bed
-  [.TRUE.]             with a void fraction EP_star.
 
 
 
-D.6      Initial Conditions
+4.2  Physical and Numerical Parameters
 
-         Each initial condition (IC) is specified over a rectangular (or pie-
-shaped, for cylindrical coordinates) region that corresponds to the scalar
-numerical grid.  These are 3D regions, and X_w   X_e, Y_s   Y_n, and Z_t   Z_b.
-The region is defined by the constant coordinates of each of the six faces,
-which may be specified as the physical coordinates or the cell indices.  The 
-physical coordinates are easier to specify than the cell indices.  If cell sizes
-are not small enough to resolve a region specified using physical coordinates,
-MFIX will indicate this problem with an error message.
+ Keyword (dimension)   Type    Description
 
-         In cylindrical coordinates, when the theta direction crosses the 0
-value, split that region into two regions:  e.g., Split a region spanning 1.9 pi
-to 0.1 pi as 1.9 pi to 2 pi and 0 to 0.1 pi.
+ C(100)                  DP    User defined constants.
 
-         Two initial condition regions may overlap.  When an overlap occurs,
-MFIX uses the conditions specified for the higher IC number.
+ C_NAME(100)             C     Name of user-defined constants (20 characters
+                               long). These character strings are used only to
+                               identify user-defined constants ( c ) in the
+                               .OUT file.
 
-Keyword (dimension) Type  Description
+ C_e                     DP    Coefficient of restitution for
+                               particle-particle collisions. (MFIX 1.94
+                               keyword e).
 
-IC_X_w (ic)         DP x coordinate of the west face.
+ e_w                     DP    Coefficient of restitution for particle-wall
+                               collisions.
+                [1.0]
 
-IC_X_e (ic)         DP x coordinate of the east face.
+ PHIP                    DP    Specularity coefficient associated with
+                               particle-wall collisions.
+                [0.6]
 
-IC_Y_s (ic)         DP y coordinate of the south face. 
+ C_f                     DP    Coefficient of friction between the particles
+                               of two solids phases.
 
-IC_Y_n (ic)         DP y coordinate of the north face.
+ Phi                     DP    Angle of internal friction (in degrees). Set
+                               this value to zero to turn off plastic regime
+                               stress calculations.
 
-IC_Z_b (ic)         DP z coordinate of the bottom face.
+ L_scale0                DP    Value of turbulent length initialized. This may
+                               be overwritten in specific regions with the
+                [0.0]          keyword IC_L_scale.
 
-IC_Z_t (ic)         DP z coordinate of the top face.
+ Mu_gmax                 DP    Maximum value of the turbulent viscosity of the
+                               fluid.
 
-IC_I_w (ic)         I  i index of the west-most cell.
+ V_ex                    DP    Excluded volume in Boyle-Massoudi stress.
 
-IC_I_e (ic)         I  i index of the east-most cell.
+                [0.0]          B-M stress is turned off.
 
-IC_J_s (ic)         I  j index of the south-most cell.
+ P_ref                   DP    Reference pressure.
 
-IC_J_n (ic)         I  j index of the north-most cell.
+                [0.0]
 
-IC_K_b (ic)         I  k index of the bottom-most cell.
+ P_scale                 DP    Scale factor for pressure.
 
-IC_K_t (ic)         I  k index of the top-most cell.
+                [1.0]
 
+ GRAVITY                 DP    Gravitational acceleration.
 
-Keyword (dimension) Type  Description
+              [980.7]          By default, the gravity force acts in the ve
+                               y-direction. Modify file b_force2.inc to change
+                               the body force term.
 
-IC_TYPE (ic)        C  Type of initial condition.  Mainly used in restart runs to
-                       overwrite values read from the .RES file by specifying it as
-                       'PATCH'.  The user needs to be careful when using the
-                       'PATCH' option, since the values from the .RES file are
-                       overwritten and no error checking is done for the patched
-                       values.
+ MAX_NIT                 I     Maximum number of iterations.
 
-IC_EP_g (ic)        DP Initial void fraction in the IC region.
+                [500]
 
-IC_P_g (ic)         DP Initial gas pressure in the IC region.  If this quantity
-                       is not specified, MFIX will set up a hydrostatic pressure
-                       profile, which varies only in the y-direction.
+ NORM_g                  DP    Factor to normalize the gas continuity equation
+                               residual.
+    [Use the residual
+       from the first
+          iteration.]
 
-IC_P_star (ic)      DP Initial solids pressure in the IC region.  Usually this 
-                       value is specified as zero.
+ NORM_s                  DP    Factor to normalize the solids continuity
+                               equation residual.
+    [Use the residual
+       from the first
+          iteration.]
 
-IC_L_scale (ic)     DP Turbulence length scale in the IC region.
+ TOL_RESID               DP    Maximum residual at convergence
+                               (continuity+momentum).
+               [1E-3]
 
-IC_ROP_s (ic, m)    DP Initial macroscopic density of solids phase-m in the IC
-                       region.
+ TOL_RESID_T             DP    Maximum residual at convergence (energy).
 
-IC_T_g (ic)         DP Initial gas phase temperature in the IC region.
+               [1E-4]
 
-IC_T_s (ic, m)      DP Initial solids phase-m temperature in the IC region.
+ TOL_RESID_X             DP    Maximum residual at convergence (species
+                               balance).
+               [1E-4]
 
-IC_Theta_m(ic, m)   DP Initial solids phase-m granular temperature in the IC region.
+ TOL_RESID_Scalar        DP    Maximum residual at convergence (scalar
+                               balances.)
+               [1E-4]
 
-IC_GAMA_Rg (ic)     DP Gas phase radiation coefficient in the IC region.
-  [0]                  Modify file radtn2.inc for changing the source term.
+ TOL_DIVERGE             DP    Minimum residual for declaring divergence. When
+                               the fluid is incompressible, the velocity
+               [1E+4]          residuals take large values in the second
+                               iteration (e.g., 1E+8) and then drop down to a
+                               low value in the third iteration (e.g., 0.1).
+                               In such cases, it is desirable to increase this
+                               setting.
 
-IC_T_Rg (ic)        DP Gas phase radiation temperature in the IC region.
 
-IC_GAMA_Rs (ic, m)  DP Solids phase-m radiation coefficient in the IC region.
-  [0]                  Modify file radtn2.inc for changing the source term.
 
-IC_T_Rs (ic, m)     DP Solids phase-m radiation temperature in the IC region.
+The next keywords LEQ_IT, LEQ_METHOD, LEQ_SWEEP, LEQ_TOL, UR_FAC, and
+DISCRETIZE are dimensioned for the nine types of equations:
 
-IC_U_g (ic)         DP Initial x-component of gas velocity in the IC region.
+                     Index    Equation Type
 
-IC_U_s (ic, m)      DP Initial x-component of solids-phase velocity in the IC
-                       region.
+                     1        gas pressure
 
-IC_V_g (ic)         DP Initial y-component of gas velocity in the IC region.
+                     2        solids volume fraction
 
-IC_V_s (ic, m)      DP Initial y-component of solids-phase velocity in the IC
-                       region.
+                     3        gas and solids v-momentum
 
-IC_W_g (ic)         DP Initial z-component of gas velocity in the IC region.
+                     5        gas and solids w-momentum
 
-IC_W_s (ic, m)      DP Initial z-component of solids-phase velocity in the IC
-                       region.
+                     6        temperature
 
-IC_X_g (ic, n)      DP Initial mass fraction of gas species n.
-   [0]
+                     7        species mass fractions
 
-IC_X_s (ic, m, n)   DP Initial mass fraction of solids phase-m, species n.
+                     8        granular temperature
 
-   [0]
-   
-IC_Scalar (ic, n)   DP Initial value of Scalar n.
-   [0]
+                     9        user-defined scalar
 
+For example, LEQ_IT(3) = 10 will make MFIX use 10 linear equation iterations
+while solving the gas and solids u-momentum equation (Equation Type =3).
 
 
-D.7      Boundary Conditions
 
-         Boundary conditions (BC) are specified over flow planes or 2D surfaces
-that are normal to one of the coordinate directions and coinciding with a face
-of the scalar control-volume.  The values for one of the three pairs of 
-coordinates are equal.  The surface is defined by the constant coordinates of
-each of the four edges, which can be specified with physical coordinates or cell
-indices, and the two equal values for the direction normal to the face, which 
-can only be specified with physical coordinates.  If cell sizes are not small
-enough to resolve a surface specified using physical coordinates, MFIX will
-indicate this problem with an error message.
 
-         A flow plane must have a wall cell (or an outside boundary) on one side
-and a flow cell on the other side.
 
-         The BC section is also used for specifying obstacles in the flow domain.
-Obstacles are 3D regions and just as for the IC regions X_w   X_e, Y_s   Y_n, 
-and Z_t   Z_b.  By default the outside boundary is initialized as no-slip walls.
+
+
+
+
+
+
+
+
+
+
+ Keyword (dimension)     Type  Description
+
+ LEQ_IT(9)                I    Number of iterations in the linear equation
+                               solver. The nine values are for the nine types
+      [20 for 1 and 2]         of equations noted above.
+
+           [5 for 2-5]         The same convention holds for LEQ_METHOD,
+                               UR_FAC, and DISCRETIZE. If the residual of an
+          [15 for 6-9]         equation is less than the convergence
+                               criterion, MFIX makes LEQ_IT equal to the
+                               lesser of 5 and the user-defined value and
+                               LEQ_METHOD equal to 1.
+
+ LEQ_METHOD(9)            I    The method used in the linear equation solver:
+
+ [1 for all equations]         1. BiCGSTAB.
+
+ LEQ_SWEEP(9)             C    The sweep direction used in the linear equation
+                               solver. The sweep direction for preconditioning
+                [II]         line relaxation; e.g., if LEQ_SWEEP = "III", 3
+                               sweeps with do I loop, or if LEQ_SWEEP =
+                               "IJK", 3 sweeps with do I, do J, do K
+                               loops. Only used by BiCGSTAB.
+
+ LEQ_TOL(9)               DP   The tolerance, if used, in linear equation
+                               solvers. Only used by BiCGSTAB.
+              [1.0D-4]
+
+ UR_FAC(9)                I    Under relaxation factors for seven types of
+                               equations.
+     [0.8 for 1, 6, 9]
+                               Reducing UR_FAC(2) will help convergence in
+  [0.5 for 2, 3, 4, 5,         problems in which the solids tend to pack.
+                    8]
+
+          [0.75 for 7]
+
+ DEF_COR                  L    If true, use deferred correction method for
+                               implementing higher order discretization.
+             [.TRUE.]          Otherwise, use down-wind factor method
+                               (default).
+
+ DISCRETIZE(9)            I    Discretization scheme for seven types of
+                               equations.
+
+                   [0]         First-order upwinding.
+
+                     1         First-order upwinding (using down-wind
+                               factors).
+
+                     2         Superbee (recommended method).
+
+                     3         SMART.
+
+                     4         ULTRA-QUICK.
+
+                     5         QUICKEST (does not work).
+
+                     6         MUSCL.
+
+                     7         van Leer.
+
+                     8         Minmod.
+
+
+
+
+
+
+
+4.3  Geometry and Discretization
+
+For 2D simulations, the thickness of the third direction specified should be
+exact if mass or volumetric flow rates, rather than velocities, are
+specified at the boundaries.
+
+ Keyword (dimension)     Type  Description
+
+ COORDINATES              C    Coordinates used in the simulation.
+
+             CARTESIAN         Cartesian coordinates.
+
+           CYLINDRICAL         Cylindrical coordinates.
+
+ NO_I                     L    (Do not use.)
+
+             [.FALSE.]         X (r) direction is considered.
+
+                .TRUE.         X (r) direction is not considered.
+
+ IMAX                     I    Number of cells in the x (r) direction.
+
+ DX (l)                   DP   Cell sizes in the x (r) direction. (Use uniform
+                               mesh size with second-order discretization
+                               methods.)
+
+ XMIN                     DP   The inner radius in the simulation of an
+                               annular cylindrical region.
+
+ XLENGTH                  DP   Reactor length in the x (r) direction.
+
+ NO_J                     L    (Do not use.)
+
+              [.FALSE]         y direction is considered.
+
+                .TRUE.         y direction is not considered.
+
+ JMAX                     I    Number of cells in the y direction.
+
+ DY (1)                   DP   Cell sizes in the y direction. (Use uniform
+                               mesh size with second-order discretization
+                               methods.)
+
+ YLENGTH                  DP   Reactor length in the y direction.
+
+ NO_K                     L
+
+             [.FALSE.]         z ( ) direction is considered.
+
+                .TRUE.         z ( ) direction is not considered.
+
+ KMAX                     I    Number of cells in the z ( ) direction.
+
+ DZ (1)                   DP   Cell sizes in the z ( ) direction. (Use uniform
+                               mesh size with second-order discretization
+                               methods.)
+
+ ZLENGTH                  DP   Reactor length in the z ( ) direction.
+
+ CYCLIC_X                 L    Flag for making the x-direction cyclic without
+                               pressure drop. No other boundary conditions for
+                               the x-direction should be specified.
+
+             [.FALSE.]         No cyclic condition at X-boundary.
+
+                .TRUE.         Cyclic condition at X-boundary.
+
+ CYCLIC_X_PD              L    Flag for making the x-direction cyclic with
+                               pressure drop. No other boundary conditions for
+                               the x-direction should be specified.
+
+             [.FALSE.]         No cyclic condition at X-boundary.
+
+                .TRUE.         Cyclic condition with pressure drop at
+                               X-boundary.
+
+ DELP_X                   DP   Fluid pressure drop across XLENGTH when a
+                               cyclic boundary condition with pressure drop is
+                               imposed in the x-direction.
+
+ CYCLIC_Y                 L    Flag for making the y-direction cyclic without
+                               pressure drop. No other boundary conditions for
+                               the y-direction should be specified.
+
+             [.FALSE.]         No cyclic condition at Y-boundary.
+
+                .TRUE.         Cyclic condition at X-boundary.
+
+ CYCLIC_Y_PD              L    Flag for making the y-direction cyclic with
+                               pressure drop. No other boundary conditions for
+                               the y-direction should be specified.
+
+             [.FALSE.]         No cyclic condition at Y-boundary.
+
+                .TRUE.         Cyclic condition with pressure drop at
+                               Y-boundary.
+
+ DELP_Y                   DP   Fluid pressure drop across YLENGTH when a
+                               cyclic boundary condition with pressure drop is
+                               imposed in the y-direction.
+
+ CYCLIC_Z                 L    Flag for making the z-direction cyclic without
+                               pressure drop. No other boundary conditions for
+                               the z-direction should be specified.
+
+             [.FALSE.]         No cyclic condition at Z-boundary.
+
+                .TRUE.         Cyclic condition at Z-boundary.
+
+ CYCLIC_Z_PD              L    Flag for making the z-direction cyclic with
+                               pressure drop. No other boundary conditions for
+                               the z-direction should be specified.
+
+             [.FALSE.]         No cyclic condition at Z-boundary.
+
+                .TRUE.         Cyclic condition with pressure drop at
+                               Z-boundary.
+
+ DELP_Z                   DP   Fluid pressure drop across ZLENGTH when a
+                               cyclic boundary condition with pressure drop is
+                               imposed in the z-direction.
+
+ SHEAR                    L    If .TRUE. imposes a mean shear on the flow
+                               field as a linear function of x coordinate.
+                               This feature should only be used when
+                               CYCLIC_X=.TRUE. Also, the keyword V-sh needs to
+                               be set.
+
+ V_sh                     DP   Specifies the mean y velocity component at
+                               the eastern boundary of the domain (V_sh), and
+                               the mean y velocity (-V_sh) at the western
+                               boundary of the domain.
+
+
+
+
+
+4.4  Gas Phase
+
+ Keyword (dimension)     Type   Description
+
+ RO_g0                    DP    Specified constant gas density. This value may
+                                be set to zero to make the drag zero and to
+                                simulate granular flow in a vacuum.
+
+ MU_g0                    DP    Specified constant gas viscosity.
+
+ K_g0                     DP    Specified constant gas conductivity.
+
+ C_pg0                    DP    Specified constant gas specific heat.
+
+ DIF_g0                   DP    Specified constant gas diffusivity.
+
+ MW_AVG                   DP    Average molecular weight of gas.
+
+ MW_g (n)                 DP    Molecular weight of gas species n.
+
+
+
+
+
+
+
+4.5  Solids Phase
+
+ Keyword (dimension)      Type   Description
+
+ MMAX                       I    Number of solids phases.
+
+ D_p (m)                   DP    Particle diameters.
+
+ RO_s (m)                  DP    Particle densities.
+
+ NMAX (m)                   I    Number of species in phase m. Note that m=0
+                                 indicates gas phase.
+
+ MU_s0                     DP    Specified constant granular viscosity. If this
+                                 value is specified, then the kinetic theory
+                                 calculation is turned off and P_s = 0 and
+                                 Lambda_s = -2/3 MU_s0.
+
+ K_s0                      DP    Specified constant solids conductivity.
+
+ C_ps0                     DP    Specified constant solids specific heat.
+
+ DIF_s0                    DP    Specified constant solids diffusivity.
+
+ MW_s (m,n)                DP    Molecular weight of solids phase-m, species n.
+
+ EP_star                   DP    Packed bed void fraction.
+
+ CLOSE_PACKED (m)           L    Indiates whether the solids phase forms a
+                                 packed bed with a void fraction EP_star.
+                [.TRUE.]
+
+
+
+
+
+4.6  Initial Conditions
+
+Each initial condition (IC) is specified over a rectangular region (or
+pie-shaped for cylindrical coordinates) that corresponds to the scalar
+numerical grid. These are 3D regions: X_w X_e, Y_s Y_n, and Z_t Z_b. The
+region is defined by the constant coordinates of each of the six faces,
+which may be specified as the physical coordinates or the cell indices. The
+
+physical coordinates are easier to specify than the cell indices. If cell
+sizes are not small enough to resolve a region specified using physical
+coordinates, MFIX will indicate this problem with an error message.
+
+In cylindrical coordinates, when the theta direction crosses the 0 value,
+split that region into two regions: e.g., Split a region spanning 1.9 pi to
+0.1 pi as 1.9 pi to 2 pi and 0 to 0.1 pi.
+
+Two initial condition regions may overlap. When an overlap occurs, MFIX uses
+the conditions specified for the higher IC number.
+
+ Keyword (dimension)     Type    Description
+
+ IC_X_w (ic)               DP    x coordinate of the west face.
+
+ IC_X_e (ic)               DP    x coordinate of the east face.
+
+ IC_Y_s (ic)               DP    y coordinate of the south face.
+
+ IC_Y_n (ic)               DP    y coordinate of the north face.
+
+ IC_Z_b (ic)               DP    z coordinate of the bottom face.
+
+ IC_Z_t (ic)               DP    z coordinate of the top face.
+
+ IC_I_w (ic)               I     i index of the west-most wall.
+
+ IC_I_e (ic)               I     i index of the east-most wall.
+
+ IC_J_s (ic)               I     j index of the south-most wall.
+
+ IC_J_n (ic)               I     j index of the north-most wall.
+
+ IC_K_b (ic)               I     k index of the bottom-most wall.
+
+ IC_K_t (ic)               I     k index of the top-most wall.
+
+ IC_TYPE (ic)              C     Type of initial condition. Mainly used in
+                                 restart runs to overwrite values read from the
+                                 .RES file by specifying it as PATCH. The
+                                 user needs to be careful when using the
+                                 PATCH option, since the values from the .RES
+                                 file are overwritten and no error checking is
+                                 done for the patched values.
+
+ IC_EP_g (ic)              DP    Initial void fraction in the IC region.
+
+ IC_P_g (ic)               DP    Initial gas pressure in the IC region. If this
+                                 quantity is not specified, MFIX will set up a
+                                 hydrostatic pressure profile, which varies
+                                 only in the y-direction.
+
+ IC_P_star (ic)            DP    Initial solids pressure in the IC region.
+                                 Usually, this value is specified as zero.
+
+ IC_L_scale (ic)           DP    Turbulence length scale in the IC region.
+
+ IC_ROP_s (ic, m)          DP    Initial macroscopic density of solids phase-m
+                                 in the IC region.
+
+ IC_T_g (ic)               DP    Initial gas phase temperature in the IC
+                                 region.
+
+ IC_T_s (ic, m)            DP    Initial solids phase-m temperature in the IC
+                                 region.
+
+ IC_Theta_m (ic, m)        DP    Initial solids phase-m granular temperature in
+                                 the IC region.
+
+ IC_GAMA_Rg (ic)           DP    Gas phase radiation coefficient in the IC
+                                 region. Modify file radtn2.inc to change the
+                    [0]          source term.
+
+ IC_T_Rg (ic)              DP    Gas phase radiation temperature in the IC
+                                 region.
+
+ IC_GAMA_Rs (ic, m)        DP    Solids phase-m radiation coefficient in the IC
+                                 region. Modify file radtn2.inc to change the
+                    [0]          source term.
+
+ IC_T_Rs (ic, m)           DP    Solids phase-m radiation temperature in the IC
+                                 region.
+
+ IC_U_g (ic)               DP    Initial x-component of gas velocity in the IC
+                                 region.
+
+ IC_U_s (ic, m)            DP    Initial x-component of solids-phase velocity
+                                 in the IC region.
+
+ IC_V_g (ic)               DP    Initial y-component of gas velocity in the IC
+                                 region.
+
+ IC_V_s (ic, m)            DP    Initial y-component of solids-phase velocity
+                                 in the IC region.
+
+ IC_W_g (ic)               DP    Initial z-component of gas velocity in the IC
+                                 region.
+
+ IC_W_s (ic, m)            DP    Initial z-component of solids-phase velocity
+                                 in the IC region
+
+ IC_X_g (ic, n)            DP    Initial mass fraction of gas species n.
+
+                    [0]
+
+ IC_X_s (ic, m, n)         DP    Initial mass fraction of solids phase-m,
+                                 species n.
+                    [0]
+
+ IC_SOLAR (ic, n)          DP    Initial value of Scalar n.
+
+                    [0]
+
+
+
+
+
+4.7  Boundary Conditions
+
+Boundary conditions (BC) are specified over flow planes or 2D surfaces that
+are normal to one of the coordinate directions and coincide with a face of
+the scalar control-volume. The values for one of the three pairs of
+coordinates are equal. The surface is defined by the constant coordinates of
+each of the four edges, which can be specified with physical coordinates or
+cell indices, and the two equal values for the direction normal to the face,
+which can only be specified with physical coordinates. If cell sizes are not
+small enough to resolve a surface specified using physical coordinates, MFIX
+will indicate this problem with an error message.
+
+A flow plane must have a wall cell (or an outside boundary) on one side and
+a flow cell on the other side.
+
+The BC section is also used to specify obstacles in the flow domain.
+Obstacles are 3D regions, just as for the IC regions: X_w X_e, Y_s Y_n, and
+Z_t Z_b. By default the outside boundary is initialized as no-slip walls.
 For cylindrical coordinates the axis is initialized as a free-slip wall.
 
-         Two boundary surfaces must not intersect.  Two obstacle regions may
+Two boundary surfaces must not intersect. Two obstacle regions may
 intersect.
 
-Keyword (dimension) Type  Description
+ Keyword (dimension)     Type    Description
 
-BC_X_w (bc)         DP x coordinate of the west face or edge.
+ BC_X_w (bc)              DP     x coordinate of the west face or edge.
 
-BC_X_e (bc)         DP x coordinate of the east face or edge.
+ BC_X_e (bc)              DP     x coordinate of the east face or edge.
 
-BC_Y_s (bc)         DP y coordinate of the south face or edge.
+ BC_Y_s (bc)              DP     y coordinate of the south face or edge.
 
-BC_Y_n (bc)         DP y coordinate of the north face or edge.
+ BC_Y_n (bc)              DP     y coordinate of the north face or edge.
 
-BC_Z_b (bc)         DP z coordinate of the bottom face or edge.
+ BC_Z_b (bc)              DP     z coordinate of the bottom face or edge.
 
-BC_Z_t (bc)         DP z coordinate of the top face or edge.
+ BC_Z_t (bc)              DP     z coordinate of the top face or edge.
 
-BC_I_w (bc)         I  i index of the west-most cell.
+ BC_I_w (bc)               I     i index of the west-most cell.
 
-BC_I_e (bc)         I  i index of the east-most cell.
+ BC_I_e (bc)               I     i index of the east-most cell.
 
-BC_J_s (bc)         I  j index of the south-most cell.
+ BC_J_s (bc)               I     i index of the south-most cell.
 
-BC_J_n (bc)         I  j index of the north-most cell.
+ BC_J_n (bc)               I     i index of the north-most cell.
 
-BC_K_b (bc)         I  k index of the bottom-most cell.
+ BC_K_b (bc)               I     i index of the bottom-most cell.
 
+ BC_K_t (bc)               I     i index of the top-most cell.
 
-Keyword (dimension) Type  Description
+ BC_TYPE (bc)              C     Type of boundary:
 
-BC_K_t (bc)         I  k index of the top-most cell.
+                 DUMMY           The specified boundary condition is ignored.
+                                 This is useful for turning off some boundary
+                                 conditions without having to delete them from
+                                 the file.
 
-BC_TYPE(bc)         C  Type of boundary:
+     MASS_INFLOW or MI           Mass inflow rates for gas and solids phases
+                                 are specified at the boundary.
 
-  DUMMY                   The specified boundary condition is ignored.  This is
-                          useful for turning off some boundary conditions without
-                          having to delete them from the file.
+    MASS_OUTFLOW or MO           The specified values of gas and solids mass
+                                 outflow rates at the boundary are maintained,
+                                 approximately. This condition should be used
+                                 sparingly for minor outflows, when the bulk of
+                                 the outflow is occurring through other
+                                 constant pressure outflow boundaries.
 
-  MASS_INFLOW or MI       Mass inflow rates for gas and solids phases are 
-                          specified at the boundary.
+        P_INFLOW or PI           Inflow from a boundary at a specified constant
+                                 pressure. To specify as the west, south, or
+                                 bottom end of the computational region, add a
+                                 layer of wall cells to the west, south, or
+                                 bottom of the PI cells.
 
-  MASS_OUTFLOW or MO      The specified values of gas and solids mass outflow
-                          rates at the boundary are maintained, approximately.
-                          This condition should be used (sparingly) for minor
-                          outflows, when the bulk of the outflow is occurring
-                          through other constant pressure outflow boundaries.
+       P_OUTFLOW or PO           Outflow to a boundary at a specified constant
+                                 pressure. To specify as the west, south, or
+                                 bottom end of the computational region, add a
+                                 layer of wall cells to the west, south, or
+                                 bottom of the PO cells.
 
-  P_INFLOW or PI          Inflow from a boundary at a specified constant
-                          pressure. To specify as the west, south, or bottom end 
-                          of the computationa region add a layer of wall cells to
-                          the west, south or bottom of the PI cells.
+ FREE_SLIP_WALL or FSW           Velocity gradients at the wall vanish. If
+                                 BC_JJ_PS is equal to 1, Johnson-Jackson bc is
+                                 used for solids.
 
-  P_OUTFLOW or PO         Outflow to a boundary at a specified constant pressure.
-                          To specify as the west, south, or bottom end 
-                          of the computationa region add a layer of wall cells to
-                          the west, south or bottom of the PO cells.
+   NO_SLIP_WALL or NSW           All components of the velocity vanish at the
+                                 wall. If BC_JJ_PS is equal to 1,
+                                 Johnson-Jackson bc is used for solids.
 
-  FREE_SLIP_WALL or FSW   Velocity gradients at the wall vanish.  If BC_JJ_PS is
-                          equal to 1 Johnson-Jackson bc is used for solids.
+  PAR_SLIP_WALL or PSW           Partial slip at the wall implemented as dv/dn
+                                 + hw (v  vw) = 0, where n is the normal
+                                 pointing from the fluid into the wall.
 
-  NO_SLIP_WALL or NSW     All components of the velocity vanish at the wall.  If
-                          BC_JJ_PS is equal to 1 Johnson-Jackson bc is used for
-			  solids.
+                                 The coefficients hw and vw should be
+                                 specified. Hw = 0 => free slip; hw = ¥ ; and
+                                 vw => 0 . no slip. To set hw = oo, leave it
+                                 unspecified.
 
-  PAR_SLIP_WALL or PSW    Partial slip at the wall implemented as
-                          dv/dn + hw (v - vw) = 0, where n is the normal pointing
-                          from the fluid into the wall.
-                          The coefficients hw and vw should be specified.
-                          hw = 0 => free slip; hw = oo and vw = 0 => no slip. For
-                          setting hw = oo leave it unspecified.
-                          If BC_JJ_PS is equal to 1 Johnson-Jackson bc is used
-                          for solids.
+                                 If BC_JJ_PS is equal to 1, Johnson-Jackson
+                                 boundary condition is used for solids.
 
 Specifications for WALL boundary conditions:
 
-BC_hw_g(bc)         DP  Gas phase hw for partial slip boundary.
-  [oo]
+ Keyword (dimension)     Type    Description
 
-BC_hw_s(bc, m)      DP  Solids phase hw for partial slip boundary.
-  [oo]
+ Momentum Equation               Partial slip at the wall implemented as dv/dn
+                                 + hw (v  vw) = 0, where n is the normal
+                                 pointing from the fluid into the wall.
 
-BC_Uw_g(bc)         DP  Gas phase Uw for partial slip boundary.
+                                 The coefficients hw and vw should be
+                                 specified. Hw = 0 => free slip; hw = ¥ ; and
+                                 vw => 0 . no slip. To set hw = oo, leave it
+                                 unspecified.
 
-BC_Uw_s(bc, m)      DP  Solids phase Uw for partial slip boundary.
+ BC_hw_g (bc)             DP     Gas phase hw for partial slip boundary.
 
-BC_Vw_g(bc)         DP  Gas phase Vw for partial slip boundary.
+                  [¥ ]
 
-BC_Vw_s(bc, m)      DP  Solids phase Vw for partial slip boundary.
+ BC_hw_s (bc, m)          DP     Solids phase hw for partial slip boundary.
 
-BC_Ww_g(bc)         DP  Gas phase Ww for partial slip boundary.
+                  [¥ ]
 
-BC_Ww_s(bc, m)      DP  Solids phase Ww for partial slip boundary.
+ BC_Uw_g (bc)             DP     Gas phase Uw for partial slip boundary.
 
+ BC_Uw_s (bc, m)          DP     Solids phase Uw for partial slip boundary.
 
-BC_JJ_PS(bc)	    I     1 -- Use Johnson and Jackson partial slip bc.
-                          0 -- Do not use Johnson and Jackson partial slip bc.
-  [0]                     If granular energy transport equation is not solved
-  [1]                     If granular energy transport equation is solved
+ BC_Vw_g (bc)             DP     Gas phase Vw for partial slip boundary.
 
-                        Granular energy boundary condition is implemented as
-                        dT/dn + hw (T - Tw) = c, where n is the normal pointing
-                        from the fluid into the wall.  If Johnson and Jackson
-			partial slip bc is used the coefficeints hw and c are 
-			calculated.  Otherwise they must be specified.
-                        hw = 0 => specified heat flux; hw = oo => specified
-                        temperature boundary condition.  For setting hw = oo
-                        leave it unspecified and give value for Tw.
-			
-BC_Thetaw_m(bc, m)  DP  Tw for granular energy bc.
+ BC_Vw_s (bc, m)          DP     Solids phase Vw for partial slip boundary.
 
-BC_hw_Theta_m(bc, m)DP  hw for granular energy bc.
-  [oo]
+ BC_Ww_g (bc)             DP     Gas phase Ww for partial slip boundary.
 
-BC_C_Theta_m(bc, m) DP  c for granular energy bc.
+ BC_Ww_s (bc, m)          DP     Solids phase Ww for partial slip boundary.
 
+ BC_JJ_PS (bc)             I     1: Use Johnson and Jackson partial slip bc. 0:
+                                 Do not use Johnson and Jackson partial slip
+                                 bc.
 
+                   [0]           If granular energy transport equation is not
+                                 solved.
 
-                        Thermal boundary condition is implemented as
-                        dT/dn + hw (T - Tw) = c, where n is the normal pointing
-                        from the fluid into the wall.
-                        The coefficients hw, Tw, and c should be specified.
-                        hw = 0 => specified heat flux; hw = oo => specified
-                        temperature boundary condition.  For setting hw = oo
-                        leave it unspecified and give value for Tw.
-
-BC_hw_T_g(bc)       DP  Gas phase hw for heat transfer
-   [oo]
-
-BC_hw_T_s(bc, m)    DP  Solids phase hw for heat transfer
-   [oo]
- 
-BC_Tw_g(bc)         DP  Gas phase Tw for heat transfer
-
-BC_Tw_s(bc, m)      DP  Solids phase Tw for heat transfer
-
-BC_C_T_g(bc)        DP  Gas phase C for heat transfer
-  
-BC_C_T_s(bc, m)     DP  Solids phase C for heat transfer
-
-
-                        Species diffusion boundary condition is implemented as
-                        dX/dn + hw (X - Xw) = c, where n is the normal pointing
-                        from the fluid into the wall.
-                        The coefficients hw, Xw, and c should be specified.
-                        hw = 0 => specified species diffusion flux;
-                        hw = oo => specified species concentration at the
-                        boundary.  For setting hw = oo leave it unspecified and
-                        give value for Xw.
-
-BC_hw_X_g(bc, n)    DP  Gas phase hw for mass transfer
-   [oo]
-
-BC_hw_X_s(bc, m, n) DP  Solids phase hw for mass transfer
-   [oo]
- 
-BC_Xw_g(bc, n)      DP  Gas phase Xw for mass transfer
-
-BC_Xw_s(bc, m, n)   DP  Solids phase Tw for mass transfer
-
-BC_C_X_g(bc, n)     DP  Gas phase C for mass transfer
-  
-BC_C_X_s(bc, m, n)  DP  Solids phase C for mass transfer
+                   [1]           If granular energy transport equation is
+                                 solved.
 
 
 
-                        Scalar boundary condition is implemented as
-                        dS/dn + hw (S - Sw) = c, where n is the normal pointing
-                        from the fluid into the wall.
-                        The coefficients hw, Sw, and c should be specified.
-                        hw = 0 => specified species diffusion flux;
-                        hw = oo => specified species concentration at the
-                        boundary.  For setting hw = oo leave it unspecified and
-                        give value for Sw.
+ Granular Energy                 The granular energy boundary condition is
+ Equation                        implemented as dT/dn + hw (T  Tw) = c, where
+                                 n is the normal pointing from the fluid into
+                                 the wall. If Johnson and Jackson partial slip
+                                 bc is used, the coefficients hw and c are
+                                 calculated. Otherwise, they must be specified.
+                                 Hw = 0 => specified heat flux; hw = ¥ =>
+                                 specified temperature boundary condition. To
+                                 set hw = ¥ , leave it unspecified and give a
+                                 value for Tw.
 
-BC_hw_Scalar(bc, n) DP  hw for scalar transfer at the boundary
-   [oo]
+ BC_Thetaw_m (bc, m)      DP     Tw for granular energy bc.
 
-BC_ScalarW(bc, n)   DP  Xw for scalar transfer at the boundary
+ BC_hw_Theta_m (bc, m)    DP     Hw for granular energy bc.
 
-BC_C_Scalar(bc, n)  DP  C for scalar transfer at the boundary
+                  [¥ ]
+
+ BC_C_Theta_m (bc, m)     DP     c for granular energy bc.
+
+
+
+ Gas and Solids Energy           The thermal boundary condition implemented as
+ Equations                       dT/dn + hw (T  Tw) = c, where n is the normal
+                                 pointing from the fluid into the wall.
+
+                                 The coefficients hw, Tw, and c should be
+                                 specified. Hw = 0 => specified heat flux; hw =
+                                 ¥ => specified temperature boundary condition.
+                                 To set hw = ¥ , leave it unspecified and give
+                                 a value for Tw.
+
+ BC_hw_T_g (bc)           DP     Gas phase hw for heat transfer.
+
+                  [¥ ]
+
+ BC_hw_T_s (bc, m)        DP     Solids phase hw for heat transfer.
+
+                  [¥ ]
+
+ BC_Tw_g (bc)             DP     Gas phase Tw for heat transfer.
+
+ BC_Tw_s (bc, m)          DP     Solids phase Tw for heat transfer.
+
+ BC_C_T_g (bc)            DP     Gas phase C for heat transfer.
+
+ BC_C_T_s (bc, m)         DP     Solids phase C for heat transfer.
+
+
+
+ Gas and Solids                  The species diffusion boundary condition is
+ Species Equations               implemented as dX/dn + hw (X  Xw) = c, where
+                                 n is the normal pointing from the fluid into
+                                 the wall.
+
+                                 The coefficients hw, Xw, and c should be
+                                 specified. Hw = 0 => specified species
+                                 diffusion flux; hw = ¥ => specified species
+                                 concentration at the boundary. To set hw = ¥ ,
+                                 leave it unspecified and give a value for Xw.
+
+ BC_hwX_g (bc, n)         DP     The species diffusion boundary condition is
+                                 implemented as dX/dn + hw (X  Xw) = c, where
+                  [¥ ]           n is the normal pointing from the fluid into
+                                 the wall.
+
+                                 The coefficients hw, Xw, and c should be
+                                 specified. Hw = 0 => specified species
+                                 diffusion flux; hw = ¥ => specified species
+                                 concentration at the boundary. To set hw = ¥ ,
+                                 leave it unspecified and give a value for Xw.
+
+                                 Gas phase hw for mass transfer.
+
+ BC_hw_X_s (bc, m, n)     DP     Solids phase hw for mass transfer.
+
+                  [¥ ]
+
+ BC_Xw_g (bc, n)          DP     Gas phase Xw for mass transfer.
+
+ BC_Xw_s (bc, m, n)       DP     Solids phase Xw for mass transfer.
+
+ BC_C_X_g (bc, n)         DP     Gas phase C for mass transfer.
+
+ BC_C_X_s (bc, m, n)      DP     Solids phase C for mass transfer.
+
+
+
+ Scalar Transport                The scalar boundary condition is implemented
+ Equations                       as dS/dn + hw (S  Sw) = C, where n is the
+                                 normal pointing from the fluid into the wall.
+
+                                 The coefficients hw, Sw, and c should be
+                                 specified. Hw = 0 => specified species
+                                 diffusion flux; hw = ¥ => specified species
+                                 concentration at the boundary. To set hw = ¥ ,
+                                 leave it unspecified and give a value for Sw.
+
+ BC_hw_Scalar (bc, n)     DP     hw for scalar transfer at the boundary.
+
+                  [¥ ]
+
+ BC_ScalarW (bc, n)       DP     Xw for scalar transfer at the boundary.
+
+ BC_C_Scalar (bc, n)      DP     C for scalar transfer at the boundary.
 
 
 
 Specifications for FLOW boundary conditions:
 
-Keyword (dimension) Type  Description
+ Keyword (dimension)     Type    Description
 
-BC_EP_g (bc)        DP Void fraction at the BC plane.
+ BC_EP_g (bc)             DP     Void fraction at the BC plane.
 
-BC_P_g (bc)         DP Gas pressure at the BC plane.
+ BC_P_g (bc)              DP     Gas pressure at the BC plane.
 
-BC_ROP_s (bc, m)    DP Macroscopic density of solids phases at the BC plane.
+ BC_ROP_s (bc, m)         DP     Macroscopic density of solids phase at the BC
+                                 plane.
 
-BC_T_g (bc)         DP Gas phase temperature at the BC plane.
+ BC_T_g (bc)              DP     Gas phase temperature at the BC plane.
 
-BC_T_s (bc, m)      DP Solids phase-m temperature at the BC plane.
+ BC_T_s (bc, m)           DP     Solids phase-m temperature at the BC plane.
 
-BC_Theta_m(bc, m)   DP Solids phase-m granular temperature at the BC plane.
+ BC_Theta_m (bc, m)       DP     Solids phase-m granular temperature at the BC
+                                 plane.
 
-BC_X_g (bc, n)      DP Mass fraction of gas species n at the BC plane.
-   [0]
-BC_Scalar(bc, n)    DP Scalar-n value at the BC plane.
+ BC_X_g (bc, n)           DP     Mass fraction of gas species n at the BC
+                                 plane.
+                   [0]
 
+ BC_X_s (bc, m, n)        DP     Mass fraction of solids phase-m, species n at
+                                 the BC plane.
+                   [0]
 
+ BC_U_g (bc)              DP     x-component of gas velocity at the BC plane.
 
-Keyword (dimension) Type  Description
+ BC_U_s (bc, m)           DP     x-component of solids-phase velocity at the BC
+                                 plane.
 
-BC_X_s (bc, m, n)   DP Mass fraction of solids phase-m, species n at the BC 
-                       plane.
-   [0]
+ BC_V_g (bc)              DP     y-component of gas velocity at the BC plane.
 
-BC_U_g (bc)         DP x-component of gas velocity at the BC plane.
+ BC_V_s (bc, m)           DP     y-component of solids-phase velocity at the BC
+                                 plane.
 
-BC_U_s (bc, m)      DP x-component of solids-phase velocity at the BC plane.
+ BC_W_g (bc)              DP     z-component of gas velocity at the BC plane.
 
-BC_V_g (bc)         DP y-component of gas velocity at the BC plane.
+ BC_W_s (bc, m)           DP     z-component of solids-phase velocity at the BC
+                                 plane.
 
-BC_V_s (bc, m)      DP y-component of solids-phase velocity at the BC plane.
+For a mass inflow boundary, instead of specifying the normal velocity at a
+boundary, the gas and solids flow rates may be specified as the volumetric
+or mass flow rates. If the volumetric or mass flow rate is specified, MFIX
+will calculate the velocity normal to the boundary. The velocity calculated
+by MFIX, however, may differ from the velocity calculated based on the
+physical dimensions of the port because the simulated dimensions may not be
+exactly equal to the physical dimensions. Specify positive values for all
+the flow rates. MFIX will assign the correct sign to the computed velocity
+values.
 
-BC_W_g (bc)         DP z-component of gas velocity at the BC plane.
-
-BC_W_s (bc, m)      DP z-component of solids-phase velocity at the BC plane.
-
-        For a mass inflow boundary, instead of specifying the normal velocity at
-a boundary, the gas and solids flow rates may be specified as the volumetric or
-mass flow rates.  If the volumetric or mass flow rate is specified, MFIX will
-calculate the velocity normal to the boundary.  The velocity calculated by MFIX,
-however, may differ from the velocity calculated based on the physical 
-dimensions of the port because the simulated dimensions may not be exactly equal
-to the physical dimensions.  Specify positive values for all the flow rates.
-MFIX will assign the correct sign to the computed velocity values.
-
-        If the mass or volumetric flow rate is specified for a mass outflow
-boundary condition, then at every interval BC_DT_0, MFIX will adjust the normal
+If the mass or volumetric flow rate is specified for a mass outflow boundary
+condition, then at every interval BC_DT_0, MFIX will adjust the normal
 velocity so that the average computed-outflow rate is equal to the specified
-value.  The user is cautioned, however, that if unrealistic mass flow rates are
-specified, the computations may become unstable.  It is better to specify the
-velocity at the mass outflow boundary, if some amount of fluctuation in the mass
-outflow rate is tolerable.
+value. The user is cautioned, however, that if unrealistic mass flow rates
+are specified, the computations may become unstable. It is better to specify
+the
 
-Keyword (dimension) Type  Description
+velocity at the mass outflow boundary, if some amount of fluctuation in the
+mass outflow rate is tolerable.
 
-BC_VOLFLOW_g(bc)    DP Gas volumetric flow rate through the boundary.
+ Keyword (dimension)     Type   Description
 
-BC_VOLFLOW_s(bc, m) DP Solids volumetric flow rate through the boundary.
+ BC_VOLFLOW_g (bc)        DP    Gas volumetric flow rate through the boundary.
 
-BC_MASSFLOW_g(bc)   DP Gas mass flow rate through the boundary.
+ BC_VOLFLOW_s (bc, m)     DP    Solids volumetric flow rate through the
+                                boundary.
 
-BC_MASSFLOW_s(bc, m)   DP Solids mass flow rate through the boundary.
+ BC_MASSFLOW_g (bc)       DP    Gas mass flow rate through the boundary.
 
-        MFIX allows the specification of a transient jet with its velocity
-fluctuating between two values.  The jet conditions will override the steady
-condition specified for the normal velocity. Therefore, if there is no transient
-jet, do not specify any of the following, except BC_DT_0, which may be required
-for mass outflow conditions.
+ BC_MASSFLOW_s (bc, m)    DP    Solids mass flow rate through the boundary.
 
-
-Keyword (dimension) Type  Description
-
-BC_DT_0 (bc)        DP The interval at the beginning when the normal velocity at
-                       the boundary is equal to BC_Jet_g0.  When doing a restart
-                       run this value and BC_Jet_g0 should be specified such
-                       that the transient jet continues correctly.  MFIX does not
-                       store the jet conditions.
-
-                       For MASS_OUTFLOW boundary condition, BC_DT_0 is the time
-                       period for averaging and printing the outflow rates. 
-                       The adjustment of velocities to get a specified mass or
-                       volumetric flow rate is based on the average outflow rate.
-
-BC_Jet_g0 (bc)      DP Value of normal velocity during the initial interval
-                       BC_DT_0.
-
-BC_DT_h (bc)        DP The interval when normal velocity is equal to BC_Jet_gh.
-
-BC_Jet_gh (bc)      DP Value of normal velocity during the interval BC_DT_h.
-
-BC_DT_l (bc)        DP The interval when normal velocity is equal to BC_Jet_gl.
-
-BC_Jet_gl (bc)      DP Value of normal velocity during the interval BC_DT_l.
+MFIX allows the specification of a transient jet with its velocity
+fluctuating between two values. The jet conditions will override the steady
+condition specified for the normal velocity. Therefore, if there is no
+transient jet, do not specify any of the following, except BC_DT_0, which
+may be required for mass outflow conditions.
 
 
-D.8      Internal Surfaces
 
-         Internal surfaces (IS) are normal to one of the coordinate directions
-and coincide with one of the faces of the scalar control volume.  One of the
-three pairs of coordinates is equal.  The surface is defined by the constant
+
+
+
+
+ Keyword (dimension)     Type   Description
+
+ BC_DT_0 (bc)             DP    The interval at the beginning when the normal
+                                velocity at the boundary is equal to
+                                BC_Jet_g0. When restarting, run this value and
+                                BC_Jet_g0 should be specified such that the
+                                transient jet continues correctly. MFIX does
+                                not store the jet conditions.
+
+                                For MASS_OUTFLOW boundary conditions, BC_DT_0
+                                is the time period to average and print the
+                                outflow rates. The adjustment of velocities to
+                                get a specified mass or volumetric flow rate
+                                is based on the average outflow rate.
+
+ BC_Jet_g0                DP    Value of normal velocity during the initial
+                                interval BC_DT_0.
+
+ BC_DT_h (bc)             DP    The interval when normal velocity is equal to
+                                BC_Jet_gh.
+
+ BC_Jet_gh (bc)           DP    Value of normal velocity during the interval
+                                BC_DT_h.
+
+ BC_DT_1 (bc)             DP    The interval when normal velocity is equal to
+                                BC_Jet_g1.
+
+ BC_Jet_g1 (bc)           DP    Value of normal velocity during the interval
+                                BC_DT_1.
+
+
+
+
+
+4.8  Internal Surfaces
+
+Internal surfaces (IS) are normal to one of the coordinate directions and
+coincide with one of the faces of the scalar control volume. One of the
+three pairs of coordinates is equal. The surface is defined by the constant
 coordinates of each of the four edges, which can be specified with physical
-coordinates or cell indices, and the two equal values for the direction normal
-to the face, which can only be specified with physical coordinates.  If cell
-sizes are not small enough to resolve a surface specified using physical
-coordinates, MFIX will indicate this problem with an error message.
+coordinates or cell indices, and the two equal values for the direction
+normal to the face, which can only be specified with physical coordinates.
+If cell sizes are not small enough to resolve a surface specified using
+physical coordinates, MFIX will indicate this problem with an error message.
 
-         To specify a large number of internal surfaces in a region, a 3D region
-may be specified.  When IS_Type is specified for such regions, add a prefix
-(X_, Y_, or Z_) to indicate the direction of the internal surfaces;
-e.g., X_IMPERMEABLE specifies impermeable internal surfaces parallel to the
-X coordinate. 
+To specify a large number of internal surfaces in a region, a 3D region may
+be specified. When IS_Type is specified for such regions, add a prefix (X_,
+Y_, or Z_) to indicate the direction of the internal surfaces; e.g.,
+X_IMPERMEABLE specifies impermeable internal surfaces parallel to the X
+coordinate.
 
-         Internal surfaces act as free-slip walls in stress computations.  This
+Internal surfaces act as free-slip walls in stress computations. This
 default condition cannot be changed.
 
-Keyword (dimension) Type  Description
+ Keyword (dimension)     Type   Description
 
-IS_X_w (is)         DP x coordinate of the west face or edge.
+ IS_X_w (is)              DP    x coordinate of the west face or edge.
 
-IS_X_e (is)         DP x coordinate of the east face or edge.
+ IS_X_e (is)              DP    x coordinate of the east face or edge.
 
-IS_Y_s (is)         DP y coordinate of the south face or edge.
+ IS_Y_s (is)              DP    y coordinate of the south face or edge
 
-IS_Y_n (is)         DP y coordinate of the north face or edge.
+ IS_Y_n (is)              DP    y coordinate of the north face or edge
 
-IS_Z_b (is)         DP z coordinate of the bottom face or edge.
+ IS_Z_b (is)              DP    z coordinate of the bottom face or edge
 
-IS_Z_t (is)         DP z coordinate of the top face or edge.
+ IS_Z_t (is)              DP    z coordinate of the top face or edge
 
-IS_I_w (is)         I  i index of the west-most cell.
+ IS_I_w (is)               I    i index of the west-most cell.
 
-IS_I_e (is)         I  i index of the east-most cell.
+ IS_I_e (is)               I    i index of the east-most cell
 
-IS_J_s (is)         I  j index of the south-most cell.
+ IS_J_s (is)               I    j index of the south-most cell
 
-IS_J_n (is)         I  j index of the north-most cell.
+ IS_J_n (is)               I    j index of the north-most cell
 
-IS_K_b (is)         I  k index of the bottom-most cell.
+ IS_K_b (is)               I    k index of the bottom-most cell
 
-IS_K_t (is)         I  k index of the top-most cell.
+ IS_K_t (is)               I    k index of the top-most cell
 
-IS_TYPE(is)         C  Type of internal surface:
+ IS_TYPE (is)              C    Type of internal surface:
 
-  IMPERMEABLE or IP    No gas or solids flow through the internal surface.
+     IMPERMEABLE or IP          No gas or solids flow through the surface.
 
-  SEMIPERMEABLE or SP  Only gas flows through the surface.  Solids velocity is
-                       zero or a user-specified fixed value.
+   SEMIPERMEABLE or SP          Only gas flows through the surface. Solids
+                                velocity is zero or a user-specified fixed
+                                value.
+
+ IS_PC (is, 2)            DP    1: permeability; 2: Inertial resistance
+                                coefficient. These values need to be specified
+        (*, 1) = 1.E32          for semipermeable surfaces only. The thickness
+                                used for pressure drop computation is that of
+          (*, 2) = 0.0          the momentum cell (DX_e, DY_n, or DZ_t). To
+                                turn off the resistance, use a large value for
+                                permeability (1.E32) and a small value for the
+                                inertial resistance coefficient (0.0).
+
+ IS_VEL (is, m)           DP    Value of fixed solids velocity through
+                                semipermeable surfaces.
 
 
-Keyword (dimension) Type  Description
 
-IS_PC (is, 2)       DP 1. permeability; 2. inertial resistance coefficient.
- (*,1) = 1.E32         These values need to be specified for semipermeable 
- (*,2) = 0.0           surfaces only. The thickness used for pressure drop 
-                       computation is that of the momentum cell (DX_e, DY_n, or
-                       DZ_t).  To turn off the resistance, use a large value for
-                       permeability (1.E32) and a small value for inertial
-                       resistance coefficient (0.0).
 
-IS_VEL (is, m)      DP Value of fixed solids velocity through semipermeable
-                       surfaces.
 
-D.9      Output Control
+4.9  Output Control
 
-RES_DT              DP Interval at which restart (.RES) file is updated.
+ Keyword (dimension)     Type   Description
 
-SPX_DT(9)           DP Interval at which .SPx files are updated.
-  .SP1                 Void fraction (EP_g)
-  .SP2                 Gas pressure, solids pressure (P_g, P_star)
-  .SP3                 Gas velocity (U_g, V_g, W_g)
-  .SP4                 Solids velocity (U_s, V_s, W_s)
-  .SP5                 Solids density (ROP_s)
-  .SP6                 Gas and solids temperature (T_g, T_s1, T_s2)
-  .SP7                 Gas and solids mass fractions (X_g, X_s)
-  .SP8                 Granular temperature (G)
-  .SP9                 User defined scalars
+ RES_DT                   DP    Interval at which restart (.RES) file is
+                                updated.
 
-OUT_DT              DP Interval at which standard output (.OUT) file is updated.
+ SPX_DT (9)               DP    Interval at which .SPX files are updated.
 
-USR_DT(5)           DP Interval at which user-defined outputs are written from the
-                       subroutine WRITE_USR1.
+                  .SP1          Void fraction (EP_g).
 
-NLOG                I  Interval in number of time steps at which .LOG file is
-  [25]                 written.
+                  .SP2          Gas pressure, solids pressure (P_g, P_star).
 
-FULL_LOG            L  If true, display the residuals on the screen and messages
-  [.FALSE.]            about convergence on the screen and in the .LOG file.
+                  .SP3          Gas velocity (U_g, V_g, W_g).
 
-RESID_STRING(8)     C  Specify residuals to be printed as a 4 character strings.
-                       First character specifies the field variable: P - pressure,
-                       R - density, U - u veclocity, V - v velocity, 
-                       W - w velocity, T - temperature, X - species mass fr.,
-                       G - Granular temperature
-                       The second number specifies the phase (0 for gas).  The
-                       last two numbers specify the species index. 
-                       e.g., 'P0' - gas pressure, 'R1' - solids phase 1 density,
-                       'X001'- gas phase, species 1; 'X203' - solids phase 2, species 3.
+                  .SP4          Solids velocity (U_s, V_s, W_s).
 
-D.10 Chemical Reactions
+                  .SP5          Solids density (ROP_s).
 
-The chemical reactions can be specified two ways: in the data file or in the 
-subroutine rrates.  If reactions are specified in the data file, Mfix uses the
-subroutine rrates0 to calculate all the required quantities.  The user need not
-modify rrates0.  If the chemical reactions are not specified in the data file,
-the user must program them into the subroutine rrates.
+                  .SP6          Gas and solids temperature (T_g, T_s1, T_s2).
 
-To define chemical reactions through the data file, first define species names
-with the following key word.
+                  .SP7          Gas and solids mass fractions (X_g, X-s).
 
-SPECIES_NAME        C  Names of gas and solids phase species.  The first NMAX(0)
-                       are the names of gas species.  The next NMAX(1) are the
-                       names of solids phase-1 species, and so on.  All the names
-                       should be unique.
+                  .SP8          Granular temperature (G).
+
+                  .SP9          User defined scalars.
+
+ OUT_DT                   DP    Interval at which standard output (.OUT) file
+                                is updated.
+
+ USR_DT (5)               DP    Interval at which user-defined outputs are
+                                written from the subroutine WRITE_USR1.
+
+ NLOG                      I    Interval in number of time steps at which .LOG
+                                file is written.
+                  [25]
+
+ FULL_LOG                  L    If true, display the residuals on the screen
+                                and messages about convergence on the screen
+              [.FALSE]          and in the .LOG file.
+
+ RESID_STRING (8)          C    Specify resideuals to be printed as
+                                4-character strings.
+
+                                First character specifies the field variable:
+                                P - pressure, R - density, U - u velocity, V -
+                                v velocity, W - w velocity, T - temperature, X
+                                 species mass fraction, G - Granular
+                                temperature. The second number specifies the
+                                phase (0 for gas). The last two numbers
+                                specify the species index; e.g., 'P0' - gas
+                                pressure, 'R1' - solids phase 1 density,
+                                'X001'- gas phase, species 1; 'X203'  solids
+                                phase 2, species 3.
+
+
+
+
+
+4.10  Chemical Reactions
+
+Chemical reactions can be specified in two ways: in the data file, or in the
+subroutine rrates. If reactions are specified in the data file, MFIX uses
+the subroutine rrates0 to calculate all the required quantities. The user
+need not modify rrates0. If the chemical reactions are not specified in the
+data file, the user must program them into the subroutine rrates.
+
+To define chemical reactions through the data file, first define species
+names with the following key word.
+
+ Keyword (dimension)     Type    Description
+
+ SPECIES_NAME              C     Names of gas and solids phase species. The
+                                 first NMAX(0) are the names of gas species.
+                                 The next NMAX(1) are the names of solids
+                                 phase-1 species, and so on. All the names
+                                 should be unique.
+
+
 
 The reactions are specified in a reaction block beginning with the string
-@(RXNS) and ending with the string @(END).  The reactions are entered in the
-following format:
-  reaction name: reaction scheme 
-             r1: CH4 + 2 O2 -> CO2 + 2H2O
+@(RXNS) and ending with the string @(END). The reactions are entered in the
+following format: reaction name: reaction scheme. r1: CH4 + 2 O2 à CO2 +
+2H2O
 
-The reaction rate in g-mol/(m^3.s)is then entered in the following format starting
-with the keyword rate:
-  rate     reaction which       preexponen-  Temperature Activation  Concentration
-  Keyword  name     temperature tial factor  exponent    temperature dependence
-                     (m)           (A)          (n)          (E/R)
-  rate     r1:        0           6.7E12         0           24358.  [O2]^1.3 [CH4]^0.2
+The reaction rate in g-mol/(m^3.s)is then entered in the following format,
+starting with the keyword rate:
+
+          Name   Phase  Preexponen-tial  Tempera-ture  Activation   Concentraton
+                 index  Factor (A)       Expo-nent     Temperature  Dependence
+ Keyword         for                     (n)           (E/R)
+                 Temp
+                 (m)
+
+   Rate    r1:     0        6.7E12            0          24358.     [O2]^1.3
+                                                                    [CH4]^0.2
 
 The index m is used to identify the phase temperature to be used in the rate
-expression, to assign the enthalpy change due to reaction, and to determine the 
-phase volume fraction to be used in the rate expression.  m=0 is fluid
-phase, m=1 is solids phase 1, and so on.  The rest of the input appear in the
-rate expression as follows: 
-rate = A * T_g**n * exp(-(E/R)/T_g)) * EP_g * (RO_g * X_O2/MW_O2)**1.3 
-                                            * (RO_g * X_CH$/MW_CH4)**0.2
+expression, to assign the enthalpy change caused by the reaction, and to
+determine the phase volume fraction to be used in the rate expression. m=0
+is fluid phase, m=1 is solids phase 1, and so on. The rest of the input
+appears in the rate expression as follows:
 
-The rate expression may be written on multiple lines.  Reverse reactions are
+rate = A * T_g**n * exp(-(E/R)/T_g)) * EP_g * (RO_g * X_O2/MW_O2)**1.3 *
+(RO_g * X_CH$/MW_CH4)**0.2
+
+The rate expression may be written on multiple lines. Reverse reactions are
 denoted by a '<' in the reaction scheme.
 
-The enthalpy change due to reaction in cal/g-mol is expressed as follows with
-the keyword DH.  The default value is zero.
-  enthalpy change  reaction  enthalpy change 
-  keyword          name      due to reaction (cal/g-mol)
-  DH               r1:       -191759.0
+The enthalpy change caused by the reaction in cal/g-mol is expressed as
+follows with the keyword DH. The default value is zero.
 
-The enthalpy change is assigned to the phase identified by the index m in the
-rate expression.
+ Enthalpy Change       Reaction Name     Enthalpy Change Caused by Reaction
+
+ Keyword                                 (cal/g-mol)
+
+          DH                 r1:                       -191759.0
+
+The enthalpy change is assigned to the phase identified by the index m in
+the rate expression.
 
 The following is an example of an athermal reversible reaction.
 
-@( RXNS -- Start chemical reactions input )
+@( RXNS  Start chemical reactions input )
 
-	A2R:  A <--> R
+A2R: A <--> R
 
-	 rate A2R:  0 1.2E17  0 5837   [A]
-	 rate A2R<: 0 2.5E41  0 14897  [R]
+rate A2R: 0 1.2E17 0 5837 [A]
 
-         DH   A2R: 0.0
+rate A2R<: 0 2.5E41 0 14897 [R]
 
-@( END  -- End chemical reactions input )
+DH A2R: 0.0
 
+@( END  End chemical reactions input )
 
-All the reaction schemes must be specified in the data file.  All the reaction
-rate expressions and enthalpy changes need not be specified in the data file,
-however.  If a rate expression or an enthalpy change is missing from the data
-file, that information must be added to subroutine rrates0.
-
-
-D11.  User-defined subroutines
+All the reaction schemes must be specified in the data file. All the
+reaction rate expressions and enthalpy changes need not be specified in the
+data file, however. If a rate expression or an enthalpy change is missing
+from the data file, that information must be added to the subroutine
+rrates0.
 
 
-The user may modify any *.f or *.inc file in Mfix. To modify a file, 
-first copy it from mfix/model directory into the run directory.  Modify only 
-this copy in the run directory and NOT the original in mfix/model.  Then
-invoke the 'sh make_mfix' command from the run directory.  The make_mfix
-messages will identify the files from the run directory used for creating the
-Mfix executable.  All the (Mfix and non-Mfix) *.inc files from the run directory
-will be used for creating Mfix executable.  Only Mfix *.f files from the run
-directory will be used, however.  Non-Mfix *.f files in the
-run directory will be ignored.  To use new Fortran files, include them in one of
-the Mfix *.f files.
 
-The following is a list of Mfix files that are usually modified for
-including chemical reactions and user defined scalars:
+4.11  User-Defined Subroutines
 
-rrates.f             -- Chemical reaction rates and heats of reactions
+The user may modify any *.f or *.inc file in MFIX. To modify a file, first
+copy it from the mfix/model directory into the run directory. Modify only
+this copy in the run directory; do NOT modify the original files in
+mfix/model. Then, invoke the 'sh make_mfix' command from the run directory.
+The make_mfix messages will identify the files from the run directory used
+to create the MFIX executable. All the (MFIX and non-MFIX) *.inc files from
+the run directory will be used to create the MFIX executable. Only MFIX *.f
+files from the run directory will be used, however. Non-MFIX *.f files in
+the run directory will be ignored. To use new Fortran files, include them in
+one of the MFIX *.f files.
 
-transport_prop.f     -- Transport properties
+The following is a list of MFIX files that are usually modified to include
+chemical reactions and user defined scalars:
 
-physical_prop.f      -- Physical properties
+ rrates.f                     Chemical reation rates and heats of reaction.
 
-scalar_prop.f        -- Properties and source terms in scalar transport
-                        equations
+ transport_prop.f             Transport properties.
 
+ physical_prop.f              Physical properties.
 
-To activate the calls to the following three routines set call_usr = .true. in
-the data file:
-usr0.f               -- A subroutine that is called once every run, just before
-                        the time-loop begins
-
-usr1.f               -- A subroutine that is called once every timestep
-
-usr2.f               -- A subroutine that is called once every iteration
-
-usr3.f               -- A subroutine that is called once every run, after
-                        the time-loop ends
+ scalar_prop.f                Properties and source terms in scalar transport
+                              equations.
 
 
-usrnlst.inc          -- List of user-defined keywords.  These may be used to
-                        enter data through the input data file mfix.dat.
 
-usr_init_namelist.f  -- Initialize user-defined keywords
+The following routines are used for writing user-defined output:
 
+ write_usr0.f                 Called once during the run. Can be used for
+                              opening user-defined files.
 
-usr_mod.f            -- User-defined module.  Include "Use usr" for using
-                        user-defined variables in this module.  If allocatable
-                        arrays are defined in this module, allocate them in
-                        usr0.f
+ write_usr1.f                 Called at intervals defined by USR_DT.
 
 
-D.12  Parallelization controls
-Keyword (dimension) Type  Description
 
-NODESI               I  Number of grid blocks in x-direction
- [1]
+To activate the calls to the following three routines, set call_usr = .TRUE.
+in the data file:
 
-NODESJ               I  Number of grid blocks in y-direction
- [1]
+ usr0.f                       A subroutine that is called once every run, just
+                              before the time-loop begins.
 
-NODESK               I  Number of grid blocks in z-direction
- [1]
+ usr1.f                       A subroutine that is called once every timestep.
 
-NODESI * NODESJ * NODESK must be the same as the number of processors specified using the mpirun (or equivalent command). Otherwise the code will return with an
-error. At this time decomposition in the periodic direction is not allowed.
+ usr2.f                       A subroutine that is called once every
+                              iteration.
+
+ usr3.f                       A subroutine that is called once every run,
+                              after the time-loop ends.
+
+ usrnlst.inc                  List of user-defined keywords. These may be used
+                              to enter data through the input data file
+                              mfix.dat.
+
+ usr_init_namelist.f          Initialize user-defined keywords.
+
+ usr_mod.f                    User-defined module. Include "Use usr" to use
+                              user-defined variables in this module. If
+                              allocatable arrays are defined in this module,
+                              allocate them in usr0.f.
 
 
-M. Syamlal\08-25-00
+
+
+
+
+
+4.12  Parallelization Controls
+
+ Keyword (dimension)     Type   Description
+
+ NODESI                    I    Number of grid blocks in x-direction.
+
+                   [1]
+
+ NODESJ                    I    Number of grid blocks in y-direction.
+
+                   [1]
+
+ NODESK                    I    Number of grid blocks in z-direction.
+
+                   [1]
+
+
+
+NODESI * NODESJ * NODESK must be the same as the number of processors
+specified using the mpirun (or equivalent command). Otherwise the code will
+return with an error. At this time, decomposition in the periodic direction
+is not allowed.
