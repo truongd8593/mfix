@@ -232,7 +232,7 @@
         logical, parameter :: jfastest = .true.
 
 
-	integer, parameter :: message_tag_offset = 1000
+	integer, parameter :: message_tag_offset = 11
 
 
 !	----------------
@@ -243,7 +243,7 @@
 !//DEEP moved include function before message_tag declaration
 	include 'function.inc'
 
-	message_tag(src,dest) = message_tag_offset + (1+src + dest*10*numPEs)
+	message_tag(src,dest) = message_tag_offset + (1+src + dest*numPEs)
 !//DEEP_BEFORE
 !	include 'function.inc'
 
@@ -2017,7 +2017,8 @@ enddo ! do ilayer
 	integer :: lidebug
 	integer :: jj,ijk,  jindex, ii,j1,j2, ierror
 
-	integer, dimension(MPI_STATUS_SIZE) :: recv_status
+	integer, dimension(MPI_STATUS_SIZE) :: recv_status_any
+	integer, dimension(:,:), pointer :: recv_status
 	integer, dimension(:,:), pointer :: send_status
 
 !	---------------
@@ -2042,6 +2043,7 @@ enddo ! do ilayer
 		'waiting for sends to complete, nsend  = ', nsend )
 	endif
 
+	allocate( recv_status(MPI_STATUS_SIZE,nsend))
 	allocate( send_status(MPI_STATUS_SIZE,nsend))
 
         if (use_persistent_message) then
@@ -2076,10 +2078,10 @@ enddo ! do ilayer
 
            if (use_persistent_message) then
 	      call MPI_WAITANY( nrecv, recv_persistent_request,  &
-			jindex, recv_status, ierror )
+			jindex, recv_status_any, ierror )
            else
 	      call MPI_WAITANY( nrecv, recvrequest,   &
-			jindex, recv_status, ierror )
+			jindex, recv_status_any, ierror )
            endif
 
 	   call MPI_Check( 'sendrecv_end_1d:MPI_WAITANY ', ierror )
@@ -2308,7 +2310,8 @@ enddo ! do ilayer
 	integer :: lidebug
 	integer :: jj,ijk,  jindex, ii,j1,j2, ierror
 
-	integer, dimension(MPI_STATUS_SIZE) :: recv_status
+	integer, dimension(MPI_STATUS_SIZE) :: recv_status_any
+	integer, dimension(:,:), pointer :: recv_status
 	integer, dimension(:,:), pointer :: send_status
 
 !	---------------
@@ -2333,6 +2336,7 @@ enddo ! do ilayer
 		'waiting for sends to complete, nsend  = ', nsend )
 	endif
 
+	allocate( recv_status(MPI_STATUS_SIZE,nsend))
 	allocate( send_status(MPI_STATUS_SIZE,nsend))
 
 	call MPI_WAITALL( nsend, sendrequest, send_status, ierror )
@@ -2360,7 +2364,7 @@ enddo ! do ilayer
 
       if (use_waitany) then
 	do ii=1,nrecv
-	   call MPI_WAITANY( nrecv, recvrequest, jindex, recv_status, ierror )
+	   call MPI_WAITANY( nrecv, recvrequest, jindex, recv_status_any, ierror )
 	   call MPI_Check( 'sendrecv_end_1i:MPI_WAITANY ', ierror )
 
 	   j1 = xrecv( jindex )
