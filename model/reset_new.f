@@ -71,6 +71,11 @@
         Scalar(:,:NScalar) = ScalarO(:,:NScalar) 
       ENDIF 
 
+      IF (K_Epsilon) THEN 
+        K_Turb_G(:) = K_Turb_GO(:) 
+        E_Turb_G(:) = E_Turb_GO(:)
+      ENDIF     
+
       DO M = 1, MMAX 
         ROP_S(:,M) = ROP_SO(:,M) 
         IF (ENERGY_EQ) T_S(:,M) = T_SO(:,M) 

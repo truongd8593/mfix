@@ -37,6 +37,7 @@
       USE indices
       USE physprop
       USE scalars
+      USE run
       USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
@@ -125,6 +126,14 @@
 		    Endif
 		  END DO
 		  
+		  IF(K_Epsilon) THEN
+                    IF (U_G(LFLUID) >= ZERO) THEN 
+		      K_Turb_G(IJK) = K_Turb_G(LFLUID)
+		      E_Turb_G(IJK) = E_Turb_G(LFLUID)
+		    ENDIF
+		  ENDIF
+		  
+		  
                   DO M = 1, MMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (U_S(LFLUID,M) >= ZERO) THEN 
@@ -197,6 +206,13 @@
 		      ENDIF
 		    Endif
 		  END DO
+		  
+		  IF(K_Epsilon) THEN
+                    IF (U_G(LFLUID) <= ZERO) THEN 
+		      K_Turb_G(IJK) = K_Turb_G(LFLUID)
+		      E_Turb_G(IJK) = E_Turb_G(LFLUID)
+		    ENDIF
+		  ENDIF
 		  
                   DO M = 1, MMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
@@ -272,6 +288,13 @@
 		    Endif
 		  END DO
 		  
+		  IF(K_Epsilon) THEN
+                    IF (V_G(LFLUID) >= ZERO) THEN 
+		      K_Turb_G(IJK) = K_Turb_G(LFLUID)
+		      E_Turb_G(IJK) = E_Turb_G(LFLUID)
+		    ENDIF
+		  ENDIF
+		  
                   DO M = 1, MMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (V_S(LFLUID,M) >= 0.) THEN 
@@ -338,6 +361,13 @@
 		      ENDIF
 		    Endif
 		  END DO
+		  
+		  IF(K_Epsilon) THEN
+                    IF (V_G(LFLUID) <= ZERO) THEN 
+		      K_Turb_G(IJK) = K_Turb_G(LFLUID)
+		      E_Turb_G(IJK) = E_Turb_G(LFLUID)
+		    ENDIF
+		  ENDIF
 		  
                   DO M = 1, MMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
@@ -409,6 +439,13 @@
 		    Endif
 		  END DO
 		  
+		  IF(K_Epsilon) THEN
+                    IF (W_G(LFLUID) >= ZERO) THEN 
+		      K_Turb_G(IJK) = K_Turb_G(LFLUID)
+		      E_Turb_G(IJK) = E_Turb_G(LFLUID)
+		    ENDIF
+		  ENDIF
+		  
                   DO M = 1, MMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (W_S(LFLUID,M) >= 0.) THEN 
@@ -475,6 +512,13 @@
 		      ENDIF
 		    Endif
 		  END DO
+		  
+		  IF(K_Epsilon) THEN
+                    IF (W_G(LFLUID) <= ZERO) THEN 
+		      K_Turb_G(IJK) = K_Turb_G(LFLUID)
+		      E_Turb_G(IJK) = E_Turb_G(LFLUID)
+		    ENDIF
+		  ENDIF
 		  
                   DO M = 1, MMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 

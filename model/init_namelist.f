@@ -108,7 +108,8 @@
       DEF_COR  =  .FALSE. 
       C_FAC = UNDEFINED
       FPFOI = .FALSE.
-      GRANULAR_ENERGY = .FALSE. 
+      GRANULAR_ENERGY = .FALSE.
+      K_Epsilon = .FALSE.
       
 ! start peter 7/15
       V_sh=0d0
@@ -214,7 +215,8 @@
       TOL_RESID = 1.0E-3 
       TOL_RESID_T = 1.0E-4 
       TOL_RESID_X = 1.0E-4 
-      TOL_RESID_Scalar = 1.0E-4 
+      TOL_RESID_Scalar = 1.0E-4
+      TOL_RESID_K_Epsilon = 1.0E-4
       TOL_DIVERGE = 1.0E+4 
       V_EX = ZERO 
       P_REF = ZERO 

@@ -178,11 +178,12 @@
       ENDIF
       
       IF(SUM<=TOL_RESID .AND. SUM_T<=TOL_RESID_T .AND. &
-         RESID(RESID_sc,0)<=TOL_RESID_Scalar .AND. SUM_X<=TOL_RESID_X)THEN 
+         RESID(RESID_sc,0)<=TOL_RESID_Scalar .AND. SUM_X<=TOL_RESID_X &
+	  .AND. RESID(RESID_ke,0)<=TOL_RESID_K_Epsilon)THEN 
          MUSTIT = 0                              !converged 
       ELSE IF (SUM>=TOL_DIVERGE .OR. SUM_T>=TOL_DIVERGE .OR.&
                 RESID(RESID_sc,0)>= TOL_DIVERGE .OR. SUM_X>=TOL_DIVERGE&
-            ) THEN 
+            .OR. RESID(RESID_ke,0)>= TOL_DIVERGE ) THEN 
          IF (NIT /= 1) THEN 
             MUSTIT = 2                           !diverged 
          ELSE 

@@ -343,7 +343,14 @@
          IF(DMP_LOG)WRITE (UNIT_LOG, 1350) 
          CALL MFIX_EXIT(myPE) 
       ENDIF 
-
+!
+!  Check whether MU_gmax is specified for turbulence (sof)
+!
+      IF (K_Epsilon .AND. MU_GMAX==UNDEFINED) THEN 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1350) 
+         CALL MFIX_EXIT(myPE) 
+      ENDIF 
+      
       CALL END_LOG 
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&

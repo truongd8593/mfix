@@ -8,6 +8,7 @@
              MOMENTUM_X_EQ, MOMENTUM_Y_EQ,MOMENTUM_Z_EQ, DISCRETIZE,&
              GRANULAR_ENERGY,& 
 	     NScalar, Phase4Scalar, &
+	     K_Epsilon, &
              nRR,  &
 ! start anuj 4/20
              FRICTION, SAVAGE,&
@@ -67,7 +68,7 @@
              IC_U_g, IC_U_s, IC_V_g, IC_V_s, IC_W_g, IC_W_s,&
              IC_X_g, IC_X_s, IC_TYPE, IC_P_star, IC_L_scale,&
              IC_GAMA_Rg, IC_T_Rg, IC_GAMA_Rs, IC_T_Rs,&
-             IC_Theta_m, IC_Scalar,&
+             IC_Theta_m, IC_Scalar, IC_K_Turb_G, IC_E_Turb_G, &
 !
 ! 1.8 Boundary conditions section
 !
@@ -94,6 +95,7 @@
 !end   kapil anuj 01/19/98
              BC_hw_Scalar, BC_Scalarw, BC_C_Scalar,&
              BC_Scalar,&
+	     BC_K_Turb_G, BC_E_Turb_G, &
 !
 ! 1.9 Internal surfaces section
 !

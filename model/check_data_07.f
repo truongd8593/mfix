@@ -405,7 +405,19 @@
                    IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
 		   CALL MFIX_EXIT(myPE)
                  ENDIF 
-               END DO 
+               END DO  
+	       
+	       IF(K_Epsilon) THEN
+                 IF (BC_K_Turb_G(BCV) == UNDEFINED) THEN 
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_K_Turb_G', BCV
+		   CALL MFIX_EXIT(myPE)
+                 ENDIF
+	       
+                 IF (BC_E_Turb_G(BCV) == UNDEFINED) THEN 
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_E_Turb_G', BCV
+		   CALL MFIX_EXIT(myPE)
+                 ENDIF
+	       ENDIF
 	       
             CASE ('MASS_OUTFLOW')  
                IF (BC_DT_0(BCV) == UNDEFINED) THEN 
@@ -610,7 +622,19 @@
                    IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
 		   CALL MFIX_EXIT(myPE)
                  ENDIF 
-               END DO 
+               END DO  
+	       
+	       IF(K_Epsilon) THEN
+                 IF (BC_K_Turb_G(BCV) == UNDEFINED) THEN 
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_K_Turb_G', BCV
+		   CALL MFIX_EXIT(myPE)
+                 ENDIF
+	       
+                 IF (BC_E_Turb_G(BCV) == UNDEFINED) THEN 
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_E_Turb_G', BCV 
+		   CALL MFIX_EXIT(myPE)
+                 ENDIF
+	       ENDIF
 	       
 	       
             CASE ('P_OUTFLOW')  
@@ -702,7 +726,18 @@
 	        CALL MFIX_EXIT(myPE)
               ENDIF 
             END DO 
-	    
+	   
+	       IF(K_Epsilon) THEN
+                 IF (BC_K_Turb_G(BCV) == UNDEFINED) THEN 
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'BC_K_Turb_G', BCV 
+		   CALL MFIX_EXIT(myPE)
+                 ENDIF
+	       
+                 IF (BC_E_Turb_G(BCV) == UNDEFINED) THEN 
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'BC_E_Turb_G', BCV
+		   CALL MFIX_EXIT(myPE)
+                 ENDIF
+	       ENDIF  
          ENDIF 
       END DO 
       DO BCV = 1, DIMENSION_BC 

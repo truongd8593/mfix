@@ -157,7 +157,10 @@
 ! 
 !                      initial scalar value in a region
       DOUBLE PRECISION IC_Scalar (DIMENSION_IC, DIM_scalar)
-
+! 
+!                      Initial K & Epsilon values in a region
+      DOUBLE PRECISION IC_K_Turb_G (DIMENSION_IC)
+      DOUBLE PRECISION IC_E_Turb_G (DIMENSION_IC)
 
 
       END MODULE ic                                                                              

@@ -148,6 +148,15 @@
 !
 !                      Previous time-step value of User-defined Scalars
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Scalaro 
+!
+!
+!                      K and Epsilon for Gas turbulence
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  K_Turb_G
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  E_Turb_G
+!
+!                      Previous time-step value of K and Epsilon
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  K_Turb_Go
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  E_Turb_Go
  
 !!!HPF$ align EP_g(:) with TT(:)
 !!!HPF$ align EP_go(:) with TT(:)

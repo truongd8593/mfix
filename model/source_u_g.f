@@ -311,6 +311,9 @@
 ! 
 !                      Vector b_m 
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
+! 
+!                      Turbulent shear stress
+      DOUBLE PRECISION  W_F_Slip
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
@@ -479,7 +482,7 @@
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
-               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE     		     
+               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
                         IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
                         A_M(IJK,E,M) = ZERO 
@@ -512,7 +515,7 @@
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
-               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE     		     		     
+               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
                         IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
                         JM = JM1(J) 
@@ -525,8 +528,15 @@
                         A_M(IJK,B,M) = ZERO 
                         A_M(IJK,0,M) = -ONE 
                         B_M(IJK,M) = ZERO 
-                        IF (FLUID_AT(NORTH_OF(IJK))) THEN 
-                           IF (BC_HW_G(L) == UNDEFINED) THEN 
+                        IF (FLUID_AT(NORTH_OF(IJK))) THEN  
+                           
+			   IF(K_Epsilon) THEN
+			     CALL Wall_Function(IJK,NORTH_OF(IJK),ODY_N(J),W_F_Slip)
+                             A_M(IJK,N,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             B_M(IJK,M) = -BC_UW_G(L)			     
+			   
+			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,N,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_UW_G(L) 
@@ -535,8 +545,15 @@
                               A_M(IJK,N,M) = -(HALF*BC_HW_G(L)-ODY_N(J)) 
                               B_M(IJK,M) = -BC_HW_G(L)*BC_UW_G(L) 
                            ENDIF 
-                        ELSE IF (FLUID_AT(SOUTH_OF(IJK))) THEN 
-                           IF (BC_HW_G(L) == UNDEFINED) THEN 
+                        ELSE IF (FLUID_AT(SOUTH_OF(IJK))) THEN  
+                           
+			   IF(K_Epsilon) THEN
+			     CALL Wall_Function(IJK,SOUTH_OF(IJK),ODY_N(JM),W_F_Slip)
+                             A_M(IJK,S,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             B_M(IJK,M) = -BC_UW_G(L)			     
+			   
+			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,S,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_UW_G(L) 
@@ -545,8 +562,15 @@
                               A_M(IJK,0,M) = -(HALF*BC_HW_G(L)+ODY_N(JM)) 
                               B_M(IJK,M) = -BC_HW_G(L)*BC_UW_G(L) 
                            ENDIF 
-                        ELSE IF (FLUID_AT(TOP_OF(IJK))) THEN 
-                           IF (BC_HW_G(L) == UNDEFINED) THEN 
+                        ELSE IF (FLUID_AT(TOP_OF(IJK))) THEN  
+                           
+			   IF(K_Epsilon) THEN
+			     CALL Wall_Function(IJK,TOP_OF(IJK),ODZ_T(K)*OX_E(I),W_F_Slip)
+                             A_M(IJK,T,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE
+                             B_M(IJK,M) = -BC_UW_G(L)			     
+			   
+			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,T,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_UW_G(L) 
@@ -555,8 +579,15 @@
                               A_M(IJK,T,M)=-(HALF*BC_HW_G(L)-ODZ_T(K)*OX_E(I)) 
                               B_M(IJK,M) = -BC_HW_G(L)*BC_UW_G(L) 
                            ENDIF 
-                        ELSE IF (FLUID_AT(BOTTOM_OF(IJK))) THEN 
-                           IF (BC_HW_G(L) == UNDEFINED) THEN 
+                        ELSE IF (FLUID_AT(BOTTOM_OF(IJK))) THEN   
+                           
+			   IF(K_Epsilon) THEN
+			     CALL Wall_Function(IJK,BOTTOM_OF(IJK),ODZ_T(KM)*OX_E(I),W_F_Slip)
+                             A_M(IJK,B,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE
+                             B_M(IJK,M) = -BC_UW_G(L)			     
+			   
+			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,B,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_UW_G(L) 
@@ -582,7 +613,7 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE     		     			
+               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                            IJK = FUNIJK(I,J,K) 
                            A_M(IJK,E,M) = ZERO 
                            A_M(IJK,W,M) = ONE 
@@ -607,7 +638,7 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE     		     			
+               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                            IJK = FUNIJK(I,J,K) 
                            A_M(IJK,E,M) = ZERO 
                            A_M(IJK,W,M) = ONE 
@@ -641,7 +672,7 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE 			
+               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                            IJK = FUNIJK(I,J,K) 
 !
                            IP = IP1(I) 
@@ -668,7 +699,7 @@
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
-               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
+               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
@@ -697,6 +728,71 @@
       END DO 
       RETURN  
       END SUBROUTINE SOURCE_U_G_BC 
+!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: Wall_Function(IJK1,IJK2,ODX_WF,W_F_Slip)               C
+!  Purpose: Calculate Slip velocity using wall functions               C
+!                                                                      C
+!  Author: S. Benyahia                                Date: MAY-13-04  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE Wall_Function(IJK1,IJK2,ODX_WF,W_F_Slip)
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE physprop 
+      USE fldvar
+      USE visc_g  
+      USE geometry 
+      USE indices 
+      USE bc
+      USE compar 
+      USE turb        
+      USE mpi_utility 
+      IMPLICIT NONE
+!
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+
+!                      IJK indices for wall cell and fluid cell
+      INTEGER          IJK1, IJK2
+
+!                      ODX_WF: 1/dx, and W_F_Slip: value of turb. shear stress at walls
+      DOUBLE PRECISION ODX_WF, W_F_Slip
+
+!                      C_mu and Kappa are constants in turb. viscosity and Von Karmen const.
+      DOUBLE PRECISION C_mu, Kappa
+!-----------------------------------------------
+!
+!
+	C_mu = 0.09D+0
+	Kappa = 0.42D+0
+	
+		W_F_Slip = (ONE - ONE/ODX_WF* RO_g(IJK2)*C_mu**0.25   &
+			   *SQRT(K_Turb_G(IJK2))/MU_gT(IJK2)	      &
+			   *Kappa/LOG(9.81D+0/(ODX_WF*2.D+0)*         &
+			    RO_g(IJK2)*C_mu**0.25*                    &
+			   SQRT(K_Turb_G(IJK2))/MU_g(IJK2)))
+!
+      RETURN  
+      END SUBROUTINE Wall_Function
 
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization

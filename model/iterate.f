@@ -231,7 +231,11 @@
 
 !
 !     DIffusion coefficient and source terms for user-defined scalars
-      IF(NScalar /= 0)CALL SCALAR_PROP(IER)
+      IF(NScalar /= 0)CALL SCALAR_PROP(IER) 
+
+!
+!     DIffusion coefficient and source terms for K & Epsilon Eq.
+      IF(K_Epsilon) CALL K_Epsilon_PROP(IER)
 
 !      
 !
@@ -330,6 +334,10 @@
 !     Solve other scalar transport equations
 !
       IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER) 
+!
+!     Solve K & Epsilon transport equations
+!
+      IF(K_Epsilon) CALL SOLVE_K_Epsilon_EQ (IER) 
       
 !
 !    User-defined linear equation solver parameters may be adjusted after

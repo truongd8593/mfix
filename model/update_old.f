@@ -76,7 +76,12 @@
       
       IF (NScalar > 0) THEN 
         ScalarO(:,:NScalar) = Scalar(:,:NScalar) 
-      ENDIF 
+      ENDIF
+      
+      IF (K_Epsilon) THEN 
+        K_Turb_GO(:) = K_Turb_G(:)
+        E_Turb_GO(:) = E_Turb_G(:)
+      ENDIF
 
 !!$omp parallel do private(M,IJK,N)
       DO M = 1, MMAX 

@@ -325,6 +325,9 @@
 ! 
 !                      Vector b_m 
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
+! 
+!                      Turbulent shear stress
+      DOUBLE PRECISION  W_F_Slip 
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
@@ -541,7 +544,14 @@
                         A_M(IJK,0,M) = -ONE 
                         B_M(IJK,M) = ZERO 
                         IF (FLUID_AT(EAST_OF(IJK))) THEN 
-                           IF (BC_HW_G(L) == UNDEFINED) THEN 
+                           
+			   IF(K_Epsilon) THEN
+			     CALL Wall_Function(IJK,EAST_OF(IJK),ODX_E(I),W_F_Slip)
+                             A_M(IJK,E,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             B_M(IJK,M) = -BC_VW_G(L)			     
+			   
+			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,E,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_VW_G(L) 
@@ -550,8 +560,15 @@
                               A_M(IJK,E,M) = -(HALF*BC_HW_G(L)-ODX_E(I)) 
                               B_M(IJK,M) = -BC_HW_G(L)*BC_VW_G(L) 
                            ENDIF 
-                        ELSE IF (FLUID_AT(WEST_OF(IJK))) THEN 
-                           IF (BC_HW_G(L) == UNDEFINED) THEN 
+                        ELSE IF (FLUID_AT(WEST_OF(IJK))) THEN  
+                           
+			   IF(K_Epsilon) THEN
+			     CALL Wall_Function(IJK,WEST_OF(IJK),ODX_E(IM),W_F_Slip)
+                             A_M(IJK,W,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             B_M(IJK,M) = -BC_VW_G(L)			     
+			   
+			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,W,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_VW_G(L) 
@@ -560,8 +577,15 @@
                               A_M(IJK,0,M) = -(HALF*BC_HW_G(L)+ODX_E(IM)) 
                               B_M(IJK,M) = -BC_HW_G(L)*BC_VW_G(L) 
                            ENDIF 
-                        ELSE IF (FLUID_AT(TOP_OF(IJK))) THEN 
-                           IF (BC_HW_G(L) == UNDEFINED) THEN 
+                        ELSE IF (FLUID_AT(TOP_OF(IJK))) THEN   
+                           
+			   IF(K_Epsilon) THEN
+			     CALL Wall_Function(IJK,TOP_OF(IJK),ODZ_T(K)*OX(I),W_F_Slip)
+                             A_M(IJK,T,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             B_M(IJK,M) = -BC_VW_G(L)			     
+			   
+			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,T,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_VW_G(L) 
@@ -570,8 +594,15 @@
                               A_M(IJK,T,M) = -(HALF*BC_HW_G(L)-ODZ_T(K)*OX(I)) 
                               B_M(IJK,M) = -BC_HW_G(L)*BC_VW_G(L) 
                            ENDIF 
-                        ELSE IF (FLUID_AT(BOTTOM_OF(IJK))) THEN 
-                           IF (BC_HW_G(L) == UNDEFINED) THEN 
+                        ELSE IF (FLUID_AT(BOTTOM_OF(IJK))) THEN    
+                           
+			   IF(K_Epsilon) THEN
+			     CALL Wall_Function(IJK,BOTTOM_OF(IJK),ODZ_T(KM)*OX(I),W_F_Slip)
+                             A_M(IJK,B,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             B_M(IJK,M) = -BC_VW_G(L)			     
+			   
+			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,B,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_VW_G(L) 
@@ -709,7 +740,6 @@
       END DO 
       RETURN  
       END SUBROUTINE SOURCE_V_G_BC 
-
 
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization

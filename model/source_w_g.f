@@ -349,7 +349,13 @@
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
 ! 
 !                      Vector b_m 
-      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
+      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)  
+! 
+!                      Turb. Shear at walls
+      DOUBLE PRECISION W_F_Slip 
+!
+!                      C_mu and Kappa are constants in turb. viscosity and Von Karmen const.
+      DOUBLE PRECISION C_mu, Kappa
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
@@ -360,6 +366,9 @@
       INCLUDE 'b_force2.inc'
 !
       M = 0 
+!
+      C_mu = 0.09D+0
+      Kappa = 0.42D+0
 !
 !
 !  Set the default boundary conditions
@@ -559,8 +568,25 @@
                         A_M(IJK,B,M) = ZERO 
                         A_M(IJK,0,M) = -ONE 
                         B_M(IJK,M) = ZERO 
-                        IF (FLUID_AT(EAST_OF(IJK))) THEN 
-                           IF (BC_HW_G(L) == UNDEFINED) THEN 
+                        IF (FLUID_AT(EAST_OF(IJK))) THEN  
+                           
+			   IF(K_Epsilon) THEN
+			     IF (CYLINDRICAL) THEN
+			       W_F_Slip = (ONE/(ODX_E(I)+HALF*OX_E(I)))*	    &
+			       (ODX_E(I) -OX_E(I)-				    &
+			       RO_g(EAST_OF(IJK))*C_mu**0.25			    &
+			       *SQRT(K_Turb_G((EAST_OF(IJK))))/MU_gT(EAST_OF(IJK))  &
+			       *Kappa/LOG(9.81D+0	/ODX_E(I)		    &
+			       /(2.D+0)*RO_g(EAST_OF(IJK))*C_mu**0.25*		    &
+			       SQRT(K_Turb_G((EAST_OF(IJK))))/MU_g(EAST_OF(IJK))))
+			     ELSE
+			       CALL Wall_Function(IJK,EAST_OF(IJK),ODX_E(I),W_F_Slip)
+			     ENDIF
+                             A_M(IJK,E,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             B_M(IJK,M) = -BC_WW_G(L)			     
+			   
+			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,E,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_WW_G(L) 
@@ -577,8 +603,25 @@
                                  B_M(IJK,M) = -BC_HW_G(L)*BC_WW_G(L) 
                               ENDIF 
                            ENDIF 
-                        ELSE IF (FLUID_AT(WEST_OF(IJK))) THEN 
-                           IF (BC_HW_G(L) == UNDEFINED) THEN 
+                        ELSE IF (FLUID_AT(WEST_OF(IJK))) THEN  
+                           
+			   IF(K_Epsilon) THEN
+			     IF (CYLINDRICAL) THEN
+			       W_F_Slip =  (ONE/(ONE*ODX_E(IM)+HALF*OX_E(IM)))*	    &
+			       (ONE*ODX_E(IM) -OX_E(IM)-			    &
+			       RO_g(WEST_OF(IJK))*C_mu**0.25			    &
+			       *SQRT(K_Turb_G((WEST_OF(IJK))))/MU_gT(WEST_OF(IJK))  &
+			       *Kappa/LOG(9.81D+0	/ODX_E(IM)		    &
+			       /(2.D+0)*RO_g(WEST_OF(IJK))*C_mu**0.25*		    &
+			       SQRT(K_Turb_G((WEST_OF(IJK))))/MU_g(WEST_OF(IJK))))
+			     ELSE
+			       CALL Wall_Function(IJK,WEST_OF(IJK),ODX_E(IM),W_F_Slip)
+			     ENDIF
+                             A_M(IJK,W,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             B_M(IJK,M) = -BC_WW_G(L)			     
+			   
+			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,W,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_WW_G(L) 
@@ -595,8 +638,15 @@
                                  B_M(IJK,M) = -BC_HW_G(L)*BC_WW_G(L) 
                               ENDIF 
                            ENDIF 
-                        ELSE IF (FLUID_AT(NORTH_OF(IJK))) THEN 
-                           IF (BC_HW_G(L) == UNDEFINED) THEN 
+                        ELSE IF (FLUID_AT(NORTH_OF(IJK))) THEN   
+                           
+			   IF(K_Epsilon) THEN
+			     CALL Wall_Function(IJK,NORTH_OF(IJK),ODY_N(J),W_F_Slip)
+                             A_M(IJK,N,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             B_M(IJK,M) = -BC_WW_G(L)			     
+			   
+			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,N,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_WW_G(L) 
@@ -605,8 +655,15 @@
                               A_M(IJK,N,M) = -(HALF*BC_HW_G(L)-ODY_N(J)) 
                               B_M(IJK,M) = -BC_HW_G(L)*BC_WW_G(L) 
                            ENDIF 
-                        ELSE IF (FLUID_AT(SOUTH_OF(IJK))) THEN 
-                           IF (BC_HW_G(L) == UNDEFINED) THEN 
+                        ELSE IF (FLUID_AT(SOUTH_OF(IJK))) THEN    
+                           
+			   IF(K_Epsilon) THEN
+			     CALL Wall_Function(IJK,SOUTH_OF(IJK),ODY_N(JM),W_F_Slip)
+                             A_M(IJK,S,M) = W_F_Slip
+                             A_M(IJK,0,M) = -ONE 
+                             B_M(IJK,M) = -BC_WW_G(L)			     
+			   
+			   ELSE IF (BC_HW_G(L) == UNDEFINED) THEN 
                               A_M(IJK,S,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_WW_G(L) 
@@ -742,8 +799,7 @@
          ENDIF 
       END DO 
       RETURN  
-      END SUBROUTINE SOURCE_W_G_BC 
-
+      END SUBROUTINE SOURCE_W_G_BC  
 
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization

@@ -17,6 +17,10 @@
 !  Author: S. Dartevelle                              Date: 01-Jul-02  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
+!  Revision Number: 3                                                  C
+!  Purpose: compute turbulent eddy viscosity                           C
+!  Author: S. Benyahia                                Date: May-13-04  C
+!  Reviewer:                                          Date: dd-mmm-yy  C                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced:                                               C
@@ -43,7 +47,7 @@
       USE indices
       USE constant
       USE compar
-	  USE run          !S. Dartevelle
+      USE run          !S. Dartevelle
       USE sendrecv  
       IMPLICIT NONE
 !-----------------------------------------------
@@ -117,6 +121,9 @@
 !
 !                      Second invariant of the deviator of D_g
       DOUBLE PRECISION I2_devD_g
+!
+!                      Constant in turbulent viscosity formulation
+      DOUBLE PRECISION C_MU
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -124,18 +131,30 @@
       INCLUDE 'ep_s2.inc'
       INCLUDE 'fun_avg2.inc'
 !
+      C_MU = 9D-02
 !
 !!$omp parallel do private(ijk) schedule(dynamic,chunk_size)
       DO IJK = ijkstart3, ijkend3 
+!
          IF (FLUID_AT(IJK)) THEN 
 !
 !  Molecular viscosity
 !
-         IF (MU_G0 == UNDEFINED) MU_G(IJK) = to_SI*1.7D-4*(T_G(IJK)/273.0)**1.5*(&
+           IF (MU_G0 == UNDEFINED) MU_G(IJK) = to_SI*1.7D-4*(T_G(IJK)/273.0)**1.5*(&
                383./(T_G(IJK)+110.))   !in Poise or Pa.s
-            MU_GT(IJK) = MU_G(IJK) 
-            LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
+             MU_GT(IJK) = MU_G(IJK) 
+             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
 
+	   IF (K_Epsilon) THEN
+
+! Definition of the turbulent viscosity
+!	     
+	     MU_GT(IJK) = MU_G(IJK) +  RO_G(IJK)*C_mu*K_Turb_G(IJK)**2&
+                        /(E_Turb_G(IJK)+Small_number)
+! 
+	     MU_GT(IJK) = MIN(MU_GMAX, MU_GT(IJK))
+             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
+	   ENDIF
 	 ELSE
             MU_G(IJK)  = ZERO 
             MU_GT(IJK) = ZERO 
@@ -224,7 +243,7 @@
             D_G(2,3)=HALF*((V_G_T-V_G_B)*(OX(I)*ODZ(K))+(W_G_N-W_G_S)*ODY(J)) 
             D_G(3,1) = D_G(1,3) 
             D_G(3,2) = D_G(2,3) 
-            D_G(3,3) = (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) + U_G_C*OX(I) 
+            D_G(3,3) = (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) + U_G_C*OX(I)
 !
 !
 !         Calculate the second invariant of the deviator of D_g

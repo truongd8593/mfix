@@ -106,6 +106,10 @@
       call send_recv(THETA_M,2)
       call send_recv(X_S,2)
       if(NScalar > 0)call send_recv(Scalar,2)
+      if(K_Epsilon) THEN
+        call send_recv(K_Turb_G,2)
+        call send_recv(E_Turb_G,2)
+      endif
       call send_recv(GAMA_RG,2)
       call send_recv(T_RG,2)
       call send_recv(GAMA_RS,2)
@@ -176,7 +180,14 @@
 !     Version 1.5
       DO LC = 1, nRR 
             call gatherWriteRes (ReactionRates(:,LC),array2, array1, NEXT_REC)  !//d pnicol
-      END DO
+      END DO 
+!
+!     Version 1.6
+
+      if (K_epsilon) then
+            call gatherWriteRes (K_turb_G,array2, array1, NEXT_REC)  !//d pnicol
+	    call gatherWriteRes (E_turb_G,array2, array1, NEXT_REC)
+      endif
 !--------------------------------------------------------------------- 
  
       if (myPE.eq.PE_IO) CALL FLUSH_res (UNIT_RES) 

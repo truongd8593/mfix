@@ -330,6 +330,14 @@
 !
 !                      Wall value in boundary  condition
       DOUBLE PRECISION BC_ScalarW (DIMENSION_BC, DIM_scalar)
+!
+!
+!   K and Epsilon for Gas turbulence
+!
+! 
+!                      K & Epsilon values in a boundary region
+      DOUBLE PRECISION BC_K_Turb_G (DIMENSION_BC)
+      DOUBLE PRECISION BC_E_Turb_G (DIMENSION_BC)
 
 
       END MODULE bc                                                                              

@@ -47,6 +47,7 @@
       USE energy
       USE scalars
       USE compar 
+      USE run
       USE sendrecv 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -132,6 +133,7 @@
             VGX = IC_V_G(L) 
             WGX = IC_W_G(L) 
             IF (IC_L_SCALE(L) /= UNDEFINED) RECALC_VISC_G = .TRUE. 
+	    IF(K_Epsilon) RECALC_VISC_G = .TRUE.
 !
             M = 1 
             IF (MMAX > 0) THEN 
@@ -174,7 +176,15 @@
                         IF (NScalar > 0) THEN 
                            WHERE (IC_Scalar(L,:NScalar) /= UNDEFINED)&
 			     Scalar(IJK,:NScalar) = IC_Scalar(L,:NScalar) 
-                        ENDIF 
+                        ENDIF  
+			
+                        IF (K_Epsilon) THEN 
+                           IF (IC_K_Turb_G(L) /= UNDEFINED)&
+			     K_Turb_G(IJK) = IC_K_Turb_G(L) 
+                           
+			   IF (IC_E_Turb_G(L) /= UNDEFINED)&
+			     E_Turb_G(IJK) = IC_E_Turb_G(L)
+                        ENDIF
 			
                         IF (UGX /= UNDEFINED) U_G(IJK) = UGX 
                         IF (VGX /= UNDEFINED) V_G(IJK) = VGX 

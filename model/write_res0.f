@@ -105,7 +105,7 @@
 !
 !     Add new data entries at the end of the file and identify version no.
 !------------------------------------------------------------------------
-      VERSION = 'RES = 01.5' 
+      VERSION = 'RES = 01.6' 
 !------------------------------------------------------------------------
 !//SP - Temporarily disabled so that the binary files can be diffed.....
 !
@@ -350,6 +350,11 @@
 !
 !     Version 1.5 -- write nRR
       WRITE (UNIT_RES, REC=NEXT_RECA) nRR  
+      NEXT_RECA = NEXT_RECA + 1 
+
+!
+!     Version 1.6 -- write k and epsilon in write_res1 and spx1
+      WRITE (UNIT_RES, REC=NEXT_RECA) K_epsilon  
       NEXT_RECA = NEXT_RECA + 1 
 
 !

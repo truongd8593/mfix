@@ -27,7 +27,9 @@
       Use pscor
       Use residual
       Use rxns
+      Use run
       Use scalars
+      Use turb
       Use tau_g
       Use tau_s
       Use tmp_array
@@ -137,6 +139,13 @@
       Allocate(  P_staro (DIMENSION_3) )
       Allocate(  THETA_m (DIMENSION_3, DIMENSION_M) )
       Allocate(  THETA_mo (DIMENSION_3, DIMENSION_M) )
+
+      IF(K_Epsilon)then
+        Allocate(  K_Turb_G (DIMENSION_3) )
+        Allocate(  K_Turb_Go (DIMENSION_3) )
+        Allocate(  E_Turb_G (DIMENSION_3) )
+        Allocate(  E_Turb_Go (DIMENSION_3) )
+      ENDIF
       
       IF(DIMENSION_Scalar /= 0)then
         Allocate(  Scalar (DIMENSION_3,  DIMENSION_Scalar) )
@@ -255,6 +264,17 @@
         Allocate(  Scalar_c (DIMENSION_3,  DIMENSION_Scalar) )
         Allocate(  Scalar_p (DIMENSION_3,  DIMENSION_Scalar) )
         Allocate(  Dif_Scalar (DIMENSION_3, DIMENSION_Scalar) )
+      
+      ENDIF
+!K-Epsilon Turbulence model
+      
+      IF(K_Epsilon)then
+        Allocate(  K_Turb_G_c (DIMENSION_3) )
+        Allocate(  K_Turb_G_p (DIMENSION_3) )
+        Allocate(  Dif_K_Turb_G (DIMENSION_3) )
+        Allocate(  E_Turb_G_c (DIMENSION_3) )
+        Allocate(  E_Turb_G_p (DIMENSION_3) )
+        Allocate(  Dif_E_Turb_G (DIMENSION_3) )
       
       ENDIF
 

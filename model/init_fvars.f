@@ -39,6 +39,7 @@
       USE indices
       USE scalars
       USE rxns
+      USE run
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
@@ -77,6 +78,11 @@
       
       IF(Nscalar > 0) Scalar(IJKSTART3:IJKEND3,:Nscalar) = ZERO
       IF(nRR > 0) ReactionRates(IJKSTART3:IJKEND3,:nRR) = ZERO
+
+      IF(K_Epsilon) THEN
+        K_Turb_G(IJKSTART3:IJKEND3) = ZERO
+        E_Turb_G(IJKSTART3:IJKEND3) = ZERO
+      ENDIF
 
 !!$omp parallel do private(M,IJK,N)
       DO M = 1, MMAX 

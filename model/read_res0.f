@@ -119,7 +119,7 @@
     if (myPE == PE_IO ) then
       READ (UNIT_RES, REC=1) VERSION 
       READ (VERSION(6:512), *) VERSION_NUMBER 
-      IF (VERSION_NUMBER > 1.5) THEN 
+      IF (VERSION_NUMBER > 1.6) THEN 
          WRITE (*, *) ' Update Subroutine read_res0' 
          CALL SLUMBER 
 !         STOP  
@@ -885,7 +885,7 @@
              else
                 n_spx_res = 9
              end if
-             DO LC = 1, N_SPX 
+             DO LC = 1, N_SPX_RES
                READ (UNIT_RES, REC=NEXT_RECA) SPX_DT(LC) 
                NEXT_RECA = NEXT_RECA + 1 
              END DO 
@@ -1165,6 +1165,24 @@
         ELSE
           nRR = 0 
         ENDIF 
+
+!
+!           Version 1.6 -- read K_Epsilon
+!
+        IF (VERSION_NUMBER >= 1.599) THEN 
+          if (myPE == PE_IO) then
+            READ (UNIT_RES, REC=NEXT_RECA) K_Epsilon
+            NEXT_RECA = NEXT_RECA + 1 
+            if (doingPost .and. K_epsilon) then
+               Allocate( K_Turb_G(DIMENSION_3) )
+               Allocate( E_Turb_G(DIMENSION_3) )
+            end if
+	  ENDIF
+          call bcast(K_Epsilon,PE_IO) !//PAR_I/O BCAST0d 
+        ELSE
+          K_Epsilon = .false.
+        ENDIF 
+
 !
 !  Add new read statements above this line.  Remember to update NEXT_RECA.
 !  Remember to update the version number check near begining of this subroutine.

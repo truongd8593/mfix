@@ -63,6 +63,9 @@
 !                      Tolerance in scalr eq residuals allowed for convergence
       DOUBLE PRECISION TOL_RESID_Scalar
 !
+!                      Tolerance in K & Epsilon eq residuals allowed for convergence
+      DOUBLE PRECISION TOL_RESID_K_Epsilon
+!
 !                      Minimum residual for declaring divergence
       DOUBLE PRECISION TOL_DIVERGE
 !

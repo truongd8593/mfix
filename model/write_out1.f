@@ -188,6 +188,15 @@
         END DO
       ENDIF
 
+      IF(K_Epsilon) THEN
+         if (myPE == PE_IO) WRITE (UNIT_OUT, 2600) CHAR(12), TIME 
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         call gather (K_Turb_G,array1,root)    !//
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'K_Turb_G') 
+         call gather (E_Turb_G,array1,root)    !//
+         if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'E_Turb_G') 
+      ENDIF
       IF(nRR /= 0) THEN
         DO LC = 1, nRR
          if (myPE == PE_IO) WRITE (UNIT_OUT, 2500) CHAR(12), LC, TIME 
@@ -234,4 +243,5 @@
  2400 FORMAT(1X,A1,/5X,'--- Granular temperature of Solids Phase-',I1,&
          ' (Theta_m) at time ',G12.5,' ---',2/) 
  2500 FORMAT(1X,A1,/5X,'--- Scalar Field-',I2, ' (Scalar) at time ',G12.5,' ---',2/) 
+ 2600 FORMAT(1X,A1,/5X,'--- Turbulence Field-', ' (K-Epsilon) at time ',G12.5,' ---',2/)
       END SUBROUTINE WRITE_OUT1 

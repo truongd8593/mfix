@@ -206,6 +206,11 @@
         DO N = 1, nRR 
           call readScatterRes(ReactionRates(:,N), array2, array1, NEXT_REC)
         END DO 
+      ENDIF 
+
+      IF (VERSION_NUMBER >= 1.6 .AND. K_Epsilon) THEN 
+          call readScatterRes(K_Turb_G, array2, array1, NEXT_REC)
+          call readScatterRes(E_Turb_G, array2, array1, NEXT_REC)
       ENDIF
 !------------------------------------------------------------------------
 !

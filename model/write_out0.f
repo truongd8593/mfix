@@ -184,6 +184,7 @@
           WRITE (UNIT_OUT, 1103)L, Phase4Scalar(L)
         END DO 
       ENDIF
+      IF (K_Epsilon) WRITE (UNIT_OUT, 1104)    
 !
 !  Physical and numerical parameters
 !
@@ -479,6 +480,7 @@
       WRITE (UNIT_OUT, 1904) TOL_RESID, TOL_RESID_T, TOL_RESID_X, TOL_DIVERGE 
       WRITE (UNIT_OUT, 1905) TOL_COM
       IF(NScalar /= 0)WRITE (UNIT_OUT, 1906) TOL_RESID_Scalar
+      IF(K_Epsilon)WRITE (UNIT_OUT, 1907) TOL_RESID_K_Epsilon
 !
 !  Echo user defined input data
 !
@@ -508,6 +510,7 @@
  1102 FORMAT(/7X,'Number of scalars = ', I4,&
              /7X,'Scalar No.        Carrier Phase (Phase4Scalar)')
  1103 FORMAT(/7X, I4,'               ',I4)
+ 1104 FORMAT(/7X,'* K and Epsilon equations are solved')
  1110 FORMAT(7X,'Run name(RUN_NAME): ',A60) 
  1120 FORMAT(7X,'Brief description of the run (DESCRIPTION) :',/9X,A60) 
  1130 FORMAT(7X,'Units (UNITS) : ',A16) 
@@ -740,7 +743,8 @@
          'Maximum average residual (TOL_RESID_X) = ',G12.5,/7X,&
          'Minimum residual at divergence (TOL_DIVERGE) = ',G12.5) 
  1905 FORMAT(7X,'Tolerance for species and energy balances (TOL_COM) = ',G12.5) 
- 1906 FORMAT(7X,'Tolerance for scalar mass balances (TOL_RESID_Scalar) = ',G12.5) 
+ 1906 FORMAT(7X,'Tolerance for scalar mass balances (TOL_RESID_Scalar) = ',G12.5)  
+ 1907 FORMAT(7X,'Tolerance for K-Epsilon balances (TOL_RESID_K_Epsilon) = ',G12.5)
 !
       END SUBROUTINE WRITE_OUT0 
       

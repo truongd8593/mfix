@@ -285,6 +285,28 @@
             if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
          end if
 !
+! ".SP11" FILE         turbulence
+!
+      CASE (11)  
+         if (myPE.eq.PE_IO) then
+            READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
+            NUM_REC = NEXT_REC 
+            WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
+            NEXT_REC = NEXT_REC + 1
+         end if 
+	 if (K_Epsilon) then
+            call gatherWriteSpx (K_Turb_G,array2, array1, uspx+L, NEXT_REC) 
+            call gatherWriteSpx (E_Turb_G,array2, array1, uspx+L, NEXT_REC)
+	 end if
+	    
+         if (myPE.eq.PE_IO) then
+            NUM_REC = NEXT_REC - NUM_REC 
+            WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
+            if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
+         end if
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!
+!
       CASE DEFAULT
             LINE(1) = 'Unknown SPx file index' 
             CALL WRITE_ERROR ('WRITE_SPX1', LINE, 1) 

@@ -249,7 +249,15 @@
                            IF (NScalar > 0) THEN 
                               WHERE (BC_Scalar(L,:NScalar) /= UNDEFINED)&
 			         Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
-                           ENDIF 
+                           ENDIF  
+			   
+                           IF (K_Epsilon) THEN 
+                              IF (BC_K_Turb_G(L) /= UNDEFINED)&
+			         K_Turb_G(IJK) = BC_K_Turb_G(L) 
+                              
+			      IF (BC_E_Turb_G(L) /= UNDEFINED)&
+			         E_Turb_G(IJK) = BC_E_Turb_G(L)
+                           ENDIF
 			   
                            DO M = 1, MMAX 
                               IF (BC_ROP_S(L,M) /= UNDEFINED) ROP_S(IJK,M) = &
@@ -278,7 +286,12 @@
 			   
                            IF (NScalar > 0) THEN 
                               Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
-                           ENDIF 
+                           ENDIF  
+			   
+                           IF (K_Epsilon) THEN 
+                              K_Turb_G(IJK) = BC_K_Turb_G(L) 
+                              E_Turb_G(IJK) = BC_E_Turb_G(L)
+                           ENDIF
 			   
                            DO M = 1, MMAX 
                               ROP_S(IJK,M) = BC_ROP_S(L,M) 

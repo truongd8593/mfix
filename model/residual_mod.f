@@ -14,7 +14,7 @@
       INTEGER          NRESID
       INTEGER          NPREFIX
       INTEGER          RESID_p, RESID_ro, RESID_u, RESID_v, RESID_w,&
-                       RESID_t, RESID_x, RESID_th, RESID_sc
+                       RESID_t, RESID_x, RESID_th, RESID_sc,RESID_ke 
       PARAMETER        (RESID_p  = 1)     !pressure
       PARAMETER        (RESID_ro = 2)     !density, volume fraction
       PARAMETER        (RESID_u  = 3)     !u-velocity
@@ -24,12 +24,13 @@
       PARAMETER        (RESID_th = 7)     !granular temperature
       PARAMETER        (RESID_sc = 8)     !user-defined scalar
       PARAMETER        (NRESID   = 8 + DIM_N)
-      PARAMETER        (RESID_x  = 9)     !mass fraction (keep this the last)
-      PARAMETER        (NPREFIX  = 9)
+      PARAMETER        (RESID_ke = 9)     !k-epsilon equations
+      PARAMETER        (RESID_x  = 10)     !mass fraction (keep this the last)
+      PARAMETER        (NPREFIX  = 10)
 !
 !                      prefix of Residuals string
       CHARACTER, PARAMETER, DIMENSION(NPREFIX) :: RESID_PREFIX = &
-        (/ 'P', 'R', 'U', 'V', 'W', 'T', 'G', 'S', 'X' /)
+        (/ 'P', 'R', 'U', 'V', 'W', 'T', 'G', 'S', 'K', 'X' /)
  
 !
 !                      Average residual
