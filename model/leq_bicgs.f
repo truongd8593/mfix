@@ -317,7 +317,7 @@
             ier = 0
 	  endif
 
-          call send_recv(var,2)
+          call send_recv(var,nlayers_bicgs)
 	  return
         endif
 
@@ -604,7 +604,7 @@
         endif
 
 
-        call send_recv(var,2)
+        call send_recv(var,nlayers_bicgs)
         
         return
         end subroutine LEQ_BICGS0
@@ -976,7 +976,7 @@
       endif
 
 
-      call send_recv(Avar,1)
+      call send_recv(Avar,nlayers_bicgs)
       return
       END SUBROUTINE LEQ_MATVEC
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -1072,7 +1072,7 @@
         enddo
         enddo
 
-     call send_recv(var,2)
+     call send_recv(var,nlayers_bicgs)
 
      ENDIF
 
@@ -1189,7 +1189,7 @@
 
       ENDIF
 
-      IF (DO_SENDRECV) call send_recv(var,2)
+      IF (DO_SENDRECV) call send_recv(var,nlayers_bicgs)
 
      ENDIF
 
@@ -1430,12 +1430,12 @@
       prod = 0.0d0
    
 !$omp parallel do private(i,j,k,ijk) reduction(+:prod)
-      do k = kstart1, kend1
-        do i = istart1, iend1
-          do j = jstart1, jend1
+      do k = kstart, kend
+        do i = istart, iend
+          do j = jstart, jend
    
-!           ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
-            ijk = funijk (i,j,k)
+            ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
+!           ijk = funijk (i,j,k)
 
             prod = prod + r1(ijk)*r2(ijk)
    
@@ -1537,7 +1537,7 @@
      else
      var(:) = b_m(:)
      endif
-     call send_recv(var,1)
+     call send_recv(var,nlayers_bicgs)
 
      return
      end subroutine leq_msolve0
@@ -1607,7 +1607,7 @@
 	enddo
 	enddo
 
-     call send_recv(var,1)
+     call send_recv(var,nlayers_bicgs)
 
      return
      end subroutine leq_msolve1
@@ -2191,7 +2191,7 @@
             ier = 0
 	  endif
 
-          call send_recv(var,2)
+          call send_recv(var,nlayers_bicgs)
 	  return
         endif
 
@@ -2469,7 +2469,7 @@
             endif
         endif
 
-        call send_recv(var,2)
+        call send_recv(var,nlayers_bicgs)
         
         return
         end subroutine LEQ_BICGS0t
@@ -2841,7 +2841,7 @@
       endif
 
 
-      call send_recv(Avar,1)
+      call send_recv(Avar,nlayers_bicgs)
       return
       END SUBROUTINE LEQ_MATVECt
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -2937,7 +2937,7 @@
         enddo
         enddo
 
-     call send_recv(var,2)
+     call send_recv(var,nlayers_bicgs)
 
      ENDIF
 
@@ -3054,7 +3054,7 @@
 
       ENDIF
 
-      IF (DO_SENDRECV) call send_recv(var,2)
+      IF (DO_SENDRECV) call send_recv(var,nlayers_bicgs)
 
      ENDIF
 
@@ -3321,7 +3321,7 @@
      else
      var(:) = b_m(:)
      endif
-     call send_recv(var,1)
+     call send_recv(var,nlayers_bicgs)
 
      return
      end subroutine leq_msolve0t
@@ -3389,7 +3389,7 @@
 	enddo
 	enddo
 
-     call send_recv(var,1)
+     call send_recv(var,nlayers_bicgs)
 
      return
      end subroutine leq_msolve1t
