@@ -351,6 +351,9 @@
 !
 !                      Index corresponding to boundary condition
       INTEGER          L
+      
+!              Radial distribution function
+      DOUBLE PRECISION G_0, g0
  
  
 !
@@ -368,7 +371,8 @@
  
       IF(FCELL .EQ. 'N')THEN
  
-        EP_avg = EP_s(IJK2,M)
+        g0 = G_0(IJK2, M, M)
+	EP_avg = EP_s(IJK2,M)
         TH_avg = AVG_Y(Theta_m(IJK1, M),Theta_m(IJK2, M),J_OF(IJK1))
         Mu_g_avg = Mu_g(IJK2)
         RO_g_avg = RO_g(IJK2)
@@ -399,6 +403,7 @@
  
       ELSEIF(FCELL .EQ. 'S')THEN
  
+        g0 = g_0(IJK2,M,M)
         EP_avg = EP_s(IJK2,M)
         TH_avg = AVG_Y(Theta_m(IJK2, M),Theta_m(IJK1, M),J_OF(IJK2))
         Mu_g_avg = Mu_g(IJK2)
@@ -429,6 +434,7 @@
  
       ELSEIF(FCELL== 'E')THEN
  
+        g0 = g_0(IJK2,M,M)
         EP_avg = EP_s(IJK2,M)
         TH_avg = AVG_X(Theta_m(IJK1, M),Theta_m(IJK2, M),I_OF(IJK1))
         Mu_g_avg = Mu_g(IJK2)
@@ -460,6 +466,7 @@
  
       ELSEIF(FCELL== 'W')THEN
  
+        g0 = g_0(IJK2,M,M)
         EP_avg = EP_s(IJK2,M)
         TH_avg = AVG_X(Theta_m(IJK2, M),Theta_m(IJK1, M),I_OF(IJK2))
         Mu_g_avg = Mu_g(IJK2)
@@ -491,6 +498,7 @@
  
       ELSEIF(FCELL== 'T')THEN
  
+        g0 = g_0(IJK2,M,M)
         EP_avg = EP_s(IJK2,M)
         TH_avg = AVG_Z(Theta_m(IJK1, M),Theta_m(IJK2, M),K_OF(IJK1))
         Mu_g_avg = Mu_g(IJK2)
@@ -523,6 +531,7 @@
  
       ELSEIF(FCELL== 'B')THEN
  
+        g0 = g_0(IJK2,M,M)
         EP_avg = EP_s(IJK2,M)
         TH_avg = AVG_Z(Theta_m(IJK2, M),Theta_m(IJK1, M),K_OF(IJK2))
         Mu_g_avg = Mu_g(IJK2)
@@ -558,7 +567,7 @@
 	call exitMPI(myPE)          
       ENDIF
  
-      CALL THETA_Hw_Cw(EP_avg,TH_avg,Mu_g_avg,RO_g_avg,VREL,VSLIPSQ,M,&
+      CALL THETA_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg,VREL,VSLIPSQ,M,&
                        Gw,Hw,Cw,L)
 !
       RETURN
@@ -567,7 +576,7 @@
  
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SUBROUTINE THETA_HW_CW(EPS, TH, Mu_g_avg, RO_g_avg,    C
+!  Module name: SUBROUTINE THETA_HW_CW(g0,EPS, TH, Mu_g_avg, RO_g_avg,    C
 !                                      VREL,VSLIPSQ,M,GW,HW,CW,L)      C
 !  Purpose: Subroutine for hw and cw                                   C
 !                                                                      C
@@ -585,7 +594,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE THETA_HW_CW(EPS,TH,Mu_g_avg,RO_g_avg,VREL,VSLIPSQ,M,&
+      SUBROUTINE THETA_HW_CW(g0,EPS,TH,Mu_g_avg,RO_g_avg,VREL,VSLIPSQ,M,&
                              GW,HW,CW,L)
  
 
@@ -649,8 +658,8 @@
       DOUBLE PRECISION GW, HW, CW
  
  
-!              Radial distribution function (Carnahan & Starling)
-      DOUBLE PRECISION G_0, G_0EP
+!              Radial distribution function
+      DOUBLE PRECISION G_0, g0
  
 !
 !                      Error message
@@ -671,7 +680,7 @@
 !     In F_2 and Mu a DSQRT(T) has been left out as it appears in both
 !     terms and thus cancels out upon dividing the former by the latter
  
-      G_0 = G_0EP(EPS)
+      G_0 = g0
  
       Lambda = 75*RO_s(M)*D_p(M)*DSQRT(Pi*TH)/(48*Eta*(41d0-33d0*Eta))
  

@@ -74,11 +74,16 @@
 !
 !                      Magnitude of gas-solids relative velocity
       DOUBLE PRECISION VREL
+!
+!                      radial distribution function at contact
+      DOUBLE PRECISION g0
  
 !
 !                      Error message
       CHARACTER*80     LINE
  
+!              Radial distribution function
+      DOUBLE PRECISION g_0AVG, g0
 !
 !  Function subroutines
 !
@@ -104,6 +109,7 @@
           IPJK2 = IP_OF(IJK2)
           IPJMK2 = JM_OF(IPJK2)
  
+          g0 = g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, M)
           EP_avg = AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M), I_OF(IJK2))
           TH_avg = AVG_Y(&
               AVG_X(Theta_m(IJK1, M), Theta_m(IPJMK2, M), I_OF(IJK1)),&
@@ -137,13 +143,14 @@
           VREL =&
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
  
-          Hw = F_Hw(EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL, M)
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL, M)
  
         ELSEIF(FCELL .EQ. 'S')THEN
            IJK2E= EAST_OF(IJK2)
            IPJK2= IP_OF(IJK2)
            IPJPK2= JP_OF(IPJK2)
  
+          g0 = g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, M)
           EP_avg = AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M), I_OF(IJK2))
  
           TH_avg = AVG_Y(&
@@ -179,12 +186,13 @@
           VREL =&
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
  
-          Hw = F_Hw(EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
  
         ELSEIF(FCELL .EQ. 'T')THEN
            IJK2E= EAST_OF(IJK2)
            IPJK2= IP_OF(IJK2)
            IPJKM2= KM_OF(IPJK2)
+          g0 = g_0AVG(IJK2, IJK2E, 'X',I_OF(IJK2), M, M)
           EP_avg =&
                 AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M),I_OF(IJK2))
  
@@ -223,12 +231,13 @@
           VREL =&
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
  
-          Hw = F_Hw(EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
  
         ELSEIF(FCELL .EQ. 'B')THEN
            IJK2E= EAST_OF(IJK2)
            IPJK2= IP_OF(IJK2)
            IPJKP2= KP_OF(IPJK2)
+          g0 = g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, M)
           EP_avg =&
                 AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M), I_OF(IJK2))
  
@@ -267,7 +276,7 @@
           VREL =&
             DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
  
-          Hw = F_Hw(EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
          CALL WRITE_ERROR('CALC_GRBDRY', LINE, 1)
@@ -278,6 +287,7 @@
           IJK2N = NORTH_OF(IJK2)
           IJPK2 = JP_OF(IJK2)
           IJPKM2 = KM_OF(IJPK2)
+          g0 = g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, M)
           EP_avg =&
                   AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M), J_OF(IJK2))
  
@@ -325,12 +335,13 @@
           VREL =&
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
  
-          Hw = F_Hw(EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL, M)
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL, M)
  
         ELSEIF(FCELL .EQ. 'B')THEN
           IJK2N = NORTH_OF(IJK2)
           IJPK2 = JP_OF(IJK2)
           IJPKP2 = KP_OF(IJPK2)
+          g0 = g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, M)
           EP_avg =&
                    AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M), J_OF(IJK2))
  
@@ -378,12 +389,13 @@
           VREL =&
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
  
-          Hw = F_Hw(EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
  
         ELSEIF(FCELL .EQ. 'E')THEN
            IJK2N= NORTH_OF(IJK2)
            IJPK2= JP_OF(IJK2)
            IMJPK2= IM_OF(IJPK2)
+          g0 = g_0AVG(IJK2, IJK2N, 'Y',J_OF(IJK2), M, M)
           EP_avg =&
                 AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M),J_OF(IJK2))
  
@@ -423,13 +435,14 @@
           VREL =&
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
  
-          Hw = F_Hw(EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
  
         ELSEIF(FCELL .EQ. 'W')THEN
            IJK2N= NORTH_OF(IJK2)
            IJPK2= JP_OF(IJK2)
            IPJPK2= IP_OF(IJPK2)
  
+          g0 = g_0AVG(IJK2, IJK2N, 'Y',J_OF(IJK2), M, M)
           EP_avg =&
                 AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M),J_OF(IJK2))
  
@@ -469,7 +482,7 @@
           VREL =&
             DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
  
-          Hw = F_Hw(EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
          CALL WRITE_ERROR('CALC_GRBDRY', LINE, 1)
@@ -480,6 +493,7 @@
           IJK2T = TOP_OF(IJK2)
           IJKP2 = KP_OF(IJK2)
           IJMKP2 = JM_OF(IJKP2)
+          g0 = g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, M)
           EP_avg =&
                    AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
  
@@ -527,12 +541,13 @@
           VREL =&
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
  
-          Hw = F_Hw(EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL, M)
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL, M)
  
         ELSEIF(FCELL .EQ. 'S')THEN
           IJK2T = TOP_OF(IJK2)
           IJKP2 = KP_OF(IJK2)
           IJPKP2 = JP_OF(IJKP2)
+          g0 = g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, M)
           EP_avg =&
                    AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
  
@@ -580,13 +595,14 @@
           VREL =&
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
  
-          Hw = F_Hw(EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL, M)
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL, M)
  
  
         ELSEIF(FCELL .EQ. 'E')THEN
            IJK2T= TOP_OF(IJK2)
            IJKP2= KP_OF(IJK2)
            IMJKP2 = IM_OF(IJKP2)
+          g0 = g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, M)
           EP_avg =&
                 AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
  
@@ -626,12 +642,13 @@
           VREL =&
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
  
-          Hw = F_Hw(EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
  
         ELSEIF(FCELL .EQ. 'W')THEN
            IJK2T= TOP_OF(IJK2)
            IJKP2= KP_OF(IJK2)
            IPJKP2= IP_OF(IJKP2)
+          g0 = g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, M)
           EP_avg =&
                 AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
  
@@ -670,7 +687,7 @@
           VREL =&
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
  
-          Hw = F_Hw(EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, VREL,M)
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
          CALL WRITE_ERROR('CALC_GRBDRY', LINE, 1)
@@ -686,7 +703,7 @@
  
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: F_HW(EPS, TH, Mu_g_avg, RO_g_avg, VREL,M)              C
+!  Module name: F_HW(g0, EPS, TH, Mu_g_avg, RO_g_avg, VREL,M)          C
 !  Purpose: Function for hw                                            C
 !                                                                      C
 !  Author: K. Agrawal & A. Srivastava, Princeton Univ. Date: 24-JAN-98 C
@@ -702,7 +719,7 @@
 !                   VREL, C_d, Beta                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      DOUBLE PRECISION FUNCTION F_HW(EPS,TH,Mu_g_avg,RO_g_avg,&
+      DOUBLE PRECISION FUNCTION F_HW(g0,EPS,TH,Mu_g_avg,RO_g_avg,&
                                      VREL,M)
  
       USE param 
@@ -753,13 +770,13 @@
 !              Viscosity corrected for interstitial fluid effects
       DOUBLE PRECISION Mu_star
  
-!              Radial distribution function (Carnahan & Starling)
-      DOUBLE PRECISION G_0, G_0EP
+!              Radial distribution function 
+      DOUBLE PRECISION g0, G_0
  
 !     In F_2 and Mu a DSQRT(T) has been left out as it appears in both
 !     terms and thus cancels out upon dividing the former by the latter
  
-      G_0 = G_0EP(EPS)
+      G_0 = g0
  
       F_2 = (PHIP*DSQRT(3d0)*Pi*RO_s(M)*EPS*G_0)&
             /(6d0*EPS_max)

@@ -45,8 +45,8 @@
 !                      error index
       INTEGER          IER
  
-!              Radial distribution function (Carnahan & Starling)
-      DOUBLE PRECISION G_0
+!              Radial distribution function
+      DOUBLE PRECISION g0, G_0
  
 !                      Other variables
       DOUBLE PRECISION Pc, DPcoDEPs, Mu, Mu_b, Mu_zeta, ZETA
@@ -251,12 +251,12 @@
       DOUBLE PRECISION, intent(in) :: EPs
 !
 !                      radial distribution function
-      DOUBLE PRECISION G_0
+      DOUBLE PRECISION G_0, g0
  
 !                      Other variables
       DOUBLE PRECISION Mu, Mu_b,  DEPs2G_0oDEPs, F1, DF1oDEPs
  
-      DOUBLE PRECISION G_0EP, DG_0DNU
+      DOUBLE PRECISION DG_0DNU
       INTEGER , intent(in) :: IJK,M
  
       INCLUDE 'ep_s1.inc'
@@ -267,28 +267,28 @@
  
  
  
-      G_0 = G_0EP(EPs)
+      g0 = G_0(IJK, M, M)
  
       Mu = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(M)*RO_s(M))/96d0
  
-      Mu_b = (256d0*Mu*EPs*EPs*G_0/(5d0*Pi))
+      Mu_b = (256d0*Mu*EPs*EPs*g0/(5d0*Pi))
  
-      DEPs2G_0oDEPs = EPs*EPs*DG_0DNU(EPs) + 2d0*EPs*G_0
+      DEPs2G_0oDEPs = EPs*EPs*DG_0DNU(EPs) + 2d0*EPs*g0
  
       F1 = ((2d0+ALPHA)/3d0)*((2*Mu/(Eta*(2d0-Eta)*&
-           G_0))*(1d0+1.6d0*Eta*EPs*G_0)*(1d0+1.6d0*Eta*(3d0*Eta-2d0)&
-           *EPs*G_0)+(1.2d0*Mu_b*Eta))
+           g0))*(1d0+1.6d0*Eta*EPs*g0)*(1d0+1.6d0*Eta*(3d0*Eta-2d0)&
+           *EPs*g0)+(1.2d0*Mu_b*Eta))
  
       DF1oDEPs = ((2d0+ALPHA)/3d0)*((2*Mu/(Eta*(2d0-Eta))*&
-         ((-DG_0DNU(EPs)/(G_0*G_0)) + (1.6d0*Eta*(3d0*Eta-1d0))&
+         ((-DG_0DNU(EPs)/(g0*g0)) + (1.6d0*Eta*(3d0*Eta-1d0))&
         + (64d0*Eta*Eta*(3d0*Eta-2d0)*DEPs2G_0oDEPs/25d0))) +&
         3.2d0*Eta*RO_s(M)*D_p(M)*((Theta_m(IJK,M)/Pi)**0.5d0)&
           *DEPs2G_0oDEPs)
  
       DZETAoDEPs = 0.5d0*((48d0*Eta*(1d0-Eta)*RO_s(M)*F1*&
               (Theta_m(IJK,M)**1.5d0)/&
-           (SQRT_Pi*D_p(M)*EPs*EPs*G_0))**0.5d0)*&
-           (F1*DEPs2G_0oDEPs - EPs*Eps*G_0*DF1oDEPs)/(F1*F1)
+           (SQRT_Pi*D_p(M)*EPs*EPs*g0))**0.5d0)*&
+           (F1*DEPs2G_0oDEPs - EPs*Eps*g0*DF1oDEPs)/(F1*F1)
  
  
       RETURN
