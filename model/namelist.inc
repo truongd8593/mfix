@@ -8,7 +8,7 @@
              MOMENTUM_X_EQ, MOMENTUM_Y_EQ,MOMENTUM_Z_EQ, DISCRETIZE,&
              GRANULAR_ENERGY,& 
 	     NScalar, Phase4Scalar, &
-             nRR, strong_conservation, &
+             nRR,  &
 ! start anuj 4/20
              FRICTION, SAVAGE,&
 ! end anuj 4/20
