@@ -1,11 +1,15 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-!                      Function for generating the 3-D array index IJK
+!                      Function for generating the LOCAL 3-D array index IJK
 !                      from the 1-D indices I, J, and K.
       INTEGER          FUNIJK
+!                      Function for generating the GLOBAL 3-D array index IJK
+!                      from the 1-D indices I, J, and K.
+      INTEGER          FUNIJK_GL
 !
 !                      FUNIJK function with bounds on I, J, and K
-      INTEGER          BOUND_FUNIJK
+!//? BUG 0901 BOUND_FUNIJK is already defined in BOUNDFUNIJK_mod.f
+!      INTEGER          BOUND_FUNIJK
 !
 !                      Function for generating the index for the entries
 !                      to the upper triangle (excluding the diagonal) of
@@ -189,16 +193,29 @@
 !
 !                      Logical function to identify No IS at Top of the cell
       LOGICAL          NO_IS_AT_T
+!\\   Added to determine whether I am on my PE  
+!\\   Logical function to determine whether I am on my PE's domain 
+      LOGICAL          IS_ON_myPE
 !
 !                      Maximum of zero or input
       DOUBLE PRECISION ZMAX
 !
 ! 
-      FUNIJK_IO (LI, LJ, LK) = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
-      FUNIJK (LI, LJ, LK) = LJ + (LI-1)*JMAX2 + (LK-1)*IJMAX2
-      BOUND_FUNIJK (LI, LJ, LK) = FUNIJK ( MIN( IMAX2, MAX (1, LI) ),&
-                                       MIN( JMAX2, MAX (1, LJ) ),&
-                                       MIN( KMAX2, MAX (1, LK) ) )
+      FUNIJK (LI, LJ, LK) = 1 + (LI - istart3_all(myPE)) &
+      + (LJ-jstart3_all(myPE))*(iend3_all(myPE)-istart3_all(myPE)+1) &
+      + (LK-kstart3_all(myPE))*(jend3_all(myPE)-jstart3_all(myPE)+1)* &
+        (iend3_all(myPE)-istart3_all(myPE)+1)
+
+      FUNIJK_GL (LI, LJ, LK) = 1 + (LI - imin3) + (LJ-jmin3)*(imax3-imin3+1) &
+      + (LK-kmin3)*(jmax3-jmin3+1)*(imax3-imin3+1)
+
+      FUNIJK_IO (LI, LJ, LK) = 1 + (LI - imin3) + (LJ-jmin3)*(imax3-imin3+1) &
+      + (LK-kmin3)*(jmax3-jmin3+1)*(imax3-imin3+1)
+
+      IS_ON_myPE (LI, LJ, LK) = LI.ge.imin3.and.LI.le.imax3.and. &
+				LJ.ge.jmin3.and.LJ.le.jmax3.and. &
+                                LK.ge.kmin3.and.LK.le.kmax3
+
       WEST_OF  (IJK)   = IJK + INCREMENT_FOR_w (CELL_CLASS(IJK))
       EAST_OF  (IJK)   = IJK + INCREMENT_FOR_e (CELL_CLASS(IJK))
       SOUTH_OF (IJK)   = IJK + INCREMENT_FOR_s (CELL_CLASS(IJK))
@@ -238,10 +255,10 @@
                         FLAG_N(IJK) .EQ. 2031
       MFLOW_AT_T(IJK)  = FLAG_T(IJK) .EQ. 2020 .OR. &
                         FLAG_T(IJK) .EQ. 2021 .OR. &
-                        FLAG_T(IJK) .EQ. 2031 
-      FLUIDorP_FLOW_AT(IJK)= FLAG(IJK) .LE. 11 
+                        FLAG_T(IJK) .EQ. 2031
+      FLUIDorP_FLOW_AT(IJK)= FLAG(IJK) .LE. 11
       P_FLOW_AT(IJK)   = FLAG(IJK) .EQ. 10 .OR. &
-                        FLAG(IJK) .EQ. 11 
+                        FLAG(IJK) .EQ. 11
       P_OUTFLOW_AT(IJK)= FLAG(IJK) .EQ. 11
       MASS_OUTFLOW_AT(IJK)= FLAG(IJK) .EQ. 21
       OUTFLOW_AT(IJK)  = FLAG(IJK) .EQ. 31
@@ -277,5 +294,5 @@
                            ICBC_FLAG(IJK)(1:1) .EQ. 's' .OR. &
                            ICBC_FLAG(IJK)(1:1) .EQ. 'c' .OR. &
                            ICBC_FLAG(IJK)(1:1) .EQ. 'C'
-      DEFAULT_WALL_AT(IJK) = ICBC_FLAG(IJK)(2:3) .EQ. '--' 
+      DEFAULT_WALL_AT(IJK) = ICBC_FLAG(IJK)(2:3) .EQ. '--'
       ZMAX (XXX)       = MAX(XXX, ZERO)

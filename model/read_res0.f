@@ -63,7 +63,7 @@
       USE tmp_array
       USE compar      !// 001 Include MPI header file
       USE mpi_utility !//
-      USE dbg_util !//PARDBG
+!     USE dbg_util !//PARDBG
 
 
       IMPLICIT NONE

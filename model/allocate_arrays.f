@@ -1,3 +1,4 @@
+
       SUBROUTINE ALLOCATE_ARRAYS 
       
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -35,12 +36,6 @@
       Use visc_g
       Use visc_s
       Use xsi_array
-
-
-!//EFD 0913
-      use compar
-      use debug
-
       IMPLICIT NONE
       
       INTEGER M
@@ -48,31 +43,10 @@
 !//TD 0912      CALL SET_MAX2
 
 
-!//EFD 0913 many changes to dimension_i,dimension_j,dimension_j
-!//         to conform to new allocation method
-!//         change dimension_i to istart3:iend3
-!//         change dimension_j to jstart3:jend3
-!//         change dimension_k to kstart3:kend3
-!//
-!//      DIMENSION_I   = IMAX2
-!//      DIMENSION_J   = JMAX2
-!//      DIMENSION_K   = KMAX2
-!//      DIMENSION_3   = IJKMAX2
-
-      DIMENSION_I = (IEND3 - ISTART3 + 1)
-      DIMENSION_J = (JEND3 - JSTART3 + 1)
-      DIMENSION_K = (KEND3 - KSTART3 + 1)
-      DIMENSION_3 = DIMENSION_I*DIMENSION_J*DIMENSION_K
-     
-!//EFD 0913 extra checks
-      
-      call assert( ijkstart3 .eq. 1, &
-        '** allocate_arrays: ijkstart3 .ne. 1, ijkstart3 =  ', ijkstart3 )
-      call assert( dimension_3 .eq. (ijkend3 - ijkstart3 + 1), &
-	'** allocate_arrays: invalid dimension_3 ' // & 
-        ' dimension_3,  ijkend3 - ijkstart3+1 ', &
-          dimension_3,  ijkend3 - ijkstart3+1 )
-		
+      DIMENSION_I   = IMAX2
+      DIMENSION_J   = JMAX2
+      DIMENSION_K   = KMAX2
+      DIMENSION_3   = IJKMAX2
       
       DIMENSION_M   = MAX(1, MMAX)
       
@@ -167,26 +141,26 @@
       Allocate(           FLAG_N (DIMENSION_3) )
       Allocate(           FLAG_T (DIMENSION_3) )
       Allocate(           ICBC_FLAG (DIMENSION_3) )
-      Allocate(  oDX (istart3:iend3) )
-      Allocate(  oDY (jstart3:jend3) )
-      Allocate(  oDZ (kstart3:kend3) )
-      Allocate(  oDX_E (istart3:iend3) )
-      Allocate(  oDY_N (jstart3:jend3) )
-      Allocate(  oDZ_T (kstart3:kend3) )
-      Allocate(  X (istart3:iend3) )
-      Allocate(  X_E (istart3:iend3) )
-      Allocate(  oX (istart3:iend3) )
-      Allocate(  oX_E (istart3:iend3) )
-      Allocate(  Z (kstart3:kend3) )
-      Allocate(  Z_T (kstart3:kend3) )
-      Allocate(  FX (istart3:iend3) )
-      Allocate(  FX_bar (istart3:iend3) )
-      Allocate(  FX_E (istart3:iend3) )
-      Allocate(  FX_E_bar (istart3:iend3) )
-      Allocate(  FY_N (jstart3:jend3) )
-      Allocate(  FY_N_bar (jstart3:jend3) )
-      Allocate(  FZ_T (kstart3:kend3) )
-      Allocate(  FZ_T_bar (kstart3:kend3) )
+      Allocate(  oDX (DIMENSION_I) )
+      Allocate(  oDY (DIMENSION_J) )
+      Allocate(  oDZ (DIMENSION_K) )
+      Allocate(  oDX_E (DIMENSION_I) )
+      Allocate(  oDY_N (DIMENSION_J) )
+      Allocate(  oDZ_T (DIMENSION_K) )
+      Allocate(  X (DIMENSION_I) )
+      Allocate(  X_E (DIMENSION_I) )
+      Allocate(  oX (DIMENSION_I) )
+      Allocate(  oX_E (DIMENSION_I) )
+      Allocate(  Z (DIMENSION_K) )
+      Allocate(  Z_T (DIMENSION_K) )
+      Allocate(  FX (DIMENSION_I) )
+      Allocate(  FX_bar (DIMENSION_I) )
+      Allocate(  FX_E (DIMENSION_I) )
+      Allocate(  FX_E_bar (DIMENSION_I) )
+      Allocate(  FY_N (DIMENSION_J) )
+      Allocate(  FY_N_bar (DIMENSION_J) )
+      Allocate(  FZ_T (DIMENSION_K) )
+      Allocate(  FZ_T_bar (DIMENSION_K) )
       Allocate(  AYZ (DIMENSION_3) )
       Allocate(  AXZ (DIMENSION_3) )
       Allocate(  AXY (DIMENSION_3) )
@@ -210,12 +184,12 @@
       Allocate(           I_OF (DIMENSION_3) )
       Allocate(           J_OF (DIMENSION_3) )
       Allocate(           K_OF (DIMENSION_3) )
-      Allocate(           Im1 (istart3:iend3) )
-      Allocate(           Ip1 (istart3:iend3) )
-      Allocate(           Jm1 (jstart3:jend3) )
-      Allocate(           Jp1 (jstart3:jend3) )
-      Allocate(           Km1 (kstart3:kend3) )
-      Allocate(           Kp1 (kstart3:kend3) )
+      Allocate(           Im1 (DIMENSION_I) )
+      Allocate(           Ip1 (DIMENSION_I) )
+      Allocate(           Jm1 (DIMENSION_J) )
+      Allocate(           Jp1 (DIMENSION_J) )
+      Allocate(           Km1 (DIMENSION_K) )
+      Allocate(           Kp1 (DIMENSION_K) )
       
 
 
@@ -313,11 +287,10 @@
 ! array allocation of add on packages, such as linear equation solvers
 !
 
-!//EFD 0913  avoid unnecessary allocation for SLAP and other linear solver
-!//      CALL Allocate_dsdgmr
-!//      CALL Allocate_dslucs
-!//      CALL Allocate_dslugm
-!//      CALL Allocate_igcg  
+      CALL Allocate_dsdgmr
+      CALL Allocate_dslucs
+      CALL Allocate_dslugm
+      CALL Allocate_igcg  
      
       RETURN
       END SUBROUTINE ALLOCATE_ARRAYS 
@@ -405,4 +378,3 @@
 
       
       END SUBROUTINE Allocate_igcg
-
