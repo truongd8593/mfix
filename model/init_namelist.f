@@ -139,7 +139,6 @@
 
       nRR = 0
       
-      strong_conservation(:) = .FALSE.
 !
 ! INITIALIZE THE OUTPUT CONTROL SECTION
 !

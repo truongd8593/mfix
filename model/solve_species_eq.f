@@ -109,15 +109,10 @@
             DO IJK = ijkstart3, ijkend3 
 !
                IF (FLUID_AT(IJK)) THEN
-	          if(strong_conservation(7)) then 
-                     S_P(IJK) = (ROX_GC(IJK,LN))*VOL(IJK) 
-		     S_C(IJK) = ROP_GO(IJK)*VOL(IJK)*ODT*X_GO(IJK,LN) + R_GP(IJK,LN)*VOL(IJK) 
-		   else 
-                     APO = ROP_GO(IJK)*VOL(IJK)*ODT 
-                     S_P(IJK) = APO + (ZMAX(SUM_R_G(IJK))+ROX_GC(IJK,LN))*VOL(IJK) 
-                     S_C(IJK) = APO*X_GO(IJK,LN) + X_G(IJK,LN)*ZMAX((-SUM_R_G(IJK)))&
-                      *VOL(IJK) + R_GP(IJK,LN)*VOL(IJK)
-		   endif
+                   APO = ROP_GO(IJK)*VOL(IJK)*ODT 
+                   S_P(IJK) = APO + (ZMAX(SUM_R_G(IJK))+ROX_GC(IJK,LN))*VOL(IJK) 
+                   S_C(IJK) = APO*X_GO(IJK,LN) + X_G(IJK,LN)*ZMAX((-SUM_R_G(IJK)))&
+                    *VOL(IJK) + R_GP(IJK,LN)*VOL(IJK)
                ELSE 
 !
                   S_P(IJK) = ZERO 
@@ -127,23 +122,14 @@
             END DO
 	    
 	     
-	    if(strong_conservation(7)) then
-              CALL CONV_DIF_PHI_Strong (X_G(1,LN), DIF_G(1,LN), DISCRETIZE(7), U_G, V_G, &
+            CALL CONV_DIF_PHI (X_G(1,LN), DIF_G(1,LN), DISCRETIZE(7), U_G, V_G, &
                W_G, ROP_G, 0, A_M, B_M, IER)
-	    else 
-              CALL CONV_DIF_PHI (X_G(1,LN), DIF_G(1,LN), DISCRETIZE(7), U_G, V_G, &
-               W_G, ROP_G, 0, A_M, B_M, IER)
-	    endif 
 
 !
             CALL BC_PHI (BC_X_G(1,LN), BC_XW_G(1,LN), BC_HW_X_G(1,LN), BC_C_X_G(1,&
                LN), 0, A_M, B_M, IER) 
 !
-	    if(strong_conservation(7)) then
-              CALL SOURCE_PHI_Strong (S_P, S_C, EP_G, X_G(1,LN), 0, A_M, B_M, IER)
-	    else 
-              CALL SOURCE_PHI (S_P, S_C, EP_G, X_G(1,LN), 0, A_M, B_M, IER)
-	    endif 
+            CALL SOURCE_PHI (S_P, S_C, EP_G, X_G(1,LN), 0, A_M, B_M, IER)
 !
             CALL CALC_RESID_S (X_G(1,LN), A_M, B_M, 0, RESID(RESID_X+(LN-1),0), &
                MAX_RESID(RESID_X+(LN-1),0), IJK_RESID(RESID_X+(LN-1),0), &
@@ -179,16 +165,11 @@
 !
                   IF (FLUID_AT(IJK)) THEN 
 !
-	            if(strong_conservation(7)) then 
-                      S_P(IJK) = (ROX_SC(IJK,M,LN))*VOL(IJK) 
-		      S_C(IJK) = ROP_SO(IJK,M)*VOL(IJK)*ODT*X_SO(IJK,M,LN) + R_SP(IJK,M,LN)*VOL(IJK)
-		    else 
-                      APO = ROP_SO(IJK,M)*VOL(IJK)*ODT 
-                      S_P(IJK) = APO + (ZMAX(SUM_R_S(IJK,M))+ROX_SC(IJK,M,LN))*&
+                    APO = ROP_SO(IJK,M)*VOL(IJK)*ODT 
+                    S_P(IJK) = APO + (ZMAX(SUM_R_S(IJK,M))+ROX_SC(IJK,M,LN))*&
                         VOL(IJK) 
-                      S_C(IJK) = APO*X_SO(IJK,M,LN) + X_S(IJK,M,LN)*ZMAX((-SUM_R_S&
+                    S_C(IJK) = APO*X_SO(IJK,M,LN) + X_S(IJK,M,LN)*ZMAX((-SUM_R_S&
                         (IJK,M)))*VOL(IJK) + R_SP(IJK,M,LN)*VOL(IJK)
-		    endif 
 !
                     EPS(IJK) = EP_S(IJK,M) 
 !
@@ -200,24 +181,15 @@
 !
                   ENDIF 
                END DO 
-	       if(strong_conservation(7)) then
-                 CALL CONV_DIF_PHI_Strong (X_S(1,M,LN), DIF_S(1,M,LN), DISCRETIZE(7), U_S(&
+               CALL CONV_DIF_PHI (X_S(1,M,LN), DIF_S(1,M,LN), DISCRETIZE(7), U_S(&
                   1,M), V_S(1,M), W_S(1,M), ROP_S(1,M), M, A_M, B_M, IER)
-	       else 
-                 CALL CONV_DIF_PHI (X_S(1,M,LN), DIF_S(1,M,LN), DISCRETIZE(7), U_S(&
-                  1,M), V_S(1,M), W_S(1,M), ROP_S(1,M), M, A_M, B_M, IER)
-	       endif 
 !
                CALL BC_PHI (BC_X_S(1,M,LN), BC_XW_S(1,M,LN), BC_HW_X_S(1,M,LN), &
                   BC_C_X_S(1,M,LN), M, A_M, B_M, IER) 
 !
 !
-	       if(strong_conservation(7)) then
-                 CALL SOURCE_PHI_Strong (S_P, S_C, EPS, X_S(1,M,LN), M, A_M, B_M, IER)
-	       else 
-                 CALL SOURCE_PHI (S_P, S_C, EPS, X_S(1,M,LN), M, A_M, B_M, IER)
-	       endif 
-!
+               CALL SOURCE_PHI (S_P, S_C, EPS, X_S(1,M,LN), M, A_M, B_M, IER)
+
                CALL CALC_RESID_S (X_S(1,M,LN), A_M, B_M, M, RESID(RESID_X+(LN-1),&
                   M), MAX_RESID(RESID_X+(LN-1),M), IJK_RESID(RESID_X+(LN-1),M), &
                   ZERO_X_GS, IER) 

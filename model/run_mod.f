@@ -69,10 +69,6 @@
       INTEGER          DISCRETIZE(9)
       
 !
-!                      Whether or not to use strong conservation scheme
-!                      for different equations
-      LOGICAL          strong_conservation(9)
-!
 !                      RUN ID info
 !
       INTEGER          ID_MONTH
