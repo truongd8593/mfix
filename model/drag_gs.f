@@ -345,40 +345,40 @@
            F_STOKES = 18*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(M)**2
 	       
 	   phis = EP_s(IJK,M)
-	   w = EXP(-10.0*(0.4-phis)/phi)
+	   w = EXP(-10.0*(0.4-phis)/phis)
 	   
-	   IF(phis > 0.01 .AND. phi < 0.4) THEN
-	    F_0 = (1.0-w) *                                      &
-	              (1.0 + 3.0*dsqrt(phis/2.0) + 135.0/64.0*phi &
-	                *LOG(phis) + 17.14*phi) / (1.0 + 0.681*   &
-	  	        phis - 8.48*phi*phi + 8.16*phi**3) + w *  &
-			10.0*phis/(1.0-phi)**3
+	   IF(phis > 0.01 .AND. phis < 0.4) THEN
+	    F_0 = (1.0-w) *                                           &
+	              (1.0 + 3.0*dsqrt(phis/2.0) + 135.0/64.0*phis    &
+	                *LOG(phis) + 17.14*phis) / (1.0 + 0.681*      &
+	  	        phis - 8.48*phis*phis + 8.16*phis**3) + w *   &
+			10.0*phis/(1.0-phis)**3
 	               
 	   ELSE IF(phis >= 0.4) THEN
-	    F_0 = 10.0*phis/(1.0-phi)**3
+	    F_0 = 10.0*phis/(1.0-phis)**3
 	   ENDIF
 	   
-	   IF(phis > 0.01 .AND. phi <= 0.1) THEN
+	   IF(phis > 0.01 .AND. phis <= 0.1) THEN
 	    F_1 = dsqrt(2.0/phis) / 40.0
 	   ELSE IF(phis > 0.1) THEN
 	    F_1 = 0.11 + 5.1D-04 * exp(11.6*phis)
 	   ENDIF
 	   
 	   IF(phis < 0.4) THEN
-	    F_2 = (1.0-w) *                                      &
-	              (1.0 + 3.0*dsqrt(phis/2.0) + 135.0/64.0*phi &
-	                *LOG(phis) + 17.89*phi) / (1.0 + 0.681*   &
-	  	        phis - 11.03*phi*phi + 15.41*phi**3)+ w * &
-			10.0*phis/(1.0-phi)**3
+	    F_2 = (1.0-w) *                                           &
+	              (1.0 + 3.0*dsqrt(phis/2.0) + 135.0/64.0*phis    &
+	                *LOG(phis) + 17.89*phis) / (1.0 + 0.681*      &
+	  	        phis - 11.03*phis*phis + 15.41*phis**3)+ w *  &
+			10.0*phis/(1.0-phis)**3
 	   
 	   ELSE
-	    F_2 = 10.0*phis/(1.0-phi)**3
+	    F_2 = 10.0*phis/(1.0-phis)**3
 	   ENDIF
 	   
 	   IF(phis < 0.0953) THEN
 	    F_3 = 0.9351*phis + 0.03667
 	   ELSE
-	    F_3 = 0.0673 + 0.212*phis +0.0232/(1.0-phi)**5
+	    F_3 = 0.0673 + 0.212*phis +0.0232/(1.0-phis)**5
 	   ENDIF
 	   
 	   Re_Trans_1 = (F_2 - 1.0)/(3.0/8.0 - F_3)
@@ -392,7 +392,7 @@
 	     F = F_0 + F_1*Re_kh*Re_kh
 	   
 	  
-	   ELSE IF(phis <= 0.01 .AND. Re_kh > Re_Trans_1 .OR.        &
+	   ELSE IF(phis <= 0.01 .AND. Re_kh > Re_Trans_1 .OR.         &
 	           phis >  0.01 .AND. Re_kh > Re_Trans_2) THEN
 	     F = F_2 + F_3*Re_kh
 	  
@@ -401,7 +401,7 @@
 	   ENDIF
 	   
 !  This is a check for phis (or eps_(ijk,m)) to be within physical range
-	   IF(phis < SMALL_NUMBER .OR. phi > ONE) F = zero
+	   IF(phis < SMALL_NUMBER .OR. phis > ONE) F = zero
 	   
 	   DgA = F * F_STOKES
 !!!   
