@@ -126,40 +126,52 @@
          ENDIF 
       END DO 
       K1 = 1 
-      DO J1 = 1, JMAX2 
-         DO I1 = 1, IMAX2 
+
+!//SP
+      DO J1 = JSTART3, JEND3
+         DO I1 = ISTART3, IEND3
+!!/SP
+            IF(K1.NE.KSTART2)   EXIT
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
                , 0, (-ONE)) 
          END DO 
       END DO 
       K1 = KMAX2 
-      DO J1 = 1, JMAX2 
-         DO I1 = 1, IMAX2 
+      DO J1 = JSTART3, JEND3
+         DO I1 = ISTART3, IEND3
+!!/SP
+            IF(K1.NE.KEND2)   EXIT
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
                , 0, (-ONE)) 
          END DO 
       END DO 
       J1 = 1 
-      DO K1 = 1, KMAX2 
-         DO I1 = 1, IMAX2 
+      DO K1 = KSTART3, KEND3
+         DO I1 = ISTART3, IEND3
+!!/SP
+            IF(J1.NE.JSTART2)   EXIT
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
                , 0, (-ONE)) 
          END DO 
       END DO 
       J1 = JMAX2 
-      DO K1 = 1, KMAX2 
-         DO I1 = 1, IMAX2 
+      DO K1 = KSTART3, KEND3
+         DO I1 = ISTART3, IEND3
+!!/SP
+            IF(J1.NE.JEND2)   EXIT
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
                , 0, (-ONE)) 
          END DO 
       END DO 
       I1 = 1 
-      DO K1 = 1, KMAX2 
-         DO J1 = 1, JMAX2 
+      DO K1 = KSTART3, KEND3
+         DO J1 = JSTART3, JEND3
+!!/SP
+            IF(I1.NE.ISTART2)   EXIT
             IJK = FUNIJK(I1,J1,K1) 
 !
             IF (DEFAULT_WALL_AT(IJK)) THEN 
@@ -183,8 +195,10 @@
          END DO 
       END DO 
       I1 = IMAX2 
-      DO K1 = 1, KMAX2 
-         DO J1 = 1, JMAX2 
+      DO K1 = KSTART3, KEND3
+         DO J1 = JSTART3, JEND3
+!!/SP
+            IF(I1.NE.IEND2)   EXIT
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
                , 0, (-ONE)) 
@@ -278,6 +292,21 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
+!//SP
+!//SP - Limit I1, I2 and all to local processor first ghost layer
+
+     IF(I1.LE.IEND2)   I1 = MAX(I1, ISTART2)
+
+     IF(J1.LE.JEND2)   J1 = MAX(J1, JSTART2)
+
+     IF(K1.LE.KEND2)   K1 = MAX(K1, KSTART2)
+
+     IF(I2.GE.ISTART2) I2 = MIN(I2, IEND2)
+
+     IF(J2.GE.JSTART2) J2 = MIN(J2, JEND2)
+
+     IF(K2.GE.KSTART2) K2 = MIN(K2, KEND2)
+
       DO K = K1, K2 
          DO J = J1, J2 
             DO I = I1, I2 

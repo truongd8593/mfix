@@ -243,6 +243,9 @@
             END DO 
          END DO 
       END DO 
+!//SP
+      call send_recv(P_G,2)
+
 !
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: SET_FLUIDBED_P'/' Message: Outflow ',&

@@ -530,7 +530,8 @@
 !
             CALL CALC_XSI (DISCRETIZE(2), ROP_S(1,M), U_S(1,M), V_S(1,M), W_S(1&
                ,M), XSI_E, XSI_N, XSI_T) 
-            DO IJK = 1, IJKMAX2 
+!//SP
+            DO IJK = IJKSTART3, IJKEND3
 !
                IF (FLUID_AT(IJK)) THEN 
                   I = I_OF(IJK) 

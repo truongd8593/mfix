@@ -290,8 +290,8 @@
 !     write(*,*) 'after CORRECT_1, etc.,', myPE
 !
 !  Update wall velocities
-!
-!     CALL SET_WALL_BC (IER) 
+ 
+      CALL SET_WALL_BC (IER) 
 !
 !//SP
 !     write(*,*) 'after SET_WALL_BC, etc.,', myPE
