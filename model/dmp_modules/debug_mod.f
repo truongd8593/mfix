@@ -1,7 +1,7 @@
 	module debug
 !//BUGFIX 0904 added funits module here for declaration of UNIT_LOG
         USE funits
-        USE dbg_util
+!       USE dbg_util
        	implicit none
 
 	integer :: idebug = 0

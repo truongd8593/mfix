@@ -17,7 +17,92 @@
 !	depending on the argument type. i stands for integer, r for real
 !	and d for double precision. 0 for scalar, 1 for vector, 2 for
 !	2-D array and similarly 3.
+!AIKEPORT 
+#ifdef T3E
+	interface scatter
+	module  procedure scatter_1i, scatter_2i, scatter_3i, &
+                          scatter_1r, scatter_2r, scatter_3r, &
+			  scatter_1c,scatter_1l
+	end interface 
 
+	interface gather
+	module  procedure gather_1i, gather_2i, gather_3i, &
+                          gather_1r, gather_2r, gather_3r, &
+			  gather_1c, gather_1l
+	end interface 
+
+	interface bcast
+	module  procedure bcast_0i, bcast_1i, bcast_2i, bcast_3i, &
+                          bcast_0r, bcast_1r, bcast_2r, bcast_3r, &
+			  bcast_0l, bcast_1l, bcast_0c, bcast_1c
+	end interface 
+
+        interface global_sum
+        module  procedure global_sum_0i, global_sum_1i, global_sum_2i, global_sum_3i, &
+                          global_sum_0r, global_sum_1r, global_sum_2r, global_sum_3r
+
+        end interface
+
+        interface global_all_sum
+        module  procedure &
+                          global_all_sum_0i, global_all_sum_1i, &
+                          global_all_sum_2i, global_all_sum_3i, &
+                          global_all_sum_0r, global_all_sum_1r, &
+                          global_all_sum_2r, global_all_sum_3r, &
+                          global_all_sum_onevar_0i, global_all_sum_onevar_1i, &
+                          global_all_sum_onevar_2i, global_all_sum_onevar_3i, &
+                          global_all_sum_onevar_0r, global_all_sum_onevar_1r, &
+                          global_all_sum_onevar_2r, global_all_sum_onevar_3r
+        end interface
+
+        interface global_min
+        module  procedure global_min_0i, global_min_1i, global_min_2i, global_min_3i, &
+                          global_min_0r, global_min_1r, global_min_2r, global_min_3r
+
+        end interface
+
+        interface global_all_min
+        module  procedure &
+                          global_all_min_0i, global_all_min_1i, &
+                          global_all_min_2i, global_all_min_3i, &
+                          global_all_min_0r, global_all_min_1r, &
+                          global_all_min_2r, global_all_min_3r, &
+                          global_all_min_onevar_0i, global_all_min_onevar_1i, &
+                          global_all_min_onevar_2i, global_all_min_onevar_3i, &
+                          global_all_min_onevar_0r, global_all_min_onevar_1r, &
+                          global_all_min_onevar_2r, global_all_min_onevar_3r
+        end interface
+
+        interface global_max
+        module  procedure global_max_0i, global_max_1i, global_max_2i, global_max_3i, &
+                          global_max_0r, global_max_1r, global_max_2r, global_max_3r
+
+        end interface
+
+        interface global_all_max
+        module  procedure &
+                          global_all_max_0i, global_all_max_1i, &
+                          global_all_max_2i, global_all_max_3i, &
+                          global_all_max_0r, global_all_max_1r, &
+                          global_all_max_2r, global_all_max_3r, &
+                          global_all_max_onevar_0i, global_all_max_onevar_1i, &
+                          global_all_max_onevar_2i, global_all_max_onevar_3i, &
+                          global_all_max_onevar_0r, global_all_max_onevar_1r, &
+                          global_all_max_onevar_2r, global_all_max_onevar_3r
+        end interface
+
+        interface global_all_and
+        module procedure &
+                global_all_and_0d, global_all_and_1d, &
+                global_all_and_onevar_0d, global_all_and_onevar_1d
+        end interface
+
+        interface global_all_or
+        module procedure &
+                global_all_or_0d, global_all_or_1d, &
+                global_all_or_onevar_0d, global_all_or_onevar_1d
+        end interface
+#else
 	interface scatter
 	module  procedure scatter_1i, scatter_2i, scatter_3i, &
                           scatter_1r, scatter_2r, scatter_3r, &
@@ -116,6 +201,7 @@
                 global_all_or_0d, global_all_or_1d, &
                 global_all_or_onevar_0d, global_all_or_onevar_1d
         end interface
+#endif
 
         contains
 

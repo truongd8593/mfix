@@ -27,10 +27,14 @@
       IMPLICIT NONE
 !
       OPEN_N1   = 512
-      NWORDS_DP =  64
-      NWORDS_R  = 128
-      NWORDS_I  = 128
-      JUST_FLUSH = .TRUE.
+!AIKEPORT Adjust the number variables that fit in 512 byte record length for Cra
+ 	NWORDS_DP =  64
+ 	NWORDS_R	= 128
+ 	NWORDS_I	= 128
+!       NWORDS_DP =  32
+!       NWORDS_R	=  32
+!       NWORDS_I	=  64
+
 !
       RETURN
       END
@@ -76,8 +80,7 @@
       ID_SECOND = DAT(7)
       
 !     For SGI only
-      ID_NODE = ""
-      CALL GETHOSTNAME(ID_NODE,64)
+!     CALL GETHOSTNAME(ID_NODE,64)
 !
       RETURN
       END
@@ -111,29 +114,39 @@
 !
 !                      cpu time since start of run
       DOUBLE PRECISION CPU
-      
-      INTEGER, SAVE :: COUNT_OLD=0, WRAP=0
 !
 ! local variables
 !
-
+!
+!                      TA(1) = user cpu time   TA(2) = system cpu time
+      REAL             TA(2) 
+!
+!                      XT = TA(1) + TA(2)
+      REAL             XT
+!
+!                      ETIME is an SGI system function which returns
+!                      the elasped CPU time
+      REAL             ETIME
+!
+!     XT  = ETIME()
+!     CPU = XT
+!AIKEPORT 090201 Cray equivalent to system time
+      CPU = IRTC()*6.6E-9
+      
+      
+!-------------------------------------------F90
 !                       clock cycle
-      INTEGER           COUNT
+!      INTEGER           COUNT
 
 !                       number of cycles per second
-      INTEGER           COUNT_RATE
+!      INTEGER           COUNT_RATE
       
 !                       max number of cycles, after which count is reset to 0
-      INTEGER           COUNT_MAX
+!      INTEGER           COUNT_MAX
 
-      CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
-      IF(COUNT_OLD .GT. COUNT) THEN
-        WRAP = WRAP + 1
-      ENDIF
-      COUNT_OLD = COUNT
+!      CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
       
-      CPU           = DBLE(COUNT)/DBLE(COUNT_RATE) &
-                     + DBLE(WRAP) * DBLE(COUNT_MAX)/DBLE(COUNT_RATE)
+!      CPU           = DBLE(COUNT)/DBLE(COUNT_RATE)
 !
       RETURN
       END
@@ -188,7 +201,8 @@
       SUBROUTINE END_LOG
       USE funits
       IMPLICIT NONE
-      CALL FLUSH (UNIT_LOG)
+!AIKEPORT Disabled flush call untill Cray equivalent is found
+!     CALL FLUSH (UNIT_LOG)
       RETURN
       END
 !
@@ -199,29 +213,23 @@
       subroutine pc_quickwin
       return
       end
-!
 
-      subroutine gethostname(name, namelen)
-      integer namelen
-      character *1 name(namelen)
-      name = " "
+!AIKEPORT dummy routine for flush function
+      subroutine flush(UNIT_LOG)
+!     USE funits
       return
       end
-      subroutine ran
-      return
-      end
-     
-!
+
       subroutine flush_bin(iunit)
       implicit none
       integer :: iunit
       call flush(iunit)
       return
       end
-
       subroutine flush_res(iunit)
       implicit none
       integer :: iunit
       call flush(iunit)
       return
       end
+

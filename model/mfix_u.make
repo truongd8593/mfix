@@ -48,7 +48,6 @@ mfix.exe : \
     VSHEAR.mod \
     XSI_ARRAY.mod \
     COMPAR.mod \
-    DBG_UTIL.mod \
     DEBUG.mod \
     GRIDMAP.mod \
     MPI.mod \
@@ -559,7 +558,6 @@ mfix.exe : \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
     compar_mod.$(OBJ_EXT) \
-    dbg_util_mod.$(OBJ_EXT) \
     debug_mod.$(OBJ_EXT) \
     gridmap_mod.$(OBJ_EXT) \
     mpi_mod.$(OBJ_EXT) \
@@ -762,8 +760,7 @@ DBG_UTIL.mod : ./dmp_modules/dbg_util_mod.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/dbg_util_mod.f 
 DEBUG.mod : ./dmp_modules/debug_mod.f \
-            FUNITS.mod \
-            DBG_UTIL.mod 
+            FUNITS.mod
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/debug_mod.f 
 GRIDMAP.mod : ./dmp_modules/gridmap_mod.f \
             MPI_UTILITY.mod \
@@ -785,7 +782,7 @@ MPI_UTILITY.mod : ./dmp_modules/mpi_utility_mod.f \
             INDICES.mod \
             FUNITS.mod \
             function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/mpi_utility_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS2) ./dmp_modules/mpi_utility_mod.f 
 PARALLEL_MPI.mod : ./dmp_modules/parallel_mpi_mod.f \
             GEOMETRY.mod \
             COMPAR.mod 

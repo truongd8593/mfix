@@ -46,7 +46,6 @@ post_mfix : \
     XSI_ARRAY.mod \
     write_error.$(OBJ_EXT)                    \
     COMPAR.mod                                \
-    DBG_UTIL.mod                              \
     DEBUG.mod                                 \
     GRIDMAP.mod                               \
     MPI.mod                                   \
@@ -281,7 +280,6 @@ post_mfix : \
     write_spx1.$(OBJ_EXT) \
     debug_mod.$(OBJ_EXT)                           \
     compar_mod.$(OBJ_EXT)                          \
-    dbg_util_mod.$(OBJ_EXT)                        \
     gridmap_mod.$(OBJ_EXT)                         \
     mpi_mod.$(OBJ_EXT)                             \
     mpi_utility_mod.$(OBJ_EXT)                     \
@@ -1188,7 +1186,6 @@ PARALLEL_MPI.mod : ../model/dmp_modules/mpi_donothing/parallel_mpi_mod.f \
             COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/parallel_mpi_mod.f 
 DEBUG.mod : ../model/dmp_modules/mpi_donothing/debug_mod.f \
-            DBG_UTIL.mod \
             FUNITS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/debug_mod.f 
 GRIDMAP.mod : ../model/dmp_modules/mpi_donothing/gridmap_mod.f \
@@ -1208,7 +1205,7 @@ MPI_UTILITY.mod : ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f \
             INDICES.mod \
             FUNITS.mod \
             function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) -eZ -F -DT3E ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f 
 SENDRECV.mod : ../model/dmp_modules/mpi_donothing/sendrecv_mod.f \
             PARALLEL_MPI.mod \
             DEBUG.mod \

@@ -1,0 +1,7 @@
+
+add a soft link for mpif.h
+
+modify make_post for Cray platform and compiler flags
+
+modify post_u.make for special compilation of mpi_utility_mod.f
+ -eZ -F -DT3E 
