@@ -59,20 +59,23 @@
 !-----------------------------------------------
       IJK = 1 
       IF (IJKMAX2 > 0) THEN 
-         EP_G(:IJKMAX2) = UNDEFINED 
-         P_G(:IJKMAX2) = UNDEFINED 
-         P_STAR(:IJKMAX2) = ZERO 
-         RO_G(:IJKMAX2) = UNDEFINED 
-         ROP_G(:IJKMAX2) = UNDEFINED 
-         T_G(:IJKMAX2) = ZERO 
-         U_G(:IJKMAX2) = UNDEFINED 
-         V_G(:IJKMAX2) = UNDEFINED 
-         W_G(:IJKMAX2) = UNDEFINED 
+!// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3
+!//         EP_G(:IJKMAX2) = UNDEFINED       
+         EP_G(0:IJKMAX3) = UNDEFINED 
+         P_G(0:IJKMAX3) = UNDEFINED 
+         P_STAR(0:IJKMAX3) = ZERO 
+         RO_G(0:IJKMAX3) = UNDEFINED 
+         ROP_G(0:IJKMAX3) = UNDEFINED 
+         T_G(0:IJKMAX3) = ZERO 
+         U_G(0:IJKMAX3) = UNDEFINED 
+         V_G(0:IJKMAX3) = UNDEFINED 
+         W_G(0:IJKMAX3) = UNDEFINED 
          N = 1 
          IF (NMAX(0) > 0) THEN 
-            X_G(:IJKMAX2,:NMAX(0)) = ZERO 
+            X_G(0:IJKMAX3,:NMAX(0)) = ZERO 
             N = NMAX(0) + 1 
          ENDIF 
+!//? what is IJK used for?	 
          IJK = IJKMAX2 + 1 
       ENDIF 
 
@@ -80,17 +83,19 @@
       DO M = 1, MMAX 
          IJK = 1 
          IF (IJKMAX2 > 0) THEN 
-            ROP_S(:IJKMAX2,M) = UNDEFINED 
-            T_S(:IJKMAX2,M) = ZERO 
-            THETA_M(:IJKMAX2,M) = ZERO 
-            U_S(:IJKMAX2,M) = UNDEFINED 
-            V_S(:IJKMAX2,M) = UNDEFINED 
-            W_S(:IJKMAX2,M) = UNDEFINED 
+!// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3
+            ROP_S(0:IJKMAX3,M) = UNDEFINED 
+            T_S(0:IJKMAX3,M) = ZERO 
+            THETA_M(0:IJKMAX3,M) = ZERO 
+            U_S(0:IJKMAX3,M) = UNDEFINED 
+            V_S(0:IJKMAX3,M) = UNDEFINED 
+            W_S(0:IJKMAX3,M) = UNDEFINED 
             N = 1 
             IF (NMAX(M) > 0) THEN 
-               X_S(:IJKMAX2,M,:NMAX(M)) = ZERO 
+               X_S(0:IJKMAX3,M,:NMAX(M)) = ZERO 
                N = NMAX(M) + 1 
             ENDIF 
+!//? what is IJK used for?	 	    
             IJK = IJKMAX2 + 1 
          ENDIF 
       END DO 

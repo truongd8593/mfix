@@ -27,6 +27,7 @@
       USE param 
       USE param1 
       USE geometry
+!      USE compar  !//AIKEPARDBG only activate when debug printing
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -93,6 +94,13 @@
          KMAX3 = KMAX + 3 	 	 	 
       ENDIF 
 !
+!//AIKEPARDBGSTOP 0922
+!      write(*,"('(PE ',I2,'): from set_max2.f ',&
+!                 /,9X,'Kmin2 = ',I6,'  Kmax3 = ',I6,'  Kmax = ',I6, &
+!                 /,9X,'Jmin2 = ',I6,'  Jmax3 = ',I6,'  Jmax = ',I6,&
+!		 /,9X,'Imin2 = ',I6,'  Imax3 = ',I6,'  Imax = ',I6)") &
+!                 myPE,Kmin2,Kmax3,Kmax,Jmin2,Jmax3,Jmax,Imin2,Imax3,Imax
+
       IJMAX2 = IMAX2*JMAX2 
       IJKMAX2 = IMAX2*JMAX2*KMAX2 
       IF (DO_K) THEN 

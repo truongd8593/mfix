@@ -28,6 +28,7 @@
 !   M o d u l e s 
 !-----------------------------------------------
       USE funits 
+      USE compar   !//
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -62,7 +63,7 @@
 !
       IF (N /= 2) THEN 
          WRITE (UNIT_LOG, 1000) NAME, BC 
-         STOP  
+         call mfix_exit(myPE) 
       ENDIF 
 !
       RETURN  

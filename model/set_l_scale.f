@@ -46,10 +46,12 @@
 !-----------------------------------------------
 !
       IJK = 1 
-!//? LIMITS: should we initialize L_SCALE for 1:ijkmax3 instead of ijkmax2???      
+      
       IF (IJKMAX2 > 0) THEN 
-         L_SCALE(:IJKMAX2) = L_SCALE0 
-         IJK = IJKMAX2 + 1 
+!// 200 0922 changed :IJKMAX2 --> 0:IJKMAX3      
+         L_SCALE(0:IJKMAX3) = L_SCALE0 
+!//? what is IJK used for? modification for IJKMAX3 is valid or not?	 
+         IJK = IJKMAX3 + 1 
       ENDIF 
       RETURN  
       END SUBROUTINE SET_L_SCALE 

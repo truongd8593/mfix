@@ -154,8 +154,8 @@
 
       CALL CHECK_DATA_03 (SHIFT)                 ! geometry input 
 !//AIKEPARDBGSTOP 0907
-      write(*,"('(PE ',I2,'): aft call chk_data_03 in get_data')") myPE !//AIKEPARDBG
-      call mfix_exit(myPE) !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): aft call chk_data_03 in get_data')") myPE !//AIKEPARDBG
+!      call mfix_exit(myPE) !//AIKEPARDBG
 
 !
 !  Set X, X_E, oX, oX_E ... etc.
@@ -164,6 +164,10 @@
 !
       CALL SET_L_SCALE 
 !
+!//AIKEPARDBGSTOP 0920
+!      write(*,"('(PE ',I2,'): aft call set_L_scale in get_data')") myPE !//AIKEPARDBG
+!      call mfix_exit(myPE) !//AIKEPARDBG
+
       CALL CHECK_DATA_04                         ! solid phase section 
       CALL CHECK_DATA_05                         ! gas phase section 
 !
@@ -171,10 +175,24 @@
 !
       CALL SET_CONSTANTS 
 !
+!//AIKEPARDBGSTOP 0922
+!      write(*,"('(PE ',I2,'): aft call set_constants in get_data')") myPE !//AIKEPARDBG
+!      call mfix_exit(myPE) !//AIKEPARDBG
+
       CALL CHECK_DATA_06                         ! initial condition section 
+
+!//AIKEPARDBGSTOP 0922
+!      write(*,"('(PE ',I2,'): aft call check_data_06 in get_data')") myPE !//AIKEPARDBG
+!      call mfix_exit(myPE) !//AIKEPARDBG
+
       CALL CHECK_DATA_07                         ! boundary condition section 
       CALL CHECK_DATA_08                         ! Internal surfaces section 
       CALL CHECK_DATA_09                         ! Chemical reactions section 
+!//AIKEPARDBGSTOP 0922
+!      write(*,"('(PE ',I2,'): aft call check_data_09 in get_data')") myPE !//AIKEPARDBG
+!      call mfix_exit(myPE) !//AIKEPARDBG
+      
+
 !
 ! close .LOG file
 !

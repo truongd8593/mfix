@@ -95,8 +95,8 @@
          DY(1) = DY(JMAX1) 
          DY(JMAX2) = DY(JMIN1) 
       ENDIF 
-!// 300 0912 For CYCLIC_Z, dz(1) of PE 0 = dz(kmax1) of PE 1
-!//          As dz() is the global array for all PEs no modification necessary
+!//D 300 0912 For CYCLIC_Z, dz(1) of PE 0 = dz(kmax1) of PE 1
+!//D          As dz() is the global array for all PEs no modification necessary
       IF (CYCLIC_Z) THEN 
          DZ(1) = DZ(KMAX1) 
          DZ(KMAX2) = DZ(KMIN1) 
@@ -153,14 +153,23 @@
          ODY(:JMAX2) = ONE/DY(:JMAX2) 
          J = JMAX2 + 1 
       ENDIF 
-!//? LIMITS : need to change the limits? kmax2 -> kmax3???
-      DO K = 1, KMAX2 
+
+!// 200 0920 Changed the limit from KMAX2--> KMAX3
+      DO K = 1, KMAX3 
 !
          IF (K == 1) THEN 
             Z(K) = ZERO - HALF*DZ(K) 
             Z_T(K) = ZERO 
+!// 200 0920 added initializations to take care of z(KMIN3)	    
+	    Z(K-1) =Z(K)
+            Z_T(K-1) = Z_T(K) 	    
 !
-         ELSE 
+!// 200 0920 added initializations to take care of z(KMAX3)	    
+         ELSE IF (K == KMAX3) THEN
+	    Z(K) =Z(K-1)
+            Z_T(K) = Z_T(K-1) 	    
+	    
+         ELSE
             Z(K) = Z_T(K-1) + HALF*DZ(K) 
             Z_T(K) = Z_T(K-1) + DZ(K) 
 !
@@ -213,7 +222,7 @@
 !
 !       Look at 2 through KMAX1 W-momentum cells
       IF (DO_K) THEN 
-!// 300 0912 no changes in the limits as they run over ACTIVE cells ONLY
+!//D 300 0912 no changes in the limits as they run over ACTIVE cells ONLY
          DO K = KMIN1, KMAX1 
             DZ_T = HALF*(DZ(K+1)+DZ(K)) 
             ODZ_T(K) = ONE/DZ_T 
@@ -230,15 +239,21 @@
       ODX_E(IMAX2) = ONE/DX_E 
       ODY_N(JMAX2) = ONE/DY_N 
       ODZ_T(KMAX2) = ONE/DZ_T 
+!//S2D for 2D/3D decomp. do similar add ons for JMAX3, IMAX3 as done in KMAX3 below      
       FX(IMAX2) = HALF 
       FX_BAR(IMAX2) = HALF 
       FX_E(IMAX2) = HALF 
       FX_E_BAR(IMAX2) = HALF 
+      
       FY_N(JMAX2) = HALF 
-!//? LIMITS: do we need to update values for KMAX3 also?      
-      FY_N_BAR(JMAX2) = HALF 
+      FY_N_BAR(JMAX2) = HALF      
+
       FZ_T(KMAX2) = HALF 
       FZ_T_BAR(KMAX2) = HALF 
+!// 200 0920 need to update values for KMAX3 also             
+      FZ_T(KMAX3) = HALF 
+      FZ_T_BAR(KMAX3) = HALF 
+      
       IF (CYCLIC_X) THEN 
          FX_E(1) = FX_E(IMAX1) 
          FX_E_BAR(1) = FX_E_BAR(IMAX1) 
@@ -247,6 +262,7 @@
          FY_N(1) = FY_N(JMAX1) 
          FY_N_BAR(1) = FY_N_BAR(JMAX1) 
       ENDIF 
+!//? should we update the additional ghosts for CYCLIC_Z?      
       IF (CYCLIC_Z) THEN 
          FZ_T(1) = FZ_T(KMAX1) 
          FZ_T_BAR(1) = FZ_T_BAR(KMAX1) 

@@ -61,6 +61,9 @@
       DOUBLE PRECISION SUM
 !-----------------------------------------------
       INCLUDE 'function.inc'
+      
+!//? DID NOT PERFORMED A TEST WITH INTERNAL SURF. YET
+
 !
 ! DETERMINE WHICH INTERNAL SURFACE INDICES HAVE VALUES
 !
@@ -84,7 +87,7 @@
                   IS_X_W(ISV) = ZERO 
                ELSE 
                   WRITE (UNIT_LOG, 1000) 'IS_X_w and IS_I_w ', ISV 
-                  STOP  
+                  call mfix_exit(myPE)  
                ENDIF 
             ENDIF 
             IF (IS_X_E(ISV)==UNDEFINED .AND. IS_I_E(ISV)==UNDEFINED_I) THEN 
@@ -92,7 +95,7 @@
                   IS_X_E(ISV) = XLENGTH 
                ELSE 
                   WRITE (UNIT_LOG, 1000) 'IS_X_e and IS_I_e ', ISV 
-                  STOP  
+                  call mfix_exit(myPE)		  
                ENDIF 
             ENDIF 
             IF (IS_Y_S(ISV)==UNDEFINED .AND. IS_J_S(ISV)==UNDEFINED_I) THEN 
@@ -100,7 +103,7 @@
                   IS_Y_S(ISV) = ZERO 
                ELSE 
                   WRITE (UNIT_LOG, 1000) 'IS_Y_s and IS_J_s ', ISV 
-                  STOP  
+                  call mfix_exit(myPE)		  
                ENDIF 
             ENDIF 
             IF (IS_Y_N(ISV)==UNDEFINED .AND. IS_J_N(ISV)==UNDEFINED_I) THEN 
@@ -108,7 +111,7 @@
                   IS_Y_N(ISV) = YLENGTH 
                ELSE 
                   WRITE (UNIT_LOG, 1000) 'IS_Y_n and IS_J_n ', ISV 
-                  STOP  
+                  call mfix_exit(myPE)
                ENDIF 
             ENDIF 
             IF (IS_Z_B(ISV)==UNDEFINED .AND. IS_K_B(ISV)==UNDEFINED_I) THEN 
@@ -116,7 +119,7 @@
                   IS_Z_B(ISV) = ZERO 
                ELSE 
                   WRITE (UNIT_LOG, 1000) 'IS_Z_b and IS_K_b ', ISV 
-                  STOP  
+                  call mfix_exit(myPE)
                ENDIF 
             ENDIF 
             IF (IS_Z_T(ISV)==UNDEFINED .AND. IS_K_T(ISV)==UNDEFINED_I) THEN 
@@ -124,7 +127,7 @@
                   IS_Z_T(ISV) = ZLENGTH 
                ELSE 
                   WRITE (UNIT_LOG, 1000) 'IS_Z_t and IS_K_t ', ISV 
-                  STOP  
+                  call mfix_exit(myPE)
                ENDIF 
             ENDIF 
             DO I = 1, DIM_ISTYPE 
@@ -144,7 +147,7 @@
             END DO 
             WRITE (UNIT_LOG, 1001) ISV, IS_TYPE(ISV) 
             WRITE (UNIT_LOG, 1002) VALID_IS_TYPE 
-            STOP  
+            call mfix_exit(myPE)  
          ENDIF 
       END DO L50 
       CALL GET_IS 
@@ -158,15 +161,15 @@
                'SEMIPERMEABLE') THEN 
                IF (IS_PC(ISV,1) == UNDEFINED) THEN 
                   WRITE (UNIT_LOG, 1005) 'IS_PC', ISV 
-                  STOP  
+                  call mfix_exit(myPE)  
                ENDIF 
                IF (IS_PC(ISV,1) == ZERO) THEN 
                   WRITE (UNIT_LOG, 1006) 'IS_PC', ISV 
-                  STOP  
+                  call mfix_exit(myPE)  
                ENDIF 
                IF (IS_PC(ISV,2) == UNDEFINED) THEN 
                   WRITE (UNIT_LOG, 1010) 'IS_PC', ISV 
-                  STOP  
+                  call mfix_exit(myPE)  
                ENDIF 
             ENDIF 
          ELSE 
@@ -175,11 +178,11 @@
 !
             IF (IS_PC(ISV,1) /= LARGE_NUMBER) THEN 
                WRITE (UNIT_LOG, 1200) 'IS_PC', ISV 
-               STOP  
+               call mfix_exit(myPE)  
             ENDIF 
             IF (IS_PC(ISV,2) /= ZERO) THEN 
                WRITE (UNIT_LOG, 1210) 'IS_PC', ISV 
-               STOP  
+               call mfix_exit(myPE)  
             ENDIF 
          ENDIF 
       END DO 

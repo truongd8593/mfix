@@ -51,34 +51,46 @@
 !
       IF (DO_I) THEN 
          DX(IMAX2) = DX(IMAX) 
+!// 200 0920 added IMAX3 initialization	 	 
+	 DX(IMAX3) = DX(IMAX2)	 
          LC = IMAX1 
          IF (1 + IMAX1 - IMIN1 > 0) THEN 
             DX(IMAX1:IMIN1:(-1)) = DX(IMAX1-1:IMIN1-1:(-1)) 
             LC = IMIN1 - 1 
          ENDIF 
          DX(1) = DX(IMIN1) 
+!// 200 0920 added IMIN3 (i.e. = 0) initialization	 
+         DX(IMIN3) =DX(IMIN2)	 	 
       ENDIF 
 !
+
       IF (DO_J) THEN 
          DY(JMAX2) = DY(JMAX) 
+!// 200 0920 added JMAX3 initialization	 	 
+	 DY(JMAX3) = DY(JMAX2)	 	 
          LC = JMAX1 
          IF (1 + JMAX1 - JMIN1 > 0) THEN 
             DY(JMAX1:JMIN1:(-1)) = DY(JMAX1-1:JMIN1-1:(-1)) 
             LC = JMIN1 - 1 
          ENDIF 
          DY(1) = DY(JMIN1) 
+!// 200 0920 added JMIN3 (i.e. = 0) initialization	 
+         DY(JMIN3) =DY(JMIN2)	 	 
+	 
       ENDIF 
 !
-!//? do we need modify dz shift w.r.t. additional ghost layers introduced for
-!//? for MFIX/MPI, in particular, at kmax3, kmin2,kmin1
       IF (DO_K) THEN 
          DZ(KMAX2) = DZ(KMAX) 
+!// 200 0920 added KMAX3 initialization	 
+	 DZ(KMAX3) = DZ(KMAX2)
          LC = KMAX1 
          IF (1 + KMAX1 - KMIN1 > 0) THEN 
             DZ(KMAX1:KMIN1:(-1)) = DZ(KMAX1-1:KMIN1-1:(-1)) 
             LC = KMIN1 - 1 
          ENDIF 
          DZ(1) = DZ(KMIN1) 
+!// 200 0920 added KMIN3 (i.e. = 0) initialization	 
+         DZ(KMIN3) =DZ(KMIN2)	 
       ENDIF 
 !
       RETURN  

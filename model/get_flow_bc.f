@@ -209,8 +209,9 @@
                   ENDIF 
                   DO K = BC_K_B(BCV), BC_K_T(BCV) 
                      DO J = BC_J_S(BCV), BC_J_N(BCV) 
-                        IJK_WALL = FUNIJK(I_WALL,J,K) 
-                        IJK_FLUID = FUNIJK(I_FLUID,J,K) 
+!// 220 1004 Replaced with global FUNIJK		     
+                        IJK_WALL = FUNIJK_GL(I_WALL,J,K) 
+                        IJK_FLUID = FUNIJK_GL(I_FLUID,J,K) 
                         IF (.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. ICBC_FLAG(&
                            IJK_FLUID)(1:1)=='.')) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, I_WALL, I_FLUID, J, K, &
@@ -233,8 +234,9 @@
                   ENDIF 
                   DO K = BC_K_B(BCV), BC_K_T(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
-                        IJK_WALL = FUNIJK(I,J_WALL,K) 
-                        IJK_FLUID = FUNIJK(I,J_FLUID,K) 
+!// 220 1004 Replaced with global FUNIJK		     
+                        IJK_WALL = FUNIJK_GL(I,J_WALL,K) 
+                        IJK_FLUID = FUNIJK_GL(I,J_FLUID,K) 
                         IF (.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. ICBC_FLAG(&
                            IJK_FLUID)(1:1)=='.')) THEN 
                            WRITE (UNIT_LOG, 1200) BCV, I, J_WALL, J_FLUID, K, &
@@ -257,8 +259,9 @@
                   ENDIF 
                   DO J = BC_J_S(BCV), BC_J_N(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
-                        IJK_WALL = FUNIJK(I,J,K_WALL) 
-                        IJK_FLUID = FUNIJK(I,J,K_FLUID) 
+!// 220 1004 Replaced with global FUNIJK		     		     
+                        IJK_WALL = FUNIJK_GL(I,J,K_WALL) 
+                        IJK_FLUID = FUNIJK_GL(I,J,K_FLUID) 
                         IF (.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. ICBC_FLAG(&
                            IJK_FLUID)(1:1)=='.')) THEN 
                            WRITE (UNIT_LOG, 1300) BCV, I, J, K_WALL, K_FLUID, &
@@ -285,7 +288,8 @@
                DO K = BC_K_B(BCV), BC_K_T(BCV) 
                   DO J = BC_J_S(BCV), BC_J_N(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
-                        IJK = FUNIJK(I,J,K) 
+!// 220 1004 Replaced with global FUNIJK		     		     
+                        IJK = FUNIJK_GL(I,J,K) 
                         IF (.NOT.WALL_ICBC_FLAG(IJK)) THEN 
                            WRITE (UNIT_LOG, 1500) BCV, ICBC_FLAG(IJK), I, J, K 
                            ERROR = .TRUE. 
@@ -310,7 +314,7 @@
             ENDIF 
          ENDIF 
       END DO 
-      IF (ERROR) STOP  
+      IF (ERROR) call mfix_exit(myPE)  
 !
       RETURN  
 !

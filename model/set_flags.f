@@ -91,7 +91,27 @@
 !
 !!$omp  parallel do private( IJK) &
 !!$omp&  schedule(static)
-      DO IJK = 1, IJKMAX2 
+
+!//AIKEPARDBG dump the ICBC_FLAG in matrix form to verify with serial version
+!      write(*,"('(PE ',I2,'): IJKSTART3,IJKEND3 = ',2(I5,2X)))") & !//AIKEPARDBG
+!              myPE,IJKSTART3,IJKEND3                    !//AIKEPARDBG
+!      DO K = KMIN3, KMAX3                               !//AIKEPARDBG
+!         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
+!	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
+!         DO J = JMIN3, JMAX3                            !//AIKEPARDBG
+!           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	 
+!           DO I = IMIN3, IMAX3                          !//AIKEPARDBG
+!             IJK = FUNIJK_GL(I,J,K)                     !//AIKEPARDBG
+!             write(UNIT_LOG,"(2X,A3,$)") ICBC_FLAG(IJK) !//AIKEPARDBG
+!           END DO                                       !//AIKEPARDBG
+!           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
+!         END DO                                         !//AIKEPARDBG
+!      END DO                                            !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): reached debug stop in set_flags')") myPE    !//AIKEPARDBG
+!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+      
+!// 200 1002 change the DO loop limits from i,ijkmax2 --> ijkstart3, ijkend3
+      DO IJK = IJKSTART3, IJKEND3
 !
          SELECT CASE (ICBC_FLAG(IJK)(1:1))  
          CASE ('.')  
@@ -121,7 +141,7 @@
 !Access to only one thread at a time
 !!$omp       critical
             WRITE (UNIT_LOG, 1000) IJK, ICBC_FLAG(IJK) 
-            STOP  
+            call mfix_exit(myPE)
 !!$omp       end critical
          END SELECT 
 !
@@ -156,7 +176,8 @@
                I = IS_I_W(L) 
                DO K = IS_K_B(L), IS_K_T(L) 
                   DO J = IS_J_S(L), IS_J_N(L) 
-                     IJK = FUNIJK(I,J,K) 
+!// 220 1004 Replaced with global FUNIJK		  
+                     IJK = FUNIJK_GL(I,J,K) 
                      FLAG_E(IJK) = FLAGX 
                   END DO 
                END DO 
@@ -165,7 +186,8 @@
                DO I = IS_I_W(L), IS_I_E(L) 
                   DO K = IS_K_B(L), IS_K_T(L) 
                      DO J = IS_J_S(L), IS_J_N(L) 
-                        IJK = FUNIJK(I,J,K) 
+!// 220 1004 Replaced with global FUNIJK		     
+                        IJK = FUNIJK_GL(I,J,K) 
                         FLAG_E(IJK) = FLAGX 
                      END DO 
                   END DO 
@@ -177,7 +199,8 @@
                J = IS_J_S(L) 
                DO K = IS_K_B(L), IS_K_T(L) 
                   DO I = IS_I_W(L), IS_I_E(L) 
-                     IJK = FUNIJK(I,J,K) 
+!// 220 1004 Replaced with global FUNIJK		  
+                     IJK = FUNIJK_GL(I,J,K) 
                      FLAG_N(IJK) = FLAGX 
                   END DO 
                END DO 
@@ -186,7 +209,8 @@
                DO J = IS_J_S(L), IS_J_N(L) 
                   DO K = IS_K_B(L), IS_K_T(L) 
                      DO I = IS_I_W(L), IS_I_E(L) 
-                        IJK = FUNIJK(I,J,K) 
+!// 220 1004 Replaced with global FUNIJK		     
+                        IJK = FUNIJK_GL(I,J,K) 
                         FLAG_N(IJK) = FLAGX 
                      END DO 
                   END DO 
@@ -198,7 +222,8 @@
                K = IS_K_B(L) 
                DO J = IS_J_S(L), IS_J_N(L) 
                   DO I = IS_I_W(L), IS_I_E(L) 
-                     IJK = FUNIJK(I,J,K) 
+!// 220 1004 Replaced with global FUNIJK		  
+                     IJK = FUNIJK_GL(I,J,K) 
                      FLAG_T(IJK) = FLAGX 
                   END DO 
                END DO 
@@ -207,7 +232,8 @@
                DO K = IS_K_B(L), IS_K_T(L) 
                   DO J = IS_J_S(L), IS_J_N(L) 
                      DO I = IS_I_W(L), IS_I_E(L) 
-                        IJK = FUNIJK(I,J,K) 
+!// 220 1004 Replaced with global FUNIJK		     
+                        IJK = FUNIJK_GL(I,J,K) 
                         FLAG_T(IJK) = FLAGX 
                      END DO 
                   END DO 

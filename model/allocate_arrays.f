@@ -42,11 +42,13 @@
 !// 300 0912 Relocated set_max2 call to get_data before calling gridmap_init
 !//TD 0912      CALL SET_MAX2
 
+!// 200 1008 adjust the max values based on new limits, i.e. IMAX--> IMAX3 etc
+      DIMENSION_I   = IMAX3
+      DIMENSION_J   = JMAX3
+      DIMENSION_K   = KMAX3
+      DIMENSION_3   = IJKMAX3
 
-      DIMENSION_I   = IMAX2
-      DIMENSION_J   = JMAX2
-      DIMENSION_K   = KMAX2
-      DIMENSION_3   = IJKMAX2
+!      write(*,"('(PE ',I2,'): DIM_3 = ',I6)") myPE,DIMENSION_3 !//AIKEPARDBG
       
       DIMENSION_M   = MAX(1, MMAX)
       

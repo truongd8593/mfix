@@ -134,25 +134,37 @@
 !
       CALL GET_DATA 
 
-      call exitMPI(myPE)   !//AIKEPARDBGSTOP
-
 !
 !  Initialize all field variables as undefined
 !
       CALL INIT_FVARS 
+
+
 !
 !  Set the flags for identifying computational cells
 !
       CALL SET_FLAGS 
+
 !
 !  Set constant physical properties
 !
       CALL SET_CONSTPROP 
+
+!//AIKEPARDBG
+      write(*,"('(PE ',I2,'): reached debug stop in mfix')") myPE !//AIKEPARDBG
+      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+      
 !
 !
 !  Write the initial part of the standard output file
 !
       CALL WRITE_OUT0 
+
+!//AIKEPARDBG
+!     call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+!     write(*,"('(PE ',I2,'): reached debug stop in mfix')") myPE !//AIKEPARDBG
+!     call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Write the initial part of the special output file(s)
 !
@@ -220,6 +232,10 @@
 !
       END SELECT 
 !
+!//AIKEPARDBG
+      write(*,"('(PE ',I2,'): reached before dt setting in mfix')") myPE    !//AIKEPARDBG
+      call exitMPI(myPE)   !//AIKEPARDBGSTOP
+
       IF (DT_TMP /= UNDEFINED) THEN 
          DT = MAX(DT_MIN,MIN(DT_MAX,DT)) 
 !

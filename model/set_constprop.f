@@ -52,7 +52,17 @@
 !
 !  Set specified constant physical properties values
 !
-      DO IJK = 1, IJKMAX2 
+
+!//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): IJKSTART3,IJKEND3 = ',2(I5,2X)))") & !//AIKEPARDBG
+!              myPE,IJKSTART3,IJKEND3                    !//AIKEPARDBG
+!      write(*,"('(PE ',I2,'): IJKMIN2,IJKMAX2 = ',2(I5,2X)))") & !//AIKEPARDBG
+!              myPE,IJKMIN2,IJKMAX2                    !//AIKEPARDBG
+
+!// 200 1002 change the DO loop limits from i,ijkmax2 --> ijkstart3, ijkend3
+!      DO IJK = 1, IJKMAX2 
+      DO IJK = IJKSTART3, IJKEND3
+      
          IF (WALL_AT(IJK)) THEN 
             RO_G(IJK) = ZERO 
             MU_G(IJK) = ZERO 
@@ -72,12 +82,15 @@
            HOR_S(IJK,M) = ZERO 
 	 END DO
       END DO 
+      
       IF (DIF_G0 /= UNDEFINED) THEN 
          N = 1 
          IF (NMAX(0) > 0) THEN 
             IJK = 1 
             IF (IJKMAX2 > 0) THEN 
-               DIF_G(:IJKMAX2,:NMAX(0)) = DIF_G0 
+!// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3    
+               DIF_G(0:IJKMAX3,:NMAX(0)) = DIF_G0 
+!//? what is IJK used for?	       
                IJK = IJKMAX2 + 1 
             ENDIF 
             N = NMAX(0) + 1 
@@ -85,7 +98,9 @@
       ENDIF 
 !
       DO M = 1, MMAX 
-         DO IJK = 1, IJKMAX2 
+!// 200 1002 change the DO loop limits from i,ijkmax2 --> ijkstart3, ijkend3
+!      DO IJK = 1, IJKMAX2 
+         DO IJK = IJKSTART3, IJKEND3
             IF (WALL_AT(IJK)) THEN 
                P_S(IJK,M) = ZERO 
                MU_S(IJK,M) = ZERO 
@@ -104,29 +119,39 @@
                IF (C_PS0 /= UNDEFINED) C_PS(IJK,M) = C_PS0 
             ENDIF 
          END DO 
+	 
          IF (DIF_S0 /= UNDEFINED) THEN 
             N = 1 
             IF (NMAX(M) > 0) THEN 
                IJK = 1 
                IF (IJKMAX2 > 0) THEN 
-                  DIF_S(:IJKMAX2,M,:NMAX(M)) = DIF_S0 
+!// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3    	       
+                  DIF_S(0:IJKMAX3,M,:NMAX(M)) = DIF_S0 
+!//? what is IJK used for?	       		  
                   IJK = IJKMAX2 + 1 
                ENDIF 
                N = NMAX(M) + 1 
             ENDIF 
          ENDIF 
       END DO 
+      
       IF (RO_G0 == ZERO) THEN 
          M = 1 
          IF (MMAX > 0) THEN 
             IJK = 1 
             IF (IJKMAX2 > 0) THEN 
-               F_GS(:IJKMAX2,:MMAX) = ZERO 
+!// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3    	       	    
+               F_GS(0:IJKMAX3,:MMAX) = ZERO 
+!//? what is IJK used for?	       		  	       
                IJK = IJKMAX2 + 1 
             ENDIF 
             M = MMAX + 1 
          ENDIF 
       ENDIF 
 !
+!//AIKEPARDBG
+!     write(*,"('(PE ',I2,'): reached end of  set_constprop')") myPE    !//AIKEPARDBG
+!     call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
       RETURN  
       END SUBROUTINE SET_CONSTPROP 

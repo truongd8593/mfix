@@ -51,7 +51,11 @@
 !
 
 
-
+!//? make sure each PE has acurate data to calculate the area of boundary 
+!//?      surfaces that are extending adjacent PE subdomains!!! otherwise need
+!//?      need GLOBAL REDUCTION COMM
+!//? pay attention for i & j constant planes especially as they go thru several
+!//? subdomains!!!
       DO BCV = 1, DIMENSION_BC 
          IF (BC_DEFINED(BCV)) THEN 
             BC_AREA(BCV) = ZERO 

@@ -26,6 +26,7 @@
       USE rxns
       USE indices
       USE funits 
+      USE compar   !//
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -80,7 +81,7 @@
 !       Is a reaction defined in data file?
          IF (.NOT.GOT_RXN(L)) THEN 
             WRITE (UNIT_LOG, 1000) L, RXN_NAME(L) 
-            STOP  
+            call mfix_exit(myPE)  
          ENDIF 
 !
 !       Are molecular weights and stoichiometry consistent?
@@ -90,14 +91,14 @@
             DO ID = 1, N_ALL 
 	       IF(STOICH(L,ID) /= ZERO .AND. MW_ALL(ID) == UNDEFINED)THEN
                  WRITE (UNIT_LOG, 1001) ID
-		 STOP 
+		 call mfix_exit(myPE) 
 	       ENDIF
                SUM = SUM + STOICHXMW(L,ID) 
             END DO 
          ENDIF 
          IF (.NOT.COMPARE(SUM,ZERO)) THEN 
             WRITE (UNIT_LOG, 1010) L, RXN_NAME(L) 
-            STOP  
+            call mfix_exit(myPE)  
          ENDIF 
 !
          IF (GOT_RATE(L)) THEN 
@@ -107,21 +108,21 @@
 !
             IF (RATE_M4T(L)<0 .OR. RATE_M4T(L)>MMAX) THEN 
                WRITE (UNIT_LOG, 1012) L, RXN_NAME(L), RATE_M4T(L) 
-               STOP  
+               call mfix_exit(myPE)  
             ENDIF 
 !
 !
 !         Preexponential factor should be positive
             IF (RATE_FAC(L,1) < ZERO) THEN 
                WRITE (UNIT_LOG, 1014) L, RXN_NAME(L), RATE_FAC(L,1) 
-               STOP  
+               call mfix_exit(myPE)  
             ENDIF 
 !
 !
 !         Activation temperature should be positive
             IF (RATE_FAC(L,3) < ZERO) THEN 
                WRITE (UNIT_LOG, 1016) L, RXN_NAME(L), RATE_FAC(L,3) 
-               STOP  
+               call mfix_exit(myPE)  
             ENDIF 
 !
          ENDIF 
@@ -167,7 +168,7 @@
          ELSE 
             IF (POS/=0 .AND. NEG/=0) THEN 
                WRITE (UNIT_LOG, 1020) L, RXN_NAME(L) 
-               STOP
+               call mfix_exit(myPE)
 	    ELSE   !no interphase transfer
 	      R_TEMP(L,:MMAX,:MMAX)  = ZERO
             ENDIF 

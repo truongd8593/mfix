@@ -35,6 +35,7 @@
       USE bc
       USE indices
       USE funits 
+      USE compar   !//
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -102,26 +103,26 @@
                               IF (BC_U_G(BCV)==UNDEFINED .OR. BC_U_G(BCV)==ZERO) &
                                  THEN 
                                  WRITE (UNIT_LOG, 1010) BCV, 'BC_U_g' 
-                                 STOP  
+                                 call mfix_exit(myPE)  
                               ENDIF 
                            ELSE IF (BC_PLANE(BCV)=='N' .OR. BC_PLANE(BCV)=='S') &
                                  THEN 
                               IF (BC_V_G(BCV)==UNDEFINED .OR. BC_V_G(BCV)==ZERO) &
                                  THEN 
                                  WRITE (UNIT_LOG, 1010) BCV, 'BC_V_g' 
-                                 STOP  
+                                 call mfix_exit(myPE)  
                               ENDIF 
                            ELSE IF (BC_PLANE(BCV)=='T' .OR. BC_PLANE(BCV)=='B') &
                                  THEN 
                               IF (BC_W_G(BCV)==UNDEFINED .OR. BC_W_G(BCV)==ZERO) &
                                  THEN 
                                  WRITE (UNIT_LOG, 1010) BCV, 'BC_W_g' 
-                                 STOP  
+                                 call mfix_exit(myPE)  
                               ENDIF 
                            ENDIF 
                         ELSE 
                            WRITE (UNIT_LOG, 1020) BCV 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                      ENDIF 
                   ENDIF 
@@ -131,7 +132,7 @@
                   IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN 
                      IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_G(BCV))) THEN 
                         WRITE (UNIT_LOG, 1000) BCV, VOLFLOW, BC_VOLFLOW_G(BCV) 
-                        STOP  
+                        call mfix_exit(myPE)  
                      ENDIF 
                   ELSE 
                      BC_VOLFLOW_G(BCV) = VOLFLOW 
@@ -154,12 +155,12 @@
                            VEL),BC_U_G(BCV))) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, (-VEL), 'BC_U_g', BC_U_G(&
                               BCV) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                         IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND.  .NOT.COMPARE(VEL&
                            ,BC_U_G(BCV))) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, VEL, 'BC_U_g', BC_U_G(BCV) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
@@ -173,13 +174,13 @@
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND.  .NOT.COMPARE(VEL,&
                            BC_U_G(BCV))) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, VEL, 'BC_U_g', BC_U_G(BCV) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                         IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND.  .NOT.COMPARE((-&
                            VEL),BC_U_G(BCV))) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, (-VEL), 'BC_U_g', BC_U_G(&
                               BCV) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
@@ -194,12 +195,12 @@
                            VEL),BC_V_G(BCV))) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, (-VEL), 'BC_V_g', BC_V_G(&
                               BCV) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                         IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND.  .NOT.COMPARE(VEL&
                            ,BC_V_G(BCV))) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, VEL, 'BC_V_g', BC_V_G(BCV) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
@@ -213,13 +214,13 @@
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND.  .NOT.COMPARE(VEL,&
                            BC_V_G(BCV))) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, VEL, 'BC_V_g', BC_V_G(BCV) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                         IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND.  .NOT.COMPARE((-&
                            VEL),BC_V_G(BCV))) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, (-VEL), 'BC_V_g', BC_V_G(&
                               BCV) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
@@ -234,12 +235,12 @@
                            VEL),BC_W_G(BCV))) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, (-VEL), 'BC_W_g', BC_W_G(&
                               BCV) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                         IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND.  .NOT.COMPARE(VEL&
                            ,BC_W_G(BCV))) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, VEL, 'BC_W_g', BC_W_G(BCV) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
@@ -253,13 +254,13 @@
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND.  .NOT.COMPARE(VEL,&
                            BC_W_G(BCV))) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, VEL, 'BC_W_g', BC_W_G(BCV) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                         IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND.  .NOT.COMPARE((-&
                            VEL),BC_W_G(BCV))) THEN 
                            WRITE (UNIT_LOG, 1100) BCV, (-VEL), 'BC_W_g', BC_W_G(&
                               BCV) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
@@ -289,7 +290,7 @@
                      IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
                         IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_S(BCV,M))) THEN 
                            WRITE(UNIT_LOG,1200)BCV,VOLFLOW,M,BC_VOLFLOW_S(BCV,M) 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                      ELSE 
                         BC_VOLFLOW_S(BCV,M) = VOLFLOW 
@@ -307,7 +308,7 @@
                               VEL = ZERO 
                            ELSE 
                               WRITE (UNIT_LOG, 1250) BCV, M 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                         ENDIF 
                      ELSE 
@@ -315,7 +316,7 @@
                            VEL = ZERO 
                         ELSE 
                            WRITE (UNIT_LOG, 1260) BCV, M 
-                           STOP  
+                           call mfix_exit(myPE)  
                         ENDIF 
                      ENDIF 
                      CONVERTED = .TRUE. 
@@ -326,13 +327,13 @@
                               -VEL),BC_U_S(BCV,M))) THEN 
                               WRITE (UNIT_LOG, 1300) BCV, (-VEL), 'BC_U_s', M, &
                                  BC_U_S(BCV,M) 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                            IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND.  .NOT.COMPARE(&
                               VEL,BC_U_S(BCV,M))) THEN 
                               WRITE (UNIT_LOG, 1300) BCV, VEL, 'BC_U_s', M, &
                                  BC_U_S(BCV,M) 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                         ELSE 
                            IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
@@ -347,13 +348,13 @@
                               VEL,BC_U_S(BCV,M))) THEN 
                               WRITE (UNIT_LOG, 1300) BCV, VEL, 'BC_U_s', M, &
                                  BC_U_S(BCV,M) 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                            IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND.  .NOT.COMPARE(&
                               (-VEL),BC_U_S(BCV,M))) THEN 
                               WRITE (UNIT_LOG, 1300) BCV, (-VEL), 'BC_U_s', M, &
                                  BC_U_S(BCV,M) 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                         ELSE 
                            IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
@@ -368,13 +369,13 @@
                               -VEL),BC_V_S(BCV,M))) THEN 
                               WRITE (UNIT_LOG, 1300) BCV, (-VEL), 'BC_V_s', M, &
                                  BC_V_S(BCV,M) 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                            IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND.  .NOT.COMPARE(&
                               VEL,BC_V_S(BCV,M))) THEN 
                               WRITE (UNIT_LOG, 1300) BCV, VEL, 'BC_V_s', M, &
                                  BC_V_S(BCV,M) 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                         ELSE 
                            IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
@@ -389,13 +390,13 @@
                               VEL,BC_V_S(BCV,M))) THEN 
                               WRITE (UNIT_LOG, 1300) BCV, VEL, 'BC_V_s', M, &
                                  BC_V_S(BCV,M) 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                            IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND.  .NOT.COMPARE(&
                               (-VEL),BC_V_S(BCV,M))) THEN 
                               WRITE (UNIT_LOG, 1300) BCV, (-VEL), 'BC_V_s', M, &
                                  BC_V_S(BCV,M) 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                         ELSE 
                            IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
@@ -410,13 +411,13 @@
                               -VEL),BC_W_S(BCV,M))) THEN 
                               WRITE (UNIT_LOG, 1300) BCV, (-VEL), 'BC_W_s', M, &
                                  BC_W_S(BCV,M) 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                            IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND.  .NOT.COMPARE(&
                               VEL,BC_W_S(BCV,M))) THEN 
                               WRITE (UNIT_LOG, 1300) BCV, VEL, 'BC_W_s', M, &
                                  BC_W_S(BCV,M) 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                         ELSE 
                            IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
@@ -431,13 +432,13 @@
                               VEL,BC_W_S(BCV,M))) THEN 
                               WRITE (UNIT_LOG, 1300) BCV, VEL, 'BC_W_s', M, &
                                  BC_W_S(BCV,M) 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                            IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND.  .NOT.COMPARE(&
                               (-VEL),BC_W_S(BCV,M))) THEN 
                               WRITE (UNIT_LOG, 1300) BCV, (-VEL), 'BC_W_s', M, &
                                  BC_W_S(BCV,M) 
-                              STOP  
+                              call mfix_exit(myPE)  
                            ENDIF 
                         ELSE 
                            IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
