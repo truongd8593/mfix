@@ -35,6 +35,7 @@
              TOL_RESID, TOL_DIVERGE, MAX_NIT, LEQ_IT, LEQ_METHOD, LEQ_SWEEP,&
 	     LEQ_TOL,  V_ex,&
              P_ref, P_scale, UR_FAC, GRAVITY, TOL_RESID_T, TOL_RESID_X,&
+	     TOL_RESID_Th,&
              NORM_g, NORM_s, PHIP, e_w, EPS_f_min, EPS_max,&
 !
 ! start GERA 8/15/03
