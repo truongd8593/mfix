@@ -58,7 +58,7 @@
       INTEGER MPI_SOURCE, MPI_TAG, MPI_ERROR
       PARAMETER(MPI_SOURCE=2, MPI_TAG=3, MPI_ERROR=4)
       INTEGER MPI_STATUS_SIZE
-      PARAMETER (MPI_STATUS_SIZE=4)
+      PARAMETER (MPI_STATUS_SIZE=5)
       INTEGER MPI_MAX_PROCESSOR_NAME, MPI_MAX_ERROR_STRING
       PARAMETER (MPI_MAX_PROCESSOR_NAME=256)
       PARAMETER (MPI_MAX_ERROR_STRING=512)
@@ -92,8 +92,6 @@
 !     routines know about MPI_BOTTOM, but MPI_TYPE_STRUCT as yet does not.
 !
 !     MPI_STATUS_IGNORE and MPI_STATUSES_IGNORE are similar objects
-!     Until the underlying MPI library implements the C version of these
-!     (a null pointer), these are declared as arrays of MPI_STATUS_SIZE
 !
 !     The types MPI_INTEGER1,2,4 and MPI_REAL4,8 are OPTIONAL.
 !     Their values are zero if they are not available.  Note that
@@ -101,9 +99,8 @@
 !     portability between Crays and other systems)
 !
       INTEGER MPI_TAG_UB, MPI_HOST, MPI_IO
-      INTEGER MPI_BOTTOM
-      INTEGER MPI_STATUS_IGNORE(MPI_STATUS_SIZE)
-      INTEGER MPI_STATUSES_IGNORE(MPI_STATUS_SIZE)
+      INTEGER MPI_WIN_BASE, MPI_WIN_SIZE, MPI_WIN_DISP_UNIT
+      INTEGER MPI_BOTTOM, MPI_STATUS_IGNORE, MPI_STATUSES_IGNORE
       INTEGER MPI_INTEGER, MPI_REAL, MPI_DOUBLE_PRECISION 
       INTEGER MPI_COMPLEX, MPI_DOUBLE_COMPLEX,MPI_LOGICAL
       INTEGER MPI_CHARACTER, MPI_BYTE, MPI_2INTEGER, MPI_2REAL
@@ -147,7 +144,7 @@
       INTEGER MPI_COMPLEX8, MPI_COMPLEX16, MPI_COMPLEX32
       PARAMETER (MPI_INTEGER1=1,MPI_INTEGER2=4)
       PARAMETER (MPI_INTEGER4=6)
-      PARAMETER (MPI_INTEGER8=13)
+      PARAMETER (MPI_INTEGER8=8)
       PARAMETER (MPI_INTEGER16=0)
       PARAMETER (MPI_REAL4=10)
       PARAMETER (MPI_REAL8=11)
@@ -155,19 +152,17 @@
       PARAMETER (MPI_COMPLEX8=23)
       PARAMETER (MPI_COMPLEX16=24)
       PARAMETER (MPI_COMPLEX32=0)
+
+      COMMON /MPIPRIV/ MPI_BOTTOM,MPI_STATUS_IGNORE,MPI_STATUSES_IGNORE      
 !
-!    This is now handled with either the "pointer" extension or this same
-!    code, appended at the end.
-!      COMMON /MPIPRIV/ MPI_BOTTOM,MPI_STATUS_IGNORE,MPI_STATUSES_IGNORE
-!C
-!C     Without this save, some Fortran implementations may make the common
-!C     dynamic!
-!C    
-!C     For a Fortran90 module, we might replace /MPIPRIV/ with a simple
-!C     SAVE MPI_BOTTOM
-!C
-!      SAVE /MPIPRIV/
+!     Without this save, some Fortran implementations may make the common
+!     dynamic!
+!    
+!     For a Fortran90 module, we might replace /MPIPRIV/ with a simple
+!     SAVE MPI_BOTTOM
 !
+      SAVE /MPIPRIV/
+
       PARAMETER (MPI_MAX=100,MPI_MIN=101,MPI_SUM=102,MPI_PROD=103)
       PARAMETER (MPI_LAND=104,MPI_BAND=105,MPI_LOR=106,MPI_BOR=107)
       PARAMETER (MPI_LXOR=108,MPI_BXOR=109,MPI_MINLOC=110)
@@ -175,6 +170,7 @@
 !
       PARAMETER (MPI_GROUP_EMPTY=90,MPI_COMM_WORLD=91,MPI_COMM_SELF=92)
       PARAMETER (MPI_TAG_UB=80,MPI_HOST=82,MPI_IO=84)
+      PARAMETER (MPI_WIN_BASE=70,MPI_WIN_SIZE=72,MPI_WIN_DISP_UNIT=74)
       PARAMETER (MPI_WTIME_IS_GLOBAL=86)
 !
       INTEGER MPI_ANY_SOURCE
@@ -187,8 +183,12 @@
 !
 !     There are additional MPI-2 constants 
       INTEGER MPI_ADDRESS_KIND, MPI_OFFSET_KIND
-      PARAMETER (MPI_ADDRESS_KIND=4)
+      PARAMETER (MPI_ADDRESS_KIND=8)
       PARAMETER (MPI_OFFSET_KIND=8)
+!
+!     MPI-2 Locktypes
+      INTEGER MPI_LOCK_EXCLUSIVE, MPI_LOCK_SHARED
+      PARAMETER (MPI_LOCK_EXCLUSIVE = 1000, MPI_LOCK_SHARED = 2000)
 !
 !     All other MPI routines are subroutines
 !     This may cause some Fortran compilers to complain about defined and
@@ -199,22 +199,13 @@
 !     the routine is never called.  Remove PMPI_WTIME and PMPI_WTICK
 !     if you have trouble with them.
 !
-      DOUBLE PRECISION MPI_WTIME, MPI_WTICK,PMPI_WTIME,PMPI_WTICK
-      EXTERNAL MPI_WTIME, MPI_WTICK,PMPI_WTIME,PMPI_WTICK
+      DOUBLE PRECISION MPI_WTIME, MPI_WTICK
+      EXTERNAL MPI_WTIME, MPI_WTICK
 !
 !     The attribute copy/delete subroutines are symbols that can be passed
 !     to MPI routines
 !
       EXTERNAL MPI_NULL_COPY_FN, MPI_NULL_DELETE_FN, MPI_DUP_FN
-      COMMON /MPIPRIV/ MPI_BOTTOM,MPI_STATUS_IGNORE,MPI_STATUSES_IGNORE      
-!
-!     Without this save, some Fortran implementations may make the common
-!     dynamic!
-!    
-!     For a Fortran90 module, we might replace /MPIPRIV/ with a simple
-!     SAVE MPI_BOTTOM
-!
-      SAVE /MPIPRIV/
 ! 
 !     $Id$    
 ! 

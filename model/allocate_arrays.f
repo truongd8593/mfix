@@ -73,7 +73,7 @@
 !coeff
       
       Allocate( DENSITY(0:DIMENSION_M) )
-      Allocate( SIZE(0:DIMENSION_M) )
+      Allocate( PSIZE(0:DIMENSION_M) )
       Allocate( SP_HEAT(0:DIMENSION_M) )
       Allocate( VISC(0:DIMENSION_M) )
       Allocate( COND(0:DIMENSION_M) )

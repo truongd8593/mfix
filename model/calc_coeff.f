@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CALC_COEFF(DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF,   C
+!  Module name: CALC_COEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF,   C
 !       RRATE, DRAG, HEAT_TR, WALL_TR, IER)                            C
 !  Purpose: Calculate physical and transport properties, reaction ratesC
 !           and exchange rates.                                        C
@@ -18,7 +18,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_COEFF(DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, &
+      SUBROUTINE CALC_COEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, &
          DRAG, HEAT_TR, WALL_TR, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
@@ -47,7 +47,7 @@
       INTEGER          L, M
 !
 !                      Flags to tell whether to calculate or not
-      LOGICAL          DENSITY(0:DIMENSION_M), SIZE(0:DIMENSION_M),&
+      LOGICAL          DENSITY(0:DIMENSION_M), PSIZE(0:DIMENSION_M),&
                        SP_HEAT(0:DIMENSION_M)
 !
 !                      Flags to tell whether to calculate or not
@@ -65,7 +65,7 @@
 !
 !     Calculate physical properties
 !
-      CALL PHYSICAL_PROP (DENSITY, SIZE, SP_HEAT, IER) 
+      CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER) 
 
 !
 !     Calculate Transport properties
@@ -95,7 +95,7 @@
       M = 0 
       IF (MMAX + 1 > 0) THEN 
          DENSITY(:MMAX) = .FALSE. 
-         SIZE(:MMAX) = .FALSE. 
+         PSIZE(:MMAX) = .FALSE. 
          SP_HEAT(:MMAX) = .FALSE. 
          VISC(:MMAX) = .FALSE. 
          COND(:MMAX) = .FALSE. 

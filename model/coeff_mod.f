@@ -7,7 +7,7 @@
 
 !
 !                      Flags to tell whether to calculate or not
-      LOGICAL, DIMENSION(:), ALLOCATABLE ::  DENSITY, SIZE,SP_HEAT 
+      LOGICAL, DIMENSION(:), ALLOCATABLE ::  DENSITY, PSIZE,SP_HEAT 
 !
 !                      Flags to tell whether to calculate or not
       LOGICAL, DIMENSION(:), ALLOCATABLE ::  VISC, COND, DIFF

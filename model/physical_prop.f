@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: PHYSICAL_PROP(DENSITY, SIZE, SP_HEAT,IER)              C
+!  Module name: PHYSICAL_PROP(DENSITY, PSIZE, SP_HEAT,IER)              C
 !  Purpose: Calculate physical properties that vary with time          C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 17-JUL-92  C
@@ -26,7 +26,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE PHYSICAL_PROP(DENSITY, SIZE, SP_HEAT, IER) 
+      SUBROUTINE PHYSICAL_PROP(DENSITY, PSIZE, SP_HEAT, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !-----------------------------------------------
@@ -62,7 +62,7 @@
       DOUBLE PRECISION MW
 !
 !                      Flags to tell whether to calculate or not
-      LOGICAL          DENSITY(0:DIMENSION_M), SIZE(0:DIMENSION_M),&
+      LOGICAL          DENSITY(0:DIMENSION_M), PSIZE(0:DIMENSION_M),&
                        SP_HEAT(0:DIMENSION_M)
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
