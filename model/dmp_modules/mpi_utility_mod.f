@@ -693,7 +693,7 @@
 	integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc
         integer :: ijk, ijk_gl
-        integer :: istart, iend, jstart, jend, kstart, kend
+        integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
 	logical :: isok_k,isok_j,isok_i, isinterior 
 	logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
         include 'function.inc'
@@ -734,28 +734,28 @@
         if( myPE.eq.lroot) then
         ibuffer = 0
           do iproc = 0,numPEs-1
-            istart = istart1_all(iproc)
-            iend = iend1_all(iproc)
-            jstart = jstart1_all(iproc)
-            jend = jend1_all(iproc)
-            kstart = kstart1_all(iproc)
-            kend = kend1_all(iproc)
+            istartl = istart1_all(iproc)
+            iendl = iend1_all(iproc)
+            jstartl = jstart1_all(iproc)
+            jendl = jend1_all(iproc)
+            kstartl = kstart1_all(iproc)
+            kendl = kend1_all(iproc)
 
-            if(istart3_all(iproc).eq.imin3) istart = istart3_all(iproc)
-            if(iend3_all(iproc).eq.imax3) iend = iend3_all(iproc)
-            if(jstart3_all(iproc).eq.jmin3) jstart = jstart3_all(iproc)
-            if(jend3_all(iproc).eq.jmax3) jend = jend3_all(iproc)
-            if(kstart3_all(iproc).eq.kmin3) kstart = kstart3_all(iproc)
-            if(kend3_all(iproc).eq.kmax3) kend = kend3_all(iproc)
+            if(istart3_all(iproc).eq.imin3) istartl = istart3_all(iproc)
+            if(iend3_all(iproc).eq.imax3) iendl = iend3_all(iproc)
+            if(jstart3_all(iproc).eq.jmin3) jstartl = jstart3_all(iproc)
+            if(jend3_all(iproc).eq.jmax3) jendl = jend3_all(iproc)
+            if(kstart3_all(iproc).eq.kmin3) kstartl = kstart3_all(iproc)
+            if(kend3_all(iproc).eq.kmax3) kendl = kend3_all(iproc)
 
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
                   ibuffer = ibuffer + 1
-                  isok_k = (kstart <= k) .and. (k <=kend)
-                  isok_j = (jstart <= j) .and. (j <=jend)
-                  isok_i = (istart <= i) .and. (i <=iend)
+                  isok_k = (kstartl <= k) .and. (k <=kendl)
+                  isok_j = (jstartl <= j) .and. (j <=jendl)
+                  isok_i = (istartl <= i) .and. (i <=iendl)
 
                   need_copy = isok_k .and. isok_j .and. isok_i
 
@@ -857,7 +857,7 @@
 	integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc
         integer :: ijk, ijk_gl
-        integer :: istart, iend, jstart, jend, kstart, kend
+        integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
         include 'function.inc'
@@ -896,28 +896,28 @@
         if( myPE.eq.lroot) then
         ibuffer = 0
           do iproc = 0,numPEs-1
-            istart = istart1_all(iproc)
-            iend = iend1_all(iproc)
-            jstart = jstart1_all(iproc)
-            jend = jend1_all(iproc)
-            kstart = kstart1_all(iproc)
-            kend = kend1_all(iproc)
+            istartl = istart1_all(iproc)
+            iendl = iend1_all(iproc)
+            jstartl = jstart1_all(iproc)
+            jendl = jend1_all(iproc)
+            kstartl = kstart1_all(iproc)
+            kendl = kend1_all(iproc)
 
-            if(istart3_all(iproc).eq.imin3) istart = istart3_all(iproc)
-            if(iend3_all(iproc).eq.imax3) iend = iend3_all(iproc)
-            if(jstart3_all(iproc).eq.jmin3) jstart = jstart3_all(iproc)
-            if(jend3_all(iproc).eq.jmax3) jend = jend3_all(iproc)
-            if(kstart3_all(iproc).eq.kmin3) kstart = kstart3_all(iproc)
-            if(kend3_all(iproc).eq.kmax3) kend = kend3_all(iproc)
+            if(istart3_all(iproc).eq.imin3) istartl = istart3_all(iproc)
+            if(iend3_all(iproc).eq.imax3) iendl = iend3_all(iproc)
+            if(jstart3_all(iproc).eq.jmin3) jstartl = jstart3_all(iproc)
+            if(jend3_all(iproc).eq.jmax3) jendl = jend3_all(iproc)
+            if(kstart3_all(iproc).eq.kmin3) kstartl = kstart3_all(iproc)
+            if(kend3_all(iproc).eq.kmax3) kendl = kend3_all(iproc)
 
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
                   ibuffer = ibuffer + 1
-                  isok_k = (kstart <= k) .and. (k <=kend)
-                  isok_j = (jstart <= j) .and. (j <=jend)
-                  isok_i = (istart <= i) .and. (i <=iend)
+                  isok_k = (kstartl <= k) .and. (k <=kendl)
+                  isok_j = (jstartl <= j) .and. (j <=jendl)
+                  isok_i = (istartl <= i) .and. (i <=iendl)
 
                   need_copy = isok_k .and. isok_j .and. isok_i
 
@@ -1022,7 +1022,7 @@
         integer :: ijk, ijk_gl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        integer :: istart, iend, jstart, jend, kstart, kend
+        integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
 
         include 'function.inc'
 
@@ -1060,28 +1060,28 @@
         if( myPE.eq.lroot) then
         ibuffer = 0
           do iproc = 0,numPEs-1
-            istart = istart1_all(iproc)
-            iend = iend1_all(iproc)
-            jstart = jstart1_all(iproc)
-            jend = jend1_all(iproc)
-            kstart = kstart1_all(iproc)
-            kend = kend1_all(iproc)
+            istartl = istart1_all(iproc)
+            iendl = iend1_all(iproc)
+            jstartl = jstart1_all(iproc)
+            jendl = jend1_all(iproc)
+            kstartl = kstart1_all(iproc)
+            kendl = kend1_all(iproc)
 
-            if(istart3_all(iproc).eq.imin3) istart = istart3_all(iproc)
-            if(iend3_all(iproc).eq.imax3) iend = iend3_all(iproc)
-            if(jstart3_all(iproc).eq.jmin3) jstart = jstart3_all(iproc)
-            if(jend3_all(iproc).eq.jmax3) jend = jend3_all(iproc)
-            if(kstart3_all(iproc).eq.kmin3) kstart = kstart3_all(iproc)
-            if(kend3_all(iproc).eq.kmax3) kend = kend3_all(iproc)
+            if(istart3_all(iproc).eq.imin3) istartl = istart3_all(iproc)
+            if(iend3_all(iproc).eq.imax3) iendl = iend3_all(iproc)
+            if(jstart3_all(iproc).eq.jmin3) jstartl = jstart3_all(iproc)
+            if(jend3_all(iproc).eq.jmax3) jendl = jend3_all(iproc)
+            if(kstart3_all(iproc).eq.kmin3) kstartl = kstart3_all(iproc)
+            if(kend3_all(iproc).eq.kmax3) kendl = kend3_all(iproc)
 
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
                   ibuffer = ibuffer + 1
-                  isok_k = (kstart <= k) .and. (k <=kend)
-                  isok_j = (jstart <= j) .and. (j <=jend)
-                  isok_i = (istart <= i) .and. (i <=iend)
+                  isok_k = (kstartl <= k) .and. (k <=kendl)
+                  isok_j = (jstartl <= j) .and. (j <=jendl)
+                  isok_i = (istartl <= i) .and. (i <=iendl)
 
                   need_copy = isok_k .and. isok_j .and. isok_i
 
@@ -1185,7 +1185,7 @@
         integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc
         integer :: ijk, ijk_gl
-        integer :: istart, iend, jstart, jend, kstart, kend
+        integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         integer :: lenchar, icount
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
@@ -1260,28 +1260,28 @@
         if( myPE.eq.lroot) then
         ibuffer = 0
           do iproc = 0,numPEs-1
-            istart = istart1_all(iproc)
-            iend = iend1_all(iproc)
-            jstart = jstart1_all(iproc)
-            jend = jend1_all(iproc)
-            kstart = kstart1_all(iproc)
-            kend = kend1_all(iproc)
+            istartl = istart1_all(iproc)
+            iendl = iend1_all(iproc)
+            jstartl = jstart1_all(iproc)
+            jendl = jend1_all(iproc)
+            kstartl = kstart1_all(iproc)
+            kendl = kend1_all(iproc)
 
-            if(istart3_all(iproc).eq.imin3) istart = istart3_all(iproc)
-            if(iend3_all(iproc).eq.imax3) iend = iend3_all(iproc)
-            if(jstart3_all(iproc).eq.jmin3) jstart = jstart3_all(iproc)
-            if(jend3_all(iproc).eq.jmax3) jend = jend3_all(iproc)
-            if(kstart3_all(iproc).eq.kmin3) kstart = kstart3_all(iproc)
-            if(kend3_all(iproc).eq.kmax3) kend = kend3_all(iproc)
+            if(istart3_all(iproc).eq.imin3) istartl = istart3_all(iproc)
+            if(iend3_all(iproc).eq.imax3) iendl = iend3_all(iproc)
+            if(jstart3_all(iproc).eq.jmin3) jstartl = jstart3_all(iproc)
+            if(jend3_all(iproc).eq.jmax3) jendl = jend3_all(iproc)
+            if(kstart3_all(iproc).eq.kmin3) kstartl = kstart3_all(iproc)
+            if(kend3_all(iproc).eq.kmax3) kendl = kend3_all(iproc)
 
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
                   ibuffer = ibuffer + 1
-                  isok_k = (kstart <= k) .and. (k <=kend)
-                  isok_j = (jstart <= j) .and. (j <=jend)
-                  isok_i = (istart <= i) .and. (i <=iend)
+                  isok_k = (kstartl <= k) .and. (k <=kendl)
+                  isok_j = (jstartl <= j) .and. (j <=jendl)
+                  isok_i = (istartl <= i) .and. (i <=iendl)
 
                   need_copy = isok_k .and. isok_j .and. isok_i
 
@@ -1316,7 +1316,7 @@
         integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc
         integer :: ijk, ijk_gl
-        integer :: istart, iend, jstart, jend, kstart, kend
+        integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
         include 'function.inc'
@@ -1357,28 +1357,28 @@
         if( myPE.eq.lroot) then
         ibuffer = 0
           do iproc = 0,numPEs-1
-            istart = istart1_all(iproc)
-            iend = iend1_all(iproc)
-            jstart = jstart1_all(iproc)
-            jend = jend1_all(iproc)
-            kstart = kstart1_all(iproc)
-            kend = kend1_all(iproc)
+            istartl = istart1_all(iproc)
+            iendl = iend1_all(iproc)
+            jstartl = jstart1_all(iproc)
+            jendl = jend1_all(iproc)
+            kstartl = kstart1_all(iproc)
+            kendl = kend1_all(iproc)
 
-            if(istart3_all(iproc).eq.imin3) istart = istart3_all(iproc)
-            if(iend3_all(iproc).eq.imax3) iend = iend3_all(iproc)
-            if(jstart3_all(iproc).eq.jmin3) jstart = jstart3_all(iproc)
-            if(jend3_all(iproc).eq.jmax3) jend = jend3_all(iproc)
-            if(kstart3_all(iproc).eq.kmin3) kstart = kstart3_all(iproc)
-            if(kend3_all(iproc).eq.kmax3) kend = kend3_all(iproc)
+            if(istart3_all(iproc).eq.imin3) istartl = istart3_all(iproc)
+            if(iend3_all(iproc).eq.imax3) iendl = iend3_all(iproc)
+            if(jstart3_all(iproc).eq.jmin3) jstartl = jstart3_all(iproc)
+            if(jend3_all(iproc).eq.jmax3) jendl = jend3_all(iproc)
+            if(kstart3_all(iproc).eq.kmin3) kstartl = kstart3_all(iproc)
+            if(kend3_all(iproc).eq.kmax3) kendl = kend3_all(iproc)
 
             do k = kstart3_all(iproc), kend3_all(iproc)
               do j = jstart3_all(iproc), jend3_all(iproc)
                 do i = istart3_all(iproc), iend3_all(iproc)
 
                   ibuffer = ibuffer + 1
-                  isok_k = (kstart <= k) .and. (k <=kend)
-                  isok_j = (jstart <= j) .and. (j <=jend)
-                  isok_i = (istart <= i) .and. (i <=iend)
+                  isok_k = (kstartl <= k) .and. (k <=kendl)
+                  isok_j = (jstartl <= j) .and. (j <=jendl)
+                  isok_i = (istartl <= i) .and. (i <=iendl)
 
                   need_copy = isok_k .and. isok_j .and. isok_i
 
