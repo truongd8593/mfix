@@ -1,0 +1,3 @@
+set ignorecase
+1,$ s$dmp_modules$dmp_modules/mpi_donothing$g
+w
