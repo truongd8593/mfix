@@ -58,7 +58,6 @@
 !!$omp& schedule(dynamic,chunk_size)
       DO IJK = ijkstart3, ijkend3      
          IF (FLUID_AT(IJK)) THEN 
-	 write(*,*) 'T_G',T_G(IJK), I_OF(IJK), J_OF(IJK), K_OF(IJK)
 !           Gas conductivity (air) in cal/s.cm.K
 !           Bird, Stewart, and Lightfoot (1960) -- Temperature dependence from formula
 !           8.3-12 on p. 255 and conductivity value at 300 K from p. 263
