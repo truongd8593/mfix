@@ -364,6 +364,7 @@
       
       IF(CYCLIC)THEN
         IF(MUSTIT==0 .OR. NIT >= MAX_NIT) CALL GoalSeekMassFlux(NIT, MUSTIT, .true.)
+        IF(AUTOMATIC_RESTART) RETURN
       ENDIF
 
 !
@@ -509,12 +510,14 @@
       USE bc
       USE geometry
       USE constant
-      USE compar   
+      USE compar 
+      USE run
+      USE time_cpu 
       IMPLICIT NONE
 
       INTEGER, PARAMETER :: MAXOUTIT = 500
       DOUBLE PRECISION, PARAMETER          :: omega = 0.9
-      DOUBLE PRECISION, PARAMETER          :: TOL = 1E-3
+      DOUBLE PRECISION, PARAMETER          :: TOL = 1E-03
       
       INTEGER :: NIT, MUSTIT
       INTEGER, SAVE :: OUTIT
@@ -528,6 +531,10 @@
       CHARACTER, Save  :: Direction
       
       DOUBLE PRECISION , EXTERNAL :: VAVG_Flux_U_G, VAVG_Flux_V_G, VAVG_Flux_W_G
+!
+!                      To check when mdot_n or delp_n becomes NaN to auto_restart MFIX
+      CHARACTER *80 notnumber
+!
       
       IF(CYCLIC_X_MF)THEN
         delp_n = delp_x
@@ -561,7 +568,32 @@
       ELSEIF(CYCLIC_Z_MF)THEN
         mdot_n = VAVG_Flux_W_G()
       ENDIF
- 
+      
+      WRITE(notnumber,*) mdot_n
+! Check for NaN's in mdot_n
+! See if velocity (a real number) contains a letter "n" or symbol "?"
+! in which case it's a NaN (Not a Number)
+!
+      IF(INDEX(notnumber,'?') > 0 .OR.     &
+         INDEX(notnumber,'n') > 0 .OR.     &
+         INDEX(notnumber,'N') > 0 ) THEN
+        write(*,*) mdot_n, ' NaN being caught in GoalSeekMassFlux '
+        AUTOMATIC_RESTART = .TRUE.
+	RETURN
+      ENDIF
+
+      WRITE(notnumber,*) delp_n
+! Check for NaN's in delp_n
+!
+      IF(INDEX(notnumber,'?') > 0 .OR.     &
+         INDEX(notnumber,'n') > 0 .OR.     &
+         INDEX(notnumber,'N') > 0 ) THEN
+        write(*,*) delp_n, ' NaN being caught in GoalSeekMassFlux '
+        AUTOMATIC_RESTART = .TRUE.
+	RETURN
+      ENDIF
+! end of NaN's checking...
+! 
       err = abs((mdot_n - mdot_0)/mdot_0)
       if( err < TOL)then
         MUSTIT = 0
@@ -572,8 +604,12 @@
       
       ! correct delp
       if(.not.firstPass)then
-        delp_xyz = delp_n - omega * (delp_n - delp_nm1) * (mdot_n - mdot_0) &
-	                   / (mdot_n - mdot_nm1)
+!        delp_xyz = delp_n - omega * (delp_n - delp_nm1) * (mdot_n - mdot_0) &
+!	                   / (mdot_n - mdot_nm1)
+! Fail-Safe Newton's method (below) works better than the regular Newton method (above)
+!
+        delp_xyz = delp_n - omega * (delp_n - delp_nm1) * ((mdot_n - mdot_0)/(mdot_nm1 - mdot_0)) &
+	                   / ((mdot_n - mdot_0)/(mdot_nm1 - mdot_0) - ONE)
       else
         firstPass=.false.
         delp_xyz = delp_n*0.99
@@ -590,6 +626,7 @@
       ELSEIF(CYCLIC_Z_MF)THEN
         delp_z = delp_xyz
       ENDIF
+!
       
       return
 5400 FORMAT(/1X,70('*')//' From: GoalSeekMassFlux',/&

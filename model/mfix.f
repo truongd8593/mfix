@@ -105,6 +105,11 @@
 ! set the version.release of the software
 !
       ID_VERSION = '2004-3'
+
+!
+! set automatic restart flag to false
+!      AUTOMATIC_RESTART = .FALSE.
+!      ITER_RESTART      = 1
 !
 !!   Specify the number of processors to be used
 !
@@ -173,6 +178,15 @@
 !  setup for PC quickwin application
 !
       CALL PC_QUICKWIN 
+!
+  101 CONTINUE
+      IF(AUTOMATIC_RESTART) THEN
+         RUN_TYPE = 'RESTART_1'
+         AUTOMATIC_RESTART = .FALSE.
+         ITER_RESTART = ITER_RESTART + 1
+         CALL CHECK_DATA_06
+         CALL SET_FLAGS
+      ENDIF
 !
       DT_TMP = DT 
       SELECT CASE (TRIM(RUN_TYPE))  
@@ -309,7 +323,9 @@
 !  Find the solution of the equations from TIME to TSTOP at
 !  intervals of DT
 !
-      CALL TIME_MARCH 
+      CALL TIME_MARCH(AUTOMATIC_RESTART) 
+      WRITE(*,*) AUTOMATIC_RESTART, ITER_RESTART
+      IF(AUTOMATIC_RESTART.AND.ITER_RESTART.LE.10) GOTO 101
 
 !  Call user-defined subroutine after time-loop.
       IF (CALL_USR) CALL USR3

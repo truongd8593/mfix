@@ -44,6 +44,12 @@
 !                      Type of run: NEW, RESTART
       CHARACTER*16     RUN_TYPE
 !
+!                      Variable which triggers automatic restart
+      LOGICAL          AUTOMATIC_RESTART
+!
+!                      counter to keep track of how many auto_retart were performed
+      INTEGER          ITER_RESTART
+!
 !                      computer node name/id
       CHARACTER*64     ID_NODE
 !

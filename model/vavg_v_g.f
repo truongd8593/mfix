@@ -28,7 +28,8 @@
 !   M o d u l e s 
 !-----------------------------------------------
       USE param 
-      USE param1 
+      USE param1  
+      USE run
       USE parallel 
       USE fldvar
       USE bc
@@ -50,13 +51,16 @@
 !-----------------------------------------------
 ! 
 !                      Indices 
-      INTEGER          IJK 
+      INTEGER          IJK, I_DUM 
 ! 
 !                      Integral of V_g*EP_g for entire volume 
       DOUBLE PRECISION SUM_V_g 
 ! 
 !                      Total volume of computational cells 
-      DOUBLE PRECISION SUM_VOL 
+      DOUBLE PRECISION SUM_VOL
+!
+!                      To check when velocity becomes NaN to auto_restart MFIX
+      CHARACTER *80 notnumber 
 ! 
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -78,7 +82,18 @@
       CALL GLOBAL_ALL_SUM(SUM_VOL)
       CALL GLOBAL_ALL_SUM(SUM_V_G)
 
-      VAVG_V_G = SUM_V_G/SUM_VOL 
+      VAVG_V_G = SUM_V_G/SUM_VOL
+      WRITE(notnumber,*) VAVG_V_G
+! Check for NaN's
+! See if velocity (a real number) contains a letter "n" or symbol "?"
+! in which case it's a NaN (Not a Number)
+!
+      IF(INDEX(notnumber,'?') > 0 .OR.     &
+         INDEX(notnumber,'n') > 0 .OR.     &
+         INDEX(notnumber,'N') > 0 ) THEN
+        write(*,*) VAVG_V_G,  ' NaN being caught in VAVG_V_G.f '
+        AUTOMATIC_RESTART = .TRUE.
+      ENDIF
 !
       RETURN  
       END FUNCTION VAVG_V_G 

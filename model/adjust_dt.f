@@ -46,7 +46,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       DOUBLE PRECISION :: NITOS_NEW 
-      CHARACTER, DIMENSION(1) :: LINE*50 
+      CHARACTER, DIMENSION(1) :: LINE*70 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -120,10 +120,10 @@
 
          IF (DT < DT_MIN) THEN 
 !//SP
-            LINE(1) = 'DT < DT_MIN.  Recovery not possible!' 
+            LINE(1) = 'DT < DT_MIN.  Recovery not possible! Trying Automatic Restart' 
             IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1) 
             CALL WRITE_ERROR ('ADJUST_DT', LINE, 1) 
-            CALL MFIX_EXIT(myPE)
+!           CALL MFIX_EXIT(myPE)
          ELSE IF (DT_FAC >= ONE) THEN 
             LINE(1) = 'DT_FAC >= 1.  Recovery not possible!' 
 !//SP
