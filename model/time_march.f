@@ -147,7 +147,7 @@
 !
 !
 !
-      if (myPE.eq.PE_IO) then        !//
+!      if (myPE.eq.PE_IO) then        !//
        IF (RUN_TYPE == 'NEW') THEN 
          RES_TIME = TIME 
          SPX_TIME(:N_SPX) = TIME 
@@ -171,7 +171,14 @@
             ENDIF 
          ENDIF 
        END DO
-    end if             !//
+!    end if             !//
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): reached dbg stop in time_march')") myPE    !//AIKEPARDBG
+!    write(UNIT_LOG,*) 'RES_TIME:',RES_TIME
+!    write(UNIT_LOG,*) 'SPX_TIME:',SPX_TIME    
+!    write(UNIT_LOG,*) 'USR_TIME:',USR_TIME        
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+  
 !
 !   Parse residual strings
 !
@@ -179,6 +186,7 @@
 !
 !  Initialization for the linear equation solver igcg
 !
+!//? ORNL: could you please check the NCOL,NAREA, NVOL settings in this routine
       CALL IGCG_INIT 
 !
 !  Call user-defined subroutine to set constants, check data, etc.
@@ -214,8 +222,28 @@
       ENDIF 
       IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
       IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
+
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): before CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
+!    write(UNIT_LOG,"('RRATE = ',L2,' WALL_TR = ',L2)") RRATE,WALL_TR   !//AIKEPARDBG
+!    write(UNIT_LOG,*) 'DENSITY: ',DENSITY    !//AIKEPARDBG
+!    write(UNIT_LOG,*) 'SIZE: ',SIZE          !//AIKEPARDBG
+!    write(UNIT_LOG,*) 'SP_HEAT: ',SP_HEAT    !//AIKEPARDBG
+!    write(UNIT_LOG,*) 'COND: ',COND          !//AIKEPARDBG      
+!    write(UNIT_LOG,*) 'VISC: ',VISC          !//AIKEPARDBG           
+!    write(UNIT_LOG,*) 'DIFF: ',DIFF          !//AIKEPARDBG          
+!    write(UNIT_LOG,*) 'DRAGCOEF: ',DRAGCOEF  !//AIKEPARDBG                  
+!    write(UNIT_LOG,*) 'HEAT_TR: ',HEAT_TR    !//AIKEPARDBG                    
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
+      
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
+
+!//AIKEPARDBG
+    write(*,"('(PE ',I2,'): aft CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
+    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 !  Remove undefined values at wall cells for scalars
 !
