@@ -93,7 +93,7 @@
 !                      Coefficient of restitution (old symbol)
       DATA DISCR_NAME/'FOUP', 'FOUP', 'Superbee', 'Smart', 'Ultra-Quick', &
          'QUICKEST', 'Muscl', 'VanLeer', 'Minmod'/ 
-      DATA DISCR_NAME/'FOUP', 'FOUP', 'Fourth Order', 'Smart', 'Ultra-Quick', &
+      DATA DISCR_NAME1/'FOUP', 'FOUP', 'Fourth Order', 'Smart', 'Ultra-Quick', &
          'QUICKEST', 'Muscl', 'VanLeer', 'Minmod'/ 
 
       if (myPE.ne.PE_IO) return
