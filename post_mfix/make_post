@@ -5,9 +5,47 @@
 #------------------------------------------------------------------------
 # For compiling post_mfix the ../model directory must exist.
 #
+    if test -f machine.f
+    then
     chmod +w machine.f
+    else
+    echo
+    fi
 
     set `uname -s` ; opsys=$1
+
+#------------------------------------------------------------------------
+#  Check if the system is a Linux system, if yes then ask the user which 
+#  compiler to use    
+#
+    if test $opsys = "Linux"
+    then
+       echo
+       echo
+       echo "Linux system detected, please select compiler"
+       echo
+       echo "Post_mfix Compilation directives available for following compilers:"
+       echo " - Intel Linux Fortran Compiler (ifc)"
+       echo " - Portland Group Linux Fortran Compiler (pgf90)"
+       echo -n "Do you want to compile with Intel Linux F90 Compiler? (y/n) [yes] "
+       read lnx_compiler
+       case $lnx_compiler in
+         y|Y ) 
+	   echo "Intel Linux Fortran Compiler selected"
+	   opsys="Linux_ifc"
+           ;;
+         n|N )
+	   echo "Portland Group Linux Fortran Compiler selected" 	      
+	   opsys="Linux_pgi"
+           ;; 
+         *)
+           echo "Intel Linux Fortran Compiler selected"
+	   opsys="Linux_ifc"
+           ;;
+       esac    
+    else
+       echo  
+    fi
     
     case $opsys in
 
@@ -76,7 +114,7 @@
 
 
 
-    Linux)
+    Linux_pgi)
             echo
             echo "Compiling for Linux computer (Portland group)"
             echo	    
@@ -103,6 +141,66 @@
             compile="-c -Mfreeform -Mnosave -Mrecursive -Mreentrant -byteswapio"
             link=" "
             MODULE_CODE=1
+
+            ;;
+
+    Linux_ifc)
+            echo
+            echo "Compiling for Linux computer (Intel Linux Compilers (ifc))"
+            echo	    
+	    
+            if test -f COMPILED.FOR.LINUX.IFC
+            then
+	        echo
+            else
+                cp ../model/LINUX_intel.F machine.f
+                rm *.o
+                rm COMPILED.FOR.*
+                touch COMPILED.FOR.LINUX.IFC
+            fi
+	    
+	    
+            FORTRAN_CMD=ifc
+            LINK_CMD=ifc 
+	       
+	    
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+
+           #-----------
+	   # Check if Intel Linux compiler portability library is accessible?
+	   #-----------
+            echo
+            echo "checking for Intel compiler portability library, PEPCF90" 
+	    echo "in the default directory /opt/intel/compiler70/ia32/lib"
+            if test -f "/opt/intel/compiler70/ia32/lib/libPEPCF90.a"
+            then
+	        echo
+              #  echo -n "PEPCF90 library found under /opt/intel/compiler70/ia32/lib"
+		intel_lib="/opt/intel/compiler70/ia32/lib"
+            else
+	        intel_dir="/opt/intel"
+	        echo  "Library not found. Enter the directory "
+                echo -n "where Intel Linux compiler is installed [e.g. /opt/intel]: "
+                   read intel_dir
+  	         intel_lib="$intel_dir/compiler70/ia32/lib"  
+
+ 	         if test -d "$intel_lib"
+	         then
+                   echo
+	         else
+	           echo "Directory $intel_lib not found"
+	           exit
+	         fi
+
+            fi
+
+	    
+            compile_d="-g -c -FR -xK -w "
+            link_d="-L$intel_lib -lPEPCF90 "
+            compile="-c -O3 -w -w95 -i_dynamic -ip -FR"
+            link="-L$intel_lib -lPEPCF90"
+            MODULE_CODE=0
 
             ;;
 	    
@@ -396,5 +494,3 @@ read delete_files
  /bin/rm -f namelist.inc
  /bin/rm -f sc_p_g1.inc
  /bin/rm -f sc_p_g2.inc
-
-
