@@ -27,7 +27,7 @@
       USE param 
       USE param1 
       USE geometry
-!      USE compar  !//AIKEPARDBG only activate when debug printing
+      USE compar  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -54,8 +54,13 @@
          IMAX2 = IMAX + 2 
 !// 300 0912 initialization of IMIN2, IMIN3, IMAX3
          IMIN2 = 1 
+	 IF(NODESI.NE.1) THEN
          IMIN3 = 0 
          IMAX3 = IMAX + 3 	 
+	 ELSE
+	 IMIN3 = IMIN2
+	 IMAX3 = IMAX2
+	 ENDIF
       ENDIF 
 !
       IF (NO_J) THEN 
@@ -72,8 +77,13 @@
          JMAX2 = JMAX + 2 
 !// 300 0912 initialization of JMIN2, JMIN3, JMAX3
          JMIN2 = 1 
-         JMIN3 = 0 
-         JMAX3 = JMAX + 3 	 	 
+         IF(NODESJ.NE.1) THEN
+         JMIN3 = 0
+         JMAX3 = JMAX + 3
+         ELSE
+         JMIN3 = JMIN2
+         JMAX3 = JMAX2
+         ENDIF
       ENDIF 
 !
       IF (NO_K) THEN 
@@ -90,8 +100,13 @@
          KMAX2 = KMAX + 2 
 !// 300 0912 initialization of KMIN2, KMIN3, KMAX3
          KMIN2 = 1 
-         KMIN3 = 0 
-         KMAX3 = KMAX + 3 	 	 	 
+         IF(NODESK.NE.1) THEN
+         KMIN3 = 0
+         KMAX3 = KMAX + 3
+         ELSE
+         KMIN3 = KMIN2
+         KMAX3 = KMAX2
+         ENDIF
       ENDIF 
 !
 !//AIKEPARDBGSTOP 0922

@@ -414,7 +414,12 @@
       INTEGER          I, J, K, IJK, IPJK, IJPK, IJKP 
       INTEGER          IMJK, IJMK, IJKM, IJKE, IJKW, IJKN, IJKS 
       INTEGER          IJKB, IJKT 
-! 
+!
+! loezos
+
+	INTEGER  incr
+! loezos      
+ 
 !                      dPodEP_s(EP_s(IJK, M)) 
       DOUBLE PRECISION K_P 
 ! 
@@ -437,10 +442,6 @@
       INCLUDE 's_pr2.inc'
       INCLUDE 'ep_s2.inc'
 
-! loezos
-
-	INTEGER  incr
-! loezos      
 
       call lock_xsi_array
 

@@ -72,6 +72,20 @@
 !      DOUBLE PRECISION, PARAMETER :: TOL = 1.0D-4
       INTEGER, PARAMETER :: MAX_IT = 1
 !
+      INTERFACE
+      SUBROUTINE  leq_bicgs( VNAME,VAR, A_M, B_M, CMETHOD, TOL, ITMAX,IER)
+      INTEGER, INTENT(INOUT) ::          IER
+      INTEGER, INTENT(IN) ::          ITMAX
+      DOUBLE PRECISION, INTENT(IN) ::  TOL
+      DOUBLE PRECISION, INTENT(IN), DIMENSION(:,:) :: A_m
+      DOUBLE PRECISION, INTENT(IN), DIMENSION(:) :: B_m
+      CHARACTER*(*), INTENT(IN) ::    Vname
+      DOUBLE PRECISION, INTENT(INOUT), DIMENSION(:) :: Var
+      CHARACTER*(*), INTENT(INOUT) :: CMETHOD
+      END SUBROUTINE  leq_bicgs
+      END INTERFACE
+
+!
 !//SP - Temporary set METHOD = 2
       METHOD = 2
 !
@@ -99,8 +113,8 @@
                         SWEEP, TOL, ITMAX, MAX_IT, IER )
         endif
 	
-      CASE (6)
-        CALL LEQ_LSOR( VNAME, VAR, A_M(:,:,M), B_M(:,M), ITMAX, IER)
+!     CASE (6) - Disabled
+!       CALL LEQ_LSOR( VNAME, VAR, A_M(:,:,M), B_M(:,M), ITMAX, IER)
 
       CASE DEFAULT 
         LINE0(1:14) = 'SOLVE_LIN_EQ: '

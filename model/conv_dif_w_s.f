@@ -364,7 +364,11 @@
 ! 
 !                      Solids phase 
       INTEGER          M 
-! 
+!
+! loezos
+	INTEGER incr
+! loezos
+ 
 !                      Diffusion parameter 
       DOUBLE PRECISION D_f 
 ! 
@@ -404,9 +408,6 @@
       INCLUDE 'ep_s2.inc'
 
 
-! loezos
-	INTEGER incr
-! loezos
 
       call lock_tmp_array
       call lock_xsi_array
@@ -657,7 +658,11 @@
 ! 
 !                      Solids phase 
       INTEGER          M 
-! 
+!
+! loezos
+	INTEGER incr
+! loezos
+ 
 !                      Diffusion parameter 
       DOUBLE PRECISION D_f 
 ! 
@@ -677,9 +682,6 @@
       INCLUDE 'ep_s2.inc'
 
 
-! loezos
-	INTEGER incr
-! loezos
 
       call lock_tmp_array
       call lock_xsi_array

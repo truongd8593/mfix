@@ -51,7 +51,7 @@
       USE geometry
       USE constant
       USE indices
-      USE compar        !//d
+      USE compar   
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -96,3 +96,6 @@
 !
       RETURN  
       END SUBROUTINE SET_INDEX1 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

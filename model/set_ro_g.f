@@ -40,10 +40,9 @@
       USE fldvar
       USE constant
       USE indices
-      USE compar        !//d
-      USE funits        !//AIKEPARDBG
-      USE sendrecv      !// 400
-!      USE dbg_util      !//AIKEPARDBG
+      USE compar       
+   
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -65,14 +64,6 @@
       IF (RO_G0 == UNDEFINED) THEN 
 
 !!$omp parallel do private(IJK)  
-
-!//? 1024 make sure the values of the dependent variables are consistent at the
-!//? overlapping subdomain boundaries, need debug print during testing.
-
-!//? make sure the values in ghosts are set appropriately to avoid the division
-!//? by zero problem in function EOSG
-
-!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
          DO IJK = ijkstart3, ijkend3 
             IF (.NOT.WALL_AT(IJK)) THEN 
                RO_G(IJK) = EOSG(MW_MIX_G(IJK),P_G(IJK),T_G(IJK)) 
@@ -82,7 +73,6 @@
       ELSE 
 
 !!$omp   parallel do private(ijk)  
-!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
          DO IJK = ijkstart3, ijkend3 
             IF (.NOT.WALL_AT(IJK)) THEN 
                RO_G(IJK) = RO_G0 
@@ -91,20 +81,9 @@
          END DO 
       ENDIF 
 
-
-!       call prnfield(RO_G,'RO_G','BEF')   !//AIKEPARDBG
-
-!
-!//S No communication is necessary as the RO_G and ROP_G are calculated based
-!//  on already available vars and these portions are already overlapping.
-!//  A good check for the execution is to see whether RO_G and ROP_G have
-!//  same values on both PEs although they were calculated independently.
-!//? Mike's implementation but check necessity and also syntax as it give compilation error
-!	CALL SEND_RECV(RO_G, 2)
-!	CALL SEND_RECV(ROP_G, 2)
-	
-
-!       call prnfield(RO_G,'RO_G','BEF')    !//AIKEPARDBG
-
       RETURN  
       END SUBROUTINE SET_RO_G 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

@@ -205,19 +205,17 @@
 !  Calculate convection-diffusion fluxes through each of the faces
 !
 !
-!!$omp      parallel do                                              &
-!!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,         &
-!!$omp&             IJKP, IJKT,  V_f, D_f,                    &
-!!$omp&             IMJK, IM, IJKW,                                  &
-!!$omp&             IJMK, JM, IJKS,                                  &
-!!$omp&             IJKM, KM,  IJKB)                     
+!$omp      parallel do                                              &
+!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,         &
+!$omp&             IJKP, IJKT,  V_f, D_f,                    &
+!$omp&             IMJK, IM, IJKW,                                  &
+!$omp&             IJMK, JM, IJKS,                                  &
+!$omp&             IJKM, KM,  IJKB)                     
       DO IJK = ijkstart3, ijkend3
 !
-!// Determine if IJK falls within 1 ghost layer........
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
-
 !
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -458,17 +456,17 @@
 !  Calculate convection-diffusion fluxes through each of the faces
 !
 !
-!!$omp      parallel do                                              &
-!!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,         &
-!!$omp&             IJKP, IJKT,  V_f, D_f,                    &
-!!$omp&             IMJK, IJKW,                                  &
-!!$omp&             IJMK, IJKS,                                  &
-!!$omp&             IJKM, IJKB, PHI_HO, PHI_LO, CONV_FAC,       &
-!!$omp&             EAST_DC, WEST_DC, NORTH_DC, SOUTH_DC, TOP_DC, BOTTOM_DC)                     
+!$omp      parallel do                                              &
+!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,         &
+!$omp&             IJKP, IJKT,  V_f, D_f,                    &
+!$omp&             IMJK, IJKW,                                  &
+!$omp&             IJMK, IJKS,                                  &
+!$omp&             IJKM, IJKB, PHI_HO, PHI_LO, CONV_FAC,       &
+!$omp&             EAST_DC, WEST_DC, NORTH_DC, SOUTH_DC, TOP_DC, BOTTOM_DC)                     
 !
       DO IJK = ijkstart3, ijkend3
 !
-!//  Determine whether IJK falls within 1 ghost layer........
+! Determine whether IJK falls within 1 ghost layer........
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
@@ -728,18 +726,17 @@
 !
 !  Calculate convection-diffusion fluxes through each of the faces
 !
-!!$omp      parallel do                                               &
-!!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,          &
-!!$omp&             IJKP, IJKT,    D_f,                        &
-!!$omp&             IMJK, IM, IJKW,                                   &
-!!$omp&             IJMK, JM,  IJKS,                                  &
-!!$omp&             IJKM, KM,  IJKB )                      
+!$omp      parallel do                                               &
+!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,          &
+!$omp&             IJKP, IJKT,    D_f,                        &
+!$omp&             IMJK, IM, IJKW,                                   &
+!$omp&             IJMK, JM,  IJKS,                                  &
+!$omp&             IJKM, KM,  IJKB )                      
 !
 !
 !
       DO IJK = ijkstart3, ijkend3
 !
-!//  Determine whether IJK falls within 1 ghost layer........
        I = I_OF(IJK) 
        J = J_OF(IJK) 
        K = K_OF(IJK) 
@@ -824,7 +821,6 @@
 
 ! loezos 
        IF (SHEAR) THEN
-
 	 DO IJK = ijkstart3, ijkend3
           IF (FLUID_AT(IJK)) THEN  	 
 	   VF(IJK)=VF(IJK)-VSH(IJK)	
@@ -934,15 +930,21 @@
             K1 = IS_K_B(L) 
             K2 = IS_K_T(L) 
 
-!// Limit I1, I2 and all to local processor first ghost layer
+!       Limit I1, I2 and all to local processor first ghost layer
+
 	    IF(I1.LE.IEND2)   I1 = MAX(I1, ISTART2)
+
             IF(J1.LE.JEND2)   J1 = MAX(J1, JSTART2)
+
             IF(K1.LE.KEND2)   K1 = MAX(K1, KSTART2)
+
             IF(I2.GE.ISTART2) I2 = MIN(I2, IEND2)
+
             IF(J2.GE.JSTART2) J2 = MIN(J2, JEND2)
+
             IF(K2.GE.KSTART2) K2 = MIN(K2, KEND2)
 
-
+!     End of limiting to the first ghost cells of the processor....
             DO K = K1, K2 
                DO J = J1, J2 
                   DO I = I1, I2 
@@ -993,5 +995,4 @@
 
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization
-!// 300 Limit I1, I2 and all to local processor first ghost layer
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

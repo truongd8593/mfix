@@ -83,9 +83,9 @@
 !
       IF (DO_K) THEN 
          K1 = 1 
+!$omp    parallel do private(IJK, J1, I1)
          DO J1 = jmin3, jmax3 
             DO I1 = imin3, imax3 
-!//SP ----> Not very efficient - can check only for K
    	       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
                IJK = FUNIJK(I1,J1,K1) 
                IF (DEFAULT_WALL_AT(IJK)) THEN 
@@ -104,9 +104,9 @@
             END DO 
          END DO 
          K1 = KMAX2 
+!$omp    parallel do private(IJK, J1, I1)
          DO J1 = jmin3, jmax3 
             DO I1 = imin3, imax3 
-!//SP ----> Not very efficient - can check only for K
    	       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
                IJK = FUNIJK(I1,J1,K1) 
                IF (DEFAULT_WALL_AT(IJK)) THEN 
@@ -127,9 +127,9 @@
       ENDIF 
 !
       J1 = 1 
+!$omp    parallel do private(IJK, K1, I1)
       DO K1 = kmin3, kmax3 
          DO I1 = imin3, imax3 
-!//SP ----> Not very efficient - can check only for J
    	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) THEN 
@@ -149,9 +149,9 @@
       END DO 
       
       J1 = JMAX2 
+!$omp    parallel do private(IJK, K1, I1)
       DO K1 = kmin3, kmax3 
          DO I1 = imin3, imax3 
-!//SP ----> Not very efficient - can check only for J
    	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) THEN 
@@ -171,9 +171,9 @@
       END DO 
 
       I1 = imin2 
+!$omp    parallel do private(IJK, K1, J1)
       DO K1 = kmin3, kmax3 
          DO J1 = jmin3, jmax3 
-!//SP ----> Not very efficient - can check only for I
    	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) THEN 
@@ -193,9 +193,9 @@
       END DO 
 
       I1 = IMAX2 
+!$omp    parallel do private(IJK, K1, J1)
       DO K1 = kmin3, kmax3 
          DO J1 = jmin3, jmax3 
-!//SP ----> Not very efficient - can check only for I
    	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) THEN 
@@ -227,6 +227,7 @@
                J2 = BC_J_N(L) 
                K1 = BC_K_B(L) 
                K2 = BC_K_T(L) 
+!$omp    parallel do private(IJK, K, J, I, IM, JM, KM)
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 		     
@@ -335,6 +336,7 @@
                J2 = BC_J_N(L) 
                K1 = BC_K_B(L) 
                K2 = BC_K_T(L) 
+!$omp    parallel do private(IJK, K, J, I)
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
@@ -374,6 +376,7 @@
                J2 = BC_J_N(L) 
                K1 = BC_K_B(L) 
                K2 = BC_K_T(L) 
+!$omp    parallel do private(IJK, K, J, I)
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 

@@ -42,8 +42,8 @@
       USE indices
       USE is
       USE vshear
-      USE sendrecv        !//d
-      USE compar        !//d
+      USE sendrecv  
+      USE compar   
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -66,7 +66,11 @@
 ! 
 !                      Phase index 
       INTEGER          M 
-! 
+!
+! loezos
+       INTEGER I1,J1    
+! loezos
+ 
 !                      Average volume fraction 
       DOUBLE PRECISION EPGA 
 ! 
@@ -97,9 +101,6 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-! loezos
-       INTEGER I1,J1    
-! loezos
 !
 
 
@@ -109,7 +110,6 @@
 ! update to true velocity
       IF (SHEAR) THEN        
 !$omp  parallel do private(IJK)
-!//SP
 	 DO IJK = IJKSTART3, IJKEND3
           IF (FLUID_AT(IJK)) THEN 
 	   V_S(IJK,m)=V_S(IJK,m)+VSH(IJK)
@@ -125,8 +125,6 @@
 !!$omp&  SBV,  SSX,SSY,   SSZ, EPMU_STE,EPMU_SBE, &
 !!$omp&  EPMUGA,DWOXDZ,VTZB ) &
 !!$omp&  schedule(static)
-
-!//SP
       DO IJK = IJKSTART3, IJKEND3
             I = I_OF(IJK) 
             IJKE = EAST_OF(IJK) 
@@ -200,7 +198,6 @@
 ! loezos 
        IF (SHEAR) THEN
 !$omp  parallel do private(IJK) 
-!//SP
 	 DO IJK = IJKSTART3, IJKEND3
           IF (FLUID_AT(IJK)) THEN  	 
 	   V_S(IJK,m)=V_S(IJK,m)-VSH(IJK)	
@@ -213,3 +210,8 @@
       call send_recv(tau_u_s,2)
       RETURN  
       END SUBROUTINE CALC_TAU_U_S 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 400 Added sendrecv module and send_recv calls for COMMunication

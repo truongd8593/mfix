@@ -173,11 +173,11 @@
 !--------------------------------------------------------------------- 
  
       if (myPE.eq.PE_IO) CALL FLUSH (UNIT_RES) 
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
       deallocate (array1)  !//d pnicol
       deallocate (array2)  !//d pnicol
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
       RETURN  
       END SUBROUTINE WRITE_RES1 
@@ -194,9 +194,9 @@
         double precision, dimension(DIMENSION_3) :: VAR    
         INTEGER :: NEXT_REC 
 
-        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
         call gather (VAR,array2,root)  !//d pnicol
-        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
         if (myPE.eq.PE_IO) then
            call convert_to_io_dp(array2,array1,ijkmax2)  
            CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 

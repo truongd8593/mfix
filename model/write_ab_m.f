@@ -30,8 +30,9 @@
       USE param 
       USE param1 
       USE matrix 
-      USE compar       
-      USE mpi_utility   
+
+      USE compar      
+      USE mpi_utility  
       USE indices       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -71,11 +72,11 @@
       include 'function.inc'
 
       if (myPE == PE_IO) then
-         allocate (array1(ijkmax3))    !//d
-         allocate (array2(ijkmax3))    !//d
+         allocate (array1(ijkmax3))    
+         allocate (array2(ijkmax3))    
       else
-         allocate (array1(1))          !//d
-         allocate (array2(1))          !//d
+         allocate (array1(1))          
+         allocate (array2(1))          
       end if
 
       if (myPE == PE_IO) then
@@ -91,11 +92,10 @@
       end if
 
 
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-      call gather(b_m(:,M),array2,root) 
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
 
-!// Split do ijk loop into do i, do j, do k loops
+      call gather(b_m(:,M),array2,root) 
+
+
       DO K = Kmin2, Kmax2
       DO J = Jmin2, Jmax2
       DO I = Imin2, Imax2
@@ -103,9 +103,9 @@
       IJK = FUNIJK_GL(IMAP_C(I),JMAP_C(J),KMAP_C(K))
 
          do L = -3,3
-            call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+
             call gather(a_m(:,L,M),array1,root)
-            call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+
             if (myPE == PE_IO) am(l) = array1(ijk)
          end do
          if (myPE == PE_IO) WRITE (UNIT_LOG, '(I5, 3(I3), 8(1X,G9.2))') IJK, I, J, K,&
@@ -116,15 +116,14 @@
       END DO 
       if (myPE == PE_IO) CALL END_LOG 
 
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+
       deallocate (array1)    !//
       deallocate (array2)    !//
 
       RETURN  
       END SUBROUTINE WRITE_AB_M 
-
+      
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization
 !// 020 New local variables for parallelization: array1,array2,i,j,k
 !// 400 Added mpi_utility module and other global reduction (gather) calls
-

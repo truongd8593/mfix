@@ -41,8 +41,8 @@
       USE geometry
       USE indices
       USE is
-      USE compar        !//d
-      USE sendrecv        !//d
+      USE compar  
+      USE sendrecv  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -104,11 +104,8 @@
 !!$omp&  SBV,  SSX,SSY,  EPMU_GTE,EPMU_GBE, SSZ, &
 !!$omp&  EPMUGA,DWOXDZ,VTZB )
 !!$omp&  schedule(static)
-!//SP
       DO IJK = IJKSTART3, IJKEND3
          I = I_OF(IJK) 
-!//SP
-!	 IF(.NOT.IS_ON_MYPE_plus1layer(I,J_OF(IJK), K_OF(IJK))) cycle
          IJKE = EAST_OF(IJK) 
          EPGA = AVG_X(EP_G(IJK),EP_G(IJKE),I) 
          IF ( .NOT.IP_AT_E(IJK) .AND. EPGA>DIL_EP_S) THEN 
@@ -177,5 +174,10 @@
          ENDIF 
       END DO 
       RETURN  
-!     call send_recv(tau_u_g,2)
+
       END SUBROUTINE CALC_TAU_U_G 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+

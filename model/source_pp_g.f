@@ -70,7 +70,10 @@
 !                      Indices 
       INTEGER          IJK, IMJK, IJMK, IJKM, I, J, K 
       INTEGER          M, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB 
-! 
+!
+! loezos
+      integer incr
+ 
 !                      error message 
       CHARACTER*80     LINE(1) 
 ! 
@@ -79,10 +82,7 @@
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: DROODP_G 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-! loezos
-      integer incr
-
+ 
 !// Need to extract i, j, k from ijk_p_g to determine the processor which
 !     acts on ijk_p_g to fix the value of pressure
 !       ----------------------------------------------------------
@@ -90,6 +90,8 @@
 !       -----------------------------------------------------------
         integer i_of_g,j_of_g,k_of_g
         integer ijk_p_g_local
+
+      INCLUDE 'function.inc'
 
         k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
         j_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1))) &

@@ -227,7 +227,6 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 's_pr2.inc'
      
-      
 ! loezos
       IF (SHEAR) THEN           
       SRT=(2d0*V_sh/XLENGTH)

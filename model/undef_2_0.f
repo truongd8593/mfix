@@ -7,7 +7,6 @@
 !  Author: M. Syamlal                                 Date: 18-JUL-96  C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-!//AIKE Changed local variable name from VAR to VARDUM, due to conflict in PG
       SUBROUTINE UNDEF_2_0(VARDUM, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
@@ -43,7 +42,6 @@
 !
 !      IJK = 1 
 !      IF (IJKEND3 > 0) THEN 
-!// 200 1119 changed :IJKMAX2 --> IJKSTART3:IJKEND3          
 !         WHERE (VAR(:IJKMAX2) == UNDEFINED) VAR(:IJKMAX2) = ZERO 
 !         WHERE (VARDUM(IJKSTART3:IJKEND3) == UNDEFINED) VARDUM(IJKSTART3:IJKEND3) = ZERO 
          WHERE (VARDUM(1:IJKEND3) == UNDEFINED) VARDUM(1:IJKEND3) = ZERO 
@@ -51,3 +49,7 @@
 !      ENDIF 
       RETURN  
       END SUBROUTINE UNDEF_2_0 
+
+!// Comments on the modifications for DMP version implementation      
+!//PG Changed local variable name from VAR to VARDUM, due to conflict in PG
+!// 120 Replaced the index for initialization :IJKMAX2 --> VARDUM(1:IJKEND3)

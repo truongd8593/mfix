@@ -35,7 +35,6 @@
       USE indices
       USE run
       USE toleranc 
-!//SP
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
@@ -60,45 +59,31 @@
 ! 1.2.1 Fluid viscosity
       IF (VISC(0)) CALL CALC_MU_G (IER) 
 
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): after CALC_MU_G in transport_prop')") myPE    !//AIKEPARDBG
-!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-
 !
 ! 1.2.2 Solids viscosity
       DO M = 1, MMAX 
          IF (VISC(M)) CALL CALC_MU_S (M, IER) 
       END DO 
 
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): after CALC_MU_S in transport_prop')") myPE    !//AIKEPARDBG
-!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-
-
 !
 ! 1.2.3 Fluid conductivity
       IF (COND(0)) CALL CALC_K_G (IER) 
-!      write(*,"('(PE ',I2,'): after CALC_K_G in transport_prop')") myPE    !//AIKEPARDBG
 !
 ! 1.2.4 Solids conductivity
       DO M = 1, MMAX 
          IF (COND(M)) CALL CALC_K_S (M, IER) 
       END DO 
-!      write(*,"('(PE ',I2,'): after CALC_K_S in transport_prop')") myPE    !//AIKEPARDBG
 !
 ! 1.2.5 Fluid diffusivity
       IF (DIFF(0)) CALL CALC_DIF_G (IER) 
-!      write(*,"('(PE ',I2,'): after CALC_DIF_G in transport_prop')") myPE    !//AIKEPARDBG
 !
 ! 1.2.6 Solids diffusivity
       DO M = 1, MMAX 
          IF (DIFF(M)) CALL CALC_DIF_S (M, IER) 
       END DO 
-!      write(*,"('(PE ',I2,'): after CALC_DIF_S in transport_prop')") myPE    !//AIKEPARDBG
-
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): eof transport_prop')") myPE    !//AIKEPARDBG
-!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
       
       RETURN  
       END SUBROUTINE TRANSPORT_PROP 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

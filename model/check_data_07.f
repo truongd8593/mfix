@@ -903,6 +903,9 @@
          END DO 
       END DO 
 
+!//SP Send Receive
+!     call send_recv(icbc_flag,2)
+
       IF (ERROR) THEN 
          WRITE (UNIT_LOG, 1420) 
          call mfix_exit(myPE)  
@@ -967,5 +970,5 @@
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization
 !// 220 Use local FUNIJK for triple DO i,j,k loop
-!// 350 Change do loop limits: 1,kmax2->kmin3,kmax3      
+!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3      
 !// 990 Replace STOP with exitMPI to terminate all processors

@@ -55,8 +55,8 @@
       USE tau_s
       USE bc
       USE vshear
-      USE compar        !//d
-      USE sendrecv   !// 400       
+      USE compar 
+      USE sendrecv    
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -104,7 +104,12 @@
 ! 
 !                      Source terms (Volumetric) 
       DOUBLE PRECISION V0, Vmt, Vbf 
-! 
+!
+! loezos
+      DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
+      DOUBLE PRECISION SRT
+! loezos
+ 
 !                      error message 
       CHARACTER*80     LINE(2) 
 ! 
@@ -116,17 +121,11 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
       INCLUDE 'b_force2.inc'
-! loezos
-      DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
-      DOUBLE PRECISION SRT
-! loezos
 
 !
       DO M = 1, MMAX 
          IF (MOMENTUM_Y_EQ(M)) THEN 
 !
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-
 !$omp  parallel do private( I, J, K, IJK, IJKN, ISV, Sdp, Sdps, V0, Vmt, &
 !$omp&  PGN,DRO1,DRO2,DROA, Vbf, MUGA, ROPGA, EPGA,VSH_n,VSH_s,VSH_e,&
 !$omp&  VSH_w,VSH_p,Source_conv ) &
@@ -265,11 +264,6 @@
             CALL SOURCE_V_S_BC (A_M, B_M, M, IER) 
          END IF
       END DO 
-
-!//? probably need to communicate A_M and B_M here or in solve_vel_star in order
-!//? collect the COMMs
-!!!      CALL SEND_RECV(A_M, 2)
-!!!      CALL SEND_RECV(B_M, 2)
       
       RETURN  
       END SUBROUTINE SOURCE_V_S 
@@ -324,7 +318,7 @@
       USE tau_s 
       USE bc
       USE output
-      USE compar        !//d
+      USE compar  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -369,10 +363,8 @@
 !
       IF (DO_K) THEN 
          K1 = 1 
-!// 350 1229 change do loop limits: 1,jmax2->jmin3,jmax3	 	 
          DO J1 = jmin3,jmax3 
             DO I1 = imin3, imax3 
-!// 360 1229 Check if current i,j,k resides on this PE
    	       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE		 
                IJK = FUNIJK(I1,J1,K1) 
                IF (NS_WALL_AT(IJK)) THEN 
@@ -397,10 +389,8 @@
             END DO 
          END DO 
          K1 = KMAX2 
-!// 350 1229 change do loop limits: 1,jmax2->jmin3,jmax3	 	 	 
          DO J1 = jmin3,jmax3 
             DO I1 = imin3, imax3 
-!// 360 1229 Check if current i,j,k resides on this PE
    	       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	 
                IJK = FUNIJK(I1,J1,K1) 
                IF (NS_WALL_AT(IJK)) THEN 
@@ -429,7 +419,6 @@
       I1 = 1
       DO K1 = kmin3, kmax3 
          DO J1 = jmin3, jmax3 
-!// 360 1229 Check if current i,j,k resides on this PE
    	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE       
             IJK = FUNIJK(I1,J1,K1) 
             IF (NS_WALL_AT(IJK)) THEN 
@@ -456,7 +445,6 @@
       I1 = IMAX2 
       DO K1 = kmin3, kmax3 
          DO J1 = jmin3, jmax3 
-!// 360 1223 Check if current i,j,k resides on this PE
    	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE      
             IJK = FUNIJK(I1,J1,K1) 
             IF (NS_WALL_AT(IJK)) THEN 
@@ -494,7 +482,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE		     
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     		     			
                            IJK = FUNIJK(I,J,K) 
                            A_M(IJK,E,M) = ZERO 
@@ -534,7 +521,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE		     
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     		     			
 			
                            IJK = FUNIJK(I,J,K) 
@@ -575,7 +561,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE		     
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     		     			
 			
                            IJK = FUNIJK(I,J,K) 
@@ -653,7 +638,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE		     
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     		     			
 			
                            IJK = FUNIJK(I,J,K) 
@@ -680,7 +664,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE		     
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     		     			
 			
                            IJK = FUNIJK(I,J,K) 
@@ -715,7 +698,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE		     
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     		     			
 			
                            IJK = FUNIJK(I,J,K) 
@@ -743,7 +725,6 @@
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE		     
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     		     			
 		     
                         IJK = FUNIJK(I,J,K) 
@@ -822,7 +803,7 @@
       USE tau_s 
       USE bc
       USE output 
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -857,7 +838,6 @@
       DO K = K1, K2 
          DO J = J1, J2 
             DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE		     
                IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
 	    
                IJK = FUNIJK(I,J,K) 
@@ -988,3 +968,9 @@
       END DO 
       RETURN  
       END SUBROUTINE JJ_BC_V_S 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,kmax2->kmin3,kmax3      
+!// 360 Check if i,j,k resides on current processor
+

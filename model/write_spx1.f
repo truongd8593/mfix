@@ -99,7 +99,7 @@
             WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
             CALL FLUSH (UNIT_SPX + L) 
          end if
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP2" FILE         P_g , P_star
 !
@@ -117,7 +117,7 @@
             WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
             CALL FLUSH (UNIT_SPX + L) 
          end if
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP3" FILE         U_g , V_g , W_g
 !
@@ -136,7 +136,7 @@
             WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
             CALL FLUSH (UNIT_SPX + L) 
          end if
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP4" FILE         U_s , V_s , W_s
 !
@@ -157,7 +157,7 @@
             WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
             CALL FLUSH (UNIT_SPX + L) 
          end if
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP5" FILE         ROP_s
 !
@@ -176,7 +176,7 @@
             WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
             CALL FLUSH (UNIT_SPX + L) 
          end if
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP6" FILE         T_g  , T_s
 !
@@ -219,7 +219,7 @@
             WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
             CALL FLUSH (UNIT_SPX + L) 
          end if
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP8" FILE         THETA_m
 !
@@ -238,7 +238,7 @@
             WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
             CALL FLUSH (UNIT_SPX + L) 
          end if
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP9" FILE         Scalar
 !
@@ -257,7 +257,7 @@
             WRITE (UNIT_SPX + L, REC=3) NEXT_REC, NUM_REC 
             CALL FLUSH (UNIT_SPX + L) 
          end if
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 !
       END SELECT 
@@ -282,9 +282,9 @@
         double precision, dimension(ijkmax3) :: array2     
         double precision, dimension(DIMENSION_3) :: VAR    
 
-        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
         call gather (VAR,array2,root)  !//d pnicol
-        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+!       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
         if (myPE.eq.PE_IO) then
            call convert_to_io_dp(array2,array1,ijkmax2)  
            CALL OUT_BIN_R (UNIT_SPX+L, array1, IJKMAX2, NEXT_REC) 

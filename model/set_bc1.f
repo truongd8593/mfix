@@ -39,7 +39,7 @@
       USE physprop
       USE run
       USE funits 
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -94,14 +94,6 @@
             J2 = BC_J_N(L) 
             K1 = BC_K_B(L) 
             K2 = BC_K_T(L) 
-!//AIKEPARDBG              
-!            write(UNIT_LOG,"('S1:set_bc1 for EP_G: IJK= ',I5,'  I= ',I4,&
-!	      & ' J=',I4,' K=',I4,' BC_EP_G=',E12.4,' EP_G=',E12.4)") &
-!	          IJK,I,J,K,BC_EP_G(L),EP_G(IJK)  !//AIKEPARDBG
-
-!//? Need to add a filter to check whether any of i1,i2,j1,j2,k1,k2 is on adjacent PE
-!// 360 1025 Check if current i,j,k resides on this PE	    
-!           IF (.NOT.IS_ON_myPE_plus2layers(I?,J?,K?)) CYCLE
 
             IF (BC_TYPE(L) == 'MASS_OUTFLOW') THEN 
                CALL SET_OUTFLOW (L, I1, I2, J1, J2, K1, K2) 
@@ -220,9 +212,7 @@
                   DO K = BC_K_B(L), BC_K_T(L) 
                      DO J = BC_J_S(L), BC_J_N(L) 
                         DO I = BC_I_W(L), BC_I_E(L) 
-!// 360 1025 Check if current i,j,k resides on this PE	    
                          IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-!// 220 1004 Need to use local FUNIJK			
                            IJK = FUNIJK(I,J,K) 
                            SELECT CASE (BC_PLANE(L))  
                            CASE ('W')  
@@ -282,9 +272,7 @@
                   DO K = BC_K_B(L), BC_K_T(L) 
                      DO J = BC_J_S(L), BC_J_N(L) 
                         DO I = BC_I_W(L), BC_I_E(L)
-!// 360 1025 Check if current i,j,k resides on this PE			 
    		          IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE			
-!// 220 1004 Need to use local FUNIJK			
                            IJK = FUNIJK(I,J,K) 
                            SELECT CASE (BC_PLANE(L))  
                            CASE ('W')  
@@ -343,15 +331,10 @@
                ENDIF 
 !
             ENDIF 
-!//AIKEPARDBG
-!            write(UNIT_LOG,"('S2:set_bc1 for EP_G: IJK= ',I5,'  I= ',I4,&
-!	      & ' J=',I4,' K=',I4,' BC_EP_G=',E12.4,' EP_G=',E12.4)") &
-!	          IJK,I,J,K,BC_EP_G(L),EP_G(IJK)  !//AIKEPARDBG
 	    
          ENDIF 
       END DO 
 
-!//? check for dependency along overlapping subdomain interface BCs
       
       RETURN  
  1000 FORMAT(/,1X,'Average outflow rates at BC No. ',I2,'  At Time = ',G12.5) 
@@ -359,3 +342,7 @@
  1200 FORMAT(3X,'Solids-',I1,' : Mass flow = ',G12.5,'     Volumetric flow = ',&
          G12.5) 
       END SUBROUTINE SET_BC1 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 360 Check if i,j,k resides on current processor

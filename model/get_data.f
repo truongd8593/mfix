@@ -78,12 +78,11 @@
       CALL READ_NAMELIST (0) 
 
       CALL CHECK_DATA_00
-!//SP The following have to be moved here are cyclic_y etc. is needed in gridmap_init
+
       IF (CYCLIC_X_PD) CYCLIC_X = .TRUE.
       IF (CYCLIC_Y_PD) CYCLIC_Y = .TRUE.
       IF (CYCLIC_Z_PD) CYCLIC_Z = .TRUE.
-
-!// Sreekanth's recomm. for rotary-drum
+      
       DO_K = .NOT.NO_K
 !
       IF (COORDINATES == 'CYLINDRICAL') CYLINDRICAL = .TRUE.
@@ -111,7 +110,7 @@
          RUN_TYPE = 'RESTART_1' 
          CALL OPEN_FILES (RUN_NAME, RUN_TYPE, N_SPX) 
          CALL READ_RES0
-!         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
 
          CALL READ_NAMELIST (0)                  ! to modify the .RES data with .DAT data 
          RUN_TYPE = 'RESTART_1' 
@@ -121,7 +120,7 @@
          CALL OPEN_FILES (RUN_NAME, RUN_TYPE, N_SPX) 
 
          CALL READ_RES0  
-!         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
 
          CALL READ_NAMELIST (0)              ! to modify the .RES data with .DAT data 
          RUN_TYPE = 'RESTART_2' 

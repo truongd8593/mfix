@@ -46,8 +46,8 @@
       USE time_cpu 
       USE funits 
       USE output
-      USE compar      !// 001 Include MPI header file
-      USE mpi_utility !//     added for exitMPI calls for debugging     
+      USE compar      
+      USE mpi_utility     
       USE parallel_mpi
       IMPLICIT NONE
 !-----------------------------------------------
@@ -91,14 +91,6 @@
 
 !// 010 Initialize MPI & get ranks & total PEs employed
     call parallel_init
-!//PARDBG 0801 Printout total PEs and also signal each alive PE
-!   if(myPE == 0) then
-!       write(*,"('Total number of PEs  :',I3)") numPEs
-!   endif
-!   write(*,"('Hello, I am PE :',I2)") myPE
-
-
-
 !
 ! set the version.release of the software
 !
@@ -126,18 +118,12 @@
 !
 !  Get the initial value of CPU time
 !
-
-!// 888 Start MPI's own clock to measure wall time
       CALL CPU_TIME (CPU0) 
 !
 !   Read input data, check data, do computations for IC and BC locations
 !   and flows, and set geometry parameters such as X, X_E, DToDX, etc.
 !
       CALL GET_DATA 
-
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): aft get_data in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Initialize all field variables as undefined
@@ -149,38 +135,22 @@
 !
       CALL SET_FLAGS 
 
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): aft set_flags in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
-
 !
 !  Set constant physical properties
 !
       CALL SET_CONSTPROP 
       
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): aft set_constprop in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
-
 !
 !
 !  Write the initial part of the standard output file
 !
       CALL WRITE_OUT0
       CALL WRITE_FLAGS 
-!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): after write_out0 in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Write the initial part of the special output file(s)
 !
       CALL WRITE_USR0 
-
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): after write_usr0 in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
       
 !$
 !$    CALL START_LOG 
@@ -201,9 +171,6 @@
 !  Write the initial part of the restart files
 !
          CALL WRITE_RES0 
-!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-!      write(*,"('(PE ',I2,'): after write_res0 in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
          DO L = 1, N_SPX 
             CALL WRITE_SPX0 (L) 
@@ -244,14 +211,11 @@
          WRITE (UNIT_LOG, *) ' MFIX: Do not know how to process' 
          WRITE (UNIT_LOG, *) ' RUN_TYPE in data file' 
          CALL END_LOG 
-         STOP  
+         call mfix_exit(myPE)  
 !
       END SELECT 
 !
-!//AIKEPARDBG
        call MPI_Barrier(MPI_COMM_WORLD,mpierr)   !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): after write_XXXX in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
       IF (DT_TMP /= UNDEFINED) THEN 
          DT = MAX(DT_MIN,MIN(DT_MAX,DT)) 
@@ -265,72 +229,51 @@
 !
       CALL SET_INCREMENTS 
 !
-!      write(*,"('(PE ',I2,'): after set_increments in mfix')") myPE    !//AIKEPARDBG
-!
 !  Set the flags for wall surfaces impermeable and identify flow boundaries
 !  using FLAG_E, FLAG_N, and FLAG_T
 !
       CALL SET_FLAGS1 
-
-!      write(*,"('(PE ',I2,'): after set_flags1 in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Calculate cell volumes and face areas
 !
       CALL SET_GEOMETRY1 
 
-!      write(*,"('(PE ',I2,'): after set_geometry1 in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
-
 !
 !  Find corner cells and set their face areas to zero
 !
       CALL GET_CORNER_CELLS (IER) 
 
-!      write(*,"('(PE ',I2,'): after get_corner_cells in mfix')") myPE    !//AIKEPARDBG
 !
 !  Set initial conditions
 !
       CALL SET_IC 
-
-!      write(*,"('(PE ',I2,'): after set_ic in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Set boundary conditions
 !
       CALL ZERO_NORM_VEL 
       CALL SET_BC0 
-
-!      write(*,"('(PE ',I2,'): after set_bc0 in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
-
 !
 !  Set gas mixture molecular weight
 !
       CALL SET_MW_MIX_G 
 
-!      write(*,"('(PE ',I2,'): after set_mw_mix_g in mfix')") myPE    !//AIKEPARDBG
+
 !
 !  Set the pressure field for a fluidized bed
 !
       IF (RUN_TYPE == 'NEW') CALL SET_FLUIDBED_P 
 
-!      write(*,"('(PE ',I2,'): after set_fluidbed_p in mfix')") myPE    !//AIKEPARDBG
 !
 !  Initialize gas densities
 !
       CALL SET_RO_G 
 
-!      write(*,"('(PE ',I2,'): after set_ro_g in mfix')") myPE    !//AIKEPARDBG
 !
 !  Initialize time dependent boundary conditions
 !
       CALL SET_BC1 
-
-!      write(*,"('(PE ',I2,'): after set_bc1 in mfix')") myPE    !//AIKEPARDBG
-!      call exitMPI(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Check the field variable data and report errors.
@@ -344,9 +287,6 @@
       CPU_NLOG = CPU1 
       TIME_NLOG = TIME - DT 
 
-!     write(*,"('(PE ',I2,'): reached beginning of time march in mfix')") myPE    !//AIKEPARDBG
-!     call exitMPI(myPE)   !//AIKEPARDBGSTOP
-
 !
 !  Find the solution of the equations from TIME to TSTOP at
 !  intervals of DT
@@ -359,8 +299,6 @@
 !  Get the final value of CPU time.  The difference gives the
 !  CPU time used for the computations.
 !
-
-!// 888 Read time from MPI's own clock to measure wall time
       CALL CPU_TIME (CPU1) 
 !
 !  Compute the CPU time and write it out in the .OUT file.
@@ -368,7 +306,7 @@
       CPUTIME_USED = CPU1 - CPU0 
       CALL WRITE_OUT3 (CPUTIME_USED) 
 
-!// 010 Finalize and terminate MPI
+!// Finalize and terminate MPI
       call parallel_fin
             
       STOP  
@@ -378,3 +316,5 @@
          ' Time step number (NSTEP) =',I7,/1X,70('*')/) 
       END PROGRAM MFIX 
       
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

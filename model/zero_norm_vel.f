@@ -31,7 +31,7 @@
       USE fldvar
       USE indices
       USE is
-      USE compar        !//d
+      USE compar   
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -52,7 +52,6 @@
       INCLUDE 'function.inc'
 !
 !!$omp  parallel do private( IMJK, IJMK, IJKM)
-!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
       DO IJK = ijkstart3, ijkend3
       
          IF (.NOT.WALL_AT(IJK)) THEN 
@@ -73,7 +72,6 @@
             .OR.I_OF(IJK)==IMAX3))) U_G(IMJK) = ZERO 
             IF (.NOT.(CYCLIC_AT(IJK) .AND. (J_OF(IJK)==JMAX2&
             .OR.J_OF(IJK)==JMAX3))) V_G(IJMK) = ZERO 
-!//? check for subdomain boundary behavior of this if branch assignment	    
             IF (.NOT.(CYCLIC_AT(IJK) .AND. (K_OF(IJK)==KMAX2&
             .OR.K_OF(IJK)==KMAX3))) W_G(IJKM) = ZERO 
          ENDIF 
@@ -81,8 +79,6 @@
       DO M = 1, MMAX 
 !
 !!$omp  parallel do private( ISV,  IMJK, IJMK, IJKM)
-!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
-!         DO IJK = 1, IJKMAX2 
          DO IJK = ijkstart3, ijkend3
             IF (.NOT.WALL_AT(IJK)) THEN 
                IF (IP_AT_E(IJK)) THEN 
@@ -117,7 +113,6 @@
                .OR.I_OF(IJK)==IMAX3))) U_S(IMJK,M) = ZERO 
                IF (.NOT.(CYCLIC_AT(IJK) .AND. (J_OF(IJK)==JMAX2&
                .OR.J_OF(IJK)==JMAX3))) V_S(IJMK,M) = ZERO 
-!//? check for subdomain boundary behavior of this if branch assignment	    
                IF (.NOT.(CYCLIC_AT(IJK) .AND. (K_OF(IJK)==KMAX2&
                .OR.K_OF(IJK)==KMAX3))) W_S(IJKM,M) = ZERO 
             ENDIF 
@@ -125,3 +120,9 @@
       END DO 
       RETURN  
       END SUBROUTINE ZERO_NORM_VEL 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+
+

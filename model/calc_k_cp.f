@@ -189,6 +189,7 @@
 
 	       ENDIF
  
+!//SP
             ELSE
 
 	       Kcp(IJK) = ZERO

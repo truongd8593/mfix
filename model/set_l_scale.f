@@ -49,10 +49,12 @@
       IJK = 1 
       
 !     IF (IJKMAX2 > 0) THEN 
-!// 200 0922 changed :IJKMAX2 --> 0:IJKMAX3      
          L_SCALE(IJKSTART3:IJKEND3) = L_SCALE0 
-!//? what is IJK used for? modification for IJKMAX3 is valid or not?	 
 !        IJK = IJKMAX3 + 1 
 !     ENDIF 
       RETURN  
       END SUBROUTINE SET_L_SCALE 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 120 Replaced the index for initialization : :IJKMAX2 --> L_SCALE(IJKSTART3:IJKEND3)

@@ -77,13 +77,15 @@
       endif
 !
       IF (OPEN_ACCESS == 'DIRECT') THEN 
-!//AIKEPARDBG implemented a bypass to avoid erasing files each time I start for debugging
-         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3), STATUS=OPEN_STAT, RECL=IRECL, ACCESS=&
-!         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3), STATUS='UNKNOWN', RECL=IRECL, ACCESS=&
+
+         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3+DUMPE), STATUS=OPEN_STAT, RECL=IRECL, ACCESS=&
+!// Bypass for checking if previous run files exist in same directory or not
+!         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3+DUMPE), STATUS='UNKNOWN', RECL=IRECL, ACCESS=&
             OPEN_ACCESS, FORM=OPEN_FORM, ERR=100) 
       ELSE 
-!//AIKEPARDBG implemented a bypass to avoid erasing files each time I start for debugging
+
          OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3+DUMPE), STATUS=OPEN_STAT, ACCESS=OPEN_ACCESS&
+!// Bypass for checking if previous run files exist in same directory or not
 !         OPEN(UNIT=IUNIT, FILE=FILE_NAME(1:NB+3+DUMPE), STATUS='UNKNOWN', ACCESS=OPEN_ACCESS&
             , FORM=OPEN_FORM, ERR=100) 
       ENDIF 

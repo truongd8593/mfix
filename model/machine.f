@@ -75,7 +75,6 @@
       ID_SECOND = DAT(7)
       
 !     For SGI only
-      ID_NODE = ""
       CALL GETHOSTNAME(ID_NODE,64)
 !
       RETURN
@@ -103,6 +102,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE CPU_TIME(CPU)
+      USE compar      !// 001 Include MPI header file
 !
       IMPLICIT NONE
 !
@@ -110,29 +110,38 @@
 !
 !                      cpu time since start of run
       DOUBLE PRECISION CPU
-      
-      INTEGER, SAVE :: COUNT_OLD=0, WRAP=0
 !
 ! local variables
 !
-
+!
+!                      TA(1) = user cpu time   TA(2) = system cpu time
+!     REAL             TA(2) 
+!
+!                      XT = TA(1) + TA(2)
+!     REAL             XT
+!
+!                      ETIME is an SGI system function which returns
+!                      the elasped CPU time
+!     REAL             ETIME
+!
+!      XT = MPI_WTIME()
+!      XT  = ETIME(TA)
+!     CPU = XT
+      
+      
+!-------------------------------------------F90
 !                       clock cycle
-      INTEGER           COUNT
+       INTEGER           COUNT
 
 !                       number of cycles per second
-      INTEGER           COUNT_RATE
+       INTEGER           COUNT_RATE
       
 !                       max number of cycles, after which count is reset to 0
-      INTEGER           COUNT_MAX
+       INTEGER           COUNT_MAX
 
-      CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
-      IF(COUNT_OLD .GT. COUNT) THEN
-        WRAP = WRAP + 1
-      ENDIF
-      COUNT_OLD = COUNT
+       CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
       
-      CPU           = DBLE(COUNT)/DBLE(COUNT_RATE) &
-                     + DBLE(WRAP) * DBLE(COUNT_MAX)/DBLE(COUNT_RATE)
+       CPU           = DBLE(COUNT)/DBLE(COUNT_RATE)
 !
       RETURN
       END
@@ -199,31 +208,45 @@
       return
       end
 !
-
-      subroutine gethostname(name, namelen)
-      integer namelen
-      character *1 name(namelen)
-      name = " "
-      return
-      end
-      subroutine ran
-      return
-      end
-     
 !
       subroutine flush_bin(iunit,code)
+!
+      use funits
+      use run
+      use machine
+!
       implicit none
-      integer :: iunit , code
-      call flush(iunit)
+!
+      integer    :: iunit , lc , code , nb , ier
+      CHARACTER  :: EXT*4 , file_name*64 
+!
+      if (code .ne. 1) then
+         call flush(iunit)
+         return
+      end if
+!
+! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
+!
+      DO LC = 1, LEN(RUN_NAME) 
+         IF (RUN_NAME(LC:LC) == ' ') THEN 
+            NB = LC 
+            GO TO 125 
+         ENDIF 
+      END DO 
+      WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
+      STOP  
+ 125  continue
+      lc  = iunit - unit_spx
+      ext = '.SPx'
+      WRITE (EXT(4:4), 1000) LC         
+      close (unit=iunit)
+
+
+
+
+      CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, &
+              'old' , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER)
+!
+ 1000 FORMAT(I1)
       return
       end
-
-! ----------------------------
-! AIX specific utility routine
-! ----------------------------
-!     subroutine flush( iunit )
-!     integer iunit
-!     call flush_(iunit)
-!     return
-!     end
-

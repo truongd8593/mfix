@@ -28,8 +28,8 @@
       USE param1 
       USE geometry
       USE indices
-      USE compar        !//d
-      USE sendrecv        !//d
+      USE compar  
+      USE sendrecv   
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -70,7 +70,7 @@
       F1 = ONE/UR 
       F2 = F1 - ONE 
 !
-!// 350 1207 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+!$omp    parallel do private(IJK,AP)
       DO IJK = ijkstart3, ijkend3 
          IF (FLUID_AT(IJK)) THEN 
             AP = A_M(IJK,0,M) 
@@ -80,9 +80,6 @@
             ENDIF 
          ENDIF 
       END DO 
-!//SP
-!!!!      call send_recv(a_m,2)
-!!!!      call send_recv(b_m,2)
       RETURN  
       END SUBROUTINE UNDER_RELAX_S 
 !
@@ -117,8 +114,8 @@
       USE param1 
       USE geometry
       USE indices
-      USE compar        !//d
-      USE sendrecv        !//d
+      USE compar  
+      USE sendrecv  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -159,7 +156,7 @@
       F1 = ONE/UR 
       F2 = F1 - ONE 
 !
-!// 350 1223 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3  
+!$omp    parallel do private(IJK,AP)
       DO IJK = ijkstart3, ijkend3 
          IF (FLOW_AT_E(IJK)) THEN 
             AP = A_M(IJK,0,M) 
@@ -169,9 +166,6 @@
             ENDIF 
          ENDIF 
       END DO 
-!//SP
-!!!!      call send_recv(a_m,2)
-!!!!      call send_recv(b_m,2)
       RETURN  
       END SUBROUTINE UNDER_RELAX_U 
 !
@@ -206,8 +200,8 @@
       USE param1 
       USE geometry
       USE indices
-      USE compar        !//d
-      USE sendrecv        !//d
+      USE compar   
+      USE sendrecv  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -248,7 +242,7 @@
       F1 = ONE/UR 
       F2 = F1 - ONE 
 !
-!// 350 1223 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!$omp    parallel do private(IJK,AP)
       DO IJK = ijkstart3, ijkend3
          IF (FLOW_AT_N(IJK)) THEN 
             AP = A_M(IJK,0,M) 
@@ -258,9 +252,6 @@
             ENDIF 
          ENDIF 
       END DO 
-!//SP
-!!!!      call send_recv(a_m,2)
-!!!!      call send_recv(b_m,2)
       RETURN  
       END SUBROUTINE UNDER_RELAX_V 
 !
@@ -295,8 +286,8 @@
       USE param1 
       USE geometry
       USE indices
-      USE compar        !//d
-      USE sendrecv        !//d
+      USE compar   
+      USE sendrecv   
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -337,7 +328,7 @@
       F1 = ONE/UR 
       F2 = F1 - ONE 
 !
-!// 350 1223 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3  
+!$omp    parallel do private(IJK,AP)
       DO IJK = ijkstart3, ijkend3
          IF (FLOW_AT_T(IJK)) THEN 
             AP = A_M(IJK,0,M) 
@@ -347,8 +338,9 @@
             ENDIF 
          ENDIF 
       END DO 
-!//SP
-!!!!      call send_recv(a_m,2)
-!!!!      call send_recv(b_m,2)
       RETURN  
       END SUBROUTINE UNDER_RELAX_W 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

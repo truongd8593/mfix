@@ -54,8 +54,8 @@
       USE is
       USE tau_s
       USE bc
-      USE compar        !//d
-      USE sendrecv      !// 400      
+      USE compar  
+      USE sendrecv 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -122,8 +122,6 @@
       DO M = 1, MMAX 
          IF (MOMENTUM_Z_EQ(M)) THEN 
 !
-!// 350 1229 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-
 !$omp  parallel do &
 !$omp& private(IJK, I, J, K, IJK, IJKT, EPGA, ISV, &
 !$omp& PGT,SDP,SDPS,   ROPGA,V0,VMT,   DRO1,DRO2,DROA,VBF, &
@@ -298,11 +296,6 @@
             CALL SOURCE_W_S_BC (A_M, B_M, M, IER) 
          ENDIF 
       END DO 
-
-!//? probably need to communicate A_M and B_M here or in solve_vel_star in order
-!//? collect the COMMs
-!!!      CALL SEND_RECV(A_M, 2)
-!!!      CALL SEND_RECV(B_M, 2)
       
       RETURN  
       END SUBROUTINE SOURCE_W_S 
@@ -357,7 +350,7 @@
       USE tau_s 
       USE bc
       USE output
-      USE compar        !//d
+      USE compar  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -403,7 +396,6 @@
       J1 = 1 
       DO K1 = kmin3,kmax3 
          DO I1 = imin3,imax3 
-!// 360 1229 Check if current i,j,k resides on this PE
    	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	 	    	    
             IJK = FUNIJK(I1,J1,K1) 
             IF (NS_WALL_AT(IJK)) THEN 
@@ -430,7 +422,6 @@
       J1 = JMAX2 
       DO K1 = kmin3, kmax3
          DO I1 = imin3, imax3 
-!// 360 1229 Check if current i,j,k resides on this PE
    	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    	    	    	 
             IJK = FUNIJK(I1,J1,K1) 
             IF (NS_WALL_AT(IJK)) THEN 
@@ -457,7 +448,6 @@
       I1 = 1 
       DO K1 = kmin3, kmax3
          DO J1 = jmin3, jmax3 
-!// 360 1229 Check if current i,j,k resides on this PE
    	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    	    	    	 
             IJK = FUNIJK(I1,J1,K1) 
             IF (NS_WALL_AT(IJK)) THEN 
@@ -484,7 +474,6 @@
       I1 = IMAX2 
       DO K1 = kmin3,kmax3 
          DO J1 = jmin3,jmax3 
-!// 360 1229 Check if current i,j,k resides on this PE
    	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE      
             IJK = FUNIJK(I1,J1,K1) 
             IF (NS_WALL_AT(IJK)) THEN 
@@ -522,7 +511,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    	    	 		     
 			
                            IJK = FUNIJK(I,J,K) 
@@ -564,7 +552,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    	    	 		     
 			
                            IJK = FUNIJK(I,J,K) 
@@ -606,7 +593,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    	    	 		     
 
                            IJK = FUNIJK(I,J,K) 
@@ -696,7 +682,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    	    	 		     
 			
                            IJK = FUNIJK(I,J,K) 
@@ -723,7 +708,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    	    	 		     
 			
                            IJK = FUNIJK(I,J,K) 
@@ -758,8 +742,7 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE
-                       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    	    	 		     
+                      IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    	    	 		     
 			
                            IJK = FUNIJK(I,J,K) 
 !
@@ -786,7 +769,6 @@
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	    	    	 		     
 		     
                         IJK = FUNIJK(I,J,K) 
@@ -865,7 +847,7 @@
       USE tau_s 
       USE bc
       USE output 
-      USE compar        !//d
+      USE compar    
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -901,7 +883,6 @@
       DO K = K1, K2 
          DO J = J1, J2 
             DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE		     
                IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
 	    
                IJK = FUNIJK(I,J,K) 
@@ -1044,3 +1025,9 @@
       END DO 
       RETURN  
       END SUBROUTINE JJ_BC_W_S 
+
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,kmax2->kmin3,kmax3      
+!// 360 Check if i,j,k resides on current processor

@@ -376,6 +376,10 @@
       INTEGER          IJMK, JM, IPJMK, IJKS, IJKSE
       INTEGER          IJKM, KM, IPJKM, IJKB, IJKBE
 !
+! loezos
+	INTEGER incr
+! loezos
+
 !                      Diffusion parameter
       DOUBLE PRECISION D_f
 
@@ -409,9 +413,6 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
 
-! loezos
-	INTEGER incr
-! loezos
 
       call lock_tmp_array
       call lock_xsi_array
@@ -666,6 +667,11 @@
       INTEGER          IMJK, IM, IJKW
       INTEGER          IJMK, JM, IPJMK, IJKS, IJKSE
       INTEGER          IJKM, KM, IPJKM, IJKB, IJKBE
+
+! loezos                     SHEAR VELOCITY
+      INTEGER incr    
+!loezos
+
 !
 !                      Diffusion parameter
       DOUBLE PRECISION D_f
@@ -683,9 +689,6 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
 
-! loezos                     SHEAR VELOCITY
-      INTEGER incr    
-!loezos
 
       call lock_tmp_array
       call lock_xsi_array

@@ -28,7 +28,7 @@
       USE run
       USE funits 
       USE drag
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -53,15 +53,7 @@
 !  Set specified constant physical properties values
 !
 
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): IJKSTART3,IJKEND3 = ',2(I5,2X)))") & !//AIKEPARDBG
-!              myPE,IJKSTART3,IJKEND3                    !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): IJKMIN2,IJKMAX2 = ',2(I5,2X)))") & !//AIKEPARDBG
-!              myPE,IJKMIN2,IJKMAX2                    !//AIKEPARDBG
-
-!// 200 1002 change the DO loop limits from i,ijkmax2 --> ijkstart3, ijkend3
-!      DO IJK = 1, IJKMAX2 
-      DO IJK = IJKSTART3, IJKEND3
+      DO IJK = ijkstart3, ijkend3
       
          IF (WALL_AT(IJK)) THEN 
             RO_G(IJK) = ZERO 
@@ -88,9 +80,7 @@
          IF (NMAX(0) > 0) THEN 
             IJK = 1 
             IF (IJKMAX2 > 0) THEN 
-!// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3    
                DIF_G(IJKSTART3:IJKEND3,:NMAX(0)) = DIF_G0 
-!//? what is IJK used for? leftover from f77-->f90 automatic conversion?	       
                IJK = IJKMAX2 + 1 
             ENDIF 
             N = NMAX(0) + 1 
@@ -98,9 +88,7 @@
       ENDIF 
 !
       DO M = 1, MMAX 
-!// 200 1002 change the DO loop limits from i,ijkmax2 --> ijkstart3, ijkend3
-!      DO IJK = 1, IJKMAX2 
-         DO IJK = IJKSTART3, IJKEND3
+         DO IJK = ijkstart3, ijkend3
             IF (WALL_AT(IJK)) THEN 
                P_S(IJK,M) = ZERO 
                MU_S(IJK,M) = ZERO 
@@ -125,9 +113,7 @@
             IF (NMAX(M) > 0) THEN 
                IJK = 1 
                IF (IJKMAX2 > 0) THEN 
-!// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3    	       
                   DIF_S(IJKSTART3:IJKEND3,M,:NMAX(M)) = DIF_S0 
-!//? what is IJK used for? leftover from f77-->f90 automatic conversion?	       		  
                   IJK = IJKMAX2 + 1 
                ENDIF 
                N = NMAX(M) + 1 
@@ -140,18 +126,17 @@
          IF (MMAX > 0) THEN 
             IJK = 1 
             IF (IJKMAX2 > 0) THEN 
-!// 200 1010 modified the upper limit from :ijkmax2 --> 0:ijkmax3    	       	    
                F_GS(IJKSTART3:IJKEND3,:MMAX) = ZERO 
-!//? what is IJK used for?  leftover from f77-->f90 automatic conversion?	       		  	       
                IJK = IJKMAX2 + 1 
             ENDIF 
             M = MMAX + 1 
          ENDIF 
       ENDIF 
 !
-!//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): reached end of  set_constprop')") myPE    !//AIKEPARDBG
-!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
       RETURN  
       END SUBROUTINE SET_CONSTPROP 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 120 Replaced the index for initialization: e.g. in DIF_G :ijkmax2 --> IJKSTART3:IJKEND3

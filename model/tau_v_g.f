@@ -41,8 +41,8 @@
       USE geometry
       USE indices
       USE is
-      USE sendrecv        !//d
-      USE compar        !//d
+      USE sendrecv    
+      USE compar     
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -94,8 +94,6 @@
 !!$omp&  JP,IM,IJPK,IJKW,IJKNW,IMJPK,IJKTN,IJKBN,IJPKM,IJKB,IJKM, &
 !!$omp&  SBV,  SSX,SSY,   SSZ)  &
 !!$omp&  schedule(static)
-
-!//SP
       DO IJK = IJKSTART3, IJKEND3
          J = J_OF(IJK) 
          IJKN = NORTH_OF(IJK) 
@@ -149,3 +147,8 @@
       call send_recv(tau_v_g,2)
       RETURN  
       END SUBROUTINE CALC_TAU_V_G 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 400 Added sendrecv module and send_recv calls for COMMunication

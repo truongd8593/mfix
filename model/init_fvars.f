@@ -87,6 +87,7 @@
             U_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
             V_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
             W_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
+	    P_S(IJKSTART3:IJKEND3,M) = UNDEFINED
             N = 1 
             IF (NMAX(M) > 0) THEN 
                X_S(IJKSTART3:IJKEND3,M,:NMAX(M)) = ZERO 

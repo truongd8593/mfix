@@ -117,6 +117,7 @@
       IF (SPECIES_EQ(0)) THEN 
          DO N = 1, NMAX(0) 
             CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER) 
+!$omp    parallel do private(IJK, APO)
             DO IJK = ijkstart3, ijkend3 
 !
                IF (FLUID_AT(IJK)) THEN 
@@ -171,6 +172,7 @@
 !
                CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
 !
+!$omp    parallel do private(IJK, APO)
                DO IJK = ijkstart3, ijkend3 
 !
                   IF (FLUID_AT(IJK)) THEN 

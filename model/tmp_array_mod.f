@@ -17,10 +17,8 @@ MODULE tmp_array
 
    INTEGER, DIMENSION(:), ALLOCATABLE :: &
       ARRAY1I
-!//?WEIRD 1004 somehow allocatable causes PG internal error, Ed's soln: pointers
-!   CHARACTER*3, DIMENSION(:), ALLOCATABLE :: ARRAY1C
-!   CHARACTER*3, DIMENSION(4704):: ARRAY1C
-      character*3,  dimension(:), pointer :: ARRAY1C     
+
+   character*3,  dimension(:), pointer :: ARRAY1C     
    
 !!!HPF$ align Array1(:) with TT(:)
 !!!HPF$ align Array2(:) with TT(:)
@@ -48,3 +46,8 @@ MODULE tmp_array
       
 
 END MODULE tmp_array
+
+!// Comments on the modifications for DMP version implementation      
+!//PG Allocatable causes PG internal error, Ed's soln: pointers for ARRAY1c
+
+

@@ -45,27 +45,44 @@ fi
     set `uname -s` ; opsys=$1
     
     case $opsys in
+
+      AIX)
+            mach_file="AIX.F"
+
+            FORTRAN_CMD=xlf90_r
+            LINK_CMD=xlf90_r
+            libs_d="-lblas "
+            libs="-lblas -lesslp2_r"
+
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-qsmp=omp -qsmp=noauto -qnosave"
+            compile_d="-q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -c -I. -C -g -pg -qinitauto=FF -qflttrap -freeform"
+            link_d="-q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -C -g -pg -qinitauto=FF -qflttrap"
+
+            compile="-c -pg -I. -O3 -qstrict -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qarch=pwr3 -qtune=pwr3 -qcache=auto -freeform "
+            compile2="-c -pg -I. -O3 -qstrict -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qarch=pwr3 -qtune=pwr3 -qcache=auto -freeform "
+            link="-O3 -pg -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qtune=pwr3 -qcache=auto "
+            MODULE_CODE=1
+            ;;
+
     
       IRIX64) 
 	    mach_file="IRIXF90.F"
 
             FORTRAN_CMD=f90
             LINK_CMD=f90
-            libs_d="blas90.a -lmpi"
-            libs="blas90.a -lmpi"
+            libs_d="-lblas"
+            libs="-lblas"
 	      
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"
             compile_d="-c -I. -64 -C -trapuv -g -freeform "
-#AIKE
-            compile_d3="-c -I. -64 -trapuv -g -freeform "
             link_d="-64 -C -g"
 
             compile="-c -I. -64 -O3 -mips4 -freeform "
             compile2="-c -I. -64 -O3 -mips4 -freeform "
-#AIKE
-            compile3="-c -I. -64 -O3 -mips4 -freeform "
             link="-64 -O3 -mips4"
             MODULE_CODE=0
             ;;
@@ -96,21 +113,19 @@ fi
 	    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d="blas90.a -L/usr/local/MPI/mpich/build/LINUX/ch_p4/lib -lmpich"
-            libs="blas90.a -L/usr/local/MPI/mpich/build/LINUX/ch_p4/lib -lmpich"
+            libs_d=blas90.a
+            libs=blas90.a
     
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"
             compile_d="-c -I. -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
 #            link_d="-Mprof=func -g -L/usr/local/MPI/mpich/lib/LINUX/ch_p4 -lmpich"
-#           link_d=" -L/usr/lib -lmpi"
-            link_d=" "
+            link_d=" -L/usr/lib -lmpi"
             compile=" -O -I. -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant "
             compile2="-O1 -I. -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
 #            link=" -L/usr/local/MPI/mpich/lib/LINUX/ch_p4 -lmpich"
-#            link=" -L/usr/lib -lmpi"
-            link=" "
+            link=" -L/usr/lib -lmpi"
             MODULE_CODE=1
 	    
 
@@ -159,30 +174,6 @@ fi
 	    
 
 
-    AIX)
-	    mach_file="AIX.F"
-	    
-#           FORTRAN_CMD=mpxlf
-            FORTRAN_CMD=xlf90_r
-            LINK_CMD=xlf90_r
-            libs_d="-lblas "
-            libs="-lblas "
-    
-            OBJ_EXT=o
-            FORTRAN_EXT=f
-	    omp="-qnosave -qsmp=omp"
-            compile_d="-qfree=f90 -c -g "
-            link_d=" "
-            compile=" -qfree=f90 -O -c "
-            compile2="-O -c "
-            link=""
-            MODULE_CODE=1
-	    
-
-            ;;
-	    
-	    
-	         
       *) echo "Sorry, no support for operating system: $opsys"
          echo 
 	 echo "modify  make_mfix   to add support"
@@ -202,6 +193,10 @@ echo
 
 echo -n "Do you need SMP version? (y/n) [no] "
 read smp_version
+
+echo
+echo -n "Do you need SERIAL version? (y/n) [no] "
+read serial_version
 
 echo
 echo -n "Do you need debug version? (y/n) [no] "
@@ -225,6 +220,29 @@ case $smp_version in
             then
                 rm *.o *.a *.mod *.exe
                 rm $smp_check
+            else
+	        echo
+            fi
+    ;;
+esac
+
+# prepare for SERIAL version   
+serial_check="COMPILED_SERIAL"
+case $serial_version in
+  y|Y )
+            if test -f $serial_check
+            then
+	        echo
+            else
+                rm *.o *.a *.mod *.exe
+                touch $serial_check
+            fi
+    ;;
+  *)
+            if test -f $serial_check
+            then
+                rm *.o *.a *.mod *.exe
+                rm $serial_check
             else
 	        echo
             fi
@@ -343,6 +361,38 @@ esac
 #------------------------------------------------------------------------
 #
 
+  case $serial_version in
+  y|Y )
+        cp mfix_l.make mfix_l_not.make
+	ex mfix_l_not.make < ex.commands
+	cp mfix_u.make mfix_u_not.make
+	ex mfix_u_not.make < ex.commands
+
+        cmp -s dmp_modules/compar_mod.f mpi_donothing/compar_mod.f 
+        if test $? = 0
+        then
+	 echo
+        else
+ 	 cp dmp_modules/compar_mod.f mpi_donothing/
+        fi
+
+        cmp -s dmp_modules/gridmap_mod.f mpi_donothing/gridmap_mod.f 
+        if test $? = 0
+        then
+	 echo
+        else
+         cp dmp_modules/gridmap_mod.f mpi_donothing/
+        fi
+    ;;
+  *)
+    
+    ;;
+  esac
+
+#
+#------------------------------------------------------------------------
+#
+
 #make_mfix:
   case $smp_version in
   y|Y )
@@ -359,16 +409,12 @@ esac
     echo "Execution may be SLOW.  Do not use debug version for production runs!"
     FORT_FLAGS="$mp_flag $compile_d"
     FORT_FLAGS2="$mp_flag $compile_d"
-#AIKE
-    FORT_FLAGS3="$mp_flag $compile_d3"
     LINK_FLAGS="$mp_flag $link_d"
     LIB_FLAGS="$libs_d"
     ;;
   *)
     FORT_FLAGS="$mp_flag $compile"
     FORT_FLAGS2="$mp_flag $compile2"
-#AIKE
-    FORT_FLAGS3="$mp_flag $compile3"
     LINK_FLAGS="$mp_flag $link"
     LIB_FLAGS="$libs"
     ;;
@@ -378,8 +424,6 @@ esac
   
   export FORT_FLAGS
   export FORT_FLAGS2
-#AIKE
-  export FORT_FLAGS3
   export LINK_FLAGS
   export LIB_FLAGS
   export OBJ_EXT
@@ -390,11 +434,25 @@ esac
  
   case $MODULE_CODE in
   0)
-       make -f mfix_u.make
-       ;;
+  	case $serial_version in
+  	y|Y )
+   	    make -f mfix_u_not.make
+   	 ;;
+  	*)
+   	    make -f mfix_u.make
+   	 ;;
+  	esac
+   ;;
   1)
-       make -f mfix_l.make
-       ;;
+  	case $serial_version in
+  	y|Y )
+   	    make -f mfix_l_not.make
+   	 ;;
+  	*)
+   	    make -f mfix_l.make
+   	 ;;
+  	esac
+   ;;
   esac
 
   if test $? = 0

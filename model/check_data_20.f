@@ -81,8 +81,6 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-!//SP Should be moved elsewhere, done here as a temporary fix to update the 
-!      ghost layers created by processor mapping
       call send_recv(p_g,2)
       call send_recv(ep_g,2)
       call send_recv(w_s,2)
@@ -302,7 +300,7 @@
       END DO 
       IF (ABORT) THEN 
          WRITE (UNIT_LOG, 1300) 
-         CALL MFIX_EXIT 
+         CALL MFIX_EXIT(myPE)
       ENDIF 
 !
       DO K = kstart2, kend2 
@@ -336,7 +334,7 @@
       END DO 
       IF (ABORT) THEN 
          WRITE (UNIT_LOG, 1300) 
-         CALL MFIX_EXIT 
+         CALL MFIX_EXIT (myPE)
       ENDIF 
 !
 !  Check whether MU_gmax is specified

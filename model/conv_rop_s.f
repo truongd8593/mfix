@@ -251,12 +251,13 @@
 !                      Indices 
       INTEGER          I, J, K, IJK, IPJK, IJPK, IJKP 
       INTEGER          IMJK, IJMK, IJKM 
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-
 ! loezos
 	INTEGER incr
 ! loezos      
+
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+
 
        call lock_xsi_array
      

@@ -89,7 +89,7 @@
       array1(:) = Undefined
       array2(:) = Undefined
 
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+!      call MPI_barrier(MPI_COMM_WORLD,mpierr)
 !
 !     Use DT from data file if DT_FAC is set to 1.0
       IF (DT_FAC == ONE) DT_SAVE = DT 
@@ -110,13 +110,13 @@
          NEXT_REC = NEXT_REC + 1 
       end if
 !
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+!      call MPI_barrier(MPI_COMM_WORLD,mpierr)
       call bcast(VERSION, PE_IO)        !//PAR_I/O BCAST0c
       call bcast(VERSION_NUMBER, PE_IO) !//PAR_I/O BCAST0r
       call bcast(TIME, PE_IO)           !//PAR_I/O BCAST0d
       call bcast(NSTEP, PE_IO)          !//PAR_I/O BCAST0i
       if (VERSION_NUMBER >= 1.12) call bcast(DT, PE_IO)   !//PAR_I/O BCAST0d	     
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+!      call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
 !
       call readScatterRes(EP_G,array2, array1, NEXT_REC)
@@ -201,10 +201,10 @@
 !
 
 
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+!      call MPI_barrier(MPI_COMM_WORLD,mpierr)
       deallocate( array1 )
       deallocate( array2 )
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+!      call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
       call send_recv(rop_g)
       call send_recv(ro_g)
@@ -233,9 +233,9 @@
           CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
           CALL convert_from_io_dp(array1, array2, IJKMAX2) 
         end if
-        call MPI_barrier(MPI_COMM_WORLD,mpierr)
+!        call MPI_barrier(MPI_COMM_WORLD,mpierr)
         call scatter(VAR, array2, PE_IO)
-        call MPI_barrier(MPI_COMM_WORLD,mpierr)
+!        call MPI_barrier(MPI_COMM_WORLD,mpierr)
       
       End subroutine readScatterRes
 

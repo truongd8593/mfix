@@ -55,8 +55,8 @@
       USE is
       USE tau_s
       USE bc
-      USE compar        !//d
-      USE sendrecv    !// 400
+      USE compar    
+      USE sendrecv  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -119,8 +119,6 @@
       DO M = 1, MMAX 
          IF (MOMENTUM_X_EQ(M)) THEN 
 !
-!// 350 1213 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-
 !$omp  parallel do private( IJK, IJKE, ISV, Sdp, Sdps, V0, Vmt, Vbf, &
 !$omp&  I,PGE,DRO1,DRO2,DROA, IJKM,IPJK,IPJKM,  WSE,VCF,EPMUGA,VTZA, &
 !$omp&  EPSA, ROPSA, LINE) &
@@ -226,8 +224,6 @@
                      IJKM = KM_OF(IJK) 
                      IPJK = IP_OF(IJK) 
                      IPJKM = IP_OF(IJKM) 
-!//? make sure W_G(IJKM) for k-direction decomposition is up to date on PEs
-!//I? make sure W_G(IPJK) for i-direction decomp. is up to date on PEs	       		     
                      WSE = AVG_X(HALF*(W_S(IJK,M)+W_S(IJKM,M)),HALF*(W_S(IPJK,M&
                         )+W_S(IPJKM,M)),I) 
                      VCF = ROPSA*WSE**2*OX_E(I) 
@@ -250,11 +246,6 @@
             END DO 
             CALL SOURCE_U_S_BC (A_M, B_M, M, IER) 
          ENDIF 
-
-!//? verify the location of the COMM
-!//? verify whether in the do M=1,MMAX lopp for each M, or out of the loop
-!!!      CALL SEND_RECV(A_M, 2)
-!!!      CALL SEND_RECV(B_M, 2)
 
       END DO 
 
@@ -312,7 +303,7 @@
       USE tau_s 
       USE bc
       USE output
-      USE compar        !//d
+      USE compar   
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -352,14 +343,10 @@
 !
 !  Set the default boundary conditions
 !
-!//? see if the questions in source_u_g for similar location required any
-!//? changes. If yes then implement it here also.
       IF (DO_K) THEN 
          K1 = 1 
-!// 350 1208 change do loop limits: 1,jmax2->jmin3,jmax3	 	 
          DO J1 = jmin3,jmax3 
             DO I1 = imin3, imax3 	 
-!// 360 1208 Check if current i,j,k resides on this PE
    	       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
                IJK = FUNIJK(I1,J1,K1) 
                IF (NS_WALL_AT(IJK)) THEN 
@@ -385,10 +372,8 @@
          END DO 
 	 
          K1 = KMAX2 
-!// 350 1208 change do loop limits: 1,jmax2->jmin3,jmax3	 	 
          DO J1 = jmin3,jmax3 
             DO I1 = imin3, imax3 	 
-!// 360 1208 Check if current i,j,k resides on this PE
    	       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	 
                IJK = FUNIJK(I1,J1,K1) 
                IF (NS_WALL_AT(IJK)) THEN 
@@ -413,16 +398,9 @@
             END DO 
          END DO 
       ENDIF 
-!
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft DO_K branch in source_u_s')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
-
       J1 = 1 
-!// 350 1208 change do loop limits: 1,jmax2->jmin3,jmax3	 	 	       
       DO K1 = kmin3, kmax3 
          DO I1 = imin3, imax3
-!// 360 1208 Check if current i,j,k resides on this PE
    	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    	    	 
             IJK = FUNIJK(I1,J1,K1) 
             IF (NS_WALL_AT(IJK)) THEN 
@@ -447,10 +425,8 @@
          END DO 
       END DO 
       J1 = JMAX2 
-!// 350 1208 change do loop limits: 1,jmax2->jmin3,jmax3	 	 	       
       DO K1 = kmin3, kmax3 
          DO I1 = imin3, imax3
-!// 360 1208 Check if current i,j,k resides on this PE
    	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    	    	 
             IJK = FUNIJK(I1,J1,K1) 
             IF (NS_WALL_AT(IJK)) THEN 
@@ -474,10 +450,6 @@
             ENDIF 
          END DO 
       END DO 
-
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft J branch in source_u_s')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
       
       DO L = 1, DIMENSION_BC 
          IF (BC_DEFINED(L)) THEN 
@@ -493,7 +465,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1208 Check if current i,j,k resides on this PE		     
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                            IJK = FUNIJK(I,J,K) 
                            A_M(IJK,E,M) = ZERO 
@@ -516,13 +487,9 @@
                         END DO 
                      END DO 
                   END DO 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft Part 1 in source_u_s')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
 		  
                ELSE                              !Johnson and Jackson partial slip 
 !
-!//? need to go over the subroutine to see any further modifications necessary?
                   CALL JJ_BC_U_S (I1, I2, J1, J2, K1, K2, L, M, A_M, B_M) 
 !
                ENDIF 
@@ -539,7 +506,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1208 Check if current i,j,k resides on this PE		     
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                            IJK = FUNIJK(I,J,K) 
                            A_M(IJK,E,M) = ZERO 
@@ -562,9 +528,6 @@
                         END DO 
                      END DO 
                   END DO 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft Part 2 in source_u_s')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
 		  
                ELSE                              !Johnson and Jackson partial slip 
 !
@@ -584,7 +547,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1208 Check if current i,j,k resides on this PE		     
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     			
                            IJK = FUNIJK(I,J,K) 
                            JM = JM1(J) 
@@ -645,9 +607,6 @@
                         END DO 
                      END DO 
                   END DO 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft Part 3 in source_u_s')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
 		  
                ELSE                              !Johnson and Jackson partial slip 
 !
@@ -665,7 +624,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1208 Check if current i,j,k resides on this PE		     
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE			
                            IJK = FUNIJK(I,J,K) 
                            A_M(IJK,E,M) = ZERO 
@@ -679,9 +637,6 @@
                         END DO 
                      END DO 
                   END DO 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft Part 4 in source_u_s')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
 		  
                ENDIF 
             ELSE IF (BC_TYPE(L) == 'OUTFLOW') THEN 
@@ -695,7 +650,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1208 Check if current i,j,k resides on this PE		     
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
                            IJK = FUNIJK(I,J,K) 
                            A_M(IJK,E,M) = ZERO 
@@ -720,9 +674,6 @@
                         END DO 
                      END DO 
                   END DO 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft Part 5 in source_u_s')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
 		  
                ELSE IF (BC_PLANE(L) == 'E') THEN 
                   I1 = BC_I_W(L) 
@@ -734,7 +685,6 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE		     
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
 
                            IJK = FUNIJK(I,J,K) 
@@ -752,9 +702,6 @@
                         END DO 
                      END DO 
                   END DO 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft Part 6 in source_u_s')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
 		  
                ENDIF 
             ELSE 
@@ -767,7 +714,6 @@
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE		     
                	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
 		     
                         IJK = FUNIJK(I,J,K) 
@@ -793,9 +739,6 @@
                      END DO 
                   END DO 
                END DO 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft Part 7 in source_u_s')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
 	       
             ENDIF 
          ENDIF 
@@ -850,7 +793,7 @@
       USE tau_s 
       USE bc
       USE output 
-      USE compar        !//d
+      USE compar   
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -887,7 +830,6 @@
       DO K = K1, K2 
          DO J = J1, J2 
             DO I = I1, I2 
-!// 360 1229 Check if current i,j,k resides on this PE		     
                IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
 
                IJK = FUNIJK(I,J,K) 
@@ -1017,11 +959,11 @@
             END DO 
          END DO 
       END DO 
-
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): eof JJ_BC_U_S in source_u_s')") myPE  !//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): eof JJ_BC_U_S in source_u_s')") myPE  !//AIKEPARDBG
-!    call mfix_exit(myPE)     !//AIKEPARDBG
-      
+     
       RETURN  
       END SUBROUTINE JJ_BC_U_S 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,kmax2->kmin3,kmax3      
+!// 360 Check if i,j,k resides on current processor

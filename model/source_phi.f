@@ -44,7 +44,7 @@
       USE indices
       USE is
       USE tau_s
-      USE compar        !//d
+      USE compar  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -90,8 +90,7 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
-!
-!// 350 1025 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3    
+!$omp    parallel do private(IJK)
       DO IJK = ijkstart3, ijkend3 
 !
          IF (FLUID_AT(IJK)) THEN 
@@ -127,6 +126,9 @@
 	    ENDIF 
          ENDIF 
       END DO 
-!//? check if need to COMMunicate A_M and B_M?      
       RETURN  
       END SUBROUTINE SOURCE_PHI 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
