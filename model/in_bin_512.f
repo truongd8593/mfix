@@ -114,7 +114,7 @@
       do k = 1,kmax2
          do j = 1,jmax2
             do i = 1,imax2
-               ijk    = funijk_gl(imap_c(i),jmap_c(j),kmap_c(k))
+               ijk = funijk_gl(i,j,k)
                ijk_io = funijk_io(i,j,k)
                arr_internal(ijk) = arr_io(ijk_io)
             end do
@@ -141,7 +141,7 @@
       do k = 1,kmax2
          do j = 1,jmax2
             do i = 1,imax2
-               ijk    = funijk_gl(imap_c(i),jmap_c(j),kmap_c(k))
+               ijk  = funijk_gl(i,j,k)
                ijk_io = funijk_io(i,j,k)
                arr_io(ijk_io) = arr_internal(ijk) 
             end do

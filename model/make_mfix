@@ -92,19 +92,21 @@ fi
 	    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d=blas90.a
-            libs=blas90.a
+            libs_d="blas90.a -L/usr/local/MPI/mpich/build/LINUX/ch_p4/lib -lmpich"
+            libs="blas90.a -L/usr/local/MPI/mpich/build/LINUX/ch_p4/lib -lmpich"
     
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"
             compile_d="-c -I. -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
 #            link_d="-Mprof=func -g -L/usr/local/MPI/mpich/lib/LINUX/ch_p4 -lmpich"
-            link_d=" -L/usr/lib -lmpi"
+#           link_d=" -L/usr/lib -lmpi"
+            link_d=" "
             compile=" -O -I. -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant "
             compile2="-O1 -I. -c -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
 #            link=" -L/usr/local/MPI/mpich/lib/LINUX/ch_p4 -lmpich"
-            link=" -L/usr/lib -lmpi"
+#            link=" -L/usr/lib -lmpi"
+            link=" "
             MODULE_CODE=1
 	    
 

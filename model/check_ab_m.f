@@ -66,7 +66,7 @@
       INCLUDE 'function.inc'
 !
       IER = 0 
-      DO IJK = 1, IJKMAX2 
+      DO IJK = IJKSTART3, IJKEND3
          IF (.NOT.WALL_AT(IJK)) THEN 
             IF (A_M(IJK,B,M) < ZERO) THEN 
                IF (ABS(A_M(IJK,B,M)) > SMALL_NUMBER) THEN 

@@ -66,7 +66,7 @@
 !//? make sure FLUID_AT(ijk) gives zero for ghost cells
 !// 350 1025 change do loop limits: ijkmin1,ijkmax2-> ijkstart3, ijkend3    
       DO IJK = ijkstart3, ijkend3 
-         IF (FLUID_AT(IJK)) MW_MIX_G(IJK) = CALC_MW(X_G,DIMENSION_3,IJK,NMAX(0)&
+         IF (.NOT.WALL_AT(IJK)) MW_MIX_G(IJK) = CALC_MW(X_G,DIMENSION_3,IJK,NMAX(0)&
             ,MW_G) 
       END DO 
       RETURN  

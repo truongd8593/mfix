@@ -768,7 +768,8 @@ dbg_util.mod : ./dmp_modules/dbg_util_mod.f \
             compar.mod \
             geometry.mod \
             parallel_mpi.mod \
-            indices.mod 
+            indices.mod \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/dbg_util_mod.f 
 debug.mod : ./dmp_modules/debug_mod.f \
             funits.mod 
@@ -2105,6 +2106,7 @@ init_namelist.$(OBJ_EXT) : init_namelist.f \
             leqsol.mod \
             residual.mod \
             rxns.mod \
+            scalars.mod \
             compar.mod \
             namelist.inc                                                
 init_resid.$(OBJ_EXT) : init_resid.f \
@@ -2177,6 +2179,7 @@ machine.$(OBJ_EXT) : machine.f \
             machine.mod \
             param.mod \
             run.mod \
+            compar.mod \
             funits.mod 
 make_upper_case.$(OBJ_EXT) : make_upper_case.f 
 mark_phase_4_cor.$(OBJ_EXT) : mark_phase_4_cor.f \
@@ -2358,6 +2361,7 @@ read_namelist.$(OBJ_EXT) : read_namelist.f \
             leqsol.mod \
             residual.mod \
             rxns.mod \
+            scalars.mod \
             compar.mod \
             usrnlst.inc                                                  \
             namelist.inc                                                

@@ -99,7 +99,7 @@
       INCLUDE 'function.inc'
 !
       IS_SMALL = .FALSE. 
-      DO IJK = 1, IJKMAX2 
+      DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN 
             IF (ABS(V(IJK)) > TOL) RETURN  
          ENDIF 
