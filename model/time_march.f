@@ -55,7 +55,7 @@
       USE vshear
       USE scalars
       USE drag
-      USE compar               !//d
+      USE compar     
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -151,7 +151,7 @@
 !
 !
 !
-!      if (myPE.eq.PE_IO) then        !//
+
        IF (RUN_TYPE == 'NEW') THEN 
          RES_TIME = TIME 
          SPX_TIME(:N_SPX) = TIME 
@@ -175,15 +175,6 @@
             ENDIF 
          ENDIF 
        END DO
-!    end if             !//
-!//AIKEPARDBG
-!     if(idbg > 1) then        !//AIKEPARDBG
-!       write(*,"('(PE ',I2,'): reached dbg stop in time_march')") myPE    !//AIKEPARDBG
-!    write(UNIT_LOG,*) 'RES_TIME:',RES_TIME
-!    write(UNIT_LOG,*) 'SPX_TIME:',SPX_TIME    
-!    write(UNIT_LOG,*) 'USR_TIME:',USR_TIME        
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-!     endif
   
 !
 !   Parse residual strings
@@ -224,21 +215,6 @@
       IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
       IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
 
-!//AIKEPARDBG
-!     if(idbg > 1) then        !//AIKEPARDBG
-!       write(*,"('(PE ',I2,'): before CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
-!    write(UNIT_LOG,"('RRATE = ',L2,' WALL_TR = ',L2)") RRATE,WALL_TR   !//AIKEPARDBG
-!    write(UNIT_LOG,*) 'DENSITY: ',DENSITY    !//AIKEPARDBG
-!    write(UNIT_LOG,*) 'SIZE: ',SIZE          !//AIKEPARDBG
-!    write(UNIT_LOG,*) 'SP_HEAT: ',SP_HEAT    !//AIKEPARDBG
-!    write(UNIT_LOG,*) 'COND: ',COND          !//AIKEPARDBG      
-!    write(UNIT_LOG,*) 'VISC: ',VISC          !//AIKEPARDBG           
-!    write(UNIT_LOG,*) 'DIFF: ',DIFF          !//AIKEPARDBG          
-!    write(UNIT_LOG,*) 'DRAGCOEF: ',DRAGCOEF  !//AIKEPARDBG                  
-!    write(UNIT_LOG,*) 'HEAT_TR: ',HEAT_TR    !//AIKEPARDBG                    
-!        call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-!     endif                     !//AIKEPARDBG
-
       DO M=1, MMAX 
         CALL ZERO_ARRAY (F_gs(1,M), IER)
       END DO
@@ -257,10 +233,6 @@
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-
 !
 !  Remove undefined values at wall cells for scalars
 !
@@ -269,15 +241,10 @@
          CALL UNDEF_2_0 (ROP_S(1,M), IER) 
       END DO 
 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft UNDEF_2_0 in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Initialize d's and e's to zero   !//? pnicol : ??????
 !
-!// 500 1119 Removed IJKMAX2 from the arg. list of ZERO_ARRAY calls based on
-!       modification of Sreekanth for ZERo_ARRAY routine on 11/2/99.
       DO M = 0, MMAX 
          CALL ZERO_ARRAY (D_E(1,M), IER) 	 
          CALL ZERO_ARRAY (D_N(1,M), IER) 
@@ -286,10 +253,6 @@
       CALL ZERO_ARRAY (E_E, IER) 
       CALL ZERO_ARRAY (E_N, IER) 
       CALL ZERO_ARRAY (E_T, IER) 
-
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft ZERO_ARRAY in time_march, IER=',I4)") myPE,IER    !//AIKEPARDBG
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
 !   Initialize adjust_ur
@@ -308,18 +271,10 @@
   100 CONTINUE 
       IF (CALL_USR) CALL USR1 
 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft call USR1 in time_march')") myPE    !//AIKEPARDBG
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-
 !
 !  Remove solids from cells containing very small quantities of solids
 !
       CALL ADJUST_EPS 
-
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft ADJUST_EPS in time_march')") myPE    !//AIKEPARDBG
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Mark the phase whose continuity will be used for forming Pp_g and Pp_s eqs.
@@ -327,24 +282,14 @@
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP, DO_P_S, &
          SWITCH_4_P_G, SWITCH_4_P_S, IER) 
 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft MARK_PHASE_4 in time_march')") myPE    !//AIKEPARDBG
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-
 !
 !  Set wall boundary conditions and transient flow b.c.'s
 !
       CALL SET_BC1 
 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft SET_BC1 in time_march')") myPE    !//AIKEPARDBG
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-
 !
 ! Write standard output, if needed
 !
-!//SP
-!     if (myPE.eq.PE_IO) then       !//
          IF (OUT_DT /= UNDEFINED) THEN 
             IF (DT == UNDEFINED) THEN 
                CALL WRITE_OUT1 
@@ -353,11 +298,7 @@
                CALL WRITE_OUT1 
             ENDIF 
          ENDIF 
-!     end if                          !//
 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft wrt std out in time_march')") myPE    !//AIKEPARDBG
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
 ! Write restart file, if needed
@@ -379,15 +320,9 @@
       ENDIF 
 !
 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft restart dump in time_march')") myPE    !//AIKEPARDBG
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-
 !
 ! Write SPx files, if needed
 !
-!//SP Commented the following
-!     if (myPE.eq.PE_IO) then         !//
          ISPX = 0 
          DO L = 1, N_SPX 
             IF (DT == UNDEFINED) THEN 
@@ -429,8 +364,7 @@
                IF (FULL_LOG) WRITE (*, 1010,  ADVANCE='NO') L 
             ENDIF 
          END DO 
-!//SP Commented the following
-!     end if                         !//
+
       IF (.NOT.SPX_MSG) THEN 
          DO L = 1, N_SPX - ISPX 
             WRITE (UNIT_LOG, '(A,$)') '   ' 
@@ -443,10 +377,6 @@
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, *)    !//
       ENDIF 
 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft spx dump in time_march')") myPE    !//AIKEPARDBG
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-
 !
       RES_MSG = .TRUE. 
       SPX_MSG = .TRUE. 
@@ -454,15 +384,13 @@
 !
 !  Write special output, if needed
 !
-!//SP
-!     if (myPE.eq.PE_IO) then           !//
         DO L = 1, DIMENSION_USR 
          IF (DT == UNDEFINED) THEN 
-!//SP   
+!//   
             IF (FINISH.and.myPE.eq.PE_IO) CALL WRITE_USR1 (L) 
          ELSE IF (USR_TIME(L)/=UNDEFINED .AND. TIME+0.1*DT>=USR_TIME(L)) THEN 
             USR_TIME(L) = (INT((TIME + 0.1*DT)/USR_DT(L))+1)*USR_DT(L) 
-!//SP
+!//
             if (myPE.eq.PE_IO) CALL WRITE_USR1 (L) 
          ENDIF 
         END DO 
@@ -475,20 +403,11 @@
         ELSE IF (TIME + 0.1*DT >= TSTOP) THEN 
          RETURN  
         ENDIF 
-!//SP
-!     end if                !//
-
-!//AIKEPARDBG
-!   write(*,"('(PE ',I2,'): reached end of restart dump in time_march')") myPE    !//AIKEPARDBG
-!   call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
 !  Update previous-time-step values of field variables
 !
       CALL UPDATE_OLD 
-!//SP
-!    write(*,"('(PE ',I2,'): reached end of update_old in time_march')") myPE    !//SP
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !
 !     Calculate coefficients.  Explicitly set flags for all the quantities
@@ -510,47 +429,23 @@
       ENDIF 
       IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
       IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): bef 2nd calc_coeff in time_march')") myPE    !//SP
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
       CALL CALC_COEFF (DENSITY, SIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
-!//AIKEPARDBG
-!    write(*,"('(PE ',I2,'): aft 2nd CALC_COEFF in time_march')") myPE    !//AIKEPARDBG
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 !
 !     Calculate the cross terms of the stress tensor
 !
       CALL CALC_TRD_G (TRD_G, IER) 
-!//SP
-!  write(*,"('(PE ',I2,'): reached end of CALC_TRD_G in time_march')") myPE
 
       CALL CALC_TRD_S (TRD_S, IER) 
-!//SP
-!   write(*,"('(PE ',I2,'): reached end of CALC_TRD_S in time_march')") myPE
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
     
       CALL CALC_TAU_U_G (TAU_U_G, IER) 
-!//SP
-!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_U_G in time_march')") myPE
-!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-    
       CALL CALC_TAU_V_G (TAU_V_G, IER) 
-!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_V_G in time_march')") myPE
       CALL CALC_TAU_W_G (TAU_W_G, IER) 
-!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_W_G in time_march')") myPE
       CALL CALC_TAU_U_S (TAU_U_S, IER) 
-!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_U_S in time_march')") myPE
       CALL CALC_TAU_V_S (TAU_V_S, IER) 
-!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_V_S in time_march')") myPE
       CALL CALC_TAU_W_S (TAU_W_S, IER) 
-!   write(*,"('(PE ',I2,'): reached end of CALC_TAU_W_S in time_march')") myPE
-!//SP
-!  write(*,"('(PE ',I2,'): reached end of calc routines in time_march')") myPE 
-!//SP
-!   call mfix_exit(myPE)   !//SP
-!
+
 !  Check rates and sums of mass fractions every NLOG time steps
 !
       IF (NSTEP == NCHECK) THEN 
@@ -559,18 +454,9 @@
          CALL CHECK_DATA_30 
       ENDIF 
 !
-!//SP
-!   write(*,"('(PE ',I2,'): reached end of CHECK_DATA_30 in time_march')") myPE
-!   call mfix_exit(myPE)   !//SP   
-!
 !  Advance the solution in time by iteratively solving the equations
 !
       CALL ITERATE (IER, NIT) 
-
-!
-!//AIKEPARDBG
-!   write(*,"('(PE ',I2,'): aft iterate in time_march')") myPE
-!   call mfix_exit(myPE)   !//SP
 
 !
 !  Adjust time step and reiterate if necessary
@@ -602,3 +488,5 @@
  1015 FORMAT(14X,'Disk=',F7.2,' Mb') 
       END SUBROUTINE TIME_MARCH 
 !
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization

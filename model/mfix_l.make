@@ -107,7 +107,6 @@ mfix.exe : \
     geometry_mod.$(OBJ_EXT) \
     get_bc_area.$(OBJ_EXT) \
     get_data.$(OBJ_EXT) \
-    get_data_ORG.$(OBJ_EXT) \
     get_eq.$(OBJ_EXT) \
     get_flow_bc.$(OBJ_EXT) \
     get_hloss.$(OBJ_EXT) \
@@ -393,7 +392,6 @@ mfix.exe : \
     geometry_mod.$(OBJ_EXT) \
     get_bc_area.$(OBJ_EXT) \
     get_data.$(OBJ_EXT) \
-    get_data_ORG.$(OBJ_EXT) \
     get_eq.$(OBJ_EXT) \
     get_flow_bc.$(OBJ_EXT) \
     get_hloss.$(OBJ_EXT) \
@@ -1970,13 +1968,6 @@ get_data.$(OBJ_EXT) : get_data.f \
             funits.mod \
             compar.mod \
             gridmap.mod 
-get_data_ORG.$(OBJ_EXT) : get_data_ORG.f \
-            param.mod \
-            param1.mod \
-            run.mod \
-            funits.mod \
-            compar.mod \
-            gridmap.mod 
 get_eq.$(OBJ_EXT) : get_eq.f \
             param.mod \
             param1.mod \
@@ -2900,7 +2891,6 @@ source_pp_g.$(OBJ_EXT) : source_pp_g.f \
             vshear.mod \
             xsi_array.mod \
             compar.mod \
-            sendrecv.mod \
             function.inc                                                
 source_rop_g.$(OBJ_EXT) : source_rop_g.f \
             param.mod \

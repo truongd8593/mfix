@@ -87,12 +87,11 @@
 !                             determination faster. 
       INTEGER                 DENOTE_CLASS(MAX_CLASS)
 !
-!//SP
       LOGICAL          TRUEI, TRUEJ, TRUEK
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
-!//09/02/99 Initialize the default values to Undefined_I
+!// Initialize the default values to Undefined_I
 
       IP1(:) = UNDEFINED_I
       IM1(:) = UNDEFINED_I
@@ -110,16 +109,6 @@
             IM1(I) = MAX(ISTART3,I - 1) 
             IP1(I) = MIN(IEND3,I + 1) 
          ENDIF 
-!//AIKEPARDBG
-!         if( i == istart2) &
-!	 write(UNIT_LOG,"(' IM1(',I4,') = ',I5, &
-!	              & '  IP1= ',I5)") I-1,IM1(i-1),IP1(i-1)  !//AIKEPARDBG
-!	 
-!	 write(UNIT_LOG,"(' IM1(',I4,') = ',I5, &
-!	              & '  IP1= ',I5)") I,IM1(i),IP1(i)  !//AIKEPARDBG
-!         if( i == iend2) &
-!	 write(UNIT_LOG,"(' IM1(',I4,') = ',I5, &
-!	              & '  IP1= ',I5)") I+1,IM1(i+1),IP1(i+1)  !//AIKEPARDBG
 	 
       END DO 
       DO J = JSTART3, JEND3
@@ -145,37 +134,25 @@
       
       ICLASS = 0 
 !
-!// 350 0916 change do loop limits: 1,kmax2->kmin3,kmax3
 !     Loop over all cells
       DO K = KSTART3, KEND3
          DO J = JSTART3, JEND3
             DO I = ISTART3, IEND3
-!
-
-!// 220 1004 Need to use local FUNIJK
                IJK = FUNIJK(I,J,K)               !Find value of IJK 
 !
 !        Fill I, J, K arrays
                I_OF(IJK) = I
                J_OF(IJK) = J 
                K_OF(IJK) = K 
-
-!//AIKEPARDBG
-!	 write(UNIT_LOG,"(' I_OF(',I4,') = ',I5, &
-!	              & '  J= ',I5,'  K= ',I5)") ,IJK,I,J,K  !//AIKEPARDBG
-!
             END DO 
          END DO 
       END DO 
 
-!      call mfix_exit(myPE) !//AIKEPARDBG       
 
 !     Loop over all cells (minus the ghost layers)
       DO K = KSTART3, KEND3
          DO J = JSTART3, JEND3
             L100: DO I = ISTART3, IEND3
-!
-!// 220 1004 Need to use local FUNIJK
                IJK = FUNIJK(I,J,K)               !Find value of IJK
 !
 
@@ -260,3 +237,8 @@
          'MAX_CLASS in PARAM1.INC') 
 !
       END SUBROUTINE SET_INCREMENTS 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 020 New local variables for parallelization : TRUEI, TRUEJ, TRUEK
+!// 350 Changed do loop limits: 1,kmax2->kmin3,kmax3      

@@ -808,10 +808,6 @@
         call send_recv(XSI_E,2)
         call send_recv(XSI_N,2)
         call send_recv(XSI_T,2)
-!//SP
-!        not needed, because VSH is first added and then subtracted from V
-!        so that there is no net change in V
-!        call send_recv(V,2)  
 
 	RETURN
 	END SUBROUTINE CXS

@@ -91,28 +91,26 @@
       IF (CYCLIC_X) THEN 
          DX(1) = DX(IMAX1) 
          DX(IMAX2) = DX(IMIN1) 
-!//SP
+!// Initialize the additional layers introduced for DMP version
          DX(0) = DX(IMAX1-1) 
          DX(IMAX3) = DX(IMIN1+1) 
       ENDIF 
       IF (CYCLIC_Y) THEN 
          DY(1) = DY(JMAX1) 
          DY(JMAX2) = DY(JMIN1) 
-!//SP
+!// Initialize the additional layers introduced for DMP version
          DY(0) = DY(JMAX1-1) 
          DY(JMAX3) = DY(JMIN1+1) 
       ENDIF 
-!//D 300 0912 For CYCLIC_Z, dz(1) of PE 0 = dz(kmax1) of PE 1
-!//D          As dz() is the global array for all PEs no modification necessary
       IF (CYCLIC_Z) THEN 
          DZ(1) = DZ(KMAX1) 
          DZ(KMAX2) = DZ(KMIN1) 
-!//SP
+!// Initialize the additional layers introduced for DMP version
          DZ(0) = DZ(KMAX1-1) 
          DZ(KMAX3) = DZ(KMIN1+1) 
       ENDIF 
 !
-!//SP Changed the bounds to 0:IMAX3 from 1:IMAX2
+!// Changed the bounds to 0:IMAX3 from 1:IMAX2
       IF (COORDINATES == 'CARTESIAN') THEN 
          I = 0 
          IF (IMAX3 > 0) THEN 
@@ -165,7 +163,7 @@
          ENDIF 
       ENDIF 
 !
-!//SP Changed the bounds to 0:JMAX3 from 1:JMAX2
+!// Changed the bounds to 0:JMAX3 from 1:JMAX2
 !
       J = 0 
       IF (JMAX2 > 0) THEN 
@@ -173,22 +171,15 @@
          J = JMAX3 + 1 
       ENDIF 
 
-!// 200 0920 Changed the limit from KMAX2--> KMAX3
-!// SP Modified the logic to incorporate the correct values for second ghost layer.
+!//  Modified the logic to incorporate the correct values for second ghost layer.
       DO K = 1, KMAX3 
 !
          IF (K == 1) THEN 
             Z(K) = ZERO - HALF*DZ(K) 
             Z_T(K) = ZERO 
-!// 200 0920 added initializations to take care of z(KMIN3)	    
 	    Z(K-1) =Z_T(K) - HALF*DZ(K-1)
             Z_T(K-1) = Z_T(K) - DZ(K-1) 	    
-!
-!// 200 0920 added initializations to take care of z(KMAX3)	    
-!        ELSE IF (K == KMAX3) THEN
-!	    Z(K) =Z_T(K-1) + HALF*DZ(K)
-!           Z_T(K) = Z_T(K-1) + DZ(K) 	    
-	    
+!	    
          ELSE
             Z(K) = Z_T(K-1) + HALF*DZ(K) 
             Z_T(K) = Z_T(K-1) + DZ(K) 
@@ -214,7 +205,7 @@
       FY_N_BAR(1) = HALF 
       FZ_T(1) = HALF 
       FZ_T_BAR(1) = HALF 
-!//SP For 0
+!// Initialize for index = 0 (first ghost layer of DMP version)
       ODX_E(0) = ONE/DX_E
       ODY_N(0) = ONE/DY_N
       ODZ_T(0) = ONE/DZ_T
@@ -256,7 +247,6 @@
 !
 !       Look at 2 through KMAX1 W-momentum cells
       IF (DO_K) THEN 
-!//D 300 0912 no changes in the limits as they run over ACTIVE cells ONLY
          DO K = KMIN1, KMAX1 
             DZ_T = HALF*(DZ(K+1)+DZ(K)) 
             ODZ_T(K) = ONE/DZ_T 
@@ -273,7 +263,6 @@
       ODX_E(IMAX2) = ONE/DX_E 
       ODY_N(JMAX2) = ONE/DY_N 
       ODZ_T(KMAX2) = ONE/DZ_T 
-!//S2D for 2D/3D decomp. do similar add ons for JMAX3, IMAX3 as done in KMAX3 below      
       FX(IMAX2) = HALF 
       FX_BAR(IMAX2) = HALF 
       FX_E(IMAX2) = HALF 
@@ -284,15 +273,13 @@
 
       FZ_T(KMAX2) = HALF 
       FZ_T_BAR(KMAX2) = HALF 
-!// 200 0920 need to update values for KMAX3 also             
       FZ_T(KMAX3) = HALF 
       FZ_T_BAR(KMAX3) = HALF 
 
-!//SP FOr IMAX3, JMAX3...
+!// Initialize for index = ?MAX3 (last ghost layer of DMP version)
       ODX_E(IMAX3) = ONE/DX_E
       ODY_N(JMAX3) = ONE/DY_N
       ODZ_T(KMAX3) = ONE/DZ_T
-!//S2D for 2D/3D decomp. do similar add ons for JMAX3, IMAX3 as done in KMAX3 below
       FX(IMAX3) = HALF
       FX_BAR(IMAX3) = HALF
       FX_E(IMAX3) = HALF
@@ -305,22 +292,21 @@
       IF (CYCLIC_X) THEN 
          FX_E(1) = FX_E(IMAX1) 
          FX_E_BAR(1) = FX_E_BAR(IMAX1) 
-!//SP
+!// Initialize for index = 0 (first ghost layer of DMP version)
          FX_E(0) = FX_E(IMAX1-1) 
          FX_E_BAR(0) = FX_E_BAR(IMAX1-1) 
       ENDIF 
       IF (CYCLIC_Y) THEN 
          FY_N(1) = FY_N(JMAX1) 
          FY_N_BAR(1) = FY_N_BAR(JMAX1) 
-!//SP
+!// Initialize for index = 0 (first ghost layer of DMP version)
          FY_N(0) = FY_N(JMAX1-1) 
          FY_N_BAR(0) = FY_N_BAR(JMAX1-1) 
       ENDIF 
-!//? should we update the additional ghosts for CYCLIC_Z?      
       IF (CYCLIC_Z) THEN 
          FZ_T(1) = FZ_T(KMAX1) 
          FZ_T_BAR(1) = FZ_T_BAR(KMAX1) 
-!//SP
+!// Initialize for index = 0 (first ghost layer of DMP version)
          FZ_T(0) = FZ_T(KMAX1-1) 
          FZ_T_BAR(0) = FZ_T_BAR(KMAX1-1) 
       ENDIF 
@@ -328,3 +314,8 @@
 !
       RETURN  
       END SUBROUTINE SET_GEOMETRY 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!//     Initialize ghost layers introduced in parallel version
+!// 350 Changed do loop limits: 1,kmax2->1,kmax3

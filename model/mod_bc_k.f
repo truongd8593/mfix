@@ -60,7 +60,7 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-!//SP
+!// 
     IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
       bcast_root = myPE
       call global_all_sum(bcast_root)
@@ -88,7 +88,6 @@
       ENDIF 
     ENDIF
 
-!/SP
       CALL bcast(K_B,bcast_root)
       CALL bcast(K_T,bcast_root)
       CALL bcast(PLANE,bcast_root)
@@ -104,4 +103,5 @@
 
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization
+!// 360 Check if I_W,J_S,K_B resides on current processor
 !// 400 Added mpi_utility module and other global reduction (bcast) calls

@@ -47,7 +47,7 @@
       USE indices
       USE physprop
       USE funits 
-      USE compar        !//d
+      USE compar 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -91,27 +91,7 @@
 !
 !!$omp  parallel do private( IJK) &
 !!$omp&  schedule(static)
-
-!//AIKEPARDBG dump the ICBC_FLAG in matrix form to verify with serial version
-!      write(*,"('(PE ',I2,'): IJKSTART3,IJKEND3 = ',2(I5,2X)))") & !//AIKEPARDBG
-!              myPE,IJKSTART3,IJKEND3                    !//AIKEPARDBG
-!      DO K = KMIN3, KMAX3                               !//AIKEPARDBG
-!         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
-!	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
-!         DO J = JMIN3, JMAX3                            !//AIKEPARDBG
-!           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	 
-!           DO I = IMIN3, IMAX3                          !//AIKEPARDBG
-!             IJK = FUNIJK_GL(I,J,K)                     !//AIKEPARDBG
-!             write(UNIT_LOG,"(2X,A3,$)") ICBC_FLAG(IJK) !//AIKEPARDBG
-!           END DO                                       !//AIKEPARDBG
-!           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
-!         END DO                                         !//AIKEPARDBG
-!      END DO                                            !//AIKEPARDBG
-!      write(*,"('(PE ',I2,'): reached debug stop in set_flags')") myPE    !//AIKEPARDBG
-!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
-      
-!// 200 1002 change the DO loop limits from i,ijkmax2 --> ijkstart3, ijkend3
-      DO IJK = IJKSTART3, IJKEND3
+      DO IJK = ijkstart3, ijkend3
 !
          SELECT CASE (ICBC_FLAG(IJK)(1:1))  
          CASE ('.')  
@@ -176,10 +156,7 @@
                I = IS_I_W(L) 
                DO K = IS_K_B(L), IS_K_T(L) 
                   DO J = IS_J_S(L), IS_J_N(L) 
-!//? Check the following filter
-!// 360 1025 Check if current i,j,k resides on this PE		     
-   		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-!// 220 1004 Need to use local FUNIJK, size(FLAG_E) = DIMENSION_3L 
+   		     IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                      IJK = FUNIJK(I,J,K) 
                      FLAG_E(IJK) = FLAGX 
                   END DO 
@@ -189,10 +166,7 @@
                DO I = IS_I_W(L), IS_I_E(L) 
                   DO K = IS_K_B(L), IS_K_T(L) 
                      DO J = IS_J_S(L), IS_J_N(L) 
-!//? Check the following filter
-!// 360 1025 Check if current i,j,k resides on this PE		     
    		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-!// 220 1004 Need to use local FUNIJK, size(FLAG_E) = DIMENSION_3L 
                         IJK = FUNIJK(I,J,K) 
                         FLAG_E(IJK) = FLAGX 
                      END DO 
@@ -205,10 +179,7 @@
                J = IS_J_S(L) 
                DO K = IS_K_B(L), IS_K_T(L) 
                   DO I = IS_I_W(L), IS_I_E(L) 
-!//? Check the following filter		  
-!// 360 1025 Check if current i,j,k resides on this PE		     
-   		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		  
-!// 220 1004 Need to use local FUNIJK, size(FLAG_E) = DIMENSION_3L 		
+   		     IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		  
                      IJK = FUNIJK(I,J,K) 
                      FLAG_N(IJK) = FLAGX 
                   END DO 
@@ -218,10 +189,7 @@
                DO J = IS_J_S(L), IS_J_N(L) 
                   DO K = IS_K_B(L), IS_K_T(L) 
                      DO I = IS_I_W(L), IS_I_E(L) 
-!//? Check the following filter		     
-!// 360 1025 Check if current i,j,k resides on this PE		     
    		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
-!// 220 1004 Need to use local FUNIJK, size(FLAG_E) = DIMENSION_3L 
                         IJK = FUNIJK(I,J,K) 
                         FLAG_N(IJK) = FLAGX 
                      END DO 
@@ -234,10 +202,7 @@
                K = IS_K_B(L) 
                DO J = IS_J_S(L), IS_J_N(L) 
                   DO I = IS_I_W(L), IS_I_E(L) 
-!//? Check the following filter		  
-!// 360 1025 Check if current i,j,k resides on this PE		     
-   		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		  
-!// 220 1004 Need to use local FUNIJK		       
+   		     IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		  
                      IJK = FUNIJK(I,J,K) 
                      FLAG_T(IJK) = FLAGX 
                   END DO 
@@ -247,10 +212,7 @@
                DO K = IS_K_B(L), IS_K_T(L) 
                   DO J = IS_J_S(L), IS_J_N(L) 
                      DO I = IS_I_W(L), IS_I_E(L) 
-!//? Check the following filter		     
-!// 360 1025 Check if current i,j,k resides on this PE		     
    		       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
-!// 220 1004 Need to use local FUNIJK		     
                         IJK = FUNIJK(I,J,K) 
                         FLAG_T(IJK) = FLAGX 
                      END DO 
@@ -301,8 +263,8 @@
       USE indices
       USE physprop 
       USE funits 
-      USE compar        !//d
-      USE mpi_utility   !//SP
+      USE compar     
+      USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -318,22 +280,19 @@
       INTEGER          IJK,  IMJK, IJMK, IJKM, IPJK, IJPK, IJKP 
       INTEGER          I, J, K 
 ! 
-!//SP
       INTEGER, DIMENSION(:), allocatable :: FLAG_TEMP
       integer :: flag_size
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!//SP allocate storage for temporary flag arrays
-
+      
+!//  Allocate storage for temporary flag arrays
       flag_size = ijkmax3
       if (myPE.eq.root) then
           flag_size = ijkmax3
       endif
-
       allocate( flag_temp(flag_size) )
 
 !
-!// 350 1025 change do loop limits: 1,ijkmax2->ijkstart3,ijkend3
       DO IJK = ijkstart3,ijkend3
          IMJK = IM_OF(IJK) 
          IJMK = JM_OF(IJK) 
@@ -355,7 +314,6 @@
 !
             IF (CYCLIC_AT(IJK)) THEN             ! make the upper (E, N, T) bdry
 
-!//SP
               IF (I == IMAX2) THEN              ! permeable
                  IF ((J/=1.AND.J/=0.) .AND. (J/=JMAX2.AND.J/=JMAX3)) THEN
                     IF (NO_K) THEN
@@ -401,7 +359,7 @@
          ENDIF 
       END DO 
 
-!//SP Fill the ghost layers using gather and scatter
+!//  Fill the ghost layers using gather and scatter
       call gather( flag_e, flag_temp )
       call scatter( flag_e, flag_temp )
 
@@ -411,23 +369,19 @@
       call gather( flag_t, flag_temp )
       call scatter( flag_t, flag_temp )
 
-!//SP deallocate storage of temporary flag arrays
+!// deallocate storage of temporary flag arrays
 
     deallocate( flag_temp )
 
-!//AIKEPARDBG dump the FLAG_X in matrix form to verify with serial version
-!      DO K = Kstart3, Kend3                               !//AIKEPARDBG
-!         write(UNIT_LOG,"('K = ',I5)") K                !//AIKEPARDBG 
-!	 write(UNIT_LOG,"(7X,14(I3,2X))") (I,i=IMIN3,IMAX3)  !//AIKEPARDBG
-!         DO J = Jstart3, Jend3                            !//AIKEPARDBG
-!           write(UNIT_LOG,"(I5,')',$)") J               !//AIKEPARDBG	
-!           DO I = Istart3, Iend3                          !//AIKEPARDBG
-!             IJK = FUNIJK(I,J,K)                     !//AIKEPARDBG
-!             write(UNIT_LOG,"(2X,A3,$)") FLAG_T(IJK) !//AIKEPARDBG
-!           END DO                                       !//AIKEPARDBG
-!           write(UNIT_LOG,"(/)")                        !//AIKEPARDBG
-!         END DO                                         !//AIKEPARDBG
-!      END DO    
       
       RETURN  
       END SUBROUTINE SET_FLAGS1 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 020 New local variables for parallelization: FLAG_TEMP, flag_size
+!// 220 Use local FUNIJK for triple DO i,j,k loop
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 360 Check if i,j,k resides on current processor
+!// 990 Replace STOP with mfix_exit(myPE) to terminate all processors
+

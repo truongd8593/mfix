@@ -47,7 +47,7 @@
       USE scalars
       Use ambm
       Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
-      USE compar        !//d
+      USE compar      
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -113,7 +113,6 @@
 	    
 	  IF(M == 0) THEN
 	  
-!//SP
           DO IJK = IJKSTART3, IJKEND3
 !
                IF (FLUID_AT(IJK)) THEN 
@@ -170,7 +169,6 @@
 !
          ELSE
 	 
-!//SP
             DO IJK = IJKSTART3, IJKEND3
 !
                IF (FLUID_AT(IJK)) THEN 
@@ -235,3 +233,8 @@
 
       RETURN  
       END SUBROUTINE SOLVE_Scalar_EQ 
+
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

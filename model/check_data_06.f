@@ -86,12 +86,11 @@
                ENDIF 
 
                IF (DO_K) THEN 
+!// Changed K==1 OR K==KMAX2 to K==KMIN3 OR K==KMIN2 ...	       
                   IF (K==KMIN3 .OR. K==KMIN2 .OR. &
  		      K==KMAX2 .OR. K==KMAX3) THEN 		  
-!//SP
                      IF (CYCLIC_Z_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
-!//SP
                      ELSE IF (CYCLIC_Z) THEN 
                         ICBC_FLAG(IJK) = 'c--' 
                      ELSE 
@@ -101,12 +100,11 @@
                ENDIF 
 
                IF (DO_J) THEN 
+!// Changed J==1 OR J==JMAX2 to J==JMIN3 OR J==JMIN2 ...	       	       
                   IF (J==JMIN3 .OR. J==JMIN2 .OR. &
  		      J==JMAX2 .OR. J==JMAX3) THEN 		  		  
-!//SP
                      IF (CYCLIC_Y_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
-!//SP
                      ELSE IF (CYCLIC_Y) THEN 
                         ICBC_FLAG(IJK) = 'c--' 
                      ELSE 
@@ -116,13 +114,12 @@
                ENDIF 
 
                IF (DO_I) THEN 
+!// Changed I==1 OR I==IMAX2 to I==IMIN3 OR I==IMIN2 ...	       	       
                   IF (I==IMIN3 .OR. I==IMIN2 .OR. &
  		      I==IMAX2 .OR. I==IMAX3) THEN 		  
 		  
-!//SP
                      IF (CYCLIC_X_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
-!//SP
                      ELSE IF (CYCLIC_X) THEN 
                         ICBC_FLAG(IJK) = 'c--' 
                      ELSE 
@@ -568,9 +565,6 @@
             END DO 
          ENDIF 
       END DO 
-
-!//SP Send Receive
-!     call send_recv(icbc_flag,2)
 
 
       RETURN  

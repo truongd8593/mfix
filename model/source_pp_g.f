@@ -44,8 +44,7 @@
       USE bc
       USE vshear
       Use xsi_array
-      USE compar        !//d
-      USE sendrecv     !// 400
+      USE compar    
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -84,7 +83,7 @@
 ! loezos
       integer incr
 
-!//SP Need to extract i, j, k from ijk_p_g to determine the processor which
+!// Need to extract i, j, k from ijk_p_g to determine the processor which
 !     acts on ijk_p_g to fix the value of pressure
 !       ----------------------------------------------------------
 !       inline functions for determining i, j, k for global ijk_p_g
@@ -102,7 +101,6 @@
 ! update to true velocity
       IF (SHEAR) THEN
 !$omp parallel do private(IJK) 
-!//SP
 	 DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN  
 	   V_G(IJK)=V_G(IJK)+VSH(IJK)	
@@ -116,7 +114,6 @@
 !
 !  Calculate convection-diffusion fluxes through each of the faces
 !
-!// 350 1225 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !$omp    parallel do private(IJK, IMJK, IJMK, IJKM, M)
       DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN 
@@ -179,7 +176,6 @@
 ! loezos
       IF (SHEAR) THEN
 !$omp parallel do private(IJK) 
-!//SP
 	 DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN  
 	   V_G(IJK)=V_G(IJK)-VSH(IJK)	
@@ -244,7 +240,7 @@
 !  Specify P' to zero at a certain location for incompressible flows and
 !  cyclic boundary conditions.
 !
-!//SP/ Parallel implementation of fixing a pressure at a point
+!// Parallel implementation of fixing a pressure at a point
    I = I_OF_G(IJK_P_G)
    J = J_OF_G(IJK_P_G)
    K = K_OF_G(IJK_P_G)
@@ -264,9 +260,10 @@
 !
       call unlock_xsi_array
 
-!//? need to COMM A_M and B_M here?
-!// 400 1224 COMM A_M and B_M
-!      call sendrecv(A_M,2)
-!      call sendrecv(B_M,2)
       RETURN  
       END SUBROUTINE SOURCE_PP_G 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+

@@ -213,11 +213,11 @@
 !!$omp&             IJKM, KM,  IJKB)                     
       DO IJK = ijkstart3, ijkend3
 !
-!//SP 102199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+!// Determine if IJK falls within 1 ghost layer........
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
-!!!!       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+
 !
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -468,11 +468,10 @@
 !
       DO IJK = ijkstart3, ijkend3
 !
-!//SP 102199\Sreekanth - Determining whether IJK falls within 1 ghost layer........
+!//  Determine whether IJK falls within 1 ghost layer........
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
-!!!!       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -740,11 +739,10 @@
 !
       DO IJK = ijkstart3, ijkend3
 !
-!//SP 102199\Sreekanth - Determining whether IJK falls within 1 ghost layer........
+!//  Determine whether IJK falls within 1 ghost layer........
        I = I_OF(IJK) 
        J = J_OF(IJK) 
        K = K_OF(IJK) 
-!!!!       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
          IF (FLUID_AT(IJK)) THEN 
 !
@@ -826,7 +824,7 @@
 
 ! loezos 
        IF (SHEAR) THEN
-!//SP
+
 	 DO IJK = ijkstart3, ijkend3
           IF (FLUID_AT(IJK)) THEN  	 
 	   VF(IJK)=VF(IJK)-VSH(IJK)	
@@ -936,21 +934,15 @@
             K1 = IS_K_B(L) 
             K2 = IS_K_T(L) 
 
-!//SP 09/28/99 - Limit I1, I2 and all to local processor first ghost layer
-
+!// Limit I1, I2 and all to local processor first ghost layer
 	    IF(I1.LE.IEND2)   I1 = MAX(I1, ISTART2)
-
             IF(J1.LE.JEND2)   J1 = MAX(J1, JSTART2)
-
             IF(K1.LE.KEND2)   K1 = MAX(K1, KSTART2)
-
             IF(I2.GE.ISTART2) I2 = MIN(I2, IEND2)
-
             IF(J2.GE.JSTART2) J2 = MIN(J2, JEND2)
-
             IF(K2.GE.KSTART2) K2 = MIN(K2, KEND2)
 
-!//SP End of limiting to the first ghost cells of the processor....
+
             DO K = K1, K2 
                DO J = J1, J2 
                   DO I = I1, I2 
@@ -1001,4 +993,5 @@
 
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization
+!// 300 Limit I1, I2 and all to local processor first ghost layer
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

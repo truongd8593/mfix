@@ -161,11 +161,10 @@
 !$omp&           IJKE, IJKW, IJKN, IJKS, IJKT, IJKB,                   &
 !$omp&           K_P, SRC )
       DO IJK = ijkstart3, ijkend3
-!//SP 122199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+!// Determine whehter IJK falls within 1 ghost layer........
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
-!!!       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
          IF (FLUID_AT(IJK)) THEN 
             IPJK = IP_OF(IJK) 
@@ -482,11 +481,10 @@
 !$omp&           IMJK, IJMK, IJKM, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB, &
 !$omp&           K_P,ROP_SF,SRC )
       DO IJK = ijkstart3, ijkend3
-!//SP 122199\Sreekanth - Determining whehter IJK falls within 1 ghost layer........
+!// Determine if IJK falls within 1 ghost layer........
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
-!!!       IF(.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 !
          IF (FLUID_AT(IJK)) THEN 
             IPJK = IP_OF(IJK) 
@@ -633,4 +631,5 @@
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 360 Check if ijk falls within 1 ghost layer
 

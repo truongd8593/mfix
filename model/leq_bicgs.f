@@ -170,46 +170,6 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
-!//TEMP - Arrays
-!     DOUBLE PRECISION A_m_tmp(1:ijkmax3, -3:3 )
-!     DOUBLE PRECISION B_m_tmp(1:ijkmax3)
-
-!//TEMP - SP
-!       write(*,*) 'before gather in conv_dif_phi'
-!	if(VNAME == 'Pp_g') then
-!       CALL gather(A_M, A_M_tmp)
-!       CALL gather(B_M, B_M_tmp)
-!       write(*,*) 'after gather in conv_dif_phi'
-
-!       if(myPE.eq.root) then
-
-!       do k = kmin2, kmax2
-!       do j = jmin2, jmax2
-!       do i = imin2, imax2
-
-!       ijk = funijk_gl(i,j,k)
-!       write(*,*) i,j,k,ijk,A_M_tmp(IJK,:), B_M_tmp(IJK)
-!       write(90,*) i,j,k,A_M_tmp(IJK,:), B_M_tmp(IJK)
-
-!       enddo
-!       enddo
-!       enddo
-
-
-!       endif
-!call MPI_Barrier(MPI_COMM_WORLD,mpierr)
-!if(myPE.eq.root) then
-!close(90)
-!endif
-!call mfix_exit(myPE)
-!endif
-
-!//end_TEMP
-
-!//SP
-!     call send_recv(A_M,2)
-!     call send_recv(B_M,2)
-
 
       alpha(:)  = zero
       beta(:)   = zero
@@ -287,7 +247,7 @@
 !           ------------
             ier = 0
 	  endif
-!//SP - Send Receive two updated ghostlayers of Var to every processor
+
           call send_recv(var,2)
 	  return
         endif
@@ -300,7 +260,7 @@
            beta(i-1) = ( rho(i-1)/rho(i-2) )*( alpha(i-1) / omega(i-1) )
 
            P(:) = R(:) + beta(i-1)*( P(:) - omega(i-1)*V(:) )
-!	   call send_recv(P,2)
+
 
         endif
 
@@ -325,7 +285,7 @@
         alpha(i) = rho(i-1) / RtildexV
 
         Svec(:) = R(:) - alpha(i) * V(:)
-!       call send_recv(Svec,2)
+
 
 !
 !       Check norm of Svec(:); if small enough:
@@ -385,10 +345,10 @@
 
         Var(ijkstart3:ijkend3) = Var(ijkstart3:ijkend3) +                           &
               alpha(i)*Phat(ijkstart3:ijkend3) + omega(i)*Shat(ijkstart3:ijkend3)
-!	call send_recv(var,2)
+
 
         R(:) = Svec(:) - omega(i)*Tvec(:)
-!	call send_recv(R,2)
+
         Rnorm = sqrt( dot_product_par(R, R) )
 
         if (idebugl.ge.1) then
@@ -440,7 +400,6 @@
             endif
         endif
 
-!//SP - Send Receive two updated ghostlayers of Var to every processor
         call send_recv(var,2)
         
         return
@@ -1590,7 +1549,7 @@
 
 
       integer :: Lstart,Lend,Linc,L,iplane
-!\\091699\Changed istart -> istartl, iend -> iendl - Sreekanth
+!// Changed istart -> istartl, iend -> iendl - Sreekanth
       integer :: ncount,ilevel,nlevel, istartl,iendl,inode, iposition
       integer, allocatable, dimension(:) :: xlist,list
 
@@ -1649,7 +1608,7 @@
           if (idebug >= 1) then
             print*,'nlevel ', nlevel
 
-!\\091699\Changed istart -> istartl, iend -> iendl - Sreekanth
+!// Changed istart -> istartl, iend -> iendl - Sreekanth
             do ilevel=1,nlevel
                 print*,'ilevel: ', ilevel
                 istartl = xlist(ilevel)
@@ -1696,7 +1655,7 @@
 
       IF (NO_K) THEN
 
-!\\091699\Changed istart -> istartl, iend -> iendl - Sreekanth
+!// Changed istart -> istartl, iend -> iendl - Sreekanth
          do L=Lstart,Lend,Linc
             istartl = xlist(L)
             iendl = xlist(L+1)-1
@@ -1720,7 +1679,7 @@
       ELSE
 
 
-!\\091699\Changed istart -> istartl, iend -> iendl - Sreekanth
+!// Changed istart -> istartl, iend -> iendl - Sreekanth
          do L=Lstart,Lend,Linc
             istartl = xlist(L)
             iendl = xlist(L+1)-1
@@ -2502,3 +2461,6 @@
 !     End of DGTSV
 !
       END SUBROUTINE DGTSV
+
+!// Comments on the modifications for DMP version implementation      
+!// 400 Send Receive two updated ghostlayers of Var to every processor

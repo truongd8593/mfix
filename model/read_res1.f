@@ -38,10 +38,10 @@
       USE scalars
       USE funits 
       USE energy
-      USE compar      !// 001 Include MPI header file
-      USE mpi_utility !//
-      USE sendrecv    !//
-!//TD      USE dbg_utility !//PARDBG
+      USE compar      
+      USE mpi_utility 
+      USE sendrecv    
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -71,7 +71,7 @@
 !                      Dummy array
       DOUBLE PRECISION DT_SAVE
 
-!//PAR_I/O 0814 declare global scratch arrays
+!//PAR_I/O declare global scratch arrays
       double precision, allocatable :: array1(:)
       double precision, allocatable :: array2(:)
       INTEGER allocstatus, i
@@ -85,7 +85,7 @@
          allocate (array2(1))
       end if
 
-!//SP
+!// Reset global scratch arrays
       array1(:) = Undefined
       array2(:) = Undefined
 
@@ -96,7 +96,7 @@
 !
 !
 
-!//PAR_I/O 0813 only PE_IO reads the restart file
+!//PAR_I/O only PE_IO reads the restart file
       if (myPE == PE_IO ) then
          READ (UNIT_RES, REC=1) VERSION 
          READ (VERSION(6:512), *) VERSION_NUMBER 
@@ -206,8 +206,6 @@
       deallocate( array2 )
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
-
-!//SP
       call send_recv(rop_g)
       call send_recv(ro_g)
       call send_recv(rop_s)
@@ -222,9 +220,9 @@
       subroutine readScatterRes(VAR, array2, array1, NEXT_REC)
         USE geometry
         USE funits 
-        USE compar           !//
-        USE mpi_utility      !//d pnicol : for gather
-        USE sendrecv         !//d pnicol : for gather
+        USE compar           
+        USE mpi_utility      
+        USE sendrecv         
         IMPLICIT NONE
         double precision, dimension(ijkmax2) :: array1       
         double precision, dimension(ijkmax3) :: array2     
@@ -240,3 +238,9 @@
         call MPI_barrier(MPI_COMM_WORLD,mpierr)
       
       End subroutine readScatterRes
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 020 New local variables for parallelization: array1, array2
+!// 400 Added sendrecv module and send_recv calls for COMMunication
+!// 400 Added mpi_utility module and other global reduction (bcast) calls

@@ -141,7 +141,6 @@
 !!$omp& U_G_N,U_G_S,U_G_T,U_G_B,V_G_E,V_G_W,V_G_T,V_G_B, &
 !!$omp$ W_G_N,W_G_S,W_G_E,W_G_W,  U_G_C,W_G_C, D_G,I2_DEVD_G )
       DO IJK = ijkstart3, ijkend3
-!//SP
          IF ( FLUID_AT(IJK) .AND. L_SCALE(IJK)/=ZERO) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 

@@ -30,10 +30,9 @@
       USE param 
       USE param1 
       USE matrix 
-!//d      USE funits 
-      USE compar        !//d
-      USE mpi_utility   !//d
-      USE indices       !//SP
+      USE compar       
+      USE mpi_utility   
+      USE indices       
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -68,7 +67,6 @@
 !
 !-----------------------------------------------
 !
-!//SP
       integer i, j, k
       include 'function.inc'
 
@@ -97,8 +95,7 @@
       call gather(b_m(:,M),array2,root) 
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)
 
-!//SP
-!     DO IJK = 1, IJKMAX3 
+!// Split do ijk loop into do i, do j, do k loops
       DO K = Kmin2, Kmax2
       DO J = Jmin2, Jmax2
       DO I = Imin2, Imax2
@@ -125,3 +122,9 @@
 
       RETURN  
       END SUBROUTINE WRITE_AB_M 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 020 New local variables for parallelization: array1,array2,i,j,k
+!// 400 Added mpi_utility module and other global reduction (gather) calls
+

@@ -103,7 +103,7 @@
       DOUBLE PRECISION RESs 
   
       DOUBLE PRECISION TLEFT 
-!//SP
+
       LOGICAL          ABORT_IER
       CHARACTER*4 TUNIT 
 !-----------------------------------------------
@@ -147,20 +147,18 @@
 !
 !     CPU time left
 !
-!//SP
       IF (FULL_LOG) THEN      !//
          TLEFT = (TSTOP - TIME)*CPUOS 
          CALL GET_TUNIT (TLEFT, TUNIT) 
 !
          IF (DT == UNDEFINED) THEN 
             CALL GET_SMASS (SMASS) 
-!//SP
+
 	    IF(myPE.eq.PE_IO) THEN
               WRITE (*, '(/A,G10.5, A,F9.3,1X,A)') ' Starting solids mass = ', &
                  SMASS, '    CPU time left = ', TLEFT, TUNIT 
 	    ENDIF
          ELSE 
-!//SP
             IF(myPE.eq.PE_IO) THEN
               WRITE (*, '(/A,G12.5, A,G12.5, A,F9.3,1X,A)') ' Time = ', TIME, &
                  '  Dt = ', DT, '    CPU time left = ', TLEFT, TUNIT 
@@ -250,7 +248,7 @@
 !
 ! IER = 0
          CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
-!//SP
+
 	 abort_ier = ier.eq.1
 	 call global_all_or(abort_ier)
          IF (abort_ier) THEN 
@@ -443,3 +441,4 @@
 
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization
+!// 020 New local variables for parallelization : abort_ier

@@ -68,7 +68,6 @@
 !
 !     If gas momentum equations in x and y directions are not solved return
 !
-!//SP
 !
       CALL ZERO_ARRAY (PP_G, IER) 
       IF (.NOT.(MOMENTUM_X_EQ(0) .OR. MOMENTUM_Y_EQ(0))) THEN
@@ -112,3 +111,6 @@
 
       RETURN  
       END SUBROUTINE SOLVE_PP_G 
+
+!// Comments on the modifications for DMP version implementation      
+!//    Initialize PP_G with call zero_array

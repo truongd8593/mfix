@@ -81,7 +81,7 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-!//SP/ Should be moved elsewhere, done here as a temporary fix to update the 
+!//SP Should be moved elsewhere, done here as a temporary fix to update the 
 !      ghost layers created by processor mapping
       call send_recv(p_g,2)
       call send_recv(ep_g,2)

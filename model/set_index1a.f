@@ -68,7 +68,6 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-!//09/02/99 - Modified calls to BOUND_FUNIJK to have a self consistent formulation - Sreekanth
 !
       IMJK = UNDEFINED_I
       IPJK = UNDEFINED_I
@@ -159,3 +158,5 @@
       RETURN  
       END SUBROUTINE SET_INDEX1A 
 
+!// Comments on the modifications for DMP version implementation      
+!// Modified calls to BOUND_FUNIJK to have a self consistent formulation

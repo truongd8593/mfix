@@ -83,7 +83,7 @@
       IF (CYCLIC_Y_PD) CYCLIC_Y = .TRUE.
       IF (CYCLIC_Z_PD) CYCLIC_Z = .TRUE.
 
-!//SP 0201 Sreekanth's recomm. for rotary-drum
+!// Sreekanth's recomm. for rotary-drum
       DO_K = .NOT.NO_K
 !
       IF (COORDINATES == 'CYLINDRICAL') CYLINDRICAL = .TRUE.
@@ -91,7 +91,7 @@
       IF (CYLINDRICAL .AND. COMPARE(ZLENGTH,8.D0*ATAN(ONE)) .AND. DO_K) &
          CYCLIC_Z = .TRUE.
 
-!// 300 Partition the domain and set indices
+!// Partition the domain and set indices
       call SET_MAX2
       call GRIDMAP_INIT
 
@@ -111,7 +111,7 @@
          RUN_TYPE = 'RESTART_1' 
          CALL OPEN_FILES (RUN_NAME, RUN_TYPE, N_SPX) 
          CALL READ_RES0
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
+!         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
 
          CALL READ_NAMELIST (0)                  ! to modify the .RES data with .DAT data 
          RUN_TYPE = 'RESTART_1' 
@@ -121,7 +121,7 @@
          CALL OPEN_FILES (RUN_NAME, RUN_TYPE, N_SPX) 
 
          CALL READ_RES0  
-         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
+!         call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
 
          CALL READ_NAMELIST (0)              ! to modify the .RES data with .DAT data 
          RUN_TYPE = 'RESTART_2' 
@@ -244,5 +244,3 @@
 !// Comments on the modifications for DMP version implementation      
 !// 300 Partition the domain and set indices
 !//PAR_I/O enforce barrier here
-!//S 0815 May be worth to replace following MPI_Barrier calls with a wrapper
-!//S      equivalent to avoid direct inclusion of MPI library thru out the source code

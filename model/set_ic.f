@@ -46,8 +46,8 @@
       USE scales 
       USE energy
       USE scalars
-      USE compar        !//d
-      USE sendrecv      !//d
+      USE compar 
+      USE sendrecv 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -121,9 +121,6 @@
 !
 !  Set the initial conditions.
 !
-!//SP
-!     CALL SEND_RECV(FLAG,2)
-
       DO L = 1, DIMENSION_IC 
          IF (IC_DEFINED(L)) THEN 
             EPGX = IC_EP_G(L) 
@@ -148,11 +145,7 @@
             DO K = IC_K_B(L), IC_K_T(L) 
                DO J = IC_J_S(L), IC_J_N(L) 
                   DO I = IC_I_W(L), IC_I_E(L) 
-!
-!// 360 1025 Check if current i,j,k resides on this PE
 		    IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-		     
-!// 220 1004 Need to use local FUNIJK
                      IJK = FUNIJK(I,J,K) 
 
                      IF (FLAG(IJK) == 1) THEN 
@@ -223,7 +216,12 @@
             END DO 
          ENDIF 
       END DO 
-!//SP
+      
       CALL SEND_RECV(L_SCALE,2)
       RETURN  
       END SUBROUTINE SET_IC 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,kmax2->kmin3,kmax3      
+!// 400 Added sendrecv module and send_recv calls for COMMunication

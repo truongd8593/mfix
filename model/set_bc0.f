@@ -38,8 +38,8 @@
       USE param 
       USE param1 
       USE geometry
-      USE compar       !//
-      USE mpi_utility  !//
+      USE compar     
+      USE mpi_utility 
       USE physprop
       USE bc
       USE fldvar
@@ -85,11 +85,9 @@
       DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW 
 !-----------------------------------------------
 !----------------------------------------------
-!   Temporary variable //SP - To gather fluid_at
-!----------------------------------------------
-      
+!// Temporary variable to gather fluid_at. 
       INTEGER, DIMENSION(:), ALLOCATABLE :: FLAG_G
-!//SP  Logical function to identify a fluid cell in global coordiantes
+!// Logical function to identify a fluid cell in global coordiantes
       LOGICAL          FLUID_AT_G
 
       INCLUDE 'sc_p_g1.inc'
@@ -100,21 +98,19 @@
 !
 !  Setup for cyclic boundary conditions
 !
-!//? 1026 check the pointer location for ijk1 on all PEs and adjust loop counter if necessary
-!//SP Modifications so that the present computation is performed only on the root processor
-!//SP and broadcasted everywhere!!
 
+!// Perform the following computations only on the root processor
+!// and broadcasted everywhere!!
     IF(myPE.eq.root) then
 
-!//SP Allocate temp var
+!// allocate temp var
       ALLOCATE(FLAG_G(IJKMAX3))
       CALL GATHER(FLAG, FLAG_G, root)
       IJK1 = FUNIJK_GL(IMAX1/2 + 1,JMAX1,KMAX1/2 + 1)
-!      write(*,"('(PE ',I2,'): IJK1 = ',I5)") myPE,IJK1 !//AIKEPARDBG
 
-!//SP Exact implementation as in the serial code. In the serial version CYCLE has to be
-!     replaced by EXIT to have the same meaning as in the original version
-!
+!// Exact implementation as in the serial code. In the serial version CYCLE has to be
+!// replaced by EXIT to have the same meaning as in the original version
+
       DO IJK = IJK1, ijkmax3 
          IF (FLUID_AT_G(IJK)) EXIT  
       END DO 
@@ -140,11 +136,11 @@
 
     ENDIF ! myPE.eq.root
 
-!//SP Deallocate storage
+!// Deallocate storage
 
       DEALLOCATE(FLAG_G)
 
-!//SP Broadcast the values
+!// Broadcast the values
 
       CALL BCAST(PJ)
       CALL BCAST(IJK_P_G)
@@ -196,14 +192,8 @@
             DO K = BC_K_B(L), BC_K_T(L) 
                DO J = BC_J_S(L), BC_J_N(L) 
                   DO I = BC_I_W(L), BC_I_E(L) 	
-!// 360 1025 Check if current i,j,k resides on this PE		  	  
-!// SP - Changed to two layers
 		  IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                      IJK = BOUND_FUNIJK(I,J,K) 
-!//AIKEPARDBG
-!              write(UNIT_LOG,"('P1:set_bc0 for EP_G: IJK= ',I5,'  I= ',I4,&
-!	      & ' J=',I4,' K=',I4,' BC_EP_G=',E12.4,' EP_G=',E12.4)") &
-!	          IJK,I,J,K,BC_EP_G(L),EP_G(IJK) !//AIKEPARDBG
 		     
                      IF (.NOT.WALL_AT(IJK)) THEN 
 !
@@ -269,13 +259,13 @@
                            IJK3 = IJK 
                            SELECT CASE (BC_PLANE(L))  
                            CASE ('W')  
-!//SP - Changed to make consistent approach
+!// Changed to make consistent approach
                               IJK1 = BOUND_FUNIJK(IM1(I),J,K) 
                            CASE ('S')  
-!//SP - Changed to make consistent approach
+!// Changed to make consistent approach
                               IJK2 = BOUND_FUNIJK(I,JM1(J),K) 
                            CASE ('B')  
-!//SP - Changed to make consistent approach
+!// Changed to make consistent approach
                               IJK3 = BOUND_FUNIJK(I,J,KM1(K)) 
                            END SELECT 
 !
@@ -309,16 +299,16 @@
                            ENDIF 
                         ENDIF 
                      ENDIF 
-!//AIKEPARDBG		     
-!              write(UNIT_LOG,"('P2:set_bc0 for EP_G: IJK= ',I5,'  I= ',I4,&
-!	      & ' J=',I4,' K=',I4,' BC_EP_G=',E12.4,' EP_G=',E12.4)") &
-!	          IJK,I,J,K,BC_EP_G(L),EP_G(IJK)  !//AIKEPARDBG
 		     
                   END DO 
                END DO 
             END DO 
          ENDIF 
       END DO 
-!//? check for the variables that require communication due to the cyclic BC along k direction 
       RETURN  
       END SUBROUTINE SET_BC0 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 020 New local variables for parallelization: FLAG_G , FLUID_AT_G
+!// 360 Check if i,j,k resides on current processor

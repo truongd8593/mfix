@@ -24,7 +24,6 @@
 !-----------------------------------------------
       USE param 
       USE param1 
-!//d      USE funits 
       USE run
       USE output
       USE compar      
@@ -53,9 +52,6 @@
 !-----------------------------------------------
 !
 !
-!//  only do this routine if the root processor
-!//SP
-!     if (myPE.ne.PE_IO) return
 !
 !     Initialize
       IF (IER == 100) THEN 
@@ -79,7 +75,6 @@
             ELSE 
                DT = DT*DT_FAC 
             ENDIF 
-!//SP
             IF (FULL_LOG.and.myPE.eq.PE_IO) &
             WRITE (*, *) 'DT = ', DT, '  NIT/s = ', NINT(NITOS) 
          ELSE 
@@ -92,14 +87,12 @@
       ELSE 
 !
          IF (DT < DT_MIN) THEN 
-!//SP
             LINE(1) = 'DT < DT_MIN.  Recovery not possible!' 
             IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1) 
             CALL WRITE_ERROR ('ADJUST_DT', LINE, 1) 
             STOP
          ELSE IF (DT_FAC >= ONE) THEN 
             LINE(1) = 'DT_FAC >= 1.  Recovery not possible!' 
-!//SP
             IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1) 
             CALL WRITE_ERROR ('ADJUST_DT', LINE, 1) 
             STOP  
@@ -113,7 +106,6 @@
             DT = DT*DT_FAC 
 !
             IF (FULL_LOG) THEN 
-!//SP
 	      IF(myPE.eq.PE_IO) then
                WRITE (*, '(12X,A,G11.5,9X,A)') ' Dt=', DT, &
                   ' Recovered            :-)' 

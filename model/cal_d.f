@@ -25,10 +25,9 @@
       USE compar
 
       DOUBLE PRECISION V_sh,dis
-!     DOUBLE PRECISION xdist(IMAX2,JMAX2)
-!     DOUBLE PRECISION xdist3(IMAX2,JMAX2,KMAX2),cnter3(IMAX2,JMAX2,KMAX2)
 
-!//SP Note the rational behind using global direction in I direction. This is to ensure
+
+!//   Note the rational behind using global direction in I direction. This is to ensure
 !     correctness in the way distances are calculated in the serial version and also
 !     to give the capability to perform calculations over additional ghost layers in
 !     to avoid if checks and communication
@@ -111,6 +110,7 @@
       
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization
+!// 050 Changed declaration of xdist(IMAX2,JMAX2) to (IMIN3:IMAX3. JSTART3:JEND3)
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !// 350 1206 change do loop limits: 1,kmax2->kstart3,kend3      
 

@@ -25,7 +25,6 @@
 !  Variables modified: P_g, IJK, I, J, K                               C
 !                                                                      C
 !  Local variables: PJ, BED_WEIGHT, AREA, dAREA                        C
-!//SP
 !  IS_ON_MYPE_K, IS_ON_MYPE_I
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
@@ -51,9 +50,9 @@
       USE indices
       USE funits 
       USE scales 
-      USE compar        !//d
-      USE mpi_utility   !//d
-      USE sendrecv      !//d
+      USE compar    
+      USE mpi_utility 
+      USE sendrecv 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -86,8 +85,8 @@
 ! 
 !                      Average pressure drop per unit length 
       DOUBLE PRECISION DPoDX, DPoDY, DPoDZ 
-!//SP
-!     Bound Checking
+
+!//   New Bound Checking variables
       LOGICAL IS_ON_MYPE_K, IS_ON_MYPE_I
 ! 
 !-----------------------------------------------
@@ -116,7 +115,7 @@
             PJ = PJ + DPODX*HALF*(DX(I)+DX(I+1)) 
             DO K = KMIN1, KMAX1 
                DO J = JMIN1, JMAX1 
-!\\ Bound Checking
+!// Bound Checking
 	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                   IJK = FUNIJK(I,J,K) 
                   IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ) 
@@ -132,7 +131,7 @@
             PJ = PJ + DPODY*HALF*(DY(J)+DY(J+1)) 
             DO K = KMIN1, KMAX1 
                DO I = IMIN1, IMAX1 
-!\\ Bound Checking
+!// Bound Checking
 	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                   IJK = FUNIJK(I,J,K) 
                   IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ) 
@@ -148,7 +147,7 @@
             PJ = PJ + DPODZ*HALF*(DZ(K)+DZ(K+1)) 
             DO J = JMIN1, JMAX1 
                DO I = IMIN1, IMAX1 
-!\\ Bound Checking
+!// Bound Checking
 	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                   IJK = FUNIJK(I,J,K) 
                   IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ) 
@@ -156,9 +155,7 @@
             END DO 
          END DO 
       ENDIF 
-!4/29/94
-!//SP
-!     RETURN  
+
       GOTO 100
 !
 !  Search for an outflow boundary condition where pressure is specified
@@ -173,12 +170,10 @@
 !
 !         If incompressible flow set P_g to zero.
 !
-!\\SP Changed the bounds from 1, ijkmax2
             DO IJK = IJKSTART3, IJKEND3 
                IF (FLUID_AT(IJK)) P_G(IJK) = ZERO 
             END DO 
-!//SP
-!           RETURN  
+
             GOTO 100  
          ELSE 
 !
@@ -201,7 +196,7 @@
          BED_WEIGHT = 0.0 
          AREA = 0.0 
          DO K = KMIN1, KMAX1 
-!\\SP Bound Checking!!
+!// Bound Checking
 	    IF(K.LT.KSTART.OR.K.GT.KEND) CYCLE
             DO I = IMIN1, IMAX1 
 	       IF(I.LT.ISTART.OR.I.GT.IEND) CYCLE
@@ -228,17 +223,14 @@
             END DO 
          END DO 
 	 
-!\\SP Global Sum
+!// Global Sum
  	 call global_all_sum(bed_weight)
  	 call global_all_sum(area)
          IF (AREA /= 0.0) BED_WEIGHT = BED_WEIGHT/AREA 
-!	 call global_all_sum(bed_weight)
-! bed_weight = bed_weight/numPEs
-!\\SP\
-! PJ = 0.0d0
+
          PJ = PJ + BED_WEIGHT 
          DO K = KMIN1, KMAX1
-!\\SP Bound Checking!!
+!// Bound Checking
 	    IF(K.LT.KSTART.OR.K.GT.KEND) CYCLE
             DO I = IMIN1, IMAX1 
 	       IF(I.LT.ISTART.OR.I.GT.IEND) CYCLE
@@ -247,9 +239,9 @@
             END DO 
          END DO 
       END DO 
-!//SP
+!//
   100 CONTINUE
-!//SP
+
       call send_recv(P_G,2)
 
 !
@@ -259,3 +251,10 @@
          'All the initial pressures (IC_P_g) or at least one P_OUTFLOW',/&
          'condition need to be specified',/1X,70('*')/) 
       END SUBROUTINE SET_FLUIDBED_P 
+      
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 020 New local variables for parallelization: IS_ON_MYPE_K, IS_ON_MYPE_I
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 400 Added sendrecv module and send_recv calls for COMMunication
+

@@ -48,7 +48,7 @@
       Use tmp_array, S_p => ARRAY1, S_C => ARRAY2, EPs => ARRAY3, &
                      ROPxCp => ARRAY4
       Use tmp_array1, VxGama => ARRAYm1
-      USE compar        !//d
+      USE compar    
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -114,7 +114,7 @@
       DO M = 0, MMAX 
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
       END DO 
-!//SP
+
       DO IJK = IJKSTART3, IJKEND3
 !
          IF (FLUID_AT(IJK)) THEN 
@@ -221,3 +221,7 @@
 
       RETURN  
       END SUBROUTINE SOLVE_ENERGY_EQ 
+
+
+!// Comments on the modifications for DMP version implementation      
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

@@ -66,7 +66,6 @@
       LOGICAL          NO_RESID
 !-----------------------------------------------
 !
-!//SP
       SUM = RESID(RESID_P,0) 
       if(MMAX > 0) SUM = SUM + RESID(RESID_P,1) 
 !
@@ -90,9 +89,6 @@
             SUM = SUM + RESID(RESID_TH,M) 
          END DO 
       ENDIF 
-      
-!//SP
-!    call global_all_sum(SUM)
 !
       SUM_T = ZERO 
       IF (ENERGY_EQ) THEN 
@@ -100,8 +96,7 @@
             SUM_T = SUM_T + RESID(RESID_T,M) 
          END DO 
       ENDIF 
-!//SP
-!    call global_all_sum(SUM_T)
+
       SUM_X = ZERO 
       NO_RESID = .FALSE. 
       DO M = 0, MMAX 
@@ -112,8 +107,7 @@
             END DO 
          ENDIF 
       END DO 
-!//SP
-!    call global_all_sum(SUM_X)
+
       IF (NO_RESID) SUM_X = TOL_RESID_X + ONE 
       
 !
@@ -179,4 +173,3 @@
       END SUBROUTINE CHECK_CONVERGENCE 
       
 !// Comments on the modifications for DMP version implementation            
-!// 400 Added mpi_utility module and other global reduction (bcast) calls
