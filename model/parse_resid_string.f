@@ -30,6 +30,8 @@
       USE param1 
       USE physprop
       USE residual
+      USE funits  !//AIKEPARDBG for UNIT_LOG defn
+      USE compar  !//AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -126,5 +128,14 @@
               + ICHAR(RESID_STRING(L)(4:4)) - 48 - 1 
          ENDIF 
       END DO 
+      
+!//AIKEPARDBG      
+!      write(*,"('(PE ',I2,'): reached eof parse_residual_string')") myPE    !//AIKEPARDBG
+!      write(UNIT_LOG,*) 'RESID_PREFIX:',RESID_PREFIX
+!      write(UNIT_LOG,*) 'RESID_STRING:',RESID_STRING
+!      write(UNIT_LOG,*) 'STRING_DEFINED:',STRING_DEFINED
+!      write(UNIT_LOG,*) 'RESID_INDEX:',RESID_INDEX        
+!      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+      
       RETURN  
       END SUBROUTINE PARSE_RESID_STRING 

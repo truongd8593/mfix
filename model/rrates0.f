@@ -45,6 +45,7 @@
       USE constant
       USE funits 
       USE compar        !//d
+      USE sendrecv      !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -87,7 +88,13 @@
       
       
 !!$omp  parallel do private( IJK, L, LM, M, N, LR, ID, stmw, ex, Tr, EP, RATE )    
-      DO IJK = 1, IJKMAX2 
+
+!//S  Make sure all field variables that are used in following DO loop are 
+!     up to date, e.g. EP_G, T_G, EP_S, T_S
+
+!// 350 1112 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
+      DO IJK = IJKSTART3, IJKEND3 
+      
          IF (FLUID_AT(IJK)) THEN 
 !
 !
@@ -198,7 +205,7 @@
                   END DO 
                ELSE 
                   WRITE (UNIT_LOG, 1000) LR, RXN_NAME(LR) 
-                  STOP  
+                  call mfix_exit(myPE)  
                ENDIF 
             END DO 
             DO LR = 1, NO_OF_RXNS 
@@ -249,13 +256,35 @@
                         CALL START_LOG 
                         WRITE (UNIT_LOG, 1010) L, M 
                         CALL END_LOG 
-                        STOP  
+                        call mfix_exit(myPE)  
                      ENDIF 
                   END DO 
                END DO 
             END DO 
          ENDIF 
       END DO 
+
+
+
+!//S 1113 try to move this COMM to the end of transport_prop to do all COMMs
+!//       at certain locations, provided that no data dependency in between.
+
+
+!// 400 1112 update the boundaries for recently calculated field vars
+      call send_recv(ROX_GC,2)
+      call send_recv(R_GP,2)
+      call send_recv(ROX_SC,2)
+      call send_recv(R_SP,2)      
+      call send_recv(HOR_G,2) 
+      call send_recv(HOR_S,2)   
+      call send_recv(R_TEMP,2)       
+      call send_recv(R_PHASE,2) 
+!//? check if we need a GLOBAL SUM for the following two as it accumulates sum
+!//  for each species      
+      call send_recv(SUM_R_S,2)        
+      call send_recv(SUM_R_G,2)              
+
+      
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: RRATES0',/' Error: ',&
          'Reaction rate for reaction ',I2,' (',A,') not specified',/1X,70('*')/&

@@ -31,6 +31,7 @@
       USE param1 
       USE physprop
       USE rxns
+      USE compar !//AIKEPARDBG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -62,14 +63,27 @@
                        WALL_TR
 !-----------------------------------------------
 !
+!//AIKEPARDBG
+!    write(*,"('(PE ',I2,'): begin CALC_COEFF')") myPE    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
 
 !     Calculate physical properties
 !
       CALL PHYSICAL_PROP (DENSITY, SIZE, SP_HEAT, IER) 
+
+!//AIKEPARDBG
+    write(*,"('(PE ',I2,'): aft PHYSICAL_PROP in CALC_COEFF, IER=',I4)") myPE,IER    !//AIKEPARDBG
+
+
 !
 !     Calculate Transport properties
 !
       CALL TRANSPORT_PROP (VISC, COND, DIFF, IER) 
+
+!//AIKEPARDBG
+    write(*,"('(PE ',I2,'): aft TRANSPORT_PROP in CALC_COEFF, IER=',I4)") myPE,IER    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+
 !
 !     Calculate reaction rates and interphase mass transfer
 !
@@ -80,6 +94,10 @@
             CALL RRATES (IER)                    !rxns defined in rrates.f 
          ENDIF 
       ENDIF 
+!//AIKEPARDBG
+    write(*,"('(PE ',I2,'): aft RRATES calls in CALC_COEFF, IER=',I4)") myPE,IER    !//AIKEPARDBG
+!    call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+      
 !
 !     Calculate interphase momentum, and energy transfers
 !

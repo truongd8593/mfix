@@ -38,6 +38,8 @@
       USE toleranc 
       USE constant
       USE compar        !//d
+      USE funits        !//AIKEPARDBG
+      USE sendrecv      !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -70,8 +72,11 @@
 !  Fluid phase
 !
 
+!//? 1112 Make sure the appropriate updates were done for the overlapping boundaries 
+!//? for variables P_G, T_G, EP_G prior to next loop
 !$omp  parallel do private(IJK, MW, N)  
-      DO IJK = 1, IJKMAX2 
+!// 350 1112 MTP change do loop limits : 1,ijkmax2 ==> ijkstart3, ijkend3
+      DO IJK = IJKSTART3, IJKEND3 
          IF (.NOT.WALL_AT(IJK)) THEN 
 !
 ! 1.1      Density
@@ -104,10 +109,23 @@
                IJK)) + 0.233*CPO2(T_G(IJK)) 
          ENDIF 
       END DO 
+      
+
+!//? 1112 Check the values of variables on the overlapping boundaries for verification
+!//? need the debug tool from KIVA to dump the overlapping boundary region for
+!//? specified variables in order to compare with same locations in serial version
+!//? Below just dumps all the subdomain.
+!//AIKEPARDBG
+!      DO IJK = IJKSTART3, IJKEND3 
+!        write(UNIT_LOG,"(I4,4(E15.6,3X))") &
+!	ijk,MW_MIX_G(ijk),RO_G(ijk),ROP_G(ijk),C_PG(ijk)
+!      END DO     
+
       DO M = 1, MMAX 
 !
 !$omp  parallel do private(IJK)  
-         DO IJK = 1, IJKMAX2 
+!// 350 1112 MTP change do loop limits : 1,ijkmax2 ==> ijkstart3, ijkend3
+         DO IJK = IJKSTART3, IJKEND3 
             IF (.NOT.WALL_AT(IJK)) THEN 
 !
 !             Specific heat of solids (Coal) in cal/g.K
@@ -117,5 +135,13 @@
             ENDIF 
          END DO 
       END DO 
+
+!// 400 1112 MTP Communicate boundaries for MW_MIX_G, RO_G, ROP_G, C_PG, C_S  
+      CALL SEND_RECV(MW_MIX_G, 2)
+      CALL SEND_RECV(RO_G, 2)
+      CALL SEND_RECV(ROP_G, 2)
+      CALL SEND_RECV(C_PG, 2)
+      CALL SEND_RECV(C_PS, 2)      
+      
       RETURN  
       END SUBROUTINE PHYSICAL_PROP 

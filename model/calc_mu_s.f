@@ -65,6 +65,7 @@
       USE indices
       USE constant
       USE compar    !//d
+      USE sendrecv  !// 400
       IMPLICIT NONE
 !                      Maximum value of solids viscosity in poise
       DOUBLE PRECISION MAX_MU_s
@@ -235,7 +236,16 @@
 !!$omp&  KTH_STAR,KTH,CHI,PFOPC,PC,ZETA,MU_ZETA,PF,LAMBDA_F,MU_F,MUS, &
 !!$omp&  MU_STAR,MU_B,MU,M,IJPKM,IJMKM,IJMKP,IPJMK,IPJKM,IMJKM,IMJKP,IMJMK, &
 !!$omp&  EP_sxSQRTHETA, EP_s2xTHETA )  
-      DO 200 IJK = IJKMIN1, IJKMAX1
+
+!//? 1112 Make sure all the variables used in following DO loop are up to date
+!//       at the boundaries as it has references to K-1. K-1 on PE 1 at the
+!//       bottom face refers to the top face layer of PE 0!!!
+
+!// 350 changed do loop limits ijkmin1, ijkmax1 ==> ijkmin1_L,ijkmax1_L     
+!      DO 200 IJK = IJKMIN1, IJKMAX1 
+!//? replace the crowd once ijmax_L, ijmin1_L, ijmax1_L are defined & set globally
+      DO 200 IJK = ((iend3-istart3+1)*(jend3-jstart3+1)+1), &
+       ((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1)) - (iend3-istart3+1)*(jend3-jstart3+1)
 !
         IF ( FLUID_AT(IJK) ) THEN
 !
@@ -698,6 +708,30 @@
         ENDIF
 !
   200 CONTINUE
+  
+!//? check if all the COMM for following variables is necessary?
+
+!//S 1113 try to move this COMM to the end of transport_prop to do all COMMs
+!//       at certain locations, provided that no data dependency in between.
+  
+!//? 1112 need to update the boundaries for variables : 
+!// 400 1112 update the boundaries for recently calculated field vars
+      call send_recv(trD_s2,2)
+      call send_recv(MU_s,2) 
+      call send_recv(Lambda_s,2)
+      call send_recv(P_star,2) 
+      call send_recv(Alpha_s,2)    
+      call send_recv(Theta_m,2) 
+      call send_recv(P_s,2)  
+      call send_recv(MU_s_c,2)                                       
+      call send_recv(Lambda_s_c,2) 
+      call send_recv(P_s_c,2)    
+      call send_recv(Kth_s,2) 
+      call send_recv(Kphi_s,2)                      
+!//AIKEPARDBG
+      write(*,"('(PE ',I2,'): eof CALC_MU_S ')") myPE    !//AIKEPARDBG
+      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+  
 !
       RETURN
       END

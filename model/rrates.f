@@ -44,6 +44,7 @@
       USE constant
       USE funits 
       USE compar        !//d
+      USE sendrecv      !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -71,7 +72,10 @@
 !  ---  Remember to include all the local variables here for parallel
 !  ---- processing
 !$omp  parallel do private(ijk, R_tmp, L, LM, M, N)
-      DO IJK = 1, IJKMAX2 
+
+!// 350 1112 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
+      DO IJK = IJKSTART3, IJKEND3 
+      
          IF (FLUID_AT(IJK)) THEN 
 !
 !
@@ -179,12 +183,26 @@
                      CALL START_LOG 
                      WRITE (UNIT_LOG, 1000) L, M 
                      CALL END_LOG 
-                     STOP  
+                     call mfix_exit(myPE)  
                   ENDIF 
                END DO 
             END DO 
          ENDIF 
       END DO 
+      
+!//S 1113 try to move this COMM to the end of transport_prop to do all COMMs
+!//       at certain locations, provided that no data dependency in between.
+
+
+!// 400 1112 update the boundaries for recently calculated field vars
+      CALL SEND_RECV(HOR_G, 2)
+      CALL SEND_RECV(HOR_S, 2)
+!//? check if we need a GLOBAL SUM for the following two as it accumulates sum
+!//  for each species            
+      CALL SEND_RECV(SUM_R_G , 2)
+      CALL SEND_RECV(SUM_R_S, 2)      
+      CALL SEND_RECV(R_PHASE, 2)      
+     
  1000 FORMAT(/1X,70('*')//' From: RRATES',/&
          ' Message: Mass transfer between phases ',I2,' and ',I2,&
          ' (R_tmp) not specified',/1X,70('*')/) 

@@ -38,6 +38,7 @@
       USE indices
       USE constant
       USE compar    !//d
+      USE sendrecv  !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -120,7 +121,8 @@
 !
 !
 !!$omp parallel do private(ijk) schedule(dynamic,chunk_size)
-      DO IJK = 1, IJKMAX2 
+!// 350 1112 change do loop limits: 1,ijkmax2-> ijkstart3, ijkend3 
+      DO IJK = IJKSTART3, IJKEND3 
          IF (.NOT.WALL_AT(IJK)) THEN 
 !
 !  Molecular viscosity
@@ -138,7 +140,32 @@
 !!$omp& IMJKM,IPJKM,IPJMK,IJMKP,IJMKM,IJPKM, &
 !!$omp& U_G_N,U_G_S,U_G_T,U_G_B,V_G_E,V_G_W,V_G_T,V_G_B, &
 !!$omp$ W_G_N,W_G_S,W_G_E,W_G_W,  U_G_C,W_G_C, D_G,I2_DEVD_G )
-      DO IJK = IJKMIN1, IJKMAX1 
+
+
+!//? 1112 need equivalents of ijkmin1, ijkmax1 based on each processors subdomain
+! Following defns assumes DO_K = TRUE see set_max2.f for details
+!      ijmax2_L = (iend3-istart3+1)*(jend3-jstart3+1)
+!      ijkmin1_L = ijmax3 + 1
+!      ijkmax1_L = ((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1))- ijmax3
+
+!//AIKEPARDBG
+    write(*,"('(PE ',I2,'): IJKMIN1= ',I4,' IJKMAX1= ',I4,' IJMAX2 = ',I4)") &
+           myPE,IJKMIN1,IJKMAX1,IJMAX2    !//AIKEPARDBG
+    write(*,"('(PE ',I2,'): IJMIN1_L= ',I4,' IJKMAX1_L= ',I4,'  IJMAX2_L= ',I4)") &
+           myPE, ((iend3-istart3+1)*(jend3-jstart3+1)+1),   &  
+	  (((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1))- (iend3-istart3+1)*(jend3-jstart3+1)), &
+          ((iend3-istart3+1)*(jend3-jstart3+1)) 
+
+!//? 1112 Make sure all the variables used in following DO loop are up to date
+!//       at the boundaries as it has references to K-1. K-1 on PE 1 at the
+!//       bottom face refers to the top face layer of PE 0!!!
+
+!// 350 changed do loop limits ijkmin1, ijkmax1 ==> ijkmin1_L,ijkmax1_L     
+!      DO IJK = IJKMIN1, IJKMAX1 
+!//? replace the crowd once ijmax_L, ijmin1_L, ijmax1_L are defined & set globally
+      DO IJK = ((iend3-istart3+1)*(jend3-jstart3+1)+1), &
+       ((iend3-istart3+1)*(jend3-jstart3+1)*(kend3-kstart3+1)) - (iend3-istart3+1)*(jend3-jstart3+1)
+
          IF ( .NOT.WALL_AT(IJK) .AND. L_SCALE(IJK)/=ZERO) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
@@ -161,7 +188,7 @@
             IPJMK = IP_OF(IJMK) 
             IJMKP = JM_OF(IJKP) 
             IJMKM = JM_OF(IJKM) 
-            IJPKM = JP_OF(IJKM) 
+            IJPKM = JP_OF(IJKM) 	    
 !
 !         Find fluid velocity values at faces of the cell
             U_G_N = AVG_Y(AVG_X_E(U_G(IMJK),U_G(IJK),I),AVG_X_E(U_G(IMJPK),U_G(&
@@ -222,5 +249,18 @@
             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK) 
          ENDIF 
       END DO 
+
+!//S 1113 try to move this COMM to the end of transport_prop to do all COMMs
+!//       at certain locations, provided that no data dependency in between.
+
+!//? 1112 need to update the boundaries for variables : MU_GT,LAMBDA_GT
+!// 400 1112 update the boundaries for recently calculated field vars
+      call send_recv(mu_gt,2)
+      call send_recv(lambda_gt,2) 
+           
+!//AIKEPARDBG
+      write(*,"('(PE ',I2,'): eof CALC_MU_G ')") myPE    !//AIKEPARDBG
+      call mfix_exit(myPE)   !//AIKEPARDBGSTOP
+      
       RETURN  
       END SUBROUTINE CALC_MU_G 

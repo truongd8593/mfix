@@ -34,6 +34,7 @@
       USE indices
       USE constant
       USE compar    !//d
+      USE sendrecv  !// 400
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -56,7 +57,8 @@
 !!$omp parallel do private(ijk) &
 !!$omp& schedule(dynamic,chunk_size)
 
-      DO IJK = 1, IJKMAX2 
+!// 350 1112 MTP changed do loop limits 1,ijkmax2 ==> ijkstart3, ijkend3
+      DO IJK = IJKSTART3, IJKEND3      
          IF (.NOT.WALL_AT(IJK)) THEN 
 !           Gas conductivity (air) in cal/s.cm.K
 !           Bird, Stewart, and Lightfoot (1960) -- Temperature dependence from formula
@@ -66,5 +68,12 @@
             K_G(IJK) = ZERO 
          ENDIF 
       END DO 
+
+!//S 1113 try to move this COMM to the end of transport_prop to do all COMMs
+!//       at certain locations, provided that no data dependency in between.
+      
+!// 400 1113 MTP communicate boundaries
+      CALL SEND_RECV(K_G, 2)     
+      
       RETURN  
       END SUBROUTINE CALC_K_G 
