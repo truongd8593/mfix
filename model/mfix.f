@@ -84,7 +84,7 @@
       external cpu_time
 !-----------------------------------------------
 !
-!$      INTEGER num_threads, threads_specified
+!$      INTEGER num_threads, threads_specified, omp_id
 !$      INTEGER mp_numthreads, omp_get_num_threads
       INTEGER IJK
       INCLUDE 'function.inc'
@@ -94,18 +94,21 @@
 !
 ! set the version.release of the software
 !
-      ID_VERSION = '4.1' 
+      ID_VERSION = '2002-3'
 !
-!   Specify the number of processors to be used
+!!   Specify the number of processors to be used
 !
-!$      WRITE(*,'(A,$)') 'Enter the number of processors to be used: '
+!$      WRITE(*,'(A,$)') 'Enter the number of threads to be used for SMP: '
 !$      READ(*,*) threads_specified
 !$      call omp_set_num_threads(threads_specified)
 !
-!       Find the number of processors used
+!!       Find the number of processors used
 !
+!$omp  parallel
 !$      num_threads = omp_get_num_threads()
-!$      Write(*,*)' Number of processors used = ',  num_threads
+!$      omp_id = omp_get_thread_num()
+!$      if(omp_id.eq.0) Write(*,*)' Number of threads used for SMP = ',  num_threads
+!$omp  end parallel
 !
 !  Set machine dependent constants
 !
