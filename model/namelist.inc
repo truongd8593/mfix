@@ -36,6 +36,12 @@
              P_ref, P_scale, UR_FAC, GRAVITY, TOL_RESID_T, TOL_RESID_X,&
              NORM_g, NORM_s, PHIP, e_w, EPS_f_min, EPS_max,&
 !
+! start GERA 8/15/03
+             SEGREGATION_SLOPE_COEFFICIENT, MAX_SOLID_1_PACKING,&
+	     MAX_SOLID_2_PACKING,&
+! end GERA 8/15/03     
+!	     	     
+!
 ! 1.4 Geometry and discretization section
 !
              COORDINATES, IMAX, DX, XMIN, XLENGTH, JMAX, DY, YLENGTH,&

@@ -141,7 +141,7 @@
 
 !	    Account for particle-particle drag due to enduring contact in a close-packed system.
 	    IF(CLOSE_PACKED(M) .AND. CLOSE_PACKED(L) .AND. (MMAX >= 2))&
-	   F_SS(IJK,LM) = F_SS(IJK,LM) + C(10)* P_star(IJK)
+	   F_SS(IJK,LM) = F_SS(IJK,LM) + SEGREGATION_SLOPE_COEFFICIENT* P_star(IJK) 
 !
 !
 !END GERA**********

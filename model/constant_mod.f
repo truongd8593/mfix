@@ -31,7 +31,8 @@
 !       multiple particle sizes
         DOUBLE PRECISION ep_s_max(DIM_M)  !maximum packing volume fraction for particles, typically 0.6
 	DOUBLE PRECISION ep_s_max_ratio(DIM_M, DIM_M), d_p_ratio(DIM_M, DIM_M)
-	
+	DOUBLE PRECISION SEGREGATION_SLOPE_COEFFICIENT, MAX_SOLID_1_PACKING,&
+			  MAX_SOLID_2_PACKING
 !     ALPHA = parameter in equation for mu_s
 !
 !     SWITCH enables us to turn on/off the modification to the
@@ -69,7 +70,7 @@
       DOUBLE PRECISION EPS_max		
 !
 !                      Gravitational acceleration
-      DOUBLE PRECISION GRAVITY
+      DOUBLE PRECISION GRAVITY, to_SI
 !
 !                      Universal gas constant
       DOUBLE PRECISION GAS_CONST
@@ -133,9 +134,6 @@
 !                      Excluded volume (Boyle-Massoudi stress tensor)
       DOUBLE PRECISION V_ex
 !
-!
-!S. Dartevelle:        constant to convert the frictional-plastic Pressure dyne/cm2 --> Pa
-      DOUBLE PRECISION to_SI
 
 
       END MODULE constant                                                                        
