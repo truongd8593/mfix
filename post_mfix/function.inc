@@ -1,3 +1,5 @@
+! This function.inc is for post_mfix.  The only change is that funijk is set
+! equal to funijk_io
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
 !                      Function for generating the LOCAL 3-D array index IJK

@@ -78,7 +78,11 @@
       nodesk = 1
 
 
+      imin2 = 1
+      jmin2 = 1
+      kmin2 = 1
       CALL READ_RES0
+      if(no_k .and. dz(1) .eq. UNDEFINED)DZ(1)=ONE
       call SET_MAX2
       call GRIDMAP_INIT
       CALL SET_INCREMENTS

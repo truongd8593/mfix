@@ -3,7 +3,8 @@
 # POST_MFIX script file for executing 'make'
 # M. Syamlal/P.Nicoletti                   9-27-95
 #------------------------------------------------------------------------
-
+# For compiling post_mfix the ../model directory must exist.
+#
     chmod +w machine.f
 
     set `uname -s` ; opsys=$1
@@ -180,6 +181,21 @@ echo " "
 #
 #------------------------------------------------------------------------
 #
+#  Create a backup of the function.inc in the model directory and copy the
+#  function.inc from the post_mfix directory to the model directory
+
+#      Is there default file Mfix/model directory?
+       if test -r "../model/function.0inc"
+       then
+          do_nothing="ok"
+      
+       else
+#        Mfix/model directory does not have a default file. create one.
+         cp "../model/function.inc" "../model/function.0inc"
+       fi
+       cp "./function.inc" "../model/function.inc"
+
+#------------------------------------------------------------------------
 #
     FORT_FLAGS="$compile"
     LINK_FLAGS="$link"
@@ -230,6 +246,9 @@ echo " "
     echo "*** File post_mfix NOT created."
     echo 
  fi
+ 
+# Restore the function.inc file in the model directory
+  mv "../model/function.0inc" "../model/function.inc"
 
  chmod +w ep_s1.inc
  chmod +w ep_s2.inc

@@ -929,10 +929,12 @@
          (VAR_NO .EQ. 44                     ) .OR.&
          (VAR_NO .EQ. 46                     ) .OR.&
          (VAR_NO .EQ. 47                     ) &
-                                                  ) THEN
-          DO 102 K = K1, K2
-          DO 102 J = J1, J2
-          DO 102 I = I1, I2
+	                                          ) THEN
+	  ! loop over the entire domain because mass flux calculations
+	  ! need ROP_s outside i,j,k limits specified by the user
+          DO 102 K = KMIN1, KMAX2
+          DO 102 J = JMIN1, JMAX2
+          DO 102 I = IMIN1, IMAX2
             IJK = FUNIJK(I, J, K)
             ROP_s(IJK, 1) = (ONE - EP_g(IJK)) * RO_s(1)
 102       CONTINUE

@@ -1,7 +1,10 @@
-1.  All the common files between post_mfix and mfix are stored in the model
-directory.  Only exception is function.inc where fun_ijk is made same as
-funijk_io.  For some unknown reason it is necessary to copy 
-bc_mod.f, ic_mod.f and time_cpu_mod.f into post_mfix directory.
+1.  For compiling post_mfix ../model directory must exist.  All the common
+files between post_mfix and mfix are stored in the model
+directory.  (Only exception is function.inc.  For post_mfix fun_ijk is made
+the same as funijk_io. make_post takes care of using the correct function.inc.)
+
+2.  If function.inc is updated ensure that those changes are made in the
+post_mfix version of function.inc. 
 
 2.  If new variables are added to write_res1, ensure that they are updated
 in interp_res.
