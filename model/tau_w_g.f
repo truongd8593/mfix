@@ -79,7 +79,7 @@
       DOUBLE PRECISION dWoXdz, duodz 
 ! 
 !                      Source terms (Surface) 
-      DOUBLE PRECISION Ste, Stw, Sbv, Ssx, Ssy, Ssz 
+      DOUBLE PRECISION Sbv, Ssx, Ssy, Ssz 
 ! 
 !                      Source terms (Volumetric) 
       DOUBLE PRECISION Vxz 
@@ -101,7 +101,7 @@
 !!$omp&  IM,IJKW, IPJK, &
 !!$omp&  IMJK,IJKN,IJMK,IJKT,  &
 !!$omp&  IJKM, &
-!!$omp&  STE, STW, SBV,  SSX,SSY,   SSZ) &
+!!$omp&  SBV,  SSX,SSY,   SSZ) &
 !!$omp&  schedule(static)
       DO IJK = IJKSTART3, IJKEND3
          K = K_OF(IJK) 
@@ -140,6 +140,7 @@
                IJK) - AVG_Z_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJK),IM),AVG_X_H(MU_GT(&
                IJKTW),MU_GT(IJKT),IM),K)*(U_G(IMJKP)-U_G(IMJK))*ODZ_T(K)*DY(J)*&
                (HALF*(DZ(K)+DZ(KP))) 
+		  !same as oX_E(IM)*AYZ_W(IMJK), but avoids singularity
             SSY = AVG_Z_H(AVG_Y_H(MU_GT(IJK),MU_GT(IJKN),J),AVG_Y_H(MU_GT(IJKT)&
                ,MU_GT(IJKNT),J),K)*(V_G(IJKP)-V_G(IJK))*OX(I)*ODZ_T(K)*AXZ_W(&
                IJK) - AVG_Z_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJK),JM),AVG_Y_H(MU_GT(&
@@ -153,28 +154,11 @@
 !         Special terms for cylindrical coordinates
             IF (CYLINDRICAL) THEN 
 !
-!           modify Szz to include integral of (1/x)*(d/dz)(2*u/x)
+!              modify Szz to include integral of (1/x)*(d/dz)(2*u/x)
                SSZ = SSZ + MU_GT(IJKT)*(U_G(IJKP)+U_G(IMJKP))*OX(I)*AXY_W(IJK)&
                    - MU_GT(IJK)*(U_G(IJK)+U_G(IMJK))*OX(I)*AXY_W(IJKM) 
 !
-!           Term from tau_xz: intergral of (1/x)*(d/dx)(x*mu*((1/x)*du/dz))
-               IJKE = EAST_OF(IJK) 
-               IJKW = WEST_OF(IJK) 
-               IJKTE = TOP_OF(IJKE) 
-               IJKTW = TOP_OF(IJKW) 
-               IM = IM1(I) 
-               IPJK = IP_OF(IJK) 
-!
-               STE = AVG_Z_H(AVG_X_H(MU_GT(IJK),MU_GT(IJKE),I),AVG_X_H(&
-                  MU_GT(IJKT),MU_GT(IJKTE),I),K)*OX_E(I)*AYZ_W(IJK)*(U_G(IJKP)-U_G&
-                  (IJK))*ODZ_T(K)
-!
-               STW = AVG_Z_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJK),IM),AVG_X_H(&
-                  MU_GT(IJKTW),MU_GT(IJKT),IM),K)*DY(J)*(HALF*(DZ(K)+DZ(KP1(K))&
-                  )) * (U_G(IMJKP)-U_G(IMJK))*ODZ_T(K)
-		  !same as oX_E(IM)*AYZ_W(IMJK), but avoids singularity
-!
-!           (mu_s/x)* part of (du/dz*x) tau_xz/X
+!              (mu_s/x)* part of (du/dz*x) tau_xz/X
                IF (OX_E(IM) /= UNDEFINED) THEN 
                   DUODZ = (U_G(IMJKP)-U_G(IMJK))*OX_E(IM)*ODZ_T(K) 
                ELSE 
@@ -184,13 +168,11 @@
                   (IJK))*OX_E(I)*ODZ_T(K)+DUODZ) 
 !
             ELSE
-	       STE = ZERO
-	       STW = ZERO
                VXZ = ZERO 
             ENDIF 
 !
 !         Add the terms
-            TAU_W_G(IJK) = (STE-STW) + SBV + SSX + SSY + SSZ + VXZ*VOL_W(IJK) 
+            TAU_W_G(IJK) =  SBV + SSX + SSY + SSZ + VXZ*VOL_W(IJK) 
          ELSE 
             TAU_W_G(IJK) = ZERO 
          ENDIF 
