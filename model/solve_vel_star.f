@@ -14,6 +14,10 @@
 !  Author: S. Dartevelle, LANL                        Date: 28-FEb-04  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
+!  Revision Number: 3                                                  C
+!  Purpose: To flag the solids calculations whether Kinetic or DES.    C
+!  And to change the gas arrays incorporating the drag, when doing DES C
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -52,6 +56,7 @@
       Use tmp_array1,  VxF_gs => Arraym1
       Use tmp_array,  VxF_ss => ArrayLM     !S. Dartevelle, LANL, MARCH 2004
       USE compar
+      USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -71,7 +76,7 @@
 ! 
 ! 
 !                      phase index 
-      INTEGER          m 
+      INTEGER          m, UVEL, VVEL, WVEL 
 ! 
 !                      Septadiagonal matrix A_m 
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
@@ -89,6 +94,12 @@
       call lock_ambm
       call lock_tmp_array1
       call lock_tmp_array2
+      
+      IF(DISCRETE_ELEMENT) THEN
+         UVEL = 0
+         VVEL = 0
+         WVEL = 0
+      END IF
 !
       IF (MMAX == 0) CALL ZERO_ARRAY (VXF_GS(1,1), IER)
 	  IF (MMAX == 1) CALL ZERO_ARRAY (VXF_SS(1,1), IER)
@@ -100,24 +111,43 @@
       END DO 
       
       CALL CONV_DIF_U_G (A_M, B_M, IER) 
-
-      CALL CONV_DIF_U_S (A_M, B_M, IER) 
+      
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         CALL CONV_DIF_U_S (A_M, B_M, IER) 
+      END IF
 !
       CALL SOURCE_U_G (A_M, B_M, IER) 
-      CALL SOURCE_U_S (A_M, B_M, IER) 
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         CALL SOURCE_U_S (A_M, B_M, IER) 
+      END IF
 !
       IF (MMAX > 0) CALL VF_GS_X (VXF_GS, IER)
-      IF (MMAX > 0) CALL VF_SS_X (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         IF (MMAX > 0) CALL VF_SS_X (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
+      END IF
 !
-      CALL CALC_D_E (A_M, VXF_GS, VXF_SS, D_E, IER)  !S. Dartevelle, LANL, Feb.2004
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         CALL CALC_D_E (A_M, VXF_GS, VXF_SS, D_E, IER)  !S. Dartevelle, LANL, Feb.2004
+      ELSE IF(DISCRETE_ELEMENT) THEN
+         CALL DES_CALC_D_E (A_M, VXF_GS, D_E, IER)
+      END IF
 !  
-      IF (MMAX > 0) CALL CALC_E_E (A_M, MCP, E_E, IER) 
-!
-      IF (MMAX > 0) CALL PARTIAL_ELIM_U (U_G, U_S, VXF_GS, A_M, B_M, IER) 
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         IF (MMAX > 0) CALL CALC_E_E (A_M, MCP, E_E, IER) 
+         IF (MMAX > 0) CALL PARTIAL_ELIM_U (U_G, U_S, VXF_GS, A_M, B_M, IER) 
+      END IF
 !
       CALL ADJUST_A_U_G (A_M, B_M, IER) 
-      CALL ADJUST_A_U_S (A_M, B_M, IER) 
-
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         CALL ADJUST_A_U_S (A_M, B_M, IER)
+      END IF 
+      
+      
+      IF((CALLED.GT.3).AND.(DES_CONTINUUM_COUPLED)) THEN
+         UVEL = 1
+         CALL GAS_DRAG(A_M, B_M, VXF_GS, IER, UVEL, VVEL, WVEL)
+         UVEL = 0
+      END IF
 !
       IF (MOMENTUM_X_EQ(0)) THEN 
          CALL CALC_RESID_U (U_G, V_G, W_G, A_M, B_M, 0, RESID(RESID_U,0), &
@@ -178,29 +208,46 @@
      
       CALL CONV_DIF_V_G (A_M, B_M, IER) 
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-      CALL CONV_DIF_V_S (A_M, B_M, IER) 
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         CALL CONV_DIF_V_S (A_M, B_M, IER) 
+      END IF
 !
       CALL SOURCE_V_G (A_M, B_M, IER) 
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-      CALL SOURCE_V_S (A_M, B_M, IER) 
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         CALL SOURCE_V_S (A_M, B_M, IER)
+      END IF 
 
 !
       IF (MMAX > 0) CALL VF_GS_Y (VXF_GS, IER)
-      IF (MMAX > 0) CALL VF_SS_Y (VXF_SS, IER)    !S. Dartevelle, LANL, Feb.2004
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         IF (MMAX > 0) CALL VF_SS_Y (VXF_SS, IER)    !S. Dartevelle, LANL, Feb.2004
+      END IF
 !
-      CALL CALC_D_N (A_M, VXF_GS, VXF_SS, D_N, IER)   !S. Dartevelle, LANL, Feb.2004
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         CALL CALC_D_N (A_M, VXF_GS, VXF_SS, D_N, IER)   !S. Dartevelle, LANL, Feb.2004
+      ELSE IF(DISCRETE_ELEMENT) THEN
+         CALL DES_CALC_D_N (A_M, VXF_GS, D_N, IER)
+      END IF
 !
-      IF (MMAX > 0) CALL CALC_E_N (A_M, MCP, E_N, IER) 
-!
-      IF (MMAX > 0) CALL PARTIAL_ELIM_V (V_G, V_S, VXF_GS, A_M, B_M, IER) 
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         IF (MMAX > 0) CALL CALC_E_N (A_M, MCP, E_N, IER) 
+         IF (MMAX > 0) CALL PARTIAL_ELIM_V (V_G, V_S, VXF_GS, A_M, B_M, IER) 
+      END IF
 !
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       CALL ADJUST_A_V_G (A_M, B_M, IER)
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-
-      CALL ADJUST_A_V_S (A_M, B_M, IER) 
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         CALL ADJUST_A_V_S (A_M, B_M, IER) 
+      END IF
 !
-
+      IF((CALLED.GT.3).AND.(DES_CONTINUUM_COUPLED)) THEN
+         VVEL = 1     
+         CALL GAS_DRAG(A_M, B_M, VXF_GS, IER, UVEL, VVEL, WVEL)
+         VVEL = 0
+      END IF
+      
       IF (MOMENTUM_Y_EQ(0)) THEN 
          CALL CALC_RESID_V (U_G, V_G, W_G, A_M, B_M, 0, RESID(RESID_V,0), &
             MAX_RESID(RESID_V,0), IJK_RESID(RESID_V,0), IER) 
@@ -266,31 +313,54 @@
       CALL CONV_DIF_W_G (A_M, B_M, IER) 
 !
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-      CALL CONV_DIF_W_S (A_M, B_M, IER) 
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         CALL CONV_DIF_W_S (A_M, B_M, IER) 
+      END IF
 !
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 !         
       CALL SOURCE_W_G (A_M, B_M, IER) 
 
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-!         
-      CALL SOURCE_W_S (A_M, B_M, IER) 
+!     
+      IF(.NOT.DISCRETE_ELEMENT) THEN    
+         CALL SOURCE_W_S (A_M, B_M, IER) 
+      END IF
 !
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 ! call mfix_exit(myPE)
 !
       IF (MMAX > 0) CALL VF_GS_Z (VXF_GS, IER)
-      IF (MMAX > 0) CALL VF_SS_Z (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         IF (MMAX > 0) CALL VF_SS_Z (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
+      END IF
 !
-      CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER)  !S. Dartevelle, LANL, Feb.2004
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER)  !S. Dartevelle, LANL, Feb.2004
+      ELSE IF(DISCRETE_ELEMENT) THEN
+         IF(DIMN.EQ.3) THEN
+            CALL DES_CALC_D_T (A_M, VXF_GS, D_T, IER)
+         END IF
+      END IF
 !
-      IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T, IER) 
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T, IER) 
+         IF (MMAX > 0) CALL PARTIAL_ELIM_W (W_G, W_S, VXF_GS, A_M, B_M, IER)
+      END IF 
 !
-      IF (MMAX > 0) CALL PARTIAL_ELIM_W (W_G, W_S, VXF_GS, A_M, B_M, IER) 
+      CALL ADJUST_A_W_G (A_M, B_M, IER)
+      IF(.NOT.DISCRETE_ELEMENT) THEN 
+         CALL ADJUST_A_W_S (A_M, B_M, IER)
+      END IF 
 !
-      CALL ADJUST_A_W_G (A_M, B_M, IER) 
-      CALL ADJUST_A_W_S (A_M, B_M, IER) 
-!
+      IF(DIMN.EQ.3) THEN
+         IF((CALLED.GT.3).AND.(DES_CONTINUUM_COUPLED)) THEN
+            WVEL = 1
+            CALL GAS_DRAG(A_M, B_M, VXF_GS, IER, UVEL, VVEL, WVEL)
+            WVEL = 0
+         END IF
+      END IF
+                                              
       IF (MOMENTUM_Z_EQ(0)) THEN 
          CALL CALC_RESID_W (U_G, V_G, W_G, A_M, B_M, 0, RESID(RESID_W,0), &
             MAX_RESID(RESID_W,0), IJK_RESID(RESID_W,0), IER) 

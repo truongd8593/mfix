@@ -7,6 +7,10 @@
 !  Author: M. Syamlal                                 Date: 12-APR-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: To incorporate the "Kinetic" flag so taht the solids       C
+!  calculations are not done using kinetic when doing DES              C
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -46,6 +50,8 @@
       USE scalars
       USE compar   
       USE mpi_utility 
+      USE discretelement
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -265,38 +271,39 @@
 !     Solve solids volume fraction correction equation for close-packed
 !     solids phases
 !
-      IF (MMAX > 0) THEN
-        IF(MMAX == 1)THEN
-          CALL CALC_K_CP (K_CP, IER)
-	  CALL SOLVE_EPP (NORMS, RESS, IER)
-          CALL CORRECT_1 (IER) 
-        ELSE
-          DO M=1,MMAX 
-!   	    IF (M .EQ. MCp) THEN !Volume fraction correction technique for multiparticle types is 
-   	    IF (.FALSE.) THEN    !not implemented.  This will only slow down convergence.
-              CALL CALC_K_CP (K_CP, IER)
-	      CALL SOLVE_EPP (NORMS, RESS, IER)
-              CALL CORRECT_1 (IER) 
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+        IF (MMAX > 0) THEN
+          IF(MMAX == 1)THEN
+            CALL CALC_K_CP (K_CP, IER)
+	    CALL SOLVE_EPP (NORMS, RESS, IER)
+            CALL CORRECT_1 (IER) 
+          ELSE
+            DO M=1,MMAX 
+!   	      IF (M .EQ. MCp) THEN !Volume fraction correction technique for multiparticle types is 
+   	      IF (.FALSE.) THEN    !not implemented.  This will only slow down convergence.
+                CALL CALC_K_CP (K_CP, IER)
+	        CALL SOLVE_EPP (NORMS, RESS, IER)
+                CALL CORRECT_1 (IER) 
 
-      	    ELSE
-	      CALL SOLVE_CONTINUITY(M,IER)
+      	      ELSE
+	        CALL SOLVE_CONTINUITY(M,IER)
 	             
-	    ENDIF
-	  END DO
-        ENDIF
+	      ENDIF
+	    END DO
+          ENDIF
 
-        CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
+          CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
 
-	 abort_ier = ier.eq.1
-	 call global_all_or(abort_ier)
-         IF (abort_ier) THEN 
-	    ier = 1
-            MUSTIT = 2                           !indicates divergence 
-            IF(DT/=UNDEFINED)GO TO 1000 
-         ENDIF 
+	  abort_ier = ier.eq.1
+	  call global_all_or(abort_ier)
+          IF (abort_ier) THEN 
+	      ier = 1
+              MUSTIT = 2                           !indicates divergence 
+              IF(DT/=UNDEFINED)GO TO 1000 
+          ENDIF 
  
-      ENDIF
-      
+        ENDIF
+      END IF
 !
 !  Update wall velocities
  
@@ -306,7 +313,9 @@
 !     Calculate P_star in cells where solids continuity equation is
 !     solved
 !
-      IF (MMAX > 0) CALL CALC_P_STAR (EP_G, P_STAR, IER) 
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+        IF (MMAX > 0) CALL CALC_P_STAR (EP_G, P_STAR, IER) 
+      END IF
 !
 !
 !     Solve energy equations

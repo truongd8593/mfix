@@ -17,7 +17,11 @@
 !  Revision Number: 2                                                  C
 !  Purpose: Changes for MFIX 2.0                                       C
 !  Author: M. Syamlal                                 Date: 12-APR-96  C
-!  Reviewer:                                 Date:            C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Reavision Number: 2                                                 C
+!  Purpose: To call DES related routines when doing DES                C
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -57,7 +61,8 @@
       USE drag
       USE rxns
       USE compar     
-      USE time_cpu     
+      USE time_cpu  
+      USE discretelement   
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -110,6 +115,7 @@
 ! 
 !                      used for activating check_data_30 
       INTEGER          NCHECK, DNCHECK,ijk 
+      INTEGER          K, PC, PC1, NN, NNC, LNN, I, J
 ! 
 !                      dummy logical variable for initializing adjust_dt 
       LOGICAL          dummy 
@@ -187,6 +193,10 @@
 !   Parse residual strings
 !
       CALL PARSE_RESID_STRING (IER) 
+
+      IF(DISCRETE_ELEMENT) THEN
+         CALL MAKE_ARRAYS_DES(PARTICLES)
+      END IF
 !
 !  Call user-defined subroutine to set constants, check data, etc.
 !
@@ -480,14 +490,156 @@
 !
 !  Adjust time step and reiterate if necessary
 !
+      IF(TIME_ADJUST) THEN
       DO WHILE(ADJUST_DT(IER,NIT)) 
          CALL ITERATE (IER, NIT) 
       END DO 
+      END IF
       
 ! Check over mass and elemental balances.  This routine is not active by default.
 ! Edit the routine and specify a reporting interval to activate it.
       Call check_mass_balance (1)
 
+!vvvvvvvvvvvvvvvvvvvvv Only DES begin!vvvvvvvvvvvvvvvvvvvvvvvvv
+
+	IF(TIME.GE.(0.00)) THEN
+ 
+        IF (DISCRETE_ELEMENT) THEN	
+
+        IF(COUPLED_FLOW) THEN            
+	IF(TIME.GE.(DTSOLID)) THEN
+	  FACTOR = 20 
+	  DTSOLID = DT/FACTOR
+	  DES_CONTINUUM_COUPLED = .TRUE.
+	END IF 
+        END IF
+                
+	PRINT *,'Discrete Element Simulation'
+
+            DO NN = 1, FACTOR
+
+	IF(DES_CONTINUUM_COUPLED) THEN
+               PC = 100*FACTOR
+!               OPEN (UNIT=1, FILE='called.out', STATUS='REPLACE')
+!               WRITE (1,*) CALLED
+!               PRINT *,'D.E.S. COUPLED', CALLED
+       ELSE 
+	       PC = 2000
+!	       PRINT *,'D.E.S', CALLED
+	END IF
+               
+	IF(CALLED.LT.4) THEN
+	    CALL CFASSIGN(PARTICLES)
+        END IF
+
+ 	IF(CALLED.GT.1) THEN
+	       IF(DES_PERIODIC_WALLS) THEN
+		  CALL PERIODIC_WALL_CALC_FORCE_DES(CALLED)
+	       ELSE IF(INLET_OUTLET) THEN
+	          CALL DES_INLET_OUTLET(CALLED)
+	       ELSE
+                  CALL CALC_FORCE_DES(CALLED)
+	       END IF
+	END IF
+
+
+	IF(CALLED.GT.1) THEN	
+
+               IF(COUPLED_FLOW) THEN
+	         IF(PCOUNT.EQ.PC) THEN
+                   CALL PRESSURE_DROP(PARTICLES)
+	         END IF
+               END IF
+	
+	       IF(PCOUNT.EQ.PC) THEN
+
+                 OPEN (UNIT=91, FILE='des_XY1.OUT', STATUS='REPLACE')
+                 WRITE (91,*) (DES_POS_NEW(K,20)/RADIUS_EQ,K=1,DIMN)
+                 OPEN (UNIT=19, FILE='des_XY2.OUT', STATUS='REPLACE')
+                 WRITE (19,*) (DES_POS_NEW(K,40)/RADIUS_EQ,K=1,DIMN)
+                 OPEN (UNIT=29, FILE='des_XY3.OUT', STATUS='REPLACE')
+                 WRITE (29,*) (DES_POS_NEW(K,60)/RADIUS_EQ,K=1,DIMN)
+                 OPEN (UNIT=39, FILE='des_XY4.OUT', STATUS='REPLACE')
+                 WRITE (39,*) (DES_POS_NEW(K,80)/RADIUS_EQ,K=1,DIMN)
+                 OPEN (UNIT=49, FILE='des_XY5.OUT', STATUS='REPLACE') 
+                 WRITE (49,*) (DES_POS_NEW(K,100)/RADIUS_EQ,K=1,DIMN)
+                 OPEN (UNIT=59, FILE='des_XY6.OUT', STATUS='REPLACE')
+                 WRITE (59,*) (DES_POS_NEW(K,130)/RADIUS_EQ,K=1,DIMN)
+                 OPEN (UNIT=69, FILE='des_XY7.OUT', STATUS='REPLACE')
+                 WRITE (69,*) (DES_POS_NEW(K,160)/RADIUS_EQ,K=1,DIMN)
+                 OPEN (UNIT=79, FILE='des_XY8.OUT', STATUS='REPLACE')
+                 WRITE (79,*) (DES_POS_NEW(K,200)/RADIUS_EQ,K=1,DIMN)
+                 OPEN (UNIT=89, FILE='des_XY9.OUT', STATUS='REPLACE')
+                 WRITE (89,*) (DES_POS_NEW(K,240)/RADIUS_EQ,K=1,DIMN)
+                 OPEN (UNIT=99, FILE='des_XY10.OUT', STATUS='REPLACE') 
+                 WRITE (99,*) (DES_POS_NEW(K,290)/RADIUS_EQ,K=1,DIMN)
+
+                
+	IF(CALLED.LT.(FACTOR/DT)) THEN
+            OPEN (UNIT=9, FILE='des_all-particles-1.out', STATUS='REPLACE')
+	       WRITE (9,*)' '
+	       WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
+	       DO LNN = 1, PARTICLES
+	       WRITE (9,*) ((DES_POS_NEW(K,LNN)/RADIUS_EQ),K=1,DIMN), (DES_VEL_NEW(K,LNN),K=1,DIMN), PR(LNN), RO_Sol(LNN)
+	       END DO
+	ELSE IF(CALLED.LT.(2*FACTOR/DT)) THEN
+            OPEN (UNIT=9, FILE='des_all-particles-2.out', STATUS='REPLACE')
+	       WRITE (9,*)' '
+	       WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
+	       DO LNN = 1, PARTICLES
+	       WRITE (9,*) ((DES_POS_NEW(K,LNN)/RADIUS_EQ),K=1,DIMN), (DES_VEL_NEW(K,LNN),K=1,DIMN), PR(LNN), RO_Sol(LNN)
+	       END DO
+	ELSE IF(CALLED.LT.(3*FACTOR/DT)) THEN
+            OPEN (UNIT=9, FILE='des_all-particles-3.out', STATUS='REPLACE')
+	       WRITE (9,*)' '
+	       WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
+	       DO LNN = 1, PARTICLES
+	       WRITE (9,*) ((DES_POS_NEW(K,LNN)/RADIUS_EQ),K=1,DIMN), (DES_VEL_NEW(K,LNN),K=1,DIMN), PR(LNN), RO_Sol(LNN)
+	       END DO
+	ELSE IF(CALLED.LT.(4*FACTOR/DT)) THEN
+            OPEN (UNIT=9, FILE='des_all-particles-4.out', STATUS='REPLACE')
+	       WRITE (9,*)' '
+	       WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
+	       DO LNN = 1, PARTICLES
+	       WRITE (9,*) ((DES_POS_NEW(K,LNN)/RADIUS_EQ),K=1,DIMN), (DES_VEL_NEW(K,LNN),K=1,DIMN), PR(LNN), RO_Sol(LNN)
+	       END DO
+	ELSE IF(CALLED.LE.(5*FACTOR/DT)) THEN
+            OPEN (UNIT=9, FILE='des_all-particles-5.out', STATUS='REPLACE')
+	       WRITE (9,*)' '
+	       WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
+	       DO LNN = 1, PARTICLES
+	       WRITE (9,*) ((DES_POS_NEW(K,LNN)/RADIUS_EQ),K=1,DIMN), (DES_VEL_NEW(K,LNN),K=1,DIMN), PR(LNN), RO_Sol(LNN)
+	       END DO
+	END IF
+
+       PCOUNT = 0
+	       END IF
+	PCOUNT = PCOUNT + 1
+	END IF
+
+               CALLED = CALLED + 1
+
+            END DO
+
+	IF(CALLED.GT.2500000000) THEN
+	PRINT *,'TIME =', TIME
+	  STOP
+	END IF
+
+!	STOP
+
+      END IF
+
+      END IF
+
+	IF(NNC.LE.FACTOR) THEN	
+	CALL DES_GRANULAR_TEMPERATURE(NNC)
+	NNC = NNC + 1
+	ELSE
+	NNC = FACTOR
+	END IF
+!^^^^^^^^^^^^^^^^^^^^^^ Only DES end!^^^^^^^^^^^^^^^^^^^^
+!
 !
 !  Advance the time step and continue
 !

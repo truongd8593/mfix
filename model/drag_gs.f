@@ -7,9 +7,9 @@
 !  Author: M. Syamlal                                 Date: 20-MAY-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
+!  Revision Number: 1                                                  C
+!  Purpose: To use Tsuji drag correlation also if needed in DES        C
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Literature/Document References:                                     C
@@ -39,7 +39,8 @@
       USE compar  
       USE drag  
       USE sendrecv 
-
+      USE discretelement
+      
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -108,7 +109,7 @@
       DOUBLE PRECISION B 
 ! 
 !                      Single sphere drag coefficient x Re 
-      DOUBLE PRECISION C_DsxRe 
+      DOUBLE PRECISION C_DsxRe, C_DsxReT 
 ! 
 !                      single sphere drag coefficient 
       DOUBLE PRECISION C_d 
@@ -123,7 +124,8 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
-      C_DSXRE(RE) = (0.63*SQRT(RE) + 4.8)**2     ! Dalla Valle (1948) 
+      C_DSXRET(RE) = 24*(1 + 0.15*RE**0.687)/RE   ! Tsuji drag
+      C_DSXRE(RE) = (0.63*SQRT(RE) + 4.8)**2      ! Dalla Valle (1948) 
 !      C_DsxRe (Re) = 24. * (1. + 0.173 * Re**0.657)      ! Turton and
 !     &          + 0.413 * Re**2.09 / (Re**1.09 + 16300.) ! Levenspiel (1986)
 !
@@ -188,10 +190,23 @@
 !
 !           Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
 !
-               IF (MODEL_B) THEN 
+               IF(TSUJI_DRAG) THEN
+                 IF(EP_G(IJK).LE.0.8) THEN
+                    F_GS(IJK,M) = (MU_G(IJK)*EP_S(IJK,M)/(D_P(M)**2))*&
+                                   (150*(EP_S(IJK,M)/EP_G(IJK)) + 1.75*RE)
+                 ELSE IF(EP_G(IJK).GT.0.8) THEN
+                    IF(RE*EP_G(IJK).GT.1000) THEN
+                       F_GS(IJK,M) = 0.75*0.43*MU_G(IJK)*EP_S(IJK,M)*RE/(D_P(M)**2 *&
+                                                                       EP_G(IJK)**1.7)
+                    ELSE IF(RE*EP_G(IJK).LE.1000) THEN
+                            F_GS(IJK,M) = 0.75*C_DSXRET(RE*EP_G(IJK))*MU_G(IJK)*EP_S(IJK,M)*&
+                                                           RE/(D_P(M)**2 *EP_G(IJK)**1.7)
+                    END IF
+                 END IF 
+               ELSE IF(MODEL_B) THEN 
                   F_GS(IJK,M) = 0.75*MU_G(IJK)*EP_S(IJK,M)*C_DSXRE(RE/V_RM)/(&
                      V_RM*D_P(M)*D_P(M)) 
-               ELSE 
+               ELSE
                   F_GS(IJK,M) = 0.75*MU_G(IJK)*EP_S(IJK,M)*EP_G(IJK)*C_DSXRE(RE&
                      /V_RM)/(V_RM*D_P(M)*D_P(M)) 
                ENDIF 

@@ -7,6 +7,9 @@
 !  Author: M. Syamlal                                 Date: 29-APR-97  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: To eliminate kinetic solids calculations when doing DES    C
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -48,7 +51,8 @@
       Use tmp_array, S_p => ARRAY1, S_C => ARRAY2, EPs => ARRAY3, &
                      ROPxCp => ARRAY4
       Use tmp_array1, VxGama => ARRAYm1
-      USE compar    
+      USE compar   
+      USE discretelement 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -69,6 +73,7 @@
 ! 
 !                      phase index 
       INTEGER          m 
+      INTEGER          TEMP_MMAX
 ! 
 !                      Septadiagonal matrix A_m 
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
@@ -110,6 +115,10 @@
       call lock_tmp_array
       call lock_tmp_array1
 
+      TEMP_MMAX = MMAX
+      IF(DISCRETE_ELEMENT) THEN
+         MMAX = 0   ! Only the gas calculations are needed
+      END IF            
 !
       DO M = 0, MMAX 
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
@@ -232,7 +241,9 @@
       call unlock_ambm
       call unlock_tmp_array
       call unlock_tmp_array1
-
+      
+      MMAX = TEMP_MMAX
+      
       RETURN  
       END SUBROUTINE SOLVE_ENERGY_EQ 
 

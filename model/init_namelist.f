@@ -14,6 +14,10 @@
 !  Author: W. Sams                                    Date: 04-MAY-94  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
+!  Revision Number: 3                                                  C
+!  Purpose: To call DES_Init_Namelist                                  C
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
+!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced: None                                          C
@@ -451,6 +455,7 @@
       IS_SERIAL = .TRUE.
       USE_DOLOOP = .FALSE.
 
+      CALL DES_INIT_NAMELIST
       CALL USR_INIT_NAMELIST 
 !
       RETURN  
