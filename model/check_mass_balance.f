@@ -36,6 +36,7 @@
       USE funits 
       USE compar 
       USE mpi_utility  
+      USE output
       USE check
       IMPLICIT NONE
 !-----------------------------------------------
@@ -44,8 +45,6 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-!Reporting interval.  To activate this routine define a value (e.g. 0.1) .
-      DOUBLE PRECISION, PARAMETER :: Report_dt = large_number 
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -78,13 +77,13 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
-      if(report_dt == large_number) return
+      if(report_mass_balance_dt == UNDEFINED) return
 
       if(init == 0) then
 !       allocate arrays
 !       Initilaize this routine
         start_time = time
-        report_time = time + report_dt
+        report_time = time + report_mass_balance_dt
 	
 	!initialize flux and reaction rate arrays
         DO L = 1, DIMENSION_BC
@@ -362,7 +361,7 @@
 	CALL END_LOG
 	
         start_time = time
-        report_time = time + report_dt
+        report_time = time + report_mass_balance_dt
 	
 	!initialize flux and reaction rate arrays
         DO L = 1, DIMENSION_BC

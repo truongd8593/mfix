@@ -140,6 +140,7 @@
 !
 ! INITIALIZE THE OUTPUT CONTROL SECTION
 !
+      report_mass_balance_dt = UNDEFINED
       NLOG = 25 
       FULL_LOG = .FALSE. 
       RES_DT = UNDEFINED 

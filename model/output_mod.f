@@ -122,5 +122,8 @@
       LOGICAL, PARAMETER          :: ENABLE_DMP_LOG = .FALSE.
 
 
+!                      Interval at which mass balance is checked and reported in .LOG file.
+!                      This value is used in check_mass_balance and is by default undefined.
+      DOUBLE PRECISION report_mass_balance_dt
 
       END MODULE output                                                                          

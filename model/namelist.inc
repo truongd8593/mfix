@@ -26,6 +26,7 @@
              USR_DT, USR_TYPE, USR_VAR, USR_FORMAT, USR_EXT,&
              USR_X_w , USR_X_e , USR_Y_s , USR_Y_n ,&
              USR_Z_b , USR_Z_t, NLOG, FULL_LOG, RESID_STRING,&
+	     report_mass_balance_dt, &
 !
 ! 1.3 Physical and numerical parameters section
 !            (e and C_e are same)
