@@ -1,0 +1,217 @@
+!                                                                               
+!  Bubbling Fluidized Bed Simulation with DES and Cohesion
+
+! For more details refer to PhD thesis (2004) of Michael Weber
+! It is made available in MFIX documents
+!                                                                               
+! Run-control section                                                           
+  RUN_NAME = 'fluidbed_VDW_high_coh'             
+  DESCRIPTION = 'fluid bed with cohesion'          
+  RUN_TYPE = 'new' 
+  UNITS = 'cgs'
+  TIME = 0.0				!start time
+  TSTOP = 5.0 
+  DT = 2.5E-4			!time step
+  DT_MAX = 4.0E-4
+ 
+  ENERGY_EQ = .FALSE.			!do not solve energy eq
+  SPECIES_EQ = .FALSE.    .FALSE. 		!do not solve species eq
+ 
+  MOMENTUM_X_EQ(1) = .FALSE.
+  MOMENTUM_Y_EQ(1) = .FALSE.
+  MOMENTUM_Z_EQ(1) = .FALSE.
+
+  TIME_ADJUST = .FALSE.
+!  NORM_G = 1.0
+
+  MAX_NIT = 250
+  TOL_RESID = 1.E-3
+                
+                                                               
+! Geometry Section                                                              
+                                                                               
+  COORDINATES = 'cartesian' 
+  XLENGTH = 8.0		        !X length	
+  IMAX = 27			!cells in i direction
+  YLENGTH = 20.0			!height
+  JMAX = 30 			!cells in j direction
+
+  NO_K = .TRUE. 			!2D, no k direction
+
+  
+  GRAVITY = 980
+                                                                             
+! Gas-phase Section                                                             
+ 
+  MU_g0 = 1.75E-4		!constant gas viscosity
+  RO_g0 = 1.205E-3		!constant gas density
+
+ 
+! Solids-phase Section                                                          
+  
+  RO_s = 2.65			!solids density
+  D_p = 0.1			!particle diameter     
+  e = 0.9 			!restitution coefficient
+  Phi = 30.0		!angle of internal friction
+  EP_star = 0.42		!void fraction at minimum
+						!  fluidization
+
+  
+! Initial Conditions Section                                                    
+
+    ! 1. bed
+  IC_X_w(1) =  0.0				!domain
+  IC_X_e(1) =  8.0		! 0 < x < 15, 0 < y < 100
+  IC_Y_s(1) =  0.0
+  IC_Y_n(1) =  10.0
+                                	!initial values in the region
+  IC_EP_g(1) =  0.42		!void fraction
+  IC_U_g(1) =  0.0		!radial gas velocity
+  IC_V_g(1) =  80.0	!axial gas velocity
+
+  IC_U_s(1,1) = 0.0
+  IC_V_s(1,1) = 0.0
+
+      ! 2. freeboard
+  IC_X_w(2) = 0.0			!domain
+  IC_X_e(2) = 8.0		! 0 < x < 15, 0 < y < 100
+  IC_Y_s(2) = 10.0
+  IC_Y_n(2) = 20.0
+                                	!initial values in the region
+  IC_EP_g(2) = 1.0		!void fraction
+  IC_U_g(2) = 0.0		!radial gas velocity
+  IC_V_g(2) = 100.0	!axial gas velocity
+
+  IC_U_s(2,1) = 0.0
+  IC_V_s(2,1) = 0.0
+
+
+
+
+!  Boundary Conditions Section
+
+      ! 1. 
+  BC_X_w(1) = 0.1				!JET #1
+  BC_X_e(1) = 7.9			
+  BC_Y_s(1) = 0.0
+  BC_Y_n(1) = 0.0
+  BC_TYPE(1) = 'MI'		!specified mass inflow
+
+  BC_EP_g(1) = 1.0
+  BC_U_g(1) = 0.0
+  BC_V_g(1) = 250.0 		!inlet jet vel
+  BC_P_g(1) = 0.0
+
+  BC_X_w(2) = 0.0				!top exit
+  BC_X_e(2) = 8.0	
+  BC_Y_s(2) = 20.0
+  BC_Y_n(2) = 20.0
+  BC_TYPE(2) = 'PO' 	!specified pressure outflow
+  BC_P_g(2) = 0.0
+
+
+!
+! DES INPUT
+
+! Begin
+! Parameters
+
+DIMN = 2 
+WX1 = 0
+EX2 = 8
+BY1 = 0
+TY2 = 20 
+SZ1 =0
+NZ2 = 1
+DTSOLID = 0.05
+PARTICLES = 4000
+ZONES = 1
+ZN1 = 49				! particles based on size or density etc.
+MN = 8
+RADIUS_EQ = 0.05
+FACTOR = 20
+KN = 800000
+KT = 800000
+ETA_DES_N = 0.792
+ETA_DES_T = 0.792
+MEW = 0.3
+KN_W = 800000
+KT_W = 800000
+ETA_N_W = 0.792
+ETA_T_W = 0.792
+MEW_W = 0.3
+E_RESTITUTION = 0.9
+DES_GAMMA = 0.0
+DES_F = 0.0
+ROs = 2.65
+GRAV(1) = 0
+GRAV(2) = -980 
+GRAV(3) = 0 
+DES_NEIGHBOR_SEARCH = 2
+
+
+!  DES Logicals
+DISCRETE_ELEMENT = .TRUE.
+WALLDTSPLIT = .TRUE.
+COUPLED_FLOW = .TRUE.
+DO_QUADTREE=.TRUE.
+
+!!COHESION INPUT BEGIN
+USE_COHESION=.TRUE.
+SQUARE_WELL=.FALSE.
+MASTER_WELL_DEPTH = 1e-3
+MASTER_WALL_WELL_DEPTH=2e-3
+RADIUS_RATIO=1.01
+WALL_RADIUS_RATIO=1.01
+VAN_DER_WAALS=.TRUE.
+HAMAKER_CONSTANT = 1e-10
+WALL_HAMAKER_CONSTANT = 1.0e-10
+VDW_INNER_CUTOFF=4e-8
+WALL_VDW_INNER_CUTOFF=4e-8
+VDW_OUTER_CUTOFF=0.01
+WALL_VDW_OUTER_CUTOFF=0.01
+COHESION_DEBUG=0
+FOCUS_PARTICLE=4005
+!!COHESION INPUT END
+
+
+! End DES Input
+
+
+!
+!  Output Control
+!
+!  OUT_DT = 0.05		!write text file BUB01.OUT
+					!  every 0.1s
+  RES_DT = 0.01		!write binary restart file
+					!  BUB01.RES every 0.01 s
+  NLOG = 25 		!write logfile BUB01.LOG
+					!every 25 time steps
+  FULL_LOG = .TRUE. 	!display residuals on screen
+
+
+!SPX_DT values determine how often SPx files are written.  Here BUB01.SP1, which
+!contains void fraction (EP_g), is written every 0.01 s, BUB01.SP2, which contains
+! gas and solids pressure (P_g, P_star), is written every 0.1 s, and so forth.
+!
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
+        !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
+        !                W_g  W_s
+  SPX_DT = 0.1 0.05      0.01  0.1  100.      100. 100.   100.0     100.        
+                                                                                
+!  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
+  
+!  NODESI = 1   NODESJ = 1   NODESK = 1
+
+!  Sweep Direction
+
+LEQ_SWEEP(1) = 'ISIS' 
+LEQ_SWEEP(2) = 'ISIS'  
+LEQ_SWEEP(3) = 'ISIS' 
+LEQ_SWEEP(4) = 'ISIS'  
+LEQ_SWEEP(5) = 'ISIS'  
+LEQ_SWEEP(6) = 'ISIS'  
+LEQ_SWEEP(7) = 'ISIS' 
+LEQ_SWEEP(8) = 'ISIS'  
+LEQ_SWEEP(9) = 'ISIS'
+
