@@ -107,6 +107,7 @@
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
+                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
                         IJKE = EAST_OF(IJK) 
                         IJKN = NORTH_OF(IJK) 
@@ -126,6 +127,7 @@
                   DO K = K1, K2 
                      DO J = J1, J2 
                         DO I = I1, I2 
+                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                            IJK = FUNIJK(I,J,K) 
                            IJKE = EAST_OF(IJK) 
                            IJKT = TOP_OF(IJK) 
