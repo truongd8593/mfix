@@ -123,7 +123,7 @@
 !
                   IF (BC_MASSFLOW_G(L) /= UNDEFINED) THEN 
                      IF (BC_MOUT_G(L) > SMALL_NUMBER) THEN 
-                        SELECT CASE (BC_PLANE(L))  
+                        SELECT CASE (TRIM(BC_PLANE(L)))  
                         CASE ('W')  
                            BC_U_G(L) = BC_U_G(L)*BC_MASSFLOW_G(L)/BC_MOUT_G(L) 
                         CASE ('E')  
@@ -140,7 +140,7 @@
                      ENDIF 
                   ELSE IF (BC_VOLFLOW_G(L) /= UNDEFINED) THEN 
                      IF (BC_VOUT_G(L) > SMALL_NUMBER) THEN 
-                        SELECT CASE (BC_PLANE(L))  
+                        SELECT CASE (TRIM(BC_PLANE(L)))  
                         CASE ('W')  
                            BC_U_G(L) = BC_U_G(L)*BC_VOLFLOW_G(L)/BC_VOUT_G(L) 
                         CASE ('E')  
@@ -161,7 +161,7 @@
                   DO M = 1, MMAX 
                      IF (BC_MASSFLOW_S(L,M) /= UNDEFINED) THEN 
                         IF (BC_MOUT_S(L,M) > SMALL_NUMBER) THEN 
-                           SELECT CASE (BC_PLANE(L))  
+                           SELECT CASE (TRIM(BC_PLANE(L)))  
                            CASE ('W')  
                               BC_U_S(L,M) = BC_U_S(L,M)*BC_MASSFLOW_S(L,M)/&
                                  BC_MOUT_S(L,M) 
@@ -184,7 +184,7 @@
                         ENDIF 
                      ELSE IF (BC_VOLFLOW_S(L,M) /= UNDEFINED) THEN 
                         IF (BC_VOUT_S(L,M) > SMALL_NUMBER) THEN 
-                           SELECT CASE (BC_PLANE(L))  
+                           SELECT CASE (TRIM(BC_PLANE(L)))  
                            CASE ('W')  
                               BC_U_S(L,M) = BC_U_S(L,M)*BC_VOLFLOW_S(L,M)/&
                                  BC_VOUT_S(L,M) 
@@ -214,7 +214,7 @@
                         DO I = BC_I_W(L), BC_I_E(L) 
                          IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                            IJK = FUNIJK(I,J,K) 
-                           SELECT CASE (BC_PLANE(L))  
+                           SELECT CASE (TRIM(BC_PLANE(L)))  
                            CASE ('W')  
                               IJK2 = IM_OF(IJK) 
                               U_G(IJK2) = BC_U_G(L) 
@@ -232,7 +232,7 @@
                               W_G(IJK) = BC_W_G(L) 
                            END SELECT 
                            DO M = 1, MMAX 
-                              SELECT CASE (BC_PLANE(L))  
+                              SELECT CASE (TRIM(BC_PLANE(L)))  
                               CASE ('W')  
                                  IJK2 = IM_OF(IJK) 
                                  U_S(IJK2,M) = BC_U_S(L,M) 
@@ -274,7 +274,7 @@
                         DO I = BC_I_W(L), BC_I_E(L)
    		          IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE			
                            IJK = FUNIJK(I,J,K) 
-                           SELECT CASE (BC_PLANE(L))  
+                           SELECT CASE (TRIM(BC_PLANE(L)))  
                            CASE ('W')  
                               IJK2 = IM_OF(IJK) 
                               U_G(IJK2) = BC_JET_G(L) 

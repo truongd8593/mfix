@@ -205,7 +205,7 @@
                 ENDIF 
                 BC_JET_G(L) = BC_JET_G0(L) 
                 IF (BC_JET_G(L) /= UNDEFINED) THEN 
-                  SELECT CASE (BC_PLANE(L))  
+                  SELECT CASE (TRIM(BC_PLANE(L)))  
                   CASE ('W')  
                      BC_U_G(L) = BC_JET_G(L) 
                   CASE ('E')  
@@ -311,7 +311,7 @@
                            IJK1 = IJK 
                            IJK2 = IJK 
                            IJK3 = IJK 
-                           SELECT CASE (BC_PLANE(L))  
+                           SELECT CASE (TRIM(BC_PLANE(L)))  
                            CASE ('W')  
 !// Changed to make consistent approach
                               IJK1 = BOUND_FUNIJK(IM1(I),J,K) 

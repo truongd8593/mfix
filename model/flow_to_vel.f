@@ -148,7 +148,7 @@
                      RETURN                      !Error caught in Check_data_07 
                   ENDIF 
                   CONVERTED = .TRUE. 
-                  SELECT CASE (BC_PLANE(BCV))  
+                  SELECT CASE (TRIM(BC_PLANE(BCV)))  
                   CASE ('W')  
                      IF (BC_U_G(BCV) /= UNDEFINED) THEN 
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND.  .NOT.COMPARE((-&
@@ -320,7 +320,7 @@
                         ENDIF 
                      ENDIF 
                      CONVERTED = .TRUE. 
-                     SELECT CASE (BC_PLANE(BCV))  
+                     SELECT CASE (TRIM(BC_PLANE(BCV)))  
                      CASE ('W')  
                         IF (BC_U_S(BCV,M) /= UNDEFINED) THEN 
                            IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND.  .NOT.COMPARE((&

@@ -362,7 +362,7 @@
 !
 !           Check whether the bc velocity components have the correct sign
 !
-                  SELECT CASE (BC_PLANE(BCV))  
+                  SELECT CASE (TRIM(BC_PLANE(BCV)))  
                   CASE ('W')  
                      IF (BC_U_S(BCV,M) > ZERO) THEN 
                         IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '<' 
@@ -451,7 +451,7 @@
 !
 !           Check whether the bc velocity components have the correct sign
 !
-               SELECT CASE (BC_PLANE(BCV))  
+               SELECT CASE (TRIM(BC_PLANE(BCV)))  
                CASE ('W')  
                   IF (BC_U_G(BCV) < ZERO) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '>' 
@@ -511,7 +511,7 @@
 !
 !           Check whether the bc velocity components have the correct sign
 !
-                  SELECT CASE (BC_PLANE(BCV))  
+                  SELECT CASE (TRIM(BC_PLANE(BCV)))  
                   CASE ('W')  
                      IF (BC_U_S(BCV,M) < ZERO) THEN 
                         IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '>' 

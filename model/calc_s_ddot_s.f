@@ -141,9 +141,9 @@
 !
 !
 !
-      SELECT CASE (COM)  
+      SELECT CASE (TRIM(COM))  
       CASE ('U')  
-         SELECT CASE (FCELL)  
+         SELECT CASE (TRIM(FCELL))  
          CASE ('N')  
             IPJK2 = IP_OF(IJK2) 
             IPJMK2 = JM_OF(IPJK2) 
@@ -421,7 +421,7 @@
          END SELECT 
 !
       CASE ('V')  
-         SELECT CASE (FCELL)  
+         SELECT CASE (TRIM(FCELL))  
          CASE ('T')  
             IJPK2 = JP_OF(IJK2) 
             IJPKM2 = KM_OF(IJPK2) 
@@ -704,7 +704,7 @@
          END SELECT 
 !
       CASE ('W')  
-         SELECT CASE (FCELL)  
+         SELECT CASE (TRIM(FCELL))  
          CASE ('N')  
             IJKP2 = KP_OF(IJK2) 
             IJMKP2 = JM_OF(IJKP2) 

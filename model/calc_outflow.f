@@ -65,7 +65,7 @@
          DO J = BC_J_S(L), BC_J_N(L) 
             DO I = BC_I_W(L), BC_I_E(L) 
                IJK = FUNIJK(I,J,K) 
-               SELECT CASE (BC_PLANE(L))  
+               SELECT CASE (TRIM(BC_PLANE(L)))  
                CASE ('W')  
                   IJK2 = IM_OF(IJK) 
                   BC_MOUT_G(L) = BC_MOUT_G(L) + DY(J)*X_E(I-1)*DZ(K)*U_G(IJK2)*&
@@ -101,7 +101,7 @@
                   BC_VOUT_G(L) = BC_VOUT_G(L) + DX(I)*DY(J)*W_G(IJK)*EP_G(IJK2) 
                END SELECT 
                DO M = 1, MMAX 
-                  SELECT CASE (BC_PLANE(L))  
+                  SELECT CASE (TRIM(BC_PLANE(L)))
                   CASE ('W')  
                      IJK2 = IM_OF(IJK) 
                      BC_MOUT_S(L,M) = BC_MOUT_S(L,M) + DY(J)*X_E(I-1)*DZ(K)*U_S&

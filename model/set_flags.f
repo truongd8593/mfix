@@ -96,7 +96,7 @@
 !!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
 !
-         SELECT CASE (ICBC_FLAG(IJK)(1:1))  
+         SELECT CASE (TRIM(ICBC_FLAG(IJK)(1:1)))  
          CASE ('.')  
             FLAG(IJK) = 1 
          CASE ('p')  

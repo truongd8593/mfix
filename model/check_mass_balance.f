@@ -525,7 +525,7 @@
             DO I = I1, I2 
               IF(.NOT.IS_ON_myPE_owns(I, J, K)) cycle
 
-              SELECT CASE (PLANE)  
+              SELECT CASE (TRIM(PLANE))  
               CASE ('W')  
                 IJK = IM_OF(FUNIJK(I,J,K))
 		IF(U(IJK) > ZERO)THEN

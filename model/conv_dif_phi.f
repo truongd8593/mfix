@@ -1069,7 +1069,7 @@
                   DO I = I1, I2 
                      IJK = FUNIJK(I,J,K) 
 !
-                     SELECT CASE (IS_PLANE(L))  
+                     SELECT CASE (TRIM(IS_PLANE(L)))  
                      CASE ('E')  
                         IJKE = EAST_OF(IJK) 
                         IPJK = IP_OF(IJK) 

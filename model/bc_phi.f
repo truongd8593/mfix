@@ -356,7 +356,7 @@
                         A_M(IJK,T,M) = ZERO 
                         A_M(IJK,B,M) = ZERO 
 !
-                        SELECT CASE (BC_PLANE(L))  
+                        SELECT CASE (TRIM(BC_PLANE(L)))  
                         CASE ('E')  
                            A_M(IJK,E,M) = ONE 
                         CASE ('W')  
