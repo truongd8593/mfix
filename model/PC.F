@@ -30,7 +30,6 @@
       NWORDS_DP =  64
       NWORDS_R  = 128
       NWORDS_I  = 128
-      JUST_FLUSH = .TRUE.
 !
       RETURN
       END
@@ -180,7 +179,7 @@
       SUBROUTINE END_LOG
       USE funits
       IMPLICIT NONE
-      IF(DMP_LOG)CALL FLUSH (UNIT_LOG)
+      CALL FLUSH (UNIT_LOG)
       RETURN
       END
 !
@@ -189,38 +188,6 @@
 	use dflib
 	integer n,i
 	i = commitqq(n)
-	return
-	end
-!
-      double precision function dnrm2(n,x,i)
-	integer n,i
-	double precision x
-	dnrm2 = 1.0
-	return
-	end
-!
-      double precision function ddot(n,x1,i,x2,k)
-	integer n,i,k
-	double precision x1,x2
-	ddot = 1.0
-	return
-	end
-!
-      subroutine daxpy(n,x1,x2,i,x3,k)
-	integer n,i,k
-	double precision x1,x2,x3
-	return
-	end
-!
-      subroutine dcopy(n,x1,i,x2,k)
-	integer n,i,k
-	double precision x1,x2
-	return
-	end
-!
-      subroutine dscal(n,x1,x2,i)
-	integer n,i
-	double precision x1,x2
 	return
 	end
 !
@@ -249,78 +216,12 @@
 !
 !
       subroutine pc_quickwin
-!
-      USE DFLIB
-!
-!
-      Use param
-      Use run
-      implicit none
-!
-! set the version.release of the software
-!
-      TYPE (windowconfig) wc
-      LOGICAL status /.FALSE./
 
-      LOGICAL(4) result
-      INTEGER(2) numfonts, fontnum
-      TYPE (qwinfo) winfo
-      TYPE (xycoord) pos
-!
-      character title*81
-!
-      integer i , nb , nc
-!
-!
-! Set the x & y pixels to 800X600
-!
-
-      do i = 1,len(run_name)
-	   if (run_name(i:i).eq.' ') then
-	      nb = i
-	      goto 111
-	   end if
-	end do
-	nb = len(run_name)
- 111  continue
-      title = run_name
-	title(nb:nb) = ':'
-	nc = 80-nb
-	if (nc.ge.len(description)) then
-	   title(nb+1:80) = description(1:len(description))
-	else
-	   title(nb+1:80) = description(1:80-nb)
-	end if
-	title(81:81) = char(0)
-!
-      wc.numxpixels  = 800
-      wc.numypixels  = 600
-      wc.numtextcols = -1
-      wc.numtextrows = -1
-      wc.numcolors   = -1
-!      wc.title= "This is a test"C
-      wc.title= title
-!      wc.fontsize = #0008000C
-      wc.fontsize = -1
-      if (.NOT.status) status = SETWINDOWCONFIG(wc)
-!	status = setbkcolorrgb(#330000)
-!
-      winfo.TYPE = QWIN$MAX
-!      result = SETWSIZEQQ(QWIN$FRAMEWINDOW, winfo)
-      ! Maximize child window
-      result=SETWSIZEQQ(0, winfo)
-!
       return
       end
 !
 !
       subroutine slumber
-!
-      use dfport
-!
-      do while (.true.)
-         call sleep(1000)
-      end do
 !
       return
       end
@@ -331,6 +232,7 @@
       call flush(iunit)
       return
       end
+
       subroutine flush_res(iunit)
       implicit none
       integer :: iunit
