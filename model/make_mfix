@@ -410,6 +410,7 @@ ln -sf "$mpi_include/mpif.h" .
 
             OBJ_EXT=o
             FORTRAN_EXT=f
+            omp="-openmp -assume cc_omp"
             libs=blas90.a 
 	    
             if test $intel_ver = "Linux_ifc7"
@@ -480,9 +481,9 @@ ln -sf "$mpi_include/mpif.h" .
          # Switch to general optimization flags if not compiling on Pentium 4 architecture 
             if [ $P4_OPTIMIZE -eq 0 ]
 	    then
-               compile_common="-c -O3 -I. -w -w95 -i_dynamic -ip -FR"
+               compile_common="-c -O3 -I. -w -w95 -static -ip -FR"
 	    else
-	       compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -FR"
+	       compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -static -ip -FR"
 	    fi
             compile_d="-g -O0 -c -FR -I. -w -d1 -CB " 
             link_d="-I. -L$intel_lib -lPEPCF90 "
