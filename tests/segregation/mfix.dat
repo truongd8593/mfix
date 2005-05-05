@@ -35,8 +35,8 @@
   JMAX          = 30                            !cells in j direction
   NO_K          = .TRUE.                        !2D, no k direction
   SEGREGATION_SLOPE_COEFFICIENT    = 0.3	!used in calculating the initial slope of segregation: see Gera et al. (2003)
-  MAX_SOLID_1_PACKING		   = 0.6            !  maximum solid packing of phases 0.6 
-  MAX_SOLID_2_PACKING		   = 0.6            !  maximum solid packing of phases 0.6                                                                            
+  ep_s_max(1)    		   = 0.6            !  maximum solid packing of phases 0.6 
+  ep_s_max(2)	        	   = 0.6            !  maximum solid packing of phases 0.6                                                                            
 ! Gas-phase Section                                                             
  
   MU_g0                 = 1.8E-4                !constant gas viscosity
