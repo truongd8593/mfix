@@ -46,9 +46,13 @@
              NORM_g, NORM_s, PHIP, e_w, EPS_f_min, EPS_max,&
 !
 ! start GERA 8/15/03
-             SEGREGATION_SLOPE_COEFFICIENT, MAX_SOLID_1_PACKING,&
-	     MAX_SOLID_2_PACKING,&
+             SEGREGATION_SLOPE_COEFFICIENT, ep_s_max,&
+! modified by sof, removed MAX_SOLID_1_PACKING and MAX_SOLID_2_PACKING
 ! end GERA 8/15/03     
+!
+! start sof 5/04/05 (for rearanging indices from coarsest to finest particles)
+             M_MAX,&
+! end sof 5/04/05     
 !	     	     
 !
 ! 1.4 Geometry and discretization section
