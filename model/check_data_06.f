@@ -63,7 +63,7 @@
 !
       INTEGER I_w , I_e , J_s , J_n , K_b , K_t , ICV
       INTEGER I, J, k, IJK, IC2, M, N
-      DOUBLE PRECISION SUM, SUM_EP
+      DOUBLE PRECISION SUM, SUM_EP, old_value, DP_TMP(MMAX)
 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -71,6 +71,42 @@
       LOGICAL , EXTERNAL :: COMPARE 
 !-----------------------------------------------
       INCLUDE 'function.inc'
+!
+! start sof modifications: 05/04-2005
+!
+! initializing the new indexing system
+       IF(MMAX .GE. 2) THEN
+         DO I = 1, MMAX
+           DP_TMP(I) = D_P(I)
+           M_MAX(I) = I
+         END DO
+!
+! rearrange the indices from coarsest particles to finest to be used in CALC_ep_star
+! I did this here because it may need to be done for auto_restart
+         DO I = 1, MMAX	 
+	   DO J = I, MMAX
+	    
+	     IF(DP_TMP(I) < DP_TMP(J)) THEN
+	       old_value = DP_TMP(I)
+	       DP_TMP(I) = DP_TMP(J)
+	       DP_TMP(J) = old_value
+	     ENDIF
+	   
+	   END DO
+         END DO
+!
+	 DO I = 1, MMAX	 
+	   DO J = 1, MMAX
+	     
+	     IF(DP_TMP(I) == D_P(J) .AND. D_P(I) .NE. D_P(J)) THEN
+	       M_MAX(I) = J 
+	     ENDIF
+	   
+	   END DO
+         END DO
+       ENDIF ! for MMAX >= 2
+!
+! end of sof modifications: 05/04-2005
 !
 ! Initialize the icbc_flag array.  If not a NEW run then do not
 ! check the initial conditions.

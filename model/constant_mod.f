@@ -29,10 +29,13 @@
       Use param1
 
 !       multiple particle sizes
-        DOUBLE PRECISION ep_s_max(DIM_M)  !maximum packing volume fraction for particles, typically 0.6
+        DOUBLE PRECISION ep_s_max(DIM_M)  !maximum packing volume fraction for particles, typically 
 	DOUBLE PRECISION ep_s_max_ratio(DIM_M, DIM_M), d_p_ratio(DIM_M, DIM_M)
-	DOUBLE PRECISION SEGREGATION_SLOPE_COEFFICIENT, MAX_SOLID_1_PACKING,&
-			  MAX_SOLID_2_PACKING
+!
+! commented by sof(05-04-2005) no need for this, will be user input in mfix.dat
+	DOUBLE PRECISION SEGREGATION_SLOPE_COEFFICIENT !, MAX_SOLID_1_PACKING,&
+			  !MAX_SOLID_2_PACKING0.6
+!
 !     ALPHA = parameter in equation for mu_s
 !
 !     SWITCH enables us to turn on/off the modification to the

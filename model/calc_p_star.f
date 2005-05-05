@@ -110,7 +110,7 @@
 !  Literature/Document References:                                     C
 !                                                                      C
 !    A.B. Yu and N. Standish. Powder Tech, 52 (1987) 233-241           C
-! The commented version implemented by Dinesh has the following ref:   C
+! The commented version has the following ref:                         C
 !     R.F. Fedors and R.F. Landel. Powder Tech, 23 (1979) 225-231      C
 !                                                                      C
 !  Variables referenced:                                               C
@@ -156,6 +156,9 @@
 !                       maximum packing for the mixture
        DOUBLE PRECISION P_IT(MMAX)
 !
+!                       true maximum packing for the mixture
+       DOUBLE PRECISION EPs_max_local
+!
 !                       maximum packing fraction for a binary mixture
        DOUBLE PRECISION P_IJ(MMAX, MMAX)
 !
@@ -177,39 +180,14 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
-! rearanging phases to start from coarsest to finest particles
-! this is the way the algorithm was written by Yu and Standish.
+! rearranging to start from coarsest to finest particles (see check_data_06.f)
+! this is the way the algorithm was written by Yu and Standish (sof).
 !
-       DO I = 1, MMAX
-         
-	 DP_TMP(I) = D_P(I)
-	 EPs_TMP(I) = EP_s(IJK,I)
-	 EPs_max_TMP(I) = ep_s_max(I)
+       DO I = 1, MMAX 
+	 DP_TMP(I) = D_P(M_MAX(I))
+	 EPs_TMP(I) = EP_s(IJK,M_MAX(I))
+	 EPs_max_TMP(I) = ep_s_max(M_MAX(I))
        END DO
-
-       DO I = 1, MMAX	 
-	 DO J = I, MMAX
-	   
-	   IF(DP_TMP(I) < DP_TMP(J)) THEN
-	     
-	     old_value = DP_TMP(I)
-	     DP_TMP(I) = DP_TMP(J)
-	     DP_TMP(J) = old_value
-	     
-	     old_value = EPs_TMP(I)
-	     EPs_TMP(I) = EPs_TMP(J)
-	     EPs_TMP(J) = old_value
-	     
-	     old_value = EPs_max_TMP(I)
-	     EPs_max_TMP(I) = EPs_max_TMP(J)
-	     EPs_max_TMP(J) = old_value
-
-	   ENDIF
-	   
-	 ENDDO
-       END DO
-!
-!end of solids phase rearangment
 !
 ! compute equations 25 in Yu-Standish
 !      
@@ -228,7 +206,7 @@
 	 IF(SUM_LOCAL > DIL_EP_s) THEN
 	   COMP_X_I(I) = EPs_TMP(I)/SUM_LOCAL ! fractional solids volume see eq. 20
 	 ELSE
-	   CALC_EP_star = EPs_max_TMP(1) !return first phase ep_s_max in case very dilute
+	   CALC_EP_star = 1.0 - EPs_max_TMP(1) !return first phase ep_s_max in case very dilute
 	   RETURN
 	 ENDIF
        
@@ -259,7 +237,7 @@
 !
 ! Compute equation 22
 !
-	 CALC_EP_star = 1.0
+	 EPs_max_local = 1.0
 	 DO I = 1, MMAX
            SUM_LOCAL = 0.0
          
@@ -293,15 +271,18 @@
 	     P_IT(I) = 1.0 ! do nothing if particles have same diameter
 	   ENDIF
 !   
-	   CALC_EP_star = MIN(P_IT(I), CALC_EP_star)
+	   EPs_max_local = MIN(P_IT(I), EPs_max_local)
 
          END DO !for I
 
 ! for the case of all phases having same diameter	 
 
-	 IF (CALC_EP_star == 1.0) CALC_EP_star = EPs_max_TMP(1)
+	 IF (EPs_max_local == 1.0) EPs_max_local = EPs_max_TMP(1)
+	 
+	 CALC_EP_star = 1.0 - EPs_max_local
 !
 ! end modifications by sof (May-02-2005)
+
 
 !
 ! Part implemented by Dinesh for binary mixture, uncomment to use (Sof)
@@ -318,10 +299,34 @@
 !              +(1-ep_s_max(1))*ep_s_max(2))*(1. -xbar) +ep_s_max(1))))
 !	   end if
 !	else
-!	   CALC_EP_star = MIN(ep_s_max(1), ep_s_max(2))
+!	   CALC_EP_star = 1.0 - MIN(ep_s_max(1), ep_s_max(2)) !corrected by sof
 !	end if
-! 
-	
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! I suggest to use the following code (below) instead of the above commented few lines
+! of code because the phases were not rearranged and I didn't want to modify it (sof)
+! If you don't understand what's going on, contact me: sof@fluent.com
+!
+! In the case of binary mixture (Fedors-Landel empirical correlation)
+!
+!
+!       IF(MMAX == 2) THEN
+!       
+!         IF(COMP_X_I(1) .LE. (EPs_max_TMP(1)/(EPs_max_TMP(1)+ &
+!	   (1.0 - EPs_max_TMP(1))*EPs_max_TMP(2)))) THEN
+!	 
+!	   CALC_EP_star = (EPs_max_TMP(1)-EPs_max_TMP(2)+(1-sqrt(R_IJ(2, 1)))* &
+!	               (1.0 - EPs_max_TMP(1)) *EPs_max_TMP(2))*(EPs_max_TMP(1) &
+!		       +(1.0-EPs_max_TMP(1))*EPs_max_TMP(2))*  &
+!			  COMP_X_I(1)/EPs_max_TMP(1) + EPs_max_TMP(2)
+!	 ELSE
+!	   CALC_EP_star = (1.0-sqrt(R_IJ(2, 1)))*(EPs_max_TMP(1)+(1.0-EPs_max_TMP(1))* &
+!	               EPs_max_TMP(2))*(1.0 - COMP_X_I(1)) + EPs_max_TMP(1)
+!         ENDIF
+!         CALC_EP_star = 1.0 - CALC_EP_star ! this is gas volume fraction
+!       ENDIF ! for N == 2
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!	
       RETURN  
       END function CALC_ep_star
 

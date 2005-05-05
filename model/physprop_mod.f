@@ -43,6 +43,10 @@
 !                      Particle diameters
       DOUBLE PRECISION D_p (DIM_M)
 !
+!                      index to rearrange particles from coarsest to finest
+!                      for use in function CALC_ep_star(IJK,IER)
+      INTEGER          M_MAX (DIM_M)
+!
 !                      Particle densities
       DOUBLE PRECISION RO_s  (DIM_M)
 !

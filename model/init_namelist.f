@@ -216,8 +216,12 @@
       E_W = 1D0 
 ! GERA 08/15/03
       SEGREGATION_SLOPE_COEFFICIENT=0.D0
-      MAX_SOLID_1_PACKING=0.6
-      MAX_SOLID_2_PACKING=0.6
+! modified by sof (05-04-2005)
+!      MAX_SOLID_1_PACKING=0.6
+!      MAX_SOLID_2_PACKING=0.6
+!
+      EP_S_MAX(:DIM_M) = 0.6D0
+!      
 ! END GERA
       EPS_F_MIN = 0.5D0 
       EPS_MAX = 0.65D0 
