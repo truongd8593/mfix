@@ -206,7 +206,8 @@
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP= ABS(USCM-BC_Uw_s(L, M))
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
@@ -270,7 +271,8 @@
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP= ABS(USCM-BC_Uw_s(L, M))
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
@@ -335,7 +337,8 @@
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP= ABS(USCM-BC_Uw_s(L, M))
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
@@ -400,7 +403,8 @@
             DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP= ABS(USCM-BC_Uw_s(L, M))
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
@@ -480,7 +484,8 @@
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = ABS(VSCM-BC_Vw_s(L, M))
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
@@ -554,7 +559,8 @@
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = ABS(VSCM-BC_Vw_s(L, M))
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
@@ -620,7 +626,8 @@
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = ABS(VSCM-BC_Vw_s(L, M))
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
@@ -687,7 +694,8 @@
             DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = ABS(VSCM-BC_Vw_s(L, M))
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
@@ -767,7 +775,8 @@
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = ABS(WSCM-BC_Ww_s(L, M))
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
@@ -841,7 +850,8 @@
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = ABS(WSCM-BC_Ww_s(L, M))
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
@@ -907,7 +917,8 @@
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = ABS(WSCM-BC_Ww_s(L, M))
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
@@ -972,7 +983,8 @@
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = ABS(WSCM-BC_Ww_s(L, M))
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
@@ -1142,7 +1154,7 @@
  
       IF(JENKINS) THEN
 !
-        IF (VSLIP <= small_number) THEN
+        IF (VSLIP == ZERO) THEN
 ! if solids velocity field is initialized to zero, use free slip bc
 	  F_2 = zero
 !

@@ -167,7 +167,8 @@
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP= DSQRT( USCM**2 + VSCM**2 + WSCM**2 )
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
@@ -225,7 +226,8 @@
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP= DSQRT( USCM**2 + VSCM**2 + WSCM**2 )
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                + (WSCM-BC_WW_S(L,M))**2 )
  
           Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
@@ -285,7 +287,8 @@
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP= DSQRT( USCM**2 + VSCM**2 + WSCM**2 )
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                 + (WSCM-BC_WW_S(L,M))**2 )
  
           Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
@@ -345,7 +348,8 @@
             DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP= DSQRT( USCM**2 + VSCM**2 + WSCM**2 )
+	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                 + (WSCM-BC_WW_S(L,M))**2 )
  
           Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
@@ -419,7 +423,8 @@
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = DSQRT( USCM**2 + VSCM**2 + WSCM**2 )
+	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                  + (WSCM-BC_WW_S(L,M))**2 )
  
           Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
@@ -488,7 +493,8 @@
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = DSQRT( USCM**2 + VSCM**2 + WSCM**2 )
+	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                  + (WSCM-BC_WW_S(L,M))**2 )
  
           Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
@@ -549,7 +555,8 @@
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = DSQRT( USCM**2 + VSCM**2 + WSCM**2 )
+	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                  + (WSCM-BC_WW_S(L,M))**2 )
  
           Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
@@ -611,7 +618,8 @@
             DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = DSQRT( USCM**2 + VSCM**2 + WSCM**2 )
+	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                  + (WSCM-BC_WW_S(L,M))**2 )
  
           Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
@@ -685,7 +693,8 @@
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = DSQRT( USCM**2 + VSCM**2 + WSCM**2 )
+	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                  + (WSCM-BC_WW_S(L,M))**2 )
  
           Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
@@ -754,7 +763,8 @@
           DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = DSQRT( USCM**2 + VSCM**2 + WSCM**2 )
+	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                  + (WSCM-BC_WW_S(L,M))**2 )
  
           Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
@@ -816,7 +826,8 @@
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = DSQRT( USCM**2 + VSCM**2 + WSCM**2 )
+	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                  + (WSCM-BC_WW_S(L,M))**2 )
  
           Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
@@ -876,7 +887,8 @@
            DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 !
 ! slip velocity for use in Jenkins bc (sof)	  
-	  VSLIP = DSQRT( USCM**2 + VSCM**2 + WSCM**2 )
+	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+	                  + (WSCM-BC_WW_S(L,M))**2 )
  
           Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
