@@ -227,6 +227,9 @@
       DOUBLE PRECISION Sigma_c, Zeta_c, Omega_c, Zeta_c_2, C_mu, X_21, Nu_t
       DOUBLE PRECISION MU_2_T_Kin, Mu_2_Col, Kappa_kin, Kappa_Col
       DOUBLE PRECISION DGA, C_d, Re
+!
+!                       defining very dilute ep_g to be used with Sundar's model
+      DOUBLE PRECISION EP_g_Dilute
  
 !     SWITCH enables us to turn on/off the modification to the
 !     particulate phase viscosity. If we want to simulate gas-particle
@@ -521,7 +524,26 @@
          ENDIF
 !           end Schaeffer
 !
+! This represents the gas VOF in a fluid cell that contains a single particle
+          
+	  IF(NO_K) THEN
+	    EP_g_Dilute = (1.0d0 - PI*D_P(M)*D_P(M)*ODX(I_OF(IJK))*ODY(J_OF(IJK)))
+	  ELSE
+	    EP_g_Dilute = (1.0d0 - PI/6.0d0*D_P(M)*D_P(M)*D_P(M)*ODX(I_OF(IJK)) &
+	                           *ODY(J_OF(IJK))*ODZ(K_OF(IJK)))
+	  ENDIF
 !
+! Defining a single particle drag coefficient (similar to one defined in drag_gs)
+!
+	  Re = D_P(M)*VREL*ROP_G(IJK)/(MU_G(IJK) + small_number)
+          IF(Re .LE. 1000)THEN
+             C_d = (24./(Re+SMALL_NUMBER)) * (ONE + 0.15 * Re**0.687)
+          ELSE
+             C_d = 0.44
+          ENDIF
+! This is from Wen-Yu correlation, you can put here your own single particle drag
+!	      
+	  DgA = 0.75 * C_d * VREL * ROP_g(IJK) / D_p(M)
 !
 ! Define some time scales and constants related to Simonin and Ahmadi models
 !
@@ -533,13 +555,6 @@
 	    IF(Ep_s(IJK,M) > DIL_EP_S .AND. F_GS(IJK,1) > small_number) THEN
 	      Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
 	    ELSE !for dilute flows, drag equals single particle drag law
-	      Re = D_P(M)*VREL*ROP_G(IJK)/(MU_G(IJK) + small_number)
-              IF(Re .LE. 1000)THEN
-                C_d = (24./(Re+SMALL_NUMBER)) * (ONE + 0.15 * Re**0.687)
-              ELSE
-                C_d = 0.44
-              ENDIF
-	      DgA = 0.75 * C_d * VREL * ROP_g(IJK) / D_p(M)
 	      Tau_12_st = RO_s(M)/DgA
 	    ENDIF !for dilute flows
 	      
@@ -728,14 +743,18 @@
             Mu_b = (256d0*Mu*EP_s(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M))&
                      /(5d0*Pi)
  
-            IF(SWITCH*F_gs(IJK,M) .LT. SMALL_NUMBER)THEN
+            IF(SWITCH == ZERO) THEN !sof modifications (May 20 2005)
               Mu_star = Mu
 		
 	    ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
               Mu_star = ZERO
 	
-            ELSEIF((RO_s(M)*EP_s(IJK,M)*G_0(IJK,M,M)) .LT. SMALL_NUMBER)THEN
-              Mu_star = Mu
+            ELSEIF(EP_g(IJK) .GE. EP_g_Dilute) THEN
+	      
+              
+	      Mu_star = RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)* Mu/ &
+	               (RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M) + &
+		       2.0d0*DgA/RO_S(M)* Mu)
 	      
 	    ELSE
               Mu_star = Mu/(1.+(2d0*SWITCH*F_gs(IJK,M)*Mu/&
@@ -885,14 +904,17 @@
             Kth=75*RO_s(M)*D_p(M)*DSQRT(Pi*Theta_m(IJK,M))/&
                   (48*Eta*(41d0-33*Eta))
  
-            IF(SWITCH*F_gs(IJK,M) .LT. SMALL_NUMBER)THEN
+            IF(SWITCH == ZERO) THEN ! sof modifications (May 20 2005)
               Kth_star=Kth
 		
 	    ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
               Kth_star = ZERO
 	
-	    ELSEIF((EP_s(IJK,M)*G_0(IJK,M,M)) .LT. SMALL_NUMBER)THEN
-              Kth_star=Kth
+	    ELSEIF(EP_g(IJK) .GE. EP_g_Dilute) THEN
+              
+	      Kth_star = RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)* Kth/ &
+	               (RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M) + &
+		       1.2d0*DgA/RO_S(M)* Kth)
 
 	    ELSE
               Kth_star=Kth/(1.+(1.2d0*SWITCH*F_gs(IJK,M)*Kth/&
