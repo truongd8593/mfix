@@ -52,7 +52,11 @@
 !
 ! start sof 5/04/05 (for rearanging indices from coarsest to finest particles)
              M_MAX,&
-! end sof 5/04/05     
+! end sof 5/04/05      
+!
+! start sof 5/04/05 Adding automatic_restart
+             AUTO_RESTART,&
+! end sof 5/04/05    
 !	     	     
 !
 ! 1.4 Geometry and discretization section

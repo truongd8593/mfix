@@ -168,6 +168,9 @@
 !	               default set to .TRUE. use Scheffer frictional stress
       LOGICAL	       SCHAEFFER
 ! sof: end
+! sof: added in case a user wants the code to automatically restart for DT < DT_MIN
+      LOGICAL	       AUTO_RESTART
+! sof: end 5/24/2005
  
 !      parameters for dynamically adjusting time step
  

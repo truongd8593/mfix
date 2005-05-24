@@ -118,6 +118,7 @@
       AHMADI = .FALSE.
       JENKINS = .FALSE.
       AUTOMATIC_RESTART = .FALSE.
+      AUTO_RESTART = .FALSE.
       ITER_RESTART = 1
 ! start peter 7/15
       V_sh=0d0

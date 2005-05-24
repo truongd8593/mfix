@@ -518,10 +518,11 @@
          END DO
          IF(DT.LT.DT_MIN) THEN
             IF(TIME.LE.RES_DT) THEN
-               WRITE(UNIT_LOG,*) 'Automatic restart not possible as Total Time < RES_DT'
+               IF (AUTO_RESTART) WRITE(UNIT_LOG,*) &
+	                       'Automatic restart not possible as Total Time < RES_DT'
                CALL MFIX_EXIT(MyPE)
             ENDIF
-            AUTOMATIC_RESTART = .TRUE.
+            IF(AUTO_RESTART) AUTOMATIC_RESTART = .TRUE.
             RETURN
          ENDIF
       END IF

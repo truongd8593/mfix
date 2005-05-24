@@ -120,7 +120,11 @@
 
          IF (DT < DT_MIN) THEN 
 !//SP
-            LINE(1) = 'DT < DT_MIN.  Recovery not possible! Trying Automatic Restart' 
+            IF(AUTO_RESTART) THEN
+              LINE(1) = 'DT < DT_MIN.  Recovery not possible! Trying Automatic Restart'
+	    ELSE
+	      LINE(1) = 'DT < DT_MIN.  Recovery not possible!'
+	    ENDIF
             IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1) 
             CALL WRITE_ERROR ('ADJUST_DT', LINE, 1) 
 !           CALL MFIX_EXIT(myPE)
