@@ -169,8 +169,8 @@
 !                      continuum
       DOUBLE PRECISION EP_s2xTHETA
 !
-!                      Local DO-LOOP counters
-      INTEGER          I1, I2
+!                      Local DO-LOOP counters and phase index
+      INTEGER          I1, I2, MM
 !
 !                      Second invariant of the deviator of D_s
       DOUBLE PRECISION I2_devD_s
@@ -229,7 +229,10 @@
       DOUBLE PRECISION DGA, C_d, Re
 !
 !                       defining very dilute ep_g to be used with Sundar's model
-      DOUBLE PRECISION EP_g_Dilute
+      DOUBLE PRECISION EP_g_Dilute 
+!
+!                       Sum of all solids volume fractions
+      DOUBLE PRECISION   SUM_EPS_CP
  
 !     SWITCH enables us to turn on/off the modification to the
 !     particulate phase viscosity. If we want to simulate gas-particle
@@ -479,7 +482,19 @@
  	if (MMAX >= 2) EP_star = Calc_ep_star(ijk, ier)
 !*********END GERA*************
  
-          IF(EP_g(IJK) .LT. EP_star) THEN
+! added closed pack, this has to be consistent with the normal frictional force
+! see for example source_v_s.f. Tardos Powder Tech. 92 (1997) 61-74 explains in
+! his equation (3) that solids normal and shear frictional stresses have to be 
+! treated consistently. --> sof May 24 2005.
+!
+          IF(EP_g(IJK) .LT. EP_star .AND. CLOSE_PACKED(M)) THEN 
+! part copied from source_v_s.f (sof)
+	    SUM_EPS_CP=0.0
+	    DO MM=1,MMAX
+	      IF (CLOSE_PACKED(MM)) SUM_EPS_CP=SUM_EPS_CP+EP_S(IJK,MM)
+	    END DO
+! end of part copied
+!
 !             P_star(IJK) = Neg_H(EP_g(IJK))
 !
 !  Plastic-flow stress tensor
@@ -510,7 +525,9 @@
 !
             qxP_s            = SQRT( (4. * Sin2_Phi) * I2_devD_s)
             MU_s(IJK, M)     = P_star(IJK) * Sin2_Phi&
-                               / (qxP_s + SMALL_NUMBER)
+                               / (qxP_s + SMALL_NUMBER) &
+			       *(EP_S(IJK,M)/SUM_EPS_CP) ! added by sof for consistency
+			                                 ! with solids pressure treatment
             MU_s(IJK, M)     = MIN(MU_s(IJK, M), MAX_MU_s)
  
             LAMBDA_s(IJK, M) = ZERO
@@ -527,10 +544,10 @@
 ! This represents the gas VOF in a fluid cell that contains a single particle
           
 	  IF(NO_K) THEN
-	    EP_g_Dilute = (1.0d0 - PI*D_P(M)*D_P(M)*ODX(I_OF(IJK))*ODY(J_OF(IJK)))
+	    EP_g_Dilute = (1.0d0 - PI*D_P(M)*D_P(M)*ODX(I)*ODY(J))
 	  ELSE
-	    EP_g_Dilute = (1.0d0 - PI/6.0d0*D_P(M)*D_P(M)*D_P(M)*ODX(I_OF(IJK)) &
-	                           *ODY(J_OF(IJK))*ODZ(K_OF(IJK)))
+	    EP_g_Dilute = (1.0d0 - PI/6.0d0*D_P(M)*D_P(M)*D_P(M)*ODX(I) &
+	                           *ODY(J)*ODZ(K))
 	  ENDIF
 !
 ! Defining a single particle drag coefficient (similar to one defined in drag_gs)
@@ -812,10 +829,21 @@
             Mu_f = ZERO
             Lambda_f = ZERO
             Pf = ZERO
- 
-            IF (FRICTION) THEN
-               IF (EP_s(IJK,M) .GT. EPS_f_min) THEN
- 
+!
+! close_packed was added for concistency with the Schaeffer model
+! I'm also extending this model in the case where more than 1 solids
+! phase are used. sof May24 2005.
+!
+            IF (FRICTION .AND. CLOSE_PACKED(M)) THEN
+               IF (EP_g(IJK) .LT. (ONE-EPS_f_min)) THEN
+!
+! part copied from source_v_s.f (sof)
+	         SUM_EPS_CP=0.0
+	         DO MM=1,MMAX
+	           IF (CLOSE_PACKED(MM)) SUM_EPS_CP=SUM_EPS_CP+EP_S(IJK,MM)
+	         END DO
+! end of part copied
+! 
                   IF (SAVAGE.EQ.1) THEN !form of Savage
             	     Mu_zeta =&
                            ((2d0+ALPHA)/3d0)*((Mu/(Eta*(2d0-Eta)*&
@@ -882,6 +910,12 @@
  
                   Mu_f = Chi/(2d0*ZETA)
                   Lambda_f = - 2d0*Mu_f/3d0
+!
+! modification of the stresses in case of more than one solids phase are used (sof)
+!
+                  Pf = Pf * (EP_S(IJK,M)/SUM_EPS_CP)
+		  Mu_f = Mu_f * (EP_S(IJK,M)/SUM_EPS_CP)
+                  Lambda_f = Lambda_f * (EP_S(IJK,M)/SUM_EPS_CP)
  
  
                ENDIF
