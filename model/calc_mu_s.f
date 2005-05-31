@@ -561,6 +561,7 @@
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
 !	      
 	  DgA = 0.75 * C_d * VREL * ROP_g(IJK) / D_p(M)
+	  IF(VREL == ZERO) DgA = LARGE_NUMBER !for 1st iteration and 1st time step
 !
 ! Define some time scales and constants related to Simonin and Ahmadi models
 !
