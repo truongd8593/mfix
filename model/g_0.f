@@ -79,28 +79,37 @@
         G_0AVG = G_0(IJK1, M1, M2) 
       ELSE
 !
+! Part modified to automatically use Lebowitz if more than one solids
+! phase is used. sof June 3rd 2005
+!
+        IF(MMAX > 1) THEN
+!
 ! Start Lebowitz (1964)
-!        EPSoDP = ZERO
-!        DO Mx = 1, MMAX
-!          EPS = AVG_XYZ(EP_s(IJK1, Mx), EP_s(IJK2, Mx), DIR, L)
-!          EPSoDP = EPSoDP + EPS / D_p(Mx)
-!        END DO
-!        EPg = AVG_XYZ(EP_g(IJK1), EP_g(IJK2), DIR, L)
-!        G_0AVG = ONE / EPg                                      &
-!            + 3.0 * EPSoDP * D_p(M1) * D_p(M2)               &
-!            / (EPg*EPg *(D_p(M1) + D_p(M2)))
+          EPSoDP = ZERO
+          DO Mx = 1, MMAX
+            EPS = AVG_XYZ(EP_s(IJK1, Mx), EP_s(IJK2, Mx), DIR, L)
+            EPSoDP = EPSoDP + EPS / D_p(Mx)
+          END DO
+          EPg = AVG_XYZ(EP_g(IJK1), EP_g(IJK2), DIR, L)
+          G_0AVG = ONE / EPg                                      &
+              + 3.0 * EPSoDP * D_p(M1) * D_p(M2)               &
+              / (EPg*EPg *(D_p(M1) + D_p(M2)))
 ! End Lebowitz (1964)
+!
+        ELSE
 !
 !  Start Carnahan-Starling
 !    (Do not use when there are more than one granular phase)
 !     This is the form of the radial distribution function
 !     proposed by Carnahan & Starling
 !
-  	IF(M1 /= M2) CALL WRITE_ERROR('G_0AVG', 'Cannot use CS g_0', 1)
-        EPS = AVG_XYZ(EP_s(IJK1, M1), EP_s(IJK2, M1), DIR, L)
+!  	IF(M1 /= M2) CALL WRITE_ERROR('G_0AVG', 'Cannot use CS g_0', 1)
 
-        G_0AVG = G_0CS(EPS) 
+          EPS = AVG_XYZ(EP_s(IJK1, M1), EP_s(IJK2, M1), DIR, L)
+
+          G_0AVG = G_0CS(EPS) 
 !  End Carnahan-Starling
+        ENDIF ! for mmax > 1
       ENDIF
 
       RETURN  
@@ -191,27 +200,32 @@
       INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
+        
+      IF(MMAX > 1) THEN
 !
 ! Start Lebowitz (1964)
-!        EPSoDP = ZERO
-!        DO Mx = 1, MMAX
-!          EPS = EP_s(IJK, Mx)
-!          EPSoDP = EPSoDP + EPS / D_p(Mx)
-!        END DO
-!        EPg = EP_g(IJK)
-!        G_0 = ONE / EPg                                      &
-!            + 3.0 * EPSoDP * D_p(M1) * D_p(M2)               &
-!            / (EPg*EPg *(D_p(M1) + D_p(M2)))
+        EPSoDP = ZERO
+        DO Mx = 1, MMAX
+          EPS = EP_s(IJK, Mx)
+          EPSoDP = EPSoDP + EPS / D_p(Mx)
+        END DO
+        EPg = EP_g(IJK)
+        G_0 = ONE / EPg                                      &
+            + 3.0 * EPSoDP * D_p(M1) * D_p(M2)               &
+            / (EPg*EPg *(D_p(M1) + D_p(M2)))
 ! End Lebowitz (1964)
+!        
+      ELSE
 !
 !  Start Carnahan-Starling
 !    (Do not use when there are more than one granular phase)
 !     This is the form of the radial distribution function
 !     proposed by Carnahan & Starling
 !
-      G_0 = G_0CS(EP_S(IJK,M1)) 
+        G_0 = G_0CS(EP_S(IJK,M1)) 
 !  End Carnahan-Starling
-!
+!        
+      ENDIF ! for mmax > 1
       RETURN  
       END FUNCTION G_0 
 !
@@ -262,14 +276,20 @@
 !
 ! Start Lebowitz (1964).  g_0 derivative is not needed for multiparticle
 ! simulations; so this value is set to zero.
-!      DG_0DNU = ZERO
+        
+      IF(MMAX > 1) THEN
+        DG_0DNU = ZERO
 ! End Lebowitz (1964)
+!
+      ELSE
 !  Start Carnahan-Starling derivative
 !
 !     Derivative of (G0) wrt EP_s
-      DG_0DNU = 1D0/(1. - EPS)**2 + 1.5D0*(1. + EPS)*(1D0/(1. - EPS))**3 + &
-         0.5D0*(EPS**2 + 2.*EPS)*(1D0/(1. - EPS))**4 
+        DG_0DNU = 1D0/(1. - EPS)**2 + 1.5D0*(1. + EPS)*(1D0/(1. - EPS))**3 + &
+           0.5D0*(EPS**2 + 2.*EPS)*(1D0/(1. - EPS))**4 
 !  End Carnahan-Starling derivative
+!
+      ENDIF
       RETURN  
       END FUNCTION DG_0DNU 
 
