@@ -52,7 +52,7 @@
 !                      error index
 !
       CALL CORRECT_0G (PP_G, UR_FAC(1), D_E, D_N, D_T, P_G, U_G, V_G, W_G, IER) 
-      CALL CORRECT_0S (PP_G, D_E, D_N, D_T, U_S, V_S, W_S, IER) 
+!      CALL CORRECT_0S (PP_G, D_E, D_N, D_T, U_S, V_S, W_S, IER) 
       RETURN  
       END SUBROUTINE CORRECT_0 
 !

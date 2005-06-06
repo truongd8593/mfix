@@ -50,7 +50,8 @@
       Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
       USE compar       
       USE mpi_utility      
-      USE sendrecv      
+      USE sendrecv 
+      USE mflux     
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -125,7 +126,7 @@
 	    
 	     
             CALL CONV_DIF_PHI (X_G(1,LN), DIF_G(1,LN), DISCRETIZE(7), U_G, V_G, &
-               W_G, ROP_G, 0, A_M, B_M, IER)
+               W_G, Flux_gE, Flux_gN, Flux_gT, 0, A_M, B_M, IER)
 
 !
             CALL BC_PHI (X_G(1,LN), BC_X_G(1,LN), BC_XW_G(1,LN), BC_HW_X_G(1,LN), BC_C_X_G(1,&
@@ -185,7 +186,7 @@
                   ENDIF 
                END DO 
                CALL CONV_DIF_PHI (X_S(1,M,LN), DIF_S(1,M,LN), DISCRETIZE(7), U_S(&
-                  1,M), V_S(1,M), W_S(1,M), ROP_S(1,M), M, A_M, B_M, IER)
+                  1,M), V_S(1,M), W_S(1,M), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), M, A_M, B_M, IER)
 !
                CALL BC_PHI (X_S(1,M,LN), BC_X_S(1,M,LN), BC_XW_S(1,M,LN), BC_HW_X_S(1,M,LN), &
                   BC_C_X_S(1,M,LN), M, A_M, B_M, IER) 

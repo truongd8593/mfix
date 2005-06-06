@@ -125,6 +125,9 @@
       DO IJK = ijkstart3, ijkend3 
          I = I_OF(IJK) 
          IJKE = EAST_OF(IJK) 
+         IJKM = KM_OF(IJK) 
+         IPJK = IP_OF(IJK) 
+         IPJKM = IP_OF(IJKM) 
          EPGA = AVG_X(EP_G(IJK),EP_G(IJKE),I) 
          IF (IP_AT_E(IJK)) THEN 
             A_M(IJK,E,M) = ZERO 
@@ -172,11 +175,11 @@
             ENDIF 
 !
 !       Volumetric forces
-            ROPGA = AVG_X(ROP_G(IJK),ROP_G(IJKE),I) 
-            ROGA = AVG_X(RO_G(IJK),RO_G(IJKE),I) 
+            ROPGA = HALF * (VOL(IJK)*ROP_G(IJK) + VOL(IPJK)*ROP_G(IJKE))/VOL_U(IJK)
+            ROGA  = HALF * (VOL(IJK)*RO_G(IJK) + VOL(IPJK)*RO_G(IJKE))/VOL_U(IJK) 
 !
 !         Previous time step
-            V0 = AVG_X(ROP_GO(IJK),ROP_GO(IJKE),I)*ODT 
+            V0 = HALF * (VOL(IJK)*ROP_GO(IJK) + VOL(IPJK)*ROP_GO(IJKE))*ODT/VOL_U(IJK) 
 !
 !         pressure drop through porous media
             IF (SIP_AT_E(IJK)) THEN 
@@ -190,7 +193,7 @@
             ENDIF 
 !
 !         Interphase mass transfer
-            VMT = AVG_X(SUM_R_G(IJK),SUM_R_G(IJKE),I) 
+            VMT = HALF * (VOL(IJK)*SUM_R_G(IJK) + VOL(IPJK)*SUM_R_G(IJKE))/VOL_U(IJK) 
 !
 !         Body force
             IF (MODEL_B) THEN 
@@ -205,9 +208,6 @@
             IF (CYLINDRICAL) THEN 
 !
 !           centrifugal force
-               IJKM = KM_OF(IJK) 
-               IPJK = IP_OF(IJK) 
-               IPJKM = IP_OF(IJKM) 
                WGE = AVG_X(HALF*(W_G(IJK)+W_G(IJKM)),HALF*(W_G(IPJK)+W_G(IPJKM)&
                   ),I) 
                VCF = ROPGA*WGE**2*OX_E(I) 

@@ -129,6 +129,9 @@
 !           Wall or impermeable internal surface
                I = I_OF(IJK) 
                IJKE = EAST_OF(IJK) 
+               IJKM = KM_OF(IJK) 
+               IPJK = IP_OF(IJK) 
+               IPJKM = IP_OF(IJKM) 
                EPSA = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I) 
                IF (IP_AT_E(IJK)) THEN 
                   A_M(IJK,E,M) = ZERO 
@@ -204,13 +207,13 @@
 !             Shear stress terms
 !
 !           Volumetric forces
-                  ROPSA = AVG_X(ROP_S(IJK,M),ROP_S(IJKE,M),I) 
+                  ROPSA = HALF * (VOL(IJK)*ROP_S(IJK,M) + VOL(IPJK)*ROP_S(IJKE,M))/VOL_U(IJK) 
 !
 !             Previous time step
-                  V0 = AVG_X(ROP_SO(IJK,M),ROP_SO(IJKE,M),I)*ODT 
+                  V0 = HALF * (VOL(IJK)*ROP_SO(IJK,M) + VOL(IPJK)*ROP_SO(IJKE,M))*ODT/VOL_U(IJK) 
 !
 !             Interphase mass transfer
-                  VMT = AVG_X(SUM_R_S(IJK,M),SUM_R_S(IJKE,M),I) 
+                  VMT = HALF * (VOL(IJK)*SUM_R_S(IJK,M) + VOL(IPJK)*SUM_R_S(IJKE,M))/VOL_U(IJK) 
 !
 !             Body force
                   IF (MODEL_B) THEN 
@@ -229,9 +232,6 @@
                   IF (CYLINDRICAL) THEN 
 !
 !             centrifugal force
-                     IJKM = KM_OF(IJK) 
-                     IPJK = IP_OF(IJK) 
-                     IPJKM = IP_OF(IJKM) 
                      WSE = AVG_X(HALF*(W_S(IJK,M)+W_S(IJKM,M)),HALF*(W_S(IPJK,M&
                         )+W_S(IPJKM,M)),I) 
                      VCF = ROPSA*WSE**2*OX_E(I) 

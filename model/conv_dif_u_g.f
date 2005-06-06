@@ -126,7 +126,8 @@
       USE physprop
       USE fldvar
       USE output
-      USE compar 
+      USE compar
+      USE mflux 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -150,8 +151,8 @@
 !                      Solids phase
       INTEGER          M
 !
-!                      Face velocity
-      DOUBLE PRECISION V_f
+!                      Face mass flux
+      DOUBLE PRECISION Flux
 !
 !                      Diffusion parameter
       DOUBLE PRECISION D_f
@@ -199,30 +200,26 @@
 !
 !
 !           East face (i+1, j, k)
-            V_F = AVG_X_E(U_G(IJK),U_G(IPJK),IP) 
+	    Flux = HALF * (Flux_gE(IJK) + Flux_gE(IPJK))
             D_F = MU_GT(IJKE)*ODX(IP)*AYZ_U(IJK) 
-            IF (V_F >= ZERO) THEN 
+            IF (Flux >= ZERO) THEN 
                A_U_G(IJK,E) = D_F 
-               A_U_G(IPJK,W) = D_F + AVG_X(ROP_G(IJKC),ROP_G(IJKE),I)*V_F*AYZ_U&
-                  (IJK) 
+               A_U_G(IPJK,W) = D_F + Flux
             ELSE 
-               A_U_G(IJK,E) = D_F - AVG_X(ROP_G(IJKE),ROP_G(EAST_OF(IJKE)),IP)*&
-                  V_F*AYZ_U(IJK) 
+               A_U_G(IJK,E) = D_F - Flux
                A_U_G(IPJK,W) = D_F 
             ENDIF 
 !
 !
 !           North face (i+1/2, j+1/2, k)
-            V_F = AVG_X(V_G(IJK),V_G(IPJK),I) 
+	    Flux = HALF * (Flux_gN(IJK) + Flux_gN(IPJK))
             D_F = AVG_X_H(AVG_Y_H(MU_GT(IJKC),MU_GT(IJKN),J),AVG_Y_H(MU_GT(IJKE&
                ),MU_GT(IJKNE),J),I)*ODY_N(J)*AXZ_U(IJK) 
-            IF (V_F >= ZERO) THEN 
+            IF (Flux >= ZERO) THEN 
                A_U_G(IJK,N) = D_F 
-               A_U_G(IJPK,S) = D_F + AVG_X(ROP_G(IJKC),ROP_G(IJKE),I)*V_F*AXZ_U&
-                  (IJK) 
+               A_U_G(IJPK,S) = D_F + Flux
             ELSE 
-               A_U_G(IJK,N) = D_F - AVG_X(ROP_G(IJKN),ROP_G(IJKNE),I)*V_F*AXZ_U&
-                  (IJK) 
+               A_U_G(IJK,N) = D_F - Flux
                A_U_G(IJPK,S) = D_F 
             ENDIF 
 !
@@ -231,16 +228,14 @@
                IJKP = KP_OF(IJK) 
                IJKT = TOP_OF(IJK) 
                IJKTE = EAST_OF(IJKT) 
-               V_F = AVG_X(W_G(IJK),W_G(IPJK),I) 
+	       Flux = HALF * (Flux_gT(IJK) + Flux_gT(IPJK))
                D_F = AVG_X_H(AVG_Z_H(MU_GT(IJKC),MU_GT(IJKT),K),AVG_Z_H(MU_GT(&
                   IJKE),MU_GT(IJKTE),K),I)*OX_E(I)*ODZ_T(K)*AXY_U(IJK) 
-               IF (V_F >= ZERO) THEN 
+               IF (Flux >= ZERO) THEN 
                   A_U_G(IJK,T) = D_F 
-                  A_U_G(IJKP,B) = D_F + AVG_X(ROP_G(IJKC),ROP_G(IJKE),I)*V_F*&
-                     AXY_U(IJK) 
+                  A_U_G(IJKP,B) = D_F + Flux
                ELSE 
-                  A_U_G(IJK,T) = D_F - AVG_X(ROP_G(IJKT),ROP_G(IJKTE),I)*V_F*&
-                     AXY_U(IJK) 
+                  A_U_G(IJK,T) = D_F - Flux
                   A_U_G(IJKP,B) = D_F 
                ENDIF 
             ENDIF 
@@ -251,11 +246,10 @@
             IF (.NOT.FLOW_AT_E(IMJK)) THEN 
                IM = IM1(I) 
                IJKW = WEST_OF(IJK) 
-               V_F = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
+	       Flux = HALF * (Flux_gE(IMJK) + Flux_gE(IJK))
                D_F = MU_GT(IJKC)*ODX(I)*AYZ_U(IMJK) 
-               IF (V_F >= ZERO) THEN 
-                  A_U_G(IJK,W) = D_F + AVG_X(ROP_G(IJKW),ROP_G(IJKC),IM)*V_F*&
-                     AYZ_U(IMJK) 
+               IF (Flux >= ZERO) THEN 
+                  A_U_G(IJK,W) = D_F + Flux
                ELSE 
                   A_U_G(IJK,W) = D_F 
                ENDIF 
@@ -268,12 +262,11 @@
                IPJMK = IP_OF(IJMK) 
                IJKS = SOUTH_OF(IJK) 
                IJKSE = EAST_OF(IJKS) 
-               V_F = AVG_X(V_G(IJMK),V_G(IPJMK),I) 
+	       Flux = HALF * (Flux_gN(IJMK) + Flux_gN(IPJMK))
                D_F = AVG_X_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJKC),JM),AVG_Y_H(MU_GT(&
                   IJKSE),MU_GT(IJKE),JM),I)*ODY_N(JM)*AXZ_U(IJMK) 
-               IF (V_F >= ZERO) THEN 
-                  A_U_G(IJK,S) = D_F + AVG_X(ROP_G(IJKS),ROP_G(IJKSE),I)*V_F*&
-                     AXZ_U(IJMK) 
+               IF (Flux >= ZERO) THEN 
+                  A_U_G(IJK,S) = D_F + Flux
                ELSE 
                   A_U_G(IJK,S) = D_F 
                ENDIF 
@@ -287,13 +280,12 @@
                   IPJKM = IP_OF(IJKM) 
                   IJKB = BOTTOM_OF(IJK) 
                   IJKBE = EAST_OF(IJKB) 
-                  V_F = AVG_X(W_G(IJKM),W_G(IPJKM),I) 
+	          Flux = HALF * (Flux_gT(IJKM) + Flux_gT(IPJKM))
                   D_F = AVG_X_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJKC),KM),AVG_Z_H(&
                      MU_GT(IJKBE),MU_GT(IJKE),KM),I)*OX_E(I)*ODZ_T(KM)*AXY_U(&
                      IJKM) 
-                  IF (V_F >= ZERO) THEN 
-                     A_U_G(IJK,B) = D_F + AVG_X(ROP_G(IJKB),ROP_G(IJKBE),I)*V_F&
-                        *AXY_U(IJKM) 
+                  IF (Flux >= ZERO) THEN 
+                     A_U_G(IJK,B) = D_F + Flux
                   ELSE 
                      A_U_G(IJK,B) = D_F 
                   ENDIF 
@@ -356,6 +348,7 @@
       USE compar   
       USE sendrecv
       USE sendrecv3
+      USE mflux 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -400,7 +393,7 @@
 	DOUBLE PRECISION MOM_LO
 !
 !	CONVECTION FACTOR AT THE FACE
-	DOUBLE PRECISION CONV_FAC
+	DOUBLE PRECISION Flux
 !
 !	DEFERRED CORRECTION CONTRIBUTIONS FROM EACH FACE
 	DOUBLE PRECISION 	EAST_DC
@@ -526,55 +519,41 @@
 !           DEFERRED CORRECTION CONTRIBUTION AT THE East face (i+1, j, k)
 !
 		IF(U(IJK) >= ZERO)THEN
-	            CONV_FAC=AVG_X(ROP_G(IJK),ROP_G(IJKE),I)*U(IJK)*AYZ_U(IJK) 
 		    MOM_LO = U_G(IJK)
-                     IF ( FPFOI ) THEN
+                     IF ( FPFOI ) &
                       MOM_HO = FPFOI_OF(U_G(IPJK), U_G(IJK), & 
                             U_G(IMJK), U_G(IM_OF(IMJK)))
-                     ELSE
-                     ENDIF
 		ELSE
-		    CONV_FAC = AVG_X(ROP_G(IJKE),ROP_G(EAST_OF(IJKE)),IP)&
-                               *U(IJK)*AYZ_U(IJK)
 		    MOM_LO = U_G(IPJK)
-                     IF ( FPFOI ) THEN
+                     IF ( FPFOI ) &
                       MOM_HO = FPFOI_OF(U_G(IJK), U_G(IPJK), & 
                             U_G(IP_OF(IPJK)), TMP4(IPPP4))
-                     ELSE
-                     ENDIF
 		ENDIF
-                     IF (.NOT. FPFOI ) THEN
+                IF (.NOT. FPFOI ) &
 		      MOM_HO = XSI_E(IJK)*U_G(IPJK)+ &
                                (1.0-XSI_E(IJK))*U_G(IJK)
-                     ELSE
-                     ENDIF
-		EAST_DC = CONV_FAC*(MOM_LO-MOM_HO)
+			      
+	        Flux = HALF * (Flux_gE(IJK) + Flux_gE(IPJK))
+		EAST_DC = Flux *(MOM_LO - MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE North face (i+1/2, j+1/2, k)
 !            
 		IF(V(IJK) >= ZERO)THEN
-	            CONV_FAC=AVG_X(ROP_G(IJKC),ROP_G(IJKE),I)*V(IJK)*AXZ_U(IJK) 
 		    MOM_LO = U_G(IJK)
-                     IF ( FPFOI ) THEN
+                     IF ( FPFOI ) &
                       MOM_HO = FPFOI_OF(U_G(IJPK), U_G(IJK), & 
                             U_G(IJMK), U_G(JM_OF(IJMK)))
-                     ELSE
-                     ENDIF
 		ELSE
-		   CONV_FAC=AVG_X(ROP_G(IJKN),ROP_G(IJKNE),I)*V(IJK)*AXZ_U(IJK)
 		    MOM_LO = U_G(IJPK)
-                     IF ( FPFOI ) THEN
+                     IF ( FPFOI ) &
                       MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJPK), & 
                             U_G(JP_OF(IJPK)), TMP4(JPPP4))
-                     ELSE
-                     ENDIF
 		ENDIF
-                     IF (.NOT. FPFOI ) THEN
+                IF (.NOT. FPFOI ) &
 		      MOM_HO = XSI_N(IJK)*U_G(IJPK)+ &
                                  (1.0-XSI_N(IJK))*U_G(IJK)
-                     ELSE
-                     ENDIF
-		NORTH_DC = CONV_FAC*(MOM_LO-MOM_HO)
+	        Flux = HALF * (Flux_gN(IJK) + Flux_gN(IPJK))
+		NORTH_DC = Flux *(MOM_LO - MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Top face (i+1/2, j, k+1/2)
 !
@@ -583,28 +562,21 @@
                 IJKT = TOP_OF(IJK) 
                 IJKTE = EAST_OF(IJKT) 
 		IF(WW(IJK) >= ZERO)THEN
-	           CONV_FAC=AVG_X(ROP_G(IJKC),ROP_G(IJKE),I)*WW(IJK)*AXY_U(IJK) 
 		   MOM_LO = U_G(IJK)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       MOM_HO = FPFOI_OF(U_G(IJKP), U_G(IJK), & 
                             U_G(IJKM), U_G(KM_OF(IJKM)))
-                     ELSE
-                     ENDIF
 		ELSE
-		  CONV_FAC=AVG_X(ROP_G(IJKT),ROP_G(IJKTE),I)*WW(IJK)*AXY_U(IJK)
 		   MOM_LO = U_G(IJKP)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJKP), & 
                             U_G(KP_OF(IJKP)), TMP4(KPPP4))
-                     ELSE
-                     ENDIF
 		ENDIF
-                     IF (.NOT. FPFOI ) THEN
+                IF (.NOT. FPFOI ) &
 		      MOM_HO = XSI_T(IJK)*U_G(IJKP)+ &
                                (1.0-XSI_T(IJK))*U_G(IJK)
-                     ELSE
-                     ENDIF
-		TOP_DC = CONV_FAC*(MOM_LO-MOM_HO)
+	        Flux = HALF * (Flux_gT(IJK) + Flux_gT(IPJK))
+		TOP_DC = Flux *(MOM_LO - MOM_HO)
 		
 	    ELSE
 		TOP_DC = ZERO
@@ -617,28 +589,21 @@
             IM = IM1(I) 
             IJKW = WEST_OF(IJK)
 	    IF(U(IMJK) >= ZERO)THEN
-	      CONV_FAC=AVG_X(ROP_G(IJKW),ROP_G(IJK),IM)*U(IMJK)*AYZ_U(IMJK) 
 	      MOM_LO = U_G(IMJK)
-                     IF ( FPFOI ) THEN
+              IF ( FPFOI ) &
                       MOM_HO = FPFOI_OF(U_G(IJK), U_G(IMJK), & 
                             U_G(IM_OF(IMJK)), TMP4(IMMM4))
-                     ELSE
-                     ENDIF	      
-	    ELSE
-	      CONV_FAC=AVG_X(ROP_G(IJK),ROP_G(IJKE),I)*U(IMJK)*AYZ_U(IMJK)
+ 	    ELSE
 	      MOM_LO = U_G(IJK)
-                     IF ( FPFOI ) THEN
+              IF ( FPFOI ) &
                       MOM_HO = FPFOI_OF(U_G(IMJK), U_G(IJK), & 
                             U_G(IPJK), U_G(IP_OF(IPJK)))
-                     ELSE
-                     ENDIF	      
 	    ENDIF
-                     IF (.NOT. FPFOI ) THEN
+            IF (.NOT. FPFOI ) &
 	              MOM_HO = XSI_E(IMJK)*U_G(IJK)+ &
                                (1.0-XSI_E(IMJK))*U_G(IMJK)
-                     ELSE
-                     ENDIF
-	    WEST_DC = CONV_FAC*(MOM_LO-MOM_HO)
+	    Flux = HALF * (Flux_gE(IMJK) + Flux_gE(IJK))
+	    WEST_DC = Flux * (MOM_LO - MOM_HO)
 
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE South face (i+1/2, j-1/2, k)
@@ -649,28 +614,21 @@
             IJKS = SOUTH_OF(IJK) 
             IJKSE = EAST_OF(IJKS) 
  	    IF(V(IJMK) >= ZERO)THEN
-	      CONV_FAC=AVG_X(ROP_G(IJKS),ROP_G(IJKSE),I)*V(IJMK)*AXZ_U(IJMK) 
 	      MOM_LO = U_G(IJMK)
-                     IF ( FPFOI ) THEN
+              IF ( FPFOI ) &
                       MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJMK), & 
                             U_G(JM_OF(IJMK)), TMP4(JMMM4))
-                     ELSE
-                     ENDIF
 	    ELSE
-	      CONV_FAC=AVG_X(ROP_G(IJK),ROP_G(IJKE),I)*V(IJMK)*AXZ_U(IJMK)
 	      MOM_LO = U_G(IJK)
-                     IF ( FPFOI ) THEN
+              IF ( FPFOI ) &
                       MOM_HO = FPFOI_OF(U_G(IJMK), U_G(IJK), & 
                             U_G(IJPK), U_G(JP_OF(IJPK)))
-                     ELSE
-                     ENDIF
 	    ENDIF
-                     IF (.NOT. FPFOI ) THEN
+            IF (.NOT. FPFOI ) &
 	              MOM_HO = XSI_N(IJMK)*U_G(IJK)+ &
                               (1.0-XSI_N(IJMK))*U_G(IJMK)
-                     ELSE
-                     ENDIF
-	    SOUTH_DC = CONV_FAC*(MOM_LO-MOM_HO)
+	    Flux = HALF * (Flux_gN(IJMK) + Flux_gN(IPJMK))
+	    SOUTH_DC = Flux *(MOM_LO - MOM_HO)
 	    
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Bottom face (i+1/2, j, k-1/2)
@@ -682,28 +640,21 @@
                IJKB = BOTTOM_OF(IJK) 
                IJKBE = EAST_OF(IJKB)
 	       IF(WW(IJK) >= ZERO)THEN
-	         CONV_FAC=AVG_X(ROP_G(IJKB),ROP_G(IJKBE),I)*WW(IJK)*AXY_U(IJKM) 
 		 MOM_LO = U_G(IJKM)
-                     IF ( FPFOI ) THEN
+                 IF ( FPFOI ) &
                       MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJKM), & 
                             U_G(KM_OF(IJKM)), TMP4(KMMM4))
-                     ELSE
-                     ENDIF
 	       ELSE
-		 CONV_FAC=AVG_X(ROP_G(IJK),ROP_G(IJKE),I)*WW(IJK)*AXY_U(IJKM)
 		 MOM_LO = U_G(IJK)
-                     IF ( FPFOI ) THEN
+                 IF ( FPFOI ) &
                       MOM_HO = FPFOI_OF(U_G(IJKM), U_G(IJK), & 
                             U_G(IJKP), U_G(KP_OF(IJKP)))
-                     ELSE
-                     ENDIF
 	       ENDIF
-                     IF (.NOT. FPFOI ) THEN
+               IF (.NOT. FPFOI ) &
 	              MOM_HO = XSI_T(IJKM)*U_G(IJK)+ &
                                (1.0-XSI_T(IJKM))*U_G(IJKM)
-                     ELSE
-                     ENDIF
-	       BOTTOM_DC = CONV_FAC*(MOM_LO-MOM_HO)
+	       Flux = HALF * (Flux_gT(IJKM) + Flux_gT(IPJKM))
+	       BOTTOM_DC = Flux * (MOM_LO - MOM_HO)
             ELSE
 	       BOTTOM_DC = ZERO
 	      
@@ -774,7 +725,7 @@
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar  
-
+      USE mflux 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -804,6 +755,9 @@
 !
 !                      Diffusion parameter
       DOUBLE PRECISION D_f
+!
+!                      Face mass flux
+      DOUBLE PRECISION Flux
 !
 !                      Septadiagonal matrix A_U_g
       DOUBLE PRECISION A_U_g(DIMENSION_3, -3:3)
@@ -898,24 +852,22 @@
             IJKNE = EAST_OF(IJKN) 
 !
 !           East face (i+1, j, k)
+	    Flux = HALF * (Flux_gE(IJK) + Flux_gE(IPJK))
             D_F = MU_GT(IJKE)*ODX(IP)*AYZ_U(IJK) 
 !
-            A_U_G(IJK,E) = D_F - XSI_E(IJK)*AVG_X(ROP_G(IJKE),ROP_G(EAST_OF(&
-               IJKE)),IP)*U(IJK)*AYZ_U(IJK) 
+            A_U_G(IJK,E) = D_F - XSI_E(IJK) * Flux
 !
-            A_U_G(IPJK,W) = D_F + (ONE - XSI_E(IJK))*AVG_X(ROP_G(IJKC),ROP_G(&
-               IJKE),I)*U(IJK)*AYZ_U(IJK) 
+            A_U_G(IPJK,W) = D_F + (ONE - XSI_E(IJK)) * Flux
 !
 !
 !           North face (i+1/2, j+1/2, k)
+	    Flux = HALF * (Flux_gN(IJK) + Flux_gN(IPJK))
             D_F = AVG_X_H(AVG_Y_H(MU_GT(IJKC),MU_GT(IJKN),J),AVG_Y_H(MU_GT(IJKE&
                ),MU_GT(IJKNE),J),I)*ODY_N(J)*AXZ_U(IJK) 
 !
-            A_U_G(IJK,N) = D_F - XSI_N(IJK)*AVG_X(ROP_G(IJKN),ROP_G(IJKNE),I)*V&
-               (IJK)*AXZ_U(IJK) 
+            A_U_G(IJK,N) = D_F - XSI_N(IJK) * Flux 
 !
-            A_U_G(IJPK,S) = D_F + (ONE - XSI_N(IJK))*AVG_X(ROP_G(IJKC),ROP_G(&
-               IJKE),I)*V(IJK)*AXZ_U(IJK) 
+            A_U_G(IJPK,S) = D_F + (ONE - XSI_N(IJK)) * Flux 
 !
 !
 !           Top face (i+1/2, j, k+1/2)
@@ -924,14 +876,13 @@
                IJKT = TOP_OF(IJK) 
                IJKTE = EAST_OF(IJKT) 
 !
+	       Flux = HALF * (Flux_gT(IJK) + Flux_gT(IPJK))
                D_F = AVG_X_H(AVG_Z_H(MU_GT(IJKC),MU_GT(IJKT),K),AVG_Z_H(MU_GT(&
                   IJKE),MU_GT(IJKTE),K),I)*OX_E(I)*ODZ_T(K)*AXY_U(IJK) 
 !
-               A_U_G(IJK,T) = D_F - XSI_T(IJK)*AVG_X(ROP_G(IJKT),ROP_G(IJKTE),I&
-                  )*WW(IJK)*AXY_U(IJK) 
+               A_U_G(IJK,T) = D_F - XSI_T(IJK) * Flux
 !
-               A_U_G(IJKP,B) = D_F + (ONE - XSI_T(IJK))*AVG_X(ROP_G(IJKC),ROP_G&
-                  (IJKE),I)*WW(IJK)*AXY_U(IJK) 
+               A_U_G(IJKP,B) = D_F + (ONE - XSI_T(IJK)) * Flux 
             ENDIF 
 !
 !           West face (i, j, k)
@@ -940,10 +891,10 @@
                IM = IM1(I) 
                IJKW = WEST_OF(IJK) 
 !
+	       Flux = HALF * (Flux_gE(IMJK) + Flux_gE(IJK))
                D_F = MU_GT(IJKC)*ODX(I)*AYZ_U(IMJK) 
 !
-               A_U_G(IJK,W) = D_F + (ONE - XSI_E(IMJK))*AVG_X(ROP_G(IJKW),ROP_G&
-                  (IJKC),IM)*U(IMJK)*AYZ_U(IMJK) 
+               A_U_G(IJK,W) = D_F + (ONE - XSI_E(IMJK)) * Flux
             ENDIF 
 !
 !           South face (i+1/2, j-1/2, k)
@@ -954,11 +905,11 @@
                IJKS = SOUTH_OF(IJK) 
                IJKSE = EAST_OF(IJKS) 
 !
+	       Flux = HALF * (Flux_gN(IJMK) + Flux_gN(IPJMK))
                D_F = AVG_X_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJKC),JM),AVG_Y_H(MU_GT(&
                   IJKSE),MU_GT(IJKE),JM),I)*ODY_N(JM)*AXZ_U(IJMK) 
 !
-               A_U_G(IJK,S) = D_F + (ONE - XSI_N(IJMK))*AVG_X(ROP_G(IJKS),ROP_G&
-                  (IJKSE),I)*V(IJMK)*AXZ_U(IJMK) 
+               A_U_G(IJK,S) = D_F + (ONE - XSI_N(IJMK)) * Flux
             ENDIF 
 !
 !           Bottom face (i+1/2, j, k-1/2)
@@ -970,12 +921,12 @@
                   IJKB = BOTTOM_OF(IJK) 
                   IJKBE = EAST_OF(IJKB) 
 !
+	          Flux = HALF * (Flux_gT(IJKM) + Flux_gT(IPJKM))
                   D_F = AVG_X_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJKC),KM),AVG_Z_H(&
                      MU_GT(IJKBE),MU_GT(IJKE),KM),I)*OX_E(I)*ODZ_T(KM)*AXY_U(&
                      IJKM) 
 !
-                  A_U_G(IJK,B) = D_F + (ONE - XSI_T(IJKM))*AVG_X(ROP_G(IJKB),&
-                     ROP_G(IJKBE),I)*WW(IJKM)*AXY_U(IJKM) 
+                  A_U_G(IJK,B) = D_F + (ONE - XSI_T(IJKM)) * Flux
                ENDIF 
             ENDIF 
 !

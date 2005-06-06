@@ -48,6 +48,7 @@
       Use ambm
       Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
       USE compar      
+      USE mflux     
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -132,7 +133,7 @@
 	    
     
             CALL CONV_DIF_PHI (Scalar(1,N), DIF_Scalar(1,N), DISCRETIZE(9), &
-	                       U_G, V_G, W_G, ROP_G, M, A_M, B_M, IER) 
+	                       U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, M, A_M, B_M, IER) 
 !
 !
             CALL BC_PHI (Scalar(1,N), BC_Scalar(1,N), BC_ScalarW(1,N), BC_HW_Scalar(1,N), &
@@ -190,7 +191,7 @@
 	    
 	    
             CALL CONV_DIF_PHI (Scalar(1,N), DIF_Scalar(1,N), DISCRETIZE(9), &
-	                       U_s(1,m), V_s(1,m), W_s(1,m), ROP_s(1,m), M, &
+	                       U_s(1,m), V_s(1,m), W_s(1,m), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), M, &
 			       A_M, B_M, IER) 
 !
 !

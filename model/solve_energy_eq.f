@@ -49,10 +49,11 @@
       USE rxns
       Use ambm
       Use tmp_array, S_p => ARRAY1, S_C => ARRAY2, EPs => ARRAY3, &
-                     ROPxCp => ARRAY4
+                     TxCp => ARRAY4
       Use tmp_array1, VxGama => ARRAYm1
       USE compar   
       USE discretelement 
+      USE mflux     
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -127,9 +128,9 @@
       DO IJK = IJKSTART3, IJKEND3
 !
          IF(.NOT.WALL_AT(IJK))THEN
-            ROPXCP(IJK) = ROP_G(IJK)*C_PG(IJK) 
+            TxCP(IJK) = T_G(IJK)*C_PG(IJK) 
 	 ELSE
-            ROPXCP(IJK) = ZERO 
+            TxCP(IJK) = ZERO 
 	 ENDIF
 	 
          IF (FLUID_AT(IJK)) THEN 
@@ -143,7 +144,7 @@
 !
          ENDIF 
       END DO 
-      CALL CONV_DIF_PHI (T_G, K_G, DISCRETIZE(6), U_G, V_G, W_G, ROPXCP, 0, A_M&
+      CALL CONV_DIF_PHI (TxCP, K_G, DISCRETIZE(6), U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, 0, A_M&
          , B_M, IER) 
 !
       CALL BC_PHI (T_g, BC_T_G, BC_TW_G, BC_HW_T_G, BC_C_T_G, 0, A_M, B_M, IER) 
@@ -155,9 +156,9 @@
          DO IJK = IJKSTART3, IJKEND3
 !
             IF(.NOT.WALL_AT(IJK))THEN
-               ROPXCP(IJK) = ROP_S(IJK,M)*C_PS(IJK,M) 
+               TxCP(IJK) = T_S(IJK,M)*C_PS(IJK,M) 
 	    ELSE
-               ROPXCP(IJK) = ZERO 
+               TxCP(IJK) = ZERO 
 	    ENDIF
 	 
             IF (FLUID_AT(IJK)) THEN 
@@ -178,8 +179,8 @@
 !
             ENDIF 
          END DO 
-         CALL CONV_DIF_PHI (T_S(1,M), K_S(1,M), DISCRETIZE(6), U_S(1,M), V_S(1,&
-            M), W_S(1,M), ROPXCP, M, A_M, B_M, IER) 
+         CALL CONV_DIF_PHI (TxCP, K_S(1,M), DISCRETIZE(6), U_S(1,M), V_S(1,&
+            M), W_S(1,M), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), M, A_M, B_M, IER) 
 !
          CALL BC_PHI (T_s(1,M), BC_T_S(1,M), BC_TW_S(1,M), BC_HW_T_S(1,M), BC_C_T_S(1,M)&
             , M, A_M, B_M, IER) 

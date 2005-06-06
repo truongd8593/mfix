@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name:
-!  CONV_DIF_Phi(Phi, Dif, Disc, Uf, Vf, Wf, ROPf, M, A_m, B_m, IER)    C
+!  CONV_DIF_Phi(Phi, Dif, Disc, Uf, Vf, Wf, Flux_E, Flux_N, Flux_T, M, A_m, B_m, IER)    C
 !  Purpose: Determine convection diffusion terms for a sclar phi       C
 !  The off-diagonal coefficients calculated here must be positive. The C
 !  center coefficient and the source vector are negative;              C
@@ -26,7 +26,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_DIF_PHI(PHI,DIF,DISC,UF,VF,WF,ROPF,M,A_M,B_M,IER) 
+      SUBROUTINE CONV_DIF_PHI(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -65,8 +65,8 @@
 !                      Velocity components
       DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3) 
 !
-!                      Macroscopic density
-      DOUBLE PRECISION ROPf(DIMENSION_3)
+!                      Mass flux components
+      DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3) 
 !
 !                      Phase index
       INTEGER          M
@@ -88,16 +88,16 @@
 !	IF DEFERRED CORRECTION IS USED WITH THE SCALAR TRANSPORT EQN.
 !
 	IF(DEF_COR)THEN
-	  CALL CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,ROPF,M,A_M,B_M,IER)
-	  if (DISC > 1) CALL CONV_DIF_PHI_DC(PHI,DIF,DISC,UF,VF,WF,ROPF,M,A_M,B_M,IER)
+	  CALL CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
+	  if (DISC > 1) CALL CONV_DIF_PHI_DC(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
 	ELSE
 !
 !	NO DEFERRED CORRECTION IS USED WITH THE SCALAR TRANSPORT EQN.
 !
 	  IF (DISC == 0) THEN                        
-            CALL CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,ROPF,M,A_M,B_M,IER)
+            CALL CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
 	  ELSE
-            CALL CONV_DIF_PHI1(PHI,DIF,DISC,UF,VF,WF,ROPF,M,A_M,B_M,IER) 
+            CALL CONV_DIF_PHI1(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER) 
           ENDIF
 	ENDIF 
 	
@@ -110,7 +110,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name:
-!   CONV_DIF_Phi0(Phi, Dif, Disc, Uf, Vf, Wf, ROPf, M, A_m, B_m, IER)
+!   CONV_DIF_Phi0(Phi, Dif, Disc, Uf, Vf, Wf, Flux_E,Flux_N,Flux_T, M, A_m, B_m, IER)
 !  Purpose: Determine convection diffusion terms for Phi balance       C
 !  The off-diagonal coefficients calculated here must be positive. The C
 !  center coefficient and the source vector are negative;              C
@@ -129,7 +129,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,ROPF,M,A_M,B_M,IER) 
+      SUBROUTINE CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -168,8 +168,8 @@
 !                      Velocity components
       DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3) 
 !
-!                      Macroscopic density
-      DOUBLE PRECISION ROPf(DIMENSION_3)
+!                      Mass flux components
+      DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3) 
 !
 !                      Phase index
       INTEGER          M
@@ -230,9 +230,9 @@
             D_F = AVG_X_H(DIF(IJK),DIF(IJKE),I)*ODX_E(I)*AYZ(IJK) 
             IF (V_F >= ZERO) THEN 
                A_M(IJK,E,M) = D_F 
-               A_M(IPJK,W,M) = D_F + ROPF(IJK)*V_F*AYZ(IJK) 
+               A_M(IPJK,W,M) = D_F + FLUX_E(IJK) 
             ELSE 
-               A_M(IJK,E,M) = D_F - ROPF(IJKE)*V_F*AYZ(IJK) 
+               A_M(IJK,E,M) = D_F - FLUX_E(IJK) 
                A_M(IPJK,W,M) = D_F 
             ENDIF 
 !
@@ -242,9 +242,9 @@
             D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*AXZ(IJK) 
             IF (V_F >= ZERO) THEN 
                A_M(IJK,N,M) = D_F 
-               A_M(IJPK,S,M) = D_F + ROPF(IJK)*V_F*AXZ(IJK) 
+               A_M(IJPK,S,M) = D_F + FLUX_N(IJK) 
             ELSE 
-               A_M(IJK,N,M) = D_F - ROPF(IJKN)*V_F*AXZ(IJK) 
+               A_M(IJK,N,M) = D_F - FLUX_N(IJK) 
                A_M(IJPK,S,M) = D_F 
             ENDIF 
 !
@@ -256,9 +256,9 @@
                D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*AXY(IJK) 
                IF (V_F >= ZERO) THEN 
                   A_M(IJK,T,M) = D_F 
-                  A_M(IJKP,B,M) = D_F + ROPF(IJK)*V_F*AXY(IJK) 
+                  A_M(IJKP,B,M) = D_F + FLUX_T(IJK) 
                ELSE 
-                  A_M(IJK,T,M) = D_F - ROPF(IJKT)*V_F*AXY(IJK) 
+                  A_M(IJK,T,M) = D_F - FLUX_T(IJK) 
                   A_M(IJKP,B,M) = D_F 
                ENDIF 
             ENDIF 
@@ -272,7 +272,7 @@
                V_F = UF(IMJK) 
                D_F = AVG_X_H(DIF(IJKW),DIF(IJK),IM)*ODX_E(IM)*AYZ(IMJK) 
                IF (V_F >= ZERO) THEN 
-                  A_M(IJK,W,M) = D_F + ROPF(IJKW)*V_F*AYZ(IMJK) 
+                  A_M(IJK,W,M) = D_F + FLUX_E(IMJK) 
                ELSE 
                   A_M(IJK,W,M) = D_F 
                ENDIF 
@@ -286,7 +286,7 @@
                V_F = VF(IJMK) 
                D_F = AVG_Y_H(DIF(IJKS),DIF(IJK),JM)*ODY_N(JM)*AXZ(IJMK) 
                IF (V_F >= ZERO) THEN 
-                  A_M(IJK,S,M) = D_F + ROPF(IJKS)*V_F*AXZ(IJMK) 
+                  A_M(IJK,S,M) = D_F + FLUX_N(IJMK) 
                ELSE 
                   A_M(IJK,S,M) = D_F 
                ENDIF 
@@ -302,7 +302,7 @@
                   D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX_E(I)*ODZ_T(KM)*AXY(&
                      IJKM) 
                   IF (V_F >= ZERO) THEN 
-                     A_M(IJK,B,M) = D_F + ROPF(IJKB)*V_F*AXY(IJKM) 
+                     A_M(IJK,B,M) = D_F + FLUX_T(IJKM) 
                   ELSE 
                      A_M(IJK,B,M) = D_F 
                   ENDIF 
@@ -320,7 +320,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name:
-!    CONV_DIF_Phi_DC(Phi, Dif, Disc, Uf, Vf, Wf, ROPf, M, A_m, B_m, IER)
+!    CONV_DIF_Phi_DC(Phi, Dif, Disc, Uf, Vf, Wf, Flux_E,Flux_N,Flux_T, M, A_m, B_m, IER)
 !  Purpose: TO USE DEFERRED CORRECTION IN SOLVING THE SCALAR TRANSPORT C
 !  EQN. THIS METHOD COMBINES FIRST ORDER UPWIND AND A USER SPECIFIED   C
 !  HIGH ORDER METHOD TO SOLVE FOR THE SCALAR PHI.
@@ -339,7 +339,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_DIF_PHI_DC(PHI,DIF,DISC,UF,VF,WF,ROPF,M,A_M,B_M,IER) 
+      SUBROUTINE CONV_DIF_PHI_DC(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -381,8 +381,8 @@
 !                      Velocity components
       DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3) 
 !
-!                      Macroscopic density
-      DOUBLE PRECISION ROPf(DIMENSION_3)
+!                      Mass flux components
+      DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3) 
 !
 !                      Phase index
       INTEGER          M
@@ -422,9 +422,6 @@
 !
 !	LOW ORDER APPROXIMATION 
 	DOUBLE PRECISION PHI_LO
-!
-!	CONVECTION FACTOR AT THE FACE
-	DOUBLE PRECISION CONV_FAC
 !
 !	DEFERRED CORRECTION CONTRIBUTIONS FROM EACH FACE
 	DOUBLE PRECISION  EAST_DC
@@ -524,54 +521,38 @@
 !
 		V_F = UF(IJK)
 		IF(V_F >= ZERO)THEN
-		   CONV_FAC = ROPF(IJK)*V_F*AYZ(IJK)
 		   PHI_LO = PHI(IJK)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IPJK), PHI(IJK), & 
                             PHI(IMJK), PHI(IM_OF(IMJK)))
-                     ELSE
-                     ENDIF
 		ELSE
-		   CONV_FAC = ROPF(IJKE)*V_F*AYZ(IJK)
 		   PHI_LO = PHI(IPJK)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJK), PHI(IPJK), & 
                             PHI(IP_OF(IPJK)), TMP4(IPPP4))
-                     ELSE
-                     ENDIF
 		ENDIF
-                     IF (.NOT. FPFOI ) THEN
+                IF (.NOT. FPFOI ) &
                       PHI_HO = XSI_E(IJK)*PHI(IPJK)+(1.0-XSI_E(IJK))*PHI(IJK)
-                     ELSE
-                     ENDIF
-		EAST_DC = CONV_FAC*(PHI_LO-PHI_HO)
+		EAST_DC = FLUX_E(IJK)*(PHI_LO - PHI_HO)
 !
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE North face (i, j+1/2, k)
 !
 		V_F = VF(IJK)
 		IF(V_F >= ZERO)THEN
-		   CONV_FAC = ROPF(IJK)*V_F*AXZ(IJK)
 		   PHI_LO = PHI(IJK)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJPK), PHI(IJK), & 
                             PHI(IJMK), PHI(JM_OF(IJMK)))
-                     ELSE
-                     ENDIF
 		ELSE
-		   CONV_FAC = ROPF(IJKN)*V_F*AXZ(IJK)
 		   PHI_LO = PHI(IJPK)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJK), PHI(IJPK), & 
                             PHI(JP_OF(IJPK)), TMP4(JPPP4))
-                     ELSE
-                     ENDIF
 		ENDIF
-                    IF (.NOT. FPFOI ) THEN
+                IF (.NOT. FPFOI ) &
 		     PHI_HO = XSI_N(IJK)*PHI(IJPK)+(1.0-XSI_N(IJK))*PHI(IJK)
-                    ELSE
-                    ENDIF
-		NORTH_DC = CONV_FAC*(PHI_LO-PHI_HO)
+		NORTH_DC = FLUX_N(IJK)*(PHI_LO - PHI_HO)
 !
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Top face (i, j, k+1/2)
@@ -581,27 +562,19 @@
                 IJKT = TOP_OF(IJK)
 	        V_F = WF(IJK)
 		IF(V_F >= ZERO)THEN
-		   CONV_FAC = ROPF(IJK)*V_F*AXY(IJK)
                    PHI_LO = PHI(IJK)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJKP),  PHI(IJK), &
                             PHI(IJKM), PHI(KM_OF(IJKM)))
-                     ELSE 
-                     ENDIF  
 	        ELSE
-		   CONV_FAC = ROPF(IJKT)*V_F*AXY(IJK)
 		   PHI_LO = PHI(IJKP)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJK), PHI(IJKP),  &
                             PHI(KP_OF(IJKP)), TMP4(KPPP4))
-                     ELSE 
-                     ENDIF  
 	        ENDIF
-                    IF (.NOT. FPFOI ) THEN
+                IF (.NOT. FPFOI ) &
                      PHI_HO = XSI_T(IJK)*PHI(IJKP)+(1.0-XSI_T(IJK))*PHI(IJK)
-                    ELSE
-                    ENDIF
-		  TOP_DC = CONV_FAC*(PHI_LO-PHI_HO)
+                TOP_DC = FLUX_T(IJK)*(PHI_LO - PHI_HO)
 	      ELSE
 	          TOP_DC = ZERO	    
               ENDIF
@@ -613,27 +586,19 @@
 	    	IJKW = WEST_OF(IJK)
 	    	V_F = UF(IMJK)
 	    	IF(V_F >= ZERO)THEN
-		   CONV_FAC = ROPF(IJKW)*V_F*AYZ(IMJK)
 		   PHI_LO = PHI(IMJK)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJK), PHI(IMJK), &
                             PHI(IM_OF(IMJK)), TMP4(IMMM4))
-                     ELSE
-                     ENDIF
 		ELSE
-		   CONV_FAC = ROPF(IJK)*V_F*AYZ(IMJK)
 		   PHI_LO = PHI(IJK)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IMJK), PHI(IJK), &
                             PHI(IPJK), PHI(IP_OF(IPJK)))
-                     ELSE
-                     ENDIF
                 ENDIF
-                    IF (.NOT. FPFOI ) THEN
+                IF (.NOT. FPFOI ) &
 		      PHI_HO = XSI_E(IMJK)*PHI(IJK)+(ONE-XSI_E(IMJK))*PHI(IMJK)
-                    ELSE
-                    ENDIF
-		WEST_DC = CONV_FAC*(PHI_LO-PHI_HO)
+		WEST_DC = FLUX_E(IMJK)*(PHI_LO - PHI_HO)
 !
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE South face (i, j-1/2, k)
@@ -642,27 +607,19 @@
             	IJKS = SOUTH_OF(IJK)
 		V_F = VF(IJMK)
 		IF(V_F >= ZERO)THEN
-		   CONV_FAC = ROPF(IJKS)*V_F*AXZ(IJMK)
 		   PHI_LO = PHI(IJMK)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJK), PHI(IJMK), & 
                             PHI(JM_OF(IJMK)), TMP4(JMMM4))
-                     ELSE
-                     ENDIF
 		ELSE
-		   CONV_FAC = ROPF(IJK)*V_F*AXZ(IJMK)
 		   PHI_LO = PHI(IJK)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJMK), PHI(IJK), & 
                             PHI(IJPK), PHI(JP_OF(IJPK)))
-                     ELSE
-                     ENDIF
                 ENDIF
-                    IF (.NOT. FPFOI ) THEN
+                IF (.NOT. FPFOI ) &
             	      PHI_HO = XSI_N(IJMK)*PHI(IJK)+(ONE-XSI_N(IJMK))*PHI(IJMK)
-                    ELSE
-                    ENDIF
-		SOUTH_DC = CONV_FAC*(PHI_LO-PHI_HO)
+		SOUTH_DC = FLUX_N(IJMK)*(PHI_LO - PHI_HO)
 !
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Bottom face (i, j, k-1/2)
@@ -671,27 +628,19 @@
                  IJKB = BOTTOM_OF(IJK)
 		 V_F = WF(IJKM)
 		 IF(V_F >= ZERO)THEN
-		   CONV_FAC = ROPF(IJKB)*V_F*AXY(IJKM)
                    PHI_LO = PHI(IJKM)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJK), PHI(IJKM), &
                             PHI(KM_OF(IJKM)), TMP4(KMMM4))
-                      ELSE
-                      ENDIF
 		 ELSE
-		   CONV_FAC = ROPF(IJK)*V_F*AXY(IJKM)
                    PHI_LO = PHI(IJK)
-                     IF ( FPFOI ) THEN
+                   IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJKM), PHI(IJK), &
                             PHI(IJKP), PHI(KP_OF(IJKP)))
-                     ELSE
-                     ENDIF
                  ENDIF
-                     IF (.NOT. FPFOI ) THEN
+                 IF (.NOT. FPFOI ) &
                       PHI_HO = XSI_T(IJKM)*PHI(IJK)+(1.0-XSI_T(IJKM))*PHI(IJKM)
-                     ELSE
-                     ENDIF
-		   BOTTOM_DC = CONV_FAC*(PHI_LO-PHI_HO)
+		 BOTTOM_DC = FLUX_T(IJKM)*(PHI_LO - PHI_HO)
 	      ELSE
 		   BOTTOM_DC = ZERO
 	      ENDIF
@@ -718,7 +667,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name:
-!    CONV_DIF_Phi1(Phi, Dif, Disc, Uf, Vf, Wf, ROPf, M, A_m, B_m, IER)
+!    CONV_DIF_Phi1(Phi, Dif, Disc, Uf, Vf, Wf, Flux_E,Flux_N,Flux_T, M, A_m, B_m, IER)
 !  Purpose: Determine convection diffusion terms for gas energy eq Phi C
 !  The off-diagonal coefficients calculated here must be positive. The C
 !  center coefficient and the source vector are negative;              C
@@ -737,7 +686,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_DIF_PHI1(PHI,DIF,DISC,UF,VF,WF,ROPF,M,A_M,B_M,IER) 
+      SUBROUTINE CONV_DIF_PHI1(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -779,8 +728,8 @@
 !                      Velocity components
       DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3) 
 !
-!                      Macroscopic density
-      DOUBLE PRECISION ROPf(DIMENSION_3)
+!                      Mass flux components
+      DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3) 
 !
 !                      Phase index
       INTEGER          M
@@ -871,17 +820,17 @@
 !           East face (i+1/2, j, k)
             D_F = AVG_X_H(DIF(IJK),DIF(IJKE),I)*ODX_E(I)*AYZ(IJK) 
 !
-            A_M(IJK,E,M) = D_F - XSI_E(IJK)*ROPF(IJKE)*UF(IJK)*AYZ(IJK) 
+            A_M(IJK,E,M) = D_F - XSI_E(IJK)*FLUX_E(IJK) 
 !
-            A_M(IPJK,W,M) = D_F + (ONE - XSI_E(IJK))*ROPF(IJK)*UF(IJK)*AYZ(IJK) 
+            A_M(IPJK,W,M) = D_F + (ONE - XSI_E(IJK))*FLUX_E(IJK) 
 !
 !
 !           North face (i, j+1/2, k)
             D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*AXZ(IJK) 
 !
-            A_M(IJK,N,M) = D_F - XSI_N(IJK)*ROPF(IJKN)*VF(IJK)*AXZ(IJK) 
+            A_M(IJK,N,M) = D_F - XSI_N(IJK)*FLUX_N(IJK) 
 !
-            A_M(IJPK,S,M) = D_F + (ONE - XSI_N(IJK))*ROPF(IJK)*VF(IJK)*AXZ(IJK) 
+            A_M(IJPK,S,M) = D_F + (ONE - XSI_N(IJK))*FLUX_N(IJK) 
 !
 !
 !           Top face (i, j, k+1/2)
@@ -891,9 +840,9 @@
 !
                D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*AXY(IJK) 
 !
-               A_M(IJK,T,M) = D_F - XSI_T(IJK)*ROPF(IJKT)*WF(IJK)*AXY(IJK) 
+               A_M(IJK,T,M) = D_F - XSI_T(IJK)*FLUX_T(IJK) 
 !
-               A_M(IJKP,B,M)=D_F+(ONE-XSI_T(IJK))*ROPF(IJK)*WF(IJK)*AXY(IJK) 
+               A_M(IJKP,B,M)=D_F+(ONE-XSI_T(IJK))*FLUX_T(IJK) 
             ENDIF 
 !
 !           West face (i-1/2, j, k)
@@ -904,8 +853,7 @@
 !
                D_F = AVG_X_H(DIF(IJKW),DIF(IJK),IM)*ODX_E(IM)*AYZ(IMJK) 
 !
-               A_M(IJK,W,M) = D_F + (ONE - XSI_E(IMJK))*ROPF(IJKW)*UF(IMJK)*AYZ&
-                  (IMJK) 
+               A_M(IJK,W,M) = D_F + (ONE - XSI_E(IMJK))*FLUX_E(IMJK) 
             ENDIF 
 !
 !           South face (i, j-1/2, k)
@@ -916,8 +864,7 @@
 !
                D_F = AVG_Y_H(DIF(IJKS),DIF(IJK),JM)*ODY_N(JM)*AXZ(IJMK) 
 !
-               A_M(IJK,S,M) = D_F + (ONE - XSI_N(IJMK))*ROPF(IJKS)*VF(IJMK)*AXZ&
-                  (IJMK) 
+               A_M(IJK,S,M) = D_F + (ONE - XSI_N(IJMK))*FLUX_N(IJMK) 
             ENDIF 
 !
 !           Bottom face (i, j, k-1/2)
@@ -930,8 +877,7 @@
                   D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX_E(I)*ODZ_T(KM)*AXY(&
                      IJKM) 
 !
-                  A_M(IJK,B,M) = D_F + (ONE - XSI_T(IJKM))*ROPF(IJKB)*WF(IJKM)*&
-                     AXY(IJKM) 
+                  A_M(IJK,B,M) = D_F + (ONE - XSI_T(IJKM))*FLUX_T(IJKM) 
                ENDIF 
             ENDIF 
 !

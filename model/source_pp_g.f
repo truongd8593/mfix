@@ -45,6 +45,7 @@
       USE vshear
       Use xsi_array
       USE compar    
+      USE ur_facs 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -67,6 +68,10 @@
 !      DOUBLE PRECISION XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),& 
 !                       XSI_t(DIMENSION_3) 
 ! 
+! 
+!                      under relaxation factor for pressure
+      DOUBLE PRECISION fac 
+
 !                      Indices 
       INTEGER          IJK, IMJK, IJMK, IJKM, I, J, K 
       INTEGER          M, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB 
@@ -187,6 +192,7 @@
 ! loezos
 
       IF (RO_G0 == UNDEFINED) THEN 
+        fac = UR_FAC(1)  !since p_g = p_g* + ur_fac * pp_g
 
 ! loezos
 	incr=0		
@@ -211,26 +217,26 @@
                IJKT = TOP_OF(IJK) 
                IJKB = BOTTOM_OF(IJK) 
 !
-               A_M(IJK,0,0) = A_M(IJK,0,0) - DROODP_G(RO_G(IJK),P_G(IJK))*EP_G(&
+               A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*EP_G(&
                   IJK)*((ONE - XSI_E(IJK))*U_G(IJK)*AYZ(IJK)-XSI_E(IMJK)*U_G(&
                   IMJK)*AYZ(IMJK)+(ONE-XSI_N(IJK))*V_G(IJK)*AXZ(IJK)-XSI_N(IJMK&
                   )*V_G(IJMK)*AXZ(IJMK)+VOL(IJK)*ODT) 
 !
-               A_M(IJK,E,0) = A_M(IJK,E,0) - EP_G(IJKE)*DROODP_G(RO_G(IJKE),P_G&
+               A_M(IJK,E,0) = A_M(IJK,E,0) - EP_G(IJKE)*fac*DROODP_G(RO_G(IJKE),P_G&
                   (IJKE))*XSI_E(IJK)*U_G(IJK)*AYZ(IJK) 
-               A_M(IJK,W,0) = A_M(IJK,W,0) + EP_G(IJKW)*DROODP_G(RO_G(IJKW),P_G&
+               A_M(IJK,W,0) = A_M(IJK,W,0) + EP_G(IJKW)*fac*DROODP_G(RO_G(IJKW),P_G&
                   (IJKW))*(ONE - XSI_E(IMJK))*U_G(IMJK)*AYZ(IMJK) 
-               A_M(IJK,N,0) = A_M(IJK,N,0) - EP_G(IJKN)*DROODP_G(RO_G(IJKN),P_G&
+               A_M(IJK,N,0) = A_M(IJK,N,0) - EP_G(IJKN)*fac*DROODP_G(RO_G(IJKN),P_G&
                   (IJKN))*XSI_N(IJK)*V_G(IJK)*AXZ(IJK) 
-               A_M(IJK,S,0) = A_M(IJK,S,0) + EP_G(IJKS)*DROODP_G(RO_G(IJKS),P_G&
+               A_M(IJK,S,0) = A_M(IJK,S,0) + EP_G(IJKS)*fac*DROODP_G(RO_G(IJKS),P_G&
                   (IJKS))*(ONE - XSI_N(IJMK))*V_G(IJMK)*AXZ(IJMK) 
                IF (DO_K) THEN 
-                  A_M(IJK,0,0) = A_M(IJK,0,0) - DROODP_G(RO_G(IJK),P_G(IJK))*&
+                  A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*&
                      EP_G(IJK)*((ONE - XSI_T(IJK))*W_G(IJK)*AXY(IJK)-XSI_T(IJKM&
                      )*W_G(IJKM)*AXY(IJKM)) 
-                  A_M(IJK,T,0) = A_M(IJK,T,0) - EP_G(IJKT)*DROODP_G(RO_G(IJKT),&
+                  A_M(IJK,T,0) = A_M(IJK,T,0) - EP_G(IJKT)*fac*DROODP_G(RO_G(IJKT),&
                      P_G(IJKT))*XSI_T(IJK)*W_G(IJK)*AXY(IJK) 
-                  A_M(IJK,B,0) = A_M(IJK,B,0) + EP_G(IJKB)*DROODP_G(RO_G(IJKB),&
+                  A_M(IJK,B,0) = A_M(IJK,B,0) + EP_G(IJKB)*fac*DROODP_G(RO_G(IJKB),&
                      P_G(IJKB))*(ONE - XSI_T(IJKM))*W_G(IJKM)*AXY(IJKM) 
                ENDIF 
 !

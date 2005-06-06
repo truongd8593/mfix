@@ -46,8 +46,9 @@
       USE energy
       USE rxns
       Use ambm
-      Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, ROPxCp => Array4
+      Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, TxCp => Array4
       USE compar      
+      USE mflux     
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -111,7 +112,7 @@
             IF (FLUID_AT(IJK)) THEN 
 !
                CALL SOURCE_GRANULAR_ENERGY (SOURCELHS, SOURCERHS, IJK, M, IER) 
-               ROPXCP(IJK) = 1.5D0*ROP_S(IJK,M) 
+               TXCP(IJK) = 1.5D0*THETA_M(IJK,M) 
                APO = 1.5D0*ROP_SO(IJK,M)*VOL(IJK)*ODT 
                S_P(IJK) = APO + SOURCELHS + ZMAX(SUM_R_S(IJK,M)) * VOL(IJK) 
                S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS + &
@@ -121,14 +122,14 @@
             ELSE 
 !
                EPS(IJK) = ZERO 
-               ROPXCP(IJK) = ZERO 
+               TXCP(IJK) = ZERO 
                S_P(IJK) = ZERO 
                S_C(IJK) = ZERO 
 !
             ENDIF 
          END DO 
-         CALL CONV_DIF_PHI (THETA_M(1,M), KTH_S(1,M), DISCRETIZE(8), U_S(1,M), &
-            V_S(1,M), W_S(1,M), ROPXCP, M, A_M, B_M, IER) 
+         CALL CONV_DIF_PHI (TXCP, KTH_S(1,M), DISCRETIZE(8), U_S(1,M), &
+            V_S(1,M), W_S(1,M), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), M, A_M, B_M, IER) 
 !
          CALL BC_PHI (THETA_M(1,M), BC_THETA_M(1,M), BC_THETAW_M(1,M), BC_HW_THETA_M(1,M), &
             BC_C_THETA_M(1,M), M, A_M, B_M, IER) 

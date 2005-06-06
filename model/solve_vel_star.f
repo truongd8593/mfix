@@ -77,9 +77,11 @@
 ! 
 !                      phase index 
       INTEGER          m, UVEL, VVEL, WVEL 
+      INTEGER          IJK 
 ! 
-!                      Septadiagonal matrix A_m 
-!      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
+!                      temporary velocity arrays 
+      DOUBLE PRECISION U_gtmp(DIMENSION_3),  V_gtmp(DIMENSION_3), W_gtmp(DIMENSION_3)
+      DOUBLE PRECISION U_stmp(DIMENSION_3, DIMENSION_M),  V_stmp(DIMENSION_3, DIMENSION_M), W_stmp(DIMENSION_3, DIMENSION_M)
 ! 
 !                      Vector b_m 
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
@@ -94,6 +96,20 @@
       call lock_ambm
       call lock_tmp_array1
       call lock_tmp_array2
+      
+!     Store the velocities so that the order of solving the momentum equations does not matter
+      DO IJK = ijkstart3, ijkend3
+        U_gtmp(IJK) = U_g(IJK)
+        V_gtmp(IJK) = V_g(IJK)
+        W_gtmp(IJK) = W_g(IJK)
+      ENDDO
+      DO M = 1, MMAX
+        DO IJK = ijkstart3, ijkend3
+          U_stmp(IJK, M) = U_s(IJK, M)
+          V_stmp(IJK, M) = V_s(IJK, M)
+          W_stmp(IJK, M) = W_s(IJK, M)
+        ENDDO
+      ENDDO
       
       IF(DISCRETE_ELEMENT) THEN
          UVEL = 0
@@ -184,7 +200,7 @@
          CALL ADJUST_LEQ (RESID(RESID_U,0), LEQ_IT(3), LEQ_METHOD(3), LEQI, &
             LEQM, IER) 
 !
-         CALL SOLVE_LIN_EQ ('U_g', U_G, A_M, B_M, 0, LEQI, LEQM, &
+         CALL SOLVE_LIN_EQ ('U_g', U_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
 	                     LEQ_SWEEP(3), LEQ_TOL(3),IER) 
 !        call out_array(u_g, 'u_g')
       ENDIF 
@@ -196,7 +212,7 @@
             CALL ADJUST_LEQ (RESID(RESID_U,M), LEQ_IT(3), LEQ_METHOD(3), LEQI, &
                LEQM, IER) 
 !
-            CALL SOLVE_LIN_EQ ('U_s', U_S(1,M), A_M, B_M, M, LEQI, LEQM, &
+            CALL SOLVE_LIN_EQ ('U_s', U_Stmp(1,M), A_M, B_M, M, LEQI, LEQM, &
 	                     LEQ_SWEEP(3), LEQ_TOL(3),IER) 
 !          call out_array(u_s(1,m), 'u_s')
          ENDIF 
@@ -280,7 +296,7 @@
          CALL ADJUST_LEQ (RESID(RESID_V,0), LEQ_IT(4), LEQ_METHOD(4), LEQI, &
             LEQM, IER) 
 !
-         CALL SOLVE_LIN_EQ ('V_g', V_G, A_M, B_M, 0, LEQI, LEQM, &
+         CALL SOLVE_LIN_EQ ('V_g', V_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
 	                     LEQ_SWEEP(4), LEQ_TOL(4),IER) 
 !        call out_array(v_g, 'v_g')
       ENDIF 
@@ -293,86 +309,81 @@
             CALL ADJUST_LEQ (RESID(RESID_V,M), LEQ_IT(4), LEQ_METHOD(4), LEQI, &
                LEQM, IER) 
 !
-            CALL SOLVE_LIN_EQ ('V_s', V_S(1,M), A_M, B_M, M, LEQI, LEQM, &
+            CALL SOLVE_LIN_EQ ('V_s', V_Stmp(1,M), A_M, B_M, M, LEQI, LEQM, &
 	                     LEQ_SWEEP(4), LEQ_TOL(4),IER) 
 !          call out_array(v_s(1,m), 'v_s')
          ENDIF 
       END DO 
 
-      IF (NO_K)THEN
-        call unlock_ambm
-        call unlock_tmp_array1
-	call unlock_tmp_array2
-        RETURN
-      ENDIF
 !
+      IF (DO_K)THEN
 
-      DO M = 0, MMAX 
-         CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
-      END DO 
-      CALL CONV_DIF_W_G (A_M, B_M, IER) 
+        DO M = 0, MMAX 
+          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
+        END DO 
+        CALL CONV_DIF_W_G (A_M, B_M, IER) 
 !
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-      IF(.NOT.DISCRETE_ELEMENT) THEN
-         CALL CONV_DIF_W_S (A_M, B_M, IER) 
-      END IF
+        IF(.NOT.DISCRETE_ELEMENT) THEN
+          CALL CONV_DIF_W_S (A_M, B_M, IER) 
+        END IF
 !
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 !         
-      CALL SOURCE_W_G (A_M, B_M, IER) 
+        CALL SOURCE_W_G (A_M, B_M, IER) 
 
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 !     
-      IF(.NOT.DISCRETE_ELEMENT) THEN    
-         CALL SOURCE_W_S (A_M, B_M, IER) 
-      END IF
+        IF(.NOT.DISCRETE_ELEMENT) THEN    
+          CALL SOURCE_W_S (A_M, B_M, IER) 
+        END IF
 !
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 ! call mfix_exit(myPE)
 !
-      IF (MMAX > 0) CALL VF_GS_Z (VXF_GS, IER)
-      IF(.NOT.DISCRETE_ELEMENT) THEN
-         IF (MMAX > 0) CALL VF_SS_Z (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
-      END IF
+        IF (MMAX > 0) CALL VF_GS_Z (VXF_GS, IER)
+        IF(.NOT.DISCRETE_ELEMENT) THEN
+          IF (MMAX > 0) CALL VF_SS_Z (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
+        END IF
 !
-      IF(.NOT.DISCRETE_ELEMENT) THEN
-         CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER)  !S. Dartevelle, LANL, Feb.2004
-      ELSE IF(DISCRETE_ELEMENT) THEN
-         IF(DIMN.EQ.3) THEN
+        IF(.NOT.DISCRETE_ELEMENT) THEN
+          CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER)  !S. Dartevelle, LANL, Feb.2004
+        ELSE IF(DISCRETE_ELEMENT) THEN
+          IF(DIMN.EQ.3) THEN
             CALL DES_CALC_D_T (A_M, VXF_GS, D_T, IER)
-         END IF
-      END IF
+          END IF
+        END IF
 !
-      IF(.NOT.DISCRETE_ELEMENT) THEN
-         IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T, IER) 
-         IF (MMAX > 0) CALL PARTIAL_ELIM_W (W_G, W_S, VXF_GS, A_M, B_M, IER)
-      END IF 
+        IF(.NOT.DISCRETE_ELEMENT) THEN
+          IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T, IER) 
+          IF (MMAX > 0) CALL PARTIAL_ELIM_W (W_G, W_S, VXF_GS, A_M, B_M, IER)
+        END IF 
 !
-      CALL ADJUST_A_W_G (A_M, B_M, IER)
-      IF(.NOT.DISCRETE_ELEMENT) THEN 
-         CALL ADJUST_A_W_S (A_M, B_M, IER)
-      END IF 
+        CALL ADJUST_A_W_G (A_M, B_M, IER)
+        IF(.NOT.DISCRETE_ELEMENT) THEN 
+          CALL ADJUST_A_W_S (A_M, B_M, IER)
+        END IF 
 !
-      IF(DIMN.EQ.3) THEN
-         IF((CALLED.GT.3).AND.(DES_CONTINUUM_COUPLED)) THEN
+        IF(DIMN.EQ.3) THEN
+          IF((CALLED.GT.3).AND.(DES_CONTINUUM_COUPLED)) THEN
             WVEL = 1
             CALL GAS_DRAG(A_M, B_M, VXF_GS, IER, UVEL, VVEL, WVEL)
             WVEL = 0
-         END IF
-      END IF
+          END IF
+        END IF
                                               
-      IF (MOMENTUM_Z_EQ(0)) THEN 
-         CALL CALC_RESID_W (U_G, V_G, W_G, A_M, B_M, 0, RESID(RESID_W,0), &
+        IF (MOMENTUM_Z_EQ(0)) THEN 
+          CALL CALC_RESID_W (U_G, V_G, W_G, A_M, B_M, 0, RESID(RESID_W,0), &
             MAX_RESID(RESID_W,0), IJK_RESID(RESID_W,0), IER) 
-         CALL UNDER_RELAX_W (W_G, A_M, B_M, 0, UR_FAC(5), IER) 
+          CALL UNDER_RELAX_W (W_G, A_M, B_M, 0, UR_FAC(5), IER) 
 !
 !        call check_ab_m(a_m, b_m, 0, .false., ier)
 !     &      resid(resid_w, 0), max_resid(resid_w, 0),
 !     &      ijk_resid(resid_w, 0)
-      ENDIF 
+        ENDIF 
 !
-      DO M = 1, MMAX 
-         IF (MOMENTUM_Z_EQ(M)) THEN 
+        DO M = 1, MMAX 
+          IF (MOMENTUM_Z_EQ(M)) THEN 
             CALL CALC_RESID_W (U_S(1,M), V_S(1,M), W_S(1,M), A_M, B_M, M, RESID&
                (RESID_W,M), MAX_RESID(RESID_W,M), IJK_RESID(RESID_W,M), IER) 
             CALL UNDER_RELAX_W (W_S(1,M), A_M, B_M, M, UR_FAC(5), IER) 
@@ -381,33 +392,48 @@
 !     &      resid(resid_w, m), max_resid(resid_w, m),
 !     &      ijk_resid(resid_w, m)
 !          call write_ab_m(a_m, b_m, ijkmax2, m, ier)
-         ENDIF 
-      END DO 
-      IF (MOMENTUM_Z_EQ(0)) THEN 
+          ENDIF 
+        END DO 
+        IF (MOMENTUM_Z_EQ(0)) THEN 
 !        call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, DO_K,
 !     &    ier)
 !
-         CALL ADJUST_LEQ (RESID(RESID_W,0), LEQ_IT(5), LEQ_METHOD(5), LEQI, &
+          CALL ADJUST_LEQ (RESID(RESID_W,0), LEQ_IT(5), LEQ_METHOD(5), LEQI, &
             LEQM, IER) 
 !
-         CALL SOLVE_LIN_EQ ('W_g', W_G, A_M, B_M, 0, LEQI, LEQM, &
+          CALL SOLVE_LIN_EQ ('W_g', W_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
 	                     LEQ_SWEEP(5), LEQ_TOL(5),IER) 
 !        call out_array(w_g, 'w_g')
-      ENDIF 
+        ENDIF 
 !
-      DO M = 1, MMAX 
-         IF (MOMENTUM_Z_EQ(M)) THEN 
+        DO M = 1, MMAX 
+          IF (MOMENTUM_Z_EQ(M)) THEN 
 !          call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, M), 1, DO_K,
 !     &    ier)
 !
             CALL ADJUST_LEQ (RESID(RESID_W,M), LEQ_IT(5), LEQ_METHOD(5), LEQI, &
                LEQM, IER) 
 !
-            CALL SOLVE_LIN_EQ ('W_s', W_S(1,M), A_M, B_M, M, LEQI, LEQM, &
+            CALL SOLVE_LIN_EQ ('W_s', W_Stmp(1,M), A_M, B_M, M, LEQI, LEQM, &
 	                     LEQ_SWEEP(5), LEQ_TOL(5),IER) 
 !          call out_array(w_s(1,m), 'w_s')
-         ENDIF 
-      END DO 
+          ENDIF 
+        END DO 
+      ENDIF
+      
+!     Now update all velocity components
+      DO IJK = ijkstart3, ijkend3
+        U_g(IJK) = U_gtmp(IJK)
+        V_g(IJK) = V_gtmp(IJK)
+        W_g(IJK) = W_gtmp(IJK)
+      ENDDO
+      DO M = 1, MMAX
+        DO IJK = ijkstart3, ijkend3
+        U_s(IJK, M) = U_stmp(IJK, M)
+        V_s(IJK, M) = V_stmp(IJK, M)
+        W_s(IJK, M) = W_stmp(IJK, M)
+        ENDDO
+      ENDDO
 
       call unlock_ambm
       call unlock_tmp_array1

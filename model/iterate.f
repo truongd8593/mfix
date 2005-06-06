@@ -189,6 +189,11 @@
 
       call CALC_RESID_MB(0, errorpercent)
 
+!
+!     Calculate the face values of densities and mass fluxes for the first solve_vel_star call.
+      CALL CONV_ROP(IER)
+      CALL CALC_MFLUX (IER)
+      
 !     Begin iterations
 !
 !------------------------------------------------------------------------------
@@ -222,20 +227,11 @@
 !     Calculate coefficients.  Explicitly set flags for all the quantities
 !     that need to be calculated before calling CALC_COEFF.
 !
-      IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
-      IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
-!
       VISC(0) = RECALC_VISC_G 
-! The following if statement was commented to allow calling calc_mu_s even
-! when the algebraic granular equation is solved (not only the PDE form).
-! This may enhance convergence. sof, March-10-2005.
-!      IF (GRANULAR_ENERGY) THEN 
-         M = 1 
-         IF (MMAX > 0) THEN 
-            VISC(1:MMAX) = .TRUE. 
-            M = MMAX + 1 
-         ENDIF 
-!      ENDIF 
+! 	The IF (GRANULAR_ENERGY) statement was commented out to allow calling calc_mu_s even
+! 	when the algebraic granular equation is solved (not only the PDE form).
+! 	This may enhance convergence. sof, March-10-2005.
+       VISC(1:MMAX) = .TRUE. 
 !
       CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
@@ -255,20 +251,12 @@
 
       CALL SOLVE_VEL_STAR (IER) 
 !
-!     Solve fluid pressure correction equation
-!
-      IF (RO_G0 /= ZERO) CALL SOLVE_PP_G (NORMG, RESG, IER) 
-!
-!
-!     Correct pressure and velocities
-!
-      IF (RO_G0 /= ZERO) CALL CORRECT_0 (IER) 
-     
-      IF (RO_G0 == UNDEFINED) THEN
-        DENSITY(0) = .TRUE. 
-        CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
+!     Calculate density and reaction rates. Do not change density or reaction rate before the call to
+!     solve_vel_star.
+      IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
+      IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
+      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
          HEAT_TR, WALL_TR, IER) 
-      ENDIF 
 
 !
 !     Solve solids volume fraction correction equation for close-packed
@@ -308,12 +296,6 @@
         ENDIF
       END IF
 !
-!  Update wall velocities
-!  modified by sof to force wall functions even when NSW or FSW are declared
-!  default wall BC will still be treated as NSW and no wall functions will be used
- 
-      IF(.NOT. K_EPSILON) CALL SET_WALL_BC (IER) 
-!
 !
 !     Calculate P_star in cells where solids continuity equation is
 !     solved
@@ -322,6 +304,34 @@
         IF (MMAX > 0) CALL CALC_P_STAR (EP_G, P_STAR, IER) 
       END IF
 !
+!     Calculate the face values of densities.
+      CALL CONV_ROP(IER)
+!
+!     Solve fluid pressure correction equation
+!
+      IF (RO_G0 /= ZERO) CALL SOLVE_PP_G (NORMG, RESG, IER) 
+!
+!
+!     Correct pressure, velocities, and density
+!
+      IF (RO_G0 /= ZERO) CALL CORRECT_0 (IER) 
+     
+      IF (RO_G0 == UNDEFINED) THEN
+        DENSITY(0) = .TRUE. 
+        CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
+         HEAT_TR, WALL_TR, IER) 
+      ENDIF 
+
+!
+!  Update wall velocities
+!  modified by sof to force wall functions even when NSW or FSW are declared
+!  default wall BC will still be treated as NSW and no wall functions will be used
+ 
+      IF(.NOT. K_EPSILON) CALL SET_WALL_BC (IER) 
+!
+!     Calculate the face values of densities and mass fluxes.
+      CALL CONV_ROP(IER)
+      CALL CALC_MFLUX (IER)
 !
 !     Solve energy equations
 !
