@@ -1124,3566 +1124,3273 @@ adjust_theta.$(OBJ_EXT) : adjust_theta.f \
             run.mod \
             compar.mod \
             function.inc                                                
-ar             .$(OBJ_EXT) : tant           .f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            mflux.mod g
-            physprop.mod g
-            run.mod g
-            parallel.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
-            sendrecv.mod g
-            xsi_array.mod g
-            mpi_utility.mod g
-            matrix.mod g
-            toleranc.mod g
-            sendrecv3.mod g
-            tmp_array.mod g
-            vshear.mod g
-            scales.mod g
-            constant.mod g
-            visc_s.mod g
-            output.mod g
-            is.mod g
-            visc_g.mod g
-            pgcor.mod g
-            ur_facs.mod g
-            funits.mod g
-            time_cpu.mod g
-            pscor.mod g
-            coeff.mod g
-            leqsol.mod g
-            cont.mod g
-            scalars.mod g
-            discretelement.mod g
-            bc.mod g
-            param1.mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            nt.mod g
-            .mod g
-            m.mod g
-            m1.mod g
-            ar.mod g
-            x.mod g
-            prop.mod g
-            .mod g
-            llel.mod g
-            etry.mod g
-            ces.mod g
-            ar.mod g
-            recv.mod g
-            array.mod g
-            utility.mod g
-            ix.mod g
-            ranc.mod g
-            recv3.mod g
-            array.mod g
-            ar.mod g
-            es.mod g
-            tant.mod g
-            _s.mod g
-            ut.mod g
-            .mod g
-            _g.mod g
-            r.mod g
-            acs.mod g
-            ts.mod g
-            _cpu.mod g
-            r.mod g
-            f.mod g
-            ol.mod g
-            .mod g
-            ars.mod g
-            retelement.mod g
-            m1.mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            .mod g
-            function.inc                                                 g
-            fun_avg1.inc                                                 g
-            fun_avg2.inc                                                 g
-            function3.inc                                                g
-            ep_s1.inc                                                    g
-            ep_s2.inc                                                    g
-            radtn1.inc                                                   g
-            radtn2.inc                                                   g
-            b_force1.inc                                                 g
-            b_force2.inc                                                
-bc_phi.$(OBJ_EXT) : bc_phi.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            toleranc.mod g
-            run.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_s.mod g
-            geometry.mod g
-            output.mod g
-            indices.mod g
-            bc.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
+            param.mod \
+            param1.mod \
+            ambm.mod \
+            coeff.mod \
+            cont.mod \
+            drag.mod \
+            energy.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            pgcor.mod \
+            physprop.mod \
+            pscor.mod \
+            residual.mod \
+            rxns.mod \
+            run.mod \
+            scalars.mod \
+            turb.mod \
+            tau_g.mod \
+            tau_s.mod \
+            tmp_array.mod \
+            tmp_array1.mod \
+            trace.mod \
+            visc_g.mod \
+            visc_s.mod \
+            xsi_array.mod \
+            vshear.mod \
+            mflux.mod 
+bc_phi.$(OBJ_EXT) : bc_phi.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            toleranc.mod \
+            run.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_s.mod \
+            geometry.mod \
+            output.mod \
+            indices.mod \
+            bc.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-bc_theta.$(OBJ_EXT) : bc_theta.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            toleranc.mod g
-            run.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_s.mod g
-            geometry.mod g
-            output.mod g
-            indices.mod g
-            bc.mod g
-            compar.mod g
-            mpi_utility.mod g
-            turb.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+bc_theta.$(OBJ_EXT) : bc_theta.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            toleranc.mod \
+            run.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_s.mod \
+            geometry.mod \
+            output.mod \
+            indices.mod \
+            bc.mod \
+            compar.mod \
+            mpi_utility.mod \
+            turb.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-b_m_p_star.$(OBJ_EXT) : b_m_p_star.f g
-            param.mod g
-            param1.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            run.mod g
-            rxns.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
-            b_force1.inc                                                 g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+b_m_p_star.$(OBJ_EXT) : b_m_p_star.f \
+            param.mod \
+            param1.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            run.mod \
+            rxns.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             b_force2.inc                                                
-bound_x.$(OBJ_EXT) : bound_x.f g
-            param.mod g
+bound_x.$(OBJ_EXT) : bound_x.f \
+            param.mod \
             param1.mod 
-calc_cell.$(OBJ_EXT) : calc_cell.f g
-            param.mod g
+calc_cell.$(OBJ_EXT) : calc_cell.f \
+            param.mod \
             param1.mod 
-calc_coeff.$(OBJ_EXT) : calc_coeff.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            rxns.mod g
-            funits.mod g
+calc_coeff.$(OBJ_EXT) : calc_coeff.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            rxns.mod \
+            funits.mod \
             compar.mod 
-calc_d.$(OBJ_EXT) : calc_d.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            run.mod g
-            scales.mod g
-            compar.mod g
-            sendrecv.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+calc_d.$(OBJ_EXT) : calc_d.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            run.mod \
+            scales.mod \
+            compar.mod \
+            sendrecv.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-calc_dif_g.$(OBJ_EXT) : calc_dif_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            physprop.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            constant.mod g
-            compar.mod g
-            sendrecv.mod g
-            run.mod g
+calc_dif_g.$(OBJ_EXT) : calc_dif_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            constant.mod \
+            compar.mod \
+            sendrecv.mod \
+            run.mod \
             function.inc                                                
-calc_dif_s.$(OBJ_EXT) : calc_dif_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            physprop.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            constant.mod g
-            toleranc.mod g
-            compar.mod g
-            sendrecv.mod g
-            run.mod g
+calc_dif_s.$(OBJ_EXT) : calc_dif_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            constant.mod \
+            toleranc.mod \
+            compar.mod \
+            sendrecv.mod \
+            run.mod \
             function.inc                                                
-calc_drag.$(OBJ_EXT) : calc_drag.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            run.mod g
-            drag.mod g
-            compar.mod g
+calc_drag.$(OBJ_EXT) : calc_drag.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            run.mod \
+            drag.mod \
+            compar.mod \
             discretelement.mod 
-calc_e.$(OBJ_EXT) : calc_e.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            run.mod g
-            constant.mod g
-            compar.mod g
-            sendrecv.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+calc_e.$(OBJ_EXT) : calc_e.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            run.mod \
+            constant.mod \
+            compar.mod \
+            sendrecv.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-calc_gama.$(OBJ_EXT) : calc_gama.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            energy.mod g
-            rxns.mod g
-            indices.mod g
-            compar.mod g
-            sendrecv.mod g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
+calc_gama.$(OBJ_EXT) : calc_gama.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            energy.mod \
+            rxns.mod \
+            indices.mod \
+            compar.mod \
+            sendrecv.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
             ep_s2.inc                                                   
-calc_grbdry.$(OBJ_EXT) : calc_grbdry.f g
-            param.mod g
-            param1.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            run.mod g
-            turb.mod g
-            visc_s.mod g
-            geometry.mod g
-            indices.mod g
-            bc.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+calc_grbdry.$(OBJ_EXT) : calc_grbdry.f \
+            param.mod \
+            param1.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            run.mod \
+            turb.mod \
+            visc_s.mod \
+            geometry.mod \
+            indices.mod \
+            bc.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-calc_k_cp.$(OBJ_EXT) : calc_k_cp.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            physprop.mod g
-            indices.mod g
-            pscor.mod g
-            geometry.mod g
-            constant.mod g
-            run.mod g
-            visc_s.mod g
-            trace.mod g
-            compar.mod g
-            sendrecv.mod g
-            ep_s1.inc                                                    g
-            s_pr1.inc                                                    g
-            function.inc                                                 g
-            s_pr2.inc                                                    g
+calc_k_cp.$(OBJ_EXT) : calc_k_cp.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            physprop.mod \
+            indices.mod \
+            pscor.mod \
+            geometry.mod \
+            constant.mod \
+            run.mod \
+            visc_s.mod \
+            trace.mod \
+            compar.mod \
+            sendrecv.mod \
+            ep_s1.inc                                                    \
+            s_pr1.inc                                                    \
+            function.inc                                                 \
+            s_pr2.inc                                                    \
             ep_s2.inc                                                   
-calc_k_g.$(OBJ_EXT) : calc_k_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            physprop.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            constant.mod g
-            compar.mod g
-            run.mod g
-            sendrecv.mod g
+calc_k_g.$(OBJ_EXT) : calc_k_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            constant.mod \
+            compar.mod \
+            run.mod \
+            sendrecv.mod \
             function.inc                                                
-calc_k_s.$(OBJ_EXT) : calc_k_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            physprop.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            constant.mod g
-            toleranc.mod g
-            compar.mod g
-            sendrecv.mod g
-            run.mod g
+calc_k_s.$(OBJ_EXT) : calc_k_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            constant.mod \
+            toleranc.mod \
+            compar.mod \
+            sendrecv.mod \
+            run.mod \
             function.inc                                                
-calc_mflux.$(OBJ_EXT) : calc_mflux.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            mflux.mod g
-            physprop.mod g
-            run.mod g
-            parallel.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
+calc_mflux.$(OBJ_EXT) : calc_mflux.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            mflux.mod \
+            physprop.mod \
+            run.mod \
+            parallel.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
-calc_mu_g.$(OBJ_EXT) : calc_mu_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            visc_g.mod g
-            visc_s.mod g
-            indices.mod g
-            constant.mod g
-            toleranc.mod g
-            compar.mod g
-            drag.mod g
-            run.mod g
-            turb.mod g
-            sendrecv.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            ep_s2.inc                                                    g
+calc_mu_g.$(OBJ_EXT) : calc_mu_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            visc_g.mod \
+            visc_s.mod \
+            indices.mod \
+            constant.mod \
+            toleranc.mod \
+            compar.mod \
+            drag.mod \
+            run.mod \
+            turb.mod \
+            sendrecv.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            ep_s2.inc                                                    \
             fun_avg2.inc                                                
-calc_mu_s.$(OBJ_EXT) : calc_mu_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            physprop.mod g
-            drag.mod g
-            run.mod g
-            geometry.mod g
-            fldvar.mod g
-            visc_g.mod g
-            visc_s.mod g
-            trace.mod g
-            turb.mod g
-            indices.mod g
-            constant.mod g
-            toleranc.mod g
-            vshear.mod g
-            compar.mod g
-            sendrecv.mod g
-            s_pr1.inc                                                    g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            ep_s2.inc                                                    g
-            fun_avg2.inc                                                 g
+calc_mu_s.$(OBJ_EXT) : calc_mu_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            drag.mod \
+            run.mod \
+            geometry.mod \
+            fldvar.mod \
+            visc_g.mod \
+            visc_s.mod \
+            trace.mod \
+            turb.mod \
+            indices.mod \
+            constant.mod \
+            toleranc.mod \
+            vshear.mod \
+            compar.mod \
+            sendrecv.mod \
+            s_pr1.inc                                                    \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            ep_s2.inc                                                    \
+            fun_avg2.inc                                                 \
             s_pr2.inc                                                   
-calc_mw.$(OBJ_EXT) : calc_mw.f g
-            param.mod g
-            param1.mod g
+calc_mw.$(OBJ_EXT) : calc_mw.f \
+            param.mod \
+            param1.mod \
             toleranc.mod 
-calc_outflow.$(OBJ_EXT) : calc_outflow.f g
-            param.mod g
-            param1.mod g
-            bc.mod g
-            fldvar.mod g
-            indices.mod g
-            physprop.mod g
-            geometry.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
+calc_outflow.$(OBJ_EXT) : calc_outflow.f \
+            param.mod \
+            param1.mod \
+            bc.mod \
+            fldvar.mod \
+            indices.mod \
+            physprop.mod \
+            geometry.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
             ep_s2.inc                                                   
-calc_p_star.$(OBJ_EXT) : calc_p_star.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            constant.mod g
-            pgcor.mod g
-            pscor.mod g
-            ur_facs.mod g
-            residual.mod g
-            compar.mod g
-            fldvar.mod g
-            toleranc.mod g
-            s_pr1.inc                                                    g
-            function.inc                                                 g
-            s_pr2.inc                                                    g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            fun_avg2.inc                                                 g
+calc_p_star.$(OBJ_EXT) : calc_p_star.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            constant.mod \
+            pgcor.mod \
+            pscor.mod \
+            ur_facs.mod \
+            residual.mod \
+            compar.mod \
+            fldvar.mod \
+            toleranc.mod \
+            s_pr1.inc                                                    \
+            function.inc                                                 \
+            s_pr2.inc                                                    \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-calc_resid.$(OBJ_EXT) : calc_resid.f g
-            param.mod g
-            param1.mod g
-            matrix.mod g
-            parallel.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
-            mpi_utility.mod g
-            fldvar.mod g
-            run.mod g
-            bc.mod g
-            constant.mod g
-            physprop.mod g
-            residual.mod g
-            rxns.mod g
+calc_resid.$(OBJ_EXT) : calc_resid.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            parallel.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            mpi_utility.mod \
+            fldvar.mod \
+            run.mod \
+            bc.mod \
+            constant.mod \
+            physprop.mod \
+            residual.mod \
+            rxns.mod \
             function.inc                                                
-calc_s_ddot_s.$(OBJ_EXT) : calc_s_ddot_s.f g
-            param.mod g
-            param1.mod g
-            constant.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
+calc_s_ddot_s.$(OBJ_EXT) : calc_s_ddot_s.f \
+            param.mod \
+            param1.mod \
+            constant.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
             fun_avg2.inc                                                
-calc_trd_g.$(OBJ_EXT) : calc_trd_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            geometry.mod g
-            fldvar.mod g
-            indices.mod g
-            compar.mod g
-            sendrecv.mod g
+calc_trd_g.$(OBJ_EXT) : calc_trd_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            geometry.mod \
+            fldvar.mod \
+            indices.mod \
+            compar.mod \
+            sendrecv.mod \
             function.inc                                                
-calc_trd_s.$(OBJ_EXT) : calc_trd_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            geometry.mod g
-            fldvar.mod g
-            indices.mod g
-            physprop.mod g
-            compar.mod g
-            sendrecv.mod g
+calc_trd_s.$(OBJ_EXT) : calc_trd_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            geometry.mod \
+            fldvar.mod \
+            indices.mod \
+            physprop.mod \
+            compar.mod \
+            sendrecv.mod \
             function.inc                                                
-calc_u_friction.$(OBJ_EXT) : calc_u_friction.f g
-            param.mod g
-            param1.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            run.mod g
-            turb.mod g
-            visc_s.mod g
-            geometry.mod g
-            indices.mod g
-            bc.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+calc_u_friction.$(OBJ_EXT) : calc_u_friction.f \
+            param.mod \
+            param1.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            run.mod \
+            turb.mod \
+            visc_s.mod \
+            geometry.mod \
+            indices.mod \
+            bc.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-calc_vol_fr.$(OBJ_EXT) : calc_vol_fr.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            constant.mod g
-            pgcor.mod g
-            pscor.mod g
-            compar.mod g
-            sendrecv.mod g
-            ep_s1.inc                                                    g
-            s_pr1.inc                                                    g
-            function.inc                                                 g
-            s_pr2.inc                                                    g
+calc_vol_fr.$(OBJ_EXT) : calc_vol_fr.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            constant.mod \
+            pgcor.mod \
+            pscor.mod \
+            compar.mod \
+            sendrecv.mod \
+            ep_s1.inc                                                    \
+            s_pr1.inc                                                    \
+            function.inc                                                 \
+            s_pr2.inc                                                    \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS2) calc_vol_fr.f 
-calc_xsi.$(OBJ_EXT) : calc_xsi.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            geometry.mod g
-            indices.mod g
-            vshear.mod g
-            chischeme.mod g
-            compar.mod g
-            sendrecv.mod g
-            xsi1.inc                                                     g
-            function.inc                                                 g
+calc_xsi.$(OBJ_EXT) : calc_xsi.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            geometry.mod \
+            indices.mod \
+            vshear.mod \
+            chischeme.mod \
+            compar.mod \
+            sendrecv.mod \
+            xsi1.inc                                                     \
+            function.inc                                                 \
             xsi2.inc                                                    
-cal_d.$(OBJ_EXT) : cal_d.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_s.mod g
-            rxns.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            tau_s.mod g
-            bc.mod g
-            vshear.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+cal_d.$(OBJ_EXT) : cal_d.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_s.mod \
+            rxns.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            tau_s.mod \
+            bc.mod \
+            vshear.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-check_ab_m.$(OBJ_EXT) : check_ab_m.f g
-            param.mod g
-            param1.mod g
-            matrix.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
+check_ab_m.$(OBJ_EXT) : check_ab_m.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
-check_convergence.$(OBJ_EXT) : check_convergence.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            run.mod g
-            residual.mod g
-            toleranc.mod g
+check_convergence.$(OBJ_EXT) : check_convergence.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            run.mod \
+            residual.mod \
+            toleranc.mod \
             mpi_utility.mod 
-check_data_01.$(OBJ_EXT) : check_data_01.f g
-            param.mod g
-            param1.mod g
-            constant.mod g
-            run.mod g
-            physprop.mod g
-            indices.mod g
-            scalars.mod g
+check_data_01.$(OBJ_EXT) : check_data_01.f \
+            param.mod \
+            param1.mod \
+            constant.mod \
+            run.mod \
+            physprop.mod \
+            indices.mod \
+            scalars.mod \
             funits.mod 
-check_data_02.$(OBJ_EXT) : check_data_02.f g
-            param.mod g
-            param1.mod g
-            output.mod g
-            leqsol.mod g
-            geometry.mod g
-            run.mod g
+check_data_02.$(OBJ_EXT) : check_data_02.f \
+            param.mod \
+            param1.mod \
+            output.mod \
+            leqsol.mod \
+            geometry.mod \
+            run.mod \
             rxns.mod 
-check_data_03.$(OBJ_EXT) : check_data_03.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            bc.mod g
-            funits.mod g
-            compar.mod g
+check_data_03.$(OBJ_EXT) : check_data_03.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            bc.mod \
+            funits.mod \
+            compar.mod \
             mpi_utility.mod 
-check_data_04.$(OBJ_EXT) : check_data_04.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            indices.mod g
-            physprop.mod g
-            constant.mod g
+check_data_04.$(OBJ_EXT) : check_data_04.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            indices.mod \
+            physprop.mod \
+            constant.mod \
             funits.mod 
-check_data_05.$(OBJ_EXT) : check_data_05.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            funits.mod g
-            run.mod g
+check_data_05.$(OBJ_EXT) : check_data_05.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            funits.mod \
+            run.mod \
             indices.mod 
-check_data_06.$(OBJ_EXT) : check_data_06.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            ic.mod g
-            fldvar.mod g
-            physprop.mod g
-            run.mod g
-            indices.mod g
-            funits.mod g
-            scalars.mod g
-            compar.mod g
-            mpi_utility.mod g
-            sendrecv.mod g
+check_data_06.$(OBJ_EXT) : check_data_06.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            ic.mod \
+            fldvar.mod \
+            physprop.mod \
+            run.mod \
+            indices.mod \
+            funits.mod \
+            scalars.mod \
+            compar.mod \
+            mpi_utility.mod \
+            sendrecv.mod \
             function.inc                                                
-check_data_07.$(OBJ_EXT) : check_data_07.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            run.mod g
-            bc.mod g
-            indices.mod g
-            funits.mod g
-            scalars.mod g
-            compar.mod g
-            sendrecv.mod g
+check_data_07.$(OBJ_EXT) : check_data_07.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            run.mod \
+            bc.mod \
+            indices.mod \
+            funits.mod \
+            scalars.mod \
+            compar.mod \
+            sendrecv.mod \
             function.inc                                                
-check_data_08.$(OBJ_EXT) : check_data_08.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            run.mod g
-            is.mod g
-            indices.mod g
-            funits.mod g
-            compar.mod g
+check_data_08.$(OBJ_EXT) : check_data_08.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            run.mod \
+            is.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
             function.inc                                                
-check_data_09.$(OBJ_EXT) : check_data_09.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            run.mod g
-            rxns.mod g
-            indices.mod g
-            funits.mod g
+check_data_09.$(OBJ_EXT) : check_data_09.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            run.mod \
+            rxns.mod \
+            indices.mod \
+            funits.mod \
             compar.mod 
-check_data_20.$(OBJ_EXT) : check_data_20.f g
-            param.mod g
-            param1.mod g
-            toleranc.mod g
-            fldvar.mod g
-            run.mod g
-            geometry.mod g
-            constant.mod g
-            physprop.mod g
-            indices.mod g
-            funits.mod g
-            visc_g.mod g
-            rxns.mod g
-            scalars.mod g
-            compar.mod g
-            sendrecv.mod g
+check_data_20.$(OBJ_EXT) : check_data_20.f \
+            param.mod \
+            param1.mod \
+            toleranc.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            constant.mod \
+            physprop.mod \
+            indices.mod \
+            funits.mod \
+            visc_g.mod \
+            rxns.mod \
+            scalars.mod \
+            compar.mod \
+            sendrecv.mod \
             function.inc                                                
-check_data_30.$(OBJ_EXT) : check_data_30.f g
-            param.mod g
-            param1.mod g
-            toleranc.mod g
-            fldvar.mod g
-            rxns.mod g
-            visc_s.mod g
-            visc_g.mod g
-            geometry.mod g
-            run.mod g
-            constant.mod g
-            physprop.mod g
-            indices.mod g
-            funits.mod g
-            compar.mod g
-            mpi_utility.mod g
+check_data_30.$(OBJ_EXT) : check_data_30.f \
+            param.mod \
+            param1.mod \
+            toleranc.mod \
+            fldvar.mod \
+            rxns.mod \
+            visc_s.mod \
+            visc_g.mod \
+            geometry.mod \
+            run.mod \
+            constant.mod \
+            physprop.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
+            mpi_utility.mod \
             function.inc                                                
-check_mass_balance.$(OBJ_EXT) : check_mass_balance.f g
-            param.mod g
-            param1.mod g
-            toleranc.mod g
-            fldvar.mod g
-            rxns.mod g
-            geometry.mod g
-            run.mod g
-            bc.mod g
-            constant.mod g
-            physprop.mod g
-            indices.mod g
-            funits.mod g
-            compar.mod g
-            mpi_utility.mod g
-            output.mod g
-            check.mod g
-            parallel.mod g
-            matrix.mod g
+check_mass_balance.$(OBJ_EXT) : check_mass_balance.f \
+            param.mod \
+            param1.mod \
+            toleranc.mod \
+            fldvar.mod \
+            rxns.mod \
+            geometry.mod \
+            run.mod \
+            bc.mod \
+            constant.mod \
+            physprop.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
+            mpi_utility.mod \
+            output.mod \
+            check.mod \
+            parallel.mod \
+            matrix.mod \
             function.inc                                                
-check_one_axis.$(OBJ_EXT) : check_one_axis.f g
-            param.mod g
-            param1.mod g
+check_one_axis.$(OBJ_EXT) : check_one_axis.f \
+            param.mod \
+            param1.mod \
             funits.mod 
-check_plane.$(OBJ_EXT) : check_plane.f g
-            funits.mod g
+check_plane.$(OBJ_EXT) : check_plane.f \
+            funits.mod \
             compar.mod 
-cn_extrapol.$(OBJ_EXT) : cn_extrapol.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            scalars.mod g
-            trace.mod g
-            run.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
-            mpi_utility.mod g
+cn_extrapol.$(OBJ_EXT) : cn_extrapol.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            scalars.mod \
+            trace.mod \
+            run.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            mpi_utility.mod \
             function.inc                                                
-compare.$(OBJ_EXT) : compare.f g
-            param.mod g
-            param1.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
+compare.$(OBJ_EXT) : compare.f \
+            param.mod \
+            param1.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
-conv_dif_phi.$(OBJ_EXT) : conv_dif_phi.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            geometry.mod g
-            compar.mod g
-            sendrecv.mod g
-            xsi_array.mod g
-            mpi_utility.mod g
-            indices.mod g
-            parallel.mod g
-            matrix.mod g
-            toleranc.mod g
-            sendrecv3.mod g
-            tmp_array.mod g
-            vshear.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_s.mod g
-            output.mod g
-            is.mod g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            function3.inc                                                g
-            ep_s1.inc                                                    g
+conv_dif_phi.$(OBJ_EXT) : conv_dif_phi.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            geometry.mod \
+            compar.mod \
+            sendrecv.mod \
+            xsi_array.mod \
+            mpi_utility.mod \
+            indices.mod \
+            parallel.mod \
+            matrix.mod \
+            toleranc.mod \
+            sendrecv3.mod \
+            tmp_array.mod \
+            vshear.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_s.mod \
+            output.mod \
+            is.mod \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            function3.inc                                                \
+            ep_s1.inc                                                    \
             ep_s2.inc                                                   
-conv_dif_u_g.$(OBJ_EXT) : conv_dif_u_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            geometry.mod g
-            indices.mod g
-            run.mod g
-            visc_g.mod g
-            compar.mod g
-            toleranc.mod g
-            physprop.mod g
-            fldvar.mod g
-            output.mod g
-            mflux.mod g
-            vshear.mod g
-            xsi_array.mod g
-            tmp_array.mod g
-            sendrecv.mod g
-            sendrecv3.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+conv_dif_u_g.$(OBJ_EXT) : conv_dif_u_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            geometry.mod \
+            indices.mod \
+            run.mod \
+            visc_g.mod \
+            compar.mod \
+            toleranc.mod \
+            physprop.mod \
+            fldvar.mod \
+            output.mod \
+            mflux.mod \
+            vshear.mod \
+            xsi_array.mod \
+            tmp_array.mod \
+            sendrecv.mod \
+            sendrecv3.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             function3.inc                                               
-conv_dif_u_s.$(OBJ_EXT) : conv_dif_u_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            geometry.mod g
-            indices.mod g
-            run.mod g
-            physprop.mod g
-            visc_s.mod g
-            compar.mod g
-            toleranc.mod g
-            fldvar.mod g
-            output.mod g
-            mflux.mod g
-            xsi_array.mod g
-            tmp_array.mod g
-            sendrecv.mod g
-            sendrecv3.mod g
-            vshear.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+conv_dif_u_s.$(OBJ_EXT) : conv_dif_u_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            geometry.mod \
+            indices.mod \
+            run.mod \
+            physprop.mod \
+            visc_s.mod \
+            compar.mod \
+            toleranc.mod \
+            fldvar.mod \
+            output.mod \
+            mflux.mod \
+            xsi_array.mod \
+            tmp_array.mod \
+            sendrecv.mod \
+            sendrecv3.mod \
+            vshear.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             function3.inc                                               
-conv_dif_v_g.$(OBJ_EXT) : conv_dif_v_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            geometry.mod g
-            indices.mod g
-            run.mod g
-            visc_g.mod g
-            compar.mod g
-            toleranc.mod g
-            physprop.mod g
-            fldvar.mod g
-            output.mod g
-            mflux.mod g
-            xsi_array.mod g
-            vshear.mod g
-            tmp_array.mod g
-            sendrecv.mod g
-            sendrecv3.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+conv_dif_v_g.$(OBJ_EXT) : conv_dif_v_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            geometry.mod \
+            indices.mod \
+            run.mod \
+            visc_g.mod \
+            compar.mod \
+            toleranc.mod \
+            physprop.mod \
+            fldvar.mod \
+            output.mod \
+            mflux.mod \
+            xsi_array.mod \
+            vshear.mod \
+            tmp_array.mod \
+            sendrecv.mod \
+            sendrecv3.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             function3.inc                                               
-conv_dif_v_s.$(OBJ_EXT) : conv_dif_v_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            geometry.mod g
-            indices.mod g
-            run.mod g
-            physprop.mod g
-            visc_s.mod g
-            compar.mod g
-            toleranc.mod g
-            fldvar.mod g
-            output.mod g
-            mflux.mod g
-            xsi_array.mod g
-            tmp_array.mod g
-            sendrecv.mod g
-            sendrecv3.mod g
-            vshear.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+conv_dif_v_s.$(OBJ_EXT) : conv_dif_v_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            geometry.mod \
+            indices.mod \
+            run.mod \
+            physprop.mod \
+            visc_s.mod \
+            compar.mod \
+            toleranc.mod \
+            fldvar.mod \
+            output.mod \
+            mflux.mod \
+            xsi_array.mod \
+            tmp_array.mod \
+            sendrecv.mod \
+            sendrecv3.mod \
+            vshear.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             function3.inc                                               
-conv_dif_w_g.$(OBJ_EXT) : conv_dif_w_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            geometry.mod g
-            indices.mod g
-            run.mod g
-            visc_g.mod g
-            compar.mod g
-            toleranc.mod g
-            physprop.mod g
-            fldvar.mod g
-            output.mod g
-            mflux.mod g
-            xsi_array.mod g
-            tmp_array.mod g
-            sendrecv.mod g
-            sendrecv3.mod g
-            vshear.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+conv_dif_w_g.$(OBJ_EXT) : conv_dif_w_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            geometry.mod \
+            indices.mod \
+            run.mod \
+            visc_g.mod \
+            compar.mod \
+            toleranc.mod \
+            physprop.mod \
+            fldvar.mod \
+            output.mod \
+            mflux.mod \
+            xsi_array.mod \
+            tmp_array.mod \
+            sendrecv.mod \
+            sendrecv3.mod \
+            vshear.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             function3.inc                                               
-conv_dif_w_s.$(OBJ_EXT) : conv_dif_w_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            geometry.mod g
-            indices.mod g
-            run.mod g
-            physprop.mod g
-            visc_s.mod g
-            compar.mod g
-            toleranc.mod g
-            fldvar.mod g
-            output.mod g
-            mflux.mod g
-            xsi_array.mod g
-            tmp_array.mod g
-            sendrecv.mod g
-            sendrecv3.mod g
-            vshear.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+conv_dif_w_s.$(OBJ_EXT) : conv_dif_w_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            geometry.mod \
+            indices.mod \
+            run.mod \
+            physprop.mod \
+            visc_s.mod \
+            compar.mod \
+            toleranc.mod \
+            fldvar.mod \
+            output.mod \
+            mflux.mod \
+            xsi_array.mod \
+            tmp_array.mod \
+            sendrecv.mod \
+            sendrecv3.mod \
+            vshear.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             function3.inc                                               
-conv_pp_g.$(OBJ_EXT) : conv_pp_g.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            run.mod g
-            parallel.mod g
-            matrix.mod g
-            physprop.mod g
-            geometry.mod g
-            indices.mod g
-            pgcor.mod g
-            compar.mod g
-            mflux.mod g
+conv_pp_g.$(OBJ_EXT) : conv_pp_g.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            run.mod \
+            parallel.mod \
+            matrix.mod \
+            physprop.mod \
+            geometry.mod \
+            indices.mod \
+            pgcor.mod \
+            compar.mod \
+            mflux.mod \
             function.inc                                                
-conv_rop.$(OBJ_EXT) : conv_rop.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            mflux.mod g
-            physprop.mod g
-            run.mod g
-            parallel.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
-            xsi_array.mod g
+conv_rop.$(OBJ_EXT) : conv_rop.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            mflux.mod \
+            physprop.mod \
+            run.mod \
+            parallel.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            xsi_array.mod \
             function.inc                                                
-conv_rop_g.$(OBJ_EXT) : conv_rop_g.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            run.mod g
-            compar.mod g
-            parallel.mod g
-            matrix.mod g
-            physprop.mod g
-            geometry.mod g
-            indices.mod g
-            pgcor.mod g
-            xsi_array.mod g
+conv_rop_g.$(OBJ_EXT) : conv_rop_g.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            run.mod \
+            compar.mod \
+            parallel.mod \
+            matrix.mod \
+            physprop.mod \
+            geometry.mod \
+            indices.mod \
+            pgcor.mod \
+            xsi_array.mod \
             function.inc                                                
-conv_rop_s.$(OBJ_EXT) : conv_rop_s.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            run.mod g
-            compar.mod g
-            parallel.mod g
-            matrix.mod g
-            physprop.mod g
-            geometry.mod g
-            indices.mod g
-            pgcor.mod g
-            pscor.mod g
-            xsi_array.mod g
+conv_rop_s.$(OBJ_EXT) : conv_rop_s.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            run.mod \
+            compar.mod \
+            parallel.mod \
+            matrix.mod \
+            physprop.mod \
+            geometry.mod \
+            indices.mod \
+            pgcor.mod \
+            pscor.mod \
+            xsi_array.mod \
             function.inc                                                
-conv_source_epp.$(OBJ_EXT) : conv_source_epp.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            run.mod g
-            geometry.mod g
-            compar.mod g
-            sendrecv.mod g
-            xsi_array.mod g
-            parallel.mod g
-            matrix.mod g
-            constant.mod g
-            physprop.mod g
-            rxns.mod g
-            indices.mod g
-            pgcor.mod g
-            pscor.mod g
-            vshear.mod g
-            ep_s1.inc                                                    g
-            s_pr1.inc                                                    g
-            function.inc                                                 g
-            s_pr2.inc                                                    g
+conv_source_epp.$(OBJ_EXT) : conv_source_epp.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            compar.mod \
+            sendrecv.mod \
+            xsi_array.mod \
+            parallel.mod \
+            matrix.mod \
+            constant.mod \
+            physprop.mod \
+            rxns.mod \
+            indices.mod \
+            pgcor.mod \
+            pscor.mod \
+            vshear.mod \
+            ep_s1.inc                                                    \
+            s_pr1.inc                                                    \
+            function.inc                                                 \
+            s_pr2.inc                                                    \
             ep_s2.inc                                                   
-copy_a.$(OBJ_EXT) : copy_a.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
-            physprop.mod g
+copy_a.$(OBJ_EXT) : copy_a.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            physprop.mod \
             function.inc                                                
-corner.$(OBJ_EXT) : corner.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            physprop.mod g
-            indices.mod g
-            matrix.mod g
-            corner.mod g
-            funits.mod g
-            compar.mod g
+corner.$(OBJ_EXT) : corner.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            physprop.mod \
+            indices.mod \
+            matrix.mod \
+            corner.mod \
+            funits.mod \
+            compar.mod \
             function.inc                                                
-correct_0.$(OBJ_EXT) : correct_0.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            pgcor.mod g
-            ur_facs.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            compar.mod g
+correct_0.$(OBJ_EXT) : correct_0.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            pgcor.mod \
+            ur_facs.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            compar.mod \
             function.inc                                                
-correct_1.$(OBJ_EXT) : correct_1.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            physprop.mod g
-            indices.mod g
-            geometry.mod g
-            pscor.mod g
-            ur_facs.mod g
-            constant.mod g
-            compar.mod g
-            sendrecv.mod g
-            ep_s1.inc                                                    g
-            s_pr1.inc                                                    g
-            function.inc                                                 g
-            s_pr2.inc                                                    g
+correct_1.$(OBJ_EXT) : correct_1.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            physprop.mod \
+            indices.mod \
+            geometry.mod \
+            pscor.mod \
+            ur_facs.mod \
+            constant.mod \
+            compar.mod \
+            sendrecv.mod \
+            ep_s1.inc                                                    \
+            s_pr1.inc                                                    \
+            function.inc                                                 \
+            s_pr2.inc                                                    \
             ep_s2.inc                                                   
 dgtsl.$(OBJ_EXT) : dgtsl.f 
-dif_u_is.$(OBJ_EXT) : dif_u_is.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            toleranc.mod g
-            run.mod g
-            physprop.mod g
-            fldvar.mod g
-            geometry.mod g
-            output.mod g
-            indices.mod g
-            is.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+dif_u_is.$(OBJ_EXT) : dif_u_is.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            toleranc.mod \
+            run.mod \
+            physprop.mod \
+            fldvar.mod \
+            geometry.mod \
+            output.mod \
+            indices.mod \
+            is.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-dif_v_is.$(OBJ_EXT) : dif_v_is.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            toleranc.mod g
-            run.mod g
-            physprop.mod g
-            fldvar.mod g
-            geometry.mod g
-            output.mod g
-            indices.mod g
-            is.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+dif_v_is.$(OBJ_EXT) : dif_v_is.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            toleranc.mod \
+            run.mod \
+            physprop.mod \
+            fldvar.mod \
+            geometry.mod \
+            output.mod \
+            indices.mod \
+            is.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-dif_w_is.$(OBJ_EXT) : dif_w_is.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            toleranc.mod g
-            run.mod g
-            physprop.mod g
-            fldvar.mod g
-            geometry.mod g
-            output.mod g
-            indices.mod g
-            is.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+dif_w_is.$(OBJ_EXT) : dif_w_is.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            toleranc.mod \
+            run.mod \
+            physprop.mod \
+            fldvar.mod \
+            geometry.mod \
+            output.mod \
+            indices.mod \
+            is.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-discretize.$(OBJ_EXT) : discretize.f g
-            param.mod g
-            param1.mod g
+discretize.$(OBJ_EXT) : discretize.f \
+            param.mod \
+            param1.mod \
             run.mod 
-display_resid.$(OBJ_EXT) : display_resid.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            residual.mod g
-            fldvar.mod g
-            compar.mod g
+display_resid.$(OBJ_EXT) : display_resid.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            residual.mod \
+            fldvar.mod \
+            compar.mod \
             geometry.mod 
-drag_gs.$(OBJ_EXT) : drag_gs.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            run.mod g
-            constant.mod g
-            compar.mod g
-            drag.mod g
-            sendrecv.mod g
-            discretelement.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+drag_gs.$(OBJ_EXT) : drag_gs.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            run.mod \
+            constant.mod \
+            compar.mod \
+            drag.mod \
+            sendrecv.mod \
+            discretelement.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-drag_ss.$(OBJ_EXT) : drag_ss.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            constant.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            compar.mod g
-            sendrecv.mod g
-            drag.mod g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
+drag_ss.$(OBJ_EXT) : drag_ss.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            constant.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            compar.mod \
+            sendrecv.mod \
+            drag.mod \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
             fun_avg2.inc                                                
-eosg.$(OBJ_EXT) : eosg.f g
-            param.mod g
-            param1.mod g
-            constant.mod g
-            physprop.mod g
-            scales.mod g
-            sc_p_g1.inc                                                  g
+eosg.$(OBJ_EXT) : eosg.f \
+            param.mod \
+            param1.mod \
+            constant.mod \
+            physprop.mod \
+            scales.mod \
+            sc_p_g1.inc                                                  \
             sc_p_g2.inc                                                 
-equal.$(OBJ_EXT) : equal.f g
-            param.mod g
-            param1.mod g
-            indices.mod g
+equal.$(OBJ_EXT) : equal.f \
+            param.mod \
+            param1.mod \
+            indices.mod \
             physprop.mod 
-error_routine.$(OBJ_EXT) : error_routine.f g
-            funits.mod g
-            compar.mod g
+error_routine.$(OBJ_EXT) : error_routine.f \
+            funits.mod \
+            compar.mod \
             mpi_utility.mod 
-exchange.$(OBJ_EXT) : exchange.f g
-            param.mod g
-            param1.mod g
+exchange.$(OBJ_EXT) : exchange.f \
+            param.mod \
+            param1.mod \
             compar.mod 
-exit.$(OBJ_EXT) : exit.f g
-            funits.mod g
-            compar.mod g
+exit.$(OBJ_EXT) : exit.f \
+            funits.mod \
+            compar.mod \
             mpi_utility.mod 
-flow_to_vel.$(OBJ_EXT) : flow_to_vel.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            run.mod g
-            bc.mod g
-            indices.mod g
-            funits.mod g
+flow_to_vel.$(OBJ_EXT) : flow_to_vel.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            run.mod \
+            bc.mod \
+            indices.mod \
+            funits.mod \
             compar.mod 
-g_0.$(OBJ_EXT) : g_0.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
-            ep_s2.inc                                                    g
-            fun_avg1.inc                                                 g
+g_0.$(OBJ_EXT) : g_0.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
+            ep_s2.inc                                                    \
+            fun_avg1.inc                                                 \
             fun_avg2.inc                                                
-get_bc_area.$(OBJ_EXT) : get_bc_area.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            bc.mod g
+get_bc_area.$(OBJ_EXT) : get_bc_area.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            bc.mod \
             compar.mod 
-get_data.$(OBJ_EXT) : get_data.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            funits.mod g
-            compar.mod g
+get_data.$(OBJ_EXT) : get_data.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            funits.mod \
+            compar.mod \
             gridmap.mod 
-get_eq.$(OBJ_EXT) : get_eq.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
+get_eq.$(OBJ_EXT) : get_eq.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
             indices.mod 
-get_flow_bc.$(OBJ_EXT) : get_flow_bc.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            bc.mod g
-            indices.mod g
-            funits.mod g
-            compar.mod g
-            sendrecv.mod g
+get_flow_bc.$(OBJ_EXT) : get_flow_bc.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            bc.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
+            sendrecv.mod \
             function.inc                                                
-get_hloss.$(OBJ_EXT) : get_hloss.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            bc.mod g
-            indices.mod g
+get_hloss.$(OBJ_EXT) : get_hloss.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            bc.mod \
+            indices.mod \
             energy.mod 
-get_is.$(OBJ_EXT) : get_is.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            is.mod g
-            indices.mod g
-            funits.mod g
+get_is.$(OBJ_EXT) : get_is.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            is.mod \
+            indices.mod \
+            funits.mod \
             compar.mod 
-get_philoss.$(OBJ_EXT) : get_philoss.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            bc.mod g
-            indices.mod g
-            energy.mod g
-            compar.mod g
+get_philoss.$(OBJ_EXT) : get_philoss.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            bc.mod \
+            indices.mod \
+            energy.mod \
+            compar.mod \
             function.inc                                                
-get_smass.$(OBJ_EXT) : get_smass.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            indices.mod g
-            compar.mod g
-            mpi_utility.mod g
+get_smass.$(OBJ_EXT) : get_smass.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            indices.mod \
+            compar.mod \
+            mpi_utility.mod \
             function.inc                                                
-get_stats.$(OBJ_EXT) : get_stats.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            indices.mod g
-            funits.mod g
-            residual.mod g
-            run.mod g
-            compar.mod g
+get_stats.$(OBJ_EXT) : get_stats.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            indices.mod \
+            funits.mod \
+            residual.mod \
+            run.mod \
+            compar.mod \
             function.inc                                                
-get_walls_bc.$(OBJ_EXT) : get_walls_bc.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            bc.mod g
-            indices.mod g
-            funits.mod g
-            compar.mod g
-            sendrecv.mod g
+get_walls_bc.$(OBJ_EXT) : get_walls_bc.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            bc.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
+            sendrecv.mod \
             function.inc                                                
-in_bin_512.$(OBJ_EXT) : in_bin_512.f g
-            machine.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
+in_bin_512.$(OBJ_EXT) : in_bin_512.f \
+            machine.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
-in_bin_512i.$(OBJ_EXT) : in_bin_512i.f g
-            machine.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
+in_bin_512i.$(OBJ_EXT) : in_bin_512i.f \
+            machine.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
-init_ab_m.$(OBJ_EXT) : init_ab_m.f g
-            param.mod g
-            param1.mod g
-            matrix.mod g
-            parallel.mod g
+init_ab_m.$(OBJ_EXT) : init_ab_m.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            parallel.mod \
             compar.mod 
-init_fvars.$(OBJ_EXT) : init_fvars.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            geometry.mod g
-            physprop.mod g
-            indices.mod g
-            scalars.mod g
-            rxns.mod g
-            run.mod g
+init_fvars.$(OBJ_EXT) : init_fvars.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            geometry.mod \
+            physprop.mod \
+            indices.mod \
+            scalars.mod \
+            rxns.mod \
+            run.mod \
             compar.mod 
-init_namelist.$(OBJ_EXT) : init_namelist.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            output.mod g
-            physprop.mod g
-            geometry.mod g
-            ic.mod g
-            bc.mod g
-            fldvar.mod g
-            constant.mod g
-            indices.mod g
-            is.mod g
-            toleranc.mod g
-            scales.mod g
-            ur_facs.mod g
-            leqsol.mod g
-            residual.mod g
-            rxns.mod g
-            scalars.mod g
-            compar.mod g
-            parallel.mod g
+init_namelist.$(OBJ_EXT) : init_namelist.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            output.mod \
+            physprop.mod \
+            geometry.mod \
+            ic.mod \
+            bc.mod \
+            fldvar.mod \
+            constant.mod \
+            indices.mod \
+            is.mod \
+            toleranc.mod \
+            scales.mod \
+            ur_facs.mod \
+            leqsol.mod \
+            residual.mod \
+            rxns.mod \
+            scalars.mod \
+            compar.mod \
+            parallel.mod \
             namelist.inc                                                
-init_resid.$(OBJ_EXT) : init_resid.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
+init_resid.$(OBJ_EXT) : init_resid.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
             residual.mod 
-iterate.$(OBJ_EXT) : iterate.f g
-            param.mod g
-            param1.mod g
-            toleranc.mod g
-            run.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            output.mod g
-            indices.mod g
-            funits.mod g
-            time_cpu.mod g
-            pscor.mod g
-            coeff.mod g
-            leqsol.mod g
-            visc_g.mod g
-            pgcor.mod g
-            cont.mod g
-            scalars.mod g
-            compar.mod g
-            mpi_utility.mod g
-            discretelement.mod g
-            bc.mod g
+iterate.$(OBJ_EXT) : iterate.f \
+            param.mod \
+            param1.mod \
+            toleranc.mod \
+            run.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            output.mod \
+            indices.mod \
+            funits.mod \
+            time_cpu.mod \
+            pscor.mod \
+            coeff.mod \
+            leqsol.mod \
+            visc_g.mod \
+            pgcor.mod \
+            cont.mod \
+            scalars.mod \
+            compar.mod \
+            mpi_utility.mod \
+            discretelement.mod \
+            bc.mod \
             constant.mod 
-k_epsilon_prop.$(OBJ_EXT) : k_epsilon_prop.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            physprop.mod g
-            drag.mod g
-            run.mod g
-            output.mod g
-            geometry.mod g
-            fldvar.mod g
-            visc_g.mod g
-            visc_s.mod g
-            trace.mod g
-            indices.mod g
-            constant.mod g
-            vshear.mod g
-            turb.mod g
-            toleranc.mod g
-            compar.mod g
-            tau_g.mod g
-            sendrecv.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            ep_s2.inc                                                    g
+k_epsilon_prop.$(OBJ_EXT) : k_epsilon_prop.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            drag.mod \
+            run.mod \
+            output.mod \
+            geometry.mod \
+            fldvar.mod \
+            visc_g.mod \
+            visc_s.mod \
+            trace.mod \
+            indices.mod \
+            constant.mod \
+            vshear.mod \
+            turb.mod \
+            toleranc.mod \
+            compar.mod \
+            tau_g.mod \
+            sendrecv.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            ep_s2.inc                                                    \
             fun_avg2.inc                                                
-leq_bicgs.$(OBJ_EXT) : leq_bicgs.f g
-            param.mod g
-            param1.mod g
-            matrix.mod g
-            geometry.mod g
-            compar.mod g
-            indices.mod g
-            leqsol.mod g
-            funits.mod g
-            parallel.mod g
-            mpi_utility.mod g
-            sendrecv.mod g
+leq_bicgs.$(OBJ_EXT) : leq_bicgs.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            geometry.mod \
+            compar.mod \
+            indices.mod \
+            leqsol.mod \
+            funits.mod \
+            parallel.mod \
+            mpi_utility.mod \
+            sendrecv.mod \
             function.inc                                                
-leq_gmres.$(OBJ_EXT) : leq_gmres.f g
-            param.mod g
-            param1.mod g
-            matrix.mod g
-            geometry.mod g
-            indices.mod g
-            debug.mod g
-            compar.mod g
-            mpi_utility.mod g
-            parallel.mod g
-            funits.mod g
-            gridmap.mod g
+leq_gmres.$(OBJ_EXT) : leq_gmres.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            geometry.mod \
+            indices.mod \
+            debug.mod \
+            compar.mod \
+            mpi_utility.mod \
+            parallel.mod \
+            funits.mod \
+            gridmap.mod \
             function.inc                                                
-leq_sor.$(OBJ_EXT) : leq_sor.f g
-            param.mod g
-            param1.mod g
-            matrix.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
+leq_sor.$(OBJ_EXT) : leq_sor.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
 line_too_big.$(OBJ_EXT) : line_too_big.f 
-location_check.$(OBJ_EXT) : location_check.f g
-            param.mod g
-            param1.mod g
-            funits.mod g
+location_check.$(OBJ_EXT) : location_check.f \
+            param.mod \
+            param1.mod \
+            funits.mod \
             geometry.mod 
-location.$(OBJ_EXT) : location.f g
-            param.mod g
+location.$(OBJ_EXT) : location.f \
+            param.mod \
             param1.mod 
-machine.$(OBJ_EXT) : machine.f g
-            machine.mod g
-            param.mod g
-            run.mod g
+machine.$(OBJ_EXT) : machine.f \
+            machine.mod \
+            param.mod \
+            run.mod \
             funits.mod 
 make_upper_case.$(OBJ_EXT) : make_upper_case.f 
-mark_phase_4_cor.$(OBJ_EXT) : mark_phase_4_cor.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            indices.mod g
-            fldvar.mod g
-            physprop.mod g
-            constant.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
+mark_phase_4_cor.$(OBJ_EXT) : mark_phase_4_cor.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            indices.mod \
+            fldvar.mod \
+            physprop.mod \
+            constant.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS2) mark_phase_4_cor.f 
-mfix.$(OBJ_EXT) : mfix.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            time_cpu.mod g
-            funits.mod g
-            output.mod g
-            compar.mod g
-            mpi_utility.mod g
-            parallel_mpi.mod g
+mfix.$(OBJ_EXT) : mfix.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            time_cpu.mod \
+            funits.mod \
+            output.mod \
+            compar.mod \
+            mpi_utility.mod \
+            parallel_mpi.mod \
             function.inc                                                
-mod_bc_i.$(OBJ_EXT) : mod_bc_i.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            indices.mod g
-            funits.mod g
-            compar.mod g
-            mpi_utility.mod g
+mod_bc_i.$(OBJ_EXT) : mod_bc_i.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
+            mpi_utility.mod \
             function.inc                                                
-mod_bc_j.$(OBJ_EXT) : mod_bc_j.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            indices.mod g
-            funits.mod g
-            compar.mod g
-            mpi_utility.mod g
+mod_bc_j.$(OBJ_EXT) : mod_bc_j.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
+            mpi_utility.mod \
             function.inc                                                
-mod_bc_k.$(OBJ_EXT) : mod_bc_k.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            indices.mod g
-            funits.mod g
-            compar.mod g
-            mpi_utility.mod g
+mod_bc_k.$(OBJ_EXT) : mod_bc_k.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
+            mpi_utility.mod \
             function.inc                                                
 open_file.$(OBJ_EXT) : open_file.f 
-open_files.$(OBJ_EXT) : open_files.f g
-            machine.mod g
-            funits.mod g
+open_files.$(OBJ_EXT) : open_files.f \
+            machine.mod \
+            funits.mod \
             compar.mod 
-out_array_c.$(OBJ_EXT) : out_array_c.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            indices.mod g
-            funits.mod g
-            compar.mod g
+out_array_c.$(OBJ_EXT) : out_array_c.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
             function.inc                                                
-out_array.$(OBJ_EXT) : out_array.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            indices.mod g
-            funits.mod g
-            compar.mod g
+out_array.$(OBJ_EXT) : out_array.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
             function.inc                                                
-out_array_kc.$(OBJ_EXT) : out_array_kc.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            indices.mod g
-            funits.mod g
-            compar.mod g
-            mpi_utility.mod g
+out_array_kc.$(OBJ_EXT) : out_array_kc.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
+            mpi_utility.mod \
             function.inc                                                
-out_array_k.$(OBJ_EXT) : out_array_k.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            fldvar.mod g
-            physprop.mod g
-            indices.mod g
-            funits.mod g
-            compar.mod g
+out_array_k.$(OBJ_EXT) : out_array_k.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
             function.inc                                                
-out_bin_512.$(OBJ_EXT) : out_bin_512.f g
+out_bin_512.$(OBJ_EXT) : out_bin_512.f \
             machine.mod 
-out_bin_512i.$(OBJ_EXT) : out_bin_512i.f g
+out_bin_512i.$(OBJ_EXT) : out_bin_512i.f \
             machine.mod 
-out_bin_512r.$(OBJ_EXT) : out_bin_512r.f g
+out_bin_512r.$(OBJ_EXT) : out_bin_512r.f \
             machine.mod 
-out_bin_r.$(OBJ_EXT) : out_bin_r.f g
+out_bin_r.$(OBJ_EXT) : out_bin_r.f \
             param.mod 
-parse_line.$(OBJ_EXT) : parse_line.f g
-            param.mod g
-            param1.mod g
-            parse.mod g
+parse_line.$(OBJ_EXT) : parse_line.f \
+            param.mod \
+            param1.mod \
+            parse.mod \
             compar.mod 
-parse_resid_string.$(OBJ_EXT) : parse_resid_string.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            residual.mod g
-            funits.mod g
+parse_resid_string.$(OBJ_EXT) : parse_resid_string.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            residual.mod \
+            funits.mod \
             compar.mod 
-parse_rxn.$(OBJ_EXT) : parse_rxn.f g
-            param.mod g
-            param1.mod g
-            parse.mod g
-            rxns.mod g
+parse_rxn.$(OBJ_EXT) : parse_rxn.f \
+            param.mod \
+            param1.mod \
+            parse.mod \
+            rxns.mod \
             compar.mod 
-partial_elim.$(OBJ_EXT) : partial_elim.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            geometry.mod g
-            matrix.mod g
-            physprop.mod g
-            indices.mod g
-            compar.mod g
-            drag.mod g
-            fldvar.mod g
-            run.mod g
-            function.inc                                                 g
-            fun_avg1.inc                                                 g
+partial_elim.$(OBJ_EXT) : partial_elim.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            geometry.mod \
+            matrix.mod \
+            physprop.mod \
+            indices.mod \
+            compar.mod \
+            drag.mod \
+            fldvar.mod \
+            run.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
             fun_avg2.inc                                                
-physical_prop.$(OBJ_EXT) : physical_prop.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            physprop.mod g
-            geometry.mod g
-            indices.mod g
-            run.mod g
-            toleranc.mod g
-            constant.mod g
-            compar.mod g
-            funits.mod g
-            cp_fun1.inc                                                  g
-            function.inc                                                 g
+physical_prop.$(OBJ_EXT) : physical_prop.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            physprop.mod \
+            geometry.mod \
+            indices.mod \
+            run.mod \
+            toleranc.mod \
+            constant.mod \
+            compar.mod \
+            funits.mod \
+            cp_fun1.inc                                                  \
+            function.inc                                                 \
             cp_fun2.inc                                                 
-read_namelist.$(OBJ_EXT) : read_namelist.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            output.mod g
-            physprop.mod g
-            geometry.mod g
-            ic.mod g
-            is.mod g
-            bc.mod g
-            fldvar.mod g
-            constant.mod g
-            indices.mod g
-            toleranc.mod g
-            funits.mod g
-            scales.mod g
-            ur_facs.mod g
-            leqsol.mod g
-            residual.mod g
-            rxns.mod g
-            scalars.mod g
-            compar.mod g
-            parallel.mod g
-            discretelement.mod g
-            usrnlst.inc                                                  g
-            namelist.inc                                                 g
+read_namelist.$(OBJ_EXT) : read_namelist.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            output.mod \
+            physprop.mod \
+            geometry.mod \
+            ic.mod \
+            is.mod \
+            bc.mod \
+            fldvar.mod \
+            constant.mod \
+            indices.mod \
+            toleranc.mod \
+            funits.mod \
+            scales.mod \
+            ur_facs.mod \
+            leqsol.mod \
+            residual.mod \
+            rxns.mod \
+            scalars.mod \
+            compar.mod \
+            parallel.mod \
+            discretelement.mod \
+            usrnlst.inc                                                  \
+            namelist.inc                                                 \
             des/desnamelist.inc                                         
-read_res0.$(OBJ_EXT) : read_res0.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            physprop.mod g
-            run.mod g
-            ic.mod g
-            bc.mod g
-            is.mod g
-            constant.mod g
-            funits.mod g
-            output.mod g
-            scales.mod g
-            ur_facs.mod g
-            toleranc.mod g
-            leqsol.mod g
-            scalars.mod g
-            rxns.mod g
-            compar.mod g
-            mpi_utility.mod g
+read_res0.$(OBJ_EXT) : read_res0.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            physprop.mod \
+            run.mod \
+            ic.mod \
+            bc.mod \
+            is.mod \
+            constant.mod \
+            funits.mod \
+            output.mod \
+            scales.mod \
+            ur_facs.mod \
+            toleranc.mod \
+            leqsol.mod \
+            scalars.mod \
+            rxns.mod \
+            compar.mod \
+            mpi_utility.mod \
             fldvar.mod 
-read_res1.$(OBJ_EXT) : read_res1.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            geometry.mod g
-            physprop.mod g
-            run.mod g
-            rxns.mod g
-            scalars.mod g
-            funits.mod g
-            energy.mod g
-            compar.mod g
-            mpi_utility.mod g
+read_res1.$(OBJ_EXT) : read_res1.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            geometry.mod \
+            physprop.mod \
+            run.mod \
+            rxns.mod \
+            scalars.mod \
+            funits.mod \
+            energy.mod \
+            compar.mod \
+            mpi_utility.mod \
             sendrecv.mod 
 remove_comment.$(OBJ_EXT) : remove_comment.f 
-reset_new.$(OBJ_EXT) : reset_new.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            trace.mod g
-            run.mod g
+reset_new.$(OBJ_EXT) : reset_new.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            trace.mod \
+            run.mod \
             scalars.mod 
-rrates0.$(OBJ_EXT) : rrates0.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            rxns.mod g
-            energy.mod g
-            geometry.mod g
-            run.mod g
-            indices.mod g
-            physprop.mod g
-            constant.mod g
-            funits.mod g
-            compar.mod g
-            sendrecv.mod g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
+rrates0.$(OBJ_EXT) : rrates0.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            rxns.mod \
+            energy.mod \
+            geometry.mod \
+            run.mod \
+            indices.mod \
+            physprop.mod \
+            constant.mod \
+            funits.mod \
+            compar.mod \
+            sendrecv.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
             ep_s2.inc                                                   
-rrates.$(OBJ_EXT) : rrates.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            rxns.mod g
-            energy.mod g
-            geometry.mod g
-            run.mod g
-            indices.mod g
-            physprop.mod g
-            constant.mod g
-            funits.mod g
-            compar.mod g
-            sendrecv.mod g
+rrates.$(OBJ_EXT) : rrates.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            rxns.mod \
+            energy.mod \
+            geometry.mod \
+            run.mod \
+            indices.mod \
+            physprop.mod \
+            constant.mod \
+            funits.mod \
+            compar.mod \
+            sendrecv.mod \
             function.inc                                                
-rrates_init.$(OBJ_EXT) : rrates_init.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            rxns.mod g
-            energy.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
+rrates_init.$(OBJ_EXT) : rrates_init.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            rxns.mod \
+            energy.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
-scalar_prop.$(OBJ_EXT) : scalar_prop.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            physprop.mod g
-            geometry.mod g
-            indices.mod g
-            run.mod g
-            scalars.mod g
-            toleranc.mod g
-            compar.mod g
-            sendrecv.mod g
+scalar_prop.$(OBJ_EXT) : scalar_prop.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            physprop.mod \
+            geometry.mod \
+            indices.mod \
+            run.mod \
+            scalars.mod \
+            toleranc.mod \
+            compar.mod \
+            sendrecv.mod \
             function.inc                                                
 seek_comment.$(OBJ_EXT) : seek_comment.f 
 seek_end.$(OBJ_EXT) : seek_end.f 
-set_bc0.$(OBJ_EXT) : set_bc0.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            compar.mod g
-            mpi_utility.mod g
-            physprop.mod g
-            bc.mod g
-            fldvar.mod g
-            indices.mod g
-            run.mod g
-            funits.mod g
-            scales.mod g
-            scalars.mod g
-            boundfunijk.mod g
-            toleranc.mod g
-            sc_p_g1.inc                                                  g
-            function.inc                                                 g
+set_bc0.$(OBJ_EXT) : set_bc0.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            compar.mod \
+            mpi_utility.mod \
+            physprop.mod \
+            bc.mod \
+            fldvar.mod \
+            indices.mod \
+            run.mod \
+            funits.mod \
+            scales.mod \
+            scalars.mod \
+            boundfunijk.mod \
+            toleranc.mod \
+            sc_p_g1.inc                                                  \
+            function.inc                                                 \
             sc_p_g2.inc                                                 
-set_bc1.$(OBJ_EXT) : set_bc1.f g
-            param.mod g
-            param1.mod g
-            bc.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            run.mod g
-            funits.mod g
-            compar.mod g
+set_bc1.$(OBJ_EXT) : set_bc1.f \
+            param.mod \
+            param1.mod \
+            bc.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            run.mod \
+            funits.mod \
+            compar.mod \
             function.inc                                                
-set_constants.$(OBJ_EXT) : set_constants.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            visc_s.mod g
-            energy.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            constant.mod g
-            run.mod g
-            funits.mod g
-            drag.mod g
+set_constants.$(OBJ_EXT) : set_constants.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            visc_s.mod \
+            energy.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            constant.mod \
+            run.mod \
+            funits.mod \
+            drag.mod \
             compar.mod 
-set_constprop.$(OBJ_EXT) : set_constprop.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            visc_s.mod g
-            visc_g.mod g
-            energy.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            constant.mod g
-            run.mod g
-            funits.mod g
-            drag.mod g
-            compar.mod g
+set_constprop.$(OBJ_EXT) : set_constprop.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            visc_s.mod \
+            visc_g.mod \
+            energy.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            constant.mod \
+            run.mod \
+            funits.mod \
+            drag.mod \
+            compar.mod \
             function.inc                                                
-set_flags.$(OBJ_EXT) : set_flags.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            geometry.mod g
-            bc.mod g
-            is.mod g
-            indices.mod g
-            physprop.mod g
-            funits.mod g
-            compar.mod g
-            sendrecv.mod g
-            sendrecv3.mod g
-            boundfunijk.mod g
-            mpi_utility.mod g
-            function.inc                                                 g
+set_flags.$(OBJ_EXT) : set_flags.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            geometry.mod \
+            bc.mod \
+            is.mod \
+            indices.mod \
+            physprop.mod \
+            funits.mod \
+            compar.mod \
+            sendrecv.mod \
+            sendrecv3.mod \
+            boundfunijk.mod \
+            mpi_utility.mod \
+            function.inc                                                 \
             function3.inc                                               
-set_fluidbed_p.$(OBJ_EXT) : set_fluidbed_p.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            geometry.mod g
-            bc.mod g
-            ic.mod g
-            fldvar.mod g
-            constant.mod g
-            indices.mod g
-            funits.mod g
-            scales.mod g
-            compar.mod g
-            mpi_utility.mod g
-            sendrecv.mod g
-            sc_p_g1.inc                                                  g
-            b_force1.inc                                                 g
-            function.inc                                                 g
-            b_force2.inc                                                 g
+set_fluidbed_p.$(OBJ_EXT) : set_fluidbed_p.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            geometry.mod \
+            bc.mod \
+            ic.mod \
+            fldvar.mod \
+            constant.mod \
+            indices.mod \
+            funits.mod \
+            scales.mod \
+            compar.mod \
+            mpi_utility.mod \
+            sendrecv.mod \
+            sc_p_g1.inc                                                  \
+            b_force1.inc                                                 \
+            function.inc                                                 \
+            b_force2.inc                                                 \
             sc_p_g2.inc                                                 
-set_geometry1.$(OBJ_EXT) : set_geometry1.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            run.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
+set_geometry1.$(OBJ_EXT) : set_geometry1.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            run.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
-set_geometry.$(OBJ_EXT) : set_geometry.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            geometry.mod g
+set_geometry.$(OBJ_EXT) : set_geometry.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            geometry.mod \
             compar.mod 
-set_ic.$(OBJ_EXT) : set_ic.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            constant.mod g
-            physprop.mod g
-            ic.mod g
-            fldvar.mod g
-            visc_g.mod g
-            indices.mod g
-            scales.mod g
-            energy.mod g
-            scalars.mod g
-            compar.mod g
-            run.mod g
-            sendrecv.mod g
-            sc_p_g1.inc                                                  g
-            s_pr1.inc                                                    g
-            function.inc                                                 g
-            s_pr2.inc                                                    g
+set_ic.$(OBJ_EXT) : set_ic.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            constant.mod \
+            physprop.mod \
+            ic.mod \
+            fldvar.mod \
+            visc_g.mod \
+            indices.mod \
+            scales.mod \
+            energy.mod \
+            scalars.mod \
+            compar.mod \
+            run.mod \
+            sendrecv.mod \
+            sc_p_g1.inc                                                  \
+            s_pr1.inc                                                    \
+            function.inc                                                 \
+            s_pr2.inc                                                    \
             sc_p_g2.inc                                                 
-set_increments3.$(OBJ_EXT) : set_increments3.f g
-            param.mod g
-            param1.mod g
-            indices.mod g
-            geometry.mod g
-            compar.mod g
-            physprop.mod g
-            fldvar.mod g
-            funits.mod g
-            function.inc                                                 g
+set_increments3.$(OBJ_EXT) : set_increments3.f \
+            param.mod \
+            param1.mod \
+            indices.mod \
+            geometry.mod \
+            compar.mod \
+            physprop.mod \
+            fldvar.mod \
+            funits.mod \
+            function.inc                                                 \
             function3.inc                                               
-set_increments.$(OBJ_EXT) : set_increments.f g
-            param.mod g
-            param1.mod g
-            indices.mod g
-            geometry.mod g
-            compar.mod g
-            physprop.mod g
-            fldvar.mod g
-            funits.mod g
+set_increments.$(OBJ_EXT) : set_increments.f \
+            param.mod \
+            param1.mod \
+            indices.mod \
+            geometry.mod \
+            compar.mod \
+            physprop.mod \
+            fldvar.mod \
+            funits.mod \
             function.inc                                                
-set_index1a3.$(OBJ_EXT) : set_index1a3.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            geometry.mod g
-            compar.mod g
-            fldvar.mod g
-            indices.mod g
-            boundfunijk3.mod g
+set_index1a3.$(OBJ_EXT) : set_index1a3.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            geometry.mod \
+            compar.mod \
+            fldvar.mod \
+            indices.mod \
+            boundfunijk3.mod \
             function.inc                                                
-set_index1a.$(OBJ_EXT) : set_index1a.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            geometry.mod g
-            compar.mod g
-            fldvar.mod g
-            indices.mod g
-            boundfunijk.mod g
+set_index1a.$(OBJ_EXT) : set_index1a.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            geometry.mod \
+            compar.mod \
+            fldvar.mod \
+            indices.mod \
+            boundfunijk.mod \
             function.inc                                                
-set_index1.$(OBJ_EXT) : set_index1.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            fldvar.mod g
-            geometry.mod g
-            constant.mod g
-            indices.mod g
-            compar.mod g
+set_index1.$(OBJ_EXT) : set_index1.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            fldvar.mod \
+            geometry.mod \
+            constant.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
-set_l_scale.$(OBJ_EXT) : set_l_scale.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            constant.mod g
-            visc_g.mod g
-            geometry.mod g
-            indices.mod g
+set_l_scale.$(OBJ_EXT) : set_l_scale.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            constant.mod \
+            visc_g.mod \
+            geometry.mod \
+            indices.mod \
             compar.mod 
-set_max2.$(OBJ_EXT) : set_max2.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
+set_max2.$(OBJ_EXT) : set_max2.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
             compar.mod 
-set_mw_mix_g.$(OBJ_EXT) : set_mw_mix_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            constant.mod g
-            indices.mod g
-            compar.mod g
+set_mw_mix_g.$(OBJ_EXT) : set_mw_mix_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            constant.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
-set_outflow.$(OBJ_EXT) : set_outflow.f g
-            param.mod g
-            param1.mod g
-            bc.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            scalars.mod g
-            run.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
+set_outflow.$(OBJ_EXT) : set_outflow.f \
+            param.mod \
+            param1.mod \
+            bc.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            scalars.mod \
+            run.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
             ep_s2.inc                                                   
-set_ro_g.$(OBJ_EXT) : set_ro_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            constant.mod g
-            indices.mod g
-            compar.mod g
+set_ro_g.$(OBJ_EXT) : set_ro_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            constant.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
-set_wall_bc.$(OBJ_EXT) : set_wall_bc.f g
-            param.mod g
-            param1.mod g
-            bc.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            run.mod g
-            funits.mod g
-            compar.mod g
+set_wall_bc.$(OBJ_EXT) : set_wall_bc.f \
+            param.mod \
+            param1.mod \
+            bc.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            run.mod \
+            funits.mod \
+            compar.mod \
             function.inc                                                
-shift_dxyz.$(OBJ_EXT) : shift_dxyz.f g
-            param.mod g
-            param1.mod g
+shift_dxyz.$(OBJ_EXT) : shift_dxyz.f \
+            param.mod \
+            param1.mod \
             geometry.mod 
-solve_continuity.$(OBJ_EXT) : solve_continuity.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            indices.mod g
-            residual.mod g
-            cont.mod g
-            leqsol.mod g
+solve_continuity.$(OBJ_EXT) : solve_continuity.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            indices.mod \
+            residual.mod \
+            cont.mod \
+            leqsol.mod \
             ambm.mod 
-solve_energy_eq.$(OBJ_EXT) : solve_energy_eq.f g
-            param.mod g
-            param1.mod g
-            toleranc.mod g
-            run.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            output.mod g
-            indices.mod g
-            drag.mod g
-            residual.mod g
-            ur_facs.mod g
-            pgcor.mod g
-            pscor.mod g
-            leqsol.mod g
-            bc.mod g
-            energy.mod g
-            rxns.mod g
-            ambm.mod g
-            tmp_array.mod g
-            tmp_array1.mod g
-            compar.mod g
-            discretelement.mod g
-            mflux.mod g
-            radtn1.inc                                                   g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
-            ep_s2.inc                                                    g
+solve_energy_eq.$(OBJ_EXT) : solve_energy_eq.f \
+            param.mod \
+            param1.mod \
+            toleranc.mod \
+            run.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            output.mod \
+            indices.mod \
+            drag.mod \
+            residual.mod \
+            ur_facs.mod \
+            pgcor.mod \
+            pscor.mod \
+            leqsol.mod \
+            bc.mod \
+            energy.mod \
+            rxns.mod \
+            ambm.mod \
+            tmp_array.mod \
+            tmp_array1.mod \
+            compar.mod \
+            discretelement.mod \
+            mflux.mod \
+            radtn1.inc                                                   \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
+            ep_s2.inc                                                    \
             radtn2.inc                                                  
-solve_epp.$(OBJ_EXT) : solve_epp.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            geometry.mod g
-            pscor.mod g
-            residual.mod g
-            leqsol.mod g
-            physprop.mod g
+solve_epp.$(OBJ_EXT) : solve_epp.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            geometry.mod \
+            pscor.mod \
+            residual.mod \
+            leqsol.mod \
+            physprop.mod \
             ambm.mod 
-solve_granular_energy.$(OBJ_EXT) : solve_granular_energy.f g
-            param.mod g
-            param1.mod g
-            toleranc.mod g
-            run.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            constant.mod g
-            output.mod g
-            indices.mod g
-            drag.mod g
-            residual.mod g
-            ur_facs.mod g
-            pgcor.mod g
-            pscor.mod g
-            leqsol.mod g
-            bc.mod g
-            energy.mod g
-            rxns.mod g
-            ambm.mod g
-            tmp_array.mod g
-            compar.mod g
-            mflux.mod g
-            radtn1.inc                                                   g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
-            ep_s2.inc                                                    g
+solve_granular_energy.$(OBJ_EXT) : solve_granular_energy.f \
+            param.mod \
+            param1.mod \
+            toleranc.mod \
+            run.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            constant.mod \
+            output.mod \
+            indices.mod \
+            drag.mod \
+            residual.mod \
+            ur_facs.mod \
+            pgcor.mod \
+            pscor.mod \
+            leqsol.mod \
+            bc.mod \
+            energy.mod \
+            rxns.mod \
+            ambm.mod \
+            tmp_array.mod \
+            compar.mod \
+            mflux.mod \
+            radtn1.inc                                                   \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
+            ep_s2.inc                                                    \
             radtn2.inc                                                  
-solve_k_epsilon_eq.$(OBJ_EXT) : solve_k_epsilon_eq.f g
-            param.mod g
-            param1.mod g
-            toleranc.mod g
-            run.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            output.mod g
-            indices.mod g
-            drag.mod g
-            residual.mod g
-            ur_facs.mod g
-            pgcor.mod g
-            pscor.mod g
-            leqsol.mod g
-            bc.mod g
-            energy.mod g
-            rxns.mod g
-            turb.mod g
-            usr.mod g
-            ambm.mod g
-            tmp_array.mod g
-            compar.mod g
-            mflux.mod g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
-            ep_s2.inc                                                    g
-            fun_avg1.inc                                                 g
+solve_k_epsilon_eq.$(OBJ_EXT) : solve_k_epsilon_eq.f \
+            param.mod \
+            param1.mod \
+            toleranc.mod \
+            run.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            output.mod \
+            indices.mod \
+            drag.mod \
+            residual.mod \
+            ur_facs.mod \
+            pgcor.mod \
+            pscor.mod \
+            leqsol.mod \
+            bc.mod \
+            energy.mod \
+            rxns.mod \
+            turb.mod \
+            usr.mod \
+            ambm.mod \
+            tmp_array.mod \
+            compar.mod \
+            mflux.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
+            ep_s2.inc                                                    \
+            fun_avg1.inc                                                 \
             fun_avg2.inc                                                
-solve_lin_eq.$(OBJ_EXT) : solve_lin_eq.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
+solve_lin_eq.$(OBJ_EXT) : solve_lin_eq.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
             compar.mod 
-solve_pp_g.$(OBJ_EXT) : solve_pp_g.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            physprop.mod g
-            geometry.mod g
-            pgcor.mod g
-            residual.mod g
-            leqsol.mod g
-            run.mod g
+solve_pp_g.$(OBJ_EXT) : solve_pp_g.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            physprop.mod \
+            geometry.mod \
+            pgcor.mod \
+            residual.mod \
+            leqsol.mod \
+            run.mod \
             ambm.mod 
-solve_scalar_eq.$(OBJ_EXT) : solve_scalar_eq.f g
-            param.mod g
-            param1.mod g
-            toleranc.mod g
-            run.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            output.mod g
-            indices.mod g
-            drag.mod g
-            residual.mod g
-            ur_facs.mod g
-            pgcor.mod g
-            pscor.mod g
-            leqsol.mod g
-            bc.mod g
-            energy.mod g
-            rxns.mod g
-            scalars.mod g
-            ambm.mod g
-            tmp_array.mod g
-            compar.mod g
-            mflux.mod g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
+solve_scalar_eq.$(OBJ_EXT) : solve_scalar_eq.f \
+            param.mod \
+            param1.mod \
+            toleranc.mod \
+            run.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            output.mod \
+            indices.mod \
+            drag.mod \
+            residual.mod \
+            ur_facs.mod \
+            pgcor.mod \
+            pscor.mod \
+            leqsol.mod \
+            bc.mod \
+            energy.mod \
+            rxns.mod \
+            scalars.mod \
+            ambm.mod \
+            tmp_array.mod \
+            compar.mod \
+            mflux.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
             ep_s2.inc                                                   
-solve_species_eq.$(OBJ_EXT) : solve_species_eq.f g
-            param.mod g
-            param1.mod g
-            toleranc.mod g
-            run.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            output.mod g
-            indices.mod g
-            drag.mod g
-            residual.mod g
-            ur_facs.mod g
-            pgcor.mod g
-            pscor.mod g
-            leqsol.mod g
-            bc.mod g
-            energy.mod g
-            rxns.mod g
-            ambm.mod g
-            matrix.mod g
-            chischeme.mod g
-            tmp_array.mod g
-            compar.mod g
-            mpi_utility.mod g
-            sendrecv.mod g
-            mflux.mod g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
+solve_species_eq.$(OBJ_EXT) : solve_species_eq.f \
+            param.mod \
+            param1.mod \
+            toleranc.mod \
+            run.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            output.mod \
+            indices.mod \
+            drag.mod \
+            residual.mod \
+            ur_facs.mod \
+            pgcor.mod \
+            pscor.mod \
+            leqsol.mod \
+            bc.mod \
+            energy.mod \
+            rxns.mod \
+            ambm.mod \
+            matrix.mod \
+            chischeme.mod \
+            tmp_array.mod \
+            compar.mod \
+            mpi_utility.mod \
+            sendrecv.mod \
+            mflux.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
             ep_s2.inc                                                   
-solve_vel_star.$(OBJ_EXT) : solve_vel_star.f g
-            param.mod g
-            param1.mod g
-            toleranc.mod g
-            run.mod g
-            physprop.mod g
-            geometry.mod g
-            fldvar.mod g
-            output.mod g
-            indices.mod g
-            drag.mod g
-            residual.mod g
-            ur_facs.mod g
-            pgcor.mod g
-            pscor.mod g
-            leqsol.mod g
-            ambm.mod g
-            tmp_array1.mod g
-            tmp_array.mod g
-            compar.mod g
+solve_vel_star.$(OBJ_EXT) : solve_vel_star.f \
+            param.mod \
+            param1.mod \
+            toleranc.mod \
+            run.mod \
+            physprop.mod \
+            geometry.mod \
+            fldvar.mod \
+            output.mod \
+            indices.mod \
+            drag.mod \
+            residual.mod \
+            ur_facs.mod \
+            pgcor.mod \
+            pscor.mod \
+            leqsol.mod \
+            ambm.mod \
+            tmp_array1.mod \
+            tmp_array.mod \
+            compar.mod \
             discretelement.mod 
-source_granular_energy.$(OBJ_EXT) : source_granular_energy.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            physprop.mod g
-            run.mod g
-            drag.mod g
-            geometry.mod g
-            fldvar.mod g
-            visc_g.mod g
-            visc_s.mod g
-            trace.mod g
-            turb.mod g
-            indices.mod g
-            constant.mod g
-            toleranc.mod g
-            compar.mod g
-            s_pr1.inc                                                    g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            ep_s2.inc                                                    g
-            fun_avg2.inc                                                 g
+source_granular_energy.$(OBJ_EXT) : source_granular_energy.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            run.mod \
+            drag.mod \
+            geometry.mod \
+            fldvar.mod \
+            visc_g.mod \
+            visc_s.mod \
+            trace.mod \
+            turb.mod \
+            indices.mod \
+            constant.mod \
+            toleranc.mod \
+            compar.mod \
+            s_pr1.inc                                                    \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            ep_s2.inc                                                    \
+            fun_avg2.inc                                                 \
             s_pr2.inc                                                   
-source_phi.$(OBJ_EXT) : source_phi.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_s.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            tau_s.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+source_phi.$(OBJ_EXT) : source_phi.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_s.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            tau_s.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-source_pp_g.$(OBJ_EXT) : source_pp_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            physprop.mod g
-            fldvar.mod g
-            rxns.mod g
-            run.mod g
-            geometry.mod g
-            indices.mod g
-            pgcor.mod g
-            bc.mod g
-            vshear.mod g
-            xsi_array.mod g
-            compar.mod g
-            ur_facs.mod g
+source_pp_g.$(OBJ_EXT) : source_pp_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            physprop.mod \
+            fldvar.mod \
+            rxns.mod \
+            run.mod \
+            geometry.mod \
+            indices.mod \
+            pgcor.mod \
+            bc.mod \
+            vshear.mod \
+            xsi_array.mod \
+            compar.mod \
+            ur_facs.mod \
             function.inc                                                
-source_rop_g.$(OBJ_EXT) : source_rop_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            fldvar.mod g
-            rxns.mod g
-            run.mod g
-            geometry.mod g
-            indices.mod g
-            pgcor.mod g
-            compar.mod g
+source_rop_g.$(OBJ_EXT) : source_rop_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            fldvar.mod \
+            rxns.mod \
+            run.mod \
+            geometry.mod \
+            indices.mod \
+            pgcor.mod \
+            compar.mod \
             function.inc                                                
-source_rop_s.$(OBJ_EXT) : source_rop_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            fldvar.mod g
-            rxns.mod g
-            run.mod g
-            geometry.mod g
-            indices.mod g
-            pgcor.mod g
-            pscor.mod g
-            compar.mod g
+source_rop_s.$(OBJ_EXT) : source_rop_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            fldvar.mod \
+            rxns.mod \
+            run.mod \
+            geometry.mod \
+            indices.mod \
+            pgcor.mod \
+            pscor.mod \
+            compar.mod \
             function.inc                                                
-source_u_g.$(OBJ_EXT) : source_u_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_g.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            tau_g.mod g
-            bc.mod g
-            compar.mod g
-            sendrecv.mod g
-            output.mod g
-            turb.mod g
-            mpi_utility.mod g
-            b_force1.inc                                                 g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+source_u_g.$(OBJ_EXT) : source_u_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_g.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            tau_g.mod \
+            bc.mod \
+            compar.mod \
+            sendrecv.mod \
+            output.mod \
+            turb.mod \
+            mpi_utility.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             b_force2.inc                                                
-source_u_s.$(OBJ_EXT) : source_u_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_s.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            tau_s.mod g
-            bc.mod g
-            compar.mod g
-            sendrecv.mod g
-            output.mod g
-            b_force1.inc                                                 g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+source_u_s.$(OBJ_EXT) : source_u_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_s.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            tau_s.mod \
+            bc.mod \
+            compar.mod \
+            sendrecv.mod \
+            output.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             b_force2.inc                                                
-source_v_g.$(OBJ_EXT) : source_v_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_g.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            tau_g.mod g
-            bc.mod g
-            vshear.mod g
-            compar.mod g
-            sendrecv.mod g
-            output.mod g
-            b_force1.inc                                                 g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+source_v_g.$(OBJ_EXT) : source_v_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_g.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            tau_g.mod \
+            bc.mod \
+            vshear.mod \
+            compar.mod \
+            sendrecv.mod \
+            output.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             b_force2.inc                                                
-source_v_s.$(OBJ_EXT) : source_v_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_s.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            tau_s.mod g
-            bc.mod g
-            vshear.mod g
-            compar.mod g
-            sendrecv.mod g
-            output.mod g
-            b_force1.inc                                                 g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+source_v_s.$(OBJ_EXT) : source_v_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_s.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            tau_s.mod \
+            bc.mod \
+            vshear.mod \
+            compar.mod \
+            sendrecv.mod \
+            output.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             b_force2.inc                                                
-source_w_g.$(OBJ_EXT) : source_w_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_g.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            tau_g.mod g
-            bc.mod g
-            compar.mod g
-            sendrecv.mod g
-            output.mod g
-            b_force1.inc                                                 g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+source_w_g.$(OBJ_EXT) : source_w_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_g.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            tau_g.mod \
+            bc.mod \
+            compar.mod \
+            sendrecv.mod \
+            output.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             b_force2.inc                                                
-source_w_s.$(OBJ_EXT) : source_w_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_s.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            tau_s.mod g
-            bc.mod g
-            compar.mod g
-            sendrecv.mod g
-            output.mod g
-            b_force1.inc                                                 g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
-            ep_s2.inc                                                    g
+source_w_s.$(OBJ_EXT) : source_w_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_s.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            tau_s.mod \
+            bc.mod \
+            compar.mod \
+            sendrecv.mod \
+            output.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
             b_force2.inc                                                
-tau_u_g.$(OBJ_EXT) : tau_u_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_g.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            compar.mod g
-            sendrecv.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+tau_u_g.$(OBJ_EXT) : tau_u_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_g.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            compar.mod \
+            sendrecv.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-tau_u_s.$(OBJ_EXT) : tau_u_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_s.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            vshear.mod g
-            sendrecv.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+tau_u_s.$(OBJ_EXT) : tau_u_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_s.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            vshear.mod \
+            sendrecv.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-tau_v_g.$(OBJ_EXT) : tau_v_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_g.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            sendrecv.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+tau_v_g.$(OBJ_EXT) : tau_v_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_g.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            sendrecv.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-tau_v_s.$(OBJ_EXT) : tau_v_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_s.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            sendrecv.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+tau_v_s.$(OBJ_EXT) : tau_v_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_s.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            sendrecv.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-tau_w_g.$(OBJ_EXT) : tau_w_g.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_g.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            sendrecv.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+tau_w_g.$(OBJ_EXT) : tau_w_g.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_g.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            sendrecv.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-tau_w_s.$(OBJ_EXT) : tau_w_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_s.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            sendrecv.mod g
-            compar.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+tau_w_s.$(OBJ_EXT) : tau_w_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_s.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            sendrecv.mod \
+            compar.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-test_lin_eq.$(OBJ_EXT) : test_lin_eq.f g
-            param.mod g
-            param1.mod g
-            matrix.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
+test_lin_eq.$(OBJ_EXT) : test_lin_eq.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
             function.inc                                                
-time_march.$(OBJ_EXT) : time_march.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            output.mod g
-            physprop.mod g
-            fldvar.mod g
-            geometry.mod g
-            pgcor.mod g
-            pscor.mod g
-            cont.mod g
-            coeff.mod g
-            tau_g.mod g
-            tau_s.mod g
-            visc_g.mod g
-            visc_s.mod g
-            funits.mod g
-            vshear.mod g
-            scalars.mod g
-            drag.mod g
-            rxns.mod g
-            compar.mod g
-            time_cpu.mod g
+time_march.$(OBJ_EXT) : time_march.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            output.mod \
+            physprop.mod \
+            fldvar.mod \
+            geometry.mod \
+            pgcor.mod \
+            pscor.mod \
+            cont.mod \
+            coeff.mod \
+            tau_g.mod \
+            tau_s.mod \
+            visc_g.mod \
+            visc_s.mod \
+            funits.mod \
+            vshear.mod \
+            scalars.mod \
+            drag.mod \
+            rxns.mod \
+            compar.mod \
+            time_cpu.mod \
             discretelement.mod 
-transfer.$(OBJ_EXT) : transfer.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
+transfer.$(OBJ_EXT) : transfer.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
             indices.mod 
-transport_prop.$(OBJ_EXT) : transport_prop.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            physprop.mod g
-            geometry.mod g
-            indices.mod g
-            run.mod g
-            toleranc.mod g
+transport_prop.$(OBJ_EXT) : transport_prop.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            physprop.mod \
+            geometry.mod \
+            indices.mod \
+            run.mod \
+            toleranc.mod \
             compar.mod 
-undef_2_0.$(OBJ_EXT) : undef_2_0.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
+undef_2_0.$(OBJ_EXT) : undef_2_0.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
             compar.mod 
-under_relax.$(OBJ_EXT) : under_relax.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            indices.mod g
-            compar.mod g
-            sendrecv.mod g
+under_relax.$(OBJ_EXT) : under_relax.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            sendrecv.mod \
             function.inc                                                
-update_old.$(OBJ_EXT) : update_old.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            run.mod g
-            trace.mod g
-            visc_s.mod g
+update_old.$(OBJ_EXT) : update_old.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            run.mod \
+            trace.mod \
+            visc_s.mod \
             scalars.mod 
-usr0.$(OBJ_EXT) : usr0.f g
+usr0.$(OBJ_EXT) : usr0.f \
             usr.mod 
-usr1.$(OBJ_EXT) : usr1.f g
+usr1.$(OBJ_EXT) : usr1.f \
             usr.mod 
-usr2.$(OBJ_EXT) : usr2.f g
+usr2.$(OBJ_EXT) : usr2.f \
             usr.mod 
-usr3.$(OBJ_EXT) : usr3.f g
+usr3.$(OBJ_EXT) : usr3.f \
             usr.mod 
-usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f g
+usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             usrnlst.inc                                                 
 usr_write_out0.$(OBJ_EXT) : usr_write_out0.f 
 usr_write_out1.$(OBJ_EXT) : usr_write_out1.f 
-vavg_u_g.$(OBJ_EXT) : vavg_u_g.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            parallel.mod g
-            fldvar.mod g
-            bc.mod g
-            geometry.mod g
-            physprop.mod g
-            indices.mod g
-            compar.mod g
-            mpi_utility.mod g
+vavg_u_g.$(OBJ_EXT) : vavg_u_g.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            parallel.mod \
+            fldvar.mod \
+            bc.mod \
+            geometry.mod \
+            physprop.mod \
+            indices.mod \
+            compar.mod \
+            mpi_utility.mod \
             function.inc                                                
-vavg_u_s.$(OBJ_EXT) : vavg_u_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            bc.mod g
-            geometry.mod g
-            physprop.mod g
-            indices.mod g
-            compar.mod g
-            mpi_utility.mod g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
+vavg_u_s.$(OBJ_EXT) : vavg_u_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            bc.mod \
+            geometry.mod \
+            physprop.mod \
+            indices.mod \
+            compar.mod \
+            mpi_utility.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
             ep_s2.inc                                                   
-vavg_v_g.$(OBJ_EXT) : vavg_v_g.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            parallel.mod g
-            fldvar.mod g
-            bc.mod g
-            geometry.mod g
-            physprop.mod g
-            indices.mod g
-            compar.mod g
-            mpi_utility.mod g
+vavg_v_g.$(OBJ_EXT) : vavg_v_g.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            parallel.mod \
+            fldvar.mod \
+            bc.mod \
+            geometry.mod \
+            physprop.mod \
+            indices.mod \
+            compar.mod \
+            mpi_utility.mod \
             function.inc                                                
-vavg_v_s.$(OBJ_EXT) : vavg_v_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            bc.mod g
-            geometry.mod g
-            physprop.mod g
-            indices.mod g
-            compar.mod g
-            mpi_utility.mod g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
+vavg_v_s.$(OBJ_EXT) : vavg_v_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            bc.mod \
+            geometry.mod \
+            physprop.mod \
+            indices.mod \
+            compar.mod \
+            mpi_utility.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
             ep_s2.inc                                                   
-vavg_w_g.$(OBJ_EXT) : vavg_w_g.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            parallel.mod g
-            fldvar.mod g
-            bc.mod g
-            geometry.mod g
-            physprop.mod g
-            indices.mod g
-            compar.mod g
-            mpi_utility.mod g
+vavg_w_g.$(OBJ_EXT) : vavg_w_g.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            parallel.mod \
+            fldvar.mod \
+            bc.mod \
+            geometry.mod \
+            physprop.mod \
+            indices.mod \
+            compar.mod \
+            mpi_utility.mod \
             function.inc                                                
-vavg_w_s.$(OBJ_EXT) : vavg_w_s.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            bc.mod g
-            geometry.mod g
-            physprop.mod g
-            indices.mod g
-            compar.mod g
-            mpi_utility.mod g
-            ep_s1.inc                                                    g
-            function.inc                                                 g
+vavg_w_s.$(OBJ_EXT) : vavg_w_s.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            bc.mod \
+            geometry.mod \
+            physprop.mod \
+            indices.mod \
+            compar.mod \
+            mpi_utility.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
             ep_s2.inc                                                   
-vf_gs_x.$(OBJ_EXT) : vf_gs_x.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            compar.mod g
-            drag.mod g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
+vf_gs_x.$(OBJ_EXT) : vf_gs_x.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            compar.mod \
+            drag.mod \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
             fun_avg2.inc                                                
-vf_gs_y.$(OBJ_EXT) : vf_gs_y.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            compar.mod g
-            drag.mod g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
+vf_gs_y.$(OBJ_EXT) : vf_gs_y.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            compar.mod \
+            drag.mod \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
             fun_avg2.inc                                                
-vf_gs_z.$(OBJ_EXT) : vf_gs_z.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            compar.mod g
-            drag.mod g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
+vf_gs_z.$(OBJ_EXT) : vf_gs_z.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            compar.mod \
+            drag.mod \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
             fun_avg2.inc                                                
-write_ab_m.$(OBJ_EXT) : write_ab_m.f g
-            param.mod g
-            param1.mod g
-            matrix.mod g
-            compar.mod g
-            mpi_utility.mod g
-            indices.mod g
+write_ab_m.$(OBJ_EXT) : write_ab_m.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            compar.mod \
+            mpi_utility.mod \
+            indices.mod \
             function.inc                                                
-write_ab_m_var.$(OBJ_EXT) : write_ab_m_var.f g
-            param.mod g
-            param1.mod g
-            matrix.mod g
-            geometry.mod g
-            compar.mod g
-            mpi_utility.mod g
-            indices.mod g
+write_ab_m_var.$(OBJ_EXT) : write_ab_m_var.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            geometry.mod \
+            compar.mod \
+            mpi_utility.mod \
+            indices.mod \
             function.inc                                                
-write_error.$(OBJ_EXT) : write_error.f g
-            param.mod g
-            param1.mod g
+write_error.$(OBJ_EXT) : write_error.f \
+            param.mod \
+            param1.mod \
             funits.mod 
-write_header.$(OBJ_EXT) : write_header.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            output.mod g
-            funits.mod g
+write_header.$(OBJ_EXT) : write_header.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            output.mod \
+            funits.mod \
             compar.mod 
-write_out0.$(OBJ_EXT) : write_out0.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            output.mod g
-            physprop.mod g
-            geometry.mod g
-            ic.mod g
-            bc.mod g
-            is.mod g
-            fldvar.mod g
-            constant.mod g
-            indices.mod g
-            funits.mod g
-            toleranc.mod g
-            scales.mod g
-            scalars.mod g
-            ur_facs.mod g
-            leqsol.mod g
-            compar.mod g
-            mpi_utility.mod g
-            sendrecv.mod g
+write_out0.$(OBJ_EXT) : write_out0.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            output.mod \
+            physprop.mod \
+            geometry.mod \
+            ic.mod \
+            bc.mod \
+            is.mod \
+            fldvar.mod \
+            constant.mod \
+            indices.mod \
+            funits.mod \
+            toleranc.mod \
+            scales.mod \
+            scalars.mod \
+            ur_facs.mod \
+            leqsol.mod \
+            compar.mod \
+            mpi_utility.mod \
+            sendrecv.mod \
             function.inc                                                
-write_out1.$(OBJ_EXT) : write_out1.f g
-            param.mod g
-            param1.mod g
-            physprop.mod g
-            fldvar.mod g
-            run.mod g
-            scalars.mod g
-            funits.mod g
-            rxns.mod g
-            compar.mod g
+write_out1.$(OBJ_EXT) : write_out1.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            fldvar.mod \
+            run.mod \
+            scalars.mod \
+            funits.mod \
+            rxns.mod \
+            compar.mod \
             mpi_utility.mod 
-write_out3.$(OBJ_EXT) : write_out3.f g
-            funits.mod g
+write_out3.$(OBJ_EXT) : write_out3.f \
+            funits.mod \
             compar.mod 
-write_res0.$(OBJ_EXT) : write_res0.f g
-            param.mod g
-            param1.mod g
-            geometry.mod g
-            physprop.mod g
-            run.mod g
-            ic.mod g
-            is.mod g
-            bc.mod g
-            constant.mod g
-            funits.mod g
-            output.mod g
-            scales.mod g
-            scalars.mod g
-            rxns.mod g
-            ur_facs.mod g
-            leqsol.mod g
-            toleranc.mod g
-            compar.mod g
-            mpi_utility.mod g
+write_res0.$(OBJ_EXT) : write_res0.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            physprop.mod \
+            run.mod \
+            ic.mod \
+            is.mod \
+            bc.mod \
+            constant.mod \
+            funits.mod \
+            output.mod \
+            scales.mod \
+            scalars.mod \
+            rxns.mod \
+            ur_facs.mod \
+            leqsol.mod \
+            toleranc.mod \
+            compar.mod \
+            mpi_utility.mod \
             sendrecv.mod 
-write_res1.$(OBJ_EXT) : write_res1.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            geometry.mod g
-            physprop.mod g
-            run.mod g
-            scalars.mod g
-            rxns.mod g
-            funits.mod g
-            output.mod g
-            energy.mod g
-            compar.mod g
-            mpi_utility.mod g
+write_res1.$(OBJ_EXT) : write_res1.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            geometry.mod \
+            physprop.mod \
+            run.mod \
+            scalars.mod \
+            rxns.mod \
+            funits.mod \
+            output.mod \
+            energy.mod \
+            compar.mod \
+            mpi_utility.mod \
             sendrecv.mod 
-write_spx0.$(OBJ_EXT) : write_spx0.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            funits.mod g
-            compar.mod g
+write_spx0.$(OBJ_EXT) : write_spx0.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            funits.mod \
+            compar.mod \
             mpi_utility.mod 
-write_spx1.$(OBJ_EXT) : write_spx1.f g
-            param.mod g
-            param1.mod g
-            fldvar.mod g
-            geometry.mod g
-            physprop.mod g
-            run.mod g
-            funits.mod g
-            scalars.mod g
-            output.mod g
-            rxns.mod g
-            compar.mod g
-            mpi_utility.mod g
+write_spx1.$(OBJ_EXT) : write_spx1.f \
+            param.mod \
+            param1.mod \
+            fldvar.mod \
+            geometry.mod \
+            physprop.mod \
+            run.mod \
+            funits.mod \
+            scalars.mod \
+            output.mod \
+            rxns.mod \
+            compar.mod \
+            mpi_utility.mod \
             sendrecv.mod 
-write_table.$(OBJ_EXT) : write_table.f g
-            param.mod g
-            param1.mod g
+write_table.$(OBJ_EXT) : write_table.f \
+            param.mod \
+            param1.mod \
             funits.mod 
 write_usr0.$(OBJ_EXT) : write_usr0.f 
 write_usr1.$(OBJ_EXT) : write_usr1.f 
-xerbla.$(OBJ_EXT) : xerbla.f g
+xerbla.$(OBJ_EXT) : xerbla.f \
             compar.mod 
-zero_array.$(OBJ_EXT) : zero_array.f g
-            param.mod g
+zero_array.$(OBJ_EXT) : zero_array.f \
+            param.mod \
             param1.mod 
-zero_norm_vel.$(OBJ_EXT) : zero_norm_vel.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            geometry.mod g
-            physprop.mod g
-            fldvar.mod g
-            indices.mod g
-            is.mod g
-            compar.mod g
+zero_norm_vel.$(OBJ_EXT) : zero_norm_vel.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            geometry.mod \
+            physprop.mod \
+            fldvar.mod \
+            indices.mod \
+            is.mod \
+            compar.mod \
             function.inc                                                
-add_part_to_link_list.$(OBJ_EXT) : ./cohesion/add_part_to_link_list.f g
+add_part_to_link_list.$(OBJ_EXT) : ./cohesion/add_part_to_link_list.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/add_part_to_link_list.f 
-calc_app_coh_force.$(OBJ_EXT) : ./cohesion/calc_app_coh_force.f g
-            discretelement.mod g
+calc_app_coh_force.$(OBJ_EXT) : ./cohesion/calc_app_coh_force.f \
+            discretelement.mod \
             run.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_app_coh_force.f 
-calc_cap_coh_force.$(OBJ_EXT) : ./cohesion/calc_cap_coh_force.f g
-            discretelement.mod g
+calc_cap_coh_force.$(OBJ_EXT) : ./cohesion/calc_cap_coh_force.f \
+            discretelement.mod \
             run.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_cap_coh_force.f 
-calc_cohesive_forces.$(OBJ_EXT) : ./cohesion/calc_cohesive_forces.f g
+calc_cohesive_forces.$(OBJ_EXT) : ./cohesion/calc_cohesive_forces.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_cohesive_forces.f 
-calc_esc_coh_force.$(OBJ_EXT) : ./cohesion/calc_esc_coh_force.f g
-            discretelement.mod g
+calc_esc_coh_force.$(OBJ_EXT) : ./cohesion/calc_esc_coh_force.f \
+            discretelement.mod \
             run.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_esc_coh_force.f 
-calc_square_well.$(OBJ_EXT) : ./cohesion/calc_square_well.f g
+calc_square_well.$(OBJ_EXT) : ./cohesion/calc_square_well.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_square_well.f 
-calc_van_der_waals.$(OBJ_EXT) : ./cohesion/calc_van_der_waals.f g
+calc_van_der_waals.$(OBJ_EXT) : ./cohesion/calc_van_der_waals.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_van_der_waals.f 
-check_link.$(OBJ_EXT) : ./cohesion/check_link.f g
+check_link.$(OBJ_EXT) : ./cohesion/check_link.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_link.f 
-check_sw_wall_interaction.$(OBJ_EXT) : ./cohesion/check_sw_wall_interaction.f g
+check_sw_wall_interaction.$(OBJ_EXT) : ./cohesion/check_sw_wall_interaction.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_sw_wall_interaction.f 
-check_vdw_wall_interaction.$(OBJ_EXT) : ./cohesion/check_vdw_wall_interaction.f g
+check_vdw_wall_interaction.$(OBJ_EXT) : ./cohesion/check_vdw_wall_interaction.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_vdw_wall_interaction.f 
-initialize_cohesion_parameters.$(OBJ_EXT) : ./cohesion/initialize_cohesion_parameters.f g
+initialize_cohesion_parameters.$(OBJ_EXT) : ./cohesion/initialize_cohesion_parameters.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/initialize_cohesion_parameters.f 
-initialize_coh_int_search.$(OBJ_EXT) : ./cohesion/initialize_coh_int_search.f g
+initialize_coh_int_search.$(OBJ_EXT) : ./cohesion/initialize_coh_int_search.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/initialize_coh_int_search.f 
-linked_interaction_eval.$(OBJ_EXT) : ./cohesion/linked_interaction_eval.f g
+linked_interaction_eval.$(OBJ_EXT) : ./cohesion/linked_interaction_eval.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/linked_interaction_eval.f 
-remove_part_from_link_list.$(OBJ_EXT) : ./cohesion/remove_part_from_link_list.f g
+remove_part_from_link_list.$(OBJ_EXT) : ./cohesion/remove_part_from_link_list.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/remove_part_from_link_list.f 
-unlinked_interaction_eval.$(OBJ_EXT) : ./cohesion/unlinked_interaction_eval.f g
-            discretelement.mod g
+unlinked_interaction_eval.$(OBJ_EXT) : ./cohesion/unlinked_interaction_eval.f \
+            discretelement.mod \
             run.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/unlinked_interaction_eval.f 
-update_search_grids.$(OBJ_EXT) : ./cohesion/update_search_grids.f g
+update_search_grids.$(OBJ_EXT) : ./cohesion/update_search_grids.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/update_search_grids.f 
-calc_force_des.$(OBJ_EXT) : ./des/calc_force_des.f g
-            discretelement.mod g
+calc_force_des.$(OBJ_EXT) : ./des/calc_force_des.f \
+            discretelement.mod \
             geometry.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_force_des.f 
-cfassign.$(OBJ_EXT) : ./des/cfassign.f g
+cfassign.$(OBJ_EXT) : ./des/cfassign.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfassign.f 
-cffctow.$(OBJ_EXT) : ./des/cffctow.f g
+cffctow.$(OBJ_EXT) : ./des/cffctow.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cffctow.f 
-cffn.$(OBJ_EXT) : ./des/cffn.f g
+cffn.$(OBJ_EXT) : ./des/cffn.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cffn.f 
-cffnwall.$(OBJ_EXT) : ./des/cffnwall.f g
+cffnwall.$(OBJ_EXT) : ./des/cffnwall.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cffnwall.f 
-cfft.$(OBJ_EXT) : ./des/cfft.f g
+cfft.$(OBJ_EXT) : ./des/cfft.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfft.f 
-cfftwall.$(OBJ_EXT) : ./des/cfftwall.f g
+cfftwall.$(OBJ_EXT) : ./des/cfftwall.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfftwall.f 
-cfincrementaloverlaps.$(OBJ_EXT) : ./des/cfincrementaloverlaps.f g
+cfincrementaloverlaps.$(OBJ_EXT) : ./des/cfincrementaloverlaps.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfincrementaloverlaps.f 
-cfnewvalues.$(OBJ_EXT) : ./des/cfnewvalues.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            compar.mod g
-            sendrecv.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_g.mod g
-            rxns.mod g
-            run.mod g
-            geometry.mod g
-            indices.mod g
-            drag.mod g
+cfnewvalues.$(OBJ_EXT) : ./des/cfnewvalues.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            compar.mod \
+            sendrecv.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_g.mod \
+            rxns.mod \
+            run.mod \
+            geometry.mod \
+            indices.mod \
+            drag.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnewvalues.f 
-cfnocontact.$(OBJ_EXT) : ./des/cfnocontact.f g
+cfnocontact.$(OBJ_EXT) : ./des/cfnocontact.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnocontact.f 
-cfnormal.$(OBJ_EXT) : ./des/cfnormal.f g
+cfnormal.$(OBJ_EXT) : ./des/cfnormal.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnormal.f 
-cfoutofbox.$(OBJ_EXT) : ./des/cfoutofbox.f g
+cfoutofbox.$(OBJ_EXT) : ./des/cfoutofbox.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfoutofbox.f 
-cfperiodicwallneighbourx.$(OBJ_EXT) : ./des/cfperiodicwallneighbourx.f g
+cfperiodicwallneighbourx.$(OBJ_EXT) : ./des/cfperiodicwallneighbourx.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallneighbourx.f 
-cfperiodicwallneighboury.$(OBJ_EXT) : ./des/cfperiodicwallneighboury.f g
+cfperiodicwallneighboury.$(OBJ_EXT) : ./des/cfperiodicwallneighboury.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallneighboury.f 
-cfperiodicwallneighbourz.$(OBJ_EXT) : ./des/cfperiodicwallneighbourz.f g
+cfperiodicwallneighbourz.$(OBJ_EXT) : ./des/cfperiodicwallneighbourz.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallneighbourz.f 
-cfperiodicwallx.$(OBJ_EXT) : ./des/cfperiodicwallx.f g
+cfperiodicwallx.$(OBJ_EXT) : ./des/cfperiodicwallx.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallx.f 
-cfperiodicwally.$(OBJ_EXT) : ./des/cfperiodicwally.f g
+cfperiodicwally.$(OBJ_EXT) : ./des/cfperiodicwally.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwally.f 
-cfperiodicwallz.$(OBJ_EXT) : ./des/cfperiodicwallz.f g
+cfperiodicwallz.$(OBJ_EXT) : ./des/cfperiodicwallz.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallz.f 
-cfrelvel.$(OBJ_EXT) : ./des/cfrelvel.f g
+cfrelvel.$(OBJ_EXT) : ./des/cfrelvel.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfrelvel.f 
-cfslide.$(OBJ_EXT) : ./des/cfslide.f g
+cfslide.$(OBJ_EXT) : ./des/cfslide.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfslide.f 
-cfslidewall.$(OBJ_EXT) : ./des/cfslidewall.f g
+cfslidewall.$(OBJ_EXT) : ./des/cfslidewall.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfslidewall.f 
-cftangent.$(OBJ_EXT) : ./des/cftangent.f g
+cftangent.$(OBJ_EXT) : ./des/cftangent.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cftangent.f 
-cftotaloverlaps.$(OBJ_EXT) : ./des/cftotaloverlaps.f g
+cftotaloverlaps.$(OBJ_EXT) : ./des/cftotaloverlaps.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cftotaloverlaps.f 
-cfupdateold.$(OBJ_EXT) : ./des/cfupdateold.f g
+cfupdateold.$(OBJ_EXT) : ./des/cfupdateold.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfupdateold.f 
-cfvrn.$(OBJ_EXT) : ./des/cfvrn.f g
+cfvrn.$(OBJ_EXT) : ./des/cfvrn.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfvrn.f 
-cfvrt.$(OBJ_EXT) : ./des/cfvrt.f g
+cfvrt.$(OBJ_EXT) : ./des/cfvrt.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfvrt.f 
-cfwallcontact.$(OBJ_EXT) : ./des/cfwallcontact.f g
-            discretelement.mod g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            run.mod g
-            geometry.mod g
-            matrix.mod g
-            indices.mod g
-            physprop.mod g
-            drag.mod g
-            constant.mod g
+cfwallcontact.$(OBJ_EXT) : ./des/cfwallcontact.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
             compar.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfwallcontact.f 
-cfwallposvel.$(OBJ_EXT) : ./des/cfwallposvel.f g
-            discretelement.mod g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            run.mod g
-            geometry.mod g
-            matrix.mod g
-            indices.mod g
-            physprop.mod g
-            drag.mod g
-            constant.mod g
+cfwallposvel.$(OBJ_EXT) : ./des/cfwallposvel.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
             compar.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfwallposvel.f 
-des_calc_d.$(OBJ_EXT) : ./des/des_calc_d.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            geometry.mod g
-            indices.mod g
-            physprop.mod g
-            run.mod g
-            scales.mod g
-            compar.mod g
-            sendrecv.mod g
-            discretelement.mod g
-            ep_s1.inc                                                    g
-            fun_avg1.inc                                                 g
-            function.inc                                                 g
-            fun_avg2.inc                                                 g
+des_calc_d.$(OBJ_EXT) : ./des/des_calc_d.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            run.mod \
+            scales.mod \
+            compar.mod \
+            sendrecv.mod \
+            discretelement.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_calc_d.f 
-des_granular_temperature.$(OBJ_EXT) : ./des/des_granular_temperature.f g
-            discretelement.mod g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            run.mod g
-            geometry.mod g
-            matrix.mod g
-            indices.mod g
-            physprop.mod g
-            drag.mod g
-            constant.mod g
-            compar.mod g
+des_granular_temperature.$(OBJ_EXT) : ./des/des_granular_temperature.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
+            compar.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_granular_temperature.f 
-des_init_namelist.$(OBJ_EXT) : ./des/des_init_namelist.f g
-            discretelement.mod g
+des_init_namelist.$(OBJ_EXT) : ./des/des_init_namelist.f \
+            discretelement.mod \
             des/desnamelist.inc                                         
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_namelist.f 
-des_inlet_outlet.$(OBJ_EXT) : ./des/des_inlet_outlet.f g
-            discretelement.mod g
+des_inlet_outlet.$(OBJ_EXT) : ./des/des_inlet_outlet.f \
+            discretelement.mod \
             geometry.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_inlet_outlet.f 
-des_time_march.$(OBJ_EXT) : ./des/des_time_march.f g
-            param.mod g
-            param1.mod g
-            run.mod g
-            output.mod g
-            physprop.mod g
-            fldvar.mod g
-            geometry.mod g
-            pgcor.mod g
-            pscor.mod g
-            cont.mod g
-            coeff.mod g
-            tau_g.mod g
-            tau_s.mod g
-            visc_g.mod g
-            visc_s.mod g
-            funits.mod g
-            vshear.mod g
-            scalars.mod g
-            drag.mod g
-            rxns.mod g
-            compar.mod g
-            time_cpu.mod g
+des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            output.mod \
+            physprop.mod \
+            fldvar.mod \
+            geometry.mod \
+            pgcor.mod \
+            pscor.mod \
+            cont.mod \
+            coeff.mod \
+            tau_g.mod \
+            tau_s.mod \
+            visc_g.mod \
+            visc_s.mod \
+            funits.mod \
+            vshear.mod \
+            scalars.mod \
+            drag.mod \
+            rxns.mod \
+            compar.mod \
+            time_cpu.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_time_march.f 
-drag_fgs.$(OBJ_EXT) : ./des/drag_fgs.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_g.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            tau_g.mod g
-            bc.mod g
-            compar.mod g
-            sendrecv.mod g
-            discretelement.mod g
-            drag.mod g
-            function.inc                                                 g
-            ep_s1.inc                                                    g
+drag_fgs.$(OBJ_EXT) : ./des/drag_fgs.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_g.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            tau_g.mod \
+            bc.mod \
+            compar.mod \
+            sendrecv.mod \
+            discretelement.mod \
+            drag.mod \
+            function.inc                                                 \
+            ep_s1.inc                                                    \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/drag_fgs.f 
-gas_drag.$(OBJ_EXT) : ./des/gas_drag.f g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            matrix.mod g
-            scales.mod g
-            constant.mod g
-            physprop.mod g
-            fldvar.mod g
-            visc_g.mod g
-            rxns.mod g
-            run.mod g
-            toleranc.mod g
-            geometry.mod g
-            indices.mod g
-            is.mod g
-            tau_g.mod g
-            bc.mod g
-            compar.mod g
-            sendrecv.mod g
-            discretelement.mod g
-            drag.mod g
+gas_drag.$(OBJ_EXT) : ./des/gas_drag.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            visc_g.mod \
+            rxns.mod \
+            run.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            is.mod \
+            tau_g.mod \
+            bc.mod \
+            compar.mod \
+            sendrecv.mod \
+            discretelement.mod \
+            drag.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/gas_drag.f 
-make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f g
-            funits.mod g
-            compar.mod g
+make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
+            funits.mod \
+            compar.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/make_arrays_des.f 
-neighbour.$(OBJ_EXT) : ./des/neighbour.f g
+neighbour.$(OBJ_EXT) : ./des/neighbour.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/neighbour.f 
-nsquare.$(OBJ_EXT) : ./des/nsquare.f g
+nsquare.$(OBJ_EXT) : ./des/nsquare.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/nsquare.f 
-octree.$(OBJ_EXT) : ./des/octree.f g
+octree.$(OBJ_EXT) : ./des/octree.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/octree.f 
-particles_in_cell.$(OBJ_EXT) : ./des/particles_in_cell.f g
-            discretelement.mod g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            run.mod g
-            geometry.mod g
-            matrix.mod g
-            indices.mod g
-            physprop.mod g
-            drag.mod g
-            constant.mod g
-            compar.mod g
-            sendrecv.mod g
-            function.inc                                                 g
-            ep_s1.inc                                                    g
+particles_in_cell.$(OBJ_EXT) : ./des/particles_in_cell.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
+            compar.mod \
+            sendrecv.mod \
+            function.inc                                                 \
+            ep_s1.inc                                                    \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/particles_in_cell.f 
-periodic_wall_calc_force_des.$(OBJ_EXT) : ./des/periodic_wall_calc_force_des.f g
-            discretelement.mod g
+periodic_wall_calc_force_des.$(OBJ_EXT) : ./des/periodic_wall_calc_force_des.f \
+            discretelement.mod \
             geometry.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/periodic_wall_calc_force_des.f 
-pressure_drop.$(OBJ_EXT) : ./des/pressure_drop.f g
-            discretelement.mod g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            run.mod g
-            geometry.mod g
-            matrix.mod g
-            indices.mod g
-            physprop.mod g
-            drag.mod g
-            constant.mod g
-            compar.mod g
+pressure_drop.$(OBJ_EXT) : ./des/pressure_drop.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
+            compar.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/pressure_drop.f 
-print_vel.$(OBJ_EXT) : ./des/print_vel.f g
-            discretelement.mod g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            run.mod g
-            geometry.mod g
-            matrix.mod g
-            indices.mod g
-            physprop.mod g
+print_vel.$(OBJ_EXT) : ./des/print_vel.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
             drag.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/print_vel.f 
-quadtree.$(OBJ_EXT) : ./des/quadtree.f g
-            discretelement.mod g
-            param.mod g
-            param1.mod g
-            parallel.mod g
-            fldvar.mod g
-            run.mod g
-            geometry.mod g
-            matrix.mod g
-            indices.mod g
-            physprop.mod g
-            drag.mod g
-            constant.mod g
+quadtree.$(OBJ_EXT) : ./des/quadtree.f \
+            discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
             compar.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/quadtree.f 
