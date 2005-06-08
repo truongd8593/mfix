@@ -72,6 +72,9 @@
 ! 
 !                      error message 
       CHARACTER*80     LINE 
+!
+!                      FOR CALL_CHEM and CALL_ISAT = .true.
+      DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
 ! 
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -80,6 +83,16 @@
 !!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
 !!$omp&  Src, LINE) &
 !!$omp&  schedule(static)
+!
+!     CHEM & ISAT begin (nan xie)
+! Set the source terms zero
+      IF (CALL_CHEM .or. CALL_ISAT) THEN
+         SUM_R_S_temp = SUM_R_S
+         SUM_R_S = ZERO
+      END IF
+!     CHEM & ISAT end (nan xie)
+!
+!
       DO IJK = ijkstart3, ijkend3
 !
          IF (FLUID_AT(IJK) .AND. PHASE_4_P_G(IJK)/=M .AND. PHASE_4_P_S(IJK)/=M&
@@ -129,6 +142,14 @@
             B_M(IJK,M) = -ROP_S(IJK,M) 
          ENDIF 
       END DO 
+!
+!     CHEM & ISAT begin (nan xie)
+!
+      IF (CALL_CHEM .or. CALL_ISAT) THEN
+         SUM_R_S = SUM_R_S_temp
+      END IF
+!     CHEM & ISAT end (nan xie)
+! 
       
       RETURN  
       END SUBROUTINE SOURCE_ROP_S 

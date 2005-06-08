@@ -198,7 +198,11 @@
       CALL CHECK_DATA_07                         ! boundary condition section 
       CALL CHECK_DATA_08                         ! Internal surfaces section 
       CALL CHECK_DATA_09                         ! Chemical reactions section       
-
+!
+!     CHEM & ISAT begin (nan xie)
+!  check rxns
+      CALL CHECK_DATA_CHEM      
+!     CHEM & ISAT end (nan xie)
 !
 ! close .LOG file
 !

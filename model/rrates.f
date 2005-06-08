@@ -72,7 +72,9 @@
 ! The following section is provided so that species equation calculations are 
 ! NOT accidentally performed with the default routine.  To activate this routine
 ! remove the following two lines and insert information in sections 1-4.
-      IER = 1
+
+!      IER = 1
+
       RETURN
 
 !************************************************************************

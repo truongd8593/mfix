@@ -88,12 +88,12 @@
           EPSoDP = ZERO
           DO Mx = 1, MMAX
             EPS = AVG_XYZ(EP_s(IJK1, Mx), EP_s(IJK2, Mx), DIR, L)
-            EPSoDP = EPSoDP + EPS / D_p(Mx)
+            EPSoDP = EPSoDP + EPS / D_p(IJK,Mx)
           END DO
           EPg = AVG_XYZ(EP_g(IJK1), EP_g(IJK2), DIR, L)
           G_0AVG = ONE / EPg                                      &
-              + 3.0 * EPSoDP * D_p(M1) * D_p(M2)               &
-              / (EPg*EPg *(D_p(M1) + D_p(M2)))
+              + 3.0 * EPSoDP * D_p(IJK,M1) * D_p(IJK,M2)               &
+              / (EPg*EPg *(D_p(IJK,M1) + D_p(IJK,M2)))
 ! End Lebowitz (1964)
 !
         ELSE
@@ -207,12 +207,12 @@
         EPSoDP = ZERO
         DO Mx = 1, MMAX
           EPS = EP_s(IJK, Mx)
-          EPSoDP = EPSoDP + EPS / D_p(Mx)
+          EPSoDP = EPSoDP + EPS / D_p(IJK,Mx)
         END DO
         EPg = EP_g(IJK)
         G_0 = ONE / EPg                                      &
-            + 3.0 * EPSoDP * D_p(M1) * D_p(M2)               &
-            / (EPg*EPg *(D_p(M1) + D_p(M2)))
+            + 3.0 * EPSoDP * D_p(IJK,M1) * D_p(IJK,M2)               &
+            / (EPg*EPg *(D_p(IJK,M1) + D_p(IJK,M2)))
 ! End Lebowitz (1964)
 !        
       ELSE

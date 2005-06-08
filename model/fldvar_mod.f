@@ -59,7 +59,15 @@
 !                      Previous-time-step value of macroscopic density of
 !                      solids phases
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  ROP_so 
+
+!                      Macroscopic density of particle diameter
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  D_p 
 !
+!                      Previous-time-step value of particle diameter
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  D_po 
+
+
+
 !                      Gas phase temperature
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  T_g 
 !
@@ -166,6 +174,8 @@
 !!!HPF$ align RO_go(:) with TT(:)
 !!!HPF$ align ROP_g(:) with TT(:)
 !!!HPF$ align ROP_go(:) with TT(:)
+!!!HPF$ align D_p(:, *) with TT(:)
+!!!HPF$ align D_po(:, *) with TT(:)
 !!!HPF$ align ROP_s(:, *) with TT(:)
 !!!HPF$ align ROP_so(:, *) with TT(:)
 !!!HPF$ align T_g(:) with TT(:)

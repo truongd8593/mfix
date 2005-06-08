@@ -159,7 +159,7 @@
 !---------------  Begin Syamlal and O'Brien ---------------------------
 !         Reynolds number
             if(MU_G(IJK) > ZERO)then
-              RE = D_P(M)*VREL*RO_G(IJK)/MU_G(IJK)
+              RE = D_p(IJK,M)*VREL*RO_G(IJK)/MU_G(IJK)
             else
               RE = LARGE_NUMBER
             endif
@@ -190,10 +190,10 @@
 !
                IF (MODEL_B) THEN 
                   F_GS(IJK,M) = 0.75*MU_G(IJK)*EP_S(IJK,M)*C_DSXRE(RE/V_RM)/(&
-                     V_RM*D_P(M)*D_P(M)) 
+                     V_RM*D_p(IJK,M)*D_p(IJK,M)) 
                ELSE 
                   F_GS(IJK,M) = 0.75*MU_G(IJK)*EP_S(IJK,M)*EP_G(IJK)*C_DSXRE(RE&
-                     /V_RM)/(V_RM*D_P(M)*D_P(M)) 
+                     /V_RM)/(V_RM*D_p(IJK,M)*D_p(IJK,M)) 
                ENDIF 
             ENDIF 
 !---------------  End Syamlal and O'Brien ---------------------------
@@ -201,17 +201,17 @@
 !-------------------------- Begin Gidaspow --------------------------
 !          IF(EP_g(IJK) .LE. 0.8) THEN
 !            DgA = 150 * (ONE - EP_g(IJK)) * MU_g(IJK) &
-!                    / ( EP_g(IJK) * D_p(M)**2 ) &
-!                  + 1.75 * RO_g(IJK) * VREL / D_p(M)
+!                    / ( EP_g(IJK) * D_p(IJK,M)**2 ) &
+!                  + 1.75 * RO_g(IJK) * VREL / D_p(IJK,M)
 !          ELSE
-!            Re =  D_p(M) * VREL * ROP_g(IJK) / MU_g(IJK)
+!            Re =  D_p(IJK,M) * VREL * ROP_g(IJK) / MU_g(IJK)
 !            IF(Re .LE. 1000)THEN
 !              C_d = (24./(Re+SMALL_NUMBER)) * (ONE + 0.15 * Re**0.687)
 !            ELSE
 !              C_d = 0.44
 !            ENDIF
 !            DgA = 0.75 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65) &
-!                  /D_p(M)
+!                  /D_p(IJK,M)
 !          ENDIF
 !
 !         Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)

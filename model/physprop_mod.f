@@ -41,7 +41,7 @@
       DOUBLE PRECISION K_scale
 !
 !                      Particle diameters
-      DOUBLE PRECISION D_p (DIM_M)
+      DOUBLE PRECISION D_p0 (DIM_M)
 !
 !                      index to rearrange particles from coarsest to finest
 !                      for use in function CALC_ep_star(IJK,IER)

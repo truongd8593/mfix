@@ -140,7 +140,7 @@
                MM = 1
             ELSE
                DO M = 1, MMAX
-                  IF((2*DES_RADIUS(KK)-D_P(M)).LE.1E-5) THEN
+                  IF((2*DES_RADIUS(KK)-D_P(IJK,M)).LE.1E-5) THEN
                      MM = M
                   END IF
                END DO

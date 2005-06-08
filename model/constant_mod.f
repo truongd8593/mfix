@@ -35,7 +35,11 @@
 ! commented by sof(05-04-2005) no need for this, will be user input in mfix.dat
 	DOUBLE PRECISION SEGREGATION_SLOPE_COEFFICIENT !, MAX_SOLID_1_PACKING,&
 			  !MAX_SOLID_2_PACKING0.6
-!
+
+! success-factor for aggregation and breakage  
+
+        DOUBLE PRECISION AGGREGATION_EFF
+        DOUBLE PRECISION BREAKAGE_EFF
 !     ALPHA = parameter in equation for mu_s
 !
 !     SWITCH enables us to turn on/off the modification to the

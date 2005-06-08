@@ -144,6 +144,10 @@
 ! 
 !                      error message 
       CHARACTER*80     LINE(1) 
+!
+!                      FOR CALL_CHEM and CALL_ISAT = .true.
+      DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
+!
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 's_pr1.inc'
@@ -160,6 +164,16 @@
 !$omp&           IMJK, IJMK, IJKM,                               &
 !$omp&           IJKE, IJKW, IJKN, IJKS, IJKT, IJKB,                   &
 !$omp&           K_P, SRC )
+!
+!     CHEM & ISAT begin (nan xie)
+!
+! Set the source terms zero
+      IF (CALL_CHEM .or. CALL_ISAT) THEN
+         SUM_R_S_temp = SUM_R_S
+         SUM_R_S = ZERO
+      END IF
+!     CHEM & ISAT end (nan xie)
+!
       DO IJK = ijkstart3, ijkend3
 !// Determine whehter IJK falls within 1 ghost layer........
        I = I_OF(IJK)
@@ -341,6 +355,14 @@
             B_M(IJK,0) = ZERO 
          ENDIF 
       END DO 
+!
+!     CHEM & ISAT begin (nan xie)
+!
+      IF (CALL_CHEM .or. CALL_ISAT) THEN
+         SUM_R_S = SUM_R_S_temp
+      END IF
+!     CHEM & ISAT end (nan xie)
+!      
       RETURN  
       END SUBROUTINE CONV_SOURCE_EPP0 
 !
@@ -431,6 +453,10 @@
 ! 
 !                      error message 
       CHARACTER*80     LINE(1) 
+!
+!                      FOR CALL_CHEM and CALL_ISAT = .true.
+      DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
+!
 ! 
 !                      Convection weighting factors 
 !      DOUBLE PRECISION XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),& 
@@ -481,6 +507,16 @@
 !$omp&   private(I, J, K, IJK, IPJK, IJPK, IJKP,                &
 !$omp&           IMJK, IJMK, IJKM, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB, &
 !$omp&           K_P,ROP_SF,SRC )
+!
+!     CHEM & ISAT begin (nan xie)
+!
+! Set the source terms zero
+      IF (CALL_CHEM .or. CALL_ISAT) THEN
+         SUM_R_S_temp = SUM_R_S
+         SUM_R_S = ZERO
+      END IF
+!     CHEM & ISAT end (nan xie)
+!
       DO IJK = ijkstart3, ijkend3
 !// Determine if IJK falls within 1 ghost layer........
        I = I_OF(IJK)
@@ -612,7 +648,14 @@
             B_M(IJK,0) = ZERO 
          ENDIF 
       END DO
-
+!
+!     CHEM & ISAT begin (nan xie)
+!
+      IF (CALL_CHEM .or. CALL_ISAT) THEN
+         SUM_R_S = SUM_R_S_temp
+      END IF
+!     CHEM & ISAT end (nan xie)
+!
 ! loezos
       IF (SHEAR) THEN
 !$omp parallel do private(IJK)  

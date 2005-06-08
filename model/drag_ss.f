@@ -97,19 +97,15 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
 !
-      D_PM = D_P(M) 
-      D_PL = D_P(L) 
-      DPSUM = D_PL + D_PM 
-      LM = FUNLM(L,M) 
-      CONST = 3.*(ONE + C_E)*(PI/2. + C_F*PI*PI/8.)*DPSUM**2/(2.*PI*(RO_S(L)*&
-         D_PL**3+RO_S(M)*D_PM**3)) 
+      LM = FUNLM(L,M)
+   
 !
 !!$omp  parallel do private( I, L, M,  IJK, IMJK, IJMK, IJKM, &
-!!$omp&  USCM, VSCM, WSCM, &
+!!$omp&  USCM, VSCM, WSCM,D_PM, D_PL, D_PSUM, CONST,&
 !!$omp&  VREL, USCL, VSCL, WSCL) &
 !!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
-      
+         
          IF (.NOT.WALL_AT(IJK)) THEN 
             I = I_OF(IJK) 
             IMJK = IM_OF(IJK) 
@@ -137,7 +133,14 @@
             VREL = SQRT((USCL - USCM)**2 + (VSCL - VSCM)**2 + (WSCL - WSCM)**2) 
 !
 !
-            F_SS(IJK,LM) = CONST*ROP_S(IJK,L)*ROP_S(IJK,M)*G_0(IJK,L,M)*VREL 
+         D_PM = D_P(IJK,M) 
+         D_PL = D_P(IJK,L) 
+         DPSUM = D_PL + D_PM 
+       
+       
+         CONST = 3.*(ONE + C_E)*(PI/2. + C_F*PI*PI/8.)*DPSUM**2/(2.*PI*(RO_S(L)*&
+         D_PL**3+RO_S(M)*D_PM**3)) 
+             F_SS(IJK,LM) = CONST*ROP_S(IJK,L)*ROP_S(IJK,M)*G_0(IJK,L,M)*VREL 
 
 !	    Account for particle-particle drag due to enduring contact in a close-packed system.
 	    IF(CLOSE_PACKED(M) .AND. CLOSE_PACKED(L) .AND. (MMAX >= 2))&
@@ -154,3 +157,10 @@
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+
+
+
+
+
+
+

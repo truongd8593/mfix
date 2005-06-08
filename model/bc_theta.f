@@ -322,7 +322,7 @@
       INTEGER          IPJK2T
 !
 !                      Average scalars
-      DOUBLE PRECISION EP_avg, TH_avg, Mu_g_avg, RO_g_avg
+      DOUBLE PRECISION EP_avg, TH_avg, Mu_g_avg, RO_g_avg, Dp_avg
 !
 !                      Average Simonin variables
       DOUBLE PRECISION K_12_avg, Tau_12_avg
@@ -390,6 +390,8 @@
 	  K_12_avg = ZERO    
           Tau_12_avg = ZERO
 	ENDIF
+
+        DP_avg   =D_P(IJK2,M)
  
 !     Calculate velocity components at i, j+1/2, k (relative to IJK1)
         UGC  = AVG_Y(AVG_X_E(U_g(IM_OF(IJK1)),U_g(IJK1),I_OF(IJK1)),&
@@ -431,6 +433,8 @@
 	  K_12_avg = ZERO    
           Tau_12_avg = ZERO
 	ENDIF
+
+        DP_avg   =D_P(IJK2,M)
  
 !     Calculate velocity components at i, j+1/2, k (relative to IJK2)
         UGC  = AVG_Y(AVG_X_E(U_g(IM_OF(IJK2)),U_g(IJK2),I_OF(IJK2)),&
@@ -472,6 +476,7 @@
           Tau_12_avg = ZERO
 	ENDIF
  
+        DP_avg   =D_P(IJK2,M)
 !     Calculate velocity components at i+1/2, j, k (relative to IJK1)
         UGC  = U_g(IJK1)
         VGC  = AVG_X(AVG_Y_N(V_g(JM_OF(IJK1)), V_g(IJK1)),&
@@ -513,6 +518,7 @@
           Tau_12_avg = ZERO
 	ENDIF
  
+        DP_avg   =D_P(IJK2,M)
 !     Calculate velocity components at i+1/2, j, k (relative to IJK2)
         UGC  = U_g(IJK2)
         VGC  = AVG_X(AVG_Y_N(V_g(JM_OF(IJK2)), V_g(IJK2)),&
@@ -554,6 +560,8 @@
           Tau_12_avg = ZERO
 	ENDIF
  
+        DP_avg   =D_P(IJK2,M)
+
 !     Calculate velocity components at i, j, k+1/2 (relative to IJK1)
         UGC  = AVG_Z(AVG_X_E(U_g(IM_OF(IJK1)),U_g(IJK1),I_OF(IJK1)),&
                      AVG_X_E(U_g(IM_OF(IJK2)),U_g(IJK2),I_OF(IJK2)),&
@@ -596,6 +604,7 @@
           Tau_12_avg = ZERO
 	ENDIF
  
+        DP_avg   =D_P(IJK2,M)
 !     Calculate velocity components at i, j, k+1/2 (relative to IJK2)
         UGC  = AVG_Z(AVG_X_E(U_g(IM_OF(IJK2)),U_g(IJK2),I_OF(IJK2)),&
                      AVG_X_E(U_g(IM_OF(IJK1)),U_g(IJK1),I_OF(IJK1)),&
@@ -626,7 +635,7 @@
 	call exitMPI(myPE)          
       ENDIF
  
-      CALL THETA_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg,K_12_avg,Tau_12_avg,&
+      CALL THETA_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, K_12_avg,Tau_12_avg,&
                        VREL,VSLIPSQ,M,Gw,Hw,Cw,L)
 !
       RETURN
@@ -636,7 +645,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SUBROUTINE THETA_HW_CW(g0,EPS, TH, Mu_g_avg, RO_g_avg, C
-!                                      K_12_avg,Tau_12_avg,            C
+!                                DP_avg,K_12_avg,Tau_12_avg,           C
 !                                       VREL,VSLIPSQ,M,GW,HW,CW,L)     C
 !  Purpose: Subroutine for hw and cw                                   C
 !                                                                      C
@@ -646,11 +655,11 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced: EPS, TH, C_e, RO_s, D_p(M), Eta, e_w          C
+!  Variables referenced: EPS, TH, C_e, RO_s, Eta, e_w                  C
 !  Variables modified:                                                 C
 !                                                                      C
 !  Local variables: F_2, Mu_s, Mu, Mu_b, Mu_g_avg, RO_g_avg,           C
-!                   VREL, C_d, Beta                                    C
+!                   DP_avg, VREL, C_d, Beta                                    C
 !                                                                      C
 !  Modified: Sofiane Benyahia, Fluent Inc.             Date: 02-FEB-05 C
 !  Purpose: Include conductivity defined by Simonin and Ahmadi         C
@@ -662,7 +671,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE THETA_HW_CW(g0,EPS,TH,Mu_g_avg,RO_g_avg,K_12_avg,Tau_12_avg,&
+      SUBROUTINE THETA_HW_CW(g0,EPS,TH,Mu_g_avg,RO_g_avg, DP_avg, K_12_avg,Tau_12_avg,&
                              VREL,VSLIPSQ,M,GW,HW,CW,L)
  
 
@@ -715,7 +724,10 @@
  
 !              Average gas viscosity
       DOUBLE PRECISION Mu_g_avg
- 
+
+!              Average particle diameter
+      DOUBLE PRECISION DP_avg
+!      
 !              Reynolds number based on slip velocity
       DOUBLE PRECISION Re_g
  
@@ -756,16 +768,16 @@
  
       G_0 = g0
  
-      Lambda = 75*RO_s(M)*D_p(M)*DSQRT(Pi*TH)/(48*Eta*(41d0-33d0*Eta))
+      Lambda = 75*RO_s(M)*Dp_avg*DSQRT(Pi*TH)/(48*Eta*(41d0-33d0*Eta))
  
-      Re_g = (1d0-EPS)*RO_g_avg*D_p(M)*VREL/Mu_g_avg
+      Re_g = (1d0-EPS)*RO_g_avg*Dp_avg*VREL/Mu_g_avg
       IF (Re_g.lt.1000d0) THEN
          C_d = (24./(Re_g+SMALL_NUMBER))*(1d0 + 0.15 * Re_g**0.687)
       ELSE
          C_d = 0.44d0
       ENDIF
       Beta = 0.75d0*C_d*Ro_g_avg*(1-EPS)*EPS*VREL&
-                *((1-EPS)**(-2.65d0))/D_p(M)
+                *((1-EPS)**(-2.65d0))/Dp_avg
 ! particle relaxation time
       Tau_12_st = EPS*RO_s(M)/(Beta+small_number)
       
@@ -800,7 +812,7 @@
 
         Omega_c = 3.d0*(ONE+ C_e)**2 *(2.d0*C_e-ONE)/5.d0 
 !
-        Tau_2_c = D_P(M)/(6.d0*EpS*G_0 &
+        Tau_2_c = DP_avg/(6.d0*EpS*G_0 &
                  *DSQRT(16.d0*(TH+Small_number)/PI))
 
 ! Defining Simonin's Solids Turbulent Kinetic diffusivity: Kappa
@@ -810,12 +822,12 @@
                    (9.d0/(5.d0*Tau_12_st) + zeta_c/Tau_2_c)
 !
         Kappa_Col = 18.d0/5.d0*EPS*G_0*Eta* (Kappa_kin+ &
-                     5.d0/9.d0*D_p(M)*DSQRT(Th/PI))
+                     5.d0/9.d0*Dp_avg*DSQRT(Th/PI))
 !
 	K_1 =  EPS*RO_s(M)*(Kappa_kin + Kappa_Col)
  
       ELSE IF(AHMADI) THEN
-        K_1 =  0.1306*RO_s(M)*D_p(M)*(ONE+C_e**2)* (  &
+        K_1 =  0.1306*RO_s(M)*DP_avg*(ONE+C_e**2)* (  &
 	       ONE/G_0+4.8*EPS+12.1184 *EPS*EPS*G_0 )*DSQRT(Th)
 !
       ENDIF !for simonin or ahmadi models

@@ -90,18 +90,18 @@
 ! CHECK D_p
 !
       DO LC = 1, MMAX 
-         IF (D_P(LC)<ZERO .OR. D_P(LC)==UNDEFINED) THEN 
+         IF (D_P0(LC)<ZERO .OR. D_P0(LC)==UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
-               'D_p not specified or unphysical', 0, 2) 
-               IF(DMP_LOG)WRITE (UNIT_LOG, 1100) LC, D_P(LC) 
+               'D_p0 not specified or unphysical', 0, 2) 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1100) LC, D_P0(LC) 
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       END DO 
       DO LC = MMAX + 1, DIMENSION_M 
-         IF (D_P(LC) /= UNDEFINED) THEN 
+         IF (D_P0(LC) /= UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
-               'too many D_p values specified', 0, 2) 
-               IF(DMP_LOG)WRITE (UNIT_LOG, 1200) LC, D_P(LC), MMAX
+               'too many D_p0 values specified', 0, 2) 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1200) LC, D_P0(LC), MMAX
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       END DO 
@@ -178,8 +178,8 @@
  1045 FORMAT(1X,/,1X,'NMAX is not specified for solids phase',I2) 
  1050 FORMAT(1X,/,1X,'NMAX(',I2,')   in  mfix.dat = ',I6,/,1X,&
          'DIMENSION_N_s in  param.inc  = ',I6,/) 
- 1100 FORMAT(1X,/,1X,'D_p(',I2,') in mfix.dat = ',G12.5) 
- 1200 FORMAT(1X,/,1X,'D_p(',I2,') = ',G12.5,/,1X,'MMAX in mfix = ',I2,/) 
+ 1100 FORMAT(1X,/,1X,'D_p0(',I2,') in mfix.dat = ',G12.5) 
+ 1200 FORMAT(1X,/,1X,'D_p0(',I2,') = ',G12.5,/,1X,'MMAX in mfix = ',I2,/) 
  1300 FORMAT(1X,/,1X,'RO_s(',I2,') in mfix.dat = ',G12.5) 
  1400 FORMAT(1X,/,1X,'RO_s(',I2,') = ',G12.5,/,1X,'MMAX in mfix = ',I2,/) 
  1410 FORMAT(1X,/,1X,'Solids phase = ',I2,'   Species = ',I3) 

@@ -113,6 +113,9 @@
  
 !                      error message 
       CHARACTER*80     LINE(2) 
+!
+!                      FOR CALL_CHEM and CALL_ISAT = .true.
+      DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
 ! 
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
@@ -131,6 +134,15 @@
 !$omp&  PGN,DRO1,DRO2,DROA, Vbf, MUGA, ROPGA, EPGA,VSH_n,VSH_s,VSH_e,&
 !$omp&  VSH_w,VSH_p,Source_conv, SRT,SUM_EPS_CP,MM) &
 !$omp&  schedule(static)
+!
+!     CHEM & ISAT begin (nan xie)
+! Set the source terms zero
+            IF (CALL_CHEM .or. CALL_ISAT) THEN
+               SUM_R_S_temp = SUM_R_S
+               SUM_R_S = ZERO
+            END IF
+!     CHEM & ISAT end (nan xie)
+!
             DO IJK = ijkstart3, ijkend3
                I = I_OF(IJK) 
                J = J_OF(IJK) 
@@ -271,9 +283,16 @@
                ENDIF 
               END DO
             CALL SOURCE_V_S_BC (A_M, B_M, M, IER) 
+!
+!     CHEM & ISAT begin (nan xie)
+            IF (CALL_CHEM .or. CALL_ISAT) THEN
+               SUM_R_S = SUM_R_S_temp
+            END IF
+!     CHEM & ISAT end (nan xie)
+!    
          END IF
       END DO 
-      
+   
       RETURN  
       END SUBROUTINE SOURCE_V_S 
 !

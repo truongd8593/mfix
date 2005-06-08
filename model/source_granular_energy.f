@@ -104,7 +104,7 @@
         VSLIP = DSQRT(VSLIP) 
 !
         SOURCERHS = SOURCERHS + (SWITCH*81D0*EP_S(IJK,M)*(MU_G(IJK)*VSLIP)**2D0/(&
-           G_0(IJK,M,M)*D_P(M)**3D0*RO_S(M)*(PI*THETA_M(IJK,M)+SMALL_NUMBER)**&
+           G_0(IJK,M,M)*D_P(IJK,M)**3D0*RO_S(M)*(PI*THETA_M(IJK,M)+SMALL_NUMBER)**&
            0.5D0))*VOL(IJK) 
       ENDIF
 !
@@ -150,7 +150,7 @@
 !---------------------------------------------------------------------
 !
       SOURCELHS = ((48./DSQRT(PI))*ETA*(1.-ETA)*ROP_S(IJK&
-         ,M)*EP_S(IJK,M)*G_0(IJK,M,M)*DSQRT(THETA_M(IJK,M))/D_P(M)+ &
+         ,M)*EP_S(IJK,M)*G_0(IJK,M,M)*DSQRT(THETA_M(IJK,M))/D_P(IJK,M)+ &
 	 P_S_C(IJK,M)*ZMAX((TRD_S_C(IJK,M)))/(THETA_M(IJK,M)+SMALL_NUMBER) &
 	 +ZMAX((-LAMBDA_S_C(IJK,M)))*TRD_S_C(IJK,M)**2/(THETA_M(IJK,M)+&
          SMALL_NUMBER))*VOL(IJK)  

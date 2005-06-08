@@ -108,6 +108,10 @@
 ! 
 !                      error message 
       CHARACTER*80     LINE(2) 
+!
+!                      FOR CALL_CHEM and CALL_ISAT = .true.
+      DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
+!
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
@@ -124,6 +128,15 @@
 !$omp&  I,PGE,DRO1,DRO2,DROA, IJKM,IPJK,IPJKM,  WSE,VCF,EPMUGA,VTZA, &
 !$omp&  EPSA, ROPSA, LINE,SUM_EPS_CP,MM) &
 !$omp&  schedule(static)
+!
+!     CHEM & ISAT begin (nan xie)
+! Set the source terms zero
+            IF (CALL_CHEM .or. CALL_ISAT) THEN
+               SUM_R_S_temp = SUM_R_S
+               SUM_R_S = ZERO
+            END IF
+!     CHEM & ISAT end (nan xie)
+!
             DO IJK = ijkstart3, ijkend3 
 !
 !           Wall or impermeable internal surface
@@ -253,6 +266,13 @@
                ENDIF 
             END DO 
             CALL SOURCE_U_S_BC (A_M, B_M, M, IER) 
+!
+!     CHEM & ISAT begin (nan xie)
+            IF (CALL_CHEM .or. CALL_ISAT) THEN
+               SUM_R_S = SUM_R_S_temp
+            END IF
+!     CHEM & ISAT end (nan xie)
+! 
          ENDIF 
 
       END DO 

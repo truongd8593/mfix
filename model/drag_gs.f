@@ -228,13 +228,13 @@
 
 !     Reynolds number
             if(Mu > ZERO)then
-               RE = D_P(M)*VREL*RO_G(IJK)/Mu
+               RE = D_P(IJK,M)*VREL*RO_G(IJK)/Mu
 
 !     Note the presence of gas volume fraction in ROP_G
-               RE_G = D_P(M)*VREL*ROP_G(IJK)/Mu
+               RE_G = D_P(IJK,M)*VREL*ROP_G(IJK)/Mu
 
 !     Note Reynolds' number for Hill and Koch has an additional factor of 1/2 & ep_g
-               RE_kh = 0.5*D_P(M)*VREL*ROP_G(IJK)/Mu
+               RE_kh = 0.5*D_P(IJK,M)*VREL*ROP_G(IJK)/Mu
             else 
                RE = LARGE_NUMBER 
                RE_G = LARGE_NUMBER
@@ -281,23 +281,23 @@
 !     
                   IF(TSUJI_DRAG) THEN
                      IF(EP_G(IJK).LE.0.8) THEN
-                        F_GS(IJK,M) = (Mu*EP_S(IJK,M)/(D_P(M)**2))*&
+                        F_GS(IJK,M) = (Mu*EP_S(IJK,M)/(D_P(IJK,M)**2))*&
                         (150*(EP_S(IJK,M)/EP_G(IJK)) + 1.75*RE)
                      ELSE IF(EP_G(IJK).GT.0.8) THEN
                         IF(RE*EP_G(IJK).GT.1000) THEN
-                           F_GS(IJK,M) = 0.75*0.43*Mu*EP_S(IJK,M)*RE/(D_P(M)**2 *&
+                           F_GS(IJK,M) = 0.75*0.43*Mu*EP_S(IJK,M)*RE/(D_P(IJK,M)**2 *&
                            EP_G(IJK)**1.7)
                         ELSE IF(RE*EP_G(IJK).LE.1000) THEN
                            F_GS(IJK,M) = 0.75*C_DSXRET(RE*EP_G(IJK))*Mu*EP_S(IJK,M)*&
-                           RE/(D_P(M)**2 *EP_G(IJK)**1.7)
+                           RE/(D_P(IJK,M)**2 *EP_G(IJK)**1.7)
                         END IF
                      END IF 
                   ELSE IF(MODEL_B) THEN 
                      F_GS(IJK,M) = 0.75*Mu*EP_S(IJK,M)*C_DSXRE(RE/V_RM)/(&
-                     V_RM*D_P(M)*D_P(M)) 
+                     V_RM*D_P(IJK,M)*D_P(IJK,M)) 
                   ELSE
                      F_GS(IJK,M) = 0.75*Mu*EP_S(IJK,M)*EP_G(IJK)*C_DSXRE(RE&
-                     /V_RM)/(V_RM*D_P(M)*D_P(M)) 
+                     /V_RM)/(V_RM*D_P(IJK,M)*D_P(IJK,M)) 
                   ENDIF 
                ENDIF 
 !---------------End Syamlal and O'Brien ---------------------------
@@ -306,8 +306,8 @@
             ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW') then
                IF(EP_g(IJK) .LE. 0.8) THEN
                   DgA = 150 * (ONE - EP_g(IJK)) * Mu &
-                  / ( EP_g(IJK) * D_p(M)**2 ) &
-                  + 1.75 * RO_g(IJK) * VREL / D_p(M)
+                  / ( EP_g(IJK) * D_p(IJK,M)**2 ) &
+                  + 1.75 * RO_g(IJK) * VREL / D_p(IJK,M)
                ELSE
                   IF(Re_G .LE. 1000)THEN
                      C_d = (24./(Re_G+SMALL_NUMBER)) * (ONE + 0.15 * Re_G**0.687)
@@ -315,7 +315,7 @@
                      C_d = 0.44
                   ENDIF
                   DgA = 0.75 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65) &
-                  /D_p(M)
+                  /D_p(IJK,M)
                ENDIF
                
 !              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
@@ -335,7 +335,7 @@
                    C_d = 0.44
                 ENDIF
                 DgA = 0.75 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65) &
-                  /D_p(M)
+                  /D_p(IJK,M)
                
 !              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
                IF(Model_B)THEN
@@ -361,7 +361,7 @@
 !
             ELSE IF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL') then
 !     
-           F_STOKES = 18*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(M)**2
+           F_STOKES = 18*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
 	       
 	   phis = EP_s(IJK,M)
 	   w = EXP(-10.0*(0.4-phis)/phis)
@@ -434,7 +434,6 @@
 !     
 !---------------------End Koch & Hill (2001) ----------------------
 !     
-
          ELSE 
             F_GS(IJK,M) = ZERO 
          ENDIF 

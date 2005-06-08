@@ -41,7 +41,7 @@
 
 ! 5. Solids phase
 	MMAX		= 2
-	D_P		= .1	.1
+	D_p0	        = .1	.1
 	RO_s		= 1.0	1.0
 
 	NMAX(1)		= 2	2

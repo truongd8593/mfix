@@ -65,12 +65,12 @@
 !            S is linearized as S = Scalar_c - Scalar_p * Scalar
 !            Scalar_c and Scalar_p must be >= 0
 !            *** Uncomment next two lines ***
-             ! Scalar_c (IJK, L) = 
-             ! Scalar_p (IJK, L) =
+              Scalar_c (IJK, L) = ZERO 
+              Scalar_p (IJK, L) = ZERO
 !
 !            Diffusion coefficient for User-defined Scalars
 !            *** Uncomment next one line ***
-             ! Dif_Scalar(IJK, L) =
+              Dif_Scalar(IJK, L) =ZERO
            END DO 
 !
          ENDIF 

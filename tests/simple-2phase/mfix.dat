@@ -40,7 +40,7 @@
 # Solids-phase Section
 #
   RO_s         = 2.0
-  D_p          = 0.04
+  D_p0         = 0.04
   CLOSE_PACKED = .TRUE.
 
   e       = 0.8

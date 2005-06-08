@@ -18,7 +18,7 @@
 !                        KMAX, IMAX1, JMAX1, KMAX1, IMAX2, JMAX2,KMAX2 C
 !                        IJMAX2, IJKMAX2, MMAX, DT, XLENGTH, YLENGTH   C
 !                        ZLENGTH, DX, DY, DZ, RUN_NAME, DESCRIPTION    C
-!                        UNITS, RUN_TYPE, CORDINATES, D_p, RO_s,       C
+!                        UNITS, RUN_TYPE, CORDINATES, D_p0, RO_s,       C
 !                        EP_star, MU_g0, MW_AVG, IC_X_w, IC_X_e, IC_Y_sC
 !                        IC_Y_n, IC_Z_b, IC_Z_t, IC_I_w, IC_I_e        C
 !                        IC_J_s, IC_J_n, IC_K_b, IC_K_t, IC_EP_g       C
@@ -133,7 +133,7 @@
       WRITE (UNIT_RES, REC=NEXT_RECA) RUN_NAME, DESCRIPTION, UNITS, RUN_TYPE, &
          COORDINATES 
       NEXT_RECA = NEXT_RECA + 1 
-      WRITE (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,MMAX), (RO_S(L),L=1,MMAX), &
+      WRITE (UNIT_RES, REC=NEXT_RECA) (D_P0(L),L=1,MMAX), (RO_S(L),L=1,MMAX), &
          EP_STAR, RO_G0, MU_G0, MW_AVG 
       NEXT_RECA = NEXT_RECA + 1 
       CALL OUT_BIN_512 (UNIT_RES, MW_G, NMAX(0), NEXT_RECA) 

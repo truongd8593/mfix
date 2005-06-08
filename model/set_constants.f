@@ -75,11 +75,6 @@
 !        ep_s_max(1) = MAX_SOLID_1_PACKING  ! maximum packing volume fraction for spheres, typically 0.6
 !	ep_s_max(2) = MAX_SOLID_2_PACKING ! maximum packing volume fraction for solids, typically 0.6
 
-	if (d_p(2) .GT. d_p(1)) then
-	  d_p_ratio(1,2) = (d_p(1)/d_p(2))**0.5
-	else
-	  d_p_ratio(1,2) = (d_p(2)/d_p(1))**0.5
-	end if
 	ep_s_max_ratio(1,2) = ep_s_max(1)/(ep_s_max(1)+(1.-ep_s_max(1))*ep_s_max(2))  ! refer to Syam's dissertation
 	
 !

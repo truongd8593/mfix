@@ -39,7 +39,7 @@
 # Solids-phase Section                                                          
 #                                                                               
   RO_s    = 2.0                                                                 
-  D_p     = 0.04                                                                
+  D_p0     = 0.04                                                                
                                                                                 
   e       = 0.8                                                                 
   Phi     = 0.0                                                                 

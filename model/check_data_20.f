@@ -358,6 +358,19 @@
                     ENDIF  
 		  ENDIF ! for MMAX > 0
 !
+!     CHEM & ISAT begin (nan xie)
+                  IF ((RUN_TYPE /= 'NEW') .AND. (CALL_ISAT .OR. CALL_CHEM))THEN
+                  ELSE
+                    IF (ABS(DIF) > ZERO_EP_S) THEN
+                       IF (.NOT.ABORT) THEN 
+                          IF(DMP_LOG)WRITE (UNIT_LOG, 1050) 
+                          ABORT = .TRUE. 
+                       ENDIF 
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 1100) I, J, K, (1.- dif) 
+                    ENDIF 
+                  END IF
+!     CHEM & ISAT end (nan xie)
+!
 !  Check whether L_scale is non-zero anywhere
 !
                   IF (L_SCALE(IJK) /= ZERO) NONZERO = .TRUE. 

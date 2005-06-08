@@ -16,7 +16,7 @@
 !  Variables referenced: ID_MONTH, ID_DAY, ID_YEAR, RUN_NAME, UNITS    C
 !                        DESCRIPTION, RUN_TYPE, DX, IMAX1, IMAX, DY    C
 !                        JMAX1, YLENGTH, XLENGTH, JMAX, DZ, KMAX1      C
-!                        KMAX, ZLENGTH, MMAX, D_p, RO_s, EP_star, MU_g0C
+!                        KMAX, ZLENGTH, MMAX, D_p0, RO_s, EP_star, MU_g0C
 !                        MW_AVG, IC_DEFINED, IC_X_w, IC_X_e, IC_Y_s    C
 !                        IC_Z_b, IC_Z_t, IC_I_w, IC_I_e, IC_J_s        C
 !                        IC_J_n, IC_K_b, IC_K_t, IC_EP_g, IC_P_g       C
@@ -279,7 +279,7 @@
       WRITE (UNIT_OUT, 1410) MMAX 
       WRITE (UNIT_OUT, 1420) 
       DO M = 1, MMAX 
-         WRITE (UNIT_OUT, 1421) M, D_P(M), RO_S(M), CLOSE_PACKED(M) 
+         WRITE (UNIT_OUT, 1421) M, D_P0(M), RO_S(M), CLOSE_PACKED(M) 
       END DO 
       DO M = 1, MMAX 
          IF (SPECIES_EQ(M)) THEN 
@@ -601,7 +601,7 @@
  1405 FORMAT(7X,'Viscosity (MU_s0) = ',G12.5,&
          '  (A constant value is used everywhere)') 
  1410 FORMAT(7X,'Number of particulate phases (MMAX) = ',I2) 
- 1420 FORMAT(/7X,'M',5X,'Diameter (D_p)',T35,'Density (RO_s)',T50,&
+ 1420 FORMAT(/7X,'M',5X,'Diameter (D_p0)',T35,'Density (RO_s)',T50,&
          'Close_Packed') 
  1421 FORMAT(7X,I1,5X,G12.5,T35,G12.5,T55,L1) 
  1422 FORMAT(7X,'Number of solids-',I1,' species (NMAX(',I1,')) = ',I3) 

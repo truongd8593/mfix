@@ -86,7 +86,10 @@
 ! 
 !                      linear equation solver method and iterations 
       INTEGER          LEQM, LEQI 
-      
+!
+!     FOR CALL_CHEM or CALL_ISAT = .true.
+      DOUBLE PRECISION SUM_R_G_temp(DIMENSION_3)
+      DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)    
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -100,7 +103,17 @@
      
       call lock_ambm
       call lock_tmp_array
- 
+!
+!     CHEM & ISAT begin (nan xie)
+! Set the source terms zero
+      IF (CALL_CHEM .or. CALL_ISAT) THEN
+         SUM_R_G_temp = SUM_R_G
+         SUM_R_S_temp = SUM_R_S
+
+         SUM_R_G = ZERO
+         SUM_R_S = ZERO
+      END IF 
+!     CHEM & ISAT end (nan xie)
 !
 !     Fluid phase species mass balance equations
 !
@@ -113,6 +126,7 @@
 !
                IF (FLUID_AT(IJK)) THEN
                    APO = ROP_GO(IJK)*VOL(IJK)*ODT 
+
                    S_P(IJK) = APO + (ZMAX(SUM_R_G(IJK))+ROX_GC(IJK,LN))*VOL(IJK) 
                    S_C(IJK) = APO*X_GO(IJK,LN) + X_G(IJK,LN)*ZMAX((-SUM_R_G(IJK)))&
                     *VOL(IJK) + R_GP(IJK,LN)*VOL(IJK)
@@ -170,6 +184,7 @@
                   IF (FLUID_AT(IJK)) THEN 
 !
                     APO = ROP_SO(IJK,M)*VOL(IJK)*ODT 
+
                     S_P(IJK) = APO + (ZMAX(SUM_R_S(IJK,M))+ROX_SC(IJK,M,LN))*&
                         VOL(IJK) 
                     S_C(IJK) = APO*X_SO(IJK,M,LN) + X_S(IJK,M,LN)*ZMAX((-SUM_R_S&
@@ -220,7 +235,15 @@
             END DO 
          ENDIF 
       END DO 
-      
+!
+!     CHEM & ISAT begin (nan xie)
+!
+      IF (CALL_CHEM .or. CALL_ISAT) THEN
+         SUM_R_G = SUM_R_G_temp
+         SUM_R_S = SUM_R_S_temp
+      END IF
+!     CHEM & ISAT end (nan xie)
+!      
       call unlock_ambm
       call unlock_tmp_array
 

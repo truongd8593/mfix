@@ -87,8 +87,8 @@ c
      &                                     BACK
          endif
       END DO
-      write (30,'(a)') '    blas90.a '
-      write (31,'(a)') '    blas90.a '
+      write (30,'(a)') '    blas90.a odepack.a'
+      write (31,'(a)') '    blas90.a odepack.a'
 C
 C  mfix.exe link statement ( all object files + $(LIB_FLAGS) )
 C
@@ -117,6 +117,18 @@ c
       write (31,'(a)') '	ar cr blas90.a BLAS.o'
       write (31,'(a)') 'BLAS.o : BLAS.F'           
       WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F'
+C
+c
+c source code dependencies   ... odepack.a
+c
+      write (30,'(a)') 'odepack.a : ODEPACK.o'
+      write (30,'(a)') '	ar cr odepack.a ODEPACK.o'
+      write (30,'(a)') 'ODEPACK.o : ODEPACK.F'           
+      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS2) ODEPACK.F'
+      write (31,'(a)') 'odepack.a : ODEPACK.o'
+      write (31,'(a)') '	ar cr odepack.a ODEPACK.o'
+      write (31,'(a)') 'ODEPACK.o : ODEPACK.F'           
+      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS2) ODEPACK.F'
 C
 C  source code Dependencies  ... MODULES
 C
@@ -245,9 +257,9 @@ C
          IF(fn(i).eq.'mark_phase_4_cor.f' .or.
      &      fn(i).eq.'calc_vol_fr.f') THEN      
            WRITE (30,'(A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS2) ', NOEXT(1:N),'.f '
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f '
            WRITE (31,'(A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS2) ', NOEXT(1:N),'.f '
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f '
          ENDIF
  5189    continue
       END DO

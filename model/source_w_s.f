@@ -110,7 +110,11 @@
       DOUBLE PRECISION V0, Vmt, Vbf, Vcoa, Vcob 
 ! 
 !                      error message 
-      CHARACTER*80     LINE 
+      CHARACTER*80     LINE
+!
+!                      FOR CALL_CHEM and CALL_ISAT = .true.
+      DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
+! 
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
@@ -129,6 +133,15 @@
 !$omp& IMJK,IJKP,IMJKP,  UGT,VCOA,VCOB, &
 !$omp& IJKE,IJKW,IJKTE,IJKTW,IM,IPJK, &
 !$omp& CTE,CTW,SXZB,  EPMUOX,VXZA,VXZB )
+!
+!     CHEM & ISAT begin (nan xie)
+! Set the source terms zero
+            IF (CALL_CHEM .or. CALL_ISAT) THEN
+               SUM_R_S_temp = SUM_R_S
+               SUM_R_S = ZERO
+            END IF
+!     CHEM & ISAT end (nan xie)
+!
             DO IJK = ijkstart3, ijkend3 
                I = I_OF(IJK) 
                J = J_OF(IJK) 
@@ -298,9 +311,15 @@
                ENDIF 
             END DO 
             CALL SOURCE_W_S_BC (A_M, B_M, M, IER) 
+!
+!     CHEM & ISAT begin (nan xie)
+            IF (CALL_CHEM .or. CALL_ISAT) THEN
+               SUM_R_S = SUM_R_S_temp
+            END IF
+!     CHEM & ISAT end (nan xie)
          ENDIF 
       END DO 
-      
+
       RETURN  
       END SUBROUTINE SOURCE_W_S 
 !

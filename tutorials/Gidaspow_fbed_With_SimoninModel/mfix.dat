@@ -67,7 +67,7 @@ FRICTION = .F.
   DRAG_TYPE             = 'GIDASPOW'                                      
   
   RO_s    		= 2.61				!solids density
-  D_p     		= 0.05			        !particle diameter
+  D_p0    		= 0.05			        !particle diameter
   e       		= 0.8 				!restitution coefficient
   Phi    		= 30.0				!angle of internal friction
   EP_star 		= 0.44				!void fraction at minimum

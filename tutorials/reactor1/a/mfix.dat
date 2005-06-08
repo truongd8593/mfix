@@ -54,7 +54,7 @@
 ! Solids-phase Section
 !
   RO_s         = 5.1
-  D_p          = 1.0 
+  D_p0         = 1.0 
   CLOSE_PACKED = .TRUE.
 
   MU_s0 = 0.0

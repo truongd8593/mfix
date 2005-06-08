@@ -53,7 +53,7 @@
 # PARTICLE SECTION                                                              
                                                                                 
   MMAX  = 1                                                                     
-  D_p           =  0.012                                                        
+  D_p0          =  0.012                                                        
   RO_s          =  2.6                                                          
                                                                                 
   EP_star       =  0.4                                                          

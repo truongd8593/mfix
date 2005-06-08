@@ -227,6 +227,10 @@
 !     Calculate coefficients.  Explicitly set flags for all the quantities
 !     that need to be calculated before calling CALC_COEFF.
 !
+      IF (Call_DQMOM) PSIZE(1:MMAX)=.TRUE.
+      IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
+      IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
+!
       VISC(0) = RECALC_VISC_G 
 ! 	The IF (GRANULAR_ENERGY) statement was commented out to allow calling calc_mu_s even
 ! 	when the algebraic granular equation is solved (not only the PDE form).

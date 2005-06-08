@@ -68,7 +68,9 @@
       DIMENSION_N_all = DIMENSION_N_g + DIMENSION_M * DIMENSION_N_s
       
       DIMENSION_Scalar = NScalar
-
+!     add by rong
+      DIM_Scalar2 = 2*NScalar
+!     add by rong
 !ambm
       Allocate( A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) )
       Allocate( B_m(DIMENSION_3, 0:DIMENSION_M) )
@@ -140,6 +142,8 @@
       Allocate(  P_staro (DIMENSION_3) )
       Allocate(  THETA_m (DIMENSION_3, DIMENSION_M) )
       Allocate(  THETA_mo (DIMENSION_3, DIMENSION_M) )
+
+
 
       IF(K_Epsilon)then
         Allocate(  K_Turb_G (DIMENSION_3) )
@@ -267,6 +271,26 @@
         Allocate(  Dif_Scalar (DIMENSION_3, DIMENSION_Scalar) )
       
       ENDIF
+! add by rong for dqmom
+      Allocate(  D_p  (DIMENSION_3, DIMENSION_M) )
+      Allocate(  D_po (DIMENSION_3, DIMENSION_M) )
+!      Allocate(  ome  (DIMENSION_3, DIMENSION_M) )
+!      Allocate(  ome_o (DIMENSION_3, DIMENSION_M) )
+      Allocate(  Source_a(DIMENSION_3, DIMENSION_M) )
+      Allocate(  S_bar( 0:DIM_Scalar2-1 ))
+      Allocate(  Matrix_a(DIM_Scalar2,DIM_scalar2))
+      Allocate(  Matrix_b(DIM_Scalar2,DIM_scalar2))
+      Allocate(  Matrix_c(DIM_Scalar2,DIM_scalar2))
+      Allocate(  Inv_a(DIM_Scalar2,DIM_scalar2))
+      Allocate(  A( 1:DIMENSION_Scalar))
+      Allocate(  omega(1:DIMENSION_m))
+      ALLocate(  beta_a( DIM_Scalar,DIM_Scalar))
+      ALLocate(  ystart( 1:DIM_Scalar2))
+!     ALLocate(  g_a( 1:DIMENSION_Scalar))
+ 
+! add by rong for dqmom
+
+
 !K-Epsilon Turbulence model
       
       IF(K_Epsilon)then

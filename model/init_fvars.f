@@ -89,6 +89,9 @@
          IF (IJKMAX2 > 0) THEN 
             ROP_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
             T_S(IJKSTART3:IJKEND3,M) = ZERO 
+! add by rong 
+            D_P(IJKSTART3:IJKEND3,M)=ZERO
+! add by rong
             THETA_M(IJKSTART3:IJKEND3,M) = ZERO 
             P_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
             U_S(IJKSTART3:IJKEND3,M) = UNDEFINED 

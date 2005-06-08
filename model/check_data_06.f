@@ -77,7 +77,7 @@
 ! initializing the new indexing system
        IF(MMAX .GE. 2) THEN
          DO I = 1, MMAX
-           DP_TMP(I) = D_P(I)
+           DP_TMP(I) = D_P(IJK,I)
            M_MAX(I) = I
          END DO
 !
@@ -98,7 +98,7 @@
 	 DO I = 1, MMAX	 
 	   DO J = 1, MMAX
 	     
-	     IF(DP_TMP(I) == D_P(J) .AND. D_P(I) .NE. D_P(J)) THEN
+	     IF(DP_TMP(I) == D_P(IJK,J) .AND. D_P(IJK,I) .NE. D_P(IJK,J)) THEN
 	       M_MAX(I) = J 
 	     ENDIF
 	   

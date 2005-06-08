@@ -41,7 +41,7 @@
   phi  = 0.0
 
   MMAX = 1                            ! No of solids
-  D_p           =  0.1
+  D_p0          =  0.1
   RO_s          =  2.0
 
   EP_star = 0.4                       ! maximum possible packing

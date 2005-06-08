@@ -29,7 +29,7 @@
 !     USR_TYPE, USR_VAR, USR_FORMAT, USR_EXT, USR_X_w                     C
 !     USR_X_e , USR_Y_s , USR_Y_n , USR_Z_b , USR_Z_t,                    C
 !     NLOG, COORDINATES, IMAX, DX, XLENGTH, JMAX, DY,                     C
-!     YLENGTH, KMAX, DZ, ZLENGTH, MMAX, D_p, RO_s,                        C
+!     YLENGTH, KMAX, DZ, ZLENGTH, MMAX, D_p0, RO_s,                        C
 !     EP_star, MU_g0, MW_AVG, IC_X_w, IC_X_e, IC_Y_s,                     C
 !     IC_Y_n, IC_Z_b, IC_Z_t, IC_I_w, IC_I_e, IC_J_s,                     C
 !     IC_J_n, IC_K_b, IC_K_t, IC_EP_g, IC_P_g,                            C

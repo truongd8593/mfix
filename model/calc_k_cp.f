@@ -103,7 +103,7 @@
  
  
                      Mu = (5d0*DSQRT(Pi*Theta_m(IJK,M))&
-                           *D_p(M)*RO_s(M))/96d0
+                           *D_p(IJK,M)*RO_s(M))/96d0
  
  
                      Mu_b = (256d0*Mu*EP_s(IJK,M)*EP_s(IJK,M)&
@@ -120,7 +120,7 @@
                       ZETA = ((48d0*Eta*(1d0-Eta)*RO_s(M)*EP_s(IJK,M)*&
                             EP_s(IJK,M)*G_0(IJK,M,M)*&
                             (Theta_m(IJK,M)**1.5d0))/&
-                            (SQRT_Pi*D_p(M)*2d0*Mu_zeta))**0.5d0
+                            (SQRT_Pi*D_p(IJK,M)*2d0*Mu_zeta))**0.5d0
  
                      ELSEIF (SAVAGE.EQ.0) THEN
                       ZETA = (SMALL_NUMBER +&
@@ -128,7 +128,7 @@
                              trD_s_C(IJK,M))/3.d0))**0.5d0
  
                      ELSE
-                      ZETA = ((Theta_m(IJK,M)/(D_p(M)*D_p(M))) +&
+                      ZETA = ((Theta_m(IJK,M)/(D_p(IJK,M)*D_p(IJK,M))) +&
                              (trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
                              trD_s_C(IJK,M))/3.d0)))**0.5d0
  
@@ -251,13 +251,19 @@
       DOUBLE PRECISION, intent(in) :: EPs
 !
 !                      radial distribution function
-      DOUBLE PRECISION G_0, g0
+      DOUBLE PRECISION g0
  
 !                      Other variables
       DOUBLE PRECISION Mu, Mu_b,  DEPs2G_0oDEPs, F1, DF1oDEPs
  
       DOUBLE PRECISION DG_0DNU
       INTEGER , intent(in) :: IJK,M
+
+!-----------------------------------------------
+!   E x t e r n a l   F u n c t i o n s
+!-----------------------------------------------
+      DOUBLE PRECISION , EXTERNAL :: G_0
+!-----------------------------------------------
  
       INCLUDE 'ep_s1.inc'
       INCLUDE 's_pr1.inc'
@@ -266,10 +272,9 @@
       INCLUDE 'ep_s2.inc'
  
  
- 
       g0 = G_0(IJK, M, M)
  
-      Mu = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(M)*RO_s(M))/96d0
+      Mu = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(IJK,M)*RO_s(M))/96d0
  
       Mu_b = (256d0*Mu*EPs*EPs*g0/(5d0*Pi))
  
@@ -282,12 +287,12 @@
       DF1oDEPs = ((2d0+ALPHA)/3d0)*((2*Mu/(Eta*(2d0-Eta))*&
          ((-DG_0DNU(EPs)/(g0*g0)) + (1.6d0*Eta*(3d0*Eta-1d0))&
         + (64d0*Eta*Eta*(3d0*Eta-2d0)*DEPs2G_0oDEPs/25d0))) +&
-        3.2d0*Eta*RO_s(M)*D_p(M)*((Theta_m(IJK,M)/Pi)**0.5d0)&
+        3.2d0*Eta*RO_s(M)*D_p(IJK,M)*((Theta_m(IJK,M)/Pi)**0.5d0)&
           *DEPs2G_0oDEPs)
  
       DZETAoDEPs = 0.5d0*((48d0*Eta*(1d0-Eta)*RO_s(M)*F1*&
               (Theta_m(IJK,M)**1.5d0)/&
-           (SQRT_Pi*D_p(M)*EPs*EPs*g0))**0.5d0)*&
+           (SQRT_Pi*D_p(IJK,M)*EPs*EPs*g0))**0.5d0)*&
            (F1*DEPs2G_0oDEPs - EPs*Eps*g0*DF1oDEPs)/(F1*F1)
  
  

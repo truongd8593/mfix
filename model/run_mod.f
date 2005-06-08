@@ -136,6 +136,9 @@
 !
 !                      If .TRUE. call user-defined subroutines
       LOGICAL          CALL_USR
+!                       If .TRUE. solve population balance  equations
+      LOGICAL          Call_DQMOM
+!
 !
 !                      If .TRUE. use Model-B momentum equations
       LOGICAL          Model_B
@@ -212,5 +215,16 @@
       DOUBLE PRECISION V_sh
 ! loezos
          common /run_dp/ time      !for Linux
+!
+!     CHEM & ISAT begin (nan xie)
+!                      If .TRUE. call ODEPACK
+      LOGICAL          CALL_CHEM
+!                      If .TRUE. calculate the change of diameter due to grow
+      LOGICAL          CALL_GROW
+!                      If .TRUE. call isat subroutines
+      LOGICAL          CALL_ISAT
+!                      time step for isat calculation
+      DOUBLE PRECISION ISATdt
+!     CHEM & ISAT end (nan xie)
 
       END MODULE run                                                                             

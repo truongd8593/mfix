@@ -53,7 +53,7 @@
  
 !
 !                      Average scalars
-      DOUBLE PRECISION EP_avg, TH_avg, Mu_g_avg, RO_g_avg
+      DOUBLE PRECISION EP_avg, TH_avg, Mu_g_avg, RO_g_avg,Dp_avg
 !
 !                      Average velocities
       DOUBLE PRECISION WGC1, WGC2, WGCM, VGC1, VGC2, UGC1, UGC2
@@ -179,6 +179,8 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg   = AVG_X(D_P(IJK2,M), D_P(IJK2E,M), I_OF(IJK2))
  
 !         Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)
           UGC  = AVG_Y(U_g(IJK1), U_g(IJK2),J_OF(IJK1))
@@ -212,7 +214,7 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL, M,&
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, VREL, M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Uw_s(L, M), gw, hw,cw)
@@ -244,6 +246,8 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg   = AVG_X(D_P(IJK2,M), D_P(IJK2E,M), I_OF(IJK2))
  
 !         Calculate velocity components at i+1/2, j+1/2, k relative to IJK2
           UGC  = AVG_Y(U_g(IJK2),U_g(IJK1),J_OF(IJK2))
@@ -277,7 +281,7 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL, M,&
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, VREL, M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Uw_s(L, M), gw, hw,cw)
@@ -310,6 +314,9 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg  =& 
+                AVG_X(D_P(IJK2,M), D_P(IJK2E,M), I_OF(IJK2))
  
 !         Calculate velocity components at i+1/2,j,k-1/2 relative to IJK2
           UGC  = AVG_Z(U_g(IJK1), U_g(IJK2), K_OF(IJK1))
@@ -343,7 +350,7 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Uw_s(L, M), gw, hw,cw)
@@ -376,6 +383,8 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg = AVG_X(D_P(IJK2,M), D_P(IJK2E,M), I_OF(IJK2))
  
 !         Calculate velocity components at i+1/2,j,k-1/2 relative to IJK1
           UGC  = AVG_Z(U_g(IJK2), U_g(IJK1), K_OF(IJK2))
@@ -409,7 +418,7 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Uw_s(L, M), gw, hw,cw)
@@ -448,6 +457,8 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg   = AVG_Y(D_P(IJK2,M), D_P(IJK2N,M), J_OF(IJK2))
  
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK1)
           UGC1 = AVG_X_E(&
@@ -490,7 +501,7 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
+          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Vw_s(L, M), gw, hw,cw)
@@ -509,7 +520,7 @@
               J_OF(IJK2))
           Mu_g_avg =&
                      AVG_Y(Mu_g(IJK2), Mu_g(IJK2N), J_OF(IJK2))
- 
+! chang by rong 
           RO_g_avg =&
                      AVG_Z(RO_g(IJK2), RO_g(IJK2N), J_OF(IJK2))
 
@@ -523,6 +534,9 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg   = AVG_Y(D_P(IJK2,M), D_P(IJK2N,M), J_OF(IJK2))
+! change by rong
  
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK2)
           UGC1 = AVG_X_E(&
@@ -565,7 +579,7 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
+          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Vw_s(L, M), gw, hw,cw)
@@ -598,7 +612,8 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
- 
+
+          DP_avg = AVG_Y(D_P(IJK2,M), D_P(IJK2N,M), J_OF(IJK2))
  
 !         Calculate velocity components at i+1/2,j+1/2,k relative to IJK1
           UGC  = AVG_Y(U_g(IJK1), U_g(IMJPK2), J_OF(IJK1))
@@ -632,7 +647,7 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
+          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Vw_s(L, M), gw, hw,cw)
@@ -666,7 +681,8 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
- 
+
+          DP_avg = AVG_Y(D_P(IJK2,M), D_P(IJK2N,M), J_OF(IJK2))
  
 !         Calculate velocity components at i+1/2,j+1/2,k relative to IJK2
           UGC  = AVG_Y(U_g(IJK2), U_g(IJPK2), J_OF(IJK2))
@@ -700,7 +716,7 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
+          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Vw_s(L, M), gw, hw,cw)
@@ -739,7 +755,9 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
- 
+
+           DP_avg   = AVG_Z(D_P(IJK2,M), D_P(IJK2T,M), K_OF(IJK2))
+
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK1)
           UGC1 = AVG_X_E(&
                          AVG_Z(U_g(IM_OF(IJK1)), U_g(IM_OF(IJMKP2)),&
@@ -781,7 +799,7 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
+          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Ww_s(L, M), gw, hw,cw)
@@ -815,6 +833,8 @@
             Tau_1_avg = ZERO
 	  ENDIF
  
+          DP_avg   = AVG_Z(D_P(IJK2,M), D_P(IJK2T,M), K_OF(IJK2))
+
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK2)
           UGC1 = AVG_X_E(&
                          AVG_Z(U_g(IM_OF(IJK1)), U_g(IM_OF(IJPKP2)),&
@@ -856,7 +876,7 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
+          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Ww_s(L, M), gw, hw,cw)
@@ -890,6 +910,7 @@
             Tau_1_avg = ZERO
 	  ENDIF
  
+          DP_avg = AVG_Z(D_P(IJK2,M), D_P(IJK2T,M), K_OF(IJK2))
  
 !         Calculate velocity components at i+1/2,j,k+1/2 relative to IJK1
           UGC  = AVG_Z(U_g(IJK1), U_g(IMJKP2), K_OF(IJK1))
@@ -923,7 +944,7 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
+          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Ww_s(L, M), gw, hw,cw)
@@ -956,6 +977,8 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg= AVG_Z(D_P(IJK2,M), D_P(IJKP2,M), K_OF(IJK2))
  
 !         Calculate velocity components at i+1/2,j,k+1/2 relative to IJK2
           UGC  = AVG_Z(U_g(IJK2), U_g(IJKP2), K_OF(IJK2))
@@ -989,7 +1012,7 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, VREL,M,&
+          CALL CALC_Gw_Hw_Cw(g0,EP_avg,TH_avg,Mu_g_avg,RO_g_avg, DP_avg, VREL,M,&
                              DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Ww_s(L, M), gw, hw,cw)
@@ -1011,7 +1034,8 @@
  
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CALC_Gw_Hw_Cw(g0, EPS, TH, Mu_g_avg, RO_g_avg, VREL, M C
+!  Module name: CALC_Gw_Hw_Cw(g0, EPS, TH, Mu_g_avg, RO_g_avg, DP_avg, C
+!                            VREL, M,                                  C 
 !                             DEL_U, S_S, S_dd, VEL, W_VEL,            C
 !                             gw, hw,cw)                               C
 !                       +K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP  (sof)  C
@@ -1024,10 +1048,10 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced: EPS, TH, C_e, RO_s, D_p(M)                    C
+!  Variables referenced: EPS, TH, C_e, RO_s                            C
 !  Variables modified:                                                 C
 !                                                                      C
-!  Local variables:                                                    C
+!  Local variables:Dp_avg,RO_g_avg,Mu_g_avg                                                 C
 !                                                                      C
 !  Modified: Sofiane Benyahia, Fluent Inc.             Date: 03-FEB-05 C
 !  Purpose: Include conductivity defined by Simonin and Ahmadi         C
@@ -1039,7 +1063,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
  
-      SUBROUTINE CALC_Gw_Hw_Cw(g0,EPS,TH,Mu_g_avg,RO_g_avg, VREL, M,&
+      SUBROUTINE CALC_Gw_Hw_Cw(g0,EPS,TH,Mu_g_avg,RO_g_avg, DP_avg, VREL, M,&
                                DEL_U, S_S, S_dd, VEL, &
 			       K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
 			       W_VEL, gw, hw,cw)
@@ -1114,7 +1138,12 @@
  
 !              Average cross-correlation K_12 and time-scales (sof)
       DOUBLE PRECISION K_12_avg, Tau_12_avg, Tau_1_avg
- 
+
+! add by rong
+!              Average solid diameter
+      DOUBLE PRECISION dp_avg
+
+! add by rong 
 !              Average gas viscosity
       DOUBLE PRECISION Mu_g_avg
  
@@ -1184,18 +1213,18 @@
 !
       ENDIF !for Jenkins
  
-      Mu = (5d0*DSQRT(Pi*TH)*D_p(M)*RO_s(M))/96d0
+      Mu = (5d0*DSQRT(Pi*TH)*Dp_avg*RO_s(M))/96d0
  
       Mu_b = (256d0*Mu*EPS*EPS*G_0)/(5d0*Pi)
  
-      Re_g = (1d0-EPS)*RO_g_avg*D_p(M)*VREL/Mu_g_avg
+      Re_g = (1d0-EPS)*RO_g_avg*Dp_avg*VREL/Mu_g_avg
       IF (Re_g.lt.1000d0) THEN
          C_d = (24./(Re_g+SMALL_NUMBER))*(1d0 + 0.15 * Re_g**0.687)
       ELSE
          C_d = 0.44d0
       ENDIF
       Beta = 0.75d0*C_d*Ro_g_avg*(1-EPS)*EPS*VREL&
-                *((1-EPS)**(-2.65d0))/D_p(M)
+                *((1-EPS)**(-2.65d0))/Dp_avg
 ! particle relaxation time
       Tau_12_st = EPS*RO_s(M)/(Beta+small_number)
       
@@ -1226,7 +1255,7 @@
       IF(SIMONIN) THEN !see calc_mu_s for explanation of these definitions
 !
         Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
-        Tau_2_c = D_P(M)/(6.d0*EPS*G_0*DSQRT(16.d0*(TH+Small_number)/PI))
+        Tau_2_c = DP_avg/(6.d0*EPS*G_0*DSQRT(16.d0*(TH+Small_number)/PI))
 	zeta_c_2= 2./5.*(ONE+ C_e)*(3.d0*C_e-ONE)
 	Nu_t =  Tau_12_avg/Tau_12_st
         Tau_2 = ONE/(2./Tau_12_st+Sigma_c/Tau_2_c)
@@ -1235,7 +1264,7 @@
                      (ONE+ zeta_c_2*EPS*G_0))*Tau_2
 !
 	Mu_2_Col = 8./5.*EPS*G_0*Eta* (MU_2_T_Kin+ &
-                   D_p(M)*DSQRT(TH/PI))
+                   Dp_avg*DSQRT(TH/PI))
 !
 	Mu_s = EPS*RO_s(M)*(MU_2_T_Kin + Mu_2_Col)
 !
@@ -1243,7 +1272,7 @@
 !
 	Mu_s = ONE/(ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS/EPS_max)**3)&
 	       *0.1045*(ONE/G_0+3.2*EPS+12.1824*G_0*EPS*EPS)          &
-	       *D_p(M)*RO_s(M)* DSQRT(TH)
+	       *Dp_avg*RO_s(M)* DSQRT(TH)
       ENDIF
  
 !     Calculating frictional terms
@@ -1258,13 +1287,13 @@
          IF (SAVAGE.EQ.1) THEN    !form of Savage
             ZETA = ((48d0*Eta*(1d0-Eta)*RO_s(M)*EPS*EPS*G_0*&
                     (TH**1.5d0))/&
-                    (SQRT_Pi*D_p(M)*2d0*Mu_s))**0.5d0
+                    (SQRT_Pi*Dp_avg*2d0*Mu_s))**0.5d0
  
          ELSEIF (SAVAGE.EQ.0)  THEN !S:S form
             ZETA = DSQRT(S_S)
  
          ELSE
-            ZETA = DSQRT(S_S + (TH/(D_p(M)*D_p(M))))
+            ZETA = DSQRT(S_S + (TH/(Dp_avg*Dp_avg)))
          ENDIF
  
  

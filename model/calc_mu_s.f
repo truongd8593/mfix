@@ -544,15 +544,15 @@
 ! This represents the gas VOF in a fluid cell that contains a single particle
           
 	  IF(NO_K) THEN
-	    EP_g_Dilute = (1.0d0 - PI*D_P(M)*D_P(M)*ODX(I)*ODY(J))
+	    EP_g_Dilute = (1.0d0 - PI*D_p(IJK,M)*D_p(IJK,M)*ODX(I)*ODY(J))
 	  ELSE
-	    EP_g_Dilute = (1.0d0 - PI/6.0d0*D_P(M)*D_P(M)*D_P(M)*ODX(I) &
+	    EP_g_Dilute = (1.0d0 - PI/6.0d0*D_p(IJK,M)*D_p(IJK,M)*D_p(IJK,M)*ODX(I) &
 	                           *ODY(J)*ODZ(K))
 	  ENDIF
 !
 ! Defining a single particle drag coefficient (similar to one defined in drag_gs)
 !
-	  Re = D_P(M)*VREL*ROP_G(IJK)/(MU_G(IJK) + small_number)
+	  Re = D_p(IJK,M)*VREL*ROP_G(IJK)/(MU_G(IJK) + small_number)
           IF(Re .LE. 1000)THEN
              C_d = (24./(Re+SMALL_NUMBER)) * (ONE + 0.15 * Re**0.687)
           ELSE
@@ -560,7 +560,7 @@
           ENDIF
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
 !	      
-	  DgA = 0.75 * C_d * VREL * ROP_g(IJK) / D_p(M)
+	  DgA = 0.75 * C_d * VREL * ROP_g(IJK) / D_p(IJK,M)
 	  IF(VREL == ZERO) DgA = LARGE_NUMBER !for 1st iteration and 1st time step
 !
 ! Define some time scales and constants related to Simonin and Ahmadi models
@@ -606,7 +606,7 @@
 ! Defining the inter-particle collision time
 !
 	    IF(Ep_s(IJK,M) > DIL_EP_S) THEN
-              Tau_2_c = D_P(M)/(6.d0*Ep_s(IJK,M)*G_0(IJK,M,M) &
+              Tau_2_c = D_p(IJK,M)/(6.d0*Ep_s(IJK,M)*G_0(IJK,M,M) &
                        *DSQRT(16.d0*(Theta_m(ijk,m)+Small_number)/PI))
 	    ELSE ! assign it a large number
 	      Tau_2_c = LARGE_NUMBER
@@ -655,17 +655,17 @@
 !
 !             Calculate K_1m, K_2m, K_3m, K_4m
               K_1m = 2.D0 * (ONE + C_e) * RO_s(M) * G_0(IJK, M,M)
-              K_3m = HALF * D_p(M) * RO_s(M) * (&
+              K_3m = HALF * D_p(IJK,M) * RO_s(M) * (&
                   ( (SQRT_PI / (3.D0*(3.D0 - C_e))) *&
                   (ONE + 0.4D0*(ONE + C_e)*(3.D0*C_e - ONE)*&
                   EP_s(IJK,M)*G_0(IJK, M,M)) ) +&
                   8.D0*EP_s(IJK,M)*G_0(IJK, M,M)*(ONE + C_e) /&
                   (5.D0*SQRT_PI) )
-              K_2m = 4.D0 * D_p(M) * RO_s(M) * (ONE + C_e) *&
+              K_2m = 4.D0 * D_p(IJK,M) * RO_s(M) * (ONE + C_e) *&
                   EP_s(IJK,M) * G_0(IJK, M,M) / (3.D0 * SQRT_PI) -&
                   2.D0/3.D0 * K_3m
               K_4m = 12.D0 * (ONE - C_e*C_e) *&
-                  RO_s(M) * G_0(IJK, M,M) / (D_p(M) * SQRT_PI)
+                  RO_s(M) * G_0(IJK, M,M) / (D_p(IJK,M) * SQRT_PI)
               aq   = K_4m*EP_s(IJK,M)
               bq   = K_1m*EP_s(IJK,M)*trD_s_C(IJK,M)
               cq   = -(K_2m*trD_s_C(IJK,M)*trD_s_C(IJK,M)&
@@ -675,7 +675,7 @@
 !
               IF(V_ex .NE. ZERO) THEN
                 K_5m = 0.4 * (ONE + C_e) * G_0(IJK, M,M) * RO_s(M) *&
-                  ( (V_ex * D_p(M)) / (ONE - EP_s(IJK,M) * V_ex) )**2
+                  ( (V_ex * D_p(IJK,M)) / (ONE - EP_s(IJK,M) * V_ex) )**2
                 DEP_soDX  = ( EP_s(IJKE, M) - EP_s(IJK, M) ) * oDX_E(I)&
                  * ( ONE / ( (oDX_E(IM)/oDX_E(I)) + ONE ) ) +&
                  ( EP_s(IJK, M) - EP_s(IJKW, M) ) * oDX_E(IM)&
@@ -756,7 +756,7 @@
 
 ! find bulk and shear viscosity
 !	    
-	    Mu = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(M)*RO_s(M))/96d0
+            Mu = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(IJK,M)*RO_s(M))/96d0
  
             Mu_b = (256d0*Mu*EP_s(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M))&
                      /(5d0*Pi)
@@ -796,7 +796,7 @@
                           (ONE+ zeta_c_2*EP_s(IJK,M)*G_0(IJK,M,M)))*Tau_2
 !
 	      Mu_2_Col = 8./5.*EP_s(IJK,M)*G_0(IJK,M,M)*Eta* (MU_2_T_Kin+ &
-                         D_p(M)*DSQRT(Theta_m(IJK,M)/PI))
+                         D_p(IJK,M)*DSQRT(Theta_m(IJK,M)/PI))
 !
               Mu_b = 5.d0/3.d0*EP_s(IJK,M)*RO_s(M)*Mu_2_Col
 !
@@ -809,7 +809,7 @@
 !
 	      Mus = ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/EPS_max)**3)&
 	         *0.1045*(ONE/G_0(IJK,M,M)+3.2*EP_s(IJK,M)+12.1824*   &
-		 G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M))*D_p(M)*RO_s(M)*  &
+		 G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M))*D_p(IJK,M)*RO_s(M)*  &
 		 DSQRT(Theta_m(IJK,M))
 !
 ! This is a guess of what Mu_b might be by taking 5/3 of the collisional viscosity
@@ -819,7 +819,7 @@
 	      Mu_b = 5./3.* &
 	         ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/EPS_max)**3)&
 	         *0.1045*(12.1824*G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M)) &
-		 *D_p(M)*RO_s(M)* DSQRT(Theta_m(IJK,M))
+		 *D_p(IJK,M)*RO_s(M)* DSQRT(Theta_m(IJK,M))
             
 	    ENDIF !for simonin or ahmadi viscosity
  
@@ -857,7 +857,7 @@
                             ((48d0*Eta*(1d0-Eta)*RO_s(M)*EP_s(IJK,M)*&
                             EP_s(IJK,M)*G_0(IJK,M,M)*&
                             (Theta_m(IJK,M)**1.5d0))/&
-                            (SQRT_Pi*D_p(M)*2d0*Mu_zeta))**0.5d0
+                            (SQRT_Pi*D_p(IJK,M)*2d0*Mu_zeta))**0.5d0
  
                   ELSEIF (SAVAGE.EQ.0) THEN  !S:S form
                      ZETA = (SMALL_NUMBER +&
@@ -866,7 +866,7 @@
  
                   ELSE  !combined form
  
-                     ZETA = ((Theta_m(IJK,M)/(D_p(M)*D_p(M))) +&
+                     ZETA = ((Theta_m(IJK,M)/(D_p(IJK,M)*D_p(IJK,M))) +&
                             (trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
                              trD_s_C(IJK,M))/3.d0)))**0.5d0
  
@@ -936,7 +936,7 @@
             P_s(IJK,M) = P_s(IJK,M) + Pf      !add to P_s
 ! end anuj 04/20
  
-            Kth=75*RO_s(M)*D_p(M)*DSQRT(Pi*Theta_m(IJK,M))/&
+            Kth=75*RO_s(M)*D_p(IJK,M)*DSQRT(Pi*Theta_m(IJK,M))/&
                   (48*Eta*(41d0-33*Eta))
  
             IF(SWITCH == ZERO) THEN ! sof modifications (May 20 2005)
@@ -976,7 +976,7 @@
                  (9.d0/(5.d0*Tau_12_st) + zeta_c/Tau_2_c)
           
               Kappa_Col = 18.d0/5.d0*EP_s(IJK,M)*G_0(IJK,M,M)*Eta* (Kappa_kin+ &
-                     5.d0/9.d0*D_p(M)*DSQRT(Theta_m(IJK,M)/PI))
+                     5.d0/9.d0*D_p(IJK,M)*DSQRT(Theta_m(IJK,M)/PI))
   
               Kth_s(IJK,M) =  EP_s(IJK,M)*RO_s(M)*(Kappa_kin + Kappa_Col)
 !
@@ -985,7 +985,7 @@
 ! Defining Ahmadi conductivity from his equation 42 in Cao and Ahmadi 1995 paper
 ! note the constant 0.0711 is now 0.1306 because K = 3/2 theta_m
 !
-	      Kth_s(IJK,M) = 0.1306*RO_s(M)*D_p(M)*(ONE+C_e**2)* (  &
+	      Kth_s(IJK,M) = 0.1306*RO_s(M)*D_p(IJK,M)*(ONE+C_e**2)* (  &
 	                   ONE/G_0(IJK,M,M)+4.8*EP_s(IJK,M)+12.1184 &
 			   *EP_s(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M) )  &
 			   *DSQRT(Theta_m(IJK,M))

@@ -24,7 +24,7 @@
 !  Variables modified: RUN_NAME, DESCRIPTION, UNITS, RUN_TYPE, TIME    C
 !                      TSTOP, DT, RES_DT, SPX_DT, OUT_DT, NLOG         C
 !                      COORDINATES, IMAX, DX, XLENGTH, JMAX, DY        C
-!                      YLENGTH, KMAX, DZ, ZLENGTH, MMAX, D_p, RO_s     C
+!                      YLENGTH, KMAX, DZ, ZLENGTH, MMAX, D_p0, RO_s    C
 !                      L_scale0, L_scale, EP_star, MU_g0, MW_AVG       C
 !                      IC_X_w, IC_X_e, IC_Y_s, IC_Y_n, IC_Z_b, IC_Z_t  C
 !                      IC_I_w, IC_I_e, IC_J_s, IC_J_n, IC_K_b, IC_K_t  C
@@ -160,7 +160,7 @@
       Phase4Scalar(:) = UNDEFINED_I
 
       nRR = 0
-      
+      Call_DQMOM = .FALSE.      
 !
 ! INITIALIZE THE OUTPUT CONTROL SECTION
 !
@@ -224,6 +224,10 @@
       EP_S_MAX(:DIM_M) = 0.6D0
 !      
 ! END GERA
+! start rong
+      AGGREGATION_EFF=0.D0
+      BREAKAGE_EFF=0.D0
+! end rong
       EPS_F_MIN = 0.5D0 
       EPS_MAX = 0.65D0 
       PHI_W = ZERO 
@@ -303,7 +307,7 @@
       K_S0 = UNDEFINED 
       DIF_S0 = UNDEFINED 
       C_PS0 = UNDEFINED 
-      D_P(:DIM_M) = UNDEFINED 
+      D_P0(:DIM_M) = UNDEFINED 
       RO_S(:DIM_M) = UNDEFINED 
       NMAX(1:DIM_M) = UNDEFINED_I 
       CLOSE_PACKED(:DIM_M) = .TRUE. 
@@ -477,6 +481,14 @@
 
       IS_SERIAL = .TRUE.
       USE_DOLOOP = .FALSE.
+
+!     CHEM & ISAT begin (nan xie)
+!
+      CALL_CHEM = .FALSE.
+      CALL_GROW = .FALSE.
+      CALL_ISAT = .FALSE.  
+      ISATdt    = UNDEFINED
+!     CHEM & ISAT end (nan xie)
 
       CALL DES_INIT_NAMELIST
       CALL USR_INIT_NAMELIST 

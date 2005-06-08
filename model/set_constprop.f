@@ -92,6 +92,10 @@
             IF (WALL_AT(IJK)) THEN 
                P_S(IJK,M) = ZERO 
                MU_S(IJK,M) = ZERO 
+! add by rong
+               D_p(IJK,M)=D_P0(M)
+             
+! add by rong
                LAMBDA_S(IJK,M) = ZERO 
                ALPHA_S(IJK,M) = ZERO 
                K_S(IJK,M) = ZERO 
@@ -106,7 +110,10 @@
                     ALPHA_S(IJK,M) = ZERO 
                  ENDIF 
                  IF (K_S0 /= UNDEFINED) K_S(IJK,M) = K_S0 
-                 IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0 
+                 IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
+! add by rong
+                 IF (D_P0(M)/=UNDEFINED)  D_P(IJK,M)=D_P0(M) 
+! add by rong 
 	       ENDIF
             ENDIF 
          END DO 

@@ -36,7 +36,9 @@
       INTEGER          DIMENSION_N_s
 !
 !                      Maximum number of user-defined scalars
+      INTEGER          DIM_Scalar2
       INTEGER          DIMENSION_Scalar
+      
 !===============================================================================
 !
 ! 2.  Parameters for controlling data input:  This section seldom needs

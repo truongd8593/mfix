@@ -26,6 +26,11 @@ P4_OPTIMIZE=1
   PDTROOTDIR=/mnt/home/ACTS/halow/TAU/pdt
   # *****
 #========== end of TAU related settings ==============  
+#
+# Flag variable for compiling with interfaces to call ISAT
+# To set to true, change this to 1. By default it is set to false (0).
+DO_ISAT=0
+#
 echo
 echo 
 echo "*******************************************"
@@ -233,7 +238,7 @@ ln -sf "$mpi_include/mpif.h" .
             link_d="-C -g -nowarn -assume byterecl -convert big_endian"
 
             compile="-c -I. -I$mpi_include -O5 -free -nowarn -assume byterecl -convert big_endian "
-            compile2="-c -I. -I$mpi_include -O5 -free -nowarn -assume byterecl -convert big_endian "
+            compile2="-c -I. -I$mpi_include -O5 -nowarn -assume byterecl -convert big_endian "
             link="-O5 -nowarn -assume byterecl -convert big_endian"
             MODULE_CODE=1
             ;;
@@ -281,7 +286,7 @@ ln -sf "$mpi_include/mpif.h" .
             link_d="$compile_d"
 
             compile=" -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
-            compile2="$compile"
+            compile2="-c -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -c -I.  -I$moddir -qmoddir=$moddir -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
             link="-O3 -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qtune=pwr3 -qcache=auto "
 
 #	    ------------------
@@ -312,7 +317,7 @@ ln -sf "$mpi_include/mpif.h" .
             link_d="-IPA -64 -C -g"
 
             compile="$compile_common -O3 -mips4 "
-            compile2="$compile_common -O1 -mips4 "
+            compile2="-c -I. -I$mpi_include -64 -O3 -mips4"
             link="-IPA -64 -O3 -mips4"
             MODULE_CODE=0
 #           ------------------
@@ -331,8 +336,8 @@ ln -sf "$mpi_include/mpif.h" .
   
             FORTRAN_CMD=f90
             LINK_CMD=f90
-            libs_d=blas90.a
-            libs=blas90.a
+            libs_d="blas90.a odepack.a"
+            libs="blas90.a odepack.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f90
@@ -340,7 +345,7 @@ ln -sf "$mpi_include/mpif.h" .
             compile_d="-c -I. -I$mpi_include -g -nowarn -freeform -convert big_endian"
             link_d="-g -nowarn -convert big_endian"
             compile="-c -I. -I$mpi_include -nowarn -O2 -freeform -convert big_endian"
-            compile2="-c -I. -I$mpi_include -nowarn -O2 -freeform -convert big_endian"
+            compile2="-c -I. -I$mpi_include -nowarn -O2 -convert big_endian"
             link="-O2 -nowarn -convert big_endian"
             MODULE_CODE=0
 	    
@@ -352,8 +357,8 @@ ln -sf "$mpi_include/mpif.h" .
 	    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d="-lblas blas90.a"
-            libs="-lblas blas90.a"
+            libs_d="-lblas blas90.a odepack.a"
+            libs="-lblas blas90.a odepack.a"
     
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -362,7 +367,7 @@ ln -sf "$mpi_include/mpif.h" .
             compile_d=" -g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk $compile_common"
             link_d=" "
             compile=" -O -Mdalign $compile_common"
-            compile2="-O1 -Mdalign $compile_common"
+            compile2="-O1 -Mdalign -c -I.  -Mnosave -Mrecursive -Mreentrant -byteswapio"
             link="  "
             MODULE_CODE=1
 	    
@@ -400,7 +405,7 @@ ln -sf "$mpi_include/mpif.h" .
                         if test $intel_ver = "Linux_ifc8" 
                         then
                            FORTRAN_CMD=ifort
-                           LINK_CMD=ifort
+                           LINK_CMD="ifort -lsvml"
                         else
                            FORTRAN_CMD=ifc
                            LINK_CMD=ifc
@@ -411,7 +416,7 @@ ln -sf "$mpi_include/mpif.h" .
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-openmp -assume cc_omp"
-            libs=blas90.a 
+            libs='blas90.a odepack.a'
 	    
             if test $intel_ver = "Linux_ifc7"
             then
@@ -488,7 +493,7 @@ ln -sf "$mpi_include/mpif.h" .
             compile_d="-g -O0 -c -FR -I. -w -d1 -CB " 
             link_d="-I. -L$intel_lib -lPEPCF90 "
             compile="$compile_common"
-            compile2="$compile_common"
+            compile2="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip"
             link="-I. -L$intel_lib -lPEPCF90"
             MODULE_CODE=0
             fi
@@ -505,7 +510,7 @@ ln -sf "$mpi_include/mpif.h" .
               compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB "
               link_d="-I.  "
               compile="$compile_common"
-              compile2="$compile_common"
+              compile2="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
               link="-I.  "
               MODULE_CODE=1
             fi
@@ -530,8 +535,8 @@ ln -sf "$mpi_include/mpif.h" .
    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d=blas90.a
-            libs=blas90.a
+            libs_d="blas90.a odepack.a"
+            libs="blas90.a odepack.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -539,7 +544,7 @@ ln -sf "$mpi_include/mpif.h" .
             compile_d="-c -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             link_d="-g"
             compile="-c -I. -I. -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
-            compile2="-c -I. -I. -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile2="-c -I. -I. -byteswapio -Mnosave -Mrecursive -Mreentrant"
             link=" "
             MODULE_CODE=1
 
@@ -550,8 +555,8 @@ ln -sf "$mpi_include/mpif.h" .
    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d=blas90.a
-            libs=blas90.a
+            libs_d="blas90.a odepack.a"
+            libs="blas90.a odepack.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -559,7 +564,7 @@ ln -sf "$mpi_include/mpif.h" .
             compile_d="-c -g -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             link_d="-g"
             compile="-c -I. -I$mpi_include -O -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
-            compile2="-c -I. -I$mpi_include -O1 -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
+            compile2="-c -I. -I$mpi_include -O1 -byteswapio -Mnosave -Mrecursive -Mreentrant"
             link=" "
             MODULE_CODE=1
 
@@ -796,6 +801,16 @@ esac
     ;;
   esac
 
+#
+#------------------------------------------------------------------------
+#
+# ISAT related modifications
+  if [ $DO_ISAT -eq 0 ]
+  then
+     /bin/cp -fp chem/isat_donothing/* chem
+  else
+     /bin/cp -fp chem/isat_do/* chem
+  fi
 #
 #------------------------------------------------------------------------
 #

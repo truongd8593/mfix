@@ -86,6 +86,10 @@
 !!$omp parallel do private(M,IJK,N)
       DO M = 1, MMAX 
             ROP_SO(:,M) = ROP_S(:,M) 
+! add by rong
+       IF(Call_DQMOM) D_Po(:,M)=D_P(:,M)
+!      IF (NScalar>0) ome_o(:,M)=ome(:,M)
+! add by rong 
             IF (ENERGY_EQ) T_SO(:,M) = T_S(:,M) 
             IF (GRANULAR_ENERGY) THEN 
                THETA_MO(:,M) = THETA_M(:,M) 

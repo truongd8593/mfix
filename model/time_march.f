@@ -23,6 +23,10 @@
 !  Purpose: To call DES related routines when doing DES                C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                      C
+!  Reavision Number: 3                                                 C
+!  Purpose: To call ISAT to calculate chemical rxns                    C
+!  Author: Nan Xie                                    Date: 02-Aug-04  C 
+!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced: RUN_TYPE, TIME, DT, NSTEP, TSTOP, OUT_DT,     C
@@ -62,7 +66,8 @@
       USE rxns
       USE compar     
       USE time_cpu  
-      USE discretelement   
+      USE discretelement  
+      USE mchem
       IMPLICIT NONE
 !-----------------------------------------------
 !     G l o b a l   P a r a m e t e r s
@@ -70,7 +75,8 @@
 !-----------------------------------------------
 !     L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      DOUBLE PRECISION, PARAMETER :: ONEMEG = 1048576 
+      DOUBLE PRECISION, PARAMETER :: ONEMEG = 1048576
+  
 !-----------------------------------------------
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -206,6 +212,22 @@
 !     
 !     Calculate all the coefficients once before entering the time loop
 !     
+!
+!  CHEM & ISAT begin (Nan Xie)
+      IF (CALL_CHEM) THEN 
+         CALL MCHEM_INIT
+         CALL MCHEM_ODEPACK_INIT
+      END IF
+
+      IF (CALL_ISAT) THEN 
+         CALL MCHEM_INIT
+         CALL MCHEM_ODEPACK_INIT
+         CALL MISAT_TABLE_INIT
+      END IF
+!  CHEM & ISAT end (Nan Xie)
+!
+!  Calculate all the coefficients once before entering the time loop
+!
       CALL RRATES_INIT(IER)
       IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
       WALL_TR = .TRUE. 
@@ -232,6 +254,11 @@
          L = MMAX + 1 
          M = MMAX + 1 
       ENDIF 
+! add by rong
+     
+      IF (.not.Call_DQMOM) PSIZE(1:MMAX) = .FALSE.
+
+! addby rong
       IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
       IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
 
@@ -455,6 +482,9 @@
          L = MMAX + 1 
          M = MMAX + 1 
       ENDIF 
+! add by rong
+      IF(.not.Call_DQMOM) Psize(1:MMAX)=.FALSE.
+! add by rong
       IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
       IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
 
@@ -549,7 +579,17 @@
 !     
 !     Advance the time step and continue
 !     
-
+! CHEM & ISAT begin (Nan Xie)
+      IF (CALL_ISAT .OR. CALL_CHEM) THEN 
+         CALL MCHEM_TIME_MARCH
+      END IF
+! CHEM & ISAT end (Nan Xie)
+!
+!
+      IF (CALL_DQMOM) CALL USR_DQMOM
+!
+!  Advance the time step and continue
+!
 !     AE TIME 041601 Double the timestep for 2nd order accurate time implementation
 !     IF (CN_ON.AND.NSTEP>1) then 
       IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 

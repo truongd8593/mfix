@@ -153,17 +153,16 @@
                   VREL=SQRT((UGC-USCM)**2+(VGC-VSCM)**2+(WGC-WSCM)**2) 
 		  
                   if(MU_G(IJK) > ZERO)then
-                     RE = EP_G(IJK)*D_P(M)*VREL*RO_G(IJK)/MU_G(IJK)                     
+                     RE = EP_G(IJK)*D_P(IJK,M)*VREL*RO_G(IJK)/MU_G(IJK)                     
                   else 
 	             RE = LARGE_NUMBER
                   endif		  		  
-
 !
 !  Calculate gas-solids heat transfer coefficient (Gunn 1978)
 !
                   GAMA_GS(IJK,M) = ((7. - 10.*EP_G(IJK)+5.*EP_G2)*(ONE+0.7*RE**&
                      0.2*PR1O3)+(1.33-2.4*EP_G(IJK)+1.2*EP_G2)*RE**0.7*PR1O3)*(&
-                     K_G(IJK)/D_P(M))*(6.*EP_S(IJK,M)/D_P(M)) 
+                     K_G(IJK)/D_P(IJK,M))*(6.*EP_S(IJK,M)/D_P(IJK,M)) 
 !
 !  Correct the heat transfer coefficient for transpiration
 !  Bird, Stewart, and Lightfoot (1960, p.663)

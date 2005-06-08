@@ -106,6 +106,9 @@
 ! 
 !                      error message 
       CHARACTER*80     LINE 
+!
+!     FOR CALL_CHEM and CALL_ISAT = .true.
+      DOUBLE PRECISION SUM_R_G_temp(DIMENSION_3)
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
@@ -122,6 +125,15 @@
 !$omp&                  ISV, Sdp, V0, Vpm, Vmt, Vbf,              &
 !$omp&                  Vcf, EPMUGA, VTZA, WGE, PGE, ROGA,        &
 !$omp&                  MUGA, ROPGA, EPGA )
+!
+!!     CHEM & ISAT begin (nan xie)
+! Set the source terms zero
+      IF (CALL_CHEM .or. CALL_ISAT) THEN
+         SUM_R_G_temp = SUM_R_G
+         SUM_R_G = ZERO
+      END IF
+!     CHEM & ISAT end (nan xie)
+!
       DO IJK = ijkstart3, ijkend3 
          I = I_OF(IJK) 
          IJKE = EAST_OF(IJK) 
@@ -228,6 +240,13 @@
 	ENDIF 
       END DO 
       CALL SOURCE_U_G_BC (A_M, B_M, IER) 
+!
+!     CHEM & ISAT begin (nan xie)
+!
+      IF (CALL_CHEM .or. CALL_ISAT) THEN
+         SUM_R_G = SUM_R_G_temp
+      END IF  
+!     CHEM & ISAT end (nan xie)
 !
 
       RETURN  

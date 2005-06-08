@@ -184,7 +184,7 @@
 ! this is the way the algorithm was written by Yu and Standish (sof).
 !
        DO I = 1, MMAX 
-	 DP_TMP(I) = D_P(M_MAX(I))
+	 DP_TMP(I) = D_P(IJK,M_MAX(I))
 	 EPs_TMP(I) = EP_s(IJK,M_MAX(I))
 	 EPs_max_TMP(I) = ep_s_max(M_MAX(I))
        END DO

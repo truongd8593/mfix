@@ -8,7 +8,7 @@
              MOMENTUM_X_EQ, MOMENTUM_Y_EQ,MOMENTUM_Z_EQ, DISCRETIZE,&
              GRANULAR_ENERGY,& 
 	     NScalar, Phase4Scalar, &
-	     K_Epsilon, &
+	     K_Epsilon, Call_DQMOM,&
 ! sof 02-01-05
 	     SIMONIN, AHMADI, JENKINS, &
              nRR, chi_scheme, &
@@ -58,6 +58,9 @@
              AUTO_RESTART,&
 ! end sof 5/04/05    
 !	     	     
+! start rong
+             AGGREGATION_EFF,BREAKAGE_EFF,&
+! end rong 
 !
 ! 1.4 Geometry and discretization section
 !
@@ -72,7 +75,7 @@
 !
 ! 1.6 Solids phase section
 !
-             MU_s0, D_p, RO_s, EP_star, MMAX, NMAX, MW_s, CLOSE_PACKED,&
+             MU_s0, D_p0, RO_s, EP_star, MMAX, NMAX, MW_s, CLOSE_PACKED,&
              K_s0, C_ps0, DIF_s0,&
 
 !
@@ -124,6 +127,10 @@
 !
              SPECIES_NAME, &
 !
+!     CHEM & ISAT begin (nan xie)
+!
+	     CALL_CHEM, CALL_GROW, CALL_ISAT, ISATdt,&
+!     CHEM & ISAT end (nan xie)
 ! 1.11 distributed parallel
 !
              NODESI , NODESJ , NODESK, &

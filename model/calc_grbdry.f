@@ -48,7 +48,7 @@
  
 !
 !                      Average scalars
-      DOUBLE PRECISION EP_avg, TH_avg, Mu_g_avg, RO_g_avg
+      DOUBLE PRECISION EP_avg, TH_avg, Mu_g_avg, RO_g_avg, Dp_avg
 !
 !                      Average Simonin and Ahmadi variables (sof)
       DOUBLE PRECISION K_12_avg, Tau_12_avg, Tau_1_avg
@@ -140,6 +140,8 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg   = AVG_X(D_P(IJK2,M), D_P(IJK2E,M), I_OF(IJK2))
  
 !         Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)
           UGC  = AVG_Y(U_g(IJK1), U_g(IJK2),J_OF(IJK1))
@@ -170,7 +172,7 @@
 	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'S')THEN
@@ -199,6 +201,8 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+          
+          DP_avg   = AVG_X(D_P(IJK2,M), D_P(IJK2E,M), I_OF(IJK2))
  
 !         Calculate velocity components at i+1/2, j+1/2, k relative to IJK2
           UGC  = AVG_Y(U_g(IJK2),U_g(IJK1),J_OF(IJK2))
@@ -229,7 +233,7 @@
 	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,  &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'T')THEN
@@ -260,6 +264,9 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg =&
+                AVG_X(D_p(IJK2,M), D_p(IJK2E,M), I_OF(IJK2))
  
 !         Calculate velocity components at i+1/2,j,k-1/2 relative to IJK2
           UGC  = AVG_Z(U_g(IJK1), U_g(IJK2), K_OF(IJK1))
@@ -290,7 +297,7 @@
 	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                 + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg, &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'B')THEN
@@ -321,6 +328,9 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg =&
+                AVG_X(D_p(IJK2,M), D_p(IJK2E,M), I_OF(IJK2))
  
 !         Calculate velocity components at i+1/2,j,k-1/2 relative to IJK1
           UGC  = AVG_Z(U_g(IJK2), U_g(IJK1), K_OF(IJK2))
@@ -351,7 +361,7 @@
 	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                 + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
@@ -387,6 +397,10 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg =&
+                     AVG_Y(D_p(IJK2,M), D_p(IJK2N,M), J_OF(IJK2))
+ 
  
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK1)
           UGC1 = AVG_X_E(&
@@ -426,7 +440,7 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'B')THEN
@@ -457,6 +471,10 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg =&
+                     AVG_Y(D_p(IJK2,M), D_p(IJK2N,M), J_OF(IJK2))
+ 
  
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK2)
           UGC1 = AVG_X_E(&
@@ -496,7 +514,7 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg, &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'E')THEN
@@ -527,6 +545,9 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg =&
+                AVG_Y(D_p(IJK2,M), D_p(IJK2N,M), J_OF(IJK2))
  
  
 !         Calculate velocity components at i+1/2,j+1/2,k relative to IJK1
@@ -558,7 +579,7 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'W')THEN
@@ -590,7 +611,9 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
- 
+
+          DP_avg =&
+                AVG_Y(D_p(IJK2,M), D_p(IJK2N,M), J_OF(IJK2))
  
 !         Calculate velocity components at i+1/2,j+1/2,k relative to IJK2
           UGC  = AVG_Y(U_g(IJK2), U_g(IJPK2), J_OF(IJK2))
@@ -621,7 +644,7 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
@@ -657,7 +680,10 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
- 
+
+          DP_avg =&
+                    AVG_Z(D_p(IJK2,M), D_p(IJK2T,M), K_OF(IJK2))
+      
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK1)
           UGC1 = AVG_X_E(&
                          AVG_Z(U_g(IM_OF(IJK1)), U_g(IM_OF(IJMKP2)),&
@@ -696,7 +722,7 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg, &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'S')THEN
@@ -727,6 +753,9 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg =&
+                     AVG_Z(D_p(IJK2,M), D_p(IJK2T,M), K_OF(IJK2))
  
 !         Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK2)
           UGC1 = AVG_X_E(&
@@ -766,7 +795,7 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,DP_avg, &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
  
@@ -798,7 +827,9 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
- 
+
+          DP_avg =&
+                AVG_Z(D_p(IJK2,M), D_p(IJK2T,M), K_OF(IJK2))
  
 !         Calculate velocity components at i+1/2,j,k+1/2 relative to IJK1
           UGC  = AVG_Z(U_g(IJK1), U_g(IMJKP2), K_OF(IJK1))
@@ -829,7 +860,7 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,   &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'W')THEN
@@ -860,6 +891,9 @@
             Tau_12_avg = ZERO	    
             Tau_1_avg = ZERO
 	  ENDIF
+
+          DP_avg =&
+                AVG_Z(D_p(IJK2,M), D_p(IJK2T,M), K_OF(IJK2))
  
 !         Calculate velocity components at i+1/2,j,k+1/2 relative to IJK2
           UGC  = AVG_Z(U_g(IJK2), U_g(IJKP2), K_OF(IJK2))
@@ -890,7 +924,7 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,   &
+          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,  &
 	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
@@ -907,7 +941,8 @@
  
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: F_HW(g0, EPS, TH, Mu_g_avg, RO_g_avg, VREL,M)          C
+!  Module name: F_HW(EPS, TH, Mu_g_avg, RO_g_avg,DP_avg,               C
+!                    K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP,M)   C
 !  Purpose: Function for hw                                            C
 !                                                                      C
 !  Author: K. Agrawal & A. Srivastava, Princeton Univ. Date: 24-JAN-98 C
@@ -916,11 +951,11 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced: EPS, TH, C_e, RO_s, D_p(M)                    C
+!  Variables referenced: EPS, TH, C_e, RO_s                            C
 !  Variables modified:                                                 C
 !                                                                      C
 !  Local variables: F_2, Mu_s, Mu, Mu_b, Eta, Mu_g_avg, RO_g_avg,      C
-!                   VREL, C_d, Beta                                    C
+!                   VREL, C_d, Beta, dp_avg                                    C
 !                                                                      C
 !  Modified: Sofiane Benyahia, Fluent Inc.             Date: 02-FEB-05 C
 !  Purpose: Include conductivity defined by Simonin and Ahmadi         C
@@ -931,7 +966,7 @@
 !  9 (10), 2835. See equation (2) in the paper                         C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      DOUBLE PRECISION FUNCTION F_HW(g0,EPS,TH,Mu_g_avg,RO_g_avg,&
+      DOUBLE PRECISION FUNCTION F_HW(g0,EPS,TH,Mu_g_avg,RO_g_avg, DP_avg,&
                                      K_12_avg, Tau_12_avg, Tau_1_avg, &
 				     VREL, VSLIP, M)
  
@@ -977,6 +1012,10 @@
  
 !              Average gas viscosity
       DOUBLE PRECISION Mu_g_avg
+! add by rong
+!              Average solid diameter
+      DOUBLE PRECISION Dp_avg
+! add by rong
  
 !              Reynolds number based on slip velocity
       DOUBLE PRECISION Re_g
@@ -1037,18 +1076,18 @@
 !
       ENDIF !for Jenkins
  
-      Mu = (5d0*DSQRT(Pi*TH)*D_p(M)*RO_s(M))/96d0
+      Mu = (5d0*DSQRT(Pi)*Dp_avg*RO_s(M))/96d0
  
       Mu_b = (256d0*Mu*EPS*EPS*G_0)/(5d0*Pi)
  
-      Re_g = (1d0-EPS)*RO_g_avg*D_p(M)*VREL/Mu_g_avg
+      Re_g = (1d0-EPS)*RO_g_avg*Dp_avg*VREL/Mu_g_avg
       IF (Re_g.lt.1000d0) THEN
          C_d = (24./(Re_g+SMALL_NUMBER))*(1d0 + 0.15 * Re_g**0.687)
       ELSE
          C_d = 0.44d0
       ENDIF
       Beta = 0.75d0*C_d*Ro_g_avg*(1-EPS)*EPS*VREL&
-                *((1-EPS)**(-2.65d0))/D_p(M)
+                *((1-EPS)**(-2.65d0))/Dp_avg
 ! particle relaxation time
       Tau_12_st = EPS*RO_s(M)/(Beta+small_number)
       
@@ -1079,7 +1118,7 @@
       IF(SIMONIN) THEN !see calc_mu_s for explanation of these definitions
 !
         Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
-        Tau_2_c = D_P(M)/(6.d0*EPS*G_0*DSQRT(16.d0*(TH+Small_number)/PI))
+        Tau_2_c = DP_avg/(6.d0*EPS*G_0*DSQRT(16.d0*(TH+Small_number)/PI))
 	zeta_c_2= 2./5.*(ONE+ C_e)*(3.d0*C_e-ONE)
 	Nu_t =  Tau_12_avg/Tau_12_st
         Tau_2 = ONE/(2./Tau_12_st+Sigma_c/Tau_2_c)
@@ -1088,7 +1127,7 @@
                      (ONE+ zeta_c_2*EPS*G_0))*Tau_2
 !
 	Mu_2_Col = 8./5.*EPS*G_0*Eta* (MU_2_T_Kin+ &
-                   D_p(M)*DSQRT(TH/PI))
+                   Dp_avg*DSQRT(TH/PI))
 !
 	Mu_s = EPS*RO_s(M)*(MU_2_T_Kin + Mu_2_Col)
 !
@@ -1096,7 +1135,7 @@
 !
 	Mu_s = ONE/(ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS/EPS_max)**3)&
 	       *0.1045*(ONE/G_0+3.2*EPS+12.1824*G_0*EPS*EPS)  &
-	       *D_p(M)*RO_s(M)* DSQRT(TH)
+	       *Dp_avg*RO_s(M)* DSQRT(TH)
       ENDIF
         
  

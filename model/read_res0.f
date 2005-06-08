@@ -18,7 +18,7 @@
 !                        KMAX, IMAX1, JMAX1, KMAX1, IMAX2, JMAX2,KMAX2 C
 !                        IJMAX2, IJKMAX2, MMAX, DT, XLENGTH, YLENGTH   C
 !                        ZLENGTH, DX, DY, DZ, RUN_NAME, DESCRIPTION    C
-!                        UNITS, RUN_TYPE, CORDINATES, D_p, RO_s,       C
+!                        UNITS, RUN_TYPE, CORDINATES, D_p0, RO_s,       C
 !                        EP_star, MU_g, MW_AVG, IC_X_w, IC_X_e, IC_Y_s C
 !                        IC_Y_n, IC_Z_b, IC_Z_t, IC_I_w, IC_I_e        C
 !                        IC_J_s, IC_J_n, IC_K_b, IC_K_t, IC_EP_g       C
@@ -413,25 +413,25 @@
         if (myPE == PE_IO) then
 	  IF (VERSION=='RES = 01.00' .OR. VERSION==&
                 'RES = 01.01') THEN 
-            READ (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,&
+            READ (UNIT_RES, REC=NEXT_RECA) (D_P0(L),L=1,&
                 MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
                 MU_G0, MW_AVG 
           ELSE IF (VERSION == 'RES = 01.02') THEN 
-            READ (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,&
+            READ (UNIT_RES, REC=NEXT_RECA) (D_P0(L),L=1,&
                 MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
                 RO_G0, MU_G0, MW_AVG 
           ELSE IF (VERSION == 'RES = 01.03') THEN 
-            READ (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,&
+            READ (UNIT_RES, REC=NEXT_RECA) (D_P0(L),L=1,&
                 MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
                 RO_G0, MU_G0, MW_AVG 
           ELSE IF (VERSION_NUMBER >= 1.04) THEN 
-            READ (UNIT_RES, REC=NEXT_RECA) (D_P(L),L=1,&
+            READ (UNIT_RES, REC=NEXT_RECA) (D_P0(L),L=1,&
                 MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
                 RO_G0, MU_G0, MW_AVG 
           ENDIF 
           NEXT_RECA = NEXT_RECA + 1
 	ENDIF 
-        call bcast(D_P, PE_IO)       !//PAR_I/O BCAST1d
+        call bcast(D_P0, PE_IO)       !//PAR_I/O BCAST1d
         call bcast(RO_S, PE_IO)      !//PAR_I/O BCAST1d
         call bcast(EP_STAR, PE_IO)   !//PAR_I/O BCAST0d
         call bcast(RO_G0, PE_IO)     !//PAR_I/O BCAST0d
@@ -1167,11 +1167,11 @@
         ENDIF 
 
 !
-!           Version 1.6 -- read K_Epsilon
+!           Version 1.6 -- read K_Epsilon and dqmom
 !
         IF (VERSION_NUMBER >= 1.599) THEN 
           if (myPE == PE_IO) then
-            READ (UNIT_RES, REC=NEXT_RECA) K_Epsilon
+            READ (UNIT_RES, REC=NEXT_RECA) K_Epsilon, Call_DQMOM
             NEXT_RECA = NEXT_RECA + 1 
             if (doingPost .and. K_epsilon) then
                Allocate( K_Turb_G(DIMENSION_3) )
@@ -1179,10 +1179,25 @@
             end if
 	  ENDIF
           call bcast(K_Epsilon,PE_IO) !//PAR_I/O BCAST0d 
+          call bcast(Call_DQMOM,PE_IO) !//PAR_I/O BCAST0d 
         ELSE
           K_Epsilon = .false.
+          Call_DQMOM =.FALSE.
         ENDIF 
-
+!
+!     CHEM & ISAT begin (nan xie)
+!        IF (VERSION_NUMBER >= 1.599) THEN 
+          if (myPE == PE_IO) then
+            READ (UNIT_RES, REC=NEXT_RECA) CALL_CHEM, CALL_ISAT
+            NEXT_RECA = NEXT_RECA + 1 
+	  ENDIF
+          call bcast(CALL_CHEM,PE_IO) !//PAR_I/O BCAST0d 
+          call bcast(CALL_ISAT,PE_IO)
+!        ELSE
+!          CALL_CHEM = .false.
+!          CALL_ISAT = .false.
+!        ENDIF 
+!     CHEM & ISAT end (nan xie)
 !
 !  Add new read statements above this line.  Remember to update NEXT_RECA.
 !  Remember to update the version number check near begining of this subroutine.

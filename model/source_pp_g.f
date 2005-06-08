@@ -81,6 +81,10 @@
  
 !                      error message 
       CHARACTER*80     LINE(1) 
+!
+!     FOR CALL_CHEM and CALL_ISAT = .true.
+      DOUBLE PRECISION SUM_R_G_temp(DIMENSION_3)
+      DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
 ! 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -113,11 +117,20 @@
 	   V_G(IJK)=V_G(IJK)+VSH(IJK)	
          END IF
         END DO 
- 
       END IF
 
       call lock_xsi_array
+!
+!     CHEM & ISAT begin (nan xie)
+! Set the source terms zero
+      IF (CALL_CHEM .or. CALL_ISAT) THEN
+         SUM_R_G_temp = SUM_R_G
+         SUM_R_S_temp = SUM_R_S
 
+         SUM_R_G = ZERO
+         SUM_R_S = ZERO
+      END IF
+!     CHEM & ISAT end (nan xie)      
 !
 !  Calculate convection-diffusion fluxes through each of the faces
 !
@@ -267,6 +280,12 @@
       ENDIF 
    ENDIF
 !
+!     CHEM & ISAT begin (nan xie)
+      IF (CALL_CHEM .or. CALL_ISAT) THEN
+         SUM_R_G = SUM_R_G_temp
+         SUM_R_S = SUM_R_S_temp
+      END IF
+!     CHEM & ISAT end (nan xie)
       call unlock_xsi_array
 
       RETURN  

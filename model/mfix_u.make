@@ -52,6 +52,7 @@ mfix.exe : \
     VISC_S.mod \
     VSHEAR.mod \
     XSI_ARRAY.mod \
+    MCHEM.mod \
     DISCRETELEMENT.mod \
     COMPAR.mod \
     DBG_UTIL.mod \
@@ -298,6 +299,19 @@ mfix.exe : \
     xerbla.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
+    calc_jacobian.$(OBJ_EXT) \
+    check_data_chem.$(OBJ_EXT) \
+    dgpadm.$(OBJ_EXT) \
+    exponential.$(OBJ_EXT) \
+    fex.$(OBJ_EXT) \
+    g_derivs.$(OBJ_EXT) \
+    jac.$(OBJ_EXT) \
+    mchem_init.$(OBJ_EXT) \
+    mchem_odepack_init.$(OBJ_EXT) \
+    mchem_time_march.$(OBJ_EXT) \
+    misat_table_init.$(OBJ_EXT) \
+    react.$(OBJ_EXT) \
+    usrfg.$(OBJ_EXT) \
     add_part_to_link_list.$(OBJ_EXT) \
     calc_app_coh_force.$(OBJ_EXT) \
     calc_cap_coh_force.$(OBJ_EXT) \
@@ -358,7 +372,13 @@ mfix.exe : \
     pressure_drop.$(OBJ_EXT) \
     print_vel.$(OBJ_EXT) \
     quadtree.$(OBJ_EXT) \
-    blas90.a 
+    gaussj.$(OBJ_EXT) \
+    odeint.$(OBJ_EXT) \
+    rkck.$(OBJ_EXT) \
+    rkqs.$(OBJ_EXT) \
+    source_population_eq.$(OBJ_EXT) \
+    usr_dqmom.$(OBJ_EXT) \
+    blas90.a odepack.a
 	$(LINK_CMD) $(LINK_FLAGS) \
     adjust_a_u_g.$(OBJ_EXT) \
     adjust_a_u_s.$(OBJ_EXT) \
@@ -646,6 +666,20 @@ mfix.exe : \
     xsi_array_mod.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
+    calc_jacobian.$(OBJ_EXT) \
+    check_data_chem.$(OBJ_EXT) \
+    dgpadm.$(OBJ_EXT) \
+    exponential.$(OBJ_EXT) \
+    fex.$(OBJ_EXT) \
+    g_derivs.$(OBJ_EXT) \
+    jac.$(OBJ_EXT) \
+    mchem_init.$(OBJ_EXT) \
+    mchem_mod.$(OBJ_EXT) \
+    mchem_odepack_init.$(OBJ_EXT) \
+    mchem_time_march.$(OBJ_EXT) \
+    misat_table_init.$(OBJ_EXT) \
+    react.$(OBJ_EXT) \
+    usrfg.$(OBJ_EXT) \
     add_part_to_link_list.$(OBJ_EXT) \
     calc_app_coh_force.$(OBJ_EXT) \
     calc_cap_coh_force.$(OBJ_EXT) \
@@ -716,12 +750,22 @@ mfix.exe : \
     parallel_mpi_mod.$(OBJ_EXT) \
     sendrecv3_mod.$(OBJ_EXT) \
     sendrecv_mod.$(OBJ_EXT) \
+    gaussj.$(OBJ_EXT) \
+    odeint.$(OBJ_EXT) \
+    rkck.$(OBJ_EXT) \
+    rkqs.$(OBJ_EXT) \
+    source_population_eq.$(OBJ_EXT) \
+    usr_dqmom.$(OBJ_EXT) \
   -o mfix.exe $(LIB_FLAGS)
   
 blas90.a : BLAS.o
 	ar cr blas90.a BLAS.o
 BLAS.o : BLAS.F
 	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F
+odepack.a : ODEPACK.o
+	ar cr odepack.a ODEPACK.o
+ODEPACK.o : ODEPACK.F
+	$(FORTRAN_CMD) $(FORT_FLAGS2) ODEPACK.F
 AMBM.mod : ambm_mod.f \
             PARAM.mod \
             PARAM1.mod \
@@ -932,6 +976,9 @@ XSI_ARRAY.mod : xsi_array_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) xsi_array_mod.f 
+MCHEM.mod : ./chem/mchem_mod.f \
+            PARAM.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_mod.f 
 DISCRETELEMENT.mod : ./des/discretelement_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -1566,7 +1613,7 @@ calc_vol_fr.$(OBJ_EXT) : calc_vol_fr.f \
             function.inc                                                 \
             s_pr2.inc                                                    \
             ep_s2.inc                                                   
-	$(FORTRAN_CMD) $(FORT_FLAGS2) calc_vol_fr.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) calc_vol_fr.f 
 calc_xsi.$(OBJ_EXT) : calc_xsi.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1765,6 +1812,7 @@ check_mass_balance.$(OBJ_EXT) : check_mass_balance.f \
             MPI_UTILITY.mod \
             OUTPUT.mod \
             CHECK.mod \
+            MCHEM.mod \
             PARALLEL.mod \
             MATRIX.mod \
             function.inc                                                
@@ -2536,7 +2584,7 @@ mark_phase_4_cor.$(OBJ_EXT) : mark_phase_4_cor.f \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
-	$(FORTRAN_CMD) $(FORT_FLAGS2) mark_phase_4_cor.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) mark_phase_4_cor.f 
 mfix.$(OBJ_EXT) : mfix.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2679,11 +2727,19 @@ physical_prop.$(OBJ_EXT) : physical_prop.f \
             RUN.mod \
             TOLERANC.mod \
             CONSTANT.mod \
+            SCALARS.mod \
             COMPAR.mod \
             FUNITS.mod \
+            USR.mod \
+            species_indices.inc                                          \
+            usrnlst.inc                                                  \
             cp_fun1.inc                                                  \
+            fun_avg1.inc                                                 \
             function.inc                                                 \
-            cp_fun2.inc                                                 
+            fun_avg2.inc                                                 \
+            cp_fun2.inc                                                  \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
 read_namelist.$(OBJ_EXT) : read_namelist.f \
             PARAM.mod \
             PARAM1.mod \
@@ -3707,7 +3763,8 @@ time_march.$(OBJ_EXT) : time_march.f \
             RXNS.mod \
             COMPAR.mod \
             TIME_CPU.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            MCHEM.mod 
 transfer.$(OBJ_EXT) : transfer.f \
             PARAM.mod \
             PARAM1.mod \
@@ -3749,7 +3806,8 @@ update_old.$(OBJ_EXT) : update_old.f \
             VISC_S.mod \
             SCALARS.mod 
 usr0.$(OBJ_EXT) : usr0.f \
-            USR.mod 
+            USR.mod \
+            usrnlst.inc                                                 
 usr1.$(OBJ_EXT) : usr1.f \
             USR.mod 
 usr2.$(OBJ_EXT) : usr2.f \
@@ -4018,6 +4076,70 @@ zero_norm_vel.$(OBJ_EXT) : zero_norm_vel.f \
             IS.mod \
             COMPAR.mod \
             function.inc                                                
+calc_jacobian.$(OBJ_EXT) : ./chem/calc_jacobian.f \
+            PARAM1.mod \
+            USR.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/calc_jacobian.f 
+check_data_chem.$(OBJ_EXT) : ./chem/check_data_chem.f \
+            PARAM1.mod \
+            RUN.mod \
+            MPI_UTILITY.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/check_data_chem.f 
+dgpadm.$(OBJ_EXT) : ./chem/dgpadm.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/dgpadm.f 
+exponential.$(OBJ_EXT) : ./chem/exponential.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/exponential.f 
+fex.$(OBJ_EXT) : ./chem/fex.f \
+            RUN.mod \
+            PHYSPROP.mod \
+            TOLERANC.mod \
+            USR.mod \
+            MCHEM.mod \
+            cp_fun1.inc                                                  \
+            cp_fun2.inc                                                 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/fex.f 
+g_derivs.$(OBJ_EXT) : ./chem/g_derivs.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/g_derivs.f 
+jac.$(OBJ_EXT) : ./chem/jac.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/jac.f 
+mchem_init.$(OBJ_EXT) : ./chem/mchem_init.f \
+            PARAM1.mod \
+            RUN.mod \
+            PHYSPROP.mod \
+            MCHEM.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_init.f 
+mchem_odepack_init.$(OBJ_EXT) : ./chem/mchem_odepack_init.f \
+            MCHEM.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_odepack_init.f 
+mchem_time_march.$(OBJ_EXT) : ./chem/mchem_time_march.f \
+            RUN.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            RXNS.mod \
+            MPI_UTILITY.mod \
+            TOLERANC.mod \
+            MCHEM.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
+            ep_s2.inc                                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_time_march.f 
+misat_table_init.$(OBJ_EXT) : ./chem/misat_table_init.f \
+            MCHEM.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/misat_table_init.f 
+react.$(OBJ_EXT) : ./chem/react.f \
+            PARAM1.mod \
+            TOLERANC.mod \
+            FLDVAR.mod \
+            PHYSPROP.mod \
+            RXNS.mod \
+            RUN.mod \
+            MCHEM.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/react.f 
+usrfg.$(OBJ_EXT) : ./chem/usrfg.f \
+            PARAM1.mod \
+            RUN.mod \
+            MCHEM.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/usrfg.f 
 add_part_to_link_list.$(OBJ_EXT) : ./cohesion/add_part_to_link_list.f \
             DISCRETELEMENT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/add_part_to_link_list.f 
@@ -4394,3 +4516,36 @@ quadtree.$(OBJ_EXT) : ./des/quadtree.f \
             CONSTANT.mod \
             COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/quadtree.f 
+gaussj.$(OBJ_EXT) : ./dqmom/gaussj.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/gaussj.f 
+odeint.$(OBJ_EXT) : ./dqmom/odeint.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/odeint.f 
+rkck.$(OBJ_EXT) : ./dqmom/rkck.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/rkck.f 
+rkqs.$(OBJ_EXT) : ./dqmom/rkqs.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/rkqs.f 
+source_population_eq.$(OBJ_EXT) : ./dqmom/source_population_eq.f \
+            PHYSPROP.mod \
+            CONSTANT.mod \
+            FLDVAR.mod \
+            SCALARS.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/source_population_eq.f 
+usr_dqmom.$(OBJ_EXT) : ./dqmom/usr_dqmom.f \
+            PARAM.mod \
+            PARAM1.mod \
+            RUN.mod \
+            PHYSPROP.mod \
+            GEOMETRY.mod \
+            FLDVAR.mod \
+            OUTPUT.mod \
+            INDICES.mod \
+            RXNS.mod \
+            CONSTANT.mod \
+            AMBM.mod \
+            COMPAR.mod \
+            SCALARS.mod \
+            USR.mod \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                    \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/usr_dqmom.f 

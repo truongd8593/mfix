@@ -78,6 +78,10 @@
 
       DO M = 1, MMAX 
         ROP_S(:,M) = ROP_SO(:,M) 
+! add by rong
+        If (Call_DQMOM) D_P(:,M)=D_Po(:,M)
+!       If (NScalar>0) ome(:,M)=ome_o(:,M)
+! add by rong
         IF (ENERGY_EQ) T_S(:,M) = T_SO(:,M) 
         IF (GRANULAR_ENERGY) THEN 
           THETA_M(:,M) = THETA_MO(:,M) 
