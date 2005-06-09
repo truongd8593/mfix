@@ -210,13 +210,14 @@
 ! loezos
 	incr=0		
 ! loezos
-         CALL CALC_XSI(DISCRETIZE(1),ROP_G,U_G,V_G,W_G,XSI_E,XSI_N,XSI_T,incr) 
+!         CALL CALC_XSI(DISCRETIZE(1),ROP_G,U_G,V_G,W_G,XSI_E,XSI_N,XSI_T,incr) 
 	
 !$omp    parallel do                                                     &
 !$omp&   private(IJK,I,J,K,                                       &
 !$omp&            IMJK,IJMK,IJKM,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB)
          DO IJK = ijkstart3, ijkend3 
-            IF (FLUID_AT(IJK)) THEN 
+            IF (FLUID_AT(IJK)) THEN
+	       
                I = I_OF(IJK) 
                J = J_OF(IJK) 
                K = K_OF(IJK) 
@@ -230,28 +231,35 @@
                IJKT = TOP_OF(IJK) 
                IJKB = BOTTOM_OF(IJK) 
 !
-               A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*EP_G(&
-                  IJK)*((ONE - XSI_E(IJK))*U_G(IJK)*AYZ(IJK)-XSI_E(IMJK)*U_G(&
-                  IMJK)*AYZ(IMJK)+(ONE-XSI_N(IJK))*V_G(IJK)*AXZ(IJK)-XSI_N(IJMK&
-                  )*V_G(IJMK)*AXZ(IJMK)+VOL(IJK)*ODT) 
+               A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*EP_G(IJK)*VOL(IJK)*ODT
+	       
+!   Although the following is a better approximation for high speed flows because it considers density changes
+!   in the neighboring cells, the code runs faster without it for low speed flows.  The gas phase mass balance
+!   cannot be maintained to machine precision with the following approximation. If the following lines are
+!   uncommented, the calc_xsi call above should also be uncommented.
+!  
+!               A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*EP_G(&
+!                  IJK)*((ONE - XSI_E(IJK))*U_G(IJK)*AYZ(IJK)-XSI_E(IMJK)*U_G(&
+!                  IMJK)*AYZ(IMJK)+(ONE-XSI_N(IJK))*V_G(IJK)*AXZ(IJK)-XSI_N(IJMK&
+!                  )*V_G(IJMK)*AXZ(IJMK)) 
 !
-               A_M(IJK,E,0) = A_M(IJK,E,0) - EP_G(IJKE)*fac*DROODP_G(RO_G(IJKE),P_G&
-                  (IJKE))*XSI_E(IJK)*U_G(IJK)*AYZ(IJK) 
-               A_M(IJK,W,0) = A_M(IJK,W,0) + EP_G(IJKW)*fac*DROODP_G(RO_G(IJKW),P_G&
-                  (IJKW))*(ONE - XSI_E(IMJK))*U_G(IMJK)*AYZ(IMJK) 
-               A_M(IJK,N,0) = A_M(IJK,N,0) - EP_G(IJKN)*fac*DROODP_G(RO_G(IJKN),P_G&
-                  (IJKN))*XSI_N(IJK)*V_G(IJK)*AXZ(IJK) 
-               A_M(IJK,S,0) = A_M(IJK,S,0) + EP_G(IJKS)*fac*DROODP_G(RO_G(IJKS),P_G&
-                  (IJKS))*(ONE - XSI_N(IJMK))*V_G(IJMK)*AXZ(IJMK) 
-               IF (DO_K) THEN 
-                  A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*&
-                     EP_G(IJK)*((ONE - XSI_T(IJK))*W_G(IJK)*AXY(IJK)-XSI_T(IJKM&
-                     )*W_G(IJKM)*AXY(IJKM)) 
-                  A_M(IJK,T,0) = A_M(IJK,T,0) - EP_G(IJKT)*fac*DROODP_G(RO_G(IJKT),&
-                     P_G(IJKT))*XSI_T(IJK)*W_G(IJK)*AXY(IJK) 
-                  A_M(IJK,B,0) = A_M(IJK,B,0) + EP_G(IJKB)*fac*DROODP_G(RO_G(IJKB),&
-                     P_G(IJKB))*(ONE - XSI_T(IJKM))*W_G(IJKM)*AXY(IJKM) 
-               ENDIF 
+!               A_M(IJK,E,0) = A_M(IJK,E,0) - EP_G(IJKE)*fac*DROODP_G(RO_G(IJKE),P_G&
+!                  (IJKE))*XSI_E(IJK)*U_G(IJK)*AYZ(IJK) 
+!               A_M(IJK,W,0) = A_M(IJK,W,0) + EP_G(IJKW)*fac*DROODP_G(RO_G(IJKW),P_G&
+!                  (IJKW))*(ONE - XSI_E(IMJK))*U_G(IMJK)*AYZ(IMJK) 
+!               A_M(IJK,N,0) = A_M(IJK,N,0) - EP_G(IJKN)*fac*DROODP_G(RO_G(IJKN),P_G&
+!                  (IJKN))*XSI_N(IJK)*V_G(IJK)*AXZ(IJK) 
+!               A_M(IJK,S,0) = A_M(IJK,S,0) + EP_G(IJKS)*fac*DROODP_G(RO_G(IJKS),P_G&
+!                  (IJKS))*(ONE - XSI_N(IJMK))*V_G(IJMK)*AXZ(IJMK) 
+!               IF (DO_K) THEN 
+!                  A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*&
+!                     EP_G(IJK)*((ONE - XSI_T(IJK))*W_G(IJK)*AXY(IJK)-XSI_T(IJKM&
+!                     )*W_G(IJKM)*AXY(IJKM)) 
+!                  A_M(IJK,T,0) = A_M(IJK,T,0) - EP_G(IJKT)*fac*DROODP_G(RO_G(IJKT),&
+!                     P_G(IJKT))*XSI_T(IJK)*W_G(IJK)*AXY(IJK) 
+!                  A_M(IJK,B,0) = A_M(IJK,B,0) + EP_G(IJKB)*fac*DROODP_G(RO_G(IJKB),&
+!                     P_G(IJKB))*(ONE - XSI_T(IJKM))*W_G(IJKM)*AXY(IJKM) 
+!               ENDIF 
 !
             ENDIF 
          END DO 

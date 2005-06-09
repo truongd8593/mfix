@@ -333,8 +333,7 @@
  
       IF(.NOT. K_EPSILON) CALL SET_WALL_BC (IER) 
 !
-!     Calculate the face values of densities and mass fluxes.
-      CALL CONV_ROP(IER)
+!     Calculate the face values of mass fluxes.
       CALL CALC_MFLUX (IER)
 !
 !     Solve energy equations
