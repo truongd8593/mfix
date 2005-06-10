@@ -71,43 +71,6 @@
       LOGICAL , EXTERNAL :: COMPARE 
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!
-! start sof modifications: 05/04-2005
-!
-! initializing the new indexing system
-       IF(MMAX .GE. 2) THEN
-         DO I = 1, MMAX
-           DP_TMP(I) = D_P(IJK,I)
-           M_MAX(I) = I
-         END DO
-!
-! rearrange the indices from coarsest particles to finest to be used in CALC_ep_star
-! I did this here because it may need to be done for auto_restart
-         DO I = 1, MMAX	 
-	   DO J = I, MMAX
-	    
-	     IF(DP_TMP(I) < DP_TMP(J)) THEN
-	       old_value = DP_TMP(I)
-	       DP_TMP(I) = DP_TMP(J)
-	       DP_TMP(J) = old_value
-	     ENDIF
-	   
-	   END DO
-         END DO
-!
-	 DO I = 1, MMAX	 
-	   DO J = 1, MMAX
-	     
-	     IF(DP_TMP(I) == D_P(IJK,J) .AND. D_P(IJK,I) .NE. D_P(IJK,J)) THEN
-	       M_MAX(I) = J 
-	     ENDIF
-	   
-	   END DO
-         END DO
-       ENDIF ! for MMAX >= 2
-!
-! end of sof modifications: 05/04-2005
-!
 ! Initialize the icbc_flag array.  If not a NEW run then do not
 ! check the initial conditions.
 !

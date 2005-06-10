@@ -39,7 +39,8 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IJK, M, N 
+      INTEGER :: IJK, M, N, I, J
+      DOUBLE PRECISION SUM, SUM_EP, old_value, DP_TMP(MMAX)
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
@@ -57,7 +58,7 @@
       F_GS(:,:) = ZERO                 !S. Dartevelle, LANL, 2004
       F_SS(:,:) = ZERO                 !S. Dartevelle, LANL, 2004
 !
-      IF (ENERGY_EQ .OR. L_SCALE0/=ZERO) THEN 
+      IF (ENERGY_EQ .OR. L_SCALE0/=ZERO .OR. K_EPSILON) THEN 
          RECALC_VISC_G = .TRUE. 
       ELSE 
          RECALC_VISC_G = .FALSE. 
@@ -112,7 +113,7 @@
                  IF (K_S0 /= UNDEFINED) K_S(IJK,M) = K_S0 
                  IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
 ! add by rong
-                 IF (D_P0(M)/=UNDEFINED)  D_P(IJK,M)=D_P0(M) 
+                 IF (D_P0(M)/=UNDEFINED)  D_P(IJK,M)=D_P0(M)
 ! add by rong 
 	       ENDIF
             ENDIF 
@@ -127,6 +128,47 @@
             ENDIF 
          ENDIF 
       ENDIF 
+!
+!
+! start sof modifications: 05/04-2005
+!
+! initializing the new indexing system
+!
+      IF(.NOT. CALL_DQMOM) THEN
+       IF(MMAX > 1) THEN
+         DO I = 1, MMAX
+           IF(D_P0(I) == UNDEFINED) RETURN
+	   DP_TMP(I) = D_P0(I)
+           M_MAX(I) = I
+         END DO
+!
+! rearrange the indices from coarsest particles to finest to be used in CALC_ep_star
+! I did this here because it may need to be done for auto_restart
+         DO I = 1, MMAX	 
+	   DO J = I, MMAX
+	    
+	     IF(DP_TMP(I) < DP_TMP(J)) THEN
+	       old_value = DP_TMP(I)
+	       DP_TMP(I) = DP_TMP(J)
+	       DP_TMP(J) = old_value
+	     ENDIF
+	   
+	   END DO
+         END DO
+!
+	 DO I = 1, MMAX	 
+	   DO J = 1, MMAX
+	     
+	     IF(DP_TMP(I) == D_P0(J) .AND. D_P0(I) .NE. D_P0(J)) THEN
+	       M_MAX(I) = J 
+	     ENDIF
+	   
+	   END DO
+         END DO
+       ENDIF ! for MMAX >= 2
+      ENDIF ! for .not. call_dqmom
+!
+! end of sof modifications: 05/04-2005
 !
 
       RETURN  

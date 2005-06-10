@@ -340,7 +340,7 @@
                     ENDIF  
 !
 ! ep_s cannot exceed eps_max for all models, (sof)
-		    IF (EP_G(IJK) < (1. - Eps_max)) THEN 
+		    IF (EP_G(IJK) < SMALL_NUMBER) THEN 
                        IF (.NOT.ABORT) THEN 
                           IF(DMP_LOG)WRITE (UNIT_LOG, 1070) 
                           ABORT = .TRUE. 
@@ -412,7 +412,7 @@
          ' Message: EP_g is less than EP_star ',/&
          '          in the following cells:',/4X,'I',T14,'J',T24,'K') 
  1070 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
-         ' Message: EP_g is less than (1.0-Eps_max) ',/&
+         ' Message: EP_g is less than SMALL_NUMBER ',/&
          '          in the following cells:',/4X,'I',T14,'J',T24,'K') 
  1080 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
          ' Message: EP_g is greater than one ',/&

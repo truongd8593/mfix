@@ -189,6 +189,7 @@
          CALL CHECK_DATA_08
          CALL CHECK_DATA_09
          CALL SET_FLAGS
+         CALL SET_CONSTPROP
       ENDIF
 !
       DT_TMP = DT 
