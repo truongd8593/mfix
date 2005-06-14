@@ -379,7 +379,7 @@ mfix.exe : \
     rkqs.$(OBJ_EXT) \
     source_population_eq.$(OBJ_EXT) \
     usr_dqmom.$(OBJ_EXT) \
-    blas90.a 
+    blas90.a odepack.a
 	$(LINK_CMD) $(LINK_FLAGS) \
     adjust_a_u_g.$(OBJ_EXT) \
     adjust_a_u_s.$(OBJ_EXT) \
@@ -764,6 +764,10 @@ blas90.a : BLAS.o
 	ar cr blas90.a BLAS.o
 BLAS.o : BLAS.F
 	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F
+odepack.a : ODEPACK.o
+	ar cr odepack.a ODEPACK.o
+ODEPACK.o : ODEPACK.F
+	$(FORTRAN_CMD) $(FORT_FLAGS2) ODEPACK.F
 AMBM.mod : ambm_mod.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1520,6 +1524,7 @@ calc_p_star.$(OBJ_EXT) : calc_p_star.f \
             COMPAR.mod \
             FLDVAR.mod \
             TOLERANC.mod \
+            RUN.mod \
             s_pr1.inc                                                    \
             function.inc                                                 \
             s_pr2.inc                                                    \
@@ -1611,7 +1616,7 @@ calc_vol_fr.$(OBJ_EXT) : calc_vol_fr.f \
             function.inc                                                 \
             s_pr2.inc                                                    \
             ep_s2.inc                                                   
-	$(FORTRAN_CMD) $(FORT_FLAGS2) calc_vol_fr.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) calc_vol_fr.f 
 calc_xsi.$(OBJ_EXT) : calc_xsi.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2582,7 +2587,7 @@ mark_phase_4_cor.$(OBJ_EXT) : mark_phase_4_cor.f \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
-	$(FORTRAN_CMD) $(FORT_FLAGS2) mark_phase_4_cor.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) mark_phase_4_cor.f 
 mfix.$(OBJ_EXT) : mfix.f \
             PARAM.mod \
             PARAM1.mod \
