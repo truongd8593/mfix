@@ -57,9 +57,8 @@
 ! 
 !                      Total volume of computational cells 
       DOUBLE PRECISION SUM_VOL
-!
-!                      To check when velocity becomes NaN to auto_restart MFIX
-      CHARACTER *80 notnumber 
+
+      LOGICAL, EXTERNAL :: isNan
 ! 
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -81,14 +80,8 @@
       CALL GLOBAL_ALL_SUM(SUM_VOL)
       CALL GLOBAL_ALL_SUM(SUM_W_G)
       VAVG_W_G = SUM_W_G/SUM_VOL
-      WRITE(notnumber,*) VAVG_W_G
-! Check for NaN's
-! See if velocity (a real number) contains a letter "n" or symbol "?"
-! in which case it's a NaN (Not a Number)
-!
-      IF(INDEX(notnumber,'?') > 0 .OR.     &
-         INDEX(notnumber,'n') > 0 .OR.     &
-         INDEX(notnumber,'N') > 0 ) THEN
+
+      IF( isNan(VAVG_W_G) ) THEN
         write(*,*) VAVG_W_G,  ' NaN being caught in VAVG_W_G.f '
         AUTOMATIC_RESTART = .TRUE.
       ENDIF 
@@ -114,7 +107,8 @@
       USE physprop
       USE indices
       USE compar       
-      USE mpi_utility  
+      USE mpi_utility
+      Use mflux  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -147,11 +141,7 @@
       DO IJK = IJKSTART3, IJKEND3
       IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK), J_OF(IJK), K_OF(IJK))) CYCLE
          IF (FLUID_AT(IJK)) THEN 
-	   IF(W_g(IJK) > ZERO) THEN
-             SUM_W_G = SUM_W_G + W_G(IJK)*ROP_G(IJK)*AXY(IJK) 
-	   ELSE
-             SUM_W_G = SUM_W_G + W_G(IJK)*ROP_G(TOP_OF(IJK))*AXY(IJK) 
-	   ENDIF
+           SUM_W_G = SUM_W_G + Flux_gT(IJK) 
            SUM_AREA = SUM_AREA + AXY(IJK)
          ENDIF 
       END DO 

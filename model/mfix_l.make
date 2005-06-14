@@ -273,6 +273,7 @@ mfix.exe : \
     usr_init_namelist.$(OBJ_EXT) \
     usr_write_out0.$(OBJ_EXT) \
     usr_write_out1.$(OBJ_EXT) \
+    utilities.$(OBJ_EXT) \
     vavg_u_g.$(OBJ_EXT) \
     vavg_u_s.$(OBJ_EXT) \
     vavg_v_g.$(OBJ_EXT) \
@@ -378,7 +379,7 @@ mfix.exe : \
     rkqs.$(OBJ_EXT) \
     source_population_eq.$(OBJ_EXT) \
     usr_dqmom.$(OBJ_EXT) \
-    blas90.a odepack.a
+    blas90.a 
 	$(LINK_CMD) $(LINK_FLAGS) \
     adjust_a_u_g.$(OBJ_EXT) \
     adjust_a_u_s.$(OBJ_EXT) \
@@ -636,6 +637,7 @@ mfix.exe : \
     usr_mod.$(OBJ_EXT) \
     usr_write_out0.$(OBJ_EXT) \
     usr_write_out1.$(OBJ_EXT) \
+    utilities.$(OBJ_EXT) \
     vavg_u_g.$(OBJ_EXT) \
     vavg_u_s.$(OBJ_EXT) \
     vavg_v_g.$(OBJ_EXT) \
@@ -762,10 +764,6 @@ blas90.a : BLAS.o
 	ar cr blas90.a BLAS.o
 BLAS.o : BLAS.F
 	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F
-odepack.a : ODEPACK.o
-	ar cr odepack.a ODEPACK.o
-ODEPACK.o : ODEPACK.F
-	$(FORTRAN_CMD) $(FORT_FLAGS2) ODEPACK.F
 ambm.mod : ambm_mod.f \
             param.mod \
             param1.mod \
@@ -1613,7 +1611,7 @@ calc_vol_fr.$(OBJ_EXT) : calc_vol_fr.f \
             function.inc                                                 \
             s_pr2.inc                                                    \
             ep_s2.inc                                                   
-	$(FORTRAN_CMD) $(FORT_FLAGS) calc_vol_fr.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS2) calc_vol_fr.f 
 calc_xsi.$(OBJ_EXT) : calc_xsi.f \
             param.mod \
             param1.mod \
@@ -2584,7 +2582,7 @@ mark_phase_4_cor.$(OBJ_EXT) : mark_phase_4_cor.f \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
-	$(FORTRAN_CMD) $(FORT_FLAGS) mark_phase_4_cor.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS2) mark_phase_4_cor.f 
 mfix.$(OBJ_EXT) : mfix.f \
             param.mod \
             param1.mod \
@@ -3818,6 +3816,7 @@ usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             usrnlst.inc                                                 
 usr_write_out0.$(OBJ_EXT) : usr_write_out0.f 
 usr_write_out1.$(OBJ_EXT) : usr_write_out1.f 
+utilities.$(OBJ_EXT) : utilities.f 
 vavg_u_g.$(OBJ_EXT) : vavg_u_g.f \
             param.mod \
             param1.mod \
@@ -3830,6 +3829,7 @@ vavg_u_g.$(OBJ_EXT) : vavg_u_g.f \
             indices.mod \
             compar.mod \
             mpi_utility.mod \
+            mflux.mod \
             function.inc                                                
 vavg_u_s.$(OBJ_EXT) : vavg_u_s.f \
             param.mod \
@@ -3857,6 +3857,7 @@ vavg_v_g.$(OBJ_EXT) : vavg_v_g.f \
             indices.mod \
             compar.mod \
             mpi_utility.mod \
+            mflux.mod \
             function.inc                                                
 vavg_v_s.$(OBJ_EXT) : vavg_v_s.f \
             param.mod \
@@ -3884,6 +3885,7 @@ vavg_w_g.$(OBJ_EXT) : vavg_w_g.f \
             indices.mod \
             compar.mod \
             mpi_utility.mod \
+            mflux.mod \
             function.inc                                                
 vavg_w_s.$(OBJ_EXT) : vavg_w_s.f \
             param.mod \

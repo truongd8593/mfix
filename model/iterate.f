@@ -536,6 +536,7 @@
       INTEGER, PARAMETER :: MAXOUTIT = 500
       DOUBLE PRECISION, PARAMETER          :: omega = 0.9
       DOUBLE PRECISION, PARAMETER          :: TOL = 1E-03
+     
       
       INTEGER :: NIT, MUSTIT
       INTEGER, SAVE :: OUTIT
@@ -549,9 +550,7 @@
       CHARACTER, Save  :: Direction
       
       DOUBLE PRECISION , EXTERNAL :: VAVG_Flux_U_G, VAVG_Flux_V_G, VAVG_Flux_W_G
-!
-!                      To check when mdot_n or delp_n becomes NaN to auto_restart MFIX
-      CHARACTER *80 notnumber
+      LOGICAL , EXTERNAL :: IsNan
 !
       
       IF(CYCLIC_X_MF)THEN
@@ -587,30 +586,11 @@
         mdot_n = VAVG_Flux_W_G()
       ENDIF
       
-      WRITE(notnumber,*) mdot_n
-! Check for NaN's in mdot_n
-! See if velocity (a real number) contains a letter "n" or symbol "?"
-! in which case it's a NaN (Not a Number)
-!
-      IF(INDEX(notnumber,'?') > 0 .OR.     &
-         INDEX(notnumber,'n') > 0 .OR.     &
-         INDEX(notnumber,'N') > 0 ) THEN
-        write(*,*) mdot_n, ' NaN being caught in GoalSeekMassFlux '
+      If (isNan(mdot_n) .or. isNan(delp_n)) then
+        write(*,*) mdot_n, delp_n, ' NaN being caught in GoalSeekMassFlux '
         AUTOMATIC_RESTART = .TRUE.
 	RETURN
       ENDIF
-
-      WRITE(notnumber,*) delp_n
-! Check for NaN's in delp_n
-!
-      IF(INDEX(notnumber,'?') > 0 .OR.     &
-         INDEX(notnumber,'n') > 0 .OR.     &
-         INDEX(notnumber,'N') > 0 ) THEN
-        write(*,*) delp_n, ' NaN being caught in GoalSeekMassFlux '
-        AUTOMATIC_RESTART = .TRUE.
-	RETURN
-      ENDIF
-! end of NaN's checking...
 ! 
       err = abs((mdot_n - mdot_0)/mdot_0)
       if( err < TOL)then
@@ -653,3 +633,4 @@
      
     
       end subroutine GoalSeekMassFlux
+ 
