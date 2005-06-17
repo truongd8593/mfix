@@ -112,10 +112,10 @@
                  ENDIF 
                  IF (K_S0 /= UNDEFINED) K_S(IJK,M) = K_S0 
                  IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
-! add by rong
+	       ENDIF
+! add by rong; modified by sof (June 17 2005)
                  IF (D_P0(M)/=UNDEFINED)  D_P(IJK,M)=D_P0(M)
 ! add by rong 
-	       ENDIF
             ENDIF 
          END DO 
 	 
