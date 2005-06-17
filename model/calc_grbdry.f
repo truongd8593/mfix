@@ -48,7 +48,7 @@
  
 !
 !                      Average scalars
-      DOUBLE PRECISION EP_avg, TH_avg, Mu_g_avg, RO_g_avg, Dp_avg
+      DOUBLE PRECISION EP_avg, EPg_avg, TH_avg, Mu_g_avg, RO_g_avg, Dp_avg
 !
 !                      Average Simonin and Ahmadi variables (sof)
       DOUBLE PRECISION K_12_avg, Tau_12_avg, Tau_1_avg
@@ -63,7 +63,7 @@
       CHARACTER        COM
 !
 !                      Solids phase index
-      INTEGER          M
+      INTEGER          M, MM
 !
 !                      Wall momentum or granular energy coefficient
       DOUBLE PRECISION Hw
@@ -86,6 +86,9 @@
 !
 !                      radial distribution function at contact
       DOUBLE PRECISION g0
+!
+!                      Sum of eps*G_0
+      DOUBLE PRECISION g0EP_avg
  
 !
 !                      Error message
@@ -123,6 +126,13 @@
  
           g0 = g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, M)
           EP_avg = AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M), I_OF(IJK2))
+	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
+          g0EP_avg = ZERO
+	  DO MM = 1, MMAX
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
+	               * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
+          ENDDO
+	  
           TH_avg = AVG_Y(&
               AVG_X(Theta_m(IJK1, M), Theta_m(IPJMK2, M), I_OF(IJK1)),&
               AVG_X(Theta_m(IJK2, M), Theta_m(IPJK2, M), I_OF(IJK2)),&
@@ -172,8 +182,8 @@
 	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,   &
-	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
+          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'S')THEN
            IJK2E= EAST_OF(IJK2)
@@ -182,6 +192,12 @@
  
           g0 = g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, M)
           EP_avg = AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M), I_OF(IJK2))
+	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
+          g0EP_avg = ZERO
+	  DO MM = 1, MMAX
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
+	               * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
+          ENDDO
  
           TH_avg = AVG_Y(&
                 AVG_X(Theta_m(IJK2, M),Theta_m(IPJK2, M),I_OF(IJK2)),&
@@ -233,8 +249,8 @@
 	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,  &
-	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
+          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'T')THEN
            IJK2E= EAST_OF(IJK2)
@@ -243,6 +259,12 @@
           g0 = g_0AVG(IJK2, IJK2E, 'X',I_OF(IJK2), M, M)
           EP_avg =&
                 AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M),I_OF(IJK2))
+	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
+          g0EP_avg = ZERO
+	  DO MM = 1, MMAX
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
+	               * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
+          ENDDO
  
           TH_avg = AVG_Z(&
                 AVG_X(Theta_m(IJK1,M),Theta_m(IPJKM2, M),I_OF(IJK1)),&
@@ -297,8 +319,8 @@
 	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                 + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg, &
-	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
+          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'B')THEN
            IJK2E= EAST_OF(IJK2)
@@ -307,6 +329,12 @@
           g0 = g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, M)
           EP_avg =&
                 AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M), I_OF(IJK2))
+	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
+          g0EP_avg = ZERO
+	  DO MM = 1, MMAX
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
+	               * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
+          ENDDO
  
           TH_avg = AVG_Z(&
                 AVG_X(Theta_m(IJK2,M), Theta_m(IPJK2,M),I_OF(IJK2)),&
@@ -361,8 +389,8 @@
 	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                 + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,   &
-	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
+          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
          CALL WRITE_ERROR('CALC_GRBDRY', LINE, 1)
@@ -376,6 +404,12 @@
           g0 = g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, M)
           EP_avg =&
                   AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M), J_OF(IJK2))
+	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
+          g0EP_avg = ZERO
+	  DO MM = 1, MMAX
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
+	               * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
+          ENDDO
  
           TH_avg = AVG_Y(&
            AVG_Z(Theta_m(IJK1, M), Theta_m(IJK2, M), K_OF(IJK1)),&
@@ -440,8 +474,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,   &
-	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
+          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'B')THEN
           IJK2N = NORTH_OF(IJK2)
@@ -450,6 +484,12 @@
           g0 = g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, M)
           EP_avg =&
                    AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M), J_OF(IJK2))
+	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
+          g0EP_avg = ZERO
+	  DO MM = 1, MMAX
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
+	               * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
+          ENDDO
  
           TH_avg = AVG_Y(&
               AVG_Z(Theta_m(IJK2, M), Theta_m(IJK1, M), K_OF(IJK2)),&
@@ -514,8 +554,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg, &
-	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
+          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'E')THEN
            IJK2N= NORTH_OF(IJK2)
@@ -524,6 +564,12 @@
           g0 = g_0AVG(IJK2, IJK2N, 'Y',J_OF(IJK2), M, M)
           EP_avg =&
                 AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M),J_OF(IJK2))
+	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
+          g0EP_avg = ZERO
+	  DO MM = 1, MMAX
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
+	               * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
+          ENDDO
  
           TH_avg = AVG_Y(&
                 AVG_X(Theta_m(IJK1,M),Theta_m(IJK2, M),I_OF(IJK1)),&
@@ -579,8 +625,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,   &
-	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
+          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'W')THEN
            IJK2N= NORTH_OF(IJK2)
@@ -590,6 +636,12 @@
           g0 = g_0AVG(IJK2, IJK2N, 'Y',J_OF(IJK2), M, M)
           EP_avg =&
                 AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M),J_OF(IJK2))
+	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
+          g0EP_avg = ZERO
+	  DO MM = 1, MMAX
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
+	               * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
+          ENDDO
  
           TH_avg = AVG_Y(&
                 AVG_X(Theta_m(IJK2,M),Theta_m(IJK1, M),I_OF(IJK2)),&
@@ -644,8 +696,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,   &
-	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
+          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
          CALL WRITE_ERROR('CALC_GRBDRY', LINE, 1)
@@ -659,6 +711,12 @@
           g0 = g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, M)
           EP_avg =&
                    AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
+	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
+          g0EP_avg = ZERO
+	  DO MM = 1, MMAX
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
+	               * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
+          ENDDO
  
           TH_avg = AVG_Y(&
               AVG_Z(Theta_m(IJK1, M), Theta_m(IJMKP2, M), K_OF(IJK1)),&
@@ -722,8 +780,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg, &
-	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
+          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'S')THEN
           IJK2T = TOP_OF(IJK2)
@@ -732,6 +790,12 @@
           g0 = g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, M)
           EP_avg =&
                    AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
+	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
+          g0EP_avg = ZERO
+	  DO MM = 1, MMAX
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
+	               * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
+          ENDDO
  
           TH_avg = AVG_Y(&
               AVG_Z(Theta_m(IJK2, M), Theta_m(IJKP2, M), K_OF(IJK2)),&
@@ -795,8 +859,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg,DP_avg, &
-	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
+          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
  
         ELSEIF(FCELL .EQ. 'E')THEN
@@ -806,6 +870,12 @@
           g0 = g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, M)
           EP_avg =&
                 AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
+	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
+          g0EP_avg = ZERO
+	  DO MM = 1, MMAX
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
+	               * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
+          ENDDO
  
           TH_avg = AVG_Z(&
                 AVG_X(Theta_m(IJK1,M),Theta_m(IJK2, M),I_OF(IJK1)),&
@@ -860,8 +930,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,   &
-	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
+          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'W')THEN
            IJK2T= TOP_OF(IJK2)
@@ -870,6 +940,12 @@
           g0 = g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, M)
           EP_avg =&
                 AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
+	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
+          g0EP_avg = ZERO
+	  DO MM = 1, MMAX
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
+	               * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
+          ENDDO
  
           TH_avg = AVG_Z(&
                 AVG_X(Theta_m(IJK2,M),Theta_m(IJK1, M),I_OF(IJK2)),&
@@ -924,8 +1000,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, TH_avg, Mu_g_avg, RO_g_avg, DP_avg,  &
-	            K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
+          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
          CALL WRITE_ERROR('CALC_GRBDRY', LINE, 1)
@@ -941,8 +1017,8 @@
  
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: F_HW(EPS, TH, Mu_g_avg, RO_g_avg,DP_avg,               C
-!                    K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP,M)   C
+!  Module name: F_HW(g0,EPS, EPG, g0EP_avg, TH, Mu_g_avg, RO_g_avg,    C
+!               DP_avg,K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP,M) C
 !  Purpose: Function for hw                                            C
 !                                                                      C
 !  Author: K. Agrawal & A. Srivastava, Princeton Univ. Date: 24-JAN-98 C
@@ -955,7 +1031,7 @@
 !  Variables modified:                                                 C
 !                                                                      C
 !  Local variables: F_2, Mu_s, Mu, Mu_b, Eta, Mu_g_avg, RO_g_avg,      C
-!                   VREL, C_d, Beta, dp_avg                                    C
+!                   VREL, C_d, Beta, dp_avg                            C
 !                                                                      C
 !  Modified: Sofiane Benyahia, Fluent Inc.             Date: 02-FEB-05 C
 !  Purpose: Include conductivity defined by Simonin and Ahmadi         C
@@ -966,8 +1042,8 @@
 !  9 (10), 2835. See equation (2) in the paper                         C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      DOUBLE PRECISION FUNCTION F_HW(g0,EPS,TH,Mu_g_avg,RO_g_avg, DP_avg,&
-                                     K_12_avg, Tau_12_avg, Tau_1_avg, &
+      DOUBLE PRECISION FUNCTION F_HW(g0,EPS,EPG,g0EP_avg,TH,Mu_g_avg,RO_g_avg,&
+                                     DP_avg,K_12_avg, Tau_12_avg, Tau_1_avg, &
 				     VREL, VSLIP, M)
  
       USE param 
@@ -980,8 +1056,8 @@
  
       INTEGER          M
 !
-!              Average solids volume fraction
-      DOUBLE PRECISION EPS
+!              Average solids and gas volume fraction
+      DOUBLE PRECISION EPS, EPG
  
 !              Average theta_m
       DOUBLE PRECISION Th
@@ -1024,13 +1100,16 @@
       DOUBLE PRECISION C_d
  
 !              Drag Coefficient
-      DOUBLE PRECISION Beta
+      DOUBLE PRECISION Beta, DgA
  
 !              Viscosity corrected for interstitial fluid effects
       DOUBLE PRECISION Mu_star
  
 !              Radial distribution function 
       DOUBLE PRECISION g0, G_0
+!
+!                      Sum of eps*G_0 (sof June 16 2005)
+      DOUBLE PRECISION g0EP_avg
  
 !              Constants in Simonin model
       DOUBLE PRECISION Sigma_c, Tau_2_c, Tau_12_st, Nu_t
@@ -1061,12 +1140,12 @@
 ! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
 !
           F_2 = tan_Phi_w*RO_s(M)*EPS* &
-	        ((ONE + 4.0*EPS*G_0) + HALF*(ONE -C_e*C_e))*TH/VSLIP
+	        ((ONE + 4.0*g0EP_avg) + HALF*(ONE -C_e*C_e))*TH/VSLIP
 !
 ! here F_2 divided by VSLIP to use the same bc as Johnson&Jackson
 !
         ELSE  ! Simonin or granular models use same solids pressure
-          F_2 = tan_Phi_w*RO_s(M)*EPS*(1d0+ 4. * Eta *EPs*G_0)*TH/VSLIP
+          F_2 = tan_Phi_w*RO_s(M)*EPS*(1d0+ 4. * Eta *g0EP_avg)*TH/VSLIP
 	ENDIF !VSLIP == ZERO
 !
       ELSE ! no change to the original code if Jenkins BC not used
@@ -1076,44 +1155,45 @@
 !
       ENDIF !for Jenkins
  
-      Mu = (5d0*DSQRT(Pi)*Dp_avg*RO_s(M))/96d0
+      Mu = (5d0*DSQRT(Pi*TH)*Dp_avg*RO_s(M))/96d0
  
-      Mu_b = (256d0*Mu*EPS*EPS*G_0)/(5d0*Pi)
+      Mu_b = (256d0*Mu*EPS*g0EP_avg)/(5d0*Pi)
  
-      Re_g = (1d0-EPS)*RO_g_avg*Dp_avg*VREL/Mu_g_avg
+      Re_g = EPG*RO_g_avg*Dp_avg*VREL/Mu_g_avg
       IF (Re_g.lt.1000d0) THEN
-         C_d = (24./(Re_g+SMALL_NUMBER))*(1d0 + 0.15 * Re_g**0.687)
+         C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
       ELSE
          C_d = 0.44d0
       ENDIF
-      Beta = 0.75d0*C_d*Ro_g_avg*(1-EPS)*EPS*VREL&
-                *((1-EPS)**(-2.65d0))/Dp_avg
+      DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(Dp_avg*EPG**(2.65d0))
+      IF(VREL == ZERO) DgA = LARGE_NUMBER
+      Beta = SWITCH*EPS*DgA
+!
 ! particle relaxation time
-      Tau_12_st = EPS*RO_s(M)/(Beta+small_number)
-      
-      Beta = SWITCH*Beta
- 
+      Tau_12_st = RO_s(M)/(DgA+small_number)
+!
 !     SWITCH enables us to turn on/off the modification to the
 !     particulate phase viscosity. If we want to simulate gas-particle
 !     flow then SWITCH=1 to incorporate the effect of drag on the
 !     particle viscosity. If we want to simulate granular flow
 !     without the effects of an interstitial gas, SWITCH=0.
  
-      IF(Beta .LT. SMALL_NUMBER)THEN
+      IF(SWITCH == ZERO)THEN
         Mu_star = Mu
 		
       ELSEIF(TH .LT. SMALL_NUMBER)THEN
         MU_star = ZERO
 	
       ELSE
-        Mu_star = Mu/(1+(2d0*Beta*Mu/(RO_s(M)*RO_s(M)*EPS*EPS*G_0*TH)))
+	Mu_star = RO_S(M)*EPS* G_0*TH* Mu/ &
+	         (RO_S(M)*g0EP_avg*TH + 2.0d0*SWITCH*DgA/RO_S(M)* Mu)
 	
       ENDIF
  
-      Mu_s = ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*G_0))*&
-             (1d0+1.6d0*Eta*EPS*G_0)*&
-             (1d0+1.6d0*Eta*(3d0*Eta-2d0)*EPS*G_0) +&
-             (0.6d0*Mu_b*Eta))
+      Mu_s = ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*&
+                   G_0))*(ONE+1.6d0*Eta*g0EP_avg&
+                   )*(ONE+1.6d0*Eta*(3d0*Eta-2d0)*&
+                   g0EP_avg)+(0.6d0*Mu_b*Eta))
  
       IF(SIMONIN) THEN !see calc_mu_s for explanation of these definitions
 !

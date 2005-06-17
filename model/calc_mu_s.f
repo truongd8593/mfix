@@ -232,7 +232,7 @@
       DOUBLE PRECISION EP_g_Dilute 
 !
 !                       Sum of all solids volume fractions
-      DOUBLE PRECISION   SUM_EPS_CP
+      DOUBLE PRECISION   SUM_EPS_CP, SUM_EpsGo
  
 !     SWITCH enables us to turn on/off the modification to the
 !     particulate phase viscosity. If we want to simulate gas-particle
@@ -740,25 +740,34 @@
  
           ELSE	!granular energy transport equation
 	        ! This is also used whith Simonin or Ahmadi models
- 
- 
+!
+! This is added for consistency of multi-particles kinetic theory. Solids pressure,
+! viscosity and conductivity must be additive. Thus non-linear terms (eps^2) are 
+! corrected so the stresses of two identical solids phases are equal to those
+! of a single solids phase. sof June 15 2005.
+!            
+	    SUM_EpsGo = ZERO
+            DO MM = 1, MMAX
+	      SUM_EpsGo =  SUM_EpsGo+EP_s(IJK,MM)*G_0(IJK,MM,MM)
+	    ENDDO 
+!
 !           Find pressure in the Mth solids phase
             P_s(IJK,M) = ROP_s(IJK,M)*(1d0+ 4. * Eta *&
-                           EP_s(IJK,M)*G_0(IJK,M,M))*Theta_m(IJK,M)
+                           SUM_EpsGo)*Theta_m(IJK,M)
 !
 ! implement Simonin (same as granular) and Ahmadi solids pressures
             IF(SIMONIN) THEN
 	      P_s(IJK,M) = P_s(IJK,M) ! no changes to solids pressure
 	    ELSE IF(AHMADI) THEN
 	      P_s(IJK,M) = ROP_s(IJK,M)*Theta_m(IJK,M) * ( (ONE + 4.0* &
-	                   EP_s(IJK,M)*G_0(IJK,M,M)) + HALF*(ONE - C_e*C_e) )
+	                   SUM_EpsGo ) + HALF*(ONE - C_e*C_e) )
 	    ENDIF
 
 ! find bulk and shear viscosity
 !	    
             Mu = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(IJK,M)*RO_s(M))/96d0
  
-            Mu_b = (256d0*Mu*EP_s(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M))&
+            Mu_b = (256d0*Mu*EP_s(IJK,M)*SUM_EpsGo)&
                      /(5d0*Pi)
  
             IF(SWITCH == ZERO) THEN !sof modifications (May 20 2005)
@@ -771,31 +780,31 @@
 	      
               
 	      Mu_star = RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)* Mu/ &
-	               (RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M) + &
-		       2.0d0*DgA/RO_S(M)* Mu)
+	               (RO_S(M)*SUM_EpsGo*Theta_m(IJK,M) + &
+		       2.0d0*SWITCH*DgA/RO_S(M)* Mu)
 	      
 	    ELSE
-              Mu_star = Mu/(1.+(2d0*SWITCH*F_gs(IJK,M)*Mu/&
-                        (RO_s(M)*RO_s(M)*EP_s(IJK,M)*EP_s(IJK,M)&
-                        *G_0(IJK,M,M)*Theta_m(IJK,M))))
+              Mu_star = RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)*Mu/ &
+	               (RO_S(M)*SUM_EpsGo*Theta_m(IJK,M)+ &
+		       (2d0*SWITCH*F_gs(IJK,M)*Mu/(RO_S(M)*EP_s(IJK,M))) )
             ENDIF
 !
 !           shear viscosity in Mth solids phase  (add to plastic part)
             Mus =&
                    ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*&
-                   G_0(IJK,M,M)))*(1d0+1.6d0*Eta*EP_s(IJK,M)*&
-                   G_0(IJK,M,M))*(1d0+1.6d0*Eta*(3d0*Eta-2d0)*&
-                   EP_s(IJK,M)*G_0(IJK,M,M))+(0.6d0*Mu_b*Eta))
+                   G_0(IJK,M,M)))*(ONE+1.6d0*Eta*SUM_EpsGo&
+                   )*(ONE+1.6d0*Eta*(3d0*Eta-2d0)*&
+                   SUM_EpsGo)+(0.6d0*Mu_b*Eta))
 !
 ! implement Simonin and Ahmadi solids viscosities
             IF(SIMONIN) THEN
 !
 ! Defining Simonin solids turbulent Kinetic (MU_2_T_Kin) and collisional (Mu_2_Col)
 ! viscosities
-	      MU_2_T_Kin = (2.0/3.0*K_12(ijk)*Nu_t + Theta_m(IJK,M) * &
+	      MU_2_T_Kin = (2.0d0/3.0d0*K_12(ijk)*Nu_t + Theta_m(IJK,M) * &
                           (ONE+ zeta_c_2*EP_s(IJK,M)*G_0(IJK,M,M)))*Tau_2
 !
-	      Mu_2_Col = 8./5.*EP_s(IJK,M)*G_0(IJK,M,M)*Eta* (MU_2_T_Kin+ &
+	      Mu_2_Col = 8.d0/5.d0*EP_s(IJK,M)*G_0(IJK,M,M)*Eta* (MU_2_T_Kin+ &
                          D_p(IJK,M)*DSQRT(Theta_m(IJK,M)/PI))
 !
               Mu_b = 5.d0/3.d0*EP_s(IJK,M)*RO_s(M)*Mu_2_Col
@@ -808,7 +817,7 @@
 ! was replaced by 0.1567 to include 3/2*sqrt(3/2) because K = 3/2 Theta_m
 !
 	      Mus = ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/EPS_max)**3)&
-	         *0.1045*(ONE/G_0(IJK,M,M)+3.2*EP_s(IJK,M)+12.1824*   &
+	         *0.1045d0*(ONE/G_0(IJK,M,M)+3.2d0*EP_s(IJK,M)+12.1824d0*   &
 		 G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M))*D_p(IJK,M)*RO_s(M)*  &
 		 DSQRT(Theta_m(IJK,M))
 !
@@ -816,9 +825,9 @@
 ! contribution. In this case col. visc. is the eps^2 contribution to mus. This
 ! might be changed later if communications with Ahmadi reveals a diffrent appoach
 !
-	      Mu_b = 5./3.* &
+	      Mu_b = 5.d0/3.d0* &
 	         ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/EPS_max)**3)&
-	         *0.1045*(12.1824*G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M)) &
+	         *0.1045d0*(12.1824d0*G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M)) &
 		 *D_p(IJK,M)*RO_s(M)* DSQRT(Theta_m(IJK,M))
             
 	    ENDIF !for simonin or ahmadi viscosity
@@ -936,8 +945,8 @@
             P_s(IJK,M) = P_s(IJK,M) + Pf      !add to P_s
 ! end anuj 04/20
  
-            Kth=75*RO_s(M)*D_p(IJK,M)*DSQRT(Pi*Theta_m(IJK,M))/&
-                  (48*Eta*(41d0-33*Eta))
+            Kth=75d0*RO_s(M)*D_p(IJK,M)*DSQRT(Pi*Theta_m(IJK,M))/&
+                  (48d0*Eta*(41d0-33d0*Eta))
  
             IF(SWITCH == ZERO) THEN ! sof modifications (May 20 2005)
               Kth_star=Kth
@@ -948,22 +957,22 @@
 	    ELSEIF(EP_g(IJK) .GE. EP_g_Dilute) THEN
               
 	      Kth_star = RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)* Kth/ &
-	               (RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M) + &
-		       1.2d0*DgA/RO_S(M)* Kth)
+	               (RO_S(M)*SUM_EpsGo*Theta_m(IJK,M) + &
+		       1.2d0*SWITCH*DgA/RO_S(M)* Kth)
 
 	    ELSE
-              Kth_star=Kth/(1.+(1.2d0*SWITCH*F_gs(IJK,M)*Kth/&
-                       (RO_s(M)*RO_s(M)*EP_s(IJK,M)*EP_s(IJK,M)&
-                       *G_0(IJK,M,M)*Theta_m(IJK,M))))
+              Kth_star = RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)*Kth/ &
+	               (RO_S(M)*SUM_EpsGo*Theta_m(IJK,M)+ &
+		       (1.2d0*SWITCH*F_gs(IJK,M)*Kth/(RO_S(M)*EP_s(IJK,M))) )
             ENDIF
 !
 !           granular conductivity in Mth solids phase
-            Kth_s(IJK,M) = Kth_star*(&
-                  ( (1d0/G_0(IJK,M,M)) + (12d0/5.)*Eta*EP_s(IJK,M) )&
-                  * ( (1d0) + (12d0/5.)*Eta*Eta*(4d0*Eta-3d0)&
-                      *EP_s(IJK,M)*G_0(IJK,M,M) )&
+            Kth_s(IJK,M) = Kth_star/G_0(IJK,M,M)*(&
+                  ( ONE + (12d0/5.d0)*Eta*SUM_EpsGo )&
+                  * ( ONE + (12d0/5.d0)*Eta*Eta*(4d0*Eta-3d0)&
+                      *SUM_EpsGo )&
                   + (64d0/(25d0*Pi)) * (41d0-33d0*Eta) *&
-                     (Eta*EP_s(IJK,M))**2 * G_0(IJK,M,M)&
+                     (Eta*SUM_EpsGo)**2 &
               )
 !
 ! implement Simonin and Ahmadi solids conductivities

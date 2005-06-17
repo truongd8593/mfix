@@ -52,7 +52,7 @@
       INTEGER          IER
 !     
 !                      Indices
-      INTEGER          IJK, I, J, K, M
+      INTEGER          IJK, I, J, K, M, MM
 !
 !                      Source terms to be kept on rhs
       DOUBLE PRECISION sourcerhs
@@ -62,6 +62,9 @@
 !
 !                      Particle relaxation time
       DOUBLE PRECISION Tau_12_st
+!
+!                      Sum of eps*G_0
+      DOUBLE PRECISION SUM_EpsGo
 !
 !                      Slip velocity
       DOUBLE PRECISION VSLIP
@@ -149,8 +152,15 @@
 !     &    *AXY(KM_OF(IJK))
 !---------------------------------------------------------------------
 !
+! Changes needed for multitype particles, sof June 16 2005
+! Sum of eps*G_0 is used instead of Eps*G_0
+!
+      SUM_EpsGo = ZERO
+      DO MM = 1, MMAX
+        SUM_EpsGo =  SUM_EpsGo+EP_s(IJK,MM)*G_0(IJK,MM,MM)
+      ENDDO
       SOURCELHS = ((48./DSQRT(PI))*ETA*(1.-ETA)*ROP_S(IJK&
-         ,M)*EP_S(IJK,M)*G_0(IJK,M,M)*DSQRT(THETA_M(IJK,M))/D_P(IJK,M)+ &
+         ,M)*SUM_EpsGo*DSQRT(THETA_M(IJK,M))/D_P(IJK,M)+ &
 	 P_S_C(IJK,M)*ZMAX((TRD_S_C(IJK,M)))/(THETA_M(IJK,M)+SMALL_NUMBER) &
 	 +ZMAX((-LAMBDA_S_C(IJK,M)))*TRD_S_C(IJK,M)**2/(THETA_M(IJK,M)+&
          SMALL_NUMBER))*VOL(IJK)  
