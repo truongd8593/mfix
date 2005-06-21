@@ -880,21 +880,21 @@
 ! Ahmadi model uses different solids pressure model
 !
           HW = 3./8.*DSQRT(3.*TH)*((1d0-e_w))&
-               *RO_s(M)*EPS*((ONE + 4.0*EPS*G_0) + HALF*(ONE -C_e*C_e))
+               *RO_s(M)*EPS*((ONE + 4.0*g0EP_avg) + HALF*(ONE -C_e*C_e))
 !
 ! the coefficient mu in Jenkins paper is defined as tan_Phi_w, that's how
 ! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
 ! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
 !
 	  CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21.d0/16.d0*DSQRT(3.*TH)    &
-               *RO_s(M)*EPS*((ONE + 4.0*EPS*G_0) + HALF*(ONE -C_e*C_e))*TH
+               *RO_s(M)*EPS*((ONE + 4.0*g0EP_avg) + HALF*(ONE -C_e*C_e))*TH
 
         ELSE  ! Simonin or granular models use same solids pressure
 
           HW = 3./8.*DSQRT(3.*Th)*((1d0-e_w))&
-               *RO_s(M)*EPS*(1d0+ 4.*Eta*EPs*G_0)
+               *RO_s(M)*EPS*(1d0+ 4.*Eta*g0EP_avg)
 	  CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21./16.*DSQRT(3.*TH)    &
-	       *RO_s(M)*EPS*(1d0+ 4.*Eta*EPs*G_0)*TH
+	       *RO_s(M)*EPS*(1d0+ 4.*Eta*g0EP_avg)*TH
 !
         ENDIF !for Ahmadi
 !
