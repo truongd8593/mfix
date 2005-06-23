@@ -473,7 +473,10 @@
       WRITE (UNIT_LOG, 5100) TIME, DT, NIT, SMASS 
       CALL END_LOG 
 !
-      IER = 0 
+! modified sof (06-23/2005) Mfix will not go the next time step if MAX_NIT is reached,
+! instead it will decrease the time step. (IER changed from 0 to 1)
+!
+      IER = 1
       RETURN  
  5000 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,' Sm=',G10.5,'MbErr%=', G10.4,' Hl=',G12.5,&
          T84,'CPU=',F8.0,' s') 
