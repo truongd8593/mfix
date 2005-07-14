@@ -215,7 +215,7 @@
             ENDIF 
 !
 !           North face (i, j+1, k)
-	    Flux = HALF * (Flux_sT(IJK,M) + Flux_sT(IJPK,M))
+	    Flux = HALF * (Flux_sN(IJK,M) + Flux_sN(IJPK,M))
             D_F = MU_S(IJKN,M)*ODY(JP)*AXZ_V(IJK) 
             IF (Flux >= ZERO) THEN 
                A_V_S(IJK,N,M) = D_F 
