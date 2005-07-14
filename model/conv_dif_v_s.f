@@ -559,7 +559,7 @@
                 IF (.NOT. FPFOI ) &
 		      MOM_HO = XSI_N(IJK)*V_S(IJPK,M)+ &
                                (1.0-XSI_N(IJK))*V_S(IJK,M)
-	        Flux = HALF * (Flux_sT(IJK,M) + Flux_sT(IJPK,M))
+	        Flux = HALF * (Flux_sN(IJK,M) + Flux_sN(IJPK,M))
 		NORTH_DC = Flux*(MOM_LO-MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Top face (i, j+1/2, k+1/2)
@@ -863,7 +863,7 @@
 !
 !
 !           North face (i, j+1, k)
-	    Flux = HALF * (Flux_sT(IJK,M) + Flux_sT(IJPK,M))
+	    Flux = HALF * (Flux_sN(IJK,M) + Flux_sN(IJPK,M))
             D_F = MU_S(IJKN,M)*ODY(JP)*AXZ_V(IJK) 
             A_V_S(IJK,N,M) = D_F - XSI_N(IJK)*Flux 
 !
