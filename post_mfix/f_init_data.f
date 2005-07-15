@@ -37,7 +37,7 @@
       I_MAX = IMAX2
       J_MAX = JMAX2
       K_MAX = KMAX2
-      M_MAX = MMAX
+      MM_MAX = MMAX
 !
       DO I = 0,MMAX
          N_MAX(I) = NMAX(I)

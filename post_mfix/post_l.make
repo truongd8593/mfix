@@ -18,6 +18,7 @@ post_mfix : \
     is.mod \
     leqsol.mod \
     machine.mod \
+    mflux.mod \
     output.mod \
     parallel.mod \
     param1.mod \
@@ -181,6 +182,7 @@ post_mfix : \
     is_mod.$(OBJ_EXT) \
     leqsol_mod.$(OBJ_EXT) \
     machine_mod.$(OBJ_EXT) \
+    mflux_mod.$(OBJ_EXT) \
     output_mod.$(OBJ_EXT) \
     parallel_mod.$(OBJ_EXT) \
     param1_mod.$(OBJ_EXT) \
@@ -386,6 +388,8 @@ leqsol.mod : ../model/leqsol_mod.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/leqsol_mod.f 
 machine.mod : ../model/machine_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/machine_mod.f 
+mflux.mod : ../model/mflux_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/mflux_mod.f 
 output.mod : ../model/output_mod.f \
             param.mod \
             param1.mod 
@@ -517,6 +521,7 @@ allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             visc_g.mod \
             visc_s.mod \
             xsi_array.mod \
+            mflux.mod \
             vshear.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/allocate_arrays.f 
 any_more_data.$(OBJ_EXT) : any_more_data.f 

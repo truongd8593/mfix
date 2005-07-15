@@ -6,7 +6,7 @@
       LOGICAL        RES_P_g , RES_T_g , RES_X_g
       LOGICAL        HAVE_RO_g0 , HAVE_MW_avg
 !
-      INTEGER        I_MAX,J_MAX,K_MAX,M_MAX,I1,I2,J1,J2,K1,K2
+      INTEGER        I_MAX,J_MAX,K_MAX,MM_MAX,I1,I2,J1,J2,K1,K2
       INTEGER        VAR_NO,M_USE,N_USE,XCODE,SPX_NUM,N_MAX(0:99)
       INTEGER        MINMAX
       REAL           TIME_START,TIME_END,E_PASS,TIME_FOR_OUT
@@ -15,7 +15,7 @@
       COMMON /XFORMS/ DO_XFORMS,MINMAX,I_AVERAGE,J_AVERAGE, &
                      K_AVERAGE, &
                      TIME_AVERAGE,APPEND_MODE,I_MAX,J_MAX,K_MAX, &
-                     M_MAX,N_MAX,I1,I2,J1,J2,K1,K2,VAR_NO,M_USE, &
+                     MM_MAX,N_MAX,I1,I2,J1,J2,K1,K2,VAR_NO,M_USE, &
                      N_USE,RES_P_g,RES_T_g,RES_X_g,HAVE_RO_g0, &
                      HAVE_MW_avg, &
                      HAVE_E,XCODE,RESET_TIME,CALC_GV,CALC_GT, &

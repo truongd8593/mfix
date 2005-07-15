@@ -37,6 +37,7 @@
       Use visc_s
       Use xsi_array
       Use vshear
+      Use mflux
       IMPLICIT NONE
       
       INTEGER M
@@ -288,6 +289,34 @@
 !
 ! array allocation of add on packages, such as linear equation solvers
 !
+
+! array allocation for higher order implementation
+      Allocate(           FLAG3 (DIMENSION_4) )
+      Allocate(           CELL_CLASS3 (DIMENSION_4) )
+      Allocate(           I3_OF (DIMENSION_4) )
+      Allocate(           J3_OF (DIMENSION_4) )
+      Allocate(           K3_OF (DIMENSION_4) )
+      Allocate(           Im1_3 (-1:DIMENSION_I+1) )
+      Allocate(           Ip1_3 (-1:DIMENSION_I+1) )
+      Allocate(           Jm1_3 (-1:DIMENSION_J+1) )
+      Allocate(           Jp1_3 (-1:DIMENSION_J+1) )
+      Allocate(           Km1_3 (-1:DIMENSION_K+1) )
+      Allocate(           Kp1_3 (-1:DIMENSION_K+1) )
+ 
+!mflux
+      Allocate(    Flux_gE(DIMENSION_3) ) 
+      Allocate(    Flux_sE(DIMENSION_3, DIMENSION_M) ) 
+      Allocate(    Flux_gN(DIMENSION_3) ) 
+      Allocate(    Flux_sN(DIMENSION_3, DIMENSION_M) ) 
+      Allocate(    Flux_gT(DIMENSION_3) ) 
+      Allocate(    Flux_sT(DIMENSION_3, DIMENSION_M) ) 
+      Allocate(    ROP_gE(DIMENSION_3) ) 
+      Allocate(    ROP_sE(DIMENSION_3, DIMENSION_M) ) 
+      Allocate(    ROP_gN(DIMENSION_3) ) 
+      Allocate(    ROP_sN(DIMENSION_3, DIMENSION_M) ) 
+      Allocate(    ROP_gT(DIMENSION_3) ) 
+      Allocate(    ROP_sT(DIMENSION_3, DIMENSION_M) ) 
+
 
      
       RETURN

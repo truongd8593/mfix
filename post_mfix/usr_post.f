@@ -234,7 +234,7 @@
           VREL = SQRT(  (U_g(IJK) - U_s(IJK,1))**2&
                       + (V_g(IJK) - V_s(IJK,1))**2&
                       + (W_g(IJK) - W_s(IJK,1))**2 )
-          Re =  D_p(1) * VREL * RO_g0 / MU_g0
+          Re =  D_p(IJK, 1) * VREL * RO_g0 / MU_g0
           FC = (ONE + a1 * exp(-a2*(Re - Re_c)**2 &
                                 - a3*(EP_g(IJK)-ep_c)**2)&
                      * Re * (1. - EP_g(IJK))               )
