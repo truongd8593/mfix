@@ -416,6 +416,7 @@ ln -sf "$mpi_include/mpif.h" .
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-openmp -assume cc_omp"
+            libs_d='blas90.a odepack.a'
             libs='blas90.a odepack.a'
 	    
             if test $intel_ver = "Linux_ifc7"
@@ -491,6 +492,7 @@ ln -sf "$mpi_include/mpif.h" .
 	       compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -static -ip -FR"
 	    fi
             compile_d="-g -O0 -c -FR -I. -w -d1 -CB " 
+            compile_d2="-g -O0 -c -I. -w -d1 -CB " 
             link_d="-I. -L$intel_lib -lPEPCF90 "
             compile="$compile_common"
             compile2="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip"
@@ -508,6 +510,7 @@ ln -sf "$mpi_include/mpif.h" .
                 compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"	      
 	      fi
               compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB "
+              compile_d2="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB "
               link_d="-I.  "
               compile="$compile_common"
               compile2="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
@@ -830,7 +833,7 @@ esac
     echo
     echo "Execution may be SLOW.  Do not use debug version for production runs!"
     FORT_FLAGS="$mp_flag $compile_d"
-    FORT_FLAGS2="$mp_flag $compile_d"
+    FORT_FLAGS2="$mp_flag $compile_d2"
     LINK_FLAGS="$mp_flag $link_d"
     LIB_FLAGS="$libs_d"
     ;;
@@ -1180,7 +1183,7 @@ esac
     echo
     echo "Execution may be SLOW.  Do not use debug version for production runs!"
     FORT_FLAGS="$mp_flag $compile_d"
-    FORT_FLAGS2="$mp_flag $compile_d"
+    FORT_FLAGS2="$mp_flag $compile_d2"
     LINK_FLAGS="$mp_flag $link_d"
     LIB_FLAGS="$libs_d"
     ;;
