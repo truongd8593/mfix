@@ -615,7 +615,7 @@
         firstPass=.false.
         delp_xyz = delp_n*0.99
       endif
-      IF(myPE.eq.PE_IO) Write(*,5500) OUTIT, err, delp_xyz, mdot_n
+      IF(MUSTIT == 0 .and. myPE.eq.PE_IO) Write(*,5500) TIME, OUTIT, delp_xyz, mdot_n
      
       mdot_nm1 = mdot_n
       delp_nm1 = delp_n
@@ -632,7 +632,7 @@
       return
 5400 FORMAT(/1X,70('*')//' From: GoalSeekMassFlux',/&
       ' Message: Number of outer iterations exceeded ', I4,/1X,70('*')/) 
-5500  Format('  MassFluxIteration:', I4, ' Err=', G12.5, ' DelP=', G12.5, ' Flux=', G12.5)
+5500  Format('  Tiime=', G12.5, ' MassFluxIterations=', I4, ' DelP=', G12.5, ' Gas Flux=', G12.5)
      
     
       end subroutine GoalSeekMassFlux
