@@ -632,7 +632,7 @@
       return
 5400 FORMAT(/1X,70('*')//' From: GoalSeekMassFlux',/&
       ' Message: Number of outer iterations exceeded ', I4,/1X,70('*')/) 
-5500  Format('  Tiime=', G12.5, ' MassFluxIterations=', I4, ' DelP=', G12.5, ' Gas Flux=', G12.5)
+5500  Format('  Time=', G12.5, ' MassFluxIterations=', I4, ' DelP=', G12.5, ' Gas Flux=', G12.5)
      
     
       end subroutine GoalSeekMassFlux
