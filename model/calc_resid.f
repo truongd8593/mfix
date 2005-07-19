@@ -654,7 +654,7 @@
 !                      Indices
       INTEGER          L, IJK
 
-      DOUBLE PRECISION flux_in, flux_out, fin, fout, err, accum_new
+      DOUBLE PRECISION flux_in, flux_out, fin, fout, err, accum_new, denom
 
 !     functions      
       DOUBLE PRECISION Accumulation
@@ -704,9 +704,9 @@
         END DO
         
 	Err = (accum_new - Accum_resid_g) - (flux_in - flux_out)
-
-        IF (FLUX_IN.ne.ZERO) THEN
-	   ErrorPercent(0) = err*100./flux_in
+	denom = max(abs(accum_new), abs(Accum_resid_g), abs(flux_in), abs(flux_out))
+        IF (denom /= ZERO) THEN
+	   ErrorPercent(0) = err*100./denom
         ELSE
            ErrorPercent(0) = err*100./SMALL_NUMBER
         END IF
@@ -731,10 +731,11 @@
           END DO
         
 	  Err = (accum_new - Accum_resid_s(M)) - (flux_in - flux_out)
-	  if(flux_in /= ZERO) THEN
-	    ErrorPercent(M) = err*100./flux_in
+	  denom = max(abs(accum_new), abs(Accum_resid_s(M)), abs(flux_in), abs(flux_out))
+	  if(denom /= ZERO) THEN
+	    ErrorPercent(M) = err*100./denom
 	  else
-	    ErrorPercent(M) = err*100./Accum_resid_s(M)
+	    ErrorPercent(M) = err*100./SMALL_NUMBER
 	  endif
 	END DO
 	
