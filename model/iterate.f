@@ -409,16 +409,19 @@
             IF (ENERGY_EQ) CALL GET_HLOSS (HLOSS) 
 !
 !
-            IF (ENERGY_EQ) THEN 
-               WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS, errorpercent(0), HLOSS, CPU_NOW 
-               IF(FULL_LOG.and.myPE.eq.PE_IO) &          
-                       WRITE(*,5000)TIME,DT,NIT,SMASS,errorpercent(0), HLOSS,CPU_NOW        !//
-            ELSE 
-               WRITE (UNIT_LOG, 5001) TIME, DT, NIT, SMASS, errorpercent(0), CPU_NOW 
-               IF (FULL_LOG .and. myPE.eq.PE_IO) &
-                       WRITE (*, 5001) TIME, DT, NIT, SMASS, errorpercent(0), CPU_NOW       !//
-            ENDIF 
             CALL START_LOG 
+            IF (ENERGY_EQ) THEN 
+               WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS, HLOSS, CPU_NOW 
+               IF(FULL_LOG.and.myPE.eq.PE_IO) &          
+                       WRITE(*,5000)TIME,DT,NIT,SMASS, HLOSS,CPU_NOW        
+            ELSE 
+               WRITE (UNIT_LOG, 5001) TIME, DT, NIT, SMASS, CPU_NOW 
+               IF (FULL_LOG .and. myPE.eq.PE_IO) &
+                       WRITE (*, 5001) TIME, DT, NIT, SMASS, CPU_NOW      
+            ENDIF 
+            WRITE (UNIT_LOG, 5002) (errorpercent(M), M=0,MMAX) 
+            IF (FULL_LOG .and. myPE.eq.PE_IO) &
+                       WRITE (*, 5002) (errorpercent(M), M=0,MMAX)      
             IF (.NOT.FULL_LOG) THEN 
                TLEFT = (TSTOP - TIME)*CPUOS 
                CALL GET_TUNIT (TLEFT, TUNIT) 
@@ -478,10 +481,10 @@
 !
       IER = 1
       RETURN  
- 5000 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,' Sm=',G10.5,'MbErr%=', G10.4,' Hl=',G12.5,&
+ 5000 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,' Sm=',G10.5,' Hl=',G12.5,&
          T84,'CPU=',F8.0,' s') 
- 5001 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,' Sm=',G10.5,'MbErr%=', G10.4,T84,'CPU=',F8.0&
-         ,' s') 
+ 5001 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,' Sm=',G10.5, T84,'CPU=',F8.0,' s') 
+ 5002 FORMAT(3X,'MbError%(0,MMAX):', 5(1X,G10.4)) 
  5050 FORMAT(5X,'Average ',A,G12.5) 
  5060 FORMAT(5X,'Average ',A,I2,A,G12.5) 
  5100 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT>',I3,' Sm= ',G10.5, 'MbErr%=', G10.4) 
@@ -615,7 +618,9 @@
         firstPass=.false.
         delp_xyz = delp_n*0.99
       endif
-      IF(MUSTIT == 0 .and. myPE.eq.PE_IO) Write(*,5500) TIME, OUTIT, delp_xyz, mdot_n
+      IF(MUSTIT == 0) then
+        IF(myPE.eq.PE_IO) Write(*,5500) TIME, OUTIT, delp_xyz, mdot_n
+      ENDIF
      
       mdot_nm1 = mdot_n
       delp_nm1 = delp_n
