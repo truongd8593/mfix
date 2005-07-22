@@ -1,7 +1,7 @@
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SOURCE_Pp_g(A_m, B_m, IER)
+!  Module name: SOURCE_Pp_g(A_m, B_m, B_MMAX, IER)
 !  Purpose: Determine source terms for Pressure                        C
 !  correction equation.  The off-diagonal coefficients are             C
 !   positive. The center coefficient and the source vector are         C
@@ -21,7 +21,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE SOURCE_PP_G(A_M, B_M, IER) 
+      SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -64,6 +64,9 @@
 !                      Vector b_m 
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
 ! 
+!                      maximum term in b_m expression
+      DOUBLE PRECISION B_mmax(DIMENSION_3, 0:DIMENSION_M) 
+! 
 !                      Convection weighting factors 
 !      DOUBLE PRECISION XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),& 
 !                       XSI_t(DIMENSION_3) 
@@ -71,6 +74,9 @@
 ! 
 !                      under relaxation factor for pressure
       DOUBLE PRECISION fac 
+! 
+!                      terms of bm expression
+      DOUBLE PRECISION bma, bme, bmw, bmn, bms, bmt, bmb, bmr
 
 !                      Indices 
       INTEGER          IJK, IMJK, IJMK, IJKM, I, J, K 
@@ -140,10 +146,20 @@
             IMJK = IM_OF(IJK) 
             IJMK = JM_OF(IJK) 
             IJKM = KM_OF(IJK) 
-            B_M(IJK,0) = -((-((ROP_G(IJK)-ROP_GO(IJK))*VOL(IJK)*ODT+A_M(IJK,E,0&
-               )*U_G(IJK)-A_M(IJK,W,0)*U_G(IMJK)+A_M(IJK,N,0)*V_G(IJK)-A_M(IJK,&
-               S,0)*V_G(IJMK)+A_M(IJK,T,0)*W_G(IJK)-A_M(IJK,B,0)*W_G(IJKM)))+&
-               SUM_R_G(IJK)*VOL(IJK)) 
+!            B_M(IJK,0) = -((-((ROP_G(IJK)-ROP_GO(IJK))*VOL(IJK)*ODT+A_M(IJK,E,0&
+!               )*U_G(IJK)-A_M(IJK,W,0)*U_G(IMJK)+A_M(IJK,N,0)*V_G(IJK)-A_M(IJK,&
+!               S,0)*V_G(IJMK)+A_M(IJK,T,0)*W_G(IJK)-A_M(IJK,B,0)*W_G(IJKM)))+&
+!               SUM_R_G(IJK)*VOL(IJK)) 
+            bma = (ROP_G(IJK)-ROP_GO(IJK))*VOL(IJK)*ODT
+	    bme = A_M(IJK,E,0)*U_G(IJK)
+            bmw = A_M(IJK,W,0)*U_G(IMJK)
+            bmn = A_M(IJK,N,0)*V_G(IJK)
+            bms = A_M(IJK,S,0)*V_G(IJMK)
+            bmt = A_M(IJK,T,0)*W_G(IJK)
+            bmb = A_M(IJK,B,0)*W_G(IJKM)
+            bmr = SUM_R_G(IJK)*VOL(IJK) 
+            B_M(IJK,0) = -((-(bma + bme - bmw + bmn - bms + bmt - bmb ))+ bmr ) 
+            B_MMAX(IJK,0) = max(abs(bma), abs(bme), abs(bmw), abs(bmn), abs(bms), abs(bmt), abs(bmb), abs(bmr) ) 
             A_M(IJK,E,0) = A_M(IJK,E,0)*D_E(IJK,0) 
             A_M(IJK,W,0) = A_M(IJK,W,0)*D_E(IMJK,0) 
             A_M(IJK,N,0) = A_M(IJK,N,0)*D_N(IJK,0) 

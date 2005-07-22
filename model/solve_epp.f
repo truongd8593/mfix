@@ -35,16 +35,23 @@
       USE leqsol 
       USE physprop
       Use ambm
+      Use tmp_array1, B_mMAX => ARRAYm1
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!Parameter to make tolerance for residual scaled with max value compatible with
+!residual scaled with first iteration residual.  Increase it, to tighten convergence.
+      DOUBLE PRECISION, PARAMETER :: DEN = 1.0D1  
+!-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
 !                      Normalization factor for solids volume fraction residual
-      DOUBLE PRECISION NORMs
+      DOUBLE PRECISION NORMs, NORMSloc
 !
 !                      solids volume fraction residual
       DOUBLE PRECISION RESs
@@ -57,6 +64,7 @@
 !
 !                      Vector b_m
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
+! 
 
       INTEGER          M
 !
@@ -66,6 +74,7 @@
 !-----------------------------------------------
 !
       call lock_ambm
+      call lock_tmp_array1
 
 !
 !  Form the sparse matrix equation
@@ -74,7 +83,7 @@
 !//
       CALL ZERO_ARRAY (EPP, IER) 
 !
-      CALL CONV_SOURCE_EPP (A_M, B_M, IER) 
+      CALL CONV_SOURCE_EPP (A_M, B_M, B_mmax, IER) 
 !
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
@@ -83,7 +92,13 @@
 !
 !  Find average residual, maximum residual and location
 !
-      CALL CALC_RESID_PP (B_M, NORMS, RESID(RESID_P,1), MAX_RESID(RESID_P,1), &
+      NORMSloc = NORMS
+      IF(NORMS == ZERO) THEN
+        CALL CALC_RESID_PP (B_MMAX, ONE, RESID(RESID_P,1), MAX_RESID(RESID_P,1), &
+         IJK_RESID(RESID_P,1), IER) 
+	 NORMSloc = RESID(RESID_P,1)/DEN
+      ENDIF
+      CALL CALC_RESID_PP (B_M, NORMSloc, RESID(RESID_P,1), MAX_RESID(RESID_P,1), &
          IJK_RESID(RESID_P,1), IER) 
       RESS = RESID(RESID_P,1) 
 !      write(*,*)
@@ -99,6 +114,7 @@
 	                     LEQ_SWEEP(1), LEQ_TOL(1),IER) 
 !      call out_array(EPp, 'EPp')
 !
+      call unlock_tmp_array1
       call unlock_ambm
 
       RETURN  

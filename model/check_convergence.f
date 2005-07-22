@@ -43,7 +43,7 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !Maximum % error allowed in fluid continuity
-      DOUBLE PRECISION, PARAMETER :: MaxErrorPercent = 1.0E-6  
+!      DOUBLE PRECISION, PARAMETER :: MaxErrorPercent = 1.0E-6  
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -75,11 +75,12 @@
 !-----------------------------------------------
 !
 !//SP
-      if(abs(errorpercent) > MaxErrorPercent)then
+!      if(abs(errorpercent) > MaxErrorPercent)then
         SUM = RESID(RESID_P,0) 
-      else
-        SUM = zero
-      endif
+!      else
+!        SUM = zero
+!      endif
+
       if(MMAX > 0) SUM = SUM + RESID(RESID_P,1) 
 !
       DO M = 0, MMAX 

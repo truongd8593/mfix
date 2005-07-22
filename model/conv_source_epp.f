@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CONV_SOURCE_EPp(A_m, B_m, IER)                         C
+!  Module name: CONV_SOURCE_EPp(A_m, B_m, B_mmax, IER)                 C
 !  Purpose: Determine convection terms for solids volume fraction      C
 !           correction equation.  Master routine                       C
 !                                                                      C
@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_SOURCE_EPP(A_M, B_M, IER) 
+      SUBROUTINE CONV_SOURCE_EPP(A_M, B_M, B_mmax, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -56,11 +56,15 @@
 !                      Vector b_m 
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
   
+! 
+!                      maximum term in b_m expression
+      DOUBLE PRECISION B_mmax(DIMENSION_3, 0:DIMENSION_M) 
+  
 !
       IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding 
-         CALL CONV_SOURCE_EPP0 (A_M, B_M, IER) 
+         CALL CONV_SOURCE_EPP0 (A_M, B_M, B_MMAX, IER) 
       ELSE 
-         CALL CONV_SOURCE_EPP1 (A_M, B_M, IER) 
+         CALL CONV_SOURCE_EPP1 (A_M, B_M, B_MMAX, IER) 
       ENDIF 
 
 
@@ -68,7 +72,7 @@
       END SUBROUTINE CONV_SOURCE_EPP 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CONV_SOURCE_EPp0(A_m, B_m, IER)                        C
+!  Module name: CONV_SOURCE_EPp0(A_m, B_m, B_MMAX, IER)                C
 !  Purpose: Determine convection terms for solids volume fraction      C
 !           correction equation.  First order upwinding.               C
 !                                                                      C
@@ -85,7 +89,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_SOURCE_EPP0(A_M, B_M, IER) 
+      SUBROUTINE CONV_SOURCE_EPP0(A_M, B_M, B_MMAX, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -128,6 +132,9 @@
 !                      Vector b_m 
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
 ! 
+!                      maximum term in b_m expression
+      DOUBLE PRECISION B_mmax(DIMENSION_3, 0:DIMENSION_M) 
+! 
 !                      phase index 
       INTEGER          M 
 ! 
@@ -147,6 +154,9 @@
 !
 !                      FOR CALL_CHEM and CALL_ISAT = .true.
       DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
+! 
+!                      terms of bm expression
+      DOUBLE PRECISION bma, bme, bmw, bmn, bms, bmt, bmb, bmr
 !
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
@@ -207,7 +217,8 @@
 !
                A_M(IJK,0,0)=A_M(IJK,0,0)+ROP_S(IJKE,M)*E_E(IJK)*K_P*AYZ(IJK) 
 !
-               B_M(IJK,0) = B_M(IJK,0) + (-ROP_S(IJKE,M)*U_S(IJK,M))*AYZ(IJK) 
+               bme = (-ROP_S(IJKE,M)*U_S(IJK,M))*AYZ(IJK)
+               B_M(IJK,0) = B_M(IJK,0) +  bme
 !
             ELSE 
                A_M(IJK,E,0) = (ROP_S(IJK,M)*E_E(IJK)*K_CP(IJKE))*AYZ(IJK) 
@@ -215,7 +226,8 @@
                A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_S(IJK,M)*E_E(IJK)*K_P+RO_S(M)&
                   *U_S(IJK,M))*AYZ(IJK) 
 !
-               B_M(IJK,0) = B_M(IJK,0) + (-ROP_S(IJK,M)*U_S(IJK,M))*AYZ(IJK) 
+               bme = (-ROP_S(IJK,M)*U_S(IJK,M))*AYZ(IJK)
+               B_M(IJK,0) = B_M(IJK,0) +  bme
 !
             ENDIF 
 !
@@ -228,7 +240,8 @@
                A_M(IJK,0,0) = A_M(IJK,0,0) + ROP_S(IJKW,M)*E_E(IMJK)*K_P*AYZ(&
                   IMJK) 
 !
-               B_M(IJK,0) = B_M(IJK,0) + (ROP_S(IJKW,M)*U_S(IMJK,M))*AYZ(IMJK) 
+               bmw = (ROP_S(IJKW,M)*U_S(IMJK,M))*AYZ(IMJK)
+               B_M(IJK,0) = B_M(IJK,0) + bmw  
 !
             ELSE 
                A_M(IJK,W,0) = (ROP_S(IJK,M)*E_E(IMJK)*K_CP(IJKW))*AYZ(IMJK) 
@@ -236,7 +249,8 @@
                A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_S(IJK,M)*E_E(IMJK)*K_P-RO_S(M&
                   )*U_S(IMJK,M))*AYZ(IMJK) 
 !
-               B_M(IJK,0) = B_M(IJK,0) + (ROP_S(IJK,M)*U_S(IMJK,M))*AYZ(IMJK) 
+               bmw = (ROP_S(IJK,M)*U_S(IMJK,M))*AYZ(IMJK)
+               B_M(IJK,0) = B_M(IJK,0) + bmw 
 !
             ENDIF 
 !
@@ -248,7 +262,8 @@
 !
                A_M(IJK,0,0)=A_M(IJK,0,0)+ROP_S(IJKN,M)*E_N(IJK)*K_P*AXZ(IJK) 
 !
-               B_M(IJK,0) = B_M(IJK,0) + (-ROP_S(IJKN,M)*V_S(IJK,M))*AXZ(IJK) 
+               bmn = (-ROP_S(IJKN,M)*V_S(IJK,M))*AXZ(IJK)
+               B_M(IJK,0) = B_M(IJK,0) + bmn  
 !
             ELSE 
                A_M(IJK,N,0) = (ROP_S(IJK,M)*E_N(IJK)*K_CP(IJKN))*AXZ(IJK) 
@@ -256,7 +271,8 @@
                A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_S(IJK,M)*E_N(IJK)*K_P+RO_S(M)&
                   *V_S(IJK,M))*AXZ(IJK) 
 !
-               B_M(IJK,0) = B_M(IJK,0) + (-ROP_S(IJK,M)*V_S(IJK,M))*AXZ(IJK) 
+               bmn = (-ROP_S(IJK,M)*V_S(IJK,M))*AXZ(IJK)
+               B_M(IJK,0) = B_M(IJK,0) + bmn  
 !
             ENDIF 
 !
@@ -269,7 +285,8 @@
                A_M(IJK,0,0) = A_M(IJK,0,0) + ROP_S(IJKS,M)*E_N(IJMK)*K_P*AXZ(&
                   IJMK) 
 !
-               B_M(IJK,0) = B_M(IJK,0) + (ROP_S(IJKS,M)*V_S(IJMK,M))*AXZ(IJMK) 
+               bms = (ROP_S(IJKS,M)*V_S(IJMK,M))*AXZ(IJMK)
+               B_M(IJK,0) = B_M(IJK,0) + bms 
 !
             ELSE 
                A_M(IJK,S,0) = (ROP_S(IJK,M)*E_N(IJMK)*K_CP(IJKS))*AXZ(IJMK) 
@@ -277,7 +294,8 @@
                A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_S(IJK,M)*E_N(IJMK)*K_P-RO_S(M&
                   )*V_S(IJMK,M))*AXZ(IJMK) 
 !
-               B_M(IJK,0) = B_M(IJK,0) + (ROP_S(IJK,M)*V_S(IJMK,M))*AXZ(IJMK) 
+               bms = (ROP_S(IJK,M)*V_S(IJMK,M))*AXZ(IJMK)
+               B_M(IJK,0) = B_M(IJK,0) + bms 
 !
             ENDIF 
 !
@@ -291,7 +309,8 @@
                   A_M(IJK,0,0) = A_M(IJK,0,0) + ROP_S(IJKT,M)*E_T(IJK)*K_P*AXY(&
                      IJK) 
 !
-                  B_M(IJK,0)=B_M(IJK,0)+(-ROP_S(IJKT,M)*W_S(IJK,M))*AXY(IJK) 
+                  bmt = (-ROP_S(IJKT,M)*W_S(IJK,M))*AXY(IJK)
+                  B_M(IJK,0)=B_M(IJK,0) + bmt 
 !
                ELSE 
                   A_M(IJK,T,0) = (ROP_S(IJK,M)*E_T(IJK)*K_CP(IJKT))*AXY(IJK) 
@@ -299,7 +318,8 @@
                   A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_S(IJK,M)*E_T(IJK)*K_P+RO_S&
                      (M)*W_S(IJK,M))*AXY(IJK) 
 !
-                  B_M(IJK,0) = B_M(IJK,0) + (-ROP_S(IJK,M)*W_S(IJK,M))*AXY(IJK) 
+                  bmt = (-ROP_S(IJK,M)*W_S(IJK,M))*AXY(IJK)
+                  B_M(IJK,0) = B_M(IJK,0) + bmt 
 !
                ENDIF 
 !
@@ -312,8 +332,8 @@
                   A_M(IJK,0,0) = A_M(IJK,0,0) + ROP_S(IJKB,M)*E_T(IJKM)*K_P*AXY&
                      (IJKM) 
 !
-                  B_M(IJK,0) = B_M(IJK,0) + (ROP_S(IJKB,M)*W_S(IJKM,M))*AXY(&
-                     IJKM) 
+                  bmb = (ROP_S(IJKB,M)*W_S(IJKM,M))*AXY(IJKM) 
+                  B_M(IJK,0) = B_M(IJK,0) + bmb
 !
                ELSE 
                   A_M(IJK,B,0) = (ROP_S(IJK,M)*E_T(IJKM)*K_CP(IJKB))*AXY(IJKM) 
@@ -321,7 +341,8 @@
                   A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_S(IJK,M)*E_T(IJKM)*K_P-&
                      RO_S(M)*W_S(IJKM,M))*AXY(IJKM) 
 !
-                  B_M(IJK,0)=B_M(IJK,0)+(ROP_S(IJK,M)*W_S(IJKM,M))*AXY(IJKM) 
+                  bmb = (ROP_S(IJK,M)*W_S(IJKM,M))*AXY(IJKM)
+                  B_M(IJK,0)=B_M(IJK,0) + bmb
 !
                ENDIF 
 !
@@ -335,8 +356,10 @@
 !
             A_M(IJK,0,0) = -(A_M(IJK,0,0)+VOL(IJK)*ODT*RO_S(M)+SRC*RO_S(M)) 
 !
-            B_M(IJK,0) = -(B_M(IJK,0)-(ROP_S(IJK,M)-ROP_SO(IJK,M))*VOL(IJK)*ODT&
-               +SUM_R_S(IJK,M)*VOL(IJK)) 
+            bma = (ROP_S(IJK,M)-ROP_SO(IJK,M))*VOL(IJK)*ODT
+	    bmr = SUM_R_S(IJK,M)*VOL(IJK)
+            B_M(IJK,0) = -(B_M(IJK,0) - bma + bmr) 
+            B_MMAX(IJK,0) = max(abs(bma), abs(bme), abs(bmw), abs(bmn), abs(bms), abs(bmt), abs(bmb), abs(bmr) ) 
 !
             IF ((-A_M(IJK,0,0)) < SMALL_NUMBER) THEN 
                IF (ABS(B_M(IJK,0)) < SMALL_NUMBER) THEN 
@@ -368,7 +391,7 @@
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CONV_SOURCE_EPp1(A_m, B_m, IER)                        C
+!  Module name: CONV_SOURCE_EPp1(A_m, B_m, B_MMAX, IER)                C
 !  Purpose: Determine convection terms for solids volume fraction      C
 !           correction equation.  Higher order scheme.                 C
 !                                                                      C
@@ -385,7 +408,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_SOURCE_EPP1(A_M, B_M, IER) 
+      SUBROUTINE CONV_SOURCE_EPP1(A_M, B_M, B_MMAX, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -429,6 +452,9 @@
 !                      Vector b_m 
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
 ! 
+!                      maximum term in b_m expression
+      DOUBLE PRECISION B_mmax(DIMENSION_3, 0:DIMENSION_M) 
+! 
 !                      phase index 
       INTEGER          M 
 ! 
@@ -456,6 +482,9 @@
 !
 !                      FOR CALL_CHEM and CALL_ISAT = .true.
       DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
+! 
+!                      terms of bm expression
+      DOUBLE PRECISION bma, bme, bmw, bmn, bms, bmt, bmb, bmr
 !
 ! 
 !                      Convection weighting factors 
@@ -552,7 +581,8 @@
             A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_SF*E_E(IJK)*K_P+RO_S(M)*U_S(IJK,&
                M)*(ONE-XSI_E(IJK)))*AYZ(IJK) 
 !
-            B_M(IJK,0) = B_M(IJK,0) + (-ROP_SF*U_S(IJK,M))*AYZ(IJK) 
+            bme = (-ROP_SF*U_S(IJK,M))*AYZ(IJK)
+            B_M(IJK,0) = B_M(IJK,0) + bme 
 !
 !
 !
@@ -565,7 +595,8 @@
             A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_SF*E_E(IMJK)*K_P-RO_S(M)*U_S(&
                IMJK,M)*XSI_E(IMJK))*AYZ(IMJK) 
 !
-            B_M(IJK,0) = B_M(IJK,0) + (ROP_SF*U_S(IMJK,M))*AYZ(IMJK) 
+            bmw = (ROP_SF*U_S(IMJK,M))*AYZ(IMJK)
+            B_M(IJK,0) = B_M(IJK,0) +  bmw
 !
 !
 !         North face (i, j+1/2, k)
@@ -577,7 +608,8 @@
             A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_SF*E_N(IJK)*K_P+RO_S(M)*V_S(IJK,&
                M)*(ONE-XSI_N(IJK)))*AXZ(IJK) 
 !
-            B_M(IJK,0) = B_M(IJK,0) + (-ROP_SF*V_S(IJK,M))*AXZ(IJK) 
+            bmn = (-ROP_SF*V_S(IJK,M))*AXZ(IJK) 
+            B_M(IJK,0) = B_M(IJK,0) + bmn
 !
 !
 !         South face (i, j-1/2, k)
@@ -589,7 +621,8 @@
             A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_SF*E_N(IJMK)*K_P-RO_S(M)*V_S(&
                IJMK,M)*XSI_N(IJMK))*AXZ(IJMK) 
 !
-            B_M(IJK,0) = B_M(IJK,0) + (ROP_SF*V_S(IJMK,M))*AXZ(IJMK) 
+            bms = (ROP_SF*V_S(IJMK,M))*AXZ(IJMK)
+            B_M(IJK,0) = B_M(IJK,0) + bms
 !
             IF (DO_K) THEN 
 !
@@ -602,7 +635,8 @@
                A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_SF*E_T(IJK)*K_P+RO_S(M)*W_S(&
                   IJK,M)*(ONE-XSI_T(IJK)))*AXY(IJK) 
 !
-               B_M(IJK,0) = B_M(IJK,0) + (-ROP_SF*W_S(IJK,M))*AXY(IJK) 
+               bmt = (-ROP_SF*W_S(IJK,M))*AXY(IJK)
+               B_M(IJK,0) = B_M(IJK,0) + bmt
 !
 !
 !           Bottom face (i, j, k-1/2)
@@ -615,7 +649,8 @@
                A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_SF*E_T(IJKM)*K_P-RO_S(M)*W_S(&
                   IJKM,M)*XSI_T(IJKM))*AXY(IJKM) 
 !
-               B_M(IJK,0) = B_M(IJK,0) + (ROP_SF*W_S(IJKM,M))*AXY(IJKM) 
+               bmb = (ROP_SF*W_S(IJKM,M))*AXY(IJKM)
+               B_M(IJK,0) = B_M(IJK,0) + bmb
 !
             ENDIF 
 !
@@ -627,9 +662,10 @@
 !
             A_M(IJK,0,0) = -(A_M(IJK,0,0)+VOL(IJK)*ODT*RO_S(M)+SRC*RO_S(M)) 
 !
-            B_M(IJK,0) = -(B_M(IJK,0)-(ROP_S(IJK,M)-ROP_SO(IJK,M))*VOL(IJK)*ODT&
-               +SUM_R_S(IJK,M)*VOL(IJK)) 
-!
+            bma = (ROP_S(IJK,M)-ROP_SO(IJK,M))*VOL(IJK)*ODT
+	    bmr = SUM_R_S(IJK,M)*VOL(IJK)
+            B_M(IJK,0) = -(B_M(IJK,0)- bma + bmr) 
+            B_MMAX(IJK,0) = max(abs(bma), abs(bme), abs(bmw), abs(bmn), abs(bms), abs(bmt), abs(bmb), abs(bmr) ) !
             IF (ABS(A_M(IJK,0,0)) < SMALL_NUMBER) THEN 
                IF (ABS(B_M(IJK,0)) < SMALL_NUMBER) THEN 
                   A_M(IJK,0,0) = -ONE            ! Equation is undefined. 

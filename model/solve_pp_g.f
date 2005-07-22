@@ -33,16 +33,23 @@
       USE leqsol 
       USE run
       Use ambm
+      Use tmp_array1, B_mMAX => ARRAYm1
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!Parameter to make tolerance for residual scaled with max value compatible with
+!residual scaled with first iteration residual.  Increase it, to tighten convergence.
+      DOUBLE PRECISION, PARAMETER :: DEN = 1.0D1  
+!-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
 !                      Normalization factor for gas pressure residual
-      DOUBLE PRECISION NORMg
+      DOUBLE PRECISION NORMg, NORMGloc
 !
 !                      gas pressure residual
       DOUBLE PRECISION RESg
@@ -64,6 +71,7 @@
 !-----------------------------------------------
 !
       call lock_ambm
+      call lock_tmp_array1
 
 !
 !     If gas momentum equations in x and y directions are not solved return
@@ -82,7 +90,7 @@
       END DO 
       CALL CONV_PP_G (A_M, B_M, IER) 
 !
-      CALL SOURCE_PP_G (A_M, B_M, IER) 
+      CALL SOURCE_PP_G (A_M, B_M, B_MMAX, IER) 
 !
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
@@ -91,7 +99,13 @@
 !
 !  Find average residual, maximum residual and location
 !
-      CALL CALC_RESID_PP (B_M, NORMG, RESID(RESID_P,0), MAX_RESID(RESID_P,0), &
+      NORMGloc = NORMG
+      IF(NORMG == ZERO) THEN
+        CALL CALC_RESID_PP (B_MMAX, ONE, RESID(RESID_P,0), MAX_RESID(RESID_P,0), &
+         IJK_RESID(RESID_P,0), IER)
+         NORMGloc = RESID(RESID_P,0)/DEN
+      ENDIF
+      CALL CALC_RESID_PP (B_M, NORMGloc, RESID(RESID_P,0), MAX_RESID(RESID_P,0), &
          IJK_RESID(RESID_P,0), IER) 
       RESG = RESID(RESID_P,0) 
 !      write(*,*)
@@ -109,6 +123,7 @@
 	                     LEQ_SWEEP(1), LEQ_TOL(1),IER) 
 !      call out_array(Pp_g, 'Pp_g')
 !
+      call unlock_tmp_array1
       call unlock_ambm
 
       RETURN  
