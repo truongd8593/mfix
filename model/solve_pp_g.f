@@ -80,6 +80,7 @@
       CALL ZERO_ARRAY (PP_G, IER) 
       IF (.NOT.(MOMENTUM_X_EQ(0) .OR. MOMENTUM_Y_EQ(0))) THEN
         call unlock_ambm
+        call unlock_tmp_array1
         RETURN  
       ENDIF
 !
