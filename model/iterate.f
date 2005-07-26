@@ -229,7 +229,6 @@
 !
       IF (Call_DQMOM) PSIZE(1:MMAX)=.TRUE.
       IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
-      IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
 !
       VISC(0) = RECALC_VISC_G 
 ! 	The IF (GRANULAR_ENERGY) statement was commented out to allow calling calc_mu_s even
@@ -237,8 +236,9 @@
 ! 	This may enhance convergence. sof, March-10-2005.
        VISC(1:MMAX) = .TRUE. 
 !
-      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
-         HEAT_TR, WALL_TR, IER) 
+      CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER) 
+      CALL TRANSPORT_PROP (VISC, COND, DIFF, IER) 
+      CALL EXCHANGE (DRAGCOEF, HEAT_TR, WALL_TR, IER) 
 
 !
 !     DIffusion coefficient and source terms for user-defined scalars
@@ -255,8 +255,8 @@
 
       CALL SOLVE_VEL_STAR (IER) 
 !
-!     Calculate density and reaction rates. Do not change density or reaction rate before the call to
-!     solve_vel_star.
+!     Calculate density and reaction rates. Do not change reaction rate anywhere else within this
+!     iteration loop.  Fluid density can be changed after the pressure correction step.
       IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
       IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
       CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
@@ -322,8 +322,7 @@
      
       IF (RO_G0 == UNDEFINED) THEN
         DENSITY(0) = .TRUE. 
-        CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
-         HEAT_TR, WALL_TR, IER) 
+        CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER) 
       ENDIF 
 
 !
