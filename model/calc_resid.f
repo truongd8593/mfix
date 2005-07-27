@@ -625,6 +625,7 @@
       USE mpi_utility   
       USE residual
       USE rxns
+      USE mflux
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -695,9 +696,12 @@
         flux_in = zero
         DO L = 1, DIMENSION_BC
           IF (BC_DEFINED(L)) THEN
-            call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), & 
-            BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_g, V_g, W_g, &
-            ROP_g, fin, fout, IER) 
+!            call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), & 
+!            BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_g, V_g, W_g, &
+!            ROP_g, fin, fout, IER) 
+            call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), & 
+            BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), Flux_gE, Flux_gN, Flux_gT, &
+            fin, fout, IER) 
 	    flux_out = flux_out + fout  * dt_local
             flux_in = flux_in + fin * dt_local
           ENDIF 
@@ -722,9 +726,12 @@
           flux_in = zero
           DO L = 1, DIMENSION_BC
             IF (BC_DEFINED(L)) THEN
-              call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), &
-              BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_s(1,M), V_s(1,M), W_s(1,M), &
-              ROP_s(1,M), fin, fout, IER) 
+!              call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), &
+!              BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_s(1,M), V_s(1,M), W_s(1,M), &
+!              ROP_s(1,M), fin, fout, IER) 
+              call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), &
+              BC_K_B(L), BC_K_T(L), BC_PLANE(L), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), &
+              fin, fout, IER) 
 	      flux_out = flux_out + fout  * dt_local
               flux_in = flux_in + fin * dt_local
             ENDIF 

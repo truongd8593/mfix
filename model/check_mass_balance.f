@@ -39,6 +39,7 @@
       USE output
       USE check
       USE mchem
+      USE mflux
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -146,12 +147,14 @@
             K1 = BC_K_B(L) 
             K2 = BC_K_T(L)
 	     
-            call Calc_mass_flux(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_g, V_g, W_g, ROP_g, fin, fout, IER) 
+!            call Calc_mass_flux(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_g, V_g, W_g, ROP_g, fin, fout, IER) 
+            call Calc_mass_fluxHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_gE, Flux_gN, Flux_gT, fin, fout, IER) 
 	    flux_out_g(L) = flux_out_g(L) + fout  * dt_prev
             flux_in_g(L) = flux_in_g(L) + fin * dt_prev
 	    
 	    DO M = 1, MMAX
-              call Calc_mass_flux(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_s(1,m), V_s(1,m), W_s(1,m), ROP_s(1,m), fin, fout, IER) 
+!              call Calc_mass_flux(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_s(1,m), V_s(1,m), W_s(1,m), ROP_s(1,m), fin, fout, IER) 
+              call Calc_mass_fluxHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_sE(1,m), Flux_sN(1,m), Flux_sT(1,m), fin, fout, IER) 
 	      flux_out_s(L, M) = flux_out_s(L, M) + fout  * dt_prev
               flux_in_s(L, M) = flux_in_s(L, M) + fin * dt_prev
 	    END DO
@@ -170,7 +173,8 @@
                 J2 = BC_J_N(L) 
                 K1 = BC_K_B(L) 
                 K2 = BC_K_T(L) 
-                call Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_g, V_g, W_g, ROP_g, X_g(1, N), fin, fout, IER) 
+!                call Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_g, V_g, W_g, ROP_g, X_g(1, N), fin, fout, IER) 
+                call Calc_mass_flux_spHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_gE, Flux_gN, Flux_gT, X_g(1, N), DISCRETIZE(7), fin, fout, IER) 
 	        flux_out_X_g(L, N) = flux_out_X_g(L, N) + fout  * dt_prev
                 flux_in_X_g(L, N) = flux_in_X_g(L, N) + fin * dt_prev
               ENDIF 
@@ -201,8 +205,10 @@
                   J2 = BC_J_N(L) 
                   K1 = BC_K_B(L) 
                   K2 = BC_K_T(L) 
-                  call Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, BC_PLANE(L), &
-                  U_s(1,M), V_s(1,M), W_s(1,M), ROP_s(1,M), X_s(1, M, N), fin, fout, &
+!                  call Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, BC_PLANE(L), &
+!                  U_s(1,M), V_s(1,M), W_s(1,M), ROP_s(1,M), X_s(1, M, N), fin, fout, &
+                  call Calc_mass_flux_spHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), &
+                  Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), X_s(1, M, N), DISCRETIZE(7), fin, fout, &
                   IER) 
 	          flux_out_X_s(L, M, N) = flux_out_X_s(L, M, N) + fout  * dt_prev
                   flux_in_X_s(L, M, N) = flux_in_X_s(L, M, N) + fin * dt_prev
@@ -606,7 +612,186 @@
             call global_all_sum(flux_out)
 	 
       return
-      end SUBROUTINE  Calc_mass_flux_sp	 
+      end SUBROUTINE  Calc_mass_flux_sp	
+       
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: Calc_mass_fluxHR                                       C
+!  Purpose: Calculate the mass flux (g/s) across a plane. HR version.  C
+!                                                                      C
+!  Author: M. Syamlal                                 Date: 26-Jul-05   C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE  Calc_mass_fluxHR(I1, I2, J1, J2, K1, K2, Plane, Flux_E, Flux_N, Flux_T, flux_in, flux_out, IER) 
+      USE param 
+      USE param1 
+      IMPLICIT NONE
+      
+! 
+!                      Starting and ending indices (Make sure these represent a plane and NOT a volume)
+      INTEGER ::           I1, I2, J1, J2, K1, K2 
+
+!                      For each (scalar) cell the plane (W, E, S, N, B, T) to be used for flux calc
+      Character :: 	       Plane
+ 
+!                      Components of flux
+      DOUBLE PRECISION ::  Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3)
+ 
+!                      Species Mass fraction
+      DOUBLE PRECISION :: Xn(DIMENSION_3)
+
+!                      flux across the plane (composed of many cell faces)
+!                      flux_in: flux from the scalar cell into the rest of the domain
+!                      flux_out: flux into the scalar cell from the rest of the domain
+      DOUBLE PRECISION ::  flux_in, flux_out
+
+      INTEGER ::           IER
+      
+      Xn = one
+      call Calc_mass_flux_spHR(I1, I2, J1, J2, K1, K2, PLANE, Flux_E, Flux_N, Flux_T, Xn, 0, flux_in, flux_out, IER) 
+      return
+      end SUBROUTINE  Calc_mass_fluxHR	 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: Calc_mass_flux_spHR                                    C
+!  Purpose: Calculate the species mass flux (g/s) across a plane. HR version       C
+!                                                                      C
+!  Author: M. Syamlal                                 Date: 26-Jul-05   C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE  Calc_mass_flux_spHR(I1, I2, J1, J2, K1, K2, Plane, Flux_E, Flux_N, Flux_T, Xn, disc, flux_in, flux_out, IER) 
+      USE param 
+      USE param1 
+      USE geometry
+      USE physprop
+      USE indices
+      USE compar 
+      Use xsi_array
+      USE mpi_utility  
+      IMPLICIT NONE
+      
+! 
+!                      Starting and ending indices (Make sure these represent a plane and NOT a volume)
+      INTEGER ::           I1, I2, J1, J2, K1, K2 
+
+!                      For each (scalar) cell the plane (W, E, S, N, B, T) to be used for flux calc
+      Character :: 	       Plane
+ 
+!                      Components of flux
+      DOUBLE PRECISION ::  Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3)
+ 
+!                      Species Mass fraction
+      DOUBLE PRECISION :: Xn(DIMENSION_3)
+
+!
+!                      Discretizationindex
+      INTEGER          Disc
+      
+!                      flux across the plane (composed of many cell faces)
+!                      flux_in: flux from the scalar cell into the rest of the domain
+!                      flux_out: flux into the scalar cell from the rest of the domain
+      DOUBLE PRECISION ::  flux_in, flux_out, flux_in_global, flux_out_global
+
+!                       Flux and Xn at the boundary plane
+      DOUBLE PRECISION ::  Flux, PHI_HO
+
+      INTEGER ::           IER
+!
+!                      Indices
+      INTEGER          I, J, K, IJK
+      
+      INCLUDE 'function.inc'
+
+      call lock_xsi_array
+
+!     Unlike other calls to calc_xsi, the fluxes rather than the velocities are passed.
+!     This should work fine because the velocities are used to determine the upwind bias,
+!     which the fluxes should do equally well. The flag incr is not needed and is set to 0.
+      CALL CALC_XSI (DISC, Xn, Flux_E, Flux_N, Flux_T, XSI_E, XSI_N, XSI_T, 0)
+       
+      flux_in = zero
+      flux_out = zero
+      IER = 0
+      
+     
+            DO K = K1, K2 
+            DO J = J1, J2 
+            DO I = I1, I2 
+              IF(.NOT.IS_ON_myPE_owns(I, J, K)) cycle
+
+              SELECT CASE (TRIM(PLANE))  
+              CASE ('W')  
+                IJK = IM_OF(FUNIJK(I,J,K))
+                PHI_HO = XSI_E(IJK)*Xn(IP_OF(IJK))+(1.0-XSI_E(IJK))*Xn(IJK)
+		Flux = FLUX_E(IJK)
+
+              CASE ('E')  
+                IJK = FUNIJK(I,J,K)
+                PHI_HO = XSI_E(IJK)*Xn(IP_OF(IJK))+(1.0-XSI_E(IJK))*Xn(IJK)
+		Flux = -FLUX_E(IJK)
+		
+              CASE ('S')  
+                IJK = JM_OF(FUNIJK(I,J,K))
+                PHI_HO = XSI_N(IJK)*Xn(JP_OF(IJK))+(1.0-XSI_N(IJK))*Xn(IJK)
+		Flux = FLUX_N(IJK)
+
+              CASE ('N')  
+                IJK = FUNIJK(I,J,K)
+                PHI_HO = XSI_N(IJK)*Xn(JP_OF(IJK))+(1.0-XSI_N(IJK))*Xn(IJK)
+		Flux = -FLUX_N(IJK)
+
+              CASE ('B')  
+                IJK = KM_OF(FUNIJK(I,J,K))
+                PHI_HO = XSI_T(IJK)*Xn(KP_OF(IJK))+(1.0-XSI_T(IJK))*Xn(IJK)
+		Flux = FLUX_T(IJK)
+
+              CASE ('T')  
+                IJK = FUNIJK(I,J,K)
+                PHI_HO = XSI_T(IJK)*Xn(KP_OF(IJK))+(1.0-XSI_T(IJK))*Xn(IJK)
+		Flux = -FLUX_T(IJK)
+		
+	      CASE DEFAULT 
+!                IER = 1
+!                CALL START_LOG 
+!                WRITE (UNIT_LOG, '(A, A1)' ) 'From: Calc_mass_flux, Unknown Plane: ', Plane
+!                CALL MFIX_EXIT(myPE) 
+		
+              END SELECT
+	       
+	      IF(FLUX > ZERO)THEN
+		flux_out = flux_out + FLUX * PHI_HO
+	      ELSE
+		flux_in = flux_in - FLUX * PHI_HO
+	      ENDIF
+	      
+	    ENDDO
+	    ENDDO
+	    ENDDO
+
+            call global_all_sum(flux_in)
+            call global_all_sum(flux_out)
+      call unlock_xsi_array
+	 
+      return
+      end SUBROUTINE  Calc_mass_flux_spHR	 
       
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
