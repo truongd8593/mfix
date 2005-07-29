@@ -159,6 +159,7 @@
                   NQUAD = UNDEFINED_I
                   DIMN = UNDEFINED_I
                   DES_NEIGHBOR_SEARCH = UNDEFINED_I 
+                  USE_COHESION = .FALSE.
 ! DES_SEARCH takes values 1 (for n-square), 2(for quadtree) and 3(for octree)
 
                   RETURN

@@ -217,7 +217,7 @@
                              PV(IJK,LL) = 1
                              CALL CFNORMAL(LL, I, NORMAL)
                              CALL CFTANGENT(TANGENT, NORMAL, VRE)
-                             CALL CFRELVEL(LL, I, VRE, TANGENT, VRE)
+                             CALL CFRELVEL(LL, I, VRE, TANGENT)
 !                             CALL CFTANGENT(TANGENT, NORMAL, VRE)                             
                              CALL CFVRN(Vn, VRE, NORMAL)
                              CALL CFVRT(Vt, VRE, TANGENT)
