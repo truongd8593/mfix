@@ -769,8 +769,8 @@
  
             Mu_b = (256d0*Mu*EP_s(IJK,M)*SUM_EpsGo)&
                      /(5d0*Pi)
- 
-            IF(SWITCH == ZERO) THEN !sof modifications (May 20 2005)
+! added Ro_g = 0 for granular flows (no gas). sof Aug-02-2005 
+            IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN !sof modifications (May 20 2005)
               Mu_star = Mu
 		
 	    ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
@@ -948,7 +948,7 @@
             Kth=75d0*RO_s(M)*D_p(IJK,M)*DSQRT(Pi*Theta_m(IJK,M))/&
                   (48d0*Eta*(41d0-33d0*Eta))
  
-            IF(SWITCH == ZERO) THEN ! sof modifications (May 20 2005)
+            IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN ! sof modifications (May 20 2005)
               Kth_star=Kth
 		
 	    ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
