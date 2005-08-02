@@ -20,7 +20,7 @@ cd FluidBed_DES
 echo "********************************************************************"
 echo "FluidBed_DES"
 tail -20 out1
-cd ../..
+cd ..
 # Another case
 echo
 cd fluidBed1
@@ -55,4 +55,18 @@ cd SpoutedBedCombustor
 echo "********************************************************************"
 echo "SpoutedBedCombustor"
 tail -20 out1
-cd ../..
+cd ..
+# Another case
+echo
+cd Fully_Developed_With_AhmadiModel
+echo "********************************************************************"
+echo "Fully_Developed_With_AhmadiModel"
+tail -20 out1
+cd ..
+# Another case
+echo
+cd Gidaspow_fbed_With_SimoninModel
+echo "********************************************************************"
+echo "Gidaspow_fbed_With_SimoninModel"
+tail -20 out1
+cd ..

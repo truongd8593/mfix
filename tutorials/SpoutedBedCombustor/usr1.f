@@ -90,7 +90,7 @@
 !
               VREL = SQRT((UGC - USCM)**2 + (VGC-VSCM)**2   &
                                         + (WGC-WSCM)**2 )
-              Re = EP_g(IJK) * D_p(M) * VREL * RO_g(IJK) / MU_g(IJK)
+              Re = EP_g(IJK) * D_p0(M) * VREL * RO_g(IJK) / MU_g(IJK)
               N_sh(IJK, M) = ( (7. - 10. * EP_g(IJK) + 5. * EP_g2) &
                              *(ONE + 0.7 * Re**0.2 * Sc1o3)      &
                             + (1.33 - 2.4*EP_g(IJK) + 1.2*EP_g2) &

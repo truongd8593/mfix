@@ -206,34 +206,34 @@
         IF(R_D1 .EQ. ZERO .OR. EP_s1 .EQ. ZERO) THEN
           RXNA1F = ZERO
         ELSE
-          K_f = DIFF * N_sh(IJK, 1) / (D_p(1) * R_O2 * TGX)
+          K_f = DIFF * N_sh(IJK, 1) / (D_p0(1) * R_O2 * TGX)
           K_r = 8710. * EXP( -27000./1.987/TS1X) * R_D1*R_D1
 !
           IF(R_D1 .GE. ONE) THEN
             RXNA = ONE / (ONE / K_f + ONE / K_r)
           ELSE
             K_a = 2. * DIFF * f_EP_A * R_D1 &
-                / ( D_p(1) * ( ONE - R_D1 ) * R_O2 * TS1X )
+                / ( D_p0(1) * ( ONE - R_D1 ) * R_O2 * TS1X )
             RXNA = ONE / ( ONE /K_f + ONE/K_a + ONE/ K_r)
           ENDIF
-          RXNA1F = RXNA * PO2 * 6.0 * EP_s1 / ( D_p(1) * 32.0 )
+          RXNA1F = RXNA * PO2 * 6.0 * EP_s1 / ( D_p0(1) * 32.0 )
         ENDIF
 !
         IF(R_D2 .EQ. ZERO .OR. EP_s2 .EQ. ZERO) THEN
           RXNA2F = ZERO
         ELSE
 !
-          K_f = DIFF * N_sh(IJK, 2) / (D_p(2) * R_O2 * TGX)
+          K_f = DIFF * N_sh(IJK, 2) / (D_p0(2) * R_O2 * TGX)
           K_r = 8710. * EXP( -27000./1.987/TS2X) * R_D2*R_D2
 !
           IF(R_D2 .GE. ONE) THEN
             RXNA = ONE / (ONE / K_f + ONE / K_r)
           ELSE
             K_a = 2. * DIFF * f_EP_A * R_D2 &
-                / ( D_p(2) * ( ONE - R_D2 ) * R_O2 * TS2X )
+                / ( D_p0(2) * ( ONE - R_D2 ) * R_O2 * TS2X )
             RXNA = ONE / ( ONE /K_f + ONE/K_a + ONE/ K_r)
           ENDIF
-          RXNA2F = RXNA * PO2 * 6.0 * EP_s2 / ( D_p(2) * 32.0 )
+          RXNA2F = RXNA * PO2 * 6.0 * EP_s2 / ( D_p0(2) * 32.0 )
         ENDIF
       ELSE
         RXNA1F = ZERO
