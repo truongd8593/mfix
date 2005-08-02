@@ -33,6 +33,8 @@
   SIMONIN = .F.
   TOL_RESID  = 2.E-4
   UR_FAC(8) = 0.8
+  NORM_g = 0.0d0
+  NORM_s = 0.0d0
 
   Flux_g = 0.592965 !for superficial gas velocity of 500 cm/s
 
