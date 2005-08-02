@@ -1178,7 +1178,7 @@
 !     particle viscosity. If we want to simulate granular flow
 !     without the effects of an interstitial gas, SWITCH=0.
  
-      IF(SWITCH == ZERO)THEN
+      IF(SWITCH == ZERO .OR. Ro_g_avg == ZERO)THEN
         Mu_star = Mu
 		
       ELSEIF(TH .LT. SMALL_NUMBER)THEN

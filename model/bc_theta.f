@@ -823,7 +823,7 @@
 !     without the effects of an interstitial gas, SWITCH=0.
  
  
-      IF(SWITCH == ZERO)THEN
+      IF(SWITCH == ZERO .OR. Ro_g_avg == ZERO)THEN
         Lambda_star = Lambda
 		
       ELSEIF(TH .LT. SMALL_NUMBER)THEN
