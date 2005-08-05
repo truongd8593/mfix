@@ -724,14 +724,13 @@
 
 !     Unlike other calls to calc_xsi, the fluxes rather than the velocities are passed.
 !     This should work fine because the velocities are used to determine the upwind bias,
-!     which the fluxes should do equally well. The flag incr is not needed and is set to 0.
+!     for which fluxes should suffice. The flag incr is not needed and is set to 0.
       CALL CALC_XSI (DISC, Xn, Flux_E, Flux_N, Flux_T, XSI_E, XSI_N, XSI_T, 0)
        
       flux_in = zero
       flux_out = zero
       IER = 0
       
-     
             DO K = K1, K2 
             DO J = J1, J2 
             DO I = I1, I2 
@@ -769,10 +768,8 @@
 		Flux = -FLUX_T(IJK)
 		
 	      CASE DEFAULT 
-!                IER = 1
-!                CALL START_LOG 
-!                WRITE (UNIT_LOG, '(A, A1)' ) 'From: Calc_mass_flux, Unknown Plane: ', Plane
-!                CALL MFIX_EXIT(myPE) 
+                PHI_HO = ZERO
+		Flux = ZERO
 		
               END SELECT
 	       
