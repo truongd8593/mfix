@@ -328,7 +328,7 @@
 !  intervals of DT
 !
       CALL TIME_MARCH
-      IF(AUTOMATIC_RESTART.AND.ITER_RESTART.LE.10) GOTO 101
+      IF(AUTO_RESTART.AND.AUTOMATIC_RESTART.AND.ITER_RESTART.LE.10) GOTO 101
 
 !  Call user-defined subroutine after time-loop.
       IF (CALL_USR) CALL USR3
