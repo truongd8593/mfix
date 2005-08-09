@@ -107,6 +107,9 @@
 ! 
 !                      solids pressure residual 
       DOUBLE PRECISION RESs 
+! 
+!                      average velocity
+      DOUBLE PRECISION Vavg 
   
       DOUBLE PRECISION TLEFT 
 
@@ -225,10 +228,23 @@
 !
 !
 !     Calculate coefficients.  Explicitly set flags for all the quantities
-!     that need to be calculated before calling CALC_COEFF.
+!     that need to be calculated.  These are set to false when CALC_COEFF is called later.
 !
       IF (Call_DQMOM) PSIZE(1:MMAX)=.TRUE.
       IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
+
+!      WALL_TR = .TRUE. 
+      IF (ENERGY_EQ) THEN 
+!        SP_HEAT(:MMAX) = .TRUE. 
+!        COND(:MMAX) = .TRUE. 
+!        HEAT_TR(:MMAX,:MMAX) = .TRUE. 
+      ELSE 
+        SP_HEAT(:MMAX) = .FALSE. 
+        COND(:MMAX) = .FALSE. 
+        HEAT_TR(:MMAX,:MMAX) = .FALSE. 
+      ENDIF 
+!      DIFF(:MMAX) = .TRUE. 
+!      DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
 !
       VISC(0) = RECALC_VISC_G 
 ! 	The IF (GRANULAR_ENERGY) statement was commented out to allow calling calc_mu_s even
@@ -410,35 +426,51 @@
 !
             CALL START_LOG 
             IF (ENERGY_EQ) THEN 
-               WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS, HLOSS, CPU_NOW 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS, HLOSS, CPU_NOW 
                IF(FULL_LOG.and.myPE.eq.PE_IO) &          
                        WRITE(*,5000)TIME,DT,NIT,SMASS, HLOSS,CPU_NOW        
             ELSE 
-               WRITE (UNIT_LOG, 5001) TIME, DT, NIT, SMASS, CPU_NOW 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 5001) TIME, DT, NIT, SMASS, CPU_NOW 
                IF (FULL_LOG .and. myPE.eq.PE_IO) &
                        WRITE (*, 5001) TIME, DT, NIT, SMASS, CPU_NOW      
             ENDIF 
-            WRITE (UNIT_LOG, 5002) (errorpercent(M), M=0,MMAX) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 5002) (errorpercent(M), M=0,MMAX) 
             IF (FULL_LOG .and. myPE.eq.PE_IO) &
                        WRITE (*, 5002) (errorpercent(M), M=0,MMAX)      
             IF (.NOT.FULL_LOG) THEN 
                TLEFT = (TSTOP - TIME)*CPUOS 
                CALL GET_TUNIT (TLEFT, TUNIT) 
-               WRITE (UNIT_LOG, '(46X, A, F9.3, 1X, A)') '    CPU time left = '&
+               IF(DMP_LOG)WRITE (UNIT_LOG, '(46X, A, F9.3, 1X, A)') '    CPU time left = '&
                   , TLEFT, TUNIT 
             ENDIF 
 !
             IF (CYCLIC_X .OR. CYCLIC_Y .OR. CYCLIC_Z) THEN 
-               IF (DO_I) WRITE (UNIT_LOG, 5050) 'U_g = ', VAVG_U_G() 
-               IF (DO_J) WRITE (UNIT_LOG, 5050) 'V_g = ', VAVG_V_G() 
-               IF (DO_K) WRITE (UNIT_LOG, 5050) 'W_g = ', VAVG_W_G() 
+	      
+               IF (DO_I) THEN
+	         Vavg = VAVG_U_G()
+	         IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'U_g = ', Vavg
+	       ENDIF
+               IF (DO_J) THEN
+	         Vavg = VAVG_V_G()
+	         IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'V_g = ',  Vavg
+	       ENDIF
+               IF (DO_K) THEN
+	         Vavg = VAVG_W_G()
+	         IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'W_g = ', Vavg 
+	       ENDIF
                DO M = 1, MMAX 
-                  IF (DO_I) WRITE (UNIT_LOG, 5060) 'U_s(', M, ') = ', VAVG_U_S(&
-                     M) 
-                  IF (DO_J) WRITE (UNIT_LOG, 5060) 'V_s(', M, ') = ', VAVG_V_S(&
-                     M) 
-                  IF (DO_K) WRITE (UNIT_LOG, 5060) 'W_s(', M, ') = ', VAVG_W_S(&
-                     M) 
+                  IF (DO_I) Then
+		    Vavg = VAVG_U_S(M)
+		    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'U_s(', M, ') = ', Vavg
+		  ENDIF
+                  IF (DO_J) Then
+		    Vavg = VAVG_V_S(M)
+		    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'V_s(', M, ') = ', Vavg
+		  ENDIF
+                  IF (DO_K) Then
+		    Vavg = VAVG_W_S(M) 
+		    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'W_s(', M, ') = ', Vavg
+		  ENDIF
                END DO 
             ENDIF 
 !
@@ -451,7 +483,7 @@
          IF (FULL_LOG) THEN 
             CALL START_LOG 
             call CALC_RESID_MB(1, errorpercent)
-            WRITE (UNIT_LOG, 5200) TIME, DT, NIT, errorpercent(0) 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 5200) TIME, DT, NIT, errorpercent(0) 
             CALL END_LOG 
 
             if (myPE.eq.PE_IO) WRITE (*, 5200) TIME, DT, NIT, errorpercent(0)   !//
@@ -472,7 +504,7 @@
       CALL GET_SMASS (SMASS) 
       if (myPE.eq.PE_IO) WRITE (UNIT_OUT, 5100) TIME, DT, NIT, SMASS    !//
       CALL START_LOG 
-      WRITE (UNIT_LOG, 5100) TIME, DT, NIT, SMASS 
+      IF(DMP_LOG)WRITE (UNIT_LOG, 5100) TIME, DT, NIT, SMASS 
       CALL END_LOG 
 !
 ! modified sof (06-23/2005) Mfix will not go the next time step if MAX_NIT is reached,
@@ -575,7 +607,7 @@
       
       OUTIT = OUTIT + 1
       if(OUTIT > MAXOUTIT) then
-        Write(*,5400) MAXOUTIT
+        if (myPE.eq.PE_IO)Write(*,5400) MAXOUTIT
         call mfix_exit(0)
       endif
       
@@ -592,7 +624,7 @@
       ENDIF
       
       If (isNan(mdot_n) .or. isNan(delp_n)) then
-        write(*,*) mdot_n, delp_n, ' NaN being caught in GoalSeekMassFlux '
+        if (myPE.eq.PE_IO)write(*,*) mdot_n, delp_n, ' NaN being caught in GoalSeekMassFlux '
         AUTOMATIC_RESTART = .TRUE.
 	RETURN
       ENDIF

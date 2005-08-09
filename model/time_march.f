@@ -358,7 +358,7 @@
          IF (FINISH) THEN 
             CALL WRITE_RES1 
             RES_MSG = .FALSE. 
-            WRITE (UNIT_LOG, '(" t=",F10.4, "  Wrote RES;")', ADVANCE='NO') TIME 
+            IF(DMP_LOG)WRITE (UNIT_LOG, '(" t=",F10.4, "  Wrote RES;")', ADVANCE='NO') TIME 
             IF (FULL_LOG .and. myPE.eq.PE_IO) THEN
                WRITE (*, 1000,  ADVANCE="NO") TIME 
             ENDIF
@@ -367,7 +367,7 @@
          RES_TIME = (INT((TIME + 0.1*DT)/RES_DT) + 1)*RES_DT 
          CALL WRITE_RES1 
          RES_MSG = .FALSE. 
-         WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME 
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME 
       ENDIF 
 !     
@@ -385,16 +385,16 @@
 !     
                IF (SPX_MSG) THEN 
                   IF (RES_MSG) THEN 
-                     WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME 
-                     IF (FULL_LOG) WRITE (*, 1001,  ADVANCE='NO') TIME 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME 
+                     IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1001,  ADVANCE='NO') TIME 
                   ELSE 
-                     WRITE (UNIT_LOG, 1002,  ADVANCE='NO') 
-                     IF (FULL_LOG) WRITE (*, 1002,  ADVANCE='NO') 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1002,  ADVANCE='NO') 
+                     IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1002,  ADVANCE='NO') 
                   ENDIF 
                   SPX_MSG = .FALSE. 
                ENDIF 
-               WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
-               IF (FULL_LOG) WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
+               IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
             ENDIF 
          ELSE IF (TIME + 0.1*DT>=SPX_TIME(L) .OR. TIME+0.1*DT>=TSTOP) THEN 
             SPX_TIME(L) = (INT((TIME + 0.1*DT)/SPX_DT(L))+1)*SPX_DT(L) 
@@ -404,28 +404,28 @@
 !     
             IF (SPX_MSG) THEN 
                IF (RES_MSG) THEN 
-                  WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME 
-                  IF (FULL_LOG) WRITE (*, 1001,  ADVANCE='NO') TIME 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME 
+                  IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1001,  ADVANCE='NO') TIME 
                ELSE 
-                  WRITE (UNIT_LOG, 1002,  ADVANCE='NO') 
-                  IF (FULL_LOG) WRITE (*, 1002,  ADVANCE='NO') 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1002,  ADVANCE='NO') 
+                  IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1002,  ADVANCE='NO') 
                ENDIF 
                SPX_MSG = .FALSE. 
             ENDIF 
-            WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
-            IF (FULL_LOG) WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
+            IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
          ENDIF 
       END DO 
 
       IF (.NOT.SPX_MSG) THEN 
          DO L = 1, N_SPX - ISPX 
-            WRITE (UNIT_LOG, '(A,$)') '   ' 
+            IF(DMP_LOG)WRITE (UNIT_LOG, '(A,$)') '   ' 
             IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, '(A,$)') '   ' !//
          END DO 
-         WRITE (UNIT_LOG, 1015) DISK_TOT 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1015) DISK_TOT 
          IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, 1015) DISK_TOT !//
       ELSE IF (.NOT.RES_MSG) THEN 
-         WRITE (UNIT_LOG, *) 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) 
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, *) !//
       ENDIF 
 
@@ -548,7 +548,7 @@
          END DO
          IF(DT.LT.DT_MIN) THEN
             IF(TIME.LE.RES_DT) THEN
-               IF (AUTO_RESTART) WRITE(UNIT_LOG,*) &
+               IF (AUTO_RESTART .AND. DMP_LOG)WRITE(UNIT_LOG,*) &
 	                       'Automatic restart not possible as Total Time < RES_DT'
                CALL MFIX_EXIT(MyPE)
             ENDIF
