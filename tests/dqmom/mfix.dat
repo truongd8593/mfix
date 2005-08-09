@@ -10,7 +10,7 @@
   RUN_TYPE              = 'new'             
   UNITS                 = 'cgs'
   TIME                  = 0.0                         !start time
-  TSTOP                 = 10
+  TSTOP                 = 0.1
   DT                    = 1.0E-5
                            
   CLOSE_PACKED 	= .TRUE.  .TRUE.

@@ -17,8 +17,11 @@
   TIME  = 0.0    TSTOP =0.12    DT = 1.0E-4  !DT_FAC = 1.0
   ENERGY_EQ = .FALSE.                                                           
   SPECIES_EQ = .TRUE.    .FALSE.   
-  DISCRETIZE		= 1, 3, 4*3, 3*3
+  DISCRETIZE		= 9*3
   chi_scheme = .true.
+
+  NORM_G = 0.0
+  NORM_S = 0.0
 #                                                                               
 # Geometry Section                                                              
 #                                                                               

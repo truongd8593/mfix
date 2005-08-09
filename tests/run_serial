@@ -44,7 +44,7 @@ sh ~/MFIX/mfix/model/make_mfix < ../in
 cd ..
 # Another case
 echo
-cd Diven_Cavity_DES
+cd Driven_Cavity_DES
 echo "********************************************************************"
 echo "Driven_Cavity_DES"
 sh ~/MFIX/mfix/model/make_mfix < ../in
