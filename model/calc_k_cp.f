@@ -95,7 +95,7 @@
  
                         DPcoDEPs =&
                            Fr*((EP_s(IJK,M) - EPS_f_min)**(N_Pc - 1.))&
-                           *(N_Pc*(EPS_max - EP_s(IJK,M)) -&
+                           *(N_Pc*(EPS_max - EP_s(IJK,M)) +&
                              D_Pc*(EP_s(IJK,M) - EPS_f_min))&
       	                   / ((EPS_max - EP_s(IJK,M) + SMALL_NUMBER)**&
                               (D_Pc + 1.))
