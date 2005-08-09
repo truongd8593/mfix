@@ -142,11 +142,22 @@
 !                      number of cells with minor and major discrepancy
       INTEGER          COUNT_masstr0(0:DIMENSION_M), COUNT_masstr1(0:DIMENSION_M)
 !
+!                   run_name + extension
+      CHARACTER     FILE_NAME*64
+!
+!
+!                   Log file name: dmp mode adds processor no to file name
+      CHARACTER     LOGFILE*60
+!
+!                      errror  flag
+      INTEGER          IER
+!
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
-!
-      MESSAGE_rxnsum = .false.
+! For DM parallel runs we redo these checks again from here so that all processors can write
+! log files.  There is a goto statement at the end to start from statement no. 1.
+1     MESSAGE_rxnsum = .false.
       RXNSUM_MAX     = ZERO
       COUNT_RXNSUM0  = 0
       COUNT_RXNSUM1  = 0
@@ -683,9 +694,22 @@
       END DO 
       IF (MESSAGE .AND. DMP_LOG)WRITE (UNIT_LOG, 1500) 
 !
-      IF (ABORT) CALL MFIX_EXIT(myPE) 
-!
       CALL END_LOG 
+      IF (ABORT) then
+        if(.not.dmp_log)then
+	  !enable dmp_log, open logfile, and redo the check (goto 1), so that this PE can
+	  !  write the error message before aborting
+	  write(LOGFILE,'(A,I3.3)') 'Error-PE',myPE
+          CALL OPEN_FILE (LOGFILE, 12, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
+          'SEQUENTIAL', 'FORMATTED', 132, IER)
+	  dmp_log = .true.
+	  goto 1 
+
+	else
+          CALL MFIX_EXIT(myPE)
+	endif
+      endif
+!
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: CHECK_DATA_30',5X,'Time = ',G12.5,/&
          ' Message: One or more of the following errors detected:',/&
