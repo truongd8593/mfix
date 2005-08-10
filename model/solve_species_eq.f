@@ -229,8 +229,8 @@
 !
                CALL SOLVE_LIN_EQ ('X_s', X_S(1,M,LN), A_M, B_M, M, LEQI, LEQM, &
 	                     LEQ_SWEEP(7), LEQ_TOL(7),IER) 
+               CALL BOUND_X (X_S(1,M,LN), IJKMAX2, IER) 
 !            call out_array(X_s(1,m,LN), 'X_s')
-!               CALL BOUND_X (X_S(1,M,LN), IJKMAX2, IER) 
 !
             END DO 
          ENDIF 
