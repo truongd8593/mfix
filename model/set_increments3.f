@@ -76,6 +76,9 @@
 !                      Index for the solids phase.
       INTEGER          M
 !
+!                      error Index
+      INTEGER          ier
+!
 !                             Local DO-loop index
       INTEGER                 L
 !
@@ -166,6 +169,7 @@
 !
                ICLASS = ICLASS + 1               !Increment the ICLASS counter 
                IF (ICLASS > MAX_CLASS) THEN 
+	          IF(.not.DMP_LOG)call open_pe_log(ier)
                   WRITE (UNIT_LOG, 1000) MAX_CLASS 
                   CALL MFIX_EXIT(myPE) 
                ENDIF 

@@ -235,23 +235,24 @@
       if (time >= report_time)then
 	
         CALL START_LOG 
-        WRITE(UNIT_LOG, '(/A,G12.5,A,G12.5)') 'Mass balance for interval ', start_time, ' to ', time
+        IF(DMP_LOG)WRITE(UNIT_LOG, '(/A,G12.5,A,G12.5)') 'Mass balance for interval ', start_time, ' to ', time
 
 	Accumulation_old = Accumulation_g
         Accumulation_g = Accumulation(ROP_g)
 	Accumulation_delta = Accumulation_g - Accumulation_old - Integral_SUM_R_g
-        WRITE(UNIT_LOG, '(A)') 'Total Fluid Accumulation (g)'
-        WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
+        IF(DMP_LOG)WRITE(UNIT_LOG, '(A)') 'Total Fluid Accumulation (g)'
+        IF(DMP_LOG)WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
 	  Accumulation_g, ', Production = ', Integral_SUM_R_g, ', net accu(New - Old - Production) = ', Accumulation_delta
 	  
-        WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
-	Write(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'
+        IF(DMP_LOG)WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
+	IF(DMP_LOG)WRITE(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'
 	flux = zero
 	flux_in_tot = zero
 	flux_out_tot = zero
         DO L = 1, DIMENSION_BC
-	  if(flux_out_g(L) /= ZERO .OR. flux_in_g(L) /= ZERO) &
-	    Write(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_g(L), flux_out_g(L), (flux_in_g(L)-flux_out_g(L))
+	  if(flux_out_g(L) /= ZERO .OR. flux_in_g(L) /= ZERO) then
+	    IF(DMP_LOG)WRITE(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_g(L), flux_out_g(L), (flux_in_g(L)-flux_out_g(L))
+	  endif
 	  flux = flux + flux_in_g(L) - flux_out_g(L)
 	  flux_in_tot = flux_in_tot + flux_in_g(L)
 	  flux_out_tot = flux_out_tot + flux_out_g(L)
@@ -262,26 +263,27 @@
 	else
 	  error_percent = zero
 	endif
-	Write(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
-	Write(Unit_log, '(A, G12.5, A, G12.5)')'Error (net influx - net accu) = ', &
+	IF(DMP_LOG)WRITE(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
+	IF(DMP_LOG)WRITE(Unit_log, '(A, G12.5, A, G12.5)')'Error (net influx - net accu) = ', &
 	  (flux - Accumulation_delta), ' %Error_g = ', error_percent
 	  
 	DO M = 1, MMAX
 	  Accumulation_old = Accumulation_s(M)
           Accumulation_s(M) = Accumulation(ROP_s(1, M))
 	  Accumulation_delta = Accumulation_s(M) - Accumulation_old - Integral_SUM_R_s(M)
-          WRITE(UNIT_LOG, '(/A, I1, A)') 'Total Solids-', M, ' Accumulation (g)'
-          WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
+          IF(DMP_LOG)WRITE(UNIT_LOG, '(/A, I1, A)') 'Total Solids-', M, ' Accumulation (g)'
+          IF(DMP_LOG)WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
 	    Accumulation_s(M), ', Production = ', Integral_SUM_R_s(M), ', net accu(New - Old - Production) = ', Accumulation_delta
 	  
-          WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
-	  Write(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'
+          IF(DMP_LOG)WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
+	  IF(DMP_LOG)WRITE(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'
 	  flux = zero
 	  flux_in_tot = zero
 	  flux_out_tot = zero
           DO L = 1, DIMENSION_BC
-	    if(flux_out_s(L,M) /= ZERO .OR. flux_in_s(L,M) /= ZERO) &
-	      Write(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_s(L,M), flux_out_s(L,M), (flux_in_s(L,M)-flux_out_s(L,M))
+	    if(flux_out_s(L,M) /= ZERO .OR. flux_in_s(L,M) /= ZERO) then
+	      IF(DMP_LOG)WRITE(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_s(L,M), flux_out_s(L,M), (flux_in_s(L,M)-flux_out_s(L,M))
+	    endif
 	    flux = flux + flux_in_s(L,M) - flux_out_s(L,M)
 	    flux_in_tot = flux_in_tot + flux_in_s(L,M)
 	    flux_out_tot = flux_out_tot + flux_out_s(L,M)
@@ -295,8 +297,8 @@
 	  else
 	    error_percent = zero
 	  endif
-	  Write(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
-	  Write(Unit_log, '(A, G12.5, A, I1, A, G12.5)')'Error (net influx - net accu) = ', &
+	  IF(DMP_LOG)WRITE(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
+	  IF(DMP_LOG)WRITE(Unit_log, '(A, G12.5, A, I1, A, G12.5)')'Error (net influx - net accu) = ', &
 	    (flux - Accumulation_delta), ' %Error_',M,' = ', error_percent
 	END DO
 
@@ -304,24 +306,25 @@
         IF(SPECIES_EQ(0) )THEN
           DO N = 1, NMAX(0)
 	
-            WRITE(UNIT_LOG, '(/A,I2)') 'Gas species - ', N
+            IF(DMP_LOG)WRITE(UNIT_LOG, '(/A,I2)') 'Gas species - ', N
 	  
 	    Accumulation_old = Accumulation_X_g(N)
 	    Accumulation_X_g(N) = Accumulation_sp(ROP_g, X_g(1, N)) 
 	    Accumulation_delta = Accumulation_X_g(N) - Accumulation_old - Integral_R_g(N)
-            WRITE(UNIT_LOG, '(A)') 'Species Accumulation (g)'
-            WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
+            IF(DMP_LOG)WRITE(UNIT_LOG, '(A)') 'Species Accumulation (g)'
+            IF(DMP_LOG)WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
 	      Accumulation_X_g(N), ', Production = ', Integral_R_g(N), ', net accu(New - Old - Production) = ', Accumulation_delta
 	  
-            WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
-	    Write(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'
+            IF(DMP_LOG)WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
+	    IF(DMP_LOG)WRITE(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'
 	    flux = zero
 	    flux_in_tot = zero
 	    flux_out_tot = zero
             DO L = 1, DIMENSION_BC
-	      if(flux_out_X_g(L, N) /= ZERO .OR. flux_in_X_g(L, N) /= ZERO) &
-	        Write(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_X_g(L, N), flux_out_X_g(L, N), &
-	       (flux_in_X_g(L, N)-flux_out_X_g(L, N))
+	      if(flux_out_X_g(L, N) /= ZERO .OR. flux_in_X_g(L, N) /= ZERO) then
+	        IF(DMP_LOG)WRITE(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_X_g(L, N), flux_out_X_g(L, N), &
+	          (flux_in_X_g(L, N)-flux_out_X_g(L, N))
+	      endif
 	      flux = flux + flux_in_X_g(L, N) - flux_out_X_g(L, N)
 	      flux_in_tot = flux_in_tot + flux_in_X_g(L, N)
 	      flux_out_tot = flux_out_tot + flux_out_X_g(L, N)
@@ -336,8 +339,8 @@
 	    else
 	      error_percent = zero
 	    endif
-	    Write(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
-	    Write(Unit_log, '(A, G12.5, A, I2, A, G12.5)')'Error (net influx - net accu) = ', &
+	    IF(DMP_LOG)WRITE(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
+	    IF(DMP_LOG)WRITE(Unit_log, '(A, G12.5, A, I2, A, G12.5)')'Error (net influx - net accu) = ', &
 	     (flux - Accumulation_delta), ' %Error_g(',N,') = ', error_percent
 	  
           END DO
@@ -347,24 +350,25 @@
           IF(SPECIES_EQ(M) )THEN
             DO N = 1, NMAX(M)
 	
-              WRITE(UNIT_LOG, '(/A,I1, A, I2)') 'Solids-', M, ' species - ', N
+              IF(DMP_LOG)WRITE(UNIT_LOG, '(/A,I1, A, I2)') 'Solids-', M, ' species - ', N
 	  
 	      Accumulation_old = Accumulation_X_s(M,N)
   	      Accumulation_X_s(M,N) = Accumulation_sp(ROP_s(1,M), X_s(1, M, N)) 
 	      Accumulation_delta = Accumulation_X_s(M,N) - Accumulation_old - Integral_R_s(M,N)
-              WRITE(UNIT_LOG, '(A)') 'Species Accumulation (g)'
-              WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
+              IF(DMP_LOG)WRITE(UNIT_LOG, '(A)') 'Species Accumulation (g)'
+              IF(DMP_LOG)WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
 	        Accumulation_X_s(M,N), ', Production = ', Integral_R_s(M,N), ', net accu(New - Old - Production) = ', Accumulation_delta
 	  
-              WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
-	      Write(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'
+              IF(DMP_LOG)WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
+	      IF(DMP_LOG)WRITE(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'
 	      flux = zero
 	      flux_in_tot = zero
 	      flux_out_tot = zero
               DO L = 1, DIMENSION_BC
-	        if(flux_out_X_s(L, M, N) /= ZERO .OR. flux_in_X_s(L, M, N) /= ZERO) &
-	          Write(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_X_s(L, M, N), flux_out_X_s(L, M, N), &
+	        if(flux_out_X_s(L, M, N) /= ZERO .OR. flux_in_X_s(L, M, N) /= ZERO) then
+	          IF(DMP_LOG)WRITE(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_X_s(L, M, N), flux_out_X_s(L, M, N), &
 	           (flux_in_X_s(L, M, N)-flux_out_X_s(L, M, N))
+		endif
 	        flux = flux + flux_in_X_s(L, M, N) - flux_out_X_s(L, M, N)
 	        flux_in_tot = flux_in_tot + flux_in_X_s(L, M, N)
 	        flux_out_tot = flux_out_tot + flux_out_X_s(L, M, N)
@@ -379,14 +383,14 @@
 	      else
 	        error_percent = zero
 	      endif
-	      Write(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
-	      Write(Unit_log, '(A, G12.5, A, I1, A, I2, A, G12.5)')'Error (net influx - net accu) = ', &
+	      IF(DMP_LOG)WRITE(Unit_log, '(2X, A, 1X, 3(G12.5, 1x))')'Total', flux_in_tot, flux_out_tot, flux
+	      IF(DMP_LOG)WRITE(Unit_log, '(A, G12.5, A, I1, A, I2, A, G12.5)')'Error (net influx - net accu) = ', &
 	        (flux - Accumulation_delta), ' %Error_',M,'(',N,') = ', error_percent
 	  
             END DO
 	  ENDIF 
         END DO 
-        WRITE(UNIT_LOG, '(/)')
+        IF(DMP_LOG)WRITE(UNIT_LOG, '(/)')
 	CALL END_LOG
 	
         start_time = time
@@ -600,7 +604,7 @@
 	      CASE DEFAULT 
 !                IER = 1
 !                CALL START_LOG 
-!                WRITE (UNIT_LOG, '(A, A1)' ) 'From: Calc_mass_flux, Unknown Plane: ', Plane
+!                IF(DMP_LOG)WRITE (UNIT_LOG, '(A, A1)' ) 'From: Calc_mass_flux, Unknown Plane: ', Plane
 !                CALL MFIX_EXIT(myPE) 
 		
               END SELECT 

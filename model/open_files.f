@@ -189,7 +189,61 @@
          70('*')/) 
       END SUBROUTINE OPEN_FILES 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!//PAR_I/O Root Processor handles all file I/O except the LOG files
-!// 990 Replace STOP with mfix_exit(myPE) to terminate all processors
+
+      SUBROUTINE OPEN_PE_LOG (IER) 
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Switches: -xf
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE machine 
+      USE funits 
+      USE run
+      USE compar 
+      
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!
+!                     Error index: 0 - no error, 1 could not open file
+      INTEGER         IER
+!
+!                   run_name + extension
+      CHARACTER     FILE_NAME*64
+!
+!
+!                   Log file name: dmp mode adds processor no to file name
+      CHARACTER     LOGFILE*60
+!
+!                   Loop counter
+      INTEGER       LC
+!
+!                   index to first blank character in run_name
+      INTEGER       NB, NBL
+
+!-----------------------------------------------
+
+!
+! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
+!
+
+!//PAR_I/O all PEs must exec this check in order to avoid Bcast of NB
+      DO LC = 1, LEN(RUN_NAME) 
+         IF (RUN_NAME(LC:LC) == ' ') THEN 
+            NB = LC 
+            EXIT 
+         ENDIF
+	 LOGFILE(LC:LC) = RUN_NAME(LC:LC) 
+      END DO 
+!
+      NBL = NB
+      write(LOGFILE(NB:NB+3),'(I3.3)') myPE
+      NBL = NB + 3
+!
+      CALL OPEN_FILE (LOGFILE, NBL, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
+          'SEQUENTIAL', 'FORMATTED', 132, IER)
+	  
+      RETURN
+      END SUBROUTINE OPEN_PE_LOG 

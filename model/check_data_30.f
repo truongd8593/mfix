@@ -699,9 +699,10 @@
         if(.not.dmp_log)then
 	  !enable dmp_log, open logfile, and redo the check (goto 1), so that this PE can
 	  !  write the error message before aborting
-	  write(LOGFILE,'(A,I3.3)') 'Error-PE',myPE
-          CALL OPEN_FILE (LOGFILE, 12, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
-          'SEQUENTIAL', 'FORMATTED', 132, IER)
+!	  write(LOGFILE,'(A,I3.3)') 'Error-PE',myPE
+!          CALL OPEN_FILE (LOGFILE, 12, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
+!          'SEQUENTIAL', 'FORMATTED', 132, IER)
+          call open_pe_log(ier)
 	  dmp_log = .true.
 	  goto 1 
 

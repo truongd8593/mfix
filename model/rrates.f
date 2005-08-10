@@ -212,7 +212,8 @@
                      R_PHASE(IJK,LM) = -R_TMP(M,L) 
                   ELSE 
                      CALL START_LOG 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) L, M 
+                     IF(.not.DMP_LOG)call open_pe_log(ier)
+                     WRITE (UNIT_LOG, 1000) L, M 
                      CALL END_LOG 
                      call mfix_exit(myPE)  
                   ENDIF 
