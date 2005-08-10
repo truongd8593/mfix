@@ -116,13 +116,14 @@
          IF (FLUID_AT_G(IJK)) EXIT  
       END DO 
       
-      IF (CYCLIC) THEN 
+      PJ = UNDEFINED 
+      DO L = 1, DIMENSION_BC 
+         IF (BC_DEFINED(L) .AND. BC_TYPE(L)=='P_OUTFLOW') PJ = BC_P_G(L) 
+      END DO 
+      
+      IF (CYCLIC .AND. PJ == UNDEFINED) THEN 
          IJK_P_G = IJK 
       ELSE 
-         PJ = UNDEFINED 
-         DO L = 1, DIMENSION_BC 
-            IF (BC_DEFINED(L) .AND. BC_TYPE(L)=='P_OUTFLOW') PJ = BC_P_G(L) 
-         END DO 
          IF (PJ == UNDEFINED) THEN 
             IJK_P_G = IJK 
          ELSE 
