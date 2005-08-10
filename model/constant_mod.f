@@ -141,6 +141,9 @@
 !                      Excluded volume (Boyle-Massoudi stress tensor)
       DOUBLE PRECISION V_ex
 !
+!                      Coefficients for calibrating Syamlal-O'Brien drag correlation with Umf data
+      DOUBLE PRECISION drag_c1, drag_d1
+!
 
 
       END MODULE constant                                                                        

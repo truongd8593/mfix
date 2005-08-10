@@ -141,6 +141,8 @@
 ! end loezos   
 !
        DRAG_TYPE = 'SYAM_OBRIEN'
+       drag_c1 = 0.8d0
+       drag_d1 = 2.65d0
 
 !AE TIME 041601 Set the default to 1st order accurate time implementation
        CN_ON = .FALSE.
@@ -235,13 +237,13 @@
       MU_GMAX = UNDEFINED 
       NORM_G = UNDEFINED 
       NORM_S = UNDEFINED 
-      TOL_RESID = 1.0E-3 
-      TOL_RESID_T = 1.0E-4 
-      TOL_RESID_X = 1.0E-4 
-      TOL_RESID_Scalar = 1.0E-4
-      TOL_RESID_K_Epsilon = 1.0E-4
-      TOL_RESID_Th = 1.0E-4
-      TOL_DIVERGE = 1.0E+4 
+      TOL_RESID = 1.0D-3 
+      TOL_RESID_T = 1.0D-4 
+      TOL_RESID_X = 1.0D-4 
+      TOL_RESID_Scalar = 1.0D-4
+      TOL_RESID_K_Epsilon = 1.0D-4
+      TOL_RESID_Th = 1.0D-4
+      TOL_DIVERGE = 1.0D+4 
       V_EX = ZERO 
       P_REF = ZERO 
       P_SCALE = ONE 
@@ -283,15 +285,16 @@
       LEQ_TOL(8) = 1.0D-4  
       LEQ_TOL(9) = 1.0D-4  
       LEQ_PC     = 'LINE'
-      UR_FAC(1) = 0.8                            !pressure 
-      UR_FAC(2) = 0.5                            !rho, ep 
-      UR_FAC(3) = 0.5                            !U 
-      UR_FAC(4) = 0.5                            !V 
-      UR_FAC(5) = 0.5                            !W 
-      UR_FAC(6) = 1.0                            !T 
-      UR_FAC(7) = 1.0                            !X 
-      UR_FAC(8) = 0.5                            !Th 
-      UR_FAC(9) = 0.8                            !Scalar
+      UR_FAC(1) = 0.8D0                            !pressure 
+      UR_FAC(2) = 0.5D0                            !rho, ep 
+      UR_FAC(3) = 0.5D0                            !U 
+      UR_FAC(4) = 0.5D0                            !V 
+      UR_FAC(5) = 0.5D0                            !W 
+      UR_FAC(6) = 1.0D0                            !T 
+      UR_FAC(7) = 1.0D0                            !X 
+      UR_FAC(8) = 0.5D0                            !Th 
+      UR_FAC(9) = 0.8D0                            !Scalar
+      UR_F_gs   = 1.0D0				 !drag coefficient update
 !
 ! INITIALIZE THE GAS PHASE SECTION
 !

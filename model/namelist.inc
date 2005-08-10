@@ -39,11 +39,12 @@
 ! 1.3 Physical and numerical parameters section
 !            (e and C_e are same)
              e, C_e, C_f, C, C_NAME, Phi, Phi_w, L_scale0, MU_gmax,&
-             TOL_RESID, TOL_DIVERGE, MAX_NIT, LEQ_IT, LEQ_METHOD, LEQ_SWEEP,&
+             TOL_RESID, TOL_DIVERGE, TOL_RESID_Scalar, MAX_NIT, LEQ_IT, LEQ_METHOD, LEQ_SWEEP,&
 	     LEQ_TOL,  V_ex,&
-             P_ref, P_scale, UR_FAC, GRAVITY, TOL_RESID_T, TOL_RESID_X,&
+             P_ref, P_scale, UR_FAC, UR_F_gs, GRAVITY, TOL_RESID_T, TOL_RESID_X,&
 	     TOL_RESID_Th,&
              NORM_g, NORM_s, PHIP, e_w, EPS_f_min, EPS_max,&
+	     drag_c1, drag_d1, &
 !
 ! start GERA 8/15/03
              SEGREGATION_SLOPE_COEFFICIENT, ep_s_max,&

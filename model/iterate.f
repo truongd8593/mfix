@@ -233,18 +233,18 @@
       IF (Call_DQMOM) PSIZE(1:MMAX)=.TRUE.
       IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
 
-!      WALL_TR = .TRUE. 
+      WALL_TR = .TRUE. 
       IF (ENERGY_EQ) THEN 
-!        SP_HEAT(:MMAX) = .TRUE. 
-!        COND(:MMAX) = .TRUE. 
-!        HEAT_TR(:MMAX,:MMAX) = .TRUE. 
+        SP_HEAT(:MMAX) = .TRUE. 
+        COND(:MMAX) = .TRUE. 
+        HEAT_TR(:MMAX,:MMAX) = .TRUE. 
       ELSE 
         SP_HEAT(:MMAX) = .FALSE. 
         COND(:MMAX) = .FALSE. 
         HEAT_TR(:MMAX,:MMAX) = .FALSE. 
       ENDIF 
-!      DIFF(:MMAX) = .TRUE. 
-!      DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
+      DIFF(:MMAX) = .TRUE. 
+      DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
 !
       VISC(0) = RECALC_VISC_G 
 ! 	The IF (GRANULAR_ENERGY) statement was commented out to allow calling calc_mu_s even

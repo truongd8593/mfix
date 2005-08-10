@@ -68,6 +68,7 @@
       USE time_cpu  
       USE discretelement  
       USE mchem
+      USE ur_facs 
       IMPLICIT NONE
 !-----------------------------------------------
 !     G l o b a l   P a r a m e t e r s
@@ -130,6 +131,9 @@
 !     
 !     use function vavg_v_g to catch NaN's 
       DOUBLE PRECISION VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg
+!     
+!     Temporary storage 
+      DOUBLE PRECISION UR_F_gstmp
 !     
 !-----------------------------------------------
 !     E x t e r n a l   F u n c t i o n s
@@ -213,6 +217,8 @@
 !     Calculate all the coefficients once before entering the time loop
 !     
 !
+
+ 
 !  CHEM & ISAT begin (Nan Xie)
       IF (CALL_CHEM) THEN 
          CALL MCHEM_INIT
@@ -228,6 +234,12 @@
 !
 !  Calculate all the coefficients once before entering the time loop
 !
+!    First set any under relaxation factors for coefficient calculations to 1 and change them to user
+!    defined values after the call to calc_coefficient
+
+      UR_F_gstmp = UR_F_gs
+      UR_F_gs = ONE
+
       CALL RRATES_INIT(IER)
       IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
       WALL_TR = .TRUE. 
@@ -269,6 +281,8 @@
       CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
       HEAT_TR, WALL_TR, IER) 
 
+!    Now restore all underrelaxation factors for coefficient calculations to their original value
+      UR_F_gs = UR_F_gstmp
 !     
 !     Remove undefined values at wall cells for scalars
 !     
@@ -468,6 +482,11 @@
 !     Calculate coefficients.  Explicitly set flags for all the quantities
 !     that need to be calculated before calling CALC_COEFF.
 !     
+!    First set any under relaxation factors for coefficient calculations to 1 and change them to user
+!    defined values after the call to calc_coefficient
+
+      UR_F_gstmp = UR_F_gs
+      UR_F_gs = ONE
       M = 0 
       IF (MMAX + 1 > 0) THEN 
          IF (ENERGY_EQ) THEN 
@@ -490,6 +509,9 @@
 
       CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
       HEAT_TR, WALL_TR, IER) 
+      
+!    Now restore all underrelaxation factors for coefficient calculations to their original value
+      UR_F_gs = UR_F_gstmp
 !     
 !     Calculate the cross terms of the stress tensor
 !     

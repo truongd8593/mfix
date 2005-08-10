@@ -40,6 +40,7 @@
       USE drag  
       USE sendrecv 
       USE discretelement
+      USE ur_facs 
       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -161,9 +162,9 @@
 !     End of Koch and Hill variables declaration, sof
 !***********************************************************
 !     
-!     Local Coefficients
-      DOUBLE PRECISION C2_TMP, C3_TMP
 !     
+!     Current value of F_gs (i.e., without underrelaxation)
+      DOUBLE PRECISION F_gstmp
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -250,23 +251,16 @@
 !     
             IF(TRIM(DRAG_TYPE).EQ.'SYAM_OBRIEN') then
 
-               IF(C(2).EQ.UNDEFINED.AND.C(3).EQ.UNDEFINED) THEN
-                  C2_TMP = 0.8d0
-                  C3_TMP = 2.65d0
-               ELSE
-                  C2_TMP = C(2)
-                  C3_TMP = C(3)
-               END IF
                IF (EP_G(IJK) == ONE) THEN 
-                  F_GS(IJK,M) = ZERO 
+                  F_gstmp = ZERO 
                ELSE IF (EP_G(IJK) == ZERO) THEN 
-                  F_GS(IJK,M) = ZERO 
+                  F_gstmp = ZERO 
                ELSE 
                   A = EP_G(IJK)**4.14 
                   IF (EP_G(IJK) <= 0.85) THEN 
-                     B = C2_TMP*EP_G(IJK)**1.28 
+                     B = drag_c1*EP_G(IJK)**1.28 
                   ELSE 
-                     B = EP_G(IJK)**C3_TMP
+                     B = EP_G(IJK)**drag_d1
                   ENDIF 
                   V_RM=HALF*(A-0.06*RE+SQRT(3.6E-3*RE*RE+0.12*RE*(2.*B-A)+A*A)) 
 !------------------Begin cluster correction --------------------------
@@ -281,22 +275,22 @@
 !     
                   IF(TSUJI_DRAG) THEN
                      IF(EP_G(IJK).LE.0.8) THEN
-                        F_GS(IJK,M) = (Mu*EP_S(IJK,M)/(D_P(IJK,M)**2))*&
+                        F_gstmp = (Mu*EP_S(IJK,M)/(D_P(IJK,M)**2))*&
                         (150*(EP_S(IJK,M)/EP_G(IJK)) + 1.75*RE)
                      ELSE IF(EP_G(IJK).GT.0.8) THEN
                         IF(RE*EP_G(IJK).GT.1000) THEN
-                           F_GS(IJK,M) = 0.75*0.43*Mu*EP_S(IJK,M)*RE/(D_P(IJK,M)**2 *&
+                           F_gstmp = 0.75*0.43*Mu*EP_S(IJK,M)*RE/(D_P(IJK,M)**2 *&
                            EP_G(IJK)**1.7)
                         ELSE IF(RE*EP_G(IJK).LE.1000) THEN
-                           F_GS(IJK,M) = 0.75*C_DSXRET(RE*EP_G(IJK))*Mu*EP_S(IJK,M)*&
+                           F_gstmp = 0.75*C_DSXRET(RE*EP_G(IJK))*Mu*EP_S(IJK,M)*&
                            RE/(D_P(IJK,M)**2 *EP_G(IJK)**1.7)
                         END IF
                      END IF 
                   ELSE IF(MODEL_B) THEN 
-                     F_GS(IJK,M) = 0.75*Mu*EP_S(IJK,M)*C_DSXRE(RE/V_RM)/(&
+                     F_gstmp = 0.75*Mu*EP_S(IJK,M)*C_DSXRE(RE/V_RM)/(&
                      V_RM*D_P(IJK,M)*D_P(IJK,M)) 
                   ELSE
-                     F_GS(IJK,M) = 0.75*Mu*EP_S(IJK,M)*EP_G(IJK)*C_DSXRE(RE&
+                     F_gstmp = 0.75*Mu*EP_S(IJK,M)*EP_G(IJK)*C_DSXRE(RE&
                      /V_RM)/(V_RM*D_P(IJK,M)*D_P(IJK,M)) 
                   ENDIF 
                ENDIF 
@@ -320,9 +314,9 @@
                
 !              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
                IF(Model_B)THEN
-                  F_gs(IJK, M) = DgA * EP_s(IJK, M)/EP_g(IJK)
+                  F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
                ELSE
-                  F_gs(IJK, M) = DgA * EP_s(IJK, M)
+                  F_gstmp = DgA * EP_s(IJK, M)
                ENDIF
                
 !--------------------------End Gidaspow --------------------------
@@ -339,9 +333,9 @@
                
 !              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
                IF(Model_B)THEN
-                  F_gs(IJK, M) = DgA * EP_s(IJK, M)/EP_g(IJK)
+                  F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
                ELSE
-                  F_gs(IJK, M) = DgA * EP_s(IJK, M)
+                  F_gstmp = DgA * EP_s(IJK, M)
                ENDIF
                
 !--------------------------End WEN_YU ----------------------------
@@ -426,19 +420,20 @@
 !!!   
 !!!   Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
                IF(Model_B)THEN
-                  F_gs(IJK, M) = DgA * EP_s(IJK, M)/EP_g(IJK)
+                  F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
                ELSE
-                  F_gs(IJK, M) = DgA * EP_s(IJK, M)
+                  F_gstmp = DgA * EP_s(IJK, M)
                ENDIF
             ENDIF
 !     
 !---------------------End Koch & Hill (2001) ----------------------
 !     
          ELSE 
-            F_GS(IJK,M) = ZERO 
+            F_gstmp = ZERO 
          ENDIF 
       END DO 
       
+      F_gs(IJK, M) = (ONE - UR_F_gs) * F_gs(IJK, M) + UR_F_gs * F_gstmp
       
       RETURN  
       END SUBROUTINE DRAG_GS 
