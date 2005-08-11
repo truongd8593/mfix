@@ -259,6 +259,9 @@
       INCLUDE 'ep_s2.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 's_pr2.inc'
+      
+      
+      IF(MU_s0 /= UNDEFINED) RETURN  ! constant solids viscosity case
      
 ! loezos
       IF (SHEAR) THEN           

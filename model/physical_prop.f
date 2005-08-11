@@ -98,7 +98,7 @@
             END IF
 !           CHEM & ISAT end (nan xie)
 !
-! 1.1      Density
+!       Gas Density
 !
             IF (DENSITY(0)) THEN 
                IF (MW_AVG == UNDEFINED) THEN 
@@ -123,25 +123,16 @@
             ENDIF
 !
 !
-!1 Cal = 4.183925 J
+!       Gas specific heat
+
+!              1 Cal = 4.183925 J
 !
 !           Constant pressure specific heat of air in cal/g.K
-!            IF (SP_HEAT(0) .AND. C_PG0==UNDEFINED) C_PG(IJK) = 0.767*CPN2(T_G(&
-!               IJK)) + 0.233*CPO2(T_G(IJK))
-!
-!           CHEM & ISAT begin (nan xie)
-            IF (CALL_CHEM .or. CALL_ISAT) THEN
-               C_pg(IJK) =  X_g(IJK,SiH4)*CPSiH4(TGX)&
-                       + X_g(IJK,SiH2)*CPSiH2(TGX)  + X_g(IJK,H2)*CPH2(TGX)&
-                       + X_g(IJK,Si2H6)*CPSi2H6(TGX) + X_g(IJK,N2)*CPN2(TGX)
-            ELSE
-               IF (SP_HEAT(0) .AND. C_PG0==UNDEFINED) C_PG(IJK) = 0.767*CPN2(T_G(&
-               IJK)) + 0.233*CPO2(T_G(IJK))
-            END IF
-!           CHEM & ISAT end (nan xie)
-!
-!to SI, S. Dartevelle
-         IF (UNITS == 'SI') C_PG(IJK) = 4183.925*C_PG(IJK)    !in J/kg K
+            IF (SP_HEAT(0) .AND. C_PG0==UNDEFINED) then
+               C_PG(IJK) = 0.767*CPN2(T_G(IJK)) + 0.233*CPO2(T_G(IJK))
+               !to SI, S. Dartevelle
+               IF (UNITS == 'SI') C_PG(IJK) = 4183.925*C_PG(IJK)    !in J/kg K
+	    ENDIF
 !
 !
          ENDIF 
@@ -179,29 +170,14 @@
          DO IJK = IJKSTART3, IJKEND3 
             IF (.NOT.WALL_AT(IJK)) THEN 
 !
-!             Specific heat of solids (Coal = 0.3 cal/g.K)
-!             Perry & Chilton(1973) -- Table 3-201 on page 3-136
-!             Specific heat of solids (Ash =  0.310713 cal/g.K)
-!             Dobran et al., 1991
-               IF (SP_HEAT(M) .AND. C_PS0==UNDEFINED) C_PS(IJK,M) = 0.310713
-!to SI, S. Dartevelle
-               IF (UNITS == 'SI') C_PS(IJK,M) = 4183.925*C_PS(IJK,M)    !in J/kg K
-!
-!
-!
-!           CHEM & ISAT begin (nan xie)
-               IF (CALL_CHEM .or. CALL_ISAT) THEN
-                  TSX  = T_s(IJK, M)
-!
-!             Specific heat of solids (Coal) in cal/g.K
-!             Perry & Chilton(1973) -- Table 3-201 on page 3-136
-!
-                  IF(ROP_s(IJK,M) .GT. ZERO)THEN
-                     C_ps(IJK, M) = X_s(IJK,M,Si)*CPSi(TSX) &
-	                     + X_s(IJK,M,Al2O3)*CPAl2O3(TSX)
-                  ELSE
-                     C_ps(IJK, M) =  CPAl2O3(TSX)
-                  ENDIF 	  
+!             Specific heat of solids
+!                (Coal = 0.3 cal/g.K)  Perry & Chilton(1973) -- Table 3-201 on page 3-136
+!                (Ash =  0.310713 cal/g.K)           Dobran et al., 1991
+              IF (SP_HEAT(M) .AND. C_PS0==UNDEFINED) then
+	         C_PS(IJK,M) = 0.310713
+                 !to SI, S. Dartevelle
+                 IF (UNITS == 'SI') C_PS(IJK,M) = 4183.925*C_PS(IJK,M)    !in J/kg K
+	      ENDIF
 !
 !             Calculate Sherwood number for solids phases (Gunn 1978)
 !
@@ -231,7 +207,6 @@
                             + (1.33 - 2.4*EP_g(IJK) + 1.2*EP_g2)&
                              * Re**0.7 * Sc1o3 )
                END IF
-!           CHEM & ISAT end (nan xie)
             ENDIF 
          END DO 
       END DO  
