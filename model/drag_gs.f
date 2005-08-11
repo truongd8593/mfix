@@ -427,13 +427,14 @@
             ENDIF
 !     
 !---------------------End Koch & Hill (2001) ----------------------
-!     
-         ELSE 
-            F_gstmp = ZERO 
-         ENDIF 
-      END DO 
+! 
       
-      F_gs(IJK, M) = (ONE - UR_F_gs) * F_gs(IJK, M) + UR_F_gs * F_gstmp
+            F_gs(IJK, M) = (ONE - UR_F_gs) * F_gs(IJK, M) + UR_F_gs * F_gstmp
+         
+	 ELSE 
+            F_gs(IJK, M) = ZERO 
+         ENDIF 
+      END DO
       
       RETURN  
       END SUBROUTINE DRAG_GS 
