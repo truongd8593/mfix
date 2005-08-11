@@ -142,13 +142,6 @@
 !                      number of cells with minor and major discrepancy
       INTEGER          COUNT_masstr0(0:DIMENSION_M), COUNT_masstr1(0:DIMENSION_M)
 !
-!                   run_name + extension
-      CHARACTER     FILE_NAME*64
-!
-!
-!                   Log file name: dmp mode adds processor no to file name
-      CHARACTER     LOGFILE*60
-!
 !                      errror  flag
       INTEGER          IER
 !
@@ -699,9 +692,6 @@
         if(.not.dmp_log)then
 	  !enable dmp_log, open logfile, and redo the check (goto 1), so that this PE can
 	  !  write the error message before aborting
-!	  write(LOGFILE,'(A,I3.3)') 'Error-PE',myPE
-!          CALL OPEN_FILE (LOGFILE, 12, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
-!          'SEQUENTIAL', 'FORMATTED', 132, IER)
           call open_pe_log(ier)
 	  dmp_log = .true.
 	  goto 1 
