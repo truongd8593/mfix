@@ -42,10 +42,9 @@
       USE run
       USE toleranc 
       USE constant
-      USE scalars
       USE compar 
       USE funits 
-      USE usr   
+      USE scalars   
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -71,20 +70,12 @@
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: EOSG 
 !-----------------------------------------------
-      INCLUDE 'species_indices.inc'
-      INCLUDE 'usrnlst.inc'
-!
-      DOUBLE PRECISION TGX, TSX,  DIFF, EP_g2
-      DOUBLE PRECISION Sc1o3, UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, Re
-      INTEGER IMJK, IJMK, IJKM,I
-    
-      INCLUDE 'cp_fun1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'cp_fun2.inc'
       INCLUDE 'ep_s1.inc'
+      INCLUDE 'cp_fun1.inc'
+      INCLUDE 'function.inc'
+      INCLUDE 'cp_fun2.inc'
       INCLUDE 'ep_s2.inc'
+!
 !  Fluid phase
 !
 
@@ -92,13 +83,7 @@
       DO IJK = IJKSTART3, IJKEND3 
          IF (.NOT.WALL_AT(IJK)) THEN 
 !
-!           CHEM & ISAT begin (nan xie)
-            IF (CALL_CHEM .or. CALL_ISAT) THEN
-               TGX  = T_g(IJK)
-            END IF
-!           CHEM & ISAT end (nan xie)
-!
-!       Gas Density
+! 1.1      Density
 !
             IF (DENSITY(0)) THEN 
                IF (MW_AVG == UNDEFINED) THEN 
@@ -170,46 +155,19 @@
          DO IJK = IJKSTART3, IJKEND3 
             IF (.NOT.WALL_AT(IJK)) THEN 
 !
-!             Specific heat of solids
-!                (Coal = 0.3 cal/g.K)  Perry & Chilton(1973) -- Table 3-201 on page 3-136
-!                (Ash =  0.310713 cal/g.K)           Dobran et al., 1991
-              IF (SP_HEAT(M) .AND. C_PS0==UNDEFINED) then
+!             Specific heat of solids (Coal = 0.3 cal/g.K)
+!             Perry & Chilton(1973) -- Table 3-201 on page 3-136
+!             Specific heat of solids (Ash =  0.310713 cal/g.K)
+!             Dobran et al., 1991
+               IF (SP_HEAT(M) .AND. C_PS0==UNDEFINED) then
 	         C_PS(IJK,M) = 0.310713
                  !to SI, S. Dartevelle
                  IF (UNITS == 'SI') C_PS(IJK,M) = 4183.925*C_PS(IJK,M)    !in J/kg K
-	      ENDIF
+	       ENDIF
 !
-!             Calculate Sherwood number for solids phases (Gunn 1978)
-!
-                  EP_g2 = EP_g(IJK) * EP_g(IJK)
-                  DIFF = 4.26 * ((T_g(IJK)/1800.)**1.75) * 1013000. / P_g(IJK)
-                  Sc1o3 = (MU_g(IJK)/(RO_g(IJK) * DIFF))**(1./3.)
-	      
-                  IMJK = IM_OF(IJK)
-                  IJMK = JM_OF(IJK)
-                  IJKM = KM_OF(IJK)
-                  I    = I_OF(IJK)
-	      
-                  UGC = AVG_X_E(U_g(IMJK), U_g(IJK), I)
-                  VGC = AVG_Y_N(V_g(IJMK), V_g(IJK))
-                  WGC = AVG_Z_T(W_g(IJKM), W_g(IJK))
-!
-                  USCM = AVG_X_E(U_s(IMJK,M), U_s(IJK,M), I)
-                  VSCM = AVG_Y_N(V_s(IJMK,M), V_s(IJK,M))
-                  WSCM = AVG_Z_T(W_s(IJKM,M), W_s(IJK,M))
-!
-                  VREL = SQRT((UGC - USCM)**2 + (VGC-VSCM)**2&
-                                        + (WGC-WSCM)**2 )
-                                        
-                  Re = EP_g(IJK) * D_p(IJK,M) * VREL * RO_g(IJK) / (MU_g(IJK)+small_number)
-                  N_sh(IJK, M) = ( (7. - 10. * EP_g(IJK) + 5. * EP_g2)&
-                             *(ONE + 0.7 * Re**0.2 * Sc1o3)&
-                            + (1.33 - 2.4*EP_g(IJK) + 1.2*EP_g2)&
-                             * Re**0.7 * Sc1o3 )
-               END IF
             ENDIF 
          END DO 
-      END DO  
+      END DO 
 
      
       RETURN  
@@ -218,4 +176,3 @@
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-
