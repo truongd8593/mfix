@@ -355,79 +355,86 @@
 !
             ELSE IF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL') then
 !     
-           F_STOKES = 18*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
+              F_STOKES = 18*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
 	       
-	   phis = EP_s(IJK,M)
-	   w = EXP(-10.0*(0.4-phis)/phis)
+	      phis = EP_s(IJK,M)
+	      w = EXP(-10.0*(0.4-phis)/phis)
 	   
-	   IF(phis > 0.01 .AND. phis < 0.4) THEN
-	    F_0 = (1.0-w) *                                           &
+	      IF(phis > 0.01 .AND. phis < 0.4) THEN
+	        F_0 = (1.0-w) *                                           &
 	              (1.0 + 3.0*dsqrt(phis/2.0) + 135.0/64.0*phis    &
 	                *LOG(phis) + 17.14*phis) / (1.0 + 0.681*      &
 	  	        phis - 8.48*phis*phis + 8.16*phis**3) + w *   &
 			10.0*phis/(1.0-phis)**3
 	               
-	   ELSE IF(phis >= 0.4) THEN
-	    F_0 = 10.0*phis/(1.0-phis)**3
-	   ENDIF
+	      ELSE IF(phis >= 0.4) THEN
+	        F_0 = 10.0*phis/(1.0-phis)**3
+	      ENDIF
 	   
-	   IF(phis > 0.01 .AND. phis <= 0.1) THEN
-	    F_1 = dsqrt(2.0/phis) / 40.0
-	   ELSE IF(phis > 0.1) THEN
-	    F_1 = 0.11 + 5.1D-04 * exp(11.6*phis)
-	   ENDIF
+	      IF(phis > 0.01 .AND. phis <= 0.1) THEN
+	        F_1 = dsqrt(2.0/phis) / 40.0
+	      ELSE IF(phis > 0.1) THEN
+	        F_1 = 0.11 + 5.1D-04 * exp(11.6*phis)
+	      ENDIF
 	   
-	   IF(phis < 0.4) THEN
-	    F_2 = (1.0-w) *                                           &
+	      IF(phis < 0.4) THEN
+	        F_2 = (1.0-w) *                                           &
 	              (1.0 + 3.0*dsqrt(phis/2.0) + 135.0/64.0*phis    &
 	                *LOG(phis) + 17.89*phis) / (1.0 + 0.681*      &
 	  	        phis - 11.03*phis*phis + 15.41*phis**3)+ w *  &
 			10.0*phis/(1.0-phis)**3
 	   
-	   ELSE
-	    F_2 = 10.0*phis/(1.0-phis)**3
-	   ENDIF
+	      ELSE
+	        F_2 = 10.0*phis/(1.0-phis)**3
+	      ENDIF
 	   
-	   IF(phis < 0.0953) THEN
-	    F_3 = 0.9351*phis + 0.03667
-	   ELSE
-	    F_3 = 0.0673 + 0.212*phis +0.0232/(1.0-phis)**5
-	   ENDIF
+	      IF(phis < 0.0953) THEN
+	        F_3 = 0.9351*phis + 0.03667
+	      ELSE
+	        F_3 = 0.0673 + 0.212*phis +0.0232/(1.0-phis)**5
+	      ENDIF
 	   
-	   Re_Trans_1 = (F_2 - 1.0)/(3.0/8.0 - F_3)
-	   Re_Trans_2 = (F_3 + dsqrt(F_3*F_3 - 4.0*F_1 &
+	      Re_Trans_1 = (F_2 - 1.0)/(3.0/8.0 - F_3)
+	      Re_Trans_2 = (F_3 + dsqrt(F_3*F_3 - 4.0*F_1 &
 	                 *(F_0-F_2))) / (2.0*F_1)
 	   
-	   IF(phis <= 0.01 .AND. Re_kh <= Re_Trans_1) THEN
-	     F = 1.0 + 3.0/8.0*Re_kh
+	      IF(phis <= 0.01 .AND. Re_kh <= Re_Trans_1) THEN
+	        F = 1.0 + 3.0/8.0*Re_kh
 	   
-	   ELSE IF(phis > 0.01 .AND. Re_kh <= Re_Trans_2) THEN
-	     F = F_0 + F_1*Re_kh*Re_kh
+	      ELSE IF(phis > 0.01 .AND. Re_kh <= Re_Trans_2) THEN
+	        F = F_0 + F_1*Re_kh*Re_kh
 	   
 	  
-	   ELSE IF(phis <= 0.01 .AND. Re_kh > Re_Trans_1 .OR.         &
+	      ELSE IF(phis <= 0.01 .AND. Re_kh > Re_Trans_1 .OR.         &
 	           phis >  0.01 .AND. Re_kh > Re_Trans_2) THEN
-	     F = F_2 + F_3*Re_kh
+	        F = F_2 + F_3*Re_kh
 	  
-	   ELSE
-	     F = zero
-	   ENDIF
+	      ELSE
+	        F = zero
+	      ENDIF
 	   
 !  This is a check for phis (or eps_(ijk,m)) to be within physical range
-	   IF(phis < SMALL_NUMBER .OR. phis > ONE) F = zero
+	      IF(phis < SMALL_NUMBER .OR. phis > ONE) F = zero
 	   
-	   DgA = F * F_STOKES
+	      DgA = F * F_STOKES
 !!!   
 !!!   Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
-               IF(Model_B)THEN
+              IF(Model_B)THEN
                   F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
-               ELSE
+              ELSE
                   F_gstmp = DgA * EP_s(IJK, M)
-               ENDIF
-            ENDIF
+              ENDIF
 !     
 !---------------------End Koch & Hill (2001) ----------------------
 ! 
+            ELSE
+              CALL START_LOG 
+              IF(.not.DMP_LOG)call open_pe_log(ier)
+	      if(mype == pe_io) WRITE (*, '(A,A)') 'Unknown DRAG_TYPE: ', DRAG_TYPE
+              WRITE (UNIT_LOG, '(A,A)') 'Unknown DRAG_TYPE: ', DRAG_TYPE
+              CALL END_LOG 
+              call mfix_exit(myPE)  
+            ENDIF
       
             F_gs(IJK, M) = (ONE - UR_F_gs) * F_gs(IJK, M) + UR_F_gs * F_gstmp
          
