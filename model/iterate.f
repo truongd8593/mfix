@@ -227,39 +227,31 @@
       IF (CALL_USR) CALL USR2       
 !
 !
-!     Calculate coefficients.  Explicitly set flags for all the quantities
-!     that need to be calculated.  These are set to false when CALC_COEFF is called later.
+!     Calculate coefficients.  First turn off all flags.  Then explicitly set flags for all the quantities
+!     that need to be calculated.
 !
+      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, &
+         DRAGCOEF, HEAT_TR, WALL_TR, IER)
+
       IF (Call_DQMOM) PSIZE(1:MMAX)=.TRUE.
       IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
-
       WALL_TR = .TRUE. 
       IF (ENERGY_EQ) THEN 
         SP_HEAT(:MMAX) = .TRUE. 
         COND(:MMAX) = .TRUE. 
         HEAT_TR(:MMAX,:MMAX) = .TRUE. 
-      ELSE 
-        SP_HEAT(:MMAX) = .FALSE. 
-        COND(:MMAX) = .FALSE. 
-        HEAT_TR(:MMAX,:MMAX) = .FALSE. 
       ENDIF 
       DIFF(:MMAX) = .TRUE. 
       DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
-!
       VISC(0) = RECALC_VISC_G 
-! 	The IF (GRANULAR_ENERGY) statement was commented out to allow calling calc_mu_s even
-! 	when the algebraic granular equation is solved (not only the PDE form).
-! 	This may enhance convergence. sof, March-10-2005.
-       VISC(1:MMAX) = .TRUE. 
+      VISC(1:MMAX) = .TRUE. 
 !
       CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER) 
       CALL TRANSPORT_PROP (VISC, COND, DIFF, IER) 
       CALL EXCHANGE (DRAGCOEF, HEAT_TR, WALL_TR, IER) 
-
 !
 !     DIffusion coefficient and source terms for user-defined scalars
       IF(NScalar /= 0)CALL SCALAR_PROP(IER) 
-
 !
 !     DIffusion coefficient and source terms for K & Epsilon Eq.
       IF(K_Epsilon) CALL K_Epsilon_PROP(IER)
@@ -270,13 +262,17 @@
 !
 
       CALL SOLVE_VEL_STAR (IER) 
+
 !
 !     Calculate density and reaction rates. Do not change reaction rate anywhere else within this
 !     iteration loop.  Fluid density can be changed after the pressure correction step.
+      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, &
+         DRAGCOEF, HEAT_TR, WALL_TR, IER)
       IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
-      IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
-      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
-         HEAT_TR, WALL_TR, IER) 
+      IF (ANY_SPECIES_EQ) RRATE = .TRUE.
+       
+      CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER) 
+      CALL CALC_RRATE(RRATE)
 
 !
 !     Solve solids volume fraction correction equation for close-packed
