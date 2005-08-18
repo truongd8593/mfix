@@ -61,7 +61,7 @@ echo
 cd SpoutedBedCombustor
 echo "********************************************************************"
 echo "SpoutedBedCombustor"
-sh ~/MFIX/mfix/model/make_mfix < ../../in
+sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
 cd ../
 # Another case
@@ -69,7 +69,7 @@ echo
 cd Fully_Developed_With_AhmadiModel
 echo "********************************************************************"
 echo "Fully_Developed_With_AhmadiModel"
-sh ~/MFIX/mfix/model/make_mfix < ../../in
+sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
 cd ../
 # Another case
@@ -77,8 +77,6 @@ echo
 cd Gidaspow_fbed_With_SimoninModel
 echo "********************************************************************"
 echo "Gidaspow_fbed_With_SimoninModel"
-sh ~/MFIX/mfix/model/make_mfix < ../../in
+sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
 cd ../
-
-
