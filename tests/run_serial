@@ -230,9 +230,33 @@ sh ~/MFIX/mfix/model/make_mfix < ../in
 cd ..
 # Another case
 echo
-cd turbulent_pipe_flow
+cd 2Dfluidbed_VDW_high_coh
 echo "********************************************************************"
-echo "turbulent_pipe_flow"
+echo "2Dfluidbed_VDW_high_coh"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
+cd driven_cavity_cohesion_VDW
+echo "********************************************************************"
+echo "driven_cavity_cohesion_VDW"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
+cd isat
+echo "********************************************************************"
+echo "isat"
+sh ~/MFIX/mfix/model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
+cd dqmom
+echo "********************************************************************"
+echo "dqmom"
 sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
