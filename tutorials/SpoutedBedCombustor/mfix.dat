@@ -16,6 +16,13 @@
  	ENERGY_EQ	= .T.
 	SPECIES_EQ	= .T.  .T.  .T.
 	CALL_USR	= .T.
+	
+  	NORM_g 		= 0.
+  	NORM_s 		= 0.
+
+	UR_FAC(1) 	= 0.7
+	UR_FAC(3) 	= 0.3
+	UR_FAC(4) 	= 0.3
 
 ! 2. User defined constants
 	C		=  0.9	    			1.0E2
@@ -98,9 +105,9 @@
 	BC_ROP_s(1,1)	= 0.0
 	BC_ROP_s(1,2)	= 0.1
 
-	BC_T_g		= 300.0		300.0
-	BC_T_s(1,1)	= 300.0
-	BC_T_s(1,2)	= 300.0
+	BC_T_g		=  2*800.0	
+	BC_T_s(1,1)	= 800.0
+	BC_T_s(1,2)	= 800.0
 
 	BC_U_g		=  0.0		0.0
 	BC_MASSFLOW_g	= 10.		116.
@@ -220,7 +227,7 @@
 !Use the following to check mass balance for debugging initial runs.
 !For production runs comment out the line to disable this feature,
 !as it slows down the simulation.
-	Report_mass_balance_dt = 1.0  
+	Report_mass_balance_dt = 0.1  
 	  
 	nRR		= 7      !number reaction rates written out to .SPA
         OUT_DT 		= 100.
