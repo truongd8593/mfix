@@ -333,6 +333,8 @@
       IF (RO_G0 /= ZERO) CALL CORRECT_0 (IER) 
      
       IF (RO_G0 == UNDEFINED) THEN
+        PSIZE(1:MMAX)=.FALSE.
+        SP_HEAT(:MMAX) = .FALSE. 
         DENSITY(0) = .TRUE. 
         CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER) 
       ENDIF 
