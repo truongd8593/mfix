@@ -45,7 +45,7 @@
 !-----------------------------------------------
 !Parameter to make tolerance for residual scaled with max value compatible with
 !residual scaled with first iteration residual.  Increase it, to tighten convergence.
-      DOUBLE PRECISION, PARAMETER :: DEN = 1.0D1  
+      DOUBLE PRECISION, PARAMETER :: DEN = 5.0D2  
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
