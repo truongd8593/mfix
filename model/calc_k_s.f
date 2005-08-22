@@ -56,11 +56,11 @@
       
 !              microscopic conductivity of solids in cal/s.cm.K (not modified by the Gas Phase)
       DOUBLE PRECISION Ks_micro
-      PARAMETER (Ks_micro = 0.5258E-2)    !(2.2 J/s.m.K, conductivity of Ash) S. Dartevelle
+      PARAMETER (Ks_micro = 0.5258D-2)    !(2.2 J/s.m.K, conductivity of Ash) S. Dartevelle
 !
 !              Constant in conductivity equation
       DOUBLE PRECISION PHI_k
-      PARAMETER (PHI_k = 7.26E-3)
+      PARAMETER (PHI_k = 7.26D-3)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -92,7 +92,7 @@
 !
         IF (FLUID_AT(IJK)) THEN
           IF (UNITS == 'SI') THEN
-            Kg_micro = K_g(IJK)/418.3925  !back to CGS for K_g, Cal/s.cm.K
+            Kg_micro = K_g(IJK)/418.3925D0  !back to CGS for K_g, Cal/s.cm.K
 	  ELSE
             Kg_micro = K_g(IJK)           !it's already within the CGS system
           ENDIF
@@ -121,7 +121,7 @@
         ENDIF
 !
 !to SI, S. Dartevelle:
-        IF (UNITS == 'SI') K_s(IJK, M) = 418.3925*K_s(IJK, M)           !J/s.m.K
+        IF (UNITS == 'SI') K_s(IJK, M) = 418.3925D0*K_s(IJK, M)           !J/s.m.K
 !
       END DO
 !

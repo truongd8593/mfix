@@ -34,7 +34,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      DOUBLE PRECISION, PARAMETER :: TWO = 2. 
+      DOUBLE PRECISION, PARAMETER :: TWO = 2.D0 
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -102,7 +102,7 @@
       DOUBLE PRECISION PHI_C, Chi 
 
       if((ONE - PHI_C) > small_number)then
-        Chi_SMART = Chi * (3./8. - PHI_C/4.) / (ONE - PHI_C)
+        Chi_SMART = Chi * (3.D0/8.D0 - PHI_C/4.) / (ONE - PHI_C)
       else
       Chi_SMART = ONE
       endif
@@ -123,12 +123,12 @@
 !-----------------------------------------------
       DOUBLE PRECISION PHI_C 
 
-      IF(PHI_C > ZERO .AND. PHI_C <= (1./6.))THEN
-        Chi4SMART = 16. * PHI_C/(3. - 2. * PHI_C)
-      ELSEIF(PHI_C > (1./6.) .AND. PHI_C <= (5./6.))THEN
+      IF(PHI_C > ZERO .AND. PHI_C <= (1./6.D0))THEN
+        Chi4SMART = 16.D0 * PHI_C/(3.D0 - 2.D0 * PHI_C)
+      ELSEIF(PHI_C > (1./6.D0) .AND. PHI_C <= (5.D0/6.D0))THEN
         Chi4SMART = ONE
-      ELSEIF(PHI_C > (5./6.) .AND. PHI_C <= ONE)THEN
-        Chi4SMART = 8.*(ONE - PHI_C)/(3. - 2. * PHI_C)
+      ELSEIF(PHI_C > (5.D0/6.D0) .AND. PHI_C <= ONE)THEN
+        Chi4SMART = 8.D0*(ONE - PHI_C)/(3.D0 - 2.D0 * PHI_C)
       ELSE
         Chi4SMART = ZERO
       ENDIF
@@ -154,7 +154,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      DOUBLE PRECISION, PARAMETER :: FIVEOSIX = 5./6. 
+      DOUBLE PRECISION, PARAMETER :: FIVEOSIX = 5.D0/6.D0 
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -166,9 +166,9 @@
          ULTRA_QUICK = HALF 
       ELSE IF (PHI_C > FIVEOSIX) THEN 
          ULTRA_QUICK = ONE 
-      ELSE IF (PHI_C > 3./(8.*OCF - 6.)) THEN 
+      ELSE IF (PHI_C > 3.D0/(8.D0*OCF - 6.D0)) THEN 
          TH = PHI_C/(ONE - PHI_C) 
-         ULTRA_QUICK = HALF - 0.125*(ONE - TH) 
+         ULTRA_QUICK = HALF - 0.125D0*(ONE - TH) 
       ELSE IF (PHI_C > ZERO) THEN 
          TH = PHI_C/(ONE - PHI_C) 
          ULTRA_QUICK = (OCF - ONE)*TH 
@@ -205,7 +205,7 @@
 !-----------------------------------------------
 !
       IF (PHI_C>ZERO .AND. PHI_C<ONE) THEN       !monotonic region 
-         FCF = -(ONE - CF*CF)/3. 
+         FCF = -(ONE - CF*CF)/3.D0 
          TH = PHI_C/(ONE - PHI_C + SMALL_NUMBER) 
          QUICKEST = HALF*(ONE - CF) + FCF*(ODXC/ODXCD - ODXC*ODXUC*TH/ODXCD**2) 
          IF(PHI_C<CF)QUICKEST=MIN(QUICKEST,(ONE/CF-ONE)*PHI_C/(ONE-PHI_C)) 
@@ -266,7 +266,7 @@
       DOUBLE PRECISION PHI_C, Chi 
 
       if((ONE - PHI_C) > small_number)then
-        Chi_MUSCL = Chi /(4. * (ONE - PHI_C))
+        Chi_MUSCL = Chi /(4.D0 * (ONE - PHI_C))
       else
         Chi_MUSCL = ONE 
       endif
@@ -287,12 +287,12 @@
 !-----------------------------------------------
       DOUBLE PRECISION PHI_C 
 
-      IF(PHI_C > ZERO .AND. PHI_C <= (1./4.))THEN
-        Chi4MUSCL = 4. * PHI_C
-      ELSEIF(PHI_C > (1./4.) .AND. PHI_C <= (3./4.))THEN
+      IF(PHI_C > ZERO .AND. PHI_C <= (1./4.D0))THEN
+        Chi4MUSCL = 4.D0 * PHI_C
+      ELSEIF(PHI_C > (1./4.D0) .AND. PHI_C <= (3.D0/4.D0))THEN
         Chi4MUSCL = ONE
       ELSEIF(PHI_C > (3./4.) .AND. PHI_C <= ONE)THEN
-        Chi4MUSCL = 4.*(ONE - PHI_C)
+        Chi4MUSCL = 4.D0*(ONE - PHI_C)
       ELSE
         Chi4MUSCL = ZERO
       ENDIF
@@ -496,9 +496,9 @@
 !-----------------------------------------------
 !-----------------------------------------------
 !
-      FPFOI_OF = PHI_C + (5.0/16.0)*(PHI_D - PHI_C) + &
-                         (1.0/4.0)*(PHI_C - PHI_U) - &
-                         (1.0/16.0)*(PHI_U - PHI_UU)
+      FPFOI_OF = PHI_C + (5.0D0/16.0D0)*(PHI_D - PHI_C) + &
+                         (1.0D0/4.0D0)*(PHI_C - PHI_U) - &
+                         (1.0D0/16.0D0)*(PHI_U - PHI_UU)
 !
 !	LIMIT THE HIGH ORDER INTERPOLATION
 !
