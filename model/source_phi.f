@@ -106,13 +106,22 @@
                A_M(IJK,0,M) = -ONE 
                B_M(IJK,M) = ZERO 
 !
-               IF (EP(WEST_OF(IJK)) > DIL_EP_S) THEN 
-                  A_M(IJK,W,M) = ONE 
-               ELSE IF (EP(EAST_OF(IJK)) > DIL_EP_S) THEN 
-                  A_M(IJK,E,M) = ONE 
-               ELSE 
-                  B_M(IJK,M) = -PHI(IJK) 
-               ENDIF 
+! using the average boundary cell values to compute phi (sof, Aug 23 2005)
+!
+               IF (EP(WEST_OF(IJK)) > DIL_EP_S) A_M(IJK,W,M) = ONE 
+               IF (EP(EAST_OF(IJK)) > DIL_EP_S) A_M(IJK,E,M) = ONE 
+               IF (EP(SOUTH_OF(IJK)) > DIL_EP_S) A_M(IJK,S,M) = ONE 
+               IF (EP(NORTH_OF(IJK)) > DIL_EP_S) A_M(IJK,N,M) = ONE
+               IF (EP(BOTTOM_OF(IJK)) > DIL_EP_S) A_M(IJK,B,M) = ONE 
+               IF (EP(TOP_OF(IJK)) > DIL_EP_S) A_M(IJK,T,M) = ONE 
+!               
+	       IF((A_M(IJK,W,M)+A_M(IJK,E,M)+A_M(IJK,S,M)+A_M(IJK,N,M)+ &
+	           A_M(IJK,B,M)+A_M(IJK,T,M)) == ZERO) THEN
+	          B_M(IJK,M) = -PHI(IJK)              
+	       ELSE
+	         A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+ &
+                                  A_M(IJK,S,M)+A_M(IJK,T,M)+A_M(IJK,B,M))
+	       ENDIF
 !
 !             Normal case
             ELSE 
