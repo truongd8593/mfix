@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: TEST_LIN_EQ(A_m, LEQIT, LEQMETHOD, LEQSWEEP, LEQTOL, TEST, IER) 
+!  Module name: TEST_LIN_EQ(A_m, LEQIT, LEQMETHOD, LEQSWEEP, LEQTOL, LEQPC, TEST, IER) 
 !  Purpose: Routine for testing the accuracy of linear equation solver C
 !                                                                      C
 !                                                                      C
@@ -19,7 +19,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
 !
-      SUBROUTINE TEST_LIN_EQ(A_M, LEQIT, LEQMETHOD, LEQSWEEP, LEQTOL, TEST, IER) 
+      SUBROUTINE TEST_LIN_EQ(A_M, LEQIT, LEQMETHOD, LEQSWEEP, LEQTOL, LEQPC,  TEST, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !-----------------------------------------------
@@ -54,7 +54,7 @@
 !                      linear equation solver method and iterations 
       INTEGER          LEQMETHOD, LEQIT 
       CHARACTER*4 ::   LEQSWEEP
-      DOUBLE PRECISION LEQTOL
+      DOUBLE PRECISION LEQTOL, LEQPC
       REAL  :: Harvest 
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -122,7 +122,7 @@
 !
 !  Solve the linear equation
 !
-      CALL SOLVE_LIN_EQ ('Test', X_SOL, Am, Bm, 0, LEQIT, LEQMETHOD, LEQSWEEP, LEQTOL,IER) 
+      CALL SOLVE_LIN_EQ ('Test', X_SOL, Am, Bm, 0, LEQIT, LEQMETHOD, LEQSWEEP, LEQTOL, LEQPC, IER) 
 !
 !  Check the solution
 !

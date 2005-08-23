@@ -201,7 +201,7 @@
             LEQM, IER) 
 !
          CALL SOLVE_LIN_EQ ('U_g', U_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
-	                     LEQ_SWEEP(3), LEQ_TOL(3),IER) 
+	                     LEQ_SWEEP(3), LEQ_TOL(3),  LEQ_PC(3), IER) 
 !        call out_array(u_g, 'u_g')
       ENDIF 
 !
@@ -213,7 +213,7 @@
                LEQM, IER) 
 !
             CALL SOLVE_LIN_EQ ('U_s', U_Stmp(1,M), A_M, B_M, M, LEQI, LEQM, &
-	                     LEQ_SWEEP(3), LEQ_TOL(3),IER) 
+	                     LEQ_SWEEP(3), LEQ_TOL(3),  LEQ_PC(3), IER) 
 !          call out_array(u_s(1,m), 'u_s')
          ENDIF 
       END DO 
@@ -297,7 +297,7 @@
             LEQM, IER) 
 !
          CALL SOLVE_LIN_EQ ('V_g', V_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
-	                     LEQ_SWEEP(4), LEQ_TOL(4),IER) 
+	                     LEQ_SWEEP(4), LEQ_TOL(4),  LEQ_PC(4), IER) 
 !        call out_array(v_g, 'v_g')
       ENDIF 
 !
@@ -310,7 +310,7 @@
                LEQM, IER) 
 !
             CALL SOLVE_LIN_EQ ('V_s', V_Stmp(1,M), A_M, B_M, M, LEQI, LEQM, &
-	                     LEQ_SWEEP(4), LEQ_TOL(4),IER) 
+	                     LEQ_SWEEP(4), LEQ_TOL(4), LEQ_PC(4), IER) 
 !          call out_array(v_s(1,m), 'v_s')
          ENDIF 
       END DO 
@@ -402,7 +402,7 @@
             LEQM, IER) 
 !
           CALL SOLVE_LIN_EQ ('W_g', W_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
-	                     LEQ_SWEEP(5), LEQ_TOL(5),IER) 
+	                     LEQ_SWEEP(5), LEQ_TOL(5), LEQ_PC(5), IER) 
 !        call out_array(w_g, 'w_g')
         ENDIF 
 !
@@ -415,7 +415,7 @@
                LEQM, IER) 
 !
             CALL SOLVE_LIN_EQ ('W_s', W_Stmp(1,M), A_M, B_M, M, LEQI, LEQM, &
-	                     LEQ_SWEEP(5), LEQ_TOL(5),IER) 
+	                     LEQ_SWEEP(5), LEQ_TOL(5), LEQ_PC(5), IER) 
 !          call out_array(w_s(1,m), 'w_s')
           ENDIF 
         END DO 

@@ -95,7 +95,7 @@
             LEQM, IER) 
 !
          CALL SOLVE_LIN_EQ ('ROP_g', ROP_G, A_M, B_M, 0, LEQI, LEQM, &
-	                     LEQ_SWEEP(2), LEQ_TOL(2),IER) 
+	                     LEQ_SWEEP(2), LEQ_TOL(2), LEQ_PC(2), IER) 
          CALL ADJUST_ROP (ROP_G, IER) 
 !        call out_array(ROP_g, 'rop_g')
       ELSE 
@@ -119,7 +119,7 @@
                , LEQM, IER) 
 !
             CALL SOLVE_LIN_EQ ('ROP_s', ROP_S(1,M), A_M, B_M, M, LEQI, LEQM,&
-	                     LEQ_SWEEP(2), LEQ_TOL(2),IER) 
+	                     LEQ_SWEEP(2), LEQ_TOL(2), LEQ_PC(2), IER) 
             CALL ADJUST_ROP (ROP_S(1,M), IER) 
 !          call out_array(rop_s(1,m), 'rop_s')
       ENDIF 

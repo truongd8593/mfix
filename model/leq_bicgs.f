@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_BICGS(VNAME, VAR, A_M, B_m,  cmethod, TOL, ITMAX,IER)
+      SUBROUTINE LEQ_BICGS(VNAME, VAR, A_M, B_m,  cmethod, TOL, PC, ITMAX,IER)
       
 !-----------------------------------------------
 !   M o d u l e s
@@ -41,6 +41,8 @@
       INTEGER ::          ITMAX
 !                      convergence tolerance
       DOUBLE PRECISION ::  TOL
+!                      Preconditioner
+      CHARACTER*4   ::  PC
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3,-3:3) :: A_m
 !                      Vector b_m
@@ -59,13 +61,13 @@
 
 !--------------------------------------------------
 
-      if(leq_pc.eq.'LINE') then
+      if(PC.eq.'LINE') then
          call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
                           cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE, IER )
-      elseif(leq_pc.eq.'DIAG') then
+      elseif(PC.eq.'DIAG') then
          call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
                           cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE1, IER )
-      elseif(leq_pc.eq.'NONE') then
+      elseif(PC.eq.'NONE') then
          call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
                           cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE0, IER )
       else
@@ -1906,7 +1908,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_BICGSt(VNAME, VAR, A_M, B_m,  cmethod, TOL, ITMAX,IER)
+      SUBROUTINE LEQ_BICGSt(VNAME, VAR, A_M, B_m,  cmethod, TOL, PC, ITMAX,IER)
       
 !-----------------------------------------------
 !   M o d u l e s
@@ -1930,6 +1932,8 @@
       INTEGER ::          ITMAX
 !                      convergence tolerance
       DOUBLE PRECISION ::  TOL
+!                      Preconditioner
+      CHARACTER*4   ::  PC
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION, dimension(-3:3,ijkstart3:ijkend3) :: A_m
 !                      Vector b_m
@@ -1950,17 +1954,17 @@
 	
 !--------------------------------------------------
 
-      if(leq_pc.eq.'LINE') then
+      if(PC.eq.'LINE') then
 	 call LEQ_BICGS0t( Vname, Var, A_m, B_m,				&
 			  cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVEt, IER )
-      elseif(leq_pc.eq.'DIAG') then
+      elseif(PC.eq.'DIAG') then
 	 call LEQ_BICGS0t( Vname, Var, A_m, B_m,				&
 			  cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVE1t, IER )
-      elseif(leq_pc.eq.'NONE') then
+      elseif(PC.eq.'NONE') then
 	 call LEQ_BICGS0t( Vname, Var, A_m, B_m,				&
 			  cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVE0t, IER )
       else
-    		IF(DMP_LOG)WRITE (UNIT_LOG,*) 'preconditioner option not found - check mfix.dat and readme', leq_pc
+    		IF(DMP_LOG)WRITE (UNIT_LOG,*) 'preconditioner option not found - check mfix.dat and readme', PC
 	 call mfix_exit(myPE)
       endif
 

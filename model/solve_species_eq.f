@@ -158,7 +158,7 @@
                 LEQI, LEQM, IER)
 !
             CALL SOLVE_LIN_EQ ('X_g', X_G(1,LN), A_M, B_M, 0, LEQI, LEQM, &
-	                     LEQ_SWEEP(7), LEQ_TOL(7),IER) 
+	                     LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER) 
 
             CALL BOUND_X (X_G(1,LN), IJKMAX2, IER) 
 
@@ -228,7 +228,7 @@
                   ), LEQI, LEQM, IER) 
 !
                CALL SOLVE_LIN_EQ ('X_s', X_S(1,M,LN), A_M, B_M, M, LEQI, LEQM, &
-	                     LEQ_SWEEP(7), LEQ_TOL(7),IER) 
+	                     LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER) 
                CALL BOUND_X (X_S(1,M,LN), IJKMAX2, IER) 
 !            call out_array(X_s(1,m,LN), 'X_s')
 !

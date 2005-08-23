@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SOLVE_LIN_EQ(Vname, Var, A_m, B_m, M, ITMAX, METHOD,   C
-!                            SWEEP, TOL,                IER)           C
+!                            SWEEP, TOL, PC,            IER)           C
 !  Purpose: Interface for linear equation solver                       C
 !                                                                      C
 !                                                                      C
@@ -19,7 +19,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE SOLVE_LIN_EQ(VNAME, VAR, A_M, B_M, M, ITMAX, METHOD,&
-                              SWEEP, TOL, IER) 
+                              SWEEP, TOL, PC, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -63,6 +63,8 @@
 
 !                           convergence tolerance for leq solver
       DOUBLE PRECISION  :: TOL  
+!                           Preconditioner
+      CHARACTER*4       :: PC  
       
 !			sweep direction of leq solver
       CHARACTER*4	:: SWEEP
@@ -96,9 +98,9 @@
       endif
 !       bicgstab
       if(do_transpose) then
-        call leq_bicgst( VNAME,VAR, A_Mt(:,:), B_M(:,M), SWEEP, TOL, ITMAX,IER)
+        call leq_bicgst( VNAME,VAR, A_Mt(:,:), B_M(:,M), SWEEP, TOL, PC, ITMAX,IER)
       else 
-        call leq_bicgs( VNAME,VAR, A_M(:,:,M), B_M(:,M), SWEEP, TOL, ITMAX,IER)
+        call leq_bicgs( VNAME,VAR, A_M(:,:,M), B_M(:,M), SWEEP, TOL, PC, ITMAX,IER)
       endif
 
       if(do_transpose) then	
@@ -111,7 +113,7 @@
 
       CASE (4)  
         IER = 0
-        call leq_bicgs( VNAME,VAR, A_M(:,:,M), B_M(:,M), SWEEP, TOL, ITMAX,IER)
+        call leq_bicgs( VNAME,VAR, A_M(:,:,M), B_M(:,M), SWEEP, TOL, PC, ITMAX,IER)
         if (IER .eq. -2) then
           IER = 0
           print*,'calling leq_gmres', Vname

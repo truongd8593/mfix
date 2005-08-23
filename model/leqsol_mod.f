@@ -37,7 +37,7 @@
       DOUBLE PRECISION LEQ_TOL(9)
 !
 !		       Preconditioner option
-      CHARACTER*4 ::   LEQ_PC
+      CHARACTER*4 ::   LEQ_PC(9)
 !
 !      COMMON / ITERS_DP /
 !     &
