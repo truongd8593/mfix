@@ -554,12 +554,12 @@
       CALL ITERATE (IER, NIT)
       IF(AUTOMATIC_RESTART) RETURN
       
-! Just to Check for NaN's    
-!     
-      X_vavg = VAVG_U_G ()
-      X_vavg = VAVG_V_G ()
-      X_vavg = VAVG_W_G ()
-      IF(AUTOMATIC_RESTART) RETURN
+! Just to Check for NaN's, Uncomment the following lines and also lines  
+! of code in  VAVG_U_G, VAVG_V_G, VAVG_W_G to use.
+!      X_vavg = VAVG_U_G ()
+!      X_vavg = VAVG_V_G ()
+!      X_vavg = VAVG_W_G ()
+!      IF(AUTOMATIC_RESTART) RETURN
 
 !     
 !     Adjust time step and reiterate if necessary

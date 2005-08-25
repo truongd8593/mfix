@@ -80,11 +80,12 @@
       CALL GLOBAL_ALL_SUM(SUM_VOL)
       CALL GLOBAL_ALL_SUM(SUM_W_G)
       VAVG_W_G = SUM_W_G/SUM_VOL
-
-      IF( isNan(VAVG_W_G) ) THEN
-        write(*,*) VAVG_W_G,  ' NaN being caught in VAVG_W_G.f '
-        AUTOMATIC_RESTART = .TRUE.
-      ENDIF 
+!
+! uncomment the following lines to enable trapping NaN's.
+!      IF( isNan(VAVG_W_G) ) THEN
+!        write(*,*) VAVG_W_G,  ' NaN being caught in VAVG_W_G.f '
+!        AUTOMATIC_RESTART = .TRUE.
+!      ENDIF 
 !
       RETURN  
       END FUNCTION VAVG_W_G 

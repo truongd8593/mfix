@@ -72,6 +72,10 @@
 !                      to indicate undefined residual in species eq at the
 !                      begining of iterations
       LOGICAL          NO_RESID
+!
+!                      to check upper bound (speed of sound) limit for gas and
+!                      solids velocity components
+      LOGICAL          CHECK_VEL_BOUND
 !-----------------------------------------------
 !
 !//SP
@@ -197,8 +201,98 @@
          MUSTIT = 1                              !not converged 
       ENDIF 
 !
+      IF(CHECK_VEL_BOUND()) THEN
+        MUSTIT = 2 !divergence 
+        if (myPE.eq.PE_IO) WRITE (*,*) 'WARNING: Gas or solids velocity > speed', &
+	                                ' of sound computed in check_convergence'
+      ENDIF 
+!
       RETURN  
       END SUBROUTINE CHECK_CONVERGENCE 
       
 !// Comments on the modifications for DMP version implementation            
 !// 400 Added mpi_utility module and other global reduction (bcast) calls
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CHECK_VEL_BOUND()                                      C
+!  Purpose: Check velocities upper bound to be less than speed of soundC
+!                                                                      C
+!  Author: S. Benyahia                                Date: 25-AUG-05  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      LOGICAL FUNCTION CHECK_VEL_BOUND () 
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Switches: -xf
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE parallel 
+      USE fldvar
+      USE bc
+      USE geometry
+      USE physprop
+      USE indices
+      USE run
+      USE compar        
+      USE mpi_utility   
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      INTEGER          M
+! 
+!                      Indices 
+      INTEGER          IJK 
+! 
+!                      Approximation of speed of sound in air 
+      DOUBLE PRECISION SPEED_SOUND
+! 
+!-----------------------------------------------
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'function.inc'
+      INCLUDE 'ep_s2.inc'
+!
+!!$omp   parallel do private(IJK)
+      CHECK_VEL_BOUND = .FALSE. !initialisation
+      DO IJK = IJKSTART3, IJKEND3
+         IF (FLUID_AT(IJK)) THEN 
+            SPEED_SOUND = 200d0*SQRT(T_G(IJK)) !this is an approximation for air
+            IF (UNITS == 'SI') SPEED_SOUND = 20d0*SQRT(T_G(IJK)) 
+	    IF(U_G(IJK) > SPEED_SOUND .OR. V_G(IJK) > SPEED_SOUND .OR. &
+	       W_G(IJK) > SPEED_SOUND) CHECK_VEL_BOUND = .TRUE.
+	    DO M = 1, MMAX
+	      IF(U_S(IJK,M) > SPEED_SOUND .OR. V_S(IJK,M) > SPEED_SOUND .OR. &
+	         W_S(IJK,M) > SPEED_SOUND) CHECK_VEL_BOUND = .TRUE.
+	    ENDDO
+         ENDIF 
+      END DO 
+!
+      RETURN  
+      END FUNCTION CHECK_VEL_BOUND 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+!// 400 Added mpi_utility module and other global reduction (sum) calls
+
