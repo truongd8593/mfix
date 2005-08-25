@@ -15,7 +15,7 @@
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Revision Number: 3                                                  C
-!  Purpose: To flag the solids calculations whether Kinetic or DES.    C
+!  Purpose: To flag the solids calculations: Continuum or DES          C
 !  And to change the gas arrays incorporating the drag, when doing DES C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                      C

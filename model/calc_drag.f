@@ -17,7 +17,7 @@
 !     Author: M. Syamlal                                 Date: 25-APR-96  C
 !                                                                         C
 !     Revision Number: 2                                                  C
-!     Purpose: To call solids drag Drag_SS only when using Kinetic theory C
+!     Purpose: To call solids drag Drag_SS only when not using DES        C
 !     Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                         C
 !     Literature/Document References:                                     C

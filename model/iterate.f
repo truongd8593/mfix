@@ -8,8 +8,8 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !  Revision Number: 1                                                  C
-!  Purpose: To incorporate the "Kinetic" flag so taht the solids       C
-!  calculations are not done using kinetic when doing DES              C
+!  Purpose: To incorporate DES flags so that the solids                C
+!  calculations are not done using Continuum when doing DES            C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                      C
 !  Literature/Document References:                                     C
