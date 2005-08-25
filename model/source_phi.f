@@ -58,7 +58,7 @@
       INTEGER          IER 
 ! 
 !                      Indices 
-      INTEGER          IJK 
+      INTEGER          IJK, IMJK, IJMK, IJKM 
 ! 
 !                      Source term on LHS.  Must be positive. 
       DOUBLE PRECISION S_p(DIMENSION_3) 
@@ -108,12 +108,15 @@
 !
 ! using the average boundary cell values to compute phi (sof, Aug 23 2005)
 !
-               IF (EP(WEST_OF(IJK)) > DIL_EP_S) A_M(IJK,W,M) = ONE 
-               IF (EP(EAST_OF(IJK)) > DIL_EP_S) A_M(IJK,E,M) = ONE 
-               IF (EP(SOUTH_OF(IJK)) > DIL_EP_S) A_M(IJK,S,M) = ONE 
-               IF (EP(NORTH_OF(IJK)) > DIL_EP_S) A_M(IJK,N,M) = ONE
-               IF (EP(BOTTOM_OF(IJK)) > DIL_EP_S) A_M(IJK,B,M) = ONE 
-               IF (EP(TOP_OF(IJK)) > DIL_EP_S) A_M(IJK,T,M) = ONE 
+               IMJK = IM_OF(IJK)
+	       IJMK = JM_OF(IJK)
+	       IJKM = KM_OF(IJK)
+               IF (EP(WEST_OF(IJK)) > DIL_EP_S .AND. .NOT.IS_AT_E(IMJK)) A_M(IJK,W,M) = ONE
+               IF (EP(EAST_OF(IJK)) > DIL_EP_S .AND. .NOT.IS_AT_E(IJK)) A_M(IJK,E,M) = ONE 
+               IF (EP(SOUTH_OF(IJK)) > DIL_EP_S .AND. .NOT.IS_AT_N(IJMK)) A_M(IJK,S,M) = ONE
+               IF (EP(NORTH_OF(IJK)) > DIL_EP_S .AND. .NOT.IS_AT_N(IJK)) A_M(IJK,N,M) = ONE
+               IF (EP(BOTTOM_OF(IJK)) > DIL_EP_S .AND. .NOT.IS_AT_T(IJKM)) A_M(IJK,B,M) = ONE
+               IF (EP(TOP_OF(IJK)) > DIL_EP_S .AND. .NOT.IS_AT_T(IJK)) A_M(IJK,T,M) = ONE  
 !               
 	       IF((A_M(IJK,W,M)+A_M(IJK,E,M)+A_M(IJK,S,M)+A_M(IJK,N,M)+ &
 	           A_M(IJK,B,M)+A_M(IJK,T,M)) == ZERO) THEN
