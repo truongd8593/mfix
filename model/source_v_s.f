@@ -146,7 +146,10 @@
             DO IJK = ijkstart3, ijkend3
                I = I_OF(IJK) 
                J = J_OF(IJK) 
-               K = K_OF(IJK) 
+               K = K_OF(IJK)
+               IMJK = IM_OF(IJK)
+	       IJMK = JM_OF(IJK)
+	       IJKM = KM_OF(IJK) 
                IJKN = NORTH_OF(IJK) 
                EPGA = AVG_Y(EP_S(IJK,M),EP_S(IJKN,M),J) 
                IF (IP_AT_N(IJK)) THEN 

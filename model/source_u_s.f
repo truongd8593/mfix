@@ -141,7 +141,9 @@
 !
 !           Wall or impermeable internal surface
                I = I_OF(IJK) 
-               IJKE = EAST_OF(IJK) 
+               IJKE = EAST_OF(IJK)
+               IMJK = IM_OF(IJK) 
+	       IJMK = JM_OF(IJK)
                IJKM = KM_OF(IJK) 
                IPJK = IP_OF(IJK) 
                IPJKM = IP_OF(IJKM) 
