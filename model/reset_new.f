@@ -48,6 +48,9 @@
 !
 !                    Indices
       INTEGER :: M
+!
+!                    error index
+      INTEGER :: IER
 !-----------------------------------------------
 !
 !
@@ -96,6 +99,11 @@
           ENDIF 
         ENDIF 
       END DO 
+!     
+!     Recalculate all coefficients
+
+      CALL CALC_COEFF_ALL (0, IER)
+ 
       RETURN  
       END SUBROUTINE RESET_NEW 
 

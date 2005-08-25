@@ -68,7 +68,6 @@
       USE time_cpu  
       USE discretelement  
       USE mchem
-      USE ur_facs 
       IMPLICIT NONE
 !-----------------------------------------------
 !     G l o b a l   P a r a m e t e r s
@@ -131,9 +130,6 @@
 !     
 !     use function vavg_v_g to catch NaN's 
       DOUBLE PRECISION VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg
-!     
-!     Temporary storage 
-      DOUBLE PRECISION UR_F_gstmp
 !     
 !-----------------------------------------------
 !     E x t e r n a l   F u n c t i o n s
@@ -231,58 +227,19 @@
          CALL MISAT_TABLE_INIT
       END IF
 !  CHEM & ISAT end (Nan Xie)
-!
-!  Calculate all the coefficients once before entering the time loop
-!
-!    First set any under relaxation factors for coefficient calculations to 1 and change them to user
-!    defined values after the call to calc_coefficient
-
-      UR_F_gstmp = UR_F_gs
-      UR_F_gs = ONE
 
       CALL RRATES_INIT(IER)
-      IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
-      WALL_TR = .TRUE. 
-      M = 0 
-      IF (MMAX + 1 > 0) THEN 
-         DENSITY(:MMAX) = .TRUE. 
-         PSIZE(:MMAX) = .TRUE. 
-         IF (ENERGY_EQ) THEN 
-            SP_HEAT(:MMAX) = .TRUE. 
-            COND(:MMAX) = .TRUE. 
-         ELSE 
-            SP_HEAT(:MMAX) = .FALSE. 
-            COND(:MMAX) = .FALSE. 
-         ENDIF 
-         VISC(:MMAX) = .TRUE. 
-         DIFF(:MMAX) = .TRUE. 
-         L = 0 
-         DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
-         IF (ENERGY_EQ) THEN 
-            HEAT_TR(:MMAX,:MMAX) = .TRUE. 
-         ELSE 
-            HEAT_TR(:MMAX,:MMAX) = .FALSE. 
-         ENDIF 
-         L = MMAX + 1 
-         M = MMAX + 1 
-      ENDIF 
-! add by rong
-     
-      IF (.not.Call_DQMOM) PSIZE(1:MMAX) = .FALSE.
-
-! addby rong
-      IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
-      IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
 
       DO M=1, MMAX 
          CALL ZERO_ARRAY (F_gs(1,M), IER)
       END DO
 
-      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
-      HEAT_TR, WALL_TR, IER) 
+!
+!  Calculate all the coefficients once before entering the time loop
+!
 
-!    Now restore all underrelaxation factors for coefficient calculations to their original value
-      UR_F_gs = UR_F_gstmp
+      CALL CALC_COEFF_ALL (0, IER) 
+
 !     
 !     Remove undefined values at wall cells for scalars
 !     
@@ -479,39 +436,9 @@
       CALL UPDATE_OLD 
 
 !     
-!     Calculate coefficients.  Explicitly set flags for all the quantities
-!     that need to be calculated before calling CALC_COEFF.
-!     
-!    First set any under relaxation factors for coefficient calculations to 1 and change them to user
-!    defined values after the call to calc_coefficient
+!     Calculate coefficients
 
-      UR_F_gstmp = UR_F_gs
-      UR_F_gs = ONE
-      M = 0 
-      IF (MMAX + 1 > 0) THEN 
-         IF (ENERGY_EQ) THEN 
-            SP_HEAT(:MMAX) = .TRUE. 
-            COND(:MMAX) = .TRUE. 
-            DIFF(:MMAX) = .TRUE. 
-         ENDIF 
-         VISC(:MMAX) = .TRUE. 
-         L = 0 
-         DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
-         IF (ENERGY_EQ) HEAT_TR(:MMAX,:MMAX) = .TRUE. 
-         L = MMAX + 1 
-         M = MMAX + 1 
-      ENDIF 
-! add by rong
-      IF(.not.Call_DQMOM) Psize(1:MMAX)=.FALSE.
-! add by rong
-      IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
-      IF (MU_S0 /= UNDEFINED) VISC(1) = .FALSE. 
-
-      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
-      HEAT_TR, WALL_TR, IER) 
-      
-!    Now restore all underrelaxation factors for coefficient calculations to their original value
-      UR_F_gs = UR_F_gstmp
+      CALL CALC_COEFF_ALL (0, IER) 
 !     
 !     Calculate the cross terms of the stress tensor
 !     
@@ -534,8 +461,7 @@
 	 
 !     Upate the reaction rates for checking
          IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
-	 CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
-         HEAT_TR, WALL_TR, IER) 
+         CALL CALC_RRATE(RRATE)
 
          CALL CHECK_DATA_30 
       ENDIF 
