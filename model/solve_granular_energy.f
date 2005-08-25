@@ -156,7 +156,7 @@
                  A_M(IJK,3,M) = ZERO 
                  A_M(IJK,-3,M) = ZERO 
                  A_M(IJK,0,M) = -ONE 		  
-                 B_M(IJK,M) = ZERO
+                 B_M(IJK,M) = -ZERO_EP_S
 	      ENDIF
 	   END DO
 	 ENDIF	 
