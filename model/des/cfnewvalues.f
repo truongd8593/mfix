@@ -84,6 +84,20 @@
             DES_POS_NEW(1,L) = DES_POS_NEW(1,L) + (EX2 - WX1)
          END IF
         END IF
+        IF(DES_PERIODIC_WALLS_Y) THEN
+         IF(DES_POS_NEW(2,L).GT.TY2) THEN
+            DES_POS_NEW(2,L) = DES_POS_NEW(2,L) - (TY2 - BY1)
+         ELSE IF(DES_POS_NEW(2,L).LT.BY1) THEN
+            DES_POS_NEW(2,L) = DES_POS_NEW(2,L) + (TY2 - BY1)
+         END IF
+        END IF
+        IF(DES_PERIODIC_WALLS_Z) THEN
+         IF(DES_POS_NEW(3,L).GT.NZ2) THEN
+            DES_POS_NEW(3,L) = DES_POS_NEW(3,L) - (NZ2 - SZ1)
+         ELSE IF(DES_POS_NEW(3,L).LT.SZ1) THEN
+            DES_POS_NEW(3,L) = DES_POS_NEW(3,L) + (NZ2 - SZ1)
+         END IF
+        END IF
       END IF
 
       IF(INLET_OUTLET) THEN

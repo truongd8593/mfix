@@ -3,10 +3,10 @@
 !  Module name: PERIODIC_WALL_CALC_FORCE_DES(C)                        C
 !  Purpose: DES - DES calculaton for a periodic boundary flow          C
 !                                                                      C
-!                                                                      C
+!                                                                C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
-!                                                                      C
+!  REVISED aug 24 2005                                                                    C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE PERIODIC_WALL_CALC_FORCE_DES(C)
@@ -30,7 +30,7 @@
 !---------------------------------------------------------------------
 !     
 
-      IF (CALLED.LE.2) THEN
+      IF (CALLED.LE.4) THEN
          DO K = 1, DIMN
             VRE(K) = 0D0
             TANGENT(K) = 0D0
@@ -71,6 +71,7 @@
            S_TIME = CALLED*DTSOLID
            CALL NEIGHBOUR(PARTICLES)
 
+           
            DO K = 1, 1000
               WWALL(K) = 0
               EWALL(K) = 0
@@ -80,38 +81,67 @@
               NWALL(K) = 0
            END DO
 
-           IF(DES_PERIODIC_WALLS_X) THEN
-              CALL CF_PERIODIC_WALL_X(WWALL, EWALL)
-           ELSE IF(DES_PERIODIC_WALLS_Y) THEN
-              CALL CF_PERIODIC_WALL_Y(BWALL,TWALL)
-           ELSE IF(DES_PERIODIC_WALLS_Z) THEN
-              CALL CF_PERIODIC_WALL_Z(SWALL, NWALL)
-           END IF
-
-           DO LL = 1, PARTICLES
-
               IF(DES_PERIODIC_WALLS_X) THEN
-                IF(DES_POS_NEW(1,LL).LE.(WX1 + 2*RADIUS_EQ)) THEN
-                   CALL CF_PERIODIC_WALL_NEIGHBOUR_X(LL, WWALL, EWALL)
-                ELSE IF(DES_POS_NEW(1,LL).GE.(EX2 - 2*RADIUS_EQ))THEN
-                   CALL CF_PERIODIC_WALL_NEIGHBOUR_X(LL, WWALL, EWALL)
-                END IF
-              END IF
-              IF(DES_PERIODIC_WALLS_Y) THEN
-                IF(DES_POS_NEW(2,LL).LE.(BY1 + 2*RADIUS_EQ)) THEN
-                   CALL CF_PERIODIC_WALL_NEIGHBOUR_Y(LL, BWALL, TWALL)
-                ELSE IF(DES_POS_NEW(2,LL).GE.(TY2 - 2*RADIUS_EQ))THEN
-                   CALL CF_PERIODIC_WALL_NEIGHBOUR_Y(LL, BWALL, TWALL)
-                END IF
-              END IF
-              IF(DES_PERIODIC_WALLS_z) THEN
-                IF(DES_POS_NEW(3,LL).LE.(SZ1 + 2*RADIUS_EQ)) THEN
-                   CALL CF_PERIODIC_WALL_NEIGHBOUR_Z(LL, SWALL, NWALL)
-                ELSE IF(DES_POS_NEW(3,LL).GE.(NZ2 - 2*RADIUS_EQ))THEN
-                   CALL CF_PERIODIC_WALL_NEIGHBOUR_Z(LL, SWALL, NWALL)
-                END IF
-              END IF
 
+                CALL CF_PERIODIC_WALL_X(WWALL, EWALL)
+                      
+                IF (WWALL(1).GT.0) THEN
+                DO K = 2, WWALL(1) + 1
+                   LL = WWALL(K)
+                   CALL CF_PERIODIC_WALL_NEIGHBOUR_X(LL, WWALL, EWALL)
+                END DO
+                END IF
+                
+                IF(EWALL(1).GT.0) THEN
+                DO K = 2, EWALL(1) + 1
+                   LL = EWALL(K)
+                   CALL CF_PERIODIC_WALL_NEIGHBOUR_X(LL, WWALL, EWALL)
+                END DO
+                END IF
+              END IF
+              
+              IF(DES_PERIODIC_WALLS_Y) THEN
+
+                CALL CF_PERIODIC_WALL_Y(BWALL,TWALL)
+ 
+                IF(BWALL(1).GT.0) THEN
+                DO K = 2, BWALL(1) + 1
+                   LL = BWALL(K)
+                   CALL CF_PERIODIC_WALL_NEIGHBOUR_Y(LL, BWALL, TWALL)
+                END DO
+                END IF
+                
+                IF(TWALL(1).GT.0) THEN
+                DO K = 2, TWALL(I) + 1
+                   LL = TWALL(K)
+                   CALL CF_PERIODIC_WALL_NEIGHBOUR_Y(LL, BWALL, TWALL)
+                END DO
+                END IF
+              END IF
+              
+              IF(DIMN.EQ.3) THEN
+              IF(DES_PERIODIC_WALLS_z) THEN
+
+                CALL CF_PERIODIC_WALL_Z(SWALL, NWALL)
+                      
+                IF(SWALL(1).GT.0) THEN
+                DO K = 2, SWALL(1) + 1
+                   LL = SWALL(K)
+                   CALL CF_PERIODIC_WALL_NEIGHBOUR_Z(LL, SWALL, NWALL)
+                END DO
+                END IF
+                
+                IF(NWALL(1).GT.0) THEN
+                DO K = 2, NWALL(1) + 1
+                   LL = NWALL(K)
+                   CALL CF_PERIODIC_WALL_NEIGHBOUR_Z(LL, SWALL, NWALL)
+                END DO
+                END IF
+              END IF
+              END IF
+           
+           DO LL = 1, PARTICLES
+            
               IJK = 0
               DO K = 1, DIMN
                  TEMPFN(K) = 0.0
@@ -201,7 +231,7 @@
                  WALLCHECK = 0
                  NWS = 2*DIMN
                  DO IW = 1, NWS
-                    IF(IW.GE.3) THEN
+                    IF(DES_PERIODIC_WALLS_X.AND.(IW.NE.1).AND.(IW.NE.2)) THEN
                        WALLCONTACT = 0
                        CALL CFWALLCONTACT(IW, LL, S_TIME, WALLCONTACT)
                        IF(WALLCONTACT.EQ.1) THEN
@@ -228,6 +258,63 @@
                           CALL CFFCTOW(LL, NORMAL)
                        END IF
                     END IF
+
+                    IF(DES_PERIODIC_WALLS_Y.AND.(IW.NE.3).AND.(IW.NE.4)) THEN
+                       WALLCONTACT = 0
+                       CALL CFWALLCONTACT(IW, LL, S_TIME, WALLCONTACT)
+                       IF(WALLCONTACT.EQ.1) THEN
+                          WALLCHECK = 1
+                          CALL CFWALLPOSVEL(LL, S_TIME, IW)
+                          I = PARTICLES + IW
+                          DO K = 1, DIMN
+                             DES_POS_NEW(K,I) = DES_WALL_POS(K,IW)
+                             DES_VEL_NEW(K,I) = DES_WALL_VEL(K,IW)
+                             OMEGA_NEW(K,I) = 0.0
+                             OMEGA_NEW(3,I) = 0.0
+                          END DO
+                          DES_RADIUS(I) = DES_RADIUS(LL)
+                          CALL CFNORMAL(LL, I, NORMAL)
+                          CALL CFTANGENT(TANGENT, NORMAL, VRE)
+                          CALL CFRELVEL(LL, I, VRE, TANGENT)
+!                          CALL CFTANGENT(TANGENT, NORMAL, VRE)
+                          CALL CFVRN(Vn, VRE, NORMAL)
+                          CALL CFVRT(Vt, VRE, TANGENT)
+                          CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)
+                          CALL CFFNWALL(LL, Vn, OVERLAP_N, NORMAL)
+                          CALL CFFTWALL(LL, Vt, OVERLAP_T, TANGENT)
+                          CALL CFSLIDEWALL(LL, TANGENT)
+                          CALL CFFCTOW(LL, NORMAL)
+                       END IF
+                    END IF
+
+                    IF(DES_PERIODIC_WALLS_Z.AND.(IW.NE.5).AND.(IW.NE.6)) THEN
+                       WALLCONTACT = 0
+                       CALL CFWALLCONTACT(IW, LL, S_TIME, WALLCONTACT)
+                       IF(WALLCONTACT.EQ.1) THEN
+                          WALLCHECK = 1
+                          CALL CFWALLPOSVEL(LL, S_TIME, IW)
+                          I = PARTICLES + IW
+                          DO K = 1, DIMN
+                             DES_POS_NEW(K,I) = DES_WALL_POS(K,IW)
+                             DES_VEL_NEW(K,I) = DES_WALL_VEL(K,IW)
+                             OMEGA_NEW(K,I) = 0.0
+                             OMEGA_NEW(3,I) = 0.0
+                          END DO
+                          DES_RADIUS(I) = DES_RADIUS(LL)
+                          CALL CFNORMAL(LL, I, NORMAL)
+                          CALL CFTANGENT(TANGENT, NORMAL, VRE)
+                          CALL CFRELVEL(LL, I, VRE, TANGENT)
+!                          CALL CFTANGENT(TANGENT, NORMAL, VRE)
+                          CALL CFVRN(Vn, VRE, NORMAL)
+                          CALL CFVRT(Vt, VRE, TANGENT)
+                          CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)
+                          CALL CFFNWALL(LL, Vn, OVERLAP_N, NORMAL)
+                          CALL CFFTWALL(LL, Vt, OVERLAP_T, TANGENT)
+                          CALL CFSLIDEWALL(LL, TANGENT)
+                          CALL CFFCTOW(LL, NORMAL)
+                       END IF
+                    END IF
+                    
                  END DO
               END IF
 
