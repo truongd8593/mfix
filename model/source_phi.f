@@ -1,3 +1,5 @@
+! Note: This routine is now restricted to Non-Negative scalers when using
+! deferred correction. 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SOURCE_phi(S_p, S_c, EP, Phi, M, A_m, B_m, IER)        C
@@ -133,7 +135,14 @@
                A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+A_M(IJK,&
                   S,M)+A_M(IJK,T,M)+A_M(IJK,B,M)+S_P(IJK))
 !
-               B_M(IJK,M) = -S_C(IJK)+B_M(IJK,M)
+! B_m and A_m are corrected in case deferred corrections computes B_m > S_c
+! see CONV_DIF_PHI_DC.
+               IF(B_M(IJK,M) < S_C(IJK) .OR. PHI(IJK) == ZERO) THEN
+                 B_M(IJK,M) = -S_C(IJK)+B_M(IJK,M)
+               ELSE ! disable ELSE statememt if PHI can be negative
+                 A_M(IJK,0,M) = A_M(IJK,0,M) - B_M(IJK,M)/PHI(IJK)
+                 B_M(IJK,M) = -S_C(IJK)
+               ENDIF
 !			
 	    ENDIF 
          ENDIF 
