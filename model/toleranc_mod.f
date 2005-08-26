@@ -24,29 +24,32 @@
 !
 !
 !                      Minimum value of solids volume fraction tracked
-      DOUBLE PRECISION, PARAMETER          ::  ZERO_EP_s = 1.0E-8
+      DOUBLE PRECISION, PARAMETER          ::  ZERO_EP_s = 1.0D-8
 !
 !                      Small value for species mass fraction for disregarding
 !                      residual calculation
-      DOUBLE PRECISION, PARAMETER          ::  ZERO_X_gs = 1.0E-7
+      DOUBLE PRECISION, PARAMETER          ::  ZERO_X_gs = 1.0D-7
  
 !                      Dilute flow threshold.  When the volume fraction of a
 !                      certain phase in a cell is smaller than this value the
 !                      momentum equation for that phase is not solved in the cell.
-      DOUBLE PRECISION, PARAMETER          ::  DIL_EP_s = 1.0E-4
+      DOUBLE PRECISION, PARAMETER          ::  DIL_EP_s = 1.0D-4
 !
 !                      Tolerance used for comparing two numbers for equality
 !                      in function compare(a, b)
-      DOUBLE PRECISION, PARAMETER          ::  TOL_COM = 1.0E-4
+      DOUBLE PRECISION, PARAMETER          ::  TOL_COM = 1.0D-4
 !
 !                      Upper bound for temperatures
-      DOUBLE PRECISION, PARAMETER          ::  TMAX = 4000.
+      DOUBLE PRECISION, PARAMETER          ::  TMAX = 4000.D0
 !
 !                      Lower bound for temperatures
-      DOUBLE PRECISION, PARAMETER          ::  TMIN = 250.
+      DOUBLE PRECISION, PARAMETER          ::  TMIN = 250.D0
 !
 !                      Reciprocal of a maximum molecular weight
-      DOUBLE PRECISION, PARAMETER          ::  oMW_MAX = (1./500.)
+      DOUBLE PRECISION, PARAMETER          ::  oMW_MAX = (ONE/500.D0)
+!
+!                      Maximum value of velocities set to avoid divergence problems.
+      DOUBLE PRECISION MAX_INLET_VEL
 !
 !  The following quantities can be specified through the input data file, with
 !  namelist inputs of the same name.

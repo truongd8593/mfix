@@ -226,6 +226,10 @@
       EP_S_MAX(:DIM_M) = 0.6D0
 !      
 ! END GERA
+! SOF 26-AUG-2005
+      MAX_INLET_VEL = ZERO
+! END SOF
+!
 ! start rong
       AGGREGATION_EFF=0.D0
       BREAKAGE_EFF=0.D0

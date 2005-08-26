@@ -62,6 +62,7 @@
       USE funits 
       USE vshear
       USE scalars
+      USE toleranc
       USE drag
       USE rxns
       USE compar     
@@ -129,7 +130,10 @@
       CHARACTER        EXT_END*35 
 !     
 !     use function vavg_v_g to catch NaN's 
-      DOUBLE PRECISION VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg
+      DOUBLE PRECISION VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg     
+!
+!     use function MAX_VEL_INLET to compute max. velocity at inlet
+      DOUBLE PRECISION MAX_VEL_INLET
 !     
 !-----------------------------------------------
 !     E x t e r n a l   F u n c t i o n s
@@ -472,8 +476,11 @@
       (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
          DT = 0.5*DT
          ODT = ODT * 2.0
-      ENDIF      
-
+      ENDIF
+!      
+! Check for maximum velocity at inlet to avoid convergence problems 
+!
+      MAX_INLET_VEL = 100.0d0*MAX_VEL_INLET ()
 !     
 !     Advance the solution in time by iteratively solving the equations 
 !     
