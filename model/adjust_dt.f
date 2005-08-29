@@ -73,10 +73,10 @@
 
 !AE TIME 041601 Set back the timestep to original size which was
 !               halved previously for 2nd order accurate time implementation
-!         IF (CN_ON.AND.NSTEP>1) DT = 2.*DT      
+!         IF (CN_ON.AND.NSTEP>1) DT = 2.D0*DT      
          IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
           (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-	     DT = 2.*DT      
+	     DT = 2.D0*DT      
 
          IF (STEPS_TOT >= STEPS_MIN) THEN 
             NITOS_NEW = DBLE(NIT_TOT)/(STEPS_TOT*DT) 
@@ -101,10 +101,10 @@
          ADJUST_DT = .FALSE.                     !No need to iterate again 
 
 !AE TIME 041601 Cut the timestep into half for 2nd order accurate time implementation
-!         IF (CN_ON.AND.NSTEP>1) DT = 0.5*DT      
+!         IF (CN_ON.AND.NSTEP>1) DT = 0.5D0*DT      
          IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
           (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-	      DT = 0.5*DT      
+	      DT = 0.5D0*DT      
 
 
 !
@@ -113,10 +113,10 @@
 !
 !AE TIME 041601 Set back the timestep to original size which was
 !               halved previously for 2nd order accurate time implementation
-!         IF (CN_ON.AND.NSTEP>1) DT = 2.*DT      
+!         IF (CN_ON.AND.NSTEP>1) DT = 2.D0*DT      
          IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
           (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-              DT = 2.*DT 
+              DT = 2.D0*DT 
 
          IF (DT < DT_MIN) THEN 
 !//SP
@@ -160,10 +160,10 @@
             ADJUST_DT = .TRUE.                   !Iterate again with new dt 
 
 !AE TIME 041601 Cut the timestep into half for 2nd order accurate time implementation
-!            IF (CN_ON.AND.NSTEP>1) DT = 0.5*DT      
+!            IF (CN_ON.AND.NSTEP>1) DT = 0.5D0*DT      
             IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
               (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-	          DT = 0.5*DT      
+	          DT = 0.5D0*DT      
          ENDIF 
 !
 !

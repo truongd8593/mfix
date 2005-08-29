@@ -58,8 +58,8 @@
 !
 !     Gas diffusion coefficient
 !     Bird, Stewart, and Lightfoot (1960) -- CO2--N2 at 298.2 K
-      Dab = 0.165       !cm^2/s
-      IF(UNITS == 'SI') Dab = Dab*0.0001   !m^2/s
+      Dab = 0.165D0       !cm^2/s
+      IF(UNITS == 'SI') Dab = Dab*0.0001D0   !m^2/s
 !
       IF (DIF_G0 /= UNDEFINED) RETURN  
 !!$omp  parallel do private(ijk) &

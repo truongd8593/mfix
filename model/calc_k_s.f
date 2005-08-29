@@ -99,7 +99,7 @@
 !
 !         All the calculation are in the CGS system
 !         Bauer & Schlunder's (1978) theory:
-          B = 1.25 * ((ONE - EP_g(IJK))/EP_g(IJK))**(10./9.)
+          B = 1.25D0 * ((ONE - EP_g(IJK))/EP_g(IJK))**(10.D0/9.D0)
           IF( (ONE - EP_g(IJK)) .GT. DIL_EP_s) THEN
             R_km = Ks_micro/Kg_micro
             BoR  = B/R_km

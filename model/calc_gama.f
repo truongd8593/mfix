@@ -131,7 +131,7 @@
 !  Calculate Prandtl number
 !
                   if(K_G(IJK) > ZERO) then
-                    PR1O3 = (C_PG(IJK)*MU_G(IJK)/K_G(IJK))**(1./3.) 
+                    PR1O3 = (C_PG(IJK)*MU_G(IJK)/K_G(IJK))**(1.D0/3.D0) 
 		  else
                     PR1O3 = LARGE_NUMBER 
 		  endif
@@ -160,9 +160,9 @@
 !
 !  Calculate gas-solids heat transfer coefficient (Gunn 1978)
 !
-                  GAMA_GS(IJK,M) = ((7. - 10.*EP_G(IJK)+5.*EP_G2)*(ONE+0.7*RE**&
-                     0.2*PR1O3)+(1.33-2.4*EP_G(IJK)+1.2*EP_G2)*RE**0.7*PR1O3)*(&
-                     K_G(IJK)/D_P(IJK,M))*(6.*EP_S(IJK,M)/D_P(IJK,M)) 
+                  GAMA_GS(IJK,M) = ((7.D0 - 10.D0*EP_G(IJK)+5.D0*EP_G2)*(ONE+0.7D0*RE**&
+                     0.2D0*PR1O3)+(1.33D0 - 2.4D0*EP_G(IJK)+1.2D0*EP_G2)*RE**0.7D0*PR1O3)*(&
+                     K_G(IJK)/D_P(IJK,M))*(6.D0*EP_S(IJK,M)/D_P(IJK,M)) 
 !
 !  Correct the heat transfer coefficient for transpiration
 !  Bird, Stewart, and Lightfoot (1960, p.663)
@@ -170,8 +170,8 @@
                   IF (GAMA_GS(IJK,M) > ZERO) THEN 
                      LM = 1 
                      FAC = R_PHASE(IJK,LM)*C_PG(IJK)/GAMA_GS(IJK,M) 
-                     IF (ABS(FAC) < 0.1) THEN 
-                        GAMA_GS(IJK,M)=GAMA_GS(IJK,M)/(ONE+FAC/2.+FAC*FAC/6.) 
+                     IF (ABS(FAC) < 0.1D0) THEN 
+                        GAMA_GS(IJK,M)=GAMA_GS(IJK,M)/(ONE+FAC/2.D0+FAC*FAC/6.D0) 
                      ELSE 
                         IF (R_PHASE(IJK,LM) > ZERO) THEN 
                            GAMA_GS(IJK,M) = R_PHASE(IJK,LM)*C_PG(IJK)*EXP((-FAC&

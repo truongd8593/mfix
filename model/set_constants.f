@@ -79,10 +79,10 @@
 	
 !
 !  Dimensionless constants
-      PI = 4.*ATAN(ONE) 
+      PI = 4.D0*ATAN(ONE) 
       SQRT_PI = SQRT(PI) 
-      K_SCALE = .08 
-      EP_S_CP = 1. - EP_STAR 
+      K_SCALE = .08D0 
+      EP_S_CP = 1.D0 - EP_STAR 
       ETA = (1D0 + C_E)*0.5D0 
 !
 !  plastic regime stress
@@ -91,17 +91,17 @@
         TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
         SIN_PHI = SIN(PHI*PI/180.D0) 
         SIN2_PHI = SIN_PHI*SIN_PHI 
-        F_PHI = (3.0 - 2.0*SIN2_PHI)/3.0 
+        F_PHI = (3.0D0 - 2.0D0*SIN2_PHI)/3.0D0 
       endif
 !
 !  Enter the value of all constants in various units (CGS or SI)
       IF (UNITS == 'SI') THEN
-         IF (GRAVITY == UNDEFINED) GRAVITY = 9.80665 ! m/s2
-         GAS_CONST = 8314.56                     !Pa.m3/kmol.K, or kg m2/s2 kmol K (Perry and Green, 1984)
-         to_SI = 0.1                             !to convert dyne/cm2 to Pa, see s_pr2.inc, see calc_mu_g.f
+         IF (GRAVITY == UNDEFINED) GRAVITY = 9.80665D0 ! m/s2
+         GAS_CONST = 8314.56D0                     !Pa.m3/kmol.K, or kg m2/s2 kmol K (Perry and Green, 1984)
+         to_SI = 0.1D0                             !to convert dyne/cm2 to Pa, see s_pr2.inc, see calc_mu_g.f
       ELSE IF (UNITS == 'CGS') THEN
-         IF (GRAVITY == UNDEFINED) GRAVITY = 980.665 !cm/s2
-         GAS_CONST = 8314.56E4                   !g.cm2/s2.mol.K
+         IF (GRAVITY == UNDEFINED) GRAVITY = 980.665D0 !cm/s2
+         GAS_CONST = 8314.56D4                   !g.cm2/s2.mol.K
          to_SI = ONE                             !does not do anything in CGS,  see s_pr2.inc, see calc_mu_g.f
       ELSE 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1000) UNITS

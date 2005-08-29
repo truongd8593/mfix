@@ -60,7 +60,7 @@
       INCLUDE 'function.inc'
 !
       Dab = ZERO       !cm^2/s
-      IF(UNITS == 'SI') Dab = Dab*0.0001   !m^2/s
+      IF(UNITS == 'SI') Dab = Dab*0.0001D0   !m^2/s
 !
       IF (DIF_s0  /= UNDEFINED) RETURN  
 

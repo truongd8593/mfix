@@ -85,7 +85,7 @@
       IMPLICIT NONE
 !                      Maximum value of solids viscosity in poise
       DOUBLE PRECISION MAX_MU_s
-      PARAMETER (MAX_MU_s = 1000.)
+      PARAMETER (MAX_MU_s = 1000.D0)
 !
 !  Function subroutines
 !
@@ -526,7 +526,7 @@
 !-----------------------------------------------------------------------
 !           Schaeffer (1987)
 !
-            qxP_s            = SQRT( (4. * Sin2_Phi) * I2_devD_s)
+            qxP_s            = SQRT( (4.D0 * Sin2_Phi) * I2_devD_s)
             MU_s(IJK, M)     = P_star(IJK) * Sin2_Phi&
                                / (qxP_s + SMALL_NUMBER) &
 			       *(EP_S(IJK,M)/SUM_EPS_CP) ! added by sof for consistency
@@ -556,14 +556,14 @@
 ! Defining a single particle drag coefficient (similar to one defined in drag_gs)
 !
 	  Re = D_p(IJK,M)*VREL*ROP_G(IJK)/(MU_G(IJK) + small_number)
-          IF(Re .LE. 1000)THEN
-             C_d = (24./(Re+SMALL_NUMBER)) * (ONE + 0.15 * Re**0.687)
+          IF(Re .LE. 1000D0)THEN
+             C_d = (24.D0/(Re+SMALL_NUMBER)) * (ONE + 0.15D0 * Re**0.687D0)
           ELSE
-             C_d = 0.44
+             C_d = 0.44D0
           ENDIF
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
 !	      
-	  DgA = 0.75 * C_d * VREL * ROP_g(IJK) / D_p(IJK,M)
+	  DgA = 0.75D0 * C_d * VREL * ROP_g(IJK) / D_p(IJK,M)
 	  IF(VREL == ZERO) DgA = LARGE_NUMBER !for 1st iteration and 1st time step
 !
 ! Define some time scales and constants related to Simonin and Ahmadi models
@@ -642,8 +642,8 @@
             K_12(ijk) = Nu_t / (ONE+Nu_t*(ONE+X_21)) * &
                        (2.d+0 *K_Turb_G(IJK) + 3.d+0 *X_21*theta_m(ijk,m))
 !  Realizability Criteria         
-	    IF(K_12(ijk) > DSQRT(6.0*K_Turb_G(IJK)*theta_m(ijk,m))) THEN
-	      K_12(ijk) = DSQRT(6.0*K_Turb_G(IJK)*theta_m(ijk,m))
+	    IF(K_12(ijk) > DSQRT(6.0D0*K_Turb_G(IJK)*theta_m(ijk,m))) THEN
+	      K_12(ijk) = DSQRT(6.0D0*K_Turb_G(IJK)*theta_m(ijk,m))
 	    ENDIF
 !
           ENDIF ! for Simonin
@@ -709,14 +709,14 @@
                     trDM_s = trDM_s + D_s(I1,I2)*M_s(I1,I2)
    30             CONTINUE
    40           CONTINUE
-                bq   = bq + EP_s(IJK,M) * K_5m * (trM_s + 2. * trDM_s)
+                bq   = bq + EP_s(IJK,M) * K_5m * (trM_s + 2.D0 * trDM_s)
               ELSE
                 K_5m = ZERO
               ENDIF
 !
 !             Calculate EP_sxSQRTHETA and EP_s2xTHETA
-              EP_sxSQRTHETA = (-bq + SQRT(bq**2 - 4. * aq * cq ))&
-                             / ( 2. * K_4m )
+              EP_sxSQRTHETA = (-bq + SQRT(bq**2 - 4.D0 * aq * cq ))&
+                             / ( 2.D0 * K_4m )
               EP_s2xTHETA = EP_sxSQRTHETA * EP_sxSQRTHETA
  
               IF(EP_s(IJK,M) > SMALL_NUMBER)THEN
@@ -755,14 +755,14 @@
 	    ENDDO 
 !
 !           Find pressure in the Mth solids phase
-            P_s(IJK,M) = ROP_s(IJK,M)*(1d0+ 4. * Eta *&
+            P_s(IJK,M) = ROP_s(IJK,M)*(1d0+ 4.D0 * Eta *&
                            SUM_EpsGo)*Theta_m(IJK,M)
 !
 ! implement Simonin (same as granular) and Ahmadi solids pressures
             IF(SIMONIN) THEN
 	      P_s(IJK,M) = P_s(IJK,M) ! no changes to solids pressure
 	    ELSE IF(AHMADI) THEN
-	      P_s(IJK,M) = ROP_s(IJK,M)*Theta_m(IJK,M) * ( (ONE + 4.0* &
+	      P_s(IJK,M) = ROP_s(IJK,M)*Theta_m(IJK,M) * ( (ONE + 4.0D0* &
 	                   SUM_EpsGo ) + HALF*(ONE - C_e*C_e) )
 	    ENDIF
 
@@ -983,7 +983,7 @@
 
 ! Defining Simonin's Solids Turbulent Kinetic diffusivity: Kappa
   
-              Kappa_kin = (9.d0/10.d0*K_12(ijk)*Nu_t + 3.0/2.0 * &
+              Kappa_kin = (9.d0/10.d0*K_12(ijk)*Nu_t + 3.0D0/2.0D0 * &
                  Theta_m(IJK,M)*(ONE+ Omega_c*EP_s(IJK,M)*G_0(IJK,M,M)))/&
                  (9.d0/(5.d0*Tau_12_st) + zeta_c/Tau_2_c)
           
@@ -997,8 +997,8 @@
 ! Defining Ahmadi conductivity from his equation 42 in Cao and Ahmadi 1995 paper
 ! note the constant 0.0711 is now 0.1306 because K = 3/2 theta_m
 !
-	      Kth_s(IJK,M) = 0.1306*RO_s(M)*D_p(IJK,M)*(ONE+C_e**2)* (  &
-	                   ONE/G_0(IJK,M,M)+4.8*EP_s(IJK,M)+12.1184 &
+	      Kth_s(IJK,M) = 0.1306D0*RO_s(M)*D_p(IJK,M)*(ONE+C_e**2)* (  &
+	                   ONE/G_0(IJK,M,M)+4.8D0*EP_s(IJK,M)+12.1184D0 &
 			   *EP_s(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M) )  &
 			   *DSQRT(Theta_m(IJK,M))
 !

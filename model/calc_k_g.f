@@ -57,7 +57,7 @@
       INCLUDE 'function.inc'
 !
 !
-!1 Cal = 4.183925 J
+!1 Cal = 4.183925D0 J
 !
       IF (K_G0 /= UNDEFINED) RETURN  
 
@@ -68,12 +68,12 @@
 !           Gas conductivity (air) in cal/s.cm.K
 !           Bird, Stewart, and Lightfoot (1960) -- Temperature dependence from formula
 !           8.3-12 on p. 255 and conductivity value at 300 K from p. 263
-            K_G(IJK) = 6.02D-5*SQRT(T_G(IJK)/300.)
+            K_G(IJK) = 6.02D-5*SQRT(T_G(IJK)/300.D0)
          ELSE 
             K_G(IJK) = ZERO 
          ENDIF
 !to SI, S. Dartevelle
-         IF (UNITS == 'SI') K_G(IJK) = 418.3925*K_G(IJK)      !J/s.m.K
+         IF (UNITS == 'SI') K_G(IJK) = 418.3925D0*K_G(IJK)      !J/s.m.K
 !
       END DO 
 

@@ -147,8 +147,8 @@
 !
 !  Molecular viscosity
 !
-           IF (MU_G0 == UNDEFINED) MU_G(IJK) = to_SI*1.7D-4*(T_G(IJK)/273.0)**1.5*(&
-               383./(T_G(IJK)+110.))   !in Poise or Pa.s
+           IF (MU_G0 == UNDEFINED) MU_G(IJK) = to_SI*1.7D-4*(T_G(IJK)/273.0D0)**1.5D0*(&
+               383.D0/(T_G(IJK)+110.D0))   !in Poise or Pa.s
              MU_GT(IJK) = MU_G(IJK) 
              LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
 
@@ -163,9 +163,9 @@
 !
 ! new definition of C_mu (equation A.12, Peirano et al. (2002) Powder tech. 122,69-82)
 !	       
-!	       IF( K_12(ijk)/(2.0*K_Turb_G(IJK)) < ONE) THEN
-!	         C_MU = C_MU/(ONE+ 0.314*X_21 / ( (Tau_1(ijk)/(Tau_12_st + small_number)) &
-!	                    *(ONE - K_12(ijk)/(2.0*K_Turb_G(IJK))) ))
+!	       IF( K_12(ijk)/(2.0D0*K_Turb_G(IJK)) < ONE) THEN
+!	         C_MU = C_MU/(ONE+ 0.314D0*X_21 / ( (Tau_1(ijk)/(Tau_12_st + small_number)) &
+!	                    *(ONE - K_12(ijk)/(2.0D0*K_Turb_G(IJK))) ))
 !	       ELSE
 !		 C_MU = C_MU
 !	       ENDIF
@@ -282,7 +282,7 @@
 !         Calculate the second invariant of the deviator of D_g
 !
             I2_DEVD_G = ((D_G(1,1)-D_G(2,2))**2+(D_G(2,2)-D_G(3,3))**2+(D_G(3,3&
-               )-D_G(1,1))**2)/6. + D_G(1,2)**2 + D_G(2,3)**2 + D_G(3,1)**2 
+               )-D_G(1,1))**2)/6.D0 + D_G(1,2)**2 + D_G(2,3)**2 + D_G(3,1)**2 
 !
             MU_GT(IJK) = MIN(MU_GMAX,MU_GT(IJK)+2.0*L_SCALE(IJK)*L_SCALE(IJK)*&
                RO_G(IJK)*SQRT(I2_DEVD_G)) 

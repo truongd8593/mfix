@@ -64,10 +64,10 @@
 !     PARAMETER (a1 = 1500.)  !for G_s = 147 kg/m^2.s
 !     a1 depends upon solids flux.  It has been represented by C(1) 
 !     defined in the data file.
-      DOUBLE PRECISION, PARAMETER :: A2 = 0.005 
-      DOUBLE PRECISION, PARAMETER :: A3 = 90.0 
-      DOUBLE PRECISION, PARAMETER :: RE_C = 5. 
-      DOUBLE PRECISION, PARAMETER :: EP_C = 0.92 
+      DOUBLE PRECISION, PARAMETER :: A2 = 0.005D0 
+      DOUBLE PRECISION, PARAMETER :: A3 = 90.0D0 
+      DOUBLE PRECISION, PARAMETER :: RE_C = 5.D0 
+      DOUBLE PRECISION, PARAMETER :: EP_C = 0.92D0 
 !-----------------------------------------------
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -172,10 +172,10 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !     
-      C_DSXRET(RE) = 24*(1 + 0.15*RE**0.687)/RE ! Tsuji drag
-      C_DSXRE(RE) = (0.63*SQRT(RE) + 4.8)**2 ! Dalla Valle (1948) 
-!     C_DsxRe (Re) = 24. * (1. + 0.173 * Re**0.657)      ! Turton and
-!     &          + 0.413 * Re**2.09 / (Re**1.09 + 16300.) ! Levenspiel (1986)
+      C_DSXRET(RE) = 24D0*(1 + 0.15D0*RE**0.687D0)/RE ! Tsuji drag
+      C_DSXRE(RE) = (0.63D0*SQRT(RE) + 4.8D0)**2 ! Dalla Valle (1948) 
+!     C_DsxRe (Re) = 24.D0 * (1.D0 + 0.173D0 * Re**0.657D0)      ! Turton and
+!     &          + 0.413D0 * Re**2.09D0 / (Re**1.09D0 + 16300.D0) ! Levenspiel (1986)
 !     
 !     
 !     
@@ -235,7 +235,7 @@
                RE_G = D_P(IJK,M)*VREL*ROP_G(IJK)/Mu
 
 !     Note Reynolds' number for Hill and Koch has an additional factor of 1/2 & ep_g
-               RE_kh = 0.5*D_P(IJK,M)*VREL*ROP_G(IJK)/Mu
+               RE_kh = 0.5D0*D_P(IJK,M)*VREL*ROP_G(IJK)/Mu
             else 
                RE = LARGE_NUMBER 
                RE_G = LARGE_NUMBER
@@ -256,16 +256,16 @@
                ELSE IF (EP_G(IJK) == ZERO) THEN 
                   F_gstmp = ZERO 
                ELSE 
-                  A = EP_G(IJK)**4.14 
-                  IF (EP_G(IJK) <= 0.85) THEN 
-                     B = drag_c1*EP_G(IJK)**1.28 
+                  A = EP_G(IJK)**4.14D0 
+                  IF (EP_G(IJK) <= 0.85D0) THEN 
+                     B = drag_c1*EP_G(IJK)**1.28D0 
                   ELSE 
                      B = EP_G(IJK)**drag_d1
                   ENDIF 
-                  V_RM=HALF*(A-0.06*RE+SQRT(3.6E-3*RE*RE+0.12*RE*(2.*B-A)+A*A)) 
+                  V_RM=HALF*(A-0.06D0*RE+SQRT(3.6D-3*RE*RE+0.12D0*RE*(2.D0*B-A)+A*A)) 
 !------------------Begin cluster correction --------------------------
 !     uncomment the following four lines and comment the above line V_RM=... 
-!     V_RM=HALF*(A-0.06*RE+SQRT(3.6E-3*RE*RE+0.12*RE*(2.*B-A)+A*A)) & 
+!     V_RM=HALF*(A-0.06D0*RE+SQRT(3.6D-3*RE*RE+0.12D0*RE*(2.D0*B-A)+A*A)) & 
 !     * ( ONE + C(1) * exp( -a2*(Re - Re_c)**2 &
 !     - a3*(EP_g(IJK)-ep_c)**2 &
 !     )       * Re * (1. - EP_g(IJK))                )
@@ -274,23 +274,23 @@
 !     Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
 !     
                   IF(TSUJI_DRAG) THEN
-                     IF(EP_G(IJK).LE.0.8) THEN
+                     IF(EP_G(IJK).LE.0.8D0) THEN
                         F_gstmp = (Mu*EP_S(IJK,M)/(D_P(IJK,M)**2))*&
-                        (150*(EP_S(IJK,M)/EP_G(IJK)) + 1.75*RE)
-                     ELSE IF(EP_G(IJK).GT.0.8) THEN
-                        IF(RE*EP_G(IJK).GT.1000) THEN
-                           F_gstmp = 0.75*0.43*Mu*EP_S(IJK,M)*RE/(D_P(IJK,M)**2 *&
-                           EP_G(IJK)**1.7)
-                        ELSE IF(RE*EP_G(IJK).LE.1000) THEN
-                           F_gstmp = 0.75*C_DSXRET(RE*EP_G(IJK))*Mu*EP_S(IJK,M)*&
-                           RE/(D_P(IJK,M)**2 *EP_G(IJK)**1.7)
+                        (150D0*(EP_S(IJK,M)/EP_G(IJK)) + 1.75D0*RE)
+                     ELSE IF(EP_G(IJK).GT.0.8D0) THEN
+                        IF(RE*EP_G(IJK).GT.1000D0) THEN
+                           F_gstmp = 0.75D0*0.43D0*Mu*EP_S(IJK,M)*RE/(D_P(IJK,M)**2 *&
+                           EP_G(IJK)**1.7D0)
+                        ELSE IF(RE*EP_G(IJK).LE.1000D0) THEN
+                           F_gstmp = 0.75D0*C_DSXRET(RE*EP_G(IJK))*Mu*EP_S(IJK,M)*&
+                           RE/(D_P(IJK,M)**2 *EP_G(IJK)**1.7D0)
                         END IF
                      END IF 
                   ELSE IF(MODEL_B) THEN 
-                     F_gstmp = 0.75*Mu*EP_S(IJK,M)*C_DSXRE(RE/V_RM)/(&
+                     F_gstmp = 0.75D0*Mu*EP_S(IJK,M)*C_DSXRE(RE/V_RM)/(&
                      V_RM*D_P(IJK,M)*D_P(IJK,M)) 
                   ELSE
-                     F_gstmp = 0.75*Mu*EP_S(IJK,M)*EP_G(IJK)*C_DSXRE(RE&
+                     F_gstmp = 0.75D0*Mu*EP_S(IJK,M)*EP_G(IJK)*C_DSXRE(RE&
                      /V_RM)/(V_RM*D_P(IJK,M)*D_P(IJK,M)) 
                   ENDIF 
                ENDIF 
@@ -298,17 +298,17 @@
 !     
 !--------------------------Begin Gidaspow --------------------------
             ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW') then
-               IF(EP_g(IJK) .LE. 0.8) THEN
-                  DgA = 150 * (ONE - EP_g(IJK)) * Mu &
+               IF(EP_g(IJK) .LE. 0.8D0) THEN
+                  DgA = 150D0 * (ONE - EP_g(IJK)) * Mu &
                   / ( EP_g(IJK) * D_p(IJK,M)**2 ) &
-                  + 1.75 * RO_g(IJK) * VREL / D_p(IJK,M)
+                  + 1.75D0 * RO_g(IJK) * VREL / D_p(IJK,M)
                ELSE
-                  IF(Re_G .LE. 1000)THEN
-                     C_d = (24./(Re_G+SMALL_NUMBER)) * (ONE + 0.15 * Re_G**0.687)
+                  IF(Re_G .LE. 1000D0)THEN
+                     C_d = (24.D0/(Re_G+SMALL_NUMBER)) * (ONE + 0.15D0 * Re_G**0.687D0)
                   ELSE
-                     C_d = 0.44
+                     C_d = 0.44D0
                   ENDIF
-                  DgA = 0.75 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65) &
+                  DgA = 0.75D0 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65D0) &
                   /D_p(IJK,M)
                ENDIF
                
@@ -323,12 +323,12 @@
 !     
 !--------------------------Begin WEN_YU --------------------------
             ELSE IF(TRIM(DRAG_TYPE).EQ.'WEN_YU') then
-                IF(Re_G .LE. 1000)THEN
-                   C_d = (24./(Re_G+SMALL_NUMBER)) * (ONE + 0.15 * Re_G**0.687)
+                IF(Re_G .LE. 1000D0)THEN
+                   C_d = (24.D0/(Re_G+SMALL_NUMBER)) * (ONE + 0.15D0 * Re_G**0.687D0)
                 ELSE
-                   C_d = 0.44
+                   C_d = 0.44D0
                 ENDIF
-                DgA = 0.75 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65) &
+                DgA = 0.75D0 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65D0) &
                   /D_p(IJK,M)
                
 !              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
@@ -355,58 +355,58 @@
 !
             ELSE IF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL') then
 !     
-              F_STOKES = 18*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
+              F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
 	       
 	      phis = EP_s(IJK,M)
-	      w = EXP(-10.0*(0.4-phis)/phis)
+	      w = EXP(-10.0D0*(0.4D0-phis)/phis)
 	   
-	      IF(phis > 0.01 .AND. phis < 0.4) THEN
-	        F_0 = (1.0-w) *                                           &
-	              (1.0 + 3.0*dsqrt(phis/2.0) + 135.0/64.0*phis    &
-	                *LOG(phis) + 17.14*phis) / (1.0 + 0.681*      &
-	  	        phis - 8.48*phis*phis + 8.16*phis**3) + w *   &
-			10.0*phis/(1.0-phis)**3
+	      IF(phis > 0.01D0 .AND. phis < 0.4D0) THEN
+	        F_0 = (1.0D0-w) *                                           &
+	              (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis    &
+	                *LOG(phis) + 17.14D0*phis) / (1.0D0 + 0.681D0*      &
+	  	        phis - 8.48D0*phis*phis + 8.16D0*phis**3) + w *   &
+			10.0D0*phis/(1.0D0-phis)**3
 	               
-	      ELSE IF(phis >= 0.4) THEN
-	        F_0 = 10.0*phis/(1.0-phis)**3
+	      ELSE IF(phis >= 0.4D0) THEN
+	        F_0 = 10.0D0*phis/(1.0D0-phis)**3
 	      ENDIF
 	   
-	      IF(phis > 0.01 .AND. phis <= 0.1) THEN
-	        F_1 = dsqrt(2.0/phis) / 40.0
-	      ELSE IF(phis > 0.1) THEN
-	        F_1 = 0.11 + 5.1D-04 * exp(11.6*phis)
+	      IF(phis > 0.01D0 .AND. phis <= 0.1D0) THEN
+	        F_1 = dsqrt(2.0D0/phis) / 40.0D0
+	      ELSE IF(phis > 0.1D0) THEN
+	        F_1 = 0.11D0 + 5.1D-04 * exp(11.6D0*phis)
 	      ENDIF
 	   
-	      IF(phis < 0.4) THEN
-	        F_2 = (1.0-w) *                                           &
-	              (1.0 + 3.0*dsqrt(phis/2.0) + 135.0/64.0*phis    &
-	                *LOG(phis) + 17.89*phis) / (1.0 + 0.681*      &
-	  	        phis - 11.03*phis*phis + 15.41*phis**3)+ w *  &
-			10.0*phis/(1.0-phis)**3
+	      IF(phis < 0.4D0) THEN
+	        F_2 = (1.0D0-w) *                                           &
+	              (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis    &
+	                *LOG(phis) + 17.89D0*phis) / (1.0D0 + 0.681D0*      &
+	  	        phis - 11.03D0*phis*phis + 15.41D0*phis**3)+ w *  &
+			10.0D0*phis/(1.0D0-phis)**3
 	   
 	      ELSE
-	        F_2 = 10.0*phis/(1.0-phis)**3
+	        F_2 = 10.0D0*phis/(1.0D0-phis)**3
 	      ENDIF
 	   
-	      IF(phis < 0.0953) THEN
-	        F_3 = 0.9351*phis + 0.03667
+	      IF(phis < 0.0953D0) THEN
+	        F_3 = 0.9351D0*phis + 0.03667D0
 	      ELSE
-	        F_3 = 0.0673 + 0.212*phis +0.0232/(1.0-phis)**5
+	        F_3 = 0.0673D0 + 0.212D0*phis +0.0232D0/(1.0-phis)**5
 	      ENDIF
 	   
-	      Re_Trans_1 = (F_2 - 1.0)/(3.0/8.0 - F_3)
-	      Re_Trans_2 = (F_3 + dsqrt(F_3*F_3 - 4.0*F_1 &
-	                 *(F_0-F_2))) / (2.0*F_1)
+	      Re_Trans_1 = (F_2 - 1.0D0)/(3.0D0/8.0D0 - F_3)
+	      Re_Trans_2 = (F_3 + dsqrt(F_3*F_3 - 4.0D0*F_1 &
+	                 *(F_0-F_2))) / (2.0D0*F_1)
 	   
-	      IF(phis <= 0.01 .AND. Re_kh <= Re_Trans_1) THEN
-	        F = 1.0 + 3.0/8.0*Re_kh
+	      IF(phis <= 0.01D0 .AND. Re_kh <= Re_Trans_1) THEN
+	        F = 1.0D0 + 3.0D0/8.0D0*Re_kh
 	   
-	      ELSE IF(phis > 0.01 .AND. Re_kh <= Re_Trans_2) THEN
+	      ELSE IF(phis > 0.01D0 .AND. Re_kh <= Re_Trans_2) THEN
 	        F = F_0 + F_1*Re_kh*Re_kh
 	   
 	  
-	      ELSE IF(phis <= 0.01 .AND. Re_kh > Re_Trans_1 .OR.         &
-	           phis >  0.01 .AND. Re_kh > Re_Trans_2) THEN
+	      ELSE IF(phis <= 0.01D0 .AND. Re_kh > Re_Trans_1 .OR.         &
+	           phis >  0.01D0 .AND. Re_kh > Re_Trans_2) THEN
 	        F = F_2 + F_3*Re_kh
 	  
 	      ELSE

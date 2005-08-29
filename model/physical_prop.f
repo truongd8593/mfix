@@ -114,9 +114,9 @@
 !
 !           Constant pressure specific heat of air in cal/g.K
             IF (SP_HEAT(0) .AND. C_PG0==UNDEFINED) then
-               C_PG(IJK) = 0.767*CPN2(T_G(IJK)) + 0.233*CPO2(T_G(IJK))
+               C_PG(IJK) = 0.767D0*CPN2(T_G(IJK)) + 0.233D0*CPO2(T_G(IJK))
                !to SI, S. Dartevelle
-               IF (UNITS == 'SI') C_PG(IJK) = 4183.925*C_PG(IJK)    !in J/kg K
+               IF (UNITS == 'SI') C_PG(IJK) = 4183.925D0*C_PG(IJK)    !in J/kg K
 	    ENDIF
 !
 !
@@ -160,9 +160,9 @@
 !             Specific heat of solids (Ash =  0.310713 cal/g.K)
 !             Dobran et al., 1991
                IF (SP_HEAT(M) .AND. C_PS0==UNDEFINED) then
-	         C_PS(IJK,M) = 0.310713
+	         C_PS(IJK,M) = 0.310713D0
                  !to SI, S. Dartevelle
-                 IF (UNITS == 'SI') C_PS(IJK,M) = 4183.925*C_PS(IJK,M)    !in J/kg K
+                 IF (UNITS == 'SI') C_PS(IJK,M) = 4183.925D0*C_PS(IJK,M)    !in J/kg K
 	       ENDIF
 !
             ENDIF 
