@@ -224,7 +224,6 @@ echo
 cd tsuji
 echo "********************************************************************"
 echo "tsuji"
-cd tsuji
 sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
@@ -233,7 +232,6 @@ echo
 cd turbulent_pipe_flow
 echo "********************************************************************"
 echo "turbulent_pipe_flow"
-cd turbulent_pipe_flow
 sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
