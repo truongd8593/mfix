@@ -230,7 +230,7 @@ LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
             'WARNING: velocity higher than maximum allowed velocity: ', &
 	    G12.5,/&
 	    'in this cell: ','I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
-	    'Gas solids components: ','Us = ', G12.5, 'Vs = ', G12.5, 'Ws = ', G12.5)
+	    'Solids velocity components: ','Us = ', G12.5, 'Vs = ', G12.5, 'Ws = ', G12.5)
       END FUNCTION CHECK_VEL_BOUND 
 
 !// Comments on the modifications for DMP version implementation      
