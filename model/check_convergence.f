@@ -203,8 +203,6 @@
 !
       IF(CHECK_VEL_BOUND()) THEN
         MUSTIT = 2 !divergence 
-        if (myPE.eq.PE_IO) WRITE (*,*) 'WARNING: Gas or solids velocity > speed', &
-	                                ' of sound computed in check_convergence'
       ENDIF 
 !
       RETURN  

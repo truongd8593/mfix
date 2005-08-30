@@ -183,9 +183,6 @@
 !                      Indices 
       INTEGER          IJK 
 ! 
-!                      Approximation of speed of sound in air 
-      DOUBLE PRECISION SPEED_SOUND
-! 
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
@@ -193,24 +190,47 @@
 !
 !!$omp   parallel do private(IJK)
       CHECK_VEL_BOUND = .FALSE. !initialisation
-      DO IJK = IJKSTART3, IJKEND3
-         IF (FLUID_AT(IJK)) THEN 
-            SPEED_SOUND = 200d0*DSQRT(T_G(IJK)) !this is an approximation for air
-	    IF (UNITS == 'SI') SPEED_SOUND = 20d0*DSQRT(T_G(IJK)) 
 !
-! if no inlet velocity is specified, use the speed of sound as an upper limit
-            IF(MAX_INLET_VEL == ZERO) MAX_INLET_VEL = SPEED_SOUND 
+LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
+!
+         IF (FLUID_AT(IJK)) THEN
+!
+! if no inlet velocity is specified, use an upper limit defined in toleranc_mod.f
+            IF(MAX_INLET_VEL == ZERO) THEN
+	      MAX_INLET_VEL = MAX_ALLOWED_VEL
+	      IF (UNITS == 'SI') MAX_INLET_VEL = 1D-2 * MAX_ALLOWED_VEL
+            ENDIF
 !
 	    IF(ABS(U_G(IJK)) > MAX_INLET_VEL .OR. ABS(V_G(IJK)) > MAX_INLET_VEL .OR. &
-	       ABS(W_G(IJK)) > MAX_INLET_VEL) CHECK_VEL_BOUND = .TRUE.
+	       ABS(W_G(IJK)) > MAX_INLET_VEL) THEN
+	        CHECK_VEL_BOUND = .TRUE.
+		if (myPE.eq.PE_IO) WRITE(*,1000) MAX_INLET_VEL, I_OF(IJK), J_OF(IJK), K_OF(IJK), &
+		              U_G(IJK), V_G(IJK), W_G(IJK)
+	        EXIT LOOP_FLUID
+	    ENDIF
 	    DO M = 1, MMAX
 	      IF(ABS(U_S(IJK,M)) > MAX_INLET_VEL .OR. ABS(V_S(IJK,M)) > MAX_INLET_VEL .OR. &
-	         ABS(W_S(IJK,M)) > MAX_INLET_VEL) CHECK_VEL_BOUND = .TRUE.
+	         ABS(W_S(IJK,M)) > MAX_INLET_VEL) THEN
+	        CHECK_VEL_BOUND = .TRUE.
+		if (myPE.eq.PE_IO) WRITE(*,1010) MAX_INLET_VEL, I_OF(IJK), J_OF(IJK), K_OF(IJK), &
+		              U_S(IJK,M), V_S(IJK,M), W_S(IJK,M)
+	        EXIT LOOP_FLUID
+	      ENDIF
 	    ENDDO
          ENDIF 
-      END DO 
+      END DO LOOP_FLUID
 !
       RETURN  
+ 1000 FORMAT(1X,'Message from: CHECK_VEL_BOUND',/& 
+            'WARNING: velocity higher than maximum allowed velocity: ', &
+	    G12.5,/&
+	    'in this cell: ','I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
+	    'Gas velocity components: ','Ug = ', G12.5, 'Vg = ', G12.5, 'Wg = ', G12.5)  
+ 1010 FORMAT(1X,'Message from: CHECK_VEL_BOUND',/& 
+            'WARNING: velocity higher than maximum allowed velocity: ', &
+	    G12.5,/&
+	    'in this cell: ','I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
+	    'Gas solids components: ','Us = ', G12.5, 'Vs = ', G12.5, 'Ws = ', G12.5)
       END FUNCTION CHECK_VEL_BOUND 
 
 !// Comments on the modifications for DMP version implementation      
