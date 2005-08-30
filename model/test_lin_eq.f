@@ -54,7 +54,8 @@
 !                      linear equation solver method and iterations 
       INTEGER          LEQMETHOD, LEQIT 
       CHARACTER*4 ::   LEQSWEEP
-      DOUBLE PRECISION LEQTOL, LEQPC
+      DOUBLE PRECISION LEQTOL
+      CHARACTER*4 ::   LEQPC
       REAL  :: Harvest 
 !-----------------------------------------------
       INCLUDE 'function.inc'
