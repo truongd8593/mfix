@@ -21,7 +21,7 @@ echo
 cd FluidBed_DES
 echo "********************************************************************"
 echo "FluidBed_DES"
-sh ~/MFIX/mfix/model/make_mfix < ../../in
+sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
 cd ../
 # Another case
