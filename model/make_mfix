@@ -21,9 +21,13 @@ P4_OPTIMIZE=1
   # MUST set the TAUROOTDIR environment variable to a valid path of TAU installation
   # if USE_TAU is enabled.
   TAUROOTDIR=/mnt/home/ACTS/halow/TAU/tau
+#AIKE
+  TAUROOTDIR=/home/aike/ACTS/TAU/tau
   # MUST set the PDTROOTDIR environment variable to a valid path of PDToolkit installation
   # if USE_TAU is enabled.
   PDTROOTDIR=/mnt/home/ACTS/halow/TAU/pdt
+#AIKE  
+  PDTROOTDIR=/home/aike/ACTS/TAU/pdt  
   # *****
 #========== end of TAU related settings ==============  
 #
@@ -195,14 +199,14 @@ ln -sf "$mpi_include/mpif.h" .
        then
          echo 
          echo "  Supported Intel Linux Fortran compiler versions:"
-         echo "    1) Intel Linux Fortran Compiler (ifort) version 8.0"
+         echo "    1) Intel Linux Fortran Compiler (ifort) version 8.X and up"
          echo "    2) Intel Linux Fortran Compiler (ifc) version 7.X" 
          echo -n "   Enter line number corresponding the compiler version? (1/2) [1] "
          read ver_compiler
          case $ver_compiler in
          1)
 	   echo " "
-           echo "Intel Linux Fortran Compiler (ifort) version 8.0 selected"
+           echo "Intel Linux Fortran Compiler (ifort) version 8.X and up selected"
            intel_ver="Linux_ifc8"
            ;;
          2)
@@ -212,7 +216,7 @@ ln -sf "$mpi_include/mpif.h" .
            ;;
          *)
 	   echo " "
-           echo "Intel Linux Fortran Compiler (ifort) version 8.0 selected"
+           echo "Intel Linux Fortran Compiler (ifort) version 8.X and up selected"
            intel_ver="Linux_ifc8"
            ;;
        esac
@@ -221,6 +225,11 @@ ln -sf "$mpi_include/mpif.h" .
        echo  
     fi
 
+#  Note: 
+#    compile3 and compile_d3 flags are passed to makefile for compiling
+#    F77 based codes (e.g. ODEPACK, BLAS, etc.) for optimized and debug
+#    versions, respectively.
+#
     case $opsys in
 
       OSF1)
@@ -235,10 +244,13 @@ ln -sf "$mpi_include/mpif.h" .
             FORTRAN_EXT=f
             omp="-omp"
             compile_d="-c -I. -I$mpi_include -C -trapuv -g -free -nowarn -assume byterecl -convert big_endian "
-            link_d="-C -g -nowarn -assume byterecl -convert big_endian"
+            compile_d2="-c -I. -I$mpi_include -C -trapuv -g -free -nowarn -assume byterecl -convert big_endian "
+            compile_d3="-c -I. -I$mpi_include -C -trapuv -g -free -nowarn -assume byterecl -convert big_endian "	    
+            link_d="-C -g -nowarn -assume byterecl -convert big_endian"	   
 
             compile="-c -I. -I$mpi_include -O5 -free -nowarn -assume byterecl -convert big_endian "
             compile2="-c -I. -I$mpi_include -O5 -nowarn -assume byterecl -convert big_endian "
+            compile3="-c -I. -I$mpi_include -O5 -free -nowarn -assume byterecl -convert big_endian "	    
             link="-O5 -nowarn -assume byterecl -convert big_endian"
             MODULE_CODE=1
             ;;
@@ -283,10 +295,13 @@ ln -sf "$mpi_include/mpif.h" .
 
  	    compile_common="-c -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -c -I.  -freeform -I$moddir -qmoddir=$moddir "
             compile_d="-C -g -qinitauto=FF -qflttrap -freeform $compile_common"
+            compile_d2="-C -g -qinitauto=FF -qflttrap -freeform $compile_common"
+            compile_d3="-C -g -qinitauto=FF -qflttrap -freeform $compile_common"	    	    
             link_d="$compile_d"
 
             compile=" -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
             compile2="-c -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -c -I.  -I$moddir -qmoddir=$moddir -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
+            compile3=" -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
             link="-O3 -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qtune=pwr3 -qcache=auto "
 
 #	    ------------------
@@ -314,10 +329,13 @@ ln -sf "$mpi_include/mpif.h" .
 	    omp="-mp"
 	    compile_common="-c -I. -I$mpi_include -64 -freeform "
             compile_d="$compile_common -C -trapuv -g "
+            compile_d2="$compile_common -C -trapuv -g "
+            compile_d3="$compile_common -C -trapuv -g "	    	    
             link_d="-IPA -64 -C -g"
 
             compile="$compile_common -O3 -mips4 "
             compile2="-c -I. -I$mpi_include -64 -O3 -mips4"
+            compile3="$compile_common -O3 -mips4 "	    
             link="-IPA -64 -O3 -mips4"
             MODULE_CODE=0
 #           ------------------
@@ -343,9 +361,12 @@ ln -sf "$mpi_include/mpif.h" .
             FORTRAN_EXT=f90
 	    omp="?"
             compile_d="-c -I. -I$mpi_include -g -nowarn -freeform -convert big_endian"
+            compile_d2="-c -I. -I$mpi_include -g -nowarn -freeform -convert big_endian"
+            compile_d3="-c -I. -I$mpi_include -g -nowarn -freeform -convert big_endian"	    	    
             link_d="-g -nowarn -convert big_endian"
             compile="-c -I. -I$mpi_include -nowarn -O2 -freeform -convert big_endian"
             compile2="-c -I. -I$mpi_include -nowarn -O2 -convert big_endian"
+            compile3="-c -I. -I$mpi_include -nowarn -O2 -freeform -convert big_endian"	    
             link="-O2 -nowarn -convert big_endian"
             MODULE_CODE=0
 	    
@@ -365,9 +386,12 @@ ln -sf "$mpi_include/mpif.h" .
 	    omp="-mp"
 	    compile_common="-c -I.  -Mnosave -Mfreeform -Mrecursive -Mreentrant -byteswapio"
             compile_d=" -g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk $compile_common"
+            compile_d2=" -g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk $compile_common"	    
+            compile_d3=" -g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk $compile_common"	    
             link_d=" "
             compile=" -O -Mdalign $compile_common"
             compile2="-O1 -Mdalign -c -I.  -Mnosave -Mrecursive -Mreentrant -byteswapio"
+            compile3=" -O -Mdalign $compile_common"
             link="  "
             MODULE_CODE=1
 	    
@@ -493,9 +517,11 @@ ln -sf "$mpi_include/mpif.h" .
 	    fi
             compile_d="-g -O0 -c -FR -I. -w -d1 -CB " 
             compile_d2="-g -O0 -c -I. -w -d1 -CB " 
+            compile_d3="-g -O0 -c -I. -w -d1 -CB " 	    
             link_d="-I. -L$intel_lib -lPEPCF90 "
             compile="$compile_common"
             compile2="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip"
+            compile3="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip"	    
             link="-I. -L$intel_lib -lPEPCF90"
             MODULE_CODE=0
             fi
@@ -511,9 +537,11 @@ ln -sf "$mpi_include/mpif.h" .
 	      fi
               compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB "
               compile_d2="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB "
+              compile_d3="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB "	      
               link_d="-I.  "
               compile="$compile_common"
               compile2="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+              compile3="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
               link="-I.  "
               MODULE_CODE=1
             fi
@@ -548,6 +576,7 @@ ln -sf "$mpi_include/mpif.h" .
             link_d="-g"
             compile="-c -I. -I. -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             compile2="-c -I. -I. -byteswapio -Mnosave -Mrecursive -Mreentrant"
+            compile3="-c -I. -I. -byteswapio -Mnosave -Mrecursive -Mreentrant"
             link=" "
             MODULE_CODE=1
 
@@ -568,6 +597,7 @@ ln -sf "$mpi_include/mpif.h" .
             link_d="-g"
             compile="-c -I. -I$mpi_include -O -byteswapio -Mfreeform -Mnosave -Mrecursive -Mreentrant"
             compile2="-c -I. -I$mpi_include -O1 -byteswapio -Mnosave -Mrecursive -Mreentrant"
+            compile3="-c -I. -I$mpi_include -O1 -byteswapio -Mnosave -Mrecursive -Mreentrant"
             link=" "
             MODULE_CODE=1
 
@@ -677,11 +707,12 @@ esac
        else
 #        Mfix/model directory does not have a default file. create one.
          /bin/cp -f $mfix/$i $mfix/$outfile
-       fi
-       
+       fi 
     fi
   done
-  
+
+
+    
   for i in `ls *.inc` 
   do
   
@@ -757,11 +788,162 @@ esac
     fi
   done
   echo
-  
+
+#
+#------------------------------------------------------------------------
+#
+# ISAT related modifications
+  if [ $DO_ISAT -eq 0 ]
+  then
+     /bin/cp -fp chem/isat_donothing/* chem
+  else
+     /bin/cp -fp chem/isat_do/* chem
+  fi
 #
 #------------------------------------------------------------------------
 #
 
+#AIKE 083105
+#------------------------------------------------------------------------
+#  Check if the user's run directory has the following subdirectories
+#  that contains modified source code for the new modules.
+#------------------------------------------------------------------------
+
+# 
+#  function updatesubdir defined here to embed all the operations applicable to subdirectories
+#  under run directory within in a single call but varying argument list, 
+#  e.g.
+#     updatesubdir dqmom
+#     updatesubdir chem
+#
+#
+updatesubdir()
+{  
+   #------------------------------- Step 1
+   # 
+   # create default bckup copy *.f and *.inc files in model/subrun_dir directory, 
+   # if they do not exist
+   #--------------------------------
+    subrun_dir=$1
+    
+    echo ****
+    echo "Checking for modified user files under " $run_dir/$subrun_dir
+    echo ****  
+
+    cd $run_dir/$subrun_dir
+    echo
+    echo "Ignore messages such as \"Cannot access *.f or *.inc\""
+    for i in `ls *.f` 
+    do
+  
+   # Is there a similar file in Mfix/model directory?
+      if test -r $mfix/$subrun_dir/$i 
+      then
+      # to make bckup copy "create new name" by add .0f extension, mfix.f-> mfix.0f
+        outfile=`echo $i | sed 's/\./\.0/'`
+	
+   # Is there default bckup copy of the file with *.0f extension under Mfix/model/subrun_dir directory?
+   #   if not create one (if auto_compile is enabled)
+   #   else do nothing
+        if test -r $mfix/$subrun_dir/$outfile
+        then
+          case $auto_compile in
+             y|Y)
+                  chmod u+w $outfile
+                  /bin/cp -f $run_dir/$subrun_dir/$outfile $outfile		  
+                  ;;
+             *)
+                  do_nothing="ok"
+                  ;;
+          esac
+      
+         else
+   # Mfix/model directory does not have a default file. create a backup copy with .0f extension
+           /bin/cp -f $mfix/$subrun_dir/$i $mfix/$subrun_dir/$outfile
+         fi 
+       fi
+    done  
+
+   #------------------------------- Step 2
+   #
+   # After generating the backup copy of the original under model/subrun_dir (if it didn't exist) 
+   # copy the new user modified file from the run directory over the existing one
+   # 
+   #------------------------------------------------------------------------ 
+   #
+   # Loop through all *.0* files in mfix/model/$subrun_dir directory
+     cd $mfix/$subrun_dir
+
+     echo
+     echo "Files from "$subrun_dir" under run directory used for making Mfix:"
+     for i in `ls *.0*`
+     do
+  
+   # The user has a corresponding file
+     outfile=`echo $i | sed 's/\.0/\./'`
+     if test -r $run_dir/$subrun_dir/$outfile 
+     then
+	echo "   $outfile"
+
+   #    User's file different from the .f or .inc file: copy user's file
+        cmp -s $run_dir/$subrun_dir/$outfile  $outfile 
+        if test $? = 0
+        then
+          case $auto_compile in
+             y|Y)
+                  chmod u+w $outfile
+                  /bin/cp -f $run_dir/$subrun_dir/$outfile $outfile
+                  ;;
+             *)
+                  do_nothing="ok"
+                  ;;
+          esac
+        else
+          chmod u+w $outfile
+          /bin/cp -f $run_dir/$subrun_dir/$outfile $outfile
+        fi
+
+   # User does not have the corresponding file
+     else
+
+      # The .0f or .0inc file different from the .f or .inc file: copy *.0* file
+       cmp -s $i $outfile
+       if test $? = 0
+       then
+          /bin/rm -f $i
+       else
+          /bin/mv -f $i $outfile
+	  touch $outfile
+       fi
+
+     fi
+    done
+  echo  
+  
+}    # eof function updatesubdir
+
+#-----------
+#AIKE Check for subdirectories under run directory
+#-----------
+  if test -d $run_dir/chem
+  then
+     updatesubdir chem  
+  fi
+  
+  if test -d $run_dir/dqmom
+  then
+     updatesubdir dqmom  
+  fi
+
+  if test -d $run_dir/des
+  then
+     updatesubdir des  
+  fi  
+
+  cd $mfix
+#
+#------------------------------------------------------------------------
+#
   case $dmp_version in
   y|Y )
 	echo
@@ -804,20 +986,6 @@ esac
     ;;
   esac
 
-#
-#------------------------------------------------------------------------
-#
-# ISAT related modifications
-  if [ $DO_ISAT -eq 0 ]
-  then
-     /bin/cp -fp chem/isat_donothing/* chem
-  else
-     /bin/cp -fp chem/isat_do/* chem
-  fi
-#
-#------------------------------------------------------------------------
-#
-
 #make_mfix:
   case $smp_version in
   y|Y )
@@ -834,12 +1002,14 @@ esac
     echo "Execution may be SLOW.  Do not use debug version for production runs!"
     FORT_FLAGS="$mp_flag $compile_d"
     FORT_FLAGS2="$mp_flag $compile_d2"
+    FORT_FLAGS3="$mp_flag $compile_d3"    
     LINK_FLAGS="$mp_flag $link_d"
     LIB_FLAGS="$libs_d"
     ;;
   *)
     FORT_FLAGS="$mp_flag $compile $preinline_flags"
     FORT_FLAGS2="$mp_flag $compile2 $preinline_flags"
+    FORT_FLAGS3="$mp_flag $compile3 $preinline_flags"    
     LINK_FLAGS="$mp_flag $link"
     LIB_FLAGS="$libs"
     ;;
@@ -849,6 +1019,7 @@ esac
   
   export FORT_FLAGS
   export FORT_FLAGS2
+  export FORT_FLAGS3  
   export LINK_FLAGS
   export LIB_FLAGS
   export OBJ_EXT
