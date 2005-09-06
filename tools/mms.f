@@ -112,11 +112,11 @@ c
       write (30,'(a)') 'blas90.a : BLAS.o'
       write (30,'(a)') '	ar cr blas90.a BLAS.o'
       write (30,'(a)') 'BLAS.o : BLAS.F'           
-      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS3) BLAS.F'
+      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F'
       write (31,'(a)') 'blas90.a : BLAS.o'
       write (31,'(a)') '	ar cr blas90.a BLAS.o'
       write (31,'(a)') 'BLAS.o : BLAS.F'           
-      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS3) BLAS.F'
+      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F'
 C
 c
 c source code dependencies   ... odepack.a
