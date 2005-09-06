@@ -112,11 +112,11 @@ c
       write (30,'(a)') 'blas90.a : BLAS.o'
       write (30,'(a)') '	ar cr blas90.a BLAS.o'
       write (30,'(a)') 'BLAS.o : BLAS.F'           
-      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F'
+      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS3) BLAS.F'
       write (31,'(a)') 'blas90.a : BLAS.o'
       write (31,'(a)') '	ar cr blas90.a BLAS.o'
       write (31,'(a)') 'BLAS.o : BLAS.F'           
-      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F'
+      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS3) BLAS.F'
 C
 c
 c source code dependencies   ... odepack.a
@@ -124,11 +124,11 @@ c
       write (30,'(a)') 'odepack.a : ODEPACK.o'
       write (30,'(a)') '	ar cr odepack.a ODEPACK.o'
       write (30,'(a)') 'ODEPACK.o : ODEPACK.F'           
-      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS2) ODEPACK.F'
+      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS3) ODEPACK.F'
       write (31,'(a)') 'odepack.a : ODEPACK.o'
       write (31,'(a)') '	ar cr odepack.a ODEPACK.o'
       write (31,'(a)') 'ODEPACK.o : ODEPACK.F'           
-      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS2) ODEPACK.F'
+      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS3) ODEPACK.F'
 C
 C  source code Dependencies  ... MODULES
 C
