@@ -7,8 +7,9 @@
 #     2) on NT using PGI bash :  bash  mfix/model/make_mfix
 #
 # M. Syamlal and P. Nicoletti                  9-27-94
+# A. Gel (Aeolus Research) revision            8-31-05
 #
-vers="2004-3"
+vers="2005-3"
 # Flag variable for compiling with Pentium 4 specific optimization flags   
 # Set to 0 to avoid Pentium 4 specific optimizations
 P4_OPTIMIZE=1
@@ -82,24 +83,30 @@ read dmp_version
 # Give a different name for each machine file (IRIXF90.F, ULTRIX.F, etc.)
 
     set `uname -s` ; opsys=$1
-
+    set `uname -p` ; proctyp=$1
+    
 #------------------------------------------------------------------------
 #  Check if the system is a Linux system, to display WARNING message 
 if test $opsys = "Linux"
 then
-  echo
-  echo "-------------- W  A  R  N  I  N  G ---------------------"
-  echo "      For compiling on Linux with Intel compilers: "
-  echo "           ----------------------------                 "
-  echo "MFIX will be compiled with applicable optimization flags"
-  echo "if the next question is answered [no]. "
-  echo "Note that, default optimization flags are for "
-  echo "           Pentium 4 processors ONLY! "
-  echo "You can enable non-Pentium 4 specific optimization flags "
-  echo "by editing line 14 in model/make_mfix to set : "
-  echo "P4_OPTIMIZE=0 "
-  echo "--------------------------------------------------------"  
-  echo 
+  if test $proctyp = "x86_64"
+  then
+     P4_OPTIMIZE=0
+  else
+     echo
+     echo "-------------- W  A  R  N  I  N  G ---------------------"
+     echo "      For compiling on Linux with Intel compilers: "
+     echo "           ----------------------------                 "
+     echo "MFIX will be compiled with applicable optimization flags"
+     echo "if the next question is answered [no]. "
+     echo "Note that, default optimization flags are for "
+     echo "           Pentium 4 processors ONLY! "
+     echo "You can enable non-Pentium 4 specific optimization flags "
+     echo "by editing line 14 in model/make_mfix to set : "
+     echo "P4_OPTIMIZE=0 "
+     echo "--------------------------------------------------------"
+     echo
+  fi
 fi
 
 echo -n "Do you need debug version? (y/n) [no] "
@@ -168,6 +175,62 @@ ln -sf "$mpi_include/mpif.h" .
 #
     if test $opsys = "Linux"
     then
+      if test $proctyp = "x86_64"
+      then
+       echo
+       echo
+       echo "Linux system with 64 bit processor detected, please select compiler"
+       echo
+       echo "MFIX Compilation directives available for following compilers:"
+       echo " - Portland Group Linux Fortran Compiler (pgf90)"
+       echo " - PathScale compiler (pathf90)"
+       echo -n "Do you want to compile with Portland Group Compiler? (y/n) [yes] "
+       read lnx_compiler
+       case $lnx_compiler in
+         n|N )
+           echo " "
+           echo "PathScale Compiler selected"
+           opsys="Linux_64_pscale"
+           ;;
+         y|Y )
+           echo " "
+           ;;
+         *)
+           echo " "
+           echo "Portland Group Linux Fortran Compiler selected"
+           opsys="Linux_64_pgi"
+           ;;
+         esac
+         if test $opsys = "Linux_64_pgi"
+	 then
+           if [ "$PGI" ]
+           then                                                                    
+              echo " "
+            else
+	      echo "______     Environment variable ERROR          _______"
+	      echo "Environment variable for Portland Group is not defined !"
+	      echo " "
+	      echo "Please define the following in your shell and rerun make_mfix"
+	      echo " setenv PGI your_path_of_PGI_root_directory"
+	      exit
+	    fi
+         fi
+         if test $opsys = "Linux_64_pscale"
+	 then
+           if [ "$PSCALE" ]
+           then                                                                    
+              echo " "
+            else
+	      echo "______     Environment variable ERROR          _______"
+	      echo "Environment variable for PathScale is not defined !"
+	      echo " "
+	      echo "Please define the following in your shell and rerun make_mfix"
+	      echo " setenv PSCALE your_path_of_PathScale_root_directory"
+	      exit
+	    fi
+         fi
+
+      else
        echo
        echo
        echo "Linux system detected, please select compiler"
@@ -179,22 +242,22 @@ ln -sf "$mpi_include/mpif.h" .
        read lnx_compiler
        case $lnx_compiler in
          y|Y )
-	   echo " " 
-	   echo "Intel Linux Fortran Compiler selected"
-	   opsys="Linux_ifc"
+           echo " "
+           echo "Intel Linux Fortran Compiler selected"
+           opsys="Linux_ifc"
            ;;
          n|N )
-	   echo " "
-	   echo "Portland Group Linux Fortran Compiler selected" 	      
-	   opsys="Linux_pgi"
-           ;; 
-         *)
-	   echo " "
-           echo "Intel Linux Fortran Compiler selected"
-	   opsys="Linux_ifc"
+           echo " "
+           echo "Portland Group Linux Fortran Compiler selected"
+           opsys="Linux_pgi"
            ;;
-       esac    
-
+         *)
+           echo " "
+           echo "Intel Linux Fortran Compiler selected"
+           opsys="Linux_ifc"
+           ;;
+       esac
+           
        if test $opsys = "Linux_ifc"
        then
          echo 
@@ -221,13 +284,14 @@ ln -sf "$mpi_include/mpif.h" .
            ;;
        esac
        fi
+      fi
     else
        echo  
     fi
 
 #  Note: 
 #    compile3 and compile_d3 flags are passed to makefile for compiling
-#    F77 based codes (e.g. ODEPACK, BLAS, etc.) for optimized and debug
+#    F77 based codes (e.g. ODEPACK ) for optimized and debug
 #    versions, respectively.
 #
     case $opsys in
@@ -405,7 +469,107 @@ ln -sf "$mpi_include/mpif.h" .
             preinline_flags="  "
 
             ;;
+
+    Linux_64_pgi)
+            mach_file="LINUX.F"
+
+          #-----------
+          # Decide to use mpif90 or pgf90 as the compiler & linker command
+          #-----------
+            case $dmp_version in
+              y|Y )
+                        FORTRAN_CMD=mpif90
+                        LINK_CMD=mpif90
+                ;;
+              *)
+                        FORTRAN_CMD=$PGI/bin/pgf90
+                        LINK_CMD=$PGI/bin/pgf90
+                ;;
+              esac                                                                                
+            libs_d="-lblas blas90.a"
+            libs="-lblas blas90.a"
+                                                                                
+                                                                                
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-mp"
+            compile_common="-c -I. -Mnosave -Mfreeform -Mrecursive -Mreentrant -byteswapio"
+            compile_d=" -g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk $compile_common"            link_d=" "
+            compile=" -O -Mdalign $compile_common"
+            compile2="-O1 -Mdalign $compile_common"
+            link="  "
+            MODULE_CODE=1
+                                                                                
+                                                                                
+#           ------------------
+#           flags for inlining
+#           ------------------
+            inline_objs="compare.o eosg.o discretize.o "
+            inline_files="compare.f eosg.f discretize.f "
+            inline_flags=" "
+#            inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
+            preinline_flags="  "
+            ;;
+
+     Linux_64_pscale)
+            mach_file="LINUX.F"                                                                                 
+          #-----------
+          # Decide to use mpif90 or pathf90 as the compiler & linker command
+          #-----------
+            case $dmp_version in
+              y|Y )
+                        FORTRAN_CMD=mpif90
+                        LINK_CMD=mpif90
+                ;;
+              *)
+                       #FORTRAN_CMD=/usr/common//pathscale/2.1/bin/pathf90
+                        FORTRAN_CMD=$PSCALE/bin/pathf90
+                        LINK_CMD=$PSCALE/bin/pathf90
+                ;;
+            esac
+	    if [ "$ACML" ]
+	    then
+	      echo " "
+              echo "-------------- W A R N I N G ! ----------"
+              echo " You may need to update the paths under libs_d and libs "
+	      echo " variables in make_mfix; search for  Linux_64_pscale) text block"
+	      echo " with the corresponding paths on your local system if"
+	      echo " if you encounter problems during the link phase"
+              echo "-------------- W A R N I N G ! ----------"
+	      echo " "
+	    fi  
+           #MPI = /usr/lib/mpi/mpi_gnu
+            MPI = /usr/common/mpich/pathscale-2.1/mvapich-0.9.5
 	    
+            libs_d="-lfrtbegin -lg2c odepack.a $ACML"
+            libs="-lfrtbegin -lg2c -L /usr/common/mpich/pathscale-2.1/mvapich-0.9.5/lib -lmpich odepack.a $ACML"
+                                                                                
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-mp"
+            compile_common_dbg="-c -I. -fno-math-errno -static-data -Wno-globals  -freeform"
+            compile_common="-c -I. -O3 -OPT:Ofast -fno-math-errno -static-data -msse2 -Wno-globals -fno-second-underscore -freeform"
+            compile_d=" -g $compile_common_dbg"
+            compile_d2=" -g $compile_common_dbg"
+            compile_d3=" -g -c -I. -fno-math-errno -static-data -Wno-globals "
+            link_d=" "
+            compile="$compile_common"
+            compile2="$compile_common"
+            compile3="-c -I. -O3 -OPT:Ofast -fno-math-errno -static-data -msse2 -Wno-globals -fno-second-underscore"
+            link="  "
+            MODULE_CODE=0
+                                                                                
+#           ------------------
+#           flags for inlining
+#           ------------------
+            inline_objs="compare.o eosg.o discretize.o "
+            inline_files="compare.f eosg.f discretize.f "
+            inline_flags=" "
+#            inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
+            preinline_flags="  "
+                                                                                
+            ;;
+	    	    
     Linux_ifc)
           #-----------
           # Check if the Intel Linux compiler specific machine.f exists
@@ -1355,12 +1519,14 @@ updatesubdir()
     echo "Execution may be SLOW.  Do not use debug version for production runs!"
     FORT_FLAGS="$mp_flag $compile_d"
     FORT_FLAGS2="$mp_flag $compile_d2"
+    FORT_FLAGS3="$mp_flag $compile_d3"    
     LINK_FLAGS="$mp_flag $link_d"
     LIB_FLAGS="$libs_d"
     ;;
   *)
     FORT_FLAGS="$mp_flag $compile $inline_flags"
     FORT_FLAGS2="$mp_flag $compile2 $inline_flags"
+    FORT_FLAGS3="$mp_flag $compile3 $inline_flags"    
     LINK_FLAGS="$mp_flag $link"
     LIB_FLAGS="$libs"
     ;;
@@ -1370,6 +1536,7 @@ updatesubdir()
   
   export FORT_FLAGS
   export FORT_FLAGS2
+  export FORT_FLAGS3  
   export LINK_FLAGS
   export LIB_FLAGS
   export OBJ_EXT
