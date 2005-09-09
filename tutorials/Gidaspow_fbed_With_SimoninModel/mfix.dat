@@ -13,9 +13,11 @@
   TIME  		= 0.				!start time
   TSTOP 		= 1.0
   DT 			= 1.0E-4			!time step
-  DT_MAX		= 1.0E-4			!max time-step
   DT_MIN		= 1.0E-8			!min time-step
 !!
+
+  NORM_G            =  0.0d0
+  NORM_S            =  0.0d0
 
   DISCRETIZE(1)     =  2
   DISCRETIZE(2)     =  2

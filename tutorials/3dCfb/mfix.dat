@@ -22,6 +22,8 @@
   SPECIES_EQ = 2*.F.                                                            
   CALL_USR = .F.                                                                
                                                                                 
+  NORM_s   = 0.0d0
+  NORM_g   = 0.0d0
       
                                                                                 
 # Physical parameters                                                           
