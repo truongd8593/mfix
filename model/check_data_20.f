@@ -359,7 +359,7 @@
 		  ENDIF ! for MMAX > 0
 !
 !     CHEM & ISAT begin (nan xie)
-                  IF ((RUN_TYPE /= 'NEW') .AND. (CALL_ISAT .OR. CALL_CHEM))THEN
+                  IF ((RUN_TYPE /= 'NEW') .AND. (CALL_ISAT .OR. CALL_DI))THEN
                   ELSE
                     IF (ABS(DIF) > ZERO_EP_S) THEN
                        IF (.NOT.ABORT) THEN 

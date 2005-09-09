@@ -152,7 +152,7 @@
 !                      error message 
       CHARACTER*80     LINE(1) 
 !
-!                      FOR CALL_CHEM and CALL_ISAT = .true.
+!                      FOR CALL_DI and CALL_ISAT = .true.
       DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
 ! 
 !                      terms of bm expression
@@ -178,7 +178,7 @@
 !     CHEM & ISAT begin (nan xie)
 !
 ! Set the source terms zero
-      IF (CALL_CHEM .or. CALL_ISAT) THEN
+      IF (CALL_DI .or. CALL_ISAT) THEN
          SUM_R_S_temp = SUM_R_S
          SUM_R_S = ZERO
       END IF
@@ -381,7 +381,7 @@
 !
 !     CHEM & ISAT begin (nan xie)
 !
-      IF (CALL_CHEM .or. CALL_ISAT) THEN
+      IF (CALL_DI .or. CALL_ISAT) THEN
          SUM_R_S = SUM_R_S_temp
       END IF
 !     CHEM & ISAT end (nan xie)
@@ -480,7 +480,7 @@
 !                      error message 
       CHARACTER*80     LINE(1) 
 !
-!                      FOR CALL_CHEM and CALL_ISAT = .true.
+!                      FOR CALL_DI and CALL_ISAT = .true.
       DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
 ! 
 !                      terms of bm expression
@@ -540,7 +540,7 @@
 !     CHEM & ISAT begin (nan xie)
 !
 ! Set the source terms zero
-      IF (CALL_CHEM .or. CALL_ISAT) THEN
+      IF (CALL_DI .or. CALL_ISAT) THEN
          SUM_R_S_temp = SUM_R_S
          SUM_R_S = ZERO
       END IF
@@ -687,7 +687,7 @@
 !
 !     CHEM & ISAT begin (nan xie)
 !
-      IF (CALL_CHEM .or. CALL_ISAT) THEN
+      IF (CALL_DI .or. CALL_ISAT) THEN
          SUM_R_S = SUM_R_S_temp
       END IF
 !     CHEM & ISAT end (nan xie)

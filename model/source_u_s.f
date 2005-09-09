@@ -109,7 +109,7 @@
 !                      error message 
       CHARACTER*80     LINE(2) 
 !
-!                      FOR CALL_CHEM and CALL_ISAT = .true.
+!                      FOR CALL_DI and CALL_ISAT = .true.
       DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
 !
 !-----------------------------------------------
@@ -131,7 +131,7 @@
 !
 !     CHEM & ISAT begin (nan xie)
 ! Set the source terms zero
-            IF (CALL_CHEM .or. CALL_ISAT) THEN
+            IF (CALL_DI .or. CALL_ISAT) THEN
                SUM_R_S_temp = SUM_R_S
                SUM_R_S = ZERO
             END IF
@@ -279,7 +279,7 @@
             CALL SOURCE_U_S_BC (A_M, B_M, M, IER) 
 !
 !     CHEM & ISAT begin (nan xie)
-            IF (CALL_CHEM .or. CALL_ISAT) THEN
+            IF (CALL_DI .or. CALL_ISAT) THEN
                SUM_R_S = SUM_R_S_temp
             END IF
 !     CHEM & ISAT end (nan xie)

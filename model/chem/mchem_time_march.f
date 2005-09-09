@@ -52,7 +52,7 @@
 !
 !     Time step for Integration
 !
-       IF (CALL_CHEM .AND. (ISATdt .EQ. UNDEFINED)) THEN     
+       IF (CALL_DI .AND. (ISATdt .EQ. UNDEFINED)) THEN     
           ODE_dt = DT
        ELSE 
           ODE_dt = ISATdt

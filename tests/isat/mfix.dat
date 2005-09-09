@@ -14,7 +14,7 @@
 
 #  CALL_GROW  =  .TRUE
 #  CALL_ISAT  =  .TRUE.
-  CALL_CHEM = .TRUE.
+  CALL_DI = .TRUE.
   ISATdt     = 1.0d-3
  
 #                                                                               

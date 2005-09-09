@@ -93,7 +93,7 @@
          IF (.NOT.WALL_AT(IJK)) THEN 
 !
 !           CHEM & ISAT begin (nan xie)
-            IF (CALL_CHEM .or. CALL_ISAT) THEN
+            IF (CALL_DI .or. CALL_ISAT) THEN
                TGX  = T_g(IJK)
             END IF
 !           CHEM & ISAT end (nan xie)
@@ -130,7 +130,7 @@
 !               IJK)) + 0.233*CPO2(T_G(IJK))
 !
 !           CHEM & ISAT begin (nan xie)
-            IF (CALL_CHEM .or. CALL_ISAT) THEN
+            IF (CALL_DI .or. CALL_ISAT) THEN
                C_pg(IJK) =  X_g(IJK,SiH4)*CPSiH4(TGX)&
                        + X_g(IJK,SiH2)*CPSiH2(TGX)  + X_g(IJK,H2)*CPH2(TGX)&
                        + X_g(IJK,Si2H6)*CPSi2H6(TGX) + X_g(IJK,N2)*CPN2(TGX)
@@ -199,7 +199,7 @@
 !
 !
 !           CHEM & ISAT begin (nan xie)
-               IF (CALL_CHEM .or. CALL_ISAT) THEN
+               IF (CALL_DI .or. CALL_ISAT) THEN
                   TSX  = T_s(IJK, M)
 !
 !             Specific heat of solids (Coal) in cal/g.K

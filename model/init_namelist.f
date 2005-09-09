@@ -491,7 +491,7 @@
 
 !     CHEM & ISAT begin (nan xie)
 !
-      CALL_CHEM = .FALSE.
+      CALL_DI = .FALSE.
       CALL_GROW = .FALSE.
       CALL_ISAT = .FALSE.  
       ISATdt    = UNDEFINED

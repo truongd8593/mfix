@@ -30,7 +30,7 @@
 !      CALL DLSODA(FEX, NEQ, ODSPEC, T1, ODE_dt, ITOL, RTOL, ATOL, &
 !      ITASK, ISTATE, IOPT, RWORK, LRW, IWORK, LIW, JAC, JT)
 !1)  NEQ, ODSPEC, T1, ODE_dt, ITASK, ISTATE, RWORK, LRW, IWORK, LIW are
-!    set in react.f for CALL_CHEM=.true. and usrfg.f for CALL_ISAT=.true.
+!    set in react.f for CALL_DI=.true. and usrfg.f for CALL_ISAT=.true.
 !    
 !2)  For simpility, usrs just need to provide the following in this 
 !    subroutines

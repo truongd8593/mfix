@@ -1188,13 +1188,13 @@
 !     CHEM & ISAT begin (nan xie)
 !        IF (VERSION_NUMBER >= 1.599) THEN 
           if (myPE == PE_IO) then
-            READ (UNIT_RES, REC=NEXT_RECA) CALL_CHEM, CALL_ISAT
+            READ (UNIT_RES, REC=NEXT_RECA) CALL_DI, CALL_ISAT
             NEXT_RECA = NEXT_RECA + 1 
 	  ENDIF
-          call bcast(CALL_CHEM,PE_IO) !//PAR_I/O BCAST0d 
+          call bcast(CALL_DI,PE_IO) !//PAR_I/O BCAST0d 
           call bcast(CALL_ISAT,PE_IO)
 !        ELSE
-!          CALL_CHEM = .false.
+!          CALL_DI = .false.
 !          CALL_ISAT = .false.
 !        ENDIF 
 !     CHEM & ISAT end (nan xie)

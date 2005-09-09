@@ -107,7 +107,7 @@
 !                      error message 
       CHARACTER*80     LINE 
 !
-!     FOR CALL_CHEM and CALL_ISAT = .true.
+!     FOR CALL_DI and CALL_ISAT = .true.
       DOUBLE PRECISION SUM_R_G_temp(DIMENSION_3)
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
@@ -128,7 +128,7 @@
 !
 !!     CHEM & ISAT begin (nan xie)
 ! Set the source terms zero
-      IF (CALL_CHEM .or. CALL_ISAT) THEN
+      IF (CALL_DI .or. CALL_ISAT) THEN
          SUM_R_G_temp = SUM_R_G
          SUM_R_G = ZERO
       END IF
@@ -243,7 +243,7 @@
 !
 !     CHEM & ISAT begin (nan xie)
 !
-      IF (CALL_CHEM .or. CALL_ISAT) THEN
+      IF (CALL_DI .or. CALL_ISAT) THEN
          SUM_R_G = SUM_R_G_temp
       END IF  
 !     CHEM & ISAT end (nan xie)

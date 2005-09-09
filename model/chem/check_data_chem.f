@@ -2,12 +2,12 @@
 !                                                                      C
 !  Module name: CHECK_DATA_CHEM                                        C
 !  Purpose: check the chemical rxns namelist variables for             C
-!           CALL_CHEM or CALL_ISAT                                     C
+!           CALL_DI or CALL_ISAT                                     C
 !                                                                      C
 !  Author: NAN XIE                              Date: 02-Aug-04        C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-!  Variables referenced:  CALL_CHEM , CALL_ISAT , ISATdt               C
+!  Variables referenced:  CALL_DI , CALL_ISAT , ISATdt               C
 !  Variables modified: None                                            C
 !                                                                      C
 !  Local variables: None                                               C
@@ -35,8 +35,8 @@
 !
 !-----------------------------------------------
 !
-      IF (CALL_CHEM .AND. CALL_ISAT) THEN
-         WRITE(*,*) 'CALL_CHEM and CALl_ISAT can not be set true together.'
+      IF (CALL_DI .AND. CALL_ISAT) THEN
+         WRITE(*,*) 'CALL_DI and CALL_ISAT can not be set true together.'
          CALL MFIX_EXIT(myPE)
       END IF
 

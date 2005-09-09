@@ -218,7 +218,7 @@
 !
 !     CHEM & ISAT begin (nan xie)
 !                      If .TRUE. call ODEPACK
-      LOGICAL          CALL_CHEM
+      LOGICAL          CALL_DI
 !                      If .TRUE. calculate the change of diameter due to grow
       LOGICAL          CALL_GROW
 !                      If .TRUE. call isat subroutines

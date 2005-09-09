@@ -130,7 +130,7 @@
 !
 !     CHEM & ISAT begin (nan xie)
 !
-	     CALL_CHEM, CALL_GROW, CALL_ISAT, ISATdt,&
+	     CALL_DI, CALL_GROW, CALL_ISAT, ISATdt,&
 !     CHEM & ISAT end (nan xie)
 ! 1.11 distributed parallel
 !

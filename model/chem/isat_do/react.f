@@ -131,7 +131,7 @@
          END DO
       END DO
 
-      IF (CALL_CHEM) THEN
+      IF (CALL_DI) THEN
 !
 !     Call ode solver to get the new values for reaction progress 
 !

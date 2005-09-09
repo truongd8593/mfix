@@ -182,7 +182,7 @@
 !
 !     CHEM & ISAT begin (nan xie)
 !
-            IF (CALL_ISAT .OR. CALL_CHEM) THEN
+            IF (CALL_ISAT .OR. CALL_DI) THEN
                Integral_R_g(N) = Integral_R_g(N) + Accumulation(RXN_source_g(N)) * dt_prev 
             ELSE
                Integral_R_g(N) = Integral_R_g(N) + (Accumulation(R_gp(1,N)) - &
@@ -217,7 +217,7 @@
 
 !     CHEM & ISAT begin (nan xie)
 !	    
-              IF (CALL_ISAT .OR. CALL_CHEM) THEN
+              IF (CALL_ISAT .OR. CALL_DI) THEN
                  Integral_R_s(M, N) = Integral_R_s(M, N) + Accumulation(RXN_source_s(M,N)) * dt_prev 
               ELSE
                  Integral_R_s(M, N) = Integral_R_s(M, N) + (Accumulation(R_sp(1,M,N)) - &

@@ -35,7 +35,7 @@
 !
 !     Time in isat calcualtion
 !
-      IF (CALL_CHEM .AND. (ISATdt .EQ. UNDEFINED)) THEN
+      IF (CALL_DI .AND. (ISATdt .EQ. UNDEFINED)) THEN
          TIME_isat = TIME + DT
       ELSE
          TIME_isat = TIME + ISATdt

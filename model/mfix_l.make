@@ -767,7 +767,7 @@ BLAS.o : BLAS.F
 odepack.a : ODEPACK.o
 	ar cr odepack.a ODEPACK.o
 ODEPACK.o : ODEPACK.F
-	$(FORTRAN_CMD) $(FORT_FLAGS2) ODEPACK.F
+	$(FORTRAN_CMD) $(FORT_FLAGS3) ODEPACK.F
 ambm.mod : ambm_mod.f \
             param.mod \
             param1.mod \
@@ -1280,7 +1280,9 @@ calc_coeff.$(OBJ_EXT) : calc_coeff.f \
             physprop.mod \
             rxns.mod \
             funits.mod \
-            compar.mod 
+            compar.mod \
+            ur_facs.mod \
+            run.mod 
 calc_d.$(OBJ_EXT) : calc_d.f \
             param.mod \
             param1.mod \
@@ -1548,6 +1550,7 @@ calc_resid.$(OBJ_EXT) : calc_resid.f \
             physprop.mod \
             residual.mod \
             rxns.mod \
+            mflux.mod \
             function.inc                                                
 calc_s_ddot_s.$(OBJ_EXT) : calc_s_ddot_s.f \
             param.mod \
@@ -1816,6 +1819,8 @@ check_mass_balance.$(OBJ_EXT) : check_mass_balance.f \
             output.mod \
             check.mod \
             mchem.mod \
+            mflux.mod \
+            xsi_array.mod \
             parallel.mod \
             matrix.mod \
             function.inc                                                
@@ -2254,6 +2259,7 @@ drag_gs.$(OBJ_EXT) : drag_gs.f \
             drag.mod \
             sendrecv.mod \
             discretelement.mod \
+            ur_facs.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -2636,7 +2642,8 @@ open_file.$(OBJ_EXT) : open_file.f
 open_files.$(OBJ_EXT) : open_files.f \
             machine.mod \
             funits.mod \
-            compar.mod 
+            compar.mod \
+            run.mod 
 out_array_c.$(OBJ_EXT) : out_array_c.f \
             param.mod \
             param1.mod \
@@ -2730,18 +2737,13 @@ physical_prop.$(OBJ_EXT) : physical_prop.f \
             run.mod \
             toleranc.mod \
             constant.mod \
-            scalars.mod \
             compar.mod \
             funits.mod \
-            usr.mod \
-            species_indices.inc                                          \
-            usrnlst.inc                                                  \
-            cp_fun1.inc                                                  \
-            fun_avg1.inc                                                 \
-            function.inc                                                 \
-            fun_avg2.inc                                                 \
-            cp_fun2.inc                                                  \
+            scalars.mod \
             ep_s1.inc                                                    \
+            cp_fun1.inc                                                  \
+            function.inc                                                 \
+            cp_fun2.inc                                                  \
             ep_s2.inc                                                   
 read_namelist.$(OBJ_EXT) : read_namelist.f \
             param.mod \
@@ -3179,7 +3181,8 @@ solve_epp.$(OBJ_EXT) : solve_epp.f \
             residual.mod \
             leqsol.mod \
             physprop.mod \
-            ambm.mod 
+            ambm.mod \
+            tmp_array1.mod 
 solve_granular_energy.$(OBJ_EXT) : solve_granular_energy.f \
             param.mod \
             param1.mod \
@@ -3254,7 +3257,8 @@ solve_pp_g.$(OBJ_EXT) : solve_pp_g.f \
             residual.mod \
             leqsol.mod \
             run.mod \
-            ambm.mod 
+            ambm.mod \
+            tmp_array1.mod 
 solve_scalar_eq.$(OBJ_EXT) : solve_scalar_eq.f \
             param.mod \
             param1.mod \
@@ -3762,6 +3766,7 @@ time_march.$(OBJ_EXT) : time_march.f \
             funits.mod \
             vshear.mod \
             scalars.mod \
+            toleranc.mod \
             drag.mod \
             rxns.mod \
             compar.mod \
@@ -3821,7 +3826,23 @@ usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             usrnlst.inc                                                 
 usr_write_out0.$(OBJ_EXT) : usr_write_out0.f 
 usr_write_out1.$(OBJ_EXT) : usr_write_out1.f 
-utilities.$(OBJ_EXT) : utilities.f 
+utilities.$(OBJ_EXT) : utilities.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            bc.mod \
+            fldvar.mod \
+            geometry.mod \
+            physprop.mod \
+            indices.mod \
+            constant.mod \
+            run.mod \
+            compar.mod \
+            toleranc.mod \
+            mpi_utility.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
+            ep_s2.inc                                                   
 vavg_u_g.$(OBJ_EXT) : vavg_u_g.f \
             param.mod \
             param1.mod \
@@ -4101,9 +4122,7 @@ fex.$(OBJ_EXT) : ./chem/fex.f \
             physprop.mod \
             toleranc.mod \
             usr.mod \
-            mchem.mod \
-            cp_fun1.inc                                                  \
-            cp_fun2.inc                                                 
+            mchem.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/fex.f 
 g_derivs.$(OBJ_EXT) : ./chem/g_derivs.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/g_derivs.f 

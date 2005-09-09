@@ -220,7 +220,7 @@
 
  
 !  CHEM & ISAT begin (Nan Xie)
-      IF (CALL_CHEM) THEN 
+      IF (CALL_DI) THEN 
          CALL MCHEM_INIT
          CALL MCHEM_ODEPACK_INIT
       END IF
@@ -535,7 +535,7 @@
 !     Advance the time step and continue
 !     
 ! CHEM & ISAT begin (Nan Xie)
-      IF (CALL_ISAT .OR. CALL_CHEM) THEN 
+      IF (CALL_ISAT .OR. CALL_DI) THEN 
          CALL MCHEM_TIME_MARCH
       END IF
 ! CHEM & ISAT end (Nan Xie)
