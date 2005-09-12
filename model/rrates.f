@@ -73,9 +73,16 @@
 ! NOT accidentally performed with the default routine.  To activate this routine
 ! remove the following two lines and insert information in sections 1-4.
 
-!      IER = 1
+      IF(CALL_DI.OR.CALL_ISAT) THEN ! These use functions external to this routine for rates calculations
 
-      RETURN
+         RETURN
+
+      ELSE 
+
+         IER = 1
+         RETURN
+
+      ENDIF
 
 !************************************************************************
       R_tmp = UNDEFINED
