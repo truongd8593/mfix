@@ -1052,6 +1052,7 @@
       USE physprop
       USE run
       USE fldvar
+      USE mpi_utility
       IMPLICIT NONE
  
       INTEGER          M
@@ -1121,6 +1122,17 @@
 !     The above statement was not implemented because Simonin viscosity
 !     doesn't have a sqrt(th) directly available to use this simplification.
 !     Sof --> 01/31/05
+!
+! This is done here similar to bc_theta to avoid small negative values of
+! Theta coming most probably from linear solver
+      IF(TH .LE. ZERO)THEN
+        TH = 1e-8
+
+        if (myPE.eq.PE_IO) then   
+	   WRITE(*,*)'Warning: Negative granular temp at wall set to 1e-8'
+!          CALL WRITE_ERROR('THETA_HW_CW', LINE, 1)
+        end if
+      ENDIF
 !
       G_0 = g0
       

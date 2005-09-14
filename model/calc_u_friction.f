@@ -1151,6 +1151,7 @@
       USE fldvar
       USE bc
       USE run
+      USE mpi_utility
       IMPLICIT NONE
  
       INTEGER          M
@@ -1253,9 +1254,18 @@
  
 !              Other local terms
       DOUBLE PRECISION phin
- 
-!     Calculating collisional part of stress
- 
+!
+! This is done here similar to bc_theta to avoid small negative values of
+! Theta coming most probably from linear solver
+      IF(TH .LE. ZERO)THEN
+        TH = 1e-8
+
+        if (myPE.eq.PE_IO) then   
+	   WRITE(*,*)'Warning: Negative granular temp at wall set to 1e-8'
+!          CALL WRITE_ERROR('THETA_HW_CW', LINE, 1)
+        end if
+      ENDIF
+! 
       G_0 = g0
       
 ! modify F_2 if Jenkins BC is used (sof)    
