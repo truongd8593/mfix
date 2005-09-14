@@ -1258,7 +1258,7 @@
 ! This is done here similar to bc_theta to avoid small negative values of
 ! Theta coming most probably from linear solver
       IF(TH .LE. ZERO)THEN
-        TH = 1e-8
+        TH = 1D-8
 
         if (myPE.eq.PE_IO) then   
 	   WRITE(*,*)'Warning: Negative granular temp at wall set to 1e-8'
@@ -1285,12 +1285,12 @@
 ! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
 !
             F_2 = tan_Phi_w*RO_s(M)*EPS* &
-	          ((ONE + 4.0*g0EP_avg) + HALF*(ONE -C_e*C_e))*TH/VSLIP
+	          ((ONE + 4.0D0*g0EP_avg) + HALF*(ONE -C_e*C_e))*TH/VSLIP
 !
 ! here F_2 divided by VSLIP to use the same bc as Johnson&Jackson
 !
           ELSE  ! Simonin or granular models use same solids pressure
-            F_2 = tan_Phi_w*RO_s(M)*EPS*(1d0+ 4. * Eta *g0EP_avg)*TH/VSLIP
+            F_2 = tan_Phi_w*RO_s(M)*EPS*(1d0+ 4.D0 * Eta *g0EP_avg)*TH/VSLIP
 	  ENDIF !for Ahmadi
 !
 	ENDIF ! for vslip < small_number
@@ -1346,14 +1346,14 @@
 !
         Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
         Tau_2_c = DP_avg/(6.d0*EPS*G_0*DSQRT(16.d0*(TH+Small_number)/PI))
-	zeta_c_2= 2./5.*(ONE+ C_e)*(3.d0*C_e-ONE)
+	zeta_c_2= 2.D0/5.D0*(ONE+ C_e)*(3.d0*C_e-ONE)
 	Nu_t =  Tau_12_avg/Tau_12_st
-        Tau_2 = ONE/(2./Tau_12_st+Sigma_c/Tau_2_c)
+        Tau_2 = ONE/(2.D0/Tau_12_st+Sigma_c/Tau_2_c)
 !
-	MU_2_T_Kin = (2.0/3.0*K_12_avg*Nu_t + TH * &
+	MU_2_T_Kin = (2.0D0/3.0D0*K_12_avg*Nu_t + TH * &
                      (ONE+ zeta_c_2*EPS*G_0))*Tau_2
 !
-	Mu_2_Col = 8./5.*EPS*G_0*Eta* (MU_2_T_Kin+ &
+	Mu_2_Col = 8.D0/5.D0*EPS*G_0*Eta* (MU_2_T_Kin+ &
                    Dp_avg*DSQRT(TH/PI))
 !
 	Mu_s = EPS*RO_s(M)*(MU_2_T_Kin + Mu_2_Col)
@@ -1361,7 +1361,7 @@
       ELSE IF(AHMADI) THEN
 !
 	Mu_s = ONE/(ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS/EPS_max)**3)&
-	       *0.1045*(ONE/G_0+3.2*EPS+12.1824*G_0*EPS*EPS)  &
+	       *0.1045D0*(ONE/G_0+3.2D0*EPS+12.1824D0*G_0*EPS*EPS)  &
 	       *Dp_avg*RO_s(M)* DSQRT(TH)
       ENDIF
  

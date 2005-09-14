@@ -790,7 +790,7 @@
       INTEGER          L
  
       IF(TH .LE. ZERO)THEN
-        TH = 1e-8
+        TH = 1D-8
 
         if (myPE.eq.PE_IO) then   
 	   WRITE(*,*)'Warning: Negative granular temp at wall set to 1e-8'
@@ -856,7 +856,7 @@
 ! Defining Simonin's Solids Turbulent Kinetic diffusivity: Kappa
   
         Kappa_kin = (9.d0/10.d0*K_12_avg*(Tau_12_avg/Tau_12_st) &
-	            + 3.0/2.0 * Th*(ONE+ Omega_c*EPS*G_0))/     &
+	            + 3.0D0/2.0D0 * Th*(ONE+ Omega_c*EPS*G_0))/     &
                    (9.d0/(5.d0*Tau_12_st) + zeta_c/Tau_2_c)
 !
         Kappa_Col = 18.d0/5.d0*EPS*G_0*Eta* (Kappa_kin+ &
@@ -865,8 +865,8 @@
 	K_1 =  EPS*RO_s(M)*(Kappa_kin + Kappa_Col)
  
       ELSE IF(AHMADI) THEN
-        K_1 =  0.1306*RO_s(M)*DP_avg*(ONE+C_e**2)* (  &
-	       ONE/G_0+4.8*EPS+12.1184 *EPS*EPS*G_0 )*DSQRT(Th)
+        K_1 =  0.1306D0*RO_s(M)*DP_avg*(ONE+C_e**2)* (  &
+	       ONE/G_0+4.8D0*EPS+12.1184D0 *EPS*EPS*G_0 )*DSQRT(Th)
 !
       ENDIF !for simonin or ahmadi models
       
@@ -879,31 +879,31 @@
         IF(AHMADI) THEN
 ! Ahmadi model uses different solids pressure model
 !
-          HW = 3./8.*DSQRT(3.*TH)*((1d0-e_w))&
-               *RO_s(M)*EPS*((ONE + 4.0*g0EP_avg) + HALF*(ONE -C_e*C_e))
+          HW = 3.D0/8.D0*DSQRT(3.D0*TH)*((1d0-e_w))&
+               *RO_s(M)*EPS*((ONE + 4.0D0*g0EP_avg) + HALF*(ONE -C_e*C_e))
 !
 ! the coefficient mu in Jenkins paper is defined as tan_Phi_w, that's how
 ! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
 ! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
 !
-	  CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21.d0/16.d0*DSQRT(3.*TH)    &
-               *RO_s(M)*EPS*((ONE + 4.0*g0EP_avg) + HALF*(ONE -C_e*C_e))*TH
+	  CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21.d0/16.d0*DSQRT(3.D0*TH)    &
+               *RO_s(M)*EPS*((ONE + 4.0D0*g0EP_avg) + HALF*(ONE -C_e*C_e))*TH
 
         ELSE  ! Simonin or granular models use same solids pressure
 
-          HW = 3./8.*DSQRT(3.*Th)*((1d0-e_w))&
-               *RO_s(M)*EPS*(1d0+ 4.*Eta*g0EP_avg)
-	  CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21./16.*DSQRT(3.*TH)    &
-	       *RO_s(M)*EPS*(1d0+ 4.*Eta*g0EP_avg)*TH
+          HW = 3.D0/8.D0*DSQRT(3.*Th)*((1d0-e_w))&
+               *RO_s(M)*EPS*(1d0+ 4.D0*Eta*g0EP_avg)
+	  CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21.D0/16.D0*DSQRT(3.D0*TH)    &
+	       *RO_s(M)*EPS*(1d0+ 4.D0*Eta*g0EP_avg)*TH
 !
         ENDIF !for Ahmadi
 !
       ELSE ! no change to the original code if Jenkins BC not used
       
-        HW = (Pi*DSQRT(3d0)/(4.*EPS_max))*(1d0-e_w*e_w)*RO_s(M)*EPS*G_0*&
+        HW = (Pi*DSQRT(3d0)/(4.D0*EPS_max))*(1d0-e_w*e_w)*RO_s(M)*EPS*G_0*&
            DSQRT(TH)
  
-        CW = (Pi*DSQRT(3d0)/(6.*EPS_max))*PHIP*RO_s(M)*EPS*G_0*DSQRT(TH)&
+        CW = (Pi*DSQRT(3d0)/(6.D0*EPS_max))*PHIP*RO_s(M)*EPS*G_0*DSQRT(TH)&
            *VSLIPSQ
         IF (BC_JJ_PS(L).EQ.2) CW=0d0
 !
