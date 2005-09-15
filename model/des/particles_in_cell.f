@@ -90,6 +90,7 @@
                IF((DES_POS_NEW(2,L).GE.YN(J-1)).AND.(DES_POS_NEW(2,L).LT.YN(J))) THEN
 
                   IF(DIMN.EQ.3) THEN
+                    IF(K.GE.KMIN1) THEN     
                      IF((DES_POS_NEW(3,L).GT.ZT(K-1)).AND.(DES_POS_NEW(3,L).LE.ZT(K))) THEN
                         PINC(IJKL) = PINC(IJKL) + 1
                         NEIGHBOURS(MAXNEIGHBORS,L) = IJKL
@@ -98,6 +99,7 @@
                         VOL_AVE_VS(IJKL,MM) = VOL_AVE_VS(IJKL,MM) + PVOL*DES_VEL_NEW(2,L)
                         VOL_AVE_WS(IJKL,MM) = VOL_AVE_WS(IJKL,MM) + PVOL*DES_VEL_NEW(3,L)
                      END IF
+                    END IF
                   ELSE
                      PINC(IJKL) = PINC(IJKL) + 1
                      NEIGHBOURS(MAXNEIGHBORS,L) = IJKL
