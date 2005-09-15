@@ -75,7 +75,7 @@
         UR_F_gs = ONE
       ENDIF
       
-      
+      RRATE = .FALSE.      
       IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
       DENSITY(:MMAX) = .TRUE. 
 	 

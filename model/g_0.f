@@ -59,7 +59,10 @@
       DOUBLE PRECISION EPg 
 ! 
 !                      Sum over m (EP_sm/D_pm) 
-      DOUBLE PRECISION EPSoDP 
+      DOUBLE PRECISION EPSoDP  
+! 
+!                      Average D_P for phase M1 and M2
+      DOUBLE PRECISION DP_AVERAGE_M1, DP_AVERAGE_M2
 ! 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -85,15 +88,17 @@
         IF(MMAX > 1) THEN
 !
 ! Start Lebowitz (1964)
+          DP_AVERAGE_M1 = HALF*(D_p(IJK1,M1)+D_p(IJK2,M1))
+          DP_AVERAGE_M2 = HALF*(D_p(IJK1,M2)+D_p(IJK2,M2))
           EPSoDP = ZERO
           DO Mx = 1, MMAX
             EPS = AVG_XYZ(EP_s(IJK1, Mx), EP_s(IJK2, Mx), DIR, L)
-            EPSoDP = EPSoDP + EPS / D_p(IJK,Mx)
+            EPSoDP = EPSoDP + 2d0*EPS / (D_p(IJK1,Mx)+D_p(IJK2,Mx))
           END DO
           EPg = AVG_XYZ(EP_g(IJK1), EP_g(IJK2), DIR, L)
           G_0AVG = ONE / EPg                                      &
-              + 3.0 * EPSoDP * D_p(IJK,M1) * D_p(IJK,M2)               &
-              / (EPg*EPg *(D_p(IJK,M1) + D_p(IJK,M2)))
+              + 3.0 * EPSoDP * DP_AVERAGE_M1 * DP_AVERAGE_M2               &
+              / (EPg*EPg *(DP_AVERAGE_M1 + DP_AVERAGE_M2))
 ! End Lebowitz (1964)
 !
         ELSE
