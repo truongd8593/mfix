@@ -447,8 +447,8 @@ ln -sf "$mpi_include/mpif.h" .
   
             FORTRAN_CMD=f90
             LINK_CMD=f90
-            libs_d="blas90.a odepack.a"
-            libs="blas90.a odepack.a"
+            libs_d="odepack.a blas90.a"
+            libs="odepack.a blas90.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f90
@@ -471,8 +471,8 @@ ln -sf "$mpi_include/mpif.h" .
 	    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d="-lblas blas90.a odepack.a"
-            libs="-lblas blas90.a odepack.a"
+            libs_d="-lblas odepack.a blas90.a"
+            libs="-lblas odepack.a blas90.a"
     
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -515,8 +515,8 @@ ln -sf "$mpi_include/mpif.h" .
                         LINK_CMD=ifort
                 ;;
               esac                                                                                
-            libs_d='blas90.a odepack.a'
-            libs='blas90.a odepack.a'
+            libs_d='odepack.a blas90.a'
+            libs='odepack.a blas90.a'
                                                                                 
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -560,8 +560,8 @@ ln -sf "$mpi_include/mpif.h" .
                         LINK_CMD=$PGI/bin/pgf90
                 ;;
               esac                                                                                
-            libs_d="-lblas blas90.a"
-            libs="-lblas blas90.a"
+            libs_d="odepack.a blas90.a"
+            libs="odepack.a blas90.a"
                                                                                 
                                                                                 
             OBJ_EXT=o
@@ -678,8 +678,8 @@ ln -sf "$mpi_include/mpif.h" .
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-openmp -assume cc_omp"
-            libs_d='blas90.a odepack.a'
-            libs='blas90.a odepack.a'
+            libs_d='odepack.a blas90.a'
+            libs='odepack.a blas90.a'
 	    
             if test $intel_ver = "Linux_ifc7"
             then
@@ -804,8 +804,8 @@ ln -sf "$mpi_include/mpif.h" .
    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d="blas90.a odepack.a"
-            libs="blas90.a odepack.a"
+            libs_d="odepack.a blas90.a"
+            libs="odepack.a blas90.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -825,8 +825,8 @@ ln -sf "$mpi_include/mpif.h" .
    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d="blas90.a odepack.a"
-            libs="blas90.a odepack.a"
+            libs_d="odepack.a blas90.a"
+            libs="odepack.a blas90.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f
