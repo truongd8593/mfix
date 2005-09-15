@@ -13,36 +13,156 @@
     fi
 
     set `uname -s` ; opsys=$1
+    set `uname -p` ; proctyp=$1
 
 #------------------------------------------------------------------------
 #  Check if the system is a Linux system, if yes then ask the user which 
 #  compiler to use    
 #
+#  Check if the system is a Linux system, if yes then ask the user which 
+#  compiler to use    
+#
     if test $opsys = "Linux"
     then
+      if test $proctyp = "x86_64"
+      then
+       echo
+       echo
+       echo "Linux system with 64 bit processor detected, please select compiler"
+       echo
+       echo "MFIX Compilation directives available for following compilers:"
+       echo " - Intel Fortran Compiler (IFORT - FCE for 64 bit)"
+       echo " - Portland Group Linux Fortran Compiler (pgf90)"
+       echo " - PathScale compiler (pathf90)"
+       echo -n "Do you want to compile with Intel Compiler? (y/n) [yes] "
+       read lnx_compiler
+       case $lnx_compiler in
+         y|Y )
+           echo " "
+           echo "Intel Compiler selected"
+           opsys="Linux_64_intel"
+           ;;
+         n|N )
+           echo -n "Do you want to compile with Portland Group Compiler? (y/n) [yes] "
+           read lnx_compiler
+           case $lnx_compiler in
+             n|N )
+               echo " "
+               echo "PathScale Compiler selected"
+               opsys="Linux_64_pscale"
+               ;;
+             y|Y )
+               echo " "
+               ;;
+             *)
+               echo " "
+               echo "Portland Group Linux Fortran Compiler selected"
+               opsys="Linux_64_pgi"
+               ;;
+             esac
+
+           ;;
+         *)
+           echo " "
+           echo "Intel Compiler selected"
+           opsys="Linux_64_intel"
+           ;;
+         esac
+         if test $opsys = "Linux_64_pgi"
+	 then
+           if [ "$PGI" ]
+           then                                                                    
+              echo " "
+            else
+	      echo "______     Environment variable ERROR          _______"
+	      echo "Environment variable for Portland Group is not defined !"
+	      echo " "
+	      echo "Please define the following in your shell and rerun make_mfix"
+	      echo " setenv PGI your_path_of_PGI_root_directory"
+	      exit
+	    fi
+         fi
+         if test $opsys = "Linux_64_pscale"
+	 then
+           if [ "$PSCALE" ]
+           then                                                                    
+              echo " "
+            else
+	      echo "______     Environment variable ERROR          _______"
+	      echo "Environment variable for PathScale is not defined !"
+	      echo " "
+	      echo "Please define the following in your shell and rerun make_mfix"
+	      echo " setenv PSCALE your_path_of_PathScale_root_directory"
+	      exit
+	    fi
+         fi
+         if test $opsys = "Linux_64_intel"
+         then
+
+              echo "______    If you get 'ifort: Command not found'   _______"
+              echo "IFORT environment variables are not defined"
+              echo " "
+              echo "Please add the following in your shell and rerun make_mfix"
+              echo "for .cshrc 'source path_to_fce_9.0/bin/ifortvars.csh'"
+              echo "for .kshrc or .bashrc 'source path_to_fce_9.0/bin/ifortvars.sh'"
+
+         fi
+
+      else
        echo
        echo
        echo "Linux system detected, please select compiler"
        echo
-       echo "Post_mfix Compilation directives available for following compilers:"
+       echo "MFIX Compilation directives available for following compilers:"
        echo " - Intel Linux Fortran Compiler (ifc)"
        echo " - Portland Group Linux Fortran Compiler (pgf90)"
        echo -n "Do you want to compile with Intel Linux F90 Compiler? (y/n) [yes] "
        read lnx_compiler
        case $lnx_compiler in
-         y|Y ) 
-	   echo "Intel Linux Fortran Compiler selected"
-	   opsys="Linux_ifc"
+         y|Y )
+           echo " "
+           echo "Intel Linux Fortran Compiler selected"
+           opsys="Linux_ifc"
            ;;
          n|N )
-	   echo "Portland Group Linux Fortran Compiler selected" 	      
-	   opsys="Linux_pgi"
-           ;; 
-         *)
-           echo "Intel Linux Fortran Compiler selected"
-	   opsys="Linux_ifc"
+           echo " "
+           echo "Portland Group Linux Fortran Compiler selected"
+           opsys="Linux_pgi"
            ;;
-       esac    
+         *)
+           echo " "
+           echo "Intel Linux Fortran Compiler selected"
+           opsys="Linux_ifc"
+           ;;
+       esac
+           
+       if test $opsys = "Linux_ifc"
+       then
+         echo 
+         echo "  Supported Intel Linux Fortran compiler versions:"
+         echo "    1) Intel Linux Fortran Compiler (ifort) version 8.X and up"
+         echo "    2) Intel Linux Fortran Compiler (ifc) version 7.X" 
+         echo -n "   Enter line number corresponding the compiler version? (1/2) [1] "
+         read ver_compiler
+         case $ver_compiler in
+         1)
+	   echo " "
+           echo "Intel Linux Fortran Compiler (ifort) version 8.X and up selected"
+           intel_ver="Linux_ifc8"
+           ;;
+         2)
+	   echo " "
+           echo "Intel Linux Fortran Compiler (ifc) version 7.X selected"
+           intel_ver="Linux_ifc7"
+           ;;
+         *)
+	   echo " "
+           echo "Intel Linux Fortran Compiler (ifort) version 8.X and up selected"
+           intel_ver="Linux_ifc8"
+           ;;
+       esac
+       fi
+      fi
     else
        echo  
     fi
@@ -80,8 +200,6 @@
 
             FORTRAN_CMD=f90
             LINK_CMD=f90
-            libs_d="-lcxmlp -lmpi -lelan"
-            libs="-lcxmlp -lmpi -lelan"
 
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -109,8 +227,6 @@
             	;;
             esac
 
-	    libs_d="-lblas "
-	    libs="-lblas -lesslp2_r"
 
 	    OBJ_EXT=o
 	    FORTRAN_EXT=f
@@ -138,8 +254,120 @@
  	    MODULE_CODE=1
             ;;
 
+    Linux_64_intel)
+            mach_file="LINUX.F"
 
+          #-----------
+          # Decide to use mpif90 or ifort as the compiler & linker command
+          #-----------
+            case $dmp_version in
+              y|Y )
+                        FORTRAN_CMD=mpif90
+                        LINK_CMD=mpif90
+                ;;
+              *)
+                        FORTRAN_CMD=ifort
+                        LINK_CMD=ifort
+                ;;
+              esac                                                                                
+                                                                                
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-openmp -assume cc_omp"
+            compile_common="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"
+            compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB "
+            compile_d2="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB "
+            compile_d3="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB "
+            link_d="-I.  "
+            compile="$compile_common"
+            compile2="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+            compile3="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+            link="-I.  "
+            MODULE_CODE=1
 
+            ;;
+
+     
+    Linux_64_pgi)
+            mach_file="LINUX.F"
+
+          #-----------
+          # Decide to use mpif90 or pgf90 as the compiler & linker command
+          #-----------
+            case $dmp_version in
+              y|Y )
+                        FORTRAN_CMD=mpif90
+                        LINK_CMD=mpif90
+                ;;
+              *)
+                        FORTRAN_CMD=$PGI/bin/pgf90
+                        LINK_CMD=$PGI/bin/pgf90
+                ;;
+              esac                                                                                
+                                                                                
+                                                                                
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-mp"
+            compile_common="-c -I. -Mnosave -Mfreeform -Mrecursive -Mreentrant -byteswapio"
+            compile_d=" -g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk $compile_common"            link_d=" "
+            compile=" -O -Mdalign $compile_common"
+            compile2="-O1 -Mdalign $compile_common"
+            link="  "
+            MODULE_CODE=1
+
+            ;;
+                                                                                
+
+     Linux_64_pscale)
+            mach_file="LINUX.F"                                                                                 
+          #-----------
+          # Decide to use mpif90 or pathf90 as the compiler & linker command
+          #-----------
+            case $dmp_version in
+              y|Y )
+                        FORTRAN_CMD=mpif90
+                        LINK_CMD=mpif90
+                ;;
+              *)
+                       #FORTRAN_CMD=/usr/common//pathscale/2.1/bin/pathf90
+                        FORTRAN_CMD=$PSCALE/bin/pathf90
+                        LINK_CMD=$PSCALE/bin/pathf90
+                ;;
+            esac
+	    if [ "$ACML" ]
+	    then
+	      echo " "
+              echo "-------------- W A R N I N G ! ----------"
+              echo " You may need to update the paths under libs_d and libs "
+	      echo " variables in make_mfix; search for  Linux_64_pscale) text block"
+	      echo " with the corresponding paths on your local system if"
+	      echo " if you encounter problems during the link phase"
+              echo "-------------- W A R N I N G ! ----------"
+	      echo " "
+	    fi  
+           #MPI = /usr/lib/mpi/mpi_gnu
+            MPI = /usr/common/mpich/pathscale-2.1/mvapich-0.9.5
+	    
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-mp"
+            compile_common_dbg="-c -I. -fno-math-errno -static-data -Wno-globals  -freeform"
+            compile_common="-c -I. -O3 -OPT:Ofast -fno-math-errno -static-data -msse2 -Wno-globals -fno-second-underscore -freeform"
+            compile_d=" -g $compile_common_dbg"
+            compile_d2=" -g $compile_common_dbg"
+            compile_d3=" -g -c -I. -fno-math-errno -static-data -Wno-globals "
+            link_d=" "
+            compile="$compile_common"
+            compile2="$compile_common"
+            compile3="-c -I. -O3 -OPT:Ofast -fno-math-errno -static-data -msse2 -Wno-globals -fno-second-underscore"
+            link="  "
+            MODULE_CODE=0
+                                                                                
+            ;;
+	    	
     Linux_pgi)
             echo
             echo "Compiling for Linux computer (Portland group)"

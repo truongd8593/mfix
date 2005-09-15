@@ -182,25 +182,54 @@ ln -sf "$mpi_include/mpif.h" .
        echo "Linux system with 64 bit processor detected, please select compiler"
        echo
        echo "MFIX Compilation directives available for following compilers:"
+       echo " - Intel Fortran Compiler (IFORT - FCE for 64 bit)"
        echo " - Portland Group Linux Fortran Compiler (pgf90)"
        echo " - PathScale compiler (pathf90)"
-       echo -n "Do you want to compile with Portland Group Compiler? (y/n) [yes] "
+       echo -n "Do you want to compile with Intel Compiler? (y/n) [yes] "
        read lnx_compiler
        case $lnx_compiler in
-         n|N )
-           echo " "
-           echo "PathScale Compiler selected"
-           opsys="Linux_64_pscale"
-           ;;
          y|Y )
            echo " "
+           echo "Intel Compiler selected"
+           opsys="Linux_64_intel"
+           ;;
+         n|N )
+           echo -n "Do you want to compile with Portland Group Compiler? (y/n) [yes] "
+           read lnx_compiler
+           case $lnx_compiler in
+             n|N )
+               echo " "
+               echo "PathScale Compiler selected"
+               opsys="Linux_64_pscale"
+               ;;
+             y|Y )
+               echo " "
+               ;;
+             *)
+               echo " "
+               echo "Portland Group Linux Fortran Compiler selected"
+               opsys="Linux_64_pgi"
+               ;;
+             esac
+
            ;;
          *)
            echo " "
-           echo "Portland Group Linux Fortran Compiler selected"
-           opsys="Linux_64_pgi"
+           echo "Intel Compiler selected"
+           opsys="Linux_64_intel"
            ;;
          esac
+         if test $opsys = "Linux_64_intel"
+         then
+
+              echo "______    If you get 'ifort: Command not found'   _______"
+              echo "IFORT environment variables are not defined"
+              echo " "
+              echo "Please add the following in your shell and rerun make_mfix"
+              echo "for .cshrc 'source path_to_fce_9.0/bin/ifortvars.csh'"
+              echo "for .kshrc or .bashrc 'source path_to_fce_9.0/bin/ifortvars.sh'"
+
+         fi
          if test $opsys = "Linux_64_pgi"
 	 then
            if [ "$PGI" ]
@@ -418,8 +447,8 @@ ln -sf "$mpi_include/mpif.h" .
   
             FORTRAN_CMD=f90
             LINK_CMD=f90
-            libs_d='odepack.a blas90.a'
-            libs='odepack.a blas90.a'
+            libs_d="blas90.a odepack.a"
+            libs="blas90.a odepack.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f90
@@ -442,8 +471,8 @@ ln -sf "$mpi_include/mpif.h" .
 	    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d='odepack.a blas90.a'
-            libs='odepack.a blas90.a'
+            libs_d="-lblas blas90.a odepack.a"
+            libs="-lblas blas90.a odepack.a"
     
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -470,6 +499,51 @@ ln -sf "$mpi_include/mpif.h" .
 
             ;;
 
+    Linux_64_intel)
+            mach_file="LINUX.F"
+
+          #-----------
+          # Decide to use mpif90 or ifort as the compiler & linker command
+          #-----------
+            case $dmp_version in
+              y|Y )
+                        FORTRAN_CMD=mpif90
+                        LINK_CMD=mpif90
+                ;;
+              *)
+                        FORTRAN_CMD=ifort
+                        LINK_CMD=ifort
+                ;;
+              esac                                                                                
+            libs_d='blas90.a odepack.a'
+            libs='blas90.a odepack.a'
+                                                                                
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-openmp -assume cc_omp"
+            compile_common="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"
+            compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB "
+            compile_d2="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB "
+            compile_d3="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB "
+            link_d="-I.  "
+            compile="$compile_common"
+            compile2="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+            compile3="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+            link="-I.  "
+            MODULE_CODE=1
+
+#           ------------------
+#           flags for inlining
+#           ------------------
+            inline_objs="compare.o eosg.o discretize.o "
+            inline_files="compare.f eosg.f discretize.f "
+            inline_flags=" "
+            preinline_flags="  "
+            ;;
+
+     
     Linux_64_pgi)
             mach_file="LINUX.F"
 
@@ -486,8 +560,8 @@ ln -sf "$mpi_include/mpif.h" .
                         LINK_CMD=$PGI/bin/pgf90
                 ;;
               esac                                                                                
-            libs_d='odepack.a blas90.a'
-            libs='odepack.a blas90.a'
+            libs_d="-lblas blas90.a"
+            libs="-lblas blas90.a"
                                                                                 
                                                                                 
             OBJ_EXT=o
@@ -604,8 +678,8 @@ ln -sf "$mpi_include/mpif.h" .
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-openmp -assume cc_omp"
-            libs_d='odepack.a blas90.a'
-            libs='odepack.a blas90.a'
+            libs_d='blas90.a odepack.a'
+            libs='blas90.a odepack.a'
 	    
             if test $intel_ver = "Linux_ifc7"
             then
@@ -730,8 +804,8 @@ ln -sf "$mpi_include/mpif.h" .
    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d='odepack.a blas90.a'
-            libs='odepack.a blas90.a'
+            libs_d="blas90.a odepack.a"
+            libs="blas90.a odepack.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -751,8 +825,8 @@ ln -sf "$mpi_include/mpif.h" .
    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d='odepack.a blas90.a'
-            libs='odepack.a blas90.a'
+            libs_d="blas90.a odepack.a"
+            libs="blas90.a odepack.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f
