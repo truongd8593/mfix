@@ -120,6 +120,13 @@
                   RO_G(IJK) = EOSG(MW_AVG,P_G(IJK),T_G(IJK))
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
                ENDIF
+!	       
+	       IF(RO_G(IJK) < ZERO) THEN
+		 WRITE(*,1000) I_OF(IJK), J_OF(IJK), K_OF(IJK), &
+		               RO_G(IJK), P_G(IJK), T_G(IJK)
+		 CALL MFIX_EXIT(myPE)
+	       ENDIF
+!   
             ENDIF
 !
 !
@@ -246,7 +253,12 @@
       END DO  
 
      
-      RETURN  
+      RETURN 
+ 1000 FORMAT(1X,'Message from: PHYSICAL_PROP',/& 
+            'WARNING: Gas density negative in this cell: ', /&
+	    'I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
+	    'Values of variables: ','RO_g = ', G12.5, 2X, 'P_g = ', G12.5, 2X, 'T_g = ', G12.5, /&
+	    'Suggestion: Lower UR_FAC(1) in mfix.dat')
       END SUBROUTINE PHYSICAL_PROP 
 
 !// Comments on the modifications for DMP version implementation      
