@@ -182,6 +182,8 @@
 ! 
 !                      Indices 
       INTEGER          IJK 
+!
+      LOGICAL          ALL_IS_ERROR
 ! 
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
@@ -190,6 +192,7 @@
 !
 !!$omp   parallel do private(IJK)
       CHECK_VEL_BOUND = .FALSE. !initialisation
+      ALL_IS_ERROR    = .FALSE.
 !
 LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
 !
@@ -206,7 +209,7 @@ LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
 	        CHECK_VEL_BOUND = .TRUE.
 		WRITE(*,1000) MAX_INLET_VEL, I_OF(IJK), J_OF(IJK), K_OF(IJK), &
 		              U_G(IJK), V_G(IJK), W_G(IJK)
-	        EXIT LOOP_FLUID
+                IF (NumPEs.gt.0) EXIT LOOP_FLUID
 	    ENDIF
 	    DO M = 1, MMAX
 	      IF(ABS(U_S(IJK,M)) > MAX_INLET_VEL .OR. ABS(V_S(IJK,M)) > MAX_INLET_VEL .OR. &
@@ -214,11 +217,14 @@ LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
 	        CHECK_VEL_BOUND = .TRUE.
 		WRITE(*,1010) MAX_INLET_VEL, I_OF(IJK), J_OF(IJK), K_OF(IJK), &
 		              U_S(IJK,M), V_S(IJK,M), W_S(IJK,M)
-	        EXIT LOOP_FLUID
+                IF (NumPEs.gt.0) EXIT LOOP_FLUID
 	      ENDIF
 	    ENDDO
          ENDIF 
       END DO LOOP_FLUID
+      
+      CALL GLOBAL_ALL_OR(CHECK_VEL_BOUND, ALL_IS_ERROR)
+      IF(ALL_IS_ERROR) CHECK_VEL_BOUND = .TRUE.
 !
       RETURN  
  1000 FORMAT(1X,'Message from: CHECK_VEL_BOUND',/& 
