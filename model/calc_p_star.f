@@ -184,6 +184,8 @@
 ! rearranging to start from coarsest to finest particles (see check_data_06.f)
 ! this is the way the algorithm was written by Yu and Standish (sof).
 !
+      IF (CALL_DQMOM) THEN
+!
        DO I = 1, MMAX
 	 DP_TMP(I) = D_P(IJK,I)
 	 EPs_TMP(I) = EP_s(IJK,I)
@@ -218,6 +220,8 @@
 	 EPs_TMP(I) = EP_s(IJK,M_MAX(I))
 	 EPs_max_TMP(I) = ep_s_max(M_MAX(I))
        END DO
+!
+      ENDIF !for dqmom
 !
 ! compute equations 25 in Yu-Standish
 !      
