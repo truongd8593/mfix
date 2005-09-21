@@ -30,8 +30,6 @@
 !...Switches: -xf
       Use usr
       IMPLICIT NONE
-
-      INCLUDE 'usrnlst.inc'
 !-----------------------------------------------
 !
 !  Include files defining common blocks here
@@ -44,7 +42,6 @@
 !
 !
 !  Insert user-defined code here
-      Allocate( N_sh (DIMENSION_3, DIMENSION_M) )
 !
       RETURN  
       END SUBROUTINE USR0 
