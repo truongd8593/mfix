@@ -48,8 +48,7 @@
       USE energy
       USE rxns
       Use ambm
-      Use tmp_array, S_p => ARRAY1, S_C => ARRAY2, EPs => ARRAY3, &
-                     TxCp => ARRAY4
+      Use tmp_array, S_p => ARRAY1, S_C => ARRAY2, EPs => ARRAY3
       Use tmp_array1, VxGama => ARRAYm1
       USE compar   
       USE discretelement 
@@ -76,26 +75,8 @@
       INTEGER          m 
       INTEGER          TEMP_MMAX
 ! 
-!                      Septadiagonal matrix A_m 
-!      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
-! 
-!                      Vector b_m 
-!      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
-! 
-!                      Source term on LHS.  Must be positive. 
-!      DOUBLE PRECISION S_p(DIMENSION_3) 
-! 
-!                      Source term on RHS 
-!      DOUBLE PRECISION S_C(DIMENSION_3) 
-! 
-!                      Solids volume fraction 
-!      DOUBLE PRECISION EPs(DIMENSION_3) 
-! 
-!                      ROP * Cp 
-!      DOUBLE PRECISION ROPxCp(DIMENSION_3) 
-! 
-!                      Volume x average gama at cell centers 
-!      DOUBLE PRECISION VxGama(DIMENSION_3, DIMENSION_M) 
+!                       Cp * Flux 
+      DOUBLE PRECISION CpxFlux_E(DIMENSION_3), CpxFlux_N(DIMENSION_3), CpxFlux_T(DIMENSION_3) 
 ! 
 ! 
       DOUBLE PRECISION apo 
@@ -127,12 +108,11 @@
 
       DO IJK = IJKSTART3, IJKEND3
 !
-         IF(.NOT.WALL_AT(IJK))THEN
-            TxCP(IJK) = T_G(IJK)*C_PG(IJK) 
-	 ELSE
-            TxCP(IJK) = ZERO 
-	 ENDIF
-	 
+         
+         CpxFlux_E(IJK) = HALF * (C_pg(IJK) + C_pg(IP_OF(IJK))) * Flux_gE(IJK)
+	 CpxFlux_N(IJK) = HALF * (C_pg(IJK) + C_pg(JP_OF(IJK))) * Flux_gN(IJK)
+         CpxFlux_T(IJK) = HALF * (C_pg(IJK) + C_pg(KP_OF(IJK))) * Flux_gT(IJK)
+
          IF (FLUID_AT(IJK)) THEN 
             APO = ROP_GO(IJK)*C_PG(IJK)*VOL(IJK)*ODT 
             S_P(IJK) = APO + S_RPG(IJK)*VOL(IJK) 
@@ -144,7 +124,7 @@
 !
          ENDIF 
       END DO 
-      CALL CONV_DIF_PHI (TxCP, K_G, DISCRETIZE(6), U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, 0, A_M&
+      CALL CONV_DIF_PHI (T_g, K_G, DISCRETIZE(6), U_G, V_G, W_G, CpxFlux_E, CpxFlux_N, CpxFlux_T, 0, A_M&
          , B_M, IER) 
 !
       CALL BC_PHI (T_g, BC_T_G, BC_TW_G, BC_HW_T_G, BC_C_T_G, 0, A_M, B_M, IER) 
@@ -155,12 +135,10 @@
 !
          DO IJK = IJKSTART3, IJKEND3
 !
-            IF(.NOT.WALL_AT(IJK))THEN
-               TxCP(IJK) = T_S(IJK,M)*C_PS(IJK,M) 
-	    ELSE
-               TxCP(IJK) = ZERO 
-	    ENDIF
-	 
+           CpxFlux_E(IJK) = HALF * (C_ps(IJK,M) + C_ps(IP_OF(IJK),M)) * Flux_sE(IJK,M)
+	   CpxFlux_N(IJK) = HALF * (C_ps(IJK,M) + C_ps(JP_OF(IJK),M)) * Flux_sN(IJK,M)
+           CpxFlux_T(IJK) = HALF * (C_ps(IJK,M) + C_ps(KP_OF(IJK),M)) * Flux_sT(IJK,M)
+	   
             IF (FLUID_AT(IJK)) THEN 
                APO = ROP_SO(IJK,M)*C_PS(IJK,M)*VOL(IJK)*ODT 
                S_P(IJK) = APO + S_RPS(IJK,M)*VOL(IJK) 
@@ -179,8 +157,8 @@
 !
             ENDIF 
          END DO 
-         CALL CONV_DIF_PHI (TxCP, K_S(1,M), DISCRETIZE(6), U_S(1,M), V_S(1,&
-            M), W_S(1,M), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), M, A_M, B_M, IER) 
+         CALL CONV_DIF_PHI (T_s(1,M), K_S(1,M), DISCRETIZE(6), U_S(1,M), V_S(1,&
+            M), W_S(1,M), CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M, IER) 
 !
          CALL BC_PHI (T_s(1,M), BC_T_S(1,M), BC_TW_S(1,M), BC_HW_T_S(1,M), BC_C_T_S(1,M)&
             , M, A_M, B_M, IER) 
