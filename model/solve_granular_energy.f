@@ -46,7 +46,7 @@
       USE energy
       USE rxns
       Use ambm
-      Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, TxCp => Array4
+      Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3
       USE compar      
       USE mflux     
       IMPLICIT NONE
@@ -64,23 +64,9 @@
 !                      phase index 
       INTEGER          m 
 ! 
-!                      Septadiagonal matrix A_m 
-!      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
 ! 
-!                      Vector b_m 
-!      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
-! 
-!                      Source term on LHS.  Must be positive. 
-!      DOUBLE PRECISION S_p(DIMENSION_3) 
-! 
-!                      Source term on RHS 
-!      DOUBLE PRECISION S_C(DIMENSION_3) 
-! 
-!                      Solids volume fraction 
-!      DOUBLE PRECISION EPs(DIMENSION_3) 
-! 
-!                      ROP * Cp 
-!      DOUBLE PRECISION ROPxCp(DIMENSION_3) 
+!                       Cp * Flux 
+      DOUBLE PRECISION CpxFlux_E(DIMENSION_3), CpxFlux_N(DIMENSION_3), CpxFlux_T(DIMENSION_3) 
 ! 
 ! 
       DOUBLE PRECISION apo, sourcelhs, sourcerhs 
@@ -109,10 +95,13 @@
 !
          DO IJK = ijkstart3, ijkend3
 !
+            CpxFlux_E(IJK) = 1.5D0 * Flux_sE(IJK,M)
+	    CpxFlux_N(IJK) = 1.5D0 * Flux_sN(IJK,M)
+            CpxFlux_T(IJK) = 1.5D0 * Flux_sT(IJK,M)
+
             IF (FLUID_AT(IJK)) THEN 
 !
                CALL SOURCE_GRANULAR_ENERGY (SOURCELHS, SOURCERHS, IJK, M, IER) 
-               TXCP(IJK) = 1.5D0*THETA_M(IJK,M) 
                APO = 1.5D0*ROP_SO(IJK,M)*VOL(IJK)*ODT 
                S_P(IJK) = APO + SOURCELHS + ZMAX(SUM_R_S(IJK,M)) * VOL(IJK) 
                S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS + &
@@ -122,14 +111,13 @@
             ELSE 
 !
                EPS(IJK) = ZERO 
-               TXCP(IJK) = ZERO 
                S_P(IJK) = ZERO 
                S_C(IJK) = ZERO 
 !
             ENDIF 
          END DO 
-         CALL CONV_DIF_PHI (TXCP, KTH_S(1,M), DISCRETIZE(8), U_S(1,M), &
-            V_S(1,M), W_S(1,M), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), M, A_M, B_M, IER) 
+         CALL CONV_DIF_PHI (THETA_M(1,M), KTH_S(1,M), DISCRETIZE(8), U_S(1,M), &
+            V_S(1,M), W_S(1,M), CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M, IER) 
 !
          CALL BC_PHI (THETA_M(1,M), BC_THETA_M(1,M), BC_THETAW_M(1,M), BC_HW_THETA_M(1,M), &
             BC_C_THETA_M(1,M), M, A_M, B_M, IER) 
