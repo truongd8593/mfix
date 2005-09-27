@@ -108,10 +108,21 @@
 
       DO IJK = IJKSTART3, IJKEND3
 !
-         
-         CpxFlux_E(IJK) = HALF * (C_pg(IJK) + C_pg(IP_OF(IJK))) * Flux_gE(IJK)
-	 CpxFlux_N(IJK) = HALF * (C_pg(IJK) + C_pg(JP_OF(IJK))) * Flux_gN(IJK)
-         CpxFlux_T(IJK) = HALF * (C_pg(IJK) + C_pg(KP_OF(IJK))) * Flux_gT(IJK)
+         I = I_OF(IJK)
+	 J = J_OF(IJK)
+	 K = K_OF(IJK) 
+
+         IF (IS_ON_myPE_plus2layers(IP1(I),J,K)) THEN
+	   CpxFlux_E(IJK) = HALF * (C_pg(IJK) + C_pg(IP_OF(IJK))) * Flux_gE(IJK)
+	 ENDIF
+	 
+         IF (IS_ON_myPE_plus2layers(I,JP1(J),K)) THEN
+	   CpxFlux_N(IJK) = HALF * (C_pg(IJK) + C_pg(JP_OF(IJK))) * Flux_gN(IJK)
+	 ENDIF
+	 
+         IF (IS_ON_myPE_plus2layers(I,J,KP1(K))) THEN
+	   CpxFlux_T(IJK) = HALF * (C_pg(IJK) + C_pg(KP_OF(IJK))) * Flux_gT(IJK)
+	 ENDIF
 
          IF (FLUID_AT(IJK)) THEN 
             APO = ROP_GO(IJK)*C_PG(IJK)*VOL(IJK)*ODT 
