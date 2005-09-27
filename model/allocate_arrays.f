@@ -40,6 +40,7 @@
       Use xsi_array
       Use vshear
       Use mflux
+      Use mchem
       IMPLICIT NONE
       
       INTEGER M
@@ -271,6 +272,11 @@
         Allocate(  Dif_Scalar (DIMENSION_3, DIMENSION_Scalar) )
       
       ENDIF
+
+!isat
+!  Insert user-defined code here
+      Allocate( N_sh (DIMENSION_3, DIMENSION_M) )
+
 ! add by rong for dqmom
       Allocate(  D_p  (DIMENSION_3, DIMENSION_M) )
       Allocate(  D_po (DIMENSION_3, DIMENSION_M) )

@@ -20,6 +20,10 @@
 !                      Dimension of ODEs solved in ISAT or DI
       INTEGER          NSpec
 !
+!
+!                      Sherwood number
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: N_sh
+!
 !                      Source terms for all species
       DOUBLE PRECISION RXN_source_g(DIM_N_g) 
       DOUBLE PRECISION RXN_source_s(DIM_M, DIM_N_s)

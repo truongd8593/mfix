@@ -1201,7 +1201,8 @@ allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             VISC_S.mod \
             XSI_ARRAY.mod \
             VSHEAR.mod \
-            MFLUX.mod 
+            MFLUX.mod \
+            MCHEM.mod 
 bc_phi.$(OBJ_EXT) : bc_phi.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1384,6 +1385,7 @@ calc_grbdry.$(OBJ_EXT) : calc_grbdry.f \
             INDICES.mod \
             BC.mod \
             COMPAR.mod \
+            MPI_UTILITY.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1597,6 +1599,7 @@ calc_u_friction.$(OBJ_EXT) : calc_u_friction.f \
             INDICES.mod \
             BC.mod \
             COMPAR.mod \
+            MPI_UTILITY.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -2737,13 +2740,18 @@ physical_prop.$(OBJ_EXT) : physical_prop.f \
             RUN.mod \
             TOLERANC.mod \
             CONSTANT.mod \
+            SCALARS.mod \
             COMPAR.mod \
             FUNITS.mod \
-            SCALARS.mod \
-            ep_s1.inc                                                    \
+            USR.mod \
+            species_indices.inc                                          \
+            usrnlst.inc                                                  \
             cp_fun1.inc                                                  \
+            fun_avg1.inc                                                 \
             function.inc                                                 \
+            fun_avg2.inc                                                 \
             cp_fun2.inc                                                  \
+            ep_s1.inc                                                    \
             ep_s2.inc                                                   
 read_namelist.$(OBJ_EXT) : read_namelist.f \
             PARAM.mod \
@@ -3814,8 +3822,7 @@ update_old.$(OBJ_EXT) : update_old.f \
             VISC_S.mod \
             SCALARS.mod 
 usr0.$(OBJ_EXT) : usr0.f \
-            USR.mod \
-            usrnlst.inc                                                 
+            USR.mod 
 usr1.$(OBJ_EXT) : usr1.f \
             USR.mod 
 usr2.$(OBJ_EXT) : usr2.f \
@@ -4106,7 +4113,8 @@ zero_norm_vel.$(OBJ_EXT) : zero_norm_vel.f \
             function.inc                                                
 calc_jacobian.$(OBJ_EXT) : ./chem/calc_jacobian.f \
             PARAM1.mod \
-            USR.mod 
+            USR.mod \
+            MCHEM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/calc_jacobian.f 
 check_data_chem.$(OBJ_EXT) : ./chem/check_data_chem.f \
             PARAM1.mod \
@@ -4122,7 +4130,9 @@ fex.$(OBJ_EXT) : ./chem/fex.f \
             PHYSPROP.mod \
             TOLERANC.mod \
             USR.mod \
-            MCHEM.mod 
+            MCHEM.mod \
+            cp_fun1.inc                                                  \
+            cp_fun2.inc                                                 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/fex.f 
 g_derivs.$(OBJ_EXT) : ./chem/g_derivs.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/g_derivs.f 
