@@ -51,6 +51,9 @@
 !                      Maximum value of velocities set to avoid divergence problems.
       DOUBLE PRECISION MAX_INLET_VEL
 !
+!                      User definable factor used to scale MAX_INLET_VEL.  Default value is 1.
+      DOUBLE PRECISION MAX_INLET_VEL_FAC
+!
 !                      Maximum allowed velocity of gas or solids in case no inlet velocities
 !                      (or zero velocities) are defined at inlet (see function check_vel_bound)
       DOUBLE PRECISION, PARAMETER          ::  MAX_ALLOWED_VEL = 500.0D+2

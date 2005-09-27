@@ -198,26 +198,20 @@ LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
 !
          IF (FLUID_AT(IJK)) THEN
 !
-! if no inlet velocity is specified, use an upper limit defined in toleranc_mod.f
-            IF(MAX_INLET_VEL == ZERO) THEN
-	      MAX_INLET_VEL = MAX_ALLOWED_VEL
-	      IF (UNITS == 'SI') MAX_INLET_VEL = 1D-2 * MAX_ALLOWED_VEL
-            ENDIF
-!
 	    IF(ABS(U_G(IJK)) > MAX_INLET_VEL .OR. ABS(V_G(IJK)) > MAX_INLET_VEL .OR. &
 	       ABS(W_G(IJK)) > MAX_INLET_VEL) THEN
 	        CHECK_VEL_BOUND = .TRUE.
 		WRITE(*,1000) MAX_INLET_VEL, I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-		              U_G(IJK), V_G(IJK), W_G(IJK)
-                IF (NumPEs.gt.0) EXIT LOOP_FLUID
+		              EP_g(IJK), U_G(IJK), V_G(IJK), W_G(IJK)
+                EXIT LOOP_FLUID
 	    ENDIF
 	    DO M = 1, MMAX
 	      IF(ABS(U_S(IJK,M)) > MAX_INLET_VEL .OR. ABS(V_S(IJK,M)) > MAX_INLET_VEL .OR. &
 	         ABS(W_S(IJK,M)) > MAX_INLET_VEL) THEN
 	        CHECK_VEL_BOUND = .TRUE.
-		WRITE(*,1010) MAX_INLET_VEL, I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-		              U_S(IJK,M), V_S(IJK,M), W_S(IJK,M)
-                IF (NumPEs.gt.0) EXIT LOOP_FLUID
+		WRITE(*,1010) MAX_INLET_VEL, I_OF(IJK), J_OF(IJK), K_OF(IJK), M, &
+		              EP_s(IJK, M), U_S(IJK,M), V_S(IJK,M), W_S(IJK,M)
+                EXIT LOOP_FLUID
 	      ENDIF
 	    ENDDO
          ENDIF 
@@ -229,14 +223,14 @@ LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
       RETURN  
  1000 FORMAT(1X,'Message from: CHECK_VEL_BOUND',/& 
             'WARNING: velocity higher than maximum allowed velocity: ', &
-	    G12.5,/&
+	    G12.5, '(to change this adjust the scale factor MAX_INLET_VEL_FAC)'/&
 	    'in this cell: ','I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
-	    'Gas velocity components: ','Ug = ', G12.5, 'Vg = ', G12.5, 'Wg = ', G12.5)  
+	    '  ','Epg = ', G12.5, 'Ug = ', G12.5, 'Vg = ', G12.5, 'Wg = ', G12.5)  
  1010 FORMAT(1X,'Message from: CHECK_VEL_BOUND',/& 
             'WARNING: velocity higher than maximum allowed velocity: ', &
 	    G12.5,/&
-	    'in this cell: ','I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
-	    'Solids velocity components: ','Us = ', G12.5, 'Vs = ', G12.5, 'Ws = ', G12.5)
+	    'in this cell: ','I = ',I4,2X,' J = ',I4,2X,' K = ',I4,' M = ',I4, /&
+	    '  ','Eps = ', G12.5,'Us = ', G12.5, 'Vs = ', G12.5, 'Ws = ', G12.5)
       END FUNCTION CHECK_VEL_BOUND 
 
 !// Comments on the modifications for DMP version implementation      

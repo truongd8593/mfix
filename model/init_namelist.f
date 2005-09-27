@@ -226,9 +226,6 @@
       EP_S_MAX(:DIM_M) = 0.6D0
 !      
 ! END GERA
-! SOF 26-AUG-2005
-      MAX_INLET_VEL = ZERO
-! END SOF
 !
 ! start rong
       AGGREGATION_EFF=0.D0
@@ -248,6 +245,7 @@
       TOL_RESID_K_Epsilon = 1.0D-4
       TOL_RESID_Th = 1.0D-4
       TOL_DIVERGE = 1.0D+4 
+      MAX_INLET_VEL_FAC = ONE
       V_EX = ZERO 
       P_REF = ZERO 
       P_SCALE = ONE 

@@ -481,6 +481,16 @@
 ! Check for maximum velocity at inlet to avoid convergence problems 
 !
       MAX_INLET_VEL = 100.0d0*MAX_VEL_INLET ()
+!
+!     if no inlet velocity is specified, use an upper limit defined in toleranc_mod.f
+      IF(MAX_INLET_VEL == ZERO) THEN
+	MAX_INLET_VEL = MAX_ALLOWED_VEL
+	IF (UNITS == 'SI') MAX_INLET_VEL = 1D-2 * MAX_ALLOWED_VEL
+      ENDIF
+
+!     Scale the value using a user defined scale factor      
+      MAX_INLET_VEL = MAX_INLET_VEL * MAX_INLET_VEL_FAC
+      
 !     
 !     Advance the solution in time by iteratively solving the equations 
 !     
