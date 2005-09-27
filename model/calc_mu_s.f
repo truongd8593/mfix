@@ -660,7 +660,7 @@
               K_1m = 2.D0 * (ONE + C_e) * RO_s(M) * G_0(IJK, M,M)
               K_3m = HALF * D_p(IJK,M) * RO_s(M) * (&
                   ( (SQRT_PI / (3.D0*(3.D0 - C_e))) *&
-                  (ONE + 0.4D0*(ONE + C_e)*(3.D0*C_e - ONE)*&
+                  (HALF*(3d0*C_e+ONE) + 0.4D0*(ONE + C_e)*(3.D0*C_e - ONE)*&
                   EP_s(IJK,M)*G_0(IJK, M,M)) ) +&
                   8.D0*EP_s(IJK,M)*G_0(IJK, M,M)*(ONE + C_e) /&
                   (5.D0*SQRT_PI) )
