@@ -82,7 +82,7 @@
       DOUBLE PRECISION apo 
 ! 
 !                      Indices 
-      INTEGER          IJK 
+      INTEGER          IJK, I, J, K 
 ! 
 !                      linear equation solver method and iterations 
       INTEGER          LEQM, LEQI 
