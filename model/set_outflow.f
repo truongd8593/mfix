@@ -39,6 +39,7 @@
       USE scalars
       USE run
       USE compar        !//d
+      USE mflux
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -161,7 +162,10 @@
                   ENDIF 
                   V_G(IJK) = V_G(LFLUID) 
                   W_G(IJK) = W_G(LFLUID) 
-                  M = 1 
+                  Flux_gE(IJK) = Flux_gE(LFLUID)
+		  Flux_gN(IJK) = Flux_gN(LFLUID)
+		  Flux_gT(IJK) = Flux_gT(LFLUID) 
+
                   IF (MMAX > 0) THEN 
                      WHERE (ROP_S(IJK,:MMAX) > ZERO)  
                         U_S(IJK,:MMAX) = ROP_S(LFLUID,:MMAX)*U_S(LFLUID,:MMAX)/&
@@ -171,7 +175,9 @@
                      END WHERE 
                      V_S(IJK,:MMAX) = V_S(LFLUID,:MMAX) 
                      W_S(IJK,:MMAX) = W_S(LFLUID,:MMAX) 
-                     M = MMAX + 1 
+                     Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
+		     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
+		     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
                   ENDIF 
                ENDIF 
 !
@@ -242,6 +248,10 @@
                   ENDIF 
                   V_G(IJK) = V_G(LFLUID) 
                   W_G(IJK) = W_G(LFLUID) 
+                  Flux_gE(IJK) = Flux_gE(LFLUID)
+		  Flux_gN(IJK) = Flux_gN(LFLUID)
+		  Flux_gT(IJK) = Flux_gT(LFLUID) 
+
                   DO M = 1, MMAX 
                      IF (U_S(IJK,M) == UNDEFINED) THEN 
                         IF (ROP_S(IJK,M) > ZERO) THEN 
@@ -253,6 +263,9 @@
                      ENDIF 
                      V_S(IJK,M) = V_S(LFLUID,M) 
                      W_S(IJK,M) = W_S(LFLUID,M) 
+                     Flux_sE(IJK,M) = Flux_sE(LFLUID,M)
+		     Flux_sN(IJK,M) = Flux_sN(LFLUID,M)
+		     Flux_sT(IJK,M) = Flux_sT(LFLUID,M) 
                   END DO 
                ENDIF 
 !
@@ -321,12 +334,17 @@
                      V_G(IJK) = ZERO 
                   ENDIF 
                   W_G(IJK) = W_G(LFLUID) 
-                  M = 1 
+                  Flux_gE(IJK) = Flux_gE(LFLUID)
+		  Flux_gN(IJK) = Flux_gN(LFLUID)
+		  Flux_gT(IJK) = Flux_gT(LFLUID) 
+		  
                   IF (MMAX > 0) THEN 
                      U_S(IJK,:MMAX) = U_S(LFLUID,:MMAX) 
                      V_S(IJK,:MMAX) = V_S(LFLUID,:MMAX) 
                      W_S(IJK,:MMAX) = W_S(LFLUID,:MMAX) 
-                     M = MMAX + 1 
+                     Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
+		     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
+		     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
                   ENDIF 
                ENDIF 
 !
@@ -397,13 +415,18 @@
                      ENDIF 
                   ENDIF 
                   W_G(IJK) = W_G(LFLUID) 
-                  M = 1 
+                  Flux_gE(IJK) = Flux_gE(LFLUID)
+		  Flux_gN(IJK) = Flux_gN(LFLUID)
+		  Flux_gT(IJK) = Flux_gT(LFLUID) 
+
                   IF (MMAX > 0) THEN 
                      U_S(IJK,:MMAX) = U_S(LFLUID,:MMAX) 
                      WHERE (V_S(IJK,:MMAX) == UNDEFINED) V_S(IJK,:MMAX) = V_S(&
                         LFLUID,:MMAX) 
                      W_S(IJK,:MMAX) = W_S(LFLUID,:MMAX) 
-                     M = MMAX + 1 
+                     Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
+		     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
+		     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
                   ENDIF 
                ENDIF 
 !
@@ -472,12 +495,17 @@
                   ELSE 
                      W_G(IJK) = ZERO 
                   ENDIF 
-                  M = 1 
+                  Flux_gE(IJK) = Flux_gE(LFLUID)
+		  Flux_gN(IJK) = Flux_gN(LFLUID)
+		  Flux_gT(IJK) = Flux_gT(LFLUID) 
+
                   IF (MMAX > 0) THEN 
                      U_S(IJK,:MMAX) = U_S(LFLUID,:MMAX) 
                      V_S(IJK,:MMAX) = V_S(LFLUID,:MMAX) 
                      W_S(IJK,:MMAX) = W_S(LFLUID,:MMAX) 
-                     M = MMAX + 1 
+                     Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
+		     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
+		     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
                   ENDIF 
                ENDIF 
 !
@@ -548,13 +576,18 @@
                         W_G(IJK) = ZERO 
                      ENDIF 
                   ENDIF 
-                  M = 1 
+                  Flux_gE(IJK) = Flux_gE(LFLUID)
+		  Flux_gN(IJK) = Flux_gN(LFLUID)
+		  Flux_gT(IJK) = Flux_gT(LFLUID) 
+
                   IF (MMAX > 0) THEN 
                      U_S(IJK,:MMAX) = U_S(LFLUID,:MMAX) 
                      V_S(IJK,:MMAX) = V_S(LFLUID,:MMAX) 
                      WHERE (W_S(IJK,:MMAX) == UNDEFINED) W_S(IJK,:MMAX) = W_S(&
                         LFLUID,:MMAX) 
-                     M = MMAX + 1 
+                     Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
+		     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
+		     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
                   ENDIF 
                ENDIF 
             END DO 

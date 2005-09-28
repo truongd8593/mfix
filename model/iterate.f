@@ -196,7 +196,8 @@
 !     Calculate the face values of densities and mass fluxes for the first solve_vel_star call.
       CALL CONV_ROP(IER)
       CALL CALC_MFLUX (IER)
-      
+      CALL SET_BC1
+
 !     Begin iterations
 !
 !------------------------------------------------------------------------------
@@ -348,6 +349,7 @@
 !
 !     Calculate the face values of mass fluxes.
       CALL CALC_MFLUX (IER)
+      CALL SET_BC1
 !
 !     Solve energy equations
 !
