@@ -85,7 +85,7 @@
       J = J_OF(IJK) 
       K = K_OF(IJK) 
 !
-      SOURCERHS = (ZMAX(LAMBDA_S_C(IJK,M))*TRD_S_C(IJK,M)**2+2.*MU_S_C(IJK,M)*&
+      SOURCERHS = (ZMAX(LAMBDA_S_C(IJK,M))*TRD_S_C(IJK,M)**2d0+2d0*MU_S_C(IJK,M)*&
          TRD_S2(IJK,M)+P_S_C(IJK,M)*ZMAX((-TRD_S_C(IJK,M))))*VOL(IJK)  
 !
       IF(SIMONIN) THEN
@@ -159,18 +159,18 @@
       DO MM = 1, MMAX
         SUM_EpsGo =  SUM_EpsGo+EP_s(IJK,MM)*G_0(IJK,MM,MM)
       ENDDO
-      SOURCELHS = ((48./DSQRT(PI))*ETA*(1.-ETA)*ROP_S(IJK&
+      SOURCELHS = ((48d0/DSQRT(PI))*ETA*(ONE-ETA)*ROP_S(IJK&
          ,M)*SUM_EpsGo*DSQRT(THETA_M(IJK,M))/D_P(IJK,M)+ &
 	 P_S_C(IJK,M)*ZMAX((TRD_S_C(IJK,M)))/(THETA_M(IJK,M)+SMALL_NUMBER) &
-	 +ZMAX((-LAMBDA_S_C(IJK,M)))*TRD_S_C(IJK,M)**2/(THETA_M(IJK,M)+&
+	 +ZMAX((-LAMBDA_S_C(IJK,M)))*TRD_S_C(IJK,M)**2d0/(THETA_M(IJK,M)+&
          SMALL_NUMBER))*VOL(IJK)  
 !
       IF(SIMONIN .OR. AHMADI) THEN
-        SOURCELHS = SOURCELHS +  3.0 *F_GS(IJK,M)*VOL(IJK)
+        SOURCELHS = SOURCELHS +  3d0 *F_GS(IJK,M)*VOL(IJK)
 !
       ELSE ! no modifications done to the original KTGF
 !
-        SOURCELHS = SOURCELHS + SWITCH *3.0 *F_GS(IJK,M)*VOL(IJK)
+        SOURCELHS = SOURCELHS + SWITCH *3d0 *F_GS(IJK,M)*VOL(IJK)
       ENDIF
 !
       RETURN  
