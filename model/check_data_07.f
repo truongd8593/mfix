@@ -966,8 +966,7 @@
  1160 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/&
          ' Message: Boundary condition no', &
          I2,' is a second outflow condition.',/1X,&
-         '  Only one outflow is allowed.  Consider using P_OUTFLOW.',/1X,&
-         70('*')/) 
+         '  Only one outflow is allowed.  Consider using P_OUTFLOW.',/1X, 70('*')/) 
  1200 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
          ') specified',' for an undefined BC location',/1X,70('*')/) 
  1300 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I1,&
