@@ -138,6 +138,17 @@
 !                      Collisional Contribution
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  P_s_c 
 !
+!                      Solids pressure as a result of granular motion
+!                      Viscous Contribution
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  P_s_v 
+!
+!                      Solids pressure as a result of granular motion
+!                      Frictional Contribution
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  P_s_f 
+!                      Solids pressure as a result of granular motion
+!                      Plastic Contribution
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  P_s_p 
+!
 !                      Solids pressure that maintains EP_g >= EP_star
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  P_star 
 !

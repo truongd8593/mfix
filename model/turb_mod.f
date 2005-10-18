@@ -23,5 +23,7 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  K_12
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Tau_12
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Tau_1
+!                      Cos_theta in Tau_12 calculation
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Cos_Theta
 
       END MODULE turb                                                                         

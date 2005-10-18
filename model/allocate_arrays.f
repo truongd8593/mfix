@@ -139,6 +139,9 @@
       Allocate(  W_so (DIMENSION_3, DIMENSION_M) )
       Allocate(  P_s (DIMENSION_3, DIMENSION_M) )
       Allocate(  P_s_c (DIMENSION_3, DIMENSION_M) )
+      Allocate(  P_s_v (DIMENSION_3) )
+      Allocate(  P_s_f (DIMENSION_3) )
+      Allocate(  P_s_p (DIMENSION_3) )
       Allocate(  P_star (DIMENSION_3) )
       Allocate(  P_staro (DIMENSION_3) )
       Allocate(  THETA_m (DIMENSION_3, DIMENSION_M) )
@@ -314,6 +317,7 @@
         Allocate(  K_12 (DIMENSION_3) )
 	Allocate(  Tau_12 (DIMENSION_3) )
         Allocate(  Tau_1 (DIMENSION_3) )
+        Allocate(  Cos_theta (DIMENSION_3) )
       ENDIF
 
 !tau_g
@@ -358,6 +362,21 @@
       Allocate(  ALPHA_s (DIMENSION_3, DIMENSION_M) )
       Allocate(  MU_s_c (DIMENSION_3, DIMENSION_M) )
       Allocate(  LAMBDA_s_c (DIMENSION_3, DIMENSION_M) )
+      Allocate(  LAMBDA_s_v (DIMENSION_3) )
+      Allocate(  LAMBDA_s_f (DIMENSION_3) )
+      Allocate(  LAMBDA_s_p (DIMENSION_3) )
+      Allocate(  MU_s_v (DIMENSION_3) )
+      Allocate(  MU_s_f (DIMENSION_3) )
+      Allocate(  MU_s_p (DIMENSION_3) )
+      Allocate(  MU_b_v (DIMENSION_3) )
+      Allocate(  ALPHA_s_v (DIMENSION_3) )
+      Allocate(  ALPHA_s_p (DIMENSION_3) )
+      Allocate(  ALPHA_s_f (DIMENSION_3) )
+      Allocate(  EP_star_array (DIMENSION_3) )
+      Allocate(  VREL_array (DIMENSION_3) )
+      Allocate(  I2_devD_s (DIMENSION_3) )
+      Allocate(  TrM_s (DIMENSION_3) )
+      Allocate(  TrDM_s (DIMENSION_3) )
       
 !xsi_array
       Allocate(  Xsi_e(DIMENSION_3) )
