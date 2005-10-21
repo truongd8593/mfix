@@ -66,6 +66,7 @@ fi
 
 # get user input
 echo
+echo "     CHARACTER(len=132) :: MFIX_PATH = '$mfix'" > mfix_directory_path.inc
 echo "MFIX directory is $mfix"
 echo
 

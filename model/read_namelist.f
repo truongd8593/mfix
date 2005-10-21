@@ -194,8 +194,13 @@
          CALL MFIX_EXIT(myPE) 
       ENDIF 
 !     
-!     
-      CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN) 
+!
+!     Make upper case all except species names     
+      if(index(LINE_STRING,'SPECIES_NAME') == 0 .AND. &
+         index(LINE_STRING,'species_name') == 0 .AND. &
+         index(LINE_STRING,'Species_Name') == 0       &
+	 ) &
+	   CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN) 
       CALL REPLACE_TAB (LINE_STRING, LINE_LEN) 
 !     
 !     

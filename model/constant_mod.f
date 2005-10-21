@@ -82,6 +82,9 @@
 !                      Universal gas constant
       DOUBLE PRECISION GAS_CONST
 !
+!                      Universal gas constant in cal/mol.K
+      DOUBLE PRECISION, PARAMETER :: GAS_CONST_cal = 1.987207D0
+!
 !                      Coeficient of restitution
       DOUBLE PRECISION C_e
 !

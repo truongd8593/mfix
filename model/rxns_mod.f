@@ -60,10 +60,10 @@
       DOUBLE PRECISION, DIMENSION(DIMENSION_RXN, 0:DIM_M, 0:DIM_M) :: R_temp
 !
 !                      Species names
-      CHARACTER*10     SPECIES_NAME(DIM_N_ALL)
+      CHARACTER(len=18)     SPECIES_NAME(DIM_N_ALL)
 !
 !                      Reaction names
-      CHARACTER*10, DIMENSION(DIMENSION_RXN) :: RXN_NAME
+      CHARACTER(len=10), DIMENSION(DIMENSION_RXN) :: RXN_NAME
 !
 !                      whether rxn schemes and rate expressions specified
       LOGICAL, DIMENSION(DIMENSION_RXN) :: GOT_RXN, GOT_RATE 

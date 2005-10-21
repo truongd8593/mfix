@@ -128,7 +128,7 @@
                   CALL ERROR_ROUTINE ('check_data_04', &
                      'Species molecular weight undefined', 0, 2) 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1410) LC, N 
-                  CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
+                  !CALL ERROR_ROUTINE (' ', ' ', 1, 3) no need to abort as they will be read from database
                ENDIF 
             END DO 
             DO N = NMAX(LC) + 1, DIMENSION_N_S 

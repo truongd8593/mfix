@@ -171,7 +171,7 @@
                CALL ERROR_ROUTINE ('CHECK_DATA_05', &
                   'Value of MW_g not specified', 0, 2) 
                IF(DMP_LOG)WRITE (UNIT_LOG, 1500) N 
-               CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
+!               CALL ERROR_ROUTINE (' ', ' ', 1, 3) No need to abort since MW will be read from database
             ENDIF 
          END DO 
          DO N = NMAX(0) + 1, DIMENSION_N_G 

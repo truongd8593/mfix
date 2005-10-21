@@ -200,6 +200,7 @@ mfix.exe : \
     parse_rxn.$(OBJ_EXT) \
     partial_elim.$(OBJ_EXT) \
     physical_prop.$(OBJ_EXT) \
+    read_database.$(OBJ_EXT) \
     read_namelist.$(OBJ_EXT) \
     read_res0.$(OBJ_EXT) \
     read_res1.$(OBJ_EXT) \
@@ -379,6 +380,8 @@ mfix.exe : \
     rkqs.$(OBJ_EXT) \
     source_population_eq.$(OBJ_EXT) \
     usr_dqmom.$(OBJ_EXT) \
+    get_values.$(OBJ_EXT) \
+    readTherm.$(OBJ_EXT) \
     blas90.a odepack.a
 	$(LINK_CMD) $(LINK_FLAGS) \
     adjust_a_u_g.$(OBJ_EXT) \
@@ -549,6 +552,7 @@ mfix.exe : \
     physical_prop.$(OBJ_EXT) \
     physprop_mod.$(OBJ_EXT) \
     pscor_mod.$(OBJ_EXT) \
+    read_database.$(OBJ_EXT) \
     read_namelist.$(OBJ_EXT) \
     read_res0.$(OBJ_EXT) \
     read_res1.$(OBJ_EXT) \
@@ -758,6 +762,8 @@ mfix.exe : \
     rkqs.$(OBJ_EXT) \
     source_population_eq.$(OBJ_EXT) \
     usr_dqmom.$(OBJ_EXT) \
+    get_values.$(OBJ_EXT) \
+    readTherm.$(OBJ_EXT) \
   -o mfix.exe $(LIB_FLAGS)
   
 blas90.a : BLAS.o
@@ -1472,31 +1478,31 @@ calc_mu_g.$(OBJ_EXT) : calc_mu_g.f \
             ep_s2.inc                                                    \
             fun_avg2.inc                                                
 calc_mu_s.$(OBJ_EXT) : calc_mu_s.f \
+            run.mod \
+            vshear.mod \
+            visc_s.mod \
+            physprop.mod \
+            constant.mod \
+            fldvar.mod \
+            compar.mod \
+            indices.mod \
+            geometry.mod \
             param.mod \
             param1.mod \
-            parallel.mod \
-            physprop.mod \
-            drag.mod \
-            run.mod \
-            geometry.mod \
-            fldvar.mod \
-            visc_g.mod \
-            visc_s.mod \
             trace.mod \
-            turb.mod \
-            indices.mod \
-            constant.mod \
             toleranc.mod \
-            vshear.mod \
-            compar.mod \
+            turb.mod \
+            drag.mod \
+            parallel.mod \
+            visc_g.mod \
             sendrecv.mod \
-            s_pr1.inc                                                    \
-            ep_s1.inc                                                    \
-            fun_avg1.inc                                                 \
             function.inc                                                 \
+            ep_s1.inc                                                    \
             ep_s2.inc                                                    \
-            fun_avg2.inc                                                 \
-            s_pr2.inc                                                   
+            s_pr1.inc                                                    \
+            s_pr2.inc                                                    \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
 calc_mw.$(OBJ_EXT) : calc_mw.f \
             param.mod \
             param1.mod \
@@ -2750,9 +2756,16 @@ physical_prop.$(OBJ_EXT) : physical_prop.f \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            cp_fun2.inc                                                  \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   
+read_database.$(OBJ_EXT) : read_database.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            constant.mod \
+            compar.mod \
+            rxns.mod \
+            mfix_directory_path.inc                                     
 read_namelist.$(OBJ_EXT) : read_namelist.f \
             param.mod \
             param1.mod \
@@ -2860,6 +2873,7 @@ rrates.$(OBJ_EXT) : rrates.f \
             funits.mod \
             compar.mod \
             sendrecv.mod \
+            species_indices.inc                                          \
             function.inc                                                
 rrates_init.$(OBJ_EXT) : rrates_init.f \
             param.mod \
@@ -3109,6 +3123,7 @@ set_outflow.$(OBJ_EXT) : set_outflow.f \
             scalars.mod \
             run.mod \
             compar.mod \
+            mflux.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -4130,9 +4145,7 @@ fex.$(OBJ_EXT) : ./chem/fex.f \
             physprop.mod \
             toleranc.mod \
             usr.mod \
-            mchem.mod \
-            cp_fun1.inc                                                  \
-            cp_fun2.inc                                                 
+            mchem.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/fex.f 
 g_derivs.$(OBJ_EXT) : ./chem/g_derivs.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/g_derivs.f 
@@ -4585,3 +4598,7 @@ usr_dqmom.$(OBJ_EXT) : ./dqmom/usr_dqmom.f \
             ep_s2.inc                                                    \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/usr_dqmom.f 
+get_values.$(OBJ_EXT) : ./thermochemical/get_values.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./thermochemical/get_values.f 
+readTherm.$(OBJ_EXT) : ./thermochemical/readTherm.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./thermochemical/readTherm.f 

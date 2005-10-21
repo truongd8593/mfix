@@ -62,7 +62,9 @@
 !                      cell index
       INTEGER          IJK
       
-      DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX)
+      DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX), rxn
+      DOUBLE PRECISION RXNA, Trxn
+      DOUBLE PRECISION, EXTERNAL ::calc_ICpoR
 !
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -162,7 +164,9 @@
 !     heat of Reaction for the C + O2 reaction is split into parts;
 !     CO formation is assigned to the solid phase and CO2 formation from CO to
 !     the gas phase.
-!
+!     *** This section is no longer needed as the heats of reactions are  
+!         calculated below.  If you need to override the automatic calculation, 
+!         comment out the calculations below.   
 !
 !==============================================================================
 !
@@ -207,6 +211,34 @@
 	    
 !
 !
+!
+            HOR_G(IJK) = zero
+            DO N = 1, NMAX(0)
+	      rxn =  (R_gp(IJK, N) - RoX_gc(IJK, N) * X_g(IJK, N)) &
+	              - SUM_R_g(IJK) * X_g(IJK, N)
+              HOR_G(IJK) = HOR_G(IJK) + rxn * (HfrefoR_g(N)  + &
+	                     (calc_ICpoR(T_G(IJK), Thigh_g(N), Tlow_g(N), &
+			     Tcom_g(N), Ahigh_g(1,N), Alow_g(1,N)) -  &
+			      IC_PGrefoR(N)) )* GAS_CONST_cal / MW_g(N)
+	                   
+            END DO 
+            IF (UNITS == 'SI') HOR_G(IJK) = 4183.925D0*HOR_G(IJK)    !in J/kg K
+	    
+            DO M = 1, MMAX 
+              HOR_s(IJK, M) = zero
+              DO N = 1, NMAX(M)
+	        rxn =  (R_sp(IJK, M, N) - RoX_sc(IJK, M, N) * X_s(IJK, M, N)) &
+	              - SUM_R_s(IJK, M) * X_s(IJK, M, N)
+                HOR_s(IJK, M) = HOR_s(IJK, M) + rxn * (HfrefoR_s(M, N)  + &
+	                     (calc_ICpoR(T_s(IJK, M), Thigh_s(M,N), Tlow_s(M,N), &
+			     Tcom_s(M,N), Ahigh_s(1,M,N), Alow_s(1,M,N)) -  &
+			      IC_PsrefoR(M,N)) )* GAS_CONST_cal / MW_s(M,N)
+	                   
+              END DO 
+              IF (UNITS == 'SI') HOR_s(IJK, M) = 4183.925D0*HOR_s(IJK, M)    !in J/kg K
+            END DO 
+!
+!
 !     Store R_tmp values in an array.  Only store the upper triangle without
 !     the diagonal of R_tmp array.
 !
@@ -235,7 +267,3 @@
          ' (R_tmp) not specified',/1X,70('*')/) 
       RETURN  
       END SUBROUTINE RRATES 
-
-!// Comments on the modifications for DMP version implementation
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

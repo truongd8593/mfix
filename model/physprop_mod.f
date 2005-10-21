@@ -72,6 +72,9 @@
 !                      Constant constant-pressure specific heat of gas
       DOUBLE PRECISION C_pg0
 !
+!                      Reference temperature for enthalpy calculations (K)
+      DOUBLE PRECISION, PARAMETER :: T_ref = 298
+!
 !                      Constant pressure specific heat of gas
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  C_pg 
 !
@@ -125,6 +128,14 @@
 !                      Molecular weight of gas mixture
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MW_MIX_g 
 !
+!                      Coefficients for high and low temperature ranges, heat of formation at T_ref K
+!                      and the temperature ranges for calculating thermochemical properties
+      LOGICAL :: DATABASE_READ = .FALSE.
+      DOUBLE PRECISION Ahigh_g(7, DIM_N_g), Alow_g(7, DIM_N_g), HfrefoR_g(DIM_N_g)
+      DOUBLE PRECISION Thigh_g(DIM_N_g), Tlow_g(DIM_N_g), Tcom_g(DIM_N_g), IC_PGrefoR(DIM_N_g)
+      DOUBLE PRECISION Ahigh_s(7, DIM_M, DIM_N_s), Alow_s(7, DIM_M, DIM_N_s), HfrefoR_s(DIM_M, DIM_N_s)
+      DOUBLE PRECISION Thigh_s(DIM_M, DIM_N_s), Tlow_s(DIM_M, DIM_N_s), Tcom_s(DIM_M, DIM_N_s)
+      DOUBLE PRECISION IC_PsrefoR(DIM_M, DIM_N_s)
  
  
 !!!HPF$ align MU_g(:) with TT(:)
