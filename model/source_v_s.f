@@ -902,7 +902,7 @@
                      A_M(IJK,E,M) = -ONE 
                   ELSE 
 ! start anuj 04/20
-                     IF (FRICTION .AND. EP_S(IJK,M)>EPS_F_MIN) THEN 
+		     IF (FRICTION .AND. (ONE-EP_G(EAST_OF(IJK)))>EPS_F_MIN) THEN 
                         CALL CALC_U_FRICTION (IJK, EAST_OF(IJK), 'E', 'V', L, M&
                            , GW, HW, CW) 
                      ELSE 
@@ -930,7 +930,7 @@
                   IF (EP_S(WEST_OF(IJK),M) <= DIL_EP_S) THEN 
                      A_M(IJK,W,M) = -ONE 
                   ELSE 
-                     IF (FRICTION .AND. EP_S(IJK,M)>EPS_F_MIN) THEN 
+                     IF (FRICTION .AND. (ONE-EP_G(WEST_OF(IJK)))>EPS_F_MIN) THEN 
                         CALL CALC_U_FRICTION (IJK, WEST_OF(IJK), 'W', 'V', L, M&
                            , GW, HW, CW) 
                      ELSE 
@@ -958,7 +958,7 @@
                   IF (EP_S(TOP_OF(IJK),M) <= DIL_EP_S) THEN 
                      A_M(IJK,T,M) = -ONE 
                   ELSE 
-                     IF (FRICTION .AND. EP_S(IJK,M)>EPS_F_MIN) THEN 
+                     IF (FRICTION .AND. (ONE-EP_G(TOP_OF(IJK)))>EPS_F_MIN) THEN 
                         CALL CALC_U_FRICTION (IJK, TOP_OF(IJK), 'T', 'V', L, M&
                            , GW, HW, CW) 
                      ELSE 
@@ -985,7 +985,7 @@
                   IF (EP_S(BOTTOM_OF(IJK),M) <= DIL_EP_S) THEN 
                      A_M(IJK,B,M) = -ONE 
                   ELSE 
-                     IF (FRICTION .AND. EP_S(IJK,M)>EPS_F_MIN) THEN 
+                     IF (FRICTION .AND. (ONE-EP_G(BOTTOM_OF(IJK)))>EPS_F_MIN) THEN 
                         CALL CALC_U_FRICTION (IJK, BOTTOM_OF(IJK), 'B', 'V', L&
                            , M, GW, HW, CW) 
                      ELSE 

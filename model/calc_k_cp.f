@@ -50,7 +50,7 @@
  
 !                      Other variables
       DOUBLE PRECISION Pc, DPcoDEPs, Mu, Mu_b, Mu_zeta, ZETA
-      DOUBLE PRECISION F2, DF2oDEPs, DEPs2G_0oDEPs, Pf, Pfmax
+      DOUBLE PRECISION F2, DF2oDEPs, DEPs2G_0oDEPs, Pf, Pfmax, N_Pff
       DOUBLE PRECISION  DZETAoDEPs, DG_0DNU
       double precision calc_ep_star
       
@@ -80,24 +80,24 @@
  
                IF (FRICTION) THEN
  
-                  IF (EP_s(IJK,M).GT.EPS_f_min) THEN
+                  IF ((ONE-EP_G(IJK)).GT.EPS_f_min) THEN
  
-	             IF (EP_s(IJK,M).GT.EPS_max) THEN
-              	        Pc = 1d25*((EP_s(IJK,M) - EPS_max)&
+	             IF ((ONE-EP_G(IJK)).GT.EPS_max) THEN
+              	        Pc = 1d25*(((ONE-EP_G(IJK)) - EPS_max)&
                                                       **10d0)
                         DPcoDEPS =&
-                             1d26*((EP_s(IJK,M) - EPS_max)**9d0)
+                             1d26*(((ONE-EP_G(IJK)) - EPS_max)**9d0)
  
 	             ELSE
-                        Pc = Fr*((EP_s(IJK,M) - EPS_f_min)**N_Pc)/&
-                          ((EPS_max - EP_s(IJK,M) + SMALL_NUMBER)&
+                        Pc = Fr*(((ONE-EP_G(IJK)) - EPS_f_min)**N_Pc)/&
+                          ((EPS_max - (ONE-EP_G(IJK)) + SMALL_NUMBER)&
                            **D_Pc)
  
                         DPcoDEPs =&
-                           Fr*((EP_s(IJK,M) - EPS_f_min)**(N_Pc - 1.))&
-                           *(N_Pc*(EPS_max - EP_s(IJK,M)) +&
-                             D_Pc*(EP_s(IJK,M) - EPS_f_min))&
-      	                   / ((EPS_max - EP_s(IJK,M) + SMALL_NUMBER)**&
+                           Fr*(((ONE-EP_G(IJK)) - EPS_f_min)**(N_Pc - 1.))&
+                           *(N_Pc*(EPS_max - (ONE-EP_G(IJK))) +&
+                             D_Pc*((ONE-EP_G(IJK)) - EPS_f_min))&
+      	                   / ((EPS_max - (ONE-EP_G(IJK)) + SMALL_NUMBER)**&
                               (D_Pc + 1.))
                      ENDIF
  
@@ -134,23 +134,29 @@
  
                      ENDIF
  
-                     IF ((trD_s_Co(IJK,M)/(ZETA*N_Pf*&
+                     IF (trD_s_C(IJK,M) .GE. ZERO) THEN
+                        N_Pff = DSQRT(3d0)/(2d0*Sin_Phi) !dilatation
+                     ELSE
+                        N_Pff = N_Pf !compaction
+                     ENDIF
+ 
+                     IF ((trD_s_C(IJK,M)/(ZETA*N_Pff*&
                          DSQRT(2d0)*&
                          Sin_Phi)) .GT. 1d0) THEN
                       F2 = 0d0
                       DF2oDEPs = ZERO
  
                      ELSE
-                      F2 = (1d0 - (trD_s_Co(IJK,M)/(ZETA*N_Pf*&
-                          DSQRT(2d0)*Sin_Phi)))**(N_Pf-1d0)
+                      F2 = (1d0 - (trD_s_C(IJK,M)/(ZETA*N_Pff*&
+                          DSQRT(2d0)*Sin_Phi)))**(N_Pff-1d0)
  
                       IF (SAVAGE.EQ.1) THEN
  
-                       DF2oDEPs = (N_Pf-1d0)*(F2**(N_Pf-2d0))*&
-                         trD_s_Co(IJK,M)&
+                       DF2oDEPs = (N_Pff-1d0)*(F2**(N_Pff-2d0))*&
+                         trD_s_C(IJK,M)&
                          *DZETAoDEPs(EP_s(IJK,M), IJK, M)&
                          / (ZETA*ZETA*&
-                         N_Pf*DSQRT(2d0)*Sin_Phi)
+                         N_Pff*DSQRT(2d0)*Sin_Phi)
  
                       ELSE
                        DF2oDEPs=ZERO

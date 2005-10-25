@@ -797,7 +797,7 @@
       INTEGER          M, MM
 !
 !                      Used to compute frictional terms
-      DOUBLE PRECISION Chi, Pc, Mu_zeta,Phin,PfoPc
+      DOUBLE PRECISION Chi, Pc, Mu_zeta,Phin,PfoPc, N_Pff
 !
       DOUBLE PRECISION ZETA
 !     
@@ -864,55 +864,57 @@
                   ENDIF
                   
                   
-                  IF (EP_s(IJK,M) .GT. EPS_max) THEN
-                     Pc = 1d25*((EP_s(IJK,M)- EPS_max)**10d0)
+                  IF ((ONE-EP_G(IJK)) .GT. EPS_max) THEN
+                     Pc = 1d25*(((ONE-EP_G(IJK))- EPS_max)**10d0)
                   ELSE
-                     Pc = Fr*((EP_s(IJK,M) - EPS_f_min)**N_Pc)/&
-                     ((EPS_max - EP_s(IJK,M) + SMALL_NUMBER)&
+                     Pc = Fr*(((ONE-EP_G(IJK)) - EPS_f_min)**N_Pc)/&
+                     ((EPS_max - (ONE-EP_G(IJK)) + SMALL_NUMBER)&
                      **D_Pc)
                   ENDIF
+ 
+                  IF (trD_s_C(IJK,M) .GE. ZERO) THEN
+                     N_Pff = DSQRT(3d0)/(2d0*Sin_Phi) !dilatation
+                  ELSE
+                     N_Pff = N_Pf !compaction
+                  ENDIF
                   
+                  IF ((trD_s_C(IJK,M)/(ZETA*N_Pff*DSQRT(2d0)&
+                  *Sin_Phi)) .GT. 1d0) THEN
+                    P_s_f(IJK) =ZERO
+                    PfoPc = ZERO
+                  ELSE
                   
-                  IF ((trD_s_Co(IJK,M)/(ZETA*N_Pf*DSQRT(2d0)&
-                  *Sin_Phi))&
-                  .GT. 1d0) THEN
-                  P_s_f(IJK) =ZERO
-                  PfoPc = ZERO
-               ELSE
+                    P_s_f(IJK) = Pc*(1d0 - (trD_s_C(IJK,M)/(ZETA&
+                    *N_Pff*DSQRT(2d0)*Sin_Phi)))**(N_Pff-1d0)
                   
-                  P_s_f(IJK) = Pc*(1d0 - (trD_s_Co(IJK,M)/(ZETA&
-                  *N_Pf*&
-                  DSQRT(2d0)*Sin_Phi)))**(N_Pf-1d0)
-                  
-                  PfoPc = (1d0 - (trD_s_Co(IJK,M)/(ZETA&
-                  *N_Pf*&
-                  DSQRT(2d0)*Sin_Phi)))**(N_Pf-1d0)
-               ENDIF
+                    PfoPc = (1d0 - (trD_s_C(IJK,M)/(ZETA&
+                    *N_Pff*DSQRT(2d0)*Sin_Phi)))**(N_Pff-1d0)
+                 ENDIF
                
                
                
-               Chi = DSQRT(2d0)*P_s_f(IJK)*Sin_Phi*(N_Pf - (N_Pf-1d0)*&
-               (PfoPc)**(1d0/(N_Pf-1d0)))
+                 Chi = DSQRT(2d0)*P_s_f(IJK)*Sin_Phi*(N_Pff - (N_Pff-1d0)*&
+                 (PfoPc)**(1d0/(N_Pff-1d0)))
                
-               IF (Chi < ZERO) THEN
-                  P_s_f(IJK) = Pc*((N_Pf/(N_Pf-1d0))**(N_Pf-1d0))
-                  Chi = ZERO
-               ENDIF
+                 IF (Chi < ZERO) THEN
+                    P_s_f(IJK) = Pc*((N_Pff/(N_Pff-1d0))**(N_Pff-1d0))
+                    Chi = ZERO
+                 ENDIF
                
                
-               Mu_s_f(IJK) = Chi/(2d0*ZETA)
-               Lambda_s_f(IJK) = - 2d0*Mu_s_f(IJK)/3d0
+                 Mu_s_f(IJK) = Chi/(2d0*ZETA)
+                 Lambda_s_f(IJK) = - 2d0*Mu_s_f(IJK)/3d0
 !     
 !     modification of the stresses in case of more than one solids phase are used (sof)
 !     
-               P_s_f(IJK) = P_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
-               Mu_s_f(IJK) = Mu_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
-               Lambda_s_f(IJK) = Lambda_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
+                 P_s_f(IJK) = P_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
+                 Mu_s_f(IJK) = Mu_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
+                 Lambda_s_f(IJK) = Lambda_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
 
                
-            ENDIF
+               ENDIF
 
-      Endif                     ! Fluid_at
+         Endif                  ! Fluid_at
  200  Continue                  ! outer IJK loop
       
 

@@ -556,9 +556,9 @@
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
-                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
+                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
-                             BC_Uw_s(L, M), gw, hw,cw)
+                             BC_Vw_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'B')THEN
           IJK2N = NORTH_OF(IJK2)
@@ -644,9 +644,9 @@
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
-                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
+                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
-                             BC_Uw_s(L, M), gw, hw,cw)
+                             BC_Vw_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'E')THEN
            IJK2N= NORTH_OF(IJK2)
@@ -722,9 +722,9 @@
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
-                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
+                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
-                             BC_Uw_s(L, M), gw, hw,cw)
+                             BC_Vw_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'W')THEN
            IJK2N= NORTH_OF(IJK2)
@@ -801,9 +801,9 @@
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
-                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
+                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
-                             BC_Uw_s(L, M), gw, hw,cw)
+                             BC_Vw_s(L, M), gw, hw,cw)
  
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
@@ -894,9 +894,9 @@
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
-                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
+                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
-                             BC_Uw_s(L, M), gw, hw,cw)
+                             BC_Ww_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'S')THEN
           IJK2T = TOP_OF(IJK2)
@@ -981,9 +981,9 @@
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
-                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
+                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
-                             BC_Uw_s(L, M), gw, hw,cw)
+                             BC_Ww_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'E')THEN
            IJK2T= TOP_OF(IJK2)
@@ -1059,9 +1059,9 @@
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
-                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
+                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
-                             BC_Uw_s(L, M), gw, hw,cw)
+                             BC_Ww_s(L, M), gw, hw,cw)
  
         ELSEIF(FCELL .EQ. 'W')THEN
            IJK2T= TOP_OF(IJK2)
@@ -1137,9 +1137,9 @@
                              S_DDOT_S, S_dd)
  
           CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
-                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
+                             DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
-                             BC_Uw_s(L, M), gw, hw,cw)
+                             BC_Ww_s(L, M), gw, hw,cw)
  
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
@@ -1244,7 +1244,7 @@
       DOUBLE PRECISION Pc
  
 !              Chi (appears in frictional boundary condition)
-      DOUBLE PRECISION Chi
+      DOUBLE PRECISION Chi, N_Pff
  
 !              Viscosity
       DOUBLE PRECISION Mu
@@ -1415,7 +1415,7 @@
  
 !     Calculating frictional terms
  
-      IF (EPS<= EPS_f_min) THEN
+      IF ((ONE-EPG)<= EPS_f_min) THEN
          Pf = ZERO
          Chi = ZERO
          ZETA = 1d0
@@ -1435,32 +1435,43 @@
          ENDIF
  
  
-         IF (EPS> EPS_max) THEN
-            Pc=  1d25*((EPS-EPS_max)**10d0)
+         IF ((ONE-EPG)> EPS_max) THEN
+            Pc=  1d25*(((ONE-EPG)-EPS_max)**10d0)
          ELSE
-            Pc = Fr*((EPS - EPS_f_min)**N_Pc)/((EPS_max - EPS +&
+            Pc = Fr*(((ONE-EPG) - EPS_f_min)**N_Pc)/((EPS_max - (ONE-EPG) +&
                   SMALL_NUMBER)**D_Pc)
          ENDIF
  
+         IF (DEL_U .GE. ZERO) THEN
+            N_Pff = DSQRT(3d0)/(2d0*Sin_Phi) !dilatation
+         ELSE
+            N_Pff = N_Pf !compaction
+         ENDIF
  
  
-         IF ((DEL_U/(ZETA*N_Pf*DSQRT(2d0)*Sin_Phi)) .GT. 1d0) THEN
+         IF ((DEL_U/(ZETA*N_Pff*DSQRT(2d0)*Sin_Phi)) .GT. 1d0) THEN
              Pf = ZERO
          ELSE
-             Pf = Pc*(1d0 - (DEL_U/(ZETA*N_Pf*DSQRT(2d0)*Sin_Phi)))**&
-                  (N_Pf-1d0)
+             Pf = Pc*(1d0 - (DEL_U/(ZETA*N_Pff*DSQRT(2d0)*Sin_Phi)))**&
+                  (N_Pff-1d0)
          ENDIF
  
          Chi =&
-                        DSQRT(2d0)*Pf*Sin_Phi*(N_Pf - (N_Pf-1d0)*&
-                                      ((Pf/Pc)**(1d0/(N_Pf-1d0))))
+                        DSQRT(2d0)*Pf*Sin_Phi*(N_Pff - (N_Pff-1d0)*&
+                                      ((Pf/Pc)**(1d0/(N_Pff-1d0))))
  
  
  
          IF (Chi< ZERO) THEN
-            Pf = Pc*((N_Pf/(N_Pf-1d0))**(N_Pf-1d0))
+            Pf = Pc*((N_Pff/(N_Pff-1d0))**(N_Pff-1d0))
             Chi = ZERO
          ENDIF
+
+! by writing Pf & Chi in the following form, we ensure distribution of stresses
+! amoung all solids phases (sof, Oct 24 2005)
+
+	 Pf = Pf * EPS/(ONE-EPG)
+         Chi = Chi * EPS/(ONE-EPG)
  
       ENDIF
  
