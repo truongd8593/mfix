@@ -1,4 +1,4 @@
- !     Program Test; CALL Read_Therm_tester; END Program Test
+!      Program Test; CALL Read_Therm_tester; END Program Test
       
       SUBROUTINE READ_Therm_tester 
       Implicit none
@@ -7,12 +7,26 @@
       DOUBLE PRECISION Cp1, Cp2, h1, h2, T, Hf298oR
       DOUBLE PRECISION, EXTERNAL :: calc_CpoR, calc_H0oR
       CHARACTER PATH*132, SPECIES*18
-      integer i
+      integer i, funit, IER
+      CHARACTER(len=142) FILENAME
+      CHARACTER(len=10) :: THERM = 'BURCAT.THR'
+      LOGICAL LocalCopy
       
-      SPECIES = 'ZnSO4(a\')'
+      SPECIES = 'CH4'
       PATH = '.'
-!      Call Read_Therm(PATH, 'N2', Thigh, Tlow, Tcom, Ahigh, Alow, Hf298oR)
-      Call Read_Therm(PATH, SPECIES, Thigh, Tlow, Tcom, MW, Ahigh, Alow, Hf298oR)
+      funit = 5
+      
+      INQUIRE(FILE=TRIM(THERM),EXIST=LocalCopy)
+      IF(LocalCopy)Then
+        OPEN(UNIT=funit,FILE=TRIM(THERM))
+      ELSE
+        FILENAME = TRIM(PATH) // '/'  // TRIM(THERM)
+        OPEN(UNIT=funit,FILE=TRIM(FILENAME), ERR=500)
+      ENDIF
+ 
+ !      Call Read_Therm(PATH, 'N2', Thigh, Tlow, Tcom, Ahigh, Alow, Hf298oR)
+      Call Read_Therm(funit, SPECIES, Thigh, Tlow, Tcom, MW, Ahigh, Alow, Hf298oR, IER)
+      IF(IER /= 0) GOTO 200
       
       print *, SPECIES
       print *, Thigh, Tlow, Tcom, MW, Hf298oR*1.987207
@@ -29,8 +43,13 @@
       h1 = calc_H0oR(4D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
       h2 = calc_H0oR(12D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
       print *, Cp1, h1, h2
-      
+      CLOSE(UNIT=funit)
       STOP
+200   PRINT *, 'READ_Therm_tester: Species ', TRIM(SPECIES), ' not found in Database!'
+      STOP
+500   PRINT *, 'READ_Therm_tester: Cannot Open file ', TRIM(THERM), '!'
+      PRINT *, 'Check path or copy mfix/model/thermochemical/', TRIM(THERM), ' into run directory'
+      STOP       
       END Subroutine READ_Therm_tester
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  C
@@ -41,7 +60,7 @@
 !                                                                        C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  C
 !     
-      SUBROUTINE READ_Therm(PATH, Sp, Thigh, Tlow, Tcom, MW, Ahigh, Alow, Hf298oR) 
+      SUBROUTINE READ_Therm(funit, Sp, Thigh, Tlow, Tcom, MW, Ahigh, Alow, Hf298oR, IER) 
 !     
 !-----------------------------------------------
 !     M o d u l e s 
@@ -49,19 +68,15 @@
       
       IMPLICIT NONE
       
-      CHARACTER(*) PATH
       CHARACTER(*) SP
       
 !     holds one line in the input file
       CHARACTER(len=80) :: LINE_STRING
       
-      CHARACTER(len=132) FILENAME
-      CHARACTER(len=10) :: THERM = 'BURCAT.THR'
       CHARACTER(len=18) :: SPECIES, ss
-      INTEGER i
+      INTEGER i, funit, IER
       DOUBLE PRECISION Ahigh(7), Alow(7), Hf298oR
       DOUBLE PRECISION Thigh, Tlow, Tcom, MW
-      LOGICAL LocalCopy
 
 
 !     Assoiciate a simple species name with that in BURCAT.THR file
@@ -76,6 +91,7 @@
        /), (/2,Max/))
 
       
+      IER = 0
       SPECIES = SP
       DO i = 1, MAX
         IF(TRIM(SP) == TRIM(SPECIES_ALIAS(1,I)))THEN
@@ -83,24 +99,16 @@
         ENDIF
       ENDDO
        
-      
-      INQUIRE(FILE=TRIM(THERM),EXIST=LocalCopy)
-      IF(LocalCopy)Then
-        OPEN(5,FILE=TRIM(THERM))
-      ELSE
-        FILENAME = TRIM(PATH) // '/'  // TRIM(THERM)
-        OPEN(5,FILE=TRIM(FILENAME), ERR=500)
-      ENDIF
-      
+     
       LINE_STRING = '                '
-      DO WHILE(LINE_STRING(1:10) /= 'THERMO ALL')
-        READ(5,'(A)',ERR=100,END=100)LINE_STRING
+      DO WHILE(LINE_STRING(1:11) /= 'THERMO DATA')
+        READ(UNIT=funit, FMT='(A)',ERR=100,END=100)LINE_STRING
       END DO
       
       ss = '                 '
       call trimTab(SPECIES)
       DO WHILE(TRIM(ss) /= TRIM(SPECIES))
-        READ(5,'(A)',ERR=200,END=200)LINE_STRING
+        READ(UNIT=funit, FMT='(A)',ERR=100,END=100)LINE_STRING
         ss = LINE_STRING(1:18)
         call trimTab(ss)
       END DO
@@ -108,22 +116,16 @@
        
       call get_values(LINE_STRING, Tlow, Thigh, MW)
       Tcom = 1000.D0
-      READ(5,'(5E15.0)',ERR=300,END=200)Ahigh(1:5)
-      READ(5,'(5E15.0)',ERR=300,END=200)Ahigh(6:7), Alow(1:3)
-      READ(5,'(5E15.0)',ERR=300,END=200)Alow(4:7), Hf298oR
+      READ(UNIT=funit, FMT='(5E15.0)',ERR=300,END=300)Ahigh(1:5)
+      READ(UNIT=funit, FMT='(5E15.0)',ERR=300,END=300)Ahigh(6:7), Alow(1:3)
+      READ(UNIT=funit, FMT='(5E15.0)',ERR=300,END=300)Alow(4:7), Hf298oR
       
-      CLOSE(5)
+      RETURN
+      ! species not found or THERMO DATA not found!
+100   IER = 1
       RETURN
             
-100   PRINT *, 'READ_Therm: Database Starting line THERMO ALL not found!'
-      STOP       
-200   PRINT *, 'READ_Therm: Species ', TRIM(SPECIES), ' not found in Database!', &
-               '  Search for exact species name in the file mfix/model/thermochemical/', TRIM(THERM)
-      STOP       
 300   PRINT *, 'READ_Therm: Error reading coefficients for Species ', TRIM(LINE_STRING(1:18))
-      STOP       
-500   PRINT *, 'READ_Therm: Cannot Open file ', TRIM(FILENAME), '!'
-      PRINT *, 'Check path or copy mfix/model/thermochemical/', TRIM(THERM), ' into run directory'
       STOP       
      
       END SUBROUTINE READ_Therm 

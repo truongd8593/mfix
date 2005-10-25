@@ -66,9 +66,17 @@ fi
 
 # get user input
 echo
-echo "     CHARACTER(len=132) :: MFIX_PATH = '$mfix'" > mfix_directory_path.inc
 echo "MFIX directory is $mfix"
 echo
+
+# write mfix/model path into the file mfix_directory_path.inc, if it already does not exist
+if grep -qs "     CHARACTER(len=132) :: MFIX_PATH = '$mfix'" mfix_directory_path.inc
+then
+  echo " "
+else
+  echo "     CHARACTER(len=132) :: MFIX_PATH = '$mfix'" > mfix_directory_path.inc
+fi
+
 
 echo -n "Do you need SMP version? (y/n) [no] "
 read smp_version

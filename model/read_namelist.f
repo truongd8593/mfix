@@ -201,6 +201,9 @@
          index(LINE_STRING,'Species_Name') == 0       &
 	 ) &
 	   CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN) 
+      IF(LINE_STRING(1:11) == 'THERMO DATA')  GOTO 500  !All subsequent lines are thermochemical data
+      
+      
       CALL REPLACE_TAB (LINE_STRING, LINE_LEN) 
 !     
 !     
