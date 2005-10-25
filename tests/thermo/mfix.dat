@@ -1,5 +1,6 @@
-# This is not a full run; Certain values are printed out from rrates to test the reading
+# This is not a real run; Certain values are printed out from rrates to test the reading
 # of thermo properties and heat of reaction calculation; then the code is made to exit.
+# Data are read from this file as well as from mfix/model/thermochemical/BURCAT.THR
 
   RUN_NAME = 'Thermo test'
   DESCRIPTION = 'Test the reading of thermochemical database.'
@@ -118,11 +119,22 @@
     RESID_STRING = 'P0' 'V0' 'T0' 'T1' 'X001'
 
 
+THERMO DATA
 
+The following are coal pseudo species specifications.  Replace these
+with appropriate coal properties.  Also define the Hf298 values (the fifteenth
+coefficient.).  The readme file describes the data format.
+Fixed Carbon               WARNING!       0.S   200.000  6000.000  B  12.00000 1
+-7.94079328E-01 8.09779756E-03-6.56398654E-06 1.84781958E-09 0.00000000E+00    2
+ 0.00000000E+00 0.00000000E+00-7.94079328E-01 8.09779756E-03-6.56398654E-06    3
+ 1.84781958E-09 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    4
 
-
-
-
-
-
-
+Volatile Matter            WARNING!       0.S   200.000  6000.000  B  56.00000 1
+ 4.91181845E+00 2.28260066E-02 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+ 0.00000000E+00 0.00000000E+00 4.91181845E+00 2.28260066E-02 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    4
+ 
+Coal Ash                   WARNING!       0.S   200.000  6000.000  B 120.00000 1
+ 8.70769880E+00 8.45407650E-03 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+ 0.00000000E+00 0.00000000E+00 8.70769880E+00 8.45407650E-03 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    4

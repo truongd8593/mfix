@@ -239,7 +239,8 @@
             HOR_G(IJK) = zero
 	    dHg = zero
 	    Nsp = 0
-	    write(*,'(A,TR10, A, TR10, A, TR18, A, TR12, A)') &
+	    OPEN(6,FILE='output.dat')
+	    write(6,'(A,TR10, A, TR10, A, TR18, A, TR12, A)') &
 	             'Phase', 'Species', 'Name', 'MW', 'h_formation (cal/mol)'
             DO N = 1, NMAX(0)
 	      rxn =  (R_gp(IJK, N) - RoX_gc(IJK, N) * X_g(IJK, N)) &
@@ -250,7 +251,7 @@
 			     Tcom_g(N), Ahigh_g(1,N), Alow_g(1,N)) -  &
 			      IC_PGrefoR(N)) )* GAS_CONST_cal / MW_g(N)
              Nsp = Nsp+1
-	     write(*,'(A,TR10, I4, TR10, A, G12.5, TR12, G12.5)') &
+	     write(6,'(A,TR10, I4, TR10, A, G12.5, TR12, G12.5)') &
 	              '   0',     N, Species_name(nsp), MW_g(N),  HfrefoR_g(N)  
 	                   
             END DO 
@@ -267,14 +268,15 @@
 			      IC_PsrefoR(M,N)) )* GAS_CONST_cal / MW_s(M,N)
 	                   
                 Nsp = Nsp+1
-	        write(*,'(I4,TR10, I4, TR10, A, G12.5, TR12, G12.5)') &
+	        write(6,'(I4,TR10, I4, TR10, A, G12.5, TR12, G12.5)') &
 	              M,     N, Species_name(nsp), MW_s(M,N), HfrefoR_s(M, N)  
               END DO 
               IF (UNITS == 'SI') HOR_s(IJK, M) = 4183.925D0*HOR_s(IJK, M)    !in J/kg K
             END DO 
 	    if(i_of(ijk) == 2 .and. j_of(ijk) == 2) then
-	       print *, '% Difference in Heat of rxn',&
+	       write(6,'(/A,G12.5)')'% Difference in Heat of rxn',&
 	         100*(dHg - (-191816.0790735898) * RXNA)/(-191816.0790735898 * RXNA) ! should be near zero
+		 CLOSE(6)
 	       call mfix_exit(myPE)
 	    endif
 !
