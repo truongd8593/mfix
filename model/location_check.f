@@ -78,8 +78,8 @@
       CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
 !
 !
- 1000 FORMAT(1X,'IC, BC, or IS error for : ',A,/,1X,'IC/BC/IS    No  = ',I6,/,&
-         1X,'Cell specified  = ',I6,/,1X,'Cell calculated = ',I6) 
+ 1000 FORMAT(1X,'IC, BC, or IS error for : ',A,/,1X,'IC/BC/IS    &
+         No  = ',I6,/, 1X,'Cell specified  = ',I6,/,1X,'Cell calculated = ',I6) 
 !
       RETURN  
       END SUBROUTINE LOCATION_CHECK 

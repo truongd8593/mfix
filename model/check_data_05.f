@@ -193,8 +193,8 @@
  1200 FORMAT(1X,/,1X,'MW_AVG in mfix.dat = ',G12.5) 
  1300 FORMAT(1X,/,1X,'RO_g0   in mfix.dat = ',G12.5) 
  1400 FORMAT(/1X,70('*')//' From: CHECK_DATA_05',/&
-         ' Message: Since RO_g0 is specified MW_AVG will be ignored',/,&
-         1X,70('*')/) 
+         ' Message: Since RO_g0 is specified MW_AVG will be ignored',/, 1X&
+         ,70('*')/) 
  1410 FORMAT(/1X,70('*')//' From: CHECK_DATA_05',/&
          ' Message: Since gas phase rxns are specified MW_AVG',&
          ' will be ignored',/1X,70('*')/) 

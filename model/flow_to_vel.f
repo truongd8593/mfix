@@ -475,8 +475,8 @@
          ' Value computed from mass flow  = ',G14.7,/,&
          ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/) 
  1250 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
-         ' Non-zero vol. or mass flow specified with BC_ROP_s',I1,' = 0.',/1X,&
-         70('*')/) 
+         ' Non-zero vol. or mass flow specified with BC_ROP_s',&
+         I1,' = 0.',/1X,70('*')/) 
  1260 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' BC_ROP_s',I1,' not specified',/1X,70('*')/) 
  1300 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&

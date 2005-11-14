@@ -526,8 +526,8 @@
  1110 FORMAT(7X,'Run name(RUN_NAME): ',A60) 
  1120 FORMAT(7X,'Brief description of the run (DESCRIPTION) :',/9X,A60) 
  1130 FORMAT(7X,'Units (UNITS) : ',A16) 
- 1135 FORMAT(7X,'Start-time (TIME) = ',G12.5,/7X,'Stop_time (TSTOP) = ',G12.5,/&
-         7X,'Time step (DT) = ',G12.5,/7X,'Max time step (DT_MAX) = ',G12.5,/7X&
+ 1135 FORMAT(7X,'Start-time (TIME) = ',G12.5,/7X,'Stop_time (TSTOP) = ',G12.5,/7X&
+         ,'Time step (DT) = ',G12.5,/7X,'Max time step (DT_MAX) = ',G12.5,/7X&
          ,'Min time step (DT_MIN) = ',G12.5,/7X,&
          'Time step adjustment factor (DT_FAC) = ',G12.5) 
  1136 FORMAT(7X,'* Steady state simulation.') 
@@ -683,8 +683,8 @@
  1650 FORMAT(9X,'X-component of gas velocity (BC_U_g) = ',G12.5) 
  1651 FORMAT(9X,'Y-component of gas velocity (BC_V_g) = ',G12.5) 
  1652 FORMAT(9X,'Z-component of gas velocity (BC_W_g) = ',G12.5) 
- 1655 FORMAT(9X,'Initial interval when jet vel= BC_Jet_g0 (BC_DT_0) = ',G12.5,/&
-         9X,'Initial jet velocity (BC_Jet_g0) = ',G12.5,/9X,&
+ 1655 FORMAT(9X,'Initial interval when jet vel= BC_Jet_g0 (BC_DT_0) = ',G12.5,/9X,&
+         'Initial jet velocity (BC_Jet_g0) = ',G12.5,/9X,&
          'Interval when jet vel= BC_Jet_gl (BC_DT_l) = ',G12.5,/9X,&
          'Low value of jet velocity (BC_Jet_gl) = ',G12.5,/9X,&
          'Interval when jet vel = BC_Jet_gh (BC_DT_h) = ',G12.5,/9X,&

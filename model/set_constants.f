@@ -109,6 +109,6 @@
       ENDIF 
 !
       RETURN  
- 1000 FORMAT(/70('*')//'From: SET_CONSTANTS'/'Message: Unknown UNITS: ',1A16,/&
-         70('*')/) 
+ 1000 FORMAT(/70('*')//'From: SET_CONSTANTS'/'Message: Unknown UNITS: ',1A16,/70&
+         ('*')/) 
       END SUBROUTINE SET_CONSTANTS 

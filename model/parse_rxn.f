@@ -309,8 +309,8 @@
  1050 FORMAT(/1X,70('*')//' From: PARSE_RXN',/&
          ' Message: No reaction or rate label found: ',/9X,A,/1X,70('*')/) 
 !
- 1051 FORMAT(/1X,70('*')//' From: PARSE_RXN',/' Error: Undefined Species: ',A,/&
-         9X,'in: ',A,/1X,70('*')/) 
+ 1051 FORMAT(/1X,70('*')//' From: PARSE_RXN',/' Error: Undefined Species: ',A,/9X,&
+         'in: ',A,/1X,70('*')/) 
 !
  1052 FORMAT(/1X,70('*')//' From: PARSE_RXN',/&
          ' Error: Error reading coefficient: ',A,/9X,'in: ',A,/1X,70('*')/) 
