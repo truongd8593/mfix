@@ -4,7 +4,7 @@
 
 !  specify reaction through user-defined subroutine rrates.f
 
-  RUN_NAME = 'PFRb'
+  RUN_NAME = 'PFR'
   DESCRIPTION = 'Plug-flow reactor'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
@@ -48,15 +48,7 @@
 !
 ! Solids-phase Section
 !
-  RO_s         = 5.1
-  D_p0         = 1.0 
-  CLOSE_PACKED = .TRUE.
-
-  MU_s0 = 0.0
-
-  e       = 0.8
-  Phi     = 0.0
-  EP_star = 0.5             
+  MMAX = 0
 !
 ! Initial Conditions Section
 !
@@ -130,3 +122,22 @@
 !  C =  0.0728843   1.0  !first order
   C =  5001.09     2.0  !second order
 
+THERMO DATA
+
+The following are pseudo thermochemical data for species A, R, and Inert.
+The readme file describes the thermochemical data format.
+A                          WARNING!       0.G   200.000  6000.000  B  27.00000 1
+ 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+ 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    3
+ 1.84781958E-09 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    4
+
+R                          WARNING!       0.G   200.000  6000.000  B   9.00000 1
+ 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+ 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    4
+ 
+Inert                      WARNING!       0.G   200.000  6000.000  B  27.00000 1
+ 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+ 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    4
+ 
