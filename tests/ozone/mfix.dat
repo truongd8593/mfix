@@ -35,11 +35,8 @@
 # Gas-phase Section
 #
   SPECIES_NAME = 'O3'  'O2'  'N2'
-  MW_g         =  48.   32.  28.0
-
   NMAX(0)= 3
   MU_g0 = 1.8E-4
-  MW_avg = 29.
 #
 # Solids-phase Section
 #
@@ -49,6 +46,8 @@
   e       = 0.8
   Phi     = 30.0
   EP_star = 0.48
+  !The solids species, which is not needed, but included to avoid error message 
+  SPECIES_NAME(4) = 'Al2O3'  
 #
 # Initial Conditions Section
 #
