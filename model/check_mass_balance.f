@@ -174,7 +174,8 @@
                 K1 = BC_K_B(L) 
                 K2 = BC_K_T(L) 
 !                call Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_g, V_g, W_g, ROP_g, X_g(1, N), fin, fout, IER) 
-                call Calc_mass_flux_spHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_gE, Flux_gN, Flux_gT, X_g(1, N), DISCRETIZE(7), fin, fout, IER) 
+                call Calc_mass_flux_spHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_gE, &
+                Flux_gN, Flux_gT, X_g(1, N), DISCRETIZE(7), fin, fout, IER) 
 	        flux_out_X_g(L, N) = flux_out_X_g(L, N) + fout  * dt_prev
                 flux_in_X_g(L, N) = flux_in_X_g(L, N) + fin * dt_prev
               ENDIF 
