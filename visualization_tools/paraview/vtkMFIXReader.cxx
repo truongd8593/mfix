@@ -16,7 +16,6 @@
 // Technology Laboratory who developed this class.
 // Please address all comments to Phil Nicoletti (philip.nicoletti@pp.netl.doe.gov)
 // or Brian Dotson (brian.dotson@netl.doe.gov)
-//#define DEBUG 1
 
 #include "vtkMFIXReader.h"
 
@@ -124,10 +123,6 @@ vtkMFIXReader::vtkMFIXReader()
 vtkMFIXReader::~vtkMFIXReader()
 {
 
-#ifdef DEBUG
-	cout << " Destructor " << endl;
-#endif
-
   if (this->FileName)
     {
     delete [] this->FileName;
@@ -192,61 +187,6 @@ int vtkMFIXReader::RequestData(
   vtkDebugMacro( << "Reading MFIX file");
   
   this->MakeMesh(output);
-  
-#ifdef DEBUG
-  cout << "Done with Request Data " << endl;
-	
-	cout << "Number of Cells = " << output->GetNumberOfCells() << endl;
-	cout << "Number of Points = " << output->GetNumberOfPoints() << endl;
-	for (int j=0; j<=variable_names->GetMaxId(); j++){
-		cout << "Array " << j << " Name = " << output->GetCellData()->GetArrayName(j) << ", Range = " << output->GetCellData()->GetArray(j)->GetMaxId() << endl;
-	}
-	
-	vtkIdList *pts = vtkIdList::New();
-	//for(int i=0;i<output->GetNumberOfCells();i++){
-	//	output->GetCellPoints(i, pts);
-	//	cout << "Cell " << i << " = " ;
-	//	cout << ", 0 = " << pts->GetId(0);
-	//	cout << ", 1 = " << pts->GetId(1);
-	//	cout << ", 2 = " << pts->GetId(2);
-	//	cout << ", 3 = " << pts->GetId(3);
-	//	cout << ", 4 = " << pts->GetId(4);
-	//	cout << ", 5 = " << pts->GetId(5);
-	//	cout << ", 6 = " << pts->GetId(6);
-	//	cout << ", 7 = " << pts->GetId(7);
-	//	cout << endl;
-	//}
-	for(int i=0;i<output->GetNumberOfCells();i++){
-		output->GetCellPoints(i, pts);
-		
-		if(pts->GetId(0) >= output->GetNumberOfPoints()) {
-			cout << "Point out of bounds " << i << " = " << pts->GetId(1) << endl;
-		}
-		if(pts->GetId(1) >= output->GetNumberOfPoints()) {
-			cout << "Point out of bounds " << i << " = " << pts->GetId(1) << endl;
-		}
-		if(pts->GetId(2) >= output->GetNumberOfPoints()) {
-			cout << "Point out of bounds " << i << " = " << pts->GetId(2) << endl;
-		}
-		if(pts->GetId(3) >= output->GetNumberOfPoints()) {
-			cout << "Point out of bounds " << i << " = " << pts->GetId(3) << endl;
-		}
-		if(pts->GetId(4) >= output->GetNumberOfPoints()) {
-			cout << "Point out of bounds " << i << " = " << pts->GetId(4) << endl;
-		}
-		if(pts->GetId(5) >= output->GetNumberOfPoints()) {
-			cout << "Point out of bounds " << i << " = " << pts->GetId(5) << endl;
-		}
-		if(pts->GetId(6) >= output->GetNumberOfPoints()) {
-			cout << "Point out of bounds " << i << " = " << pts->GetId(6) << endl;
-		}
-		if(pts->GetId(7) >= output->GetNumberOfPoints()) {
-			cout << "Point out of bounds " << i << " = " << pts->GetId(7) << endl;
-		}
-	}
-		
-	cout << " End of point check " << endl;
-#endif
 
   return 1;
 }
@@ -284,9 +224,6 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 			for (int k=0; k<= kmax2; k++){
 				for (int j=0; j<= jmax2; j++){
 					for (int i=0; i<= imax2; i++){
-#ifdef DEBUG
-						cout << "px = " << px <<  "py = " << py <<  "pz = " << pz << endl;				
-#endif		
 						points->InsertPoint(cnt, px, py, pz );
 						cnt++;
 						if( i == imax2 ) {
@@ -323,15 +260,6 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 			for (int k=0; k<= kmax2; k++){
 				for (int j=0; j<= jmax2; j++){
 					for (int i=0; i<= imax2; i++){
-#ifdef DEBUG
-				//		cout << "rx = " << rx <<  "ry = " << ry <<  "rz = " << rz << endl;				
-				//		cout << " cnt = " << cnt;
-				//		cout << ", rx = " << rx;	
-				//		cout << ", ry = " << ry;	
-				//		cout << ", rz = " << rz;	
-				//		cout << endl;
-#endif						
-						
 						points->InsertPoint(cnt, rx, ry, rz );
 						cnt++;
 						if( i == imax2 ) {
@@ -374,10 +302,6 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 		for (int k=0; k< kmax2; k++){
 			for (int j=0; j< jmax2; j++){
 				for (int i=0; i< imax2; i++){
-#ifdef DEBUG					
-				//	cout << "Flag " << count << " = " << FLAG->GetValue(count) << endl;
-#endif
-					
 					if ( FLAG->GetValue(count) < 10 ) {
 						if ( !strcmp(coordinates,"CYLINDRICAL" ) && (kmax2 != 1) && ( i==0)) {
 							aWedge->GetPointIds()->SetId( 0, p0-1);
@@ -386,16 +310,6 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 							aWedge->GetPointIds()->SetId( 3, p0+imax2);
 							aWedge->GetPointIds()->SetId( 4, p0+2+imax2+((imax2+1)*(jmax2+1)));
 							aWedge->GetPointIds()->SetId( 5, p0+2+imax2);
-							
-#ifdef DEBUG					
-				//			cout << " 0 = " << p0-1;
-				//			cout << " 1 = " << p0+1+((imax2+1)*(jmax2+1));
-				//			cout << " 2 = " << p0+1;
-				//			cout << " 3 = " << p0+imax2;
-				//			cout << " 4 = " << p0+2+imax2+((imax2+1)*(jmax2+1));
-				//			cout << " 5 = " << p0+2+imax2 << endl;
-#endif
-							
 							mesh->InsertNextCell(aHexahedron->GetCellType(), aWedge->GetPointIds());
 						} else {
 							aHexahedron->GetPointIds()->SetId( 0, p0);
@@ -406,19 +320,6 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 							aHexahedron->GetPointIds()->SetId( 5, p0+2+imax2);
 							aHexahedron->GetPointIds()->SetId( 6, p0+2+imax2+((imax2+1)*(jmax2+1)));
 							aHexahedron->GetPointIds()->SetId( 7, p0+1+imax2+((imax2+1)*(jmax2+1)));
-							
-#ifdef DEBUG					
-				//			cout << " 0 = " << p0;
-				//			cout << ", 1 = " << p0+1;
-				//			cout << ", 2 = " << p0+1+((imax2+1)*(jmax2+1));
-				//			cout << ", 3 = " << p0+((imax2+1)*(jmax2+1));
-				//			cout << ", 4 = " << p0+1+imax2;
-				//			cout << ", 5 = " << p0+2+imax2;
-				//			cout << ", 6 = " << p0+2+imax2+((imax2+1)*(jmax2+1));
-				//			cout << ", 7 = " << p0+1+imax2+((imax2+1)*(jmax2+1));
-				//			cout << endl;
-#endif
-							
 							mesh->InsertNextCell(aHexahedron->GetCellType(), aHexahedron->GetPointIds());
 						}
 					}
@@ -432,9 +333,6 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 		
  		cell_data_array = new vtkFloatArray * [variable_names->GetMaxId()+2];
 		for (int j=0; j<=variable_names->GetMaxId(); j++){
-#ifdef DEBUG		
-			cout << " Variable Name " << j << " = " << variable_names->GetValue(j) << endl;
-#endif
 			cell_data_array[ j ] = vtkFloatArray::New();
 			cell_data_array[ j ]->SetName(variable_names->GetValue(j));
 			cell_data_array[ j ]->SetNumberOfComponents(variable_components->GetValue(j));
@@ -449,9 +347,6 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 	
 	output->DeepCopy(mesh);  // If mesh has already been made copy it to output
 
-//	for (int j=0; j<=variable_names->GetMaxId(); j++){
-//		cout << "components " << j << " = " << variable_components->GetValue(j) << ", nc = " << cell_data_array[j]->GetNumberOfComponents() << endl;
-//	}		
 	int first = 0;
 	for (int j=0; j<=variable_names->GetMaxId(); j++){
 		
@@ -477,10 +372,6 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 			first = 1;
 		}
 	}
-#ifdef DEBUG	
-	cout << "Done with Make Mesh" << endl;
-#endif
-
 }
 
 
@@ -505,89 +396,12 @@ int vtkMFIXReader::RequestInformation(
 	SetProjectName(this->FileName);
 	ReadRes0();
 	
-#ifdef DEBUG	
-	cout << " Done with ReadRes0 " << endl;
-#endif
-	
 	CreateVariableNames();
-#ifdef DEBUG	
-	cout << " Version Number = " << this->version_number << endl;
-	cout << endl;
-	cout << " Version String = " << this->version << endl;
-	cout << endl;
-	cout << " IMAX2 = " << this->imax2 << endl;
-	cout << endl;
-	cout << " JMAX2 = " << this->jmax2 << endl;
-	cout << endl;
-	cout << " KMAX2 = " << this->kmax2 << endl;
-	cout << endl;
-	cout << " IJKMAX2 = " << this->ijkmax2 << endl;
-	cout << endl;
-	cout << " Coordinate System = " << this->coordinates << endl;
-	cout << endl;
-	cout << " NScalar = " << this->NScalar << endl;
-	cout << endl;
-	cout << " NRR = " << this->nRR << endl;
-	cout << endl;
-	cout << " bKepsilon = " << this->bKepsilon << endl;
-	cout << endl;
-	cout << " Number of Variable Arrays = " << this->variable_names->GetMaxId()+1 << endl;
-	cout << endl;
-	for (int i=0; i<=this->variable_names->GetMaxId(); ++i)
-	{
-		cout << " Variable " << i << " = " << this->variable_names->GetValue(i) << endl;
-	}
-	cout << endl;
-#endif		
 	GetTimeSteps();
-
-#ifdef DEBUG	
-	for (int i=0; i<=this->variable_names->GetMaxId(); ++i){
-		cout << "Variable " << i << ", Timesteps = " << var_timesteps->GetValue(i) << endl;
-	}
-	cout << endl;
-#endif	
 	CalculateMaxTimeStep();
-	
-#ifdef DEBUG	
-	cout << " Max Timestep = " << this->max_timestep << endl;
-	cout << endl;
-#endif	
-	
 	MakeTimeStepTable(variable_names->GetMaxId()+1);
-	
-#ifdef DEBUG	
-	for(int i=0; i<=this->variable_names->GetMaxId(); ++i){
-		for(int j=0; j<this->max_timestep; j++) {
-			cout << "var = " << i << ", ts = " << j << ", ts = " << var_timestep_table->GetComponent(j, i) << endl;
-		}
-	}
-#endif	
-	
 	GetNumberOfVariablesInSPXFiles();
-
-	
-#ifdef DEBUG	
-  	for(int j=1; j<nspx_use; j++) {
-		cout << "spx " << j << ", nvar = " << spx_to_nvar_table->GetValue(j) << endl;
-	}
-	
-	for(int i=0;i<=variable_names->GetMaxId();i++){
-		cout << "var " << i << ", var to skip = " << var_to_skip_table->GetValue(i) << endl;
-	}
-#endif	
-		
 	MakeSPXTimeStepIndexTable(variable_names->GetMaxId()+1);
-	
-#ifdef DEBUG	
-	for(int i=0; i<=variable_names->GetMaxId(); i++){
-		for (int j=0; j<this->max_timestep; j++){
-			int ind = (i*this->max_timestep) + j;
-			cout << "nvar = " << i << ", ts = " << j << ", index = " << spx_timestep_index_table[ind] << endl;
-		}
-	}
-#endif	
-	
 	for (int j=0; j<=variable_names->GetMaxId(); j++){
 		this->CellDataArraySelection->AddArray(variable_names->GetValue(j));
 	}
@@ -598,16 +412,7 @@ int vtkMFIXReader::RequestInformation(
 	this->NumberOfTimeSteps = this->max_timestep;
 	this->TimeStepRange[0] = 0;  
 	this->TimeStepRange[1] = this->NumberOfTimeSteps-1;
-	
 	this->RequestInformationFlag = 1;
-
-#ifdef DEBUG	
-	cout << "Number of Cell Fields = " << this->NumberOfCellFields << endl;
-	for (int j=0; j<=variable_names->GetMaxId(); j++){
-		cout << "Array " << j << ", Status = " << this->CellDataArraySelection->GetArraySetting(j) << endl;
-	}
-#endif
-	
 	
   }
   
@@ -860,11 +665,6 @@ void vtkMFIXReader::ReadRes0()
    
    int DIMENSION_USR = 5;
 
-#ifdef DEBUG   
-   cout << "Restart File = " << this->FileName << endl;
-   cout << "1" << endl;
-#endif	
-   
    ifstream in(this->FileName,ios::binary);
 
    if (!in)
@@ -879,10 +679,6 @@ void vtkMFIXReader::ReadRes0()
    memset(buffer,0,513);
    in.read(buffer,512);
 
-#ifdef DEBUG   
-   cout << "2" << endl;
-#endif	
-   
    RestartVersionNumber(buffer);
    
 
@@ -892,10 +688,6 @@ void vtkMFIXReader::ReadRes0()
 
    // imin1 etc : record 4
    memset(buffer,0,513);
-#ifdef DEBUG   
-   cout << "3" << endl;
-   cout << " version = " << version << endl;
-#endif	
    
    if (version == "RES = 01.00")
    {
@@ -987,13 +779,6 @@ void vtkMFIXReader::ReadRes0()
       SkipBytes(in,364);
    }
 
-#ifdef DEBUG 
-	cout << "DIM_IC = " << DIM_IC << endl;
-	cout << "DIM_BC = " << DIM_BC << endl;
-	cout << "DIM_C = " << DIM_C << endl;
-	cout << "DIM_IS = " << DIM_IS << endl;
-#endif	   
-
    const int nr = 512/sizeof(float);
 
    if ( ijkmax2%nr == 0)
@@ -1039,23 +824,6 @@ void vtkMFIXReader::ReadRes0()
    IN_BIN_512(in, DX,imax2);
    IN_BIN_512(in, DY,jmax2);
    IN_BIN_512(in, DZ,kmax2);
-#ifdef DEBUG
-	cout << "imax2 = " << imax2 << endl;
-	cout << "jmax2 = " << jmax2 << endl;
-	cout << "kmax2 = " << kmax2 << endl;
-   
-	for(int i=0;i<imax2;i++){
-		cout << " DX["<< i << "]= "<< DX->GetValue(i) << endl;
-	}
-	
-	for(int i=0;i<jmax2;i++){
-		cout << " DY["<< i << "]= "<< DY->GetValue(i) << endl;
-	}
-	
-	for(int i=0;i<kmax2;i++){
-		cout << " DZ["<< i << "]= "<< DZ->GetValue(i) << endl;
-	}
-#endif
 	
    // run_name etc.
    
@@ -1088,15 +856,6 @@ void vtkMFIXReader::ReadRes0()
    }
    strcpy(coordinates,tmp);
    
-#ifdef DEBUG
-	cout << " coordinates = " << coordinates << endl;
-#endif
-#ifdef DEBUG
-	cout << " MMAX = " << MMAX << endl;
-	cout << " NMAX[0] = " << NMAX->GetValue(0) << endl;
-#endif
-
-
    if (version_number >= 1.04)
    {
       tmpD->Resize(NMAX->GetValue(0));
@@ -1108,10 +867,6 @@ void vtkMFIXReader::ReadRes0()
    // read in the "DIM_IC" variables (and ignore ... not used by ani_mfix)
    tmpI->Resize(DIM_IC);
    tmpD->Resize(DIM_IC);
-#ifdef DEBUG
-	cout << " 10  " << endl;
-	cout << " DIM_IC = " << DIM_IC << endl;
-#endif
 
    IN_BIN_512(in, tmpD,DIM_IC);  // ic_x_w
    IN_BIN_512(in, tmpD,DIM_IC);  // ic_x_e
@@ -1137,9 +892,6 @@ void vtkMFIXReader::ReadRes0()
       IN_BIN_512(in,tmpD,DIM_IC);  // ic_t_s(1,2) or ic_tmp 
    }
 
-#ifdef DEBUG
-	cout << " 11  " << endl;
-#endif
    if (version_number >= 1.04)
    {
       for (int i=0; i<NMAX->GetValue(0); ++i) IN_BIN_512(in,tmpD,DIM_IC); // ic_x_g
@@ -1172,10 +924,6 @@ void vtkMFIXReader::ReadRes0()
    tmpI->Resize(DIM_BC);
    tmpD->Resize(DIM_BC);
 
-#ifdef DEBUG
-	cout << " 12  " << endl;
-#endif
-
    IN_BIN_512(in,tmpD,DIM_BC); // bc_x_w
    IN_BIN_512(in,tmpD,DIM_BC); // bc_x_e
    IN_BIN_512(in,tmpD,DIM_BC); // bc y s
@@ -1202,9 +950,6 @@ void vtkMFIXReader::ReadRes0()
    {
       for (int i=0; i<NMAX->GetValue(0); ++i) IN_BIN_512(in,tmpD,DIM_BC); // bc_x_g
    }
-#ifdef DEBUG
-	cout << " 13  " << endl;
-#endif
 
    IN_BIN_512(in,tmpD,DIM_BC); // bc u g
    IN_BIN_512(in,tmpD,DIM_BC); // bc v g
@@ -1237,10 +982,6 @@ void vtkMFIXReader::ReadRes0()
       IN_BIN_512(in,tmpD,DIM_BC); // bc massflow s
    }
 
-#ifdef DEBUG
-	cout << " 14  " << endl;
-	cout << "DIM_BC = " << DIM_BC << endl;
-#endif
 
    if (version == "RES = 01.00")
       l = 10;
@@ -1250,15 +991,7 @@ void vtkMFIXReader::ReadRes0()
    for (lc=0; lc<l; ++lc) in.read(buffer,512); // BC TYPE
 
    FLAG->Resize(ijkmax2);
-#ifdef DEBUG
-	cout << " Flag Index Position = " << in.tellg() << endl;
-#endif     
    IN_BIN_512I(in, FLAG,ijkmax2);
-#ifdef DEBUG
-	for(int i=0;i<ijkmax2;i++){
-		cout << " Flag["<< i << "] = " << FLAG->GetValue(i) << endl;
-	}
-#endif     
 
    // DIM_IS varibles (not needed by ani_mfix)
    tmpI->Resize(DIM_IS);
@@ -1288,34 +1021,20 @@ void vtkMFIXReader::ReadRes0()
 
       for (lc=0; lc<DIM_IS; ++lc) in.read(buffer,512); // is_type
    }
-#ifdef DEBUG
-	cout << " 15  " << endl;
-#endif
 
    if (version_number >= 1.08) in.read(buffer,512);
    
    
-#ifdef DEBUG
-	cout << " 20  " << endl;
-#endif
    if (version_number >= 1.09) 
    {
       in.read(buffer,512);
       
-#ifdef DEBUG
-	cout << " 21  " << endl;
-	cout << " index " << in.tellg() << endl;
-#endif
       if (version_number >= 1.5)
       {
          GetInt(in,nspx_use);
          SkipBytes(in,508);
       }
       
-#ifdef DEBUG
-	cout << " 22  " << endl;
-	cout << " nspx_use " << nspx_use << endl;
-#endif
       for (lc=0; lc< nspx_use; ++lc) in.read(buffer,512); // spx_dt
       
       for (lc=0; lc<MMAX+1; ++lc) in.read(buffer,512);    // species_eq
@@ -1329,9 +1048,6 @@ void vtkMFIXReader::ReadRes0()
       IN_BIN_512(in,tmpD,DIMENSION_USR); // usr y n
       IN_BIN_512(in,tmpD,DIMENSION_USR); // usr z b
       IN_BIN_512(in,tmpD,DIMENSION_USR); // usr z t
-#ifdef DEBUG
-	cout << " 16  " << endl;
-#endif
      
       for (lc=0; lc<DIMENSION_USR; ++lc) in.read(buffer,512);    // usr_ext etc.
       
@@ -1372,9 +1088,6 @@ void vtkMFIXReader::ReadRes0()
             IN_BIN_512(in,tmpD,DIM_BC); // bc_ww_s
          }
       }
-#ifdef DEBUG
-	cout << " 17 = " << endl;
-#endif
       
       if (version_number >= 1.13) in.read(buffer,512);    // momentum_x_eq , etc.
       if (version_number >= 1.14) in.read(buffer,512);    // detect_small
@@ -1415,10 +1128,6 @@ void vtkMFIXReader::ReadRes0()
         GetInt(in,nRR);
         SkipBytes(in,508);
      }
-     
-#ifdef DEBUG
-	cout << " 18 = " << endl;
-#endif
      
      if (version_number >= 1.5999)
      {
@@ -1472,9 +1181,6 @@ void vtkMFIXReader::CreateVariableNames()
 	} 
 	
 	ifstream in(fname,ios::binary);
-#ifdef DEBUG
-        cout << "CVN - fname = " << fname << ", i = " << i << endl;
-#endif
         if (in) // file exists
         {
 	    this->SpxFileExists->InsertValue(i, 1);
@@ -1775,9 +1481,6 @@ void vtkMFIXReader::CreateVariableNames()
 
 
         } else {
-#ifdef DEBUG
-		cout << "File Didn't exist " << i+1 << endl;
-#endif
 	        this->SpxFileExists->InsertValue(i, 0);
 	}
 	
@@ -1792,10 +1495,6 @@ void vtkMFIXReader::GetTimeSteps()
 	char fname[256];
  	int cnt = 0;
 	
-#ifdef DEBUG
-	cout << " nspx_use = " << nspx_use << endl;
-#endif	
-   
 	for (int i=0; i<nspx_use; ++i)
 	{
 		
@@ -1954,19 +1653,9 @@ void vtkMFIXReader::GetVariableAtTimestep(int vari , int tstep, vtkFloatArray *v
 	strcat(fname, ".SPB");
     } 
 
-#ifdef DEBUG        
-    cout << "GVATS - Variable Name = " << vname << ", spx = " << spx << ", fname = " << fname << endl;
-#endif
-
-    
     int ind = (vari*max_timestep) + tstep;
     
     int nBytesSkip = spx_timestep_index_table[ind];
-
-#ifdef DEBUG
-    cout << " ind = " << ind << endl;
-    cout << " nBytesSkip = " << nBytesSkip << endl;
-#endif
 
     ifstream in(fname,ios::binary);
 
