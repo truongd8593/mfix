@@ -440,9 +440,9 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 			cell_data_array[ j ]->SetNumberOfComponents(variable_components->GetValue(j));
 		}
 		
-		min = new float [variable_names->GetMaxId()];
-		max = new float [variable_names->GetMaxId()];
-		veclen = new int [variable_names->GetMaxId()];
+		min = new float [variable_names->GetMaxId()+1];
+		max = new float [variable_names->GetMaxId()+1];
+		veclen = new int [variable_names->GetMaxId()+1];
 
 		this->MakeMeshFlag = 1;
 	}
