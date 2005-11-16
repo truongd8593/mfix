@@ -9,7 +9,7 @@
 
 !  reaction rate expression entered through data file
 
-  RUN_NAME = 'PFRa'
+  RUN_NAME = 'PFR'
   DESCRIPTION = 'Plug-flow reactor'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
