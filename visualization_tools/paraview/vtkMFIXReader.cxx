@@ -351,7 +351,6 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 	for (int j=0; j<=variable_names->GetMaxId(); j++){
 		
 		if( this->CellDataArraySelection->GetArraySetting(j) == 1 ){
-			//cout << "components " << j << " = " << variable_components->GetValue(j) << endl;
 			if(variable_components->GetValue(j) == 1){
 				GetVariableAtTimestep( j, this->TimeStep, cell_data_array[j]);
 			} else {
@@ -1185,7 +1184,6 @@ void vtkMFIXReader::CreateVariableNames()
         {
 	    this->SpxFileExists->InsertValue(i, 1);
 	
-	    //cout << " cnt = " << cnt << ", i = " << i << endl;
             switch (i+1)
             {
 
@@ -1576,7 +1574,6 @@ void vtkMFIXReader::GetTimeSteps()
 			}
 			
 			for(int j=0; j<nvars; j++){
-				//cout << cnt << "  " << (next_rec-4)/num_rec << endl;
 				var_timesteps->InsertValue(cnt, (next_rec-4)/num_rec);
 				cnt++;
 			}
@@ -1669,7 +1666,6 @@ void vtkMFIXReader::GetVariableAtTimestep(int vari , int tstep, vtkFloatArray *v
 void vtkMFIXReader::MakeSPXTimeStepIndexTable(int nvars)
 {    
 	int spx_timestep_index_table_size = nvars * max_timestep;
-	//cout << " size = " << spx_timestep_index_table_size << endl;
 	spx_timestep_index_table = new int [spx_timestep_index_table_size];
 	
 	int timestep;
@@ -1701,7 +1697,6 @@ void vtkMFIXReader::CalculateMaxTimeStep()
 	
   this->max_timestep = 0;
   for ( int i=0; i <= variable_names->GetMaxId() ; i++ ) {
-	//cout << " Variable " << variable_names->GetValue(i) << " = " << var_timesteps->GetValue(i) << endl;
 	if(var_timesteps->GetValue(i) > this->max_timestep){
 		this->max_timestep = var_timesteps->GetValue(i);
 	}
@@ -1736,7 +1731,6 @@ void vtkMFIXReader::FillVectorVariable( int xindex, int yindex, int zindex, vtkF
 	int range = cell_data_array[xindex]->GetMaxId();
 	
 	for(int i=0;i<=range;i++){
-		//cout << "i = " << i << endl;
 		v->InsertComponent(i, 0, cell_data_array[xindex]->GetValue(i));
 		v->InsertComponent(i, 1, cell_data_array[yindex]->GetValue(i));
 		v->InsertComponent(i, 2, cell_data_array[zindex]->GetValue(i));
