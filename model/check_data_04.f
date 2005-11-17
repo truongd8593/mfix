@@ -162,14 +162,23 @@
             , 'Value of EP_star is unphysical', 1, 1) 
       ENDIF 
 !
+! Yu_Standish and Fedors_Landel correlations are used with more than one solids phase
 !
-! In turbulence modeling, ep_star must be greater than (1-eps_max). Granular flows
-! can be simulated with dry granular theory, not Simonin or Ahmadi theory (sof).
+      IF (MMAX < 2 .AND. (YU_STANDISH .OR. FEDORS_LANDEL)) &
+         CALL ERROR_ROUTINE ('check_data_04', &
+       'MMAX must be >= 2 for Yu_Standish or Fedors_Landel correlations', 1, 1)
 !
-      IF (MMAX > 0 .AND. (SIMONIN .OR. AHMADI)) THEN 
-         IF (EP_STAR <= (1.0-Eps_max)) CALL ERROR_ROUTINE ('check_data_04'&
-            , 'EP_star cannot be less than or equal to (1.0-Eps_max)', 1, 1)
-      ENDIF 
+! Fedors_Landel correlations is limited to a binary mixture of powders
+!
+      IF (MMAX > 2 .AND. FEDORS_LANDEL) &
+         CALL ERROR_ROUTINE ('check_data_04' &
+         , 'Fedors_Landel requires MMAX = 2 ', 1, 1)
+!
+! Must choose between Yu_Standish and Fedors_Landel correlations, can't use both.
+!
+      IF (YU_STANDISH .AND. FEDORS_LANDEL) &
+         CALL ERROR_ROUTINE ('check_data_04', &
+         'Cannot use both Yu_Standish and Fedors_Landel correlations', 1, 1)
 !
       RETURN  
 !

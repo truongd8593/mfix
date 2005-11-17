@@ -117,7 +117,10 @@
                  IF (D_P0(M)/=UNDEFINED)  D_P(IJK,M)=D_P0(M)
 ! add by rong 
             ENDIF 
-         END DO 
+! set ep_star_array to user input ep_star in all cells. sof--> Nov-17-05
+            EP_star_array(ijk) = ep_star
+	    IF(EP_S_MAX(M) == UNDEFINED) EP_S_MAX(M) = ONE-EP_STAR
+	 END DO 
 	 
       END DO 
       
@@ -133,9 +136,10 @@
 ! start sof modifications: 05/04-2005
 !
 ! initializing the new indexing system
+! this doesn't need to be done if no correlation is used to compute ep_star
 !
-      IF(.NOT. CALL_DQMOM) THEN
-       IF(MMAX > 1) THEN
+      IF(YU_STANDISH .OR. FEDORS_LANDEL) THEN
+	IF(.NOT. CALL_DQMOM) THEN
          DO I = 1, MMAX
            IF(D_P0(I) == UNDEFINED) RETURN
 	   DP_TMP(I) = D_P0(I)
@@ -165,8 +169,8 @@
 	   
 	   END DO
          END DO
-       ENDIF ! for MMAX >= 2
-      ENDIF ! for .not. call_dqmom
+        ENDIF ! for .not. call_dqmom
+      ENDIF ! for Yu-standish or Fedors-Landel
 !
 ! end of sof modifications: 05/04-2005
 !

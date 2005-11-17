@@ -72,9 +72,10 @@
 !	               EPS_f_min = minimum solids fraction above which
 !                                  friction kicks in
       DOUBLE PRECISION EPS_f_min
- 
+
+! not needed anymore (sof, Nov-17-2005) 
 !		       EPS_max = random close-packed solids volume fraction
-      DOUBLE PRECISION EPS_max		
+!      DOUBLE PRECISION EPS_max		
 !
 !                      Gravitational acceleration
       DOUBLE PRECISION GRAVITY, to_SI

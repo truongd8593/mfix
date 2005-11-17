@@ -227,7 +227,7 @@
                END DO
 !     end of part copied
 !     
-      P_star(IJK) = Neg_H(EP_g(IJK))
+!      P_star(IJK) = Neg_H(EP_g(IJK),EP_star_array(IJK))
 !     
 !     Frictional-flow stress tensor
 !     
@@ -345,10 +345,10 @@
 !     
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
+      INCLUDE 'ep_s2.inc'  
 
 
-      DO 200 IJK = ijkstart3, ijkend3       
+      DO 200 IJK = ijkstart3, ijkend3   
 !     
          IF ( FLUID_AT(IJK) ) THEN
 
@@ -407,7 +407,6 @@
 !     Boyle-Massoudi stress coefficient
                ALPHA_s(IJK, M) = -K_5m * EP_s2xTHETA
 	    ENDIF
-            
 
          Endif                  ! Fluid_at
  200  Continue                  ! outer IJK loop
@@ -458,6 +457,7 @@
       DOUBLE PRECISION Tau_12_st, Tau_2_c, Tau_2, Zeta_r, C_Beta
       DOUBLE PRECISION Sigma_c, Zeta_c, Omega_c, Zeta_c_2, C_mu, X_21, Nu_t
       DOUBLE PRECISION MU_2_T_Kin, Mu_2_Col, Kappa_kin, Kappa_Col
+      DOUBLE PRECISION Tmp_Ahmadi_Const
       DOUBLE PRECISION DGA, C_d, Re
 !     
 !     defining very dilute ep_g to be used with Sundar's model
@@ -665,11 +665,18 @@
                Mu_s_v(IJK) = EP_s(IJK,M)*RO_s(M)*(MU_2_T_Kin + Mu_2_Col)
                
 	    ELSE IF(AHMADI) THEN
+!
+              IF(EP_s(IJK,M) < (ONE-ep_star)) THEN
+	        Tmp_Ahmadi_Const = &
+	          ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/(ONE-ep_star))**3)
+              ELSE
+	        Tmp_Ahmadi_Const = ONE
+              ENDIF
 !     
 !     Defining Ahmadi shear and bulk viscosities. Ahmadi coefficient 0.0853 in C_mu
 !     was replaced by 0.1567 to include 3/2*sqrt(3/2) because K = 3/2 Theta_m
 !     
-               Mu_s_v(IJK) = ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/EPS_max)**3)&
+               Mu_s_v(IJK) = Tmp_Ahmadi_Const &
                *0.1045d0*(ONE/G_0(IJK,M,M)+3.2d0*EP_s(IJK,M)+12.1824d0*   &
                G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M))*D_p(IJK,M)*RO_s(M)*  &
                DSQRT(Theta_m(IJK,M))
@@ -678,8 +685,7 @@
 !     contribution. In this case col. visc. is the eps^2 contribution to Mu_s_v(IJK). This
 !     might be changed later if communications with Ahmadi reveals a diffrent appoach
 !     
-               Mu_b_v(IJK) = 5.d0/3.d0* &
-               ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/EPS_max)**3)&
+               Mu_b_v(IJK) = 5.d0/3.d0* Tmp_Ahmadi_Const                  &
                *0.1045d0*(12.1824d0*G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M)) &
                *D_p(IJK,M)*RO_s(M)* DSQRT(Theta_m(IJK,M))
                
@@ -864,12 +870,12 @@
                   ENDIF
                   
                   
-                  IF ((ONE-EP_G(IJK)) .GT. EPS_max) THEN
-                     Pc = 1d25*(((ONE-EP_G(IJK))- EPS_max)**10d0)
+                  IF ((ONE-EP_G(IJK)) .GT. (ONE-ep_star_array(ijk))) THEN
+                     Pc = 1d25*(((ONE-EP_G(IJK))- (ONE-ep_star_array(ijk)))**10d0)
                   ELSE
                      Pc = Fr*(((ONE-EP_G(IJK)) - EPS_f_min)**N_Pc)/&
-                     ((EPS_max - (ONE-EP_G(IJK)) + SMALL_NUMBER)&
-                     **D_Pc)
+                     (((ONE-ep_star_array(ijk)) - (ONE-EP_G(IJK)) +&
+		     SMALL_NUMBER)**D_Pc)
                   ENDIF
  
                   IF (trD_s_C(IJK,M) .GE. ZERO) THEN
@@ -1020,8 +1026,6 @@
 !     Function subroutines
 !     
       DOUBLE PRECISION G_0
-!
-      double precision calc_ep_star
 !     
 !     Local Variables
 !     
@@ -1377,13 +1381,7 @@
                   ENDIF
                ENDIF
             ENDIF
-            
-            if (MMAX >= 2) then
-               EP_star_array(IJK) = Calc_ep_star(ijk, ier)
-            else
-               EP_star_array(IJK) = Ep_star
-            endif
-
+!
          Endif                  ! Fluid_at
  200  Continue                  ! outer IJK loop
       

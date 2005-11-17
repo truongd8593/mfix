@@ -117,6 +117,8 @@
       SIMONIN = .FALSE.
       AHMADI = .FALSE.
       JENKINS = .FALSE.
+      YU_STANDISH = .FALSE.
+      FEDORS_LANDEL = .FALSE.
       AUTOMATIC_RESTART = .FALSE.
       AUTO_RESTART = .FALSE.
       ITER_RESTART = 1
@@ -223,7 +225,7 @@
 !      MAX_SOLID_1_PACKING=0.6
 !      MAX_SOLID_2_PACKING=0.6
 !
-      EP_S_MAX(:DIM_M) = 0.6D0
+      EP_S_MAX(:DIM_M) = UNDEFINED
 !      
 ! END GERA
 !
@@ -232,7 +234,8 @@
       BREAKAGE_EFF=0.D0
 ! end rong
       EPS_F_MIN = 0.5D0 
-      EPS_MAX = 0.65D0 
+! eps_max: not needed anymore (sof, Nov-17-2005) 
+!      EPS_MAX = 0.65D0 
       PHI_W = ZERO 
       L_SCALE0 = ZERO 
       MU_GMAX = UNDEFINED 

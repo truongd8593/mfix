@@ -40,6 +40,10 @@
   aggregation_eff=0.001
   breakage_eff=0.0001
 
+!  FEDORS_LANDEL = .TRUE.                        !compute ep_star using Fedors_landel correlation
+  YU_STANDISH = .TRUE.                          !compute ep_star using Yu_Standish correlation
+!
+
 !  C(11)=3.0
 
 !    C(10)=0.0d0

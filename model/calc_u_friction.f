@@ -1296,6 +1296,7 @@
 !              Constants in Simonin model
       DOUBLE PRECISION Sigma_c, Tau_2_c, Tau_12_st, Nu_t
       DOUBLE PRECISION Tau_2, zeta_c_2, MU_2_T_Kin, Mu_2_Col
+      DOUBLE PRECISION Tmp_Ahmadi_Const
  
 !                      Error message
       CHARACTER*80     LINE
@@ -1346,7 +1347,7 @@
       ELSE ! no change to the original code if Jenkins BC not used
  
         F_2 = (PHIP*DSQRT(3d0*TH)*Pi*RO_s(M)*EPS*G_0)&
-              /(6d0*EPS_max)
+              /(6d0*(ONE-ep_star))
 !
       ENDIF !for Jenkins
  
@@ -1408,7 +1409,13 @@
 !
       ELSE IF(AHMADI) THEN
 !
-	Mu_s = ONE/(ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS/EPS_max)**3)&
+        IF(EPS < (ONE-ep_star)) THEN
+	  Tmp_Ahmadi_Const = &
+	   ONE/(ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS/(ONE-ep_star))**3)
+        ELSE
+	  Tmp_Ahmadi_Const = ONE
+        ENDIF
+	Mu_s = Tmp_Ahmadi_Const &
 	       *0.1045D0*(ONE/G_0+3.2D0*EPS+12.1824D0*G_0*EPS*EPS)  &
 	       *Dp_avg*RO_s(M)* DSQRT(TH)
       ENDIF
@@ -1435,10 +1442,11 @@
          ENDIF
  
  
-         IF ((ONE-EPG)> EPS_max) THEN
-            Pc=  1d25*(((ONE-EPG)-EPS_max)**10d0)
+         IF (EPG < ep_star) THEN
+            Pc=  1d25*(((ONE-EPG)-(ONE-ep_star))**10d0)
          ELSE
-            Pc = Fr*(((ONE-EPG) - EPS_f_min)**N_Pc)/((EPS_max - (ONE-EPG) +&
+            Pc = Fr*(((ONE-EPG) - EPS_f_min)**N_Pc)/ &
+	      (((ONE-ep_star) - (ONE-EPG) +&
                   SMALL_NUMBER)**D_Pc)
          ENDIF
  

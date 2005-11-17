@@ -900,11 +900,11 @@
 !
       ELSE ! no change to the original code if Jenkins BC not used
       
-        HW = (Pi*DSQRT(3d0)/(4.D0*EPS_max))*(1d0-e_w*e_w)*RO_s(M)*EPS*G_0*&
-           DSQRT(TH)
+        HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star)))*(1d0-e_w*e_w)*&
+              RO_s(M)*EPS*G_0*DSQRT(TH)
  
-        CW = (Pi*DSQRT(3d0)/(6.D0*EPS_max))*PHIP*RO_s(M)*EPS*G_0*DSQRT(TH)&
-           *VSLIPSQ
+        CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star)))*PHIP*RO_s(M)*&
+              EPS*G_0*DSQRT(TH)*VSLIPSQ
         IF (BC_JJ_PS(L).EQ.2) CW=0d0
 !
       ENDIF ! for Jenkins

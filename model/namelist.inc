@@ -9,8 +9,8 @@
              GRANULAR_ENERGY,& 
 	     NScalar, Phase4Scalar, &
 	     K_Epsilon, Call_DQMOM,&
-! sof 02-01-05
-	     SIMONIN, AHMADI, JENKINS, &
+! sof 02-01-05 (modified Nov-16-05)
+	     SIMONIN, AHMADI, JENKINS, YU_STANDISH, FEDORS_LANDEL,&
              nRR, chi_scheme, &
 ! start anuj 4/20
              FRICTION, SAVAGE,&

@@ -126,7 +126,7 @@
       DOUBLE PRECISION I2_devD_g
 !
 !                      Constant in turbulent viscosity formulation
-      DOUBLE PRECISION C_MU
+      DOUBLE PRECISION C_MU, Tmp_Ahmadi_Const
 !
 !                      particle relaxation time
       DOUBLE PRECISION Tau_12_st
@@ -174,10 +174,12 @@
 	     IF(AHMADI) THEN
 	       IF(Ep_s(IJK,M) > DIL_EP_S .AND. F_GS(IJK,1) > small_number) THEN
 	         Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
-	         C_MU = C_MU*(ONE/(ONE+Tau_12_st/Tau_1(ijk)*(EP_s(IJK,M)/EPS_max)**3))
+	         Tmp_Ahmadi_Const = &
+	          ONE/(ONE+ Tau_12_st/Tau_1(ijk) * (EP_s(IJK,M)/(ONE-ep_star))**3)
 	       ELSE
-	         C_MU = C_MU
+	         Tmp_Ahmadi_Const = ONE
 	       ENDIF
+	       C_MU = C_MU*Tmp_Ahmadi_Const
 	     ENDIF
 
 ! Definition of the turbulent viscosity

@@ -61,6 +61,10 @@
 	C_f		= 0.1
 	Phi		= 30.0
 
+!  FEDORS_LANDEL = .TRUE.                        !compute ep_star using Fedors_landel correlation
+  YU_STANDISH = .TRUE.                          !compute ep_star using Yu_Standish correlation
+!
+
 ! 6. Initial conditions
                        !   Bed		!freeboard
 	IC_X_w		=  2*0.0

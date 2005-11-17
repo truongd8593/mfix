@@ -33,7 +33,8 @@
       USE fldvar
       USE physprop
       USE constant
-      USE compar       
+      USE compar  
+      USE visc_s   
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -121,7 +122,7 @@
 !
 !         Solids phase with the highest conc. that can be close-packed
 !         is marked.
-!          IF(EP_g(IJK) .LE. EP_star) THEN
+!          IF(EP_g(IJK) .LE. EP_star_array(ijk)) THEN
 !            PHASE_4_P_s(IJK) = Mcp
 !            IF(Mcp .NE. UNDEFINED_I)SW_s(Mcp) = .TRUE.
 !          ELSE

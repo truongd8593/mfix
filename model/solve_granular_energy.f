@@ -31,6 +31,7 @@
       USE toleranc 
       USE run
       USE physprop
+      USE visc_s
       USE geometry
       USE fldvar
       USE constant
@@ -134,7 +135,7 @@
          IF (SCHAEFFER) THEN
            DO IJK = ijkstart3, ijkend3
 !
-              IF (FLUID_AT(IJK) .AND. EP_g(IJK) .LT. EP_star) THEN 
+              IF (FLUID_AT(IJK) .AND. EP_g(IJK) .LT. EP_star_array(ijk)) THEN 
 !
 
                  A_M(IJK,1,M) = ZERO 

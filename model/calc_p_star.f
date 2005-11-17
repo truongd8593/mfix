@@ -39,7 +39,8 @@
       USE residual
       USE compar
 !     USE fldvar
-!     USE run
+      USE run
+      USE visc_s
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -81,10 +82,13 @@
       DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN 
 !GERA ******************
-	    if (MMAX >= 2) EP_star = calc_ep_star(ijk, ier)
+! if Yu_Standish or Fedors_Landel correlations are not used, ep_star_array will not
+! be modified (sof Nov-16-2005)
+	    if (YU_STANDISH .OR. FEDORS_LANDEL) &
+	        EP_star_array(ijk) = calc_ep_star(ijk, ier)
 !END GERA***************
-            IF (EP_G(IJK) < EP_STAR) THEN 
-               P_STAR(IJK) = NEG_H(EP_G(IJK)) 
+            IF (EP_G(IJK) < EP_star_array(ijk)) THEN 
+               P_STAR(IJK) = NEG_H(EP_G(IJK),EP_star_array(ijk))
             ELSE 
                P_STAR(IJK) = ZERO 
             ENDIF 
@@ -223,7 +227,7 @@
 !
       ENDIF !for dqmom
 !
-! compute equations 25 in Yu-Standish
+! compute equations 25 in Yu-Standish (this is also needed by Fedors_Landel)
 !      
        DO I = 1, MMAX
          SUM_LOCAL = ZERO
@@ -244,30 +248,32 @@
 	   RETURN
 	 ENDIF
        
-       END DO     
+       END DO 
+!
+       IF(YU_STANDISH) THEN  
 !
 ! compute equation 23-24 in Yu-Standish
 !
-       DO I = 1, MMAX
-         DO J = 1, MMAX
+         DO I = 1, MMAX
+           DO J = 1, MMAX
 	   
-	   IF( R_IJ(I, J) .LE. 0.741d0) THEN
+	     IF( R_IJ(I, J) .LE. 0.741d0) THEN
 
-	     IF( J .LT. I ) THEN
-	       X_IJ(I, J) = (ONE - R_IJ(I, J)*R_IJ(I, J))/(2.0d0 -  EPs_max_TMP(I))
+	       IF( J .LT. I ) THEN
+	         X_IJ(I, J) = (ONE - R_IJ(I, J)*R_IJ(I, J))/(2.0d0 -  EPs_max_TMP(I))
+	       ELSE
+	         X_IJ(I, J) = ONE - (ONE - R_IJ(I, J)*R_IJ(I, J))/(2.0d0 -  EPs_max_TMP(I))
+	       ENDIF
+
+	       P_IJ(I, J) = EPs_max_TMP(I) + EPs_max_TMP(I)* (ONE-EPs_max_TMP(I)) *  &
+	                    (ONE - 2.35d0*R_IJ(I, J) + 1.35d0*R_IJ(I, J)*R_IJ(I, J))
 	     ELSE
-	       X_IJ(I, J) = ONE - (ONE - R_IJ(I, J)*R_IJ(I, J))/(2.0d0 -  EPs_max_TMP(I))
+	   
+	       P_IJ(I, J) = EPs_max_TMP(I)
 	     ENDIF
 
-	     P_IJ(I, J) = EPs_max_TMP(I) + EPs_max_TMP(I)* (ONE-EPs_max_TMP(I)) *  &
-	                  (ONE - 2.35d0*R_IJ(I, J) + 1.35d0*R_IJ(I, J)*R_IJ(I, J))
-	   ELSE
-	   
-	     P_IJ(I, J) = EPs_max_TMP(I)
-	   ENDIF
-
-	 END DO
-       END DO
+	   END DO
+         END DO
 !
 ! Compute equation 22
 !
@@ -344,22 +350,21 @@
 ! In the case of binary mixture (Fedors-Landel empirical correlation)
 !
 !
-!       IF(MMAX == 2) THEN
+       ELSEIF(FEDORS_LANDEL) THEN
 !       
-!         IF(COMP_X_I(1) .LE. (EPs_max_TMP(1)/(EPs_max_TMP(1)+ &
-!	   (ONE - EPs_max_TMP(1))*EPs_max_TMP(2)))) THEN
-!	 
-!	   CALC_EP_star = (EPs_max_TMP(1)-EPs_max_TMP(2)+(1-sqrt(R_IJ(2, 1)))* &
-!	               (ONE - EPs_max_TMP(1)) *EPs_max_TMP(2))*(EPs_max_TMP(1) &
-!		       +(ONE-EPs_max_TMP(1))*EPs_max_TMP(2))*  &
-!			  COMP_X_I(1)/EPs_max_TMP(1) + EPs_max_TMP(2)
-!	 ELSE
-!	   CALC_EP_star = (ONE-sqrt(R_IJ(2, 1)))*(EPs_max_TMP(1)+(ONE-EPs_max_TMP(1))* &
-!	               EPs_max_TMP(2))*(ONE - COMP_X_I(1)) + EPs_max_TMP(1)
-!         ENDIF
-!         CALC_EP_star = ONE - CALC_EP_star ! this is gas volume fraction
-!       ENDIF ! for N == 2
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         IF(COMP_X_I(1) .LE. (EPs_max_TMP(1)/(EPs_max_TMP(1)+ &
+	   (ONE - EPs_max_TMP(1))*EPs_max_TMP(2)))) THEN
+	 
+	   CALC_EP_star = (EPs_max_TMP(1)-EPs_max_TMP(2)+(1-sqrt(R_IJ(2, 1)))* &
+	               (ONE - EPs_max_TMP(1)) *EPs_max_TMP(2))*(EPs_max_TMP(1) &
+		       +(ONE-EPs_max_TMP(1))*EPs_max_TMP(2))*  &
+			  COMP_X_I(1)/EPs_max_TMP(1) + EPs_max_TMP(2)
+	 ELSE
+	   CALC_EP_star = (ONE-sqrt(R_IJ(2, 1)))*(EPs_max_TMP(1)+(ONE-EPs_max_TMP(1))* &
+	               EPs_max_TMP(2))*(ONE - COMP_X_I(1)) + EPs_max_TMP(1)
+         ENDIF
+         CALC_EP_star = ONE - CALC_EP_star ! this is gas volume fraction at packing
+       ENDIF ! for Yu_Standish and Fedors_Landel correlations
 !	
       RETURN  
       END function CALC_ep_star

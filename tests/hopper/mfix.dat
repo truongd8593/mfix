@@ -31,6 +31,10 @@
   DY                    = 37*2 17*1 7*2
   CLOSE_PACKED 	        = .TRUE.  .TRUE.
 
+!  FEDORS_LANDEL = .TRUE.                        !compute ep_star using Fedors_landel correlation
+  YU_STANDISH = .TRUE.                          !compute ep_star using Yu_Standish correlation
+!
+
 ! Gas-phase Section                                                             
  
   MU_g0 		= 1.8E-4			!constant gas viscosity

@@ -52,7 +52,6 @@
       DOUBLE PRECISION Pc, DPcoDEPs, Mu, Mu_b, Mu_zeta, ZETA
       DOUBLE PRECISION F2, DF2oDEPs, DEPs2G_0oDEPs, Pf, Pfmax, N_Pff
       DOUBLE PRECISION  DZETAoDEPs, DG_0DNU
-      double precision calc_ep_star
       
       INCLUDE 'ep_s1.inc'
       INCLUDE 's_pr1.inc'
@@ -82,23 +81,24 @@
  
                   IF ((ONE-EP_G(IJK)).GT.EPS_f_min) THEN
  
-	             IF ((ONE-EP_G(IJK)).GT.EPS_max) THEN
-              	        Pc = 1d25*(((ONE-EP_G(IJK)) - EPS_max)&
+	             IF ((ONE-EP_G(IJK)).GT.(ONE-ep_star_array(ijk))) THEN
+              	        Pc = 1d25*(((ONE-EP_G(IJK)) - (ONE-ep_star_array(ijk)))&
                                                       **10d0)
                         DPcoDEPS =&
-                             1d26*(((ONE-EP_G(IJK)) - EPS_max)**9d0)
+                             1d26*(((ONE-EP_G(IJK)) - &
+			     (ONE-ep_star_array(ijk)))**9d0)
  
 	             ELSE
                         Pc = Fr*(((ONE-EP_G(IJK)) - EPS_f_min)**N_Pc)/&
-                          ((EPS_max - (ONE-EP_G(IJK)) + SMALL_NUMBER)&
-                           **D_Pc)
+                          (((ONE-ep_star_array(ijk)) - (ONE-EP_G(IJK))&
+			  + SMALL_NUMBER)**D_Pc)
  
                         DPcoDEPs =&
-                           Fr*(((ONE-EP_G(IJK)) - EPS_f_min)**(N_Pc - 1.))&
-                           *(N_Pc*(EPS_max - (ONE-EP_G(IJK))) +&
-                             D_Pc*((ONE-EP_G(IJK)) - EPS_f_min))&
-      	                   / ((EPS_max - (ONE-EP_G(IJK)) + SMALL_NUMBER)**&
-                              (D_Pc + 1.))
+                           Fr*(((ONE-EP_G(IJK)) - EPS_f_min)**(N_Pc - ONE))&
+                           *(N_Pc*((ONE-ep_star_array(ijk)) - (ONE-EP_G(IJK)))&
+			   +D_Pc*((ONE-EP_G(IJK)) - EPS_f_min))&
+      	                   / (((ONE-ep_star_array(ijk)) - (ONE-EP_G(IJK)) + &
+			   SMALL_NUMBER)**(D_Pc + ONE))
                      ENDIF
  
  
@@ -189,10 +189,12 @@
  
                ELSE ! FRICTION = .FALSE.
 !GERA*****************************
-                 if (MMAX >= 2)EP_star = Calc_ep_star(IJK, IER)
+!commented by sof, this is done in calc_p_star just once.
+!all ep_star MUST be chenged to ep_star_array(ijk). --> Nov-17-2005
+!                 if (MMAX >= 2)EP_star = Calc_ep_star(IJK, IER)
 !GERA_END************************* 
-                 IF(EP_g(IJK) .LT. EP_star) THEN
-                    Kcp(IJK) = dPodEP_s(EP_s(IJK, M))
+                 IF(EP_g(IJK) .LT. ep_star_array(ijk)) THEN
+                    Kcp(IJK) = dPodEP_s(EP_s(IJK, M),ep_star_array(ijk))
  
 		 ELSE
  		    Kcp(IJK) = ZERO	

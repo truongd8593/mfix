@@ -128,6 +128,14 @@
 !                      If .TRUE. use Jenkins small friction BC
       LOGICAL          JENKINS
 !
+!                      If .TRUE. use Yu and Standish correlation to
+!                      compute ep_star
+      LOGICAL          YU_STANDISH
+!
+!                      If .TRUE. use Fedors and Landel correlation to
+!                      compute ep_star
+      LOGICAL          FEDORS_LANDEL
+!
 !                      If .TRUE. solve species balance equations
       LOGICAL          SPECIES_EQ(0:DIM_M)
 !
