@@ -264,6 +264,8 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 						cnt++;
 						if( i == imax2 ) {
 							px = px + DX->GetValue(i-1);
+						} else if ( i == 0 ) {
+							px = 0;
 						} else { 
 							px = px + DX->GetValue(i);
 						}
