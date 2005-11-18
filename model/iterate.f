@@ -235,7 +235,7 @@
          DRAGCOEF, HEAT_TR, WALL_TR, IER)
 
       IF (Call_DQMOM) PSIZE(1:MMAX)=.TRUE.
-      IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
+!      IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
       WALL_TR = .TRUE. 
       IF (ENERGY_EQ) THEN 
         SP_HEAT(:MMAX) = .TRUE. 
@@ -272,7 +272,12 @@
       IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
       IF (ANY_SPECIES_EQ) RRATE = .TRUE.
        
-      CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER) 
+      CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
+      IF (Neg_RHO_G) THEN
+         MUSTIT = 2                              !indicates divergence 
+	 Neg_RHO_G = .FALSE.
+         IF(DT/=UNDEFINED)GO TO 1000  
+      ENDIF
       CALL CALC_RRATE(RRATE)
 
 !
@@ -337,7 +342,12 @@
         PSIZE(1:MMAX)=.FALSE.
         SP_HEAT(:MMAX) = .FALSE. 
         DENSITY(0) = .TRUE. 
-        CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER) 
+        CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
+        IF (Neg_RHO_G) THEN
+           MUSTIT = 2                              !indicates divergence 
+	   Neg_RHO_G = .FALSE.
+           IF(DT/=UNDEFINED)GO TO 1000  
+        ENDIF 
       ENDIF 
 
 !

@@ -123,7 +123,7 @@
 	       IF(RO_G(IJK) < ZERO) THEN
 		 WRITE(*,1000) I_OF(IJK), J_OF(IJK), K_OF(IJK), &
 		               RO_G(IJK), P_G(IJK), T_G(IJK)
-		 CALL MFIX_EXIT(myPE)
+		 Neg_RHO_G = .TRUE. !this will reduce dt instead of exiting
 	       ENDIF
 !   
             ENDIF
@@ -161,11 +161,11 @@
         
       IF (CALL_DQMOM) THEN
          DO M=1,MMAX 
-	   IF(PSIZE(M)) THEN
+	   IF(PSIZE(M)) THEN 
+             N=phase4scalar(M) ! can N /= M ? (sof)
 !$omp  parallel do private(IJK)
              DO IJK = IJKSTART3, IJKEND3 
-               IF (.NOT.WALL_AT(IJK)) THEN 
-                  N=phase4scalar(M)
+               IF (.NOT.WALL_AT(IJK)) THEN
                   IF(EP_s(IJK,N)>small_number) D_p(IJK,M)= Scalar(IJK,N)
                ENDIF
              END DO

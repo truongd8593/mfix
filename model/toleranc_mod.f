@@ -88,6 +88,9 @@
 !                      Factor for normalizing the residual of solids cont. eq.
       DOUBLE PRECISION NORM_s
 !
+!                      Detect negative Rho_g in physical_prop to reduce DT in iterate
+      LOGICAL  ::      Neg_RHO_G = .FALSE.
+!
 !
 
 
