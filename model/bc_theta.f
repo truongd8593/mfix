@@ -359,6 +359,9 @@
       
 !              Radial distribution function
       DOUBLE PRECISION G_0, g0
+      
+!              Average void fraction at packing
+      DOUBLE PRECISION ep_star_avg
 !
 !                      Sum of eps*G_0
       DOUBLE PRECISION g0EP_avg
@@ -382,6 +385,7 @@
         g0 = G_0(IJK2, M, M)
 	EP_avg = EP_s(IJK2,M)
 	EPg_avg = EP_g(IJK2)
+	ep_star_avg = EP_star_array(IJK2)
         g0EP_avg = ZERO
 	DO MM = 1, MMAX
 	  g0EP_avg = g0EP_avg + G_0(IJK2, MM, MM)*EP_s(IJK2,MM)
@@ -430,6 +434,7 @@
         g0 = g_0(IJK2,M,M)
         EP_avg = EP_s(IJK2,M)
 	EPg_avg = EP_g(IJK2)
+	ep_star_avg = EP_star_array(IJK2)
         g0EP_avg = ZERO
 	DO MM = 1, MMAX
 	  g0EP_avg = g0EP_avg + G_0(IJK2, MM, MM)*EP_s(IJK2,MM)
@@ -477,6 +482,7 @@
         g0 = g_0(IJK2,M,M)
         EP_avg = EP_s(IJK2,M)
 	EPg_avg = EP_g(IJK2)
+	ep_star_avg = EP_star_array(IJK2)
         g0EP_avg = ZERO
 	DO MM = 1, MMAX
 	  g0EP_avg = g0EP_avg + G_0(IJK2, MM, MM)*EP_s(IJK2,MM)
@@ -524,6 +530,7 @@
         g0 = g_0(IJK2,M,M)
         EP_avg = EP_s(IJK2,M)
 	EPg_avg = EP_g(IJK2)
+	ep_star_avg = EP_star_array(IJK2)
         g0EP_avg = ZERO
 	DO MM = 1, MMAX
 	  g0EP_avg = g0EP_avg + G_0(IJK2, MM, MM)*EP_s(IJK2,MM)
@@ -571,6 +578,7 @@
         g0 = g_0(IJK2,M,M)
         EP_avg = EP_s(IJK2,M)
 	EPg_avg = EP_g(IJK2)
+	ep_star_avg = EP_star_array(IJK2)
         g0EP_avg = ZERO
 	DO MM = 1, MMAX
 	  g0EP_avg = g0EP_avg + G_0(IJK2, MM, MM)*EP_s(IJK2,MM)
@@ -620,6 +628,7 @@
         g0 = g_0(IJK2,M,M)
         EP_avg = EP_s(IJK2,M)
 	EPg_avg = EP_g(IJK2)
+	ep_star_avg = EP_star_array(IJK2)
         g0EP_avg = ZERO
 	DO MM = 1, MMAX
 	  g0EP_avg = g0EP_avg + G_0(IJK2, MM, MM)*EP_s(IJK2,MM)
@@ -668,7 +677,8 @@
 	call exitMPI(myPE)          
       ENDIF
  
-      CALL THETA_Hw_Cw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg,Mu_g_avg,RO_g_avg, &
+      CALL THETA_Hw_Cw(g0, EP_avg, EPg_avg, ep_star_avg, &
+                       g0EP_avg, TH_avg,Mu_g_avg,RO_g_avg, &
                        DP_avg, K_12_avg,Tau_12_avg,VREL,VSLIPSQ,M,Gw,Hw,Cw,L)
 !
       RETURN
@@ -692,7 +702,7 @@
 !  Variables modified:                                                 C
 !                                                                      C
 !  Local variables: F_2, Mu_s, Mu, Mu_b, Mu_g_avg, RO_g_avg,           C
-!                   DP_avg, VREL, C_d, Beta                                    C
+!                   DP_avg, VREL, C_d, Beta                            C
 !                                                                      C
 !  Modified: Sofiane Benyahia, Fluent Inc.             Date: 02-FEB-05 C
 !  Purpose: Include conductivity defined by Simonin and Ahmadi         C
@@ -704,7 +714,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE THETA_HW_CW(g0,EPS,EPG,g0EP_avg,TH,Mu_g_avg,RO_g_avg, DP_avg, &
+      SUBROUTINE THETA_HW_CW(g0,EPS,EPG, ep_star_avg, &
+                             g0EP_avg,TH,Mu_g_avg,RO_g_avg, DP_avg, &
                              K_12_avg,Tau_12_avg,VREL,VSLIPSQ,M,GW,HW,CW,L)
  
 
@@ -727,7 +738,7 @@
       CHARACTER        FCELL
 !
 !              Average solids and gas volume fraction
-      DOUBLE PRECISION EPS, EPG
+      DOUBLE PRECISION EPS, EPG, ep_star_avg
  
 !              Average theta_m
       DOUBLE PRECISION Th
@@ -900,10 +911,10 @@
 !
       ELSE ! no change to the original code if Jenkins BC not used
       
-        HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star)))*(1d0-e_w*e_w)*&
+        HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
               RO_s(M)*EPS*G_0*DSQRT(TH)
  
-        CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star)))*PHIP*RO_s(M)*&
+        CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*RO_s(M)*&
               EPS*G_0*DSQRT(TH)*VSLIPSQ
         IF (BC_JJ_PS(L).EQ.2) CW=0d0
 !

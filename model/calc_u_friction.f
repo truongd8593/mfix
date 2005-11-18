@@ -114,6 +114,9 @@
       
 !              Average Radial distribution function
       DOUBLE PRECISION g_0AVG
+      
+!              Average void fraction at packing
+      DOUBLE PRECISION ep_star_avg
 !
 !                      Average Simonin and Ahmadi variables (sof)
       DOUBLE PRECISION K_12_avg, Tau_12_avg, Tau_1_avg
@@ -166,6 +169,7 @@
           g0 = g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK1), M, M)
           EP_avg = AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M), I_OF(IJK1))
 	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
@@ -228,7 +232,8 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, ep_star_avg, &
+	                     g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
                              DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Uw_s(L, M), gw, hw,cw)
@@ -242,6 +247,7 @@
           g0 = g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, M)
           EP_avg = AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M), I_OF(IJK2))
 	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
@@ -305,7 +311,8 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, ep_star_avg, &
+	                     g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
                              DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Uw_s(L, M), gw, hw,cw)
@@ -318,6 +325,7 @@
           EP_avg =&
                 AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M),I_OF(IJK2))
 	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
@@ -384,7 +392,8 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, ep_star_avg, &
+	                     g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
                              DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Uw_s(L, M), gw, hw,cw)
@@ -397,6 +406,7 @@
           EP_avg =&
                 AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M), I_OF(IJK2))
 	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
@@ -462,7 +472,8 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, ep_star_avg, &
+	                     g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
                              DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, USCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Uw_s(L, M), gw, hw,cw)
@@ -481,6 +492,7 @@
           EP_avg =&
                   AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M), J_OF(IJK2))
 	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
@@ -555,7 +567,8 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, ep_star_avg, &
+	                     g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
                              DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Vw_s(L, M), gw, hw,cw)
@@ -568,6 +581,7 @@
           EP_avg =&
                    AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M), J_OF(IJK2))
 	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
@@ -643,7 +657,8 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, ep_star_avg, &
+	                     g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
                              DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Vw_s(L, M), gw, hw,cw)
@@ -656,6 +671,7 @@
           EP_avg =&
                 AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M),J_OF(IJK2))
 	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
@@ -721,7 +737,8 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, ep_star_avg, &
+	                     g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
                              DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Vw_s(L, M), gw, hw,cw)
@@ -735,6 +752,7 @@
           EP_avg =&
                 AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M),J_OF(IJK2))
 	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
@@ -800,7 +818,8 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, ep_star_avg, &
+	                     g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
                              DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, VSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Vw_s(L, M), gw, hw,cw)
@@ -819,6 +838,7 @@
           EP_avg =&
                    AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
 	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
@@ -893,7 +913,8 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, ep_star_avg, &
+	                     g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
                              DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Ww_s(L, M), gw, hw,cw)
@@ -906,6 +927,7 @@
           EP_avg =&
                    AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
 	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
@@ -980,7 +1002,8 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, ep_star_avg, &
+	                     g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
                              DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Ww_s(L, M), gw, hw,cw)
@@ -993,6 +1016,7 @@
           EP_avg =&
                 AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
 	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
@@ -1058,7 +1082,8 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, ep_star_avg, &
+	                     g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
                              DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Ww_s(L, M), gw, hw,cw)
@@ -1071,6 +1096,7 @@
           EP_avg =&
                 AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
 	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
@@ -1136,7 +1162,8 @@
           CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
                              S_DDOT_S, S_dd)
  
-          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
+          CALL CALC_Gw_Hw_Cw(g0, EP_avg,EPg_avg, ep_star_avg, &
+	                     g0EP_avg,TH_avg,Mu_g_avg,RO_g_avg, &
                              DP_avg, VREL, M, DEL_DOT_U, S_DDOT_S, S_dd, WSCM,&
 			     K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
                              BC_Ww_s(L, M), gw, hw,cw)
@@ -1187,7 +1214,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
  
-      SUBROUTINE CALC_Gw_Hw_Cw(g0,EPS,EPG,g0EP_avg,TH,Mu_g_avg,RO_g_avg, &
+      SUBROUTINE CALC_Gw_Hw_Cw(g0,EPS,EPG,ep_star_avg, &
+                               g0EP_avg,TH,Mu_g_avg,RO_g_avg, &
                                DP_avg, VREL, M, DEL_U, S_S, S_dd, VEL, &
 			       K_12_avg, Tau_12_avg, Tau_1_avg,VSLIP,&
 			       W_VEL, gw, hw,cw)
@@ -1205,7 +1233,7 @@
       INTEGER          M
 !
 !              Average solids and gas volume fraction
-      DOUBLE PRECISION EPS, EPG
+      DOUBLE PRECISION EPS, EPG, ep_star_avg
  
 !              Average theta_m
       DOUBLE PRECISION TH
@@ -1347,7 +1375,7 @@
       ELSE ! no change to the original code if Jenkins BC not used
  
         F_2 = (PHIP*DSQRT(3d0*TH)*Pi*RO_s(M)*EPS*G_0)&
-              /(6d0*(ONE-ep_star))
+              /(6d0*(ONE-ep_star_avg))
 !
       ENDIF !for Jenkins
  
@@ -1409,9 +1437,9 @@
 !
       ELSE IF(AHMADI) THEN
 !
-        IF(EPS < (ONE-ep_star)) THEN
+        IF(EPS < (ONE-ep_star_avg)) THEN
 	  Tmp_Ahmadi_Const = &
-	   ONE/(ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS/(ONE-ep_star))**3)
+	   ONE/(ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS/(ONE-ep_star_avg))**3)
         ELSE
 	  Tmp_Ahmadi_Const = ONE
         ENDIF
@@ -1442,11 +1470,11 @@
          ENDIF
  
  
-         IF (EPG < ep_star) THEN
-            Pc=  1d25*(((ONE-EPG)-(ONE-ep_star))**10d0)
+         IF (EPG < ep_star_avg) THEN
+            Pc=  1d25*(((ONE-EPG)-(ONE-ep_star_avg))**10d0)
          ELSE
             Pc = Fr*(((ONE-EPG) - EPS_f_min)**N_Pc)/ &
-	      (((ONE-ep_star) - (ONE-EPG) +&
+	      (((ONE-ep_star_avg) - (ONE-EPG) +&
                   SMALL_NUMBER)**D_Pc)
          ENDIF
  

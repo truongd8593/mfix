@@ -89,6 +89,9 @@
 !
 !                      Sum of eps*G_0
       DOUBLE PRECISION g0EP_avg
+      
+!              Average void fraction at packing
+      DOUBLE PRECISION ep_star_avg
  
 !
 !                      Error message
@@ -127,6 +130,7 @@
           g0 = g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, M)
           EP_avg = AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M), I_OF(IJK2))
 	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
@@ -186,7 +190,8 @@
 	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+          Hw = F_Hw(g0, EP_avg, EPg_avg, ep_star_avg, &
+	            g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
 	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'S')THEN
@@ -197,6 +202,7 @@
           g0 = g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, M)
           EP_avg = AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M), I_OF(IJK2))
 	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
@@ -257,7 +263,8 @@
 	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+          Hw = F_Hw(g0, EP_avg, EPg_avg, ep_star_avg, &
+	            g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
 	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'T')THEN
@@ -268,6 +275,7 @@
           EP_avg =&
                 AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M),I_OF(IJK2))
 	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
@@ -331,7 +339,8 @@
 	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                 + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+          Hw = F_Hw(g0, EP_avg, EPg_avg, ep_star_avg, &
+	            g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
 	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'B')THEN
@@ -342,6 +351,7 @@
           EP_avg =&
                 AVG_X(EP_s(IJK2, M), EP_s(IJK2E, M), I_OF(IJK2))
 	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
@@ -405,7 +415,8 @@
 	  VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                 + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+          Hw = F_Hw(g0, EP_avg, EPg_avg, ep_star_avg, &
+	            g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
 	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
@@ -421,6 +432,7 @@
           EP_avg =&
                   AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M), J_OF(IJK2))
 	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
@@ -494,7 +506,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+          Hw = F_Hw(g0, EP_avg, EPg_avg, ep_star_avg, &
+	            g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
 	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'B')THEN
@@ -505,6 +518,7 @@
           EP_avg =&
                    AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M), J_OF(IJK2))
 	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
@@ -578,7 +592,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+          Hw = F_Hw(g0, EP_avg, EPg_avg, ep_star_avg, &
+	            g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
 	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'E')THEN
@@ -589,6 +604,7 @@
           EP_avg =&
                 AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M),J_OF(IJK2))
 	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
@@ -653,7 +669,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+          Hw = F_Hw(g0, EP_avg, EPg_avg, ep_star_avg, &
+	            g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
 	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'W')THEN
@@ -665,6 +682,7 @@
           EP_avg =&
                 AVG_Y(EP_s(IJK2, M), EP_s(IJK2N, M),J_OF(IJK2))
 	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
@@ -728,7 +746,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+          Hw = F_Hw(g0, EP_avg, EPg_avg, ep_star_avg, &
+	            g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
 	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
@@ -744,6 +763,7 @@
           EP_avg =&
                    AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
 	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
@@ -816,7 +836,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+          Hw = F_Hw(g0, EP_avg, EPg_avg, ep_star_avg, &
+	            g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
 	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'S')THEN
@@ -827,6 +848,7 @@
           EP_avg =&
                    AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
 	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
@@ -899,7 +921,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+          Hw = F_Hw(g0, EP_avg, EPg_avg, ep_star_avg, &
+	            g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
 	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
  
@@ -911,6 +934,7 @@
           EP_avg =&
                 AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
 	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
@@ -974,7 +998,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+          Hw = F_Hw(g0, EP_avg, EPg_avg, ep_star_avg, &
+	            g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
 	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
  
         ELSEIF(FCELL .EQ. 'W')THEN
@@ -985,6 +1010,7 @@
           EP_avg =&
                 AVG_Z(EP_s(IJK2, M), EP_s(IJK2T, M), K_OF(IJK2))
 	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
+	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
@@ -1048,7 +1074,8 @@
 	  VSLIP = DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
-          Hw = F_Hw(g0, EP_avg, EPg_avg, g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+          Hw = F_Hw(g0, EP_avg, EPg_avg, ep_star_avg, &
+	            g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
 	            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
         ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
@@ -1090,7 +1117,8 @@
 !  9 (10), 2835. See equation (2) in the paper                         C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      DOUBLE PRECISION FUNCTION F_HW(g0,EPS,EPG,g0EP_avg,TH,Mu_g_avg,RO_g_avg,&
+      DOUBLE PRECISION FUNCTION F_HW(g0,EPS,EPG, ep_star_avg, &
+                                     g0EP_avg,TH,Mu_g_avg,RO_g_avg,&
                                      DP_avg,K_12_avg, Tau_12_avg, Tau_1_avg, &
 				     VREL, VSLIP, M)
  
@@ -1106,7 +1134,7 @@
       INTEGER          M
 !
 !              Average solids and gas volume fraction
-      DOUBLE PRECISION EPS, EPG
+      DOUBLE PRECISION EPS, EPG, ep_star_avg
  
 !              Average theta_m
       DOUBLE PRECISION Th
@@ -1212,7 +1240,7 @@
       ELSE ! no change to the original code if Jenkins BC not used
  
         F_2 = (PHIP*DSQRT(3d0*TH)*Pi*RO_s(M)*EPS*G_0)&
-              /(6d0*(ONE-ep_star))
+              /(6d0*(ONE-ep_star_avg))
 !
       ENDIF !for Jenkins
  
@@ -1274,9 +1302,9 @@
 !
       ELSE IF(AHMADI) THEN
 !
-        IF(EPS < (ONE-ep_star)) THEN
+        IF(EPS < (ONE-ep_star_avg)) THEN
 	  Tmp_Ahmadi_Const = &
-	   ONE/(ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS/(ONE-ep_star))**3)
+	   ONE/(ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS/(ONE-ep_star_avg))**3)
         ELSE
 	  Tmp_Ahmadi_Const = ONE
         ENDIF
