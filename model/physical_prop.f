@@ -177,15 +177,6 @@
                ENDIF
             END DO
          END DO
-       ELSE
-          DO M=1,MMAX
-!$omp  parallel do private(IJK)
-             DO IJK = IJKSTART3, IJKEND3
-                IF (.NOT.WALL_AT(IJK)) THEN 
-                   D_P(IJK,M)=D_P0(M)
-                ENDIF
-             END DO
-          END DO  
        END IF
 ! 
 
