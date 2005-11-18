@@ -160,23 +160,17 @@
 ! diameter
         
       IF (CALL_DQMOM) THEN
-         DO M=1,MMAX     
+         DO M=1,MMAX 
+	   IF(PSIZE(M)) THEN
 !$omp  parallel do private(IJK)
-            DO IJK = IJKSTART3, IJKEND3 
+             DO IJK = IJKSTART3, IJKEND3 
                IF (.NOT.WALL_AT(IJK)) THEN 
                   N=phase4scalar(M)
-                  IF(EP_s(IJK,N)>small_number) THEN
-                     IF(PSIZE(M)) THEN
-                        D_p(IJK,M)= Scalar(IJK,N)
-                     ELSE
-                        D_P(IJK,M)=D_p0(M)
-                     ENDIF
-                  ELSE
-                     D_P(IJK,M)=D_P0(M)
-                  ENDIF
+                  IF(EP_s(IJK,N)>small_number) D_p(IJK,M)= Scalar(IJK,N)
                ENDIF
-            END DO
-         END DO
+             END DO
+           ENDIF
+	 END DO
        END IF
 ! 
 
