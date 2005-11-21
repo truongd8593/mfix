@@ -133,7 +133,7 @@
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
-	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
 	               * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
           ENDDO
 	  
@@ -205,7 +205,7 @@
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
-	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
 	               * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
           ENDDO
  
@@ -278,7 +278,7 @@
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
-	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
 	               * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
           ENDDO
  
@@ -354,7 +354,7 @@
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
-	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), MM, MM) &
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
 	               * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
           ENDDO
  
@@ -435,7 +435,7 @@
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
-	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, MM) &
 	               * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
           ENDDO
  
@@ -521,7 +521,7 @@
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
-	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, MM) &
 	               * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
           ENDDO
  
@@ -607,7 +607,7 @@
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
-	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, MM) &
 	               * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
           ENDDO
  
@@ -685,7 +685,7 @@
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
-	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), MM, MM) &
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, MM) &
 	               * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
           ENDDO
  
@@ -766,7 +766,7 @@
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
-	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, MM) &
 	               * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
           ENDDO
  
@@ -851,7 +851,7 @@
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
-	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, MM) &
 	               * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
           ENDDO
  
@@ -937,7 +937,7 @@
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
-	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, MM) &
 	               * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
           ENDDO
  
@@ -1013,7 +1013,7 @@
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
 	  DO MM = 1, MMAX
-	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), MM, MM) &
+	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, MM) &
 	               * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
           ENDDO
  

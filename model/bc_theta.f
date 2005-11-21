@@ -388,7 +388,7 @@
 	ep_star_avg = EP_star_array(IJK2)
         g0EP_avg = ZERO
 	DO MM = 1, MMAX
-	  g0EP_avg = g0EP_avg + G_0(IJK2, MM, MM)*EP_s(IJK2,MM)
+	  g0EP_avg = g0EP_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
         ENDDO
         TH_avg = AVG_Y(Theta_m(IJK1, M),Theta_m(IJK2, M),J_OF(IJK1))
         Mu_g_avg = Mu_g(IJK2)
@@ -437,7 +437,7 @@
 	ep_star_avg = EP_star_array(IJK2)
         g0EP_avg = ZERO
 	DO MM = 1, MMAX
-	  g0EP_avg = g0EP_avg + G_0(IJK2, MM, MM)*EP_s(IJK2,MM)
+	  g0EP_avg = g0EP_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
         ENDDO
         TH_avg = AVG_Y(Theta_m(IJK2, M),Theta_m(IJK1, M),J_OF(IJK2))
         Mu_g_avg = Mu_g(IJK2)
@@ -485,7 +485,7 @@
 	ep_star_avg = EP_star_array(IJK2)
         g0EP_avg = ZERO
 	DO MM = 1, MMAX
-	  g0EP_avg = g0EP_avg + G_0(IJK2, MM, MM)*EP_s(IJK2,MM)
+	  g0EP_avg = g0EP_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
         ENDDO
         TH_avg = AVG_X(Theta_m(IJK1, M),Theta_m(IJK2, M),I_OF(IJK1))
         Mu_g_avg = Mu_g(IJK2)
@@ -533,7 +533,7 @@
 	ep_star_avg = EP_star_array(IJK2)
         g0EP_avg = ZERO
 	DO MM = 1, MMAX
-	  g0EP_avg = g0EP_avg + G_0(IJK2, MM, MM)*EP_s(IJK2,MM)
+	  g0EP_avg = g0EP_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
         ENDDO
         TH_avg = AVG_X(Theta_m(IJK2, M),Theta_m(IJK1, M),I_OF(IJK2))
         Mu_g_avg = Mu_g(IJK2)
@@ -581,7 +581,7 @@
 	ep_star_avg = EP_star_array(IJK2)
         g0EP_avg = ZERO
 	DO MM = 1, MMAX
-	  g0EP_avg = g0EP_avg + G_0(IJK2, MM, MM)*EP_s(IJK2,MM)
+	  g0EP_avg = g0EP_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
         ENDDO
         TH_avg = AVG_Z(Theta_m(IJK1, M),Theta_m(IJK2, M),K_OF(IJK1))
         Mu_g_avg = Mu_g(IJK2)
@@ -631,7 +631,7 @@
 	ep_star_avg = EP_star_array(IJK2)
         g0EP_avg = ZERO
 	DO MM = 1, MMAX
-	  g0EP_avg = g0EP_avg + G_0(IJK2, MM, MM)*EP_s(IJK2,MM)
+	  g0EP_avg = g0EP_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
         ENDDO
         TH_avg = AVG_Z(Theta_m(IJK2, M),Theta_m(IJK1, M),K_OF(IJK2))
         Mu_g_avg = Mu_g(IJK2)

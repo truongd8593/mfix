@@ -600,7 +600,7 @@
 !     
 	    SUM_EpsGo = ZERO
             DO MM = 1, MMAX
-               SUM_EpsGo =  SUM_EpsGo+EP_s(IJK,MM)*G_0(IJK,MM,MM)
+               SUM_EpsGo =  SUM_EpsGo+EP_s(IJK,MM)*G_0(IJK,M,MM)
 	    ENDDO 
 !     
 !     Find pressure in the Mth solids phase
