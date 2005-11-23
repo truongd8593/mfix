@@ -23,7 +23,7 @@
       INTEGER          FUNIJK_IO
 !
 !                      Dummy arguments
-      DOUBLE PRECISION XXX, XXX1, XXX2, XXX3, XXX4, XXX5
+      DOUBLE PRECISION XXX, YYY, XXX1, XXX2, XXX3, XXX4, XXX5
 !
 !                      Dummy index for L and M
       INTEGER          L1, L2
