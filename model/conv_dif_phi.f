@@ -299,7 +299,7 @@
                   KM = KM1(K) 
                   IJKB = BOTTOM_OF(IJK) 
                   V_F = WF(IJKM) 
-                  D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX_E(I)*ODZ_T(KM)*AXY(&
+                  D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX(I)*ODZ_T(KM)*AXY(&
                      IJKM) 
                   IF (V_F >= ZERO) THEN 
                      A_M(IJK,B,M) = D_F + FLUX_T(IJKM) 
@@ -874,7 +874,7 @@
                   KM = KM1(K) 
                   IJKB = BOTTOM_OF(IJK) 
 !
-                  D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX_E(I)*ODZ_T(KM)*AXY(&
+                  D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX(I)*ODZ_T(KM)*AXY(&
                      IJKM) 
 !
                   A_M(IJK,B,M) = D_F + (ONE - XSI_T(IJKM))*FLUX_T(IJKM) 
