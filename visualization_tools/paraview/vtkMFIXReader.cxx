@@ -1367,7 +1367,7 @@ void vtkMFIXReader::CreateVariableNames()
                     }
 
 
-                    for (int m=0; m<MMAX; ++m)
+                    for (int m=1; m<=MMAX; ++m)
                     {
                         for (int i=0; i<NMAX->GetValue(m); ++i)
                         {
@@ -1377,7 +1377,7 @@ void vtkMFIXReader::CreateVariableNames()
 				var[k]=0;
 			    }	
 			    strcpy(var, "X_s_");
-			    sprintf(temp1, "%d", m+1);
+			    sprintf(temp1, "%d", m);
 			    sprintf(temp2, "%d", i+1);
 			    strcat(var, temp1);
 			    strcat(var, "_");
