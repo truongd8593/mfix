@@ -230,6 +230,7 @@ private:
   void CalculateMaxTimeStep();
   void GetNumberOfVariablesInSPXFiles();
   void FillVectorVariable( int xindex, int yindex, int zindex, vtkFloatArray *v);
+  void ConvertVectorFromCylindricalToCartesian( int xindex, int zindex);
    
 };
 

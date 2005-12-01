@@ -356,6 +356,9 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 			if(variable_components->GetValue(j) == 1){
 				GetVariableAtTimestep( j, this->TimeStep, cell_data_array[j]);
 			} else {
+				if ( !strcmp(coordinates,"CYLINDRICAL" ) ) {
+					ConvertVectorFromCylindricalToCartesian( j-3, j-1);
+				}
 				FillVectorVariable( j-3, j-2, j-1, cell_data_array[j]);
 			}
 			
@@ -1737,4 +1740,39 @@ void vtkMFIXReader::FillVectorVariable( int xindex, int yindex, int zindex, vtkF
 		v->InsertComponent(i, 1, cell_data_array[yindex]->GetValue(i));
 		v->InsertComponent(i, 2, cell_data_array[zindex]->GetValue(i));
 	}
+}
+
+void vtkMFIXReader::ConvertVectorFromCylindricalToCartesian( int xindex, int zindex)
+{
+
+	int count = 0;
+	float radius = 0.0;
+	float y = 0.0;
+	float theta = 0.0;
+	int cnt=0;
+
+	for (int k=0; k< kmax2; k++){
+		for (int j=0; j< jmax2; j++){
+			for (int i=0; i< imax2; i++){
+				if ( FLAG->GetValue(cnt) < 10 ) {
+					float ucart = (cell_data_array[xindex]->GetValue(count)*cos(theta)) - (cell_data_array[zindex]->GetValue(count)*sin(theta));
+					float wcart = (cell_data_array[xindex]->GetValue(count)*sin(theta)) + (cell_data_array[zindex]->GetValue(count)*cos(theta));
+					
+
+					cell_data_array[xindex]->InsertValue(count, ucart);
+					cell_data_array[zindex]->InsertValue(count, wcart);
+
+					//cout << "count = " << count << ", i = " << i << ", j = " << j << ", k = " << k << ", radius = " << radius << ", y = " << y << ", theta = " << theta << ", u_cy = " << cell_data_array[xindex]->GetValue(count) << ", w_cy = " << cell_data_array[zindex]->GetValue(count) << ", u_ca = " << ucart << ", w_ca = " << wcart << endl;
+					count++;
+				}
+				cnt++;
+				radius = radius + DX->GetValue(i);
+			}
+			radius = 0.0;
+			y = y + DY->GetValue(j);
+		}
+		y = 0.0;
+		theta = theta + DZ->GetValue(k);
+	}
+
 }
