@@ -171,20 +171,17 @@
 !	       ENDIF
 !
 ! On the other hand, I used this correction found in Ahmadi paper (Cao and Ahmadi)	       
-	     IF(AHMADI) THEN
-	       IF(Ep_s(IJK,M) > DIL_EP_S .AND. F_GS(IJK,1) > small_number) THEN
-	         Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
-	         Tmp_Ahmadi_Const = &
+	     IF(AHMADI .AND. F_GS(IJK,1) > small_number) THEN
+	       Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
+	       Tmp_Ahmadi_Const = &
 	          ONE/(ONE+ Tau_12_st/Tau_1(ijk) * (EP_s(IJK,M)/(ONE-ep_star))**3)
-	       ELSE
-	         Tmp_Ahmadi_Const = ONE
-	       ENDIF
-	       C_MU = C_MU*Tmp_Ahmadi_Const
+	     ELSE
+	       Tmp_Ahmadi_Const = ONE
 	     ENDIF
 
 ! Definition of the turbulent viscosity
 !	     
-	     MU_GT(IJK) = MU_G(IJK) +  RO_G(IJK)*C_mu*K_Turb_G(IJK)**2&
+	     MU_GT(IJK) = MU_G(IJK) +  RO_G(IJK)*C_mu*Tmp_Ahmadi_Const*K_Turb_G(IJK)**2&
                         /(E_Turb_G(IJK)+Small_number)
 ! 
 	     MU_GT(IJK) = MIN(MU_GMAX, MU_GT(IJK))
