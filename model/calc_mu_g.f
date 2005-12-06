@@ -178,7 +178,7 @@
 
 ! Definition of the turbulent viscosity
 !	     
-	     MU_GT(IJK) = MU_G(IJK) +  RO_G(IJK)*C_mu*Tmp_Ahmadi_Const*K_Turb_G(IJK)**2&
+	     MU_GT(IJK) = MU_G(IJK) +  RO_G(IJK)*C_mu*K_Turb_G(IJK)**2&
                         /(E_Turb_G(IJK)+Small_number)
 ! 
 	     MU_GT(IJK) = MIN(MU_GMAX, MU_GT(IJK))
