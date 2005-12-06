@@ -165,8 +165,8 @@
 ! new definition of C_mu (equation A.12, Peirano et al. (2002) Powder tech. 122,69-82)
 !	       
 !	       IF( K_12(ijk)/(2.0D0*K_Turb_G(IJK)) < ONE) &
-!	         C_MU = C_MU/(ONE+ 0.314D0*X_21 / ( (Tau_1(ijk)/(Tau_12_st + small_number)) &
-!	                    *(ONE - K_12(ijk)/(2.0D0*K_Turb_G(IJK))) ))
+!	         C_MU = C_MU/(ONE+ 0.314D0*X_21*Tau_12_st / Tau_1(ijk) &
+!	                    *(ONE - K_12(ijk)/(2.0D0*K_Turb_G(IJK))) )
 !	     ENDIF
 !
 ! On the other hand, I used this correction found in Ahmadi paper (Cao and Ahmadi)	       
