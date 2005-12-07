@@ -90,10 +90,10 @@
       Include 'function.inc'
       
       IF(MU_s0 /= UNDEFINED) RETURN ! constant solids viscosity case
-
-      CALL init_mu_s(M, IER)            ! initializing/calculating all the quantities needed for various options
       
       IF (SHEAR) CALL add_shear(M)
+
+      CALL init_mu_s(M, IER)            ! initializing/calculating all the quantities needed for various options
 !     
       
 !     GRANULAR_ENERGY
