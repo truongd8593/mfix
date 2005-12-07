@@ -22,6 +22,7 @@
 
   NORM_G = 0.0
   NORM_S = 0.0
+  MAX_NIT = 30
 #                                                                               
 # Geometry Section                                                              
 #                                                                               
@@ -33,10 +34,11 @@
   NO_K     = .TRUE.                                                             
 #                                                                               
 # Gas-phase Section                                                             
-#    
+#   
+  SPECIES_NAME = 'O3'  'O2'   
   NMAX(0) = 2 
-  MW_g(1) = 10. 30.
-  ! MW_avg = 29.   
+#  MW_g(1) = 10. 30.
+#  MW_avg = 29.   
            
   MU_g0 = 1.8E-4                                                                
 #                                                                               
@@ -47,7 +49,10 @@
                                                                                 
   e       = 0.8                                                                 
   Phi     = 0.0                                                                 
-  EP_star = 0.42                                                                
+  EP_star = 0.42   
+#
+# The solids species, which is not needed, but included to avoid error message
+  SPECIES_NAME(3) = 'Al2O3'                                                             
 #                                                                               
 # Initial Conditions Section                                                    
 #                                                                               
