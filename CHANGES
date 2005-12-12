@@ -1,44 +1,27 @@
-Changes from MFIX2004-3 to MFIX2005-3 (Date: 09/12/05)
-
+Changes from MFIX2005-3 to MFIX2005-4 (Date: 12/12/05)
 Changes in existing features:
-
-    * The iteration scheme was modified substantially to improve the accuracy of the calculations.  See [1] for implementation details and [2] for verification of momentum conservation.  If you have a customized version of iterate.f you will need to transfer your changes into the new iterate.f. No other user action is needed. 
-    * A new method for normalizing the residuals of pressure and solids volume fraction correction equations was added.  See [3] for details and [4] for verification of technique.  The new normalization method can be activated by setting Norm_g = 0.0 and Norm_s = 0.0 in mfix.dat.  The use of this feature is recommended because it speeds up calculations, especially near a steady state or even in transient simulations.
-    * The keywords C(2) and C(3) used for calibrating  Syamlal-O'Brien drag correlation have been replaced with drag_c1 and drag_d1.  (The C-array is reserved for user-defined parameters and should not be used as permanent keywords.)
-    * The drag coefficients, interphase heat transfer coefficients, specific heats, conductivities and diffusivities are now calculated every iteration (implicit method), unlike the previous method of calculating them every time step (explicit method).  The calculation of the gas-solids drag coefficient may be underrelaxed with the key word UR_F_gs.  The default value of UR_F_gs is 1; setting it to 0 will give the old method for gas-solids drag calculation.  To use explicit method for quantities set the appropriate flags to .FALSE. in iterate.f
-    * Added the capability to specify different preconditioners (LEQ_PC) for different sets of equations.
-    * The time-step size will be reduced, if the maximum number of iterations is exceeded.
-    * Added/modified some test cases and tutorial cases.
-    * Makefile modified to support Intel's Ifort 9.0 compiler and to pick up user-modified files in the subdirectories under model directory. For example, Fortran and include files in run_directory/dqmom would be used to override the corresponding files in mfix/model/dqmom directory during compilation. Support for AMD Opteron systems is also added.
-    * Scripts and changes to aid easy compilation with windows visual Fortran compiler.
-    * Updated benchmark files (tests/MFIX_Tests_Benchmarking.html and tutorials/MFIX_Tutorials_Benchmarking.html) to reflect the current test/tutorial cases along with reference wall clock times.
-    * Make all PEs to write error message to a log file when a parallel run is aborted. This is to ensure logs are written for fatal errors even when dmp_log is set to false.
-    * New animate mfix (Version 1.3) files are available at http://www.mfix.org/members/download.php for Linux with ICC & PG and Windows with the following features:
-          o All the new versions support inversion of colors (red - high and blue - low) by hitting the g-key.
-          o The new ICC version supports files bigger than 2 GB.
-          o The ICC and PG versions have a toggle switch ('toggle jpeg/tiff images') to toggle between jpeg and tiff output. This would be useful for any production quality snapshots with default set to JPG.
-    * For the case of polydisperse particles (more than one solids phase), a new algorithm was used to compute ep_star if different particle diameters are used for the different solids phases. This new algorithm follows the work of Yu and Standish [Powder Tech., 52 (1987) 233-241] rather than the old implementation that followed the work of Fedors and Landel [Powder Tech., 23 (1979) 225-231]. The new algorithm is not limited to a binary mixture of powders (see calc_ep_star for details).
-    * Several more updates for code clean up and for bug fixes - please refer to the CVS [5]
-
-
+	* An error in the energy equation introduced in the last version was corrected.  
+	* Added/modified some test cases and tutorial cases. 
+	* Several more updates for code clean up and for bug fixes - please refer to the CVS 
+[1]
+ 
 New features
-
-    * Direct Quadrature Method of Moments (DQMOM) - Contribution from Iowa State University [see 6 , 7, dqmom test case in mfix/tests directory and the readme file]. This change will need you to define D_p in mfix.dat as D_p0.
-    * Time-splitting for chemistry - Contribution from Iowa State University [see 6, 8, isat test case in tests directory and the readme file].
-    * In Situ Adaptive Tabulation (ISAT) - Contribution from Iowa State University [see 6, 8, isat test case in tests directory and the readme file].
-    * Cohesion in Discrete Element Simulation (DES) - Contribution from University of Colorado [see 9, cohesion test cases in tests directory and the readme file].
-    * Ahmadi and Simonin models for gas-solid turbulence - [see 10,  several tests and tutorial cases and the readme].
-
-
+	* A recently published thermochemical database of Burcat and Ruscic (2005) was 
+linked with MFIX.  This gives MFIX users access to accurate thermochemical 
+data for over 1300 species, which includes specific heat, enthalpy, entropy, free 
+energy, formation enthalpy and molecular weight.  In addition to the improvement 
+in the accuracy of the calculations, the linkage with the database eliminates the 
+potential for errors when data are entered manually.  The database authors' 
+permission was obtained for including it in MFIX; the database can be used only 
+for noncommercial work (see the notice in the database) [2].  The rate of reaction 
+term is also computed automatically now.  See the readme file for details.
+	* A reader for the Paraview visualization software and instructions for using the 
+software has been added.
+ 
 References
-
-   1. mfix/doc/High resolution and conservation
-   2. mfix/doc/Verification of momentum conservation
-   3. mfix/doc/ Normalization of correction equation residuals
-   4. mfix/doc/ Verification of the new residuals normalization method
-   5. http://www.mfix.org/cgi-bin/cvsweb.cgi/mfix/model/#dirlist
-   6. mfix/doc/isat_dqmom
-   7. http://www.mfix.org/open_citations/citation_page.php?citation_id=53
-   8. http://www.mfix.org/open_citations/citation_page.php?citation_id=52
-   9. http://www.mfix.org/open_citations/citation_page.php?citation_id=54
-  10. mfix/doc/Simonin_Ahmadi_Models.pdf
+	1. http://www.mfix.org/cgi-bin/cvsweb.cgi/mfix/model/#dirlist 
+	2. A. Burcat and B. Ruscic, "Third Millennium Ideal Gas and Condensed Phase 
+Thermochemical Database for Combustion with updates from Active 
+Thermochemical Tables" ANL-05/20 and TAE 960 Technion-IIT, Aerospace 
+Engineering, and Argonne National Laboratory, Chemistry Division, September 
+2005.) 
