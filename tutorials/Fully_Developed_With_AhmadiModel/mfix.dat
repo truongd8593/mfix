@@ -21,10 +21,7 @@
   SPECIES_EQ = .FALSE.    .FALSE.
   GRANULAR_ENERGY = .T.
 
-  DISCRETIZE(3)     =  7
-  DISCRETIZE(4)     =  7
-  DISCRETIZE(5)     =  7
-  DISCRETIZE(8)     =  7
+  DISCRETIZE     =  9*2
   DEF_COR = .TRUE.
 
   K_EPSILON = .F.  ! will be set to true when Ahmadi or Simonin models are used.
@@ -35,6 +32,9 @@
   UR_FAC(8) = 0.8
   NORM_g = 0.0d0
   NORM_s = 0.0d0
+
+  LEQ_IT = 9*300
+  LEQ_TOL = 9*1D-06
 
   Flux_g = 0.592965 !for superficial gas velocity of 500 cm/s
 
