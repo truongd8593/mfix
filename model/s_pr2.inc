@@ -29,9 +29,9 @@
        ! function P_s(EP_g)
         Neg_H(XXX,YYY)    = to_SI*a_ps * (MAX(ZERO, (YYY - XXX )))**b_ps
        ! inverse of Neg_H.  function EP_g(P_s)
-        INV_H(XXX,YYY)    = YYY - ( XXX/(to_SI*a_ps) )**(1./dble(b_ps))
+        INV_H(XXX,YYY)    = YYY - ( XXX/(to_SI*a_ps) )**(ONE/dble(b_ps))
        ! Differentiate P_s w.r.t. EP_s.  function dP_s/dEP_s (EP_s)       
-        dPodEP_s(XXX,YYY) = to_SI*a_ps * dble(b_ps)*(MAX(ZERO, (YYY - (1. - XXX) )))**(b_ps-1)
+        dPodEP_s(XXX,YYY) = to_SI*a_ps * dble(b_ps)*(MAX(ZERO, (YYY - (ONE - XXX) )))**(b_ps-1)
 !
 !     Solids pressure in plastic-flow stress formulation. Jackson's model
        ! function P_s(EP_g)
