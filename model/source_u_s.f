@@ -185,8 +185,10 @@
                   IF (EP_S(EAST_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_E(IJK)) A_M(IJK,E,M) = ONE 
                   IF (EP_S(SOUTH_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_N(IJMK)) A_M(IJK,S,M) = ONE 
                   IF (EP_S(NORTH_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_N(IJK)) A_M(IJK,N,M) = ONE
-                  IF (EP_S(BOTTOM_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_T(IJKM)) A_M(IJK,B,M) = ONE 
-                  IF (EP_S(TOP_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_T(IJK)) A_M(IJK,T,M) = ONE 
+                  IF(.NOT. NO_K) THEN
+                    IF (EP_S(BOTTOM_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_T(IJKM)) A_M(IJK,B,M) = ONE 
+                    IF (EP_S(TOP_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_T(IJK)) A_M(IJK,T,M) = ONE 
+		  ENDIF
 !               
 	          IF((A_M(IJK,W,M)+A_M(IJK,E,M)+A_M(IJK,S,M)+A_M(IJK,N,M)+ &
 	              A_M(IJK,B,M)+A_M(IJK,T,M)) == ZERO) THEN

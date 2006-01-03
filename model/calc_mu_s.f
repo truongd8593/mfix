@@ -460,9 +460,6 @@
       DOUBLE PRECISION Tmp_Ahmadi_Const
       DOUBLE PRECISION DGA, C_d, Re
 !     
-!     defining very dilute ep_g to be used with Sundar's model
-      DOUBLE PRECISION EP_g_Dilute 
-!     
 !     Sum of ep_s * g_0
       DOUBLE PRECISION   SUM_EpsGo
       
@@ -494,16 +491,6 @@
 	 K = K_OF(IJK)       
 !     
          IF ( FLUID_AT(IJK) ) THEN
-
-!     
-!     This represents the gas VOF in a fluid cell that contains a single particle
-            
-            IF(NO_K) THEN
-               EP_g_Dilute = (1.0d0 - PI*D_p(IJK,M)*D_p(IJK,M)*ODX(I)*ODY(J))
-            ELSE
-               EP_g_Dilute = (1.0d0 - PI/6.0d0*D_p(IJK,M)*D_p(IJK,M)*D_p(IJK,M)*ODX(I) &
-               *ODY(J)*ODZ(K))
-            ENDIF
 !     
 !     Defining a single particle drag coefficient (similar to one defined in drag_gs)
 !     
@@ -629,7 +616,7 @@
 	    ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                Mu_star = ZERO
                
-            ELSEIF(EP_g(IJK) .GE. EP_g_Dilute) THEN
+            ELSEIF(EP_S(IJK,M) < DIL_EP_S) THEN
                
                
                Mu_star = RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)* Mu_s_v(IJK)/ &
@@ -701,7 +688,7 @@
 	    ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                Kth_star = ZERO
                
-	    ELSEIF(EP_g(IJK) .GE. EP_g_Dilute) THEN
+	    ELSEIF(EP_S(IJK,M) < DIL_EP_S) THEN
                
                Kth_star = RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)* Kth/ &
                (RO_S(M)*SUM_EpsGo*Theta_m(IJK,M) &
