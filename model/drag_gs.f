@@ -251,7 +251,7 @@
 !     
             IF(TRIM(DRAG_TYPE).EQ.'SYAM_OBRIEN') then
 
-               IF (EP_G(IJK) == ONE) THEN 
+               IF (EP_s(IJK,M) <= ZERO) THEN 
                   F_gstmp = ZERO 
                ELSE IF (EP_G(IJK) == ZERO) THEN 
                   F_gstmp = ZERO 
@@ -414,7 +414,7 @@
 	      ENDIF
 	   
 !  This is a check for phis (or eps_(ijk,m)) to be within physical range
-	      IF(phis < SMALL_NUMBER .OR. phis > ONE) F = zero
+	      IF(phis <= ZERO .OR. phis > ONE) F = zero
 	   
 	      DgA = F * F_STOKES
 !!!   
