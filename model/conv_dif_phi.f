@@ -480,7 +480,7 @@
 !$omp&             IJKP, IJKT,  V_f, D_f,                    &
 !$omp&             IMJK, IJKW,                                  &
 !$omp&             IJMK, IJKS,                                  &
-!$omp&             IJKM, IJKB, PHI_HO, PHI_LO, CONV_FAC,       &
+!$omp&             IJKM, IJKB, PHI_HO, PHI_LO,        &
 !$omp&             EAST_DC, WEST_DC, NORTH_DC, SOUTH_DC, TOP_DC, BOTTOM_DC)                     
 !
       DO IJK = ijkstart3, ijkend3

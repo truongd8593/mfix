@@ -170,7 +170,7 @@
 
 !$omp      parallel do                                               &
 !$omp&     private( I,  J, K, IPJK, IJPK, IJKN, IJKC, KP,     &
-!$omp&             IJKE, IJKTE, IJKP, IJKT, IJKTN, IJK, V_f, D_f,    &
+!$omp&             IJKE, IJKTE, IJKP, IJKT, IJKTN, IJK, D_f,    &
 !$omp&             IMJK, IM, IJKW, IJKWT, IMJKP,                     &
 !$omp&             IJMK, JM, IJMKP, IJKS, IJKST,                     &
 !$omp&             IJKM, KM, IJKB)
@@ -462,7 +462,7 @@
 !$omp&             IMJK, IM, IJKW, IJKWT, IMJKP,                     &
 !$omp&             IJMK, JM, IJMKP, IJKS, IJKST,                     &
 !$omp&             IJKM, KM, IJKB, &
-!$omp&              MOM_HO, MOM_LO, CONV_FAC,EAST_DC,WEST_DC,NORTH_DC,&
+!$omp&              MOM_HO, MOM_LO, EAST_DC,WEST_DC,NORTH_DC,&
 !$omp&              SOUTH_DC, TOP_DC,BOTTOM_DC)
       DO IJK = ijkstart3, ijkend3 
 !
