@@ -121,10 +121,6 @@
       M = 0 
       IF (.NOT.MOMENTUM_X_EQ(0)) RETURN  
 !
-!$omp    parallel do private(I, IJK, IJKE, IJKM, IPJK, IPJKM,     &
-!$omp&                  ISV, Sdp, V0, Vpm, Vmt, Vbf,              &
-!$omp&                  Vcf, EPMUGA, VTZA, WGE, PGE, ROGA,        &
-!$omp&                  MUGA, ROPGA, EPGA )
 !
 !!     CHEM & ISAT begin (nan xie)
 ! Set the source terms zero
@@ -134,6 +130,10 @@
       END IF
 !     CHEM & ISAT end (nan xie)
 !
+!$omp    parallel do private(I, IJK, IJKE, IJKM, IPJK, IPJKM,     &
+!$omp&                  ISV, Sdp, V0, Vpm, Vmt, Vbf,              &
+!$omp&                  Vcf, EPMUGA, VTZA, WGE, PGE, ROGA,        &
+!$omp&                  MUGA, ROPGA, EPGA )
       DO IJK = ijkstart3, ijkend3 
          I = I_OF(IJK) 
          IJKE = EAST_OF(IJK) 

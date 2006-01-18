@@ -124,11 +124,6 @@
       DO M = 1, MMAX 
          IF (MOMENTUM_X_EQ(M)) THEN 
 !
-!$omp  parallel do private( IJK, IJKE, ISV, Sdp, Sdps, V0, Vmt, Vbf, &
-!$omp&  I,PGE,DRO1,DRO2,DROA, IJKM,IPJK,IPJKM,  WSE,VCF,EPMUGA,VTZA, &
-!$omp&  EPSA, ROPSA, LINE,SUM_EPS_CP,MM) &
-!$omp&  schedule(static)
-!
 !     CHEM & ISAT begin (nan xie)
 ! Set the source terms zero
             IF (CALL_DI .or. CALL_ISAT) THEN
@@ -137,6 +132,11 @@
             END IF
 !     CHEM & ISAT end (nan xie)
 !
+!
+!$omp  parallel do private( IJK, IJKE, ISV, Sdp, Sdps, V0, Vmt, Vbf, &
+!$omp&  I,PGE,DRO1,DRO2,DROA, IJKM,IPJK,IPJKM,  WSE,VCF,EPMUGA,VTZA, &
+!$omp&  EPSA, ROPSA, LINE,SUM_EPS_CP,MM) &
+!$omp&  schedule(static)
             DO IJK = ijkstart3, ijkend3 
 !
 !           Wall or impermeable internal surface

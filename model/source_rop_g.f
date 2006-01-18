@@ -75,10 +75,6 @@
       INCLUDE 'function.inc'
 !
 !
-!!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
-!!$omp&  Src, LINE) &
-!!$omp&  schedule(static)
-!
 !!     CHEM & ISAT begin (nan xie)
 ! Set the source terms zero
       IF (CALL_DI .or. CALL_ISAT) THEN
@@ -87,6 +83,10 @@
       END IF
 !     CHEM & ISAT end (nan xie)
 !
+!
+!!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
+!!$omp&  Src, LINE) &
+!!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
 !
          IF (FLUID_AT(IJK) .AND. PHASE_4_P_G(IJK)/=0) THEN 

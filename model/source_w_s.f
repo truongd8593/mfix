@@ -127,13 +127,6 @@
       DO M = 1, MMAX 
          IF (MOMENTUM_Z_EQ(M)) THEN 
 !
-!$omp  parallel do &
-!$omp& private(IJK, I, J, K, IJKT, EPGA, ISV, &
-!$omp& PGT,SDP,SDPS,   ROPGA,V0,VMT,   DRO1,DRO2,DROA,VBF, &
-!$omp& IMJK,IJKP,IMJKP,  UGT,VCOA,VCOB, &
-!$omp& IJKE,IJKW,IJKTE,IJKTW,IM,IPJK, &
-!$omp& CTE,CTW,SXZB,  EPMUOX,VXZA,VXZB )
-!
 !     CHEM & ISAT begin (nan xie)
 ! Set the source terms zero
             IF (CALL_DI .or. CALL_ISAT) THEN
@@ -142,6 +135,13 @@
             END IF
 !     CHEM & ISAT end (nan xie)
 !
+!
+!$omp  parallel do &
+!$omp& private(IJK, I, J, K, IJKT, EPGA, ISV, &
+!$omp& PGT,SDP,SDPS,   ROPGA,V0,VMT,   DRO1,DRO2,DROA,VBF, &
+!$omp& IMJK,IJKP,IMJKP,  UGT,VCOA,VCOB, &
+!$omp& IJKE,IJKW,IJKTE,IJKTW,IM,IPJK, &
+!$omp& CTE,CTW,SXZB,  EPMUOX,VXZA,VXZB )
             DO IJK = ijkstart3, ijkend3 
                I = I_OF(IJK) 
                J = J_OF(IJK) 
