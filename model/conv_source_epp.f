@@ -346,6 +346,9 @@
 !
                ENDIF 
 !
+            ELSE
+	      bmt = zero
+	      bmb = zero
             ENDIF 
 !
             IF (ROP_S(IJK,M)>ZERO .AND. SUM_R_S(IJK,M)<ZERO) THEN 
@@ -652,6 +655,9 @@
                bmb = (ROP_SF*W_S(IJKM,M))*AXY(IJKM)
                B_M(IJK,0) = B_M(IJK,0) + bmb
 !
+            ELSE
+	      bmt = zero
+	      bmb = zero
             ENDIF 
 !
             IF (ROP_S(IJK,M)>ZERO .AND. SUM_R_S(IJK,M)<ZERO) THEN 
