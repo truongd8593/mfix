@@ -139,7 +139,7 @@
        write(*,*) 'ornl.psd: hng = 0.  WARNING: no windowing function !'
        write(*,*) 'ornl.psd: Lack of windowing violates DFT assumption.'
       endif
-      if (hng.ht.10) then
+      if (hng.gt.10) then
        write(*,*) 'ornl.psd: hng > 10.  WARNING: biased results ?'
        write(*,*) 'ornl.psd: Too much frequency info may be damped out.'
       endif
