@@ -97,16 +97,6 @@
 
       CALL init_mu_s(M, IER)    ! initializing/calculating all the quantities needed for various options
 !     
-
-      IF(BLENDING_STRESS) THEN
-         ep_g_blend_start(:) = ep_star_array(:) * 0.95d0
-         ep_g_blend_end(:) = ep_star_array(:) * 1.02d0
-      ELSE
-         ep_g_blend_start(:) = ep_star_array(:)
-         ep_g_blend_end(:) = ep_star_array(:)
-      END IF
-
-!     
       
 !     GRANULAR_ENERGY
 !     .FALSE.
@@ -143,8 +133,8 @@
       
       IF(BLENDING_STRESS) THEN
 
-         DO 200 IJK = ijkstart3, ijkend3       
-
+         DO 200 IJK = ijkstart3, ijkend3
+	    
             blend =  1.0d0/(1+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
             /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
             
@@ -260,7 +250,7 @@
 !     added closed pack, this has to be consistent with the normal frictional force
 !     see for example source_v_s.f. Tardos Powder Tech. 92 (1997) 61-74 explains in
 !     his equation (3) that solids normal and shear frictional stresses have to be 
-!     treated consistently. --> sof May 24 2005.
+!     treated consistently. --> sof May 24 2005. 
 !     
             IF(EP_g(IJK) .LT. EP_g_blend_end(IJK)) THEN
 !     part copied from source_v_s.f (sof)
@@ -1413,8 +1403,6 @@
                   ENDIF
                ENDIF
             ENDIF
-
-            EP_star_array(IJK) = Calc_ep_star(ijk, ier)
 !
          Endif                  ! Fluid_at
  200  Continue                  ! outer IJK loop

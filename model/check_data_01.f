@@ -90,7 +90,9 @@
          IF (SAVAGE>2 .OR. SAVAGE<0) CALL ERROR_ROUTINE ('check_data_01', &
             'Value of SAVAGE should be 0, 1, or 2', 1, 1) 
 ! Schaeffer formulation is not used when friction is used (sof 02/16/2005)
-         SCHAEFFER = .FALSE.      
+         SCHAEFFER = .FALSE.    
+         IF (BLENDING_STRESS) CALL ERROR_ROUTINE ('check_data_01', &
+            'Use only blending_stress with Schaeffer not with Friction', 1, 1)    
       ENDIF  
 !
 ! sof: cannot use both Ahmadi and Simonin models at the same time.

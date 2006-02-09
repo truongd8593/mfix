@@ -86,28 +86,27 @@
 !     GERA ******************
 !     if Yu_Standish or Fedors_Landel correlations are not used, ep_star_array will not
 !     be modified (sof Nov-16-2005)
-	    if (YU_STANDISH .OR. FEDORS_LANDEL) &
-            EP_star_array(ijk) = calc_ep_star(ijk, ier)
+	    if (YU_STANDISH .OR. FEDORS_LANDEL) THEN
+              EP_star_array(ijk) = calc_ep_star(ijk, ier)
+	      IF(BLENDING_STRESS) THEN
+                ep_g_blend_start(ijk) = ep_star_array(ijk) * 0.95d0
+                ep_g_blend_end(ijk)   = ep_star_array(ijk) * 1.02d0
+              ENDIF
+	    endif
 !     END GERA***************
+	    
             IF (EP_G(IJK) < EP_g_blend_end(ijk)) THEN 
                P_STAR(IJK) = NEG_H(EP_G(IJK),EP_g_blend_end(ijk))
-            ELSE 
+               IF(BLENDING_STRESS) THEN
+	         blend =  1.0d0/(ONE+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
+                          /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
+                 P_STAR (IJK) = (1.0d0-blend) * P_STAR (IJK)
+               ENDIF
+	    ELSE 
                P_STAR(IJK) = ZERO 
             ENDIF 
          ENDIF 
       END DO 
-
-      IF(BLENDING_STRESS) THEN
-         DO IJK = ijkstart3, ijkend3
-            IF (FLUID_AT(IJK)) THEN
-               
-               blend =  1.0d0/(1+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
-               /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
-               P_STAR (IJK) = (1.0d0-blend) * P_STAR (IJK)
-
-            ENDIF
-         END DO
-      ENDIF
       
       RETURN  
       END SUBROUTINE CALC_P_STAR 

@@ -119,6 +119,16 @@
             ENDIF 
 ! set ep_star_array to user input ep_star in all cells. sof--> Nov-17-05
             EP_star_array(ijk) = ep_star
+
+! intializing Sreekanth blending stress parameters (sof)
+            IF(BLENDING_STRESS) THEN
+	      ep_g_blend_start(ijk) = ep_star * 0.95d0
+              ep_g_blend_end(ijk) = ep_star * 1.02d0
+            ELSE
+	      ep_g_blend_start(ijk) = ep_star
+              ep_g_blend_end(ijk) = ep_star
+            ENDIF
+
 	    IF(EP_S_MAX(M) == UNDEFINED) EP_S_MAX(M) = ONE-EP_STAR
 	 END DO 
 	 
