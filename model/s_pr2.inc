@@ -26,7 +26,7 @@
 !if CGS: to_SI=ONE and if SI: to_SI=0.1, see set_constants.f and constant_mod.f
 !
 !     Solids pressure in plastic-flow stress formulation. Mfix default model
-       ! function P_s(EP_g)
+       ! function P_s(EP_g,Ep_star)
         Neg_H(XXX,YYY)    = to_SI*a_ps * (MAX(ZERO, (YYY - XXX )))**b_ps
        ! inverse of Neg_H.  function EP_g(P_s)
         INV_H(XXX,YYY)    = YYY - ( XXX/(to_SI*a_ps) )**(ONE/dble(b_ps))
@@ -34,7 +34,7 @@
         dPodEP_s(XXX,YYY) = to_SI*a_ps * dble(b_ps)*(MAX(ZERO, (YYY - (ONE - XXX) )))**(b_ps-1)
 !
 !     Solids pressure in plastic-flow stress formulation. Jackson's model
-       ! function P_s(EP_g)
+       ! function P_s(EP_g,Ep_star)
 !!        Neg_H(XXX,YYY)    = to_SI*a_ps_jackson * (MAX(ZERO, (YYY - XXX )/(XXX - EP_g_cp)))
        ! inverse of Neg_H.  function EP_g(P_s)
 !!        INV_H(XXX,YYY)    = (to_SI*a_ps_jackson * YYY + XXX*EP_g_cp)/(to_SI*a_ps_jackson + XXX)

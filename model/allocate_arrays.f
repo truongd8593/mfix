@@ -373,6 +373,8 @@
       Allocate(  ALPHA_s_p (DIMENSION_3) )
       Allocate(  ALPHA_s_f (DIMENSION_3) )
       Allocate(  EP_star_array (DIMENSION_3) )
+      Allocate(  EP_g_blend_start (DIMENSION_3) )
+      Allocate(  EP_g_blend_end (DIMENSION_3) )
       Allocate(  VREL_array (DIMENSION_3) )
       Allocate(  I2_devD_s (DIMENSION_3) )
       Allocate(  TrM_s (DIMENSION_3) )

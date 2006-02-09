@@ -52,6 +52,8 @@
       DOUBLE PRECISION Pc, DPcoDEPs, Mu, Mu_b, Mu_zeta, ZETA
       DOUBLE PRECISION F2, DF2oDEPs, DEPs2G_0oDEPs, Pf, Pfmax, N_Pff
       DOUBLE PRECISION  DZETAoDEPs, DG_0DNU
+!     Blend Factor
+      Double Precision blend
       
       INCLUDE 'ep_s1.inc'
       INCLUDE 's_pr1.inc'
@@ -214,6 +216,17 @@
 !   end anuj 4/20
  
 ! 200   CONTINUE
+
+
+     DO IJK = ijkstart3, ijkend3
+         IF (.NOT.WALL_AT(IJK)) THEN
+
+          blend =  1.0d0/(1+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
+                   /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
+          Kcp(IJK) = (1.0d0-blend) * Kcp(IJK)
+
+         ENDIF
+      END DO
 
       CALL send_recv(Kcp, 2)
       

@@ -1,74 +1,74 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: CALC_MU_s(M, IER)                                      C
-!  Purpose: Calculate granular stress terms: THETA, P_s, LAMBDA_s, MU_sC
-!                                                                      C
-!  Author: W. Rogers                                  Date: 04-mar-92  C
-!  Reviewer: M. Syamlal                               Date: 16-MAR-92  C
-!                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: Modifications for cylindrical geometry                     C
-!  Author: M. Syamlal                                 Date: 15-MAY-92  C
-!  Revision Number: 2                                                  C
-!  Purpose: Add volume-weighted averaging statement functions for      C
-!           variable grid capability                                   C
-!  Author:  W. Rogers                                 Date: 21-JUL-92  C
-!  Reviewer: P. Nicoletti                             Date: 11-DEC-92  C
-!  Revision Number: 3                                                  C
-!  Purpose: Add frictional-flow stress terms                           C
-!  Author: M. Syamlal                                 Date: 10-FEB-93  C
-!  Revision Number: 4                                                  C
-!  Purpose: Add Boyle-Massoudi stress terms                            C
-!  Author: M. Syamlal                                 Date: 2-NOV-95   C
-!  Revision Number: 5                                                  C
-!  Purpose: MFIX 2.0 mods  (old name CALC_THETA)                       C
-!  Author: M. Syamlal                                 Date: 24-APR_96  C
-!  Author: Kapil Agrawal, Princeton University        Date: 6-FEB-98   C
-!  Revision Number: 6                                                  C
-!  Purpose: Add calculation of viscosities and conductivities for use  C
-!           with granular temperature PDE. New common block contained  C
-!           in 'trace.inc' contains trD_s_C(DIMENSION_3, DIMENSION_M)  C
-!           and trD_s2(DIMENSION_3, DIMENSION_M)                       C
-!  Author: Anuj Srivastava, Princeton University      Date: 20-APR-98  C
-!  Revision Number:7                                                   C
-!  Purpose: Add calculation of frictional stress terms                 C
-!                                                                      C
-!  Author: Sofiane Benyahia, Fluent Inc.      Date: 02-01-05           C
-!  Revision Number:8                                                   C
-!  Purpose: Add Simonin and Ahmadi models                              C
-!                                                                      C
-!  Literature/Document References:                                     C
-!  1- Simonin, O., 1996. Combustion and turbulence in two-phase flows. C
+!     C
+!     Module name: CALC_MU_s(M, IER)                                      C
+!     Purpose: Calculate granular stress terms: THETA, P_s, LAMBDA_s, MU_sC
+!     C
+!     Author: W. Rogers                                  Date: 04-mar-92  C
+!     Reviewer: M. Syamlal                               Date: 16-MAR-92  C
+!     C
+!     Revision Number: 1                                                  C
+!     Purpose: Modifications for cylindrical geometry                     C
+!     Author: M. Syamlal                                 Date: 15-MAY-92  C
+!     Revision Number: 2                                                  C
+!     Purpose: Add volume-weighted averaging statement functions for      C
+!     variable grid capability                                   C
+!     Author:  W. Rogers                                 Date: 21-JUL-92  C
+!     Reviewer: P. Nicoletti                             Date: 11-DEC-92  C
+!     Revision Number: 3                                                  C
+!     Purpose: Add frictional-flow stress terms                           C
+!     Author: M. Syamlal                                 Date: 10-FEB-93  C
+!     Revision Number: 4                                                  C
+!     Purpose: Add Boyle-Massoudi stress terms                            C
+!     Author: M. Syamlal                                 Date: 2-NOV-95   C
+!     Revision Number: 5                                                  C
+!     Purpose: MFIX 2.0 mods  (old name CALC_THETA)                       C
+!     Author: M. Syamlal                                 Date: 24-APR_96  C
+!     Author: Kapil Agrawal, Princeton University        Date: 6-FEB-98   C
+!     Revision Number: 6                                                  C
+!     Purpose: Add calculation of viscosities and conductivities for use  C
+!     with granular temperature PDE. New common block contained  C
+!     in 'trace.inc' contains trD_s_C(DIMENSION_3, DIMENSION_M)  C
+!     and trD_s2(DIMENSION_3, DIMENSION_M)                       C
+!     Author: Anuj Srivastava, Princeton University      Date: 20-APR-98  C
+!     Revision Number:7                                                   C
+!     Purpose: Add calculation of frictional stress terms                 C
+!     C
+!     Author: Sofiane Benyahia, Fluent Inc.      Date: 02-01-05           C
+!     Revision Number:8                                                   C
+!     Purpose: Add Simonin and Ahmadi models                              C
+!     C
+!     Literature/Document References:                                     C
+!     1- Simonin, O., 1996. Combustion and turbulence in two-phase flows. C
 !     Von Karman institute for fluid dynamics, lecture series 1996-02  C
-!  2- Balzer, G., Simonin, O., Boelle, A., and Lavieville, J., 1996.   C
+!     2- Balzer, G., Simonin, O., Boelle, A., and Lavieville, J., 1996.   C
 !     A unifying modelling approach for the numerical prediction of    C
 !     dilute and dense gas-solid two phase flow. CFB5, 5th int. conf.  C
 !     on circulating fluidized beds, Beijing, China.                   C
-!  3- Cao, J. and Ahmadi, G., 1995. Gas-particle two-phase turbulent   C
+!     3- Cao, J. and Ahmadi, G., 1995. Gas-particle two-phase turbulent   C
 !     flow in a vertical duct. Int. J. Multiphase Flow, vol. 21 No. 6  C
 !     pp. 1203-1228.                                                   C
-!                                                                      C
-!  Author: Sreekanth Pannala, ORNL            Date: 10-08-05           C
-!  Revision Number:9                                                   C
-!  Purpose: Rewrite different modules to increase modularity           C
-!                                                                      C
-!  Variables referenced: U_s, V_s, W_s, IMAX2, JMAX2, KMAX2, DX, DY,   C
-!                        DZ, IMJPK, IMJK, IPJMK, IPJK, IJMK, IJKP,     C
-!                        IMJKP, IPJKM, IJKM, IJMKP, IJPK, IJPKM, IJMK, C
-!                        M,  RO_s, C_e, D_p, Pi, G_0, X                C
-!                                                                      C
-!  Variables modified: I, J, K, IJK, MU_s, LAMBDA_s, P_s               C
-!                                                                      C
-!  Local variables: K_1m, K_2m, K_3m, K_4m, D_s, U_s_N, U_s_S, V_s_E,  C
-!                   V_s_W, U_s_T, U_s_B, W_s_E, W_s_W, V_s_T, V_s_B,   C
-!                   W_s_N, W_s_S, trD_s_C, W_s_C                       C
-!                   trD_s2, EP_s2xTHETA, EP_sxSQRTHETA, I1, I2, U_s_C, C
-!                                                                      C
+!     C
+!     Author: Sreekanth Pannala, ORNL            Date: 10-08-05           C
+!     Revision Number:9                                                   C
+!     Purpose: Rewrite different modules to increase modularity           C
+!     C
+!     Variables referenced: U_s, V_s, W_s, IMAX2, JMAX2, KMAX2, DX, DY,   C
+!     DZ, IMJPK, IMJK, IPJMK, IPJK, IJMK, IJKP,     C
+!     IMJKP, IPJKM, IJKM, IJMKP, IJPK, IJPKM, IJMK, C
+!     M,  RO_s, C_e, D_p, Pi, G_0, X                C
+!     C
+!     Variables modified: I, J, K, IJK, MU_s, LAMBDA_s, P_s               C
+!     C
+!     Local variables: K_1m, K_2m, K_3m, K_4m, D_s, U_s_N, U_s_S, V_s_E,  C
+!     V_s_W, U_s_T, U_s_B, W_s_E, W_s_W, V_s_T, V_s_B,   C
+!     W_s_N, W_s_S, trD_s_C, W_s_C                       C
+!     trD_s2, EP_s2xTHETA, EP_sxSQRTHETA, I1, I2, U_s_C, C
+!     C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+!     
       SUBROUTINE CALC_MU_s(M, IER)
 
-!
+!     
       USE run
       USE vshear
       USE visc_s
@@ -86,6 +86,8 @@
       INTEGER          IER
 !     Solids Phase
       INTEGER          M, IJK
+!     Blend Factor
+      Double Precision blend
 !     
       Include 'function.inc'
       
@@ -93,7 +95,17 @@
       
       IF (SHEAR) CALL add_shear(M)
 
-      CALL init_mu_s(M, IER)            ! initializing/calculating all the quantities needed for various options
+      CALL init_mu_s(M, IER)    ! initializing/calculating all the quantities needed for various options
+!     
+
+      IF(BLENDING_STRESS) THEN
+         ep_g_blend_start(:) = ep_star_array(:) * 0.95d0
+         ep_g_blend_end(:) = ep_star_array(:) * 1.02d0
+      ELSE
+         ep_g_blend_start(:) = ep_star_array(:)
+         ep_g_blend_end(:) = ep_star_array(:)
+      END IF
+
 !     
       
 !     GRANULAR_ENERGY
@@ -118,9 +130,9 @@
 !     Viscous-flow stress tensor
 !     
       IF(.NOT.GRANULAR_ENERGY) then
-         call gt_algebraic(M,IER)         !algebraic granular energy equation
+         call gt_algebraic(M,IER) !algebraic granular energy equation
       ELSE                      !granular energy transport equation
-         call gt_pde(M,IER)            ! This is also used whith Simonin or Ahmadi models
+         call gt_pde(M,IER)     ! This is also used whith Simonin or Ahmadi models
       ENDIF
 !     
 !     Frictional stress tensors
@@ -129,39 +141,70 @@
 !     
       IF(FRICTION .AND. CLOSE_PACKED(M)) call friction_princeton(M,IER) ! Princeton's frictional implementation
       
-      Mu_s_c(:,M) = Mu_s_v(:)
-      Mu_s(:,M) = Mu_s_p(:) + Mu_s_v(:) + Mu_s_f(:)
-      
+      IF(BLENDING_STRESS) THEN
+
+         DO 200 IJK = ijkstart3, ijkend3       
+
+            blend =  1.0d0/(1+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
+            /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
+            
+            Mu_s_c(IJK,M) = Mu_s_v(IJK)
+            Mu_s(IJK,M) = (1.0d0-blend)*Mu_s_p(IJK) &
+            + blend*Mu_s_v(IJK) + Mu_s_f(IJK)
+            
 !     
 !     bulk viscosity in Mth solids phase   (add to plastic part)
-      
-      LAMBDA_s_c(:,M)= Lambda_s_v(:)
-      LAMBDA_s(:,M) = LAMBDA_s_p(:) + Lambda_s_v(:) + Lambda_s_f(:)
-      
-      P_s_c(:,M) = P_s_v(:)
-      P_s(:,M) = P_s_p(:) + P_s_v(:) + P_s_f(:) !add to P_s
+            
+            LAMBDA_s_c(IJK,M)= Lambda_s_v(IJK)
+            LAMBDA_s(IJK,M) = (1.0d0-blend)*LAMBDA_s_p(IJK) &
+            + blend*Lambda_s_v(IJK) + Lambda_s_f(IJK)
+            
+            P_s_c(IJK,M) = P_s_v(IJK)
+            P_s(IJK,M) = (1.0d0-blend)*P_s_p(IJK) + blend*P_s_v(IJK) &
+            + P_s_f(IJK)        !add to P_s
 !     
+            ALPHA_s(IJK,M) = (1.0d0-blend)*ALPHA_s_p(IJK) &
+            + blend*ALPHA_s_v(IJK) + ALPHA_s_f(IJK)
+!     
+ 200     ENDDO
+
+      ELSE                      ! Blending Stress
+
+         Mu_s_c(:,M) = Mu_s_v(:)
+         Mu_s(:,M) = Mu_s_p(:) + Mu_s_v(:) + Mu_s_f(:)
+         
+!     
+!     bulk viscosity in Mth solids phase   (add to plastic part)
+         
+         LAMBDA_s_c(:,M)= Lambda_s_v(:)
+         LAMBDA_s(:,M) = LAMBDA_s_p(:) + Lambda_s_v(:) + Lambda_s_f(:)
+         
+         P_s_c(:,M) = P_s_v(:)
+         P_s(:,M) = P_s_p(:) + P_s_v(:) + P_s_f(:) !add to P_s
+!     
+      ENDIF                     ! Blending Stress
+      
       IF (SHEAR) call remove_shear(M)
 !     
 !     Debug
-!
+!     
 !     OPEN(UNIT=201, FILE='mus.dat', STATUS='UNKNOWN')
 !     Rewind(201)
 !     DO 200 IJK = ijkstart3, ijkend3       
 !     
-!        IF ( FLUID_AT(IJK) ) THEN
+!     IF ( FLUID_AT(IJK) ) THEN
 !     
-!           IF(EP_g(IJK) .LT. EP_star_array(IJK)) THEN 
-!           Write(201,*) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-!           EP_g(IJK), Mu_s(IJK,M), Mu_s_p(IJK), Mu_s_v(IJK), &
-!           Mu_s_f(IJK), LAMBDA_S(IJK,M)&
-!           , P_s(IJK,M)
-!           ENDIF
-!
-!        ENDIF
-!
-! 200  ENDDO
-!      close(201)
+!     IF(EP_g(IJK) .LT. EP_star_array(IJK)) THEN 
+!     Write(201,*) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK), &
+!     EP_g(IJK), Mu_s(IJK,M), Mu_s_p(IJK), Mu_s_v(IJK), &
+!     Mu_s_f(IJK), LAMBDA_S(IJK,M)&
+!     , P_s(IJK,M)
+!     ENDIF
+!     
+!     ENDIF
+!     
+!     200  ENDDO
+!     close(201)
 !     
       RETURN
       END
@@ -219,7 +262,7 @@
 !     his equation (3) that solids normal and shear frictional stresses have to be 
 !     treated consistently. --> sof May 24 2005.
 !     
-            IF(EP_g(IJK) .LT. EP_star_array(IJK)) THEN 
+            IF(EP_g(IJK) .LT. EP_g_blend_end(IJK)) THEN
 !     part copied from source_v_s.f (sof)
                SUM_EPS_CP=0.0
                DO MM=1,MMAX
@@ -352,7 +395,7 @@
 !     
          IF ( FLUID_AT(IJK) ) THEN
 
-            IF(EP_g(IJK) .GE. EP_star_array(IJK)) THEN
+            IF(EP_g(IJK) .GE. EP_g_blend_start(IJK)) THEN
 !     
 !     
 !     Calculate K_1m, K_2m, K_3m, K_4m
@@ -1013,6 +1056,8 @@
 !     Function subroutines
 !     
       DOUBLE PRECISION G_0
+!
+      double precision calc_ep_star
 !     
 !     Local Variables
 !     
@@ -1368,6 +1413,8 @@
                   ENDIF
                ENDIF
             ENDIF
+
+            EP_star_array(IJK) = Calc_ep_star(ijk, ier)
 !
          Endif                  ! Fluid_at
  200  Continue                  ! outer IJK loop

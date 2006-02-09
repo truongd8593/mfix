@@ -94,7 +94,7 @@
 !         bulk density of phase used for solids pr. correction
             IF (PHASE_4_P_S(IJK) /= UNDEFINED_I) THEN 
 !            Mcp   = PHASE_4_P_s(IJK)
-               EPCP = 1. - INV_H(P_STAR(IJK),EP_star_array(ijk))
+               EPCP = 1. - INV_H(P_STAR(IJK),EP_g_blend_end(ijk))
 !
                SUM = ZERO 
                DO M = 1, MMAX 

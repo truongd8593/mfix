@@ -1,30 +1,30 @@
-! TO DO:
-! p_star calculation should be based on the sum of volume fractions of
-! close-packed solids.
+!     TO DO:
+!     p_star calculation should be based on the sum of volume fractions of
+!     close-packed solids.
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: CALC_P_star(EP_g, P_star, IER)                         C
-!  Purpose: Calculate P_star in cells where solids continuity is solvedC
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 21-AUG-96  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
-!                                                                      C
+!     C
+!     Module name: CALC_P_star(EP_g, P_star, IER)                         C
+!     Purpose: Calculate P_star in cells where solids continuity is solvedC
+!     C
+!     Author: M. Syamlal                                 Date: 21-AUG-96  C
+!     Reviewer:                                          Date:            C
+!     C
+!     C
+!     Literature/Document References:                                     C
+!     C
+!     Variables referenced:                                               C
+!     Variables modified:                                                 C
+!     C
+!     Local variables:                                                    C
+!     C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+!     
       SUBROUTINE CALC_P_STAR(EP_G, P_STAR, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
+!...  Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...  Switches: -xf
+!     
 !-----------------------------------------------
-!   M o d u l e s 
+!     M o d u l e s 
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -43,57 +43,71 @@
       USE visc_s
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+!     G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+!     D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!                      Solids pressure
+!     
+!     Solids pressure
       DOUBLE PRECISION P_star(DIMENSION_3)
-!
-!                      Gas volume fraction
+!     
+!     Gas volume fraction
       DOUBLE PRECISION EP_g(DIMENSION_3)
-      double precision calc_ep_star  !GERA
+      double precision calc_ep_star !GERA
 
-!!!HPF$ align P_star(:) with TT(:)
-!!!HPF$ align EP_g(:) with TT(:)
+!!!   HPF$ align P_star(:) with TT(:)
+!!!   HPF$ align EP_g(:) with TT(:)
 
-!
-!                      error index
+!     
+!     error index
       INTEGER          IER
-!
-!                      Indices
+!     
+!     Indices
       INTEGER          IJK
 
       DOUBLE PRECISION dPs
+!     Blend Factor
+      Double Precision blend
 !-----------------------------------------------
       INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
       INCLUDE 's_pr2.inc'
 !     INCLUDE 'ep_s1.inc'
 !     INCLUDE 'ep_s2.inc'
-!
-!
-!
-!!$omp parallel do private(ijk)
-!!!HPF$ independent
+!     
+!     
+!     
+!     !$omp parallel do private(ijk)
+!!!   HPF$ independent
 
       DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN 
-!GERA ******************
-! if Yu_Standish or Fedors_Landel correlations are not used, ep_star_array will not
-! be modified (sof Nov-16-2005)
+!     GERA ******************
+!     if Yu_Standish or Fedors_Landel correlations are not used, ep_star_array will not
+!     be modified (sof Nov-16-2005)
 	    if (YU_STANDISH .OR. FEDORS_LANDEL) &
-	        EP_star_array(ijk) = calc_ep_star(ijk, ier)
-!END GERA***************
-            IF (EP_G(IJK) < EP_star_array(ijk)) THEN 
-               P_STAR(IJK) = NEG_H(EP_G(IJK),EP_star_array(ijk))
+            EP_star_array(ijk) = calc_ep_star(ijk, ier)
+!     END GERA***************
+            IF (EP_G(IJK) < EP_g_blend_end(ijk)) THEN 
+               P_STAR(IJK) = NEG_H(EP_G(IJK),EP_g_blend_end(ijk))
             ELSE 
                P_STAR(IJK) = ZERO 
             ENDIF 
          ENDIF 
       END DO 
+
+      IF(BLENDING_STRESS) THEN
+         DO IJK = ijkstart3, ijkend3
+            IF (FLUID_AT(IJK)) THEN
+               
+               blend =  1.0d0/(1+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
+               /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
+               P_STAR (IJK) = (1.0d0-blend) * P_STAR (IJK)
+
+            ENDIF
+         END DO
+      ENDIF
       
       RETURN  
       END SUBROUTINE CALC_P_STAR 

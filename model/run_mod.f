@@ -179,6 +179,11 @@
 !	               default set to .TRUE. use Scheffer frictional stress
       LOGICAL	       SCHAEFFER
 ! sof: end
+! sp: added BLENDING_STRESS keyword (02/8/2006)
+!	               default set to .FALSE. do not blend
+!	               frictional/kinetic stresses
+      LOGICAL	       BLENDING_STRESS
+! sp: end
 ! sof: added in case a user wants the code to automatically restart for DT < DT_MIN
       LOGICAL	       AUTO_RESTART
 ! sof: end 5/24/2005

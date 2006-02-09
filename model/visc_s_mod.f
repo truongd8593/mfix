@@ -57,11 +57,16 @@
 !     
 !              Bulk viscosity
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Mu_b_v
-
-      
+!     
 !     Packed bed (close packed) void fraction
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: EP_star_array
-
+!
+!     Start of Blending
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: EP_g_blend_start
+!
+!     End of Blending
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: EP_g_blend_end
+!
 !     Second invariant of the deviator of D_s
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: I2_devD_s
 !     

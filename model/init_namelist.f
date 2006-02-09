@@ -136,6 +136,10 @@
       SCHAEFFER = .TRUE. 
 ! end sof
  
+! sp (02/08/2006)
+      BLENDING_STRESS = .FALSE. 
+! end sp
+ 
 ! start loezos 
 !
        SHEAR = .FALSE.

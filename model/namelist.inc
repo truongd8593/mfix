@@ -19,6 +19,8 @@
 ! sof (02/16/2005)
              SCHAEFFER,&
 ! end sof
+! blending switch
+             BLENDING_STRESS, &
 
 ! start peter 7/15
              SHEAR, V_sh,&
