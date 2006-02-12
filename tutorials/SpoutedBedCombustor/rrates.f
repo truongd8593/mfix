@@ -92,7 +92,7 @@
       INTEGER          IJK
       
       DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX), rxn
-      DOUBLE PRECISION RXNA, Trxn
+      DOUBLE PRECISION Trxn
       DOUBLE PRECISION, EXTERNAL ::calc_ICpoR
 !
 !-----------------------------------------------
