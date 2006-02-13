@@ -45,7 +45,8 @@
       USE scalars
       USE compar 
       USE funits 
-      USE usr   
+      USE usr         
+      USE mpi_utility     
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -68,7 +69,9 @@
 !
 !                      Flags to tell whether to calculate or not
       LOGICAL          DENSITY(0:DIMENSION_M), PSIZE(0:DIMENSION_M),&
-                       SP_HEAT(0:DIMENSION_M)
+                       SP_HEAT(0:DIMENSION_M) 
+!
+      LOGICAL          ALL_IS_ERROR
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -155,6 +158,9 @@
 !
          ENDIF 
       END DO 
+      
+      CALL GLOBAL_ALL_OR(Neg_RHO_G, ALL_IS_ERROR)
+      IF(ALL_IS_ERROR) Neg_RHO_G = .TRUE.
 !
 ! add by rong
 ! diameter
