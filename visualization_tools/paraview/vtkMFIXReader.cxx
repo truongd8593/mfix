@@ -305,14 +305,45 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 			for (int j=0; j< jmax2; j++){
 				for (int i=0; i< imax2; i++){
 					if ( FLAG->GetValue(count) < 10 ) {
-						if ( !strcmp(coordinates,"CYLINDRICAL" ) && (kmax2 != 1) && ( i==0)) {
-							aWedge->GetPointIds()->SetId( 0, p0-1);
-							aWedge->GetPointIds()->SetId( 1, p0+1+((imax2+1)*(jmax2+1)));
-							aWedge->GetPointIds()->SetId( 2, p0+1);
-							aWedge->GetPointIds()->SetId( 3, p0+imax2);
-							aWedge->GetPointIds()->SetId( 4, p0+2+imax2+((imax2+1)*(jmax2+1)));
-							aWedge->GetPointIds()->SetId( 5, p0+2+imax2);
-							mesh->InsertNextCell(aHexahedron->GetCellType(), aWedge->GetPointIds());
+						if ( !strcmp(coordinates,"CYLINDRICAL" ) ) {
+
+							if((k == (kmax2-2)) && (i != 1)){
+								aHexahedron->GetPointIds()->SetId( 0, p0);
+								aHexahedron->GetPointIds()->SetId( 1, p0+1);
+								aHexahedron->GetPointIds()->SetId( 2, (p0+1+((imax2+1)*(jmax2+1)))-((imax2+1)*(jmax2+1)*(kmax2-2)) );
+								aHexahedron->GetPointIds()->SetId( 3, (p0+((imax2+1)*(jmax2+1)))  -((imax2+1)*(jmax2+1)*(kmax2-2)) );
+								aHexahedron->GetPointIds()->SetId( 4, p0+1+imax2);
+								aHexahedron->GetPointIds()->SetId( 5, p0+2+imax2);
+								aHexahedron->GetPointIds()->SetId( 6, (p0+2+imax2+((imax2+1)*(jmax2+1))) -((imax2+1)*(jmax2+1)*(kmax2-2)) );
+								aHexahedron->GetPointIds()->SetId( 7, (p0+1+imax2+((imax2+1)*(jmax2+1))) -((imax2+1)*(jmax2+1)*(kmax2-2)) );
+								mesh->InsertNextCell(aHexahedron->GetCellType(), aHexahedron->GetPointIds());
+							} else if ((k != (kmax2-2)) && (i != 1)) {
+								aHexahedron->GetPointIds()->SetId( 0, p0);
+								aHexahedron->GetPointIds()->SetId( 1, p0+1);
+								aHexahedron->GetPointIds()->SetId( 2, p0+1+((imax2+1)*(jmax2+1)));
+								aHexahedron->GetPointIds()->SetId( 3, p0+((imax2+1)*(jmax2+1)));
+								aHexahedron->GetPointIds()->SetId( 4, p0+1+imax2);
+								aHexahedron->GetPointIds()->SetId( 5, p0+2+imax2);
+								aHexahedron->GetPointIds()->SetId( 6, p0+2+imax2+((imax2+1)*(jmax2+1)));
+								aHexahedron->GetPointIds()->SetId( 7, p0+1+imax2+((imax2+1)*(jmax2+1)));
+								mesh->InsertNextCell(aHexahedron->GetCellType(), aHexahedron->GetPointIds());
+							} else if ((k != (kmax2-2)) && (i == 1)){
+								aWedge->GetPointIds()->SetId( 0, j*(imax2+1));
+								aWedge->GetPointIds()->SetId( 1, p0+1);
+								aWedge->GetPointIds()->SetId( 2, p0+1+((imax2+1)*(jmax2+1)));
+								aWedge->GetPointIds()->SetId( 3, (j+1)*(imax2+1));
+								aWedge->GetPointIds()->SetId( 4, p0+2+imax2);
+								aWedge->GetPointIds()->SetId( 5, p0+2+imax2+((imax2+1)*(jmax2+1)));
+								mesh->InsertNextCell(aWedge->GetCellType(), aWedge->GetPointIds());
+							} else if ((k == (kmax2-2)) && (i == 1)){
+								aWedge->GetPointIds()->SetId( 0, j*(imax2+1));
+								aWedge->GetPointIds()->SetId( 1, p0+1);
+								aWedge->GetPointIds()->SetId( 2, (p0+1+((imax2+1)*(jmax2+1)))-((imax2+1)*(jmax2+1)*(kmax2-2)));
+								aWedge->GetPointIds()->SetId( 3, (j+1)*(imax2+1));
+								aWedge->GetPointIds()->SetId( 4, p0+2+imax2);
+								aWedge->GetPointIds()->SetId( 5, (p0+2+imax2+((imax2+1)*(jmax2+1))) -((imax2+1)*(jmax2+1)*(kmax2-2)));
+								mesh->InsertNextCell(aWedge->GetCellType(), aWedge->GetPointIds());
+							}
 						} else {
 							aHexahedron->GetPointIds()->SetId( 0, p0);
 							aHexahedron->GetPointIds()->SetId( 1, p0+1);
