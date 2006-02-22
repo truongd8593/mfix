@@ -38,6 +38,7 @@ vtkEnSightGoldReader.cxx
 vtkEnSightMasterServerReader.cxx
 vtkEnSightReader.cxx
 vtkFacetWriter.cxx
+vtkFLUENTReader.cxx
 vtkGESignaReader.cxx
 vtkGAMBITReader.cxx
 vtkGaussianCubeReader.cxx
