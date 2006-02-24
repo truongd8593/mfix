@@ -195,8 +195,8 @@
 !all ep_star MUST be chenged to ep_star_array(ijk). --> Nov-17-2005
 !                 if (MMAX >= 2)EP_star = Calc_ep_star(IJK, IER)
 !GERA_END************************* 
-                 IF(EP_g(IJK) .LT. ep_star_array(ijk)) THEN
-                    Kcp(IJK) = dPodEP_s(EP_s(IJK, M),ep_star_array(ijk))
+                 IF(EP_g(IJK) .LT. ep_g_blend_end(ijk)) THEN
+                    Kcp(IJK) = dPodEP_s(EP_s(IJK, M),ep_g_blend_end(ijk))
 
                     IF(BLENDING_STRESS) THEN
                       blend =  1.0d0/(1+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
