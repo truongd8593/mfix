@@ -130,7 +130,7 @@ int vtkFLUENTReader::RequestInformation(
 
 	int first = 0;
 	for (int i=0; i<NumberOfVariables; i++ ) {
-		if(CellData[i]->GetNumberOfTuples() == NumberOfCells) {
+		if((CellData[i]->GetNumberOfTuples() == NumberOfCells)&&(CellData[i]->GetNumberOfComponents() < 6)) {
 			if(first == 0) {
 				mesh->GetCellData()->SetScalars(CellData[i]);
 				
