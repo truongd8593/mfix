@@ -91,7 +91,10 @@
 	      IF(BLENDING_STRESS) THEN
                 ep_g_blend_start(ijk) = ep_star_array(ijk) * 0.95d0
                 ep_g_blend_end(ijk)   = ep_star_array(ijk) * 1.02d0
-              ENDIF
+              ELSE
+                ep_g_blend_start(ijk) = ep_star_array(ijk)
+                ep_g_blend_end(ijk)   = ep_star_array(ijk)
+	      ENDIF
 	    endif
 !     END GERA***************
 	    
