@@ -25,203 +25,203 @@
 !*   2005-01-03 ceaf => changed default parameters in psd              *
 !***********************************************************************
 
-!***********************************************************************
-!* ID => psd                                                           *
-!* Function => estimates power spectral density of a time series       *
-!* Date => 2001-03-22                                                  *
-!* Last modified => 2005-01-03 22:00Z                                  *
-!***********************************************************************
-!* Programmer => C.E.A. Finney (Oak Ridge National Laboratory)         *
-!* Contact information (as of 2005-01-03) :                            *
-!*   Email => <finneyc@ornl.gov>                                       *
-!*   Telephone => 865-946-1243                                         *
-!*   Post => National Transportation Research Center                   *
-!*           2360 Cherahala Boulevard                                  *
-!*           Knoxville  TN  37932-6472  USA                            *
-!***********************************************************************
-!* Copyright (C) 2001 by C.E.A. Finney.                                *
-!* Placed in the PUBLIC DOMAIN 2001-04-01 for distribution with MFIX.  *
-!***********************************************************************
-!* Input parameters:                                                   *
-!*   TS => array with time-series data, dimensioned 1:*                *
-!*   sr => data sampling rate [samples / time unit] (this is a         *
-!*         characteristic of the data, but if none specified, then use *
-!*         2, so that reported frequencies will range from about 0 to  *
-!*         one Nyquist frequency)                                      *
-!*   nu => binary power of FFT block size (block=2**nu) (typically,    *
-!*         this depends on the desired frequency resolution, but 10-13 *
-!*         are useful values; frequency resolution (PSD bin width) is  *
-!*         df = sr / 2**(nu-1))                                        *
-!*   nb => number of averaging blocks (1 is minimum, 15 is a useful    *
-!*         maximum; the constraint is nb <= fix(length(TS)/(2**nu)).)  *
-!*   ol => percentage overlap in blocks [0,10]; typically, use 0.      *
-!*   hng => Hanning-window power (0 -> no windowing, 2-5 -> useful)    *
-!*   nrm => normalization of power (1=sum of power, 2=data variance)   *
-!* Output parameters:                                                  *
-!*   f => frequency bin centers                                        *
-!*   p => power at each corresponding bin in f                         *
-!***********************************************************************
-!* Changes:                                                            *
-!*   2001-11-02 ceaf => changed hng from integer*4 to real*4 to allow  *
-!*              exotic windowing powers; added nrm input parameter.    *
-!*   2001-12-20 ceaf => changed all floats from real*4 to real*8       *
-!*   2005-01-03 ceaf => changed default values for nb,ol and ranges in *
-!*              variance calculation/normalization to improve accuracy *
-!***********************************************************************
-
-      subroutine psd(TS,sr,nu,nb,ol,hng,nrm,f,p)
-
-      external fft
-
-      integer*4 NUMAX !................. maximal value of nu (parameter)
-      parameter (NUMAX=16)
-      integer*4 NMAX !................... maximal value of n (parameter)
-      parameter (NMAX=2**NUMAX)
-
-      real*8 TS(1:*) !.............................. time series (input)
-      real*8 sr !............................ data sampling rate (input)
-      integer*4 nu !............. binary power of FFT block size (input)
-      integer*4 nb !................. number of averaging blocks (input)
-      real*8 ol !...................... block overlap percentage (input)
-      real*8 hng !......................... Hanning-window power (input)
-      integer*4 nrm !... normalization (1=sum power, 2=variance) (input)
-      real*8 f(1:*) !.................... frequency bin centers (output)
-      real*8 p(1:*) !..... power at each corresponding bin in f (output)
-      integer*4 n !...................................... FFT block size
-      integer*4 n2 !................................ FFT half block size
-      integer*4 nol !......................... number of overlap records
-      real*8 yr(0:NMAX-1) !.............................. real component
-      real*8 yi(0:NMAX-1) !......................... imaginary component
-      integer*4 k,l !........................................... indices
-      integer*4 bi,ei !.......... pointers in TS for block begin and end
-      real*8 var !........................................ data variance
-      real*8 sum !........................... sum of block data or power
-      real*8 avg !...................................... block data mean
-
-! --- Sanity and range checks ---
-! !!! Calling program should verify that TS is long enough for nb*n. !!!
-      if (nu.gt.NUMAX) then
-       write(*,*) 'ornl.psd : nu > NUMAX.  Reduce nu or recompile psd.'
-       return
-      endif
-      if (nu.lt.1) then
-       write(*,*) 'ornl.psd: nu < 1.  Respecify valid nu.'
-       return
-      endif
-      n = 2 ** nu
-      n2 = 2 ** (nu-1)
-      if (nb.lt.0) then
-       nb = 1
-       write(*,*) 'ornl.psd: nb < 0; set to 1.'
-      endif
-! 2005-01-03 ceaf: Removed - given short data sets in MFIX simulations,
-!   all data may be be needed!
-!     if (nb.gt.15) then
-!      write(*,*) 'ornl.psd: nb > 15.  WARNING: abnormally high value.'
-!     endif
-      if (ol.lt.0.) then
-       ol = 50.
-       write(*,*) 'ornl.psd: ol < 0; set to 50.'
-      endif
-      if (ol.gt.50.) then
-       write(*,*) 'ornl.psd: ol > 50.  WARNING: biased results ?'
-      endif
-      if (ol.gt.99.) then
-       ol = 50.
-       write(*,*) 'ornl.psd: ol > 99; set to 50.'
-      endif
-      nol = int(ol / 100. * n)
-      if (hng.lt.0) then
-       hng = 4
-       write(*,*) 'ornl.psd: hng < 0; set to 4.'
-      endif
-      if (hng.eq.0) then
-       write(*,*) 'ornl.psd: hng = 0.  WARNING: no windowing function !'
-       write(*,*) 'ornl.psd: Lack of windowing violates DFT assumption.'
-      endif
-      if (hng.gt.10) then
-       write(*,*) 'ornl.psd: hng > 10.  WARNING: biased results ?'
-       write(*,*) 'ornl.psd: Too much frequency info may be damped out.'
-      endif
-
-! --- Initialize ---
-      do k=1,n2
-       f(k) = (sr / n / 2) + (k - 1) * sr / n
-       p(k) = 0.
-      enddo ! k
-
-! --- Calculate PSD over nb blocks ---
-      bi = 1
-      ei = bi + n - 1
-      do l=1,nb
-! ... calculate block data mean ...
-       sum = 0.
-       do k=0,(n-1)
-        sum = sum + TS(bi + k)
-       enddo ! k
-       avg = sum / n
-! ... subtract block data mean ...
-       do k=0,(n-1)
-        yr(k) = TS(bi + k) - avg
-        yi(k) = 0.
-       enddo ! k
-       call fft(yr, yi, nu, 1, hng) ! 1 is forward FFT
-       do k=1,n2
-        p(k) = p(k) + yr(k-1)**2 + yi(k-1)**2
-       enddo ! k
-       bi = bi + n - nol ! advance pointer for next block
-       ei = bi + n - 1 ! ditto
-      enddo ! l
-
-! --- Average power over number of blocks ---
-      do k=1,n2
-       p(k) = p(k) / (nb * n2)
-      enddo ! k
-
-! --- Normalize if requested ---
-! ... Normalize by sum of power ...
-      if (nrm.eq.1) then 
-       ! find sum
-       sum = 0.
-       do k=1,n2
-        sum = sum + p(k)
-       enddo ! k
-       ! normalize
-       do k=1,n2
-        p(k) = p(k) / sum
-       enddo ! k
-      endif
-! ... Standardize by data variance ...
-      if (nrm.eq.2) then 
-       ! find data mean
-       sum = 0.
-! 2005-01-03 ceaf: changed loop to 1,ei from nb*n to calculate
-!   variance based only on the data used.
-       do l=1,ei
-        sum = sum + TS(l)
-       enddo ! l
-       avg = sum / n
-       ! find data variance
-       var = 0.
-! 2005-01-03 ceaf: changed loop to 1,ei from nb*n to calculate
-!   variance based only on the data used.
-       do l=1,ei ! 2005-01-03: was nb*n
-        var = var + (TS(l) - avg)**2
-       enddo ! l
-       var = var / (ei - 1)
-       ! standardize
-       if (var.gt.0) then
-        do k=1,n2
-         p(k) = p(k) / var
-        enddo ! k
-       else
-        write(*,*) 'ornl.psd: WARNING: data have zero variance !'
-       endif
-      endif
-
-      return
-      end
-
+!***********************************************************************
+!* ID => psd                                                           *
+!* Function => estimates power spectral density of a time series       *
+!* Date => 2001-03-22                                                  *
+!* Last modified => 2005-01-03 22:00Z                                  *
+!***********************************************************************
+!* Programmer => C.E.A. Finney (Oak Ridge National Laboratory)         *
+!* Contact information (as of 2005-01-03) :                            *
+!*   Email => <finneyc@ornl.gov>                                       *
+!*   Telephone => 865-946-1243                                         *
+!*   Post => National Transportation Research Center                   *
+!*           2360 Cherahala Boulevard                                  *
+!*           Knoxville  TN  37932-6472  USA                            *
+!***********************************************************************
+!* Copyright (C) 2001 by C.E.A. Finney.                                *
+!* Placed in the PUBLIC DOMAIN 2001-04-01 for distribution with MFIX.  *
+!***********************************************************************
+!* Input parameters:                                                   *
+!*   TS => array with time-series data, dimensioned 1:*                *
+!*   sr => data sampling rate [samples / time unit] (this is a         *
+!*         characteristic of the data, but if none specified, then use *
+!*         2, so that reported frequencies will range from about 0 to  *
+!*         one Nyquist frequency)                                      *
+!*   nu => binary power of FFT block size (block=2**nu) (typically,    *
+!*         this depends on the desired frequency resolution, but 10-13 *
+!*         are useful values; frequency resolution (PSD bin width) is  *
+!*         df = sr / 2**(nu-1))                                        *
+!*   nb => number of averaging blocks (1 is minimum, 15 is a useful    *
+!*         maximum; the constraint is nb <= fix(length(TS)/(2**nu)).)  *
+!*   ol => percentage overlap in blocks [0,10]; typically, use 0.      *
+!*   hng => Hanning-window power (0 -> no windowing, 2-5 -> useful)    *
+!*   nrm => normalization of power (1=sum of power, 2=data variance)   *
+!* Output parameters:                                                  *
+!*   f => frequency bin centers                                        *
+!*   p => power at each corresponding bin in f                         *
+!***********************************************************************
+!* Changes:                                                            *
+!*   2001-11-02 ceaf => changed hng from integer*4 to real*4 to allow  *
+!*              exotic windowing powers; added nrm input parameter.    *
+!*   2001-12-20 ceaf => changed all floats from real*4 to real*8       *
+!*   2005-01-03 ceaf => changed default values for nb,ol and ranges in *
+!*              variance calculation/normalization to improve accuracy *
+!***********************************************************************
+
+      subroutine psd(TS,sr,nu,nb,ol,hng,nrm,f,p)
+
+      external fft
+
+      integer*4 NUMAX !................. maximal value of nu (parameter)
+      parameter (NUMAX=16)
+      integer*4 NMAX !................... maximal value of n (parameter)
+      parameter (NMAX=2**NUMAX)
+
+      real*8 TS(1:*) !.............................. time series (input)
+      real*8 sr !............................ data sampling rate (input)
+      integer*4 nu !............. binary power of FFT block size (input)
+      integer*4 nb !................. number of averaging blocks (input)
+      real*8 ol !...................... block overlap percentage (input)
+      real*8 hng !......................... Hanning-window power (input)
+      integer*4 nrm !... normalization (1=sum power, 2=variance) (input)
+      real*8 f(1:*) !.................... frequency bin centers (output)
+      real*8 p(1:*) !..... power at each corresponding bin in f (output)
+      integer*4 n !...................................... FFT block size
+      integer*4 n2 !................................ FFT half block size
+      integer*4 nol !......................... number of overlap records
+      real*8 yr(0:NMAX-1) !.............................. real component
+      real*8 yi(0:NMAX-1) !......................... imaginary component
+      integer*4 k,l !........................................... indices
+      integer*4 bi,ei !.......... pointers in TS for block begin and end
+      real*8 var !........................................ data variance
+      real*8 sum !........................... sum of block data or power
+      real*8 avg !...................................... block data mean
+
+! --- Sanity and range checks ---
+! !!! Calling program should verify that TS is long enough for nb*n. !!!
+      if (nu.gt.NUMAX) then
+       write(*,*) 'ornl.psd : nu > NUMAX.  Reduce nu or recompile psd.'
+       return
+      endif
+      if (nu.lt.1) then
+       write(*,*) 'ornl.psd: nu < 1.  Respecify valid nu.'
+       return
+      endif
+      n = 2 ** nu
+      n2 = 2 ** (nu-1)
+      if (nb.lt.0) then
+       nb = 1
+       write(*,*) 'ornl.psd: nb < 0; set to 1.'
+      endif
+! 2005-01-03 ceaf: Removed - given short data sets in MFIX simulations,
+!   all data may be be needed!
+!     if (nb.gt.15) then
+!      write(*,*) 'ornl.psd: nb > 15.  WARNING: abnormally high value.'
+!     endif
+      if (ol.lt.0.) then
+       ol = 50.
+       write(*,*) 'ornl.psd: ol < 0; set to 50.'
+      endif
+      if (ol.gt.50.) then
+       write(*,*) 'ornl.psd: ol > 50.  WARNING: biased results ?'
+      endif
+      if (ol.gt.99.) then
+       ol = 50.
+       write(*,*) 'ornl.psd: ol > 99; set to 50.'
+      endif
+      nol = int(ol / 100. * n)
+      if (hng.lt.0) then
+       hng = 4
+       write(*,*) 'ornl.psd: hng < 0; set to 4.'
+      endif
+      if (hng.eq.0) then
+       write(*,*) 'ornl.psd: hng = 0.  WARNING: no windowing function !'
+       write(*,*) 'ornl.psd: Lack of windowing violates DFT assumption.'
+      endif
+      if (hng.gt.10) then
+       write(*,*) 'ornl.psd: hng > 10.  WARNING: biased results ?'
+       write(*,*) 'ornl.psd: Too much frequency info may be damped out.'
+      endif
+
+! --- Initialize ---
+      do k=1,n2
+       f(k) = (sr / n / 2) + (k - 1) * sr / n
+       p(k) = 0.
+      enddo ! k
+
+! --- Calculate PSD over nb blocks ---
+      bi = 1
+      ei = bi + n - 1
+      do l=1,nb
+! ... calculate block data mean ...
+       sum = 0.
+       do k=0,(n-1)
+        sum = sum + TS(bi + k)
+       enddo ! k
+       avg = sum / n
+! ... subtract block data mean ...
+       do k=0,(n-1)
+        yr(k) = TS(bi + k) - avg
+        yi(k) = 0.
+       enddo ! k
+       call fft(yr, yi, nu, 1, hng) ! 1 is forward FFT
+       do k=1,n2
+        p(k) = p(k) + yr(k-1)**2 + yi(k-1)**2
+       enddo ! k
+       bi = bi + n - nol ! advance pointer for next block
+       ei = bi + n - 1 ! ditto
+      enddo ! l
+
+! --- Average power over number of blocks ---
+      do k=1,n2
+       p(k) = p(k) / (nb * n2)
+      enddo ! k
+
+! --- Normalize if requested ---
+! ... Normalize by sum of power ...
+      if (nrm.eq.1) then 
+       ! find sum
+       sum = 0.
+       do k=1,n2
+        sum = sum + p(k)
+       enddo ! k
+       ! normalize
+       do k=1,n2
+        p(k) = p(k) / sum
+       enddo ! k
+      endif
+! ... Standardize by data variance ...
+      if (nrm.eq.2) then 
+       ! find data mean
+       sum = 0.
+! 2005-01-03 ceaf: changed loop to 1,ei from nb*n to calculate
+!   variance based only on the data used.
+       do l=1,ei
+        sum = sum + TS(l)
+       enddo ! l
+       avg = sum / n
+       ! find data variance
+       var = 0.
+! 2005-01-03 ceaf: changed loop to 1,ei from nb*n to calculate
+!   variance based only on the data used.
+       do l=1,ei ! 2005-01-03: was nb*n
+        var = var + (TS(l) - avg)**2
+       enddo ! l
+       var = var / (ei - 1)
+       ! standardize
+       if (var.gt.0) then
+        do k=1,n2
+         p(k) = p(k) / var
+        enddo ! k
+       else
+        write(*,*) 'ornl.psd: WARNING: data have zero variance !'
+       endif
+      endif
+
+      return
+      end
+
 !***********************************************************************
 !* ID => fft                                                           *
 !* Function => estimates Fast Fourier Transform of a time-series block *
@@ -258,15 +258,17 @@
 !*              input arguments                                        *
 !*   2002-02-11 ceaf => removed external and declaration statement for *
 !*              bitrev - caused compilation errors on some systems     *
+!*   2006-03-01 sp => Changed real*4 to real*8 to match the calling    *
+!*              routine                                                * 
 !***********************************************************************
 
       subroutine fft(yr,yi,nu,dir,hng)
 
-      real*4 yr(0:*) !.................... real component (input/output)
-      real*4 yi(0:*) !............... imaginary component (input/output)
+      real*8 yr(0:*) !.................... real component (input/output)
+      real*8 yi(0:*) !............... imaginary component (input/output)
       integer*4 nu !............. binary power of FFT block size (input)
       integer*4 dir !....................... transform direction (input)
-      real*4 hng !......................... Hanning-window power (input)
+      real*8 hng !......................... Hanning-window power (input)
       real*8 pi
       integer*4 n !...................................... FFT block size
       integer*4 k,n2,nu1,l,i,a,b
@@ -347,47 +349,47 @@
       return
       end
 
-!***********************************************************************
-!* ID => bitrev                                                        *
-!* Function => reverse bits in an integer (used by FFT)                *
-!* Date => 2001-01-07                                                  *
-!* Last modified => 2001-12-20 22:00Z                                  *
-!***********************************************************************
-!* Programmer => C.S. Daw (Oak Ridge National Laboratory)              *
-!* Contact information (as of 2005-01-03) :                            *
-!*   Email => <dawcs@ornl.gov>                                         *
-!*   Telephone => 865-946-1341                                         *
-!*   Post => National Transportation Research Center                   *
-!*           2360 Cherahala Boulevard                                  *
-!*           Knoxville  TN  37932-6472  USA                            *
-!***********************************************************************
-!* Copyright (C) 2001 by C.S. Daw.                                     *
-!* Placed in the PUBLIC DOMAIN 2001-01-07 for distribution with MFIX.  *
-!***********************************************************************
-!* Input parameters:                                                   *
-!*   a => integer                                                      *
-!*   nu => number of bits                                              *
-!* Output parameters:                                                  *
-!*   b => integer                                                      *
-!***********************************************************************
-!* Changes:                                                            *
-!*   2001-12-20 ceaf => changed order of input arguments; changed types*
-!*              from integer to integer*4                              *
-!***********************************************************************
-
-      subroutine bitrev(a,nu,b)
-
-      integer*4 a,b,nu
-      integer*4 a1,i,a12
-
-      a1 = a
-      b = 0
-      do i=1,nu
-       a12 = int(a1 / 2)
-       b = b * 2 + (a1 - 2 * a12)
-       a1 = a12
-      enddo ! i
-
-      return
-      end
-
+!***********************************************************************
+!* ID => bitrev                                                        *
+!* Function => reverse bits in an integer (used by FFT)                *
+!* Date => 2001-01-07                                                  *
+!* Last modified => 2001-12-20 22:00Z                                  *
+!***********************************************************************
+!* Programmer => C.S. Daw (Oak Ridge National Laboratory)              *
+!* Contact information (as of 2005-01-03) :                            *
+!*   Email => <dawcs@ornl.gov>                                         *
+!*   Telephone => 865-946-1341                                         *
+!*   Post => National Transportation Research Center                   *
+!*           2360 Cherahala Boulevard                                  *
+!*           Knoxville  TN  37932-6472  USA                            *
+!***********************************************************************
+!* Copyright (C) 2001 by C.S. Daw.                                     *
+!* Placed in the PUBLIC DOMAIN 2001-01-07 for distribution with MFIX.  *
+!***********************************************************************
+!* Input parameters:                                                   *
+!*   a => integer                                                      *
+!*   nu => number of bits                                              *
+!* Output parameters:                                                  *
+!*   b => integer                                                      *
+!***********************************************************************
+!* Changes:                                                            *
+!*   2001-12-20 ceaf => changed order of input arguments; changed types*
+!*              from integer to integer*4                              *
+!***********************************************************************
+
+      subroutine bitrev(a,nu,b)
+
+      integer*4 a,b,nu
+      integer*4 a1,i,a12
+
+      a1 = a
+      b = 0
+      do i=1,nu
+       a12 = int(a1 / 2)
+       b = b * 2 + (a1 - 2 * a12)
+       a1 = a12
+      enddo ! i
+
+      return
+      end
+
