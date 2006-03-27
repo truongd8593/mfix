@@ -325,21 +325,9 @@
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1100) I, J, K, (1.- dif) 
                   ENDIF  
 !
-! EP_g must be >= ep_star to use Ahmadi or Simonin models. I did not
-! change this for all cases because someone may consider a purely granular flow,
-! i.e. with no fluid, in which case ep_s may equal eps_max. That is not the case
-! when using turbulence models that require the presence of a fluid phase.
-! (sof)
-		  IF (MMAX > 0) THEN 
-		    IF ((AHMADI .OR. SIMONIN) .AND. EP_G(IJK) < EP_star) THEN 
-                       IF (.NOT.ABORT) THEN 
-                          IF(DMP_LOG)WRITE (UNIT_LOG, 1060) 
-                          ABORT = .TRUE. 
-                       ENDIF 
-                       IF(DMP_LOG)WRITE (UNIT_LOG, 1150) I, J, K
-                    ENDIF  
+		  IF (MMAX > 0) THEN
 !
-! ep_s cannot exceed eps_max for all models, (sof)
+! ep_g must have a value > 0 for all models, (sof)
 		    IF (EP_G(IJK) < SMALL_NUMBER) THEN 
                        IF (.NOT.ABORT) THEN 
                           IF(DMP_LOG)WRITE (UNIT_LOG, 1070) 
@@ -407,9 +395,6 @@
  1013 FORMAT(1X,'I = ',I4,' J = ',I4,' K = ',I4,' M = ',I4,' N = ',I4,5X,A) 
  1050 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
          ' Message: The sum of volume fractions is not equal to 1',/&
-         '          in the following cells:',/4X,'I',T14,'J',T24,'K') 
- 1060 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
-         ' Message: EP_g is less than EP_star ',/&
          '          in the following cells:',/4X,'I',T14,'J',T24,'K') 
  1070 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
          ' Message: EP_g is less than SMALL_NUMBER ',/&
