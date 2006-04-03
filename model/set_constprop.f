@@ -120,10 +120,12 @@
 ! set ep_star_array to user input ep_star in all cells. sof--> Nov-17-05
             EP_star_array(ijk) = ep_star
 
-! intializing Sreekanth blending stress parameters (sof)
+! initializing Sreekanth blending stress parameters (sof)
+!  changed blend_start to 0.99*ep_star from 0.97*ep_star [ceaf 2006-03-17]
+!  changed blend_end to 1.01*ep_star from 1.03*ep_star [ceaf 2006-03-17]
             IF(BLENDING_STRESS) THEN
-	      ep_g_blend_start(ijk) = ep_star * 0.95d0
-              ep_g_blend_end(ijk) = ep_star * 1.02d0
+	      ep_g_blend_start(ijk) = ep_star * 0.99d0
+              ep_g_blend_end(ijk) = ep_star * 1.01d0
             ELSE
 	      ep_g_blend_start(ijk) = ep_star
               ep_g_blend_end(ijk) = ep_star

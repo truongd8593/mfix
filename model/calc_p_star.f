@@ -55,6 +55,7 @@
 !     Gas volume fraction
       DOUBLE PRECISION EP_g(DIMENSION_3)
       double precision calc_ep_star !GERA
+      DOUBLE PRECISION , EXTERNAL :: BLEND_FUNCTION
 
 !!!   HPF$ align P_star(:) with TT(:)
 !!!   HPF$ align EP_g(:) with TT(:)
@@ -86,11 +87,15 @@
 !     GERA ******************
 !     if Yu_Standish or Fedors_Landel correlations are not used, ep_star_array will not
 !     be modified (sof Nov-16-2005)
+!       changed blend_start to 0.99*ep_star from 0.95*ep_star
+!       changed blend_end to 1.01*ep_star from 1.02*ep_star
+!       [ceaf 2006-03-31]
+                 
 	    if (YU_STANDISH .OR. FEDORS_LANDEL) THEN
               EP_star_array(ijk) = calc_ep_star(ijk, ier)
 	      IF(BLENDING_STRESS) THEN
-                ep_g_blend_start(ijk) = ep_star_array(ijk) * 0.95d0
-                ep_g_blend_end(ijk)   = ep_star_array(ijk) * 1.02d0
+                ep_g_blend_start(ijk) = ep_star_array(ijk) * 0.99d0
+                ep_g_blend_end(ijk)   = ep_star_array(ijk) * 1.01d0
               ELSE
                 ep_g_blend_start(ijk) = ep_star_array(ijk)
                 ep_g_blend_end(ijk)   = ep_star_array(ijk)
@@ -101,8 +106,7 @@
             IF (EP_G(IJK) < EP_g_blend_end(ijk)) THEN 
                P_STAR(IJK) = NEG_H(EP_G(IJK),EP_g_blend_end(ijk))
                IF(BLENDING_STRESS) THEN
-	         blend =  1.0d0/(ONE+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
-                          /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
+	         blend =  blend_function(IJK)
                  P_STAR (IJK) = (1.0d0-blend) * P_STAR (IJK)
                ENDIF
 	    ELSE 
@@ -384,5 +388,82 @@
 !	
       RETURN  
       END function CALC_ep_star
+
+!
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: blend_function(IJK)                                    C
+!  Purpose: To calculate blending function                             C
+!                                                                      C
+!  Author: S. Pannala                                 Date: 28-FEB-06  C
+!  Reviewer:                                          Date:            C
+!  Modified:                                          Date:            C
+!                                                                      C
+!                                                                      C
+!  Literature/Document References:                                     C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      Double Precision function blend_function(IJK) 
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Switches: -xf
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE fldvar
+      USE geometry
+      USE indices
+      USE physprop
+      USE constant
+      USE toleranc
+      USE compar
+      USE run
+      USE visc_s
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!
+!                      Indices
+      INTEGER          IJK
+!     Blend Factor
+      Double Precision blend
+!     Midpoint
+      Double Precision ep_mid_point
+!
+!-----------------------------------------------
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'function.inc'
+      INCLUDE 'fun_avg2.inc'
+      INCLUDE 'ep_s2.inc'
+
+      IF(EP_g(IJK) .LT. ep_g_blend_end(ijk).AND. EP_g(IJK) .GT. ep_g_blend_start(ijk)) THEN
+         ep_mid_point = (ep_g_blend_end(IJK)+ep_g_blend_start(IJK))/2.0d0
+         blend = tanh(2.0d0*pi*(ep_g(IJK)-ep_mid_point)/ &
+              (ep_g_blend_end(IJK)-ep_g_blend_start(IJK)))
+         blend = (blend+1.0d0)/2.0d0
+      ELSE IF(EP_g(IJK) .GE. ep_g_blend_end(ijk)) THEN
+         blend = 1.0d0
+      ELSE IF(EP_g(IJK) .LE. ep_g_blend_start(ijk)) THEN
+         blend = 0.0d0
+      ENDIF
+!
+      blend_function = blend
+!	
+      RETURN  
+      END function blend_function
 
 !

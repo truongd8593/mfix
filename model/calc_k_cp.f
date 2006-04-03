@@ -47,6 +47,8 @@
  
 !              Radial distribution function
       DOUBLE PRECISION g0, G_0
+!
+      DOUBLE PRECISION , EXTERNAL :: BLEND_FUNCTION
  
 !                      Other variables
       DOUBLE PRECISION Pc, DPcoDEPs, Mu, Mu_b, Mu_zeta, ZETA
@@ -199,8 +201,7 @@
                     Kcp(IJK) = dPodEP_s(EP_s(IJK, M),ep_g_blend_end(ijk))
 
                     IF(BLENDING_STRESS) THEN
-                      blend =  1.0d0/(1+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
-                               /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
+                      blend =  blend_function(IJK)
                       Kcp(IJK) = (1.0d0-blend) * Kcp(IJK)
                     ENDIF
  

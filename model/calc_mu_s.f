@@ -88,6 +88,8 @@
       INTEGER          M, IJK
 !     Blend Factor
       Double Precision blend
+!
+      DOUBLE PRECISION , EXTERNAL :: BLEND_FUNCTION
 !     
       Include 'function.inc'
       
@@ -135,9 +137,8 @@
 
          DO 200 IJK = ijkstart3, ijkend3
 	    
-            blend =  1.0d0/(1+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
-            /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
-            
+            blend =  blend_function(IJK)
+           
             Mu_s_c(IJK,M) = Mu_s_v(IJK)
             Mu_s(IJK,M) = (1.0d0-blend)*Mu_s_p(IJK) &
             + blend*Mu_s_v(IJK) + Mu_s_f(IJK)
