@@ -12,7 +12,31 @@
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
+!  Revision Number: 2                                                  C
+!  Purpose: Added switch function to Gidaspow - GIDASPOW_BLEND         C
+!  Author: Charles E.A. Finney                        Date: 23-Mar-06  C
+!  Reviewer: Sreekanth Pannala                        Date: 24-Mar-06  C
+!                                                                      C
 !  Literature/Document References:                                     C
+!    Syamlal-O'Brien:                                                  C
+!      Syamlal M, O'Brien TJ (1988). International Journal of          C
+!        Multiphase Flow 14: 473-481.                                  C
+!    Gidaspow:                                                         C
+!      Ding J, Gidaspow D (1990). AIChE Journal 36: 523-538.           C
+!    Gidaspow,blended (original source unknown):                       C
+!      Lathouwers D, Bellan J (2000). Proceedings of the 2000 U.S. DOE C
+!        Hydrogen Program Review NREL/CP-570-28890. Available from     C
+!      http://www.eere.energy.gov/hydrogenandfuelcells/pdfs/28890k.pdf.C
+!    Wen-Yu:                                                           C
+!      Wen CY, Yu YH (1966). Chemical Engineering Progress Symposium   C
+!        Series 62: 100-111.                                           C
+!    Koch-Hill (modified):                                             C
+!      Benyahia S, Syamlal M, O'Brien TJ (2006). Powder Technology     C
+!        162: 166-174.                                                 C
+!      Hill RJ, Koch DL, Ladd JC (2001). Journal of Fluid Mechanics    C
+!        448: 213-241.                                                 C
+!      Hill RJ, Koch DL, Ladd JC (2001). Journal of Fluid Mechanics    C
+!        448: 243-278.                                                 C
 !                                                                      C
 !  Variables referenced: EP_g, RO_g, MU_g, D_p                         C
 !  Variables modified: DRAG_gs                                         C
@@ -117,6 +141,13 @@
 !     
 !     drag coefficient 
       DOUBLE PRECISION DgA  
+
+! --- Gidaspow switch function variables [ceaf 2006-03-23]
+      DOUBLE PRECISION Ergun
+      DOUBLE PRECISION WenYu
+      DOUBLE PRECISION PHI_gs
+! --- end Gidaspow switch function variables
+
 !     
 !     Gas Laminar viscosity redefined here to set
 !     viscosity at pressure boundaries
@@ -320,6 +351,36 @@
                ENDIF
                
 !--------------------------End Gidaspow --------------------------
+!     
+!-----------------------Begin Gidaspow_blend ---------------------
+            ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW_BLEND') then
+!              Dense phase - EP_g < 0.8
+               Ergun = 150D0 * (ONE - EP_g(IJK)) * Mu &
+               / ( EP_g(IJK) * D_p(IJK,M)**2 ) &
+               + 1.75D0 * RO_g(IJK) * VREL / D_p(IJK,M)
+!
+!              Dilute phase - EP_g >= 0.8
+               IF(Re_G .LE. 1000D0)THEN
+                  C_d = (24.D0/(Re_G+SMALL_NUMBER)) * (ONE + 0.15D0 * Re_G**0.687D0)
+               ELSE
+                  C_d = 0.44D0
+               ENDIF
+               WenYu = 0.75D0 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65D0) &
+               /D_p(IJK,M)
+!
+!              Switch function
+               PHI_gs = ATAN(150D0 * 1.75D0 * (EP_g(IJK) - 0.8D0)) / PI + 0.5D0
+!              Blend the models
+               DgA = (1D0 - PHI_gs) * Ergun + PHI_gs * WenYu
+               
+!              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+               IF(Model_B)THEN
+                  F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
+               ELSE
+                  F_gstmp = DgA * EP_s(IJK, M)
+               ENDIF
+               
+!-----------------------End Gidaspow_blend -----------------------
 !     
 !--------------------------Begin WEN_YU --------------------------
             ELSE IF(TRIM(DRAG_TYPE).EQ.'WEN_YU') then
