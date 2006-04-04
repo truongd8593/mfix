@@ -34,6 +34,7 @@
 #include <string>
 #include "vtkDataArraySelection.h"
 #include "vtkWedge.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
 
 vtkCxxRevisionMacro(vtkMFIXReader, "$Revision$");
 vtkStandardNewMacro(vtkMFIXReader);
@@ -177,9 +178,8 @@ int vtkMFIXReader::RequestData(
   vtkInformationVector **vtkNotUsed(inputVector),
   vtkInformationVector *outputVector)
 {
-  // get the info object
-  vtkInformation *outInfo = outputVector->GetInformationObject(0);
 
+  vtkInformation* outInfo = outputVector->GetInformationObject(0);
   // get the ouptut
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
@@ -414,7 +414,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 int vtkMFIXReader::RequestInformation(
   vtkInformation *vtkNotUsed(request),
   vtkInformationVector **vtkNotUsed(inputVector),
-  vtkInformationVector *vtkNotUsed(outputVector))
+  vtkInformationVector *outputVector)
 {
   
   if(this->RequestInformationFlag == 0) {
@@ -448,6 +448,10 @@ int vtkMFIXReader::RequestInformation(
 	this->TimeStepRange[0] = 0;  
 	this->TimeStepRange[1] = this->NumberOfTimeSteps-1;
 	this->RequestInformationFlag = 1;
+
+
+   	this->GetAllTimes(outputVector);
+
 	
   }
   
@@ -1805,5 +1809,75 @@ void vtkMFIXReader::ConvertVectorFromCylindricalToCartesian( int xindex, int zin
 		y = 0.0;
 		theta = theta + DZ->GetValue(k);
 	}
+
+}
+void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector) 
+{
+	int max = 0;
+	int maxvar = 0;
+	for(int j=0; j<=variable_names->GetMaxId(); j++) {
+		int n = var_timesteps->GetValue(j);
+		if (n > max){
+			max = n;
+			maxvar = j;
+		}
+	}	
+
+
+	char fname[256];
+	for(int k=0;k<sizeof(fname);k++){
+		fname[k]=0;
+	}
+	strncpy(fname, this->FileName, strlen(this->FileName)-4);
+		
+	if(maxvar==0){
+		strcat(fname, ".SP1");
+	} else if (maxvar==1) {
+		strcat(fname, ".SP2");
+	} else if (maxvar==2) {
+		strcat(fname, ".SP3");
+	} else if (maxvar==3) {
+		strcat(fname, ".SP4");
+	} else if (maxvar==4) {
+		strcat(fname, ".SP5");
+	} else if (maxvar==5) {
+		strcat(fname, ".SP6");
+	} else if (maxvar==6) {
+		strcat(fname, ".SP7");
+	} else if (maxvar==7) {
+		strcat(fname, ".SP8");
+	} else if (maxvar==8) {
+		strcat(fname, ".SP9");
+	} else if (maxvar==9) {
+		strcat(fname, ".SPA");
+	} else {
+		strcat(fname, ".SPB");
+	} 
+
+	ifstream in(fname , ios::binary);
+
+	int numberOfVariablesInSPX = spx_to_nvar_table->GetValue(variableIndexToSPX->GetValue(maxvar));
+
+	int offset = 512-sizeof(float) + 512*(numberOfVariablesInSPX*spx_records_per_timestep);
+
+	in.clear();
+    	in.seekg( 3*512, ios::beg ); // first time
+
+	float time;
+
+	int cnt = 0;
+  	double* steps = new double[this->NumberOfTimeSteps];
+	while (in.read( (char*)&time,sizeof(float) ) )
+	{
+		SWAP_FLOAT(time);
+		steps[cnt] = (double)time;
+		cnt++;
+		in.seekg(offset,ios::cur);
+	}
+
+
+  	vtkInformation* outInfo = outputVector->GetInformationObject(0);
+  	outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_STEPS(), steps, this->NumberOfTimeSteps);
+  	delete[] steps;
 
 }

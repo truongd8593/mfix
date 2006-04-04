@@ -111,6 +111,7 @@ protected:
   float *max;
   vtkDataArraySelection *CellDataArraySelection;
   int TimeStep;
+  int ActualTimeStep;
   int CurrentTimeStep;
   int NumberOfTimeSteps;
   int *TimeSteps; 
@@ -231,7 +232,8 @@ private:
   void GetNumberOfVariablesInSPXFiles();
   void FillVectorVariable( int xindex, int yindex, int zindex, vtkFloatArray *v);
   void ConvertVectorFromCylindricalToCartesian( int xindex, int zindex);
-   
+  void GetAllTimes(vtkInformationVector *outputVector);
+
 };
 
 #endif
