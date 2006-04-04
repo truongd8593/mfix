@@ -34,6 +34,13 @@
 #include "vtkByteSwap.h"
 #include "vtkCellArray.h"
 #include "vtkHexahedron.h"
+#include "vtkDoubleArray.h"
+#include "vtkPoints.h"
+#include "vtkTriangle.h"
+#include "vtkQuad.h"
+#include "vtkTetra.h"
+#include "vtkWedge.h"
+#include "vtkPyramid.h"
 
 vtkCxxRevisionMacro(vtkFLUENTReader, "$Revision$");
 vtkStandardNewMacro(vtkFLUENTReader);
@@ -41,8 +48,8 @@ vtkStandardNewMacro(vtkFLUENTReader);
 //----------------------------------------------------------------------------
 vtkFLUENTReader::vtkFLUENTReader()
 {
-	this->FileName  = NULL;
-	CreateVTKObjects();
+  this->FileName  = NULL;
+  CreateVTKObjects();
 }
 
 //----------------------------------------------------------------------------
@@ -56,14 +63,13 @@ int vtkFLUENTReader::RequestData(
   vtkInformationVector **vtkNotUsed(inputVector),
   vtkInformationVector *outputVector)
 {
-	vtkInformation *outInfo = outputVector->GetInformationObject(0);
-	
-	vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
-	outInfo->Get(vtkDataObject::DATA_OBJECT()));
-	
-	this->ReadFile(output);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
 
-	return 1;
+  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+  this->ReadFile(output);
+  return 1;
 }
 
 //----------------------------------------------------------------------------
@@ -75,13 +81,13 @@ void vtkFLUENTReader::PrintSelf(ostream& os, vtkIndent indent)
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::ReadFile(vtkUnstructuredGrid *output)
 {
-  	output->Allocate();
-	output->ShallowCopy(mesh);
-	mesh->Delete();
+  output->Allocate();
+  output->ShallowCopy(mesh);
+  mesh->Delete();
 
-	for ( int i=0; i < NumberOfVariables ; i++ ) {
-		CellData[ i ]->Delete();
-	}
+  for ( int i=0; i < NumberOfVariables ; i++ ) {
+    CellData[ i ]->Delete();
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -90,108 +96,112 @@ int vtkFLUENTReader::RequestInformation(
   vtkInformationVector **vtkNotUsed(inputVector),
   vtkInformationVector *vtkNotUsed(outputVector))
 {
+  if(ObjectsFlag == 0){
+    CreateVTKObjects();
+  }
 
-	if(ObjectsFlag == 0){
-		CreateVTKObjects();
-	}
+  if(!OpenCaseAndDataFiles()) {
+    return 0;
+  }
 
-	if(!OpenCaseAndDataFiles()) {
-		return 0;
-	}
+  ParseCaseFile();
+  MakeFaceTreeParentTable();
+  MakeCellTreeParentTable();
+  LoadFaceKidFlags();
+  LoadFaceParentFlags();
+  LoadInterfaceFaceChildFlags();
+  LoadNCGFaceChildFlags();
+  LoadCellNumberOfFaces();
+  LoadCellFaces();
+  RemoveExtraFaces();
+  LoadCellParentFlags();
+  BuildCells();
+  DataPass = 1;
+  ParseDataFile();
+  InitializeVariableNames();
+  CellData = new vtkDoubleArray * [NumberOfVariables];
 
-	ParseCaseFile();
-	MakeFaceTreeParentTable();
-	MakeCellTreeParentTable();
-	LoadFaceKidFlags();
-	LoadFaceParentFlags();
-	LoadInterfaceFaceChildFlags();
-	LoadNCGFaceChildFlags();
-	LoadCellNumberOfFaces();
-	LoadCellFaces();
-	RemoveExtraFaces();
-	LoadCellParentFlags();
-	BuildCells();
-	DataPass = 1;
-	ParseDataFile();
-	InitializeVariableNames();
+  for ( int i=0; i < NumberOfVariables ; i++ ) {
+    int id = VariableIds->GetValue(i);
+    int nc = VariableSizes->GetValue(i);
+    CellData[ i ] = vtkDoubleArray::New();
+    CellData[ i ]->SetName(VariableNames[id]);
+    CellData[ i ]->SetNumberOfComponents(nc);
+  }
 
- 	CellData = new vtkDoubleArray * [NumberOfVariables];
+  DataPass = 2;
+  ParseDataFile();  // Getting Data
 
-	for ( int i=0; i < NumberOfVariables ; i++ ) {
-		int id = VariableIds->GetValue(i);
-		int nc = VariableSizes->GetValue(i);
-		CellData[ i ] = vtkDoubleArray::New();
-		CellData[ i ]->SetName(VariableNames[id]);
-		CellData[ i ]->SetNumberOfComponents(nc);
-	}
+  int first = 0;
+  for (int i=0; i<NumberOfVariables; i++ )
+    {
+    if((CellData[i]->GetNumberOfTuples() == 
+      NumberOfCells)&&(CellData[i]->GetNumberOfComponents() < 6))
+      {
+      if(first == 0)
+        {
+        mesh->GetCellData()->SetScalars(CellData[i]);
+        } 
+      else
+        {
+        mesh->GetCellData()->AddArray(CellData[i]);
+        }
+      this->CellDataArraySelection->AddArray(CellData[ i ]->GetName());
+      first = 1;
+      NumberOfCellFields++;
+      }
+    }
 
-	DataPass = 2;
-	ParseDataFile();  // Getting Data
-
-	int first = 0;
-	for (int i=0; i<NumberOfVariables; i++ ) {
-		if((CellData[i]->GetNumberOfTuples() == NumberOfCells)&&(CellData[i]->GetNumberOfComponents() < 6)) {
-			if(first == 0) {
-				mesh->GetCellData()->SetScalars(CellData[i]);
-				
-			} else {
-				mesh->GetCellData()->AddArray(CellData[i]);
-			}
-			this->CellDataArraySelection->AddArray(CellData[ i ]->GetName());
-			first = 1;
-			NumberOfCellFields++;
-		}
-	}
-	
-	mesh->SetPoints(Points);
-
-	DeleteVTKObjects();
-
+  mesh->SetPoints(Points);
+  DeleteVTKObjects();
   return 1;
 }
 
 //----------------------------------------------------------------------------
 int vtkFLUENTReader::OpenCaseAndDataFiles( void )
 {
-	int len = strlen(FileName);
-	len = len -4;
-	DataFileName = new char [256];
-	strncpy(this->DataFileName, this->FileName, len);
-	DataFileName[len] = '\0';
-	strcat(DataFileName, ".dat");
+  int len = strlen(FileName);
+  len = len -4;
+  DataFileName = new char [256];
+  strncpy(this->DataFileName, this->FileName, len);
+  DataFileName[len] = '\0';
+  strcat(DataFileName, ".dat");
 
-    	this->FileStream = new ifstream(this->FileName, ios::binary);
-    	this->DataFileStream = new ifstream(this->DataFileName, ios::binary);
+  this->FileStream = new ifstream(this->FileName, ios::binary);
+  this->DataFileStream = new ifstream(this->DataFileName, ios::binary);
 
-	if (this->FileStream->fail()){
-		cout << "Could Not Open Case File = " << this->FileName << endl;
-		return(0);
-	}
+  if (this->FileStream->fail()){
+    cout << "Could Not Open Case File = " << this->FileName << endl;
+    return(0);
+  }
 
-	if (this->DataFileStream->fail()){
-		cout << "Could Not Open Data File = " << this->DataFileName << endl;
-		return(0);
-	}
+  if (this->DataFileStream->fail()){
+    cout << "Could Not Open Data File = " << this->DataFileName << endl;
+    return(0);
+  }
 
-	FileStream->seekg(0, ios::end);      // go to end of file
-	CaseFileBufferLength = FileStream->tellg();  // what is the length of the file
-	FileStream->seekg(0, ios::beg);    // go to beginning of file
-	CaseFileBuffer = new char[CaseFileBufferLength];
-	FileStream->read(CaseFileBuffer, CaseFileBufferLength);
-	FileStream->close();
+  FileStream->seekg(0, ios::end); // go to end of file
+  CaseFileBufferLength = FileStream->tellg(); // get length of file
+  FileStream->seekg(0, ios::beg);  // go to beginning of file
+  CaseFileBuffer = new char[CaseFileBufferLength];
+  FileStream->read(CaseFileBuffer, CaseFileBufferLength);
+  FileStream->close();
 
-	DataFileStream->seekg(0, ios::end);      // go to end of file
-	DataFileBufferLength = DataFileStream->tellg();  // what is the length of the file
-	DataFileStream->seekg(0, ios::beg);    // go to beginning of file
-	DataFileBuffer = new char[DataFileBufferLength];
-	DataFileStream->read(DataFileBuffer, DataFileBufferLength);
-	DataFileStream->close();
+  DataFileStream->seekg(0, ios::end); // go to end of file
+  DataFileBufferLength = DataFileStream->tellg(); // get length of file
+  DataFileStream->seekg(0, ios::beg); // go to beginning of file
+  DataFileBuffer = new char[DataFileBufferLength];
+  DataFileStream->read(DataFileBuffer, DataFileBufferLength);
+  DataFileStream->close();
 
-	return(1);
+  return(1);
 }
 
 //----------------------------------------------------------------------------
-void vtkFLUENTReader::GetCellDataRange(int cellComp, int index, float *min, float *max)
+void vtkFLUENTReader::GetCellDataRange( int cellComp, 
+                                        int index, 
+                                        float *min, 
+                                        float *max)
 {
   if (index >= this->veclen[cellComp] || index < 0)
     {
@@ -212,7 +222,6 @@ int vtkFLUENTReader::GetCellArrayStatus(const char* name)
 {
   return this->CellDataArraySelection->ArrayIsEnabled(name);
 }
-
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::SetCellArrayStatus(const char* name, int status)
@@ -236,270 +245,319 @@ int vtkFLUENTReader::GetNumberOfCellArrays()
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::EnableAllCellArrays()
 {
-    this->CellDataArraySelection->EnableAllArrays();
+  this->CellDataArraySelection->EnableAllArrays();
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::DisableAllCellArrays()
 {
-    this->CellDataArraySelection->DisableAllArrays();
+  this->CellDataArraySelection->DisableAllArrays();
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::ParseCaseFile(void)
 {
-	int bufptr = 0;
-	while(bufptr < CaseFileBufferLength){
-		if(CaseFileBuffer[bufptr] == '('){
-			int ix = GetCaseIndex(bufptr);
-			bufptr = ExecuteCaseTask(ix, bufptr);
-		}
-		bufptr++;
-	}
+  int bufptr = 0;
+  while(bufptr < CaseFileBufferLength)
+    {
+    if(CaseFileBuffer[bufptr] == '(')
+      {
+      int ix = GetCaseIndex(bufptr);
+      bufptr = ExecuteCaseTask(ix, bufptr);
+      }
+      bufptr++;
+    }
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::MakeFaceTreeParentTable(void)
 {
-	for(int i=0;i<NumberOfFaceTrees;i++){
-		if(FaceTreeParentFaceId1->GetValue(i) > LastFaceTreeParent){
-			LastFaceTreeParent = FaceTreeParentFaceId1->GetValue(i);
-		}
-	}
+  for(int i=0;i<NumberOfFaceTrees;i++)
+    {
+    if(FaceTreeParentFaceId1->GetValue(i) > LastFaceTreeParent)
+      {
+      LastFaceTreeParent = FaceTreeParentFaceId1->GetValue(i);
+      }
+    }
 
-	for(int i=0; i<=LastFaceTreeParent; i++){
-		FaceTreeParentTable->InsertValue(i, 0);
-	}
+  for(int i=0; i<=LastFaceTreeParent; i++)
+    {
+    FaceTreeParentTable->InsertValue(i, 0);
+    }
 
-	int index = 0;
-	for(int i=0;i<NumberOfFaceTrees;i++){
-		for(int j=FaceTreeParentFaceId0->GetValue(i);j<=FaceTreeParentFaceId1->GetValue(i);j++){
-			FaceTreeParentTable->InsertValue(j, index);
-			index++;
-		}
-	}	
+  int index = 0;
+  for(int i=0;i<NumberOfFaceTrees;i++)
+    {
+    for(int j=FaceTreeParentFaceId0->GetValue(i);j<=FaceTreeParentFaceId1->GetValue(i);j++)
+      {
+      FaceTreeParentTable->InsertValue(j, index);
+      index++;
+      }
+    }	
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::MakeCellTreeParentTable(void)
 {
-	for(int i=0;i<NumberOfCellTrees;i++){
-		if(CellTreeParentCellId1->GetValue(i) > LastCellTreeParent){
-			LastCellTreeParent = CellTreeParentCellId1->GetValue(i);
-		}
-	}
+  for(int i=0;i<NumberOfCellTrees;i++)
+    {
+    if(CellTreeParentCellId1->GetValue(i) > LastCellTreeParent)
+      {
+      LastCellTreeParent = CellTreeParentCellId1->GetValue(i);
+      }
+    }
 
-	for(int i=0; i<=LastCellTreeParent; i++){
-		CellTreeParentTable->InsertValue(i, 0);
-	}
+  for(int i=0; i<=LastCellTreeParent; i++)
+    {
+    CellTreeParentTable->InsertValue(i, 0);
+    }
 
-	int index = 0;
-	for(int i=0;i<NumberOfCellTrees;i++){
-		for(int j=CellTreeParentCellId0->GetValue(i);j<=CellTreeParentCellId1->GetValue(i);j++){
-			CellTreeParentTable->InsertValue(j, index);
-			index++;
-		}
-	}	
-
+  int index = 0;
+  for(int i=0;i<NumberOfCellTrees;i++)
+    {
+    for(int j=CellTreeParentCellId0->GetValue(i);
+      j<=CellTreeParentCellId1->GetValue(i);j++)
+      {
+      CellTreeParentTable->InsertValue(j, index);
+      index++;
+      }
+    }	
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::LoadFaceKidFlags(void)
 {
-	// Initialize
-	for(int i=0;i<=NumberOfFaces;i++){
-		FaceKidFlags->InsertValue( i, 0);
-	}
+  // Initialize
+  for(int i=0;i<=NumberOfFaces;i++)
+    {
+    FaceKidFlags->InsertValue( i, 0);
+    }
 
-	for(int i=0;i<NumberOfFaceTrees;i++){
-		int StartFace = FaceTreeParentFaceId0->GetValue(i);
-		int EndFace = FaceTreeParentFaceId1->GetValue(i);
-		for(int j = StartFace; j <= EndFace; j++){
-
-			int StartKid = FaceTreesKidsIndex->GetValue(FaceTreeParentTable->GetValue(j));
-			int EndKid = FaceTreesKidsIndex->GetValue(FaceTreeParentTable->GetValue(j))+FaceTreesNumberOfKids->GetValue(FaceTreeParentTable->GetValue(j));
-
-			for(int k=StartKid; k<EndKid; k++){
-				int kid = FaceTreesKids->GetValue(k);
-				FaceKidFlags->InsertValue( kid, 1);
-			}
-		}
-	}
+  for(int i=0;i<NumberOfFaceTrees;i++)
+    {
+    int StartFace = FaceTreeParentFaceId0->GetValue(i);
+    int EndFace = FaceTreeParentFaceId1->GetValue(i);
+    for(int j = StartFace; j <= EndFace; j++)
+      {
+      int StartKid = 
+        FaceTreesKidsIndex->GetValue(FaceTreeParentTable->GetValue(j));
+      int EndKid =
+        FaceTreesKidsIndex->GetValue(FaceTreeParentTable->GetValue(j))+
+        FaceTreesNumberOfKids->GetValue(FaceTreeParentTable->GetValue(j));
+      for(int k=StartKid; k<EndKid; k++)
+        {
+        int kid = FaceTreesKids->GetValue(k);
+        FaceKidFlags->InsertValue( kid, 1);
+        }
+      }
+    }
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::LoadFaceParentFlags(void)
 {
-	// Initialize
-	for(int i=0;i<=NumberOfFaces;i++){
-		FaceParentFlags->InsertValue( i, 0);
-	}
+  // Initialize
+  for(int i=0;i<=NumberOfFaces;i++)
+    {
+    FaceParentFlags->InsertValue( i, 0);
+    }
 
-	for(int i=0;i<NumberOfFaceTrees;i++){
-		int StartFace = FaceTreeParentFaceId0->GetValue(i);
-		int EndFace = FaceTreeParentFaceId1->GetValue(i);
-		for(int j = StartFace; j <= EndFace; j++){
-
-			FaceParentFlags->InsertValue( j, 1);
-
-		}
-	}
+  for(int i=0;i<NumberOfFaceTrees;i++)
+    {
+    int StartFace = FaceTreeParentFaceId0->GetValue(i);
+    int EndFace = FaceTreeParentFaceId1->GetValue(i);
+    for(int j = StartFace; j <= EndFace; j++)
+      {
+      FaceParentFlags->InsertValue( j, 1);
+      }
+    }
 }
 
 //----------------------------------------------------------------------------
-void   vtkFLUENTReader::LoadInterfaceFaceChildFlags(void)
+void vtkFLUENTReader::LoadInterfaceFaceChildFlags(void)
 {
-	// Initialize Flag Array
-	for(int i=1;i<=NumberOfFaces;i++){
-		InterfaceFaceChildFlags->InsertValue(i,0);
-	}
+  // Initialize Flag Array
+  for(int i=1;i<=NumberOfFaces;i++)
+    {
+    InterfaceFaceChildFlags->InsertValue(i,0);
+    }
 
-	for(int i=0;i<NumberOfFaceParentChildren;i++){
-		int child = FaceParentsChildren->GetValue(i);
-		InterfaceFaceChildFlags->InsertValue(child,1);
-	}
+  for(int i=0;i<NumberOfFaceParentChildren;i++)
+    {
+    int child = FaceParentsChildren->GetValue(i);
+    InterfaceFaceChildFlags->InsertValue(child,1);
+    }
 }
 
 //----------------------------------------------------------------------------
-void 	vtkFLUENTReader::LoadNCGFaceChildFlags(void)
+void vtkFLUENTReader::LoadNCGFaceChildFlags(void)
 {
-	// Initialize Flag Array
-	for(int i=0;i<=NumberOfFaces;i++){
-		NCGFaceChildFlags->InsertValue(i,0);
-	}
+  // Initialize Flag Array
+  for(int i=0;i<=NumberOfFaces;i++)
+    {
+    NCGFaceChildFlags->InsertValue(i,0);
+    }
 
-	for(int i=0;i<NumberOfNCGFaces;i++){
-		int child = NCGFaceChild->GetValue(i);
-		NCGFaceChildFlags->InsertValue(child,1);
-	}
+  for(int i=0;i<NumberOfNCGFaces;i++)
+    {
+    int child = NCGFaceChild->GetValue(i);
+    NCGFaceChildFlags->InsertValue(child,1);
+    }
 }
 
 //----------------------------------------------------------------------------
-void   vtkFLUENTReader::BuildCells(void)
+void vtkFLUENTReader::BuildCells(void)
 {
-	int SpinF0 = 0;
-	int SpinF1 = 0;
-	int SpinF2 = 0;
-	int SpinF3 = 0;
-	int SpinF4 = 0;
-	int SpinF5 = 0;
+  int SpinF0 = 0;
+  int SpinF1 = 0;
+  int SpinF2 = 0;
+  int SpinF3 = 0;
+  int SpinF4 = 0;
+  int SpinF5 = 0;
 
-	int N0 = 0;
-	int N1 = 0;
-	int N2 = 0;
-	int N3 = 0;
-	int N4 = 0;
-	int N5 = 0;
-	int N6 = 0;
-	int N7 = 0;
+  int N0 = 0;
+  int N1 = 0;
+  int N2 = 0;
+  int N3 = 0;
+  int N4 = 0;
+  int N5 = 0;
+  int N6 = 0;
+  int N7 = 0;
 
+  for(int i=1;i<=NumberOfCells;i++)
+    {
+    int F0 = (int) CellFacesClean->GetComponent(i, 0);
+    int F1 = (int) CellFacesClean->GetComponent(i, 1);
+    int F2 = (int) CellFacesClean->GetComponent(i, 2);
+    int F3 = (int) CellFacesClean->GetComponent(i, 3);
+    int F4 = (int) CellFacesClean->GetComponent(i, 4);
+    int F5 = (int) CellFacesClean->GetComponent(i, 5);
 
-	for(int i=1;i<=NumberOfCells;i++){
-		int F0 = (int) CellFacesClean->GetComponent(i, 0);
-		int F1 = (int) CellFacesClean->GetComponent(i, 1);
-		int F2 = (int) CellFacesClean->GetComponent(i, 2);
-		int F3 = (int) CellFacesClean->GetComponent(i, 3);
-		int F4 = (int) CellFacesClean->GetComponent(i, 4);
-		int F5 = (int) CellFacesClean->GetComponent(i, 5);
+    if( (F0!=0) && ((int)FaceCells->GetComponent(F0,0) == i))
+      {
+      SpinF0 = 1;
+      }
+    else
+      {
+      SpinF0 = -1;
+      }
 
-		if( (F0!=0) && ((int)FaceCells->GetComponent(F0,0) == i)){
-			SpinF0 = 1;
-		} else {
-			SpinF0 = -1;
-		}
-	
-		if( (F1!=0) && ((int)FaceCells->GetComponent(F1,0) == i)){
-			SpinF1 = 1;
-		} else {
-			SpinF1 = -1;
-		}
-	
-		if( (F2!=0) && ((int)FaceCells->GetComponent(F2,0) == i)){
-			SpinF2 = 1;
-		} else {
-			SpinF2 = -1;
-		}
-	
-		if( (F3!=0) && ((int)FaceCells->GetComponent(F3,0) == i)){
-			SpinF3 = 1;
-		} else {
-			SpinF3 = -1;
-		}
-	
-		if( (F4!=0) && ((int)FaceCells->GetComponent(F4,0) == i)){
-			SpinF4 = 1;
-		} else {
-			SpinF4 = -1;
-		}
-	
-		if( (F5!=0) && ((int)FaceCells->GetComponent(F5,0) == i)){
-			SpinF5 = 1;
-		} else {
-			SpinF5 = -1;
-		}
-	
-		//*************************************
-		//   Triangular Cell Type
-		//*************************************
+    if( (F1!=0) && ((int)FaceCells->GetComponent(F1,0) == i))
+      {
+      SpinF1 = 1;
+      }
+    else
+      {
+      SpinF1 = -1;
+      }
 
+    if( (F2!=0) && ((int)FaceCells->GetComponent(F2,0) == i))
+      {
+      SpinF2 = 1;
+      }
+    else
+      {
+      SpinF2 = -1;
+      }
 
-		if(CellTypes->GetValue(i) == 1){
+    if( (F3!=0) && ((int)FaceCells->GetComponent(F3,0) == i))
+      {
+      SpinF3 = 1;
+      }
+    else
+      {
+      SpinF3 = -1;
+      }
 
-			int tn0 = (int)FaceNodes->GetComponent(F0, 0);
-			int tn1 = (int)FaceNodes->GetComponent(F0, 1);
-			int tn2 = (int)FaceNodes->GetComponent(F1, 0);
-			int tn3 = (int)FaceNodes->GetComponent(F1, 1);
-			int tn4 = (int)FaceNodes->GetComponent(F2, 0);
-			int tn5 = (int)FaceNodes->GetComponent(F2, 1);
+    if( (F4!=0) && ((int)FaceCells->GetComponent(F4,0) == i))
+      {
+      SpinF4 = 1;
+      }
+    else
+      {
+      SpinF4 = -1;
+      }
 
-			if(SpinF0 > 0){
-				N0 = tn0;
-				N1 = tn1;
-			} else {
-				N0 = tn1;
-				N1 = tn0;
-			}
+    if( (F5!=0) && ((int)FaceCells->GetComponent(F5,0) == i))
+      {
+      SpinF5 = 1;
+      }
+    else
+      {
+      SpinF5 = -1;
+      }
 
-			if( (tn2!=N0) && (tn2!=N1) ) {
-				N2 = tn2;
-			} else if ( (tn3!=N0) && (tn3!=N1) ) {
-				N2 = tn3;
-			} else if ( (tn4!=N0) && (tn4!=N1) ) {
-				N2 = tn4;
-			} else {
-				N2 = tn5;
-			}
+  //*************************************
+  //   Triangular Cell Type
+  //*************************************
 
-			aTriangle->GetPointIds()->SetId( 0, N0);
-			aTriangle->GetPointIds()->SetId( 1, N1);
-			aTriangle->GetPointIds()->SetId( 2, N2);
+    if(CellTypes->GetValue(i) == 1)
+      {
+      int tn0 = (int)FaceNodes->GetComponent(F0, 0);
+      int tn1 = (int)FaceNodes->GetComponent(F0, 1);
+      int tn2 = (int)FaceNodes->GetComponent(F1, 0);
+      int tn3 = (int)FaceNodes->GetComponent(F1, 1);
+      int tn4 = (int)FaceNodes->GetComponent(F2, 0);
+      int tn5 = (int)FaceNodes->GetComponent(F2, 1);
 
-			if(CellParentFlags->GetValue(i) != 1){
-				mesh->InsertNextCell(aTriangle->GetCellType(), aTriangle->GetPointIds());
-			}
+      if(SpinF0 > 0)
+        {
+        N0 = tn0;
+        N1 = tn1;
+        }
+      else
+        {
+        N0 = tn1;
+        N1 = tn0;
+        }
 
-		} else if (CellTypes->GetValue(i) == 2){
+      if( (tn2!=N0) && (tn2!=N1) )
+        {
+        N2 = tn2;
+        }
+      else if ( (tn3!=N0) && (tn3!=N1) )
+        {
+        N2 = tn3;
+        }
+      else if ( (tn4!=N0) && (tn4!=N1) )
+        {
+        N2 = tn4;
+        }
+      else
+        {
+        N2 = tn5;
+        }
 
-		//*************************************
-		//   Tetrahedral Cell Type
-		//*************************************
+      aTriangle->GetPointIds()->SetId( 0, N0);
+      aTriangle->GetPointIds()->SetId( 1, N1);
+      aTriangle->GetPointIds()->SetId( 2, N2);
 
-			int tn0 = (int)FaceNodes->GetComponent(F0, 0);
-			int tn1 = (int)FaceNodes->GetComponent(F0, 1);
-			int tn2 = (int)FaceNodes->GetComponent(F0, 2);
+      if(CellParentFlags->GetValue(i) != 1)
+        {
+        mesh->InsertNextCell(aTriangle->GetCellType(), 
+          aTriangle->GetPointIds());
+        }
+      }
+    else if(CellTypes->GetValue(i) == 2)
+      {
+      //*************************************
+      //   Tetrahedral Cell Type
+      //*************************************
+      int tn0 = (int)FaceNodes->GetComponent(F0, 0);
+      int tn1 = (int)FaceNodes->GetComponent(F0, 1);
+      int tn2 = (int)FaceNodes->GetComponent(F0, 2);
 
-			int tn3 = (int)FaceNodes->GetComponent(F1, 0);
-			int tn4 = (int)FaceNodes->GetComponent(F1, 1);
-			int tn5 = (int)FaceNodes->GetComponent(F1, 2);
+      int tn3 = (int)FaceNodes->GetComponent(F1, 0);
+      int tn4 = (int)FaceNodes->GetComponent(F1, 1);
+      int tn5 = (int)FaceNodes->GetComponent(F1, 2);
 
-			int tn6 = (int)FaceNodes->GetComponent(F2, 0);
-			int tn7 = (int)FaceNodes->GetComponent(F2, 1);
-			int tn8 = (int)FaceNodes->GetComponent(F2, 2);
+      int tn6 = (int)FaceNodes->GetComponent(F2, 0);
+      int tn7 = (int)FaceNodes->GetComponent(F2, 1);
+      int tn8 = (int)FaceNodes->GetComponent(F2, 2);
 
-			int tn9  = (int)FaceNodes->GetComponent(F3, 0);
-			int tn10 = (int)FaceNodes->GetComponent(F3, 1);
-			int tn11 = (int)FaceNodes->GetComponent(F3, 2);
-
+      int tn9  = (int)FaceNodes->GetComponent(F3, 0);
+      int tn10 = (int)FaceNodes->GetComponent(F3, 1);
+      int tn11 = (int)FaceNodes->GetComponent(F3, 2);
 
 			if(SpinF0 > 0){
 				N0 = tn0;
@@ -4507,6 +4565,7 @@ void vtkFLUENTReader::GetStringToNextRightParenOrEOLData(int ix, char buf[] )
 
 void vtkFLUENTReader::CreateVTKObjects(void)
 {
+
 	this->NumberOfCellFields = 0;
 	this->NumberOfCellComponents = 0;
 	this->FileStream = NULL;
