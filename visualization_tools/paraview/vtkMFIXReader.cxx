@@ -178,14 +178,13 @@ int vtkMFIXReader::RequestData(
   vtkInformationVector **vtkNotUsed(inputVector),
   vtkInformationVector *outputVector)
 {
-
   vtkInformation* outInfo = outputVector->GetInformationObject(0);
-  // get the ouptut
+
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
   vtkDebugMacro( << "Reading MFIX file");
-  
+
   this->MakeMesh(output);
 
   return 1;
@@ -449,9 +448,7 @@ int vtkMFIXReader::RequestInformation(
 	this->TimeStepRange[1] = this->NumberOfTimeSteps-1;
 	this->RequestInformationFlag = 1;
 
-
    	this->GetAllTimes(outputVector);
-
 	
   }
   
@@ -1823,7 +1820,6 @@ void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector)
 		}
 	}	
 
-
 	char fname[256];
 	for(int k=0;k<sizeof(fname);k++){
 		fname[k]=0;
@@ -1854,30 +1850,29 @@ void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector)
 		strcat(fname, ".SPB");
 	} 
 
-	ifstream in(fname , ios::binary);
+	ifstream tfile(fname , ios::binary);
 
 	int numberOfVariablesInSPX = spx_to_nvar_table->GetValue(variableIndexToSPX->GetValue(maxvar));
 
 	int offset = 512-sizeof(float) + 512*(numberOfVariablesInSPX*spx_records_per_timestep);
 
-	in.clear();
-    	in.seekg( 3*512, ios::beg ); // first time
+	tfile.clear();
+    	tfile.seekg( 3*512, ios::beg ); // first time
 
 	float time;
 
 	int cnt = 0;
   	double* steps = new double[this->NumberOfTimeSteps];
-	while (in.read( (char*)&time,sizeof(float) ) )
-	{
-		SWAP_FLOAT(time);
-		steps[cnt] = (double)time;
-		cnt++;
-		in.seekg(offset,ios::cur);
-	}
 
+	for(int i = 0; i < this->NumberOfTimeSteps; i++){
+		tfile.read( (char*)&time,sizeof(float) );
+		SWAP_FLOAT(time);
+		steps[i] = (double)time;
+		//cout << "cnt = " << i << ", time = " << time << endl;
+		tfile.seekg(offset,ios::cur);
+	}
 
   	vtkInformation* outInfo = outputVector->GetInformationObject(0);
   	outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_STEPS(), steps, this->NumberOfTimeSteps);
-  	delete[] steps;
 
 }
