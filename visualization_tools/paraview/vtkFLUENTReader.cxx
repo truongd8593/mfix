@@ -76,17 +76,28 @@ int vtkFLUENTReader::RequestData(
 void vtkFLUENTReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
+
+  os << indent << "File Name: " 
+     << (this->FileName ? this->FileName : "(none)") << endl;
+
+  os << indent << "Number Of Cells: " << this->NumberOfCells << endl;
+  os << indent << "Number Of Cell Fields: " 
+     << this->NumberOfCellFields << endl;
+
+  os << indent << "Number Of Cell Components: " 
+     << this->NumberOfCellComponents << endl;
+
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::ReadFile(vtkUnstructuredGrid *output)
 {
   output->Allocate();
-  output->ShallowCopy(mesh);
-  mesh->Delete();
+  output->ShallowCopy(this->Mesh);
+  this->Mesh->Delete();
 
-  for ( int i=0; i < NumberOfVariables ; i++ ) {
-    CellData[ i ]->Delete();
+  for ( int i=0; i < this->NumberOfVariables ; i++ ) {
+    this->CellData[ i ]->Delete();
   }
 }
 
@@ -96,76 +107,76 @@ int vtkFLUENTReader::RequestInformation(
   vtkInformationVector **vtkNotUsed(inputVector),
   vtkInformationVector *vtkNotUsed(outputVector))
 {
-  if(ObjectsFlag == 0){
-    CreateVTKObjects();
+  if(this->ObjectsFlag == 0){
+    this->CreateVTKObjects();
   }
 
-  if(!OpenCaseAndDataFiles()) {
+  if(!this->OpenCaseAndDataFiles()) {
     return 0;
   }
 
-  ParseCaseFile();
-  MakeFaceTreeParentTable();
-  MakeCellTreeParentTable();
-  LoadFaceKidFlags();
-  LoadFaceParentFlags();
-  LoadInterfaceFaceChildFlags();
-  LoadNCGFaceChildFlags();
-  LoadCellNumberOfFaces();
-  LoadCellFaces();
-  RemoveExtraFaces();
-  LoadCellParentFlags();
-  BuildCells();
-  DataPass = 1;
-  ParseDataFile();
-  InitializeVariableNames();
-  CellData = new vtkDoubleArray * [NumberOfVariables];
+  this->ParseCaseFile();
+  this->MakeFaceTreeParentTable();
+  this->MakeCellTreeParentTable();
+  this->LoadFaceKidFlags();
+  this->LoadFaceParentFlags();
+  this->LoadInterfaceFaceChildFlags();
+  this->LoadNCGFaceChildFlags();
+  this->LoadCellNumberOfFaces();
+  this->LoadCellFaces();
+  this->RemoveExtraFaces();
+  this->LoadCellParentFlags();
+  this->BuildCells();
+  this->DataPass = 1;
+  this->ParseDataFile();
+  this->InitializeVariableNames();
+  this->CellData = new vtkDoubleArray * [NumberOfVariables];
 
-  for ( int i=0; i < NumberOfVariables ; i++ ) {
-    int id = VariableIds->GetValue(i);
-    int nc = VariableSizes->GetValue(i);
-    CellData[ i ] = vtkDoubleArray::New();
-    CellData[ i ]->SetName(VariableNames[id]);
-    CellData[ i ]->SetNumberOfComponents(nc);
+  for ( int i=0; i < this->NumberOfVariables ; i++ ) {
+    int variableId = this->VariableIds->GetValue(i);
+    int numberOfComponents = this->VariableSizes->GetValue(i);
+    this->CellData[ i ] = vtkDoubleArray::New();
+    this->CellData[ i ]->SetName(VariableNames[variableId]);
+    this->CellData[ i ]->SetNumberOfComponents(numberOfComponents);
   }
 
-  DataPass = 2;
-  ParseDataFile();  // Getting Data
+  this->DataPass = 2;
+  this->ParseDataFile();  // Getting Data
 
   int first = 0;
-  for (int i=0; i<NumberOfVariables; i++ )
+  for (int i=0; i<this->NumberOfVariables; i++ )
     {
-    if((CellData[i]->GetNumberOfTuples() == 
-      NumberOfCells)&&(CellData[i]->GetNumberOfComponents() < 6))
+    if((this->CellData[i]->GetNumberOfTuples() == this->NumberOfCells)
+      && (this->CellData[i]->GetNumberOfComponents() < 6))
       {
       if(first == 0)
         {
-        mesh->GetCellData()->SetScalars(CellData[i]);
+        this->Mesh->GetCellData()->SetScalars(this->CellData[i]);
         } 
       else
         {
-        mesh->GetCellData()->AddArray(CellData[i]);
+        this->Mesh->GetCellData()->AddArray(this->CellData[i]);
         }
-      this->CellDataArraySelection->AddArray(CellData[ i ]->GetName());
+      this->CellDataArraySelection->AddArray(this->CellData[ i ]->GetName());
       first = 1;
-      NumberOfCellFields++;
+      this->NumberOfCellFields++;
       }
     }
-
-  mesh->SetPoints(Points);
-  DeleteVTKObjects();
+  this->NumberOfCellArrays = this->NumberOfCellFields;
+  this->Mesh->SetPoints(this->Points);
+  this->DeleteVTKObjects();
   return 1;
 }
 
 //----------------------------------------------------------------------------
 int vtkFLUENTReader::OpenCaseAndDataFiles( void )
 {
-  int len = strlen(FileName);
+  int len = strlen(this->FileName);
   len = len -4;
-  DataFileName = new char [256];
+  this->DataFileName = new char [256];
   strncpy(this->DataFileName, this->FileName, len);
-  DataFileName[len] = '\0';
-  strcat(DataFileName, ".dat");
+  this->DataFileName[len] = '\0';
+  strcat(this->DataFileName, ".dat");
 
   this->FileStream = new ifstream(this->FileName, ios::binary);
   this->DataFileStream = new ifstream(this->DataFileName, ios::binary);
@@ -180,19 +191,19 @@ int vtkFLUENTReader::OpenCaseAndDataFiles( void )
     return(0);
   }
 
-  FileStream->seekg(0, ios::end); // go to end of file
-  CaseFileBufferLength = FileStream->tellg(); // get length of file
-  FileStream->seekg(0, ios::beg);  // go to beginning of file
-  CaseFileBuffer = new char[CaseFileBufferLength];
-  FileStream->read(CaseFileBuffer, CaseFileBufferLength);
-  FileStream->close();
+  this->FileStream->seekg(0, ios::end); 
+  this->CaseFileBufferLength = this->FileStream->tellg();
+  this->FileStream->seekg(0, ios::beg);
+  this->CaseFileBuffer = new char[this->CaseFileBufferLength];
+  this->FileStream->read(this->CaseFileBuffer, this->CaseFileBufferLength);
+  this->FileStream->close();
 
-  DataFileStream->seekg(0, ios::end); // go to end of file
-  DataFileBufferLength = DataFileStream->tellg(); // get length of file
-  DataFileStream->seekg(0, ios::beg); // go to beginning of file
-  DataFileBuffer = new char[DataFileBufferLength];
-  DataFileStream->read(DataFileBuffer, DataFileBufferLength);
-  DataFileStream->close();
+  this->DataFileStream->seekg(0, ios::end);
+  this->DataFileBufferLength = this->DataFileStream->tellg();
+  this->DataFileStream->seekg(0, ios::beg);
+  this->DataFileBuffer = new char[this->DataFileBufferLength];
+  this->DataFileStream->read(this->DataFileBuffer, this->DataFileBufferLength);
+  this->DataFileStream->close();
 
   return(1);
 }
@@ -203,12 +214,12 @@ void vtkFLUENTReader::GetCellDataRange( int cellComp,
                                         float *min, 
                                         float *max)
 {
-  if (index >= this->veclen[cellComp] || index < 0)
+  if (index >= this->VectorLength[cellComp] || index < 0)
     {
     index = 0;  // if wrong index, set it to zero
     }
-  *min = this->min[cellComp];
-  *max = this->max[cellComp];
+  *min = this->Minimum[cellComp];
+  *max = this->Maximum[cellComp];
 }
 
 //----------------------------------------------------------------------------
@@ -237,12 +248,6 @@ void vtkFLUENTReader::SetCellArrayStatus(const char* name, int status)
 }
 
 //----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNumberOfCellArrays()
-{
-  return this->CellDataArraySelection->GetNumberOfArrays();
-}
-
-//----------------------------------------------------------------------------
 void vtkFLUENTReader::EnableAllCellArrays()
 {
   this->CellDataArraySelection->EnableAllArrays();
@@ -257,41 +262,41 @@ void vtkFLUENTReader::DisableAllCellArrays()
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::ParseCaseFile(void)
 {
-  int bufptr = 0;
-  while(bufptr < CaseFileBufferLength)
+  int bufferIndex = 0;
+  while(bufferIndex < this->CaseFileBufferLength)
     {
-    if(CaseFileBuffer[bufptr] == '(')
+    if(this->CaseFileBuffer[bufferIndex] == '(')
       {
-      int ix = GetCaseIndex(bufptr);
-      bufptr = ExecuteCaseTask(ix, bufptr);
+      int taskIndex = this->GetCaseIndex(bufferIndex);
+      bufferIndex = this->ExecuteCaseTask(taskIndex, bufferIndex);
       }
-      bufptr++;
+      bufferIndex++;
     }
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::MakeFaceTreeParentTable(void)
 {
-  for(int i=0;i<NumberOfFaceTrees;i++)
+  for(int i = 0; i < this->NumberOfFaceTrees; i++)
     {
-    if(FaceTreeParentFaceId1->GetValue(i) > LastFaceTreeParent)
+    if(this->FaceTreeParentFaceId1->GetValue(i) > this->LastFaceTreeParent)
       {
-      LastFaceTreeParent = FaceTreeParentFaceId1->GetValue(i);
+      this->LastFaceTreeParent = this->FaceTreeParentFaceId1->GetValue(i);
       }
     }
 
-  for(int i=0; i<=LastFaceTreeParent; i++)
+  for(int i=0; i <= this->LastFaceTreeParent; i++)
     {
-    FaceTreeParentTable->InsertValue(i, 0);
+    this->FaceTreeParentTable->InsertValue(i, 0);
     }
 
   int index = 0;
-  for(int i=0;i<NumberOfFaceTrees;i++)
+  for(int i = 0; i < this->NumberOfFaceTrees; i++)
     {
-    for(int j=FaceTreeParentFaceId0->GetValue(i); 
-      j<=FaceTreeParentFaceId1->GetValue(i);j++)
+    for(int j = this->FaceTreeParentFaceId0->GetValue(i); 
+      j <= this->FaceTreeParentFaceId1->GetValue(i); j++)
       {
-      FaceTreeParentTable->InsertValue(j, index);
+      this->FaceTreeParentTable->InsertValue(j, index);
       index++;
       }
     }	
@@ -300,26 +305,26 @@ void vtkFLUENTReader::MakeFaceTreeParentTable(void)
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::MakeCellTreeParentTable(void)
 {
-  for(int i=0;i<NumberOfCellTrees;i++)
+  for(int i = 0; i < this->NumberOfCellTrees; i++)
     {
-    if(CellTreeParentCellId1->GetValue(i) > LastCellTreeParent)
+    if(this->CellTreeParentCellId1->GetValue(i) > this->LastCellTreeParent)
       {
-      LastCellTreeParent = CellTreeParentCellId1->GetValue(i);
+      this->LastCellTreeParent = this->CellTreeParentCellId1->GetValue(i);
       }
     }
 
-  for(int i=0; i<=LastCellTreeParent; i++)
+  for(int i=0; i<=this->LastCellTreeParent; i++)
     {
-    CellTreeParentTable->InsertValue(i, 0);
+    this->CellTreeParentTable->InsertValue(i, 0);
     }
 
   int index = 0;
-  for(int i=0;i<NumberOfCellTrees;i++)
+  for(int i = 0; i < this->NumberOfCellTrees; i++)
     {
-    for(int j=CellTreeParentCellId0->GetValue(i);
-      j<=CellTreeParentCellId1->GetValue(i);j++)
+    for(int j = this->CellTreeParentCellId0->GetValue(i);
+      j <= this->CellTreeParentCellId1->GetValue(i);j++)
       {
-      CellTreeParentTable->InsertValue(j, index);
+      this->CellTreeParentTable->InsertValue(j, index);
       index++;
       }
     }	
@@ -329,26 +334,28 @@ void vtkFLUENTReader::MakeCellTreeParentTable(void)
 void vtkFLUENTReader::LoadFaceKidFlags(void)
 {
   // Initialize
-  for(int i=0;i<=NumberOfFaces;i++)
+  for(int i = 0; i <= this->NumberOfFaces; i++)
     {
-    FaceKidFlags->InsertValue( i, 0);
+    this->FaceKidFlags->InsertValue( i, 0);
     }
 
   for(int i=0;i<NumberOfFaceTrees;i++)
     {
-    int StartFace = FaceTreeParentFaceId0->GetValue(i);
-    int EndFace = FaceTreeParentFaceId1->GetValue(i);
-    for(int j = StartFace; j <= EndFace; j++)
+    int startFace = this->FaceTreeParentFaceId0->GetValue(i);
+    int endFace = this->FaceTreeParentFaceId1->GetValue(i);
+    for(int j = startFace; j <= endFace; j++)
       {
-      int StartKid = 
-        FaceTreesKidsIndex->GetValue(FaceTreeParentTable->GetValue(j));
-      int EndKid =
-        FaceTreesKidsIndex->GetValue(FaceTreeParentTable->GetValue(j))+
-        FaceTreesNumberOfKids->GetValue(FaceTreeParentTable->GetValue(j));
-      for(int k=StartKid; k<EndKid; k++)
+      int startKid = this->FaceTreesKidsIndex->GetValue(
+        this->FaceTreeParentTable->GetValue(j));
+      int endKid = this->FaceTreesKidsIndex->GetValue(
+        this->FaceTreeParentTable->GetValue(j))
+        + this->FaceTreesNumberOfKids->GetValue(
+        this->FaceTreeParentTable->GetValue(j));
+
+        for(int k = startKid; k < endKid; k++)
         {
-        int kid = FaceTreesKids->GetValue(k);
-        FaceKidFlags->InsertValue( kid, 1);
+        int kid = this->FaceTreesKids->GetValue(k);
+        this->FaceKidFlags->InsertValue( kid, 1);
         }
       }
     }
@@ -358,18 +365,18 @@ void vtkFLUENTReader::LoadFaceKidFlags(void)
 void vtkFLUENTReader::LoadFaceParentFlags(void)
 {
   // Initialize
-  for(int i=0;i<=NumberOfFaces;i++)
+  for(int i = 0; i <= this->NumberOfFaces; i++)
     {
-    FaceParentFlags->InsertValue( i, 0);
+    this->FaceParentFlags->InsertValue( i, 0);
     }
 
-  for(int i=0;i<NumberOfFaceTrees;i++)
+  for(int i = 0; i < this->NumberOfFaceTrees; i++)
     {
-    int StartFace = FaceTreeParentFaceId0->GetValue(i);
-    int EndFace = FaceTreeParentFaceId1->GetValue(i);
-    for(int j = StartFace; j <= EndFace; j++)
+    int startFace = this->FaceTreeParentFaceId0->GetValue(i);
+    int endFace = this->FaceTreeParentFaceId1->GetValue(i);
+    for(int j = startFace; j <= endFace; j++)
       {
-      FaceParentFlags->InsertValue( j, 1);
+      this->FaceParentFlags->InsertValue( j, 1);
       }
     }
 }
@@ -378,15 +385,15 @@ void vtkFLUENTReader::LoadFaceParentFlags(void)
 void vtkFLUENTReader::LoadInterfaceFaceChildFlags(void)
 {
   // Initialize Flag Array
-  for(int i=1;i<=NumberOfFaces;i++)
+  for(int i = 1; i <= this->NumberOfFaces; i++)
     {
-    InterfaceFaceChildFlags->InsertValue(i,0);
+    this->InterfaceFaceChildFlags->InsertValue(i,0);
     }
 
-  for(int i=0;i<NumberOfFaceParentChildren;i++)
+  for(int i = 0; i < this->NumberOfFaceParentChildren; i++)
     {
-    int child = FaceParentsChildren->GetValue(i);
-    InterfaceFaceChildFlags->InsertValue(child,1);
+    int child = this->FaceParentsChildren->GetValue(i);
+    this->InterfaceFaceChildFlags->InsertValue(child,1);
     }
 }
 
@@ -394,149 +401,111 @@ void vtkFLUENTReader::LoadInterfaceFaceChildFlags(void)
 void vtkFLUENTReader::LoadNCGFaceChildFlags(void)
 {
   // Initialize Flag Array
-  for(int i=0;i<=NumberOfFaces;i++)
+  for(int i = 0; i <= this->NumberOfFaces; i++)
     {
-    NCGFaceChildFlags->InsertValue(i,0);
+    this->NCGFaceChildFlags->InsertValue(i,0);
     }
 
-  for(int i=0;i<NumberOfNCGFaces;i++)
+  for(int i = 0; i < this->NumberOfNCGFaces; i++)
     {
-    int child = NCGFaceChild->GetValue(i);
-    NCGFaceChildFlags->InsertValue(child,1);
+    int child = this->NCGFaceChild->GetValue(i);
+    this->NCGFaceChildFlags->InsertValue(child,1);
     }
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::BuildCells(void)
 {
-  int SpinF0 = 0;
-  int SpinF1 = 0;
-  int SpinF2 = 0;
-  int SpinF3 = 0;
-  int SpinF4 = 0;
-  int SpinF5 = 0;
+  int spinFace[6];
+  for (int i = 0; i < 6; i++)
+    {
+    spinFace[i] = 0;
+    }
 
-  int N0 = 0;
-  int N1 = 0;
-  int N2 = 0;
-  int N3 = 0;
-  int N4 = 0;
-  int N5 = 0;
-  int N6 = 0;
-  int N7 = 0;
+  int node[8];
+  for (int i = 0; i < 8; i++)
+    {
+    node[i] = 0;
+    }
+
+  int tempNode[30];
+  for (int i = 0; i < 30; i++)
+    {
+    tempNode[i] = 0;
+    }
+
+  int face[6];
 
   for(int i=1;i<=NumberOfCells;i++)
     {
-    int F0 = (int) CellFacesClean->GetComponent(i, 0);
-    int F1 = (int) CellFacesClean->GetComponent(i, 1);
-    int F2 = (int) CellFacesClean->GetComponent(i, 2);
-    int F3 = (int) CellFacesClean->GetComponent(i, 3);
-    int F4 = (int) CellFacesClean->GetComponent(i, 4);
-    int F5 = (int) CellFacesClean->GetComponent(i, 5);
-
-    if( (F0!=0) && ((int)FaceCells->GetComponent(F0,0) == i))
+    for (int j = 0; j < 6; j++)
       {
-      SpinF0 = 1;
-      }
-    else
-      {
-      SpinF0 = -1;
+      face[j] = (int) CellFacesClean->GetComponent(i, j);
       }
 
-    if( (F1!=0) && ((int)FaceCells->GetComponent(F1,0) == i))
+    for (int j = 0; j < 6; j++)
       {
-      SpinF1 = 1;
-      }
-    else
-      {
-      SpinF1 = -1;
-      }
-
-    if( (F2!=0) && ((int)FaceCells->GetComponent(F2,0) == i))
-      {
-      SpinF2 = 1;
-      }
-    else
-      {
-      SpinF2 = -1;
+      if ( (face[j]!=0) && ((int)FaceCells->GetComponent(face[j],0) == i))
+        {
+        spinFace[j] = 1;
+        }
+      else
+        {
+        spinFace[j] = -1;
+        }
       }
 
-    if( (F3!=0) && ((int)FaceCells->GetComponent(F3,0) == i))
-      {
-      SpinF3 = 1;
-      }
-    else
-      {
-      SpinF3 = -1;
-      }
-
-    if( (F4!=0) && ((int)FaceCells->GetComponent(F4,0) == i))
-      {
-      SpinF4 = 1;
-      }
-    else
-      {
-      SpinF4 = -1;
-      }
-
-    if( (F5!=0) && ((int)FaceCells->GetComponent(F5,0) == i))
-      {
-      SpinF5 = 1;
-      }
-    else
-      {
-      SpinF5 = -1;
-      }
-
-  //*************************************
-  //   Triangular Cell Type
-  //*************************************
+    //*************************************
+    //   Triangular Cell Type
+    //*************************************
 
     if(CellTypes->GetValue(i) == 1)
       {
-      int tn0 = (int)FaceNodes->GetComponent(F0, 0);
-      int tn1 = (int)FaceNodes->GetComponent(F0, 1);
-      int tn2 = (int)FaceNodes->GetComponent(F1, 0);
-      int tn3 = (int)FaceNodes->GetComponent(F1, 1);
-      int tn4 = (int)FaceNodes->GetComponent(F2, 0);
-      int tn5 = (int)FaceNodes->GetComponent(F2, 1);
-
-      if(SpinF0 > 0)
+      int cnt = 0;
+      for (int j = 0; j < 3; j++)
         {
-        N0 = tn0;
-        N1 = tn1;
+        for (int k = 0; k < 2; k++)
+          {
+          tempNode[cnt] = (int)FaceNodes->GetComponent(face[j], k);
+          }
+        }
+
+      if(spinFace[0] > 0)
+        {
+        node[0] = tempNode[0];
+        node[1] = tempNode[1];
         }
       else
         {
-        N0 = tn1;
-        N1 = tn0;
+        node[0] = tempNode[1];
+        node[1] = tempNode[0];
         }
 
-      if( (tn2!=N0) && (tn2!=N1) )
+      if( (tempNode[2]!=node[0]) && (tempNode[2]!=node[1]) )
         {
-        N2 = tn2;
+        node[2] = tempNode[2];
         }
-      else if ( (tn3!=N0) && (tn3!=N1) )
+      else if ( (tempNode[3]!=node[0]) && (tempNode[3]!=node[1]) )
         {
-        N2 = tn3;
+        node[2] = tempNode[3];
         }
-      else if ( (tn4!=N0) && (tn4!=N1) )
+      else if ( (tempNode[4]!=node[0]) && (tempNode[4]!=node[1]) )
         {
-        N2 = tn4;
+        node[2] = tempNode[4];
         }
       else
         {
-        N2 = tn5;
+        node[2] = tempNode[5];
         }
 
-      aTriangle->GetPointIds()->SetId( 0, N0);
-      aTriangle->GetPointIds()->SetId( 1, N1);
-      aTriangle->GetPointIds()->SetId( 2, N2);
+      ATriangle->GetPointIds()->SetId( 0, node[0]);
+      ATriangle->GetPointIds()->SetId( 1, node[1]);
+      ATriangle->GetPointIds()->SetId( 2, node[2]);
 
       if(CellParentFlags->GetValue(i) != 1)
         {
-        mesh->InsertNextCell(aTriangle->GetCellType(), 
-          aTriangle->GetPointIds());
+        Mesh->InsertNextCell(ATriangle->GetCellType(), 
+          ATriangle->GetPointIds());
         }
       }
     else if(CellTypes->GetValue(i) == 2)
@@ -544,80 +513,80 @@ void vtkFLUENTReader::BuildCells(void)
       //*************************************
       //   Tetrahedral Cell Type
       //*************************************
-      int tn0 = (int)FaceNodes->GetComponent(F0, 0);
-      int tn1 = (int)FaceNodes->GetComponent(F0, 1);
-      int tn2 = (int)FaceNodes->GetComponent(F0, 2);
+      tempNode[0] = (int)FaceNodes->GetComponent(face[0], 0);
+      tempNode[1] = (int)FaceNodes->GetComponent(face[0], 1);
+      tempNode[2] = (int)FaceNodes->GetComponent(face[0], 2);
 
-      int tn3 = (int)FaceNodes->GetComponent(F1, 0);
-      int tn4 = (int)FaceNodes->GetComponent(F1, 1);
-      int tn5 = (int)FaceNodes->GetComponent(F1, 2);
+      tempNode[3] = (int)FaceNodes->GetComponent(face[1], 0);
+      tempNode[4] = (int)FaceNodes->GetComponent(face[1], 1);
+      tempNode[5] = (int)FaceNodes->GetComponent(face[1], 2);
 
-      int tn6 = (int)FaceNodes->GetComponent(F2, 0);
-      int tn7 = (int)FaceNodes->GetComponent(F2, 1);
-      int tn8 = (int)FaceNodes->GetComponent(F2, 2);
+      tempNode[6] = (int)FaceNodes->GetComponent(face[2], 0);
+      tempNode[7] = (int)FaceNodes->GetComponent(face[2], 1);
+      tempNode[8] = (int)FaceNodes->GetComponent(face[2], 2);
 
-      int tn9  = (int)FaceNodes->GetComponent(F3, 0);
-      int tn10 = (int)FaceNodes->GetComponent(F3, 1);
-      int tn11 = (int)FaceNodes->GetComponent(F3, 2);
+      tempNode[9]  = (int)FaceNodes->GetComponent(face[3], 0);
+      tempNode[10] = (int)FaceNodes->GetComponent(face[3], 1);
+      tempNode[11] = (int)FaceNodes->GetComponent(face[3], 2);
 
-      if (SpinF0 > 0)
+      if (spinFace[0] > 0)
         {
-        N0 = tn0;
-        N1 = tn1;
-        N2 = tn2;
+        node[0] = tempNode[0];
+        node[1] = tempNode[1];
+        node[2] = tempNode[2];
         }
       else 
         {
-        N0 = tn2;
-        N1 = tn1;
-        N2 = tn0;
+        node[0] = tempNode[2];
+        node[1] = tempNode[1];
+        node[2] = tempNode[0];
         }
 
-      if ( (tn3!=N0) && (tn3!=N1) && (tn3!=N2) ) 
+      if ( (tempNode[3]!=node[0]) && (tempNode[3]!=node[1]) && (tempNode[3]!=node[2]) ) 
         {
-        N3 = tn3;
+        node[3] = tempNode[3];
         }
-      else if ( (tn4!=N0) && (tn4!=N1) && (tn4!=N2) ) 
+      else if ( (tempNode[4]!=node[0]) && (tempNode[4]!=node[1]) && (tempNode[4]!=node[2]) ) 
         {
-        N3 = tn4;
+        node[3] = tempNode[4];
         }
-      else if ( (tn5!=N0) && (tn5!=N1) && (tn5!=N2) ) 
+      else if ( (tempNode[5]!=node[0]) && (tempNode[5]!=node[1]) && (tempNode[5]!=node[2]) ) 
         {
-        N3 = tn5;
+        node[3] = tempNode[5];
         } 
-      else if ( (tn6!=N0) && (tn6!=N1) && (tn6!=N2) )
+      else if ( (tempNode[6]!=node[0]) && (tempNode[6]!=node[1]) && (tempNode[6]!=node[2]) )
         {
-        N3 = tn6;
+        node[3] = tempNode[6];
 	} 
-      else if ( (tn7!=N0) && (tn7!=N1) && (tn7!=N2) ) 
+      else if ( (tempNode[7]!=node[0]) && (tempNode[7]!=node[1]) && (tempNode[7]!=node[2]) ) 
         {
-        N3 = tn7;
+        node[3] = tempNode[7];
 	} 
-      else if ( (tn8!=N0) && (tn8!=N1) && (tn8!=N2) ) 
+      else if ( (tempNode[8]!=node[0]) && (tempNode[8]!=node[1]) && (tempNode[8]!=node[2]) ) 
         {
-        N3 = tn8;
+        node[3] = tempNode[8];
         }
-      else if ( (tn9!=N0) && (tn9!=N1) && (tn9!=N2) )
+      else if ( (tempNode[9]!=node[0]) && (tempNode[9]!=node[1]) && (tempNode[9]!=node[2]) )
         {
-        N3 = tn9;
+        node[3] = tempNode[9];
         }
-      else if ( (tn10!=N0) && (tn10!=N1) && (tn10!=N2) ) 
+      else if ( (tempNode[10]!=node[0]) && (tempNode[10]!=node[1]) && (tempNode[10]!=node[2]) ) 
         {
-        N3 = tn10;
+        node[3] = tempNode[10];
         }
       else
         {
-        N3 = tn11;
+        node[3] = tempNode[11];
         }
 
-      aTetra->GetPointIds()->SetId( 0, N0);
-      aTetra->GetPointIds()->SetId( 1, N1);
-      aTetra->GetPointIds()->SetId( 2, N2);
-      aTetra->GetPointIds()->SetId( 3, N3);
+      ATetra->GetPointIds()->SetId( 0, node[0]);
+      ATetra->GetPointIds()->SetId( 1, node[1]);
+      ATetra->GetPointIds()->SetId( 2, node[2]);
+      ATetra->GetPointIds()->SetId( 3, node[3]);
 
       if (CellParentFlags->GetValue(i) != 1)
         {
-        mesh->InsertNextCell(aTetra->GetCellType(), aTetra->GetPointIds());
+        Mesh->InsertNextCell(ATetra->GetCellType(), ATetra->GetPointIds());
         }
       } 
     else if (CellTypes->GetValue(i) == 3)
@@ -626,76 +595,76 @@ void vtkFLUENTReader::BuildCells(void)
       //   Quadrilateral Cell Type
       //*************************************
 
-      int tn0 = (int)FaceNodes->GetComponent(F0, 0);
-      int tn1 = (int)FaceNodes->GetComponent(F0, 1);
-      int tn2 = (int)FaceNodes->GetComponent(F1, 0);
-      int tn3 = (int)FaceNodes->GetComponent(F1, 1);
-      int tn4 = (int)FaceNodes->GetComponent(F2, 0);
-      int tn5 = (int)FaceNodes->GetComponent(F2, 1);
-      int tn6 = (int)FaceNodes->GetComponent(F3, 0);
-      int tn7 = (int)FaceNodes->GetComponent(F3, 1);
+      tempNode[0] = (int)FaceNodes->GetComponent(face[0], 0);
+      tempNode[1] = (int)FaceNodes->GetComponent(face[0], 1);
+      tempNode[2] = (int)FaceNodes->GetComponent(face[1], 0);
+      tempNode[3] = (int)FaceNodes->GetComponent(face[1], 1);
+      tempNode[4] = (int)FaceNodes->GetComponent(face[2], 0);
+      tempNode[5] = (int)FaceNodes->GetComponent(face[2], 1);
+      tempNode[6] = (int)FaceNodes->GetComponent(face[3], 0);
+      tempNode[7] = (int)FaceNodes->GetComponent(face[3], 1);
 
-      if (SpinF0 > 0)
+      if (spinFace[0] > 0)
         {
-        N0 = tn0;
-        N1 = tn1;
+        node[0] = tempNode[0];
+        node[1] = tempNode[1];
         }
       else
         {
-        N0 = tn1;
-        N1 = tn0;
+        node[0] = tempNode[1];
+        node[1] = tempNode[0];
         }
 
-      if ( (tn2!=N0) && (tn2!=N1) && (tn3!=N0) && (tn3!=N1) )
+      if ( (tempNode[2]!=node[0]) && (tempNode[2]!=node[1]) && (tempNode[3]!=node[0]) && (tempNode[3]!=node[1]) )
         {
-        if (SpinF1 > 0)
+        if (spinFace[1] > 0)
           {
-          N2 = tn2;
-          N3 = tn3;
+          node[2] = tempNode[2];
+          node[3] = tempNode[3];
           }
         else 
           {
-          N2 = tn3;
-          N3 = tn2;
+          node[2] = tempNode[3];
+          node[3] = tempNode[2];
           }
         }
 
-      if ( (tn4!=N0) && (tn4!=N1) && (tn5!=N0) && (tn5!=N1) )
+      if ( (tempNode[4]!=node[0]) && (tempNode[4]!=node[1]) && (tempNode[5]!=node[0]) && (tempNode[5]!=node[1]) )
         {
-        if (SpinF2 > 0)
+        if (spinFace[2] > 0)
           {
-          N2 = tn4;
-          N3 = tn5;
+          node[2] = tempNode[4];
+          node[3] = tempNode[5];
           }
         else 
           {
-          N2 = tn5;
-          N3 = tn4;
+          node[2] = tempNode[5];
+          node[3] = tempNode[4];
           }
         }
 
-      if ( (tn6!=N0) && (tn6!=N1) && (tn7!=N0) && (tn7!=N1) )
+      if ( (tempNode[6]!=node[0]) && (tempNode[6]!=node[1]) && (tempNode[7]!=node[0]) && (tempNode[7]!=node[1]) )
         {
-        if (SpinF3 > 0)
+        if (spinFace[3] > 0)
           {
-          N2 = tn6;
-          N3 = tn7;
+          node[2] = tempNode[6];
+          node[3] = tempNode[7];
           }
         else
           {
-          N2 = tn7;
-          N3 = tn6;
+          node[2] = tempNode[7];
+          node[3] = tempNode[6];
           }
         }
 
-      aQuad->GetPointIds()->SetId( 0, N0);
-      aQuad->GetPointIds()->SetId( 1, N1);
-      aQuad->GetPointIds()->SetId( 2, N2);
-      aQuad->GetPointIds()->SetId( 3, N3);
+      AQuad->GetPointIds()->SetId( 0, node[0]);
+      AQuad->GetPointIds()->SetId( 1, node[1]);
+      AQuad->GetPointIds()->SetId( 2, node[2]);
+      AQuad->GetPointIds()->SetId( 3, node[3]);
 
       if (CellParentFlags->GetValue(i) != 1)
         {
-        mesh->InsertNextCell(aQuad->GetCellType(), aQuad->GetPointIds());
+        Mesh->InsertNextCell(AQuad->GetCellType(), AQuad->GetPointIds());
         }
       }
     else if (CellTypes->GetValue(i) == 4)
@@ -709,49 +678,49 @@ void vtkFLUENTReader::BuildCells(void)
       int BackFace = 0;
       int TopFace = 0;
 
-      int tn0 = (int)FaceNodes->GetComponent(F0, 0);
-      int tn1 = (int)FaceNodes->GetComponent(F0, 1);
-      int tn2 = (int)FaceNodes->GetComponent(F0, 2);
-      int tn3 = (int)FaceNodes->GetComponent(F0, 3);
+      tempNode[0] = (int)FaceNodes->GetComponent(face[0], 0);
+      tempNode[1] = (int)FaceNodes->GetComponent(face[0], 1);
+      tempNode[2] = (int)FaceNodes->GetComponent(face[0], 2);
+      tempNode[3] = (int)FaceNodes->GetComponent(face[0], 3);
 
-      int tn4 = (int)FaceNodes->GetComponent(F1, 0);
-      int tn5 = (int)FaceNodes->GetComponent(F1, 1);
-      int tn6 = (int)FaceNodes->GetComponent(F1, 2);
-      int tn7 = (int)FaceNodes->GetComponent(F1, 3);
+      tempNode[4] = (int)FaceNodes->GetComponent(face[1], 0);
+      tempNode[5] = (int)FaceNodes->GetComponent(face[1], 1);
+      tempNode[6] = (int)FaceNodes->GetComponent(face[1], 2);
+      tempNode[7] = (int)FaceNodes->GetComponent(face[1], 3);
 
-      int tn8 =  (int)FaceNodes->GetComponent(F2, 0);
-      int tn9 =  (int)FaceNodes->GetComponent(F2, 1);
-      int tn10 = (int)FaceNodes->GetComponent(F2, 2);
-      int tn11 = (int)FaceNodes->GetComponent(F2, 3);
+      tempNode[8] =  (int)FaceNodes->GetComponent(face[2], 0);
+      tempNode[9] =  (int)FaceNodes->GetComponent(face[2], 1);
+      tempNode[10] = (int)FaceNodes->GetComponent(face[2], 2);
+      tempNode[11] = (int)FaceNodes->GetComponent(face[2], 3);
 
-      int tn12 = (int)FaceNodes->GetComponent(F3, 0);
-      int tn13 = (int)FaceNodes->GetComponent(F3, 1);
-      int tn14 = (int)FaceNodes->GetComponent(F3, 2);
-      int tn15 = (int)FaceNodes->GetComponent(F3, 3);
+      tempNode[12] = (int)FaceNodes->GetComponent(face[3], 0);
+      tempNode[13] = (int)FaceNodes->GetComponent(face[3], 1);
+      tempNode[14] = (int)FaceNodes->GetComponent(face[3], 2);
+      tempNode[15] = (int)FaceNodes->GetComponent(face[3], 3);
 
-      int tn16 = (int)FaceNodes->GetComponent(F4, 0);
-      int tn17 = (int)FaceNodes->GetComponent(F4, 1);
-      int tn18 = (int)FaceNodes->GetComponent(F4, 2);
-      int tn19 = (int)FaceNodes->GetComponent(F4, 3);
+      tempNode[16] = (int)FaceNodes->GetComponent(face[4], 0);
+      tempNode[17] = (int)FaceNodes->GetComponent(face[4], 1);
+      tempNode[18] = (int)FaceNodes->GetComponent(face[4], 2);
+      tempNode[19] = (int)FaceNodes->GetComponent(face[4], 3);
 
-      int tn20 = (int)FaceNodes->GetComponent(F5, 0);
-      int tn21 = (int)FaceNodes->GetComponent(F5, 1);
-      int tn22 = (int)FaceNodes->GetComponent(F5, 2);
-      int tn23 = (int)FaceNodes->GetComponent(F5, 3);
+      tempNode[20] = (int)FaceNodes->GetComponent(face[5], 0);
+      tempNode[21] = (int)FaceNodes->GetComponent(face[5], 1);
+      tempNode[22] = (int)FaceNodes->GetComponent(face[5], 2);
+      tempNode[23] = (int)FaceNodes->GetComponent(face[5], 3);
 
-      if (SpinF0 > 0)
+      if (spinFace[0] > 0)
         {
-        N0 = tn0;
-        N1 = tn1;
-        N2 = tn2;
-        N3 = tn3;
+        node[0] = tempNode[0];
+        node[1] = tempNode[1];
+        node[2] = tempNode[2];
+        node[3] = tempNode[3];
         }
       else
         {
-        N0 = tn3;
-        N1 = tn2;
-        N2 = tn1;
-        N3 = tn0;
+        node[0] = tempNode[3];
+        node[1] = tempNode[2];
+        node[2] = tempNode[1];
+        node[3] = tempNode[0];
         }
 
       int FF = 0;
@@ -785,349 +754,349 @@ void vtkFLUENTReader::BuildCells(void)
       int BFN2 = 0;
       int BFN3 = 0;
 
-      if (((tn4==N0)||(tn5==N0)||(tn6==N0)||(tn7==N0)) 
-        && ((tn4==N1)||(tn5==N1)||(tn6==N1)||(tn7==N1)) )
+      if (((tempNode[4]==node[0])||(tempNode[5]==node[0])||(tempNode[6]==node[0])||(tempNode[7]==node[0])) 
+        && ((tempNode[4]==node[1])||(tempNode[5]==node[1])||(tempNode[6]==node[1])||(tempNode[7]==node[1])) )
         {
         RightFace = 1;
-        RF = F1;
-        RFN0 = tn4;
-        RFN1 = tn5;
-        RFN2 = tn6;
-        RFN3 = tn7;
+        RF = face[1];
+        RFN0 = tempNode[4];
+        RFN1 = tempNode[5];
+        RFN2 = tempNode[6];
+        RFN3 = tempNode[7];
         }
-      else if (((tn4==N0)||(tn5==N0)||(tn6==N0)||(tn7==N0))
-        && ((tn4==N3)||(tn5==N3)||(tn6==N3)||(tn7==N3)) )
+      else if (((tempNode[4]==node[0])||(tempNode[5]==node[0])||(tempNode[6]==node[0])||(tempNode[7]==node[0]))
+        && ((tempNode[4]==node[3])||(tempNode[5]==node[3])||(tempNode[6]==node[3])||(tempNode[7]==node[3])) )
         {
         FrontFace = 1;
-        FF = F1;
-        FFN0 = tn4;
-        FFN1 = tn5;
-        FFN2 = tn6;
-        FFN3 = tn7;
+        FF = face[1];
+        FFN0 = tempNode[4];
+        FFN1 = tempNode[5];
+        FFN2 = tempNode[6];
+        FFN3 = tempNode[7];
         }
-      else if (((tn4==N2)||(tn5==N2)||(tn6==N2)||(tn7==N2)) 
-        && ((tn4==N3)||(tn5==N3)||(tn6==N3)||(tn7==N3)) )
+      else if (((tempNode[4]==node[2])||(tempNode[5]==node[2])||(tempNode[6]==node[2])||(tempNode[7]==node[2])) 
+        && ((tempNode[4]==node[3])||(tempNode[5]==node[3])||(tempNode[6]==node[3])||(tempNode[7]==node[3])) )
         {
         LeftFace = 1;
-        LF = F1;
-        LFN0 = tn4;
-        LFN1 = tn5;
-        LFN2 = tn6;
-        LFN3 = tn7;
+        LF = face[1];
+        LFN0 = tempNode[4];
+        LFN1 = tempNode[5];
+        LFN2 = tempNode[6];
+        LFN3 = tempNode[7];
         }
-      else if (((tn4==N1)||(tn5==N1)||(tn6==N1)||(tn7==N1)) 
-        && ((tn4==N2)||(tn5==N2)||(tn6==N2)||(tn7==N2)) ) 
+      else if (((tempNode[4]==node[1])||(tempNode[5]==node[1])||(tempNode[6]==node[1])||(tempNode[7]==node[1])) 
+        && ((tempNode[4]==node[2])||(tempNode[5]==node[2])||(tempNode[6]==node[2])||(tempNode[7]==node[2])) ) 
         {
         BackFace = 1;
-        BF = F1;
-        BFN0 = tn4;
-        BFN1 = tn5;
-        BFN2 = tn6;
-        BFN3 = tn7;
+        BF = face[1];
+        BFN0 = tempNode[4];
+        BFN1 = tempNode[5];
+        BFN2 = tempNode[6];
+        BFN3 = tempNode[7];
         }
       else
         {
         TopFace = 1;
-        TF = F1;
-        TFN0 = tn4;
-        TFN1 = tn5;
-        TFN2 = tn6;
-        TFN3 = tn7;
+        TF = face[1];
+        TFN0 = tempNode[4];
+        TFN1 = tempNode[5];
+        TFN2 = tempNode[6];
+        TFN3 = tempNode[7];
         }
 
-      if (((tn8==N0)||(tn9==N0)||(tn10==N0)||(tn11==N0)) 
-        && ((tn8==N1)||(tn9==N1)||(tn10==N1)||(tn11==N1)))
+      if (((tempNode[8]==node[0])||(tempNode[9]==node[0])||(tempNode[10]==node[0])||(tempNode[11]==node[0])) 
+        && ((tempNode[8]==node[1])||(tempNode[9]==node[1])||(tempNode[10]==node[1])||(tempNode[11]==node[1])))
         {
         RightFace = 2;
-        RF = F2;
-        RFN0 = tn8;
-        RFN1 = tn9;
-        RFN2 = tn10;
-        RFN3 = tn11;
+        RF = face[2];
+        RFN0 = tempNode[8];
+        RFN1 = tempNode[9];
+        RFN2 = tempNode[10];
+        RFN3 = tempNode[11];
         }
-      else if (((tn8==N0)||(tn9==N0)||(tn10==N0)||(tn11==N0)) 
-        && ((tn8==N3)||(tn9==N3)||(tn10==N3)||(tn11==N3)))
+      else if (((tempNode[8]==node[0])||(tempNode[9]==node[0])||(tempNode[10]==node[0])||(tempNode[11]==node[0])) 
+        && ((tempNode[8]==node[3])||(tempNode[9]==node[3])||(tempNode[10]==node[3])||(tempNode[11]==node[3])))
         {
         FrontFace = 2;
-        FF = F2;
-        FFN0 = tn8;
-        FFN1 = tn9;
-        FFN2 = tn10;
-        FFN3 = tn11;
+        FF = face[2];
+        FFN0 = tempNode[8];
+        FFN1 = tempNode[9];
+        FFN2 = tempNode[10];
+        FFN3 = tempNode[11];
         }
-      else if (((tn8==N2)||(tn9==N2)||(tn10==N2)||(tn11==N2))
-        && ((tn8==N3)||(tn9==N3)||(tn10==N3)||(tn11==N3)))
+      else if (((tempNode[8]==node[2])||(tempNode[9]==node[2])||(tempNode[10]==node[2])||(tempNode[11]==node[2]))
+        && ((tempNode[8]==node[3])||(tempNode[9]==node[3])||(tempNode[10]==node[3])||(tempNode[11]==node[3])))
         {
         LeftFace = 2;
-        LF = F2;
-        LFN0 = tn8;
-        LFN1 = tn9;
-        LFN2 = tn10;
-        LFN3 = tn11;
+        LF = face[2];
+        LFN0 = tempNode[8];
+        LFN1 = tempNode[9];
+        LFN2 = tempNode[10];
+        LFN3 = tempNode[11];
         }
-      else if (((tn8==N1)||(tn9==N1)||(tn10==N1)||(tn11==N1))
-        && ((tn8==N2)||(tn9==N2)||(tn10==N2)||(tn11==N2)))
+      else if (((tempNode[8]==node[1])||(tempNode[9]==node[1])||(tempNode[10]==node[1])||(tempNode[11]==node[1]))
+        && ((tempNode[8]==node[2])||(tempNode[9]==node[2])||(tempNode[10]==node[2])||(tempNode[11]==node[2])))
         {
         BackFace = 2;
-        BF = F2;
-        BFN0 = tn8;
-        BFN1 = tn9;
-        BFN2 = tn10;
-        BFN3 = tn11;
+        BF = face[2];
+        BFN0 = tempNode[8];
+        BFN1 = tempNode[9];
+        BFN2 = tempNode[10];
+        BFN3 = tempNode[11];
         }
       else
         {
         TopFace = 2;
-        TF = F2;
-        TFN0 = tn8;
-        TFN1 = tn9;
-        TFN2 = tn10;
-        TFN3 = tn11;
+        TF = face[2];
+        TFN0 = tempNode[8];
+        TFN1 = tempNode[9];
+        TFN2 = tempNode[10];
+        TFN3 = tempNode[11];
         }
 
-      if (((tn12==N0)||(tn13==N0)||(tn14==N0)||(tn15==N0))
-        && ((tn12==N1)||(tn13==N1)||(tn14==N1)||(tn15==N1)))
+      if (((tempNode[12]==node[0])||(tempNode[13]==node[0])||(tempNode[14]==node[0])||(tempNode[15]==node[0]))
+        && ((tempNode[12]==node[1])||(tempNode[13]==node[1])||(tempNode[14]==node[1])||(tempNode[15]==node[1])))
         {
         RightFace = 3;
-        RF = F3;
-        RFN0 = tn12;
-        RFN1 = tn13;
-        RFN2 = tn14;
-        RFN3 = tn15;
+        RF = face[3];
+        RFN0 = tempNode[12];
+        RFN1 = tempNode[13];
+        RFN2 = tempNode[14];
+        RFN3 = tempNode[15];
         }
-      else if (((tn12==N0)||(tn13==N0)||(tn14==N0)||(tn15==N0))
-        && ((tn12==N3)||(tn13==N3)||(tn14==N3)||(tn15==N3)))
+      else if (((tempNode[12]==node[0])||(tempNode[13]==node[0])||(tempNode[14]==node[0])||(tempNode[15]==node[0]))
+        && ((tempNode[12]==node[3])||(tempNode[13]==node[3])||(tempNode[14]==node[3])||(tempNode[15]==node[3])))
         {
         FrontFace = 3;
-        FF = F3;
-        FFN0 = tn12;
-        FFN1 = tn13;
-        FFN2 = tn14;
-        FFN3 = tn15;
+        FF = face[3];
+        FFN0 = tempNode[12];
+        FFN1 = tempNode[13];
+        FFN2 = tempNode[14];
+        FFN3 = tempNode[15];
         }
-      else if (((tn12==N2)||(tn13==N2)||(tn14==N2)||(tn15==N2))
-        && ((tn12==N3)||(tn13==N3)||(tn14==N3)||(tn15==N3)))
+      else if (((tempNode[12]==node[2])||(tempNode[13]==node[2])||(tempNode[14]==node[2])||(tempNode[15]==node[2]))
+        && ((tempNode[12]==node[3])||(tempNode[13]==node[3])||(tempNode[14]==node[3])||(tempNode[15]==node[3])))
         {
         LeftFace = 3;
-        LF = F3;
-        LFN0 = tn12;
-        LFN1 = tn13;
-        LFN2 = tn14;
-        LFN3 = tn15;
+        LF = face[3];
+        LFN0 = tempNode[12];
+        LFN1 = tempNode[13];
+        LFN2 = tempNode[14];
+        LFN3 = tempNode[15];
         }
-      else if (((tn12==N1)||(tn13==N1)||(tn14==N1)||(tn15==N1))
-        && ((tn12==N2)||(tn13==N2)||(tn14==N2)||(tn15==N2)))
+      else if (((tempNode[12]==node[1])||(tempNode[13]==node[1])||(tempNode[14]==node[1])||(tempNode[15]==node[1]))
+        && ((tempNode[12]==node[2])||(tempNode[13]==node[2])||(tempNode[14]==node[2])||(tempNode[15]==node[2])))
         {
         BackFace = 3;
-        BF = F3;
-        BFN0 = tn12;
-        BFN1 = tn13;
-        BFN2 = tn14;
-        BFN3 = tn15;
+        BF = face[3];
+        BFN0 = tempNode[12];
+        BFN1 = tempNode[13];
+        BFN2 = tempNode[14];
+        BFN3 = tempNode[15];
         }
       else
         {
         TopFace = 3;
-        TF = F3;
-        TFN0 = tn12;
-        TFN1 = tn13;
-        TFN2 = tn14;
-        TFN3 = tn15;
+        TF = face[3];
+        TFN0 = tempNode[12];
+        TFN1 = tempNode[13];
+        TFN2 = tempNode[14];
+        TFN3 = tempNode[15];
         }
 
-      if (((tn16==N0)||(tn17==N0)||(tn18==N0)||(tn19==N0))
-        && ((tn16==N1)||(tn17==N1)||(tn18==N1)||(tn19==N1)))
+      if (((tempNode[16]==node[0])||(tempNode[17]==node[0])||(tempNode[18]==node[0])||(tempNode[19]==node[0]))
+        && ((tempNode[16]==node[1])||(tempNode[17]==node[1])||(tempNode[18]==node[1])||(tempNode[19]==node[1])))
         {
         RightFace = 4;
-        RF = F4;
-        RFN0 = tn16;
-        RFN1 = tn17;
-        RFN2 = tn18;
-        RFN3 = tn19;
+        RF = face[4];
+        RFN0 = tempNode[16];
+        RFN1 = tempNode[17];
+        RFN2 = tempNode[18];
+        RFN3 = tempNode[19];
         }
-      else if (((tn16==N0)||(tn17==N0)||(tn18==N0)||(tn19==N0))
-        && ((tn16==N3)||(tn17==N3)||(tn18==N3)||(tn19==N3)))
+      else if (((tempNode[16]==node[0])||(tempNode[17]==node[0])||(tempNode[18]==node[0])||(tempNode[19]==node[0]))
+        && ((tempNode[16]==node[3])||(tempNode[17]==node[3])||(tempNode[18]==node[3])||(tempNode[19]==node[3])))
         {
         FrontFace = 4;
-        FF = F4;
-        FFN0 = tn16;
-        FFN1 = tn17;
-        FFN2 = tn18;
-        FFN3 = tn19;
+        FF = face[4];
+        FFN0 = tempNode[16];
+        FFN1 = tempNode[17];
+        FFN2 = tempNode[18];
+        FFN3 = tempNode[19];
         }
-      else if (((tn16==N2)||(tn17==N2)||(tn18==N2)||(tn19==N2))
-        && ((tn16==N3)||(tn17==N3)||(tn18==N3)||(tn19==N3)))
+      else if (((tempNode[16]==node[2])||(tempNode[17]==node[2])||(tempNode[18]==node[2])||(tempNode[19]==node[2]))
+        && ((tempNode[16]==node[3])||(tempNode[17]==node[3])||(tempNode[18]==node[3])||(tempNode[19]==node[3])))
         {
         LeftFace = 4;
-        LF = F4;
-        LFN0 = tn16;
-        LFN1 = tn17;
-        LFN2 = tn18;
-        LFN3 = tn19;
+        LF = face[4];
+        LFN0 = tempNode[16];
+        LFN1 = tempNode[17];
+        LFN2 = tempNode[18];
+        LFN3 = tempNode[19];
         }
-      else if (((tn16==N1)||(tn17==N1)||(tn18==N1)||(tn19==N1))
-        && ((tn16==N2)||(tn17==N2)||(tn18==N2)||(tn19==N2)))
+      else if (((tempNode[16]==node[1])||(tempNode[17]==node[1])||(tempNode[18]==node[1])||(tempNode[19]==node[1]))
+        && ((tempNode[16]==node[2])||(tempNode[17]==node[2])||(tempNode[18]==node[2])||(tempNode[19]==node[2])))
         {
         BackFace = 4;
-        BF = F4;
-        BFN0 = tn16;
-        BFN1 = tn17;
-        BFN2 = tn18;
-        BFN3 = tn19;
+        BF = face[4];
+        BFN0 = tempNode[16];
+        BFN1 = tempNode[17];
+        BFN2 = tempNode[18];
+        BFN3 = tempNode[19];
         }
       else
         {
         TopFace = 4;
-        TF = F4;
-        TFN0 = tn16;
-        TFN1 = tn17;
-        TFN2 = tn18;
-        TFN3 = tn19;
+        TF = face[4];
+        TFN0 = tempNode[16];
+        TFN1 = tempNode[17];
+        TFN2 = tempNode[18];
+        TFN3 = tempNode[19];
         }
 
-      if (((tn20==N0)||(tn21==N0)||(tn22==N0)||(tn23==N0))
-        && ((tn20==N1)||(tn21==N1)||(tn22==N1)||(tn23==N1)))
+      if (((tempNode[20]==node[0])||(tempNode[21]==node[0])||(tempNode[22]==node[0])||(tempNode[23]==node[0]))
+        && ((tempNode[20]==node[1])||(tempNode[21]==node[1])||(tempNode[22]==node[1])||(tempNode[23]==node[1])))
         {
         RightFace = 5;
-        RF = F5;
-        RFN0 = tn20;
-        RFN1 = tn21;
-        RFN2 = tn22;
-        RFN3 = tn23;
+        RF = face[5];
+        RFN0 = tempNode[20];
+        RFN1 = tempNode[21];
+        RFN2 = tempNode[22];
+        RFN3 = tempNode[23];
         }
-      else if (((tn20==N0)||(tn21==N0)||(tn22==N0)||(tn23==N0))
-        && ((tn20==N3)||(tn21==N3)||(tn22==N3)||(tn23==N3)))
+      else if (((tempNode[20]==node[0])||(tempNode[21]==node[0])||(tempNode[22]==node[0])||(tempNode[23]==node[0]))
+        && ((tempNode[20]==node[3])||(tempNode[21]==node[3])||(tempNode[22]==node[3])||(tempNode[23]==node[3])))
         {
         FrontFace = 5;
-        FF = F5;
-        FFN0 = tn20;
-        FFN1 = tn21;
-        FFN2 = tn22;
-        FFN3 = tn23;
+        FF = face[5];
+        FFN0 = tempNode[20];
+        FFN1 = tempNode[21];
+        FFN2 = tempNode[22];
+        FFN3 = tempNode[23];
         }
-      else if (((tn20==N2)||(tn21==N2)||(tn22==N2)||(tn23==N2)) 
-        && ((tn20==N3)||(tn21==N3)||(tn22==N3)||(tn23==N3)))
+      else if (((tempNode[20]==node[2])||(tempNode[21]==node[2])||(tempNode[22]==node[2])||(tempNode[23]==node[2])) 
+        && ((tempNode[20]==node[3])||(tempNode[21]==node[3])||(tempNode[22]==node[3])||(tempNode[23]==node[3])))
         {
         LeftFace = 5;
-        LF = F5;
-        LFN0 = tn20;
-        LFN1 = tn21;
-        LFN2 = tn22;
-        LFN3 = tn23;
+        LF = face[5];
+        LFN0 = tempNode[20];
+        LFN1 = tempNode[21];
+        LFN2 = tempNode[22];
+        LFN3 = tempNode[23];
         }
-      else if (((tn20==N1)||(tn21==N1)||(tn22==N1)||(tn23==N1)) 
-        && ((tn20==N2)||(tn21==N2)||(tn22==N2)||(tn23==N2)))
+      else if (((tempNode[20]==node[1])||(tempNode[21]==node[1])||(tempNode[22]==node[1])||(tempNode[23]==node[1])) 
+        && ((tempNode[20]==node[2])||(tempNode[21]==node[2])||(tempNode[22]==node[2])||(tempNode[23]==node[2])))
         {
         BackFace = 5;
-        BF = F5;
-        BFN0 = tn20;
-        BFN1 = tn21;
-        BFN2 = tn22;
-        BFN3 = tn23;
+        BF = face[5];
+        BFN0 = tempNode[20];
+        BFN1 = tempNode[21];
+        BFN2 = tempNode[22];
+        BFN3 = tempNode[23];
         }
       else
         {
         TopFace = 5;
-        TF = F5;
-        TFN0 = tn20;
-        TFN1 = tn21;
-        TFN2 = tn22;
-        TFN3 = tn23;
+        TF = face[5];
+        TFN0 = tempNode[20];
+        TFN1 = tempNode[21];
+        TFN2 = tempNode[22];
+        TFN3 = tempNode[23];
         }
 
       if (((TFN0==RFN0)||(TFN0==RFN1)||(TFN0==RFN2)||(TFN0==RFN3))
         &&((TFN0==FFN0)||(TFN0==FFN1)||(TFN0==FFN2)||(TFN0==FFN3)))
         {
-        N4 = TFN0;
+        node[4] = TFN0;
         }
       else if (((TFN0==RFN0)||(TFN0==RFN1)||(TFN0==RFN2)||(TFN0==RFN3))
         &&((TFN0==BFN0)||(TFN0==BFN1)||(TFN0==BFN2)||(TFN0==BFN3)))
         {
-        N5 = TFN0;
+        node[5] = TFN0;
         }
       else if (((TFN0==LFN0)||(TFN0==LFN1)||(TFN0==LFN2)||(TFN0==LFN3))
         &&((TFN0==BFN0)||(TFN0==BFN1)||(TFN0==BFN2)||(TFN0==BFN3)))
         {
-        N6 = TFN0;
+        node[6] = TFN0;
         }
       else 
         {
-        N7 = TFN0;
+        node[7] = TFN0;
         }
 
       if (((TFN1==RFN0)||(TFN1==RFN1)||(TFN1==RFN2)||(TFN1==RFN3))
         &&((TFN1==FFN0)||(TFN1==FFN1)||(TFN1==FFN2)||(TFN1==FFN3)))
         {
-        N4 = TFN1;
+        node[4] = TFN1;
         }
       else if (((TFN1==RFN0)||(TFN1==RFN1)||(TFN1==RFN2)||(TFN1==RFN3))
         &&((TFN1==BFN0)||(TFN1==BFN1)||(TFN1==BFN2)||(TFN1==BFN3)))
         {
-        N5 = TFN1;
+        node[5] = TFN1;
         }
       else if (((TFN1==LFN0)||(TFN1==LFN1)||(TFN1==LFN2)||(TFN1==LFN3))
         &&((TFN1==BFN0)||(TFN1==BFN1)||(TFN1==BFN2)||(TFN1==BFN3)))
         {
-        N6 = TFN1;
+        node[6] = TFN1;
         }
       else
         {
-        N7 = TFN1;
+        node[7] = TFN1;
         }
 
       if (((TFN2==RFN0)||(TFN2==RFN1)||(TFN2==RFN2)||(TFN2==RFN3))
         &&((TFN2==FFN0)||(TFN2==FFN1)||(TFN2==FFN2)||(TFN2==FFN3)))
         {
-        N4 = TFN2;
+        node[4] = TFN2;
         }
       else if (((TFN2==RFN0)||(TFN2==RFN1)||(TFN2==RFN2)||(TFN2==RFN3))
         &&((TFN2==BFN0)||(TFN2==BFN1)||(TFN2==BFN2)||(TFN2==BFN3)))
         {
-        N5 = TFN2;
+        node[5] = TFN2;
         }
       else if (((TFN2==LFN0)||(TFN2==LFN1)||(TFN2==LFN2)||(TFN2==LFN3))
         &&((TFN2==BFN0)||(TFN2==BFN1)||(TFN2==BFN2)||(TFN2==BFN3)))
         {
-        N6 = TFN2;
+        node[6] = TFN2;
         }
       else
         {
-        N7 = TFN2;
+        node[7] = TFN2;
         }
 
       if (((TFN3==RFN0)||(TFN3==RFN1)||(TFN3==RFN2)||(TFN3==RFN3))
         &&((TFN3==FFN0)||(TFN3==FFN1)||(TFN3==FFN2)||(TFN3==FFN3)))
         {
-        N4 = TFN3;
+        node[4] = TFN3;
         }
       else if (((TFN3==RFN0)||(TFN3==RFN1)||(TFN3==RFN2)||(TFN3==RFN3)) 
         &&((TFN3==BFN0)||(TFN3==BFN1)||(TFN3==BFN2)||(TFN3==BFN3)))
         {
-        N5 = TFN3;
+        node[5] = TFN3;
         }
       else if (((TFN3==LFN0)||(TFN3==LFN1)||(TFN3==LFN2)||(TFN3==LFN3))
         &&((TFN3==BFN0)||(TFN3==BFN1)||(TFN3==BFN2)||(TFN3==BFN3)))
         {
-        N6 = TFN3;
+        node[6] = TFN3;
         }
       else
         {
-        N7 = TFN3;
+        node[7] = TFN3;
         }
 
-      aHexahedron->GetPointIds()->SetId( 0, N0);
-      aHexahedron->GetPointIds()->SetId( 1, N1);
-      aHexahedron->GetPointIds()->SetId( 2, N2);
-      aHexahedron->GetPointIds()->SetId( 3, N3);
-      aHexahedron->GetPointIds()->SetId( 4, N4);
-      aHexahedron->GetPointIds()->SetId( 5, N5);
-      aHexahedron->GetPointIds()->SetId( 6, N6);
-      aHexahedron->GetPointIds()->SetId( 7, N7);
+      AHexahedron->GetPointIds()->SetId( 0, node[0]);
+      AHexahedron->GetPointIds()->SetId( 1, node[1]);
+      AHexahedron->GetPointIds()->SetId( 2, node[2]);
+      AHexahedron->GetPointIds()->SetId( 3, node[3]);
+      AHexahedron->GetPointIds()->SetId( 4, node[4]);
+      AHexahedron->GetPointIds()->SetId( 5, node[5]);
+      AHexahedron->GetPointIds()->SetId( 6, node[6]);
+      AHexahedron->GetPointIds()->SetId( 7, node[7]);
 
       if (CellParentFlags->GetValue(i) != 1)
         {
-        mesh->InsertNextCell(aHexahedron->GetCellType(), 
-          aHexahedron->GetPointIds());
+        Mesh->InsertNextCell(AHexahedron->GetCellType(), 
+          AHexahedron->GetPointIds());
         }
       }
     else if (CellTypes->GetValue(i) == 5)
@@ -1136,136 +1105,135 @@ void vtkFLUENTReader::BuildCells(void)
       //   Pyramid Cell Type
       //*************************************
       int BF;
-      int tn0, tn1, tn2;
-      if (FaceTypes->GetValue(F0) == 4)
+      if (FaceTypes->GetValue(face[0]) == 4)
         {
-        BF = F0;
-        if (SpinF0 > 0)
+        BF = face[0];
+        if (spinFace[0] > 0)
           {
-          N0 = (int)FaceNodes->GetComponent(F0, 0);
-          N1 = (int)FaceNodes->GetComponent(F0, 1);
-          N2 = (int)FaceNodes->GetComponent(F0, 2);
-          N3 = (int)FaceNodes->GetComponent(F0, 3);
+          node[0] = (int)FaceNodes->GetComponent(face[0], 0);
+          node[1] = (int)FaceNodes->GetComponent(face[0], 1);
+          node[2] = (int)FaceNodes->GetComponent(face[0], 2);
+          node[3] = (int)FaceNodes->GetComponent(face[0], 3);
           }
         else
           {
-          N3 = (int)FaceNodes->GetComponent(F0, 0);
-          N2 = (int)FaceNodes->GetComponent(F0, 1);
-          N1 = (int)FaceNodes->GetComponent(F0, 2);
-          N0 = (int)FaceNodes->GetComponent(F0, 3);
+          node[3] = (int)FaceNodes->GetComponent(face[0], 0);
+          node[2] = (int)FaceNodes->GetComponent(face[0], 1);
+          node[1] = (int)FaceNodes->GetComponent(face[0], 2);
+          node[0] = (int)FaceNodes->GetComponent(face[0], 3);
           }
-        tn0 = (int)FaceNodes->GetComponent(F1, 0);
-        tn1 = (int)FaceNodes->GetComponent(F1, 1);
-        tn2 = (int)FaceNodes->GetComponent(F1, 2);
+        tempNode[0] = (int)FaceNodes->GetComponent(face[1], 0);
+        tempNode[1] = (int)FaceNodes->GetComponent(face[1], 1);
+        tempNode[2] = (int)FaceNodes->GetComponent(face[1], 2);
         }
-      else if (FaceTypes->GetValue(F1) == 4)
+      else if (FaceTypes->GetValue(face[1]) == 4)
         {
-        BF = F1;
-        if (SpinF1 > 0)
+        BF = face[1];
+        if (spinFace[1] > 0)
           {
-          N0 = (int)FaceNodes->GetComponent(F1, 0);
-          N1 = (int)FaceNodes->GetComponent(F1, 1);
-          N2 = (int)FaceNodes->GetComponent(F1, 2);
-          N3 = (int)FaceNodes->GetComponent(F1, 3);
+          node[0] = (int)FaceNodes->GetComponent(face[1], 0);
+          node[1] = (int)FaceNodes->GetComponent(face[1], 1);
+          node[2] = (int)FaceNodes->GetComponent(face[1], 2);
+          node[3] = (int)FaceNodes->GetComponent(face[1], 3);
           }
         else
           {
-          N3 = (int)FaceNodes->GetComponent(F1, 0);
-          N2 = (int)FaceNodes->GetComponent(F1, 1);
-          N1 = (int)FaceNodes->GetComponent(F1, 2);
-          N0 = (int)FaceNodes->GetComponent(F1, 3);
+          node[3] = (int)FaceNodes->GetComponent(face[1], 0);
+          node[2] = (int)FaceNodes->GetComponent(face[1], 1);
+          node[1] = (int)FaceNodes->GetComponent(face[1], 2);
+          node[0] = (int)FaceNodes->GetComponent(face[1], 3);
           }
-          tn0 = (int)FaceNodes->GetComponent(F0, 0);
-          tn1 = (int)FaceNodes->GetComponent(F0, 1);
-          tn2 = (int)FaceNodes->GetComponent(F0, 2);
+          tempNode[0] = (int)FaceNodes->GetComponent(face[0], 0);
+          tempNode[1] = (int)FaceNodes->GetComponent(face[0], 1);
+          tempNode[2] = (int)FaceNodes->GetComponent(face[0], 2);
           }
-      else if (FaceTypes->GetValue(F2) == 4)
+      else if (FaceTypes->GetValue(face[2]) == 4)
         {
-        BF = F2;
-        if (SpinF2 > 0)
+        BF = face[2];
+        if (spinFace[2] > 0)
           {
-          N0 = (int)FaceNodes->GetComponent(F2, 0);
-          N1 = (int)FaceNodes->GetComponent(F2, 1);
-          N2 = (int)FaceNodes->GetComponent(F2, 2);
-          N3 = (int)FaceNodes->GetComponent(F2, 3);
+          node[0] = (int)FaceNodes->GetComponent(face[2], 0);
+          node[1] = (int)FaceNodes->GetComponent(face[2], 1);
+          node[2] = (int)FaceNodes->GetComponent(face[2], 2);
+          node[3] = (int)FaceNodes->GetComponent(face[2], 3);
           }
         else
           {
-          N3 = (int)FaceNodes->GetComponent(F2, 0);
-          N2 = (int)FaceNodes->GetComponent(F2, 1);
-          N1 = (int)FaceNodes->GetComponent(F2, 2);
-          N0 = (int)FaceNodes->GetComponent(F2, 3);
+          node[3] = (int)FaceNodes->GetComponent(face[2], 0);
+          node[2] = (int)FaceNodes->GetComponent(face[2], 1);
+          node[1] = (int)FaceNodes->GetComponent(face[2], 2);
+          node[0] = (int)FaceNodes->GetComponent(face[2], 3);
           }
-        tn0 = (int)FaceNodes->GetComponent(F0, 0);
-        tn1 = (int)FaceNodes->GetComponent(F0, 1);
-        tn2 = (int)FaceNodes->GetComponent(F0, 2);
+        tempNode[0] = (int)FaceNodes->GetComponent(face[0], 0);
+        tempNode[1] = (int)FaceNodes->GetComponent(face[0], 1);
+        tempNode[2] = (int)FaceNodes->GetComponent(face[0], 2);
         }
-      else if (FaceTypes->GetValue(F3) == 4)
+      else if (FaceTypes->GetValue(face[3]) == 4)
         {
-        BF = F3;
-        if (SpinF3 > 0)
+        BF = face[3];
+        if (spinFace[3] > 0)
           {
-          N0 = (int)FaceNodes->GetComponent(F3, 0);
-          N1 = (int)FaceNodes->GetComponent(F3, 1);
-          N2 = (int)FaceNodes->GetComponent(F3, 2);
-          N3 = (int)FaceNodes->GetComponent(F3, 3);
+          node[0] = (int)FaceNodes->GetComponent(face[3], 0);
+          node[1] = (int)FaceNodes->GetComponent(face[3], 1);
+          node[2] = (int)FaceNodes->GetComponent(face[3], 2);
+          node[3] = (int)FaceNodes->GetComponent(face[3], 3);
           }
         else
           {
-          N3 = (int)FaceNodes->GetComponent(F3, 0);
-          N2 = (int)FaceNodes->GetComponent(F3, 1);
-          N1 = (int)FaceNodes->GetComponent(F3, 2);
-          N0 = (int)FaceNodes->GetComponent(F3, 3);
+          node[3] = (int)FaceNodes->GetComponent(face[3], 0);
+          node[2] = (int)FaceNodes->GetComponent(face[3], 1);
+          node[1] = (int)FaceNodes->GetComponent(face[3], 2);
+          node[0] = (int)FaceNodes->GetComponent(face[3], 3);
           }
-        tn0 = (int)FaceNodes->GetComponent(F0, 0);
-        tn1 = (int)FaceNodes->GetComponent(F0, 1);
-        tn2 = (int)FaceNodes->GetComponent(F0, 2);
+        tempNode[0] = (int)FaceNodes->GetComponent(face[0], 0);
+        tempNode[1] = (int)FaceNodes->GetComponent(face[0], 1);
+        tempNode[2] = (int)FaceNodes->GetComponent(face[0], 2);
         }
       else
         {
-        BF = F4;
-        if (SpinF4 > 0)
+        BF = face[4];
+        if (spinFace[4] > 0)
           {
-          N0 = (int)FaceNodes->GetComponent(F4, 0);
-          N1 = (int)FaceNodes->GetComponent(F4, 1);
-          N2 = (int)FaceNodes->GetComponent(F4, 2);
-          N3 = (int)FaceNodes->GetComponent(F4, 3);
+          node[0] = (int)FaceNodes->GetComponent(face[4], 0);
+          node[1] = (int)FaceNodes->GetComponent(face[4], 1);
+          node[2] = (int)FaceNodes->GetComponent(face[4], 2);
+          node[3] = (int)FaceNodes->GetComponent(face[4], 3);
           }
         else
           {
-          N3 = (int)FaceNodes->GetComponent(F4, 0);
-          N2 = (int)FaceNodes->GetComponent(F4, 1);
-          N1 = (int)FaceNodes->GetComponent(F4, 2);
-          N0 = (int)FaceNodes->GetComponent(F4, 3);
+          node[3] = (int)FaceNodes->GetComponent(face[4], 0);
+          node[2] = (int)FaceNodes->GetComponent(face[4], 1);
+          node[1] = (int)FaceNodes->GetComponent(face[4], 2);
+          node[0] = (int)FaceNodes->GetComponent(face[4], 3);
           }
-        tn0 = (int)FaceNodes->GetComponent(F0, 0);
-        tn1 = (int)FaceNodes->GetComponent(F0, 1);
-        tn2 = (int)FaceNodes->GetComponent(F0, 2);
+        tempNode[0] = (int)FaceNodes->GetComponent(face[0], 0);
+        tempNode[1] = (int)FaceNodes->GetComponent(face[0], 1);
+        tempNode[2] = (int)FaceNodes->GetComponent(face[0], 2);
         }
 
-      if ((tn0!=N0)&&(tn0!=N1)&&(tn0!=N2)&&(tn0!=N3))
+      if ((tempNode[0]!=node[0])&&(tempNode[0]!=node[1])&&(tempNode[0]!=node[2])&&(tempNode[0]!=node[3]))
         {
-        N4 = tn0;
+        node[4] = tempNode[0];
         }
-      else if ((tn1!=N0)&&(tn1!=N1)&&(tn1!=N2)&&(tn1!=N3))
+      else if ((tempNode[1]!=node[0])&&(tempNode[1]!=node[1])&&(tempNode[1]!=node[2])&&(tempNode[1]!=node[3]))
         {
-        N4 = tn1;
+        node[4] = tempNode[1];
         }
       else
         {
-        N4 = tn2;
+        node[4] = tempNode[2];
         }
 
-      aPyramid->GetPointIds()->SetId( 0, N0);
-      aPyramid->GetPointIds()->SetId( 1, N1);
-      aPyramid->GetPointIds()->SetId( 2, N2);
-      aPyramid->GetPointIds()->SetId( 3, N3);
-      aPyramid->GetPointIds()->SetId( 4, N4);
+      APyramid->GetPointIds()->SetId( 0, node[0]);
+      APyramid->GetPointIds()->SetId( 1, node[1]);
+      APyramid->GetPointIds()->SetId( 2, node[2]);
+      APyramid->GetPointIds()->SetId( 3, node[3]);
+      APyramid->GetPointIds()->SetId( 4, node[4]);
 
       if (CellParentFlags->GetValue(i) != 1)
         {
-        mesh->InsertNextCell(aPyramid->GetCellType(),
-          aPyramid->GetPointIds());
+        Mesh->InsertNextCell(APyramid->GetCellType(),
+          APyramid->GetPointIds());
         }
 
       }
@@ -1276,209 +1244,209 @@ void vtkFLUENTReader::BuildCells(void)
       //*************************************
       int BF;
 
-      if (FaceTypes->GetValue(F0) == 4)
+      if (FaceTypes->GetValue(face[0]) == 4)
         {
-        BF = F0;
-        if (SpinF0 > 0)
+        BF = face[0];
+        if (spinFace[0] > 0)
           {
-          N0 = (int)FaceNodes->GetComponent(F0, 0);
-          N1 = (int)FaceNodes->GetComponent(F0, 1);
-          N4 = (int)FaceNodes->GetComponent(F0, 2);
-          N3 = (int)FaceNodes->GetComponent(F0, 3);
+          node[0] = (int)FaceNodes->GetComponent(face[0], 0);
+          node[1] = (int)FaceNodes->GetComponent(face[0], 1);
+          node[4] = (int)FaceNodes->GetComponent(face[0], 2);
+          node[3] = (int)FaceNodes->GetComponent(face[0], 3);
           }
         else
           {
-          N3 = (int)FaceNodes->GetComponent(F0, 0);
-          N4 = (int)FaceNodes->GetComponent(F0, 1);
-          N1 = (int)FaceNodes->GetComponent(F0, 2);
-          N0 = (int)FaceNodes->GetComponent(F0, 3);
+          node[3] = (int)FaceNodes->GetComponent(face[0], 0);
+          node[4] = (int)FaceNodes->GetComponent(face[0], 1);
+          node[1] = (int)FaceNodes->GetComponent(face[0], 2);
+          node[0] = (int)FaceNodes->GetComponent(face[0], 3);
           }
         }
-      else if (FaceTypes->GetValue(F1) == 4)
+      else if (FaceTypes->GetValue(face[1]) == 4)
         {
-        BF = F1;
-        if (SpinF1 > 0)
+        BF = face[1];
+        if (spinFace[1] > 0)
           {
-          N0 = (int)FaceNodes->GetComponent(F1, 0);
-          N1 = (int)FaceNodes->GetComponent(F1, 1);
-          N4 = (int)FaceNodes->GetComponent(F1, 2);
-          N3 = (int)FaceNodes->GetComponent(F1, 3);
+          node[0] = (int)FaceNodes->GetComponent(face[1], 0);
+          node[1] = (int)FaceNodes->GetComponent(face[1], 1);
+          node[4] = (int)FaceNodes->GetComponent(face[1], 2);
+          node[3] = (int)FaceNodes->GetComponent(face[1], 3);
           }
         else
           {
-          N3 = (int)FaceNodes->GetComponent(F1, 0);
-          N4 = (int)FaceNodes->GetComponent(F1, 1);
-          N1 = (int)FaceNodes->GetComponent(F1, 2);
-          N0 = (int)FaceNodes->GetComponent(F1, 3);
+          node[3] = (int)FaceNodes->GetComponent(face[1], 0);
+          node[4] = (int)FaceNodes->GetComponent(face[1], 1);
+          node[1] = (int)FaceNodes->GetComponent(face[1], 2);
+          node[0] = (int)FaceNodes->GetComponent(face[1], 3);
           }
         }
-      else if  (FaceTypes->GetValue(F2) == 4)
+      else if  (FaceTypes->GetValue(face[2]) == 4)
         {
-        BF = F2;
-        if (SpinF2 > 0) 
+        BF = face[2];
+        if (spinFace[2] > 0) 
           {
-          N0 = (int)FaceNodes->GetComponent(F2, 0);
-          N1 = (int)FaceNodes->GetComponent(F2, 1);
-          N4 = (int)FaceNodes->GetComponent(F2, 2);
-          N3 = (int)FaceNodes->GetComponent(F2, 3);
+          node[0] = (int)FaceNodes->GetComponent(face[2], 0);
+          node[1] = (int)FaceNodes->GetComponent(face[2], 1);
+          node[4] = (int)FaceNodes->GetComponent(face[2], 2);
+          node[3] = (int)FaceNodes->GetComponent(face[2], 3);
           }
         else
           {
-          N3 = (int)FaceNodes->GetComponent(F2, 0);
-          N4 = (int)FaceNodes->GetComponent(F2, 1);
-          N1 = (int)FaceNodes->GetComponent(F2, 2);
-          N0 = (int)FaceNodes->GetComponent(F2, 3);
+          node[3] = (int)FaceNodes->GetComponent(face[2], 0);
+          node[4] = (int)FaceNodes->GetComponent(face[2], 1);
+          node[1] = (int)FaceNodes->GetComponent(face[2], 2);
+          node[0] = (int)FaceNodes->GetComponent(face[2], 3);
           }
         }
-      else if (FaceTypes->GetValue(F3) == 4)
+      else if (FaceTypes->GetValue(face[3]) == 4)
         {
-        BF = F3;
-        if (SpinF3 > 0)
+        BF = face[3];
+        if (spinFace[3] > 0)
           {
-          N0 = (int)FaceNodes->GetComponent(F3, 0);
-          N1 = (int)FaceNodes->GetComponent(F3, 1);
-          N4 = (int)FaceNodes->GetComponent(F3, 2);
-          N3 = (int)FaceNodes->GetComponent(F3, 3);
+          node[0] = (int)FaceNodes->GetComponent(face[3], 0);
+          node[1] = (int)FaceNodes->GetComponent(face[3], 1);
+          node[4] = (int)FaceNodes->GetComponent(face[3], 2);
+          node[3] = (int)FaceNodes->GetComponent(face[3], 3);
           }
         else
           {
-          N3 = (int)FaceNodes->GetComponent(F3, 0);
-          N4 = (int)FaceNodes->GetComponent(F3, 1);
-          N1 = (int)FaceNodes->GetComponent(F3, 2);
-          N0 = (int)FaceNodes->GetComponent(F3, 3);
+          node[3] = (int)FaceNodes->GetComponent(face[3], 0);
+          node[4] = (int)FaceNodes->GetComponent(face[3], 1);
+          node[1] = (int)FaceNodes->GetComponent(face[3], 2);
+          node[0] = (int)FaceNodes->GetComponent(face[3], 3);
           }
         }
       else
         {
-        BF = F4;
-        if (SpinF4 > 0)
+        BF = face[4];
+        if (spinFace[4] > 0)
           {
-          N0 = (int)FaceNodes->GetComponent(F4, 0);
-          N1 = (int)FaceNodes->GetComponent(F4, 1);
-          N4 = (int)FaceNodes->GetComponent(F4, 2);
-          N3 = (int)FaceNodes->GetComponent(F4, 3);
+          node[0] = (int)FaceNodes->GetComponent(face[4], 0);
+          node[1] = (int)FaceNodes->GetComponent(face[4], 1);
+          node[4] = (int)FaceNodes->GetComponent(face[4], 2);
+          node[3] = (int)FaceNodes->GetComponent(face[4], 3);
           }
         else
           {
-          N3 = (int)FaceNodes->GetComponent(F4, 0);
-          N4 = (int)FaceNodes->GetComponent(F4, 1);
-          N1 = (int)FaceNodes->GetComponent(F4, 2);
-          N0 = (int)FaceNodes->GetComponent(F4, 3);
+          node[3] = (int)FaceNodes->GetComponent(face[4], 0);
+          node[4] = (int)FaceNodes->GetComponent(face[4], 1);
+          node[1] = (int)FaceNodes->GetComponent(face[4], 2);
+          node[0] = (int)FaceNodes->GetComponent(face[4], 3);
           }
         }
 
       int trf[2];
       int index = 0;
-      if ( FaceTypes->GetValue(F0) == 3)
+      if ( FaceTypes->GetValue(face[0]) == 3)
         {
-        trf[index] = F0;
+        trf[index] = face[0];
         index++;
         }
-      if ( FaceTypes->GetValue(F1) == 3)
+      if ( FaceTypes->GetValue(face[1]) == 3)
         {
-        trf[index] = F1;
+        trf[index] = face[1];
         index++;
         }
-      if ( FaceTypes->GetValue(F2) == 3)
+      if ( FaceTypes->GetValue(face[2]) == 3)
         {
-        trf[index] = F2;
+        trf[index] = face[2];
         index++;
         }
-      if ( FaceTypes->GetValue(F3) == 3)
+      if ( FaceTypes->GetValue(face[3]) == 3)
         {
-        trf[index] = F3;
+        trf[index] = face[3];
         index++;
         }
-      if ( FaceTypes->GetValue(F4) == 3)
+      if ( FaceTypes->GetValue(face[4]) == 3)
         {
-        trf[index] = F4;
+        trf[index] = face[4];
         index++;
         }
 
-      int tn0 = (int)FaceNodes->GetComponent(trf[0], 0);
-      int tn1 = (int)FaceNodes->GetComponent(trf[0], 1);
-      int tn2 = (int)FaceNodes->GetComponent(trf[0], 2);
+      tempNode[0] = (int)FaceNodes->GetComponent(trf[0], 0);
+      tempNode[1] = (int)FaceNodes->GetComponent(trf[0], 1);
+      tempNode[2] = (int)FaceNodes->GetComponent(trf[0], 2);
 
-      int tn3 = (int)FaceNodes->GetComponent(trf[1], 0);
-      int tn4 = (int)FaceNodes->GetComponent(trf[1], 1);
-      int tn5 = (int)FaceNodes->GetComponent(trf[1], 2);
+      tempNode[3] = (int)FaceNodes->GetComponent(trf[1], 0);
+      tempNode[4] = (int)FaceNodes->GetComponent(trf[1], 1);
+      tempNode[5] = (int)FaceNodes->GetComponent(trf[1], 2);
 
-      if (((tn0!=N0)&&(tn0!=N1)&&(tn0!=N4)&&(tn0!=N3))
-        && ((tn1==N0)||(tn1==N1)) )
+      if (((tempNode[0]!=node[0])&&(tempNode[0]!=node[1])&&(tempNode[0]!=node[4])&&(tempNode[0]!=node[3]))
+        && ((tempNode[1]==node[0])||(tempNode[1]==node[1])) )
         {
-        N2 = tn0;
+        node[2] = tempNode[0];
         }
-      else if (((tn0!=N0)&&(tn0!=N1)&&(tn0!=N4)&&(tn0!=N3))
-        && ((tn1==N4)||(tn1==N3)))
+      else if (((tempNode[0]!=node[0])&&(tempNode[0]!=node[1])&&(tempNode[0]!=node[4])&&(tempNode[0]!=node[3]))
+        && ((tempNode[1]==node[4])||(tempNode[1]==node[3])))
         {
-        N5 = tn0;
-        }
-
-      if (((tn1!=N0)&&(tn1!=N1)&&(tn1!=N4)&&(tn1!=N3))
-        && ((tn0==N0)||(tn0==N1)))
-        {
-        N2 = tn1;
-        }
-      else if (((tn1!=N0)&&(tn1!=N1)&&(tn1!=N4)&&(tn1!=N3))
-        && ((tn0==N4)||(tn0==N3)))
-        {
-        N5 = tn1;
+        node[5] = tempNode[0];
         }
 
-      if (((tn2!=N0)&&(tn2!=N1)&&(tn2!=N4)&&(tn2!=N3)) 
-        && ((tn1==N0)||(tn1==N1))) 
+      if (((tempNode[1]!=node[0])&&(tempNode[1]!=node[1])&&(tempNode[1]!=node[4])&&(tempNode[1]!=node[3]))
+        && ((tempNode[0]==node[0])||(tempNode[0]==node[1])))
         {
-        N2 = tn2;
+        node[2] = tempNode[1];
         }
-      else if (((tn2!=N0)&&(tn2!=N1)&&(tn2!=N4)&&(tn2!=N3))
-        && ((tn1==N4)||(tn1==N3)))
+      else if (((tempNode[1]!=node[0])&&(tempNode[1]!=node[1])&&(tempNode[1]!=node[4])&&(tempNode[1]!=node[3]))
+        && ((tempNode[0]==node[4])||(tempNode[0]==node[3])))
         {
-        N5 = tn2;
-        }
-
-      if (((tn3!=N0)&&(tn3!=N1)&&(tn3!=N4)&&(tn3!=N3))
-        && ((tn4==N0)||(tn4==N1)))
-        {
-        N2 = tn3;
-        }
-      else if (((tn3!=N0)&&(tn3!=N1)&&(tn3!=N4)&&(tn3!=N3))
-        && ((tn4==N4)||(tn4==N3)))
-        {
-        N5 = tn3;
+        node[5] = tempNode[1];
         }
 
-      if (((tn4!=N0)&&(tn4!=N1)&&(tn4!=N4)&&(tn4!=N3)) 
-        && ((tn3==N0)||(tn3==N1)))
+      if (((tempNode[2]!=node[0])&&(tempNode[2]!=node[1])&&(tempNode[2]!=node[4])&&(tempNode[2]!=node[3])) 
+        && ((tempNode[1]==node[0])||(tempNode[1]==node[1]))) 
         {
-        N2 = tn4;
+        node[2] = tempNode[2];
         }
-      else if (((tn4!=N0)&&(tn4!=N1)&&(tn4!=N4)&&(tn4!=N3)) 
-        && ((tn3==N4)||(tn3==N3)))
+      else if (((tempNode[2]!=node[0])&&(tempNode[2]!=node[1])&&(tempNode[2]!=node[4])&&(tempNode[2]!=node[3]))
+        && ((tempNode[1]==node[4])||(tempNode[1]==node[3])))
         {
-        N5 = tn4;
-        }
-
-      if (((tn5!=N0)&&(tn5!=N1)&&(tn5!=N4)&&(tn5!=N3))
-        && ((tn4==N0)||(tn4==N1)))
-        {
-        N2 = tn5;
-        }
-      else if (((tn5!=N0)&&(tn5!=N1)&&(tn5!=N4)&&(tn5!=N3))
-        && ((tn4==N4)||(tn4==N3)))
-        {
-        N5 = tn5;
+        node[5] = tempNode[2];
         }
 
-      aWedge->GetPointIds()->SetId( 0, N0);
-      aWedge->GetPointIds()->SetId( 1, N1);
-      aWedge->GetPointIds()->SetId( 2, N2);
-      aWedge->GetPointIds()->SetId( 3, N3);
-      aWedge->GetPointIds()->SetId( 4, N4);
-      aWedge->GetPointIds()->SetId( 5, N5);
+      if (((tempNode[3]!=node[0])&&(tempNode[3]!=node[1])&&(tempNode[3]!=node[4])&&(tempNode[3]!=node[3]))
+        && ((tempNode[4]==node[0])||(tempNode[4]==node[1])))
+        {
+        node[2] = tempNode[3];
+        }
+      else if (((tempNode[3]!=node[0])&&(tempNode[3]!=node[1])&&(tempNode[3]!=node[4])&&(tempNode[3]!=node[3]))
+        && ((tempNode[4]==node[4])||(tempNode[4]==node[3])))
+        {
+        node[5] = tempNode[3];
+        }
+
+      if (((tempNode[4]!=node[0])&&(tempNode[4]!=node[1])&&(tempNode[4]!=node[4])&&(tempNode[4]!=node[3])) 
+        && ((tempNode[3]==node[0])||(tempNode[3]==node[1])))
+        {
+        node[2] = tempNode[4];
+        }
+      else if (((tempNode[4]!=node[0])&&(tempNode[4]!=node[1])&&(tempNode[4]!=node[4])&&(tempNode[4]!=node[3])) 
+        && ((tempNode[3]==node[4])||(tempNode[3]==node[3])))
+        {
+        node[5] = tempNode[4];
+        }
+
+      if (((tempNode[5]!=node[0])&&(tempNode[5]!=node[1])&&(tempNode[5]!=node[4])&&(tempNode[5]!=node[3]))
+        && ((tempNode[4]==node[0])||(tempNode[4]==node[1])))
+        {
+        node[2] = tempNode[5];
+        }
+      else if (((tempNode[5]!=node[0])&&(tempNode[5]!=node[1])&&(tempNode[5]!=node[4])&&(tempNode[5]!=node[3]))
+        && ((tempNode[4]==node[4])||(tempNode[4]==node[3])))
+        {
+        node[5] = tempNode[5];
+        }
+
+      AWedge->GetPointIds()->SetId( 0, node[0]);
+      AWedge->GetPointIds()->SetId( 1, node[1]);
+      AWedge->GetPointIds()->SetId( 2, node[2]);
+      AWedge->GetPointIds()->SetId( 3, node[3]);
+      AWedge->GetPointIds()->SetId( 4, node[4]);
+      AWedge->GetPointIds()->SetId( 5, node[5]);
 
       if (CellParentFlags->GetValue(i) != 1)
         {
-        mesh->InsertNextCell(aWedge->GetCellType(), aWedge->GetPointIds());
+        Mesh->InsertNextCell(AWedge->GetCellType(), AWedge->GetPointIds());
         }
       }
     }
@@ -3153,7 +3121,8 @@ int vtkFLUENTReader::GetNCG2InformationASCII(int ix)
   int ZoneId, NumberOfNodesNCG;
   sscanf( buf, " %d %d", &ZoneId, &NumberOfNodesNCG);
   NCGNodeZoneId->InsertValue(NumberOfNCGNodeHeaders, ZoneId);
-  NCGNodeNumberOfNodesNCG->InsertValue(NumberOfNCGNodeHeaders, NumberOfNodesNCG);
+  NCGNodeNumberOfNodesNCG->InsertValue(NumberOfNCGNodeHeaders,
+    NumberOfNodesNCG);
 
   j = GoToNextLeftParen(j)+1;
   j = GoToNextASCIIHexDigit(j);
@@ -3588,7 +3557,8 @@ int vtkFLUENTReader::GetNCG1InformationSinglePrecision(int ix)
   sscanf( buf, " %d %d %d", &KidId, &ParentId, &NumberOfFacesNCG);
   NCGFaceKidId->InsertValue(NumberOfNCGFaceHeaders, KidId);
   NCGFaceParentId->InsertValue(NumberOfNCGFaceHeaders, ParentId);
-  NCGFaceNumberOfFaces->InsertValue(NumberOfNCGFaceHeaders, NumberOfFacesNCG);
+  NCGFaceNumberOfFaces->InsertValue(NumberOfNCGFaceHeaders, 
+    NumberOfFacesNCG);
 
   j = GoToNextLeftParen(j)+1;
   int child,parent;
@@ -3619,7 +3589,8 @@ int vtkFLUENTReader::GetNCG2InformationSinglePrecision(int ix)
   int ZoneId, NumberOfNodesNCG;
   sscanf( buf, " %d %d", &ZoneId, &NumberOfNodesNCG);
   NCGNodeZoneId->InsertValue(NumberOfNCGNodeHeaders, ZoneId);
-  NCGNodeNumberOfNodesNCG->InsertValue(NumberOfNCGNodeHeaders, NumberOfNodesNCG);
+  NCGNodeNumberOfNodesNCG->InsertValue(NumberOfNCGNodeHeaders, 
+    NumberOfNodesNCG);
   j = GoToNextLeftParen(j)+1;
 
   float x,y,z;
@@ -3784,7 +3755,7 @@ int vtkFLUENTReader::GetFaceTreeSinglePrecision(int ix)
   return GoToNextSectionSinglePrecision( j, "2059)");
 }
 
-//---------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetVariablesDoublePrecision(int ix)
 {
   return GoToNextSectionDoublePrecision( ix, "3037)");
@@ -4075,7 +4046,8 @@ int vtkFLUENTReader::GetNCG2InformationDoublePrecision(int ix)
   int ZoneId, NumberOfNodesNCG;
   sscanf( buf, " %d %d", &ZoneId, &NumberOfNodesNCG);
   NCGNodeZoneId->InsertValue(NumberOfNCGNodeHeaders, ZoneId);
-  NCGNodeNumberOfNodesNCG->InsertValue(NumberOfNCGNodeHeaders, NumberOfNodesNCG);
+  NCGNodeNumberOfNodesNCG->InsertValue(NumberOfNCGNodeHeaders, 
+    NumberOfNodesNCG);
   j = GoToNextLeftParen(j)+1;
 
   float x,y,z;
@@ -4202,891 +4174,960 @@ int vtkFLUENTReader::GetCellTreeDoublePrecision(int ix)
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetFaceTreeDoublePrecision(int ix)
 {
-	char buf[120];
-	int j = ix + 1;	
+  char buf[120];
+  int j = ix + 1;	
+  j = GoToNextLeftParen(j)+1;
+  GetStringToNextRightParen( j, buf );
 
-	j = GoToNextLeftParen(j)+1;
+  int fid0, fid1, pzid, czid;
+  sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
+  FaceTreeParentFaceId0->InsertValue(NumberOfFaceTrees, fid0);
+  FaceTreeParentFaceId1->InsertValue(NumberOfFaceTrees, fid1);
+  FaceTreeParentZoneId->InsertValue(NumberOfFaceTrees, pzid);
+  FaceTreeChildZoneId->InsertValue(NumberOfFaceTrees, czid);
+  j = GoToNextLeftParen(j)+1;
 
-	GetStringToNextRightParen( j, buf );
-	
-	int fid0, fid1, pzid, czid;
-	sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
-
-	FaceTreeParentFaceId0->InsertValue(NumberOfFaceTrees, fid0);
-	FaceTreeParentFaceId1->InsertValue(NumberOfFaceTrees, fid1);
-	FaceTreeParentZoneId->InsertValue(NumberOfFaceTrees, pzid);
-	FaceTreeChildZoneId->InsertValue(NumberOfFaceTrees, czid);
-
-	j = GoToNextLeftParen(j)+1;
-
-	for(int k=fid0; k<=fid1; k++){
-		int NumberOfKids = GetBinaryInteger(j);
-		j = j + 4;
-		FaceTreesNumberOfKids->InsertValue(NumberOfFaceTreeParents, NumberOfKids);
-
-		FaceTreesKidsIndex->InsertValue(NumberOfFaceTreeParents, NumberOfFaceTreeKids);
-		for(int i=0; i<NumberOfKids; i++){
-			int Kid = GetBinaryInteger(j);
-			j = j + 4;
-			FaceTreesKids->InsertValue(NumberOfFaceTreeKids, Kid);
-			NumberOfFaceTreeKids++;
-		}
-
-		NumberOfFaceTreeParents++;
-	}
-
-	NumberOfFaceTrees++;
-	return GoToNextSectionDoublePrecision( j, "3059)");
+  for (int k = fid0; k <= fid1; k++)
+    {
+    int NumberOfKids = GetBinaryInteger(j);
+    j = j + 4;
+    FaceTreesNumberOfKids->InsertValue(NumberOfFaceTreeParents, NumberOfKids);
+    FaceTreesKidsIndex->InsertValue(NumberOfFaceTreeParents, 
+      NumberOfFaceTreeKids);
+    for (int i = 0; i < NumberOfKids; i++)
+      {
+      int Kid = GetBinaryInteger(j);
+      j = j + 4;
+      FaceTreesKids->InsertValue(NumberOfFaceTreeKids, Kid);
+      NumberOfFaceTreeKids++;
+      }
+    NumberOfFaceTreeParents++;
+    }
+  NumberOfFaceTrees++;
+  return GoToNextSectionDoublePrecision( j, "3059)");
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetGridDimension(int ix)
 {
-	char b2[2];
+  char b2[2];
+  b2[0] = CaseFileBuffer[ix+3];
+  b2[1] = 0;
+  GridDimension = atoi(b2);
 
-	b2[0] = CaseFileBuffer[ix+3];
-	b2[1] = 0;
-
-	GridDimension = atoi(b2);
-	
-	return GoToNextRightParen(ix);
+  return GoToNextRightParen(ix);
 }
 
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetDataComment(int ix)
 {
-	return GoToNextRightParenData(ix);
+  return GoToNextRightParenData(ix);
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetDataHeader(int ix)
 {
-	return GoToNextRightParenData(ix);
+  return GoToNextRightParenData(ix);
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetDataGridDimension(int ix)
 {
-	char b2[2];
+  char b2[2];
+  b2[0] = DataFileBuffer[ix+3];
+  b2[1] = 0;
+  GridDimension = atoi(b2);
 
-	b2[0] = DataFileBuffer[ix+3];
-	b2[1] = 0;
-
-	GridDimension = atoi(b2);
-	
-	return GoToNextRightParenData(ix);
+  return GoToNextRightParenData(ix);
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetDataMachineConfiguration(int ix)
 {
-	return GoToNextSectionASCIIData(ix);
+  return GoToNextSectionASCIIData(ix);
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetDataGridSizeASCII(int ix)
 {
-	return GoToNextSectionASCIIData(ix);
+  return GoToNextSectionASCIIData(ix);
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetDataVariablesASCII(int ix)
 {
-	return GoToNextSectionASCIIData(ix);
+  return GoToNextSectionASCIIData(ix);
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetUnknownASCII313(int ix)
 {
-	return GoToNextSectionASCIIData(ix);
+  return GoToNextSectionASCIIData(ix);
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextRightParenData(int ix)
 {
-	int i = ix;
-	while(DataFileBuffer[i] != ')' ){
-		i++;
-	}
-	return i;
+  int i = ix;
+  while ( DataFileBuffer[i] != ')' )
+    {
+    i++;
+    }
+  return i;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextLeftParenData(int ix)
 {
-	int i = ix;
-	while(DataFileBuffer[i] != '(' ){
-		i++;
-	}
-	return i;
+  int i = ix;
+  while ( DataFileBuffer[i] != '(' )
+    {
+    i++;
+    }
+    return i;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextSectionASCIIData(int ix)
 {
-	int i = ix + 1;
-	int level = 0;
-	
-	while( !((level == 0) && (DataFileBuffer[i] == ')'))){
-		if(DataFileBuffer[i] == '('){
-			level++;
-		}
-		if(DataFileBuffer[i] == ')'){
-			level--;
-		}
-		i++;
-	}
-	return i;
+  int i = ix + 1;
+  int level = 0;
+
+  while ( !((level == 0) && (DataFileBuffer[i] == ')')))
+    {
+    if ( DataFileBuffer[i] == '(')
+      {
+      level++;
+      }
+    if (DataFileBuffer[i] == ')')
+      {
+      level--;
+      }
+    i++;
+    }
+  return i;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextSectionSinglePrecisionData(int ix, char buf[])
 {
-	int i = ix + 1;
-	while( !((DataFileBuffer[i] == buf[0]) && (DataFileBuffer[i+1] == buf[1]) && (DataFileBuffer[i+2] == buf[2]) && (DataFileBuffer[i+3] == buf[3]) && (DataFileBuffer[i+4] == buf[4]) )){
-		i++;
-	}
-	return i+4;
+  int i = ix + 1;
+  while ( !((DataFileBuffer[i] == buf[0]) 
+    && (DataFileBuffer[i+1] == buf[1]) 
+    && (DataFileBuffer[i+2] == buf[2]) 
+    && (DataFileBuffer[i+3] == buf[3]) 
+    && (DataFileBuffer[i+4] == buf[4])))
+    {
+    i++;
+    }
+  return i+4;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextSectionDoublePrecisionData(int ix, char buf[])
 {
-	int i = ix + 1;
-	while( !((DataFileBuffer[i] == buf[0]) && (DataFileBuffer[i+1] == buf[1]) && (DataFileBuffer[i+2] == buf[2]) && (DataFileBuffer[i+3] == buf[3]) && (DataFileBuffer[i+4] == buf[4]) )){
-		i++;
-	}
-	return i+4;
+  int i = ix + 1;
+  while( !((DataFileBuffer[i] == buf[0]) 
+    && (DataFileBuffer[i+1] == buf[1]) 
+    && (DataFileBuffer[i+2] == buf[2]) 
+    && (DataFileBuffer[i+3] == buf[3]) 
+    && (DataFileBuffer[i+4] == buf[4])))
+    {
+    i++;
+    }
+  return i+4;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetDataASCII(int ix)
 {
-	char buf[120];
-	int j = ix + 1;	
-	float x;
+  char buf[120];
+  int j = ix + 1;	
+  float x;
+  j = GoToNextLeftParenData(j)+1;
+  GetStringToNextRightParenData( j, buf );
 
-	j = GoToNextLeftParenData(j)+1;
+  int ssid, zid, size, ntl, np, fi, li;
+  sscanf( buf, " %d %d %d %d %d %d %d", 
+    &ssid, &zid, &size, &ntl, &np, &fi, &li );
+  j = GoToNextLeftParenData(j)+1;
 
-	GetStringToNextRightParenData( j, buf );
-	
-	int ssid, zid, size, ntl, np, fi, li;
-	sscanf( buf, " %d %d %d %d %d %d %d", &ssid, &zid, &size, &ntl, &np, &fi, &li );
-
-	j = GoToNextLeftParenData(j)+1;
-
-
-	if(DataPass == 1){
-		if(IsCellZoneId(zid)){
-			if(IsNewVariable(ssid)){
-				VariableIds->InsertValue(NumberOfVariables, ssid);
-				VariableSizes->InsertValue(NumberOfVariables, size);
-				NumberOfVariables++;
-			}
-		}
-	} else {
-		if(IsCellZoneId(zid)){
-			int index = GetVariableIndex(ssid);
-			for(int i=fi;i<=li;i++){
-				for(int k=0;k<size;k++){
-					GetStringToNextRightParenOrEOLData( j, buf );
-					sscanf( buf, " %f ", &x );
-					j = GoToNextEOLData(j) +1;
-					CellData[index]->InsertComponent( i-1, k, x); 
-				}
-			}
-		}
-	}
-
-	return GoToNextSectionASCIIData(j);
-
+  if (DataPass == 1)
+    {
+    if (IsCellZoneId(zid))
+      {
+      if (IsNewVariable(ssid))
+        {
+        VariableIds->InsertValue(NumberOfVariables, ssid);
+        VariableSizes->InsertValue(NumberOfVariables, size);
+        NumberOfVariables++;
+        }
+      }
+    }
+  else 
+    {
+    if (IsCellZoneId(zid))
+      {
+      int index = GetVariableIndex(ssid);
+      for (int i = fi; i <= li; i++)
+        {
+        for (int k = 0; k < size; k++)
+          {
+          GetStringToNextRightParenOrEOLData( j, buf );
+          sscanf( buf, " %f ", &x );
+          j = GoToNextEOLData(j) +1;
+          CellData[index]->InsertComponent( i-1, k, x); 
+          }
+        }
+      }
+    }
+  return GoToNextSectionASCIIData(j);
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetDataSinglePrecision(int ix)
 {
+  char buf[120];
+  int j = ix + 1;	
+  j = GoToNextLeftParenData(j)+1;
+  GetStringToNextRightParenData( j, buf );
 
-	char buf[120];
-	int j = ix + 1;	
+  int ssid, zid, size, ntl, np, fi, li;
+  sscanf( buf, " %d %d %d %d %d %d %d", 
+    &ssid, &zid, &size, &ntl, &np, &fi, &li );
+  j = GoToNextLeftParenData(j)+1;
 
-	j = GoToNextLeftParenData(j)+1;
-
-	GetStringToNextRightParenData( j, buf );
-	//cout << buf << endl;
-	
-	int ssid, zid, size, ntl, np, fi, li;
-	sscanf( buf, " %d %d %d %d %d %d %d", &ssid, &zid, &size, &ntl, &np, &fi, &li );
-
-	j = GoToNextLeftParenData(j)+1;
-
-
-	if(DataPass == 1){
-		if(IsCellZoneId(zid)){
-			if(IsNewVariable(ssid)){
-				VariableIds->InsertValue(NumberOfVariables, ssid);
-				VariableSizes->InsertValue(NumberOfVariables, size);
-				NumberOfVariables++;
-			}
-		}
-	} else {
-		if(IsCellZoneId(zid)){
-			int index = GetVariableIndex(ssid);
-			for(int i=fi;i<=li;i++){
-				for(int k=0;k<size;k++){
-					CellData[index]->InsertComponent( i-1, k, GetBinaryFloatData(j)); 
-					j = j + 4;
-				}
-			}
-		}
-	}
-	return GoToNextSectionSinglePrecisionData( j, "2300)");
+  if ( DataPass == 1)
+    {
+    if ( IsCellZoneId(zid))
+      {
+      if ( IsNewVariable(ssid))
+        {
+        VariableIds->InsertValue(NumberOfVariables, ssid);
+        VariableSizes->InsertValue(NumberOfVariables, size);
+        NumberOfVariables++;
+        }
+      }
+    }
+  else
+    {
+    if ( IsCellZoneId(zid))
+      {
+      int index = GetVariableIndex(ssid);
+      for (int i = fi; i <= li; i++)
+        {
+        for (int k = 0; k < size; k++)
+          {
+          CellData[index]->InsertComponent( i-1, k, GetBinaryFloatData(j)); 
+          j = j + 4;
+          }
+        }
+      }
+    }
+  return GoToNextSectionSinglePrecisionData( j, "2300)");
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetDataDoublePrecision(int ix)
 {
+  char buf[120];
+  int j = ix + 1;	
+  j = GoToNextLeftParenData(j)+1;
+  GetStringToNextRightParenData( j, buf );
 
-	char buf[120];
-	int j = ix + 1;	
+  int ssid, zid, size, ntl, np, fi, li;
+  sscanf( buf, " %d %d %d %d %d %d %d", 
+    &ssid, &zid, &size, &ntl, &np, &fi, &li );
+  j = GoToNextLeftParenData(j)+1;
 
-	j = GoToNextLeftParenData(j)+1;
-
-	GetStringToNextRightParenData( j, buf );
-	int ssid, zid, size, ntl, np, fi, li;
-	sscanf( buf, " %d %d %d %d %d %d %d", &ssid, &zid, &size, &ntl, &np, &fi, &li );
-
-	j = GoToNextLeftParenData(j)+1;
-
-
-	if(DataPass == 1){
-		if(IsCellZoneId(zid)){
-			if(IsNewVariable(ssid)){
-				VariableIds->InsertValue(NumberOfVariables, ssid);
-				VariableSizes->InsertValue(NumberOfVariables, size);
-				NumberOfVariables++;
-			}
-		}
-	} else {
-		if(IsCellZoneId(zid)){
-			int index = GetVariableIndex(ssid);
-			for(int i=fi;i<=li;i++){
-				for(int k=0;k<size;k++){
-					CellData[index]->InsertComponent( i-1, k, GetBinaryDoubleData(j)); 
-					j = j + 8;
-				}
-			}
-		}
-	}
-
-	
-	
-	return GoToNextSectionSinglePrecisionData( j, "3300)");
-
+  if ( DataPass == 1)
+    {
+    if ( IsCellZoneId(zid))
+      {
+      if ( IsNewVariable(ssid))
+        {
+        VariableIds->InsertValue(NumberOfVariables, ssid);
+        VariableSizes->InsertValue(NumberOfVariables, size);
+        NumberOfVariables++;
+        }
+      }
+    }
+  else
+    {
+    if ( IsCellZoneId(zid))
+      {
+      int index = GetVariableIndex(ssid);
+      for (int i = fi; i <= li; i++)
+        {
+        for (int k = 0; k < size; k++)
+          {
+          CellData[index]->InsertComponent( i-1, k, GetBinaryDoubleData(j)); 
+          j = j + 8;
+          }
+        }
+      }
+    }
+  return GoToNextSectionSinglePrecisionData( j, "3300)");
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetUnknownSinglePrecision2301(int ix)
 {
-	return GoToNextSectionSinglePrecisionData( ix, "2301)");
+  return GoToNextSectionSinglePrecisionData( ix, "2301)");
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetUnknownSinglePrecision2302(int ix)
 {
-	return GoToNextSectionSinglePrecisionData( ix, "2302)");
+  return GoToNextSectionSinglePrecisionData( ix, "2302)");
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetUnknownSinglePrecision2313(int ix)
 {
-	return GoToNextSectionSinglePrecisionData( ix, "2313)");
+  return GoToNextSectionSinglePrecisionData( ix, "2313)");
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetUnknownDoublePrecision3301(int ix)
 {
-	return GoToNextSectionDoublePrecisionData( ix, "3301)");
+  return GoToNextSectionDoublePrecisionData( ix, "3301)");
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetUnknownDoublePrecision3302(int ix)
 {
-	return GoToNextSectionDoublePrecisionData( ix, "3302)");
+  return GoToNextSectionDoublePrecisionData( ix, "3302)");
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetUnknownDoublePrecision3313(int ix)
 {
-	return GoToNextSectionDoublePrecisionData( ix, "3313)");
+  return GoToNextSectionDoublePrecisionData( ix, "3313)");
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetUnknownASCII301(int ix)
 {
-	return GoToNextSectionASCIIData(ix);
+  return GoToNextSectionASCIIData(ix);
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetUnknownASCII302(int ix)
 {
-	return GoToNextSectionASCIIData(ix);
+  return GoToNextSectionASCIIData(ix);
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetUnknownASCII303(int ix)
 {
-	return GoToNextSectionASCIIData(ix);
+  return GoToNextSectionASCIIData(ix);
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetDataUnknownASCII(int ix)
 {
-	int j = ix + 1;	
-
-	j = GoToNextLeftParenData(j)+1;
-	j = GoToNextLeftParenData(j)+1;
-	j = GoToNextRightParenData(j)+1;
-	j = GoToNextRightParenData(j)+1;
-	return j;
+  int j = ix + 1;	
+  j = GoToNextLeftParenData(j)+1;
+  j = GoToNextLeftParenData(j)+1;
+  j = GoToNextRightParenData(j)+1;
+  j = GoToNextRightParenData(j)+1;
+  return j;
 }
 
 //-----------------------------------------------------------------------------
 void vtkFLUENTReader::GetStringToNextRightParenData(int ix, char buf[] )
 {
-	// Copy contents between ( ) into buffer
-	int j = ix;
-	int k=0;
-	while( !(DataFileBuffer[j] == ')')){
-		buf[k] = DataFileBuffer[j];
-		j++;
-		k++;
-	}
-	buf[k] = 0;
+  // Copy contents between ( ) into buffer
+  int j = ix;
+  int k=0;
+  while ( !(DataFileBuffer[j] == ')'))
+    {
+    buf[k] = DataFileBuffer[j];
+    j++;
+    k++;
+    }
+  buf[k] = 0;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::IsCellZoneId(int zi)
 {
-	int flag = 0;
-	for(int i=0;i<NumberOfCellZones;i++){
-		if(zi == CellZones->GetValue(i)){
-			flag = 1;
-		}
-	}
-	return flag;
+  int flag = 0;
+  for (int i = 0; i < NumberOfCellZones; i++)
+    {
+    if ( zi == CellZones->GetValue(i))
+      {
+      flag = 1;
+      }
+    }
+  return flag;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::IsNewVariable(int ssid)
 {
-	int flag = 1;
-	for(int i=0;i<NumberOfVariables;i++){
-		if(ssid == VariableIds->GetValue(i)){
-			flag = 0;
-		}
-	}
-	return flag;
+  int flag = 1;
+  for (int i = 0; i < NumberOfVariables; i++)
+    {
+    if ( ssid == VariableIds->GetValue(i))
+      {
+      flag = 0;
+      }
+    }
+  return flag;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetVariableIndex(int ssid)
 {
-	int index = 0;
-	for(int i=0;i<NumberOfVariables;i++){
-		if(ssid == VariableIds->GetValue(i)){
-			index = i;
-		}
-	}
-	return index;
+  int index = 0;
+  for (int i = 0; i < NumberOfVariables; i++)
+    {
+    if ( ssid == VariableIds->GetValue(i))
+      {
+      index = i;
+      }
+    }
+  return index;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetBinaryIntegerData(int ix)
 {
-	union mix_i{
-		int i;
-		char c[4];
-	} mi= {1};
+  union mix_i
+    {
+    int i;
+    char c[4];
+    }mi= {1};
 
-	if(LittleEndianFlag == 1){
-		for(int k=3;k>=0;k--){
-			mi.c[k] = DataFileBuffer[ix+k];
-		}
-	} else {
-		for(int k=0;k<=3;k++){
-			mi.c[3-k] = DataFileBuffer[ix+k];
-		}
-	}
-	
-	return mi.i;
+  if ( LittleEndianFlag == 1)
+    {
+    for (int k = 3; k >= 0; k--)
+      {
+      mi.c[k] = DataFileBuffer[ix+k];
+      }
+    }
+  else
+    {
+    for (int k = 0; k <= 3; k++)
+      {
+      mi.c[3-k] = DataFileBuffer[ix+k];
+      }
+    }
+  return mi.i;
 }
 
 //-----------------------------------------------------------------------------
 float vtkFLUENTReader::GetBinaryFloatData(int ix)
 {
-	union mix_i{
-		float i;
-		char c[4];
-	} mi = {1.0};
+  union mix_i
+    {
+    float i;
+    char c[4];
+    } mi = {1.0};
 
-	if(LittleEndianFlag == 1){
-		for(int k=3;k>=0;k--){
-			mi.c[k] = DataFileBuffer[ix+k];
-		}
-	} else {
-		for(int k=0;k<=3;k++){
-			mi.c[3-k] = DataFileBuffer[ix+k];
-		}
-	}	
-	return mi.i;
+  if ( LittleEndianFlag == 1)
+    {
+    for (int k = 3; k >= 0; k--)
+      {
+      mi.c[k] = DataFileBuffer[ix+k];
+      }
+    }
+  else
+    {
+    for (int k = 0; k <= 3; k++)
+      {
+      mi.c[3-k] = DataFileBuffer[ix+k];
+      }
+    }	
+  return mi.i;
 }
 
 //-----------------------------------------------------------------------------
 double vtkFLUENTReader::GetBinaryDoubleData(int ix)
 {
-	union mix_i{
-		double i;
-		char c[8];
-	} mi= {1.0};
+  union mix_i
+    {
+    double i;
+    char c[8];
+    } mi= {1.0};
 
-	if(LittleEndianFlag == 1){
-		for(int k=7;k>=0;k--){
-			mi.c[k] = DataFileBuffer[ix+k];
-		}
-	} else {
-		for(int k=0;k<=7;k++){
-			mi.c[7-k] = DataFileBuffer[ix+k];
-		}
-	}	
-
-	return mi.i;
+  if ( LittleEndianFlag == 1)
+    {
+    for (int k = 7; k >= 0; k--)
+      {
+      mi.c[k] = DataFileBuffer[ix+k];
+      }
+    }
+  else
+    {
+    for (int k = 0; k <= 7; k++)
+      {
+      mi.c[7-k] = DataFileBuffer[ix+k];
+      }
+    }	
+  return mi.i;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::IsASCIICharacterHexDigit(int ix)
 {
-	if( (CaseFileBuffer[ix] >= 0x30) && (CaseFileBuffer[ix] <= 0x39)){
-		return 1;
-	} else if ( (CaseFileBuffer[ix] >= 0x41) && (CaseFileBuffer[ix] <= 0x46)){
-		return 1;
-	} else if ( (CaseFileBuffer[ix] >= 0x61) && (CaseFileBuffer[ix] <= 0x66)){
-		return 1;
-	} else {
-		return 0;
-	}
+  if ( (CaseFileBuffer[ix] >= 0x30) && (CaseFileBuffer[ix] <= 0x39))
+    {
+    return 1;
+    }
+  else if ( (CaseFileBuffer[ix] >= 0x41) && (CaseFileBuffer[ix] <= 0x46))
+    {
+    return 1;
+    }
+  else if ( (CaseFileBuffer[ix] >= 0x61) && (CaseFileBuffer[ix] <= 0x66))
+    {
+    return 1;
+    }
+  else
+    {
+    return 0;
+    }
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextASCIIHexDigit(int ix)
 {
-	int i = ix;
-	while(! IsASCIICharacterHexDigit(i)){
-		i++;
-	}
-	return i;
+  int i = ix;
+  while (! IsASCIICharacterHexDigit(i))
+    {
+    i++;
+    }
+  return i;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextRightParen(int ix)
 {
-	int i = ix;
-	while(CaseFileBuffer[i] != ')' ){
-		i++;
-	}
-	return i;
+  int i = ix;
+  while (CaseFileBuffer[i] != ')' )
+    {
+    i++;
+    }
+  return i;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextLeftParen(int ix)
 {
-	int i = ix;
-	while(CaseFileBuffer[i] != '(' ){
-		i++;
-	}
-	return i;
+  int i = ix;
+  while (CaseFileBuffer[i] != '(' )
+    {
+    i++;
+    }
+  return i;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextEOL(int ix)
 {
-	int i = ix;
-	while(CaseFileBuffer[i] != 0x0a ){
-		i++;
-	}
-	return i;
+  int i = ix;
+  while (CaseFileBuffer[i] != 0x0a )
+    {
+    i++;
+    }
+  return i;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextSectionASCII(int ix)
 {
-	int i = ix + 1;
-	int level = 0;
-	
-	while( !((level == 0) && (CaseFileBuffer[i] == ')'))){
-		if(CaseFileBuffer[i] == '('){
-			level++;
-		}
-		if(CaseFileBuffer[i] == ')'){
-			level--;
-		}
-		i++;
-	}
-	return i;
+  int i = ix + 1;
+  int level = 0;
+  while ( !((level == 0) && (CaseFileBuffer[i] == ')')))
+    {
+    if (CaseFileBuffer[i] == '(')
+      {
+      level++;
+      }
+    if (CaseFileBuffer[i] == ')')
+      {
+      level--;
+      }
+    i++;
+    }
+  return i;
 }
 
 //-----------------------------------------------------------------------------
 void vtkFLUENTReader::GetStringToNextRightParen(int ix, char buf[] )
 {
-	// Copy contents between ( ) into buffer
-	int j = ix;
-	int k=0;
-	while( !(CaseFileBuffer[j] == ')')){
-		buf[k] = CaseFileBuffer[j];
-		j++;
-		k++;
-	}
-	buf[k] = 0;
+  // Copy contents between ( ) into buffer
+  int j = ix;
+  int k=0;
+  while ( !(CaseFileBuffer[j] == ')'))
+    {
+    buf[k] = CaseFileBuffer[j];
+    j++;
+    k++;
+    }
+  buf[k] = 0;
 }
 
 //-----------------------------------------------------------------------------
 void vtkFLUENTReader::GetStringToNextRightParenOrEOL(int ix, char buf[] )
 {
-	// Copy contents between ( ) into buffer
-	int j = ix;
-	int k=0;
-	while( !((CaseFileBuffer[j] == 0x0a)||(CaseFileBuffer[j] == ')')) ) {
-		buf[k] = CaseFileBuffer[j];
-		j++;
-		k++;
-	}
-	buf[k] = 0;
+  // Copy contents between ( ) into buffer
+  int j = ix;
+  int k=0;
+  while ( !((CaseFileBuffer[j] == 0x0a)||(CaseFileBuffer[j] == ')')))
+    {
+    buf[k] = CaseFileBuffer[j];
+    j++;
+    k++;
+    }
+  buf[k] = 0;
 }
 
 //-----------------------------------------------------------------------------
 void vtkFLUENTReader::GetMixedCellTypes(int ix, int fi, int li)
 {
-	int j = ix;
-
-	char c[2];
-	for(int i=fi; i<=li; i++){
-		j = GoToNextASCIIHexDigit(j);
-		cout << "i = " << i << ", et = " << CaseFileBuffer[j] << endl;
-
-		c[0] = CaseFileBuffer[j];
-		c[1] = 0;
-
-		CellTypes->InsertValue(i, atoi(c));
-
-		j++;
-	}
+  int j = ix;
+  char c[2];
+  for (int i = fi; i <= li; i++)
+    {
+    j = GoToNextASCIIHexDigit(j);
+    cout << "i = " << i << ", et = " << CaseFileBuffer[j] << endl;
+    c[0] = CaseFileBuffer[j];
+    c[1] = 0;
+    CellTypes->InsertValue(i, atoi(c));
+    j++;
+    }
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextSectionSinglePrecision(int ix, char buf[])
 {
-	int i = ix + 1;
-	while( !((CaseFileBuffer[i] == buf[0]) && (CaseFileBuffer[i+1] == buf[1]) && (CaseFileBuffer[i+2] == buf[2]) && (CaseFileBuffer[i+3] == buf[3]) && (CaseFileBuffer[i+4] == buf[4]) )){
-		i++;
-	}
-	return i+4;
+  int i = ix + 1;
+  while( !((CaseFileBuffer[i] == buf[0]) 
+    && (CaseFileBuffer[i+1] == buf[1]) 
+    && (CaseFileBuffer[i+2] == buf[2]) 
+    && (CaseFileBuffer[i+3] == buf[3]) 
+    && (CaseFileBuffer[i+4] == buf[4]) ))
+    {
+    i++;
+    }
+  return i+4;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextSectionDoublePrecision(int ix, char buf[])
 {
-	int i = ix + 1;
-	while( !((CaseFileBuffer[i] == buf[0]) && (CaseFileBuffer[i+1] == buf[1]) && (CaseFileBuffer[i+2] == buf[2]) && (CaseFileBuffer[i+3] == buf[3]) && (CaseFileBuffer[i+4] == buf[4]) )){
-		i++;
-	}
-	return i+4;
+  int i = ix + 1;
+  while ( !((CaseFileBuffer[i] == buf[0]) 
+    && (CaseFileBuffer[i+1] == buf[1]) 
+    && (CaseFileBuffer[i+2] == buf[2]) 
+    && (CaseFileBuffer[i+3] == buf[3]) 
+    && (CaseFileBuffer[i+4] == buf[4])))
+    {
+    i++;
+    }
+  return i+4;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetBinaryInteger(int ix)
 {
-	union mix_i{
-		int i;
-		char c[4];
-	} mi = {1};
+  union mix_i
+    {
+    int i;
+    char c[4];
+    } mi = {1};
 
-	if(LittleEndianFlag == 1){
-		for(int k=3;k>=0;k--){
-			mi.c[k] = CaseFileBuffer[ix+k];
-		}
-	} else {
-		for(int k=0;k<=3;k++){
-			mi.c[3-k] = CaseFileBuffer[ix+k];
-		}
-	}
-	return mi.i;
+  if ( LittleEndianFlag == 1)
+    {
+    for (int k = 3; k >= 0; k--)
+      {
+      mi.c[k] = CaseFileBuffer[ix+k];
+      }
+    }
+  else
+    {
+    for (int k = 0; k <= 3; k++)
+      {
+      mi.c[3-k] = CaseFileBuffer[ix+k];
+      }
+    }
+  return mi.i;
 }
 
 //-----------------------------------------------------------------------------
 float vtkFLUENTReader::GetBinaryFloat(int ix)
 {
-	union mix_i{
-		float i;
-		char c[4];
-	} mi = {1.0};
+  union mix_i
+    {
+    float i;
+    char c[4];
+    } mi = {1.0};
 
-	if(LittleEndianFlag == 1){
-		for(int k=3;k>=0;k--){
-			mi.c[k] = CaseFileBuffer[ix+k];
-		}
-	} else {
-		for(int k=0;k<=3;k++){
-			mi.c[3-k] = CaseFileBuffer[ix+k];
-		}
-	}
-	return mi.i;
+  if ( LittleEndianFlag == 1)
+    {
+    for (int k = 3; k >= 0; k--)
+      {
+      mi.c[k] = CaseFileBuffer[ix+k];
+      }
+    }
+  else
+    {
+    for (int k = 0; k <= 3; k++)
+      {
+      mi.c[3-k] = CaseFileBuffer[ix+k];
+      }
+    }
+  return mi.i;
 }
 
 //-----------------------------------------------------------------------------
 double vtkFLUENTReader::GetBinaryDouble(int ix)
 {
-	union mix_i{
-		double i;
-		char c[8];
-	} mi = {1.0};
+  union mix_i
+    {
+    double i;
+    char c[8];
+    } mi = {1.0};
 
-	if(LittleEndianFlag == 1){
-		for(int k=7;k>=0;k--){
-			mi.c[k] = CaseFileBuffer[ix+k];
-		}
-	} else {
-		for(int k=0;k<=7;k++){
-			mi.c[7-k] = CaseFileBuffer[ix+k];
-		}
-	}	
-
-	return mi.i;
+  if ( LittleEndianFlag == 1)
+    {
+    for (int k = 7; k >= 0; k--)
+      {
+      mi.c[k] = CaseFileBuffer[ix+k];
+      }
+    }
+  else
+    {
+    for (int k = 0; k <= 7; k++)
+      {
+      mi.c[7-k] = CaseFileBuffer[ix+k];
+      }
+    }
+  return mi.i;
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetAsciiInteger(int ix)
 {
-	int j = ix;
-	int first = GoToNextASCIIHexDigit(j);
-	j = first;
-	while(IsASCIICharacterHexDigit(++j));
+  int j = ix;
+  int first = GoToNextASCIIHexDigit(j);
+  j = first;
+  while ( IsASCIICharacterHexDigit(++j));
+  int second = j-1;
+  int nchar = second-first+1;
+  char *buf;
+  buf = new char[nchar+1];
+  buf[nchar] = 0;
+  j = first;
 
-	int second = j-1;
-
-	int nchar = second-first+1;
-	char *buf;
-	buf = new char[nchar+1];
-	buf[nchar] = 0;
-
-	j = first;
-	for(int i=0;i<nchar;i++){
-		buf[i] = CaseFileBuffer[j];
-		j++;
-	} 
-
-	return atoi(buf);
-	
+  for (int i = 0; i < nchar; i++)
+    {
+    buf[i] = CaseFileBuffer[j];
+    j++;
+    }
+  return atoi(buf);
 }
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoPastAsciiInteger(int ix)
 {
-
-	int j = ix;
-	int first = GoToNextASCIIHexDigit(j);
-	j = first;
-	while(IsASCIICharacterHexDigit(++j));
-	
-	return j;
+  int j = ix;
+  int first = GoToNextASCIIHexDigit(j);
+  j = first;
+  while(IsASCIICharacterHexDigit(++j));
+  return j;
 }
-
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GoToNextEOLData(int ix)
 {
-	int i = ix;
-	while(DataFileBuffer[i] != 0x0a ){
-		i++;
-	}
-	return i;
+  int i = ix;
+  while(DataFileBuffer[i] != 0x0a )
+    {
+    i++;
+    }
+  return i;
 }
 
 //-----------------------------------------------------------------------------
 void vtkFLUENTReader::GetStringToNextRightParenOrEOLData(int ix, char buf[] )
 {
-	// Copy contents between ( ) into buffer
-	int j = ix;
-	int k=0;
-	while( !((DataFileBuffer[j] == 0x0a)||(DataFileBuffer[j] == ')')) ) {
-		buf[k] = DataFileBuffer[j];
-		j++;
-		k++;
-	}
-	buf[k] = 0;
+  // Copy contents between ( ) into buffer
+  int j = ix;
+  int k=0;
+  while ( !((DataFileBuffer[j] == 0x0a)||(DataFileBuffer[j] == ')'))) 
+    {
+    buf[k] = DataFileBuffer[j];
+    j++;
+    k++;
+    }
+  buf[k] = 0;
 }
 
 //-----------------------------------------------------------------------------
 void vtkFLUENTReader::CreateVTKObjects(void)
 {
+  this->NumberOfCellFields = 0;
+  this->NumberOfCellComponents = 0;
+  this->FileStream = NULL;
+  this->NumberOfCells = 0;
+  this->CellDataInfo = NULL;
+  this->CellDataArraySelection = vtkDataArraySelection::New();
+  this->SetNumberOfInputPorts(0);
 
-	this->NumberOfCellFields = 0;
-	this->NumberOfCellComponents = 0;
-	this->FileStream = NULL;
-	this->NumberOfCells = 0;
-	this->CellDataInfo = NULL;
-	this->CellDataArraySelection = vtkDataArraySelection::New();
-	this->SetNumberOfInputPorts(0);
+  this->CaseFileBuffer = NULL;
+  this->DataFileBuffer = NULL;
+  this->CaseFileBufferLength = 0;
+  this->DataFileBufferLength = 0;
+  this->GridDimension = 0;
+  this->NumberOfNodes = 0;
+  this->NumberOfFaces = 0;
+  this->NumberOfFaceParents = 0;
+  this->NumberOfPeriodicShadowFaces = 0;
+  this->NumberOfCellZones = 0;
+  this->NumberOfVariables = 0;
+  this->LittleEndianFlag = 1;
+  this->NumberOfFaceTrees = 0;
+  this->NumberOfFaceTreeKids = 0;
+  this->NumberOfFaceTreeParents = 0;
+  this->LastFaceTreeParent = 0;
+  this->NumberOfCellTrees = 0;
+  this->NumberOfCellTreeKids = 0;
+  this->NumberOfCellTreeParents = 0;
+  this->LastCellTreeParent = 0;
+  this->NumberOfNCGFaceHeaders = 0;
+  this->NumberOfNCGFaces = 0;
+  this->NumberOfNCGNodeHeaders = 0;
+  this->NumberOfNCGNodes = 0;
+  this->DataPass = 0;
+  this->NumberOfFaceParentChildren = 0;
 
-	this->CaseFileBuffer = NULL;
-	this->DataFileBuffer = NULL;
-	this->CaseFileBufferLength = 0;
-	this->DataFileBufferLength = 0;
-	this->GridDimension = 0;
-	this->NumberOfNodes = 0;
-	this->NumberOfFaces = 0;
-	this->NumberOfFaceParents = 0;
-	this->NumberOfPeriodicShadowFaces = 0;
-	this->NumberOfCellZones = 0;
-	this->NumberOfVariables = 0;
-	this->LittleEndianFlag = 1;
-	this->NumberOfFaceTrees = 0;
-	this->NumberOfFaceTreeKids = 0;
-	this->NumberOfFaceTreeParents = 0;
-	this->LastFaceTreeParent = 0;
-	this->NumberOfCellTrees = 0;
-	this->NumberOfCellTreeKids = 0;
-	this->NumberOfCellTreeParents = 0;
-	this->LastCellTreeParent = 0;
-	this->NumberOfNCGFaceHeaders = 0;
-	this->NumberOfNCGFaces = 0;
-	this->NumberOfNCGNodeHeaders = 0;
-	this->NumberOfNCGNodes = 0;
-	this->DataPass = 0;
-	this->NumberOfFaceParentChildren = 0;
+  this->CellDataArraySelection = vtkDataArraySelection::New();
+  this->Points = vtkPoints::New();
+  this->CellTypes = vtkIntArray::New();
+  this->CellFaces = vtkIntArray::New();
+  this->CellFacesClean = vtkIntArray::New();
+  this->CellFacesClean->SetNumberOfComponents(6);
+  this->FaceTypes = vtkIntArray::New();
+  this->FaceNodes = vtkIntArray::New();
+  this->FaceNodes->SetNumberOfComponents(4);
+  this->FaceCells = vtkIntArray::New();
+  this->FaceCells->SetNumberOfComponents(2);
+  this->FaceParents = vtkIntArray::New();
+  this->FaceParents->SetNumberOfComponents(2);
+  this->PeriodicShadowFaces = vtkIntArray::New();
+  this->PeriodicShadowFaces->SetNumberOfComponents(2);
+  this->FaceTreesNumberOfKids = vtkIntArray::New();
+  this->FaceTreesKids = vtkIntArray::New();
+  this->FaceTreesKidsIndex = vtkIntArray::New();
+  this->CellTreesNumberOfKids = vtkIntArray::New();
+  this->CellTreesKids = vtkIntArray::New();
+  this->CellTreesKidsIndex = vtkIntArray::New();
+  this->FaceTreeParentFaceId0 = vtkIntArray::New();
+  this->FaceTreeParentFaceId1 = vtkIntArray::New();
+  this->FaceTreeParentZoneId = vtkIntArray::New();
+  this->FaceTreeChildZoneId = vtkIntArray::New();
+  this->FaceTreeParentTable = vtkIntArray::New();
+  this->CellTreeParentCellId0 = vtkIntArray::New();
+  this->CellTreeParentCellId1 = vtkIntArray::New();
+  this->CellTreeParentZoneId = vtkIntArray::New();
+  this->CellTreeChildZoneId = vtkIntArray::New();
+  this->CellTreeParentTable = vtkIntArray::New();
+  this->NCGFaceKidId = vtkIntArray::New();
+  this->NCGFaceParentId = vtkIntArray::New();
+  this->NCGFaceNumberOfFaces = vtkIntArray::New();
+  this->NCGFaceChild = vtkIntArray::New();
+  this->NCGFaceParent = vtkIntArray::New();
+  this->NCGNodeZoneId = vtkIntArray::New();
+  this->NCGNodeNumberOfNodesNCG = vtkIntArray::New();
+  this->NCGNodes = vtkDoubleArray::New();
+  this->NCGNodes->SetNumberOfComponents(2);
+  this->NCGNodeIds = vtkIntArray::New();
+  this->CellNumberOfFaces = vtkIntArray::New();
+  this->FaceKidFlags = vtkIntArray::New();
+  this->FaceParentFlags = vtkIntArray::New();
+  this->CellIndex = vtkIntArray::New();
+  this->InterfaceFaceChildFlags = vtkIntArray::New();
+  this->FaceParentsChildren = vtkIntArray::New();
+  this->NCGFaceChildFlags = vtkIntArray::New();
+  this->CellParentFlags = vtkIntArray::New();
+  this->ATriangle = vtkTriangle::New();
+  this->AQuad = vtkQuad::New();
+  this->ATetra = vtkTetra::New();
+  this->APyramid = vtkPyramid::New();
+  this->AWedge = vtkWedge::New();
+  this->AHexahedron = vtkHexahedron::New();
+  this->CellZones = vtkIntArray::New();
+  this->VariableIds = vtkIntArray::New();
+  this->VariableSizes = vtkIntArray::New();
+  this->CellData = NULL;
+  this->Mesh = vtkUnstructuredGrid::New();
 
-	this->CellDataArraySelection = vtkDataArraySelection::New();
-	this->Points = vtkPoints::New();
-	this->CellTypes = vtkIntArray::New();
-	this->CellFaces = vtkIntArray::New();
-	this->CellFacesClean = vtkIntArray::New();
-	this->CellFacesClean->SetNumberOfComponents(6);
-	this->FaceTypes = vtkIntArray::New();
-	this->FaceNodes = vtkIntArray::New();
-	this->FaceNodes->SetNumberOfComponents(4);
-	this->FaceCells = vtkIntArray::New();
-	this->FaceCells->SetNumberOfComponents(2);
-	this->FaceParents = vtkIntArray::New();
-	this->FaceParents->SetNumberOfComponents(2);
-	this->PeriodicShadowFaces = vtkIntArray::New();
-	this->PeriodicShadowFaces->SetNumberOfComponents(2);
-	this->FaceTreesNumberOfKids = vtkIntArray::New();
-	this->FaceTreesKids = vtkIntArray::New();
-	this->FaceTreesKidsIndex = vtkIntArray::New();
-	this->CellTreesNumberOfKids = vtkIntArray::New();
-	this->CellTreesKids = vtkIntArray::New();
-	this->CellTreesKidsIndex = vtkIntArray::New();
-	this->FaceTreeParentFaceId0 = vtkIntArray::New();
-	this->FaceTreeParentFaceId1 = vtkIntArray::New();
-	this->FaceTreeParentZoneId = vtkIntArray::New();
-	this->FaceTreeChildZoneId = vtkIntArray::New();
-	this->FaceTreeParentTable = vtkIntArray::New();
-	this->CellTreeParentCellId0 = vtkIntArray::New();
-	this->CellTreeParentCellId1 = vtkIntArray::New();
-	this->CellTreeParentZoneId = vtkIntArray::New();
-	this->CellTreeChildZoneId = vtkIntArray::New();
-	this->CellTreeParentTable = vtkIntArray::New();
-	this->NCGFaceKidId = vtkIntArray::New();
-	this->NCGFaceParentId = vtkIntArray::New();
-	this->NCGFaceNumberOfFaces = vtkIntArray::New();
-	this->NCGFaceChild = vtkIntArray::New();
-	this->NCGFaceParent = vtkIntArray::New();
-	this->NCGNodeZoneId = vtkIntArray::New();
-	this->NCGNodeNumberOfNodesNCG = vtkIntArray::New();
-	this->NCGNodes = vtkDoubleArray::New();
-	this->NCGNodes->SetNumberOfComponents(2);
-	this->NCGNodeIds = vtkIntArray::New();
-	this->CellNumberOfFaces = vtkIntArray::New();
-	this->FaceKidFlags = vtkIntArray::New();
-	this->FaceParentFlags = vtkIntArray::New();
-	this->CellIndex = vtkIntArray::New();
-	this->InterfaceFaceChildFlags = vtkIntArray::New();
-	this->FaceParentsChildren = vtkIntArray::New();
-	this->NCGFaceChildFlags = vtkIntArray::New();
-	this->CellParentFlags = vtkIntArray::New();
-	this->aTriangle = vtkTriangle::New();
-	this->aQuad = vtkQuad::New();
-	this->aTetra = vtkTetra::New();
-	this->aPyramid = vtkPyramid::New();
-	this->aWedge = vtkWedge::New();
-	this->aHexahedron = vtkHexahedron::New();
-	this->CellZones = vtkIntArray::New();
-	this->VariableIds = vtkIntArray::New();
-	this->VariableSizes = vtkIntArray::New();
-	this->CellData = NULL;
-	this->mesh = vtkUnstructuredGrid::New();
-
-	ObjectsFlag = 1;
-
+  ObjectsFlag = 1;
 }
 
 
 //-----------------------------------------------------------------------------
 void vtkFLUENTReader::DeleteVTKObjects(void)
 {
-	delete [] CaseFileBuffer;
-	delete [] DataFileBuffer;
-	Points->Delete();
-	CellTypes->Delete();
-	CellFaces->Delete();
-	CellFacesClean->Delete();
+  delete [] CaseFileBuffer;
+  delete [] DataFileBuffer;
+  Points->Delete();
+  CellTypes->Delete();
+  CellFaces->Delete();
+  CellFacesClean->Delete();
 
-	FaceTypes->Delete();
-	FaceNodes->Delete();
-	FaceCells->Delete();
-	FaceParents->Delete();
-	PeriodicShadowFaces->Delete();
-	FaceTreesNumberOfKids->Delete();
-	FaceTreesKids->Delete();
-	FaceTreesKidsIndex->Delete();
-	CellTreesNumberOfKids->Delete();
-	CellTreesKids->Delete();
-	CellTreesKidsIndex->Delete();
-	FaceTreeParentFaceId0->Delete();
-	FaceTreeParentFaceId1->Delete();
-	FaceTreeParentZoneId->Delete();
-	FaceTreeChildZoneId->Delete();
-	FaceTreeParentTable->Delete();
-	CellTreeParentCellId0->Delete();
-	CellTreeParentCellId1->Delete();
-	CellTreeParentZoneId->Delete();
-	CellTreeChildZoneId->Delete();
-	CellTreeParentTable->Delete();
+  FaceTypes->Delete();
+  FaceNodes->Delete();
+  FaceCells->Delete();
+  FaceParents->Delete();
+  PeriodicShadowFaces->Delete();
+  FaceTreesNumberOfKids->Delete();
+  FaceTreesKids->Delete();
+  FaceTreesKidsIndex->Delete();
+  CellTreesNumberOfKids->Delete();
+  CellTreesKids->Delete();
+  CellTreesKidsIndex->Delete();
+  FaceTreeParentFaceId0->Delete();
+  FaceTreeParentFaceId1->Delete();
+  FaceTreeParentZoneId->Delete();
+  FaceTreeChildZoneId->Delete();
+  FaceTreeParentTable->Delete();
+  CellTreeParentCellId0->Delete();
+  CellTreeParentCellId1->Delete();
+  CellTreeParentZoneId->Delete();
+  CellTreeChildZoneId->Delete();
+  CellTreeParentTable->Delete();
 
-	NCGFaceKidId->Delete();
-	NCGFaceParentId->Delete();
-	NCGFaceNumberOfFaces->Delete();
-	NCGFaceChild->Delete();
-	NCGFaceParent->Delete();
-	NCGNodeZoneId->Delete();
-	NCGNodeNumberOfNodesNCG->Delete();
-	NCGNodes->Delete();
-	NCGNodeIds->Delete();
-	CellNumberOfFaces->Delete();
-	FaceKidFlags->Delete();
-	FaceParentFlags->Delete();
-	CellIndex->Delete();
-	InterfaceFaceChildFlags->Delete();
-	FaceParentsChildren->Delete();
-	NCGFaceChildFlags->Delete();
-	CellParentFlags->Delete();
-	aTriangle->Delete();
-	aQuad->Delete();
-	aTetra->Delete();
-	aPyramid->Delete();
-	aWedge->Delete();
-	aHexahedron->Delete();
-	CellZones->Delete();
-	VariableIds->Delete();
-	VariableSizes->Delete();
-	ObjectsFlag = 0;
+  NCGFaceKidId->Delete();
+  NCGFaceParentId->Delete();
+  NCGFaceNumberOfFaces->Delete();
+  NCGFaceChild->Delete();
+  NCGFaceParent->Delete();
+  NCGNodeZoneId->Delete();
+  NCGNodeNumberOfNodesNCG->Delete();
+  NCGNodes->Delete();
+  NCGNodeIds->Delete();
+  CellNumberOfFaces->Delete();
+  FaceKidFlags->Delete();
+  FaceParentFlags->Delete();
+  CellIndex->Delete();
+  InterfaceFaceChildFlags->Delete();
+  FaceParentsChildren->Delete();
+  NCGFaceChildFlags->Delete();
+  CellParentFlags->Delete();
+  ATriangle->Delete();
+  AQuad->Delete();
+  ATetra->Delete();
+  APyramid->Delete();
+  AWedge->Delete();
+  AHexahedron->Delete();
+  CellZones->Delete();
+  VariableIds->Delete();
+  VariableSizes->Delete();
+  ObjectsFlag = 0;
 }

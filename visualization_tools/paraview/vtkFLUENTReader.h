@@ -52,28 +52,30 @@ public:
 
   // Description:
   // Specify the file name of the Fluent case file to read.
-    vtkSetStringMacro(FileName);
-    vtkGetStringMacro(FileName);
+  vtkSetStringMacro(FileName);
+  vtkGetStringMacro(FileName);
 
   // Description:
   // Get the total number of cells. The number of cells is only valid after a
   // successful read of the data file is performed.
-    vtkGetMacro(NumberOfCells,int);
-    vtkGetMacro(NumberOfCellFields,int);
+  vtkGetMacro(NumberOfCells,int);
+  vtkGetMacro(NumberOfCellArrays, int);
 
-  // Description:
-  // Get the number of data components at the cells.
-    vtkGetMacro(NumberOfCellComponents,int);
+  const char* GetCellArrayName(int index);
+  int GetCellArrayStatus(const char* name);
 
 protected:
   vtkFLUENTReader();
   ~vtkFLUENTReader();
-  int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  int RequestInformation(vtkInformation *, 
+    vtkInformationVector **, vtkInformationVector *);
+  int RequestData(vtkInformation *, vtkInformationVector **, 
+    vtkInformationVector *);
   int BinaryFile;
   int NumberOfCells;
   int NumberOfCellComponents;
   int NumberOfCellFields;
+  int NumberOfCellArrays;
   ifstream *FileStream;
   ifstream *DataFileStream;
   int ObjectsFlag;
@@ -81,21 +83,19 @@ protected:
   vtkDataArraySelection* CellDataArraySelection;
   //BTX
   struct DataInfo {
-    long foffset; // offset in binary file
-    int veclen;  // number of components in the node or cell variable
-    float min[3]; // pre-calculated data minima (max size 3 for vectors)
-    float max[3]; // pre-calculated data maxima (max size 3 for vectors)
+    long FileOffset; // offset in binary file
+    int VectorLength;  // number of components in the node or cell variable
+    float Minimum[3]; // pre-calculated data minima (max size 3 for vectors)
+    float Maximum[3]; // pre-calculated data maxima (max size 3 for vectors)
   };
   //ETX
   DataInfo *CellDataInfo;
 
 private:
+
   void ReadFile(vtkUnstructuredGrid *output);
   void CreateVTKObjects(void);
   void DeleteVTKObjects(void);
-  int GetNumberOfCellArrays();
-  const char* GetCellArrayName(int index);
-  int GetCellArrayStatus(const char* name);
   void SetCellArrayStatus(const char* name, int status);
   void DisableAllCellArrays();
   void EnableAllCellArrays();
@@ -253,9 +253,9 @@ private:
   int DataPass;
   int NumberOfFaceParentChildren;
 
-  int *veclen;
-  float *min;
-  float *max;
+  int *VectorLength;
+  float *Minimum;
+  float *Maximum;
 
   vtkPoints *Points;
   vtkIntArray *CellTypes;
@@ -299,41 +299,20 @@ private:
   vtkIntArray *FaceParentsChildren;
   vtkIntArray *NCGFaceChildFlags;
   vtkIntArray *CellParentFlags;
-  vtkTriangle *aTriangle;
-  vtkQuad *aQuad;
-  vtkTetra *aTetra;
-  vtkPyramid *aPyramid;
-  vtkWedge *aWedge;
-  vtkHexahedron *aHexahedron;
+  vtkTriangle *ATriangle;
+  vtkQuad *AQuad;
+  vtkTetra *ATetra;
+  vtkPyramid *APyramid;
+  vtkWedge *AWedge;
+  vtkHexahedron *AHexahedron;
   vtkIntArray *CellZones;
   vtkIntArray *VariableIds;
   vtkIntArray *VariableSizes;
   vtkDoubleArray **CellData;
   char *VariableNames[1500];
-  vtkUnstructuredGrid *mesh;
+  vtkUnstructuredGrid *Mesh;
 
   vtkFLUENTReader(const vtkFLUENTReader&);  // Not implemented.
   void operator=(const vtkFLUENTReader&);  // Not implemented.
 };
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
