@@ -82,12 +82,13 @@ protected:
 
   vtkDataArraySelection* CellDataArraySelection;
   //BTX
-  struct DataInfo {
+  struct DataInfo
+    {
     long FileOffset; // offset in binary file
     int VectorLength;  // number of components in the node or cell variable
     float Minimum[3]; // pre-calculated data minima (max size 3 for vectors)
     float Maximum[3]; // pre-calculated data maxima (max size 3 for vectors)
-  };
+    };
   //ETX
   DataInfo *CellDataInfo;
 
