@@ -554,7 +554,7 @@ void vtkFLUENTReader::BuildCells(void)
         && (tempNode[5]!=node[2])) 
         {
         node[3] = tempNode[5];
-        } 
+        }
       else if ( (tempNode[6]!=node[0]) && (tempNode[6]!=node[1])
         && (tempNode[6]!=node[2]))
         {
@@ -2507,10 +2507,10 @@ int vtkFLUENTReader::ExecuteCaseTask(int task, int file_index)
     //  ASCII Area
     //
     case 0:
-      new_index = this->GetComment(file_index);
+      new_index = this->GetNothing(file_index);  // Section not used
       break;
     case 1:
-      new_index = this->GetHeader(file_index);
+      new_index = this->GetNothing(file_index);  // Section not used
       break;
     case 2:
       new_index = this->GetGridDimension(file_index);
@@ -2531,28 +2531,28 @@ int vtkFLUENTReader::ExecuteCaseTask(int task, int file_index)
       new_index = this->GetPeriodicShadowFacesASCII(file_index);
       break;
     case 33:
-      new_index = this->GetGridSizeASCII(file_index);
+      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
       break;
     case 37:
-      new_index = this->GetVariablesASCII(file_index);
+      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
       break;
     case 38:
-      new_index = this->GetCortexVariablesASCII(file_index);
+      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
       break;
     case 39:
-      new_index = this->GetZoneSectionsASCII(file_index);
+      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
       break;
     case 40:
-      new_index = this->GetPartitionASCII(file_index);
+      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
       break;
     case 41:
-      new_index = this->GetNodeFlagsASCII(file_index);
+      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
       break;
     case 45:
-      new_index = this->GetZoneSectionsASCII(file_index);
+      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
       break;
     case 54:
-      new_index = this->Command54(file_index);
+      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
       break;
     case 58:
       new_index = this->GetCellTreeASCII(file_index);
@@ -2570,12 +2570,12 @@ int vtkFLUENTReader::ExecuteCaseTask(int task, int file_index)
       new_index = this->GetNCG2InformationASCII(file_index);
       break;
     case 64:
-      new_index = this->GetDomainVariablesASCII(file_index);
+      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
       break;
 
-  //
-  // Single Precision
-  //
+    //
+    // Single Precision
+    //
 
     case 2010:
       new_index = this->GetNodesSinglePrecision(file_index);
@@ -2590,25 +2590,25 @@ int vtkFLUENTReader::ExecuteCaseTask(int task, int file_index)
       new_index = this->GetPeriodicShadowFacesSinglePrecision(file_index);
       break;
     case 2033:
-      new_index = this->GetGridSizeSinglePrecision(file_index);
+      new_index = this->GetNoVariablesSinglePrecision(file_index, "2033)");
       break;
     case 2037:
-      new_index = this->GetVariablesSinglePrecision(file_index);
+      new_index = this->GetNoVariablesSinglePrecision(file_index, "2037)");
       break;
     case 2038:
-      new_index = this->GetCortexVariablesSinglePrecision(file_index);
+      new_index = this->GetNoVariablesSinglePrecision(file_index, "2038)");
       break;
     case 2039:
-      new_index = this->GetZoneSectionsSinglePrecision(file_index);
+      new_index = this->GetNoVariablesSinglePrecision(file_index, "2039)");
       break;
     case 2040:
-      new_index = this->GetPartitionSinglePrecision(file_index);
+      new_index = this->GetNoVariablesSinglePrecision(file_index, "2040)");
       break;
     case 2041:
-      new_index = this->GetNodeFlagsSinglePrecision(file_index);
+      new_index = this->GetNoVariablesSinglePrecision(file_index, "2041)");
       break;
     case 2045:
-      new_index = this->GetZoneSectionsSinglePrecision(file_index);
+      new_index = this->GetNoVariablesSinglePrecision(file_index, "2045)");
       break;
     case 2058:
       new_index = this->GetCellTreeSinglePrecision(file_index);
@@ -2626,12 +2626,8 @@ int vtkFLUENTReader::ExecuteCaseTask(int task, int file_index)
       new_index = this->GetNCG2InformationSinglePrecision(file_index);
       break;
     case 2064:
-      new_index = this->GetDomainVariablesSinglePrecision(file_index);
+      new_index = this->GetNoVariablesSinglePrecision(file_index, "2064)");
       break;
-
-//
-// Double Precision
-//
 
     case 3010:
       new_index = this->GetNodesDoublePrecision(file_index);
@@ -2646,25 +2642,25 @@ int vtkFLUENTReader::ExecuteCaseTask(int task, int file_index)
       new_index = this->GetPeriodicShadowFacesDoublePrecision(file_index);
       break;
     case 3033:
-      new_index = this->GetGridSizeDoublePrecision(file_index);
+      new_index = this->GetNoVariablesDoublePrecision(file_index, "3033)");
       break;
     case 3037:
-      new_index = this->GetVariablesDoublePrecision(file_index);
+      new_index = this->GetNoVariablesDoublePrecision(file_index, "3037)");
       break;
     case 3038:
-      new_index = this->GetCortexVariablesDoublePrecision(file_index);
+      new_index = this->GetNoVariablesDoublePrecision(file_index, "3038)");
       break;
     case 3039:
-      new_index = this->GetZoneSectionsDoublePrecision(file_index);
+      new_index = this->GetNoVariablesDoublePrecision(file_index, "3039)");
       break;
     case 3040:
-      new_index = this->GetPartitionDoublePrecision(file_index);
+      new_index = this->GetNoVariablesDoublePrecision(file_index, "3040)");
       break;
     case 3041:
-      new_index = this->GetNodeFlagsDoublePrecision(file_index);
+      new_index = this->GetNoVariablesDoublePrecision(file_index, "3041)");
       break;
     case 3045:
-      new_index = this->GetZoneSectionsDoublePrecision(file_index);
+      new_index = this->GetNoVariablesDoublePrecision(file_index, "3045)");
       break;
     case 3058:
       new_index = this->GetCellTreeDoublePrecision(file_index);
@@ -2682,7 +2678,7 @@ int vtkFLUENTReader::ExecuteCaseTask(int task, int file_index)
       new_index = this->GetNCG2InformationDoublePrecision(file_index);
       break;
     case 3064:
-      new_index = this->GetDomainVariablesDoublePrecision(file_index);
+      new_index = this->GetNoVariablesDoublePrecision(file_index, "3064)");
       break;
     default:
       cout << " Unknown Index " << task << endl;
@@ -2752,73 +2748,73 @@ int vtkFLUENTReader::ExecuteDataTask(int task, int file_index)
   switch ( task )
     {
     case 0:
-      new_index = this->GetDataComment(file_index);
+      new_index = this->GetDataNothing(file_index);
       break;
     case 1:
-      new_index = this->GetDataHeader(file_index);
+      new_index = this->GetDataNothing(file_index);
       break;
     case 2:
       new_index = this->GetDataGridDimension(file_index);
       break;
     case 4:
-      new_index = this->GetDataMachineConfiguration(file_index);
+      new_index = this->GetNoData(file_index);
       break;
     case 33:
-      new_index = this->GetDataGridSizeASCII(file_index);
+      new_index = this->GetNoData(file_index);
       break;
     case 37:
-      new_index = this->GetDataVariablesASCII(file_index);
+      new_index = this->GetNoData(file_index);
       break;
     case 38:
-      new_index = this->GetDataVariablesASCII(file_index);
+      new_index = this->GetNoData(file_index);
       break;
     case 50:
       new_index = this->GetDataUnknownASCII(file_index);
       break;
     case 64:
-      new_index = this->GetDataVariablesASCII(file_index);
+      new_index = this->GetNoData(file_index);
       break;
     case 300:
       new_index = this->GetDataASCII(file_index);
       break;
     case 301:
-      new_index = this->GetUnknownASCII301(file_index);
+      new_index = this->GetNoData(file_index);
       break;
     case 302:
-      new_index = this->GetUnknownASCII302(file_index);
+      new_index = this->GetNoData(file_index);
       break;
     case 303:
-      new_index = this->GetUnknownASCII303(file_index);
+      new_index = this->GetNoData(file_index);
       break;
     case 313:
-      new_index = this->GetUnknownASCII313(file_index);
+      new_index = this->GetNoData(file_index);
       break;
     case 2300:
       new_index = this->GetDataSinglePrecision(file_index);
       break;
     case 2301:
-      new_index = this->GetUnknownSinglePrecision2301(file_index);
+      new_index = this->SkipUnknownSinglePrecisionData(file_index, "2301)");
       break;
     case 2302:
-      new_index = this->GetUnknownSinglePrecision2302(file_index);
+      new_index = this->SkipUnknownSinglePrecisionData(file_index, "2302)");
       break;
     case 2303:
-      new_index = this->GetUnknownSinglePrecision2302(file_index);
+      new_index = this->SkipUnknownSinglePrecisionData(file_index, "2303)");
       break;
     case 2313:
-      new_index = this->GetUnknownSinglePrecision2313(file_index);
+      new_index = this->SkipUnknownSinglePrecisionData(file_index, "2313)");
       break;
     case 3300:
       new_index = this->GetDataDoublePrecision(file_index);
       break;
     case 3301:
-      new_index = this->GetUnknownDoublePrecision3301(file_index);
+      new_index = this->SkipUnknownDoublePrecisionData(file_index, "3301)");
       break;
     case 3302:
-      new_index = this->GetUnknownDoublePrecision3302(file_index);
+      new_index = this->SkipUnknownDoublePrecisionData(file_index, "3302)");
       break;
     case 3313:
-      new_index = this->GetUnknownDoublePrecision3313(file_index);
+      new_index = this->SkipUnknownDoublePrecisionData(file_index, "3313)");
       break;
     default:
       cout << " Unknown Index " << task << endl;
@@ -2828,15 +2824,8 @@ int vtkFLUENTReader::ExecuteDataTask(int task, int file_index)
   return new_index;
 }
 
-
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetComment(int ix)
-{
-  return this->GoToNextRightParen(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetHeader(int ix)
+int vtkFLUENTReader::GetNothing(int ix)
 {
   return this->GoToNextRightParen(ix);
 }
@@ -2868,19 +2857,7 @@ int vtkFLUENTReader::GetMachineConfiguration(int ix)
 }
 
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetVariablesASCII(int ix)
-{
-  return this->GoToNextSectionASCII(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetCortexVariablesASCII(int ix)
-{
-  return this->GoToNextSectionASCII(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDomainVariablesASCII(int ix)
+int vtkFLUENTReader::GetNoVariablesASCII(int ix)
 {
   return this->GoToNextSectionASCII(ix);
 }
@@ -3123,7 +3100,8 @@ int vtkFLUENTReader::GetNCG1InformationASCII(int ix)
   sscanf( buf, " %d %d %d", &KidId, &ParentId, &NumberOfFacesNCG);
   this->NCGFaceKidId->InsertValue(NumberOfNCGFaceHeaders, KidId);
   this->NCGFaceParentId->InsertValue(NumberOfNCGFaceHeaders, ParentId);
-  this->NCGFaceNumberOfFaces->InsertValue(NumberOfNCGFaceHeaders, NumberOfFacesNCG);
+  this->NCGFaceNumberOfFaces->InsertValue(NumberOfNCGFaceHeaders, 
+    NumberOfFacesNCG);
 
   j = this->GoToNextLeftParen(j)+1;
   j = this->GoToNextASCIIHexDigit(j);
@@ -3191,24 +3169,6 @@ int vtkFLUENTReader::GetNCG2InformationASCII(int ix)
 }
 
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNodeFlagsASCII(int ix)
-{
-  return this->GoToNextSectionASCII(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::Command54(int ix)
-{
-  return this->GoToNextSectionASCII(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetZoneSectionsASCII(int ix)
-{
-  return this->GoToNextSectionASCII(ix);
-}
-
-//-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetPeriodicShadowFacesASCII(int ix)
 {
   char buf[120];
@@ -3240,18 +3200,6 @@ int vtkFLUENTReader::GetPeriodicShadowFacesASCII(int ix)
 }
 
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetGridSizeASCII(int ix)
-{
-  return this->GoToNextSectionASCII(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetPartitionASCII(int ix)
-{
-  return this->GoToNextSectionASCII(ix);
-}
-
-//-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetCellTreeASCII(int ix)
 {
   char buf[120];
@@ -3273,7 +3221,8 @@ int vtkFLUENTReader::GetCellTreeASCII(int ix)
     {
     int NumberOfKids = this->GetAsciiInteger(j);
     j = this->GoPastAsciiInteger(j);
-    this->CellTreesNumberOfKids->InsertValue(this->NumberOfCellTreeParents, NumberOfKids);
+    this->CellTreesNumberOfKids->InsertValue(this->NumberOfCellTreeParents, 
+      NumberOfKids);
     this->CellTreesKidsIndex->InsertValue(this->NumberOfCellTreeParents, 
       this->NumberOfCellTreeKids);
     for (int i = 0; i < NumberOfKids; i++)
@@ -3312,7 +3261,8 @@ int vtkFLUENTReader::GetFaceTreeASCII(int ix)
     {
     int NumberOfKids = this->GetAsciiInteger(j);
     j = this->GoPastAsciiInteger(j);
-    this->FaceTreesNumberOfKids->InsertValue(this->NumberOfFaceTreeParents, NumberOfKids);
+    this->FaceTreesNumberOfKids->InsertValue(this->NumberOfFaceTreeParents, 
+      NumberOfKids);
     this->FaceTreesKidsIndex->InsertValue(this->NumberOfFaceTreeParents, 
       this->NumberOfFaceTreeKids);
     for(int i = 0; i < NumberOfKids; i++)
@@ -3332,21 +3282,9 @@ int vtkFLUENTReader::GetFaceTreeASCII(int ix)
 
 //-----------------------------------------------------------------------------
 
-int vtkFLUENTReader::GetVariablesSinglePrecision(int ix)
+int vtkFLUENTReader::GetNoVariablesSinglePrecision(int ix, char buf[])
 {
-  return this->GoToNextSectionSinglePrecision( ix, "2037)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetCortexVariablesSinglePrecision(int ix)
-{
-  return this->GoToNextSectionSinglePrecision( ix, "2038)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDomainVariablesSinglePrecision(int ix)
-{
-  return this->GoToNextSectionSinglePrecision( ix, "2064)");
+  return this->GoToNextSectionSinglePrecision( ix, buf);
 }
 
 //-----------------------------------------------------------------------------
@@ -3568,7 +3506,8 @@ int vtkFLUENTReader::GetFaceParentsSinglePrecision(int ix)
     j = j + 4;
     this->FaceParents->InsertComponent(k, 0, pid0);
     this->FaceParents->InsertComponent(k, 1, pid1);
-    this->FaceParentsChildren->InsertValue(this->NumberOfFaceParentChildren, k);
+    this->FaceParentsChildren->InsertValue(
+      this->NumberOfFaceParentChildren, k);
     this->NumberOfFaceParentChildren++;
     }
 
@@ -3660,18 +3599,6 @@ int vtkFLUENTReader::GetNCG2InformationSinglePrecision(int ix)
 }
 
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNodeFlagsSinglePrecision(int ix)
-{
-  return this->GoToNextSectionSinglePrecision( ix, "2041)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetZoneSectionsSinglePrecision(int ix)
-{
-  return this->GoToNextSectionSinglePrecision( ix, "2039)");
-}
-
-//-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetPeriodicShadowFacesSinglePrecision(int ix)
 {
   char buf[120];
@@ -3703,18 +3630,6 @@ int vtkFLUENTReader::GetPeriodicShadowFacesSinglePrecision(int ix)
 }
 
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetGridSizeSinglePrecision(int ix)
-{
-  return this->GoToNextSectionSinglePrecision( ix, "2033)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetPartitionSinglePrecision(int ix)
-{
-  return this->GoToNextSectionSinglePrecision( ix, "2040)");
-}
-
-//-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetCellTreeSinglePrecision(int ix)
 {
   char buf[120];
@@ -3735,7 +3650,8 @@ int vtkFLUENTReader::GetCellTreeSinglePrecision(int ix)
     {
     int NumberOfKids = this->GetBinaryInteger(j);
     j = j + 4;
-    this->CellTreesNumberOfKids->InsertValue(this->NumberOfCellTreeParents, NumberOfKids);
+    this->CellTreesNumberOfKids->InsertValue(this->NumberOfCellTreeParents,
+      NumberOfKids);
     this->CellTreesKidsIndex->InsertValue(this->NumberOfCellTreeParents, 
       NumberOfCellTreeKids);
     for (int i = 0; i < NumberOfKids; i++)
@@ -3774,7 +3690,8 @@ int vtkFLUENTReader::GetFaceTreeSinglePrecision(int ix)
     {
     int NumberOfKids = this->GetBinaryInteger(j);
     j = j + 4;
-    this->FaceTreesNumberOfKids->InsertValue(this->NumberOfFaceTreeParents, NumberOfKids);
+    this->FaceTreesNumberOfKids->InsertValue(this->NumberOfFaceTreeParents, 
+      NumberOfKids);
     this->FaceTreesKidsIndex->InsertValue(this->NumberOfFaceTreeParents, 
       NumberOfFaceTreeKids);
     for (int i = 0; i < NumberOfKids; i++)
@@ -3791,21 +3708,9 @@ int vtkFLUENTReader::GetFaceTreeSinglePrecision(int ix)
 }
 
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetVariablesDoublePrecision(int ix)
+int vtkFLUENTReader::GetNoVariablesDoublePrecision(int ix, char buf[])
 {
-  return this->GoToNextSectionDoublePrecision( ix, "3037)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetCortexVariablesDoublePrecision(int ix)
-{
-  return this->GoToNextSectionDoublePrecision( ix, "3038)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDomainVariablesDoublePrecision(int ix)
-{
-  return this->GoToNextSectionDoublePrecision( ix, "3064)");
+  return this->GoToNextSectionDoublePrecision( ix, buf);
 }
 
 //-----------------------------------------------------------------------------
@@ -4025,7 +3930,8 @@ int vtkFLUENTReader::GetFaceParentsDoublePrecision(int ix)
     j = j + 4;
     this->FaceParents->InsertComponent(k, 0, pid0);
     this->FaceParents->InsertComponent(k, 1, pid1);
-    this->FaceParentsChildren->InsertValue(this->NumberOfFaceParentChildren, k);
+    this->FaceParentsChildren->InsertValue(
+      this->NumberOfFaceParentChildren, k);
     this->NumberOfFaceParentChildren++;
     }
 
@@ -4050,7 +3956,8 @@ int vtkFLUENTReader::GetNCG1InformationDoublePrecision(int ix)
   sscanf( buf, " %d %d %d", &KidId, &ParentId, &NumberOfFacesNCG);
   this->NCGFaceKidId->InsertValue(this->NumberOfNCGFaceHeaders, KidId);
   this->NCGFaceParentId->InsertValue(this->NumberOfNCGFaceHeaders, ParentId);
-  this->NCGFaceNumberOfFaces->InsertValue(this->NumberOfNCGFaceHeaders, NumberOfFacesNCG);
+  this->NCGFaceNumberOfFaces->InsertValue(this->NumberOfNCGFaceHeaders,
+    NumberOfFacesNCG);
 
   j = this->GoToNextLeftParen(j)+1;
   int child,parent;
@@ -4117,18 +4024,6 @@ int vtkFLUENTReader::GetNCG2InformationDoublePrecision(int ix)
 }
 
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNodeFlagsDoublePrecision(int ix)
-{
-  return this->GoToNextSectionDoublePrecision( ix, "3041)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetZoneSectionsDoublePrecision(int ix)
-{
-  return this->GoToNextSectionDoublePrecision( ix, "3039)");
-}
-
-//-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetPeriodicShadowFacesDoublePrecision(int ix)
 {
   char buf[120];
@@ -4159,18 +4054,6 @@ int vtkFLUENTReader::GetPeriodicShadowFacesDoublePrecision(int ix)
 }
 
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetGridSizeDoublePrecision(int ix)
-{
-  return this->GoToNextSectionDoublePrecision( ix, "3033)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetPartitionDoublePrecision(int ix)
-{
-  return this->GoToNextSectionDoublePrecision( ix, "3040)");
-}
-
-//-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetCellTreeDoublePrecision(int ix)
 {
   char buf[120];
@@ -4190,7 +4073,8 @@ int vtkFLUENTReader::GetCellTreeDoublePrecision(int ix)
     {
     int NumberOfKids = this->GetBinaryInteger(j);
     j = j + 4;
-    this->CellTreesNumberOfKids->InsertValue(this->NumberOfCellTreeParents, NumberOfKids);
+    this->CellTreesNumberOfKids->InsertValue(this->NumberOfCellTreeParents,
+      NumberOfKids);
     this->CellTreesKidsIndex->InsertValue(this->NumberOfCellTreeParents, 
       NumberOfCellTreeKids);
     for (int i = 0; i < NumberOfKids; i++)
@@ -4226,7 +4110,8 @@ int vtkFLUENTReader::GetFaceTreeDoublePrecision(int ix)
     {
     int NumberOfKids = this->GetBinaryInteger(j);
     j = j + 4;
-    this->FaceTreesNumberOfKids->InsertValue(this->NumberOfFaceTreeParents, NumberOfKids);
+    this->FaceTreesNumberOfKids->InsertValue(this->NumberOfFaceTreeParents,
+      NumberOfKids);
     this->FaceTreesKidsIndex->InsertValue(this->NumberOfFaceTreeParents, 
       this->NumberOfFaceTreeKids);
     for (int i = 0; i < NumberOfKids; i++)
@@ -4253,17 +4138,16 @@ int vtkFLUENTReader::GetGridDimension(int ix)
   return this->GoToNextRightParen(ix);
 }
 
-
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDataComment(int ix)
+int vtkFLUENTReader::GetDataNothing(int ix)
 {
   return this->GoToNextRightParenData(ix);
 }
 
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDataHeader(int ix)
+int vtkFLUENTReader::GetNoData(int ix)
 {
-  return this->GoToNextRightParenData(ix);
+  return this->GoToNextSectionASCIIData(ix);
 }
 
 //-----------------------------------------------------------------------------
@@ -4275,30 +4159,6 @@ int vtkFLUENTReader::GetDataGridDimension(int ix)
   this->GridDimension = atoi(b2);
 
   return this->GoToNextRightParenData(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDataMachineConfiguration(int ix)
-{
-  return this->GoToNextSectionASCIIData(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDataGridSizeASCII(int ix)
-{
-  return this->GoToNextSectionASCIIData(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDataVariablesASCII(int ix)
-{
-  return this->GoToNextSectionASCIIData(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetUnknownASCII313(int ix)
-{
-  return this->GoToNextSectionASCIIData(ix);
 }
 
 //-----------------------------------------------------------------------------
@@ -4498,7 +4358,8 @@ int vtkFLUENTReader::GetDataDoublePrecision(int ix)
         {
         for (int k = 0; k < size; k++)
           {
-          this->CellData[index]->InsertComponent( i-1, k, this->GetBinaryDoubleData(j)); 
+          this->CellData[index]->InsertComponent( i-1, k,
+            this->GetBinaryDoubleData(j)); 
           j = j + 8;
           }
         }
@@ -4508,58 +4369,17 @@ int vtkFLUENTReader::GetDataDoublePrecision(int ix)
 }
 
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetUnknownSinglePrecision2301(int ix)
+int vtkFLUENTReader::SkipUnknownSinglePrecisionData(int ix, char buf[])
 {
-  return this->GoToNextSectionSinglePrecisionData( ix, "2301)");
+  return this->GoToNextSectionSinglePrecisionData( ix, buf);
 }
 
 //-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetUnknownSinglePrecision2302(int ix)
+int vtkFLUENTReader::SkipUnknownDoublePrecisionData(int ix, char buf[])
 {
-  return this->GoToNextSectionSinglePrecisionData( ix, "2302)");
+  return this->GoToNextSectionDoublePrecisionData( ix, buf);
 }
 
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetUnknownSinglePrecision2313(int ix)
-{
-  return this->GoToNextSectionSinglePrecisionData( ix, "2313)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetUnknownDoublePrecision3301(int ix)
-{
-  return this->GoToNextSectionDoublePrecisionData( ix, "3301)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetUnknownDoublePrecision3302(int ix)
-{
-  return this->GoToNextSectionDoublePrecisionData( ix, "3302)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetUnknownDoublePrecision3313(int ix)
-{
-  return this->GoToNextSectionDoublePrecisionData( ix, "3313)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetUnknownASCII301(int ix)
-{
-  return this->GoToNextSectionASCIIData(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetUnknownASCII302(int ix)
-{
-  return this->GoToNextSectionASCIIData(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetUnknownASCII303(int ix)
-{
-  return this->GoToNextSectionASCIIData(ix);
-}
 
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::GetDataUnknownASCII(int ix)
@@ -4710,15 +4530,18 @@ double vtkFLUENTReader::GetBinaryDoubleData(int ix)
 //-----------------------------------------------------------------------------
 int vtkFLUENTReader::IsASCIICharacterHexDigit(int ix)
 {
-  if ( (this->CaseFileBuffer[ix] >= 0x30) && (this->CaseFileBuffer[ix] <= 0x39))
+  if ( (this->CaseFileBuffer[ix] >= 0x30) 
+    && (this->CaseFileBuffer[ix] <= 0x39))
     {
     return 1;
     }
-  else if ( (this->CaseFileBuffer[ix] >= 0x41) && (this->CaseFileBuffer[ix] <= 0x46))
+  else if ( (this->CaseFileBuffer[ix] >= 0x41) 
+    && (this->CaseFileBuffer[ix] <= 0x46))
     {
     return 1;
     }
-  else if ( (this->CaseFileBuffer[ix] >= 0x61) && (this->CaseFileBuffer[ix] <= 0x66))
+  else if ( (this->CaseFileBuffer[ix] >= 0x61) 
+    && (this->CaseFileBuffer[ix] <= 0x66))
     {
     return 1;
     }
@@ -4813,7 +4636,8 @@ void vtkFLUENTReader::GetStringToNextRightParenOrEOL(int ix, char buf[] )
   // Copy contents between ( ) into buffer
   int j = ix;
   int k=0;
-  while ( !((this->CaseFileBuffer[j] == 0x0a)||(this->CaseFileBuffer[j] == ')')))
+  while ( !((this->CaseFileBuffer[j] == 0x0a)
+    ||(this->CaseFileBuffer[j] == ')')))
     {
     buf[k] = this->CaseFileBuffer[j];
     j++;
@@ -4995,7 +4819,8 @@ void vtkFLUENTReader::GetStringToNextRightParenOrEOLData(int ix, char buf[] )
   // Copy contents between ( ) into buffer
   int j = ix;
   int k=0;
-  while ( !((this->DataFileBuffer[j] == 0x0a)||(this->DataFileBuffer[j] == ')'))) 
+  while ( !((this->DataFileBuffer[j] == 0x0a)
+    ||(this->DataFileBuffer[j] == ')'))) 
     {
     buf[k] = this->DataFileBuffer[j];
     j++;
