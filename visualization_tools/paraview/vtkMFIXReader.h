@@ -24,8 +24,7 @@
 // .SECTION Thanks
 // Thanks to Phil Nicoletti and Brian Dotson at the National Energy 
 // Technology Laboratory who developed this class.
-// Please address all comments to Phil Nicoletti (philip.nicoletti@pp.netl.doe.gov)
-// or Brian Dotson (brian.dotson@netl.doe.gov)
+// Please address all comments to Brian Dotson (brian.dotson@netl.doe.gov)
 
 // .SECTION See Also
 // vtkGAMBITReader
