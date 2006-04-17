@@ -14,8 +14,8 @@
 =========================================================================*/
 // Thanks to Phil Nicoletti and Brian Dotson at the National Energy 
 // Technology Laboratory who developed this class.
-// Please address all comments to Phil Nicoletti (philip.nicoletti@pp.netl.doe.gov)
-// or Brian Dotson (brian.dotson@netl.doe.gov)
+// Please address all comments to Brian Dotson (brian.dotson@netl.doe.gov)
+//
 
 #include "vtkMFIXReader.h"
 
@@ -399,7 +399,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 			}
 			
 			double tempRange[2];
-			cell_data_array[j]->GetRange(tempRange, j);
+			cell_data_array[j]->GetRange(tempRange, -1);
 			min[j] = tempRange[0];
 			max[j] = tempRange[1];
 			veclen[j] = 1;
@@ -515,8 +515,6 @@ void vtkMFIXReader::GetCellDataRange(int cellComp, int index, float *min, float 
 
 void vtkMFIXReader::SetProjectName (char *infile) {
 
-	char temp[120];
-	
 	int len = strlen(infile);
 	
 	strncpy(run_name, infile, len-4);
@@ -1187,9 +1185,10 @@ void vtkMFIXReader::CreateVariableNames()
     for (int i=0; i<nspx_use; ++i)
     {
     
-	for(int k=0;k<sizeof(fname);k++){
-		fname[k]=0;
-	}
+	for(int k = 0; k < (int)sizeof(fname); k++)
+          {
+          fname[k]=0;
+          }
 	strncpy(fname, this->FileName, strlen(this->FileName)-4);
 	
 	if(i==0){
@@ -1272,16 +1271,16 @@ void vtkMFIXReader::CreateVariableNames()
 		    
                     for (int i=0; i<MMAX; ++i)
                     {
-		    	for(int k=0;k<sizeof(us);k++) {
+		    	for(int k=0;k<(int)sizeof(us);k++) {
 			   us[k]=0;
 			}	
-		    	for(int k=0;k<sizeof(vs);k++) {
+		    	for(int k=0;k<(int)sizeof(vs);k++) {
 			   vs[k]=0;
 			}	
-		    	for(int k=0;k<sizeof(ws);k++) {
+		    	for(int k=0;k<(int)sizeof(ws);k++) {
 			   ws[k]=0;
 			}	
-		    	for(int k=0;k<sizeof(sv);k++) {
+		    	for(int k=0;k<(int)sizeof(sv);k++) {
 			   sv[k]=0;
 			}	
 		        strcpy(us, "U_s_");
@@ -1321,7 +1320,7 @@ void vtkMFIXReader::CreateVariableNames()
 
                     for (int i=0; i<MMAX; ++i)
                     {
-		    	for(int k=0;k<sizeof(rops);k++) {
+		    	for(int k=0;k<(int)sizeof(rops);k++) {
 			   rops[k]=0;
 			}	
 			strcpy(rops, "ROP_s_");
@@ -1365,7 +1364,7 @@ void vtkMFIXReader::CreateVariableNames()
 			
 			for (int i=0; i<MMAX; ++i)
 			{
-				for(int k=0;k<sizeof(ts);k++) {
+				for(int k=0;k<(int)sizeof(ts);k++) {
 				ts[k]=0;
 				}	
 				strcpy(ts, "T_s_");
@@ -1387,7 +1386,7 @@ void vtkMFIXReader::CreateVariableNames()
 
                     for (int i=0; i<NMAX->GetValue(0); ++i)
                     {
-			for(int k=0;k<sizeof(var);k++) {
+			for(int k=0;k<(int)sizeof(var);k++) {
 			   var[k]=0;
 			}	
 			strcpy(var, "X_g_");
@@ -1405,7 +1404,7 @@ void vtkMFIXReader::CreateVariableNames()
                         {
 			    char temp1[120];
 			    char temp2[120];
-			    for(int k=0;k<sizeof(var);k++) {
+			    for(int k=0;k<(int)sizeof(var);k++) {
 				var[k]=0;
 			    }	
 			    strcpy(var, "X_s_");
@@ -1431,7 +1430,7 @@ void vtkMFIXReader::CreateVariableNames()
 		    char temp[120];
                     for (int i=0; i<MMAX; ++i)
                     {
-			for(int k=0;k<sizeof(var);k++) {
+			for(int k=0;k<(int)sizeof(var);k++) {
 			  var[k]=0;
 			}	
 			strcpy(var, "Theta_m_");
@@ -1453,7 +1452,7 @@ void vtkMFIXReader::CreateVariableNames()
 
                     for (int i=0; i<NScalar; ++i)
                     {
-			for(int k=0;k<sizeof(var);k++) {
+			for(int k=0;k<(int)sizeof(var);k++) {
 			   var[k]=0;
 			}	
 		        strcpy(var, "Scalar_");
@@ -1475,7 +1474,7 @@ void vtkMFIXReader::CreateVariableNames()
 
                     for (int i=0; i<nRR; ++i)
                     {
-			for(int k=0;k<sizeof(var);k++) {
+			for(int k=0;k<(int)sizeof(var);k++) {
 			   var[k]=0;
 			}	
 		        strcpy(var, "RRates_");
@@ -1533,7 +1532,7 @@ void vtkMFIXReader::GetTimeSteps()
 	for (int i=0; i<nspx_use; ++i)
 	{
 		
-		for(int k=0;k<sizeof(fname);k++){
+		for(int k=0;k<(int)sizeof(fname);k++){
 			fname[k]=0;
 		}
 		strncpy(fname, this->FileName, strlen(this->FileName)-4);
@@ -1657,7 +1656,7 @@ void vtkMFIXReader::GetVariableAtTimestep(int vari , int tstep, vtkFloatArray *v
     int spx = variableIndexToSPX->GetValue(vari);
     
     char fname[256];
-    for(int k=0;k<sizeof(fname);k++){
+    for(int k=0;k<(int)sizeof(fname);k++){
        fname[k]=0;
     }
 
@@ -1821,7 +1820,7 @@ void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector)
 	}	
 
 	char fname[256];
-	for(int k=0;k<sizeof(fname);k++){
+	for(int k=0;k<(int)sizeof(fname);k++){
 		fname[k]=0;
 	}
 	strncpy(fname, this->FileName, strlen(this->FileName)-4);
@@ -1854,14 +1853,13 @@ void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector)
 
 	int numberOfVariablesInSPX = spx_to_nvar_table->GetValue(variableIndexToSPX->GetValue(maxvar));
 
-	int offset = 512-sizeof(float) + 512*(numberOfVariablesInSPX*spx_records_per_timestep);
+	int offset = 512-(int)sizeof(float) + 512*(numberOfVariablesInSPX*spx_records_per_timestep);
 
 	tfile.clear();
     	tfile.seekg( 3*512, ios::beg ); // first time
 
 	float time;
 
-	int cnt = 0;
   	double* steps = new double[this->NumberOfTimeSteps];
 
 	for(int i = 0; i < this->NumberOfTimeSteps; i++){
