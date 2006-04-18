@@ -33,16 +33,18 @@
 #define __vtkMFIXReader_h
 
 #include "vtkUnstructuredGridAlgorithm.h"
-#include "vtkDataArraySelection.h"
-#include "vtkStringArray.h"
-#include "vtkIntArray.h"
-#include "vtkFloatArray.h"
-#include "vtkDoubleArray.h"
-#include "vtkXMLUnstructuredGridWriter.h"
-#include "vtkWedge.h"
-#include "vtkHexahedron.h"
 
+class vtkDataArraySelection;
 class vtkDoubleArray;
+class vtkStringArray;
+class vtkIntArray;
+class vtkFloatArray;
+class vtkXMLUnstructuredGridWriter;
+class vtkWedge;
+class vtkHexahedron;
+class vtkPoints;
+class vtkStdString;
+
 class VTK_IO_EXPORT vtkMFIXReader : public vtkUnstructuredGridAlgorithm
 {
 public:
@@ -50,15 +52,6 @@ public:
   vtkTypeRevisionMacro(vtkMFIXReader,vtkUnstructuredGridAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  // Methods for Paraview
-  int GetNumberOfCellArrays(void);
-  const char* GetCellArrayName(int index);
-  int GetCellArrayStatus(const char* name);
-  void SetCellArrayStatus(const char* name, int status);
-  void DisableAllCellArrays();
-  void EnableAllCellArrays();
-  void GetCellDataRange(int cellComp, int index, float *min, float *max);
-  
   // Description:
   // Specify the file name of the MFIX Restart data file to read.
   vtkSetStringMacro(FileName);
@@ -89,6 +82,14 @@ public:
   vtkGetVector2Macro(TimeStepRange, int);
   vtkSetVector2Macro(TimeStepRange, int);
 
+  int GetNumberOfCellArrays(void);
+  const char* GetCellArrayName(int index);
+  int GetCellArrayStatus(const char* name);
+  void SetCellArrayStatus(const char* name, int status);
+  void DisableAllCellArrays();
+  void EnableAllCellArrays();
+  void GetCellDataRange(int cellComp, int index, float *min, float *max);
+  
 protected:
   vtkMFIXReader();
   ~vtkMFIXReader();
@@ -105,9 +106,9 @@ protected:
   int NumberOfPoints;
   int NumberOfCells;
   int NumberOfCellFields;
-  int *veclen;
-  float *min;
-  float *max;
+  int *VectorLength;
+  float *Minimum;
+  float *Maximum;
   vtkDataArraySelection *CellDataArraySelection;
   int TimeStep;
   int ActualTimeStep;
@@ -121,29 +122,27 @@ protected:
   //  MFIX Variables
   //
 
-  vtkFloatArray **cell_data_array; // Arrays for variables that will attach to mesh
-  vtkPoints *points;		// Points array for building grid
-  vtkUnstructuredGrid *mesh;	// Unstructured Grid
-  vtkHexahedron *aHexahedron;	// Hexahedron type cell
-  vtkWedge *aWedge;  		// Wedge type cell
-  vtkIntArray *FLAG;		// Cell Flag array
-  vtkDoubleArray *DX;		// Cell widths in x axis
-  vtkDoubleArray *DY;		// Cell widths in y axis
-  vtkDoubleArray *DZ;		// Cell widths in z axis
-  vtkIntArray *NMAX;		// Array to hold number of species per phase
+  vtkFloatArray **CellDataArray; // Arrays for variables that will attach to mesh
+  vtkPoints *Points;		// Points array for building grid
+  vtkUnstructuredGrid *Mesh;	// Unstructured Grid
+  vtkHexahedron *AHexahedron;	// Hexahedron type cell
+  vtkWedge *AWedge;  		// Wedge type cell
+  vtkIntArray *Flag;		// Cell Flag array
+  vtkDoubleArray *Dx;		// Cell widths in x axis
+  vtkDoubleArray *Dy;		// Cell widths in y axis
+  vtkDoubleArray *Dz;		// Cell widths in z axis
+  vtkIntArray *NMax;		// Array to hold number of species per phase
   vtkDoubleArray *C;		// Array used to parse restart file
-  vtkIntArray *tmpI;		// Array used to parse restart file
-  vtkDoubleArray *tmpD;		// Array used to parse restart file
+  vtkIntArray *TempI;		// Array used to parse restart file
+  vtkDoubleArray *TempD;	// Array used to parse restart file
   vtkIntArray *SpxFileExists;   // Array for keeping track of what spx files exist.
   
-  char ext [15];
-  char buffer[513];
-  char version[120];
-  float version_number;
-  double P_ref;
-  double P_scale;
-  int    DIM_IC;
-  int    DIM_BC;
+  char FileExtension[15];
+  char DataBuffer[513];
+  char Version[120];
+  float VersionNumber;
+  int    DimensionIc;
+  int    DimensionBc;
   int    DIM_C;
   int    DIM_IS;
   double c_e;

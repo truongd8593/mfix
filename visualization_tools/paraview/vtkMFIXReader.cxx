@@ -35,6 +35,7 @@
 #include "vtkDataArraySelection.h"
 #include "vtkWedge.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
+#include "vtkStringArray.h"
 
 vtkCxxRevisionMacro(vtkMFIXReader, "$Revision$");
 vtkStandardNewMacro(vtkMFIXReader);
@@ -49,16 +50,14 @@ vtkMFIXReader::vtkMFIXReader()
   this->RequestInformationFlag = 0;
   this->MakeMeshFlag = 0;
   
-  this->min = NULL;
-  this->max = NULL;
-  this->veclen = NULL;
-  this->cell_data_array = NULL;
+  this->Minimum = NULL;
+  this->Maximum = NULL;
+  this->VectorLength = NULL;
+  this->CellDataArray = NULL;
   this->spx_timestep_index_table = NULL;
   
-  this->P_ref     = 0;
-  this->P_scale   = 1;
-  this->DIM_IC    = 5;
-  this->DIM_BC    = 5;
+  this->DimensionIc    = 5;
+  this->DimensionBc    = 5;
   this->DIM_C     = 5;
   this->DIM_IS    = 5;
   this->c_e       = 1.0;
@@ -70,34 +69,34 @@ vtkMFIXReader::vtkMFIXReader()
   this->bKepsilon = false;  
   this->nRR       = 0;
   this->nTimes    = 0;
-  this->ext[0] = '1';
-  this->ext[1] = '2';
-  this->ext[2] = '3';
-  this->ext[3] = '4';
-  this->ext[4] = '5';
-  this->ext[5] = '6';
-  this->ext[6] = '7';
-  this->ext[7] = '8';
-  this->ext[8] = '9';
-  this->ext[9] = 'A';
-  this->ext[10] = 'B';
-  this->version_number = 0;
+  this->FileExtension[0] = '1';
+  this->FileExtension[1] = '2';
+  this->FileExtension[2] = '3';
+  this->FileExtension[3] = '4';
+  this->FileExtension[4] = '5';
+  this->FileExtension[5] = '6';
+  this->FileExtension[6] = '7';
+  this->FileExtension[7] = '8';
+  this->FileExtension[8] = '9';
+  this->FileExtension[9] = 'A';
+  this->FileExtension[10] = 'B';
+  this->VersionNumber = 0;
 
-  this->cell_data_array = NULL;
+  this->CellDataArray = NULL;
    
   this->CellDataArraySelection = vtkDataArraySelection::New();
-  this->points = vtkPoints::New();
-  this->mesh = vtkUnstructuredGrid::New();
-  this->aHexahedron = vtkHexahedron::New();
-  this->aWedge = vtkWedge::New();
-  this->NMAX = vtkIntArray::New();
+  this->Points = vtkPoints::New();
+  this->Mesh = vtkUnstructuredGrid::New();
+  this->AHexahedron = vtkHexahedron::New();
+  this->AWedge = vtkWedge::New();
+  this->NMax = vtkIntArray::New();
   this->C = vtkDoubleArray::New();
-  this->DX = vtkDoubleArray::New();
-  this->DY = vtkDoubleArray::New();
-  this->DZ = vtkDoubleArray::New();
-  this->tmpI = vtkIntArray::New();
-  this->tmpD = vtkDoubleArray::New();   
-  this->FLAG = vtkIntArray::New();
+  this->Dx = vtkDoubleArray::New();
+  this->Dy = vtkDoubleArray::New();
+  this->Dz = vtkDoubleArray::New();
+  this->TempI = vtkIntArray::New();
+  this->TempD = vtkDoubleArray::New();   
+  this->Flag = vtkIntArray::New();
   this->variable_names = vtkStringArray::New();
   this->variable_components = vtkIntArray::New();
   this->variableIndexToSPX = vtkIntArray::New();
@@ -130,22 +129,22 @@ vtkMFIXReader::~vtkMFIXReader()
     }
 
   for (int j=0; j<=this->variable_names->GetMaxId(); j++){
-     this->cell_data_array[j]->Delete();
+     this->CellDataArray[j]->Delete();
   }
         
   this->CellDataArraySelection->Delete();
-  this->points->Delete();
-  this->mesh->Delete();
-  this->aHexahedron->Delete();
-  this->aWedge->Delete();
-  this->NMAX->Delete();
+  this->Points->Delete();
+  this->Mesh->Delete();
+  this->AHexahedron->Delete();
+  this->AWedge->Delete();
+  this->NMax->Delete();
   this->C->Delete();
-  this->DX->Delete();
-  this->DY->Delete();
-  this->DZ->Delete();
-  this->tmpI->Delete();
-  this->tmpD->Delete();
-  this->FLAG->Delete();
+  this->Dx->Delete();
+  this->Dy->Delete();
+  this->Dz->Delete();
+  this->TempI->Delete();
+  this->TempD->Delete();
+  this->Flag->Delete();
   this->variable_names->Delete();
   this->variable_components->Delete();
   this->variableIndexToSPX->Delete();
@@ -155,17 +154,17 @@ vtkMFIXReader::~vtkMFIXReader()
   this->var_to_skip_table->Delete();
   this->SpxFileExists->Delete();
   
-  if(this->cell_data_array){
-  	delete [] this->cell_data_array;
+  if(this->CellDataArray){
+  	delete [] this->CellDataArray;
   }
-  if(this->min){
-  	delete [] this->min;
+  if(this->Minimum){
+  	delete [] this->Minimum;
   }
-  if(this->max){
-  	delete [] this->max;
+  if(this->Maximum){
+  	delete [] this->Maximum;
   }
-  if(this->veclen){
-  	delete [] this->veclen;
+  if(this->VectorLength){
+  	delete [] this->VectorLength;
   }
   if(this->spx_timestep_index_table){
   	delete [] this->spx_timestep_index_table;
@@ -209,7 +208,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 	output->Allocate();
 
 	if(this->MakeMeshFlag == 0) {
-		points->SetNumberOfPoints((imax2+1)*(jmax2+1)*(kmax2+1));
+		Points->SetNumberOfPoints((imax2+1)*(jmax2+1)*(kmax2+1));
 		
 		//
 		//  Cartesian type mesh
@@ -223,26 +222,26 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 			for (int k=0; k<= kmax2; k++){
 				for (int j=0; j<= jmax2; j++){
 					for (int i=0; i<= imax2; i++){
-						points->InsertPoint(cnt, px, py, pz );
+						Points->InsertPoint(cnt, px, py, pz );
 						cnt++;
 						if( i == imax2 ) {
-							px = px + DX->GetValue(i-1);
+							px = px + Dx->GetValue(i-1);
 						} else { 
-							px = px + DX->GetValue(i);
+							px = px + Dx->GetValue(i);
 						}
 					}
 					px = 0.0;
 					if ( j == jmax2) {
-						py = py + DY->GetValue(j-1);
+						py = py + Dy->GetValue(j-1);
 					} else { 
-						py = py + DY->GetValue(j);
+						py = py + Dy->GetValue(j);
 					}
 				}
 				py = 0.0;
 				if ( k == kmax2) {
-					pz = pz + DZ->GetValue(k-1);
+					pz = pz + Dz->GetValue(k-1);
 				} else { 
-					pz = pz + DZ->GetValue(k);
+					pz = pz + Dz->GetValue(k);
 				}
 			}
 		} else {
@@ -259,14 +258,14 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 			for (int k=0; k<= kmax2; k++){
 				for (int j=0; j<= jmax2; j++){
 					for (int i=0; i<= imax2; i++){
-						points->InsertPoint(cnt, rx, ry, rz );
+						Points->InsertPoint(cnt, rx, ry, rz );
 						cnt++;
 						if( i == imax2 ) {
-							px = px + DX->GetValue(i-1);
+							px = px + Dx->GetValue(i-1);
 						} else if ( i == 0 ) {
 							px = 0;
 						} else { 
-							px = px + DX->GetValue(i);
+							px = px + Dx->GetValue(i);
 						}
 						rx = px * cos(pz);
 						rz = px * sin(pz) * -1;
@@ -275,18 +274,18 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 					rx = 0.0;
 					rz = 0.0;
 					if ( j == jmax2) {
-						py = py + DY->GetValue(j-1);
+						py = py + Dy->GetValue(j-1);
 					} else { 
-						py = py + DY->GetValue(j);
+						py = py + Dy->GetValue(j);
 					}
 					ry = py;
 				}
 				py = 0.0;
 				ry = 0.0;
 				if ( k == kmax2) {
-					pz = pz + DZ->GetValue(k-1);
+					pz = pz + Dz->GetValue(k-1);
 				} else { 
-					pz = pz + DZ->GetValue(k);
+					pz = pz + Dz->GetValue(k);
 				}
 			}
 		}
@@ -296,63 +295,63 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 	//  Let's put the points in a mesh
 	//
 
-		mesh->SetPoints(points);
+		Mesh->SetPoints(Points);
 	
 		int p0 = 0;
 		int count = 0;
 		for (int k=0; k< kmax2; k++){
 			for (int j=0; j< jmax2; j++){
 				for (int i=0; i< imax2; i++){
-					if ( FLAG->GetValue(count) < 10 ) {
+					if ( Flag->GetValue(count) < 10 ) {
 						if ( !strcmp(coordinates,"CYLINDRICAL" ) ) {
 
 							if((k == (kmax2-2)) && (i != 1)){
-								aHexahedron->GetPointIds()->SetId( 0, p0);
-								aHexahedron->GetPointIds()->SetId( 1, p0+1);
-								aHexahedron->GetPointIds()->SetId( 2, (p0+1+((imax2+1)*(jmax2+1)))-((imax2+1)*(jmax2+1)*(kmax2-2)) );
-								aHexahedron->GetPointIds()->SetId( 3, (p0+((imax2+1)*(jmax2+1)))  -((imax2+1)*(jmax2+1)*(kmax2-2)) );
-								aHexahedron->GetPointIds()->SetId( 4, p0+1+imax2);
-								aHexahedron->GetPointIds()->SetId( 5, p0+2+imax2);
-								aHexahedron->GetPointIds()->SetId( 6, (p0+2+imax2+((imax2+1)*(jmax2+1))) -((imax2+1)*(jmax2+1)*(kmax2-2)) );
-								aHexahedron->GetPointIds()->SetId( 7, (p0+1+imax2+((imax2+1)*(jmax2+1))) -((imax2+1)*(jmax2+1)*(kmax2-2)) );
-								mesh->InsertNextCell(aHexahedron->GetCellType(), aHexahedron->GetPointIds());
+								AHexahedron->GetPointIds()->SetId( 0, p0);
+								AHexahedron->GetPointIds()->SetId( 1, p0+1);
+								AHexahedron->GetPointIds()->SetId( 2, (p0+1+((imax2+1)*(jmax2+1)))-((imax2+1)*(jmax2+1)*(kmax2-2)) );
+								AHexahedron->GetPointIds()->SetId( 3, (p0+((imax2+1)*(jmax2+1)))  -((imax2+1)*(jmax2+1)*(kmax2-2)) );
+								AHexahedron->GetPointIds()->SetId( 4, p0+1+imax2);
+								AHexahedron->GetPointIds()->SetId( 5, p0+2+imax2);
+								AHexahedron->GetPointIds()->SetId( 6, (p0+2+imax2+((imax2+1)*(jmax2+1))) -((imax2+1)*(jmax2+1)*(kmax2-2)) );
+								AHexahedron->GetPointIds()->SetId( 7, (p0+1+imax2+((imax2+1)*(jmax2+1))) -((imax2+1)*(jmax2+1)*(kmax2-2)) );
+								Mesh->InsertNextCell(AHexahedron->GetCellType(), AHexahedron->GetPointIds());
 							} else if ((k != (kmax2-2)) && (i != 1)) {
-								aHexahedron->GetPointIds()->SetId( 0, p0);
-								aHexahedron->GetPointIds()->SetId( 1, p0+1);
-								aHexahedron->GetPointIds()->SetId( 2, p0+1+((imax2+1)*(jmax2+1)));
-								aHexahedron->GetPointIds()->SetId( 3, p0+((imax2+1)*(jmax2+1)));
-								aHexahedron->GetPointIds()->SetId( 4, p0+1+imax2);
-								aHexahedron->GetPointIds()->SetId( 5, p0+2+imax2);
-								aHexahedron->GetPointIds()->SetId( 6, p0+2+imax2+((imax2+1)*(jmax2+1)));
-								aHexahedron->GetPointIds()->SetId( 7, p0+1+imax2+((imax2+1)*(jmax2+1)));
-								mesh->InsertNextCell(aHexahedron->GetCellType(), aHexahedron->GetPointIds());
+								AHexahedron->GetPointIds()->SetId( 0, p0);
+								AHexahedron->GetPointIds()->SetId( 1, p0+1);
+								AHexahedron->GetPointIds()->SetId( 2, p0+1+((imax2+1)*(jmax2+1)));
+								AHexahedron->GetPointIds()->SetId( 3, p0+((imax2+1)*(jmax2+1)));
+								AHexahedron->GetPointIds()->SetId( 4, p0+1+imax2);
+								AHexahedron->GetPointIds()->SetId( 5, p0+2+imax2);
+								AHexahedron->GetPointIds()->SetId( 6, p0+2+imax2+((imax2+1)*(jmax2+1)));
+								AHexahedron->GetPointIds()->SetId( 7, p0+1+imax2+((imax2+1)*(jmax2+1)));
+								Mesh->InsertNextCell(AHexahedron->GetCellType(), AHexahedron->GetPointIds());
 							} else if ((k != (kmax2-2)) && (i == 1)){
-								aWedge->GetPointIds()->SetId( 0, j*(imax2+1));
-								aWedge->GetPointIds()->SetId( 1, p0+1);
-								aWedge->GetPointIds()->SetId( 2, p0+1+((imax2+1)*(jmax2+1)));
-								aWedge->GetPointIds()->SetId( 3, (j+1)*(imax2+1));
-								aWedge->GetPointIds()->SetId( 4, p0+2+imax2);
-								aWedge->GetPointIds()->SetId( 5, p0+2+imax2+((imax2+1)*(jmax2+1)));
-								mesh->InsertNextCell(aWedge->GetCellType(), aWedge->GetPointIds());
+								AWedge->GetPointIds()->SetId( 0, j*(imax2+1));
+								AWedge->GetPointIds()->SetId( 1, p0+1);
+								AWedge->GetPointIds()->SetId( 2, p0+1+((imax2+1)*(jmax2+1)));
+								AWedge->GetPointIds()->SetId( 3, (j+1)*(imax2+1));
+								AWedge->GetPointIds()->SetId( 4, p0+2+imax2);
+								AWedge->GetPointIds()->SetId( 5, p0+2+imax2+((imax2+1)*(jmax2+1)));
+								Mesh->InsertNextCell(AWedge->GetCellType(), AWedge->GetPointIds());
 							} else if ((k == (kmax2-2)) && (i == 1)){
-								aWedge->GetPointIds()->SetId( 0, j*(imax2+1));
-								aWedge->GetPointIds()->SetId( 1, p0+1);
-								aWedge->GetPointIds()->SetId( 2, (p0+1+((imax2+1)*(jmax2+1)))-((imax2+1)*(jmax2+1)*(kmax2-2)));
-								aWedge->GetPointIds()->SetId( 3, (j+1)*(imax2+1));
-								aWedge->GetPointIds()->SetId( 4, p0+2+imax2);
-								aWedge->GetPointIds()->SetId( 5, (p0+2+imax2+((imax2+1)*(jmax2+1))) -((imax2+1)*(jmax2+1)*(kmax2-2)));
-								mesh->InsertNextCell(aWedge->GetCellType(), aWedge->GetPointIds());
+								AWedge->GetPointIds()->SetId( 0, j*(imax2+1));
+								AWedge->GetPointIds()->SetId( 1, p0+1);
+								AWedge->GetPointIds()->SetId( 2, (p0+1+((imax2+1)*(jmax2+1)))-((imax2+1)*(jmax2+1)*(kmax2-2)));
+								AWedge->GetPointIds()->SetId( 3, (j+1)*(imax2+1));
+								AWedge->GetPointIds()->SetId( 4, p0+2+imax2);
+								AWedge->GetPointIds()->SetId( 5, (p0+2+imax2+((imax2+1)*(jmax2+1))) -((imax2+1)*(jmax2+1)*(kmax2-2)));
+								Mesh->InsertNextCell(AWedge->GetCellType(), AWedge->GetPointIds());
 							}
 						} else {
-							aHexahedron->GetPointIds()->SetId( 0, p0);
-							aHexahedron->GetPointIds()->SetId( 1, p0+1);
-							aHexahedron->GetPointIds()->SetId( 2, p0+1+((imax2+1)*(jmax2+1)));
-							aHexahedron->GetPointIds()->SetId( 3, p0+((imax2+1)*(jmax2+1)));
-							aHexahedron->GetPointIds()->SetId( 4, p0+1+imax2);
-							aHexahedron->GetPointIds()->SetId( 5, p0+2+imax2);
-							aHexahedron->GetPointIds()->SetId( 6, p0+2+imax2+((imax2+1)*(jmax2+1)));
-							aHexahedron->GetPointIds()->SetId( 7, p0+1+imax2+((imax2+1)*(jmax2+1)));
-							mesh->InsertNextCell(aHexahedron->GetCellType(), aHexahedron->GetPointIds());
+							AHexahedron->GetPointIds()->SetId( 0, p0);
+							AHexahedron->GetPointIds()->SetId( 1, p0+1);
+							AHexahedron->GetPointIds()->SetId( 2, p0+1+((imax2+1)*(jmax2+1)));
+							AHexahedron->GetPointIds()->SetId( 3, p0+((imax2+1)*(jmax2+1)));
+							AHexahedron->GetPointIds()->SetId( 4, p0+1+imax2);
+							AHexahedron->GetPointIds()->SetId( 5, p0+2+imax2);
+							AHexahedron->GetPointIds()->SetId( 6, p0+2+imax2+((imax2+1)*(jmax2+1)));
+							AHexahedron->GetPointIds()->SetId( 7, p0+1+imax2+((imax2+1)*(jmax2+1)));
+							Mesh->InsertNextCell(AHexahedron->GetCellType(), AHexahedron->GetPointIds());
 						}
 					}
 					p0++;
@@ -363,46 +362,46 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 			p0 = p0 + imax2+1;
 		}
 		
- 		cell_data_array = new vtkFloatArray * [variable_names->GetMaxId()+2];
+ 		CellDataArray = new vtkFloatArray * [variable_names->GetMaxId()+2];
 		for (int j=0; j<=variable_names->GetMaxId(); j++){
-			cell_data_array[ j ] = vtkFloatArray::New();
-			cell_data_array[ j ]->SetName(variable_names->GetValue(j));
-			cell_data_array[ j ]->SetNumberOfComponents(variable_components->GetValue(j));
+			CellDataArray[ j ] = vtkFloatArray::New();
+			CellDataArray[ j ]->SetName(variable_names->GetValue(j));
+			CellDataArray[ j ]->SetNumberOfComponents(variable_components->GetValue(j));
 		}
 		
-		min = new float [variable_names->GetMaxId()+1];
-		max = new float [variable_names->GetMaxId()+1];
-		veclen = new int [variable_names->GetMaxId()+1];
+		Minimum = new float [variable_names->GetMaxId()+1];
+		Maximum = new float [variable_names->GetMaxId()+1];
+		VectorLength = new int [variable_names->GetMaxId()+1];
 
 		this->MakeMeshFlag = 1;
 	}
 	
-	output->DeepCopy(mesh);  // If mesh has already been made copy it to output
+	output->DeepCopy(Mesh);  // If mesh has already been made copy it to output
 
 	int first = 0;
 	for (int j=0; j<=variable_names->GetMaxId(); j++){
 		
 		if( this->CellDataArraySelection->GetArraySetting(j) == 1 ){
 			if(variable_components->GetValue(j) == 1){
-				GetVariableAtTimestep( j, this->TimeStep, cell_data_array[j]);
+				GetVariableAtTimestep( j, this->TimeStep, CellDataArray[j]);
 			} else {
 				if ( !strcmp(coordinates,"CYLINDRICAL" ) ) {
 					ConvertVectorFromCylindricalToCartesian( j-3, j-1);
 				}
-				FillVectorVariable( j-3, j-2, j-1, cell_data_array[j]);
+				FillVectorVariable( j-3, j-2, j-1, CellDataArray[j]);
 			}
 			
 			if(first == 0) {
-				output->GetCellData()->SetScalars(cell_data_array[j]);
+				output->GetCellData()->SetScalars(CellDataArray[j]);
 			} else {
-				output->GetCellData()->AddArray(cell_data_array[j]);
+				output->GetCellData()->AddArray(CellDataArray[j]);
 			}
 			
 			double tempRange[2];
-			cell_data_array[j]->GetRange(tempRange, -1);
-			min[j] = tempRange[0];
-			max[j] = tempRange[1];
-			veclen[j] = 1;
+			CellDataArray[j]->GetRange(tempRange, -1);
+			Minimum[j] = tempRange[0];
+			Maximum[j] = tempRange[1];
+			VectorLength[j] = 1;
 			first = 1;
 		}
 	}
@@ -504,12 +503,12 @@ void vtkMFIXReader::EnableAllCellArrays()
 //----------------------------------------------------------------------------
 void vtkMFIXReader::GetCellDataRange(int cellComp, int index, float *min, float *max)
 {
-  if (index >= this->veclen[cellComp] || index < 0)
+  if (index >= this->VectorLength[cellComp] || index < 0)
     {
     index = 0;  // if wrong index, set it to zero
     }
-  *min = this->min[cellComp];
-  *max = this->max[cellComp];
+  *min = this->Minimum[cellComp];
+  *max = this->Maximum[cellComp];
 
 }
 
@@ -526,9 +525,9 @@ void vtkMFIXReader::RestartVersionNumber(char* buffer)
    char s1[120];
    char s2[120];
    
-   sscanf(buffer,"%s %s %f", s1, s2, &version_number);
+   sscanf(buffer,"%s %s %f", s1, s2, &VersionNumber);
    
-   strncpy(version, buffer, 100);
+   strncpy(Version, buffer, 100);
    
 }
 
@@ -592,7 +591,7 @@ void vtkMFIXReader::GetDouble(istream& in, double& val)
 
 void vtkMFIXReader::SkipBytes(istream& in, int n)
 {
-	in.read(buffer,n); // maybe seekg instead
+	in.read(DataBuffer,n); // maybe seekg instead
 }
 
 void vtkMFIXReader::IN_BIN_512(istream& in, vtkDoubleArray *v, int n)
@@ -683,7 +682,7 @@ void vtkMFIXReader::IN_BIN_512R(istream& in, vtkFloatArray *v, int n)
            {
               float temp = array[j];
               SWAP_FLOAT(temp);
-	      if( FLAG->GetValue(c) < 10) {
+	      if( Flag->GetValue(c) < 10) {
 	        v->InsertValue(cnt, temp);
 	        cnt++;
 	      }
@@ -707,23 +706,23 @@ void vtkMFIXReader::ReadRes0()
       return;
    }
 
-   buffer[512] = '\0';
+   DataBuffer[512] = '\0';
 
    // version : record 1
-   memset(buffer,0,513);
-   in.read(buffer,512);
+   memset(DataBuffer,0,513);
+   in.read(DataBuffer,512);
 
-   RestartVersionNumber(buffer);
+   RestartVersionNumber(DataBuffer);
    
 
    // skip 2 linesline : records 2 and 3
-   in.read(buffer,512);
-   in.read(buffer,512);
+   in.read(DataBuffer,512);
+   in.read(DataBuffer,512);
 
    // imin1 etc : record 4
-   memset(buffer,0,513);
+   memset(DataBuffer,0,513);
    
-   if (version == "RES = 01.00")
+   if (Version == "RES = 01.00")
    {
       GetInt(in,imin1);  GetInt(in,jmin1);   GetInt(in,kmin1);
       GetInt(in,imax);   GetInt(in,jmax);    GetInt(in,kmax);
@@ -736,28 +735,28 @@ void vtkMFIXReader::ReadRes0()
       // 15 ints ... 4 doubles = 92 bytes
       SkipBytes(in,420);
    }
-   else if(version == "RES = 01.01" || version == "RES = 01.02")
+   else if(Version == "RES = 01.01" || Version == "RES = 01.02")
    {
       GetInt(in,imin1);  GetInt(in,jmin1);   GetInt(in,kmin1);
       GetInt(in,imax);   GetInt(in,jmax);    GetInt(in,kmax);
       GetInt(in,imax1);  GetInt(in,jmax1);   GetInt(in,kmax1);
       GetInt(in,imax2);  GetInt(in,jmax2);   GetInt(in,kmax2);
       GetInt(in,ijmax2); GetInt(in,ijkmax2); GetInt(in,MMAX);
-      GetInt(in,DIM_IC);    GetInt(in,DIM_BC);
+      GetInt(in,DimensionIc);    GetInt(in,DimensionBc);
       GetDouble(in,dt);
       GetDouble(in,xlength);  GetDouble(in,ylength);  GetDouble(in,zlength);
     
       // 17 ints ... 4 doubles = 100 bytes
       SkipBytes(in,412);
    }
-   else if(version == "RES = 01.03")
+   else if(Version == "RES = 01.03")
    {
       GetInt(in,imin1);  GetInt(in,jmin1);   GetInt(in,kmin1);
       GetInt(in,imax);   GetInt(in,jmax);    GetInt(in,kmax);
       GetInt(in,imax1);  GetInt(in,jmax1);   GetInt(in,kmax1);
       GetInt(in,imax2);  GetInt(in,jmax2);   GetInt(in,kmax2);
       GetInt(in,ijmax2); GetInt(in,ijkmax2); GetInt(in,MMAX);
-      GetInt(in,DIM_IC); GetInt(in,DIM_BC);
+      GetInt(in,DimensionIc); GetInt(in,DimensionBc);
       GetDouble(in,dt);
       GetDouble(in,xmin);
       GetDouble(in,xlength);  GetDouble(in,ylength);  GetDouble(in,zlength);
@@ -765,14 +764,14 @@ void vtkMFIXReader::ReadRes0()
       // 17 ints ... 5 doubles = 108 bytes
       SkipBytes(in,404);
    }
-   else if(version == "RES = 01.04")
+   else if(Version == "RES = 01.04")
    {
       GetInt(in,imin1);  GetInt(in,jmin1);   GetInt(in,kmin1);
       GetInt(in,imax);   GetInt(in,jmax);    GetInt(in,kmax);
       GetInt(in,imax1);  GetInt(in,jmax1);   GetInt(in,kmax1);
       GetInt(in,imax2);  GetInt(in,jmax2);   GetInt(in,kmax2);
       GetInt(in,ijmax2); GetInt(in,ijkmax2); GetInt(in,MMAX);
-      GetInt(in,DIM_IC); GetInt(in,DIM_BC);  GetInt(in,DIM_C);
+      GetInt(in,DimensionIc); GetInt(in,DimensionBc);  GetInt(in,DIM_C);
       GetDouble(in,dt);
       GetDouble(in,xmin);
       GetDouble(in,xlength);  GetDouble(in,ylength);  GetDouble(in,zlength);
@@ -780,14 +779,14 @@ void vtkMFIXReader::ReadRes0()
       // 18 ints ... 5 doubles = 112 bytes
       SkipBytes(in,400);
    }
-   else if(version == "RES = 01.05")
+   else if(Version == "RES = 01.05")
    {
       GetInt(in,imin1);  GetInt(in,jmin1);   GetInt(in,kmin1);
       GetInt(in,imax);   GetInt(in,jmax);    GetInt(in,kmax);
       GetInt(in,imax1);  GetInt(in,jmax1);   GetInt(in,kmax1);
       GetInt(in,imax2);  GetInt(in,jmax2);   GetInt(in,kmax2);
       GetInt(in,ijmax2); GetInt(in,ijkmax2); GetInt(in,MMAX);
-      GetInt(in,DIM_IC); GetInt(in,DIM_BC);  GetInt(in,DIM_C);
+      GetInt(in,DimensionIc); GetInt(in,DimensionBc);  GetInt(in,DIM_C);
       GetInt(in,DIM_IS);
       GetDouble(in,dt);
       GetDouble(in,xmin);
@@ -803,7 +802,7 @@ void vtkMFIXReader::ReadRes0()
       GetInt(in,imax1);  GetInt(in,jmax1);   GetInt(in,kmax1);
       GetInt(in,imax2);  GetInt(in,jmax2);   GetInt(in,kmax2);
       GetInt(in,ijmax2); GetInt(in,ijkmax2); GetInt(in,MMAX);
-      GetInt(in,DIM_IC); GetInt(in,DIM_BC);  GetInt(in,DIM_C);
+      GetInt(in,DimensionIc); GetInt(in,DimensionBc);  GetInt(in,DIM_C);
       GetInt(in,DIM_IS);
       GetDouble(in,dt);
       GetDouble(in,xmin);
@@ -823,50 +822,50 @@ void vtkMFIXReader::ReadRes0()
    
    // C , C_name and nmax
 
-   NMAX->Resize(MMAX+1);
+   NMax->Resize(MMAX+1);
    for (int lc=0; lc<MMAX+1; ++lc){
-	NMAX->InsertValue(lc, 1);
+	NMax->InsertValue(lc, 1);
    }
    
    C->Resize(DIM_C);
 
-   if (version_number > 1.04)
+   if (VersionNumber > 1.04)
    {
       IN_BIN_512 (in, C, DIM_C);
 
-      for (lc=0; lc<DIM_C; ++lc) in.read(buffer,512);  // c_name[] 
+      for (lc=0; lc<DIM_C; ++lc) in.read(DataBuffer,512);  // c_name[] 
  
-      if (version_number < 1.12)
-          IN_BIN_512I(in, NMAX,MMAX+1);
+      if (VersionNumber < 1.12)
+          IN_BIN_512I(in, NMax,MMAX+1);
       else
       {
           // what is the diff between this and above ??? 
           for (lc=0; lc<MMAX+1; ++lc) {
 	      int temp;
               GetInt(in,temp);
-	      NMAX->InsertValue(lc, temp);
+	      NMax->InsertValue(lc, temp);
 	  }
 
           SkipBytes(in,512-(MMAX+1)*sizeof(int));
       }
    }
   
-   DX->Resize(imax2);
-   DY->Resize(jmax2);
-   DZ->Resize(kmax2);
+   Dx->Resize(imax2);
+   Dy->Resize(jmax2);
+   Dz->Resize(kmax2);
 
-   IN_BIN_512(in, DX,imax2);
-   IN_BIN_512(in, DY,jmax2);
-   IN_BIN_512(in, DZ,kmax2);
+   IN_BIN_512(in, Dx,imax2);
+   IN_BIN_512(in, Dy,jmax2);
+   IN_BIN_512(in, Dz,kmax2);
 	
    // run_name etc.
    
    memset(units,0,17);
    memset(coordinates,0,17);
    
-   in.read(buffer,120);      // run_name , description
+   in.read(DataBuffer,120);      // run_name , description
    in.read(units,16);        // units
-   in.read(buffer,16);       // run_type
+   in.read(DataBuffer,16);       // run_type
    in.read(coordinates,16);  // coordinates 
    
    SkipBytes(in,512-168);
@@ -890,261 +889,261 @@ void vtkMFIXReader::ReadRes0()
    }
    strcpy(coordinates,tmp);
    
-   if (version_number >= 1.04)
+   if (VersionNumber >= 1.04)
    {
-      tmpD->Resize(NMAX->GetValue(0));
-      IN_BIN_512(in, tmpD, NMAX->GetValue(0));             // MW_g
-      for (i=0; i<MMAX; ++i) in.read(buffer,512);  // MW_s
+      TempD->Resize(NMax->GetValue(0));
+      IN_BIN_512(in, TempD, NMax->GetValue(0));             // MW_g
+      for (i=0; i<MMAX; ++i) in.read(DataBuffer,512);  // MW_s
    }
-   in.read(buffer,512);  // D_p etc.
+   in.read(DataBuffer,512);  // D_p etc.
 
-   // read in the "DIM_IC" variables (and ignore ... not used by ani_mfix)
-   tmpI->Resize(DIM_IC);
-   tmpD->Resize(DIM_IC);
+   // read in the "DimensionIc" variables (and ignore ... not used by ani_mfix)
+   TempI->Resize(DimensionIc);
+   TempD->Resize(DimensionIc);
 
-   IN_BIN_512(in, tmpD,DIM_IC);  // ic_x_w
-   IN_BIN_512(in, tmpD,DIM_IC);  // ic_x_e
-   IN_BIN_512(in, tmpD,DIM_IC);  // ic_y_s
-   IN_BIN_512(in, tmpD,DIM_IC);  // ic_y_n
-   IN_BIN_512(in, tmpD,DIM_IC);  // ic_z_b
-   IN_BIN_512(in, tmpD,DIM_IC);  // ic_z_t
+   IN_BIN_512(in, TempD,DimensionIc);  // ic_x_w
+   IN_BIN_512(in, TempD,DimensionIc);  // ic_x_e
+   IN_BIN_512(in, TempD,DimensionIc);  // ic_y_s
+   IN_BIN_512(in, TempD,DimensionIc);  // ic_y_n
+   IN_BIN_512(in, TempD,DimensionIc);  // ic_z_b
+   IN_BIN_512(in, TempD,DimensionIc);  // ic_z_t
    
-   IN_BIN_512I(in, tmpI,DIM_IC);  // ic_i_w
-   IN_BIN_512I(in, tmpI,DIM_IC);  // ic_i_e
-   IN_BIN_512I(in, tmpI,DIM_IC);  // ic_j_s
-   IN_BIN_512I(in, tmpI,DIM_IC);  // ic_j_n
-   IN_BIN_512I(in, tmpI,DIM_IC);  // ic_k_b
-   IN_BIN_512I(in, tmpI,DIM_IC);  // ic_k_t
+   IN_BIN_512I(in, TempI,DimensionIc);  // ic_i_w
+   IN_BIN_512I(in, TempI,DimensionIc);  // ic_i_e
+   IN_BIN_512I(in, TempI,DimensionIc);  // ic_j_s
+   IN_BIN_512I(in, TempI,DimensionIc);  // ic_j_n
+   IN_BIN_512I(in, TempI,DimensionIc);  // ic_k_b
+   IN_BIN_512I(in, TempI,DimensionIc);  // ic_k_t
    
-   IN_BIN_512(in, tmpD,DIM_IC);  // ic_ep_g
-   IN_BIN_512(in, tmpD,DIM_IC);  // ic_p_g
-   IN_BIN_512(in, tmpD,DIM_IC);  // ic_t_g
+   IN_BIN_512(in, TempD,DimensionIc);  // ic_ep_g
+   IN_BIN_512(in, TempD,DimensionIc);  // ic_p_g
+   IN_BIN_512(in, TempD,DimensionIc);  // ic_t_g
 
-   if (version_number < 1.15)
+   if (VersionNumber < 1.15)
    {
-      IN_BIN_512(in,tmpD,DIM_IC);  // ic_t_s(1,1)
-      IN_BIN_512(in,tmpD,DIM_IC);  // ic_t_s(1,2) or ic_tmp 
+      IN_BIN_512(in,TempD,DimensionIc);  // ic_t_s(1,1)
+      IN_BIN_512(in,TempD,DimensionIc);  // ic_t_s(1,2) or ic_tmp 
    }
 
-   if (version_number >= 1.04)
+   if (VersionNumber >= 1.04)
    {
-      for (int i=0; i<NMAX->GetValue(0); ++i) IN_BIN_512(in,tmpD,DIM_IC); // ic_x_g
+      for (int i=0; i<NMax->GetValue(0); ++i) IN_BIN_512(in,TempD,DimensionIc); // ic_x_g
    }
 
-   IN_BIN_512(in,tmpD,DIM_IC); // ic_u_g
-   IN_BIN_512(in,tmpD,DIM_IC); // ic_v_g
-   IN_BIN_512(in,tmpD,DIM_IC); // ic_w_g
+   IN_BIN_512(in,TempD,DimensionIc); // ic_u_g
+   IN_BIN_512(in,TempD,DimensionIc); // ic_v_g
+   IN_BIN_512(in,TempD,DimensionIc); // ic_w_g
 
    for (lc=0; lc<MMAX; ++lc)
    {
-      IN_BIN_512(in,tmpD,DIM_IC); // ic_rop_s
-      IN_BIN_512(in,tmpD,DIM_IC); // ic_u_s
-      IN_BIN_512(in,tmpD,DIM_IC); // ic_v_s
-      IN_BIN_512(in,tmpD,DIM_IC); // ic_w_s
+      IN_BIN_512(in,TempD,DimensionIc); // ic_rop_s
+      IN_BIN_512(in,TempD,DimensionIc); // ic_u_s
+      IN_BIN_512(in,TempD,DimensionIc); // ic_v_s
+      IN_BIN_512(in,TempD,DimensionIc); // ic_w_s
       
-      if (version_number >= 1.15)
+      if (VersionNumber >= 1.15)
       {
-         IN_BIN_512(in,tmpD,DIM_IC); // ic_t_s
+         IN_BIN_512(in,TempD,DimensionIc); // ic_t_s
       }
       
-      if (version_number >= 1.04)
+      if (VersionNumber >= 1.04)
       {
-         for (n=0; n<NMAX->GetValue(lc+1); ++n)
-            IN_BIN_512(in,tmpD,DIM_IC); // ic_x_s
+         for (n=0; n<NMax->GetValue(lc+1); ++n)
+            IN_BIN_512(in,TempD,DimensionIc); // ic_x_s
       }
    }
 
-   // read in the "DIM_BC" variables (and ignore ... not used by ani_mfix)
-   tmpI->Resize(DIM_BC);
-   tmpD->Resize(DIM_BC);
+   // read in the "DimensionBc" variables (and ignore ... not used by ani_mfix)
+   TempI->Resize(DimensionBc);
+   TempD->Resize(DimensionBc);
 
-   IN_BIN_512(in,tmpD,DIM_BC); // bc_x_w
-   IN_BIN_512(in,tmpD,DIM_BC); // bc_x_e
-   IN_BIN_512(in,tmpD,DIM_BC); // bc y s
-   IN_BIN_512(in,tmpD,DIM_BC); // bc y n
-   IN_BIN_512(in,tmpD,DIM_BC); // bc z b
-   IN_BIN_512(in,tmpD,DIM_BC);  // bc z t
-   IN_BIN_512I(in,tmpI,DIM_BC);  // bc i w
-   IN_BIN_512I(in,tmpI,DIM_BC); // bc i e
-   IN_BIN_512I(in,tmpI,DIM_BC); // bc j s
-   IN_BIN_512I(in,tmpI,DIM_BC); // bc j n
-   IN_BIN_512I(in,tmpI,DIM_BC); // bc k b
-   IN_BIN_512I(in,tmpI,DIM_BC); // bc k t
-   IN_BIN_512(in,tmpD,DIM_BC); // bc ep g
-   IN_BIN_512(in,tmpD,DIM_BC); // bc p g
-   IN_BIN_512(in,tmpD,DIM_BC); // bc t g
+   IN_BIN_512(in,TempD,DimensionBc); // bc_x_w
+   IN_BIN_512(in,TempD,DimensionBc); // bc_x_e
+   IN_BIN_512(in,TempD,DimensionBc); // bc y s
+   IN_BIN_512(in,TempD,DimensionBc); // bc y n
+   IN_BIN_512(in,TempD,DimensionBc); // bc z b
+   IN_BIN_512(in,TempD,DimensionBc);  // bc z t
+   IN_BIN_512I(in,TempI,DimensionBc);  // bc i w
+   IN_BIN_512I(in,TempI,DimensionBc); // bc i e
+   IN_BIN_512I(in,TempI,DimensionBc); // bc j s
+   IN_BIN_512I(in,TempI,DimensionBc); // bc j n
+   IN_BIN_512I(in,TempI,DimensionBc); // bc k b
+   IN_BIN_512I(in,TempI,DimensionBc); // bc k t
+   IN_BIN_512(in,TempD,DimensionBc); // bc ep g
+   IN_BIN_512(in,TempD,DimensionBc); // bc p g
+   IN_BIN_512(in,TempD,DimensionBc); // bc t g
 
-   if (version_number < 1.15)
+   if (VersionNumber < 1.15)
    {
-      IN_BIN_512(in,tmpD,DIM_BC); // bc_t_s(1,1)
-      IN_BIN_512(in,tmpD,DIM_BC); // bc_t_s(1,1) or bc_tmp
+      IN_BIN_512(in,TempD,DimensionBc); // bc_t_s(1,1)
+      IN_BIN_512(in,TempD,DimensionBc); // bc_t_s(1,1) or bc_tmp
    }
 
-   if (version_number >= 1.04)
+   if (VersionNumber >= 1.04)
    {
-      for (int i=0; i<NMAX->GetValue(0); ++i) IN_BIN_512(in,tmpD,DIM_BC); // bc_x_g
+      for (int i=0; i<NMax->GetValue(0); ++i) IN_BIN_512(in,TempD,DimensionBc); // bc_x_g
    }
 
-   IN_BIN_512(in,tmpD,DIM_BC); // bc u g
-   IN_BIN_512(in,tmpD,DIM_BC); // bc v g
-   IN_BIN_512(in,tmpD,DIM_BC); // bc w g
-   IN_BIN_512(in,tmpD,DIM_BC); // bc ro g
-   IN_BIN_512(in,tmpD,DIM_BC); // bc_rop_g
-   IN_BIN_512(in,tmpD,DIM_BC); // bc volflow g
-   IN_BIN_512(in,tmpD,DIM_BC); // bc massflow g
+   IN_BIN_512(in,TempD,DimensionBc); // bc u g
+   IN_BIN_512(in,TempD,DimensionBc); // bc v g
+   IN_BIN_512(in,TempD,DimensionBc); // bc w g
+   IN_BIN_512(in,TempD,DimensionBc); // bc ro g
+   IN_BIN_512(in,TempD,DimensionBc); // bc_rop_g
+   IN_BIN_512(in,TempD,DimensionBc); // bc volflow g
+   IN_BIN_512(in,TempD,DimensionBc); // bc massflow g
 
    for (lc=0; lc<MMAX; ++lc)
    {
-      IN_BIN_512(in,tmpD,DIM_BC); // bc rop s
-      IN_BIN_512(in,tmpD,DIM_BC); // bc u s
-      IN_BIN_512(in,tmpD,DIM_BC); // bc v s
+      IN_BIN_512(in,TempD,DimensionBc); // bc rop s
+      IN_BIN_512(in,TempD,DimensionBc); // bc u s
+      IN_BIN_512(in,TempD,DimensionBc); // bc v s
       
-      if (version_number >= 1.04)
+      if (VersionNumber >= 1.04)
       {
-         IN_BIN_512(in,tmpD,DIM_BC); // bc w s
+         IN_BIN_512(in,TempD,DimensionBc); // bc w s
 
-         if (version_number >= 1.15)
+         if (VersionNumber >= 1.15)
          {
-            IN_BIN_512(in,tmpD,DIM_BC); // bc t s
+            IN_BIN_512(in,TempD,DimensionBc); // bc t s
          }
-         for (n=0; n<NMAX->GetValue(lc+1); ++n)
+         for (n=0; n<NMax->GetValue(lc+1); ++n)
          {      
-            IN_BIN_512(in,tmpD,DIM_BC); // bc x s
+            IN_BIN_512(in,TempD,DimensionBc); // bc x s
          }
       }
-      IN_BIN_512(in,tmpD,DIM_BC); // bc volflow s
-      IN_BIN_512(in,tmpD,DIM_BC); // bc massflow s
+      IN_BIN_512(in,TempD,DimensionBc); // bc volflow s
+      IN_BIN_512(in,TempD,DimensionBc); // bc massflow s
    }
 
 
-   if (version == "RES = 01.00")
+   if (Version == "RES = 01.00")
       l = 10;
    else
-      l = DIM_BC;
+      l = DimensionBc;
 
-   for (lc=0; lc<l; ++lc) in.read(buffer,512); // BC TYPE
+   for (lc=0; lc<l; ++lc) in.read(DataBuffer,512); // BC TYPE
 
-   FLAG->Resize(ijkmax2);
-   IN_BIN_512I(in, FLAG,ijkmax2);
+   Flag->Resize(ijkmax2);
+   IN_BIN_512I(in, Flag,ijkmax2);
 
    // DIM_IS varibles (not needed by ani_mfix)
-   tmpI->Resize(DIM_IS);
-   tmpD->Resize(DIM_IS);
+   TempI->Resize(DIM_IS);
+   TempD->Resize(DIM_IS);
 
-   if (version_number >= 1.04)
+   if (VersionNumber >= 1.04)
    {
-      IN_BIN_512(in,tmpD,DIM_IS); // is x w
-      IN_BIN_512(in,tmpD,DIM_IS); // is x e
-      IN_BIN_512(in,tmpD,DIM_IS); // is y s
-      IN_BIN_512(in,tmpD,DIM_IS); // is y n
-      IN_BIN_512(in,tmpD,DIM_IS); // is z b
-      IN_BIN_512(in,tmpD,DIM_IS); // is z t
-      IN_BIN_512I(in,tmpI,DIM_IS); // is i w
-      IN_BIN_512I(in,tmpI,DIM_IS); // is i e
-      IN_BIN_512I(in,tmpI,DIM_IS); // is j s
-      IN_BIN_512I(in,tmpI,DIM_IS); // is j n
-      IN_BIN_512I(in,tmpI,DIM_IS); // is k b
-      IN_BIN_512I(in,tmpI,DIM_IS); // is k t
-      IN_BIN_512(in,tmpD,DIM_IS);  // is_pc(1,1)
-      IN_BIN_512(in,tmpD,DIM_IS);  // is_pc(1,2)
+      IN_BIN_512(in,TempD,DIM_IS); // is x w
+      IN_BIN_512(in,TempD,DIM_IS); // is x e
+      IN_BIN_512(in,TempD,DIM_IS); // is y s
+      IN_BIN_512(in,TempD,DIM_IS); // is y n
+      IN_BIN_512(in,TempD,DIM_IS); // is z b
+      IN_BIN_512(in,TempD,DIM_IS); // is z t
+      IN_BIN_512I(in,TempI,DIM_IS); // is i w
+      IN_BIN_512I(in,TempI,DIM_IS); // is i e
+      IN_BIN_512I(in,TempI,DIM_IS); // is j s
+      IN_BIN_512I(in,TempI,DIM_IS); // is j n
+      IN_BIN_512I(in,TempI,DIM_IS); // is k b
+      IN_BIN_512I(in,TempI,DIM_IS); // is k t
+      IN_BIN_512(in,TempD,DIM_IS);  // is_pc(1,1)
+      IN_BIN_512(in,TempD,DIM_IS);  // is_pc(1,2)
      
-      if (version_number >= 1.07)
+      if (VersionNumber >= 1.07)
       {
-         for (l=0; l<MMAX; ++l) IN_BIN_512(in,tmpD,DIM_IS); // is_vel_s
+         for (l=0; l<MMAX; ++l) IN_BIN_512(in,TempD,DIM_IS); // is_vel_s
       }
 
-      for (lc=0; lc<DIM_IS; ++lc) in.read(buffer,512); // is_type
+      for (lc=0; lc<DIM_IS; ++lc) in.read(DataBuffer,512); // is_type
    }
 
-   if (version_number >= 1.08) in.read(buffer,512);
+   if (VersionNumber >= 1.08) in.read(DataBuffer,512);
    
    
-   if (version_number >= 1.09) 
+   if (VersionNumber >= 1.09) 
    {
-      in.read(buffer,512);
+      in.read(DataBuffer,512);
       
-      if (version_number >= 1.5)
+      if (VersionNumber >= 1.5)
       {
          GetInt(in,nspx_use);
          SkipBytes(in,508);
       }
       
-      for (lc=0; lc< nspx_use; ++lc) in.read(buffer,512); // spx_dt
+      for (lc=0; lc< nspx_use; ++lc) in.read(DataBuffer,512); // spx_dt
       
-      for (lc=0; lc<MMAX+1; ++lc) in.read(buffer,512);    // species_eq
+      for (lc=0; lc<MMAX+1; ++lc) in.read(DataBuffer,512);    // species_eq
       
-      tmpD->Resize(DIMENSION_USR);
+      TempD->Resize(DIMENSION_USR);
       
-      IN_BIN_512(in,tmpD,DIMENSION_USR); // usr_dt
-      IN_BIN_512(in,tmpD,DIMENSION_USR); // usr x w
-      IN_BIN_512(in,tmpD,DIMENSION_USR); // usr x e
-      IN_BIN_512(in,tmpD,DIMENSION_USR); // usr y s
-      IN_BIN_512(in,tmpD,DIMENSION_USR); // usr y n
-      IN_BIN_512(in,tmpD,DIMENSION_USR); // usr z b
-      IN_BIN_512(in,tmpD,DIMENSION_USR); // usr z t
+      IN_BIN_512(in,TempD,DIMENSION_USR); // usr_dt
+      IN_BIN_512(in,TempD,DIMENSION_USR); // usr x w
+      IN_BIN_512(in,TempD,DIMENSION_USR); // usr x e
+      IN_BIN_512(in,TempD,DIMENSION_USR); // usr y s
+      IN_BIN_512(in,TempD,DIMENSION_USR); // usr y n
+      IN_BIN_512(in,TempD,DIMENSION_USR); // usr z b
+      IN_BIN_512(in,TempD,DIMENSION_USR); // usr z t
      
-      for (lc=0; lc<DIMENSION_USR; ++lc) in.read(buffer,512);    // usr_ext etc.
+      for (lc=0; lc<DIMENSION_USR; ++lc) in.read(DataBuffer,512);    // usr_ext etc.
       
           
-      tmpD->Resize(DIM_IC);      
-      IN_BIN_512(in,tmpD,DIM_IC); // ic_p_star
-      IN_BIN_512(in,tmpD,DIM_IC); // ic_l_scale
-      for (lc=0; lc<DIM_IC; ++lc) in.read(buffer,512);    // ic_type
+      TempD->Resize(DimensionIc);      
+      IN_BIN_512(in,TempD,DimensionIc); // ic_p_star
+      IN_BIN_512(in,TempD,DimensionIc); // ic_l_scale
+      for (lc=0; lc<DimensionIc; ++lc) in.read(DataBuffer,512);    // ic_type
           
-      tmpD->Resize(DIM_BC);      
-      IN_BIN_512(in,tmpD,DIM_BC); // bc_dt_0
-      IN_BIN_512(in,tmpD,DIM_BC); // bc_jet_g0
-      IN_BIN_512(in,tmpD,DIM_BC); // bc_dt_h
-      IN_BIN_512(in,tmpD,DIM_BC); // bc_jet_gh
-      IN_BIN_512(in,tmpD,DIM_BC); // bc_dt_l
-      IN_BIN_512(in,tmpD,DIM_BC); // bc_jet_gl
+      TempD->Resize(DimensionBc);      
+      IN_BIN_512(in,TempD,DimensionBc); // bc_dt_0
+      IN_BIN_512(in,TempD,DimensionBc); // bc_jet_g0
+      IN_BIN_512(in,TempD,DimensionBc); // bc_dt_h
+      IN_BIN_512(in,TempD,DimensionBc); // bc_jet_gh
+      IN_BIN_512(in,TempD,DimensionBc); // bc_dt_l
+      IN_BIN_512(in,TempD,DimensionBc); // bc_jet_gl
       }
       
       
-      if (version_number >= 1.1)  in.read(buffer,512);  // mu_gmax
-      if (version_number >= 1.11) in.read(buffer,512);  // x_ex , model_b
+      if (VersionNumber >= 1.1)  in.read(DataBuffer,512);  // mu_gmax
+      if (VersionNumber >= 1.11) in.read(DataBuffer,512);  // x_ex , model_b
       
-      if (version_number >= 1.12)
+      if (VersionNumber >= 1.12)
       {
-         in.read(buffer,512);   // p_ref , etc.
-         in.read(buffer,512);   // leq_it , leq_method
+         in.read(DataBuffer,512);   // p_ref , etc.
+         in.read(DataBuffer,512);   // leq_it , leq_method
     
-         IN_BIN_512(in,tmpD,DIM_BC); // bc_hw_g
-         IN_BIN_512(in,tmpD,DIM_BC); // bc_uw_g
-         IN_BIN_512(in,tmpD,DIM_BC); // bc_vw_g
-         IN_BIN_512(in,tmpD,DIM_BC); // bc_ww_g
+         IN_BIN_512(in,TempD,DimensionBc); // bc_hw_g
+         IN_BIN_512(in,TempD,DimensionBc); // bc_uw_g
+         IN_BIN_512(in,TempD,DimensionBc); // bc_vw_g
+         IN_BIN_512(in,TempD,DimensionBc); // bc_ww_g
     
          for (lc=0; lc<MMAX; ++lc)
          {
-            IN_BIN_512(in,tmpD,DIM_BC); // bc_hw_s
-            IN_BIN_512(in,tmpD,DIM_BC); // bc_uw_s
-            IN_BIN_512(in,tmpD,DIM_BC); // bc_vw_s
-            IN_BIN_512(in,tmpD,DIM_BC); // bc_ww_s
+            IN_BIN_512(in,TempD,DimensionBc); // bc_hw_s
+            IN_BIN_512(in,TempD,DimensionBc); // bc_uw_s
+            IN_BIN_512(in,TempD,DimensionBc); // bc_vw_s
+            IN_BIN_512(in,TempD,DimensionBc); // bc_ww_s
          }
       }
       
-      if (version_number >= 1.13) in.read(buffer,512);    // momentum_x_eq , etc.
-      if (version_number >= 1.14) in.read(buffer,512);    // detect_small
+      if (VersionNumber >= 1.13) in.read(DataBuffer,512);    // momentum_x_eq , etc.
+      if (VersionNumber >= 1.14) in.read(DataBuffer,512);    // detect_small
       
-      if (version_number >= 1.15)
+      if (VersionNumber >= 1.15)
       {
-         in.read(buffer,512);    // k_g0 , etc.
+         in.read(DataBuffer,512);    // k_g0 , etc.
      
-         tmpD->Resize(DIM_IC);   
+         TempD->Resize(DimensionIc);   
      
-         IN_BIN_512(in,tmpD,DIM_IC); // ic_gama_rg
-         IN_BIN_512(in,tmpD,DIM_IC); // ic_t_rg
+         IN_BIN_512(in,TempD,DimensionIc); // ic_gama_rg
+         IN_BIN_512(in,TempD,DimensionIc); // ic_t_rg
         
          for (lc=0; lc<MMAX; ++lc)
          {
-            IN_BIN_512(in,tmpD,DIM_IC); // ic_gama_rs
-            IN_BIN_512(in,tmpD,DIM_IC); // ic_t_rs
+            IN_BIN_512(in,TempD,DimensionIc); // ic_gama_rs
+            IN_BIN_512(in,TempD,DimensionIc); // ic_t_rs
          }
      }
      
-     if (version_number >= 1.2) in.read(buffer,512); // norm_g , norm_s
+     if (VersionNumber >= 1.2) in.read(DataBuffer,512); // norm_g , norm_s
  
-     if (version_number >= 1.3)
+     if (VersionNumber >= 1.3)
      {
         GetInt(in,NScalar);
         SkipBytes(in,sizeof(double)); // tol_resid_scalar
@@ -1153,17 +1152,17 @@ void vtkMFIXReader::ReadRes0()
         GetInt(in,DIM_tmp);
         SkipBytes(in,512-sizeof(double)-2*sizeof(int));
     
-        tmpI->Resize(DIM_tmp);
-        IN_BIN_512I(in,tmpI,DIM_tmp);  // Phase4Scalar;
+        TempI->Resize(DIM_tmp);
+        IN_BIN_512I(in,TempI,DIM_tmp);  // Phase4Scalar;
      }
         
-     if (version_number >= 1.5)
+     if (VersionNumber >= 1.5)
      {
         GetInt(in,nRR);
         SkipBytes(in,508);
      }
      
-     if (version_number >= 1.5999)
+     if (VersionNumber >= 1.5999)
      {
         int tmp;
         GetInt(in,tmp);
@@ -1340,7 +1339,7 @@ void vtkMFIXReader::CreateVariableNames()
 	            variableIndexToSPX->InsertValue(cnt-1, 6);
 		    variable_components->InsertValue(cnt-1, 1);
 
-                    if (version_number <= 1.15)
+                    if (VersionNumber <= 1.15)
                     {
                         variable_names->InsertValue(cnt++, "T_s_1");
 		        variableIndexToSPX->InsertValue(cnt-1, 6);
@@ -1384,7 +1383,7 @@ void vtkMFIXReader::CreateVariableNames()
 			char var[120];
 			char temp[120];
 
-                    for (int i=0; i<NMAX->GetValue(0); ++i)
+                    for (int i=0; i<NMax->GetValue(0); ++i)
                     {
 			for(int k=0;k<(int)sizeof(var);k++) {
 			   var[k]=0;
@@ -1400,7 +1399,7 @@ void vtkMFIXReader::CreateVariableNames()
 
                     for (int m=1; m<=MMAX; ++m)
                     {
-                        for (int i=0; i<NMAX->GetValue(m); ++i)
+                        for (int i=0; i<NMax->GetValue(m); ++i)
                         {
 			    char temp1[120];
 			    char temp2[120];
@@ -1585,7 +1584,7 @@ void vtkMFIXReader::GetTimeSteps()
 				case 5: nvars = MMAX; break;
 				case 6:
 				{
-					if (version_number <= 1.15)
+					if (VersionNumber <= 1.15)
 						nvars = 3;
 					else
 						nvars = MMAX + 1;
@@ -1593,9 +1592,9 @@ void vtkMFIXReader::GetTimeSteps()
 				}
 				case 7:
 				{
-					nvars = NMAX->GetValue(0);
+					nvars = NMax->GetValue(0);
 					for (int m=0; m<MMAX; ++m) {
-						nvars += NMAX->GetValue(m);
+						nvars += NMax->GetValue(m);
 					}
 					break;
 				}
@@ -1764,12 +1763,12 @@ void vtkMFIXReader::GetNumberOfVariablesInSPXFiles()
 
 void vtkMFIXReader::FillVectorVariable( int xindex, int yindex, int zindex, vtkFloatArray *v)
 {
-	int range = cell_data_array[xindex]->GetMaxId();
+	int range = CellDataArray[xindex]->GetMaxId();
 	
 	for(int i=0;i<=range;i++){
-		v->InsertComponent(i, 0, cell_data_array[xindex]->GetValue(i));
-		v->InsertComponent(i, 1, cell_data_array[yindex]->GetValue(i));
-		v->InsertComponent(i, 2, cell_data_array[zindex]->GetValue(i));
+		v->InsertComponent(i, 0, CellDataArray[xindex]->GetValue(i));
+		v->InsertComponent(i, 1, CellDataArray[yindex]->GetValue(i));
+		v->InsertComponent(i, 2, CellDataArray[zindex]->GetValue(i));
 	}
 }
 
@@ -1785,25 +1784,25 @@ void vtkMFIXReader::ConvertVectorFromCylindricalToCartesian( int xindex, int zin
 	for (int k=0; k< kmax2; k++){
 		for (int j=0; j< jmax2; j++){
 			for (int i=0; i< imax2; i++){
-				if ( FLAG->GetValue(cnt) < 10 ) {
-					float ucart = (cell_data_array[xindex]->GetValue(count)*cos(theta)) - (cell_data_array[zindex]->GetValue(count)*sin(theta));
-					float wcart = (cell_data_array[xindex]->GetValue(count)*sin(theta)) + (cell_data_array[zindex]->GetValue(count)*cos(theta));
+				if ( Flag->GetValue(cnt) < 10 ) {
+					float ucart = (CellDataArray[xindex]->GetValue(count)*cos(theta)) - (CellDataArray[zindex]->GetValue(count)*sin(theta));
+					float wcart = (CellDataArray[xindex]->GetValue(count)*sin(theta)) + (CellDataArray[zindex]->GetValue(count)*cos(theta));
 					
 
-					cell_data_array[xindex]->InsertValue(count, ucart);
-					cell_data_array[zindex]->InsertValue(count, wcart);
+					CellDataArray[xindex]->InsertValue(count, ucart);
+					CellDataArray[zindex]->InsertValue(count, wcart);
 
-					//cout << "count = " << count << ", i = " << i << ", j = " << j << ", k = " << k << ", radius = " << radius << ", y = " << y << ", theta = " << theta << ", u_cy = " << cell_data_array[xindex]->GetValue(count) << ", w_cy = " << cell_data_array[zindex]->GetValue(count) << ", u_ca = " << ucart << ", w_ca = " << wcart << endl;
+					//cout << "count = " << count << ", i = " << i << ", j = " << j << ", k = " << k << ", radius = " << radius << ", y = " << y << ", theta = " << theta << ", u_cy = " << CellDataArray[xindex]->GetValue(count) << ", w_cy = " << CellDataArray[zindex]->GetValue(count) << ", u_ca = " << ucart << ", w_ca = " << wcart << endl;
 					count++;
 				}
 				cnt++;
-				radius = radius + DX->GetValue(i);
+				radius = radius + Dx->GetValue(i);
 			}
 			radius = 0.0;
-			y = y + DY->GetValue(j);
+			y = y + Dy->GetValue(j);
 		}
 		y = 0.0;
-		theta = theta + DZ->GetValue(k);
+		theta = theta + Dz->GetValue(k);
 	}
 
 }
