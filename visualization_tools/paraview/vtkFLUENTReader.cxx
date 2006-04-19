@@ -118,8 +118,6 @@ int vtkFLUENTReader::RequestInformation(
 
   this->ParseCaseFile();
   this->MakeFaceTreeParentTable();
-  this->MakeCellTreeParentTable();
-  this->LoadFaceKidFlags();
   this->LoadFaceParentFlags();
   this->LoadInterfaceFaceChildFlags();
   this->LoadNCGFaceChildFlags();
@@ -300,65 +298,6 @@ void vtkFLUENTReader::MakeFaceTreeParentTable(void)
       {
       this->FaceTreeParentTable->InsertValue(j, index);
       index++;
-      }
-    }
-}
-
-//----------------------------------------------------------------------------
-void vtkFLUENTReader::MakeCellTreeParentTable(void)
-{
-  for(int i = 0; i < this->NumberOfCellTrees; i++)
-    {
-    if(this->CellTreeParentCellId1->GetValue(i) > this->LastCellTreeParent)
-      {
-      this->LastCellTreeParent = this->CellTreeParentCellId1->GetValue(i);
-      }
-    }
-
-  for(int i=0; i<=this->LastCellTreeParent; i++)
-    {
-    this->CellTreeParentTable->InsertValue(i, 0);
-    }
-
-  int index = 0;
-  for(int i = 0; i < this->NumberOfCellTrees; i++)
-    {
-    for(int j = this->CellTreeParentCellId0->GetValue(i);
-      j <= this->CellTreeParentCellId1->GetValue(i);j++)
-      {
-      this->CellTreeParentTable->InsertValue(j, index);
-      index++;
-      }
-    }
-}
-
-//----------------------------------------------------------------------------
-void vtkFLUENTReader::LoadFaceKidFlags(void)
-{
-  // Initialize
-  for(int i = 0; i <= this->NumberOfFaces; i++)
-    {
-    this->FaceKidFlags->InsertValue( i, 0);
-    }
-
-  for(int i=0;i<NumberOfFaceTrees;i++)
-    {
-    int startFace = this->FaceTreeParentFaceId0->GetValue(i);
-    int endFace = this->FaceTreeParentFaceId1->GetValue(i);
-    for(int j = startFace; j <= endFace; j++)
-      {
-      int startKid = this->FaceTreesKidsIndex->GetValue(
-        this->FaceTreeParentTable->GetValue(j));
-      int endKid = this->FaceTreesKidsIndex->GetValue(
-        this->FaceTreeParentTable->GetValue(j))
-        + this->FaceTreesNumberOfKids->GetValue(
-        this->FaceTreeParentTable->GetValue(j));
-
-        for(int k = startKid; k < endKid; k++)
-        {
-        int kid = this->FaceTreesKids->GetValue(k);
-        this->FaceKidFlags->InsertValue( kid, 1);
-        }
       }
     }
 }
@@ -1719,49 +1658,6 @@ void vtkFLUENTReader::ParseDataFile(void)
 //-----------------------------------------------------------------------------
 void vtkFLUENTReader::InitializeVariableNames ( void )
 {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   this->VariableNames[1] = "PRESSURE";
   this->VariableNames[2] = "MOMENTUM";
   this->VariableNames[3] = "TEMPERATURE";
@@ -3731,10 +3627,6 @@ int vtkFLUENTReader::GetNCG1InformationASCII(int ix)
 
   int KidId, ParentId, NumberOfFacesNCG;
   sscanf( buf, " %d %d %d", &KidId, &ParentId, &NumberOfFacesNCG);
-  this->NCGFaceKidId->InsertValue(NumberOfNCGFaceHeaders, KidId);
-  this->NCGFaceParentId->InsertValue(NumberOfNCGFaceHeaders, ParentId);
-  this->NCGFaceNumberOfFaces->InsertValue(NumberOfNCGFaceHeaders, 
-    NumberOfFacesNCG);
 
   j = this->GoToNextLeftParen(j)+1;
   j = this->GoToNextASCIIHexDigit(j);
@@ -3766,9 +3658,6 @@ int vtkFLUENTReader::GetNCG2InformationASCII(int ix)
 
   int ZoneId, NumberOfNodesNCG;
   sscanf( buf, " %d %d", &ZoneId, &NumberOfNodesNCG);
-  this->NCGNodeZoneId->InsertValue(this->NumberOfNCGNodeHeaders, ZoneId);
-  this->NCGNodeNumberOfNodesNCG->InsertValue(this->NumberOfNCGNodeHeaders,
-    NumberOfNodesNCG);
 
   j = this->GoToNextLeftParen(j)+1;
   j = this->GoToNextASCIIHexDigit(j);
@@ -3788,10 +3677,6 @@ int vtkFLUENTReader::GetNCG2InformationASCII(int ix)
       z = 0;
       }
 
-    this->NCGNodeIds->InsertValue(this->NumberOfNCGNodes, NodeId);
-    this->NCGNodes->InsertComponent(this->NumberOfNCGNodes, 0, x);
-    this->NCGNodes->InsertComponent(this->NumberOfNCGNodes, 1, y);
-    this->NCGNodes->InsertComponent(this->NumberOfNCGNodes, 2, z);
 
     j = this->GoToNextEOL(j) +1;
     this->NumberOfNCGNodes++;
@@ -3845,8 +3730,6 @@ int vtkFLUENTReader::GetCellTreeASCII(int ix)
 
   this->CellTreeParentCellId0->InsertValue(NumberOfCellTrees, fid0);
   this->CellTreeParentCellId1->InsertValue(NumberOfCellTrees, fid1);
-  this->CellTreeParentZoneId->InsertValue(NumberOfCellTrees, pzid);
-  this->CellTreeChildZoneId->InsertValue(NumberOfCellTrees, czid);
 
   j = this->GoToNextLeftParen(j)+1;
 
@@ -3885,8 +3768,6 @@ int vtkFLUENTReader::GetFaceTreeASCII(int ix)
 
   this->FaceTreeParentFaceId0->InsertValue(NumberOfFaceTrees, fid0);
   this->FaceTreeParentFaceId1->InsertValue(NumberOfFaceTrees, fid1);
-  this->FaceTreeParentZoneId->InsertValue(NumberOfFaceTrees, pzid);
-  this->FaceTreeChildZoneId->InsertValue(NumberOfFaceTrees, czid);
 
   j = this->GoToNextLeftParen(j)+1;
 
@@ -4162,10 +4043,6 @@ int vtkFLUENTReader::GetNCG1InformationSinglePrecision(int ix)
 
   int KidId, ParentId, NumberOfFacesNCG;
   sscanf( buf, " %d %d %d", &KidId, &ParentId, &NumberOfFacesNCG);
-  this->NCGFaceKidId->InsertValue(this->NumberOfNCGFaceHeaders, KidId);
-  this->NCGFaceParentId->InsertValue(this->NumberOfNCGFaceHeaders, ParentId);
-  this->NCGFaceNumberOfFaces->InsertValue(this->NumberOfNCGFaceHeaders, 
-    NumberOfFacesNCG);
 
   j = this->GoToNextLeftParen(j)+1;
   int child,parent;
@@ -4195,9 +4072,7 @@ int vtkFLUENTReader::GetNCG2InformationSinglePrecision(int ix)
 
   int ZoneId, NumberOfNodesNCG;
   sscanf( buf, " %d %d", &ZoneId, &NumberOfNodesNCG);
-  this->NCGNodeZoneId->InsertValue(this->NumberOfNCGNodeHeaders, ZoneId);
-  this->NCGNodeNumberOfNodesNCG->InsertValue(this->NumberOfNCGNodeHeaders, 
-    NumberOfNodesNCG);
+
   j = this->GoToNextLeftParen(j)+1;
 
   float x,y,z;
@@ -4220,10 +4095,6 @@ int vtkFLUENTReader::GetNCG2InformationSinglePrecision(int ix)
       z = 0.0;
       }
 
-    this->NCGNodeIds->InsertValue(this->NumberOfNCGNodes, NodeId);
-    this->NCGNodes->InsertComponent(this->NumberOfNCGNodes, 0, x);
-    this->NCGNodes->InsertComponent(this->NumberOfNCGNodes, 1, y);
-    this->NCGNodes->InsertComponent(this->NumberOfNCGNodes, 2, z);
     this->NumberOfNCGNodes++;
     }
 
@@ -4275,8 +4146,6 @@ int vtkFLUENTReader::GetCellTreeSinglePrecision(int ix)
 
   this->CellTreeParentCellId0->InsertValue(this->NumberOfCellTrees, fid0);
   this->CellTreeParentCellId1->InsertValue(this->NumberOfCellTrees, fid1);
-  this->CellTreeParentZoneId->InsertValue(this->NumberOfCellTrees, pzid);
-  this->CellTreeChildZoneId->InsertValue(this->NumberOfCellTrees, czid);
   j = this->GoToNextLeftParen(j)+1;
 
   for (int k = fid0; k <= fid1; k++)
@@ -4315,8 +4184,6 @@ int vtkFLUENTReader::GetFaceTreeSinglePrecision(int ix)
 
   this->FaceTreeParentFaceId0->InsertValue(this->NumberOfFaceTrees, fid0);
   this->FaceTreeParentFaceId1->InsertValue(this->NumberOfFaceTrees, fid1);
-  this->FaceTreeParentZoneId->InsertValue(this->NumberOfFaceTrees, pzid);
-  this->FaceTreeChildZoneId->InsertValue(this->NumberOfFaceTrees, czid);
   j = this->GoToNextLeftParen(j)+1;
 
   for (int k = fid0; k <= fid1; k++)
@@ -4587,10 +4454,6 @@ int vtkFLUENTReader::GetNCG1InformationDoublePrecision(int ix)
   this->GetStringToNextRightParen( j, buf );
   int KidId, ParentId, NumberOfFacesNCG;
   sscanf( buf, " %d %d %d", &KidId, &ParentId, &NumberOfFacesNCG);
-  this->NCGFaceKidId->InsertValue(this->NumberOfNCGFaceHeaders, KidId);
-  this->NCGFaceParentId->InsertValue(this->NumberOfNCGFaceHeaders, ParentId);
-  this->NCGFaceNumberOfFaces->InsertValue(this->NumberOfNCGFaceHeaders,
-    NumberOfFacesNCG);
 
   j = this->GoToNextLeftParen(j)+1;
   int child,parent;
@@ -4620,9 +4483,7 @@ int vtkFLUENTReader::GetNCG2InformationDoublePrecision(int ix)
 
   int ZoneId, NumberOfNodesNCG;
   sscanf( buf, " %d %d", &ZoneId, &NumberOfNodesNCG);
-  this->NCGNodeZoneId->InsertValue(this->NumberOfNCGNodeHeaders, ZoneId);
-  this->NCGNodeNumberOfNodesNCG->InsertValue(this->NumberOfNCGNodeHeaders, 
-    NumberOfNodesNCG);
+
   j = this->GoToNextLeftParen(j)+1;
 
   float x,y,z;
@@ -4645,10 +4506,6 @@ int vtkFLUENTReader::GetNCG2InformationDoublePrecision(int ix)
       z = 0.0;
       }
 
-    this->NCGNodeIds->InsertValue(NumberOfNCGNodes, NodeId);
-    this->NCGNodes->InsertComponent(NumberOfNCGNodes, 0, x);
-    this->NCGNodes->InsertComponent(NumberOfNCGNodes, 1, y);
-    this->NCGNodes->InsertComponent(NumberOfNCGNodes, 2, z);
     this->NumberOfNCGNodes++;
     }
 
@@ -4698,8 +4555,6 @@ int vtkFLUENTReader::GetCellTreeDoublePrecision(int ix)
   sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
   this->CellTreeParentCellId0->InsertValue(this->NumberOfCellTrees, fid0);
   this->CellTreeParentCellId1->InsertValue(this->NumberOfCellTrees, fid1);
-  this->CellTreeParentZoneId->InsertValue(this->NumberOfCellTrees, pzid);
-  this->CellTreeChildZoneId->InsertValue(this->NumberOfCellTrees, czid);
 
   j = this->GoToNextLeftParen(j)+1;
   for (int k = fid0; k <= fid1; k++)
@@ -4735,8 +4590,6 @@ int vtkFLUENTReader::GetFaceTreeDoublePrecision(int ix)
   sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
   this->FaceTreeParentFaceId0->InsertValue(this->NumberOfFaceTrees, fid0);
   this->FaceTreeParentFaceId1->InsertValue(this->NumberOfFaceTrees, fid1);
-  this->FaceTreeParentZoneId->InsertValue(this->NumberOfFaceTrees, pzid);
-  this->FaceTreeChildZoneId->InsertValue(this->NumberOfFaceTrees, czid);
   j = GoToNextLeftParen(j)+1;
 
   for (int k = fid0; k <= fid1; k++)
@@ -5523,26 +5376,12 @@ void vtkFLUENTReader::CreateVTKObjects(void)
   this->CellTreesKidsIndex = vtkIntArray::New();
   this->FaceTreeParentFaceId0 = vtkIntArray::New();
   this->FaceTreeParentFaceId1 = vtkIntArray::New();
-  this->FaceTreeParentZoneId = vtkIntArray::New();
-  this->FaceTreeChildZoneId = vtkIntArray::New();
   this->FaceTreeParentTable = vtkIntArray::New();
   this->CellTreeParentCellId0 = vtkIntArray::New();
   this->CellTreeParentCellId1 = vtkIntArray::New();
-  this->CellTreeParentZoneId = vtkIntArray::New();
-  this->CellTreeChildZoneId = vtkIntArray::New();
-  this->CellTreeParentTable = vtkIntArray::New();
-  this->NCGFaceKidId = vtkIntArray::New();
-  this->NCGFaceParentId = vtkIntArray::New();
-  this->NCGFaceNumberOfFaces = vtkIntArray::New();
   this->NCGFaceChild = vtkIntArray::New();
   this->NCGFaceParent = vtkIntArray::New();
-  this->NCGNodeZoneId = vtkIntArray::New();
-  this->NCGNodeNumberOfNodesNCG = vtkIntArray::New();
-  this->NCGNodes = vtkDoubleArray::New();
-  this->NCGNodes->SetNumberOfComponents(2);
-  this->NCGNodeIds = vtkIntArray::New();
   this->CellNumberOfFaces = vtkIntArray::New();
-  this->FaceKidFlags = vtkIntArray::New();
   this->FaceParentFlags = vtkIntArray::New();
   this->CellIndex = vtkIntArray::New();
   this->InterfaceFaceChildFlags = vtkIntArray::New();
@@ -5588,26 +5427,13 @@ void vtkFLUENTReader::DeleteVTKObjects(void)
   this->CellTreesKidsIndex->Delete();
   this->FaceTreeParentFaceId0->Delete();
   this->FaceTreeParentFaceId1->Delete();
-  this->FaceTreeParentZoneId->Delete();
-  this->FaceTreeChildZoneId->Delete();
   this->FaceTreeParentTable->Delete();
   this->CellTreeParentCellId0->Delete();
   this->CellTreeParentCellId1->Delete();
-  this->CellTreeParentZoneId->Delete();
-  this->CellTreeChildZoneId->Delete();
-  this->CellTreeParentTable->Delete();
 
-  this->NCGFaceKidId->Delete();
-  this->NCGFaceParentId->Delete();
-  this->NCGFaceNumberOfFaces->Delete();
   this->NCGFaceChild->Delete();
   this->NCGFaceParent->Delete();
-  this->NCGNodeZoneId->Delete();
-  this->NCGNodeNumberOfNodesNCG->Delete();
-  this->NCGNodes->Delete();
-  this->NCGNodeIds->Delete();
   this->CellNumberOfFaces->Delete();
-  this->FaceKidFlags->Delete();
   this->FaceParentFlags->Delete();
   this->CellIndex->Delete();
   this->InterfaceFaceChildFlags->Delete();
