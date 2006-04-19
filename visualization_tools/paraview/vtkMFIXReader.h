@@ -72,7 +72,7 @@ public:
   vtkGetMacro(NumberOfCellFields,int);
   
   // Description:
-  // Which TimeStep to read.    
+  // Which TimeStep to read.
   vtkSetMacro(TimeStep, int);
   vtkGetMacro(TimeStep, int);
  
@@ -93,13 +93,15 @@ public:
 protected:
   vtkMFIXReader();
   ~vtkMFIXReader();
-  int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  int RequestInformation(vtkInformation *,
+    vtkInformationVector **, vtkInformationVector *);
+  int RequestData(vtkInformation *,
+    vtkInformationVector **, vtkInformationVector *);
 
   //
   // ParaView Variables
   //
-  
+
   char *FileName;
   int RequestInformationFlag;
   int MakeMeshFlag;
@@ -122,92 +124,94 @@ protected:
   //  MFIX Variables
   //
 
-  vtkFloatArray **CellDataArray; // Arrays for variables that will attach to mesh
-  vtkPoints *Points;		// Points array for building grid
-  vtkUnstructuredGrid *Mesh;	// Unstructured Grid
-  vtkHexahedron *AHexahedron;	// Hexahedron type cell
-  vtkWedge *AWedge;  		// Wedge type cell
-  vtkIntArray *Flag;		// Cell Flag array
-  vtkDoubleArray *Dx;		// Cell widths in x axis
-  vtkDoubleArray *Dy;		// Cell widths in y axis
-  vtkDoubleArray *Dz;		// Cell widths in z axis
-  vtkIntArray *NMax;		// Array to hold number of species per phase
-  vtkDoubleArray *C;		// Array used to parse restart file
-  vtkIntArray *TempI;		// Array used to parse restart file
-  vtkDoubleArray *TempD;	// Array used to parse restart file
-  vtkIntArray *SpxFileExists;   // Array for keeping track of what spx files exist.
-  
+  vtkFloatArray **CellDataArray; // Arrays for variables that will 
+                                 //attach to mesh
+  vtkPoints *Points;            // Points array for building grid
+  vtkUnstructuredGrid *Mesh;    // Unstructured Grid
+  vtkHexahedron *AHexahedron;   // Hexahedron type cell
+  vtkWedge *AWedge;             // Wedge type cell
+  vtkIntArray *Flag;            // Cell Flag array
+  vtkDoubleArray *Dx;           // Cell widths in x axis
+  vtkDoubleArray *Dy;           // Cell widths in y axis
+  vtkDoubleArray *Dz;           // Cell widths in z axis
+  vtkIntArray *NMax;            // Array to hold number of species per phase
+  vtkDoubleArray *C;            // Array used to parse restart file
+  vtkIntArray *TempI;           // Array used to parse restart file
+  vtkDoubleArray *TempD;        // Array used to parse restart file
+  vtkIntArray *SpxFileExists;   // Array for keeping track of 
+                                // what spx files exist.
+
   char FileExtension[15];
   char DataBuffer[513];
   char Version[120];
   float VersionNumber;
   int    DimensionIc;
   int    DimensionBc;
-  int    DIM_C;
-  int    DIM_IS;
-  double c_e;
-  double c_f;
-  double phi;
-  double phi_w;
-  double C_e;
-  double C_f;
+  int    DimensionC;
+  int    DimensionIs;
+  double Ce;
+  double Cf;
   double Phi;
-  double Phi_w;
-  double dt;
-  double xmin;
-  char run_name[256];
-  vtkStringArray *variable_names;
-  vtkIntArray *variable_components;
-  int imin1;
-  int jmin1;
-  int kmin1;
-  int imax;
-  int jmax;
-  int kmax;
-  int imax1;
-  int jmax1;
-  int kmax1;
-  int imax2;
-  int jmax2;
-  int kmax2;
-  int ijmax2;
-  int ijkmax2;
+  double PhiW;
+  double DeltaTime;
+  double XMinimum;
+  char RunName[256];
+  vtkStringArray *VariableNames;
+  vtkIntArray *VariableComponents;
+  int IMinimum1;
+  int JMinimum1;
+  int KMinimum1;
+  int IMaximum;
+  int JMaximum;
+  int KMaximum;
+  int IMaximum1;
+  int JMaximum1;
+  int KMaximum1;
+  int IMaximum2;
+  int JMaximum2;
+  int KMaximum2;
+  int IJMaximum2;
+  int IJKMaximum2;
   int MMAX;
-  int nspx_use;
-  double xlength;
-  double ylength;
-  double zlength;
-  int  NScalar;
-  int nRR;
-  int nTimes;
-  bool bKepsilon;
-  char coordinates[17];
-  char units[17];
+  int NumberOfSPXFilesUsed;
+  double XLength;
+  double YLength;
+  double ZLength;
+  int  NumberOfScalars;
+  int NumberOfReactionRates;
+  bool BkEpsilon;
+  char CoordinateSystem[17];
+  char Units[17];
 
   //
   //  SPX Variables
   //
-	
-  int max_timestep;                 // maximum timesteps amongst the variables
-  int spx_records_per_timestep;     // number of records in a single timestep for a variable
-  vtkIntArray *spx_to_nvar_table;   // number of variables in each spx file
-  vtkIntArray *var_to_skip_table;   // skip value for each variable, this is needed in spx files 
-  				    // with more than one variable.
-  vtkIntArray *var_timesteps;       // number of timesteps for each variable
-  vtkIntArray *var_timestep_table;  //  Since the number of timesteps vary between variables
-  				    //  this is a table that looks up the appropriate 
-				    //  timestep for the particular variable.
-  vtkIntArray *variableIndexToSPX;  //  This gives the spx file number for the 
-  				    //  particular variable.
-  int *spx_timestep_index_table;    //  This a table look up for the index into a file for 
-  				    //  a certain variable.
 
+  int MaximumTimestep;              // maximum timesteps amongst the variables
+  int SPXRecordsPerTimestep;        // number of records in a single 
+                                    // timestep for a variable
+  vtkIntArray *SPXToNVarTable;      // number of variables in each spx file
+  vtkIntArray *VariableToSkipTable; // skip value for each variable, this 
+                                    // is needed in spx files 
+                                    // with more than one variable.
+  vtkIntArray *VariableTimesteps;   // number of timesteps for each variable
+  vtkIntArray *VariableTimestepTable;  // Since the number of timesteps 
+                                       // vary between variables
+                                       //  this is a table that looks 
+                                       //  up the appropriate timestep 
+                                       // for the particular variable.
+  vtkIntArray *variableIndexToSPX;  //  This gives the spx file number for the 
+                                    //  particular variable.
+  vtkIntArray *VariableIndexToSPX;  //  This gives the spx file number for the 
+                                    //  particular variable.
+  int *SPXTimestepIndexTable; //  This a table look up for the index 
+                              //  into a file for a certain variable.
 
 private:
   void MakeMesh(vtkUnstructuredGrid *output);
-  void SWAP_DOUBLE(double &value);
-  void SWAP_FLOAT(float &value);
-  void SWAP_INT(int &value);
+  void SwapDouble(double &value);
+  void SwapFloat(float &value);
+  void SwapInt(int &value);
   vtkStdString ConvertIntToString(int in);
   int ConvertCharToInt(char in);
   int ConvertStringToInt(const vtkStdString & in);
@@ -216,10 +220,10 @@ private:
   void GetFloat(istream& in, float& val);
   void SkipBytes(istream& in, int n);
   void RestartVersionNumber(char* buffer);
-  void IN_BIN_512(istream& in, vtkDoubleArray *v, int n);
-  void IN_BIN_512R(istream& in, vtkFloatArray *v, int n);
-  void IN_BIN_512I(istream& in, vtkIntArray *v, int n);
-  void ReadRes0();
+  void GetBlockOfDoubles(istream& in, vtkDoubleArray *v, int n);
+  void GetBlockOfFloats(istream& in, vtkFloatArray *v, int n);
+  void GetBlockOfInts(istream& in, vtkIntArray *v, int n);
+  void ReadRestartFile();
   void GetVariableAtTimestep(int vari , int tstep, vtkFloatArray *v);
   void CreateVariableNames();
   void GetTimeSteps();
@@ -228,7 +232,8 @@ private:
   void MakeSPXTimeStepIndexTable(int nvars);
   void CalculateMaxTimeStep();
   void GetNumberOfVariablesInSPXFiles();
-  void FillVectorVariable( int xindex, int yindex, int zindex, vtkFloatArray *v);
+  void FillVectorVariable( int xindex, int yindex, int zindex, 
+         vtkFloatArray *v);
   void ConvertVectorFromCylindricalToCartesian( int xindex, int zindex);
   void GetAllTimes(vtkInformationVector *outputVector);
 
