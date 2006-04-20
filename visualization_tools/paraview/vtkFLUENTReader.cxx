@@ -320,6 +320,9 @@ void vtkFLUENTReader::LoadFaceParentFlags(void)
       this->FaceParentFlags->InsertValue( j, 1);
       }
     }
+
+  this->FaceTreeParentFaceId0->Delete();
+  this->FaceTreeParentFaceId1->Delete();
 }
 
 //----------------------------------------------------------------------------
@@ -352,6 +355,7 @@ void vtkFLUENTReader::LoadNCGFaceChildFlags(void)
     int child = this->NCGFaceChild->GetValue(i);
     this->NCGFaceChildFlags->InsertValue(child,1);
     }
+  this->NCGFaceChild->Delete();
 }
 
 //----------------------------------------------------------------------------
@@ -1518,6 +1522,8 @@ void vtkFLUENTReader::LoadCellFaces(void)
       NumberOfFacesInCell[c1] = nc1;
       }
     }
+
+  delete [] NumberOfFacesInCell;
 }
 
 //-----------------------------------------------------------------------------
@@ -5425,13 +5431,10 @@ void vtkFLUENTReader::DeleteVTKObjects(void)
   this->CellTreesNumberOfKids->Delete();
   this->CellTreesKids->Delete();
   this->CellTreesKidsIndex->Delete();
-  this->FaceTreeParentFaceId0->Delete();
-  this->FaceTreeParentFaceId1->Delete();
   this->FaceTreeParentTable->Delete();
   this->CellTreeParentCellId0->Delete();
   this->CellTreeParentCellId1->Delete();
 
-  this->NCGFaceChild->Delete();
   this->NCGFaceParent->Delete();
   this->CellNumberOfFaces->Delete();
   this->FaceParentFlags->Delete();
