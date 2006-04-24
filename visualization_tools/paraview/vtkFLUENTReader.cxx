@@ -3468,8 +3468,8 @@ int vtkFLUENTReader::GetFacesASCII(int ix)
           {
           sscanf( buf, " %x %x %x %x %x ", &type, &n0 , &n1, &c0, &c1 );
           this->FaceTypes->InsertValue(k,type);
-          this->FaceNodes->InsertComponent(k,0,n0);
-          this->FaceNodes->InsertComponent(k,1,n1);
+          this->FaceNodes->InsertComponent(k,0,n0-1);
+          this->FaceNodes->InsertComponent(k,1,n1-1);
           this->FaceNodes->InsertComponent(k,2,0);
           this->FaceNodes->InsertComponent(k,3,0);
           this->FaceCells->InsertComponent(k,0,c0);
@@ -3480,9 +3480,9 @@ int vtkFLUENTReader::GetFacesASCII(int ix)
           sscanf( buf, " %x %x %x %x %x %x ", &type , &n0, &n1, 
             &n2, &c0, &c1 );
           this->FaceTypes->InsertValue(k,type);
-          this->FaceNodes->InsertComponent(k,0,n0);
-          this->FaceNodes->InsertComponent(k,1,n1);
-          this->FaceNodes->InsertComponent(k,2,n2);
+          this->FaceNodes->InsertComponent(k,0,n0-1);
+          this->FaceNodes->InsertComponent(k,1,n1-1);
+          this->FaceNodes->InsertComponent(k,2,n2-1);
           this->FaceNodes->InsertComponent(k,3,0);
           this->FaceCells->InsertComponent(k,0,c0);
           this->FaceCells->InsertComponent(k,1,c1);
@@ -3492,10 +3492,10 @@ int vtkFLUENTReader::GetFacesASCII(int ix)
           sscanf( buf, " %x %x %x %x %x %x %x ", &type, &n0 , &n1,
             &n2, &n3, &c0, &c1 );
           this->FaceTypes->InsertValue(k,type);
-          this->FaceNodes->InsertComponent(k,0,n0);
-          this->FaceNodes->InsertComponent(k,1,n1);
-          this->FaceNodes->InsertComponent(k,2,n2);
-          this->FaceNodes->InsertComponent(k,3,n3);
+          this->FaceNodes->InsertComponent(k,0,n0-1);
+          this->FaceNodes->InsertComponent(k,1,n1-1);
+          this->FaceNodes->InsertComponent(k,2,n2-1);
+          this->FaceNodes->InsertComponent(k,3,n3-1);
           this->FaceCells->InsertComponent(k,0,c0);
           this->FaceCells->InsertComponent(k,1,c1);
           }
@@ -3504,8 +3504,8 @@ int vtkFLUENTReader::GetFacesASCII(int ix)
         {
         sscanf( buf, " %x %x %x %x ", &n0 , &n1, &c0, &c1 );
         this->FaceTypes->InsertValue(k,2);
-        this->FaceNodes->InsertComponent(k,0,n0);
-        this->FaceNodes->InsertComponent(k,1,n1);
+        this->FaceNodes->InsertComponent(k,0,n0-1);
+        this->FaceNodes->InsertComponent(k,1,n1-1);
         this->FaceNodes->InsertComponent(k,2,0);
         this->FaceNodes->InsertComponent(k,3,0);
         this->FaceCells->InsertComponent(k,0,c0);
@@ -3515,9 +3515,9 @@ int vtkFLUENTReader::GetFacesASCII(int ix)
         {
         sscanf( buf, " %x %x %x %x %x ", &n0 , &n1, &n2, &c0, &c1 );
         this->FaceTypes->InsertValue(k,3);
-        this->FaceNodes->InsertComponent(k,0,n0);
-        this->FaceNodes->InsertComponent(k,1,n1);
-        this->FaceNodes->InsertComponent(k,2,n2);
+        this->FaceNodes->InsertComponent(k,0,n0-1);
+        this->FaceNodes->InsertComponent(k,1,n1-1);
+        this->FaceNodes->InsertComponent(k,2,n2-1);
         this->FaceNodes->InsertComponent(k,3,0);
         this->FaceCells->InsertComponent(k,0,c0);
         this->FaceCells->InsertComponent(k,1,c1);
@@ -3526,10 +3526,10 @@ int vtkFLUENTReader::GetFacesASCII(int ix)
         {
         sscanf( buf, " %x %x %x %x %x %x ", &n0 , &n1, &n2, &n3, &c0, &c1 );
         this->FaceTypes->InsertValue(k,4);
-        this->FaceNodes->InsertComponent(k,0,n0);
-        this->FaceNodes->InsertComponent(k,1,n1);
-        this->FaceNodes->InsertComponent(k,2,n2);
-        this->FaceNodes->InsertComponent(k,3,n3);
+        this->FaceNodes->InsertComponent(k,0,n0-1);
+        this->FaceNodes->InsertComponent(k,1,n1-1);
+        this->FaceNodes->InsertComponent(k,2,n2-1);
+        this->FaceNodes->InsertComponent(k,3,n3-1);
         this->FaceCells->InsertComponent(k,0,c0);
         this->FaceCells->InsertComponent(k,1,c1);
         }
@@ -3568,12 +3568,12 @@ int vtkFLUENTReader::GetNodesASCII(int ix)
       if ( nd == 2)
         {
         sscanf( buf, " %f %f ", &x , &y );
-        this->Points->InsertPoint(k, x, y, 0.0);
+        this->Points->InsertPoint(k-1, x, y, 0.0);
         }
       else
         {
         sscanf( buf, " %f %f %f", &x , &y, &z );
-        this->Points->InsertPoint(k, x, y, z);
+        this->Points->InsertPoint(k-1, x, y, z);
         }
 
       j = this->GoToNextEOL(j) +1;
@@ -3862,9 +3862,9 @@ int vtkFLUENTReader::GetFacesSinglePrecision(int ix)
     for (int i = fi; i <= li; i++)
       {
       this->FaceTypes->InsertValue(i, et);
-      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
       j = j + 4;
-      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
       j = j + 4;
       this->FaceNodes->InsertComponent(i,2, 0);
       this->FaceNodes->InsertComponent(i,3, 0);
@@ -3879,11 +3879,11 @@ int vtkFLUENTReader::GetFacesSinglePrecision(int ix)
     for (int i = fi; i <= li; i++)
       {
       this->FaceTypes->InsertValue(i, et);
-      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
       j = j + 4;
-      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
       j = j + 4;
-      this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
       j = j + 4;
       this->FaceNodes->InsertComponent(i,3, 0);
       this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
@@ -3897,13 +3897,13 @@ int vtkFLUENTReader::GetFacesSinglePrecision(int ix)
     for (int i = fi; i <= li; i++)
       {
       this->FaceTypes->InsertValue(i, et);
-      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
       j = j + 4;
-      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
       j = j + 4;
-      this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
       j = j + 4;
-      this->FaceNodes->InsertComponent(i,3,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,3,this->GetBinaryInteger(j)-1);
       j = j + 4;
       this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
       j = j + 4;
@@ -3920,9 +3920,9 @@ int vtkFLUENTReader::GetFacesSinglePrecision(int ix)
       this->FaceTypes->InsertValue(i, ft);
       if ( ft == 2)
         {
-        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
         j = j + 4;
-        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
         j = j + 4;
         this->FaceNodes->InsertComponent(i,2, 0);
         this->FaceNodes->InsertComponent(i,3, 0);
@@ -3933,11 +3933,11 @@ int vtkFLUENTReader::GetFacesSinglePrecision(int ix)
         }
       else if ( ft == 3)
         {
-        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
         j = j + 4;
-        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
         j = j + 4;
-        this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
         j = j + 4;
         this->FaceNodes->InsertComponent(i,3, 0);
         this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
@@ -3947,13 +3947,13 @@ int vtkFLUENTReader::GetFacesSinglePrecision(int ix)
         }
       else if ( ft == 4)
         {
-        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
         j = j + 4;
-        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
         j = j + 4;
-        this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
         j = j + 4;
-        this->FaceNodes->InsertComponent(i,3,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,3,this->GetBinaryInteger(j)-1);
         j = j + 4;
         this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
         j = j + 4;
@@ -3988,7 +3988,7 @@ int vtkFLUENTReader::GetNodesSinglePrecision(int ix)
       j = j+4;
       y = this->GetBinaryFloat(j);
       j = j+4;
-      this->Points->InsertPoint(k, x, y, 0);
+      this->Points->InsertPoint(k-1, x, y, 0);
       }
     else
       {
@@ -3998,7 +3998,7 @@ int vtkFLUENTReader::GetNodesSinglePrecision(int ix)
       j = j+4;
       z = this->GetBinaryFloat(j);
       j = j+4;
-      this->Points->InsertPoint(k, x, y, z);
+      this->Points->InsertPoint(k-1, x, y, z);
       }
     }
 
@@ -4273,9 +4273,9 @@ int vtkFLUENTReader::GetFacesDoublePrecision(int ix)
     for (int i = fi; i <= li; i++)
       {
       this->FaceTypes->InsertValue(i, et);
-      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
       j = j + 4;
-      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
       j = j + 4;
       this->FaceNodes->InsertComponent(i,2, 0);
       this->FaceNodes->InsertComponent(i,3, 0);
@@ -4290,11 +4290,11 @@ int vtkFLUENTReader::GetFacesDoublePrecision(int ix)
     for (int i = fi; i <= li; i++)
       {
       this->FaceTypes->InsertValue(i, et);
-      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
       j = j + 4;
-      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
       j = j + 4;
-      this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
       j = j + 4;
       this->FaceNodes->InsertComponent(i,3, 0);
       this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
@@ -4308,13 +4308,13 @@ int vtkFLUENTReader::GetFacesDoublePrecision(int ix)
     for (int i = fi; i <= li; i++)
       {
       this->FaceTypes->InsertValue(i, et);
-      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
       j = j + 4;
-      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
       j = j + 4;
-      this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
       j = j + 4;
-      this->FaceNodes->InsertComponent(i,3,this->GetBinaryInteger(j));
+      this->FaceNodes->InsertComponent(i,3,this->GetBinaryInteger(j)-1);
       j = j + 4;
       this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
       j = j + 4;
@@ -4331,9 +4331,9 @@ int vtkFLUENTReader::GetFacesDoublePrecision(int ix)
       this->FaceTypes->InsertValue(i, ft);
       if ( ft == 2)
         {
-        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
         j = j + 4;
-        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
         j = j + 4;
         this->FaceNodes->InsertComponent(i,2, 0);
         this->FaceNodes->InsertComponent(i,3, 0);
@@ -4344,11 +4344,11 @@ int vtkFLUENTReader::GetFacesDoublePrecision(int ix)
         }
       else if ( ft == 3)
         {
-        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
         j = j + 4;
-        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
         j = j + 4;
-        this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
         j = j + 4;
         this->FaceNodes->InsertComponent(i,3, 0);
         this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
@@ -4358,13 +4358,13 @@ int vtkFLUENTReader::GetFacesDoublePrecision(int ix)
         }
       else if ( ft == 4)
         {
-        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
         j = j + 4;
-        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
         j = j + 4;
-        this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
         j = j + 4;
-        this->FaceNodes->InsertComponent(i,3,this->GetBinaryInteger(j));
+        this->FaceNodes->InsertComponent(i,3,this->GetBinaryInteger(j)-1);
         j = j + 4;
         this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
         j = j + 4;
@@ -4399,7 +4399,7 @@ int vtkFLUENTReader::GetNodesDoublePrecision(int ix)
       j = j+8;
       y = this->GetBinaryDouble(j);
       j = j+8;
-      this->Points->InsertPoint(k, x, y, 0);
+      this->Points->InsertPoint(k-1, x, y, 0);
       }
     else
       {
@@ -4409,7 +4409,7 @@ int vtkFLUENTReader::GetNodesDoublePrecision(int ix)
       j = j+8;
       z = this->GetBinaryDouble(j);
       j = j+8;
-      this->Points->InsertPoint(k, x, y, z);
+      this->Points->InsertPoint(k-1, x, y, z);
       }
     }
   return this->GoToNextSectionSinglePrecision( j, "3010)");
