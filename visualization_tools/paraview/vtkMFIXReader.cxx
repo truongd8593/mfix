@@ -2018,6 +2018,8 @@ void vtkMFIXReader::MakeSPXTimeStepIndexTable(int nvars)
       SPXTimestepIndexTable[ind] = index;
       }
     }
+
+  delete [] SPXTimestepIndexTable;
 }
 
 //----------------------------------------------------------------------------
@@ -2197,4 +2199,6 @@ void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector)
   vtkInformation* outInfo = outputVector->GetInformationObject(0);
   outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_STEPS(), 
     steps, this->NumberOfTimeSteps);
+
+  delete [] steps;
 }
