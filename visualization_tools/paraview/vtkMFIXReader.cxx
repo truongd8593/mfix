@@ -2018,8 +2018,6 @@ void vtkMFIXReader::MakeSPXTimeStepIndexTable(int nvars)
       SPXTimestepIndexTable[ind] = index;
       }
     }
-
-  delete [] SPXTimestepIndexTable;
 }
 
 //----------------------------------------------------------------------------
