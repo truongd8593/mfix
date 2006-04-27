@@ -96,7 +96,6 @@ void vtkFLUENTReader::ReadFile(vtkUnstructuredGrid *output)
   output->ShallowCopy(this->Mesh);
   this->Mesh->Delete();
 
-// mccdo
   for ( int i = 0; i < this->NumberOfVariables; i++ ) 
     {
     if ( this->CellData[ i ] )
@@ -104,7 +103,6 @@ void vtkFLUENTReader::ReadFile(vtkUnstructuredGrid *output)
       this->CellData[ i ]->Delete();
       }
     }
-// mccdo
 }
 
 //----------------------------------------------------------------------------
@@ -122,8 +120,8 @@ int vtkFLUENTReader::RequestInformation(
   }
 
   this->ParseCaseFile();
-  this->Mesh->SetPoints(this->Points);   //mccdo
-  this->Points->Delete();   //mccdo
+  this->Mesh->SetPoints(this->Points);
+  this->Points->Delete();
   this->MakeFaceTreeParentTable();
   this->LoadFaceParentFlags();
   this->LoadInterfaceFaceChildFlags();
@@ -149,30 +147,7 @@ int vtkFLUENTReader::RequestInformation(
 
   this->DataPass = 2;
   this->ParseDataFile();  // Getting Data
-
-/*mccdo
-  int first = 0;
-  for (int i=0; i<this->NumberOfVariables; i++ )
-    {
-    if((this->CellData[i]->GetNumberOfTuples() == this->NumberOfCells)
-      && (this->CellData[i]->GetNumberOfComponents() < 6))
-      {
-      if(first == 0)
-        {
-        this->Mesh->GetCellData()->SetScalars(this->CellData[i]);
-        } 
-      else
-        {
-        this->Mesh->GetCellData()->AddArray(this->CellData[i]);
-        }
-      this->CellDataArraySelection->AddArray(this->CellData[ i ]->GetName());
-      first = 1;
-      this->NumberOfCellFields++;
-      }
-    }
-*/
   this->NumberOfCellArrays = this->NumberOfCellFields;
-  //mccdo this->Mesh->SetPoints(this->Points);
   this->DeleteVTKObjects();
   return 1;
 }
@@ -199,21 +174,6 @@ int vtkFLUENTReader::OpenCaseAndDataFiles( void )
     cout << "Could Not Open Data File = " << this->DataFileName << endl;
     return(0);
   }
-/* mccdo
-  this->FileStream->seekg(0, ios::end); 
-  this->CaseFileBufferLength = this->FileStream->tellg();
-  this->FileStream->seekg(0, ios::beg);
-  this->CaseFileBuffer = new char[this->CaseFileBufferLength];
-  this->FileStream->read(this->CaseFileBuffer, this->CaseFileBufferLength);
-  this->FileStream->close();
-
-  this->DataFileStream->seekg(0, ios::end);
-  this->DataFileBufferLength = this->DataFileStream->tellg();
-  this->DataFileStream->seekg(0, ios::beg);
-  this->DataFileBuffer = new char[this->DataFileBufferLength];
-  this->DataFileStream->read(this->DataFileBuffer, this->DataFileBufferLength);
-  this->DataFileStream->close();
-*/
   return(1);
 }
 
@@ -271,14 +231,12 @@ void vtkFLUENTReader::DisableAllCellArrays()
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::ParseCaseFile(void)
 {
-  //mccdo
   this->FileStream->seekg(0, ios::end); 
   this->CaseFileBufferLength = this->FileStream->tellg();
   this->FileStream->seekg(0, ios::beg);
   this->CaseFileBuffer = new char[this->CaseFileBufferLength];
   this->FileStream->read(this->CaseFileBuffer, this->CaseFileBufferLength);
   this->FileStream->close();
-  //mccdo
 
   int bufferIndex = 0;
   while(bufferIndex < this->CaseFileBufferLength)
@@ -290,98 +248,27 @@ void vtkFLUENTReader::ParseCaseFile(void)
       }
       bufferIndex++;
     }
-  delete [] CaseFileBuffer; // mccdo
+  delete [] CaseFileBuffer;
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::MakeFaceTreeParentTable(void)
 {
-/* mccdo
-  for(int i = 0; i < this->NumberOfFaceTrees; i++)
-    {
-    if(this->FaceTreeParentFaceId1->GetValue(i) > this->LastFaceTreeParent)
-      {
-      this->LastFaceTreeParent = this->FaceTreeParentFaceId1->GetValue(i);
-      }
-    }
-
-  for(int i=0; i <= this->LastFaceTreeParent; i++)
-    {
-    this->FaceTreeParentTable->InsertValue(i, 0);
-    }
-
-  int index = 0;
-  for(int i = 0; i < this->NumberOfFaceTrees; i++)
-    {
-    for(int j = this->FaceTreeParentFaceId0->GetValue(i); 
-      j <= this->FaceTreeParentFaceId1->GetValue(i); j++)
-      {
-      this->FaceTreeParentTable->InsertValue(j, index);
-      index++;
-      }
-    }
-*/
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::LoadFaceParentFlags(void)
 {
-/* mccdo  // Initialize
-  for(int i = 0; i <= this->NumberOfFaces; i++)
-    {
-    this->FaceParentFlags->InsertValue( i, 0);
-    }
-
-  for(int i = 0; i < this->NumberOfFaceTrees; i++)
-    {
-    int startFace = this->FaceTreeParentFaceId0->GetValue(i);
-    int endFace = this->FaceTreeParentFaceId1->GetValue(i);
-    for(int j = startFace; j <= endFace; j++)
-      {
-      this->FaceParentFlags->InsertValue( j, 1);
-      }
-    }
-
-  this->FaceTreeParentFaceId0->Delete();
-  this->FaceTreeParentFaceId1->Delete();
-*/
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::LoadInterfaceFaceChildFlags(void)
 {
-/* mccdo
-  // Initialize Flag Array
-  for(int i = 1; i <= this->NumberOfFaces; i++)
-    {
-    this->InterfaceFaceChildFlags->InsertValue(i,0);
-    }
-
-  for(int i = 0; i < this->NumberOfFaceParentChildren; i++)
-    {
-    int child = this->FaceParentsChildren->GetValue(i);
-    this->InterfaceFaceChildFlags->InsertValue(child,1);
-    }
-*/
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::LoadNCGFaceChildFlags(void)
 {
-/* mccdo
-  // Initialize Flag Array
-  for(int i = 0; i <= this->NumberOfFaces; i++)
-    {
-    this->NCGFaceChildFlags->InsertValue(i,0);
-    }
-
-  for(int i = 0; i < this->NumberOfNCGFaces; i++)
-    {
-    int child = this->NCGFaceChild->GetValue(i);
-    this->NCGFaceChildFlags->InsertValue(child,1);
-    }
-  this->NCGFaceChild->Delete();
-*/
 }
 
 //----------------------------------------------------------------------------
@@ -413,7 +300,7 @@ void vtkFLUENTReader::BuildCells(void)
       {
       try
         {
-        face[j] = CellFaces[ i ].at(j); // mccdo (int)this->CellFacesClean->GetComponent(i, j);
+        face[j] = CellFaces[ i ].at(j); 
         }
       catch ( ... )
         {
@@ -482,7 +369,7 @@ void vtkFLUENTReader::BuildCells(void)
         this->ATriangle->GetPointIds()->SetId( j, node[j]);
         }
 
-      if(this->CellParentFlags.at(i) != true ) // mccdo
+      if(this->CellParentFlags.at(i) != true ) 
         {
         this->Mesh->InsertNextCell(this->ATriangle->GetCellType(), 
           this->ATriangle->GetPointIds());
@@ -566,7 +453,7 @@ void vtkFLUENTReader::BuildCells(void)
         this->ATetra->GetPointIds()->SetId( j, node[j]);
         }
 
-      if (CellParentFlags.at(i) != true ) // mccdo
+      if (CellParentFlags.at(i) != true ) 
         {
         this->Mesh->InsertNextCell(this->ATetra->GetCellType(), 
           this->ATetra->GetPointIds());
@@ -648,7 +535,7 @@ void vtkFLUENTReader::BuildCells(void)
         this->AQuad->GetPointIds()->SetId( j, node[j]);
         }
 
-      if (CellParentFlags.at(i) != true ) // mccdo
+      if (CellParentFlags.at(i) != true ) 
         {
         this->Mesh->InsertNextCell(this->AQuad->GetCellType(), 
           this->AQuad->GetPointIds());
@@ -1097,7 +984,7 @@ void vtkFLUENTReader::BuildCells(void)
         this->AHexahedron->GetPointIds()->SetId( j, node[j]);
         }
 
-      if (CellParentFlags.at(i) != true ) // mccdo
+      if (CellParentFlags.at(i) != true )
         {
         this->Mesh->InsertNextCell(this->AHexahedron->GetCellType(), 
           this->AHexahedron->GetPointIds());
@@ -1234,7 +1121,7 @@ void vtkFLUENTReader::BuildCells(void)
         this->APyramid->GetPointIds()->SetId( j, node[j]);
         }
 
-      if (this->CellParentFlags.at(i) != true ) // mccdo
+      if (this->CellParentFlags.at(i) != true )
         {
         this->Mesh->InsertNextCell(this->APyramid->GetCellType(),
           this->APyramid->GetPointIds());
@@ -1452,73 +1339,30 @@ void vtkFLUENTReader::BuildCells(void)
         this->AWedge->GetPointIds()->SetId( j, node[j]);
         }
 
-      if (this->CellParentFlags.at(i) != true ) // mccdo
+      if (this->CellParentFlags.at(i) != true )
         {
         this->Mesh->InsertNextCell(this->AWedge->GetCellType(), 
           this->AWedge->GetPointIds());
         }
       }
     }
-  // mccdo
+
   CellTypes->Delete();
   CellFaces.clear();
   CellParentFlags.clear();
   FaceTypes->Delete();
   FaceNodes->Delete();
   FaceCells->Delete();
-  // mccdo
 }
 
 //-----------------------------------------------------------------------------
 void vtkFLUENTReader::LoadCellParentFlags(void)
 {
-/* mccdo
-  // Initialize Array
-  for (int i = 1; i <= this->NumberOfCells; i++)
-    {
-    this->CellParentFlags->InsertValue(i,0);
-    }
-
-  for (int i = 0; i < this->NumberOfCellTrees; i++)
-    {
-    for (int j = this->CellTreeParentCellId0->GetValue(i); 
-      j <= this->CellTreeParentCellId1->GetValue(i); j++)
-      {
-      this->CellParentFlags->InsertValue(j,1);
-      }
-    }
-*/
 }
 
 //-----------------------------------------------------------------------------
 void vtkFLUENTReader::LoadCellNumberOfFaces(void)
 {
-/* mccdo
-  for (int i = 0; i <= this->NumberOfCells; i++)
-    {
-    this->CellNumberOfFaces->InsertValue( i, 0);
-    }
-
-  for (int i = 1; i <= this->NumberOfFaces; i++)
-    {
-    int c0 = (int)this->FaceCells->GetComponent( i, 0);
-    int c1 = (int)this->FaceCells->GetComponent( i, 1);
-    int nc0 = this->CellNumberOfFaces->GetValue(c0);
-    int nc1 = this->CellNumberOfFaces->GetValue(c1);
-
-    if ( c0 != 0)
-      {
-      nc0++;
-      this->CellNumberOfFaces->InsertValue( c0, nc0);
-      }
-
-    if ( c1 != 0)
-      {
-      nc1++;
-      this->CellNumberOfFaces->InsertValue( c1, nc1);
-      }
-    }
-*/
 }
 
 //-----------------------------------------------------------------------------
@@ -1528,48 +1372,6 @@ void vtkFLUENTReader::LoadCellFaces(void)
   // face array and ...
   // Make a temporary number of faces/cell array to keep track of 
   // where to put the faces within each block.
-/*
-  int index = 0;
-  int *NumberOfFacesInCell;
-  NumberOfFacesInCell = new int[this->NumberOfCells+1];
-
-  for (int i = 1; i <= this->NumberOfCells; i++)
-    {
-    this->CellIndex->InsertValue(i, index);
-    index = index + this->CellNumberOfFaces->GetValue(i);
-    NumberOfFacesInCell[i] = 0;
-    }
-
-  this->CellIndex->InsertValue(0, 0);
-  NumberOfFacesInCell[0] = 0;
-
-  for (int i = 1; i <= this->NumberOfFaces; i++)
-    {
-    int c0 = (int)this->FaceCells->GetComponent(i,0);
-    int c1 = (int)this->FaceCells->GetComponent(i,1);
-    int nc0 = NumberOfFacesInCell[c0];
-    int nc1 = NumberOfFacesInCell[c1];
-    int ic0 = this->CellIndex->GetValue(c0);
-    int ic1 = this->CellIndex->GetValue(c1);
-
-    if ( c0 != 0)
-      {
-      this->CellFaces->InsertValue( ic0+nc0, i);
-      nc0++;
-      NumberOfFacesInCell[c0] = nc0;
-      }
-
-    if ( c1 != 0 )
-      {
-      this->CellFaces->InsertValue( ic1 + nc1, i);
-      nc1++;
-      NumberOfFacesInCell[c1] = nc1;
-      }
-    }
-
-  delete [] NumberOfFacesInCell;
-*/
-   // mccdo
   for (int i = 1; i <= this->NumberOfFaces; i++)
     {
     int c0 = (int)this->FaceCells->GetComponent(i,0);
@@ -1606,7 +1408,6 @@ void vtkFLUENTReader::LoadCellFaces(void)
         }
       }
     }
-   // mccdo
 }
 
 //-----------------------------------------------------------------------------
@@ -1624,39 +1425,19 @@ void vtkFLUENTReader::RemoveExtraFaces(void)
   actualFaces[5] = 5;  // pyramid
   actualFaces[6] = 5;  // wedge
 
-  // Initialize Clean Cell Array
-  /* mccdo
-  for (int i = 0; i <= this->NumberOfCells; i++)
-    {
-    for(int j = 0; j < 6; j++)
-      {
-      this->CellFacesClean->InsertComponent( i, j, 0);
-      }
-    }
-  */
-
   for (int i = 1; i <= this->NumberOfCells; i++)
     {
     numberOfBadKids = 0;
     int cellType = this->CellTypes->GetValue(i);
-    int numberOfFaces = CellFaces[ i ].size(); // mccdo this->CellNumberOfFaces->GetValue(i);
+    int numberOfFaces = CellFaces[ i ].size();
 
     if ( numberOfFaces > actualFaces[cellType])
       {
-      // mccdo int ic = this->CellIndex->GetValue(i);
       for (int j = 0; j < numberOfFaces; j++)
         {
-        // mccdo int face = this->CellFaces->GetValue(ic+j);
-        // mccdo int parentFlag = this->FaceParentFlags->GetValue(face);
-        // mccdo int ifChildFlag = this->InterfaceFaceChildFlags->GetValue(face);
-        // mccdo
         int face = this->CellFaces[ i ].at( j );
         int parentFlag = this->FaceParentFlags[ face ];
         int ifChildFlag = InterfaceFaceChildFlags.at( face );
-        // mccdo
-
-        // mccdo int ncgFaceChildFlag = this->NCGFaceChildFlags->GetValue(face);
-        // mccdo
         vtkstd::set< int >::iterator ncgChildIter;
         ncgChildIter = this->NCGFaceChildFlags.find( face );
         int ncgFaceChildFlag = 0;
@@ -1668,7 +1449,6 @@ void vtkFLUENTReader::RemoveExtraFaces(void)
           {
           ncgFaceChildFlag = 1;
           }
-        // mccdo
 
         if (parentFlag == 1)
           {
@@ -1709,13 +1489,11 @@ void vtkFLUENTReader::RemoveExtraFaces(void)
           << ", Cell Type = " << CellTypes->GetValue(i) << endl;
         }
 
-      // mccdo int idx = 0;
       std::vector< int >::iterator faceIter;
       faceIter =  CellFaces[ i ].begin();
       for (int j = 0; j < (int)CellFaces[ i ].size(); )
         {
         int bk = 0;
-        // mccdo int face = CellFaces->GetValue( ic + j);
         int face = CellFaces[ i ].at( j );
         for (int m = 0; m < numberOfBadKids; m++)
           {
@@ -1730,8 +1508,6 @@ void vtkFLUENTReader::RemoveExtraFaces(void)
 
         if (bk == 0)
           {
-          // mccdo faces[idx] = face;
-          // mccdo idx++;
           faceIter++;
           j++;
           }
@@ -1739,25 +1515,8 @@ void vtkFLUENTReader::RemoveExtraFaces(void)
       }
     else
       {
-      /* mccdo
-      int idx = 0;
-      int ic = this->CellIndex->GetValue(i);
-      for (int j = 0; j < numberOfFaces; j++)
-        {
-        int face = this->CellFaces->GetValue(ic+j);
-        faces[idx] = face;
-        idx++;
-        }
-      */
       }
-    /*
-    for (int j = 0; j < actualFaces[cellType]; j++)
-      {
-      this->CellFacesClean->InsertComponent( i, j, faces[j]);
-      }
-    */
     }
-  // mccdo
   this->FaceTreesNumberOfKids->Delete();
   this->FaceTreesKidsIndex->Delete();
   this->FaceTreeParentTable->Delete();
@@ -1765,20 +1524,16 @@ void vtkFLUENTReader::RemoveExtraFaces(void)
   this->InterfaceFaceChildFlags.clear();
   this->FaceParentFlags.clear();
   this->NCGFaceChildFlags.clear();
-  // mccdo
 }
 
 //-----------------------------------------------------------------------------
 void vtkFLUENTReader::ParseDataFile(void)
 {
-  // mccdo
   this->DataFileStream->seekg(0, ios::end);
   this->DataFileBufferLength = this->DataFileStream->tellg();
   this->DataFileStream->seekg(0, ios::beg);
   this->DataFileBuffer = new char[this->DataFileBufferLength];
   this->DataFileStream->read(this->DataFileBuffer, this->DataFileBufferLength);
-  // mccdo this->DataFileStream->close();
-  // mccdo
 
   int bufptr = 0;
   while ( bufptr < this->DataFileBufferLength)
@@ -1790,7 +1545,7 @@ void vtkFLUENTReader::ParseDataFile(void)
       }
     bufptr++;
     }
-  delete [] DataFileBuffer; // mccdo
+  delete [] DataFileBuffer;
   return;
 }
 
@@ -3552,7 +3307,7 @@ int vtkFLUENTReader::GetCellsASCII(int ix)
   if ( zi == 0) 
     {
     this->NumberOfCells = li;
-    this->CellParentFlags.resize( NumberOfCells+1, false ); // mccdo
+    this->CellParentFlags.resize( NumberOfCells+1, false );
     }
   else
     {
@@ -3585,8 +3340,8 @@ int vtkFLUENTReader::GetFacesASCII(int ix)
   if (zi == 0)
     {
     this->NumberOfFaces = li;
-    this->InterfaceFaceChildFlags.resize( NumberOfFaces+1, false ); //mccdo
-    this->FaceParentFlags.resize( NumberOfFaces+1, false ); //mccdo
+    this->InterfaceFaceChildFlags.resize( NumberOfFaces+1, false );
+    this->FaceParentFlags.resize( NumberOfFaces+1, false );
     }
   else
     {
@@ -3740,10 +3495,7 @@ int vtkFLUENTReader::GetFaceParentsASCII(int ix)
     int pid0, pid1;
     sscanf( buf, " %x %x ", &pid0 , &pid1 );
 
-    // mccdo this->FaceParents->InsertComponent(k, 0, pid0);
-    // mccdo this->FaceParents->InsertComponent(k, 1, pid1);
-    // mccdo this->FaceParentsChildren->InsertValue(NumberOfFaceParentChildren, k);
-    InterfaceFaceChildFlags[ k ] = true; // mccdo
+    InterfaceFaceChildFlags[ k ] = true;
     this->NumberOfFaceParentChildren++;
 
     j = this->GoToNextEOL(j) +1;
@@ -3779,9 +3531,7 @@ int vtkFLUENTReader::GetNCG1InformationASCII(int ix)
     this->GetStringToNextRightParenOrEOL( j, buf );
     int child, parent;
     sscanf( buf, " %x %x ", &child , &parent );
-    // mccdo this->NCGFaceChild->InsertValue(NumberOfNCGFaces, child);
-    // mccdo this->NCGFaceParent->InsertValue(NumberOfNCGFaces, parent);
-    this->NCGFaceChildFlags.insert( child ); // mccdo
+    this->NCGFaceChildFlags.insert( child );
     j = this->GoToNextEOL(j) +1;
     this->NumberOfNCGFaces++;
     }
@@ -3848,8 +3598,6 @@ int vtkFLUENTReader::GetPeriodicShadowFacesASCII(int ix)
     {
     this->GetStringToNextRightParenOrEOL( j, buf );
     sscanf( buf, " %x %x ", &psf0 , &psf1 );
-    // mccdo this->PeriodicShadowFaces->InsertComponent(k, 0, psf0);
-    // mccdo this->PeriodicShadowFaces->InsertComponent(k, 1, psf1);
     j = this->GoToNextEOL(j) +1;
     }
 
@@ -3872,29 +3620,19 @@ int vtkFLUENTReader::GetCellTreeASCII(int ix)
   int fid0, fid1, pzid, czid;
   sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
 
-  // mccdo this->CellTreeParentCellId0->InsertValue(this->NumberOfCellTrees, fid0);
-  // mccdo this->CellTreeParentCellId1->InsertValue(this->NumberOfCellTrees, fid1);
-  // mccdo
   for (int k = fid0; k <= fid1; k++)
     {
     this->CellParentFlags.at( k ) = true;
     }
-  // mccdo
   j = this->GoToNextLeftParen(j)+1;
 
   for (int k = fid0; k <= fid1; k++)
     {
     int NumberOfKids = this->GetAsciiInteger(j);
     j = this->GoPastAsciiInteger(j);
-    // mccdo this->CellTreesNumberOfKids->InsertValue(this->NumberOfCellTreeParents, 
-    // mccdo   NumberOfKids);
-    // mccdo this->CellTreesKidsIndex->InsertValue(this->NumberOfCellTreeParents, 
-    // mccdo   this->NumberOfCellTreeKids);
     for (int i = 0; i < NumberOfKids; i++)
       {
-      //int Kid = this->GetAsciiInteger(j);
       j = this->GoPastAsciiInteger(j);
-      // mccdo this->CellTreesKids->InsertValue(this->NumberOfCellTreeKids, Kid);
       this->NumberOfCellTreeKids++;
       }
     this->NumberOfCellTreeParents++;
@@ -3915,9 +3653,6 @@ int vtkFLUENTReader::GetFaceTreeASCII(int ix)
   int fid0, fid1, pzid, czid;
   sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
 
-  // mccdo this->FaceTreeParentFaceId0->InsertValue(this->NumberOfFaceTrees, fid0);
-  // mccdo this->FaceTreeParentFaceId1->InsertValue(this->NumberOfFaceTrees, fid1);
-  // mccdo
   static int index = 0;
   for(int k = fid0; k <= fid1; k++)
     {
@@ -3931,7 +3666,7 @@ int vtkFLUENTReader::GetFaceTreeASCII(int ix)
     {
     this->FaceParentFlags.at( k ) = true;
     }
-  //mccdo
+
   j = this->GoToNextLeftParen(j)+1;
 
   for (int k = fid0; k <= fid1; k++)
@@ -4181,9 +3916,6 @@ int vtkFLUENTReader::GetFaceParentsSinglePrecision(int ix)
     j = j + 4;
     pid1 = this->GetBinaryInteger(j);
     j = j + 4;
-    // mccdo this->FaceParents->InsertComponent(k, 0, pid0);
-    // mccdo this->FaceParents->InsertComponent(k, 1, pid1);
-    // mccdo this->FaceParentsChildren->InsertValue(NumberOfFaceParentChildren, k);
     InterfaceFaceChildFlags[ k ] = true; // mccdo
     this->NumberOfFaceParentChildren++;
     }
@@ -4215,9 +3947,7 @@ int vtkFLUENTReader::GetNCG1InformationSinglePrecision(int ix)
     j = j + 4;
     parent = this->GetBinaryInteger(j);
     j = j + 4;
-    // mccdo this->NCGFaceChild->InsertValue(NumberOfNCGFaces, child);
-    // mccdo this->NCGFaceParent->InsertValue(NumberOfNCGFaces, parent);
-    this->NCGFaceChildFlags.insert( child ); // mccdo
+    this->NCGFaceChildFlags.insert( child );
     this->NumberOfNCGFaces++;
     }
 
@@ -4285,8 +4015,6 @@ int vtkFLUENTReader::GetPeriodicShadowFacesSinglePrecision(int ix)
     j = j + 4;
     psf1 = this->GetBinaryInteger(j);
     j = j + 4;
-    // mccdo this->PeriodicShadowFaces->InsertComponent(k, 0, psf0);
-    // mccdo this->PeriodicShadowFaces->InsertComponent(k, 1, psf1);
     }
 
   if ( li >= this->NumberOfPeriodicShadowFaces)
@@ -4308,29 +4036,19 @@ int vtkFLUENTReader::GetCellTreeSinglePrecision(int ix)
   int fid0, fid1, pzid, czid;
   sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
 
-  // mccdo this->CellTreeParentCellId0->InsertValue(this->NumberOfCellTrees, fid0);
-  // mccdo this->CellTreeParentCellId1->InsertValue(this->NumberOfCellTrees, fid1);
-  // mccdo
   for (int k = fid0; k <= fid1; k++)
     {
     this->CellParentFlags.at( k ) = true;
     }
-  // mccdo
   j = this->GoToNextLeftParen(j)+1;
 
   for (int k = fid0; k <= fid1; k++)
     {
     int NumberOfKids = this->GetBinaryInteger(j);
     j = j + 4;
-    // mccdo this->CellTreesNumberOfKids->InsertValue(this->NumberOfCellTreeParents,
-    // mccdo   NumberOfKids);
-    // mccdo this->CellTreesKidsIndex->InsertValue(this->NumberOfCellTreeParents, 
-    // mccdo   NumberOfCellTreeKids);
     for (int i = 0; i < NumberOfKids; i++)
       {
-      //int Kid = this->GetBinaryInteger(j);
       j = j + 4;
-      // mccdo this->CellTreesKids->InsertValue(this->NumberOfCellTreeKids, Kid);
       this->NumberOfCellTreeKids++;
       }
 
@@ -4352,9 +4070,6 @@ int vtkFLUENTReader::GetFaceTreeSinglePrecision(int ix)
   int fid0, fid1, pzid, czid;
   sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
 
-  // mccdo this->FaceTreeParentFaceId0->InsertValue(this->NumberOfFaceTrees, fid0);
-  // mccdo this->FaceTreeParentFaceId1->InsertValue(this->NumberOfFaceTrees, fid1);
-  // mccdo
   static int index = 0;
   for(int k = fid0; k <= fid1; k++)
     {
@@ -4368,7 +4083,6 @@ int vtkFLUENTReader::GetFaceTreeSinglePrecision(int ix)
     {
     this->FaceParentFlags.at( k ) = true;
     }
-  //mccdo
   j = this->GoToNextLeftParen(j)+1;
 
   for (int k = fid0; k <= fid1; k++)
@@ -4613,10 +4327,7 @@ int vtkFLUENTReader::GetFaceParentsDoublePrecision(int ix)
     j = j + 4;
     pid1 = this->GetBinaryInteger(j);
     j = j + 4;
-    // mccdo this->FaceParents->InsertComponent(k, 0, pid0);
-    // mccdo this->FaceParents->InsertComponent(k, 1, pid1);
-    // mccdo this->FaceParentsChildren->InsertValue(NumberOfFaceParentChildren, k);
-    InterfaceFaceChildFlags[ k ] = true; // mccdo
+    InterfaceFaceChildFlags[ k ] = true;
     this->NumberOfFaceParentChildren++;
     }
 
@@ -4648,9 +4359,7 @@ int vtkFLUENTReader::GetNCG1InformationDoublePrecision(int ix)
     j = j + 4;
     parent = this->GetBinaryInteger(j);
     j = j + 4;
-    // mccdo this->NCGFaceChild->InsertValue(NumberOfNCGFaces, child);
-    // mccdo this->NCGFaceParent->InsertValue(NumberOfNCGFaces, parent);
-    this->NCGFaceChildFlags.insert( child ); //mccdo 
+    this->NCGFaceChildFlags.insert( child );
     this->NumberOfNCGFaces++;
     }
 
@@ -4717,8 +4426,6 @@ int vtkFLUENTReader::GetPeriodicShadowFacesDoublePrecision(int ix)
     j = j + 4;
     psf1 = this->GetBinaryInteger(j);
     j = j + 4;
-    // mccdo this->PeriodicShadowFaces->InsertComponent(k, 0, psf0);
-    // mccdo this->PeriodicShadowFaces->InsertComponent(k, 1, psf1);
     }
 
   if ( li >= this->NumberOfPeriodicShadowFaces)
@@ -4739,29 +4446,19 @@ int vtkFLUENTReader::GetCellTreeDoublePrecision(int ix)
 
   int fid0, fid1, pzid, czid;
   sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
-  // mccdo this->CellTreeParentCellId0->InsertValue(this->NumberOfCellTrees, fid0);
-  // mccdo this->CellTreeParentCellId1->InsertValue(this->NumberOfCellTrees, fid1);
-  // mccdo
   for (int k = fid0; k <= fid1; k++)
     {
     this->CellParentFlags.at( k ) = true;
     }
-  // mccdo
 
   j = this->GoToNextLeftParen(j)+1;
   for (int k = fid0; k <= fid1; k++)
     {
     int NumberOfKids = this->GetBinaryInteger(j);
     j = j + 4;
-    // mccdo this->CellTreesNumberOfKids->InsertValue(this->NumberOfCellTreeParents,
-    // mccdo   NumberOfKids);
-    // mccdo this->CellTreesKidsIndex->InsertValue(this->NumberOfCellTreeParents, 
-    // mccdo   NumberOfCellTreeKids);
     for (int i = 0; i < NumberOfKids; i++)
       {
-      //int Kid = this->GetBinaryInteger(j);
       j = j + 4;
-      // mccdo this->CellTreesKids->InsertValue(this->NumberOfCellTreeKids, Kid);
       this->NumberOfCellTreeKids++;
       }
     this->NumberOfCellTreeParents++;
@@ -4780,9 +4477,6 @@ int vtkFLUENTReader::GetFaceTreeDoublePrecision(int ix)
 
   int fid0, fid1, pzid, czid;
   sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
-  // mccdo this->FaceTreeParentFaceId0->InsertValue(this->NumberOfFaceTrees, fid0);
-  // mccdo this->FaceTreeParentFaceId1->InsertValue(this->NumberOfFaceTrees, fid1);
-  // mccdo
   static int index = 0;
   for(int k = fid0; k <= fid1; k++)
     {
@@ -4796,7 +4490,6 @@ int vtkFLUENTReader::GetFaceTreeDoublePrecision(int ix)
     {
     this->FaceParentFlags.at( k ) = true;
     }
-  //mccdo
   j = GoToNextLeftParen(j)+1;
 
   for (int k = fid0; k <= fid1; k++)
@@ -4931,7 +4624,7 @@ int vtkFLUENTReader::GoToNextSectionDoublePrecisionData(int ix, char buf[])
 int vtkFLUENTReader::GetDataASCII(int ix)
 {
   char buf[120];
-  int index = -1; // mccdo
+  int index = -1;
   int j = ix + 1;
   float x;
   j = this->GoToNextLeftParenData(j)+1;
@@ -4958,7 +4651,7 @@ int vtkFLUENTReader::GetDataASCII(int ix)
     {
     if (this->IsCellZoneId(zid))
       {
-      index = this->GetVariableIndex(ssid); // mccdo
+      index = this->GetVariableIndex(ssid);
       for (int i = fi; i <= li; i++)
         {
         for (int k = 0; k < size; k++)
@@ -4971,28 +4664,28 @@ int vtkFLUENTReader::GetDataASCII(int ix)
         }
       }
     }
-  // mccdo
   if ( index >= 0 )
     {
-    if((this->CellData[index]->GetNumberOfTuples() == this->Mesh->GetNumberOfCells() )
+    if((this->CellData[index]->GetNumberOfTuples() == 
+      this->Mesh->GetNumberOfCells() )
       && (this->CellData[index]->GetNumberOfComponents() < 6) )
       {
-        if (this->FirstArrayFlag == 0)
-          {
-          this->Mesh->GetCellData()->SetScalars(this->CellData[index]);
-          }
-        else
-          {
-          this->Mesh->GetCellData()->AddArray(this->CellData[index]);
-          }
-        this->FirstArrayFlag = 1;
-        this->CellDataArraySelection->AddArray(this->CellData[ index ]->GetName());
-        this->NumberOfCellFields++;
-        this->CellData[index]->Delete();
-        this->CellData[index] = 0;
+      if (this->FirstArrayFlag == 0)
+        {
+        this->Mesh->GetCellData()->SetScalars(this->CellData[index]);
+        }
+      else
+        {
+        this->Mesh->GetCellData()->AddArray(this->CellData[index]);
+        }
+      this->FirstArrayFlag = 1;
+      this->CellDataArraySelection->AddArray(
+      this->CellData[ index ]->GetName());
+      this->NumberOfCellFields++;
+      this->CellData[index]->Delete();
+      this->CellData[index] = 0;
       }
     }
-  // mccdo
   return this->GoToNextSectionASCIIData(j);
 }
 
@@ -5000,7 +4693,7 @@ int vtkFLUENTReader::GetDataASCII(int ix)
 int vtkFLUENTReader::GetDataSinglePrecision(int ix)
 {
   char buf[120];
-  int index = -1; // mccdo 
+  int index = -1; 
   int j = ix + 1;
   j = this->GoToNextLeftParenData(j)+1;
   this->GetStringToNextRightParenData( j, buf );
@@ -5026,7 +4719,7 @@ int vtkFLUENTReader::GetDataSinglePrecision(int ix)
     {
     if ( this->IsCellZoneId(zid))
       {
-      index = this->GetVariableIndex(ssid); // mccdo
+      index = this->GetVariableIndex(ssid);
       for (int i = fi; i <= li; i++)
         {
         for (int k = 0; k < size; k++)
@@ -5038,28 +4731,28 @@ int vtkFLUENTReader::GetDataSinglePrecision(int ix)
         }
       }
     }
-  // mccdo
   if ( index >= 0 )
     {
-    if((this->CellData[index]->GetNumberOfTuples() == this->Mesh->GetNumberOfCells() )
+    if((this->CellData[index]->GetNumberOfTuples() == 
+      this->Mesh->GetNumberOfCells() )
       && (this->CellData[index]->GetNumberOfComponents() < 6) )
       {
-        if (this->FirstArrayFlag == 0)
-          {
-          this->Mesh->GetCellData()->SetScalars(this->CellData[index]);
-          }
-        else
-          {
-          this->Mesh->GetCellData()->AddArray(this->CellData[index]);
-          }
-        this->FirstArrayFlag = 1;
-        this->CellDataArraySelection->AddArray(this->CellData[ index ]->GetName());
-        this->NumberOfCellFields++;
-        this->CellData[index]->Delete();
-        this->CellData[index] = 0;
+      if (this->FirstArrayFlag == 0)
+        {
+        this->Mesh->GetCellData()->SetScalars(this->CellData[index]);
+        }
+      else
+        {
+        this->Mesh->GetCellData()->AddArray(this->CellData[index]);
+        }
+      this->FirstArrayFlag = 1;
+      this->CellDataArraySelection->AddArray(
+        this->CellData[ index ]->GetName());
+      this->NumberOfCellFields++;
+      this->CellData[index]->Delete();
+      this->CellData[index] = 0;
       }
     }
-  // mccdo
   return this->GoToNextSectionSinglePrecisionData( j, "2300)");
 }
 
@@ -5067,7 +4760,7 @@ int vtkFLUENTReader::GetDataSinglePrecision(int ix)
 int vtkFLUENTReader::GetDataDoublePrecision(int ix)
 {
   char buf[120];
-  int index = -1; //mccdo
+  int index = -1;
   int j = ix + 1;
   j = this->GoToNextLeftParenData(j)+1;
   this->GetStringToNextRightParenData( j, buf );
@@ -5093,7 +4786,7 @@ int vtkFLUENTReader::GetDataDoublePrecision(int ix)
     {
     if ( this->IsCellZoneId(zid))
       {
-      index = this->GetVariableIndex(ssid); // mccdo
+      index = this->GetVariableIndex(ssid);
       for (int i = fi; i <= li; i++)
         {
         for (int k = 0; k < size; k++)
@@ -5105,28 +4798,28 @@ int vtkFLUENTReader::GetDataDoublePrecision(int ix)
         }
       }
     }
-  // mccdo
   if ( index >= 0 )
     {
-    if((this->CellData[index]->GetNumberOfTuples() == this->Mesh->GetNumberOfCells() )
+    if((this->CellData[index]->GetNumberOfTuples() == 
+      this->Mesh->GetNumberOfCells() )
       && (this->CellData[index]->GetNumberOfComponents() < 6) )
       {
-        if (this->FirstArrayFlag == 0)
-          {
-          this->Mesh->GetCellData()->SetScalars(this->CellData[index]);
-          }
-        else
-          {
-          this->Mesh->GetCellData()->AddArray(this->CellData[index]);
-          }
-        this->FirstArrayFlag = 1;
-        this->CellDataArraySelection->AddArray(this->CellData[ index ]->GetName());
-        this->NumberOfCellFields++;
-        this->CellData[index]->Delete();
-        this->CellData[index] = 0;
+      if (this->FirstArrayFlag == 0)
+        {
+        this->Mesh->GetCellData()->SetScalars(this->CellData[index]);
+        }
+      else
+        {
+        this->Mesh->GetCellData()->AddArray(this->CellData[index]);
+        }
+      this->FirstArrayFlag = 1;
+      this->CellDataArraySelection->AddArray(
+        this->CellData[ index ]->GetName());
+      this->NumberOfCellFields++;
+      this->CellData[index]->Delete();
+      this->CellData[index] = 0;
       }
     }
-  // mccdo
   return this->GoToNextSectionSinglePrecisionData( j, "3300)");
 }
 
@@ -5631,38 +5324,15 @@ void vtkFLUENTReader::CreateVTKObjects(void)
   this->CellDataArraySelection = vtkDataArraySelection::New();
   this->Points = vtkPoints::New();
   this->CellTypes = vtkIntArray::New();
-  // mccdo this->CellFaces = vtkIntArray::New();
-  // mccdo this->CellFacesClean = vtkIntArray::New();
-  // mccdo this->CellFacesClean->SetNumberOfComponents(6);
   this->FaceTypes = vtkIntArray::New();
   this->FaceNodes = vtkIntArray::New();
   this->FaceNodes->SetNumberOfComponents(4);
   this->FaceCells = vtkIntArray::New();
   this->FaceCells->SetNumberOfComponents(2);
-  // mccdo this->FaceParents = vtkIntArray::New();
-  // mccdo this->FaceParents->SetNumberOfComponents(2);
-  // mccdo this->PeriodicShadowFaces = vtkIntArray::New();
-  // mccdo this->PeriodicShadowFaces->SetNumberOfComponents(2);
   this->FaceTreesNumberOfKids = vtkIntArray::New();
   this->FaceTreesKids = vtkIntArray::New();
   this->FaceTreesKidsIndex = vtkIntArray::New();
-  // mccdo this->CellTreesNumberOfKids = vtkIntArray::New();
-  // mccdo this->CellTreesKids = vtkIntArray::New();
-  // mccdo this->CellTreesKidsIndex = vtkIntArray::New();
-  // mccdo this->FaceTreeParentFaceId0 = vtkIntArray::New();
-  // mccdo this->FaceTreeParentFaceId1 = vtkIntArray::New();
   this->FaceTreeParentTable = vtkIntArray::New();
-  // mccdo this->CellTreeParentCellId0 = vtkIntArray::New();
-  // mccdo this->CellTreeParentCellId1 = vtkIntArray::New();
-  // mccdo this->NCGFaceChild = vtkIntArray::New();
-  // mccdo this->NCGFaceParent = vtkIntArray::New();
-  // mccdo this->CellNumberOfFaces = vtkIntArray::New();
-  // mccdo this->FaceParentFlags = vtkIntArray::New();
-  // mccdo this->CellIndex = vtkIntArray::New();
-  // mccdo this->InterfaceFaceChildFlags = vtkIntArray::New();
-  // mccdo this->FaceParentsChildren = vtkIntArray::New();
-  // mccdo this->NCGFaceChildFlags = vtkIntArray::New();
-  // mccdo this->CellParentFlags = vtkIntArray::New();
   this->ATriangle = vtkTriangle::New();
   this->AQuad = vtkQuad::New();
   this->ATetra = vtkTetra::New();
@@ -5684,37 +5354,6 @@ void vtkFLUENTReader::CreateVTKObjects(void)
 //-----------------------------------------------------------------------------
 void vtkFLUENTReader::DeleteVTKObjects(void)
 {
-  // mccdo delete [] CaseFileBuffer;
-  // mccdo delete [] DataFileBuffer;
-  // mccdo this->Points->Delete();
-  // mccdo this->CellTypes->Delete();
-  // mccdo this->CellFaces->Delete();
-  // mccdo this->CellFacesClean->Delete();
-
-  // mccdo this->FaceTypes->Delete();
-  // mccdo this->FaceNodes->Delete();
-  // mccdo this->FaceCells->Delete();
-  // mccdo this->FaceParents->Delete();
-  // mccdo this->PeriodicShadowFaces->Delete();
-  // mccdo this->FaceTreesNumberOfKids->Delete();
-  // mccdo this->FaceTreesKids->Delete();
-  // mccdo this->FaceTreesKidsIndex->Delete();
-  // mccdo this->CellTreesNumberOfKids->Delete();
-  // mccdo this->CellTreesKids->Delete();
-  // mccdo this->CellTreesKidsIndex->Delete();
-  // mccdo this->FaceTreeParentTable->Delete();
-  // mccdo this->CellTreeParentCellId0->Delete();
-  // mccdo this->CellTreeParentCellId1->Delete();
-
-  // mccdo this->NCGFaceParent->Delete();
-  // mccdo this->CellNumberOfFaces->Delete();
-  // mccdo this->FaceParentFlags->Delete();
-  // mccdo this->CellIndex->Delete();
-  // mccdo this->InterfaceFaceChildFlags->Delete();
-  // mccdo this->FaceParentsChildren->Delete();
-  // mccdo this->NCGFaceChildFlags->Delete();
-  // mccdo this->CellParentFlags->Delete();
-  //this->CellDataArraySelection->Delete(); // mccdo
   this->ATriangle->Delete();
   this->AQuad->Delete();
   this->ATetra->Delete();
