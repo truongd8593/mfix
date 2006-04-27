@@ -31,6 +31,10 @@
 
 #include "vtkUnstructuredGridAlgorithm.h"
 
+#include "vtkstd/map"
+#include "vtkstd/vector"
+#include "vtkstd/set"
+
 class vtkIntArray;
 class vtkFloatArray;
 class vtkIdTypeArray;
@@ -230,6 +234,7 @@ private:
   float *Minimum;
   float *Maximum;
 
+/* mccdo
   vtkPoints *Points;
   vtkIntArray *CellTypes;
   vtkIntArray *CellFaces;
@@ -270,7 +275,84 @@ private:
   vtkIntArray *VariableSizes;
   vtkDoubleArray **CellData;
   char *VariableNames[1500];
+  vtkUnstructuredGrid *Mesh;*/
+
+  vtkPoints *Points;
+  vtkIntArray *CellTypes;
+  vtkIntArray *FaceTypes;
+  vtkIntArray *FaceNodes;
+  vtkIntArray *FaceCells;
+  vtkIntArray *FaceTreesNumberOfKids;
+  vtkIntArray *FaceTreesKids;
+  vtkIntArray *FaceTreesKidsIndex;
+
+  //BTX
+  vtkstd::map < int, vtkstd::vector<int> > CellFaces;
+  //ETX
+
+  //vtkIntArray *CellFacesClean;
+  //vtkIntArray *FaceParents;
+  //vtkIntArray *PeriodicShadowFaces;
+  //vtkIntArray *CellTreesNumberOfKids;
+  //vtkIntArray *CellTreesKids;
+  //vtkIntArray *CellTreesKidsIndex;
+  //vtkIntArray *FaceTreeParentFaceId0;
+  //vtkIntArray *FaceTreeParentFaceId1;
+  //vtkIntArray *FaceTreeParentZoneId;
+  //vtkIntArray *FaceTreeChildZoneId;
+  vtkIntArray *FaceTreeParentTable;
+  //vtkIntArray *CellTreeParentCellId0;
+  //vtkIntArray *CellTreeParentCellId1;
+  //vtkIntArray *CellTreeParentZoneId;
+  //vtkIntArray *CellTreeChildZoneId;
+  //vtkIntArray *CellTreeParentTable;
+  //vtkIntArray *NCGFaceKidId;
+  //vtkIntArray *NCGFaceParentId;
+  //vtkIntArray *NCGFaceNumberOfFaces;
+  //vtkIntArray *NCGFaceChild;
+  //vtkIntArray *NCGFaceParent;
+  //vtkIntArray *NCGNodeZoneId;
+  //vtkIntArray *NCGNodeNumberOfNodesNCG;
+  //vtkDoubleArray *NCGNodes;
+  //vtkIntArray *NCGNodeIds;
+  //vtkIntArray *CellNumberOfFaces;
+  //vtkstd::vector< int > CellNumberOfFaces;
+  //vtkIntArray *FaceKidFlags;
+
+  //BTX
+  vtkstd::vector< bool > FaceParentFlags;
+  //ETX
+
+  //vtkIntArray *CellIndex;
+  //BTX
+  vtkstd::vector< bool > InterfaceFaceChildFlags;
+  //ETX
+
+  //vtkIntArray *FaceParentsChildren;
+  //BTX
+  vtkstd::set< int > NCGFaceChildFlags;
+  //ETX
+
+  //vtkIntArray *CellParentFlags;
+
+  //BTX
+  vtkstd::vector< bool > CellParentFlags;
+  //ETX
+
+  vtkTriangle *ATriangle;
+  vtkQuad *AQuad;
+  vtkTetra *ATetra;
+  vtkPyramid *APyramid;
+  vtkWedge *AWedge;
+  vtkHexahedron *AHexahedron;
+  vtkIntArray *CellZones;
+  vtkIntArray *VariableIds;
+  vtkIntArray *VariableSizes;
+  vtkDoubleArray **CellData;
+  char *VariableNames[1500];
   vtkUnstructuredGrid *Mesh;
+
+  int FirstArrayFlag;
 
   vtkFLUENTReader(const vtkFLUENTReader&);  // Not implemented.
   void operator=(const vtkFLUENTReader&);  // Not implemented.
