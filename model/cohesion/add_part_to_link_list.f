@@ -29,14 +29,14 @@
       END IF 
 
       IF(I.gt.PARTICLES+DIMN*2)THEN 
-        PRINT *, 'STOPPED FROM inside add_part_to_link_list @',CALLED
+        PRINT *, 'STOPPED FROM inside add_part_to_link_list'
         PRINT *, 'I=',I
         PRINT *, 'J=',J
         STOP
       END IF 
 
       IF(J.gt.PARTICLES+DIMN*2)THEN 
-        PRINT *, 'STOPPED FROM inside add_part_to_link_list @',CALLED
+        PRINT *, 'STOPPED FROM inside add_part_to_link_list' 
         PRINT *, 'I=',I
         PRINT *, 'J=',J
         STOP
@@ -45,15 +45,15 @@
 
 !-----Add particle J to the list of particle I
       IF(I.le.PARTICLES)THEN
-         LINKS(LINKS(1,I)+2,I)=J
-         LINKS(1,I)=LINKS(1,I)+1
+         LINKS(I,LINKS(I,1)+2)=J
+         LINKS(I,1)=LINKS(I,1)+1
          IS_LINKED(I)=1
       END IF
 
 !-----Add particle I to the list of particle J
       IF(J.le.PARTICLES)THEN
-         LINKS(LINKS(1,J)+2,J)=I
-         LINKS(1,J)=LINKS(1,J)+1
+         LINKS(J,LINKS(J,1)+2)=I
+         LINKS(J,1)=LINKS(J,1)+1
          IS_LINKED(J)=1
       END IF
 

@@ -226,9 +226,15 @@
             UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
             VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
             WGC = AVG_Z_T(W_G(IJKM),W_G(IJK)) 
-            USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I) 
-            VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M)) 
-            WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M)) 
+            IF(.NOT.DES_CONTINUUM_COUPLED) THEN
+               USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I) 
+               VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M)) 
+               WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M)) 
+            ELSE
+               USCM = DES_U_S(IJK,M)
+               VSCM = DES_V_S(IJK,M)
+               WSCM = DES_W_S(IJK,M)
+            ENDIF
 !     
 !     magnitude of gas-solids relative velocity
 !     
@@ -502,6 +508,30 @@
 	 ELSE 
             F_gs(IJK, M) = ZERO 
          ENDIF 
+!         IF(DES_CONTINUUM_COUPLED) THEN
+!           IF(PINC(IJK).GT.0) THEN
+!
+!               SOLID_DRAG(IJK,M,1) = -F_GS(IJK,M)*&
+!                                           (DES_U_S(IJK,M)-UGC)
+!               SOLID_DRAG(IJK,M,2) = -F_GS(IJK,M)*&
+!                                           (DES_V_S(IJK,M)-VGC)
+!               IF(DIMN.EQ.3) THEN
+!                  SOLID_DRAG(IJK,M,3) = -F_GS(IJK,M)*&
+!                                           (DES_W_S(IJK,M)-WGC)
+!               END IF
+!               IF(EP_S(IJK,M).GT.0) THEN
+!                  SOLID_DRAG(IJK,M,1) = SOLID_DRAG(IJK,M,1)/&
+!                                          EP_S(IJK,M)
+!                  SOLID_DRAG(IJK,M,2) = SOLID_DRAG(IJK,M,2)/&
+!                                          EP_S(IJK,M)
+!                  IF(DIMN.EQ.3) THEN
+!                    SOLID_DRAG(IJK,M,3) = SOLID_DRAG(IJK,M,3)/&
+!                                            EP_S(IJK,M)
+!                  END IF
+!               END IF
+!           ENDIF
+!         ENDIF
+
       END DO
       
       RETURN  

@@ -15,17 +15,13 @@
       IMPLICIT NONE
       
       INTEGER L, K
-      DOUBLE PRECISION OVERLP_T, TANGNT(NDIM), Vtan
+      DOUBLE PRECISION OVERLP_T, TANGNT(DIMN), Vtan
 !---------------------------------------------------------------------
 
 
-      DO K = 1, DIMN
-         FTS1(K) = 0 - KT*OVERLP_T*TANGNT(K)
-         FT(K,L) = FTS1(K) - ETA_DES_T*Vtan*TANGNT(K)
-      END DO
-
-!     PRINT *, FT(1,L), FT(2,L)
-
+         FTS1(:) = -KT*OVERLP_T*TANGNT(:)
+         FT(L,:) = FTS1(:) - ETA_DES_T*Vtan*TANGNT(:)
+        
       RETURN
       END SUBROUTINE CFFT
 

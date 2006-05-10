@@ -24,7 +24,7 @@
       INTEGER X_INDEX, Y_INDEX, Z_INDEX
       INTEGER XX, YY, ZZ, KK
       INTEGER Z_START, Z_END
-      DOUBLE PRECISION RADIUS, R(NDIM)
+      DOUBLE PRECISION RADIUS, R(3)
       DOUBLE PRECISION FORCE, DIST
       LOGICAL NOT_CHECKED(PARTICLES+6)
       INTEGER CHECKED_PARTICLES_LIST(50)
@@ -59,12 +59,12 @@
            Z_START=1
            Z_END=1
         ELSE
-           Z_START=PART_GRID(3,I)-1
-           Z_END=PART_GRID(3,I)+1
+           Z_START=PART_GRID(I,3)-1
+           Z_END=PART_GRID(I,3)+1
         END IF
 
-        DO X_INDEX=PART_GRID(1,I)-1,PART_GRID(1,I)+1
-           DO Y_INDEX=PART_GRID(2,I)-1,PART_GRID(2,I)+1
+        DO X_INDEX=PART_GRID(I,1)-1,PART_GRID(I,1)+1
+           DO Y_INDEX=PART_GRID(I,2)-1,PART_GRID(I,2)+1
              DO Z_INDEX=Z_START,Z_END
 
              XX=X_INDEX
@@ -127,7 +127,8 @@
                END IF
                NOT_WALL=.FALSE.
              END IF
-           
+          
+             IF(DIMN.EQ.3) THEN 
              IF(ZZ.eq.0)THEN !Bottom WAll
                IF(DES_PERIODIC_WALLS_Z) THEN
                  ZZ=SEARCH_GRIDS(3)
@@ -155,12 +156,12 @@
                END IF
                NOT_WALL=.FALSE.
              END IF
+             END IF
 
              IF(COHESION_DEBUG.gt.2)THEN
                PRINT *,'****XX=',XX
                PRINT *,'****YY=',YY
              END IF
-
 
              IF((PART_IN_GRID(XX,YY,ZZ,1).gt.0).AND.NOT_WALL)THEN
                DO KK=2,PART_IN_GRID(XX,YY,ZZ,1)+1
@@ -171,7 +172,7 @@
 
       RADIUS=0.0
       DO K = 1, DIMN
-        R(K) = DES_POS_NEW(K,J)-DES_POS_NEW(K,I)
+        R(K) = DES_POS_NEW(J,K)-DES_POS_NEW(I,K)
         IF(DES_PERIODIC_WALLS) THEN
           IF(DES_PERIODIC_WALLS_X) THEN
              IF(K.eq.1) THEN
@@ -222,8 +223,8 @@
                                 (DES_RADIUS(I)+DES_RADIUS(J))
                      END IF                     
                         DO II=1,DIMN
-                           FC(II,I)=FC(II,I)+R(II)/RADIUS*FORCE
-                           FC(II,J)=FC(II,J)-R(II)/RADIUS*FORCE
+                           FC(I,II)=FC(I,II)+R(II)/RADIUS*FORCE
+                           FC(J,II)=FC(J,II)-R(II)/RADIUS*FORCE
                         END DO
 
                      END IF   !! is particle within cutoff ?

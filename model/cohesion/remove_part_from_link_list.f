@@ -34,21 +34,21 @@
       IF(I.le.PARTICLES)THEN
          REMOVED=0
          K=2
-         DO WHILE(LINKS(K,I).gt.0)
+         DO WHILE(LINKS(I,K).gt.0)
            IF(REMOVED.eq.1)THEN
-             LINKS(K-1,I)=LINKS(K,I)
-             LINKS(K,I)=-1
-           ELSE IF(LINKS(K,I).eq.J)THEN
-             LINKS(1,I)=LINKS(1,I)-1
+             LINKS(I,K-1)=LINKS(I,K)
+             LINKS(I,K)=-1
+           ELSE IF(LINKS(I,K).eq.J)THEN
+             LINKS(I,1)=LINKS(I,1)-1
              REMOVED=1
-             IF(LINKS(K+1,I).lt.0)THEN
-               LINKS(K,I)=-1
+             IF(LINKS(I,K+1).lt.0)THEN
+               LINKS(I,K)=-1
              END IF
            END IF
          K=K+1
          END DO
 
-         IF(LINKS(1,I).eq.0)THEN
+         IF(LINKS(I,1).eq.0)THEN
             IS_LINKED(I)=0
          END IF      
       END IF
@@ -57,21 +57,21 @@
       IF(J.le.PARTICLES)THEN
          REMOVED=0
          K=2
-         DO WHILE(LINKS(K,J).gt.0)
+         DO WHILE(LINKS(J,K).gt.0)
            IF(REMOVED.eq.1)THEN
-             LINKS(K-1,J)=LINKS(K,J)
-             LINKS(K,J)=-1
-           ELSE IF(LINKS(K,J).eq.I)THEN
+             LINKS(J,K-1)=LINKS(J,K)
+             LINKS(J,K)=-1
+           ELSE IF(LINKS(J,K).eq.I)THEN
              REMOVED=1
-             LINKS(1,J)=LINKS(1,J)-1
-             IF(LINKS(K+1,I).lt.0)THEN
-               LINKS(K,J)=-1
+             LINKS(J,1)=LINKS(J,1)-1
+             IF(LINKS(I,K+1).lt.0)THEN
+               LINKS(J,K)=-1
              END IF
            END IF
          K=K+1
          END DO      
 
-         IF(LINKS(1,J).eq.0)THEN
+         IF(LINKS(J,1).eq.0)THEN
             IS_LINKED(J)=0
          END IF      
 

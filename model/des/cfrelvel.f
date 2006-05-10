@@ -12,26 +12,27 @@
       SUBROUTINE CFRELVEL(L, II, VRl, TANGNT)
       
       USE discretelement
+      USE param1
       IMPLICIT NONE
 
       INTEGER L, KK, II
-      DOUBLE PRECISION VRl(NDIM), TANGNT(NDIM), LVEL, RVEL
+      DOUBLE PRECISION VRl(DIMN), TANGNT(DIMN), LVEL(DIMN), RVEL(DIMN)
 
 !-----------------------------------------------------------------------
 
-      LVEL = 0.0
-      RVEL = 0.0
+      LVEL(:) = ZERO
+      RVEL(:) = ZERO
 
-      DO KK = 1, DIMN
-         LVEL = (DES_VEL_NEW(KK,L) - DES_VEL_NEW(KK,II))
-         RVEL = 0.0
-         RVEL =(OMEGA_NEW(KK,L)*DES_RADIUS(L)+&
-                OMEGA_NEW(KK,II)*DES_RADIUS(II))*TANGNT(KK)
-         VRl(KK) = LVEL - RVEL
-      END DO
-
-!     PRINT *,'relative velocity', VRl(1), VRl(2)
-
+         LVEL(:) = (DES_VEL_NEW(L,:) - DES_VEL_NEW(II,:))
+         IF(DIMN.EQ.3) THEN
+            RVEL(:) =(OMEGA_NEW(L,:)*DES_RADIUS(L)+&
+                      OMEGA_NEW(II,:)*DES_RADIUS(II))*TANGNT(:)
+         ELSE 
+            RVEL(:) =(OMEGA_NEW(L,1)*DES_RADIUS(L)+&
+                      OMEGA_NEW(II,1)*DES_RADIUS(II))*TANGNT(:)
+         END IF        
+         VRl(:) = LVEL(:) - RVEL(:)
+         
       RETURN
       END SUBROUTINE CFRELVEL
 

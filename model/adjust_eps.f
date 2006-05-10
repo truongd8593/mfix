@@ -41,6 +41,7 @@
       USE run
       USE compar     
       USE sendrecv 
+      USE discretelement 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -63,9 +64,12 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-      IF (.NOT.(MOMENTUM_X_EQ(1) .AND. MOMENTUM_Y_EQ(1) .AND. MOMENTUM_Z_EQ(1))&
-         ) RETURN  
 !
+      IF(.NOT.DES_CONTINUUM_COUPLED) THEN
+
+      IF (.NOT.(MOMENTUM_X_EQ(1) .AND. MOMENTUM_Y_EQ(1) .AND. MOMENTUM_Z_EQ(1)) &
+         ) RETURN
+
       DO K = Kstart1, Kend1 
          DO J = Jstart1, Jend1 
             DO I = Istart1, Iend1 
@@ -95,7 +99,7 @@
             END DO 
          END DO 
       END DO            
-
+     
 !// Communicate field variables calculated in the do i,j,k loop
       call send_recv(ROP_S,2)
       call send_recv(U_S,2) 
@@ -103,7 +107,27 @@
       call send_recv(W_S,2) 
       call send_recv(EP_G,2) 
       call send_recv(ROP_G,2)             
-      
+
+      ELSE
+
+      DO K = Kstart1, Kend1 
+         DO J = Jstart1, Jend1 
+            DO I = Istart1, Iend1 
+	    
+               IJK = FUNIJK(I,J,K) 
+               IF (FLUID_AT(IJK)) THEN 
+                  ROP_G(IJK) = RO_G(IJK)*EP_G(IJK) 
+               ENDIF 
+
+            END DO 
+         END DO 
+      END DO            
+     
+!// Communicate field variables calculated in the do i,j,k loop
+      call send_recv(ROP_G,2)
+
+      END IF
+
       RETURN  
       END SUBROUTINE ADJUST_EPS 
       

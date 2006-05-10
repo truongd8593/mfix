@@ -10,6 +10,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE QUADTREE(PARTS)
 
+      USE param1
+      USE constant
       USE discretelement
       IMPLICIT NONE
 
@@ -72,39 +74,40 @@
       IMPLICIT NONE
 
       INTEGER I, J, PARTS
-      DOUBLE PRECISION STIME, A, OMEGA, ASINOMEGAT, BOXLIMIT
+      DOUBLE PRECISION A, OMEGA, OOMEGA2, ASINOMEGAT, BOXLIMIT
 
-      STIME = CALLED*DTSOLID
-
-      A = 0D0
-      OMEGA = 0D0
-      IF(DES_F.NE.0.0) THEN
-         OMEGA = 2*22*DES_F/7
+! Lines 80 to 91 are only for vibrated bottom wall 
+      A = ZERO 
+      OMEGA = ZERO
+      ASINOMEGAT = ZERO
+      IF(DES_F.NE.ZERO) THEN
+         OMEGA = 2.0D0*Pi*DES_F
+         OOMEGA2 = ONE/(OMEGA**2)
          IF(UNITS == "CGS") THEN
-            A = DES_GAMMA*980/(OMEGA*OMEGA)
+            A = DES_GAMMA*GRAV(2)*OOMEGA2
          ELSE
-            A = DES_GAMMA*9.81/(OMEGA*OMEGA)
+            A = DES_GAMMA*GRAV(2)*OOMEGA2
          END IF
+      ASINOMEGAT = A*SIN(OMEGA*S_TIME)
       END IF
-
-      ASINOMEGAT = A*SIN(OMEGA*STIME)
-      BOXLIMIT = RADIUS_EQ 
-
+! End - Bottom wall vibration calculations 
+      
+      
       DO I = 1, MAXQUADS
          DO J = 1, NMQD 
-            LQUAD(J,I) = 0D0
+            LQUAD(I,J) = 0
          END DO
          DO J = 1, NWALLS
-            CQUAD(J,I) = 0D0
+            CQUAD(I,J) = ZERO
          END DO
       END DO
 
       NQUAD = 1
-
+      BOXLIMIT = RADIUS_EQ 
       CQUAD(1,1) = WX1 - BOXLIMIT
-      CQUAD(2,1) = BY1 - BOXLIMIT + ASINOMEGAT
-      CQUAD(3,1) = EX2 + BOXLIMIT
-      CQUAD(4,1) = TY2 + BOXLIMIT
+      CQUAD(1,2) = BY1 - BOXLIMIT + ASINOMEGAT !Adding bottom wall displacement
+      CQUAD(1,3) = EX2 + BOXLIMIT
+      CQUAD(1,4) = TY2 + BOXLIMIT
 
 
       RETURN
@@ -123,6 +126,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE ADD_QUAD(II)
 
+      USE param1
       USE discretelement
       IMPLICIT NONE
       
@@ -133,14 +137,14 @@
       IFOUND = 0
       DO WHILE(IFOUND.EQ.0)
          CALL FIND_QUAD(II, IQS)
-         J = LQUAD(7,IQS)
+         J = LQUAD(IQS,7)
          IF(J.EQ.4) THEN
 	    CALL SPLIT_QUAD(IQS)
          ELSE IF(J.LT.0) THEN
             PRINT *,'ERROR IN SPLIT_QUAD'
          ELSE 
-            LQUAD(7,IQS) = J+1
-            LQUAD(J+1,IQS) = II
+            LQUAD(IQS,7) = J+1
+            LQUAD(IQS,J+1) = II
             IFOUND = 1
          END IF
       END DO            
@@ -150,7 +154,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
 	SUBROUTINE FIND_QUAD(I,Q)
-      
+  
+        USE param1
 	USE discretelement
         IMPLICIT NONE
         
@@ -159,16 +164,16 @@
 
 	I_F = 0
 	DO WHILE(I_F.EQ.0) 
-	   IF(LQUAD(7,Q).GE.0) THEN
+	   IF(LQUAD(Q,7).GE.0) THEN
  	     I_F = 1
            ELSE
-	     IC = LQUAD(1,Q)
-	     IF(DES_POS_NEW(1,I).GE.CQUAD(3,IC)) THEN
+	     IC = LQUAD(Q,1)
+	     IF(DES_POS_NEW(I,1).GE.CQUAD(IC,3)) THEN
 		IX = 1
 	     ELSE 
 		IX = 0
 	     END IF
-             IF(DES_POS_NEW(2,I).GE.CQUAD(4,IC)) THEN
+             IF(DES_POS_NEW(I,2).GE.CQUAD(IC,4)) THEN
 		IY = 1
 	     ELSE
                 IY = 0
@@ -183,7 +188,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C           
 
 	SUBROUTINE SPLIT_QUAD(Q)	
-           
+        
+        USE param1   
 	USE discretelement
         IMPLICIT NONE
         
@@ -191,48 +197,52 @@
 	INTEGER I_FQ, J, K, ORPHANS(4), NC
 	DOUBLE PRECISION XL, YL, XU, YU, XMID, YMID
 
-	LQUAD(7,Q) = -1
+	LQUAD(Q,7) = -1
 	DO J = 1, 4
-	   ORPHANS(J) = LQUAD(J,Q)
-	   LQUAD(J,Q) = NQUAD + J
-	   LQUAD(6,NQUAD+J) = Q
-	   LQUAD(5,NQUAD+J) = J
+	   ORPHANS(J) = LQUAD(Q,J)
+	   LQUAD(Q,J) = NQUAD + J
+	   LQUAD(NQUAD+J,6) = Q
+	   LQUAD(NQUAD+J,5) = J
 	END DO
-	XL = CQUAD(1,Q)
-	YL = CQUAD(2,Q)
-	XU = CQUAD(3,Q)
-	YU = CQUAD(4,Q) 
+	XL = CQUAD(Q,1)
+	YL = CQUAD(Q,2)
+	XU = CQUAD(Q,3)
+	YU = CQUAD(Q,4) 
 	XMID = (XU-XL)/2
 	YMID = (YU-YL)/2
-	CQUAD(1,NQUAD+1) = XL
-	CQUAD(2,NQUAD+1) = YL
-	CQUAD(3,NQUAD+1) = XL+XMID
-	CQUAD(4,NQUAD+1) = YL+YMID
-	CQUAD(1,NQUAD+2) = XL+XMID	
-	CQUAD(2,NQUAD+2) = YL
-	CQUAD(3,NQUAD+2) = XU
-	CQUAD(4,NQUAD+2) = YL+YMID
-	CQUAD(1,NQUAD+3) = XL
-	CQUAD(2,NQUAD+3) = YL+YMID
-	CQUAD(3,NQUAD+3) = XL+XMID
-	CQUAD(4,NQUAD+3) = YU
-	CQUAD(1,NQUAD+4) = XL+XMID
-	CQUAD(2,NQUAD+4) = YL+YMID
-	CQUAD(3,NQUAD+4) = XU
-	CQUAD(4,NQUAD+4) = YU
+
+        CQUAD(NQUAD+1,1) = XL
+	CQUAD(NQUAD+1,2) = YL
+	CQUAD(NQUAD+1,3) = XL+XMID
+	CQUAD(NQUAD+1,4) = YL+YMID
+
+        CQUAD(NQUAD+2,1) = XL+XMID	
+	CQUAD(NQUAD+2,2) = YL
+	CQUAD(NQUAD+2,3) = XU
+	CQUAD(NQUAD+2,4) = YL+YMID
+
+        CQUAD(NQUAD+3,1) = XL
+	CQUAD(NQUAD+3,2) = YL+YMID
+	CQUAD(NQUAD+3,3) = XL+XMID
+	CQUAD(NQUAD+3,4) = YU
+
+        CQUAD(NQUAD+4,1) = XL+XMID
+	CQUAD(NQUAD+4,2) = YL+YMID
+	CQUAD(NQUAD+4,3) = XU
+	CQUAD(NQUAD+4,4) = YU
 	NQUAD = NQUAD +4
 
 	DO J = 1, 4
 	   I_FQ = Q
 	   K = ORPHANS(J)
 	   CALL FIND_QUAD(K,I_FQ) 
-	   NC = LQUAD(7,I_FQ)
-	   LQUAD(7,I_FQ) = NC+1
-	   LQUAD(NC+1,I_FQ) = K 
+	   NC = LQUAD(I_FQ,7)
+	   LQUAD(I_FQ,7) = NC+1
+	   LQUAD(I_FQ,NC+1) = K 
 	END DO
 
 	IF(I_FQ.GT.MAXQUADS) THEN
-          PRINT *,'CHECK I_FQ', I_FQ
+          PRINT *,'GT MAXQUADS', I_FQ
 	  STOP
 	END IF
 
@@ -253,52 +263,65 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       RECURSIVE SUBROUTINE QUAD_NEIGHBOURS(II, NQ)
-
+      
+      USE param1
       USE discretelement
       IMPLICIT NONE
 
-      INTEGER II, I, N, LL, IC, J, K, POS, IXU, IXL, IYU, IYL, KK, NQ
+      INTEGER II, I, N, LL, IC, J, JJ, K, POS, IXU, IXL, IYU, IYL, KK, NQ
       DOUBLE PRECISION XM, YM, DIST, R_LM, XL, XU, YL, YU 
       INTEGER DIA_RATIO
 
       DIA_RATIO = INT(RADIUS_EQ/DES_RADIUS(II))
 
-      IF (LQUAD(7,NQ).GT.0) THEN
-         DO I = 1, LQUAD(7,NQ)
-            N = LQUAD(I,NQ)
-            IF(II.NE.N) THEN
-               DIST = 0
+      IF (LQUAD(NQ,7).GT.0) THEN
+
+         DO I = 1, LQUAD(NQ,7)
+            N = LQUAD(NQ,I)
+            IF(N.GT.II) THEN
+               DIST = ZERO 
                DO K = 1, DIMN
-               DIST = DIST + (DES_POS_NEW(K,II)-DES_POS_NEW(K,N))**2
+                  DIST = DIST + (DES_POS_NEW(II,K)-DES_POS_NEW(N,K))**2
                END DO
                DIST = SQRT(DIST)
                R_LM = DES_RADIUS(II)+DES_RADIUS(N)
                IF(DIST.LE.R_LM) THEN
-		  NEIGHBOURS(1,II) = NEIGHBOURS(1,II) + 1
-		  J = NEIGHBOURS(1,II)
-		  IF(J.LT.MN) THEN
-                     NEIGHBOURS(J+1,II) = N
-	          ELSE IF(J.GE.MN) THEN
-                     PRINT *,'QUAD', II, J, (NEIGHBOURS(LL,II),LL=1,J)
+		  NEIGHBOURS(II,1) = NEIGHBOURS(II,1) + 1
+		  NEIGHBOURS(N,1) = NEIGHBOURS(N,1) + 1
+		  J = NEIGHBOURS(II,1)
+		  JJ = NEIGHBOURS(N,1)
+                  IF(J.LE.MN) THEN
+                     NEIGHBOURS(II,J+1) = N
+	          ELSE 
+                     PRINT *,'QUADTREE - NEIGHBORS GT MN'
+                     PRINT *, II,':', (NEIGHBOURS(II,LL),LL=1,MAXNEIGHBORS)
+                     STOP
+	          END IF
+                  IF(JJ.LE.MN) THEN
+                     NEIGHBOURS(N,JJ+1) = II 
+	          ELSE 
+                     PRINT *,'QUADTREE - NEIGHBORS GT MN'
+                     PRINT *, II,':', (NEIGHBOURS(N,LL),LL=1,MAXNEIGHBORS)
                      STOP
 	          END IF
                END IF
             END IF
          END DO
-      ELSE IF(LQUAD(7,NQ).EQ.-1) THEN
-         IC = LQUAD(1,NQ)
-         XM = CQUAD(3,IC)
-         YM = CQUAD(4,IC)
 
-         XL = DES_POS_NEW(1,II) - (DIA_RATIO + 1) * DES_RADIUS(II)
-         XU = DES_POS_NEW(1,II) + (DIA_RATIO + 1) * DES_RADIUS(II)
-         YL = DES_POS_NEW(2,II) - (DIA_RATIO + 1) * DES_RADIUS(II)
-         YU = DES_POS_NEW(2,II) + (DIA_RATIO + 1) * DES_RADIUS(II)
+      ELSE IF(LQUAD(NQ,7).EQ.-1) THEN
+         IC = LQUAD(NQ,1)
+         XM = CQUAD(IC,3)
+         YM = CQUAD(IC,4)
+
+         XL = DES_POS_NEW(II,1) - (DIA_RATIO + 1) * DES_RADIUS(II)
+         YL = DES_POS_NEW(II,2) - (DIA_RATIO + 1) * DES_RADIUS(II)
+         XU = DES_POS_NEW(II,1) + (DIA_RATIO + 1) * DES_RADIUS(II)
+         YU = DES_POS_NEW(II,2) + (DIA_RATIO + 1) * DES_RADIUS(II)
 
          IF(XL.LT.CQUAD(1,1)) XL=CQUAD(1,1)
-         IF(XU.GT.CQUAD(3,1)) XU=CQUAD(3,1)
-         IF(YL.LT.CQUAD(2,1)) YL=CQUAD(2,1)
-         IF(YU.GT.CQUAD(4,1)) YU=CQUAD(4,1)
+         IF(XU.GT.CQUAD(1,3)) XU=CQUAD(1,3)
+         IF(YL.LT.CQUAD(1,2)) YL=CQUAD(1,2)
+         IF(YU.GT.CQUAD(1,4)) YU=CQUAD(1,4)
 
          IF(XL.GE.XM) THEN
             IXL = 1

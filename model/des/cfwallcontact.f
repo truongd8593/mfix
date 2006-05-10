@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFWALLCONTACT(WALL, L, STIME, WALLCONTACTI)            C
+!  Module name: CFWALLCONTACT(WALL, L, WALLCONTACTI)            C
 !  Purpose: DES - Checking for contact with walls                      C
 !                                                                      C
 !                                                                      C
@@ -9,7 +9,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFWALLCONTACT(WALL, L, STIME, WALLCONTACTI)
+      SUBROUTINE CFWALLCONTACT(WALL, L, WALLCONTACTI)
 
       Use discretelement
       USE param
@@ -27,7 +27,7 @@
       IMPLICIT NONE
       
       INTEGER L, I, K, WALL, WALLCONTACTI	
-      DOUBLE PRECISION STIME, A, OMEGA, ASINOMEGAT 
+      DOUBLE PRECISION A, OMEGA, OOMEGA2, ASINOMEGAT 
       
 !     
 !---------------------------------------------------------------------
@@ -35,47 +35,50 @@
 !---------------------------------------------------------------------
 !     
 
-      A = 0.0
-      OMEGA = 0.0
-      IF(DES_F.NE.0.0) THEN
-         OMEGA = 2*22*DES_F/7
+
+      A = ZERO
+      OMEGA = ZERO
+      ASINOMEGAT = ZERO
+      IF(DES_F.NE.ZERO) THEN
+         OMEGA = 2.0D0*PI*DES_F
+         OOMEGA2 = ONE/(OMEGA**2)
          IF(UNITS == "CGS") THEN
-            A = DES_GAMMA*980/(OMEGA*OMEGA)
+            A = DES_GAMMA*GRAV(2)*OOMEGA2
          ELSE 
-            A = DES_GAMMA*9.81/(OMEGA*OMEGA) 
+            A = DES_GAMMA*GRAV(2)*OOMEGA2
          END IF
+      ASINOMEGAT = A*SIN(OMEGA*S_TIME)
       END IF
-      ASINOMEGAT = A*SIN(OMEGA*STIME)
 
       WALLCONTACTI = 0
 
       IF(WALL.EQ.1) THEN
-         IF((DES_POS_NEW(1,L)-WX1).LE.DES_RADIUS(L)) THEN
+         IF((DES_POS_NEW(L,1)-WX1).LE.DES_RADIUS(L)) THEN
             WALLCONTACTI = 1
          END IF
 
       ELSE IF(WALL.EQ.2) THEN
-         IF((EX2-DES_POS_NEW(1,L)).LE.DES_RADIUS(L)) THEN
+         IF((EX2-DES_POS_NEW(L,1)).LE.DES_RADIUS(L)) THEN
             WALLCONTACTI = 1
          END IF
 
       ELSE IF(WALL.EQ.3) THEN
-         IF((DES_POS_NEW(2,L)-(BY1+ASINOMEGAT)).LE.DES_RADIUS(L)) THEN
+         IF((DES_POS_NEW(L,2)-(BY1+ASINOMEGAT)).LE.DES_RADIUS(L)) THEN
             WALLCONTACTI = 1
          END IF
 
       ELSE IF(WALL.EQ.4) THEN
-         IF((TY2-DES_POS_NEW(2,L)).LE.DES_RADIUS(L)) THEN
+         IF((TY2-DES_POS_NEW(L,2)).LE.DES_RADIUS(L)) THEN
             WALLCONTACTI = 1
          END IF
 
       ELSE IF(WALL.EQ.5) THEN
-         IF((DES_POS_NEW(3,L)-SZ1).LE.DES_RADIUS(L)) THEN
+         IF((DES_POS_NEW(L,3)-SZ1).LE.DES_RADIUS(L)) THEN
             WALLCONTACTI = 1
          END IF
 
       ELSE IF(WALL.EQ.6) THEN
-         IF((NZ2-DES_POS_NEW(3,L)).LE.DES_RADIUS(L)) THEN
+         IF((NZ2-DES_POS_NEW(L,3)).LE.DES_RADIUS(L)) THEN
             WALLCONTACTI = 1
          END IF
       END IF

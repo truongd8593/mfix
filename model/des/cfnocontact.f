@@ -9,7 +9,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CFNOCONTACT(L)
-      
+
+      USE param1      
       USE discretelement
       IMPLICIT NONE
 
@@ -17,17 +18,13 @@
 !-----------------------------------------------------------------------------
 
       
-      DO K = 1, DIMN
-         FN(K,L) = 0.0
-         FNS1(K) = 0.0
-         FT(K,L) = 0.0
-         FTS1(K) = 0.0
-         FC(K,L) = 0.0
-         TOW(K,L) = 0.0
-         TOW(3,L) = 0.0
-         OMEGA_NEW(K,L) = 0.0
-         OMEGA_NEW(3,L) = 0.0
-      END DO
+         FN(L,:) = ZERO
+         FNS1(:) = ZERO
+         FT(L,:) = ZERO
+         FTS1(:) = ZERO
+         FC(L,:) = ZERO
+         TOW(L,:) = ZERO
+         OMEGA_NEW(L,:) = ZERO
 
       RETURN
       END SUBROUTINE CFNOCONTACT

@@ -8,19 +8,21 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CALC_FORCE_DES(C)
+      SUBROUTINE CALC_FORCE_DES
 
+      USE run
+      USE param1
       USE discretelement
       USE geometry
 
       IMPLICIT NONE
       
       INTEGER LL, I, II, K, LC, C, CO, IW, KK, TEMP, TEMPN
-      DOUBLE PRECISION OVERLAP_N, OVERLAP_T, TEMPFN(NDIM), TEMPFT(NDIM)
-      DOUBLE PRECISION NORMAL(NDIM), VRE(NDIM)
-      DOUBLE PRECISION TANGENT(NDIM)
-      DOUBLE PRECISION Vn, Vt, S_TIME
-      INTEGER IJK, NWS, IJ, WALLCHECK
+      DOUBLE PRECISION OVERLAP_N, OVERLAP_T, TEMPFN(DIMN), TEMPFT(DIMN)
+      DOUBLE PRECISION NORMAL(DIMN), VRE(DIMN)
+      DOUBLE PRECISION TANGENT(DIMN)
+      DOUBLE PRECISION Vn, Vt
+      INTEGER NI, IJ, WALLCHECK
       LOGICAL ALREADY_EXISTS
 !     
 !---------------------------------------------------------------------
@@ -28,34 +30,24 @@
 !---------------------------------------------------------------------
 !     
 
-      IF (CALLED.LE.2) THEN
-!         PRINT *,'*** CALC_DES_FORCE ***'
-         DO K = 1, NDIM
-            VRE(K) = 0D0
-            TANGENT(K) = 0D0
-            NORMAL(K) = 0D0
-         END DO    
+      IF (S_TIME.LE.DTSOLID) THEN
+            VRE(:) = ZERO
+            TANGENT(:) = ZERO
+            NORMAL(:) = ZERO
          DO LC = 1, PARTICLES
-            DO K = 1, DIMN
-               FN(K,LC) = 0.0
-               FT(K,LC) = 0.0
-            END DO
+               FC(LC,:) = ZERO
+               FN(LC,:) = ZERO
+               FT(LC,:) = ZERO
             DO KK = 1, MN
-               PN(KK,LC) = -1
-               PV(KK,LC) = 1
-                    DO K = 1, DIMN
-                       PFN(K,KK,LC) = 0.0
-                       PFT(K,KK,LC) = 0.0
-                    END DO
-             END DO
-             PN(1,LC) = 0
+               PN(LC,KK) = -1
+               PV(LC,KK) = 1
+               PFN(LC,KK,:) = ZERO
+               PFT(LC,KK,:) = ZERO
+            END DO
+             PN(LC,1) = 0
           END DO
        END IF
 
-           DO LC = 1, PARTICLES
-              CALL CFNEWVALUES(LC)
-           END DO
-           
            IF(DES_CONTINUUM_COUPLED) THEN
               CALL PARTICLES_IN_CELL(PARTICLES)
            END IF
@@ -65,125 +57,87 @@
 !     Calculate contact force and torque
 !---------------------------------------------------------------------
 !     
-
-           S_TIME = CALLED*DTSOLID
-           CALL NEIGHBOUR(PARTICLES)
-
            DO LL = 1, PARTICLES
 
-              IJK = 0
-              DO K = 1, DIMN
-                 TEMPFN(K) = 0.0
-                 TEMPFT(K) = 0.0
-              END DO
+              NI = 0
+              TEMPFN(:) = ZERO
+              TEMPFT(:) = ZERO
               K = 0
               KK = 0
 
-              IF(NEIGHBOURS(1,LL).GT.1) THEN
-                 DO CO = 3, NEIGHBOURS(1,LL)+1
-                    TEMP = NEIGHBOURS(CO,LL)
-                    IJK = CO - 1
-                    DO WHILE((IJK.GT.1).AND.(NEIGHBOURS(IJK,LL).GT.TEMP))
-                       NEIGHBOURS(IJK+1,LL) = NEIGHBOURS(IJK,LL)
-                       IJK = IJK-1
-                    END DO
-                    NEIGHBOURS(IJK+1,LL) = TEMP
-                 END DO
-              END IF
-
-              IF(PN(1,LL).GT.0) THEN
-                 DO K = 2, PN(1,LL)+1
-                    IF(PV(K,LL).EQ.0) THEN
-                       PN(K,LL) = K*PARTICLES
-                       DO KK = 1, DIMN
-                          PFN(KK,K,LL) = 0.0
-                          PFT(KK,K,LL) = 0.0
-                       END DO
+              IF(PN(LL,1).GT.0) THEN
+                 DO K = 2, PN(LL,1)+1
+                    IF(PV(LL,K).EQ.0) THEN
+                       PN(LL,K) = UNDEFINED_I
+                       PFN(LL,K,:) = ZERO  
+                       PFT(LL,K,:) = ZERO
                     END IF
                  END DO
               END IF
 
-              IF(PN(1,LL).GT.1) THEN
-                 DO CO = 3, PN(1,LL)+1
-                    TEMPN = PN(CO,LL)
-                    DO K = 1, DIMN
-                       TEMPFN(K) = PFN(K,CO,LL)
-                       TEMPFT(K) = PFT(K,CO,LL)
+              IF(PN(LL,1).GT.1) THEN
+                 DO CO = 3, PN(LL,1)+1
+                    TEMPN = PN(LL,CO)
+                    TEMPFN(:) = PFN(LL,CO,:)
+                    TEMPFT(:) = PFT(LL,CO,:)
+                    NI = CO - 1
+                    DO WHILE((NI.GT.1).AND.(PN(LL,NI).GT.TEMPN))
+                       PN(LL,NI+1) = PN(LL,NI)
+                       PFN(LL,NI+1,:) = PFN(LL,NI,:)
+                       PFT(LL,NI+1,:) = PFT(LL,NI,:)
+                       NI = NI-1
                     END DO
-                    IJK = CO - 1
-                    DO WHILE((IJK.GT.1).AND.(PN(IJK,LL).GT.TEMPN))
-                       PN(IJK+1,LL) = PN(IJK,LL)
-                       DO K = 1, DIMN
-                          PFN(K,IJK+1,LL) = PFN(K,IJK,LL)
-                          PFT(K,IJK+1,LL) = PFT(K,IJK,LL)
-                       END DO
-                       IJK = IJK-1
-                    END DO
-                    PN(IJK+1,LL) = TEMPN
-                    DO K = 1, DIMN
-                       PFN(K,IJK+1,LL) = TEMPFN(K)
-                       PFT(K,IJK+1,LL) = TEMPFT(K)
-                    END DO
+                    PN(LL,NI+1) = TEMPN
+                    PFN(LL,NI+1,:) = TEMPFN(:)
+                    PFT(LL,NI+1,:) = TEMPFT(:)
                  END DO
               END IF
 
-              IF(PN(1,LL).GT.0) THEN
-                 IJ = PN(1,LL)+1
-                 DO K = 2, IJ
-                    IF(PN(K,LL).GT.PARTICLES) THEN
-                       PN(1,LL) = PN(1,LL) - 1
-                       PN(K,LL) = -1
+              IF(PN(LL,1).GT.0) THEN
+                 IJ = 0     
+                 DO NI = 2, PN(LL,1)+1 
+                   IF(PN(LL,NI).GE.2*PARTICLES) THEN
+                       PN(LL,NI) = - 1
+                       IJ = IJ + 1 
                     END IF
                  END DO
+                 PN(LL,1) = PN(LL,1) - IJ
               END IF
 
-              IF (PN(1,LL).EQ.0) THEN
-                 DO IJK = 1, MN
-		    DO K = 1, DIMN
-                       PFN(K,IJK,LL) = 0.0
-                       PFT(K,IJK,LL) = 0.0
-		    END DO
+              IF (PN(LL,1).EQ.0) THEN
+                 DO NI = 1, MAXNEIGHBORS
+                    PFN(LL,NI,:) = ZERO
+                    PFT(LL,NI,:) = ZERO
                  END DO
               END IF
 
-              DO K = 2, MN
-                 PV(K,LL) = 0
+              DO K = 2, MAXNEIGHBORS
+                 PV(LL,K) = 0
               END DO
-
-              DO K = 1, DIMN
-                 FC(K,LL) = 0.0
-                 TOW(K,LL) = 0.0
-                 TOW(3,LL) = 0.0
-              END DO
-
+              
               IF(WALLDTSPLIT) THEN
                  WALLCHECK = 0
-                 NWS = 2*DIMN 
-                 DO IW = 1, NWS
+                 DO IW = 1, NWALLS
                     WALLCONTACT = 0
-                    CALL CFWALLCONTACT(IW, LL, S_TIME, WALLCONTACT)
+                    CALL CFWALLCONTACT(IW, LL, WALLCONTACT)
                     IF(WALLCONTACT.EQ.1) THEN
                        WALLCHECK = 1
-                       CALL CFWALLPOSVEL(LL, S_TIME, IW)
+                       CALL CFWALLPOSVEL(LL, IW)
                        I = PARTICLES + IW
-                       DO K = 1, DIMN
-                          DES_POS_NEW(K,I) = DES_WALL_POS(K,IW)
-                          DES_VEL_NEW(K,I) = DES_WALL_VEL(K,IW)
-                          OMEGA_NEW(K,I) = 0.0
-                          OMEGA_NEW(3,I) = 0.0
-                       END DO
+                          DES_POS_NEW(I,:) = DES_WALL_POS(IW,:)
+                          DES_VEL_NEW(I,:) = DES_WALL_VEL(IW,:)
+                          OMEGA_NEW(I,:) = ZERO
                        DES_RADIUS(I) = DES_RADIUS(LL)
                        CALL CFNORMAL(LL, I, NORMAL)
                        CALL CFTANGENT(TANGENT, NORMAL, VRE)
                        CALL CFRELVEL(LL, I, VRE, TANGENT)
-!                       CALL CFTANGENT(TANGENT, NORMAL, VRE)
                        CALL CFVRN(Vn, VRE, NORMAL)
                        CALL CFVRT(Vt, VRE, TANGENT)
                        CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)
                        CALL CFFNWALL(LL, Vn, OVERLAP_N, NORMAL)
                        CALL CFFTWALL(LL, Vt, OVERLAP_T, TANGENT)
                        CALL CFSLIDEWALL(LL, TANGENT)
-                       CALL CFFCTOW(LL, NORMAL)
+                       CALL CFFCTOWALL(LL, NORMAL)
 !--DEBUGGING
       !!impulse is effectively doubled for wall interactions
       IF(LL.eq.FOCUS_PARTICLE)THEN
@@ -198,70 +152,58 @@
       CLOSE (1)
       END IF
 !--END DEBUGGING
-
                     END IF
                  END DO
               END IF
 
-              NEIGHBOR = 0
-              NEIGHBOR = NEIGHBOURS(1,LL)
-              IF (NEIGHBOR.GT.0) THEN
-                 DO II = 2, NEIGHBOR+1
-                    I = NEIGHBOURS(II,LL)
+              IF (NEIGHBOURS(LL,1).GT.0) THEN
+                 DO II = 2, NEIGHBOURS(LL,1)+1
+                   I = NEIGHBOURS(LL,II)
+                   IF(I.GT.LL) THEN
 	      	    CO = 0
-		    IJK = 2
-                    IF(PN(1,LL).GT.0) THEN
-                       DO WHILE((CO.EQ.0).AND.(IJK.LE.(PN(1,LL)+1)))
-                          IF(I.EQ.PN(IJK,LL)) THEN
+		    NI = 2
+                    IF(PN(LL,1).GT.0) THEN
+                       DO WHILE((CO.EQ.0).AND.(NI.LE.(PN(LL,1)+1)))
+                          IF(I.EQ.PN(LL,NI)) THEN
                              CO = 1
-                             PV(IJK,LL) = 1
+                             PV(LL,NI) = 1
                              CALL CFNORMAL(LL, I, NORMAL)
                              CALL CFTANGENT(TANGENT, NORMAL, VRE)
                              CALL CFRELVEL(LL, I, VRE, TANGENT)
-!                             CALL CFTANGENT(TANGENT, NORMAL, VRE)                             
                              CALL CFVRN(Vn, VRE, NORMAL)
                              CALL CFVRT(Vt, VRE, TANGENT)
                              CALL CFINCREMENTALOVERLAPS(Vn, Vt, OVERLAP_N, OVERLAP_T)
                              CALL CFFN(LL, Vn, OVERLAP_N, NORMAL)
                              CALL CFFT(LL, Vt, OVERLAP_T, TANGENT)
-                             DO K = 1, DIMN
-                                FN(K,LL) = FN(K,LL) + PFN(K,IJK,LL)
-                                TEMPFT(K) = FT(K,LL) + PFT(K,IJK,LL)
-                             END DO
+                                FN(LL,:) = FN(LL,:) + PFN(LL,NI,:)
+                                TEMPFT(:) = FT(LL,:) + PFT(LL,NI,:)
                              CALL CFSLIDE(LL, TANGENT, TEMPFT)
-                             CALL CFFCTOW(LL, NORMAL)
-                             DO K = 1, DIMN
-                                PFN(K,IJK,LL) = PFN(K,IJK,LL) + FNS1(K)
-                                PFT(K,IJK,LL) = PFT(K,IJK,LL) + FTS1(K)
-                             END DO
+                             CALL CFFCTOW(LL, I, NORMAL)
+                                PFN(LL,NI,:) = PFN(LL,NI,:) + FNS1(:)
+                                PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
                           ELSE
-                             IJK = IJK + 1
+                             NI = NI + 1
                           END IF
                        END DO
                     END IF
 		    IF(CO.EQ.0) THEN
-                       PN(1,LL) = PN(1,LL) + 1
-                       IJK = PN(1,LL) + 1
-                       PN(IJK,LL) = I
-                       PV(IJK,LL) = 1
+                       PN(LL,1) = PN(LL,1) + 1
+                       NI = PN(LL,1) + 1
+                       PN(LL,NI) = I
+                       PV(LL,NI) = 1
                        CALL CFNORMAL(LL, I, NORMAL)
                        CALL CFTANGENT(TANGENT, NORMAL, VRE)
                        CALL CFRELVEL(LL, I, VRE, TANGENT)
-!                       CALL CFTANGENT(TANGENT, NORMAL, VRE)
                        CALL CFVRN(Vn, VRE, NORMAL)
                        CALL CFVRT(Vt, VRE, TANGENT)
                        CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)
                        CALL CFFN(LL, Vn, OVERLAP_N, NORMAL)
                        CALL CFFT(LL, Vt, OVERLAP_T, TANGENT)
-                       DO K = 1, DIMN
-                          TEMPFT(K) = FT(K,LL)
-                       END DO
+                          TEMPFT(:) = FT(LL,:)
                        CALL CFSLIDE(LL, TANGENT, TEMPFT)
-                       CALL CFFCTOW(LL, NORMAL)
-                       DO K = 1, DIMN
-                          PFN(K,IJK,LL) = FNS1(K)
-                          PFT(K,IJK,LL) = FTS1(K)
-                       END DO
+                       CALL CFFCTOW(LL, I, NORMAL)
+                          PFN(LL,NI,:) = FNS1(:)
+                          PFT(LL,NI,:) = FTS1(:)
 		    END IF
 
 !--DEBUGGING
@@ -273,28 +215,29 @@
         WRITE(1,'(A,I5)')'CALC FORCE -- NEIGHBOR',II
         WRITE(1,'(1X,L5)')DES_CONTINUUM_COUPLED
         WRITE(1,'(2(1x,A,E12.5))')&
-            'FNx=',FN(1,LL)&
-            ,'FNy=',FN(2,LL)
+            'FNx=',FN(LL,1)&
+            ,'FNy=',FN(LL,2)
       ELSE
         OPEN(UNIT=1,FILE='debug_file',STATUS='NEW')
         WRITE(1,'(A,I5)')'CALC FORCE -- NEIGHBOR',II
         WRITE(1,'(1X,L5)')DES_CONTINUUM_COUPLED
         WRITE(1,'(2(1x,A,E12.5))')&
-            'FNx=',FN(1,LL)&
-            ,'FNy=',FN(2,LL)
+            'FNx=',FN(LL,1)&
+            ,'FNy=',FN(LL,2)
       END IF
       CLOSE (1)
       END IF
 !--END DEBUGGING
+                  END IF
                  END DO
               END IF
-
-              IF((NEIGHBOR.EQ.0).AND.(WALLCHECK.EQ.0)) THEN
+              
+              IF((NEIGHBOURS(LL,1).EQ.0).AND.(WALLCHECK.EQ.0)) THEN
                  CALL CFNOCONTACT(LL)
               END IF
 
            END DO
-
+           
            IF(DES_CONTINUUM_COUPLED) THEN
               CALL DRAG_FGS(PARTICLES)
            END IF
@@ -305,11 +248,10 @@
         END IF
 !!COHESION
 
-
 !-------------------------------------------------------------------
 !     Update old values with new values
 !-------------------------------------------------------------------
-           CALL CFUPDATEOLD(PARTICLES)
+        CALL CFUPDATEOLD(PARTICLES)
 
            RETURN
            END SUBROUTINE CALC_FORCE_DES

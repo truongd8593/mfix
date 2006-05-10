@@ -27,15 +27,15 @@
 !-----INITIALIZATIONS
       DO i=1, PARTICLES+2*DIMN
          IS_LINKED(i)=0
-         LINKS(1,i)=0
+         LINKS(i,1)=0
          DO j=2,MAXNEIGHBORS
-           LINKS(j,i)=-1
+           LINKS(i,j)=-1
          END DO
          WELL_WIDTH(i)=RADIUS_RATIO*DES_RADIUS(i)
-         wELL_DEPTH(i)=MASTER_WELL_DEPTH
+         WELL_DEPTH(i)=MASTER_WELL_DEPTH
          IF(I.gt.PARTICLES)THEN ! Walls
             WELL_WIDTH(i)=WALL_RADIUS_RATIO*DES_RADIUS(1)
-            wELL_DEPTH(i)=MASTER_WALL_WELL_DEPTH
+            WELL_DEPTH(i)=MASTER_WALL_WELL_DEPTH
             PMASS(i)=99999999
          END IF
       END DO

@@ -28,171 +28,159 @@
       USE sendrecv
       IMPLICIT NONE
 
-      INTEGER L, I, J, K, M, MM, PARTS, IJKL, IJK
-      INTEGER IPJK, IJPK, IJKP
-      DOUBLE PRECISION XE(IMAX2), YN(JMAX2), ZT(KMAX2), PVOL
-      DOUBLE PRECISION SOLVOLINC(IJKMAX2,MMAX)
-      DOUBLE PRECISION VOL_AVE_US(IJKMAX2,MMAX)
-      DOUBLE PRECISION VOL_AVE_VS(IJKMAX2,MMAX)
-      DOUBLE PRECISION VOL_AVE_WS(IJKMAX2,MMAX)
+      INTEGER L, I, J, K, M, MM, PARTS 
+      INTEGER IJK, IPJK, IJPK, IJKP
+      DOUBLE PRECISION SOLVOLINC(DIMENSION_3,MMAX), OSOLVOL
 
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
-      
-      DO IJKL = 1, IJKMAX2
-         PINC(IJKL) = 0
+
+      DO IJK = IJKSTART3, IJKEND3
+         PINC(IJK) = 0
          DO M = 1, MMAX
-            SOLVOLINC(IJKL,M) = 0.0
-            VOL_AVE_US(IJKL,M) = 0.0
-            VOL_AVE_VS(IJKL,M) = 0.0
-            VOL_AVE_WS(IJKL,M) = 0.0
+            SOLVOLINC(IJK,M) = ZERO
+            DES_U_s(IJK,M) = ZERO
+            DES_V_s(IJK,M) = ZERO
+            DES_W_s(IJK,M) = ZERO
          END DO
       END DO
 
-      XE(1) = 0.0
-      YN(1) = 0.0
-
-      DO I = IMIN1, IMAX2
-         XE(I) = XE(I-1) + DX(I)
-      END DO
-
-      DO J  = JMIN1, JMAX2
-         YN(J) = YN(J-1) + DY(J)
-      END DO
-
-      IF(DIMN.EQ.3) THEN
-         ZT(1) = 0.0
-         DO K = KMIN1, KMAX2
-            ZT(K) = ZT(K-1) + DZ(K)
-         END DO
-      END IF
-      
       DO L = 1, PARTICLES
-         IF(EQUIVALENT_RADIUS) THEN
-            MM = 1
-         ELSE
+
+	 IF(S_TIME.LE.DTSOLID) THEN
+   
             DO M = 1, MMAX
-               IF((2*DES_RADIUS(L)-D_P0(M)).LE.1E-5) THEN
-                  MM = M
+               IF(2*DES_RADIUS(L).LE.D_P0(M)) THEN
+                  PIJK(L,5) = M 
+                  RO_S(M) = RO_Sol(L)
                END IF
             END DO
-         END IF
-         PVOL = 0.0
-         PVOL = (4.0/3.0)*(22.0/7.0)*DES_RADIUS(L)**3
-         DO IJKL = 1, IJKMAX2
-            I = I_OF(IJKL)
-            J = J_OF(IJKL)
-            K = K_OF(IJKL)
-            
-           IF((I.GE.IMIN1).AND.(J.GE.JMIN1)) THEN   
-            IF((DES_POS_NEW(1,L).GE.XE(I-1)).AND.(DES_POS_NEW(1,L).LT.XE(I))) THEN
-               IF((DES_POS_NEW(2,L).GE.YN(J-1)).AND.(DES_POS_NEW(2,L).LT.YN(J))) THEN
 
-                  IF(DIMN.EQ.3) THEN
-                    IF(K.GE.KMIN1) THEN     
-                     IF((DES_POS_NEW(3,L).GT.ZT(K-1)).AND.(DES_POS_NEW(3,L).LE.ZT(K))) THEN
-                        PINC(IJKL) = PINC(IJKL) + 1
-                        NEIGHBOURS(MAXNEIGHBORS,L) = IJKL
-                        SOLVOLINC(IJKL,MM) = SOLVOLINC(IJKL,MM) +  PVOL
-                        VOL_AVE_US(IJKL,MM) = VOL_AVE_US(IJKL,MM) + PVOL*DES_VEL_NEW(1,L)
-                        VOL_AVE_VS(IJKL,MM) = VOL_AVE_VS(IJKL,MM) + PVOL*DES_VEL_NEW(2,L)
-                        VOL_AVE_WS(IJKL,MM) = VOL_AVE_WS(IJKL,MM) + PVOL*DES_VEL_NEW(3,L)
-                     END IF
-                    END IF
-                  ELSE
-                     PINC(IJKL) = PINC(IJKL) + 1
-                     NEIGHBOURS(MAXNEIGHBORS,L) = IJKL
-                     SOLVOLINC(IJKL,MM) = SOLVOLINC(IJKL,MM) + PVOL
-                     VOL_AVE_US(IJKL,MM) = VOL_AVE_US(IJKL,MM) + PVOL*DES_VEL_NEW(1,L)
-                     VOL_AVE_VS(IJKL,MM) = VOL_AVE_VS(IJKL,MM) + PVOL*DES_VEL_NEW(2,L)
-                  END IF
-               END IF
-            END IF
-          END IF  
-         END DO
-      END DO
-      
-      DO IJKL = 1, IJKMAX2
-
-         K = K_OF(IJKL)
-
-         IF(DIMN.EQ.2) THEN
-            IF(COORDINATES == 'CARTESIAN') THEN
-               DZ(K) = 2*RADIUS_EQ
-            ELSE IF(COORDINATES == 'CYLINDRICAL') THEN
-               DZ(K) = 44.0/7.0
-            END IF
-         END IF
-         
-         DO M = 1, MMAX
+            XE(1) = ZERO
+            YN(1) = ZERO
+            DO I = IMIN1, IMAX2
+               XE(I) = XE(I-1) + DX(I)
+            END DO
+            DO J  = JMIN1, JMAX2
+               YN(J) = YN(J-1) + DY(J)
+            END DO
             IF(DIMN.EQ.3) THEN
-               IF(PINC(IJKL).GT.0) THEN
-                  VOL_AVE_US(IJKL,M) = VOL_AVE_US(IJKL,M)/SOLVOLINC(IJKL,M)
-                  VOL_AVE_VS(IJKL,M) = VOL_AVE_VS(IJKL,M)/SOLVOLINC(IJKL,M)
-                  VOL_AVE_WS(IJKL,M) = VOL_AVE_WS(IJKL,M)/SOLVOLINC(IJKL,M)
-               END IF
-            ELSE
-               IF(PINC(IJKL).GT.0) THEN
-                  VOL_AVE_US(IJKL,M) = VOL_AVE_US(IJKL,M)/SOLVOLINC(IJKL,M)
-                  VOL_AVE_VS(IJKL,M) = VOL_AVE_VS(IJKL,M)/SOLVOLINC(IJKL,M)
-               END IF
+               ZT(1) = ZERO
+               DO K = KMIN1, KMAX2
+                  ZT(K) = ZT(K-1) + DZ(K)
+               END DO
             END IF
 
-            RO_S(M) = ROs
-            EP_G(IJKL) = 1   
-            IF(VOL(IJKL).GT.0) THEN
-             ROP_S(IJKL,M) = RO_S(M)*SOLVOLINC(IJKL,M)/(VOL(IJKL)*DZ(K))
-            END IF
-            
-            IF(PINC(IJKL).GT.0) THEN
-              EP_G(IJKL) = EP_G(IJKL) - EP_S(IJKL,M)
-            END IF
-            
-         END DO
+           DO I = IMIN1, IMAX3
+             IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I))) THEN
+               PIJK(L,1) = I
+               GO TO 10
+             END IF
+           END DO
+
+ 10   CONTINUE
+           DO J = JMIN1, JMAX3
+             IF((DES_POS_NEW(L,2).GE.YN(J-1)).AND.(DES_POS_NEW(L,2).LT.YN(J))) THEN
+               PIJK(L,2) = J
+               GO TO 20
+             END IF
+           END DO
+
+ 20   CONTINUE
+           IF(DIMN.EQ.2) THEN
+             PIJK(L,3)  = 1
+             GO TO 30
+           ELSE
+             DO K = KMIN1, KMAX3
+                IF((DES_POS_NEW(L,3).GT.ZT(K-1)).AND.(DES_POS_NEW(L,3).LE.ZT(K))) THEN 
+                 PIJK(L,3) = K
+                 GO TO 30
+               END IF
+             END DO
+           END IF
+
+         ELSE
+
+           I = PIJK(L,1)
+           J = PIJK(L,2)
+           K = PIJK(L,3)
+           IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I))) THEN
+              GO TO 40 
+           ELSE IF(DES_VEL_NEW(L,1).GT.ZERO) THEN
+              IF((DES_POS_NEW(L,1).GE.XE(I)).AND.(DES_POS_NEW(L,1).LT.XE(I+1))) PIJK(L,1) = I+1
+           ELSE IF(DES_VEL_NEW(L,1).LT.ZERO) THEN
+              IF((DES_POS_NEW(L,1).GE.XE(I-2)).AND.(DES_POS_NEW(L,1).LT.XE(I-1))) PIJK(L,1) = I-1
+           ELSE 
+              PRINT *,'des/particles_in_cell.f : CHECK CELL I' 
+              STOP
+           END IF
+ 40   CONTINUE
+           IF((DES_POS_NEW(L,2).GE.YN(J-1)).AND.(DES_POS_NEW(L,2).LT.YN(J))) THEN
+              GO TO 50 
+           ELSE IF(DES_VEL_NEW(L,2).GT.ZERO) THEN
+              IF((DES_POS_NEW(L,2).GE.YN(J)).AND.(DES_POS_NEW(L,2).LT.YN(J+1))) PIJK(L,2) = J+1
+           ELSE IF(DES_VEL_NEW(L,2).LT.ZERO) THEN
+              IF((DES_POS_NEW(L,2).GE.YN(J-2)).AND.(DES_POS_NEW(L,2).LT.YN(J-1))) PIJK(L,2) = J-1
+           ELSE
+              PRINT *,'des/particles_in_cell.f : CHECK CELL I' 
+              STOP
+           END IF
+ 50   CONTINUE
+           IF(DIMN.EQ.2) THEN
+              PIJK(L,3) = 1
+           ELSE
+              IF((DES_POS_NEW(L,3).GE.ZT(K-1)).AND.(DES_POS_NEW(L,3).LT.ZT(K))) THEN
+                 GO TO 30 
+              ELSE IF(DES_VEL_NEW(L,3).GT.ZERO) THEN
+                 IF((DES_POS_NEW(L,3).GE.ZT(K)).AND.(DES_POS_NEW(L,3).LT.ZT(K+1))) PIJK(L,3) = K+1
+              ELSE IF(DES_VEL_NEW(L,3).LT.ZERO) THEN
+                 IF((DES_POS_NEW(L,3).GE.ZT(K-2)).AND.(DES_POS_NEW(L,3).LT.ZT(K-1))) PIJK(L,3) = K-1
+              ELSE 
+                 PRINT *,'des/particles_in_cell.f : CHECK CELL K'
+                 STOP
+              END IF
+           END IF
+             
+         END IF
+ 
+ 30   CONTINUE
+          I = PIJK(L,1)
+          J = PIJK(L,2)
+          K = PIJK(L,3)
+          IJK = FUNIJK(I,J,K)
+          PIJK(L,4) = IJK
+          PINC(IJK) = PINC(IJK) + 1
+          MM = PIJK(L,5)
+          SOLVOLINC(IJK,MM) = SOLVOLINC(IJK,MM) +  PVOL(L)
+          DES_U_s(IJK,MM) = DES_U_s(IJK,MM) + PVOL(L)*DES_VEL_NEW(L,1)
+          DES_V_s(IJK,MM) = DES_V_s(IJK,MM) + PVOL(L)*DES_VEL_NEW(L,2)
+          IF(DIMN.EQ.3) DES_W_s(IJK,MM) = DES_W_s(IJK,MM) + PVOL(L)*DES_VEL_NEW(L,3)
+
       END DO
-
-
-      DO IJKL = 1, IJKMAX2
-         I = I_OF(IJKL)
-         J = J_OF(IJKL)
-         K = K_OF(IJKL)
-         IPJK = IP_OF(IJKL)
-         IJPK = JP_OF(IJKL)
-         IJKP = KP_OF(IJKL)
-
+        
+      DO IJK = IJKSTART3, IJKEND3
+         K = K_OF(IJK) 
          DO M = 1, MMAX
-            IF(I.EQ.1) THEN
-               U_S(IJKL,M) = 0D0
-            ELSE IF(I.EQ.IMAX2) THEN
-               U_S(IJKL,M) = 0D0
-            ELSE 
-               U_S(IJKL,M) = (VOL_AVE_US(IJKL,M)*DX(I) +&
-                             VOL_AVE_US(IPJK,M)*DX(I+1))/(DX(I)+DX(I+1))
-            END IF
-
-            IF(J.EQ.1) THEN
-               V_S(IJKL,M) = 0D0
-            ELSE IF(J.EQ.JMAX2) THEN
-               V_S(IJKL,M) = 0D0
-            ELSE 
-               V_S(IJKL,M) = (VOL_AVE_VS(IJKL,M)*DY(J) +&
-                             VOL_AVE_VS(IJPK,M)*DY(J+1))/(DY(J)+DY(J+1))
-            END IF
-            
-            IF(DIMN.EQ.3) THEN
-               IF(K.EQ.1) THEN
-                  W_S(IJKL,M) = 0D0
-               ELSE IF(K.EQ.KMAX2) THEN
-                  W_S(IJKL,M) = 0D0
-               ELSE 
-                  W_S(IJKL,M) = (VOL_AVE_WS(IJKL,M)*DZ(K) +&
-                                VOL_AVE_WS(IJKP,M)*DZ(K+1))/(DZ(K)+DZ(K+1))
+            IF(PINC(IJK).GT.0) THEN
+               OSOLVOL = ONE/SOLVOLINC(IJK,M)   
+               DES_U_s(IJK,M) = DES_U_s(IJK,M)*OSOLVOL
+               DES_V_s(IJK,M) = DES_V_s(IJK,M)*OSOLVOL
+               IF(DIMN.EQ.3) THEN
+                  DES_W_s(IJK,M) = DES_W_s(IJK,M)*OSOLVOL
                END IF
+            END IF
+            EP_G(IJK) = 1   
+            IF(VOL(IJK).GT.0) THEN
+             ROP_S(IJK,M) = RO_S(M)*SOLVOLINC(IJK,M)/(VOL(IJK)*DZ(K))
+            END IF
+            IF(PINC(IJK).GT.0) THEN
+              EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
+!              PRINT *,'PINC', IJK, EP_G(IJK)
             END IF
          END DO
       END DO
-      
+
       RETURN
       END SUBROUTINE PARTICLES_IN_CELL
 

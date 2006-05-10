@@ -18,12 +18,9 @@
 !---------------------------------------------------------------------
 
       DO LL = 1, PARTICLES
-         DO K = 1, DIMN
-            DES_POS_OLD(K,LL) = DES_POS_NEW(K,LL)
-            DES_VEL_OLD(K,LL) = DES_VEL_NEW(K,LL)
-            OMEGA_OLD(K,LL) = OMEGA_NEW(K,LL)
-         END DO
-         OMEGA_OLD(3,LL) = OMEGA_NEW(3,LL)
+            DES_POS_OLD(LL,:) = DES_POS_NEW(LL,:)
+            DES_VEL_OLD(LL,:) = DES_VEL_NEW(LL,:)
+            OMEGA_OLD(LL,:) = OMEGA_NEW(LL,:)
       END DO
 
       RETURN

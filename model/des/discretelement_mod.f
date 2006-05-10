@@ -1,90 +1,166 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                         C
-!     Module name: DISCRETELEMENT                                         C
-!     Purpose: DES mod file                                               C
-!                                                                         C
-!                                                                         C
-!     Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!     Reviewer:                                          Date:            C
-!                                                                         C
+!                                                                       C
+!   Module name: DISCRETELEMENT                                         C
+!   Purpose: DES mod file                                               C
+!                                                                       C
+!                                                                       C
+!   Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
+!   Reviewer:                                          Date:            C
+!                                                                       C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!     
-!     Common Block containing DEM conditions 
-!     
+!   
+!   Common Block containing DEM conditions 
+!   
 
       MODULE DISCRETELEMENT
 
 
       Use param
       Use param1
-      
-      parameter (NPARTICLES = 10000)
-      parameter (MAXNEIGHBORS = 16)
-      parameter (MAXQUADS = 50000)
-      parameter (NMQD = 11)
-      parameter (NDIM = 3)
-      parameter (NWALLS = 6)
 
-      INTEGER NEIGHBOURS(MAXNEIGHBORS,NPARTICLES)
-      INTEGER PN(MAXNEIGHBORS,NPARTICLES), PV(MAXNEIGHBORS,NPARTICLES)
-      INTEGER CALLED, PCOUNT, FACTOR, DES_NEIGHBOR_SEARCH
-      INTEGER PARTICLES, MN, NQUAD, DIMN, ZONES, ZN1, ZN2, ZN3, ZN4
-      INTEGER NEIGHBOR, WALLCONTACT, OUTOFBOX
-      INTEGER LQUAD(NMQD,MAXQUADS), PINC(NPARTICLES)
-      
-      DOUBLE PRECISION DES_POS_OLD(NDIM,NPARTICLES)
-      DOUBLE PRECISION DES_POS_NEW(NDIM,NPARTICLES)
-      DOUBLE PRECISION DES_RADIUS(NPARTICLES), PR(NPARTICLES)
-      DOUBLE PRECISION DES_VEL_OLD(NDIM,NPARTICLES)
-      DOUBLE PRECISION DES_VEL_NEW(NDIM,NPARTICLES)
-      DOUBLE PRECISION FC(NDIM,NPARTICLES)
-      DOUBLE PRECISION FN(NDIM,NPARTICLES)
-      DOUBLE PRECISION FT(NDIM,NPARTICLES) 
-      DOUBLE PRECISION TOW(NDIM,NPARTICLES)
-      DOUBLE PRECISION KN, KN_W
-      DOUBLE PRECISION KT, KT_W 
-      DOUBLE PRECISION ETA_DES_N, ETA_N_W
-      DOUBLE PRECISION ETA_DES_T, ETA_T_W
-      DOUBLE PRECISION MEW, MEW_W, E_RESTITUTION, DES_GAMMA, DES_F
-      DOUBLE PRECISION DES_KE, DES_PE
-      DOUBLE PRECISION OMEGA_OLD(NDIM,NPARTICLES)
-      DOUBLE PRECISION OMEGA_NEW(NDIM,NPARTICLES)
+!
+! DES Variables      
+!
+      INTEGER DIMN, MAXNEIGHBORS, MAXQUADS, NMQD, NWALLS
+      DOUBLE PRECISION S_TIME, DTSOLID, DTSOLID_FACTOR, P_TIME
+!
+!   Particle properties 
+      INTEGER PARTICLES
+      DOUBLE PRECISION PARTICLES_FACTOR 
+!
+!   Particle-particle and Particle-wall contact parameters
+!             Spring contants      
+      DOUBLE PRECISION KN, KN_W  ! Normal
+      DOUBLE PRECISION KT, KT_W  ! Tangential
+!             Damping coeffients      
+      DOUBLE PRECISION ETA_DES_N, ETA_N_W  ! Normal
+      DOUBLE PRECISION ETA_DES_T, ETA_T_W  ! Tangential
+!             Friction coefiicients and coeff of restitution
+      DOUBLE PRECISION MEW, MEW_W, E_RESTITUTION 
+!
+!   Wall treatment      
+      INTEGER WALLCONTACT
       DOUBLE PRECISION WX1, EX2, BY1, TY2, SZ1, NZ2
-      DOUBLE PRECISION DES_WALL_POS(NDIM,NWALLS), DES_WALL_VEL(NDIM,NWALLS)
-      DOUBLE PRECISION RADIUS_EQ, WALL_NORMAL(NDIM,NWALLS)
-      DOUBLE PRECISION PFN(NDIM,MAXNEIGHBORS,NPARTICLES)
-      DOUBLE PRECISION PFT(NDIM,MAXNEIGHBORS,NPARTICLES)
-      DOUBLE PRECISION CQUAD(NWALLS,MAXQUADS)
-      DOUBLE PRECISION DTSOLID, RO_Sol(NPARTICLES)
-      DOUBLE PRECISION N2CT, NBSCT, QUADCT, OCTCT
-      DOUBLE PRECISION FNS1(NDIM), FTS1(NDIM)
-      DOUBLE PRECISION PMASS(NPARTICLES), MOI(NPARTICLES), GRAV(NDIM), ROs
-      DOUBLE PRECISION DES_THETA(NPARTICLES,NDIM)
-
+!             Wall vibration parameters
+      DOUBLE PRECISION  DES_GAMMA, DES_F
+!   
+!   Neighbor search      
+      INTEGER DES_NEIGHBOR_SEARCH, MN, NQUAD
+      DOUBLE PRECISION RADIUS_EQ, NEIGHBOR_SEARCH_N
+      DOUBLE PRECISION N2CT, NBSCT, QUADCT, OCTCT, MQUAD_FACTOR
+!
+!   Kinetic and Potential energy of the system
+      DOUBLE PRECISION DES_KE, DES_PE
+!
+!    
+! DES Logicals
+!
+!   DES - Continuum       
       LOGICAL DISCRETE_ELEMENT 
       LOGICAL DES_CONTINUUM_COUPLED
-      LOGICAL COUPLED_FLOW
-      LOGICAL DO_NBS
+!
+!   Neighbor search     
       LOGICAL DO_QUADTREE
       LOGICAL DO_OCTREE
       LOGICAL DO_NSQUARE
+!
+!   Particle treatment at the walls  
       LOGICAL WALLFIXEDOVERLAP
       LOGICAL WALLDTSPLIT
       LOGICAL WALLREFLECT
+!
+!   Periodic Wall BC
       LOGICAL DES_PERIODIC_WALLS
       LOGICAL DES_PERIODIC_WALLS_X
       LOGICAL DES_PERIODIC_WALLS_Y
       LOGICAL DES_PERIODIC_WALLS_Z
+!
+!   Inlet Outlet BC 
       LOGICAL INLET_OUTLET
-      LOGICAL TIME_ADJUST
-      LOGICAL EQUIVALENT_RADIUS
+      LOGICAL INLET_OUTLET_X
+      LOGICAL INLET_OUTLET_Y
+      LOGICAL INLET_OUTLET_Z
+!
+!   Drag      
       LOGICAL TSUJI_DRAG
-      LOGICAL KUIPERS_DRAG
+!
+!
+!   Allocatable arrays
+!
+!   Particle attributes
+!     Radius, density, mass, moment of inertia      
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_RADIUS ! (PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: RO_Sol ! (PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PVOL !(PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PMASS ! (PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: OMOI ! (PARTICLES)
+!
+!   Old and new particle positions, velocities (translational and
+!                                                             rotational)      
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_POS_OLD ! (PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_POS_NEW ! (PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_VEL_OLD ! (PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_VEL_NEW ! (PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: OMEGA_OLD ! (PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: OMEGA_NEW ! (PARTICLES,DIMN)
+!
+!   Total, normal and tangetial forces      
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC ! (PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FN ! (PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FT ! (PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FNS1 ! (DIMN)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FTS1 ! (DIMN)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GRAV ! (DIMN)
+!
+!   Torque      
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW ! (PARTICLES,DIMN)
+!
+!   Accumulated spring forces      
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN ! (PARTICLES,DIMN,MAXNEIGHBORS)
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT ! (PARTICLES,DIMN,MAXNEIGHBORS)
+!
+!   Wall position, velocity and normal vector
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_WALL_POS ! (NWALLS,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_WALL_VEL ! (NWALLS,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: WALL_NORMAL ! (NWALLS,DIMN)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN ! (PARTICLES, MAXNEIGHBORS)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PV ! (PARTICLES, MAXNEIGHBORS)
+!
+!   Particles in a computational cell (for volume fraction)
+      INTEGER, DIMENSION(:), ALLOCATABLE :: PINC 
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PIJK ! (PARTCILES,5)=>I,J,K,IJK,M 
 
+!
+!   Volume averaged solids volume in a cell      
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_U_s
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_V_s
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_W_s
+!
+!   Drag exerted by the gas o solids
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: SOLID_DRAG
+!
+!   Neighbor search
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: NEIGHBOURS ! (PARTICLES, MAXNEIGHBORS)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: LQUAD ! (MAXQUADS, NMQD)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: CQUAD ! (NWALLS,MAXQUADS)
+!
+!   Granular temperature
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_THETA ! (PARTICLES,MMAX)
+!
+!   Cell faces
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: XE ! (IMAX3)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: YN ! (JMAX3)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ZT ! (KMAX3)
 
+!
+!
+!********************************************************************************
+!
+!  COHESION      
+!
 !  Square-well potential parameters
-      DOUBLE PRECISION WELL_WIDTH(NPARTICLES)
-      DOUBLE PRECISION WELL_DEPTH(NPARTICLES)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WELL_WIDTH ! (PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WELL_DEPTH ! (PARTICLES)
 
 !  Well depth read in from mfix.dat
       DOUBLE PRECISION MASTER_WELL_DEPTH
@@ -95,13 +171,13 @@
       DOUBLE PRECISION WALL_RADIUS_RATIO
 
 !  Array of linked partners
-      INTEGER LINKS(MAXNEIGHBORS, NPARTICLES)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: LINKS ! (PARTICLES, MAXNEIGHBORS)
 
 !  Array of agglomerated partners
-      INTEGER AGGS(MAXNEIGHBORS, NPARTICLES)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: AGGS ! (PARTICLES, MAXNEIGHBORS)
 
 !  Does particle have at least one linked partner
-      INTEGER IS_LINKED(NPARTICLES)
+      INTEGER, DIMENSION(:), ALLOCATABLE :: IS_LINKED ! (PARTICLES)
 
 !  Switch to turn cohesion on and off
       LOGICAL USE_COHESION      
@@ -134,7 +210,7 @@
       INTEGER MIN_LOG_STEP
 
 !  Does particle have at least one aggloerated partner
-      INTEGER IS_AGGLOMERATED(NPARTICLES)
+      INTEGER, DIMENSION(:), ALLOCATABLE :: IS_AGGLOMERATED ! (PARTICLES)
 
 !  Number of particle that is followed by single particle log
       INTEGER FOCUS_PARTICLE
@@ -143,10 +219,10 @@
       INTEGER SEARCH_GRIDS(3)
 
 !  Matrix of particles in each search grid
-      INTEGER PART_IN_GRID(100, 100, 100, 50)
+      INTEGER PART_IN_GRID(0:110, 0:110, 0:110, 0:55)
 
 !  Matrix location of particle 
-      INTEGER PART_GRID(4,NPARTICLES)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PART_GRID ! (PARTICLES,4)
 
 !  Maximum number of particles in a search grid
       INTEGER MAX_PART_IN_GRID
@@ -173,7 +249,7 @@
       LOGICAL RHODES_COHESION
       DOUBLE PRECISION RHODES_COHESION_FACTOR
       DOUBLE PRECISION RHODES_COHESION_FACTOR_WALL
-      DOUBLE PRECISION RHODES_COHESION_LENGTH_SCALE
+      DOuBLE PRECISION RHODES_COHESION_LENGTH_SCALE
       DOUBLE PRECISION RHODES_COHESION_LENGTH_SCALE_WALL
 
 
@@ -184,15 +260,15 @@
       DOUBLE PRECISION VERTICAL_NET_FORCE_INCREMENT
       DOUBLE PRECISION NET_FORCE_TIME_INCREMENT
       DOUBLE PRECISION TIME_AT_PREVIOUS_NET_FORCE
-      DOUBLE PRECISION NET_PART_TAN_FORCE(2,20)       !Contributions to net
-      DOUBLE PRECISION NET_WALL_TAN_FORCE(2,20)       !  force in x- and y-
-      DOUBLE PRECISION NET_PART_NORM_FORCE(2,20)      !  directions from up to
-      DOUBLE PRECISION NET_WALL_NORM_FORCE(2,20)      !  20 different heights
-      DOUBLE PRECISION NET_GRAVITY_FORCE(2,20)
-      DOUBLE PRECISION NET_PART_COH_FORCE(2,20)
-      DOUBLE PRECISION NET_WALL_COH_FORCE(2,20)
-      DOUBLE PRECISION NET_FLUID_DRAG_FORCE(2,20)
-      DOUBLE PRECISION NET_PRESSURE_FORCE(2,20)
+      DOUBLE PRECISION NET_PART_TAN_FORCE(20,2)       !Contributions to net
+      DOUBLE PRECISION NET_WALL_TAN_FORCE(20,2)       !  force in x- and y-
+      DOUBLE PRECISION NET_PART_NORM_FORCE(20,2)      !  directions from up to
+      DOUBLE PRECISION NET_WALL_NORM_FORCE(20,2)      !  20 different heights
+      DOUBLE PRECISION NET_GRAVITY_FORCE(20,2)
+      DOUBLE PRECISION NET_PART_COH_FORCE(20,2)
+      DOUBLE PRECISION NET_WALL_COH_FORCE(20,2)
+      DOUBLE PRECISION NET_FLUID_DRAG_FORCE(20,2)
+      DOUBLE PRECISION NET_PRESSURE_FORCE(20,2)
       INTEGER APP_COH_DIST_INT
       INTEGER CAP_COH_DIST_INT
       INTEGER ESC_COH_DIST_INT

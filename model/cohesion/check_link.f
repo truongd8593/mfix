@@ -21,10 +21,10 @@
       INTEGER K,I,J
          
       CHECK_LINK = 0
-      IF(LINKS(1,I).gt.0)THEN
+      IF(LINKS(I,1).gt.0)THEN
         K = 2
-        DO WHILE(LINKS(K,I).gt.0)
-          IF(LINKS(K,I).eq.J)THEN
+        DO WHILE(LINKS(I,K).gt.0)
+          IF(LINKS(I,K).eq.J)THEN
             CHECK_LINK=1
             GO TO 10
           END IF

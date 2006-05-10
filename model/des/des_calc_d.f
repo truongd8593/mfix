@@ -2,7 +2,7 @@
 !                                                                      C
 !  Module name: DES_CALC_d_e(A_m, VxF_gs, d_e, IER)                    C
 !  Purpose: DES -calculte coefficients linking velocity correction to  C
-!           pressure correction -- East                                C
+!           pressure correction -- East -- when coupled                C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C

@@ -21,8 +21,8 @@
 
 !-----LOCAL DUMMY VARIABLES
       INTEGER I,J,K
-      DOUBLE PRECISION R(NDIM)
-      DOUBLE PRECISION VEL_DIF(NDIM)
+      DOUBLE PRECISION R(3)
+      DOUBLE PRECISION VEL_DIF(3)
       DOUBLE PRECISION DIST
       DOUBLE PRECISION REL_VEL
       DOUBLE PRECISION CONST_A
@@ -45,7 +45,7 @@
       DIST=0
       REL_VEL=0
       DO K = 1, DIMN
-        R(K) = DES_POS_NEW(K,J)-DES_POS_NEW(K,I)
+        R(K) = DES_POS_NEW(J,K)-DES_POS_NEW(I,K)
         IF(DES_PERIODIC_WALLS) THEN
           IF(DES_PERIODIC_WALLS_X) THEN
              IF(K.eq.1) THEN
@@ -79,7 +79,7 @@
           END IF
         END IF
         DIST=DIST+(R(K))**2
-        VEL_DIF(K) = DES_VEL_NEW(K,I)-DES_VEL_NEW(K,J)
+        VEL_DIF(K) = DES_VEL_NEW(I,K)-DES_VEL_NEW(J,K)
         REL_VEL=REL_VEL+R(K)*VEL_DIF(K)
       END DO
       DIST=sqrt(DIST)
@@ -103,8 +103,8 @@
 
 !-----Convert momentum impulse into force on particle
       DO K=1,DIMN
-         FC(K,I)=FC(K,I)-IMPULSE*R(K)/(DIST*DTSOLID)
-         FC(K,J)=FC(K,J)+IMPULSE*R(K)/(DIST*DTSOLID)
+         FC(I,K)=FC(I,K)-IMPULSE*R(K)/(DIST*DTSOLID)
+         FC(J,K)=FC(J,K)+IMPULSE*R(K)/(DIST*DTSOLID)
       END DO
 
 

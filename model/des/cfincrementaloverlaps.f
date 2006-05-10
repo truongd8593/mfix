@@ -18,8 +18,8 @@
 
 !-----------------------------------------------------------------------
 
-      OVERLP_N = Vno*DTSOLID
-      OVERLP_T = Vtan*DTSOLID
+      OVERLP_N = Vno * DTSOLID
+      OVERLP_T = Vtan * DTSOLID
 
       RETURN
       END SUBROUTINE CFINCREMENTALOVERLAPS

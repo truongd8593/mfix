@@ -9,22 +9,21 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CFVRN(Vno, VRl, NORM)
-      
+
+      USE param1      
       USE discretelement
       IMPLICIT NONE
 
       INTEGER K
-      DOUBLE PRECISION Vno, VRl(NDIM), NORM(NDIM)
+      DOUBLE PRECISION Vno, VRl(DIMN), NORM(DIMN)
 
 !---------------------------------------------------------------------------
 
-      Vno = 0.0	
+      Vno = ZERO	
 
       DO K = 1, DIMN
          Vno = Vno + VRl(K)*NORM(K)
       END DO 
-
-!     PRINT *,'Vrn', Vno
 
       RETURN
       END SUBROUTINE CFVRN 

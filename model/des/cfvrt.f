@@ -11,22 +11,21 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CFVRT(Vtan, VRl, TANGNT)
-      
+
+      USE param1      
       USE discretelement
       IMPLICIT NONE
 
       INTEGER K
-      DOUBLE PRECISION Vtan, VRl(NDIM), TANGNT(NDIM), Vno, NORM(NDIM)
+      DOUBLE PRECISION Vtan, VRl(DIMN), TANGNT(DIMN), Vno, NORM(DIMN)
 
 !-----------------------------------------------------------------------
 
-      Vtan = 0
+      Vtan = ZERO 
 
       DO K = 1, DIMN
          Vtan = Vtan + VRl(K)*TANGNT(K)  
       END DO
-
-!     PRINT *,'Vrt', Vtan
 
       RETURN
       END SUBROUTINE CFVRT

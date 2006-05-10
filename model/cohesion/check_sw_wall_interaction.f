@@ -5,7 +5,7 @@
 !           and the wall when the square-well cohesion model is being  C 
 !           used                                                       C
 !                                                                      C
-!   Author: Mike Weber                              Date: 9/30/04      C
+!   Author: Mike Weber                              Date: 9/3ZERO4      C
 !   Reviewer:                                       Date:              C
 !                                                                      C
 !                                                                      C
@@ -15,6 +15,7 @@
       SUBROUTINE CHECK_SW_WALL_INTERACTION(I,J)
 
 !-----MODULES USED
+      USE param1
       USE discretelement
       IMPLICIT NONE
 
@@ -34,61 +35,61 @@
       END IF 
 
       IF(J.eq.PARTICLES+1)THEN !West wall
-         DES_POS_NEW(1,J)=WX1
-         DES_POS_NEW(2,J)=DES_POS_NEW(2,I)
-         DES_POS_NEW(3,J)=DES_POS_NEW(3,I)
-         DES_VEL_NEW(1,J)=0.0
-         DES_VEL_NEW(2,J)=0.0
-         DES_VEL_NEW(3,J)=0.0
+         DES_POS_NEW(J,1)=WX1
+         DES_POS_NEW(J,2)=DES_POS_NEW(I,2)
+         IF(DIMN.EQ.3) DES_POS_NEW(J,3)=DES_POS_NEW(I,3)
+         DES_VEL_NEW(J,1)=ZERO
+         DES_VEL_NEW(J,2)=ZERO
+         IF(DIMN.EQ.3) DES_VEL_NEW(J,3)=ZERO
       END IF         
 
       IF(J.eq.PARTICLES+2)THEN !Bottom wall
-         DES_POS_NEW(1,J)=DES_POS_NEW(1,I)
-         DES_POS_NEW(2,J)=BY1
-         DES_POS_NEW(3,J)=DES_POS_NEW(3,I)
-         DES_VEL_NEW(1,J)=0.0
-         DES_VEL_NEW(2,J)=0.0
-         DES_VEL_NEW(3,J)=0.0
+         DES_POS_NEW(J,1)=DES_POS_NEW(I,1)
+         DES_POS_NEW(J,2)=BY1
+         IF(DIMN.EQ.3) DES_POS_NEW(J,3)=DES_POS_NEW(I,3)
+         DES_VEL_NEW(J,1)=ZERO
+         DES_VEL_NEW(J,2)=ZERO
+         IF(DIMN.EQ.3) DES_VEL_NEW(J,3)=ZERO
       END IF  
 
       IF(J.eq.PARTICLES+3)THEN !East wall
-         DES_POS_NEW(1,J)=EX2
-         DES_POS_NEW(2,J)=DES_POS_NEW(2,I)
-         DES_POS_NEW(3,J)=DES_POS_NEW(3,I)
-         DES_VEL_NEW(1,J)=0.0
-         DES_VEL_NEW(2,J)=0.0
-         DES_VEL_NEW(3,J)=0.0
+         DES_POS_NEW(J,1)=EX2
+         DES_POS_NEW(J,2)=DES_POS_NEW(I,2)
+         IF(DIMN.EQ.3) DES_POS_NEW(J,3)=DES_POS_NEW(I,3)
+         DES_VEL_NEW(J,1)=ZERO
+         DES_VEL_NEW(J,2)=ZERO
+         IF(DIMN.EQ.3) DES_VEL_NEW(J,3)=ZERO
       END IF  
 
       IF(J.eq.PARTICLES+4)THEN !Top wall
-         DES_POS_NEW(1,J)=DES_POS_NEW(1,I)
-         DES_POS_NEW(2,J)=TY2
-         DES_POS_NEW(3,J)=DES_POS_NEW(3,I)
-         DES_VEL_NEW(1,J)=0.0
-         DES_VEL_NEW(2,J)=0.0
-         DES_VEL_NEW(3,J)=0.0
+         DES_POS_NEW(J,1)=DES_POS_NEW(I,1)
+         DES_POS_NEW(J,2)=TY2
+         IF(DIMN.EQ.3) DES_POS_NEW(J,3)=DES_POS_NEW(I,3)
+         DES_VEL_NEW(J,1)=ZERO
+         DES_VEL_NEW(J,2)=ZERO
+         IF(DIMN.EQ.3) DES_VEL_NEW(J,3)=ZERO
       END IF  
 
       IF(J.eq.PARTICLES+5)THEN !North wall
-         DES_POS_NEW(1,J)=DES_POS_NEW(1,I)
-         DES_POS_NEW(2,J)=DES_POS_NEW(2,I)
-         DES_POS_NEW(3,J)=NZ2
-         DES_VEL_NEW(1,J)=0.0
-         DES_VEL_NEW(2,J)=0.0
-         DES_VEL_NEW(3,J)=0.0
+         DES_POS_NEW(J,1)=DES_POS_NEW(I,1)
+         DES_POS_NEW(J,2)=DES_POS_NEW(I,2)
+         IF(DIMN.EQ.3) DES_POS_NEW(J,3)=NZ2
+         DES_VEL_NEW(J,1)=ZERO
+         DES_VEL_NEW(J,2)=ZERO
+         IF(DIMN.EQ.3) DES_VEL_NEW(J,3)=ZERO
       END IF 
 
       IF(J.eq.PARTICLES+6)THEN !South wall
-         DES_POS_NEW(1,J)=DES_POS_NEW(1,I)
-         DES_POS_NEW(2,J)=DES_POS_NEW(2,I)
-         DES_POS_NEW(3,J)=SZ1
-         DES_VEL_NEW(1,J)=0.0
-         DES_VEL_NEW(2,J)=0.0
-         DES_VEL_NEW(3,J)=0.0
+         DES_POS_NEW(J,1)=DES_POS_NEW(I,1)
+         DES_POS_NEW(J,2)=DES_POS_NEW(I,2)
+         IF(DIMN.EQ.3) DES_POS_NEW(J,3)=SZ1
+         DES_VEL_NEW(J,1)=ZERO
+         DES_VEL_NEW(J,2)=ZERO
+         IF(DIMN.EQ.3) DES_VEL_NEW(J,3)=ZERO
       END IF 
 
-      RADIUS=SQRT((DES_POS_NEW(1,J)-DES_POS_NEW(1,I))**2+&
-        (DES_POS_NEW(2,J)-DES_POS_NEW(2,I))**2)
+      RADIUS=SQRT((DES_POS_NEW(J,1)-DES_POS_NEW(I,1))**2+&
+        (DES_POS_NEW(J,2)-DES_POS_NEW(I,2))**2)
 
          LINK = CHECK_LINK(I,J)
          IF(LINK.eq.1)THEN

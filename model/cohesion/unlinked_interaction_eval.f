@@ -20,8 +20,8 @@
 
 !-----LOCAL DUMMY VARIABLES
       INTEGER I,J,K
-      DOUBLE PRECISION R(NDIM)
-      DOUBLE PRECISION VEL_DIF(NDIM)
+      DOUBLE PRECISION R(3)
+      DOUBLE PRECISION VEL_DIF(3)
       DOUBLE PRECISION DIST
       DOUBLE PRECISION REL_VEL
       DOUBLE PRECISION CONST_A
@@ -36,7 +36,7 @@
       DIST=0
       REL_VEL=0
       DO K = 1, DIMN
-        R(K) = DES_POS_NEW(K,J)-DES_POS_NEW(K,I)
+        R(K) = DES_POS_NEW(J,K)-DES_POS_NEW(I,K)
         IF(DES_PERIODIC_WALLS) THEN
           IF(DES_PERIODIC_WALLS_X) THEN
              IF(K.eq.1) THEN
@@ -69,15 +69,15 @@
              END IF
           END IF
         END IF
-        VEL_DIF(K) = DES_VEL_NEW(K,I)-DES_VEL_NEW(K,J)
+        VEL_DIF(K) = DES_VEL_NEW(I,K)-DES_VEL_NEW(J,K)
         REL_VEL=REL_VEL+R(K)*VEL_DIF(K)
         DIST=DIST+(R(K))**2
       END DO
       DIST=sqrt(DIST)
 
       IF(COHESION_DEBUG.gt.1)THEN
-         PRINT *, 'part 1=',I,'pos',DES_POS_NEW(1,I),DES_POS_NEW(2,I)
-         PRINT *, 'part 2=',J,'pos',DES_POS_NEW(1,J),DES_POS_NEW(2,J)
+         PRINT *, 'part 1=',I,'pos',DES_POS_NEW(I,1),DES_POS_NEW(I,2)
+         PRINT *, 'part 2=',J,'pos',DES_POS_NEW(J,1),DES_POS_NEW(J,2)
          PRINT *, 'REL VEL=', REL_VEL,'DIST=',DIST&
             ,'WELL_WIDTH=',WELL_WIDTH(I), WELL_WIDTH(J)
       END IF

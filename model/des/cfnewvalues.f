@@ -38,84 +38,85 @@
 !     Calculate new values
 !---------------------------------------------------------------------
 !     
-      CHECK = 0
+      CHECK = 0 
       TEMPTIME = DTSOLID
+     
 
-      DO KK = 1, DIMN
+         DES_VEL_NEW(L,:) = FC(L,:)/PMASS(L) + GRAV(:)
+         DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID
 
-!     PRINT *,KK, L,':', FC(KK,L), PMASS(L), FC(KK,L)/PMASS(L), GRAV(KK) 
+         DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID 
 
-         DES_VEL_NEW(KK,L) = FC(KK,L)/PMASS(L) + GRAV(KK)
-
-         DES_VEL_NEW(KK,L) = DES_VEL_OLD(KK,L)+DES_VEL_NEW(KK,L)*DTSOLID
-
-	 DES_POS_NEW(KK,L)=DES_VEL_NEW(KK,L)*DTSOLID+DES_POS_OLD(KK,L)
-
-	 OMEGA_NEW(KK,L) = OMEGA_OLD(KK,L) + (TOW(KK,L)/MOI(L))*DTSOLID
-      END DO
-
-      OMEGA_NEW(3,L) = OMEGA_OLD(3,L) + (TOW(3,L)/MOI(L))*DTSOLID
+	 OMEGA_NEW(L,:) = OMEGA_OLD(L,:) + TOW(L,:)*OMOI(L)*DTSOLID
 
 
-!     IF(L.EQ.1) THEN
-!     PRINT *,CALLED, L,':',FC(2,L), DES_VEL_OLD(2,L), DES_VEL_NEW(2,L), DES_POS_NEW(2,L), DTSOLID, gr
-!     END IF
-
-      DIST = 0.0
+         
+      DIST = ZERO 
       DO KK=1, DIMN
-         DIST = DIST + (DES_POS_NEW(KK,L)-DES_POS_OLD(KK,L))**2
+         DIST = DIST + (DES_POS_NEW(L,KK)-DES_POS_OLD(L,KK))**2
       END DO
       DIST = SQRT(DIST)
 
       IF(DIST.GE.2*DES_RADIUS(L)) THEN
-         PRINT *,'MOVEMENT UNDESIRED', CALLED, L, DTSOLID, DIST, DES_RADIUS(L)
-         PRINT *, (DES_POS_OLD(KK,L),KK=1,DIMN), (DES_POS_NEW(KK,L), KK= 1,DIMN)
-         PRINT *, (DES_VEL_OLD(KK,L),KK=1,DIMN), (DES_VEL_NEW(KK,L),KK=1,DIMN)
-         PRINT *, (FC(KK,L),KK=1,DIMN)
-         PRINT *,(NEIGHBOURS(KK,L), KK=1, MAXNEIGHBORS)
+         PRINT *,'MOVEMENT UNDESIRED'
+         PRINT *, 'T, DT', S_TIME, DTSOLID 
+         PRINT *, 'L, DIST, RADIUS', L, DIST, DES_RADIUS(L)
+         PRINT *, 'POS: OLD, NEW', (DES_POS_OLD(L,KK),KK=1,DIMN), (DES_POS_NEW(L,KK), KK= 1,DIMN)
+         PRINT *, 'VEL: OLD, NEW', (DES_VEL_OLD(L,KK),KK=1,DIMN), (DES_VEL_NEW(L,KK),KK=1,DIMN)
+         PRINT *, 'FC', (FC(L,KK),KK=1,DIMN)
+         PRINT *, 'NEIGHBORS', (NEIGHBOURS(L,KK), KK=1, MAXNEIGHBORS)
          STOP
       END IF
 
       IF(DES_PERIODIC_WALLS) THEN
         IF(DES_PERIODIC_WALLS_X) THEN
-         IF(DES_POS_NEW(1,L).GT.EX2) THEN
-            DES_POS_NEW(1,L) = DES_POS_NEW(1,L) - (EX2 - WX1)
-         ELSE IF(DES_POS_NEW(1,L).LT.WX1) THEN
-            DES_POS_NEW(1,L) = DES_POS_NEW(1,L) + (EX2 - WX1)
+         IF(DES_POS_NEW(L,1).GT.EX2) THEN
+            DES_POS_NEW(L,1) = DES_POS_NEW(L,1) - (EX2 - WX1)
+         ELSE IF(DES_POS_NEW(L,1).LT.WX1) THEN
+            DES_POS_NEW(L,1) = DES_POS_NEW(L,1) + (EX2 - WX1)
          END IF
         END IF
         IF(DES_PERIODIC_WALLS_Y) THEN
-         IF(DES_POS_NEW(2,L).GT.TY2) THEN
-            DES_POS_NEW(2,L) = DES_POS_NEW(2,L) - (TY2 - BY1)
-         ELSE IF(DES_POS_NEW(2,L).LT.BY1) THEN
-            DES_POS_NEW(2,L) = DES_POS_NEW(2,L) + (TY2 - BY1)
+         IF(DES_POS_NEW(L,2).GT.TY2) THEN
+            DES_POS_NEW(L,2) = DES_POS_NEW(L,2) - (TY2 - BY1)
+         ELSE IF(DES_POS_NEW(L,2).LT.BY1) THEN
+            DES_POS_NEW(L,2) = DES_POS_NEW(L,2) + (TY2 - BY1)
          END IF
         END IF
         IF(DES_PERIODIC_WALLS_Z) THEN
-         IF(DES_POS_NEW(3,L).GT.NZ2) THEN
-            DES_POS_NEW(3,L) = DES_POS_NEW(3,L) - (NZ2 - SZ1)
-         ELSE IF(DES_POS_NEW(3,L).LT.SZ1) THEN
-            DES_POS_NEW(3,L) = DES_POS_NEW(3,L) + (NZ2 - SZ1)
+         IF(DES_POS_NEW(L,3).GT.NZ2) THEN
+            DES_POS_NEW(L,3) = DES_POS_NEW(L,3) - (NZ2 - SZ1)
+         ELSE IF(DES_POS_NEW(L,3).LT.SZ1) THEN
+            DES_POS_NEW(L,3) = DES_POS_NEW(L,3) + (NZ2 - SZ1)
          END IF
         END IF
       END IF
 
       IF(INLET_OUTLET) THEN
-         IF(DES_POS_NEW(1,L).GT.(EX2+DES_RADIUS(L))) THEN
-            DES_POS_NEW(1,L) = -1000
+         IF(DES_POS_NEW(L,1).GT.(EX2+DES_RADIUS(L))) THEN
+            DES_POS_NEW(L,1) = -1000
          END IF
       END IF
 
-      V = 0.0
+      V = ZERO 
       DO K = 1, DIMN
-         V = V + DES_VEL_NEW(K,L)**2
+         V = V + DES_VEL_NEW(L,K)**2
       END DO 
 
-      DES_KE = DES_KE + 0.5*V*PMASS(L)
-      DES_PE = DES_PE + PMASS(L)*SQRT(GRAV(1)**2 +&
-              GRAV(2)**2 + GRAV(3)**2)*DES_POS_NEW(2,L)
+      DES_KE = DES_KE + HALF*V*PMASS(L) 
+
+      IF(DIMN.EQ.3) THEN
+         DES_PE = DES_PE + PMASS(L)*SQRT(GRAV(1)**2 +&
+                  GRAV(2)**2 + GRAV(3)**2)*DES_POS_NEW(L,2)
+      ELSE
+         DES_PE = DES_PE + PMASS(L)*SQRT(GRAV(1)**2 +&
+                  GRAV(2)**2)*DES_POS_NEW(L,2)
+      END IF
 
       DTSOLID = TEMPTIME
+
+      FC(L,:) = ZERO
+      TOW(L,:) = ZERO
 
       RETURN
       END SUBROUTINE CFNEWVALUES

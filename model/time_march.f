@@ -122,7 +122,6 @@
 !     
 !     used for activating check_data_30 
       INTEGER          NCHECK, DNCHECK,ijk 
-      INTEGER          NNC
 !     
 !     dummy logical variable for initializing adjust_dt 
       LOGICAL          dummy 
@@ -282,8 +281,6 @@
 !     DES 
 !     Jay Boyalakuntla
       IF(DISCRETE_ELEMENT) THEN
-         NNC = 1
-         CALLED = 0
          CALL MAKE_ARRAYS_DES(PARTICLES)
       END IF
 !     DES end 
@@ -507,7 +504,6 @@
 !     
 !     Adjust time step and reiterate if necessary
 !     
-      IF(TIME_ADJUST) THEN
          DO WHILE (ADJUST_DT(IER,NIT))
             CALL ITERATE (IER, NIT) 
          END DO
@@ -520,7 +516,6 @@
             IF(AUTO_RESTART) AUTOMATIC_RESTART = .TRUE.
             RETURN
          ENDIF
-      END IF
 
       
 !     Check over mass and elemental balances.  This routine is not active by default.
@@ -529,16 +524,7 @@
 
 !     DES begin
 !     Jay Boyalakuntla 
-      
-      IF (DISCRETE_ELEMENT) THEN	
-         CALL DES_TIME_MARCH
-         IF(NNC.LE.FACTOR) THEN
-            CALL DES_GRANULAR_TEMPERATURE(NNC)
-            NNC = NNC + 1
-         ELSE
-            NNC = FACTOR
-         END IF
-      END IF
+      IF (DISCRETE_ELEMENT) CALL DES_TIME_MARCH
 !     DES end
 !     
 !     

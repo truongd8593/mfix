@@ -14,13 +14,11 @@
       IMPLICIT NONE
 
       INTEGER K, L
-      DOUBLE PRECISION OVERLP_N, NORM(NDIM), Vno
+      DOUBLE PRECISION OVERLP_N, NORM(DIMN), Vno
 !     
 !---------------------------------------------------------------------
 
-      DO K = 1, DIMN
-         FN(K,L) = 0 - (KN_W*OVERLP_N + ETA_N_W*Vno)*NORM(K)
-      END DO
+         FN(L,:) = -(KN_W*OVERLP_N + ETA_N_W*Vno)*NORM(:)
 
       RETURN
       END SUBROUTINE CFFNWALL

@@ -42,154 +42,177 @@
 !     G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
-!     L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-      INTEGER, PARAMETER :: CALLED_MAX = 50000000  
-!-----------------------------------------------
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !     
-      INTEGER          K, PC, PC1, NN, LNN, I, J
+      INTEGER NN, LNN, I, J, K, FACTOR, NSN
+      DOUBLE PRECISION TEMP_DTS, PTC 
       LOGICAL ALREADY_EXISTS
 
+      IF(TIME.EQ.ZERO) THEN 
 
-!     
-!      CALLED = 0
+        NSN = 0
+        S_TIME = TIME
+        TEMP_DTS = ZERO
+        PTC = ZERO
 
-!      PRINT *, 'COUPLED_FLOW',COUPLED_FLOW
+        CALL CFASSIGN(PARTICLES)
 
-      DTSOLID = DT/FACTOR
+!!COHESION INITIALIZE
+         IF(USE_COHESION)THEN
+            CALL INITIALIZE_COHESION_PARAMETERS
+            CALL INITIALIZE_COH_INT_SEARCH
+         END IF
+!!COHESION
 
-      IF(COUPLED_FLOW) THEN            
-         IF(TIME.GE.(DTSOLID)) THEN
-            FACTOR = 20 
-            DTSOLID = DT/FACTOR
-            DES_CONTINUUM_COUPLED = .TRUE.
-         END IF 
+        IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
+
+           DES_CONTINUUM_COUPLED = .FALSE.
+
+           DO FACTOR = 1, 500
+             PRINT *,'DES', FACTOR 
+! New values
+             DO LNN = 1, PARTICLES
+                CALL CFNEWVALUES(LNN)
+             END DO
+! Neighbor search     
+             NSN = NSN + 1    
+             IF(NSN.EQ.NEIGHBOR_SEARCH_N) THEN 
+                CALL NEIGHBOUR(PARTICLES)
+                NSN = 0
+             END IF
+! Force calculation         
+             IF(DES_PERIODIC_WALLS) THEN
+                CALL PERIODIC_WALL_CALC_FORCE_DES
+             ELSE IF(INLET_OUTLET) THEN
+                CALL DES_INLET_OUTLET
+             ELSE
+                CALL CALC_FORCE_DES
+             END IF 
+
+           END DO
+
+           DES_CONTINUUM_COUPLED = .TRUE.
+           CALL PARTICLES_IN_CELL(PARTICLES)
+           GO TO 100
+        END IF
+      END IF
+
+      IF(DES_CONTINUUM_COUPLED) THEN
+         IF(DT.GE.DTSOLID) THEN
+            FACTOR = DT/DTSOLID + 1
+         ELSE
+            PRINT *,'DT_SOLID greater than DT_FLUID. DEM not called'
+         END IF
+      ELSE
+         FACTOR = TSTOP/DTSOLID + 1 
       END IF
       
-      PRINT *,'Discrete Element Simulation is called', FACTOR,' times.'
+      PRINT *,'Discrete Element Simulation is being called', FACTOR,' times.'
 
-      DO NN = 1, FACTOR
+      IF(NEIGHBOR_SEARCH_N.GT.FACTOR) NEIGHBOR_SEARCH_N = FACTOR
 
-!!COHESION
-         IF(CALLED.eq.0.AND.USE_COHESION)THEN
-            CALL INITIALIZE_COHESION_PARAMETERS
-            IF(USE_COHESION)THEN
-                CALL INITIALIZE_COH_INT_SEARCH
-            END IF
-         END IF
-!!COHESION
-      
+      DO NN = 1, FACTOR ! do1
+
          IF(DES_CONTINUUM_COUPLED) THEN
-            PC = 50*FACTOR
-!            OPEN (UNIT=1, FILE='called.out', STATUS='REPLACE')
-!            WRITE (1,*) CALLED
-            PRINT *,'D.E.S. COUPLED', CALLED
-         ELSE 
-            PC = 1150 
-            PRINT *,'D.E.S', CALLED
-         END IF
+            PRINT *,'DES-MFIX COUPLED', NN, S_TIME
+         ELSE
+            PRINT *,'DES', NN, S_TIME
+         END IF 
+
+! New values
+         DO LNN = 1, PARTICLES
+            CALL CFNEWVALUES(LNN)
+         END DO
          
-         IF(CALLED.LT.4) THEN
-            CALL CFASSIGN(PARTICLES)
+! Neighbor search     
+         NSN = NSN + 1    
+         IF(NSN.EQ.NEIGHBOR_SEARCH_N) THEN 
+           CALL NEIGHBOUR(PARTICLES)
+           NSN = 0
          END IF
 
-         IF(CALLED.GT.3) THEN
-            IF(DES_PERIODIC_WALLS) THEN
-               CALL PERIODIC_WALL_CALC_FORCE_DES(CALLED)
-            ELSE IF(INLET_OUTLET) THEN
-               CALL DES_INLET_OUTLET(CALLED)
-            ELSE
-               CALL CALC_FORCE_DES(CALLED)
-            END IF
+! Force calculation         
+         IF(DES_PERIODIC_WALLS) THEN
+            CALL PERIODIC_WALL_CALC_FORCE_DES
+         ELSE IF(INLET_OUTLET) THEN
+            CALL DES_INLET_OUTLET
+         ELSE
+            CALL CALC_FORCE_DES
          END IF
+  
+!         CALL DES_GRANULAR_TEMPERATURE(NN, FACTOR)
 
+         PTC = PTC + DTSOLID
 
-         IF(CALLED.GT.3) THEN	
+             IF(PTC.GE.P_TIME) THEN 
+               OPEN (UNIT=99, FILE='des_2-particles.out', STATUS='REPLACE')
+               WRITE (99,*) real(s_time),real(DES_POS_NEW(1,1)),real(DES_POS_NEW(1,2)),  real(DES_VEL_NEW(2,1)),real(DES_VEl_NEW(2,2))
 
-            IF(COUPLED_FLOW) THEN
-               IF(PCOUNT.EQ.PC) THEN
-                  CALL PRESSURE_DROP(PARTICLES)
-               END IF
-            END IF
-            
-            IF(PCOUNT.EQ.PC) THEN
-
-!               OPEN (UNIT=91, FILE='des_XY1.OUT', STATUS='REPLACE')
-!               WRITE (91,*) (DES_POS_NEW(K,20)/RADIUS_EQ,K=1,DIMN)
-!               OPEN (UNIT=19, FILE='des_XY2.OUT', STATUS='REPLACE')
-!               WRITE (19,*) (DES_POS_NEW(K,40)/RADIUS_EQ,K=1,DIMN)
-!               OPEN (UNIT=29, FILE='des_XY3.OUT', STATUS='REPLACE')
-!               WRITE (29,*) (DES_POS_NEW(K,60)/RADIUS_EQ,K=1,DIMN)
-!               OPEN (UNIT=39, FILE='des_XY4.OUT', STATUS='REPLACE')
-!               WRITE (39,*) (DES_POS_NEW(K,80)/RADIUS_EQ,K=1,DIMN)
-!               OPEN (UNIT=49, FILE='des_XY5.OUT', STATUS='REPLACE') 
-!               WRITE (49,*) (DES_POS_NEW(K,100)/RADIUS_EQ,K=1,DIMN)
-!               OPEN (UNIT=59, FILE='des_XY6.OUT', STATUS='REPLACE')
-!               WRITE (59,*) (DES_POS_NEW(K,130)/RADIUS_EQ,K=1,DIMN)
-!               OPEN (UNIT=69, FILE='des_XY7.OUT', STATUS='REPLACE')
-!               WRITE (69,*) (DES_POS_NEW(K,160)/RADIUS_EQ,K=1,DIMN)
-!               OPEN (UNIT=79, FILE='des_XY8.OUT', STATUS='REPLACE')
-!               WRITE (79,*) (DES_POS_NEW(K,200)/RADIUS_EQ,K=1,DIMN)
-!               OPEN (UNIT=89, FILE='des_XY9.OUT', STATUS='REPLACE')
-!               WRITE (89,*) (DES_POS_NEW(K,240)/RADIUS_EQ,K=1,DIMN)
-!               OPEN (UNIT=99, FILE='des_XY10.OUT', STATUS='REPLACE') 
-!               WRITE (99,*) (DES_POS_NEW(K,290)/RADIUS_EQ,K=1,DIMN)
-
-               IF(CALLED.LT.(FACTOR/DTSOLID)) THEN
+               IF(S_TIME.LE.0.2*TSTOP) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-1.out', STATUS='REPLACE')
                   WRITE (9,*)' '
-                  WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
+                  WRITE (9,*) 'Time=',S_TIME,'s'
                   DO LNN = 1, PARTICLES
-                     WRITE (9,*) ((DES_POS_NEW(K,LNN)/RADIUS_EQ),K=1,DIMN),&
-                              (DES_VEL_NEW(K,LNN),K=1,DIMN), PR(LNN), RO_Sol(LNN)
+                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN),&
+                     (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
                   END DO
-               ELSE IF(CALLED.LT.(2*FACTOR/DTSOLID)) THEN
+               ELSE IF(S_TIME.LE.0.4*TSTOP) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-2.out', STATUS='REPLACE')
                   WRITE (9,*)' '
-                  WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
+                  WRITE (9,*) 'Time=',S_TIME,'s'
                   DO LNN = 1, PARTICLES
-                     WRITE (9,*) ((DES_POS_NEW(K,LNN)/RADIUS_EQ),K=1,DIMN),&
-                              (DES_VEL_NEW(K,LNN),K=1,DIMN), PR(LNN), RO_Sol(LNN)
+                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN),&
+                     (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
                   END DO
-               ELSE IF(CALLED.LT.(3*FACTOR/DTSOLID)) THEN
+               ELSE IF(S_TIME.LE.0.6*TSTOP) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-3.out', STATUS='REPLACE')
                   WRITE (9,*)' '
-                  WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
+                  WRITE (9,*) 'Time=',S_TIME,'s'
                   DO LNN = 1, PARTICLES
-                     WRITE (9,*) ((DES_POS_NEW(K,LNN)/RADIUS_EQ),K=1,DIMN),&
-                             (DES_VEL_NEW(K,LNN),K=1,DIMN), PR(LNN), RO_Sol(LNN)
+                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN),&
+                     (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
                   END DO
-               ELSE IF(CALLED.LT.(4*FACTOR/DT)) THEN
+               ELSE IF(S_TIME.LE.0.8*TSTOP) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-4.out', STATUS='REPLACE')
                   WRITE (9,*)' '
-                  WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
+                  WRITE (9,*) 'Time=',S_TIME,'s'
                   DO LNN = 1, PARTICLES
-                     WRITE (9,*) ((DES_POS_NEW(K,LNN)/RADIUS_EQ),K=1,DIMN),&
-                              (DES_VEL_NEW(K,LNN),K=1,DIMN), PR(LNN), RO_Sol(LNN)
+                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN),&
+                     (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
                   END DO
-               ELSE IF(CALLED.LE.(5*FACTOR/DT)) THEN
+               ELSE IF(S_TIME.LE.TIME) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-5.out', STATUS='REPLACE')
                   WRITE (9,*)' '
-                  WRITE (9,*)'ZONE T="',CALLED*DTSOLID,'"'
+                  WRITE (9,*) 'Time=',S_TIME,'s'
                   DO LNN = 1, PARTICLES
-                     WRITE (9,*) ((DES_POS_NEW(K,LNN)/RADIUS_EQ),K=1,DIMN),&
-                              (DES_VEL_NEW(K,LNN),K=1,DIMN), PR(LNN), RO_Sol(LNN)
+                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN),&
+                     (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
                   END DO
                END IF
-               PCOUNT = 0
+
+               PTC = ZERO
+             END IF
+
+         IF(DES_CONTINUUM_COUPLED) THEN
+            IF((S_TIME+DTSOLID).GT.(TIME+DT)) THEN 
+               TEMP_DTS = DTSOLID
+               DTSOLID = TIME + DT - S_TIME
             END IF
-            PCOUNT = PCOUNT + 1
+            S_TIME = S_TIME + DTSOLID
+         ELSE
+            S_TIME = S_TIME + DTSOLID
+         END IF 
+
+         END DO ! enddo1
+
+         IF(.NOT.DES_CONTINUUM_COUPLED) STOP
+         
+         IF(TEMP_DTS.NE.ZERO) THEN
+            DTSOLID = TEMP_DTS
+            TEMP_DTS = ZERO
          END IF
-         CALLED = CALLED + 1
 
-
-      END DO
-
-      IF(CALLED .GT. CALLED_MAX) THEN
-         PRINT *,'TIME =', TIME
-         STOP
-      END IF
+ 100   CONTINUE
 
       END SUBROUTINE DES_TIME_MARCH

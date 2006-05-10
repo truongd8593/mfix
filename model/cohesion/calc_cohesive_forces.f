@@ -15,9 +15,8 @@
 
       USE discretelement
 
-
 !-----Debugging
-!      IF(CALLED.eq.COH_DEBUG_STEP)THEN
+!      IF(COH_DEBUG_STEP)THEN
 !        COHESION_DEBUG=.TRUE.
 !      ELSE 
 !         COHESION_DEBUG=.FALSE.
@@ -42,10 +41,7 @@
         CALL CALC_VAN_DER_WAALS
       END IF
 
-
 !-----Liquid bridging (Future work)
-
-
 
       IF(COHESION_DEBUG.gt.0)THEN
         PRINT *, '**END COHESIVE CALCS**'

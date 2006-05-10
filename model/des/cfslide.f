@@ -11,45 +11,40 @@
 
       SUBROUTINE CFSLIDE(L, TANGNT, FT1)
 
+      USE param1
       USE discretelement
       IMPLICIT NONE
 
       INTEGER L, K
-      DOUBLE PRECISION FTMD, FNMD, TANGNT(NDIM), FT1(NDIM), FN1(NDIM)
+      DOUBLE PRECISION FTMD, FNMD, TANGNT(DIMN), FT1(DIMN)
 !     
 !---------------------------------------------------------------------
 
 
-      FTMD = 0.0
-      FNMD = 0.0
+      FTMD = ZERO 
+      FNMD = ZERO
       DO K = 1, DIMN
          FTMD = FTMD + (FT1(K)**2)
-         FNMD = FNMD + (FN(K,L)**2)
+         FNMD = FNMD + (FN(L,K)**2)
       END DO
       FTMD = SQRT(FTMD)
       FNMD = SQRT(FNMD)
 
       IF (FTMD.GT.(MEW*FNMD)) THEN
-         DO K = 1, DIMN 
-            FT(K,L) = 0 - MEW*FNMD*TANGNT(K)
-         END DO
-
+         FT(L,:) = - MEW*FNMD*TANGNT(:)
          DO K = 1, DIMN
             IF(FT1(K).GT.0) THEN
-               IF(FT(K,L).LT.0) THEN
-                  FT(K,L) = 0 - FT(K,L)
+               IF(FT(L,K).LT.0) THEN
+                  FT(L,K) = - FT(L,K)
                END IF
             ELSE IF(FT1(K).LT.0) THEN
-               IF(FT(K,L).GT.0) THEN
-                  FT(K,L) = 0 - FT(K,L)
+               IF(FT(L,K).GT.0) THEN
+                  FT(L,K) = - FT(L,K)
                END IF
             END IF
          END DO
-         
       ELSE
-         DO K=1,NDIM 	
-            FT(K,L) = FT1(K)
-         END DO
+         FT(L,:) = FT1(:)
       END IF
 
       

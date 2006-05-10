@@ -46,7 +46,8 @@
       USE funits 
       USE compar      
       USE gridmap
-
+      USE discretelement
+      
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -77,7 +78,6 @@
 !
       CALL INIT_NAMELIST 
       CALL READ_NAMELIST (0) 
-
       CALL CHECK_DATA_00
 
       CYCLIC_X_BAK = CYCLIC_X
@@ -126,7 +126,12 @@
 	GRANULAR_ENERGY = .TRUE.
       ENDIF
 
-      CALL ALLOCATE_ARRAYS      
+      CALL ALLOCATE_ARRAYS    
+
+!     DES
+      IF(NO_I.OR.NO_J.OR.NO_K) DIMN = 2       
+      CALL DES_ALLOCATE_ARRAYS
+      CALL DES_INIT_ARRAYS 
 !
 !
       IF (RUN_NAME == UNDEFINED_C) THEN 

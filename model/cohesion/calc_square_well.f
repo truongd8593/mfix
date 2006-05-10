@@ -45,7 +45,7 @@
       END DO
 
       IF(DIMN.eq.3)THEN
-         MAX_cHECK=26*MAX_PART_IN_GRID
+         MAX_CHECK=26*MAX_PART_IN_GRID
       ELSE
          MAX_CHECK=8*MAX_PART_IN_GRID
       END IF
@@ -60,8 +60,8 @@
 
         IF(COHESION_DEBUG.gt.1)THEN
            PRINT *,'Particle=',I
-	   PRINT *,'NEIGHBORS=',(NEIGHBOURS(J,I), J=1, MAXNEIGHBORS)
-	   PRINT *,'LINKS=',(LINKS(J,I), J=1, MAXNEIGHBORS)
+	   PRINT *,'NEIGHBORS=',(NEIGHBOURS(I,J), J=1, MAXNEIGHBORS)
+	   PRINT *,'LINKS=',(LINKS(I,J), J=1, MAXNEIGHBORS)
         END IF
 
 !-------Check all neighboring grids for particles
@@ -70,13 +70,13 @@
            Z_START=1
            Z_END=1
         ELSE
-           Z_START=PART_GRID(3,I)-1
-           Z_END=PART_GRID(3,I)+1
+           Z_START=PART_GRID(I,3)-1
+           Z_END=PART_GRID(I,3)+1
         END IF
 
       
-        DO X_INDEX=PART_GRID(1,I)-1,PART_GRID(1,I)+1
-           DO Y_INDEX=PART_GRID(2,I)-1,PART_GRID(2,I)+1
+        DO X_INDEX=PART_GRID(I,1)-1,PART_GRID(I,1)+1
+           DO Y_INDEX=PART_GRID(I,2)-1,PART_GRID(I,2)+1
              DO Z_INDEX=Z_START,Z_END
 
              XX=X_INDEX
@@ -140,6 +140,7 @@
                NOT_WALL=.FALSE.
              END IF
 
+             IF(DIMN.EQ.3) THEN
              IF(ZZ.eq.0)THEN !Bottom WAll
                IF(DES_PERIODIC_WALLS_Z) THEN
                  YY=SEARCH_GRIDS(3)
@@ -166,6 +167,7 @@
                   END IF
                END IF
                NOT_WALL=.FALSE.
+             END IF
              END IF
 
              IF(COHESION_DEBUG.gt.2)THEN
@@ -210,9 +212,9 @@
            PRINT *,'****START CHECK OUTSIDE RANGE'
         END IF
 
-        IF(LINKS(1,I).gt.0)THEN
+        IF(LINKS(I,1).gt.0)THEN
           N=2
-          J=LINKS(N,I)
+          J=LINKS(I,N)
 
           IF(J.gt.PARTICLES+DIMN*2)THEN
             PRINT *, 'STOP 2'
@@ -230,7 +232,7 @@
                END IF
             END IF
             N=N+1
-            J=LINKS(N,I)
+            J=LINKS(I,N)
           END DO
         END IF
       IF(COHESION_DEBUG.gt.1)THEN

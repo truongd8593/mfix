@@ -12,53 +12,40 @@
       SUBROUTINE CFSLIDEWALL(L, TANGNT)
       
       USE discretelement
+      USE param1
       IMPLICIT NONE
 
-      INTEGER L, K, SIGNCONV(NDIM)
-      DOUBLE PRECISION FTMD, FNMD, TANGNT(NDIM)
+      INTEGER L, K
+      DOUBLE PRECISION FTMD, FNMD, TANGNT(DIMN), FT1(DIMN)
 !     
 !---------------------------------------------------------------------
 
 
-      DO K=1, DIMN
-         IF(FT(K,L).GT.0) THEN
-            SIGNCONV(K) = 1
-         ELSE
-            SIGNCONV(K) = -1
-         END IF
-      END DO
+      FT1(:) = FT(L,:)
 
-      FTMD = 0.0
-      FNMD = 0.0
-
+      FTMD = ZERO
+      FNMD = ZERO
       DO K = 1, DIMN
-         FTMD = FTMD + (FT(K,L)**2)
-         FNMD = FNMD + (FN(K,L)**2)
+         FTMD = FTMD + (FT(L,K)**2)
+         FNMD = FNMD + (FN(L,K)**2)
       END DO
-
       FTMD = SQRT(FTMD)
       FNMD = SQRT(FNMD)
 
       IF (FTMD.GT.(MEW_W*FNMD)) THEN
-         DO K = 1, DIMN 
-            FT(K,L) = 0 - MEW_W*FNMD*TANGNT(K)
-         END DO
-
+         FT(L,:) = -MEW_W*FNMD*TANGNT(:)
          DO K = 1, DIMN
-            IF(SIGNCONV(K).GT.0) THEN
-               IF(FT(K,L).LT.0) THEN
-                  FT(K,L) = 0 - FT(K,L)
+            IF(FT1(K).GT.0) THEN
+               IF(FT(L,K).LT.ZERO) THEN
+                  FT(L,K) = -FT(L,K)
                END IF
-            ELSE IF(SIGNCONV(K).LT.0) THEN
-               IF(FT(K,L).GT.0) THEN
-                  FT(K,L) = 0 - FT(K,L)
+            ELSE IF(FT1(K).LT.0) THEN
+               IF(FT(L,K).GT.ZERO) THEN
+                  FT(L,K) = -FT(L,K)
                END IF
             END IF
          END DO
-
       END IF
-
-!     PRINT *,'SLIDE WALL'
 
       RETURN
       END SUBROUTINE CFSLIDEWALL

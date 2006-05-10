@@ -159,7 +159,7 @@
       END IF 
       
       
-      IF((CALLED.GT.3).AND.(DES_CONTINUUM_COUPLED)) THEN
+      IF(DES_CONTINUUM_COUPLED) THEN
          UVEL = 1
          CALL GAS_DRAG(A_M, B_M, VXF_GS, IER, UVEL, VVEL, WVEL)
          UVEL = 0
@@ -258,7 +258,7 @@
          CALL ADJUST_A_V_S (A_M, B_M, IER) 
       END IF
 !
-      IF((CALLED.GT.3).AND.(DES_CONTINUUM_COUPLED)) THEN
+      IF(DES_CONTINUUM_COUPLED) THEN
          VVEL = 1     
          CALL GAS_DRAG(A_M, B_M, VXF_GS, IER, UVEL, VVEL, WVEL)
          VVEL = 0
@@ -365,7 +365,7 @@
         END IF 
 !
         IF(DIMN.EQ.3) THEN
-          IF((CALLED.GT.3).AND.(DES_CONTINUUM_COUPLED)) THEN
+          IF(DES_CONTINUUM_COUPLED) THEN
             WVEL = 1
             CALL GAS_DRAG(A_M, B_M, VXF_GS, IER, UVEL, VVEL, WVEL)
             WVEL = 0

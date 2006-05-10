@@ -11,49 +11,38 @@
 
       SUBROUTINE NEIGHBOUR(PARTS)
 
+      USE param1
       USE discretelement
       IMPLICIT NONE
 
-      INTEGER I, II, PARTS
+      INTEGER I, II, PARTS, LL, CO, NI, TEMP
 
       DO I = 1, PARTICLES
-         DO II = 1, MN
-            NEIGHBOURS(II,I) = -1
+         DO II = 1, MAXNEIGHBORS
+            NEIGHBOURS(I,II) = -1
          END DO
-         NEIGHBOURS(1,I) = 0
+         NEIGHBOURS(I,1) = 0
       END DO
 
       IF (DO_NSQUARE) THEN
          CALL NSQUARE(PARTICLES)
       ELSE
-         N2CT = 0.000
+         N2CT = ZERO
       END IF
-
-!     IF (DO_NBS) THEN
-!     CALL NBS(PARTICLES)
-!     ELSE
-!     NBSCT = 0.000
-!     END IF
 
       IF (DO_QUADTREE) THEN
          CALL QUADTREE(PARTICLES)
       ELSE
-         QUADCT = 0.000
+         QUADCT = ZERO
       END IF
 
       IF (DO_OCTREE) THEN
       CALL OCTREE(PARTICLES)
       ELSE
-      OCTCT = 0.000
+      OCTCT = ZERO
       END IF
 
-!     DO I = 1,PARTICLES
-!     IF(NEIGHBOURS(1,I).NE.0) THEN
-!     PRINT *,'N','->', I,':',(NEIGHBOURS(J,I), J=1,NEIGHBOURS(1,I)+1)
-!     END IF
-!     END DO
-
-      RETURN
+       RETURN
       END SUBROUTINE NEIGHBOUR
 
 

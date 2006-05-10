@@ -15,14 +15,12 @@
       IMPLICIT NONE
 
       INTEGER L, K
-      DOUBLE PRECISION OVERLP_T, TANGNT(NDIM), Vtan
+      DOUBLE PRECISION OVERLP_T, TANGNT(DIMN), Vtan
 !     
 !---------------------------------------------------------------------
 !     
 
-      DO K = 1, DIMN
-         FT(K,L) = 0 - (KT_W*OVERLP_T + ETA_T_W*Vtan)*TANGNT(K)
-      END DO
+         FT(L,:) = -(KT_W*OVERLP_T + ETA_T_W*Vtan)*TANGNT(:)
 
       RETURN
       END SUBROUTINE CFFTWALL

@@ -11,28 +11,65 @@
 
       SUBROUTINE CFASSIGN(PARTS)
 
-      Use discretelement
+      USE discretelement
+      USE param
+      USE param1
+      USE parallel
+      USE fldvar
+      USE run
+      USE geometry
+      USE matrix
+      USE indices
+      USE physprop
+      USE drag
+      USE constant
+      USE compar
+      USE sendrecv
+
       IMPLICIT NONE
 
-      INTEGER L, PARTS
-      DOUBLE PRECISION Dp, pi, we, PVOL
-
+      INTEGER L, PARTS, IJK, M, I,J, K
+      DOUBLE PRECISION FOUR_BY_THREE, RAD2, MINMASS
 !     
 !---------------------------------------------------------------------
 !     Assignments
 !---------------------------------------------------------------------
 !     
 
-      DO L = 1, PARTS
+      INCLUDE 'b_force1.inc'
+      INCLUDE 'b_force2.inc'
       
-         Dp = 2*DES_RADIUS(L) 
-         pi = 22.0D0/7.0D0
-         PVOL= (4.0D0/3.0D0)*pi*DES_RADIUS(L)**3
-         PMASS(L) = PVOL*RO_Sol(L)
-         MOI(L) = (PMASS(L)*Dp**2.0D0)/10.0D0 
+      FOUR_BY_THREE = 4.0/3.0
+      MINMASS = LARGE_NUMBER
+      
+         DO L = 1, PARTS
+            RAD2 = DES_RADIUS(L)**2
+            PVOL(L) = FOUR_BY_THREE*Pi*RAD2*DES_RADIUS(L)
+            PMASS(L) = PVOL(L)*RO_Sol(L) 
+            OMOI(L) = 2.5D0/(PMASS(L)*RAD2) !one over MOI
+            IF(PMASS(L).LT.MINMASS) MINMASS = PMASS(L) 
+         END DO
 
-      END DO
+         RADIUS_EQ = DES_RADIUS(1)*1.05D0
+
+         DTSOLID = DTSOLID_FACTOR*2*PI*SQRT(MINMASS/(15*KN))
       
+         WX1 = ZERO 
+         EX2 = XLENGTH 
+         BY1 = ZERO
+         TY2 = YLENGTH 
+         SZ1 = ZERO
+         NZ2 = ZLENGTH
+         SZ1 = ZERO 
+         NZ2 = 2*RADIUS_EQ
+
+         IF((DIMN.EQ.2).AND.(COORDINATES == 'CARTESIAN')) THEN
+            DZ(:) = 2*RADIUS_EQ
+         END IF
+
+         GRAV(1) = BFX_s(1,1)
+         GRAV(2) = BFY_s(1,1)
+         IF(DIMN.EQ.3) GRAV(3) = BFZ_s(1,1)
 
       RETURN
       END SUBROUTINE CFASSIGN

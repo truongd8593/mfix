@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFWALLPOSVEL(L, STIME, I)
+!  Module name: CFWALLPOSVEL(L, I)
 !  Purpose:  DES -Calculate the position and velocity of wall particle C
 !                                                                      C
 !                                                                      C
@@ -9,7 +9,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFWALLPOSVEL(L, STIME, I)
+      SUBROUTINE CFWALLPOSVEL(L, I)
 
       Use discretelement
       USE param
@@ -27,8 +27,8 @@
       IMPLICIT NONE
 
       INTEGER L, I 
-      DOUBLE PRECISION STIME, A, OMEGA_W, F, COSOMEGAT, SINOMEGAT
-      DOUBLE PRECISION DES_R
+      DOUBLE PRECISION A, OMEGA_W, F, COSOMEGAT, SINOMEGAT
+      DOUBLE PRECISION DES_R, OOMEGAW2
       
 !     
 !---------------------------------------------------------------------
@@ -36,88 +36,79 @@
 !---------------------------------------------------------------------
 !     
 
-      A = 0
-      OMEGA_W = 0.0
-      IF(DES_F.NE.0.0) THEN
-         OMEGA_W = 2*22*DES_F/7
+      A = ZERO
+      OMEGA_W = ZERO
+      IF(DES_F.NE.ZERO) THEN
+         OMEGA_W = 2.0d0*Pi*DES_F
+         OOMEGAW2 = ONE/(OMEGA_W**2)
          IF(UNITS == "CGS") THEN
-            A = DES_GAMMA*980/(OMEGA_W*OMEGA_W)
+            A = DES_GAMMA*GRAV(2)*OOMEGAW2
          ELSE
-            A = DES_GAMMA*9.81/(OMEGA_W*OMEGA_W)
+            A = DES_GAMMA*GRAV(2)*OOMEGAW2
          END IF
+      SINOMEGAT = SIN(OMEGA_W*S_TIME)
+      COSOMEGAT = COS(OMEGA_W*S_TIME)
       END IF
-
-      SINOMEGAT = SIN(OMEGA_W*STIME)
-      COSOMEGAT = COS(OMEGA_W*STIME)
 
       DES_R = DES_RADIUS(L)
       IF(WALLREFLECT) THEN
-         DES_R = 0.0
+         DES_R = ZERO
       END IF
 
-      DES_WALL_VEL(1,I) = 0.0
-      DES_WALL_VEL(2,I) = 0.0
-      DES_WALL_VEL(3,I) = 0.0
+      DES_WALL_VEL(I,1) = ZERO
+      DES_WALL_VEL(I,2) = ZERO
+      IF(DIMN.EQ.3) DES_WALL_VEL(I,3) = ZERO
 
       IF(I.EQ.1) THEN
-         DES_WALL_POS(1,I) = WX1 - DES_R	
-         DES_WALL_POS(2,I) = DES_POS_NEW(2,L)
-         DES_WALL_POS(3,I) = DES_POS_NEW(3,L)
-         WALL_NORMAL(1,1) = -1.0
-         WALL_NORMAL(2,1) = 0.0
-         WALL_NORMAL(3,1) = 0.0
+         DES_WALL_POS(I,1) = WX1 - DES_R	
+         DES_WALL_POS(I,2) = DES_POS_NEW(L,2)
+         IF(DIMN.EQ.3) DES_WALL_POS(I,3) = DES_POS_NEW(L,3)
+         WALL_NORMAL(1,1) = -ONE
+         WALL_NORMAL(1,2) = ZERO
+         IF(DIMN.EQ.3) WALL_NORMAL(1,3) = ZERO
 
       ELSE IF(I.EQ.2) THEN
-         DES_WALL_POS(1,I) = EX2 + DES_R
-         DES_WALL_POS(2,I) = DES_POS_NEW(2,L)
-         DES_WALL_POS(3,I) = DES_POS_NEW(3,L)
-         WALL_NORMAL(1,2) = 1.0
-         WALL_NORMAL(2,2) = 0.0
-         WALL_NORMAL(3,2) = 0.0
+         DES_WALL_POS(I,1) = EX2 + DES_R
+         DES_WALL_POS(I,2) = DES_POS_NEW(L,2)
+         IF(DIMN.EQ.3) DES_WALL_POS(I,3) = DES_POS_NEW(L,3)
+         WALL_NORMAL(2,1) = ONE
+         WALL_NORMAL(2,2) = ZERO
+         IF(DIMN.EQ.3) WALL_NORMAL(2,3) = ZERO
 
       ELSE IF(I.EQ.3) THEN
-         DES_WALL_POS(1,I) = DES_POS_NEW(1,L)
-         DES_WALL_POS(2,I) = BY1 - DES_R + (A*SINOMEGAT)
-         DES_WALL_POS(3,I) = DES_POS_NEW(3,L)
-         DES_WALL_VEL(2,I) =  A*OMEGA_W*COSOMEGAT
-         WALL_NORMAL(1,3) = 0.0
-         WALL_NORMAL(2,3) = -1.0
-         WALL_NORMAL(3,3) = 0.0
+         DES_WALL_POS(I,1) = DES_POS_NEW(L,1)
+         DES_WALL_POS(I,2) = BY1 - DES_R + (A*SINOMEGAT)
+         IF(DIMN.EQ.3) DES_WALL_POS(I,3) = DES_POS_NEW(L,3)
+         DES_WALL_VEL(I,2) =  A*OMEGA_W*COSOMEGAT
+         WALL_NORMAL(3,1) = ZERO
+         WALL_NORMAL(3,2) = -ONE
+         IF(DIMN.EQ.3) WALL_NORMAL(3,3) = ZERO
 
       ELSE IF(I.EQ.4) THEN
-         DES_WALL_POS(1,I) = DES_POS_NEW(1,L)
-         DES_WALL_POS(2,I) = TY2 + DES_R
-         DES_WALL_POS(3,I) = DES_POS_NEW(3,L)
-         WALL_NORMAL(1,4) = 0.0
-         WALL_NORMAL(2,4) = 1.0
-         WALL_NORMAL(3,4) = 0.0
+         DES_WALL_POS(I,1) = DES_POS_NEW(L,1)
+         DES_WALL_POS(I,2) = TY2 + DES_R
+         IF(DIMN.EQ.3) DES_WALL_POS(I,3) = DES_POS_NEW(L,3)
+         WALL_NORMAL(4,1) = ZERO
+         WALL_NORMAL(4,2) = ONE
+         IF(DIMN.EQ.3) WALL_NORMAL(4,3) = ZERO
 
       ELSE IF(I.EQ.5) THEN
-         DES_WALL_POS(1,I) = DES_POS_NEW(1,L)
-         DES_WALL_POS(2,I) = DES_POS_NEW(2,L)
-         DES_WALL_POS(3,I) = SZ1 - DES_R
-         WALL_NORMAL(1,5) = 0.0
-         WALL_NORMAL(2,5) = 0.0
-         WALL_NORMAL(3,5) = -1.0
+         DES_WALL_POS(I,1) = DES_POS_NEW(L,1)
+         DES_WALL_POS(I,2) = DES_POS_NEW(L,2)
+         IF(DIMN.EQ.3) DES_WALL_POS(I,3) = SZ1 - DES_R
+         WALL_NORMAL(5,1) = ZERO
+         WALL_NORMAL(5,2) = ZERO
+         IF(DIMN.EQ.3) WALL_NORMAL(5,3) = -ONE
 
       ELSE IF(I.EQ.6) THEN
-         DES_WALL_POS(1,I) = DES_POS_NEW(1,L)
-         DES_WALL_POS(2,I) = DES_POS_NEW(2,L)
-         DES_WALL_POS(3,I) = NZ2 + DES_R
-         WALL_NORMAL(1,6) = 0.0
-         WALL_NORMAL(2,6) = 0.0
-         WALL_NORMAL(3,6) = 1.0
+         DES_WALL_POS(I,1) = DES_POS_NEW(L,1)
+         DES_WALL_POS(I,2) = DES_POS_NEW(L,2)
+         IF(DIMN.EQ.3) DES_WALL_POS(I,3) = NZ2 + DES_R
+         WALL_NORMAL(6,1) = ZERO
+         WALL_NORMAL(6,2) = ZERO
+         IF(DIMN.EQ.3) WALL_NORMAL(6,3) = ONE
       END IF
       
-!     IF(CALLED.GT.1095) THEN
-!     IF((L.EQ.1).AND.(I.EQ.3)) THEN
-!     PRINT *, DES_F, DES_GAMMA, OMEGA_W, A, STIME, SINOMEGAT, COSOMEGAT
-!     PRINT *, L, I, (DES_POS_NEW(K,L),K=1,DIMN), (DES_WALL_POS(K,I),K=1,DIMN)
-!     PRINT *, (DES_VEL_NEW(K,L),K=1,DIMN), (DES_WALL_VEL(K,I), K=1,DIMN)
-!     STOP
-!     END IF
-!     END IF
-
       RETURN
       END SUBROUTINE CFWALLPOSVEL
 

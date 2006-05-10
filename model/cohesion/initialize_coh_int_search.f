@@ -61,6 +61,7 @@
       SEARCH_GRIDS(2)=INT((TY2-BY1)/largest_dimension)
       SEARCH_GRIDS(3)=INT((NZ2-SZ1)/largest_dimension)
 
+
       IF(SEARCH_GRIDS(1).gt.100)THEN
         SEARCH_GRIDS(1)=100
       END IF
@@ -76,6 +77,7 @@
       SEARCH_GRID_SIZE(1)=(EX2-WX1)/( REAL(SEARCH_GRIDS(1)) )
       SEARCH_GRID_SIZE(2)=(TY2-BY1)/( REAL(SEARCH_GRIDS(2)) )
       SEARCH_GRID_SIZE(3)=(NZ2-SZ1)/( REAL(SEARCH_GRIDS(2)) )
+
 
       IF(COHESION_DEBUG.gt.2)THEN
          PRINT *,'****Search Grids=',SEARCH_GRIDS(1),SEARCH_GRIDS(2)
@@ -109,16 +111,16 @@
       DO i=1,PARTICLES
         !!Add particle to new grid
         DO j=1,DIMN
-           PART_GRID(j,i)=INT(DES_POS_NEW(j,i)/SEARCH_GRID_SIZE(j))+1
+           PART_GRID(i,j)=INT(DES_POS_NEW(i,j)/SEARCH_GRID_SIZE(j))+1
         END DO 
         IF(DIMN.eq.2)THEN
-           PART_GRID(3,i)=1
+           PART_GRID(i,3)=1
         END IF
-        PART_IN_GRID(PART_GRID(1,i),PART_GRID(2,i),PART_GRID(3,i)&
-            ,PART_IN_GRID(PART_GRID(1,i),PART_GRID(2,i),PART_GRID(3,i),1)+2)=i
-        PART_GRID(4,i)=PART_IN_GRID(PART_GRID(1,i),PART_GRID(2,i),PART_GRID(3,i),1)+2
-        PART_IN_GRID(PART_GRID(1,i),PART_GRID(2,i),PART_GRID(3,i),1)=&
-           PART_IN_GRID(PART_GRID(1,i),PART_GRID(2,i),PART_GRID(3,i),1)+1
+        PART_IN_GRID(PART_GRID(i,1),PART_GRID(i,2),PART_GRID(i,3)&
+            ,PART_IN_GRID(PART_GRID(i,1),PART_GRID(i,2),PART_GRID(i,3),1)+2)=i
+        PART_GRID(i,4)=PART_IN_GRID(PART_GRID(i,1),PART_GRID(i,2),PART_GRID(i,3),1)+2
+        PART_IN_GRID(PART_GRID(i,1),PART_GRID(i,2),PART_GRID(i,3),1)=&
+           PART_IN_GRID(PART_GRID(i,1),PART_GRID(i,2),PART_GRID(i,3),1)+1
       END DO
 
       IF(COHESION_DEBUG.gt.0)THEN
