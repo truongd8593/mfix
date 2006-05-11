@@ -1,0 +1,152 @@
+#
+#  Packed bed
+#
+#  F.B. Modeler                  9-6-94
+#
+# Run-control section
+#
+  RUN_NAME = 'des_Vt' 
+  DESCRIPTION = '2 solid phase fluid bed with hybrid des&kt solid treatment'
+  RUN_TYPE = 'new'
+  UNITS = 'cgs'
+  TIME  =0.0  TSTOP = 3.    DT = 1.0e-4
+  ENERGY_EQ = .FALSE.
+  SPECIES_EQ = .FALSE.    .FALSE. !.FALSE.    .FALSE.
+
+  MOMENTUM_X_EQ(1) = .FALSE.
+  MOMENTUM_Y_EQ(1) = .FALSE.
+  MOMENTUM_Z_EQ(1) = .FALSE.
+
+  DISCRETIZE = 7*0
+  DT_MAX = 1E-2
+#
+# Geometry Section
+#
+  COORDINATES = 'Cartesian'
+
+  DISCRETIZE = 9*2
+  XLENGTH  =   1   IMAX = 5
+  YLENGTH  = 10.0    JMAX = 25
+
+  UR_FAC(2) = .5
+
+  NO_K     = .TRUE.
+  TIME_ADJUST = .FALSE.
+
+  MAX_NIT = 500
+  TOL_RESID_T  = 1.E-6
+#
+# Gas-phase Section
+#
+  RO_g0 = 1.0
+  MU_g0 = 2E-1
+  MW_avg = 29.
+#
+# Solids-phase Section
+#
+  MMAX         = 1
+  RO_s         = 6.0 
+  D_p0          = 0.1
+  e       = 0.8
+  Phi     = 0.0
+  EP_star = 0.43               
+#
+# Initial Conditions Section
+#
+       !              
+  IC_X_w(1)           =  0.0
+  IC_X_e(1)           =  1.0
+  IC_Y_s(1)           =  0.0
+  IC_Y_n(1)           =  10.0
+ 
+  IC_EP_g(1)          =  1.0
+ 
+  IC_U_g(1)           =  0.0
+  IC_V_g(1)           =  1.0
+  IC_W_g(1)           =  0.0
+  IC_U_s(1,1)         =  0.0  
+  IC_V_s(1,1)         =  0.0
+  IC_W_s(1,1)         =  0.0  
+  IC_P_g(1)           =  0.0
+  IC_T_g(1)           =  273. 
+
+     
+#
+#  Boundary Conditions Section
+#
+       !              bottom      Top
+  BC_X_w            =  0.0        0.0
+  BC_X_e            =  1.0        1.0
+  BC_Y_s            =  0.0        10.0
+  BC_Y_n            =  0.0        10.0
+#  BC_Z_b           =  0.0        100.0
+#  BC_Z_t           =  0.0        100.0
+ 
+  BC_TYPE          =  'MI'     'PO'
+
+  BC_EP_g          =  1.0      1.0
+
+  BC_U_g           =  0.0 
+  BC_V_g           =  5.0
+  BC_W_g           =  0.0
+
+  BC_P_g           =  2*0
+#
+  BC_X_w(3)     =   0.000
+  BC_X_e( 3)     =   0.000
+  BC_Y_s( 3)     =   0.0000
+  BC_Y_n( 3)     =   10.00
+  BC_TYPE( 3)    =   'FSW'
+#
+  BC_X_w(4)     =       1.000
+  BC_X_e( 4)     =      1.000
+  BC_Y_s( 4)     =      0.0000
+  BC_Y_n( 4)     =      10.00
+ BC_TYPE( 4)    =         'FSW'
+
+
+#  DES
+     PARTICLES = 2 
+     MN = 8
+     KN = 800000
+     KT = 800000
+     ETA_DES_N = 18
+     ETA_DES_T = 18
+     MEW = 0.2
+     KN_W = 1200000
+     KT_W = 1200000
+     ETA_N_W = 22
+     ETA_T_W = 22
+     MEW_W = 0.1
+     DTSOLID_FACTOR = 0.1D0
+     P_TIME = 0.00005
+    
+   !  DES Logicals
+     DISCRETE_ELEMENT = .TRUE.
+     WALLDTSPLIT = .TRUE.
+     DES_CONTINUUM_COUPLED = .TRUE.
+     TSUJI_DRAG = .TRUE.
+     DES_PERIODIC_WALLS = .TRUE.
+     DES_PERIODIC_WALLS_Y = .TRUE.
+#
+#  Output Control
+#
+  RES_DT = 0.01
+  OUT_DT = 1.
+        !
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
+        !      P_star    V_g  V_s            T_s1 X_s
+        !                W_g  W_s            T_s2
+  SPX_DT = 0.01  .01      .01  .01    .1     .1  100.    100.  100.
+
+  USR_DT = 0.1
+  
+  NLOG   = 25
+  FULL_LOG = .TRUE.
+  RESID_STRING = 'P0' 'P1' 'V1'
+
+
+# DMP control
+  
+  NODESI = 1   NODESJ = 1   NODESK = 1
+

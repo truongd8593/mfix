@@ -1,6 +1,6 @@
 !  Simulation of a vibrated granular bed in Kink regime
 !  DES for solid phase;                                          
-!  Pure granular flow; No gas coupling                                    
+!  ONly DES; No gas coupling                                    
 
 !  For more details refer to the phD thesis (Dec 2003) of Jay Boyalakuntla
 !  It is made available in MFIX documents
@@ -11,7 +11,7 @@
   RUN_TYPE 		= 'new'             
   UNITS 		= 'cgs'
   TIME  		= 0.0			!start time
-  TSTOP 		= 1E-4 
+  TSTOP 		= 1.0 
   DT 			= 1E-4			!time step
   DT_MAX                = 7.5E-4
  
@@ -22,8 +22,7 @@
   MOMENTUM_Y_EQ(1) = .FALSE.
   MOMENTUM_Z_EQ(1) = .FALSE.
 
-  TIME_ADJUST = .FALSE.
-!  NORM_G = 1.0
+! DT_FAC = 1.0
 
   MAX_NIT = 2500
   TOL_RESID = 1.E-5
@@ -32,14 +31,14 @@
 ! Geometry Section                                                      
                                                                          
   COORDINATES 		= 'cartesian' 
-  XLENGTH  		=   3.0	        !X length	
+  XLENGTH  		=   20.0	                !X length	
   IMAX 			=   15			!cells in i direction
-  YLENGTH  		=   3.0		!height
+  YLENGTH  		=   10.0		        !height
   JMAX 			=   15 			!cells in j direction
 
   NO_K     		= .TRUE. 		!2D, no k direction
 
-  GRAVITY = 0
+  GRAVITY = 980
  
    ur_fac(2) = 0.8
    
@@ -52,15 +51,15 @@
                                                                              
 ! Gas-phase Section                                                             
  
-  MU_g0 		= 2E-3		!constant gas viscosity
+  MU_g0 		= 1.8E-3		!constant gas viscosity
   RO_g0			= 1.205E-2		!constant gas density
 
  
 ! Solids-phase Section                                                  
 
 
-  RO_s    		= 1.205e-2			!solids density
-  D_p0     		= 0.1			!particle diameter
+  RO_s    		= 2.7    	        !solids density
+  D_p0     		= 0.1001		!particle diameter
   e       		= 0.9 			!restitution coefficient
   Phi    		= 30.0			!angle of internal friction
   EP_star 		= 0.42			!void fraction at minimum
@@ -71,17 +70,15 @@
 
     ! 1. bed
   IC_X_w           	=  0.0				!domain
-  IC_X_e           	=  3.0		! 0 < x < 15, 0 < y < 30
+  IC_X_e           	=  20.0		! 0 < x < 3, 0 < y < 3
   IC_Y_s          	=  0.0
-  IC_Y_n           	=  3.0
+  IC_Y_n           	=  10.0
                                 	! initial values in the region
-  IC_EP_g          	=  0.42		! void fraction
+  IC_EP_g          	=  1.0		! void fraction
   IC_U_g           	=  0.0		! x-dir gas velocity
-  IC_V_g          	=  0.0	! y-dir gas velocity
+  IC_V_g          	=  0.0	        ! y-dir gas velocity
 
   IC_P_g           =  0.0
-  IC_T_g           = 300.0
-
   IC_U_s(1,1) = 0.0
   IC_V_s(1,1) = 0.0
 
@@ -89,9 +86,9 @@
 
       ! 1. Central jet
   BC_X_w(4)		=  0.0		! central jet
-  BC_X_e(4)		=  3.0		! 7 < x < 8, y = 0
-  BC_Y_s(4)		=  3.0
-  BC_Y_n(4)		=  3.0
+  BC_X_e(4)		=  20.0		! 7 < x < 8, y = 0
+  BC_Y_s(4)		=  10.0
+  BC_Y_n(4)		=  10.0
   BC_TYPE(4)		= 'PSW'		!specified mass inflow
 
   BC_Uw_g(4)       = 2
@@ -103,46 +100,28 @@
 !
 ! DES INPUT
 
-! Begin
-! Parameters
-
-DIMN = 2 
-WX1 = 0
-EX2 = 0.215
-BY1 = 0
-TY2 = 10
-SZ1 =0
-NZ2 = 0.2
-DTSOLID = 4.337E-6
 PARTICLES = 6500
-ZONES = 1
-ZN1 = 6500				! particles based on size or density etc.
 MN = 10
-RADIUS_EQ = 0.001
-FACTOR = 2500
-KN = 4.701E3
+KN = 4701000
 KT = 0
-ETA_DES_N = 1.252E-2
+ETA_DES_N = 12.52
 ETA_DES_T = 0
 MEW = 0.0
-KN_W = 9.402E3
+KN_W = 9402000
 KT_W = 0
-ETA_N_W = 2.502E-2
+ETA_N_W = 25.02
 ETA_T_W = 0
 MEW_W = 0
-E_RESTITUTION = 0.7
 DES_GAMMA = 6
 DES_F =25
-ROs = 2500
-GRAV(1) = 0
-GRAV(2) = -9.80 
-GRAV(3) = 0 
 DES_NEIGHBOR_SEARCH = 2
+DTSOLID_FACTOR = 0.1D0
+P_TIME = 0.01
 
 !  DES Logicals
 DISCRETE_ELEMENT = .TRUE.
 WALLDTSPLIT = .TRUE.
-COUPLED_FLOW = .FALSE.
+DES_CONTINUUM_COUPLED = .FALSE.
 DES_PERIODIC_WALLS = .TRUE.
 DES_PERIODIC_WALLS_X = .TRUE.
 
@@ -166,7 +145,7 @@ DES_PERIODIC_WALLS_X = .TRUE.
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
         !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
         !                W_g  W_s
-  SPX_DT = 0.01 0.1   0.1  0.1  100.  100. 100.   100.0   100. 100.  100.        
+  SPX_DT = 0.1 0.1   0.1  0.1  100.  100. 100.   100.0   100. 100.  100.        
                                                                                 
 !  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
   
