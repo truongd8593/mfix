@@ -7,14 +7,14 @@
 ! It is made available in MFIX documents
                            
 ! Run-control section                                                           
-  RUN_NAME 		= 'DES_FLUIDIZED_BED'             
-  DESCRIPTION 		= 'fluid bed with jet'          
+  RUN_NAME 		= 'des_fb1'             
+  DESCRIPTION 		= 'fluid bed with single central jet'          
   RUN_TYPE 		= 'NEW'             
   UNITS 		= 'cgs'
   TIME  		= 0.0			!start time
-  TSTOP 		= 0.02 
+  TSTOP 		= 10.0 
   DT 			= 5E-4			!time step
-  DT_MAX                = 7.5E-4
+  DT_MAX                = 1E-3
  
   ENERGY_EQ 		= .FALSE.		!do not solve energy eq
   SPECIES_EQ 		= .FALSE.    .FALSE. 	!do not solve species eq
@@ -23,8 +23,7 @@
   MOMENTUM_Y_EQ(1) = .FALSE.
   MOMENTUM_Z_EQ(1) = .FALSE.
 
-  TIME_ADJUST = .FALSE.
-!  NORM_G = 1.0
+!  DT_FAC = 1.0
 
   MAX_NIT = 250
   TOL_RESID = 1.E-3
@@ -57,7 +56,6 @@
   Phi    		= 30.0			!angle of internal friction
   EP_star 		= 0.42			!void fraction at minimum
 						!  fluidization
-
   
 ! Initial Conditions Section                                                    
 
@@ -65,29 +63,14 @@
   IC_X_w(1)           	=  0.0				!domain
   IC_X_e(1)           	=  15.0		! 0 < x < 15, 0 < y < 30
   IC_Y_s(1)          	=  0.0
-  IC_Y_n(1)           	=  30.0
+  IC_Y_n(1)           	=  90.0  
                                 	! initial values in the region
-  IC_EP_g(1)          	=  0.42		! void fraction
+  IC_EP_g(1)          	=  1.00  	! void fraction
   IC_U_g(1)           	=  0.0		! x-dir gas velocity
-  IC_V_g(1)          	=  650.0	! y-dir gas velocity
+  IC_V_g(1)          	=  280.0 	! y-dir gas velocity
 
   IC_U_s(1,1) = 0.0
   IC_V_s(1,1) = 0.0
-
-      ! 2. freeboard
-  IC_X_w(2)           	=  0.0			!domain
-  IC_X_e(2)           	=  15.0		! 0 < x < 15, 30 < y < 90
-  IC_Y_s(2)          	=  30.0
-  IC_Y_n(2)           	=  90.0
-                                	! initial values in the region
-  IC_EP_g(2)          	=  1.0		! void fraction
-  IC_U_g(2)           	=  0.0		! x-dir gas velocity
-  IC_V_g(2)          	=  280.0	! y-dir gas velocity
-
-  IC_U_s(2,1) = 0.0
-  IC_V_s(2,1) = 0.0
-
-
 
 !  Boundary Conditions Section
 
@@ -100,40 +83,46 @@
 
   BC_EP_g(1)		=  1.0
   BC_U_g(1)		=  0.0
-  BC_V_g(1)		=  4200 	!inlet jet vel
+  BC_V_g(1)		=  4200	        !inlet jet vel
   BC_P_g(1)		=  0.0
 
+! 1. Secondary flow 1
+  BC_X_w(2)             =  0.0
+  BC_X_e(2)             =  7.0
+  BC_Y_s(2)             =  0.0
+  BC_Y_n(2)             =  0.0
+  BC_TYPE(2)            = 'MI'          !specified mass inflow
+
+  BC_EP_g(2)            =  1.0
+  BC_U_g(2)             =  0.0
+  BC_V_g(2)             =  0.0
+  BC_P_g(2)             =  0.0
+
+! 1. Secondary flow 2
+  BC_X_w(3)             =  8.0
+  BC_X_e(3)             =  15.0
+  BC_Y_s(3)             =  0.0
+  BC_Y_n(3)             =  0.0
+  BC_TYPE(3)            = 'MI'          !specified mass inflow
+
+  BC_EP_g(3)            =  1.0
+  BC_U_g(3)             =  0.0
+  BC_V_g(3)             =  0.0
+  BC_P_g(3)             =  0.0
 
        ! 2. Exit
-  BC_X_w(2)		=  0.0		! top exit
-  BC_X_e(2)		=  15.0	        ! 0 < x < 15, y = 90
-  BC_Y_s(2)		=  90.0
-  BC_Y_n(2)		=  90.0
-  BC_TYPE(2)		=  'PO' 	!specified pressure outflow
-  BC_P_g(2)		=  0.0
+  BC_X_w(4)		=  0.0		! top exit
+  BC_X_e(4)		=  15.0	        ! 0 < x < 15, y = 90
+  BC_Y_s(4)		=  90.0
+  BC_Y_n(4)		=  90.0
+  BC_TYPE(4)		=  'PO' 	!specified pressure outflow
+  BC_P_g(4)		=  0.0
 
 !
 ! DES INPUT
-
-! Begin
-! Parameters
-
-DIMN = 2            ! Problem simulation dimension 
-                    ! Simulation dimensions
-WX1 = 0             ! Lower limit; west x-dir
-EX2 = 15            ! upper limit; east x-dir
-BY1 = 0             ! lower limit; bottom y-dir
-TY2 = 90            ! upper limit; top y-dir
-SZ1 =0              ! lower limit; south z-dir
-NZ2 = 0.9           ! upper limit; north z-dir
-DTSOLID = 0.00005   ! Solid time step
+               
 PARTICLES = 2400    ! Number of particles
-ZONES = 1           ! Number of zones for to differentiate 
-ZN1 = 2400                   ! particles based on size or density etc.
-MN = 10             ! Maximum number of neighbors allowed per particle
-RADIUS_EQ = 0.21    ! Equivalent radius of particles
-FACTOR = 2010       ! Initial solid time marches per fluid time march;
-                    ! usually kept high to allow thw particles to settle down
+MN = 14             ! Maximum number of neighbors allowed per particle
 KN = 800000         ! Normal inter-particle collision spring constant
 KT = 800000         ! Tangential     "        "         "       "
 ETA_DES_N = 18      ! Normal inter-particle damping coefficient
@@ -144,19 +133,14 @@ KT_W = 1200000      ! Tangential   "           "       "      "
 ETA_N_W = 22        ! Normal particle-wall damping coefficient
 ETA_T_W = 22        ! Tangential    "         "        "
 MEW_W = 0.1         ! Particle-wall friction coefficient
-E_RESTITUTION = 0.9 ! Partciel coeficient of restitution
-DES_GAMMA = 0.0     ! Acceleration amplitudeof bottom wall if vibrated
-DES_F = 0.0         ! Frequency of bottom wall if vibrated
-ROs = 2.7           ! Particle density
-GRAV(1) = 0         ! Gravity components in x, y and z dirs
-GRAV(2) = -980 
-GRAV(3) = 0 
 DES_NEIGHBOR_SEARCH = 2 ! Particle neighbor search method; 1=n-square; 2=quadtree; 3=octree
+DTSOLID_FACTOR = 0.1D0
+P_TIME = 10.0
 
 !  DES Logicals
 DISCRETE_ELEMENT = .TRUE. 
 WALLDTSPLIT = .TRUE.
-COUPLED_FLOW = .TRUE.
+DES_CONTINUUM_COUPLED = .TRUE.
 TSUJI_DRAG = .TRUE.
 
 ! End DES Input
@@ -179,7 +163,7 @@ TSUJI_DRAG = .TRUE.
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
         !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
         !                W_g  W_s
-  SPX_DT = 0.01 0.1   0.1  0.1  100.  100. 100.   100.0   100. 100.  100.        
+  SPX_DT = 0.01 0.01   0.01  0.1  100.  100. 100.   100.0   100. 100.  100.        
                                                                                 
 !  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
   
