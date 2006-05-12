@@ -129,9 +129,16 @@
       CALL ALLOCATE_ARRAYS    
 
 !     DES
-      IF(NO_I.OR.NO_J.OR.NO_K) DIMN = 2       
-      CALL DES_ALLOCATE_ARRAYS
-      CALL DES_INIT_ARRAYS 
+      IF(DISCRETE_ELEMENT) THEN
+         IF(NO_K) DIMN = 2       
+         IF(NO_I.OR.NO_J) THEN
+            WRITE(UNIT_LOG,*) 'DES can be run only in XY plane in 2D'
+            WRITE(*,*) 'DES can be run only in XY plane in 2D'
+            STOP
+         ENDIF
+         CALL DES_ALLOCATE_ARRAYS
+         CALL DES_INIT_ARRAYS 
+      END IF
 !
 !
       IF (RUN_NAME == UNDEFINED_C) THEN 
