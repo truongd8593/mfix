@@ -97,7 +97,7 @@
           END DO
           EPg = AVG_XYZ(EP_g(IJK1), EP_g(IJK2), DIR, L)
           G_0AVG = ONE / EPg                                      &
-              + 3.0 * EPSoDP * DP_AVERAGE_M1 * DP_AVERAGE_M2               &
+              + 3.0d0 * EPSoDP * DP_AVERAGE_M1 * DP_AVERAGE_M2    &
               / (EPg*EPg *(DP_AVERAGE_M1 + DP_AVERAGE_M2))
 ! End Lebowitz (1964)
 !
@@ -216,7 +216,7 @@
         END DO
         EPg = EP_g(IJK)
         G_0 = ONE / EPg                                      &
-            + 3.0 * EPSoDP * D_p(IJK,M1) * D_p(IJK,M2)               &
+            + 3.0d0 * EPSoDP * D_p(IJK,M1) * D_p(IJK,M2)     &
             / (EPg*EPg *(D_p(IJK,M1) + D_p(IJK,M2)))
 ! End Lebowitz (1964)
 !        
@@ -290,8 +290,8 @@
 !  Start Carnahan-Starling derivative
 !
 !     Derivative of (G0) wrt EP_s
-        DG_0DNU = 1D0/(1. - EPS)**2 + 1.5D0*(1. + EPS)*(1D0/(1. - EPS))**3 + &
-           0.5D0*(EPS**2 + 2.*EPS)*(1D0/(1. - EPS))**4 
+        DG_0DNU = ONE/(ONE - EPS)**2 + 1.5D0*(ONE + EPS)*(ONE/(ONE - EPS))**3 + &
+           0.5D0*(EPS**2 + 2.d0*EPS)*(ONE/(ONE - EPS))**4 
 !  End Carnahan-Starling derivative
 !
       ENDIF
@@ -331,8 +331,8 @@
 !-----------------------------------------------
 !
 !
-      G_0CS = 1D0/(1 - EPS) + 1.5D0*EPS*(1D0/(1 - EPS))**2 + 0.5D0*EPS**2*(1D0/&
-         (1 - EPS))**3 
+      G_0CS = ONE/(ONE - EPS) + 1.5D0*EPS*(ONE/(ONE - EPS))**2 + 0.5D0*EPS**2*(ONE/&
+         (ONE - EPS))**3 
       RETURN  
       END FUNCTION G_0CS 
       
