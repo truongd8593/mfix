@@ -170,12 +170,13 @@
                   DES_W_s(IJK,M) = DES_W_s(IJK,M)*OSOLVOL
                END IF
             END IF
-            EP_G(IJK) = 1   
+            EP_G(IJK) = ONE   
             IF(VOL(IJK).GT.0) THEN
              ROP_S(IJK,M) = RO_S(M)*SOLVOLINC(IJK,M)/(VOL(IJK)*DZ(K))
             END IF
             IF(PINC(IJK).GT.0) THEN
               EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
+	      ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)  ! update rop_g just after ep_g
 !              PRINT *,'PINC', IJK, EP_G(IJK)
             END IF
          END DO

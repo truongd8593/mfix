@@ -295,7 +295,7 @@
 !     
 !     Remove solids from cells containing very small quantities of solids
 !     
-      CALL ADJUST_EPS 
+      IF(.NOT.DISCRETE_ELEMENT) CALL ADJUST_EPS 
 
 !     
 !     Mark the phase whose continuity will be used for forming Pp_g and Pp_s eqs.
