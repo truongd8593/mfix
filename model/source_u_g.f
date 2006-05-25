@@ -226,7 +226,7 @@
 !
 !           -(2mu/x)*(u/x) part of Tau_zz/X
                EPMUGA = AVG_X(MU_GT(IJK),MU_GT(IJKE),I) 
-               VTZA = 2.*EPMUGA*OX_E(I)*OX_E(I) 
+               VTZA = 2.d0*EPMUGA*OX_E(I)*OX_E(I) 
             ELSE 
                VCF = ZERO 
                VTZA = ZERO 

@@ -194,7 +194,7 @@
 !             Dobran et al., 1991
               IF (SP_HEAT(M) .AND. C_PS0==UNDEFINED)then
                 if(.not.database_read) call read_database(IER)
-	        C_PS(IJK,M) = 0.310713
+	        C_PS(IJK,M) = 0.310713d0
                 !to SI, S. Dartevelle
                 IF (UNITS == 'SI') C_PS(IJK,M) = 4183.925D0*C_PS(IJK,M)    !in J/kg K
 	      ENDIF

@@ -184,7 +184,7 @@
                   EPMUGA = AVG_X(MU_S(IJK,M),MU_S(IJKE,M),I) 
                   DWOXDZ = HALF*((W_S(IJK,M)-W_S(IJKM,M))*OX(I)*ODZ(K)+(W_S(&
                      IPJK,M)-W_S(IPJKM,M))*OX(IP)*ODZ(K)) 
-                  VTZB = -2.*EPMUGA*OX_E(I)*DWOXDZ 
+                  VTZB = -2.d0*EPMUGA*OX_E(I)*DWOXDZ 
                ELSE 
                   VTZB = ZERO 
                ENDIF 

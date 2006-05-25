@@ -138,7 +138,7 @@
          DPSUM = D_PL + D_PM 
        
        
-         CONST = 3.*(ONE + C_E)*(PI/2. + C_F*PI*PI/8.)*DPSUM**2/(2.*PI*(RO_S(L)*&
+         CONST = 3.d0*(ONE + C_E)*(PI/2.d0 + C_F*PI*PI/8.d0)*DPSUM**2/(2.d0*PI*(RO_S(L)*&
          D_PL**3+RO_S(M)*D_PM**3)) 
              F_SS(IJK,LM) = CONST*ROP_S(IJK,L)*ROP_S(IJK,M)*G_0(IJK,L,M)*VREL 
 
