@@ -5,7 +5,7 @@
                           
 ! Run-control section                                                           
                                                                                
-  RUN_NAME              = 'Binary2'             
+  RUN_NAME              = 'R'             
   DESCRIPTION           = 'Binary size distribution'          
   RUN_TYPE              = 'new'             
   UNITS                 = 'cgs'
@@ -63,8 +63,6 @@
   MMAX                  = 2
   RO_s(1)               = 2.53d0                         !solids density
   RO_s(2)               = 2.53d0
-  NMAX(1)               = 0
-  NMAX(2)               = 0
   C_f                   = 0.1
   D_p0(1)                = 0.0164536d0
   D_P0(2)                = 0.0408151d0                       !particle diameter     
