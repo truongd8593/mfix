@@ -36,7 +36,7 @@
   JMAX                  = 50                          !cells in j direction
   NO_K                  = .TRUE.                        !2D, no k direction
 
-  Segregation_slope_coefficient=2.0e+5
+  Segregation_slope_coefficient=0.3 ! see Gera et al. Int. J. multiphase flow 30 (2004) 419.
   aggregation_eff=0.001
   breakage_eff=0.0001
 
