@@ -41,13 +41,9 @@
       IF(DES_F.NE.ZERO) THEN
          OMEGA_W = 2.0d0*Pi*DES_F
          OOMEGAW2 = ONE/(OMEGA_W**2)
-         IF(UNITS == "CGS") THEN
-            A = DES_GAMMA*GRAV(2)*OOMEGAW2
-         ELSE
-            A = DES_GAMMA*GRAV(2)*OOMEGAW2
-         END IF
-      SINOMEGAT = SIN(OMEGA_W*S_TIME)
-      COSOMEGAT = COS(OMEGA_W*S_TIME)
+         A = DES_GAMMA*GRAV(2)*OOMEGAW2
+         SINOMEGAT = SIN(OMEGA_W*S_TIME)
+         COSOMEGAT = COS(OMEGA_W*S_TIME)
       END IF
 
       DES_R = DES_RADIUS(L)

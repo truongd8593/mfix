@@ -46,14 +46,16 @@
             RAD2 = DES_RADIUS(L)**2
             PVOL(L) = FOUR_BY_THREE*Pi*RAD2*DES_RADIUS(L)
             PMASS(L) = PVOL(L)*RO_Sol(L) 
-            OMOI(L) = 2.5D0/(PMASS(L)*RAD2) !one over MOI
+            OMOI(L) = 2.5/(PMASS(L)*RAD2) !one over MOI
             IF(PMASS(L).LT.MINMASS) MINMASS = PMASS(L) 
          END DO
 
          RADIUS_EQ = DES_RADIUS(1)*1.05D0
+         NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO * RADIUS_EQ
 
-         DTSOLID = DTSOLID_FACTOR*2*PI*SQRT(MINMASS/(15*KN))
-      
+         DTSOLID = DTSOLID_FACTOR*2D0*PI*SQRT(MINMASS/(15*KN)) ! DTs Rotational
+!         DTSOLID = DTSOLID_FACTOR*2D0*PI*SQRT(MINMASS/(6*KN)) ! DTs Translational
+
          WX1 = ZERO 
          EX2 = XLENGTH 
          BY1 = ZERO
@@ -64,7 +66,7 @@
          NZ2 = 2*RADIUS_EQ
 
          IF((DIMN.EQ.2).AND.(COORDINATES == 'CARTESIAN')) THEN
-            DZ(:) = 2*RADIUS_EQ
+            DZ(:) = 2D0*RADIUS_EQ
          END IF
 
          GRAV(1) = BFX_s(1,1)

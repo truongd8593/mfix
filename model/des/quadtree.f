@@ -10,38 +10,62 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE QUADTREE(PARTS)
 
+      USE run
       USE param1
       USE constant
       USE discretelement
       IMPLICIT NONE
 
-      INTEGER I, J, TC1, TC2, TCR, TCM, PARTS
+      INTEGER I, J, K, TC1, TC2, TCR, TCM, PARTS, PQ
       DOUBLE PRECISION CT
 
-!     CALL SYSTEM_CLOCK(TC1, TCR, TCM)
+      IF(DES_CONTINUUM_COUPLED) THEN
+         IF(S_TIME.EQ.TIME) THEN
+            INQC = INIT_QUAD_COUNT
+         END IF
+      END IF
 
-      CALL INIT_QUAD(PARTICLES)
-      
-      DO I = 1, PARTS
-         CALL ADD_QUAD(I)
-      END DO
+	 IF(INQC.EQ.INIT_QUAD_COUNT) THEN
 
-      DO I = 1, PARTS
-         J = 1
-         CALL QUAD_NEIGHBOURS(I, J)
-      END DO
+            CALL INIT_QUAD(PARTICLES)
+            
+      	    DO I = 1, PARTS
+            CALL ADD_QUAD(I)
+            END DO
 
-!     CALL SYSTEM_CLOCK(TC2, TCR, TCM)
+            DO I = 1, PARTS
+               J = 1
+               CALL QUAD_NEIGHBOURS(I, J)
+            END DO
 
-!     CT =  TC2-TC1
-!     IF(CT.LE.0) THEN
-!     CT = TCM + TC2 -TC1
-!     END IF
-!     CT = CT/TCR
-!     QUADCT = CT
+            INQC = INQC - 1
+            IF(INQC.EQ.0) INQC = INIT_QUAD_COUNT 
 
-!     PRINT *,'QUAD:- CPU TIME TAKEN:',CT
+         ELSE
 
+            DO I = 1, PARTS
+               PQ = PQUAD(I)
+               IF(.NOT.((DES_POS_NEW(I,1).GT.CQUAD(PQ,1)).AND.&
+                 (DES_POS_NEW(I,1).LE.CQUAD(PQ,2)).AND.& 
+                 (DES_POS_NEW(I,2).GT.CQUAD(PQ,3)).AND.&
+	         (DES_POS_NEW(I,2).LE.CQUAD(PQ,4)))) THEN
+
+                 CALL MOVE_PARTICLE(I,PQ)
+                 CALL ADD_QUAD(I)
+
+               END IF
+            END DO
+
+            DO I = 1, PARTS
+               J = 1
+               CALL QUAD_NEIGHBOURS(I, J)
+            END DO
+	
+	    INQC = INQC - 1		
+            IF(INQC.EQ.0) INQC = INIT_QUAD_COUNT
+
+         END IF
+    
       RETURN
       END SUBROUTINE QUADTREE 
 
@@ -76,19 +100,14 @@
       INTEGER I, J, PARTS
       DOUBLE PRECISION A, OMEGA, OOMEGA2, ASINOMEGAT, BOXLIMIT
 
-! Lines 80 to 91 are only for vibrated bottom wall 
-      A = ZERO 
-      OMEGA = ZERO
-      ASINOMEGAT = ZERO
+! Vibrated bottom wall 
       IF(DES_F.NE.ZERO) THEN
+         A = ZERO 
+         OMEGA = ZERO
+         ASINOMEGAT = ZERO
          OMEGA = 2.0D0*Pi*DES_F
          OOMEGA2 = ONE/(OMEGA**2)
-         IF(UNITS == "CGS") THEN
-            A = DES_GAMMA*GRAV(2)*OOMEGA2
-         ELSE
-            A = DES_GAMMA*GRAV(2)*OOMEGA2
-         END IF
-      ASINOMEGAT = A*SIN(OMEGA*S_TIME)
+         A = DES_GAMMA*GRAV(2)*OOMEGA2
       END IF
 ! End - Bottom wall vibration calculations 
       
@@ -105,7 +124,7 @@
       NQUAD = 1
       BOXLIMIT = RADIUS_EQ 
       CQUAD(1,1) = WX1 - BOXLIMIT
-      CQUAD(1,2) = BY1 - BOXLIMIT + ASINOMEGAT !Adding bottom wall displacement
+      CQUAD(1,2) = BY1 - BOXLIMIT - A !Adding minimum displacement to the bottom wall
       CQUAD(1,3) = EX2 + BOXLIMIT
       CQUAD(1,4) = TY2 + BOXLIMIT
 
@@ -113,6 +132,41 @@
       RETURN
       END SUBROUTINE INIT_QUAD 
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: MOVE_PARTICLE(II,PQD)                                     C
+!  Purpose: To move a particle from its quad                           C
+!                                                                      C
+!                                                                      C
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE MOVE_PARTICLE(II,PQD)
+
+      USE param1
+      USE discretelement
+      IMPLICIT NONE
+      
+      INTEGER II, PQD, J, K
+
+       LQUAD(PQD,7) =  LQUAD(PQD,7) - 1
+
+       DO J = 1, 4 
+          IF(LQUAD(PQD,J).EQ.II) THEN
+             IF(J.NE.4) THEN
+                DO K = J, 3
+                   LQUAD(PQD,K) = LQUAD(PQD,K+1) 
+                END DO
+             ELSE
+                LQUAD(PQD,J) = 0
+             END IF
+          END IF
+       END DO
+
+      RETURN
+      END SUBROUTINE MOVE_PARTICLE 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -182,6 +236,8 @@
 	     Q = IC + NC
            END IF
 	END DO
+        PQUAD(I) = Q
+
 	RETURN
 	END SUBROUTINE FIND_QUAD
 
@@ -241,8 +297,13 @@
 	   LQUAD(I_FQ,NC+1) = K 
 	END DO
 
-	IF(I_FQ.GT.MAXQUADS) THEN
-          PRINT *,'GT MAXQUADS', I_FQ
+!	IF(I_FQ.GT.MAXQUADS-100) THEN 
+!           PRINT *,'I_FQ.GT.MAXQUADS. CALLING REARRANGE'
+!           CALL REARRANGE_QUADTREE(I_FQ) 
+!        END IF
+
+        IF(I_FQ.GT.MAXQUADS-100) THEN
+          PRINT *,'QUADTREE: NQUADS GREATER THAN MAXQUADS SPECIFIED', I_FQ
 	  STOP
 	END IF
 
@@ -250,6 +311,88 @@
 	END SUBROUTINE SPLIT_QUAD
 
           
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: DELETE_QUADS(II)                                       C
+!  Purpose: To check and delete empty quads                            C
+!                                                                      C
+!                                                                      C
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE DELETE_QUADS(II)
+
+      USE param1
+      USE discretelement
+      IMPLICIT NONE
+      
+      INTEGER II, J
+
+! If all child quads of II are empty then remove the child quads
+      IF((LQUAD(LQUAD(II,1),7).EQ.0).AND.&
+         (LQUAD(LQUAD(II,2),7).EQ.0).AND.&
+         (LQUAD(LQUAD(II,3),7).EQ.0).AND.&
+         (LQUAD(LQUAD(II,4),7).EQ.0)) THEN
+
+          DO J = 1, 4
+            LQUAD(LQUAD(II,J),6) = -2 
+            LQUAD(II,J) = 0
+          END DO
+          LQUAD(II,7) = 0
+
+      END IF      
+
+      RETURN
+      END SUBROUTINE DELETE_QUADS 
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: REARRANGE_QUADTREE(II)                                 C
+!  Purpose: To rearrange the quadtree                                  C
+!                                                                      C
+!                                                                      C
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE REARRANGE_QUADTREE(MNQD)
+
+      USE param1
+      USE discretelement
+      IMPLICIT NONE
+      
+      INTEGER MNQD, I, J, K, LQ
+
+      DO I = 1, MNQD
+         IF(LQUAD(I,7).EQ.-1) CALL DELETE_QUADS(I)
+      END DO
+
+      I = 1
+      DO WHILE(I.LE.MNQD)
+         IF(LQUAD(I,6).EQ.-2) THEN
+           DO J = I, MNQD-4
+              LQ = LQUAD(J+4,6)
+              DO K = 1,7
+                 LQUAD(J,K) = LQUAD(J+4,K) ! moving the lquad array
+                 IF(K.LE.4) THEN
+                    CQUAD(J,K) = CQUAD(J+4,K) ! moving the cquad array
+                    IF(LQUAD(LQ,7).LT.0) LQUAD(LQ,K) = LQUAD(LQ,K) - 4 ! moved quads: parent's children should be changed
+                 END IF
+              END DO
+           END DO
+           MNQD = MNQD - 4
+           I = I + 4
+         ELSE
+           I = I + 1
+         END IF
+      END DO
+
+      RETURN
+      END SUBROUTINE REARRANGE_QUADTREE
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: QUAD_NEIGHBOURS(II, NQ)                                C
@@ -270,7 +413,7 @@
 
       INTEGER II, I, N, LL, IC, J, JJ, K, POS, IXU, IXL, IYU, IYL, KK, NQ
       DOUBLE PRECISION XM, YM, DIST, R_LM, XL, XU, YL, YU 
-      INTEGER DIA_RATIO
+      INTEGER DIA_RATIO, cc, cc1
 
       DIA_RATIO = INT(RADIUS_EQ/DES_RADIUS(II))
 
@@ -292,6 +435,8 @@
 		  JJ = NEIGHBOURS(N,1)
                   IF(J.LE.MN) THEN
                      NEIGHBOURS(II,J+1) = N
+                     PN_DIST(II,J+1) = DIST
+                     PN_RLM(II,J+1) = R_LM
 	          ELSE 
                      PRINT *,'QUADTREE - NEIGHBORS GT MN'
                      PRINT *, II,':', (NEIGHBOURS(II,LL),LL=1,MAXNEIGHBORS)
@@ -299,6 +444,8 @@
 	          END IF
                   IF(JJ.LE.MN) THEN
                      NEIGHBOURS(N,JJ+1) = II 
+                     PN_DIST(N,JJ+1) = DIST
+                     PN_RLM(N,JJ+1) = R_LM
 	          ELSE 
                      PRINT *,'QUADTREE - NEIGHBORS GT MN'
                      PRINT *, II,':', (NEIGHBOURS(N,LL),LL=1,MAXNEIGHBORS)

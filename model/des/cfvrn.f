@@ -14,17 +14,15 @@
       USE discretelement
       IMPLICIT NONE
 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+
       INTEGER K
       DOUBLE PRECISION Vno, VRl(DIMN), NORM(DIMN)
 
 !---------------------------------------------------------------------------
 
-      Vno = ZERO	
-
-      DO K = 1, DIMN
-         Vno = Vno + VRl(K)*NORM(K)
-      END DO 
-
+      Vno = DES_DOTPRDCT(VRl,NORM)
+      
       RETURN
       END SUBROUTINE CFVRN 
 

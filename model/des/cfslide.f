@@ -1,11 +1,17 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFSLIDE(L, TANGNT, FT1)                                C
+!  Module name: CFSLIDE(L, TANGNT_VREL, FT1)                           C
 !  Purpose: DES - calculate sliding between particles                  C
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
+!                                                                      C
+!                                                                      C
+!  Comments: Implements Eqns 9 & 10 from the following paper           C
+!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical         C
+!  simulation of plug glow of cohesionless particles in a              C
+!  horizontal pipe", Powder technology, 71, 239-250, 1992              C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -15,39 +21,23 @@
       USE discretelement
       IMPLICIT NONE
 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
+
       INTEGER L, K
-      DOUBLE PRECISION FTMD, FNMD, TANGNT(DIMN), FT1(DIMN)
+      DOUBLE PRECISION FTMD, FNMD,  FT1(DIMN), TANGNT(DIMN)
 !     
 !---------------------------------------------------------------------
 
-
-      FTMD = ZERO 
-      FNMD = ZERO
-      DO K = 1, DIMN
-         FTMD = FTMD + (FT1(K)**2)
-         FNMD = FNMD + (FN(L,K)**2)
-      END DO
-      FTMD = SQRT(FTMD)
-      FNMD = SQRT(FNMD)
+      FTMD = SQRT(DES_DOTPRDCT(FT1,FT1))
+      FNMD = SQRT(DES_DOTPRDCT(FN,FN))
 
       IF (FTMD.GT.(MEW*FNMD)) THEN
-         FT(L,:) = - MEW*FNMD*TANGNT(:)
-         DO K = 1, DIMN
-            IF(FT1(K).GT.0) THEN
-               IF(FT(L,K).LT.0) THEN
-                  FT(L,K) = - FT(L,K)
-               END IF
-            ELSE IF(FT1(K).LT.0) THEN
-               IF(FT(L,K).GT.0) THEN
-                  FT(L,K) = - FT(L,K)
-               END IF
-            END IF
-         END DO
+          PARTICLE_SLIDE = .TRUE.
+          FT(L,:) = - MEW*FNMD*TANGNT(:)
       ELSE
          FT(L,:) = FT1(:)
       END IF
 
-      
       RETURN
       END SUBROUTINE CFSLIDE
 

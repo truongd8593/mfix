@@ -36,15 +36,11 @@
         INCLUDE 'function.inc'
 
       IF(GTC.EQ.1) THEN
-         DO IJK = 1, DIMENSION_3
-            DO M = 1, MMAX
-               AVE_VEL_X(IJK,M) = 0.0
-               AVE_VEL_Y(IJK,M) = 0.0
-               IF(DIMN.EQ.3) THEN
-                  AVE_VEL_Z(IJK,M) = 0.0
-               END IF
-            END DO
-         END DO
+         AVE_VEL_X(:,:) = ZERO
+         AVE_VEL_Y(:,:) = ZERO
+         IF(DIMN.EQ.3) THEN
+            AVE_VEL_Z(:,:) = ZERO
+         END IF
       END IF   
   
       DO IJK = 1, DIMENSION_3

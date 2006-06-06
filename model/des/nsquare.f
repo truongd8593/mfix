@@ -19,8 +19,6 @@
       DOUBLE PRECISION CT
       DOUBLE PRECISION DIST, R_LM
 
-      IF (DO_NSQUARE) THEN
- !        CALL SYSTEM_CLOCK(TC1,TCR,TCM)
          DO L = 1, PARTICLES 
             DO I = 1, PARTICLES
                DIST = ZERO           
@@ -37,6 +35,8 @@
                      KK = NEIGHBOURS(I,1)
                      IF (K.LE.MN) THEN
                         NEIGHBOURS(L,K+1) = I
+                        PN_DIST(L,K+1) = DIST
+                        PN_RLM(L,K+1) = R_LM
                      ELSE 
                         PRINT *,'NSQUARE - NEIGHBORS GT MN'
                         PRINT *, L,':',(NEIGHBOURS(L,II), II=1,MAXNEIGHBORS) 
@@ -44,6 +44,8 @@
                      END IF
                      IF (KK.LE.MN) THEN
                         NEIGHBOURS(I,KK+1) = L
+                        PN_DIST(I,KK+1) = DIST
+                        PN_RLM(I,KK+1) = R_LM
                      ELSE 
                         PRINT *,'NSQUARE - NEIGHBORS GT MN'
                         PRINT *, I,':',(NEIGHBOURS(I,II), II=1,MAXNEIGHBORS) 
@@ -53,18 +55,6 @@
                END IF
             END DO
          END DO
-
-!         CALL SYSTEM_CLOCK(TC2,TCR,TCM)
-!         CT = TC2-TC1
-!         IF(CT.LE.0) THEN
-!            CT = TC2 + TCM - TC1
-!         END IF
-!         CT = CT/TCR
-!         N2CT = CT
-!     PRINT *,'N2:- CPU TIME TAKEN:',N2CT
-!      ELSE
-!         N2CT = ZERO
-      END IF
 
       RETURN
       END SUBROUTINE NSQUARE

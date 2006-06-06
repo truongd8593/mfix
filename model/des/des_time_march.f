@@ -46,15 +46,17 @@
 !-----------------------------------------------
 !     
       INTEGER NN, LNN, I, J, K, FACTOR, NSN
-      DOUBLE PRECISION TEMP_DTS, PTC 
+      DOUBLE PRECISION TEMP_DTS, DTSOLIDTEMP 
       LOGICAL ALREADY_EXISTS
 
       IF(TIME.EQ.ZERO) THEN 
 
         NSN = 0
+        PTC = 0D0 
         S_TIME = TIME
         TEMP_DTS = ZERO
         PTC = ZERO
+        INQC = INIT_QUAD_COUNT
 
         CALL CFASSIGN(PARTICLES)
 
@@ -65,10 +67,11 @@
          END IF
 !!COHESION
 
+! To do only des in the 1st time step so the particles settle
+! and then start coupling
+
         IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
-
            DES_CONTINUUM_COUPLED = .FALSE.
-
            DO FACTOR = 1, 500
              PRINT *,'DES', FACTOR 
 ! New values
@@ -77,8 +80,9 @@
              END DO
 ! Neighbor search     
              NSN = NSN + 1    
-             IF(NSN.EQ.NEIGHBOR_SEARCH_N) THEN 
+             IF(DO_NSEARCH.OR.(NSN.EQ.NEIGHBOR_SEARCH_N)) THEN 
                 CALL NEIGHBOUR(PARTICLES)
+                DO_NSEARCH = .FALSE.
                 NSN = 0
              END IF
 ! Force calculation         
@@ -89,9 +93,7 @@
              ELSE
                 CALL CALC_FORCE_DES
              END IF 
-
            END DO
-
            DES_CONTINUUM_COUPLED = .TRUE.
            CALL PARTICLES_IN_CELL(PARTICLES)
            GO TO 100
@@ -99,13 +101,18 @@
       END IF
 
       IF(DES_CONTINUUM_COUPLED) THEN
+         NSN = NEIGHBOR_SEARCH_N - 1
+         S_TIME = TIME
          IF(DT.GE.DTSOLID) THEN
-            FACTOR = DT/DTSOLID + 1
+            FACTOR = CEILING(real(DT/DTSOLID)) 
          ELSE
-            PRINT *,'DT_SOLID greater than DT_FLUID. DEM not called'
+            FACTOR = 1
+            DTSOLIDTEMP = DTSOLID
+            DTSOLID = DT
+            PRINT *,'DT_SOLID greater than DT_FLUID. DEM is called once'
          END IF
       ELSE
-         FACTOR = TSTOP/DTSOLID + 1 
+         FACTOR = CEILING(real(TSTOP/DTSOLID))  
       END IF
       
       PRINT *,'Discrete Element Simulation is being called', FACTOR,' times.'
@@ -127,8 +134,9 @@
          
 ! Neighbor search     
          NSN = NSN + 1    
-         IF(NSN.EQ.NEIGHBOR_SEARCH_N) THEN 
+         IF(DO_NSEARCH.OR.(NSN.EQ.NEIGHBOR_SEARCH_N)) THEN 
            CALL NEIGHBOUR(PARTICLES)
+           DO_NSEARCH = .FALSE.
            NSN = 0
          END IF
 
@@ -146,48 +154,50 @@
          PTC = PTC + DTSOLID
 
              IF(PTC.GE.P_TIME) THEN 
-               OPEN (UNIT=99, FILE='des_2-particles.out', STATUS='REPLACE')
-               WRITE (99,*) real(s_time),real(DES_POS_NEW(1,1)),real(DES_POS_NEW(1,2)),  real(DES_VEL_NEW(2,1)),real(DES_VEl_NEW(2,2))
+!               OPEN (UNIT=99, FILE='2p.out', STATUS='REPLACE')
+!               WRITE (99,*) real(s_time),real(DES_POS_NEW(1,1)),real(DES_POS_NEW(1,2)),  real(DES_POS_NEW(2,1)),real(DES_POS_NEW(2,2))
+!               OPEN (UNIT=199, FILE='2v.out', STATUS='REPLACE')
+!               WRITE (199,*) real(s_time),real(DES_VEL_NEW(1,1)),real(DES_VEL_NEW(1,2)),  real(DES_VEL_NEW(2,1)),real(DES_VEL_NEW(2,2))
 
                IF(S_TIME.LE.0.2*TSTOP) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-1.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*) 'Time=',S_TIME,'s'
                   DO LNN = 1, PARTICLES
-                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN),&
-                     (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
+                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN) !,&
+                     ! (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
                   END DO
                ELSE IF(S_TIME.LE.0.4*TSTOP) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-2.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*) 'Time=',S_TIME,'s'
                   DO LNN = 1, PARTICLES
-                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN),&
-                     (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
+                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN) !,&
+                     ! (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
                   END DO
                ELSE IF(S_TIME.LE.0.6*TSTOP) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-3.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*) 'Time=',S_TIME,'s'
                   DO LNN = 1, PARTICLES
-                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN),&
-                     (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
+                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN) !,&
+                     ! (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
                   END DO
                ELSE IF(S_TIME.LE.0.8*TSTOP) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-4.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*) 'Time=',S_TIME,'s'
                   DO LNN = 1, PARTICLES
-                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN),&
-                     (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
+                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN) !,&
+                     ! (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
                   END DO
                ELSE IF(S_TIME.LE.TIME) THEN
                   OPEN (UNIT=9, FILE='des_all-particles-5.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*) 'Time=',S_TIME,'s'
                   DO LNN = 1, PARTICLES
-                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN),&
-                     (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
+                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN) !,&
+                     ! (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
                   END DO
                END IF
 
@@ -206,8 +216,12 @@
 
          END DO ! enddo1
 
-         IF(.NOT.DES_CONTINUUM_COUPLED) STOP
-         
+         IF(.NOT.DES_CONTINUUM_COUPLED) TSTOP = DT
+
+         IF(DT.LT.DTSOLIDTEMP) THEN
+            DTSOLID = DTSOLIDTEMP
+         END IF
+
          IF(TEMP_DTS.NE.ZERO) THEN
             DTSOLID = TEMP_DTS
             TEMP_DTS = ZERO

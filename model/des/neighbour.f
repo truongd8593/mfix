@@ -18,6 +18,7 @@
       INTEGER I, II, PARTS, LL, CO, NI, TEMP
 
       DO I = 1, PARTICLES
+         PPOS(I,:) = DES_POS_NEW(I,:)
          DO II = 1, MAXNEIGHBORS
             NEIGHBOURS(I,II) = -1
          END DO
@@ -42,7 +43,7 @@
       OCTCT = ZERO
       END IF
 
-       RETURN
+      RETURN
       END SUBROUTINE NEIGHBOUR
 
 

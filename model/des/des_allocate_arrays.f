@@ -35,6 +35,11 @@
       MAXQUADS = 5*PARTICLES*MQUAD_FACTOR
       IF(MAXQUADS.LE.80000) MAXQUADS = 80000
       MAXNEIGHBORS = MN + 1
+      IF(DIMN.EQ.2) THEN
+         PBP = PARTICLES/7
+      ELSE
+         PBP = NPARTICLES/5
+      END IF
 !
 !   DES Allocatable arrays
 !
@@ -59,6 +64,7 @@
          Allocate(  OMEGA_OLD (NPARTICLES,1) )
          Allocate(  OMEGA_NEW (NPARTICLES,1) )
       END IF        
+         Allocate(  PPOS (NPARTICLES,DIMN) )
 !
 !   Total, normal and tangetial forces      
       Allocate(  FC (NPARTICLES,DIMN) )
@@ -86,6 +92,15 @@
       Allocate(  PN (NPARTICLES, MAXNEIGHBORS) )
       Allocate(  PV (NPARTICLES, MAXNEIGHBORS) )
 !
+!   Periodic walls
+!
+      Allocate(  WWALL (PBP) )
+      Allocate(  EWALL (PBP) )
+      Allocate(  BWALL (PBP) )
+      Allocate(  TWALL (PBP) )
+      Allocate(  SWALL (PBP) )
+      Allocate(  NWALL (PBP) )
+!
 !   Particles in a computational cell (for volume fraction) )
       Allocate(  PINC (DIMENSION_3) )
       Allocate(  PIJK (PARTICLES,5) )
@@ -101,7 +116,12 @@
 !   Neighbor search
       Allocate(  NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )
       Allocate(  LQUAD (MAXQUADS, NMQD) )
+      Allocate(  PQUAD (PARTICLES) )
       Allocate(  CQUAD (MAXQUADS, NWALLS) )
+!
+!   Neighbor distances
+      Allocate(  PN_DIST (NPARTICLES, MAXNEIGHBORS) )
+      Allocate(  PN_RLM (NPARTICLES, MAXNEIGHBORS) )
 !
 !   Granular temperature
       Allocate(  DES_THETA (DIMENSION_3, DIMENSION_M) )

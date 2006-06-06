@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFTOTALOVERLAPS(L, II, Vtan, OVERLP_N, OVERLP_T)       C
+!  Module name: CFTOTALOVERLAPS(L, II, J, Vtan, OVERLP_N, OVERLP_T)    C
 !  Purpose:  DES - Calculate the total overlap between particles       C
 !                                                                      C
 !                                                                      C
@@ -9,25 +9,23 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFTOTALOVERLAPS(L, II, Vtan, OVERLP_N, OVERLP_T)
+      SUBROUTINE CFTOTALOVERLAPS(L, II, J, Vtan, OVERLP_N, OVERLP_T)
 
       USE param1      
       USE discretelement
       IMPLICIT NONE
 
-      INTEGER K, L, II
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
+
+      INTEGER J, K, L, II
       DOUBLE PRECISION OVERLP_N, OVERLP_T
-      DOUBLE PRECISION Vtan, R_LM, DIST, TEMPX, TEMPY, TEMPZ
+      DOUBLE PRECISION Vtan, R_LM, D(DIMN), DIST, TEMPX, TEMPY, TEMPZ
 
 !-----------------------------------------------------------------------
 
-      DIST = ZERO 
       R_LM = DES_RADIUS(L) + DES_RADIUS(II)
-
-      DO K = 1, DIMN
-         DIST = DIST + (DES_POS_NEW(L,K)-DES_POS_NEW(II,K))**2
-      END DO
-      DIST = SQRT(DIST)
+      D(:) = DES_POS_NEW(L,:) - DES_POS_NEW(II,:)
+      DIST = SQRT(DES_DOTPRDCT(D,D))
 
       IF(DES_PERIODIC_WALLS) THEN
         TEMPX = DES_POS_NEW(II,1)
@@ -62,16 +60,14 @@
            END IF
            END IF
         END IF                   
-      DIST = 0.0
-      DO K = 1, DIMN
-         DIST = DIST + (DES_POS_NEW(L,K)-DES_POS_NEW(II,K))**2
-      END DO
-      DIST = SQRT(DIST)
+      D(:) = DES_POS_NEW(L,K) - DES_POS_NEW(II,K)
+      DIST = SQRT(DES_DOTPRDCT(D,D))
       DES_POS_NEW(II,1) = TEMPX
       DES_POS_NEW(II,2) = TEMPY
       IF (DIMN.EQ.3) DES_POS_NEW(II,3) = TEMPZ
       END IF
  
+!      OVERLP_N = PN_RLM(L,J) - PN_DIST(L,J)
       OVERLP_N = R_LM - DIST
       OVERLP_T = Vtan*DTSOLID
 

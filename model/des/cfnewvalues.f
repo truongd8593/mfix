@@ -6,7 +6,12 @@
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
-!                                                                      C
+!                                                                      C 
+!  Comments: Implements Eqns 1, 2, 3, 4 & 5  from the following paper  C
+!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical         C
+!  simulation of plug glow of cohesionless particles in a              C
+!  horizontal pipe", Powder technology, 71, 239-250, 1992              C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CFNEWVALUES(L)
 
@@ -29,10 +34,12 @@
       USE discretelement
 
       IMPLICIT NONE
+
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
       
       INTEGER L, KK, K, NSPLIT, CHECK
       INTEGER IJK, I, J, KKK 
-      DOUBLE PRECISION TEMPTIME, PASSTIME, DIST, V
+      DOUBLE PRECISION TEMPTIME, PASSTIME, D(DIMN), DIST, V
 !     
 !---------------------------------------------------------------------
 !     Calculate new values
@@ -41,33 +48,27 @@
       CHECK = 0 
       TEMPTIME = DTSOLID
      
-
          DES_VEL_NEW(L,:) = FC(L,:)/PMASS(L) + GRAV(:)
          DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID
-
          DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID 
-
 	 OMEGA_NEW(L,:) = OMEGA_OLD(L,:) + TOW(L,:)*OMOI(L)*DTSOLID
 
+! To do neighbor search if the particle has move more than the skin distace
+      IF(.NOT.DO_NSEARCH) THEN
+         D(:) = DES_POS_NEW(L,:) - PPOS(L,:)
+         DIST = SQRT(DES_DOTPRDCT(D,D))
+         IF(DIST.GE.NEIGHBOR_SEARCH_DIST) DO_NSEARCH = .TRUE.
+      END IF
 
-         
-      DIST = ZERO 
-      DO KK=1, DIMN
-         DIST = DIST + (DES_POS_NEW(L,KK)-DES_POS_OLD(L,KK))**2
-      END DO
-      DIST = SQRT(DIST)
-
-      IF(DIST.GE.2*DES_RADIUS(L)) THEN
-         PRINT *,'MOVEMENT UNDESIRED'
-         PRINT *, 'T, DT', S_TIME, DTSOLID 
-         PRINT *, 'L, DIST, RADIUS', L, DIST, DES_RADIUS(L)
-         PRINT *, 'POS: OLD, NEW', (DES_POS_OLD(L,KK),KK=1,DIMN), (DES_POS_NEW(L,KK), KK= 1,DIMN)
-         PRINT *, 'VEL: OLD, NEW', (DES_VEL_OLD(L,KK),KK=1,DIMN), (DES_VEL_NEW(L,KK),KK=1,DIMN)
-         PRINT *, 'FC', (FC(L,KK),KK=1,DIMN)
-         PRINT *, 'NEIGHBORS', (NEIGHBOURS(L,KK), KK=1, MAXNEIGHBORS)
+! Chacking if the partcile moved more than a dia in a solid time step   
+      D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
+      DIST = SQRT(DES_DOTPRDCT(D,D))
+      IF(DIST.GE.DES_RADIUS(L)) THEN
+         PRINT *,'MOVEMENT UNDESIRED: PARTICLE', L
          STOP
       END IF
 
+! Periodic treatment
       IF(DES_PERIODIC_WALLS) THEN
         IF(DES_PERIODIC_WALLS_X) THEN
          IF(DES_POS_NEW(L,1).GT.EX2) THEN
@@ -104,14 +105,7 @@
       END DO 
 
       DES_KE = DES_KE + HALF*V*PMASS(L) 
-
-      IF(DIMN.EQ.3) THEN
-         DES_PE = DES_PE + PMASS(L)*SQRT(GRAV(1)**2 +&
-                  GRAV(2)**2 + GRAV(3)**2)*DES_POS_NEW(L,2)
-      ELSE
-         DES_PE = DES_PE + PMASS(L)*SQRT(GRAV(1)**2 +&
-                  GRAV(2)**2)*DES_POS_NEW(L,2)
-      END IF
+      DES_PE = DES_PE + PMASS(L)*DES_POS_NEW(L,2)*SQRT(DES_DOTPRDCT(GRAV,GRAV))
 
       DTSOLID = TEMPTIME
 

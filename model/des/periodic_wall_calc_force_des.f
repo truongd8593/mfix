@@ -23,9 +23,6 @@
       DOUBLE PRECISION TANGENT(DIMN)
       DOUBLE PRECISION Vn, Vt
       INTEGER NI, NWS, IJ, WALLCHECK
-      INTEGER WWALL(1000), EWALL(1000)
-      INTEGER BWALL(1000), TWALL(1000)
-      INTEGER SWALL(1000), NWALL(1000)
 !     
 !---------------------------------------------------------------------
 !     Calculate new values
@@ -33,27 +30,17 @@
 !     
 
       IF (TIME.LE.DTSOLID) THEN
-         DO K = 1, DIMN
-            VRE(K) = ZERO
-            TANGENT(K) = ZERO
-            NORMAL(K) = ZERO
-         END DO
-         DO LC = 1, PARTICLES
-            DO K = 1, DIMN
-               FN(LC,K) = ZERO
-               FT(LC,K) = ZERO
-            END DO
-            DO KK = 1, MN
-               PN(LC,KK) = -1
-               PV(LC,KK) = 1
-                    DO K = 1, DIMN
-                       PFN(LC,KK,K) = ZERO
-                       PFT(LC,KK,K) = ZERO
-                    END DO
-                 END DO
-                 PN(LC,1) = 0
-              END DO
-           END IF
+            VRE(:) = ZERO
+            TANGENT(:) = ZERO
+            NORMAL(:) = ZERO
+            FN(:,:) = ZERO
+            FT(:,:) = ZERO
+            PN(:,:) = -1
+            PV(:,:) = 1
+            PFN(:,:,:) = ZERO
+            PFT(:,:,:) = ZERO
+            PN(:,1) = 0
+      END IF
            
            IF(DES_CONTINUUM_COUPLED) THEN
               CALL PARTICLES_IN_CELL(PARTICLES)
@@ -64,50 +51,48 @@
 !     Calculate contact force and torque
 !---------------------------------------------------------------------
 !     
-           
-           DO K = 1, 1000
-              WWALL(K) = 0
-              EWALL(K) = 0
-              BWALL(K) = 0
-              TWALL(K) = 0
-              SWALL(K) = 0
-              NWALL(K) = 0
-           END DO
+   
+           WWALL(:) = 0
+           EWALL(:) = 0
+           BWALL(:) = 0
+           TWALL(:) = 0
+           SWALL(:) = 0
+           NWALL(:) = 0
 
               IF(DES_PERIODIC_WALLS_X) THEN
 
-                CALL CF_PERIODIC_WALL_X(WWALL, EWALL)
+                CALL CF_PERIODIC_WALL_X()
                       
                 IF (WWALL(1).GT.0) THEN
                 DO K = 2, WWALL(1) + 1
                    LL = WWALL(K)
-                   CALL CF_PERIODIC_WALL_NEIGHBOR_X(LL, WWALL, EWALL)
+                   CALL CF_PERIODIC_WALL_NEIGHBOR_X(LL)
                 END DO
                 END IF
                 
                 IF(EWALL(1).GT.0) THEN
                 DO K = 2, EWALL(1) + 1
                    LL = EWALL(K)
-                   CALL CF_PERIODIC_WALL_NEIGHBOR_X(LL, WWALL, EWALL)
+                   CALL CF_PERIODIC_WALL_NEIGHBOR_X(LL)
                 END DO
                 END IF
               END IF
               
               IF(DES_PERIODIC_WALLS_Y) THEN
 
-                CALL CF_PERIODIC_WALL_Y(BWALL,TWALL)
+                CALL CF_PERIODIC_WALL_Y()
  
                 IF(BWALL(1).GT.0) THEN
                 DO K = 2, BWALL(1) + 1
                    LL = BWALL(K)
-                   CALL CF_PERIODIC_WALL_NEIGHBOR_Y(LL, BWALL, TWALL)
+                   CALL CF_PERIODIC_WALL_NEIGHBOR_Y(LL)
                 END DO
                 END IF
                 
                 IF(TWALL(1).GT.0) THEN
                 DO K = 2, TWALL(1) + 1
                    LL = TWALL(K)
-                   CALL CF_PERIODIC_WALL_NEIGHBOR_Y(LL, BWALL, TWALL)
+                   CALL CF_PERIODIC_WALL_NEIGHBOR_Y(LL)
                 END DO
                 END IF
               END IF
@@ -115,19 +100,19 @@
               IF(DIMN.EQ.3) THEN
               IF(DES_PERIODIC_WALLS_z) THEN
 
-                CALL CF_PERIODIC_WALL_Z(SWALL, NWALL)
+                CALL CF_PERIODIC_WALL_Z()
                       
                 IF(SWALL(1).GT.0) THEN
                 DO K = 2, SWALL(1) + 1
                    LL = SWALL(K)
-                   CALL CF_PERIODIC_WALL_NEIGHBOR_Z(LL, SWALL, NWALL)
+                   CALL CF_PERIODIC_WALL_NEIGHBOR_Z(LL)
                 END DO
                 END IF
                 
                 IF(NWALL(1).GT.0) THEN
                 DO K = 2, NWALL(1) + 1
                    LL = NWALL(K)
-                   CALL CF_PERIODIC_WALL_NEIGHBOR_Z(LL, SWALL, NWALL)
+                   CALL CF_PERIODIC_WALL_NEIGHBOR_Z(LL)
                 END DO
                 END IF
               END IF
@@ -144,7 +129,7 @@
               IF(PN(LL,1).GT.0) THEN
                  DO K = 2, PN(LL,1)+1
                     IF(PV(LL,K).EQ.0) THEN
-                       PN(LL,K) = UNDEFINED_I 
+                       PN(LL,K) = UNDEFINED_I
                        PFN(LL,K,:) = ZERO  
                        PFT(LL,K,:) = ZERO
                     END IF
@@ -160,7 +145,7 @@
                     DO WHILE((NI.GT.1).AND.(PN(LL,NI).GT.TEMPN))
                        PN(LL,NI+1) = PN(LL,NI)
                        PFN(LL,NI+1,:) = PFN(LL,NI,:)
-                       PFT(Ll,NI+1,:) = PFT(LL,NI,:)
+                       PFT(LL,NI+1,:) = PFT(LL,NI,:)
                        NI = NI-1
                     END DO
                     PN(LL,NI+1) = TEMPN
@@ -172,7 +157,7 @@
               IF(PN(LL,1).GT.0) THEN
                  IJ = 0
                  DO NI = 2, PN(LL,1)+1 
-                    IF(PN(LL,NI).GE.UNDEFINED_I) THEN
+                    IF(PN(LL,NI).EQ.UNDEFINED_I) THEN
                        PN(LL,NI) = -1
                        IJ = IJ + 1
                     END IF
@@ -206,13 +191,12 @@
                              DES_VEL_NEW(I,:) = DES_WALL_VEL(IW,:)
                              OMEGA_NEW(I,:) = ZERO
                           DES_RADIUS(I) = DES_RADIUS(LL)
-                          CALL CFNORMAL(LL, I, NORMAL)
+                          CALL CFNORMALWALL(LL, I, NORMAL)
                           CALL CFTANGENT(TANGENT, NORMAL, VRE)
                           CALL CFRELVEL(LL, I, VRE, TANGENT)
-!                          CALL CFTANGENT(TANGENT, NORMAL, VRE)
                           CALL CFVRN(Vn, VRE, NORMAL)
                           CALL CFVRT(Vt, VRE, TANGENT)
-                          CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)
+                          CALL CFTOTALOVERLAPSWALL(LL, I, Vt, OVERLAP_N, OVERLAP_T)
                           CALL CFFNWALL(LL, Vn, OVERLAP_N, NORMAL)
                           CALL CFFTWALL(LL, Vt, OVERLAP_T, TANGENT)
                           CALL CFSLIDEWALL(LL, TANGENT)
@@ -231,13 +215,12 @@
                              DES_VEL_NEW(I,:) = DES_WALL_VEL(IW,:)
                              OMEGA_NEW(I,:) = ZERO
                           DES_RADIUS(I) = DES_RADIUS(LL)
-                          CALL CFNORMAL(LL, I, NORMAL)
+                          CALL CFNORMALWALL(LL, I, NORMAL)
                           CALL CFTANGENT(TANGENT, NORMAL, VRE)
                           CALL CFRELVEL(LL, I, VRE, TANGENT)
-!                          CALL CFTANGENT(TANGENT, NORMAL, VRE)
                           CALL CFVRN(Vn, VRE, NORMAL)
                           CALL CFVRT(Vt, VRE, TANGENT)
-                          CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)
+                          CALL CFTOTALOVERLAPSWALL(LL, I, Vt, OVERLAP_N, OVERLAP_T)
                           CALL CFFNWALL(LL, Vn, OVERLAP_N, NORMAL)
                           CALL CFFTWALL(LL, Vt, OVERLAP_T, TANGENT)
                           CALL CFSLIDEWALL(LL, TANGENT)
@@ -256,13 +239,12 @@
                              DES_VEL_NEW(I,:) = DES_WALL_VEL(IW,:)
                              OMEGA_NEW(I,:) = ZERO
                           DES_RADIUS(I) = DES_RADIUS(LL)
-                          CALL CFNORMAL(LL, I, NORMAL)
+                          CALL CFNORMALWALL(LL, I, NORMAL)
                           CALL CFTANGENT(TANGENT, NORMAL, VRE)
                           CALL CFRELVEL(LL, I, VRE, TANGENT)
-!                          CALL CFTANGENT(TANGENT, NORMAL, VRE)
                           CALL CFVRN(Vn, VRE, NORMAL)
                           CALL CFVRT(Vt, VRE, TANGENT)
-                          CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)
+                          CALL CFTOTALOVERLAPSWALL(LL, I, Vt, OVERLAP_N, OVERLAP_T)
                           CALL CFFNWALL(LL, Vn, OVERLAP_N, NORMAL)
                           CALL CFFTWALL(LL, Vt, OVERLAP_T, TANGENT)
                           CALL CFSLIDEWALL(LL, TANGENT)
@@ -279,30 +261,32 @@
                    IF(I.GT.LL) THEN
 	      	    CO = 0
 		    NI = 2
-                    IF(PN(1,LL).GT.0) THEN
+                    IF(PN(LL,1).GT.0) THEN
                        DO WHILE((CO.EQ.0).AND.(NI.LE.(PN(LL,1)+1)))
                           IF(I.EQ.PN(LL,NI)) THEN
                              CO = 1
                              PV(LL,NI) = 1
-                             CALL CFNORMAL(LL, I, NORMAL)
+                             CALL CFNORMAL(LL, I, II, NORMAL)
                              CALL CFTANGENT(TANGENT, NORMAL, VRE)
                              CALL CFRELVEL(LL, I, VRE, TANGENT)
-!                             CALL CFTANGENT(TANGENT, NORMAL, VRE)
                              CALL CFVRN(Vn, VRE, NORMAL)
                              CALL CFVRT(Vt, VRE, TANGENT)
                              CALL CFINCREMENTALOVERLAPS(Vn, Vt, OVERLAP_N, OVERLAP_T)
                              CALL CFFN(LL, Vn, OVERLAP_N, NORMAL)
                              CALL CFFT(LL, Vt, OVERLAP_T, TANGENT)
-                             FN(LL,:) = FN(LL,:) + PFN(LL,NI,:)
+                                FN(LL,:) = FN(LL,:) + PFN(LL,NI,:)
                              TEMPFT(:) = FT(LL,:) + PFT(LL,NI,:)
                              CALL CFSLIDE(LL, TANGENT, TEMPFT)
                              CALL CFFCTOW(LL, I, NORMAL)
-                             PFN(LL,NI,:) = PFN(LL,NI,:) + FNS1(:)
-                             PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
+                             IF(.NOT.PARTICLE_SLIDE) THEN
+                                 PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
+                             ELSE
+                                 PFT(LL,NI,:) = FT(LL,:)
+                                 PARTICLE_SLIDE = .FALSE.
+                             END IF
                           ELSE
                              NI = NI + 1
                           END IF
-
                        END DO
                     END IF
 		    IF(CO.EQ.0) THEN
@@ -310,20 +294,23 @@
                        NI = PN(LL,1) + 1
                        PN(LL,NI) = I
                        PV(LL,NI) = 1
-                       CALL CFNORMAL(LL, I, NORMAL)
+                       CALL CFNORMAL(LL, I, II, NORMAL)
                        CALL CFTANGENT(TANGENT, NORMAL, VRE)
                        CALL CFRELVEL(LL, I, VRE, TANGENT)
-!                       CALL CFTANGENT(TANGENT, NORMAL, VRE)
                        CALL CFVRN(Vn, VRE, NORMAL)
                        CALL CFVRT(Vt, VRE, TANGENT)
-                       CALL CFTOTALOVERLAPS(LL, I, Vt, OVERLAP_N, OVERLAP_T)
+                       CALL CFTOTALOVERLAPS(LL, I, II, Vt, OVERLAP_N, OVERLAP_T)
                        CALL CFFN(LL, Vn, OVERLAP_N, NORMAL)
                        CALL CFFT(LL, Vt, OVERLAP_T, TANGENT)
-                       TEMPFT(:) = FT(LL,:)
+                          TEMPFT(:) = FT(LL,:)
                        CALL CFSLIDE(LL, TANGENT, TEMPFT)
                        CALL CFFCTOW(LL, I, NORMAL)
-                       PFN(LL,NI,:) = FNS1(:)
-                       PFT(LL,NI,:) = FTS1(:)
+                       IF(.NOT.PARTICLE_SLIDE) THEN
+                          PFT(LL,NI,:) =  FTS1(:)
+                       ELSE
+                          PFT(LL,NI,:) = FT(LL,:)
+                          PARTICLE_SLIDE = .FALSE.
+                       END IF
 		    END IF
                   END IF
                  END DO

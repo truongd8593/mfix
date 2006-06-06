@@ -36,15 +36,11 @@
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
 
-      DO IJK = IJKSTART3, IJKEND3
-         PINC(IJK) = 0
-         DO M = 1, MMAX
-            SOLVOLINC(IJK,M) = ZERO
-            DES_U_s(IJK,M) = ZERO
-            DES_V_s(IJK,M) = ZERO
-            DES_W_s(IJK,M) = ZERO
-         END DO
-      END DO
+      PINC(:) = 0
+      SOLVOLINC(:,:) = ZERO
+      DES_U_s(:,:) = ZERO
+      DES_V_s(:,:) = ZERO
+      DES_W_s(:,:) = ZERO
 
       DO L = 1, PARTICLES
 
@@ -176,8 +172,7 @@
             END IF
             IF(PINC(IJK).GT.0) THEN
               EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
-	      ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)  ! update rop_g just after ep_g
-!              PRINT *,'PINC', IJK, EP_G(IJK)
+	      ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
             END IF
          END DO
       END DO

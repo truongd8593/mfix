@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CF_PERIODIC_WALL_Y(BW, TW)                             C
+!  Module name: CF_PERIODIC_WALL_Y()                                   C
 !  Purpose: DES - Identify particles next to periodix y-walls          C
 !                                                                      C
 !                                                                      C
@@ -9,42 +9,39 @@
 !  REVISED Aug 24 2005                                                 C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CF_PERIODIC_WALL_Y(BW, TW)
+      SUBROUTINE CF_PERIODIC_WALL_Y()
       
       USE discretelement
       IMPLICIT NONE
 
       INTEGER K, L, WI, EI
-      INTEGER BW(1000), TW(1000)
 !     
 !-------------------------------------------------------------------
 !     
 
       WI = 0
       EI = 0	
-      BW(1) = 0
-      TW(1) = 0
       
       DO L = 1, PARTICLES
 
-         IF(DES_POS_NEW(L,2).LE.(BY1 + 2*RADIUS_EQ)) THEN
-            BW(1) = BW(1) + 1
-            WI = BW(1) + 1
-            IF(WI.GT.999) THEN
-               PRINT *,'Exceeding array limits BW', WI
+         IF(DES_POS_NEW(L,2).LE.(BY1 + 2D0*RADIUS_EQ)) THEN
+            BWALL(1) = BWALL(1) + 1
+            WI = BWALL(1) + 1
+            IF(WI.GT.PBP-1) THEN
+               PRINT *,'Exceeding array limits BWALL', WI
                STOP
             ELSE
-               BW(WI) = L
+               BWALL(WI) = L
             END IF
 
-         ELSE IF(DES_POS_NEW(L,2).GE.(TY2 - 2*RADIUS_EQ)) THEN
-            TW(1) = TW(1) + 1 
-            EI = TW(1) + 1
-            IF(EI.GT.999) THEN
-               PRINT *,'Exceeding array limits TW', EI
+         ELSE IF(DES_POS_NEW(L,2).GE.(TY2 - 2D0*RADIUS_EQ)) THEN
+            TWALL(1) = TWALL(1) + 1 
+            EI = TWALL(1) + 1
+            IF(EI.GT.PBP-1) THEN
+               PRINT *,'Exceeding array limits TWALL', EI
                STOP
             ELSE
-               TW(EI) = L
+               TWALL(EI) = L
             END IF
          END IF
 

@@ -20,6 +20,8 @@
       
       INTEGER LN, K, PARTS
       INTEGER CHECK_MPI
+      INTEGER L, I, II
+      DOUBLE PRECISION DIST, R_LM
 
        IF(COORDINATES == 'CYLINDRICAL') THEN
           WRITE (UNIT_LOG, *) ' '

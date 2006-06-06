@@ -1,25 +1,31 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFNORMAL(L, II, NORM)                                  C
+!  Module name: CFNORMAL(L, II, J, NORM)                               C
 !  Purpose: DES - Calculate the normal vector between particles        C
 !           in collision                                               C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Comments: Normal for Eqn 6  from the following paper                C
+!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical         C
+!  simulation of plug glow of cohesionless particles in a              C
+!  horizontal pipe", Powder technology, 71, 239-250, 1992              C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CFNORMAL(L, II, NORM) 
+      SUBROUTINE CFNORMAL(L, II, J, NORM) 
 
       USE param1      
       USE discretelement
       IMPLICIT NONE
 
-      INTEGER L, II, K
-      DOUBLE PRECISION NORMOD, NORM(DIMN), TEMPX, TEMPY, TEMPZ, TEMPD
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
+
+      INTEGER L, II, J, K
+      DOUBLE PRECISION NORMOD, NORM(DIMN), DIST(DIMN)
+      DOUBLE PRECISION TEMPX, TEMPY, TEMPZ, TEMPD
 
 !----------------------------------------------------------------------------
-
-      NORMOD = ZERO 
 
       IF(DES_PERIODIC_WALLS) THEN
       TEMPX = DES_POS_NEW(II,1)
@@ -63,22 +69,15 @@
       END IF
       END IF
       
-      DO K = 1, DIMN
-         NORMOD=NORMOD+(DES_POS_NEW(II,K)-DES_POS_NEW(L,K))**2
-      END DO
-
-      NORMOD = SQRT(NORMOD)
-
-      DO K = 1, DIMN
-         IF(NORMOD.NE.ZERO) THEN
-            NORM(K)=(DES_POS_NEW(II,K)-DES_POS_NEW(L,K))/NORMOD
-         ELSE 
-            PRINT *,'NORMOD IS ZERO', II,L
-            PRINT *, (DES_POS_NEW(II,L),L=1,DIMN)
-            PRINT *, (DES_POS_NEW(L,II),II=1,DIMN)
-            STOP
-         END IF
-      END DO
+      DIST(:) = DES_POS_NEW(II,:) - DES_POS_NEW(L,:)
+      NORMOD = SQRT(DES_DOTPRDCT(DIST,DIST))
+      IF(NORMOD.NE.ZERO) THEN
+!         NORM(:)= DIST(:)/PN_DIST(L,J)
+         NORM(:)= DIST(:)/NORMOD
+      ELSE 
+         PRINT *,'NORMOD IS ZERO', II,L
+         STOP
+      END IF
 
       IF(DES_PERIODIC_WALLS) THEN
            DES_POS_NEW(II,1) = TEMPX

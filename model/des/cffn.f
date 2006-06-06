@@ -7,6 +7,11 @@
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Comments: Implements Eqn 6 from the following paper                 C
+!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical         C
+!  simulation of plug glow of cohesionless particles in a              C
+!  horizontal pipe", Powder technology, 71, 239-250, 1992              C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CFFN(L, Vno, OVERLP_N, NORM)
       

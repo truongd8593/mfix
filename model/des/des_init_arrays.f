@@ -30,83 +30,69 @@
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !     loop counters
-      INTEGER :: LC, LCM, M, N, K, KKK
+      INTEGER :: M, N, K
 !     
 !     Coefficient of restitution (old symbol)
       DOUBLE PRECISION :: E
 !-----------------------------------------------
 !
 
-                   DO LC = 1, PARTICLES 
-                      DES_RADIUS(LC) = ZERO
-                      PMASS(LC) = ZERO
-                      PVOL(LC) = ZERO
-                      OMOI(LC) = ZERO
-                      RO_Sol(LC) = ZERO 
-                         DES_POS_OLD(LC,:) = ZERO
-                         DES_POS_NEW(LC,:) = ZERO
-                         DES_VEL_OLD(LC,:) = ZERO
-                         DES_VEL_NEW(LC,:) = ZERO
-                         FC(LC,:) = ZERO
-                         FN(LC,:) = ZERO
-                         FT(LC,:) = ZERO
-                         TOW(LC,:) = ZERO
-                         OMEGA_OLD(LC,:) = ZERO
-                         OMEGA_NEW(LC,:) = ZERO
-                   END DO
+                      DES_RADIUS(:) = ZERO
+                      PMASS(:) = ZERO
+                      PVOL(:) = ZERO
+                      OMOI(:) = ZERO
+                      RO_Sol(:) = ZERO 
+                      DES_POS_OLD(:,:) = ZERO
+                      DES_POS_NEW(:,:) = ZERO
+                      DES_VEL_OLD(:,:) = ZERO
+                      DES_VEL_NEW(:,:) = ZERO
+                      FC(:,:) = ZERO
+                      FN(:,:) = ZERO
+                      FT(:,:) = ZERO
+                      TOW(:,:) = ZERO
+                      OMEGA_OLD(:,:) = ZERO
+                      OMEGA_NEW(:,:) = ZERO
+                      PPOS(:,:) = ZERO
                    
-                         GRAV(:) = ZERO
-                         FNS1(:) = ZERO
-                         FTS1(:) = ZERO
+                      GRAV(:) = ZERO
+                      FNS1(:) = ZERO
+                      FTS1(:) = ZERO
 
-                   DO LC = 1, MAXQUADS
-                      DO K = 1, NMQD 
-                         LQUAD(LC,K) = UNDEFINED_I
-                      END DO
-                      DO K = 1, NWALLS
-                         CQUAD(LC,K) = UNDEFINED
-                      END DO
-                   END DO
+                      LQUAD(:,:) = UNDEFINED_I
+                      CQUAD(:,:) = UNDEFINED
+		      PQUAD(:) = 1
+                      NEIGHBOURS(:,:) = -1
+                      PN(:,:) = -1
+                      PV(:,:) = 1
+                      PFN(:,:,:) = ZERO
+                      PFT(:,:,:) = ZERO
 
-                   DO LC= 1, PARTICLES
-                      DO KKK = 2, MAXNEIGHBORS
-                         NEIGHBOURS(K,KKK) = -1
-                         PN(K,KKK) = -1
-                         PV(K,KKK) = 1
-                         PFN(LC,KKK,:) = ZERO
-                         PFT(LC,KKK,:) = ZERO
-                      END DO
-                      NEIGHBOURS(LC,1) = 0
-                      PN(LC,1) = 0
-                      PV(LC,1) = 1
-                      PIJK(LC,:) = ZERO
-                   END DO
+                      NEIGHBOURS(:,1) = 0
+                      PN(:,1) = 0
+                      PV(:,1) = 1
+                      PIJK(:,:) = ZERO
+                      PN_DIST(:,:) = ZERO
+                      PN_RLM(:,:) = ZERO
 
-                   DO K = 1, NWALLS
-                      DES_WALL_POS(K,:) = UNDEFINED
-                      DES_WALL_VEL(K,:) = UNDEFINED
-                      WALL_NORMAL(K,:) = UNDEFINED
-                   END DO
+                      DES_WALL_POS(:,:) = UNDEFINED
+                      DES_WALL_VEL(:,:) = UNDEFINED
 
-                   DO LC = 1, DIMENSION_3
-                      PINC(LC) = ZERO
-                      DO K = 1, MMAX
-                         DES_U_s(LC,K) = ZERO
-                         DES_W_s(LC,K) = ZERO
-                         DES_W_s(LC,K) = ZERO
-                         SOLID_DRAG(LC,K,:) = ZERO
-                      END DO
-                   END DO
+                      PINC(:) = ZERO
+                      DES_U_s(:,:) = ZERO
+                      DES_W_s(:,:) = ZERO
+                      DES_W_s(:,:) = ZERO
+                      SOLID_DRAG(:,:,:) = ZERO
 
-		   DO LC = 1, DIMENSION_I
-                      XE(LC) = ZERO
-                   END DO
-		   DO LC = 1, DIMENSION_J
-                      YN(LC) = ZERO
-                   END DO
-		   DO LC = 1, DIMENSION_K
-                      ZT(LC) = ZERO
-                   END DO
+                      XE(:) = ZERO
+                      YN(:) = ZERO
+                      ZT(:) = ZERO
+ 
+                      WWALL(:) = 0
+                      EWALL(:) = 0
+                      BWALL(:) = 0
+                      TWALL(:) = 0
+                      SWALL(:) = 0
+                      NWALL(:) = 0
                   
                   RETURN
                   END SUBROUTINE DES_INIT_ARRAYS

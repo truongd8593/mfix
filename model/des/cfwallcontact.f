@@ -42,12 +42,8 @@
       IF(DES_F.NE.ZERO) THEN
          OMEGA = 2.0D0*PI*DES_F
          OOMEGA2 = ONE/(OMEGA**2)
-         IF(UNITS == "CGS") THEN
-            A = DES_GAMMA*GRAV(2)*OOMEGA2
-         ELSE 
-            A = DES_GAMMA*GRAV(2)*OOMEGA2
-         END IF
-      ASINOMEGAT = A*SIN(OMEGA*S_TIME)
+         A = DES_GAMMA*GRAV(2)*OOMEGA2
+         ASINOMEGAT = A*SIN(OMEGA*S_TIME)
       END IF
 
       WALLCONTACTI = 0

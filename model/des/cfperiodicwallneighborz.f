@@ -1,38 +1,40 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CF_PERIODIC_WALL_NEIGHBOR_Z(L, WW, EW)                C
+!  Module name: CF_PERIODIC_WALL_NEIGHBOR_Z(L)                         C
 !  Purpose: DES - FInd neighbors at periodic z-walls                   C
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
-!  REVISED Aug 24 2005                                                  C
+!  REVISED Aug 24 2005                                                 C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CF_PERIODIC_WALL_NEIGHBOR_Z(L, WW, EW)
+      SUBROUTINE CF_PERIODIC_WALL_NEIGHBOR_Z(L)
       USE param1
       USE discretelement
 
-      INTEGER WW(1000), EW(1000), I, II, K, J, L
-      DOUBLE PRECISION R_LM, DIST
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
-      IF(DES_POS_NEW(L,3).GE.(NZ2 - RADIUS_EQ)) THEN
+      INTEGER I, II, K, J, L
+      DOUBLE PRECISION R_LM, DIST(DIMN), DISP, DIA_EQ
 
-         IF(WW(1).GT.0) THEN
-            DO J = 2, WW(1)+1
-               I = WW(J)
+      DIA_EQ = 2D0*DIA_EQ
+
+      IF(DES_POS_NEW(L,3).GE.(NZ2 - DIA_EQ)) THEN
+
+         IF(SWALL(1).GT.0) THEN
+            DO J = 2, SWALL(1)+1
+               I = SWALL(J)
                DES_POS_NEW(I,3) = DES_POS_NEW(I,3) + (NZ2 - SZ1)
-               DIST = ZERO
-               DO II = 1, DIMN
-                  DIST = DIST +&
-                  (DES_POS_NEW(I,II)-DES_POS_NEW(L,II))**2
-               END DO
-               DIST = SQRT(DIST)
+               DIST(:) = DES_POS_NEW(I,:)-DES_POS_NEW(L,:)
+               DISP = SQRT(DES_DOTPRDCT(DIST,DIST))
                R_LM = DES_RADIUS(L) + DES_RADIUS(I)
-               IF (DIST.LE.R_LM) THEN
+               IF (DISP.LE.R_LM) THEN
                   NEIGHBOURS(L,1) = NEIGHBOURS(L,1)+1
                   K = NEIGHBOURS(L,1) + 1
                   IF (K.LE.MN) THEN
                      NEIGHBOURS(L,K) = I
+                     PN_DIST(L,K) = DISP
+                     PN_RLM(L,K) = R_LM
                   ELSE
                      PRINT *,'CFPERIODICWALLNEIGHBOURS K.GE.MN', L, K, (NEIGHBOURS(L,K), K=1, MAXNEIGHBORS)
                      STOP
@@ -42,24 +44,22 @@
             END DO
          END IF
 
-      ELSE IF(DES_POS_NEW(L,3).LE.(SZ1 + RADIUS_EQ)) THEN
+      ELSE IF(DES_POS_NEW(L,3).LE.(SZ1 + DIA_EQ)) THEN
 
-         IF(EW(1).GT.0) THEN
-            DO J = 2, EW(1)+1
-               I = EW(J)
+         IF(NWALL(1).GT.0) THEN
+            DO J = 2, NWALL(1)+1
+               I = NWALL(J)
                DES_POS_NEW(I,3) = DES_POS_NEW(I,3) - (NZ2 - SZ1)
-               DIST = ZERO
-               DO II = 1, DIMN
-                  DIST = DIST +&
-                  (DES_POS_NEW(I,II)-DES_POS_NEW(L,II))**2
-               END DO
-               DIST = SQRT(DIST)
+               DIST(:) = DES_POS_NEW(I,:)-DES_POS_NEW(L,:)
+               DISP = SQRT(DES_DOTPRDCT(DIST,DIST))
                R_LM = DES_RADIUS(L) + DES_RADIUS(I)
-               IF (DIST.LE.R_LM) THEN
+               IF (DISP.LE.R_LM) THEN
                   NEIGHBOURS(L,1) = NEIGHBOURS(L,1)+1
                   K = NEIGHBOURS(L,1) + 1
                   IF (K.LE.MN) THEN
                      NEIGHBOURS(L,K) = I
+                     PN_DIST(L,K) = DISP
+                     PN_RLM(L,K) = R_LM
                   ELSE
                      PRINT *,'CFPERIODICWALLNEIGHBOURS K.GE.MN', L, K, (NEIGHBOURS(L,K), K=1, MAXNEIGHBORS)
                      STOP

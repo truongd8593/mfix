@@ -15,36 +15,20 @@
       USE param1
       IMPLICIT NONE
 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
+
       INTEGER L, K
       DOUBLE PRECISION FTMD, FNMD, TANGNT(DIMN), FT1(DIMN)
 !     
 !---------------------------------------------------------------------
 
 
-      FT1(:) = FT(L,:)
-
-      FTMD = ZERO
-      FNMD = ZERO
-      DO K = 1, DIMN
-         FTMD = FTMD + (FT(L,K)**2)
-         FNMD = FNMD + (FN(L,K)**2)
-      END DO
-      FTMD = SQRT(FTMD)
-      FNMD = SQRT(FNMD)
+      FTMD = SQRT(DES_DOTPRDCT(FT,FT))
+      FNMD = SQRT(DES_DOTPRDCT(FN,FN))
 
       IF (FTMD.GT.(MEW_W*FNMD)) THEN
+         PARTICLE_SLIDE = .TRUE.
          FT(L,:) = -MEW_W*FNMD*TANGNT(:)
-         DO K = 1, DIMN
-            IF(FT1(K).GT.0) THEN
-               IF(FT(L,K).LT.ZERO) THEN
-                  FT(L,K) = -FT(L,K)
-               END IF
-            ELSE IF(FT1(K).LT.0) THEN
-               IF(FT(L,K).GT.ZERO) THEN
-                  FT(L,K) = -FT(L,K)
-               END IF
-            END IF
-         END DO
       END IF
 
       RETURN

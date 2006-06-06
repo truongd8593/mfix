@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CF_PERIODIC_WALL_X(WW, EW)                             C
+!  Module name: CF_PERIODIC_WALL_X()                                   C
 !  Purpose: DES - Identify particles next to periodix x-walls          C
 !                                                                      C
 !                                                                      C
@@ -8,42 +8,39 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CF_PERIODIC_WALL_X(WW, EW)
+      SUBROUTINE CF_PERIODIC_WALL_X()
       
       USE discretelement
       IMPLICIT NONE
 
       INTEGER K, L, WI, EI
-      INTEGER WW(1000), EW(1000)
 !     
 !-------------------------------------------------------------------
 !     
 
       WI = 0
       EI = 0	
-      WW(1) = 0
-      EW(1) = 0
       
       DO L = 1, PARTICLES
 
-         IF(DES_POS_NEW(L,1).LE.(WX1 + 2*RADIUS_EQ)) THEN
-            WW(1) = WW(1) + 1
-            WI = WW(1) + 1
-            IF(WI.GT.999) THEN
+         IF(DES_POS_NEW(L,1).LE.(WX1 + 2D0*RADIUS_EQ)) THEN
+            WWALL(1) = WWALL(1) + 1
+            WI = WWALL(1) + 1
+            IF(WI.GT.PBP-1) THEN
                PRINT *,'Exceeding array limits WW', WI
                STOP
             ELSE
-               WW(WI) = L
+               WWALL(WI) = L
             END IF
 
-         ELSE IF(DES_POS_NEW(L,1).GE.(EX2 - 2*RADIUS_EQ)) THEN
-            EW(1) = EW(1) + 1 
-            EI = EW(1) + 1
-            IF(EI.GT.999) THEN
+         ELSE IF(DES_POS_NEW(L,1).GE.(EX2 - 2D0*RADIUS_EQ)) THEN
+            EWALL(1) = EWALL(1) + 1 
+            EI = EWALL(1) + 1
+            IF(EI.GT.PBP-1) THEN
                PRINT *,'Exceeding array limits EW', EI
                STOP
             ELSE
-               EW(EI) = L
+               EWALL(EI) = L
             END IF
          END IF
 
