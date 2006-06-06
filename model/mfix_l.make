@@ -342,6 +342,7 @@ mfix.exe : \
     cfnewvalues.$(OBJ_EXT) \
     cfnocontact.$(OBJ_EXT) \
     cfnormal.$(OBJ_EXT) \
+    cfnormalwall.$(OBJ_EXT) \
     cfperiodicwallneighborx.$(OBJ_EXT) \
     cfperiodicwallneighbory.$(OBJ_EXT) \
     cfperiodicwallneighborz.$(OBJ_EXT) \
@@ -351,8 +352,10 @@ mfix.exe : \
     cfrelvel.$(OBJ_EXT) \
     cfslide.$(OBJ_EXT) \
     cfslidewall.$(OBJ_EXT) \
+    cfslipvel.$(OBJ_EXT) \
     cftangent.$(OBJ_EXT) \
     cftotaloverlaps.$(OBJ_EXT) \
+    cftotaloverlapswall.$(OBJ_EXT) \
     cfupdateold.$(OBJ_EXT) \
     cfvrn.$(OBJ_EXT) \
     cfvrt.$(OBJ_EXT) \
@@ -360,6 +363,7 @@ mfix.exe : \
     cfwallposvel.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
     des_calc_d.$(OBJ_EXT) \
+    des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
@@ -714,6 +718,7 @@ mfix.exe : \
     cfnewvalues.$(OBJ_EXT) \
     cfnocontact.$(OBJ_EXT) \
     cfnormal.$(OBJ_EXT) \
+    cfnormalwall.$(OBJ_EXT) \
     cfperiodicwallneighborx.$(OBJ_EXT) \
     cfperiodicwallneighbory.$(OBJ_EXT) \
     cfperiodicwallneighborz.$(OBJ_EXT) \
@@ -723,8 +728,10 @@ mfix.exe : \
     cfrelvel.$(OBJ_EXT) \
     cfslide.$(OBJ_EXT) \
     cfslidewall.$(OBJ_EXT) \
+    cfslipvel.$(OBJ_EXT) \
     cftangent.$(OBJ_EXT) \
     cftotaloverlaps.$(OBJ_EXT) \
+    cftotaloverlapswall.$(OBJ_EXT) \
     cfupdateold.$(OBJ_EXT) \
     cfvrn.$(OBJ_EXT) \
     cfvrt.$(OBJ_EXT) \
@@ -732,6 +739,7 @@ mfix.exe : \
     cfwallposvel.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
     des_calc_d.$(OBJ_EXT) \
+    des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
@@ -4223,9 +4231,11 @@ check_link.$(OBJ_EXT) : ./cohesion/check_link.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_link.f 
 check_sw_wall_interaction.$(OBJ_EXT) : ./cohesion/check_sw_wall_interaction.f \
+            param1.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_sw_wall_interaction.f 
 check_vdw_wall_interaction.$(OBJ_EXT) : ./cohesion/check_vdw_wall_interaction.f \
+            param1.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_vdw_wall_interaction.f 
 initialize_cohesion_parameters.$(OBJ_EXT) : ./cohesion/initialize_cohesion_parameters.f \
@@ -4254,10 +4264,20 @@ calc_force_des.$(OBJ_EXT) : ./des/calc_force_des.f \
             geometry.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_force_des.f 
 cfassign.$(OBJ_EXT) : ./des/cfassign.f \
-            param1.mod \
-            geometry.mod \
-            constant.mod \
             discretelement.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            matrix.mod \
+            indices.mod \
+            physprop.mod \
+            drag.mod \
+            constant.mod \
+            compar.mod \
+            sendrecv.mod \
             b_force1.inc                                                 \
             b_force2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfassign.f 
@@ -4311,6 +4331,10 @@ cfnormal.$(OBJ_EXT) : ./des/cfnormal.f \
             param1.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnormal.f 
+cfnormalwall.$(OBJ_EXT) : ./des/cfnormalwall.f \
+            param1.mod \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnormalwall.f 
 cfperiodicwallneighborx.$(OBJ_EXT) : ./des/cfperiodicwallneighborx.f \
             param1.mod \
             discretelement.mod 
@@ -4344,6 +4368,10 @@ cfslidewall.$(OBJ_EXT) : ./des/cfslidewall.f \
             discretelement.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfslidewall.f 
+cfslipvel.$(OBJ_EXT) : ./des/cfslipvel.f \
+            discretelement.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfslipvel.f 
 cftangent.$(OBJ_EXT) : ./des/cftangent.f \
             discretelement.mod \
             param1.mod 
@@ -4352,6 +4380,10 @@ cftotaloverlaps.$(OBJ_EXT) : ./des/cftotaloverlaps.f \
             param1.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cftotaloverlaps.f 
+cftotaloverlapswall.$(OBJ_EXT) : ./des/cftotaloverlapswall.f \
+            param1.mod \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cftotaloverlapswall.f 
 cfupdateold.$(OBJ_EXT) : ./des/cfupdateold.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfupdateold.f 
@@ -4421,6 +4453,20 @@ des_calc_d.$(OBJ_EXT) : ./des/des_calc_d.f \
             fun_avg2.inc                                                 \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_calc_d.f 
+des_functions.$(OBJ_EXT) : ./des/des_functions.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            parallel.mod \
+            fldvar.mod \
+            bc.mod \
+            geometry.mod \
+            physprop.mod \
+            indices.mod \
+            compar.mod \
+            mpi_utility.mod \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_functions.f 
 des_granular_temperature.$(OBJ_EXT) : ./des/des_granular_temperature.f \
             discretelement.mod \
             param.mod \
@@ -4447,6 +4493,7 @@ des_init_arrays.$(OBJ_EXT) : ./des/des_init_arrays.f \
             physprop.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_arrays.f 
 des_init_namelist.$(OBJ_EXT) : ./des/des_init_namelist.f \
+            param1.mod \
             discretelement.mod \
             des/desnamelist.inc                                         
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_namelist.f 
@@ -4537,6 +4584,7 @@ gas_drag.$(OBJ_EXT) : ./des/gas_drag.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/gas_drag.f 
 make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             param1.mod \
+            geometry.mod \
             funits.mod \
             compar.mod \
             discretelement.mod 
@@ -4590,13 +4638,13 @@ periodic_wall_calc_force_des.$(OBJ_EXT) : ./des/periodic_wall_calc_force_des.f \
             geometry.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/periodic_wall_calc_force_des.f 
 quadtree.$(OBJ_EXT) : ./des/quadtree.f \
+            run.mod \
             param1.mod \
             constant.mod \
             discretelement.mod \
             param.mod \
             parallel.mod \
             fldvar.mod \
-            run.mod \
             geometry.mod \
             matrix.mod \
             indices.mod \
