@@ -41,6 +41,7 @@ class vtkIntArray;
 class vtkFloatArray;
 class vtkXMLUnstructuredGridWriter;
 class vtkWedge;
+class vtkQuad;
 class vtkHexahedron;
 class vtkPoints;
 class vtkStdString;
@@ -130,6 +131,7 @@ protected:
   vtkUnstructuredGrid *Mesh;    // Unstructured Grid
   vtkHexahedron *AHexahedron;   // Hexahedron type cell
   vtkWedge *AWedge;             // Wedge type cell
+  vtkQuad *AQuad;               // Quad type cell
   vtkIntArray *Flag;            // Cell Flag array
   vtkDoubleArray *Dx;           // Cell widths in x axis
   vtkDoubleArray *Dy;           // Cell widths in y axis

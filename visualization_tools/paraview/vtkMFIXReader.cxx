@@ -34,6 +34,7 @@
 #include <string>
 #include "vtkDataArraySelection.h"
 #include "vtkWedge.h"
+#include "vtkQuad.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
 #include "vtkStringArray.h"
 
@@ -80,6 +81,7 @@ vtkMFIXReader::vtkMFIXReader()
   this->Points = vtkPoints::New();
   this->Mesh = vtkUnstructuredGrid::New();
   this->AHexahedron = vtkHexahedron::New();
+  this->AQuad = vtkQuad::New();
   this->AWedge = vtkWedge::New();
   this->NMax = vtkIntArray::New();
   this->C = vtkDoubleArray::New();
@@ -127,6 +129,7 @@ vtkMFIXReader::~vtkMFIXReader()
   this->Mesh->Delete();
   this->AHexahedron->Delete();
   this->AWedge->Delete();
+  this->AQuad->Delete();
   this->NMax->Delete();
   this->C->Delete();
   this->Dx->Delete();
@@ -209,7 +212,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
     //
     //  Cartesian type mesh
     //
-    if ( !strcmp(this->CoordinateSystem,"CARTESIAN") || (this->KMaximum2 == 1))
+    if ( !strcmp(this->CoordinateSystem,"CARTESIAN") && (this->KMaximum2 != 1))
       {
       double pointX = 0.0;
       double pointY = 0.0;
@@ -250,6 +253,74 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
         else
           {
           pointZ = pointZ + this->Dz->GetValue(k);
+          }
+        }
+      }
+    else if ( !strcmp(this->CoordinateSystem,"CARTESIAN") && (this->KMaximum2 == 1))
+      {
+      double pointX = 0.0;
+      double pointY = 0.0;
+      double pointZ = 0.0;
+      int cnt = 0;
+        for (int j = 0; j <= this->JMaximum2; j++)
+          {
+          for (int i = 0; i <= this->IMaximum2; i++)
+            {
+            this->Points->InsertPoint(cnt, pointX, pointY, pointZ );
+            cnt++;
+            if ( i == this->IMaximum2 )
+              {
+              pointX = pointX + this->Dx->GetValue(i-1);
+              }
+            else
+              {
+              pointX = pointX + this->Dx->GetValue(i);
+              }
+            }
+          pointX = 0.0;
+          if ( j == this->JMaximum2)
+            {
+            pointY = pointY + this->Dy->GetValue(j-1);
+            }
+          else
+            {
+            pointY = pointY + this->Dy->GetValue(j);
+            }
+          }
+      }
+    else if ( !strcmp(this->CoordinateSystem,"CYLINDRICAL") && (this->KMaximum2 == 1))
+      {
+      double pointX = 0.0;
+      double pointY = 0.0;
+      double pointZ = 0.0;
+      int cnt = 0;
+      for (int j = 0; j <= this->JMaximum2; j++)
+        {
+        for (int i = 0; i <= this->IMaximum2; i++)
+          {
+          this->Points->InsertPoint(cnt, pointX, pointY, pointZ );
+          cnt++;
+          if ( i == this->IMaximum2 )
+            {
+            pointX = pointX + this->Dx->GetValue(i-1);
+            }
+          else if ( i == 0 )
+            {
+            pointX = 0;
+            }
+          else
+            {
+            pointX = pointX + this->Dx->GetValue(i);
+            }
+          }
+        pointX = 0.0;
+        if ( j == this->JMaximum2)
+          {
+          pointY = pointY + this->Dy->GetValue(j-1);
+          }
+        else
+          {
+          pointY = pointY + this->Dy->GetValue(j);
           }
         }
       }
@@ -320,7 +391,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
     this->Mesh->SetPoints(this->Points);
     int point0 = 0;
     int count = 0;
-    for (int k = 0; k < this->KMaximum2; k++)
+    if ( !strcmp(this->CoordinateSystem,"CYLINDRICAL") && (this->KMaximum2 == 1))
       {
       for (int j = 0; j < this->JMaximum2; j++)
         {
@@ -328,7 +399,29 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
           {
           if ( this->Flag->GetValue(count) < 10 )
             {
-            if ( !strcmp(this->CoordinateSystem,"CYLINDRICAL" ) )
+            this->AQuad->GetPointIds()->SetId( 0, point0);
+            this->AQuad->GetPointIds()->SetId( 1, point0+1);
+            this->AQuad->GetPointIds()->SetId( 2, point0+2+this->IMaximum2);
+            this->AQuad->GetPointIds()->SetId( 3, point0+1+this->IMaximum2);
+            this->Mesh->InsertNextCell(this->AQuad->GetCellType(), 
+              this->AQuad->GetPointIds());
+            }
+          point0++;
+          count++;
+          }
+        point0++;
+        }
+      point0 = point0 + this->IMaximum2+1;
+      }
+    else if ( !strcmp(this->CoordinateSystem,"CYLINDRICAL") && (this->KMaximum2 != 1))
+      {
+      for (int k = 0; k < this->KMaximum2; k++)
+        {
+        for (int j = 0; j < this->JMaximum2; j++)
+          {
+          for (int i = 0; i < this->IMaximum2; i++)
+            {
+            if ( this->Flag->GetValue(count) < 10 )
               {
               if (( k == (this->KMaximum2-2)) && (i != 1))
                 {
@@ -418,7 +511,44 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
                   this->AWedge->GetPointIds());
                 }
               }
-            else
+            point0++;
+            count++;
+            }
+          point0++;
+          }
+        point0 = point0 + this->IMaximum2+1;
+        }
+      }
+    else if ( !strcmp(this->CoordinateSystem,"CARTESIAN") && (this->KMaximum2 == 1))
+      {
+        for (int j = 0; j < this->JMaximum2; j++)
+          {
+          for (int i = 0; i < this->IMaximum2; i++)
+            {
+            if ( this->Flag->GetValue(count) < 10 )
+              {
+              this->AQuad->GetPointIds()->SetId( 0, point0);
+              this->AQuad->GetPointIds()->SetId( 1, point0+1);
+              this->AQuad->GetPointIds()->SetId( 2, point0+2+this->IMaximum2);
+              this->AQuad->GetPointIds()->SetId( 3, point0+1+this->IMaximum2);
+              this->Mesh->InsertNextCell(this->AQuad->GetCellType(), 
+                this->AQuad->GetPointIds());
+              }
+            point0++;
+            count++;
+            }
+          point0++;
+          }
+      }
+    else 
+      {
+      for (int k = 0; k < this->KMaximum2; k++)
+        {
+        for (int j = 0; j < this->JMaximum2; j++)
+          {
+          for (int i = 0; i < this->IMaximum2; i++)
+            {
+            if ( this->Flag->GetValue(count) < 10 )
               {
               this->AHexahedron->GetPointIds()->SetId( 0, point0);
               this->AHexahedron->GetPointIds()->SetId( 1, point0+1);
@@ -441,14 +571,15 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
               this->Mesh->InsertNextCell(this->AHexahedron->GetCellType(), 
                 this->AHexahedron->GetPointIds());
               }
+            point0++;
+            count++;
             }
           point0++;
-          count++;
           }
-        point0++;
+        point0 = point0 + this->IMaximum2+1;
         }
-      point0 = point0 + this->IMaximum2+1;
       }
+
 
     this->CellDataArray = new vtkFloatArray 
       * [this->VariableNames->GetMaxId()+2];
