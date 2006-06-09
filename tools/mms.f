@@ -12,9 +12,9 @@
 !    3) list of all FORTRAN source files located in 
 !       the file : files.lis    (one file per line)
 !
-      CHARACTER   FILENAME*60 , FN(400)*60 , IN(500)*60 , NOEXT*60
-      CHARACTER   WoPATH*60   , f90_mods(400)*60 , fname*60
-      CHARACTER   BACK*1      , inuse(500)*60
+      CHARACTER   FILENAME*60 , FN(4000)*60 , IN(2000)*60 , NOEXT*60
+      CHARACTER   WoPATH*60   , f90_mods(2000)*60 , fname*60
+      CHARACTER   BACK*1      , inuse(2000)*60
 !
       BACK = CHAR(92)
 !
