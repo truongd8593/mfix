@@ -109,9 +109,9 @@ protected:
   int NumberOfPoints;
   int NumberOfCells;
   int NumberOfCellFields;
-  int *VectorLength;
-  float *Minimum;
-  float *Maximum;
+  vtkIntArray   *VectorLength;
+  vtkFloatArray *Minimum;
+  vtkFloatArray *Maximum;
   vtkDataArraySelection *CellDataArraySelection;
   int TimeStep;
   int ActualTimeStep;
@@ -206,7 +206,7 @@ protected:
                                     //  particular variable.
   vtkIntArray *VariableIndexToSPX;  //  This gives the spx file number for the 
                                     //  particular variable.
-  int *SPXTimestepIndexTable; //  This a table look up for the index 
+  vtkIntArray *SPXTimestepIndexTable; //  This a table look up for the index 
                               //  into a file for a certain variable.
 
 private:
