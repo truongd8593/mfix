@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFVRT(Vtan, VRl, TANGNT)                               C
+!  Module name: CFVRT(VRT, VRELTRANS, TANGNT)                          C
 !  Purpose: DES - Calculate the tangential component of                C
 !           relative velocity                                          C
 !                                                                      C
@@ -10,7 +10,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFVRT(Vtan, VRl, TANGNT)
+      SUBROUTINE CFVRT(VRT, VRELTRANS, TANGNT)
 
       USE param1      
       USE discretelement
@@ -19,11 +19,11 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
 
       INTEGER K
-      DOUBLE PRECISION Vtan, VRl(DIMN), TANGNT(DIMN), Vno, NORM(DIMN)
+      DOUBLE PRECISION VRT, VRELTRANS(DIMN), TANGNT(DIMN), NORM(DIMN)
 
 !-----------------------------------------------------------------------
 
-      Vtan = DES_DOTPRDCT(VRl,TANGNT)
+      VRT = DES_DOTPRDCT(VRELTRANS,TANGNT)
       
       RETURN
       END SUBROUTINE CFVRT

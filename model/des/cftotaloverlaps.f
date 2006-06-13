@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFTOTALOVERLAPS(L, II, J, Vtan, OVERLP_N, OVERLP_T)    C
+!  Module name: CFTOTALOVERLAPS(L, II, J, VRT, N_OVERLAP, T_OVERLAP)   C
 !  Purpose:  DES - Calculate the total overlap between particles       C
 !                                                                      C
 !                                                                      C
@@ -9,7 +9,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFTOTALOVERLAPS(L, II, J, Vtan, OVERLP_N, OVERLP_T)
+      SUBROUTINE CFTOTALOVERLAPS(L, II, J, VRT, N_OVERLAP, T_OVERLAP)
 
       USE param1      
       USE discretelement
@@ -18,8 +18,9 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
       INTEGER J, K, L, II
-      DOUBLE PRECISION OVERLP_N, OVERLP_T
-      DOUBLE PRECISION Vtan, R_LM, D(DIMN), DIST, TEMPX, TEMPY, TEMPZ
+      DOUBLE PRECISION N_OVERLAP, T_OVERLAP
+      DOUBLE PRECISION D(DIMN), VRT, R_LM, DIST
+      DOUBLE PRECISION TEMPX, TEMPY, TEMPZ
 
 !-----------------------------------------------------------------------
 
@@ -67,9 +68,9 @@
       IF (DIMN.EQ.3) DES_POS_NEW(II,3) = TEMPZ
       END IF
  
-!      OVERLP_N = PN_RLM(L,J) - PN_DIST(L,J)
-      OVERLP_N = R_LM - DIST
-      OVERLP_T = Vtan*DTSOLID
+!      N_OVERLAP = PN_RLM(L,J) - PN_DIST(L,J)
+      N_OVERLAP = R_LM - DIST
+      T_OVERLAP = VRT*DTSOLID
 
       RETURN
       END SUBROUTINE CFTOTALOVERLAPS

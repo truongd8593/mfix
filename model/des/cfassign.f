@@ -53,8 +53,8 @@
          RADIUS_EQ = DES_RADIUS(1)*1.05D0
          NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO * RADIUS_EQ
 
-         DTSOLID = DTSOLID_FACTOR*2D0*PI*SQRT(MINMASS/(15*KN)) ! DTs Rotational
-!         DTSOLID = DTSOLID_FACTOR*2D0*PI*SQRT(MINMASS/(6*KN)) ! DTs Translational
+         DTSOLID = DTSOLID_FACTOR*2D0*PI*SQRT(MINMASS/(15*KN)) ! DTs - Rotational Constraint
+!         DTSOLID = DTSOLID_FACTOR*2D0*PI*SQRT(MINMASS/(6*KN)) ! DTs - Translational Constraint
 
          WX1 = ZERO 
          EX2 = XLENGTH 

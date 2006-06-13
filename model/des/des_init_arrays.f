@@ -60,7 +60,7 @@
 
                       LQUAD(:,:) = UNDEFINED_I
                       CQUAD(:,:) = UNDEFINED
-		      PQUAD(:) = 1
+		      PQUAD(:) = 0
                       NEIGHBOURS(:,:) = -1
                       PN(:,:) = -1
                       PV(:,:) = 1

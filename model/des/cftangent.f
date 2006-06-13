@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFTANGENT(SVL, TANGNT, NORM)                           C
+!  Module name: CFTANGENT(VSLIP, TANGNT, NORM)                         C
 !  Purpose: DES - Calculate tangent vector between partcile pair       C
 !                                                                      C
 !                                                                      C
@@ -15,7 +15,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFTANGENT(SVL, TANGNT, NORM)
+      SUBROUTINE CFTANGENT(VSLIP, TANGNT, NORM)
       
       USE discretelement
       USE param1
@@ -24,7 +24,7 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
       INTEGER K, L, II
-      DOUBLE PRECISION SVL(DIMN), TANGNT(DIMN), NORM(DIMN)
+      DOUBLE PRECISION VSLIP(DIMN), TANGNT(DIMN), NORM(DIMN)
       DOUBLE PRECISION TANMOD 
 !     
 !---------------------------------------------------------------------
@@ -34,9 +34,9 @@
 
 ! Tangent computed from relative velocity and used in cfslide
 
-         TANMOD = SQRT(DES_DOTPRDCT(SVL,SVL))     
+         TANMOD = SQRT(DES_DOTPRDCT(VSLIP,VSLIP))     
          IF(TANMOD.NE.0) THEN
-            TANGNT(:) = SVL(:)/TANMOD
+            TANGNT(:) = VSLIP(:)/TANMOD
          ELSE
             TANGNT(1) = NORM(2)
             TANGNT(2) = -NORM(1)

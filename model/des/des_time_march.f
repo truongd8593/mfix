@@ -45,9 +45,11 @@
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !     
-      INTEGER NN, LNN, I, J, K, FACTOR, NSN
+      INTEGER NN, LN, I, J, K, FACTOR, NSN
       DOUBLE PRECISION TEMP_DTS, DTSOLIDTEMP 
+!     Time at which REAL restart file is to be written
       LOGICAL ALREADY_EXISTS
+      CHARACTER*20 FILENAME
 
       IF(TIME.EQ.ZERO) THEN 
 
@@ -57,7 +59,9 @@
         TEMP_DTS = ZERO
         PTC = ZERO
         INQC = INIT_QUAD_COUNT
-
+        
+        DES_SPX_TIME =  (INT((TIME + 0.1*DT)/SPX_DT(1))+1)*SPX_DT(1)
+        PRINT *,'SPX TIME', SPX_DT(1), DES_SPX_TIME
         CALL CFASSIGN(PARTICLES)
 
 !!COHESION INITIALIZE
@@ -75,8 +79,8 @@
            DO FACTOR = 1, 500
              PRINT *,'DES', FACTOR 
 ! New values
-             DO LNN = 1, PARTICLES
-                CALL CFNEWVALUES(LNN)
+             DO LN = 1, PARTICLES
+                CALL CFNEWVALUES(LN)
              END DO
 ! Neighbor search     
              NSN = NSN + 1    
@@ -128,8 +132,8 @@
          END IF 
 
 ! New values
-         DO LNN = 1, PARTICLES
-            CALL CFNEWVALUES(LNN)
+         DO LN = 1, PARTICLES
+            CALL CFNEWVALUES(LN)
          END DO
          
 ! Neighbor search     
@@ -150,9 +154,9 @@
          END IF
   
 !         CALL DES_GRANULAR_TEMPERATURE(NN, FACTOR)
-
-         PTC = PTC + DTSOLID
-
+        
+            IF(.NOT.DES_CONTINUUM_COUPLED) THEN
+             PTC = PTC + DTSOLID
              IF(PTC.GE.P_TIME) THEN 
 !               OPEN (UNIT=99, FILE='2p.out', STATUS='REPLACE')
 !               WRITE (99,*) real(s_time),real(DES_POS_NEW(1,1)),real(DES_POS_NEW(1,2)),  real(DES_POS_NEW(2,1)),real(DES_POS_NEW(2,2))
@@ -160,49 +164,50 @@
 !               WRITE (199,*) real(s_time),real(DES_VEL_NEW(1,1)),real(DES_VEL_NEW(1,2)),  real(DES_VEL_NEW(2,1)),real(DES_VEL_NEW(2,2))
 
                IF(S_TIME.LE.0.2*TSTOP) THEN
-                  OPEN (UNIT=9, FILE='des_all-particles-1.out', STATUS='REPLACE')
+                  OPEN (UNIT=9, FILE='DES-1.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*) 'Time=',S_TIME,'s'
-                  DO LNN = 1, PARTICLES
-                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN) !,&
-                     ! (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
+                  DO LN = 1, PARTICLES
+                     WRITE (9,*) (DES_POS_NEW(LN,K),K=1,DIMN) !,&
+                     ! (DES_VEL_NEW(LN,K),K=1,DIMN), DES_RADIUS(LN), RO_Sol(LN)
                   END DO
                ELSE IF(S_TIME.LE.0.4*TSTOP) THEN
-                  OPEN (UNIT=9, FILE='des_all-particles-2.out', STATUS='REPLACE')
+                  OPEN (UNIT=9, FILE='DES-2.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*) 'Time=',S_TIME,'s'
-                  DO LNN = 1, PARTICLES
-                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN) !,&
-                     ! (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
+                  DO LN = 1, PARTICLES
+                     WRITE (9,*) (DES_POS_NEW(LN,K),K=1,DIMN) !,&
+                     ! (DES_VEL_NEW(LN,K),K=1,DIMN), DES_RADIUS(LN), RO_Sol(LN)
                   END DO
                ELSE IF(S_TIME.LE.0.6*TSTOP) THEN
-                  OPEN (UNIT=9, FILE='des_all-particles-3.out', STATUS='REPLACE')
+                  OPEN (UNIT=9, FILE='DES-3.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*) 'Time=',S_TIME,'s'
-                  DO LNN = 1, PARTICLES
-                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN) !,&
-                     ! (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
+                  DO LN = 1, PARTICLES
+                     WRITE (9,*) (DES_POS_NEW(LN,K),K=1,DIMN) !,&
+                     ! (DES_VEL_NEW(LN,K),K=1,DIMN), DES_RADIUS(LN), RO_Sol(LN)
                   END DO
                ELSE IF(S_TIME.LE.0.8*TSTOP) THEN
-                  OPEN (UNIT=9, FILE='des_all-particles-4.out', STATUS='REPLACE')
+                  OPEN (UNIT=9, FILE='DES-4.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*) 'Time=',S_TIME,'s'
-                  DO LNN = 1, PARTICLES
-                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN) !,&
-                     ! (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
+                  DO LN = 1, PARTICLES
+                     WRITE (9,*) (DES_POS_NEW(LN,K),K=1,DIMN) !,&
+                     ! (DES_VEL_NEW(LN,K),K=1,DIMN), DES_RADIUS(LN), RO_Sol(LN)
                   END DO
                ELSE IF(S_TIME.LE.TIME) THEN
-                  OPEN (UNIT=9, FILE='des_all-particles-5.out', STATUS='REPLACE')
+                  OPEN (UNIT=9, FILE='DES-5.out', STATUS='REPLACE')
                   WRITE (9,*)' '
                   WRITE (9,*) 'Time=',S_TIME,'s'
-                  DO LNN = 1, PARTICLES
-                     WRITE (9,*) (DES_POS_NEW(LNN,K),K=1,DIMN) !,&
-                     ! (DES_VEL_NEW(LNN,K),K=1,DIMN), DES_RADIUS(LNN), RO_Sol(LNN)
+                  DO LN = 1, PARTICLES
+                     WRITE (9,*) (DES_POS_NEW(LN,K),K=1,DIMN) !,&
+                     ! (DES_VEL_NEW(LN,K),K=1,DIMN), DES_RADIUS(LN), RO_Sol(LN)
                   END DO
                END IF
 
                PTC = ZERO
              END IF
+            END IF
 
          IF(DES_CONTINUUM_COUPLED) THEN
             IF((S_TIME+DTSOLID).GT.(TIME+DT)) THEN 
@@ -216,6 +221,50 @@
 
          END DO ! enddo1
 
+          IF(((TIME+0.1*DT).GE.DES_SPX_TIME) .OR. ((TIME+DT).GE.TSTOP)) THEN
+            IFI = IFI + 1
+            WRITE (FILENAME, 3020) IFI
+            OPEN(UNIT=99, FILE=FILENAME, STATUS='NEW')
+            WRITE(99,*)' '
+            WRITE(99,*) '<?Time =',DES_SPX_TIME,'?>' 
+            WRITE(99,*) '<VTKFile type="PolyData" version="0.1" byte_order="LittleEndian">'
+            WRITE(99,*) '<PolyData>'
+            WRITE(99,*) '<Piece NumberOfPoints="',PARTICLES,'"'
+            WRITE(99,*) '<NumberOfVerts="0" NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
+            WRITE(99,*) '<Points>'
+            IF(DIMN.EQ.2) THEN
+               WRITE(99,*) '<DataArray type="Float32" NumberOfComponents="3" format="ascii">'
+            ELSE
+               WRITE(99,*) '<DataArray type="Float32" NumberOfComponents="3" format="ascii">'
+            END IF
+            DO LN = 1, PARTICLES
+               WRITE (99,*) (real(DES_POS_NEW(LN,K)),K=1,DIMN) 
+            END DO
+            WRITE(99,*) '</DataArray>'
+            WRITE(99,*) '</Points>'
+            WRITE(99,*) '<PointData Scalars="Diameter" Vector="Velocity">'
+            WRITE(99,*) '<DataArray type="Float32" Name="Diameter" format="ascii">'
+            DO LN = 1, PARTICLES
+               WRITE (99,*) (real(DES_RADIUS(LN))) 
+            END DO
+            WRITE(99,*) '</DataArray>' 
+            IF(DIMN.EQ.2) THEN
+               WRITE(99,*) '<DataArray type="Float32" Name="Velocity" NumberOfComponents="2" format="ascii">'
+            ELSE
+               WRITE(99,*) '<DataArray type="Float32" Name="Velocity" NumberOfComponents="3" format="ascii">'
+            END IF
+            DO LN = 1, PARTICLES
+               WRITE (99,*) (real(DES_VEL_NEW(LN,K)),K=1,DIMN) 
+            END DO
+            WRITE(99,*) '</DataArray>'
+            WRITE(99,*) '</PointData>'
+            WRITE(99,*) '</Piece>'
+            WRITE(99,*) '</PolyData>'
+            WRITE(99,*) '</VTKFile>'
+            CLOSE(99)
+            DES_SPX_TIME =  (INT((TIME + 0.1*DT)/SPX_DT(1))+1)*SPX_DT(1)
+         END IF
+ 
          IF(.NOT.DES_CONTINUUM_COUPLED) TSTOP = DT
 
          IF(DT.LT.DTSOLIDTEMP) THEN
@@ -228,5 +277,7 @@
          END IF
 
  100   CONTINUE
+
+ 3020 FORMAT('DES_DATA',I4.4,'.vtp')
 
       END SUBROUTINE DES_TIME_MARCH

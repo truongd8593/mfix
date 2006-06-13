@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SOLVE_VEL_STAR(IER)                                    C
+!  Module name: CFFN(L, VRN, N_OVERLAP, NORM)                           C
 !  Purpose: DES - Calculate the normal force on a particle due to      C
 !           interparticle collision                                    C
 !                                                                      C
@@ -13,19 +13,19 @@
 !  horizontal pipe", Powder technology, 71, 239-250, 1992              C
 !                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CFFN(L, Vno, OVERLP_N, NORM)
+      SUBROUTINE CFFN(L, VRN, N_OVERLAP, NORM)
       
       USE discretelement
       IMPLICIT NONE
       
       INTEGER K, L
-      DOUBLE PRECISION OVERLP_N, NORM(DIMN), Vno
+      DOUBLE PRECISION N_OVERLAP, NORM(DIMN), VRN
 !     
 !---------------------------------------------------------------------
 !     
 
-         FNS1(:) = -KN*OVERLP_N*NORM(:)
-         FN(L,:) = FNS1(:) -  ETA_DES_N*Vno*NORM(:)
+         FNS1(:) = -KN*N_OVERLAP*NORM(:)
+         FN(L,:) = FNS1(:) -  ETA_DES_N*VRN*NORM(:)
 
       RETURN
       END SUBROUTINE CFFN

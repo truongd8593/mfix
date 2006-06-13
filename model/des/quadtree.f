@@ -16,7 +16,8 @@
       USE discretelement
       IMPLICIT NONE
 
-      INTEGER I, J, K, TC1, TC2, TCR, TCM, PARTS, PQ
+      INTEGER I, J, K, TC1, TC2, TCR, TCM, PARTS
+      INTEGER PQ, PQM(10), PQXL, PQXU, PQYL, PQYU
       DOUBLE PRECISION CT
 
       IF(DES_CONTINUUM_COUPLED) THEN
@@ -30,7 +31,8 @@
             CALL INIT_QUAD(PARTICLES)
             
       	    DO I = 1, PARTS
-            CALL ADD_QUAD(I)
+               PQ = 1
+               CALL ADD_QUAD(I,PQ)
             END DO
 
             DO I = 1, PARTS
@@ -44,21 +46,83 @@
          ELSE
 
             DO I = 1, PARTS
+               J = 1
                PQ = PQUAD(I)
-               IF(.NOT.((DES_POS_NEW(I,1).GT.CQUAD(PQ,1)).AND.&
-                 (DES_POS_NEW(I,1).LE.CQUAD(PQ,2)).AND.& 
-                 (DES_POS_NEW(I,2).GT.CQUAD(PQ,3)).AND.&
-	         (DES_POS_NEW(I,2).LE.CQUAD(PQ,4)))) THEN
-
-                 CALL MOVE_PARTICLE(I,PQ)
-                 CALL ADD_QUAD(I)
-
+! Removing a moved particle from its old quad 
+               IF(.NOT.((DES_POS_NEW(I,1).GE.CQUAD(PQ,1)).AND.&
+                 (DES_POS_NEW(I,1).LT.CQUAD(PQ,3)).AND.& 
+                 (DES_POS_NEW(I,2).GE.CQUAD(PQ,2)).AND.&
+	         (DES_POS_NEW(I,2).LT.CQUAD(PQ,4)))) THEN
+               CALL REMOVE_PARTICLE(I,PQ)
+! Placing the particle in a new quad
+            IF(QLM.LE.2) THEN
+               PQ = 1
+               GO TO 40
+            ELSE
+               PQM(1) = PQ
+               IF(PQM(1).EQ.1) THEN
+                  GO TO 40
+               ELSE
+                  DO J = 2, QLM 
+                     PQM(J) = LQUAD(PQM(J-1),6)
+                     IF(PQM(J).EQ.1) THEN
+                        PQ = 1
+                        GO TO 40
+                     ELSE
+                        PQ = PQM(J) 
+                        IF((DES_POS_NEW(I,1).GE.CQUAD(PQ,1)).AND.&
+                           (DES_POS_NEW(I,1).LT.CQUAD(PQ,3)).AND.&
+                           (DES_POS_NEW(I,2).GE.CQUAD(PQ,2)).AND.&
+                           (DES_POS_NEW(I,2).LT.CQUAD(PQ,4))) THEN
+                           PQ = LQUAD(PQM(J),6)
+                           GO TO 40    
+                        END IF
+                     END IF
+                  END DO
+                  IF(J.GT.QLM) PQ = 1
+               END IF
+            END IF
+ 40   CONTINUE
+               CALL ADD_QUAD(I,PQ)
                END IF
             END DO
 
+! Neighbor search
             DO I = 1, PARTS
                J = 1
-               CALL QUAD_NEIGHBOURS(I, J)
+             IF(QLN.LE.2) THEN
+               PQ = 1
+               GO TO 50
+             ELSE
+               PQM(1) = PQUAD(I)
+               IF(PQM(1).EQ.1) THEN
+                  GO TO 50
+               ELSE
+                  DO J = 2, QLN  
+                     PQM(J) = LQUAD(PQM(J-1),6)
+                     IF(PQM(J).EQ.1) THEN
+                        PQ = 1
+                        GO TO 50
+                     ELSE
+                        PQ = PQM(J) 
+                        PQXL = CQUAD(PQ,1) + 2.1D0 * DES_RADIUS(I)
+                        PQXU = CQUAD(PQ,3) - 2.1D0 * DES_RADIUS(I)
+                        PQYL = CQUAD(PQ,2) + 2.1D0 * DES_RADIUS(I)
+                        PQYU = CQUAD(PQ,4) - 2.1D0 * DES_RADIUS(I)
+
+                        IF((DES_POS_NEW(I,1).GE.PQXL).AND.&
+                           (DES_POS_NEW(I,1).LT.PQXU).AND.&
+                           (DES_POS_NEW(I,2).GE.PQYL).AND.&
+                           (DES_POS_NEW(I,2).LT.PQYU)) THEN
+                           GO TO 50    
+                        END IF
+                     END IF
+                  END DO
+                  IF(J.GT.QLN) PQ = 1
+               END IF
+             END IF
+ 50   CONTINUE
+               CALL QUAD_NEIGHBOURS(I, PQ)
             END DO
 	
 	    INQC = INQC - 1		
@@ -135,7 +199,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: MOVE_PARTICLE(II,PQD)                                     C
+!  Module name: REMOVE_PARTICLE(II,PQD)                                  C
 !  Purpose: To move a particle from its quad                           C
 !                                                                      C
 !                                                                      C
@@ -143,7 +207,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE MOVE_PARTICLE(II,PQD)
+      SUBROUTINE REMOVE_PARTICLE(II,PQD)
 
       USE param1
       USE discretelement
@@ -166,11 +230,11 @@
        END DO
 
       RETURN
-      END SUBROUTINE MOVE_PARTICLE 
+      END SUBROUTINE REMOVE_PARTICLE 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: ADD_QUAD(II)                                           C
+!  Module name: ADD_QUAD(II,IQS)                                           C
 !  Purpose: To find the 'quad' for the particle                        C
 !                                                                      C
 !                                                                      C
@@ -178,18 +242,17 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE ADD_QUAD(II)
+      SUBROUTINE ADD_QUAD(II,IQS)
 
       USE param1
       USE discretelement
       IMPLICIT NONE
       
-      INTEGER II
-      INTEGER J ,IQ, IQS, IFOUND, K
+      INTEGER II, IQS
+      INTEGER J ,IQ, IFOUND, K
 
-      IQS = 1
       IFOUND = 0
-      DO WHILE(IFOUND.EQ.0)
+ 10   CONTINUE
          CALL FIND_QUAD(II, IQS)
          J = LQUAD(IQS,7)
          IF(J.EQ.4) THEN
@@ -201,10 +264,11 @@
             LQUAD(IQS,J+1) = II
             IFOUND = 1
          END IF
-      END DO            
+      IF(IFOUND.EQ.0) GO TO 10 
       RETURN
       END SUBROUTINE ADD_QUAD 
 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
 	SUBROUTINE FIND_QUAD(I,Q)
@@ -217,7 +281,7 @@
 
 
 	I_F = 0
-	DO WHILE(I_F.EQ.0) 
+ 20     CONTINUE
 	   IF(LQUAD(Q,7).GE.0) THEN
  	     I_F = 1
            ELSE
@@ -235,7 +299,7 @@
 	     NC = IX + 2*IY
 	     Q = IC + NC
            END IF
-	END DO
+	IF(I_F.EQ.0) GO TO 20 
         PQUAD(I) = Q
 
 	RETURN
@@ -297,10 +361,10 @@
 	   LQUAD(I_FQ,NC+1) = K 
 	END DO
 
-!	IF(I_FQ.GT.MAXQUADS-100) THEN 
-!           PRINT *,'I_FQ.GT.MAXQUADS. CALLING REARRANGE'
-!           CALL REARRANGE_QUADTREE(I_FQ) 
-!        END IF
+	IF(I_FQ.GT.MAXQUADS-100) THEN 
+           PRINT *,'I_FQ.GT.MAXQUADS. CALLING REARRANGE'
+           CALL REARRANGE_QUADTREE(I_FQ) 
+        END IF
 
         IF(I_FQ.GT.MAXQUADS-100) THEN
           PRINT *,'QUADTREE: NQUADS GREATER THAN MAXQUADS SPECIFIED', I_FQ
@@ -370,7 +434,7 @@
       END DO
 
       I = 1
-      DO WHILE(I.LE.MNQD)
+ 30   CONTINUE
          IF(LQUAD(I,6).EQ.-2) THEN
            DO J = I, MNQD-4
               LQ = LQUAD(J+4,6)
@@ -378,7 +442,7 @@
                  LQUAD(J,K) = LQUAD(J+4,K) ! moving the lquad array
                  IF(K.LE.4) THEN
                     CQUAD(J,K) = CQUAD(J+4,K) ! moving the cquad array
-                    IF(LQUAD(LQ,7).LT.0) LQUAD(LQ,K) = LQUAD(LQ,K) - 4 ! moved quads: parent's children should be changed
+                    IF(LQUAD(LQ,7).LT.0) LQUAD(LQ,K) = LQUAD(LQ,K) - 4 
                  END IF
               END DO
            END DO
@@ -387,12 +451,12 @@
          ELSE
            I = I + 1
          END IF
-      END DO
+      IF(I.LE.MNQD) GO TO 30 
 
       RETURN
       END SUBROUTINE REARRANGE_QUADTREE
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: QUAD_NEIGHBOURS(II, NQ)                                C
@@ -413,9 +477,6 @@
 
       INTEGER II, I, N, LL, IC, J, JJ, K, POS, IXU, IXL, IYU, IYL, KK, NQ
       DOUBLE PRECISION XM, YM, DIST, R_LM, XL, XU, YL, YU 
-      INTEGER DIA_RATIO, cc, cc1
-
-      DIA_RATIO = INT(RADIUS_EQ/DES_RADIUS(II))
 
       IF (LQUAD(NQ,7).GT.0) THEN
 
@@ -460,10 +521,10 @@
          XM = CQUAD(IC,3)
          YM = CQUAD(IC,4)
 
-         XL = DES_POS_NEW(II,1) - (DIA_RATIO + 1) * DES_RADIUS(II)
-         YL = DES_POS_NEW(II,2) - (DIA_RATIO + 1) * DES_RADIUS(II)
-         XU = DES_POS_NEW(II,1) + (DIA_RATIO + 1) * DES_RADIUS(II)
-         YU = DES_POS_NEW(II,2) + (DIA_RATIO + 1) * DES_RADIUS(II)
+         XL = DES_POS_NEW(II,1) - 2.1D0 * DES_RADIUS(II)
+         YL = DES_POS_NEW(II,2) - 2.1D0 * DES_RADIUS(II)
+         XU = DES_POS_NEW(II,1) + 2.1D0 * DES_RADIUS(II)
+         YU = DES_POS_NEW(II,2) + 2.1D0 * DES_RADIUS(II)
 
          IF(XL.LT.CQUAD(1,1)) XL=CQUAD(1,1)
          IF(XU.GT.CQUAD(1,3)) XU=CQUAD(1,3)

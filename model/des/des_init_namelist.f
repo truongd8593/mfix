@@ -83,6 +83,7 @@
                   DES_PE = UNDEFINED
 
                   S_TIME = UNDEFINED
+                  DES_SPX_TIME = UNDEFINED
                   DTSOLID = UNDEFINED
                   DTSOLID_FACTOR = 0.1D0
                   P_TIME = UNDEFINED
@@ -103,7 +104,10 @@
                   NQUAD = UNDEFINED_I
 	          INIT_QUAD_COUNT = UNDEFINED_I 
 	          INQC = UNDEFINED_I 
+                  QLM = 1 ! Number of levels to go up in the tree to move particle to a new quad 
+                  QLN = 1 ! Number of levels to go up in the tree to do neighbor search
                   DIMN = UNDEFINED_I
+                  IFI = 0
                   NEIGHBOR_SEARCH_N = 1
                   NEIGHBOR_SEARCH_RAD_RATIO = 1000 
                   NEIGHBOR_SEARCH_DIST = UNDEFINED 

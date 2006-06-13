@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFTOTALOVERLAPSWALL(L, II, Vtan, OVERLP_N, OVERLP_T)   C
+!  Module name: CFTOTALOVERLAPSWALL(L, II, VRT, N_OVERLAP, T_OVERLAP)  C
 !  Purpose:  DES - Calculate the total overlap between particles       C
 !                                                                      C
 !                                                                      C
@@ -9,7 +9,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFTOTALOVERLAPSWALL(L, II, Vtan, OVERLP_N, OVERLP_T)
+      SUBROUTINE CFTOTALOVERLAPSWALL(L, II, VRT, N_OVERLAP, T_OVERLAP)
 
       USE param1      
       USE discretelement
@@ -18,8 +18,8 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
       INTEGER K, L, II
-      DOUBLE PRECISION OVERLP_N, OVERLP_T
-      DOUBLE PRECISION Vtan, R_LM, D(DIMN), DIST, TEMPX, TEMPY, TEMPZ
+      DOUBLE PRECISION N_OVERLAP, T_OVERLAP
+      DOUBLE PRECISION D(DIMN), VRT, R_LM, DIST
 
 !-----------------------------------------------------------------------
 
@@ -27,8 +27,8 @@
       D(:) = DES_POS_NEW(L,:) - DES_POS_NEW(II,:)
       DIST = SQRT(DES_DOTPRDCT(D,D))
 
-      OVERLP_N = R_LM - DIST
-      OVERLP_T = Vtan*DTSOLID
+      N_OVERLAP = R_LM - DIST
+      T_OVERLAP = VRT*DTSOLID
 
       RETURN
       END SUBROUTINE CFTOTALOVERLAPSWALL

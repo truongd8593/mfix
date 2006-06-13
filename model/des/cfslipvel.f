@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFSLIPVEL(SL, SII, VRl, SVEL, NORML)                   C
+!  Module name: CFSLIPVEL(L, II, VSLIP, VRELTRANS, VRN, NORM)          C
 !  Purpose: DES - Calculate relative velocity between a particle pair  C
 !                                                                      C
 !                                                                      C
@@ -14,25 +14,25 @@
 !                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFSLIPVEL(L, II, SVL, VRl, Vno, NORML)
+      SUBROUTINE CFSLIPVEL(L, II, VSLIP, VRELTRANS, VRN, NORM)
       
       USE discretelement
       USE param1
       IMPLICIT NONE
 
       INTEGER L, KK, II
-      DOUBLE PRECISION LVEL(DIMN), RVEL(DIMN), SVL(DIMN), Vno
-      DOUBLE PRECISION VRl(DIMN), NORML(DIMN), OMEGA_SUM(DIMN)
+      DOUBLE PRECISION LVEL(DIMN), V_ROT(DIMN), VSLIP(DIMN), VRN
+      DOUBLE PRECISION VRELTRANS(DIMN), NORM(DIMN), OMEGA_SUM(DIMN)
 
 !-----------------------------------------------------------------------
 
-      RVEL(:) = ZERO
+      V_ROT(:) = ZERO
 
       OMEGA_SUM(:) = OMEGA_NEW(L,:) + OMEGA_NEW(II,:)
-      CALL DES_CROSSPRDCT(RVEL, OMEGA_SUM, NORML)
-      RVEL(:) =DES_RADIUS(L)*RVEL(:)
+      CALL DES_CROSSPRDCT(V_ROT, OMEGA_SUM, NORM)
+      V_ROT(:) =DES_RADIUS(L)*V_ROT(:)
  
-      SVL(:) = VRl(:) - Vno*NORML(:) + RVEL(:)      
+      VSLIP(:) = VRELTRANS(:) - VRN*NORM(:) + V_ROT(:)      
   
       RETURN
       END SUBROUTINE CFSLIPVEL

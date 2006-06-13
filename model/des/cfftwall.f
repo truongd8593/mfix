@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFFTWALL(L, Vtan, OVERLP_T, TANGNT)                    C
+!  Module name: CFFTWALL(L, VRT, T_OVERLAP, TANGNT)                    C
 !  Purpose: DES - Calculate the tangential force on a particle         C
 !           due to particle-wall collision                             C
 !                                                                      C
@@ -9,18 +9,18 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CFFTWALL(L, Vtan, OVERLP_T, TANGNT)
+      SUBROUTINE CFFTWALL(L, VRT, T_OVERLAP, TANGNT)
       
       USE discretelement
       IMPLICIT NONE
 
       INTEGER L, K
-      DOUBLE PRECISION OVERLP_T, TANGNT(DIMN), Vtan
+      DOUBLE PRECISION T_OVERLAP, TANGNT(DIMN), VRT
 !     
 !---------------------------------------------------------------------
 !     
 
-         FT(L,:) = -(KT_W*OVERLP_T + ETA_T_W*Vtan)*TANGNT(:)
+         FT(L,:) = -(KT_W*T_OVERLAP + ETA_T_W*VRT)*TANGNT(:)
 
       RETURN
       END SUBROUTINE CFFTWALL

@@ -18,11 +18,12 @@
       IMPLICIT NONE
       
       INTEGER LL, I, II, K, LC, C, CO, IW, KK, TEMP, TEMPN
-      DOUBLE PRECISION OVERLAP_N, OVERLAP_T, TEMPFN(DIMN), TEMPFT(DIMN)
-      DOUBLE PRECISION NORMAL(DIMN), VRE(DIMN), SVEL(DIMN)
-      DOUBLE PRECISION TANGENT(DIMN)
-      DOUBLE PRECISION Vn, Vt
       INTEGER NI, IJ, WALLCHECK
+      DOUBLE PRECISION OVERLAP_N, OVERLAP_T
+      DOUBLE PRECISION V_REL_TRANS(DIMN), V_SLIP(DIMN)
+      DOUBLE PRECISION NORMAL(DIMN), TANGENT(DIMN)
+      DOUBLE PRECISION V_REL_TRANS_NORM, V_REL_TRANS_TANG
+      DOUBLE PRECISION TEMPFN(DIMN), TEMPFT(DIMN)
       LOGICAL ALREADY_EXISTS
 !     
 !---------------------------------------------------------------------
@@ -31,7 +32,7 @@
 !     
 
       IF (S_TIME.LE.DTSOLID) THEN
-            VRE(:) = ZERO
+            V_REL_TRANS(:) = ZERO
             TANGENT(:) = ZERO
             NORMAL(:) = ZERO
             FC(:,:) = ZERO
@@ -77,12 +78,14 @@
                     TEMPFN(:) = PFN(LL,CO,:)
                     TEMPFT(:) = PFT(LL,CO,:)
                     NI = CO - 1
-                    DO WHILE((NI.GT.1).AND.(PN(LL,NI).GT.TEMPN))
+                    IF((NI.GT.1).AND.(PN(LL,NI).GT.TEMPN)) THEN
+ 10     CONTINUE
                        PN(LL,NI+1) = PN(LL,NI)
                        PFN(LL,NI+1,:) = PFN(LL,NI,:)
                        PFT(LL,NI+1,:) = PFT(LL,NI,:)
                        NI = NI-1
-                    END DO
+                       IF((NI.GT.1).AND.(PN(LL,NI).GT.TEMPN)) GO TO 10
+                    END IF
                     PN(LL,NI+1) = TEMPN
                     PFN(LL,NI+1,:) = TEMPFN(:)
                     PFT(LL,NI+1,:) = TEMPFT(:)
@@ -92,7 +95,7 @@
               IF(PN(LL,1).GT.0) THEN
                  IJ = 0     
                  DO NI = 2, PN(LL,1)+1 
-                   IF(PN(LL,NI).GE.2*PARTICLES) THEN
+                   IF(PN(LL,NI).EQ.UNDEFINED_I) THEN
                        PN(LL,NI) = - 1
                        IJ = IJ + 1 
                     END IF
@@ -125,14 +128,14 @@
                           OMEGA_NEW(I,:) = ZERO
                        DES_RADIUS(I) = DES_RADIUS(LL)
                        CALL CFNORMALWALL(LL, I, NORMAL)
-                       CALL CFRELVEL(LL, I, VRE)
-                       CALL CFVRN(Vn, VRE, NORMAL)
-                       CALL CFSLIPVEL(LL, I, SVEL, VRE, Vn, NORMAL)
-                       CALL CFTANGENT(SVEL, TANGENT, NORMAL)
-                       CALL CFVRT(Vt, VRE, TANGENT)
-                       CALL CFTOTALOVERLAPSWALL(LL, I, Vt, OVERLAP_N, OVERLAP_T)
-                       CALL CFFNWALL(LL, Vn, OVERLAP_N, NORMAL)
-                       CALL CFFTWALL(LL, Vt, OVERLAP_T, TANGENT)
+                       CALL CFRELVEL(LL, I, V_REL_TRANS)
+                       CALL CFVRN(V_REL_TRANS_NORM, V_REL_TRANS, NORMAL)
+                       CALL CFSLIPVEL(LL, I, V_SLIP, V_REL_TRANS, V_REL_TRANS_NORM, NORMAL)
+                       CALL CFTANGENT(V_SLIP, TANGENT, NORMAL)
+                       CALL CFVRT(V_REL_TRANS_TANG, V_REL_TRANS, TANGENT)
+                       CALL CFTOTALOVERLAPSWALL(LL, I, V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T)
+                       CALL CFFNWALL(LL, V_REL_TRANS_NORM, OVERLAP_N, NORMAL)
+                       CALL CFFTWALL(LL, V_REL_TRANS_TANG, OVERLAP_T, TANGENT)
                        CALL CFSLIDEWALL(LL, TANGENT)
                        CALL CFFCTOWALL(LL, NORMAL)
 !--DEBUGGING
@@ -160,34 +163,36 @@
 	      	    CO = 0
 		    NI = 2
                     IF(PN(LL,1).GT.0) THEN
-                       DO WHILE((CO.EQ.0).AND.(NI.LE.(PN(LL,1)+1)))
-                          IF(I.EQ.PN(LL,NI)) THEN
-                             CO = 1
-                             PV(LL,NI) = 1
-                             CALL CFNORMAL(LL, I, II, NORMAL)
-                             CALL CFRELVEL(LL, I, VRE, TANGENT)
-                             CALL CFVRN(Vn, VRE, NORMAL)
-                             CALL CFSLIPVEL(LL, I, SVEL, VRE, Vn, NORMAL)
-                             CALL CFTANGENT(SVEL, TANGENT, NORMAL)
-                             CALL CFVRT(Vt, VRE, TANGENT)
-                             CALL CFINCREMENTALOVERLAPS(Vn, Vt, OVERLAP_N, OVERLAP_T)
-                             CALL CFFN(LL, Vn, OVERLAP_N, NORMAL)
-                             CALL CFFT(LL, Vt, OVERLAP_T, TANGENT)
-                                FN(LL,:) = FN(LL,:) + PFN(LL,NI,:)
-                                TEMPFT(:) = FT(LL,:) + PFT(LL,NI,:)
-                             CALL CFSLIDE(LL, TANGENT, TEMPFT)
-                             CALL CFFCTOW(LL, I, NORMAL)
+                       IF((CO.EQ.0).AND.(NI.LE.(PN(LL,1)+1))) THEN
+ 20     CONTINUE
+                         IF(I.EQ.PN(LL,NI)) THEN
+                           CO = 1
+                           PV(LL,NI) = 1
+                           CALL CFNORMAL(LL, I, II, NORMAL)
+                           CALL CFRELVEL(LL, I, V_REL_TRANS, TANGENT)
+                           CALL CFVRN(V_REL_TRANS_NORM, V_REL_TRANS, NORMAL)
+                           CALL CFSLIPVEL(LL, I, V_SLIP, V_REL_TRANS, V_REL_TRANS_NORM, NORMAL)
+                           CALL CFTANGENT(V_SLIP, TANGENT, NORMAL)
+                           CALL CFVRT(V_REL_TRANS_TANG, V_REL_TRANS, TANGENT)
+                           CALL CFINCREMENTALOVERLAPS(V_REL_TRANS_NORM, V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T)
+                           CALL CFFN(LL, V_REL_TRANS_NORM, OVERLAP_N, NORMAL)
+                           CALL CFFT(LL, V_REL_TRANS_TANG, OVERLAP_T, TANGENT)
+                              FN(LL,:) = FN(LL,:) + PFN(LL,NI,:)
+                              TEMPFT(:) = FT(LL,:) + PFT(LL,NI,:)
+                           CALL CFSLIDE(LL, TANGENT, TEMPFT)
+                           CALL CFFCTOW(LL, I, NORMAL)
                                 PFN(LL,NI,:) = PFN(LL,NI,:) + FNS1(:)
-                                IF(.NOT.PARTICLE_SLIDE) THEN
-                                    PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
-                                ELSE
-                                    PFT(LL,NI,:) = FT(LL,:)
-                                    PARTICLE_SLIDE = .FALSE.
-                                END IF
-                          ELSE
-                             NI = NI + 1
-                          END IF
-                       END DO
+                              IF(.NOT.PARTICLE_SLIDE) THEN
+                                  PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
+                              ELSE
+                                  PFT(LL,NI,:) = FT(LL,:)
+                                  PARTICLE_SLIDE = .FALSE.
+                              END IF
+                         ELSE
+                            NI = NI + 1
+                         END IF
+                         IF((CO.EQ.0).AND.(NI.LE.(PN(LL,1)+1))) GO TO 20
+                       END IF
                     END IF
 		    IF(CO.EQ.0) THEN
                        PN(LL,1) = PN(LL,1) + 1
@@ -195,14 +200,14 @@
                        PN(LL,NI) = I
                        PV(LL,NI) = 1
                        CALL CFNORMAL(LL, I, II, NORMAL)
-                       CALL CFRELVEL(LL, I, VRE, TANGENT)
-                       CALL CFVRN(Vn, VRE, NORMAL)
-                       CALL CFSLIPVEL(LL, I, SVEL, VRE, Vn, NORMAL)
-                       CALL CFTANGENT(SVEL, TANGENT, NORMAL)
-                       CALL CFVRT(Vt, VRE, TANGENT)
-                       CALL CFTOTALOVERLAPS(LL, I, II, Vt, OVERLAP_N, OVERLAP_T)
-                       CALL CFFN(LL, Vn, OVERLAP_N, NORMAL)
-                       CALL CFFT(LL, Vt, OVERLAP_T, TANGENT)
+                       CALL CFRELVEL(LL, I, V_REL_TRANS, TANGENT)
+                       CALL CFVRN(V_REL_TRANS_NORM, V_REL_TRANS, NORMAL)
+                       CALL CFSLIPVEL(LL, I, V_SLIP, V_REL_TRANS, V_REL_TRANS_NORM, NORMAL)
+                       CALL CFTANGENT(V_SLIP, TANGENT, NORMAL)
+                       CALL CFVRT(V_REL_TRANS_TANG, V_REL_TRANS, TANGENT)
+                       CALL CFTOTALOVERLAPS(LL, I, II, V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T)
+                       CALL CFFN(LL, V_REL_TRANS_NORM, OVERLAP_N, NORMAL)
+                       CALL CFFT(LL, V_REL_TRANS_TANG, OVERLAP_T, TANGENT)
                           TEMPFT(:) = FT(LL,:)
                        CALL CFSLIDE(LL, TANGENT, TEMPFT)
                        CALL CFFCTOW(LL, I, NORMAL)

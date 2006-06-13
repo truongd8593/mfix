@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFVRN(Vno, VRl, NORM)                                  C
+!  Module name: CFVRN(VRN, VRELTRANS, NORM)                            C
 !  Purpose: DES - Calculate the normal component of relative velocity  C
 !                                                                      C
 !                                                                      C
@@ -8,7 +8,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CFVRN(Vno, VRl, NORM)
+      SUBROUTINE CFVRN(VRN, VRELTRANS, NORM)
 
       USE param1      
       USE discretelement
@@ -17,12 +17,12 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
 
       INTEGER K
-      DOUBLE PRECISION Vno, VRl(DIMN), NORM(DIMN)
+      DOUBLE PRECISION VRN, VRELTRANS(DIMN), NORM(DIMN)
 
 !---------------------------------------------------------------------------
 
-      Vno = DES_DOTPRDCT(VRl,NORM)
-      
+      VRN = DES_DOTPRDCT(VRELTRANS,NORM)
+     
       RETURN
       END SUBROUTINE CFVRN 
 

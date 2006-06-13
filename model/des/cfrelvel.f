@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFRELVEL(L, II, VRl)                                   C
+!  Module name: CFRELVEL(L, II, VRELTRANS)                             C
 !  Purpose: DES - Calculate relative velocity between a particle pair  C
 !                                                                      C
 !                                                                      C
@@ -15,19 +15,19 @@
 !                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFRELVEL(L, II, VRl)
+      SUBROUTINE CFRELVEL(L, II, VRELTRANS)
       
       USE discretelement
       USE param1
       IMPLICIT NONE
 
       INTEGER L, KK, II
-      DOUBLE PRECISION VRl(DIMN)
+      DOUBLE PRECISION VRELTRANS(DIMN)
 
 !-----------------------------------------------------------------------
 
 
-      VRl(:) = (DES_VEL_NEW(L,:) - DES_VEL_NEW(II,:))
+      VRELTRANS(:) = (DES_VEL_NEW(L,:) - DES_VEL_NEW(II,:))
 
       RETURN
       END SUBROUTINE CFRELVEL
