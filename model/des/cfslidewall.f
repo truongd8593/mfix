@@ -18,13 +18,17 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
       INTEGER L, K
-      DOUBLE PRECISION FTMD, FNMD, TANGNT(DIMN), FT1(DIMN)
+      DOUBLE PRECISION FTMD, FNMD, TANGNT(DIMN)
+      DOUBLE PRECISION TEMP_FT(DIMN), TEMP_FN(DIMN)
 !     
 !---------------------------------------------------------------------
 
 
-      FTMD = SQRT(DES_DOTPRDCT(FT,FT))
-      FNMD = SQRT(DES_DOTPRDCT(FN,FN))
+      TEMP_FT(:) = FT(L,:)
+      TEMP_FN(:) = FN(L,:)
+
+      FTMD = SQRT(DES_DOTPRDCT(TEMP_FT,TEMP_FT))
+      FNMD = SQRT(DES_DOTPRDCT(TEMP_FN,TEMP_FN))
 
       IF (FTMD.GT.(MEW_W*FNMD)) THEN
          PARTICLE_SLIDE = .TRUE.

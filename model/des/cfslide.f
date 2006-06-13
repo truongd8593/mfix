@@ -15,7 +15,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFSLIDE(L, TANGNT, FT1)
+      SUBROUTINE CFSLIDE(L, TANGNT, TEMP_FT)
 
       USE param1
       USE discretelement
@@ -24,18 +24,21 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
       INTEGER L, K
-      DOUBLE PRECISION FTMD, FNMD,  FT1(DIMN), TANGNT(DIMN)
+      DOUBLE PRECISION FTMD, FNMD, TANGNT(DIMN)
+      DOUBLE PRECISION TEMP_FT(DIMN), TEMP_FN(DIMN)
 !     
 !---------------------------------------------------------------------
 
-      FTMD = SQRT(DES_DOTPRDCT(FT1,FT1))
-      FNMD = SQRT(DES_DOTPRDCT(FN,FN))
+      TEMP_FN(:) = FN(L,:)
+
+      FTMD = SQRT(DES_DOTPRDCT(TEMP_FT,TEMP_FT))
+      FNMD = SQRT(DES_DOTPRDCT(TEMP_FN,TEMP_FN))
 
       IF (FTMD.GT.(MEW*FNMD)) THEN
           PARTICLE_SLIDE = .TRUE.
           FT(L,:) = - MEW*FNMD*TANGNT(:)
       ELSE
-         FT(L,:) = FT1(:)
+         FT(L,:) = TEMP_FT(:)
       END IF
 
       RETURN
