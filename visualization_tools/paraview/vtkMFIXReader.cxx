@@ -199,9 +199,9 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
     //
     if ( !strcmp(this->CoordinateSystem,"CARTESIAN") && (this->KMaximum2 != 1))
       {
-      double pointX = 0.0;
-      double pointY = 0.0;
-      double pointZ = 0.0;
+      double pointX = -this->Dx->GetValue(0);
+      double pointY = -this->Dy->GetValue(0);
+      double pointZ = -this->Dz->GetValue(0);
       for (int k = 0; k <= this->KMaximum2; k++)
         {
         for (int j = 0; j <= this->JMaximum2; j++)
@@ -218,7 +218,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
               pointX = pointX + this->Dx->GetValue(i);
               }
             }
-          pointX = 0.0;
+          pointX = -this->Dx->GetValue(0);
           if ( j == this->JMaximum2)
             {
             pointY = pointY + this->Dy->GetValue(j-1);
@@ -228,7 +228,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
             pointY = pointY + this->Dy->GetValue(j);
             }
           }
-        pointY = 0.0;
+        pointY = -this->Dy->GetValue(0);
         if ( k == this->KMaximum2)
           {
           pointZ = pointZ + this->Dz->GetValue(k-1);
@@ -241,8 +241,8 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
       }
     else if ( !strcmp(this->CoordinateSystem,"CARTESIAN") && (this->KMaximum2 == 1))
       {
-      double pointX = 0.0;
-      double pointY = 0.0;
+      double pointX = -this->Dx->GetValue(0);
+      double pointY = -this->Dy->GetValue(0);
       double pointZ = 0.0;
         for (int j = 0; j <= this->JMaximum2; j++)
           {
@@ -258,7 +258,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
               pointX = pointX + this->Dx->GetValue(i);
               }
             }
-          pointX = 0.0;
+          pointX = -this->Dx->GetValue(0);
           if ( j == this->JMaximum2)
             {
             pointY = pointY + this->Dy->GetValue(j-1);
@@ -271,8 +271,8 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
       }
     else if ( !strcmp(this->CoordinateSystem,"CYLINDRICAL") && (this->KMaximum2 == 1))
       {
-      double pointX = 0.0;
-      double pointY = 0.0;
+      double pointX = -this->Dx->GetValue(0);
+      double pointY = -this->Dy->GetValue(0);
       double pointZ = 0.0;
       for (int j = 0; j <= this->JMaximum2; j++)
         {
@@ -292,7 +292,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
             pointX = pointX + this->Dx->GetValue(i);
             }
           }
-        pointX = 0.0;
+        pointX = -this->Dx->GetValue(0);
         if ( j == this->JMaximum2)
           {
           pointY = pointY + this->Dy->GetValue(j-1);
@@ -308,9 +308,9 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
       //
       //  Cylindrical Type Mesh
       //
-      double pointX = 0.0;
-      double pointY = 0.0;
-      double pointZ = 0.0;
+      double pointX = -this->Dx->GetValue(0);
+      double pointY = -this->Dy->GetValue(0);
+      double pointZ = -this->Dz->GetValue(0);
       double radialX = 0.0;
       double radialY = 0.0;
       double radialZ = 0.0;
@@ -327,7 +327,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
               }
             else if ( i == 0 )
               {
-              pointX = 0;
+              pointX = -this->Dx->GetValue(0);
               }
             else
               {
@@ -336,7 +336,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
             radialX = pointX * cos(pointZ);
             radialZ = pointX * sin(pointZ) * -1;
             }
-          pointX = 0.0;
+          pointX = -this->Dx->GetValue(0);
           radialX = 0.0;
           radialZ = 0.0;
           if ( j == this->JMaximum2)
@@ -349,7 +349,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
             }
           radialY = pointY;
           }
-        pointY = 0.0;
+        pointY = -this->Dy->GetValue(0);
         radialY = 0.0;
         if ( k == this->KMaximum2)
           {
