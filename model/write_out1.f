@@ -211,7 +211,7 @@
 
 !
 !             form feed character = CHAR(12)
-      WRITE (UNIT_OUT, '(/1X,1A1)') CHAR(12) 
+      if (myPE == PE_IO) WRITE (UNIT_OUT, '(/1X,1A1)') CHAR(12) 
       IF (CALL_USR) CALL USR_WRITE_OUT1 
       RETURN  
  1000 FORMAT(1X,A1,/5X,'--- Gas pressure (P_g) at time ',G12.5,' ---',2/) 

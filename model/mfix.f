@@ -212,7 +212,7 @@
          CALL START_LOG 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1010) TIME, NSTEP 
          CALL END_LOG 
-         WRITE (UNIT_OUT, 1010) TIME, NSTEP 
+         if (myPE == PE_IO) WRITE (UNIT_OUT, 1010) TIME, NSTEP 
          IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP 
 !
       CASE ('RESTART_2')  
@@ -224,7 +224,7 @@
          CALL START_LOG 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1010) TIME, NSTEP 
          CALL END_LOG 
-         WRITE (UNIT_OUT, 1010) TIME, NSTEP 
+         if (myPE == PE_IO) WRITE (UNIT_OUT, 1010) TIME, NSTEP 
          IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP 
 !
          CALL WRITE_RES0 
