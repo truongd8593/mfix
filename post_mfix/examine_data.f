@@ -166,7 +166,7 @@
       integer       :: nPrec1,nPrec2,nPrec3,nPrec4,w1,w2,w3,w4,sLen
       
       if (nPrec1.lt.0) then
-         spec = '(1X,4(G12.5,2X)'
+         spec = '(1X,4(G12.5,2X))'
 	 sLen = 57 ! = 1 + 4*14
       else
          w1 = nPrec1 + 8
