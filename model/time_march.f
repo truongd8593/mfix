@@ -185,8 +185,8 @@
          L = N_SPX + 1 
       ELSE 
          IF (DT /= UNDEFINED) THEN 
-            RES_TIME = (INT((TIME + 0.1*DT)/RES_DT) + 1)*RES_DT 
-            SPX_TIME(:N_SPX) = (INT((TIME + 0.1*DT)/SPX_DT(:N_SPX))+1)*SPX_DT(:&
+            RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT 
+            SPX_TIME(:N_SPX) = (INT((TIME + 0.1d0*DT)/SPX_DT(:N_SPX))+1)*SPX_DT(:&
             N_SPX) 
             L = N_SPX + 1 
          ENDIF 
@@ -198,7 +198,7 @@
             IF (RUN_TYPE == 'NEW') THEN 
                USR_TIME(L) = TIME 
             ELSE 
-               USR_TIME(L) = (INT((TIME + 0.1*DT)/USR_DT(L))+1)*USR_DT(L) 
+               USR_TIME(L) = (INT((TIME + 0.1d0*DT)/USR_DT(L))+1)*USR_DT(L) 
             ENDIF 
          ENDIF 
       END DO
@@ -315,8 +315,8 @@
       IF (OUT_DT /= UNDEFINED) THEN 
          IF (DT == UNDEFINED) THEN 
             CALL WRITE_OUT1 
-         ELSE IF (TIME + 0.1*DT>=OUT_TIME .OR. TIME+0.1*DT>=TSTOP) THEN 
-            OUT_TIME = (INT((TIME + 0.1*DT)/OUT_DT) + 1)*OUT_DT 
+         ELSE IF (TIME + 0.1d0*DT>=OUT_TIME .OR. TIME+0.1d0*DT>=TSTOP) THEN 
+            OUT_TIME = (INT((TIME + 0.1d0*DT)/OUT_DT) + 1)*OUT_DT 
             CALL WRITE_OUT1 
          ENDIF 
       ENDIF 
@@ -335,8 +335,8 @@
                WRITE (*, 1000,  ADVANCE="NO") TIME 
             ENDIF
          ENDIF 
-      ELSE IF (TIME + 0.1*DT>=RES_TIME .OR. TIME+0.1*DT>=TSTOP) THEN 
-         RES_TIME = (INT((TIME + 0.1*DT)/RES_DT) + 1)*RES_DT 
+      ELSE IF (TIME + 0.1d0*DT>=RES_TIME .OR. TIME+0.1d0*DT>=TSTOP) THEN 
+         RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT 
          CALL WRITE_RES1 
          RES_MSG = .FALSE. 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME 
@@ -368,8 +368,8 @@
                IF(DMP_LOG)WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
                IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
             ENDIF 
-         ELSE IF (TIME + 0.1*DT>=SPX_TIME(L) .OR. TIME+0.1*DT>=TSTOP) THEN 
-            SPX_TIME(L) = (INT((TIME + 0.1*DT)/SPX_DT(L))+1)*SPX_DT(L) 
+         ELSE IF (TIME + 0.1d0*DT>=SPX_TIME(L) .OR. TIME+0.1d0*DT>=TSTOP) THEN 
+            SPX_TIME(L) = (INT((TIME + 0.1d0*DT)/SPX_DT(L))+1)*SPX_DT(L) 
             CALL WRITE_SPX1 (L, 0) 
             DISK_TOT = DISK_TOT + DISK(L) 
             ISPX = ISPX + 1 
@@ -415,8 +415,8 @@
          IF (DT == UNDEFINED) THEN 
 !//   
             IF (FINISH.and.myPE.eq.PE_IO) CALL WRITE_USR1 (L) 
-         ELSE IF (USR_TIME(L)/=UNDEFINED .AND. TIME+0.1*DT>=USR_TIME(L)) THEN 
-            USR_TIME(L) = (INT((TIME + 0.1*DT)/USR_DT(L))+1)*USR_DT(L) 
+         ELSE IF (USR_TIME(L)/=UNDEFINED .AND. TIME+0.1d0*DT>=USR_TIME(L)) THEN 
+            USR_TIME(L) = (INT((TIME + 0.1d0*DT)/USR_DT(L))+1)*USR_DT(L) 
 !//   
             if (myPE.eq.PE_IO) CALL WRITE_USR1 (L) 
          ENDIF 
@@ -427,7 +427,7 @@
          ELSE 
             FINISH = .TRUE. 
          ENDIF 
-      ELSE IF (TIME + 0.1*DT >= TSTOP) THEN 
+      ELSE IF (TIME + 0.1d0*DT >= TSTOP) THEN 
          RETURN  
       ENDIF 
 
@@ -471,8 +471,8 @@
 !     IF ((CN_ON.AND.NSTEP>1)) THEN
       IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
       (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
-         DT = 0.5*DT
-         ODT = ODT * 2.0
+         DT = 0.5d0*DT
+         ODT = ODT * 2.0d0
       ENDIF
 !      
 ! Check for maximum velocity at inlet to avoid convergence problems 
@@ -545,8 +545,8 @@
 !     IF (CN_ON.AND.NSTEP>1) then 
       IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
       (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
-         DT = 2.*DT      
-         ODT = ODT * 0.5
+         DT = 2.d0*DT      
+         ODT = ODT * 0.5d0
       ENDIF      
 
 !     AE TIME 043001 Perform the explicit extrapolation for CN implementation

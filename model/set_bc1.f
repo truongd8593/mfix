@@ -101,7 +101,7 @@
 !           Calculate and accumulate the actual mass and volume outflow
 !
                CALL CALC_OUTFLOW (L) 
-               IF (TIME + 0.1*DT>=BC_TIME(L) .OR. TIME+0.1*DT>=TSTOP) THEN 
+               IF (TIME + 0.1d0*DT>=BC_TIME(L) .OR. TIME+0.1d0*DT>=TSTOP) THEN 
                   BC_TIME(L) = TIME + BC_DT_0(L) 
 !
 !             Average and Print out the flow rates
@@ -258,7 +258,7 @@
 !
 !           update transient jet conditions
 !
-               IF (TIME + 0.1*DT>=BC_TIME(L) .AND. BC_JET_G(L)/=UNDEFINED) THEN 
+               IF (TIME + 0.1d0*DT>=BC_TIME(L) .AND. BC_JET_G(L)/=UNDEFINED) THEN 
                   IF (BC_JET_G(L) == BC_JET_GH(L)) THEN 
                      BC_JET_G(L) = BC_JET_GL(L) 
                      BC_TIME(L) = TIME + BC_DT_L(L) 
@@ -306,7 +306,7 @@
 !           Calculate and accumulate the actual mass and volume outflow
 !
                   CALL CALC_OUTFLOW (L) 
-                  IF (TIME + 0.1*DT>=BC_TIME(L) .OR. TIME+0.1*DT>=TSTOP) THEN 
+                  IF (TIME + 0.1d0*DT>=BC_TIME(L) .OR. TIME+0.1d0*DT>=TSTOP) THEN 
                      BC_TIME(L) = TIME + BC_DT_0(L) 
 !
 !               Average and Print out the flow rates

@@ -178,7 +178,7 @@
              IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
                (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
 	        WRITE (*, '(/A,G12.5, A,G12.5, A,F9.3,1X,A)') ' Time = ', TIME, &
-                 '  Dt = ', 2.*DT, '    CPU time left = ', TLEFT, TUNIT 
+                 '  Dt = ', 2.D0*DT, '    CPU time left = ', TLEFT, TUNIT 
              ELSE
               WRITE (*, '(/A,G12.5, A,G12.5, A,F9.3,1X,A)') ' Time = ', TIME, &
                  '  Dt = ', DT, '    CPU time left = ', TLEFT, TUNIT 

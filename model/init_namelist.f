@@ -104,9 +104,9 @@
       TIME = UNDEFINED 
       TSTOP = UNDEFINED 
       DT = UNDEFINED 
-      DT_MAX = 1. 
-      DT_MIN = 1.E-6 
-      DT_FAC = 0.9 
+      DT_MAX = ONE 
+      DT_MIN = 1.D-6 
+      DT_FAC = 0.9D0
       DETECT_STALL = .TRUE. 
       ENERGY_EQ = .TRUE.
       DEF_COR  =  .FALSE. 
