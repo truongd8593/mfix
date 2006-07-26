@@ -577,8 +577,7 @@
           enddo
           yt(8) = rs / ro_s
 !--------
-          d9_v = (-(dble(-8210.0) * rc - dble(65360.0) * rd)) / ro_s / c&
-     &_ps
+          d9_v = (-(dble(-8210.0) * rc - dble(65360.0) * rd)) / ro_s / c_ps
           d11_v = d9_v / y(8)
           d2_b = 1.0d0 / y(8)
           d3_b = (-d11_v) / y(8)
