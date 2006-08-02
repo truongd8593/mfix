@@ -1,3 +1,4 @@
+! to do (sof): remove warning messages for theta < 0 from wall BC routines
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: ADJUST_THETA (M, IER)                                  C
@@ -6,6 +7,9 @@
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 02-APR-98  C
 !  Reviewer:                                          Date:            C
+!  Modified: S. Benyahia                              Date: 02-AUG-06  C
+!  Purpose: check for small negative numbers at walls (not just fluid  C
+!           cells)                                                     C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
@@ -53,7 +57,7 @@
 !
 !!!HPF$ independent
       DO IJK = IJKSTART3, IJKEND3
-         IF (FLUID_AT(IJK)) THEN 
+         IF ( FLUID_AT(IJK) .OR. WALL_AT(IJK) ) THEN 
             IF (THETA_M(IJK,M) < ZERO_EP_S) THETA_M(IJK,M) = ZERO_EP_S 
 !
          ENDIF 
