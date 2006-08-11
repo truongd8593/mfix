@@ -17,14 +17,15 @@
   RUN_TYPE              = 'NEW'             
   UNITS                 = 'cgs'
   TIME                  = 0.0                           !start time
-  TSTOP                 = 2.0E-2
+  TSTOP                 = 1.0
   DT                    = 1.0E-4                        !time step
-  DT_MAX                = 1.0e-4
+  DT_MIN                = 1.0D-08
   DETECT_STALL          = .FALSE
   CLOSE_PACKED          = .TRUE.  .TRUE.
   ENERGY_EQ             = .FALSE.                         !do not 
   SPECIES_EQ            = .FALSE.    .FALSE.    .FALSE. !do not s
   DISCRETIZE            =   7*2
+  MAX_NIT = 50
                                                                                
 ! Geometry Section                                                              
                                                                                
@@ -130,7 +131,7 @@
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
         !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
         !                W_g  W_s
-  SPX_DT = 0.1 0.1      0.1  0.1  0.1      100. 100.   100.0     100. 
+  SPX_DT = 0.1 0.1      0.1  0.1  0.1      100. 100.   0.1     100. 
   RESID_STRING  = 'P0' 'P1' 'U0' 'R2' 'V0' 'V1' 'V2'       
 !  The decomposition in I, J, and K directions for a Distributed Memory Parallel
   
