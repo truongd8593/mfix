@@ -7,16 +7,16 @@
                                                                                
   RUN_NAME              = 'R'             
   DESCRIPTION           = 'Binary size distribution'          
-  RUN_TYPE              = 'new'             
+  RUN_TYPE              = 'NEW'             
   UNITS                 = 'cgs'
   TIME                  = 0.0                         !start time
-  TSTOP                 = 0.1
+  TSTOP                 = 1.0
   DT                    = 1.0E-5
                            
   CLOSE_PACKED 	= .TRUE.  .TRUE.
   ENERGY_EQ             = .FALSE.                       !do not solve energy eq
   SPECIES_EQ            = .F. .F. .F.             !do not solve species eq
-  MAX_NIT=1000
+  MAX_NIT = 50
 !  TOL_RESID = 1.0E-3
   
 !  TOL_DIVERGE = 1.0e15
@@ -169,7 +169,7 @@
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
         !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
         !                W_g  W_s
-  SPX_DT = 0.5 0.5      0.5  0.5  0.5      100. 100.     0.5     0.5        
+  SPX_DT = 0.1 0.1      0.1  0.1  0.1      100. 100.     0.1     0.1        
                                                                                 
 
 !  Sweep Direction
