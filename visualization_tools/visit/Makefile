@@ -1,26 +1,27 @@
 ##
 ## Programs and options...
 ##
-include /home/bdotson/applications/visit/visit/1.5.2/linux-intel/include/make-variables
-TOPDIR=/home/bdotson/applications/visit/visit/1.5.2/linux-intel
+include /root/applications/visit/1.5.3/linux-intel/include/make-variables
+TOPDIR=/root/applications/visit/1.5.3/linux-intel
 
 
 ##
 ## Libraries and includes...
 ##
 VTK_INCLUDE= \
-  -I/home/bdotson/applications/visit/visit/1.5.2/linux-intel/include/vtk \
-  -I/home/bdotson/applications/visit/visit/1.5.2/linux-intel/include/vtk/Common \
-  -I/home/bdotson/applications/visit/visit/1.5.2/linux-intel/include/vtk/Filtering \
-  -I/home/bdotson/applications/visit/visit/1.5.2/linux-intel/include/vtk/Graphics \
-  -I/home/bdotson/applications/visit/visit/1.5.2/linux-intel/include/vtk/Hybrid \
-  -I/home/bdotson/applications/visit/visit/1.5.2/linux-intel/include/vtk/IO \
-  -I/home/bdotson/applications/visit/visit/1.5.2/linux-intel/include/vtk/Imaging \
-  -I/home/bdotson/applications/visit/visit/1.5.2/linux-intel/include/vtk/Rendering
-MOC=/home/bdotson/applications/visit/visit/1.5.2/linux-intel/bin/moc
+  -I/root/applications/visit/1.5.3/linux-intel/include/vtk \
+  -I/root/applications/visit/1.5.3/linux-intel/include/vtk/Common \
+  -I/root/applications/visit/1.5.3/linux-intel/include/vtk/Filtering \
+  -I/root/applications/visit/1.5.3/linux-intel/include/vtk/Graphics \
+  -I/root/applications/visit/1.5.3/linux-intel/include/vtk/Hybrid \
+  -I/root/applications/visit/1.5.3/linux-intel/include/vtk/IO \
+  -I/root/applications/visit/1.5.3/linux-intel/include/vtk/Imaging \
+  -I/root/applications/visit/1.5.3/linux-intel/include/vtk/Rendering \
+  -I/root/applications/visit/1.5.3/linux-intel/include/vtk/Utilities
+MOC=/root/applications/visit/1.5.3/linux-intel/bin/moc
 CXXFLAGS=$(CXXFLAGSORIG)
-CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) -I. -I/home/bdotson/applications/visit/visit/1.5.2/linux-intel/include -I/home/bdotson/applications/visit/visit/1.5.2/linux-intel/include/visit
-LDFLAGS=$(LDFLAGSORIG)  -L/home/bdotson/.visit/linux-intel/plugins/databases
+CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) -I. -I/root/applications/visit/1.5.3/linux-intel/include -I/root/applications/visit/1.5.3/linux-intel/include/visit
+LDFLAGS=$(LDFLAGSORIG)  -L/root/.visit/linux-intel/plugins/databases
 
 ##
 ## Files...
@@ -42,14 +43,14 @@ SHLIB_FORCED=
 ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
 MLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
 ILIBS=
-MLIBS=-lpipeline_ser -ldatabase_ser -lmir_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L/home/bdotson/.visit/linux-intel/plugins/databases -lI$(PLUGINNAME) $(MLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
-ESERLIBS=-lpipeline_ser -ldatabase_ser -lmir_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L/home/bdotson/.visit/linux-intel/plugins/databases -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
-EPARLIBS=-lpipeline_par -ldatabase_par -lmir_par -lavtmath_par -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L/home/bdotson/.visit/linux-intel/plugins/databases -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)
+MLIBS=-lpipeline_ser -ldatabase_ser -lmir_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L/root/.visit/linux-intel/plugins/databases -lI$(PLUGINNAME) $(MLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
+ESERLIBS=-lpipeline_ser -ldatabase_ser -lmir_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L/root/.visit/linux-intel/plugins/databases -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
+EPARLIBS=-lpipeline_par -ldatabase_par -lmir_par -lavtmath_par -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L/root/.visit/linux-intel/plugins/databases -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)
 
-IDSO=/home/bdotson/.visit/linux-intel/plugins/databases/libIMFIXDatabase.so
-MDSO=/home/bdotson/.visit/linux-intel/plugins/databases/libMMFIXDatabase.so
-ESERDSO=/home/bdotson/.visit/linux-intel/plugins/databases/libEMFIXDatabase_ser.so
-EPARDSO=/home/bdotson/.visit/linux-intel/plugins/databases/libEMFIXDatabase_par.so
+IDSO=/root/.visit/linux-intel/plugins/databases/libIMFIXDatabase.so
+MDSO=/root/.visit/linux-intel/plugins/databases/libMMFIXDatabase.so
+ESERDSO=/root/.visit/linux-intel/plugins/databases/libEMFIXDatabase_ser.so
+EPARDSO=/root/.visit/linux-intel/plugins/databases/libEMFIXDatabase_par.so
 
 
 DISTRIB=
@@ -100,4 +101,4 @@ $(MOCSRC) or_no_widgets: $(WIDGETS)
 ##
 ## Automatic dependency stuff
 ##
-include /home/bdotson/applications/visit/visit/1.5.2/linux-intel/include/make-targets
+include /root/applications/visit/1.5.3/linux-intel/include/make-targets

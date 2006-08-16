@@ -1597,7 +1597,7 @@ void avtMFIXFileFormat::MakeTimeStepTable()
 
   for(int i=0; i<VariableNames.size(); i++)
     {
-    int timestepIncrement = this->MaxTimeStep/this->VariableTimesteps[i];
+    int timestepIncrement = (int)((float)this->MaxTimeStep/(float)this->VariableTimesteps[i] + 0.5);
     int timestep = 1;
     for (int j=0; j<this->MaxTimeStep; j++)
       {
@@ -1605,7 +1605,7 @@ void avtMFIXFileFormat::MakeTimeStepTable()
       timestepIncrement--;
       if (timestepIncrement <= 0)
         {
-        timestepIncrement = this->MaxTimeStep/this->VariableTimesteps[i];
+        timestepIncrement = (int)((float)this->MaxTimeStep/(float)this->VariableTimesteps[i] + 0.5);
         timestep++;
         }
       if (timestep > this->VariableTimesteps[i]) 
