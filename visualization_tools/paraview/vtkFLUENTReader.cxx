@@ -20,6 +20,7 @@
 #include "vtkFLUENTReader.h"
 #include "vtkDataArraySelection.h"
 #include "vtkErrorCode.h"
+#include "vtkMultiBlockDataSet.h"
 #include "vtkUnstructuredGrid.h"
 #include "vtkInformation.h"
 #include "vtkInformationVector.h"
@@ -41,20 +42,42 @@
 #include "vtkTetra.h"
 #include "vtkWedge.h"
 #include "vtkPyramid.h"
+#include "vtkConvexPointSet.h"
+#include <fstream>
+#include <sstream>
+using vtkstd::istringstream;
 
 vtkCxxRevisionMacro(vtkFLUENTReader, "$Revision$");
 vtkStandardNewMacro(vtkFLUENTReader);
 
 //----------------------------------------------------------------------------
 vtkFLUENTReader::vtkFLUENTReader()
-{
+{cout<<"Constructor"<<endl;
+  this->SetNumberOfInputPorts(0);
   this->FileName  = NULL;
-  CreateVTKObjects();
+  this->Points = vtkPoints::New();
+  this->Triangle = vtkTriangle::New();
+  this->Tetra = vtkTetra::New();
+  this->Quad = vtkQuad::New();
+  this->Hexahedron = vtkHexahedron::New();
+  this->Pyramid = vtkPyramid::New();
+  this->Wedge = vtkWedge::New();
+  this->ConvexPointSet = vtkConvexPointSet::New();
+cout<<"ConstructorEnd"<<endl;
 }
 
 //----------------------------------------------------------------------------
 vtkFLUENTReader::~vtkFLUENTReader()
-{
+{cout<<"deConstructor"<<endl;
+  Points->Delete();
+  Triangle->Delete();
+  Tetra->Delete();
+  Quad->Delete();
+  Hexahedron->Delete();
+  Pyramid->Delete();
+  Wedge->Delete();
+  ConvexPointSet->Delete();
+cout<<"deConstructorEnd"<<endl;
 }
 
 //----------------------------------------------------------------------------
@@ -62,47 +85,134 @@ int vtkFLUENTReader::RequestData(
   vtkInformation *vtkNotUsed(request),
   vtkInformationVector **vtkNotUsed(inputVector),
   vtkInformationVector *outputVector)
-{
+{cout<<"RequestData"<<endl;
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
 
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
-    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkMultiBlockDataSet *output = vtkMultiBlockDataSet::SafeDownCast(
+    outInfo->Get(vtkMultiBlockDataSet::COMPOSITE_DATA_SET()));
 
-  this->ReadFile(output);
+  output->SetNumberOfDataSets(0, CellZones.size());
+
+  vtkUnstructuredGrid *Grid[CellZones.size()];
+
+  for(int test=0; test < CellZones.size(); test++)
+    Grid[test] = vtkUnstructuredGrid::New();
+
+  for (int i = 0; i < Cells.size(); i++)
+    {
+    int location = distance(CellZones.begin(),find(CellZones.begin(), CellZones.end(), Cells[i].zone));
+
+    if (Cells[i].type == 1 )
+      {
+      for (int j = 0; j < 3; j++)
+        {
+        Triangle->GetPointIds()->SetId( j, Cells[i].nodes[j]);
+        }
+      Grid[location]->InsertNextCell(Triangle->GetCellType(),Triangle->GetPointIds());
+      }
+    else if (Cells[i].type == 2 )
+      {
+      for (int j = 0; j < 4; j++)
+        {
+        Tetra->GetPointIds()->SetId( j, Cells[i].nodes[j]);
+        }
+      Grid[location]->InsertNextCell(Tetra->GetCellType(),Tetra->GetPointIds());
+      }
+    else if (Cells[i].type == 3 )
+      {
+      for (int j = 0; j < 4; j++)
+        {
+        Quad->GetPointIds()->SetId( j, Cells[i].nodes[j]);
+        }
+      Grid[location]->InsertNextCell(Quad->GetCellType(),Quad->GetPointIds());
+      }
+    else if (Cells[i].type == 4 )
+      {
+      for (int j = 0; j < 8; j++)
+        {
+        Hexahedron->GetPointIds()->SetId( j, Cells[i].nodes[j]);
+        }
+      Grid[location]->InsertNextCell(Hexahedron->GetCellType(),Hexahedron->GetPointIds());
+      }
+    else if (Cells[i].type == 5 )
+      {
+      for (int j = 0; j < 5; j++)
+        {
+        Pyramid->GetPointIds()->SetId( j, Cells[i].nodes[j]);
+        }
+      Grid[location]->InsertNextCell(Pyramid->GetCellType(),Pyramid->GetPointIds());
+      }
+    else if (Cells[i].type == 6 )
+      {
+      for (int j = 0; j < 6; j++)
+        {
+        Wedge->GetPointIds()->SetId( j, Cells[i].nodes[j]);
+        }
+      Grid[location]->InsertNextCell(Wedge->GetCellType(),Wedge->GetPointIds());
+      }
+    else if (Cells[i].type == 7 )
+      {
+      ConvexPointSet->GetPointIds()->SetNumberOfIds(Cells[i].nodes.size());
+      for (int j = 0; j < Cells[i].nodes.size(); j++)
+        {
+        ConvexPointSet->GetPointIds()->SetId( j, Cells[i].nodes[j]);
+        }
+      Grid[location]->InsertNextCell(ConvexPointSet->GetCellType(),ConvexPointSet->GetPointIds());
+      }
+    }
+  Cells.clear();
+
+  //Scalar Data
+  for (int l = 0; l < ScalarDataChunks.size(); l++)
+    {
+    int location = distance(CellZones.begin(),find(CellZones.begin(), CellZones.end(), ScalarDataChunks[l].zoneId));
+    vtkDoubleArray *v = vtkDoubleArray::New();
+    for (int m = 0; m < ScalarDataChunks[l].scalarData.size(); m++)
+      {
+      v->InsertValue(m, ScalarDataChunks[l].scalarData[m]);
+      }
+    v->SetName(ScalarVariableNames[l/CellZones.size()].c_str());
+    Grid[location]->GetCellData()->AddArray(v);
+    v->Delete();
+    }
+
+  //Vector Data
+  for (int l = 0; l < VectorDataChunks.size(); l++)
+    {
+    int location = distance(CellZones.begin(),find(CellZones.begin(), CellZones.end(), VectorDataChunks[l].zoneId));
+    vtkDoubleArray *v = vtkDoubleArray::New();
+    v->SetNumberOfComponents(3);
+    for (int m = 0; m < VectorDataChunks[l].iComponentData.size(); m++)
+      {
+      v->InsertComponent(m, 0, VectorDataChunks[l].iComponentData[m]);
+      v->InsertComponent(m, 1, VectorDataChunks[l].jComponentData[m]);
+      v->InsertComponent(m, 2, VectorDataChunks[l].kComponentData[m]);
+      }
+    v->SetName(VectorVariableNames[l/CellZones.size()].c_str());
+    Grid[location]->GetCellData()->AddArray(v);
+    v->Delete();
+    }
+
+  for(int addTo = 0; addTo < CellZones.size(); addTo++)
+    {
+    Grid[addTo]->SetPoints(Points);
+    output->SetDataSet(0, addTo, Grid[addTo]);
+    Grid[addTo]->Delete();
+    }
+  cout<<"RequestDataEnd"<<endl;
   return 1;
 }
 
 //----------------------------------------------------------------------------
 void vtkFLUENTReader::PrintSelf(ostream& os, vtkIndent indent)
-{
+{cout<<"PrintSelf"<<endl;
   this->Superclass::PrintSelf(os,indent);
 
   os << indent << "File Name: " 
      << (this->FileName ? this->FileName : "(none)") << endl;
 
   os << indent << "Number Of Cells: " << this->NumberOfCells << endl;
-  os << indent << "Number Of Cell Fields: " 
-     << this->NumberOfCellFields << endl;
-
-  os << indent << "Number Of Cell Components: " 
-     << this->NumberOfCellComponents << endl;
-
-}
-
-//----------------------------------------------------------------------------
-void vtkFLUENTReader::ReadFile(vtkUnstructuredGrid *output)
-{
-  output->Allocate();
-  output->ShallowCopy(this->Mesh);
-  this->Mesh->Delete();
-
-  for ( int i = 0; i < this->NumberOfVariables; i++ ) 
-    {
-    if ( this->CellData[ i ] )
-      {
-      this->CellData[ i ]->Delete();
-      }
-    }
+cout<<"PrintSelfEnd"<<endl;
 }
 
 //----------------------------------------------------------------------------
@@ -110,85 +220,73 @@ int vtkFLUENTReader::RequestInformation(
   vtkInformation *vtkNotUsed(request),
   vtkInformationVector **vtkNotUsed(inputVector),
   vtkInformationVector *vtkNotUsed(outputVector))
-{
-  if(this->ObjectsFlag == 0){
-    this->CreateVTKObjects();
-  }
+{cout<<"RequestInfo"<<endl;
+  OpenCaseFile(this->FileName);
+  OpenDataFile(this->FileName);
+cout<<"Case Opened"<<endl;
+  ParseCaseFile();  // Reads Necessary Information from the .cas file.
 
-  if(!this->OpenCaseAndDataFiles()) {
+cout<<"Case Parsed"<<endl;
+  CleanCells();  //  Removes unnecessary faces from the cells.
+
+cout<<"Cells Cleaned"<<endl;
+  PopulateCellNodes();
+
+cout<<"Cells populated"<<endl;
+  LoadVariableNames();
+cout<<"Names Loaded"<<endl;
+
+  GetNumberOfCellZones();
+cout<<CellZones.size()<<endl;
+  NumberOfScalars = 0;
+  NumberOfVectors = 0;
+  ParseDataFile();
+cout<<SubSectionIds.size()<<endl;
+  this->CellDataArraySelection = vtkDataArraySelection::New();
+  for (int i = 0; i < SubSectionIds.size(); i++)
+    {
+cout<<i<<" : "<<SubSectionIds[i]<<" : "<<SubSectionSize[i]<<" : "<<VariableNames[SubSectionIds[i]]<<endl;
+    if (SubSectionSize[i] == 1)
+      {
+      cout<<"Scalar"<<endl;
+      this->CellDataArraySelection->AddArray(VariableNames[SubSectionIds[i]].c_str());
+      ScalarVariableNames.push_back(VariableNames[SubSectionIds[i]]);
+      ScalarSubSectionIds.push_back(SubSectionIds[i]);
+      }
+    else if (SubSectionSize[i] == 3)
+      {
+      cout<<"Vector"<<endl;
+      this->CellDataArraySelection->AddArray(VariableNames[SubSectionIds[i]].c_str());
+      VectorVariableNames.push_back(VariableNames[SubSectionIds[i]]);
+      VectorSubSectionIds.push_back(SubSectionIds[i]);
+      }
+ cout<<this->CellDataArraySelection->GetArrayName(i)<<endl;
+    }
+cout<<"RequestInfoEnd"<<endl;
+return 1;
+}
+
+//----------------------------------------------------------------------------
+int vtkFLUENTReader::OpenCaseFile(const char *filename)
+{
+  this->FluentCaseFile.open(filename);
+
+  if (this->FluentCaseFile.is_open())
+    {
+    cout << "Successfully opened " << filename << endl;
+    return 1;
+    }
+  else
+    {
+    cout << "Could not open " << filename << endl;
     return 0;
-  }
-
-  this->ParseCaseFile();
-  this->Mesh->SetPoints(this->Points);
-  this->Points->Delete();
-  this->MakeFaceTreeParentTable();
-  this->LoadFaceParentFlags();
-  this->LoadInterfaceFaceChildFlags();
-  this->LoadNCGFaceChildFlags();
-  this->LoadCellNumberOfFaces();
-  this->LoadCellFaces();
-  this->RemoveExtraFaces();
-  this->LoadCellParentFlags();
-  this->BuildCells();
-  this->DataPass = 1;
-  this->ParseDataFile();
-  this->InitializeVariableNames();
-  this->CellData = new vtkDoubleArray * [NumberOfVariables];
-
-  for ( int i=0; i < this->NumberOfVariables; i++ ) 
-    {
-    int variableId = this->VariableIds->GetValue(i);
-    int numberOfComponents = this->VariableSizes->GetValue(i);
-    this->CellData[ i ] = vtkDoubleArray::New();
-    this->CellData[ i ]->SetName(VariableNames[variableId]);
-    this->CellData[ i ]->SetNumberOfComponents(numberOfComponents);
     }
-
-  this->DataPass = 2;
-  this->ParseDataFile();  // Getting Data
-  this->NumberOfCellArrays = this->NumberOfCellFields;
-  this->DeleteVTKObjects();
-  return 1;
 }
 
 //----------------------------------------------------------------------------
-int vtkFLUENTReader::OpenCaseAndDataFiles( void )
+int vtkFLUENTReader::GetNumberOfCellArrays()
 {
-  int len = strlen(this->FileName);
-  len = len -4;
-  this->DataFileName = new char [256];
-  strncpy(this->DataFileName, this->FileName, len);
-  this->DataFileName[len] = '\0';
-  strcat(this->DataFileName, ".dat");
-
-  this->FileStream = new ifstream(this->FileName, ios::binary);
-  this->DataFileStream = new ifstream(this->DataFileName, ios::binary);
-
-  if (this->FileStream->fail()){
-    cout << "Could Not Open Case File = " << this->FileName << endl;
-    return(0);
-  }
-
-  if (this->DataFileStream->fail()){
-    cout << "Could Not Open Data File = " << this->DataFileName << endl;
-    return(0);
-  }
-  return(1);
-}
-
-//----------------------------------------------------------------------------
-void vtkFLUENTReader::GetCellDataRange( int cellComp, 
-                                        int index, 
-                                        float *min, 
-                                        float *max)
-{
-  if (index >= this->VectorLength[cellComp] || index < 0)
-    {
-    index = 0;  // if wrong index, set it to zero
-    }
-  *min = this->Minimum[cellComp];
-  *max = this->Maximum[cellComp];
+  return this->CellDataArraySelection->GetNumberOfArrays();
 }
 
 //----------------------------------------------------------------------------
@@ -229,4926 +327,2671 @@ void vtkFLUENTReader::DisableAllCellArrays()
 }
 
 //----------------------------------------------------------------------------
-void vtkFLUENTReader::ParseCaseFile(void)
-{
-  this->FileStream->seekg(0, ios::end); 
-  this->CaseFileBufferLength = this->FileStream->tellg();
-  this->FileStream->seekg(0, ios::beg);
-  this->CaseFileBuffer = new char[this->CaseFileBufferLength];
-  this->FileStream->read(this->CaseFileBuffer, this->CaseFileBufferLength);
-  this->FileStream->close();
-
-  int bufferIndex = 0;
-  while(bufferIndex < this->CaseFileBufferLength)
-    {
-    if(this->CaseFileBuffer[bufferIndex] == '(')
-      {
-      int taskIndex = this->GetCaseIndex(bufferIndex);
-      bufferIndex = this->ExecuteCaseTask(taskIndex, bufferIndex);
-      }
-      bufferIndex++;
-    }
-  delete [] CaseFileBuffer;
-}
 
 //----------------------------------------------------------------------------
-void vtkFLUENTReader::MakeFaceTreeParentTable(void)
+int vtkFLUENTReader::OpenDataFile(const char *filename)
 {
-}
+  vtkstd::string dfilename(filename);
+  dfilename.erase(dfilename.length()-3, 3);
+  dfilename.append("dat");
 
-//----------------------------------------------------------------------------
-void vtkFLUENTReader::LoadFaceParentFlags(void)
-{
-}
-
-//----------------------------------------------------------------------------
-void vtkFLUENTReader::LoadInterfaceFaceChildFlags(void)
-{
-}
-
-//----------------------------------------------------------------------------
-void vtkFLUENTReader::LoadNCGFaceChildFlags(void)
-{
-}
-
-//----------------------------------------------------------------------------
-void vtkFLUENTReader::BuildCells(void)
-{
-  int spinFace[6];
-  for (int i = 0; i < 6; i++)
-    {
-    spinFace[i] = 0;
-    }
-
-  int node[8];
-  for (int i = 0; i < 8; i++)
-    {
-    node[i] = 0;
-    }
-
-  int tempNode[30];
-  for (int i = 0; i < 30; i++)
-    {
-    tempNode[i] = 0;
-    }
-
-  int face[6];
-
-  for(int i=1;i<=this->NumberOfCells;i++)
-    {
-    for (int j = 0; j < 6; j++)
-      {
-      try
-        {
-        face[j] = CellFaces[ i ].at(j); 
-        }
-      catch ( ... )
-        {
-        face[j] = 0;
-        }
-      }
-
-    for (int j = 0; j < 6; j++)
-      {
-      if ( (face[j]!=0) && ((int)this->FaceCells->GetComponent(face[j],0) == i))
-        {
-        spinFace[j] = 1;
-        }
-      else
-        {
-        spinFace[j] = -1;
-        }
-      }
-
-    //*************************************
-    //   Triangular Cell Type
-    //*************************************
-
-    if(this->CellTypes->GetValue(i) == 1)
-      {
-      int cnt = 0;
-      for (int j = 0; j < 3; j++)
-        {
-        for (int k = 0; k < 2; k++)
-          {
-          tempNode[cnt] = (int)this->FaceNodes->GetComponent(face[j], k);
-          cnt++;
-          }
-        }
-
-      if(spinFace[0] > 0)
-        {
-        node[0] = tempNode[0];
-        node[1] = tempNode[1];
-        }
-      else
-        {
-        node[0] = tempNode[1];
-        node[1] = tempNode[0];
-        }
-
-      if( (tempNode[2]!=node[0]) && (tempNode[2]!=node[1]) )
-        {
-        node[2] = tempNode[2];
-        }
-      else if ( (tempNode[3]!=node[0]) && (tempNode[3]!=node[1]) )
-        {
-        node[2] = tempNode[3];
-        }
-      else if ( (tempNode[4]!=node[0]) && (tempNode[4]!=node[1]) )
-        {
-        node[2] = tempNode[4];
-        }
-      else
-        {
-        node[2] = tempNode[5];
-        }
-
-      for (int j = 0; j < 3; j++)
-        {
-        this->ATriangle->GetPointIds()->SetId( j, node[j]);
-        }
-
-      if(this->CellParentFlags.at(i) != true ) 
-        {
-        this->Mesh->InsertNextCell(this->ATriangle->GetCellType(), 
-          this->ATriangle->GetPointIds());
-        }
-      }
-    else if(this->CellTypes->GetValue(i) == 2)
-      {
-      //*************************************
-      //   Tetrahedral Cell Type
-      //*************************************
-      int cnt = 0;
-      for(int j = 0; j < 4; j++)
-        {
-        for(int k = 0; k < 3; k++)
-          {
-          tempNode[cnt] = (int)this->FaceNodes->GetComponent(face[j], k);
-          cnt++;
-          }
-        }
-
-      if (spinFace[0] > 0)
-        {
-        node[0] = tempNode[0];
-        node[1] = tempNode[1];
-        node[2] = tempNode[2];
-        }
-      else 
-        {
-        node[0] = tempNode[2];
-        node[1] = tempNode[1];
-        node[2] = tempNode[0];
-        }
-
-      if ( (tempNode[3]!=node[0]) && (tempNode[3]!=node[1]) 
-        && (tempNode[3]!=node[2])) 
-        {
-        node[3] = tempNode[3];
-        }
-      else if ( (tempNode[4]!=node[0]) && (tempNode[4]!=node[1])
-        && (tempNode[4]!=node[2])) 
-        {
-        node[3] = tempNode[4];
-        }
-      else if ( (tempNode[5]!=node[0]) && (tempNode[5]!=node[1])
-        && (tempNode[5]!=node[2])) 
-        {
-        node[3] = tempNode[5];
-        }
-      else if ( (tempNode[6]!=node[0]) && (tempNode[6]!=node[1])
-        && (tempNode[6]!=node[2]))
-        {
-        node[3] = tempNode[6];
-        }
-      else if ( (tempNode[7]!=node[0]) && (tempNode[7]!=node[1])
-        && (tempNode[7]!=node[2])) 
-        {
-        node[3] = tempNode[7];
-        }
-      else if ( (tempNode[8]!=node[0]) && (tempNode[8]!=node[1])
-        && (tempNode[8]!=node[2])) 
-        {
-        node[3] = tempNode[8];
-        }
-      else if ( (tempNode[9]!=node[0]) && (tempNode[9]!=node[1])
-        && (tempNode[9]!=node[2]))
-        {
-        node[3] = tempNode[9];
-        }
-      else if ( (tempNode[10]!=node[0]) && (tempNode[10]!=node[1])
-        && (tempNode[10]!=node[2])) 
-        {
-        node[3] = tempNode[10];
-        }
-      else
-        {
-        node[3] = tempNode[11];
-        }
-
-      for (int j = 0; j < 4; j++)
-        {
-        this->ATetra->GetPointIds()->SetId( j, node[j]);
-        }
-
-      if (CellParentFlags.at(i) != true ) 
-        {
-        this->Mesh->InsertNextCell(this->ATetra->GetCellType(), 
-          this->ATetra->GetPointIds());
-        }
-      } 
-    else if (this->CellTypes->GetValue(i) == 3)
-      {
-      //*************************************
-      //   Quadrilateral Cell Type
-      //*************************************
-
-      int cnt = 0;
-      for(int j = 0; j < 4; j++)
-        {
-        for(int k = 0; k < 2; k++)
-          {
-          tempNode[cnt] = (int)this->FaceNodes->GetComponent(face[j], k);
-          cnt++;
-          }
-        }
-      if (spinFace[0] > 0)
-        {
-        node[0] = tempNode[0];
-        node[1] = tempNode[1];
-        }
-      else
-        {
-        node[0] = tempNode[1];
-        node[1] = tempNode[0];
-        }
-
-      if ( (tempNode[2]!=node[0]) && (tempNode[2]!=node[1])
-        && (tempNode[3]!=node[0]) && (tempNode[3]!=node[1]))
-        {
-        if (spinFace[1] > 0)
-          {
-          node[2] = tempNode[2];
-          node[3] = tempNode[3];
-          }
-        else 
-          {
-          node[2] = tempNode[3];
-          node[3] = tempNode[2];
-          }
-        }
-
-      if ( (tempNode[4]!=node[0]) && (tempNode[4]!=node[1])
-        && (tempNode[5]!=node[0]) && (tempNode[5]!=node[1]))
-        {
-        if (spinFace[2] > 0)
-          {
-          node[2] = tempNode[4];
-          node[3] = tempNode[5];
-          }
-        else 
-          {
-          node[2] = tempNode[5];
-          node[3] = tempNode[4];
-          }
-        }
-
-      if ( (tempNode[6]!=node[0]) && (tempNode[6]!=node[1])
-        && (tempNode[7]!=node[0]) && (tempNode[7]!=node[1]))
-        {
-        if (spinFace[3] > 0)
-          {
-          node[2] = tempNode[6];
-          node[3] = tempNode[7];
-          }
-        else
-          {
-          node[2] = tempNode[7];
-          node[3] = tempNode[6];
-          }
-        }
-
-      for (int j = 0; j < 4; j++)
-        {
-        this->AQuad->GetPointIds()->SetId( j, node[j]);
-        }
-
-      if (CellParentFlags.at(i) != true ) 
-        {
-        this->Mesh->InsertNextCell(this->AQuad->GetCellType(), 
-          this->AQuad->GetPointIds());
-        }
-      }
-    else if (this->CellTypes->GetValue(i) == 4)
-      {
-      //*************************************
-      //   Hexahedral Cell Type
-      //*************************************
-      int cnt = 0;
-      for(int j = 0; j < 6; j++)
-        {
-        for(int k = 0; k < 4; k++)
-          {
-          tempNode[cnt] = (int)this->FaceNodes->GetComponent(face[j], k);
-          cnt++;
-          }
-        }
-
-      if (spinFace[0] > 0)
-        {
-        for(int j = 0; j < 4; j++)
-          {
-          node[j] = tempNode[j];
-          }
-        }
-      else
-        {
-        for(int j = 0; j < 4; j++)
-          {
-          node[j] = tempNode[3-j];
-          }
-        }
-
-      int frontFaceNode[4];
-      int topFaceNode[4];
-      int rightFaceNode[4];
-      int leftFaceNode[4];
-      int bottomFaceNode[4];
-
-      for (int j = 0; j < 4; j++)
-        {
-        frontFaceNode[j] = 0;
-        topFaceNode[j] = 0;
-        rightFaceNode[j] = 0;
-        leftFaceNode[j] = 0;
-        bottomFaceNode[j] = 0;
-        }
-
-
-      if (((tempNode[4]==node[0])||(tempNode[5]==node[0])
-        ||(tempNode[6]==node[0])||(tempNode[7]==node[0]))
-        && ((tempNode[4]==node[1])||(tempNode[5]==node[1])
-        ||(tempNode[6]==node[1])||(tempNode[7]==node[1])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          rightFaceNode[j] = tempNode[j+4];
-          }
-        }
-      else if (((tempNode[4]==node[0])||(tempNode[5]==node[0])
-        ||(tempNode[6]==node[0])||(tempNode[7]==node[0]))
-        && ((tempNode[4]==node[3])||(tempNode[5]==node[3])
-        ||(tempNode[6]==node[3])||(tempNode[7]==node[3])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          frontFaceNode[j] = tempNode[j+4];
-          }
-        }
-      else if (((tempNode[4]==node[2])||(tempNode[5]==node[2])
-        ||(tempNode[6]==node[2])||(tempNode[7]==node[2])) 
-        && ((tempNode[4]==node[3])||(tempNode[5]==node[3])
-        ||(tempNode[6]==node[3])||(tempNode[7]==node[3])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          leftFaceNode[j] = tempNode[j+4];
-          }
-        }
-      else if (((tempNode[4]==node[1])||(tempNode[5]==node[1])
-        ||(tempNode[6]==node[1])||(tempNode[7]==node[1])) 
-        && ((tempNode[4]==node[2])||(tempNode[5]==node[2])
-        ||(tempNode[6]==node[2])||(tempNode[7]==node[2])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          bottomFaceNode[j] = tempNode[j+4];
-          }
-        }
-      else
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          topFaceNode[j] = tempNode[j+4];
-          }
-        }
-
-      if (((tempNode[8]==node[0])||(tempNode[9]==node[0])
-        ||(tempNode[10]==node[0])||(tempNode[11]==node[0]))
-        && ((tempNode[8]==node[1])||(tempNode[9]==node[1])
-        ||(tempNode[10]==node[1])||(tempNode[11]==node[1])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          rightFaceNode[j] = tempNode[j+8];
-          }
-        }
-      else if (((tempNode[8]==node[0])||(tempNode[9]==node[0])
-        ||(tempNode[10]==node[0])||(tempNode[11]==node[0]))
-        && ((tempNode[8]==node[3])||(tempNode[9]==node[3])
-        ||(tempNode[10]==node[3])||(tempNode[11]==node[3])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          frontFaceNode[j] = tempNode[j+8];
-          }
-        }
-      else if (((tempNode[8]==node[2])||(tempNode[9]==node[2])
-        ||(tempNode[10]==node[2])||(tempNode[11]==node[2]))
-        && ((tempNode[8]==node[3])||(tempNode[9]==node[3])
-        ||(tempNode[10]==node[3])||(tempNode[11]==node[3])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          leftFaceNode[j] = tempNode[j+8];
-          }
-        }
-      else if (((tempNode[8]==node[1])||(tempNode[9]==node[1])
-        ||(tempNode[10]==node[1])||(tempNode[11]==node[1]))
-        && ((tempNode[8]==node[2])||(tempNode[9]==node[2])
-        ||(tempNode[10]==node[2])||(tempNode[11]==node[2])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          bottomFaceNode[j] = tempNode[j+8];
-          }
-        }
-      else
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          topFaceNode[j] = tempNode[j+8];
-          }
-        }
-
-      if (((tempNode[12]==node[0])||(tempNode[13]==node[0])
-        ||(tempNode[14]==node[0])||(tempNode[15]==node[0]))
-        && ((tempNode[12]==node[1])||(tempNode[13]==node[1])
-        ||(tempNode[14]==node[1])||(tempNode[15]==node[1])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          rightFaceNode[j] = tempNode[j+12];
-          }
-        }
-      else if (((tempNode[12]==node[0])||(tempNode[13]==node[0])
-        ||(tempNode[14]==node[0])||(tempNode[15]==node[0]))
-        && ((tempNode[12]==node[3])||(tempNode[13]==node[3])
-        ||(tempNode[14]==node[3])||(tempNode[15]==node[3])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          frontFaceNode[j] = tempNode[j+12];
-          }
-        }
-      else if (((tempNode[12]==node[2])||(tempNode[13]==node[2])
-        ||(tempNode[14]==node[2])||(tempNode[15]==node[2]))
-        && ((tempNode[12]==node[3])||(tempNode[13]==node[3])
-        ||(tempNode[14]==node[3])||(tempNode[15]==node[3])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          leftFaceNode[j] = tempNode[j+12];
-          }
-        }
-      else if (((tempNode[12]==node[1])||(tempNode[13]==node[1])
-        ||(tempNode[14]==node[1])||(tempNode[15]==node[1]))
-        && ((tempNode[12]==node[2])||(tempNode[13]==node[2])
-        ||(tempNode[14]==node[2])||(tempNode[15]==node[2])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          bottomFaceNode[j] = tempNode[j+12];
-          }
-        }
-      else
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          topFaceNode[j] = tempNode[j+12];
-          }
-        }
-
-      if (((tempNode[16]==node[0])||(tempNode[17]==node[0])
-        ||(tempNode[18]==node[0])||(tempNode[19]==node[0]))
-        && ((tempNode[16]==node[1])||(tempNode[17]==node[1])
-        ||(tempNode[18]==node[1])||(tempNode[19]==node[1])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          rightFaceNode[j] = tempNode[j+16];
-          }
-        }
-      else if (((tempNode[16]==node[0])||(tempNode[17]==node[0])
-        ||(tempNode[18]==node[0])||(tempNode[19]==node[0]))
-        && ((tempNode[16]==node[3])||(tempNode[17]==node[3])
-        ||(tempNode[18]==node[3])||(tempNode[19]==node[3])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          frontFaceNode[j] = tempNode[j+16];
-          }
-        }
-      else if (((tempNode[16]==node[2])||(tempNode[17]==node[2])
-        ||(tempNode[18]==node[2])||(tempNode[19]==node[2]))
-        && ((tempNode[16]==node[3])||(tempNode[17]==node[3])
-        ||(tempNode[18]==node[3])||(tempNode[19]==node[3])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          leftFaceNode[j] = tempNode[j+16];
-          }
-        }
-      else if (((tempNode[16]==node[1])||(tempNode[17]==node[1])
-        ||(tempNode[18]==node[1])||(tempNode[19]==node[1]))
-        && ((tempNode[16]==node[2])||(tempNode[17]==node[2])
-        ||(tempNode[18]==node[2])||(tempNode[19]==node[2])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          bottomFaceNode[j] = tempNode[j+16];
-          }
-        }
-      else
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          topFaceNode[j] = tempNode[j+16];
-          }
-        }
-
-      if (((tempNode[20]==node[0])||(tempNode[21]==node[0])
-        ||(tempNode[22]==node[0])||(tempNode[23]==node[0]))
-        && ((tempNode[20]==node[1])||(tempNode[21]==node[1])
-        ||(tempNode[22]==node[1])||(tempNode[23]==node[1])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          rightFaceNode[j] = tempNode[j+20];
-          }
-        }
-      else if (((tempNode[20]==node[0])||(tempNode[21]==node[0])
-        ||(tempNode[22]==node[0])||(tempNode[23]==node[0]))
-        && ((tempNode[20]==node[3])||(tempNode[21]==node[3])
-        ||(tempNode[22]==node[3])||(tempNode[23]==node[3])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          frontFaceNode[j] = tempNode[j+20];
-          }
-        }
-      else if (((tempNode[20]==node[2])||(tempNode[21]==node[2])
-        ||(tempNode[22]==node[2])||(tempNode[23]==node[2])) 
-        && ((tempNode[20]==node[3])||(tempNode[21]==node[3])
-        ||(tempNode[22]==node[3])||(tempNode[23]==node[3])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          leftFaceNode[j] = tempNode[j+20];
-          }
-        }
-      else if (((tempNode[20]==node[1])||(tempNode[21]==node[1])
-        ||(tempNode[22]==node[1])||(tempNode[23]==node[1])) 
-        && ((tempNode[20]==node[2])||(tempNode[21]==node[2])
-        ||(tempNode[22]==node[2])||(tempNode[23]==node[2])))
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          bottomFaceNode[j] = tempNode[j+20];
-          }
-        }
-      else
-        {
-        for (int j = 0; j < 4; j++)
-          {
-          topFaceNode[j] = tempNode[j+20];
-          }
-        }
-
-      if (((topFaceNode[0]==rightFaceNode[0])
-        ||(topFaceNode[0]==rightFaceNode[1])
-        ||(topFaceNode[0]==rightFaceNode[2])
-        ||(topFaceNode[0]==rightFaceNode[3]))
-        &&((topFaceNode[0]==frontFaceNode[0])
-        ||(topFaceNode[0]==frontFaceNode[1])
-        ||(topFaceNode[0]==frontFaceNode[2])
-        ||(topFaceNode[0]==frontFaceNode[3])))
-        {
-        node[4] = topFaceNode[0];
-        }
-      else if (((topFaceNode[0]==rightFaceNode[0])
-        ||(topFaceNode[0]==rightFaceNode[1])
-        ||(topFaceNode[0]==rightFaceNode[2])
-        ||(topFaceNode[0]==rightFaceNode[3]))
-        &&((topFaceNode[0]==bottomFaceNode[0])
-        ||(topFaceNode[0]==bottomFaceNode[1])
-        ||(topFaceNode[0]==bottomFaceNode[2])
-        ||(topFaceNode[0]==bottomFaceNode[3])))
-        {
-        node[5] = topFaceNode[0];
-        }
-      else if (((topFaceNode[0]==leftFaceNode[0])
-        ||(topFaceNode[0]==leftFaceNode[1])
-        ||(topFaceNode[0]==leftFaceNode[2])
-        ||(topFaceNode[0]==leftFaceNode[3]))
-        &&((topFaceNode[0]==bottomFaceNode[0])
-        ||(topFaceNode[0]==bottomFaceNode[1])
-        ||(topFaceNode[0]==bottomFaceNode[2])
-        ||(topFaceNode[0]==bottomFaceNode[3])))
-        {
-        node[6] = topFaceNode[0];
-        }
-      else 
-        {
-        node[7] = topFaceNode[0];
-        }
-
-      if (((topFaceNode[1]==rightFaceNode[0])
-        ||(topFaceNode[1]==rightFaceNode[1])
-        ||(topFaceNode[1]==rightFaceNode[2])
-        ||(topFaceNode[1]==rightFaceNode[3]))
-        &&((topFaceNode[1]==frontFaceNode[0])
-        ||(topFaceNode[1]==frontFaceNode[1])
-        ||(topFaceNode[1]==frontFaceNode[2])
-        ||(topFaceNode[1]==frontFaceNode[3])))
-        {
-        node[4] = topFaceNode[1];
-        }
-      else if (((topFaceNode[1]==rightFaceNode[0])
-        ||(topFaceNode[1]==rightFaceNode[1])
-        ||(topFaceNode[1]==rightFaceNode[2])
-        ||(topFaceNode[1]==rightFaceNode[3]))
-        &&((topFaceNode[1]==bottomFaceNode[0])
-        ||(topFaceNode[1]==bottomFaceNode[1])
-        ||(topFaceNode[1]==bottomFaceNode[2])
-        ||(topFaceNode[1]==bottomFaceNode[3])))
-        {
-        node[5] = topFaceNode[1];
-        }
-      else if (((topFaceNode[1]==leftFaceNode[0])
-        ||(topFaceNode[1]==leftFaceNode[1])
-        ||(topFaceNode[1]==leftFaceNode[2])
-        ||(topFaceNode[1]==leftFaceNode[3]))
-        &&((topFaceNode[1]==bottomFaceNode[0])
-        ||(topFaceNode[1]==bottomFaceNode[1])
-        ||(topFaceNode[1]==bottomFaceNode[2])
-        ||(topFaceNode[1]==bottomFaceNode[3])))
-        {
-        node[6] = topFaceNode[1];
-        }
-      else
-        {
-        node[7] = topFaceNode[1];
-        }
-
-      if (((topFaceNode[2]==rightFaceNode[0])
-        ||(topFaceNode[2]==rightFaceNode[1])
-        ||(topFaceNode[2]==rightFaceNode[2])
-        ||(topFaceNode[2]==rightFaceNode[3]))
-        &&((topFaceNode[2]==frontFaceNode[0])
-        ||(topFaceNode[2]==frontFaceNode[1])
-        ||(topFaceNode[2]==frontFaceNode[2])
-        ||(topFaceNode[2]==frontFaceNode[3])))
-        {
-        node[4] = topFaceNode[2];
-        }
-      else if (((topFaceNode[2]==rightFaceNode[0])
-        ||(topFaceNode[2]==rightFaceNode[1])
-        ||(topFaceNode[2]==rightFaceNode[2])
-        ||(topFaceNode[2]==rightFaceNode[3]))
-        &&((topFaceNode[2]==bottomFaceNode[0])
-        ||(topFaceNode[2]==bottomFaceNode[1])
-        ||(topFaceNode[2]==bottomFaceNode[2])
-        ||(topFaceNode[2]==bottomFaceNode[3])))
-        {
-        node[5] = topFaceNode[2];
-        }
-      else if (((topFaceNode[2]==leftFaceNode[0])
-        ||(topFaceNode[2]==leftFaceNode[1])
-        ||(topFaceNode[2]==leftFaceNode[2])
-        ||(topFaceNode[2]==leftFaceNode[3]))
-        &&((topFaceNode[2]==bottomFaceNode[0])
-        ||(topFaceNode[2]==bottomFaceNode[1])
-        ||(topFaceNode[2]==bottomFaceNode[2])
-        ||(topFaceNode[2]==bottomFaceNode[3])))
-        {
-        node[6] = topFaceNode[2];
-        }
-      else
-        {
-        node[7] = topFaceNode[2];
-        }
-
-      if (((topFaceNode[3]==rightFaceNode[0])
-        ||(topFaceNode[3]==rightFaceNode[1])
-        ||(topFaceNode[3]==rightFaceNode[2])
-        ||(topFaceNode[3]==rightFaceNode[3]))
-        &&((topFaceNode[3]==frontFaceNode[0])
-        ||(topFaceNode[3]==frontFaceNode[1])
-        ||(topFaceNode[3]==frontFaceNode[2])
-        ||(topFaceNode[3]==frontFaceNode[3])))
-        {
-        node[4] = topFaceNode[3];
-        }
-      else if (((topFaceNode[3]==rightFaceNode[0])
-        ||(topFaceNode[3]==rightFaceNode[1])
-        ||(topFaceNode[3]==rightFaceNode[2])
-        ||(topFaceNode[3]==rightFaceNode[3])) 
-        &&((topFaceNode[3]==bottomFaceNode[0])
-        ||(topFaceNode[3]==bottomFaceNode[1])
-        ||(topFaceNode[3]==bottomFaceNode[2])
-        ||(topFaceNode[3]==bottomFaceNode[3])))
-        {
-        node[5] = topFaceNode[3];
-        }
-      else if (((topFaceNode[3]==leftFaceNode[0])
-        ||(topFaceNode[3]==leftFaceNode[1])
-        ||(topFaceNode[3]==leftFaceNode[2])
-        ||(topFaceNode[3]==leftFaceNode[3]))
-        &&((topFaceNode[3]==bottomFaceNode[0])
-        ||(topFaceNode[3]==bottomFaceNode[1])
-        ||(topFaceNode[3]==bottomFaceNode[2])
-        ||(topFaceNode[3]==bottomFaceNode[3])))
-        {
-        node[6] = topFaceNode[3];
-        }
-      else
-        {
-        node[7] = topFaceNode[3];
-        }
-
-      for (int j = 0; j < 8; j++)
-        {
-        this->AHexahedron->GetPointIds()->SetId( j, node[j]);
-        }
-
-      if (CellParentFlags.at(i) != true )
-        {
-        this->Mesh->InsertNextCell(this->AHexahedron->GetCellType(), 
-          this->AHexahedron->GetPointIds());
-        }
-      }
-    else if (CellTypes->GetValue(i) == 5)
-      {
-      //*************************************
-      //   Pyramid Cell Type
-      //*************************************
-      if (this->FaceTypes->GetValue(face[0]) == 4)
-        {
-        if (spinFace[0] > 0)
-          {
-          for (int j = 0; j < 4; j++)
-            {
-            node[j] = (int)this->FaceNodes->GetComponent(face[0], j);
-            }
-          }
-        else
-          {
-          for (int j = 0; j < 4; j++)
-            {
-            node[3-j] = (int)this->FaceNodes->GetComponent(face[0], j);
-            }
-          }
-        for (int j = 0; j < 3; j++)
-          {
-          tempNode[j] = (int)this->FaceNodes->GetComponent(face[1], j);
-          }
-        }
-      else if (this->FaceTypes->GetValue(face[1]) == 4)
-        {
-        if (spinFace[1] > 0)
-          {
-          for (int j = 0; j < 4; j++)
-            {
-            node[j] = (int)this->FaceNodes->GetComponent(face[1], j);
-            }
-          }
-        else
-          {
-          for (int j = 0; j < 4; j++)
-            {
-            node[3-j] = (int)this->FaceNodes->GetComponent(face[1], j);
-            }
-          }
-        for (int j = 0; j < 3; j++)
-          {
-          tempNode[j] = (int)this->FaceNodes->GetComponent(face[0], j);
-          }
-        }
-      else if (this->FaceTypes->GetValue(face[2]) == 4)
-        {
-        if (spinFace[2] > 0)
-          {
-          for (int j = 0; j < 4; j++)
-            {
-            node[j] = (int)this->FaceNodes->GetComponent(face[2], j);
-            }
-          }
-        else
-          {
-          for (int j = 0; j < 4; j++)
-            {
-            node[3-j] = (int)this->FaceNodes->GetComponent(face[2], j);
-            }
-          }
-        for (int j = 0; j < 3; j++)
-          {
-          tempNode[j] = (int)this->FaceNodes->GetComponent(face[0], j);
-          }
-        }
-      else if (this->FaceTypes->GetValue(face[3]) == 4)
-        {
-        if (spinFace[3] > 0)
-          {
-          for (int j = 0; j < 4; j++)
-            {
-            node[j] = (int)this->FaceNodes->GetComponent(face[3], j);
-            }
-          }
-        else
-          {
-          for (int j = 0; j < 4; j++)
-            {
-            node[3-j] = (int)this->FaceNodes->GetComponent(face[3], j);
-            }
-          }
-        for (int j = 0; j < 3; j++)
-          {
-          tempNode[j] = (int)this->FaceNodes->GetComponent(face[0], j);
-          }
-        }
-      else
-        {
-        if (spinFace[4] > 0)
-          {
-          for (int j = 0; j < 4; j++)
-            {
-            node[j] = (int)this->FaceNodes->GetComponent(face[4], j);
-            }
-          }
-        else
-          {
-          for (int j = 0; j < 4; j++)
-            {
-            node[3-j] = (int)this->FaceNodes->GetComponent(face[4], j);
-            }
-          }
-        for (int j = 0; j < 3; j++)
-          {
-          tempNode[j] = (int)this->FaceNodes->GetComponent(face[0], j);
-          }
-        }
-
-      if ((tempNode[0]!=node[0])&&(tempNode[0]!=node[1])
-        &&(tempNode[0]!=node[2])&&(tempNode[0]!=node[3]))
-        {
-        node[4] = tempNode[0];
-        }
-      else if ((tempNode[1]!=node[0])&&(tempNode[1]!=node[1])
-        &&(tempNode[1]!=node[2])&&(tempNode[1]!=node[3]))
-        {
-        node[4] = tempNode[1];
-        }
-      else
-        {
-        node[4] = tempNode[2];
-        }
-
-      for (int j = 0; j < 5; j++)
-        {
-        this->APyramid->GetPointIds()->SetId( j, node[j]);
-        }
-
-      if (this->CellParentFlags.at(i) != true )
-        {
-        this->Mesh->InsertNextCell(this->APyramid->GetCellType(),
-          this->APyramid->GetPointIds());
-        }
-
-      }
-    else if (this->CellTypes->GetValue(i) == 6)
-      {
-      //*************************************
-      //   Wedge Cell Type
-      //*************************************
-      if (this->FaceTypes->GetValue(face[0]) == 4)
-        {
-        if (spinFace[0] > 0)
-          {
-          node[0] = (int)this->FaceNodes->GetComponent(face[0], 0);
-          node[1] = (int)this->FaceNodes->GetComponent(face[0], 1);
-          node[4] = (int)this->FaceNodes->GetComponent(face[0], 2);
-          node[3] = (int)this->FaceNodes->GetComponent(face[0], 3);
-          }
-        else
-          {
-          node[3] = (int)this->FaceNodes->GetComponent(face[0], 0);
-          node[4] = (int)this->FaceNodes->GetComponent(face[0], 1);
-          node[1] = (int)this->FaceNodes->GetComponent(face[0], 2);
-          node[0] = (int)this->FaceNodes->GetComponent(face[0], 3);
-          }
-        }
-      else if (this->FaceTypes->GetValue(face[1]) == 4)
-        {
-        if (spinFace[1] > 0)
-          {
-          node[0] = (int)this->FaceNodes->GetComponent(face[1], 0);
-          node[1] = (int)this->FaceNodes->GetComponent(face[1], 1);
-          node[4] = (int)this->FaceNodes->GetComponent(face[1], 2);
-          node[3] = (int)this->FaceNodes->GetComponent(face[1], 3);
-          }
-        else
-          {
-          node[3] = (int)this->FaceNodes->GetComponent(face[1], 0);
-          node[4] = (int)this->FaceNodes->GetComponent(face[1], 1);
-          node[1] = (int)this->FaceNodes->GetComponent(face[1], 2);
-          node[0] = (int)this->FaceNodes->GetComponent(face[1], 3);
-          }
-        }
-      else if  (this->FaceTypes->GetValue(face[2]) == 4)
-        {
-        if (spinFace[2] > 0) 
-          {
-          node[0] = (int)this->FaceNodes->GetComponent(face[2], 0);
-          node[1] = (int)this->FaceNodes->GetComponent(face[2], 1);
-          node[4] = (int)this->FaceNodes->GetComponent(face[2], 2);
-          node[3] = (int)this->FaceNodes->GetComponent(face[2], 3);
-          }
-        else
-          {
-          node[3] = (int)this->FaceNodes->GetComponent(face[2], 0);
-          node[4] = (int)this->FaceNodes->GetComponent(face[2], 1);
-          node[1] = (int)this->FaceNodes->GetComponent(face[2], 2);
-          node[0] = (int)this->FaceNodes->GetComponent(face[2], 3);
-          }
-        }
-      else if (this->FaceTypes->GetValue(face[3]) == 4)
-        {
-        if (spinFace[3] > 0)
-          {
-          node[0] = (int)this->FaceNodes->GetComponent(face[3], 0);
-          node[1] = (int)this->FaceNodes->GetComponent(face[3], 1);
-          node[4] = (int)this->FaceNodes->GetComponent(face[3], 2);
-          node[3] = (int)this->FaceNodes->GetComponent(face[3], 3);
-          }
-        else
-          {
-          node[3] = (int)this->FaceNodes->GetComponent(face[3], 0);
-          node[4] = (int)this->FaceNodes->GetComponent(face[3], 1);
-          node[1] = (int)this->FaceNodes->GetComponent(face[3], 2);
-          node[0] = (int)this->FaceNodes->GetComponent(face[3], 3);
-          }
-        }
-      else
-        {
-        if (spinFace[4] > 0)
-          {
-          node[0] = (int)this->FaceNodes->GetComponent(face[4], 0);
-          node[1] = (int)this->FaceNodes->GetComponent(face[4], 1);
-          node[4] = (int)this->FaceNodes->GetComponent(face[4], 2);
-          node[3] = (int)this->FaceNodes->GetComponent(face[4], 3);
-          }
-        else
-          {
-          node[3] = (int)this->FaceNodes->GetComponent(face[4], 0);
-          node[4] = (int)this->FaceNodes->GetComponent(face[4], 1);
-          node[1] = (int)this->FaceNodes->GetComponent(face[4], 2);
-          node[0] = (int)this->FaceNodes->GetComponent(face[4], 3);
-          }
-        }
-
-      int trf[2];
-      int index = 0;
-      if ( this->FaceTypes->GetValue(face[0]) == 3)
-        {
-        trf[index] = face[0];
-        index++;
-        }
-      if ( this->FaceTypes->GetValue(face[1]) == 3)
-        {
-        trf[index] = face[1];
-        index++;
-        }
-      if ( this->FaceTypes->GetValue(face[2]) == 3)
-        {
-        trf[index] = face[2];
-        index++;
-        }
-      if ( this->FaceTypes->GetValue(face[3]) == 3)
-        {
-        trf[index] = face[3];
-        index++;
-        }
-      if ( this->FaceTypes->GetValue(face[4]) == 3)
-        {
-        trf[index] = face[4];
-        index++;
-        }
-
-      int cnt = 0;
-      for (int j = 0; j < 2; j++)
-        {
-        for (int k = 0; k < 3; k++)
-          {
-          tempNode[cnt] = (int)this->FaceNodes->GetComponent(trf[j], k);
-          cnt++;
-          }
-        }
-
-      if (((tempNode[0]!=node[0])&&(tempNode[0]!=node[1])
-        &&(tempNode[0]!=node[4])&&(tempNode[0]!=node[3]))
-        && ((tempNode[1]==node[0])||(tempNode[1]==node[1])) )
-        {
-        node[2] = tempNode[0];
-        }
-      else if (((tempNode[0]!=node[0])&&(tempNode[0]!=node[1])
-        &&(tempNode[0]!=node[4])&&(tempNode[0]!=node[3]))
-        && ((tempNode[1]==node[4])||(tempNode[1]==node[3])))
-        {
-        node[5] = tempNode[0];
-        }
-
-      if (((tempNode[1]!=node[0])&&(tempNode[1]!=node[1])
-        &&(tempNode[1]!=node[4])&&(tempNode[1]!=node[3]))
-        && ((tempNode[0]==node[0])||(tempNode[0]==node[1])))
-        {
-        node[2] = tempNode[1];
-        }
-      else if (((tempNode[1]!=node[0])&&(tempNode[1]!=node[1])
-        &&(tempNode[1]!=node[4])&&(tempNode[1]!=node[3]))
-        && ((tempNode[0]==node[4])||(tempNode[0]==node[3])))
-        {
-        node[5] = tempNode[1];
-        }
-
-      if (((tempNode[2]!=node[0])&&(tempNode[2]!=node[1])
-        &&(tempNode[2]!=node[4])&&(tempNode[2]!=node[3])) 
-        && ((tempNode[1]==node[0])||(tempNode[1]==node[1]))) 
-        {
-        node[2] = tempNode[2];
-        }
-      else if (((tempNode[2]!=node[0])&&(tempNode[2]!=node[1])
-        &&(tempNode[2]!=node[4])&&(tempNode[2]!=node[3]))
-        && ((tempNode[1]==node[4])||(tempNode[1]==node[3])))
-        {
-        node[5] = tempNode[2];
-        }
-
-      if (((tempNode[3]!=node[0])&&(tempNode[3]!=node[1])
-        &&(tempNode[3]!=node[4])&&(tempNode[3]!=node[3]))
-        && ((tempNode[4]==node[0])||(tempNode[4]==node[1])))
-        {
-        node[2] = tempNode[3];
-        }
-      else if (((tempNode[3]!=node[0])&&(tempNode[3]!=node[1])
-        &&(tempNode[3]!=node[4])&&(tempNode[3]!=node[3]))
-        && ((tempNode[4]==node[4])||(tempNode[4]==node[3])))
-        {
-        node[5] = tempNode[3];
-        }
-
-      if (((tempNode[4]!=node[0])&&(tempNode[4]!=node[1])
-        &&(tempNode[4]!=node[4])&&(tempNode[4]!=node[3])) 
-        && ((tempNode[3]==node[0])||(tempNode[3]==node[1])))
-        {
-        node[2] = tempNode[4];
-        }
-      else if (((tempNode[4]!=node[0])&&(tempNode[4]!=node[1])
-        &&(tempNode[4]!=node[4])&&(tempNode[4]!=node[3])) 
-        && ((tempNode[3]==node[4])||(tempNode[3]==node[3])))
-        {
-        node[5] = tempNode[4];
-        }
-
-      if (((tempNode[5]!=node[0])&&(tempNode[5]!=node[1])
-        &&(tempNode[5]!=node[4])&&(tempNode[5]!=node[3]))
-        && ((tempNode[4]==node[0])||(tempNode[4]==node[1])))
-        {
-        node[2] = tempNode[5];
-        }
-      else if (((tempNode[5]!=node[0])&&(tempNode[5]!=node[1])
-        &&(tempNode[5]!=node[4])&&(tempNode[5]!=node[3]))
-        && ((tempNode[4]==node[4])||(tempNode[4]==node[3])))
-        {
-        node[5] = tempNode[5];
-        }
-      for (int j = 0; j < 6; j++)
-        {
-        this->AWedge->GetPointIds()->SetId( j, node[j]);
-        }
-
-      if (this->CellParentFlags.at(i) != true )
-        {
-        this->Mesh->InsertNextCell(this->AWedge->GetCellType(), 
-          this->AWedge->GetPointIds());
-        }
-      }
-    }
-
-  CellTypes->Delete();
-  CellFaces.clear();
-  CellParentFlags.clear();
-  FaceTypes->Delete();
-  FaceNodes->Delete();
-  FaceCells->Delete();
-}
-
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::LoadCellParentFlags(void)
-{
-}
-
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::LoadCellNumberOfFaces(void)
-{
-}
-
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::LoadCellFaces(void)
-{
-  // Make an index array to determine where each cell is in the cell 
-  // face array and ...
-  // Make a temporary number of faces/cell array to keep track of 
-  // where to put the faces within each block.
-  for (int i = 1; i <= this->NumberOfFaces; i++)
-    {
-    int c0 = (int)this->FaceCells->GetComponent(i,0);
-    int c1 = (int)this->FaceCells->GetComponent(i,1);
-    if ( c0 != 0)
-      {
-      vtkstd::map< int, std::vector< int > >::iterator cellMap;
-      cellMap = CellFaces.find( c0 );
-      if ( cellMap == CellFaces.end() )
-        {
-        std::vector< int > temp;
-        temp.push_back( i );
-        CellFaces[ c0 ] = temp;
-        }
-      else
-        {
-        cellMap->second.push_back( i );
-        }
-      }
-
-    if ( c1 != 0 )
-      {
-      vtkstd::map< int, std::vector< int > >::iterator cellMap;
-      cellMap = CellFaces.find( c1 );
-      if ( cellMap == CellFaces.end() )
-        {
-        std::vector< int > temp;
-        temp.push_back( i );
-        CellFaces[ c1 ] = temp;
-        }
-      else
-        {
-        cellMap->second.push_back( i );
-        }
-      }
-    }
-}
-
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::RemoveExtraFaces(void)
-{
-  int badKids[1000000];
-  int numberOfBadKids = 0;
-  int actualFaces[7];
-
-  actualFaces[0] = 0;  // Mixed 
-  actualFaces[1] = 3;  // triangular 
-  actualFaces[2] = 4;  // tetrahedral
-  actualFaces[3] = 4;  // quadrilateral
-  actualFaces[4] = 6;  // hexahedral
-  actualFaces[5] = 5;  // pyramid
-  actualFaces[6] = 5;  // wedge
-
-  for (int i = 1; i <= this->NumberOfCells; i++)
-    {
-    numberOfBadKids = 0;
-    int cellType = this->CellTypes->GetValue(i);
-    int numberOfFaces = CellFaces[ i ].size();
-
-    if ( numberOfFaces > actualFaces[cellType])
-      {
-      for (int j = 0; j < numberOfFaces; j++)
-        {
-        int face = this->CellFaces[ i ].at( j );
-        int parentFlag = this->FaceParentFlags[ face ];
-        int ifChildFlag = InterfaceFaceChildFlags.at( face );
-        vtkstd::set< int >::iterator ncgChildIter;
-        ncgChildIter = this->NCGFaceChildFlags.find( face );
-        int ncgFaceChildFlag = 0;
-        if ( ncgChildIter == NCGFaceChildFlags.end() )
-          {
-          ncgFaceChildFlag = 0;
-          }
-        else
-          {
-          ncgFaceChildFlag = 1;
-          }
-
-        if (parentFlag == 1)
-          {
-          int startKid = 
-            this->FaceTreesKidsIndex->GetValue(
-            this->FaceTreeParentTable->GetValue(face));
-          int endKid = this->FaceTreesKidsIndex->GetValue(
-            this->FaceTreeParentTable->GetValue(face))
-            + this->FaceTreesNumberOfKids->GetValue(
-            this->FaceTreeParentTable->GetValue(face));
-          for (int k = startKid; k < endKid; k++)
-            {
-            badKids[numberOfBadKids] = this->FaceTreesKids->GetValue(k);
-            numberOfBadKids++;
-            }
-          }
-
-        if ( ifChildFlag == 1)
-          {
-          badKids[numberOfBadKids] = face;
-          numberOfBadKids++;
-          }
-
-        if (ncgFaceChildFlag == 1)
-          {
-          badKids[numberOfBadKids] = face;
-          numberOfBadKids++;
-          }
-        }
-
-      if ( (numberOfBadKids + actualFaces[cellType]) != numberOfFaces)
-        {
-        cout << " Problem in Face Reduction !!!! " << endl;
-        cout << " Cell = " << i << endl;
-        cout << " Problem - Number of Faces = " 
-          << numberOfFaces << ", Actual Faces " 
-          << actualFaces[CellTypes->GetValue(i)] 
-          << ", Cell Type = " << CellTypes->GetValue(i) << endl;
-        }
-
-      std::vector< int >::iterator faceIter;
-      faceIter =  CellFaces[ i ].begin();
-      for (int j = 0; j < (int)CellFaces[ i ].size(); )
-        {
-        int bk = 0;
-        int face = CellFaces[ i ].at( j );
-        for (int m = 0; m < numberOfBadKids; m++)
-          {
-          if ( badKids[m] == face)
-            {
-            bk = 1;
-            //remove this face from the vector
-            faceIter = CellFaces[ i ].erase( faceIter );
-            break;
-            }
-          }
-
-        if (bk == 0)
-          {
-          faceIter++;
-          j++;
-          }
-        }
-      }
-    else
-      {
-      }
-    }
-  this->FaceTreesNumberOfKids->Delete();
-  this->FaceTreesKidsIndex->Delete();
-  this->FaceTreeParentTable->Delete();
-  this->FaceTreesKids->Delete();
-  this->InterfaceFaceChildFlags.clear();
-  this->FaceParentFlags.clear();
-  this->NCGFaceChildFlags.clear();
-}
-
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::ParseDataFile(void)
-{
-  this->DataFileStream->seekg(0, ios::end);
-  this->DataFileBufferLength = this->DataFileStream->tellg();
-  this->DataFileStream->seekg(0, ios::beg);
-  this->DataFileBuffer = new char[this->DataFileBufferLength];
-  this->DataFileStream->read(this->DataFileBuffer, this->DataFileBufferLength);
-
-  int bufptr = 0;
-  while ( bufptr < this->DataFileBufferLength)
-    {
-    if ( this->DataFileBuffer[bufptr] == '(')
-      {
-      int ix = this->GetDataIndex(bufptr);
-      bufptr = this->ExecuteDataTask(ix, bufptr);
-      }
-    bufptr++;
-    }
-  delete [] DataFileBuffer;
-  return;
-}
-
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::InitializeVariableNames ( void )
-{
-  this->VariableNames[1] = "PRESSURE";
-  this->VariableNames[2] = "MOMENTUM";
-  this->VariableNames[3] = "TEMPERATURE";
-  this->VariableNames[4] = "ENTHALPY";
-  this->VariableNames[5] = "TKE";
-  this->VariableNames[6] = "TED";
-  this->VariableNames[7] = "SPECIES";
-  this->VariableNames[8] = "G";
-  this->VariableNames[9] = "WSWIRL";
-  this->VariableNames[10] = "DPMS_MASS";
-  this->VariableNames[11] = "DPMS_MOM";
-  this->VariableNames[12] = "DPMS_ENERGY";
-  this->VariableNames[13] = "DPMS_SPECIES";
-  this->VariableNames[14] = "DVOLUME_DT";
-  this->VariableNames[15] = "BODY_FORCES";
-  this->VariableNames[16] = "FMEAN";
-  this->VariableNames[17] = "FVAR";
-  this->VariableNames[18] = "MASS_FLUX";
-  this->VariableNames[19] = "WALL_SHEAR";
-  this->VariableNames[20] = "BOUNDARY_HEAT_FLUX";
-  this->VariableNames[21] = "BOUNDARY_RAD_HEAT_FLUX";
-  this->VariableNames[22] = "OLD_PRESSURE";
-  this->VariableNames[23] = "POLLUT";
-  this->VariableNames[24] = "DPMS_P1_S";
-  this->VariableNames[25] = "DPMS_P1_AP";
-  this->VariableNames[26] = "WALL_GAS_TEMPERATURE";
-  this->VariableNames[27] = "DPMS_P1_DIFF";
-  this->VariableNames[28] = "DR_SURF";
-  this->VariableNames[29] = "W_M1";
-  this->VariableNames[30] = "W_M2";
-  this->VariableNames[31] = "DPMS_BURNOUT";
-  this->VariableNames[32] = "DPMS_CONCENTRATION";
-  this->VariableNames[33] = "PDF_MW";
-  this->VariableNames[34] = "DPMS_WSWIRL";
-  this->VariableNames[35] = "YPLUS";
-  this->VariableNames[36] = "YPLUS_UTAU";
-  this->VariableNames[37] = "WALL_SHEAR_SWIRL";
-  this->VariableNames[38] = "WALL_T_INNER";
-  this->VariableNames[39] = "POLLUT0";
-  this->VariableNames[40] = "POLLUT1";
-  this->VariableNames[41] = "WALL_G_INNER";
-  this->VariableNames[42] = "PREMIXC";
-  this->VariableNames[43] = "PREMIXC_T";
-  this->VariableNames[44] = "PREMIXC_RATE";
-  this->VariableNames[45] = "POLLUT2";
-  this->VariableNames[46] = "POLLUT3";
-  this->VariableNames[47] = "MASS_FLUX_M1";
-  this->VariableNames[48] = "MASS_FLUX_M2";
-  this->VariableNames[49] = "GRID_FLUX";
-  this->VariableNames[50] = "DO_I";
-  this->VariableNames[51] = "DO_RECON_I";
-  this->VariableNames[52] = "DO_ENERGY_SOURCE";
-  this->VariableNames[53] = "DO_IRRAD";
-  this->VariableNames[54] = "DO_QMINUS";
-  this->VariableNames[55] = "DO_IRRAD_OLD";
-  this->VariableNames[56] = "DO_IWX";
-  this->VariableNames[57] = "DO_IWY";
-  this->VariableNames[58] = "DO_IWZ";
-  this->VariableNames[59] = "MACH";
-  this->VariableNames[60] = "SLIP_U";
-  this->VariableNames[61] = "SLIP_V";
-  this->VariableNames[62] = "SLIP_W";
-  this->VariableNames[63] = "SDR";
-  this->VariableNames[64] = "SDR_M1";
-  this->VariableNames[65] = "SDR_M2";
-  this->VariableNames[66] = "POLLUT4";
-  this->VariableNames[67] = "GRANULAR_TEMPERATURE";
-  this->VariableNames[68] = "GRANULAR_TEMPERATURE_M1";
-  this->VariableNames[69] = "GRANULAR_TEMPERATURE_M2";
-  this->VariableNames[70] = "VFLUX";
-  this->VariableNames[71] = "V71";
-  this->VariableNames[72] = "V72";
-  this->VariableNames[73] = "V73";
-  this->VariableNames[74] = "V74";
-  this->VariableNames[75] = "V75";
-  this->VariableNames[76] = "V76";
-  this->VariableNames[77] = "V77";
-  this->VariableNames[78] = "V78";
-  this->VariableNames[79] = "V79";
-  this->VariableNames[80] = "VFLUX_M1";
-  this->VariableNames[81] = "V81";
-  this->VariableNames[82] = "V82";
-  this->VariableNames[83] = "V83";
-  this->VariableNames[84] = "V84";
-  this->VariableNames[85] = "V85";
-  this->VariableNames[86] = "V86";
-  this->VariableNames[87] = "V87";
-  this->VariableNames[88] = "V88";
-  this->VariableNames[89] = "V89";
-  this->VariableNames[90] = "VFLUX_M2";
-  this->VariableNames[91] = "DO_QNET";
-  this->VariableNames[92] = "DO_QTRANS";
-  this->VariableNames[93] = "DO_QREFL";
-  this->VariableNames[94] = "DO_QABS";
-  this->VariableNames[95] = "POLLUT5";
-  this->VariableNames[96] = "WALL_DIST";
-  this->VariableNames[97] = "SOLAR_SOURCE";
-  this->VariableNames[98] = "SOLAR_QREFL";
-  this->VariableNames[99] = "SOLAR_QABS";
-  this->VariableNames[100] = "SOLAR_QTRANS";
-  this->VariableNames[101] = "DENSITY";
-  this->VariableNames[102] = "MU_LAM";
-  this->VariableNames[103] = "MU_TURB";
-  this->VariableNames[104] = "CP";
-  this->VariableNames[105] = "KTC";
-  this->VariableNames[106] = "VGS_DTRM";
-  this->VariableNames[107] = "VGF_DTRM";
-  this->VariableNames[108] = "RSTRESS";
-  this->VariableNames[109] = "THREAD_RAD_FLUX";
-  this->VariableNames[110] = "SPE_Q";
-  this->VariableNames[111] = "X_VELOCITY";
-  this->VariableNames[112] = "Y_VELOCITY";
-  this->VariableNames[113] = "Z_VELOCITY";
-  this->VariableNames[114] = "WALL_VELOCITY";
-  this->VariableNames[115] = "X_VELOCITY_M1";
-  this->VariableNames[116] = "Y_VELOCITY_M1";
-  this->VariableNames[117] = "Z_VELOCITY_M1";
-  this->VariableNames[118] = "PHASE_MASS";
-  this->VariableNames[119] = "TKE_M1";
-  this->VariableNames[120] = "TED_M1";
-  this->VariableNames[121] = "POLLUT6";
-  this->VariableNames[122] = "X_VELOCITY_M2";
-  this->VariableNames[123] = "Y_VELOCITY_M2";
-  this->VariableNames[124] = "Z_VELOCITY_M2";
-  this->VariableNames[125] = "V125";
-  this->VariableNames[126] = "TKE_M2";
-  this->VariableNames[127] = "TED_M2";
-  this->VariableNames[128] = "RUU";
-  this->VariableNames[129] = "RVV";
-  this->VariableNames[130] = "RWW";
-  this->VariableNames[131] = "RUV";
-  this->VariableNames[132] = "RVW";
-  this->VariableNames[133] = "RUW";
-  this->VariableNames[134] = "DPMS_EROSION";
-  this->VariableNames[135] = "DPMS_ACCRETION";
-  this->VariableNames[136] = "FMEAN2";
-  this->VariableNames[137] = "FVAR2";
-  this->VariableNames[138] = "ENTHALPY_M1";
-  this->VariableNames[139] = "ENTHALPY_M2";
-  this->VariableNames[140] = "FMEAN_M1";
-  this->VariableNames[141] = "FMEAN_M2";
-  this->VariableNames[142] = "FVAR_M1";
-  this->VariableNames[143] = "FVAR_M2";
-  this->VariableNames[144] = "FMEAN2_M1";
-  this->VariableNames[145] = "FMEAN2_M2";
-  this->VariableNames[146] = "FVAR2_M1";
-  this->VariableNames[147] = "FVAR2_M2";
-  this->VariableNames[148] = "PREMIXC_M1";
-  this->VariableNames[149] = "PREMIXC_M2";
-  this->VariableNames[150] = "VOF";
-  this->VariableNames[151] = "VOF_1";
-  this->VariableNames[152] = "VOF_2";
-  this->VariableNames[153] = "VOF_3";
-  this->VariableNames[154] = "VOF_4";
-  this->VariableNames[155] = "V155";
-  this->VariableNames[156] = "V156";
-  this->VariableNames[157] = "V157";
-  this->VariableNames[158] = "V158";
-  this->VariableNames[159] = "V159";
-  this->VariableNames[160] = "VOF_M1";
-  this->VariableNames[161] = "VOF_1_M1";
-  this->VariableNames[162] = "VOF_2_M1";
-  this->VariableNames[163] = "VOF_3_M1";
-  this->VariableNames[164] = "VOF_4_M1";
-  this->VariableNames[165] = "V165";
-  this->VariableNames[166] = "V166";
-  this->VariableNames[167] = "V167";
-  this->VariableNames[168] = "V168";
-  this->VariableNames[169] = "V169";
-  this->VariableNames[170] = "VOF_M2";
-  this->VariableNames[171] = "VOF_1_M2";
-  this->VariableNames[172] = "VOF_2_M2";
-  this->VariableNames[173] = "VOF_3_M2";
-  this->VariableNames[174] = "VOF_4_M2";
-  this->VariableNames[175] = "V175";
-  this->VariableNames[176] = "V176";
-  this->VariableNames[177] = "V177";
-  this->VariableNames[178] = "V178";
-  this->VariableNames[179] = "V179";
-  this->VariableNames[180] = "VOLUME_M2";
-  this->VariableNames[181] = "WALL_GRID_VELOCITY";
-  this->VariableNames[182] = "V182";
-  this->VariableNames[183] = "V183";
-  this->VariableNames[184] = "V184";
-  this->VariableNames[185] = "V185";
-  this->VariableNames[186] = "V186";
-  this->VariableNames[187] = "V187";
-  this->VariableNames[188] = "V188";
-  this->VariableNames[189] = "V189";
-  this->VariableNames[190] = "SV_T_AUX";
-  this->VariableNames[191] = "SV_T_AP_AUX";
-  this->VariableNames[192] = "TOTAL_PRESSURE";
-  this->VariableNames[193] = "TOTAL_TEMPERATURE";
-  this->VariableNames[194] = "NRBC_DC";
-  this->VariableNames[195] = "DP_TMFR";
-  this->VariableNames[196] = "V196";
-  this->VariableNames[197] = "V197";
-  this->VariableNames[198] = "V198";
-  this->VariableNames[199] = "V199";
-  this->VariableNames[200] = "SV_Y_0";
-  this->VariableNames[201] = "SV_Y_1";
-  this->VariableNames[202] = "SV_Y_2";
-  this->VariableNames[203] = "SV_Y_3";
-  this->VariableNames[204] = "SV_Y_4";
-  this->VariableNames[205] = "SV_Y_5";
-  this->VariableNames[206] = "SV_Y_6";
-  this->VariableNames[207] = "SV_Y_7";
-  this->VariableNames[208] = "SV_Y_8";
-  this->VariableNames[209] = "SV_Y_9";
-  this->VariableNames[210] = "SV_Y_10";
-  this->VariableNames[211] = "SV_Y_11";
-  this->VariableNames[212] = "SV_Y_12";
-  this->VariableNames[213] = "SV_Y_13";
-  this->VariableNames[214] = "SV_Y_14";
-  this->VariableNames[215] = "SV_Y_15";
-  this->VariableNames[216] = "SV_Y_16";
-  this->VariableNames[217] = "SV_Y_17";
-  this->VariableNames[218] = "SV_Y_18";
-  this->VariableNames[219] = "SV_Y_19";
-  this->VariableNames[220] = "SV_Y_20";
-  this->VariableNames[221] = "SV_Y_21";
-  this->VariableNames[222] = "SV_Y_22";
-  this->VariableNames[223] = "SV_Y_23";
-  this->VariableNames[224] = "SV_Y_24";
-  this->VariableNames[225] = "SV_Y_25";
-  this->VariableNames[226] = "SV_Y_26";
-  this->VariableNames[227] = "SV_Y_27";
-  this->VariableNames[228] = "SV_Y_28";
-  this->VariableNames[229] = "SV_Y_29";
-  this->VariableNames[230] = "SV_Y_30";
-  this->VariableNames[231] = "SV_Y_31";
-  this->VariableNames[232] = "SV_Y_32";
-  this->VariableNames[233] = "SV_Y_33";
-  this->VariableNames[234] = "SV_Y_34";
-  this->VariableNames[235] = "SV_Y_35";
-  this->VariableNames[236] = "SV_Y_36";
-  this->VariableNames[237] = "SV_Y_37";
-  this->VariableNames[238] = "SV_Y_38";
-  this->VariableNames[239] = "SV_Y_39";
-  this->VariableNames[240] = "SV_Y_40";
-  this->VariableNames[241] = "SV_Y_41";
-  this->VariableNames[242] = "SV_Y_42";
-  this->VariableNames[243] = "SV_Y_43";
-  this->VariableNames[244] = "SV_Y_44";
-  this->VariableNames[245] = "SV_Y_45";
-  this->VariableNames[246] = "SV_Y_46";
-  this->VariableNames[247] = "SV_Y_47";
-  this->VariableNames[248] = "SV_Y_48";
-  this->VariableNames[249] = "SV_Y_49";
-  this->VariableNames[250] = "SV_M1_Y_0";
-  this->VariableNames[251] = "SV_M1_Y_1";
-  this->VariableNames[252] = "SV_M1_Y_2";
-  this->VariableNames[253] = "SV_M1_Y_3";
-  this->VariableNames[254] = "SV_M1_Y_4";
-  this->VariableNames[255] = "SV_M1_Y_5";
-  this->VariableNames[256] = "SV_M1_Y_6";
-  this->VariableNames[257] = "SV_M1_Y_7";
-  this->VariableNames[258] = "SV_M1_Y_8";
-  this->VariableNames[259] = "SV_M1_Y_9";
-  this->VariableNames[260] = "SV_M1_Y_10";
-  this->VariableNames[261] = "SV_M1_Y_11";
-  this->VariableNames[262] = "SV_M1_Y_12";
-  this->VariableNames[263] = "SV_M1_Y_13";
-  this->VariableNames[264] = "SV_M1_Y_14";
-  this->VariableNames[265] = "SV_M1_Y_15";
-  this->VariableNames[266] = "SV_M1_Y_16";
-  this->VariableNames[267] = "SV_M1_Y_17";
-  this->VariableNames[268] = "SV_M1_Y_18";
-  this->VariableNames[269] = "SV_M1_Y_19";
-  this->VariableNames[270] = "SV_M1_Y_20";
-  this->VariableNames[271] = "SV_M1_Y_21";
-  this->VariableNames[272] = "SV_M1_Y_22";
-  this->VariableNames[273] = "SV_M1_Y_23";
-  this->VariableNames[274] = "SV_M1_Y_24";
-  this->VariableNames[275] = "SV_M1_Y_25";
-  this->VariableNames[276] = "SV_M1_Y_26";
-  this->VariableNames[277] = "SV_M1_Y_27";
-  this->VariableNames[278] = "SV_M1_Y_28";
-  this->VariableNames[279] = "SV_M1_Y_29";
-  this->VariableNames[280] = "SV_M1_Y_30";
-  this->VariableNames[281] = "SV_M1_Y_31";
-  this->VariableNames[282] = "SV_M1_Y_32";
-  this->VariableNames[283] = "SV_M1_Y_33";
-  this->VariableNames[284] = "SV_M1_Y_34";
-  this->VariableNames[285] = "SV_M1_Y_35";
-  this->VariableNames[286] = "SV_M1_Y_36";
-  this->VariableNames[287] = "SV_M1_Y_37";
-  this->VariableNames[288] = "SV_M1_Y_38";
-  this->VariableNames[289] = "SV_M1_Y_39";
-  this->VariableNames[290] = "SV_M1_Y_40";
-  this->VariableNames[291] = "SV_M1_Y_41";
-  this->VariableNames[292] = "SV_M1_Y_42";
-  this->VariableNames[293] = "SV_M1_Y_43";
-  this->VariableNames[294] = "SV_M1_Y_44";
-  this->VariableNames[295] = "SV_M1_Y_45";
-  this->VariableNames[296] = "SV_M1_Y_46";
-  this->VariableNames[297] = "SV_M1_Y_47";
-  this->VariableNames[298] = "SV_M1_Y_48";
-  this->VariableNames[299] = "SV_M1_Y_49";
-  this->VariableNames[300] = "SV_M2_Y_0";
-  this->VariableNames[301] = "SV_M2_Y_1";
-  this->VariableNames[302] = "SV_M2_Y_2";
-  this->VariableNames[303] = "SV_M2_Y_3";
-  this->VariableNames[304] = "SV_M2_Y_4";
-  this->VariableNames[305] = "SV_M2_Y_5";
-  this->VariableNames[306] = "SV_M2_Y_6";
-  this->VariableNames[307] = "SV_M2_Y_7";
-  this->VariableNames[308] = "SV_M2_Y_8";
-  this->VariableNames[309] = "SV_M2_Y_9";
-  this->VariableNames[310] = "SV_M2_Y_10";
-  this->VariableNames[311] = "SV_M2_Y_11";
-  this->VariableNames[312] = "SV_M2_Y_12";
-  this->VariableNames[313] = "SV_M2_Y_13";
-  this->VariableNames[314] = "SV_M2_Y_14";
-  this->VariableNames[315] = "SV_M2_Y_15";
-  this->VariableNames[316] = "SV_M2_Y_16";
-  this->VariableNames[317] = "SV_M2_Y_17";
-  this->VariableNames[318] = "SV_M2_Y_18";
-  this->VariableNames[319] = "SV_M2_Y_19";
-  this->VariableNames[320] = "SV_M2_Y_20";
-  this->VariableNames[321] = "SV_M2_Y_21";
-  this->VariableNames[322] = "SV_M2_Y_22";
-  this->VariableNames[323] = "SV_M2_Y_23";
-  this->VariableNames[324] = "SV_M2_Y_24";
-  this->VariableNames[325] = "SV_M2_Y_25";
-  this->VariableNames[326] = "SV_M2_Y_26";
-  this->VariableNames[327] = "SV_M2_Y_27";
-  this->VariableNames[328] = "SV_M2_Y_28";
-  this->VariableNames[329] = "SV_M2_Y_29";
-  this->VariableNames[330] = "SV_M2_Y_30";
-  this->VariableNames[331] = "SV_M2_Y_31";
-  this->VariableNames[332] = "SV_M2_Y_32";
-  this->VariableNames[333] = "SV_M2_Y_33";
-  this->VariableNames[334] = "SV_M2_Y_34";
-  this->VariableNames[335] = "SV_M2_Y_35";
-  this->VariableNames[336] = "SV_M2_Y_36";
-  this->VariableNames[337] = "SV_M2_Y_37";
-  this->VariableNames[338] = "SV_M2_Y_38";
-  this->VariableNames[339] = "SV_M2_Y_39";
-  this->VariableNames[340] = "SV_M2_Y_40";
-  this->VariableNames[341] = "SV_M2_Y_41";
-  this->VariableNames[342] = "SV_M2_Y_42";
-  this->VariableNames[343] = "SV_M2_Y_43";
-  this->VariableNames[344] = "SV_M2_Y_44";
-  this->VariableNames[345] = "SV_M2_Y_45";
-  this->VariableNames[346] = "SV_M2_Y_46";
-  this->VariableNames[347] = "SV_M2_Y_47";
-  this->VariableNames[348] = "SV_M2_Y_48";
-  this->VariableNames[349] = "SV_M2_Y_49";
-  this->VariableNames[350] = "DR_SURF_0";
-  this->VariableNames[351] = "DR_SURF_1";
-  this->VariableNames[352] = "DR_SURF_2";
-  this->VariableNames[353] = "DR_SURF_3";
-  this->VariableNames[354] = "DR_SURF_4";
-  this->VariableNames[355] = "DR_SURF_5";
-  this->VariableNames[356] = "DR_SURF_6";
-  this->VariableNames[357] = "DR_SURF_7";
-  this->VariableNames[358] = "DR_SURF_8";
-  this->VariableNames[359] = "DR_SURF_9";
-  this->VariableNames[360] = "DR_SURF_10";
-  this->VariableNames[361] = "DR_SURF_11";
-  this->VariableNames[362] = "DR_SURF_12";
-  this->VariableNames[363] = "DR_SURF_13";
-  this->VariableNames[364] = "DR_SURF_14";
-  this->VariableNames[365] = "DR_SURF_15";
-  this->VariableNames[366] = "DR_SURF_16";
-  this->VariableNames[367] = "DR_SURF_17";
-  this->VariableNames[368] = "DR_SURF_18";
-  this->VariableNames[369] = "DR_SURF_19";
-  this->VariableNames[370] = "DR_SURF_20";
-  this->VariableNames[371] = "DR_SURF_21";
-  this->VariableNames[372] = "DR_SURF_22";
-  this->VariableNames[373] = "DR_SURF_23";
-  this->VariableNames[374] = "DR_SURF_24";
-  this->VariableNames[375] = "DR_SURF_25";
-  this->VariableNames[376] = "DR_SURF_26";
-  this->VariableNames[377] = "DR_SURF_27";
-  this->VariableNames[378] = "DR_SURF_28";
-  this->VariableNames[379] = "DR_SURF_29";
-  this->VariableNames[380] = "DR_SURF_30";
-  this->VariableNames[381] = "DR_SURF_31";
-  this->VariableNames[382] = "DR_SURF_32";
-  this->VariableNames[383] = "DR_SURF_33";
-  this->VariableNames[384] = "DR_SURF_34";
-  this->VariableNames[385] = "DR_SURF_35";
-  this->VariableNames[386] = "DR_SURF_36";
-  this->VariableNames[387] = "DR_SURF_37";
-  this->VariableNames[388] = "DR_SURF_38";
-  this->VariableNames[389] = "DR_SURF_39";
-  this->VariableNames[390] = "DR_SURF_40";
-  this->VariableNames[391] = "DR_SURF_41";
-  this->VariableNames[392] = "DR_SURF_42";
-  this->VariableNames[393] = "DR_SURF_43";
-  this->VariableNames[394] = "DR_SURF_44";
-  this->VariableNames[395] = "DR_SURF_45";
-  this->VariableNames[396] = "DR_SURF_46";
-  this->VariableNames[397] = "DR_SURF_47";
-  this->VariableNames[398] = "DR_SURF_48";
-  this->VariableNames[399] = "DR_SURF_49";
-  this->VariableNames[400] = "PRESSURE_MEAN";
-  this->VariableNames[401] = "PRESSURE_RMS";
-  this->VariableNames[402] = "X_VELOCITY_MEAN";
-  this->VariableNames[403] = "X_VELOCITY_RMS";
-  this->VariableNames[404] = "Y_VELOCITY_MEAN";
-  this->VariableNames[405] = "Y_VELOCITY_RMS";
-  this->VariableNames[406] = "Z_VELOCITY_MEAN";
-  this->VariableNames[407] = "Z_VELOCITY_RMS";
-  this->VariableNames[408] = "TEMPERATURE_MEAN";
-  this->VariableNames[409] = "TEMPERATURE_RMS";
-  this->VariableNames[410] = "VOF_MEAN";
-  this->VariableNames[411] = "VOF_RMS";
-  this->VariableNames[412] = "PRESSURE_M1";
-  this->VariableNames[413] = "PRESSURE_M2";
-  this->VariableNames[414] = "GRANULAR_TEMPERATURE_MEAN";
-  this->VariableNames[415] = "GRANULAR_TEMPERATURE_RMS";
-  this->VariableNames[416] = "V416";
-  this->VariableNames[417] = "V417";
-  this->VariableNames[418] = "V418";
-  this->VariableNames[419] = "V419";
-  this->VariableNames[420] = "V420";
-  this->VariableNames[421] = "V421";
-  this->VariableNames[422] = "V422";
-  this->VariableNames[423] = "V423";
-  this->VariableNames[424] = "V424";
-  this->VariableNames[425] = "V425";
-  this->VariableNames[426] = "V426";
-  this->VariableNames[427] = "V427";
-  this->VariableNames[428] = "V428";
-  this->VariableNames[429] = "V429";
-  this->VariableNames[430] = "V430";
-  this->VariableNames[431] = "V431";
-  this->VariableNames[432] = "V432";
-  this->VariableNames[433] = "V433";
-  this->VariableNames[434] = "V434";
-  this->VariableNames[435] = "V435";
-  this->VariableNames[436] = "V436";
-  this->VariableNames[437] = "V437";
-  this->VariableNames[438] = "V438";
-  this->VariableNames[439] = "V439";
-  this->VariableNames[440] = "V440";
-  this->VariableNames[441] = "V441";
-  this->VariableNames[442] = "V442";
-  this->VariableNames[443] = "V443";
-  this->VariableNames[444] = "V444";
-  this->VariableNames[445] = "V445";
-  this->VariableNames[446] = "V446";
-  this->VariableNames[447] = "V447";
-  this->VariableNames[448] = "V448";
-  this->VariableNames[449] = "V449";
-  this->VariableNames[450] = "DPMS_Y_0";
-  this->VariableNames[451] = "DPMS_Y_1";
-  this->VariableNames[452] = "DPMS_Y_2";
-  this->VariableNames[453] = "DPMS_Y_3";
-  this->VariableNames[454] = "DPMS_Y_4";
-  this->VariableNames[455] = "DPMS_Y_5";
-  this->VariableNames[456] = "DPMS_Y_6";
-  this->VariableNames[457] = "DPMS_Y_7";
-  this->VariableNames[458] = "DPMS_Y_8";
-  this->VariableNames[459] = "DPMS_Y_9";
-  this->VariableNames[460] = "DPMS_Y_10";
-  this->VariableNames[461] = "DPMS_Y_11";
-  this->VariableNames[462] = "DPMS_Y_12";
-  this->VariableNames[463] = "DPMS_Y_13";
-  this->VariableNames[464] = "DPMS_Y_14";
-  this->VariableNames[465] = "DPMS_Y_15";
-  this->VariableNames[466] = "DPMS_Y_16";
-  this->VariableNames[467] = "DPMS_Y_17";
-  this->VariableNames[468] = "DPMS_Y_18";
-  this->VariableNames[469] = "DPMS_Y_19";
-  this->VariableNames[470] = "DPMS_Y_20";
-  this->VariableNames[471] = "DPMS_Y_21";
-  this->VariableNames[472] = "DPMS_Y_22";
-  this->VariableNames[473] = "DPMS_Y_23";
-  this->VariableNames[474] = "DPMS_Y_24";
-  this->VariableNames[475] = "DPMS_Y_25";
-  this->VariableNames[476] = "DPMS_Y_26";
-  this->VariableNames[477] = "DPMS_Y_27";
-  this->VariableNames[478] = "DPMS_Y_28";
-  this->VariableNames[479] = "DPMS_Y_29";
-  this->VariableNames[480] = "DPMS_Y_30";
-  this->VariableNames[481] = "DPMS_Y_31";
-  this->VariableNames[482] = "DPMS_Y_32";
-  this->VariableNames[483] = "DPMS_Y_33";
-  this->VariableNames[484] = "DPMS_Y_34";
-  this->VariableNames[485] = "DPMS_Y_35";
-  this->VariableNames[486] = "DPMS_Y_36";
-  this->VariableNames[487] = "DPMS_Y_37";
-  this->VariableNames[488] = "DPMS_Y_38";
-  this->VariableNames[489] = "DPMS_Y_39";
-  this->VariableNames[490] = "DPMS_Y_40";
-  this->VariableNames[491] = "DPMS_Y_41";
-  this->VariableNames[492] = "DPMS_Y_42";
-  this->VariableNames[493] = "DPMS_Y_43";
-  this->VariableNames[494] = "DPMS_Y_44";
-  this->VariableNames[495] = "DPMS_Y_45";
-  this->VariableNames[496] = "DPMS_Y_46";
-  this->VariableNames[497] = "DPMS_Y_47";
-  this->VariableNames[498] = "DPMS_Y_48";
-  this->VariableNames[499] = "DPMS_Y_49";
-  this->VariableNames[500] = "NUT";
-  this->VariableNames[501] = "NUT_M1";
-  this->VariableNames[502] = "NUT_M2";
-  this->VariableNames[503] = "RUU_M1";
-  this->VariableNames[504] = "RVV_M1";
-  this->VariableNames[505] = "RWW_M1";
-  this->VariableNames[506] = "RUV_M1";
-  this->VariableNames[507] = "RVW_M1";
-  this->VariableNames[508] = "RUW_M1";
-  this->VariableNames[509] = "RUU_M2";
-  this->VariableNames[510] = "RVV_M2";
-  this->VariableNames[511] = "RWW_M2";
-  this->VariableNames[512] = "RUV_M2";
-  this->VariableNames[513] = "RVW_M2";
-  this->VariableNames[514] = "RUW_M2";
-  this->VariableNames[515] = "ENERGY_M1";
-  this->VariableNames[516] = "ENERGY_M2";
-  this->VariableNames[517] = "DENSITY_M1";
-  this->VariableNames[518] = "DENSITY_M2";
-  this->VariableNames[519] = "DPMS_PDF_1";
-  this->VariableNames[520] = "DPMS_PDF_2";
-  this->VariableNames[521] = "V2";
-  this->VariableNames[522] = "V2_M1";
-  this->VariableNames[523] = "V2_M2";
-  this->VariableNames[524] = "FEL";
-  this->VariableNames[525] = "FEL_M1";
-  this->VariableNames[526] = "FEL_M2";
-  this->VariableNames[527] = "V527";
-  this->VariableNames[528] = "V528";
-  this->VariableNames[529] = "V529";
-  this->VariableNames[530] = "SHELL_CELL_T";
-  this->VariableNames[531] = "SHELL_FACE_T";
-  this->VariableNames[532] = "V532";
-  this->VariableNames[533] = "V533";
-  this->VariableNames[534] = "V534";
-  this->VariableNames[535] = "V535";
-  this->VariableNames[536] = "V536";
-  this->VariableNames[537] = "V537";
-  this->VariableNames[538] = "V538";
-  this->VariableNames[539] = "V539";
-  this->VariableNames[540] = "DPMS_TKE";
-  this->VariableNames[541] = "DPMS_D";
-  this->VariableNames[542] = "DPMS_O";
-  this->VariableNames[543] = "DPMS_TKE_RUU";
-  this->VariableNames[544] = "DPMS_TKE_RVV";
-  this->VariableNames[545] = "DPMS_TKE_RWW";
-  this->VariableNames[546] = "DPMS_TKE_RUV";
-  this->VariableNames[547] = "DPMS_TKE_RVW";
-  this->VariableNames[548] = "DPMS_TKE_RUW";
-  this->VariableNames[549] = "DPMS_DS_MASS";
-  this->VariableNames[550] = "DPMS_DS_ENERGY";
-  this->VariableNames[551] = "DPMS_DS_TKE";
-  this->VariableNames[552] = "DPMS_DS_D";
-  this->VariableNames[553] = "DPMS_DS_O";
-  this->VariableNames[554] = "DPMS_DS_TKE_RUU";
-  this->VariableNames[555] = "DPMS_DS_TKE_RVV";
-  this->VariableNames[556] = "DPMS_DS_TKE_RWW";
-  this->VariableNames[557] = "DPMS_DS_TKE_RUV";
-  this->VariableNames[558] = "DPMS_DS_TKE_RVW";
-  this->VariableNames[559] = "DPMS_DS_TKE_RUW";
-  this->VariableNames[560] = "DPMS_DS_PDF_1";
-  this->VariableNames[561] = "DPMS_DS_PDF_2";
-  this->VariableNames[562] = "DPMS_DS_EMISS";
-  this->VariableNames[563] = "DPMS_DS_ABS";
-  this->VariableNames[564] = "DPMS_DS_SCAT";
-  this->VariableNames[565] = "DPMS_DS_BURNOUT";
-  this->VariableNames[566] = "DPMS_DS_MOM";
-  this->VariableNames[567] = "DPMS_DS_WSWIRL";
-  this->VariableNames[568] = "V568";
-  this->VariableNames[569] = "V569";
-  this->VariableNames[570] = "V570";
-  this->VariableNames[571] = "V571";
-  this->VariableNames[572] = "V572";
-  this->VariableNames[573] = "V573";
-  this->VariableNames[574] = "V574";
-  this->VariableNames[575] = "V575";
-  this->VariableNames[576] = "V576";
-  this->VariableNames[577] = "V577";
-  this->VariableNames[578] = "V578";
-  this->VariableNames[579] = "V579";
-  this->VariableNames[580] = "V570";
-  this->VariableNames[581] = "V581";
-  this->VariableNames[582] = "V582";
-  this->VariableNames[583] = "V583";
-  this->VariableNames[584] = "V584";
-  this->VariableNames[585] = "V585";
-  this->VariableNames[586] = "V586";
-  this->VariableNames[587] = "V587";
-  this->VariableNames[588] = "V588";
-  this->VariableNames[589] = "V589";
-  this->VariableNames[590] = "V590";
-  this->VariableNames[591] = "V591";
-  this->VariableNames[592] = "V592";
-  this->VariableNames[593] = "V593";
-  this->VariableNames[594] = "V594";
-  this->VariableNames[595] = "V595";
-  this->VariableNames[596] = "V596";
-  this->VariableNames[597] = "V597";
-  this->VariableNames[598] = "V598";
-  this->VariableNames[599] = "V599";
-  this->VariableNames[600] = "DELH";
-  this->VariableNames[601] = "DPMS_MOM_AP";
-  this->VariableNames[602] = "DPMS_WSWIRL_AP";
-  this->VariableNames[603] = "X_PULL";
-  this->VariableNames[604] = "Y_PULL";
-  this->VariableNames[605] = "Z_PULL";
-  this->VariableNames[606] = "LIQF";
-  this->VariableNames[607] = "V607";
-  this->VariableNames[608] = "V608";
-  this->VariableNames[609] = "V609";
-  this->VariableNames[610] = "PDFT_QBAR";
-  this->VariableNames[611] = "PDFT_PHI";
-  this->VariableNames[612] = "PDFT_Q_TA";
-  this->VariableNames[613] = "PDFT_SVOL_TA";
-  this->VariableNames[614] = "PDFT_MASS_TA";
-  this->VariableNames[615] = "PDFT_T4_TA";
-  this->VariableNames[616] = "V616";
-  this->VariableNames[617] = "V617";
-  this->VariableNames[618] = "V618";
-  this->VariableNames[619] = "V619";
-  this->VariableNames[620] = "V620";
-  this->VariableNames[621] = "V621";
-  this->VariableNames[622] = "V622";
-  this->VariableNames[623] = "V623";
-  this->VariableNames[624] = "V624";
-  this->VariableNames[625] = "V625";
-  this->VariableNames[626] = "V626";
-  this->VariableNames[627] = "V627";
-  this->VariableNames[628] = "V628";
-  this->VariableNames[629] = "V629";
-  this->VariableNames[630] = "SCAD_LES";
-  this->VariableNames[631] = "V631";
-  this->VariableNames[632] = "V632";
-  this->VariableNames[633] = "V633";
-  this->VariableNames[634] = "V634";
-  this->VariableNames[635] = "V635";
-  this->VariableNames[636] = "V636";
-  this->VariableNames[637] = "V637";
-  this->VariableNames[638] = "V638";
-  this->VariableNames[639] = "V639";
-  this->VariableNames[640] = "V640";
-  this->VariableNames[641] = "V641";
-  this->VariableNames[642] = "V642";
-  this->VariableNames[643] = "V643";
-  this->VariableNames[644] = "V644";
-  this->VariableNames[645] = "CREV_MASS";
-  this->VariableNames[646] = "CREV_ENRG";
-  this->VariableNames[647] = "CREV_MOM";
-  this->VariableNames[648] = "V648";
-  this->VariableNames[649] = "V649";
-  this->VariableNames[650] = "XF_ACOUSTICS_MODEL";
-  this->VariableNames[651] = "XF_RF_AC_RECEIVERS_DATA";
-  this->VariableNames[652] = "SV_DPDT_RMS";
-  this->VariableNames[653] = "SV_PRESSURE_M1";
-  this->VariableNames[654] = "XF_RF_AC_PERIODIC_INDEX";
-  this->VariableNames[655] = "XF_RF_AC_PERIODIC_PS";
-  this->VariableNames[656] = "XF_RF_AC_F_NORMAL";
-  this->VariableNames[657] = "XF_RF_AC_F_CENTROID";
-  this->VariableNames[658] = "V658";
-  this->VariableNames[659] = "V659";
-  this->VariableNames[660] = "IGNITE";
-  this->VariableNames[661] = "IGNITE_M1";
-  this->VariableNames[662] = "IGNITE_M2";
-  this->VariableNames[663] = "IGNITE_RATE";
-  this->VariableNames[664] = "V664";
-  this->VariableNames[665] = "V665";
-  this->VariableNames[666] = "V666";
-  this->VariableNames[667] = "V667";
-  this->VariableNames[668] = "V668";
-  this->VariableNames[669] = "V669";
-  this->VariableNames[670] = "V670";
-  this->VariableNames[671] = "V671";
-  this->VariableNames[672] = "V672";
-  this->VariableNames[673] = "V673";
-  this->VariableNames[674] = "V674";
-  this->VariableNames[675] = "V675";
-  this->VariableNames[676] = "V676";
-  this->VariableNames[677] = "V677";
-  this->VariableNames[678] = "V678";
-  this->VariableNames[679] = "V679";
-  this->VariableNames[680] = "V680";
-  this->VariableNames[681] = "V681";
-  this->VariableNames[682] = "V682";
-  this->VariableNames[683] = "V683";
-  this->VariableNames[684] = "V684";
-  this->VariableNames[685] = "V685";
-  this->VariableNames[686] = "V686";
-  this->VariableNames[687] = "V687";
-  this->VariableNames[688] = "V688";
-  this->VariableNames[689] = "V689";
-  this->VariableNames[690] = "V690";
-  this->VariableNames[691] = "V691";
-  this->VariableNames[692] = "V692";
-  this->VariableNames[693] = "V693";
-  this->VariableNames[694] = "V694";
-  this->VariableNames[695] = "V695";
-  this->VariableNames[696] = "V696";
-  this->VariableNames[697] = "V697";
-  this->VariableNames[698] = "V698";
-  this->VariableNames[699] = "V699";
-  this->VariableNames[700] = "UDS_0";
-  this->VariableNames[701] = "UDS_1";
-  this->VariableNames[702] = "UDS_2";
-  this->VariableNames[703] = "UDS_3";
-  this->VariableNames[704] = "UDS_4";
-  this->VariableNames[705] = "UDS_5";
-  this->VariableNames[706] = "UDS_6";
-  this->VariableNames[707] = "UDS_7";
-  this->VariableNames[708] = "UDS_8";
-  this->VariableNames[709] = "UDS_9";
-  this->VariableNames[710] = "UDS_10";
-  this->VariableNames[711] = "UDS_11";
-  this->VariableNames[712] = "UDS_12";
-  this->VariableNames[713] = "UDS_13";
-  this->VariableNames[714] = "UDS_14";
-  this->VariableNames[715] = "UDS_15";
-  this->VariableNames[716] = "UDS_16";
-  this->VariableNames[717] = "UDS_17";
-  this->VariableNames[718] = "UDS_18";
-  this->VariableNames[719] = "UDS_19";
-  this->VariableNames[720] = "UDS_20";
-  this->VariableNames[721] = "UDS_21";
-  this->VariableNames[722] = "UDS_22";
-  this->VariableNames[723] = "UDS_23";
-  this->VariableNames[724] = "UDS_24";
-  this->VariableNames[725] = "UDS_25";
-  this->VariableNames[726] = "UDS_26";
-  this->VariableNames[727] = "UDS_27";
-  this->VariableNames[728] = "UDS_28";
-  this->VariableNames[729] = "UDS_29";
-  this->VariableNames[730] = "UDS_30";
-  this->VariableNames[731] = "UDS_31";
-  this->VariableNames[732] = "UDS_32";
-  this->VariableNames[733] = "UDS_33";
-  this->VariableNames[734] = "UDS_34";
-  this->VariableNames[735] = "UDS_35";
-  this->VariableNames[736] = "UDS_36";
-  this->VariableNames[737] = "UDS_37";
-  this->VariableNames[738] = "UDS_38";
-  this->VariableNames[739] = "UDS_39";
-  this->VariableNames[740] = "UDS_40";
-  this->VariableNames[741] = "UDS_41";
-  this->VariableNames[742] = "UDS_42";
-  this->VariableNames[743] = "UDS_43";
-  this->VariableNames[744] = "UDS_44";
-  this->VariableNames[745] = "UDS_45";
-  this->VariableNames[746] = "UDS_46";
-  this->VariableNames[747] = "UDS_47";
-  this->VariableNames[748] = "UDS_48";
-  this->VariableNames[749] = "UDS_49";
-  this->VariableNames[750] = "UDS_M1_0";
-  this->VariableNames[751] = "UDS_M1_1";
-  this->VariableNames[752] = "UDS_M1_2";
-  this->VariableNames[753] = "UDS_M1_3";
-  this->VariableNames[754] = "UDS_M1_4";
-  this->VariableNames[755] = "UDS_M1_5";
-  this->VariableNames[756] = "UDS_M1_6";
-  this->VariableNames[757] = "UDS_M1_7";
-  this->VariableNames[758] = "UDS_M1_8";
-  this->VariableNames[759] = "UDS_M1_9";
-  this->VariableNames[760] = "UDS_M1_10";
-  this->VariableNames[761] = "UDS_M1_11";
-  this->VariableNames[762] = "UDS_M1_12";
-  this->VariableNames[763] = "UDS_M1_13";
-  this->VariableNames[764] = "UDS_M1_14";
-  this->VariableNames[765] = "UDS_M1_15";
-  this->VariableNames[766] = "UDS_M1_16";
-  this->VariableNames[767] = "UDS_M1_17";
-  this->VariableNames[768] = "UDS_M1_18";
-  this->VariableNames[769] = "UDS_M1_19";
-  this->VariableNames[770] = "UDS_M1_20";
-  this->VariableNames[771] = "UDS_M1_21";
-  this->VariableNames[772] = "UDS_M1_22";
-  this->VariableNames[773] = "UDS_M1_23";
-  this->VariableNames[774] = "UDS_M1_24";
-  this->VariableNames[775] = "UDS_M1_25";
-  this->VariableNames[776] = "UDS_M1_26";
-  this->VariableNames[777] = "UDS_M1_27";
-  this->VariableNames[778] = "UDS_M1_28";
-  this->VariableNames[779] = "UDS_M1_29";
-  this->VariableNames[780] = "UDS_M1_30";
-  this->VariableNames[781] = "UDS_M1_31";
-  this->VariableNames[782] = "UDS_M1_32";
-  this->VariableNames[783] = "UDS_M1_33";
-  this->VariableNames[784] = "UDS_M1_34";
-  this->VariableNames[785] = "UDS_M1_35";
-  this->VariableNames[786] = "UDS_M1_36";
-  this->VariableNames[787] = "UDS_M1_37";
-  this->VariableNames[788] = "UDS_M1_38";
-  this->VariableNames[789] = "UDS_M1_39";
-  this->VariableNames[790] = "UDS_M1_40";
-  this->VariableNames[791] = "UDS_M1_41";
-  this->VariableNames[792] = "UDS_M1_42";
-  this->VariableNames[793] = "UDS_M1_43";
-  this->VariableNames[794] = "UDS_M1_44";
-  this->VariableNames[795] = "UDS_M1_45";
-  this->VariableNames[796] = "UDS_M1_46";
-  this->VariableNames[797] = "UDS_M1_47";
-  this->VariableNames[798] = "UDS_M1_48";
-  this->VariableNames[799] = "UDS_M1_49";
-  this->VariableNames[800] = "UDS_M2_0";
-  this->VariableNames[801] = "UDS_M2_1";
-  this->VariableNames[802] = "UDS_M2_2";
-  this->VariableNames[803] = "UDS_M2_3";
-  this->VariableNames[804] = "UDS_M2_4";
-  this->VariableNames[805] = "UDS_M2_5";
-  this->VariableNames[806] = "UDS_M2_6";
-  this->VariableNames[807] = "UDS_M2_7";
-  this->VariableNames[808] = "UDS_M2_8";
-  this->VariableNames[809] = "UDS_M2_9";
-  this->VariableNames[810] = "UDS_M2_10";
-  this->VariableNames[811] = "UDS_M2_11";
-  this->VariableNames[812] = "UDS_M2_12";
-  this->VariableNames[813] = "UDS_M2_13";
-  this->VariableNames[814] = "UDS_M2_14";
-  this->VariableNames[815] = "UDS_M2_15";
-  this->VariableNames[816] = "UDS_M2_16";
-  this->VariableNames[817] = "UDS_M2_17";
-  this->VariableNames[818] = "UDS_M2_18";
-  this->VariableNames[819] = "UDS_M2_19";
-  this->VariableNames[820] = "UDS_M2_20";
-  this->VariableNames[821] = "UDS_M2_21";
-  this->VariableNames[822] = "UDS_M2_22";
-  this->VariableNames[823] = "UDS_M2_23";
-  this->VariableNames[824] = "UDS_M2_24";
-  this->VariableNames[825] = "UDS_M2_25";
-  this->VariableNames[826] = "UDS_M2_26";
-  this->VariableNames[827] = "UDS_M2_27";
-  this->VariableNames[828] = "UDS_M2_28";
-  this->VariableNames[829] = "UDS_M2_29";
-  this->VariableNames[830] = "UDS_M2_30";
-  this->VariableNames[831] = "UDS_M2_31";
-  this->VariableNames[832] = "UDS_M2_32";
-  this->VariableNames[833] = "UDS_M2_33";
-  this->VariableNames[834] = "UDS_M2_34";
-  this->VariableNames[835] = "UDS_M2_35";
-  this->VariableNames[836] = "UDS_M2_36";
-  this->VariableNames[837] = "UDS_M2_37";
-  this->VariableNames[838] = "UDS_M2_38";
-  this->VariableNames[839] = "UDS_M2_39";
-  this->VariableNames[840] = "UDS_M2_40";
-  this->VariableNames[841] = "UDS_M2_41";
-  this->VariableNames[842] = "UDS_M2_42";
-  this->VariableNames[843] = "UDS_M2_43";
-  this->VariableNames[844] = "UDS_M2_44";
-  this->VariableNames[845] = "UDS_M2_45";
-  this->VariableNames[846] = "UDS_M2_46";
-  this->VariableNames[847] = "UDS_M2_47";
-  this->VariableNames[848] = "UDS_M2_48";
-  this->VariableNames[849] = "UDS_M2_49";
-  this->VariableNames[850] = "DPMS_DS_Y_0";
-  this->VariableNames[851] = "DPMS_DS_Y_1";
-  this->VariableNames[852] = "DPMS_DS_Y_2";
-  this->VariableNames[853] = "DPMS_DS_Y_3";
-  this->VariableNames[854] = "DPMS_DS_Y_4";
-  this->VariableNames[855] = "DPMS_DS_Y_5";
-  this->VariableNames[856] = "DPMS_DS_Y_6";
-  this->VariableNames[857] = "DPMS_DS_Y_7";
-  this->VariableNames[858] = "DPMS_DS_Y_8";
-  this->VariableNames[859] = "DPMS_DS_Y_9";
-  this->VariableNames[860] = "DPMS_DS_Y_10";
-  this->VariableNames[861] = "DPMS_DS_Y_11";
-  this->VariableNames[862] = "DPMS_DS_Y_12";
-  this->VariableNames[863] = "DPMS_DS_Y_13";
-  this->VariableNames[864] = "DPMS_DS_Y_14";
-  this->VariableNames[865] = "DPMS_DS_Y_15";
-  this->VariableNames[866] = "DPMS_DS_Y_16";
-  this->VariableNames[867] = "DPMS_DS_Y_17";
-  this->VariableNames[868] = "DPMS_DS_Y_18";
-  this->VariableNames[869] = "DPMS_DS_Y_19";
-  this->VariableNames[870] = "DPMS_DS_Y_20";
-  this->VariableNames[871] = "DPMS_DS_Y_21";
-  this->VariableNames[872] = "DPMS_DS_Y_22";
-  this->VariableNames[873] = "DPMS_DS_Y_23";
-  this->VariableNames[874] = "DPMS_DS_Y_24";
-  this->VariableNames[875] = "DPMS_DS_Y_25";
-  this->VariableNames[876] = "DPMS_DS_Y_26";
-  this->VariableNames[877] = "DPMS_DS_Y_27";
-  this->VariableNames[878] = "DPMS_DS_Y_28";
-  this->VariableNames[879] = "DPMS_DS_Y_29";
-  this->VariableNames[880] = "DPMS_DS_Y_30";
-  this->VariableNames[881] = "DPMS_DS_Y_31";
-  this->VariableNames[882] = "DPMS_DS_Y_32";
-  this->VariableNames[883] = "DPMS_DS_Y_33";
-  this->VariableNames[884] = "DPMS_DS_Y_34";
-  this->VariableNames[885] = "DPMS_DS_Y_35";
-  this->VariableNames[886] = "DPMS_DS_Y_36";
-  this->VariableNames[887] = "DPMS_DS_Y_37";
-  this->VariableNames[888] = "DPMS_DS_Y_38";
-  this->VariableNames[889] = "DPMS_DS_Y_39";
-  this->VariableNames[890] = "DPMS_DS_Y_40";
-  this->VariableNames[891] = "DPMS_DS_Y_41";
-  this->VariableNames[892] = "DPMS_DS_Y_42";
-  this->VariableNames[893] = "DPMS_DS_Y_43";
-  this->VariableNames[894] = "DPMS_DS_Y_44";
-  this->VariableNames[895] = "DPMS_DS_Y_45";
-  this->VariableNames[896] = "DPMS_DS_Y_46";
-  this->VariableNames[897] = "DPMS_DS_Y_47";
-  this->VariableNames[898] = "DPMS_DS_Y_48";
-  this->VariableNames[899] = "DPMS_DS_Y_49";
-  this->VariableNames[900] = "V900";
-  this->VariableNames[901] = "V901";
-  this->VariableNames[902] = "V902";
-  this->VariableNames[903] = "V903";
-  this->VariableNames[904] = "V904";
-  this->VariableNames[905] = "V905";
-  this->VariableNames[906] = "V906";
-  this->VariableNames[907] = "V907";
-  this->VariableNames[908] = "V908";
-  this->VariableNames[909] = "V909";
-  this->VariableNames[910] = "GRANULAR_PRESSURE";
-  this->VariableNames[911] = "DPMS_DS_P1_S";
-  this->VariableNames[912] = "DPMS_DS_P1_AP";
-  this->VariableNames[913] = "DPMS_DS_P1_DIFF";
-  this->VariableNames[914] = "V914";
-  this->VariableNames[915] = "V915";
-  this->VariableNames[916] = "V916";
-  this->VariableNames[917] = "V917";
-  this->VariableNames[918] = "V918";
-  this->VariableNames[919] = "V919";
-  this->VariableNames[920] = "V920";
-  this->VariableNames[921] = "V921";
-  this->VariableNames[922] = "V922";
-  this->VariableNames[923] = "V923";
-  this->VariableNames[924] = "V924";
-  this->VariableNames[925] = "V925";
-  this->VariableNames[926] = "V926";
-  this->VariableNames[927] = "V927";
-  this->VariableNames[928] = "V928";
-  this->VariableNames[929] = "V929";
-  this->VariableNames[930] = "V930";
-  this->VariableNames[931] = "V931";
-  this->VariableNames[932] = "V932";
-  this->VariableNames[933] = "V933";
-  this->VariableNames[934] = "V934";
-  this->VariableNames[935] = "V935";
-  this->VariableNames[936] = "V936";
-  this->VariableNames[937] = "V937";
-  this->VariableNames[938] = "V938";
-  this->VariableNames[939] = "V939";
-  this->VariableNames[940] = "V940";
-  this->VariableNames[941] = "V941";
-  this->VariableNames[942] = "V942";
-  this->VariableNames[943] = "V943";
-  this->VariableNames[944] = "V944";
-  this->VariableNames[945] = "V945";
-  this->VariableNames[946] = "V946";
-  this->VariableNames[947] = "V947";
-  this->VariableNames[948] = "V948";
-  this->VariableNames[949] = "V949";
-  this->VariableNames[950] = "V950";
-  this->VariableNames[951] = "V951";
-  this->VariableNames[952] = "V952";
-  this->VariableNames[953] = "V953";
-  this->VariableNames[954] = "V954";
-  this->VariableNames[955] = "V955";
-  this->VariableNames[956] = "V956";
-  this->VariableNames[957] = "V957";
-  this->VariableNames[958] = "V958";
-  this->VariableNames[959] = "V959";
-  this->VariableNames[960] = "V960";
-  this->VariableNames[961] = "V961";
-  this->VariableNames[962] = "V962";
-  this->VariableNames[963] = "V963";
-  this->VariableNames[964] = "V964";
-  this->VariableNames[965] = "V965";
-  this->VariableNames[966] = "V966";
-  this->VariableNames[967] = "V967";
-  this->VariableNames[968] = "V968";
-  this->VariableNames[969] = "V969";
-  this->VariableNames[970] = "UDM_I";
-  this->VariableNames[971] = "V971";
-  this->VariableNames[972] = "V972";
-  this->VariableNames[973] = "V973";
-  this->VariableNames[974] = "V974";
-  this->VariableNames[975] = "V975";
-  this->VariableNames[976] = "V976";
-  this->VariableNames[977] = "V977";
-  this->VariableNames[978] = "V978";
-  this->VariableNames[979] = "V979";
-  this->VariableNames[980] = "V980";
-  this->VariableNames[981] = "V981";
-  this->VariableNames[982] = "V982";
-  this->VariableNames[983] = "V983";
-  this->VariableNames[984] = "V984";
-  this->VariableNames[985] = "V985";
-  this->VariableNames[986] = "V986";
-  this->VariableNames[987] = "V987";
-  this->VariableNames[988] = "V988";
-  this->VariableNames[989] = "V989";
-  this->VariableNames[990] = "V990";
-  this->VariableNames[991] = "V991";
-  this->VariableNames[992] = "V992";
-  this->VariableNames[993] = "V993";
-  this->VariableNames[994] = "V994";
-  this->VariableNames[995] = "V995";
-  this->VariableNames[996] = "V996";
-  this->VariableNames[997] = "V997";
-  this->VariableNames[998] = "V998";
-  this->VariableNames[999] = "V999";
-  this->VariableNames[1000] = "V1000";
-  this->VariableNames[1001] = "V1001";
-  this->VariableNames[1002] = "V1002";
-  this->VariableNames[1003] = "V1003";
-  this->VariableNames[1004] = "V1004";
-  this->VariableNames[1005] = "V1005";
-  this->VariableNames[1006] = "V1006";
-  this->VariableNames[1007] = "V1007";
-  this->VariableNames[1008] = "V1008";
-  this->VariableNames[1009] = "V1009";
-  this->VariableNames[1010] = "V1010";
-  this->VariableNames[1011] = "V1011";
-  this->VariableNames[1012] = "V1012";
-  this->VariableNames[1013] = "V1013";
-  this->VariableNames[1014] = "V1014";
-  this->VariableNames[1015] = "V1015";
-  this->VariableNames[1016] = "V1016";
-  this->VariableNames[1017] = "V1017";
-  this->VariableNames[1018] = "V1018";
-  this->VariableNames[1019] = "V1019";
-  this->VariableNames[1020] = "V1020";
-  this->VariableNames[1021] = "V1021";
-  this->VariableNames[1022] = "V1022";
-  this->VariableNames[1023] = "V1023";
-  this->VariableNames[1024] = "V1024";
-  this->VariableNames[1025] = "V1025";
-  this->VariableNames[1026] = "V1026";
-  this->VariableNames[1027] = "V1027";
-  this->VariableNames[1028] = "V1028";
-  this->VariableNames[1029] = "V1029";
-  this->VariableNames[1030] = "V1030";
-  this->VariableNames[1031] = "V1031";
-  this->VariableNames[1032] = "V1032";
-  this->VariableNames[1033] = "V1033";
-  this->VariableNames[1034] = "V1034";
-  this->VariableNames[1035] = "V1035";
-  this->VariableNames[1036] = "V1036";
-  this->VariableNames[1037] = "V1037";
-  this->VariableNames[1038] = "V1038";
-  this->VariableNames[1039] = "V1039";
-  this->VariableNames[1040] = "V1040";
-  this->VariableNames[1041] = "V1041";
-  this->VariableNames[1042] = "V1042";
-  this->VariableNames[1043] = "V1043";
-  this->VariableNames[1044] = "V1044";
-  this->VariableNames[1045] = "V1045";
-  this->VariableNames[1046] = "V1046";
-  this->VariableNames[1047] = "V1047";
-  this->VariableNames[1048] = "V1048";
-  this->VariableNames[1049] = "V1049";
-  this->VariableNames[1050] = "V1050";
-  this->VariableNames[1051] = "V1051";
-  this->VariableNames[1052] = "V1052";
-  this->VariableNames[1053] = "V1053";
-  this->VariableNames[1054] = "V1054";
-  this->VariableNames[1055] = "V1055";
-  this->VariableNames[1056] = "V1056";
-  this->VariableNames[1057] = "V1057";
-  this->VariableNames[1058] = "V1058";
-  this->VariableNames[1059] = "V1059";
-  this->VariableNames[1060] = "V1060";
-  this->VariableNames[1061] = "V1061";
-  this->VariableNames[1062] = "V1062";
-  this->VariableNames[1063] = "V1063";
-  this->VariableNames[1064] = "V1064";
-  this->VariableNames[1065] = "V1065";
-  this->VariableNames[1066] = "V1066";
-  this->VariableNames[1067] = "V1067";
-  this->VariableNames[1068] = "V1068";
-  this->VariableNames[1069] = "V1069";
-  this->VariableNames[1070] = "V1070";
-  this->VariableNames[1071] = "V1071";
-  this->VariableNames[1072] = "V1072";
-  this->VariableNames[1073] = "V1073";
-  this->VariableNames[1074] = "V1074";
-  this->VariableNames[1075] = "V1075";
-  this->VariableNames[1076] = "V1076";
-  this->VariableNames[1077] = "V1077";
-  this->VariableNames[1078] = "V1078";
-  this->VariableNames[1079] = "V1079";
-  this->VariableNames[1080] = "V1080";
-  this->VariableNames[1081] = "V1081";
-  this->VariableNames[1082] = "V1082";
-  this->VariableNames[1083] = "V1083";
-  this->VariableNames[1084] = "V1084";
-  this->VariableNames[1085] = "V1085";
-  this->VariableNames[1086] = "V1086";
-  this->VariableNames[1087] = "V1087";
-  this->VariableNames[1088] = "V1088";
-  this->VariableNames[1089] = "V1089";
-  this->VariableNames[1090] = "V1090";
-  this->VariableNames[1091] = "V1091";
-  this->VariableNames[1092] = "V1092";
-  this->VariableNames[1093] = "V1093";
-  this->VariableNames[1094] = "V1094";
-  this->VariableNames[1095] = "V1095";
-  this->VariableNames[1096] = "V1096";
-  this->VariableNames[1097] = "V1097";
-  this->VariableNames[1098] = "V1098";
-  this->VariableNames[1099] = "V1099";
-  this->VariableNames[1100] = "V1100";
-  this->VariableNames[1101] = "V1101";
-  this->VariableNames[1102] = "V1102";
-  this->VariableNames[1103] = "V1103";
-  this->VariableNames[1104] = "V1104";
-  this->VariableNames[1105] = "V1105";
-  this->VariableNames[1106] = "V1106";
-  this->VariableNames[1107] = "V1107";
-  this->VariableNames[1108] = "V1108";
-  this->VariableNames[1109] = "V1109";
-  this->VariableNames[1110] = "V1110";
-  this->VariableNames[1111] = "V1111";
-  this->VariableNames[1112] = "V1112";
-  this->VariableNames[1113] = "V1113";
-  this->VariableNames[1114] = "V1114";
-  this->VariableNames[1115] = "V1115";
-  this->VariableNames[1116] = "V1116";
-  this->VariableNames[1117] = "V1117";
-  this->VariableNames[1118] = "V1118";
-  this->VariableNames[1119] = "V1119";
-  this->VariableNames[1120] = "V1120";
-  this->VariableNames[1121] = "V1121";
-  this->VariableNames[1122] = "V1122";
-  this->VariableNames[1123] = "V1123";
-  this->VariableNames[1124] = "V1124";
-  this->VariableNames[1125] = "V1125";
-  this->VariableNames[1126] = "V1126";
-  this->VariableNames[1127] = "V1127";
-  this->VariableNames[1128] = "V1128";
-  this->VariableNames[1129] = "V1129";
-  this->VariableNames[1130] = "V1130";
-  this->VariableNames[1131] = "V1131";
-  this->VariableNames[1132] = "V1132";
-  this->VariableNames[1133] = "V1133";
-  this->VariableNames[1134] = "V1134";
-  this->VariableNames[1135] = "V1135";
-  this->VariableNames[1136] = "V1136";
-  this->VariableNames[1137] = "V1137";
-  this->VariableNames[1138] = "V1138";
-  this->VariableNames[1139] = "V1139";
-  this->VariableNames[1140] = "V1140";
-  this->VariableNames[1141] = "V1141";
-  this->VariableNames[1142] = "V1142";
-  this->VariableNames[1143] = "V1143";
-  this->VariableNames[1144] = "V1144";
-  this->VariableNames[1145] = "V1145";
-  this->VariableNames[1146] = "V1146";
-  this->VariableNames[1147] = "V1147";
-  this->VariableNames[1148] = "V1148";
-  this->VariableNames[1149] = "V1149";
-  this->VariableNames[1150] = "V1150";
-  this->VariableNames[1151] = "V1151";
-  this->VariableNames[1152] = "V1152";
-  this->VariableNames[1153] = "V1153";
-  this->VariableNames[1154] = "V1154";
-  this->VariableNames[1155] = "V1155";
-  this->VariableNames[1156] = "V1156";
-  this->VariableNames[1157] = "V1157";
-  this->VariableNames[1158] = "V1158";
-  this->VariableNames[1159] = "V1159";
-  this->VariableNames[1160] = "V1160";
-  this->VariableNames[1161] = "V1161";
-  this->VariableNames[1162] = "V1162";
-  this->VariableNames[1163] = "V1163";
-  this->VariableNames[1164] = "V1164";
-  this->VariableNames[1165] = "V1165";
-  this->VariableNames[1166] = "V1166";
-  this->VariableNames[1167] = "V1167";
-  this->VariableNames[1168] = "V1168";
-  this->VariableNames[1169] = "V1169";
-  this->VariableNames[1170] = "V1170";
-  this->VariableNames[1171] = "V1171";
-  this->VariableNames[1172] = "V1172";
-  this->VariableNames[1173] = "V1173";
-  this->VariableNames[1174] = "V1174";
-  this->VariableNames[1175] = "V1175";
-  this->VariableNames[1176] = "V1176";
-  this->VariableNames[1177] = "V1177";
-  this->VariableNames[1178] = "V1178";
-  this->VariableNames[1179] = "V1179";
-  this->VariableNames[1180] = "V1180";
-  this->VariableNames[1181] = "V1181";
-  this->VariableNames[1182] = "V1182";
-  this->VariableNames[1183] = "V1183";
-  this->VariableNames[1184] = "V1184";
-  this->VariableNames[1185] = "V1185";
-  this->VariableNames[1186] = "V1186";
-  this->VariableNames[1187] = "V1187";
-  this->VariableNames[1188] = "V1188";
-  this->VariableNames[1189] = "V1189";
-  this->VariableNames[1190] = "V1190";
-  this->VariableNames[1191] = "V1191";
-  this->VariableNames[1192] = "V1192";
-  this->VariableNames[1193] = "V1193";
-  this->VariableNames[1194] = "V1194";
-  this->VariableNames[1195] = "V1195";
-  this->VariableNames[1196] = "V1196";
-  this->VariableNames[1197] = "V1197";
-  this->VariableNames[1198] = "V1198";
-  this->VariableNames[1199] = "V1199";
-  this->VariableNames[1200] = "V1200";
-  this->VariableNames[1201] = "V1201";
-  this->VariableNames[1202] = "V1202";
-  this->VariableNames[1203] = "V1203";
-  this->VariableNames[1204] = "V1204";
-  this->VariableNames[1205] = "V1205";
-  this->VariableNames[1206] = "V1206";
-  this->VariableNames[1207] = "V1207";
-  this->VariableNames[1208] = "V1208";
-  this->VariableNames[1209] = "V1209";
-  this->VariableNames[1210] = "V1210";
-  this->VariableNames[1211] = "V1211";
-  this->VariableNames[1212] = "V1212";
-  this->VariableNames[1213] = "V1213";
-  this->VariableNames[1214] = "V1214";
-  this->VariableNames[1215] = "V1215";
-  this->VariableNames[1216] = "V1216";
-  this->VariableNames[1217] = "V1217";
-  this->VariableNames[1218] = "V1218";
-  this->VariableNames[1219] = "V1219";
-  this->VariableNames[1220] = "V1220";
-  this->VariableNames[1221] = "V1221";
-  this->VariableNames[1222] = "V1222";
-  this->VariableNames[1223] = "V1223";
-  this->VariableNames[1224] = "V1224";
-  this->VariableNames[1225] = "V1225";
-  this->VariableNames[1226] = "V1226";
-  this->VariableNames[1227] = "V1227";
-  this->VariableNames[1228] = "V1228";
-  this->VariableNames[1229] = "V1229";
-  this->VariableNames[1230] = "V1230";
-  this->VariableNames[1231] = "V1231";
-  this->VariableNames[1232] = "V1232";
-  this->VariableNames[1233] = "V1233";
-  this->VariableNames[1234] = "V1234";
-  this->VariableNames[1235] = "V1235";
-  this->VariableNames[1236] = "V1236";
-  this->VariableNames[1237] = "V1237";
-  this->VariableNames[1238] = "V1238";
-  this->VariableNames[1239] = "V1239";
-  this->VariableNames[1240] = "V1240";
-  this->VariableNames[1241] = "V1241";
-  this->VariableNames[1242] = "V1242";
-  this->VariableNames[1243] = "V1243";
-  this->VariableNames[1244] = "V1244";
-  this->VariableNames[1245] = "V1245";
-  this->VariableNames[1246] = "V1246";
-  this->VariableNames[1247] = "V1247";
-  this->VariableNames[1248] = "V1248";
-  this->VariableNames[1249] = "V1249";
-  this->VariableNames[1250] = "V1250";
-  this->VariableNames[1251] = "V1251";
-  this->VariableNames[1252] = "V1252";
-  this->VariableNames[1253] = "V1253";
-  this->VariableNames[1254] = "V1254";
-  this->VariableNames[1255] = "V1255";
-  this->VariableNames[1256] = "V1256";
-  this->VariableNames[1257] = "V1257";
-  this->VariableNames[1258] = "V1258";
-  this->VariableNames[1259] = "V1259";
-  this->VariableNames[1260] = "V1260";
-  this->VariableNames[1261] = "V1261";
-  this->VariableNames[1262] = "V1262";
-  this->VariableNames[1263] = "V1263";
-  this->VariableNames[1264] = "V1264";
-  this->VariableNames[1265] = "V1265";
-  this->VariableNames[1266] = "V1266";
-  this->VariableNames[1267] = "V1267";
-  this->VariableNames[1268] = "V1268";
-  this->VariableNames[1269] = "V1269";
-  this->VariableNames[1270] = "V1270";
-  this->VariableNames[1271] = "V1271";
-  this->VariableNames[1272] = "V1272";
-  this->VariableNames[1273] = "V1273";
-  this->VariableNames[1274] = "V1274";
-  this->VariableNames[1275] = "V1275";
-  this->VariableNames[1276] = "V1276";
-  this->VariableNames[1277] = "V1277";
-  this->VariableNames[1278] = "V1278";
-  this->VariableNames[1279] = "V1279";
-  this->VariableNames[1280] = "V1280";
-  this->VariableNames[1281] = "V1281";
-  this->VariableNames[1282] = "V1282";
-  this->VariableNames[1283] = "V1283";
-  this->VariableNames[1284] = "V1284";
-  this->VariableNames[1285] = "V1285";
-  this->VariableNames[1286] = "V1286";
-  this->VariableNames[1287] = "V1287";
-  this->VariableNames[1288] = "V1288";
-  this->VariableNames[1289] = "V1289";
-  this->VariableNames[1290] = "V1290";
-  this->VariableNames[1291] = "V1291";
-  this->VariableNames[1292] = "V1292";
-  this->VariableNames[1293] = "V1293";
-  this->VariableNames[1294] = "V1294";
-  this->VariableNames[1295] = "V1295";
-  this->VariableNames[1296] = "V1296";
-  this->VariableNames[1297] = "V1297";
-  this->VariableNames[1298] = "V1298";
-  this->VariableNames[1299] = "V1299";
-  this->VariableNames[1300] = "V1300";
-  this->VariableNames[1301] = "WSB";
-  this->VariableNames[1302] = "WSN";
-  this->VariableNames[1303] = "WSR";
-  this->VariableNames[1304] = "WSB_M1";
-  this->VariableNames[1305] = "WSB_M2";
-  this->VariableNames[1306] = "WSN_M1";
-  this->VariableNames[1307] = "WSN_M2";
-  this->VariableNames[1308] = "WSR_M1";
-  this->VariableNames[1309] = "WSR_M2";
-  this->VariableNames[1310] = "MASGEN";
-  this->VariableNames[1311] = "NUCRAT";
-  this->VariableNames[1330] = "TEMPERATURE_M1";
-  this->VariableNames[1331] = "TEMPERATURE_M2";
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetCaseIndex(int ix)
-{
-  char b[5];
-
-  if ( this->CaseFileBuffer[ix+2] == ' ')
-    {
-    b[0] = this->CaseFileBuffer[ix+1];
-    b[1] = 0;
-    b[2] = 0;
-    b[3] = 0;
-    b[4] = 0;
-    return atoi(b);
-    }
-  else if ( this->CaseFileBuffer[ix+3] == ' ')
-    {
-    b[0] = this->CaseFileBuffer[ix+1];
-    b[1] = this->CaseFileBuffer[ix+2];
-    b[2] = 0;
-    b[3] = 0;
-    b[4] = 0;
-    return atoi(b);
-    }
-  else if ( this->CaseFileBuffer[ix+4] == ' ')
-    {
-    b[0] = this->CaseFileBuffer[ix+1];
-    b[1] = this->CaseFileBuffer[ix+2];
-    b[2] = this->CaseFileBuffer[ix+3];
-    b[3] = 0;
-    b[4] = 0;
-    return atoi(b);
-    }
-  else if (this->CaseFileBuffer[ix+5] == ' ')
-    {
-    b[0] = this->CaseFileBuffer[ix+1];
-    b[1] = this->CaseFileBuffer[ix+2];
-    b[2] = this->CaseFileBuffer[ix+3];
-    b[3] = this->CaseFileBuffer[ix+4];
-    b[4] = 0;
-    return atoi(b);
-    }
-  else
-    {
-    b[0] = this->CaseFileBuffer[ix+1];
-    b[1] = this->CaseFileBuffer[ix+2];
-    b[2] = this->CaseFileBuffer[ix+3];
-    b[3] = this->CaseFileBuffer[ix+4];
-    b[4] = 0;
-    return -1; 
-    }
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::ExecuteCaseTask(int task, int file_index)
-{
-  int new_index = 0;
-
-  switch ( task )
-    {
-    //
-    //  ASCII Area
-    //
-    case 0:
-      new_index = this->GetNothing(file_index);  // Section not used
-      break;
-    case 1:
-      new_index = this->GetNothing(file_index);  // Section not used
-      break;
-    case 2:
-      new_index = this->GetGridDimension(file_index);
-      break;
-    case 4:
-      new_index = this->GetMachineConfiguration(file_index);
-      break;
-    case 10:
-      new_index = this->GetNodesASCII(file_index);
-      break;
-    case 12:
-      new_index = this->GetCellsASCII(file_index);
-      break;
-    case 13:
-      new_index = this->GetFacesASCII(file_index);
-      break;
-    case 18:
-      new_index = this->GetPeriodicShadowFacesASCII(file_index);
-      break;
-    case 33:
-      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
-      break;
-    case 37:
-      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
-      break;
-    case 38:
-      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
-      break;
-    case 39:
-      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
-      break;
-    case 40:
-      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
-      break;
-    case 41:
-      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
-      break;
-    case 45:
-      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
-      break;
-    case 54:
-      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
-      break;
-    case 58:
-      new_index = this->GetCellTreeASCII(file_index);
-      break;
-    case 59:
-      new_index = this->GetFaceTreeASCII(file_index);
-      break;
-    case 61:
-      new_index = this->GetFaceParentsASCII(file_index);
-      break;
-    case 62:
-      new_index = this->GetNCG1InformationASCII(file_index);
-      break;
-    case 63:
-      new_index = this->GetNCG2InformationASCII(file_index);
-      break;
-    case 64:
-      new_index = this->GetNoVariablesASCII(file_index);  // Section not used
-      break;
-
-    //
-    // Single Precision
-    //
-
-    case 2010:
-      new_index = this->GetNodesSinglePrecision(file_index);
-      break;
-    case 2012:
-      new_index = this->GetCellsSinglePrecision(file_index);
-      break;
-    case 2013:
-      new_index = this->GetFacesSinglePrecision(file_index);
-      break;
-    case 2018:
-      new_index = this->GetPeriodicShadowFacesSinglePrecision(file_index);
-      break;
-    case 2033:
-      new_index = this->GetNoVariablesSinglePrecision(file_index, "2033)");
-      break;
-    case 2037:
-      new_index = this->GetNoVariablesSinglePrecision(file_index, "2037)");
-      break;
-    case 2038:
-      new_index = this->GetNoVariablesSinglePrecision(file_index, "2038)");
-      break;
-    case 2039:
-      new_index = this->GetNoVariablesSinglePrecision(file_index, "2039)");
-      break;
-    case 2040:
-      new_index = this->GetNoVariablesSinglePrecision(file_index, "2040)");
-      break;
-    case 2041:
-      new_index = this->GetNoVariablesSinglePrecision(file_index, "2041)");
-      break;
-    case 2045:
-      new_index = this->GetNoVariablesSinglePrecision(file_index, "2045)");
-      break;
-    case 2058:
-      new_index = this->GetCellTreeSinglePrecision(file_index);
-      break;
-    case 2059:
-      new_index = this->GetFaceTreeSinglePrecision(file_index);
-      break;
-    case 2061:
-      new_index = this->GetFaceParentsSinglePrecision(file_index);
-      break;
-    case 2062:
-      new_index = this->GetNCG1InformationSinglePrecision(file_index);
-      break;
-    case 2063:
-      new_index = this->GetNCG2InformationSinglePrecision(file_index);
-      break;
-    case 2064:
-      new_index = this->GetNoVariablesSinglePrecision(file_index, "2064)");
-      break;
-
-    case 3010:
-      new_index = this->GetNodesDoublePrecision(file_index);
-      break;
-    case 3012:
-      new_index = this->GetCellsDoublePrecision(file_index);
-      break;
-    case 3013:
-      new_index = this->GetFacesDoublePrecision(file_index);
-      break;
-    case 3018:
-      new_index = this->GetPeriodicShadowFacesDoublePrecision(file_index);
-      break;
-    case 3033:
-      new_index = this->GetNoVariablesDoublePrecision(file_index, "3033)");
-      break;
-    case 3037:
-      new_index = this->GetNoVariablesDoublePrecision(file_index, "3037)");
-      break;
-    case 3038:
-      new_index = this->GetNoVariablesDoublePrecision(file_index, "3038)");
-      break;
-    case 3039:
-      new_index = this->GetNoVariablesDoublePrecision(file_index, "3039)");
-      break;
-    case 3040:
-      new_index = this->GetNoVariablesDoublePrecision(file_index, "3040)");
-      break;
-    case 3041:
-      new_index = this->GetNoVariablesDoublePrecision(file_index, "3041)");
-      break;
-    case 3045:
-      new_index = this->GetNoVariablesDoublePrecision(file_index, "3045)");
-      break;
-    case 3058:
-      new_index = this->GetCellTreeDoublePrecision(file_index);
-      break;
-    case 3059:
-      new_index = this->GetFaceTreeDoublePrecision(file_index);
-      break;
-    case 3061:
-      new_index = this->GetFaceParentsDoublePrecision(file_index);
-      break;
-    case 3062:
-      new_index = this->GetNCG1InformationDoublePrecision(file_index);
-      break;
-    case 3063:
-      new_index = this->GetNCG2InformationDoublePrecision(file_index);
-      break;
-    case 3064:
-      new_index = this->GetNoVariablesDoublePrecision(file_index, "3064)");
-      break;
-    default:
-      cout << " Unknown Index " << task << endl;
-      break;
-    }
-
-  return new_index;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDataIndex(int ix)
-{
-  char b[5];
-
-  if ( this->DataFileBuffer[ix+2] == ' ')
-    {
-    b[0] = this->DataFileBuffer[ix+1];
-    b[1] = 0;
-    b[2] = 0;
-    b[3] = 0;
-    b[4] = 0;
-    return atoi(b);
-    }
-  else if ( this->DataFileBuffer[ix+3] == ' ')
-    {
-    b[0] = this->DataFileBuffer[ix+1];
-    b[1] = this->DataFileBuffer[ix+2];
-    b[2] = 0;
-    b[3] = 0;
-    b[4] = 0;
-    return atoi(b);
-    }
-  else if ( this->DataFileBuffer[ix+4] == ' ')
-    {
-    b[0] = this->DataFileBuffer[ix+1];
-    b[1] = this->DataFileBuffer[ix+2];
-    b[2] = this->DataFileBuffer[ix+3];
-    b[3] = 0;
-    b[4] = 0;
-    return atoi(b);
-    }
-  else if ( this->DataFileBuffer[ix+5] == ' ')
-    {
-    b[0] = this->DataFileBuffer[ix+1];
-    b[1] = this->DataFileBuffer[ix+2];
-    b[2] = this->DataFileBuffer[ix+3];
-    b[3] = this->DataFileBuffer[ix+4];
-    b[4] = 0;
-    return atoi(b);
-    }
-  else
-    {
-    b[0] = this->DataFileBuffer[ix+1];
-    b[1] = this->DataFileBuffer[ix+2];
-    b[2] = this->DataFileBuffer[ix+3];
-    b[3] = this->DataFileBuffer[ix+4];
-    b[4] = 0;
-    return -1; 
-    }
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::ExecuteDataTask(int task, int file_index)
-{
-  int new_index;
-
-  switch ( task )
-    {
-    case 0:
-      new_index = this->GetDataNothing(file_index);
-      break;
-    case 1:
-      new_index = this->GetDataNothing(file_index);
-      break;
-    case 2:
-      new_index = this->GetDataGridDimension(file_index);
-      break;
-    case 4:
-      new_index = this->GetNoData(file_index);
-      break;
-    case 33:
-      new_index = this->GetNoData(file_index);
-      break;
-    case 37:
-      new_index = this->GetNoData(file_index);
-      break;
-    case 38:
-      new_index = this->GetNoData(file_index);
-      break;
-    case 50:
-      new_index = this->GetDataUnknownASCII(file_index);
-      break;
-    case 64:
-      new_index = this->GetNoData(file_index);
-      break;
-    case 300:
-      new_index = this->GetDataASCII(file_index);
-      break;
-    case 301:
-      new_index = this->GetNoData(file_index);
-      break;
-    case 302:
-      new_index = this->GetNoData(file_index);
-      break;
-    case 303:
-      new_index = this->GetNoData(file_index);
-      break;
-    case 313:
-      new_index = this->GetNoData(file_index);
-      break;
-    case 2300:
-      new_index = this->GetDataSinglePrecision(file_index);
-      break;
-    case 2301:
-      new_index = this->SkipUnknownSinglePrecisionData(file_index, "2301)");
-      break;
-    case 2302:
-      new_index = this->SkipUnknownSinglePrecisionData(file_index, "2302)");
-      break;
-    case 2303:
-      new_index = this->SkipUnknownSinglePrecisionData(file_index, "2303)");
-      break;
-    case 2313:
-      new_index = this->SkipUnknownSinglePrecisionData(file_index, "2313)");
-      break;
-    case 3300:
-      new_index = this->GetDataDoublePrecision(file_index);
-      break;
-    case 3301:
-      new_index = this->SkipUnknownDoublePrecisionData(file_index, "3301)");
-      break;
-    case 3302:
-      new_index = this->SkipUnknownDoublePrecisionData(file_index, "3302)");
-      break;
-    case 3313:
-      new_index = this->SkipUnknownDoublePrecisionData(file_index, "3313)");
-      break;
-    default:
-      cout << " Unknown Index " << task << endl;
-      exit(1);
-      break;
-    }
-  return new_index;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNothing(int ix)
-{
-  return this->GoToNextRightParen(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetMachineConfiguration(int ix)
-{
-  char buf[120];
-  int j = ix+1;
-  j = this->GoToNextLeftParen(j)+1;
-
-  this->GetStringToNextRightParen( j, buf );
-  j = this->GoToNextRightParen(j)+1;
-
-  int a, b, c, d, e, f, g, h, m, n, o;
-  sscanf( buf, " %d %d %d %d %d %d %d %d %d %d %d", 
-    &a, &b, &c, &d, &e, &f, &g, &h, &m, &n, &o );
-
-  if ( a == 60 )
-    {
-    this->LittleEndianFlag = 1;
-    }
-  else
-    {
-    this->LittleEndianFlag = 0;
-    }
-
-  return this->GoToNextSectionASCII(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNoVariablesASCII(int ix)
-{
-  return this->GoToNextSectionASCII(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetCellsASCII(int ix)
-{
-  char buf[120];
-  int j = ix+1;
-  j = this->GoToNextLeftParen(j)+1;
-
-  this->GetStringToNextRightParen( j, buf );
-  j = this->GoToNextRightParen(j)+1;
-
-  int zi, fi, li, ty, et;
-  sscanf( buf, " %x %x %x %x %x", &zi, &fi, &li, &ty, &et );
-
-  if ( zi != 0)
-    {
-    this->CellZones->InsertValue(NumberOfCellZones, zi);
-    this->NumberOfCellZones++;
-    }
-
-  if ( zi == 0) 
-    {
-    this->NumberOfCells = li;
-    this->CellParentFlags.resize( NumberOfCells+1, false );
-    }
-  else
-    {
-    if ( et == 0)
-      {
-      this->GetMixedCellTypes( j, fi, li); 
-      }
-    else
-      {
-      for (int i = fi; i <= li; i++)
-        {
-        this->CellTypes->InsertValue(i, et);
-        }
-      }
-    }
-  return this->GoToNextRightParen(j)+1;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetFacesASCII(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int zi, fi, li, ty, et;
-  sscanf( buf, " %x %x %x %x %x", &zi, &fi, &li, &ty, &et );
-
-  if (zi == 0)
-    {
-    this->NumberOfFaces = li;
-    this->InterfaceFaceChildFlags.resize( NumberOfFaces+1, false );
-    this->FaceParentFlags.resize( NumberOfFaces+1, false );
-    }
-  else
-    {
-    j = this->GoToNextLeftParen(j)+1;
-    j = this->GoToNextEOL(j) +1;
-    int n0, n1, n2, n3;
-    int c0, c1;
-    int type;
-    for (int k = fi; k <= li; k++)
-      {
-      this->GetStringToNextRightParenOrEOL( j, buf );
-      if ( et == 0 )
-        {
-        if ( buf[0] == 2)
-          {
-          sscanf( buf, " %x %x %x %x %x ", &type, &n0 , &n1, &c0, &c1 );
-          this->FaceTypes->InsertValue(k,type);
-          this->FaceNodes->InsertComponent(k,0,n0-1);
-          this->FaceNodes->InsertComponent(k,1,n1-1);
-          this->FaceNodes->InsertComponent(k,2,0);
-          this->FaceNodes->InsertComponent(k,3,0);
-          this->FaceCells->InsertComponent(k,0,c0);
-          this->FaceCells->InsertComponent(k,1,c1);
-          }
-        else if ( buf[1] == 3)
-          {
-          sscanf( buf, " %x %x %x %x %x %x ", &type , &n0, &n1, 
-            &n2, &c0, &c1 );
-          this->FaceTypes->InsertValue(k,type);
-          this->FaceNodes->InsertComponent(k,0,n0-1);
-          this->FaceNodes->InsertComponent(k,1,n1-1);
-          this->FaceNodes->InsertComponent(k,2,n2-1);
-          this->FaceNodes->InsertComponent(k,3,0);
-          this->FaceCells->InsertComponent(k,0,c0);
-          this->FaceCells->InsertComponent(k,1,c1);
-          }
-        else
-          {
-          sscanf( buf, " %x %x %x %x %x %x %x ", &type, &n0 , &n1,
-            &n2, &n3, &c0, &c1 );
-          this->FaceTypes->InsertValue(k,type);
-          this->FaceNodes->InsertComponent(k,0,n0-1);
-          this->FaceNodes->InsertComponent(k,1,n1-1);
-          this->FaceNodes->InsertComponent(k,2,n2-1);
-          this->FaceNodes->InsertComponent(k,3,n3-1);
-          this->FaceCells->InsertComponent(k,0,c0);
-          this->FaceCells->InsertComponent(k,1,c1);
-          }
-        }
-      else if ( et == 2)
-        {
-        sscanf( buf, " %x %x %x %x ", &n0 , &n1, &c0, &c1 );
-        this->FaceTypes->InsertValue(k,2);
-        this->FaceNodes->InsertComponent(k,0,n0-1);
-        this->FaceNodes->InsertComponent(k,1,n1-1);
-        this->FaceNodes->InsertComponent(k,2,0);
-        this->FaceNodes->InsertComponent(k,3,0);
-        this->FaceCells->InsertComponent(k,0,c0);
-        this->FaceCells->InsertComponent(k,1,c1);
-        }
-      else if ( et == 3)
-        {
-        sscanf( buf, " %x %x %x %x %x ", &n0 , &n1, &n2, &c0, &c1 );
-        this->FaceTypes->InsertValue(k,3);
-        this->FaceNodes->InsertComponent(k,0,n0-1);
-        this->FaceNodes->InsertComponent(k,1,n1-1);
-        this->FaceNodes->InsertComponent(k,2,n2-1);
-        this->FaceNodes->InsertComponent(k,3,0);
-        this->FaceCells->InsertComponent(k,0,c0);
-        this->FaceCells->InsertComponent(k,1,c1);
-        }
-      else
-        {
-        sscanf( buf, " %x %x %x %x %x %x ", &n0 , &n1, &n2, &n3, &c0, &c1 );
-        this->FaceTypes->InsertValue(k,4);
-        this->FaceNodes->InsertComponent(k,0,n0-1);
-        this->FaceNodes->InsertComponent(k,1,n1-1);
-        this->FaceNodes->InsertComponent(k,2,n2-1);
-        this->FaceNodes->InsertComponent(k,3,n3-1);
-        this->FaceCells->InsertComponent(k,0,c0);
-        this->FaceCells->InsertComponent(k,1,c1);
-        }
-      j = this->GoToNextEOL(j) +1;
-      }
-    }
-  return j;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNodesASCII(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-
-  this->GetStringToNextRightParen( j, buf );
-
-  int zi, fi, li, ty, nd;
-  sscanf( buf, " %x %x %x %x %x", &zi, &fi, &li, &ty, &nd );
-
-  this->Points->InsertPoint(0, 0.0 , 0.0 , 0.0);
-
-  if (zi == 0)
-    {
-    this->NumberOfNodes = li;
-    }
-  else
-    {
-    j = this->GoToNextLeftParen(j)+1;
-    j = this->GoToNextEOL(j) +1;
-    float x,y,z;
-    for (int k = fi; k <= li; k++)
-      {
-      this->GetStringToNextRightParenOrEOL( j, buf );
-      if ( nd == 2)
-        {
-        sscanf( buf, " %f %f ", &x , &y );
-        this->Points->InsertPoint(k-1, x, y, 0.0);
-        }
-      else
-        {
-        sscanf( buf, " %f %f %f", &x , &y, &z );
-        this->Points->InsertPoint(k-1, x, y, z);
-        }
-
-      j = this->GoToNextEOL(j) +1;
-      }
-    }
-  j = this->GoToNextRightParen(j)+1;
-  return j;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetFaceParentsASCII(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-
-  this->GetStringToNextRightParen( j, buf );
-
-  int face_id0, face_id1;
-  sscanf( buf, " %x %x", &face_id0, &face_id1);
-
-  j = this->GoToNextLeftParen(j)+1;
-  j = this->GoToNextASCIIHexDigit(j);
-
-  for (int k=face_id0;k<=face_id1;k++)
-    {
-    this->GetStringToNextRightParenOrEOL( j, buf );
-    int pid0, pid1;
-    sscanf( buf, " %x %x ", &pid0 , &pid1 );
-
-    InterfaceFaceChildFlags[ k ] = true;
-    this->NumberOfFaceParentChildren++;
-
-    j = this->GoToNextEOL(j) +1;
-    }
-
-  if (face_id1 >= this->NumberOfFaceParents)
-    {
-    this->NumberOfFaceParents = face_id1;
-    }
-
-  return this->GoToNextRightParen(j)+1;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNCG1InformationASCII(int ix)
-{
-  // Face Information
-  char buf[120];
-  int j = ix + 1;
-
-  j = this->GoToNextLeftParen(j)+1;
-
-  this->GetStringToNextRightParen( j, buf );
-
-  int KidId, ParentId, NumberOfFacesNCG;
-  sscanf( buf, " %d %d %d", &KidId, &ParentId, &NumberOfFacesNCG);
-
-  j = this->GoToNextLeftParen(j)+1;
-  j = this->GoToNextASCIIHexDigit(j);
-
-  for (int k = 0; k < NumberOfFacesNCG; k++)
-    {
-    this->GetStringToNextRightParenOrEOL( j, buf );
-    int child, parent;
-    sscanf( buf, " %x %x ", &child , &parent );
-    this->NCGFaceChildFlags.insert( child );
-    j = this->GoToNextEOL(j) +1;
-    this->NumberOfNCGFaces++;
-    }
-
-  this->NumberOfNCGFaceHeaders++;
-  return this->GoToNextRightParen(j)+1;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNCG2InformationASCII(int ix)
-{
-  // Node Information
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-
-  this->GetStringToNextRightParen( j, buf );
-
-  int ZoneId, NumberOfNodesNCG;
-  sscanf( buf, " %d %d", &ZoneId, &NumberOfNodesNCG);
-
-  j = this->GoToNextLeftParen(j)+1;
-  j = this->GoToNextASCIIHexDigit(j);
-
-  for (int k = 0; k < NumberOfNodesNCG; k++)
-    {
-    this->GetStringToNextRightParenOrEOL( j, buf );
-    float x,y,z;
-    int NodeId;
-    if (this->GridDimension == 3)
-      {
-      sscanf( buf, " %d %f %f %f ", &NodeId, &x , &y, &z );
-      }
-    else
-      {
-      sscanf( buf, " %d %f %f ", &NodeId, &x , &y );
-      z = 0;
-      }
-
-
-    j = this->GoToNextEOL(j) +1;
-    this->NumberOfNCGNodes++;
-    }
-
-  this->NumberOfNCGNodeHeaders++;
-  return j;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetPeriodicShadowFacesASCII(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int fi, li, pz, sz;
-  sscanf( buf, " %x %x %x %x", &fi, &li, &pz, &sz);
-  j = this->GoToNextLeftParen(j)+1;
-  j = this->GoToNextASCIIHexDigit(j);
-
-  int psf0, psf1;
-  for (int k = fi; k <= li; k++)
-    {
-    this->GetStringToNextRightParenOrEOL( j, buf );
-    sscanf( buf, " %x %x ", &psf0 , &psf1 );
-    j = this->GoToNextEOL(j) +1;
-    }
-
-  if ( li >= this->NumberOfPeriodicShadowFaces)
-    {
-    this->NumberOfPeriodicShadowFaces = li;
-    }
-
-  return j;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetCellTreeASCII(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int fid0, fid1, pzid, czid;
-  sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
-
-  for (int k = fid0; k <= fid1; k++)
-    {
-    this->CellParentFlags.at( k ) = true;
-    }
-  j = this->GoToNextLeftParen(j)+1;
-
-  for (int k = fid0; k <= fid1; k++)
-    {
-    int NumberOfKids = this->GetAsciiInteger(j);
-    j = this->GoPastAsciiInteger(j);
-    for (int i = 0; i < NumberOfKids; i++)
-      {
-      j = this->GoPastAsciiInteger(j);
-      this->NumberOfCellTreeKids++;
-      }
-    this->NumberOfCellTreeParents++;
-    }
-
-  this->NumberOfCellTrees++;
-  return this->GoToNextSectionASCII(j);
-}
-
-int vtkFLUENTReader::GetFaceTreeASCII(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int fid0, fid1, pzid, czid;
-  sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
-
-  static int index = 0;
-  for(int k = fid0; k <= fid1; k++)
-    {
-    this->FaceTreeParentTable->InsertValue(k, index);
-    index++;
-    }
-
-  int startFace = fid0;
-  int endFace = fid1;
-  for(int k = startFace; k <= endFace; k++)
-    {
-    this->FaceParentFlags.at( k ) = true;
-    }
-
-  j = this->GoToNextLeftParen(j)+1;
-
-  for (int k = fid0; k <= fid1; k++)
-    {
-    int NumberOfKids = this->GetAsciiInteger(j);
-    j = this->GoPastAsciiInteger(j);
-    this->FaceTreesNumberOfKids->InsertValue(this->NumberOfFaceTreeParents, 
-      NumberOfKids);
-    this->FaceTreesKidsIndex->InsertValue(this->NumberOfFaceTreeParents, 
-      this->NumberOfFaceTreeKids);
-    for(int i = 0; i < NumberOfKids; i++)
-      {
-      int Kid = this->GetAsciiInteger(j);
-      j = this->GoPastAsciiInteger(j);
-      this->FaceTreesKids->InsertValue(this->NumberOfFaceTreeKids, Kid);
-      this->NumberOfFaceTreeKids++;
-      }
-
-    this->NumberOfFaceTreeParents++;
-    }
-
-  this->NumberOfFaceTrees++;
-  return this->GoToNextSectionASCII(j);
-}
-
-//-----------------------------------------------------------------------------
-
-int vtkFLUENTReader::GetNoVariablesSinglePrecision(int ix, char buf[])
-{
-  return this->GoToNextSectionSinglePrecision( ix, buf);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetCellsSinglePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int zi, fi, li, ty, et;
-  sscanf( buf, " %x %x %x %x %x", &zi, &fi, &li, &ty, &et );
-
-  if ( zi != 0)
-    {
-    this->CellZones->InsertValue(this->NumberOfCellZones, zi);
-    this->NumberOfCellZones++;
-    }
-
-  if ( et != 0)
-    {
-    for (int i = fi; i <= li; i++)
-      {
-      this->CellTypes->InsertValue(i, et);
-      }
-    }
-  else
-    { // Mixed Cells
-    j = this->GoToNextLeftParen(j)+1;
-    for (int i = fi; i <= li; i++)
-      {
-      this->CellTypes->InsertValue(i, this->GetBinaryInteger(j));
-      j = j + 4;
-      }
-    }
-
-  j++;
-  return this->GoToNextSectionSinglePrecision( j, "2012)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetFacesSinglePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int zi, fi, li, ty, et;
-  sscanf( buf, " %x %x %x %x %x", &zi, &fi, &li, &ty, &et );
-  j = this->GoToNextLeftParen(j)+1;
-
-  if ( et == 2)
-    {
-    for (int i = fi; i <= li; i++)
-      {
-      this->FaceTypes->InsertValue(i, et);
-      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,2, 0);
-      this->FaceNodes->InsertComponent(i,3, 0);
-      this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
-      j = j + 4;
-      this->FaceCells->InsertComponent(i,1,this->GetBinaryInteger(j));
-      j = j + 4;
-      }
-    }
-  else if ( et == 3)
-    {
-    for (int i = fi; i <= li; i++)
-      {
-      this->FaceTypes->InsertValue(i, et);
-      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,3, 0);
-      this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
-      j = j + 4;
-      this->FaceCells->InsertComponent(i,1,this->GetBinaryInteger(j));
-      j = j + 4;
-      }
-    }
-  else if ( et == 4)
-    {
-    for (int i = fi; i <= li; i++)
-      {
-      this->FaceTypes->InsertValue(i, et);
-      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,3,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
-      j = j + 4;
-      this->FaceCells->InsertComponent(i,1,this->GetBinaryInteger(j));
-      j = j + 4;
-      }
-    }
-  else
-    { // Mixed Faces
-    for (int i = fi; i <= li; i++)
-      {
-      int ft = this->GetBinaryInteger(j);
-      j = j + 4;
-      this->FaceTypes->InsertValue(i, ft);
-      if ( ft == 2)
-        {
-        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,2, 0);
-        this->FaceNodes->InsertComponent(i,3, 0);
-        this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
-        j = j + 4;
-        this->FaceCells->InsertComponent(i,1,this->GetBinaryInteger(j));
-        j = j + 4;
-        }
-      else if ( ft == 3)
-        {
-        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,3, 0);
-        this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
-        j = j + 4;
-        this->FaceCells->InsertComponent(i,1,this->GetBinaryInteger(j));
-        j = j + 4;
-        }
-      else if ( ft == 4)
-        {
-        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,3,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
-        j = j + 4;
-        this->FaceCells->InsertComponent(i,1,this->GetBinaryInteger(j));
-        j = j + 4;
-        }
-      }
-    }
-  return this->GoToNextSectionSinglePrecision( j, "2013)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNodesSinglePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int zi, fi, li, ty, nd;
-  sscanf( buf, " %x %x %x %x %x", &zi, &fi, &li, &ty, &nd );
-
-  this->Points->InsertPoint(0, 0.0 , 0.0 , 0.0);
-  j = this->GoToNextLeftParen(j)+1;
-
-  float x,y,z;
-  for(int k = fi; k <= li; k++)
-    {
-    if ( nd == 2)
-      {
-      x = this->GetBinaryFloat(j);
-      j = j+4;
-      y = this->GetBinaryFloat(j);
-      j = j+4;
-      this->Points->InsertPoint(k-1, x, y, 0);
-      }
-    else
-      {
-      x = this->GetBinaryFloat(j);
-      j = j+4;
-      y = this->GetBinaryFloat(j);
-      j = j+4;
-      z = this->GetBinaryFloat(j);
-      j = j+4;
-      this->Points->InsertPoint(k-1, x, y, z);
-      }
-    }
-
-  return this->GoToNextSectionSinglePrecision( j, "2010)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetFaceParentsSinglePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int face_id0, face_id1;
-  sscanf( buf, " %x %x", &face_id0, &face_id1);
-  j = this->GoToNextLeftParen(j)+1;
-
-  int pid0, pid1;
-  for (int k = face_id0; k <= face_id1; k++)
-    {
-    pid0 = this->GetBinaryInteger(j);
-    j = j + 4;
-    pid1 = this->GetBinaryInteger(j);
-    j = j + 4;
-    InterfaceFaceChildFlags[ k ] = true; // mccdo
-    this->NumberOfFaceParentChildren++;
-    }
-
-  if ( face_id1 >= this->NumberOfFaceParents)
-    {
-    this->NumberOfFaceParents = face_id1;
-    }
-
-  return this->GoToNextSectionSinglePrecision( j, "2061)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNCG1InformationSinglePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int KidId, ParentId, NumberOfFacesNCG;
-  sscanf( buf, " %d %d %d", &KidId, &ParentId, &NumberOfFacesNCG);
-
-  j = this->GoToNextLeftParen(j)+1;
-  int child,parent;
-  for (int k = 0; k < NumberOfFacesNCG; k++)
-    {
-    child = this->GetBinaryInteger(j);
-    j = j + 4;
-    parent = this->GetBinaryInteger(j);
-    j = j + 4;
-    this->NCGFaceChildFlags.insert( child );
-    this->NumberOfNCGFaces++;
-    }
-
-  this->NumberOfNCGFaceHeaders++;
-  return this->GoToNextSectionSinglePrecision( j, "2062)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNCG2InformationSinglePrecision(int ix)
-{
-  // Node Information
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int ZoneId, NumberOfNodesNCG;
-  sscanf( buf, " %d %d", &ZoneId, &NumberOfNodesNCG);
-
-  j = this->GoToNextLeftParen(j)+1;
-
-  float x,y,z;
-  int NodeId;
-  for (int k = 0; k < NumberOfNodesNCG; k++)
-    {
-    NodeId = this->GetBinaryInteger(j);
-    j = j + 4;
-    x = this->GetBinaryFloat(j);
-    j = j + 4;
-    y = this->GetBinaryFloat(j);
-    j = j + 4;
-    if ( this->GridDimension == 3)
-      {
-      z = this->GetBinaryFloat(j);
-      j = j + 4;
-      }
-    else
-      {
-      z = 0.0;
-      }
-
-    this->NumberOfNCGNodes++;
-    }
-
-  this->NumberOfNCGNodeHeaders++;
-  return this->GoToNextSectionSinglePrecision( j, "2063)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetPeriodicShadowFacesSinglePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int fi, li, pz, sz;
-  sscanf( buf, " %x %x %x %x", &fi, &li, &pz, &sz);
-  j = this->GoToNextLeftParen(j)+1;
-
-  int psf0, psf1;
-  for (int k = fi; k <= li; k++)
-    {
-    psf0 = this->GetBinaryInteger(j);
-    j = j + 4;
-    psf1 = this->GetBinaryInteger(j);
-    j = j + 4;
-    }
-
-  if ( li >= this->NumberOfPeriodicShadowFaces)
-    {
-    this->NumberOfPeriodicShadowFaces = li;
-    }
-
-  return this->GoToNextSectionSinglePrecision( j, "2018)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetCellTreeSinglePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int fid0, fid1, pzid, czid;
-  sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
-
-  for (int k = fid0; k <= fid1; k++)
-    {
-    this->CellParentFlags.at( k ) = true;
-    }
-  j = this->GoToNextLeftParen(j)+1;
-
-  for (int k = fid0; k <= fid1; k++)
-    {
-    int NumberOfKids = this->GetBinaryInteger(j);
-    j = j + 4;
-    for (int i = 0; i < NumberOfKids; i++)
-      {
-      j = j + 4;
-      this->NumberOfCellTreeKids++;
-      }
-
-    this->NumberOfCellTreeParents++;
-    }
-
-  this->NumberOfCellTrees++;
-  return this->GoToNextSectionSinglePrecision( j, "2058)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetFaceTreeSinglePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int fid0, fid1, pzid, czid;
-  sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
-
-  static int index = 0;
-  for(int k = fid0; k <= fid1; k++)
-    {
-    this->FaceTreeParentTable->InsertValue(k, index);
-    index++;
-    }
-
-  int startFace = fid0;
-  int endFace = fid1;
-  for(int k = startFace; k <= endFace; k++)
-    {
-    this->FaceParentFlags.at( k ) = true;
-    }
-  j = this->GoToNextLeftParen(j)+1;
-
-  for (int k = fid0; k <= fid1; k++)
-    {
-    int NumberOfKids = this->GetBinaryInteger(j);
-    j = j + 4;
-    this->FaceTreesNumberOfKids->InsertValue(this->NumberOfFaceTreeParents, 
-      NumberOfKids);
-    this->FaceTreesKidsIndex->InsertValue(this->NumberOfFaceTreeParents, 
-      NumberOfFaceTreeKids);
-    for (int i = 0; i < NumberOfKids; i++)
-      {
-      int Kid = this->GetBinaryInteger(j);
-      j = j + 4;
-      this->FaceTreesKids->InsertValue(this->NumberOfFaceTreeKids, Kid);
-      this->NumberOfFaceTreeKids++;
-      }
-    this->NumberOfFaceTreeParents++;
-    }
-  this->NumberOfFaceTrees++;
-  return this->GoToNextSectionSinglePrecision( j, "2059)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNoVariablesDoublePrecision(int ix, char buf[])
-{
-  return this->GoToNextSectionDoublePrecision( ix, buf);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetCellsDoublePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int zi, fi, li, ty, et;
-  sscanf( buf, " %x %x %x %x %x", &zi, &fi, &li, &ty, &et );
-  if ( zi != 0)
-    {
-    this->CellZones->InsertValue(this->NumberOfCellZones, zi);
-    this->NumberOfCellZones++;
-    }
-
-  if ( et != 0)
-    {
-    for ( int i = fi; i <= li; i++)
-      {
-      this->CellTypes->InsertValue(i, et);
-      }
-    }
-  else
-    { // Mixed Cells
-    j = this->GoToNextLeftParen(j)+1;
-    for (int i = fi; i <= li; i++)
-      {
-      this->CellTypes->InsertValue(i, this->GetBinaryInteger(j));
-      j = j + 4;
-      }
-    }
-
-  j++;
-  return this->GoToNextSectionDoublePrecision( j, "3012)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetFacesDoublePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int zi, fi, li, ty, et;
-  sscanf( buf, " %x %x %x %x %x", &zi, &fi, &li, &ty, &et );
-  j = this->GoToNextLeftParen(j)+1;
-
-  if (et == 2)
-    {
-    for (int i = fi; i <= li; i++)
-      {
-      this->FaceTypes->InsertValue(i, et);
-      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,2, 0);
-      this->FaceNodes->InsertComponent(i,3, 0);
-      this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
-      j = j + 4;
-      this->FaceCells->InsertComponent(i,1,this->GetBinaryInteger(j));
-      j = j + 4;
-      }
-    }
-  else if (et == 3)
-    {
-    for (int i = fi; i <= li; i++)
-      {
-      this->FaceTypes->InsertValue(i, et);
-      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,3, 0);
-      this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
-      j = j + 4;
-      this->FaceCells->InsertComponent(i,1,this->GetBinaryInteger(j));
-      j = j + 4;
-      }
-    }
-  else if (et == 4)
-    {
-    for (int i = fi; i <= li; i++)
-      {
-      this->FaceTypes->InsertValue(i, et);
-      this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceNodes->InsertComponent(i,3,this->GetBinaryInteger(j)-1);
-      j = j + 4;
-      this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
-      j = j + 4;
-      this->FaceCells->InsertComponent(i,1,this->GetBinaryInteger(j));
-      j = j + 4;
-      }
-    }
-  else
-    { // Mixed Faces
-    for (int i = fi; i <= li; i++)
-      {
-      int ft = this->GetBinaryInteger(j);
-      j = j + 4;
-      this->FaceTypes->InsertValue(i, ft);
-      if ( ft == 2)
-        {
-        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,2, 0);
-        this->FaceNodes->InsertComponent(i,3, 0);
-        this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
-        j = j + 4;
-        this->FaceCells->InsertComponent(i,1,this->GetBinaryInteger(j));
-        j = j + 4;
-        }
-      else if ( ft == 3)
-        {
-        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,3, 0);
-        this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
-        j = j + 4;
-        this->FaceCells->InsertComponent(i,1,this->GetBinaryInteger(j));
-        j = j + 4;
-        }
-      else if ( ft == 4)
-        {
-        this->FaceNodes->InsertComponent(i,0,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,1,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,2,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceNodes->InsertComponent(i,3,this->GetBinaryInteger(j)-1);
-        j = j + 4;
-        this->FaceCells->InsertComponent(i,0,this->GetBinaryInteger(j));
-        j = j + 4;
-        this->FaceCells->InsertComponent(i,1,this->GetBinaryInteger(j));
-        j = j + 4;
-        }
-      }
-    }
-  return this->GoToNextSectionDoublePrecision( j, "3013)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNodesDoublePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int zi, fi, li, ty, nd;
-  sscanf( buf, " %x %x %x %x %x", &zi, &fi, &li, &ty, &nd );
-
-  this->Points->InsertPoint(0, 0.0 , 0.0 , 0.0);
-  j = this->GoToNextLeftParen(j)+1;
-
-  float x,y,z;
-  for (int k = fi; k <= li; k++)
-    {
-    if ( nd == 2)
-      {
-      x = this->GetBinaryDouble(j);
-      j = j+8;
-      y = this->GetBinaryDouble(j);
-      j = j+8;
-      this->Points->InsertPoint(k-1, x, y, 0);
-      }
-    else
-      {
-      x = this->GetBinaryDouble(j);
-      j = j+8;
-      y = this->GetBinaryDouble(j);
-      j = j+8;
-      z = this->GetBinaryDouble(j);
-      j = j+8;
-      this->Points->InsertPoint(k-1, x, y, z);
-      }
-    }
-  return this->GoToNextSectionSinglePrecision( j, "3010)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetFaceParentsDoublePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int face_id0, face_id1;
-  sscanf( buf, " %x %x", &face_id0, &face_id1);
-  j = this->GoToNextLeftParen(j)+1;
-
-  int pid0, pid1;
-  for (int k = face_id0; k <= face_id1; k++)
-    {
-    pid0 = this->GetBinaryInteger(j);
-    j = j + 4;
-    pid1 = this->GetBinaryInteger(j);
-    j = j + 4;
-    InterfaceFaceChildFlags[ k ] = true;
-    this->NumberOfFaceParentChildren++;
-    }
-
-  if (face_id1 >= this->NumberOfFaceParents)
-    {
-    this->NumberOfFaceParents = face_id1;
-    }
-
-  return this->GoToNextSectionDoublePrecision( j, "3061)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNCG1InformationDoublePrecision(int ix)
-{
-  // Face Information
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-
-  this->GetStringToNextRightParen( j, buf );
-  int KidId, ParentId, NumberOfFacesNCG;
-  sscanf( buf, " %d %d %d", &KidId, &ParentId, &NumberOfFacesNCG);
-
-  j = this->GoToNextLeftParen(j)+1;
-  int child,parent;
-  for (int k = 0; k < NumberOfFacesNCG; k++)
-    {
-    child = this->GetBinaryInteger(j);
-    j = j + 4;
-    parent = this->GetBinaryInteger(j);
-    j = j + 4;
-    this->NCGFaceChildFlags.insert( child );
-    this->NumberOfNCGFaces++;
-    }
-
-  this->NumberOfNCGFaceHeaders++;
-  return this->GoToNextSectionDoublePrecision( j, "3062)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNCG2InformationDoublePrecision(int ix)
-{
-  // Node Information
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int ZoneId, NumberOfNodesNCG;
-  sscanf( buf, " %d %d", &ZoneId, &NumberOfNodesNCG);
-
-  j = this->GoToNextLeftParen(j)+1;
-
-  float x,y,z;
-  int NodeId;
-  for (int k = 0; k < NumberOfNodesNCG; k++)
-    {
-    NodeId = this->GetBinaryInteger(j);
-    j = j + 4;
-    x = this->GetBinaryDouble(j);
-    j = j + 8;
-    y = this->GetBinaryDouble(j);
-    j = j + 8;
-    if (this->GridDimension == 3)
-      {
-      z = this->GetBinaryDouble(j);
-      j = j + 8;
-      }
-    else
-      {
-      z = 0.0;
-      }
-
-    this->NumberOfNCGNodes++;
-    }
+  FluentDataFile.open(dfilename.c_str());
 
-  this->NumberOfNCGNodeHeaders++;
-  return this->GoToNextSectionDoublePrecision( j, "3063)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetPeriodicShadowFacesDoublePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-  int fi, li, pz, sz;
-  sscanf( buf, " %x %x %x %x", &fi, &li, &pz, &sz);
-  j = this->GoToNextLeftParen(j)+1;
-
-  int psf0, psf1;
-  for (int k = fi;k <= li; k++)
-    {
-    psf0 = this->GetBinaryInteger(j);
-    j = j + 4;
-    psf1 = this->GetBinaryInteger(j);
-    j = j + 4;
-    }
-
-  if ( li >= this->NumberOfPeriodicShadowFaces)
-    {
-    this->NumberOfPeriodicShadowFaces = li;
-    }
-
-  return this->GoToNextSectionDoublePrecision( j, "3018)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetCellTreeDoublePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int fid0, fid1, pzid, czid;
-  sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
-  for (int k = fid0; k <= fid1; k++)
-    {
-    this->CellParentFlags.at( k ) = true;
-    }
-
-  j = this->GoToNextLeftParen(j)+1;
-  for (int k = fid0; k <= fid1; k++)
-    {
-    int NumberOfKids = this->GetBinaryInteger(j);
-    j = j + 4;
-    for (int i = 0; i < NumberOfKids; i++)
-      {
-      j = j + 4;
-      this->NumberOfCellTreeKids++;
-      }
-    this->NumberOfCellTreeParents++;
-    }
-  this->NumberOfCellTrees++;
-  return this->GoToNextSectionDoublePrecision( j, "3058)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetFaceTreeDoublePrecision(int ix)
-{
-  char buf[120];
-  int j = ix + 1;
-  j = this->GoToNextLeftParen(j)+1;
-  this->GetStringToNextRightParen( j, buf );
-
-  int fid0, fid1, pzid, czid;
-  sscanf( buf, " %x %x %x %x", &fid0, &fid1, &pzid, &czid);
-  static int index = 0;
-  for(int k = fid0; k <= fid1; k++)
-    {
-    this->FaceTreeParentTable->InsertValue(k, index);
-    index++;
-    }
-
-  int startFace = fid0;
-  int endFace = fid1;
-  for(int k = startFace; k <= endFace; k++)
-    {
-    this->FaceParentFlags.at( k ) = true;
-    }
-  j = GoToNextLeftParen(j)+1;
-
-  for (int k = fid0; k <= fid1; k++)
-    {
-    int NumberOfKids = this->GetBinaryInteger(j);
-    j = j + 4;
-    this->FaceTreesNumberOfKids->InsertValue(this->NumberOfFaceTreeParents,
-      NumberOfKids);
-    this->FaceTreesKidsIndex->InsertValue(this->NumberOfFaceTreeParents, 
-      this->NumberOfFaceTreeKids);
-    for (int i = 0; i < NumberOfKids; i++)
-      {
-      int Kid = this->GetBinaryInteger(j);
-      j = j + 4;
-      this->FaceTreesKids->InsertValue(this->NumberOfFaceTreeKids, Kid);
-      this->NumberOfFaceTreeKids++;
-      }
-    this->NumberOfFaceTreeParents++;
-    }
-  this->NumberOfFaceTrees++;
-  return this->GoToNextSectionDoublePrecision( j, "3059)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetGridDimension(int ix)
-{
-  char b2[2];
-  b2[0] = this->CaseFileBuffer[ix+3];
-  b2[1] = 0;
-  this->GridDimension = atoi(b2);
-
-  return this->GoToNextRightParen(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDataNothing(int ix)
-{
-  return this->GoToNextRightParenData(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetNoData(int ix)
-{
-  return this->GoToNextSectionASCIIData(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDataGridDimension(int ix)
-{
-  char b2[2];
-  b2[0] = this->DataFileBuffer[ix+3];
-  b2[1] = 0;
-  this->GridDimension = atoi(b2);
-
-  return this->GoToNextRightParenData(ix);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextRightParenData(int ix)
-{
-  int i = ix;
-  while ( this->DataFileBuffer[i] != ')' )
-    {
-    i++;
-    }
-  return i;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextLeftParenData(int ix)
-{
-  int i = ix;
-  while ( this->DataFileBuffer[i] != '(' )
-    {
-    i++;
-    }
-    return i;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextSectionASCIIData(int ix)
-{
-  int i = ix + 1;
-  int level = 0;
-
-  while ( !((level == 0) && (DataFileBuffer[i] == ')')))
-    {
-    if ( this->DataFileBuffer[i] == '(')
-      {
-      level++;
-      }
-    if (this->DataFileBuffer[i] == ')')
-      {
-      level--;
-      }
-    i++;
-    }
-  return i;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextSectionSinglePrecisionData(int ix, char buf[])
-{
-  int i = ix + 1;
-  while ( !((this->DataFileBuffer[i] == buf[0]) 
-    && (this->DataFileBuffer[i+1] == buf[1]) 
-    && (this->DataFileBuffer[i+2] == buf[2]) 
-    && (this->DataFileBuffer[i+3] == buf[3]) 
-    && (this->DataFileBuffer[i+4] == buf[4])))
-    {
-    i++;
-    }
-  return i+4;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextSectionDoublePrecisionData(int ix, char buf[])
-{
-  int i = ix + 1;
-  while( !((this->DataFileBuffer[i] == buf[0]) 
-    && (this->DataFileBuffer[i+1] == buf[1]) 
-    && (this->DataFileBuffer[i+2] == buf[2]) 
-    && (this->DataFileBuffer[i+3] == buf[3]) 
-    && (this->DataFileBuffer[i+4] == buf[4])))
-    {
-    i++;
-    }
-  return i+4;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDataASCII(int ix)
-{
-  char buf[120];
-  int index = -1;
-  int j = ix + 1;
-  float x;
-  j = this->GoToNextLeftParenData(j)+1;
-  this->GetStringToNextRightParenData( j, buf );
-
-  int ssid, zid, size, ntl, np, fi, li;
-  sscanf( buf, " %d %d %d %d %d %d %d", 
-    &ssid, &zid, &size, &ntl, &np, &fi, &li );
-  j = this->GoToNextLeftParenData(j)+1;
-
-  if (this->DataPass == 1)
-    {
-    if (this->IsCellZoneId(zid))
-      {
-      if (this->IsNewVariable(ssid))
-        {
-        this->VariableIds->InsertValue(NumberOfVariables, ssid);
-        this->VariableSizes->InsertValue(NumberOfVariables, size);
-        this->NumberOfVariables++;
-        }
-      }
-    }
-  else 
-    {
-    if (this->IsCellZoneId(zid))
-      {
-      index = this->GetVariableIndex(ssid);
-      for (int i = fi; i <= li; i++)
-        {
-        for (int k = 0; k < size; k++)
-          {
-          this->GetStringToNextRightParenOrEOLData( j, buf );
-          sscanf( buf, " %f ", &x );
-          j = this->GoToNextEOLData(j) +1;
-          this->CellData[index]->InsertComponent( i-1, k, x); 
-          }
-        }
-      }
-    }
-  if ( index >= 0 )
-    {
-    if((this->CellData[index]->GetNumberOfTuples() == 
-      this->Mesh->GetNumberOfCells() )
-      && (this->CellData[index]->GetNumberOfComponents() < 6) )
-      {
-      if (this->FirstArrayFlag == 0)
-        {
-        this->Mesh->GetCellData()->SetScalars(this->CellData[index]);
-        }
-      else
-        {
-        this->Mesh->GetCellData()->AddArray(this->CellData[index]);
-        }
-      this->FirstArrayFlag = 1;
-      this->CellDataArraySelection->AddArray(
-      this->CellData[ index ]->GetName());
-      this->NumberOfCellFields++;
-      this->CellData[index]->Delete();
-      this->CellData[index] = 0;
-      }
-    }
-  return this->GoToNextSectionASCIIData(j);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDataSinglePrecision(int ix)
-{
-  char buf[120];
-  int index = -1; 
-  int j = ix + 1;
-  j = this->GoToNextLeftParenData(j)+1;
-  this->GetStringToNextRightParenData( j, buf );
-
-  int ssid, zid, size, ntl, np, fi, li;
-  sscanf( buf, " %d %d %d %d %d %d %d", 
-    &ssid, &zid, &size, &ntl, &np, &fi, &li );
-  j = this->GoToNextLeftParenData(j)+1;
-
-  if ( this->DataPass == 1)
-    {
-    if ( this->IsCellZoneId(zid))
-      {
-      if ( this->IsNewVariable(ssid))
-        {
-        this->VariableIds->InsertValue(NumberOfVariables, ssid);
-        this->VariableSizes->InsertValue(NumberOfVariables, size);
-        this->NumberOfVariables++;
-        }
-      }
-    }
-  else
-    {
-    if ( this->IsCellZoneId(zid))
-      {
-      index = this->GetVariableIndex(ssid);
-      for (int i = fi; i <= li; i++)
-        {
-        for (int k = 0; k < size; k++)
-          {
-          this->CellData[index]->InsertComponent( i-1, k, 
-            this->GetBinaryFloatData(j)); 
-          j = j + 4;
-          }
-        }
-      }
-    }
-  if ( index >= 0 )
-    {
-    if((this->CellData[index]->GetNumberOfTuples() == 
-      this->Mesh->GetNumberOfCells() )
-      && (this->CellData[index]->GetNumberOfComponents() < 6) )
-      {
-      if (this->FirstArrayFlag == 0)
-        {
-        this->Mesh->GetCellData()->SetScalars(this->CellData[index]);
-        }
-      else
-        {
-        this->Mesh->GetCellData()->AddArray(this->CellData[index]);
-        }
-      this->FirstArrayFlag = 1;
-      this->CellDataArraySelection->AddArray(
-        this->CellData[ index ]->GetName());
-      this->NumberOfCellFields++;
-      this->CellData[index]->Delete();
-      this->CellData[index] = 0;
-      }
-    }
-  return this->GoToNextSectionSinglePrecisionData( j, "2300)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDataDoublePrecision(int ix)
-{
-  char buf[120];
-  int index = -1;
-  int j = ix + 1;
-  j = this->GoToNextLeftParenData(j)+1;
-  this->GetStringToNextRightParenData( j, buf );
-
-  int ssid, zid, size, ntl, np, fi, li;
-  sscanf( buf, " %d %d %d %d %d %d %d", 
-    &ssid, &zid, &size, &ntl, &np, &fi, &li );
-  j = this->GoToNextLeftParenData(j)+1;
-
-  if ( this->DataPass == 1)
-    {
-    if ( this->IsCellZoneId(zid))
-      {
-      if ( this->IsNewVariable(ssid))
-        {
-        this->VariableIds->InsertValue(this->NumberOfVariables, ssid);
-        this->VariableSizes->InsertValue(this->NumberOfVariables, size);
-        this->NumberOfVariables++;
-        }
-      }
-    }
-  else
-    {
-    if ( this->IsCellZoneId(zid))
-      {
-      index = this->GetVariableIndex(ssid);
-      for (int i = fi; i <= li; i++)
-        {
-        for (int k = 0; k < size; k++)
-          {
-          this->CellData[index]->InsertComponent( i-1, k,
-            this->GetBinaryDoubleData(j)); 
-          j = j + 8;
-          }
-        }
-      }
-    }
-  if ( index >= 0 )
-    {
-    if((this->CellData[index]->GetNumberOfTuples() == 
-      this->Mesh->GetNumberOfCells() )
-      && (this->CellData[index]->GetNumberOfComponents() < 6) )
-      {
-      if (this->FirstArrayFlag == 0)
-        {
-        this->Mesh->GetCellData()->SetScalars(this->CellData[index]);
-        }
-      else
-        {
-        this->Mesh->GetCellData()->AddArray(this->CellData[index]);
-        }
-      this->FirstArrayFlag = 1;
-      this->CellDataArraySelection->AddArray(
-        this->CellData[ index ]->GetName());
-      this->NumberOfCellFields++;
-      this->CellData[index]->Delete();
-      this->CellData[index] = 0;
-      }
-    }
-  return this->GoToNextSectionSinglePrecisionData( j, "3300)");
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::SkipUnknownSinglePrecisionData(int ix, char buf[])
-{
-  return this->GoToNextSectionSinglePrecisionData( ix, buf);
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::SkipUnknownDoublePrecisionData(int ix, char buf[])
-{
-  return this->GoToNextSectionDoublePrecisionData( ix, buf);
-}
-
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetDataUnknownASCII(int ix)
-{
-  int j = ix + 1;
-  j = this->GoToNextLeftParenData(j)+1;
-  j = this->GoToNextLeftParenData(j)+1;
-  j = this->GoToNextRightParenData(j)+1;
-  j = this->GoToNextRightParenData(j)+1;
-  return j;
-}
-
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::GetStringToNextRightParenData(int ix, char buf[] )
-{
-  // Copy contents between ( ) into buffer
-  int j = ix;
-  int k=0;
-  while ( !(this->DataFileBuffer[j] == ')'))
-    {
-    buf[k] = this->DataFileBuffer[j];
-    j++;
-    k++;
-    }
-  buf[k] = 0;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::IsCellZoneId(int zi)
-{
-  int flag = 0;
-  for (int i = 0; i < this->NumberOfCellZones; i++)
-    {
-    if ( zi == this->CellZones->GetValue(i))
-      {
-      flag = 1;
-      }
-    }
-  return flag;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::IsNewVariable(int ssid)
-{
-  int flag = 1;
-  for (int i = 0; i < this->NumberOfVariables; i++)
-    {
-    if ( ssid == this->VariableIds->GetValue(i))
-      {
-      flag = 0;
-      }
-    }
-  return flag;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetVariableIndex(int ssid)
-{
-  int index = 0;
-  for (int i = 0; i < this->NumberOfVariables; i++)
-    {
-    if ( ssid == this->VariableIds->GetValue(i))
-      {
-      index = i;
-      }
-    }
-  return index;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetBinaryIntegerData(int ix)
-{
-  union mix_i
-    {
-    int i;
-    char c[4];
-    }mi= {1};
-
-  if ( this->LittleEndianFlag == 1)
-    {
-    for (int k = 3; k >= 0; k--)
-      {
-      mi.c[k] = this->DataFileBuffer[ix+k];
-      }
-    }
-  else
-    {
-    for (int k = 0; k <= 3; k++)
-      {
-      mi.c[3-k] = this->DataFileBuffer[ix+k];
-      }
-    }
-  return mi.i;
-}
-
-//-----------------------------------------------------------------------------
-float vtkFLUENTReader::GetBinaryFloatData(int ix)
-{
-  union mix_i
-    {
-    float i;
-    char c[4];
-    } mi = {1.0};
-
-  if ( this->LittleEndianFlag == 1)
-    {
-    for (int k = 3; k >= 0; k--)
-      {
-      mi.c[k] = this->DataFileBuffer[ix+k];
-      }
-    }
-  else
-    {
-    for (int k = 0; k <= 3; k++)
-      {
-      mi.c[3-k] = this->DataFileBuffer[ix+k];
-      }
-    }
-  return mi.i;
-}
-
-//-----------------------------------------------------------------------------
-double vtkFLUENTReader::GetBinaryDoubleData(int ix)
-{
-  union mix_i
-    {
-    double i;
-    char c[8];
-    } mi= {1.0};
-
-  if ( this->LittleEndianFlag == 1)
-    {
-    for (int k = 7; k >= 0; k--)
-      {
-      mi.c[k] = this->DataFileBuffer[ix+k];
-      }
-    }
-  else
-    {
-    for (int k = 0; k <= 7; k++)
-      {
-      mi.c[7-k] = this->DataFileBuffer[ix+k];
-      }
-    }
-  return mi.i;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::IsASCIICharacterHexDigit(int ix)
-{
-  if ( (this->CaseFileBuffer[ix] >= 0x30) 
-    && (this->CaseFileBuffer[ix] <= 0x39))
-    {
-    return 1;
-    }
-  else if ( (this->CaseFileBuffer[ix] >= 0x41) 
-    && (this->CaseFileBuffer[ix] <= 0x46))
-    {
-    return 1;
-    }
-  else if ( (this->CaseFileBuffer[ix] >= 0x61) 
-    && (this->CaseFileBuffer[ix] <= 0x66))
+  if (FluentDataFile.is_open())
     {
+    cout << "Successfully opened " << dfilename << endl;
     return 1;
     }
   else
     {
+    cout << "Could not open " << dfilename << endl;
     return 0;
     }
 }
 
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextASCIIHexDigit(int ix)
+//----------------------------------------------------------------------------
+int vtkFLUENTReader::GetCaseChunk ()
 {
-  int i = ix;
-  while (! this->IsASCIICharacterHexDigit(i))
-    {
-    i++;
-    }
-  return i;
-}
+cout<<"Get Case Chunk"<<endl;
+  CaseBuffer.clear();  // Clear buffer
 
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextRightParen(int ix)
-{
-  int i = ix;
-  while (this->CaseFileBuffer[i] != ')' )
+  //
+  // Look for beginning of chunk
+  //
+  while(FluentCaseFile.peek() != '(')
     {
-    i++;
-    }
-  return i;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextLeftParen(int ix)
-{
-  int i = ix;
-  while (this->CaseFileBuffer[i] != '(' )
-    {
-    i++;
-    }
-  return i;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextEOL(int ix)
-{
-  int i = ix;
-  while (this->CaseFileBuffer[i] != 0x0a )
-    {
-    i++;
-    }
-  return i;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextSectionASCII(int ix)
-{
-  int i = ix + 1;
-  int level = 0;
-  while ( !((level == 0) && (this->CaseFileBuffer[i] == ')')))
-    {
-    if (this->CaseFileBuffer[i] == '(')
+    char c = FluentCaseFile.get();
+    if (FluentCaseFile.eof())
       {
-      level++;
+      return 0;
       }
-    if (this->CaseFileBuffer[i] == ')')
+    }
+
+  //
+  // Figure out whether this is a binary or ascii chunk.
+  // If the index is 3 digits or more, then binary, otherwise ascii.
+  //
+  vtkstd::string index;
+  while(FluentCaseFile.peek() != ' ')
+    {
+    index.push_back(FluentCaseFile.peek());
+    CaseBuffer.push_back(FluentCaseFile.get());
+    if (FluentCaseFile.eof())
       {
-      level--;
+      return 0;
       }
-    i++;
     }
-  return i;
+
+  index.erase(0,1);  // Get rid of the "("
+
+  //
+  //  Grab the chunk and put it in buffer.
+  //  You have to look for the end of section vtkstd::string if it is
+  //  a binary chunk.
+  //
+
+  if (index.size() > 2)
+    {  // Binary Chunk
+    char end[120];
+    strcpy(end, "End of Binary Section   ");
+    strcat(end, index.c_str());
+    strcat(end, ")");
+
+    // Load the case buffer enough to start comparing to the end vtkstd::string.
+    while (CaseBuffer.size() < strlen(end))
+      {
+      CaseBuffer.push_back(FluentCaseFile.get());
+      }
+
+    while ( CaseBuffer.compare(CaseBuffer.size()-strlen(end), strlen(end), end) )
+      {
+      CaseBuffer.push_back(FluentCaseFile.get());
+      }
+
+    }
+  else
+    {  // Ascii Chunk
+    int level = 0;
+    while ((FluentCaseFile.peek() != ')') || (level != 0) )
+      {
+      CaseBuffer.push_back(FluentCaseFile.get());
+      if (CaseBuffer.at(CaseBuffer.length()-1) == '(')
+        {
+        level++;
+        }
+      if (CaseBuffer.at(CaseBuffer.length()-1) == ')')
+        {
+        level--;
+        }
+      if (FluentCaseFile.eof())
+        {
+        return 0;
+        }
+      }
+    CaseBuffer.push_back(FluentCaseFile.get());
+    }
+  return 1;
 }
 
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::GetStringToNextRightParen(int ix, char buf[] )
+//----------------------------------------------------------------------------
+int vtkFLUENTReader::GetCaseIndex()
 {
-  // Copy contents between ( ) into buffer
-  int j = ix;
-  int k=0;
-  while ( !(this->CaseFileBuffer[j] == ')'))
+  vtkstd::string sindex;
+
+  int i = 1;
+  while (CaseBuffer.at(i) != ' ')
     {
-    buf[k] = this->CaseFileBuffer[j];
-    j++;
-    k++;
+    sindex.push_back(CaseBuffer.at(i++));
     }
-  buf[k] = 0;
+  return atoi(sindex.c_str());
 }
 
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::GetStringToNextRightParenOrEOL(int ix, char buf[] )
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetNumberOfCellZones()
 {
-  // Copy contents between ( ) into buffer
-  int j = ix;
-  int k=0;
-  while ( !((this->CaseFileBuffer[j] == 0x0a)
-    ||(this->CaseFileBuffer[j] == ')')))
+  int match;
+
+  for (int i = 0; i < Cells.size(); i++)
     {
-    buf[k] = this->CaseFileBuffer[j];
-    j++;
-    k++;
+    if (CellZones.size() == 0)
+      {
+      CellZones.push_back(Cells[i].zone);
+      }
+    else 
+      {
+      match = 0;
+      for (int j = 0; j < CellZones.size(); j++)
+        {
+        if (CellZones[j] == Cells[i].zone)
+          {
+          match = 1;
+          }
+        }
+        if (match == 0)
+          {
+          CellZones.push_back(Cells[i].zone);
+          }
+      }
     }
-  buf[k] = 0;
 }
 
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::GetMixedCellTypes(int ix, int fi, int li)
+
+//----------------------------------------------------------------------------
+int vtkFLUENTReader::GetDataIndex()
 {
-  int j = ix;
-  char c[2];
-  for (int i = fi; i <= li; i++)
+  vtkstd::string sindex;
+
+  int i = 1;
+  while (DataBuffer.at(i) != ' ')
     {
-    j = this->GoToNextASCIIHexDigit(j);
-    //cout << "i = " << i << ", et = " << this->CaseFileBuffer[j] << endl;
-    c[0] = this->CaseFileBuffer[j];
-    c[1] = 0;
-    this->CellTypes->InsertValue(i, atoi(c));
-    j++;
+    sindex.push_back(DataBuffer.at(i++));
     }
+  return atoi(sindex.c_str());
 }
 
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextSectionSinglePrecision(int ix, char buf[])
+//----------------------------------------------------------------------------
+int vtkFLUENTReader::GetDataChunk ()
 {
-  int i = ix + 1;
-  while( !((this->CaseFileBuffer[i] == buf[0]) 
-    && (this->CaseFileBuffer[i+1] == buf[1]) 
-    && (this->CaseFileBuffer[i+2] == buf[2]) 
-    && (this->CaseFileBuffer[i+3] == buf[3]) 
-    && (this->CaseFileBuffer[i+4] == buf[4]) ))
+  DataBuffer.clear();  // Clear buffer
+  //
+  // Look for beginning of chunk
+  //
+cout<<FluentDataFile.peek()<<endl;
+  while(FluentDataFile.peek() != '(')
     {
-    i++;
+    char c = FluentDataFile.get();
+cout<<"gdc:"<<c<<endl;
+    if (FluentDataFile.eof())
+      {
+      return 0;
+      }
     }
-  return i+4;
+
+  //
+  // Figure out whether this is a binary or ascii chunk.
+  // If the index is 3 digits or more, then binary, otherwise ascii.
+  //
+  vtkstd::string index;
+  while(FluentDataFile.peek() != ' ')
+    {
+    index.push_back(FluentDataFile.peek());
+    DataBuffer.push_back(FluentDataFile.get());
+    if (FluentDataFile.eof())
+      {
+      return 0;
+      }
+    }
+
+  index.erase(0,1);  // Get rid of the "("
+
+  //
+  //  Grab the chunk and put it in buffer.
+  //  You have to look for the end of section vtkstd::string if it is
+  //  a binary chunk.
+  //
+  if (index.size() > 3)
+    {  // Binary Chunk
+    char end[120];
+    strcpy(end, "End of Binary Section   ");
+    strcat(end, index.c_str());
+    strcat(end, ")");
+
+    // Load the data buffer enough to start comparing to the end vtkstd::string.
+    while (DataBuffer.size() < strlen(end))
+      {
+      DataBuffer.push_back(FluentDataFile.get());
+      }
+
+    while ( DataBuffer.compare(DataBuffer.size()-strlen(end), strlen(end), end) )
+      {
+      DataBuffer.push_back(FluentDataFile.get());
+      }
+
+    }
+  else
+    {  // Ascii Chunk
+    int level = 0;
+    while ((FluentDataFile.peek() != ')') || (level != 0) )
+      {
+      DataBuffer.push_back(FluentDataFile.get());
+      if (DataBuffer.at(DataBuffer.length()-1) == '(')
+        {
+        level++;
+        }
+      if (DataBuffer.at(DataBuffer.length()-1) == ')')
+        {
+        level--;
+        }
+      if (FluentDataFile.eof())
+        {
+        return 0;
+        }
+      }
+    DataBuffer.push_back(FluentDataFile.get());
+    }
+
+  return 1;
 }
 
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextSectionDoublePrecision(int ix, char buf[])
+
+void vtkFLUENTReader::LoadVariableNames()
 {
-  int i = ix + 1;
-  while ( !((this->CaseFileBuffer[i] == buf[0]) 
-    && (this->CaseFileBuffer[i+1] == buf[1]) 
-    && (this->CaseFileBuffer[i+2] == buf[2]) 
-    && (this->CaseFileBuffer[i+3] == buf[3]) 
-    && (this->CaseFileBuffer[i+4] == buf[4])))
-    {
-    i++;
-    }
-  return i+4;
+  VariableNames[1]  = "PRESSURE";
+  VariableNames[2]  = "MOMENTUM";
+  VariableNames[3]  = "TEMPERATURE";
+  VariableNames[4]  = "ENTHALPY";
+  VariableNames[5]  = "TKE";
+  VariableNames[6]  = "TED";
+  VariableNames[7]  = "SPECIES";
+  VariableNames[8]  = "G";
+  VariableNames[9]  = "WSWIRL";
+  VariableNames[10] = "DPMS_MASS";
+  VariableNames[11] = "DPMS_MOM";
+  VariableNames[12] = "DPMS_ENERGY";
+  VariableNames[13] = "DPMS_SPECIES";
+  VariableNames[14] = "DVOLUME_DT";
+  VariableNames[15] = "BODY_FORCES";
+  VariableNames[16] = "FMEAN";
+  VariableNames[17] = "FVAR";
+  VariableNames[18] = "MASS_FLUX";
+  VariableNames[19] = "WALL_SHEAR";
+  VariableNames[20] = "BOUNDARY_HEAT_FLUX";
+  VariableNames[21] = "BOUNDARY_RAD_HEAT_FLUX";
+  VariableNames[22] = "OLD_PRESSURE";
+  VariableNames[23] = "POLLUT";
+  VariableNames[24] = "DPMS_P1_S";
+  VariableNames[25] = "DPMS_P1_AP";
+  VariableNames[26] = "WALL_GAS_TEMPERATURE";
+  VariableNames[27] = "DPMS_P1_DIFF";
+  VariableNames[28] = "DR_SURF";
+  VariableNames[29] = "W_M1";
+  VariableNames[30] = "W_M2";
+  VariableNames[31] = "DPMS_BURNOUT";
+
+  VariableNames[32] = "DPMS_CONCENTRATION";
+  VariableNames[33] = "PDF_MW";
+  VariableNames[34] = "DPMS_WSWIRL";
+  VariableNames[35] = "YPLUS";
+  VariableNames[36] = "YPLUS_UTAU";
+  VariableNames[37] = "WALL_SHEAR_SWIRL";
+  VariableNames[38] = "WALL_T_INNER";
+  VariableNames[39] = "POLLUT0";
+  VariableNames[40] = "POLLUT1";
+  VariableNames[41] = "WALL_G_INNER";
+  VariableNames[42] = "PREMIXC";
+  VariableNames[43] = "PREMIXC_T";
+  VariableNames[44] = "PREMIXC_RATE";
+  VariableNames[45] = "POLLUT2";
+  VariableNames[46] = "POLLUT3";
+  VariableNames[47] = "MASS_FLUX_M1";
+  VariableNames[48] = "MASS_FLUX_M2";
+  VariableNames[49] = "GRID_FLUX";
+  VariableNames[50] = "DO_I";
+  VariableNames[51] = "DO_RECON_I";
+  VariableNames[52] = "DO_ENERGY_SOURCE";
+  VariableNames[53] = "DO_IRRAD";
+  VariableNames[54] = "DO_QMINUS";
+  VariableNames[55] = "DO_IRRAD_OLD";
+  VariableNames[56] = "DO_IWX=56";
+  VariableNames[57] = "DO_IWY";
+  VariableNames[58] = "DO_IWZ";
+  VariableNames[59] = "MACH";
+  VariableNames[60] = "SLIP_U";
+  VariableNames[61] = "SLIP_V";
+  VariableNames[62] = "SLIP_W";
+  VariableNames[63] = "SDR";
+  VariableNames[64] = "SDR_M1";
+  VariableNames[65] = "SDR_M2";
+  VariableNames[66] = "POLLUT4";
+  VariableNames[67] = "GRANULAR_TEMPERATURE";
+  VariableNames[68] = "GRANULAR_TEMPERATURE_M1";
+  VariableNames[69] = "GRANULAR_TEMPERATURE_M2";
+  VariableNames[70] = "VFLUX";
+  VariableNames[80] = "VFLUX_M1";
+  VariableNames[90] = "VFLUX_M2";
+  VariableNames[91] = "DO_QNET";
+  VariableNames[92] = "DO_QTRANS";
+  VariableNames[93] = "DO_QREFL";
+  VariableNames[94] = "DO_QABS";
+  VariableNames[95] = "POLLUT5";
+  VariableNames[96] = "WALL_DIST";
+  VariableNames[97] = "SOLAR_SOURCE";
+  VariableNames[98] = "SOLAR_QREFL";
+  VariableNames[99] = "SOLAR_QABS";
+  VariableNames[100] = "SOLAR_QTRANS";
+  VariableNames[101] = "DENSITY";
+  VariableNames[102] = "MU_LAM";
+  VariableNames[103] = "MU_TURB";
+  VariableNames[104] = "CP";
+  VariableNames[105] = "KTC";
+  VariableNames[106] = "VGS_DTRM";
+  VariableNames[107] = "VGF_DTRM";
+  VariableNames[108] = "RSTRESS";	
+  VariableNames[109] = "THREAD_RAD_FLUX";
+  VariableNames[110] = "SPE_Q";
+  VariableNames[111] = "X_VELOCITY";
+  VariableNames[112] = "Y_VELOCITY";
+  VariableNames[113] = "Z_VELOCITY";
+  VariableNames[114] = "WALL_VELOCITY";
+  VariableNames[115] = "X_VELOCITY_M1";
+  VariableNames[116] = "Y_VELOCITY_M1";
+  VariableNames[117] = "Z_VELOCITY_M1";
+  VariableNames[118] = "PHASE_MASS";
+  VariableNames[119] = "TKE_M1";
+  VariableNames[120] = "TED_M1";
+  VariableNames[121] = "POLLUT6";
+  VariableNames[122] = "X_VELOCITY_M2";
+  VariableNames[123] = "Y_VELOCITY_M2";
+  VariableNames[124] = "Z_VELOCITY_M2";
+  VariableNames[126] = "TKE_M2";
+  VariableNames[127] = "TED_M2";
+  VariableNames[128] = "RUU";
+  VariableNames[129] = "RVV";
+  VariableNames[130] = "RWW";
+  VariableNames[131] = "RUV";
+  VariableNames[132] = "RVW";
+  VariableNames[133] = "RUW";
+  VariableNames[134] = "DPMS_EROSION";
+  VariableNames[135] = "DPMS_ACCRETION";
+  VariableNames[136] = "FMEAN2";
+  VariableNames[137] = "FVAR2";
+  VariableNames[138] = "ENTHALPY_M1";
+  VariableNames[139] = "ENTHALPY_M2";
+  VariableNames[140] = "FMEAN_M1";
+  VariableNames[141] = "FMEAN_M2";
+  VariableNames[142] = "FVAR_M1";
+  VariableNames[143] = "FVAR_M2";
+  VariableNames[144] = "FMEAN2_M1";
+  VariableNames[145] = "FMEAN2_M2";
+  VariableNames[146] = "FVAR2_M1";
+  VariableNames[147] = "FVAR2_M2";
+  VariableNames[148] = "PREMIXC_M1";
+  VariableNames[149] = "PREMIXC_M2";
+  VariableNames[150] = "VOF";
+  VariableNames[151] = "VOF_1";
+  VariableNames[152] = "VOF_2";
+  VariableNames[153] = "VOF_3";
+  VariableNames[154] = "VOF_4";
+  VariableNames[160] = "VOF_M1";
+  VariableNames[161] = "VOF_1_M1";
+  VariableNames[162] = "VOF_2_M1";
+  VariableNames[163] = "VOF_3_M1";
+  VariableNames[164] = "VOF_4_M1";
+  VariableNames[170] = "VOF_M2";
+  VariableNames[171] = "VOF_1_M2";
+  VariableNames[172] = "VOF_2_M2";
+  VariableNames[173] = "VOF_3_M2";
+  VariableNames[174] = "VOF_4_M2";
+  VariableNames[180] = "VOLUME_M2";
+  VariableNames[181] = "WALL_GRID_VELOCITY";
+  VariableNames[182] = "POLLUT7";
+  VariableNames[183] = "POLLUT8";
+  VariableNames[184] = "POLLUT9";
+  VariableNames[185] = "POLLUT10";
+  VariableNames[186] = "POLLUT11";
+  VariableNames[187] = "POLLUT12";
+  VariableNames[188] = "POLLUT13";
+  VariableNames[190] = "SV_T_AUX";
+  VariableNames[191] = "SV_T_AP_AUX";
+  VariableNames[192] = "TOTAL_PRESSURE";
+  VariableNames[193] = "TOTAL_TEMPERATURE";
+  VariableNames[194] = "NRBC_DC";
+  VariableNames[195] = "DP_TMFR";
+  
+  
+  VariableNames[200] = "Y_00"; 
+  VariableNames[201] = "Y_01"; 
+  VariableNames[202] = "Y_02"; 
+  VariableNames[203] = "Y_03"; 
+  VariableNames[204] = "Y_04"; 
+  VariableNames[205] = "Y_05"; 
+  VariableNames[206] = "Y_06"; 
+  VariableNames[207] = "Y_07"; 
+  VariableNames[208] = "Y_08"; 
+  VariableNames[209] = "Y_09"; 
+  VariableNames[210] = "Y_10"; 
+  VariableNames[211] = "Y_11"; 
+  VariableNames[212] = "Y_12"; 
+  VariableNames[213] = "Y_13"; 
+  VariableNames[214] = "Y_14"; 
+  VariableNames[215] = "Y_15"; 
+  VariableNames[216] = "Y_16"; 
+  VariableNames[217] = "Y_17"; 
+  VariableNames[218] = "Y_18"; 
+  VariableNames[219] = "Y_19"; 
+  VariableNames[220] = "Y_20"; 
+  VariableNames[221] = "Y_21"; 
+  VariableNames[222] = "Y_22"; 
+  VariableNames[223] = "Y_23"; 
+  VariableNames[224] = "Y_24"; 
+  VariableNames[225] = "Y_25"; 
+  VariableNames[226] = "Y_26"; 
+  VariableNames[227] = "Y_27"; 
+  VariableNames[228] = "Y_28"; 
+  VariableNames[229] = "Y_29"; 
+  VariableNames[230] = "Y_30"; 
+  VariableNames[231] = "Y_31"; 
+  VariableNames[232] = "Y_32"; 
+  VariableNames[233] = "Y_33"; 
+  VariableNames[234] = "Y_34"; 
+  VariableNames[235] = "Y_35"; 
+  VariableNames[236] = "Y_36"; 
+  VariableNames[237] = "Y_37"; 
+  VariableNames[238] = "Y_38"; 
+  VariableNames[239] = "Y_39"; 
+  VariableNames[240] = "Y_40"; 
+  VariableNames[241] = "Y_41"; 
+  VariableNames[242] = "Y_42"; 
+  VariableNames[243] = "Y_43"; 
+  VariableNames[244] = "Y_44"; 
+  VariableNames[245] = "Y_45"; 
+  VariableNames[246] = "Y_46"; 
+  VariableNames[247] = "Y_47"; 
+  VariableNames[248] = "Y_48"; 
+  VariableNames[249] = "Y_49"; 
+
+  VariableNames[250] = "Y_M1_00"; 
+  VariableNames[251] = "Y_M1_01"; 
+  VariableNames[252] = "Y_M1_02"; 
+  VariableNames[253] = "Y_M1_03"; 
+  VariableNames[254] = "Y_M1_04"; 
+  VariableNames[255] = "Y_M1_05"; 
+  VariableNames[256] = "Y_M1_06"; 
+  VariableNames[257] = "Y_M1_07"; 
+  VariableNames[258] = "Y_M1_08"; 
+  VariableNames[259] = "Y_M1_09"; 
+  VariableNames[260] = "Y_M1_10"; 
+  VariableNames[261] = "Y_M1_11"; 
+  VariableNames[262] = "Y_M1_12"; 
+  VariableNames[263] = "Y_M1_13"; 
+  VariableNames[264] = "Y_M1_14"; 
+  VariableNames[265] = "Y_M1_15"; 
+  VariableNames[266] = "Y_M1_16"; 
+  VariableNames[267] = "Y_M1_17"; 
+  VariableNames[268] = "Y_M1_18"; 
+  VariableNames[269] = "Y_M1_19"; 
+  VariableNames[270] = "Y_M1_20"; 
+  VariableNames[271] = "Y_M1_21"; 
+  VariableNames[272] = "Y_M1_22"; 
+  VariableNames[273] = "Y_M1_23"; 
+  VariableNames[274] = "Y_M1_24"; 
+  VariableNames[275] = "Y_M1_25"; 
+  VariableNames[276] = "Y_M1_26"; 
+  VariableNames[277] = "Y_M1_27"; 
+  VariableNames[278] = "Y_M1_28"; 
+  VariableNames[279] = "Y_M1_29"; 
+  VariableNames[280] = "Y_M1_30"; 
+  VariableNames[281] = "Y_M1_31"; 
+  VariableNames[282] = "Y_M1_32"; 
+  VariableNames[283] = "Y_M1_33"; 
+  VariableNames[284] = "Y_M1_34"; 
+  VariableNames[285] = "Y_M1_35"; 
+  VariableNames[286] = "Y_M1_36"; 
+  VariableNames[287] = "Y_M1_37"; 
+  VariableNames[288] = "Y_M1_38"; 
+  VariableNames[289] = "Y_M1_39"; 
+  VariableNames[290] = "Y_M1_40"; 
+  VariableNames[291] = "Y_M1_41"; 
+  VariableNames[292] = "Y_M1_42"; 
+  VariableNames[293] = "Y_M1_43"; 
+  VariableNames[294] = "Y_M1_44"; 
+  VariableNames[295] = "Y_M1_45"; 
+  VariableNames[296] = "Y_M1_46"; 
+  VariableNames[297] = "Y_M1_47"; 
+  VariableNames[298] = "Y_M1_48"; 
+  VariableNames[299] = "Y_M1_49"; 
+
+  VariableNames[300] = "Y_M2_00"; 
+  VariableNames[301] = "Y_M2_01"; 
+  VariableNames[302] = "Y_M2_02"; 
+  VariableNames[303] = "Y_M2_03"; 
+  VariableNames[304] = "Y_M2_04"; 
+  VariableNames[305] = "Y_M2_05"; 
+  VariableNames[306] = "Y_M2_06"; 
+  VariableNames[307] = "Y_M2_07"; 
+  VariableNames[308] = "Y_M2_08"; 
+  VariableNames[309] = "Y_M2_09"; 
+  VariableNames[310] = "Y_M2_10"; 
+  VariableNames[311] = "Y_M2_11"; 
+  VariableNames[312] = "Y_M2_12"; 
+  VariableNames[313] = "Y_M2_13"; 
+  VariableNames[314] = "Y_M2_14"; 
+  VariableNames[315] = "Y_M2_15"; 
+  VariableNames[316] = "Y_M2_16"; 
+  VariableNames[317] = "Y_M2_17"; 
+  VariableNames[318] = "Y_M2_18"; 
+  VariableNames[319] = "Y_M2_19"; 
+  VariableNames[320] = "Y_M2_20"; 
+  VariableNames[321] = "Y_M2_21"; 
+  VariableNames[322] = "Y_M2_22"; 
+  VariableNames[323] = "Y_M2_23"; 
+  VariableNames[324] = "Y_M2_24"; 
+  VariableNames[325] = "Y_M2_25"; 
+  VariableNames[326] = "Y_M2_26"; 
+  VariableNames[327] = "Y_M2_27"; 
+  VariableNames[328] = "Y_M2_28"; 
+  VariableNames[329] = "Y_M2_29"; 
+  VariableNames[330] = "Y_M2_30"; 
+  VariableNames[331] = "Y_M2_31"; 
+  VariableNames[332] = "Y_M2_32"; 
+  VariableNames[333] = "Y_M2_33"; 
+  VariableNames[334] = "Y_M2_34"; 
+  VariableNames[335] = "Y_M2_35"; 
+  VariableNames[336] = "Y_M2_36"; 
+  VariableNames[337] = "Y_M2_37"; 
+  VariableNames[338] = "Y_M2_38"; 
+  VariableNames[339] = "Y_M2_39"; 
+  VariableNames[340] = "Y_M2_40"; 
+  VariableNames[341] = "Y_M2_41"; 
+  VariableNames[342] = "Y_M2_42"; 
+  VariableNames[343] = "Y_M2_43"; 
+  VariableNames[344] = "Y_M2_44"; 
+  VariableNames[345] = "Y_M2_45"; 
+  VariableNames[346] = "Y_M2_46"; 
+  VariableNames[347] = "Y_M2_47"; 
+  VariableNames[348] = "Y_M2_48"; 
+  VariableNames[349] = "Y_M2_49"; 
+
+  VariableNames[350] = "DR_SURF_00"; 
+  VariableNames[351] = "DR_SURF_01"; 
+  VariableNames[352] = "DR_SURF_02"; 
+  VariableNames[353] = "DR_SURF_03"; 
+  VariableNames[354] = "DR_SURF_04"; 
+  VariableNames[355] = "DR_SURF_05"; 
+  VariableNames[356] = "DR_SURF_06"; 
+  VariableNames[357] = "DR_SURF_07"; 
+  VariableNames[358] = "DR_SURF_08"; 
+  VariableNames[359] = "DR_SURF_09"; 
+  VariableNames[360] = "DR_SURF_10"; 
+  VariableNames[361] = "DR_SURF_11"; 
+  VariableNames[362] = "DR_SURF_12"; 
+  VariableNames[363] = "DR_SURF_13"; 
+  VariableNames[364] = "DR_SURF_14"; 
+  VariableNames[365] = "DR_SURF_15"; 
+  VariableNames[366] = "DR_SURF_16"; 
+  VariableNames[367] = "DR_SURF_17"; 
+  VariableNames[368] = "DR_SURF_18"; 
+  VariableNames[369] = "DR_SURF_19"; 
+  VariableNames[370] = "DR_SURF_20"; 
+  VariableNames[371] = "DR_SURF_21"; 
+  VariableNames[372] = "DR_SURF_22"; 
+  VariableNames[373] = "DR_SURF_23"; 
+  VariableNames[374] = "DR_SURF_24"; 
+  VariableNames[375] = "DR_SURF_25"; 
+  VariableNames[376] = "DR_SURF_26"; 
+  VariableNames[377] = "DR_SURF_27"; 
+  VariableNames[378] = "DR_SURF_28"; 
+  VariableNames[379] = "DR_SURF_29"; 
+  VariableNames[380] = "DR_SURF_30"; 
+  VariableNames[381] = "DR_SURF_31"; 
+  VariableNames[382] = "DR_SURF_32"; 
+  VariableNames[383] = "DR_SURF_33"; 
+  VariableNames[384] = "DR_SURF_34"; 
+  VariableNames[385] = "DR_SURF_35"; 
+  VariableNames[386] = "DR_SURF_36"; 
+  VariableNames[387] = "DR_SURF_37"; 
+  VariableNames[388] = "DR_SURF_38"; 
+  VariableNames[389] = "DR_SURF_39"; 
+  VariableNames[390] = "DR_SURF_40"; 
+  VariableNames[391] = "DR_SURF_41"; 
+  VariableNames[392] = "DR_SURF_42"; 
+  VariableNames[393] = "DR_SURF_43"; 
+  VariableNames[394] = "DR_SURF_44"; 
+  VariableNames[395] = "DR_SURF_45"; 
+  VariableNames[396] = "DR_SURF_46"; 
+  VariableNames[397] = "DR_SURF_47"; 
+  VariableNames[398] = "DR_SURF_48"; 
+  VariableNames[399] = "DR_SURF_49"; 
+
+  VariableNames[400] = "PRESSURE_MEAN"; 
+  VariableNames[401] = "PRESSURE_RMS"; 
+  VariableNames[402] = "X_VELOCITY_MEAN"; 
+  VariableNames[403] = "X_VELOCITY_RMS"; 
+  VariableNames[404] = "Y_VELOCITY_MEAN"; 
+  VariableNames[405] = "Y_VELOCITY_RMS"; 
+  VariableNames[406] = "Z_VELOCITY_MEAN"; 
+  VariableNames[407] = "Z_VELOCITY_RMS"; 
+  VariableNames[408] = "TEMPERATURE_MEAN"; 
+  VariableNames[409] = "TEMPERATURE_RMS"; 
+  VariableNames[410] = "VOF_MEAN"; 
+  VariableNames[411] = "VOF_RMS"; 
+  VariableNames[412] = "PRESSURE_M1"; 
+  VariableNames[413] = "PRESSURE_M2"; 
+  VariableNames[414] = "GRANULAR_TEMPERATURE_MEAN"; 
+  VariableNames[415] = "GRANULAR_TEMPERATURE_RMS"; 
+
+  VariableNames[450] = "DPMS_Y_00"; 
+  VariableNames[451] = "DPMS_Y_01"; 
+  VariableNames[452] = "DPMS_Y_02"; 
+  VariableNames[453] = "DPMS_Y_03"; 
+  VariableNames[454] = "DPMS_Y_04"; 
+  VariableNames[455] = "DPMS_Y_05"; 
+  VariableNames[456] = "DPMS_Y_06"; 
+  VariableNames[457] = "DPMS_Y_07"; 
+  VariableNames[458] = "DPMS_Y_08"; 
+  VariableNames[459] = "DPMS_Y_09"; 
+  VariableNames[460] = "DPMS_Y_10"; 
+  VariableNames[461] = "DPMS_Y_11"; 
+  VariableNames[462] = "DPMS_Y_12"; 
+  VariableNames[463] = "DPMS_Y_13"; 
+  VariableNames[464] = "DPMS_Y_14"; 
+  VariableNames[465] = "DPMS_Y_15"; 
+  VariableNames[466] = "DPMS_Y_16"; 
+  VariableNames[467] = "DPMS_Y_17"; 
+  VariableNames[468] = "DPMS_Y_18"; 
+  VariableNames[469] = "DPMS_Y_19"; 
+  VariableNames[470] = "DPMS_Y_20"; 
+  VariableNames[471] = "DPMS_Y_21"; 
+  VariableNames[472] = "DPMS_Y_22"; 
+  VariableNames[473] = "DPMS_Y_23"; 
+  VariableNames[474] = "DPMS_Y_24"; 
+  VariableNames[475] = "DPMS_Y_25"; 
+  VariableNames[476] = "DPMS_Y_26"; 
+  VariableNames[477] = "DPMS_Y_27"; 
+  VariableNames[478] = "DPMS_Y_28"; 
+  VariableNames[479] = "DPMS_Y_29"; 
+  VariableNames[480] = "DPMS_Y_30"; 
+  VariableNames[481] = "DPMS_Y_31"; 
+  VariableNames[482] = "DPMS_Y_32"; 
+  VariableNames[483] = "DPMS_Y_33"; 
+  VariableNames[484] = "DPMS_Y_34"; 
+  VariableNames[485] = "DPMS_Y_35"; 
+  VariableNames[486] = "DPMS_Y_36"; 
+  VariableNames[487] = "DPMS_Y_37"; 
+  VariableNames[488] = "DPMS_Y_38"; 
+  VariableNames[489] = "DPMS_Y_39"; 
+  VariableNames[490] = "DPMS_Y_40"; 
+  VariableNames[491] = "DPMS_Y_41"; 
+  VariableNames[492] = "DPMS_Y_42"; 
+  VariableNames[493] = "DPMS_Y_43"; 
+  VariableNames[494] = "DPMS_Y_44"; 
+  VariableNames[495] = "DPMS_Y_45"; 
+  VariableNames[496] = "DPMS_Y_46"; 
+  VariableNames[497] = "DPMS_Y_47"; 
+  VariableNames[498] = "DPMS_Y_48"; 
+  VariableNames[499] = "DPMS_Y_49"; 
+
+  VariableNames[500] = "NUT";
+  VariableNames[501] = "NUT_M1";
+  VariableNames[502] = "NUT_M2";
+  VariableNames[503] = "RUU_M1";	
+  VariableNames[504] = "RVV_M1";	
+  VariableNames[505] = "RWW_M1";	
+  VariableNames[506] = "RUV_M1";	
+  VariableNames[507] = "RVW_M1";	
+  VariableNames[508] = "RUW_M1";
+  VariableNames[509] = "RUU_M2";	
+  VariableNames[510] = "RVV_M2";	
+  VariableNames[511] = "RWW_M2";	
+  VariableNames[512] = "RUV_M2";	
+  VariableNames[513] = "RVW_M2";	
+  VariableNames[514] = "RUW_M2";
+  VariableNames[515] = "ENERGY_M1";
+  VariableNames[516] = "ENERGY_M2";
+  VariableNames[517] = "DENSITY_M1";
+  VariableNames[518] = "DENSITY_M2";
+  VariableNames[519] = "DPMS_PDF_1";
+  VariableNames[520] = "DPMS_PDF_2";
+  VariableNames[521] = "V2";
+  VariableNames[522] = "V2_M1";
+  VariableNames[523] = "V2_M2";
+  VariableNames[524] = "FEL";
+  VariableNames[525] = "FEL_M1";
+  VariableNames[526] = "FEL_M2";
+  VariableNames[527] = "LKE";
+  VariableNames[528] = "LKE_M1";
+  VariableNames[529] = "LKE_M2";
+  VariableNames[530] = "SHELL_CELL_T";
+  VariableNames[531] = "SHELL_FACE_T";
+  VariableNames[532] = "SHELL_CELL_ENERGY_M1";
+  VariableNames[533] = "SHELL_CELL_ENERGY_M2";
+  VariableNames[540] = "DPMS_TKE";
+  VariableNames[541] = "DPMS_D";
+  VariableNames[542] = "DPMS_O";
+  VariableNames[543] = "DPMS_TKE_RUU";
+  VariableNames[544] = "DPMS_TKE_RVV";
+  VariableNames[545] = "DPMS_TKE_RWW";
+  VariableNames[546] = "DPMS_TKE_RUV";
+  VariableNames[547] = "DPMS_TKE_RVW";
+  VariableNames[548] = "DPMS_TKE_RUW";
+  VariableNames[549] = "DPMS_DS_MASS";
+  VariableNames[550] = "DPMS_DS_ENERGY";
+  VariableNames[551] = "DPMS_DS_TKE";
+  VariableNames[552] = "DPMS_DS_D";
+  VariableNames[553] = "DPMS_DS_O";
+  VariableNames[554] = "DPMS_DS_TKE_RUU";
+  VariableNames[555] = "DPMS_DS_TKE_RVV";
+  VariableNames[556] = "DPMS_DS_TKE_RWW";
+  VariableNames[557] = "DPMS_DS_TKE_RUV";
+  VariableNames[558] = "DPMS_DS_TKE_RVW";
+  VariableNames[559] = "DPMS_DS_TKE_RUW";
+  VariableNames[560] = "DPMS_DS_PDF_1";
+  VariableNames[561] = "DPMS_DS_PDF_2";
+  VariableNames[562] = "DPMS_DS_EMISS";
+  VariableNames[563] = "DPMS_DS_ABS";
+  VariableNames[564] = "DPMS_DS_SCAT";
+  VariableNames[565] = "DPMS_DS_BURNOUT";
+  VariableNames[566] = "DPMS_DS_MOM";
+  VariableNames[567] = "DPMS_DS_WSWIRL";
+  VariableNames[580] = "MU_TURB_L";
+  VariableNames[581] = "MU_TURB_S";
+  VariableNames[582] = "TKE_TRANS";
+  VariableNames[583] = "TKE_TRANS_M1";
+  VariableNames[584] = "TKE_TRANS_M2";
+  VariableNames[585] = "MU_TURB_W";
+  VariableNames[600] = "DELH";
+  VariableNames[601] = "DPMS_MOM_AP";
+  VariableNames[602] = "DPMS_WSWIRL_AP";
+  VariableNames[603] = "X_PULL";
+  VariableNames[604] = "Y_PULL";
+  VariableNames[605] = "Z_PULL";
+  VariableNames[606] = "LIQF";
+  VariableNames[610] = "PDFT_QBAR";
+  VariableNames[611] = "PDFT_PHI";
+  VariableNames[612] = "PDFT_Q_TA";
+  VariableNames[613] = "PDFT_SVOL_TA";
+  VariableNames[614] = "PDFT_MASS_TA";
+  VariableNames[615] = "PDFT_T4_TA";
+  VariableNames[620] = "MICRO_MIX_FVAR1 "; 
+  VariableNames[621] = "MICRO_MIX_FVAR2 "; 
+  VariableNames[622] = "MICRO_MIX_FVAR3 "; 
+  VariableNames[623] = "MICRO_MIX_FVAR1_M1 "; 
+  VariableNames[624] = "MICRO_MIX_FVAR2_M1 "; 
+  VariableNames[625] = "MICRO_MIX_FVAR3_M1 "; 
+  VariableNames[626] = "MICRO_MIX_FVAR1_M2 "; 
+  VariableNames[627] = "MICRO_MIX_FVAR2_M2 "; 
+  VariableNames[628] = "MICRO_MIX_FVAR3_M2 "; 
+  VariableNames[630] = "SCAD_LES "; 
+  VariableNames[635] = "UFLA_Y    "; 
+  VariableNames[636] = "UFLA_Y_M1 "; 
+  VariableNames[637] = "UFLA_Y_M2 "; 
+  VariableNames[645] = "CREV_MASS";
+  VariableNames[646] = "CREV_ENRG";
+  VariableNames[647] = "CREV_MOM";
+  VariableNames[650] = "ACOUSTICS_MODEL";
+  VariableNames[651] = "AC_RECEIVERS_DATA";
+  VariableNames[652] = "SV_DPDT_RMS"; 
+  VariableNames[653] = "SV_PRESSURE_M1"; 
+  VariableNames[654] = "AC_PERIODIC_INDEX"; 
+  VariableNames[655] = "AC_PERIODIC_PS";
+  VariableNames[656] = "AC_F_NORMAL";
+  VariableNames[657] = "AC_F_CENTROID";
+  VariableNames[660] = "IGNITE";
+  VariableNames[661] = "IGNITE_M1";
+  VariableNames[662] = "IGNITE_M2";
+  VariableNames[663] = "IGNITE_RATE";
+
+  VariableNames[680] = "WALL_SHEAR_MEAN";
+  VariableNames[681] = "UV_MEAN";
+  VariableNames[682] = "UW_MEAN";
+  VariableNames[683] = "VW_MEAN";
+  VariableNames[684] = "UT_MEAN";
+  VariableNames[685] = "VT_MEAN";
+  VariableNames[686] = "WT_MEAN";
+  VariableNames[687] = "BOUNDARY_HEAT_FLUX_MEAN";
+
+  VariableNames[700] = "UDS_00"; 
+  VariableNames[701] = "UDS_01"; 
+  VariableNames[702] = "UDS_02"; 
+  VariableNames[703] = "UDS_03"; 
+  VariableNames[704] = "UDS_04"; 
+  VariableNames[705] = "UDS_05"; 
+  VariableNames[706] = "UDS_06"; 
+  VariableNames[707] = "UDS_07"; 
+  VariableNames[708] = "UDS_08"; 
+  VariableNames[709] = "UDS_09"; 
+  VariableNames[710] = "UDS_10"; 
+  VariableNames[711] = "UDS_11"; 
+  VariableNames[712] = "UDS_12"; 
+  VariableNames[713] = "UDS_13"; 
+  VariableNames[714] = "UDS_14"; 
+  VariableNames[715] = "UDS_15"; 
+  VariableNames[716] = "UDS_16"; 
+  VariableNames[717] = "UDS_17"; 
+  VariableNames[718] = "UDS_18"; 
+  VariableNames[719] = "UDS_19"; 
+  VariableNames[720] = "UDS_20"; 
+  VariableNames[721] = "UDS_21"; 
+  VariableNames[722] = "UDS_22"; 
+  VariableNames[723] = "UDS_23"; 
+  VariableNames[724] = "UDS_24"; 
+  VariableNames[725] = "UDS_25"; 
+  VariableNames[726] = "UDS_26"; 
+  VariableNames[727] = "UDS_27"; 
+  VariableNames[728] = "UDS_28"; 
+  VariableNames[729] = "UDS_29"; 
+  VariableNames[730] = "UDS_30"; 
+  VariableNames[731] = "UDS_31"; 
+  VariableNames[732] = "UDS_32"; 
+  VariableNames[733] = "UDS_33"; 
+  VariableNames[734] = "UDS_34"; 
+  VariableNames[735] = "UDS_35"; 
+  VariableNames[736] = "UDS_36"; 
+  VariableNames[737] = "UDS_37"; 
+  VariableNames[738] = "UDS_38"; 
+  VariableNames[739] = "UDS_39"; 
+  VariableNames[740] = "UDS_40"; 
+  VariableNames[741] = "UDS_41"; 
+  VariableNames[742] = "UDS_42"; 
+  VariableNames[743] = "UDS_43"; 
+  VariableNames[744] = "UDS_44"; 
+  VariableNames[745] = "UDS_45"; 
+  VariableNames[746] = "UDS_46"; 
+  VariableNames[747] = "UDS_47"; 
+  VariableNames[748] = "UDS_48"; 
+  VariableNames[749] = "UDS_49"; 
+
+  VariableNames[750] = "UDS_M1_00"; 
+  VariableNames[751] = "UDS_M1_01"; 
+  VariableNames[752] = "UDS_M1_02"; 
+  VariableNames[753] = "UDS_M1_03"; 
+  VariableNames[754] = "UDS_M1_04"; 
+  VariableNames[755] = "UDS_M1_05"; 
+  VariableNames[756] = "UDS_M1_06"; 
+  VariableNames[757] = "UDS_M1_07"; 
+  VariableNames[758] = "UDS_M1_08"; 
+  VariableNames[759] = "UDS_M1_09"; 
+  VariableNames[760] = "UDS_M1_10"; 
+  VariableNames[761] = "UDS_M1_11"; 
+  VariableNames[762] = "UDS_M1_12"; 
+  VariableNames[763] = "UDS_M1_13"; 
+  VariableNames[764] = "UDS_M1_14"; 
+  VariableNames[765] = "UDS_M1_15"; 
+  VariableNames[766] = "UDS_M1_16"; 
+  VariableNames[767] = "UDS_M1_17"; 
+  VariableNames[768] = "UDS_M1_18"; 
+  VariableNames[769] = "UDS_M1_19"; 
+  VariableNames[770] = "UDS_M1_20"; 
+  VariableNames[771] = "UDS_M1_21"; 
+  VariableNames[772] = "UDS_M1_22"; 
+  VariableNames[773] = "UDS_M1_23"; 
+  VariableNames[774] = "UDS_M1_24"; 
+  VariableNames[775] = "UDS_M1_25"; 
+  VariableNames[776] = "UDS_M1_26"; 
+  VariableNames[777] = "UDS_M1_27"; 
+  VariableNames[778] = "UDS_M1_28"; 
+  VariableNames[779] = "UDS_M1_29"; 
+  VariableNames[780] = "UDS_M1_30"; 
+  VariableNames[781] = "UDS_M1_31"; 
+  VariableNames[782] = "UDS_M1_32"; 
+  VariableNames[783] = "UDS_M1_33"; 
+  VariableNames[784] = "UDS_M1_34"; 
+  VariableNames[785] = "UDS_M1_35"; 
+  VariableNames[786] = "UDS_M1_36"; 
+  VariableNames[787] = "UDS_M1_37"; 
+  VariableNames[788] = "UDS_M1_38"; 
+  VariableNames[789] = "UDS_M1_39"; 
+  VariableNames[790] = "UDS_M1_40"; 
+  VariableNames[791] = "UDS_M1_41"; 
+  VariableNames[792] = "UDS_M1_42"; 
+  VariableNames[793] = "UDS_M1_43"; 
+  VariableNames[794] = "UDS_M1_44"; 
+  VariableNames[795] = "UDS_M1_45"; 
+  VariableNames[796] = "UDS_M1_46"; 
+  VariableNames[797] = "UDS_M1_47"; 
+  VariableNames[798] = "UDS_M1_48"; 
+  VariableNames[799] = "UDS_M1_49"; 
+
+  VariableNames[800] = "UDS_M2_00"; 
+  VariableNames[801] = "UDS_M2_01"; 
+  VariableNames[802] = "UDS_M2_02"; 
+  VariableNames[803] = "UDS_M2_03"; 
+  VariableNames[804] = "UDS_M2_04"; 
+  VariableNames[805] = "UDS_M2_05"; 
+  VariableNames[806] = "UDS_M2_06"; 
+  VariableNames[807] = "UDS_M2_07"; 
+  VariableNames[808] = "UDS_M2_08"; 
+  VariableNames[809] = "UDS_M2_09"; 
+  VariableNames[810] = "UDS_M2_10"; 
+  VariableNames[811] = "UDS_M2_11"; 
+  VariableNames[812] = "UDS_M2_12"; 
+  VariableNames[813] = "UDS_M2_13"; 
+  VariableNames[814] = "UDS_M2_14"; 
+  VariableNames[815] = "UDS_M2_15"; 
+  VariableNames[816] = "UDS_M2_16"; 
+  VariableNames[817] = "UDS_M2_17"; 
+  VariableNames[818] = "UDS_M2_18"; 
+  VariableNames[819] = "UDS_M2_19"; 
+  VariableNames[820] = "UDS_M2_20"; 
+  VariableNames[821] = "UDS_M2_21"; 
+  VariableNames[822] = "UDS_M2_22"; 
+  VariableNames[823] = "UDS_M2_23"; 
+  VariableNames[824] = "UDS_M2_24"; 
+  VariableNames[825] = "UDS_M2_25"; 
+  VariableNames[826] = "UDS_M2_26"; 
+  VariableNames[827] = "UDS_M2_27"; 
+  VariableNames[828] = "UDS_M2_28"; 
+  VariableNames[829] = "UDS_M2_29"; 
+  VariableNames[830] = "UDS_M2_30"; 
+  VariableNames[831] = "UDS_M2_31"; 
+  VariableNames[832] = "UDS_M2_32"; 
+  VariableNames[833] = "UDS_M2_33"; 
+  VariableNames[834] = "UDS_M2_34"; 
+  VariableNames[835] = "UDS_M2_35"; 
+  VariableNames[836] = "UDS_M2_36"; 
+  VariableNames[837] = "UDS_M2_37"; 
+  VariableNames[838] = "UDS_M2_38"; 
+  VariableNames[839] = "UDS_M2_39"; 
+  VariableNames[840] = "UDS_M2_40"; 
+  VariableNames[841] = "UDS_M2_41"; 
+  VariableNames[842] = "UDS_M2_42"; 
+  VariableNames[843] = "UDS_M2_43"; 
+  VariableNames[844] = "UDS_M2_44"; 
+  VariableNames[845] = "UDS_M2_45"; 
+  VariableNames[846] = "UDS_M2_46"; 
+  VariableNames[847] = "UDS_M2_47"; 
+  VariableNames[848] = "UDS_M2_48"; 
+  VariableNames[849] = "UDS_M2_49"; 
+
+  VariableNames[850] = "DPMS_DS_Y_00"; 
+  VariableNames[851] = "DPMS_DS_Y_01"; 
+  VariableNames[852] = "DPMS_DS_Y_02"; 
+  VariableNames[853] = "DPMS_DS_Y_03"; 
+  VariableNames[854] = "DPMS_DS_Y_04"; 
+  VariableNames[855] = "DPMS_DS_Y_05"; 
+  VariableNames[856] = "DPMS_DS_Y_06"; 
+  VariableNames[857] = "DPMS_DS_Y_07"; 
+  VariableNames[858] = "DPMS_DS_Y_08"; 
+  VariableNames[859] = "DPMS_DS_Y_09"; 
+  VariableNames[860] = "DPMS_DS_Y_10"; 
+  VariableNames[861] = "DPMS_DS_Y_11"; 
+  VariableNames[862] = "DPMS_DS_Y_12"; 
+  VariableNames[863] = "DPMS_DS_Y_13"; 
+  VariableNames[864] = "DPMS_DS_Y_14"; 
+  VariableNames[865] = "DPMS_DS_Y_15"; 
+  VariableNames[866] = "DPMS_DS_Y_16"; 
+  VariableNames[867] = "DPMS_DS_Y_17"; 
+  VariableNames[868] = "DPMS_DS_Y_18"; 
+  VariableNames[869] = "DPMS_DS_Y_19"; 
+  VariableNames[870] = "DPMS_DS_Y_20"; 
+  VariableNames[871] = "DPMS_DS_Y_21"; 
+  VariableNames[872] = "DPMS_DS_Y_22"; 
+  VariableNames[873] = "DPMS_DS_Y_23"; 
+  VariableNames[874] = "DPMS_DS_Y_24"; 
+  VariableNames[875] = "DPMS_DS_Y_25"; 
+  VariableNames[876] = "DPMS_DS_Y_26"; 
+  VariableNames[877] = "DPMS_DS_Y_27"; 
+  VariableNames[878] = "DPMS_DS_Y_28"; 
+  VariableNames[879] = "DPMS_DS_Y_29"; 
+  VariableNames[880] = "DPMS_DS_Y_30"; 
+  VariableNames[881] = "DPMS_DS_Y_31"; 
+  VariableNames[882] = "DPMS_DS_Y_32"; 
+  VariableNames[883] = "DPMS_DS_Y_33"; 
+  VariableNames[884] = "DPMS_DS_Y_34"; 
+  VariableNames[885] = "DPMS_DS_Y_35"; 
+  VariableNames[886] = "DPMS_DS_Y_36"; 
+  VariableNames[887] = "DPMS_DS_Y_37"; 
+  VariableNames[888] = "DPMS_DS_Y_38"; 
+  VariableNames[889] = "DPMS_DS_Y_39"; 
+  VariableNames[890] = "DPMS_DS_Y_40"; 
+  VariableNames[891] = "DPMS_DS_Y_41"; 
+  VariableNames[892] = "DPMS_DS_Y_42"; 
+  VariableNames[893] = "DPMS_DS_Y_43"; 
+  VariableNames[894] = "DPMS_DS_Y_44"; 
+  VariableNames[895] = "DPMS_DS_Y_45"; 
+  VariableNames[896] = "DPMS_DS_Y_46"; 
+  VariableNames[897] = "DPMS_DS_Y_47"; 
+  VariableNames[898] = "DPMS_DS_Y_48"; 
+  VariableNames[899] = "DPMS_DS_Y_49"; 
+
+  VariableNames[910] = "GRANULAR_PRESSURE"; 
+  VariableNames[911] = "DPMS_DS_P1_S"; 
+  VariableNames[912] = "DPMS_DS_P1_AP"; 
+  VariableNames[913] = "DPMS_DS_P1_DIFF"; 
+
+  VariableNames[920] = "DPMS_DS_SURFACE_SPECIES_00"; 
+  VariableNames[921] = "DPMS_DS_SURFACE_SPECIES_01"; 
+  VariableNames[922] = "DPMS_DS_SURFACE_SPECIES_02"; 
+  VariableNames[923] = "DPMS_DS_SURFACE_SPECIES_03"; 
+  VariableNames[924] = "DPMS_DS_SURFACE_SPECIES_04"; 
+  VariableNames[925] = "DPMS_DS_SURFACE_SPECIES_05"; 
+  VariableNames[926] = "DPMS_DS_SURFACE_SPECIES_06"; 
+  VariableNames[927] = "DPMS_DS_SURFACE_SPECIES_07"; 
+  VariableNames[928] = "DPMS_DS_SURFACE_SPECIES_08"; 
+  VariableNames[929] = "DPMS_DS_SURFACE_SPECIES_09"; 
+  VariableNames[930] = "DPMS_DS_SURFACE_SPECIES_10"; 
+  VariableNames[931] = "DPMS_DS_SURFACE_SPECIES_11"; 
+  VariableNames[932] = "DPMS_DS_SURFACE_SPECIES_12"; 
+  VariableNames[933] = "DPMS_DS_SURFACE_SPECIES_13"; 
+  VariableNames[934] = "DPMS_DS_SURFACE_SPECIES_14"; 
+  VariableNames[935] = "DPMS_DS_SURFACE_SPECIES_15"; 
+  VariableNames[936] = "DPMS_DS_SURFACE_SPECIES_16"; 
+  VariableNames[937] = "DPMS_DS_SURFACE_SPECIES_17"; 
+  VariableNames[938] = "DPMS_DS_SURFACE_SPECIES_18"; 
+  VariableNames[939] = "DPMS_DS_SURFACE_SPECIES_19"; 
+  VariableNames[940] = "DPMS_DS_SURFACE_SPECIES_20"; 
+  VariableNames[941] = "DPMS_DS_SURFACE_SPECIES_21"; 
+  VariableNames[942] = "DPMS_DS_SURFACE_SPECIES_22"; 
+  VariableNames[943] = "DPMS_DS_SURFACE_SPECIES_23"; 
+  VariableNames[944] = "DPMS_DS_SURFACE_SPECIES_24"; 
+  VariableNames[945] = "DPMS_DS_SURFACE_SPECIES_25"; 
+  VariableNames[946] = "DPMS_DS_SURFACE_SPECIES_26"; 
+  VariableNames[947] = "DPMS_DS_SURFACE_SPECIES_27"; 
+  VariableNames[948] = "DPMS_DS_SURFACE_SPECIES_28"; 
+  VariableNames[949] = "DPMS_DS_SURFACE_SPECIES_29"; 
+  VariableNames[950] = "DPMS_DS_SURFACE_SPECIES_30"; 
+  VariableNames[951] = "DPMS_DS_SURFACE_SPECIES_31"; 
+  VariableNames[952] = "DPMS_DS_SURFACE_SPECIES_32"; 
+  VariableNames[953] = "DPMS_DS_SURFACE_SPECIES_33"; 
+  VariableNames[954] = "DPMS_DS_SURFACE_SPECIES_34"; 
+  VariableNames[955] = "DPMS_DS_SURFACE_SPECIES_35"; 
+  VariableNames[956] = "DPMS_DS_SURFACE_SPECIES_36"; 
+  VariableNames[957] = "DPMS_DS_SURFACE_SPECIES_37"; 
+  VariableNames[958] = "DPMS_DS_SURFACE_SPECIES_38"; 
+  VariableNames[959] = "DPMS_DS_SURFACE_SPECIES_39"; 
+  VariableNames[960] = "DPMS_DS_SURFACE_SPECIES_40"; 
+  VariableNames[961] = "DPMS_DS_SURFACE_SPECIES_41"; 
+  VariableNames[962] = "DPMS_DS_SURFACE_SPECIES_42"; 
+  VariableNames[963] = "DPMS_DS_SURFACE_SPECIES_43"; 
+  VariableNames[964] = "DPMS_DS_SURFACE_SPECIES_44"; 
+  VariableNames[965] = "DPMS_DS_SURFACE_SPECIES_45"; 
+  VariableNames[966] = "DPMS_DS_SURFACE_SPECIES_46"; 
+  VariableNames[967] = "DPMS_DS_SURFACE_SPECIES_47"; 
+  VariableNames[968] = "DPMS_DS_SURFACE_SPECIES_48"; 
+  VariableNames[969] = "DPMS_DS_SURFACE_SPECIES_49";
+
+  VariableNames[970] = "UDM_I";
+ 
+
+  VariableNames[1000] = "Y_MEAN_00"; 
+  VariableNames[1001] = "Y_MEAN_01"; 
+  VariableNames[1002] = "Y_MEAN_02"; 
+  VariableNames[1003] = "Y_MEAN_03"; 
+  VariableNames[1004] = "Y_MEAN_04"; 
+  VariableNames[1005] = "Y_MEAN_05"; 
+  VariableNames[1006] = "Y_MEAN_06"; 
+  VariableNames[1007] = "Y_MEAN_07"; 
+  VariableNames[1008] = "Y_MEAN_08"; 
+  VariableNames[1009] = "Y_MEAN_09"; 
+  VariableNames[1010] = "Y_MEAN_10"; 
+  VariableNames[1011] = "Y_MEAN_11"; 
+  VariableNames[1012] = "Y_MEAN_12"; 
+  VariableNames[1013] = "Y_MEAN_13"; 
+  VariableNames[1014] = "Y_MEAN_14"; 
+  VariableNames[1015] = "Y_MEAN_15"; 
+  VariableNames[1016] = "Y_MEAN_16"; 
+  VariableNames[1017] = "Y_MEAN_17"; 
+  VariableNames[1018] = "Y_MEAN_18"; 
+  VariableNames[1019] = "Y_MEAN_19"; 
+  VariableNames[1020] = "Y_MEAN_20"; 
+  VariableNames[1021] = "Y_MEAN_21"; 
+  VariableNames[1022] = "Y_MEAN_22"; 
+  VariableNames[1023] = "Y_MEAN_23"; 
+  VariableNames[1024] = "Y_MEAN_24"; 
+  VariableNames[1025] = "Y_MEAN_25"; 
+  VariableNames[1026] = "Y_MEAN_26"; 
+  VariableNames[1027] = "Y_MEAN_27"; 
+  VariableNames[1028] = "Y_MEAN_28"; 
+  VariableNames[1029] = "Y_MEAN_29"; 
+  VariableNames[1030] = "Y_MEAN_30"; 
+  VariableNames[1031] = "Y_MEAN_31"; 
+  VariableNames[1032] = "Y_MEAN_32"; 
+  VariableNames[1033] = "Y_MEAN_33"; 
+  VariableNames[1034] = "Y_MEAN_34"; 
+  VariableNames[1035] = "Y_MEAN_35"; 
+  VariableNames[1036] = "Y_MEAN_36"; 
+  VariableNames[1037] = "Y_MEAN_37"; 
+  VariableNames[1038] = "Y_MEAN_38"; 
+  VariableNames[1039] = "Y_MEAN_39"; 
+  VariableNames[1040] = "Y_MEAN_40"; 
+  VariableNames[1041] = "Y_MEAN_41"; 
+  VariableNames[1042] = "Y_MEAN_42"; 
+  VariableNames[1043] = "Y_MEAN_43"; 
+  VariableNames[1044] = "Y_MEAN_44"; 
+  VariableNames[1045] = "Y_MEAN_45"; 
+  VariableNames[1046] = "Y_MEAN_46"; 
+  VariableNames[1047] = "Y_MEAN_47"; 
+  VariableNames[1048] = "Y_MEAN_48"; 
+  VariableNames[1049] = "Y_MEAN_49"; 
+
+  VariableNames[1050] = "Y_RMS_00"; 
+  VariableNames[1051] = "Y_RMS_01"; 
+  VariableNames[1052] = "Y_RMS_02"; 
+  VariableNames[1053] = "Y_RMS_03"; 
+  VariableNames[1054] = "Y_RMS_04"; 
+  VariableNames[1055] = "Y_RMS_05"; 
+  VariableNames[1056] = "Y_RMS_06"; 
+  VariableNames[1057] = "Y_RMS_07"; 
+  VariableNames[1058] = "Y_RMS_08"; 
+  VariableNames[1059] = "Y_RMS_09"; 
+  VariableNames[1060] = "Y_RMS_10"; 
+  VariableNames[1061] = "Y_RMS_11"; 
+  VariableNames[1062] = "Y_RMS_12"; 
+  VariableNames[1063] = "Y_RMS_13"; 
+  VariableNames[1064] = "Y_RMS_14"; 
+  VariableNames[1065] = "Y_RMS_15"; 
+  VariableNames[1066] = "Y_RMS_16"; 
+  VariableNames[1067] = "Y_RMS_17"; 
+  VariableNames[1068] = "Y_RMS_18"; 
+  VariableNames[1069] = "Y_RMS_19"; 
+  VariableNames[1070] = "Y_RMS_20"; 
+  VariableNames[1071] = "Y_RMS_21"; 
+  VariableNames[1072] = "Y_RMS_22"; 
+  VariableNames[1073] = "Y_RMS_23"; 
+  VariableNames[1074] = "Y_RMS_24"; 
+  VariableNames[1075] = "Y_RMS_25"; 
+  VariableNames[1076] = "Y_RMS_26"; 
+  VariableNames[1077] = "Y_RMS_27"; 
+  VariableNames[1078] = "Y_RMS_28"; 
+  VariableNames[1079] = "Y_RMS_29"; 
+  VariableNames[1080] = "Y_RMS_30"; 
+  VariableNames[1081] = "Y_RMS_31"; 
+  VariableNames[1082] = "Y_RMS_32"; 
+  VariableNames[1083] = "Y_RMS_33"; 
+  VariableNames[1084] = "Y_RMS_34"; 
+  VariableNames[1085] = "Y_RMS_35"; 
+  VariableNames[1086] = "Y_RMS_36"; 
+  VariableNames[1087] = "Y_RMS_37"; 
+  VariableNames[1088] = "Y_RMS_38"; 
+  VariableNames[1089] = "Y_RMS_39"; 
+  VariableNames[1090] = "Y_RMS_40"; 
+  VariableNames[1091] = "Y_RMS_41"; 
+  VariableNames[1092] = "Y_RMS_42"; 
+  VariableNames[1093] = "Y_RMS_43"; 
+  VariableNames[1094] = "Y_RMS_44"; 
+  VariableNames[1095] = "Y_RMS_45"; 
+  VariableNames[1096] = "Y_RMS_46"; 
+  VariableNames[1097] = "Y_RMS_47"; 
+  VariableNames[1098] = "Y_RMS_48"; 
+  VariableNames[1099] = "Y_RMS_49"; 
+
+
+  VariableNames[1200] = "SITE_F_00"; 
+  VariableNames[1201] = "SITE_F_01"; 
+  VariableNames[1202] = "SITE_F_02"; 
+  VariableNames[1203] = "SITE_F_03"; 
+  VariableNames[1204] = "SITE_F_04"; 
+  VariableNames[1205] = "SITE_F_05"; 
+  VariableNames[1206] = "SITE_F_06"; 
+  VariableNames[1207] = "SITE_F_07"; 
+  VariableNames[1208] = "SITE_F_08"; 
+  VariableNames[1209] = "SITE_F_09"; 
+  VariableNames[1210] = "SITE_F_10"; 
+  VariableNames[1211] = "SITE_F_11"; 
+  VariableNames[1212] = "SITE_F_12"; 
+  VariableNames[1213] = "SITE_F_13"; 
+  VariableNames[1214] = "SITE_F_14"; 
+  VariableNames[1215] = "SITE_F_15"; 
+  VariableNames[1216] = "SITE_F_16"; 
+  VariableNames[1217] = "SITE_F_17"; 
+  VariableNames[1218] = "SITE_F_18"; 
+  VariableNames[1219] = "SITE_F_19"; 
+  VariableNames[1220] = "SITE_F_20"; 
+  VariableNames[1221] = "SITE_F_21"; 
+  VariableNames[1222] = "SITE_F_22"; 
+  VariableNames[1223] = "SITE_F_23"; 
+  VariableNames[1224] = "SITE_F_24"; 
+  VariableNames[1225] = "SITE_F_25"; 
+  VariableNames[1226] = "SITE_F_26"; 
+  VariableNames[1227] = "SITE_F_27"; 
+  VariableNames[1228] = "SITE_F_28"; 
+  VariableNames[1229] = "SITE_F_29"; 
+  VariableNames[1230] = "SITE_F_30"; 
+  VariableNames[1231] = "SITE_F_31"; 
+  VariableNames[1232] = "SITE_F_32"; 
+  VariableNames[1233] = "SITE_F_33"; 
+  VariableNames[1234] = "SITE_F_34"; 
+  VariableNames[1235] = "SITE_F_35"; 
+  VariableNames[1236] = "SITE_F_36"; 
+  VariableNames[1237] = "SITE_F_37"; 
+  VariableNames[1238] = "SITE_F_38"; 
+  VariableNames[1239] = "SITE_F_39"; 
+  VariableNames[1240] = "SITE_F_40"; 
+  VariableNames[1241] = "SITE_F_41"; 
+  VariableNames[1242] = "SITE_F_42"; 
+  VariableNames[1243] = "SITE_F_43"; 
+  VariableNames[1244] = "SITE_F_44"; 
+  VariableNames[1245] = "SITE_F_45"; 
+  VariableNames[1246] = "SITE_F_46"; 
+  VariableNames[1247] = "SITE_F_47"; 
+  VariableNames[1248] = "SITE_F_48"; 
+  VariableNames[1249] = "SITE_F_49"; 
+
+  VariableNames[1250] = "CREV_Y_00"; 
+  VariableNames[1251] = "CREV_Y_01"; 
+  VariableNames[1252] = "CREV_Y_02"; 
+  VariableNames[1253] = "CREV_Y_03"; 
+  VariableNames[1254] = "CREV_Y_04"; 
+  VariableNames[1255] = "CREV_Y_05"; 
+  VariableNames[1256] = "CREV_Y_06"; 
+  VariableNames[1257] = "CREV_Y_07"; 
+  VariableNames[1258] = "CREV_Y_08"; 
+  VariableNames[1259] = "CREV_Y_09"; 
+  VariableNames[1260] = "CREV_Y_10"; 
+  VariableNames[1261] = "CREV_Y_11"; 
+  VariableNames[1262] = "CREV_Y_12"; 
+  VariableNames[1263] = "CREV_Y_13"; 
+  VariableNames[1264] = "CREV_Y_14"; 
+  VariableNames[1265] = "CREV_Y_15"; 
+  VariableNames[1266] = "CREV_Y_16"; 
+  VariableNames[1267] = "CREV_Y_17"; 
+  VariableNames[1268] = "CREV_Y_18"; 
+  VariableNames[1269] = "CREV_Y_19"; 
+  VariableNames[1270] = "CREV_Y_20"; 
+  VariableNames[1271] = "CREV_Y_21"; 
+  VariableNames[1272] = "CREV_Y_22"; 
+  VariableNames[1273] = "CREV_Y_23"; 
+  VariableNames[1274] = "CREV_Y_24"; 
+  VariableNames[1275] = "CREV_Y_25"; 
+  VariableNames[1276] = "CREV_Y_26"; 
+  VariableNames[1277] = "CREV_Y_27"; 
+  VariableNames[1278] = "CREV_Y_28"; 
+  VariableNames[1279] = "CREV_Y_29"; 
+  VariableNames[1280] = "CREV_Y_30"; 
+  VariableNames[1281] = "CREV_Y_31"; 
+  VariableNames[1282] = "CREV_Y_32"; 
+  VariableNames[1283] = "CREV_Y_33"; 
+  VariableNames[1284] = "CREV_Y_34"; 
+  VariableNames[1285] = "CREV_Y_35"; 
+  VariableNames[1286] = "CREV_Y_36"; 
+  VariableNames[1287] = "CREV_Y_37"; 
+  VariableNames[1288] = "CREV_Y_38"; 
+  VariableNames[1289] = "CREV_Y_39"; 
+  VariableNames[1290] = "CREV_Y_40"; 
+  VariableNames[1291] = "CREV_Y_41"; 
+  VariableNames[1292] = "CREV_Y_42"; 
+  VariableNames[1293] = "CREV_Y_43"; 
+  VariableNames[1294] = "CREV_Y_44"; 
+  VariableNames[1295] = "CREV_Y_45"; 
+  VariableNames[1296] = "CREV_Y_46"; 
+  VariableNames[1297] = "CREV_Y_47"; 
+  VariableNames[1298] = "CREV_Y_48"; 
+  VariableNames[1299] = "CREV_Y_49"; 
+
+  VariableNames[1301] = "WSB"; 
+  VariableNames[1302] = "WSN"; 
+  VariableNames[1303] = "WSR"; 
+  VariableNames[1304] = "WSB_M1"; 
+  VariableNames[1305] = "WSB_M2"; 
+  VariableNames[1306] = "WSN_M1"; 
+  VariableNames[1307] = "WSN_M2"; 
+  VariableNames[1308] = "WSR_M1"; 
+  VariableNames[1309] = "WSR_M2"; 
+  VariableNames[1310] = "MASGEN"; 
+  VariableNames[1311] = "NUCRAT"; 
+  VariableNames[1330] = "TEMPERATURE_M1"; 
+  VariableNames[1331] = "TEMPERATURE_M2"; 
+
+  VariableNames[1350] = "SURF_F_00"; 
+  VariableNames[1351] = "SURF_F_01"; 
+  VariableNames[1352] = "SURF_F_02"; 
+  VariableNames[1353] = "SURF_F_03"; 
+  VariableNames[1354] = "SURF_F_04"; 
+  VariableNames[1355] = "SURF_F_05"; 
+  VariableNames[1356] = "SURF_F_06"; 
+  VariableNames[1357] = "SURF_F_07"; 
+  VariableNames[1358] = "SURF_F_08"; 
+  VariableNames[1359] = "SURF_F_09"; 
+  VariableNames[1360] = "SURF_F_10"; 
+  VariableNames[1361] = "SURF_F_11"; 
+  VariableNames[1362] = "SURF_F_12"; 
+  VariableNames[1363] = "SURF_F_13"; 
+  VariableNames[1364] = "SURF_F_14"; 
+  VariableNames[1365] = "SURF_F_15"; 
+  VariableNames[1366] = "SURF_F_16"; 
+  VariableNames[1367] = "SURF_F_17"; 
+  VariableNames[1368] = "SURF_F_18"; 
+  VariableNames[1369] = "SURF_F_19"; 
+  VariableNames[1370] = "SURF_F_20"; 
+  VariableNames[1371] = "SURF_F_21"; 
+  VariableNames[1372] = "SURF_F_22"; 
+  VariableNames[1373] = "SURF_F_23"; 
+  VariableNames[1374] = "SURF_F_24"; 
+  VariableNames[1375] = "SURF_F_25"; 
+  VariableNames[1376] = "SURF_F_26"; 
+  VariableNames[1377] = "SURF_F_27"; 
+  VariableNames[1378] = "SURF_F_28"; 
+  VariableNames[1379] = "SURF_F_29"; 
+  VariableNames[1380] = "SURF_F_30"; 
+  VariableNames[1381] = "SURF_F_31"; 
+  VariableNames[1382] = "SURF_F_32"; 
+  VariableNames[1383] = "SURF_F_33"; 
+  VariableNames[1384] = "SURF_F_34"; 
+  VariableNames[1385] = "SURF_F_35"; 
+  VariableNames[1386] = "SURF_F_36"; 
+  VariableNames[1387] = "SURF_F_37"; 
+  VariableNames[1388] = "SURF_F_38"; 
+  VariableNames[1389] = "SURF_F_39"; 
+  VariableNames[1390] = "SURF_F_40"; 
+  VariableNames[1391] = "SURF_F_41"; 
+  VariableNames[1392] = "SURF_F_42"; 
+  VariableNames[1393] = "SURF_F_43"; 
+  VariableNames[1394] = "SURF_F_44"; 
+  VariableNames[1395] = "SURF_F_45"; 
+  VariableNames[1396] = "SURF_F_46"; 
+  VariableNames[1397] = "SURF_F_47"; 
+  VariableNames[1398] = "SURF_F_48"; 
+  VariableNames[1399] = "SURF_F_49"; 
+
+
+
+
+
+
+
+
+  VariableNames[7700] = "PB_DISC_00"; 
+  VariableNames[7701] = "PB_DISC_01"; 
+  VariableNames[7702] = "PB_DISC_02"; 
+  VariableNames[7703] = "PB_DISC_03"; 
+  VariableNames[7704] = "PB_DISC_04"; 
+  VariableNames[7705] = "PB_DISC_05"; 
+  VariableNames[7706] = "PB_DISC_06"; 
+  VariableNames[7707] = "PB_DISC_07"; 
+  VariableNames[7708] = "PB_DISC_08"; 
+  VariableNames[7709] = "PB_DISC_09"; 
+  VariableNames[7710] = "PB_DISC_10"; 
+  VariableNames[7711] = "PB_DISC_11"; 
+  VariableNames[7712] = "PB_DISC_12"; 
+  VariableNames[7713] = "PB_DISC_13"; 
+  VariableNames[7714] = "PB_DISC_14"; 
+  VariableNames[7715] = "PB_DISC_15"; 
+  VariableNames[7716] = "PB_DISC_16"; 
+  VariableNames[7717] = "PB_DISC_17"; 
+  VariableNames[7718] = "PB_DISC_18"; 
+  VariableNames[7719] = "PB_DISC_19"; 
+  VariableNames[7720] = "PB_DISC_20"; 
+  VariableNames[7721] = "PB_DISC_21"; 
+  VariableNames[7722] = "PB_DISC_22"; 
+  VariableNames[7723] = "PB_DISC_23"; 
+  VariableNames[7724] = "PB_DISC_24"; 
+  VariableNames[7725] = "PB_DISC_25"; 
+  VariableNames[7726] = "PB_DISC_26"; 
+  VariableNames[7727] = "PB_DISC_27"; 
+  VariableNames[7728] = "PB_DISC_28"; 
+  VariableNames[7729] = "PB_DISC_29"; 
+  VariableNames[7730] = "PB_DISC_30"; 
+  VariableNames[7731] = "PB_DISC_31"; 
+  VariableNames[7732] = "PB_DISC_32"; 
+  VariableNames[7733] = "PB_DISC_33"; 
+  VariableNames[7734] = "PB_DISC_34"; 
+  VariableNames[7735] = "PB_DISC_35"; 
+  VariableNames[7736] = "PB_DISC_36"; 
+  VariableNames[7737] = "PB_DISC_37"; 
+  VariableNames[7738] = "PB_DISC_38"; 
+  VariableNames[7739] = "PB_DISC_39"; 
+  VariableNames[7740] = "PB_DISC_40"; 
+  VariableNames[7741] = "PB_DISC_41"; 
+  VariableNames[7742] = "PB_DISC_42"; 
+  VariableNames[7743] = "PB_DISC_43"; 
+  VariableNames[7744] = "PB_DISC_44"; 
+  VariableNames[7745] = "PB_DISC_45"; 
+  VariableNames[7746] = "PB_DISC_46"; 
+  VariableNames[7747] = "PB_DISC_47"; 
+  VariableNames[7748] = "PB_DISC_48"; 
+  VariableNames[7749] = "PB_DISC_49"; 
+
+  VariableNames[7750] = "PB_DISC_M1_00"; 
+  VariableNames[7751] = "PB_DISC_M1_01"; 
+  VariableNames[7752] = "PB_DISC_M1_02"; 
+  VariableNames[7753] = "PB_DISC_M1_03"; 
+  VariableNames[7754] = "PB_DISC_M1_04"; 
+  VariableNames[7755] = "PB_DISC_M1_05"; 
+  VariableNames[7756] = "PB_DISC_M1_06"; 
+  VariableNames[7757] = "PB_DISC_M1_07"; 
+  VariableNames[7758] = "PB_DISC_M1_08"; 
+  VariableNames[7759] = "PB_DISC_M1_09"; 
+  VariableNames[7760] = "PB_DISC_M1_10"; 
+  VariableNames[7761] = "PB_DISC_M1_11"; 
+  VariableNames[7762] = "PB_DISC_M1_12"; 
+  VariableNames[7763] = "PB_DISC_M1_13"; 
+  VariableNames[7764] = "PB_DISC_M1_14"; 
+  VariableNames[7765] = "PB_DISC_M1_15"; 
+  VariableNames[7766] = "PB_DISC_M1_16"; 
+  VariableNames[7767] = "PB_DISC_M1_17"; 
+  VariableNames[7768] = "PB_DISC_M1_18"; 
+  VariableNames[7769] = "PB_DISC_M1_19"; 
+  VariableNames[7770] = "PB_DISC_M1_20"; 
+  VariableNames[7771] = "PB_DISC_M1_21"; 
+  VariableNames[7772] = "PB_DISC_M1_22"; 
+  VariableNames[7773] = "PB_DISC_M1_23"; 
+  VariableNames[7774] = "PB_DISC_M1_24"; 
+  VariableNames[7775] = "PB_DISC_M1_25"; 
+  VariableNames[7776] = "PB_DISC_M1_26"; 
+  VariableNames[7777] = "PB_DISC_M1_27"; 
+  VariableNames[7778] = "PB_DISC_M1_28"; 
+  VariableNames[7779] = "PB_DISC_M1_29"; 
+  VariableNames[7780] = "PB_DISC_M1_30"; 
+  VariableNames[7781] = "PB_DISC_M1_31"; 
+  VariableNames[7782] = "PB_DISC_M1_32"; 
+  VariableNames[7783] = "PB_DISC_M1_33"; 
+  VariableNames[7784] = "PB_DISC_M1_34"; 
+  VariableNames[7785] = "PB_DISC_M1_35"; 
+  VariableNames[7786] = "PB_DISC_M1_36"; 
+  VariableNames[7787] = "PB_DISC_M1_37"; 
+  VariableNames[7788] = "PB_DISC_M1_38"; 
+  VariableNames[7789] = "PB_DISC_M1_39"; 
+  VariableNames[7790] = "PB_DISC_M1_40"; 
+  VariableNames[7791] = "PB_DISC_M1_41"; 
+  VariableNames[7792] = "PB_DISC_M1_42"; 
+  VariableNames[7793] = "PB_DISC_M1_43"; 
+  VariableNames[7794] = "PB_DISC_M1_44"; 
+  VariableNames[7795] = "PB_DISC_M1_45"; 
+  VariableNames[7796] = "PB_DISC_M1_46"; 
+  VariableNames[7797] = "PB_DISC_M1_47"; 
+  VariableNames[7798] = "PB_DISC_M1_48"; 
+  VariableNames[7799] = "PB_DISC_M1_49"; 
+
+  VariableNames[7800] = "PB_DISC_M2_00"; 
+  VariableNames[7801] = "PB_DISC_M2_01"; 
+  VariableNames[7802] = "PB_DISC_M2_02"; 
+  VariableNames[7803] = "PB_DISC_M2_03"; 
+  VariableNames[7804] = "PB_DISC_M2_04"; 
+  VariableNames[7805] = "PB_DISC_M2_05"; 
+  VariableNames[7806] = "PB_DISC_M2_06"; 
+  VariableNames[7807] = "PB_DISC_M2_07"; 
+  VariableNames[7808] = "PB_DISC_M2_08"; 
+  VariableNames[7809] = "PB_DISC_M2_09"; 
+  VariableNames[7810] = "PB_DISC_M2_10"; 
+  VariableNames[7811] = "PB_DISC_M2_11"; 
+  VariableNames[7812] = "PB_DISC_M2_12"; 
+  VariableNames[7813] = "PB_DISC_M2_13"; 
+  VariableNames[7814] = "PB_DISC_M2_14"; 
+  VariableNames[7815] = "PB_DISC_M2_15"; 
+  VariableNames[7816] = "PB_DISC_M2_16"; 
+  VariableNames[7817] = "PB_DISC_M2_17"; 
+  VariableNames[7818] = "PB_DISC_M2_18"; 
+  VariableNames[7819] = "PB_DISC_M2_19"; 
+  VariableNames[7820] = "PB_DISC_M2_20"; 
+  VariableNames[7821] = "PB_DISC_M2_21"; 
+  VariableNames[7822] = "PB_DISC_M2_22"; 
+  VariableNames[7823] = "PB_DISC_M2_23"; 
+  VariableNames[7824] = "PB_DISC_M2_24"; 
+  VariableNames[7825] = "PB_DISC_M2_25"; 
+  VariableNames[7826] = "PB_DISC_M2_26"; 
+  VariableNames[7827] = "PB_DISC_M2_27"; 
+  VariableNames[7828] = "PB_DISC_M2_28"; 
+  VariableNames[7829] = "PB_DISC_M2_29"; 
+  VariableNames[7830] = "PB_DISC_M2_30"; 
+  VariableNames[7831] = "PB_DISC_M2_31"; 
+  VariableNames[7832] = "PB_DISC_M2_32"; 
+  VariableNames[7833] = "PB_DISC_M2_33"; 
+  VariableNames[7834] = "PB_DISC_M2_34"; 
+  VariableNames[7835] = "PB_DISC_M2_35"; 
+  VariableNames[7836] = "PB_DISC_M2_36"; 
+  VariableNames[7837] = "PB_DISC_M2_37"; 
+  VariableNames[7838] = "PB_DISC_M2_38"; 
+  VariableNames[7839] = "PB_DISC_M2_39"; 
+  VariableNames[7840] = "PB_DISC_M2_40"; 
+  VariableNames[7841] = "PB_DISC_M2_41"; 
+  VariableNames[7842] = "PB_DISC_M2_42"; 
+  VariableNames[7843] = "PB_DISC_M2_43"; 
+  VariableNames[7844] = "PB_DISC_M2_44"; 
+  VariableNames[7845] = "PB_DISC_M2_45"; 
+  VariableNames[7846] = "PB_DISC_M2_46"; 
+  VariableNames[7847] = "PB_DISC_M2_47"; 
+  VariableNames[7848] = "PB_DISC_M2_48"; 
+  VariableNames[7849] = "PB_DISC_M2_49"; 
+
+  VariableNames[7850] = "PB_QMOM_00"; 
+  VariableNames[7851] = "PB_QMOM_01"; 
+  VariableNames[7852] = "PB_QMOM_02"; 
+  VariableNames[7853] = "PB_QMOM_03"; 
+  VariableNames[7854] = "PB_QMOM_04"; 
+  VariableNames[7855] = "PB_QMOM_05"; 
+  VariableNames[7856] = "PB_QMOM_06"; 
+  VariableNames[7857] = "PB_QMOM_07"; 
+  VariableNames[7858] = "PB_QMOM_08"; 
+  VariableNames[7859] = "PB_QMOM_09"; 
+  VariableNames[7860] = "PB_QMOM_10"; 
+  VariableNames[7861] = "PB_QMOM_11"; 
+  VariableNames[7862] = "PB_QMOM_12"; 
+  VariableNames[7863] = "PB_QMOM_13"; 
+  VariableNames[7864] = "PB_QMOM_14"; 
+  VariableNames[7865] = "PB_QMOM_15"; 
+  VariableNames[7866] = "PB_QMOM_16"; 
+  VariableNames[7867] = "PB_QMOM_17"; 
+  VariableNames[7868] = "PB_QMOM_18"; 
+  VariableNames[7869] = "PB_QMOM_19"; 
+  VariableNames[7870] = "PB_QMOM_20"; 
+  VariableNames[7871] = "PB_QMOM_21"; 
+  VariableNames[7872] = "PB_QMOM_22"; 
+  VariableNames[7873] = "PB_QMOM_23"; 
+  VariableNames[7874] = "PB_QMOM_24"; 
+  VariableNames[7875] = "PB_QMOM_25"; 
+  VariableNames[7876] = "PB_QMOM_26"; 
+  VariableNames[7877] = "PB_QMOM_27"; 
+  VariableNames[7878] = "PB_QMOM_28"; 
+  VariableNames[7879] = "PB_QMOM_29"; 
+  VariableNames[7880] = "PB_QMOM_30"; 
+  VariableNames[7881] = "PB_QMOM_31"; 
+  VariableNames[7882] = "PB_QMOM_32"; 
+  VariableNames[7883] = "PB_QMOM_33"; 
+  VariableNames[7884] = "PB_QMOM_34"; 
+  VariableNames[7885] = "PB_QMOM_35"; 
+  VariableNames[7886] = "PB_QMOM_36"; 
+  VariableNames[7887] = "PB_QMOM_37"; 
+  VariableNames[7888] = "PB_QMOM_38"; 
+  VariableNames[7889] = "PB_QMOM_39"; 
+  VariableNames[7890] = "PB_QMOM_40"; 
+  VariableNames[7891] = "PB_QMOM_41"; 
+  VariableNames[7892] = "PB_QMOM_42"; 
+  VariableNames[7893] = "PB_QMOM_43"; 
+  VariableNames[7894] = "PB_QMOM_44"; 
+  VariableNames[7895] = "PB_QMOM_45"; 
+  VariableNames[7896] = "PB_QMOM_46"; 
+  VariableNames[7897] = "PB_QMOM_47"; 
+  VariableNames[7898] = "PB_QMOM_48"; 
+  VariableNames[7899] = "PB_QMOM_49"; 
+
+  VariableNames[7900] = "PB_QMOM_M1_00"; 
+  VariableNames[7901] = "PB_QMOM_M1_01"; 
+  VariableNames[7902] = "PB_QMOM_M1_02"; 
+  VariableNames[7903] = "PB_QMOM_M1_03"; 
+  VariableNames[7904] = "PB_QMOM_M1_04"; 
+  VariableNames[7905] = "PB_QMOM_M1_05"; 
+  VariableNames[7906] = "PB_QMOM_M1_06"; 
+  VariableNames[7907] = "PB_QMOM_M1_07"; 
+  VariableNames[7908] = "PB_QMOM_M1_08"; 
+  VariableNames[7909] = "PB_QMOM_M1_09"; 
+  VariableNames[7910] = "PB_QMOM_M1_10"; 
+  VariableNames[7911] = "PB_QMOM_M1_11"; 
+  VariableNames[7912] = "PB_QMOM_M1_12"; 
+  VariableNames[7913] = "PB_QMOM_M1_13"; 
+  VariableNames[7914] = "PB_QMOM_M1_14"; 
+  VariableNames[7915] = "PB_QMOM_M1_15"; 
+  VariableNames[7916] = "PB_QMOM_M1_16"; 
+  VariableNames[7917] = "PB_QMOM_M1_17"; 
+  VariableNames[7918] = "PB_QMOM_M1_18"; 
+  VariableNames[7919] = "PB_QMOM_M1_19"; 
+  VariableNames[7920] = "PB_QMOM_M1_20"; 
+  VariableNames[7921] = "PB_QMOM_M1_21"; 
+  VariableNames[7922] = "PB_QMOM_M1_22"; 
+  VariableNames[7923] = "PB_QMOM_M1_23"; 
+  VariableNames[7924] = "PB_QMOM_M1_24"; 
+  VariableNames[7925] = "PB_QMOM_M1_25"; 
+  VariableNames[7926] = "PB_QMOM_M1_26"; 
+  VariableNames[7927] = "PB_QMOM_M1_27"; 
+  VariableNames[7928] = "PB_QMOM_M1_28"; 
+  VariableNames[7929] = "PB_QMOM_M1_29"; 
+  VariableNames[7930] = "PB_QMOM_M1_30"; 
+  VariableNames[7931] = "PB_QMOM_M1_31"; 
+  VariableNames[7932] = "PB_QMOM_M1_32"; 
+  VariableNames[7933] = "PB_QMOM_M1_33"; 
+  VariableNames[7934] = "PB_QMOM_M1_34"; 
+  VariableNames[7935] = "PB_QMOM_M1_35"; 
+  VariableNames[7936] = "PB_QMOM_M1_36"; 
+  VariableNames[7937] = "PB_QMOM_M1_37"; 
+  VariableNames[7938] = "PB_QMOM_M1_38"; 
+  VariableNames[7939] = "PB_QMOM_M1_39"; 
+  VariableNames[7940] = "PB_QMOM_M1_40"; 
+  VariableNames[7941] = "PB_QMOM_M1_41"; 
+  VariableNames[7942] = "PB_QMOM_M1_42"; 
+  VariableNames[7943] = "PB_QMOM_M1_43"; 
+  VariableNames[7944] = "PB_QMOM_M1_44"; 
+  VariableNames[7945] = "PB_QMOM_M1_45"; 
+  VariableNames[7946] = "PB_QMOM_M1_46"; 
+  VariableNames[7947] = "PB_QMOM_M1_47"; 
+  VariableNames[7948] = "PB_QMOM_M1_48"; 
+  VariableNames[7949] = "PB_QMOM_M1_49"; 
+
+
+  VariableNames[7950] = "PB_QMOM_M2_00"; 
+  VariableNames[7951] = "PB_QMOM_M2_01"; 
+  VariableNames[7952] = "PB_QMOM_M2_02"; 
+  VariableNames[7953] = "PB_QMOM_M2_03"; 
+  VariableNames[7954] = "PB_QMOM_M2_04"; 
+  VariableNames[7955] = "PB_QMOM_M2_05"; 
+  VariableNames[7956] = "PB_QMOM_M2_06"; 
+  VariableNames[7957] = "PB_QMOM_M2_07"; 
+  VariableNames[7958] = "PB_QMOM_M2_08"; 
+  VariableNames[7959] = "PB_QMOM_M2_09"; 
+  VariableNames[7960] = "PB_QMOM_M2_10"; 
+  VariableNames[7961] = "PB_QMOM_M2_11"; 
+  VariableNames[7962] = "PB_QMOM_M2_12"; 
+  VariableNames[7963] = "PB_QMOM_M2_13"; 
+  VariableNames[7964] = "PB_QMOM_M2_14"; 
+  VariableNames[7965] = "PB_QMOM_M2_15"; 
+  VariableNames[7966] = "PB_QMOM_M2_16"; 
+  VariableNames[7967] = "PB_QMOM_M2_17"; 
+  VariableNames[7968] = "PB_QMOM_M2_18"; 
+  VariableNames[7969] = "PB_QMOM_M2_19"; 
+  VariableNames[7970] = "PB_QMOM_M2_20"; 
+  VariableNames[7971] = "PB_QMOM_M2_21"; 
+  VariableNames[7972] = "PB_QMOM_M2_22"; 
+  VariableNames[7973] = "PB_QMOM_M2_23"; 
+  VariableNames[7974] = "PB_QMOM_M2_24"; 
+  VariableNames[7975] = "PB_QMOM_M2_25"; 
+  VariableNames[7976] = "PB_QMOM_M2_26"; 
+  VariableNames[7977] = "PB_QMOM_M2_27"; 
+  VariableNames[7978] = "PB_QMOM_M2_28"; 
+  VariableNames[7979] = "PB_QMOM_M2_29"; 
+  VariableNames[7980] = "PB_QMOM_M2_30"; 
+  VariableNames[7981] = "PB_QMOM_M2_31"; 
+  VariableNames[7982] = "PB_QMOM_M2_32"; 
+  VariableNames[7983] = "PB_QMOM_M2_33"; 
+  VariableNames[7984] = "PB_QMOM_M2_34"; 
+  VariableNames[7985] = "PB_QMOM_M2_35"; 
+  VariableNames[7986] = "PB_QMOM_M2_36"; 
+  VariableNames[7987] = "PB_QMOM_M2_37"; 
+  VariableNames[7988] = "PB_QMOM_M2_38"; 
+  VariableNames[7989] = "PB_QMOM_M2_39"; 
+  VariableNames[7990] = "PB_QMOM_M2_40"; 
+  VariableNames[7991] = "PB_QMOM_M2_41"; 
+  VariableNames[7992] = "PB_QMOM_M2_42"; 
+  VariableNames[7993] = "PB_QMOM_M2_43"; 
+  VariableNames[7994] = "PB_QMOM_M2_44"; 
+  VariableNames[7995] = "PB_QMOM_M2_45"; 
+  VariableNames[7996] = "PB_QMOM_M2_46"; 
+  VariableNames[7997] = "PB_QMOM_M2_47"; 
+  VariableNames[7998] = "PB_QMOM_M2_48"; 
+  VariableNames[7999] = "PB_QMOM_M2_49"; 
+
+  VariableNames[8000] = "PB_SMM_00"; 
+  VariableNames[8001] = "PB_SMM_01"; 
+  VariableNames[8002] = "PB_SMM_02"; 
+  VariableNames[8003] = "PB_SMM_03"; 
+  VariableNames[8004] = "PB_SMM_04"; 
+  VariableNames[8005] = "PB_SMM_05"; 
+  VariableNames[8006] = "PB_SMM_06"; 
+  VariableNames[8007] = "PB_SMM_07"; 
+  VariableNames[8008] = "PB_SMM_08"; 
+  VariableNames[8009] = "PB_SMM_09"; 
+  VariableNames[8010] = "PB_SMM_10"; 
+  VariableNames[8011] = "PB_SMM_11"; 
+  VariableNames[8012] = "PB_SMM_12"; 
+  VariableNames[8013] = "PB_SMM_13"; 
+  VariableNames[8014] = "PB_SMM_14"; 
+  VariableNames[8015] = "PB_SMM_15"; 
+  VariableNames[8016] = "PB_SMM_16"; 
+  VariableNames[8017] = "PB_SMM_17"; 
+  VariableNames[8018] = "PB_SMM_18"; 
+  VariableNames[8019] = "PB_SMM_19"; 
+  VariableNames[8020] = "PB_SMM_20"; 
+  VariableNames[8021] = "PB_SMM_21"; 
+  VariableNames[8022] = "PB_SMM_22"; 
+  VariableNames[8023] = "PB_SMM_23"; 
+  VariableNames[8024] = "PB_SMM_24"; 
+  VariableNames[8025] = "PB_SMM_25"; 
+  VariableNames[8026] = "PB_SMM_26"; 
+  VariableNames[8027] = "PB_SMM_27"; 
+  VariableNames[8028] = "PB_SMM_28"; 
+  VariableNames[8029] = "PB_SMM_29"; 
+  VariableNames[8030] = "PB_SMM_30"; 
+  VariableNames[8031] = "PB_SMM_31"; 
+  VariableNames[8032] = "PB_SMM_32"; 
+  VariableNames[8033] = "PB_SMM_33"; 
+  VariableNames[8034] = "PB_SMM_34"; 
+  VariableNames[8035] = "PB_SMM_35"; 
+  VariableNames[8036] = "PB_SMM_36"; 
+  VariableNames[8037] = "PB_SMM_37"; 
+  VariableNames[8038] = "PB_SMM_38"; 
+  VariableNames[8039] = "PB_SMM_39"; 
+  VariableNames[8040] = "PB_SMM_40"; 
+  VariableNames[8041] = "PB_SMM_41"; 
+  VariableNames[8042] = "PB_SMM_42"; 
+  VariableNames[8043] = "PB_SMM_43"; 
+  VariableNames[8044] = "PB_SMM_44"; 
+  VariableNames[8045] = "PB_SMM_45"; 
+  VariableNames[8046] = "PB_SMM_46"; 
+  VariableNames[8047] = "PB_SMM_47"; 
+  VariableNames[8048] = "PB_SMM_48"; 
+  VariableNames[8049] = "PB_SMM_49"; 
+
+
+  VariableNames[8050] = "PB_SMM_M1_00"; 
+  VariableNames[8051] = "PB_SMM_M1_01"; 
+  VariableNames[8052] = "PB_SMM_M1_02"; 
+  VariableNames[8053] = "PB_SMM_M1_03"; 
+  VariableNames[8054] = "PB_SMM_M1_04"; 
+  VariableNames[8055] = "PB_SMM_M1_05"; 
+  VariableNames[8056] = "PB_SMM_M1_06"; 
+  VariableNames[8057] = "PB_SMM_M1_07"; 
+  VariableNames[8058] = "PB_SMM_M1_08"; 
+  VariableNames[8059] = "PB_SMM_M1_09"; 
+  VariableNames[8060] = "PB_SMM_M1_10"; 
+  VariableNames[8061] = "PB_SMM_M1_11"; 
+  VariableNames[8062] = "PB_SMM_M1_12"; 
+  VariableNames[8063] = "PB_SMM_M1_13"; 
+  VariableNames[8064] = "PB_SMM_M1_14"; 
+  VariableNames[8065] = "PB_SMM_M1_15"; 
+  VariableNames[8066] = "PB_SMM_M1_16"; 
+  VariableNames[8067] = "PB_SMM_M1_17"; 
+  VariableNames[8068] = "PB_SMM_M1_18"; 
+  VariableNames[8069] = "PB_SMM_M1_19"; 
+  VariableNames[8070] = "PB_SMM_M1_20"; 
+  VariableNames[8071] = "PB_SMM_M1_21"; 
+  VariableNames[8072] = "PB_SMM_M1_22"; 
+  VariableNames[8073] = "PB_SMM_M1_23"; 
+  VariableNames[8074] = "PB_SMM_M1_24"; 
+  VariableNames[8075] = "PB_SMM_M1_25"; 
+  VariableNames[8076] = "PB_SMM_M1_26"; 
+  VariableNames[8077] = "PB_SMM_M1_27"; 
+  VariableNames[8078] = "PB_SMM_M1_28"; 
+  VariableNames[8079] = "PB_SMM_M1_29"; 
+  VariableNames[8080] = "PB_SMM_M1_30"; 
+  VariableNames[8081] = "PB_SMM_M1_31"; 
+  VariableNames[8082] = "PB_SMM_M1_32"; 
+  VariableNames[8083] = "PB_SMM_M1_33"; 
+  VariableNames[8084] = "PB_SMM_M1_34"; 
+  VariableNames[8085] = "PB_SMM_M1_35"; 
+  VariableNames[8086] = "PB_SMM_M1_36"; 
+  VariableNames[8087] = "PB_SMM_M1_37"; 
+  VariableNames[8088] = "PB_SMM_M1_38"; 
+  VariableNames[8089] = "PB_SMM_M1_39"; 
+  VariableNames[8090] = "PB_SMM_M1_40"; 
+  VariableNames[8091] = "PB_SMM_M1_41"; 
+  VariableNames[8092] = "PB_SMM_M1_42"; 
+  VariableNames[8093] = "PB_SMM_M1_43"; 
+  VariableNames[8094] = "PB_SMM_M1_44"; 
+  VariableNames[8095] = "PB_SMM_M1_45"; 
+  VariableNames[8096] = "PB_SMM_M1_46"; 
+  VariableNames[8097] = "PB_SMM_M1_47"; 
+  VariableNames[8098] = "PB_SMM_M1_48"; 
+  VariableNames[8099] = "PB_SMM_M1_49"; 
+
+  VariableNames[8100] = "PB_SMM_M2_00"; 
+  VariableNames[8101] = "PB_SMM_M2_01"; 
+  VariableNames[8102] = "PB_SMM_M2_02"; 
+  VariableNames[8103] = "PB_SMM_M2_03"; 
+  VariableNames[8104] = "PB_SMM_M2_04"; 
+  VariableNames[8105] = "PB_SMM_M2_05"; 
+  VariableNames[8106] = "PB_SMM_M2_06"; 
+  VariableNames[8107] = "PB_SMM_M2_07"; 
+  VariableNames[8108] = "PB_SMM_M2_08"; 
+  VariableNames[8109] = "PB_SMM_M2_09"; 
+  VariableNames[8110] = "PB_SMM_M2_10"; 
+  VariableNames[8111] = "PB_SMM_M2_11"; 
+  VariableNames[8112] = "PB_SMM_M2_12"; 
+  VariableNames[8113] = "PB_SMM_M2_13"; 
+  VariableNames[8114] = "PB_SMM_M2_14"; 
+  VariableNames[8115] = "PB_SMM_M2_15"; 
+  VariableNames[8116] = "PB_SMM_M2_16"; 
+  VariableNames[8117] = "PB_SMM_M2_17"; 
+  VariableNames[8118] = "PB_SMM_M2_18"; 
+  VariableNames[8119] = "PB_SMM_M2_19"; 
+  VariableNames[8120] = "PB_SMM_M2_20"; 
+  VariableNames[8121] = "PB_SMM_M2_21"; 
+  VariableNames[8122] = "PB_SMM_M2_22"; 
+  VariableNames[8123] = "PB_SMM_M2_23"; 
+  VariableNames[8124] = "PB_SMM_M2_24"; 
+  VariableNames[8125] = "PB_SMM_M2_25"; 
+  VariableNames[8126] = "PB_SMM_M2_26"; 
+  VariableNames[8127] = "PB_SMM_M2_27"; 
+  VariableNames[8128] = "PB_SMM_M2_28"; 
+  VariableNames[8129] = "PB_SMM_M2_29"; 
+  VariableNames[8130] = "PB_SMM_M2_30"; 
+  VariableNames[8131] = "PB_SMM_M2_31"; 
+  VariableNames[8132] = "PB_SMM_M2_32"; 
+  VariableNames[8133] = "PB_SMM_M2_33"; 
+  VariableNames[8134] = "PB_SMM_M2_34"; 
+  VariableNames[8135] = "PB_SMM_M2_35"; 
+  VariableNames[8136] = "PB_SMM_M2_36"; 
+  VariableNames[8137] = "PB_SMM_M2_37"; 
+  VariableNames[8138] = "PB_SMM_M2_38"; 
+  VariableNames[8139] = "PB_SMM_M2_39"; 
+  VariableNames[8140] = "PB_SMM_M2_40"; 
+  VariableNames[8141] = "PB_SMM_M2_41"; 
+  VariableNames[8142] = "PB_SMM_M2_42"; 
+  VariableNames[8143] = "PB_SMM_M2_43"; 
+  VariableNames[8144] = "PB_SMM_M2_44"; 
+  VariableNames[8145] = "PB_SMM_M2_45"; 
+  VariableNames[8146] = "PB_SMM_M2_46"; 
+  VariableNames[8147] = "PB_SMM_M2_47"; 
+  VariableNames[8148] = "PB_SMM_M2_48"; 
+  VariableNames[8149] = "PB_SMM_M2_49"; 
+
 }
 
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetBinaryInteger(int ix)
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::ParseCaseFile()
+{
+  FluentCaseFile.clear();
+  FluentCaseFile.seekg (0, ios::beg);
+
+  int cnt = 0;
+  while (GetCaseChunk())
+    {
+
+    int index = GetCaseIndex();
+cout<<"parseCase: "<<index<<endl;
+    switch (index)
+      {
+      case 0:
+        break;
+      case 1:
+        break;
+      case 2:
+        GridDimension = GetDimension();
+        break;
+      case 4:
+        GetLittleEndianFlag();
+        break;
+      case 10:
+        GetNodesAscii();
+        break;
+      case 12:
+        GetCellsAscii();
+        break;
+      case 13:
+        GetFacesAscii();
+        break;
+      case 18:
+        GetPeriodicShadowFacesAscii();
+        break;
+      case 37:
+        break;
+      case 38:
+        break;
+      case 39:
+        break;
+      case 40:
+        break;
+      case 41:
+        break;
+      case 45:
+        break;
+      case 58:
+        GetCellTreeAscii();
+        break;
+      case 59:
+        GetFaceTreeAscii();
+        break;
+      case 61:
+        GetInterfaceFaceParentsAscii();
+        break;
+      case 62:
+        GetNonconformalGridInterfaceFaceInformationAscii();
+        break;
+      case 63:
+        break;
+      case 64:
+        break;
+      case 2010:
+        GetNodesSinglePrecision();
+        break;
+      case 3010:
+        GetNodesDoublePrecision();
+        break;
+      case 2012:
+        GetCellsBinary();
+        break;
+      case 3012:
+        GetCellsBinary();  // Should be the same as single precision.. only grabbing ints.
+        break;
+      case 2013:
+        GetFacesBinary();
+        break;
+      case 3013:
+        GetFacesBinary();
+        break;
+      case 2018:
+        GetPeriodicShadowFacesBinary();
+        break;
+      case 3018:
+        GetPeriodicShadowFacesBinary();
+        break;
+      case 2040:
+        break;
+      case 3040:
+        break;
+      case 2041:
+        break;
+      case 3041:
+        break;
+      case 2058:
+        GetCellTreeBinary();
+        break;
+      case 3058:
+        GetCellTreeBinary();
+        break;
+      case 2059:
+        GetFaceTreeBinary();
+        break;
+      case 3059:
+        GetFaceTreeBinary();
+        break;
+      case 2061:
+        GetInterfaceFaceParentsBinary();
+        break;
+      case 3061:
+        GetInterfaceFaceParentsBinary();
+        break;
+      case 2062:
+        GetNonconformalGridInterfaceFaceInformationBinary();
+        break;
+      case 3062:
+        GetNonconformalGridInterfaceFaceInformationBinary();
+        break;
+      case 2063:
+        break;
+      case 3063:
+        break;
+      default:
+        //cout << "Undefined Section = " << index << endl;
+        break;
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+int vtkFLUENTReader::GetDimension()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+4, 1 );
+  return atoi(info.c_str());
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetLittleEndianFlag()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int flag;
+  sscanf(info.c_str(), "%d", &flag);
+
+  if (flag == 60)
+    {
+    LittleEndianFlag = 1;
+    }
+  else
+    {
+    LittleEndianFlag = 0;
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetNodesAscii()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int zoneId, firstIndex, lastIndex, type, nd;
+  sscanf(info.c_str(), "%x %x %x %d %d", &zoneId, &firstIndex, &lastIndex, &type, &nd);
+
+  if (CaseBuffer.at(5) == '0')
+    {
+    Points->Allocate(lastIndex);
+    }
+  else
+    {
+    int dstart = CaseBuffer.find('(', 5);
+    int dend = CaseBuffer.find(')', dstart+1);
+    vtkstd::string pdata = CaseBuffer.substr(dstart+1, dend-start-1);
+    vtkstd::istringstream pdatastream;
+    pdatastream.str(pdata);
+
+    double x, y, z;
+    if (GridDimension == 3)
+      {
+      for (int i = firstIndex; i <=lastIndex; i++)
+        {
+        pdatastream >> x;
+        pdatastream >> y;
+        pdatastream >> z;
+        Points->InsertPoint(i-1, x, y, z);
+        }
+      }
+    else
+      {
+      for (int i = firstIndex; i <=lastIndex; i++)
+        {
+        pdatastream >> x;
+        pdatastream >> y;
+        Points->InsertPoint(i-1, x, y, 0.0);
+        }
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetNodesSinglePrecision()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int zoneId, firstIndex, lastIndex, type, nd;
+  sscanf(info.c_str(), "%x %x %x %d", &zoneId, &firstIndex, &lastIndex, &type);
+
+  int dstart = CaseBuffer.find('(', 7);
+  int ptr = dstart + 1;
+
+  double x, y, z;
+  if (GridDimension == 3)
+    {
+    for (int i = firstIndex; i <=lastIndex; i++)
+      {
+      x = GetCaseBufferFloat(ptr);
+      ptr = ptr + 4;
+
+      y = GetCaseBufferFloat(ptr);
+      ptr = ptr + 4;
+
+      z = GetCaseBufferFloat(ptr);
+      ptr = ptr + 4;
+      Points->InsertPoint(i-1, x, y, z);
+      }
+    }
+  else
+    {
+    for (int i = firstIndex; i <=lastIndex; i++)
+      {
+      x = GetCaseBufferFloat(ptr);
+      ptr = ptr + 4;
+
+      y = GetCaseBufferFloat(ptr);
+      ptr = ptr + 4;
+
+      z = 0.0;
+
+      Points->InsertPoint(i-1, x, y, 0.0);
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetNodesDoublePrecision()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int zoneId, firstIndex, lastIndex, type, nd;
+  sscanf(info.c_str(), "%x %x %x %d", &zoneId, &firstIndex, &lastIndex, &type);
+
+  int dstart = CaseBuffer.find('(', 7);
+  int ptr = dstart+1;
+
+  double x, y, z;
+  if (GridDimension == 3)
+    {
+    for (int i = firstIndex; i <=lastIndex; i++)
+      {
+      x = GetCaseBufferDouble(ptr);
+      ptr = ptr + 8;
+
+      y = GetCaseBufferDouble(ptr);
+      ptr = ptr + 8;
+
+      z = GetCaseBufferDouble(ptr);
+      ptr = ptr + 8;
+      Points->InsertPoint(i-1, x, y, z);
+      }
+    }
+  else
+    {
+    for (int i = firstIndex; i <=lastIndex; i++)
+      {
+      x = GetCaseBufferDouble(ptr);
+      ptr = ptr + 8;
+
+      y = GetCaseBufferDouble(ptr);
+      ptr = ptr + 8;
+
+      z = 0.0;
+      Points->InsertPoint(i-1, x, y, 0.0);
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetCellsAscii()
+{
+  if (CaseBuffer.at(5) == '0')
+    { // Cell Info
+    int start = CaseBuffer.find('(', 1);
+    int end = CaseBuffer.find(')',1);
+    vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+    int zoneId, firstIndex, lastIndex, type;
+    sscanf(info.c_str(), "%x %x %x %d", &zoneId, &firstIndex, &lastIndex, &type);
+    Cells.resize(lastIndex);
+    }
+  else
+    { // Cell Definitions
+    int start = CaseBuffer.find('(', 1);
+    int end = CaseBuffer.find(')',1);
+    vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+    int zoneId, firstIndex, lastIndex, type, elementType;
+    sscanf(info.c_str(), "%x %x %x %d %d", &zoneId, &firstIndex, &lastIndex, &type, &elementType);
+
+    if (elementType == 0)
+      {
+      int dstart = CaseBuffer.find('(', 5);
+      int dend = CaseBuffer.find(')', dstart+1);
+      vtkstd::string pdata = CaseBuffer.substr(dstart+1, dend-start-1);
+      vtkstd::istringstream pdatastream;
+      pdatastream.str(pdata);
+      for (int i = firstIndex; i <=lastIndex; i++)
+        {
+        pdatastream >> Cells[i].type;
+        Cells[i-1].zone = zoneId;
+        Cells[i-1].parent = 0;
+        Cells[i-1].child  = 0;
+        }
+      }
+    else 
+      {
+      for (int i = firstIndex; i <=lastIndex; i++)
+        {
+        Cells[i-1].type = elementType;
+        Cells[i-1].zone = zoneId;
+        Cells[i-1].parent = 0;
+        Cells[i-1].child  = 0;
+        }
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetCellsBinary()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int zoneId, firstIndex, lastIndex, type, elementType;
+  sscanf(info.c_str(), "%x %x %x %x %x", &zoneId, &firstIndex, &lastIndex, &type, &elementType);
+
+  if (elementType == 0)
+    {
+    int dstart = CaseBuffer.find('(', 7);
+    int ptr = dstart + 1;
+    for (int i = firstIndex; i <=lastIndex; i++)
+      {
+      Cells[i-1].type = GetCaseBufferInt(ptr);
+      ptr = ptr +4;
+      Cells[i-1].zone = zoneId;
+      Cells[i-1].parent = 0;
+      Cells[i-1].child  = 0;
+      }
+    }
+  else 
+    {
+    for (int i = firstIndex; i <=lastIndex; i++)
+      {
+      Cells[i-1].type = elementType;
+      Cells[i-1].zone = zoneId;
+      Cells[i-1].parent = 0;
+      Cells[i-1].child  = 0;
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetFacesAscii()
+{
+
+  if (CaseBuffer.at(5) == '0')
+    { // Face Info
+    int start = CaseBuffer.find('(', 1);
+    int end = CaseBuffer.find(')',1);
+    vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+    int zoneId, firstIndex, lastIndex, bcType, faceType;
+    sscanf(info.c_str(), "%x %x %x %x", &zoneId, &firstIndex, &lastIndex, &bcType);
+
+    Faces.resize(lastIndex);
+    }
+  else
+    { // Face Definitions
+    int start = CaseBuffer.find('(', 1);
+    int end = CaseBuffer.find(')',1);
+    vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+    int zoneId, firstIndex, lastIndex, bcType, faceType;
+    sscanf(info.c_str(), "%x %x %x %x %x", &zoneId, &firstIndex, &lastIndex, &bcType, &faceType);
+
+    int dstart = CaseBuffer.find('(', 7);
+    int dend = CaseBuffer.find(')', dstart+1);
+    vtkstd::string pdata = CaseBuffer.substr(dstart+1, dend-start-1);
+    vtkstd::istringstream pdatastream;
+    pdatastream.str(pdata);
+
+    int numberOfNodesInFace = 0;
+    for (int i = firstIndex; i <=lastIndex; i++)
+      {
+      if (faceType == 0 || faceType == 5)
+        {
+        pdatastream >> numberOfNodesInFace;
+        }
+      else
+        {
+        numberOfNodesInFace = faceType;
+        }
+      Faces[i-1].nodes.resize(numberOfNodesInFace);
+      for (int j = 0; j<numberOfNodesInFace; j++)
+        {
+        pdatastream >> hex >> Faces[i-1].nodes[j];
+        Faces[i-1].nodes[j]--;
+        }
+      pdatastream >> hex >> Faces[i-1].c0;
+      pdatastream >> hex >> Faces[i-1].c1;
+      Faces[i-1].c0--;
+      Faces[i-1].c1--;
+      Faces[i-1].type = numberOfNodesInFace;
+      Faces[i-1].zone = zoneId;
+      Faces[i-1].periodicShadow = 0;
+      Faces[i-1].parent = 0;
+      Faces[i-1].child = 0;
+      Faces[i-1].interfaceFaceParent = 0;
+      Faces[i-1].ncgParent = 0;
+      Faces[i-1].ncgChild = 0;
+      Faces[i-1].interfaceFaceChild = 0;
+      if (Faces[i-1].c0 >= 0)
+        {
+        Cells[Faces[i-1].c0].faces.push_back(i-1);
+        }
+      if (Faces[i-1].c1 >= 0)
+        {
+        Cells[Faces[i-1].c1].faces.push_back(i-1);
+        }
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetFacesBinary()
+{
+//cout<<"Get Faces Binary"<<endl;
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int zoneId, firstIndex, lastIndex, bcType, faceType;
+  sscanf(info.c_str(), "%x %x %x %x %x", &zoneId, &firstIndex, &lastIndex, &bcType, &faceType);
+//cout<<zoneId<<" : "<<firstIndex<<" : "<<lastIndex<<" : "<<bcType<<" : "<< faceType  <<endl;
+  int dstart = CaseBuffer.find('(', 7);
+  int dend = CaseBuffer.find(')', dstart+1);
+  int numberOfNodesInFace = 0;
+  int ptr = dstart + 1;
+//cout<<lastIndex<<endl;
+  for (int i = firstIndex; i <=lastIndex; i++)
+    {
+//cout<<i<<endl;
+    if ((faceType == 0) || (faceType == 5))
+      {
+      numberOfNodesInFace = GetCaseBufferInt(ptr);
+      ptr = ptr + 4;
+      }
+    else
+      {
+      numberOfNodesInFace = faceType;
+      }
+
+    Faces[i-1].nodes.resize(numberOfNodesInFace);
+
+    for (int k = 0; k<numberOfNodesInFace; k++)
+      {
+      Faces[i-1].nodes[k] = GetCaseBufferInt(ptr);
+      Faces[i-1].nodes[k]--;
+      ptr = ptr + 4;
+      }
+
+    Faces[i-1].c0 = GetCaseBufferInt(ptr);
+    ptr = ptr + 4;
+    Faces[i-1].c1 = GetCaseBufferInt(ptr);
+    ptr = ptr + 4;
+    Faces[i-1].c0--;
+    Faces[i-1].c1--;
+    Faces[i-1].type = numberOfNodesInFace;
+    Faces[i-1].zone = zoneId;
+    Faces[i-1].periodicShadow = 0;
+    Faces[i-1].parent = 0;
+    Faces[i-1].child = 0;
+    Faces[i-1].interfaceFaceParent = 0;
+    Faces[i-1].ncgParent = 0;
+    Faces[i-1].ncgChild = 0;
+    Faces[i-1].interfaceFaceChild = 0;
+//cout<<Faces[i-1].c0<<" : "<<Faces[i-1].c1<<endl;
+//cout<<Cells.size()<<endl;
+    if (Faces[i-1].c0 >= 0)
+      {
+      Cells[Faces[i-1].c0].faces.push_back(i-1);
+      }
+    if (Faces[i-1].c1 >= 0)
+      {
+      Cells[Faces[i-1].c1].faces.push_back(i-1);
+      }
+    }
+//cout<<"end"<<endl;
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetPeriodicShadowFacesAscii()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int firstIndex, lastIndex, periodicZone, shadowZone;
+  sscanf(info.c_str(), "%x %x %x %x", &firstIndex, &lastIndex, &periodicZone, &shadowZone);
+
+  int dstart = CaseBuffer.find('(', 7);
+  int dend = CaseBuffer.find(')', dstart+1);
+  vtkstd::string pdata = CaseBuffer.substr(dstart+1, dend-start-1);
+  vtkstd::istringstream pdatastream;
+  pdatastream.str(pdata);
+
+  int faceIndex1, faceIndex2;
+  for (int i = firstIndex; i <=lastIndex; i++)
+    {
+    pdatastream >> hex >> faceIndex1;
+    pdatastream >> hex >> faceIndex2;
+    Faces[faceIndex1].periodicShadow = 1;
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetPeriodicShadowFacesBinary()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int firstIndex, lastIndex, periodicZone, shadowZone;
+  sscanf(info.c_str(), "%x %x %x %x", &firstIndex, &lastIndex, &periodicZone, &shadowZone);
+
+  int dstart = CaseBuffer.find('(', 7);
+  int dend = CaseBuffer.find(')', dstart+1);
+  int ptr = dstart + 1;
+
+  int faceIndex1, faceIndex2;
+  for (int i = firstIndex; i <=lastIndex; i++)
+    {
+    faceIndex1 = GetCaseBufferInt(ptr);
+    ptr = ptr + 4;
+    faceIndex2 = GetCaseBufferInt(ptr);
+    ptr = ptr + 4;
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetCellTreeAscii()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int cellId0, cellId1, parentZoneId, childZoneId;
+  sscanf(info.c_str(), "%x %x %x %x", &cellId0, &cellId1, &parentZoneId, &childZoneId);
+
+  int dstart = CaseBuffer.find('(', 7);
+  int dend = CaseBuffer.find(')', dstart+1);
+  vtkstd::string pdata = CaseBuffer.substr(dstart+1, dend-start-1);
+  vtkstd::istringstream pdatastream;
+  pdatastream.str(pdata);
+
+  int numberOfKids, kid;
+  for (int i = cellId0; i <=cellId1; i++)
+    {
+    Cells[i-1].parent = 1;
+    pdatastream >> hex >> numberOfKids;
+    for (int j = 0; j < numberOfKids; j++)
+      {
+      pdatastream >> hex >> kid;
+      Cells[kid-1].child = 1;
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetCellTreeBinary()
+{
+
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int cellId0, cellId1, parentZoneId, childZoneId;
+  sscanf(info.c_str(), "%x %x %x %x", &cellId0, &cellId1, &parentZoneId, &childZoneId);
+
+  int dstart = CaseBuffer.find('(', 7);
+  int dend = CaseBuffer.find(')', dstart+1);
+  int ptr = dstart + 1;
+
+  int numberOfKids, kid;
+  for (int i = cellId0; i <=cellId1; i++)
+    {
+    Cells[i-1].parent = 1;
+    numberOfKids = GetCaseBufferInt(ptr);
+    ptr = ptr + 4;
+    for (int j = 0; j < numberOfKids; j++)
+      {
+      kid = GetCaseBufferInt(ptr);
+      ptr = ptr + 4;
+      Cells[kid-1].child = 1;
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetFaceTreeAscii()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int faceId0, faceId1, parentZoneId, childZoneId;
+  sscanf(info.c_str(), "%x %x %x %x", &faceId0, &faceId1, &parentZoneId, &childZoneId);
+
+  int dstart = CaseBuffer.find('(', 7);
+  int dend = CaseBuffer.find(')', dstart+1);
+  vtkstd::string pdata = CaseBuffer.substr(dstart+1, dend-start-1);
+  vtkstd::istringstream pdatastream;
+  pdatastream.str(pdata);
+
+  int numberOfKids, kid;
+  for (int i = faceId0; i <=faceId1; i++)
+    {
+    Faces[i-1].parent = 1;
+    pdatastream >> hex >> numberOfKids;
+    for (int j = 0; j < numberOfKids; j++)
+      {
+      pdatastream >> hex >> kid;
+      Faces[kid-1].child = 1;
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetFaceTreeBinary()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int faceId0, faceId1, parentZoneId, childZoneId;
+  sscanf(info.c_str(), "%x %x %x %x", &faceId0, &faceId1, &parentZoneId, &childZoneId);
+
+  int dstart = CaseBuffer.find('(', 7);
+  int dend = CaseBuffer.find(')', dstart+1);
+  int ptr = dstart + 1;
+
+  int numberOfKids, kid;
+  for (int i = faceId0; i <=faceId1; i++)
+    {
+    Faces[i-1].parent = 1;
+    numberOfKids = GetCaseBufferInt(ptr);
+    ptr = ptr + 4;
+    for (int j = 0; j < numberOfKids; j++)
+      {
+      kid = GetCaseBufferInt(ptr);
+      ptr = ptr + 4;
+      Faces[kid-1].child = 1;
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetInterfaceFaceParentsAscii()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int faceId0, faceId1;
+  sscanf(info.c_str(), "%x %x", &faceId0, &faceId1);
+
+  int dstart = CaseBuffer.find('(', 7);
+  int dend = CaseBuffer.find(')', dstart+1);
+  vtkstd::string pdata = CaseBuffer.substr(dstart+1, dend-start-1);
+  vtkstd::istringstream pdatastream;
+  pdatastream.str(pdata);
+
+  int parentId0, parentId1;
+  for (int i = faceId0; i <=faceId1; i++)
+    {
+    pdatastream >> hex >> parentId0;
+    pdatastream >> hex >> parentId1;
+    Faces[parentId0-1].interfaceFaceParent = 1;
+    Faces[parentId1-1].interfaceFaceParent = 1;
+    Faces[i-1].interfaceFaceChild = 1;
+    }
+
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetInterfaceFaceParentsBinary()
+{
+
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int faceId0, faceId1;
+  sscanf(info.c_str(), "%x %x", &faceId0, &faceId1);
+
+  int dstart = CaseBuffer.find('(', 7);
+  int dend = CaseBuffer.find(')', dstart+1);
+  int ptr = dstart + 1;
+
+  int parentId0, parentId1;
+  for (int i = faceId0; i <=faceId1; i++)
+    {
+    parentId0 = GetCaseBufferInt(ptr);
+    ptr = ptr + 4;
+    parentId1 = GetCaseBufferInt(ptr);
+    ptr = ptr + 4;
+    Faces[parentId0-1].interfaceFaceParent = 1;
+    Faces[parentId1-1].interfaceFaceParent = 1;
+    Faces[i-1].interfaceFaceChild = 1;
+    }
+
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetNonconformalGridInterfaceFaceInformationAscii()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int KidId, ParentId, NumberOfFaces;
+  sscanf(info.c_str(), "%d %d %d", &KidId, &ParentId, &NumberOfFaces);
+
+  int dstart = CaseBuffer.find('(', 7);
+  int dend = CaseBuffer.find(')', dstart+1);
+  vtkstd::string pdata = CaseBuffer.substr(dstart+1, dend-start-1);
+  vtkstd::istringstream pdatastream;
+  pdatastream.str(pdata);
+
+  int child, parent;
+  for (int i = 0; i < NumberOfFaces; i++)
+    {
+    pdatastream >> hex >> child;
+    pdatastream >> hex >> parent;
+    Faces[child-1].ncgChild = 1;
+    Faces[parent-1].ncgParent = 1;
+    }
+
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::GetNonconformalGridInterfaceFaceInformationBinary()
+{
+  int start = CaseBuffer.find('(', 1);
+  int end = CaseBuffer.find(')',1);
+  vtkstd::string info = CaseBuffer.substr(start+1,end-start-1 );
+  int KidId, ParentId, NumberOfFaces;
+  sscanf(info.c_str(), "%d %d %d", &KidId, &ParentId, &NumberOfFaces);
+
+  int dstart = CaseBuffer.find('(', 7);
+  int dend = CaseBuffer.find(')', dstart+1);
+  int ptr = dstart + 1;
+
+  int child, parent;
+  for (int i = 0; i < NumberOfFaces; i++)
+    {
+    child = GetCaseBufferInt(ptr);
+    ptr = ptr + 4;
+    parent = GetCaseBufferInt(ptr);
+    ptr = ptr + 4;
+    Faces[child-1].ncgChild = 1;
+    Faces[parent-1].ncgParent = 1;
+    }
+
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::CleanCells()
+{
+
+vtkstd::vector<int> t;
+
+  for (int i = 0; i < Cells.size(); i++)
+    {
+
+    if ( ((Cells[i].type == 1)  && (Cells[i].faces.size() != 3)) ||
+         ((Cells[i].type == 2)  && (Cells[i].faces.size() != 4)) ||
+         ((Cells[i].type == 3)  && (Cells[i].faces.size() != 4)) ||
+         ((Cells[i].type == 4)  && (Cells[i].faces.size() != 6)) ||
+         ((Cells[i].type == 5)  && (Cells[i].faces.size() != 5)) ||
+         ((Cells[i].type == 6)  && (Cells[i].faces.size() != 5)) )
+      {
+
+      // Copy faces
+      t.clear();
+      for (int j = 0; j < Cells[i].faces.size(); j++)
+        {
+        t.push_back(Cells[i].faces[j]);
+        }
+
+      // Clear Faces
+      Cells[i].faces.clear();
+
+      // Copy the faces that are not flagged back into the cell
+      for (int j = 0; j < t.size(); j++)
+        {
+        if ( (Faces[t[j]].child == 0 ) &&
+             (Faces[t[j]].ncgChild == 0 ) &&
+             (Faces[t[j]].interfaceFaceChild == 0 ))
+          {
+          Cells[i].faces.push_back(t[j]);
+          }
+        }
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::PopulateCellNodes()
+{
+  for (int i = 0; i < Cells.size(); i++)
+    {
+cout<<"Pop: "<<Cells[i].type<<endl;
+    switch (Cells[i].type)
+      {
+      case 1:  // Triangle
+            PopulateTriangleCell(i);
+            break;
+
+      case 2:  // Tetrahedron
+            PopulateTetraCell(i);
+            break;
+
+      case 3:  // Quadrilateral
+            PopulateQuadCell(i);
+            break;
+
+      case 4:  // Hexahedral
+            PopulateHexahedronCell(i);
+            break;
+
+      case 5:  // Pyramid
+            PopulatePyramidCell(i);
+            break;
+
+      case 6:  // Wedge
+            PopulateWedgeCell(i);
+            break;
+
+      case 7:  // Polyhedron
+            PopulatePolyhedronCell(i);
+            break;
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+int vtkFLUENTReader::GetCaseBufferInt(int ptr)
 {
   union mix_i
     {
@@ -5156,212 +2999,862 @@ int vtkFLUENTReader::GetBinaryInteger(int ix)
     char c[4];
     } mi = {1};
 
-  if ( this->LittleEndianFlag == 1)
+  for (int j = 0; j < 4; j++)
     {
-    for (int k = 3; k >= 0; k--)
+    if (!LittleEndianFlag)
       {
-      mi.c[k] = this->CaseFileBuffer[ix+k];
+      mi.c[3 - j] = CaseBuffer.at(ptr+j);
       }
-    }
-  else
-    {
-    for (int k = 0; k <= 3; k++)
+    else
       {
-      mi.c[3-k] = this->CaseFileBuffer[ix+k];
+      mi.c[j] = CaseBuffer.at(ptr+j);
       }
     }
   return mi.i;
 }
 
-//-----------------------------------------------------------------------------
-float vtkFLUENTReader::GetBinaryFloat(int ix)
+//----------------------------------------------------------------------------
+float vtkFLUENTReader::GetCaseBufferFloat(int ptr)
 {
-  union mix_i
+  union mix_f
     {
-    float i;
+    float f;
     char c[4];
-    } mi = {1.0};
+    } mf = {1.0};
 
-  if ( this->LittleEndianFlag == 1)
+  for (int j = 0; j < 4; j++)
     {
-    for (int k = 3; k >= 0; k--)
+    if (!LittleEndianFlag)
       {
-      mi.c[k] = this->CaseFileBuffer[ix+k];
+      mf.c[3 - j] = CaseBuffer.at(ptr+j);
+      }
+    else
+      {
+      mf.c[j] = CaseBuffer.at(ptr+j);
       }
     }
-  else
-    {
-    for (int k = 0; k <= 3; k++)
-      {
-      mi.c[3-k] = this->CaseFileBuffer[ix+k];
-      }
-    }
-  return mi.i;
+  return mf.f;
 }
 
-//-----------------------------------------------------------------------------
-double vtkFLUENTReader::GetBinaryDouble(int ix)
+//----------------------------------------------------------------------------
+double vtkFLUENTReader::GetCaseBufferDouble(int ptr)
 {
   union mix_i
     {
-    double i;
+    double d;
     char c[8];
-    } mi = {1.0};
+    } md = {1.0};
 
-  if ( this->LittleEndianFlag == 1)
+  for (int j = 0; j < 8; j++)
     {
-    for (int k = 7; k >= 0; k--)
+    if (!LittleEndianFlag)
       {
-      mi.c[k] = this->CaseFileBuffer[ix+k];
+      md.c[7 - j] = CaseBuffer.at(ptr+j);
+      }
+    else
+      {
+      md.c[j] = CaseBuffer.at(ptr+j);
+      }
+    }
+  return md.d;
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::PopulateTriangleCell(int i)
+{
+  Cells[i].nodes.resize(3);
+  if (Faces[Cells[i].faces[0]].c0 == i)
+    {
+    Cells[i].nodes[0] = Faces[Cells[i].faces[0]].nodes[0];
+    Cells[i].nodes[1] = Faces[Cells[i].faces[0]].nodes[1];
+    }
+  else
+    {
+    Cells[i].nodes[1] = Faces[Cells[i].faces[0]].nodes[0];
+    Cells[i].nodes[0] = Faces[Cells[i].faces[0]].nodes[1];
+    }
+
+  if (Faces[Cells[i].faces[1]].nodes[0] != Cells[i].nodes[0] &&
+      Faces[Cells[i].faces[1]].nodes[0] != Cells[i].nodes[1])
+    {
+    Cells[i].nodes[2] = Faces[Cells[i].faces[1]].nodes[0];
+    }
+  else
+    {
+    Cells[i].nodes[2] = Faces[Cells[i].faces[1]].nodes[1];
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::PopulateTetraCell(int i)
+{
+  Cells[i].nodes.resize(4);
+
+  if (Faces[Cells[i].faces[0]].c0 == i)
+    {
+    Cells[i].nodes[0] = Faces[Cells[i].faces[0]].nodes[0];
+    Cells[i].nodes[1] = Faces[Cells[i].faces[0]].nodes[1];
+    Cells[i].nodes[2] = Faces[Cells[i].faces[0]].nodes[2];
+    }
+  else
+    {
+    Cells[i].nodes[2] = Faces[Cells[i].faces[0]].nodes[0];
+    Cells[i].nodes[1] = Faces[Cells[i].faces[0]].nodes[1];
+    Cells[i].nodes[0] = Faces[Cells[i].faces[0]].nodes[2];
+    }
+
+  if (Faces[Cells[i].faces[1]].nodes[0] != Cells[i].nodes[0] &&
+      Faces[Cells[i].faces[1]].nodes[0] != Cells[i].nodes[1] &&
+      Faces[Cells[i].faces[1]].nodes[0] != Cells[i].nodes[2] )
+    {
+    Cells[i].nodes[3] = Faces[Cells[i].faces[1]].nodes[0];
+    }
+  else if (Faces[Cells[i].faces[1]].nodes[1] != Cells[i].nodes[0] &&
+           Faces[Cells[i].faces[1]].nodes[1] != Cells[i].nodes[1] &&
+           Faces[Cells[i].faces[1]].nodes[1] != Cells[i].nodes[2] )
+    {
+    Cells[i].nodes[3] = Faces[Cells[i].faces[1]].nodes[1];
+    }
+  else
+    {
+    Cells[i].nodes[3] = Faces[Cells[i].faces[1]].nodes[2];
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::PopulateQuadCell(int i)
+{
+  Cells[i].nodes.resize(4);
+
+  if (Faces[Cells[i].faces[0]].c0 == i)
+    {
+    Cells[i].nodes[0] = Faces[Cells[i].faces[0]].nodes[0];
+    Cells[i].nodes[1] = Faces[Cells[i].faces[0]].nodes[1];
+    }
+  else
+    {
+    Cells[i].nodes[1] = Faces[Cells[i].faces[0]].nodes[0];
+    Cells[i].nodes[0] = Faces[Cells[i].faces[0]].nodes[1];
+    }
+
+  if ((Faces[Cells[i].faces[1]].nodes[0] != Cells[i].nodes[0] &&
+       Faces[Cells[i].faces[1]].nodes[0] != Cells[i].nodes[1]) && 
+      (Faces[Cells[i].faces[1]].nodes[1] != Cells[i].nodes[0] &&
+       Faces[Cells[i].faces[1]].nodes[1] != Cells[i].nodes[1]))
+    {
+    if (Faces[Cells[i].faces[1]].c0 == i)
+      {
+      Cells[i].nodes[2] = Faces[Cells[i].faces[1]].nodes[0];
+      Cells[i].nodes[3] = Faces[Cells[i].faces[1]].nodes[1];
+      }
+    else
+      {
+      Cells[i].nodes[3] = Faces[Cells[i].faces[1]].nodes[0];
+      Cells[i].nodes[2] = Faces[Cells[i].faces[1]].nodes[1];
+      }
+    }
+  else if ((Faces[Cells[i].faces[2]].nodes[0] != Cells[i].nodes[0] &&
+            Faces[Cells[i].faces[2]].nodes[0] != Cells[i].nodes[1]) && 
+           (Faces[Cells[i].faces[2]].nodes[1] != Cells[i].nodes[0] &&
+            Faces[Cells[i].faces[2]].nodes[1] != Cells[i].nodes[1]))
+    {
+    if (Faces[Cells[i].faces[2]].c0 == i)
+      {
+      Cells[i].nodes[2] = Faces[Cells[i].faces[2]].nodes[0];
+      Cells[i].nodes[3] = Faces[Cells[i].faces[2]].nodes[1];
+      }
+    else
+      {
+      Cells[i].nodes[3] = Faces[Cells[i].faces[2]].nodes[0];
+      Cells[i].nodes[2] = Faces[Cells[i].faces[2]].nodes[1];
       }
     }
   else
     {
-    for (int k = 0; k <= 7; k++)
+    if (Faces[Cells[i].faces[3]].c0 == i)
       {
-      mi.c[7-k] = this->CaseFileBuffer[ix+k];
+      Cells[i].nodes[2] = Faces[Cells[i].faces[3]].nodes[0];
+      Cells[i].nodes[3] = Faces[Cells[i].faces[3]].nodes[1];
+      }
+    else
+      {
+      Cells[i].nodes[3] = Faces[Cells[i].faces[3]].nodes[0];
+      Cells[i].nodes[2] = Faces[Cells[i].faces[3]].nodes[1];
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::PopulateHexahedronCell(int i)
+{
+  Cells[i].nodes.resize(8);
+
+  if (Faces[Cells[i].faces[0]].c0 == i)
+    {
+    for (int j = 0; j < 4; j++)
+      {
+      Cells[i].nodes[j] = Faces[Cells[i].faces[0]].nodes[j];
+      }
+    }
+  else
+    {
+    for (int j = 3; j >=0; j--)
+      {
+      Cells[i].nodes[3-j] = Faces[Cells[i].faces[0]].nodes[j];
+      }
+    }
+
+  //  Look for opposite face of hexahedron
+  for (int j = 1; j < 6; j++)
+    {
+    int flag = 0;
+    for (int k = 0; k < 4; k++)
+      {
+      if ( (Cells[i].nodes[0] == Faces[Cells[i].faces[j]].nodes[k]) ||
+           (Cells[i].nodes[1] == Faces[Cells[i].faces[j]].nodes[k]) ||
+           (Cells[i].nodes[2] == Faces[Cells[i].faces[j]].nodes[k]) ||
+           (Cells[i].nodes[3] == Faces[Cells[i].faces[j]].nodes[k]) )
+        {
+        flag = 1;
+        }
+      }
+    if (flag == 0)
+      {
+      if (Faces[Cells[i].faces[j]].c1 == i)
+        {
+        for (int k = 4; k < 8; k++)
+          {
+          Cells[i].nodes[k] = Faces[Cells[i].faces[j]].nodes[k-4];
+          }
+        }
+      else
+        {
+        for (int k = 7; k >= 4; k--)
+          {
+          Cells[i].nodes[k] = Faces[Cells[i].faces[j]].nodes[7-k];
+          }
+        }
+      }
+    }
+
+  //  Find the face with points 0 and 1 in them.
+  int f01[4];
+  for (int j = 1; j < 6; j++)
+    {
+    int flag0 = 0;
+    int flag1 = 0;
+    for (int k = 0; k < 4; k++)
+      {
+      if (Cells[i].nodes[0] == Faces[Cells[i].faces[j]].nodes[k])
+        {
+        flag0 = 1;
+        }
+      if (Cells[i].nodes[1] == Faces[Cells[i].faces[j]].nodes[k])
+        {
+        flag1 = 1;
+        }
+      }
+    if ((flag0 == 1) && (flag1 == 1))
+      {
+      if (Faces[Cells[i].faces[j]].c0 == i)
+        {
+        for (int k=0; k<4; k++)
+          {
+          f01[k] = Faces[Cells[i].faces[j]].nodes[k];
+          }
+        }
+      else
+        {
+        for (int k=3; k>=0; k--)
+          {
+          f01[k] = Faces[Cells[i].faces[j]].nodes[k];
+          }
+        }
+      }
+    }
+
+  //  Find the face with points 0 and 3 in them.
+  int f03[4];
+  for (int j = 1; j < 6; j++)
+    {
+    int flag0 = 0;
+    int flag1 = 0;
+    for (int k = 0; k < 4; k++)
+      {
+      if (Cells[i].nodes[0] == Faces[Cells[i].faces[j]].nodes[k])
+        {
+        flag0 = 1;
+        }
+      if (Cells[i].nodes[3] == Faces[Cells[i].faces[j]].nodes[k])
+        {
+        flag1 = 1;
+        }
+      }
+
+    if ((flag0 == 1) && (flag1 == 1))
+      {
+      if (Faces[Cells[i].faces[j]].c0 == i)
+        {
+        for (int k=0; k<4; k++)
+          {
+          f03[k] = Faces[Cells[i].faces[j]].nodes[k];
+          }
+        }
+      else
+        {
+        for (int k=3; k>=0; k--)
+          {
+          f03[k] = Faces[Cells[i].faces[j]].nodes[k];
+          }
+        }
+      }
+    }
+
+  // What point is in f01 and f03 besides 0 ... this is point 4
+  int p4;
+  for (int k = 0; k < 4; k++)
+    {
+    if ( f01[k] != Cells[i].nodes[0]) 
+      {
+      for (int n = 0; n < 4; n++)
+        {
+        if (f01[k] == f03[n])
+          {
+          p4 = f01[k];
+          }
+        }
+      }
+    }
+
+  // Since we know point 4 now we check to see if points
+  //  4, 5, 6, and 7 are in the correct positions.
+  int t[8];
+  t[4] = Cells[i].nodes[4];
+  t[5] = Cells[i].nodes[5];
+  t[6] = Cells[i].nodes[6];
+  t[7] = Cells[i].nodes[7];
+  if (p4 == Cells[i].nodes[5])
+    {
+    Cells[i].nodes[5] = t[6];
+    Cells[i].nodes[6] = t[7];
+    Cells[i].nodes[7] = t[4];
+    Cells[i].nodes[4] = t[5];
+    }
+  else if (p4 == Cells[i].nodes[6])
+    {
+    Cells[i].nodes[5] = t[7];
+    Cells[i].nodes[6] = t[4];
+    Cells[i].nodes[7] = t[5];
+    Cells[i].nodes[4] = t[6];
+    }
+  else if (p4 == Cells[i].nodes[7])
+    {
+    Cells[i].nodes[5] = t[4];
+    Cells[i].nodes[6] = t[5];
+    Cells[i].nodes[7] = t[6];
+    Cells[i].nodes[4] = t[7];
+    }
+  // else point 4 was lined up so everything was correct.
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::PopulatePyramidCell(int i)
+{
+  Cells[i].nodes.resize(5);
+  //  The quad face will be the base of the pyramid
+  for (int j = 0; j < Cells[i].faces.size(); j++)
+    {
+    if ( Faces[Cells[i].faces[j]].nodes.size() == 4)
+      {
+      if (Faces[Cells[i].faces[j]].c0 == i)
+        {
+        for (int k = 0; k < 4; k++)
+          {
+          Cells[i].nodes[k] = Faces[Cells[i].faces[j]].nodes[k];
+          }
+        }
+      else
+        {
+        for (int k = 0; k < 4; k++)
+          {
+          Cells[i].nodes[3-k] = Faces[Cells[i].faces[j]].nodes[k];
+          }
+        }
+      }
+    }
+
+  // Just need to find point 4
+  for (int j = 0; j < Cells[i].faces.size(); j++)
+    {
+    if ( Faces[Cells[i].faces[j]].nodes.size() == 3)
+      {
+      for (int k = 0; k < 3; k ++)
+        {
+        if ( (Faces[Cells[i].faces[j]].nodes[k] != Cells[i].nodes[0]) &&
+             (Faces[Cells[i].faces[j]].nodes[k] != Cells[i].nodes[1]) &&
+             (Faces[Cells[i].faces[j]].nodes[k] != Cells[i].nodes[2]) && 
+             (Faces[Cells[i].faces[j]].nodes[k] != Cells[i].nodes[3]) )
+          {
+          Cells[i].nodes[4] = Faces[Cells[i].faces[j]].nodes[k];
+          }
+        }
+      }
+    }
+
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::PopulateWedgeCell(int i)
+{
+  Cells[i].nodes.resize(6);
+
+  //  Find the first triangle face and make it the base.
+  int base = 0;
+  int first = 0;
+  for (int j = 0; j < Cells[i].faces.size(); j++)
+    {
+    if ((Faces[Cells[i].faces[j]].type == 3) && (first == 0))
+      {
+      base = Cells[i].faces[j];
+      first = 1;
+      }
+    }
+
+  //  Find the second triangle face and make it the top.
+  int top = 0;
+  int second = 0;
+  for (int j = 0; j < Cells[i].faces.size(); j++)
+    {
+    if ((Faces[Cells[i].faces[j]].type == 3) && (second == 0) && (Cells[i].faces[j] != base))
+      {
+      top = Cells[i].faces[j];
+      second = 1;
+      }
+    }
+
+  // Load Base nodes into the nodes vtkstd::vector
+  if (Faces[base].c0 == i)
+    {
+    for (int j = 0; j < 3; j++)
+      {
+      Cells[i].nodes[j] = Faces[base].nodes[j];
+      }
+    }
+  else
+    {
+    for (int j = 2; j >=0; j--)
+      {
+      Cells[i].nodes[2-j] = Faces[base].nodes[j];
+      }
+    }
+   // Load Top nodes into the nodes vtkstd::vector
+  if (Faces[top].c1 == i)
+    {
+    for (int j = 3; j < 6; j++)
+      {
+      Cells[i].nodes[j] = Faces[top].nodes[j-3];
+      }
+    }
+  else
+    {
+    for (int j = 3; j < 6; j++)
+      {
+      Cells[i].nodes[j] = Faces[top].nodes[5-j];
+      }
+    }
+
+  //  Find the quad face with points 0 and 1 in them.
+  int w01[4];
+  for (int j = 0; j < Cells[i].faces.size(); j++)
+    {
+    if (Cells[i].faces[j] != base)
+      {
+      int wf0 = 0;
+      int wf1 = 0;
+      for (int k = 0; k < 4; k++)
+        {
+        if (Cells[i].nodes[0] == Faces[Cells[i].faces[j]].nodes[k])
+          {
+          wf0 = 1;
+          }
+        if (Cells[i].nodes[1] == Faces[Cells[i].faces[j]].nodes[k])
+          {
+          wf1 = 1;
+          }
+        if ((wf0 == 1) && (wf1 == 1))
+          {
+          for (int n=0; n<4; n++)
+            {
+            w01[n] = Faces[Cells[i].faces[j]].nodes[n];
+            }
+          }
+        }
+      }
+    }
+
+  //  Find the quad face with points 0 and 2 in them.
+  int w02[4];
+  for (int j = 0; j < Cells[i].faces.size(); j++)
+    {
+    if (Cells[i].faces[j] != base)
+      {
+      int wf0 = 0;
+      int wf2 = 0;
+      for (int k = 0; k < 4; k++)
+        {
+        if (Cells[i].nodes[0] == Faces[Cells[i].faces[j]].nodes[k])
+          {
+          wf0 = 1;
+          }
+        if (Cells[i].nodes[2] == Faces[Cells[i].faces[j]].nodes[k])
+          {
+          wf2 = 1;
+          }
+        if ((wf0 == 1) && (wf2 == 1))
+          {
+          for (int n=0; n<4; n++)
+            {
+            w02[n] = Faces[Cells[i].faces[j]].nodes[n];
+            }
+          }
+        }
+      }
+    }
+
+  // Point 3 is the point that is in both w01 and w02
+
+  // What point is in f01 and f02 besides 0 ... this is point 3
+  int p3;
+  for (int k = 0; k < 4; k++)
+    {
+    if ( w01[k] != Cells[i].nodes[0]) 
+      {
+      for (int n = 0; n < 4; n++)
+        {
+        if (w01[k] == w02[n])
+          {
+          p3 = w01[k];
+          }
+        }
+      }
+    }
+
+  // Since we know point 3 now we check to see if points
+  //  3, 4, and 5 are in the correct positions.
+  int t[6];
+  t[3] = Cells[i].nodes[3];
+  t[4] = Cells[i].nodes[4];
+  t[5] = Cells[i].nodes[5];
+  if (p3 == Cells[i].nodes[4])
+    {
+    Cells[i].nodes[3] = t[4];
+    Cells[i].nodes[4] = t[5];
+    Cells[i].nodes[5] = t[3];
+    }
+  else if (p3 == Cells[i].nodes[5])
+    {
+    Cells[i].nodes[3] = t[5];
+    Cells[i].nodes[4] = t[3];
+    Cells[i].nodes[5] = t[4];
+    }
+  // else point 3 was lined up so everything was correct.
+
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::PopulatePolyhedronCell(int i)
+{
+  //  We can't set the size on the nodes vtkstd::vector because we
+  //  are not sure how many we are going to have.
+  //  All we have to do here is add the nodes from the faces into
+  //  nodes vtkstd::vector within the cell.  All we have to check for is 
+  //  duplicate nodes.
+  //
+  //cout << "number of faces in cell = " << Cells[i].faces.size() << endl;
+
+  for (int j = 0; j < Cells[i].faces.size(); j++)
+    {
+    //cout << "number of nodes in face = " << Faces[Cells[i].faces[j]].nodes.size() << endl;
+    for (int k = 0; k < Faces[Cells[i].faces[j]].nodes.size(); k++)
+      {
+      int flag;
+      flag = 0;
+      // Is the node already in the cell?
+      for (int n = 0; n < Cells[i].nodes.size(); n++)
+        {
+        if (Cells[i].nodes[n] == Faces[Cells[i].faces[j]].nodes[k])
+          {
+          flag = 1;
+          }
+        }
+      if (flag == 0)
+       { // No match - insert node into cell.
+       Cells[i].nodes.push_back(Faces[Cells[i].faces[j]].nodes[k]);
+      // cout << "insert node" << endl;
+       }
+     }
+   }
+}
+
+//----------------------------------------------------------------------------
+void vtkFLUENTReader::ParseDataFile()
+{
+  int cnt = 0;
+  while (GetDataChunk())
+    {
+    int index = GetDataIndex();
+cout<<"parsedata: "<<index<<endl;
+    switch (index)
+      {
+      case 0:
+        //cout << "Comment Section" << endl;
+        break;
+
+      case 4:
+        //cout << "Machine Configuration Section" << endl;
+        break;
+
+      case 33:
+        //cout << "Grid Size Section" << endl;
+        break;
+
+      case 37:
+        //cout << "Variables Section" << endl;
+        break;
+
+      case 300:
+        //cout << "Data Section" << endl;
+        GetData(1);
+        break;
+
+      case 301:
+        //cout << "Residuals Section" << endl;
+        break;
+
+      case 302:
+        //cout << "Residuals Section" << endl;
+        break;
+
+      case 2300:
+        //cout << "Single Precision Data Section" << endl;
+        GetData(2);
+        break;
+
+      case 2301:
+        //cout << "Single Precision Residuals Section" << endl;
+        break;
+
+      case 2302:
+        //cout << "Single Precision Residuals Section" << endl;
+        break;
+
+      case 3300:
+        //cout << "Single Precision Data Section" << endl;
+        GetData(3);
+        break;
+
+      case 3301:
+        //cout << "Single Precision Residuals Section" << endl;
+        break;
+
+      case 3302:
+        //cout << "Single Precision Residuals Section" << endl;
+        break;
+
+      default:
+        //cout << "Data Undefined Section = " << index << endl;
+        break;
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+int vtkFLUENTReader::GetDataBufferInt(int ptr)
+{
+  union mix_i
+    {
+    int i;
+    char c[4];
+    } mi = {1};
+
+  for (int j = 0; j < 4; j++)
+    {
+    if (!LittleEndianFlag)
+      {
+      mi.c[3 - j] = DataBuffer.at(ptr+j);
+      }
+    else
+      {
+      mi.c[j] = DataBuffer.at(ptr+j);
       }
     }
   return mi.i;
 }
 
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GetAsciiInteger(int ix)
+//----------------------------------------------------------------------------
+float vtkFLUENTReader::GetDataBufferFloat(int ptr)
 {
-  int j = ix;
-  int first = this->GoToNextASCIIHexDigit(j);
-  j = first;
-  while ( this->IsASCIICharacterHexDigit(++j));
-  int second = j-1;
-  int nchar = second-first+1;
-  char *buf;
-  buf = new char[nchar+1];
-  buf[nchar] = 0;
-  j = first;
-
-  for (int i = 0; i < nchar; i++)
+  union mix_f
     {
-    buf[i] = this->CaseFileBuffer[j];
-    j++;
-    }
-  return atoi(buf);
-}
+    float f;
+    char c[4];
+    } mf = {1.0};
 
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoPastAsciiInteger(int ix)
-{
-  int j = ix;
-  int first = this->GoToNextASCIIHexDigit(j);
-  j = first;
-  while(this->IsASCIICharacterHexDigit(++j));
-  return j;
-}
-
-//-----------------------------------------------------------------------------
-int vtkFLUENTReader::GoToNextEOLData(int ix)
-{
-  int i = ix;
-  while(this->DataFileBuffer[i] != 0x0a )
+  for (int j = 0; j < 4; j++)
     {
-    i++;
+    if (!LittleEndianFlag)
+      {
+      mf.c[3 - j] = DataBuffer.at(ptr+j);
+      }
+    else
+      {
+      mf.c[j] = DataBuffer.at(ptr+j);
+      }
     }
-  return i;
+  return mf.f;
 }
 
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::GetStringToNextRightParenOrEOLData(int ix, char buf[] )
+//----------------------------------------------------------------------------
+double vtkFLUENTReader::GetDataBufferDouble(int ptr)
 {
-  // Copy contents between ( ) into buffer
-  int j = ix;
-  int k=0;
-  while ( !((this->DataFileBuffer[j] == 0x0a)
-    ||(this->DataFileBuffer[j] == ')'))) 
+  union mix_i
     {
-    buf[k] = this->DataFileBuffer[j];
-    j++;
-    k++;
+    double d;
+    char c[8];
+    } md = {1.0};
+
+  for (int j = 0; j < 8; j++)
+    {
+    if (!LittleEndianFlag)
+      {
+      md.c[7 - j] = DataBuffer.at(ptr+j);
+      }
+    else
+      {
+      md.c[j] = DataBuffer.at(ptr+j);
+      }
     }
-  buf[k] = 0;
+  return md.d;
 }
 
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::CreateVTKObjects(void)
+//------------------------------------------------------------------------------
+void vtkFLUENTReader::GetData(int dataType)
 {
-  this->NumberOfCellFields = 0;
-  this->NumberOfCellComponents = 0;
-  this->FileStream = NULL;
-  this->NumberOfCells = 0;
-  this->CellDataInfo = NULL;
-  this->SetNumberOfInputPorts(0);
+  int start = DataBuffer.find('(', 1);
+  int end = DataBuffer.find(')',1);
+  vtkstd::string info = DataBuffer.substr(start+1,end-start-1 );
+  vtkstd::istringstream infostream;
+  infostream.str(info);
+  int subSectionId, zoneId, size, nTimeLevels, nPhases, firstId, lastId;
+  infostream >> subSectionId >> zoneId >> size >> nTimeLevels >> nPhases >> firstId >> lastId;
 
-  this->CaseFileBuffer = NULL;
-  this->DataFileBuffer = NULL;
-  this->CaseFileBufferLength = 0;
-  this->DataFileBufferLength = 0;
-  this->GridDimension = 0;
-  this->NumberOfNodes = 0;
-  this->NumberOfFaces = 0;
-  this->NumberOfFaceParents = 0;
-  this->NumberOfPeriodicShadowFaces = 0;
-  this->NumberOfCellZones = 0;
-  this->NumberOfVariables = 0;
-  this->LittleEndianFlag = 1;
-  this->NumberOfFaceTrees = 0;
-  this->NumberOfFaceTreeKids = 0;
-  this->NumberOfFaceTreeParents = 0;
-  this->LastFaceTreeParent = 0;
-  this->NumberOfCellTrees = 0;
-  this->NumberOfCellTreeKids = 0;
-  this->NumberOfCellTreeParents = 0;
-  this->LastCellTreeParent = 0;
-  this->NumberOfNCGFaceHeaders = 0;
-  this->NumberOfNCGFaces = 0;
-  this->NumberOfNCGNodeHeaders = 0;
-  this->NumberOfNCGNodes = 0;
-  this->DataPass = 0;
-  this->NumberOfFaceParentChildren = 0;
+  // Is this a cell zone?
+  int zmatch = 0;
+  for (int i = 0; i < CellZones.size(); i++)
+    {
+    if (CellZones[i] == zoneId)
+      {
+      zmatch = 1;
+      }
+    }
 
-  this->CellDataArraySelection = vtkDataArraySelection::New();
-  this->Points = vtkPoints::New();
-  this->CellTypes = vtkIntArray::New();
-  this->FaceTypes = vtkIntArray::New();
-  this->FaceNodes = vtkIntArray::New();
-  this->FaceNodes->SetNumberOfComponents(4);
-  this->FaceCells = vtkIntArray::New();
-  this->FaceCells->SetNumberOfComponents(2);
-  this->FaceTreesNumberOfKids = vtkIntArray::New();
-  this->FaceTreesKids = vtkIntArray::New();
-  this->FaceTreesKidsIndex = vtkIntArray::New();
-  this->FaceTreeParentTable = vtkIntArray::New();
-  this->ATriangle = vtkTriangle::New();
-  this->AQuad = vtkQuad::New();
-  this->ATetra = vtkTetra::New();
-  this->APyramid = vtkPyramid::New();
-  this->AWedge = vtkWedge::New();
-  this->AHexahedron = vtkHexahedron::New();
-  this->CellZones = vtkIntArray::New();
-  this->VariableIds = vtkIntArray::New();
-  this->VariableSizes = vtkIntArray::New();
-  this->CellData = NULL;
-  this->Mesh = vtkUnstructuredGrid::New();
+  if (zmatch)
+    {
 
-  this->ObjectsFlag = 1;
-  this->FirstArrayFlag = 0;
+    // Set up stream or pointer to data
+    int dstart = DataBuffer.find('(', 7);
+    int dend = DataBuffer.find(')', dstart+1);
+    vtkstd::istringstream pdatastream;
+    vtkstd::string pdata = DataBuffer.substr(dstart+1, dend-dstart-2);
+    pdatastream.str(pdata);
+    int ptr = dstart + 1;
 
-}
+    // Is this a new variable?
+    int match = 0;
+    for (int i = 0; i < SubSectionIds.size(); i++)
+      {
+      if (subSectionId == SubSectionIds[i])
+        {
+        match = 1;
+        }
+      }
 
+    if ((match == 0) && (size < 4))
+      { // new variable
+      SubSectionIds.push_back(subSectionId);
+      SubSectionSize.push_back(size);
+      SubSectionZones.resize(SubSectionZones.size()+1);
+      SubSectionZones[SubSectionZones.size()-1].push_back(zoneId);
+      }
 
-//-----------------------------------------------------------------------------
-void vtkFLUENTReader::DeleteVTKObjects(void)
-{
-  this->ATriangle->Delete();
-  this->AQuad->Delete();
-  this->ATetra->Delete();
-  this->APyramid->Delete();
-  this->AWedge->Delete();
-  this->AHexahedron->Delete();
-  this->CellZones->Delete();
-  this->VariableIds->Delete();
-  this->VariableSizes->Delete();
-  this->ObjectsFlag = 0;
+    if (size == 1)
+      {
+      NumberOfScalars++;
+      ScalarDataChunks.resize(ScalarDataChunks.size() + 1);
+      ScalarDataChunks[ScalarDataChunks.size()-1].subsectionId = subSectionId;
+      ScalarDataChunks[ScalarDataChunks.size()-1].zoneId = zoneId;
+      for (int i=firstId; i<=lastId; i++)
+        {
+        double temp;
+        if (dataType == 1)
+          {
+          pdatastream >> temp;
+          }
+        else if (dataType == 2)
+          {
+          temp = GetDataBufferFloat(ptr);
+          ptr = ptr + 4;
+          }
+        else
+          {
+          temp = GetDataBufferDouble(ptr);
+          ptr = ptr + 8;
+          }
+        ScalarDataChunks[ScalarDataChunks.size()-1].scalarData.push_back(temp);
+        }
+      }
+    else if (size == 3)
+      {
+      NumberOfVectors++;
+      VectorDataChunks.resize(VectorDataChunks.size() + 1);
+      VectorDataChunks[VectorDataChunks.size() - 1].subsectionId = subSectionId;
+      VectorDataChunks[VectorDataChunks.size() - 1].zoneId = zoneId;
+      for (int i=firstId; i<=lastId; i++)
+        {
+        double tempx, tempy, tempz;
+
+        if (dataType == 1)
+          {
+          pdatastream >> tempx;
+          pdatastream >> tempy;
+          pdatastream >> tempz;
+          }
+        else if (dataType == 2)
+          {
+          tempx = GetDataBufferFloat(ptr);
+          ptr = ptr + 4;
+          tempy = GetDataBufferFloat(ptr);
+          ptr = ptr + 4;
+          tempz = GetDataBufferFloat(ptr);
+          ptr = ptr + 4;
+          }
+        else
+          {
+          tempx = GetDataBufferDouble(ptr);
+          ptr = ptr + 8;
+          tempy = GetDataBufferDouble(ptr);
+          ptr = ptr + 8;
+          tempz = GetDataBufferDouble(ptr);
+          ptr = ptr + 8;
+          }
+        VectorDataChunks[VectorDataChunks.size()-1].iComponentData.push_back(tempx);
+        VectorDataChunks[VectorDataChunks.size()-1].jComponentData.push_back(tempy);
+        VectorDataChunks[VectorDataChunks.size()-1].kComponentData.push_back(tempz);
+        }
+      }
+    else
+      {
+      //cout << "Weird Variable Size = " << size << endl;
+      }
+    }
 }

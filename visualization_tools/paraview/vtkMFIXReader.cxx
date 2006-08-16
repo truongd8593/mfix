@@ -576,6 +576,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
   int first = 0;
   for (int j = 0; j <= this->VariableNames->GetMaxId(); j++)
     {
+cout<<this->VariableNames->GetValue(j);
     if ( this->CellDataArraySelection->GetArraySetting(j) == 1 )
       {
       if (this->VariableComponents->GetValue(j) == 1)
@@ -588,7 +589,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
           {
           this->ConvertVectorFromCylindricalToCartesian( j-3, j-1);
           }
-        this->FillVectorVariable( j-3, j-2, j-1, CellDataArray[j]);
+        this->FillVectorVariable( j-3, j-2, j-1, this->CellDataArray[j]);
         }
       if (first == 0)
         {
@@ -598,7 +599,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
         {
         output->GetCellData()->AddArray(this->CellDataArray[j]);
         }
-
+cout<<" : "<<this->CellDataArray[j]->GetSize()<<endl;
       double tempRange[2];
       this->CellDataArray[j]->GetRange(tempRange, -1);
       this->Minimum->InsertValue( j, tempRange[0]);
@@ -2002,8 +2003,8 @@ void vtkMFIXReader::MakeTimeStepTable(int numberOfVariables)
 
   for(int i=0; i<numberOfVariables; i++)
     {
-    int timestepIncrement = this->MaximumTimestep/
-      this->VariableTimesteps->GetValue(i);
+    int timestepIncrement = (int)((float)this->MaximumTimestep/
+                            (float)this->VariableTimesteps->GetValue(i) + 0.5);
     int timestep = 1;
     for (int j=0; j<this->MaximumTimestep; j++)
       {
@@ -2011,8 +2012,8 @@ void vtkMFIXReader::MakeTimeStepTable(int numberOfVariables)
       timestepIncrement--;
       if (timestepIncrement <= 0)
         {
-        timestepIncrement = this->MaximumTimestep/
-          this->VariableTimesteps->GetValue(i);
+        timestepIncrement = (int)((float)this->MaximumTimestep/
+                            (float)this->VariableTimesteps->GetValue(i) + 0.5);
         timestep++;
         }
       if (timestep > this->VariableTimesteps->GetValue(i)) 
