@@ -18,8 +18,11 @@
 // .dat files stored in FLUENT native format.
 //
 // .SECTION Thanks
-// Thanks to Brian W. Dotson (Department of Energy, National Energy 
-//       Technology Laboratory) who developed this class.
+// Thanks to Brian W. Dotson & Terry E. Jordan (Department of Energy, National
+// Energy Technology Laboratory) & Douglas McCorkle (Iowa State University)
+// who developed this class.
+// Please address all comments to Brian Dotson (brian.dotson@netl.doe.gov) &
+// Terry Jordan (terry.jordan@sa.netl.doe.gov)
 //
 // Please address all comments to Brian Dotson (Brian.Dotson@netl.doe.gov)
 
@@ -80,134 +83,138 @@ protected:
   int RequestData(vtkInformation *, vtkInformationVector **, 
     vtkInformationVector *);
   vtkDataArraySelection* CellDataArraySelection;
-char * FileName;
-int NumberOfCells;
-int NumberOfCellArrays;
- int                    OpenCaseFile(const char *filename);
-    int                    OpenDataFile(const char *filename);
-    int                    GetCaseChunk ();
-    void                   GetNumberOfCellZones();
-    int                    GetCaseIndex();
-    void                   LoadVariableNames();
-    int                    GetDataIndex();
-    int                    GetDataChunk();
+  char * FileName;
+  int NumberOfCells;
+  int NumberOfCellArrays;
+  int                    OpenCaseFile(const char *filename);
+  int                    OpenDataFile(const char *filename);
+  int                    GetCaseChunk ();
+  void                   GetNumberOfCellZones();
+  int                    GetCaseIndex();
+  void                   LoadVariableNames();
+  int                    GetDataIndex();
+  int                    GetDataChunk();
 
-    void                   ParseCaseFile();
-    int                    GetDimension();
-    void                   GetLittleEndianFlag();
-    void                   GetNodesAscii();
-    void                   GetNodesSinglePrecision();
-    void                   GetNodesDoublePrecision();
-    void                   GetCellsAscii();
-    void                   GetCellsBinary();
-    void                   GetFacesAscii();
-    void                   GetFacesBinary();
-    void                   GetPeriodicShadowFacesAscii();
-    void                   GetPeriodicShadowFacesBinary();
-    void                   GetCellTreeAscii();
-    void                   GetCellTreeBinary();
-    void                   GetFaceTreeAscii();
-    void                   GetFaceTreeBinary();
-    void                   GetInterfaceFaceParentsAscii();
-    void                   GetInterfaceFaceParentsBinary();
-    void                   GetNonconformalGridInterfaceFaceInformationAscii();
-    void                   GetNonconformalGridInterfaceFaceInformationBinary();
-    void                   CleanCells();
-    void                   PopulateCellNodes();
-    int                    GetCaseBufferInt(int ptr);
-    float                  GetCaseBufferFloat(int ptr);
-    double                 GetCaseBufferDouble(int ptr);
-    void                   PopulateTriangleCell(int i);
-    void                   PopulateTetraCell(int i);
-    void                   PopulateQuadCell(int i);
-    void                   PopulateHexahedronCell(int i);
-    void                   PopulatePyramidCell(int i);
-    void                   PopulateWedgeCell(int i);
-    void                   PopulatePolyhedronCell(int i);
-    void                   ParseDataFile();
-    int                    GetDataBufferInt(int ptr);
-    float                  GetDataBufferFloat(int ptr);
-    double                 GetDataBufferDouble(int ptr);
-    void                   GetData(int dataType);
+  void                   ParseCaseFile();
+  int                    GetDimension();
+  void                   GetLittleEndianFlag();
+  void                   GetNodesAscii();
+  void                   GetNodesSinglePrecision();
+  void                   GetNodesDoublePrecision();
+  void                   GetCellsAscii();
+  void                   GetCellsBinary();
+  void                   GetFacesAscii();
+  void                   GetFacesBinary();
+  void                   GetPeriodicShadowFacesAscii();
+  void                   GetPeriodicShadowFacesBinary();
+  void                   GetCellTreeAscii();
+  void                   GetCellTreeBinary();
+  void                   GetFaceTreeAscii();
+  void                   GetFaceTreeBinary();
+  void                   GetInterfaceFaceParentsAscii();
+  void                   GetInterfaceFaceParentsBinary();
+  void                   GetNonconformalGridInterfaceFaceInformationAscii();
+  void                   GetNonconformalGridInterfaceFaceInformationBinary();
+  void                   CleanCells();
+  void                   PopulateCellNodes();
+  int                    GetCaseBufferInt(int ptr);
+  float                  GetCaseBufferFloat(int ptr);
+  double                 GetCaseBufferDouble(int ptr);
+  void                   PopulateTriangleCell(int i);
+  void                   PopulateTetraCell(int i);
+  void                   PopulateQuadCell(int i);
+  void                   PopulateHexahedronCell(int i);
+  void                   PopulatePyramidCell(int i);
+  void                   PopulateWedgeCell(int i);
+  void                   PopulatePolyhedronCell(int i);
+  void                   ParseDataFile();
+  int                    GetDataBufferInt(int ptr);
+  float                  GetDataBufferFloat(int ptr);
+  double                 GetDataBufferDouble(int ptr);
+  void                   GetData(int dataType);
 
-//
-//  Variables
-//
-//BTX
-ifstream FluentCaseFile;
-ifstream FluentDataFile;
-vtkstd::string CaseBuffer;
-vtkstd::string DataBuffer;
+  //
+  //  Variables
+  //
+  //BTX
+  ifstream FluentCaseFile;
+  ifstream FluentDataFile;
+  vtkstd::string CaseBuffer;
+  vtkstd::string DataBuffer;
 
-vtkPoints           *Points;
-vtkTriangle         *Triangle;
-vtkTetra            *Tetra;
-vtkQuad             *Quad;
-vtkHexahedron       *Hexahedron;
-vtkPyramid          *Pyramid;
-vtkWedge            *Wedge;
-vtkConvexPointSet   *ConvexPointSet;
+  vtkPoints           *Points;
+  vtkTriangle         *Triangle;
+  vtkTetra            *Tetra;
+  vtkQuad             *Quad;
+  vtkHexahedron       *Hexahedron;
+  vtkPyramid          *Pyramid;
+  vtkWedge            *Wedge;
+  vtkConvexPointSet   *ConvexPointSet;
 
-struct Cell {
-  int type;
-  int zone;
-  vtkstd::vector<int> faces;
-  int parent;
-  int child;
-  vtkstd::vector<int> nodes;
+  struct Cell 
+    {
+    int type;
+    int zone;
+    vtkstd::vector<int> faces;
+    int parent;
+    int child;
+    vtkstd::vector<int> nodes;
+    };
+
+  struct Face
+    {
+    int type;
+    int zone;
+    vtkstd::vector<int> nodes;
+    int c0;
+    int c1;
+    int periodicShadow;
+    int parent;
+    int child;
+    int interfaceFaceParent;
+    int interfaceFaceChild;
+    int ncgParent;
+    int ncgChild;
+    };
+
+  struct ScalarDataChunk
+    {
+    int subsectionId;
+    int zoneId;
+    vtkstd::vector<double> scalarData;
+    };
+
+  struct VectorDataChunk
+    {
+    int subsectionId;
+    int zoneId;
+    vtkstd::vector<double> iComponentData;
+    vtkstd::vector<double> jComponentData;
+    vtkstd::vector<double> kComponentData;
+    };
+
+
+  vtkstd::vector< Cell > Cells;
+  vtkstd::vector< Face > Faces;
+  vtkstd::map< int, vtkstd::string > VariableNames;
+  vtkstd::vector< int >  CellZones;
+  vtkstd::vector< ScalarDataChunk > ScalarDataChunks;
+  vtkstd::vector< VectorDataChunk > VectorDataChunks;
+
+  vtkstd::vector< vtkstd::vector<int> > SubSectionZones;
+  vtkstd::vector< int > SubSectionIds;
+  vtkstd::vector< int > SubSectionSize;
+
+  vtkstd::vector< vtkstd::string > ScalarVariableNames;
+  vtkstd::vector< int > ScalarSubSectionIds;
+  vtkstd::vector< vtkstd::string > VectorVariableNames;
+  vtkstd::vector< int > VectorSubSectionIds;
+
+  int LittleEndianFlag;
+  int GridDimension;
+  int DataPass;
+  int NumberOfScalars;
+  int NumberOfVectors;
+  //ETX
 };
-
-struct Face {
-  int type;
-  int zone;
-  vtkstd::vector<int> nodes;
-  int c0;
-  int c1;
-  int periodicShadow;
-  int parent;
-  int child;
-  int interfaceFaceParent;
-  int interfaceFaceChild;
-  int ncgParent;
-  int ncgChild;
-};
-
-struct ScalarDataChunk {
-  int subsectionId;
-  int zoneId;
-  vtkstd::vector<double> scalarData;
-};
-
-struct VectorDataChunk {
-  int subsectionId;
-  int zoneId;
-  vtkstd::vector<double> iComponentData;
-  vtkstd::vector<double> jComponentData;
-  vtkstd::vector<double> kComponentData;
-};
-
-
-vtkstd::vector< Cell > Cells;
-vtkstd::vector< Face > Faces;
-vtkstd::map< int, vtkstd::string > VariableNames;
-vtkstd::vector< int >  CellZones;
-vtkstd::vector< ScalarDataChunk > ScalarDataChunks;
-vtkstd::vector< VectorDataChunk > VectorDataChunks;
-
-vtkstd::vector< vtkstd::vector<int> > SubSectionZones;
-vtkstd::vector< int > SubSectionIds;
-vtkstd::vector< int > SubSectionSize;
-
-vtkstd::vector< vtkstd::string > ScalarVariableNames;
-vtkstd::vector< int > ScalarSubSectionIds;
-vtkstd::vector< vtkstd::string > VectorVariableNames;
-vtkstd::vector< int > VectorSubSectionIds;
-
-int LittleEndianFlag;
-int GridDimension;
-int DataPass;
-int NumberOfScalars;
-int NumberOfVectors;
-//ETX
-  };
 #endif
