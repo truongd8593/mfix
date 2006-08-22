@@ -1,36 +1,49 @@
 <ModuleInterfaces>
-	
-	
-	<Module name="MFIXReader"
-		root_name="MFIXReader"
-		class="vtkPVAdvancedReaderModule"
-		module_type="Reader"
-		extensions=".RES"
-		file_description="MFIX UnstructuredGrid Files">
-		<Source class="vtkMFIXReader"/>
-		
-		<Scale property="TimeStep"
-		       label="Time step" trace_name="TimeStep"
-		       keeps_timesteps="1"
-		       help="Set the current timestep."/>
-		
-		<ArraySelection label_text="Cell Arrays"
-				property="CellArrayStatus"
-				trace_name="CellSelection"/>
-	</Module>
+  <Module name="OpenFOAMReader" 
+          root_name="OpenFOAMReader" 
+	  class="vtkPVAdvancedReaderModule" 
+	  module_type="Reader" 
+	  extensions=".foam" 
+	  file_description="OpenFOAM  Files"> 
+    <Source class="vtkOpenFOAMReader"/> 
+    <Scale property="TimeStep" 
+           label="Time step" 
+           trace_name="TimeStep" 
+           keeps_timesteps="1" 
+           help="Set the current timestep."/> 
+    <ArraySelection label_text="Cell Arrays" 
+                    property="CellArrayStatus" 
+                    trace_name="CellSelection"/> 
+  </Module> 
+  <Module name="MFIXReader" 
+          root_name="MFIXReader" 
+          class="vtkPVAdvancedReaderModule" 
+          module_type="Reader" 
+          extensions=".RES" 
+          file_description="MFIX UnstructuredGrid Files">
+  <Source class="vtkMFIXReader"/>
 
-	<Module name="FLUENTReader"
-		root_name="FLUENTReader"
-		class="vtkPVAdvancedReaderModule"
-		module_type="Reader"
-		extensions=".cas"
-		file_description="Fluent Case File">
-		<Source class="vtkFLUENTReader"/>
-		<ArraySelection label_text="Cell Arrays"
-				property="CellArrayStatus"
-				trace_name="CellSelection"/>
-	</Module>
-	
+  <Scale property="TimeStep" 
+         label="Time step" 
+         trace_name="TimeStep" 
+         keeps_timesteps="1" 
+         help="Set the current timestep."/>
+  <ArraySelection label_text="Cell Arrays"
+                  property="CellArrayStatus" 
+                  trace_name="CellSelection"/>
+  </Module>
+  <Module name="FLUENTReader"
+          root_name="FLUENTReader"
+          class="vtkPVAdvancedReaderModule"
+          module_type="Reader" 
+          extensions=".cas" 
+          file_description="Fluent Case File">
+  <Source class="vtkFLUENTReader"/>
+
+  <ArraySelection label_text="Cell Arrays"
+                  property="CellArrayStatus"
+                  trace_name="CellSelection"/>
+  </Module>
   <Module name="PVDReader"
           class="vtkPVDReaderModule"
           root_name="PVDReader"
@@ -184,6 +197,38 @@
                     property="CellArrayStatus"
                     trace_name="CellSelection"/>
   </Module>
+  <Module name="XMLMultiBlockDataReader"
+          root_name="XMLMultiBlockDataReader"
+          class="vtkPVAdvancedReaderModule"
+          module_type="Reader"
+          extensions=".vtm"
+          file_description="VTK MultiBlock Data Files">
+    <Source class="vtkXMLMultiBlockDataReader"/>
+  </Module>
+  <Module name="XMLMultiGroupDataReader"
+          root_name="XMLMultiGroupDataReader"
+          class="vtkPVAdvancedReaderModule"
+          module_type="Reader"
+          extensions=".vtm"
+          file_description="VTK MultiGroup Data Files">
+    <Source class="vtkXMLMultiGroupDataReader"/>
+  </Module>
+  <Module name="XMLHierarchicalDataReader"
+          root_name="XMLHierarchicalDataReader"
+          class="vtkPVAdvancedReaderModule"
+          module_type="Reader"
+          extensions=".vtm"
+          file_description="VTK Hierarchical Data Files">
+    <Source class="vtkXMLHierarchicalDataReader"/>
+  </Module>
+  <Module name="XMLHierarchicalBoxDataReader"
+          root_name="XMLHierarchicalBoxDataReader"
+          class="vtkPVAdvancedReaderModule"
+          module_type="Reader"
+          extensions=".vtm"
+          file_description="VTK Hierarchical Box Data Files">
+    <Source class="vtkXMLHierarchicalBoxDataReader"/>
+  </Module>
   <Module name="legacyreader"
           class="vtkPVReaderModule" root_name="LegaVTK"
           module_type="Reader"
@@ -206,7 +251,7 @@
           module_type="Reader"
           extensions=".case .CASE .Case"
           file_description="EnSight Files">
-    <Source class="vtkPVEnSightMasterServerReader"/>
+    <Source class="vtkGenericEnSightReader"/>
     <SelectionList label="Byte order"
                    trace_name="ByteOrder"
                    property="ByteOrder"
@@ -379,7 +424,7 @@
           module_type="Reader"
           extensions=".xyz"
           file_description="PLOT3D Files">
-    <Source class="vtkPLOT3DReader"/>
+    <Source class="vtkMultiBlockPLOT3DReader"/>
     <FileEntry label="Q File"
                trace_name="QFileName"
                property="QFileName" extension="q"
@@ -418,45 +463,37 @@
       <Item name="little endian"
             value="1"/>
     </SelectionList>
+    <ItemSelection label_text="Function"
+                    property="Functions"
+                    trace_name="FunctionSelection"/>
   </Module>
-
-#if 0
-  <!-- Removing things associated with vtkCTHData -->
-  <Module name="amrspcthreader"
-          class="vtkPVAdvancedReaderModule" root_name="SPCTH"
-          module_type="Reader"
-          extensions=".amrspcth"
-          file_description="SpyPlot CTH AMR dataset">
-    <Source class="vtkAMRSpyPlotReader"/>
-    <Scale property="TimeStep"
-           label="Time step" trace_name="TimeStep"
-           keeps_timesteps="1"
-           display_entry="1" display_value="0"
-           help="Set the current timestep."/>
-    <ArraySelection label_text="Cell Arrays"
-                    property="CellArrayStatus"
-                    trace_name="CellArrays"/>
-  </Module>
-#endif
 
  <Module name="spcthreader"
           class="vtkPVAdvancedReaderModule" root_name="SPCTH"
           module_type="Reader"
-          extensions=".spcth"
+          extensions=".spcth .0"
           file_description="SpyPlot CTH dataset">
     <Source class="vtkSpyPlotReader"/>
+    <LabeledToggle label="Down-convert Volume Fraction"
+                   property="DownConvertVolumeFraction"
+                   trace_name="down_convert"
+                   help="Select whether, the volume fraction is float or down converted into unsinged char"/>
     <LabeledToggle label="Distribute files"
                    property="DistributeFiles"
                    trace_name="file_flag"
                    help="Select whether, in parallel mode, if the reader distributes files or blocks"/>
- <LabeledToggle label="Generate level array"
+    <LabeledToggle label="Generate level array"
                    property="GenerateLevelArray"
                    trace_name="level_flag"
                    help="Generate a cell array storing the level of each block"/>
- <LabeledToggle label="Generate blockId array"
+    <LabeledToggle label="Generate blockId array"
                    property="GenerateBlockIdArray"
                    trace_name="blockid_flag"
                    help="Generate a cell array storing a unique blockId of each block"/>
+    <LabeledToggle label="Generate active block array"
+                   property="GenerateActiveBlockArray"
+                   trace_name="activeblock_flag"
+                   help="Generate a cell array that stores the active status of a block"/>
     <Scale property="TimeStep"
            label="Time step" trace_name="TimeStep"
            keeps_timesteps="1"
@@ -724,6 +761,4 @@
           file_description="PNG Image Files">
     <Source class="vtkPNGReader"/>
   </Module>
-  
-  
 </ModuleInterfaces>

@@ -1,99 +1,137 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="sources">
+    <!-- Beginning of FOAM Reader -->
+    <SourceProxy name="OpenFOAMReader" 
+                    class="vtkOpenFOAMReader">
+      <StringVectorProperty name="FileName"
+                            command="SetFileName"
+                            animateable="1"
+                            number_of_elements="1">
+        <StringListDomain name="files"/>
+      </StringVectorProperty>
+      <StringVectorProperty name="CellArrayInfo"
+                            information_only="1">
+        <ArraySelectionInformationHelper attribute_name="Cell"/>
+      </StringVectorProperty>
+      <StringVectorProperty name="CellArrayStatus"
+		            command="SetCellArrayStatus"
+			    number_of_elements="0" 
+			    repeat_command="1"
+			    number_of_elements_per_command="2"
+			    element_types="2 0" 
+		      information_property="CellArrayInfo"> 
+        <ArraySelectionDomain name="array_list">
+	  <RequiredProperties>
+	    <Property name="CellArrayInfo" function="ArrayList"/>
+	  </RequiredProperties>
+        </ArraySelectionDomain>
+      </StringVectorProperty>
+      <IntVectorProperty name="TimeStepRangeInfo"
+                         command="GetTimeStepRange"
+                         information_only="1">
+        <SimpleIntInformationHelper/>
+      </IntVectorProperty>
+      <IntVectorProperty name="TimeStep"
+                           command="SetTimeStep"
+                           number_of_elements="1"
+                           animateable="1"
+                           default_values="0">
+        <IntRangeDomain name="range">
+          <RequiredProperties>
+            <Property name="TimeStepRangeInfo" function="Range"/>
+          </RequiredProperties>
+        </IntRangeDomain>
+      </IntVectorProperty>
+      <DoubleVectorProperty name="TimestepValues"
+                            information_only="1">
+        <TimeStepsInformationHelper/>
+      </DoubleVectorProperty>
+    </SourceProxy>
+    <!-- End of foam Reader -->
 
-	  <!-- Beginning of MFIX Reader -->
-	  
-	  <SourceProxy name="MFIXReader" 
-		       class="vtkMFIXReader">
-		  <StringVectorProperty
-				       name="FileName"
-				       command="SetFileName"
-				       animateable="1"
-				       number_of_elements="1">
-			  <StringListDomain name="files"/>
-		  </StringVectorProperty>
-		  
-		  <StringVectorProperty 
-					name="CellArrayInfo"
-					information_only="1">
-			  <ArraySelectionInformationHelper attribute_name="Cell"/>
-		  </StringVectorProperty>
-		  
-		  <StringVectorProperty
-				       name="CellArrayStatus"
-				       command="SetCellArrayStatus"
-				       number_of_elements="0" 
-				       repeat_command="1"
-				       number_of_elements_per_command="2"
-				       element_types="2 0" 
-				       information_property="CellArrayInfo"> 
-			  <ArraySelectionDomain name="array_list">
-				  <RequiredProperties>
-					  <Property name="CellArrayInfo" function="ArrayList"/>
-				  </RequiredProperties>
-			  </ArraySelectionDomain>
-		  </StringVectorProperty>
-		  
-		  <IntVectorProperty 
-				     name="TimeStepRangeInfo"
-				     command="GetTimeStepRange"
-				     information_only="1">
-			  <SimpleIntInformationHelper/>
-		  </IntVectorProperty>
-		  <IntVectorProperty 
-				     name="TimeStep"
-				     command="SetTimeStep"
-				     number_of_elements="1"
-				     animateable="1"
-				     default_values="0">
-			  <IntRangeDomain name="range">
-				  <RequiredProperties>
-					  <Property name="TimeStepRangeInfo" function="Range"/>
-				  </RequiredProperties>
-			  </IntRangeDomain>
-		  </IntVectorProperty>
-		  
-		  
-	  </SourceProxy>
-	  
-	  <!-- End of MFIX Reader -->
-	  
-	  <!-- Beginning of FLUENT Reader -->
-	  
-	  <SourceProxy name="FLUENTReader" 
-		       class="vtkFLUENTReader">
-		  <StringVectorProperty
-				       name="FileName"
-				       command="SetFileName"
-				       animateable="1"
-				       number_of_elements="1">
-			  <StringListDomain name="files"/>
-		  </StringVectorProperty>
-		  
-		  <StringVectorProperty 
-					name="CellArrayInfo"
-					information_only="1">
-			  <ArraySelectionInformationHelper attribute_name="Cell"/>
-		  </StringVectorProperty>
-		  
-		  <StringVectorProperty
-				       name="CellArrayStatus"
-				       command="SetCellArrayStatus"
-				       number_of_elements="0" 
-				       repeat_command="1"
-				       number_of_elements_per_command="2"
-				       element_types="2 0" 
-				       information_property="CellArrayInfo"> 
-			  <ArraySelectionDomain name="array_list">
-				  <RequiredProperties>
-					  <Property name="CellArrayInfo" function="ArrayList"/>
-				  </RequiredProperties>
-			  </ArraySelectionDomain>
-		  </StringVectorProperty>
-	  </SourceProxy>
-	  
-	  
-	  <!-- End of FLUENT Reader -->
+    <!-- Beginning of MFIX Reader -->
+    <SourceProxy name="MFIXReader" 
+		 class="vtkMFIXReader">
+	    <StringVectorProperty
+				 name="FileName"
+				 command="SetFileName"
+				 animateable="1"
+				 number_of_elements="1">
+		    <StringListDomain name="files"/>
+	    </StringVectorProperty>
+	    
+	    <StringVectorProperty 
+				  name="CellArrayInfo"
+				  information_only="1">
+		    <ArraySelectionInformationHelper attribute_name="Cell"/>
+	    </StringVectorProperty>
+	    
+	    <StringVectorProperty
+				 name="CellArrayStatus"
+				 command="SetCellArrayStatus"
+				 number_of_elements="0" 
+				 repeat_command="1"
+				 number_of_elements_per_command="2"
+				 element_types="2 0" 
+				 information_property="CellArrayInfo"> 
+		    <ArraySelectionDomain name="array_list">
+			    <RequiredProperties>
+				    <Property name="CellArrayInfo" function="ArrayList"/>
+			    </RequiredProperties>
+		    </ArraySelectionDomain>
+	    </StringVectorProperty>
+	    <IntVectorProperty name="TimeStepRangeInfo"
+			       command="GetTimeStepRange"
+			       information_only="1">
+		    <SimpleIntInformationHelper/>
+	    </IntVectorProperty>
+	    <IntVectorProperty name="TimeStep"
+			       command="SetTimeStep"
+			       number_of_elements="1"
+			       animateable="1"
+			       default_values="0">
+		    <IntRangeDomain name="range">
+			    <RequiredProperties>
+				    <Property name="TimeStepRangeInfo" function="Range"/>
+			    </RequiredProperties>
+		    </IntRangeDomain>
+	    </IntVectorProperty>
+	    <DoubleVectorProperty name="TimestepValues"
+				  information_only="1">
+		    <TimeStepsInformationHelper/>
+	    </DoubleVectorProperty>
+    </SourceProxy>
+    <!-- End of MFIX Reader -->
+
+   <!-- Beginning of FLUENT Reader -->
+   <SourceProxy name="FLUENTReader"
+                class="vtkFLUENTReader">
+     <StringVectorProperty name="FileName"
+                           command="SetFileName"
+                           animateable="1"
+                           number_of_elements="1">
+       <StringListDomain name="files"/>
+     </StringVectorProperty>
+     <StringVectorProperty name="CellArrayInfo"
+                           information_only="1">
+       <ArraySelectionInformationHelper attribute_name="Cell"/>
+     </StringVectorProperty>
+     <StringVectorProperty name="CellArrayStatus"
+                           command="SetCellArrayStatus"
+                           number_of_elements="0"
+                           repeat_command="1" 
+                           number_of_elements_per_command="2"
+                           element_types="2 0"
+                           information_property="CellArrayInfo">
+       <ArraySelectionDomain name="array_list">
+         <RequiredProperties>
+           <Property name="CellArrayInfo"
+                     function="ArrayList"/>
+         </RequiredProperties>
+       </ArraySelectionDomain>
+     </StringVectorProperty>
+   </SourceProxy>
+   <!-- End of FLUENT Reader -->
 
    <SourceProxy name="DEMReader" 
                 class="vtkDEMReader">
@@ -106,6 +144,50 @@
      </StringVectorProperty>
 
    <!-- End DEMReader -->
+   </SourceProxy>
+
+   <SourceProxy name="XMLMultiBlockDataReader" 
+                class="vtkXMLMultiBlockDataReader">
+     <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <StringListDomain name="files"/>
+     </StringVectorProperty>
+   <!-- End MultiBlockDataReader -->
+   </SourceProxy>
+
+   <SourceProxy name="XMLMultiGroupDataReader" 
+                class="vtkXMLMultiGroupDataReader">
+     <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <StringListDomain name="files"/>
+     </StringVectorProperty>
+   <!-- End MultiGroupDataReader -->
+   </SourceProxy>
+
+   <SourceProxy name="XMLHierarchicalDataReader" 
+                class="vtkXMLHierarchicalDataReader">
+     <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <StringListDomain name="files"/>
+     </StringVectorProperty>
+   <!-- End HierarchicalDataReader -->
+   </SourceProxy>
+
+   <SourceProxy name="XMLHierarchicalBoxDataReader" 
+                class="vtkXMLHierarchicalBoxDataReader">
+     <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <StringListDomain name="files"/>
+     </StringVectorProperty>
+   <!-- End HierarchicalBoxDataReader -->
    </SourceProxy>
 
    <SourceProxy name="PVDReader" 
@@ -703,7 +785,7 @@
    </SourceProxy>
 
    <SourceProxy name="ensight" 
-                class="vtkPVEnSightMasterServerReader">
+                class="vtkGenericEnSightReader">
      <StringVectorProperty
         name="CaseFileName"
         command="SetCaseFileName"
@@ -814,58 +896,7 @@
       </IntVectorProperty>
    <!-- End HDF5RawImageReader -->
    </SourceProxy>
-#if 0
-   <!-- Removing things associated with vtkCTHData -->
-   <SourceProxy name="amrspcthreader" class="vtkAMRSpyPlotReader">
-     <StringVectorProperty
-        name="FileName"
-        command="SetFileName"
-        number_of_elements="1">
-        <StringListDomain name="files"/>
-     </StringVectorProperty>
-     <IntVectorProperty 
-        name="TimeStepRangeInfo"
-        command="GetTimeStepRange"
-        information_only="1">
-        <SimpleIntInformationHelper/>
-     </IntVectorProperty>
 
-     <IntVectorProperty 
-        name="TimeStep"
-        command="SetTimeStep"
-        number_of_elements="1"
-        animateable="1"
-        default_values="0">
-       <IntRangeDomain name="range">
-          <RequiredProperties>
-             <Property name="TimeStepRangeInfo" function="Range"/>
-          </RequiredProperties>
-       </IntRangeDomain>
-     </IntVectorProperty>
-
-     <StringVectorProperty 
-        name="CellArrayInfo"
-        information_only="1">
-        <ArraySelectionInformationHelper attribute_name="Cell"/>
-     </StringVectorProperty>
-
-     <StringVectorProperty
-        name="CellArrayStatus"
-        command="SetCellArrayStatus"
-        number_of_elements="0" 
-        repeat_command="1"
-        number_of_elements_per_command="2"
-        element_types="2 0"
-        information_property="CellArrayInfo"> 
-       <ArraySelectionDomain name="array_list">
-          <RequiredProperties>
-             <Property name="CellArrayInfo" function="ArrayList"/>
-          </RequiredProperties>
-       </ArraySelectionDomain>
-     </StringVectorProperty>
-   <!-- End spcthreader-->
-   </SourceProxy>
-#endif
    <SourceProxy name="spcthreader" class="vtkSpyPlotReader">
      <StringVectorProperty
         name="FileName"
@@ -880,7 +911,15 @@
         <TimeStepsInformationHelper/>
      </DoubleVectorProperty>
 
- <IntVectorProperty 
+     <IntVectorProperty 
+        name="DownConvertVolumeFraction" 
+        command="SetDownConvertVolumeFraction" 
+        number_of_elements="1"
+        default_values="1" > 
+       <BooleanDomain name="bool"/>
+     </IntVectorProperty>
+
+     <IntVectorProperty 
         name="DistributeFiles" 
         command="SetDistributeFiles" 
         number_of_elements="1"
@@ -888,7 +927,7 @@
        <BooleanDomain name="bool"/>
      </IntVectorProperty>
 
- <IntVectorProperty 
+     <IntVectorProperty 
         name="GenerateLevelArray" 
         command="SetGenerateLevelArray" 
         number_of_elements="1"
@@ -896,7 +935,15 @@
        <BooleanDomain name="bool"/>
      </IntVectorProperty>
 
- <IntVectorProperty 
+     <IntVectorProperty 
+        name="GenerateActiveBlockArray" 
+        command="SetGenerateActiveBlockArray" 
+        number_of_elements="1"
+        default_values="0" > 
+       <BooleanDomain name="bool"/>
+     </IntVectorProperty>
+
+     <IntVectorProperty 
         name="GenerateBlockIdArray" 
         command="SetGenerateBlockIdArray" 
         number_of_elements="1"
@@ -1000,7 +1047,7 @@
    <!-- End xyzreader -->
    </SourceProxy>
 
-   <SourceProxy name="P3DReader" class="vtkPLOT3DReader">
+   <SourceProxy name="P3DReader" class="vtkMultiBlockPLOT3DReader">
      <StringVectorProperty
         name="FileName"
         animateable="1"
@@ -1012,6 +1059,7 @@
      <StringVectorProperty
         name="QFileName"
         command="SetQFileName"
+        animateable="1"
         number_of_elements="1">
        <StringListDomain name="files"/>
      </StringVectorProperty>
@@ -1072,6 +1120,30 @@
        <EnumerationDomain name="enum">
          <Entry value="0" text="BigEndian"/>
          <Entry value="1" text="LittleEndian"/>
+       </EnumerationDomain>
+     </IntVectorProperty>
+
+     <IntVectorProperty 
+        name="Functions" 
+        command="AddFunction"
+        clean_command="RemoveAllFunctions"
+        repeat_command="1"
+        number_of_elements_per_command="1">
+       <EnumerationDomain name="array_list">
+         <!-- <Entry value="100" text="Scalar - Density"/> -->
+         <Entry value="110" text="Scalar - Pressure"/>
+         <Entry value="120" text="Scalar - Temperature"/>
+         <Entry value="130" text="Scalar - Enthalpy"/>
+         <Entry value="140" text="Scalar - Internal energy"/>
+         <Entry value="144" text="Scalar - Kinetic energy"/>
+         <Entry value="153" text="Scalar - Velocity magnitude"/>
+         <!-- <Entry value="163" text="Scalar - Stagnation energy"/> -->
+         <Entry value="170" text="Scalar - Entropy"/>
+         <Entry value="184" text="Scalar - Swirl."/>
+         <Entry value="200" text="Vector - Velocity"/>
+         <Entry value="201" text="Vector - Vorticity"/>
+         <!-- <Entry value="202" text="Vector - Momentum"/> -->
+         <Entry value="210" text="Vector - Pressure gradient"/>
        </EnumerationDomain>
      </IntVectorProperty>
    <!-- End P3DReader -->
@@ -1697,7 +1769,7 @@
         name="GenerateGlobalElementIdArray" 
         command="SetGenerateGlobalElementIdArray" 
         number_of_elements="1"
-        default_values="0" > 
+        default_values="1" > 
        <BooleanDomain name="bool"/>
      </IntVectorProperty>
 
@@ -1904,7 +1976,6 @@
      </StringVectorProperty>
    <!-- End PNGReader -->
    </SourceProxy>
-
 
   </ProxyGroup>
 </ServerManagerConfiguration>
