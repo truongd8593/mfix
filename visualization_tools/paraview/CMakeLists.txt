@@ -61,6 +61,7 @@ vtkMFIXReader.cxx
 vtkMultiBlockPLOT3DReader.cxx
 vtkMoleculeReaderBase.cxx
 vtkOBJReader.cxx
+vtkOpenFOAMReader.cxx
 vtkOutputStream.cxx
 vtkPDBReader.cxx
 vtkPLOT3DReader.cxx
