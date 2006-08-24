@@ -1,4 +1,3 @@
-! to do (sof): remove warning messages for theta < 0 from wall BC routines
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: ADJUST_THETA (M, IER)                                  C
@@ -57,7 +56,7 @@
 !
 !!!HPF$ independent
       DO IJK = IJKSTART3, IJKEND3
-         IF ( FLUID_AT(IJK) .OR. WALL_AT(IJK) ) THEN 
+         IF ( FLUID_AT(IJK) ) THEN 
             IF (THETA_M(IJK,M) < ZERO_EP_S) THETA_M(IJK,M) = ZERO_EP_S 
 !
          ENDIF 
