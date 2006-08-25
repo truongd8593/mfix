@@ -175,15 +175,15 @@
          w4 = nPrec4 + 8
          spec = &
          '(1x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4)' 
-	 !123 56 89012345 78 01234567 90 23456789 12 456789
-	 write (spec(5:6),'(i2.2)')   w1
-	 write (spec(8:9),'(i2.2)')   nPrec1
-	 write (spec(17:18),'(i2.2)') w2
-	 write (spec(20:21),'(i2.2)') nPrec2
-	 write (spec(29:30),'(i2.2)') w3
-	 write (spec(32:33),'(i2.2)') nPrec3
-	 write (spec(41:42),'(i2.2)') w4
-	 write (spec(44:45),'(i2.2)') nPrec4
+	 !123  67 90123456 89 12 4567  01 3456789  23 56
+	 write (spec(6:7),'(i2.2)')   w1
+	 write (spec(9:10),'(i2.2)')   nPrec1
+	 write (spec(18:19),'(i2.2)') w2
+	 write (spec(21:22),'(i2.2)') nPrec2
+	 write (spec(30:31),'(i2.2)') w3
+	 write (spec(33:34),'(i2.2)') nPrec3
+	 write (spec(42:43),'(i2.2)') w4
+	 write (spec(45:46),'(i2.2)') nPrec4
 	 sLen = w1 + w2 + w3 + w4 + 7
       end if
       return
@@ -209,17 +209,17 @@
          w5 = nPrec5 + 8
          spec = &
          '(1x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4)' 
-	 !123 56 89012345 78 01234567 90 23456789 12 45678901 34 6789
-	 write (spec(5:6),'(i2.2)')   w1
-	 write (spec(8:9),'(i2.2)')   nPrec1
-	 write (spec(17:18),'(i2.2)') w2
-	 write (spec(20:21),'(i2.2)') nPrec2
-	 write (spec(29:30),'(i2.2)') w3
-	 write (spec(32:33),'(i2.2)') nPrec3
-	 write (spec(41:42),'(i2.2)') w4
-	 write (spec(44:45),'(i2.2)') nPrec4
-	 write (spec(52:54),'(i2.2)') w5
-	 write (spec(56:57),'(i2.2)') nPrec5
+	 !123 56 89012345 78 01234567 90 23456789 12 45678901 34 67890
+	 write (spec(6:7),'(i2.2)')   w1
+	 write (spec(9:10),'(i2.2)')   nPrec1
+	 write (spec(18:19),'(i2.2)') w2
+	 write (spec(21:22),'(i2.2)') nPrec2
+	 write (spec(30:31),'(i2.2)') w3
+	 write (spec(33:34),'(i2.2)') nPrec3
+	 write (spec(42:43),'(i2.2)') w4
+	 write (spec(45:46),'(i2.2)') nPrec4
+	 write (spec(54:55),'(i2.2)') w5
+	 write (spec(57:58),'(i2.2)') nPrec5
 	 sLen = w1 + w2 + w3 + w4 + w5 + 9
       end if
       return
@@ -380,17 +380,26 @@
       ' or press RETURN to select default values shown in parenthesis.'
       
       WRITE(*,*)
-      write (*,*) 'output using user-supplied precision ? (T/F)'
-      read  (*,*) bPrecision
+      
+9     write (*,'(A,$)') ' Write output using user-supplied precision? (T/F) '
+!      read  (*,*) bPrecision
+        READ(*,'(1A60)',ERR=24) STRING
+        IF(STRING(1:1) .EQ. '?') THEN
+          CALL HELP(9)
+          GOTO 9
+        ENDIF
+        L3 = 1
+        CALL GET_SUBSTR(STRING, L3, SUBSTR)
+        IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=9)bPrecision
       
       nPrec_location = -1  ! default value if not using precision
       nPrec_time     = -1  ! default value if not using precision
       nPrec_variable =  5  ! default value if not using precision
       
       if (bPrecision) then
-         write (*,*) 'enter precision for location values'
+         write (*,'(A,$)') ' Enter precision for location values: '
 	 read  (*,*) nPrec_location
-         write (*,*) 'enter precision for time     values'
+         write (*,'(A,$)') ' Enter precision for time values: '
 	 read  (*,*) nPrec_time
       end if
 !
@@ -1766,7 +1775,12 @@
 !
       WRITE(*,*)
 !
-      IF(N .EQ. 10)THEN
+      IF(N .EQ. 9)THEN
+        WRITE(*,*) &
+        ' If true, then user is asked for the number of digits of precision'
+        WRITE(*,*) &
+        ' for the location, time and variable.'
+      ELSEIF(N .EQ. 10)THEN
         WRITE(*,*) &
         ' Enter start time and end time for data retrieval.  If the'
         WRITE(*,*) &

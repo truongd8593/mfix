@@ -670,6 +670,7 @@ read delete_files
 
 #------------------------------------------------------------------------
 #
+# Debug version: in the next two lines change flags to compile_d and link_d
     FORT_FLAGS="$compile"
     LINK_FLAGS="$link"
 #
