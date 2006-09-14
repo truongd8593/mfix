@@ -33,6 +33,7 @@
       USE physprop
       USE run
       USE bc
+      USE scales
       USE indices
       USE funits 
       USE compar 
@@ -92,8 +93,8 @@
                         ELSE 
                            MW = MW_AVG 
                         ENDIF 
-                        VOLFLOW = BC_MASSFLOW_G(BCV)/EOSG(MW,BC_P_G(BCV),BC_T_G(&
-                           BCV)) 
+                        VOLFLOW = BC_MASSFLOW_G(BCV)/EOSG(MW,(BC_P_G(BCV)-P_REF), &
+			   BC_T_G(BCV))
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_OUTFLOW') THEN 
                            IF (BC_MASSFLOW_G(BCV) == ZERO) THEN 
