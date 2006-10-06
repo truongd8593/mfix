@@ -239,7 +239,7 @@
             HOR_G(IJK) = zero
 	    dHg = zero
 	    Nsp = 0
-	    OPEN(6,FILE='output.dat')
+	    OPEN(6,FILE='POST_Thermo.dat')
 	    write(6,'(A,TR10, A, TR10, A, TR18, A, TR12, A)') &
 	             'Phase', 'Species', 'Name', 'MW', 'h_formation (cal/mol)'
             DO N = 1, NMAX(0)
