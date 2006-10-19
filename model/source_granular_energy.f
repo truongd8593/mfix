@@ -100,7 +100,7 @@
 	  SOURCERHS = SOURCERHS
 	ENDIF
 !
-      ELSE ! no modifications done to the original KTGF
+      ELSE IF(SWITCH > ZERO .AND. RO_g0 /= ZERO) THEN ! no modifications done to the original KTGF
 !
         VSLIP = (U_S(IJK,M)-U_G(IJK))**2 + (V_S(IJK,M)-V_G(IJK))**2 + (W_S(IJK,M)&
            -W_G(IJK))**2 
@@ -168,7 +168,7 @@
       IF(SIMONIN .OR. AHMADI) THEN
         SOURCELHS = SOURCELHS +  3d0 *F_GS(IJK,M)*VOL(IJK)
 !
-      ELSE ! no modifications done to the original KTGF
+      ELSE IF(SWITCH > ZERO .AND. RO_g0 /= ZERO) THEN ! no modifications done to the original KTGF
 !
         SOURCELHS = SOURCELHS + SWITCH *3d0 *F_GS(IJK,M)*VOL(IJK)
       ENDIF
