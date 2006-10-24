@@ -1,23 +1,23 @@
 !     TO DO:
 !     p_star calculation should be based on the sum of volume fractions of
 !     close-packed solids.
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!     C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                         C
 !     Module name: CALC_P_star(EP_g, P_star, IER)                         C
 !     Purpose: Calculate P_star in cells where solids continuity is solvedC
-!     C
+!                                                                         C
 !     Author: M. Syamlal                                 Date: 21-AUG-96  C
 !     Reviewer:                                          Date:            C
-!     C
-!     C
+!                                                                         C
+!                                                                         C
 !     Literature/Document References:                                     C
-!     C
+!                                                                         C
 !     Variables referenced:                                               C
 !     Variables modified:                                                 C
-!     C
+!                                                                         C
 !     Local variables:                                                    C
-!     C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!                                                                         C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !     
       SUBROUTINE CALC_P_STAR(EP_G, P_STAR, IER) 
 !...  Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
@@ -90,12 +90,16 @@
 !       changed blend_start to 0.99*ep_star from 0.95*ep_star
 !       changed blend_end to 1.01*ep_star from 1.02*ep_star
 !       [ceaf 2006-03-31]
+!       added option for sigmoid function [sp 2006-10-24]
                  
 	    if (YU_STANDISH .OR. FEDORS_LANDEL) THEN
               EP_star_array(ijk) = calc_ep_star(ijk, ier)
-	      IF(BLENDING_STRESS) THEN
+	      IF(BLENDING_STRESS.AND.TANH_BLEND) THEN
                 ep_g_blend_start(ijk) = ep_star_array(ijk) * 0.99d0
                 ep_g_blend_end(ijk)   = ep_star_array(ijk) * 1.01d0
+              ELSE IF(BLENDING_STRESS.AND.SIGM_BLEND) THEN
+                ep_g_blend_start(ijk) = ep_star * 0.97d0
+                ep_g_blend_end(ijk) = ep_star * 1.01d0
               ELSE
                 ep_g_blend_start(ijk) = ep_star_array(ijk)
                 ep_g_blend_end(ijk)   = ep_star_array(ijk)
@@ -399,7 +403,7 @@
 !                                                                      C
 !  Author: S. Pannala                                 Date: 28-FEB-06  C
 !  Reviewer:                                          Date:            C
-!  Modified:                                          Date:            C
+!  Modified:                                          Date: 24-OCT-06  C
 !                                                                      C
 !                                                                      C
 !  Literature/Document References:                                     C
@@ -438,10 +442,14 @@
 !
 !                      Indices
       INTEGER          IJK
+!     Logical to see whether this is the first entry to this routine
+      LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 !     Blend Factor
-      Double Precision blend
+      Double Precision:: blend, blend_right
+!     Scale Factor
+      Double Precision, Save:: scale
 !     Midpoint
-      Double Precision ep_mid_point
+      Double Precision, Save:: ep_mid_point
 !
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
@@ -450,19 +458,41 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 
-      IF(EP_g(IJK) .LT. ep_g_blend_end(ijk).AND. EP_g(IJK) .GT. ep_g_blend_start(ijk)) THEN
-         ep_mid_point = (ep_g_blend_end(IJK)+ep_g_blend_start(IJK))/2.0d0
-         blend = tanh(2.0d0*pi*(ep_g(IJK)-ep_mid_point)/ &
-              (ep_g_blend_end(IJK)-ep_g_blend_start(IJK)))
-         blend = (blend+1.0d0)/2.0d0
-      ELSE IF(EP_g(IJK) .GE. ep_g_blend_end(ijk)) THEN
-         blend = 1.0d0
-      ELSE IF(EP_g(IJK) .LE. ep_g_blend_start(ijk)) THEN
-         blend = 0.0d0
-      ENDIF
+      IF(TANH_BLEND) then  ! Tan hyperbolic blending of stresses
 !
+         IF(EP_g(IJK) .LT. ep_g_blend_end(ijk).AND. EP_g(IJK) .GT. ep_g_blend_start(ijk)) THEN
+            ep_mid_point = (ep_g_blend_end(IJK)+ep_g_blend_start(IJK))/2.0d0
+            blend = tanh(2.0d0*pi*(ep_g(IJK)-ep_mid_point)/ &
+            (ep_g_blend_end(IJK)-ep_g_blend_start(IJK)))
+            blend = (blend+1.0d0)/2.0d0
+         ELSE IF(EP_g(IJK) .GE. ep_g_blend_end(ijk)) THEN
+            blend = 1.0d0
+         ELSE IF(EP_g(IJK) .LE. ep_g_blend_start(ijk)) THEN
+            blend = 0.0d0
+         ENDIF
+!
+      ELSEIF(SIGM_BLEND) then !  Truncated and Scaled Sigmoidal blending of stresses
+
+         IF(FIRST_PASS) THEN
+            blend_right =  1.0d0/(1+0.01d0**((ep_g_blend_end(IJK)-ep_star_array(IJK))&
+            /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
+            blend_right = (blend_right+1.0d0)/2.0d0
+            scale = 1.0d0/blend_right
+            write(*,*) 'Blending value at end and scaling factor', blend_right, scale
+            FIRST_PASS = .FALSE.
+         ENDIF
+
+         IF(EP_g(IJK) .LT. ep_g_blend_end(ijk)) THEN
+            blend =  scale/(1+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
+            /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
+         ELSE IF(EP_g(IJK) .GE. ep_g_blend_end(ijk)) THEN
+            blend = 1.0d0
+         ENDIF
+!
+      ENDIF 
+!     
       blend_function = blend
-!	
+!     
       RETURN  
       END function blend_function
 

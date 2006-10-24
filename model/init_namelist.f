@@ -138,6 +138,8 @@
  
 ! sp (02/08/2006)
       BLENDING_STRESS = .FALSE. 
+      TANH_BLEND      = .TRUE.
+      SIGM_BLEND      = .FALSE.
 ! end sp
  
 ! start loezos 

@@ -182,6 +182,10 @@
 !
       RETURN  
 !
+      IF (SIGM_BLEND) THEN
+         TANH_BLEND = .FALSE. ! Setting tanh blending to be false
+      ENDIF
+!
  1000 FORMAT(1X,/,1X,'MMAX        in  mfix.dat = ',I6,/,1X,&
          'DIMENSION_M in  param.inc  = ',I6,/) 
  1045 FORMAT(1X,/,1X,'NMAX is not specified for solids phase',I2) 

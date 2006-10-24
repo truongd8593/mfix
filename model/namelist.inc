@@ -20,7 +20,7 @@
              SCHAEFFER,&
 ! end sof
 ! blending switch
-             BLENDING_STRESS, &
+             BLENDING_STRESS, TANH_BLEND, SIGM_BLEND, &
 
 ! start peter 7/15
              SHEAR, V_sh,&

@@ -183,6 +183,9 @@
 !	               default set to .FALSE. do not blend
 !	               frictional/kinetic stresses
       LOGICAL	       BLENDING_STRESS
+! sp: added TANH_BLEND & SIGM_BLEND keyword (10/24/2006)
+      LOGICAL	       TANH_BLEND ! default set to true
+      LOGICAL	       SIGM_BLEND ! default set to false
 ! sp: end
 ! sof: added in case a user wants the code to automatically restart for DT < DT_MIN
       LOGICAL	       AUTO_RESTART
