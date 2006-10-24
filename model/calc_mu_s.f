@@ -1325,6 +1325,8 @@
                   trD_s2(IJK,M) = trD_s2(IJK,M) + D_s(I1,I2)*D_s(I1,I2)
  10            CONTINUE
  20         CONTINUE
+!            use this fact to prevent underflow during theta calculation
+             if(trD_s2(IJK,M) == zero)trD_s_C(IJK,M) = zero 
 !     
 !     Start definition of Relative Velocity
 !     
