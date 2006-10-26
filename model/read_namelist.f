@@ -79,6 +79,7 @@
       USE compar    
       USE parallel    
       USE discretelement
+      USE usr
       
       IMPLICIT NONE
 !-----------------------------------------------
