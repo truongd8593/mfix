@@ -44,6 +44,7 @@ post_mfix : \
     trace.mod \
     turb.mod \
     ur_facs.mod \
+    usr.mod \
     visc_g.mod \
     visc_s.mod \
     vshear.mod \
@@ -208,6 +209,7 @@ post_mfix : \
     trace_mod.$(OBJ_EXT) \
     turb_mod.$(OBJ_EXT) \
     ur_facs_mod.$(OBJ_EXT) \
+    usr_mod.$(OBJ_EXT) \
     visc_g_mod.$(OBJ_EXT) \
     visc_s_mod.$(OBJ_EXT) \
     vshear_mod.$(OBJ_EXT) \
@@ -483,6 +485,10 @@ ur_facs.mod : ../model/ur_facs_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/ur_facs_mod.f 
+usr.mod : ../model/usr_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/usr_mod.f 
 visc_g.mod : ../model/visc_g_mod.f \
             param.mod \
             param1.mod 
@@ -1000,6 +1006,7 @@ read_namelist.$(OBJ_EXT) : ../model/read_namelist.f \
             funits.mod \
             scales.mod \
             ur_facs.mod \
+            usr.mod \
             leqsol.mod \
             residual.mod \
             rxns.mod \
