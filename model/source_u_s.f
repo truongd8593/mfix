@@ -879,7 +879,8 @@
                IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE		     
 
                IJK = FUNIJK(I,J,K) 
-               IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
+               IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells 
+               IF (WALL_AT(EAST_OF(IJK))) CYCLE  !skip if wall cell normal to flow
                JM = JM1(J) 
                KM = KM1(K) 
                A_M(IJK,E,M) = ZERO 
