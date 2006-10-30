@@ -65,9 +65,9 @@
       INCLUDE 'ep_s2.inc'
 !
       IF (MOMENTUM_X_EQ(0) .AND. DISCRETE_ELEMENT) THEN
-!
-!$omp  parallel do private( I,IJK, IJKE, EPGA, EPSA, FoA0pF, FoA1pF), &
-!$omp&  schedule(static)
+!     
+!     $omp  parallel do private( I,IJK, IJKE, EPGA, EPSA, FoA0pF, FoA1pF), &
+!     $omp&  schedule(static)
          DO IJK = ijkstart3, ijkend3
             IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN
                D_E(IJK,0) = ZERO
@@ -81,7 +81,7 @@
                   IF (VXF_GS(IJK,1) > SMALL_NUMBER) THEN
                      FOA1PF = VXF_GS(IJK,1)/((-A_M(IJK,0,1))+VXF_GS(IJK,1))
                      D_E(IJK,0) = P_SCALE*AYZ(IJK)/((-A_M(IJK,0,0))-A_M(IJK,0,1&
-                        )*FOA1PF)
+                     )*FOA1PF)
                      D_E(IJK,1) = FOA1PF*D_E(IJK,0)
                   ELSE
                      IF ((-A_M(IJK,0,1)) > SMALL_NUMBER) THEN
@@ -89,17 +89,15 @@
                      ELSE
                         D_E(IJK,0) = ZERO
                      ENDIF
-                    D_E(IJK,1) = ZERO
+                     D_E(IJK,1) = ZERO
                   ENDIF
-               ELSE                              !Model A
-!                 MFIX convention: center coeff is negative
+               ELSE             !Model A
+!     MFIX convention: center coeff is negative
                   IF (VXF_GS(IJK,1) > SMALL_NUMBER) THEN
-                     FOA0PF = VXF_GS(IJK,1)/((-A_M(IJK,0,0))+VXF_GS(IJK,1))
-                     FOA1PF = VXF_GS(IJK,1)/((-A_M(IJK,0,1))+VXF_GS(IJK,1))
-                     D_E(IJK,0) = P_SCALE*AYZ(IJK)*(EPGA + EPSA*FOA1PF)/((-A_M(&
-                        IJK,0,0))-A_M(IJK,0,1)*FOA1PF)
-                     D_E(IJK,1) = P_SCALE*AYZ(IJK)*(EPSA + EPGA*FOA0PF)/((-A_M(&
-                        IJK,0,1))-A_M(IJK,0,0)*FOA0PF)
+!     changed by jinsun@iastate.edu
+!     since DES comes in as an explicit coupling only the center coefficient gets modigied
+                     D_E(IJK,0) = P_SCALE*AYZ(IJK)*EPGA /(-A_M(IJK,0,0) + vxf_gs(ijk,1))
+                     
                   ELSE
                      IF ((-A_M(IJK,0,0)) > SMALL_NUMBER) THEN
                         D_E(IJK,0) = P_SCALE*AYZ(IJK)*EPGA/(-A_M(IJK,0,0))
@@ -184,10 +182,10 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
-	IF (MOMENTUM_Y_EQ(0) .AND. DISCRETE_ELEMENT) THEN
-!
-!$omp  parallel do private( J, K, IJK, IJKN, EPGA, EPSA, FoA0pF, FoA1pF), &
-!$omp&  schedule(static)
+      IF (MOMENTUM_Y_EQ(0) .AND. DISCRETE_ELEMENT) THEN
+!     
+!     $omp  parallel do private( J, K, IJK, IJKN, EPGA, EPSA, FoA0pF, FoA1pF), &
+!     $omp&  schedule(static)
          DO IJK = ijkstart3, ijkend3
             IF (IP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN
                D_N(IJK,0) = ZERO
@@ -203,7 +201,7 @@
                   IF (VXF_GS(IJK,1) > SMALL_NUMBER) THEN
                      FOA1PF = VXF_GS(IJK,1)/((-A_M(IJK,0,1))+VXF_GS(IJK,1))
                      D_N(IJK,0) = P_SCALE*AXZ(IJK)/((-A_M(IJK,0,0))-A_M(IJK,0,1&
-                        )*FOA1PF)
+                     )*FOA1PF)
                      D_N(IJK,1) = FOA1PF*D_N(IJK,0)
                   ELSE
                      IF ((-A_M(IJK,0,1)) > SMALL_NUMBER) THEN
@@ -213,15 +211,13 @@
                      ENDIF
                      D_N(IJK,1) = ZERO
                   ENDIF
-               ELSE                              !Model A
-!                 MFIX convention: center coeff is negative
+               ELSE             !Model A
+!     MFIX convention: center coeff is negative
                   IF (VXF_GS(IJK,1) > SMALL_NUMBER) THEN
-                     FOA0PF = VXF_GS(IJK,1)/((-A_M(IJK,0,0))+VXF_GS(IJK,1))
-                     FOA1PF = VXF_GS(IJK,1)/((-A_M(IJK,0,1))+VXF_GS(IJK,1))
-                     D_N(IJK,0) = P_SCALE*AXZ(IJK)*(EPGA + EPSA*FOA1PF)/((-A_M(&
-                        IJK,0,0))-A_M(IJK,0,1)*FOA1PF)
-                     D_N(IJK,1) = P_SCALE*AXZ(IJK)*(EPSA + EPGA*FOA0PF)/((-A_M(&
-                        IJK,0,1))-A_M(IJK,0,0)*FOA0PF)
+!     changed by jinsun@iastate.edu
+!     since DES comes in as an explicit coupling only the center coefficient gets modigied
+                     D_N(IJK,0) = P_SCALE*AXZ(IJK)* EPGA /(-A_M(IJK,0,0) + Vxf_gs(ijk,1))
+                     
                   ELSE
                      IF ((-A_M(IJK,0,0)) > SMALL_NUMBER) THEN
                         D_N(IJK,0) = P_SCALE*AXZ(IJK)*EPGA/(-A_M(IJK,0,0))
@@ -306,10 +302,10 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
-	IF (MOMENTUM_Z_EQ(0) .AND. DISCRETE_ELEMENT) THEN
-!
-!$omp  parallel do private( J, K, IJK, IJKT, EPGA, EPSA, FoA0pF, FoA1pF), &
-!$omp&  schedule(static)
+      IF (MOMENTUM_Z_EQ(0) .AND. DISCRETE_ELEMENT) THEN
+!     
+!     $omp  parallel do private( J, K, IJK, IJKT, EPGA, EPSA, FoA0pF, FoA1pF), &
+!     $omp&  schedule(static)
          DO IJK = ijkstart3, ijkend3
             IF (IP_AT_T(IJK) .OR. MFLOW_AT_N(IJK)) THEN
                D_T(IJK,0) = ZERO
@@ -325,7 +321,7 @@
                   IF (VXF_GS(IJK,1) > SMALL_NUMBER) THEN
                      FOA1PF = VXF_GS(IJK,1)/((-A_M(IJK,0,1))+VXF_GS(IJK,1))
                      D_T(IJK,0) = P_SCALE*AXY(IJK)/((-A_M(IJK,0,0))-A_M(IJK,0,1&
-                        )*FOA1PF)
+                     )*FOA1PF)
                      D_T(IJK,1) = FOA1PF*D_T(IJK,0)
                   ELSE
                      IF ((-A_M(IJK,0,1)) > SMALL_NUMBER) THEN
@@ -335,15 +331,13 @@
                      ENDIF
                      D_T(IJK,1) = ZERO
                   ENDIF
-               ELSE                              !Model A
-!                 MFIX convention: center coeff is negative
+               ELSE             !Model A
+!     MFIX convention: center coeff is negative
                   IF (VXF_GS(IJK,1) > SMALL_NUMBER) THEN
-                     FOA0PF = VXF_GS(IJK,1)/((-A_M(IJK,0,0))+VXF_GS(IJK,1))
-                     FOA1PF = VXF_GS(IJK,1)/((-A_M(IJK,0,1))+VXF_GS(IJK,1))
-                     D_T(IJK,0) = P_SCALE*AXY(IJK)*(EPGA + EPSA*FOA1PF)/((-A_M(&
-                        IJK,0,0))-A_M(IJK,0,1)*FOA1PF)
-                     D_T(IJK,1) = P_SCALE*AXY(IJK)*(EPSA + EPGA*FOA0PF)/((-A_M(&
-                        IJK,0,1))-A_M(IJK,0,0)*FOA0PF)
+!     changed by jinsun@iastate.edu
+!     since DES comes in as an explicit coupling only the center coefficient gets modigied
+                     D_T(IJK,0) = P_SCALE*AXY(IJK)* EPGA /(-A_M(IJK,0,0) + vxf_gs(ijk,1))
+                     
                   ELSE
                      IF ((-A_M(IJK,0,0)) > SMALL_NUMBER) THEN
                         D_T(IJK,0) = P_SCALE*AXY(IJK)*EPGA/(-A_M(IJK,0,0))

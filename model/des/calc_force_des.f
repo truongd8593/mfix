@@ -169,7 +169,7 @@
                            CO = 1
                            PV(LL,NI) = 1
                            CALL CFNORMAL(LL, I, II, NORMAL)
-                           CALL CFRELVEL(LL, I, V_REL_TRANS, TANGENT)
+                           CALL CFRELVEL(LL, I, V_REL_TRANS)
                            CALL CFVRN(V_REL_TRANS_NORM, V_REL_TRANS, NORMAL)
                            CALL CFSLIPVEL(LL, I, V_SLIP, V_REL_TRANS, V_REL_TRANS_NORM, NORMAL)
                            CALL CFTANGENT(V_SLIP, TANGENT, NORMAL)
@@ -200,7 +200,7 @@
                        PN(LL,NI) = I
                        PV(LL,NI) = 1
                        CALL CFNORMAL(LL, I, II, NORMAL)
-                       CALL CFRELVEL(LL, I, V_REL_TRANS, TANGENT)
+                       CALL CFRELVEL(LL, I, V_REL_TRANS)
                        CALL CFVRN(V_REL_TRANS_NORM, V_REL_TRANS, NORMAL)
                        CALL CFSLIPVEL(LL, I, V_SLIP, V_REL_TRANS, V_REL_TRANS_NORM, NORMAL)
                        CALL CFTANGENT(V_SLIP, TANGENT, NORMAL)

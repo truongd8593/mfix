@@ -28,9 +28,8 @@
 
       V_ROT(:) = ZERO
 
-      OMEGA_SUM(:) = OMEGA_NEW(L,:) + OMEGA_NEW(II,:)
+      OMEGA_SUM(:) = OMEGA_NEW(L,:)*DES_RADIUS(L)+ OMEGA_NEW(II,:)*DES_RADIUS(II)
       CALL DES_CROSSPRDCT(V_ROT, OMEGA_SUM, NORM)
-      V_ROT(:) =DES_RADIUS(L)*V_ROT(:)
  
       VSLIP(:) = VRELTRANS(:) - VRN*NORM(:) + V_ROT(:)      
   
