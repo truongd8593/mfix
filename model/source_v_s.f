@@ -889,7 +889,6 @@
 	    
                IJK = FUNIJK(I,J,K) 
                IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
-               IF (WALL_AT(NORTH_OF(IJK))) CYCLE  !skip if wall cell normal to flow
                IM = IM1(I) 
                KM = KM1(K) 
                A_M(IJK,E,M) = ZERO 
@@ -901,6 +900,7 @@
                A_M(IJK,0,M) = -ONE 
                B_M(IJK,M) = ZERO 
                IF (FLUID_AT(EAST_OF(IJK))) THEN 
+                  IF (WALL_AT(NORTH_OF(EAST_OF(IJK)))) CYCLE
                   IF (EP_S(EAST_OF(IJK),M) <= DIL_EP_S) THEN 
                      A_M(IJK,E,M) = -ONE 
                   ELSE 
@@ -930,6 +930,7 @@
                   ENDIF 
 !
                ELSE IF (FLUID_AT(WEST_OF(IJK))) THEN 
+                  IF (WALL_AT(NORTH_OF(WEST_OF(IJK)))) CYCLE
                   IF (EP_S(WEST_OF(IJK),M) <= DIL_EP_S) THEN 
                      A_M(IJK,W,M) = -ONE 
                   ELSE 
@@ -958,6 +959,7 @@
                   ENDIF 
 !
                ELSE IF (FLUID_AT(TOP_OF(IJK))) THEN 
+                  IF (WALL_AT(NORTH_OF(TOP_OF(IJK)))) CYCLE
                   IF (EP_S(TOP_OF(IJK),M) <= DIL_EP_S) THEN 
                      A_M(IJK,T,M) = -ONE 
                   ELSE 
@@ -985,6 +987,7 @@
                   ENDIF 
 !
                ELSE IF (FLUID_AT(BOTTOM_OF(IJK))) THEN 
+                  IF (WALL_AT(NORTH_OF(BOTTOM_OF(IJK)))) CYCLE
                   IF (EP_S(BOTTOM_OF(IJK),M) <= DIL_EP_S) THEN 
                      A_M(IJK,B,M) = -ONE 
                   ELSE 
