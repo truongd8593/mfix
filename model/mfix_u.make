@@ -378,6 +378,8 @@ mfix.exe : \
     particles_in_cell.$(OBJ_EXT) \
     periodic_wall_calc_force_des.$(OBJ_EXT) \
     quadtree.$(OBJ_EXT) \
+    write_des_data.$(OBJ_EXT) \
+    write_des_restart.$(OBJ_EXT) \
     gaussj.$(OBJ_EXT) \
     odeint.$(OBJ_EXT) \
     rkck.$(OBJ_EXT) \
@@ -755,6 +757,8 @@ mfix.exe : \
     particles_in_cell.$(OBJ_EXT) \
     periodic_wall_calc_force_des.$(OBJ_EXT) \
     quadtree.$(OBJ_EXT) \
+    write_des_data.$(OBJ_EXT) \
+    write_des_restart.$(OBJ_EXT) \
     compar_mod.$(OBJ_EXT) \
     dbg_util_mod.$(OBJ_EXT) \
     debug_mod.$(OBJ_EXT) \
@@ -2332,6 +2336,7 @@ flow_to_vel.$(OBJ_EXT) : flow_to_vel.f \
             PHYSPROP.mod \
             RUN.mod \
             BC.mod \
+            SCALES.mod \
             INDICES.mod \
             FUNITS.mod \
             COMPAR.mod 
@@ -4598,13 +4603,13 @@ nsquare.$(OBJ_EXT) : ./des/nsquare.f \
             DISCRETELEMENT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/nsquare.f 
 octree.$(OBJ_EXT) : ./des/octree.f \
+            RUN.mod \
             PARAM1.mod \
             CONSTANT.mod \
             DISCRETELEMENT.mod \
             PARAM.mod \
             PARALLEL.mod \
             FLDVAR.mod \
-            RUN.mod \
             GEOMETRY.mod \
             MATRIX.mod \
             INDICES.mod \
@@ -4652,6 +4657,14 @@ quadtree.$(OBJ_EXT) : ./des/quadtree.f \
             DRAG.mod \
             COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/quadtree.f 
+write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
+            PARAM1.mod \
+            DISCRETELEMENT.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/write_des_data.f 
+write_des_restart.$(OBJ_EXT) : ./des/write_des_restart.f \
+            PARAM1.mod \
+            DISCRETELEMENT.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/write_des_restart.f 
 gaussj.$(OBJ_EXT) : ./dqmom/gaussj.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/gaussj.f 
 odeint.$(OBJ_EXT) : ./dqmom/odeint.f 

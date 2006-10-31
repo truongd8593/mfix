@@ -59,6 +59,9 @@
 !   Output file count
       INTEGER IFI
 !
+!   Restart
+      DOUBLE PRECISION DESRESDT
+!
 !    
 ! DES Logicals
 !
@@ -94,6 +97,9 @@
 !
 !   Drag      
       LOGICAL TSUJI_DRAG
+!
+!   Print DES Data
+      LOGICAL PRINT_DES_DATA 
 !
 !
 !   Allocatable arrays
