@@ -4594,7 +4594,8 @@ make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             geometry.mod \
             funits.mod \
             compar.mod \
-            discretelement.mod 
+            discretelement.mod \
+            run.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/make_arrays_des.f 
 neighbour.$(OBJ_EXT) : ./des/neighbour.f \
             param1.mod \
