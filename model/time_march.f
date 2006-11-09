@@ -281,7 +281,7 @@
 !     DES 
 !     Jay Boyalakuntla
       IF(DISCRETE_ELEMENT) THEN
-         CALL MAKE_ARRAYS_DES(PARTICLES)
+         CALL MAKE_ARRAYS_DES
       END IF
 !     DES end 
 !     

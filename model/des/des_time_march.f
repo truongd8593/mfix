@@ -4,7 +4,7 @@
 !     Purpose: Called in time_march.f to do DES calcs                     C
 !                                                                         C
 !     Author: Jay Boyalakuntla                           Date: 21-Jun-04  C
-!     Reviewer:                                          Date:            C
+!     Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C
 !                                                                         C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
@@ -51,7 +51,7 @@
       LOGICAL ALREADY_EXISTS
       CHARACTER*20 FILENAME
 
-      IF(TIME.EQ.ZERO) THEN 
+      IF(TIME.EQ.ZERO.AND.RUN_TYPE=='NEW') THEN 
 
          DESRESDT = 0.0
          NSN = 0
@@ -63,7 +63,7 @@
 
          DES_SPX_TIME =  (INT((TIME + 0.1*DT)/SPX_DT(1))+1)*SPX_DT(1)
          PRINT *,'SPX TIME', SPX_DT(1), DES_SPX_TIME
-         CALL CFASSIGN(PARTICLES)
+         CALL CFASSIGN
 
 !     !COHESION INITIALIZE
          IF(USE_COHESION)THEN
@@ -86,7 +86,7 @@
 !     Neighbor search     
                NSN = NSN + 1    
                IF(DO_NSEARCH.OR.(NSN.EQ.NEIGHBOR_SEARCH_N)) THEN 
-                  CALL NEIGHBOUR(PARTICLES)
+                  CALL NEIGHBOUR
                   DO_NSEARCH = .FALSE.
                   NSN = 0
                END IF
@@ -100,7 +100,7 @@
                END IF 
             END DO
             DES_CONTINUUM_COUPLED = .TRUE.
-            CALL PARTICLES_IN_CELL(PARTICLES)
+            CALL PARTICLES_IN_CELL
             RETURN              ! exit subroutine
          END IF
       END IF
@@ -120,7 +120,8 @@
          FACTOR = CEILING(real(TSTOP/DTSOLID))  
       END IF
       
-      PRINT *,"Discrete Element Simulation is being called", FACTOR," times."
+      PRINT *,"Discrete Element Simulation is being called"&
+             , FACTOR," times."
 
       IF(NEIGHBOR_SEARCH_N.GT.FACTOR) NEIGHBOR_SEARCH_N = FACTOR
 
@@ -140,7 +141,7 @@
 !     Neighbor search     
          NSN = NSN + 1    
          IF(DO_NSEARCH.OR.(NSN.EQ.NEIGHBOR_SEARCH_N)) THEN 
-            CALL NEIGHBOUR(PARTICLES)
+            CALL NEIGHBOUR
             DO_NSEARCH = .FALSE.
                NSN = 0
             END IF
@@ -157,7 +158,7 @@
 !     Write Restart
             DESRESDT = DESRESDT + DTSOLID
             IF(DESRESDT.EQ.RES_DT) THEN
-               CALL WRITE_DES_RESTART(PARTICLES)
+               CALL WRITE_DES_RESTART
                DESRESDT = 0.0d0
             END IF
 

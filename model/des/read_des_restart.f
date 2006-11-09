@@ -1,20 +1,20 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: WRITE_DES_RESTART(PARTS)                               C
-!  Purpose: Writing DES data for restart                               C
+!  Module name: READ_DES_RESTART                                       C
+!  Purpose: Reading DES data for restart                               C
 !                                                                      C
 !                                                                      C
-!  Author: Jay Boyalakuntla                           Date: 26-Jul-06  C
-!  Reviewer:Sreekanth Pannala                         Date: 31-Oct-06  C
+!  Author: Sreekanth Pannala                          Date: 09-Nov-06  C
+!  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE WRITE_DES_RESTART(PARTS)
+      SUBROUTINE READ_DES_RESTART
 
       USE param1      
       USE discretelement
       IMPLICIT NONE
 
-      INTEGER LL, PARTS, K 
+      INTEGER LL, K 
 
 !---------------------------------------------------------------------------
 
@@ -33,29 +33,29 @@
       REWIND(906)
 
       DO LL = LL, PARTICLES
-         WRITE (901,*) (DES_POS_NEW(LL,K),K=1,DIMN)
+         READ (901,*) (DES_POS_OLD(LL,K),K=1,DIMN)
       END DO
 
       DO LL = 1, PARTICLES
-         WRITE (902,*) (DES_VEL_NEW(LL,K),K=1,DIMN)
+         READ (902,*) (DES_VEL_OLD(LL,K),K=1,DIMN)
       END DO
 
       DO LL = 1, PARTICLES
-         WRITE (903,*) (NEIGHBOURS(LL,K),K=1,MAXNEIGHBORS)
+         READ (903,*) (NEIGHBOURS(LL,K),K=1,MAXNEIGHBORS)
       END DO
 
       DO LL = 1, PARTICLES
-         WRITE (904,*) (FC(LL,K),K=1,DIMN)
-      END DO      
-
-      DO LL = 1, PARTICLES
-         WRITE (905,*) (OMEGA_NEW(LL,K),K=1,DIMN)
+         READ (904,*) (FC(LL,K),K=1,DIMN)
       END DO
 
       DO LL = 1, PARTICLES
-         WRITE (906,*) (TOW(LL,K),K=1,DIMN)
+         READ (905,*) (OMEGA_OLD(LL,K),K=1,DIMN)
       END DO
 
-      END SUBROUTINE WRITE_DES_RESTART 
+      DO LL = 1, PARTICLES
+         READ (906,*) (TOW(LL,K),K=1,DIMN)
+      END DO
+
+      END SUBROUTINE READ_DES_RESTART 
 
 

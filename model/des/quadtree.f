@@ -1,14 +1,14 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: QUADTREE(PARTS)                                        C
+!  Module name: QUADTREE                                               C
 !  Purpose: To find particle neighbors in 2D using quadtree method     C
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer:                                          Date:            C
+!  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C  
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE QUADTREE(PARTS)
+      SUBROUTINE QUADTREE
 
       USE run
       USE param1
@@ -16,7 +16,7 @@
       USE discretelement
       IMPLICIT NONE
 
-      INTEGER I, J, K, TC1, TC2, TCR, TCM, PARTS
+      INTEGER I, J, K, TC1, TC2, TCR, TCM
       INTEGER PQ, PQM(10), PQXL, PQXU, PQYL, PQYU
       DOUBLE PRECISION CT
 
@@ -26,35 +26,35 @@
          END IF
       END IF
 
-	 IF(INQC.EQ.INIT_QUAD_COUNT) THEN
+      IF(INQC.EQ.INIT_QUAD_COUNT) THEN
 
-            CALL INIT_QUAD(PARTICLES)
-            
-      	    DO I = 1, PARTS
-               PQ = 1
-               CALL ADD_QUAD(I,PQ)
-            END DO
+         CALL INIT_QUAD
+         
+         DO I = 1, PARTICLES
+            PQ = 1
+            CALL ADD_QUAD(I,PQ)
+         END DO
 
-            DO I = 1, PARTS
-               J = 1
-               CALL QUAD_NEIGHBOURS(I, J)
-            END DO
+         DO I = 1, PARTICLES
+            J = 1
+            CALL QUAD_NEIGHBOURS(I, J)
+         END DO
 
-            INQC = INQC - 1
-            IF(INQC.EQ.0) INQC = INIT_QUAD_COUNT 
+         INQC = INQC - 1
+         IF(INQC.EQ.0) INQC = INIT_QUAD_COUNT 
 
-         ELSE
+      ELSE
 
-            DO I = 1, PARTS
-               J = 1
-               PQ = PQUAD(I)
-! Removing a moved particle from its old quad 
-               IF(.NOT.((DES_POS_NEW(I,1).GE.CQUAD(PQ,1)).AND.&
-                 (DES_POS_NEW(I,1).LT.CQUAD(PQ,3)).AND.& 
-                 (DES_POS_NEW(I,2).GE.CQUAD(PQ,2)).AND.&
-	         (DES_POS_NEW(I,2).LT.CQUAD(PQ,4)))) THEN
-               CALL REMOVE_PARTICLE(I,PQ)
-! Placing the particle in a new quad
+         DO I = 1, PARTICLES
+            J = 1
+            PQ = PQUAD(I)
+!     Removing a moved particle from its old quad 
+            IF(.NOT.((DES_POS_NEW(I,1).GE.CQUAD(PQ,1)).AND.&
+            (DES_POS_NEW(I,1).LT.CQUAD(PQ,3)).AND.& 
+            (DES_POS_NEW(I,2).GE.CQUAD(PQ,2)).AND.&
+            (DES_POS_NEW(I,2).LT.CQUAD(PQ,4)))) THEN
+            CALL REMOVE_PARTICLE(I,PQ)
+!     Placing the particle in a new quad
             IF(QLM.LE.2) THEN
                PQ = 1
                GO TO 40
@@ -71,72 +71,72 @@
                      ELSE
                         PQ = PQM(J) 
                         IF((DES_POS_NEW(I,1).GE.CQUAD(PQ,1)).AND.&
-                           (DES_POS_NEW(I,1).LT.CQUAD(PQ,3)).AND.&
-                           (DES_POS_NEW(I,2).GE.CQUAD(PQ,2)).AND.&
-                           (DES_POS_NEW(I,2).LT.CQUAD(PQ,4))) THEN
-                           PQ = LQUAD(PQM(J),6)
-                           GO TO 40    
-                        END IF
+                        (DES_POS_NEW(I,1).LT.CQUAD(PQ,3)).AND.&
+                        (DES_POS_NEW(I,2).GE.CQUAD(PQ,2)).AND.&
+                        (DES_POS_NEW(I,2).LT.CQUAD(PQ,4))) THEN
+                        PQ = LQUAD(PQM(J),6)
+                        GO TO 40    
                      END IF
-                  END DO
-                  IF(J.GT.QLM) PQ = 1
-               END IF
+                  END IF
+               END DO
+               IF(J.GT.QLM) PQ = 1
             END IF
- 40   CONTINUE
-               CALL ADD_QUAD(I,PQ)
-               END IF
-            END DO
-
-! Neighbor search
-            DO I = 1, PARTS
-               J = 1
-             IF(QLN.LE.2) THEN
-               PQ = 1
-               GO TO 50
-             ELSE
-               PQM(1) = PQUAD(I)
-               IF(PQM(1).EQ.1) THEN
-                  GO TO 50
-               ELSE
-                  DO J = 2, QLN  
-                     PQM(J) = LQUAD(PQM(J-1),6)
-                     IF(PQM(J).EQ.1) THEN
-                        PQ = 1
-                        GO TO 50
-                     ELSE
-                        PQ = PQM(J) 
-                        PQXL = CQUAD(PQ,1) + 2.1D0 * DES_RADIUS(I)
-                        PQXU = CQUAD(PQ,3) - 2.1D0 * DES_RADIUS(I)
-                        PQYL = CQUAD(PQ,2) + 2.1D0 * DES_RADIUS(I)
-                        PQYU = CQUAD(PQ,4) - 2.1D0 * DES_RADIUS(I)
-
-                        IF((DES_POS_NEW(I,1).GE.PQXL).AND.&
-                           (DES_POS_NEW(I,1).LT.PQXU).AND.&
-                           (DES_POS_NEW(I,2).GE.PQYL).AND.&
-                           (DES_POS_NEW(I,2).LT.PQYU)) THEN
-                           GO TO 50    
-                        END IF
-                     END IF
-                  END DO
-                  IF(J.GT.QLN) PQ = 1
-               END IF
-             END IF
- 50   CONTINUE
-               CALL QUAD_NEIGHBOURS(I, PQ)
-            END DO
-	
-	    INQC = INQC - 1		
-            IF(INQC.EQ.0) INQC = INIT_QUAD_COUNT
-
          END IF
-    
+ 40      CONTINUE
+         CALL ADD_QUAD(I,PQ)
+      END IF
+      END DO
+
+!     Neighbor search
+      DO I = 1, PARTICLES
+         J = 1
+         IF(QLN.LE.2) THEN
+            PQ = 1
+            GO TO 50
+         ELSE
+            PQM(1) = PQUAD(I)
+            IF(PQM(1).EQ.1) THEN
+               GO TO 50
+            ELSE
+               DO J = 2, QLN  
+                  PQM(J) = LQUAD(PQM(J-1),6)
+                  IF(PQM(J).EQ.1) THEN
+                     PQ = 1
+                     GO TO 50
+                  ELSE
+                     PQ = PQM(J) 
+                     PQXL = CQUAD(PQ,1) + 2.1D0 * DES_RADIUS(I)
+                     PQXU = CQUAD(PQ,3) - 2.1D0 * DES_RADIUS(I)
+                     PQYL = CQUAD(PQ,2) + 2.1D0 * DES_RADIUS(I)
+                     PQYU = CQUAD(PQ,4) - 2.1D0 * DES_RADIUS(I)
+
+                     IF((DES_POS_NEW(I,1).GE.PQXL).AND.&
+                     (DES_POS_NEW(I,1).LT.PQXU).AND.&
+                     (DES_POS_NEW(I,2).GE.PQYL).AND.&
+                     (DES_POS_NEW(I,2).LT.PQYU)) THEN
+                     GO TO 50    
+                  END IF
+               END IF
+            END DO
+            IF(J.GT.QLN) PQ = 1
+         END IF
+      END IF
+ 50   CONTINUE
+      CALL QUAD_NEIGHBOURS(I, PQ)
+      END DO
+      
+      INQC = INQC - 1		
+      IF(INQC.EQ.0) INQC = INIT_QUAD_COUNT
+
+      END IF
+      
       RETURN
       END SUBROUTINE QUADTREE 
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: INIT_QUAD(PARTS)                                       C
+!  Module name: INIT_QUAD                                              C
 !  Purpose: Initialize arrays for quadtree search                      C
 !                                                                      C
 !                                                                      C
@@ -144,7 +144,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE INIT_QUAD(PARTS)
+      SUBROUTINE INIT_QUAD
 
       USE discretelement
       USE param
@@ -161,10 +161,10 @@
       USE compar
       IMPLICIT NONE
 
-      INTEGER I, J, PARTS
+      INTEGER I, J
       DOUBLE PRECISION A, OMEGA, OOMEGA2, ASINOMEGAT, BOXLIMIT
 
-! Vibrated bottom wall 
+!     Vibrated bottom wall 
       IF(DES_F.NE.ZERO) THEN
          A = ZERO 
          OMEGA = ZERO
@@ -173,7 +173,7 @@
          OOMEGA2 = ONE/(OMEGA**2)
          A = DES_GAMMA*GRAV(2)*OOMEGA2
       END IF
-! End - Bottom wall vibration calculations 
+!     End - Bottom wall vibration calculations 
       
       
       DO I = 1, MAXQUADS
@@ -199,7 +199,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: REMOVE_PARTICLE(II,PQD)                                  C
+!  Module name: REMOVE_PARTICLE(II,PQD)                                C
 !  Purpose: To move a particle from its quad                           C
 !                                                                      C
 !                                                                      C
@@ -215,26 +215,26 @@
       
       INTEGER II, PQD, J, K
 
-       LQUAD(PQD,7) =  LQUAD(PQD,7) - 1
+      LQUAD(PQD,7) =  LQUAD(PQD,7) - 1
 
-       DO J = 1, 4 
-          IF(LQUAD(PQD,J).EQ.II) THEN
-             IF(J.NE.4) THEN
-                DO K = J, 3
-                   LQUAD(PQD,K) = LQUAD(PQD,K+1) 
-                END DO
-             ELSE
-                LQUAD(PQD,J) = 0
-             END IF
-          END IF
-       END DO
+      DO J = 1, 4 
+         IF(LQUAD(PQD,J).EQ.II) THEN
+            IF(J.NE.4) THEN
+               DO K = J, 3
+                  LQUAD(PQD,K) = LQUAD(PQD,K+1) 
+               END DO
+            ELSE
+               LQUAD(PQD,J) = 0
+            END IF
+         END IF
+      END DO
 
       RETURN
       END SUBROUTINE REMOVE_PARTICLE 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: ADD_QUAD(II,IQS)                                           C
+!  Module name: ADD_QUAD(II,IQS)                                       C
 !  Purpose: To find the 'quad' for the particle                        C
 !                                                                      C
 !                                                                      C
@@ -253,17 +253,17 @@
 
       IFOUND = 0
  10   CONTINUE
-         CALL FIND_QUAD(II, IQS)
-         J = LQUAD(IQS,7)
-         IF(J.EQ.4) THEN
-	    CALL SPLIT_QUAD(IQS)
-         ELSE IF(J.LT.0) THEN
-            PRINT *,'ERROR IN SPLIT_QUAD'
-         ELSE 
-            LQUAD(IQS,7) = J+1
-            LQUAD(IQS,J+1) = II
-            IFOUND = 1
-         END IF
+      CALL FIND_QUAD(II, IQS)
+      J = LQUAD(IQS,7)
+      IF(J.EQ.4) THEN
+         CALL SPLIT_QUAD(IQS)
+      ELSE IF(J.LT.0) THEN
+         PRINT *,'ERROR IN SPLIT_QUAD'
+      ELSE 
+         LQUAD(IQS,7) = J+1
+         LQUAD(IQS,J+1) = II
+         IFOUND = 1
+      END IF
       IF(IFOUND.EQ.0) GO TO 10 
       RETURN
       END SUBROUTINE ADD_QUAD 
@@ -271,108 +271,108 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-	SUBROUTINE FIND_QUAD(I,Q)
-  
-        USE param1
-	USE discretelement
-        IMPLICIT NONE
-        
-	INTEGER I, Q, I_F, IC, IX, IY, NC
+      SUBROUTINE FIND_QUAD(I,Q)
+      
+      USE param1
+      USE discretelement
+      IMPLICIT NONE
+      
+      INTEGER I, Q, I_F, IC, IX, IY, NC
 
 
-	I_F = 0
- 20     CONTINUE
-	   IF(LQUAD(Q,7).GE.0) THEN
- 	     I_F = 1
-           ELSE
-	     IC = LQUAD(Q,1)
-	     IF(DES_POS_NEW(I,1).GE.CQUAD(IC,3)) THEN
-		IX = 1
-	     ELSE 
-		IX = 0
-	     END IF
-             IF(DES_POS_NEW(I,2).GE.CQUAD(IC,4)) THEN
-		IY = 1
-	     ELSE
-                IY = 0
-             END IF
-	     NC = IX + 2*IY
-	     Q = IC + NC
-           END IF
-	IF(I_F.EQ.0) GO TO 20 
-        PQUAD(I) = Q
+      I_F = 0
+ 20   CONTINUE
+      IF(LQUAD(Q,7).GE.0) THEN
+         I_F = 1
+      ELSE
+         IC = LQUAD(Q,1)
+         IF(DES_POS_NEW(I,1).GE.CQUAD(IC,3)) THEN
+            IX = 1
+         ELSE 
+            IX = 0
+         END IF
+         IF(DES_POS_NEW(I,2).GE.CQUAD(IC,4)) THEN
+            IY = 1
+         ELSE
+            IY = 0
+         END IF
+         NC = IX + 2*IY
+         Q = IC + NC
+      END IF
+      IF(I_F.EQ.0) GO TO 20 
+      PQUAD(I) = Q
 
-	RETURN
-	END SUBROUTINE FIND_QUAD
+      RETURN
+      END SUBROUTINE FIND_QUAD
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C           
 
-	SUBROUTINE SPLIT_QUAD(Q)	
-        
-        USE param1   
-	USE discretelement
-        IMPLICIT NONE
-        
-	INTEGER Q
-	INTEGER I_FQ, J, K, ORPHANS(4), NC
-	DOUBLE PRECISION XL, YL, XU, YU, XMID, YMID
+      SUBROUTINE SPLIT_QUAD(Q)	
+      
+      USE param1   
+      USE discretelement
+      IMPLICIT NONE
+      
+      INTEGER Q
+      INTEGER I_FQ, J, K, ORPHANS(4), NC
+      DOUBLE PRECISION XL, YL, XU, YU, XMID, YMID
 
-	LQUAD(Q,7) = -1
-	DO J = 1, 4
-	   ORPHANS(J) = LQUAD(Q,J)
-	   LQUAD(Q,J) = NQUAD + J
-	   LQUAD(NQUAD+J,6) = Q
-	   LQUAD(NQUAD+J,5) = J
-	END DO
-	XL = CQUAD(Q,1)
-	YL = CQUAD(Q,2)
-	XU = CQUAD(Q,3)
-	YU = CQUAD(Q,4) 
-	XMID = (XU-XL)/2
-	YMID = (YU-YL)/2
+      LQUAD(Q,7) = -1
+      DO J = 1, 4
+         ORPHANS(J) = LQUAD(Q,J)
+         LQUAD(Q,J) = NQUAD + J
+         LQUAD(NQUAD+J,6) = Q
+         LQUAD(NQUAD+J,5) = J
+      END DO
+      XL = CQUAD(Q,1)
+      YL = CQUAD(Q,2)
+      XU = CQUAD(Q,3)
+      YU = CQUAD(Q,4) 
+      XMID = (XU-XL)/2
+      YMID = (YU-YL)/2
 
-        CQUAD(NQUAD+1,1) = XL
-	CQUAD(NQUAD+1,2) = YL
-	CQUAD(NQUAD+1,3) = XL+XMID
-	CQUAD(NQUAD+1,4) = YL+YMID
+      CQUAD(NQUAD+1,1) = XL
+      CQUAD(NQUAD+1,2) = YL
+      CQUAD(NQUAD+1,3) = XL+XMID
+      CQUAD(NQUAD+1,4) = YL+YMID
 
-        CQUAD(NQUAD+2,1) = XL+XMID	
-	CQUAD(NQUAD+2,2) = YL
-	CQUAD(NQUAD+2,3) = XU
-	CQUAD(NQUAD+2,4) = YL+YMID
+      CQUAD(NQUAD+2,1) = XL+XMID	
+      CQUAD(NQUAD+2,2) = YL
+      CQUAD(NQUAD+2,3) = XU
+      CQUAD(NQUAD+2,4) = YL+YMID
 
-        CQUAD(NQUAD+3,1) = XL
-	CQUAD(NQUAD+3,2) = YL+YMID
-	CQUAD(NQUAD+3,3) = XL+XMID
-	CQUAD(NQUAD+3,4) = YU
+      CQUAD(NQUAD+3,1) = XL
+      CQUAD(NQUAD+3,2) = YL+YMID
+      CQUAD(NQUAD+3,3) = XL+XMID
+      CQUAD(NQUAD+3,4) = YU
 
-        CQUAD(NQUAD+4,1) = XL+XMID
-	CQUAD(NQUAD+4,2) = YL+YMID
-	CQUAD(NQUAD+4,3) = XU
-	CQUAD(NQUAD+4,4) = YU
-	NQUAD = NQUAD +4
+      CQUAD(NQUAD+4,1) = XL+XMID
+      CQUAD(NQUAD+4,2) = YL+YMID
+      CQUAD(NQUAD+4,3) = XU
+      CQUAD(NQUAD+4,4) = YU
+      NQUAD = NQUAD +4
 
-	DO J = 1, 4
-	   I_FQ = Q
-	   K = ORPHANS(J)
-	   CALL FIND_QUAD(K,I_FQ) 
-	   NC = LQUAD(I_FQ,7)
-	   LQUAD(I_FQ,7) = NC+1
-	   LQUAD(I_FQ,NC+1) = K 
-	END DO
+      DO J = 1, 4
+         I_FQ = Q
+         K = ORPHANS(J)
+         CALL FIND_QUAD(K,I_FQ) 
+         NC = LQUAD(I_FQ,7)
+         LQUAD(I_FQ,7) = NC+1
+         LQUAD(I_FQ,NC+1) = K 
+      END DO
 
-	IF(I_FQ.GT.MAXQUADS-100) THEN 
-           PRINT *,'I_FQ.GT.MAXQUADS. CALLING REARRANGE'
-           CALL REARRANGE_QUADTREE(I_FQ) 
-        END IF
+      IF(I_FQ.GT.MAXQUADS-100) THEN 
+         PRINT *,'I_FQ.GT.MAXQUADS. CALLING REARRANGE'
+         CALL REARRANGE_QUADTREE(I_FQ) 
+      END IF
 
-        IF(I_FQ.GT.MAXQUADS-100) THEN
-          PRINT *,'QUADTREE: NQUADS GREATER THAN MAXQUADS SPECIFIED', I_FQ
-	  STOP
-	END IF
+      IF(I_FQ.GT.MAXQUADS-100) THEN
+         PRINT *,'QUADTREE: NQUADS GREATER THAN MAXQUADS SPECIFIED', I_FQ
+         STOP
+      END IF
 
-	RETURN
-	END SUBROUTINE SPLIT_QUAD
+      RETURN
+      END SUBROUTINE SPLIT_QUAD
 
           
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -393,17 +393,17 @@
       
       INTEGER II, J
 
-! If all child quads of II are empty then remove the child quads
+!     If all child quads of II are empty then remove the child quads
       IF((LQUAD(LQUAD(II,1),7).EQ.0).AND.&
-         (LQUAD(LQUAD(II,2),7).EQ.0).AND.&
-         (LQUAD(LQUAD(II,3),7).EQ.0).AND.&
-         (LQUAD(LQUAD(II,4),7).EQ.0)) THEN
+      (LQUAD(LQUAD(II,2),7).EQ.0).AND.&
+      (LQUAD(LQUAD(II,3),7).EQ.0).AND.&
+      (LQUAD(LQUAD(II,4),7).EQ.0)) THEN
 
-          DO J = 1, 4
-            LQUAD(LQUAD(II,J),6) = -2 
-            LQUAD(II,J) = 0
-          END DO
-          LQUAD(II,7) = 0
+      DO J = 1, 4
+         LQUAD(LQUAD(II,J),6) = -2 
+         LQUAD(II,J) = 0
+      END DO
+      LQUAD(II,7) = 0
 
       END IF      
 
@@ -435,22 +435,22 @@
 
       I = 1
  30   CONTINUE
-         IF(LQUAD(I,6).EQ.-2) THEN
-           DO J = I, MNQD-4
-              LQ = LQUAD(J+4,6)
-              DO K = 1,7
-                 LQUAD(J,K) = LQUAD(J+4,K) ! moving the lquad array
-                 IF(K.LE.4) THEN
-                    CQUAD(J,K) = CQUAD(J+4,K) ! moving the cquad array
-                    IF(LQUAD(LQ,7).LT.0) LQUAD(LQ,K) = LQUAD(LQ,K) - 4 
-                 END IF
-              END DO
-           END DO
-           MNQD = MNQD - 4
-           I = I + 4
-         ELSE
-           I = I + 1
-         END IF
+      IF(LQUAD(I,6).EQ.-2) THEN
+         DO J = I, MNQD-4
+            LQ = LQUAD(J+4,6)
+            DO K = 1,7
+               LQUAD(J,K) = LQUAD(J+4,K) ! moving the lquad array
+               IF(K.LE.4) THEN
+                  CQUAD(J,K) = CQUAD(J+4,K) ! moving the cquad array
+                  IF(LQUAD(LQ,7).LT.0) LQUAD(LQ,K) = LQUAD(LQ,K) - 4 
+               END IF
+            END DO
+         END DO
+         MNQD = MNQD - 4
+         I = I + 4
+      ELSE
+         I = I + 1
+      END IF
       IF(I.LE.MNQD) GO TO 30 
 
       RETURN

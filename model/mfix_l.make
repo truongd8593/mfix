@@ -378,6 +378,7 @@ mfix.exe : \
     particles_in_cell.$(OBJ_EXT) \
     periodic_wall_calc_force_des.$(OBJ_EXT) \
     quadtree.$(OBJ_EXT) \
+    read_des_restart.$(OBJ_EXT) \
     write_des_data.$(OBJ_EXT) \
     write_des_restart.$(OBJ_EXT) \
     gaussj.$(OBJ_EXT) \
@@ -757,6 +758,7 @@ mfix.exe : \
     particles_in_cell.$(OBJ_EXT) \
     periodic_wall_calc_force_des.$(OBJ_EXT) \
     quadtree.$(OBJ_EXT) \
+    read_des_restart.$(OBJ_EXT) \
     write_des_data.$(OBJ_EXT) \
     write_des_restart.$(OBJ_EXT) \
     compar_mod.$(OBJ_EXT) \
@@ -4657,6 +4659,10 @@ quadtree.$(OBJ_EXT) : ./des/quadtree.f \
             drag.mod \
             compar.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/quadtree.f 
+read_des_restart.$(OBJ_EXT) : ./des/read_des_restart.f \
+            param1.mod \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/read_des_restart.f 
 write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
             param1.mod \
             discretelement.mod 
