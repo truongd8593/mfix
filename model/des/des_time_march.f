@@ -47,23 +47,27 @@
 !     
       INTEGER NN, LN, I, J, K, FACTOR, NSN
       DOUBLE PRECISION TEMP_DTS, DTSOLIDTEMP 
-!     Time at which REAL restart file is to be written
-      LOGICAL ALREADY_EXISTS
-      CHARACTER*20 FILENAME
+      DOUBLE PRECISION DES_RES_TIME
+      CHARACTER*5 FILENAME
+!     Logical to see whether this is the first entry to this routine
+      LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 
-      IF(TIME.EQ.ZERO.AND.RUN_TYPE=='NEW') THEN 
-
-         DESRESDT = 0.0
+      IF(FIRST_PASS) THEN 
+         
+         FIRST_PASS = .FALSE.
+         DESRESDT = 0.0d0
          NSN = 0
-         PTC = 0D0 
-         S_TIME = TIME
+         S_TIME = ZERO
          TEMP_DTS = ZERO
          PTC = ZERO
          INQC = INIT_QUAD_COUNT
 
          DES_SPX_TIME =  (INT((TIME + 0.1*DT)/SPX_DT(1))+1)*SPX_DT(1)
+         DES_RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT
          PRINT *,'SPX TIME', SPX_DT(1), DES_SPX_TIME
          CALL CFASSIGN
+
+         IF(RUN_TYPE=='RESTART_1') CALL PARTICLES_IN_CELL
 
 !     !COHESION INITIALIZE
          IF(USE_COHESION)THEN
@@ -72,37 +76,40 @@
          END IF
 !     !COHESION
 
-!     To do only des in the 1st time step so the particles settle
-!     and then start coupling
+!     To do only des in the 1st time step only for a new run so the particles settle down
+!     before the coupling is turned on
 
-         IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
-            DES_CONTINUUM_COUPLED = .FALSE.
-            DO FACTOR = 1, 500
-               PRINT *,'DES', FACTOR 
+         IF(RUN_TYPE == 'NEW') THEN
+            IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
+               DES_CONTINUUM_COUPLED = .FALSE.
+               DO FACTOR = 1, 500
+                  PRINT *,'DES', FACTOR 
 !     New values
-               DO LN = 1, PARTICLES
-                  CALL CFNEWVALUES(LN)
-               END DO
+                  DO LN = 1, PARTICLES
+                     CALL CFNEWVALUES(LN)
+                  END DO
 !     Neighbor search     
-               NSN = NSN + 1    
-               IF(DO_NSEARCH.OR.(NSN.EQ.NEIGHBOR_SEARCH_N)) THEN 
-                  CALL NEIGHBOUR
-                  DO_NSEARCH = .FALSE.
-                  NSN = 0
-               END IF
+                  NSN = NSN + 1    
+                  IF(DO_NSEARCH.OR.(NSN.EQ.NEIGHBOR_SEARCH_N)) THEN 
+                     CALL NEIGHBOUR
+                     DO_NSEARCH = .FALSE.
+                     NSN = 0
+                  END IF
 !     Force calculation         
-               IF(DES_PERIODIC_WALLS) THEN
-                  CALL PERIODIC_WALL_CALC_FORCE_DES
-               ELSE IF(INLET_OUTLET) THEN
-                  CALL DES_INLET_OUTLET
-               ELSE
-                  CALL CALC_FORCE_DES
-               END IF 
-            END DO
-            DES_CONTINUUM_COUPLED = .TRUE.
-            CALL PARTICLES_IN_CELL
-            RETURN              ! exit subroutine
-         END IF
+                  IF(DES_PERIODIC_WALLS) THEN
+                     CALL PERIODIC_WALL_CALC_FORCE_DES
+                  ELSE IF(INLET_OUTLET) THEN
+                     CALL DES_INLET_OUTLET
+                  ELSE
+                     CALL CALC_FORCE_DES
+                  END IF 
+               END DO
+               DES_CONTINUUM_COUPLED = .TRUE.
+               CALL PARTICLES_IN_CELL
+               RETURN           ! exit subroutine
+            END IF
+         END IF ! end if on new run type
+
       END IF
 
       IF(DES_CONTINUUM_COUPLED) THEN
@@ -143,75 +150,84 @@
          IF(DO_NSEARCH.OR.(NSN.EQ.NEIGHBOR_SEARCH_N)) THEN 
             CALL NEIGHBOUR
             DO_NSEARCH = .FALSE.
-               NSN = 0
-            END IF
+            NSN = 0
+         END IF
 
 !     Force calculation         
-            IF(DES_PERIODIC_WALLS) THEN
-               CALL PERIODIC_WALL_CALC_FORCE_DES
-            ELSE IF(INLET_OUTLET) THEN
-               CALL DES_INLET_OUTLET
-            ELSE
-               CALL CALC_FORCE_DES
+         IF(DES_PERIODIC_WALLS) THEN
+            CALL PERIODIC_WALL_CALC_FORCE_DES
+         ELSE IF(INLET_OUTLET) THEN
+            CALL DES_INLET_OUTLET
+         ELSE
+            CALL CALC_FORCE_DES
+         END IF
+         
+!     CALL DES_GRANULAR_TEMPERATURE(NN, FACTOR)
+         
+         IF(PRINT_DES_DATA) THEN    
+            IF(.NOT.DES_CONTINUUM_COUPLED) THEN
+               PTC = PTC + DTSOLID
+               IF(PTC.GE.P_TIME) THEN 
+                  WRITE (FILENAME, 3020) IFI
+                  OPEN(UNIT=99, FILE=FILENAME, STATUS='NEW')
+                  CALL WRITE_DES_DATA(99)
+                  CLOSE(99)
+                  IFI = IFI + 1
+                  PTC = ZERO
+               END IF
             END IF
-            
-!     Write Restart
+         END IF
+
+!     Write Restart for DEM only case
+         IF(.NOT.DES_CONTINUUM_COUPLED) THEN
             DESRESDT = DESRESDT + DTSOLID
-            IF(DESRESDT.EQ.RES_DT) THEN
+            IF(DESRESDT.GE.RES_DT) THEN
                CALL WRITE_DES_RESTART
                DESRESDT = 0.0d0
             END IF
+         END IF
 
-!     CALL DES_GRANULAR_TEMPERATURE(NN, FACTOR)
-            
-            IF(PRINT_DES_DATA) THEN    
-               IF(.NOT.DES_CONTINUUM_COUPLED) THEN
-                  PTC = PTC + DTSOLID
-                  IF(PTC.GE.P_TIME) THEN 
-                     WRITE (FILENAME, 3020) IFI
-                     OPEN(UNIT=99, FILE=FILENAME, STATUS='NEW')
-                     CALL WRITE_DES_DATA(99)
-                     CLOSE(99)
-                     IFI = IFI + 1
-                     PTC = ZERO
-                  END IF
-               END IF
+
+         IF(DES_CONTINUUM_COUPLED) THEN
+            IF((S_TIME+DTSOLID).GT.(TIME+DT)) THEN 
+               TEMP_DTS = DTSOLID
+               DTSOLID = TIME + DT - S_TIME
             END IF
+            S_TIME = S_TIME + DTSOLID
+         ELSE
+            S_TIME = S_TIME + DTSOLID
+         END IF 
 
-            IF(DES_CONTINUUM_COUPLED) THEN
-               IF((S_TIME+DTSOLID).GT.(TIME+DT)) THEN 
-                  TEMP_DTS = DTSOLID
-                  DTSOLID = TIME + DT - S_TIME
-               END IF
-               S_TIME = S_TIME + DTSOLID
-            ELSE
-               S_TIME = S_TIME + DTSOLID
-            END IF 
-
-         END DO                 ! end do NN = 1, FACTOR
-         
-         IF(PRINT_DES_DATA) THEN
-            IF(((TIME+0.1*DT).GE.DES_SPX_TIME) .OR. ((TIME+DT).GE.TSTOP)) THEN
-               WRITE (FILENAME, 3020) IFI
-               OPEN(UNIT=99, FILE=FILENAME, STATUS='NEW')
-               CALL WRITE_DES_DATA(99)
-               CLOSE(99)
-               DES_SPX_TIME =  (INT((TIME + 0.1*DT)/SPX_DT(1))+1)*SPX_DT(1)
-               IFI = IFI + 1
-            END IF
+      END DO                    ! end do NN = 1, FACTOR
+      
+      IF(PRINT_DES_DATA) THEN
+         IF(((TIME+0.1*DT).GE.DES_SPX_TIME) .OR. ((TIME+0.1*DT).GE.TSTOP)) THEN
+            WRITE (FILENAME, 3020) IFI
+            OPEN(UNIT=99, FILE=TRIM(RUN_NAME)//'_DES_'//FILENAME//'.vtp', STATUS='NEW')
+            CALL WRITE_DES_DATA(99)
+            CLOSE(99)
+            DES_SPX_TIME =  (INT((TIME + 0.1*DT)/SPX_DT(1))+1)*SPX_DT(1)
+            IFI = IFI + 1
          END IF
-         
-         IF(.NOT.DES_CONTINUUM_COUPLED) TSTOP = DT
+      END IF
+      
+!     Write Restart
+      IF(TIME + 0.1d0*DT>=DES_RES_TIME .OR. TIME+0.1d0*DT>=TSTOP) THEN
+         CALL WRITE_DES_RESTART
+         DES_RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT
+      END IF
 
-         IF(DT.LT.DTSOLIDTEMP) THEN
-            DTSOLID = DTSOLIDTEMP
-         END IF
+      IF(.NOT.DES_CONTINUUM_COUPLED) TSTOP = DT
 
-         IF(TEMP_DTS.NE.ZERO) THEN
-            DTSOLID = TEMP_DTS
-            TEMP_DTS = ZERO
-         END IF
+      IF(DT.LT.DTSOLIDTEMP) THEN
+         DTSOLID = DTSOLIDTEMP
+      END IF
 
- 3020    FORMAT('DES_DATA',I4.4,'.vtp')
+      IF(TEMP_DTS.NE.ZERO) THEN
+         DTSOLID = TEMP_DTS
+         TEMP_DTS = ZERO
+      END IF
 
-         END SUBROUTINE DES_TIME_MARCH
+ 3020 FORMAT(I5.5)
+
+      END SUBROUTINE DES_TIME_MARCH

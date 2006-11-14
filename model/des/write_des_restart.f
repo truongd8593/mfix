@@ -12,49 +12,28 @@
 
       USE param1      
       USE discretelement
+      USE run
       IMPLICIT NONE
 
-      INTEGER LL, PARTS, K 
+      INTEGER LL, PARTS, K
 
 !---------------------------------------------------------------------------
 
-      OPEN (UNIT=901, FILE='des_restart_pos.out', STATUS='unknown')
-      OPEN (UNIT=902, FILE='des_restart_vel.out', STATUS='unknown')
-      OPEN (UNIT=903, FILE='des_restart_neighbor.out', STATUS='unknown')
-      OPEN (UNIT=904, FILE='des_restart_force.out', STATUS='unknown')
-      OPEN (UNIT=905, FILE='des_restart_omega.out', STATUS='unknown')
-      OPEN (UNIT=904, FILE='des_restart_tow.out', STATUS='unknown')
+      OPEN (UNIT=901, FILE=TRIM(RUN_NAME)//'_DES.RES', FORM='Unformatted', STATUS='unknown')
 
-      REWIND(901)
-      REWIND(902)
-      REWIND(903)
-      REWIND(904)
-      REWIND(905)
-      REWIND(906)
+      REWIND (901)
 
-      DO LL = LL, PARTICLES
-         WRITE (901,*) (DES_POS_NEW(LL,K),K=1,DIMN)
-      END DO
-
-      DO LL = 1, PARTICLES
-         WRITE (902,*) (DES_VEL_NEW(LL,K),K=1,DIMN)
-      END DO
-
-      DO LL = 1, PARTICLES
-         WRITE (903,*) (NEIGHBOURS(LL,K),K=1,MAXNEIGHBORS)
-      END DO
-
-      DO LL = 1, PARTICLES
-         WRITE (904,*) (FC(LL,K),K=1,DIMN)
-      END DO      
-
-      DO LL = 1, PARTICLES
-         WRITE (905,*) (OMEGA_NEW(LL,K),K=1,DIMN)
-      END DO
-
-      DO LL = 1, PARTICLES
-         WRITE (906,*) (TOW(LL,K),K=1,DIMN)
-      END DO
+      WRITE (901) PARTICLES
+      WRITE (901) IFI
+      WRITE (901) DTSOLID
+      WRITE (901) DES_POS_NEW
+      WRITE (901) DES_VEL_NEW
+      WRITE (901) DES_RADIUS
+      WRITE (901) RO_Sol
+      WRITE (901) NEIGHBOURS
+      WRITE (901) FC
+      WRITE (901) OMEGA_NEW
+      WRITE (901) TOW
 
       END SUBROUTINE WRITE_DES_RESTART 
 

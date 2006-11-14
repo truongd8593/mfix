@@ -66,7 +66,15 @@
          END DO
       ELSE IF(RUN_TYPE == 'RESTART_1') THEN !  Read Restart
          CALL READ_DES_RESTART
+         DES_POS_NEW(:,:) = DES_POS_OLD(:,:)
+         DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
+         OMEGA_NEW(:,:) = OMEGA_OLD(:,:)
          DESRESDT = 0.0d0
+         IF(USE_COHESION) THEN
+            WRITE(UNIT_LOG,*) 'Restart 1 is not implemented with DES-COHESION'
+            WRITE(*,*) 'Restart 1 is not implemented with DES-COHESION'
+            CALL MFIX_EXIT
+         END IF
       ELSE IF (RUN_TYPE == 'RESTART_2') THEN 
          WRITE(UNIT_LOG,*) 'Restart 2 is not implemented with DES'
          WRITE(*,*) 'Restart 2 is not implemented with DES'
