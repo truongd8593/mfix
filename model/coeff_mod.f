@@ -12,6 +12,9 @@
 !                      Flags to tell whether to calculate or not
       LOGICAL, DIMENSION(:), ALLOCATABLE ::  VISC, COND, DIFF
 !
+!                      Flags to tell whether to calculate or not
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: GRAN_DISS
+!
 !                      Flag for Reaction rates
       LOGICAL          RRATE
 !

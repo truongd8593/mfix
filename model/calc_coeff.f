@@ -59,6 +59,13 @@
       LOGICAL          DRAGCOEF(0:DIMENSION_M, 0:DIMENSION_M),&
                        HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
                        WALL_TR
+!
+!     JEG 
+!     University of Colorado, Hrenya Research Group
+!                      Flags to tell whether to calculate or not:
+!                      a granular energy dissipation term
+      LOGICAL          GRAN_DISS(0:DIMENSION_M)
+!     END JEG
 !     
 !     Temporary storage 
       DOUBLE PRECISION UR_F_gstmp
@@ -87,6 +94,15 @@
       ENDIF
 ! addby rong
 
+!     JEG added 11/20/2005
+!     University of Colorado, Hrenya Research Group
+      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+          GRAN_DISS(:MMAX) = .TRUE.
+      ELSE
+          GRAN_DISS(:MMAX) = .FALSE.
+      ENDIF
+!     END JEG
+
       WALL_TR = .TRUE. 
       IF (ENERGY_EQ) THEN 
          SP_HEAT(:MMAX) = .TRUE. 
@@ -103,8 +119,10 @@
       IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
       IF (MU_S0 /= UNDEFINED) VISC(1:MMAX) = .FALSE. 
 
-      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, DRAGCOEF, &
-      HEAT_TR, WALL_TR, IER) 
+!     JEG modified 11/20/2005
+!     University of Colorado, Hrenya Research Group
+      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
+          GRAN_DISS, RRATE, DRAGCOEF, HEAT_TR, WALL_TR, IER)
 
       
       IF(FLAG == 0) then
@@ -137,8 +155,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_COEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, &
-         DRAG, HEAT_TR, WALL_TR, IER) 
+      SUBROUTINE CALC_COEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
+            GRAN_DISS, RRATE,DRAG, HEAT_TR, WALL_TR, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -181,6 +199,13 @@
       LOGICAL          DRAG(0:DIMENSION_M, 0:DIMENSION_M),&
                        HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
                        WALL_TR
+!
+!     JEG added 11/20/2005
+!     University of Colorado, Hrenya Research Group
+!                      Flags to tell whether to calculate or not:
+!                      a granular energy dissipation term
+      LOGICAL          GRAN_DISS(0:DIMENSION_M)
+!     END JEG
 !-----------------------------------------------
 !
 !     Calculate physical properties
@@ -190,7 +215,7 @@
 !
 !     Calculate Transport properties
 !
-      CALL TRANSPORT_PROP (VISC, COND, DIFF, IER) 
+      CALL TRANSPORT_PROP (VISC, COND, DIFF, GRAN_DISS, IER) 
 
 !
 !     Calculate reaction rates and interphase mass transfer
@@ -204,8 +229,8 @@
 !     Reset all flags.  The flags need to be set every time this routine is
 !     called.
 !
-      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, &
-         DRAG, HEAT_TR, WALL_TR, IER)
+      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
+           GRAN_DISS, RRATE, DRAG, HEAT_TR, WALL_TR, IER)
 
       RETURN  
       END SUBROUTINE CALC_COEFF 
@@ -272,8 +297,8 @@
 
 
  
-      SUBROUTINE TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, &
-         DRAG, HEAT_TR, WALL_TR, IER) 
+      SUBROUTINE TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
+           GRAN_DISS, RRATE, DRAG, HEAT_TR, WALL_TR, IER) 
       USE param 
       USE param1 
       USE physprop
@@ -300,6 +325,13 @@
       LOGICAL          DRAG(0:DIMENSION_M, 0:DIMENSION_M),&
                        HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
                        WALL_TR
+!
+!     JEG added 11/20/2005
+!     University of Colorado, Hrenya Research Group
+!                      Flags to tell whether to calculate or not:
+!                      a granular energy dissipation term
+      LOGICAL          GRAN_DISS(0:DIMENSION_M)
+!     END JEG
 		       
 !     Reset all flags
 !
@@ -310,7 +342,8 @@
       SP_HEAT(:MMAX) = .FALSE. 
       VISC(:MMAX) = .FALSE. 
       COND(:MMAX) = .FALSE. 
-      DIFF(:MMAX) = .FALSE. 
+      DIFF(:MMAX) = .FALSE.
+      GRAN_DISS(:MMAX) = .FALSE.  
       DRAG(:MMAX,:MMAX) = .FALSE. 
       HEAT_TR(:MMAX,:MMAX) = .FALSE. 
       RETURN  

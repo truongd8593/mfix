@@ -56,6 +56,10 @@
       USE bc
       USE compar  
       USE sendrecv 
+!     JEG Added--- University of Colorado, Hrenya Research Group
+      use kintheory
+      use kintheory2
+!     END JEG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -317,9 +321,17 @@
                      IJK,S,M)+A_M(IJK,T,M)+A_M(IJK,B,M)+(V0+ZMAX(VMT)+VCOA+VXZA&
                      )*VOL_W(IJK)+ CTE - CTW) 
                   A_M(IJK,E,M) = A_M(IJK,E,M) - CTE
-                  A_M(IJK,W,M) = A_M(IJK,W,M) + CTW 
-                  B_M(IJK,M) = -(SDP + SDPS + TAU_W_S(IJK,M)+SXZB+((V0+ZMAX((-&
-                     VMT)))*W_SO(IJK,M)+VBF+VCOB+VXZB)*VOL_W(IJK)) + B_m(IJK, M)
+                  A_M(IJK,W,M) = A_M(IJK,W,M) + CTW  
+!
+!             JEG Modified--University of Colorado, Hrenya Research Group
+                  IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN 
+                     B_M(IJK,M) = -(SDP + KTMOM_W_S(IJK,M) + SDPS + TAU_W_S(IJK,M) + &
+		        SXZB+((V0+ZMAX((-VMT)))*W_SO(IJK,M)+VBF+VCOB+VXZB)*          &
+			VOL_W(IJK)) + B_m(IJK, M) 
+                  ELSE 
+                     B_M(IJK,M) = -(SDP + SDPS + TAU_W_S(IJK,M)+SXZB+((V0+ZMAX((-&
+                        VMT)))*W_SO(IJK,M)+VBF+VCOB+VXZB)*VOL_W(IJK)) + B_m(IJK, M) 
+                  ENDIF
                ENDIF 
             END DO 
             CALL SOURCE_W_S_BC (A_M, B_M, M, IER) 

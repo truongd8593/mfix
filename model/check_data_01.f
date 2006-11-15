@@ -103,6 +103,12 @@
       IF (K_Epsilon .AND. L_SCALE0/=ZERO) CALL ERROR_ROUTINE ('check_data_01', &
             'Cannot set both K_Epsilon = .T. and L_SCALE0 /= ZERO', 1, 1)
 !
+! sof: The only option for KT type is Iddir-Arastoopour non-equip theory
+      IF (KT_TYPE /= UNDEFINED_C) THEN
+         IF(KT_TYPE /= 'IA_NONEP') CALL ERROR_ROUTINE ('check_data_01', &
+            'The only option for KT_TYPE is IA_NONEP', 1, 1)
+      ENDIF
+!
 !  Set variable ANY_SPECIES_EQ
 !
       ANY_SPECIES_EQ = .FALSE. 

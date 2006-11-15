@@ -27,6 +27,13 @@
 ! end peter 7/15
              DRAG_TYPE, &
 
+!     JEG Added 
+!     University of Colorado, Hrenya Research Group
+             KT_TYPE, &
+!
+             RDF_TYPE, &
+!     END JEG
+
 !AE TIME 043001  added new logical flag var for 2nd order time into NAMELIST
              CN_ON,&
 !

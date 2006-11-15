@@ -29,6 +29,9 @@
       USE funits 
       USE drag
       USE compar 
+!     JEG Added 04/01/2005---University of Colorado, Hrenya Research Group
+      use kintheory
+!     END JEG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -63,6 +66,26 @@
       ELSE 
          RECALC_VISC_G = .FALSE. 
       ENDIF 
+!
+!     JEG Added
+!     University of Colorado, Hrenya Research Group
+!     For kinetic theory of Iddir & Arastoopour (2005)
+      MU_sM_ip(:,:,:) = ZERO
+      MU_sL_ip(:,:,:) = ZERO
+      XI_sM_ip(:,:,:) = ZERO
+      XI_sL_ip(:,:,:) = ZERO
+      Fnu_s_ip(:,:,:) = ZERO
+      FT_sM_ip(:,:,:) = ZERO
+      FT_sL_ip(:,:,:) = ZERO
+      Kth_sL_ip(:,:,:) = ZERO
+      Knu_sM_ip(:,:,:) = ZERO
+      Knu_sL_ip(:,:,:) = ZERO
+      Kvel_s_ip(:,:,:) = ZERO
+      ED_ss_ip(:,:) = ZERO
+      EDT_s_ip(:,:,:) = ZERO
+      EDvel_sM_ip(:,:,:) = ZERO
+      EDvel_sL_ip(:,:,:) = ZERO
+!     END JEG
 !     
 !     
 !     Set specified constant physical properties values

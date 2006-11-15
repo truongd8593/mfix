@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: TRANSPORT_PROP(VISC, COND, DIFF, IER)                  C
+!  Module name: TRANSPORT_PROP(VISC, COND, DIFF, GRAN_DISS, IER)       C
 !  Purpose: Calculate transport properties that vary with time         C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 17-JUL-92  C
@@ -20,7 +20,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE TRANSPORT_PROP(VISC, COND, DIFF, IER) 
+      SUBROUTINE TRANSPORT_PROP(VISC, COND, DIFF, GRAN_DISS, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -53,6 +53,11 @@
 !                      Flags to tell whether to calculate or not
       LOGICAL          VISC(0:DIMENSION_M), COND(0:DIMENSION_M), &
                        DIFF(0:DIMENSION_M)
+!
+!     JEG Added--- University of Colorado, Hrenya Research Group
+!                      Flags to tell whether to calculate or not
+      LOGICAL          GRAN_DISS(0:DIMENSION_M)         
+!     END JEG
 !                 
 !-----------------------------------------------
 !
@@ -81,6 +86,17 @@
       DO M = 1, MMAX 
          IF (DIFF(M)) CALL CALC_DIF_S (M, IER) 
       END DO 
+!
+!     JEG Added
+!     University of Colorado, Hrenya Research Group
+!     Particle-Particle Energy Dissipation
+      DO M = 1, MMAX
+           IF (GRAN_DISS(M)) THEN
+	       IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') &
+	           CALL CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER)
+           ENDIF
+      END DO
+!     END JEG
       
       RETURN  
       END SUBROUTINE TRANSPORT_PROP 

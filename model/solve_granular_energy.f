@@ -63,7 +63,7 @@
       INTEGER          IER 
 ! 
 !                      phase index 
-      INTEGER          m 
+      INTEGER          M, L 
 ! 
 ! 
 !                       Cp * Flux 
@@ -77,6 +77,14 @@
 ! 
 !                      linear equation solver method and iterations 
       INTEGER          LEQM, LEQI 
+!
+!     JEG Added--- University of Colorado, Hrenya Research Group
+!                      Variables for IA (2005) kinetic theory model                       
+      DOUBLE PRECISION M_PM,D_PM
+!
+!                      temporary variable for volume x interphase transfer 
+!                      coefficient between solids phases
+      DOUBLE PRECISION VxTC_ss(DIMENSION_3,DIMENSION_LM)
 !-----------------------------------------------
       INCLUDE 'radtn1.inc'
       INCLUDE 'ep_s1.inc'
@@ -91,7 +99,105 @@
       DO M = 0, MMAX 
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
       END DO 
-      DO M = 1, MMAX 
+!
+      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+!
+          DO M = 1, MMAX 
+               DO IJK = ijkstart3, ijkend3
+!
+                    D_PM = D_P(IJK,M)
+                    M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
+!
+!                   In Iddir & Arastoopour (2005) the granular temperature includes 
+!                   mass of the particle in the definition
+                    CpxFlux_E(IJK) = (1.5D0/M_PM) * Flux_sE(IJK,M)
+                    CpxFlux_N(IJK) = (1.5D0/M_PM) * Flux_sN(IJK,M)
+                    CpxFlux_T(IJK) = (1.5D0/M_PM) * Flux_sT(IJK,M)
+!
+                    IF (FLUID_AT(IJK)) THEN 
+                         CALL SOURCE_IA_NONEP_GRANULAR_ENERGY (SOURCELHS, SOURCERHS, IJK, M, IER) 
+                         APO = (1.5D0/M_PM)*ROP_SO(IJK,M)*VOL(IJK)*ODT 
+                         S_P(IJK) = APO + SOURCELHS + (1.5d0/M_PM)*ZMAX(SUM_R_S(IJK,M)) * VOL(IJK) 
+                         S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS + &
+                              (1.50d0/M_PM)*THETA_M(IJK,M)*ZMAX((-SUM_R_S(IJK,M))) * VOL(IJK)
+                         EPS(IJK) = EP_S(IJK,M)
+                    ELSE 
+                         EPS(IJK) = ZERO 
+                         S_P(IJK) = ZERO 
+                         S_C(IJK) = ZERO 
+                    ENDIF 
+               END DO 
+! 
+               CALL CONV_DIF_PHI (THETA_M(1,M), KTH_S(1,M), DISCRETIZE(8), U_S(1,M), &
+                    V_S(1,M), W_S(1,M), CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M, IER)
+           
+	       CALL BC_PHI (THETA_M(1,M), BC_THETA_M(1,M), BC_THETAW_M(1,M), BC_HW_THETA_M(1,M), &
+                    BC_C_THETA_M(1,M), M, A_M, B_M, IER) 
+!
+!              override bc settings if Johnson-Jackson bcs are specified
+               CALL BC_THETA (M, A_M, B_M, IER)
+! 
+               CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M, IER)
+          ENDDO ! for M = 1, mmax
+!
+!              use partial elimination on collisional dissipation term: SUM(Nip)
+!                   SUM( ED_s_ip* (Theta_p-Theta_i))
+          IF (MMAX > 1) THEN 
+              CALL CALC_VTC_SS (VXTC_SS, IER)   
+              CALL PARTIAL_ELIM_IA (THETA_M, VXTC_SS, A_M, B_M, IER)
+          ENDIF
+
+!              Adjusting the values of theta_m to zero when Ep_g < EP_star (Shaeffer, 1987)
+!              This is done here instead of calc_mu_s.f to avoid convergence problems. (sof)
+          IF (SCHAEFFER) THEN
+	       DO M = 1, MMAX
+                    DO IJK = ijkstart3, ijkend3
+                         IF (FLUID_AT(IJK) .AND. EP_g(IJK) .LT. EP_star) THEN 
+                              A_M(IJK,1,M) = ZERO 
+                              A_M(IJK,-1,M) = ZERO 
+                              A_M(IJK,2,M) = ZERO 
+                              A_M(IJK,-2,M) = ZERO 
+                              A_M(IJK,3,M) = ZERO 
+                              A_M(IJK,-3,M) = ZERO 
+                              A_M(IJK,0,M) = -ONE 		  
+                              B_M(IJK,M) = -ZERO_EP_S
+                         ENDIF
+                    ENDDO
+	       ENDDO ! for M
+          ENDIF	 
+!              End of Shaeffer adjustments, sof.
+!
+!
+          DO M = 1, MMAX 
+!
+               CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, RESID(RESID_TH,M), &
+                    MAX_RESID(RESID_TH,M), IJK_RESID(RESID_TH,M), ZERO, IER) 
+!
+               CALL UNDER_RELAX_S (THETA_M(1,M), A_M, B_M, M, UR_FAC(8), IER) 
+!
+!              call check_ab_m(a_m, b_m, m, .true., ier)
+!              write(*,*)      resid(resid_th, m), max_resid(resid_th, m),&
+!                              I_OF(ijk_resid(resid_th, m)), J_OF(ijk_resid(resid_th, m))
+!              call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!
+!              call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, M), 1, DO_K,
+!                   &    ier)
+!
+               CALL ADJUST_LEQ (RESID(RESID_TH,M), LEQ_IT(8), LEQ_METHOD(8), LEQI, &
+                    LEQM, IER) 
+
+               CALL SOLVE_LIN_EQ ('Theta_m', THETA_M(1,M), A_M, B_M, M, LEQI, LEQM, &
+                    LEQ_SWEEP(8), LEQ_TOL(8),  LEQ_PC(8), IER) 
+!              call out_array(Theta_m(1,m), 'Theta_m')
+!
+!              Remove very small negative values of theta caused by leq solvers
+               CALL ADJUST_THETA (M, IER) 
+               IF (IER /= 0) RETURN                    !large negative granular temp -> divergence 
+!
+          ENDDO
+!
+      ELSE     ! default KT in MFIX left unchanged (sof)
+        DO M = 1, MMAX 
 !
 !
          DO IJK = ijkstart3, ijkend3
@@ -177,7 +283,8 @@
 !        Remove very small negative values of theta caused by leq solvers
          CALL ADJUST_THETA (M, IER) 
          IF (IER /= 0) RETURN                    !large negative granular temp -> divergence 
-      END DO 
+        END DO 
+      ENDIF     ! for kt_type
       
       call unlock_ambm
       call unlock_tmp_array

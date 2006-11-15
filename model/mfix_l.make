@@ -21,6 +21,8 @@ mfix.exe : \
     ic.mod \
     indices.mod \
     is.mod \
+    kintheory2.mod \
+    kintheory.mod \
     leqsol.mod \
     machine.mod \
     matrix.mod \
@@ -172,6 +174,11 @@ mfix.exe : \
     init_resid.$(OBJ_EXT) \
     iterate.$(OBJ_EXT) \
     k_epsilon_prop.$(OBJ_EXT) \
+    kintheory_drag_ss.$(OBJ_EXT) \
+    kintheory_energy_dissipation_ss.$(OBJ_EXT) \
+    kintheory_u_s.$(OBJ_EXT) \
+    kintheory_v_s.$(OBJ_EXT) \
+    kintheory_w_s.$(OBJ_EXT) \
     leq_bicgs.$(OBJ_EXT) \
     leq_gmres.$(OBJ_EXT) \
     leq_sor.$(OBJ_EXT) \
@@ -284,6 +291,7 @@ mfix.exe : \
     vf_gs_x.$(OBJ_EXT) \
     vf_gs_y.$(OBJ_EXT) \
     vf_gs_z.$(OBJ_EXT) \
+    vtc_scalar.$(OBJ_EXT) \
     write_ab_m.$(OBJ_EXT) \
     write_ab_m_var.$(OBJ_EXT) \
     write_error.$(OBJ_EXT) \
@@ -519,6 +527,13 @@ mfix.exe : \
     is_mod.$(OBJ_EXT) \
     iterate.$(OBJ_EXT) \
     k_epsilon_prop.$(OBJ_EXT) \
+    kintheory2_mod.$(OBJ_EXT) \
+    kintheory_drag_ss.$(OBJ_EXT) \
+    kintheory_energy_dissipation_ss.$(OBJ_EXT) \
+    kintheory_mod.$(OBJ_EXT) \
+    kintheory_u_s.$(OBJ_EXT) \
+    kintheory_v_s.$(OBJ_EXT) \
+    kintheory_w_s.$(OBJ_EXT) \
     leq_bicgs.$(OBJ_EXT) \
     leq_gmres.$(OBJ_EXT) \
     leqsol_mod.$(OBJ_EXT) \
@@ -661,6 +676,7 @@ mfix.exe : \
     visc_g_mod.$(OBJ_EXT) \
     visc_s_mod.$(OBJ_EXT) \
     vshear_mod.$(OBJ_EXT) \
+    vtc_scalar.$(OBJ_EXT) \
     write_ab_m.$(OBJ_EXT) \
     write_ab_m_var.$(OBJ_EXT) \
     write_error.$(OBJ_EXT) \
@@ -879,6 +895,14 @@ is.mod : is_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) is_mod.f 
+kintheory2.mod : kintheory2_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) kintheory2_mod.f 
+kintheory.mod : kintheory_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) kintheory_mod.f 
 leqsol.mod : leqsol_mod.f \
             param.mod \
             param1.mod 
@@ -1222,7 +1246,9 @@ allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             xsi_array.mod \
             vshear.mod \
             mflux.mod \
-            mchem.mod 
+            mchem.mod \
+            kintheory.mod \
+            kintheory2.mod 
 bc_phi.$(OBJ_EXT) : bc_phi.f \
             param.mod \
             param1.mod \
@@ -1507,6 +1533,7 @@ calc_mu_s.$(OBJ_EXT) : calc_mu_s.f \
             toleranc.mod \
             turb.mod \
             drag.mod \
+            kintheory.mod \
             parallel.mod \
             visc_g.mod \
             sendrecv.mod \
@@ -2350,6 +2377,7 @@ g_0.$(OBJ_EXT) : g_0.f \
             geometry.mod \
             indices.mod \
             compar.mod \
+            visc_s.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                    \
@@ -2559,6 +2587,95 @@ k_epsilon_prop.$(OBJ_EXT) : k_epsilon_prop.f \
             function.inc                                                 \
             ep_s2.inc                                                    \
             fun_avg2.inc                                                
+kintheory_drag_ss.$(OBJ_EXT) : kintheory_drag_ss.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            constant.mod \
+            fldvar.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            compar.mod \
+            sendrecv.mod \
+            drag.mod \
+            kintheory.mod \
+            function.inc                                                
+kintheory_energy_dissipation_ss.$(OBJ_EXT) : kintheory_energy_dissipation_ss.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            compar.mod \
+            fldvar.mod \
+            indices.mod \
+            physprop.mod \
+            run.mod \
+            constant.mod \
+            toleranc.mod \
+            kintheory.mod \
+            function.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
+kintheory_u_s.$(OBJ_EXT) : kintheory_u_s.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            run.mod \
+            toleranc.mod \
+            physprop.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            fldvar.mod \
+            visc_s.mod \
+            kintheory.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                   
+kintheory_v_s.$(OBJ_EXT) : kintheory_v_s.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            run.mod \
+            toleranc.mod \
+            physprop.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            fldvar.mod \
+            visc_s.mod \
+            kintheory.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                   
+kintheory_w_s.$(OBJ_EXT) : kintheory_w_s.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            scales.mod \
+            constant.mod \
+            run.mod \
+            toleranc.mod \
+            physprop.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            fldvar.mod \
+            visc_s.mod \
+            kintheory.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                   
 leq_bicgs.$(OBJ_EXT) : leq_bicgs.f \
             param.mod \
             param1.mod \
@@ -2811,6 +2928,7 @@ read_namelist.$(OBJ_EXT) : read_namelist.f \
             compar.mod \
             parallel.mod \
             discretelement.mod \
+            usr.mod \
             usrnlst.inc                                                  \
             namelist.inc                                                 \
             des/desnamelist.inc                                         
@@ -2981,6 +3099,7 @@ set_constprop.$(OBJ_EXT) : set_constprop.f \
             funits.mod \
             drag.mod \
             compar.mod \
+            kintheory.mod \
             function.inc                                                
 set_flags.$(OBJ_EXT) : set_flags.f \
             param.mod \
@@ -3398,6 +3517,8 @@ source_granular_energy.$(OBJ_EXT) : source_granular_energy.f \
             constant.mod \
             toleranc.mod \
             compar.mod \
+            residual.mod \
+            kintheory.mod \
             s_pr1.inc                                                    \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -3522,6 +3643,8 @@ source_u_s.$(OBJ_EXT) : source_u_s.f \
             bc.mod \
             compar.mod \
             sendrecv.mod \
+            kintheory.mod \
+            kintheory2.mod \
             output.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -3580,6 +3703,8 @@ source_v_s.$(OBJ_EXT) : source_v_s.f \
             vshear.mod \
             compar.mod \
             sendrecv.mod \
+            kintheory.mod \
+            kintheory2.mod \
             output.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -3636,6 +3761,8 @@ source_w_s.$(OBJ_EXT) : source_w_s.f \
             bc.mod \
             compar.mod \
             sendrecv.mod \
+            kintheory.mod \
+            kintheory2.mod \
             output.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -3816,7 +3943,8 @@ time_march.$(OBJ_EXT) : time_march.f \
             compar.mod \
             time_cpu.mod \
             discretelement.mod \
-            mchem.mod 
+            mchem.mod \
+            kintheory2.mod 
 transfer.$(OBJ_EXT) : transfer.f \
             param.mod \
             param1.mod \
@@ -3866,7 +3994,7 @@ usr2.$(OBJ_EXT) : usr2.f \
 usr3.$(OBJ_EXT) : usr3.f \
             usr.mod 
 usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
-            usrnlst.inc                                                 
+            usr.mod 
 usr_write_out0.$(OBJ_EXT) : usr_write_out0.f 
 usr_write_out1.$(OBJ_EXT) : usr_write_out1.f 
 utilities.$(OBJ_EXT) : utilities.f \
@@ -4003,6 +4131,15 @@ vf_gs_z.$(OBJ_EXT) : vf_gs_z.f \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
+vtc_scalar.$(OBJ_EXT) : vtc_scalar.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
+            compar.mod \
+            kintheory.mod \
+            function.inc                                                
 write_ab_m.$(OBJ_EXT) : write_ab_m.f \
             param.mod \
             param1.mod \

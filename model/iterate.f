@@ -231,8 +231,9 @@
 !     Calculate coefficients.  First turn off all flags.  Then explicitly set flags for all the quantities
 !     that need to be calculated.
 !
-      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, &
-         DRAGCOEF, HEAT_TR, WALL_TR, IER)
+!         JEG modified, University of Colorado, Hrenya Research Group
+      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
+               GRAN_DISS, RRATE, DRAGCOEF, HEAT_TR, WALL_TR, IER)
 
       IF (Call_DQMOM) PSIZE(1:MMAX)=.TRUE.
 !      IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
@@ -247,8 +248,14 @@
       VISC(0) = RECALC_VISC_G 
       VISC(1:MMAX) = .TRUE. 
 !
-      CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER) 
-      CALL TRANSPORT_PROP (VISC, COND, DIFF, IER) 
+!         JEG added
+!         University of Colorado, Hrenya Research Group
+      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') GRAN_DISS(:MMAX) = .TRUE.
+
+!         END JEG
+      CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
+!         JEG modified, University of Colorado, Hrenya Research Group
+      CALL TRANSPORT_PROP (VISC, COND, DIFF, GRAN_DISS, IER) 
       CALL EXCHANGE (DRAGCOEF, HEAT_TR, WALL_TR, IER) 
 !
 !     DIffusion coefficient and source terms for user-defined scalars
@@ -267,8 +274,10 @@
 !
 !     Calculate density and reaction rates. Do not change reaction rate anywhere else within this
 !     iteration loop.  Fluid density can be changed after the pressure correction step.
-      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, RRATE, &
-         DRAGCOEF, HEAT_TR, WALL_TR, IER)
+!        
+!         JEG modified, University of Colorado, Hrenya Research Group
+      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
+               GRAN_DISS, RRATE, DRAGCOEF, HEAT_TR, WALL_TR, IER)
       IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
       IF (ANY_SPECIES_EQ) RRATE = .TRUE.
        

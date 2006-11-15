@@ -69,6 +69,9 @@
       USE time_cpu  
       USE discretelement  
       USE mchem
+!     JEG Added--- University of Colorado, Hrenya Research Group
+      use kintheory2
+!     END JEG
       IMPLICIT NONE
 !-----------------------------------------------
 !     G l o b a l   P a r a m e t e r s
@@ -453,6 +456,15 @@
       CALL CALC_TAU_U_S (TAU_U_S, IER) 
       CALL CALC_TAU_V_S (TAU_V_S, IER) 
       CALL CALC_TAU_W_S (TAU_W_S, IER) 
+!
+!     JEG Added 
+!     University of Colorado, Hrenya Research Group
+!     Calculate additional solid phase momentum source terms 
+!     that arise from kinetic theory constitutive relations
+      CALL CALC_KTMOMSOURCE_U_S (KTMOM_U_S, IER)
+      CALL CALC_KTMOMSOURCE_V_S (KTMOM_V_S, IER)
+      CALL CALC_KTMOMSOURCE_W_S (KTMOM_W_S, IER)
+!     END JEG 
 
 !     Check rates and sums of mass fractions every NLOG time steps
 !     

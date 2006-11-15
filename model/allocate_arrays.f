@@ -41,6 +41,11 @@
       Use vshear
       Use mflux
       Use mchem
+!     JEG Added 04/01/2005
+!     University of Colorado, Hrenya Research Group
+      use kintheory
+      use kintheory2
+!     END JEG
       IMPLICIT NONE
       
       INTEGER M
@@ -94,7 +99,7 @@
 
 !drag
       Allocate(  F_gs(DIMENSION_3, DIMENSION_M) )
-      Allocate(  F_ss(DIMENSION_3, DIMENSION_LM) )
+      Allocate(  F_ss(DIMENSION_3, 0:DIMENSION_LM) )
 
 
 !energy
@@ -422,6 +427,30 @@
       Allocate(    ROP_sN(DIMENSION_3, DIMENSION_M) ) 
       Allocate(    ROP_gT(DIMENSION_3) ) 
       Allocate(    ROP_sT(DIMENSION_3, DIMENSION_M) ) 
+
+!     JEG Added 
+!     University of Colorado, Hrenya Research Group
+!     Arising from kinetic theory of Iddir & Arastoopour (2005)
+      Allocate(    KTMOM_U_s(DIMENSION_3, DIMENSION_M) )
+      Allocate(    KTMOM_V_s(DIMENSION_3, DIMENSION_M) )
+      Allocate(    KTMOM_W_s(DIMENSION_3, DIMENSION_M) )
+      Allocate(    trD_s2_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )      
+      Allocate(    MU_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    MU_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    XI_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    XI_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    Fnu_s_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    FT_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    FT_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    Kth_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    Knu_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    Knu_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    Kvel_s_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    EDT_s_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    EDvel_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    EDvel_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    ED_ss_ip(DIMENSION_3, 0:DIMENSION_LM) )
+      Allocate(    GRAN_DISS(0:DIMENSION_M) )
 
      
       RETURN

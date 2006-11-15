@@ -242,5 +242,18 @@
 !                      time step for isat calculation
       DOUBLE PRECISION ISATdt
 !     CHEM & ISAT end (nan xie)
+!
+!
+!     JEG Added
+!     University of Colorado, Hrenya Research Group
+!                       Only options is IA_nonep (for now, sof)
+      CHARACTER(64)     KT_TYPE
+!
+!                       for m > 1 options are lebowitz, modified_lebowitz,
+!                       mansoori, modified_mansoori.  default = lebowitz
+!                       for m = 1 then carnahan and starling rdf used
+      CHARACTER(64)     RDF_TYPE 
+!
+!     END JEG      
 
       END MODULE run                                                                             

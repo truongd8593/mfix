@@ -41,3 +41,23 @@
 !             F(IJK) F(IJKP) K  
       AVG_Z_h(XXXm,  XXXp,   xL) = XXXm * XXXp / &
        MAX(SMALL_NUMBER, ( FZ_T(xL) * XXXm + FZ_T_bar(xL) * XXXp) )
+!
+! Harmonic averages for possibly negative scalars (sof, Aug 22 2006)
+!
+!     i+1/2, j, k. Use IJKE for scalar
+!             F(IJK) F(IPJK)  I      
+      AVG_X_S(XXXm,  XXXp,    xL) = XXXm * XXXp / &
+       (1D-30 + ( FX_E(xL) * XXXm + FX_E_bar(xL) * XXXp) )
+!
+!
+!     i, j+1/2, k. Use IJKN for scalar
+!             F(IJK) F(IJPK) J  
+      AVG_Y_S(XXXm,  XXXp,   xL) = XXXm * XXXp / &
+       (1D-30 + ( FY_N(xL) * XXXm + FY_N_bar(xL) * XXXp) )
+!
+!
+!     i, j, k+1/2. Use IJKT for scalar
+!             F(IJK) F(IJKP) K  
+      AVG_Z_S(XXXm,  XXXp,   xL) = XXXm * XXXp / &
+       (1D-30 + ( FZ_T(xL) * XXXm + FZ_T_bar(xL) * XXXp) )
+

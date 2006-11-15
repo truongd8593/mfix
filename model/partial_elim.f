@@ -99,16 +99,16 @@
 		   F(M,0)=-VXF(IJK,M)
 		   F(0,M)=F(M,0)
                  else
-		   F(0,0)=0.   
+		   F(0,0) = ZERO   
 	         end if
 		 
 		 DO L =1, MMAX
 		   IF ((L .NE. M) .AND. (M .NE. 0)) THEN
-		     F(M,L)=0.0  !insert solids-solids exchange coefficients here
+		     F(M,L) = ZERO  !insert solids-solids exchange coefficients here
 		   ELSE
-		     F(M,L)=0.
+		     F(M,L) = ZERO
 		   END IF
-		   F(L,M)=0.0
+		   F(L,M) = ZERO
 		 END DO
 		  
 		 IF (M == 0 ) THEN
@@ -135,11 +135,11 @@
 	       END DO
 		  
 	       Do M=0,MMAX
-		 SUM_A=0.
-		 SUM_B=0.0
+		 SUM_A = ZERO
+		 SUM_B = ZERO
 		 do L =0,MMAX
-		   SUM_A_LPRIME=0.0
-		   SUM_B_LPRIME=0.0
+		   SUM_A_LPRIME = ZERO
+		   SUM_B_LPRIME = ZERO
 		      
 		   DO LP=0,MMAX
 		     IF ( LP .NE. M) THEN
@@ -167,6 +167,157 @@
 
       RETURN  
       END SUBROUTINE PARTIAL_ELIM_S 
+!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: PARTIAL_ELIM_IA(Var_s, VxTCss, A_m, B_m, IER)          C
+!  Purpose: Do partial elimination for granular temperature coupling   C
+!                                                                      C
+!                                                                      C
+!  Author: J. Galvin                                  Date: 21-MAY-05  C
+!  Reviewer:S. benyahia                               Date:            C
+!                                                                      C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE PARTIAL_ELIM_IA(VAR_S, VXTCSS, A_M, B_M, IER) 
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Switches: -xf
+!
+!-----------------------------------------------
+!     Modules
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE parallel 
+      USE geometry
+      USE matrix 
+      USE physprop
+      USE indices
+      USE compar  
+      USE drag
+      USE fldvar 
+      IMPLICIT NONE
+!-----------------------------------------------
+!     Local variables
+!-----------------------------------------------  
+!                      Error index 
+      INTEGER          IER 
+! 
+!                      Indices 
+      INTEGER          IJK, IJKW, IJKS, IJKB, IJKE, IJKN, IJKT, LM
+! 
+!                      solids phase variable 
+      DOUBLE PRECISION Var_s(DIMENSION_3, DIMENSION_M) 
+! 
+!     JEG Added/Modified
+!     University of Colorado, Hrenya Research Group
+!
+!                      Volume x solids-solids transfer coefficient 
+      DOUBLE PRECISION VxTCss (DIMENSION_3, DIMENSION_LM) 
+!     END JEG
+! 
+!                      Septadiagonal matrix A_m 
+      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
+! 
+!                      Vector b_m 
+      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
+! 
+!     Gera modifications
+      DOUBLE PRECISION SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME, DEN
+      INTEGER          L, M,LP 
+! 
+!                      a0, b0 etc. 
+      DOUBLE PRECISION a(DIMENSION_M), BB(DIMENSION_M), F(DIMENSION_M,DIMENSION_M),&
+                       Saxf(DIMENSION_M) 
+!
+!                      error message 
+      CHARACTER*80     LINE 
+!-----------------------------------------------
+!     Include statement functions
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+!-----------------------------------------------
+!$omp  parallel do private( IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
+!$omp&  a, bb,F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, den) &
+!$omp&  schedule(static)
+!
+      DO IJK = ijkstart3, ijkend3
+!
+          IF (FLUID_AT(IJK)) THEN 
+               IJKW = WEST_OF(IJK) 
+               IJKS = SOUTH_OF(IJK)
+               IJKE = EAST_OF(IJK) 
+               IJKN = NORTH_OF(IJK) 
+!
+               F(:,:) = ZERO
+!
+               DO M = 1, MMAX
+                    A(M)=A_M(IJK,0,M)
+                    BB(M)=B_M(IJK,M)
+!
+                    DO L = 1, MMAX
+                         IF ( L .NE. M ) THEN
+!     JEG Added/Modified
+!     University of Colorado, Hrenya Research Group
+                              LM = FUNLM(L,M)                    
+                              F(M,L)=-VxTCSS(IJK,LM)
+                         ENDIF
+                         F(L,M) = F(M,L)
+                    ENDDO
+!
+                    SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IJKE,M)+A_M(IJK,W,M)*VAR_S(&
+                              IJKW,M)+A_M(IJK,N,M)*VAR_S(IJKN,M)+A_M(IJK,S,M)*VAR_S(&
+                              IJKS,M)) 
+!
+                    IF (DO_K) THEN 
+                         IJKB = BOTTOM_OF(IJK) 
+                         IJKT = TOP_OF(IJK)
+                         SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKT,M)+&
+                                   A_M(IJK,B,M)*VAR_S(IJKB,M)) 
+                    ENDIF 
+               ENDDO
+!
+               DO M = 1, MMAX
+                    SUM_A = ZERO
+                    SUM_B = ZERO
+!
+                    DO L = 1, MMAX
+                         SUM_A_LPRIME = ZERO
+                         SUM_B_LPRIME = ZERO
+!
+                         DO LP = 1, MMAX
+                              IF ( LP .NE. M) THEN
+                                   SUM_A_LPRIME=SUM_A_LPRIME+F(L,LP)
+                                   SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_S(IJK,LP)
+                              ENDIF
+                         ENDDO
+!
+                         DEN = A(L) + SUM_A_LPRIME + F(L,M)
+!
+                         IF ( DEN .NE. ZERO) THEN
+                              SUM_A = SUM_A + ((F(L,M)*(A(L)+SUM_A_LPRIME))/DEN)
+                              SUM_B = SUM_B + F(L,M)*(SAXF(L) + BB(L)+SUM_B_LPRIME &
+                                   )/DEN
+                         ENDIF
+                    ENDDO
+!
+                    A_M(IJK,0,M)= SUM_A+A(M)
+                    B_M(IJK,M)  = SUM_B+BB(M)
+               ENDDO
+!
+          ENDIF 
+      ENDDO 
+!
+      RETURN  
+      END SUBROUTINE PARTIAL_ELIM_IA 
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -310,11 +461,11 @@
    	         Do M=0,MMAX
 		   
                    IF (MOMENTUM_X_EQ(M)) THEN
-		     SUM_A=0.
-		     SUM_B=0.0
+		     SUM_A = ZERO
+		     SUM_B = ZERO
 		     do L =0,MMAX
-		       SUM_A_LPRIME=0.0
-		       SUM_B_LPRIME=0.0
+		       SUM_A_LPRIME = ZERO
+		       SUM_B_LPRIME = ZERO
 		       DO LP=0,MMAX
 			 IF ( LP .NE. M) THEN
 			   SUM_A_LPRIME=SUM_A_LPRIME+F(L,LP)
@@ -511,11 +662,11 @@
 		
 		Do M=0,MMAX
                   IF (MOMENTUM_Y_EQ(M)) THEN
-		    SUM_A=0.
-		    SUM_B=0.0
+		    SUM_A = ZERO
+		    SUM_B = ZERO
 		    do L =0,MMAX
-			 SUM_A_LPRIME=0.0
-			 SUM_B_LPRIME=0.0
+			 SUM_A_LPRIME = ZERO
+			 SUM_B_LPRIME = ZERO
 			 DO LP=0,MMAX
 			   IF ( LP .NE. M) THEN
 			     SUM_A_LPRIME=SUM_A_LPRIME+F(L,LP)
@@ -702,11 +853,11 @@
 		 
 		 Do M=0,MMAX
                    IF (MOMENTUM_Z_EQ(M)) THEN
-		     SUM_A=0.
-		     SUM_B=0.0
+		     SUM_A = ZERO
+		     SUM_B = ZERO
 		     do L =0,MMAX
-			  SUM_A_LPRIME=0.0
-			  SUM_B_LPRIME=0.0
+			  SUM_A_LPRIME = ZERO
+			  SUM_B_LPRIME = ZERO
 			  DO LP=0,MMAX
 			    IF ( LP .NE. M) THEN
 			      SUM_A_LPRIME=SUM_A_LPRIME+F(L,LP)

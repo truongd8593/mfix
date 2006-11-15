@@ -13,6 +13,13 @@
  
 !	               Trace of D_s at previous timestep
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  trD_s_Co 
+!
+!     JEG Added 
+!     University of Colorado, Hrenya Research Group
+!                      Trace of the dot of D_s (M solid phase) and
+!                      D_sl (L solid phase)
+      DOUBLE PRECISION, DIMENSION (:,:,:), ALLOCATABLE :: trD_s2_ip
+!     END JEG
  
  
  

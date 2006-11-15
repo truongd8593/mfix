@@ -124,6 +124,13 @@
       ITER_RESTART = 1
 ! start peter 7/15
       V_sh=0d0
+
+!     JEG Added (4/01/2005)
+!     University of Colorado, Hrenya Research Group
+      KT_TYPE = UNDEFINED_C
+!     Added (6/15/2005)
+      RDF_TYPE = 'LEBOWITZ'
+!     END JEG
 !
 !
 ! start anuj 04/20

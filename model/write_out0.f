@@ -155,6 +155,10 @@
             WRITE (UNIT_OUT, 1141) M, 'Z', ' NOT ' 
          ENDIF 
       END DO 
+      IF (GRANULAR_ENERGY) THEN
+        WRITE (UNIT_OUT, 1142)  
+        IF(MMAX > 1) WRITE (UNIT_OUT, 1123) KT_TYPE(1:50) 
+      ENDIF
       IF (ENERGY_EQ) THEN 
          WRITE (UNIT_OUT, 1143) 
       ELSE 
@@ -525,6 +529,7 @@
  1109 FORMAT(/7X,'* Savage frictional model is solved')
  1110 FORMAT(7X,'Run name(RUN_NAME): ',A60) 
  1120 FORMAT(7X,'Brief description of the run (DESCRIPTION) :',/9X,A60) 
+ 1123 FORMAT(14X,'Kinetic Theory : ',A50)
  1130 FORMAT(7X,'Units (UNITS) : ',A16) 
  1135 FORMAT(7X,'Start-time (TIME) = ',G12.5,/7X,'Stop_time (TSTOP) = ',G12.5,/7X&
          ,'Time step (DT) = ',G12.5,/7X,'Max time step (DT_MAX) = ',G12.5,/7X&
@@ -535,7 +540,8 @@
  1138 FORMAT(30X,'(Initial conditions from the input (.DAT) file)') 
  1139 FORMAT(30X,'(Initial conditions from the restart (.RES) file)') 
  1140 FORMAT(/7X,'* Gas momentum equation-',A,' is',A,'solved.') 
- 1141 FORMAT(/7X,'* Solids-',I1,' momentum equation-',A,' is',A,'solved.') 
+ 1141 FORMAT(/7X,'* Solids-',I1,' momentum equation-',A,' is',A,'solved.')  
+ 1142 FORMAT(/7X,'* Granular energy equation(s) is solved.')
  1143 FORMAT(/7X,'* Energy equations are solved.') 
  1144 FORMAT(/7X,'* Energy equations are NOT solved.') 
  1145 FORMAT(/7X,'* Gas Species equations are solved.') 

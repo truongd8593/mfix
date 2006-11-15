@@ -82,9 +82,18 @@
       DO M = 1, MMAX 
          IF (DRAGD(0,M) .AND. RO_G0/=ZERO) CALL DRAG_GS (M, IER)
          IF(.NOT.DISCRETE_ELEMENT) THEN 
-            DO L = 1, M - 1 
-               IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER) 
-            END DO 
+!
+!              JEG Added 
+!              University of Colorado, Hrenya Research Group
+               IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+                    DO L = 1, MMAX
+                         IF (DRAGD(L,M)) CALL CALC_IA_NONEP_DRAG_SS (L,M,IER)
+                    ENDDO
+               ELSE
+                    DO L = 1, M - 1 
+                         IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER) 
+                    END DO 
+               ENDIF
          END IF
       END DO 
 
