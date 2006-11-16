@@ -390,7 +390,7 @@ IS.mod : ../model/is_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/is_mod.f 
-KINTHEORY2.mod : ../model/kintheory2.f \
+KINTHEORY2.mod : ../model/kintheory2_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/kintheory2_mod.f 
