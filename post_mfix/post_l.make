@@ -16,6 +16,8 @@ post_mfix : \
     ic.mod \
     indices.mod \
     is.mod \
+    kintheory2.mod \
+    kintheory.mod \
     leqsol.mod \
     machine.mod \
     mchem.mod \
@@ -182,6 +184,8 @@ post_mfix : \
     ic_mod.$(OBJ_EXT) \
     indices_mod.$(OBJ_EXT) \
     is_mod.$(OBJ_EXT) \
+    kintheory2_mod.$(OBJ_EXT) \
+    kintheory_mod.$(OBJ_EXT) \
     leqsol_mod.$(OBJ_EXT) \
     machine_mod.$(OBJ_EXT) \
     mchem_mod.$(OBJ_EXT) \
@@ -385,7 +389,15 @@ indices.mod : ../model/indices_mod.f \
 is.mod : ../model/is_mod.f \
             param.mod \
             param1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/is_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/is_mod.f   
+kintheory2.mod : ../model/kintheory2_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/kintheory2_mod.f 
+kintheory.mod : ../model/kintheory_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/kintheory_mod.f 
 leqsol.mod : ../model/leqsol_mod.f \
             param.mod \
             param1.mod 
@@ -533,7 +545,9 @@ allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             xsi_array.mod \
             mflux.mod \
             mchem.mod \
-            vshear.mod 
+            vshear.mod \
+            kintheory.mod \
+            kintheory2.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/allocate_arrays.f 
 any_more_data.$(OBJ_EXT) : any_more_data.f 
 calc_cell2.$(OBJ_EXT) : calc_cell2.f 
@@ -574,6 +588,7 @@ calc_mu_s.$(OBJ_EXT) : ../model/calc_mu_s.f \
             parallel.mod \
             physprop.mod \
             drag.mod \
+            kintheory.mod \
             run.mod \
             geometry.mod \
             fldvar.mod \
