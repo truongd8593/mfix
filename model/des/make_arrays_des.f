@@ -27,7 +27,10 @@
       IF(COORDINATES == 'CYLINDRICAL') THEN
          WRITE (UNIT_LOG, *) ' '
          WRITE (UNIT_LOG, *) 'Cylindrical coordinates are being used. STOP'
-         WRITE(*,*) 'DES should only be run using cartesian coordinates.'
+         WRITE (UNIT_LOG, *) 'DES should only be run using cartesian coordinates.'
+         WRITE (*, *) ' '
+         WRITE (*, *) 'Cylindrical coordinates are being used. STOP'
+         WRITE (*, *) 'DES should only be run using cartesian coordinates.'
          CALL MFIX_EXIT
       END IF
 
@@ -35,24 +38,27 @@
       IF((CHECK_MPI.NE.1).AND.(DISCRETE_ELEMENT)) THEN
          WRITE (UNIT_LOG, *) ' '
          WRITE (UNIT_LOG, *) 'DES being run on multiple processors. STOP'
-         WRITE(*,*) 'DES should only be run serially on one processor.'
+         WRITE (UNIT_LOG, *) 'DES should only be run serially on one processor.'
+         WRITE (*, *) ' '
+         WRITE (*, *) 'DES being run on multiple processors. STOP'
+         WRITE (*, *) 'DES should only be run serially on one processor.'
          CALL MFIX_EXIT
       END IF
 
       IF(DES_NEIGHBOR_SEARCH.EQ.UNDEFINED_I) THEN
          DES_NEIGHBOR_SEARCH = 1
-         WRITE(*,*) 'Default N-Square search will be implemented'
+         WRITE(*,*) 'Default N-Square search will be used'
       END IF
 
       IF(DES_NEIGHBOR_SEARCH.EQ.1) THEN
          DO_NSQUARE = .TRUE.
-         WRITE(*,*) 'N-SQUARE Search'
+         WRITE(*,*) 'DEM USING N-SQUARE Search'
       ELSE IF(DES_NEIGHBOR_SEARCH.EQ.2) THEN
          DO_QUADTREE = .TRUE.
-         WRITE(*,*) 'QUADTREE Search'
+         WRITE(*,*) 'DEM USING QUADTREE Search'
       ELSE IF(DES_NEIGHBOR_SEARCH.EQ.3) THEN
          DO_OCTREE = .TRUE.
-         WRITE(*,*) 'OCTREE Search'
+         WRITE(*,*) 'DEM USING OCTREE Search'
       END IF
       
       IF(RUN_TYPE == 'NEW') THEN ! Fresh run
@@ -70,6 +76,8 @@
          DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
          OMEGA_NEW(:,:) = OMEGA_OLD(:,:)
          DESRESDT = 0.0d0
+         WRITE(*,*) 'DES_RES file read at Time= ', TIME
+         WRITE(UNIT_LOG,*) 'DES_RES file read at Time= ', TIME
          IF(USE_COHESION) THEN
             WRITE(UNIT_LOG,*) 'Restart 1 is not implemented with DES-COHESION'
             WRITE(*,*) 'Restart 1 is not implemented with DES-COHESION'

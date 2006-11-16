@@ -326,28 +326,6 @@
 
 
 !     
-!     Write restart file, if needed
-!     
-      CALL START_LOG 
-      IF (DT == UNDEFINED) THEN 
-         IF (FINISH) THEN 
-            CALL WRITE_RES1 
-            RES_MSG = .FALSE. 
-            IF(DMP_LOG)WRITE (UNIT_LOG, '(" t=",F10.4, "  Wrote RES;")', ADVANCE='NO') TIME 
-            IF (FULL_LOG .and. myPE.eq.PE_IO) THEN
-               WRITE (*, 1000,  ADVANCE="NO") TIME 
-            ENDIF
-         ENDIF 
-      ELSE IF (TIME + 0.1d0*DT>=RES_TIME .OR. TIME+0.1d0*DT>=TSTOP) THEN 
-         RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT 
-         CALL WRITE_RES1 
-         RES_MSG = .FALSE. 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME 
-         IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME 
-      ENDIF 
-!     
-
-!     
 !     Write SPx files, if needed
 !     
       ISPX = 0 
@@ -376,6 +354,7 @@
             CALL WRITE_SPX1 (L, 0) 
             DISK_TOT = DISK_TOT + DISK(L) 
             ISPX = ISPX + 1 
+            IF(DISCRETE_ELEMENT.AND.L.EQ.1.AND.PRINT_DES_DATA) CALL WRITE_DES_DATA
 !     
             IF (SPX_MSG) THEN 
                IF (RES_MSG) THEN 
@@ -403,6 +382,29 @@
          IF(DMP_LOG)WRITE (UNIT_LOG, *) 
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, *) !//
       ENDIF 
+
+!     
+!     Write restart file, if needed
+!     
+      CALL START_LOG 
+      IF (DT == UNDEFINED) THEN 
+         IF (FINISH) THEN 
+            CALL WRITE_RES1 
+            RES_MSG = .FALSE. 
+            IF(DMP_LOG)WRITE (UNIT_LOG, '(" t=",F10.4, "  Wrote RES;")', ADVANCE='NO') TIME 
+            IF (FULL_LOG .and. myPE.eq.PE_IO) THEN
+               WRITE (*, 1000,  ADVANCE="NO") TIME 
+            ENDIF
+         ENDIF 
+      ELSE IF (TIME + 0.1d0*DT>=RES_TIME .OR. TIME+0.1d0*DT>=TSTOP) THEN 
+         RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT 
+         CALL WRITE_RES1 
+         IF(DISCRETE_ELEMENT) CALL WRITE_DES_RESTART
+         RES_MSG = .FALSE. 
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME 
+         IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME 
+      ENDIF 
+!     
 
 !     
       RES_MSG = .TRUE. 

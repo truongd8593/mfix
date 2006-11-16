@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: WRITE_DES_RESTART(PARTS)                               C
+!  Module name: WRITE_DES_RESTART                                      C
 !  Purpose: Writing DES data for restart                               C
 !                                                                      C
 !                                                                      C
@@ -8,7 +8,7 @@
 !  Reviewer:Sreekanth Pannala                         Date: 31-Oct-06  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE WRITE_DES_RESTART(PARTS)
+      SUBROUTINE WRITE_DES_RESTART
 
       USE param1      
       USE discretelement

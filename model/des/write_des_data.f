@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: WRITE_DES_DATA(DES_UNIT)                               C
+!  Module name: WRITE_DES_DATA                                         C
 !  Purpose: Writing DES output in Paraview format                      C
 !                                                                      C
 !                                                                      C
@@ -8,18 +8,24 @@
 !  Reviewer: Sreekanth Pannala                        Date: 31-Oct-06  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE WRITE_DES_DATA(DES_UNIT)
+      SUBROUTINE WRITE_DES_DATA
 
       USE param1      
       USE discretelement
+      USE run
       IMPLICIT NONE
 
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
 
       INTEGER DES_UNIT, LN, K 
       INTEGER POS_Z, VEL_W
+      CHARACTER*5 FILENAME
 
 !---------------------------------------------------------------------------
+
+      DES_UNIT = 99
+      WRITE (FILENAME, 3020) IFI
+      OPEN(UNIT=DES_UNIT, FILE=TRIM(RUN_NAME)//'_DES_'//FILENAME//'.vtp', STATUS='NEW')
 
       POS_Z = 0
       VEL_W = 0
@@ -90,6 +96,10 @@
       WRITE(DES_UNIT,*) '   </Piece>'
       WRITE(DES_UNIT,*) ' </PolyData>'
       WRITE(DES_UNIT,*) ' </VTKFile>'
+    
+      CLOSE(DES_UNIT)
+
+      IFI = IFI+1
       
       RETURN
 
@@ -98,6 +108,6 @@
  3031 FORMAT(A106)
  3032 FORMAT(A87)
 
+ 3020 FORMAT(I5.5)
+
       END SUBROUTINE WRITE_DES_DATA 
-
-

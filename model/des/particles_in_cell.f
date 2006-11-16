@@ -31,6 +31,8 @@
       INTEGER L, I, J, K, M, MM 
       INTEGER IJK, IPJK, IJPK, IJKP
       DOUBLE PRECISION SOLVOLINC(DIMENSION_3,MMAX), OSOLVOL
+!     Logical to see whether this is the first entry to this routine
+      LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
@@ -42,31 +44,35 @@
       DES_V_s(:,:) = ZERO
       DES_W_s(:,:) = ZERO
 
+      IF(FIRST_PASS) THEN
+         FIRST_PASS = .False.
+         XE(1) = ZERO
+         YN(1) = ZERO
+         DO I = IMIN1, IMAX2
+            XE(I) = XE(I-1) + DX(I)
+         END DO
+         DO J  = JMIN1, JMAX2
+            YN(J) = YN(J-1) + DY(J)
+         END DO
+         IF(DIMN.EQ.3) THEN
+            ZT(1) = ZERO
+            DO K = KMIN1, KMAX2
+               ZT(K) = ZT(K-1) + DZ(K)
+            END DO
+         END IF
+      ENDIF
+
       DO L = 1, PARTICLES
 
-	 IF(S_TIME.LE.DTSOLID) THEN
+	 IF(S_TIME.LE.DTSOLID) THEN ! Brute force technique to determine the particle locations in the Eulerian grid
             
+                                ! currently the code does not distinguish different density particles with exactly same size - needs to be fixed
             DO M = 1, MMAX
-               IF(2*DES_RADIUS(L).LE.D_P0(M)) THEN
+               IF(2.0d0*DES_RADIUS(L).EQ.D_P0(M)) THEN
                   PIJK(L,5) = M 
                   RO_S(M) = RO_Sol(L)
                END IF
             END DO
-
-            XE(1) = ZERO
-            YN(1) = ZERO
-            DO I = IMIN1, IMAX2
-               XE(I) = XE(I-1) + DX(I)
-            END DO
-            DO J  = JMIN1, JMAX2
-               YN(J) = YN(J-1) + DY(J)
-            END DO
-            IF(DIMN.EQ.3) THEN
-               ZT(1) = ZERO
-               DO K = KMIN1, KMAX2
-                  ZT(K) = ZT(K-1) + DZ(K)
-               END DO
-            END IF
 
             DO I = IMIN1, IMAX3
                IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I))) THEN
@@ -96,7 +102,7 @@
                END DO
             END IF
 
-         ELSE
+         ELSE                   ! Incremental approach to determine the new location of the particles
 
             I = PIJK(L,1)
             J = PIJK(L,2)
@@ -137,9 +143,9 @@
                   STOP
                END IF
             END IF
-            
+
          END IF
-         
+
  30      CONTINUE
          I = PIJK(L,1)
          J = PIJK(L,2)
@@ -154,7 +160,7 @@
          IF(DIMN.EQ.3) DES_W_s(IJK,MM) = DES_W_s(IJK,MM) + PVOL(L)*DES_VEL_NEW(L,3)
 
       END DO
-      
+
       DO IJK = IJKSTART3, IJKEND3
          K = K_OF(IJK) 
          DO M = 1, MMAX

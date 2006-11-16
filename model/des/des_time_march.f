@@ -47,7 +47,6 @@
 !     
       INTEGER NN, LN, I, J, K, FACTOR, NSN
       DOUBLE PRECISION TEMP_DTS, DTSOLIDTEMP 
-      DOUBLE PRECISION DES_RES_TIME
       CHARACTER*5 FILENAME
 !     Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
@@ -62,9 +61,16 @@
          PTC = ZERO
          INQC = INIT_QUAD_COUNT
 
-         DES_SPX_TIME =  (INT((TIME + 0.1*DT)/SPX_DT(1))+1)*SPX_DT(1)
-         DES_RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT
+!        IF(RUN_TYPE == 'NEW') THEN
+!           DES_SPX_TIME =  TIME
+!           DES_RES_TIME =  TIME
+! ELSE
+!           DES_SPX_TIME = (INT((TIME+DT+0.1d0*DT)/SPX_DT(1))+1)*SPX_DT(1)
+!           DES_RES_TIME = (INT((TIME+DT+0.1d0*DT)/RES_DT)   +1)*RES_DT
+!        ENDIF
+
          PRINT *,'SPX TIME', SPX_DT(1), DES_SPX_TIME
+
          CALL CFASSIGN
 
          IF(RUN_TYPE=='RESTART_1') CALL PARTICLES_IN_CELL
@@ -116,7 +122,7 @@
          NSN = NEIGHBOR_SEARCH_N - 1
          S_TIME = TIME
          IF(DT.GE.DTSOLID) THEN
-            FACTOR = CEILING(real(DT/DTSOLID)) 
+            FACTOR = CEILING(real(DT/DTSOLID)) + 1
          ELSE
             FACTOR = 1
             DTSOLIDTEMP = DTSOLID
@@ -124,7 +130,7 @@
             PRINT *,"DT_SOLID greater than DT_FLUID. DEM is called once"
          END IF
       ELSE
-         FACTOR = CEILING(real(TSTOP/DTSOLID))  
+         FACTOR = CEILING(real(TSTOP/DTSOLID)) + 1
       END IF
       
       PRINT *,"Discrete Element Simulation is being called"&
@@ -135,7 +141,8 @@
       DO NN = 1, FACTOR         !  do NN = 1, FACTOR
          
          IF(DES_CONTINUUM_COUPLED) THEN
-            PRINT *,"DES-MFIX COUPLED", NN, S_TIME
+!           PRINT *,"DES-MFIX COUPLED, ITER, TIMESTEP, TIME", NN, DTSOLID, S_TIME
+            PRINT *,"DES-MFIX COUPLED, ITER, TIME", NN, S_TIME
          ELSE
             PRINT *,"DES", NN, S_TIME
          END IF 
@@ -168,11 +175,13 @@
             IF(.NOT.DES_CONTINUUM_COUPLED) THEN
                PTC = PTC + DTSOLID
                IF(PTC.GE.P_TIME) THEN 
-                  WRITE (FILENAME, 3020) IFI
-                  OPEN(UNIT=99, FILE=FILENAME, STATUS='NEW')
-                  CALL WRITE_DES_DATA(99)
+!                 WRITE (FILENAME, 3020) IFI
+!                 OPEN(UNIT=99, FILE=FILENAME, STATUS='NEW')
+                  CALL WRITE_DES_DATA
+                  WRITE(*,*) 'DES_SPX file written at Time= ', S_TIME
+                  WRITE(UNIT_LOG,*) 'DES_SPX file written at Time= ', S_TIME
                   CLOSE(99)
-                  IFI = IFI + 1
+!                 IFI = IFI + 1
                   PTC = ZERO
                END IF
             END IF
@@ -183,10 +192,13 @@
             DESRESDT = DESRESDT + DTSOLID
             IF(DESRESDT.GE.RES_DT) THEN
                CALL WRITE_DES_RESTART
+               WRITE(*,*) 'DES_RES file written at Time= ', S_TIME
+               WRITE(UNIT_LOG,*) 'DES_RES file written at Time= ', S_TIME
                DESRESDT = 0.0d0
             END IF
          END IF
 
+         IF(S_TIME.GE.(TIME+DT)) EXIT
 
          IF(DES_CONTINUUM_COUPLED) THEN
             IF((S_TIME+DTSOLID).GT.(TIME+DT)) THEN 
@@ -200,22 +212,27 @@
 
       END DO                    ! end do NN = 1, FACTOR
       
-      IF(PRINT_DES_DATA) THEN
-         IF(((TIME+0.1*DT).GE.DES_SPX_TIME) .OR. ((TIME+0.1*DT).GE.TSTOP)) THEN
-            WRITE (FILENAME, 3020) IFI
-            OPEN(UNIT=99, FILE=TRIM(RUN_NAME)//'_DES_'//FILENAME//'.vtp', STATUS='NEW')
-            CALL WRITE_DES_DATA(99)
-            CLOSE(99)
-            DES_SPX_TIME =  (INT((TIME + 0.1*DT)/SPX_DT(1))+1)*SPX_DT(1)
-            IFI = IFI + 1
-         END IF
-      END IF
+!     IF(PRINT_DES_DATA) THEN
+!        IF(((TIME+DT+0.1*DT).GE.DES_SPX_TIME) .OR. ((TIME+DT+0.1*DT).GE.TSTOP)) THEN
+!           WRITE (FILENAME, 3020) IFI
+!           OPEN(UNIT=99, FILE=TRIM(RUN_NAME)//'_DES_'//FILENAME//'.vtp', STATUS='NEW')
+!           CALL WRITE_DES_DATA(99)
+!           CLOSE(99)
+!           DES_SPX_TIME =  (INT((TIME+DT+0.1*DT)/SPX_DT(1))+1)*SPX_DT(1)
+!           IFI = IFI + 1
+!           WRITE(*,*) 'DES_SPX file written at Time= ', TIME+DT
+!           WRITE(UNIT_LOG,*) 'DES_SPX file written at Time= ', TIME+DT
+!        END IF
+!     END IF
       
 !     Write Restart
-      IF(TIME + 0.1d0*DT>=DES_RES_TIME .OR. TIME+0.1d0*DT>=TSTOP) THEN
-         CALL WRITE_DES_RESTART
-         DES_RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT
-      END IF
+!     IF(((TIME+DT+0.1d0*DT)>=DES_RES_TIME).OR.((TIME+DT+0.1d0*DT)>=TSTOP)) THEN
+!        CALL WRITE_DES_RESTART
+!        WRITE(*,*) 'DES_RES file written at Time= ', TIME+DT
+!        WRITE(*,*) 'DES_RES Debug', TIME+1.1*DT, DES_RES_TIME, RES_DT
+!        WRITE(UNIT_LOG,*) 'DES_RES file written at Time= ', TIME+DT
+!        DES_RES_TIME = (INT((TIME+DT+0.1d0*DT)/RES_DT) + 1)*RES_DT
+!     END IF
 
       IF(.NOT.DES_CONTINUUM_COUPLED) TSTOP = DT
 
