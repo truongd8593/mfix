@@ -34,6 +34,9 @@
       WRITE (901) FC
       WRITE (901) OMEGA_NEW
       WRITE (901) TOW
+      WRITE (901) DES_U_s
+      WRITE (901) DES_V_s
+      WRITE (901) DES_W_s
 
       END SUBROUTINE WRITE_DES_RESTART 
 

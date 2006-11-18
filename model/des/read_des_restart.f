@@ -34,6 +34,9 @@
       READ (901) FC
       READ (901) OMEGA_OLD
       READ (901) TOW
+      READ (901) DES_U_s
+      READ (901) DES_V_s
+      READ (901) DES_W_s
 
       END SUBROUTINE READ_DES_RESTART 
 

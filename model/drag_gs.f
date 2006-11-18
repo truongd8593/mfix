@@ -508,29 +508,6 @@
 	 ELSE 
             F_gs(IJK, M) = ZERO 
          ENDIF 
-!         IF(DES_CONTINUUM_COUPLED) THEN
-!           IF(PINC(IJK).GT.0) THEN
-!
-!               SOLID_DRAG(IJK,M,1) = -F_GS(IJK,M)*&
-!                                           (DES_U_S(IJK,M)-UGC)
-!               SOLID_DRAG(IJK,M,2) = -F_GS(IJK,M)*&
-!                                           (DES_V_S(IJK,M)-VGC)
-!               IF(DIMN.EQ.3) THEN
-!                  SOLID_DRAG(IJK,M,3) = -F_GS(IJK,M)*&
-!                                           (DES_W_S(IJK,M)-WGC)
-!               END IF
-!               IF(EP_S(IJK,M).GT.0) THEN
-!                  SOLID_DRAG(IJK,M,1) = SOLID_DRAG(IJK,M,1)/&
-!                                          EP_S(IJK,M)
-!                  SOLID_DRAG(IJK,M,2) = SOLID_DRAG(IJK,M,2)/&
-!                                          EP_S(IJK,M)
-!                  IF(DIMN.EQ.3) THEN
-!                    SOLID_DRAG(IJK,M,3) = SOLID_DRAG(IJK,M,3)/&
-!                                            EP_S(IJK,M)
-!                  END IF
-!               END IF
-!           ENDIF
-!         ENDIF
 
       END DO
       

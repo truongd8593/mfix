@@ -46,7 +46,7 @@
        END IF
 
            IF(DES_CONTINUUM_COUPLED) THEN
-              CALL PARTICLES_IN_CELL(PARTICLES)
+              CALL PARTICLES_IN_CELL
            END IF
 
 !     

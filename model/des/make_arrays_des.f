@@ -31,7 +31,7 @@
          WRITE (*, *) ' '
          WRITE (*, *) 'Cylindrical coordinates are being used. STOP'
          WRITE (*, *) 'DES should only be run using cartesian coordinates.'
-         CALL MFIX_EXIT
+         CALL MFIX_EXIT(myPE)
       END IF
 
       CHECK_MPI = NODESI * NODESJ * NODESK
@@ -42,7 +42,7 @@
          WRITE (*, *) ' '
          WRITE (*, *) 'DES being run on multiple processors. STOP'
          WRITE (*, *) 'DES should only be run serially on one processor.'
-         CALL MFIX_EXIT
+         CALL MFIX_EXIT(myPE)
       END IF
 
       IF(DES_NEIGHBOR_SEARCH.EQ.UNDEFINED_I) THEN
@@ -81,12 +81,12 @@
          IF(USE_COHESION) THEN
             WRITE(UNIT_LOG,*) 'Restart 1 is not implemented with DES-COHESION'
             WRITE(*,*) 'Restart 1 is not implemented with DES-COHESION'
-            CALL MFIX_EXIT
+            CALL MFIX_EXIT(myPE)
          END IF
       ELSE IF (RUN_TYPE == 'RESTART_2') THEN 
          WRITE(UNIT_LOG,*) 'Restart 2 is not implemented with DES'
          WRITE(*,*) 'Restart 2 is not implemented with DES'
-         CALL MFIX_EXIT
+         CALL MFIX_EXIT(myPE)
       END IF
 
       RETURN
