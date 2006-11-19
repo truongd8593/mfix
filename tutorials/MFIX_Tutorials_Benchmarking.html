@@ -1,401 +1,735 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <title>MFIX Tutorials Benchmarking</title>
-  <meta http-equiv="content-type"
- content="text/html; charset=ISO-8859-1">
-</head>
-<body alink="#000088" bgcolor="#33ccff" link="#0000ff" text="#000000"
- vlink="#ff0000">
-Simulations in tutorials directory<br>
-<table style="width: 1360px; height: 758px;" border="1" cellpadding="2"
- cellspacing="2">
-  <tbody>
-    <tr>
-      <td>Name </td>
-      <td>Fluid </td>
-      <td>Solids </td>
-      <td>Moment </td>
-      <td>Energy </td>
-      <td>Species </td>
-      <td>Cyclic </td>
-      <td>Rxns </td>
-      <td>Transient</td>
-      <td style="vertical-align: top;"><br>
-      <br>
-K_Eps<br>
-      </td>
-      <td style="vertical-align: top;"><br>
-DES <br>
-for <br>
-Solids<br>
-      </td>
-      <td valign="top">Linux P IV 1.7 GHz<br>
-06/07/02<br>
--Lina<br>
-      </td>
-      <td valign="top">Linux P IV 1.7 GHz<br>
-09/01/03<br>
--Sreekanth<br>
-      </td>
-      <td style="vertical-align: top;">Linux P IV 3 GHz<br>
-ifort 8.034 <br>
-06/25/04<br>
--Jay Boyalakuntla<br>
-      </td>
-      <td style="vertical-align: top;">Linux PIV 3 GHz <br>
-ifort 8.1 <br>
-(08/02/2005)
-- Sreekanth<br>
-      <font color="#ff0000">Not Dedicated using Intel Compiler</font></td>
-      <td style="vertical-align: top;">Linux PIV 3 GHz <br>
-ifort 8.1 <br>
-(09/02/2005)
-- Sreekanth<br>
-      <font color="#ff0000">Not Dedicated using Intel Compiler</font></td>
-      <td style="vertical-align: top;">Linux P IV 3 GHz<br>
-ifort 8.1<br>
-12/10.05<br>
--Jay Boyalakuntla<font color="#ff0000">&nbsp;</font> </td>
-    </tr>
-    <tr>
-      <td>3dCFB </td>
-      <td>X </td>
-      <td>X </td>
-      <td>X </td>
-      <td>. </td>
-      <td>. </td>
-      <td>X </td>
-      <td>. </td>
-      <td>X</td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td valign="top">45897 secs<br>
-      </td>
-      <td valign="top">46969 secs<br>
-      </td>
-      <td style="vertical-align: top;">23919 secs<br>
-      </td>
-      <td style="vertical-align: top;">27395 secs<br>
-      </td>
-      <td style="vertical-align: top;">11091 secs<br>
-(Triggered Norm_g=0 and Norm_s=0) </td>
-      <td style="vertical-align: top;">39680.26 s<br>
-      </td>
-    </tr>
-    <tr>
-      <td>3dFluidbed </td>
-      <td>X </td>
-      <td>X </td>
-      <td>X </td>
-      <td>. </td>
-      <td>. </td>
-      <td>X </td>
-      <td>. </td>
-      <td>X</td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td valign="top">4108.72 secs<br>
-      </td>
-      <td valign="top">3885.26 secs<br>
-      </td>
-      <td style="vertical-align: top;">1859 secs<br>
-      </td>
-      <td style="vertical-align: top;">1376 secs<br>
-      </td>
-      <td style="vertical-align: top;">1311 secs<br>
-      </td>
-      <td style="vertical-align: top;">1255.395<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">FluidBEd_DES<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">49.18 secs<br>
-      </td>
-      <td style="vertical-align: top;">55.98 secs<br>
-      </td>
-      <td style="vertical-align: top;">49.14 secs<br>
-      </td>
-      <td style="vertical-align: top;">42.14 s<br>
-      </td>
-    </tr>
-    <tr>
-      <td>Fluidbed1 </td>
-      <td>X </td>
-      <td>X </td>
-      <td>X </td>
-      <td>. </td>
-      <td>. </td>
-      <td>X </td>
-      <td>. </td>
-      <td>X</td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td valign="top">529.835 secs<br>
-      </td>
-      <td valign="top">670 secs<br>
-      </td>
-      <td style="vertical-align: top;">263 secs<br>
-      </td>
-      <td style="vertical-align: top;">343&nbsp; secs <br>
-      </td>
-      <td style="vertical-align: top;">249 secs<br>
-      </td>
-      <td style="vertical-align: top;">221.90 s<br>
-      </td>
-    </tr>
-    <tr>
-      <td>Fluidbed2 </td>
-      <td>X </td>
-      <td>X </td>
-      <td>X </td>
-      <td>. </td>
-      <td>. </td>
-      <td>X </td>
-      <td>. </td>
-      <td>X</td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td valign="top">708.460 secs<br>
-      </td>
-      <td valign="top">883 secs<br>
-      </td>
-      <td style="vertical-align: top;">352 secs<br>
-      </td>
-      <td style="vertical-align: top;">407 secs<br>
-      </td>
-      <td style="vertical-align: top;">328 secs<br>
-      </td>
-      <td style="vertical-align: top;">326.22 s<br>
-      </td>
-    </tr>
-    <tr>
-      <td>reactor1 - a </td>
-      <td>X </td>
-      <td>X </td>
-      <td>X(Only Y-gas) </td>
-      <td>. </td>
-      <td>X </td>
-      <td>. </td>
-      <td>X </td>
-      <td>.</td>
-      <td style="vertical-align: top;">.<br>
-      <br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td valign="top">0.540 secs<br>
-75 iters<br>
-      </td>
-      <td valign="top">0.54 secs<br>
-27 iters<br>
-      </td>
-      <td style="vertical-align: top;">0.18 secs<br>
-      </td>
-      <td style="vertical-align: top;">&nbsp;0.14 secs<br>
-16 iters<br>
-      </td>
-      <td style="vertical-align: top;">0.14 secs<br>
-18 iters<br>
-      </td>
-      <td style="vertical-align: top;">0.049 s<br>
-      </td>
-    </tr>
-    <tr>
-      <td valign="top">reactor1 - b<br>
-      </td>
-      <td valign="top">X<br>
-      </td>
-      <td valign="top">X<br>
-      </td>
-      <td valign="top">X(Only Y-gas)<br>
-      </td>
-      <td valign="top">.<br>
-      </td>
-      <td valign="top">X<br>
-      </td>
-      <td valign="top">.<br>
-      </td>
-      <td valign="top">X<br>
-      </td>
-      <td valign="top">.<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td valign="top">0.484 secs<br>
-72 iters<br>
-      </td>
-      <td valign="top">0.22 secs<br>
-27 iters<br>
-      </td>
-      <td style="vertical-align: top;">0.17 secs<br>
-      </td>
-      <td style="vertical-align: top;">0.14 secs<br>
-16 iters<br>
-      </td>
-      <td style="vertical-align: top;">0.14 secs<br>
-16 iters<br>
-      </td>
-      <td style="vertical-align: top;">0.044 s<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">SpoutedBedCombustor<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">.<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">80.65 secs<br>
-      </td>
-      <td style="vertical-align: top;">675 secs<br>
-      </td>
-      <td style="vertical-align: top;">74 secs<br>
-      </td>
-      <td style="vertical-align: top;">1176.63 s<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">Fully_Developed_With_AhmadiModel<br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">585 secs<br>
-      </td>
-      <td style="vertical-align: top;"><span
- style="color: rgb(0, 0, 0);">523 secs</span><br>
-      </td>
-      <td style="vertical-align: top;">736.74 s<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">Gidaspow_fbed_With_SimoninModel<br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">X<br>
-      </td>
-      <td style="vertical-align: top;">32765 secs<br>
-      </td>
-      <td style="vertical-align: top;">13481 secs<br>
-(Relaxed dt_max criterion and triggered Norm_g=0 and Norm_s=0)<br>
-      </td>
-      <td style="vertical-align: top;">16874.60 s<br>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-</body>
-</html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE>MFIX Tutorials Benchmarking</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
+	<META NAME="CREATED" CONTENT="20061119;14583800">
+	<META NAME="CHANGEDBY" CONTENT="Sreekanth Pannala">
+	<META NAME="CHANGED" CONTENT="20061119;15172300">
+	<STYLE TYPE="text/css">
+	<!--
+		TD P { color: #000000 }
+		P { color: #000000 }
+		A:link { color: #0000ff }
+		A:visited { color: #ff0000 }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" TEXT="#000000" LINK="#0000ff" VLINK="#ff0000" BGCOLOR="#33ccff" DIR="LTR">
+<P STYLE="margin-bottom: 0in">Simulations in tutorials directory</P>
+<TABLE WIDTH=1651 BORDER=1 CELLPADDING=2 CELLSPACING=3>
+	<COL WIDTH=209>
+	<COL WIDTH=40>
+	<COL WIDTH=49>
+	<COL WIDTH=81>
+	<COL WIDTH=54>
+	<COL WIDTH=60>
+	<COL WIDTH=50>
+	<COL WIDTH=40>
+	<COL WIDTH=68>
+	<COL WIDTH=39>
+	<COL WIDTH=47>
+	<COL WIDTH=112>
+	<COL WIDTH=112>
+	<COL WIDTH=112>
+	<COL WIDTH=112>
+	<COL WIDTH=112>
+	<COL WIDTH=112>
+	<COL WIDTH=108>
+	<TR>
+		<TD WIDTH=209>
+			<P>Name 
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>Fluid 
+			</P>
+		</TD>
+		<TD WIDTH=49>
+			<P>Solids 
+			</P>
+		</TD>
+		<TD WIDTH=81>
+			<P>Moment 
+			</P>
+		</TD>
+		<TD WIDTH=54>
+			<P>Energy 
+			</P>
+		</TD>
+		<TD WIDTH=60>
+			<P>Species 
+			</P>
+		</TD>
+		<TD WIDTH=50>
+			<P>Cyclic 
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>Rxns 
+			</P>
+		</TD>
+		<TD WIDTH=68>
+			<P>Transient</P>
+		</TD>
+		<TD WIDTH=39>
+			<P><BR><BR>K_Eps</P>
+		</TD>
+		<TD WIDTH=47>
+			<P><BR>DES <BR>for <BR>Solids</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>Linux P IV 1.7 GHz<BR>06/07/02<BR>-Lina</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>Linux P IV 1.7 GHz<BR>09/01/03<BR>-Sreekanth</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>Linux P IV 3 GHz<BR>ifort 8.034 <BR>06/25/04<BR>-Jay
+			Boyalakuntla</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>Linux PIV 3 GHz <BR>ifort 8.1 <BR>(08/02/2005) - Sreekanth<BR><FONT COLOR="#ff0000">Not
+			Dedicated using Intel Compiler</FONT></P>
+		</TD>
+		<TD WIDTH=112>
+			<P>Linux PIV 3 GHz <BR>ifort 8.1 <BR>(09/02/2005) - Sreekanth<BR><FONT COLOR="#ff0000">Not
+			Dedicated using Intel Compiler</FONT></P>
+		</TD>
+		<TD WIDTH=112>
+			<P>Linux P IV 3 GHz<BR>ifort 8.1<BR>12/10.05<BR>-Jay Boyalakuntla<FONT COLOR="#ff0000">&nbsp;</FONT>
+						</P>
+		</TD>
+		<TD WIDTH=108>
+			<P>Linux AMD Opeteron 270<BR>ifort 9.0<BR>11/18/2006<BR>-Sreekanth<FONT COLOR="#ff0000">&nbsp;</FONT></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=209>
+			<P>3dCFB 
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=49>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=81>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=54>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=60>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=50>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=68>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=47>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>45897 secs</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>46969 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>23919 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>27395 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>11091 secs<BR>(Triggered Norm_g=0 and Norm_s=0) 
+			</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>39680.26 s</P>
+		</TD>
+		<TD WIDTH=108>
+			<P>8224 s</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=209>
+			<P>3dFluidbed 
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=49>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=81>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=54>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=60>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=50>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=68>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=47>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>4108.72 secs</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>3885.26 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>1859 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>1376 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>1311 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>1255.395</P>
+		</TD>
+		<TD WIDTH=108>
+			<P>1332 s</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=209>
+			<P>FluidBEd_DES</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=49>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=81>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=54>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=60>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=50>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=68>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=47>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>49.18 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>55.98 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>49.14 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>42.14 s</P>
+		</TD>
+		<TD WIDTH=108>
+			<P>2323 s (10 second simulation time)</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=209>
+			<P>Fluidbed1 
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=49>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=81>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=54>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=60>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=50>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=68>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=47>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>529.835 secs</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>670 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>263 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>343&nbsp; secs 
+			</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>249 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>221.90 s</P>
+		</TD>
+		<TD WIDTH=108>
+			<P>222 s</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=209>
+			<P>Fluidbed2 
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=49>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=81>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=54>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=60>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=50>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=68>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=47>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>708.460 secs</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>883 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>352 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>407 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>328 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>326.22 s</P>
+		</TD>
+		<TD WIDTH=108>
+			<P>298 s</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=209>
+			<P>reactor1a 
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=49>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=81>
+			<P>X(Only Y-gas) 
+			</P>
+		</TD>
+		<TD WIDTH=54>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=60>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=50>
+			<P>. 
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>X 
+			</P>
+		</TD>
+		<TD WIDTH=68>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=47>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>0.540 secs<BR>75 iters</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>0.54 secs<BR>27 iters</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>0.18 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>&nbsp;0.14 secs<BR>16 iters</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>0.14 secs<BR>18 iters</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>0.049 s</P>
+		</TD>
+		<TD WIDTH=108>
+			<P>0.047s</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=209 VALIGN=TOP>
+			<P>reactor1b</P>
+		</TD>
+		<TD WIDTH=40 VALIGN=TOP>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=49 VALIGN=TOP>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=81 VALIGN=TOP>
+			<P>X(Only Y-gas)</P>
+		</TD>
+		<TD WIDTH=54 VALIGN=TOP>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=60 VALIGN=TOP>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=50 VALIGN=TOP>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=40 VALIGN=TOP>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=68 VALIGN=TOP>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=47>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>0.484 secs<BR>72 iters</P>
+		</TD>
+		<TD WIDTH=112 VALIGN=TOP>
+			<P>0.22 secs<BR>27 iters</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>0.17 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>0.14 secs<BR>16 iters</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>0.14 secs<BR>16 iters</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>0.044 s</P>
+		</TD>
+		<TD WIDTH=108>
+			<P>0.051s</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=209>
+			<P>SpoutedBedCombustor</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=49>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=81>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=54>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=60>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=50>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=40>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=68>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=47>
+			<P>.</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>80.65 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>675 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>74 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>1176.63 s</P>
+		</TD>
+		<TD WIDTH=108>
+			<P>746 s</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=209>
+			<P>Fully_Developed_With_AhmadiModel</P>
+		</TD>
+		<TD WIDTH=40>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=49>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=81>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=54>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=60>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=50>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=68>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=39>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=47>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>585 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>523 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>736.74 s</P>
+		</TD>
+		<TD WIDTH=108>
+			<P>738 s</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=209>
+			<P>Gidaspow_fbed_With_SimoninModel</P>
+		</TD>
+		<TD WIDTH=40>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=49>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=81>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=54>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=60>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=50>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=40>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=68>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=39>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=47>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>X</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>32765 secs</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>13481 secs<BR>(Relaxed dt_max criterion and triggered Norm_g=0
+			and Norm_s=0)</P>
+		</TD>
+		<TD WIDTH=112>
+			<P>16874.60 s</P>
+		</TD>
+		<TD WIDTH=108>
+			<P>9933 s</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR>
+</P>
+</BODY>
+</HTML>

@@ -42,20 +42,20 @@ sh ~/MFIX/mfix/model/make_mfix < ../in
 cd ..
 # Another case
 echo
-cd reactor1/a
+cd reactor1a
 echo "********************************************************************"
-echo "reactor1/a"
-sh ~/MFIX/mfix/model/make_mfix < ../../in
+echo "reactor1a"
+sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
-cd ../..
+cd ..
 # Another case
 echo
-cd reactor1/b
+cd reactor1b
 echo "********************************************************************"
-echo "reactor1/b"
-sh ~/MFIX/mfix/model/make_mfix < ../../in
+echo "reactor1b"
+sh ~/MFIX/mfix/model/make_mfix < ../in
 ./mfix.exe > out1
-cd ../..
+cd ..
 # Another case
 echo
 cd SpoutedBedCombustor

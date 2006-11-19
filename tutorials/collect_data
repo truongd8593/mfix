@@ -37,18 +37,18 @@ tail -20 out1
 cd ..
 # Another case
 echo
-cd reactor1/a
+cd reactor1a
 echo "********************************************************************"
-echo "reactor1/a"
+echo "reactor1a"
 tail -20 out1 
-cd ../..
+cd ..
 # Another case
 echo
-cd reactor1/b
+cd reactor1b
 echo "********************************************************************"
-echo "reactor1/b"
+echo "reactor1b"
 tail -20 out1 
-cd ../..
+cd ..
 # Another case
 echo
 cd SpoutedBedCombustor
