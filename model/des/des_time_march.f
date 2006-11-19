@@ -198,7 +198,7 @@
             END IF
          END IF
 
-         IF(S_TIME.GE.(TIME+DT)) EXIT
+         IF(DES_CONTINUUM_COUPLED.AND.S_TIME.GE.(TIME+DT)) EXIT
 
          IF(DES_CONTINUUM_COUPLED) THEN
             IF((S_TIME+DTSOLID).GT.(TIME+DT)) THEN 
