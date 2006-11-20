@@ -20,11 +20,15 @@
       INTEGER DES_UNIT, LN, K 
       INTEGER POS_Z, VEL_W
       CHARACTER*5 FILENAME
+      CHARACTER*6 IPART
+      CHARACTER*106 INUMBER
 
 !---------------------------------------------------------------------------
 
       DES_UNIT = 99
       WRITE (FILENAME, 3020) IFI
+      WRITE (IPART, 3021) PARTICLES
+      INUMBER = '     <Piece NumberOfPoints="'//TRIM(ADJUSTL(IPART))//'" NumberOfVerts="0" NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
       OPEN(UNIT=DES_UNIT, FILE=TRIM(RUN_NAME)//'_DES_'//FILENAME//'.vtp', STATUS='NEW')
 
       POS_Z = 0
@@ -35,7 +39,7 @@
 !     WRITE(DES_UNIT,*) '<?Time =',S_TIME,'s?>'
       WRITE(DES_UNIT,3030) ' <VTKFile type="PolyData" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">'
       WRITE(DES_UNIT,*) '  <PolyData>'
-      WRITE(DES_UNIT,3031) '    <Piece NumberOfPoints="2400" NumberOfVerts="0" NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
+      WRITE(DES_UNIT,3031) INUMBER
       WRITE(DES_UNIT,*) '      <PointData Scalars="Diameter">'
       WRITE(DES_UNIT,*) '        <DataArray type="Float64" Name="Diameter" format="ascii">'
       DO LN = 1, PARTICLES
@@ -109,5 +113,6 @@
  3032 FORMAT(A87)
 
  3020 FORMAT(I5.5)
+ 3021 FORMAT(I6)
 
       END SUBROUTINE WRITE_DES_DATA 
