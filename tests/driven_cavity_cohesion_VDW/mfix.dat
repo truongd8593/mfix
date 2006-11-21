@@ -24,7 +24,6 @@
   MOMENTUM_Y_EQ(1) = .FALSE.
   MOMENTUM_Z_EQ(1) = .FALSE.
 
-  TIME_ADJUST = .FALSE.
 !  NORM_G = 1.0
 
   MAX_NIT = 2500
@@ -77,12 +76,11 @@
   IC_Y_s          	=  0.0
   IC_Y_n           	=  3.0
                                 	! initial values in the region
-  IC_EP_g          	=  0.42		! void fraction
+  IC_EP_g          	=  1.0		! void fraction
   IC_U_g           	=  0.0		! x-dir gas velocity
   IC_V_g          	=  0.0	! y-dir gas velocity
 
   IC_P_g           =  0.0
-  IC_T_g           = 300.0
 
   IC_U_s(1,1) = 0.0
   IC_V_s(1,1) = 0.0
@@ -108,20 +106,9 @@
 ! Begin
 ! Parameters
 
-DIMN = 2 
-WX1 = 0
-EX2 = 3
-BY1 = 0
-TY2 = 3 
-SZ1 =0
-NZ2 = 1
-DTSOLID = 0.000005
 PARTICLES = 49
-ZONES = 1
-ZN1 = 49				! particles based on size or density etc.
 MN = 8
-RADIUS_EQ = 0.075
-FACTOR = 210
+
 KN = 800000
 KT = 800000
 ETA_DES_N = 18
@@ -132,13 +119,11 @@ KT_W = 1200000
 ETA_N_W = 22
 ETA_T_W = 22
 MEW_W = 0.1
-E_RESTITUTION = 0.9
-DES_GAMMA = 0.0
-DES_F = 0.0
-ROs = 2.7
-GRAV(1) = 0
-GRAV(2) = 0 
-GRAV(3) = 0 
+DES_NEIGHBOR_SEARCH = 1
+DTSOLID_FACTOR = 0.1D0
+P_TIME = 10.0
+PRINT_DES_DATA = .TRUE.
+NFACTOR = 0
 
 USE_COHESION=.TRUE.
 SQUARE_WELL=.FALSE.
@@ -156,12 +141,10 @@ WALL_VDW_OUTER_CUTOFF=0.01
 COHESION_DEBUG=0
 FOCUS_PARTICLE=4004
 
-
-
 !  DES Logicals
 DISCRETE_ELEMENT = .TRUE.
 WALLDTSPLIT = .TRUE.
-COUPLED_FLOW = .TRUE.
+DES_CONTINUUM_COUPLED = .TRUE.
 TSUJI_DRAG = .TRUE.
 
 ! End DES Input
