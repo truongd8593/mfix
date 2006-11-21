@@ -15,6 +15,7 @@
 !     the input deck, than flag an error. 
 !
 !  Author: Jay Boyalakuntla  (May-12-06)
+! Modified: S. Pannala (Nov-21-06)
 !
 !******************************************************************
 !
@@ -30,11 +31,11 @@
         integer n, np, np1
 	integer nx, ny, nz
 
-	real xp, yp, zp, x(maxp), y(maxp), z(maxp)
-	real u, v, w
-        real xl, yl, zl
-        real radius, dia, dist, rad1 
-        real density
+	real*8 xp, yp, zp, x(maxp), y(maxp), z(maxp)
+	real*8 u, v, w
+        real*8 xl, yl, zl
+        real*8 radius, dia, dist, rad1 
+        real*8 density
 
         open(unit=10, file="Pgen.in", status='old')
         open(unit=20, file="particle_input.dat", status='replace')
@@ -52,10 +53,10 @@
         rad1 = 1.05*rad
 
 	nx = xl/dia
-	nz = ceiling(real(zl/dia)) 
+	nz = ceiling(real(zl/dia)) + 1
         if(dim.eq.2) nz = 1  
-        np1 = ceiling(real(np/nz))
-        ny = ceiling(real(np1/nx)) 
+        np1 = ceiling(real(np/nz))+ 1
+        ny = ceiling(real(np1/nx)) + 1
 
 !       Specifying the initial distribution of the particles
 	
@@ -105,13 +106,16 @@
 	
         if(dim.eq.2) then
            do i = 1, np
-	      write(20,*) x(i), y(i), radius, density, u, v
+	      write(20,11) x(i), y(i), radius, density, u, v
            end do
 	else
            do i = 1, np
-	      write(20,*) x(i), y(i), z(i), radius, density, u, v, w
+	      write(20,12) x(i), y(i), z(i), radius, density, u, v, w
            end do
 	end if
+
+ 11     FORMAT (6(d10.4,2x))
+ 12     FORMAT (8(d10.4,2x))
 
         stop
         end
@@ -125,9 +129,9 @@
         subroutine random_particle(rad, xp1, yp1, zp1, xl1, yl1, zl1, dim1)
 
         integer i, dim1, ic
-        real rad, xp1, yp1, zp1, xl1, yl1, zl1
-        real rad1 
-        real pxy(3)
+        real*8 rad, xp1, yp1, zp1, xl1, yl1, zl1
+        real*8 rad1 
+        real*8 pxy(3)
 
 	   ic = 100000
            do i = 1, ic
