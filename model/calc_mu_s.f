@@ -671,9 +671,9 @@
                
 	    ELSE IF(AHMADI) THEN
 !
-              IF(EP_s(IJK,M) < (ONE-ep_star)) THEN
+              IF(EP_s(IJK,M) < (ONE-EP_star_array(ijk))) THEN
 	        Tmp_Ahmadi_Const = &
-	          ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/(ONE-ep_star))**3)
+	          ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/(ONE-EP_star_array(ijk)))**3)
               ELSE
 	        Tmp_Ahmadi_Const = ONE
               ENDIF
