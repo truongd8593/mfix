@@ -173,7 +173,7 @@
 	     IF(AHMADI .AND. F_GS(IJK,1) > small_number) THEN
 	       Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
 	       C_MU = &
-	          C_MU/(ONE+ Tau_12_st/Tau_1(ijk) * (EP_s(IJK,M)/(ONE-ep_star))**3)
+	          C_MU/(ONE+ Tau_12_st/Tau_1(ijk) * (EP_s(IJK,M)/(ONE-EP_star_array(ijk)))**3)
 	     ENDIF
 
 ! Definition of the turbulent viscosity

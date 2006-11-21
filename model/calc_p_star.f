@@ -98,8 +98,8 @@
                 ep_g_blend_start(ijk) = ep_star_array(ijk) * 0.99d0
                 ep_g_blend_end(ijk)   = ep_star_array(ijk) * 1.01d0
               ELSE IF(BLENDING_STRESS.AND.SIGM_BLEND) THEN
-                ep_g_blend_start(ijk) = ep_star * 0.97d0
-                ep_g_blend_end(ijk) = ep_star * 1.01d0
+                ep_g_blend_start(ijk) = EP_star_array(ijk) * 0.97d0
+                ep_g_blend_end(ijk) = EP_star_array(ijk) * 1.01d0
               ELSE
                 ep_g_blend_start(ijk) = ep_star_array(ijk)
                 ep_g_blend_end(ijk)   = ep_star_array(ijk)
