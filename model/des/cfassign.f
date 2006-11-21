@@ -60,10 +60,13 @@
       EX2 = XLENGTH 
       BY1 = ZERO
       TY2 = YLENGTH 
-      SZ1 = ZERO
-      NZ2 = ZLENGTH
-      SZ1 = ZERO 
-      NZ2 = 2*RADIUS_EQ
+      IF((DIMN.EQ.2).AND.(COORDINATES == 'CARTESIAN')) THEN
+         SZ1 = ZERO 
+         NZ2 = 2*RADIUS_EQ
+      ELSE
+         SZ1 = ZERO
+         NZ2 = ZLENGTH
+      ENDIF
 
       IF((DIMN.EQ.2).AND.(COORDINATES == 'CARTESIAN')) THEN
          DZ(:) = 2D0*RADIUS_EQ

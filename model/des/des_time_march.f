@@ -69,11 +69,11 @@
 !           DES_RES_TIME = (INT((TIME+DT+0.1d0*DT)/RES_DT)   +1)*RES_DT
 !        ENDIF
 
-         PRINT *,'SPX TIME', SPX_DT(1), DES_SPX_TIME
+!        PRINT *,'SPX TIME', SPX_DT(1), DES_SPX_TIME
 
          CALL CFASSIGN
 
-         IF(RUN_TYPE=='RESTART_1') CALL PARTICLES_IN_CELL
+         CALL PARTICLES_IN_CELL
 
 !     !COHESION INITIALIZE
          IF(USE_COHESION)THEN
@@ -88,7 +88,7 @@
          IF(RUN_TYPE == 'NEW') THEN
             IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
                DES_CONTINUUM_COUPLED = .FALSE.
-               DO FACTOR = 1, 500
+               DO FACTOR = 1, NFACTOR
                   PRINT *,'DES', FACTOR 
 !     New values
                   DO LN = 1, PARTICLES
@@ -112,7 +112,6 @@
                END DO
                DES_CONTINUUM_COUPLED = .TRUE.
                CALL PARTICLES_IN_CELL
-               RETURN           ! exit subroutine
             END IF
          END IF ! end if on new run type
 
@@ -139,7 +138,7 @@
       IF(NEIGHBOR_SEARCH_N.GT.FACTOR) NEIGHBOR_SEARCH_N = FACTOR
 
       DO NN = 1, FACTOR         !  do NN = 1, FACTOR
-         
+
          IF(DES_CONTINUUM_COUPLED) THEN
 !           PRINT *,"DES-MFIX COUPLED, ITER, TIMESTEP, TIME", NN, DTSOLID, S_TIME
             PRINT *,"DES-MFIX COUPLED, ITER, TIME", NN, S_TIME
@@ -150,6 +149,7 @@
 !     New values
          DO LN = 1, PARTICLES
             CALL CFNEWVALUES(LN)
+!           write(*,*) ln, des_pos_new(ln,:), des_vel_new(ln,:)
          END DO
          
 !     Neighbor search     

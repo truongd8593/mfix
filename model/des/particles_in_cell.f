@@ -32,7 +32,7 @@
       INTEGER IJK, IPJK, IJPK, IJKP
       DOUBLE PRECISION SOLVOLINC(DIMENSION_3,MMAX), OSOLVOL
 !     Logical to see whether this is the first entry to this routine
-      LOGICAL,SAVE:: FIRST_PASS = .TRUE.
+      LOGICAL,SAVE:: FIRST_PASS1 = .TRUE.
 
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
@@ -44,8 +44,7 @@
       DES_V_s(:,:) = ZERO
       DES_W_s(:,:) = ZERO
 
-      IF(FIRST_PASS) THEN
-         FIRST_PASS = .False.
+      IF(FIRST_PASS1) THEN
          XE(1) = ZERO
          YN(1) = ZERO
          DO I = IMIN1, IMAX2
@@ -64,15 +63,20 @@
 
       DO L = 1, PARTICLES
 
-	 IF(S_TIME.LE.DTSOLID) THEN ! Brute force technique to determine the particle locations in the Eulerian grid
+	 IF(S_TIME.LE.DTSOLID.OR.FIRST_PASS1) THEN ! Brute force technique to determine the particle locations in the Eulerian grid
             
                                 ! currently the code does not distinguish different density particles with exactly same size - needs to be fixed
             DO M = 1, MMAX
-               IF(2.0d0*DES_RADIUS(L).EQ.D_P0(M)) THEN
+               IF(ABS(2.0d0*DES_RADIUS(L)-D_P0(M)).LT.SMALL_NUMBER) THEN
                   PIJK(L,5) = M 
                   RO_S(M) = RO_Sol(L)
                END IF
             END DO
+ 
+            IF(PIJK(L,5).EQ.0) THEN
+              WRITE(*,*) 'Problem determining the solids association in PIC', L, DES_RADIUS(L), D_P0
+            ENDIF
+
 
             DO I = IMIN1, IMAX3
                IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I))) THEN
@@ -90,6 +94,7 @@
             END DO
 
  20         CONTINUE
+!           write(*,*) 'pijk', L, PIJK(L,1),  PIJK(L,2)
             IF(DIMN.EQ.2) THEN
                PIJK(L,3)  = 1
                GO TO 30
@@ -101,38 +106,41 @@
                   END IF
                END DO
             END IF
+           
 
          ELSE                   ! Incremental approach to determine the new location of the particles
 
             I = PIJK(L,1)
             J = PIJK(L,2)
             K = PIJK(L,3)
-            IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I))) THEN
+!           write(*,*) 'pijk2', L, PIJK(L,1),  PIJK(L,2) , XE(I-1), XE(I)
+            IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I)).OR.I.EQ.1) THEN
                GO TO 40 
             ELSE IF(DES_VEL_NEW(L,1).GT.ZERO) THEN
                IF((DES_POS_NEW(L,1).GE.XE(I)).AND.(DES_POS_NEW(L,1).LT.XE(I+1))) PIJK(L,1) = I+1
             ELSE IF(DES_VEL_NEW(L,1).LT.ZERO) THEN
                IF((DES_POS_NEW(L,1).GE.XE(I-2)).AND.(DES_POS_NEW(L,1).LT.XE(I-1))) PIJK(L,1) = I-1
             ELSE 
-               PRINT *,'des/particles_in_cell.f : CHECK CELL I' 
+               PRINT *,'des/particles_in_cell.f : CHECK CELL I' , PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,1), DES_VEL_NEW(L,1)
                STOP
             END IF
  40         CONTINUE
-            IF((DES_POS_NEW(L,2).GE.YN(J-1)).AND.(DES_POS_NEW(L,2).LT.YN(J))) THEN
+!           write(*,*) 'pijk2', L, PIJK(L,1),  PIJK(L,2) 
+            IF((DES_POS_NEW(L,2).GE.YN(J-1)).AND.(DES_POS_NEW(L,2).LT.YN(J)).OR.J.EQ.1) THEN
                GO TO 50 
             ELSE IF(DES_VEL_NEW(L,2).GT.ZERO) THEN
                IF((DES_POS_NEW(L,2).GE.YN(J)).AND.(DES_POS_NEW(L,2).LT.YN(J+1))) PIJK(L,2) = J+1
             ELSE IF(DES_VEL_NEW(L,2).LT.ZERO) THEN
                IF((DES_POS_NEW(L,2).GE.YN(J-2)).AND.(DES_POS_NEW(L,2).LT.YN(J-1))) PIJK(L,2) = J-1
             ELSE
-               PRINT *,'des/particles_in_cell.f : CHECK CELL I' 
+               PRINT *,'des/particles_in_cell.f : CHECK CELL J' 
                STOP
             END IF
  50         CONTINUE
             IF(DIMN.EQ.2) THEN
                PIJK(L,3) = 1
             ELSE
-               IF((DES_POS_NEW(L,3).GE.ZT(K-1)).AND.(DES_POS_NEW(L,3).LT.ZT(K))) THEN
+               IF((DES_POS_NEW(L,3).GE.ZT(K-1)).AND.(DES_POS_NEW(L,3).LT.ZT(K)).OR.K.EQ.1) THEN
                   GO TO 30 
                ELSE IF(DES_VEL_NEW(L,3).GT.ZERO) THEN
                   IF((DES_POS_NEW(L,3).GE.ZT(K)).AND.(DES_POS_NEW(L,3).LT.ZT(K+1))) PIJK(L,3) = K+1
@@ -182,6 +190,8 @@
             END IF
          END DO
       END DO
+
+      FIRST_PASS1 = .False.
 
       RETURN
       END SUBROUTINE PARTICLES_IN_CELL

@@ -45,6 +45,7 @@
                  NMQD = 7
               END IF
               PBP = 0.2*PARTICLES
+              NFACTOR = 500
       
                   DISCRETE_ELEMENT = .FALSE.
                   DO_QUADTREE = .FALSE.
