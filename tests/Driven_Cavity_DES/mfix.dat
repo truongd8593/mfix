@@ -50,15 +50,15 @@
                                                                              
 ! Gas-phase Section                                                             
  
-  MU_g0 		= 6.75 		        !constant gas viscosity
-  RO_g0			= 0.75D0		!constant gas density
+  MU_g0 		= 2.0e-3 	        !constant gas viscosity
+  RO_g0			= 1.205E-2		!constant gas density
 
  
 ! Solids-phase Section                                                  
 
 
-  RO_s    		= 0.75 			!solids density
-  D_p0     		= 0.1001		!particle diameter
+  RO_s    		= 1.205E-2 		!solids density
+  D_p0     		= 0.1D0 		!particle diameter
   e       		= 0.9 			!restitution coefficient
   Phi    		= 30.0			!angle of internal friction
   EP_star 		= 0.42			!void fraction at minimum
@@ -114,6 +114,8 @@ MEW_W = 0.1
 DES_NEIGHBOR_SEARCH = 1
 DTSOLID_FACTOR = 0.1D0
 P_TIME = 10.0
+PRINT_DES_DATA = .TRUE.
+NFACTOR = 0
 
 !  DES Logicals
 DISCRETE_ELEMENT = .TRUE.
