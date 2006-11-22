@@ -109,6 +109,13 @@
             'The only option for KT_TYPE is IA_NONEP', 1, 1)
       ENDIF
 !
+! sof: Check name of radial distribution function
+      IF (RDF_TYPE /= 'LEBOWITZ') THEN
+         IF(RDF_TYPE /= 'MODIFIED_LEBOWITZ' .AND. RDF_TYPE /= 'MANSOORI' .AND. &
+	    RDF_TYPE /= 'MODIFIED_MANSOORI') CALL ERROR_ROUTINE ('check_data_01', &
+            'Unknown RDF_TYPE', 1, 1)
+      ENDIF
+!
 !  Set variable ANY_SPECIES_EQ
 !
       ANY_SPECIES_EQ = .FALSE. 
