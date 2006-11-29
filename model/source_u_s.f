@@ -864,7 +864,7 @@
 !
 !                      Indices
       INTEGER          I,  J, K, I1, I2, J1, J2, K1, K2, IJK, &
-                       JM, KM
+                       JM, KM, IPJK
 !
 !                      Solids phase
       INTEGER          M
@@ -903,7 +903,8 @@
                B_M(IJK,M) = ZERO 
 !
                IF (FLUID_AT(NORTH_OF(IJK))) THEN 
-                  IF (WALL_AT(EAST_OF(NORTH_OF(IJK)))) CYCLE
+	          IPJK = IP_OF(NORTH_OF(IJK))
+                  IF (WALL_AT(IPJK)) CYCLE
 		  IF (EP_S(NORTH_OF(IJK),M) <= DIL_EP_S) THEN 
                      A_M(IJK,N,M) = -ONE 
                   ELSE 
@@ -932,8 +933,9 @@
                      B_M(IJK,M) = -CW 
                   ENDIF 
 !
-               ELSE IF (FLUID_AT(SOUTH_OF(IJK))) THEN 
-                  IF (WALL_AT(EAST_OF(SOUTH_OF(IJK)))) CYCLE
+               ELSE IF (FLUID_AT(SOUTH_OF(IJK))) THEN
+	          IPJK = IP_OF(SOUTH_OF(IJK))
+                  IF (WALL_AT(IPJK)) CYCLE
                   IF (EP_S(SOUTH_OF(IJK),M) <= DIL_EP_S) THEN 
                      A_M(IJK,S,M) = -ONE 
                   ELSE 
@@ -962,7 +964,8 @@
                   ENDIF 
 !
                ELSE IF (FLUID_AT(TOP_OF(IJK))) THEN 
-                  IF (WALL_AT(EAST_OF(TOP_OF(IJK)))) CYCLE
+	          IPJK = IP_OF(TOP_OF(IJK))
+                  IF (WALL_AT(IPJK)) CYCLE
                   IF (EP_S(TOP_OF(IJK),M) <= DIL_EP_S) THEN 
                      A_M(IJK,T,M) = -ONE 
                   ELSE 
@@ -990,7 +993,8 @@
                   ENDIF 
 !
                ELSE IF (FLUID_AT(BOTTOM_OF(IJK))) THEN 
-                  IF (WALL_AT(EAST_OF(BOTTOM_OF(IJK)))) CYCLE
+	          IPJK = IP_OF(BOTTOM_OF(IJK))
+                  IF (WALL_AT(IPJK)) CYCLE
                   IF (EP_S(BOTTOM_OF(IJK),M) <= DIL_EP_S) THEN 
                      A_M(IJK,B,M) = -ONE 
                   ELSE 
