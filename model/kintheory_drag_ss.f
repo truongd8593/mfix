@@ -159,11 +159,11 @@
                
                     Fnu_s_ip(IJK,M,L) = Fnus_ip 
 !
-!                  the following two terms were removed because of converegence issues in 2-D
-!                  this will need further investigation (sof)
-                    FT_sM_ip(IJK,M,L) = ZERO !FTsM_ip
+!      WARNING: the following two terms have caused some convergence problems earlier
+!               Set them to ZERO for debugging in case of converegence issues. (sof)
+                    FT_sM_ip(IJK,M,L) = FTsM_ip  ! ZERO
 
-                    FT_sL_ip(IJK,M,L) = ZERO !FTsL_ip
+                    FT_sL_ip(IJK,M,L) = FTsL_ip  ! ZERO
                  ELSE
 		    F_SS(IJK,LM) = ZERO
                     Fnu_s_ip(IJK,M,L) = ZERO

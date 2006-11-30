@@ -520,22 +520,22 @@
           ENDIF    ! (IF M.NE.L)
 !
       ENDDO
-!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!
-! The commented two lines in LHS and RHS caused convergence issues. These
-! need to be revisited and debugged before release (sof, Nov 07 2006)
+!
+!  WARNING: The terms due to granular temperature gradients S21 (a,b,c) have caused
+!           some converegence issues, remove them from LHS and RHS for debugging (sof).
 !
       SOURCELHS = ( (S11a_sum_lhs+S11b_sum_lhs+S11c_sum_lhs+S12a_sum_lhs+&
           S12b_sum_lhs+S12c_sum_lhs) + (S10_lhs+S16_lhs+S17_sum_lhs+&
           S18_sum_lhs-S20_sum_lhs + S13_sum_lhs)*VOL(IJK) + &
-!	  ZMAX(S21a_sum_rhs+S21b_sum_rhs+S21c_sum_rhs)+ &
+	  ZMAX(S21a_sum_rhs+S21b_sum_rhs+S21c_sum_rhs)+ &
 	  ZMAX(S14a_sum_rhs+S14b_sum_rhs+S14c_sum_rhs)+ ZMAX(S9_sum_rhs) ) / &
           Theta_m(IJK,M)
 !
 !
       SOURCERHS = ( S10_rhs+ S15_rhs + S16_rhs + S17_sum_rhs+S18_sum_rhs  + S13_sum_rhs) * VOL(IJK) + &
           S11a_sum_rhs+S11b_sum_rhs+S11c_sum_rhs+S12a_sum_rhs+S12b_sum_rhs+S12c_sum_rhs + &
-          ZMAX(- (S14a_sum_rhs+S14b_sum_rhs+S14c_sum_rhs) ) + ZMAX(-S9_sum_rhs)! + &
-!	  ZMAX(- (S21a_sum_rhs+S21b_sum_rhs+S21c_sum_rhs) )
+          ZMAX(- (S14a_sum_rhs+S14b_sum_rhs+S14c_sum_rhs) ) + ZMAX(-S9_sum_rhs) + &
+	  ZMAX(- (S21a_sum_rhs+S21b_sum_rhs+S21c_sum_rhs) )
 	  
 !	  
 !
