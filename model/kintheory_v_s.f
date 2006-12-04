@@ -243,11 +243,11 @@
 !
                          NU_PM_pN = ROP_S(IJKN,M)/M_PM
                          NU_PM_pS = ROP_S(IJK,M)/M_PM
-                         NU_PM_p = AVG_Y(NU_PM_pN,NU_PM_pS,J)
+                         NU_PM_p = AVG_Y(NU_PM_pS,NU_PM_pN,J)
 !
                          NU_PL_pN = ROP_S(IJKN,L)/M_PL
                          NU_PL_pS = ROP_S(IJK,L)/M_PL
-                         NU_PL_p = AVG_Y(NU_PL_pN,NU_PL_pS,J)
+                         NU_PL_p = AVG_Y(NU_PL_pS,NU_PL_pN,J)
 !
                          Fnu_s_p = AVG_Y(Fnu_s_ip(IJK,M,L),Fnu_s_ip(IJKN,M,L),J)
                          DS1 = Fnu_s_p*NU_PL_p*(NU_PM_pN-NU_PM_pS)*ODY_N(J)

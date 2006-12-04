@@ -271,11 +271,11 @@
 ! 
                          NU_PM_pE = ROP_S(IJKE,M)/M_PM
                          NU_PM_pW = ROP_S(IJK,M)/M_PM
-                         NU_PM_p = AVG_X(NU_PM_pE,NU_PM_pW,I)
+                         NU_PM_p = AVG_X(NU_PM_pW,NU_PM_pE,I)
 !                                                                                          
                          NU_PL_pE = ROP_S(IJKE,L)/M_PL
                          NU_PL_pW = ROP_S(IJK,L)/M_PL
-                         NU_PL_p = AVG_X(NU_PL_pE,NU_PL_pW,I)
+                         NU_PL_p = AVG_X(NU_PL_pW,NU_PL_pE,I)
 !                       
                          Fnu_s_p = AVG_X(Fnu_s_ip(IJK,M,L),Fnu_s_ip(IJKE,M,L),I)   
                          DS1 = Fnu_s_p*NU_PL_p*(NU_PM_pE-NU_PM_pW)*ODX_E(I)

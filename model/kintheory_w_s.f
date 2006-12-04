@@ -300,11 +300,11 @@
 				
                          NU_PM_pT = ROP_S(IJKT,M)/M_PM
                          NU_PM_pB = ROP_S(IJK,M)/M_PM
-                         NU_PM_p = AVG_Z(NU_PM_pT,NU_PM_pB,K)
+                         NU_PM_p = AVG_Z(NU_PM_pB,NU_PM_pT,K)
 !
                          NU_PL_pT = ROP_S(IJKT,L)/M_PL
                          NU_PL_pB = ROP_S(IJK,L)/M_PL
-                         NU_PL_p = AVG_Z(NU_PL_pT,NU_PL_pB,K)
+                         NU_PL_p = AVG_Z(NU_PL_pB,NU_PL_pT,K)
 !
                          Fnu_s_p = AVG_Z(Fnu_s_ip(IJK,M,L),Fnu_s_ip(IJKT,M,L),K)
                          DS1 = Fnu_s_p*NU_PL_p*(NU_PM_pT-NU_PM_pB)*ODZ_T(K)
