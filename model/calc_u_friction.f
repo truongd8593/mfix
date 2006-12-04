@@ -600,7 +600,7 @@
                      AVG_Y(Mu_g(IJK2), Mu_g(IJK2N), J_OF(IJK2))
 ! chang by rong 
           RO_g_avg =&
-                     AVG_Z(RO_g(IJK2), RO_g(IJK2N), J_OF(IJK2))
+                     AVG_Y(RO_g(IJK2), RO_g(IJK2N), J_OF(IJK2))
 
 	  IF(SIMONIN .OR. AHMADI) THEN
 ! added for Simonin and Ahmadi model (sof)

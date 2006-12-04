@@ -229,7 +229,7 @@
 ! off diagonal shear stress terms
                          SSX = SSUX
                          SSY = MU_sL_pN*(V_S(IPJK,L)-V_S(IJK,L))*AXZ_U(IJK)*ODX_E(I)&
-                              -MU_sL_pS*(V_S(IPJMK,M)-V_S(IJMK,M))*AXZ_U(IJMK)*ODX_E(I)
+                              -MU_sL_pS*(V_S(IPJMK,L)-V_S(IJMK,L))*AXZ_U(IJMK)*ODX_E(I)
                          SSZ = MU_sL_pT*(W_S(IPJK,L)-W_S(IJK,L))*AXY_U(IJK)*ODX_E(I)&
                               -MU_sL_pB*(W_S(IPJKM,L)-W_S(IJKM,L))*AXY_U(IJKM)*ODX_E(I)
 ! 
