@@ -1004,15 +1004,16 @@
 ! 
           IF(SWITCH == ZERO .OR. RO_g_avg == ZERO)THEN
                Kgran_star = Kgran
-          ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
+          ELSEIF(TH(M)/M_PM .LT. SMALL_NUMBER)THEN
                Kgran_star = ZERO
           ELSE
-               Kgran_star = Kgran/(ONE+ 1.2d0*SWITCH*Beta*Kgran &
-                          / ((RO_S(M)*EPS(M))**2 *g0(M)*(TH(M)/M_PM)))
+               Kgran_star = Kgran*g0(M)*EPS(M)/ &
+		              (g0EPs_avg+ 1.2d0*SWITCH*DgA*Kgran &
+                            / (RO_S(M)**2 *(TH(M)/M_PM)))
           ENDIF
 !
           K_s_MM = (Kgran_star/(M_PM*g0(M)))*&  ! Kth doesn't include the mass.
-                    (1.d0+(3.d0/5.d0)*(1.d0+C_E)*(1.d0+C_E)*g0(M)*EPS(M))**2
+                    (1.d0+(3.d0/5.d0)*(1.d0+C_E)*(1.d0+C_E)*g0EPs_avg)**2
 !
           DO LL = 1, MMAX
 !

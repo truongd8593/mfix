@@ -1230,11 +1230,12 @@
           ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
                MU_star = ZERO
           ELSE
-               Mu_star = Mu/(ONE+ 2.0d0*SWITCH*Beta*Mu &
-                          / ((RO_S(M)*EPS(M))**2 *g0(M)*(TH(M)/M_PM)))
+               Mu_star = Mu*EPS(M)*g0(M)/ &
+	                 (g0EPs_avg+ 2.0d0*SWITCH*DgA*Mu &
+                          / (RO_S(M)**2 *(TH(M)/M_PM)))
           ENDIF
 !
-          MU_s_MM = (Mu_star/g0(M))*(1.d0+(4.d0/5.d0)*(1.d0+C_E)*g0(M)*EPS(M))**2
+          MU_s_MM = (Mu_star/g0(M))*(1.d0+(4.d0/5.d0)*(1.d0+C_E)*g0EPs_avg)**2
 !
           Mu_sM_sum = ZERO
 !

@@ -828,7 +828,7 @@
       DOUBLE PRECISION Mu_star, Mu_s_dil, Kth_star, K_s_dil, XI_star
 !
 !                      variables for Iddir equipartition model
-      DOUBLE PRECISION P_s_sum, P_s_MM, P_s_LM, SUM_EpsGo
+      DOUBLE PRECISION P_s_sum, P_s_MM, P_s_LM
       DOUBLE PRECISION MU_common_term, K_common_term
       DOUBLE PRECISION Mu_sM_sum, MU_s_MM, MU_s_LM, MU_sM_LM, MU_sL_LM
       DOUBLE PRECISION XI_sM_sum, XI_s_v
@@ -837,6 +837,9 @@
                        R5p_lm, R6p_lm, R7p_lm
       DOUBLE PRECISION K_s_sum, K_s_MM, K_s_LM
       DOUBLE PRECISION Re, C_d, DgA
+!     
+!     Sum of ep_s * g_0
+      DOUBLE PRECISION   SUM_EpsGo
 !
 !----------------------------------------------- 
 !     Function subroutines
@@ -874,6 +877,16 @@
                IF (VREL_array(IJK) == ZERO) THEN
                     DgA = LARGE_NUMBER     ! for 1st iteration and 1st time step
                ENDIF
+!  
+! Added for concistancy of IA KT: 2 identical solids phases must yield same
+! results as one solids phase. Both Mus and Kths are modified. 
+! This is an ad-hoc modification as there are other possible ways of doing this.
+! sof Dec 01 2006.
+!   
+	       SUM_EpsGo = ZERO
+               DO L = 1, MMAX
+                  SUM_EpsGo =  SUM_EpsGo+EP_s(IJK,L)*G_0(IJK,M,L)
+	       ENDDO 
 !
 !     
                P_s_sum = ZERO
@@ -895,16 +908,17 @@
                     Mu_star = ZERO
 !        
                ELSEIF(EP_S(IJK,M) <= DIL_EP_s) THEN
-                    Mu_star = EP_s(IJK,M)* MU_s_dil/(EP_S(IJK,M)+ 2.0d0*SWITCH*DgA*MU_s_dil &
-                          / (RO_S(M)**2 *G_0(IJK,M,M)*(Theta_m(IJK,M)/M_PM)))
+                    Mu_star = MU_s_dil*EP_s(IJK,M)*G_0(IJK,M,M)/ &
+		             (SUM_EpsGo + 2.0d0*SWITCH*DgA*MU_s_dil &
+                             / (RO_S(M)**2 *(Theta_m(IJK,M)/M_PM)))
                ELSE
-                    Mu_star = MU_s_dil/(ONE+ 2.0d0*SWITCH*F_gs(IJK,M)*MU_s_dil &
-                          / ((RO_S(M)*EP_S(IJK,M))**2 *G_0(IJK,M,M)*(Theta_m(IJK,M)/M_PM)))
+                    Mu_star = MU_s_dil*EP_S(IJK,M)*G_0(IJK,M,M)/ &
+		            (SUM_EpsGo + 2.0d0*SWITCH*F_gs(IJK,M)*MU_s_dil &
+                            / (RO_S(M)**2 *EP_s(IJK,M)*(Theta_m(IJK,M)/M_PM)))
                ENDIF
 	       
 	       MU_s_MM = (Mu_star/G_0(IJK,M,M))*&
-                    (1.d0+(4.d0/5.d0)*(1.d0+C_E)*G_0(IJK,M,M)*&
-                    EP_s(IJK,M))**2
+                    (1.d0+(4.d0/5.d0)*(1.d0+C_E)*SUM_EpsGo)**2
 
                DO L = 1, MMAX
 
@@ -1028,16 +1042,17 @@
                     Kth_star = ZERO
 !        
                ELSEIF(EP_S(IJK,M) <= DIL_EP_s) THEN
-                    Kth_star = EP_s(IJK,M)* K_s_dil/(EP_S(IJK,M)+ 1.2d0*SWITCH*DgA*K_s_dil &
-                          / (RO_S(M)**2 *G_0(IJK,M,M)*(Theta_m(IJK,M)/M_PM)))
+                    Kth_star = K_s_dil*EP_s(IJK,M)*G_0(IJK,M,M)/ &
+		              (SUM_EpsGo+ 1.2d0*SWITCH*DgA*K_s_dil &
+                            / (RO_S(M)**2 *(Theta_m(IJK,M)/M_PM)))
                ELSE
-                    Kth_star = K_s_dil/(ONE+ 1.2d0*SWITCH*F_gs(IJK,M)*K_s_dil &
-                          / ((RO_S(M)*EP_S(IJK,M))**2 *G_0(IJK,M,M)*(Theta_m(IJK,M)/M_PM)))
+                    Kth_star = K_s_dil*EP_S(IJK,M)*G_0(IJK,M,M)/ &
+		              (SUM_EpsGo+ 1.2d0*SWITCH*F_gs(IJK,M)*K_s_dil &
+                            / (RO_S(M)**2 *EP_s(IJK,M)*(Theta_m(IJK,M)/M_PM)))
                ENDIF
 	       
 	       K_s_MM = (Kth_star/(M_PM*G_0(IJK,M,M)))*&  ! Kth doesn't include the mass.
-                    (1.d0+(3.d0/5.d0)*(1.d0+C_E)*(1.d0+C_E)*&
-                    G_0(IJK,M,M)*EP_S(IJK,M))**2
+                    (1.d0+(3.d0/5.d0)*(1.d0+C_E)*(1.d0+C_E)*SUM_EpsGo)**2
 !
 
                DO L = 1, MMAX
