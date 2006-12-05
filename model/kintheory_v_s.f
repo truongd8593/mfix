@@ -214,8 +214,8 @@
                               AVG_Z_H(MU_sL_ip(IJKN,M,L),MU_sL_ip(IJKTN,M,L),K),J)
                          MU_sL_pB = AVG_Y_H(AVG_Z_H(MU_sL_ip(IJKB,M,L),MU_sL_ip(IJK,M,L),KM),&
                               AVG_Z_H(MU_sL_ip(IJKBN,M,L),MU_sL_ip(IJKN,M,L),KM),J)
-                         SSVZ = MU_sL_pT*(V_S(IJKP,L)-V_S(IJK,L))*AXY_V(IJK)*ODZ_T(K)*OX_E(I)&
-                              -MU_sL_pB*(V_S(IJK,L)-V_S(IJKM,L))*AXY_V(IJKM)*ODZ_T(KM)*OX_E(I)
+                         SSVZ = MU_sL_pT*(V_S(IJKP,L)-V_S(IJK,L))*AXY_V(IJK)*ODZ_T(K)*OX(I)&
+                              -MU_sL_pB*(V_S(IJK,L)-V_S(IJKM,L))*AXY_V(IJKM)*ODZ_T(KM)*OX(I)
 !
 ! bulk viscosity term
                          XI_sL_pN = XI_sL_ip(IJKN,M,L)
