@@ -881,12 +881,17 @@
 ! Added for concistancy of IA KT: 2 identical solids phases must yield same
 ! results as one solids phase. Both Mus and Kths are modified. 
 ! This is an ad-hoc modification as there are other possible ways of doing this.
-! sof Dec 01 2006.
+! SWITCH_IA can be set to false in constant_mod to use standard IA theory.
+! sof Dec 05 2006. 
 !   
-	       SUM_EpsGo = ZERO
-               DO L = 1, MMAX
-                  SUM_EpsGo =  SUM_EpsGo+EP_s(IJK,L)*G_0(IJK,M,L)
-	       ENDDO 
+	       IF(SWITCH_IA) THEN
+	          SUM_EpsGo = ZERO
+                  DO L = 1, MMAX
+                     SUM_EpsGo =  SUM_EpsGo+EP_s(IJK,L)*G_0(IJK,M,L)
+	          ENDDO 
+	       ELSE
+	          SUM_EpsGo =  EP_s(IJK,M)*G_0(IJK,M,M) 
+	       ENDIF
 !
 !     
                P_s_sum = ZERO

@@ -1205,7 +1205,10 @@
 !
       IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN  
 !
-          D_PM = DP_avg(M)
+! Use original IA theory if SWITCH_IA is false
+          IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*RO_S(M)
+!
+	  D_PM = DP_avg(M)
           M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
           NU_PM = (EPS(M)*RO_S(M))/M_PM
 ! 

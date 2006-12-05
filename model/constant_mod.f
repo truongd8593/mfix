@@ -50,6 +50,12 @@
 !     (Same for conductivity)
       DOUBLE PRECISION ALPHA, SWITCH
       PARAMETER(ALPHA = 1.6d0, SWITCH=1d0)
+!
+!     SWITCH_IA changes some terms in solids viscosity and conductivity
+!     in order for the results using 2 or more identical solids phase to 
+!     be the same as 1 soldis phase. Set to false to use original theory
+!     of Iddir-Arastoopour. Sof DEC 05 2006.
+      LOGICAL, PARAMETER :: SWITCH_IA = .TRUE.
  
  
 !		       PHIP  = Specularity coefficient associated with
