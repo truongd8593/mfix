@@ -77,18 +77,37 @@ public:
   vtkSetMacro(TimeStep, int);
   vtkGetMacro(TimeStep, int);
  
+  // Description:
+  // Returns the number of timesteps.
   vtkGetMacro(NumberOfTimeSteps, int);
+
   // Description:
   // Which TimeStepRange to read
   vtkGetVector2Macro(TimeStepRange, int);
   vtkSetVector2Macro(TimeStepRange, int);
 
+  // Description
+  // Get the number of cell arrays available in the input.
   int GetNumberOfCellArrays(void);
+
+  // Description:
+  // Get the name of the  cell array with the given index in
+  // the input.
   const char* GetCellArrayName(int index);
+
+  // Description:
+  // Get/Set whether the cell array with the given name is to
+  // be read.
   int GetCellArrayStatus(const char* name);
   void SetCellArrayStatus(const char* name, int status);
+
+  // Description:
+  // Turn on/off all cell arrays.
   void DisableAllCellArrays();
   void EnableAllCellArrays();
+
+  // Description:
+  // Get the range of cell data.
   void GetCellDataRange(int cellComp, int index, float *min, float *max);
   
 protected:
@@ -210,6 +229,9 @@ protected:
                               //  into a file for a certain variable.
 
 private:
+  vtkMFIXReader(const vtkMFIXReader&);  // Not implemented.
+  void operator=(const vtkMFIXReader&);  // Not implemented.
+
   void MakeMesh(vtkUnstructuredGrid *output);
   void SwapDouble(double &value);
   void SwapFloat(float &value);

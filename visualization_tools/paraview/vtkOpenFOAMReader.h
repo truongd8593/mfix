@@ -29,10 +29,6 @@
 #define __vtkOpenFOAMReader_h
 
 #include "vtkMultiBlockDataSetAlgorithm.h"
-#include "vtkUnstructuredGridAlgorithm.h"
-#include "vtkstd/vector"
-#include "vtkstd/string"
-#include "vtkstd/map"
 
 typedef struct
 {
@@ -46,29 +42,54 @@ class vtkIntArray;
 class vtkFloatArray;
 class vtkDoubleArray;
 class vtkDataArraySelection;
+struct stdString;
+struct stringVector;
+struct intVector;
+struct intVectorVector;
+struct faceVectorVector;
 
 class VTK_IO_EXPORT vtkOpenFOAMReader : public vtkMultiBlockDataSetAlgorithm
 {
 public:
-  //METHODS FOR PARAVIEW
   static vtkOpenFOAMReader *New();
   vtkTypeRevisionMacro(vtkOpenFOAMReader, vtkMultiBlockDataSetAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  //PARAVIEW MACROS
+  // Description:
+  // Set/Get the filename.
   vtkSetStringMacro(FileName);
   vtkGetStringMacro(FileName);
+
+  // Description:
+  // Returns the number of timesteps.
   vtkGetMacro(NumberOfTimeSteps, int);
+
+  // Description:
+  // Set/Get the current timestep.
   vtkSetMacro(TimeStep, int);
   vtkGetMacro(TimeStep, int);
-  vtkGetVector2Macro(TimeStepRange, int);
-  vtkSetVector2Macro(TimeStepRange, int);
 
-  //CELL ARRAY METHODS
+  // Description:
+  // Get the timesteprange. Filled during RequestInformation.
+  vtkGetVector2Macro(TimeStepRange, int);
+
+  // Description:
+  // Get the number of cell arrays available in the input.
   int GetNumberOfCellArrays(void);
-  const char* GetCellArrayName(int index);
+
+  // Description:
+  // Get/Set whether the cell array with the given name is to
+  // be read.
   int GetCellArrayStatus(const char* name);
   void SetCellArrayStatus(const char* name, int status);
+
+  // Description:
+  // Get the name of the  cell array with the given index in
+  // the input.
+  const char* GetCellArrayName(int index);
+
+  // Description:
+  // Turn on/off all cell arrays.
   void DisableAllCellArrays();
   void EnableAllCellArrays();
 
@@ -82,6 +103,11 @@ protected:
     vtkInformationVector **, vtkInformationVector *);
 
 private:
+  vtkOpenFOAMReader(const vtkOpenFOAMReader&);  // Not implemented.
+  void operator=(const vtkOpenFOAMReader&);  // Not implemented.
+
+  vtkSetVector2Macro(TimeStepRange, int);
+
   char * FileName;
   int NumberOfTimeSteps;
   int TimeStep;
@@ -89,49 +115,48 @@ private:
   double * Steps;
   bool RequestInformationFlag;
   int StartFace;
-  //BTX
-  vtkstd::string Path;
-  vtkstd::string PathPrefix;
-  vtkstd::vector< vtkstd::string > TimeStepData;
+
+  stdString * Path;
+  stdString * PathPrefix;
+  stringVector * TimeStepData;
   vtkDataArraySelection * CellDataArraySelection;
-  vtkstd::vector< vtkstd::vector<int> > FacePoints;
-  vtkstd::vector< vtkstd::vector<int> > FacesOwnerCell;
-  vtkstd::vector< vtkstd::vector<int> > FacesNeighborCell;
-  vtkstd::vector< vtkstd::vector<face> > FacesOfCell;
+  intVectorVector * FacePoints;
+  intVectorVector * FacesOwnerCell;
+  intVectorVector * FacesNeighborCell;
+  faceVectorVector * FacesOfCell;
   vtkPoints * Points;
   vtkIdType NumCells;
   vtkIdType NumFaces;
   vtkIntArray * FaceOwner;
   //vtkIntArray * FaceNeighbor;
-  vtkstd::vector< vtkstd::string > PolyMeshPointsDir;
-  vtkstd::vector< vtkstd::string > PolyMeshFacesDir;
+  stringVector * PolyMeshPointsDir;
+  stringVector * PolyMeshFacesDir;
   vtkIdType NumPoints;
-  vtkstd::vector< int > SizeOfBoundary;
-  vtkstd::vector< vtkstd::string > BoundaryNames;
-  vtkstd::vector< vtkstd::string > PointZoneNames;
-  vtkstd::vector< vtkstd::string > FaceZoneNames;
-  vtkstd::vector< vtkstd::string > CellZoneNames;
+  intVector * SizeOfBoundary;
+  stringVector * BoundaryNames;
+  stringVector * PointZoneNames;
+  stringVector * FaceZoneNames;
+  stringVector * CellZoneNames;
   int NumBlocks;
   void CombineOwnerNeigbor();
   vtkUnstructuredGrid * MakeInternalMesh();
-  double ControlDictDataParser(vtkstd::string);
+  double ControlDictDataParser(const char *);
   void ReadControlDict ();
   void GetPoints (int);
-  void ReadFacesFile (vtkstd::string);
-  void ReadOwnerFile(vtkstd::string);
-  void ReadNeighborFile(vtkstd::string);
+  void ReadFacesFile (const char *);
+  void ReadOwnerFile(const char *);
+  void ReadNeighborFile(const char *);
   void PopulatePolyMeshDirArrays();
-  vtkstd::string GetDataType(vtkstd::string, vtkstd::string);
-  vtkDoubleArray * GetInternalVariableAtTimestep( vtkstd::string, int);
-  vtkDoubleArray * GetBoundaryVariableAtTimestep(int, vtkstd::string, int,
+  const char * GetDataType(const char *, const char *);
+  vtkDoubleArray * GetInternalVariableAtTimestep(const char *, int);
+  vtkDoubleArray * GetBoundaryVariableAtTimestep(int, const char *, int,
                                                  vtkUnstructuredGrid *);
-  vtkstd::vector< vtkstd::string > GatherBlocks(vtkstd::string, int);
+  stringVector *GatherBlocks(const char *, int);
   vtkUnstructuredGrid * GetBoundaryMesh(int, int);
   vtkUnstructuredGrid * GetPointZoneMesh(int, int);
   vtkUnstructuredGrid * GetFaceZoneMesh(int, int);
   vtkUnstructuredGrid * GetCellZoneMesh(int, int);
   void CreateDataSet(vtkMultiBlockDataSet *);
-  //ETX
 };
 
 #endif

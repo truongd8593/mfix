@@ -23,8 +23,8 @@
 // who developed this class.
 // Please address all comments to Brian Dotson (brian.dotson@netl.doe.gov) &
 // Terry Jordan (terry.jordan@sa.netl.doe.gov)
+// & Doug McCorkle (mccdo@iastate.edu)
 //
-// Please address all comments to Brian Dotson (Brian.Dotson@netl.doe.gov)
 
 // .SECTION See Also
 // vtkGAMBITReader
@@ -33,12 +33,6 @@
 #define __vtkFLUENTReader_h
 
 #include "vtkMultiBlockDataSetAlgorithm.h"
-
-#include "vtkstd/map"
-#include "vtkstd/vector"
-#include "vtkstd/set"
-#include <fstream>
-#include <sstream>
 
 class vtkDataArraySelection;
 class vtkPoints;
@@ -49,6 +43,20 @@ class vtkHexahedron;
 class vtkPyramid;
 class vtkWedge;
 class vtkConvexPointSet;
+struct Cell;
+struct Face;
+struct ScalarDataChunk;
+struct VectorDataChunk;
+struct stdString;
+struct intVector;
+struct doubleVector;
+struct stringVector;
+struct cellVector;
+struct faceVector;
+struct stdMap;
+struct scalarDataVector;
+struct vectorDataVector;
+struct intVectorVector;
 
 class VTK_IO_EXPORT vtkFLUENTReader : public vtkMultiBlockDataSetAlgorithm
 {
@@ -66,12 +74,24 @@ public:
   // Get the total number of cells. The number of cells is only valid after a
   // successful read of the data file is performed.
   vtkGetMacro(NumberOfCells,int);
-  //vtkGetMacro(NumberOfCellArrays, int);
 
+  // Description:
+  // Get the number of cell arrays available in the input.
   int GetNumberOfCellArrays(void);
+
+  // Description:
+  // Get the name of the  cell array with the given index in
+  // the input.
   const char* GetCellArrayName(int index);
+
+  // Description:
+  // Get/Set whether the cell array with the given name is to
+  // be read.
   int GetCellArrayStatus(const char* name);
   void SetCellArrayStatus(const char* name, int status);
+
+  // Description:
+  // Turn on/off all cell arrays.
   void DisableAllCellArrays();
   void EnableAllCellArrays();
 
@@ -136,11 +156,10 @@ protected:
   //
   //  Variables
   //
-  //BTX
-  ifstream FluentCaseFile;
-  ifstream FluentDataFile;
-  vtkstd::string CaseBuffer;
-  vtkstd::string DataBuffer;
+  ifstream *FluentCaseFile;
+  ifstream *FluentDataFile;
+  stdString *CaseBuffer;
+  stdString *DataBuffer;
 
   vtkPoints           *Points;
   vtkTriangle         *Triangle;
@@ -151,70 +170,30 @@ protected:
   vtkWedge            *Wedge;
   vtkConvexPointSet   *ConvexPointSet;
 
-  struct Cell 
-    {
-    int type;
-    int zone;
-    vtkstd::vector<int> faces;
-    int parent;
-    int child;
-    vtkstd::vector<int> nodes;
-    };
+  cellVector *Cells;
+  faceVector *Faces;
+  stdMap *VariableNames;
+  intVector  *CellZones;
+  scalarDataVector *ScalarDataChunks;
+  vectorDataVector *VectorDataChunks;
 
-  struct Face
-    {
-    int type;
-    int zone;
-    vtkstd::vector<int> nodes;
-    int c0;
-    int c1;
-    int periodicShadow;
-    int parent;
-    int child;
-    int interfaceFaceParent;
-    int interfaceFaceChild;
-    int ncgParent;
-    int ncgChild;
-    };
+  intVectorVector *SubSectionZones;
+  intVector *SubSectionIds;
+  intVector *SubSectionSize;
 
-  struct ScalarDataChunk
-    {
-    int subsectionId;
-    int zoneId;
-    vtkstd::vector<double> scalarData;
-    };
-
-  struct VectorDataChunk
-    {
-    int subsectionId;
-    int zoneId;
-    vtkstd::vector<double> iComponentData;
-    vtkstd::vector<double> jComponentData;
-    vtkstd::vector<double> kComponentData;
-    };
-
-
-  vtkstd::vector< Cell > Cells;
-  vtkstd::vector< Face > Faces;
-  vtkstd::map< int, vtkstd::string > VariableNames;
-  vtkstd::vector< int >  CellZones;
-  vtkstd::vector< ScalarDataChunk > ScalarDataChunks;
-  vtkstd::vector< VectorDataChunk > VectorDataChunks;
-
-  vtkstd::vector< vtkstd::vector<int> > SubSectionZones;
-  vtkstd::vector< int > SubSectionIds;
-  vtkstd::vector< int > SubSectionSize;
-
-  vtkstd::vector< vtkstd::string > ScalarVariableNames;
-  vtkstd::vector< int > ScalarSubSectionIds;
-  vtkstd::vector< vtkstd::string > VectorVariableNames;
-  vtkstd::vector< int > VectorSubSectionIds;
+  stringVector *ScalarVariableNames;
+  intVector *ScalarSubSectionIds;
+  stringVector *VectorVariableNames;
+  intVector *VectorSubSectionIds;
 
   int LittleEndianFlag;
   int GridDimension;
   int DataPass;
   int NumberOfScalars;
   int NumberOfVectors;
-  //ETX
+
+private:
+  vtkFLUENTReader(const vtkFLUENTReader&);  // Not implemented.
+  void operator=(const vtkFLUENTReader&);  // Not implemented.
 };
 #endif
