@@ -175,13 +175,9 @@
             IF(.NOT.DES_CONTINUUM_COUPLED) THEN
                PTC = PTC + DTSOLID
                IF(PTC.GE.P_TIME) THEN 
-!                 WRITE (FILENAME, 3020) IFI
-!                 OPEN(UNIT=99, FILE=FILENAME, STATUS='NEW')
                   CALL WRITE_DES_DATA
                   WRITE(*,*) 'DES_SPX file written at Time= ', S_TIME
                   WRITE(UNIT_LOG,*) 'DES_SPX file written at Time= ', S_TIME
-                  CLOSE(99)
-!                 IFI = IFI + 1
                   PTC = ZERO
                END IF
             END IF

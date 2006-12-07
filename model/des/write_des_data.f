@@ -21,7 +21,7 @@
       INTEGER POS_Z, VEL_W
       CHARACTER*5 FILENAME
       CHARACTER*6 IPART
-      CHARACTER*106 INUMBER
+      CHARACTER*115 INUMBER
 
 !---------------------------------------------------------------------------
 
@@ -109,7 +109,7 @@
 
  3029 FORMAT(A21)
  3030 FORMAT(A102)
- 3031 FORMAT(A106)
+ 3031 FORMAT(A115)
  3032 FORMAT(A87)
 
  3020 FORMAT(I5.5)
