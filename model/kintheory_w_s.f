@@ -307,8 +307,8 @@
                          NU_PL_p = AVG_Z(NU_PL_pB,NU_PL_pT,K)
 !
                          Fnu_s_p = AVG_Z(Fnu_s_ip(IJK,M,L),Fnu_s_ip(IJKT,M,L),K)
-                         DS1 = Fnu_s_p*NU_PL_p*(NU_PM_pT-NU_PM_pB)*ODZ_T(K)
-                         DS2 = -Fnu_s_p*NU_PM_p*(NU_PL_pT-NU_PL_pB)*ODZ_T(K)
+                         DS1 = Fnu_s_p*NU_PL_p*(NU_PM_pT-NU_PM_pB)*OX(I)*ODZ_T(K)
+                         DS2 = -Fnu_s_p*NU_PM_p*(NU_PL_pT-NU_PL_pB)*OX(I)*ODZ_T(K)
                          DS1plusDS2 = DS1 + DS2
 !
 !
@@ -318,7 +318,7 @@
                          T_PM_pB = Theta_M(IJK,M)
 !
                          FT_sM_p = AVG_Z(FT_sM_ip(IJK,M,L),FT_sM_ip(IJKT,M,L),K)
-                         DS3 = FT_sM_p*(T_PM_pT-T_PM_pB)*ODZ_T(K)						
+                         DS3 = FT_sM_p*(T_PM_pT-T_PM_pB)*OX(I)*ODZ_T(K)						
 !
 !
 !                        Momentum source associated with the gradient in granular
@@ -327,7 +327,7 @@
                          T_PL_pB = Theta_M(IJK,L)
 !
                          FT_sL_p = AVG_Z(FT_sL_ip(IJK,M,L),FT_sL_ip(IJKT,M,L),K)
-                         DS4 = FT_sL_p*(T_PL_pT-T_PL_pB)*ODZ_T(K)						
+                         DS4 = FT_sL_p*(T_PL_pT-T_PL_pB)*OX(I)*ODZ_T(K)						
 !
 !--------------------- End Sources from Momentum Source Term ---------------------
 !
