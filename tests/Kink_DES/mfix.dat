@@ -58,8 +58,8 @@
 ! Solids-phase Section                                                  
 
 
-  RO_s    		= 2.7    	        !solids density
-  D_p0     		= 0.1001		!particle diameter
+  RO_s    		= 2.7d0    	        !solids density
+  D_p0     		= 0.1d0		        !particle diameter
   e       		= 0.9 			!restitution coefficient
   Phi    		= 30.0			!angle of internal friction
   EP_star 		= 0.42			!void fraction at minimum
@@ -116,7 +116,8 @@ DES_GAMMA = 6
 DES_F =25
 DES_NEIGHBOR_SEARCH = 2
 DTSOLID_FACTOR = 0.1D0
-P_TIME = 0.01
+PRINT_DES_DATA = .TRUE.
+P_TIME = 0.00001
 
 !  DES Logicals
 DISCRETE_ELEMENT = .TRUE.
