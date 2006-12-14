@@ -9,7 +9,7 @@
 # M. Syamlal and P. Nicoletti                  9-27-94
 # A. Gel (Aeolus Research) revision            8-31-05
 #
-vers="2005-4"
+vers="2006-4"
 # Flag variable for compiling with Pentium 4 specific optimization flags   
 # Set to 0 to avoid Pentium 4 specific optimizations
 P4_OPTIMIZE=1

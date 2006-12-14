@@ -1,27 +1,51 @@
-Changes from MFIX2005-3 to MFIX2005-4 (Date: 12/12/05)
+Changes from MFIX2005-4 to MFIX2006-4 (Date: 12/12/06)
+------------------------------------------------------
+
 Changes in existing features:
-	* An error in the energy equation introduced in the last version was corrected.  
-	* Added/modified some test cases and tutorial cases. 
-	* Several more updates for code clean up and for bug fixes - please refer to the CVS 
-[1]
- 
-New features
-	* A recently published thermochemical database of Burcat and Ruscic (2005) was 
-linked with MFIX.  This gives MFIX users access to accurate thermochemical 
-data for over 1300 species, which includes specific heat, enthalpy, entropy, free 
-energy, formation enthalpy and molecular weight.  In addition to the improvement 
-in the accuracy of the calculations, the linkage with the database eliminates the 
-potential for errors when data are entered manually.  The database authors' 
-permission was obtained for including it in MFIX; the database can be used only 
-for noncommercial work (see the notice in the database) [2].  The rate of reaction 
-term is also computed automatically now.  See the readme file for details.
-	* A reader for the Paraview visualization software and instructions for using the 
-software has been added.
- 
-References
-	1. http://www.mfix.org/cgi-bin/cvsweb.cgi/mfix/model/#dirlist 
-	2. A. Burcat and B. Ruscic, "Third Millennium Ideal Gas and Condensed Phase 
-Thermochemical Database for Combustion with updates from Active 
-Thermochemical Tables" ANL-05/20 and TAE 960 Technion-IIT, Aerospace 
-Engineering, and Argonne National Laboratory, Chemistry Division, September 
-2005.) 
+-----------------------------
+
+    * Significant changes were made to the DEM model implemented in MFIX and the current implementation is documented in a detailed report [1]. The changes not only improve the efficiency of the code but also accuracy to some extent. Here is a brief summary of the changes:
+          o The neighbor search algorithms have been improved so that one can perform neighbor search after a prescribed number of times or when the particles move out of a prescribed halo region of influence.
+          o The quadtree/octree is not initialized at every iteration but only at user-specified interval and when the maximum number of quads is reached.
+          o Additional optimizations to the quadtree were made which are described in the DEM document [1]
+          o Particle search within fluid cells has been drastically improved by taking advantage of the Cartesian topology and looking only at the neighboring cells based on the local particle velocity.
+          o All the information being passed from DEM to MFIX in coupled simulations was not consistently adhering to the staggered grid formulation and this has been fixed. In addition, there were other bugs related to the coupling and are fixed. For more details, probe the CVS log at [2]
+          o All geometric inputs and other duplicate initializations for the discrete part are removed and the information would be obtained from MFIX inputs.
+          o All the arrays have been made allocatable so that better management of the memory can be made.
+          o The array indexing has been swapped so that the longest index is in the first location so that better cache utilization can been accomplished during calculations.
+          o The code has been extensively cleaned and several alternate computations were constructed to improve the overall efficiency of the code.
+          o A major bug related to transferring void-fraction information from DEM to MFIX continuum side has been fixed.
+          o The code was additional commented, formatted and made more modular for easy readability.
+          o Many variables are renamed for easy understanding and consistency.
+          o The code has tested 2D and 3D capability.
+          o The interphase coupling inconsistency reported by Jin Sun at Iowa State is fixed and details are available in DEM document's appendix [1]
+    * Added/modified some test cases and tutorial cases. The test and tutorial cases are benchmarked and the summary tables are located in respective directories.
+    * Minor Open-MP bug fixes
+    * A major bug related to NFS writes which was causing premature exits for parallel jobs has been fixed
+    * One can look at the log history for a more detailed list of changes at [3]
+
+New features added:
+-------------------
+
+    * The following additions were made to the DEM code and refer to the report [1] for more details:
+          o The DEM output is written out in VTK format at the same frequency as the void fraction for coupled simulations and at user-specified frequency for DEM only simulations. One could now superpose DEM particle visualization on top of continuum field information in Paraview.
+          o Added restart capability to DEM.
+          o Added a small tool to generate input deck for DEM cases in mfix/tools/DES_Particle_Generator/
+          o The adjustable time sequence is restored so that the simulation time depends on the characteristic time-scales rather than something imposed artificially. This seems to accelerate the simulations considerably.
+          o Newton’s 3rd Law is implemented for force calculations to eliminate the duplicate force calculation for any given pair.
+    * Iddir & Arastoopour's [4] kinetic theory for multiparticle types was added.  Available via MFIX input KT_TYPE. Refer to documentation [5] for more details.
+          o Added a tutorial case for this model
+    * Added several new radial distribution functions. Available via a new MFIX input RDF_TYPE.
+    * Added a small tool to the mfix/tools/MFIX_Grid_Generator/ to generate grid input to MFIX for more complicated cases with non-uniform grid.
+    * Added functionality to do both hyperbolic tangent as well has sigmoidal functional blending of the Schaeffer/Kinetic theory stresses.
+
+References:
+----------
+
+   1. http://www.mfix.org/documents/MFIXDEM2006-4-1.pdf
+   2. http://www.mfix.org/cgi-bin/cvsweb.cgi/mfix/model/des/#dirlist
+   3. http://www.mfix.org/cgi-bin/cvsweb.cgi/mfix/model/#dirlist
+   4. Iddir, Y.H. and H. Arastoopour, Modeling of multitype particle flow using the kinetic theory approach. AIChE Journal, 2005. 51(6): p. 1620-1632.
+   5. http://www.mfix.org/documents/MFIXIAEqns2006-4-1.pdf
+
+
