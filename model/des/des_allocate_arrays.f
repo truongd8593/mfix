@@ -35,10 +35,17 @@
       MAXQUADS = 5*PARTICLES*MQUAD_FACTOR
       IF(MAXQUADS.LE.80000) MAXQUADS = 80000
       MAXNEIGHBORS = MN + 1
+
       IF(DIMN.EQ.2) THEN
          PBP = PARTICLES/7
       ELSE
          PBP = NPARTICLES/5
+      END IF
+
+      IF(DIMN.EQ.3) THEN
+         NMQD = 11
+      ELSE
+         NMQD = 7
       END IF
 !
 !   DES Allocatable arrays
@@ -75,7 +82,7 @@
       Allocate(  GRAV (DIMN) )
 !
 !   Torque     
-      IF(DIMN.GT.3) THEN 
+      IF(DIMN.EQ.3) THEN 
          Allocate(  TOW (NPARTICLES,DIMN) )
       ELSE
          Allocate(  TOW (NPARTICLES,1) )

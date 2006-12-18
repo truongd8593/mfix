@@ -119,6 +119,10 @@
             ELSE IF(DES_VEL_NEW(L,1).GT.ZERO) THEN
                IF((DES_POS_NEW(L,1).GE.XE(I)).AND.(DES_POS_NEW(L,1).LT.XE(I+1))) PIJK(L,1) = I+1
             ELSE IF(DES_VEL_NEW(L,1).LT.ZERO) THEN
+               IF(I.EQ.2) THEN
+                  PRINT *,'des/particles_in_cell.f : CHECK CELL I, Problem with I.EQ.2'
+                  STOP
+               END IF
                IF((DES_POS_NEW(L,1).GE.XE(I-2)).AND.(DES_POS_NEW(L,1).LT.XE(I-1))) PIJK(L,1) = I-1
             ELSE 
                PRINT *,'des/particles_in_cell.f : CHECK CELL I' , PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,1), DES_VEL_NEW(L,1)
@@ -131,6 +135,10 @@
             ELSE IF(DES_VEL_NEW(L,2).GT.ZERO) THEN
                IF((DES_POS_NEW(L,2).GE.YN(J)).AND.(DES_POS_NEW(L,2).LT.YN(J+1))) PIJK(L,2) = J+1
             ELSE IF(DES_VEL_NEW(L,2).LT.ZERO) THEN
+               IF(J.EQ.2) THEN
+                  PRINT *,'des/particles_in_cell.f : CHECK CELL J, Problem with J.EQ.2'
+                  STOP
+               END IF
                IF((DES_POS_NEW(L,2).GE.YN(J-2)).AND.(DES_POS_NEW(L,2).LT.YN(J-1))) PIJK(L,2) = J-1
             ELSE
                PRINT *,'des/particles_in_cell.f : CHECK CELL J' 
@@ -145,6 +153,10 @@
                ELSE IF(DES_VEL_NEW(L,3).GT.ZERO) THEN
                   IF((DES_POS_NEW(L,3).GE.ZT(K)).AND.(DES_POS_NEW(L,3).LT.ZT(K+1))) PIJK(L,3) = K+1
                ELSE IF(DES_VEL_NEW(L,3).LT.ZERO) THEN
+               IF(K.EQ.2) THEN
+                  PRINT *,'des/particles_in_cell.f : CHECK CELL K, Problem with K.EQ.2'
+                  STOP
+               END IF
                   IF((DES_POS_NEW(L,3).GE.ZT(K-2)).AND.(DES_POS_NEW(L,3).LT.ZT(K-1))) PIJK(L,3) = K-1
                ELSE 
                   PRINT *,'des/particles_in_cell.f : CHECK CELL K'
