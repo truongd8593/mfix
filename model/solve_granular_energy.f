@@ -153,6 +153,10 @@
 	       DO M = 1, MMAX
                     DO IJK = ijkstart3, ijkend3
                          IF (FLUID_AT(IJK) .AND. EP_g(IJK) .LT. EP_star_array(ijk)) THEN 
+!
+                              D_PM = D_P(IJK,M)
+                              M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
+!
                               A_M(IJK,1,M) = ZERO 
                               A_M(IJK,-1,M) = ZERO 
                               A_M(IJK,2,M) = ZERO 
@@ -160,7 +164,11 @@
                               A_M(IJK,3,M) = ZERO 
                               A_M(IJK,-3,M) = ZERO 
                               A_M(IJK,0,M) = -ONE 		  
-                              B_M(IJK,M) = -ZERO_EP_S
+!            In Iddir & Arastoopour (2005) the granular temperature includes
+!            mass of the particle in the definition.  Systems with small
+!            particles can give rise to smaller temperatures than the standard
+!            zero_ep_s		  
+                              B_M(IJK,M) = -ZERO_EP_S*M_PM
                          ENDIF
                     ENDDO
 	       ENDDO ! for M

@@ -43,6 +43,10 @@
 !
 !                      Solids phase
       INTEGER          M
+!
+!                      Particle mass and diameter for use with IA theory only
+!                      because theta definition includes mass of particle.
+      DOUBLE PRECISION M_PM, D_PM
       
 !
 !                      error indicator
@@ -57,7 +61,13 @@
 !!!HPF$ independent
       DO IJK = IJKSTART3, IJKEND3
          IF ( FLUID_AT(IJK) ) THEN 
-            IF (THETA_M(IJK,M) < ZERO_EP_S) THETA_M(IJK,M) = ZERO_EP_S 
+            IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+	       D_PM = D_P(IJK,M)
+	       M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
+	       IF (THETA_M(IJK,M) < ZERO_EP_S*M_PM) THETA_M(IJK,M) = ZERO_EP_S*M_PM 
+            ELSE
+	       IF (THETA_M(IJK,M) < ZERO_EP_S) THETA_M(IJK,M) = ZERO_EP_S 
+            ENDIF
 !
          ENDIF 
       END DO 
