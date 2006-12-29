@@ -36,7 +36,6 @@
       USE indices
       USE scalars
       USE funits
-      USE rxns
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -47,12 +46,10 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: M, N, L, IER 
+      INTEGER :: M, N, L
       Character*80  Line(1)
 !-----------------------------------------------
 !
-! Read thermochemical database
-      If(.not.database_read .and. species_name(1) /= UNDEFINED_C) call read_database(IER)
 !
 !
 !                      Solids phase

@@ -43,6 +43,7 @@
       USE compar      
       USE mpi_utility      
       USE sendrecv    
+      USE rxns
       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -62,7 +63,7 @@
 !    IC2 - Last two digits of IC
 !
       INTEGER I_w , I_e , J_s , J_n , K_b , K_t , ICV
-      INTEGER I, J, k, IJK, IC2, M, N
+      INTEGER I, J, k, IJK, IC2, M, N, IER
       DOUBLE PRECISION SUM, SUM_EP, old_value, DP_TMP(MMAX)
 
 !-----------------------------------------------
@@ -71,6 +72,11 @@
       LOGICAL , EXTERNAL :: COMPARE 
 !-----------------------------------------------
       INCLUDE 'function.inc'
+
+! Read thermochemical database
+      If(.not.database_read .and. species_name(1) /= UNDEFINED_C) &
+        call read_database(IER)
+
 ! Initialize the icbc_flag array.  If not a NEW run then do not
 ! check the initial conditions.
 !
