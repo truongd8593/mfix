@@ -99,7 +99,8 @@
               DO 110 J = J1, J2
               DO 100 I = I1, I2
 	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	      
-                IJK   = FUNIJK(I, J, K)
+                IJK   = FUNIJK(I, J, K)      
+		IF (FLOW_AT(IJK)) CYCLE !checks for pressure outlets
                 IM    = Im1(I)
                 JM    = Jm1(J)
                 KM    = Km1(K)
