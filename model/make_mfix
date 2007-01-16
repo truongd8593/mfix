@@ -850,8 +850,27 @@ ln -sf "$mpi_include/mpif.h" .
 
             ;;
 	    
+    CYGWIN_NT-5.1)
+	    mach_file="CYGNT.F"
+   
+            FORTRAN_CMD=g95
+            LINK_CMD=g95
+            libs_d="odepack.a blas90.a"
+            libs="odepack.a blas90.a"
+	       
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+	    omp="-mp"
+            compile_d="-c -g"
+            link_d="-g"
+            compile="-c -I. -ffree-form -I$mpi_include -O "
+            compile2="-c -I. -ffree-form -I$mpi_include -O1 "
+            compile3="-c -I. -I$mpi_include -O1 "
+            link=" "
+            MODULE_CODE=1
 
-
+            ;;
+	    
       *) echo "Sorry, no support for operating system: $opsys"
          echo 
 	 echo "modify  make_mfix   to add support"
