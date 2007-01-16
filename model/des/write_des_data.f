@@ -28,7 +28,9 @@
       DES_UNIT = 99
       WRITE (FILENAME, 3020) IFI
       WRITE (IPART, 3021) PARTICLES
-      INUMBER = '     <Piece NumberOfPoints="'//TRIM(ADJUSTL(IPART))//'" NumberOfVerts="0" NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
+      IPART = ADJUSTL(IPART)
+      IPART = TRIM(IPART)
+      INUMBER = '     <Piece NumberOfPoints="'//IPART//'" NumberOfVerts="0" NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
       OPEN(UNIT=DES_UNIT, FILE=TRIM(RUN_NAME)//'_DES_'//FILENAME//'.vtp', STATUS='NEW')
 
       POS_Z = 0
