@@ -37,6 +37,7 @@
       Use post3d
       Use scalars
       Use rxns
+      Use machine
       IMPLICIT NONE
 !
 ! passed arguments
@@ -61,8 +62,18 @@
       INTEGER LC,N
 !
 !             Pointer to the next record
-      INTEGER NEXT_REC
-!
+      INTEGER NEXT_REC , num_recs
+
+      integer :: gas_species_index , solid_species_index , solid_index
+      logical :: bRead_all
+
+      common /fast_sp7/ gas_species_index , solid_species_index , &
+                         solid_index , bRead_all
+
+ 
+      num_recs = 1 + ijkmax2 / nwords_r
+      if (mod(ijkmax2,nwords_r) .eq. 0) num_recs = num_recs - 1
+ 
 !
 ! ".SP1" FILE         EP_g    [ ROP_g , RO_g must be calculated ...
 !                                        not written out ]
@@ -204,6 +215,34 @@
 !
 ! ".SP7" FILE         X_g, X_s
 !
+ !     IF (READ_SPX(7).AND..NOT.AT_EOF(7)) THEN
+ !        IF(.NOT.SPX_OPEN(7)) THEN
+ !          WRITE(*,*)' SP7 file is not open'
+ !          STOP
+ !        ENDIF
+ !        NEXT_REC = REC_POINTER(7)
+ !        IF (NEXT_REC.ge.LAST_REC(7)) THEN
+ !           AT_EOF(7) = .TRUE.
+ !           RETURN
+ !        END IF
+ !        AT_EOF(7) = .FALSE.
+ !        READ (UNIT_SPX+7,REC=NEXT_REC) TIME_REAL(7) , NSTEP
+  !       NEXT_REC = NEXT_REC + 1
+ !        DO 250 N = 1,1 ! NMAX(0)
+ !          write (*,*) n,next_rec
+ !          CALL IN_BIN_R(UNIT_SPX+7,X_g(1,N),IJKMAX2,NEXT_REC)
+!250      CONTINUE
+!         DO 300 LC = 1,MMAX
+!          DO 270 N = 1, NMAX(LC)
+ !            write (*,*) lc,n,next_rec
+ !            CALL IN_BIN_R(UNIT_SPX+7,X_s(1,LC, N),IJKMAX2,NEXT_REC)
+!270        CONTINUE
+!300      CONTINUE
+!         next_rec = next_rec + 28578
+!         REC_POINTER(7) = NEXT_REC
+ !     END IF
+
+
       IF (READ_SPX(7).AND..NOT.AT_EOF(7)) THEN
          IF(.NOT.SPX_OPEN(7)) THEN
            WRITE(*,*)' SP7 file is not open'
@@ -217,16 +256,29 @@
          AT_EOF(7) = .FALSE.
          READ (UNIT_SPX+7,REC=NEXT_REC) TIME_REAL(7) , NSTEP
          NEXT_REC = NEXT_REC + 1
-         DO 250 N = 1, NMAX(0)
-           CALL IN_BIN_R(UNIT_SPX+7,X_g(1,N),IJKMAX2,NEXT_REC)
-250      CONTINUE
+
+          DO 250 N = 1, NMAX(0)
+           if (bRead_all .or. n.eq.gas_species_index) then
+              CALL IN_BIN_R(UNIT_SPX+7,X_g(1,N),IJKMAX2,NEXT_REC)
+           else
+              next_rec = next_rec + num_recs
+           end if
+ 250      CONTINUE
          DO 300 LC = 1,MMAX
            DO 270 N = 1, NMAX(LC)
-             CALL IN_BIN_R(UNIT_SPX+7,X_s(1,LC, N),IJKMAX2,NEXT_REC)
+             if (bRead_all .or. &
+               (lc.eq.solid_index .and. n.eq.solid_species_index))then
+                 CALL IN_BIN_R(UNIT_SPX+7,X_s(1,LC, N),IJKMAX2,NEXT_REC)
+             else
+                next_rec = next_rec + num_recs
+             end if
 270        CONTINUE
 300      CONTINUE
          REC_POINTER(7) = NEXT_REC
       END IF
+
+
+
 !
 ! ".SP8" FILE         THETA_m
 !

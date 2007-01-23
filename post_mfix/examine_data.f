@@ -326,6 +326,19 @@
       DY_N(J) = HALF * (DY(J) + DY(Jp1(J)))
       DX_E(I) = HALF * (DX(I) + DX(Ip1(I)))
 !
+
+      integer :: gas_species_index , solid_species_index , solid_index
+      logical :: bRead_all
+
+      common /fast_sp7/ gas_species_index , solid_species_index , &
+                         solid_index , bRead_all
+
+      solid_species_index = 0
+      solid_index    = 0
+      gas_species_index = 0
+      bRead_all = .true.
+
+
       CALL READ_RES1
       TIME_IN_RES = TIME
 !
@@ -405,7 +418,14 @@
 !
 !  Read time
 !
-10    WRITE(*,*)
+10    continue
+
+      solid_species_index = 0
+      solid_index         = 0
+      gas_species_index   = 0
+      bRead_all           = .true.
+
+      WRITE(*,*)
       WRITE(*,'(A,F7.3,A,F7.3,A,$)')&
        ' Time: (',TIME_START,',',TIME_END,') > '
       READ(*,'(1A60)',ERR=10) STRING
@@ -415,6 +435,7 @@
       ELSEIF(STRING(1:1) .EQ. 'e' .OR. STRING(1:1) .EQ. 'E' .OR. & 
              STRING(1:1) .EQ. 'q' .OR. STRING(1:1) .EQ. 'Q') THEN
         IF(FILE_NAME(1:1) .NE. '*') CLOSE(40)
+        bRead_all = .true.
         RETURN
       ENDIF
       L3 = 1
@@ -529,6 +550,7 @@
         ELSE
           M = 1
         ENDIF
+        solid_index = m
       ENDIF
 !
       IF(VAR_NO .GE. 14 .AND. VAR_NO .LE. 21)THEN
@@ -552,6 +574,8 @@
           N = NMAX(M)
           GOTO 25
         ENDIF
+        if (var_no .eq. 14) gas_species_index   = N
+        if (var_no .eq. 15) solid_species_index = N
       ENDIF
 !
       IF(VAR_NO .EQ. 49)THEN
@@ -651,6 +675,12 @@
          READ_SPX(L)    = .FALSE.
          AT_EOF(L)      = .FALSE.
       END DO
+
+      if (var_no.eq.14 .or. var_no.eq.15) then
+          bRead_all = .false.
+      else
+          bRead_all = .true.
+      end if
 !
 !
       IF(VAR_NO .EQ. 1 .OR. (VAR_NO .GE. 16 .AND. VAR_NO .LE. 18) .OR.&

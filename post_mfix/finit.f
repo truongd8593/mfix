@@ -47,6 +47,16 @@
       LOGICAL OPEN_FILEP
 !
       INTEGER M_PASS,N_PASS
+      integer :: gas_species_index , solid_species_index , solid_index
+      logical :: bRead_all
+
+      common /fast_sp7/ gas_species_index , solid_species_index , &
+                         solid_index , bRead_all
+
+      solid_species_index = 0
+      solid_index    = 0
+      gas_species_index = 0
+      bRead_all = .true.
 
       nodesi = 1
       nodesj = 1
