@@ -247,7 +247,7 @@ THERMO DATA
 The following are coal pseudo species specifications.  Replace these
 with appropriate coal properties.  Also define the heat of formation (Hf298)
 values (the fifteenth coefficient).  The readme file describes the data format.
-Fixed Carbon               WARNING!       0.S   200.000  6000.000  B  12.00000 1
+Fixed Carbon               WARNING!       0.S   200.000  6000.000  B  12.01100 1
 -7.94079328E-01 8.09779756E-03-6.56398654E-06 1.84781958E-09 0.00000000E+00    2
  0.00000000E+00 0.00000000E+00-7.94079328E-01 8.09779756E-03-6.56398654E-06    3
  1.84781958E-09 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    4
