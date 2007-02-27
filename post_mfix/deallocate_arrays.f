@@ -39,6 +39,8 @@
       Use vshear
       Use mflux
       Use mchem
+      use kintheory
+      use kintheory2
       IMPLICIT NONE
       
       INTEGER M
@@ -327,6 +329,30 @@
 
 !VSHE
       Deallocate(  VSHE )
+
+!     University of Colorado, Hrenya Research Group
+!     Arising from kinetic theory of Iddir & Arastoopour (2005)
+      Deallocate(    KTMOM_U_s)
+      Deallocate(    KTMOM_V_s)
+      Deallocate(    KTMOM_W_s)
+      Deallocate(    trD_s2_ip)
+      Deallocate(    MU_sM_ip)
+      Deallocate(    MU_sL_ip)
+      Deallocate(    XI_sM_ip)
+      Deallocate(    XI_sL_ip)
+      Deallocate(    Fnu_s_ip)
+      Deallocate(    FT_sM_ip)
+      Deallocate(    FT_sL_ip)
+      Deallocate(    Kth_sL_ip)
+      Deallocate(    Knu_sM_ip)
+      Deallocate(    Knu_sL_ip)
+      Deallocate(    Kvel_s_ip)
+      Deallocate(    EDT_s_ip)
+      Deallocate(    EDvel_sM_ip)
+      Deallocate(    EDvel_sL_ip)
+      Deallocate(    ED_ss_ip)
+      Deallocate(    GRAN_DISS)
+
 
 !
 ! array allocation of add on packages, such as linear equation solvers
