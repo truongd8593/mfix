@@ -29,6 +29,7 @@
       USE geometry
       USE indices
       USE compar        !//d
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -55,13 +56,13 @@
       CHARACTER*(*)    Vname
 !
 !                      Variable
-      DOUBLE PRECISION Var(DIMENSION_3)
+      DOUBLE PRECISION Var(DIMENSION_3), Var_tmp(DIMENSION_3)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !
 !                      OVERRELAXATION FACTOR
-      DOUBLE PRECISION, PARAMETER :: OMEGA = 1.2 
+      DOUBLE PRECISION, PARAMETER :: OMEGA = 1.0  !1.2 
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -78,14 +79,60 @@
       INCLUDE 'function.inc'
 !
 !
-!     Disabled Successive Over relaxation method
 !
+!     Successive Over relaxation method
+!
+!$omp parallel do private(IJK,OAM)
+      DO IJK = ijkstart3, ijkend3
 
-      write(*,*) '****************error*****************'
-      write(*,*) 'Successive Over relaxation method has been deprecated'
-      write(*,*) '**************************************'
+         IF(.NOT.IS_ON_myPE_owns(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
+!
+         OAM = ONE/A_M(IJK,0,M)
+	  
+         A_M(IJK,0,M) = ONE
+         A_M(IJK,-2,M) = A_M(IJK,-2,M)*OAM 
+         A_M(IJK,-1,M) = A_M(IJK,-1,M)*OAM 
+         A_M(IJK,1,M) = A_M(IJK,1,M)*OAM 
+         A_M(IJK,2,M) = A_M(IJK,2,M)*OAM 
+         A_M(IJK,-3,M) = A_M(IJK,-3,M)*OAM 
+         A_M(IJK,3,M) = A_M(IJK,3,M)*OAM 
+         B_M(IJK,M) = B_M(IJK,M)*OAM 
+      END DO 
+      
+      DO ITER = 1, ITMAX 
+!
+!
+!  SOR procedure
+!
+         IF (DO_K) THEN 
+!$omp parallel do private(IJK)
+            DO IJK = ijkstart3, ijkend3
 
-      call mfix_exit(myPE)
+              IF(.NOT.IS_ON_myPE_owns(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
+              VAR_tmp(IJK) = VAR(IJK) + OMEGA*(B_M(IJK,M)-A_M(IJK,-2,M)*VAR(JM_OF(&
+                  IJK))-A_M(IJK,-1,M)*VAR(IM_OF(IJK))-A_M(IJK,1,M)*VAR(IP_OF(&
+                  IJK))-A_M(IJK,2,M)*VAR(JP_OF(IJK))-A_M(IJK,-3,M)*VAR(KM_OF(&
+                  IJK))-A_M(IJK,3,M)*VAR(KP_OF(IJK))-VAR(IJK)) 
+            END DO 
+
+         ELSE 
+!$omp parallel do private(IJK)
+           DO IJK = ijkstart3, ijkend3
+
+             IF(.NOT.IS_ON_myPE_owns(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
+             VAR_tmp(IJK) = VAR(IJK) + OMEGA*(B_M(IJK,M)-A_M(IJK,-2,M)*VAR(JM_OF(&
+                  IJK))-A_M(IJK,-1,M)*VAR(IM_OF(IJK))-A_M(IJK,1,M)*VAR(IP_OF(&
+                  IJK))-A_M(IJK,2,M)*VAR(JP_OF(IJK))-VAR(IJK)) 
+           END DO 
+         ENDIF 
+      END DO 
+
+!$omp parallel do private(IJK)
+      DO IJK = ijkstart3, ijkend3
+        VAR(IJK) = VAR_tmp(IJK)
+      END DO 
+
+      call send_recv(var,2)
 
       RETURN  
       END SUBROUTINE LEQ_SOR 
