@@ -64,8 +64,8 @@
       INTEGER          Vno
 !
 !                      Adjust LEQ Tolerance flag
-      LOGICAL, PARAMETER :: adjust_leq_tol = .TRUE.
-      LOGICAL, PARAMETER :: leq_tol_scheme1 = .TRUE.
+      LOGICAL, PARAMETER :: adjust_leq_tol = .FALSE.
+      LOGICAL, PARAMETER :: leq_tol_scheme1 = .FALSE.
       DOUBLE PRECISION max_resid_local, tol_resid_max
 !
 !                      Variable
