@@ -110,7 +110,7 @@
 !
       CALL ADJUST_LEQ(RESID(RESID_P,1),LEQ_IT(1),LEQ_METHOD(1),LEQI,LEQM,IER) 
 !
-      CALL SOLVE_LIN_EQ ('EPp', EPP, A_M, B_M, 0, LEQI, LEQM, &
+      CALL SOLVE_LIN_EQ ('EPp', 1, EPP, A_M, B_M, 0, LEQI, LEQM, &
 	                     LEQ_SWEEP(1), LEQ_TOL(1), LEQ_PC(1), IER) 
 !      call out_array(EPp, 'EPp')
 !

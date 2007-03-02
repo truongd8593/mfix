@@ -194,7 +194,7 @@
                CALL ADJUST_LEQ (RESID(RESID_TH,M), LEQ_IT(8), LEQ_METHOD(8), LEQI, &
                     LEQM, IER) 
 
-               CALL SOLVE_LIN_EQ ('Theta_m', THETA_M(1,M), A_M, B_M, M, LEQI, LEQM, &
+               CALL SOLVE_LIN_EQ ('Theta_m', 7, THETA_M(1,M), A_M, B_M, M, LEQI, LEQM, &
                     LEQ_SWEEP(8), LEQ_TOL(8),  LEQ_PC(8), IER) 
 !              call out_array(Theta_m(1,m), 'Theta_m')
 !
@@ -283,7 +283,7 @@
          CALL ADJUST_LEQ (RESID(RESID_TH,M), LEQ_IT(8), LEQ_METHOD(8), LEQI, &
             LEQM, IER) 
 !
-         CALL SOLVE_LIN_EQ ('Theta_m', THETA_M(1,M), A_M, B_M, M, LEQI, LEQM, &
+         CALL SOLVE_LIN_EQ ('Theta_m', 7, THETA_M(1,M), A_M, B_M, M, LEQI, LEQM, &
 	                     LEQ_SWEEP(8), LEQ_TOL(8),  LEQ_PC(8), IER) 
 !          call out_array(Theta_m(1,m), 'Theta_m')
 !

@@ -177,7 +177,7 @@
                LEQI, LEQM, IER) 
 !
             write(Vname, '(A,I2)')'Scalar',N
-            CALL SOLVE_LIN_EQ (Vname, Scalar(1,N), A_M, B_M, M, LEQI, LEQM, &
+            CALL SOLVE_LIN_EQ (Vname, 9, Scalar(1,N), A_M, B_M, M, LEQI, LEQM, &
 	                     LEQ_SWEEP(9), LEQ_TOL(9), LEQ_PC(9), IER) 
 !          call out_array(Scalar(1, N), Vname)
 !
@@ -235,7 +235,7 @@
                LEQI, LEQM, IER) 
 !
             write(Vname, '(A,I2)')'Scalar',N
-            CALL SOLVE_LIN_EQ (Vname, Scalar(1,N), A_M, B_M, M, LEQI, LEQM, &
+            CALL SOLVE_LIN_EQ (Vname, 9, Scalar(1,N), A_M, B_M, M, LEQI, LEQM, &
 	                     LEQ_SWEEP(9), LEQ_TOL(9), LEQ_PC(9), IER) 
 !          call out_array(Scalar(1, N), Vname)
 !

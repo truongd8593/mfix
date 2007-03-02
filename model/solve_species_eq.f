@@ -157,7 +157,7 @@
             CALL ADJUST_LEQ (RESID(RESID_X+(LN-1),0), LEQ_IT(7), LEQ_METHOD(7), &
                 LEQI, LEQM, IER)
 !
-            CALL SOLVE_LIN_EQ ('X_g', X_G(1,LN), A_M, B_M, 0, LEQI, LEQM, &
+            CALL SOLVE_LIN_EQ ('X_g', 10, X_G(1,LN), A_M, B_M, 0, LEQI, LEQM, &
 	                     LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER) 
 
             CALL BOUND_X (X_G(1,LN), IJKMAX2, IER) 
@@ -227,7 +227,7 @@
                CALL ADJUST_LEQ (RESID(RESID_X+(LN-1),M), LEQ_IT(7), LEQ_METHOD(7&
                   ), LEQI, LEQM, IER) 
 !
-               CALL SOLVE_LIN_EQ ('X_s', X_S(1,M,LN), A_M, B_M, M, LEQI, LEQM, &
+               CALL SOLVE_LIN_EQ ('X_s', 10, X_S(1,M,LN), A_M, B_M, M, LEQI, LEQM, &
 	                     LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER) 
                CALL BOUND_X (X_S(1,M,LN), IJKMAX2, IER) 
 !            call out_array(X_s(1,m,LN), 'X_s')

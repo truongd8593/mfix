@@ -191,7 +191,7 @@
                LEQI, LEQM, IER) 
 !
             write(Vname, '(A,I2)')'K_Turb_G'
-            CALL SOLVE_LIN_EQ (Vname, K_Turb_G, A_M, B_M, M, LEQI, LEQM, &
+            CALL SOLVE_LIN_EQ (Vname, 9, K_Turb_G, A_M, B_M, M, LEQI, LEQM, &
                              LEQ_SWEEP(9), LEQ_TOL(9),  LEQ_PC(9), IER) 
 !          call out_array(K_Turb_G, Vname)
 
@@ -320,7 +320,7 @@
                LEQI, LEQM, IER) 
 !
             write(Vname, '(A,I2)')'E_Turb_G'
-            CALL SOLVE_LIN_EQ (Vname, E_Turb_G, A_M, B_M, M, LEQI, LEQM, &
+            CALL SOLVE_LIN_EQ (Vname, 9, E_Turb_G, A_M, B_M, M, LEQI, LEQM, &
                              LEQ_SWEEP(9), LEQ_TOL(9), LEQ_PC(9), IER) 
 !          call out_array(E_Turb_G, Vname)
 !

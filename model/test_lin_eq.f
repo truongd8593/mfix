@@ -123,7 +123,7 @@
 !
 !  Solve the linear equation
 !
-      CALL SOLVE_LIN_EQ ('Test', X_SOL, Am, Bm, 0, LEQIT, LEQMETHOD, LEQSWEEP, LEQTOL, LEQPC, IER) 
+      CALL SOLVE_LIN_EQ ('Test', 1, X_SOL, Am, Bm, 0, LEQIT, LEQMETHOD, LEQSWEEP, LEQTOL, LEQPC, IER) 
 !
 !  Check the solution
 !

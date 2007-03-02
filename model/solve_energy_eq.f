@@ -212,7 +212,7 @@
       CALL ADJUST_LEQ(RESID(RESID_T,0),LEQ_IT(6),LEQ_METHOD(6),LEQI,LEQM,IER) 
 !         call test_lin_eq(a_m(1, -3, 0), LEQI, LEQM, LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6),  0, ier)
 !
-      CALL SOLVE_LIN_EQ ('T_g', T_G, A_M, B_M, 0, LEQI, LEQM, &
+      CALL SOLVE_LIN_EQ ('T_g', 6, T_G, A_M, B_M, 0, LEQI, LEQM, &
 	                     LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6), IER)  
 
 !       bound the temperature
@@ -229,7 +229,7 @@
             LEQM, IER) 
 !         call test_lin_eq(a_m(1, -3, M), LEQI, LEQM, LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6),  0, ier)
 !
-         CALL SOLVE_LIN_EQ ('T_s', T_S(1,M), A_M, B_M, M, LEQI, LEQM, &
+         CALL SOLVE_LIN_EQ ('T_s', 6, T_S(1,M), A_M, B_M, M, LEQI, LEQM, &
 	                     LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6), IER) 
 
 !       bound the temperature

@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SOLVE_LIN_EQ(Vname, Var, A_m, B_m, M, ITMAX, METHOD,   C
-!                            SWEEP, TOL, PC,            IER)           C
+!  Module name: SOLVE_LIN_EQ(Vname, Vno, Var, A_m, B_m, M, ITMAX, METHOD,   C
+!                            SWEEP, TOL1, PC,            IER)           C
 !  Purpose: Interface for linear equation solver                       C
 !                                                                      C
 !                                                                      C
@@ -18,8 +18,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE SOLVE_LIN_EQ(VNAME, VAR, A_M, B_M, M, ITMAX, METHOD,&
-                              SWEEP, TOL, PC, IER) 
+      SUBROUTINE SOLVE_LIN_EQ(VNAME, Vno, VAR, A_M, B_M, M, ITMAX, METHOD,&
+                              SWEEP, TOL1, PC, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -30,6 +30,8 @@
       USE param1 
       USE geometry
       USE compar  
+      USE residual  
+      USE toleranc  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -58,15 +60,23 @@
 !                      Variable name
       CHARACTER*(*)    Vname
 !
+!                      Variable number
+      INTEGER          Vno
+!
+!                      Adjust LEQ Tolerance flag
+      LOGICAL, PARAMETER :: adjust_leq_tol = .TRUE.
+      LOGICAL, PARAMETER :: leq_tol_scheme1 = .TRUE.
+      DOUBLE PRECISION max_resid_local, tol_resid_max
+!
 !                      Variable
       DOUBLE PRECISION Var(DIMENSION_3)
 
-!                           convergence tolerance for leq solver
-      DOUBLE PRECISION  :: TOL  
-!                           Preconditioner
+!                      convergence tolerance for leq solver
+      DOUBLE PRECISION  :: TOL1, TOL  
+!                      Preconditioner
       CHARACTER*4       :: PC  
       
-!			sweep direction of leq solver
+!                      sweep direction of leq solver
       CHARACTER*4	:: SWEEP
       
       CHARACTER*80     LINE0, LINE1
@@ -78,7 +88,30 @@
       logical, parameter :: do_transpose = .true. 
       integer :: ii, ijk 
 
-!
+!     Adjusting the tolerances
+!     
+      if(adjust_leq_tol) then 
+         max_resid_local = maxval(resid(:,M),1)
+         tol_resid_max   = max(tol_resid, tol_resid_t, tol_resid_th, tol_resid_x)
+         if(leq_tol_scheme1.and.resid(Vno,M).lt.1.0e-1) then
+            if(Vno.le.5) then
+               TOL = MAX(TOL1,TOL1*RESID(Vno,M)/TOL_RESID)
+            elseif (Vno.eq.6) then 
+               TOL = MAX(TOL1,TOL1*RESID(Vno,M)/TOL_RESID_T)
+            elseif (Vno.eq.7) then 
+               TOL = MAX(TOL1,TOL1*RESID(Vno,M)/TOL_RESID_Th)
+            elseif (Vno.eq.10) then 
+               TOL = MAX(TOL1,TOL1*RESID(Vno,M)/TOL_RESID_X)
+            endif 
+            Write(*,*) 'Adjusting LEQ_Tolerance', Vname, tol, resid(Vno,M)
+         else if(max_resid_local.lt.1.0e-1) then
+            TOL = MAX(TOL1,TOL1*max_resid_local/TOL_RESID_max)
+            Write(*,*) 'Adjusting LEQ_Tolerance', Vname, tol, max_resid_local
+         endif 
+      else
+        TOL = TOL1
+      endif
+
 !
       SELECT CASE (METHOD)  
       CASE (1)  
@@ -97,6 +130,7 @@
         enddo
       endif
 !       bicgstab
+
       if(do_transpose) then
         call leq_bicgst( VNAME,VAR, A_Mt(:,:), B_M(:,M), SWEEP, TOL, PC, ITMAX,IER)
       else 
