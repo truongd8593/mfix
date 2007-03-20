@@ -87,8 +87,8 @@ c
      &                                     BACK
          endif
       END DO
-      write (30,'(a)') '    blas90.a odepack.a'
-      write (31,'(a)') '    blas90.a odepack.a'
+      write (30,'(a)') '    blas90.a odepack.a dgtsv90.a'
+      write (31,'(a)') '    blas90.a odepack.a dgtsv90.a'
 C
 C  mfix.exe link statement ( all object files + $(LIB_FLAGS) )
 C
@@ -117,6 +117,17 @@ c
       write (31,'(a)') '	ar cr blas90.a BLAS.o'
       write (31,'(a)') 'BLAS.o : BLAS.F'           
       WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F'
+c
+c source code dependencies   ... dgtsv90.a
+c
+      write (30,'(a)') 'dgtsv90.a : DGTSV.o'
+      write (30,'(a)') '	ar cr dgtsv90.a DGTSV.o'
+      write (30,'(a)') 'DGTSV.o : DGTSV.F'           
+      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.F'
+      write (31,'(a)') 'dgtsv90.a : DGTSV.o'
+      write (31,'(a)') '	ar cr dgtsv90.a DGTSV.o'
+      write (31,'(a)') 'DGTSV.o : DGTSV.F'           
+      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.F'
 C
 c
 c source code dependencies   ... odepack.a

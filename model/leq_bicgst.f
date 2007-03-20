@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: LEQ_BICGS(Vname, Var, A_m, B_m,                        C
+!  Module name: LEQ_BICGSt(Vname, Var, A_m, B_m,                       C
 !                         cmethod, TOL, ITMAX, IER )
 !  Purpose: Compute residual of linear system                          C
 !                                                                      C
@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_BICGS(VNAME, VAR, A_M, B_m,  cmethod, TOL, PC, ITMAX,IER)
+      SUBROUTINE LEQ_BICGSt(VNAME, VAR, A_M, B_m,  cmethod, TOL, PC, ITMAX,IER)
       
 !-----------------------------------------------
 !   M o d u l e s
@@ -44,7 +44,7 @@
 !                      Preconditioner
       CHARACTER*4   ::  PC
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3,-3:3) :: A_m
+      DOUBLE PRECISION, DIMENSION(-3:3,ijkstart3:ijkend3) :: A_m
 !                      Vector b_m
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) :: B_m
 !                      Variable name
@@ -56,27 +56,27 @@
 !
 !-------------------------------------------------
       DOUBLE PRECISION DNRM2
-      EXTERNAL LEQ_MATVEC, LEQ_MSOLVE, LEQ_MSOLVE0, LEQ_MSOLVE1
+      EXTERNAL LEQ_MATVECt, LEQ_MSOLVEt, LEQ_MSOLVE0t, LEQ_MSOLVE1t
 
 
 !--------------------------------------------------
 
       if(PC.eq.'LINE') then
-         call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
-         cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE, IER )
+         call LEQ_BICGS0t( Vname, Var, A_m, B_m,                        &
+         cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVEt, IER )
       elseif(PC.eq.'DIAG') then
-         call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
-         cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE1, IER )
+         call LEQ_BICGS0t( Vname, Var, A_m, B_m,                        &
+         cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVE1t, IER )
       elseif(PC.eq.'NONE') then
-         call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
-         cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE0, IER )
+         call LEQ_BICGS0t( Vname, Var, A_m, B_m,                        &
+         cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVE0t, IER )
       else
          IF(DMP_LOG)WRITE (UNIT_LOG,*) 'preconditioner option not found - check mfix.dat and readme'
          call mfix_exit(myPE)
       endif
 
       return
-      END SUBROUTINE LEQ_BICGS
+      END SUBROUTINE LEQ_BICGSt
 
 
 
@@ -100,8 +100,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_BICGS0(VNAME, VAR, A_M, B_m,  cmethod, TOL, ITMAX,  &
-                            MATVEC, MSOLVE, IER ) 
+      SUBROUTINE LEQ_BICGS0t(VNAME, VAR, A_M, B_m,  cmethod, TOL, ITMAX,  &
+                            MATVECt, MSOLVEt, IER ) 
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -127,7 +127,7 @@
 !                      convergence tolerance
       DOUBLE PRECISION ::  TOL
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3,-3:3) :: A_m
+      DOUBLE PRECISION, DIMENSION(-3:3,ijkstart3:ijkend3) :: A_m
 !                      Vector b_m
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) :: B_m
 !                      Variable name
@@ -156,7 +156,7 @@
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
 !     DOUBLE PRECISION , EXTERNAL :: DOT_PRODUCT_PAR
-      EXTERNAL  MATVEC, MSOLVE
+      EXTERNAL  MATVECt, MSOLVEt
 
       INTERFACE
          DOUBLE PRECISION FUNCTION DOT_PRODUCT_PAR( R1, R2 )
@@ -223,12 +223,11 @@
 
                   IJK = funijk(i,j,k)
 
-
-                  aijmax = maxval(abs(A_M(ijk,:)) )
+                  aijmax = maxval(abs(A_M(:,ijk)) )
 
                   OAM = one/aijmax
                   
-                  A_M(IJK,:) = A_M(IJK,:)*OAM
+                  A_M(:,IJK) = A_M(:,IJK)*OAM
 
                   B_M(IJK) = B_M(IJK)*OAM
 
@@ -243,7 +242,7 @@
 !    rtilde = r
 
 
-      call MATVEC( Vname, Var, A_M, R )
+      call MATVECt( Vname, Var, A_M, R )
 
 
       if (use_doloop) then
@@ -353,9 +352,9 @@
 !     V(:) = A*Phat(:)
 !     
 
-         call MSOLVE( Vname, P, A_m, Phat, CMETHOD)
+         call MSOLVEt( Vname, P, A_m, Phat, CMETHOD)
 
-         call MATVEC( Vname, Phat, A_m, V )
+         call MATVECt( Vname, Phat, A_m, V )
          
          if(is_serial) then
             if (use_doloop) then
@@ -420,7 +419,7 @@
 !     
 !     Recompute residual norm
 !     
-                  call MATVEC( Vname, Var, A_m, R )
+                  call MATVECt( Vname, Var, A_m, R )
 
 !     Rnorm = sqrt( dot_product_par( Var, Var ) )
 !     print*,'leq_bicgs, initial: ', Vname,' Vnorm ', Rnorm
@@ -460,9 +459,9 @@
 !     Solve M Shat(:) = Svec(:)
 !     Tvec(:) = A * Shat(:)
 !     
-         call MSOLVE( Vname, Svec, A_m, Shat, CMETHOD)
+         call MSOLVEt( Vname, Svec, A_m, Shat, CMETHOD)
          
-         call MATVEC( Vname, Shat, A_m, Tvec )
+         call MATVECt( Vname, Shat, A_m, Tvec )
 
          if(is_serial) then
             if (use_doloop) then
@@ -541,7 +540,7 @@
       enddo
 
       if (idebugl >= 1) then
-         call MATVEC( Vname, Var, A_m, R )
+         call MATVECt( Vname, Var, A_m, R )
          if (use_doloop) then
 !$omp  parallel do private(ijk)
             do ijk=ijkstart3,ijkend3
@@ -585,12 +584,12 @@
       call send_recv(var,2)
       
       return
-      end subroutine LEQ_BICGS0
+      end subroutine LEQ_BICGS0t
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: LEQ_ISWEEP(I, Vname, Var, A_m, B_m )                   C
+!  Module name: LEQ_ISWEEPt(I, Vname, Var, A_m, B_m )                  C
 !  Purpose: Perform line sweep at coordiante I                         C
 !                                                                      C
 !                                                                      C
@@ -606,7 +605,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE LEQ_ISWEEP(I,Vname, VAR, A_M, B_M)
+      SUBROUTINE LEQ_ISWEEPt(I,Vname, VAR, A_M, B_M)
 
 !-----------------------------------------------
 !   M o d u l e s
@@ -632,7 +631,7 @@
 !
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
+      DOUBLE PRECISION A_m(-3:3,ijkstart3:ijkend3)
 !
 !                      Vector b_m
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
@@ -670,11 +669,11 @@
          IM1JK = IM_OF(IJK)
          IP1JK = IP_OF(IJK)
 
-         DD(J) = A_M(IJK,  0)
-         CC(J) = A_M(IJK, -2)
-         EE(J) = A_M(IJK,  2)
-         BB(J) = B_M(IJK) -  A_M(IJK,-1) * Var( IM1JK )         &
-         -  A_M(IJK, 1) * Var( IP1JK )
+         DD(J) = A_M(0, IJK)
+         CC(J) = A_M(-2, IJK)
+         EE(J) = A_M(2, IJK)
+         BB(J) = B_M(IJK) -  A_M(-1, IJK) * Var( IM1JK )         &
+         -  A_M(1, IJK) * Var( IP1JK )
 
       END DO
 
@@ -695,10 +694,10 @@
       ENDDO
 
       RETURN
-      END SUBROUTINE  LEQ_ISWEEP
+      END SUBROUTINE  LEQ_ISWEEPt
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m )               C
+!  Module name: LEQ_IKSWEEPt(I, K, Vname, Var, A_m, B_m )              C
 !  Purpose: Perform line sweep at coordiante I,K                       C
 !                                                                      C
 !                                                                      C
@@ -714,7 +713,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE LEQ_IKSWEEP(I,K,Vname, VAR, A_M, B_M )
+      SUBROUTINE LEQ_IKSWEEPt(I,K,Vname, VAR, A_M, B_M )
 
 !-----------------------------------------------
 !   M o d u l e s
@@ -739,7 +738,7 @@
       INTEGER          I,K
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
+      DOUBLE PRECISION A_m(-3:3,ijkstart3:ijkend3)
 !
 !                      Vector b_m
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
@@ -780,13 +779,13 @@
          IJKM1 = KM_OF(IJK)
          IJKP1 = KP_OF(IJK)
 
-         DD(J) = A_M(IJK,  0)
-         CC(J) = A_M(IJK, -2)
-         EE(J) = A_M(IJK,  2)
-         BB(J) = B_M(IJK) -  A_M(IJK,-1) * Var( IM1JK )         &
-         -  A_M(IJK, 1) * Var( IP1JK )         &
-         -  A_M(IJK,-3) * Var( IJKM1 )         &
-         -  A_M(IJK, 3) * Var( IJKP1 )
+         DD(J) = A_M(0, IJK)
+         CC(J) = A_M(-2, IJK)
+         EE(J) = A_M(2, IJK)
+         BB(J) = B_M(IJK) -  A_M(-1, IJK) * Var( IM1JK )         &
+         -  A_M(1, IJK) * Var( IP1JK )         &
+         -  A_M(-3, IJK) * Var( IJKM1 )         &
+         -  A_M(3, IJK) * Var( IJKP1 )
 
       ENDDO
 
@@ -809,12 +808,12 @@
       ENDDO
       
       RETURN
-      END SUBROUTINE  LEQ_IKSWEEP
+      END SUBROUTINE  LEQ_IKSWEEPt
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: LEQ_MATVEC(Vname, Var, A_m, B_m )                      C
+!  Module name: LEQ_MATVECt(Vname, Var, A_m, B_m )                     C
 !  Purpose: Compute residual of linear system                          C
 !                                                                      C
 !  Author: Ed D'Azevedo                               Date: 21-JAN-99  C
@@ -830,7 +829,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_MATVEC(VNAME, VAR, A_M, Avar )
+      SUBROUTINE LEQ_MATVECt(VNAME, VAR, A_M, Avar )
 !
 !-----------------------------------------------
 !   M o d u l e s
@@ -853,7 +852,7 @@
 !
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
+      DOUBLE PRECISION A_m(-3:3, ijkstart3:ijkend3)
 !
 !                      Vector AVar
       DOUBLE PRECISION AVar(ijkstart3:ijkend3)
@@ -912,13 +911,13 @@
                   ijkp1 = kp_of(ijk)
 
 
-                  AVar(ijk) =      A_m(ijk,-3) * Var(ijkm1)   &
-                  + A_m(ijk,-2) * Var(ijm1k)   &
-                  + A_m(ijk,-1) * Var(im1jk)   &
-                  + A_m(ijk, 0) * Var(ijk)     &
-                  + A_m(ijk, 1) * Var(ip1jk)   &
-                  + A_m(ijk, 2) * Var(ijp1k)   &
-                  + A_m(ijk, 3) * Var(ijkp1)
+                  AVar(ijk) =      A_m(-3, ijk) * Var(ijkm1)   &
+                  + A_m(-2, ijk) * Var(ijm1k)   &
+                  + A_m(-1, ijk) * Var(im1jk)   &
+                  + A_m(0, ijk) * Var(ijk)     &
+                  + A_m(1, ijk) * Var(ip1jk)   &
+                  + A_m(2, ijk) * Var(ijp1k)   &
+                  + A_m(3, ijk) * Var(ijkp1)
 
                enddo
             enddo
@@ -938,11 +937,11 @@
                ip1jk = ip_of(ijk)
                ijm1k = jm_of(ijk)
                ijp1k = jp_of(ijk)
-               AVar(ijk) =      A_m(ijk,-2) * Var(ijm1k)   &
-               + A_m(ijk,-1) * Var(im1jk)   &
-               + A_m(ijk, 0) * Var(ijk)     &
-               + A_m(ijk, 1) * Var(ip1jk)   &
-               + A_m(ijk, 2) * Var(ijp1k)
+               AVar(ijk) =      A_m(-2, ijk) * Var(ijm1k)   &
+               + A_m(-1, ijk) * Var(im1jk)   &
+               + A_m(0, ijk) * Var(ijk)     &
+               + A_m(1, ijk) * Var(ip1jk)   &
+               + A_m(2, ijk) * Var(ijp1k)
 
             enddo
          enddo
@@ -951,7 +950,7 @@
 
       call send_recv(Avar,nlayers_bicgs)
       return
-      END SUBROUTINE LEQ_MATVEC
+      END SUBROUTINE LEQ_MATVECt
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: LEQ_MSOLVE(Vname, B_m, A_m, Var, CMETHOD)
@@ -970,7 +969,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_MSOLVE(VNAME, B_m, A_M, Var, CMETHOD)
+      SUBROUTINE LEQ_MSOLVEt(VNAME, B_m, A_M, Var, CMETHOD)
 !
 !-----------------------------------------------
 !   M o d u l e s
@@ -991,7 +990,7 @@
 !-----------------------------------------------
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
+      DOUBLE PRECISION A_m(-3:3, ijkstart3:ijkend3)
 !
 !                      Vector b_m
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
@@ -1067,7 +1066,7 @@
             IF ( DO_ISWEEP ) THEN
 !$omp   parallel do private(I)
                DO I=istart,iend
-                  CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
+                  CALL LEQ_ISWEEPt( I, Vname, Var, A_m, B_m )
                ENDDO
             ENDIF
 
@@ -1091,7 +1090,7 @@
                         k = int( ik/isize ) + k1 -1
                      endif
                      i = (ik-1-(k-k1)*isize) + i1
-                     CALL LEQ_IKSWEEP( I,K, Vname, Var, A_m, B_m )
+                     CALL LEQ_IKSWEEPt( I,K, Vname, Var, A_m, B_m )
                   ENDDO
                ENDDO
 
@@ -1115,7 +1114,7 @@
                         k = int( ik/isize ) + k1 -1
                      endif
                      i = (ik-1-(k-k1)*isize) + i1
-                     CALL LEQ_IKSWEEP( I,K, Vname, Var, A_m, B_m )
+                     CALL LEQ_IKSWEEPt( I,K, Vname, Var, A_m, B_m )
                   ENDDO
                ENDIF
 
@@ -1129,7 +1128,7 @@
                      endif
                      k = (ik-1-(i-i1)*ksize) + k1
 
-                     CALL LEQ_IKSWEEP( I,K, Vname, Var, A_m, B_m )
+                     CALL LEQ_IKSWEEPt( I,K, Vname, Var, A_m, B_m )
                   ENDDO
                ENDIF
 
@@ -1139,7 +1138,7 @@
 !$omp   parallel do private(K,I)
                   DO K=kstart,kend
                      DO I=istart,iend
-                        CALL LEQ_IKSWEEP( I,K, Vname, Var, A_m, B_m )
+                        CALL LEQ_IKSWEEPt( I,K, Vname, Var, A_m, B_m )
                      ENDDO
                   ENDDO
                ENDIF
@@ -1148,7 +1147,7 @@
 !$omp   parallel do private(K,I)
                   DO I=istart,iend
                      DO K=kstart,kend
-                        CALL LEQ_IKSWEEP( I,K, Vname, Var, A_m, B_m )
+                        CALL LEQ_IKSWEEPt( I,K, Vname, Var, A_m, B_m )
                      ENDDO
                   ENDDO
                ENDIF
@@ -1162,12 +1161,12 @@
       ENDDO
 
       RETURN
-      END SUBROUTINE LEQ_MSOLVE
+      END SUBROUTINE LEQ_MSOLVEt
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: LEQ_JKSWEEP(J, K, Vname, Var, A_m, B_m )               C
+!  Module name: LEQ_JKSWEEPt(J, K, Vname, Var, A_m, B_m )              C
 !  Purpose: Perform line sweep at coordiante I,K                       C
 !                                                                      C
 !                                                                      C
@@ -1183,7 +1182,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE LEQ_JKSWEEP(J,K,Vname, VAR, A_M, B_M )
+      SUBROUTINE LEQ_JKSWEEPt(J,K,Vname, VAR, A_M, B_M )
 
 !-----------------------------------------------
 !   M o d u l e s
@@ -1206,7 +1205,7 @@
       INTEGER          J,K
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
+      DOUBLE PRECISION A_m(-3:3, ijkstart3:ijkend3)
 !
 !                      Vector b_m
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
@@ -1237,13 +1236,13 @@
       DO I=1,NN
          IJK = FUNIJK(I,J,K)
 
-         DD(I) = A_M(IJK,  0)
-         CC(I) = A_M(IJK, -1)
-         EE(I) = A_M(IJK,  1)
-         BB(I) = B_M(IJK)    -  A_M(IJK,-2) * Var( JM_OF(IJK) )         &
-         -  A_M(IJK, 2) * Var( JP_OF(IJK) )         &
-         -  A_M(IJK,-3) * Var( KM_OF(IJK) )         &
-         -  A_M(IJK, 3) * Var( KP_OF(IJK) )
+         DD(I) = A_M(0, IJK)
+         CC(I) = A_M(-1, IJK)
+         EE(I) = A_M(1, IJK)
+         BB(I) = B_M(IJK)    -  A_M(-2,IJK) * Var( JM_OF(IJK) )         &
+         -  A_M(2, IJK) * Var( JP_OF(IJK) )         &
+         -  A_M(-3, IJK) * Var( KM_OF(IJK) )         &
+         -  A_M(3, IJK) * Var( KP_OF(IJK) )
 
       ENDDO
 
@@ -1266,11 +1265,11 @@
       ENDDO
 
       RETURN
-      END SUBROUTINE  LEQ_JKSWEEP
+      END SUBROUTINE  LEQ_JKSWEEPt
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: LEQ_IJSWEEP(I,J, Vname, Var, A_m, B_m )               C
+!  Module name: LEQ_IJSWEEPt(I,J, Vname, Var, A_m, B_m )               C
 !  Purpose: Perform line sweep at coordiante I,K                       C
 !                                                                      C
 !                                                                      C
@@ -1286,7 +1285,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE LEQ_IJSWEEP(I,J,Vname, VAR, A_M, B_M )
+      SUBROUTINE LEQ_IJSWEEPt(I,J,Vname, VAR, A_M, B_M )
 
 !-----------------------------------------------
 !   M o d u l e s
@@ -1309,7 +1308,7 @@
       INTEGER          I,J
 !
 !                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
+      DOUBLE PRECISION A_m(-3:3, ijkstart3:ijkend3)
 !
 !                      Vector b_m
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
@@ -1340,13 +1339,13 @@
       DO K=1,NN
          IJK = FUNIJK(I,J,K)
 
-         DD(K) = A_M(IJK,  0)
-         CC(K) = A_M(IJK, -3)
-         EE(K) = A_M(IJK,  3)
-         BB(K) = B_M(IJK)    -  A_M(IJK,-2) * Var( JM_OF(IJK) )         &
-         -  A_M(IJK, 2) * Var( JP_OF(IJK) )         &
-         -  A_M(IJK,-1) * Var( IM_OF(IJK) )         &
-         -  A_M(IJK, 1) * Var( IP_OF(IJK) )
+         DD(K) = A_M(0,IJK)
+         CC(K) = A_M(-3,IJK)
+         EE(K) = A_M(3,IJK)
+         BB(K) = B_M(IJK)    -  A_M(-2,IJK) * Var( JM_OF(IJK) )         &
+         -  A_M(2,IJK) * Var( JP_OF(IJK) )         &
+         -  A_M(-1,IJK) * Var( IM_OF(IJK) )         &
+         -  A_M(1,IJK) * Var( IP_OF(IJK) )
 
       ENDDO
 
@@ -1369,94 +1368,10 @@
       ENDDO
 
       RETURN
-      END SUBROUTINE  LEQ_IJSWEEP
-
+      END SUBROUTINE  LEQ_IJSWEEPt
 
 !-----------------------------------------------
-      Double Precision function dot_product_par(r1,r2)
-!-----------------------------------------------
-
-      use mpi_utility
-      use geometry
-      use compar
-      use indices
-
-      implicit none
-      double precision, intent(in), dimension(ijkstart3:ijkend3) :: r1,r2
-
-!     local variable
-
-      DOUBLE PRECISION, allocatable, Dimension(:) :: r1_g, r2_g
-      double precision :: prod, prod_gl
-      integer :: i, j, k, ijk
-      logical, parameter :: do_global_sum = .true.
-
-      include 'function.inc'
-
-      if(do_global_sum) then
-         
-         prod = 0.0d0
-         
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
-         do k = kstart1, kend1
-            do i = istart1, iend1
-               do j = jstart1, jend1
-                  
-                  ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
-!     ijk = funijk (i,j,k)
-
-                  prod = prod + r1(ijk)*r2(ijk)
-                  
-               enddo
-            enddo
-         enddo
-         
-         call global_all_sum(prod, dot_product_par)
-
-      else
-         
-         if(myPE.eq.root) then
-            allocate (r1_g(1:ijkmax3))
-            allocate (r2_g(1:ijkmax3))
-         else
-            allocate (r1_g(10))
-            allocate (r2_g(10))
-         endif
-         
-         call gather(r1,r1_g)
-         call gather(r2,r2_g)
-         
-         if(myPE.eq.root) then
-            prod = 0.0d0
-            
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
-            do k = kmin1, kmax1
-               do i = imin1, imax1
-                  do j = jmin1, jmax1
-                     
-                     ijk = funijk_gl (imap_c(i),jmap_c(j),kmap_c(k))
-!     ijk = funijk_gl (i,j,k)
-                     
-                     prod = prod + r1_g(ijk)*r2_g(ijk)
-                     
-                  enddo
-               enddo
-            enddo
-         endif
-         
-         call bcast( prod)
-         
-         dot_product_par = prod
-
-         deallocate (r1_g)
-         deallocate (r2_g)
-
-      endif
-      
-      end function dot_product_par
-    
-!-----------------------------------------------
-      SUBROUTINE LEQ_MSOLVE0(VNAME, B_m, A_M, Var, CMETHOD )
+      SUBROUTINE LEQ_MSOLVE0t(VNAME, B_m, A_M, Var, CMETHOD )
 !-----------------------------------------------
 !
 !-----------------------------------------------
@@ -1480,7 +1395,7 @@
 !-----------------------------------------------
 !     
 !     Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
+      DOUBLE PRECISION A_m(-3:3, ijkstart3:ijkend3)
 !     
 !     Vector b_m
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
@@ -1493,8 +1408,6 @@
       integer :: ijk
 
       CHARACTER*4 :: CMETHOD
-
-
 
 !     do nothing or no preconditioning
 
@@ -1510,10 +1423,10 @@
       call send_recv(var,nlayers_bicgs)
 
       return
-      end subroutine leq_msolve0
+      end subroutine leq_msolve0t
 
 !-----------------------------------------------
-      SUBROUTINE LEQ_msolve1(VNAME, B_m, A_M, Var, CMETHOD )
+      SUBROUTINE LEQ_msolve1t(VNAME, B_m, A_M, Var, CMETHOD )
 !-----------------------------------------------
 !
 !-----------------------------------------------
@@ -1538,7 +1451,7 @@
 !-----------------------------------------------
 !     
 !     Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(ijkstart3:ijkend3, -3:3)
+      DOUBLE PRECISION A_m(-3:3, ijkstart3:ijkend3)
 !     
 !     Vector b_m
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
@@ -1573,7 +1486,7 @@
             do j=jstart2,jend2
 
                ijk = funijk( i,j,k )
-               var(ijk) = b_m(ijk)/A_m(ijk,0)
+               var(ijk) = b_m(ijk)/A_m(0,ijk)
 
             enddo
          enddo
@@ -1582,270 +1495,5 @@
       call send_recv(var,nlayers_bicgs)
 
       return
-      end subroutine leq_msolve1
-
-!-----------------------------------------------
-      SUBROUTINE DGTSV( N, NRHS, DL, D, DU, B, LDB, INFO )
-!-----------------------------------------------
-!
-!  -- LAPACK routine (version 3.0) --
-!     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-!     Courant Institute, Argonne National Lab, and Rice University
-!     October 31, 1999
-!
-!     .. Scalar Arguments ..
-      INTEGER            INFO, LDB, N, NRHS
-!     ..
-!     .. Array Arguments ..
-      DOUBLE PRECISION   B( LDB, * ), D( * ), DL( * ), DU( * )
-!     ..
-!
-!  Purpose
-!  =======
-!
-!  DGTSV  solves the equation
-!
-!     A*X = B,
-!
-!  where A is an n by n tridiagonal matrix, by Gaussian elimination with
-!  partial pivoting.
-!
-!  Note that the equation  A'*X = B  may be solved by interchanging the
-!  order of the arguments DU and DL.
-!
-!  Arguments
-!  =========
-!
-!  N       (input) INTEGER
-!          The order of the matrix A.  N >= 0.
-!
-!  NRHS    (input) INTEGER
-!          The number of right hand sides, i.e., the number of columns
-!          of the matrix B.  NRHS >= 0.
-!
-!  DL      (input/output) DOUBLE PRECISION array, dimension (N-1)
-!          On entry, DL must contain the (n-1) sub-diagonal elements of
-!          A.
-!
-!          On exit, DL is overwritten by the (n-2) elements of the
-!          second super-diagonal of the upper triangular matrix U from
-!          the LU factorization of A, in DL(1), ..., DL(n-2).
-!
-!  D       (input/output) DOUBLE PRECISION array, dimension (N)
-!          On entry, D must contain the diagonal elements of A.
-!
-!          On exit, D is overwritten by the n diagonal elements of U.
-!
-!  DU      (input/output) DOUBLE PRECISION array, dimension (N-1)
-!          On entry, DU must contain the (n-1) super-diagonal elements
-!          of A.
-!
-!          On exit, DU is overwritten by the (n-1) elements of the first
-!          super-diagonal of U.
-!
-!  B       (input/output) DOUBLE PRECISION array, dimension (LDB,NRHS)
-!          On entry, the N by NRHS matrix of right hand side matrix B.
-!          On exit, if INFO = 0, the N by NRHS solution matrix X.
-!
-!  LDB     (input) INTEGER
-!          The leading dimension of the array B.  LDB >= max(1,N).
-!
-!  INFO    (output) INTEGER
-!          = 0: successful exit
-!          < 0: if INFO = -i, the i-th argument had an illegal value
-!          > 0: if INFO = i, U(i,i) is exactly zero, and the solution
-!               has not been computed.  The factorization has not been
-!               completed unless i = N.
-!
-!  =====================================================================
-!
-!     .. Parameters ..
-      DOUBLE PRECISION   ZERO
-      PARAMETER          ( ZERO = 0.0D+0 )
-!     ..
-!     .. Local Scalars ..
-      INTEGER            I, J
-      DOUBLE PRECISION   FACT, TEMP
-!     ..
-!     .. Intrinsic Functions ..
-      INTRINSIC          ABS, MAX
-!     ..
-!     .. External Subroutines ..
-      EXTERNAL           XERBLA
-!     ..
-!     .. Executable Statements ..
-!
-      INFO = 0
-      IF( N.LT.0 ) THEN
-         INFO = -1
-      ELSE IF( NRHS.LT.0 ) THEN
-         INFO = -2
-      ELSE IF( LDB.LT.MAX( 1, N ) ) THEN
-         INFO = -7
-      END IF
-      IF( INFO.NE.0 ) THEN
-         CALL XERBLA( 'DGTSV ', -INFO )
-         RETURN
-      END IF
-!
-      IF( N.EQ.0 ) RETURN
-!
-      IF( NRHS.EQ.1 ) THEN
-         DO 10 I = 1, N - 2
-            IF( ABS( D( I ) ).GE.ABS( DL( I ) ) ) THEN
-!
-!              No row interchange required
-!
-               IF( D( I ).NE.ZERO ) THEN
-                  FACT = DL( I ) / D( I )
-                  D( I+1 ) = D( I+1 ) - FACT*DU( I )
-                  B( I+1, 1 ) = B( I+1, 1 ) - FACT*B( I, 1 )
-               ELSE
-                  INFO = I
-                  RETURN
-               END IF
-               DL( I ) = ZERO
-            ELSE
-!
-!              Interchange rows I and I+1
-!
-               FACT = D( I ) / DL( I )
-               D( I ) = DL( I )
-               TEMP = D( I+1 )
-               D( I+1 ) = DU( I ) - FACT*TEMP
-               DL( I ) = DU( I+1 )
-               DU( I+1 ) = -FACT*DL( I )
-               DU( I ) = TEMP
-               TEMP = B( I, 1 )
-               B( I, 1 ) = B( I+1, 1 )
-               B( I+1, 1 ) = TEMP - FACT*B( I+1, 1 )
-            END IF
-   10    CONTINUE
-         IF( N.GT.1 ) THEN
-            I = N - 1
-            IF( ABS( D( I ) ).GE.ABS( DL( I ) ) ) THEN
-               IF( D( I ).NE.ZERO ) THEN
-                  FACT = DL( I ) / D( I )
-                  D( I+1 ) = D( I+1 ) - FACT*DU( I )
-                  B( I+1, 1 ) = B( I+1, 1 ) - FACT*B( I, 1 )
-               ELSE
-                  INFO = I
-                  RETURN
-               END IF
-            ELSE
-               FACT = D( I ) / DL( I )
-               D( I ) = DL( I )
-               TEMP = D( I+1 )
-               D( I+1 ) = DU( I ) - FACT*TEMP
-               DU( I ) = TEMP
-               TEMP = B( I, 1 )
-               B( I, 1 ) = B( I+1, 1 )
-               B( I+1, 1 ) = TEMP - FACT*B( I+1, 1 )
-            END IF
-         END IF
-         IF( D( N ).EQ.ZERO ) THEN
-            INFO = N
-            RETURN
-         END IF
-      ELSE
-         DO 40 I = 1, N - 2
-            IF( ABS( D( I ) ).GE.ABS( DL( I ) ) ) THEN
-!
-!              No row interchange required
-!
-               IF( D( I ).NE.ZERO ) THEN
-                  FACT = DL( I ) / D( I )
-                  D( I+1 ) = D( I+1 ) - FACT*DU( I )
-                  DO 20 J = 1, NRHS
-                     B( I+1, J ) = B( I+1, J ) - FACT*B( I, J )
-   20             CONTINUE
-               ELSE
-                  INFO = I
-                  RETURN
-               END IF
-               DL( I ) = ZERO
-            ELSE
-!
-!              Interchange rows I and I+1
-!
-               FACT = D( I ) / DL( I )
-               D( I ) = DL( I )
-               TEMP = D( I+1 )
-               D( I+1 ) = DU( I ) - FACT*TEMP
-               DL( I ) = DU( I+1 )
-               DU( I+1 ) = -FACT*DL( I )
-               DU( I ) = TEMP
-               DO 30 J = 1, NRHS
-                  TEMP = B( I, J )
-                  B( I, J ) = B( I+1, J )
-                  B( I+1, J ) = TEMP - FACT*B( I+1, J )
-   30          CONTINUE
-            END IF
-   40    CONTINUE
-         IF( N.GT.1 ) THEN
-            I = N - 1
-            IF( ABS( D( I ) ).GE.ABS( DL( I ) ) ) THEN
-               IF( D( I ).NE.ZERO ) THEN
-                  FACT = DL( I ) / D( I )
-                  D( I+1 ) = D( I+1 ) - FACT*DU( I )
-                  DO 50 J = 1, NRHS
-                     B( I+1, J ) = B( I+1, J ) - FACT*B( I, J )
-   50             CONTINUE
-               ELSE
-                  INFO = I
-                  RETURN
-               END IF
-            ELSE
-               FACT = D( I ) / DL( I )
-               D( I ) = DL( I )
-               TEMP = D( I+1 )
-               D( I+1 ) = DU( I ) - FACT*TEMP
-               DU( I ) = TEMP
-               DO 60 J = 1, NRHS
-                  TEMP = B( I, J )
-                  B( I, J ) = B( I+1, J )
-                  B( I+1, J ) = TEMP - FACT*B( I+1, J )
-   60          CONTINUE
-            END IF
-         END IF
-         IF( D( N ).EQ.ZERO ) THEN
-            INFO = N
-            RETURN
-         END IF
-      END IF
-!
-!     Back solve with the matrix U from the factorization.
-!
-      IF( NRHS.LE.2 ) THEN
-         J = 1
-   70    CONTINUE
-         B( N, J ) = B( N, J ) / D( N )
-         IF( N.GT.1 ) &
-            B( N-1, J ) = ( B( N-1, J )-DU( N-1 )*B( N, J ) ) / D( N-1 )
-         DO 80 I = N - 2, 1, -1
-            B( I, J ) = ( B( I, J )-DU( I )*B( I+1, J )-DL( I )* &
-                        B( I+2, J ) ) / D( I )
-   80    CONTINUE
-         IF( J.LT.NRHS ) THEN
-            J = J + 1
-            GO TO 70
-         END IF
-      ELSE
-         DO 100 J = 1, NRHS
-            B( N, J ) = B( N, J ) / D( N )
-            IF( N.GT.1 ) &
-               B( N-1, J ) = ( B( N-1, J )-DU( N-1 )*B( N, J ) ) / &
-                             D( N-1 )
-            DO 90 I = N - 2, 1, -1
-               B( I, J ) = ( B( I, J )-DU( I )*B( I+1, J )-DL( I )*&
-                           B( I+2, J ) ) / D( I )
-   90       CONTINUE
-  100    CONTINUE
-      END IF
-!
-      RETURN
-!
-!     End of DGTSV
-!
-      END SUBROUTINE DGTSV
+      end subroutine leq_msolve1t
 

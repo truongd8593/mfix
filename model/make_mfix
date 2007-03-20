@@ -456,8 +456,8 @@ ln -sf "$mpi_include/mpif.h" .
   
             FORTRAN_CMD=f90
             LINK_CMD=f90
-            libs_d="odepack.a blas90.a"
-            libs="odepack.a blas90.a"
+            libs_d="odepack.a blas90.a dgtsv90.a"
+            libs="odepack.a blas90.a dgtsv90.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f90
@@ -480,8 +480,8 @@ ln -sf "$mpi_include/mpif.h" .
 	    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d="-lblas odepack.a blas90.a"
-            libs="-lblas odepack.a blas90.a"
+            libs_d="-lblas odepack.a blas90.a dgtsv90.a"
+            libs="-lblas odepack.a blas90.a dgtsv90.a"
     
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -569,8 +569,8 @@ ln -sf "$mpi_include/mpif.h" .
                         LINK_CMD=$PGI/bin/pgf90
                 ;;
               esac                                                                                
-            libs_d="odepack.a blas90.a"
-            libs="odepack.a blas90.a"
+            libs_d="odepack.a blas90.a dgtsv90.a"
+            libs="odepack.a blas90.a dgtsv90.a"
                                                                                 
                                                                                 
             OBJ_EXT=o
@@ -813,8 +813,8 @@ ln -sf "$mpi_include/mpif.h" .
    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d="odepack.a blas90.a"
-            libs="odepack.a blas90.a"
+            libs_d="odepack.a blas90.a dgtsv90.a"
+            libs="odepack.a blas90.a dgtsv90.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -834,8 +834,8 @@ ln -sf "$mpi_include/mpif.h" .
    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d="odepack.a blas90.a"
-            libs="odepack.a blas90.a"
+            libs_d="odepack.a blas90.a dgtsv90.a"
+            libs="odepack.a blas90.a dgtsv90.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -855,8 +855,8 @@ ln -sf "$mpi_include/mpif.h" .
    
             FORTRAN_CMD=g95
             LINK_CMD=g95
-            libs_d="odepack.a blas90.a"
-            libs="odepack.a blas90.a"
+            libs_d="odepack.a blas90.a dgtsv90.a"
+            libs="odepack.a blas90.a dgtsv90.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f

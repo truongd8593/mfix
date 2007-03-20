@@ -180,6 +180,7 @@ mfix.exe : \
     kintheory_v_s.$(OBJ_EXT) \
     kintheory_w_s.$(OBJ_EXT) \
     leq_bicgs.$(OBJ_EXT) \
+    leq_bicgst.$(OBJ_EXT) \
     leq_gmres.$(OBJ_EXT) \
     leq_sor.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
@@ -397,7 +398,7 @@ mfix.exe : \
     usr_dqmom.$(OBJ_EXT) \
     get_values.$(OBJ_EXT) \
     readTherm.$(OBJ_EXT) \
-    blas90.a odepack.a
+    blas90.a odepack.a dgtsv90.a
 	$(LINK_CMD) $(LINK_FLAGS) \
     adjust_a_u_g.$(OBJ_EXT) \
     adjust_a_u_s.$(OBJ_EXT) \
@@ -535,6 +536,7 @@ mfix.exe : \
     kintheory_v_s.$(OBJ_EXT) \
     kintheory_w_s.$(OBJ_EXT) \
     leq_bicgs.$(OBJ_EXT) \
+    leq_bicgst.$(OBJ_EXT) \
     leq_gmres.$(OBJ_EXT) \
     leqsol_mod.$(OBJ_EXT) \
     leq_sor.$(OBJ_EXT) \
@@ -800,6 +802,10 @@ blas90.a : BLAS.o
 	ar cr blas90.a BLAS.o
 BLAS.o : BLAS.F
 	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F
+dgtsv90.a : DGTSV.o
+	ar cr dgtsv90.a DGTSV.o
+DGTSV.o : DGTSV.F
+	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.F
 odepack.a : ODEPACK.o
 	ar cr odepack.a ODEPACK.o
 ODEPACK.o : ODEPACK.F
@@ -1781,6 +1787,7 @@ check_data_06.$(OBJ_EXT) : check_data_06.f \
             COMPAR.mod \
             MPI_UTILITY.mod \
             SENDRECV.mod \
+            RXNS.mod \
             function.inc                                                
 check_data_07.$(OBJ_EXT) : check_data_07.f \
             PARAM.mod \
@@ -2378,6 +2385,9 @@ g_0.$(OBJ_EXT) : g_0.f \
             INDICES.mod \
             COMPAR.mod \
             VISC_S.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                    \
@@ -2689,6 +2699,19 @@ leq_bicgs.$(OBJ_EXT) : leq_bicgs.f \
             MPI_UTILITY.mod \
             SENDRECV.mod \
             function.inc                                                
+leq_bicgst.$(OBJ_EXT) : leq_bicgst.f \
+            PARAM.mod \
+            PARAM1.mod \
+            MATRIX.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            INDICES.mod \
+            LEQSOL.mod \
+            FUNITS.mod \
+            PARALLEL.mod \
+            MPI_UTILITY.mod \
+            SENDRECV.mod \
+            function.inc                                                
 leq_gmres.$(OBJ_EXT) : leq_gmres.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2709,6 +2732,7 @@ leq_sor.$(OBJ_EXT) : leq_sor.f \
             GEOMETRY.mod \
             INDICES.mod \
             COMPAR.mod \
+            SENDRECV.mod \
             function.inc                                                
 line_too_big.$(OBJ_EXT) : line_too_big.f 
 location_check.$(OBJ_EXT) : location_check.f \
@@ -2887,7 +2911,6 @@ physical_prop.$(OBJ_EXT) : physical_prop.f \
             FUNITS.mod \
             USR.mod \
             MPI_UTILITY.mod \
-            species_indices.inc                                          \
             usrnlst.inc                                                  \
             cp_fun1.inc                                                  \
             fun_avg1.inc                                                 \
@@ -3409,7 +3432,9 @@ solve_lin_eq.$(OBJ_EXT) : solve_lin_eq.f \
             PARAM.mod \
             PARAM1.mod \
             GEOMETRY.mod \
-            COMPAR.mod 
+            COMPAR.mod \
+            RESIDUAL.mod \
+            TOLERANC.mod 
 solve_pp_g.$(OBJ_EXT) : solve_pp_g.f \
             PARAM.mod \
             PARAM1.mod \
@@ -4405,7 +4430,8 @@ calc_force_des.$(OBJ_EXT) : ./des/calc_force_des.f \
             RUN.mod \
             PARAM1.mod \
             DISCRETELEMENT.mod \
-            GEOMETRY.mod 
+            GEOMETRY.mod \
+            COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_force_des.f 
 cfassign.$(OBJ_EXT) : ./des/cfassign.f \
             DISCRETELEMENT.mod \
@@ -4799,15 +4825,18 @@ quadtree.$(OBJ_EXT) : ./des/quadtree.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/quadtree.f 
 read_des_restart.$(OBJ_EXT) : ./des/read_des_restart.f \
             PARAM1.mod \
+            RUN.mod \
             DISCRETELEMENT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/read_des_restart.f 
 write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
             PARAM1.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            RUN.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/write_des_data.f 
 write_des_restart.$(OBJ_EXT) : ./des/write_des_restart.f \
             PARAM1.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            RUN.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/write_des_restart.f 
 gaussj.$(OBJ_EXT) : ./dqmom/gaussj.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/gaussj.f 
