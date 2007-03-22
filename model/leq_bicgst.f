@@ -151,6 +151,7 @@
       LOGICAL :: isconverged
       LOGICAL, PARAMETER :: minimize_dotproducts = .FALSE.
       INTEGER :: i, ii, j, k, ijk, itemp, iter
+      DOUBLE PRECISION, DIMENSION(2) :: TxS_TxT
 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -163,6 +164,14 @@
          use compar
          DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: R1,R2
          END FUNCTION DOT_PRODUCT_PAR
+      END INTERFACE
+
+      INTERFACE
+         DOUBLE PRECISION FUNCTION DOT_PRODUCT_PAR2( R1, R2, R3, R4 )
+         use compar
+         DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: &
+                                                           R1,R2, R3, R4
+         END FUNCTION DOT_PRODUCT_PAR2
       END INTERFACE
 
       logical, parameter :: do_unit_scaling = .true.
@@ -477,8 +486,14 @@
                TxT = dot_product( Tvec, Tvec )
             endif
          else
-            TxS = dot_product_par( Tvec, Svec )
-            TxT = dot_product_par( Tvec, Tvec )
+            if(.not.minimize_dotproducts) then
+               TxS = dot_product_par( Tvec, Svec )
+               TxT = dot_product_par( Tvec, Tvec )
+            else
+               TxS_TxT = dot_product_par2(Tvec, Svec, Tvec, Tvec )
+               TxS = TxS_TxT(1)
+               TxT = TxS_TxT(2)
+            endif
          endif
          omega(i) = TxS / TxT
 

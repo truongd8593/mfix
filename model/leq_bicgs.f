@@ -151,6 +151,7 @@
       LOGICAL :: isconverged
       LOGICAL, PARAMETER :: minimize_dotproducts = .FALSE.
       INTEGER :: i, ii, j, k, ijk, itemp, iter
+      DOUBLE PRECISION, DIMENSION(2) :: TxS_TxT
 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -163,6 +164,14 @@
          use compar
          DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: R1,R2
          END FUNCTION DOT_PRODUCT_PAR
+      END INTERFACE
+
+      INTERFACE
+         DOUBLE PRECISION FUNCTION DOT_PRODUCT_PAR2( R1, R2, R3, R4 )
+         use compar
+         DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: &
+                                                           R1,R2, R3, R4
+         END FUNCTION DOT_PRODUCT_PAR2
       END INTERFACE
 
       logical, parameter :: do_unit_scaling = .true.
@@ -478,8 +487,14 @@
                TxT = dot_product( Tvec, Tvec )
             endif
          else
-            TxS = dot_product_par( Tvec, Svec )
-            TxT = dot_product_par( Tvec, Tvec )
+            if(.not.minimize_dotproducts) then
+               TxS = dot_product_par( Tvec, Svec )
+               TxT = dot_product_par( Tvec, Tvec )
+            else
+               TxS_TxT = dot_product_par2(Tvec, Svec, Tvec, Tvec )
+               TxS = TxS_TxT(1)
+               TxT = TxS_TxT(2)
+            endif
          endif
          omega(i) = TxS / TxT
 
@@ -1454,7 +1469,96 @@
       endif
       
       end function dot_product_par
+
+!-----------------------------------------------
+      function dot_product_par2(r1,r2,r3,r4)
+!-----------------------------------------------
+
+      use mpi_utility
+      use geometry
+      use compar
+      use indices
+
+      implicit none
+      double precision, intent(in), dimension(ijkstart3:ijkend3) :: r1,r2,r3,r4
+
+!     local variable
+
+      DOUBLE PRECISION, allocatable, Dimension(:,:) :: r_temp, rg_temp
+      double precision, Dimension(2) :: prod, prod_gl, dot_product_par2
+      integer :: i, j, k, ijk
+      logical, parameter :: do_global_sum = .true.
+
+      include 'function.inc'
+
+      if(do_global_sum) then
+         
+         prod(:) = 0.0d0
+         
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
+         do k = kstart1, kend1
+            do i = istart1, iend1
+               do j = jstart1, jend1
+                  
+                  ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
+!     ijk = funijk (i,j,k)
+
+                  prod(1) = prod(1) + r1(ijk)*r2(ijk)
+                  prod(2) = prod(2) + r3(ijk)*r4(ijk)
+                  
+               enddo
+            enddo
+         enddo
+         
+         call global_all_sum(prod, dot_product_par2)
+
+      else
+         
+         allocate (r_temp(ijkstart3:ijkend3,4))
+         r_temp(:,1) = r1
+         r_temp(:,2) = r2
+         r_temp(:,3) = r3
+         r_temp(:,4) = r4
+
+         if(myPE.eq.root) then
+            allocate (rg_temp(1:ijkmax3,4))
+         else
+            allocate (rg_temp(10,4))
+         endif
+         
+         call gather(r_temp,rg_temp)
+         
+         if(myPE.eq.root) then
+            prod = 0.0d0
+            
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
+            do k = kmin1, kmax1
+               do i = imin1, imax1
+                  do j = jmin1, jmax1
+                     
+                     ijk = funijk_gl (imap_c(i),jmap_c(j),kmap_c(k))
+!     ijk = funijk_gl (i,j,k)
+                     
+                     prod(1) = prod(1) + rg_temp(ijk,1)*rg_temp(ijk,2)
+                     prod(2) = prod(2) + rg_temp(ijk,3)*rg_temp(ijk,4)
+                     
+                  enddo
+               enddo
+            enddo
+         endif
+         
+         call bcast( prod)
+         
+         dot_product_par2 = prod
+
+         deallocate (r_temp)
+         deallocate (rg_temp)
+
+      endif
+      
+      end function dot_product_par2
     
+         
 !-----------------------------------------------
       SUBROUTINE LEQ_MSOLVE0(VNAME, B_m, A_M, Var, CMETHOD )
 !-----------------------------------------------
