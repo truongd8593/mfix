@@ -97,7 +97,7 @@
 !-----------------------------------------------
 !     
 !     Indices 
-      INTEGER          I,  IJK, IMJK, IJMK, IJKM 
+      INTEGER          I,  IJK, IMJK, IJMK, IJKM, Im
 !     
 !     Cell center value of U_sm 
       DOUBLE PRECISION USCM 
@@ -185,7 +185,7 @@
        DOUBLE PRECISION phis
 !      
 !      weighting factor to compute F_0 and F_2
-       DOUBLE PRECISION w
+       DOUBLE PRECISION w, D_p_av, Y_i
 !     
 !     Hill and Koch Reynolds number
       DOUBLE PRECISION Re_kh
@@ -424,7 +424,7 @@
 !     
               F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
 	       
-	      phis = EP_s(IJK,M)
+	      phis = ONE-EP_G(IJK) ! EP_s(IJK,M) for polydisperse systems (sof --> 03-27-2007)
 	      w = EXP(-10.0D0*(0.4D0-phis)/phis)
 	   
 	      IF(phis > 0.01D0 .AND. phis < 0.4D0) THEN
@@ -493,6 +493,40 @@
               ENDIF
 !     
 !---------------------End Koch & Hill (2001) ----------------------
+! 
+!
+            ELSE IF(TRIM(DRAG_TYPE).EQ.'BVK') then
+!     
+              F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)**2/D_p(IJK,M)**2 ! eq(9) BVK J. fluid. Mech. 528, 2005
+	       
+	      phis = ONE-EP_g(IJK)
+	      D_p_av = ZERO
+	      DO Im = 1, MMAX
+	         D_p_av = D_p_av + EP_S(IJK,Im)/ (D_p(IJK,Im)*phis)
+	      ENDDO 
+	      IF(D_p_av > ZERO) D_p_av = ONE / D_p_av
+
+	      Y_i = D_p(IJK,M)/D_p_av
+	      
+	      RE = D_p_av*VREL*ROP_G(IJK)/Mu
+	      
+	      F = 10d0 * phis / EP_g(IJK)**2 + EP_g(IJK)**2 * (ONE+1.5d0*DSQRT(phis))
+	      F = F + 0.413d0*Re/(24d0*EP_g(IJK)**2) * (ONE/EP_G(IJK) + 3d0*EP_G(IJK) &
+	          *phis + 8.4d0/Re**0.343) / (ONE+10**(3d0*phis)/Re**(0.5+2*phis))
+	      
+	      F = (EP_g(IJK)*Y_i + phis*Y_i**2 + 0.064d0*EP_g(IJK)*Y_i**3) * F
+	   
+	      DgA = F * F_STOKES
+!	      IF(I_OF(IJK) == 4 .AND. J_OF(IJK) == 2) write(*,*) M, D_p_av, Y_i
+!!!   
+!!!   Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+              IF(Model_B)THEN
+                  F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
+              ELSE
+                  F_gstmp = DgA * EP_s(IJK, M)
+              ENDIF
+!     
+!---- End Beetstra, van der Hoef, Kuipers, Chem. Eng. Science 62 (Jan 2007) -----
 ! 
             ELSE
               CALL START_LOG 
