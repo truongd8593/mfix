@@ -524,8 +524,8 @@ ln -sf "$mpi_include/mpif.h" .
                         LINK_CMD=ifort
                 ;;
               esac                                                                                
-            libs_d='odepack.a blas90.a'
-            libs='odepack.a blas90.a'
+            libs_d='odepack.a blas90.a dgtsv90.a'
+            libs='odepack.a blas90.a dgtsv90.a'
                                                                                 
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -687,8 +687,8 @@ ln -sf "$mpi_include/mpif.h" .
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-openmp -assume cc_omp"
-            libs_d='odepack.a blas90.a'
-            libs='odepack.a blas90.a'
+            libs_d='odepack.a blas90.a dgtsv90.a'
+            libs='odepack.a blas90.a dgtsv90.a'
 	    
             if test $intel_ver = "Linux_ifc7"
             then
