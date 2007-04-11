@@ -78,7 +78,7 @@
 !
 !
       CALL ZERO_ARRAY (PP_G, IER) 
-      IF (.NOT.(MOMENTUM_X_EQ(0) .OR. MOMENTUM_Y_EQ(0))) THEN
+      IF (.NOT.(MOMENTUM_X_EQ(0) .OR. MOMENTUM_Y_EQ(0)) .AND. RO_G0 .NE. UNDEFINED) THEN
         call unlock_ambm
         call unlock_tmp_array1
         RETURN  

@@ -124,8 +124,9 @@
       IF (CYCLIC .AND. PJ == UNDEFINED) THEN 
          IJK_P_G = IJK 
       ELSE 
-         IF (PJ == UNDEFINED) THEN 
+         IF (PJ == UNDEFINED .AND. RO_G0 .NE. UNDEFINED) THEN ! added incompressible
             IJK_P_G = IJK 
+	    write(*,*) PJ, IJK, RO_G0
          ELSE 
             IJK_P_G = UNDEFINED_I 
          ENDIF 
