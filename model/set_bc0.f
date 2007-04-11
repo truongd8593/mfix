@@ -126,7 +126,6 @@
       ELSE 
          IF (PJ == UNDEFINED .AND. RO_G0 .NE. UNDEFINED) THEN ! added incompressible
             IJK_P_G = IJK 
-	    write(*,*) PJ, IJK, RO_G0
          ELSE 
             IJK_P_G = UNDEFINED_I 
          ENDIF 
