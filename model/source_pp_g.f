@@ -188,7 +188,7 @@
                IF (ABS(B_M(IJK,0)) < SMALL_NUMBER) THEN 
                   A_M(IJK,0,0) = -ONE 
                   B_M(IJK,0) = ZERO 
-               ELSE 
+               ELSE IF (RO_G0 .NE. UNDEFINED) THEN !This is an error only in incompressible flow 
 !$omp             critical
                   WRITE (LINE, '(A,I6,A,I1,A,G12.5)') 'Error: At IJK = ', IJK, &
                      ' M = ', 0, ' A = 0 and b = ', B_M(IJK,0) 
