@@ -359,7 +359,7 @@
                AVG_Y(U_SO(IJK1,M),U_SO(JP_OF(IJK1),M),J_OF(IJK1)),K_OF(IJK2)) 
 !
             U_S_S = AVG_Z(AVG_Y(U_SO(JM_OF(IJK2),M),U_SO(IJK2,M),J_OF(JM_OF(&
-               IJK2))),AVG_Z(U_SO(JM_OF(IJK1),M),U_SO(IJK1,M),J_OF(JM_OF(IJK1))&
+               IJK2))),AVG_Y(U_SO(JM_OF(IJK1),M),U_SO(IJK1,M),J_OF(JM_OF(IJK1))&
                ),K_OF(IJK2)) 
 !
             U_S_E = AVG_Z(AVG_X_E(U_SO(IJK2,M),U_SO(IPJK2,M),I_OF(IPJK2)),&
