@@ -49,7 +49,7 @@
 !            (e and C_e are same)
              e, C_e, C_f, C, C_NAME, Phi, Phi_w, L_scale0, MU_gmax,&
              TOL_RESID, TOL_DIVERGE, TOL_RESID_Scalar, MAX_NIT, LEQ_IT, LEQ_METHOD, LEQ_SWEEP,&
-	     LEQ_TOL,  V_ex,&
+	     LEQ_TOL, DO_TRANSPOSE,  V_ex,&
              P_ref, P_scale, UR_FAC, UR_F_gs, GRAVITY, TOL_RESID_T, TOL_RESID_X,&
 	     TOL_RESID_Th, MAX_INLET_VEL_FAC, &
              NORM_g, NORM_s, PHIP, e_w, EPS_f_min, & !EPS_max,
@@ -151,4 +151,4 @@
 
 ! 1.13 Parallel related
 
-	     IS_SERIAL, USE_DOLOOP
+	     IS_SERIAL, USE_DOLOOP, minimize_dotproducts

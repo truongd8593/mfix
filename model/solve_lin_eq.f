@@ -32,6 +32,7 @@
       USE compar  
       USE residual  
       USE toleranc  
+      USE leqsol  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -85,7 +86,6 @@
       INTEGER, PARAMETER :: MAX_IT = 1
 !
       double precision, allocatable, dimension(:,:) :: A_mt
-      logical, parameter :: do_transpose = .true. 
       integer :: ii, ijk 
 
 !     Adjusting the tolerances

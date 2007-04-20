@@ -39,6 +39,12 @@
 !		       Preconditioner option
       CHARACTER*4 ::   LEQ_PC(9)
 !
+!                      Option to minimize dot products
+      LOGICAL     ::   minimize_dotproducts
+!
+!                      Option to transpose A_m
+      LOGICAL     ::   do_transpose
+!
 !      COMMON / ITERS_DP /
 !     &
 !

@@ -114,6 +114,7 @@
       USE mpi_utility
       USE sendrecv
       USE indices
+      USE leqsol
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -149,7 +150,6 @@
       DOUBLE PRECISION :: TxS, TxT, oam,RtildexV,                   &
 		      RtildexR, aijmax, Rnorm=0, Rnorm0, Snorm, TOLMIN, pnorm
       LOGICAL :: isconverged
-      LOGICAL, PARAMETER :: minimize_dotproducts = .FALSE.
       INTEGER :: i, ii, j, k, ijk, itemp, iter
       DOUBLE PRECISION, DIMENSION(2) :: TxS_TxT
 
@@ -167,10 +167,11 @@
       END INTERFACE
 
       INTERFACE
-         DOUBLE PRECISION FUNCTION DOT_PRODUCT_PAR2( R1, R2, R3, R4 )
+         FUNCTION DOT_PRODUCT_PAR2( R1, R2, R3, R4 )
          use compar
          DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: &
                                                            R1,R2, R3, R4
+         DOUBLE PRECISION, DIMENSION(2) :: DOT_PRODUCT_PAR2
          END FUNCTION DOT_PRODUCT_PAR2
       END INTERFACE
 
