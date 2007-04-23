@@ -164,9 +164,9 @@
         print *, 'Calc_ICp: Temperature ', T, ' not in the range: ', Tlow, Thigh
         STOP
       elseif (T < Tcom) then
-        ICpoRT = (((Alow(5)*T/5.D0 +Alow(4))*T/4.D0 + Alow(3))*T/3.D0 + Alow(2))*T/2.D0 + Alow(1)
+        ICpoRT = (((Alow(5)*T/5.D0 + Alow(4)/4.D0)*T + Alow(3)/3.D0)*T + Alow(2)/2.D0)*T + Alow(1)
       else
-        ICpoRT = (((Ahigh(5)*T/5.D0 +Ahigh(4))*T/4.D0 + Ahigh(3))*T/3.D0 + Ahigh(2))*T/2.D0 + Ahigh(1)
+        ICpoRT = (((Ahigh(5)*T/5.D0 + Ahigh(4)/4.D0)*T + Ahigh(3)/3.D0)*T + Ahigh(2)/2.D0)*T + Ahigh(1)
       endif
       
       calc_ICpoR = T * ICpoRT
