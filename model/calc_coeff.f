@@ -114,6 +114,7 @@
          HEAT_TR(:MMAX,:MMAX) = .FALSE. 
       ENDIF 
       VISC(:MMAX) = .TRUE. 
+      DIFF(:MMAX) = .FALSE.
       IF (ANY_SPECIES_EQ) DIFF(:MMAX) = .TRUE. 
       DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
       IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
