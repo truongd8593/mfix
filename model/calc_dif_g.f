@@ -37,6 +37,7 @@
       USE geometry
       USE indices
       USE constant
+      USE scales
       USE compar
       USE sendrecv
       USE run
@@ -63,8 +64,8 @@
 !     Default gas diffusion coefficient
 !     Bird, Stewart, and Lightfoot (1960) -- CO2--N2 at 298.2 K
       Dab(1,2) = 0.165D0       !cm^2/s
-      Tg0 = 298.2
-      Pg0 = 1.01e6
+      Tg0 = 298.2D0
+      Pg0 = 1.01D6
 !
       IF(UNITS == 'SI') THEN
          Dab(1,2) = Dab(1,2)*0.0001D0   !m^2/s
@@ -117,9 +118,9 @@
 !
       DO N = 1, NMAX(0) 
          DO IJK = IJKSTART3, IJKEND3 	 
-            IF (FLUID_AT(IJK)) THEN 
-               DIF_G(IJK,N) = ROP_G(IJK)*Dab(1,2)*(T_g(IJK)/Tg0)**1.75&
-               *Pg0/P_g(IJK)
+            IF (FLUID_AT(IJK)) THEN
+	       DIF_G(IJK,N) = ROP_G(IJK)*Dab(1,2)*(T_g(IJK)/Tg0)**1.75&
+                             *Pg0/(P_g(IJK)+P_REF)
             ELSE 
                DIF_G(IJK,N) = ZERO 
             ENDIF 

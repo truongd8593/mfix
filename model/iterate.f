@@ -243,7 +243,7 @@
         COND(:MMAX) = .TRUE. 
         HEAT_TR(:MMAX,:MMAX) = .TRUE. 
       ENDIF 
-      DIFF(:MMAX) = .TRUE. 
+      IF(ANY_SPECIES_EQ) DIFF(:MMAX) = .TRUE.
       DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
       VISC(0) = RECALC_VISC_G 
       VISC(1:MMAX) = .TRUE. 
