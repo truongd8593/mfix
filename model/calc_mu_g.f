@@ -280,7 +280,7 @@
             I2_DEVD_G = ((D_G(1,1)-D_G(2,2))**2+(D_G(2,2)-D_G(3,3))**2+(D_G(3,3&
                )-D_G(1,1))**2)/6.D0 + D_G(1,2)**2 + D_G(2,3)**2 + D_G(3,1)**2 
 !
-            MU_GT(IJK) = MIN(MU_GMAX,MU_GT(IJK)+2.0*L_SCALE(IJK)*L_SCALE(IJK)*&
+            MU_GT(IJK) = MIN(MU_GMAX,MU_G(IJK)+2.0*L_SCALE(IJK)*L_SCALE(IJK)*&
                RO_G(IJK)*SQRT(I2_DEVD_G)) 
             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK) 
 	    
