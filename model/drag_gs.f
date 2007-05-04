@@ -515,9 +515,9 @@
 	          *phis + 8.4d0/Re**0.343) / (ONE+10**(3d0*phis)/Re**(0.5+2*phis))
 	      
 	      F = (EP_g(IJK)*Y_i + phis*Y_i**2 + 0.064d0*EP_g(IJK)*Y_i**3) * F
-	   
+	      
+	      IF(Re == ZERO) F = ZERO
 	      DgA = F * F_STOKES
-!	      IF(I_OF(IJK) == 4 .AND. J_OF(IJK) == 2) write(*,*) M, D_p_av, Y_i
 !!!   
 !!!   Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
               IF(Model_B)THEN
