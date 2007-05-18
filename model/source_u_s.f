@@ -87,7 +87,7 @@
       DOUBLE PRECISION PgE 
 ! 
 !                      average volume fraction 
-      DOUBLE PRECISION EPSA 
+      DOUBLE PRECISION EPGA 
 ! 
 !                      Average density 
       DOUBLE PRECISION ROPSA 
@@ -139,7 +139,7 @@
 !
 !$omp  parallel do private( IJK, IJKE, ISV, Sdp, Sdps, V0, Vmt, Vbf, &
 !$omp&  I,PGE,DRO1,DRO2,DROA, IJKM,IPJK,IPJKM,  WSE,VCF,EPMUGA,VTZA, &
-!$omp&  EPSA, ROPSA, LINE,SUM_EPS_CP,MM) &
+!$omp&  EPGA, ROPSA, LINE,SUM_EPS_CP,MM) &
 !$omp&  schedule(static)
             DO IJK = ijkstart3, ijkend3 
 !
@@ -151,7 +151,7 @@
                IJKM = KM_OF(IJK) 
                IPJK = IP_OF(IJK) 
                IPJKM = IP_OF(IJKM) 
-               EPSA = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I) 
+               EPGA = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I) 
                IF (IP_AT_E(IJK)) THEN 
                   A_M(IJK,E,M) = ZERO 
                   A_M(IJK,W,M) = ZERO 
@@ -173,7 +173,7 @@
                   B_M(IJK,M) = -IS_VEL_S(ISV,M) 
 !
 !           dilute flow
-               ELSE IF (EPSA <= DIL_EP_S) THEN 
+               ELSE IF (EPGA <= DIL_EP_S) THEN 
                   A_M(IJK,E,M) = ZERO 
                   A_M(IJK,W,M) = ZERO 
                   A_M(IJK,N,M) = ZERO 
@@ -216,20 +216,24 @@
                      SDP = ZERO 
 !
                   ELSE 
-                     SDP = -P_SCALE*EPSA*(PGE - P_G(IJK))*AYZ(IJK) 
+                     SDP = -P_SCALE*EPGA*(PGE - P_G(IJK))*AYZ(IJK) 
 !
                   ENDIF 
 !
                   IF (CLOSE_PACKED(M)) THEN 
-		     SUM_EPS_CP=0.0 
-		     DO MM=1,MMAX
-		       IF (CLOSE_PACKED(MM))&
-			     SUM_EPS_CP=SUM_EPS_CP+EP_S(IJK,MM)
-		     END DO
-		     SUM_EPS_CP = Max(SUM_EPS_CP, small_number)
-                     SDPS = -((P_S(IJKE,M)-P_S(IJK,M))+(EP_S(IJK,M)/SUM_EPS_CP)*&
-			(P_STAR(IJKE)-P_STAR(IJK&
-                        )))*AYZ(IJK) 
+		     IF(MMAX > 1) THEN ! extra work is done only in case of polydispersity.
+		       SUM_EPS_CP=0.0 
+		       DO MM=1,MMAX
+		         IF (CLOSE_PACKED(MM))&
+			       SUM_EPS_CP=SUM_EPS_CP+AVG_X(EP_S(IJK,MM),EP_S(IJKE,MM),I)
+		       END DO
+		       SUM_EPS_CP = Max(SUM_EPS_CP, small_number)
+                       SDPS = -((P_S(IJKE,M)-P_S(IJK,M))+(EPGA/SUM_EPS_CP)*&
+			  (P_STAR(IJKE)-P_STAR(IJK&
+                          )))*AYZ(IJK) 
+		     ELSE
+                       SDPS =-((P_S(IJKE,M)-P_S(IJK,M))+(P_STAR(IJKE)-P_STAR(IJK)))*AYZ(IJK) 
+		     ENDIF
                   ELSE 
                      SDPS = -(P_S(IJKE,M)-P_S(IJK,M))*AYZ(IJK) 
                   ENDIF 

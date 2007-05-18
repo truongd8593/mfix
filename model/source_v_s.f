@@ -227,16 +227,20 @@
                   ENDIF 
 !
                   IF (CLOSE_PACKED(M)) THEN
-		     SUM_EPS_CP=0.0 
-		     DO MM=1,MMAX
-		       IF (CLOSE_PACKED(MM))&
-			     SUM_EPS_CP=SUM_EPS_CP+EP_S(IJK,MM)
-		     END DO
-		     SUM_EPS_CP = Max(SUM_EPS_CP, small_number)
-                     SDPS = - ((P_S(IJKN,M)-P_S(IJK,M))+(EP_S(IJK,M)/SUM_EPS_CP)* &
-                         (P_STAR(IJKN)- &
-		         P_STAR(IJK&
-                        )))*AXZ(IJK) 
+		     IF(MMAX > 1) THEN ! extra work is done only in case of polydispersity.
+		       SUM_EPS_CP=0.0 
+		       DO MM=1,MMAX
+		         IF (CLOSE_PACKED(MM))&
+			       SUM_EPS_CP=SUM_EPS_CP+AVG_Y(EP_S(IJK,MM),EP_S(IJKN,MM),J)
+		       END DO
+		       SUM_EPS_CP = Max(SUM_EPS_CP, small_number)
+                       SDPS = - ((P_S(IJKN,M)-P_S(IJK,M))+(EPGA/SUM_EPS_CP)* &
+                           (P_STAR(IJKN)- &
+		           P_STAR(IJK&
+                          )))*AXZ(IJK) 
+		     ELSE
+                       SDPS = - ((P_S(IJKN,M)-P_S(IJK,M))+(P_STAR(IJKN)-P_STAR(IJK)))*AXZ(IJK)
+		     ENDIF
                   ELSE 
                      SDPS = -(P_S(IJKN,M)-P_S(IJK,M))*AXZ(IJK) 
                   ENDIF 
