@@ -159,7 +159,14 @@
       END DO 
       
       CALL GLOBAL_ALL_OR(Neg_RHO_G, ALL_IS_ERROR)
-      IF(ALL_IS_ERROR) Neg_RHO_G = .TRUE.
+
+! In case of negative density force to exit from physical property calculation
+! in order to reduce timestep otherwise 'Re' calculated in this routine,
+! negative value of Re and other derived variables propogate to drag calculations.
+      IF(ALL_IS_ERROR) THEN
+         Neg_RHO_G = .TRUE.
+	 RETURN
+      ENDIF
 !
 ! add by rong
 ! diameter
