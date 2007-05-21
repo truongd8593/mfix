@@ -66,8 +66,8 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer          idebug
-      parameter( idebug = 0 )
+      integer          iidebug
+      parameter( iidebug = 0 )
  
 ! 
       INTEGER          I, J, K, IJK, ITER, IJK01, IJK02, IJK11, IJK12 
