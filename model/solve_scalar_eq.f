@@ -78,7 +78,7 @@
 
 ! 
 !                      temporary variables in residual computation 
-      DOUBLE PRECISION res1, mres1
+      DOUBLE PRECISION res1, mres1, num_res, den_res
       INTEGER          ires1 
 ! 
 !                      Indices 
@@ -114,6 +114,8 @@
  !     CHEM & ISAT end (nan xie)
 !   
       RESID(RESID_sc,0) = ZERO
+      NUM_RESID(RESID_sc,0) = ZERO
+      DEN_RESID(RESID_sc,0) = ZERO
       MAX_RESID(RESID_sc,0) = ZERO
       IJK_RESID(RESID_sc,0) = 0
 !
@@ -155,9 +157,11 @@
 !
             CALL SOURCE_PHI (S_P, S_C, EP_G, Scalar(1,N), M, A_M, B_M, IER) 
 !
-            CALL CALC_RESID_S (Scalar(1,N), A_M, B_M, M, res1, &
+            CALL CALC_RESID_S (Scalar(1,N), A_M, B_M, M, num_res, den_res, res1, &
                mres1, ires1, ZERO, IER) 
                RESID(RESID_sc,0) = RESID(RESID_sc,0)+res1
+               NUM_RESID(RESID_sc,0) = NUM_RESID(RESID_sc,0)+num_res
+               DEN_RESID(RESID_sc,0) = DEN_RESID(RESID_sc,0)+den_res
 	       if(mres1 .gt. MAX_RESID(RESID_sc,0))then
 	         MAX_RESID(RESID_sc,0) = mres1
 		 IJK_RESID(RESID_sc,0) = ires1
@@ -214,9 +218,11 @@
 !
             CALL SOURCE_PHI (S_P, S_C, EPs, Scalar(1,N), M, A_M, B_M, IER) 
 !
-            CALL CALC_RESID_S (Scalar(1,N), A_M, B_M, M, res1, &
+            CALL CALC_RESID_S (Scalar(1,N), A_M, B_M, M, num_res, den_res, res1, &
                mres1, ires1, ZERO, IER) 
                RESID(RESID_sc,0) = RESID(RESID_sc,0)+res1
+               NUM_RESID(RESID_sc,0) = NUM_RESID(RESID_sc,0)+num_res
+               DEN_RESID(RESID_sc,0) = DEN_RESID(RESID_sc,0)+den_res
 	       if(mres1 .gt. MAX_RESID(RESID_sc,0))then
 	         MAX_RESID(RESID_sc,0) = mres1
 		 IJK_RESID(RESID_sc,0) = ires1

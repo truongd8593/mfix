@@ -19,7 +19,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_RESID_C(VAR,A_M,B_M,M,RESID,MAX_RESID,IJK_RESID,IER) 
+      SUBROUTINE CALC_RESID_C(VAR,A_M,B_M,M,NUM,DEN,RESID,MAX_RESID,IJK_RESID,IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -34,6 +34,7 @@
       USE indices
       USE compar
       USE mpi_utility 
+      USE run 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -138,15 +139,18 @@
 !efd            ENDIF 
 
             RESID_IJK(IJK) = NUM1
-!
+!     
             NCELLS = NCELLS + 1 
-!
+!     
             NUM = NUM + NUM1 
             DEN = DEN + DEN1 
 !
          ENDIF 
       END DO 
 !efd
+
+      if(.not.debug_resid) return
+
       call global_all_sum(NUM)
       call global_all_sum(DEN)
       call global_all_sum(NCELLS)
@@ -225,7 +229,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_RESID_S(VAR,A_M,B_M,M,RESID,MAX_RESID,IJK_RESID,TOL, IER) 
+      SUBROUTINE CALC_RESID_S(VAR,A_M,B_M,M,NUM,DEN,RESID,MAX_RESID,IJK_RESID,TOL, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -240,6 +244,7 @@
       USE indices
       USE compar      
       USE mpi_utility
+      USE run 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -351,6 +356,9 @@
 !
          ENDIF 
       END DO 
+
+      if(.not.debug_resid) return
+
 !// Collect all the information among all the procesors
       call global_all_sum(NUM)
       call global_all_sum(DEN)
@@ -437,7 +445,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_RESID_PP(B_M, NORM, RESID, MAX_RESID, IJK_RESID, IER) 
+      SUBROUTINE CALC_RESID_PP(B_M, NORM, NUM, DEN, RESID,MAX_RESID, IJK_RESID, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -452,6 +460,7 @@
       USE indices
       USE compar   
       USE mpi_utility   
+      USE run 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -530,6 +539,9 @@
 !
          ENDIF 
       END DO 
+
+
+      if(.not.debug_resid) return
 
 !// Determine the global sum
       call global_all_sum(NUM)
@@ -772,7 +784,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_RESID_U(U_M, V_M, W_M, A_M, B_M, M, RESID, MAX_RESID, &
+      SUBROUTINE CALC_RESID_U(U_M, V_M, W_M, A_M, B_M, M, NUM, DEN, RESID,MAX_RESID, &
          IJK_RESID, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
@@ -788,6 +800,7 @@
       USE indices
       USE compar 
       USE mpi_utility 
+      USE run 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -915,6 +928,9 @@
 !
          ENDIF 
       END DO 
+
+      if(.not.debug_resid) return
+
 !//
       call global_all_sum(NUM)
       call global_all_sum(DEN)
@@ -998,7 +1014,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_RESID_V(U_M, V_M, W_M, A_M, B_M, M, RESID, MAX_RESID, &
+      SUBROUTINE CALC_RESID_V(U_M, V_M, W_M, A_M, B_M, M, NUM, DEN, RESID,MAX_RESID, &
          IJK_RESID, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
@@ -1014,6 +1030,7 @@
       USE indices
       USE compar   
       USE mpi_utility  
+      USE run 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1143,6 +1160,9 @@
          ENDIF 
       END DO 
 
+
+      if(.not.debug_resid) return
+
 !//
       call global_all_sum(NUM)
       call global_all_sum(DEN)
@@ -1226,7 +1246,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_RESID_W(U_M, V_M, W_M, A_M, B_M, M, RESID, MAX_RESID, &
+      SUBROUTINE CALC_RESID_W(U_M, V_M, W_M, A_M, B_M, M, NUM, DEN, RESID,MAX_RESID, &
          IJK_RESID, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
@@ -1242,6 +1262,7 @@
       USE indices
       USE compar 
       USE mpi_utility 
+      USE run 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1367,6 +1388,9 @@
 !
          ENDIF 
       END DO 
+
+
+      if(.not.debug_resid) return
 
 !//
       call global_all_sum(NUM)

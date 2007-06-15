@@ -45,6 +45,14 @@
 !                      IJK location of maximum residual
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: IJK_RESID
  
+!                      Residual Numerator
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: NUM_RESID
+!
+!                      Residual Denominator
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DEN_RESID
+!
+!                      Residual Packing for Global Operations
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: RESID_PACK
 !
 !                      Residuals to be printed out
       CHARACTER*4      RESID_STRING(MAX_RESID_INDEX)

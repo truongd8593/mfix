@@ -148,7 +148,8 @@
 !
             CALL SOURCE_PHI (S_P, S_C, EP_G, X_G(1,LN), 0, A_M, B_M, IER)
 !
-            CALL CALC_RESID_S (X_G(1,LN), A_M, B_M, 0, RESID(RESID_X+(LN-1),0), &
+            CALL CALC_RESID_S (X_G(1,LN), A_M, B_M, 0, NUM_RESID(RESID_X+(LN-1),0), &
+               DEN_RESID(RESID_X+(LN-1),0), RESID(RESID_X+(LN-1),0), &
                MAX_RESID(RESID_X+(LN-1),0), IJK_RESID(RESID_X+(LN-1),0), &
 	       ZERO_X_GS, IER) 
 
@@ -209,7 +210,8 @@
 !
                CALL SOURCE_PHI (S_P, S_C, EPS, X_S(1,M,LN), M, A_M, B_M, IER)
 
-               CALL CALC_RESID_S (X_S(1,M,LN), A_M, B_M, M, RESID(RESID_X+(LN-1),&
+               CALL CALC_RESID_S (X_S(1,M,LN), A_M, B_M, M, NUM_RESID(RESID_X+(LN-1),M), &
+                  DEN_RESID(RESID_X+(LN-1),M), RESID(RESID_X+(LN-1),&
                   M), MAX_RESID(RESID_X+(LN-1),M), IJK_RESID(RESID_X+(LN-1),M), &
                   ZERO_X_GS, IER) 
 !

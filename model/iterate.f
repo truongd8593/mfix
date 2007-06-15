@@ -51,6 +51,7 @@
       USE compar   
       USE mpi_utility 
       USE discretelement
+      USE residual
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -411,6 +412,9 @@
 !
 !     Check for convergence
 !
+      CALL ACCUM_RESID ! Accumulating residuals from all the processors
+      RESG = RESID(RESID_P,0)
+      RESS = RESID(RESID_P,1)
       call CALC_RESID_MB(1, errorpercent)
       CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT, IER) 
       

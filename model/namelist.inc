@@ -21,6 +21,8 @@
 ! end sof
 ! blending switch
              BLENDING_STRESS, TANH_BLEND, SIGM_BLEND, &
+! residual calculation
+             DEBUG_RESID, &
 
 ! start peter 7/15
              SHEAR, V_sh,&

@@ -80,7 +80,8 @@
 !
          CALL SOURCE_ROP_G (A_M, B_M, IER) 
 !
-         CALL CALC_RESID_C (ROP_G, A_M, B_M, 0, RESID(RESID_RO,0), MAX_RESID(&
+         CALL CALC_RESID_C (ROP_G, A_M, B_M, 0, NUM_RESID(RESID_RO,0),  &
+            DEN_RESID(RESID_RO,0), RESID(RESID_RO,0), MAX_RESID(&
             RESID_RO,0), IJK_RESID(RESID_RO,0), IER) 
 !
 !        call check_ab_m(a_m, b_m, 0, .true., ier)
@@ -104,7 +105,8 @@
             CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
             CALL CONV_ROP_S (A_M, B_M, M, IER) 
             CALL SOURCE_ROP_S (A_M, B_M, M, IER) 
-            CALL CALC_RESID_C (ROP_S(1,M), A_M, B_M, M, RESID(RESID_RO,M), &
+            CALL CALC_RESID_C (ROP_S(1,M), A_M, B_M, M, NUM_RESID(RESID_RO,M), &
+               DEN_RESID(RESID_RO,M), RESID(RESID_RO,M), &
                MAX_RESID(RESID_RO,M), IJK_RESID(RESID_RO,M), IER) 
             RESS = RESID(RESID_RO,M) 
 

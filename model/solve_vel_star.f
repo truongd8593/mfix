@@ -166,7 +166,8 @@
       END IF
 !
       IF (MOMENTUM_X_EQ(0)) THEN 
-         CALL CALC_RESID_U (U_G, V_G, W_G, A_M, B_M, 0, RESID(RESID_U,0), &
+         CALL CALC_RESID_U (U_G, V_G, W_G, A_M, B_M, 0, NUM_RESID(RESID_U,0), &
+            DEN_RESID(RESID_U,0), RESID(RESID_U,0), &
             MAX_RESID(RESID_U,0), IJK_RESID(RESID_U,0), IER) 
          CALL UNDER_RELAX_U (U_G, A_M, B_M, 0, UR_FAC(3), IER) 
 !
@@ -181,7 +182,8 @@
 !
       DO M = 1, MMAX 
          IF (MOMENTUM_X_EQ(M)) THEN 
-            CALL CALC_RESID_U (U_S(1,M), V_S(1,M), W_S(1,M), A_M, B_M, M, RESID&
+            CALL CALC_RESID_U (U_S(1,M), V_S(1,M), W_S(1,M), A_M, B_M, M,  &
+               NUM_RESID(RESID_U,M), DEN_RESID(RESID_U,M), RESID&
                (RESID_U,M), MAX_RESID(RESID_U,M), IJK_RESID(RESID_U,M), IER) 
             CALL UNDER_RELAX_U (U_S(1,M), A_M, B_M, M, UR_FAC(3), IER) 
 !          call check_ab_m(a_m, b_m, m, .false., ier)
@@ -265,7 +267,8 @@
       END IF
       
       IF (MOMENTUM_Y_EQ(0)) THEN 
-         CALL CALC_RESID_V (U_G, V_G, W_G, A_M, B_M, 0, RESID(RESID_V,0), &
+         CALL CALC_RESID_V (U_G, V_G, W_G, A_M, B_M, 0, NUM_RESID(RESID_V,0), &
+            DEN_RESID(RESID_V,0), RESID(RESID_V,0), &
             MAX_RESID(RESID_V,0), IJK_RESID(RESID_V,0), IER) 
          CALL UNDER_RELAX_V (V_G, A_M, B_M, 0, UR_FAC(4), IER) 
 !
@@ -279,7 +282,8 @@
 
       DO M = 1, MMAX 
          IF (MOMENTUM_Y_EQ(M)) THEN 
-            CALL CALC_RESID_V (U_S(1,M), V_S(1,M), W_S(1,M), A_M, B_M, M, RESID&
+            CALL CALC_RESID_V (U_S(1,M), V_S(1,M), W_S(1,M), A_M, B_M, M, &
+                NUM_RESID(RESID_V,M), DEN_RESID(RESID_V,M), RESID&
                (RESID_V,M), MAX_RESID(RESID_V,M), IJK_RESID(RESID_V,M), IER) 
             CALL UNDER_RELAX_V (V_S(1,M), A_M, B_M, M, UR_FAC(4), IER) 
 !          call check_ab_m(a_m, b_m, m, .false., ier)
@@ -373,7 +377,8 @@
         END IF
                                               
         IF (MOMENTUM_Z_EQ(0)) THEN 
-          CALL CALC_RESID_W (U_G, V_G, W_G, A_M, B_M, 0, RESID(RESID_W,0), &
+          CALL CALC_RESID_W (U_G, V_G, W_G, A_M, B_M, 0, NUM_RESID(RESID_W,0), &
+            DEN_RESID(RESID_W,0), RESID(RESID_W,0), &
             MAX_RESID(RESID_W,0), IJK_RESID(RESID_W,0), IER) 
           CALL UNDER_RELAX_W (W_G, A_M, B_M, 0, UR_FAC(5), IER) 
 !
@@ -384,7 +389,8 @@
 !
         DO M = 1, MMAX 
           IF (MOMENTUM_Z_EQ(M)) THEN 
-            CALL CALC_RESID_W (U_S(1,M), V_S(1,M), W_S(1,M), A_M, B_M, M, RESID&
+            CALL CALC_RESID_W (U_S(1,M), V_S(1,M), W_S(1,M), A_M, B_M, M, &
+                NUM_RESID(RESID_W,M), DEN_RESID(RESID_W,M), RESID&
                (RESID_W,M), MAX_RESID(RESID_W,M), IJK_RESID(RESID_W,M), IER) 
             CALL UNDER_RELAX_W (W_S(1,M), A_M, B_M, M, UR_FAC(5), IER) 
 !          call check_ab_m(a_m, b_m, m, .false., ier)

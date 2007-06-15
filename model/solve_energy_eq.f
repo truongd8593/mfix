@@ -190,7 +190,8 @@
       END DO 
       IF (MMAX > 0) CALL PARTIAL_ELIM_S (T_G, T_S, VXGAMA, A_M, B_M, IER) 
 !
-      CALL CALC_RESID_S (T_G, A_M, B_M, 0, RESID(RESID_T,0), MAX_RESID(RESID_T,&
+      CALL CALC_RESID_S (T_G, A_M, B_M, 0, NUM_RESID(RESID_T,0),& 
+         DEN_RESID(RESID_T,0), RESID(RESID_T,0), MAX_RESID(RESID_T,&
          0), IJK_RESID(RESID_T,0), ZERO, IER) 
 !
       CALL UNDER_RELAX_S (T_G, A_M, B_M, 0, UR_FAC(6), IER) 
@@ -204,7 +205,8 @@
 !
       DO M = 1, MMAX 
 !
-         CALL CALC_RESID_S (T_S(1,M), A_M, B_M, M, RESID(RESID_T,M), MAX_RESID(&
+         CALL CALC_RESID_S (T_S(1,M), A_M, B_M, M, NUM_RESID(RESID_T,M), &
+            DEN_RESID(RESID_T,M), RESID(RESID_T,M), MAX_RESID(&
             RESID_T,M), IJK_RESID(RESID_T,M), ZERO, IER) 
 !
          CALL UNDER_RELAX_S (T_S(1,M), A_M, B_M, M, UR_FAC(6), IER) 

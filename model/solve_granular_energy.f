@@ -178,7 +178,8 @@
 !
           DO M = 1, MMAX 
 !
-               CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, RESID(RESID_TH,M), &
+               CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, &
+                    NUM_RESID(RESID_TH,M), DEN_RESID(RESID_TH,M), RESID(RESID_TH,M),&
                     MAX_RESID(RESID_TH,M), IJK_RESID(RESID_TH,M), ZERO, IER) 
 !
                CALL UNDER_RELAX_S (THETA_M(1,M), A_M, B_M, M, UR_FAC(8), IER) 
@@ -265,7 +266,8 @@
 	 ENDIF	 
 ! End of Shaeffer adjustments, sof.
 !
-         CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, RESID(RESID_TH,M), &
+         CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, NUM_RESID(RESID_TH,M), &
+            DEN_RESID(RESID_TH,M), RESID(RESID_TH,M), &
             MAX_RESID(RESID_TH,M), IJK_RESID(RESID_TH,M), ZERO, IER) 
 !
          CALL UNDER_RELAX_S (THETA_M(1,M), A_M, B_M, M, UR_FAC(8), IER) 

@@ -148,6 +148,10 @@
       TANH_BLEND      = .TRUE.
       SIGM_BLEND      = .FALSE.
 ! end sp
+
+! sp (06/15/2007)
+      DEBUG_RESID     = .TRUE.
+! end sp
  
 ! start loezos 
 !

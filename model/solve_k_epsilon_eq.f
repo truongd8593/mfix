@@ -80,7 +80,7 @@
 
 ! 
 !                      temporary variables in residual computation 
-      DOUBLE PRECISION res1, mres1
+      DOUBLE PRECISION res1, mres1, num_res, den_res
       INTEGER          ires1 
 ! 
 !                      Indices 
@@ -112,6 +112,8 @@
       call lock_tmp_array
       
       RESID(RESID_ke,0) = ZERO
+      NUM_RESID(RESID_ke,0) = ZERO
+      DEN_RESID(RESID_ke,0) = ZERO
       MAX_RESID(RESID_ke,0) = ZERO
       IJK_RESID(RESID_ke,0) = 0
 
@@ -169,13 +171,16 @@
 !
             CALL SOURCE_PHI (S_P, S_C, EP_G, K_Turb_G, M, A_M, B_M, IER) 
 !           
-	    CALL CALC_RESID_S (K_Turb_G, A_M, B_M, M, res1, &
-               mres1, ires1, ZERO, IER) 
-               RESID(RESID_ke,0) = RESID(RESID_ke,0)+res1
-               if(mres1 .gt. MAX_RESID(RESID_ke,0))then
-                 MAX_RESID(RESID_ke,0) = mres1
-                 IJK_RESID(RESID_ke,0) = ires1
-               endif
+            CALL CALC_RESID_S (K_Turb_G, A_M, B_M, M, num_res, den_res, res1, &
+                               mres1, ires1, ZERO, IER)
+
+            RESID(RESID_ke,0) = RESID(RESID_ke,0)+res1
+            NUM_RESID(RESID_ke,0) = NUM_RESID(RESID_ke,0)+num_res
+            DEN_RESID(RESID_ke,0) = DEN_RESID(RESID_ke,0)+den_res
+            if(mres1 .gt. MAX_RESID(RESID_ke,0))then
+              MAX_RESID(RESID_ke,0) = mres1
+              IJK_RESID(RESID_ke,0) = ires1
+            endif
 !
             CALL UNDER_RELAX_S (K_Turb_G, A_M, B_M, M, UR_FAC(9), IER) 
 !
@@ -187,7 +192,7 @@
 !          call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, DO_K, &
 !          ier)
 !
-            CALL ADJUST_LEQ (res1, LEQ_IT(9), LEQ_METHOD(9), &
+            CALL ADJUST_LEQ (RESID(RESID_ke,0), LEQ_IT(9), LEQ_METHOD(9), &
                LEQI, LEQM, IER) 
 !
             write(Vname, '(A,I2)')'K_Turb_G'
@@ -298,13 +303,16 @@
                ENDIF  !for fluid at ijk
             ENDDO   	    
            
-	    CALL CALC_RESID_S (E_Turb_G, A_M, B_M, M, res1, &
-               mres1, ires1, ZERO, IER) 
-               RESID(RESID_ke,0) = RESID(RESID_ke,0)+res1
-               if(mres1 .gt. MAX_RESID(RESID_ke,0))then
-                 MAX_RESID(RESID_ke,0) = mres1
-                 IJK_RESID(RESID_ke,0) = ires1
-               endif
+            CALL CALC_RESID_S (E_Turb_G, A_M, B_M, M, num_res, den_res, res1, &
+                               mres1, ires1, ZERO, IER)
+
+            RESID(RESID_ke,0) = RESID(RESID_ke,0)+res1
+            NUM_RESID(RESID_ke,0) = NUM_RESID(RESID_ke,0)+num_res
+            DEN_RESID(RESID_ke,0) = DEN_RESID(RESID_ke,0)+den_res
+            if(mres1 .gt. MAX_RESID(RESID_ke,0))then
+              MAX_RESID(RESID_ke,0) = mres1
+              IJK_RESID(RESID_ke,0) = ires1
+            endif
 !
             CALL UNDER_RELAX_S (E_Turb_G, A_M, B_M, M, UR_FAC(9), IER) 
 !
@@ -316,7 +324,7 @@
 !          call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, DO_K, &
 !          ier)
 !
-            CALL ADJUST_LEQ (res1, LEQ_IT(9), LEQ_METHOD(9), &
+            CALL ADJUST_LEQ (RESID(RESID_ke,0), LEQ_IT(9), LEQ_METHOD(9), &
                LEQI, LEQM, IER) 
 !
             write(Vname, '(A,I2)')'E_Turb_G'

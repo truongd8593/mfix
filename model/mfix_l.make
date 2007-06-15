@@ -65,6 +65,7 @@ mfix.exe : \
     parallel_mpi.mod \
     sendrecv3.mod \
     sendrecv.mod \
+    accum_resid.$(OBJ_EXT) \
     adjust_a_u_g.$(OBJ_EXT) \
     adjust_a_u_s.$(OBJ_EXT) \
     adjust_a_v_g.$(OBJ_EXT) \
@@ -400,6 +401,7 @@ mfix.exe : \
     readTherm.$(OBJ_EXT) \
     blas90.a odepack.a dgtsv90.a
 	$(LINK_CMD) $(LINK_FLAGS) \
+    accum_resid.$(OBJ_EXT) \
     adjust_a_u_g.$(OBJ_EXT) \
     adjust_a_u_s.$(OBJ_EXT) \
     adjust_a_v_g.$(OBJ_EXT) \
@@ -1092,6 +1094,17 @@ sendrecv.mod : ./dmp_modules/sendrecv_mod.f \
             mpi.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/sendrecv_mod.f 
+accum_resid.$(OBJ_EXT) : accum_resid.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            parallel.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            mpi_utility.mod \
+            residual.mod \
+            run.mod 
 adjust_a_u_g.$(OBJ_EXT) : adjust_a_u_g.f \
             param.mod \
             param1.mod \
@@ -1362,6 +1375,7 @@ calc_dif_g.$(OBJ_EXT) : calc_dif_g.f \
             geometry.mod \
             indices.mod \
             constant.mod \
+            scales.mod \
             compar.mod \
             sendrecv.mod \
             run.mod \
@@ -1599,8 +1613,8 @@ calc_resid.$(OBJ_EXT) : calc_resid.f \
             indices.mod \
             compar.mod \
             mpi_utility.mod \
-            fldvar.mod \
             run.mod \
+            fldvar.mod \
             bc.mod \
             constant.mod \
             physprop.mod \
@@ -2569,6 +2583,7 @@ iterate.$(OBJ_EXT) : iterate.f \
             compar.mod \
             mpi_utility.mod \
             discretelement.mod \
+            residual.mod \
             bc.mod \
             constant.mod 
 k_epsilon_prop.$(OBJ_EXT) : k_epsilon_prop.f \
@@ -3434,7 +3449,8 @@ solve_lin_eq.$(OBJ_EXT) : solve_lin_eq.f \
             geometry.mod \
             compar.mod \
             residual.mod \
-            toleranc.mod 
+            toleranc.mod \
+            leqsol.mod 
 solve_pp_g.$(OBJ_EXT) : solve_pp_g.f \
             param.mod \
             param1.mod \

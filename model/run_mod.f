@@ -225,6 +225,9 @@
 !                      If .TRUE. reduce time step when residuals do not decrease
       LOGICAL          DETECT_STALL
 !
+! String which controls reduction of global sums for residual calculations
+      LOGICAL          DEBUG_RESID        
+!
 !
 
 ! loezos                     Shear Vel
