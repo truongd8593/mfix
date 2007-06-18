@@ -1004,15 +1004,15 @@
 !
           DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(DP_avg(M)*EPG**(2.65d0))
           IF(VREL == ZERO) DgA = LARGE_NUMBER
-          Beta = SWITCH*EPS(M)*DgA
+          Beta = EPS(M)*DgA
 ! 
-          IF(SWITCH == ZERO .OR. RO_g_avg == ZERO)THEN
+          IF(.NOT.SWITCH_IA .OR. RO_g_avg == ZERO)THEN
                Kgran_star = Kgran
           ELSEIF(TH(M)/M_PM .LT. SMALL_NUMBER)THEN
                Kgran_star = ZERO
           ELSE
                Kgran_star = Kgran*g0(M)*EPS(M)/ &
-		              (g0EPs_avg+ 1.2d0*SWITCH*DgA*Kgran &
+		              (g0EPs_avg+ 1.2d0*DgA*Kgran &
                             / (RO_S(M)**2 *(TH(M)/M_PM)))
           ENDIF
 !

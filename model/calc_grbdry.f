@@ -1226,15 +1226,15 @@
 !
           DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(D_PM*EPG**(2.65d0))
           IF(VREL == ZERO) DgA = LARGE_NUMBER
-          Beta = SWITCH*EPS(M)*DgA !this is equivalent to F_gs(ijk,m)
+          Beta = EPS(M)*DgA !this is equivalent to F_gs(ijk,m)
 !
-          IF(SWITCH == ZERO .OR. RO_g_avg == ZERO)THEN
+          IF(.NOT.SWITCH_IA .OR. RO_g_avg == ZERO)THEN
                Mu_star = Mu
           ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
                MU_star = ZERO
           ELSE
                Mu_star = Mu*EPS(M)*g0(M)/ &
-	                 (g0EPs_avg+ 2.0d0*SWITCH*DgA*Mu &
+	                 (g0EPs_avg+ 2.0d0*DgA*Mu &
                           / (RO_S(M)**2 *(TH(M)/M_PM)))
           ENDIF
 !

@@ -907,18 +907,18 @@
                MU_s_dil = (5.d0/96.d0)*D_PM* RO_S(M)*DSQRT(PI*Theta_m(IJK,M)/M_PM)
                
 !
-	       IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN 
+	       IF(.NOT.SWITCH_IA .OR. RO_G(IJK) == ZERO) THEN 
                     Mu_star = MU_s_dil ! do nothing... granular flow
                ELSEIF(Theta_m(IJK,M)/M_PM < SMALL_NUMBER)THEN
                     Mu_star = ZERO
 !        
                ELSEIF(EP_S(IJK,M) <= DIL_EP_s) THEN
                     Mu_star = MU_s_dil*EP_s(IJK,M)*G_0(IJK,M,M)/ &
-		             (SUM_EpsGo + 2.0d0*SWITCH*DgA*MU_s_dil &
+		             (SUM_EpsGo + 2.0d0*DgA*MU_s_dil &
                              / (RO_S(M)**2 *(Theta_m(IJK,M)/M_PM)))
                ELSE
                     Mu_star = MU_s_dil*EP_S(IJK,M)*G_0(IJK,M,M)/ &
-		            (SUM_EpsGo + 2.0d0*SWITCH*F_gs(IJK,M)*MU_s_dil &
+		            (SUM_EpsGo + 2.0d0*F_gs(IJK,M)*MU_s_dil &
                             / (RO_S(M)**2 *EP_s(IJK,M)*(Theta_m(IJK,M)/M_PM)))
                ENDIF
 	       
@@ -1041,18 +1041,18 @@
 !
                K_s_dil = (75.d0/384.d0)*D_PM* RO_S(M)*DSQRT(PI*Theta_m(IJK,M)/M_PM)
                
-	       IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN 
+	       IF(.NOT.SWITCH_IA .OR. RO_G(IJK) == ZERO) THEN 
                     Kth_star = K_s_dil ! do nothing... granular flow
                ELSEIF(Theta_m(IJK,M)/M_PM < SMALL_NUMBER)THEN
                     Kth_star = ZERO
 !        
                ELSEIF(EP_S(IJK,M) <= DIL_EP_s) THEN
                     Kth_star = K_s_dil*EP_s(IJK,M)*G_0(IJK,M,M)/ &
-		              (SUM_EpsGo+ 1.2d0*SWITCH*DgA*K_s_dil &
+		              (SUM_EpsGo+ 1.2d0*DgA*K_s_dil &
                             / (RO_S(M)**2 *(Theta_m(IJK,M)/M_PM)))
                ELSE
                     Kth_star = K_s_dil*EP_S(IJK,M)*G_0(IJK,M,M)/ &
-		              (SUM_EpsGo+ 1.2d0*SWITCH*F_gs(IJK,M)*K_s_dil &
+		              (SUM_EpsGo+ 1.2d0*F_gs(IJK,M)*K_s_dil &
                             / (RO_S(M)**2 *EP_s(IJK,M)*(Theta_m(IJK,M)/M_PM)))
                ENDIF
 	       
