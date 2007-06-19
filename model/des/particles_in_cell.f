@@ -183,6 +183,7 @@
 
       DO IJK = IJKSTART3, IJKEND3
          K = K_OF(IJK) 
+         EP_G(IJK) = ONE   
          DO M = 1, MMAX
             IF(PINC(IJK).GT.0) THEN
                OSOLVOL = ONE/SOLVOLINC(IJK,M)   
@@ -192,7 +193,6 @@
                   DES_W_s(IJK,M) = DES_W_s(IJK,M)*OSOLVOL
                END IF
             END IF
-            EP_G(IJK) = ONE   
             IF(VOL(IJK).GT.0) THEN
                ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)/(VOL(IJK)*DZ(K))
             END IF
