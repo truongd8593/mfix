@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_GMRES(VNAME, VAR, A_M, B_M, &
+      SUBROUTINE LEQ_GMRES(VNAME, VNO, VAR, A_M, B_M, &
                     cmethod,TOL,ITMAX,MAX_IT,IER)
       
 !-----------------------------------------------
@@ -47,11 +47,11 @@
 !                      maximum number of iterations
       INTEGER          ITMAX
 !
+!                      variable number
+      INTEGER ::          VNO
+!
 !                      maximum number of outer iterations
       INTEGER          MAX_IT
-!
-!
-!
 !
 !                      convergence tolerance
       DOUBLE PRECISION TOL
@@ -87,7 +87,7 @@
       
       
       
-      CALL LEQ_GMRES0( VNAME, VAR, A_M, B_M,                        &
+      CALL LEQ_GMRES0( VNAME, VNO, VAR, A_M, B_M,                        &
 	       CMETHOD, TOL, ITMAX, MAX_IT, LEQ_MATVEC, LEQ_MSOLVE, IER )
 
       RETURN
@@ -115,7 +115,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_GMRES0(VNAME, VAR, A_M, B_M,  &
+      SUBROUTINE LEQ_GMRES0(VNAME, VNO, VAR, A_M, B_M,  &
                             CMETHOD, TOL, ITMAX, MAX_IT, &
                             MATVEC, MSOLVE, IER )
 !-----------------------------------------------
@@ -152,6 +152,9 @@
 !
 !                      maximum number of iterations
       INTEGER          ITMAX
+!
+!                      variable number
+      INTEGER ::          VNO
 !
 !                      maximum number of outer iterations
       INTEGER          MAX_IT

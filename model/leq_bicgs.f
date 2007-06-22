@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_BICGS(VNAME, VAR, A_M, B_m,  cmethod, TOL, PC, ITMAX,IER)
+      SUBROUTINE LEQ_BICGS(VNAME, VNO, VAR, A_M, B_m,  cmethod, TOL, PC, ITMAX,IER)
       
 !-----------------------------------------------
 !   M o d u l e s
@@ -39,6 +39,8 @@
       INTEGER ::          IER
 !                      maximum number of iterations
       INTEGER ::          ITMAX
+!                      variable number
+      INTEGER ::          VNO
 !                      convergence tolerance
       DOUBLE PRECISION ::  TOL
 !                      Preconditioner
@@ -62,13 +64,13 @@
 !--------------------------------------------------
 
       if(PC.eq.'LINE') then
-         call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
+         call LEQ_BICGS0( Vname, Vno, Var, A_m, B_m,                        &
          cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE, IER )
       elseif(PC.eq.'DIAG') then
-         call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
+         call LEQ_BICGS0( Vname, Vno, Var, A_m, B_m,                        &
          cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE1, IER )
       elseif(PC.eq.'NONE') then
-         call LEQ_BICGS0( Vname, Var, A_m, B_m,                        &
+         call LEQ_BICGS0( Vname, Vno, Var, A_m, B_m,                        &
          cmethod, TOL, ITMAX, LEQ_MATVEC, LEQ_MSOLVE0, IER )
       else
          IF(DMP_LOG)WRITE (UNIT_LOG,*) 'preconditioner option not found - check mfix.dat and readme'
@@ -100,7 +102,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_BICGS0(VNAME, VAR, A_M, B_m,  cmethod, TOL, ITMAX,  &
+      SUBROUTINE LEQ_BICGS0(VNAME, VNO, VAR, A_M, B_m,  cmethod, TOL, ITMAX,  &
                             MATVEC, MSOLVE, IER ) 
 !-----------------------------------------------
 !   M o d u l e s
@@ -125,6 +127,8 @@
       INTEGER ::          IER
 !                      maximum number of iterations
       INTEGER ::          ITMAX
+!                      variable number
+      INTEGER ::          VNO
 !                      convergence tolerance
       DOUBLE PRECISION ::  TOL
 !                      Septadiagonal matrix A_m
@@ -546,6 +550,7 @@
             isconverged = (Rnorm <= TOL*Rnorm0)
 
             if (isconverged) then
+               iter_tot(vno) = iter_tot(vno) + iter + 1
                EXIT
             endif
 
@@ -589,6 +594,7 @@
       endif 
 
       isconverged = (real(Rnorm) <= TOL*Rnorm0);
+      iter_tot(vno) = iter_tot(vno) + iter
 !     write(*,*) '***',iter, isconverged, Rnorm, TOL, Rnorm0, myPE
       IER = 0
       if (.not.isconverged) then
@@ -1029,14 +1035,14 @@
 
 !     
       INTEGER ::   IJK, I , J, K , ITER, NITER
-      INTEGER ::   I1 , K1 , I2, K2, IK, ISIZE, KSIZE
+      INTEGER ::   I1, J1, K1, I2, J2, K2, IK, JK, IJ, ISIZE, JSIZE, KSIZE 
       INTEGER ::   ICASE
       
 !     CHARACTER*4, PARAMETER :: CMETHOD = 'II'
 !     sweep direction
       CHARACTER*4 :: CMETHOD
       CHARACTER :: CH
-      LOGICAL :: DO_ISWEEP, DO_JSWEEP, DO_KSWEEP
+      LOGICAL :: DO_ISWEEP, DO_JSWEEP, DO_KSWEEP, DO_ALL
       LOGICAL :: DO_SENDRECV, DO_REDBLACK
       LOGICAL, PARAMETER :: USE_IKLOOP = .FALSE.
 
@@ -1077,6 +1083,7 @@
          DO_KSWEEP = (CH .EQ. 'K') .OR. (CH .EQ. 'k')
          DO_SENDRECV = (CH .EQ. 'S') .OR. (CH .EQ. 's')
          DO_REDBLACK = (CH .EQ. 'R') .OR. (CH .EQ. 'r')
+         DO_ALL = (CH .EQ. 'A') .OR. (CH .EQ. 'a')
 
          IF (NO_K) THEN
 
@@ -1088,6 +1095,72 @@
             ENDIF
 
          ELSE
+
+            IF(DO_ALL) THEN
+
+! IK Loop
+               i1 = istart
+               k1 = kstart
+               i2 = iend
+               k2 = kend
+               isize = i2-i1+1
+               ksize = k2-k1+1
+
+               DO icase = 1, 2
+!$omp   parallel do private(K,I,IK)
+                  DO IK=icase, ksize*isize, 2
+                     if (mod(ik,isize).ne.0) then
+                        k = int( ik/isize ) + k1
+                     else
+                        k = int( ik/isize ) + k1 -1
+                     endif
+                     i = (ik-1-(k-k1)*isize) + i1
+                     CALL LEQ_IKSWEEP( I,K, Vname, Var, A_m, B_m )
+                  ENDDO
+               ENDDO
+! JK Loop
+               j1 = jstart
+               k1 = kstart
+               j2 = jend
+               k2 = kend
+               jsize = j2-j1+1
+               ksize = k2-k1+1
+
+               DO icase = 1, 2
+!$omp   parallel do private(K,J,JK)
+                  DO JK=icase, ksize*jsize, 2
+                     if (mod(jk,jsize).ne.0) then
+                        k = int( jk/isize ) + k1
+                     else
+                        k = int( jk/isize ) + k1 -1
+                     endif
+                     j = (jk-1-(k-k1)*jsize) + j1
+                     CALL LEQ_JKSWEEP( J,K, Vname, Var, A_m, B_m )
+                  ENDDO
+               ENDDO
+! IJ Loop
+               i1 = istart
+               j1 = jstart
+               i2 = iend
+               j2 = jend
+               isize = i2-i1+1
+               jsize = j2-j1+1
+
+               DO icase = 1, 2
+!$omp   parallel do private(J,I,IJ)
+                  DO IJ=icase, jsize*isize, 2
+                     if (mod(ij,isize).ne.0) then
+                        j = int( ij/isize ) + j1
+                     else
+                        j = int( ij/isize ) + j1 -1
+                     endif
+                     i = (ij-1-(j-j1)*isize) + i1
+                     CALL LEQ_IJSWEEP( I,J, Vname, Var, A_m, B_m )
+                  ENDDO
+               ENDDO
+
+            ENDIF ! end DO_ALL
+
 
             IF(DO_REDBLACK) THEN
 

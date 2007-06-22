@@ -16,7 +16,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_SOR(VNAME, VAR, A_M, B_M, M, ITMAX, IER) 
+      SUBROUTINE LEQ_SOR(VNAME, VNO, VAR, A_M, B_M, M, ITMAX, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -30,6 +30,7 @@
       USE indices
       USE compar        !//d
       USE sendrecv
+      USE leqsol
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -42,6 +43,8 @@
 !
 !                      maximum number of iterations
       INTEGER          ITMAX
+!                      variable number
+      INTEGER ::          VNO
 !
 !                      phase index
       INTEGER          M
@@ -125,6 +128,9 @@
                   IJK))-A_M(IJK,2,M)*VAR(JP_OF(IJK))-VAR(IJK)) 
            END DO 
          ENDIF 
+
+      call send_recv(var,2)
+
       END DO 
 
 !$omp parallel do private(IJK)
@@ -132,7 +138,8 @@
         VAR(IJK) = VAR_tmp(IJK)
       END DO 
 
-      call send_recv(var,2)
+      ITER_TOT(VNO) = ITER
+
 
       RETURN  
       END SUBROUTINE LEQ_SOR 

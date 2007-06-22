@@ -69,6 +69,7 @@
       USE time_cpu  
       USE discretelement  
       USE mchem
+      USE leqsol
 !     JEG Added--- University of Colorado, Hrenya Research Group
       use kintheory2
 !     END JEG
@@ -114,14 +115,14 @@
       DOUBLE PRECISION USR_TIME (DIMENSION_USR) 
 !     
 !     Loop indices 
-      INTEGER          L, M 
+      INTEGER          L, M , I
 !     
 !     Error index 
       INTEGER          IER 
       
 !     
 !     Number of iterations 
-      INTEGER          NIT 
+      INTEGER          NIT, NIT_TOTAL 
 !     
 !     used for activating check_data_30 
       INTEGER          NCHECK, DNCHECK,ijk 
@@ -151,6 +152,7 @@
       NCHECK  = NSTEP 
       DNCHECK = 1 
       CPU_IO  = ZERO 
+      NIT_TOTAL = 0
 !     
 !     Initialize times for writing outputs
 !     
@@ -575,12 +577,27 @@
          NSTEP = NSTEP + 1 
       ENDIF 
 
+      NIT_TOTAL = NIT_TOTAL+NIT
+
 !     AIKEDEBUG 081101
 !     write (*,"('Compute the Courant number')") 
 !     call get_stats(IER)
       
       CALL FLUSH (6) 
       GO TO 100 
+
+      IF(minimize_dotproducts) then
+         WRITE(*,*) 'Total number of non-linear iterations', NIT_TOTAL
+         WRITE(*,*) 'Average number per time-step', NIT_TOTAL/NSTEP
+         WRITE(*,*) 'Equation number', '-----', 'Number of linear solves'
+         DO I = 1, 10
+            Write(*,*) I, '---------',  iter_tot(I)
+         END DO
+         WRITE(*,*) 'Equation number', '-----', 'Avg. number of linear solves for NIT'
+         DO I = 1, 10
+            Write(*,*) I, '---------',  iter_tot(I)/NIT_TOTAL
+         END DO
+      END IF
 !     
 !     The TIME loop ends here....................................................
 !     

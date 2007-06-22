@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_BICGSt(VNAME, VAR, A_M, B_m,  cmethod, TOL, PC, ITMAX,IER)
+      SUBROUTINE LEQ_BICGSt(VNAME, VNO, VAR, A_M, B_m,  cmethod, TOL, PC, ITMAX,IER)
       
 !-----------------------------------------------
 !   M o d u l e s
@@ -39,6 +39,8 @@
       INTEGER ::          IER
 !                      maximum number of iterations
       INTEGER ::          ITMAX
+!                      variable number
+      INTEGER ::          VNO
 !                      convergence tolerance
       DOUBLE PRECISION ::  TOL
 !                      Preconditioner
@@ -62,13 +64,13 @@
 !--------------------------------------------------
 
       if(PC.eq.'LINE') then
-         call LEQ_BICGS0t( Vname, Var, A_m, B_m,                        &
+         call LEQ_BICGS0t( Vname, Vno, Var, A_m, B_m,                        &
          cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVEt, IER )
       elseif(PC.eq.'DIAG') then
-         call LEQ_BICGS0t( Vname, Var, A_m, B_m,                        &
+         call LEQ_BICGS0t( Vname, Vno, Var, A_m, B_m,                        &
          cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVE1t, IER )
       elseif(PC.eq.'NONE') then
-         call LEQ_BICGS0t( Vname, Var, A_m, B_m,                        &
+         call LEQ_BICGS0t( Vname, Vno, Var, A_m, B_m,                        &
          cmethod, TOL, ITMAX, LEQ_MATVECt, LEQ_MSOLVE0t, IER )
       else
          IF(DMP_LOG)WRITE (UNIT_LOG,*) 'preconditioner option not found - check mfix.dat and readme'
@@ -100,7 +102,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE LEQ_BICGS0t(VNAME, VAR, A_M, B_m,  cmethod, TOL, ITMAX,  &
+      SUBROUTINE LEQ_BICGS0t(VNAME, VNO, VAR, A_M, B_m,  cmethod, TOL, ITMAX,  &
                             MATVECt, MSOLVEt, IER ) 
 !-----------------------------------------------
 !   M o d u l e s
@@ -125,6 +127,8 @@
       INTEGER ::          IER
 !                      maximum number of iterations
       INTEGER ::          ITMAX
+!                      variable number
+      INTEGER ::          VNO
 !                      convergence tolerance
       DOUBLE PRECISION ::  TOL
 !                      Septadiagonal matrix A_m
@@ -545,6 +549,7 @@
             isconverged = (Rnorm <= TOL*Rnorm0)
 
             if (isconverged) then
+               iter_tot(vno) = iter_tot(vno) + iter + 1
                EXIT
             endif
 
@@ -588,6 +593,7 @@
       endif 
 
       isconverged = (real(Rnorm) <= TOL*Rnorm0);
+      iter_tot(vno) = iter_tot(vno) + iter
 !     write(*,*) '***',iter, isconverged, Rnorm, TOL, Rnorm0, myPE
       IER = 0
       if (.not.isconverged) then

@@ -30,6 +30,9 @@
 !                      linear equation solver method
       INTEGER          LEQ_METHOD(9)
 !
+!                      Iteration total
+      INTEGER :: ITER_TOT(10) = 0
+!
 !                      linear equation solver sweep direction
       CHARACTER*4 ::   LEQ_SWEEP(9)
 !
@@ -49,6 +52,5 @@
 !     &
 !
 !
-
 
       END MODULE leqsol                                                                          
