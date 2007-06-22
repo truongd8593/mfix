@@ -116,7 +116,7 @@
       SELECT CASE (METHOD)  
       CASE (1)  
 !       Successive over relaxation method from Templates
-        CALL LEQ_SOR (VNAME, VAR, A_M, B_M, M, ITMAX, IER) 
+        CALL LEQ_SOR (VNAME, VNO, VAR, A_M, B_M, M, ITMAX, IER) 
 !
       CASE (2)  
 
@@ -132,9 +132,9 @@
 !       bicgstab
 
       if(do_transpose) then
-        call leq_bicgst( VNAME,VAR, A_Mt(:,:), B_M(:,M), SWEEP, TOL, PC, ITMAX,IER)
+        call leq_bicgst( VNAME,VNO, VAR, A_Mt(:,:), B_M(:,M), SWEEP, TOL, PC, ITMAX,IER)
       else 
-        call leq_bicgs( VNAME,VAR, A_M(:,:,M), B_M(:,M), SWEEP, TOL, PC, ITMAX,IER)
+        call leq_bicgs( VNAME,VNO, VAR, A_M(:,:,M), B_M(:,M), SWEEP, TOL, PC, ITMAX,IER)
       endif
 
       if(do_transpose) then	
@@ -142,16 +142,16 @@
       endif
 
       case(3)
-        call leq_gmres( VNAME, VAR, A_M(:,:,M), B_M(:,M), &
+        call leq_gmres( VNAME, VNO, VAR, A_M(:,:,M), B_M(:,M), &
                         SWEEP, TOL, ITMAX, MAX_IT, IER )
 
       CASE (4)  
         IER = 0
-        call leq_bicgs( VNAME,VAR, A_M(:,:,M), B_M(:,M), SWEEP, TOL, PC, ITMAX,IER)
+        call leq_bicgs( VNAME,VNO, VAR, A_M(:,:,M), B_M(:,M), SWEEP, TOL, PC, ITMAX,IER)
         if (IER .eq. -2) then
           IER = 0
           print*,'calling leq_gmres', Vname
-          call leq_gmres( VNAME, VAR, A_M(:,:,M), B_M(:,M), &
+          call leq_gmres( VNAME, VNO, VAR, A_M(:,:,M), B_M(:,M), &
                         SWEEP, TOL, ITMAX, MAX_IT, IER )
         endif
 	
