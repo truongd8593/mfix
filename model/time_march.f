@@ -435,6 +435,18 @@
             FINISH = .TRUE. 
          ENDIF 
       ELSE IF (TIME + 0.1d0*DT >= TSTOP) THEN 
+         IF(solver_statistics) then
+            WRITE(*,*) 'Total number of non-linear iterations', NIT_TOTAL
+            WRITE(*,*) 'Average number per time-step', NIT_TOTAL/NSTEP
+            WRITE(*,*) 'Equation number', '-----', 'Number of linear solves'
+            DO I = 1, 10
+               Write(*,*) I, '---------',  iter_tot(I)
+            END DO
+            WRITE(*,*) 'Equation number', '-----', 'Avg. number of linear solves for NIT'
+            DO I = 1, 10
+               Write(*,*) I, '---------',  iter_tot(I)/NIT_TOTAL
+            END DO
+         END IF
          RETURN  
       ENDIF 
 
@@ -586,7 +598,7 @@
       CALL FLUSH (6) 
       GO TO 100 
 
-      IF(minimize_dotproducts) then
+      IF(solver_statistics) then
          WRITE(*,*) 'Total number of non-linear iterations', NIT_TOTAL
          WRITE(*,*) 'Average number per time-step', NIT_TOTAL/NSTEP
          WRITE(*,*) 'Equation number', '-----', 'Number of linear solves'

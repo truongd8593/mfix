@@ -47,6 +47,8 @@
       USE compar      
       USE gridmap
       USE discretelement
+      USE leqsol
+      USE parallel
       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -95,6 +97,17 @@
 
       IF (CYLINDRICAL .AND. COMPARE(ZLENGTH,8.D0*ATAN(ONE)) .AND. DO_K) &
          CYCLIC_Z = .TRUE.
+
+      IF (OPT_PARALLEL) THEN
+         IS_SERIAL = .FALSE.
+         DO_TRANSPOSE = .FALSE.
+         MINIMIZE_DOTPRODUCTS = .TRUE.
+         SOLVER_STATISTICS = .TRUE.
+         DEBUG_RESID = .FALSE.
+         LEQ_SWEEP(1:2) = 'ASAS'
+         LEQ_METHOD(1:2) = 2
+         LEQ_METHOD(3:9) = 1
+      ENDIF
 
 !// Partition the domain and set indices
       call SET_MAX2

@@ -48,6 +48,15 @@
 !                      Option to transpose A_m
       LOGICAL     ::   do_transpose
 !
+!                      Frequency of convergence check in BiCGStab
+      INTEGER     ::   icheck_bicgs
+!
+!                      Optimize for massively parallel machine
+      LOGICAL     ::   opt_parallel
+!
+!                      Linear and non-linear solver statistics
+      LOGICAL     ::   solver_statistics
+!
 !      COMMON / ITERS_DP /
 !     &
 !

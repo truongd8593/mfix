@@ -110,10 +110,10 @@
 !  Solve EP_s_prime equation
 !
 !
-      CALL ADJUST_LEQ(RESID(RESID_P,1),LEQ_IT(1),LEQ_METHOD(1),LEQI,LEQM,IER) 
+      CALL ADJUST_LEQ(RESID(RESID_P,1),LEQ_IT(2),LEQ_METHOD(2),LEQI,LEQM,IER) 
 !
-      CALL SOLVE_LIN_EQ ('EPp', 1, EPP, A_M, B_M, 0, LEQI, LEQM, &
-	                     LEQ_SWEEP(1), LEQ_TOL(1), LEQ_PC(1), IER) 
+      CALL SOLVE_LIN_EQ ('EPp', 2, EPP, A_M, B_M, 0, LEQI, LEQM, &
+	                     LEQ_SWEEP(2), LEQ_TOL(2), LEQ_PC(2), IER) 
 !      call out_array(EPp, 'EPp')
 !
       call unlock_tmp_array1
