@@ -59,9 +59,9 @@
       DO NN = 1, NRESID
          DO M = 0, DIMENSION_M
             LOCAL_INDEX = LOCAL_INDEX + 1
-            RESID_PACK(LOCAL_INDEX) = NUM_RESID(N,M)
+            RESID_PACK(LOCAL_INDEX) = NUM_RESID(NN,M)
             LOCAL_INDEX = LOCAL_INDEX + 1
-            RESID_PACK(LOCAL_INDEX) = DEN_RESID(N,M)
+            RESID_PACK(LOCAL_INDEX) = DEN_RESID(NN,M)
          ENDDO
       ENDDO
 

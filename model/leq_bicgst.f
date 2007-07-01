@@ -500,6 +500,7 @@
                TxT = TxS_TxT(2)
             endif
          endif
+         IF(TxT.eq.Zero) TxT = SMALL_NUMBER
          omega(i) = TxS / TxT
 
 

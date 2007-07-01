@@ -533,9 +533,9 @@ ln -sf "$mpi_include/mpif.h" .
             FORTRAN_EXT=f
             omp="-openmp -assume cc_omp"
             compile_common="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"
-            compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB "
-            compile_d2="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB "
-            compile_d3="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB "
+            compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB -traceback"
+            compile_d2="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB -traceback"
+            compile_d3="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB -traceback"
             link_d="-I.  "
             compile="$compile_common"
             compile2="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
@@ -762,9 +762,9 @@ ln -sf "$mpi_include/mpif.h" .
 	    else
 	       compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -static -ip -FR"
 	    fi
-            compile_d="-g -O0 -c -FR -I. -w -d1 -CB " 
-            compile_d2="-g -O0 -c -I. -w -d1 -CB " 
-            compile_d3="-g -O0 -c -I. -w -d1 -CB " 	    
+            compile_d="-g -O0 -c -FR -I. -w -d1 -CB -traceback" 
+            compile_d2="-g -O0 -c -I. -w -d1 -CB -traceback" 
+            compile_d3="-g -O0 -c -I. -w -d1 -CB -traceback" 	    
             link_d="-I. -L$intel_lib -lPEPCF90 "
             compile="$compile_common"
             compile2="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip"
@@ -782,9 +782,9 @@ ln -sf "$mpi_include/mpif.h" .
 	      else
                 compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"	      
 	      fi
-              compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB "
-              compile_d2="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB "
-              compile_d3="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB "	      
+              compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB -traceback"
+              compile_d2="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB -traceback"
+              compile_d3="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB -traceback"	      
               link_d="-I.  "
               compile="$compile_common"
               compile2="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
