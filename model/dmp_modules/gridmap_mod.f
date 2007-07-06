@@ -507,6 +507,26 @@
 
 	enddo
 
+        if(numPEs.gt.1.and.myPE.eq.0) then
+        write(*,*) '*************************************************'
+        write(*,*) 'Parallel Load Balancing Statistics'
+        write(*,*) '*************************************************'
+        write(*,*) 'Maximum number of nodes = ', maxval(ijksize3_all)
+        write(*,*) 'at processor = ', maxloc(ijksize3_all)
+        write(*,*) 'Minimum number of nodes = ', minval(ijksize3_all)
+        write(*,*) 'at processor = ', minloc(ijksize3_all)
+        write(*,*) 'Average number of nodes = ', sum(ijksize3_all)/numPEs
+        write(*,*) 'Load imbalance percentage = ', &  
+        (maxval(ijksize3_all)- minval(ijksize3_all))/minval(ijksize3_all)*100
+        if((maxval(ijksize3_all)- minval(ijksize3_all))/minval(ijksize3_all)*100.ne.0) then
+        write(*,*) "Maximum speedup based on Amdahl's Law = ", &
+        1.0/((maxval(ijksize3_all)- minval(ijksize3_all))/minval(ijksize3_all)*100)
+        else
+        write(*,*) "Maximum speedup based on Amdahl's Law = ", 'Infinity'
+        end if 
+        write(*,*) '*************************************************'
+        write(*,*) '*************************************************'
+        end if
 
 !       Setup coefficients of FUINIJK
 
