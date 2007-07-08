@@ -889,7 +889,7 @@ ln -sf "$mpi_include/mpif.h" .
                         if [ "$ACML_DIR" ]
                         then                                                                    
                            libs_d="odepack.a -L $ACML_DIR/pgi6/lib -lacml -lacml_mv"
-                           libs="odepack.a -lhwpc -lpapi -lm -L $ACML_DIR/pgi6/lib -lacml -lacml_mv"
+                           libs="odepack.a -lhwpc -lpapi -lm -L $ACML_DIR/pgi64/lib -lacml -lacml_mv"
 		        else
                            libs_d="odepack.a blas90.a dgtsv90.a -lhwpc -lpapi -lm"
                            libs="odepack.a blas90.a dgtsv90.a -lhwpc -lpapi -lm"
