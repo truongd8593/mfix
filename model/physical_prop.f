@@ -200,7 +200,13 @@
 !             Dobran et al., 1991
               IF (SP_HEAT(M) .AND. C_PS0==UNDEFINED)then
                 if(.not.database_read) call read_database(IER)
-	        C_PS(IJK,M) = 0.310713d0
+	        C_PS(IJK, M) = ZERO
+		DO N = 1, NMAX(M)
+	          C_PS(IJK, M) = C_PS(IJK, M) + X_s(IJK, M, N) * calc_CpoR(T_S(IJK, M), Thigh_s(M, N), &
+		            Tlow_s(M, N), Tcom_s(M, N), Ahigh_s(1,M,N), Alow_s(1,M,N)) &
+			    * RGAS / MW_s(M,N) 
+		ENDDO
+!	        C_PS(IJK,M) = 0.310713d0
                 !to SI, S. Dartevelle
                 IF (UNITS == 'SI') C_PS(IJK,M) = 4183.925D0*C_PS(IJK,M)    !in J/kg K
 	      ENDIF
