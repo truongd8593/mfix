@@ -884,8 +884,8 @@ ln -sf "$mpi_include/mpif.h" .
           #-----------
             case $dmp_version in
               y|Y )
-                        FORTRAN_CMD=mpif90
-                        LINK_CMD=mpif90
+                        FORTRAN_CMD=ftn
+                        LINK_CMD=ftn
                         if [ "$ACML_DIR" ]
                         then                                                                    
                            libs_d="odepack.a -L $ACML_DIR/pgi6/lib -lacml -lacml_mv"
@@ -1745,10 +1745,24 @@ updatesubdir()
    else
      SELfile=select.tau
      echo "# Selective instrumentation: Specify an exclude/include list of routines/files." > $SELfile
-     echo "#BEGIN_EXCLUDE_LIST" >> $SELfile
+     echo "BEGIN_EXCLUDE_LIST" >> $SELfile
      echo "#void quicksort(int *, int, int)" >> $SELfile
      echo "#void interchange(int *, int *)" >> $SELfile
-     echo "#END_EXCLUDE_LIST" >> $SELfile               
+     echo "SET_WALL_BC1" >> $SELfile
+     echo "PARALLEL_MPI::MPI_CHECK" >> $SELfile
+     echo "G_0" >> $SELfile
+     echo "EQUAL" >> $SELfile
+     echo "DROODP_G" >> $SELfile
+     echo "DG_0DNU" >> $SELfile
+     echo "BOUNDFUNIJK::BOUND_FUNIJK" >> $SELfile
+     echo "G_0CS" >> $SELfile
+     echo "COMPARE" >> $SELfile
+     echo "BOUNDFUNIJK3::BOUND_FUNIJK3" >> $SELfile
+     echo "DEBUG::ASSERT_I" >> $SELfile
+     echo "EOSG" >> $SELfile
+     echo "CALC_XSI" >> $SELfile
+     #echo "READ_NAMELIST" >> $SELfile
+     echo "END_EXCLUDE_LIST" >> $SELfile
      echo "# " >> $SELfile
      echo "# If an include list is specified, the routines in the list will be the only" >> $SELfile          
      echo "# routines that are instrumented." >> $SELfile          
