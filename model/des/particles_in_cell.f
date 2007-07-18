@@ -194,7 +194,11 @@
                END IF
             END IF
             IF(VOL(IJK).GT.0) THEN
-               ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)/(VOL(IJK)*DZ(K))
+               IF(DIMN.EQ.2) THEN
+                  ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)/(VOL(IJK)*DZ(K))
+               ELSE
+                  ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)/(VOL(IJK))
+               ENDIF
             END IF
             IF(PINC(IJK).GT.0) THEN
                EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
