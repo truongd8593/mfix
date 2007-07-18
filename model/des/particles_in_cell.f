@@ -65,11 +65,14 @@
 
 	 IF(S_TIME.LE.DTSOLID.OR.FIRST_PASS1) THEN ! Brute force technique to determine the particle locations in the Eulerian grid
             
-                                ! currently the code does not distinguish different density particles with exactly same size - needs to be fixed
             DO M = 1, MMAX
-               IF(ABS(2.0d0*DES_RADIUS(L)-D_P0(M)).LT.SMALL_NUMBER) THEN
+               IF(ABS(2.0d0*DES_RADIUS(L)-D_P0(M)).LT.SMALL_NUMBER.AND. &
+                  ABS( RO_Sol(L)-RO_S(M)).LT.SMALL_NUMBER) THEN
                   PIJK(L,5) = M 
-                  RO_S(M) = RO_Sol(L)
+               ELSE
+                  Write(*,*) 'The particle size in particle.dat does not &
+                  correspond to any phase defined in mfix.dat'
+                  STOP
                END IF
             END DO
  
