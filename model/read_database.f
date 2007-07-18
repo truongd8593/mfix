@@ -81,7 +81,7 @@
             PRINT *, '  Read data for ',SPECIES_NAME(Nsp)
 !           There are a number of species with Tlow as 300, for which the following calculation will 
 !           produce an error because T_ref = 298.  So slightly extend validity of the correaltion
-            if( Tlow_g(N)-T_ref <= 2.0D0) Tlow_g(N) = 298.D0
+            if( abs(Tlow_g(N)-T_ref) <= 2.0D0) Tlow_g(N) = 298.D0
 	    IC_PGrefoR(N) = calc_ICpoR(T_ref, Thigh_g(N), Tlow_g(N), Tcom_g(N), Ahigh_g(1,N), Alow_g(1,N))
 	    SPECIES_READ(Nsp) = .TRUE.
 	  ENDIF
@@ -105,7 +105,7 @@
               PRINT *, '  Read data for ',SPECIES_NAME(Nsp)
 !             There are a number of species with Tlow as 300, for which the following calculation will 
 !             produce an error because T_ref = 298.  So slightly extend validity of the correaltion
-              if( Tlow_s(M,N)-T_ref <= 2.0D0) Tlow_s(M,N) = 298.D0
+              if( abs(Tlow_s(M,N)-T_ref) <= 2.0D0) Tlow_s(M,N) = 298.D0
 	      IC_PsrefoR(M,N) = calc_ICpoR(T_ref, Thigh_s(M,N), Tlow_s(M,N), Tcom_s(M,N),&
 	                         Ahigh_s(1,M,N), Alow_s(1,M,N))
 	      SPECIES_READ(Nsp) = .TRUE.
