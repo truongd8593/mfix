@@ -31,7 +31,7 @@
 	 CALL DES_CROSSPRDCT(CROSSP, NORM, FT1)
 
          TOW(L,:) = TOW(L,:) + DES_RADIUS(L)*CROSSP(:)
-         TOW(II,:) = TOW(L,:) - DES_RADIUS(II)*CROSSP(:)
+         TOW(II,:) = TOW(II,:) - DES_RADIUS(II)*CROSSP(:)
 
       RETURN
       END SUBROUTINE CFFCTOW
