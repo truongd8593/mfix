@@ -79,7 +79,7 @@
       DOUBLE PRECISION bma, bme, bmw, bmn, bms, bmt, bmb, bmr
 
 !                      Indices 
-      INTEGER          IJK, IMJK, IJMK, IJKM, I, J, K 
+      INTEGER          IJK, I, J, K, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
       INTEGER          M, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB 
 !
 ! loezos
@@ -234,18 +234,6 @@
          DO IJK = ijkstart3, ijkend3 
             IF (FLUID_AT(IJK)) THEN
 	       
-               I = I_OF(IJK) 
-               J = J_OF(IJK) 
-               K = K_OF(IJK) 
-               IMJK = IM_OF(IJK) 
-               IJMK = JM_OF(IJK) 
-               IJKM = KM_OF(IJK) 
-               IJKE = EAST_OF(IJK) 
-               IJKW = WEST_OF(IJK) 
-               IJKN = NORTH_OF(IJK) 
-               IJKS = SOUTH_OF(IJK) 
-               IJKT = TOP_OF(IJK) 
-               IJKB = BOTTOM_OF(IJK) 
 !
                A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*EP_G(IJK)*VOL(IJK)*ODT
 	       
@@ -254,6 +242,15 @@
 !   cannot be maintained to machine precision with the following approximation. If the following lines are
 !   uncommented, the calc_xsi call above should also be uncommented.
 !  
+!               IMJK = IM_OF(IJK) 
+!               IJMK = JM_OF(IJK) 
+!               IJKM = KM_OF(IJK) 
+!               IJKE = EAST_OF(IJK) 
+!               IJKW = WEST_OF(IJK) 
+!               IJKN = NORTH_OF(IJK) 
+!               IJKS = SOUTH_OF(IJK) 
+!               IJKT = TOP_OF(IJK) 
+!               IJKB = BOTTOM_OF(IJK) 
 !               A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*EP_G(&
 !                  IJK)*((ONE - XSI_E(IJK))*U_G(IJK)*AYZ(IJK)-XSI_E(IMJK)*U_G(&
 !                  IMJK)*AYZ(IMJK)+(ONE-XSI_N(IJK))*V_G(IJK)*AXZ(IJK)-XSI_N(IJMK&
@@ -280,7 +277,29 @@
             ENDIF 
          END DO 
       ENDIF 
-!
+
+!     Remove the asymmetry in matrix caused by the pressure outlet or inlet boundaries. Because
+!     the P' at such boundaries is zero we may set the coefficient in the neighboring
+!     fluid cell to zero without affecting the linear equation set. 
+!$omp    parallel do                                                     &
+!$omp&   private(IJK,IMJK, IPJK, IJMK, IJPK, IJKM, IJKP)
+      DO IJK = ijkstart3, ijkend3 
+         IF (FLUID_AT(IJK)) THEN
+            IMJK = IM_OF(IJK) 
+            IPJK = IP_OF(IJK) 
+            IJMK = JM_OF(IJK) 
+            IJPK = JP_OF(IJK) 
+            IJKM = KM_OF(IJK)
+            IJKP = KP_OF(IJK)
+	    if(p_flow_at(imjk))A_m(IJK, w, 0) = ZERO
+	    if(p_flow_at(ipjk))A_m(IJK, e, 0) = ZERO
+	    if(p_flow_at(ijmk))A_m(IJK, s, 0) = ZERO
+	    if(p_flow_at(ijpk))A_m(IJK, n, 0) = ZERO
+	    if(p_flow_at(ijkm))A_m(IJK, b, 0) = ZERO
+	    if(p_flow_at(ijkp))A_m(IJK, t, 0) = ZERO
+	     
+         ENDIF 
+      END DO 
 !
 !  Specify P' to zero at a certain location for incompressible flows and
 !  cyclic boundary conditions.
