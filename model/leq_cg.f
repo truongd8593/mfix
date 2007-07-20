@@ -145,10 +145,10 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: idebugl = 0
+      INTEGER, PARAMETER :: idebugl = 1
       DOUBLE PRECISION :: ratiotol = 0.2
 
-      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) :: R,P,Zvec,Q
+      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) :: Xinit, R,P,Zvec,Q
       DOUBLE PRECISION, DIMENSION(0:ITMAX+1) :: alpha,beta,rho
       DOUBLE PRECISION :: RxZ, PxQ, aijmax, oam, Rnorm=0, Rnorm0, TOLMIN, pnorm
       LOGICAL :: isconverged
@@ -215,9 +215,12 @@
                   IJK = funijk(i,j,k)
 
 
-                  aijmax = maxval(abs(A_M(ijk,:)) )
+!                 aijmax = maxval(abs(A_M(ijk,:)) )
+              
+!                 if(aijmax.ne.abs(A_M(ijk,0))) & 
+!                 write(*,*) 'Not positive definite', k,i,j,(A_M(ijk,:))
 
-                  OAM = one/aijmax
+                  OAM = one/A_M(ijk,0)
                   
                   A_M(IJK,:) = A_M(IJK,:)*OAM
 
@@ -229,10 +232,26 @@
       endif
 
 !     
-!     Compute initial residual, assume initial guess in Var
-!     r = b - A*x
-!     rtilde = r
+!     Compute initial residual, assume initial guess in Var + some small random number
+!     r = b - A*x : Line 1
 
+!     call random_number(Xinit(:))
+
+!     if (use_doloop) then
+
+!$omp   parallel do private(ijk)
+!        do ijk=ijkstart3,ijkend3
+!           Xinit(ijk) = Var(ijk)*(ONE + (2.0d0*Xinit(ijk)-1.0d0)*1.0d-6)
+!        enddo
+!     else
+!        Xinit(:) = Var(:)* (ONE + (2.0d0*Xinit(:)-1.0d0)*1.0d-6)
+!     endif
+
+!     Xinit(:) = Zero
+
+      if (idebugl >= 1) then
+         if(myPE.eq.0) print*,'leq_bicgs, initial: ', Vname,' resid ', Rnorm0
+      endif
 
       call MATVEC( Vname, Var, A_M, R )
 
@@ -267,15 +286,18 @@
          if(myPE.eq.0) print*,'leq_bicgs, initial: ', Vname,' resid ', Rnorm0
       endif
 !     
-!     Main loop
+!     Main loop : Line 2
 !     
       iter = 1
       do i=1,itmax
 !     
-!     Solve M Zvec(:) = R(:)
+!     Solve M Zvec(:) = R(:) : Line 3
 !     
          call MSOLVE( Vname, R, A_m, Zvec, CMETHOD)
 
+!     
+!     Solve Rho = RxZ : Line 4
+!     
          if(is_serial) then
             if (use_doloop) then
                RxZ = zero
@@ -291,14 +313,12 @@
             rho(i-1) = dot_product_par( R, Zvec )
          endif                  ! is_serial
 
-!     print*,'leq_bicgs, initial: ', Vname,' rho(i-1) ', rho(i-1)
 
          if (rho(i-1) .eq. zero) then
             if(i /= 1)then
 !     ------------
 !     Method fails
 !     ------------
-!     print*, 'leq_bicgs,',Vname,': rho(i-1) == 0 '
                ier = -2
             else
 !     ------------
@@ -311,6 +331,11 @@
          endif                  ! rho(i-1).eq.0
 
          if (i .eq. 1) then
+
+!
+!     P_1 = Z_0 | Line 6
+!
+
             if (use_doloop) then
 !$omp        parallel do private(ijk)
                do ijk=ijkstart3,ijkend3
@@ -320,6 +345,10 @@
                P(:) = Zvec(:)
             endif
          else
+!
+!     beta = rho(i-1)/rho(i-2) | Line 8
+!     P = Z + beta*P | Line 9
+!
             beta(i-1) = ( rho(i-1)/rho(i-2) )
             if (use_doloop) then
 !$omp        parallel do private(ijk)
@@ -331,7 +360,7 @@
             endif
          endif                  ! i.eq.1
 
-!     Q(:) = A*P(:)
+!     Q(:) = A*P(:) : Line 10
 !     
          call MATVEC( Vname, P, A_m, Q )
          
@@ -349,9 +378,12 @@
             PxQ = dot_product_par( P, Q )
          endif                  ! is_serial
 
-!     print*,'leq_bicgs, initial: ', Vname,' RtildexV ', RtildexV
+!     alpha = rho/PxQ : Line 11
 
-         alpha(i) = rho(i-1) / PxQ
+         alpha(i) = rho(i-1)/PxQ
+
+!     x = x + alpha*p : Line 12
+!     r = r - alpha*q : Line 13
 
          if (use_doloop) then
 !$omp     parallel do private(ijk)
@@ -361,7 +393,7 @@
             enddo
          else
             R(:) = R(:) - alpha(i) * Q(:)
-            Var(:) = R(:) + alpha(i) * P(:)
+            Var(:) = Var(:) + alpha(i) * P(:)
          endif                  ! use_doloop
 
 !     
@@ -384,17 +416,15 @@
 
 
          if (idebugl >= 1) then
-
             print*,'leq_bicgs, initial: ', Vname,' Vnorm ', Rnorm
-
          endif 
          
 
          if (idebugl.ge.1) then
             if (myPE.eq.PE_IO) then
                print*,'iter, Rnorm ', iter, Rnorm
-               print*,'alpha(i), beta(i) ', alpha(i), beta(i)
                print*,'PxQ, rho(i-1) ', PxQ, rho(i-1)
+               print*,'alpha(i), beta(i-1) ', alpha(i), beta(i-1)
             endif
          endif
 !     
@@ -443,7 +473,6 @@
          ' L-2', Rnorm/Rnorm0
       endif 
 
-!     write(*,*) '***',iter, isconverged, Rnorm, TOL, Rnorm0, myPE
       IER = 0
       if (.not.isconverged) then
          IER = -1

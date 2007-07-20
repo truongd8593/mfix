@@ -182,6 +182,7 @@ mfix.exe : \
     kintheory_w_s.$(OBJ_EXT) \
     leq_bicgs.$(OBJ_EXT) \
     leq_bicgst.$(OBJ_EXT) \
+    leq_cg.$(OBJ_EXT) \
     leq_gmres.$(OBJ_EXT) \
     leq_sor.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
@@ -539,6 +540,7 @@ mfix.exe : \
     kintheory_w_s.$(OBJ_EXT) \
     leq_bicgs.$(OBJ_EXT) \
     leq_bicgst.$(OBJ_EXT) \
+    leq_cg.$(OBJ_EXT) \
     leq_gmres.$(OBJ_EXT) \
     leqsol_mod.$(OBJ_EXT) \
     leq_sor.$(OBJ_EXT) \
@@ -2420,7 +2422,9 @@ get_data.$(OBJ_EXT) : get_data.f \
             FUNITS.mod \
             COMPAR.mod \
             GRIDMAP.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            LEQSOL.mod \
+            PARALLEL.mod 
 get_eq.$(OBJ_EXT) : get_eq.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2727,6 +2731,19 @@ leq_bicgst.$(OBJ_EXT) : leq_bicgst.f \
             MPI_UTILITY.mod \
             SENDRECV.mod \
             function.inc                                                
+leq_cg.$(OBJ_EXT) : leq_cg.f \
+            PARAM.mod \
+            PARAM1.mod \
+            MATRIX.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            INDICES.mod \
+            LEQSOL.mod \
+            FUNITS.mod \
+            PARALLEL.mod \
+            MPI_UTILITY.mod \
+            SENDRECV.mod \
+            function.inc                                                
 leq_gmres.$(OBJ_EXT) : leq_gmres.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2748,6 +2765,7 @@ leq_sor.$(OBJ_EXT) : leq_sor.f \
             INDICES.mod \
             COMPAR.mod \
             SENDRECV.mod \
+            LEQSOL.mod \
             function.inc                                                
 line_too_big.$(OBJ_EXT) : line_too_big.f 
 location_check.$(OBJ_EXT) : location_check.f \
@@ -3985,6 +4003,7 @@ time_march.$(OBJ_EXT) : time_march.f \
             TIME_CPU.mod \
             DISCRETELEMENT.mod \
             MCHEM.mod \
+            LEQSOL.mod \
             KINTHEORY2.mod 
 transfer.$(OBJ_EXT) : transfer.f \
             PARAM.mod \

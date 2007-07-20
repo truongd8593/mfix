@@ -95,8 +95,6 @@
 !
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-!      call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, DO_K,
-!     &  ier)
 !
 !  Find average residual, maximum residual and location
 !
@@ -122,7 +120,8 @@
        LEQM = LEQ_METHOD(1)
 !      CALL ADJUST_LEQ(RESID(RESID_P,0),LEQ_IT(1),LEQ_METHOD(1),LEQI,LEQM,IER) 
 !
-!      call check_symmetry(A_m, 0, IER)
+      call check_symmetry(A_m, 0, IER)
+!     call test_lin_eq(A_M, LEQ_IT(1),LEQ_METHOD(1), LEQ_SWEEP(1), LEQ_TOL(1), LEQ_PC(1),0,IER)
       CALL SOLVE_LIN_EQ ('Pp_g', 1, PP_G, A_M, B_M, 0, LEQI, LEQM, &
 	                     LEQ_SWEEP(1), LEQ_TOL(1), LEQ_PC(1), IER) 
 !      call out_array(Pp_g, 'Pp_g')

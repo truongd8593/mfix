@@ -154,7 +154,10 @@
           call leq_gmres( VNAME, VNO, VAR, A_M(:,:,M), B_M(:,M), &
                         SWEEP, TOL, ITMAX, MAX_IT, IER )
         endif
-	
+
+      CASE (5)  
+        call leq_cg( VNAME,VNO, VAR, A_M(:,:,M), B_M(:,M), SWEEP, TOL, PC, ITMAX,IER)
+
 !     CASE (6) - Disabled
 !       CALL LEQ_LSOR( VNAME, VAR, A_M(:,:,M), B_M(:,M), ITMAX, IER)
 
