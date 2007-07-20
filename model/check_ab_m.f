@@ -208,25 +208,29 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
       IER = 0
-      DO IJK = ijkstart3, ijkend3 
-	ipjk = ip_of(ijk)
-	ijpk = jp_of(ijk)
-	ijkp = kp_of(ijk)
-	i = i_of(ijk)
-	j = j_of(ijk)
-	k = k_of(ijk)
-	IF(A_m(ijk, e, M) .ne. A_m(ipjk, w, M))then
-	  print *, i,j,k, 'east-west asymmetry', A_m(ijk,e,M), A_m(ipjk,w,M)
-	  IER = IER + 1
+      DO IJK = ijkstart3, ijkend3
+        !No need to check the matrix entries for cyclic
+	! cells as they are not used during the linear solve.
+        if(.not. cyclic_at(ijk))then 
+	  ipjk = ip_of(ijk)
+	  ijpk = jp_of(ijk)
+	  ijkp = kp_of(ijk)
+	  i = i_of(ijk)
+	  j = j_of(ijk)
+	  k = k_of(ijk)
+  	  IF(A_m(ijk, e, M) .ne. A_m(ipjk, w, M))then
+	    print *, i,j,k, 'east-west asymmetry', A_m(ijk,e,M), A_m(ipjk,w,M)
+	    IER = IER + 1
+	  endif
+	  IF(A_m(ijk, n, M) .ne. A_m(ijpk, s, M))then
+	    print *, i,j,k, 'north-south asymmetry', A_m(ijk,n,M), A_m(ijpk,s,M)
+	    IER = IER + 1
+          endif
+	  IF(A_m(ijk, t, M) .ne. A_m(ijkp, b, M))then
+	    print *, i,j,k, 'top-bottom asymmetry', A_m(ijk,t,M), A_m(ijkp,b,M)
+	    IER = IER + 1
+          endif
 	endif
-	IF(A_m(ijk, n, M) .ne. A_m(ijpk, s, M))then
-	  print *, i,j,k, 'north-south asymmetry', A_m(ijk,n,M), A_m(ijpk,s,M)
-	  IER = IER + 1
-        endif
-	IF(A_m(ijk, t, M) .ne. A_m(ijkp, b, M))then
-	  print *, i,j,k, 'top-bottom asymmetry', A_m(ijk,t,M), A_m(ijkp,b,M)
-	  IER = IER + 1
-        endif
       enddo
       if(IER > 0) print *, 'Asymmetry in ', IER, ' instances'
       RETURN
