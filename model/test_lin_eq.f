@@ -166,15 +166,16 @@
       WRITE (LINE(2), *) 'Average normalized error = ', ERR 
       WRITE (LINE(3), *) 'Max normalized error = ', ERRMAX 
       WRITE (LINE(4), *) 'Location of max error = ', IJKERR 
-      WRITE (LINE(5), *) 'Sample values of actual (Xa) and solution (Xs):' 
-      WRITE (LINE(6), '(A,G12.5, A, I6, A, G12.5, A, I6, A, G12.5)') 'Xa(1)=', &
+      WRITE (LINE(5), *) 'Xa and Xs @ max error = ', X_ACT(IJKERR), X_SOL(IJKERR) 
+      WRITE (LINE(6), *) 'Sample values of actual (Xa) and solution (Xs):' 
+      WRITE (LINE(7), '(A,G12.5, A, I6, A, G12.5, A, I6, A, G12.5)') 'Xa(1)=', &
          X_ACT(1), '  Xa(', IJKMAX2/2, ')=', X_ACT(IJKMAX2/2), '  Xa(', IJKMAX2, ')=', &
          X_ACT(IJKMAX2) 
-      WRITE (LINE(7), '(A,G12.5, A, I6, A, G12.5, A, I6, A, G12.5)') 'Xs(1)=', &
+      WRITE (LINE(8), '(A,G12.5, A, I6, A, G12.5, A, I6, A, G12.5)') 'Xs(1)=', &
          X_SOL(1), '  Xs(', IJKMAX2/2, ')=', X_SOL(IJKMAX2/2), '  Xs(', IJKMAX2&
          , ')=', X_SOL(IJKMAX2) 
 !
-      CALL WRITE_ERROR ('TEST_LIN_EQ', LINE, 7) 
+      CALL WRITE_ERROR ('TEST_LIN_EQ', LINE, 8) 
 !
       RETURN  
       END SUBROUTINE TEST_LIN_EQ 

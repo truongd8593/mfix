@@ -594,11 +594,11 @@
       endif 
 
       isconverged = (real(Rnorm) <= TOL*Rnorm0);
-      iter_tot(vno) = iter_tot(vno) + iter
 !     write(*,*) '***',iter, isconverged, Rnorm, TOL, Rnorm0, myPE
       IER = 0
       if (.not.isconverged) then
          IER = -1
+         iter_tot(vno) = iter_tot(vno) + iter
          if (real(Rnorm) >= ratiotol*real(Rnorm0)) then
             IER = -2
          endif

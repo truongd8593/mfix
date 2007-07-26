@@ -145,7 +145,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: idebugl = 1
+      INTEGER, PARAMETER :: idebugl = 0
       DOUBLE PRECISION :: ratiotol = 0.2
 
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) :: Xinit, R,P,Zvec,Q
@@ -476,6 +476,7 @@
       IER = 0
       if (.not.isconverged) then
          IER = -1
+         iter_tot(vno) = iter_tot(vno) + iter
          if (real(Rnorm) >= ratiotol*real(Rnorm0)) then
             IER = -2
          endif

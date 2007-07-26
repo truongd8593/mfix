@@ -120,7 +120,7 @@
        LEQM = LEQ_METHOD(1)
 !      CALL ADJUST_LEQ(RESID(RESID_P,0),LEQ_IT(1),LEQ_METHOD(1),LEQI,LEQM,IER) 
 !
-      call check_symmetry(A_m, 0, IER)
+!     call check_symmetry(A_m, 0, IER)
 !     call test_lin_eq(A_M, LEQ_IT(1),LEQ_METHOD(1), LEQ_SWEEP(1), LEQ_TOL(1), LEQ_PC(1),0,IER)
       CALL SOLVE_LIN_EQ ('Pp_g', 1, PP_G, A_M, B_M, 0, LEQI, LEQM, &
 	                     LEQ_SWEEP(1), LEQ_TOL(1), LEQ_PC(1), IER) 

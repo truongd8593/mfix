@@ -145,7 +145,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: idebugl = 0
+      INTEGER, PARAMETER :: idebugl = 1
       DOUBLE PRECISION :: ratiotol = 0.2
 
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) ::                       &
@@ -594,10 +594,10 @@
       endif 
 
       isconverged = (real(Rnorm) <= TOL*Rnorm0);
-      iter_tot(vno) = iter_tot(vno) + iter
 !     write(*,*) '***',iter, isconverged, Rnorm, TOL, Rnorm0, myPE
       IER = 0
       if (.not.isconverged) then
+         iter_tot(vno) = iter_tot(vno) + iter
          IER = -1
          if (real(Rnorm) >= ratiotol*real(Rnorm0)) then
             IER = -2
