@@ -74,7 +74,7 @@
                         IF((DES_POS_NEW(I,1).GE.CQUAD(PQ,1)).AND.&
                         (DES_POS_NEW(I,1).LT.CQUAD(PQ,3)).AND.&
                         (DES_POS_NEW(I,2).GE.CQUAD(PQ,2)).AND.&
-                        (DES_POS_NEW(I,2).GE.CQUAD(PQ,4)).AND.&
+                        (DES_POS_NEW(I,2).LT.CQUAD(PQ,4)).AND.&
                         (DES_POS_NEW(I,3).GE.CQUAD(PQ,5)).AND.&
                         (DES_POS_NEW(I,3).LT.CQUAD(PQ,6))) THEN
                         PQ = LQUAD(PQM(J),10)
@@ -118,7 +118,7 @@
                      IF((DES_POS_NEW(I,1).GE.PQXL).AND.&
                      (DES_POS_NEW(I,1).LT.PQXU).AND.&
                      (DES_POS_NEW(I,2).GE.PQYL).AND.&
-                     (DES_POS_NEW(I,2).GE.PQYU).AND.&
+                     (DES_POS_NEW(I,2).LT.PQYU).AND.&
                      (DES_POS_NEW(I,3).GE.PQZL).AND.&
                      (DES_POS_NEW(I,3).LT.PQZU)) THEN
                      GO TO 50
@@ -173,20 +173,13 @@
       INTEGER I, J
       DOUBLE PRECISION A, OMEGA, OOMEGA2, ASINOMEGAT, BOXLIMIT
 
-      A = ZERO
-      OMEGA = ZERO
       IF(DES_F.NE.ZERO) THEN
+         A = ZERO
+         ASINOMEGAT = ZERO
          OMEGA = 2.0D0*Pi*DES_F
          OOMEGA2 = ONE/(OMEGA**2)
-         IF(UNITS == "CGS") THEN
-            A = DES_GAMMA*GRAV(2)*OOMEGA2
-         ELSE
-            A = DES_GAMMA*GRAV(2)*OOMEGA2
-         END IF         
+         A = DES_GAMMA*GRAV(2)*OOMEGA2
       END IF
-
-      ASINOMEGAT = A*SIN(OMEGA*S_TIME)
-      BOXLIMIT = RADIUS_EQ
 
       DO I = 1, MAXQUADS
          DO J = 1, NMQD 
@@ -199,8 +192,9 @@
 
       NQUAD = 1
 
+      BOXLIMIT = RADIUS_EQ
       CQUAD(1,1) = WX1 - BOXLIMIT
-      CQUAD(1,2) = BY1- BOXLIMIT + ASINOMEGAT 
+      CQUAD(1,2) = BY1 - BOXLIMIT - A
       CQUAD(1,3) = EX2 + BOXLIMIT 
       CQUAD(1,4) = TY2 + BOXLIMIT 
       CQUAD(1,5) = SZ1 - BOXLIMIT
@@ -558,7 +552,7 @@
                      STOP
                   END IF
                   IF(JJ.LE.MN) THEN
-                     NEIGHBOURS(II,JJ+1) = II 
+                     NEIGHBOURS(N,JJ+1) = II 
                      PN_DIST(N,JJ+1) = DIST
                      PN_RLM(N,JJ+1) = R_LM
                   ELSE
