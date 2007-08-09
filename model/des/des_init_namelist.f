@@ -5,8 +5,8 @@
 !                                                                         C
 !                                                                         C
 !     Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!     Reviewer:                                          Date:            C
-!                                                                         C
+!     Reviewer: Rahul Garg                               Date: 01-Aug-07  C
+!     Comments: Added some interpolation based inputs                     C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !     
       SUBROUTINE DES_INIT_NAMELIST 
@@ -40,7 +40,7 @@
       MAXNEIGHBORS = 10
       MQUAD_FACTOR = 1.1D0
       PBP = 0.2*PARTICLES
-      NFACTOR = 500
+      NFACTOR = 10
       
       DISCRETE_ELEMENT = .FALSE.
       DO_QUADTREE = .FALSE.
@@ -104,11 +104,16 @@
       QLN = 1                   ! Number of levels to go up in the tree to do neighbor search
       DIMN = UNDEFINED_I
       IFI = 0
-      NEIGHBOR_SEARCH_N = 1
-      NEIGHBOR_SEARCH_RAD_RATIO = 1000 
+      NEIGHBOR_SEARCH_N = 25
+      NEIGHBOR_SEARCH_RAD_RATIO = 1.0D0
       NEIGHBOR_SEARCH_DIST = UNDEFINED 
       DES_NEIGHBOR_SEARCH = UNDEFINED_I 
       USE_COHESION = .FALSE.
-
+      FACTOR_RLM = 1.2 
+      DES_INTERP_ON = .FALSE.
+      intx_per = .false.
+      inty_per = .false.
+      intz_per = .false.
+      NPC = 1
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST

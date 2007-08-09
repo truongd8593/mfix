@@ -9,7 +9,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFSLIDEWALL(L, TANGNT)
+      SUBROUTINE CFSLIDEWALL(L, TANGNT, TEMP_FT)
       
       USE discretelement
       USE param1
@@ -24,16 +24,19 @@
 !---------------------------------------------------------------------
 
 
-      TEMP_FT(:) = FT(L,:)
-      TEMP_FN(:) = FN(L,:)
+      !TEMP_FT(:) = FTS1(:)
+      TEMP_FN(:) = FN(L, :)
 
       FTMD = SQRT(DES_DOTPRDCT(TEMP_FT,TEMP_FT))
       FNMD = SQRT(DES_DOTPRDCT(TEMP_FN,TEMP_FN))
 
-      IF (FTMD.GT.(MEW_W*FNMD)) THEN
+      IF (FTMD.GT.(MEW*FNMD)) THEN
          PARTICLE_SLIDE = .TRUE.
-         FT(L,:) = -MEW_W*FNMD*TANGNT(:)
+         FT(L,:) = - MEW_W*FNMD*TANGNT(:)
+      ELSE
+         FT(L,:) = TEMP_FT(:)
       END IF
+      
 
       RETURN
       END SUBROUTINE CFSLIDEWALL

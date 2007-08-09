@@ -5,6 +5,8 @@
 !                                                                         C
 !     Author: Jay Boyalakuntla                           Date: 21-Jun-04  C
 !     Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C
+!     Reviewer: Rahul Garg                               Date: 01-Aug-07  C
+!     Comments: Changed the calling rules to neighbor search routines     C
 !                                                                         C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
@@ -39,9 +41,6 @@
       
       IMPLICIT NONE
 !-----------------------------------------------
-!     G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !     
@@ -60,7 +59,6 @@
          TEMP_DTS = ZERO
          PTC = ZERO
          INQC = INIT_QUAD_COUNT
-
 !        IF(RUN_TYPE == 'NEW') THEN
 !           DES_SPX_TIME =  TIME
 !           DES_RES_TIME =  TIME
@@ -70,11 +68,9 @@
 !        ENDIF
 
 !        PRINT *,'SPX TIME', SPX_DT(1), DES_SPX_TIME
-
-         CALL CFASSIGN
-
-         CALL PARTICLES_IN_CELL
-
+         
+         CALL NEIGHBOUR
+         
 !     !COHESION INITIALIZE
          IF(USE_COHESION)THEN
             CALL INITIALIZE_COHESION_PARAMETERS
@@ -89,18 +85,23 @@
             IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
                DES_CONTINUUM_COUPLED = .FALSE.
                DO FACTOR = 1, NFACTOR
-                  PRINT *,'DES', FACTOR 
+                  PRINT *,'DES FIRST PASS IN TIME MARCH', FACTOR, DTSOLID, INIT_QUAD_COUNT
 !     New values
                   DO LN = 1, PARTICLES
                      CALL CFNEWVALUES(LN)
                   END DO
 !     Neighbor search     
                   NSN = NSN + 1    
-                  IF(DO_NSEARCH.OR.(NSN.EQ.NEIGHBOR_SEARCH_N)) THEN 
+
+                  IF(MOD(FACTOR,INT(NEIGHBOR_SEARCH_N)).EQ.0) THEN 
+                     CALL NEIGHBOUR
+                     
+                  ELSE IF(DO_NSEARCH) THEN 
                      CALL NEIGHBOUR
                      DO_NSEARCH = .FALSE.
-                     NSN = 0
-                  END IF
+                        NSN = 0
+                     END IF
+                     
 !     Force calculation         
                   IF(DES_PERIODIC_WALLS) THEN
                      CALL PERIODIC_WALL_CALC_FORCE_DES
@@ -113,12 +114,13 @@
                DES_CONTINUUM_COUPLED = .TRUE.
                CALL PARTICLES_IN_CELL
             END IF
+            CALL WRITE_DES_DATA
          END IF ! end if on new run type
 
       END IF
-
+      !write(*,*) ' dt, dtsolid = ', dt, dtsolid
+      !read(*,*)
       IF(DES_CONTINUUM_COUPLED) THEN
-         NSN = NEIGHBOR_SEARCH_N - 1
          S_TIME = TIME
          IF(DT.GE.DTSOLID) THEN
             FACTOR = CEILING(real(DT/DTSOLID)) + 1
@@ -129,33 +131,40 @@
             PRINT *,"DT_SOLID greater than DT_FLUID. DEM is called once"
          END IF
       ELSE
+         write(*,*) ' dt, dtsolid = ', dt, dtsolid, nint(dt/dtsolid)
          FACTOR = CEILING(real(TSTOP/DTSOLID)) + 1
       END IF
       
       PRINT *,"Discrete Element Simulation is being called"&
-             , FACTOR," times."
+             , FACTOR," times.", dt, dtsolid
 
-      IF(NEIGHBOR_SEARCH_N.GT.FACTOR) NEIGHBOR_SEARCH_N = FACTOR
+      IF(NEIGHBOR_SEARCH_N.GT.FACTOR) THEN 
+         !NEIGHBOR_SEARCH_N = FACTOR
+         
+         NSN = NEIGHBOR_SEARCH_N - 1
+      ENDIF 
 
       DO NN = 1, FACTOR         !  do NN = 1, FACTOR
 
          IF(DES_CONTINUUM_COUPLED) THEN
 !           PRINT *,"DES-MFIX COUPLED, ITER, TIMESTEP, TIME", NN, DTSOLID, S_TIME
-            PRINT *,"DES-MFIX COUPLED, ITER, TIME", NN, S_TIME
+            PRINT *,"DES-MFIX Co , ITER, TIME, DES_INTERP_ON ?", NN, S_TIME, DES_INTERP_ON
          ELSE
-            PRINT *,"DES", NN, S_TIME
+            PRINT *,"DES UNCOUPLED", NN, S_TIME
          END IF 
 
 !     New values
          DO LN = 1, PARTICLES
             CALL CFNEWVALUES(LN)
-!           write(*,*) ln, des_pos_new(ln,:), des_vel_new(ln,:)
          END DO
-         
-!     Neighbor search     
          NSN = NSN + 1    
-         IF(DO_NSEARCH.OR.(NSN.EQ.NEIGHBOR_SEARCH_N)) THEN 
+         
+         IF(NN.EQ.1.OR.MOD(NN,INT(NEIGHBOR_SEARCH_N)).EQ.0) THEN 
             CALL NEIGHBOUR
+         ELSE IF(DO_NSEARCH) THEN 
+            CALL NEIGHBOUR
+            
+            PRINT*, 'CALLING NEIGHBOR BECASUE DO_NSEARCH = ', DO_NSEARCH
             DO_NSEARCH = .FALSE.
             NSN = 0
          END IF
@@ -205,8 +214,11 @@
          ELSE
             S_TIME = S_TIME + DTSOLID
          END IF 
-
+                  
       END DO                    ! end do NN = 1, FACTOR
+      
+      !CALL WRITE_DES_DATA
+                                !read(*,*)
       
 !     IF(PRINT_DES_DATA) THEN
 !        IF(((TIME+DT+0.1*DT).GE.DES_SPX_TIME) .OR. ((TIME+DT+0.1*DT).GE.TSTOP)) THEN
@@ -230,17 +242,18 @@
 !        DES_RES_TIME = (INT((TIME+DT+0.1d0*DT)/RES_DT) + 1)*RES_DT
 !     END IF
 
-      IF(.NOT.DES_CONTINUUM_COUPLED) TSTOP = DT
+      !IF(.NOT.DES_CONTINUUM_COUPLED) TSTOP = DT
 
       IF(DT.LT.DTSOLIDTEMP) THEN
          DTSOLID = DTSOLIDTEMP
       END IF
-
+      !write(*,*) 'loop end dt, dtsolid = ', dt, dtsolid
       IF(TEMP_DTS.NE.ZERO) THEN
          DTSOLID = TEMP_DTS
          TEMP_DTS = ZERO
       END IF
 
+      !write(*,*) 'end dt, dtsolid = ', dt, dtsolid      
  3020 FORMAT(I5.5)
 
       END SUBROUTINE DES_TIME_MARCH

@@ -6,7 +6,8 @@
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 26-Jul-06  C
 !  Reviewer: Sreekanth Pannala                        Date: 31-Oct-06  C
-!                                                                      C
+!  Reviewer: Rahul Garg                               Dare: 01-Aug-07  C
+!  Comments: Added one more output file containing averaged bed height C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE WRITE_DES_DATA
 
@@ -17,12 +18,17 @@
 
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
 
-      INTEGER DES_UNIT, LN, K 
+      INTEGER DES_UNIT, LN, K , j, i
       INTEGER POS_Z, VEL_W
       CHARACTER*5 FILENAME
       CHARACTER*6 IPART
       CHARACTER*115 INUMBER
-
+      INTEGER, SAVE :: unitht, tcount = 1
+      DOUBLE PRECISION, PARAMETER :: tmin = 5.d0
+      LOGICAL:: filexist, isopen
+      DOUBLE PRECISION, DIMENSION(5000), SAVE :: bed_height_time, dt_time
+      
+      DOUBLE PRECISION :: height_avg, height_rms
 !---------------------------------------------------------------------------
 
       DES_UNIT = 99
@@ -106,6 +112,46 @@
       CLOSE(DES_UNIT)
 
       IFI = IFI+1
+
+      
+      height_avg = zero
+      height_rms = zero
+      
+      if(time.gt.tmin) then 
+         if(tcount.le.5000)  then 
+            bed_height_time(tcount) = bed_height(1)
+            !dt_time(tcount) = DT
+            tcount = tcount + 1
+            
+            if(tcount.gt.20)  then
+               do i = 1, tcount-1,1
+                  height_avg = height_avg + bed_height_time(i)!*dt_time(i)
+               end do
+               height_avg = height_avg/(tcount-1)
+               do i = 1, tcount-1,1
+                  height_rms = height_rms + ((bed_height_time(i)&
+                       &-height_avg)**2)!*dt_time(i)
+               end do
+               
+               
+               height_rms = sqrt(height_rms/(tcount-1))
+            end if
+         end if
+         
+      end if
+      
+      
+      INQUIRE(FILE='bed_height.dat',EXIST=filexist,OPENED=isopen)
+      IF (.NOT.filexist.OR.(.NOT.isopen)) THEN
+
+         unitht = 400
+       OPEN(unit=unitht,file='bed_height.dat',form='formatted', status='replace')
+    END IF
+      write(*, '(10(2x,e20.12))') time, (bed_height(j) , j = 1, size(bed_height,1))
+      !read(*,*)
+      write(unitht, '(10(2x,e20.12))') time, (bed_height(j) , j = 1,&
+           & size(bed_height,1)), height_avg, height_rms
+
       
       RETURN
 
@@ -116,5 +162,4 @@
 
  3020 FORMAT(I5.5)
  3021 FORMAT(I6)
-
       END SUBROUTINE WRITE_DES_DATA 

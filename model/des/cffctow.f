@@ -5,8 +5,8 @@
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
+!  Reviewer: Rahul Garg                               Date: 02-Aug-07  C
+!  Comments: 2-D case torque calculation corrected                     C
 !  Comments: Implements Eqns 13 & 14 from the following paper          C
 !  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical         C
 !  simulation of plug glow of cohesionless particles in a              C
@@ -20,18 +20,27 @@
       IMPLICIT NONE
       
       INTEGER L, II, K
-      DOUBLE PRECISION NORM(DIMN), CROSSP(DIMN), FT1(DIMN)
+      DOUBLE PRECISION NORM(DIMN), CROSSP(DIMN), FT1(DIMN), FT2(DIMN)
 !---------------------------------------------------------------------
 !     
+
 
          FC(L,:) = FC(L,:) + FN(L,:) + FT(L,:) 
          FC(II,:) = FC(II,:) - FN(L,:) - FT(L,:)
 
          FT1(:) = FT(L,:)
-	 CALL DES_CROSSPRDCT(CROSSP, NORM, FT1)
 
-         TOW(L,:) = TOW(L,:) + DES_RADIUS(L)*CROSSP(:)
-         TOW(II,:) = TOW(II,:) - DES_RADIUS(II)*CROSSP(:)
+         IF(DIMN.EQ.3) THEN 
+            CALL DES_CROSSPRDCT(CROSSP, NORM, FT1)
+            TOW(L,:) = TOW(L,:) + DES_RADIUS(L)*CROSSP(:)
+            TOW(II,:) = TOW(II,:) - DES_RADIUS(II)*CROSSP(:)
+         ELSE 
+            CROSSP(1) = NORM(1)*FT1(2) - NORM(2)*FT1(1)
+            TOW(L,1) = TOW(L,1) + DES_RADIUS(L)*CROSSP(1)
+            TOW(II,1) = TOW(II,1) - DES_RADIUS(II)*CROSSP(1)
+         endif 
+
+	!         IF(L.EQ.29) PRINT*,'FOR = ', L, II, FC(L,:)
 
       RETURN
       END SUBROUTINE CFFCTOW

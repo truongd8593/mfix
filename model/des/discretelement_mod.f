@@ -1,11 +1,11 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                       C
 !   Module name: DISCRETELEMENT                                         C
 !   Purpose: DES mod file                                               C
 !                                                                       C
 !                                                                       C
 !   Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!   Reviewer:                                          Date:            C
+!   Reviewer: Jin Sun and Rahul Garg                   Date: 01-Aug-07  C
+!   Comments: Added declaration of interpolation related data           C
 !                                                                       C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !   
@@ -15,8 +15,42 @@
       MODULE DISCRETELEMENT
 
 
-      Use param
-      Use param1
+      USE param
+      USE param1
+
+!===========START of Interpolation related data======================
+
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: bed_height
+
+!  the coefficient add to gas momentum A matrix  at cell corners
+      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE ::drag_am 
+!  the coefficient add to gas momentum A matrix  at cell surface 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::dragam 
+!  the coefficient add to gas momentum B matrix  at cell corners
+      DOUBLE PRECISION, DIMENSION(:,:,:,:,:), ALLOCATABLE ::drag_bm 
+
+      ! fluid velocity at particle position
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::vel_fp 
+      
+      DOUBLE PRECISION, DIMENSION(:,:,:),POINTER :: weightp
+      DOUBLE PRECISION, DIMENSION(:),   ALLOCATABLE :: f_gp 
+      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: wtderivp, wtbar
+       
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE:: sstencil
+       
+      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE:: gstencil, vstencil,pgradstencil
+       
+       LOGICAL:: intx_per, inty_per, intz_per
+       CHARACTER(LEN=7):: scheme, interp_scheme
+       INTEGER:: order, ob2l, ob2r
+      
+       TYPE iap1
+       INTEGER, DIMENSION(:), POINTER:: p
+       END TYPE iap1
+       !id's of particles in a cell 
+       TYPE(iap1), DIMENSION(:,:,:), ALLOCATABLE:: pic
+!===============end of interpolation related data set==============
+
 
 !
 ! DES Variables      
@@ -28,7 +62,7 @@
       INTEGER NFACTOR
 !
 !   Particle properties 
-      INTEGER PARTICLES
+      INTEGER PARTICLES, NPC
       DOUBLE PRECISION PARTICLES_FACTOR 
 !
 !   Particle-particle and Particle-wall contact parameters
@@ -62,8 +96,11 @@
 !
 !   Restart
       DOUBLE PRECISION DESRESDT
+
+!   foctor for sum of radii in des_grid_based_neighbor_search
+      DOUBLE PRECISION FACTOR_RLM
 !
-!    
+                                !    
 ! DES Logicals
 !
 !   DES - Continuum       
@@ -78,7 +115,8 @@
       LOGICAL DO_OCTREE
       LOGICAL DO_NSQUARE
       LOGICAL DO_NSEARCH
-!
+      LOGICAL DO_GRID_BASED_SEARCH
+                                !
 !   Particle treatment at the walls  
       LOGICAL WALLFIXEDOVERLAP
       LOGICAL WALLDTSPLIT
@@ -127,6 +165,8 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC ! (PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FN ! (PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FT ! (PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FNS2 ! (DIMN)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FTS2 ! (DIMN)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FNS1 ! (DIMN)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FTS1 ! (DIMN)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GRAV ! (DIMN)
@@ -210,7 +250,9 @@
 
 !  Does particle have at least one linked partner
       INTEGER, DIMENSION(:), ALLOCATABLE :: IS_LINKED ! (PARTICLES)
-
+!Switch to decide if to call des_drag_fgs or drag_gs to calculate the drag coeff
+      
+      LOGICAL DES_INTERP_ON
 !  Switch to turn cohesion on and off
       LOGICAL USE_COHESION      
 
@@ -260,7 +302,7 @@
       INTEGER MAX_PART_IN_GRID
 
 !  Size of search grids
-      DouBLE PRECISION SEARCH_GRID_SIZE(3)
+      DOUBLE PRECISION SEARCH_GRID_SIZE(3)
 
 !  Use new algorithm for inelastic collisions
       LOGICAL USE_COL_MW
@@ -281,7 +323,7 @@
       LOGICAL RHODES_COHESION
       DOUBLE PRECISION RHODES_COHESION_FACTOR
       DOUBLE PRECISION RHODES_COHESION_FACTOR_WALL
-      DOuBLE PRECISION RHODES_COHESION_LENGTH_SCALE
+      DOUBLE PRECISION RHODES_COHESION_LENGTH_SCALE
       DOUBLE PRECISION RHODES_COHESION_LENGTH_SCALE_WALL
 
 

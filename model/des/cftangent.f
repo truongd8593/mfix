@@ -35,11 +35,12 @@
 ! Tangent computed from relative velocity and used in cfslide
 
          TANMOD = SQRT(DES_DOTPRDCT(VSLIP,VSLIP))     
-         IF(TANMOD.NE.0) THEN
+         IF(TANMOD.NE.0.) THEN
             TANGNT(:) = VSLIP(:)/TANMOD
          ELSE
-            TANGNT(1) = NORM(2)
-            TANGNT(2) = -NORM(1)
+            TANGNT(:) = ZERO
+            !TANGNT(1) = NORM(2)
+            !TANGNT(2) = -NORM(1)
          END IF
 
       RETURN

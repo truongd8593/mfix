@@ -20,12 +20,13 @@
       IMPLICIT NONE
       
       INTEGER L, K
-      DOUBLE PRECISION OVERLP_T, TANGNT(DIMN), Vtan
+      DOUBLE PRECISION OVERLP_T, TANGNT(DIMN), Vtan(DIMN)
 !---------------------------------------------------------------------
 
 
-         FTS1(:) = -KT*OVERLP_T*TANGNT(:)
-         FT(L,:) = FTS1(:) - ETA_DES_T*Vtan*TANGNT(:)
+         FTS1(:) = -KT*((OVERLP_T)) *TANGNT(:)
+         FTS2(:) = - ETA_DES_T*VTAN*TANGNT(:)
+         FT(L,:) = FTS1(:) + FTS2(:) !- ETA_DES_T*Vtan(:)
 
       RETURN
       END SUBROUTINE CFFT

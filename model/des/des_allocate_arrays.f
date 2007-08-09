@@ -1,3 +1,15 @@
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CFTOTALOVERLAPS(L, II, J, VRN, VRT, N_OVERLAP, T_OVERLAP,CHECK_CON)                                                                   C
+!  Purpose:  DES - Calculate the total overlap between particles       C
+!                                                                      C
+!                                                                      C
+!  Author:                                            Date:            C
+!  Reviewer:Rahul Garg                                DATE: 01=Aug-07  C
+!  Comments: Added allocation of interpolation based arrays            C
+!            MAXNEIGHBORS  definition now includes walls also          C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
 
       SUBROUTINE DES_ALLOCATE_ARRAYS 
       
@@ -19,7 +31,7 @@
       Use physprop
       IMPLICIT NONE
       
-      INTEGER NPARTICLES
+      INTEGER NPARTICLES, I,J,K
 
       DIMENSION_I   = IMAX3
       DIMENSION_J   = JMAX3
@@ -29,12 +41,16 @@
       DIMENSION_3L  = ijksize3_all(myPE)      
       DIMENSION_M   = MAX(1, MMAX)
       DIMENSION_4   = (kend4-kstart4+1)*(jend4-jstart4+1)*(iend4-istart4+1)
-
+      
+      !dimensionint_I = iend3-istart3
+      !dimensionint_J = jend3-jstart3
+      !dimensionint_K = kend3-kstart3
       NWALLS = 2*DIMN
+      !particles = npc*(imax)*(jmax)*kmax
       NPARTICLES = PARTICLES * PARTICLES_FACTOR + NWALLS
       MAXQUADS = 5*PARTICLES*MQUAD_FACTOR
       IF(MAXQUADS.LE.80000) MAXQUADS = 80000
-      MAXNEIGHBORS = MN + 1
+      MAXNEIGHBORS = MN + 1 + NWALLS
 
       IF(DIMN.EQ.2) THEN
          PBP = PARTICLES/7
@@ -52,6 +68,26 @@
 !
 !   Particle attributes
 !     Radius, density, mass, moment of inertia      
+
+      ALLOCATE(DRAG_AM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), MMAX))
+      ALLOCATE(DRAG_BM(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1), DIMN, MMAX))
+      ALLOCATE(WTBAR(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1),  MMAX))
+      ALLOCATE(VEL_FP(NPARTICLES,3))
+      ALLOCATE(F_gp(NPARTICLES ))  
+      F_gp(1:NPARTICLES)  = ZERO
+      ALLOCATE(bed_height(MMAX))
+
+      
+      ALLOCATE(pic(IMAX2,JMAX2,KMAX2))
+      DO 10 k  = 1,KMAX2!MAX(KMAX1-1,1)
+      DO 10 j  = 1,JMAX2
+      DO 10 i  = 1,IMAX2
+        NULLIFY(pic(i,j,k)%p)
+      10 CONTINUE
+         
+       !=======END OF INTERPOLATION RELATED ARRAYS==================!
+      write(*,*) 'Nparticles = ', nparticles, particles, particles_factor, nwalls
+
       Allocate(  DES_RADIUS (NPARTICLES) )
       Allocate(  RO_Sol (NPARTICLES) )
       Allocate(  PVOL (NPARTICLES) )
@@ -77,9 +113,12 @@
       Allocate(  FC (NPARTICLES,DIMN) )
       Allocate(  FN (NPARTICLES,DIMN) )
       Allocate(  FT (NPARTICLES,DIMN) )
+      Allocate(  FNS2 (DIMN) )
+      Allocate(  FTS2 (DIMN) )
       Allocate(  FNS1 (DIMN) )
       Allocate(  FTS1 (DIMN) )
       Allocate(  GRAV (DIMN) )
+
 !
 !   Torque     
       IF(DIMN.EQ.3) THEN 

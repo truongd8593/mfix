@@ -5,7 +5,8 @@
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer:                                          Date:            C
+!  Reviewer: Rahul Garg                               Date: 01-Aug-07  C
+!  Comments: Added some calls that are necessary if INTERPOLATION IS ON C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -59,10 +60,13 @@
       ELSE IF(DES_NEIGHBOR_SEARCH.EQ.3) THEN
          DO_OCTREE = .TRUE.
          WRITE(*,*) 'DEM USING OCTREE Search'
+      ELSE IF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
+         DO_GRID_BASED_SEARCH = .TRUE.
+         WRITE(*,*) 'DEM USING CELL LINKED SEARCH'
       END IF
       
       IF(RUN_TYPE == 'NEW') THEN ! Fresh run
-         OPEN(UNIT=10, FILE='particle_input.dat', STATUS='OLD')
+         OPEN(UNIT=10, FILE='particle_input.dat', STATUS='OLD') 
          DO LN = 1, PARTICLES
             READ (10, *) (DES_POS_OLD(LN,K),K=1,DIMN),DES_RADIUS(LN),RO_Sol(LN),(DES_VEL_OLD(LN,K),K=1,DIMN)
             OMEGA_OLD(LN,:) = ZERO
@@ -83,12 +87,14 @@
             WRITE(*,*) 'Restart 1 is not implemented with DES-COHESION'
             CALL MFIX_EXIT(myPE)
          END IF
+         
       ELSE IF (RUN_TYPE == 'RESTART_2') THEN 
          WRITE(UNIT_LOG,*) 'Restart 2 is not implemented with DES'
          WRITE(*,*) 'Restart 2 is not implemented with DES'
          CALL MFIX_EXIT(myPE)
       END IF
-
+      CALL CFASSIGN
+      CALL PARTICLES_IN_CELL
       RETURN
       END SUBROUTINE MAKE_ARRAYS_DES 
 

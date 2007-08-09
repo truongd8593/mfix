@@ -23,9 +23,11 @@
 !     
 !---------------------------------------------------------------------
 !     
-
-         FNS1(:) = -KN*N_OVERLAP*NORM(:)
-         FN(L,:) = FNS1(:) -  ETA_DES_N*VRN*NORM(:)
+      
+      !IF(N_OVERLAP.lt.ZERO) PRINT*,'OVERLAP LT 0', N_OVERLAP
+         FNS1(:) = -KN*((N_OVERLAP))*NORM(:)
+         FNS2(:) = -ETA_DES_N*VRN*NORM(:)
+         FN(L,:) = FNS1(:) +  FNS2(:)
 
       RETURN
       END SUBROUTINE CFFN

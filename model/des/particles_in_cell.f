@@ -7,6 +7,11 @@
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C 
+!  Reviewer: Rahul Garg                               Date: 01-Aug-07  C
+!  Comments: Removed the separate volume definitions and added pic     C
+!            array formulation and bed height caluclation.             C
+!  Note:     PIC array is currently used only if cell linked list      C
+!            search is used.                                           C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -26,13 +31,23 @@
       USE constant
       USE compar
       USE sendrecv
+      
       IMPLICIT NONE
 
-      INTEGER L, I, J, K, M, MM 
+      INTEGER L, I, J, K, M, MM , IPLAST
       INTEGER IJK, IPJK, IJPK, IJKP
       DOUBLE PRECISION SOLVOLINC(DIMENSION_3,MMAX), OSOLVOL
 !     Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS1 = .TRUE.
+      DOUBLE PRECISION :: OVOL, tmp_num(MMAX), tmp_den(MMAX), hcell 
+      integer:: ijpkp, ipjkp, ipjpk
+      integer, dimension(3):: pcell
+      integer:: ib, ie, jb, je, kb, ke, ii
+      integer:: onew !order
+      
+      INTEGER:: ng, ip, npic, pos, count
+      INTEGER, DIMENSION(3):: pc
+      INTEGER, DIMENSION(IMAX2,JMAX2,KMAX2):: icount
 
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
@@ -59,20 +74,21 @@
                ZT(K) = ZT(K-1) + DZ(K)
             END DO
          END IF
-      ENDIF
 
+
+      ENDIF
+      
       DO L = 1, PARTICLES
 
-	 IF(S_TIME.LE.DTSOLID.OR.FIRST_PASS1) THEN ! Brute force technique to determine the particle locations in the Eulerian grid
+	 IF(FIRST_PASS1) THEN ! Brute force technique to determine the particle locations in the Eulerian grid
+
+	 !IF(S_TIME.LE.DTSOLID.OR.FIRST_PASS1) THEN ! Brute force technique to determine the particle locations in the Eulerian grid
             
+                                ! currently the code does not distinguish different density particles with exactly same size - needs to be fixed
             DO M = 1, MMAX
-               IF(ABS(2.0d0*DES_RADIUS(L)-D_P0(M)).LT.SMALL_NUMBER.AND. &
-                  ABS( RO_Sol(L)-RO_S(M)).LT.SMALL_NUMBER) THEN
+               IF(ABS(2.0d0*DES_RADIUS(L)-D_P0(M)).LT.SMALL_NUMBER) THEN
                   PIJK(L,5) = M 
-               ELSE
-                  Write(*,*) 'The particle size in particle.dat does not &
-                  correspond to any phase defined in mfix.dat'
-                  STOP
+                  RO_S(M) = RO_Sol(L)
                END IF
             END DO
  
@@ -116,15 +132,16 @@
             I = PIJK(L,1)
             J = PIJK(L,2)
             K = PIJK(L,3)
-!           write(*,*) 'pijk2', L, PIJK(L,1),  PIJK(L,2) , XE(I-1), XE(I)
+            !write(*,*) 'pijk2', L, PIJK(L,1),  PIJK(L,2) , XE(I-1),&
+            !    & XE(I), des_pos_new(L,1)
             IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I)).OR.I.EQ.1) THEN
                GO TO 40 
             ELSE IF(DES_VEL_NEW(L,1).GT.ZERO) THEN
                IF((DES_POS_NEW(L,1).GE.XE(I)).AND.(DES_POS_NEW(L,1).LT.XE(I+1))) PIJK(L,1) = I+1
             ELSE IF(DES_VEL_NEW(L,1).LT.ZERO) THEN
                IF(I.EQ.2) THEN
-                  PRINT *,'des/particles_in_cell.f : CHECK CELL I, Problem with I.EQ.2'
-                  STOP
+                 ! PRINT *,'des/particles_in_cell.f : CHECK CELL I, Problem with I.EQ.2'
+                  !STOP
                END IF
                IF((DES_POS_NEW(L,1).GE.XE(I-2)).AND.(DES_POS_NEW(L,1).LT.XE(I-1))) PIJK(L,1) = I-1
             ELSE 
@@ -139,8 +156,8 @@
                IF((DES_POS_NEW(L,2).GE.YN(J)).AND.(DES_POS_NEW(L,2).LT.YN(J+1))) PIJK(L,2) = J+1
             ELSE IF(DES_VEL_NEW(L,2).LT.ZERO) THEN
                IF(J.EQ.2) THEN
-                  PRINT *,'des/particles_in_cell.f : CHECK CELL J, Problem with J.EQ.2'
-                  STOP
+                !  PRINT *,'des/particles_in_cell.f : CHECK CELL J, Problem with J.EQ.2'
+                  !STOP
                END IF
                IF((DES_POS_NEW(L,2).GE.YN(J-2)).AND.(DES_POS_NEW(L,2).LT.YN(J-1))) PIJK(L,2) = J-1
             ELSE
@@ -157,8 +174,8 @@
                   IF((DES_POS_NEW(L,3).GE.ZT(K)).AND.(DES_POS_NEW(L,3).LT.ZT(K+1))) PIJK(L,3) = K+1
                ELSE IF(DES_VEL_NEW(L,3).LT.ZERO) THEN
                IF(K.EQ.2) THEN
-                  PRINT *,'des/particles_in_cell.f : CHECK CELL K, Problem with K.EQ.2'
-                  STOP
+                !  PRINT *,'des/particles_in_cell.f : CHECK CELL K, Problem with K.EQ.2'
+                  !STOP
                END IF
                   IF((DES_POS_NEW(L,3).GE.ZT(K-2)).AND.(DES_POS_NEW(L,3).LT.ZT(K-1))) PIJK(L,3) = K-1
                ELSE 
@@ -174,6 +191,7 @@
          J = PIJK(L,2)
          K = PIJK(L,3)
          IJK = FUNIJK(I,J,K)
+         IF(IJK.LT.0) write(*,*), 'WARNING.. IJK < 0 ', L, DES_POS_NEW(L,:)
          PIJK(L,4) = IJK
          PINC(IJK) = PINC(IJK) + 1
          MM = PIJK(L,5)
@@ -183,35 +201,77 @@
          IF(DIMN.EQ.3) DES_W_s(IJK,MM) = DES_W_s(IJK,MM) + PVOL(L)*DES_VEL_NEW(L,3)
 
       END DO
-
+      tmp_num = zero
+      tmp_den = zero
       DO IJK = IJKSTART3, IJKEND3
          K = K_OF(IJK) 
+         J = J_OF(IJK)
          EP_G(IJK) = ONE   
          DO M = 1, MMAX
             IF(PINC(IJK).GT.0) THEN
                OSOLVOL = ONE/SOLVOLINC(IJK,M)   
                DES_U_s(IJK,M) = DES_U_s(IJK,M)*OSOLVOL
                DES_V_s(IJK,M) = DES_V_s(IJK,M)*OSOLVOL
+               !Print*,'DES_US = ', DES_U_S(IJK,M)
                IF(DIMN.EQ.3) THEN
                   DES_W_s(IJK,M) = DES_W_s(IJK,M)*OSOLVOL
                END IF
             END IF
             IF(VOL(IJK).GT.0) THEN
-               IF(DIMN.EQ.2) THEN
-                  ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)/(VOL(IJK)*DZ(K))
-               ELSE
-                  ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)/(VOL(IJK))
-               ENDIF
+               OVOL = ONE/(VOL(IJK))
+               ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)*OVOL
             END IF
             IF(PINC(IJK).GT.0) THEN
                EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
+               IF(EP_G(IJK).LT.ZERO) then 
+                  WRITE(*,*) 'IN DES/PARTICLES_IN_CELL'
+                  write(*,*) 'vol(Ij,K) =  ', vol(IJK), DZ(K)
+                  Write(*,*)'warning EP_G becoming LT zero at ',I_OF(IJK),J_OF(IJK),PINC(IJK), EP_S(IJK,1)
+                  
+                  stop
+               endif 
                ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
+               hcell = 0.5d0*(YN(J)+YN(J-1))
+               tmp_num(M) = tmp_num(M) + EP_S(IJK,M)*hcell*VOL(IJK)
+               tmp_den(M) = tmp_den(M) + EP_S(IJK,M)*VOL(IJK)
             END IF
          END DO
       END DO
 
-      FIRST_PASS1 = .False.
+      bed_height(:) = tmp_num(:)/tmp_den(:)
 
-      RETURN
-      END SUBROUTINE PARTICLES_IN_CELL
 
+      IF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
+
+         DO  k = 1,KMAX2        !MAX(KMAX1-1,1)
+            DO  j = 1,JMAX2
+               DO  i = 1,IMAX2
+                  IJK = FUNIJK(I,J,K)
+                  NPIC = PINC(IJK)
+               
+                  IF (ASSOCIATED(pic(i,j,k)%p)) THEN
+                     IF (npic.NE.SIZE(pic(i,j,k)%p)) THEN
+                        DEALLOCATE(pic(i,j,k)%p)
+                        IF (npic.GT.0) ALLOCATE(pic(i,j,k)%p(npic))
+                     ENDIF
+                  ELSE
+                     IF (npic.GT.0) ALLOCATE(pic(i,j,k)%p(npic))
+                  ENDIF
+                  
+               end DO
+            end DO
+         end DO
+      
+         icount(:,:,:) = 1
+         
+         DO ip = 1, PARTICLES
+            PC(:) =  PIJK(IP,1:3)
+            pos = icount(pc(1),pc(2),pc(3))
+            pic(pc(1),pc(2),pc(3))%p(pos) = ip
+            icount(pc(1),pc(2),pc(3)) = &
+            & icount(pc(1),pc(2),pc(3)) + 1
+         ENDDO
+      ENDIF
+     FIRST_PASS1 = .False.
+    RETURN
+  END SUBROUTINE PARTICLES_IN_CELL

@@ -53,9 +53,11 @@
       RADIUS_EQ = DES_RADIUS(1)*1.05D0
       NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO * RADIUS_EQ
 
-      DTSOLID = DTSOLID_FACTOR*2D0*PI*SQRT(MINMASS/(15*KN)) ! DTs - Rotational Constraint
+      DTSOLID = DTSOLID_FACTOR*2.0D0*PI*SQRT(MINMASS/(15*KN)) ! DTs - Rotational Constraint
 !     DTSOLID = DTSOLID_FACTOR*2D0*PI*SQRT(MINMASS/(6*KN)) ! DTs - Translational Constraint
 
+      !Print*,'DTSOLID = ', dtsolid
+      !read(*,*)
       WX1 = ZERO 
       EX2 = XLENGTH 
       BY1 = ZERO
@@ -66,11 +68,12 @@
       ELSE
          SZ1 = ZERO
          NZ2 = ZLENGTH
+        ! WRITE(*,*) 'XLENGHT =', XLENGTH, YLENGTH, ZLENGTH
       ENDIF
 
-      IF((DIMN.EQ.2).AND.(COORDINATES == 'CARTESIAN')) THEN
-         DZ(:) = 2D0*RADIUS_EQ
-      END IF
+      !IF((DIMN.EQ.2).AND.(COORDINATES == 'CARTESIAN')) THEN
+      !   DZ(:) = 2D0*RADIUS_EQ
+      !END IF
 
       GRAV(1) = BFX_s(1,1)
       GRAV(2) = BFY_s(1,1)

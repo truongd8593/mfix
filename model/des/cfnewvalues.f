@@ -47,13 +47,14 @@
 !     
       CHECK = 0 
       TEMPTIME = DTSOLID
-     
          DES_VEL_NEW(L,:) = FC(L,:)/PMASS(L) + GRAV(:)
          DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID
          DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID 
 	 OMEGA_NEW(L,:) = OMEGA_OLD(L,:) + TOW(L,:)*OMOI(L)*DTSOLID
-
-! To do neighbor search if the particle has move more than the skin distace
+         IF(DES_POS_NEW(L,2).LT.ZERO) THEN
+            PRINT*,'POSITION LE ZERO FOR L = ', L, DES_VEL_NEW(L,:), DES_POS_NEW(L,:)
+         ENDIF 
+         
       IF(.NOT.DO_NSEARCH) THEN
          D(:) = DES_POS_NEW(L,:) - PPOS(L,:)
          DIST = SQRT(DES_DOTPRDCT(D,D))

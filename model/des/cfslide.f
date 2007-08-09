@@ -29,7 +29,7 @@
 !     
 !---------------------------------------------------------------------
 
-      TEMP_FN(:) = FN(L,:)
+      TEMP_FN(:) = FN(L, :)
 
       FTMD = SQRT(DES_DOTPRDCT(TEMP_FT,TEMP_FT))
       FNMD = SQRT(DES_DOTPRDCT(TEMP_FN,TEMP_FN))
@@ -38,7 +38,7 @@
           PARTICLE_SLIDE = .TRUE.
           FT(L,:) = - MEW*FNMD*TANGNT(:)
       ELSE
-         FT(L,:) = TEMP_FT(:)
+         FT(L, :) = TEMP_FT(:)
       END IF
 
       RETURN

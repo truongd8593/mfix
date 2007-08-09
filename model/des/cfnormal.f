@@ -76,6 +76,7 @@
          NORM(:)= DIST(:)/NORMOD
       ELSE 
          PRINT *,'NORMOD IS ZERO', II,L
+         PRINT *,'NORMOD IS ZERO', DES_POS_NEW(II,:), DES_POS_NEW(L,:) 
          STOP
       END IF
 
