@@ -70,7 +70,7 @@
       INTEGER          M
 !     
 !     Flag for exchange functions
-      LOGICAL          DRAGD(0:DIMENSION_M, 0:DIMENSION_M)
+      LOGICAL          DRAGD(0:DIMENSION_M, 0:DIMENSION_M), CALC_FC, CALLFROMDES
 !     
 !     Local index for solids phase l
       INTEGER          L
