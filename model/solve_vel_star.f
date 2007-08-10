@@ -19,6 +19,11 @@
 !  And to change the gas arrays incorporating the drag, when doing DES C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                      C
+!  Author: Rahul Garg                                 Date: 01-Aug-07  C
+!  Purpose: For Discrete element simulation, no need to call           C
+!   DES_CALC_D_E to caculate pressure correction coeff's. CALC_D_E     C
+!   already contains this spl case. Same for North and Top cases.      C
+
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced:                                               C
@@ -142,11 +147,7 @@
          IF (MMAX > 0) CALL VF_SS_X (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
       END IF
 !
-      IF(.NOT.DISCRETE_ELEMENT) THEN
-         CALL CALC_D_E (A_M, VXF_GS, VXF_SS, D_E, IER)  !S. Dartevelle, LANL, Feb.2004
-      ELSE IF(DISCRETE_ELEMENT) THEN
-         CALL DES_CALC_D_E (A_M, VXF_GS, D_E, IER)
-      END IF
+      CALL CALC_D_E (A_M, VXF_GS, VXF_SS, D_E, IER)  !S. Dartevelle, LANL, Feb.2004
 !  
       IF(.NOT.DISCRETE_ELEMENT) THEN
          IF (MMAX > 0) CALL CALC_E_E (A_M, MCP, E_E, IER) 
@@ -242,11 +243,7 @@
          IF (MMAX > 0) CALL VF_SS_Y (VXF_SS, IER)    !S. Dartevelle, LANL, Feb.2004
       END IF
 !
-      IF(.NOT.DISCRETE_ELEMENT) THEN
-         CALL CALC_D_N (A_M, VXF_GS, VXF_SS, D_N, IER)   !S. Dartevelle, LANL, Feb.2004
-      ELSE IF(DISCRETE_ELEMENT) THEN
-         CALL DES_CALC_D_N (A_M, VXF_GS, D_N, IER)
-      END IF
+      CALL CALC_D_N (A_M, VXF_GS, VXF_SS, D_N, IER) !S. Dartevelle, LANL, Feb.2004
 !
       IF(.NOT.DISCRETE_ELEMENT) THEN
          IF (MMAX > 0) CALL CALC_E_N (A_M, MCP, E_N, IER) 
@@ -350,13 +347,8 @@
           IF (MMAX > 0) CALL VF_SS_Z (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
         END IF
 !
-        IF(.NOT.DISCRETE_ELEMENT) THEN
-          CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER)  !S. Dartevelle, LANL, Feb.2004
-        ELSE IF(DISCRETE_ELEMENT) THEN
-          IF(DIMN.EQ.3) THEN
-            CALL DES_CALC_D_T (A_M, VXF_GS, D_T, IER)
-          END IF
-        END IF
+        
+        CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER) !S. Dartevelle, LANL, Feb.2004
 !
         IF(.NOT.DISCRETE_ELEMENT) THEN
           IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T, IER) 
