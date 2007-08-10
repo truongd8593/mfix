@@ -56,6 +56,7 @@ mfix.exe : \
     xsi_array.mod \
     mchem.mod \
     discretelement.mod \
+    interpolation.mod \
     compar.mod \
     dbg_util.mod \
     debug.mod \
@@ -773,6 +774,7 @@ mfix.exe : \
     discretelement_mod.$(OBJ_EXT) \
     drag_fgs.$(OBJ_EXT) \
     gas_drag.$(OBJ_EXT) \
+    interpolation_mod.$(OBJ_EXT) \
     make_arrays_des.$(OBJ_EXT) \
     neighbour.$(OBJ_EXT) \
     nsquare.$(OBJ_EXT) \
@@ -1039,6 +1041,11 @@ discretelement.mod : ./des/discretelement_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/discretelement_mod.f 
+interpolation.mod : ./des/interpolation_mod.f \
+            constant.mod \
+            discretelement.mod \
+            geometry.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/interpolation_mod.f 
 compar.mod : ./dmp_modules/compar_mod.f \
             mpi.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/compar_mod.f 
@@ -4755,6 +4762,8 @@ drag_fgs.$(OBJ_EXT) : ./des/drag_fgs.f \
             sendrecv.mod \
             discretelement.mod \
             drag.mod \
+            interpolation.mod \
+            ur_facs.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                 \
@@ -4797,7 +4806,8 @@ make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/make_arrays_des.f 
 neighbour.$(OBJ_EXT) : ./des/neighbour.f \
             param1.mod \
-            discretelement.mod 
+            discretelement.mod \
+            geometry.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/neighbour.f 
 nsquare.$(OBJ_EXT) : ./des/nsquare.f \
             param1.mod \
