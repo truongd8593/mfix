@@ -242,6 +242,15 @@
          CALL ZERO_ARRAY (F_gs(1,M), IER)
       END DO
 
+!     DES 
+!     Jay Boyalakuntla
+!     This call to make_arrays_des has now been moved ahead of calc_coeff_all 
+!     so that on the call to des/drag_fgs.f, the particle in cell info and also
+!     Ep_s are known.  Rahul Garg 
+      IF(DISCRETE_ELEMENT) THEN
+         CALL MAKE_ARRAYS_DES
+      END IF
+!     DES end 
 !
 !  Calculate all the coefficients once before entering the time loop
 !
@@ -283,12 +292,6 @@
 !     reporting interval (hard-wired in the routine) to activate the routine.
       Call check_mass_balance (0)
 
-!     DES 
-!     Jay Boyalakuntla
-      IF(DISCRETE_ELEMENT) THEN
-         CALL MAKE_ARRAYS_DES
-      END IF
-!     DES end 
 !     
 !     The TIME loop begins here.............................................
 !     
