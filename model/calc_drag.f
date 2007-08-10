@@ -16,6 +16,13 @@
 !     Purpose: MFIX 2.0 mods                                              C
 !     Author: M. Syamlal                                 Date: 25-APR-96  C
 !                                                                         C
+!     Revision Number 3                                  Date: 2-July-07  C
+!     Author: Rahul Garg                                                  C
+!     Purpose: If DES_INTERP_ON is true, then additional call is made to  C
+!     des/drag_fgs.f in order to obtain cell corner drag related AM and   C
+!     BM coeff's                                                          C
+!                                                                         C
+!                                                                         C
 !     Revision Number: 2                                                  C
 !     Purpose: To call solids drag Drag_SS only when not using DES        C
 !     Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
@@ -96,6 +103,11 @@
                ENDIF
          END IF
       END DO 
-
+   
+      IF(DISCRETE_ELEMENT.AND.DES_INTERP_ON) THEN
+         CALC_FC = .FALSE. 
+         CALLFROMDES = .FALSE.
+         CALL DRAG_FGS (CALC_FC, CALLFROMDES)
+      ENDIF
       RETURN  
       END SUBROUTINE CALC_DRAG 
