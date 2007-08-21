@@ -37,7 +37,7 @@
   IMAX 			=   15			!cells in i direction
   YLENGTH  		=   3.0		!height
   JMAX 			=   15 			!cells in j direction
-
+  DZ(1)                 =   0.1
   NO_K     		= .TRUE. 		!2D, no k direction
 
   GRAVITY = 0
