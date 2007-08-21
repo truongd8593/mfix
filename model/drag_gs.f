@@ -203,7 +203,7 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !     
-      C_DSXRET(RE) = 24D0*(1 + 0.15D0*RE**0.687D0)/RE ! Tsuji drag
+      C_DSXRET(RE) = 24D0*(1 + 0.15D0*RE**0.687D0)/(RE+SMALL_NUMBER) ! Tsuji drag
       C_DSXRE(RE) = (0.63D0*SQRT(RE) + 4.8D0)**2 ! Dalla Valle (1948) 
 !     C_DsxRe (Re) = 24.D0 * (1.D0 + 0.173D0 * Re**0.657D0)      ! Turton and
 !     &          + 0.413D0 * Re**2.09D0 / (Re**1.09D0 + 16300.D0) ! Levenspiel (1986)
