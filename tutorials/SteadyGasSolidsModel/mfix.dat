@@ -1,0 +1,159 @@
+#
+#
+#  S. Benyahia                  08-14-2007
+#
+#  Gas/solids steady flow in fully developed 1-D channel 
+#  
+#  
+#
+# Run-control section
+#
+  RUN_NAME = 'R'
+  DESCRIPTION = 'Steady flow'
+  RUN_TYPE = 'new'  !  'restart_1' ! 
+  UNITS = 'cgs'
+  TIME  =0.0  
+  TSTOP = 70
+  DT = 1.0e-4
+  DT_MIN = 1.0e-8
+  ENERGY_EQ = .FALSE.
+  SPECIES_EQ = .FALSE.    .FALSE.
+  GRANULAR_ENERGY = .T.
+
+  CALL_USR = .TRUE.
+
+  NORM_G = 0.0d0
+  NORM_S = 0.0d0
+
+  DISCRETIZE     =  9*2
+  DEF_COR = .TRUE.
+
+  TOL_RESID  = 1.D-5
+  LEQ_TOL = 9*1D-10
+  LEQ_IT = 9*300
+
+  Flux_g = 0.65226 !for superficial gas velocity of 550 cm/s
+
+  GRAVITY = 980.
+#
+# Geometry Section
+#
+  COORDINATES = 'CARTESIAN'
+
+  XLENGTH  =   10.0    IMAX =  80 
+  YLENGTH  = 10.0    JMAX = 1
+
+  NO_K     = .TRUE.
+  CYCLIC_Y_PD = .TRUE.
+  delp_y = 800.
+
+  MAX_NIT = 50
+
+ 
+#
+# Gas-phase Section
+#
+
+  MU_g0 = 1.80E-04
+#  RO_g0 = 1.186e-03
+  MW_avg = 29.
+  Mu_gmax = 1.E+03 ! must specify Mu_gmax with K_epsilon model.
+     #
+#
+# Solids-phase Section
+#
+#
+                     DRAG_TYPE  = 'WEN_YU'
+                     SCHAEFFER  = .F.
+                     RO_S  =         2.4 
+                      D_P0  =         0.012
+                        C_e  =       0.99
+                      PHI  =        30.0 
+                  EP_STAR  =         0.44 
+		  e_w      =         0.7  !particle-wall rest. coef.
+		  PHIP     =        0.005 !Specularite coef.
+                  phi_w    =       11.31 ! angle of internal friction to use with Jenkins BC
+#
+# Initial Conditions Section
+#
+       !              
+  IC_X_w(1)           =  0.0 
+  IC_X_e(1)           =  10.0 
+  IC_Y_s(1)           =  0.0 
+  IC_Y_n(1)           = 10.0
+ 
+  IC_EP_g(1)          =  0.97 
+ 
+  IC_U_g(1)           =   0.0
+  IC_V_g(1)           =  550.0         
+  IC_P_g(1) = 1013250.        
+  IC_T_g(1) = 298.
+ 
+  IC_U_s(1,1)           =   0.
+  IC_V_s(1,1)           =  520.0
+  
+  IC_Theta_m(1,1)     = 10000
+  IC_K_Turb_G(1)      = 100.
+  IC_E_Turb_G(1)      = 1000.
+#
+###############################################
+#
+  BC_X_w(4) = 0.                                      
+  BC_X_e(4) = 0.                               
+  BC_Y_s(4) = 0.                                     
+  BC_Y_n(4) = 10.                
+  BC_TYPE(4) = 'PAR_SLIP_WALL'
+  !
+  BC_Uw_s(4,1) = 0.0 	
+  BC_Vw_s(4,1) = 0.0
+  BC_hw_s(4,1) = 0.0
+  BC_hw_g(4) = 0.0
+  BC_Uw_g(4) = 0.0
+  BC_Vw_g(4) = 0.0
+  BC_Ww_g(4) = 0.0
+  BC_Ww_s(4,1) = 0.0
+  BC_Thetaw_m(4,1) = 0.
+  BC_hw_Theta_m(4,1) = 0. 
+  BC_C_Theta_m(4,1) = 0.   	    
+  BC_JJ_PS(4) = 0
+#
+###############################################
+#
+  BC_X_w(5) = 10.                                      
+  BC_X_e(5) = 10.                               
+  BC_Y_s(5) = 0.                                     
+  BC_Y_n(5) = 10.                
+  BC_TYPE(5) = 'PAR_SLIP_WALL'
+  ! 	
+!
+  BC_Uw_s(5,1) = 0.0
+  BC_Vw_s(5,1) = 0.0
+  BC_hw_s(5,1) = 0.0
+  BC_hw_g(5) = 0.0
+  BC_Uw_g(5) = 0.0
+  BC_Vw_g(5) = 0.0
+  BC_Ww_g(5) = 0.0
+  BC_Ww_s(5,1) = 0.0
+  BC_Thetaw_m(5,1) = 0.
+  BC_hw_Theta_m(5,1) = 0.
+  BC_C_Theta_m(5,1) = 0. 
+  BC_JJ_PS(5) = 0
+###############################################
+#
+#  Output Control
+#
+  RES_DT = 0.1
+  OUT_DT = 10.
+        !
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g  theta  scalar rrate k_epsilon
+        !      P_star    V_g  V_s            T_s1 X_s
+        !                W_g  W_s            T_s2
+  SPX_DT = 0.1 0.1      0.1  0.1  100. 100. 100. 0.1   0.1 100. 0.1
+
+  NLOG   = 25
+  RESID_STRING = 'P0' 'P1' 'U0' 'V0' 'U1' 'V1' 'G1'
+#  FULL_LOG = .TRUE.
+  
+# DMP control
+  
+#  NODESI = 2  NODESJ = 1   NODESK = 1

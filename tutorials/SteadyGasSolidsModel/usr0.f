@@ -1,0 +1,415 @@
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: USR0                                                   C
+!  Purpose: This routine is called before the time loop starts and is  C
+!           user-definable.  The user may insert code in this routine  C
+!           or call appropriate user defined subroutines.  This        C
+!           can be used for setting constants and checking errors in   C
+!           data.  This routine is not called from an IJK loop, hence  C
+!           all indices are undefined.                                 C
+!                                                                      C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE USR0 
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Switches: -xf
+      USE param 
+      USE param1
+      USE physprop 
+      USE bc
+      USE fldvar
+      USE geometry
+      USE indices
+      USE constant
+      USE run
+      Use usr
+      USE compar 
+      IMPLICIT NONE
+!-----------------------------------------------
+!
+!  Include files defining common blocks here
+!
+!
+!
+!  Define local variables here
+!!
+      INTEGER L, I, J, K, IJK, IJK2, M
+      DOUBLE PRECISION X_loc ! x-direction location of cell centers
+!
+      INCLUDE 'function.inc'
+      
+      ALLOCATE ( Th2(IMAX2), eps2(IMAX2), eps_Th(IMAX2), eps_Th2(IMAX2) )
+      ALLOCATE (Th_eps2(IMAX2), eps2_Th2(IMAX2), Th3(IMAX2))
+      ALLOCATE (eps_Th3(IMAX2), eps2_Th3(IMAX2), eps3(IMAX2))
+      ALLOCATE (Th_eps3(IMAX2), Th2_eps3(IMAX2), Th3_eps3(IMAX2))
+      ALLOCATE (eps4(IMAX2), Th1_eps4(IMAX2), Th2_eps4(IMAX2), Th3_eps4(IMAX2), Th4_eps4(IMAX2))
+      ALLOCATE (eps1_Th4(IMAX2), eps2_Th4(IMAX2), eps3_Th4(IMAX2), Th4(IMAX2))
+      ALLOCATE (eps5(IMAX2), Th1_eps5(IMAX2), Th2_eps5(IMAX2), Th3_eps5(IMAX2), Th4_eps5(IMAX2), Th5_eps5(IMAX2))
+      ALLOCATE (eps1_Th5(IMAX2), eps2_Th5(IMAX2), eps3_Th5(IMAX2), eps4_Th5(IMAX2), Th5(IMAX2))
+      ALLOCATE (eps6(IMAX2),Th1_eps6(IMAX2),Th2_eps6(IMAX2),Th3_eps6(IMAX2),Th4_eps6(IMAX2))
+      ALLOCATE (Th5_eps6(IMAX2),Th6_eps6(IMAX2),eps1_Th6(IMAX2),eps2_Th6(IMAX2),eps3_Th6(IMAX2))
+      ALLOCATE (eps4_Th6(IMAX2),eps5_Th6(IMAX2),Th6(IMAX2))
+      ALLOCATE (eps7(IMAX2),Th1_eps7(IMAX2),Th2_eps7(IMAX2),Th3_eps7(IMAX2),Th4_eps7(IMAX2))
+      ALLOCATE (Th5_eps7(IMAX2),Th6_eps7(IMAX2),Th7_eps7(IMAX2),eps1_Th7(IMAX2),eps2_Th7(IMAX2))
+      ALLOCATE (eps3_Th7(IMAX2),eps4_Th7(IMAX2),eps5_Th7(IMAX2),eps6_Th7(IMAX2),Th7(IMAX2))
+      ALLOCATE (eps8(IMAX2),Th1_eps8(IMAX2),Th2_eps8(IMAX2),Th3_eps8(IMAX2),Th4_eps8(IMAX2), Th5_eps8(IMAX2))
+      ALLOCATE (Th6_eps8(IMAX2),Th7_eps8(IMAX2),Th8_eps8(IMAX2),eps1_Th8(IMAX2),eps2_Th8(IMAX2),eps3_Th8(IMAX2))
+      ALLOCATE	(eps4_Th8(IMAX2),eps5_Th8(IMAX2),eps6_Th8(IMAX2),eps7_Th8(IMAX2),Th8(IMAX2))
+      ALLOCATE (eps9(IMAX2),Th1_eps9(IMAX2),Th2_eps9(IMAX2),Th3_eps9(IMAX2),Th4_eps9(IMAX2),Th5_eps9(IMAX2),Th6_eps9(IMAX2))
+      ALLOCATE (Th7_eps9(IMAX2),Th8_eps9(IMAX2),Th9_eps9(IMAX2),eps1_Th9(IMAX2),eps2_Th9(IMAX2),eps3_Th9(IMAX2),eps4_Th9(IMAX2))
+      ALLOCATE (eps5_Th9(IMAX2),eps6_Th9(IMAX2), eps7_Th9(IMAX2),eps8_Th9(IMAX2),Th9(IMAX2) )
+
+      ALLOCATE ( gsSqr(IMAX2), Thg(IMAX2), epsg(IMAX2), Th2g(IMAX2), eps2g(IMAX2), eps_Thg(IMAX2), eps_Th2g(IMAX2) )
+      ALLOCATE (Th_eps2g(IMAX2), eps2_Th2g(IMAX2), Th3g(IMAX2))
+      ALLOCATE (eps_Th3g(IMAX2), eps2_Th3g(IMAX2), eps3g(IMAX2))
+      ALLOCATE (Th_eps3g(IMAX2), Th2_eps3g(IMAX2), Th3_eps3g(IMAX2))
+      ALLOCATE (eps4g(IMAX2), Th1_eps4g(IMAX2), Th2_eps4g(IMAX2), Th3_eps4g(IMAX2), Th4_eps4g(IMAX2))
+      ALLOCATE (eps1_Th4g(IMAX2), eps2_Th4g(IMAX2), eps3_Th4g(IMAX2), Th4g(IMAX2))
+      ALLOCATE (eps5g(IMAX2), Th1_eps5g(IMAX2), Th2_eps5g(IMAX2), Th3_eps5g(IMAX2), Th4_eps5g(IMAX2), Th5_eps5g(IMAX2))
+      ALLOCATE (eps1_Th5g(IMAX2), eps2_Th5g(IMAX2), eps3_Th5g(IMAX2), eps4_Th5g(IMAX2), Th5g(IMAX2))
+      ALLOCATE (eps6g(IMAX2),Th1_eps6g(IMAX2),Th2_eps6g(IMAX2),Th3_eps6g(IMAX2),Th4_eps6g(IMAX2))
+      ALLOCATE (Th5_eps6g(IMAX2),Th6_eps6g(IMAX2),eps1_Th6g(IMAX2),eps2_Th6g(IMAX2),eps3_Th6g(IMAX2))
+      ALLOCATE (eps4_Th6g(IMAX2),eps5_Th6g(IMAX2),Th6g(IMAX2))
+      ALLOCATE (eps7g(IMAX2),Th1_eps7g(IMAX2),Th2_eps7g(IMAX2),Th3_eps7g(IMAX2),Th4_eps7g(IMAX2))
+      ALLOCATE (Th5_eps7g(IMAX2),Th6_eps7g(IMAX2),Th7_eps7g(IMAX2),eps1_Th7g(IMAX2),eps2_Th7g(IMAX2))
+      ALLOCATE (eps3_Th7g(IMAX2),eps4_Th7g(IMAX2),eps5_Th7g(IMAX2),eps6_Th7g(IMAX2),Th7g(IMAX2))
+
+      ALLOCATE ( Thg2(IMAX2), epsg2(IMAX2), Th2g2(IMAX2), eps2g2(IMAX2), eps_Thg2(IMAX2), eps_Th2g2(IMAX2) )
+      ALLOCATE (Th_eps2g2(IMAX2), eps2_Th2g2(IMAX2), Th3g2(IMAX2))
+      ALLOCATE (eps_Th3g2(IMAX2), eps2_Th3g2(IMAX2), eps3g2(IMAX2))
+      ALLOCATE (Th_eps3g2(IMAX2), Th2_eps3g2(IMAX2), Th3_eps3g2(IMAX2))
+      ALLOCATE (eps4g2(IMAX2), Th1_eps4g2(IMAX2), Th2_eps4g2(IMAX2), Th3_eps4g2(IMAX2), Th4_eps4g2(IMAX2))
+      ALLOCATE (eps1_Th4g2(IMAX2), eps2_Th4g2(IMAX2), eps3_Th4g2(IMAX2), Th4g2(IMAX2))
+      ALLOCATE (eps5g2(IMAX2), Th1_eps5g2(IMAX2), Th2_eps5g2(IMAX2), Th3_eps5g2(IMAX2), Th4_eps5g2(IMAX2), Th5_eps5g2(IMAX2))
+      ALLOCATE (eps1_Th5g2(IMAX2), eps2_Th5g2(IMAX2), eps3_Th5g2(IMAX2), eps4_Th5g2(IMAX2), Th5g2(IMAX2))
+      ALLOCATE (eps6g2(IMAX2),Th1_eps6g2(IMAX2),Th2_eps6g2(IMAX2),Th3_eps6g2(IMAX2),Th4_eps6g2(IMAX2))
+      ALLOCATE (Th5_eps6g2(IMAX2),Th6_eps6g2(IMAX2),eps1_Th6g2(IMAX2),eps2_Th6g2(IMAX2),eps3_Th6g2(IMAX2))
+      ALLOCATE (eps4_Th6g2(IMAX2),eps5_Th6g2(IMAX2),Th6g2(IMAX2))
+      ALLOCATE (eps7g2(IMAX2),Th1_eps7g2(IMAX2),Th2_eps7g2(IMAX2),Th3_eps7g2(IMAX2),Th4_eps7g2(IMAX2))
+      ALLOCATE (Th5_eps7g2(IMAX2),Th6_eps7g2(IMAX2),Th7_eps7g2(IMAX2),eps1_Th7g2(IMAX2),eps2_Th7g2(IMAX2))
+      ALLOCATE (eps3_Th7g2(IMAX2),eps4_Th7g2(IMAX2),eps5_Th7g2(IMAX2),eps6_Th7g2(IMAX2),Th7g2(IMAX2))
+
+      ALLOCATE ( epsUxUy(IMAX2), UxUy(IMAX2) )
+      ALLOCATE ( epsUxUx(IMAX2), UxUx(IMAX2) )
+      ALLOCATE ( epg2(IMAX2), Vr2(IMAX2), epgVr(IMAX2), &
+	         Vr3(IMAX2), epg3(IMAX2), epg2Vr(IMAX2), epgVr2(IMAX2), &
+		Vr4(IMAX2), epg4(IMAX2), epg3Vr(IMAX2), epgVr3(IMAX2), epg2Vr2(IMAX2), &
+		Vr5(IMAX2), epg5(IMAX2), epg4Vr(IMAX2), epgVr4(IMAX2), epg3Vr2(IMAX2), epg2Vr3(IMAX2), &
+		Vr6(IMAX2), epg6(IMAX2), epg5Vr(IMAX2), epgVr5(IMAX2), epg4Vr2(IMAX2), epg2Vr4(IMAX2),epg3Vr3(IMAX2), &
+		Vr7(IMAX2), epg7(IMAX2), epg6Vr(IMAX2), epgVr6(IMAX2), epg5Vr2(IMAX2), epg2Vr5(IMAX2), &
+	        epg4Vr3(IMAX2), epg3Vr4(IMAX2) )
+      ALLOCATE ( U_s_mean(IMAX2),V_s_mean(IMAX2),U_g_mean(IMAX2),V_g_mean(IMAX2),Ep_g_mean(IMAX2), Th_mean(IMAX2) )
+!!
+!  Insert user-defined code here
+!
+      OPEN (UNIT=75,FILE='time_avgVar.dat',STATUS='OLD')
+       READ(75,3) (U_s_mean(I), I = 1, IMAX2)
+       READ(75,3) (V_s_mean(I), I = 1, IMAX2)
+       READ(75,3) (U_g_mean(I), I = 1, IMAX2)
+       READ(75,3) (V_g_mean(I), I = 1, IMAX2)
+       READ(75,3) (Ep_g_mean(I), I = 1, IMAX2)
+       READ(75,3) (Th_mean(I), I = 1, IMAX2)
+      CLOSE (UNIT=75)
+
+!
+!
+      OPEN (UNIT=81,FILE='epsThCorr.dat',STATUS='OLD')
+      OPEN (UNIT=80,FILE='epsThVsVsCorr.dat',STATUS='OLD')
+      OPEN (UNIT=79,FILE='ReShearStress.dat',STATUS='OLD')
+      OPEN (UNIT=78,FILE='ReNormStress.dat',STATUS='OLD')
+      OPEN (UNIT=77,FILE='dragCorr.dat',STATUS='OLD')
+      
+	 READ(81,3) (eps_Th(I), I = 1, IMAX2)
+	 READ(81,3) (Th2(I), I = 1, IMAX2)
+	 READ(81,3) (eps2(I), I = 1, IMAX2)
+	 READ(81,3) (eps_Th2(I), I = 1, IMAX2)
+	 READ(81,3) (Th_eps2(I), I = 1, IMAX2)
+	 READ(81,3) (eps2_Th2(I), I = 1, IMAX2)
+	 READ(81,3) (Th3(I), I = 1, IMAX2)
+	 READ(81,3) (eps_Th3(I), I = 1, IMAX2)
+	 READ(81,3) (eps2_Th3(I), I = 1, IMAX2)
+	 READ(81,3) (eps3(I), I = 1, IMAX2)
+	 READ(81,3) (Th_eps3(I), I = 1, IMAX2)
+	 READ(81,3) (Th2_eps3(I), I = 1, IMAX2)
+	 READ(81,3) (Th3_eps3(I), I = 1, IMAX2)
+	 READ(81,3) (eps4(I), I = 1, IMAX2)
+	 READ(81,3) (Th1_eps4(I), I = 1, IMAX2)
+	 READ(81,3) (Th2_eps4(I), I = 1, IMAX2)
+	 READ(81,3) (Th3_eps4(I), I = 1, IMAX2)
+	 READ(81,3) (Th4_eps4(I), I = 1, IMAX2)
+	 READ(81,3) (Th4(I), I = 1, IMAX2)
+	 READ(81,3) (eps1_Th4(I), I = 1, IMAX2)
+	 READ(81,3) (eps2_Th4(I), I = 1, IMAX2)
+	 READ(81,3) (eps3_Th4(I), I = 1, IMAX2)
+	 READ(81,3) (eps5(I), I = 1, IMAX2)
+	 READ(81,3) (Th1_eps5(I), I = 1, IMAX2)
+	 READ(81,3) (Th2_eps5(I), I = 1, IMAX2)
+	 READ(81,3) (Th3_eps5(I), I = 1, IMAX2)
+	 READ(81,3) (Th4_eps5(I), I = 1, IMAX2)
+	 READ(81,3) (Th5_eps5(I), I = 1, IMAX2)
+	 READ(81,3) (Th5(I), I = 1, IMAX2)
+	 READ(81,3) (eps1_Th5(I), I = 1, IMAX2)
+	 READ(81,3) (eps2_Th5(I), I = 1, IMAX2)
+	 READ(81,3) (eps3_Th5(I), I = 1, IMAX2)
+	 READ(81,3) (eps4_Th5(I), I = 1, IMAX2)
+	 READ(81,3) (eps6(I), I = 1, IMAX2)
+	 READ(81,3) (Th1_eps6(I), I = 1, IMAX2)
+	 READ(81,3) (Th2_eps6(I), I = 1, IMAX2)
+	 READ(81,3) (Th3_eps6(I), I = 1, IMAX2)
+	 READ(81,3) (Th4_eps6(I), I = 1, IMAX2)
+	 READ(81,3) (Th5_eps6(I), I = 1, IMAX2)
+	 READ(81,3) (Th6_eps6(I), I = 1, IMAX2)
+	 READ(81,3) (Th6(I), I = 1, IMAX2)
+	 READ(81,3) (eps1_Th6(I), I = 1, IMAX2)
+	 READ(81,3) (eps2_Th6(I), I = 1, IMAX2)
+	 READ(81,3) (eps3_Th6(I), I = 1, IMAX2)
+	 READ(81,3) (eps4_Th6(I), I = 1, IMAX2)
+	 READ(81,3) (eps5_Th6(I), I = 1, IMAX2)
+	 READ(81,3) (eps7(I), I = 1, IMAX2)
+	 READ(81,3) (Th1_eps7(I), I = 1, IMAX2)
+	 READ(81,3) (Th2_eps7(I), I = 1, IMAX2)
+	 READ(81,3) (Th3_eps7(I), I = 1, IMAX2)
+	 READ(81,3) (Th4_eps7(I), I = 1, IMAX2)
+	 READ(81,3) (Th5_eps7(I), I = 1, IMAX2)
+	 READ(81,3) (Th6_eps7(I), I = 1, IMAX2)
+	 READ(81,3) (Th7_eps7(I), I = 1, IMAX2)
+	 READ(81,3) (Th7(I), I = 1, IMAX2)
+	 READ(81,3) (eps1_Th7(I), I = 1, IMAX2)
+	 READ(81,3) (eps2_Th7(I), I = 1, IMAX2)
+	 READ(81,3) (eps3_Th7(I), I = 1, IMAX2)
+	 READ(81,3) (eps4_Th7(I), I = 1, IMAX2)
+	 READ(81,3) (eps5_Th7(I), I = 1, IMAX2)
+	 READ(81,3) (eps6_Th7(I), I = 1, IMAX2)
+	 READ(81,3) (eps8(I), I = 1, IMAX2)
+	 READ(81,3) (Th1_eps8(I), I = 1, IMAX2)
+	 READ(81,3) (Th2_eps8(I), I = 1, IMAX2)
+	 READ(81,3) (Th3_eps8(I), I = 1, IMAX2)
+	 READ(81,3) (Th4_eps8(I), I = 1, IMAX2)
+	 READ(81,3) (Th5_eps8(I), I = 1, IMAX2)
+	 READ(81,3) (Th6_eps8(I), I = 1, IMAX2)
+	 READ(81,3) (Th7_eps8(I), I = 1, IMAX2)
+	 READ(81,3) (Th8_eps8(I), I = 1, IMAX2)
+	 READ(81,3) (Th8(I), I = 1, IMAX2)
+	 READ(81,3) (eps1_Th8(I), I = 1, IMAX2)
+	 READ(81,3) (eps2_Th8(I), I = 1, IMAX2)
+	 READ(81,3) (eps3_Th8(I), I = 1, IMAX2)
+	 READ(81,3) (eps4_Th8(I), I = 1, IMAX2)
+	 READ(81,3) (eps5_Th8(I), I = 1, IMAX2)
+	 READ(81,3) (eps6_Th8(I), I = 1, IMAX2)
+	 READ(81,3) (eps7_Th8(I), I = 1, IMAX2)
+	 READ(81,3) (eps9(I), I = 1, IMAX2)
+	 READ(81,3) (Th1_eps9(I), I = 1, IMAX2)
+	 READ(81,3) (Th2_eps9(I), I = 1, IMAX2)
+	 READ(81,3) (Th3_eps9(I), I = 1, IMAX2)
+	 READ(81,3) (Th4_eps9(I), I = 1, IMAX2)
+	 READ(81,3) (Th5_eps9(I), I = 1, IMAX2)
+	 READ(81,3) (Th6_eps9(I), I = 1, IMAX2)
+	 READ(81,3) (Th7_eps9(I), I = 1, IMAX2)
+	 READ(81,3) (Th8_eps9(I), I = 1, IMAX2)
+	 READ(81,3) (Th9_eps9(I), I = 1, IMAX2)
+	 READ(81,3) (Th9(I), I = 1, IMAX2)
+	 READ(81,3) (eps1_Th9(I), I = 1, IMAX2)
+	 READ(81,3) (eps2_Th9(I), I = 1, IMAX2)
+	 READ(81,3) (eps3_Th9(I), I = 1, IMAX2)
+	 READ(81,3) (eps4_Th9(I), I = 1, IMAX2)
+	 READ(81,3) (eps5_Th9(I), I = 1, IMAX2)
+	 READ(81,3) (eps6_Th9(I), I = 1, IMAX2)
+	 READ(81,3) (eps7_Th9(I), I = 1, IMAX2)
+	 READ(81,3) (eps8_Th9(I), I = 1, IMAX2)
+      
+       
+	 READ(80,3) (gsSqr(I), I = 1, IMAX2)
+	 READ(80,3) (Thg(I), I = 1, IMAX2)
+	 READ(80,3) (epsg(I), I = 1, IMAX2)
+	 READ(80,3) (Thg2(I), I = 1, IMAX2)
+	 READ(80,3) (epsg2(I), I = 1, IMAX2)
+	 
+	 
+	 READ(80,3) (eps_Thg(I), I = 1, IMAX2)
+	 READ(80,3) (Th2g(I), I = 1, IMAX2)
+	 READ(80,3) (eps2g(I), I = 1, IMAX2)
+	 READ(80,3) (eps_Th2g(I), I = 1, IMAX2)
+	 READ(80,3) (Th_eps2g(I), I = 1, IMAX2)
+	 READ(80,3) (eps2_Th2g(I), I = 1, IMAX2)
+	 READ(80,3) (Th3g(I), I = 1, IMAX2)
+	 READ(80,3) (eps_Th3g(I), I = 1, IMAX2)
+	 READ(80,3) (eps2_Th3g(I), I = 1, IMAX2)
+	 READ(80,3) (eps3g(I), I = 1, IMAX2)
+	 READ(80,3) (Th_eps3g(I), I = 1, IMAX2)
+	 READ(80,3) (Th2_eps3g(I), I = 1, IMAX2)
+	 READ(80,3) (Th3_eps3g(I), I = 1, IMAX2)
+	 READ(80,3) (eps4g(I), I = 1, IMAX2)
+	 READ(80,3) (Th1_eps4g(I), I = 1, IMAX2)
+	 READ(80,3) (Th2_eps4g(I), I = 1, IMAX2)
+	 READ(80,3) (Th3_eps4g(I), I = 1, IMAX2)
+	 READ(80,3) (Th4_eps4g(I), I = 1, IMAX2)
+	 READ(80,3) (Th4g(I), I = 1, IMAX2)
+	 READ(80,3) (eps1_Th4g(I), I = 1, IMAX2)
+	 READ(80,3) (eps2_Th4g(I), I = 1, IMAX2)
+	 READ(80,3) (eps3_Th4g(I), I = 1, IMAX2)
+	 READ(80,3) (eps5g(I), I = 1, IMAX2)
+	 READ(80,3) (Th1_eps5g(I), I = 1, IMAX2)
+	 READ(80,3) (Th2_eps5g(I), I = 1, IMAX2)
+	 READ(80,3) (Th3_eps5g(I), I = 1, IMAX2)
+	 READ(80,3) (Th4_eps5g(I), I = 1, IMAX2)
+	 READ(80,3) (Th5_eps5g(I), I = 1, IMAX2)
+	 READ(80,3) (Th5g(I), I = 1, IMAX2)
+	 READ(80,3) (eps1_Th5g(I), I = 1, IMAX2)
+	 READ(80,3) (eps2_Th5g(I), I = 1, IMAX2)
+	 READ(80,3) (eps3_Th5g(I), I = 1, IMAX2)
+	 READ(80,3) (eps4_Th5g(I), I = 1, IMAX2)
+	 READ(80,3) (eps6g(I), I = 1, IMAX2)
+	 READ(80,3) (Th1_eps6g(I), I = 1, IMAX2)
+	 READ(80,3) (Th2_eps6g(I), I = 1, IMAX2)
+	 READ(80,3) (Th3_eps6g(I), I = 1, IMAX2)
+	 READ(80,3) (Th4_eps6g(I), I = 1, IMAX2)
+	 READ(80,3) (Th5_eps6g(I), I = 1, IMAX2)
+	 READ(80,3) (Th6_eps6g(I), I = 1, IMAX2)
+	 READ(80,3) (Th6g(I), I = 1, IMAX2)
+	 READ(80,3) (eps1_Th6g(I), I = 1, IMAX2)
+	 READ(80,3) (eps2_Th6g(I), I = 1, IMAX2)
+	 READ(80,3) (eps3_Th6g(I), I = 1, IMAX2)
+	 READ(80,3) (eps4_Th6g(I), I = 1, IMAX2)
+	 READ(80,3) (eps5_Th6g(I), I = 1, IMAX2)
+	 READ(80,3) (eps7g(I), I = 1, IMAX2)
+	 READ(80,3) (Th1_eps7g(I), I = 1, IMAX2)
+	 READ(80,3) (Th2_eps7g(I), I = 1, IMAX2)
+	 READ(80,3) (Th3_eps7g(I), I = 1, IMAX2)
+	 READ(80,3) (Th4_eps7g(I), I = 1, IMAX2)
+	 READ(80,3) (Th5_eps7g(I), I = 1, IMAX2)
+	 READ(80,3) (Th6_eps7g(I), I = 1, IMAX2)
+	 READ(80,3) (Th7_eps7g(I), I = 1, IMAX2)
+	 READ(80,3) (Th7g(I), I = 1, IMAX2)
+	 READ(80,3) (eps1_Th7g(I), I = 1, IMAX2)
+	 READ(80,3) (eps2_Th7g(I), I = 1, IMAX2)
+	 READ(80,3) (eps3_Th7g(I), I = 1, IMAX2)
+	 READ(80,3) (eps4_Th7g(I), I = 1, IMAX2)
+	 READ(80,3) (eps5_Th7g(I), I = 1, IMAX2)
+	 READ(80,3) (eps6_Th7g(I), I = 1, IMAX2)
+	 
+	 READ(80,3) (eps_Thg2(I), I = 1, IMAX2)
+	 READ(80,3) (Th2g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps2g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps_Th2g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th_eps2g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps2_Th2g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th3g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps_Th3g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps2_Th3g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps3g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th_eps3g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th2_eps3g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th3_eps3g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps4g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th1_eps4g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th2_eps4g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th3_eps4g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th4_eps4g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th4g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps1_Th4g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps2_Th4g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps3_Th4g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps5g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th1_eps5g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th2_eps5g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th3_eps5g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th4_eps5g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th5_eps5g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th5g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps1_Th5g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps2_Th5g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps3_Th5g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps4_Th5g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps6g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th1_eps6g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th2_eps6g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th3_eps6g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th4_eps6g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th5_eps6g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th6_eps6g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th6g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps1_Th6g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps2_Th6g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps3_Th6g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps4_Th6g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps5_Th6g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps7g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th1_eps7g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th2_eps7g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th3_eps7g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th4_eps7g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th5_eps7g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th6_eps7g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th7_eps7g2(I), I = 1, IMAX2)
+	 READ(80,3) (Th7g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps1_Th7g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps2_Th7g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps3_Th7g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps4_Th7g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps5_Th7g2(I), I = 1, IMAX2)
+	 READ(80,3) (eps6_Th7g2(I), I = 1, IMAX2)
+	 
+	 READ(79,3) (epsUxUy(I), I = 1, IMAX2)
+	 READ(79,3) (UxUy(I), I = 1, IMAX2)
+	 READ(78,3) (epsUxUx(I), I = 1, IMAX2)
+	 READ(78,3) (UxUx(I), I = 1, IMAX2)
+       
+       READ(77,3) (epg2(I), I = 1, IMAX2)
+       READ(77,3) (Vr2(I), I = 1, IMAX2)
+       READ(77,3) (epgVr(I), I = 1, IMAX2)
+       READ(77,3) (epg3(I), I = 1, IMAX2)
+       READ(77,3) (Vr3(I), I = 1, IMAX2)
+       READ(77,3) (epg2Vr(I), I = 1, IMAX2)
+       READ(77,3) (epgVr2(I), I = 1, IMAX2)
+       READ(77,3) (epg4(I), I = 1, IMAX2)
+       READ(77,3) (Vr4(I), I = 1, IMAX2)
+       READ(77,3) (epg3Vr(I), I = 1, IMAX2)
+       READ(77,3) (epgVr3(I), I = 1, IMAX2)
+       READ(77,3) (epg2Vr2(I), I = 1, IMAX2)
+       READ(77,3) (epg5(I), I = 1, IMAX2)
+       READ(77,3) (Vr5(I), I = 1, IMAX2)
+       READ(77,3) (epg4Vr(I), I = 1, IMAX2)
+       READ(77,3) (epgVr4(I), I = 1, IMAX2)
+       READ(77,3) (epg3Vr2(I), I = 1, IMAX2)
+       READ(77,3) (epg2Vr3(I), I = 1, IMAX2)
+       READ(77,3) (epg6(I), I = 1, IMAX2)
+       READ(77,3) (Vr6(I), I = 1, IMAX2)
+       READ(77,3) (epg5Vr(I), I = 1, IMAX2)
+       READ(77,3) (epgVr5(I), I = 1, IMAX2)
+       READ(77,3) (epg4Vr2(I), I = 1, IMAX2)
+       READ(77,3) (epg2Vr4(I), I = 1, IMAX2)
+       READ(77,3) (epg3Vr3(I), I = 1, IMAX2)
+       READ(77,3) (epg7(I), I = 1, IMAX2)
+       READ(77,3) (Vr7(I), I = 1, IMAX2)
+       READ(77,3) (epg6Vr(I), I = 1, IMAX2)
+       READ(77,3) (epgVr6(I), I = 1, IMAX2)
+       READ(77,3) (epg5Vr2(I), I = 1, IMAX2)
+       READ(77,3) (epg2Vr5(I), I = 1, IMAX2)
+       READ(77,3) (epg4Vr3(I), I = 1, IMAX2)
+       READ(77,3) (epg3Vr4(I), I = 1, IMAX2)
+	
+ 3     FORMAT(83(E13.7,1X))
+      close(unit = 81)
+      close(unit = 80)
+      close(unit = 79)
+      close(unit = 78)
+      close(unit = 77)
+!      close(unit = 71)
+!
+      RETURN 
+      END SUBROUTINE USR0 
