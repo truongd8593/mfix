@@ -1,4 +1,4 @@
-#!/bin/bsh -f
+i#!/bin/bsh -f
 #
 # POST_MFIX script file for executing 'make'
 # M. Syamlal/P.Nicoletti                   9-27-95
@@ -15,8 +15,8 @@
     set `uname -s` ; opsys=$1
     set `uname -p` ; proctyp=$1
 
-echo "IMPORTANT: execute this makefile by typing \"sh make_post\" "
-echo
+echo "IMPORTANT: execute this makefile by typing \"sh make_post\""
+
 #------------------------------------------------------------------------
 #  Check if the system is a Linux system, if yes then ask the user which 
 #  compiler to use    
@@ -55,11 +55,11 @@ echo
                ;;
              y|Y )
                echo " "
-               ;;
+	       echo "Portland Group Linux Fortran Compiler selected"
+               opsys="Linux_64_pgi"
+	       ;;
              *)
                echo " "
-               echo "Portland Group Linux Fortran Compiler selected"
-               opsys="Linux_64_pgi"
                ;;
              esac
 
