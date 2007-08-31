@@ -164,11 +164,6 @@
           M = PIJK(NP,5)
           PART_IJK = PINC(IJK)
           
-          IF(DIMN.EQ.2) THEN
-             OVOL = ONE/(VOL(IJK)*DZ(K))
-          ELSE
-             OVOL = ONE/VOL(IJK)
-          END IF
           OVOL = ONE/VOL(IJK)
           PCELL(1) = I-1
           PCELL(2) = J-1
@@ -335,13 +330,7 @@
           
           DO KK = 1, PARTICLES
              IJK = PIJK(KK,4)
-             K = PIJK(KK,3)
              MM = PIJK(KK,5)
-             IF(DIMN.EQ.2) THEN
-                OVOL = ONE/(VOL(IJK)*DZ(K))
-             ELSE
-                OVOL = ONE/VOL(IJK)
-             END IF
              OVOL = ONE/VOL(IJK)
              FC(KK,:)=FC(KK,:)+ (SOLID_DRAG(IJK,MM,:) +&
                   P_FORCE(IJK,:)*OVOL)*PVOL(KK)
