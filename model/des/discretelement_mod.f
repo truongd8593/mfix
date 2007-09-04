@@ -139,6 +139,8 @@
 !
 !   Print DES Data
       LOGICAL PRINT_DES_DATA 
+
+      DOUBLE PRECISION :: MIN_RADIUS, MAX_RADIUS
 !
 !
 !   Allocatable arrays
