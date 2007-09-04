@@ -207,7 +207,7 @@
          J = J_OF(IJK)
          EP_G(IJK) = ONE   
          DO M = 1, MMAX
-            IF(PINC(IJK).GT.0) THEN
+            IF(PINC(IJK).GT.0.AND.SOLVOLINC(IJK,M).GT.0) THEN
                OSOLVOL = ONE/SOLVOLINC(IJK,M)   
                DES_U_s(IJK,M) = DES_U_s(IJK,M)*OSOLVOL
                DES_V_s(IJK,M) = DES_V_s(IJK,M)*OSOLVOL

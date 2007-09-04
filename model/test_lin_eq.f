@@ -49,7 +49,7 @@
       DOUBLE PRECISION, DIMENSION(DIMENSION_3,-3:3) :: Am 
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: Bm, X_ACT, X_SOL 
       DOUBLE PRECISION :: ERR, ERRMAX, ERRSUM, XSUM 
-      CHARACTER, DIMENSION(7) :: LINE*80 
+      CHARACTER, DIMENSION(8) :: LINE*80 
 ! 
 !                      linear equation solver method and iterations 
       INTEGER          LEQMETHOD, LEQIT 

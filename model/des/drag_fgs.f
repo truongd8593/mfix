@@ -83,6 +83,7 @@
              UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
              VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
            DO M = 1, MMAX
+             IF(EP_S(IJK,M).GT.ZERO) THEN
              SOLID_DRAG(IJK,M,1) = -F_GS(IJK,M)*&
                                          (DES_U_S(IJK,M)-UGC)
              SOLID_DRAG(IJK,M,2) = -F_GS(IJK,M)*&
@@ -94,6 +95,7 @@
              END IF
              OEPS = ONE/EP_S(IJK,M)
              SOLID_DRAG(IJK,M,:) = SOLID_DRAG(IJK,M,:)*OEPS
+             ENDIF
            END DO     
                  
             IF(I.EQ.IMIN1) THEN
