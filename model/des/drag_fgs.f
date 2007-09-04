@@ -83,20 +83,20 @@
              UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
              VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
            DO M = 1, MMAX
-             IF(EP_S(IJK,M).GT.ZERO) THEN
-             SOLID_DRAG(IJK,M,1) = -F_GS(IJK,M)*&
-                                         (DES_U_S(IJK,M)-UGC)
-             SOLID_DRAG(IJK,M,2) = -F_GS(IJK,M)*&
-                                         (DES_V_S(IJK,M)-VGC)
-             IF(DIMN.EQ.3) THEN
-                WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
-                SOLID_DRAG(IJK,M,3) = -F_GS(IJK,M)*&
-                                         (DES_W_S(IJK,M)-WGC)
-             END IF
-             OEPS = ONE/EP_S(IJK,M)
-             SOLID_DRAG(IJK,M,:) = SOLID_DRAG(IJK,M,:)*OEPS
-             ENDIF
-           END DO     
+              IF(EP_S(IJK,M).GT.ZERO) THEN
+                 SOLID_DRAG(IJK,M,1) = -F_GS(IJK,M)*&
+                      (DES_U_S(IJK,M)-UGC)
+                 SOLID_DRAG(IJK,M,2) = -F_GS(IJK,M)*&
+                      (DES_V_S(IJK,M)-VGC)
+                 IF(DIMN.EQ.3) THEN
+                    WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
+                    SOLID_DRAG(IJK,M,3) = -F_GS(IJK,M)*&
+                         (DES_W_S(IJK,M)-WGC)
+                 END IF
+                 OEPS = ONE/EP_S(IJK,M)
+                 SOLID_DRAG(IJK,M,:) = SOLID_DRAG(IJK,M,:)*OEPS
+              END IF
+           END DO
                  
             IF(I.EQ.IMIN1) THEN
                TEMP2 = (P_G(IJK)+P_G(IPJK))/2
@@ -164,6 +164,7 @@
 
           IJK = PIJK(NP, 4)
           M = PIJK(NP,5)
+          
           PART_IJK = PINC(IJK)
           
           OVOL = ONE/VOL(IJK)
@@ -179,13 +180,6 @@
                    II = IB+I-1
                    JJ = JB+J-1
                    KK = KB+K-1
-                   IF((XE(II)-XLENGTH).gt.small_number) then 
-                      Print*,'XE greater than XLEN', NP, XE(II), XLENGTH
-                      Print*, 'PCELL = ',PCELL(:)+1
-                      write(*,*)  ib,ie
-                      write(*,*) jb,je
-                      write(*,*)  kb,ke
-                      endif
                    GSTENCIL(I,J,K,1) = XE(II)
                    GSTENCIL(I,J,K,2) = YN(JJ)
                    GSTENCIL(I,J,K,3) = ZT(KK)*(DIMN-2) + DZ(1)*(3-DIMN)
@@ -253,7 +247,6 @@
                   &,DES_POS_NEW(np, 1:3),vel_fp(np,1:3),onew&
                   &,interp_scheme,weightp)   
           end if
-          !Print*,'Np = ', PCELL(:), vel_fp(np,1:dimn)
           
           F_pf = zero
           DO k = 1, (3-dimn)*1+(dimn-2)*onew
@@ -264,26 +257,36 @@
              end DO
           end DO
           
+          
           !=========================================================
           !NOW CALCULATE THE PARTICLE CENTERED DRAG COEFFICIENT
           !=========================================================
-
-          !call des_drag_gs(NP)
           
-          OEPS = ONE/EP_S(PIJK(NP,4),M)
-          F_gp(NP) = F_GS(PIJK(NP,4),M) 
-          if(CALC_FC) then
+          !CALL DES_DRAG_GS(NP)         
+          
+          F_gp(NP) = F_GS(PIJK(NP,4),M)
+
+          IF(EP_S(PIJK(NP,4),M).GT.ZERO) THEN
+             
+             OEPS = ONE/EP_S(PIJK(NP,4),M)
+             
+             F_gp(NP) = F_gp(NP)*OEPS*PVOL(NP)
+          END IF
+          
+          IF(CALC_FC) then
              OVOL = (ONE/VOL(PIJK(NP,4)))
              
-             D_FORCE(1:dimn) = (f_gp(np)*(vel_fp(np,1:dimn)-des_vel_new(np,1:dimn)))*OEPS
              
-             FC(NP,:) = FC(NP,:) + (D_FORCE(:) + P_FORCE(PIJK(NP,4),:)*OVOL)*PVOL(NP)
+             D_FORCE(1:dimn) = (f_gp(np)*(vel_fp(np,1:dimn)-des_vel_new(np,1:dimn)))
              
-          endif
+             FC(NP,:) = FC(NP,:) + D_FORCE(:)
+             FC(NP,:) = FC(NP,:) +  (P_FORCE(PIJK(NP,4),:)*OVOL)*PVOL(NP)
+             
+          ENDIF
           
-          if(callfromdes) goto 300 
-          f_gp(NP) = f_gp(NP)/(PART_IJK)
-         
+          IF(CALLFROMDES) GOTO 300 
+          
+             
           DO k = 1, (3-dimn)*1+(dimn-2)*onew
              DO j = 1, onew
                 DO i = 1, onew
@@ -309,12 +312,14 @@
 
                    OVOL = ONE/VCELL
                    !Print*,'VCELL = ', II,JJ,KK, VCELL
-                   drag_am(ii,jj,kk,M) = drag_am(ii,jj,kk,M) + f_gp(np)  &
+                   drag_am(ii,jj,kk,M) = drag_am(ii,jj,kk,M) + F_gp(np)  &
                    &*     weightp(i,j,k)*OVOL
                    
                    
-                   drag_bm(ii,jj,kk, :,M) = drag_bm(ii,jj,kk,:,M) + f_gp(np) *  &
-                   & ( des_vel_new(np,:)) * weightp(i,j,k)*OVOL
+                   drag_bm(ii,jj,kk, :,M) = drag_bm(ii,jj,kk,:,M) +&
+                        & F_gp(np) *( des_vel_new(np,:)) * weightp(i&
+                        &,j,k)*OVOL  
+                   
                    wtbar(ii,jj,kk,M) = wtbar(ii,jj,kk,M) + weightp(i,j,k)
                 enddo
              enddo
@@ -332,10 +337,12 @@
           
           DO KK = 1, PARTICLES
              IJK = PIJK(KK,4)
+             K = PIJK(KK,3)
              MM = PIJK(KK,5)
              OVOL = ONE/VOL(IJK)
-             FC(KK,:)=FC(KK,:)+ (SOLID_DRAG(IJK,MM,:) +&
-                  P_FORCE(IJK,:)*OVOL)*PVOL(KK)
+             FC(KK,:)=FC(KK,:)+ (SOLID_DRAG(IJK,MM,:)*PVOL(KK)) 
+             FC(KK,:) = FC(KK,:) + (P_FORCE(IJK,:)*OVOL)*PVOL(KK) 
+
           END DO
        end if
 
@@ -518,7 +525,7 @@
 
       DOUBLE PRECISION F_gstmp
 
-      double precision:: eps, diameter
+      DOUBLE PRECISION:: EPS, DIAMETER
 
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -526,14 +533,14 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !     
-      C_DSXRET(RE) = 24D0*(1 + 0.15D0*RE**0.687D0)/RE ! Tsuji drag
+      C_DSXRET(RE) = 24D0*(1 + 0.15D0*RE**0.687D0)/(RE+SMALL_NUMBER) ! Tsuji drag
       C_DSXRE(RE) = (0.63D0*SQRT(RE) + 4.8D0)**2 ! Dalla Valle (1948) 
 !     C_DsxRe (Re) = 24.D0 * (1.D0 + 0.173D0 * Re**0.657D0)      ! Turton and
 !     &          + 0.413D0 * Re**2.09D0 / (Re**1.09D0 + 16300.D0) ! Levenspiel (1986)
 !     
 !     
-!     
-      !f_gp(KK) = zero 
+!    
+!	PRINT*,'IN CALC_DRAG, DRAG_TYPE = ', DRAG_TYPE 
       IJK = PIJK(KK,4)
       M = PIJK(KK,5)
       EPS  = EP_S(IJK, M)
@@ -568,7 +575,7 @@
 
 !     Reynolds number
       if(Mu > ZERO)then
-         RE = diameter * VREL*RO_G(IJK)/Mu + SMALL_NUMBER
+         RE = diameter * VREL*RO_G(IJK)/Mu 
          
 !     Note the presence of gas volume fraction in ROP_G
          RE_G = (diameter * VREL*ROP_G(IJK))/Mu
@@ -583,22 +590,26 @@
          RE_kh = LARGE_NUMBER
       endif
 ! f_gp() =  single particle drag excluding vector(v_g - v_p)
-      IF(TRIM(DRAG_TYPE).EQ.'SYAM_OBRIEN') then
-         
-         IF(TSUJI_DRAG) THEN
-            IF (EP_s(IJK,M) <= ZERO) THEN 
-               F_gstmp = ZERO 
-            ELSE IF (EP_G(IJK) == ZERO) THEN 
-               F_gstmp = ZERO 
-            ELSE 
-               !write(*,*)' EP_G = ', EP_G(IJK),IJK,EAST_OF(IJK), WEST_OF(IJK), NORTH_OF(IJK), SOUTH_OF(IJK)
-               A = EP_G(IJK)**4.14D0 
-               IF (EP_G(IJK) <= 0.85D0) THEN 
-                  B = drag_c1*EP_G(IJK)**1.28D0 
+!     
+
+!---------------Begin Syamlal and O'Brien ---------------------------
+!     
+!     Calculate V_rm
+!     
+            IF(TRIM(DRAG_TYPE).EQ.'SYAM_OBRIEN') then
+
+               IF (EP_s(IJK,M) <= ZERO) THEN 
+                  F_gstmp = ZERO 
+               ELSE IF (EP_G(IJK) == ZERO) THEN 
+                  F_gstmp = ZERO 
                ELSE 
-                  B = EP_G(IJK)**drag_d1
-               ENDIF
-               V_RM=HALF*(A-0.06D0*RE+SQRT(3.6D-3*RE*RE+0.12D0*RE*(2.D0*B-A)+A*A)) 
+                  A = EP_G(IJK)**4.14D0 
+                  IF (EP_G(IJK) <= 0.85D0) THEN 
+                     B = drag_c1*EP_G(IJK)**1.28D0 
+                  ELSE 
+                     B = EP_G(IJK)**drag_d1
+                  ENDIF 
+                  V_RM=HALF*(A-0.06D0*RE+SQRT(3.6D-3*RE*RE+0.12D0*RE*(2.D0*B-A)+A*A)) 
 !------------------Begin cluster correction --------------------------
 !     uncomment the following four lines and comment the above line V_RM=... 
 !     V_RM=HALF*(A-0.06D0*RE+SQRT(3.6D-3*RE*RE+0.12D0*RE*(2.D0*B-A)+A*A)) & 
@@ -609,27 +620,27 @@
 !     
 !     Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
 !     
-               IF(TSUJI_DRAG) THEN
-                  IF(EP_G(IJK).LE.0.8D0) THEN
-                     F_gstmp = (Mu*EP_S(IJK,M)/(diameter**2))*&
-                          (150D0*(EP_S(IJK,M)/EP_G(IJK)) + 1.75D0*RE)
-                  ELSE IF(EP_G(IJK).GT.0.8D0) THEN
-                     IF(RE*EP_G(IJK).GT.1000D0) THEN
-                        F_gstmp = 0.75D0*0.43D0*Mu*EP_S(IJK,M)* &
-                             RE/(diameter**2 *EP_G(IJK)**1.7D0)
-                     ELSE IF(RE*EP_G(IJK).LE.1000D0) THEN
-                        F_gstmp = 0.75D0*C_DSXRET(RE*EP_G(IJK))*Mu*EP_S(IJK,M)*&
-                        RE/(diameter**2 *EP_G(IJK)**1.7D0)
-                     END IF
-                  END IF
-               ELSE IF(MODEL_B) THEN 
-                  F_gstmp = 0.75D0*Mu*EP_S(IJK,M)*C_DSXRE(RE/V_RM)/(&
-                  V_RM*diameter*diameter) 
-               ELSE
-                  F_gstmp = 0.75D0*Mu*EP_S(IJK,M)*EP_G(IJK)*C_DSXRE(RE&
-                  /V_RM)/(V_RM*diameter*diameter) 
-               ENDIF
-            ENDIF
+                  IF(TSUJI_DRAG) THEN
+                     IF(EP_G(IJK).LE.0.8D0) THEN
+                        F_gstmp = (Mu*EP_S(IJK,M)/(DIAMETER**2))*&
+                        (150D0*(EP_S(IJK,M)/EP_G(IJK)) + 1.75D0*RE)
+                     ELSE IF(EP_G(IJK).GT.0.8D0) THEN
+                        IF(RE*EP_G(IJK).GT.1000D0) THEN
+                           F_gstmp = 0.75D0*0.43D0*Mu*EP_S(IJK,M)*RE/(DIAMETER**2 *&
+                           EP_G(IJK)**1.7D0)
+                        ELSE IF(RE*EP_G(IJK).LE.1000D0) THEN
+                           F_gstmp = 0.75D0*C_DSXRET(RE*EP_G(IJK))*Mu*EP_S(IJK,M)*&
+                           RE/(DIAMETER**2 *EP_G(IJK)**1.7D0)
+                        END IF
+                     END IF 
+                  ELSE IF(MODEL_B) THEN 
+                     F_gstmp = 0.75D0*Mu*EP_S(IJK,M)*C_DSXRE(RE/V_RM)/(&
+                     V_RM*DIAMETER*DIAMETER) 
+                  ELSE
+                     F_gstmp = 0.75D0*Mu*EP_S(IJK,M)*EP_G(IJK)*C_DSXRE(RE&
+                     /V_RM)/(V_RM*DIAMETER*DIAMETER) 
+                  ENDIF 
+               ENDIF 
 !---------------End Syamlal and O'Brien ---------------------------
 !     
 !--------------------------Begin Gidaspow --------------------------
@@ -791,8 +802,20 @@
             ELSE
                F_gstmp = DgA * EP_s(IJK, M)
             ENDIF
-!     
-                     ELSE
+                                !     
+            
+            ELSE IF((DRAG_TYPE).EQ.'DILUTE_CASE') then
+               C_d =  C_DSXRET(RE)
+               !DgA = (0.75D0 * C_d * VREL * RO_g(IJK))/diameter
+               DgA = (0.75D0 * C_d*VREL * RO_g(IJK))/(diameter)
+               !DgA = DgA*(PVOL(KK)/VOL(IJK))
+!              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+               !PRINT*, 'DGA = ', DGA, RE, VREL, RO_g(IJK), PVOL(KK), VOL(IJK)
+               IF(RE.GT.1.d0) PRINT*, 'Reynolds becoming more than one for dilue case: RE = ', RE, ' PARICLE ID = ', KK
+               F_gstmp = DgA * EP_s(IJK, M)
+               
+!--------------------------End Dilue case --------------------------
+         ELSE
             CALL START_LOG 
             !IF(.not.DMP_LOG)call open_pe_log(ier)
             if(mype == pe_io) WRITE (*, '(A,A)') 'Unknown DRAG_TYPE: ', DRAG_TYPE
@@ -801,10 +824,7 @@
             call mfix_exit(myPE)  
          ENDIF
          
-         f_gp(kk) =(ONE - UR_F_gs) * F_gp(kk) + UR_F_gs * F_gstmp
-         
-      else
-         f_gp(kk) = zero
-      endif
+         F_gp(kk) =(ONE - UR_F_gs) * F_gp(KK) + UR_F_gs * F_gstmp
+         !F_gs(IJK, M) = F_gs(IJK,M) + F_gp(KK)
     end SUBROUTINE DES_DRAG_GS
   
