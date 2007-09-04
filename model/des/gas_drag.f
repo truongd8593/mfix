@@ -94,8 +94,8 @@
                      
                      VCELL = VOL(IJK)
                      
-                     tmp_A = tmp_A*VCELL*VCELL
-                     tmp_B = tmp_B*VCELL*VCELL
+                     tmp_A = tmp_A*VCELL
+                     tmp_B = tmp_B*VCELL
                      
                      else 
                         USFCM = AVG_X(DES_U_S(IJK,M),DES_U_S(EAST_OF(IJK),M),I_OF(IJK))
@@ -136,8 +136,8 @@
                  VCELL = VOL(IJK)
 
                                       
-                 tmp_A = tmp_A*VCELL*VCELL
-                 tmp_B = tmp_B*VCELL*VCELL
+                 tmp_A = tmp_A*VCELL
+                 tmp_B = tmp_B*VCELL
                  
                  else 
                     I = I_OF(IJK)
@@ -178,8 +178,8 @@
                      
                      VCELL = VOL(IJK)
                                                            
-                     tmp_A = tmp_A*VCELL*VCELL
-                     tmp_B = tmp_B*VCELL*VCELL
+                     tmp_A = tmp_A*VCELL
+                     tmp_B = tmp_B*VCELL
 
                   else 
                      WSFCM = AVG_Z(DES_W_S(IJK,M),DES_W_S(TOP_OF(IJK),M),K_OF(IJK))
