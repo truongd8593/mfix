@@ -41,15 +41,19 @@
       
       FOUR_BY_THREE = 4.0d0/3.0d0
       MINMASS = LARGE_NUMBER
-      
+      MAX_RADIUS = ZERO
+      MIN_RADIUS = LARGE_NUMBER
       DO L = 1, PARTICLES
          RAD2 = DES_RADIUS(L)**2
          PVOL(L) = FOUR_BY_THREE*Pi*RAD2*DES_RADIUS(L)
          PMASS(L) = PVOL(L)*RO_Sol(L) 
          OMOI(L) = 2.5d0/(PMASS(L)*RAD2) !one over MOI
+         MAX_RADIUS = MAX(MAX_RADIUS, DES_RADIUS(L))
+         MIN_RADIUS = MIN(MIN_RADIUS, DES_RADIUS(L))
          IF(PMASS(L).LT.MINMASS) MINMASS = PMASS(L) 
       END DO
-
+      
+      
       RADIUS_EQ = DES_RADIUS(1)*1.05D0
       NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO * RADIUS_EQ
 
@@ -81,6 +85,4 @@
 
       RETURN
       END SUBROUTINE CFASSIGN
-
-
-
+      
