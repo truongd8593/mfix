@@ -68,24 +68,29 @@
 !
 !   Particle attributes
 !     Radius, density, mass, moment of inertia      
+      IF(DES_INTERP_ON) THEN
+         ALLOCATE(DRAG_AM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), MMAX))
+         ALLOCATE(DRAG_BM(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1), DIMN, MMAX))
+         ALLOCATE(WTBAR(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1),  MMAX))
+         ALLOCATE(VEL_FP(NPARTICLES,3))
+         ALLOCATE(F_gp(NPARTICLES ))  
+         F_gp(1:NPARTICLES)  = ZERO
+      ENDIF 
+      !=======END OF INTERPOLATION RELATED ARRAYS==================!
 
-      ALLOCATE(DRAG_AM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), MMAX))
-      ALLOCATE(DRAG_BM(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1), DIMN, MMAX))
-      ALLOCATE(WTBAR(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1),  MMAX))
-      ALLOCATE(VEL_FP(NPARTICLES,3))
-      ALLOCATE(F_gp(NPARTICLES ))  
-      F_gp(1:NPARTICLES)  = ZERO
       ALLOCATE(bed_height(MMAX))
 
       
-      ALLOCATE(pic(IMAX2,JMAX2,KMAX2))
+      IF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
+         ALLOCATE(pic(IMAX2,JMAX2,KMAX2))
+         
       DO 10 k  = 1,KMAX2!MAX(KMAX1-1,1)
       DO 10 j  = 1,JMAX2
       DO 10 i  = 1,IMAX2
         NULLIFY(pic(i,j,k)%p)
       10 CONTINUE
+      ENDIF
          
-       !=======END OF INTERPOLATION RELATED ARRAYS==================!
       write(*,*) 'Nparticles = ', nparticles, particles, particles_factor, nwalls
 
       Allocate(  DES_RADIUS (NPARTICLES) )
