@@ -39,6 +39,9 @@
 
   NO_K     		= .TRUE. 		!2D, no k direction
 
+  DZ(1)                 = 0.4d0                 !Define DZ to be particle
+                                                !for 2D DEM cases
+
   GRAVITY = 980
                                                                              
 ! Gas-phase Section                                                             
@@ -134,6 +137,7 @@ ETA_N_W = 22        ! Normal particle-wall damping coefficient
 ETA_T_W = 22        ! Tangential    "         "        "
 MEW_W = 0.1         ! Particle-wall friction coefficient
 DES_NEIGHBOR_SEARCH = 2 ! Particle neighbor search method; 1=n-square; 2=quadtree; 3=octree
+NEIGHBOR_SEARCH_N = 1
 DTSOLID_FACTOR = 0.1D0
 P_TIME = 10.0
 
