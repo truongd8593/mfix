@@ -95,10 +95,11 @@
 !-----------------------------------------------
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
-!     
+!
 !     Indices 
       INTEGER          I,  IJK, IMJK, IJMK, IJKM, Im
 !     
+!
 !     Cell center value of U_sm 
       DOUBLE PRECISION USCM 
 !     
@@ -147,7 +148,11 @@
       DOUBLE PRECISION WenYu
       DOUBLE PRECISION PHI_gs
 ! --- end Gidaspow switch function variables
-
+!
+! --- Correction factors for implementing polydisperse drag model 
+!     proposed by van der Hoef et al. (2005)
+      DOUBLE PRECISION FA_cor, FB_cor, FA, FB, tmp_sum, tmp_fac
+!
 !     
 !     Gas Laminar viscosity redefined here to set
 !     viscosity at pressure boundaries
@@ -298,7 +303,7 @@
                      B = drag_c1*EP_G(IJK)**1.28D0 
                   ELSE 
                      B = EP_G(IJK)**drag_d1
-                  ENDIF 
+                  ENDIF
                   V_RM=HALF*(A-0.06D0*RE+SQRT(3.6D-3*RE*RE+0.12D0*RE*(2.D0*B-A)+A*A)) 
 !------------------Begin cluster correction --------------------------
 !     uncomment the following four lines and comment the above line V_RM=... 
@@ -357,6 +362,78 @@
                ENDIF
                
 !--------------------------End Gidaspow --------------------------
+!
+!--------------------------Begin GIDASPOW_PCF --------------------
+!    Additional modifications to apply the polydisperse correction 
+!    factor (PCF) proposed by Beestra et al. (2007)    09-26-07
+!
+            ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW_PCF') THEN
+!
+               phis = ZERO
+	       DO IM = 1, MMAX
+	         phis = phis + EP_S(IJK,IM)
+	       ENDDO 
+               D_p_av = ZERO
+               tmp_sum = ZERO
+	       tmp_fac = ZERO
+	       DO IM = 1, MMAX
+                 IF (phis .GT. ZERO) THEN
+                   tmp_fac = EP_S(IJK,Im)/phis
+                   tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
+                 ELSE
+                   tmp_sum = tmp_sum + ONE/ D_p(IJK,Im) ! not important, but will avoid NaN's in empty cells
+		 ENDIF
+               ENDDO 
+               D_p_av = ONE / tmp_sum
+
+               Y_i = D_p(IJK,M)/D_p_av
+
+               IF (Mu > ZERO) THEN
+                    RE_G = D_p_av*VREL*ROP_G(IJK)/Mu
+               ELSE
+                    RE_G = LARGE_NUMBER 
+               ENDIF
+!
+               IF(EP_g(IJK) .LE. 0.8D0) THEN
+                    DgA = 150D0 * (ONE - EP_g(IJK)) * Mu &
+                         / ( EP_g(IJK) * D_p_av**2 ) &
+                         + 1.75D0 * RO_g(IJK) * VREL / D_p_av
+               ELSE
+                    IF(RE_G .LE. 1000D0)THEN
+                         C_d = (24.D0/(RE_G+SMALL_NUMBER)) * (ONE + 0.15D0 * RE_G**0.687D0)
+                    ELSE
+                         C_d = 0.44D0
+                    ENDIF
+                    DgA = 0.75D0 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65D0) &
+                         /D_p_av 
+               ENDIF
+
+
+               ! see the associated erratum by Beestra et al. (2007) :
+               FA_cor = Y_i 
+               IF (M .EQ. 1) THEN
+                    FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2) 
+               ELSE
+                    FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2 + 0.064d0*EP_g(IJK)*Y_i**3) 
+               ENDIF
+
+               FA = ONE/(Y_i*Y_i) * DgA * FA_cor 
+               FB = ONE/(Y_i*Y_i) * DgA * FB_cor 
+
+               IF (RE_G .EQ. ZERO) THEN
+                    FA = ZERO
+                    FB = ZERO
+               ENDIF
+
+!              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+               IF(Model_B)THEN
+                    F_gstmp = FB * EP_s(IJK, M)/EP_g(IJK)
+               ELSE
+                    F_gstmp = FA * EP_s(IJK, M)
+               ENDIF
+!
+!              
+!--------------------------End GIDASPOW_PCF ----------------------
 !     
 !-----------------------Begin Gidaspow_blend ---------------------
             ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW_BLEND') then
@@ -385,8 +462,85 @@
                ELSE
                   F_gstmp = DgA * EP_s(IJK, M)
                ENDIF
-               
+!
 !-----------------------End Gidaspow_blend -----------------------
+!     
+!----------------------Begin Gidaspow_BLEND_PCF ------------------
+!    Additional modifications to apply the polydisperse correction 
+!    factor (PCF) proposed by Beestra et al. (2007)    09-26-07
+!
+            ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW_BLEND_PCF') THEN
+!
+               phis = ZERO
+	       DO IM = 1, MMAX
+	         phis = phis + EP_S(IJK,IM)
+	       ENDDO 
+               D_p_av = ZERO
+               tmp_sum = ZERO
+	       tmp_fac = ZERO
+	       DO IM = 1, MMAX
+                 IF (phis .GT. ZERO) THEN
+                   tmp_fac = EP_S(IJK,Im)/phis
+                   tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
+                 ELSE
+                   tmp_sum = tmp_sum + ONE/ D_p(IJK,Im) ! not important, but will avoid NaN's in empty cells
+		 ENDIF
+               ENDDO 
+               D_p_av = ONE / tmp_sum
+
+               Y_i = D_p(IJK,M)/D_p_av
+
+               IF (Mu > ZERO) THEN
+                    RE_G = D_p_av*VREL*ROP_G(IJK)/Mu
+               ELSE
+                    RE_G = LARGE_NUMBER
+               ENDIF
+!
+!              Dense phase - EP_g < 0.8
+               Ergun = 150D0 * (ONE - EP_g(IJK)) * Mu &
+                    / ( EP_g(IJK) * D_p_av**2 ) &
+                    + 1.75D0 * RO_g(IJK) * VREL / D_p_av
+!
+!              Dilute phase - EP_g >= 0.8
+               IF(RE_G .LE. 1000D0)THEN
+                    C_d = (24.D0/(RE_G+SMALL_NUMBER)) * (ONE + 0.15D0 * RE_G**0.687D0)
+               ELSE
+                    C_d = 0.44D0
+               ENDIF
+               WenYu = 0.75D0 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65D0) &
+                    /D_p_av
+!     
+!              Switch function
+               PHI_gs = ATAN(150D0 * 1.75D0 * (EP_g(IJK) - 0.8D0)) / PI + 0.5D0
+!
+!              Blend the models
+               DgA = (1D0 - PHI_gs) * Ergun + PHI_gs * WenYu
+!               
+               ! see the associated erratum by Beestra et al. (2007) :
+               FA_cor = Y_i 
+               IF (M .EQ. 1) THEN
+                    FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2) 
+               ELSE
+                    FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2 + 0.064d0*EP_g(IJK)*Y_i**3) 
+               ENDIF
+
+               FA = ONE/(Y_i*Y_i) * DgA * FA_cor
+               FB = ONE/(Y_i*Y_i) * DgA * FB_cor 
+
+               IF (RE_G .EQ. ZERO) THEN
+                    FA = ZERO
+                    FB = ZERO
+               ENDIF
+
+!              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+               IF(Model_B)THEN
+                    F_gstmp = FB * EP_s(IJK, M)/EP_g(IJK)
+               ELSE
+                    F_gstmp = FA * EP_s(IJK, M)
+               ENDIF
+!
+!               
+!---------------------End Gidaspow_BLEND_PCF ---------------------
 !     
 !--------------------------Begin WEN_YU --------------------------
             ELSE IF(TRIM(DRAG_TYPE).EQ.'WEN_YU') then
@@ -395,6 +549,7 @@
                 ELSE
                    C_d = 0.44D0
                 ENDIF
+!
                 DgA = 0.75D0 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65D0) &
                   /D_p(IJK,M)
                
@@ -406,7 +561,73 @@
                ENDIF
                
 !--------------------------End WEN_YU ----------------------------
-!     
+! 
+!--------------------------Begin WEN_YU_PCF ----------------------
+!    Additional modifications to apply the polydisperse correction 
+!    factor (PCF) proposed by Beestra et al. (2007)    09-26-07
+!
+            ELSE IF(TRIM(DRAG_TYPE).EQ.'WEN_YU_PCF') then
+!
+               phis = ZERO
+	       DO IM = 1, MMAX
+	         phis = phis + EP_S(IJK,IM)
+	       ENDDO 
+               D_p_av = ZERO
+               tmp_sum = ZERO
+	       tmp_fac = ZERO
+	       DO IM = 1, MMAX
+                 IF (phis .GT. ZERO) THEN
+                   tmp_fac = EP_S(IJK,Im)/phis
+                   tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
+                 ELSE
+                   tmp_sum = tmp_sum + ONE/ D_p(IJK,Im) ! not important, but will avoid NaN's in empty cells
+		 ENDIF
+               ENDDO 
+               D_p_av = ONE / tmp_sum
+
+               Y_i = D_p(IJK,M)/D_p_av
+
+               IF (Mu > ZERO) THEN
+                    RE_G = D_p_av*VREL*ROP_G(IJK)/Mu
+               ELSE
+                    RE_G = LARGE_NUMBER
+               ENDIF
+!
+               IF(RE_G .LE. 1000D0)THEN
+                    C_d = (24.D0/(RE_G+SMALL_NUMBER)) * (ONE + 0.15D0 * RE_G**0.687D0)
+               ELSE
+                    C_d = 0.44D0
+               ENDIF
+
+               DgA = 0.75D0 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65D0) &
+                    /D_p_av
+
+               ! see the associated erratum by Beestra et al. (2007) :
+               FA_cor = Y_i 
+               IF (M .EQ. 1) THEN
+                    FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2) 
+               ELSE
+                    FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2 + 0.064d0*EP_g(IJK)*Y_i**3) 
+               ENDIF
+
+               FA = ONE/(Y_i*Y_i) * DgA * FA_cor
+               FB = ONE/(Y_i*Y_i) * DgA * FB_cor 
+
+               IF (RE_G .EQ. ZERO) THEN
+                    FA = ZERO
+                    FB = ZERO
+               ENDIF
+
+!              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+               IF(Model_B)THEN
+                    F_gstmp = FB * EP_s(IJK, M)/EP_g(IJK)
+               ELSE
+                    F_gstmp = FA * EP_s(IJK, M)
+               ENDIF
+!
+!              
+!------------------------End WEN_YU_PCF --------------------------
+    
 !--------------------Begin Koch & Hill (2001) --------------------
 !     
 !!!   Added by Clay Sutton (Lehigh University) 7-14-04
@@ -420,118 +641,268 @@
 !!!  Clay's implementation was modified by Sof (01-21-2005)
 !!!  for a report explaining these changes contact sof@fluent.com
 !
-            ELSE IF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL') then
+            ELSE IF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL') THEN
 !     
-              F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
+               F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
 	       
-	      phis = ONE-EP_G(IJK) ! EP_s(IJK,M) for polydisperse systems (sof --> 03-27-2007)
-	      w = EXP(-10.0D0*(0.4D0-phis)/phis)
+               phis = ZERO
+	       DO IM = 1, MMAX
+	         phis = phis + EP_S(IJK,IM) ! this is slightly /= one-ep_g due to round-off
+	       ENDDO 
+               w = EXP(-10.0D0*(0.4D0-phis)/phis)
 	   
-	      IF(phis > 0.01D0 .AND. phis < 0.4D0) THEN
-	        F_0 = (1.0D0-w) *                                           &
-	              (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis    &
-	                *LOG(phis) + 17.14D0*phis) / (1.0D0 + 0.681D0*      &
-	  	        phis - 8.48D0*phis*phis + 8.16D0*phis**3) + w *   &
-			10.0D0*phis/(1.0D0-phis)**3
+               IF(phis > 0.01D0 .AND. phis < 0.4D0) THEN
+                    F_0 = (1.0D0-w) *                                             &
+                         (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis   &
+                         *LOG(phis) + 17.14D0*phis) / (1.0D0 + 0.681D0*           &
+                         phis - 8.48D0*phis*phis + 8.16D0*phis**3) + w *          &
+                         10.0D0*phis/(1.0D0-phis)**3
 	               
-	      ELSE IF(phis >= 0.4D0) THEN
-	        F_0 = 10.0D0*phis/(1.0D0-phis)**3
-	      ENDIF
+               ELSE IF(phis >= 0.4D0) THEN
+                    F_0 = 10.0D0*phis/(1.0D0-phis)**3
+               ENDIF
 	   
-	      IF(phis > 0.01D0 .AND. phis <= 0.1D0) THEN
-	        F_1 = dsqrt(2.0D0/phis) / 40.0D0
-	      ELSE IF(phis > 0.1D0) THEN
-	        F_1 = 0.11D0 + 5.1D-04 * exp(11.6D0*phis)
-	      ENDIF
+               IF(phis > 0.01D0 .AND. phis <= 0.1D0) THEN
+                    F_1 = dsqrt(2.0D0/phis) / 40.0D0
+               ELSE IF(phis > 0.1D0) THEN
+                    F_1 = 0.11D0 + 5.1D-04 * exp(11.6D0*phis)
+               ENDIF
 	   
-	      IF(phis < 0.4D0) THEN
-	        F_2 = (1.0D0-w) *                                           &
-	              (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis    &
-	                *LOG(phis) + 17.89D0*phis) / (1.0D0 + 0.681D0*      &
-	  	        phis - 11.03D0*phis*phis + 15.41D0*phis**3)+ w *  &
-			10.0D0*phis/(1.0D0-phis)**3
+               IF(phis < 0.4D0) THEN
+                    F_2 = (1.0D0-w) *                                            &
+                         (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis  &
+                         *LOG(phis) + 17.89D0*phis) / (1.0D0 + 0.681D0*          &
+                         phis - 11.03D0*phis*phis + 15.41D0*phis**3)+ w *        &
+                         10.0D0*phis/(1.0D0-phis)**3
 	   
-	      ELSE
-	        F_2 = 10.0D0*phis/(1.0D0-phis)**3
-	      ENDIF
+               ELSE
+                    F_2 = 10.0D0*phis/(1.0D0-phis)**3
+               ENDIF
 	   
-	      IF(phis < 0.0953D0) THEN
-	        F_3 = 0.9351D0*phis + 0.03667D0
-	      ELSE
-	        F_3 = 0.0673D0 + 0.212D0*phis +0.0232D0/(1.0-phis)**5
-	      ENDIF
+               IF(phis < 0.0953D0) THEN
+                    F_3 = 0.9351D0*phis + 0.03667D0
+               ELSE
+                    F_3 = 0.0673D0 + 0.212D0*phis +0.0232D0/(1.0-phis)**5
+               ENDIF
 	   
-	      Re_Trans_1 = (F_2 - 1.0D0)/(3.0D0/8.0D0 - F_3)
-	      Re_Trans_2 = (F_3 + dsqrt(F_3*F_3 - 4.0D0*F_1 &
-	                 *(F_0-F_2))) / (2.0D0*F_1)
+               Re_Trans_1 = (F_2 - 1.0D0)/(3.0D0/8.0D0 - F_3)
+               Re_Trans_2 = (F_3 + dsqrt(F_3*F_3 - 4.0D0*F_1 &
+                    *(F_0-F_2))) / (2.0D0*F_1)
 	   
-	      IF(phis <= 0.01D0 .AND. Re_kh <= Re_Trans_1) THEN
-	        F = 1.0D0 + 3.0D0/8.0D0*Re_kh
+               IF(phis <= 0.01D0 .AND. Re_kh <= Re_Trans_1) THEN
+                    F = 1.0D0 + 3.0D0/8.0D0*Re_kh
+               ELSE IF(phis > 0.01D0 .AND. Re_kh <= Re_Trans_2) THEN
+                    F = F_0 + F_1*Re_kh*Re_kh
+               ELSE IF(phis <= 0.01D0 .AND. Re_kh > Re_Trans_1 .OR.         &
+                    phis >  0.01D0 .AND. Re_kh > Re_Trans_2) THEN
+                    F = F_2 + F_3*Re_kh
+               ELSE
+                    F = zero
+               ENDIF
 	   
-	      ELSE IF(phis > 0.01D0 .AND. Re_kh <= Re_Trans_2) THEN
-	        F = F_0 + F_1*Re_kh*Re_kh
-	   
-	  
-	      ELSE IF(phis <= 0.01D0 .AND. Re_kh > Re_Trans_1 .OR.         &
-	           phis >  0.01D0 .AND. Re_kh > Re_Trans_2) THEN
-	        F = F_2 + F_3*Re_kh
-	  
-	      ELSE
-	        F = zero
-	      ENDIF
-	   
-!  This is a check for phis (or eps_(ijk,m)) to be within physical range
-	      IF(phis <= ZERO .OR. phis > ONE) F = zero
-	   
-	      DgA = F * F_STOKES
-!!!   
-!!!   Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
-              IF(Model_B)THEN
-                  F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
-              ELSE
-                  F_gstmp = DgA * EP_s(IJK, M)
-              ENDIF
+!              This is a check for phis (or eps_(ijk,m)) to be within physical range
+               IF(phis <= ZERO .OR. phis > ONE) F = zero
+!
+               DgA = F * F_STOKES
+!   
+!              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+               IF(Model_B)THEN
+                    F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
+               ELSE
+                    F_gstmp = DgA * EP_s(IJK, M)
+               ENDIF
+!               
 !     
 !---------------------End Koch & Hill (2001) ----------------------
+!
+!-------------------- Begin Koch_Hill_PCF -------------------------
+!    Additional modifications to apply the polydisperse correction 
+!    factor (PCF) proposed by Beestra et al. (2007)    09-26-07
+!
+            ELSE IF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL_PCF') THEN
+!     
+               F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
+	       
+               phis = ZERO
+	       DO IM = 1, MMAX
+	         phis = phis + EP_S(IJK,IM)
+	       ENDDO 
+               D_p_av = ZERO
+               tmp_sum = ZERO
+	       tmp_fac = ZERO
+	       DO IM = 1, MMAX
+                 IF (phis .GT. ZERO) THEN
+                   tmp_fac = EP_S(IJK,Im)/phis
+                   tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
+                 ELSE
+                   tmp_sum = tmp_sum + ONE/ D_p(IJK,Im) ! not important, but will avoid NaN's in empty cells
+		 ENDIF
+               ENDDO 
+               D_p_av = ONE / tmp_sum
+
+               Y_i = D_p(IJK,M)/D_p_av
+
+               w = EXP(-10.0D0*(0.4D0-phis)/phis)
+	   
+               IF(phis > 0.01D0 .AND. phis < 0.4D0) THEN
+                    F_0 = (1.0D0-w) *                                             &
+                         (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis   &
+                         *LOG(phis) + 17.14D0*phis) / (1.0D0 + 0.681D0*           &
+                         phis - 8.48D0*phis*phis + 8.16D0*phis**3) + w *          &
+                         10.0D0*phis/(1.0D0-phis)**3
+	               
+               ELSE IF(phis >= 0.4D0) THEN
+                    F_0 = 10.0D0*phis/(1.0D0-phis)**3
+               ENDIF
+	   
+               IF(phis > 0.01D0 .AND. phis <= 0.1D0) THEN
+                    F_1 = dsqrt(2.0D0/phis) / 40.0D0
+               ELSE IF(phis > 0.1D0) THEN
+                    F_1 = 0.11D0 + 5.1D-04 * exp(11.6D0*phis)
+               ENDIF
+	   
+               IF(phis < 0.4D0) THEN
+                    F_2 = (1.0D0-w) *                                            &
+                         (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis  &
+                         *LOG(phis) + 17.89D0*phis) / (1.0D0 + 0.681D0*          &
+                         phis - 11.03D0*phis*phis + 15.41D0*phis**3)+ w *        &
+                         10.0D0*phis/(1.0D0-phis)**3
+	   
+               ELSE
+                    F_2 = 10.0D0*phis/(1.0D0-phis)**3
+               ENDIF
+	   
+               IF(phis < 0.0953D0) THEN
+                    F_3 = 0.9351D0*phis + 0.03667D0
+               ELSE
+                    F_3 = 0.0673D0 + 0.212D0*phis +0.0232D0/(1.0-phis)**5
+               ENDIF
+	   
+               Re_Trans_1 = (F_2 - 1.0D0)/(3.0D0/8.0D0 - F_3)
+               Re_Trans_2 = (F_3 + dsqrt(F_3*F_3 - 4.0D0*F_1 &
+                    *(F_0-F_2))) / (2.0D0*F_1)
+
+               IF (Mu > ZERO) THEN
+!                   Note Reynolds' number for Hill and Koch has an 
+!                   additional factor of 1/2 & ep_g
+                    RE_kh = 0.5D0 * D_p_av * VREL * ROP_G(IJK) / Mu
+               ELSE
+                    RE_kh = LARGE_NUMBER
+               ENDIF
+	   
+               IF(phis <= 0.01D0 .AND. Re_kh <= Re_Trans_1) THEN
+                    F = 1.0D0 + 3.0D0/8.0D0*Re_kh
+               ELSE IF(phis > 0.01D0 .AND. Re_kh <= Re_Trans_2) THEN
+                    F = F_0 + F_1*Re_kh*Re_kh
+               ELSE IF(phis <= 0.01D0 .AND. Re_kh > Re_Trans_1 .OR.         &
+                    phis >  0.01D0 .AND. Re_kh > Re_Trans_2) THEN
+                    F = F_2 + F_3*Re_kh
+               ELSE
+                    F = zero
+               ENDIF
+	   
+!              This is a check for phis (or eps_(ijk,m)) to be within physical range
+               IF(phis <= ZERO .OR. phis > ONE) F = zero
+!
+               ! see the associated erratum by Beestra et al. (2007) :
+               FA_cor = Y_i 
+               IF (M .EQ. 1) THEN
+                    FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2) 
+               ELSE
+                    FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2 + 0.064d0*EP_g(IJK)*Y_i**3) 
+               ENDIF
+
+               FA = FA_cor * F
+               FB = FB_cor * F 
+	      
+               IF(Re_kh == ZERO) THEN
+                    FA = ZERO
+                    FB = ZERO
+               ENDIF
+
+!              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+               IF(Model_B)THEN
+                    DgA = FB * F_STOKES
+                    F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
+               ELSE
+                    DgA = FA * F_STOKES
+                    F_gstmp = DgA * EP_s(IJK, M)
+               ENDIF
+!                
+!     
+!--------------------- End Koch_Hill_PCF --------------------------
+!
+!---- Begin Beetstra, van der Hoef, Kuipers, Chem. Eng. Science 62 (Jan 2007) -----
 ! 
 !
-            ELSE IF(TRIM(DRAG_TYPE).EQ.'BVK') then
-!     
-              F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)**2/D_p(IJK,M)**2 ! eq(9) BVK J. fluid. Mech. 528, 2005
+            ELSE IF(TRIM(DRAG_TYPE).EQ.'BVK') THEN
+!
+!              eq(9) BVK J. fluid. Mech. 528, 2005 (this F_Stokes is /= of Koch_Hill by a factor of ep_g)
+               F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2 
 	       
-	      phis = ONE-EP_g(IJK)
-	      D_p_av = ZERO
-	      DO Im = 1, MMAX
-	         D_p_av = D_p_av + EP_S(IJK,Im)/ (D_p(IJK,Im)*phis)
-	      ENDDO 
-	      IF(D_p_av > ZERO) D_p_av = ONE / D_p_av
+               phis = ZERO
+	       DO IM = 1, MMAX
+	         phis = phis + EP_S(IJK,IM)
+	       ENDDO 
+               D_p_av = ZERO
+               tmp_sum = ZERO
+	       tmp_fac = ZERO
+	       DO IM = 1, MMAX
+                 IF (phis .GT. ZERO) THEN
+                   tmp_fac = EP_S(IJK,Im)/phis
+                   tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
+                 ELSE
+                   tmp_sum = tmp_sum + ONE/ D_p(IJK,Im) ! not important, but will avoid NaN's in empty cells
+		 ENDIF
+               ENDDO 
+               D_p_av = ONE / tmp_sum
 
-	      Y_i = D_p(IJK,M)/D_p_av
+               Y_i = D_p(IJK,M)/D_p_av
+
+               IF (Mu > ZERO) THEN	      
+                    RE = D_p_av*VREL*ROP_G(IJK)/Mu
+               ELSE
+                    RE = LARGE_NUMBER
+               ENDIF
 	      
-	      RE = D_p_av*VREL*ROP_G(IJK)/Mu
+               F = 10d0 * phis / EP_g(IJK)**2 + EP_g(IJK)**2 * (ONE+1.5d0*DSQRT(phis))
+               F = F + 0.413d0*Re/(24d0*EP_g(IJK)**2) * (ONE/EP_G(IJK) + 3d0*EP_G(IJK) &
+                    *phis + 8.4d0/Re**0.343) / (ONE+10**(3d0*phis)/Re**(0.5+2*phis))
+
+               ! see the associated erratum by Beestra et al. (2007) :
+               ! the correction factor differs for model A versus model B
+               ! application of the correction factor for model A is found from
+               ! the correction factor for model B and neglects the Y_i**3 term
+               FA_cor = Y_i
+               IF (M .EQ. 1) THEN
+                    FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2) 
+               ELSE
+                    FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2 + 0.064d0*EP_g(IJK)*Y_i**3) 
+               ENDIF
+            
+               FA = FA_cor * F
+               FB = FB_cor * F 
 	      
-	      F = 10d0 * phis / EP_g(IJK)**2 + EP_g(IJK)**2 * (ONE+1.5d0*DSQRT(phis))
-	      F = F + 0.413d0*Re/(24d0*EP_g(IJK)**2) * (ONE/EP_G(IJK) + 3d0*EP_G(IJK) &
-	          *phis + 8.4d0/Re**0.343) / (ONE+10**(3d0*phis)/Re**(0.5+2*phis))
-	      
-	      F = (EP_g(IJK)*Y_i + phis*Y_i**2 + 0.064d0*EP_g(IJK)*Y_i**3) * F
-	      
-	      IF(Re == ZERO) F = ZERO
-	      DgA = F * F_STOKES
-!!!   
-!!!   Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
-              IF(Model_B)THEN
-                  F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
-              ELSE
-                  F_gstmp = DgA * EP_s(IJK, M)
-              ENDIF
+               IF(Re == ZERO) THEN
+                    FA = ZERO
+                    FB = ZERO
+               ENDIF
+  
+!              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+               IF(Model_B)THEN
+                    DgA = FB * F_STOKES
+                    F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
+               ELSE
+                    DgA = FA * F_STOKES
+                    F_gstmp = DgA * EP_s(IJK, M)
+               ENDIF
 !     
 !---- End Beetstra, van der Hoef, Kuipers, Chem. Eng. Science 62 (Jan 2007) -----
 ! 
             ELSE
               CALL START_LOG 
               IF(.not.DMP_LOG)call open_pe_log(ier)
-	      if(mype == pe_io) WRITE (*, '(A,A)') 'Unknown DRAG_TYPE: ', DRAG_TYPE
+              if(mype == pe_io) WRITE (*, '(A,A)') 'Unknown DRAG_TYPE: ', DRAG_TYPE
               WRITE (UNIT_LOG, '(A,A)') 'Unknown DRAG_TYPE: ', DRAG_TYPE
               CALL END_LOG 
               call mfix_exit(myPE)  
@@ -539,9 +910,9 @@
       
             F_gs(IJK, M) = (ONE - UR_F_gs) * F_gs(IJK, M) + UR_F_gs * F_gstmp
          
-	 ELSE 
+      ELSE 
             F_gs(IJK, M) = ZERO 
-         ENDIF 
+          ENDIF 
 
       END DO
       
