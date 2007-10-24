@@ -667,9 +667,9 @@
                                  B_M(IJK,M) = -BC_WW_S(L,M) 
                               ELSE 
                                  IF (CYLINDRICAL) THEN 
-                                    A_M(IJK,0,M) = -(HALF*(BC_HW_S(L,M)+OX_E(I)&
+                                    A_M(IJK,0,M) = -(HALF*(BC_HW_S(L,M)-OX_E(I)&
                                        )+ODX_E(I)) 
-                                    A_M(IJK,E,M) = -(HALF*(BC_HW_S(L,M)+OX_E(I)&
+                                    A_M(IJK,E,M) = -(HALF*(BC_HW_S(L,M)-OX_E(I)&
                                        )-ODX_E(I)) 
                                  ELSE 
                                     A_M(IJK,0,M)=-(HALF*BC_HW_S(L,M)+ODX_E(I)) 
@@ -981,8 +981,8 @@
                         ENDIF 
                      ENDIF 
                      IF (CYLINDRICAL) THEN 
-                        A_M(IJK,E,M) = -(HALF*(HW + OX_E(I)*GW)-ODX_E(I)*GW) 
-                        A_M(IJK,0,M) = -(HALF*(HW + OX_E(I)*GW)+ODX_E(I)*GW) 
+                        A_M(IJK,E,M) = -(HALF*(HW - OX_E(I)*GW)-ODX_E(I)*GW) 
+                        A_M(IJK,0,M) = -(HALF*(HW - OX_E(I)*GW)+ODX_E(I)*GW) 
                      ELSE 
                         A_M(IJK,E,M) = -(HALF*HW - ODX_E(I)*GW) 
                         A_M(IJK,0,M) = -(HALF*HW + ODX_E(I)*GW) 
