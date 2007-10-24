@@ -148,28 +148,28 @@
             IPJK2 = IP_OF(IJK2) 
             IPJMK2 = JM_OF(IPJK2) 
 !
-            U_S_N = U_SO(IJK2,M) 
+            U_S_N = U_S(IJK2,M) 
 !
-            U_S_S = U_SO(IJK1,M) 
+            U_S_S = U_S(IJK1,M) 
 !
-            U_S_E = AVG_Y(AVG_X_E(U_SO(IJK1,M),U_SO(IPJMK2,M),I_OF(IPJMK2)),&
-               AVG_X_E(U_SO(IJK2,M),U_SO(IPJK2,M),I_OF(IPJK2)),J_OF(IPJMK2)) 
+            U_S_E = AVG_Y(AVG_X_E(U_S(IJK1,M),U_S(IPJMK2,M),I_OF(IPJMK2)),&
+               AVG_X_E(U_S(IJK2,M),U_S(IPJK2,M),I_OF(IPJK2)),J_OF(IPJMK2)) 
 !
-            U_S_W = AVG_Y(AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),&
-               AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),J_OF(IJK1)) 
+            U_S_W = AVG_Y(AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),&
+               AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),J_OF(IJK1)) 
 !
-            U_S_T = AVG_Y(AVG_Z(U_SO(IJK1,M),U_SO(KP_OF(IJK1),M),K_OF(IJK1)),&
-               AVG_Z(U_SO(IJK2,M),U_SO(KP_OF(IJK2),M),K_OF(IJK2)),J_OF(IJK1)) 
+            U_S_T = AVG_Y(AVG_Z(U_S(IJK1,M),U_S(KP_OF(IJK1),M),K_OF(IJK1)),&
+               AVG_Z(U_S(IJK2,M),U_S(KP_OF(IJK2),M),K_OF(IJK2)),J_OF(IJK1)) 
 !
-            U_S_B = AVG_Y(AVG_Z(U_SO(KM_OF(IJK1),M),U_SO(IJK1,M),K_OF(KM_OF(&
-               IJK1))),AVG_Z(U_SO(KM_OF(IJK2),M),U_SO(IJK2,M),K_OF(KM_OF(IJK2))&
+            U_S_B = AVG_Y(AVG_Z(U_S(KM_OF(IJK1),M),U_S(IJK1,M),K_OF(KM_OF(&
+               IJK1))),AVG_Z(U_S(KM_OF(IJK2),M),U_S(IJK2,M),K_OF(KM_OF(IJK2))&
                ),J_OF(IJK1)) 
 !
-            V_S_N = AVG_X(AVG_Y_N(V_SO(IJK1,M),V_SO(IJK2,M)),AVG_Y_N(V_SO(&
-               IPJMK2,M),V_SO(IPJK2,M)),I_OF(IJK2)) 
+            V_S_N = AVG_X(AVG_Y_N(V_S(IJK1,M),V_S(IJK2,M)),AVG_Y_N(V_S(&
+               IPJMK2,M),V_S(IPJK2,M)),I_OF(IJK2)) 
 !
-            V_S_S = AVG_X(AVG_Y_N(V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),AVG_Y_N(&
-               V_SO(JM_OF(IPJMK2),M),V_SO(IPJMK2,M)),I_OF(IJK1)) 
+            V_S_S = AVG_X(AVG_Y_N(V_S(JM_OF(IJK1),M),V_S(IJK1,M)),AVG_Y_N(&
+               V_S(JM_OF(IPJMK2),M),V_S(IPJMK2,M)),I_OF(IJK1)) 
 !
             V_S_E = ZERO 
 !
@@ -179,27 +179,27 @@
 !
             V_S_B = ZERO 
 !
-            W_S_N = AVG_X(AVG_Z_T(W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),AVG_Z_T(&
-               W_SO(KM_OF(IPJK2),M),W_SO(IPJK2,M)),I_OF(IJK2)) 
+            W_S_N = AVG_X(AVG_Z_T(W_S(KM_OF(IJK2),M),W_S(IJK2,M)),AVG_Z_T(&
+               W_S(KM_OF(IPJK2),M),W_S(IPJK2,M)),I_OF(IJK2)) 
 !
-            W_S_S = AVG_X(AVG_Z_T(W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),AVG_Z_T(&
-               W_SO(KM_OF(IPJMK2),M),W_SO(IPJMK2,M)),I_OF(IJK1)) 
+            W_S_S = AVG_X(AVG_Z_T(W_S(KM_OF(IJK1),M),W_S(IJK1,M)),AVG_Z_T(&
+               W_S(KM_OF(IPJMK2),M),W_S(IPJMK2,M)),I_OF(IJK1)) 
 !
-            W_S_E = AVG_Y(AVG_Z_T(W_SO(KM_OF(IPJMK2),M),W_SO(IPJMK2,M)),AVG_Z_T&
-               (W_SO(KM_OF(IPJK2),M),W_SO(IPJK2,M)),J_OF(IPJMK2)) 
+            W_S_E = AVG_Y(AVG_Z_T(W_S(KM_OF(IPJMK2),M),W_S(IPJMK2,M)),AVG_Z_T&
+               (W_S(KM_OF(IPJK2),M),W_S(IPJK2,M)),J_OF(IPJMK2)) 
 !
-            W_S_W = AVG_Y(AVG_Z_T(W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),AVG_Z_T(&
-               W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),J_OF(IJK1)) 
+            W_S_W = AVG_Y(AVG_Z_T(W_S(KM_OF(IJK1),M),W_S(IJK1,M)),AVG_Z_T(&
+               W_S(KM_OF(IJK2),M),W_S(IJK2,M)),J_OF(IJK1)) 
 !
-            W_S_T = AVG_X(AVG_Y(W_SO(IJK1,M),W_SO(IJK2,M),J_OF(IJK1)),AVG_Y(&
-               W_SO(IPJMK2,M),W_SO(IPJK2,M),J_OF(IPJMK2)),I_OF(IJK1)) 
+            W_S_T = AVG_X(AVG_Y(W_S(IJK1,M),W_S(IJK2,M),J_OF(IJK1)),AVG_Y(&
+               W_S(IPJMK2,M),W_S(IPJK2,M),J_OF(IPJMK2)),I_OF(IJK1)) 
 !
-            W_S_B = AVG_X(AVG_Y(W_SO(KM_OF(IJK1),M),W_SO(KM_OF(IJK2),M),J_OF(&
-               KM_OF(IJK1))),AVG_Y(W_SO(KM_OF(IPJMK2),M),W_SO(KM_OF(IPJK2),M),&
+            W_S_B = AVG_X(AVG_Y(W_S(KM_OF(IJK1),M),W_S(KM_OF(IJK2),M),J_OF(&
+               KM_OF(IJK1))),AVG_Y(W_S(KM_OF(IPJMK2),M),W_S(KM_OF(IPJK2),M),&
                J_OF(KM_OF(IPJMK2))),I_OF(IJK1)) 
 !
             IF (CYLINDRICAL) THEN 
-               U_S_C = AVG_Y(U_SO(IJK1,M),U_SO(IJK2,M),J_OF(IJK1)) 
+               U_S_C = AVG_Y(U_S(IJK1,M),U_S(IJK2,M),J_OF(IJK1)) 
                W_S_C = AVG_X(W_S_W,W_S_E,I_OF(IJK1)) 
             ELSE 
                U_S_C = ZERO 
@@ -218,28 +218,28 @@
             IPJK2 = IP_OF(IJK2) 
             IPJPK2 = JP_OF(IPJK2) 
 !
-            U_S_N = U_SO(IJK1,M) 
+            U_S_N = U_S(IJK1,M) 
 !
-            U_S_S = U_SO(IJK2,M) 
+            U_S_S = U_S(IJK2,M) 
 !
-            U_S_E = AVG_Y(AVG_X_E(U_SO(IJK2,M),U_SO(IPJK2,M),I_OF(IPJK2)),&
-               AVG_X_E(U_SO(IJK1,M),U_SO(IPJPK2,M),I_OF(IPJPK2)),J_OF(IPJK2)) 
+            U_S_E = AVG_Y(AVG_X_E(U_S(IJK2,M),U_S(IPJK2,M),I_OF(IPJK2)),&
+               AVG_X_E(U_S(IJK1,M),U_S(IPJPK2,M),I_OF(IPJPK2)),J_OF(IPJK2)) 
 !
-            U_S_W = AVG_Y(AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),&
-               AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),J_OF(IJK2)) 
+            U_S_W = AVG_Y(AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),&
+               AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),J_OF(IJK2)) 
 !
-            U_S_T = AVG_Y(AVG_Z(U_SO(IJK2,M),U_SO(KP_OF(IJK2),M),K_OF(IJK2)),&
-               AVG_Z(U_SO(IJK1,M),U_SO(KP_OF(IJK1),M),K_OF(IJK1)),J_OF(IJK2)) 
+            U_S_T = AVG_Y(AVG_Z(U_S(IJK2,M),U_S(KP_OF(IJK2),M),K_OF(IJK2)),&
+               AVG_Z(U_S(IJK1,M),U_S(KP_OF(IJK1),M),K_OF(IJK1)),J_OF(IJK2)) 
 !
-            U_S_B = AVG_Y(AVG_Z(U_SO(KM_OF(IJK2),M),U_SO(IJK2,M),K_OF(KM_OF(&
-               IJK2))),AVG_Z(U_SO(KM_OF(IJK1),M),U_SO(IJK1,M),K_OF(KM_OF(IJK1))&
+            U_S_B = AVG_Y(AVG_Z(U_S(KM_OF(IJK2),M),U_S(IJK2,M),K_OF(KM_OF(&
+               IJK2))),AVG_Z(U_S(KM_OF(IJK1),M),U_S(IJK1,M),K_OF(KM_OF(IJK1))&
                ),J_OF(IJK2)) 
 !
-            V_S_N = AVG_X(AVG_Y_N(V_SO(IJK2,M),V_SO(IJK1,M)),AVG_Y_N(V_SO(IPJK2&
-               ,M),V_SO(IPJPK2,M)),I_OF(IJK1)) 
+            V_S_N = AVG_X(AVG_Y_N(V_S(IJK2,M),V_S(IJK1,M)),AVG_Y_N(V_S(IPJK2&
+               ,M),V_S(IPJPK2,M)),I_OF(IJK1)) 
 !
-            V_S_S = AVG_X(AVG_Y_N(V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),AVG_Y_N(&
-               V_SO(JM_OF(IPJK2),M),V_SO(IPJK2,M)),I_OF(IJK2)) 
+            V_S_S = AVG_X(AVG_Y_N(V_S(JM_OF(IJK2),M),V_S(IJK2,M)),AVG_Y_N(&
+               V_S(JM_OF(IPJK2),M),V_S(IPJK2,M)),I_OF(IJK2)) 
 !
             V_S_E = ZERO 
 !
@@ -249,27 +249,27 @@
 !
             V_S_B = ZERO 
 !
-            W_S_N = AVG_X(AVG_Z_T(W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),AVG_Z_T(&
-               W_SO(KM_OF(IPJPK2),M),W_SO(IPJPK2,M)),I_OF(IJK1)) 
+            W_S_N = AVG_X(AVG_Z_T(W_S(KM_OF(IJK1),M),W_S(IJK1,M)),AVG_Z_T(&
+               W_S(KM_OF(IPJPK2),M),W_S(IPJPK2,M)),I_OF(IJK1)) 
 !
-            W_S_S = AVG_X(AVG_Z_T(W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),AVG_Z_T(&
-               W_SO(KM_OF(IPJK2),M),W_SO(IPJK2,M)),I_OF(IJK2)) 
+            W_S_S = AVG_X(AVG_Z_T(W_S(KM_OF(IJK2),M),W_S(IJK2,M)),AVG_Z_T(&
+               W_S(KM_OF(IPJK2),M),W_S(IPJK2,M)),I_OF(IJK2)) 
 !
-            W_S_E = AVG_Y(AVG_Z_T(W_SO(KM_OF(IPJK2),M),W_SO(IPJK2,M)),AVG_Z_T(&
-               W_SO(KM_OF(IPJPK2),M),W_SO(IPJPK2,M)),J_OF(IPJK2)) 
+            W_S_E = AVG_Y(AVG_Z_T(W_S(KM_OF(IPJK2),M),W_S(IPJK2,M)),AVG_Z_T(&
+               W_S(KM_OF(IPJPK2),M),W_S(IPJPK2,M)),J_OF(IPJK2)) 
 !
-            W_S_W = AVG_Y(AVG_Z_T(W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),AVG_Z_T(&
-               W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),J_OF(IJK2)) 
+            W_S_W = AVG_Y(AVG_Z_T(W_S(KM_OF(IJK2),M),W_S(IJK2,M)),AVG_Z_T(&
+               W_S(KM_OF(IJK1),M),W_S(IJK1,M)),J_OF(IJK2)) 
 !
-            W_S_T = AVG_X(AVG_Y(W_SO(IJK2,M),W_SO(IJK1,M),J_OF(IJK2)),AVG_Y(&
-               W_SO(IPJK2,M),W_SO(IPJPK2,M),J_OF(IPJK2)),I_OF(IJK2)) 
+            W_S_T = AVG_X(AVG_Y(W_S(IJK2,M),W_S(IJK1,M),J_OF(IJK2)),AVG_Y(&
+               W_S(IPJK2,M),W_S(IPJPK2,M),J_OF(IPJK2)),I_OF(IJK2)) 
 !
-            W_S_B = AVG_X(AVG_Y(W_SO(KM_OF(IJK2),M),W_SO(KM_OF(IJK1),M),J_OF(&
-               KM_OF(IJK2))),AVG_Y(W_SO(KM_OF(IPJK2),M),W_SO(KM_OF(IPJPK2),M),&
+            W_S_B = AVG_X(AVG_Y(W_S(KM_OF(IJK2),M),W_S(KM_OF(IJK1),M),J_OF(&
+               KM_OF(IJK2))),AVG_Y(W_S(KM_OF(IPJK2),M),W_S(KM_OF(IPJPK2),M),&
                J_OF(KM_OF(IPJK2))),I_OF(IJK2)) 
 !
             IF (CYLINDRICAL) THEN 
-               U_S_C = AVG_Y(U_SO(IJK2,M),U_SO(IJK1,M),J_OF(IJK2)) 
+               U_S_C = AVG_Y(U_S(IJK2,M),U_S(IJK1,M),J_OF(IJK2)) 
                W_S_C = AVG_X(W_S_W,W_S_E,I_OF(IJK2)) 
             ELSE 
                U_S_C = ZERO 
@@ -287,41 +287,41 @@
             IPJKM2 = KM_OF(IPJK2) 
 !
 !
-            U_S_N = AVG_Z(AVG_Y(U_SO(IJK1,M),U_SO(JP_OF(IJK1),M),J_OF(IJK1)),&
-               AVG_Y(U_SO(IJK2,M),U_SO(JP_OF(IJK2),M),J_OF(IJK2)),K_OF(IJK1)) 
+            U_S_N = AVG_Z(AVG_Y(U_S(IJK1,M),U_S(JP_OF(IJK1),M),J_OF(IJK1)),&
+               AVG_Y(U_S(IJK2,M),U_S(JP_OF(IJK2),M),J_OF(IJK2)),K_OF(IJK1)) 
 !
-            U_S_S = AVG_Z(AVG_Y(U_SO(JM_OF(IJK1),M),U_SO(IJK1,M),J_OF(JM_OF(&
-               IJK1))),AVG_Y(U_SO(JM_OF(IJK2),M),U_SO(IJK2,M),J_OF(JM_OF(IJK2))&
+            U_S_S = AVG_Z(AVG_Y(U_S(JM_OF(IJK1),M),U_S(IJK1,M),J_OF(JM_OF(&
+               IJK1))),AVG_Y(U_S(JM_OF(IJK2),M),U_S(IJK2,M),J_OF(JM_OF(IJK2))&
                ),K_OF(IJK1)) 
 !
-            U_S_E = AVG_Z(AVG_X_E(U_SO(IJK1,M),U_SO(IPJKM2,M),I_OF(IPJKM2)),&
-               AVG_X_E(U_SO(IJK2,M),U_SO(IPJK2,M),I_OF(IPJK2)),K_OF(IPJKM2)) 
+            U_S_E = AVG_Z(AVG_X_E(U_S(IJK1,M),U_S(IPJKM2,M),I_OF(IPJKM2)),&
+               AVG_X_E(U_S(IJK2,M),U_S(IPJK2,M),I_OF(IPJK2)),K_OF(IPJKM2)) 
 !
-            U_S_W = AVG_Z(AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),&
-               AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),K_OF(IJK1)) 
+            U_S_W = AVG_Z(AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),&
+               AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),K_OF(IJK1)) 
 !
-            U_S_T = U_SO(IJK2,M) 
+            U_S_T = U_S(IJK2,M) 
 !
-            U_S_B = U_SO(IJK1,M) 
+            U_S_B = U_S(IJK1,M) 
 !
-            V_S_N = AVG_X(AVG_Z(V_SO(IJK1,M),V_SO(IJK2,M),K_OF(IJK1)),AVG_Z(&
-               V_SO(IPJKM2,M),V_SO(IPJK2,M),K_OF(IPJKM2)),I_OF(IJK1)) 
+            V_S_N = AVG_X(AVG_Z(V_S(IJK1,M),V_S(IJK2,M),K_OF(IJK1)),AVG_Z(&
+               V_S(IPJKM2,M),V_S(IPJK2,M),K_OF(IPJKM2)),I_OF(IJK1)) 
 !
-            V_S_S = AVG_X(AVG_Z(V_SO(JM_OF(IJK1),M),V_SO(JM_OF(IJK2),M),K_OF(&
-               JM_OF(IJK1))),AVG_Z(V_SO(JM_OF(IPJKM2),M),V_SO(JM_OF(IPJK2),M),&
+            V_S_S = AVG_X(AVG_Z(V_S(JM_OF(IJK1),M),V_S(JM_OF(IJK2),M),K_OF(&
+               JM_OF(IJK1))),AVG_Z(V_S(JM_OF(IPJKM2),M),V_S(JM_OF(IPJK2),M),&
                K_OF(JM_OF(IPJKM2))),I_OF(IJK1)) 
 !
-            V_S_E = AVG_Z(AVG_Y_N(V_SO(JM_OF(IPJKM2),M),V_SO(IPJKM2,M)),AVG_Y_N&
-               (V_SO(JM_OF(IPJK2),M),V_SO(IPJK2,M)),K_OF(IPJKM2)) 
+            V_S_E = AVG_Z(AVG_Y_N(V_S(JM_OF(IPJKM2),M),V_S(IPJKM2,M)),AVG_Y_N&
+               (V_S(JM_OF(IPJK2),M),V_S(IPJK2,M)),K_OF(IPJKM2)) 
 !
-            V_S_W = AVG_Z(AVG_Y_N(V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),AVG_Y_N(&
-               V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),K_OF(IJK1)) 
+            V_S_W = AVG_Z(AVG_Y_N(V_S(JM_OF(IJK1),M),V_S(IJK1,M)),AVG_Y_N(&
+               V_S(JM_OF(IJK2),M),V_S(IJK2,M)),K_OF(IJK1)) 
 !
-            V_S_T = AVG_X(AVG_Y_N(V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),AVG_Y_N(&
-               V_SO(JM_OF(IPJK2),M),V_SO(IPJK2,M)),I_OF(IJK2)) 
+            V_S_T = AVG_X(AVG_Y_N(V_S(JM_OF(IJK2),M),V_S(IJK2,M)),AVG_Y_N(&
+               V_S(JM_OF(IPJK2),M),V_S(IPJK2,M)),I_OF(IJK2)) 
 !
-            V_S_B = AVG_X(AVG_Y_N(V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),AVG_Y_N(&
-               V_SO(JM_OF(IPJKM2),M),V_SO(IPJKM2,M)),I_OF(IJK1)) 
+            V_S_B = AVG_X(AVG_Y_N(V_S(JM_OF(IJK1),M),V_S(IJK1,M)),AVG_Y_N(&
+               V_S(JM_OF(IPJKM2),M),V_S(IPJKM2,M)),I_OF(IJK1)) 
 !
             W_S_N = ZERO 
 !
@@ -331,15 +331,15 @@
 !
             W_S_W = ZERO 
 !
-            W_S_T = AVG_X(AVG_Z_T(W_SO(IJK1,M),W_SO(IJK2,M)),AVG_Z_T(W_SO(&
-               IPJKM2,M),W_SO(IPJK2,M)),I_OF(IJK2)) 
+            W_S_T = AVG_X(AVG_Z_T(W_S(IJK1,M),W_S(IJK2,M)),AVG_Z_T(W_S(&
+               IPJKM2,M),W_S(IPJK2,M)),I_OF(IJK2)) 
 !
-            W_S_B = AVG_X(AVG_Z_T(W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),AVG_Z_T(&
-               W_SO(KM_OF(IPJKM2),M),W_SO(IPJKM2,M)),I_OF(IJK1)) 
+            W_S_B = AVG_X(AVG_Z_T(W_S(KM_OF(IJK1),M),W_S(IJK1,M)),AVG_Z_T(&
+               W_S(KM_OF(IPJKM2),M),W_S(IPJKM2,M)),I_OF(IJK1)) 
 !
             IF (CYLINDRICAL) THEN 
-               U_S_C = AVG_Z(U_SO(IJK1,M),U_SO(IJK2,M),K_OF(IJK1)) 
-               W_S_C = AVG_X(W_SO(IJK1,M),W_SO(IPJKM2,M),I_OF(IJK1)) 
+               U_S_C = AVG_Z(U_S(IJK1,M),U_S(IJK2,M),K_OF(IJK1)) 
+               W_S_C = AVG_X(W_S(IJK1,M),W_S(IPJKM2,M),I_OF(IJK1)) 
             ELSE 
                U_S_C = ZERO 
                W_S_C = ZERO 
@@ -355,41 +355,41 @@
             IPJK2 = IP_OF(IJK2) 
             IPJKP2 = KP_OF(IPJK2) 
 !
-            U_S_N = AVG_Z(AVG_Y(U_SO(IJK2,M),U_SO(JP_OF(IJK2),M),J_OF(IJK2)),&
-               AVG_Y(U_SO(IJK1,M),U_SO(JP_OF(IJK1),M),J_OF(IJK1)),K_OF(IJK2)) 
+            U_S_N = AVG_Z(AVG_Y(U_S(IJK2,M),U_S(JP_OF(IJK2),M),J_OF(IJK2)),&
+               AVG_Y(U_S(IJK1,M),U_S(JP_OF(IJK1),M),J_OF(IJK1)),K_OF(IJK2)) 
 !
-            U_S_S = AVG_Z(AVG_Y(U_SO(JM_OF(IJK2),M),U_SO(IJK2,M),J_OF(JM_OF(&
-               IJK2))),AVG_Y(U_SO(JM_OF(IJK1),M),U_SO(IJK1,M),J_OF(JM_OF(IJK1))&
+            U_S_S = AVG_Z(AVG_Y(U_S(JM_OF(IJK2),M),U_S(IJK2,M),J_OF(JM_OF(&
+               IJK2))),AVG_Y(U_S(JM_OF(IJK1),M),U_S(IJK1,M),J_OF(JM_OF(IJK1))&
                ),K_OF(IJK2)) 
 !
-            U_S_E = AVG_Z(AVG_X_E(U_SO(IJK2,M),U_SO(IPJK2,M),I_OF(IPJK2)),&
-               AVG_X_E(U_SO(IJK1,M),U_SO(IPJKP2,M),I_OF(IPJKP2)),K_OF(IPJK2)) 
+            U_S_E = AVG_Z(AVG_X_E(U_S(IJK2,M),U_S(IPJK2,M),I_OF(IPJK2)),&
+               AVG_X_E(U_S(IJK1,M),U_S(IPJKP2,M),I_OF(IPJKP2)),K_OF(IPJK2)) 
 !
-            U_S_W = AVG_Z(AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),&
-               AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),K_OF(IJK2)) 
+            U_S_W = AVG_Z(AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),&
+               AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),K_OF(IJK2)) 
 !
-            U_S_T = U_SO(IJK1,M) 
+            U_S_T = U_S(IJK1,M) 
 !
-            U_S_B = U_SO(IJK2,M) 
+            U_S_B = U_S(IJK2,M) 
 !
-            V_S_N = AVG_X(AVG_Z(V_SO(IJK2,M),V_SO(IJK1,M),K_OF(IJK2)),AVG_Z(&
-               V_SO(IPJK2,M),V_SO(IPJKP2,M),K_OF(IPJK2)),I_OF(IJK2)) 
+            V_S_N = AVG_X(AVG_Z(V_S(IJK2,M),V_S(IJK1,M),K_OF(IJK2)),AVG_Z(&
+               V_S(IPJK2,M),V_S(IPJKP2,M),K_OF(IPJK2)),I_OF(IJK2)) 
 !
-            V_S_S = AVG_X(AVG_Z(V_SO(JM_OF(IJK2),M),V_SO(JM_OF(IJK1),M),K_OF(&
-               JM_OF(IJK2))),AVG_Z(V_SO(JM_OF(IPJK2),M),V_SO(JM_OF(IPJKP2),M),&
+            V_S_S = AVG_X(AVG_Z(V_S(JM_OF(IJK2),M),V_S(JM_OF(IJK1),M),K_OF(&
+               JM_OF(IJK2))),AVG_Z(V_S(JM_OF(IPJK2),M),V_S(JM_OF(IPJKP2),M),&
                K_OF(JM_OF(IPJK2))),I_OF(IJK2)) 
 !
-            V_S_E = AVG_Z(AVG_Y_N(V_SO(JM_OF(IPJK2),M),V_SO(IPJK2,M)),AVG_Y_N(&
-               V_SO(JM_OF(IPJKP2),M),V_SO(IPJKP2,M)),K_OF(IPJK2)) 
+            V_S_E = AVG_Z(AVG_Y_N(V_S(JM_OF(IPJK2),M),V_S(IPJK2,M)),AVG_Y_N(&
+               V_S(JM_OF(IPJKP2),M),V_S(IPJKP2,M)),K_OF(IPJK2)) 
 !
-            V_S_W = AVG_Z(AVG_Y_N(V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),AVG_Y_N(&
-               V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),K_OF(IJK2)) 
+            V_S_W = AVG_Z(AVG_Y_N(V_S(JM_OF(IJK2),M),V_S(IJK2,M)),AVG_Y_N(&
+               V_S(JM_OF(IJK1),M),V_S(IJK1,M)),K_OF(IJK2)) 
 !
-            V_S_T = AVG_X(AVG_Y_N(V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),AVG_Y_N(&
-               V_SO(JM_OF(IPJKP2),M),V_SO(IPJKP2,M)),I_OF(IJK1)) 
+            V_S_T = AVG_X(AVG_Y_N(V_S(JM_OF(IJK1),M),V_S(IJK1,M)),AVG_Y_N(&
+               V_S(JM_OF(IPJKP2),M),V_S(IPJKP2,M)),I_OF(IJK1)) 
 !
-            V_S_B = AVG_X(AVG_Y_N(V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),AVG_Y_N(&
-               V_SO(JM_OF(IPJK2),M),V_SO(IPJK2,M)),I_OF(IJK2)) 
+            V_S_B = AVG_X(AVG_Y_N(V_S(JM_OF(IJK2),M),V_S(IJK2,M)),AVG_Y_N(&
+               V_S(JM_OF(IPJK2),M),V_S(IPJK2,M)),I_OF(IJK2)) 
 !
             W_S_N = ZERO 
 !
@@ -399,15 +399,15 @@
 !
             W_S_W = ZERO 
 !
-            W_S_T = AVG_X(AVG_Z_T(W_SO(IJK2,M),W_SO(IJK1,M)),AVG_Z_T(W_SO(IPJK2&
-               ,M),W_SO(IPJKP2,M)),I_OF(IJK1)) 
+            W_S_T = AVG_X(AVG_Z_T(W_S(IJK2,M),W_S(IJK1,M)),AVG_Z_T(W_S(IPJK2&
+               ,M),W_S(IPJKP2,M)),I_OF(IJK1)) 
 !
-            W_S_B = AVG_X(AVG_Z_T(W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),AVG_Z_T(&
-               W_SO(KM_OF(IPJK2),M),W_SO(IPJK2,M)),I_OF(IJK2)) 
+            W_S_B = AVG_X(AVG_Z_T(W_S(KM_OF(IJK2),M),W_S(IJK2,M)),AVG_Z_T(&
+               W_S(KM_OF(IPJK2),M),W_S(IPJK2,M)),I_OF(IJK2)) 
 !
             IF (CYLINDRICAL) THEN 
-               U_S_C = AVG_Z(U_SO(IJK2,M),U_SO(IJK1,M),K_OF(IJK2)) 
-               W_S_C = AVG_X(W_SO(IJK2,M),W_SO(IPJK2,M),I_OF(IJK2)) 
+               U_S_C = AVG_Z(U_S(IJK2,M),U_S(IJK1,M),K_OF(IJK2)) 
+               W_S_C = AVG_X(W_S(IJK2,M),W_S(IPJK2,M),I_OF(IJK2)) 
             ELSE 
                U_S_C = ZERO 
                W_S_C = ZERO 
@@ -426,44 +426,44 @@
             IJPK2 = JP_OF(IJK2) 
             IJPKM2 = KM_OF(IJPK2) 
 !
-            U_S_N = AVG_Z(AVG_X_E(U_SO(IM_OF(IJPKM2),M),U_SO(IJPKM2,M),I_OF(&
-               IJPKM2)),AVG_X_E(U_SO(IM_OF(IJPK2),M),U_SO(IJPK2,M),I_OF(IJPK2))&
+            U_S_N = AVG_Z(AVG_X_E(U_S(IM_OF(IJPKM2),M),U_S(IJPKM2,M),I_OF(&
+               IJPKM2)),AVG_X_E(U_S(IM_OF(IJPK2),M),U_S(IJPK2,M),I_OF(IJPK2))&
                ,K_OF(IJPKM2)) 
 !
-            U_S_S = AVG_Z(AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),&
-               AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),K_OF(IJK1)) 
+            U_S_S = AVG_Z(AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),&
+               AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),K_OF(IJK1)) 
 !
-            U_S_E = AVG_Z(AVG_Y(U_SO(IJK1,M),U_SO(IJPKM2,M),J_OF(IJK1)),AVG_Y(&
-               U_SO(IJK2,M),U_SO(IJPK2,M),J_OF(IJK2)),K_OF(IJK1)) 
+            U_S_E = AVG_Z(AVG_Y(U_S(IJK1,M),U_S(IJPKM2,M),J_OF(IJK1)),AVG_Y(&
+               U_S(IJK2,M),U_S(IJPK2,M),J_OF(IJK2)),K_OF(IJK1)) 
 !
-            U_S_W = AVG_Z(AVG_Y(U_SO(IM_OF(IJK1),M),U_SO(IM_OF(IJPKM2),M),J_OF(&
-               IM_OF(IJK1))),AVG_Y(U_SO(IM_OF(IJK2),M),U_SO(IM_OF(IJPK2),M),&
+            U_S_W = AVG_Z(AVG_Y(U_S(IM_OF(IJK1),M),U_S(IM_OF(IJPKM2),M),J_OF(&
+               IM_OF(IJK1))),AVG_Y(U_S(IM_OF(IJK2),M),U_S(IM_OF(IJPK2),M),&
                J_OF(IM_OF(IJK2))),K_OF(IJK1)) 
 !
-            U_S_T = AVG_Y(AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),&
-               AVG_X_E(U_SO(IM_OF(IJPK2),M),U_SO(IJPK2,M),I_OF(IJPK2)),J_OF(&
+            U_S_T = AVG_Y(AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),&
+               AVG_X_E(U_S(IM_OF(IJPK2),M),U_S(IJPK2,M),I_OF(IJPK2)),J_OF(&
                IJK2)) 
 !
-            U_S_B = AVG_Y(AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),&
-               AVG_X_E(U_SO(IM_OF(IJPKM2),M),U_SO(IJPKM2,M),I_OF(IJPKM2)),J_OF(&
+            U_S_B = AVG_Y(AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),&
+               AVG_X_E(U_S(IM_OF(IJPKM2),M),U_S(IJPKM2,M),I_OF(IJPKM2)),J_OF(&
                IJK1)) 
 !
-            V_S_N = AVG_Z(AVG_Y_N(V_SO(IJK1,M),V_SO(IJPKM2,M)),AVG_Y_N(V_SO(&
-               IJK2,M),V_SO(IJPK2,M)),K_OF(IJPKM2)) 
+            V_S_N = AVG_Z(AVG_Y_N(V_S(IJK1,M),V_S(IJPKM2,M)),AVG_Y_N(V_S(&
+               IJK2,M),V_S(IJPK2,M)),K_OF(IJPKM2)) 
 !
-            V_S_S = AVG_Z(AVG_Y_N(V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),AVG_Y_N(&
-               V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),K_OF(IJK1)) 
+            V_S_S = AVG_Z(AVG_Y_N(V_S(JM_OF(IJK1),M),V_S(IJK1,M)),AVG_Y_N(&
+               V_S(JM_OF(IJK2),M),V_S(IJK2,M)),K_OF(IJK1)) 
 !
-            V_S_E = AVG_Z(AVG_X(V_SO(IJK1,M),V_SO(IP_OF(IJK1),M),I_OF(IJK1)),&
-               AVG_X(V_SO(IJK2,M),V_SO(IP_OF(IJK2),M),I_OF(IJK2)),K_OF(IJK1)) 
+            V_S_E = AVG_Z(AVG_X(V_S(IJK1,M),V_S(IP_OF(IJK1),M),I_OF(IJK1)),&
+               AVG_X(V_S(IJK2,M),V_S(IP_OF(IJK2),M),I_OF(IJK2)),K_OF(IJK1)) 
 !
-            V_S_W = AVG_Z(AVG_X(V_SO(IM_OF(IJK1),M),V_SO(IJK1,M),I_OF(IM_OF(&
-               IJK1))),AVG_X(V_SO(IM_OF(IJK2),M),V_SO(IJK2,M),I_OF(IM_OF(IJK2))&
+            V_S_W = AVG_Z(AVG_X(V_S(IM_OF(IJK1),M),V_S(IJK1,M),I_OF(IM_OF(&
+               IJK1))),AVG_X(V_S(IM_OF(IJK2),M),V_S(IJK2,M),I_OF(IM_OF(IJK2))&
                ),K_OF(IJK1)) 
 !
-            V_S_T = V_SO(IJK2,M) 
+            V_S_T = V_S(IJK2,M) 
 !
-            V_S_B = V_SO(IJK1,M) 
+            V_S_B = V_S(IJK1,M) 
 !
             W_S_N = ZERO 
 !
@@ -473,15 +473,15 @@
 !
             W_S_W = ZERO 
 !
-            W_S_T = AVG_Y(AVG_Z_T(W_SO(IJK1,M),W_SO(IJK2,M)),AVG_Z_T(W_SO(&
-               IJPKM2,M),W_SO(IJPK2,M)),J_OF(IJK2)) 
+            W_S_T = AVG_Y(AVG_Z_T(W_S(IJK1,M),W_S(IJK2,M)),AVG_Z_T(W_S(&
+               IJPKM2,M),W_S(IJPK2,M)),J_OF(IJK2)) 
 !
-            W_S_B = AVG_Y(AVG_Z_T(W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),AVG_Z_T(&
-               W_SO(KM_OF(IJPKM2),M),W_SO(IJPKM2,M)),J_OF(IJK1)) 
+            W_S_B = AVG_Y(AVG_Z_T(W_S(KM_OF(IJK1),M),W_S(IJK1,M)),AVG_Z_T(&
+               W_S(KM_OF(IJPKM2),M),W_S(IJPKM2,M)),J_OF(IJK1)) 
 !
             IF (CYLINDRICAL) THEN 
                U_S_C = AVG_Z(U_S_B,U_S_T,K_OF(IJK1)) 
-               W_S_C = AVG_Y(W_SO(IJK1,M),W_SO(IJPKM2,M),J_OF(IJK1)) 
+               W_S_C = AVG_Y(W_S(IJK1,M),W_S(IJPKM2,M),J_OF(IJK1)) 
             ELSE 
                U_S_C = ZERO 
                W_S_C = ZERO 
@@ -497,44 +497,44 @@
             IJPK2 = JP_OF(IJK2) 
             IJPKP2 = KP_OF(IJPK2) 
 !
-            U_S_N = AVG_Z(AVG_X_E(U_SO(IM_OF(IJPK2),M),U_SO(IJPK2,M),I_OF(IJPK2&
-               )),AVG_X_E(U_SO(IM_OF(IJPKP2),M),U_SO(IJPKP2,M),I_OF(IJPKP2)),&
+            U_S_N = AVG_Z(AVG_X_E(U_S(IM_OF(IJPK2),M),U_S(IJPK2,M),I_OF(IJPK2&
+               )),AVG_X_E(U_S(IM_OF(IJPKP2),M),U_S(IJPKP2,M),I_OF(IJPKP2)),&
                K_OF(IJPK2)) 
 !
-            U_S_S = AVG_Z(AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),&
-               AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),K_OF(IJK2)) 
+            U_S_S = AVG_Z(AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),&
+               AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),K_OF(IJK2)) 
 !
-            U_S_E = AVG_Z(AVG_Y(U_SO(IJK2,M),U_SO(IJPK2,M),J_OF(IJK2)),AVG_Y(&
-               U_SO(IJK1,M),U_SO(IJPKP2,M),J_OF(IJK1)),K_OF(IJK2)) 
+            U_S_E = AVG_Z(AVG_Y(U_S(IJK2,M),U_S(IJPK2,M),J_OF(IJK2)),AVG_Y(&
+               U_S(IJK1,M),U_S(IJPKP2,M),J_OF(IJK1)),K_OF(IJK2)) 
 !
-            U_S_W = AVG_Z(AVG_Y(U_SO(IM_OF(IJK2),M),U_SO(IM_OF(IJPK2),M),J_OF(&
-               IM_OF(IJK2))),AVG_Y(U_SO(IM_OF(IJK1),M),U_SO(IM_OF(IJPKP2),M),&
+            U_S_W = AVG_Z(AVG_Y(U_S(IM_OF(IJK2),M),U_S(IM_OF(IJPK2),M),J_OF(&
+               IM_OF(IJK2))),AVG_Y(U_S(IM_OF(IJK1),M),U_S(IM_OF(IJPKP2),M),&
                J_OF(IM_OF(IJK1))),K_OF(IJK2)) 
 !
-            U_S_T = AVG_Y(AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),&
-               AVG_X_E(U_SO(IM_OF(IJPKP2),M),U_SO(IJPKP2,M),I_OF(IJPKP2)),J_OF(&
+            U_S_T = AVG_Y(AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),&
+               AVG_X_E(U_S(IM_OF(IJPKP2),M),U_S(IJPKP2,M),I_OF(IJPKP2)),J_OF(&
                IJK1)) 
 !
-            U_S_B = AVG_Y(AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),&
-               AVG_X_E(U_SO(IM_OF(IJPK2),M),U_SO(IJPK2,M),I_OF(IJPK2)),J_OF(&
+            U_S_B = AVG_Y(AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),&
+               AVG_X_E(U_S(IM_OF(IJPK2),M),U_S(IJPK2,M),I_OF(IJPK2)),J_OF(&
                IJK2)) 
 !
-            V_S_N = AVG_Z(AVG_Y_N(V_SO(IJK2,M),V_SO(IJPK2,M)),AVG_Y_N(V_SO(IJK1&
-               ,M),V_SO(IJPKP2,M)),K_OF(IJPK2)) 
+            V_S_N = AVG_Z(AVG_Y_N(V_S(IJK2,M),V_S(IJPK2,M)),AVG_Y_N(V_S(IJK1&
+               ,M),V_S(IJPKP2,M)),K_OF(IJPK2)) 
 !
-            V_S_S = AVG_Z(AVG_Y_N(V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),AVG_Y_N(&
-               V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),K_OF(IJK2)) 
+            V_S_S = AVG_Z(AVG_Y_N(V_S(JM_OF(IJK2),M),V_S(IJK2,M)),AVG_Y_N(&
+               V_S(JM_OF(IJK1),M),V_S(IJK1,M)),K_OF(IJK2)) 
 !
-            V_S_E = AVG_Z(AVG_X(V_SO(IJK2,M),V_SO(IP_OF(IJK2),M),I_OF(IJK2)),&
-               AVG_X(V_SO(IJK1,M),V_SO(IP_OF(IJK1),M),I_OF(IJK1)),K_OF(IJK2)) 
+            V_S_E = AVG_Z(AVG_X(V_S(IJK2,M),V_S(IP_OF(IJK2),M),I_OF(IJK2)),&
+               AVG_X(V_S(IJK1,M),V_S(IP_OF(IJK1),M),I_OF(IJK1)),K_OF(IJK2)) 
 !
-            V_S_W = AVG_Z(AVG_X(V_SO(IM_OF(IJK2),M),V_SO(IJK2,M),I_OF(IM_OF(&
-               IJK2))),AVG_X(V_SO(IM_OF(IJK1),M),V_SO(IJK1,M),I_OF(IM_OF(IJK1))&
+            V_S_W = AVG_Z(AVG_X(V_S(IM_OF(IJK2),M),V_S(IJK2,M),I_OF(IM_OF(&
+               IJK2))),AVG_X(V_S(IM_OF(IJK1),M),V_S(IJK1,M),I_OF(IM_OF(IJK1))&
                ),K_OF(IJK2)) 
 !
-            V_S_T = V_SO(IJK1,M) 
+            V_S_T = V_S(IJK1,M) 
 !
-            V_S_B = V_SO(IJK2,M) 
+            V_S_B = V_S(IJK2,M) 
 !
             W_S_N = ZERO 
 !
@@ -544,15 +544,15 @@
 !
             W_S_W = ZERO 
 !
-            W_S_T = AVG_Y(AVG_Z_T(W_SO(IJK2,M),W_SO(IJK1,M)),AVG_Z_T(W_SO(IJPK2&
-               ,M),W_SO(IJPKP2,M)),J_OF(IJK1)) 
+            W_S_T = AVG_Y(AVG_Z_T(W_S(IJK2,M),W_S(IJK1,M)),AVG_Z_T(W_S(IJPK2&
+               ,M),W_S(IJPKP2,M)),J_OF(IJK1)) 
 !
-            W_S_B = AVG_Y(AVG_Z_T(W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),AVG_Z_T(&
-               W_SO(KM_OF(IJPK2),M),W_SO(IJPK2,M)),J_OF(IJK2)) 
+            W_S_B = AVG_Y(AVG_Z_T(W_S(KM_OF(IJK2),M),W_S(IJK2,M)),AVG_Z_T(&
+               W_S(KM_OF(IJPK2),M),W_S(IJPK2,M)),J_OF(IJK2)) 
 !
             IF (CYLINDRICAL) THEN 
                U_S_C = AVG_Z(U_S_B,U_S_T,K_OF(IJK2)) 
-               W_S_C = AVG_Y(W_SO(IJK2,M),W_SO(IJPK2,M),J_OF(IJK2)) 
+               W_S_C = AVG_Y(W_S(IJK2,M),W_S(IJPK2,M),J_OF(IJK2)) 
             ELSE 
                U_S_C = ZERO 
                W_S_C = ZERO 
@@ -572,55 +572,55 @@
 !
             U_S_S = ZERO 
 !
-            U_S_E = AVG_Y(AVG_X_E(U_SO(IJK1,M),U_SO(IJK2,M),I_OF(IJK2)),AVG_X_E&
-               (U_SO(IMJPK2,M),U_SO(IJPK2,M),I_OF(IJPK2)),J_OF(IJK2)) 
+            U_S_E = AVG_Y(AVG_X_E(U_S(IJK1,M),U_S(IJK2,M),I_OF(IJK2)),AVG_X_E&
+               (U_S(IMJPK2,M),U_S(IJPK2,M),I_OF(IJPK2)),J_OF(IJK2)) 
 !
-            U_S_W = AVG_Y(AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),&
-               AVG_X_E(U_SO(IM_OF(IMJPK2),M),U_SO(IMJPK2,M),I_OF(IMJPK2)),J_OF(&
+            U_S_W = AVG_Y(AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),&
+               AVG_X_E(U_S(IM_OF(IMJPK2),M),U_S(IMJPK2,M),I_OF(IMJPK2)),J_OF(&
                IJK1)) 
 !
             U_S_T = ZERO 
 !
             U_S_B = ZERO 
 !
-            V_S_N = AVG_X(AVG_Y_N(V_SO(IJK1,M),V_SO(IMJPK2,M)),AVG_Y_N(V_SO(&
-               IJK2,M),V_SO(IJPK2,M)),I_OF(IMJPK2)) 
+            V_S_N = AVG_X(AVG_Y_N(V_S(IJK1,M),V_S(IMJPK2,M)),AVG_Y_N(V_S(&
+               IJK2,M),V_S(IJPK2,M)),I_OF(IMJPK2)) 
 !
-            V_S_S = AVG_X(AVG_Y_N(V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),AVG_Y_N(&
-               V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),I_OF(IJK1)) 
+            V_S_S = AVG_X(AVG_Y_N(V_S(JM_OF(IJK1),M),V_S(IJK1,M)),AVG_Y_N(&
+               V_S(JM_OF(IJK2),M),V_S(IJK2,M)),I_OF(IJK1)) 
 !
-            V_S_E = V_SO(IJK2,M) 
+            V_S_E = V_S(IJK2,M) 
 !
-            V_S_W = V_SO(IJK1,M) 
+            V_S_W = V_S(IJK1,M) 
 !
-            V_S_T = AVG_X(AVG_Z(V_SO(IJK1,M),V_SO(KP_OF(IJK1),M),K_OF(IJK1)),&
-               AVG_Z(V_SO(IJK2,M),V_SO(KP_OF(IJK2),M),K_OF(IJK2)),I_OF(IJK1)) 
+            V_S_T = AVG_X(AVG_Z(V_S(IJK1,M),V_S(KP_OF(IJK1),M),K_OF(IJK1)),&
+               AVG_Z(V_S(IJK2,M),V_S(KP_OF(IJK2),M),K_OF(IJK2)),I_OF(IJK1)) 
 !
-            V_S_B = AVG_X(AVG_Z(V_SO(KM_OF(IJK1),M),V_SO(IJK1,M),K_OF(KM_OF(&
-               IJK1))),AVG_Z(V_SO(KM_OF(IJK2),M),V_SO(IJK2,M),K_OF(KM_OF(IJK2))&
+            V_S_B = AVG_X(AVG_Z(V_S(KM_OF(IJK1),M),V_S(IJK1,M),K_OF(KM_OF(&
+               IJK1))),AVG_Z(V_S(KM_OF(IJK2),M),V_S(IJK2,M),K_OF(KM_OF(IJK2))&
                ),I_OF(IJK1)) 
 !
-            W_S_N = AVG_X(AVG_Z_T(W_SO(KM_OF(IMJPK2),M),W_SO(IMJPK2,M)),AVG_Z_T&
-               (W_SO(KM_OF(IJPK2),M),W_SO(IJPK2,M)),I_OF(IMJPK2)) 
+            W_S_N = AVG_X(AVG_Z_T(W_S(KM_OF(IMJPK2),M),W_S(IMJPK2,M)),AVG_Z_T&
+               (W_S(KM_OF(IJPK2),M),W_S(IJPK2,M)),I_OF(IMJPK2)) 
 !
-            W_S_S = AVG_X(AVG_Z_T(W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),AVG_Z_T(&
-               W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),I_OF(IJK1)) 
+            W_S_S = AVG_X(AVG_Z_T(W_S(KM_OF(IJK1),M),W_S(IJK1,M)),AVG_Z_T(&
+               W_S(KM_OF(IJK2),M),W_S(IJK2,M)),I_OF(IJK1)) 
 !
-            W_S_E = AVG_Y(AVG_Z_T(W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),AVG_Z_T(&
-               W_SO(KM_OF(IJPK2),M),W_SO(IJPK2,M)),J_OF(IJK2)) 
+            W_S_E = AVG_Y(AVG_Z_T(W_S(KM_OF(IJK2),M),W_S(IJK2,M)),AVG_Z_T(&
+               W_S(KM_OF(IJPK2),M),W_S(IJPK2,M)),J_OF(IJK2)) 
 !
-            W_S_W = AVG_Y(AVG_Z_T(W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),AVG_Z_T(&
-               W_SO(KM_OF(IMJPK2),M),W_SO(IMJPK2,M)),J_OF(IJK1)) 
+            W_S_W = AVG_Y(AVG_Z_T(W_S(KM_OF(IJK1),M),W_S(IJK1,M)),AVG_Z_T(&
+               W_S(KM_OF(IMJPK2),M),W_S(IMJPK2,M)),J_OF(IJK1)) 
 !
-            W_S_T = AVG_X(AVG_Y(W_SO(IJK1,M),W_SO(IMJPK2,M),J_OF(IJK1)),AVG_Y(&
-               W_SO(IJK2,M),W_SO(IJPK2,M),J_OF(IJK2)),I_OF(IJK1)) 
+            W_S_T = AVG_X(AVG_Y(W_S(IJK1,M),W_S(IMJPK2,M),J_OF(IJK1)),AVG_Y(&
+               W_S(IJK2,M),W_S(IJPK2,M),J_OF(IJK2)),I_OF(IJK1)) 
 !
-            W_S_B = AVG_X(AVG_Y(W_SO(KM_OF(IJK1),M),W_SO(KM_OF(IMJPK2),M),J_OF(&
-               KM_OF(IJK1))),AVG_Y(W_SO(KM_OF(IJK2),M),W_SO(KM_OF(IJPK2),M),&
+            W_S_B = AVG_X(AVG_Y(W_S(KM_OF(IJK1),M),W_S(KM_OF(IMJPK2),M),J_OF(&
+               KM_OF(IJK1))),AVG_Y(W_S(KM_OF(IJK2),M),W_S(KM_OF(IJPK2),M),&
                J_OF(KM_OF(IJK2))),I_OF(IJK1)) 
 !
             IF (CYLINDRICAL) THEN 
-               U_S_C = AVG_Y(U_SO(IJK1,M),U_SO(IMJPK2,M),J_OF(IJK1)) 
+               U_S_C = AVG_Y(U_S(IJK1,M),U_S(IMJPK2,M),J_OF(IJK1)) 
                W_S_C = AVG_X(W_S_W,W_S_E,I_OF(IJK1)) 
             ELSE 
                U_S_C = ZERO 
@@ -641,55 +641,55 @@
 !
             U_S_S = ZERO 
 !
-            U_S_E = AVG_Y(AVG_X_E(U_SO(IJK2,M),U_SO(IJK1,M),I_OF(IJK1)),AVG_X_E&
-               (U_SO(IJPK2,M),U_SO(IPJPK2,M),I_OF(IPJPK2)),J_OF(IJK1)) 
+            U_S_E = AVG_Y(AVG_X_E(U_S(IJK2,M),U_S(IJK1,M),I_OF(IJK1)),AVG_X_E&
+               (U_S(IJPK2,M),U_S(IPJPK2,M),I_OF(IPJPK2)),J_OF(IJK1)) 
 !
-            U_S_W = AVG_Y(AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),&
-               AVG_X_E(U_SO(IM_OF(IJPK2),M),U_SO(IJPK2,M),I_OF(IJPK2)),J_OF(&
+            U_S_W = AVG_Y(AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),&
+               AVG_X_E(U_S(IM_OF(IJPK2),M),U_S(IJPK2,M),I_OF(IJPK2)),J_OF(&
                IJK2)) 
 !
             U_S_T = ZERO 
 !
             U_S_B = ZERO 
 !
-            V_S_N = AVG_X(AVG_Y_N(V_SO(IJK2,M),V_SO(IJPK2,M)),AVG_Y_N(V_SO(IJK1&
-               ,M),V_SO(IPJPK2,M)),I_OF(IJPK2)) 
+            V_S_N = AVG_X(AVG_Y_N(V_S(IJK2,M),V_S(IJPK2,M)),AVG_Y_N(V_S(IJK1&
+               ,M),V_S(IPJPK2,M)),I_OF(IJPK2)) 
 !
-            V_S_S = AVG_X(AVG_Y_N(V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),AVG_Y_N(&
-               V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),I_OF(IJK2)) 
+            V_S_S = AVG_X(AVG_Y_N(V_S(JM_OF(IJK2),M),V_S(IJK2,M)),AVG_Y_N(&
+               V_S(JM_OF(IJK1),M),V_S(IJK1,M)),I_OF(IJK2)) 
 !
-            V_S_E = V_SO(IJK1,M) 
+            V_S_E = V_S(IJK1,M) 
 !
-            V_S_W = V_SO(IJK2,M) 
+            V_S_W = V_S(IJK2,M) 
 !
-            V_S_T = AVG_X(AVG_Z(V_SO(IJK2,M),V_SO(KP_OF(IJK2),M),K_OF(IJK2)),&
-               AVG_Z(V_SO(IJK1,M),V_SO(KP_OF(IJK1),M),K_OF(IJK1)),I_OF(IJK2)) 
+            V_S_T = AVG_X(AVG_Z(V_S(IJK2,M),V_S(KP_OF(IJK2),M),K_OF(IJK2)),&
+               AVG_Z(V_S(IJK1,M),V_S(KP_OF(IJK1),M),K_OF(IJK1)),I_OF(IJK2)) 
 !
-            V_S_B = AVG_X(AVG_Z(V_SO(KM_OF(IJK2),M),V_SO(IJK2,M),K_OF(KM_OF(&
-               IJK2))),AVG_Z(V_SO(KM_OF(IJK1),M),V_SO(IJK1,M),K_OF(KM_OF(IJK1))&
+            V_S_B = AVG_X(AVG_Z(V_S(KM_OF(IJK2),M),V_S(IJK2,M),K_OF(KM_OF(&
+               IJK2))),AVG_Z(V_S(KM_OF(IJK1),M),V_S(IJK1,M),K_OF(KM_OF(IJK1))&
                ),I_OF(IJK2)) 
 !
-            W_S_N = AVG_X(AVG_Z_T(W_SO(KM_OF(IJPK2),M),W_SO(IJPK2,M)),AVG_Z_T(&
-               W_SO(KM_OF(IPJPK2),M),W_SO(IPJPK2,M)),I_OF(IJPK2)) 
+            W_S_N = AVG_X(AVG_Z_T(W_S(KM_OF(IJPK2),M),W_S(IJPK2,M)),AVG_Z_T(&
+               W_S(KM_OF(IPJPK2),M),W_S(IPJPK2,M)),I_OF(IJPK2)) 
 !
-            W_S_S = AVG_X(AVG_Z_T(W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),AVG_Z_T(&
-               W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),I_OF(IJK2)) 
+            W_S_S = AVG_X(AVG_Z_T(W_S(KM_OF(IJK2),M),W_S(IJK2,M)),AVG_Z_T(&
+               W_S(KM_OF(IJK1),M),W_S(IJK1,M)),I_OF(IJK2)) 
 !
-            W_S_E = AVG_Y(AVG_Z_T(W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),AVG_Z_T(&
-               W_SO(KM_OF(IPJPK2),M),W_SO(IPJPK2,M)),J_OF(IJK1)) 
+            W_S_E = AVG_Y(AVG_Z_T(W_S(KM_OF(IJK1),M),W_S(IJK1,M)),AVG_Z_T(&
+               W_S(KM_OF(IPJPK2),M),W_S(IPJPK2,M)),J_OF(IJK1)) 
 !
-            W_S_W = AVG_Y(AVG_Z_T(W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),AVG_Z_T(&
-               W_SO(KM_OF(IJPK2),M),W_SO(IJPK2,M)),J_OF(IJK2)) 
+            W_S_W = AVG_Y(AVG_Z_T(W_S(KM_OF(IJK2),M),W_S(IJK2,M)),AVG_Z_T(&
+               W_S(KM_OF(IJPK2),M),W_S(IJPK2,M)),J_OF(IJK2)) 
 !
-            W_S_T = AVG_X(AVG_Y(W_SO(IJK2,M),W_SO(IJPK2,M),J_OF(IJK2)),AVG_Y(&
-               W_SO(IJK1,M),W_SO(IPJPK2,M),J_OF(IJK1)),I_OF(IJK2)) 
+            W_S_T = AVG_X(AVG_Y(W_S(IJK2,M),W_S(IJPK2,M),J_OF(IJK2)),AVG_Y(&
+               W_S(IJK1,M),W_S(IPJPK2,M),J_OF(IJK1)),I_OF(IJK2)) 
 !
-            W_S_B = AVG_X(AVG_Y(W_SO(KM_OF(IJK2),M),W_SO(KM_OF(IJPK2),M),J_OF(&
-               KM_OF(IJK2))),AVG_Y(W_SO(KM_OF(IJK1),M),W_SO(KM_OF(IPJPK2),M),&
+            W_S_B = AVG_X(AVG_Y(W_S(KM_OF(IJK2),M),W_S(KM_OF(IJPK2),M),J_OF(&
+               KM_OF(IJK2))),AVG_Y(W_S(KM_OF(IJK1),M),W_S(KM_OF(IPJPK2),M),&
                J_OF(KM_OF(IJK1))),I_OF(IJK2)) 
 !
             IF (CYLINDRICAL) THEN 
-               U_S_C = AVG_Y(U_SO(IJK2,M),U_SO(IJPK2,M),J_OF(IJK2)) 
+               U_S_C = AVG_Y(U_S(IJK2,M),U_S(IJPK2,M),J_OF(IJK2)) 
                W_S_C = AVG_X(W_S_W,W_S_E,I_OF(IJK2)) 
             ELSE 
                U_S_C = ZERO 
@@ -709,33 +709,33 @@
             IJKP2 = KP_OF(IJK2) 
             IJMKP2 = JM_OF(IJKP2) 
 !
-            U_S_N = AVG_Z(AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),&
-               AVG_X_E(U_SO(IM_OF(IJKP2),M),U_SO(IJKP2,M),I_OF(IJKP2)),K_OF(&
+            U_S_N = AVG_Z(AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),&
+               AVG_X_E(U_S(IM_OF(IJKP2),M),U_S(IJKP2,M),I_OF(IJKP2)),K_OF(&
                IJK2)) 
 !
-            U_S_S = AVG_Z(AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),&
-               AVG_X_E(U_SO(IM_OF(IJMKP2),M),U_SO(IJMKP2,M),I_OF(IJMKP2)),K_OF(&
+            U_S_S = AVG_Z(AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),&
+               AVG_X_E(U_S(IM_OF(IJMKP2),M),U_S(IJMKP2,M),I_OF(IJMKP2)),K_OF(&
                IJK1)) 
 !
-            U_S_E = AVG_Z(AVG_Y(U_SO(IJK1,M),U_SO(IJK2,M),J_OF(IJK1)),AVG_Y(&
-               U_SO(IJMKP2,M),U_SO(IJKP2,M),J_OF(IJMKP2)),K_OF(IJK1)) 
+            U_S_E = AVG_Z(AVG_Y(U_S(IJK1,M),U_S(IJK2,M),J_OF(IJK1)),AVG_Y(&
+               U_S(IJMKP2,M),U_S(IJKP2,M),J_OF(IJMKP2)),K_OF(IJK1)) 
 !
-            U_S_W = AVG_Z(AVG_Y(U_SO(IM_OF(IJK1),M),U_SO(IM_OF(IJK2),M),J_OF(&
-               IM_OF(IJK1))),AVG_Y(U_SO(IM_OF(IJMKP2),M),U_SO(IM_OF(IJKP2),M),&
+            U_S_W = AVG_Z(AVG_Y(U_S(IM_OF(IJK1),M),U_S(IM_OF(IJK2),M),J_OF(&
+               IM_OF(IJK1))),AVG_Y(U_S(IM_OF(IJMKP2),M),U_S(IM_OF(IJKP2),M),&
                J_OF(IM_OF(IJMKP2))),K_OF(IJK1)) 
 !
-            U_S_T = AVG_Y(AVG_X_E(U_SO(IM_OF(IJMKP2),M),U_SO(IJMKP2,M),I_OF(&
-               IJMKP2)),AVG_X_E(U_SO(IM_OF(IJKP2),M),U_SO(IJKP2,M),I_OF(IJKP2))&
+            U_S_T = AVG_Y(AVG_X_E(U_S(IM_OF(IJMKP2),M),U_S(IJMKP2,M),I_OF(&
+               IJMKP2)),AVG_X_E(U_S(IM_OF(IJKP2),M),U_S(IJKP2,M),I_OF(IJKP2))&
                ,J_OF(IJMKP2)) 
 !
-            U_S_B = AVG_Y(AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),&
-               AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),J_OF(IJK1)) 
+            U_S_B = AVG_Y(AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),&
+               AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),J_OF(IJK1)) 
 !
-            V_S_N = AVG_Z(AVG_Y_N(V_SO(IJK1,M),V_SO(IJK2,M)),AVG_Y_N(V_SO(&
-               IJMKP2,M),V_SO(IJKP2,M)),K_OF(IJK2)) 
+            V_S_N = AVG_Z(AVG_Y_N(V_S(IJK1,M),V_S(IJK2,M)),AVG_Y_N(V_S(&
+               IJMKP2,M),V_S(IJKP2,M)),K_OF(IJK2)) 
 !
-            V_S_S = AVG_Z(AVG_Y_N(V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),AVG_Y_N(&
-               V_SO(JM_OF(IJMKP2),M),V_SO(IJMKP2,M)),K_OF(IJK1)) 
+            V_S_S = AVG_Z(AVG_Y_N(V_S(JM_OF(IJK1),M),V_S(IJK1,M)),AVG_Y_N(&
+               V_S(JM_OF(IJMKP2),M),V_S(IJMKP2,M)),K_OF(IJK1)) 
 !
             V_S_E = ZERO 
 !
@@ -745,26 +745,26 @@
 !
             V_S_B = ZERO 
 !
-            W_S_N = W_SO(IJK2,M) 
+            W_S_N = W_S(IJK2,M) 
 !
-            W_S_S = W_SO(IJK1,M) 
+            W_S_S = W_S(IJK1,M) 
 !
-            W_S_E = AVG_Y(AVG_X(W_SO(IJK1,M),W_SO(IP_OF(IJK1),M),I_OF(IJK1)),&
-               AVG_X(W_SO(IJK2,M),W_SO(IP_OF(IJK2),M),I_OF(IJK2)),J_OF(IJK1)) 
+            W_S_E = AVG_Y(AVG_X(W_S(IJK1,M),W_S(IP_OF(IJK1),M),I_OF(IJK1)),&
+               AVG_X(W_S(IJK2,M),W_S(IP_OF(IJK2),M),I_OF(IJK2)),J_OF(IJK1)) 
 !
-            W_S_W = AVG_Y(AVG_X(W_SO(IM_OF(IJK1),M),W_SO(IJK1,M),I_OF(IM_OF(&
-               IJK1))),AVG_X(W_SO(IM_OF(IJK2),M),W_SO(IJK2,M),I_OF(IM_OF(IJK2))&
+            W_S_W = AVG_Y(AVG_X(W_S(IM_OF(IJK1),M),W_S(IJK1,M),I_OF(IM_OF(&
+               IJK1))),AVG_X(W_S(IM_OF(IJK2),M),W_S(IJK2,M),I_OF(IM_OF(IJK2))&
                ),J_OF(IJK1)) 
 !
-            W_S_T = AVG_Y(AVG_Z_T(W_SO(IJK1,M),W_SO(IJMKP2,M)),AVG_Z_T(W_SO(&
-               IJK2,M),W_SO(IJKP2,M)),J_OF(IJMKP2)) 
+            W_S_T = AVG_Y(AVG_Z_T(W_S(IJK1,M),W_S(IJMKP2,M)),AVG_Z_T(W_S(&
+               IJK2,M),W_S(IJKP2,M)),J_OF(IJMKP2)) 
 !
-            W_S_B = AVG_Y(AVG_Z_T(W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),AVG_Z_T(&
-               W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),J_OF(IJK1)) 
+            W_S_B = AVG_Y(AVG_Z_T(W_S(KM_OF(IJK1),M),W_S(IJK1,M)),AVG_Z_T(&
+               W_S(KM_OF(IJK2),M),W_S(IJK2,M)),J_OF(IJK1)) 
 !
             IF (CYLINDRICAL) THEN 
                U_S_C = AVG_Z(U_S_B,U_S_T,K_OF(IJK1)) 
-               W_S_C = AVG_Y(W_SO(IJK1,M),W_SO(IJK2,M),J_OF(IJK1)) 
+               W_S_C = AVG_Y(W_S(IJK1,M),W_S(IJK2,M),J_OF(IJK1)) 
             ELSE 
                U_S_C = ZERO 
                W_S_C = ZERO 
@@ -780,33 +780,33 @@
             IJKP2 = KP_OF(IJK2) 
             IJPKP2 = JP_OF(IJKP2) 
 !
-            U_S_N = AVG_Z(AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),&
-               AVG_X_E(U_SO(IM_OF(IJPKP2),M),U_SO(IJPKP2,M),I_OF(IJPKP2)),K_OF(&
+            U_S_N = AVG_Z(AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),&
+               AVG_X_E(U_S(IM_OF(IJPKP2),M),U_S(IJPKP2,M),I_OF(IJPKP2)),K_OF(&
                IJK1)) 
 !
-            U_S_S = AVG_Z(AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),&
-               AVG_X_E(U_SO(IM_OF(IJKP2),M),U_SO(IJKP2,M),I_OF(IJKP2)),K_OF(&
+            U_S_S = AVG_Z(AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),&
+               AVG_X_E(U_S(IM_OF(IJKP2),M),U_S(IJKP2,M),I_OF(IJKP2)),K_OF(&
                IJK2)) 
 !
-            U_S_E = AVG_Z(AVG_Y(U_SO(IJK2,M),U_SO(IJK1,M),J_OF(IJK2)),AVG_Y(&
-               U_SO(IJKP2,M),U_SO(IJPKP2,M),J_OF(IJKP2)),K_OF(IJK2)) 
+            U_S_E = AVG_Z(AVG_Y(U_S(IJK2,M),U_S(IJK1,M),J_OF(IJK2)),AVG_Y(&
+               U_S(IJKP2,M),U_S(IJPKP2,M),J_OF(IJKP2)),K_OF(IJK2)) 
 !
-            U_S_W = AVG_Z(AVG_Y(U_SO(IM_OF(IJK2),M),U_SO(IM_OF(IJK1),M),J_OF(&
-               IM_OF(IJK2))),AVG_Y(U_SO(IM_OF(IJKP2),M),U_SO(IM_OF(IJPKP2),M),&
+            U_S_W = AVG_Z(AVG_Y(U_S(IM_OF(IJK2),M),U_S(IM_OF(IJK1),M),J_OF(&
+               IM_OF(IJK2))),AVG_Y(U_S(IM_OF(IJKP2),M),U_S(IM_OF(IJPKP2),M),&
                J_OF(IM_OF(IJKP2))),K_OF(IJK2)) 
 !
-            U_S_T = AVG_Y(AVG_X_E(U_SO(IM_OF(IJKP2),M),U_SO(IJKP2,M),I_OF(IJKP2&
-               )),AVG_X_E(U_SO(IM_OF(IJPKP2),M),U_SO(IJPKP2,M),I_OF(IJPKP2)),&
+            U_S_T = AVG_Y(AVG_X_E(U_S(IM_OF(IJKP2),M),U_S(IJKP2,M),I_OF(IJKP2&
+               )),AVG_X_E(U_S(IM_OF(IJPKP2),M),U_S(IJPKP2,M),I_OF(IJPKP2)),&
                J_OF(IJKP2)) 
 !
-            U_S_B = AVG_Y(AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),&
-               AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),J_OF(IJK2)) 
+            U_S_B = AVG_Y(AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),&
+               AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),J_OF(IJK2)) 
 !
-            V_S_N = AVG_Z(AVG_Y_N(V_SO(IJK2,M),V_SO(IJK1,M)),AVG_Y_N(V_SO(IJKP2&
-               ,M),V_SO(IJPKP2,M)),K_OF(IJK1)) 
+            V_S_N = AVG_Z(AVG_Y_N(V_S(IJK2,M),V_S(IJK1,M)),AVG_Y_N(V_S(IJKP2&
+               ,M),V_S(IJPKP2,M)),K_OF(IJK1)) 
 !
-            V_S_S = AVG_Z(AVG_Y_N(V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),AVG_Y_N(&
-               V_SO(JM_OF(IJKP2),M),V_SO(IJKP2,M)),K_OF(IJK2)) 
+            V_S_S = AVG_Z(AVG_Y_N(V_S(JM_OF(IJK2),M),V_S(IJK2,M)),AVG_Y_N(&
+               V_S(JM_OF(IJKP2),M),V_S(IJKP2,M)),K_OF(IJK2)) 
 !
             V_S_E = ZERO 
 !
@@ -816,26 +816,26 @@
 !
             V_S_B = ZERO 
 !
-            W_S_N = W_SO(IJK1,M) 
+            W_S_N = W_S(IJK1,M) 
 !
-            W_S_S = W_SO(IJK2,M) 
+            W_S_S = W_S(IJK2,M) 
 !
-            W_S_E = AVG_Y(AVG_X(W_SO(IJK2,M),W_SO(IP_OF(IJK2),M),I_OF(IJK2)),&
-               AVG_X(W_SO(IJK1,M),W_SO(IP_OF(IJK1),M),I_OF(IJK1)),J_OF(IJK2)) 
+            W_S_E = AVG_Y(AVG_X(W_S(IJK2,M),W_S(IP_OF(IJK2),M),I_OF(IJK2)),&
+               AVG_X(W_S(IJK1,M),W_S(IP_OF(IJK1),M),I_OF(IJK1)),J_OF(IJK2)) 
 !
-            W_S_W = AVG_Y(AVG_X(W_SO(IM_OF(IJK2),M),W_SO(IJK2,M),I_OF(IM_OF(&
-               IJK2))),AVG_X(W_SO(IM_OF(IJK1),M),W_SO(IJK1,M),I_OF(IM_OF(IJK1))&
+            W_S_W = AVG_Y(AVG_X(W_S(IM_OF(IJK2),M),W_S(IJK2,M),I_OF(IM_OF(&
+               IJK2))),AVG_X(W_S(IM_OF(IJK1),M),W_S(IJK1,M),I_OF(IM_OF(IJK1))&
                ),J_OF(IJK2)) 
 !
-            W_S_T = AVG_Y(AVG_Z_T(W_SO(IJK2,M),W_SO(IJKP2,M)),AVG_Z_T(W_SO(IJK1&
-               ,M),W_SO(IJPKP2,M)),J_OF(IJKP2)) 
+            W_S_T = AVG_Y(AVG_Z_T(W_S(IJK2,M),W_S(IJKP2,M)),AVG_Z_T(W_S(IJK1&
+               ,M),W_S(IJPKP2,M)),J_OF(IJKP2)) 
 !
-            W_S_B = AVG_Y(AVG_Z_T(W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),AVG_Z_T(&
-               W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),J_OF(IJK2)) 
+            W_S_B = AVG_Y(AVG_Z_T(W_S(KM_OF(IJK2),M),W_S(IJK2,M)),AVG_Z_T(&
+               W_S(KM_OF(IJK1),M),W_S(IJK1,M)),J_OF(IJK2)) 
 !
             IF (CYLINDRICAL) THEN 
                U_S_C = AVG_Z(U_S_B,U_S_T,K_OF(IJK2)) 
-               W_S_C = AVG_Y(W_SO(IJK2,M),W_SO(IJK1,M),J_OF(IJK2)) 
+               W_S_C = AVG_Y(W_S(IJK2,M),W_S(IJK1,M),J_OF(IJK2)) 
             ELSE 
                U_S_C = ZERO 
                W_S_C = ZERO 
@@ -855,56 +855,56 @@
 !
             U_S_S = ZERO 
 !
-            U_S_E = AVG_Z(AVG_X_E(U_SO(IJK1,M),U_SO(IJK2,M),I_OF(IJK2)),AVG_X_E&
-               (U_SO(IMJKP2,M),U_SO(IJKP2,M),I_OF(IJKP2)),K_OF(IJK2)) 
+            U_S_E = AVG_Z(AVG_X_E(U_S(IJK1,M),U_S(IJK2,M),I_OF(IJK2)),AVG_X_E&
+               (U_S(IMJKP2,M),U_S(IJKP2,M),I_OF(IJKP2)),K_OF(IJK2)) 
 !
-            U_S_W = AVG_Z(AVG_X_E(U_SO(IM_OF(IJK1),M),U_SO(IJK1,M),I_OF(IJK1)),&
-               AVG_X_E(U_SO(IM_OF(IMJKP2),M),U_SO(IMJKP2,M),I_OF(IMJKP2)),K_OF(&
+            U_S_W = AVG_Z(AVG_X_E(U_S(IM_OF(IJK1),M),U_S(IJK1,M),I_OF(IJK1)),&
+               AVG_X_E(U_S(IM_OF(IMJKP2),M),U_S(IMJKP2,M),I_OF(IMJKP2)),K_OF(&
                IJK1)) 
 !
             U_S_T = ZERO 
 !
             U_S_B = ZERO 
 !
-            V_S_N = AVG_X(AVG_Z(V_SO(IJK1,M),V_SO(IMJKP2,M),K_OF(IJK1)),AVG_Z(&
-               V_SO(IJK2,M),V_SO(IJKP2,M),K_OF(IJK2)),I_OF(IJK1)) 
+            V_S_N = AVG_X(AVG_Z(V_S(IJK1,M),V_S(IMJKP2,M),K_OF(IJK1)),AVG_Z(&
+               V_S(IJK2,M),V_S(IJKP2,M),K_OF(IJK2)),I_OF(IJK1)) 
 !
-            V_S_S = AVG_X(AVG_Z(V_SO(JM_OF(IJK1),M),V_SO(JM_OF(IMJKP2),M),K_OF(&
-               JM_OF(IJK1))),AVG_Z(V_SO(JM_OF(IJK2),M),V_SO(JM_OF(IJKP2),M),&
+            V_S_S = AVG_X(AVG_Z(V_S(JM_OF(IJK1),M),V_S(JM_OF(IMJKP2),M),K_OF(&
+               JM_OF(IJK1))),AVG_Z(V_S(JM_OF(IJK2),M),V_S(JM_OF(IJKP2),M),&
                K_OF(JM_OF(IJK2))),I_OF(IJK1)) 
 !
-            V_S_E = AVG_Z(AVG_Y_N(V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),AVG_Y_N(&
-               V_SO(JM_OF(IJKP2),M),V_SO(IJKP2,M)),K_OF(IJK2)) 
+            V_S_E = AVG_Z(AVG_Y_N(V_S(JM_OF(IJK2),M),V_S(IJK2,M)),AVG_Y_N(&
+               V_S(JM_OF(IJKP2),M),V_S(IJKP2,M)),K_OF(IJK2)) 
 !
-            V_S_W = AVG_Z(AVG_Y_N(V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),AVG_Y_N(&
-               V_SO(JM_OF(IMJKP2),M),V_SO(IMJKP2,M)),K_OF(IJK1)) 
+            V_S_W = AVG_Z(AVG_Y_N(V_S(JM_OF(IJK1),M),V_S(IJK1,M)),AVG_Y_N(&
+               V_S(JM_OF(IMJKP2),M),V_S(IMJKP2,M)),K_OF(IJK1)) 
 !
-            V_S_T = AVG_X(AVG_Y_N(V_SO(JM_OF(IMJKP2),M),V_SO(IMJKP2,M)),AVG_Y_N&
-               (V_SO(JM_OF(IJKP2),M),V_SO(IJKP2,M)),I_OF(IMJKP2)) 
+            V_S_T = AVG_X(AVG_Y_N(V_S(JM_OF(IMJKP2),M),V_S(IMJKP2,M)),AVG_Y_N&
+               (V_S(JM_OF(IJKP2),M),V_S(IJKP2,M)),I_OF(IMJKP2)) 
 !
-            V_S_B = AVG_X(AVG_Y_N(V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),AVG_Y_N(&
-               V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),I_OF(IJK1)) 
+            V_S_B = AVG_X(AVG_Y_N(V_S(JM_OF(IJK1),M),V_S(IJK1,M)),AVG_Y_N(&
+               V_S(JM_OF(IJK2),M),V_S(IJK2,M)),I_OF(IJK1)) 
 !
-            W_S_N = AVG_X(AVG_Y(W_SO(IJK1,M),W_SO(JP_OF(IJK1),M),J_OF(IJK1)),&
-               AVG_Y(W_SO(IJK2,M),W_SO(JP_OF(IJK2),M),J_OF(IJK2)),I_OF(IJK1)) 
+            W_S_N = AVG_X(AVG_Y(W_S(IJK1,M),W_S(JP_OF(IJK1),M),J_OF(IJK1)),&
+               AVG_Y(W_S(IJK2,M),W_S(JP_OF(IJK2),M),J_OF(IJK2)),I_OF(IJK1)) 
 !
-            W_S_S = AVG_X(AVG_Y(W_SO(JM_OF(IJK1),M),W_SO(IJK1,M),J_OF(JM_OF(&
-               IJK1))),AVG_Y(W_SO(JM_OF(IJK2),M),W_SO(IJK2,M),J_OF(JM_OF(IJK2))&
+            W_S_S = AVG_X(AVG_Y(W_S(JM_OF(IJK1),M),W_S(IJK1,M),J_OF(JM_OF(&
+               IJK1))),AVG_Y(W_S(JM_OF(IJK2),M),W_S(IJK2,M),J_OF(JM_OF(IJK2))&
                ),I_OF(IJK1)) 
 !
-            W_S_E = W_SO(IJK2,M) 
+            W_S_E = W_S(IJK2,M) 
 !
-            W_S_W = W_SO(IJK1,M) 
+            W_S_W = W_S(IJK1,M) 
 !
-            W_S_T = AVG_X(AVG_Z_T(W_SO(IJK1,M),W_SO(IMJKP2,M)),AVG_Z_T(W_SO(&
-               IJK2,M),W_SO(IJKP2,M)),I_OF(IMJKP2)) 
+            W_S_T = AVG_X(AVG_Z_T(W_S(IJK1,M),W_S(IMJKP2,M)),AVG_Z_T(W_S(&
+               IJK2,M),W_S(IJKP2,M)),I_OF(IMJKP2)) 
 !
-            W_S_B = AVG_X(AVG_Z_T(W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),AVG_Z_T(&
-               W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),I_OF(IJK1)) 
+            W_S_B = AVG_X(AVG_Z_T(W_S(KM_OF(IJK1),M),W_S(IJK1,M)),AVG_Z_T(&
+               W_S(KM_OF(IJK2),M),W_S(IJK2,M)),I_OF(IJK1)) 
 !
             IF (CYLINDRICAL) THEN 
-               U_S_C = AVG_Z(U_SO(IJK1,M),U_SO(IMJKP2,M),K_OF(IJK1)) 
-               W_S_C = AVG_X(W_SO(IJK1,M),W_SO(IJK2,M),I_OF(IJK1)) 
+               U_S_C = AVG_Z(U_S(IJK1,M),U_S(IMJKP2,M),K_OF(IJK1)) 
+               W_S_C = AVG_X(W_S(IJK1,M),W_S(IJK2,M),I_OF(IJK1)) 
             ELSE 
                U_S_C = ZERO 
                W_S_C = ZERO 
@@ -924,56 +924,56 @@
 !
             U_S_S = ZERO 
 !
-            U_S_E = AVG_Z(AVG_X_E(U_SO(IJK2,M),U_SO(IJK1,M),I_OF(IJK1)),AVG_X_E&
-               (U_SO(IJKP2,M),U_SO(IPJKP2,M),I_OF(IPJKP2)),K_OF(IJK1)) 
+            U_S_E = AVG_Z(AVG_X_E(U_S(IJK2,M),U_S(IJK1,M),I_OF(IJK1)),AVG_X_E&
+               (U_S(IJKP2,M),U_S(IPJKP2,M),I_OF(IPJKP2)),K_OF(IJK1)) 
 !
-            U_S_W = AVG_Z(AVG_X_E(U_SO(IM_OF(IJK2),M),U_SO(IJK2,M),I_OF(IJK2)),&
-               AVG_X_E(U_SO(IM_OF(IJKP2),M),U_SO(IJKP2,M),I_OF(IJKP2)),K_OF(&
+            U_S_W = AVG_Z(AVG_X_E(U_S(IM_OF(IJK2),M),U_S(IJK2,M),I_OF(IJK2)),&
+               AVG_X_E(U_S(IM_OF(IJKP2),M),U_S(IJKP2,M),I_OF(IJKP2)),K_OF(&
                IJK2)) 
 !
             U_S_T = ZERO 
 !
             U_S_B = ZERO 
 !
-            V_S_N = AVG_X(AVG_Z(V_SO(IJK2,M),V_SO(IJKP2,M),K_OF(IJK2)),AVG_Z(&
-               V_SO(IJK1,M),V_SO(IPJKP2,M),K_OF(IJK1)),I_OF(IJK2)) 
+            V_S_N = AVG_X(AVG_Z(V_S(IJK2,M),V_S(IJKP2,M),K_OF(IJK2)),AVG_Z(&
+               V_S(IJK1,M),V_S(IPJKP2,M),K_OF(IJK1)),I_OF(IJK2)) 
 !
-            V_S_S = AVG_X(AVG_Z(V_SO(JM_OF(IJK2),M),V_SO(JM_OF(IJKP2),M),K_OF(&
-               JM_OF(IJK2))),AVG_Z(V_SO(JM_OF(IJK1),M),V_SO(JM_OF(IPJKP2),M),&
+            V_S_S = AVG_X(AVG_Z(V_S(JM_OF(IJK2),M),V_S(JM_OF(IJKP2),M),K_OF(&
+               JM_OF(IJK2))),AVG_Z(V_S(JM_OF(IJK1),M),V_S(JM_OF(IPJKP2),M),&
                K_OF(JM_OF(IJK1))),I_OF(IJK2)) 
 !
-            V_S_E = AVG_Z(AVG_Y_N(V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),AVG_Y_N(&
-               V_SO(JM_OF(IPJKP2),M),V_SO(IPJKP2,M)),K_OF(IJK1)) 
+            V_S_E = AVG_Z(AVG_Y_N(V_S(JM_OF(IJK1),M),V_S(IJK1,M)),AVG_Y_N(&
+               V_S(JM_OF(IPJKP2),M),V_S(IPJKP2,M)),K_OF(IJK1)) 
 !
-            V_S_W = AVG_Z(AVG_Y_N(V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),AVG_Y_N(&
-               V_SO(JM_OF(IJKP2),M),V_SO(IJKP2,M)),K_OF(IJK2)) 
+            V_S_W = AVG_Z(AVG_Y_N(V_S(JM_OF(IJK2),M),V_S(IJK2,M)),AVG_Y_N(&
+               V_S(JM_OF(IJKP2),M),V_S(IJKP2,M)),K_OF(IJK2)) 
 !
-            V_S_T = AVG_X(AVG_Y_N(V_SO(JM_OF(IJKP2),M),V_SO(IJKP2,M)),AVG_Y_N(&
-               V_SO(JM_OF(IPJKP2),M),V_SO(IPJKP2,M)),I_OF(IJKP2)) 
+            V_S_T = AVG_X(AVG_Y_N(V_S(JM_OF(IJKP2),M),V_S(IJKP2,M)),AVG_Y_N(&
+               V_S(JM_OF(IPJKP2),M),V_S(IPJKP2,M)),I_OF(IJKP2)) 
 !
-            V_S_B = AVG_X(AVG_Y_N(V_SO(JM_OF(IJK2),M),V_SO(IJK2,M)),AVG_Y_N(&
-               V_SO(JM_OF(IJK1),M),V_SO(IJK1,M)),I_OF(IJK2)) 
+            V_S_B = AVG_X(AVG_Y_N(V_S(JM_OF(IJK2),M),V_S(IJK2,M)),AVG_Y_N(&
+               V_S(JM_OF(IJK1),M),V_S(IJK1,M)),I_OF(IJK2)) 
 !
-            W_S_N = AVG_X(AVG_Y(W_SO(IJK2,M),W_SO(JP_OF(IJK2),M),J_OF(IJK2)),&
-               AVG_Y(W_SO(IJK1,M),W_SO(JP_OF(IJK1),M),J_OF(IJK1)),I_OF(IJK2)) 
+            W_S_N = AVG_X(AVG_Y(W_S(IJK2,M),W_S(JP_OF(IJK2),M),J_OF(IJK2)),&
+               AVG_Y(W_S(IJK1,M),W_S(JP_OF(IJK1),M),J_OF(IJK1)),I_OF(IJK2)) 
 !
-            W_S_S = AVG_X(AVG_Y(W_SO(JM_OF(IJK2),M),W_SO(IJK2,M),J_OF(JM_OF(&
-               IJK2))),AVG_Y(W_SO(JM_OF(IJK1),M),W_SO(IJK1,M),J_OF(JM_OF(IJK1))&
+            W_S_S = AVG_X(AVG_Y(W_S(JM_OF(IJK2),M),W_S(IJK2,M),J_OF(JM_OF(&
+               IJK2))),AVG_Y(W_S(JM_OF(IJK1),M),W_S(IJK1,M),J_OF(JM_OF(IJK1))&
                ),I_OF(IJK2)) 
 !
-            W_S_E = W_SO(IJK1,M) 
+            W_S_E = W_S(IJK1,M) 
 !
-            W_S_W = W_SO(IJK2,M) 
+            W_S_W = W_S(IJK2,M) 
 !
-            W_S_T = AVG_X(AVG_Z_T(W_SO(IJK2,M),W_SO(IJKP2,M)),AVG_Z_T(W_SO(IJK1&
-               ,M),W_SO(IPJKP2,M)),I_OF(IJKP2)) 
+            W_S_T = AVG_X(AVG_Z_T(W_S(IJK2,M),W_S(IJKP2,M)),AVG_Z_T(W_S(IJK1&
+               ,M),W_S(IPJKP2,M)),I_OF(IJKP2)) 
 !
-            W_S_B = AVG_X(AVG_Z_T(W_SO(KM_OF(IJK2),M),W_SO(IJK2,M)),AVG_Z_T(&
-               W_SO(KM_OF(IJK1),M),W_SO(IJK1,M)),I_OF(IJK2)) 
+            W_S_B = AVG_X(AVG_Z_T(W_S(KM_OF(IJK2),M),W_S(IJK2,M)),AVG_Z_T(&
+               W_S(KM_OF(IJK1),M),W_S(IJK1,M)),I_OF(IJK2)) 
 !
             IF (CYLINDRICAL) THEN 
-               U_S_C = AVG_Z(U_SO(IJK2,M),U_SO(IJKP2,M),K_OF(IJK2)) 
-               W_S_C = AVG_X(W_SO(IJK2,M),W_SO(IJK1,M),I_OF(IJK2)) 
+               U_S_C = AVG_Z(U_S(IJK2,M),U_S(IJKP2,M),K_OF(IJK2)) 
+               W_S_C = AVG_X(W_S(IJK2,M),W_S(IJK1,M),I_OF(IJK2)) 
             ELSE 
                U_S_C = ZERO 
                W_S_C = ZERO 
