@@ -411,9 +411,9 @@
               IF (I == IMAX2) THEN              ! permeable
                  IF ((J/=1.AND.J/=0.) .AND. (J/=JMAX2.AND.J/=JMAX3)) THEN
                     IF (NO_K) THEN
-                       FLAG_E(IMJK) = 2000
+                       IF(.NOT.WALL_AT(IMJK)) FLAG_E(IMJK) = 2000
                     ELSE IF ((K/=1.AND.K/=0) .AND. (K/=KMAX2.AND.K/=KMAX3)) THEN
-                       FLAG_E(IMJK) = 2000
+                       IF(.NOT.WALL_AT(IMJK)) FLAG_E(IMJK) = 2000
                     ENDIF
                  ENDIF
               ENDIF
@@ -421,16 +421,17 @@
               IF (J == JMAX2) THEN
                  IF ((I/=1.AND.I/=0) .AND. (I/=IMAX2.AND.I/=IMAX3)) THEN
                     IF (NO_K) THEN
-                       FLAG_N(IJMK) = 2000
+                       IF(.NOT.WALL_AT(IJMK)) FLAG_N(IJMK) = 2000
                     ELSE IF ((K/=1.AND.K/=0) .AND. (K/=KMAX2.AND.K/=KMAX3)) THEN
-                       FLAG_N(IJMK) = 2000
+                       IF(.NOT.WALL_AT(IJMK)) FLAG_N(IJMK) = 2000
                     ENDIF
                  ENDIF
               ENDIF
 
               IF (K == KMAX2) THEN
                  IF ((J/=1.AND.J/=0.) .AND. (J/=JMAX2.AND.J/=JMAX3)) THEN
-                    IF ((I/=1.AND.I/=0) .AND. (I/=IMAX2.AND.I/=IMAX3)) FLAG_T(IJKM) = 2000
+                    IF ((I/=1.AND.I/=0) .AND. (I/=IMAX2.AND.I/=IMAX3) .AND. &
+		    .NOT.WALL_AT(IJKM)) FLAG_T(IJKM) = 2000
                  ENDIF
               ENDIF
 
