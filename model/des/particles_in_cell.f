@@ -93,7 +93,7 @@
  
             IF(PIJK(L,5).EQ.0) THEN
               WRITE(*,*) 'Problem determining the solids association &
-                          in PIC', L, DES_RADIUS(L), D_P0
+      &                   in PIC', L, DES_RADIUS(L), D_P0
             ENDIF
 
 
@@ -141,7 +141,7 @@
             ELSE IF(DES_VEL_NEW(L,1).LT.ZERO) THEN
                IF(I.EQ.2) THEN
                   PRINT *,'des/particles_in_cell.f : particle leaving &
-                       domain at' , &
+      &                domain at' , &
                   PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,1), DES_VEL_NEW(L,1)
                   PRINT *, 'particle velocity reset to zero'
                   DES_VEL_NEW(L,1) = ZERO
@@ -161,8 +161,8 @@
             ELSE IF(DES_VEL_NEW(L,2).LT.ZERO) THEN
                IF(J.EQ.2) THEN
                   PRINT *,'des/particles_in_cell.f : particle leaving &
-                       domain at' , &
-                  PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,2), DES_VEL_NEW(L,2)
+      &                domain at' , &
+      &           PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,2), DES_VEL_NEW(L,2)
                   PRINT *, 'particle velocity reset to zero'
                   DES_VEL_NEW(L,2) = ZERO
                   GO TO 50 
@@ -183,7 +183,7 @@
                ELSE IF(DES_VEL_NEW(L,3).LT.ZERO) THEN
                IF(K.EQ.2) THEN
                   PRINT *,'des/particles_in_cell.f : particle leaving &
-                       domain at' , &
+      &                domain at' , &
                   PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,3), DES_VEL_NEW(L,3)
                   PRINT *, 'particle velocity reset to zero'
                   DES_VEL_NEW(L,3) = ZERO
