@@ -40,10 +40,10 @@
         integer, intent(in) :: ierr
 
         character(len=512) :: errmsg
-        integer :: resultlen
+        integer :: resultlen, ierror
 
         if (ierr .ne. MPI_SUCCESS ) then
-                call MPI_Error_string( ierr, errmsg, resultlen )
+                call MPI_Error_string( ierr, errmsg, resultlen, ierror )
                 print*, 'Error: ', msg
                 print*, errmsg(1:resultlen)
                 stop '** ERROR ** '

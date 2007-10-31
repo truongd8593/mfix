@@ -21,14 +21,14 @@
 
 	integer :: ip, iproc, isize, iremain, &
 		   kp, kproc, ksize, kremain, &
-                   jp, jproc, jsize, jremain, ijkproc, ierr
+                   jp, jproc, jsize, jremain, ijkproc, ierr, ierrcode
 
         if(numPEs.ne.(nodesi*nodesj*nodesk)) then
 	  write(*,*)'From : gridmap module'
 	  write(*, *) 'nodesi = ', nodesi, '  nodesj = ', nodesj, '  nodesk = ',nodesk
 	  write(*,*) 'number of processors requested = ', numPEs
 	  write(*,*) 'nodesi*nodesj*nodesk must equal the number of processors requested in mpirun'
-          call MPI_abort( MPI_COMM_WORLD, ierr)
+          call MPI_abort( MPI_COMM_WORLD, ierrcode, ierr)
 	endif
 !
         if(nodesi.ne.1.and.cyclic_x) then
