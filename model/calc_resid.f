@@ -541,57 +541,72 @@
       END DO 
 
 
-      if(.not.debug_resid) return
+      if(.not.debug_resid) then
 
-!// Determine the global sum
-      call global_all_sum(NUM)
-      call global_all_sum(DEN)
-      call global_all_sum(NCELLS)
+         call global_all_sum(NUM)
+         call global_all_sum(DEN)
 
-!//
-      do nproc=0,NumPEs-1
-	if(nproc.eq.myPE) then
-	MAX_RESID_L(nproc) = MAX_RESID
-	IJK_RESID_L(nproc) = FUNIJK_GL(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
-	else
-	MAX_RESID_L(nproc) = 0.0
-	IJK_RESID_L(nproc) = 0
-	endif
-      enddo
+         IF (DEN*NORM > ZERO) THEN 
+            RESID = NUM/(DEN*NORM) 
+         ELSE IF (NUM == ZERO) THEN 
+            RESID = ZERO 
+         ELSE 
+            RESID = LARGE_NUMBER 
+         ENDIF 
 
-!//  Determine the maximum among all the procesors
-      call global_all_max(MAX_RESID)
+      else
+
+!//   Determine the global sum
+         call global_all_sum(NUM)
+         call global_all_sum(DEN)
+         call global_all_sum(NCELLS)
+
+!//   
+         do nproc=0,NumPEs-1
+            if(nproc.eq.myPE) then
+               MAX_RESID_L(nproc) = MAX_RESID
+               IJK_RESID_L(nproc) = FUNIJK_GL(I_OF(IJK_RESID), J_OF(IJK_RESID), K_OF(IJK_RESID))
+            else
+               MAX_RESID_L(nproc) = 0.0
+               IJK_RESID_L(nproc) = 0
+            endif
+         enddo
+
+!//   Determine the maximum among all the procesors
+         call global_all_max(MAX_RESID)
 
 
-!//  Collect all the information among all the procesors
-      call global_all_sum(MAX_RESID_L, MAX_RESID_GL)
-      call global_all_sum(IJK_RESID_L, IJK_RESID_GL)
+!//   Collect all the information among all the procesors
+         call global_all_sum(MAX_RESID_L, MAX_RESID_GL)
+         call global_all_sum(IJK_RESID_L, IJK_RESID_GL)
 
-!//  Determine the global IJK location w.r.t. serial version
-      IJK_RESID = IJKMAX2
+!//   Determine the global IJK location w.r.t. serial version
+         IJK_RESID = IJKMAX2
 
-      do nproc=0,NumPEs-1
+         do nproc=0,NumPEs-1
 
-        if(MAX_RESID_GL(nproc).eq.MAX_RESID.and.IJK_RESID_GL(nproc).lt.IJK_RESID) then
+            if(MAX_RESID_GL(nproc).eq.MAX_RESID.and.IJK_RESID_GL(nproc).lt.IJK_RESID) then
 
-        IJK_RESID = IJK_RESID_GL(nproc)
+               IJK_RESID = IJK_RESID_GL(nproc)
 
-        endif
+            endif
 
-      enddo            
-      IF (DEN*NORM > ZERO) THEN 
-         RESID = NUM/(DEN*NORM) 
-         MAX_RESID = NCELLS*MAX_RESID/(DEN*NORM) 
-      ELSE IF (NUM == ZERO) THEN 
-         RESID = ZERO 
-         MAX_RESID = ZERO 
-         IJK_RESID = 0 
-      ELSE 
-         RESID = LARGE_NUMBER 
-         MAX_RESID = LARGE_NUMBER 
-!         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
-!         CALL WRITE_ERROR ('CALC_RESID_pp', LINE, 1) 
-      ENDIF 
+         enddo            
+         IF (DEN*NORM > ZERO) THEN 
+            RESID = NUM/(DEN*NORM) 
+            MAX_RESID = NCELLS*MAX_RESID/(DEN*NORM) 
+         ELSE IF (NUM == ZERO) THEN 
+            RESID = ZERO 
+            MAX_RESID = ZERO 
+            IJK_RESID = 0 
+         ELSE 
+            RESID = LARGE_NUMBER 
+            MAX_RESID = LARGE_NUMBER 
+!     WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
+!     CALL WRITE_ERROR ('CALC_RESID_pp', LINE, 1) 
+         ENDIF 
+
+      endif                     ! debug_resid_g
 !
       RETURN  
       END SUBROUTINE CALC_RESID_PP 

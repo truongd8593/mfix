@@ -56,7 +56,7 @@
 
 !$omp parallel do private( NN,M )&
 !$omp&  REDUCTION(+:LOCAL_INDEX)
-      DO NN = 1, NRESID
+      DO NN = 2, NRESID
          DO M = 0, DIMENSION_M
             LOCAL_INDEX = LOCAL_INDEX + 1
             RESID_PACK(LOCAL_INDEX) = NUM_RESID(NN,M)
@@ -73,7 +73,7 @@
 
 !$omp parallel do private( NN,M )&
 !$omp&  REDUCTION(+:LOCAL_INDEX)
-      DO NN = 1, NRESID
+      DO NN = 2, NRESID
          DO M = 0, DIMENSION_M
             LOCAL_INDEX = LOCAL_INDEX + 1
             NUM_RESID(NN,M) = RESID_PACK(LOCAL_INDEX)
@@ -83,7 +83,7 @@
       ENDDO
 
 !$omp parallel do private( NN,M )
-      DO NN = 1, NRESID
+      DO NN = 2, NRESID
          DO M = 0, DIMENSION_M
             IF (DEN_RESID(NN,M) > ZERO) THEN 
                RESID(NN,M) = NUM_RESID(NN,M)/DEN_RESID(NN,M) 
