@@ -1549,8 +1549,8 @@
 	return
 	end subroutine MPI_BARRIER
 
-	subroutine MPI_ABORT(MPI_COMM_WORLD, mpierr)
-	integer, intent(in) :: MPI_COMM_WORLD, mpierr
+	subroutine MPI_ABORT(MPI_COMM_WORLD, mpierr, ierr)
+	integer, intent(in) :: MPI_COMM_WORLD, mpierr, ierr
 
 	STOP
 	end subroutine MPI_ABORT
