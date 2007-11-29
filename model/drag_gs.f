@@ -249,7 +249,7 @@
 !     ! This applies just to the calculation of the drag, in other routines the value of viscosity
 !     ! at a pressure boundary has always a zero value.
 !     
-            IF (P_OUTFLOW_AT(IJK)) THEN
+            IF (P_FLOW_AT(IJK)) THEN
                IF( FLUID_AT(EAST_OF(IJK) )) THEN
                   Mu = MU_G(EAST_OF(IJK))
                ELSE IF ( FLUID_AT(WEST_OF(IJK)) ) THEN
