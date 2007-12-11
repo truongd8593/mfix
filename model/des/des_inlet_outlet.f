@@ -24,8 +24,10 @@
       DOUBLE PRECISION NORMAL(DIMN), TANGENT(DIMN)
       DOUBLE PRECISION V_REL_TRANS_NORM, V_REL_TRANS_TANG
       DOUBLE PRECISION TEMPFN(DIMN), TEMPFT(DIMN), T(DIMN)
-      LOGICAL ALREADY_EXISTS
-!      
+      LOGICAL ALREADY_EXISTS, calc_fc, CALLFROMDES
+      LOGICAL CHECK_CON
+      
+
 !---------------------------------------------------------------------
 ! Calculate new values
 !---------------------------------------------------------------------
@@ -136,15 +138,14 @@
                           OMEGA_NEW(I,:) = ZERO
                           DES_RADIUS(I) = DES_RADIUS(LL)
                        CALL CFNORMALWALL(LL, I, NORMAL)
-                       CALL CFRELVEL(LL, I, V_REL_TRANS)
-                       CALL CFVRN(V_REL_TRANS_NORM, V_REL_TRANS, NORMAL)
-                       CALL CFSLIPVEL(LL, I, V_SLIP, V_REL_TRANS, V_REL_TRANS_NORM, NORMAL)
-                       CALL CFTANGENT(V_SLIP, TANGENT, NORMAL)
-                       CALL CFVRT(V_REL_TRANS_TANG, V_REL_TRANS, TANGENT)
-                       CALL CFTOTALOVERLAPSWALL(LL, I, V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T)
+                       CALL CFNORMALWALL(LL, I, NORMAL)
+                       CALL CFRELVEL(LL, I, V_REL_TRANS, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
+                       CALL CFTOTALOVERLAPS(LL, I, II, V_REL_TRANS_NORM, V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T, CHECK_CON)
+
                        CALL CFFNWALL(LL, V_REL_TRANS_NORM, OVERLAP_N, NORMAL)
                        CALL CFFTWALL(LL, V_REL_TRANS_TANG, OVERLAP_T, TANGENT)
-                       CALL CFSLIDEWALL(LL, TANGENT)
+                       TEMPFT(:) = FTS1(:)
+                       CALL CFSLIDEWALL(LL, TANGENT, TEMPFT)
                        CALL CFFCTOWALL(LL, NORMAL)
                        END IF
                    END IF 
@@ -160,17 +161,16 @@
                           DES_VEL_NEW(I,:) = DES_WALL_VEL(IW,:)
                           OMEGA_NEW(I,:) = ZERO
                           DES_RADIUS(I) = DES_RADIUS(LL)
-                       CALL CFNORMALWALL(LL, I, NORMAL)
-                       CALL CFRELVEL(LL, I, V_REL_TRANS)
-                       CALL CFVRN(V_REL_TRANS_NORM, V_REL_TRANS, NORMAL)
-                       CALL CFSLIPVEL(LL, I, V_SLIP, V_REL_TRANS, V_REL_TRANS_NORM, NORMAL)
-                       CALL CFTANGENT(V_SLIP, TANGENT, NORMAL)
-                       CALL CFVRT(V_REL_TRANS_TANG, V_REL_TRANS, TANGENT)
-                       CALL CFTOTALOVERLAPSWALL(LL, I, V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T)
-                       CALL CFFNWALL(LL, V_REL_TRANS_NORM, OVERLAP_N, NORMAL)
-                       CALL CFFTWALL(LL, V_REL_TRANS_TANG, OVERLAP_T, TANGENT)
-                       CALL CFSLIDEWALL(LL, TANGENT)
-                       CALL CFFCTOWALL(LL, NORMAL)
+                          CALL CFNORMALWALL(LL, I, NORMAL)
+                          CALL CFNORMALWALL(LL, I, NORMAL)
+                          CALL CFRELVEL(LL, I, V_REL_TRANS, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
+                          CALL CFTOTALOVERLAPS(LL, I, II, V_REL_TRANS_NORM, V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T, CHECK_CON)
+
+                          CALL CFFNWALL(LL, V_REL_TRANS_NORM, OVERLAP_N, NORMAL)
+                          CALL CFFTWALL(LL, V_REL_TRANS_TANG, OVERLAP_T, TANGENT)
+                          TEMPFT(:) = FTS1(:)
+                          CALL CFSLIDEWALL(LL, TANGENT, TEMPFT)
+                          CALL CFFCTOWALL(LL, NORMAL)
                        END IF
                    END IF 
                    
@@ -185,17 +185,16 @@
                           DES_VEL_NEW(I,:) = DES_WALL_VEL(IW,:)
                           OMEGA_NEW(I,:) = ZERO
                           DES_RADIUS(I) = DES_RADIUS(LL)
-                       CALL CFNORMALWALL(LL, I, NORMAL)
-                       CALL CFRELVEL(LL, I, V_REL_TRANS)
-                       CALL CFVRN(V_REL_TRANS_NORM, V_REL_TRANS, NORMAL)
-                       CALL CFSLIPVEL(LL, I, V_SLIP, V_REL_TRANS, V_REL_TRANS_NORM, NORMAL)
-                       CALL CFTANGENT(V_SLIP, TANGENT, NORMAL)
-                       CALL CFVRT(V_REL_TRANS_TANG, V_REL_TRANS, TANGENT)
-                       CALL CFTOTALOVERLAPSWALL(LL, I, V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T)
-                       CALL CFFNWALL(LL, V_REL_TRANS_NORM, OVERLAP_N, NORMAL)
-                       CALL CFFTWALL(LL, V_REL_TRANS_TANG, OVERLAP_T, TANGENT)
-                       CALL CFSLIDEWALL(LL, TANGENT)
-                       CALL CFFCTOWALL(LL, NORMAL)
+                          CALL CFNORMALWALL(LL, I, NORMAL)
+                          CALL CFNORMALWALL(LL, I, NORMAL)
+                          CALL CFRELVEL(LL, I, V_REL_TRANS, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
+                          CALL CFTOTALOVERLAPS(LL, I, II, V_REL_TRANS_NORM, V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T, CHECK_CON)
+                          
+                          CALL CFFNWALL(LL, V_REL_TRANS_NORM, OVERLAP_N, NORMAL)
+                          CALL CFFTWALL(LL, V_REL_TRANS_TANG, OVERLAP_T, TANGENT)
+                          TEMPFT(:) = FTS1(:)
+                          CALL CFSLIDEWALL(LL, TANGENT, TEMPFT)
+                          CALL CFFCTOWALL(LL, NORMAL)
                        END IF
                    END IF 
 !--DEBUGGING
@@ -228,12 +227,9 @@
                            CO = 1
                            PV(LL,NI) = 1
                            CALL CFNORMAL(LL, I, II, NORMAL)
-                           CALL CFRELVEL(LL, I, V_REL_TRANS)
-                           CALL CFVRN(V_REL_TRANS_NORM, V_REL_TRANS, NORMAL)
-                           CALL CFSLIPVEL(LL, I, V_SLIP, V_REL_TRANS, V_REL_TRANS_NORM, NORMAL)
-                           CALL CFTANGENT(V_SLIP, TANGENT, NORMAL)
-                           CALL CFVRT(V_REL_TRANS_TANG, V_REL_TRANS, TANGENT)
-                           CALL CFINCREMENTALOVERLAPS(V_REL_TRANS_NORM, V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T)
+                           CALL CFRELVEL(LL, I, V_REL_TRANS, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
+                           CALL CFINCREMENTALOVERLAPS(LL,I, V_REL_TRANS_NORM,  V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T, CHECK_CON)
+
                            CALL CFFN(LL, V_REL_TRANS_NORM, OVERLAP_N, NORMAL)
                            CALL CFFT(LL, V_REL_TRANS_TANG, OVERLAP_T, TANGENT)
                               FN(LL,:) = FN(LL,:) + PFN(LL,NI,:)
@@ -259,15 +255,13 @@
                        PN(LL,NI) = I
                        PV(LL,NI) = 1
                        CALL CFNORMAL(LL, I, II, NORMAL)
-                       CALL CFRELVEL(LL, I, V_REL_TRANS)
-                       CALL CFVRN(V_REL_TRANS_NORM, V_REL_TRANS, NORMAL)
-                       CALL CFSLIPVEL(LL, I, V_SLIP, V_REL_TRANS, V_REL_TRANS_NORM, NORMAL)
-                       CALL CFTANGENT(V_SLIP, TANGENT, NORMAL)
-                       CALL CFVRT(V_REL_TRANS_TANG, V_REL_TRANS, TANGENT)
-                       CALL CFTOTALOVERLAPS(LL, I, II, V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T)
+                       CALL CFRELVEL(LL, I, V_REL_TRANS, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
+                       CALL CFINCREMENTALOVERLAPS(LL,I, V_REL_TRANS_NORM,  V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T, CHECK_CON)
+                       CALL CFTOTALOVERLAPS(LL, I, II, V_REL_TRANS_NORM, V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T, CHECK_CON)
+
                        CALL CFFN(LL, V_REL_TRANS_NORM, OVERLAP_N, NORMAL)
                        CALL CFFT(LL, V_REL_TRANS_TANG, OVERLAP_T, TANGENT)
-                          TEMPFT(:) = FT(LL,:)
+                       TEMPFT(:) = FT(LL,:)
                        CALL CFSLIDE(LL, TANGENT, TEMPFT)
                        CALL CFFCTOW(LL, I, NORMAL)
                           PFN(LL,NI,:) = FNS1(:)
@@ -311,9 +305,13 @@
 
         END DO
 
-	IF(DES_CONTINUUM_COUPLED) THEN
-	CALL DRAG_FGS(PARTICLES)
-	END IF
+        calc_fc = .true.
+        IF(DES_CONTINUUM_COUPLED) THEN
+           CALLFROMDES = .TRUE.
+           CALL DRAG_FGS(calc_fc,CALLFROMDES)
+           CALLFROMDES = .FALSE.
+        END IF
+
 
 !-------------------------------------------------------------------
 ! Update old values with new values
