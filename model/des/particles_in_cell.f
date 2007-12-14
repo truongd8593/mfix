@@ -92,8 +92,10 @@
             END DO
  
             IF(PIJK(L,5).EQ.0) THEN
-              WRITE(*,*) 'Problem determining the solids association &
-      &                   in PIC', L, DES_RADIUS(L), D_P0
+              WRITE(*,*) 'Problem determining the solids association in PIC for particle no: ', L
+	      write(*,*) 'Particle diameter = ', 2.d0*DES_RADIUS(L),' and dp =', D_P0(1:MMAX)
+	      write(*,*) 'Particle density = ', Ro_Sol(L), 'and RO_S =', RO_S(1:MMAX)
+	      write(*,*) 'Particle position =' , DES_POS_NEW(L,:)
             ENDIF
 
 
@@ -140,16 +142,12 @@
                IF((DES_POS_NEW(L,1).GE.XE(I)).AND.(DES_POS_NEW(L,1).LT.XE(I+1))) PIJK(L,1) = I+1
             ELSE IF(DES_VEL_NEW(L,1).LT.ZERO) THEN
                IF(I.EQ.2) THEN
-                  PRINT *,'des/particles_in_cell.f : particle leaving &
-      &                domain at' , &
-                  PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,1), DES_VEL_NEW(L,1)
-                  PRINT *, 'particle velocity reset to zero'
-                  DES_VEL_NEW(L,1) = ZERO
-                  GO TO 40 
+                 ! PRINT *,'des/particles_in_cell.f : CHECK CELL I, Problem with I.EQ.2'
+                  !STOP
                END IF
                IF((DES_POS_NEW(L,1).GE.XE(I-2)).AND.(DES_POS_NEW(L,1).LT.XE(I-1))) PIJK(L,1) = I-1
             ELSE 
-               PRINT *,'des/particles_in_cell.f : CHECK CELL I' 
+               PRINT *,'des/particles_in_cell.f : CHECK CELL I' , PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,1), DES_VEL_NEW(L,1)
                STOP
             END IF
  40         CONTINUE
@@ -160,12 +158,8 @@
                IF((DES_POS_NEW(L,2).GE.YN(J)).AND.(DES_POS_NEW(L,2).LT.YN(J+1))) PIJK(L,2) = J+1
             ELSE IF(DES_VEL_NEW(L,2).LT.ZERO) THEN
                IF(J.EQ.2) THEN
-                  PRINT *,'des/particles_in_cell.f : particle leaving &
-      &                domain at' , &
-      &           PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,2), DES_VEL_NEW(L,2)
-                  PRINT *, 'particle velocity reset to zero'
-                  DES_VEL_NEW(L,2) = ZERO
-                  GO TO 50 
+                !  PRINT *,'des/particles_in_cell.f : CHECK CELL J, Problem with J.EQ.2'
+                  !STOP
                END IF
                IF((DES_POS_NEW(L,2).GE.YN(J-2)).AND.(DES_POS_NEW(L,2).LT.YN(J-1))) PIJK(L,2) = J-1
             ELSE
@@ -182,12 +176,8 @@
                   IF((DES_POS_NEW(L,3).GE.ZT(K)).AND.(DES_POS_NEW(L,3).LT.ZT(K+1))) PIJK(L,3) = K+1
                ELSE IF(DES_VEL_NEW(L,3).LT.ZERO) THEN
                IF(K.EQ.2) THEN
-                  PRINT *,'des/particles_in_cell.f : particle leaving &
-      &                domain at' , &
-                  PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,3), DES_VEL_NEW(L,3)
-                  PRINT *, 'particle velocity reset to zero'
-                  DES_VEL_NEW(L,3) = ZERO
-                  GO TO 30 
+                !  PRINT *,'des/particles_in_cell.f : CHECK CELL K, Problem with K.EQ.2'
+                  !STOP
                END IF
                   IF((DES_POS_NEW(L,3).GE.ZT(K-2)).AND.(DES_POS_NEW(L,3).LT.ZT(K-1))) PIJK(L,3) = K-1
                ELSE 
@@ -220,7 +210,7 @@
          J = J_OF(IJK)
          EP_G(IJK) = ONE   
          DO M = 1, MMAX
-            IF(PINC(IJK).GT.0.AND.SOLVOLINC(IJK,M).GT.0) THEN
+            IF(SOLVOLINC(IJK,M).GT.ZERO) THEN
                OSOLVOL = ONE/SOLVOLINC(IJK,M)   
                DES_U_s(IJK,M) = DES_U_s(IJK,M)*OSOLVOL
                DES_V_s(IJK,M) = DES_V_s(IJK,M)*OSOLVOL
