@@ -33,11 +33,14 @@
          IF(DIMN.EQ.3) THEN 
             CALL DES_CROSSPRDCT(CROSSP, NORM, FT1)
             TOW(L,:) = TOW(L,:) + DES_RADIUS(L)*CROSSP(:)
-            TOW(II,:) = TOW(II,:) - DES_RADIUS(II)*CROSSP(:)
+            TOW(II,:) = TOW(II,:) + DES_RADIUS(II)*CROSSP(:)
+	!Remember the torque is r cross F_T, which, compared to i particle, are both negative for the j particl.
+	!Therefore, the toqrue, unlike tangential and normal contact forces, will be in the same direction for 
+	!both the particles making the pair 
          ELSE 
             CROSSP(1) = NORM(1)*FT1(2) - NORM(2)*FT1(1)
             TOW(L,1) = TOW(L,1) + DES_RADIUS(L)*CROSSP(1)
-            TOW(II,1) = TOW(II,1) - DES_RADIUS(II)*CROSSP(1)
+            TOW(II,1) = TOW(II,1) + DES_RADIUS(II)*CROSSP(1)
          endif 
 
 	!         IF(L.EQ.29) PRINT*,'FOR = ', L, II, FC(L,:)
