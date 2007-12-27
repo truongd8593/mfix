@@ -92,6 +92,7 @@ mfix.exe : \
     calc_e.$(OBJ_EXT) \
     calc_gama.$(OBJ_EXT) \
     calc_grbdry.$(OBJ_EXT) \
+    calc_h.$(OBJ_EXT) \
     calc_k_cp.$(OBJ_EXT) \
     calc_k_g.$(OBJ_EXT) \
     calc_k_s.$(OBJ_EXT) \
@@ -433,6 +434,7 @@ mfix.exe : \
     calc_e.$(OBJ_EXT) \
     calc_gama.$(OBJ_EXT) \
     calc_grbdry.$(OBJ_EXT) \
+    calc_h.$(OBJ_EXT) \
     calc_k_cp.$(OBJ_EXT) \
     calc_k_g.$(OBJ_EXT) \
     calc_k_s.$(OBJ_EXT) \
@@ -1466,6 +1468,12 @@ calc_grbdry.$(OBJ_EXT) : calc_grbdry.f \
             function.inc                                                 \
             fun_avg2.inc                                                 \
             ep_s2.inc                                                   
+calc_h.$(OBJ_EXT) : calc_h.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            CONSTANT.mod 
 calc_k_cp.$(OBJ_EXT) : calc_k_cp.f \
             PARAM.mod \
             PARAM1.mod \
