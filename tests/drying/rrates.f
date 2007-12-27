@@ -62,9 +62,10 @@
 !                      cell index
       INTEGER          IJK
       
-      DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX), rxn
+      DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX), RxH_xfr(0:MMAX, 0:MMAX)
+      DOUBLE PRECISION X_tmp(0:MMAX, 0:MMAX, Dimension_n_all)
       DOUBLE PRECISION RXNA, Trxn
-      DOUBLE PRECISION, EXTERNAL ::calc_ICpoR
+      DOUBLE PRECISION, EXTERNAL ::calc_h
 !
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -73,6 +74,7 @@
 
 !************************************************************************
       R_tmp = UNDEFINED
+      X_tmp(:, :, :) = ZERO
 !
 !  ---  Remember to include all the local variables here for parallel
 !  ---- processing
@@ -100,7 +102,9 @@
 !
 !
          if (X_s(IJK, 1, 1) > 0.0) then
+!         if (X_g(IJK, 1) > 0.0) then
 	   rxna = C(1) * ROP_s(IJK, 1) * max(0., (0.5 - X_g(IJK, 1)))
+!	   rxna = C(1) * X_g(IJK, 1)
 	 else
 	   rxna = 0.
 	 endif
@@ -125,10 +129,16 @@
 !
 !    (1) H2O gas
       R_gp(IJK, 1) = RXNA
+!      IF(X_g(IJK, 1) .GT. ZERO) THEN
+!        RoX_gc(IJK, 1) = RXNA / X_g(IJK, 1)
+!      ELSE
+!        RoX_gc(IJK, 1) = 1.0e-9
+!      ENDIF
 
 !  SOLIDS SPECIES
 !
 !    (1) H2O liquid
+!      R_sp(IJK, 1, 1) = RXNA
       IF(X_s(IJK, 1, 1) .GT. ZERO) THEN
         RoX_sc(IJK, 1, 1) = RXNA / X_s(IJK, 1, 1)
       ELSE
@@ -138,7 +148,8 @@
 !
 !3333333333333333333333333333333333333333333333333333333333333333333333333333333
 !
-! 3.  Determine the g/(cm^3.s) transferred from one phase to the other.
+! 3.  Determine the g/(cm^3.s) transferred from one phase to the other and specify
+!     the composition of the transferred material.
 !          R_tmp(To phase #, From phase #)
 !     e.g. R_tmp(0,1) -  mass generation of gas phase from solids-1,
 !          R_tmp(0,2) -  mass generation of gas phase from solids-2,
@@ -150,8 +161,28 @@
 !     Only one of the two skew-symmetric elements -- e.g., R_tmp(0,1) or
 !     R_tmp(1,0) -- needs to be specified.
 !
+!     
+!     X_tmp(M,L, N) is the mass fraction of species N in the material transferred
+!     between phase-M and phase-L. If the destination phase is M, then N is the
+!     index of the species in phase-M, otherwise N is the index of the species
+!     in phase-L; e.g. (1) In the reaction C+1/2O2 --> CO,
+!     the destination phase is gas phase. Then N will be equal to the index of CO 
+!     in gas phase. (2) If H2O is trasferred between liquid and gas phases either
+!     evaporation or condensation, then the index must change depending upon the
+!     direction of mass transfer. For condensation, N is the species index
+!     of H2O in the liquid phase and for evaporation it is the species index
+!     of H2O in the gas phase. Also Sum_over_N (X_tmp(M,L, N)) should be equal to 1. 
 !
-      if(MMAX > 0) R_tmp(0,1) =  RXNA
+      if(MMAX > 0) then
+        R_tmp(0,1) =  RXNA
+!        R_tmp(0,1) =  -RXNA
+	X_tmp(0, 1, :) = ZERO
+	if(R_tmp(0,1) > 0) then
+	  X_tmp(0, 1, 1) = 1.0	    !water (vapor)
+	else
+	  X_tmp(0, 1, 1) = 1.0	    !water (liquid)
+	endif
+      endif
 !
 !4444444444444444444444444444444444444444444444444444444444444444444444444444444
 !
@@ -209,32 +240,72 @@
             END DO 
 	    
 !
+!           Calculate the enthalpy of transferred material
 !
+
+            DO M = 0, MMAX-1
+ 	      DO L = M+1, MMAX
+	        RxH_xfr(M, L) = zero 
+	        IF(R_tmp(M,L) .NE. UNDEFINED)THEN
+		   IF(R_tmp(M,L) > ZERO) then ! phase-M is generated from phase-L
+                     DO N = 1, NMAX(M)
+                       RxH_xfr(M, L) =  RxH_xfr(M, L) + R_tmp(M,L) * X_tmp(M,L, N) * &
+			                              CALC_H(IJK, M, N)
+	                   
+                     END DO 
+		   else    ! phase-L is generated from phase-M
+                     DO N = 1, NMAX(L)
+                       RxH_xfr(M, L) =  RxH_xfr(M, L) + R_tmp(M,L) * X_tmp(M,L, N) * &
+			                              CALC_H(IJK, L, N)
+                     END DO
+		   endif
+		ELSEIF(R_tmp(L,M) .NE. UNDEFINED)THEN
+		   IF(R_tmp(L,M)> ZERO) then ! phase-L is generated from phase-M
+                     DO N = 1, NMAX(L)
+                       RxH_xfr(M, L) =  RxH_xfr(M, L) - R_tmp(L,M) * X_tmp(L,M, N) * &
+			                              CALC_H(IJK, L, N) 
+                     END DO
+		   else ! phase-M is generated from phase-L
+                     DO N = 1, NMAX(M)
+                       RxH_xfr(M, L) =  RxH_xfr(M, L) - R_tmp(L,M) * X_tmp(L,M, N) * &
+			                              CALC_H(IJK, M, N)
+                     END DO 
+		   endif
+	        ENDIF
+	      ENDDO 
+            END DO 
+	    
+            DO M = 1, MMAX
+ 	      DO L = 0, M-1
+	        RxH_xfr(M, L) = -RxH_xfr(L, M) 
+	      ENDDO 
+            END DO 
+
+!
+!           Calculate heats of reactions
 !
             HOR_G(IJK) = zero
             DO N = 1, NMAX(0)
-	      rxn =  (R_gp(IJK, N) - RoX_gc(IJK, N) * X_g(IJK, N)) &
-	              - SUM_R_g(IJK) * X_g(IJK, N)
-              HOR_G(IJK) = HOR_G(IJK) + rxn * (HfrefoR_g(N)  + &
-	                     (calc_ICpoR(T_G(IJK), Thigh_g(N), Tlow_g(N), &
-			     Tcom_g(N), Ahigh_g(1,N), Alow_g(1,N)) -  &
-			      IC_PGrefoR(N)) )* GAS_CONST_cal / MW_g(N)
-	                   
+              HOR_G(IJK) = HOR_G(IJK) + &
+	         (R_gp(IJK, N) - RoX_gc(IJK, N) * X_g(IJK, N)) * CALC_H(IJK, 0, N)
             END DO 
+            DO L = 1, MMAX
+	      HOR_G(IJK) = HOR_G(IJK) - RxH_xfr(0, L)
+	    ENDDO
             IF (UNITS == 'SI') HOR_G(IJK) = 4183.925D0*HOR_G(IJK)    !in J/kg K
+	    print *, hor_g(ijk)
 	    
             DO M = 1, MMAX 
               HOR_s(IJK, M) = zero
               DO N = 1, NMAX(M)
-	        rxn =  (R_sp(IJK, M, N) - RoX_sc(IJK, M, N) * X_s(IJK, M, N)) &
-	              - SUM_R_s(IJK, M) * X_s(IJK, M, N)
-                HOR_s(IJK, M) = HOR_s(IJK, M) + rxn * (HfrefoR_s(M, N)  + &
-	                     (calc_ICpoR(T_s(IJK, M), Thigh_s(M,N), Tlow_s(M,N), &
-			     Tcom_s(M,N), Ahigh_s(1,M,N), Alow_s(1,M,N)) -  &
-			      IC_PsrefoR(M,N)) )* GAS_CONST_cal / MW_s(M,N)
-	                   
+                HOR_s(IJK, M) = HOR_s(IJK, M) + &
+		  (R_sp(IJK, M, N) - RoX_sc(IJK, M, N) * X_s(IJK, M, N)) * CALC_H(IJK, M, N)
               END DO 
+              DO L = 0, MMAX
+	        if(M .NE. L) HOR_s(IJK, M) = HOR_s(IJK, M) - RxH_xfr(M, L)
+	      ENDDO
               IF (UNITS == 'SI') HOR_s(IJK, M) = 4183.925D0*HOR_s(IJK, M)    !in J/kg K
+              print *, m, hor_s(ijk, m)
             END DO 
 !
 !
@@ -265,4 +336,4 @@
          ' Message: Mass transfer between phases ',I2,' and ',I2,&
          ' (R_tmp) not specified',/1X,70('*')/) 
       RETURN  
-      END SUBROUTINE RRATES 
+      END SUBROUTINE RRATES

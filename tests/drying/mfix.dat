@@ -55,7 +55,7 @@
   EP_star = 0.4
   
   NMAX(1) = 2
-  SPECIES_NAME(3) = 'H2O(L)' 'Al2O3'
+  SPECIES_NAME(3) = 'H2O(L)' 'Al2O3' !'SiO2(Lqz)' !
   
   C(1) = 0.002  #reaction rate coefficient  
 
@@ -84,6 +84,8 @@
 
   IC_X_g(1,1)      =  0.0
   IC_X_g(1,2)      =  1.0
+!  IC_X_g(1,1)      =  0.5
+!  IC_X_g(1,2)      =  0.5
    
   IC_X_s(1,1,1)      =  0.1
   IC_X_s(1,1,2)      =  0.9 
@@ -104,7 +106,7 @@
   
   NLOG   = 25
   FULL_LOG = .TRUE.
-  RESID_STRING = 'P0' 'P1' 'V0'
+  RESID_STRING = 'T0' 'T1' 'V0'
 
 
 # DMP control
