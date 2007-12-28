@@ -239,7 +239,7 @@
 
 !     if (use_doloop) then
 
-!$omp   parallel do private(ijk)
+!!$omp   parallel do private(ijk)
 !        do ijk=ijkstart3,ijkend3
 !           Xinit(ijk) = Var(ijk)*(ONE + (2.0d0*Xinit(ijk)-1.0d0)*1.0d-6)
 !        enddo
