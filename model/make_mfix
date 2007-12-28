@@ -22,10 +22,10 @@ P4_OPTIMIZE=1
   # MUST set the TAUROOTDIR environment variable to a valid path of TAU installation
   # if USE_TAU is enabled.
   # FOLLOWING PATH SETTINGS is FOR NCCS
-  TAUROOTDIR=/spin/proj/perc/TOOLS/tau_latest
+    TAUROOTDIR=/spin/proj/perc/TOOLS/tau_latest
   # MUST set the PDTROOTDIR environment variable to a valid path of PDToolkit installation
   # if USE_TAU is enabled.
-  PDTROOTDIR=/spin/proj/perc/TOOLS/pdtoolkit-3.11
+    PDTROOTDIR=/spin/proj/perc/TOOLS/pdtoolkit-3.11
 #  
 #========== end of TAU related settings ==============  
 #
@@ -142,13 +142,17 @@ case $dmp_version in
   mpi_include="$mfix/dmp_modules/mpi_donothing"
   echo " "
   echo " "
-  echo "-------------- W  A  R  N  I  N  G ---------------------"
-  echo "Current configuration of MFIX makefile for TAU can be only used in dmp mode"
-  echo "Continuing with compilation without TAU directives"
-  echo "--------------------------------------------------------"
+  if [ "$USE_TAU" ]
+  then 
   echo " "
-  echo " "
-  unset USE_TAU
+    echo "-------------- W  A  R  N  I  N  G ---------------------"
+    echo "Current configuration of MFIX makefile for TAU can be only used in dmp mode"
+    echo "Continuing with compilation without TAU directives"
+    echo "--------------------------------------------------------"
+    echo " "
+    echo " "
+    unset USE_TAU
+  fi
   ;;
 esac
 ln -sf "$mpi_include/mpif.h" .
@@ -185,9 +189,11 @@ ln -sf "$mpi_include/mpif.h" .
       then
        echo
        echo
-       echo "Linux system with 64 bit processor detected, please select compiler"
+       echo "64 bit Linux system detected, please select compiler."
        echo
+       echo "=============================================================="
        echo "MFIX Compilation directives available for following compilers:"
+       echo "=============================================================="
        echo " [1] Intel Fortran Compiler (IFORT - FCE for 64 bit)"
        echo " [2] Intel Fortran Compiler (IFORT - FCE for 64 bit) on AMD Opteron"       
        echo " [3] Portland Group Linux Fortran Compiler (pgf90)"
@@ -195,6 +201,8 @@ ln -sf "$mpi_include/mpif.h" .
        echo " [5] Portland Group Linux Fortran Compiler (pgf90) on AMD Opteron"              
        echo " [6] Portland Group Linux Fortran Compiler (pgf90) on Cray XT3 at PSC"       
        echo " [7] Portland Group Linux Fortran Compiler (pgf90) on Cray XT4 at NCCS"        
+       echo " [8] PathScale Compiler (pathf90) on Cray XT4 at NCCS"        
+       echo " "
        echo -n "Select the compiler to compile MFIX? [1] "
        read lnx_compiler
        case $lnx_compiler in
@@ -233,6 +241,11 @@ ln -sf "$mpi_include/mpif.h" .
            echo "Portland Group Linux Fortran Compiler for Cray XT4 at NCCS selected"
            opsys="Linux_64_pgi_xt_nccs"
            ;;
+         8 )
+           echo " "
+           echo "PathScale Compiler (pathf90) on Cray XT4 at NCCS selected"
+           opsys="Linux_64_pscale_xt_nccs"
+           ;;
          *)
            echo " "
            echo "Intel Compiler selected"
@@ -250,6 +263,7 @@ ln -sf "$mpi_include/mpif.h" .
               echo "for .cshrc 'source path_to_fce_9.0/bin/ifortvars.csh'"
               echo "for .kshrc or .bashrc 'source path_to_fce_9.0/bin/ifortvars.sh'"
          fi
+
          if test $opsys = "Linux_64_pgi"
 	 then
            if [ "$PGI" ]
@@ -264,92 +278,80 @@ ln -sf "$mpi_include/mpif.h" .
 	      exit
 	    fi
          fi	    
-         if test $opsys = "Linux_64_pscale"
-	 then
-           if [ "$PSCALE" ]
-           then                                                                    
-              echo " "
-            else
-	      echo "______     Environment variable ERROR          _______"
-	      echo "Environment variable for PathScale is not defined !"
-	      echo " "
-	      echo "Please define the following in your shell and rerun make_mfix"
-	      echo " setenv PSCALE your_path_of_PathScale_root_directory"
-	      exit
-	    fi
-         fi
 
-         if test $opsys = "Linux_64_pscale" -o $opsys = "Linux_64_intel_amd64"
-	 then
-            if [ "$ACML" ]
-            then                                                                    
-                echo " "
-            else
-	        echo "______     Environment variable ERROR          _______"
-	        echo "Environment variable for ACML library is not defined !"
-	        echo " "
-	        echo "Please define the following in your shell and rerun make_mfix"
-	        echo " setenv ACML -L your_path_of_ACML_root_directory"
-	        echo "e.g. "
-	        echo " setenv ACML -L/usr/common/usg/acml/3.6.0/pathscale64/lib"	      
-	        exit
-	    fi	 
-         fi
-      else
+        # Temporarily disable PSCALE and ACML env variable check
+        #if test $opsys = "Linux_64_pscale"
+	#then
+        #   if [ "$PSCALE" ]
+        #   then                                                                    
+              echo " "
+        #    else
+        #      echo "______     Environment variable ERROR          _______"
+	#      echo "Environment variable for PathScale is not defined !"
+	#      echo " "
+	#      echo "Please define the following in your shell and rerun make_mfix"
+	#      echo " setenv PSCALE your_path_of_PathScale_root_directory"
+	#      exit
+	#    fi
+        #fi
+
+        #if test $opsys = "Linux_64_pscale" -o $opsys = "Linux_64_intel_amd64"
+	#then
+        #   if [ "$ACML" ]
+        #   then                                                                    
+        #       echo " "
+        #   else
+	#       echo "______     Environment variable ERROR          _______"
+	#       echo "Environment variable for ACML library is not defined !"
+	#       echo " "
+	#       echo "Please define the following in your shell and rerun make_mfix"
+	#       echo " setenv ACML -L your_path_of_ACML_root_directory"
+	#       echo "e.g. "
+	#       echo " setenv ACML -L/usr/common/usg/acml/3.6.0/pathscale64/lib"	      
+	#       exit
+	#   fi	 
+        #fi
+
+      else    # test $opsys = "Linux" branch
+
        echo
        echo
-       echo "32 bit Linux system detected, please select compiler"
+       echo "32 bit Linux system detected, please select compiler."
        echo
+       echo "=============================================================="
        echo "MFIX Compilation directives available for following compilers:"
-       echo " - Intel Linux Fortran Compiler (ifc)"
-       echo " - Portland Group Linux Fortran Compiler (pgf90)"
-       echo -n "Do you want to compile with Intel Linux F90 Compiler? (y/n) [yes] "
+       echo "=============================================================="
+       echo " [1] Portland Group Linux Fortran Compiler (pgf90)"
+       echo " [2] Intel Fortran Compiler version 9.X (ifort) "
+      #echo " [3] Intel Fortran Compiler version 10.X (ifort)"
+       echo " "
+       echo -n "Select the compiler to compile MFIX? [2] "
        read lnx_compiler
+
        case $lnx_compiler in
-         y|Y )
-           echo " "
-           echo "Intel Linux Fortran Compiler selected"
-           opsys="Linux_ifc"
-           ;;
-         n|N )
+         1 )
            echo " "
            echo "Portland Group Linux Fortran Compiler selected"
            opsys="Linux_pgi"
            ;;
+         33 )
+           echo " "
+           echo "Intel Linux Fortran Compiler version 10.X selected"
+           opsys="Linux_ifc10"
+           ;;
+         2 )
+           echo " "
+           echo "Intel Linux Fortran Compiler version 9.X selected"
+           opsys="Linux_ifc9"
+           ;;
          *)
            echo " "
-           echo "Intel Linux Fortran Compiler selected"
-           opsys="Linux_ifc"
+           echo "Intel Linux Fortran Compiler version 9.X selected"
+           opsys="Linux_ifc9"
            ;;
        esac
            
-       if test $opsys = "Linux_ifc"
-       then
-         echo 
-         echo "  Supported Intel Linux Fortran compiler versions:"
-         echo "    1) Intel Linux Fortran Compiler (ifort) version 8.X and up"
-         echo "    2) Intel Linux Fortran Compiler (ifc) version 7.X" 
-         echo -n "   Enter line number corresponding the compiler version? (1/2) [1] "
-         read ver_compiler
-         case $ver_compiler in
-         1)
-	   echo " "
-           echo "Intel Linux Fortran Compiler (ifort) version 8.X and up selected"
-           intel_ver="Linux_ifc8"
-           ;;
-         2)
-	   echo " "
-           echo "Intel Linux Fortran Compiler (ifc) version 7.X selected"
-           intel_ver="Linux_ifc7"
-           ;;
-         *)
-	   echo " "
-           echo "Intel Linux Fortran Compiler (ifort) version 8.X and up selected"
-           intel_ver="Linux_ifc8"
-           ;;
-       esac
-       fi
-      fi
+      fi   # end of test $opsys = "Linux" branch
     else
        echo  
     fi
@@ -545,19 +547,19 @@ ln -sf "$mpi_include/mpif.h" .
               y|Y )
                       FORTRAN_CMD=mpif90
                       LINK_CMD=mpif90
-		      
-                      if [ "$MPIHOME" ]
-                      then                                                                    
-                        echo " "
-                      else
-	                echo "______     Environment variable ERROR          _______"
-	                echo "Environment variable for MPI home directory is not defined !"
-	                echo " "
-	                echo "Please define the following in your shell and rerun make_mfix"
-	                echo " setenv MPIHOME your_path_of_MPI_root_directory"
-	                echo " e.g. setenv MPIHOME /opt/MPI/mpich2_intel_opt"	      
-	                exit
-	              fi
+		     # Temporarily disable MPIHOME env variable check
+                     #if [ "$MPIHOME" ]
+                     #then                                                                    
+                     #  echo " "
+                     #else
+	             #  echo "______     Environment variable ERROR          _______"
+	             #  echo "Environment variable for MPI home directory is not defined !"
+	             #  echo " "
+	             #  echo "Please define the following in your shell and rerun make_mfix"
+	             #  echo " setenv MPIHOME your_path_of_MPI_root_directory"
+	             #  echo " e.g. setenv MPIHOME /opt/MPI/mpich2_intel_opt"	      
+	             #  exit
+	             #fi
                       if [ "$ACML" ]
                       then                                                                    
                          libs_d="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
@@ -629,18 +631,18 @@ ln -sf "$mpi_include/mpif.h" .
                       FORTRAN_CMD=mpif90
                       LINK_CMD=mpif90
 		      
-                      if [ "$MPIHOME" ]
-                      then                                                                    
-                        echo " "
-                      else
-	                echo "______     Environment variable ERROR          _______"
-	                echo "Environment variable for MPI home directory is not defined !"
-	                echo " "
-	                echo "Please define the following in your shell and rerun make_mfix"
-	                echo " setenv MPIHOME your_path_of_MPI_root_directory"
-	                echo " e.g. setenv MPIHOME /opt/MPI/mpich2_intel_opt"	      
-	                exit
-	              fi
+                     #if [ "$MPIHOME" ]
+                     #then                                                                    
+                     #  echo " "
+                     #else
+	             #  echo "______     Environment variable ERROR          _______"
+	             #  echo "Environment variable for MPI home directory is not defined !"
+	             #  echo " "
+	             #  echo "Please define the following in your shell and rerun make_mfix"
+	             #  echo " setenv MPIHOME your_path_of_MPI_root_directory"
+	             #  echo " e.g. setenv MPIHOME /opt/MPI/mpich2_intel_opt"	      
+	             #  exit
+	             #fi
                       if [ "$ACML" ]
                       then                                                                    
                          libs_d="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
@@ -811,8 +813,8 @@ ln -sf "$mpi_include/mpif.h" .
           #-----------
             case $dmp_version in
               y|Y )
-                        FORTRAN_CMD=mpif90
-                        LINK_CMD=mpif90
+                        FORTRAN_CMD=ftn
+                        LINK_CMD=ftn
                 ;;
               *)
 #
@@ -878,18 +880,21 @@ ln -sf "$mpi_include/mpif.h" .
     Linux_64_pgi_xt_nccs)
             mach_file="LINUX.F"
             proc_type="amd64e"
+            proc_type="k8-64"
 	    
           #-----------
           # Decide to use mpif90 or pgf90 as the compiler & linker command
           #-----------
             case $dmp_version in
               y|Y )
+                       #FORTRAN_CMD=mpif90
+                       #LINK_CMD=mpif90
                         FORTRAN_CMD=ftn
                         LINK_CMD=ftn
                         if [ "$ACML_DIR" ]
                         then                                                                    
                            libs_d="odepack.a -L $ACML_DIR/pgi6/lib -lacml -lacml_mv"
-                           libs="odepack.a -lhwpc -lpapi -lm -L $ACML_DIR/pgi64/lib -lacml -lacml_mv"
+                           libs="odepack.a -lpapi -lm -L $ACML_DIR/pgi64/lib -lacml -lacml_mv"
 		        else
                            libs_d="odepack.a blas90.a dgtsv90.a -lhwpc -lpapi -lm"
                            libs="odepack.a blas90.a dgtsv90.a -lhwpc -lpapi -lm"
@@ -923,15 +928,15 @@ ln -sf "$mpi_include/mpif.h" .
           # Activate for compiler based profiling
           # profile_common="-Mprof=func"
             profile_common=" "	    
-            compile_common="-c -I. -I/opt/xt-tools/craypat/3.1.2/cpatx/include -Mnosave -byteswapio -target=catamount"
+            compile_common="-c -I. -I/opt/xt-tools/craypat/3.1.2/cpatx/include -Mnosave -byteswapio "
 
             compile="$optimize_common $profile_common -Mfreeform  $compile_common"
             compile2="$optimize_common $profile_common -Mfreeform $compile_common"
             compile3="$optimize_common $profile_common $compile_common"
             link="-Mipa=fast -Mipa=inline $profile_common"	    
 
-            compile_common_d="-c -I. -Mnosave -byteswapio"
-	    debug_common = "-g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk"
+            compile_common_d="-c -I. -Mnosave -byteswapio -target=catamount"
+	    debug_common="-g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk"
             compile_d=" $debug_common -Mfreeform $compile_common_d"
             compile_d2=" $debug_common -Mfreeform $compile_common_d"
             compile_d3=" $debug_common $compile_common_d"
@@ -1006,8 +1011,77 @@ ln -sf "$mpi_include/mpif.h" .
             preinline_flags="  "
                                                                                 
             ;;
-	    	    
-    Linux_ifc)
+
+     Linux_64_pscale_xt_nccs)
+            mach_file="LINUX.F"                 
+          #-----------
+          # Decide to use mpif90 or pathf90 as the compiler & linker command
+          #-----------
+            case $dmp_version in
+              y|Y )
+                        FORTRAN_CMD=ftn
+                        LINK_CMD=ftn
+                ;;
+              *)
+                        FORTRAN_CMD=$PSCALE/bin/pathf90
+                        LINK_CMD=$PSCALE/bin/pathf90
+                ;;
+            esac
+            if [ "$ACML" ]
+            then
+              echo " "
+              echo "-------------- W A R N I N G ! ----------"
+              echo " You may need to update the paths under libs_d and libs "
+              echo " variables in make_mfix; search for  Linux_64_pscale) text block"
+              echo " with the corresponding paths on your local system if"
+              echo " if you encounter problems during the link phase"
+              echo "-------------- W A R N I N G ! ----------"
+              echo " "
+            fi  
+            
+           case $dmp_version in
+              y|Y )
+                   libs_d="-lfrtbegin -lg2c odepack.a -lhwpc -lpapi -L $ACML/pathscale64/lib -lacml -lacml_mv"
+                   libs="-lfrtbegin -lg2c odepack.a -lhwpc -lpapi -L $ACML/pathscale64/lib -lacml -lacml_mv"
+                ;;
+              *)
+                   libs_d="-lfrtbegin -lg2c odepack.a $ACML"
+                   libs="-lfrtbegin -lg2c odepack.a $ACML"
+                ;;
+            esac
+                                                     
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-mp"
+            compile_common_dbg="-c -I. -fno-math-errno -static-data -fno-second-underscore -byteswapio -trapuv"
+# xt3 :  -O3 -LNO:prefetch=2 -LNO:prefetch_ahead=9 -LNO:fusion=2 -CG:use_prefetchnta=on
+            compile_common="-c -I. -I /opt/xt-tools/craypat/3.1.2/cpatx/include -march=opteron -O3 -OPT:Ofast -ffast-math -funroll-loops -fno-math-errno -static-data -fno-second-underscore -byteswapio"
+           #compile_common="-c -I. -I /opt/xt-tools/craypat/3.1.2/cpatx/include -OPT:Ofast -fno-math-errno -msse2 -fno-second-underscore -byteswapio"
+            
+            compile_d=" -g $compile_common_dbg -freeform"
+            compile_d2=" -g $compile_common_dbg -freeform"
+            compile_d3=" -g $compile_common_dbg"
+            link_d=" "
+
+            compile="$compile_common -freeform"
+            compile2="$compile_common -freeform"
+            compile3="$compile_common"
+            link="  "
+
+            MODULE_CODE=0
+
+#           ------------------
+#           flags for inlining
+#           ------------------
+            inline_objs="compare.o eosg.o discretize.o "
+            inline_files="compare.f eosg.f discretize.f "
+            inline_flags=" "
+            preinline_flags="  "
+
+            ;;
+
+                                               	    	    
+    Linux_ifc9 | Linux_ifc10 )
           #-----------
           # Check if the Intel Linux compiler specific machine.f exists
 	  #-----------
@@ -1018,73 +1092,54 @@ ln -sf "$mpi_include/mpif.h" .
 	      echo LINUX_intel.F "not found in $mfix"
 	      exit
 	    fi
+
           #-----------	    
           # Decide to use mpif90 or ifc as the compiler & linker command
 	  #-----------
             case $dmp_version in
               y|Y )
-                        FORTRAN_CMD=mpif90
-                        LINK_CMD=mpif90
+                      FORTRAN_CMD=mpif90
+                      LINK_CMD="mpif90 -lsvml"
                 ;;
               *)
-                        if test $intel_ver = "Linux_ifc8" 
-                        then
+                  case $opsys in
+                    Linux_ifc9 )
                            FORTRAN_CMD=ifort
                            LINK_CMD="ifort -lsvml"
-                        else
-                           FORTRAN_CMD=ifc
-                           LINK_CMD=ifc
-                        fi
+                           ;;
+                    Linux_ifc10 )
+                           FORTRAN_CMD=ifort
+                           LINK_CMD="ifort -lsvml"
+                           ;;
+                    * )
+                           FORTRAN_CMD=ifort
+                           LINK_CMD="ifort -lsvml"
+                           ;;
+                    esac
                 ;;
             esac
 
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-openmp -assume cc_omp"
+
             libs_d='odepack.a blas90.a dgtsv90.a'
             libs='odepack.a blas90.a dgtsv90.a'
 	    
-            if test $intel_ver = "Linux_ifc7"
-            then
-              #-----------
-	      # Check if Intel Linux compiler portability library is accessible?
-	      #-----------
-               echo
-               echo "checking for Intel compiler portability library, PEPCF90" 
-	       echo "in the default directory /opt/intel/compiler70/ia32/lib"
 
-            if test -f "/opt/intel/compiler70/ia32/lib/libPEPCF90.a"
-            then
-	        echo
-              #  echo -n "PEPCF90 library found under /opt/intel/compiler70/ia32/lib"
-		intel_lib="/opt/intel/compiler70/ia32/lib"
-            else
-	        intel_dir="/opt/intel"
-	        echo  "Library not found. Enter the directory "
-                echo -n "where Intel Linux compiler is installed [e.g. /opt/intel]: "
-                   read intel_dir
-  	         intel_lib="$intel_dir/compiler70/ia32/lib"  
-
- 	         if test -d "$intel_lib"
-	         then
-                   echo
-	         else
-	           echo "Directory $intel_lib not found"
-	           exit
-	         fi
-
-            fi
-
+         #============================
+         # Check the big endian environment variable 
+         #============================
             if [ "$F_UFMTENDIAN" ]
             then
-              #echo "Environment variable, F_UFMTENDIAN is found"
+               #echo "Environment variable, F_UFMTENDIAN is found"
 
-              if ( expr "$F_UFMTENDIAN" = "big" )
-              then
-                 echo "***********************************"
-                 echo "Intel Big Endian environment is set"
-                 echo "***********************************"
-              else
+               if ( expr "$F_UFMTENDIAN" = "big" )
+               then
+                 echo "*********************************************"
+                 echo "Big Endian environment set for Intel compiler"
+                 echo "*********************************************"
+               else
                  echo "F_UFMTENDIAN environment variable  IS NOT set to big endian!"
                  echo "Check the current value of F_UFMTENDIAN variable by:"
 		 echo "echo \$F_UFMTENDIAN"
@@ -1095,9 +1150,10 @@ ln -sf "$mpi_include/mpif.h" .
 		 echo " "
                  echo "Aborting compilation"
 		 exit
-              fi
+               fi
 
-            else
+            else  # if [ "$F_UFMTENDIAN" ] branch
+
               echo "Environment variable for big endian IS NOT set!"
               echo "Issue the following Cshell command at the prompt and "
               echo "then recompile:"
@@ -1106,60 +1162,88 @@ ln -sf "$mpi_include/mpif.h" .
 	      echo " "
               echo "Aborting compilation" 
 	      exit
-            fi
 
+            fi    # eof if [ "$F_UFMTENDIAN" ] branch
 
-         # Switch to general optimization flags if not compiling on Pentium 4 architecture 
+         #============================
+         # Set the common compiler flags that are common for all three sets 
+         #============================
+            case $opsys in
+                    Linux_ifc9 )
+                         compile_common="-c -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -d1 -CB -traceback"
+                           ;;
+                    Linux_ifc10 )
+                         compile_common="-c -I. -w -w95 -i_dynamic -convert big_endian -assume byterecl"
+                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -CB -traceback"
+                           ;;
+                    * )
+                         compile_common="-c -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -d1 -CB -traceback"
+                           ;;
+                    esac
+
+         #============================
+         # Set the optimization compiler flags 
+         #============================
+          # Old Pentium 3 processors are sensitive optimization flags so set a reduced set of flags
+          # that produce generic instruction set for all Pentium platforms
             if [ $P4_OPTIMIZE -eq 0 ]
-	    then
-               compile_common="-c -O3 -I. -w -w95 -static -ip -FR"
-	    else
-	       compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -static -ip -FR"
-	    fi
-            compile_d="-g -O0 -c -FR -I. -w -d1 -CB -traceback" 
-            compile_d2="-g -O0 -c -I. -w -d1 -CB -traceback" 
-            compile_d3="-g -O0 -c -I. -w -d1 -CB -traceback" 	    
-            link_d="-I. -L$intel_lib -lPEPCF90 "
-            compile="$compile_common"
-            compile2="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip"
-            compile3="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip"	    
-            link="-I. -L$intel_lib -lPEPCF90"
-            MODULE_CODE=0
-            fi
-
-            if test $intel_ver = "Linux_ifc8" 
             then
-         # Switch to general optimization flags if not compiling on Pentium 4 architecture 
-              if [ $P4_OPTIMIZE -eq 0 ]
-	      then
-                compile_common="-c -O3 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"
-	      else
-                compile_common="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"	      
-	      fi
-              compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB -traceback"
-              compile_d2="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB -traceback"
-              compile_d3="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB -traceback"	      
-              link_d="-I.  "
-              compile="$compile_common"
-              compile2="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
-              compile3="-c -O3 -axKW -tpp7 -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
-              link="-I.  "
-              MODULE_CODE=1
+               case $opsys in
+                  Linux_ifc9 )
+                           optimize_common="-O3"
+                           ;;
+                  Linux_ifc10 )
+                           optimize_common="-O3"
+                           ;;
+                  * ) 
+                           optimize_common="-O3"
+                           ;;
+                  esac
+            else
+               case $opsys in
+                  Linux_ifc9 )
+                           optimize_common="-O3 -axKW -tpp7"
+                           ;;
+                  Linux_ifc10 )
+                           #optimize_common="-fast"
+                           optimize_common="-O3 -axW -ip -fp-model precise -ftz"
+                           ;;
+                  * )  
+                           optimize_common="-O3 -axKW -tpp7"
+                           ;;
+                  esac
             fi
+         #============================
+         # Set ALL debug compile flags
+         #============================
+            compile_d="-g -c -I. -FR $compile_common_d"
+            compile_d2="-g -c -I. -FR $compile_common_d"
+            compile_d3="-g -c -I. $compile_common_d"
+            link_d="-I.  "
+         #============================
+         # Set ALL optimized compile flags
+         #============================
+            compile="$compile_common -FR $optimize_common"
+            compile2="$compile_common -FR $optimize_common"
+            compile3="$compile_common $optimize_common"
+            link="-I.  "
 
-	    
-#           ------------------
-#           flags for inlining
-#           ------------------
+            MODULE_CODE=1
+
+          # ------------------
+          # flags for inlining
+          # ------------------
             inline_objs="compare.o eosg.o discretize.o "
-#           inline_objs=" "
-            inline_files="compare.f eosg.f discretize.f "
-#           inline_files=" "
-            inline_flags=" "
-#            inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
-            preinline_flags="  "
+          # inline_objs=" "
 
-	    
+            inline_files="compare.f eosg.f discretize.f "
+          # inline_files=" "
+
+            inline_flags=" "
+          # inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
+            preinline_flags="  "
             ;;
 	    	    
     CYGWIN32_NT)
@@ -1650,6 +1734,11 @@ updatesubdir()
   then  
     export USE_TAU
   fi
+#AIKE debug what is sent to makefile
+# echo "Test vars: " $FORT_FLAGS
+# echo "Test vars: " $FORT_FLAGS2
+# echo "Test vars: " $FORT_FLAGS3
+# echo "Test vars: " $LIB_FLAGS3
 
 #######
 #INFO_3 Following block makes necessary setup for automatic instrumentation using TAU
@@ -1702,11 +1791,16 @@ updatesubdir()
    #----
      OUTfile=tausettings
      echo "ifdef USE_TAU" > $OUTfile
-     echo "  include \$(TAUROOTDIR)/include/Makefile" >> $OUTfile 
+#    echo "  include \$(TAUROOTDIR)/include/Makefile" >> $OUTfile 
+#    echo "  include \$(TAUROOTDIR)/xt3/lib/Makefile.tau-craytimers-multiplecounters-mpi-papi-pdt-pgi" >> $OUTfile 
+     echo "  include \$(TAUROOTDIR)/xt3/lib/Makefile.tau-callpath-craytimers-multiplecounters-mpi-papi-pdt-pgi" >> $OUTfile 
+#    echo "  include \$(TAUROOTDIR)/xt3/lib/Makefile.tau-phase-craytimers-multiplecounters-mpi-papi-pdt-pgi" >> $OUTfile 
+#    echo "  include \$(TAUROOTDIR)/xt3/lib/Makefile.tau-callpath-craytimers-mpi-pdt-pgi" >> $OUTfile 
      echo "  MYOPTIONS=-optVerbose -optKeepFiles -optPdtF95Opts=\"-R free\" -optTauSelectFile=select.tau " >> $OUTfile     
      case $dmp_version in
      y|Y )
-           COMPIL_SET=mpif90
+          #COMPIL_SET=mpif90
+           COMPIL_SET=ftn
           ;;
      *)
            COMPIL_SET=qk-pgf90
@@ -1748,21 +1842,21 @@ updatesubdir()
      echo "BEGIN_EXCLUDE_LIST" >> $SELfile
      echo "#void quicksort(int *, int, int)" >> $SELfile
      echo "#void interchange(int *, int *)" >> $SELfile
-     echo "SET_WALL_BC1" >> $SELfile
+     echo "SET_WALL_BC1" >> $SELfile 
      echo "PARALLEL_MPI::MPI_CHECK" >> $SELfile
      echo "G_0" >> $SELfile
      echo "EQUAL" >> $SELfile
      echo "DROODP_G" >> $SELfile
      echo "DG_0DNU" >> $SELfile
      echo "BOUNDFUNIJK::BOUND_FUNIJK" >> $SELfile
-     echo "G_0CS" >> $SELfile
+     echo "G_0CS" >> $SELfile 
      echo "COMPARE" >> $SELfile
      echo "BOUNDFUNIJK3::BOUND_FUNIJK3" >> $SELfile
      echo "DEBUG::ASSERT_I" >> $SELfile
      echo "EOSG" >> $SELfile
      echo "CALC_XSI" >> $SELfile
      #echo "READ_NAMELIST" >> $SELfile
-     echo "END_EXCLUDE_LIST" >> $SELfile
+     echo "END_EXCLUDE_LIST" >> $SELfile               
      echo "# " >> $SELfile
      echo "# If an include list is specified, the routines in the list will be the only" >> $SELfile          
      echo "# routines that are instrumented." >> $SELfile          
