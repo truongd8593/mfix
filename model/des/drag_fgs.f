@@ -144,11 +144,11 @@
          END IF
        END DO
 
-       if(.not.DES_INTERP_ON) goto 200
 
 500    CONTINUE
 
        
+       if(.not.DES_INTERP_ON) goto 200
        call set_interpolation_scheme(2)
        AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
        AVG_FACTOR2 = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)
