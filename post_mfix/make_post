@@ -18,8 +18,9 @@ i#!/bin/bsh -f
 echo "IMPORTANT: execute this makefile by typing \"sh make_post\""
 
 #------------------------------------------------------------------------
-#  Check if the system is a Linux system, if yes then ask the user which 
-#  compiler to use    
+# Flag variable for compiling with Pentium 4 specific optimization flags
+# Set to 0 to avoid Pentium 4 specific optimizations
+P4_OPTIMIZE=1
 #
 #  Check if the system is a Linux system, if yes then ask the user which 
 #  compiler to use    
@@ -111,59 +112,43 @@ echo "IMPORTANT: execute this makefile by typing \"sh make_post\""
          fi
 
       else
+
        echo
        echo
-       echo "Linux system detected, please select compiler"
+       echo "32 bit Linux system detected, please select compiler."
        echo
+       echo "=============================================================="
        echo "MFIX Compilation directives available for following compilers:"
-       echo " - Intel Linux Fortran Compiler (ifc)"
-       echo " - Portland Group Linux Fortran Compiler (pgf90)"
-       echo -n "Do you want to compile with Intel Linux F90 Compiler? (y/n) [yes] "
+       echo "=============================================================="
+       echo " [1] Portland Group Linux Fortran Compiler (pgf90)"
+       echo " [2] Intel Fortran Compiler version 9.X (ifort) "
+      #echo " [3] Intel Fortran Compiler version 10.X (ifort)"
+       echo " "
+       echo -n "Select the compiler to compile MFIX? [2] "
        read lnx_compiler
+
        case $lnx_compiler in
-         y|Y )
-           echo " "
-           echo "Intel Linux Fortran Compiler selected"
-           opsys="Linux_ifc"
-           ;;
-         n|N )
+         1 )
            echo " "
            echo "Portland Group Linux Fortran Compiler selected"
            opsys="Linux_pgi"
            ;;
+         33 )
+           echo " "
+           echo "Intel Linux Fortran Compiler version 10.X selected"
+           opsys="Linux_ifc10"
+           ;;
+         2 )
+           echo " "
+           echo "Intel Linux Fortran Compiler version 9.X selected"
+           opsys="Linux_ifc9"
+           ;;
          *)
            echo " "
-           echo "Intel Linux Fortran Compiler selected"
-           opsys="Linux_ifc"
+           echo "Intel Linux Fortran Compiler version 9.X selected"
+           opsys="Linux_ifc9"
            ;;
        esac
-           
-       if test $opsys = "Linux_ifc"
-       then
-         echo 
-         echo "  Supported Intel Linux Fortran compiler versions:"
-         echo "    1) Intel Linux Fortran Compiler (ifort) version 8.X and up"
-         echo "    2) Intel Linux Fortran Compiler (ifc) version 7.X" 
-         echo -n "   Enter line number corresponding the compiler version? (1/2) [1] "
-         read ver_compiler
-         case $ver_compiler in
-         1)
-	   echo " "
-           echo "Intel Linux Fortran Compiler (ifort) version 8.X and up selected"
-           intel_ver="Linux_ifc8"
-           ;;
-         2)
-	   echo " "
-           echo "Intel Linux Fortran Compiler (ifc) version 7.X selected"
-           intel_ver="Linux_ifc7"
-           ;;
-         *)
-	   echo " "
-           echo "Intel Linux Fortran Compiler (ifort) version 8.X and up selected"
-           intel_ver="Linux_ifc8"
-           ;;
-       esac
-       fi
       fi
     else
        echo  
@@ -375,10 +360,7 @@ echo "IMPORTANT: execute this makefile by typing \"sh make_post\""
 
             ;;
 
-    Linux_ifc)
-            echo
-            echo "Compiling for Linux computer (Intel Linux Compilers (ifc))"
-            echo	    
+    Linux_ifc9 | Linux_ifc10 )
 	    
             if test -f COMPILED.FOR.LINUX.IFC
             then
@@ -390,68 +372,132 @@ echo "IMPORTANT: execute this makefile by typing \"sh make_post\""
                 touch COMPILED.FOR.LINUX.IFC
             fi
 	    
-            if test $intel_ver = "Linux_ifc8"
-            then
-              FORTRAN_CMD=ifort
-              LINK_CMD=ifort
-            else
-              FORTRAN_CMD=ifc
-              LINK_CMD=ifc
-            fi    
-	       
+            case $opsys in
+                Linux_ifc9 )
+                      FORTRAN_CMD=ifort
+                      LINK_CMD="ifort -lsvml"
+                      ;;
+                Linux_ifc10 )
+                      FORTRAN_CMD=ifort
+                      LINK_CMD="ifort -lsvml"
+                     ;;
+                * )
+                      FORTRAN_CMD=ifort
+                      LINK_CMD="ifort -lsvml"
+                      ;;
+                esac
+
 	    
             OBJ_EXT=o
             FORTRAN_EXT=f
 
-            if test $intel_ver = "Linux_ifc7"
+
+         #============================
+         # Check the big endian environment variable
+         #============================
+            if [ "$F_UFMTENDIAN" ]
             then
-              #-----------
-              # Check if Intel Linux compiler portability library is accessible?
-	      #-----------
-              echo
-              echo "checking for Intel compiler portability library, PEPCF90" 
-	      echo "in the default directory /opt/intel/compiler70/ia32/lib"
-              if test -f "/opt/intel/compiler70/ia32/lib/libPEPCF90.a"
-              then
-	         echo
-              #  echo -n "PEPCF90 library found under /opt/intel/compiler70/ia32/lib"
-		 intel_lib="/opt/intel/compiler70/ia32/lib"
-              else
-	         intel_dir="/opt/intel"
-	         echo  "Library not found. Enter the directory "
-                 echo -n "where Intel Linux compiler is installed [e.g. /opt/intel]: "
-                 read intel_dir
-  	         intel_lib="$intel_dir/compiler70/ia32/lib"  
+               #echo "Environment variable, F_UFMTENDIAN is found"
 
- 	         if test -d "$intel_lib"
-	         then
-                   echo
-	         else
-	           echo "Directory $intel_lib not found"
-	           exit
-	         fi
-              fi
+               if ( expr "$F_UFMTENDIAN" = "big" )
+               then
+                 echo "*********************************************"
+                 echo "Big Endian environment set for Intel compiler"
+                 echo "*********************************************"
+               else
+                 echo "F_UFMTENDIAN environment variable  IS NOT set to big endian!"
+                 echo "Check the current value of F_UFMTENDIAN variable by:"
+                 echo "echo \$F_UFMTENDIAN"
+                 echo "then issue the following Cshell command at the prompt and "
+                 echo "recompile:"
+                 echo "setenv F_UFMTENDIAN big for csh/tcsh"
+                 echo "export F_UFMTENDIAN=big for ksh/bash"
+                 echo " "
+                 echo "Aborting compilation"
+                 exit
+               fi
 
+            else  # if [ "$F_UFMTENDIAN" ] branch
+
+              echo "Environment variable for big endian IS NOT set!"
+              echo "Issue the following Cshell command at the prompt and "
+              echo "then recompile:"
+              echo "setenv F_UFMTENDIAN big for csh/tcsh"
+              echo "export F_UFMTENDIAN=big for ksh/bash"
+              echo " "
+              echo "Aborting compilation"
+              exit
+
+            fi    # eof if [ "$F_UFMTENDIAN" ] branch
 	    
-              compile_d="-g -c -FR -xK -w -w95 -I. "
-              link_d="-L$intel_lib -lPEPCF90 "
-              compile="-c -O3 -I. -w -w95 -i_dynamic -ip -FR"
-              link="-I. -L$intel_lib -lPEPCF90"
-              MODULE_CODE=0
-             fi
 
-             if test $intel_ver = "Linux_ifc8"
-             then
-                compile_common="-c -O3 -axKW -tpp7 -w -w95 -I. -i_dynamic -ip -convert big_endian -assume byterecl -FR"
-                compile_d="-g -c -convert big_endian -assume byterecl -FR -O0 -fpe0 -d1 -CB "
-                link_d="-I."
-                compile="$compile_common"
-                compile2="$compile_common"
-                link="-I. -L/opt/intel/lib/ -lsvml"
-                MODULE_CODE=1
-                LIB_FLAGS="-L/opt/intel/lib/ -lsvml"
-              fi
+         #============================
+         # Set the common compiler flags that are common for all three sets
+         #============================
+            case $opsys in
+                    Linux_ifc9 )
+                         compile_common="-c -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -d1 -CB -traceback"
+                           ;;
+                   #Linux_ifc10 )
+                   #     compile_common="-c -I. -w -w95 -i_dynamic -convert big_endian -assume byterecl"
+                   #     compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -CB -traceback"
+                   #       ;;
+                    * )
+                         compile_common="-c -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -d1 -CB -traceback"
+                           ;;
+            esac
 
+
+         #============================
+         # Set the optimization compiler flags
+         #============================
+          # Old Pentium 3 processors are sensitive optimization flags so set a reduced set of flags
+          # that produce generic instruction set for all Pentium platforms
+            if [ $P4_OPTIMIZE -eq 0 ]
+            then
+               case $opsys in
+                  Linux_ifc9 )
+                           optimize_common="-O3"
+                           ;;
+                 #Linux_ifc10 )
+                 #         optimize_common="-O3"
+                 #         ;;
+                  * )
+                           optimize_common="-O3"
+                           ;;
+                  esac
+            else
+               case $opsys in
+                  Linux_ifc9 )
+                           optimize_common="-O3 -axKW -tpp7"
+                           ;;
+                 #Linux_ifc10 )
+                 #         #optimize_common="-fast"
+                 #         optimize_common="-O3 -axW -ip -fp-model precise -ftz"
+                 #         ;;
+                  * )
+                           optimize_common="-O3 -axKW -tpp7"
+                           ;;
+                  esac
+            fi
+         #============================
+         # Set ALL debug compile flags
+         #============================
+            compile_d="-g -c -I. -FR $compile_common_d"
+           #compile_d2="-g -c -I. -FR $compile_common_d"
+           #compile_d3="-g -c -I. $compile_common_d"
+            link_d="-I.  "
+         #============================
+         # Set ALL optimized compile flags
+         #============================
+            compile="$compile_common -FR $optimize_common"
+            compile2="$compile_common -FR $optimize_common"
+           #compile3="$compile_common $optimize_common"
+            link="-I.  "
+
+            MODULE_CODE=1
             ;;
 	    
       sn6301)
