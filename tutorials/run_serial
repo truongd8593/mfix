@@ -1,11 +1,11 @@
 #!/bin/tcsh 
 # Script to run all the tutorial cases in serial
-rm -f */*.RES */*.SP* */*.LOG */*.OUT */*/*.RES */*/*.SP* */*/*.LOG */*/*.OUT
+rm -f */*.RES */*.SP* */*.LOG */*.OUT */*/*.RES */*/*.SP* */*/*.LOG */*/*.OUT */*.vtp
 echo
 cd 3dCfb
 echo "********************************************************************"
 echo "3dCfb"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -13,7 +13,7 @@ echo
 cd 3dFluidbed
 echo "********************************************************************"
 echo "3dFluidbed"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -21,7 +21,7 @@ echo
 cd FluidBed_DES
 echo "********************************************************************"
 echo "FluidBed_DES"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ../
 # Another case
@@ -29,7 +29,7 @@ echo
 cd fluidBed1
 echo "********************************************************************"
 echo "fluidBed1"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -37,7 +37,7 @@ echo
 cd fluidBed2
 echo "********************************************************************"
 echo "fluidBed2"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -45,7 +45,7 @@ echo
 cd reactor1a
 echo "********************************************************************"
 echo "reactor1a"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -53,7 +53,7 @@ echo
 cd reactor1b
 echo "********************************************************************"
 echo "reactor1b"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -61,7 +61,7 @@ echo
 cd SpoutedBedCombustor
 echo "********************************************************************"
 echo "SpoutedBedCombustor"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ../
 # Another case
@@ -69,7 +69,7 @@ echo
 cd Fully_Developed_With_AhmadiModel
 echo "********************************************************************"
 echo "Fully_Developed_With_AhmadiModel"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ../
 # Another case
@@ -77,6 +77,6 @@ echo
 cd Gidaspow_fbed_With_SimoninModel
 echo "********************************************************************"
 echo "Gidaspow_fbed_With_SimoninModel"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ../

@@ -1,5 +1,5 @@
 #!/bin/tcsh 
-rm -f */*.RES */*.SP* */*.LOG */*.OUT
+rm -f */*.RES */*.SP* */*.LOG */*.OUT */*.vtk
 # Another case
 echo
 cd chi-scheme
@@ -89,6 +89,13 @@ echo
 cd fluidBed1SI
 echo "********************************************************************"
 echo "fluidBed1SI"
+tail -20 out1 
+cd ..
+# Another case
+echo
+cd fluidBed1SIConstVisc
+echo "********************************************************************"
+echo "fluidBed1SIConstVisc"
 tail -20 out1 
 cd ..
 # Another case

@@ -1,11 +1,11 @@
 #!/bin/tcsh 
-rm -f */*.RES */*.SP* */*.LOG */*.OUT */*.out */*.*~
+rm -f */*.RES */*.SP* */*.LOG */*.OUT */*.out */*.*~ */*.vtp
 # Another case
 echo
 cd chi-scheme
 echo "********************************************************************"
 echo "chi-scheme"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -13,7 +13,7 @@ echo
 cd cond_conv
 echo "********************************************************************"
 echo "cond_conv"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -22,7 +22,7 @@ cd conduction
 echo "********************************************************************"
 echo "conduction"
 conduction
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -31,7 +31,7 @@ cd conduction2
 echo "********************************************************************"
 echo "conduction2"
 conduction2
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -39,7 +39,7 @@ echo
 cd cyclic-shear
 echo "********************************************************************"
 echo "cyclic-shear"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -47,7 +47,7 @@ echo
 cd Driven_Cavity_DES
 echo "********************************************************************"
 echo "Driven_Cavity_DES"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -55,7 +55,7 @@ echo
 cd developed_pipe_flow
 echo "********************************************************************"
 echo "developed_pipe_flow"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -63,7 +63,7 @@ echo
 cd developed_pipe_flow1
 echo "********************************************************************"
 echo "developed_pipe_flow1"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -71,7 +71,7 @@ echo
 cd developed_slit_flow
 echo "********************************************************************"
 echo "developed_slit_flow"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -80,7 +80,7 @@ cd dmp_test
 echo "********************************************************************"
 echo "dmp_test"
 dmp_test
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -88,7 +88,7 @@ echo
 cd dmp_test_cyclic
 echo "********************************************************************"
 echo "dmp_test_cyclic"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -96,7 +96,7 @@ echo
 cd driven-cavity
 echo "********************************************************************"
 echo "driven-cavity"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -104,7 +104,15 @@ echo
 cd fluidBed1SI
 echo "********************************************************************"
 echo "fluidBed1SI"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
+./mfix.exe > out1
+cd ..
+# Another case
+echo
+cd fluidBed1SIConstVisc
+echo "********************************************************************"
+echo "fluidBed1SIConstVisc"
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -112,7 +120,7 @@ echo
 cd fluidBed1_cn
 echo "********************************************************************"
 echo "fluidBed1_cn"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -120,7 +128,7 @@ echo
 cd fluidBed1_4th
 echo "********************************************************************"
 echo "fluidBed1_4th"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -128,7 +136,7 @@ echo
 cd hopper
 echo "********************************************************************"
 echo "hopper"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -136,7 +144,7 @@ echo
 cd granular_shear
 echo "********************************************************************"
 echo "granular_shear"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -144,7 +152,7 @@ echo
 cd Kink_DES
 echo "********************************************************************"
 echo "Kink_DES"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -152,7 +160,7 @@ echo
 cd ozone
 echo "********************************************************************"
 echo "ozone"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -160,7 +168,7 @@ echo
 cd packed-bed
 echo "********************************************************************"
 echo "packed-bed"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -168,7 +176,7 @@ echo
 cd phase-change
 echo "********************************************************************"
 echo "phase-change"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -176,7 +184,7 @@ echo
 cd periodic-flow-fixed-mass-flux
 echo "********************************************************************"
 echo "periodic-flow-fixed-mass-flux"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -184,7 +192,7 @@ echo
 cd rotary-drum
 echo "********************************************************************"
 echo "rotary-drum"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -192,7 +200,7 @@ echo
 cd segregation
 echo "********************************************************************"
 echo "segregation"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -200,7 +208,7 @@ echo
 cd settling-tank
 echo "********************************************************************"
 echo "settling-tank"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -208,7 +216,7 @@ echo
 cd simple-2phase
 echo "********************************************************************"
 echo "simple-2phase"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -216,7 +224,7 @@ echo
 cd solid-body-rotation
 echo "********************************************************************"
 echo "solid-body-rotation"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -224,7 +232,7 @@ echo
 cd tsuji
 echo "********************************************************************"
 echo "tsuji"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -232,7 +240,7 @@ echo
 cd turbulent_pipe_flow
 echo "********************************************************************"
 echo "turbulent_pipe_flow"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -240,7 +248,7 @@ echo
 cd 2Dfluidbed_VDW_high_coh
 echo "********************************************************************"
 echo "2Dfluidbed_VDW_high_coh"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -248,7 +256,7 @@ echo
 cd driven_cavity_cohesion_VDW
 echo "********************************************************************"
 echo "driven_cavity_cohesion_VDW"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -256,7 +264,7 @@ echo
 cd isat
 echo "********************************************************************"
 echo "isat"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
@@ -264,7 +272,7 @@ echo
 cd dqmom
 echo "********************************************************************"
 echo "dqmom"
-sh ~/MFIX/mfix/model/make_mfix < ../in
+sh ../../model/make_mfix < ../in
 ./mfix.exe > out1
 cd ..
 # Another case
