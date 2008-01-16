@@ -1,0 +1,187 @@
+#
+#  1D simple shear flow using Hypoplasticity model
+#
+#  S.B. Modeler                  15-jan-08
+#
+#  This case will fail due to overpacking where ep_g --> zero
+#
+# Run-control section
+#
+  RUN_NAME = 'R'
+  DESCRIPTION = 'hypo-1D-fully-develop'
+  RUN_TYPE = 'NEW'  !  'restart_1' ! 
+  UNITS = 'cgs'
+  
+  TIME  =0.0  
+  TSTOP = 50.0   
+  DT = 1.0e-4 
+  DT_MIN = 1.0e-8
+  
+  ENERGY_EQ = .FALSE.
+  SPECIES_EQ = .FALSE.    .FALSE.
+  MOMENTUM_X_EQ(0) = .F.
+  MOMENTUM_Y_EQ(0) = .F.
+  
+########  GRANULAR_ENERGY = .T.
+
+  NSCALAR = 3
+  PHASE4SCALAR = 3*1
+  
+  DISCRETIZE     =  9*0
+##  DEF_COR  =  .T.
+  
+  LEQ_IT = 9*200
+  LEQ_TOL = 9*1D-8
+
+#  NORM_S = 0.01
+
+  CALL_USR = .FALSE. 
+
+  TOL_RESID  = 1.E-4
+
+
+  GRAVITY = 0.0
+#
+# Geometry Section
+#
+  COORDINATES = 'CARTESIAN'
+
+  XLENGTH  =   10.0    IMAX =  10 
+  YLENGTH  =   1.0    JMAX =  1
+
+  NO_K     = .TRUE.
+  CYCLIC_Y = .TRUE.
+
+  MAX_NIT = 50
+
+ 
+#
+# Gas-phase Section
+#
+
+  MU_g0 = 1.80E-04
+  MW_avg = 29.
+  Mu_gmax = 1.E+03
+  RO_G0 = 0.0          ! "dry" granular flow, no gas
+  
+  P_REF = 1.013E+06 
+#
+#
+# Solids-phase Section
+#
+#
+
+                     DRAG_TYPE = 'WEN_YU'
+		     RO_S  =         2.5 
+                      D_P0 =         0.02
+                        C_e  =       0.95
+                      PHI  =         30.0 
+		      Phi_w =        15.0
+                  EP_STAR  =         0.36
+		  e_w      =         0.7  !particle-wall rest. coef.
+		  PHIP     =         0.001 !Specularite coef.
+		  
+		  Mu_s0 = 0.0
+#
+# Initial Conditions Section
+#
+       !              
+  IC_X_w(1)           =  0.0 
+  IC_X_e(1)           =  10.0 
+  IC_Y_s(1)           =  0.0 
+  IC_Y_n(1)           =  1.0
+ 
+  IC_EP_g(1)          =  0.4 
+ 
+  IC_U_g(1)           =   0.0
+  IC_V_g(1)           =   0.0         
+  IC_P_g(1)           = 1.013E+06       
+  IC_T_g(1)           = 298.
+ 
+  IC_U_s(1,1)         =   0.0
+  IC_V_s(1,1)         =   0.0
+  IC_P_star(1)     = 0.0
+  
+  IC_Theta_m(1,1)     = 10.
+  IC_SCALAR(1,1)      = -1.0 ! results are very sensitive to IC for stress components
+  IC_SCALAR(1,2)      = -1.0
+  IC_SCALAR(1,3)      = -0.00001
+###
+#   
+###############################################
+#
+#
+                BC_X_W(1)  =      0.
+                BC_X_E(1)  =      0.
+                BC_Y_S(1)  =       0.
+                BC_Y_N(1)  =       1.0
+                BC_TYPE(1)  =       'PSW'
+# 	
+  BC_hw_Scalar(1,1) = 0.0
+  BC_C_Scalar(1,1) = 0.0  
+  BC_ScalarW(1,1) = 0.0  
+  BC_hw_Scalar(1,2) = 0.0
+  BC_C_Scalar(1,2) = 0.0  
+  BC_ScalarW(1,2) = 0.0  
+  BC_hw_Scalar(1,3) = 0.0
+  BC_C_Scalar(1,3) = 0.0  
+  BC_ScalarW(1,3) = 0.0  
+  
+  BC_Uw_s( 1,1) = 0.0
+  BC_Vw_s( 1,1) = 5.0
+  BC_Uw_g(1) = 0.0
+  BC_Vw_g(1) = 0.0
+  BC_Ww_g(1) = 0.0
+  BC_Ww_s(1,1) = 0.0
+  BC_hw_Theta_m(1,1) = 0.0
+  BC_Thetaw_m(1,1) = 0.0 
+  BC_C_Theta_m(1,1) = 0. 
+  BC_JJ_PS(1) = 0
+#
+#
+                BC_X_W(2)  =      10.
+                BC_X_E(2)  =      10.
+                BC_Y_S(2)  =       0.
+                BC_Y_N(2)  =       1.0
+                BC_TYPE(2)  =       'PSW'
+# 	
+  BC_hw_Scalar(2,1) = 0.0
+  BC_C_Scalar(2,1) = 0.0  
+  BC_ScalarW(2,1) = 0.0  
+  BC_hw_Scalar(2,2) = 0.0
+  BC_C_Scalar(2,2) = 0.0  
+  BC_ScalarW(2,2) = 0.0  
+  BC_hw_Scalar(2,3) = 0.0
+  BC_C_Scalar(2,3) = 0.0  
+  BC_ScalarW(2,3) = 0.0  
+  
+  BC_Uw_s( 2,1) = 0.0
+  BC_Vw_s( 2,1) = -5.0
+  BC_Uw_g(2) = 0.0
+  BC_Vw_g(2) = 0.0
+  BC_Ww_g(2) = 0.0
+  BC_Ww_s(2,1) = 0.0
+  BC_hw_Theta_m(2,1) = 0.0
+  BC_Thetaw_m(2,1) = 0.0 
+  BC_C_Theta_m(2,1) = 0. 
+  BC_JJ_PS(2) = 0
+#
+#  Output Control
+#
+  RES_DT = 0.01
+  OUT_DT = 10.
+        !
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g  theta  scalar rrate k_epsilon
+        !      P_star    V_g  V_s            T_s1 X_s
+        !                W_g  W_s            T_s2
+  SPX_DT = 0.01 0.01   0.01  0.01  100.   100. 100.  0.01   0.01 100. 100.
+
+  NLOG   = 25
+  RESID_STRING = 'P0' 'P1' 'V1' 'U1' 'S0' 'G1'
+   FULL_LOG = .TRUE.
+  
+# DMP control
+  
+  NODESI = 1  NODESJ = 1   NODESK = 1
+
+
