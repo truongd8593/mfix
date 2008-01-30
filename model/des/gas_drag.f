@@ -88,7 +88,7 @@
                      IF(DIMN.eq.3) then 
                         tmp_A = tmp_A - AVG_FACTOR*(DRAG_AM(I&
                              &,J,K-1,M) + DRAG_AM(I,J-1,K-1,M))
-                        tmp_B = tmp_A - AVG_FACTOR*(DRAG_BM(I&
+                        tmp_B = tmp_B - AVG_FACTOR*(DRAG_BM(I&
                              &,J,K-1,1,M) + DRAG_BM(I,J-1,K-1,1,M))
                      end IF
                      
