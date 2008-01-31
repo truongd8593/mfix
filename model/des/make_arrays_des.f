@@ -7,6 +7,8 @@
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Rahul Garg                               Date: 01-Aug-07  C
 !  Comments: Added some calls that are necessary if INTERPOLATION IS ON C
+!  Reviewer: Tingwen Li                               Date: 23-Jan-08  C
+!  Comments: Call cell_near_wall                                       C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -94,8 +96,10 @@
          CALL MFIX_EXIT(myPE)
       END IF
       CALL CFASSIGN
-      CALL PARTICLES_IN_CELL
+      CALL PARTICLES_IN_CELL     
+
+!     call cell_near_wall and set non_rect_bc
+      if(NON_RECT_BC) call cell_near_wall
+
       RETURN
       END SUBROUTINE MAKE_ARRAYS_DES 
-
-

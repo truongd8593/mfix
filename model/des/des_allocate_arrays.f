@@ -8,6 +8,9 @@
 !  Reviewer:Rahul Garg                                DATE: 01=Aug-07  C
 !  Comments: Added allocation of interpolation based arrays            C
 !            MAXNEIGHBORS  definition now includes walls also          C
+!  Reviewer:Tingwen Li                                Date: 23-Jan-08  C
+!  Comments: Modify variables to take care of non-rectangular bcs and  C
+!            internal surface. NPARTICLES,c_near_w                     C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
 
@@ -46,8 +49,17 @@
       !dimensionint_J = jend3-jstart3
       !dimensionint_K = kend3-kstart3
       NWALLS = 2*DIMN
-      !particles = npc*(imax)*(jmax)*kmax
-      NPARTICLES = PARTICLES * PARTICLES_FACTOR + NWALLS
+      IF(.NOT.NON_RECT_BC) THEN
+                                !particles = npc*(imax)*(jmax)*kmax
+         NPARTICLES = PARTICLES * PARTICLES_FACTOR + NWALLS
+      ELSE
+!     By Tingwen 19/01/2008 6:51:31 PM
+!     +2 to include the contact with edge and node
+!     only one edge contact or one node contact with wall is allowed for a particle
+         NPARTICLES = PARTICLES * PARTICLES_FACTOR + NWALLS + 2 + NWALLS +1 
+!     by Tingwen 19/01/2008 6:51:31 PM
+      END IF
+
       MAXQUADS = 5*PARTICLES*MQUAD_FACTOR
       IF(MAXQUADS.LE.80000) MAXQUADS = 80000
       MAXNEIGHBORS = MN + 1 + NWALLS
@@ -155,7 +167,7 @@
 !   Particles in a computational cell (for volume fraction) )
       Allocate(  PINC (DIMENSION_3) )
       Allocate(  PIJK (PARTICLES,5) )
-!
+
 !   Volume averaged solids volume in a cell      
       Allocate(  DES_U_s (DIMENSION_3, DIMENSION_M) )
       Allocate(  DES_V_s (DIMENSION_3, DIMENSION_M) )
@@ -204,6 +216,8 @@
 !  Matrix location of particle 
       Allocate(  PART_GRID (NPARTICLES,4) )
 
+!  Array of cell_near_wall
+      Allocate(  c_near_w(DIMENSION_3, 7) )
 
       RETURN
       END SUBROUTINE DES_ALLOCATE_ARRAYS 

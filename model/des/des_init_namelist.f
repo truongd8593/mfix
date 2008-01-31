@@ -58,6 +58,7 @@
       INLET_OUTLET_X = .FALSE.
       INLET_OUTLET_Y = .FALSE.
       INLET_OUTLET_Z = .FALSE.
+      NON_RECT_BC=.FALSE.
       DES_CONTINUUM_COUPLED = .FALSE.
       TSUJI_DRAG = .FALSE.
       PARTICLE_SLIDE = .FALSE.
@@ -113,7 +114,7 @@
       DES_INTERP_ON = .FALSE.
       intx_per = .false.
       inty_per = .false.
-      intz_per = .false.
+      intz_per = .false.    
       NPC = 1
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST
