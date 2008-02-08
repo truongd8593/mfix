@@ -21,7 +21,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE DRAG_FGS(CALC_FC,CALLFROMDES)
     
-    USE param
+      USE param
       USE param1
       USE parallel
       USE matrix
@@ -116,22 +116,20 @@
                TEMP1 = (P_G(IJK)*DX(I) - TEMP2*DX(I)/2)/(DX(I)/2)
                P_FORCE(IJK,1) = (TEMP2 - TEMP1)*DY(J)*DZ(K)
             ELSE IF((I.GT.IMIN1).AND.(I.LT.IMAX1)) THEN
-               if(non_rect_bc) then
-                  if(c_near_w(ijk,7).eq.0 .or. c_near_w(ijk,7).eq.3) then
-                     if(c_near_w(ijk,1) .eq. 1) then
-                        TEMP2 = (P_G(IJK)+P_G(IPJK))/2                         
-                        TEMP1 = (P_G(IJK)*DX(I) - TEMP2*DX(I)/2)/(DX(I)/2)     
-                        P_FORCE(IJK,1) = (TEMP1-TEMP2)*DY(J)*DZ(K )                        	   
-                     elseif((c_near_w(ijk,2) .eq. 1)) then
-                        TEMP2 = (P_G(IMJK)+P_G(IJK))/2
-                        TEMP1 = (P_G(IJK)*DX(I) - TEMP2*DX(I)/2)/(DX(I)/2)
-                        P_FORCE(IJK,1) = (TEMP2 - TEMP1)*DY(J)*DZ(K)   
-                     else
-                        TEMP2 = (P_G(IJK)+P_G(IPJK))/2
-                        TEMP1 = (P_G(IMJK)+P_G(IJK))/2
-                        P_FORCE(IJK,1) = (TEMP1 - TEMP2)*DY(J)*DZ(K)                	    	  
-                     end if        	            	
-            	  end if        	            	
+               if((c_near_w(ijk,7).eq.0 .or. c_near_w(ijk,7).eq.3).and. non_rect_bc) then
+                  if(c_near_w(ijk,1) .eq. 1) then
+                     TEMP2 = (P_G(IJK)+P_G(IPJK))/2                         
+                     TEMP1 = (P_G(IJK)*DX(I) - TEMP2*DX(I)/2)/(DX(I)/2)     
+                     P_FORCE(IJK,1) = (TEMP1-TEMP2)*DY(J)*DZ(K )                        	   
+                  elseif((c_near_w(ijk,2) .eq. 1)) then
+                     TEMP2 = (P_G(IMJK)+P_G(IJK))/2
+                     TEMP1 = (P_G(IJK)*DX(I) - TEMP2*DX(I)/2)/(DX(I)/2)
+                     P_FORCE(IJK,1) = (TEMP2 - TEMP1)*DY(J)*DZ(K)   
+                  else
+                     TEMP2 = (P_G(IJK)+P_G(IPJK))/2
+                     TEMP1 = (P_G(IMJK)+P_G(IJK))/2
+                     P_FORCE(IJK,1) = (TEMP1 - TEMP2)*DY(J)*DZ(K)                	    	  
+                  end if        	            	
                else               	
                   TEMP2 = (P_G(IJK)+P_G(IPJK))/2
                   TEMP1 = (P_G(IMJK)+P_G(IJK))/2
@@ -148,22 +146,20 @@
                TEMP1 = (P_G(IJK)*DY(J) - TEMP2*DY(J)/2)/(DY(J)/2)
                P_FORCE(IJK,2) = (TEMP2 - TEMP1)*DX(I)*DZ(K)               
             ELSE IF((J.GT.JMIN1).AND.(J.LT.JMAX1)) THEN
-               if(non_rect_bc) then
-                  if(c_near_w(ijk,7).eq.0 .or. c_near_w(ijk,7).eq.3) then
-                     if(c_near_w(ijk,3) .eq. 1) then
-                        TEMP2 = (P_G(IJK)+P_G(IJPK))/2
-                        TEMP1 = (P_G(IJK)*DY(J) - TEMP2*DY(J)/2)/(DY(J)/2)
-                        P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K)                   	   
-                     elseif((c_near_w(ijk,4) .eq. 1)) then
-                        TEMP2 = (P_G(IJMK)+P_G(IJK))/2
-                        TEMP1 = (P_G(IJK)*DY(J) - TEMP2*DY(J)/2)/(DY(J)/2)
-                        P_FORCE(IJK,2) = (TEMP2 - TEMP1)*DX(I)*DZ(K)   	  
-                     else
-                        TEMP2 = (P_G(IJK)+P_G(IJPK))/2
-                        TEMP1 = (P_G(IJMK)+P_G(IJK))/2
-                        P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K)            	  	
-                     end if        	            	            	            	
-                  end if             	            	
+               if((c_near_w(ijk,7).eq.0 .or. c_near_w(ijk,7).eq.3).and. non_rect_bc) then
+                  if(c_near_w(ijk,3) .eq. 1) then
+                     TEMP2 = (P_G(IJK)+P_G(IJPK))/2
+                     TEMP1 = (P_G(IJK)*DY(J) - TEMP2*DY(J)/2)/(DY(J)/2)
+                     P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K)                   	   
+                  elseif((c_near_w(ijk,4) .eq. 1)) then
+                     TEMP2 = (P_G(IJMK)+P_G(IJK))/2
+                     TEMP1 = (P_G(IJK)*DY(J) - TEMP2*DY(J)/2)/(DY(J)/2)
+                     P_FORCE(IJK,2) = (TEMP2 - TEMP1)*DX(I)*DZ(K)   	  
+                  else
+                     TEMP2 = (P_G(IJK)+P_G(IJPK))/2
+                     TEMP1 = (P_G(IJMK)+P_G(IJK))/2
+                     P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K)            	  	
+                  end if        	            	            	            	
                else	               	
                   TEMP2 = (P_G(IJK)+P_G(IJPK))/2
                   TEMP1 = (P_G(IJMK)+P_G(IJK))/2
@@ -181,21 +177,19 @@
                   TEMP1 = (P_G(IJK)*DZ(K) - TEMP2*DZ(K)/2)/(DZ(K)/2)
                   P_FORCE(IJK,3) = (TEMP2 - TEMP1)*DX(I)*DY(J)
                ELSE IF((K.GT.KMIN1).AND.(K.LT.KMAX1)) THEN
-                  if(non_rect_bc) then
-                     if(c_near_w(ijk,7).eq.0 .or. c_near_w(ijk,7).eq.3) then
-                        if(c_near_w(ijk,5) .eq. 1) then
-                           TEMP2 = (P_G(IJK)+P_G(IJKP))/2
-                           TEMP1 = (P_G(IJK)*DZ(K) - TEMP2*DZ(K)/2)/(DZ(K)/2)
-                           P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J)               	   
-                        elseif((c_near_w(ijk,6) .eq. 1)) then
-                           TEMP2 = (P_G(IJKM)+P_G(IJK))/2
-                           TEMP1 = (P_G(IJK)*DZ(K) - TEMP2*DZ(K)/2)/(DZ(K)/2)
-                           P_FORCE(IJK,3) = (TEMP2 - TEMP1)*DX(I)*DY(J)  
-                        else
-                           TEMP2 = (P_G(IJK)+P_G(IJKP))/2
-                           TEMP1 = (P_G(IJKM)+P_G(IJK))/2
-                           P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J)                	
-                        end if             	            	
+                  if((c_near_w(ijk,7).eq.0 .or. c_near_w(ijk,7).eq.3) .and. non_rect_bc) then
+                     if(c_near_w(ijk,5) .eq. 1) then
+                        TEMP2 = (P_G(IJK)+P_G(IJKP))/2
+                        TEMP1 = (P_G(IJK)*DZ(K) - TEMP2*DZ(K)/2)/(DZ(K)/2)
+                        P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J)               	   
+                     elseif((c_near_w(ijk,6) .eq. 1)) then
+                        TEMP2 = (P_G(IJKM)+P_G(IJK))/2
+                        TEMP1 = (P_G(IJK)*DZ(K) - TEMP2*DZ(K)/2)/(DZ(K)/2)
+                        P_FORCE(IJK,3) = (TEMP2 - TEMP1)*DX(I)*DY(J)  
+                     else
+                        TEMP2 = (P_G(IJK)+P_G(IJKP))/2
+                        TEMP1 = (P_G(IJKM)+P_G(IJK))/2
+                        P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J)                	
                      end if             	            	
                   else               	               	
                      TEMP2 = (P_G(IJK)+P_G(IJKP))/2
