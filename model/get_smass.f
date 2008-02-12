@@ -69,8 +69,6 @@
       DO M = 1, MMAX 
          SMASS = SMASS + Accumulation(ROP_s(1, M))
       END DO 
-
-      call global_all_sum(smass)
       
       RETURN  
       END SUBROUTINE GET_SMASS 
