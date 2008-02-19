@@ -763,8 +763,8 @@ ln -sf "$mpi_include/mpif.h" .
 			
                 ;;
               *)
-                        FORTRAN_CMD=$PGI/bin/pgf90
-                        LINK_CMD=$PGI/bin/pgf90
+                        FORTRAN_CMD=pgf90
+                        LINK_CMD=pgf90
                         if [ "$ACML" ]
                         then                                                                    
                            libs_d="odepack.a -L $ACML/pgi64/lib -lacml -lacml_mv"
@@ -786,6 +786,14 @@ ln -sf "$mpi_include/mpif.h" .
             compile2="-O1 -Mdalign $compile_common"
             compile3="-c -I. $optimize_common -Mdalign  -Mnosave -byteswapio"
             link="-Mipa=fast -Mipa=inline"	    
+
+            compile_common_d="-c -I. -Mnosave -byteswapio"
+            debug_common="-g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk -Ktrap=fp"
+            compile_d=" $debug_common -Mfreeform $compile_common_d"
+            compile_d2=" $debug_common -Mfreeform $compile_common_d"
+            compile_d3=" $debug_common $compile_common_d"
+            link_d=" "
+
 	    
             MODULE_CODE=1
                                                                                 
