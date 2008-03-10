@@ -93,13 +93,14 @@
 !     
       Include 'function.inc'
       
-      IF(MU_s0 /= UNDEFINED) RETURN ! constant solids viscosity case
-      
       IF (SHEAR) CALL add_shear(M)
 
       CALL init_mu_s(M, IER)    ! initializing/calculating all the quantities needed for various options
 !     
-      
+      IF (SHEAR) call remove_shear(M)  	 
+        	 
+      IF(MU_s0 /= UNDEFINED) RETURN ! constant solids viscosity case 
+
 !     GRANULAR_ENERGY
 !     .FALSE.
 !     EP_g < EP_star   -->    friction_schaeffer
@@ -2006,6 +2007,7 @@
 !              The trace of D_sm dot D_sl is required in the implementation of
 !              Iddir's (2004) kinetic theory 
 !
+            IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                DO L = 1,MMAX
 		  IF (L .ne. M) THEN
 		     IF (L > M) THEN !done because trD_s2_ip(IJK,M,L) is symmetric, sof.
@@ -2116,6 +2118,7 @@
                        trD_s2_ip(IJK,M,M) = trD_s2(IJK,M)
                   ENDIF !for m NE L
                ENDDO
+             ENDIF ! if kt_type = IA theory
 !              END JEG
 !     
 !     Start definition of Relative Velocity
