@@ -64,7 +64,7 @@
       
       DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX), RxH_xfr(0:MMAX, 0:MMAX)
       DOUBLE PRECISION X_tmp(0:MMAX, 0:MMAX, Dimension_n_all)
-      DOUBLE PRECISION RXNA, Trxn
+      DOUBLE PRECISION RXNA, Trxn, Tm, Tl
       DOUBLE PRECISION, EXTERNAL ::calc_h
 !
 !-----------------------------------------------
@@ -244,31 +244,41 @@
 !
 
             DO M = 0, MMAX-1
+              if(m == 0) then
+                Tm = T_g(IJK)
+              else
+                Tm = T_s(IJK, M)
+              endif
  	      DO L = M+1, MMAX
+                if(l == 0) then
+                  Tl = T_g(IJK)
+                else
+                  Tl = T_s(IJK, L)
+                endif
 	        RxH_xfr(M, L) = zero 
 	        IF(R_tmp(M,L) .NE. UNDEFINED)THEN
 		   IF(R_tmp(M,L) > ZERO) then ! phase-M is generated from phase-L
                      DO N = 1, NMAX(M)
                        RxH_xfr(M, L) =  RxH_xfr(M, L) + R_tmp(M,L) * X_tmp(M,L, N) * &
-			                              CALC_H(IJK, M, N)
+			                              CALC_H(Tl, M, N)
 	                   
                      END DO 
 		   else    ! phase-L is generated from phase-M
                      DO N = 1, NMAX(L)
                        RxH_xfr(M, L) =  RxH_xfr(M, L) + R_tmp(M,L) * X_tmp(M,L, N) * &
-			                              CALC_H(IJK, L, N)
+			                              CALC_H(Tm, L, N)
                      END DO
 		   endif
 		ELSEIF(R_tmp(L,M) .NE. UNDEFINED)THEN
 		   IF(R_tmp(L,M)> ZERO) then ! phase-L is generated from phase-M
                      DO N = 1, NMAX(L)
                        RxH_xfr(M, L) =  RxH_xfr(M, L) - R_tmp(L,M) * X_tmp(L,M, N) * &
-			                              CALC_H(IJK, L, N) 
+			                              CALC_H(Tm, L, N) 
                      END DO
 		   else ! phase-M is generated from phase-L
                      DO N = 1, NMAX(M)
                        RxH_xfr(M, L) =  RxH_xfr(M, L) - R_tmp(L,M) * X_tmp(L,M, N) * &
-			                              CALC_H(IJK, M, N)
+			                              CALC_H(Tl, M, N)
                      END DO 
 		   endif
 	        ENDIF
@@ -287,26 +297,24 @@
             HOR_G(IJK) = zero
             DO N = 1, NMAX(0)
               HOR_G(IJK) = HOR_G(IJK) + &
-	         (R_gp(IJK, N) - RoX_gc(IJK, N) * X_g(IJK, N)) * CALC_H(IJK, 0, N)
+	         (R_gp(IJK, N) - RoX_gc(IJK, N) * X_g(IJK, N)) * CALC_H(T_g(IJK), 0, N)
             END DO 
             DO L = 1, MMAX
 	      HOR_G(IJK) = HOR_G(IJK) - RxH_xfr(0, L)
 	    ENDDO
             IF (UNITS == 'SI') HOR_G(IJK) = 4183.925D0*HOR_G(IJK)    !in J/kg K
-	    print *, hor_g(ijk)
 	    
             DO M = 1, MMAX 
               HOR_s(IJK, M) = zero
               DO N = 1, NMAX(M)
                 HOR_s(IJK, M) = HOR_s(IJK, M) + &
-		  (R_sp(IJK, M, N) - RoX_sc(IJK, M, N) * X_s(IJK, M, N)) * CALC_H(IJK, M, N)
+		  (R_sp(IJK, M, N) - RoX_sc(IJK, M, N) * X_s(IJK, M, N)) * CALC_H(T_s(IJK,M), M, N)
               END DO 
               DO L = 0, MMAX
 	        if(M .NE. L) HOR_s(IJK, M) = HOR_s(IJK, M) - RxH_xfr(M, L)
 	      ENDDO
               IF (UNITS == 'SI') HOR_s(IJK, M) = 4183.925D0*HOR_s(IJK, M)    !in J/kg K
-              print *, m, hor_s(ijk, m)
-            END DO 
+          END DO 
 !
 !
 !     Store R_tmp values in an array.  Only store the upper triangle without
