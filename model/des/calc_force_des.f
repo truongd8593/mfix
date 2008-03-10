@@ -144,7 +144,8 @@
                                     DES_RADIUS(I) = DES_RADIUS(LL)
                                     CALL CFNORMALWALL(LL, I, NORMAL)
                                     CALL CFRELVEL(LL, I, V_REL_TRANS, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
-                                    CALL CFINCREMENTALOVERLAPS(LL,I, V_REL_TRANS_NORM,  V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T, CHECK_CON)
+                                    CALL CFINCREMENTALOVERLAPS(LL,I, V_REL_TRANS_NORM,  V_REL_TRANS_TANG, OVERLAP_N, &
+                                    OVERLAP_T, CHECK_CON)
                                     
                                     IF(.not.CHECK_CON) THEN 
                                        PV(LL,NI) = 0 !No More Contact 
@@ -465,7 +466,8 @@
                                     DES_RADIUS(I) = DES_RADIUS(LL)
                                     CALL CFNORMALWALL(LL, I, NORMAL)
                                     CALL CFRELVEL(LL, I, V_REL_TRANS, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
-                                    CALL CFINCREMENTALOVERLAPS(LL,I, V_REL_TRANS_NORM,  V_REL_TRANS_TANG, OVERLAP_N, OVERLAP_T, CHECK_CON)
+                                    CALL CFINCREMENTALOVERLAPS(LL,I, V_REL_TRANS_NORM,  V_REL_TRANS_TANG, OVERLAP_N, &
+                                    OVERLAP_T, CHECK_CON)
                                     
                                     IF(.not.CHECK_CON) THEN 
                                        PV(LL,NI) = 0 !No More Contact 

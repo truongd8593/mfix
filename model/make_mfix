@@ -183,6 +183,34 @@ ln -sf "$mpi_include/mpif.h" .
 #  Check if the system is a Linux system, if yes then ask the user which 
 #  compiler to use    
 #
+    if test $opsys = "CYGWIN_NT-5.1"
+    then
+       echo
+       echo
+       echo "CYGWIN on Windows Detected"
+       echo
+       echo "=============================================================="
+       echo "MFIX Compilation directives available for following compilers:"
+       echo "=============================================================="
+       echo " [1] g95"
+       echo " [2] gfortran"       
+       echo " "
+       echo -n "Select the compiler to compile MFIX? [2] "
+       read cygwin_compiler
+       case $cygwin_compiler in
+         1 )
+           echo " "
+           echo "g95 compiler selected"
+           opsys="CYGWIN_NT-5.1-g95"
+           ;;
+         * )
+           echo " "
+           echo "gfortran Compiler selected"
+           opsys="CYGWIN_NT-5.1-gfortran"
+           ;;
+         esac
+    fi
+	        
     if test $opsys = "Linux"
     then
       if test $proctyp = "x86_64"
@@ -1296,7 +1324,7 @@ ln -sf "$mpi_include/mpif.h" .
 
             ;;
 	    
-    CYGWIN_NT-5.1)
+    CYGWIN_NT-5.1-g95)
 	    mach_file="CYGNT.F"
    
             FORTRAN_CMD=g95
@@ -1309,13 +1337,35 @@ ln -sf "$mpi_include/mpif.h" .
 	    omp="-mp"
             compile_d="-c -g"
             link_d="-g"
-            compile="-c -I. -ffree-form -I$mpi_include -O "
-            compile2="-c -I. -ffree-form -I$mpi_include -O1 "
-            compile3="-c -I. -I$mpi_include -O1 "
+            compile="-c -I. -fendian=big -ffree-form -I$mpi_include -O "
+            compile2="-c -I. -fendian=big -ffree-form -I$mpi_include -O1 "
+            compile3="-c -I. -fendian=big -I$mpi_include -O1 "
             link=" "
             MODULE_CODE=1
 
             ;;
+
+    CYGWIN_NT-5.1-gfortran)
+            mach_file="CYGNT.F"
+
+            FORTRAN_CMD=gfortran
+            LINK_CMD=gfortran
+            libs_d="odepack.a blas90.a dgtsv90.a"
+            libs="odepack.a blas90.a dgtsv90.a"
+
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-mp"
+            compile_d="-c -g"
+            link_d="-g"
+            compile="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O3 "
+            compile2="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O1 "
+            compile3="-c -I. -fconvert='big-endian' -I$mpi_include -O1 "
+            link=" "
+            MODULE_CODE=1
+
+            ;;
+
 	    
       *) echo "Sorry, no support for operating system: $opsys"
          echo 
