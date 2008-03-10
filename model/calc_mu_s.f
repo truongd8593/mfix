@@ -182,7 +182,6 @@
 !     
       ENDIF                     ! Blending Stress
       
-      IF (SHEAR) call remove_shear(M)
 !     
       RETURN
       END
