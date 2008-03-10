@@ -247,9 +247,9 @@
 !     CHEM & ISAT end (nan xie)
 !
 !
-!     JEG Added
-!     University of Colorado, Hrenya Research Group
-!                       Only options is IA_nonep (for now, sof)
+!     JEG added
+!                       for m > 1 option is IA_nonep.  
+!                       for m = 1 option is GD_99
       CHARACTER(64)     KT_TYPE
 !
 !                       for m > 1 options are lebowitz, modified_lebowitz,
@@ -257,6 +257,6 @@
 !                       for m = 1 then carnahan and starling rdf used
       CHARACTER(64)     RDF_TYPE 
 !
-!     END JEG      
+!     JEG end      
 
       END MODULE run                                                                             

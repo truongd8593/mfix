@@ -72,6 +72,8 @@
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: G_0 
+!----------------------------------------------- 
+!     Include statement functions
 !-----------------------------------------------
       INCLUDE 's_pr1.inc'
       INCLUDE 'ep_s1.inc'
@@ -80,37 +82,38 @@
       INCLUDE 'ep_s2.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 's_pr2.inc'
-!
+!-----------------------------------------------
       I = I_OF(IJK) 
       J = J_OF(IJK) 
       K = K_OF(IJK) 
-!
+
       SOURCERHS = (ZMAX(LAMBDA_S_C(IJK,M))*TRD_S_C(IJK,M)**2d0+2d0*MU_S_C(IJK,M)*&
          TRD_S2(IJK,M)+P_S_C(IJK,M)*ZMAX((-TRD_S_C(IJK,M))))*VOL(IJK)  
-!
+
       IF(SIMONIN) THEN
-        SOURCERHS = SOURCERHS +  F_GS(IJK,M)*K_12(IJK)*VOL(IJK)
-!
+          SOURCERHS = SOURCERHS +  F_GS(IJK,M)*K_12(IJK)*VOL(IJK)
+
       ELSE IF(AHMADI) THEN
-	IF(Ep_s(IJK,M) > DIL_EP_S .AND. F_GS(IJK,1) > small_number) THEN
-          Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
-	  SOURCERHS = SOURCERHS + 2.D+0*F_GS(IJK,M)* (ONE/(ONE+Tau_12_st/  &
-                      (Tau_1(ijk)+small_number)))*K_Turb_G(IJK)*VOL(IJK)
-	ELSE
-	  SOURCERHS = SOURCERHS
-	ENDIF
-!
+          IF(Ep_s(IJK,M) > DIL_EP_S .AND. F_GS(IJK,1) > small_number) THEN
+              Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
+              SOURCERHS = SOURCERHS + 2.D+0*F_GS(IJK,M)* (ONE/(ONE+Tau_12_st/  &
+                  (Tau_1(ijk)+small_number)))*K_Turb_G(IJK)*VOL(IJK)
+          ELSE
+              SOURCERHS = SOURCERHS
+          ENDIF
+
       ELSE IF(SWITCH > ZERO .AND. RO_g0 /= ZERO) THEN ! no modifications done to the original KTGF
-!
-        VSLIP = (U_S(IJK,M)-U_G(IJK))**2 + (V_S(IJK,M)-V_G(IJK))**2 + (W_S(IJK,M)&
-           -W_G(IJK))**2 
-        VSLIP = DSQRT(VSLIP) 
-!
-        SOURCERHS = SOURCERHS + (SWITCH*81D0*EP_S(IJK,M)*(MU_G(IJK)*VSLIP)**2D0/(&
-           G_0(IJK,M,M)*D_P(IJK,M)**3D0*RO_S(M)*(PI*THETA_M(IJK,M)+SMALL_NUMBER)**&
-           0.5D0))*VOL(IJK) 
+
+          VSLIP = (U_S(IJK,M)-U_G(IJK))**2 + (V_S(IJK,M)-V_G(IJK))**2 + (W_S(IJK,M)&
+              -W_G(IJK))**2 
+          VSLIP = DSQRT(VSLIP) 
+
+          SOURCERHS = SOURCERHS + (SWITCH*81D0*EP_S(IJK,M)*(MU_G(IJK)*VSLIP)**2D0/(&
+              G_0(IJK,M,M)*D_P(IJK,M)**3D0*RO_S(M)*(PI*THETA_M(IJK,M)+SMALL_NUMBER)**&
+              0.5D0))*VOL(IJK) 
+
       ENDIF
-!
+
 !---------------------------------------------------------------------
 !  The following lines are commented out since Kphi_s has been set to zero
 !  in subroutine calc_mu_s.  To activate the feature uncomment the following
@@ -157,28 +160,30 @@
 !
       SUM_EpsGo = ZERO
       DO MM = 1, MMAX
-        SUM_EpsGo =  SUM_EpsGo+EP_s(IJK,MM)*G_0(IJK,MM,MM)
+          SUM_EpsGo =  SUM_EpsGo+EP_s(IJK,MM)*G_0(IJK,MM,MM)
       ENDDO
+
       SOURCELHS = ((48d0/DSQRT(PI))*ETA*(ONE-ETA)*ROP_S(IJK&
-         ,M)*SUM_EpsGo*DSQRT(THETA_M(IJK,M))/D_P(IJK,M)+ &
-	 P_S_C(IJK,M)*ZMAX((TRD_S_C(IJK,M)))/(THETA_M(IJK,M)+SMALL_NUMBER) &
-	 +ZMAX((-LAMBDA_S_C(IJK,M)))*TRD_S_C(IJK,M)**2d0/(THETA_M(IJK,M)+&
-         SMALL_NUMBER))*VOL(IJK)  
-!
+          ,M)*SUM_EpsGo*DSQRT(THETA_M(IJK,M))/D_P(IJK,M)+ &
+          P_S_C(IJK,M)*ZMAX((TRD_S_C(IJK,M)))/(THETA_M(IJK,M)+SMALL_NUMBER) &
+          +ZMAX((-LAMBDA_S_C(IJK,M)))*TRD_S_C(IJK,M)**2d0/(THETA_M(IJK,M)+&
+          SMALL_NUMBER))*VOL(IJK)  
+
       IF(SIMONIN .OR. AHMADI) THEN
-        SOURCELHS = SOURCELHS +  3d0 *F_GS(IJK,M)*VOL(IJK)
-!
+          SOURCELHS = SOURCELHS +  3d0 *F_GS(IJK,M)*VOL(IJK)
+
       ELSE IF(SWITCH > ZERO .AND. RO_g0 /= ZERO) THEN ! no modifications done to the original KTGF
-!
-        SOURCELHS = SOURCELHS + SWITCH *3d0 *F_GS(IJK,M)*VOL(IJK)
+
+          SOURCELHS = SOURCELHS + SWITCH *3d0 *F_GS(IJK,M)*VOL(IJK)
+
       ENDIF
-!
+
       RETURN  
       END SUBROUTINE SOURCE_GRANULAR_ENERGY 
 !-----------------------------------------------  
-!
-!
-!
+
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !                                                                      
 !  Module name: SOURCE_IA_NONEP_GRANULAR_ENERGY(SOURCELHS, SOURCERHS, IJK, M, IER)
@@ -300,7 +305,7 @@
       IJKS = SOUTH_OF(IJK)
       IJKT = TOP_OF(IJK) 
       IJKB = BOTTOM_OF(IJK) 
-!
+
 !     initialize summation variables
       S9_sum_rhs = ZERO
       S11a_sum_rhs = ZERO
@@ -325,7 +330,7 @@
       S17_sum_lhs = ZERO
       S18_sum_lhs = ZERO
       S20_sum_lhs = ZERO
-!
+
       UsM_e = U_S(IJK,M)
       UsM_w = U_S(IMJK,M)
       VsM_n = V_S(IJK,M)
@@ -335,7 +340,7 @@
       UsM_p = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I)
       VsM_p = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M) )
       WsM_p = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M) )
-! 
+ 
       D_PM = D_P(IJK,M) 
       M_PM = (Pi/6.d0)*D_PM**3 * RO_S(M)
       NU_PM_p = ROP_S(IJK,M)/M_PM
@@ -543,3 +548,232 @@
       END SUBROUTINE SOURCE_IA_NONEP_GRANULAR_ENERGY
 !-----------------------------------------------  
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+!                                                                      
+!  Module name: SOURCE_GD_99_GRANULAR_ENERGY(SOURCELHS, SOURCERHS, IJK, M, IER)
+!  Purpose: This module computes the source term of the species
+!           granular energy equation
+!
+!  Literature/Document References:    
+!	Garzo, V. & Dufty, J.W., "Dense fluid transport for inelastic
+!       hard spheres," Physical Review E, Vol 59, No 5 1999
+!                                                         
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!
+      SUBROUTINE SOURCE_GD_99_GRANULAR_ENERGY(SOURCELHS, SOURCERHS, IJK, M, IER) 
+!
+!-----------------------------------------------
+!     Modules
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE parallel 
+      USE physprop
+      USE run
+      USE drag
+      USE geometry
+      USE fldvar
+      USE visc_g
+      USE visc_s
+      USE trace
+      USE turb
+      USE indices
+      USE constant
+      USE toleranc
+      USE residual
+      use kintheory
+      USE compar        !//d
+      IMPLICIT NONE
+!-----------------------------------------------
+!     Local variables
+!-----------------------------------------------  
+!                      Error index
+      INTEGER          IER
+!     
+!                      Indices
+      INTEGER          IJK, I, J, K, IM, JM, KM, IMJK, IJMK, IJKM,&
+                       IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
+!
+!                      phase index 
+      INTEGER          M
+!
+!                      number densities
+      DOUBLE PRECISION NU_PM_E, NU_PM_W, NU_PM_N, NU_PM_S, NU_PM_T,&
+                       NU_PM_B, NU_PM_p
+!
+!                      particle characteristics
+      DOUBLE PRECISION M_PM, D_PM
+!
+!                      coefficients in heat flux term
+      DOUBLE PRECISION Knu_sM_e, Knu_sM_w, Knu_sM_n, Knu_sM_s,&
+                       Knu_sM_t, Knu_sM_b
+!
+!                      Source terms to be kept on rhs
+      DOUBLE PRECISION sourcerhs, S8_rhs, S9_rhs, S10_rhs, S11_rhs, S12_rhs,&
+                       S13a_rhs, S13b_rhs, S14a_rhs, S14b_rhs, S15a_rhs,&
+                       S15b_rhs
+!
+!                      Source terms to be kept on lhs
+      DOUBLE PRECISION sourcelhs, S8_lhs, S10_lhs, S11_lhs, S12_lhs, S13a_lhs,&
+                       S13b_lhs, S14a_lhs, S14b_lhs, S15a_lhs, S15b_lhs
+!
+!                      Source terms from interstitial effects
+      DOUBLE PRECISION VSLIP, Kslip, Tslip_rhs, Tslip_lhs, Tvis_lhs
+!
+!----------------------------------------------- 
+!     Function subroutines
+!----------------------------------------------- 
+      DOUBLE PRECISION G_0
+!----------------------------------------------- 
+!     Include statement functions
+!-----------------------------------------------
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'function.inc'
+      INCLUDE 'ep_s2.inc'
+      INCLUDE 'fun_avg2.inc'
+!-----------------------------------------------
+!
+      I = I_OF(IJK) 
+      J = J_OF(IJK) 
+      K = K_OF(IJK) 
+      IM = Im1(I)
+      JM = Jm1(J)
+      KM = Km1(K)
+      IMJK = IM_OF(IJK)
+      IJMK = JM_OF(IJK)
+      IJKM = KM_OF(IJK) 
+      IJKE = EAST_OF(IJK) 
+      IJKW = WEST_OF(IJK)
+      IJKN = NORTH_OF(IJK) 
+      IJKS = SOUTH_OF(IJK)
+      IJKT = TOP_OF(IJK) 
+      IJKB = BOTTOM_OF(IJK) 
+!
+! 
+      S8_lhs = ZERO
+      S10_lhs = ZERO
+      S11_lhs = ZERO
+      S12_lhs = ZERO
+      S13a_lhs = ZERO
+      S13b_lhs = ZERO
+      S14a_lhs = ZERO
+      S14b_lhs = ZERO
+      S15a_lhs = ZERO
+      S15b_lhs = ZERO
+      S8_rhs = ZERO
+      S9_rhs = ZERO
+      S10_rhs = ZERO
+      S11_rhs = ZERO
+      S12_rhs = ZERO
+      S13a_rhs = ZERO
+      S13b_rhs = ZERO
+      S14a_rhs = ZERO
+      S14b_rhs = ZERO
+      S15a_rhs = ZERO
+      S15b_rhs = ZERO
+!
+!
+      D_PM = D_P(IJK,M) 
+      M_PM = (Pi/6.d0)*D_PM**3 * RO_S(M)
+      NU_PM_p = ROP_S(IJK,M)/M_PM
+      NU_PM_E = ROP_S(IJKE,M)/M_PM
+      NU_PM_W = ROP_S(IJKW,M)/M_PM
+      NU_PM_N = ROP_S(IJKN,M)/M_PM
+      NU_PM_S = ROP_S(IJKS,M)/M_PM
+      NU_PM_T = ROP_S(IJKT,M)/M_PM
+      NU_PM_B = ROP_S(IJKB,M)/M_PM
+
+
+!     Production by shear: (S:grad(v))
+!         P_s*tr(D)
+      S8_lhs = P_S_C(IJK,M) * ZMAX(TRD_S_C(IJK,M)) 
+      S8_rhs = P_S_C(IJK,M) * ZMAX(-TRD_S_C(IJK,M))
+
+
+!     Production by shear: (S:grad(v))  
+!         Mu_s*tr(D^2)
+      S9_rhs = 2.d0*Mu_s_c(IJK,M)*TRD_S2(IJK,M)
+
+
+!     Production by shear: (S:grad(v))  
+!         Lambda_s*tr(D)^2
+      S10_lhs = (TRD_S_C(IJK,M)**2)*ZMAX( -LAMBDA_s_C(IJK,M) )
+      S10_rhs = (TRD_S_C(IJK,M)**2)*ZMAX(  LAMBDA_s_C(IJK,M) )
+	 
+
+!     Energy dissipation by collisions: (3/2)*n*kboltz*T*zeta0
+!          linearized (3/2)*rop_s*T*zeta0
+      S11_lhs = (3.d0/2.d0)*EDT_s_ip(IJK,M,M)
+      S11_rhs = (1.d0/2.d0)*EDT_s_ip(IJK,M,M)*Theta_m(IJK,M)
+
+!     Energy dissipation by collisions: (3/2)*n*kboltz*T*zeta1
+!          (3/2)*rop_s*T*zeta1
+      S12_lhs = ZMAX( EDvel_sM_ip(IJK,M,M) * TRD_S_C(IJK,M) ) 
+      S12_rhs = ZMAX( -EDvel_sM_ip(IJK,M,M) * TRD_S_C(IJK,M) )*Theta_m(IJK,M)
+
+
+!     Part of Heat Flux: div (q)
+!          Knu_s_ip*grad(nu)
+      Knu_sM_e = AVG_X_S(Kphi_s(IJK,M), Kphi_s(IJKE,M),I)
+      Knu_sM_w = AVG_X_S(Kphi_s(IJKW,M),Kphi_s(IJK,M), IM)
+      Knu_sM_n = AVG_Y_S(Kphi_s(IJK,M), Kphi_s(IJKN,M),J)
+      Knu_sM_s = AVG_Y_S(Kphi_s(IJKS,M),Kphi_s(IJK,M), JM)
+      Knu_sM_t = AVG_Z_S(Kphi_s(IJK,M), Kphi_s(IJKT,M),K)
+      Knu_sM_b = AVG_Z_S(Kphi_s(IJKB,M),Kphi_s(IJK,M), KM)
+
+      S13a_rhs = Knu_sM_e*ZMAX( (NU_PM_E-NU_PM_p) )*ODX_E(I)*AYZ(IJK) 
+      S13a_lhs = Knu_sM_e*ZMAX( -(NU_PM_E-NU_PM_p) )*ODX_E(I)*AYZ(IJK) 
+
+      S13b_rhs = Knu_sM_w*ZMAX( -(NU_PM_p-NU_PM_W) )*ODX_E(IM)*AYZ(IMJK)
+      S13b_lhs = Knu_sM_w*ZMAX( (NU_PM_p-NU_PM_W) )*ODX_E(IM)*AYZ(IMJK)
+
+      S14a_rhs = Knu_sM_n*ZMAX( (NU_PM_N-NU_PM_p) )*ODY_N(J)*AXZ(IJK)
+      S14a_lhs = Knu_sM_n*ZMAX( -(NU_PM_N-NU_PM_p) )*ODY_N(J)*AXZ(IJK)
+
+      S14b_rhs = Knu_sM_s*ZMAX( -(NU_PM_p-NU_PM_S) )*ODY_N(JM)*AXZ(IJMK)
+      S14b_lhs = Knu_sM_s*ZMAX( (NU_PM_p-NU_PM_S) )*ODY_N(JM)*AXZ(IJMK)
+
+      S15a_rhs = Knu_sM_t*ZMAX( (NU_PM_T-NU_PM_p) )*ODZ_T(K)*OX(I)*AXY(IJK)
+      S15a_lhs = Knu_sM_t*ZMAX( -(NU_PM_T-NU_PM_p) )*ODZ_T(K)*OX(I)*AXY(IJK)
+
+      S15b_rhs = Knu_sM_b*ZMAX( -(NU_PM_p-NU_PM_B) )*ODZ_T(KM)*OX(I)*AXY(IJKM)
+      S15b_lhs = Knu_sM_b*ZMAX( (NU_PM_p-NU_PM_B) )*ODZ_T(KM)*OX(I)*AXY(IJKM)
+
+
+      SOURCELHS = ( (S8_lhs+S10_lhs)*VOL(IJK) + &
+          S13a_lhs+S13b_lhs+S14a_lhs+S14b_lhs+S15a_lhs+S15b_lhs)/Theta_m(IJK,M)&
+          + (S11_lhs + S12_rhs)*VOL(IJK) 
+
+
+      SOURCERHS = ( S8_rhs+S9_rhs+S10_rhs+S11_rhs+S12_rhs) * VOL(IJK) + &
+          S13a_rhs+S13b_rhs+S14a_rhs+S14b_rhs+S15a_rhs+S15b_rhs
+
+
+      IF(SWITCH > ZERO .AND. RO_g0 /= ZERO) THEN 
+
+          VSLIP = (U_S(IJK,M)-U_G(IJK))**2 + (V_S(IJK,M)-V_G(IJK))**2 +&
+               (W_S(IJK,M)-W_G(IJK))**2 
+          VSLIP = DSQRT(VSLIP) 
+
+!     production by gas-particle slip: Koch & Sangani (1999)
+          Kslip = SWITCH*81.d0*EP_s(IJK,M)*(MU_G(IJK)*VSLIP)**2.d0 / &
+               (G_0(IJK,M,M)*D_P(IJK,M)**3.D0*RO_S(M)*DSQRT(PI)) 
+
+          Tslip_rhs = 1.5d0*Kslip/(THETA_M(IJK,M)+SMALL_NUMBER)*VOL(IJK)  
+          Tslip_lhs = 0.5d0*Kslip/( (THETA_M(IJK,M)+SMALL_NUMBER)**1.5d0)*VOL(IJK)
+
+!     dissipation by viscous damping: Gidaspow (1994)
+          Tvis_lhs = SWITCH*3d0*F_GS(IJK,M)*VOL(IJK)
+
+!          SOURCELHS = SOURCELHS + Tslip_lhs + Tvis_lhs
+!          SOURCERHS = SOURCERHS + Tslip_rhs
+      ENDIF
+
+
+
+      RETURN  
+      END SUBROUTINE SOURCE_GD_99_GRANULAR_ENERGY
+!-----------------------------------------------  

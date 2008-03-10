@@ -68,8 +68,9 @@
       ENDIF 
 !
 !     JEG Added
-!     University of Colorado, Hrenya Research Group
 !     For kinetic theory of Iddir & Arastoopour (2005)
+!     EDvel_sM_ip & ED_ss_ip are also used for kinetic theory
+!          of Garzo & Dufty (1999)
       MU_sM_ip(:,:,:) = ZERO
       MU_sL_ip(:,:,:) = ZERO
       XI_sM_ip(:,:,:) = ZERO

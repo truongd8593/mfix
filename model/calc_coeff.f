@@ -60,12 +60,9 @@
                        HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
                        WALL_TR
 !
-!     JEG 
-!     University of Colorado, Hrenya Research Group
 !                      Flags to tell whether to calculate or not:
 !                      a granular energy dissipation term
       LOGICAL          GRAN_DISS(0:DIMENSION_M)
-!     END JEG
 !     
 !     Temporary storage 
       DOUBLE PRECISION UR_F_gstmp
@@ -94,14 +91,13 @@
       ENDIF
 ! addby rong
 
-!     JEG added 11/20/2005
-!     University of Colorado, Hrenya Research Group
-      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+! jeg add
+      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP' .OR. TRIM(KT_TYPE) .EQ. 'GD_99') THEN
           GRAN_DISS(:MMAX) = .TRUE.
       ELSE
           GRAN_DISS(:MMAX) = .FALSE.
       ENDIF
-!     END JEG
+! jeg end
 
       WALL_TR = .TRUE. 
       IF (ENERGY_EQ) THEN 
@@ -121,7 +117,6 @@
       IF (MU_S0 /= UNDEFINED) VISC(1:MMAX) = .FALSE. 
 
 !     JEG modified 11/20/2005
-!     University of Colorado, Hrenya Research Group
       CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
           GRAN_DISS, RRATE, DRAGCOEF, HEAT_TR, WALL_TR, IER)
 
@@ -201,12 +196,10 @@
                        HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
                        WALL_TR
 !
-!     JEG added 11/20/2005
-!     University of Colorado, Hrenya Research Group
 !                      Flags to tell whether to calculate or not:
 !                      a granular energy dissipation term
       LOGICAL          GRAN_DISS(0:DIMENSION_M)
-!     END JEG
+!
 !-----------------------------------------------
 !
 !     Calculate physical properties
@@ -327,13 +320,12 @@
                        HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
                        WALL_TR
 !
-!     JEG added 11/20/2005
-!     University of Colorado, Hrenya Research Group
+!     added by jeg 11/20/2005
 !                      Flags to tell whether to calculate or not:
 !                      a granular energy dissipation term
       LOGICAL          GRAN_DISS(0:DIMENSION_M)
-!     END JEG
-		       
+!     end jeg
+!		       
 !     Reset all flags
 !
       RRATE = .FALSE. 

@@ -205,53 +205,59 @@
 !
           ENDDO
 !
-      ELSE     ! default KT in MFIX left unchanged (sof)
+      ELSE     ! default KT in MFIX or GD_99 theory
         DO M = 1, MMAX 
-!
-!
-         DO IJK = ijkstart3, ijkend3
-!
-            CpxFlux_E(IJK) = 1.5D0 * Flux_sE(IJK,M)
-	    CpxFlux_N(IJK) = 1.5D0 * Flux_sN(IJK,M)
-            CpxFlux_T(IJK) = 1.5D0 * Flux_sT(IJK,M)
 
+
+         DO IJK = ijkstart3, ijkend3
+
+            CpxFlux_E(IJK) = 1.5D0 * Flux_sE(IJK,M)
+            CpxFlux_N(IJK) = 1.5D0 * Flux_sN(IJK,M)
+            CpxFlux_T(IJK) = 1.5D0 * Flux_sT(IJK,M)
+ 
             IF (FLUID_AT(IJK)) THEN 
-!
-               CALL SOURCE_GRANULAR_ENERGY (SOURCELHS, SOURCERHS, IJK, M, IER) 
-               APO = 1.5D0*ROP_SO(IJK,M)*VOL(IJK)*ODT 
-               S_P(IJK) = APO + SOURCELHS + 1.5D0 * ZMAX(SUM_R_S(IJK,M)) * VOL(IJK) 
-               S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS + &
-	                  1.5D0 * THETA_M(IJK,M)*ZMAX((-SUM_R_S(IJK,M))) * VOL(IJK)
-               EPS(IJK) = EP_S(IJK,M) 
-!
+
+                 IF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+                      CALL SOURCE_GD_99_GRANULAR_ENERGY(SOURCELHS, SOURCERHS, IJK, M, IER)
+                 ELSE
+                      CALL SOURCE_GRANULAR_ENERGY (SOURCELHS, SOURCERHS, IJK, M, IER) 
+                 ENDIF
+
+                 APO = 1.5D0*ROP_SO(IJK,M)*VOL(IJK)*ODT 
+                 S_P(IJK) = APO + SOURCELHS + 1.5D0 * ZMAX(SUM_R_S(IJK,M)) * VOL(IJK) 
+                 S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS + &
+                      1.5D0 * THETA_M(IJK,M)*ZMAX((-SUM_R_S(IJK,M))) * VOL(IJK)
+                 EPS(IJK) = EP_S(IJK,M) 
+
             ELSE 
-!
+
                EPS(IJK) = ZERO 
                S_P(IJK) = ZERO 
                S_C(IJK) = ZERO 
-!
+
             ENDIF 
          END DO 
+
          CALL CONV_DIF_PHI (THETA_M(1,M), KTH_S(1,M), DISCRETIZE(8), U_S(1,M), &
             V_S(1,M), W_S(1,M), CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M, IER) 
-!
+
          CALL BC_PHI (THETA_M(1,M), BC_THETA_M(1,M), BC_THETAW_M(1,M), BC_HW_THETA_M(1,M), &
             BC_C_THETA_M(1,M), M, A_M, B_M, IER) 
-!
-         CALL BC_THETA (M, A_M, B_M, IER)        !override bc settings if 
-!                                        Johnson-Jackson bcs are specified
-!
+
+         CALL BC_THETA (M, A_M, B_M, IER)     !override bc settings if 
+                                              !Johnson-Jackson bcs are specified
+
          CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M, IER) 
-!
-!
+
+
 ! Adjusting the values of theta_m to zero when Ep_g < EP_star (Shaeffer, 1987)
 ! This is done here instead of calc_mu_s.f to avoid convergence problems. (sof)
-!
+
          IF (SCHAEFFER) THEN
            DO IJK = ijkstart3, ijkend3
-!
+
               IF (FLUID_AT(IJK) .AND. EP_g(IJK) .LT. EP_star_array(ijk)) THEN 
-!
+
 
                  A_M(IJK,1,M) = ZERO 
                  A_M(IJK,-1,M) = ZERO 

@@ -54,10 +54,8 @@
       LOGICAL          VISC(0:DIMENSION_M), COND(0:DIMENSION_M), &
                        DIFF(0:DIMENSION_M)
 !
-!     JEG Added--- University of Colorado, Hrenya Research Group
 !                      Flags to tell whether to calculate or not
       LOGICAL          GRAN_DISS(0:DIMENSION_M)         
-!     END JEG
 !                 
 !-----------------------------------------------
 !
@@ -88,12 +86,14 @@
       END DO 
 !
 !     JEG Added
-!     University of Colorado, Hrenya Research Group
 !     Particle-Particle Energy Dissipation
       DO M = 1, MMAX
            IF (GRAN_DISS(M)) THEN
-	       IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') &
-	           CALL CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER)
+                IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+                     CALL CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER)
+                ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+                     CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
+                ENDIF
            ENDIF
       END DO
 !     END JEG

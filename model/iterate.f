@@ -122,8 +122,8 @@
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, VAVG_U_S, &
-         VAVG_V_S, VAVG_W_S 
-	 external cpu_time   !use the subroutine from machine.f
+                                     VAVG_V_S, VAVG_W_S 
+      external cpu_time   !use the subroutine from machine.f
 !-----------------------------------------------
 !
 !
@@ -162,31 +162,30 @@
 !     CPU time left
 !
       IF (FULL_LOG) THEN      !//
-         TLEFT = (TSTOP - TIME)*CPUOS 
-         CALL GET_TUNIT (TLEFT, TUNIT) 
+          TLEFT = (TSTOP - TIME)*CPUOS 
+          CALL GET_TUNIT (TLEFT, TUNIT) 
 !
-         IF (DT == UNDEFINED) THEN 
-            CALL GET_SMASS (SMASS) 
+          IF (DT == UNDEFINED) THEN 
+              CALL GET_SMASS (SMASS) 
 
-	    IF(myPE.eq.PE_IO) THEN
-              WRITE (*, '(/A,G10.5, A,F9.3,1X,A)') ' Starting solids mass = ', &
+              IF(myPE.eq.PE_IO) THEN
+                WRITE (*, '(/A,G10.5, A,F9.3,1X,A)') ' Starting solids mass = ', &
                  SMASS, '    CPU time left = ', TLEFT, TUNIT 
-	    ENDIF
-         ELSE 
-            IF(myPE.eq.PE_IO) THEN
+              ENDIF
+          ELSE 
+              IF(myPE.eq.PE_IO) THEN
 !AE TIME 050801 add CN_ON check to print original timestep size
 !             IF (CN_ON) THEN
-             IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
-               (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
-	        WRITE (*, '(/A,G12.5, A,G12.5, A,F9.3,1X,A)') ' Time = ', TIME, &
-                 '  Dt = ', 2.D0*DT, '    CPU time left = ', TLEFT, TUNIT 
-             ELSE
-              WRITE (*, '(/A,G12.5, A,G12.5, A,F9.3,1X,A)') ' Time = ', TIME, &
-                 '  Dt = ', DT, '    CPU time left = ', TLEFT, TUNIT 
-             ENDIF
-	    ENDIF
-!
-         ENDIF 
+                  IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
+                      (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
+                      WRITE (*, '(/A,G12.5, A,G12.5, A,F9.3,1X,A)') ' Time = ', TIME, &
+                         '  Dt = ', 2.D0*DT, '    CPU time left = ', TLEFT, TUNIT 
+                  ELSE
+                      WRITE (*, '(/A,G12.5, A,G12.5, A,F9.3,1X,A)') ' Time = ', TIME, &
+                          '  Dt = ', DT, '    CPU time left = ', TLEFT, TUNIT 
+                  ENDIF
+              ENDIF
+          ENDIF 
       ENDIF 
 !
 !
@@ -232,7 +231,6 @@
 !     Calculate coefficients.  First turn off all flags.  Then explicitly set flags for all the quantities
 !     that need to be calculated.
 !
-!         JEG modified, University of Colorado, Hrenya Research Group
       CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
                GRAN_DISS, RRATE, DRAGCOEF, HEAT_TR, WALL_TR, IER)
 
@@ -248,14 +246,15 @@
       DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
       VISC(0) = RECALC_VISC_G 
       VISC(1:MMAX) = .TRUE. 
-!
-!         JEG added
-!         University of Colorado, Hrenya Research Group
-      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') GRAN_DISS(:MMAX) = .TRUE.
 
-!         END JEG
+!     added jeg
+      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP' .OR. TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+          GRAN_DISS(:MMAX) = .TRUE.
+      ENDIF
+!     end jeg
+
       CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
-!         JEG modified, University of Colorado, Hrenya Research Group
+
       CALL TRANSPORT_PROP (VISC, COND, DIFF, GRAN_DISS, IER) 
       CALL EXCHANGE (DRAGCOEF, HEAT_TR, WALL_TR, IER) 
 !
@@ -276,7 +275,6 @@
 !     Calculate density and reaction rates. Do not change reaction rate anywhere else within this
 !     iteration loop.  Fluid density can be changed after the pressure correction step.
 !        
-!         JEG modified, University of Colorado, Hrenya Research Group
       CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
                GRAN_DISS, RRATE, DRAGCOEF, HEAT_TR, WALL_TR, IER)
       IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
@@ -285,7 +283,7 @@
       CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
       IF (Neg_RHO_G) THEN
          MUSTIT = 2                              !indicates divergence 
-	 Neg_RHO_G = .FALSE.
+         Neg_RHO_G = .FALSE.
          IF(DT/=UNDEFINED)GO TO 1000  
       ENDIF
       CALL CALC_RRATE(RRATE)
@@ -298,29 +296,29 @@
         IF (MMAX > 0) THEN
           IF(MMAX == 1)THEN
             CALL CALC_K_CP (K_CP, IER)
-	    CALL SOLVE_EPP (NORMS, RESS, IER)
+            CALL SOLVE_EPP (NORMS, RESS, IER)
             CALL CORRECT_1 (IER) 
           ELSE
             DO M=1,MMAX 
 !   	      IF (M .EQ. MCp) THEN !Volume fraction correction technique for multiparticle types is 
-   	      IF (.FALSE.) THEN    !not implemented.  This will only slow down convergence.
+              IF (.FALSE.) THEN    !not implemented.  This will only slow down convergence.
                 CALL CALC_K_CP (K_CP, IER)
-	        CALL SOLVE_EPP (NORMS, RESS, IER)
+                CALL SOLVE_EPP (NORMS, RESS, IER)
                 CALL CORRECT_1 (IER) 
 
-      	      ELSE
-	        CALL SOLVE_CONTINUITY(M,IER)
-	             
-	      ENDIF
-	    END DO
+              ELSE
+                CALL SOLVE_CONTINUITY(M,IER)
+             
+              ENDIF
+            END DO
           ENDIF
 
           CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
 
-	  abort_ier = ier.eq.1
-	  call global_all_or(abort_ier)
+          abort_ier = ier.eq.1
+          call global_all_or(abort_ier)
           IF (abort_ier) THEN 
-	      ier = 1
+              ier = 1
               MUSTIT = 2                           !indicates divergence 
               IF(DT/=UNDEFINED)GO TO 1000 
           ENDIF 
@@ -355,7 +353,7 @@
         CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
         IF (Neg_RHO_G) THEN
            MUSTIT = 2                              !indicates divergence 
-	   Neg_RHO_G = .FALSE.
+           Neg_RHO_G = .FALSE.
            IF(DT/=UNDEFINED)GO TO 1000  
         ENDIF 
       ENDIF 
@@ -413,6 +411,8 @@
 !     Check for convergence
 !
       CALL ACCUM_RESID ! Accumulating residuals from all the processors
+      RESG = RESID(RESID_P,0)
+      RESS = RESID(RESID_P,1)
       call CALC_RESID_MB(1, errorpercent)
       CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT, IER) 
       
@@ -623,7 +623,7 @@
      
       if(.not.doit) then
         OUTIT = 0
-	return
+        return
       endif
       
       OUTIT = OUTIT + 1
@@ -647,7 +647,7 @@
       If (isNan(mdot_n) .or. isNan(delp_n)) then
         if (myPE.eq.PE_IO)write(*,*) mdot_n, delp_n, ' NaN being caught in GoalSeekMassFlux '
         AUTOMATIC_RESTART = .TRUE.
-	RETURN
+        RETURN
       ENDIF
 ! 
       err = abs((mdot_n - mdot_0)/mdot_0)
@@ -655,7 +655,7 @@
         MUSTIT = 0
       else
         MUSTIT = 1
-	NIT = 1
+        NIT = 1
       endif
       
       ! correct delp
@@ -665,7 +665,7 @@
 ! Fail-Safe Newton's method (below) works better than the regular Newton method (above)
 !
         delp_xyz = delp_n - omega * (delp_n - delp_nm1) * ((mdot_n - mdot_0)/(mdot_nm1 - mdot_0)) &
-	                   / ((mdot_n - mdot_0)/(mdot_nm1 - mdot_0) - ONE)
+                   / ((mdot_n - mdot_0)/(mdot_nm1 - mdot_0) - ONE)
       else
         firstPass=.false.
         delp_xyz = delp_n*0.99

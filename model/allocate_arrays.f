@@ -41,11 +41,10 @@
       Use vshear
       Use mflux
       Use mchem
-!     JEG Added 04/01/2005
-!     University of Colorado, Hrenya Research Group
+!   JEG Added 
       use kintheory
       use kintheory2
-!     END JEG
+!   END JEG
       IMPLICIT NONE
       
       INTEGER M
@@ -432,8 +431,9 @@
       Allocate(    ROP_sT(DIMENSION_3, DIMENSION_M) ) 
 
 !     JEG Added 
-!     University of Colorado, Hrenya Research Group
 !     Arising from kinetic theory of Iddir & Arastoopour (2005)
+!     EDvel_sM_ip & ED_ss_ip are also used for kinetic theory
+!          of Garzo & Dufty (1999)
       Allocate(    KTMOM_U_s(DIMENSION_3, DIMENSION_M) )
       Allocate(    KTMOM_V_s(DIMENSION_3, DIMENSION_M) )
       Allocate(    KTMOM_W_s(DIMENSION_3, DIMENSION_M) )

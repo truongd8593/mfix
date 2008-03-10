@@ -104,8 +104,8 @@
 !
 ! sof: The only option for KT type is Iddir-Arastoopour non-equip theory
       IF (KT_TYPE /= UNDEFINED_C) THEN
-         IF(KT_TYPE /= 'IA_NONEP') CALL ERROR_ROUTINE ('check_data_01', &
-            'The only option for KT_TYPE is IA_NONEP', 1, 1)
+         IF(KT_TYPE /= 'IA_NONEP' .AND. KT_TYPE /= 'GD_99') CALL ERROR_ROUTINE ('check_data_01', &
+            'The only option for KT_TYPE is IA_NONEP or GD_99', 1, 1)
       ENDIF
 !
 ! sof: Check name of radial distribution function

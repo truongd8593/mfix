@@ -189,3 +189,111 @@
 
       RETURN  
       END SUBROUTINE CALC_IA_NONEP_ENERGY_DISSIPATION_SS 
+!-----------------------------------------------
+
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!
+      SUBROUTINE CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER) 
+!
+!-----------------------------------------------
+!     Modules
+!-----------------------------------------------
+      USE param
+      USE param1
+      USE geometry
+      USE compar
+      USE fldvar 
+      USE indices 
+      USE physprop
+      USE run
+      USE constant
+      USE toleranc
+      use kintheory
+      IMPLICIT NONE
+!-----------------------------------------------
+!     Local variables
+!-----------------------------------------------  
+!     Error index
+      INTEGER          IER
+!
+!     Index
+      INTEGER          IJK, I, J, K
+!     
+!     Solids phase
+      INTEGER          M
+!
+!     variables for GD model
+      DOUBLE PRECISION D_PM
+      DOUBLE PRECISION press_star, c_star, zeta0_star, nu_gamma_star, &
+                       lambda_num, cd_num, zeta1, nu0	   
+!
+!----------------------------------------------- 
+!     Function subroutines
+!----------------------------------------------- 
+      DOUBLE PRECISION G_0
+!-----------------------------------------------
+!     Include statement functions
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'ep_s2.inc'
+!-----------------------------------------------   
+!
+      DO IJK = ijkstart3, ijkend3
+          I = I_OF(IJK)
+          J = J_OF(IJK)
+          K = K_OF(IJK)       
+     
+          IF ( FLUID_AT(IJK) ) THEN
+
+!              Note: k_boltz = M_PM
+
+               D_PM = D_P(IJK,M)
+
+!              nu0=p_k/eta0
+               nu0 = (96.d0/5.d0)*(EP_s(IJK,M)/D_PM)*DSQRT(Theta_m(IJK,M)/PI)
+
+               press_star = 1.d0 + 2.d0*(1.d0+C_E)*EP_s(IJK,M)*G_0(IJK,M,M)
+
+               c_star = 32.0d0*(1.0d0 - C_E)*(1.d0 - 2.0d0*C_E*C_E) &
+                    / (81.d0 - 17.d0*C_E + 30.d0*C_E*C_E*(1.0d0-C_E))
+
+               zeta0_star = (5.d0/12.d0)*G_0(IJK,M,M)*(1.d0 - C_E*C_E) &
+                    * (1.d0 + (3.d0/32.d0)*c_star)
+
+               nu_gamma_star = ((1.d0+C_E)/48.d0)*G_0(IJK,M,M)*(128.d0-96.d0*C_E + &
+                    15.d0*C_E*C_E-15.d0*C_E*C_E*C_E+ (c_star/64.d0) * (15.d0* &
+                    C_E*C_E*C_E-15.d0*C_E*C_E+498.d0*C_E-434.d0))
+
+               lambda_num = (3.d0/8.d0)*( (1.d0-C_E)*(5.d0*C_E*C_E+4.d0*C_E-1.d0)+ &
+                    (c_star/12.d0)*(159.d0*C_E+3.d0*C_E*C_E-19.d0*C_E- &
+                    15.d0*C_E*C_E*C_E) ) * (1.d0+C_E)
+
+!              does not include factor of 1/nu0.  the factor 1/nu0 in cD will cancel
+!              with the factor of nu0 used to obtain zeta1 from zeta1_star
+               cd_num = ( (4.d0/15.d0)*lambda_num*PI*EP_s(IJK,M)*G_0(IJK,M,M) + &
+                    (press_star-1.d0)*(2.d0/3.d0-C_E)*c_star ) / &
+                    ( 0.5d0*zeta0_star+nu_gamma_star + (5.d0*c_star/64.d0) * &
+                    (1.d0+(3.d0*c_star/64.d0))*G_0(IJK,M,M)*(1.d0-C_E*C_E))
+
+!              does not include factor of 1/nu0 in the first term.  the factor 1/nu0 
+!              will cancel with the factor of nu0 used to obtain zeta1 from zeta1_star
+!              zeta1 = nu0*zeta1_star
+               zeta1 = -(1.d0-C_E)*(press_star-1.d0) + (5.d0/32.d0) * &
+                    (1.d0-C_E*C_E)*(1.d0+(3.d0*c_star/64.d0))*G_0(IJK,M,M)*cd_num
+
+!              in the energy equation this term is multiplied by 3/2*n*kboltz*T
+!              leave multiplication of theta for source routine
+               EDvel_sM_ip(IJK,M,M) = (3.d0/2.d0)*ROP_s(IJK,M)*zeta1
+
+!              in the energy equation this term is multiplied by 3/2*n*kboltz*T
+!              leave multiplication of theta for source routine
+               EDT_s_ip(IJK,M,M) = (3.d0/2.d0)*ROP_s(IJK,M)*nu0*zeta0_star
+
+          ENDIF
+      ENDDO
+
+      RETURN  
+      END SUBROUTINE CALC_GD_99_ENERGY_DISSIPATION_SS 
+!-----------------------------------------------

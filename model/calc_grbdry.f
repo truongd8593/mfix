@@ -1162,11 +1162,15 @@
       DOUBLE PRECISION Tau_2, zeta_c_2, MU_2_T_Kin, Mu_2_Col
       DOUBLE PRECISION Tmp_Ahmadi_Const
 !
-!                      variables for Iddir equipartition model
+!                      add. variables for Iddir & Arastoopour model
       DOUBLE PRECISION MU_sM_sum, MU_s_MM, MU_s_LM, MU_sM_ip, MU_common_term,&
                        MU_sM_LM
       DOUBLE PRECISION M_PM, M_PL, MPSUM, NU_PL, NU_PM, D_PM, D_PL, DPSUMo2
       DOUBLE PRECISION Ap_lm, Dp_lm, R1p_lm, Bp_lm
+!
+!                      add. variables for Garzo and Dufty model
+      DOUBLE PRECISION c_star, zeta0_star, nu_eta_star, press_star, &
+                       gamma_star, eta_k_star, eta_star, eta0
 !----------------------------------------------- 
  
 !     In F_2 and Mu a DSQRT(T) has been left out as it appears in both
@@ -1186,48 +1190,43 @@
 !          CALL WRITE_ERROR('THETA_HW_CW', LINE, 1)
         end if
       ENDIF
-!      
-!
-!         The current implementation of the IA (2005) kinetic theory is not
-!         intended to incorporate ahmadi or simonin additions. also 
-!         further modifications will be needed to implement jenkins and
-!         friction. see additional comments following.
+
+
+      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN  
+
+!         The current implementation of the IA (2005) kinetic theory does
+!         not incorporate ahmadi or simonin additions. also further
+!         modifications are needed to implement jenkins model or friction.
 !
 !         The granular momentum BC is written with a normal vector dot the
-!         stress tensor.  The stress tensor expression contains a term
-!         with gradient in velocity of phase M. In IA's (2005) theory the stress
-!         tensor also contains terms with the gradient in velocity of the other
-!         phases.  Therefore, these additional terms will need to be accounted
-!         for when satisfying the granular momentum BC for this kinetic theory.
-!         These modifications have NOT been rigorously addressed for IA (2005) 
-!         theory.
-! 
-!
-      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN  
-!
-! Use original IA theory if SWITCH_IA is false
+!         stress tensor.  Besides the gradient in velocity of phase M, the
+!         IA stress tensor expression contains several additional terms that 
+!         will need to be accounted for when satisfying the BC and these
+!         modifications have NOT been rigorously addressed.
+
+!         Use original IA theory if SWITCH_IA is false
           IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*RO_S(M)
-!
-	  D_PM = DP_avg(M)
+
+          D_PM = DP_avg(M)
           M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
           NU_PM = (EPS(M)*RO_S(M))/M_PM
-! 
+ 
           F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*RO_s(M)*EPS(M)*g0(M))/&
                (6.d0*(ONE-ep_star_avg))
-!
+
           Mu = (5.d0/96.d0)*D_PM* RO_S(M)*DSQRT(PI*TH(M)/M_PM)
+
+!         This is from Wen-Yu correlation, you can put here your own single particle drag
           Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
-!
           IF (Re_g .lt. 1000.d0) THEN
                C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
           ELSE
                C_d = 0.44d0
           ENDIF
-!
           DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(D_PM*EPG**(2.65d0))
           IF(VREL == ZERO) DgA = LARGE_NUMBER
           Beta = EPS(M)*DgA !this is equivalent to F_gs(ijk,m)
-!
+
           IF(.NOT.SWITCH_IA .OR. RO_g_avg == ZERO)THEN
                Mu_star = Mu
           ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
@@ -1237,13 +1236,13 @@
 	                 (g0EPs_avg+ 2.0d0*DgA*Mu &
                           / (RO_S(M)**2 *(TH(M)/M_PM)))
           ENDIF
-!
+
           MU_s_MM = (Mu_star/g0(M))*(1.d0+(4.d0/5.d0)*(1.d0+C_E)*g0EPs_avg)**2
-!
+
           Mu_sM_sum = ZERO
-!
+
           DO LL = 1, MMAX
-!
+
                D_PL = DP_avg(LL)
                M_PL = (PI/6.d0)*(D_PL**3.)*RO_S(LL)
                MPSUM = M_PM + M_PL
@@ -1259,13 +1258,13 @@
                          g0(LL)*(M_PL*M_PM/MPSUM)*(M_PL*M_PM/&
                          MPSUM)*((M_PL*M_PM)**1.5)*NU_PM*NU_PL*&
                          (1.d0+C_E)*R1p_lm*DSQRT(TH(M))
-!
+
 !                   solids phase 'viscosity' associated with the divergence
 !                   of solids phase M                    
                     MU_sM_ip = (MU_s_MM + MU_s_LM)
-!
+
                ELSE
-!
+
                     Ap_lm = (M_PM*TH(LL)+M_PL*TH(M))/&
                          (2.d0)
                     Bp_lm = (M_PM*M_PL*(TH(LL)-TH(M) ))/&
@@ -1280,126 +1279,196 @@
                          g0(LL)*(M_PL*M_PM/MPSUM)*(M_PL*M_PM/&
                          MPSUM)*((M_PL*M_PM)**1.5)*NU_PM*NU_PL*&
                          (1.d0+C_E)*R1p_lm
-!
+
                     MU_sM_LM = MU_common_term*(TH(M)*TH(M)*TH(LL)*TH(LL)*TH(LL) )
 
 !                   solids phase 'viscosity' associated with the divergence
 !                   of solids phase M       
                     MU_sM_ip = MU_sM_LM
-!
+
                ENDIF
-!
+
                MU_sM_sum = MU_sM_sum + MU_sM_ip
-!
+
           ENDDO
-!
+
 !         Find the term proportional to the gradient in velocity
 !         of phase M  (viscosity in the Mth solids phase)
           Mu_s = MU_sM_sum
-!
-!
-      ELSE   ! No modifications to original mfix if IA theory not used
-      
-! modify F_2 if Jenkins BC is used (sof)    
+
+
+      ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+
+!         The current implementation of the GD (1999) kinetic theory does
+!         not incorporate ahmadi or simonin additions. also further
+!         modifications will be needed to implement jenkins model or friction
+
+          D_PM = DP_avg(M)
+          M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
+          NU_PM = (EPS(M)*RO_S(M))/M_PM
+
+!         future work: examine Jenkins model to modify F_2 accordingly 
+          F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*RO_s(M)*EPS(M)*g0(M))/&
+               (6.d0*(ONE-ep_star_avg))
+
+
+!         This is from Wen-Yu correlation, you can put here your own single particle drag
+          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
+          IF (Re_g .lt. 1000.d0) THEN
+               C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
+          ELSE
+               C_d = 0.44d0
+          ENDIF
+          DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(D_PM*EPG**(2.65d0))
+          IF(VREL == ZERO) DgA = LARGE_NUMBER
+          Beta = EPS(M)*DgA !this is equivalent to F_gs(ijk,m)
+    
+
+!         Pressure/Viscosity/Bulk Viscosity
+!         Note: k_boltz = M_PM
+     
+!         Find pressure in the Mth solids phase
+          press_star = 1.d0 + 2.d0*(1.d0+C_E)*EPS(M)*G0(M)
  
-      IF(JENKINS) THEN
-!
-        IF (VSLIP == ZERO) THEN
-! if solids velocity field is initialized to zero, use free slip bc
-	  F_2 = zero
-!
-	ELSE IF(AHMADI) THEN
-! Ahmadi model uses different solids pressure model
-!
+!         find bulk and shear viscosity
+          c_star = 32.0d0*(1.0d0 - C_E)*(1.d0 - 2.0d0*C_E*C_E) &
+               / (81.d0 - 17.d0*C_E + 30.d0*C_E*C_E*(1.0d0-C_E))
+
+          zeta0_star = (5.d0/12.d0)*G0(M)*(1.d0 - C_E*C_E) &
+               * (1.d0 + (3.d0/32.d0)*c_star)
+
+          nu_eta_star = G0(M)*(1.d0 - 0.25d0*(1.d0-C_E)*(1.d0-C_E)) &
+               * (1.d0-(c_star/64.d0))
+
+          gamma_star = (4.d0/5.d0)*(32.d0/PI)*EPS(M)*EPS(M) &
+               * G0(M)*(1.d0+C_E) * (1.d0 - (c_star/32.d0))
+
+          eta_k_star = (1.d0 - (2.d0/5.d0)*(1.d0+C_E)*(1.d0-3.d0*C_E) &
+               * EPS(M)*G0(M) ) / (nu_eta_star - 0.5d0*zeta0_star)
+
+          eta_star = eta_k_star*(1.d0 + (4.d0/5.d0)*EPS(M)*G0(M) &
+               * (1.d0+C_E) ) + (3.d0/5.d0)*gamma_star
+
+          eta0 = 5.0d0*M_PM*DSQRT(TH(M)/PI) / (16.d0*D_PM*D_PM)
+
+    
+!         added Ro_g = 0 for granular flows (no gas). 
+          IF(SWITCH == ZERO .OR. RO_g_avg == ZERO) THEN 
+               Mu_star = eta0
+               
+          ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
+               Mu_star = ZERO               
+
+          ELSE
+               Mu_star = RO_S(M)*EPS(M)*G0(M)*TH(M)*eta0 / &
+                    ( RO_S(M)*EPS(M)*G0(M)*TH(M) + &
+                    (2.d0*DgA*eta0/RO_S(M)) )     ! Note dgA is ~F_gs/ep_s
+          ENDIF
+
+     
+!         shear viscosity in Mth solids phase  (add to frictional part)
+          Mu_s = Mu_star * eta_star
+
+
+      ELSE   ! No modifications to original mfix if 
+             ! IA or GD99 theories are not used
+      
+!         modify F_2 if Jenkins BC is used (sof)    
+ 
+          IF(JENKINS) THEN
+               IF (VSLIP == ZERO) THEN
+!                   if solids velocity field is initialized to zero,
+!                   use free slip bc
+                    F_2 = zero
+
+               ELSE IF(AHMADI) THEN
+!              Ahmadi model uses different solids pressure model
 ! the coefficient mu in Jenkins paper is defined as tan_Phi_w, that's how
 ! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
 ! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
-!
-          F_2 = tan_Phi_w*RO_s(M)*EPS(M)* &
-	        ((ONE + 4.0D0*g0EPs_avg) + HALF*(ONE -C_e*C_e))*TH(M)/VSLIP
-!
-! here F_2 divided by VSLIP to use the same bc as Johnson&Jackson
-!
-        ELSE  ! Simonin or granular models use same solids pressure
-          F_2 = tan_Phi_w*RO_s(M)*EPS(M)*(1d0+ 4.D0 * Eta *g0EPs_avg)*TH(M)/VSLIP
-	ENDIF !VSLIP == ZERO
-!
-      ELSE ! no change to the original code if Jenkins BC not used
+
+                    F_2 = tan_Phi_w*RO_s(M)*EPS(M)* &
+                         ((ONE + 4.0D0*g0EPs_avg) + HALF*(ONE -C_e*C_e))*TH(M)/VSLIP
+
+!                  here F_2 divided by VSLIP to use the same bc as Johnson&Jackson
+
+               ELSE  ! Simonin or granular models use same solids pressure
+                    F_2 = tan_Phi_w*RO_s(M)*EPS(M)*(1d0+ 4.D0 * Eta *g0EPs_avg)*TH(M)/VSLIP
+               ENDIF !VSLIP == ZERO
+
+          ELSE ! no change to the original code if Jenkins BC not used
  
-        F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*RO_s(M)*EPS(M)*g0(M))&
-              /(6d0*(ONE-ep_star_avg))
-!
-      ENDIF !for Jenkins
+               F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*RO_s(M)*EPS(M)*g0(M))&
+                    /(6d0*(ONE-ep_star_avg))
+
+          ENDIF !for Jenkins
  
-      Mu = (5d0*DSQRT(Pi*TH(M))*DP_avg(M)*RO_s(M))/96d0
+          Mu = (5d0*DSQRT(Pi*TH(M))*DP_avg(M)*RO_s(M))/96d0
  
-      Mu_b = (256d0*Mu*EPS(M)*g0EPs_avg)/(5d0*Pi)
+          Mu_b = (256d0*Mu*EPS(M)*g0EPs_avg)/(5d0*Pi)
  
-      Re_g = EPG*RO_g_avg*DP_avg(M)*VREL/Mu_g_avg
-      IF (Re_g.lt.1000d0) THEN
-         C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
-      ELSE
-         C_d = 0.44d0
-      ENDIF
-      DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(DP_avg(M)*EPG**(2.65d0))
-      IF(VREL == ZERO) DgA = LARGE_NUMBER
-      Beta = SWITCH*EPS(M)*DgA
-!
-! particle relaxation time
-      Tau_12_st = RO_s(M)/(DgA+small_number)
-!
+          Re_g = EPG*RO_g_avg*DP_avg(M)*VREL/Mu_g_avg
+          IF (Re_g.lt.1000d0) THEN
+               C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
+          ELSE
+               C_d = 0.44d0
+          ENDIF
+          DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(DP_avg(M)*EPG**(2.65d0))
+          IF(VREL == ZERO) DgA = LARGE_NUMBER
+          Beta = SWITCH*EPS(M)*DgA
+
+!         particle relaxation time
+          Tau_12_st = RO_s(M)/(DgA+small_number)
+
 !     SWITCH enables us to turn on/off the modification to the
 !     particulate phase viscosity. If we want to simulate gas-particle
 !     flow then SWITCH=1 to incorporate the effect of drag on the
 !     particle viscosity. If we want to simulate granular flow
 !     without the effects of an interstitial gas, SWITCH=0.
  
-      IF(SWITCH == ZERO .OR. Ro_g_avg == ZERO)THEN
-        Mu_star = Mu
-		
-      ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
-        MU_star = ZERO
-	
-      ELSE
-	Mu_star = RO_S(M)*EPS(M)* g0(M)*TH(M)* Mu/ &
-	         (RO_S(M)*g0EPs_avg*TH(M) + 2.0d0*SWITCH*DgA/RO_S(M)* Mu)
-	
-      ENDIF
+          IF(SWITCH == ZERO .OR. Ro_g_avg == ZERO)THEN
+               Mu_star = Mu
+          ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
+               MU_star = ZERO
+          ELSE
+               Mu_star = RO_S(M)*EPS(M)* g0(M)*TH(M)* Mu/ &
+                    (RO_S(M)*g0EPs_avg*TH(M) + 2.0d0*DgA/RO_S(M)* Mu)
+          ENDIF
  
-      Mu_s = ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*&
-                   g0(M)))*(ONE+1.6d0*Eta*g0EPs_avg&
-                   )*(ONE+1.6d0*Eta*(3d0*Eta-2d0)*&
-                   g0EPs_avg)+(0.6d0*Mu_b*Eta))
+          Mu_s = ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*&
+               g0(M)))*(ONE+1.6d0*Eta*g0EPs_avg&
+               )*(ONE+1.6d0*Eta*(3d0*Eta-2d0)*&
+               g0EPs_avg)+(0.6d0*Mu_b*Eta))
  
-      IF(SIMONIN) THEN !see calc_mu_s for explanation of these definitions
-!
-        Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
-        Tau_2_c = DP_avg(M)/(6.d0*EPS(M)*g0(M)*DSQRT(16.d0*(TH(M)+Small_number)/PI))
-	zeta_c_2= 2.D0/5.D0*(ONE+ C_e)*(3.d0*C_e-ONE)
-	Nu_t =  Tau_12_avg/Tau_12_st
-        Tau_2 = ONE/(2.D0/Tau_12_st+Sigma_c/Tau_2_c)
-!
-	MU_2_T_Kin = (2.0D0/3.0D0*K_12_avg*Nu_t + TH(M) * &
-                     (ONE+ zeta_c_2*EPS(M)*g0(M)))*Tau_2
-!
-	Mu_2_Col = 8.D0/5.D0*EPS(M)*g0(M)*Eta* (MU_2_T_Kin+ &
-                   DP_avg(M)*DSQRT(TH(M)/PI))
-!
-	Mu_s = EPS(M)*RO_s(M)*(MU_2_T_Kin + Mu_2_Col)
-!
-      ELSE IF(AHMADI) THEN
-!
-        IF(EPS(M) < (ONE-ep_star_avg)) THEN
-	  Tmp_Ahmadi_Const = &
-	   ONE/(ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS(M)/(ONE-ep_star_avg))**3)
-        ELSE
-	  Tmp_Ahmadi_Const = ONE
-        ENDIF
-	Mu_s = Tmp_Ahmadi_Const &
-	       *0.1045D0*(ONE/g0(M)+3.2D0*EPS(M)+12.1824D0*g0(M)*EPS(M)*EPS(M))  &
-	       *DP_avg(M)*RO_s(M)* DSQRT(TH(M))
-      ENDIF
-!        
+          IF(SIMONIN) THEN !see calc_mu_s for explanation of these definitions
+
+               Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
+               Tau_2_c = DP_avg(M)/(6.d0*EPS(M)*g0(M)*DSQRT(16.d0*(TH(M)+Small_number)/PI))
+               zeta_c_2= 2.D0/5.D0*(ONE+ C_e)*(3.d0*C_e-ONE)
+               Nu_t =  Tau_12_avg/Tau_12_st
+               Tau_2 = ONE/(2.D0/Tau_12_st+Sigma_c/Tau_2_c)
+
+               MU_2_T_Kin = (2.0D0/3.0D0*K_12_avg*Nu_t + TH(M) * &
+                    (ONE+ zeta_c_2*EPS(M)*g0(M)))*Tau_2
+
+               Mu_2_Col = 8.D0/5.D0*EPS(M)*g0(M)*Eta* (MU_2_T_Kin+ &
+                     DP_avg(M)*DSQRT(TH(M)/PI))
+
+               Mu_s = EPS(M)*RO_s(M)*(MU_2_T_Kin + Mu_2_Col)
+
+          ELSE IF(AHMADI) THEN
+
+               IF(EPS(M) < (ONE-ep_star_avg)) THEN
+                    Tmp_Ahmadi_Const = &
+                    ONE/(ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS(M)/(ONE-ep_star_avg))**3)
+               ELSE
+                    Tmp_Ahmadi_Const = ONE
+               ENDIF
+                    Mu_s = Tmp_Ahmadi_Const &
+                    *0.1045D0*(ONE/g0(M)+3.2D0*EPS(M)+12.1824D0*g0(M)*EPS(M)*EPS(M))  &
+                    *DP_avg(M)*RO_s(M)* DSQRT(TH(M))
+          ENDIF
+        
       ENDIF    ! for kinetic theory type
         
  
