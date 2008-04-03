@@ -545,8 +545,10 @@
 !  Start Carnahan-Starling derivative
 !
 !     Derivative of (G0) wrt EP_s
-        DG_0DNU = ONE/(ONE - EPS)**2 + 1.5D0*(ONE + EPS)*(ONE/(ONE - EPS))**3 + &
-           0.5D0*(EPS**2 + 2.d0*EPS)*(ONE/(ONE - EPS))**4 
+!        DG_0DNU = ONE/(ONE - EPS)**2 + 1.5D0*(ONE + EPS)*(ONE/(ONE - EPS))**3 + &
+!           0.5D0*(EPS**2 + 2.d0*EPS)*(ONE/(ONE - EPS))**4 
+!     This simpler formula is less expensive to compute, sof Apr-03-2008
+        DG_0DNU = 3D0*(ONE-0.5D0*EPS)/(ONE - EPS)**4 - 0.5D0/(ONE - EPS)**3
 !  End Carnahan-Starling derivative
 !
       ENDIF
@@ -586,8 +588,10 @@
 !-----------------------------------------------
 !
 !
-      G_0CS = ONE/(ONE - EPS) + 1.5D0*EPS*(ONE/(ONE - EPS))**2 + 0.5D0*EPS**2*(ONE/&
-         (ONE - EPS))**3 
+!      G_0CS = ONE/(ONE - EPS) + 1.5D0*EPS*(ONE/(ONE - EPS))**2 + 0.5D0*EPS**2*(ONE/&
+!         (ONE - EPS))**3 
+!     This simpler formula is less expensive to compute, sof Apr-03-2008
+      G_0CS = (ONE-0.5D0*EPS)/(ONE - EPS)**3
       RETURN  
       END FUNCTION G_0CS 
       
