@@ -520,6 +520,7 @@
 
 !
       IF((VAR_NO .GE.  7 .AND. VAR_NO .LE. 10) .OR. &
+         (VAR_NO .EQ. 12                     ) .OR. &
          (VAR_NO .EQ. 15                     ) .OR. &
          (VAR_NO .GE. 19 .AND. VAR_NO .LE. 21) .OR. &
          (VAR_NO .GE. 25 .AND. VAR_NO .LE. 27) .OR. &
@@ -1176,6 +1177,8 @@
         CALL WRITE_LINE(FILE_NAME, LINE, 27)
       ENDIF
       IF((VAR_NO .GE.  7 .AND. VAR_NO .LE. 10) .OR.&
+         (VAR_NO .EQ. 12                     ) .OR.&
+         (VAR_NO .EQ. 13                     ) .OR.&
          (VAR_NO .EQ. 15                     ) .OR.&
          (VAR_NO .GE. 19 .AND. VAR_NO .LE. 21) .OR.&
          (VAR_NO .GE. 25 .AND. VAR_NO .LE. 27) .OR.&
@@ -1194,6 +1197,10 @@
       IF(VAR_NO .GE. 14 .AND. VAR_NO .LE. 21) THEN
         WRITE(LINE,'(A,I2)') ' Species = ', N
         CALL WRITE_LINE(FILE_NAME, LINE, 13)
+      ENDIF
+      IF(VAR_NO .EQ. 50) THEN 
+        WRITE(LINE,'(A,I2)') ' Rrates = ', N
+        CALL WRITE_LINE(FILE_NAME, LINE, 12)
       ENDIF
 !
 !  Read data
