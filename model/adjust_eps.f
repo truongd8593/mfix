@@ -65,9 +65,6 @@
 !
 !
 
-      IF (.NOT.(MOMENTUM_X_EQ(1) .AND. MOMENTUM_Y_EQ(1) .AND. MOMENTUM_Z_EQ(1)) &
-         ) RETURN
-
       DO K = Kstart1, Kend1 
          DO J = Jstart1, Jend1 
             DO I = Istart1, Iend1 
