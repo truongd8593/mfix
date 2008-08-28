@@ -365,7 +365,7 @@
 !
 !--------------------------Begin GIDASPOW_PCF --------------------
 !    Additional modifications to apply the polydisperse correction 
-!    factor (PCF) proposed by Beestra et al. (2007)    09-26-07
+!    factor (PCF) proposed by Beetstra et al. (2007)    09-26-07
 !
             ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW_PCF') THEN
 !
@@ -409,7 +409,7 @@
                ENDIF
 
 
-               ! see the associated erratum by Beestra et al. (2007) :
+               ! see the associated erratum by Beetstra et al. (2007) :
                FA_cor = Y_i 
                IF (M .EQ. 1) THEN
                     FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2) 
@@ -467,7 +467,7 @@
 !     
 !----------------------Begin Gidaspow_BLEND_PCF ------------------
 !    Additional modifications to apply the polydisperse correction 
-!    factor (PCF) proposed by Beestra et al. (2007)    09-26-07
+!    factor (PCF) proposed by Beetstra et al. (2007)    09-26-07
 !
             ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW_BLEND_PCF') THEN
 !
@@ -516,7 +516,7 @@
 !              Blend the models
                DgA = (1D0 - PHI_gs) * Ergun + PHI_gs * WenYu
 !               
-               ! see the associated erratum by Beestra et al. (2007) :
+               ! see the associated erratum by Beetstra et al. (2007) :
                FA_cor = Y_i 
                IF (M .EQ. 1) THEN
                     FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2) 
@@ -564,7 +564,7 @@
 ! 
 !--------------------------Begin WEN_YU_PCF ----------------------
 !    Additional modifications to apply the polydisperse correction 
-!    factor (PCF) proposed by Beestra et al. (2007)    09-26-07
+!    factor (PCF) proposed by Beetstra et al. (2007)    09-26-07
 !
             ELSE IF(TRIM(DRAG_TYPE).EQ.'WEN_YU_PCF') then
 !
@@ -602,7 +602,7 @@
                DgA = 0.75D0 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65D0) &
                     /D_p_av
 
-               ! see the associated erratum by Beestra et al. (2007) :
+               ! see the associated erratum by Beetstra et al. (2007) :
                FA_cor = Y_i 
                IF (M .EQ. 1) THEN
                     FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2) 
@@ -643,7 +643,7 @@
 !
             ELSE IF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL') THEN
 !     
-               F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
+               F_STOKES = 18D0*Mu*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
 	       
                phis = ZERO
 	       DO IM = 1, MMAX
@@ -717,11 +717,11 @@
 !
 !-------------------- Begin Koch_Hill_PCF -------------------------
 !    Additional modifications to apply the polydisperse correction 
-!    factor (PCF) proposed by Beestra et al. (2007)    09-26-07
+!    factor (PCF) proposed by Beetstra et al. (2007)    09-26-07
 !
             ELSE IF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL_PCF') THEN
 !     
-               F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
+               F_STOKES = 18D0*Mu*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
 	       
                phis = ZERO
 	       DO IM = 1, MMAX
@@ -804,7 +804,7 @@
 !              This is a check for phis (or eps_(ijk,m)) to be within physical range
                IF(phis <= ZERO .OR. phis > ONE) F = zero
 !
-               ! see the associated erratum by Beestra et al. (2007) :
+               ! see the associated erratum by Beetstra et al. (2007) :
                FA_cor = Y_i 
                IF (M .EQ. 1) THEN
                     FB_cor = (EP_g(IJK)*Y_i + phis*Y_i**2) 
@@ -838,7 +838,7 @@
             ELSE IF(TRIM(DRAG_TYPE).EQ.'BVK') THEN
 !
 !              eq(9) BVK J. fluid. Mech. 528, 2005 (this F_Stokes is /= of Koch_Hill by a factor of ep_g)
-               F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2 
+               F_STOKES = 18D0*Mu*EP_g(IJK)/D_p(IJK,M)**2 
 	       
                phis = ZERO
 	       DO IM = 1, MMAX
@@ -869,7 +869,7 @@
                F = F + 0.413d0*Re/(24d0*EP_g(IJK)**2) * (ONE/EP_G(IJK) + 3d0*EP_G(IJK) &
                     *phis + 8.4d0/Re**0.343) / (ONE+10**(3d0*phis)/Re**(0.5+2*phis))
 
-               ! see the associated erratum by Beestra et al. (2007) :
+               ! see the associated erratum by Beetstra et al. (2007) :
                ! the correction factor differs for model A versus model B
                ! application of the correction factor for model A is found from
                ! the correction factor for model B and neglects the Y_i**3 term
