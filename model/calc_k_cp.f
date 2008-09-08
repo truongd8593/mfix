@@ -150,7 +150,12 @@
                       F2 = 0d0
                       DF2oDEPs = ZERO
  
-                     ELSE
+                     ELSEIF(trD_s_C(IJK,M) == ZERO) THEN
+                     
+		      F2 = ONE
+                      DF2oDEPs = ZERO
+                     
+		     ELSE
                       F2 = (1d0 - (trD_s_C(IJK,M)/(ZETA*N_Pff*&
                           DSQRT(2d0)*Sin_Phi)))**(N_Pff-1d0)
  

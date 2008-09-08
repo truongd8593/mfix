@@ -1581,7 +1581,13 @@
                   *Sin_Phi)) .GT. 1d0) THEN
                     P_s_f(IJK) =ZERO
                     PfoPc = ZERO
-                  ELSE
+                  
+		  ELSEIF(trD_s_C(IJK,M) == ZERO) THEN
+                    
+		    P_s_f(IJK) = Pc
+                    PfoPc = ONE
+                  
+		  ELSE
                   
                     P_s_f(IJK) = Pc*(1d0 - (trD_s_C(IJK,M)/(ZETA&
                     *N_Pff*DSQRT(2d0)*Sin_Phi)))**(N_Pff-1d0)
