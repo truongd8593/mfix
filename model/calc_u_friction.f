@@ -1487,6 +1487,8 @@
  
          IF ((DEL_U/(ZETA*N_Pff*DSQRT(2d0)*Sin_Phi)) .GT. 1d0) THEN
              Pf = ZERO
+         ELSEIF( DEL_U == ZERO ) THEN
+             Pf = Pc
          ELSE
              Pf = Pc*(1d0 - (DEL_U/(ZETA*N_Pff*DSQRT(2d0)*Sin_Phi)))**&
                   (N_Pff-1d0)
@@ -1515,9 +1517,9 @@
  
       Gw = (MU_s + Chi/(2d0*ZETA))*DABS(VEL - W_VEL)
  
-      Hw = F_2*DABS(VEL - W_VEL) + Pf*tan_Phi_w -&
-           Chi*S_dd*tan_Phi_w/ZETA
- 
+      Hw = F_2*DABS(VEL - W_VEL) + Pf*tan_Phi_w
+      IF(ZETA .NE. ZERO) Hw = Hw - Chi*S_dd*tan_Phi_w/ZETA
+      
       Cw = hw * W_VEL
  
       RETURN
