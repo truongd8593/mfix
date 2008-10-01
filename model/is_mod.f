@@ -85,6 +85,9 @@
 !                      Logical variable to determine whether an IS is defined
        LOGICAL         IS_DEFINED (DIMENSION_IS)
 !
+!                      Are there any IS defined?
+       LOGICAL         ANY_IS_DEFINED
+!
 !                      Character variable with values E, N, and T
 !                      to determine the IS plane of a flow cell
        CHARACTER       IS_PLANE (DIMENSION_IS)

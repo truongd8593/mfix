@@ -152,8 +152,10 @@
       END DO L50 
       CALL GET_IS 
 !
+      ANY_IS_DEFINED = .FALSE.
       DO ISV = 1, DIMENSION_IS 
          IF (IS_DEFINED(ISV)) THEN 
+            ANY_IS_DEFINED = .TRUE.
 !
 !  Check whether IS_PC is defined
 !
