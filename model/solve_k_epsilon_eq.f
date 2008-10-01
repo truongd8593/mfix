@@ -34,6 +34,7 @@
       USE geometry
       !USE matrix
       USE fldvar
+      USE constant
       USE output
       USE indices
       USE drag
@@ -92,7 +93,10 @@
 !                      A default zero flux will be defined for both K & Epsilon at walls
       DOUBLE PRECISION BC_hw_K_Turb_G (DIMENSION_BC),  BC_hw_E_Turb_G (DIMENSION_BC)    
       DOUBLE PRECISION BC_K_Turb_GW (DIMENSION_BC),   BC_E_Turb_GW (DIMENSION_BC) 
-      DOUBLE PRECISION BC_C_K_Turb_G (DIMENSION_BC),  BC_C_E_Turb_G (DIMENSION_BC)    
+      DOUBLE PRECISION BC_C_K_Turb_G (DIMENSION_BC),  BC_C_E_Turb_G (DIMENSION_BC)  
+!
+!                      small value of K or E, 1 cm2/s2 = 1e-4 m2/s2 = 1e-4 m2/s3
+      DOUBLE PRECISION smallTheta  
 !
       character*8      Vname
 !-----------------------------------------------
@@ -110,6 +114,9 @@
       
       call lock_ambm
       call lock_tmp_array
+
+!
+      smallTheta = (to_SI)**4 * ZERO_EP_S
       
       RESID(RESID_ke,0) = ZERO
       NUM_RESID(RESID_ke,0) = ZERO
@@ -337,8 +344,8 @@
 !
            DO IJK = IJKSTART3, IJKEND3
             IF (FLUID_AT(IJK)) THEN 
-	     IF(K_Turb_G(IJK) < ZERO_EP_S) K_Turb_G(IJK) = ZERO_EP_S 
-	     IF(E_Turb_G(IJK) < ZERO_EP_S) E_Turb_G(IJK) = ZERO_EP_S 
+	     IF(K_Turb_G(IJK) < smallTheta) K_Turb_G(IJK) = smallTheta 
+	     IF(E_Turb_G(IJK) < smallTheta) E_Turb_G(IJK) = smallTheta 
 !
             ENDIF 
            END DO 

@@ -274,7 +274,7 @@
                / (qxP_s + SMALL_NUMBER) &
                *(EP_S(IJK,M)/SUM_EPS_CP) ! added by sof for consistency
                                 ! with solids pressure treatment
-               MU_s_p(IJK)     = MIN(MU_s_p(IJK), MAX_MU_s)
+               MU_s_p(IJK)     = MIN(MU_s_p(IJK), to_SI*MAX_MU_s)
                
                LAMBDA_s_p(IJK) = ZERO
                ALPHA_s_p(IJK)  = ZERO
@@ -318,9 +318,6 @@
       INTEGER          IJK
 !     Solids phase
       INTEGER          M, MM
-!     Maximum value of solids viscosity in poise
-      DOUBLE PRECISION MAX_MU_s
-      PARAMETER (MAX_MU_s = 1000.D0)
 !     
 !     Sum of all solids volume fractions
       DOUBLE PRECISION   SUM_EPS_CP
@@ -462,10 +459,6 @@
 !     
 !     Solids phase
       INTEGER          M, MM
-!     
-!     Maximum value of solids viscosity in poise
-      DOUBLE PRECISION MAX_MU_s
-      PARAMETER (MAX_MU_s = 1000.D0)
 !     
 !     Error index
       INTEGER          IER     
@@ -817,10 +810,6 @@
 !                      Solids phase
       INTEGER          M, L 
 !     
-!                      Maximum value of solids viscosity in poise
-      DOUBLE PRECISION MAX_MU_s
-      PARAMETER (MAX_MU_s = 1000.D0)
-!     
 !     Error index
       INTEGER          IER     
 !     
@@ -1056,10 +1045,6 @@
 !     
 !                      Solids phase
       INTEGER          M, L 
-!     
-!                      Maximum value of solids viscosity in poise
-      DOUBLE PRECISION MAX_MU_s
-      PARAMETER (MAX_MU_s = 1000.D0)
 !     
 !                      Error index
       INTEGER          IER     

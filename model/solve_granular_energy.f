@@ -82,6 +82,9 @@
 !                      Variables for IA (2005) kinetic theory model                       
       DOUBLE PRECISION M_PM,D_PM
 !
+!                      small value of theta_m, 1 cm2/s2 = 1e-4 m2/s2
+      DOUBLE PRECISION smallTheta
+!
 !                      temporary variable for volume x interphase transfer 
 !                      coefficient between solids phases
       DOUBLE PRECISION VxTC_ss(DIMENSION_3,DIMENSION_LM)
@@ -95,6 +98,8 @@
       call lock_ambm
       call lock_tmp_array
 
+!
+      smallTheta = (to_SI)**4 * ZERO_EP_S
 !
       DO M = 0, MMAX 
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
@@ -168,7 +173,7 @@
 !            mass of the particle in the definition.  Systems with small
 !            particles can give rise to smaller temperatures than the standard
 !            zero_ep_s		  
-                              B_M(IJK,M) = -ZERO_EP_S*M_PM
+                              B_M(IJK,M) = -smallTheta*M_PM
                          ENDIF
                     ENDDO
 	       ENDDO ! for M
@@ -266,7 +271,7 @@
                  A_M(IJK,3,M) = ZERO 
                  A_M(IJK,-3,M) = ZERO 
                  A_M(IJK,0,M) = -ONE 		  
-                 B_M(IJK,M) = -ZERO_EP_S
+                 B_M(IJK,M) = -smallTheta
 	      ENDIF
 	   END DO
 	 ENDIF	 

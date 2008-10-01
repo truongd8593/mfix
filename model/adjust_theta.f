@@ -47,7 +47,9 @@
 !                      Particle mass and diameter for use with IA theory only
 !                      because theta definition includes mass of particle.
       DOUBLE PRECISION M_PM, D_PM
-      
+!
+!                      small value of theta_m, 1 cm2/s2 = 1e-4 m2/s2
+      DOUBLE PRECISION smallTheta
 !
 !                      error indicator
       INTEGER          IER
@@ -57,6 +59,7 @@
 !
 !
       IER = 0 
+      smallTheta = (to_SI)**4 * ZERO_EP_S
 !
 !!!HPF$ independent
       DO IJK = IJKSTART3, IJKEND3
@@ -64,9 +67,9 @@
             IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
 	       D_PM = D_P(IJK,M)
 	       M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
-	       IF (THETA_M(IJK,M) < ZERO_EP_S*M_PM) THETA_M(IJK,M) = ZERO_EP_S*M_PM 
+	       IF (THETA_M(IJK,M) < smallTheta*M_PM) THETA_M(IJK,M) = smallTheta*M_PM 
             ELSE
-	       IF (THETA_M(IJK,M) < ZERO_EP_S) THETA_M(IJK,M) = ZERO_EP_S 
+	       IF (THETA_M(IJK,M) < smallTheta) THETA_M(IJK,M) = smallTheta 
             ENDIF
 !
          ENDIF 
