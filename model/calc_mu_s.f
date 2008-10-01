@@ -1697,6 +1697,7 @@
       USE fldvar
       USE visc_g
       USE visc_s
+      USE is
       USE trace
       USE turb
       USE indices
@@ -1950,6 +1951,22 @@
             ELSE
                U_s_C = ZERO
                W_s_C = ZERO
+            ENDIF
+!     
+!     Check for IS surfaces and modify solids velocity-comp accordingly
+            IF(ANY_IS_DEFINED) THEN
+	      IF(IS_AT_N(IJK) .AND. .NOT.WALL_AT(IJPK)) U_s_N = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
+	      IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) U_s_S = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
+	      IF(IS_AT_T(IJK) .AND. .NOT.WALL_AT(IJKP)) U_s_T = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
+	      IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) U_s_B = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
+	      IF(IS_AT_E(IJK) .AND. .NOT.WALL_AT(IPJK)) V_s_E = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
+	      IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) V_s_W = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
+	      IF(IS_AT_T(IJK) .AND. .NOT.WALL_AT(IJKP)) V_s_T = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
+	      IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) V_s_B = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
+	      IF(IS_AT_N(IJK) .AND. .NOT.WALL_AT(IJPK)) W_s_N = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
+	      IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) W_s_S = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
+	      IF(IS_AT_E(IJK) .AND. .NOT.WALL_AT(IPJK)) W_s_E = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
+	      IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) W_s_W = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
             ENDIF
 !     
 !     Find components of Mth solids phase continuum strain rate
