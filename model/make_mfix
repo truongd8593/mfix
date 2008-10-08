@@ -351,7 +351,7 @@ ln -sf "$mpi_include/mpif.h" .
        echo "=============================================================="
        echo " [1] Portland Group Linux Fortran Compiler (pgf90)"
        echo " [2] Intel Fortran Compiler version 9.X (ifort) "
-      #echo " [3] Intel Fortran Compiler version 10.X (ifort)"
+       echo " [3] Intel Fortran Compiler version 10.X (ifort)"
        echo " "
        echo -n "Select the compiler to compile MFIX? [2] "
        read lnx_compiler
@@ -362,7 +362,7 @@ ln -sf "$mpi_include/mpif.h" .
            echo "Portland Group Linux Fortran Compiler selected"
            opsys="Linux_pgi"
            ;;
-         33 )
+         3 )
            echo " "
            echo "Intel Linux Fortran Compiler version 10.X selected"
            opsys="Linux_ifc10"
@@ -566,15 +566,86 @@ ln -sf "$mpi_include/mpif.h" .
             ;;
 
     Linux_64_intel)
-            mach_file="LINUX.F"
+          #-----------
+          #  Set the supported compiler version under 64 bit platforms
+          #-----------
+          # Intel version 9.X
+          # opsys_intel="Linux_64_ifc9"
+          # Intel version 10.X
+            opsys_intel="Linux_64_ifc10"
+
+          #-----------
+          #  Set MPI library used as Intel's MPI library uses mpiifort instead of mpif90 
+          #-----------
+           if [ "$INTEL_MPI" ]
+           then
+            # Intel's MPI library (commercial version)
+             mpi_type=mpi_intel
+           else
+            # Generic MPICH library
+             mpi_type=mpich
+           fi
+          #-----------
+          # Check if the Intel Linux compiler specific machine.f exists
+          #-----------
+            if test -f "$mfix/LINUX_intel.F"
+            then
+              mach_file="LINUX_intel.F"
+            else
+              echo LINUX_intel.F "not found in $mfix"
+              exit
+            fi
 
           #-----------
           # Decide to use mpif90 or ifort as the compiler & linker command
           #-----------
             case $dmp_version in
               y|Y )
-                      FORTRAN_CMD=mpif90
-                      LINK_CMD=mpif90
+                   case $mpi_type in
+                     mpich )
+                           FORTRAN_CMD=mpif90
+                           LINK_CMD=mpif90
+                           if [ "$ACML" ]
+                           then
+                             libs_d="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
+                             libs="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
+                           else
+                             libs_d="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
+                             libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
+                           fi
+                           ;;
+                     mpi_intel )
+                           FORTRAN_CMD=mpiifort
+                           LINK_CMD=mpiifort
+#DEBUG
+                           unsetenv MKLROOT
+                           echo $MKLROOT
+                           if [ "$MKLROOT" ]
+                           then
+                             libs_d="odepack.a -L $MPICH_DIR/lib64 -lmpi -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lvml -lguide"
+                             libs="odepack.a -L $MPICH_DIR/lib64 -lmpi -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide" 
+                           else
+                             libs_d="odepack.a -L $MPICH_DIR/lib64 -lmpi blas90.a dgtsv90.a "
+                             libs="odepack.a -L $MPICH_DIR/lib64 -lmpi blas90.a dgtsv90.a "
+                            #libs_d="odepack.a -L $MPICH_DIR/lib64 -lmpi -L ${MKLROOT}/lib/64 -lmkl_solver -lmkl_lapack -lvml -lguide"
+                            #libs="odepack.a -L $MPICH_DIR/lib64 -lmpi -L ${MKLROOT}/lib/64 -lmkl_solver -lmkl_lapack -lvml -lguide"
+
+                           fi
+                           ;;
+                     * )
+                           FORTRAN_CMD=mpif90
+                           LINK_CMD=mpif90
+                           if [ "$ACML" ]
+                           then              
+                             libs_d="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
+                             libs="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
+                           else
+                             libs_d="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
+                             libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
+                           fi
+                           ;;
+                     esac
+
 		     # Temporarily disable MPIHOME env variable check
                      #if [ "$MPIHOME" ]
                      #then                                                                    
@@ -588,15 +659,6 @@ ln -sf "$mpi_include/mpif.h" .
 	             #  echo " e.g. setenv MPIHOME /opt/MPI/mpich2_intel_opt"	      
 	             #  exit
 	             #fi
-                      if [ "$ACML" ]
-                      then                                                                    
-                         libs_d="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
-                         libs="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
-		      else
-                         libs_d="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
-                         libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
-		      fi
-
                 ;;
               *)
                       FORTRAN_CMD=ifort
@@ -617,15 +679,79 @@ ln -sf "$mpi_include/mpif.h" .
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-openmp -assume cc_omp"
-            compile_common="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"
-            compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB -traceback"
-            compile_d2="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB -traceback"
-            compile_d3="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB -traceback"
+         #============================
+         # Set the common compiler flags that are common for all three sets 
+         #============================
+            case $opsys_intel in
+                    Linux_64_ifc9 )
+                         compile_common="-c -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -d1 -CB -traceback"
+                           ;;
+                    Linux_64_ifc10 )
+                         compile_common="-c -I. -w -w95 -i_dynamic -convert big_endian -assume byterecl"
+                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -CB -traceback"
+                           ;;
+                    * )
+                         compile_common="-c -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -d1 -CB -traceback"
+                           ;;
+                    esac
+
+             case $opsys_intel in
+                  Linux_64_ifc9 )
+                           optimize_common="-O3 -axKW -tpp7"
+                           ;;
+                  Linux_64_ifc10 )
+                           #optimize_common="-fast"
+                           optimize_common="-O3 -axW -ip -fp-model precise -ftz"
+                           ;;
+                  * )
+                           optimize_common="-O3 -axKW -tpp7"
+                           ;;
+                  esac
+
+         #============================
+         # Set ALL debug compile flags
+         #============================
+            compile_d="-g -c -I. -FR $compile_common_d"
+            compile_d2="-g -c -I. -FR $compile_common_d"
+            compile_d3="-g -c -I. $compile_common_d"
             link_d="-I.  "
-            compile="$compile_common"
-            compile2="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
-            compile3="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
-            link="-I.  "
+         #============================
+         # Set ALL optimized compile flags
+         #============================
+              case $opsys_intel in
+                  Linux_64_ifc9 )
+                           compile="$compile_common -FR $optimize_common"
+                           compile2="$compile_common -FR $optimize_common"
+                           compile3="$compile_common $optimize_common"
+                           link="-I.  "
+                           ;;
+                  Linux_64_ifc10 )
+                           compile="$compile_common -FR $optimize_common"
+                           compile2="$compile_common -FR -O0 -axW -ip -fp-model precise -ftz"
+                           compile3="$compile_common $optimize_common"
+                           link="-I.  "
+                           ;;
+                  * )
+                           compile="$compile_common -FR $optimize_common"
+                           compile2="$compile_common -FR $optimize_common"
+                           compile3="$compile_common $optimize_common"
+                           link="-I.  "
+                           ;;
+                  esac
+
+         #  compile_common="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl -FR"
+         #  compile_d="-g -c -convert big_endian -assume byterecl -I. -FR -O0 -fpe0 -d1 -CB -traceback"
+         #  compile_d2="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB -traceback"
+         #  compile_d3="-g -c -convert big_endian -assume byterecl -I. -O0 -fpe0 -d1 -CB -traceback"
+         #  link_d="-I.  "
+         #  compile="$compile_common"
+         # #compile2="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+         #  compile2="-c -O0 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+         #  compile3="-c -O3 -axP -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
+         #  link="-I.  "
+
             MODULE_CODE=1
 
 #           ------------------
@@ -738,8 +864,8 @@ ln -sf "$mpi_include/mpif.h" .
                         LINK_CMD=mpif90
                 ;;
               *)
-                        FORTRAN_CMD=$PGI/bin/pgf90
-                        LINK_CMD=$PGI/bin/pgf90
+                        FORTRAN_CMD=pgf90
+                        LINK_CMD=pgf90
                 ;;
               esac                                                                                
             libs_d="odepack.a blas90.a dgtsv90.a"
@@ -808,7 +934,7 @@ ln -sf "$mpi_include/mpif.h" .
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-mp"
-            optimize_common="-V -Minfo=inline,loop -tp $proc_type -fastsse -Mipa=fast -Mipa=inline -Bstatic"
+            optimize_common="-Minfo=inline,loop -tp $proc_type -fastsse -Mipa=fast -Mipa=inline -Bstatic"
             compile_common="-c -I. -Mnosave -Mfreeform -byteswapio -Mkeepasm"
             compile="$optimize_common -Mdalign $compile_common"
             compile2="-O1 -Mdalign $compile_common"
@@ -1119,6 +1245,14 @@ ln -sf "$mpi_include/mpif.h" .
                                                	    	    
     Linux_ifc9 | Linux_ifc10 )
           #-----------
+          #  Set MPI library used as Intel's MPI library uses mpiifort instead of mpif90
+          #-----------
+          # Generic MPICH library
+          # mpi_type=mpich
+          # Intel's MPI library (commercial version)
+            mpi_type=mpi_intel
+
+          #-----------
           # Check if the Intel Linux compiler specific machine.f exists
 	  #-----------
 	    if test -f "$mfix/LINUX_intel.F"
@@ -1134,8 +1268,44 @@ ln -sf "$mpi_include/mpif.h" .
 	  #-----------
             case $dmp_version in
               y|Y )
-                      FORTRAN_CMD=mpif90
-                      LINK_CMD="mpif90 -lsvml"
+                   case $mpi_type in
+                     mpich )
+                           FORTRAN_CMD=mpif90
+                           LINK_CMD="mpif90 -lsvml"
+                           if [ "$ACML" ]
+                           then
+                             libs_d="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
+                             libs="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
+                           else
+                             libs_d="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
+                             libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
+                           fi
+                           ;;
+                     mpi_intel )
+                           FORTRAN_CMD=mpiifort
+                           LINK_CMD="mpiifort -lsvml"
+                           if [ "$MKLROOT" ]
+                           then
+                             libs_d="odepack.a -L $MPICH_DIR/lib -lmpi -L $MKLROOT/lib/32 -lmkl_solver -lmkl_lapack -lvml -lguide"
+                             libs="odepack.a -L $MPICH_DIR/lib -lmpi -L $MKLROOT/lib/32 -lmkl_solver -lmkl_lapack -lvml -lguide"
+                           else
+                             libs_d="odepack.a -L $MPICH_DIR/lib -lmpi blas90.a dgtsv90.a "
+                             libs="odepack.a -L $MPICH_DIR/lib -lmpi blas90.a dgtsv90.a "
+                           fi
+                           ;;
+                     * )
+                           FORTRAN_CMD=mpif90
+                           LINK_CMD="mpif90 -lsvml"
+                           if [ "$ACML" ]
+                           then
+                             libs_d="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
+                             libs="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
+                           else
+                             libs_d="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
+                             libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
+                           fi
+                           ;;
+                     esac
                 ;;
               *)
                   case $opsys in
@@ -1261,10 +1431,26 @@ ln -sf "$mpi_include/mpif.h" .
          #============================
          # Set ALL optimized compile flags
          #============================
-            compile="$compile_common -FR $optimize_common"
-            compile2="$compile_common -FR $optimize_common"
-            compile3="$compile_common $optimize_common"
-            link="-I.  "
+              case $opsys in
+                  Linux_ifc9 )
+                           compile="$compile_common -FR $optimize_common"
+                           compile2="$compile_common -FR $optimize_common"
+                           compile3="$compile_common $optimize_common"
+                           link="-I.  "
+                           ;;
+                  Linux_ifc10 )
+                           compile="$compile_common -FR $optimize_common"
+                           compile2="$compile_common -FR -O0 -axW -ip -fp-model precise -ftz"
+                           compile3="$compile_common $optimize_common"
+                           link="-I.  "
+                           ;;
+                  * )
+                           compile="$compile_common -FR $optimize_common"
+                           compile2="$compile_common -FR $optimize_common"
+                           compile3="$compile_common $optimize_common"
+                           link="-I.  "
+                           ;;
+                  esac
 
             MODULE_CODE=1
 
