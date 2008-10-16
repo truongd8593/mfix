@@ -266,20 +266,18 @@
 !
 !                      Source terms to be kept on rhs
       DOUBLE PRECISION sourcerhs, S10_rhs, S15_rhs, S16_rhs,&
-                       S11a_sum_rhs, S11b_sum_rhs, S11c_sum_rhs, S12a_sum_rhs,&
-                       S12b_sum_rhs, S12c_sum_rhs, &
-                       S13_sum_lhs, S13_sum_rhs, &
-                       S14a_sum_rhs, S14b_sum_rhs, S14c_sum_rhs,&
-                       S17_sum_rhs, S18_sum_rhs, &
-                       S9_sum_rhs, s21a_sum_rhs, S21b_sum_rhs, S21c_sum_rhs
+                       S11_sum_rhs, S12_sum_rhs,&
+                       S13_sum_rhs, S17_sum_rhs, S18_sum_rhs
+
+!                      Source terms 
+      DOUBLE PRECISION S14a_sum, S14b_sum, S14c_sum, &
+                       S9_sum, s21a_sum, s21b_sum, s21c_sum
 !
 !                      Source terms to be kept on lhs
       DOUBLE PRECISION sourcelhs, S10_lhs, S16_lhs,&
-                       S11a_sum_lhs, S11b_sum_lhs, S11c_sum_lhs, S12a_sum_lhs,&
-                       S12b_sum_lhs, S12c_sum_lhs, &
+                       S11_sum_lhs, S12_sum_lhs, S13_sum_lhs,&
                        S17_sum_lhs, S18_sum_lhs, S20_sum_lhs
 
-!
 !----------------------------------------------- 
 !     Include statement functions
 !-----------------------------------------------
@@ -289,7 +287,7 @@
       INCLUDE 'ep_s2.inc'
       INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
-!
+
       I = I_OF(IJK) 
       J = J_OF(IJK) 
       K = K_OF(IJK) 
@@ -307,25 +305,22 @@
       IJKB = BOTTOM_OF(IJK) 
 
 !     initialize summation variables
-      S9_sum_rhs = ZERO
-      S11a_sum_rhs = ZERO
-      S12a_sum_rhs = ZERO 
+      S9_sum = ZERO
+      S14a_sum = ZERO
+      S14b_sum = ZERO
+      S14c_sum = ZERO   
+      S21a_sum = ZERO
+      S21b_sum = ZERO
+      S21c_sum = ZERO
+
+      S11_sum_rhs = ZERO
+      S12_sum_rhs = ZERO 
       S13_sum_rhs = ZERO  
-      S14a_sum_rhs = ZERO
-      S14b_sum_rhs = ZERO
-      S14c_sum_rhs = ZERO   
       S17_sum_rhs = ZERO
       S18_sum_rhs = ZERO
-      S21a_sum_rhs = ZERO
-      S21b_sum_rhs = ZERO
-      S21c_sum_rhs = ZERO
 
-      S11a_sum_lhs = ZERO
-      S11b_sum_lhs = ZERO
-      S11c_sum_lhs = ZERO
-      S12a_sum_lhs = ZERO
-      S12b_sum_lhs = ZERO
-      S12c_sum_lhs = ZERO
+      S11_sum_lhs = ZERO
+      S12_sum_lhs = ZERO
       S13_sum_lhs = ZERO  
       S17_sum_lhs = ZERO
       S18_sum_lhs = ZERO
@@ -350,27 +345,22 @@
       NU_PM_S = ROP_S(IJKS,M)/M_PM
       NU_PM_T = ROP_S(IJKT,M)/M_PM
       NU_PM_B = ROP_S(IJKB,M)/M_PM
-!
-!
+
 !     Production by shear: (S:grad(vi))
 !         Pi_s*tr(Di)
-
       S10_lhs = P_S_C(IJK,M) * ZMAX(TRD_S_C(IJK,M)) 
       S10_rhs = P_S_C(IJK,M) * ZMAX(-TRD_S_C(IJK,M))
-!
-!
+
+
 !     Production by shear: (S:grad(vi))  
 !         Mu_s*tr(Di^2)
       S15_rhs = 2.d0*Mu_s_c(IJK,M)*TRD_S2(IJK,M)
-!
-!
+
 !     Production by shear: (S:grad(vi))  
 !         Lambda_s*tr(Di)^2
       S16_lhs = (TRD_S_C(IJK,M)**2)*ZMAX( -LAMBDA_s_c(IJK,M) )
       S16_rhs = (TRD_S_C(IJK,M)**2)*ZMAX(  LAMBDA_s_C(IJK,M) )
-	 
-!
-!
+
       DO L = 1, MMAX
           D_PL = D_P(IJK,L) 
           M_PL = (Pi/6.d0)*D_PL**3 * RO_S(L)
@@ -399,44 +389,35 @@
           UsL_p = AVG_X_E(U_S(IMJK,L),U_S(IJK,L),I)
           VsL_p = AVG_Y_N(V_S(IJMK,L),V_S(IJK,L) )
           WsL_p = AVG_Z_T(W_S(IJKM,L),W_S(IJK,L) )
-!
-!
+
 !         Energy dissipation by collisions: Sum(Nip)
 !              SUM( EDT_s_ip )
           S20_sum_lhs = S20_sum_lhs + EDT_s_ip(IJK,M,L)
-!
-!
+
 !         Energy dissipation by collisions: SUM(Nip)
 !              SUM( EDvel_sL_ip* div(vp) ) !Modified by sof to include trace of V_s_L
-          
-	  S11a_sum_lhs = S11a_sum_lhs + ZMAX(-EDvel_sL_ip(IJK,M,L)* &
+          S11_sum_lhs = S11_sum_lhs + ZMAX(-EDvel_sL_ip(IJK,M,L)* &
                TRD_S_C(IJK,L) ) * VOL(IJK)
-          
-	  S11a_sum_rhs = S11a_sum_rhs + ZMAX( EDvel_sL_ip(IJK,M,L)* &
+          S11_sum_rhs = S11_sum_rhs + ZMAX( EDvel_sL_ip(IJK,M,L)* &
                TRD_S_C(IJK,L) ) * VOL(IJK)
-!
-!
+
 !         Energy dissipation by collisions: Sum(Nip)
 !              SUM( EDvel_sM_ip* div(vi) ) !Modified by sof to include trace of V_s_M
-          
-	  S12a_sum_lhs = S12a_sum_lhs + ZMAX(-EDvel_sM_ip(IJK,M,L)*&
+          S12_sum_lhs = S12_sum_lhs + ZMAX(-EDvel_sM_ip(IJK,M,L)*&
                TRD_S_C(IJK,M) ) * VOL(IJK)
-          
-	  S12a_sum_rhs = S12a_sum_rhs + ZMAX( EDvel_sM_ip(IJK,M,L)*&
+          S12_sum_rhs = S12_sum_rhs + ZMAX( EDvel_sM_ip(IJK,M,L)*&
                TRD_S_C(IJK,M) ) * VOL(IJK)
-!
-!                    
+                    
           IF (M .NE. L) THEN
-	        LM = FUNLM(L,M)
-!
-!
+               LM = FUNLM(L,M)
+
 !              Production by shear: (S:grad(vi))  
 !                   SUM(2*Mu_sL_ip*tr(Dk*Di) )
                S17_sum_lhs = S17_sum_lhs + 2.d0*MU_sL_ip(IJK,M,L)*&
                     ZMAX( - TRD_s2_ip(IJK,M,L) )
                S17_sum_rhs = S17_sum_rhs + 2.d0*MU_sL_ip(IJK,M,L)*&
                     ZMAX( TRD_s2_ip(IJK,M,L) )
-!
+
 ! These two terms can be treated explicitly here by uncommenting the following
 ! two lines. They are currently treated by PEA algorithm in solve_granular_energy
 !
@@ -452,8 +433,7 @@
                S18_sum_rhs = S18_sum_rhs + ZMAX(&
                     (Xi_sL_ip(IJK,M,L)-(2.d0/3.d0)*Mu_sL_ip(IJK,M,L))*&
                     TRD_S_C(IJK,M)*TRD_S_C(IJK,L) )
-!
-!
+
 !              Part of Heat Flux: div (q)
 !                   Kth_sL_ip*[grad(Tp)]
 !              Note for L=M S21 terms cancel with similar term arising from
@@ -465,17 +445,16 @@
                Kth_sL_t = AVG_Z_S(Kth_sL_ip(IJK,M,L), Kth_sL_ip(IJKT,M,L),K)
                Kth_sL_b = AVG_Z_S(Kth_sL_ip(IJKB,M,L),Kth_sL_ip(IJK,M,L), KM)
 
-               S21a_sum_rhs = S21a_sum_rhs + ( (Kth_sL_e*(T_PL_E-T_PL_p) )*&
+               S21a_sum = S21a_sum + ( (Kth_sL_e*(T_PL_E-T_PL_p) )*&
                     ODX_E(I)*AYZ(IJK) - (Kth_sL_w*(T_PL_p-T_PL_W) )*ODX_E(IM)*&
                     AYZ(IMJK) )
-               S21b_sum_rhs = S21b_sum_rhs + ( (Kth_sL_n*(T_PL_N-T_PL_p) )*&
+               S21b_sum = S21b_sum + ( (Kth_sL_n*(T_PL_N-T_PL_p) )*&
                     ODY_N(J)*AXZ(IJK) - (Kth_sL_s*(T_PL_p-T_PL_S) )*ODY_N(JM)*&
                     AXZ(IJMK) )
-               S21c_sum_rhs = S21c_sum_rhs + ( (Kth_sL_t*(T_PL_T-T_PL_p) )*&
+               S21c_sum = S21c_sum + ( (Kth_sL_t*(T_PL_T-T_PL_p) )*&
                     ODZ_T(K)*OX(I)*AXY(IJK) - (Kth_sL_b*(T_PL_p-T_PL_B) )*&
                     ODZ_T(KM)*OX(I)*AXY(IJKM) )
-!
-!
+
 !              Part of Heat Flux: div (q)
 !                   Knu_s_ip*[ni*grad(np)-np*grad(ni)]
 !              Note S14 terms should evaluate to zero for particles from the same phase
@@ -492,20 +471,19 @@
                Knu_sL_b = AVG_Z_S(Knu_sL_ip(IJKB,M,L),Knu_sL_ip(IJK,M,L), KM)
                Knu_sM_b = AVG_Z_S(Knu_sM_ip(IJKB,M,L),Knu_sM_ip(IJK,M,L), KM)
 
-               S14a_sum_rhs = S14a_sum_rhs + ( (Knu_sL_e*(NU_PL_E-NU_PL_p) - &
+               S14a_sum = S14a_sum + ( (Knu_sL_e*(NU_PL_E-NU_PL_p) - &
                     Knu_sM_e*(NU_PM_E-NU_PM_p) )*ODX_E(I)*AYZ(IJK) - (Knu_sL_w*&
                     (NU_PL_p-NU_PL_W) - Knu_sM_w*(NU_PM_p-NU_PM_W) )*ODX_E(IM)*&
                     AYZ(IMJK) )
-               S14b_sum_rhs = S14b_sum_rhs + ( (Knu_sL_n*(NU_PL_N-NU_PL_p) - &
+               S14b_sum = S14b_sum + ( (Knu_sL_n*(NU_PL_N-NU_PL_p) - &
                     Knu_sM_n*(NU_PM_N-NU_PM_p) )*ODY_N(J)*AXZ(IJK) - (Knu_sL_s*&
                     (NU_PL_p-NU_PL_S) - Knu_sM_s*(NU_PM_p-NU_PM_S) )*ODY_N(JM)*&
                     AXZ(IJMK) )
-               S14c_sum_rhs = S14c_sum_rhs + ( (Knu_sL_t*(NU_PL_T-NU_PL_p) - &
+               S14c_sum = S14c_sum + ( (Knu_sL_t*(NU_PL_T-NU_PL_p) - &
                     Knu_sM_t*(NU_PM_T-NU_PM_p) )*ODZ_T(K)*OX(I)*AXY(IJK) - &
                     (Knu_sL_b*(NU_PL_p-NU_PL_B) - Knu_sM_b*(NU_PM_p-NU_PM_B) )*&
                     ODZ_T(KM)*OX(I)*AXY(IJKM) )
-!
-!
+
 !              Part of Heat Flux: div (q)
 !                   Kvel_s_ip*[vi-vp]
 !              Note S9 terms should evaluate to zero for particles from the same phase
@@ -516,34 +494,31 @@
                Kvel_s_t = AVG_Z_H(Kvel_s_ip(IJK,M,L), Kvel_s_ip(IJKT,M,L),K)
                Kvel_s_b = AVG_Z_H(Kvel_s_ip(IJKB,M,L),Kvel_s_ip(IJK,M,L), KM)
  
-               S9_sum_rhs = S9_sum_rhs + ( Kvel_s_e*(UsM_e-UsL_e)*AYZ(IJK) - &
+               S9_sum = S9_sum + ( Kvel_s_e*(UsM_e-UsL_e)*AYZ(IJK) - &
                     Kvel_s_w*(UsM_w-UsL_w)*AYZ(IMJK) + Kvel_s_n*(VsM_n-VsL_n)*AXZ(IJK)-&
                     Kvel_s_s*(VsM_s-VsL_s)*AXZ(IJMK) + Kvel_s_t*(WsM_t-WsL_t)*AXY(IJK)-&
                     Kvel_s_b*(WsM_b-WsL_b)*AXY(IJKM) )
-!
-!
+
           ENDIF    ! (IF M.NE.L)
-!
+
       ENDDO
-!
+
 !  WARNING: The terms due to granular temperature gradients S21 (a,b,c) have caused
 !           some converegence issues, remove them from LHS and RHS for debugging (sof).
-!
-      SOURCELHS = ( (S11a_sum_lhs+S11b_sum_lhs+S11c_sum_lhs+S12a_sum_lhs+&
-          S12b_sum_lhs+S12c_sum_lhs) + (S10_lhs+S16_lhs+S17_sum_lhs+&
-          S18_sum_lhs-S20_sum_lhs + S13_sum_lhs)*VOL(IJK) + &
-	  ZMAX(S21a_sum_rhs+S21b_sum_rhs+S21c_sum_rhs)+ &
-	  ZMAX(S14a_sum_rhs+S14b_sum_rhs+S14c_sum_rhs)+ ZMAX(S9_sum_rhs) ) / &
+
+      SOURCELHS = ( (S11_sum_lhs+S12_sum_lhs)+&
+          + (S10_lhs+S16_lhs+S17_sum_lhs+&
+          S18_sum_lhs-S20_sum_lhs+S13_sum_lhs)*VOL(IJK) + &
+          ZMAX(S21a_sum+S21b_sum+S21c_sum)+ &
+          ZMAX(S14a_sum+S14b_sum+S14c_sum)+ ZMAX(S9_sum) ) / &
           Theta_m(IJK,M)
-!
-!
-      SOURCERHS = ( S10_rhs+ S15_rhs + S16_rhs + S17_sum_rhs+S18_sum_rhs  + S13_sum_rhs) * VOL(IJK) + &
-          S11a_sum_rhs+S11b_sum_rhs+S11c_sum_rhs+S12a_sum_rhs+S12b_sum_rhs+S12c_sum_rhs + &
-          ZMAX(- (S14a_sum_rhs+S14b_sum_rhs+S14c_sum_rhs) ) + ZMAX(-S9_sum_rhs) + &
-	  ZMAX(- (S21a_sum_rhs+S21b_sum_rhs+S21c_sum_rhs) )
-	  
-!	  
-!
+
+      SOURCERHS = ( S10_rhs+S15_rhs+S16_rhs+S17_sum_rhs+S18_sum_rhs+S13_sum_rhs) * VOL(IJK) + &
+          S11_sum_rhs+S12_sum_rhs+ &
+          ZMAX(- (S14a_sum+S14b_sum+S14c_sum) ) + ZMAX(-S9_sum) + &
+          ZMAX(- (S21a_sum+S21b_sum+S21c_sum) )
+  
+
       RETURN  
       END SUBROUTINE SOURCE_IA_NONEP_GRANULAR_ENERGY
 !-----------------------------------------------  
@@ -651,8 +626,7 @@
       IJKS = SOUTH_OF(IJK)
       IJKT = TOP_OF(IJK) 
       IJKB = BOTTOM_OF(IJK) 
-!
-! 
+
       S8_lhs = ZERO
       S10_lhs = ZERO
       S11_lhs = ZERO
@@ -674,8 +648,7 @@
       S14b_rhs = ZERO
       S15a_rhs = ZERO
       S15b_rhs = ZERO
-!
-!
+
       D_PM = D_P(IJK,M) 
       M_PM = (Pi/6.d0)*D_PM**3 * RO_S(M)
       NU_PM_p = ROP_S(IJK,M)/M_PM
@@ -686,23 +659,19 @@
       NU_PM_T = ROP_S(IJKT,M)/M_PM
       NU_PM_B = ROP_S(IJKB,M)/M_PM
 
-
 !     Production by shear: (S:grad(v))
 !         P_s*tr(D)
       S8_lhs = P_S_C(IJK,M) * ZMAX(TRD_S_C(IJK,M)) 
       S8_rhs = P_S_C(IJK,M) * ZMAX(-TRD_S_C(IJK,M))
 
-
 !     Production by shear: (S:grad(v))  
 !         Mu_s*tr(D^2)
       S9_rhs = 2.d0*Mu_s_c(IJK,M)*TRD_S2(IJK,M)
-
 
 !     Production by shear: (S:grad(v))  
 !         Lambda_s*tr(D)^2
       S10_lhs = (TRD_S_C(IJK,M)**2)*ZMAX( -LAMBDA_s_C(IJK,M) )
       S10_rhs = (TRD_S_C(IJK,M)**2)*ZMAX(  LAMBDA_s_C(IJK,M) )
-	 
 
 !     Energy dissipation by collisions: (3/2)*n*kboltz*T*zeta0
 !          linearized (3/2)*rop_s*T*zeta0
@@ -713,7 +682,6 @@
 !          (3/2)*rop_s*T*zeta1
       S12_lhs = ZMAX( EDvel_sM_ip(IJK,M,M) * TRD_S_C(IJK,M) ) 
       S12_rhs = ZMAX( -EDvel_sM_ip(IJK,M,M) * TRD_S_C(IJK,M) )*Theta_m(IJK,M)
-
 
 !     Part of Heat Flux: div (q)
 !          Knu_s_ip*grad(nu)
@@ -777,3 +745,4 @@
       RETURN  
       END SUBROUTINE SOURCE_GD_99_GRANULAR_ENERGY
 !-----------------------------------------------  
+
