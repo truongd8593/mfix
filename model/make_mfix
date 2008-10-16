@@ -95,7 +95,7 @@ read dmp_version
 #  Check if the system is a Linux system, to display WARNING message 
 if test $opsys = "Linux"
 then
-  if test $proctyp = "x86_64"
+  if test $proctyp = "x86_64" -o $proctyp = "ppc64"
   then
      P4_OPTIMIZE=0
   else
@@ -230,6 +230,8 @@ ln -sf "$mpi_include/mpif.h" .
        echo " [6] Portland Group Linux Fortran Compiler (pgf90) on Cray XT3 at PSC"       
        echo " [7] Portland Group Linux Fortran Compiler (pgf90) on Cray XT4 at NCCS"        
        echo " [8] PathScale Compiler (pathf90) on Cray XT4 at NCCS"        
+       echo " [9] Pathscale Compiler (pathf90) on Cray XT4 at NERSC"
+       echo " [10] IBM Fortran Compiler (xlf90) on Blue Gene at ANL ALCF"
        echo " "
        echo -n "Select the compiler to compile MFIX? [1] "
        read lnx_compiler
@@ -273,6 +275,16 @@ ln -sf "$mpi_include/mpif.h" .
            echo " "
            echo "PathScale Compiler (pathf90) on Cray XT4 at NCCS selected"
            opsys="Linux_64_pscale_xt_nccs"
+           ;;
+         9 )
+           echo " "
+           echo "PathScale Compiler (pathf90) on Cray XT4 at NERSC selected"
+           opsys="Linux_64_pscale_xt_nersc"
+           ;;
+         10 )
+           echo " "
+           echo "IBM Fortran Compiler (xlf90) on Blue Gene at ANL ALCF"
+           opsys="Linux_64_xlf_anl"
            ;;
          *)
            echo " "
@@ -618,17 +630,15 @@ ln -sf "$mpi_include/mpif.h" .
                            FORTRAN_CMD=mpiifort
                            LINK_CMD=mpiifort
 #DEBUG
-                           unsetenv MKLROOT
-                           echo $MKLROOT
+#                          unsetenv MKLROOT
+#                          echo $MKLROOT
                            if [ "$MKLROOT" ]
                            then
-                             libs_d="odepack.a -L $MPICH_DIR/lib64 -lmpi -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lvml -lguide"
+                             libs_d="odepack.a -L $MPICH_DIR/lib64 -lmpi -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide"
                              libs="odepack.a -L $MPICH_DIR/lib64 -lmpi -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide" 
                            else
                              libs_d="odepack.a -L $MPICH_DIR/lib64 -lmpi blas90.a dgtsv90.a "
                              libs="odepack.a -L $MPICH_DIR/lib64 -lmpi blas90.a dgtsv90.a "
-                            #libs_d="odepack.a -L $MPICH_DIR/lib64 -lmpi -L ${MKLROOT}/lib/64 -lmkl_solver -lmkl_lapack -lvml -lguide"
-                            #libs="odepack.a -L $MPICH_DIR/lib64 -lmpi -L ${MKLROOT}/lib/64 -lmkl_solver -lmkl_lapack -lvml -lguide"
 
                            fi
                            ;;
@@ -643,6 +653,7 @@ ln -sf "$mpi_include/mpif.h" .
                              libs_d="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
                              libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
                            fi
+
                            ;;
                      esac
 
@@ -667,10 +678,18 @@ ln -sf "$mpi_include/mpif.h" .
                       then                                                                    
                          libs_d="odepack.a -L $ACML/ifort64/lib -lacml -lacml_mv"
                          libs="odepack.a -L $ACML/ifort64/lib -lacml -lacml_mv"
-		      else
+		      else 
                          libs_d="odepack.a blas90.a dgtsv90.a"
                          libs="odepack.a blas90.a dgtsv90.a"
 		      fi		      
+                      if [ "$MKLROOT" ]
+                      then
+                         libs_d="odepack.a -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide -lpthread"
+                         libs="odepack.a -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide -lpthread"
+                      else
+                         libs_d="odepack.a blas90.a dgtsv90.a "
+                         libs="odepack.a blas90.a dgtsv90.a "
+                      fi
                 ;;
               esac	  
                                                                                 
@@ -1241,6 +1260,152 @@ ln -sf "$mpi_include/mpif.h" .
             preinline_flags="  "
 
             ;;
+
+     Linux_64_pscale_xt_nersc)
+            mach_file="LINUX.F"
+          #-----------
+          # Decide to use mpif90 or pathf90 as the compiler & linker command
+          #-----------
+            case $dmp_version in
+              y|Y )
+                        FORTRAN_CMD=ftn
+                        LINK_CMD=ftn
+                ;;      
+              *)
+                        FORTRAN_CMD=ftn
+                        LINK_CMD=ftn
+                ;;
+            esac
+            if [ "$ACML_DIR" ]
+            then
+              echo " "
+              echo "-------------- W A R N I N G ! ----------"
+              echo " You may need to update the paths under libs_d and libs "
+              echo " variables in make_mfix; search for  Linux_64_pscale) text block"
+              echo " with the corresponding paths on your local system if"
+              echo " if you encounter problems during the link phase"
+              echo "-------------- W A R N I N G ! ----------"
+              echo " "
+            fi
+           case $dmp_version in
+              y|Y ) 
+                   libs_d="-lfrtbegin -lg2c odepack.a -lhwpc -lpapi -L $ACML_DIR/pathscale64/lib -lacml -lacml_mv"  
+                   libs="-lfrtbegin -lg2c odepack.a -lhwpc -lpapi -L $ACML_DIR/pathscale64/lib -lacml -l acml_mv"    
+                ;;
+              *)
+                   libs_d="-lfrtbegin -lg2c odepack.a $ACML_DIR/pathscale64/lib -lacml -lacml_mv"
+                   libs="-lfrtbegin -lg2c odepack.a $ACML_DIR/pathscale64/lib -lacml -lacml_mv"
+                ;;
+            esac
+
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-mp"
+            compile_common_dbg="-c -I. -fno-math-errno -static-data -fno-second-underscore -byteswapio -trapuv"
+# xt3 :  -O3 -LNO:prefetch=2 -LNO:prefetch_ahead=9 -LNO:fusion=2 -CG:use_prefetchnta=on
+            compile_common="-c -I. -I $PAT_ROOT/include -march=opteron -O3 -OPT:Ofast -ffast-math -funroll-loops -fno-math-errno -static-data -fno-second-underscore -byteswapio"
+           #compile_common="-c -I. -I /opt/xt-tools/craypat/3.1.2/cpatx/include -OPT:Ofast -fno-math-errno -msse2 -fno-second-underscore -byteswapio"
+                
+            compile_d=" -g $compile_common_dbg -freeform"
+            compile_d2=" -g $compile_common_dbg -freeform"
+            compile_d3=" -g $compile_common_dbg"
+            link_d=" "
+
+            compile="$compile_common -freeform"
+            compile2="$compile_common -freeform"
+            compile3="$compile_common"
+            link="  "
+            MODULE_CODE=0
+
+#           ------------------
+#           flags for inlining
+#           ------------------
+            inline_objs="compare.o eosg.o discretize.o "
+            inline_files="compare.f eosg.f discretize.f "
+            inline_flags=" "
+            preinline_flags="  "
+
+            ;;
+
+     Linux_64_xlf_anl)
+            mach_file="AIX.F"
+
+            case $dmp_version in
+              y|Y )
+                        FORTRAN_CMD=/bgsys/drivers/ppcfloor/comm/bin/mpixlf90_r
+                        F77_CMD=/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r
+                        LINK_CMD=/bgsys/drivers/ppcfloor/comm/bin/mpixlf90_r
+                ;;
+              *)
+                        #FORTRAN_CMD=xlf90_r
+                        #F77_CMD=xlf_r
+                        #LINK_CMD=xlf90_r
+                        # compute node
+                        FORTRAN_CMD=
+                        F77_CMD=
+                        LINK_CMD=xlf90_r
+
+                ;;
+            esac
+
+           #libs_d="-lblas "
+           #libs_d="-lblas440 -llapack440"
+           #libs_d="blas90.a odepack.a dgtsv90.a"
+            libs_d="blas90.a odepack.a dgtsv90.a -L/bgsys/ibm_essl/sles10/prod/opt/ibmmath/essl/4.3/lib -lesslbg"
+            libs="-lblas -lesslp2_r"
+
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+
+#           =============================
+#           use mpxlf90_r or xlf90_r
+#           for thread safe code
+#           =============================
+            omp="-qsmp=omp -qsmp=noauto -qnosave "
+
+#           =================================
+#           the module directory cannot be on
+#           a GPFS parallel file system
+#           =================================
+
+            moddir=/tmp/$USER
+            if test -d $moddir
+            then
+            touch $moddir
+            else
+            mkdir $moddir
+            fi
+            compile_common="-c -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -c -I.  -freeform -I$moddir -qmoddir=$moddir "
+# AIX Settings
+#           compile_d="-C -g -qinitauto=FF -qflttrap -freeform $compile_common"
+#           compile_d2="-C -g -qinitauto=FF -qflttrap -freeform $compile_common"
+#           compile_d3="-C -g -qinitauto=FF -qflttrap -freeform $compile_common"
+#           link_d="$compile_d"
+            
+            compile_common="-c -I.  -qlanglvl=90std"
+            compile_d="-C -g -qinitauto=FF -freeform $compile_common"
+            compile_d2="-C -g -qinitauto=FF -freeform $compile_common"
+            compile_d3="-C -g -qinitauto=FF $compile_common"
+            link_d=""
+
+            compile_opt="-O2 -qarch=450 -qtune=450"
+            compile=" -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
+            compile2="-c -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -c -I.  -I$moddir -qmoddir=$moddir -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
+            compile3=" -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
+            link="-O3 -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -qtune=pwr3 -
+qcache=auto " 
+
+#           ------------------
+#           flags for inlining
+#           ------------------
+            inline_objs="compare.o eosg.o discretize.o "
+            inline_files="compare.f eosg.f discretize.f "
+            inline_flags="-qipa=inline=auto -Q $inline_files"
+            preinline_flags=" "
+            
+            MODULE_CODE=1
+            ;;
+
 
                                                	    	    
     Linux_ifc9 | Linux_ifc10 )
