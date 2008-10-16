@@ -4309,6 +4309,7 @@ write_res0.$(OBJ_EXT) : write_res0.f \
             compar.mod \
             mpi_utility.mod \
             sendrecv.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS2) write_res0.f
 write_res1.$(OBJ_EXT) : write_res1.f \
             param.mod \
             param1.mod \
