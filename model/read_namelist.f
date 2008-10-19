@@ -132,7 +132,7 @@
       LOGICAL          BLANK_LINE
       INTEGER   L
 !//   New variables for generating filebasename with processor id, i.e., XXX.LOG
-      INTEGER :: i1, i10, i100
+      INTEGER :: i1, i10, i100, i1000, i10000
       LOGICAL :: present
 
 !-----------------------------------------------
@@ -157,19 +157,23 @@
       NO_OF_RXNS = 0 
 
 !//   PAR_I/O Generate file basename for LOG files
-      i100 = int(myPE/100)
-      i10  = int((myPE-i100*100)/10)
-      i1   = int((myPE-i100*100-i10*10)/1)
+      i10000 = int(myPE/10000)
+      i1000 = int((myPE-i10000*10000)/1000)
+      i100  = int((myPE-i10000*10000-i1000*1000)/100)
+      i10   = int((myPE-i10000*10000-i1000*1000-i100*100)/10)
+      i1    = int((myPE-i10000*10000-i1000*1000-i100*100-i10*10)/1)
 
+      i10000= i10000+ 48
+      i1000= i1000+ 48
       i100 = i100 + 48
       i10  = i10  + 48
       i1   = i1   + 48
 
-      fbname=char(i100)//char(i10)//char(i1)
+      fbname=char(i10000)//char(i1000)//char(i100)//char(i10)//char(i1)
 
       inquire(file='mfix.dat',exist=present)
       if(.not.present) then
-         write(*,"('(PE ',I3,'): input data file, ',A11,' is missing: run aborted')") &
+         write(*,"('(PE ',I6,'): input data file, ',A11,' is missing: run aborted')") &
          myPE,'mfix.dat'
          call mfix_exit(myPE) 
       endif
@@ -218,7 +222,8 @@
 !     and read the scratch file in NAMELIST format
 !     
       IF (READ_FLAG) THEN 
-         OPEN(UNIT=UNIT_TMP, STATUS='SCRATCH', ERR=900) 
+!        OPEN(UNIT=UNIT_TMP, STATUS='SCRATCH', ERR=900) 
+         OPEN(UNIT=UNIT_TMP, FILE='scr'//fbname, STATUS='UNKNOWN', ERR=900)
          WRITE (UNIT_TMP, 1000) 
          WRITE (UNIT_TMP, 1100) LINE_STRING(1:LINE_LEN) 
          WRITE (UNIT_TMP, 1200) 
@@ -307,9 +312,9 @@
       'Possible causes are 1. incorrect format, 2. unknown name,',/1X,&
       '3. the item is dimensioned too small (see PARAM.INC file).',/1X,70(&
       '*')/) 
- 1610 FORMAT(/1X,70('*')//'(PE ',I3,'): From: READ_NAMELIST',/' Message: ',&
+ 1610 FORMAT(/1X,70('*')//'(PE ',I6,'): From: READ_NAMELIST',/' Message: ',&
       'No rxn rate defined for rxn: ',A,/1X,70('*')/) 
- 1620 FORMAT(/1X,70('*')//'(PE ',I3,'): From: READ_NAMELIST',/' Message: ',&
+ 1620 FORMAT(/1X,70('*')//'(PE ',I6,'): From: READ_NAMELIST',/' Message: ',&
       'No stoichiometry defined for rxn: ',A,/1X,70('*')/) 
 !     
       END SUBROUTINE READ_NAMELIST 
