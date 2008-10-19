@@ -50,6 +50,7 @@
       USE scalars
       USE boundfunijk 
       USE toleranc
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
