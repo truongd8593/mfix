@@ -104,8 +104,8 @@
 !   Variables added at Aytekin's request on 09/01/99 
 !   for some code implementation
 
-!// 500 0803 declaration for storing filebasename, e.g. mfix000.dat
-        CHARACTER(len=3) :: fbname
+!// 500 0803 declaration for storing filebasename, e.g. mfix00000.dat
+        CHARACTER(len=5) :: fbname
         INTEGER :: idbg = 1
 
 !       Funijk coefficients
