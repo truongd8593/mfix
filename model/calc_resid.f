@@ -520,6 +520,9 @@
 !
       DEN1 = ONE 
 !
+!FIX AEOLUS 032608 Missing initialization 
+      IJK_RESID = 1
+
       DO IJK = ijkstart3, ijkend3 
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
       
