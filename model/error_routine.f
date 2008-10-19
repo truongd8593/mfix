@@ -72,8 +72,8 @@
           call mfix_exit(myPE)
       ENDIF 
 !
- 1000 FORMAT(1X,70('*'),/,/,1X,'(PE ',I3,'): From : ',A,/,11X,'Message : ',A) 
- 1100 FORMAT(1X,'(PE ',I3,'): Program execution ',A,/,/,1X,70('*')) 
+ 1000 FORMAT(1X,70('*'),/,/,1X,'(PE ',I6,'): From : ',A,/,11X,'Message : ',A) 
+ 1100 FORMAT(1X,'(PE ',I6,'): Program execution ',A,/,/,1X,70('*')) 
 !
       END SUBROUTINE ERROR_ROUTINE 
       

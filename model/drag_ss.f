@@ -114,7 +114,7 @@
 !//? Following check may not be necessary due to the above FLUIDorP_FLOW check
 !// 360 1117 Check if  i,j,k-1 resides on this PE
             IF (.NOT.IS_ON_myPE_plus2layers(I_OF(IJK),J_OF(IJK),K_OF(IJKM))) then
-              write(*,"('(PE ',I2,'): catched KM at (',I4,',',I4,',',I4,')')") &
+              write(*,"('(PE ',I6,'): catched KM at (',I4,',',I4,',',I4,')')") &
 	           myPE, I_OF(IJK),J_OF(IJK),K_OF(IJKM) !//AIKEPARDBG
 	      CYCLE
             ENDIF

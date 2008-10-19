@@ -124,9 +124,9 @@
 !
       RETURN  
 
- 1000 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_LINE',/&
+ 1000 FORMAT(/1X,70('*')//'(PE ',I6,'): From: PARSE_LINE',/&
          ' Message: No ending ) found in the input line: ',/9X,A,/1X,70('*')/) 
- 1010 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_LINE',/&
+ 1010 FORMAT(/1X,70('*')//'(PE ',I6,'): From: PARSE_LINE',/&
          ' Message: END keyword before a start keyword in line: ',/9X,A,/1X,70(&
          '*')/) 
       END SUBROUTINE PARSE_LINE 
@@ -409,13 +409,13 @@
   900 CONTINUE 
       WRITE (*, 1010) myPE, SUB_STR(1:LSUB-1) 
       CALL MFIX_EXIT(myPE)  
- 1000 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_ARITH',/&
+ 1000 FORMAT(/1X,70('*')//'(PE ',I6,'): From: PARSE_ARITH',/&
          ' Message: No ending ) found in the input line: ',/9X,A,/1X,70('*')/) 
- 1010 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_ARITH',/&
+ 1010 FORMAT(/1X,70('*')//'(PE ',I6,'): From: PARSE_ARITH',/&
          ' Message: Error reading the input string: ',/9X,A,/1X,70('*')/) 
- 1015 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_ARITH',/&
+ 1015 FORMAT(/1X,70('*')//'(PE ',I6,'): From: PARSE_ARITH',/&
          ' Message: Invalid operator in the input string: ',/9X,A,/1X,70('*')/) 
- 1020 FORMAT(/1X,70('*')//'(PE ',I3,'): From: PARSE_ARITH',/&
+ 1020 FORMAT(/1X,70('*')//'(PE ',I6,'): From: PARSE_ARITH',/&
          ' Message: Too many arithmetic operations in the line: ',/1X,A,/1X,70(&
          '*')/) 
       END SUBROUTINE PARSE_ARITH 

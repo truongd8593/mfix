@@ -1219,7 +1219,7 @@
   900 CONTINUE 
       WRITE (*, *) ' ' 
       WRITE (*, *) ' **************************************' 
-      WRITE (*, "('(PE ',I3,'): From: READ_RES0')") myPE 
+      WRITE (*, "('(PE ',I6,'): From: READ_RES0')") myPE 
       WRITE (*, *) ' DIMENSION ERROR ---' 
       WRITE (*, *) ' ' 
       WRITE (*, *) ' DIMENSION_IC = ', DIMENSION_IC, ' DIM_IC       = ', DIM_IC 

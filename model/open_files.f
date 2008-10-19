@@ -185,7 +185,7 @@
  1002 FORMAT(/70('*')//' From: OPEN_FILES',/&
          ' Error: RESTART run -- .RES file should be in the run directory'/&
          ' Cannot open existing file -- ',A,/70('*')/) 
- 1100 FORMAT(/70('*')//'(PE ',I3,'): From: OPEN_FILES',/&
+ 1100 FORMAT(/70('*')//'(PE ',I6,'): From: OPEN_FILES',/&
          ' Error: Cannot open file -- ',A,/70('*')/) 
       END SUBROUTINE OPEN_FILES 
 

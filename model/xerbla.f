@@ -39,7 +39,7 @@
 
 !     STOP
       call mfix_exit(myPE)
-99999 FORMAT ( '(PE ',I3,'): ** On entry to ', A6, ' parameter number ', I2, &
+99999 FORMAT ( '(PE ',I6,'): ** On entry to ', A6, ' parameter number ', I2, &
          ' had an illegal value' )
 !     End of XERBLA.
       END SUBROUTINE XERBLA
