@@ -361,6 +361,12 @@
             ENDIF 
          ENDIF 
       END DO 
+
+!FIX AEOLUS Sofiane's bug fix to make T_g nonzero in k=0,1 ghost layers when k-decomposition employed
+      call send_recv(T_G,2)
+      call send_recv(P_G,2)
+      call send_recv(X_G,2)
+
       RETURN  
       END SUBROUTINE SET_BC0 
 
