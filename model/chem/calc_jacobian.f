@@ -14,7 +14,8 @@
 !   M o d u l e s 
 !-----------------------------------------------
       USE param1
-      USE usr
+!ALPEMI commented due to duplicate declaration for n_sh both in usr and mchem modules
+!     USE usr
       USE mchem
       IMPLICIT NONE
 !-----------------------------------------------
