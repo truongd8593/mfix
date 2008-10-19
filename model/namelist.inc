@@ -38,6 +38,23 @@
 
 !AE TIME 043001  added new logical flag var for 2nd order time into NAMELIST
              CN_ON,&
+!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+!  flag variable to check for end of batch queue when set to TRUE
+!      check performed at the beginning of each time step and termination of
+!      mfix triggered after saving all files if condition is met
+             CHK_BATCHQ_END,&
+!  variable to store the total wall clock duration of the batch queue session 
+!  wall clock time specified in seconds
+!  for jaguarcnl@NCCS max wall clock limit is 2.5 hr limit up to 512 processors
+             BATCH_WALLCLOCK,&
+!  variable to set a buffer time before the batch queue session ends to
+!  make sure once MFIX is triggered to shutdown, there is sufficient time
+!  to save files, make copies to HPSS storage before batch queue time runs out
+!  Current logic in MFIX checks for
+!    if CPU_TIME > (BATCH_WALLCLOCK - TERM_BUFFER) then save all .RES .SP files
+!                                                  and trigger shutdown
+             TERM_BUFFER,&
+
 !
 ! 1.2 Output control section
 !
@@ -46,6 +63,10 @@
              USR_X_w , USR_X_e , USR_Y_s , USR_Y_n ,&
              USR_Z_b , USR_Z_t, NLOG, FULL_LOG, RESID_STRING,&
 	     report_mass_balance_dt, &
+!AEOLUS added the flag variable to debug print whole index layout 
+             DBGPRN_LAYOUT, &
+!AEOLUS added the flag variable to enable all processors printout their own *.LOG file instead of root only 
+             ENABLE_DMP_LOG, &
 !
 ! 1.3 Physical and numerical parameters section
 !            (e and C_e are same)

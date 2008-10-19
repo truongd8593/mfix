@@ -73,6 +73,8 @@
 !     JEG Added--- University of Colorado, Hrenya Research Group
       use kintheory2
 !     END JEG
+!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+      use mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
 !     G l o b a l   P a r a m e t e r s
@@ -137,6 +139,18 @@
 !
 !     use function MAX_VEL_INLET to compute max. velocity at inlet
       DOUBLE PRECISION MAX_VEL_INLET
+!
+!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+      DOUBLE PRECISION CPU_STOP 
+     !LOGICAL CHK_BATCHQ_END
+      LOGICAL AlreadyThere
+     ! Buffer time prior to end of batch queue to force proper MFIX shutdown 
+     !DOUBLE PRECISION TERM_BUFFER
+     ! Wallclock in seconds requested in the batch queue 
+     !DOUBLE PRECISION BATCH_WALLCLOCK  
+      LOGICAL eofBATCHQ
+     ! not used remove after verification
+      INTEGER CHKBATCHQ_FLAG
 !     
 !-----------------------------------------------
 !     E x t e r n a l   F u n c t i o n s
@@ -153,6 +167,10 @@
       DNCHECK = 1 
       CPU_IO  = ZERO 
       NIT_TOTAL = 0
+!AEOLUS STOP before batch queue terminates
+      AlreadyThere = .FALSE.
+      eofBATCHQ = .FALSE.
+      
 !     
 !     Initialize times for writing outputs
 !     
@@ -298,12 +316,59 @@
 !     
  100  CONTINUE
       
+!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+      IF (CHK_BATCHQ_END) THEN
+       CHKBATCHQ_FLAG = 0 
+       if (myPE.eq.PE_IO) then   
+          CALL CPU_TIME(CPU_STOP)
+	! need to use CPU00, a timestamp from first line of mfix.f to take 
+	! account the time spent in I/O
+          CPU_STOP = CPU_STOP - CPU00
+	  write(*,"('Elapsed CPU time = ',E15.6,' sec')") CPU_STOP
+	
+	  IF ((CPU_STOP+TERM_BUFFER) .ge. BATCH_WALLCLOCK) THEN
+             write(*,"(/,'=============== REQUESTED CPU TIME LIMIT REACHED ===========')")
+ 	     write(*,*) 'Elapsed CPU time                        = ',CPU_STOP,' sec'
+	     write(*,*) 'Buffer CPU time before triggering abort = ',TERM_BUFFER,' sec'
+	     write(*,*) 'Elapsed+Buffer CPU time = ',(CPU_STOP+TERM_BUFFER),&
+	&     ' sec >= Allocated Wallclock ',BATCH_WALLCLOCK,' sec'
+	  !  write(*,"('Buffer CPU time before triggering abort = ',E10.2,' sec')") TERM_BUFFER
+	  !  write(*,"('Elapsed+Buffer CPU time = ',E10.2,&
+	  !&  ' sec >= Allocated Wallclock ',E10.2,' sec')") (CPU_STOP+TERM_BUFFER),BATCH_WALLCLOCK
+             write(*,"('=============== REQUESTED CPU TIME LIMIT REACHED ===========',/)")
+	     eofBATCHQ = .TRUE.
+             CHKBATCHQ_FLAG = 1
+            !FINISH = .TRUE.	  
+            !DT = UNDEFINED
+	  END IF 
+        
+          INQUIRE(file="MFIX.STOP",exist=AlreadyThere)
+          IF (AlreadyThere) THEN
+            write(*,"(/,'=============== MFIX STOP SIGNAL DETECTED ===========')")
+            write(*,"('  MFIX.STOP file detected in working directory, terminating MFIX run')")
+            write(*,"('  Please DO NOT FORGET to erase MFIX.STOP file before next run')") 
+           !write(*,"('  Elapsed CPU time = ',E10.2,' sec')") CPU_STOP
+ 	    write(*,*) ' Elapsed CPU time = ',CPU_STOP,' sec'	  
+            write(*,"('=============== MFIX STOP SIGNAL DETECTED ===========',/)")	
+	    eofBATCHQ = .TRUE.
+            CHKBATCHQ_FLAG = 1
+
+           !FINISH = .TRUE.
+           !DT = UNDEFINED          
+	    AlreadyThere = .FALSE.
+          END IF	
+       END IF		! myPE = PE_IO
+! Try to move this bcast call to another location where there is barrier or bcast 
+       call bcast (eofBATCHQ,PE_IO)	  
+      END IF   
+! eof AEOLUS STOP
+
       IF (CALL_USR) CALL USR1 
 
 !     
 !     Remove solids from cells containing very small quantities of solids
 !     
-      IF(.NOT.DISCRETE_ELEMENT) CALL ADJUST_EPS 
+      IF(.NOT.DISCRETE_ELEMENT) CALL ADJUST_EPS
 
 !     
 !     Mark the phase whose continuity will be used for forming Pp_g and Pp_s eqs.
@@ -354,7 +419,10 @@
                IF(DMP_LOG)WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
                IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
             ENDIF 
-         ELSE IF (TIME + 0.1d0*DT>=SPX_TIME(L) .OR. TIME+0.1d0*DT>=TSTOP) THEN 
+!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+!            added additional condition .OR.eofBATCHQ
+!         ELSE IF (TIME + 0.1d0*DT>=SPX_TIME(L) .OR. TIME+0.1d0*DT>=TSTOP) THEN 
+         ELSE IF (TIME + 0.1d0*DT>=SPX_TIME(L) .OR. TIME+0.1d0*DT>=TSTOP.OR.eofBATCHQ) THEN 
             SPX_TIME(L) = (INT((TIME + 0.1d0*DT)/SPX_DT(L))+1)*SPX_DT(L) 
             CALL WRITE_SPX1 (L, 0) 
             DISK_TOT = DISK_TOT + DISK(L) 
@@ -401,7 +469,11 @@
                WRITE (*, 1000,  ADVANCE="NO") TIME 
             ENDIF
          ENDIF 
-      ELSE IF (TIME + 0.1d0*DT>=RES_TIME .OR. TIME+0.1d0*DT>=TSTOP) THEN 
+!
+!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+!            added additional condition .OR.eofBATCHQ
+!      ELSE IF (TIME + 0.1d0*DT>=RES_TIME .OR. TIME+0.1d0*DT>=TSTOP) THEN 
+      ELSE IF (TIME + 0.1d0*DT>=RES_TIME .OR. TIME+0.1d0*DT>=TSTOP.OR.eofBATCHQ) THEN 
          RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT 
          CALL WRITE_RES1 
          IF(DISCRETE_ELEMENT) CALL WRITE_DES_RESTART
@@ -425,7 +497,11 @@
          IF (DT == UNDEFINED) THEN 
 !//   
             IF (FINISH.and.myPE.eq.PE_IO) CALL WRITE_USR1 (L) 
-         ELSE IF (USR_TIME(L)/=UNDEFINED .AND. TIME+0.1d0*DT>=USR_TIME(L)) THEN 
+!
+!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+!            added additional condition .OR.eofBATCHQ
+!         ELSE IF (USR_TIME(L)/=UNDEFINED .AND. TIME+0.1d0*DT>=USR_TIME(L)) THEN 
+         ELSE IF (USR_TIME(L)/=UNDEFINED .AND. TIME+0.1d0*DT>=USR_TIME(L).OR.eofBATCHQ) THEN 
             USR_TIME(L) = (INT((TIME + 0.1d0*DT)/USR_DT(L))+1)*USR_DT(L) 
 !//   
             if (myPE.eq.PE_IO) CALL WRITE_USR1 (L) 
@@ -437,7 +513,11 @@
          ELSE 
             FINISH = .TRUE. 
          ENDIF 
-      ELSE IF (TIME + 0.1d0*DT >= TSTOP) THEN 
+!
+!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+!            added additional condition .OR.eofBATCHQ
+!      ELSE IF (TIME + 0.1d0*DT >= TSTOP) THEN 	 
+      ELSE IF (TIME + 0.1d0*DT >= TSTOP.OR.eofBATCHQ) THEN 
          IF(solver_statistics) then
             WRITE(*,*) 'Total number of non-linear iterations', NIT_TOTAL
             WRITE(*,*) 'Average number per time-step', NIT_TOTAL/NSTEP

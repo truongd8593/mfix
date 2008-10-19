@@ -16,4 +16,7 @@
 	DOUBLE PRECISION CPU0_IO, CPU1_IO, CPU_IO
 
 
+!AEOLUS STOP Initial value of CPU time at the begin of MFIX, prior any I/O
+      DOUBLE PRECISION CPU00
+
       END MODULE time_cpu                                                                        

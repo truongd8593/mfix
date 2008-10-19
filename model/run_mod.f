@@ -168,6 +168,13 @@
 !AE TIME 041601        If .TRUE. activate 2nd order accurate time implementation
       LOGICAL          CN_ON
 
+!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+      LOGICAL          CHK_BATCHQ_END
+      DOUBLE PRECISION BATCH_WALLCLOCK
+      DOUBLE PRECISION TERM_BUFFER
+
+
+
 !		       If 0: use S:S
 !	               If 1: use the form of Savage to compute S:S
 !		       If 2: use combination of both

@@ -103,6 +103,11 @@
       RUN_TYPE = UNDEFINED_C 
       TIME = UNDEFINED 
       TSTOP = UNDEFINED 
+!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+      CHK_BATCHQ_END = .FALSE. 
+      BATCH_WALLCLOCK = 9000.0    ! set to 2.5 hrs for jaguarcnl w/ nproc<=512
+      TERM_BUFFER = 180.0         ! set to 3 minutes prior to end of job
+!
       DT = UNDEFINED 
       DT_MAX = ONE 
       DT_MIN = 1.D-6 
@@ -152,7 +157,7 @@
 ! sp (06/15/2007)
       DEBUG_RESID     = .TRUE.
 ! end sp
- 
+
 ! start loezos 
 !
        SHEAR = .FALSE.
@@ -311,6 +316,10 @@
       icheck_bicgs = 1
       solver_statistics = .FALSE.
       opt_parallel = .FALSE.
+!AEOLUS set default value for new variable to debug print whole index layout 
+      DBGPRN_LAYOUT = .FALSE.
+!AEOLUS set default value for enabling all processors write out their *.LOG invidually 
+      ENABLE_DMP_LOG = .FALSE.
       UR_FAC(1) = 0.8D0                            !pressure 
       UR_FAC(2) = 0.5D0                            !rho, ep 
       UR_FAC(3) = 0.5D0                            !U 

@@ -119,11 +119,17 @@
 !
 !              User defined flag to enable log file writing from each processor in DMP mode
 !              If .false. only PE_IO writes the log file
-      LOGICAL, PARAMETER          :: ENABLE_DMP_LOG = .FALSE.
+!AEOLUS added to mfix.dat namelist as input parameter
+!     LOGICAL, PARAMETER          :: ENABLE_DMP_LOG = .FALSE.
+      LOGICAL :: ENABLE_DMP_LOG
 
 
 !                      Interval at which mass balance is checked and reported in .LOG file.
 !                      This value is used in check_mass_balance and is by default undefined.
       DOUBLE PRECISION report_mass_balance_dt
+
+!AEOLUS Flag variable which controls debug print of whole index layout to be used in determining ijk<=>i,j,k and other similar
+! debugging tasks
+      LOGICAL          DBGPRN_LAYOUT
 
       END MODULE output                                                                          
