@@ -40,6 +40,7 @@
       USE funits 
       USE output
       USE energy
+      USE cdist
       USE compar           !//
       USE mpi_utility      !//d pnicol : for gather
       USE sendrecv         !//d pnicol : for gather
@@ -72,49 +73,54 @@
 !
 
 !//d pnicol      
-      if (myPE.eq.PE_IO) then
+!      if (myPE.eq.PE_IO .and. .not.distio) then
          allocate (array1(ijkmax2)) 
          allocate (array2(ijkmax3))  
-      else
-         allocate (array1(1)) 
-         allocate (array2(1))  
-      end if
+!      else
+!         allocate (array1(1)) 
+!         allocate (array2(1))  
+!      end if
 
 
-      if (myPE.eq.PE_IO) then
+      if (myPE.eq.PE_IO .or. bDist_IO) then
          READ (UNIT_RES, REC=3) NEXT_REC 
          WRITE (UNIT_RES, REC=NEXT_REC) TIME, DT, NSTEP 
          NEXT_REC = NEXT_REC + 1 
       end if
 !
 !\\SP Local Send Receive - need to be moved to source later!!
-      call send_recv(EP_g,2)
-      call send_recv(P_g,2)
-      call send_recv(P_star,2)
-      call send_recv(RO_g,2)
-      call send_recv(ROP_g,2)
-      call send_recv(X_g,2)
-      call send_recv(T_g,2)
-      call send_recv(U_g,2)
-      call send_recv(V_g,2)
-      call send_recv(W_g,2)
-      call send_recv(ROP_S,2)
-      call send_recv(T_S,2)
-      call send_recv(U_S,2)
-      call send_recv(V_S,2)
-      call send_recv(W_S,2)
-      call send_recv(THETA_M,2)
-      call send_recv(X_S,2)
-      if(NScalar > 0)call send_recv(Scalar,2)
-      if(K_Epsilon) THEN
-        call send_recv(K_Turb_G,2)
-        call send_recv(E_Turb_G,2)
-      endif
-      call send_recv(GAMA_RG,2)
-      call send_recv(T_RG,2)
-      call send_recv(GAMA_RS,2)
-      call send_recv(T_RS,2)
-      if(nRR > 0)call send_recv(ReactionRates,2)
+
+      if (.not. bDist_IO) then
+
+          call send_recv(EP_g,2)
+          call send_recv(P_g,2)
+          call send_recv(P_star,2)
+          call send_recv(RO_g,2)
+          call send_recv(ROP_g,2)
+          call send_recv(X_g,2)
+          call send_recv(T_g,2)
+          call send_recv(U_g,2)
+          call send_recv(V_g,2)
+          call send_recv(W_g,2)
+          call send_recv(ROP_S,2)
+          call send_recv(T_S,2)
+          call send_recv(U_S,2)
+          call send_recv(V_S,2)
+          call send_recv(W_S,2)
+          call send_recv(THETA_M,2)
+          call send_recv(X_S,2)
+          if(NScalar > 0)call send_recv(Scalar,2)
+          if(K_Epsilon) THEN
+              call send_recv(K_Turb_G,2)
+              call send_recv(E_Turb_G,2)
+          endif
+          call send_recv(GAMA_RG,2)
+          call send_recv(T_RG,2)
+          call send_recv(GAMA_RS,2)
+          call send_recv(T_RS,2)
+          if(nRR > 0)call send_recv(ReactionRates,2)
+
+      end if
 
 
       call gatherWriteRes (EP_g,array2, array1, NEXT_REC)  !//d pnicol
@@ -186,12 +192,15 @@
 
       if (K_epsilon) then
             call gatherWriteRes (K_turb_G,array2, array1, NEXT_REC)  !//d pnicol
-	    call gatherWriteRes (E_turb_G,array2, array1, NEXT_REC)
+          call gatherWriteRes (E_turb_G,array2, array1, NEXT_REC)
       endif
 !--------------------------------------------------------------------- 
  
-      if (myPE.eq.PE_IO) CALL FLUSH_res (UNIT_RES) 
-!     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      if ( (myPE.eq.PE_IO .and. .not.bDist_IO) .or. bDist_IO) then 
+           CALL FLUSH_res (UNIT_RES) 
+        end if
+
+!      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
       deallocate (array1)  !//d pnicol
       deallocate (array2)  !//d pnicol
@@ -201,24 +210,37 @@
       END SUBROUTINE WRITE_RES1 
       
       subroutine gatherWriteRes(VAR, array2, array1, NEXT_REC)
-        USE geometry
-        USE funits 
-        USE compar           !//
-        USE mpi_utility      !//d pnicol : for gather
-        USE sendrecv         !//d pnicol : for gather
-        IMPLICIT NONE
-        double precision, dimension(ijkmax2) :: array1       
-        double precision, dimension(ijkmax3) :: array2     
-        double precision, dimension(DIMENSION_3) :: VAR    
-        INTEGER :: NEXT_REC 
 
-!       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-        call gather (VAR,array2,root)  !//d pnicol
-!       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-        if (myPE.eq.PE_IO) then
-           call convert_to_io_dp(array2,array1,ijkmax2)  
-           CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-        end if
+      USE geometry
+      USE funits 
+      USE cdist
+      USE compar           !//
+      USE mpi_utility      !//d pnicol : for gather
+      USE sendrecv         !//d pnicol : for gather
+
+      IMPLICIT NONE
+
+      double precision, dimension(ijkmax2) :: array1       
+      double precision, dimension(ijkmax3) :: array2     
+      double precision, dimension(DIMENSION_3) :: VAR   
+
+      INTEGER :: NEXT_REC 
+
+!     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+      if (.not.bDist_IO) then
+
+         call gather (VAR,array2,root)  !//d pnicol
+!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
+         if (myPE.eq.PE_IO) then
+            call convert_to_io_dp(array2,array1,ijkmax2)  
+            CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+         end if
+
+      else
+
+         CALL OUT_BIN_512 (UNIT_RES, var, size(var), NEXT_REC) 
+
+      end if
       
       End subroutine gatherWriteRes
       

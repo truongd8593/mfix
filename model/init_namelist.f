@@ -73,6 +73,8 @@
       USE scalars
       USE compar
       USE parallel
+!DISTIO
+      USE cdist      
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -158,6 +160,11 @@
       DEBUG_RESID     = .TRUE.
 ! end sp
 
+!DISTIO start distributed IO
+      bDist_IO            = .false.
+      bStart_with_one_RES = .false.
+! end distributed IO
+ 
 ! start loezos 
 !
        SHEAR = .FALSE.

@@ -39,6 +39,7 @@
       USE scalars
       USE output
       USE rxns
+      USE cdist
       USE compar           !//
       USE mpi_utility      !//
 !//       USE tmp_array
@@ -96,14 +97,18 @@
 !
       SELECT CASE (L)  
       CASE (1)  
-         if (myPE.eq.PE_IO) then 
+         if (myPE.eq.PE_IO.or.bDist_IO) then 
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
             NUM_REC = NEXT_REC 
             WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
             NEXT_REC = NEXT_REC + 1 
          end if
-         call gatherWriteSpx (EP_g,array2, array1, uspx+L, NEXT_REC)   !//
-         if (myPE .eq. PE_IO) then
+         if (bDist_IO) then
+            call OUT_BIN_R(uspx+L,EP_g,size(EP_g),NEXT_REC)
+         else
+            call gatherWriteSpx (EP_g,array2, array1, uspx+L, NEXT_REC)   !//
+         end if 
+         if (myPE .eq. PE_IO.or.bDist_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
             if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
@@ -113,15 +118,20 @@
 ! ".SP2" FILE         P_g , P_star
 !
       CASE (2)  
-         if (myPE.eq.PE_IO) then 
+         if (myPE.eq.PE_IO.or.bDist_IO) then 
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
             NUM_REC = NEXT_REC 
             WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
             NEXT_REC = NEXT_REC + 1 
          end if
-         call gatherWriteSpx (P_g,array2, array1, uspx+L, NEXT_REC)   !//
-         call gatherWriteSpx (P_star,array2, array1, uspx+L, NEXT_REC)   !//
-         if (myPE.eq.PE_IO) then 
+         if (bDist_IO) then
+           call OUT_BIN_R(uspx+L,P_g,size(P_g),NEXT_REC)
+           call OUT_BIN_R(uspx+L,P_star,size(P_star),NEXT_REC)
+         else
+           call gatherWriteSpx (P_g,array2, array1, uspx+L, NEXT_REC)   !//
+           call gatherWriteSpx (P_star,array2, array1, uspx+L, NEXT_REC)   !//
+         end if
+         if (myPE.eq.PE_IO.or.bDist_IO) then 
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
             if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
@@ -131,16 +141,22 @@
 ! ".SP3" FILE         U_g , V_g , W_g
 !
       CASE (3)  
-         if (myPE.eq.PE_IO) then 
+         if (myPE.eq.PE_IO.or.bDist_IO) then 
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
             NUM_REC = NEXT_REC 
             WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
             NEXT_REC = NEXT_REC + 1
          end if 
-         call gatherWriteSpx (U_g,array2, array1, uspx+L, NEXT_REC)   !//
-         call gatherWriteSpx (V_g,array2, array1, uspx+L, NEXT_REC)   !//
-         call gatherWriteSpx (W_g,array2, array1, uspx+L, NEXT_REC)   !//
-         if (myPE.eq.PE_IO) then
+         if (bDist_IO) then
+           call OUT_BIN_R(uspx+L,U_g,size(U_g),NEXT_REC)
+           call OUT_BIN_R(uspx+L,V_g,size(V_g),NEXT_REC)
+           call OUT_BIN_R(uspx+L,W_g,size(W_g),NEXT_REC)
+         else
+           call gatherWriteSpx (U_g,array2, array1, uspx+L, NEXT_REC)   !//
+           call gatherWriteSpx (V_g,array2, array1, uspx+L, NEXT_REC)   !//
+           call gatherWriteSpx (W_g,array2, array1, uspx+L, NEXT_REC)   !//
+         end if
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
             if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
@@ -150,18 +166,26 @@
 ! ".SP4" FILE         U_s , V_s , W_s
 !
       CASE (4)  
-         if (myPE.eq.PE_IO) then
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
             NUM_REC = NEXT_REC 
             WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
             NEXT_REC = NEXT_REC + 1 
          end if
+         if (bDist_IO) then
+         DO LC = 1, MMAX
+           call OUT_BIN_R(uspx+L,U_s(:,LC),Size(U_s(:,LC)),NEXT_REC)
+           call OUT_BIN_R(uspx+L,V_s(:,LC),Size(V_s(:,LC)),NEXT_REC)
+           call OUT_BIN_R(uspx+L,W_s(:,LC),Size(W_s(:,LC)),NEXT_REC)
+         END DO
+         else
          DO LC = 1, MMAX 
             call gatherWriteSpx (U_s(:,LC),array2, array1, uspx+L, NEXT_REC)
             call gatherWriteSpx (V_s(:,LC),array2, array1, uspx+L, NEXT_REC)
             call gatherWriteSpx (W_s(:,LC),array2, array1, uspx+L, NEXT_REC)
-         END DO 
-         if (myPE.eq.PE_IO) then
+         END DO
+         end if 
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
             if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
@@ -171,16 +195,22 @@
 ! ".SP5" FILE         ROP_s
 !
       CASE (5)  
-         if (myPE.eq.PE_IO) then
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
             NUM_REC = NEXT_REC 
             WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
             NEXT_REC = NEXT_REC + 1 
          end if
+         if (bDist_IO) then
+          DO LC = 1, MMAX
+            call OUT_BIN_R(uspx+L,ROP_s(:,LC),size(ROP_s(:,LC)), NEXT_REC)
+         END DO
+         else
          DO LC = 1, MMAX 
             call gatherWriteSpx (ROP_s(:,LC),array2, array1, uspx+L, NEXT_REC)
-         END DO 
-         if (myPE.eq.PE_IO) then
+         END DO
+         end if 
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
             if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
@@ -190,17 +220,24 @@
 ! ".SP6" FILE         T_g  , T_s
 !
       CASE (6)  
-         if (myPE.eq.PE_IO) then
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
             NUM_REC = NEXT_REC 
             WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
             NEXT_REC = NEXT_REC + 1 
          end if
+         if (bDist_IO) then
+           call OUT_BIN_R(uspx+L,T_g,size(T_g), NEXT_REC)
+          DO LC = 1, MMAX
+            call OUT_BIN_R(uspx+L,T_s(:,LC),size(T_s(:,LC)), NEXT_REC)
+          END DO
+         else
          call gatherWriteSpx (T_g,array2, array1, uspx+L, NEXT_REC)   !//
-         DO LC = 1, MMAX 
+          DO LC = 1, MMAX 
             call gatherWriteSpx (T_s(:,LC),array2, array1, uspx+L, NEXT_REC)
-         END DO 
-         if (myPE.eq.PE_IO) then
+          END DO
+         end if 
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
             if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
@@ -209,21 +246,33 @@
 ! ".SP7" FILE         X_g, X_s
 !
       CASE (7)  
-         if (myPE.eq.PE_IO) then
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
             NUM_REC = NEXT_REC 
             WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
             NEXT_REC = NEXT_REC + 1 
          end if
-         DO N = 1, NMAX(0) 
+         if (bDist_IO) then
+           DO N = 1, NMAX(0)
+             call OUT_BIN_R(uspx+L,X_G(:,N),size(X_G(:,N)), NEXT_REC)
+           END DO
+           DO LC = 1, MMAX
+            DO N = 1, NMAX(LC)
+               call OUT_BIN_R(uspx+L,X_s(:,LC,N),size(X_s(:,LC,N)), NEXT_REC)
+            END DO
+           END DO
+
+         else
+          DO N = 1, NMAX(0) 
             call gatherWriteSpx (X_G(:,N),array2, array1, uspx+L, NEXT_REC)
-         END DO 
-         DO LC = 1, MMAX 
+          END DO 
+          DO LC = 1, MMAX 
             DO N = 1, NMAX(LC) 
                call gatherWriteSpx (X_s(:,LC,N),array2, array1, uspx+L, NEXT_REC)
             END DO 
-         END DO 
-         if (myPE.eq.PE_IO) then
+          END DO
+         end if 
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
             if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
@@ -233,16 +282,22 @@
 ! ".SP8" FILE         THETA_m
 !
       CASE (8)  
-         if (myPE.eq.PE_IO) then
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
             NUM_REC = NEXT_REC 
             WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
             NEXT_REC = NEXT_REC + 1
          end if 
-         DO LC = 1, MMAX 
+         if (bDist_IO) then
+          DO LC = 1, MMAX
+            call OUT_BIN_R(uspx+L,THETA_m(:,LC),size(THETA_m(:,LC)), NEXT_REC)
+         END DO
+         else
+          DO LC = 1, MMAX 
             call gatherWriteSpx (THETA_m(:,LC),array2, array1, uspx+L, NEXT_REC)
-         END DO 
-         if (myPE.eq.PE_IO) then
+          END DO 
+         end if
+         if (myPE.eq.PE_IO .or. bDist_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
             if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
@@ -252,16 +307,22 @@
 ! ".SP9" FILE         Scalar
 !
       CASE (9)  
-         if (myPE.eq.PE_IO) then
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
             NUM_REC = NEXT_REC 
             WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
             NEXT_REC = NEXT_REC + 1
          end if 
-         DO LC = 1, Nscalar 
+         if (bDist_IO) then
+          DO LC = 1, Nscalar
+            call OUT_BIN_R(uspx+L,Scalar(:,LC),size(Scalar(:,LC)), NEXT_REC)
+          END DO
+         else
+          DO LC = 1, Nscalar 
             call gatherWriteSpx (Scalar(:,LC),array2, array1, uspx+L, NEXT_REC) 
-         END DO 
-         if (myPE.eq.PE_IO) then
+          END DO
+         end if 
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
             if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
@@ -270,16 +331,22 @@
 !
       CASE (10)
 
-         if (myPE.eq.PE_IO) then
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
             NUM_REC = NEXT_REC 
             WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
             NEXT_REC = NEXT_REC + 1
          end if 
-         DO LC = 1, nRR
+         if (bDist_IO) then
+          DO LC = 1, nRR
+            call OUT_BIN_R(uspx+L,ReactionRates(:,LC),size(ReactionRates(:,LC)), NEXT_REC)
+          END DO
+         else
+          DO LC = 1, nRR
             call gatherWriteSpx (ReactionRates(:,LC),array2, array1, uspx+L, NEXT_REC) 
-         END DO 
-         if (myPE.eq.PE_IO) then
+          END DO
+         end if 
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
             if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
@@ -288,22 +355,28 @@
 ! ".SP11" FILE         turbulence
 !
       CASE (11)  
-         if (myPE.eq.PE_IO) then
+         if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
             NUM_REC = NEXT_REC 
             WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP 
             NEXT_REC = NEXT_REC + 1
          end if 
-	 if (K_Epsilon) then
-            call gatherWriteSpx (K_Turb_G,array2, array1, uspx+L, NEXT_REC) 
-            call gatherWriteSpx (E_Turb_G,array2, array1, uspx+L, NEXT_REC)
-	 end if
-	    
-         if (myPE.eq.PE_IO) then
+         if (K_Epsilon) then
+            if (bDist_IO) then
+             call OUT_BIN_R(uspx+L,K_Turb_G,size(K_Turb_G), NEXT_REC)
+             call OUT_BIN_R(uspx+L,E_Turb_G,size(E_Turb_G), NEXT_REC)
+
+            else
+             call gatherWriteSpx (K_Turb_G,array2, array1, uspx+L, NEXT_REC) 
+             call gatherWriteSpx (E_Turb_G,array2, array1, uspx+L, NEXT_REC)
+            end if
+          end if
+ 
+           if (myPE.eq.PE_IO.or.bDist_IO) then
             NUM_REC = NEXT_REC - NUM_REC 
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC 
             if(unit_add == 0) CALL FLUSH_bin (uspx + L) 
-         end if
+           end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 !
@@ -327,7 +400,7 @@
         USE mpi_utility      !//d pnicol : for gatherWriteSpx
         USE sendrecv         !//d pnicol : for gatherWriteSpx
         IMPLICIT NONE
-	integer uspxL, NEXT_REC
+        integer uspxL, NEXT_REC
         double precision, dimension(ijkmax2) :: array1       
         double precision, dimension(ijkmax3) :: array2     
         double precision, dimension(DIMENSION_3) :: VAR    

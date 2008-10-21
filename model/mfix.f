@@ -49,6 +49,8 @@
       USE compar      
       USE mpi_utility     
       USE parallel_mpi
+!DISTIO      
+      USE cdist      
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -78,6 +80,8 @@
 !
 !                      Error index
       INTEGER          IER
+!DISTIO
+      character :: version*512      
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -90,6 +94,19 @@
       INTEGER IJK
       INCLUDE 'function.inc'
 
+!DISTIO
+      ! note: the value below for version must be the same as
+      !       the value of version in mfix.f
+      !       If you change it in this subroutine, you must
+      !       change it in write_res0.f also
+      !   
+      !       The value should also be consistent with the check
+      !       in read_res0
+      
+	version = 'RES = 01.6'
+
+	bDoing_postmfix = .false.
+	
 !// 010 Initialize MPI & get ranks & total PEs employed
     call parallel_init
     
@@ -137,7 +154,6 @@
 !AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
 !            timestamp at the beginning of execution
       CALL CPU_TIME (CPU00)
-!
 !
 !   Read input data, check data, do computations for IC and BC locations
 !   and flows, and set geometry parameters such as X, X_E, DToDX, etc.
@@ -222,6 +238,13 @@
       CASE ('RESTART_2')  
 !
          TIME_SAVE = TIME 
+!DISTIO
+         if (myPE .ne. PE_IO .and. bDist_IO .and. bStart_with_one_res) then
+             write (unit_res,rec=1) version
+             write (unit_res,rec=2) 4
+             write (unit_res,rec=3) 4
+         end if	 
+	 
          CALL READ_RES1 
          TIME = TIME_SAVE 
 !
@@ -317,13 +340,15 @@
 !
       CALL CHECK_DATA_20 
 
-!AEOLUS DEBUG PRINT
+!DISTIO
+! for creating files needed by post_mfix with distributed IO
+
+!AEOLUS DEBUG PRINT 
     if (DBGPRN_LAYOUT) then
 !     write (*,*) myPE , ' E.4 ... version = ' , version(1:33)
       call debug_write_layout(1,ier)
       call write_parallel_info(1,ier)
     endif
-
 !
 !  Initializations for CPU time calculations in iterate
 !
@@ -371,9 +396,6 @@
 !// Comments on the modifications for DMP version implementation      
 !// 001 Include header file and common declarations for parallelization
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: debug_write(debuglvl, ier )                            C
@@ -409,7 +431,7 @@
       USE indices
       USE leqsol
 !DISTIO      
-!     USE cdist      
+      USE cdist      
       USE funits
       USE run       ! added for AMG input parameters entered in mfix.dat
 !AE AMG 091503
@@ -468,9 +490,7 @@
       write (11,*) ' '
  
 
-!DISTIO
-!     if (AMGDBG .or. bDist_IO) then
-      if (AMGDBG) then
+      if (AMGDBG .or. bDist_IO) then
       write(11,"('BLK1: Running from istart3,iend3 .AND. jstart3, jend3 .AND. kstart3, kend3')")
       write(11,"(' (   i ,    j,     k) =>    ijk      ijk_GL     ijk_PROC    ijk_IO')") 
       write(11,"(' ====================      =====     =======    ========    ======')")
@@ -631,9 +651,7 @@
       
 
 
-!DISTIO
-!     if (AMGDBG .or. bDist_IO) then
-      if (AMGDBG) then
+      if (AMGDBG .or. bDist_IO) then
       write(11,"(/,/,'BLK6: ========= ORIGINAL MFIX VARIABLES ===========')")
       write(11,"('PE ',I5,': imin1  = ',I6,3X,'imax1= ',I6,/,'PE ',I5,': jmin1  = ',I6,3X,'jmax1= ',I6)") & 
              myPE,imin1,imax1,myPE,jmin1,jmax1

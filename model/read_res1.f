@@ -39,7 +39,8 @@
       USE scalars
       USE funits 
       USE energy
-      USE compar      
+      USE compar     
+      USE cdist 
       USE mpi_utility 
       USE sendrecv    
 
@@ -78,7 +79,7 @@
       INTEGER allocstatus, i
 !-----------------------------------------------
 !
-      if (myPE .eq. PE_IO) then
+      if (myPE .eq. PE_IO .or. .not.bStart_with_one_res) then
          allocate (array1(ijkmax2))
          allocate (array2(ijkmax3))
       else
@@ -95,10 +96,9 @@
 !     Use DT from data file if DT_FAC is set to 1.0
       IF (DT_FAC == ONE) DT_SAVE = DT 
 !
-!
 
 !//PAR_I/O only PE_IO reads the restart file
-      if (myPE == PE_IO ) then
+      if (myPE == PE_IO .or. (bDist_IO .and. .not.bStart_with_one_RES)) then
          READ (UNIT_RES, REC=1) VERSION 
          READ (VERSION(6:512), *) VERSION_NUMBER 
 
@@ -111,12 +111,15 @@
          NEXT_REC = NEXT_REC + 1 
       end if
 !
-!      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-      call bcast(VERSION, PE_IO)        !//PAR_I/O BCAST0c
-      call bcast(VERSION_NUMBER, PE_IO) !//PAR_I/O BCAST0r
-      call bcast(TIME, PE_IO)           !//PAR_I/O BCAST0d
-      call bcast(NSTEP, PE_IO)          !//PAR_I/O BCAST0i
-      if (VERSION_NUMBER >= 1.12) call bcast(DT, PE_IO)   !//PAR_I/O BCAST0d	     
+      if (.not.bDist_IO  .or. bStart_with_one_RES) then
+!        call MPI_barrier(MPI_COMM_WORLD,mpierr)
+      
+         call bcast(VERSION, PE_IO)        !//PAR_I/O BCAST0c
+         call bcast(VERSION_NUMBER, PE_IO) !//PAR_I/O BCAST0r
+         call bcast(TIME, PE_IO)           !//PAR_I/O BCAST0d
+         call bcast(NSTEP, PE_IO)          !//PAR_I/O BCAST0i
+         if (VERSION_NUMBER >= 1.12) call bcast(DT, PE_IO)   !//PAR_I/O BCAST0d	  
+	end if   
 !      call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
 !AE TIME 091501 Store the timestep counter level at the begin of RESTART run
@@ -221,9 +224,11 @@
       deallocate( array2 )
 !      call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
-      call send_recv(rop_g)
-      call send_recv(ro_g)
-      call send_recv(rop_s)
+      if (.not.bDist_IO .or. bStart_with_one_RES) then
+         call send_recv(rop_g)
+         call send_recv(ro_g)
+         call send_recv(rop_s)
+      end if
 
 
       IF (DT_FAC == ONE) DT = DT_SAVE 
@@ -235,7 +240,8 @@
       subroutine readScatterRes(VAR, array2, array1, NEXT_REC)
         USE geometry
         USE funits 
-        USE compar           
+        USE compar      
+	  USE cdist     
         USE mpi_utility      
         USE sendrecv         
         IMPLICIT NONE
@@ -243,14 +249,18 @@
         double precision, dimension(ijkmax3) :: array2     
         double precision, dimension(DIMENSION_3) :: VAR
         INTEGER :: NEXT_REC 
-	    
-        if (myPE == PE_IO) then
-          CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-          CALL convert_from_io_dp(array1, array2, IJKMAX2) 
-        end if
+	   
+	if (.not.bDist_IO .or. bStart_with_one_RES) then 
+         if (myPE == PE_IO) then
+            CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+            CALL convert_from_io_dp(array1, array2, IJKMAX2) 
+         end if
 !        call MPI_barrier(MPI_COMM_WORLD,mpierr)
-        call scatter(VAR, array2, PE_IO)
+         call scatter(VAR, array2, PE_IO)
 !        call MPI_barrier(MPI_COMM_WORLD,mpierr)
+      else
+         CALL IN_BIN_512 (UNIT_RES, var, size(var) , NEXT_REC) 
+	end if
       
       End subroutine readScatterRes
 

@@ -32,6 +32,7 @@
       USE param1 
       USE run
       USE funits 
+      USE cdist
       USE compar           !// 
       USE mpi_utility      !//
       IMPLICIT NONE
@@ -57,10 +58,16 @@
       INTEGER  uspx   ! UNIT_SPX + offset from post_mfix
 !-----------------------------------------------
 !
-        uspx = UNIT_SPX + unit_add
+      uspx = UNIT_SPX + unit_add
 
 !
-      if (myPE.ne.PE_IO) return    !// 
+! if DISTIO is true then write headers in all local files (DEM)
+!  i.e. if DISTIO is disabled and this is not the IO node then
+!   return, otherwise write the distributed files.
+!
+
+!   
+      if (myPE.ne.PE_IO .and. bDist_IO .eq. .false.) return    !// 
 !
       VERSION = 'SPx = 02.00' 
       WRITE (VERSION(3:3), 1000) L 

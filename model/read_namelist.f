@@ -80,6 +80,8 @@
       USE parallel    
       USE discretelement
       USE usr
+!DISTIO
+      USE cdist
       
       IMPLICIT NONE
 !-----------------------------------------------

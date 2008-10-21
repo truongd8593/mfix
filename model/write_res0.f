@@ -18,7 +18,7 @@
 !                        KMAX, IMAX1, JMAX1, KMAX1, IMAX2, JMAX2,KMAX2 C
 !                        IJMAX2, IJKMAX2, MMAX, DT, XLENGTH, YLENGTH   C
 !                        ZLENGTH, DX, DY, DZ, RUN_NAME, DESCRIPTION    C
-!                        UNITS, RUN_TYPE, CORDINATES, D_p0, RO_s,       C
+!                        UNITS, RUN_TYPE, CORDINATES, D_p0, RO_s,      C
 !                        EP_star, MU_g0, MW_AVG, IC_X_w, IC_X_e, IC_Y_sC
 !                        IC_Y_n, IC_Z_b, IC_Z_t, IC_I_w, IC_I_e        C
 !                        IC_J_s, IC_J_n, IC_K_b, IC_K_t, IC_EP_g       C
@@ -61,6 +61,7 @@
       USE ur_facs 
       USE leqsol 
       USE toleranc 
+      USE cdist
       USE compar           !//
       USE mpi_utility      !// for gather
       USE sendrecv         !// for filling the boundary information
@@ -80,6 +81,8 @@
 !
       integer, allocatable :: arr1(:)
       integer, allocatable :: arr2(:)
+
+      integer :: work_around(100)
 !
 !                loop counters
       INTEGER :: LC, L, N
@@ -91,6 +94,21 @@
       CHARACTER :: VERSION*512 
 !-----------------------------------------------
 !
+!
+      NEXT_RECA = 5 
+      
+      ! note: the value below for version must be the same as
+      !       the value of version in mfix.f
+      !       If you change it in this subroutine, you must
+      !       change it in mfix.f also.
+      !   
+      !       The value should also be consistent with the check
+      !       in read_res0
+      
+      VERSION = 'RES = 01.6' 
+!
+!     Add new data entries at the end of the file and identify version no.
+
       if (myPE.eq.PE_IO) then
          allocate (arr1(ijkmax3))        !// 
          allocate (arr2(ijkmax2))        !// 
@@ -100,12 +118,6 @@
          goto 1100
       end if
 
-!
-      NEXT_RECA = 5 
-!
-!     Add new data entries at the end of the file and identify version no.
-!------------------------------------------------------------------------
-      VERSION = 'RES = 01.6' 
 !------------------------------------------------------------------------
 !//SP - Temporarily disabled so that the binary files can be diffed.....
 !
@@ -116,16 +128,30 @@
       WRITE (UNIT_RES, REC=4) IMIN1, JMIN1, KMIN1, IMAX, JMAX, KMAX, IMAX1, &
          JMAX1, KMAX1, IMAX2, JMAX2, KMAX2, IJMAX2, IJKMAX2, MMAX, DIMENSION_IC&
          , DIMENSION_BC, DIMENSION_C, DIMENSION_IS, DT, XMIN, XLENGTH, YLENGTH&
-         , ZLENGTH, C_E, C_F, PHI, PHI_W 
-      CALL OUT_BIN_512 (UNIT_RES, C, DIMENSION_C, NEXT_RECA) 
-      NEXT_RECA = 1 + NEXT_RECA                  ! work around for -O3 compiler bug 
+         , ZLENGTH, C_E, C_F, PHI, PHI_W
+      CALL OUT_BIN_512 (UNIT_RES, C, DIMENSION_C, NEXT_RECA)
+      NEXT_RECA = 1 + NEXT_RECA                  ! work around for -O3 compiler bug
       NEXT_RECA = NEXT_RECA - 1 
       DO LC = 1, DIMENSION_C 
          WRITE (UNIT_RES, REC=NEXT_RECA) C_NAME(LC) 
          NEXT_RECA = NEXT_RECA + 1 
-      END DO 
-      WRITE (UNIT_RES, REC=NEXT_RECA) (NMAX(L),L=0,MMAX) 
-      NEXT_RECA = NEXT_RECA + 1 
+      END DO
+      write (*,*) 'next_reca = ' , next_reca
+      do l = 0,mmax
+         write (*,*) L,nmax(l)
+	 work_around(L+1) = nmax(L)
+      end do
+ !     next_reca = next_reca + 1
+ !     CALL OUT_BIN_512I (UNIT_RES, work_around, MMAX+1, NEXT_RECA)
+!      WRITE (UNIT_RES, REC=NEXT_RECA) (work_around(L),L=1,MMAX+1)
+      WRITE (UNIT_RES, REC=NEXT_RECA) (NMAX(L),L=0,MMAX)
+ !      do l =0,mmax
+ !         write (unit_res,rec=next_reca) nmax(l)
+!	  next_reca = next_reca + 1
+ !      end do
+!      write (unit_res,rec=next_reca) nmax(0) , nmax(1)
+      NEXT_RECA = NEXT_RECA + 1
+      write (*,*) ' next_reca = ' , next_reca
 !
       CALL OUT_BIN_512 (UNIT_RES, DX(1), IMAX2, NEXT_RECA) 
       CALL OUT_BIN_512 (UNIT_RES, DY(1), JMAX2, NEXT_RECA) 
@@ -151,8 +177,8 @@
       CALL OUT_BIN_512I (UNIT_RES, IC_I_E, DIMENSION_IC, NEXT_RECA) 
       CALL OUT_BIN_512I (UNIT_RES, IC_J_S, DIMENSION_IC, NEXT_RECA) 
       CALL OUT_BIN_512I (UNIT_RES, IC_J_N, DIMENSION_IC, NEXT_RECA) 
-      CALL OUT_BIN_512I (UNIT_RES, IC_K_B, DIMENSION_IC, NEXT_RECA) 
-      CALL OUT_BIN_512I (UNIT_RES, IC_K_T, DIMENSION_IC, NEXT_RECA) 
+      CALL OUT_BIN_512I (UNIT_RES, IC_K_B, DIMENSION_IC, NEXT_RECA)
+      CALL OUT_BIN_512I (UNIT_RES, IC_K_T, DIMENSION_IC, NEXT_RECA)
       CALL OUT_BIN_512 (UNIT_RES, IC_EP_G, DIMENSION_IC, NEXT_RECA) 
       CALL OUT_BIN_512 (UNIT_RES, IC_P_G, DIMENSION_IC, NEXT_RECA) 
       CALL OUT_BIN_512 (UNIT_RES, IC_T_G, DIMENSION_IC, NEXT_RECA) 
@@ -368,6 +394,14 @@
       CALL FLUSH (UNIT_RES) 
 
  1200 continue
+
+      if (bDist_IO .and. myPE.ne.PE_IO) then
+         WRITE (UNIT_RES, REC=1) VERSION 
+         WRITE (UNIT_RES, REC=2) RUN_NAME, ID_MONTH, ID_DAY, ID_YEAR, ID_HOUR, &
+             ID_MINUTE, ID_SECOND 
+         WRITE (UNIT_RES, REC=3) 4 
+         CALL FLUSH (UNIT_RES) 
+      end if
 
       deallocate (arr1)              !//
       deallocate (arr2)              !//
