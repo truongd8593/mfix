@@ -217,6 +217,9 @@
       Deallocate( RESID )
       Deallocate( MAX_RESID )
       Deallocate( IJK_RESID )
+      deallocate( NUM_RESID )   ! added 17-mar-2008
+      deallocate( den_resid )   ! added 17-mar-2008
+      deallocate( resid_pack )  ! added 17-mar-2008
  
 !rxns
       Deallocate(  R_gp  )

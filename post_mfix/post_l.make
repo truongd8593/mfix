@@ -4,6 +4,7 @@
 post_mfix : \
     ambm.mod \
     bc.mod \
+    cdist.mod \
     coeff.mod \
     constant.mod \
     cont.mod \
@@ -172,6 +173,7 @@ post_mfix : \
     ambm_mod.$(OBJ_EXT) \
     bc_mod.$(OBJ_EXT) \
     boundfunijk_mod.$(OBJ_EXT)                           \
+    cdist_mod.$(OBJ_EXT) \
     coeff_mod.$(OBJ_EXT) \
     constant_mod.$(OBJ_EXT) \
     cont_mod.$(OBJ_EXT) \
@@ -346,6 +348,8 @@ bc.mod : ../model/bc_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/bc_mod.f 
+cdist.mod : ../model/cdist_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cdist_mod.f 
 coeff.mod : ../model/coeff_mod.f \
             param.mod \
             param1.mod 
@@ -765,6 +769,7 @@ finit.$(OBJ_EXT) : finit.f \
             constant.mod \
             funits.mod \
             parallel_mpi.mod          \
+	    cdist.mod   \
             xforms.inc                                                  
 flow_gx.$(OBJ_EXT) : flow_gx.f \
             param.mod \

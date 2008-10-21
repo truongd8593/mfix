@@ -764,6 +764,7 @@ finit.$(OBJ_EXT) : finit.f \
             CONSTANT.mod \
             FUNITS.mod \
             PARALLEL_MPI.mod                      \
+	    CDIST.mod \
             xforms.inc                                                  
 flow_gx.$(OBJ_EXT) : flow_gx.f \
             PARAM.mod \
