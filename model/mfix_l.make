@@ -6,6 +6,7 @@ mfix.exe : \
     bc.mod \
     boundfunijk3.mod \
     boundfunijk.mod \
+    cdist.mod \
     check.mod \
     chischeme.mod \
     coeff.mod \
@@ -456,6 +457,7 @@ mfix.exe : \
     calc_vol_fr.$(OBJ_EXT) \
     calc_xsi.$(OBJ_EXT) \
     cal_d.$(OBJ_EXT) \
+    cdist_mod.$(OBJ_EXT) \
     check_ab_m.$(OBJ_EXT) \
     check_convergence.$(OBJ_EXT) \
     check_data_01.$(OBJ_EXT) \
@@ -856,6 +858,8 @@ boundfunijk.mod : boundfunijk_mod.f \
             indices.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) boundfunijk_mod.f 
+cdist.mod : cdist_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) cdist_mod.f 
 check.mod : check_mod.f \
             param.mod \
             param1.mod 
@@ -1286,7 +1290,8 @@ allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             mflux.mod \
             mchem.mod \
             kintheory.mod \
-            kintheory2.mod 
+            kintheory2.mod \
+            cdist.mod 
 bc_phi.$(OBJ_EXT) : bc_phi.f \
             param.mod \
             param1.mod \
@@ -2829,6 +2834,14 @@ mfix.$(OBJ_EXT) : mfix.f \
             compar.mod \
             mpi_utility.mod \
             parallel_mpi.mod \
+            cdist.mod \
+            parallel.mod \
+            matrix.mod \
+            geometry.mod \
+            sendrecv.mod \
+            sendrecv3.mod \
+            indices.mod \
+            leqsol.mod \
             function.inc                                                
 mod_bc_i.$(OBJ_EXT) : mod_bc_i.f \
             param.mod \
@@ -2863,11 +2876,14 @@ mod_bc_k.$(OBJ_EXT) : mod_bc_k.f \
             compar.mod \
             mpi_utility.mod \
             function.inc                                                
-open_file.$(OBJ_EXT) : open_file.f 
+open_file.$(OBJ_EXT) : open_file.f \
+            cdist.mod \
+            compar.mod 
 open_files.$(OBJ_EXT) : open_files.f \
             machine.mod \
             funits.mod \
             compar.mod \
+            cdist.mod \
             run.mod 
 out_array_c.$(OBJ_EXT) : out_array_c.f \
             param.mod \
@@ -3044,6 +3060,7 @@ read_res1.$(OBJ_EXT) : read_res1.f \
             funits.mod \
             energy.mod \
             compar.mod \
+            cdist.mod \
             mpi_utility.mod \
             sendrecv.mod 
 remove_comment.$(OBJ_EXT) : remove_comment.f 
@@ -4306,6 +4323,7 @@ write_res0.$(OBJ_EXT) : write_res0.f \
             ur_facs.mod \
             leqsol.mod \
             toleranc.mod \
+            cdist.mod \
             compar.mod \
             mpi_utility.mod \
             sendrecv.mod 
@@ -4322,6 +4340,7 @@ write_res1.$(OBJ_EXT) : write_res1.f \
             funits.mod \
             output.mod \
             energy.mod \
+            cdist.mod \
             compar.mod \
             mpi_utility.mod \
             sendrecv.mod 
@@ -4330,6 +4349,7 @@ write_spx0.$(OBJ_EXT) : write_spx0.f \
             param1.mod \
             run.mod \
             funits.mod \
+            cdist.mod \
             compar.mod \
             mpi_utility.mod 
 write_spx1.$(OBJ_EXT) : write_spx1.f \
@@ -4343,6 +4363,7 @@ write_spx1.$(OBJ_EXT) : write_spx1.f \
             scalars.mod \
             output.mod \
             rxns.mod \
+            cdist.mod \
             compar.mod \
             mpi_utility.mod \
             sendrecv.mod 

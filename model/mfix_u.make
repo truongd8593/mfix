@@ -6,6 +6,7 @@ mfix.exe : \
     BC.mod \
     BOUNDFUNIJK3.mod \
     BOUNDFUNIJK.mod \
+    CDIST.mod \
     CHECK.mod \
     CHISCHEME.mod \
     COEFF.mod \
@@ -456,6 +457,7 @@ mfix.exe : \
     calc_vol_fr.$(OBJ_EXT) \
     calc_xsi.$(OBJ_EXT) \
     cal_d.$(OBJ_EXT) \
+    cdist_mod.$(OBJ_EXT) \
     check_ab_m.$(OBJ_EXT) \
     check_convergence.$(OBJ_EXT) \
     check_data_01.$(OBJ_EXT) \
@@ -856,6 +858,8 @@ BOUNDFUNIJK.mod : boundfunijk_mod.f \
             INDICES.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) boundfunijk_mod.f 
+CDIST.mod : cdist_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) cdist_mod.f 
 CHECK.mod : check_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -1286,7 +1290,8 @@ allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             MFLUX.mod \
             MCHEM.mod \
             KINTHEORY.mod \
-            KINTHEORY2.mod 
+            KINTHEORY2.mod \
+            CDIST.mod 
 bc_phi.$(OBJ_EXT) : bc_phi.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2829,6 +2834,14 @@ mfix.$(OBJ_EXT) : mfix.f \
             COMPAR.mod \
             MPI_UTILITY.mod \
             PARALLEL_MPI.mod \
+            CDIST.mod \
+            PARALLEL.mod \
+            MATRIX.mod \
+            GEOMETRY.mod \
+            SENDRECV.mod \
+            SENDRECV3.mod \
+            INDICES.mod \
+            LEQSOL.mod \
             function.inc                                                
 mod_bc_i.$(OBJ_EXT) : mod_bc_i.f \
             PARAM.mod \
@@ -2863,11 +2876,14 @@ mod_bc_k.$(OBJ_EXT) : mod_bc_k.f \
             COMPAR.mod \
             MPI_UTILITY.mod \
             function.inc                                                
-open_file.$(OBJ_EXT) : open_file.f 
+open_file.$(OBJ_EXT) : open_file.f \
+            CDIST.mod \
+            COMPAR.mod 
 open_files.$(OBJ_EXT) : open_files.f \
             MACHINE.mod \
             FUNITS.mod \
             COMPAR.mod \
+            CDIST.mod \
             RUN.mod 
 out_array_c.$(OBJ_EXT) : out_array_c.f \
             PARAM.mod \
@@ -3044,6 +3060,7 @@ read_res1.$(OBJ_EXT) : read_res1.f \
             FUNITS.mod \
             ENERGY.mod \
             COMPAR.mod \
+            CDIST.mod \
             MPI_UTILITY.mod \
             SENDRECV.mod 
 remove_comment.$(OBJ_EXT) : remove_comment.f 
@@ -4306,6 +4323,7 @@ write_res0.$(OBJ_EXT) : write_res0.f \
             UR_FACS.mod \
             LEQSOL.mod \
             TOLERANC.mod \
+            CDIST.mod \
             COMPAR.mod \
             MPI_UTILITY.mod \
             SENDRECV.mod 
@@ -4321,6 +4339,7 @@ write_res1.$(OBJ_EXT) : write_res1.f \
             FUNITS.mod \
             OUTPUT.mod \
             ENERGY.mod \
+            CDIST.mod \
             COMPAR.mod \
             MPI_UTILITY.mod \
             SENDRECV.mod 
@@ -4329,6 +4348,7 @@ write_spx0.$(OBJ_EXT) : write_spx0.f \
             PARAM1.mod \
             RUN.mod \
             FUNITS.mod \
+            CDIST.mod \
             COMPAR.mod \
             MPI_UTILITY.mod 
 write_spx1.$(OBJ_EXT) : write_spx1.f \
@@ -4342,6 +4362,7 @@ write_spx1.$(OBJ_EXT) : write_spx1.f \
             SCALARS.mod \
             OUTPUT.mod \
             RXNS.mod \
+            CDIST.mod \
             COMPAR.mod \
             MPI_UTILITY.mod \
             SENDRECV.mod 
