@@ -11,7 +11,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CFFCTOWALL(L, NORM)
-     
+      
       USE param1 
       USE discretelement
       IMPLICIT NONE
@@ -21,23 +21,18 @@
 !---------------------------------------------------------------------
 !     
 
-        FC(L,:) = FC(L,:) + FN(L,:) + FT(L,:) 
+      FC(L,:) = FC(L,:) + FN(L,:) + FT(L,:) 
 
-        FT1(:) = FT(L,:)
+      FT1(:) = FT(L,:)
+      
+      IF(DIMN.EQ.3) THEN 
+         CALL DES_CROSSPRDCT(CROSSP, NORM, FT1)
+         TOW(L,:) = TOW(L,:) + DES_RADIUS(L)*CROSSP(:)
+      ELSE 
+         CROSSP(1) = NORM(1)*FT1(2) - NORM(2)*FT1(1)
+         TOW(L,1) = TOW(L,1) + DES_RADIUS(L)*CROSSP(1)
+      endif 
 
-        
-         IF(DIMN.EQ.3) THEN 
-            CALL DES_CROSSPRDCT(CROSSP, NORM, FT1)
-            TOW(L,:) = TOW(L,:) + DES_RADIUS(L)*CROSSP(:)
-         ELSE 
-            CROSSP(1) = NORM(1)*FT1(2) - NORM(2)*FT1(1)
-            TOW(L,1) = TOW(L,1) + DES_RADIUS(L)*CROSSP(1)
-         endif 
-         !CALL DES_CROSSPRDCT(CROSSP, NORM, FT1)         
-
-         !TOW(L,:) = TOW(L,:) + DES_RADIUS(L)*CROSSP(:)
-         
-         !IF(L.EQ.29) PRINT*,'FOR = ', L, FC(L,:)
       RETURN
       END SUBROUTINE CFFCTOWALL
 

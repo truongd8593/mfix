@@ -21,8 +21,7 @@
       
       USE discretelement
       USE param1
-      IMPLICIT NONE
-      
+      IMPLICIT NONE     
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
       
       INTEGER L, KK, II
@@ -31,9 +30,7 @@
 !
 !-----------------------------------------------------------------------
 
-      
-      V_ROT(:) = ZERO
-      
+!     V_ROT(:) = ZERO
       
       VRELTRANS(:) = (DES_VEL_NEW(L,:) - DES_VEL_NEW(II,:))
 
@@ -52,10 +49,10 @@
       
       VSLIP(:) =  VRELTRANS(:) - VRN*NORM(:)
       
-      TANMOD = ZERO
+!     TANMOD = ZERO
       
       TANMOD = SQRT(DES_DOTPRDCT(VSLIP,VSLIP))     
-      IF(TANMOD.NE.0.) THEN
+      IF(TANMOD.NE.ZERO) THEN
          TANGNT(:) = VSLIP(:)/TANMOD
       ELSE
          TANGNT(:) = ZERO

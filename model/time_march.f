@@ -316,6 +316,14 @@
 !     
  100  CONTINUE
       
+      IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN 
+         !CALL WRITE_RES1 
+         CALL WRITE_DES_DATA
+                  
+         CALL DES_TIME_MARCH
+         !CALL WRITE_RES1 
+         STOP
+      ENDIF 
 !AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
       IF (CHK_BATCHQ_END) THEN
        CHKBATCHQ_FLAG = 0 
@@ -368,7 +376,7 @@
 !     
 !     Remove solids from cells containing very small quantities of solids
 !     
-      IF(.NOT.DISCRETE_ELEMENT) CALL ADJUST_EPS
+      CALL ADJUST_EPS
 
 !     
 !     Mark the phase whose continuity will be used for forming Pp_g and Pp_s eqs.
@@ -635,7 +643,7 @@
 
 !     DES begin
 !     Jay Boyalakuntla 
-      IF (DISCRETE_ELEMENT) CALL DES_TIME_MARCH
+      IF (DISCRETE_ELEMENT.AND.DES_CONTINUUM_COUPLED) CALL DES_TIME_MARCH
 !     DES end
 !     
 !     

@@ -39,29 +39,40 @@
       
       INTEGER L, KK, K, NSPLIT, CHECK
       INTEGER IJK, I, J, KKK 
-      DOUBLE PRECISION TEMPTIME, PASSTIME, D(DIMN), DIST, V
+      DOUBLE PRECISION TEMPTIME, PASSTIME, D(DIMN), DIST,  V, rhat(dimn), rhat2, force_tmpy
 !     
 !---------------------------------------------------------------------
 !     Calculate new values
 !---------------------------------------------------------------------
 !     
+      IF(L.EQ.1) THEN 
+         DES_KE = ZERO
+         DES_PE = ZERO 
+         DES_VEL_AVG = ZERO
+      ENDIF
       CHECK = 0 
+
       TEMPTIME = DTSOLID
-         DES_VEL_NEW(L,:) = FC(L,:)/PMASS(L) + GRAV(:)
-         DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID
-         DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID 
-	 OMEGA_NEW(L,:) = OMEGA_OLD(L,:) + TOW(L,:)*OMOI(L)*DTSOLID
-         IF(DES_POS_NEW(L,2).LT.ZERO) THEN
-            PRINT*,'POSITION LE ZERO FOR L = ', L, DES_VEL_NEW(L,:), DES_POS_NEW(L,:)
-         ENDIF 
-         
+      FC(L, :) = FC(L,:)/PMASS(L) + GRAV(:)
+
+      DES_VEL_NEW(L,:) = FC(L,:)
+      
+      DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID
+      DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID 
+      OMEGA_NEW(L,:) = OMEGA_OLD(L,:) + TOW(L,:)*OMOI(L)*DTSOLID
+      IF(DES_POS_NEW(L,2).LT.ZERO.AND..NOT.DES_PERIODIC_WALLS) THEN
+         PRINT*,'POSITION LE ZERO FOR L = ', L, DES_VEL_NEW(L,:), DES_POS_NEW(L,:)
+      ENDIF 
+!PRINT*,'grav = ', GRAV(2), pgrad(2)*PVOL(L)/PMASS(L), RO_sol(L)
       IF(.NOT.DO_NSEARCH) THEN
          D(:) = DES_POS_NEW(L,:) - PPOS(L,:)
          DIST = SQRT(DES_DOTPRDCT(D,D))
+         
+         NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO*DES_RADIUS(L)
          IF(DIST.GE.NEIGHBOR_SEARCH_DIST) DO_NSEARCH = .TRUE.
       END IF
 
-! Chacking if the partcile moved more than a dia in a solid time step   
+!     Chacking if the partcile moved more than a dia in a solid time step   
       D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
       DIST = SQRT(DES_DOTPRDCT(D,D))
       IF(DIST.GE.DES_RADIUS(L)) THEN
@@ -69,29 +80,35 @@
          STOP
       END IF
 
-! Periodic treatment
+!     Periodic treatment
       IF(DES_PERIODIC_WALLS) THEN
-        IF(DES_PERIODIC_WALLS_X) THEN
-         IF(DES_POS_NEW(L,1).GT.EX2) THEN
-            DES_POS_NEW(L,1) = DES_POS_NEW(L,1) - (EX2 - WX1)
-         ELSE IF(DES_POS_NEW(L,1).LT.WX1) THEN
-            DES_POS_NEW(L,1) = DES_POS_NEW(L,1) + (EX2 - WX1)
+         IF(DES_PERIODIC_WALLS_X) THEN
+            IF(DES_POS_NEW(L,1).GT.EX2) THEN
+               DES_POS_NEW(L,1) = DES_POS_NEW(L,1) - (EX2 - WX1)
+               PIJK(L,1) = 2
+            ELSE IF(DES_POS_NEW(L,1).LT.WX1) THEN
+               DES_POS_NEW(L,1) = DES_POS_NEW(L,1) + (EX2 - WX1)
+               PIJK(L,1) = IMAX1
+            END IF
          END IF
-        END IF
-        IF(DES_PERIODIC_WALLS_Y) THEN
-         IF(DES_POS_NEW(L,2).GT.TY2) THEN
-            DES_POS_NEW(L,2) = DES_POS_NEW(L,2) - (TY2 - BY1)
-         ELSE IF(DES_POS_NEW(L,2).LT.BY1) THEN
-            DES_POS_NEW(L,2) = DES_POS_NEW(L,2) + (TY2 - BY1)
+         IF(DES_PERIODIC_WALLS_Y) THEN
+            IF(DES_POS_NEW(L,2).GT.TY2) THEN
+               DES_POS_NEW(L,2) = DES_POS_NEW(L,2) - (TY2 - BY1)
+               PIJK(L,2) = 2
+            ELSE IF(DES_POS_NEW(L,2).LT.BY1) THEN
+               DES_POS_NEW(L,2) = DES_POS_NEW(L,2) + (TY2 - BY1)
+               PIJK(L,2) = JMAX1
+            END IF
          END IF
-        END IF
-        IF(DES_PERIODIC_WALLS_Z) THEN
-         IF(DES_POS_NEW(L,3).GT.NZ2) THEN
-            DES_POS_NEW(L,3) = DES_POS_NEW(L,3) - (NZ2 - SZ1)
-         ELSE IF(DES_POS_NEW(L,3).LT.SZ1) THEN
-            DES_POS_NEW(L,3) = DES_POS_NEW(L,3) + (NZ2 - SZ1)
+         IF(DES_PERIODIC_WALLS_Z) THEN
+            IF(DES_POS_NEW(L,3).GT.NZ2) THEN
+               DES_POS_NEW(L,3) = DES_POS_NEW(L,3) - (NZ2 - SZ1)
+               PIJK(L,3) = 2
+            ELSE IF(DES_POS_NEW(L,3).LT.SZ1) THEN
+               DES_POS_NEW(L,3) = DES_POS_NEW(L,3) + (NZ2 - SZ1)
+               PIJK(L,3) = KMAX1
+            END IF
          END IF
-        END IF
       END IF
 
       IF(INLET_OUTLET) THEN
@@ -104,6 +121,8 @@
       DO K = 1, DIMN
          V = V + DES_VEL_NEW(L,K)**2
       END DO 
+      
+      DES_VEL_AVG(:) =  DES_VEL_AVG(:) + DES_VEL_NEW(L,:)
 
       DES_KE = DES_KE + HALF*V*PMASS(L) 
       DES_PE = DES_PE + PMASS(L)*DES_POS_NEW(L,2)*SQRT(DES_DOTPRDCT(GRAV,GRAV))

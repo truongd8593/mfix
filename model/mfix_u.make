@@ -58,6 +58,7 @@ mfix.exe : \
     MCHEM.mod \
     DISCRETELEMENT.mod \
     INTERPOLATION.mod \
+    RANDOMNO.mod \
     COMPAR.mod \
     DBG_UTIL.mod \
     DEBUG.mod \
@@ -386,6 +387,8 @@ mfix.exe : \
     des_time_march.$(OBJ_EXT) \
     drag_fgs.$(OBJ_EXT) \
     gas_drag.$(OBJ_EXT) \
+    generate_particle_config.$(OBJ_EXT) \
+    grid_based_neighbor_search.$(OBJ_EXT) \
     make_arrays_des.$(OBJ_EXT) \
     neighbour.$(OBJ_EXT) \
     nsquare.$(OBJ_EXT) \
@@ -783,6 +786,8 @@ mfix.exe : \
     discretelement_mod.$(OBJ_EXT) \
     drag_fgs.$(OBJ_EXT) \
     gas_drag.$(OBJ_EXT) \
+    generate_particle_config.$(OBJ_EXT) \
+    grid_based_neighbor_search.$(OBJ_EXT) \
     interpolation_mod.$(OBJ_EXT) \
     make_arrays_des.$(OBJ_EXT) \
     neighbour.$(OBJ_EXT) \
@@ -791,6 +796,7 @@ mfix.exe : \
     particles_in_cell.$(OBJ_EXT) \
     periodic_wall_calc_force_des.$(OBJ_EXT) \
     quadtree.$(OBJ_EXT) \
+    randomno_mod.$(OBJ_EXT) \
     read_des_restart.$(OBJ_EXT) \
     walledgecontact.$(OBJ_EXT) \
     wallfacecontact.$(OBJ_EXT) \
@@ -1060,6 +1066,9 @@ INTERPOLATION.mod : ./des/interpolation_mod.f \
             DISCRETELEMENT.mod \
             GEOMETRY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/interpolation_mod.f 
+RANDOMNO.mod : ./des/randomno_mod.f \
+            CONSTANT.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/randomno_mod.f 
 COMPAR.mod : ./dmp_modules/compar_mod.f \
             MPI.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/compar_mod.f 
@@ -1290,8 +1299,7 @@ allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             MFLUX.mod \
             MCHEM.mod \
             KINTHEORY.mod \
-            KINTHEORY2.mod \
-            CDIST.mod 
+            KINTHEORY2.mod 
 bc_phi.$(OBJ_EXT) : bc_phi.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1586,6 +1594,7 @@ calc_mu_s.$(OBJ_EXT) : calc_mu_s.f \
             KINTHEORY.mod \
             PARALLEL.mod \
             VISC_G.mod \
+            IS.mod \
             SENDRECV.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
@@ -2587,6 +2596,7 @@ init_namelist.$(OBJ_EXT) : init_namelist.f \
             SCALARS.mod \
             COMPAR.mod \
             PARALLEL.mod \
+            CDIST.mod \
             namelist.inc                                                
 init_resid.$(OBJ_EXT) : init_resid.f \
             PARAM.mod \
@@ -3024,6 +3034,7 @@ read_namelist.$(OBJ_EXT) : read_namelist.f \
             PARALLEL.mod \
             DISCRETELEMENT.mod \
             USR.mod \
+            CDIST.mod \
             usrnlst.inc                                                  \
             namelist.inc                                                 \
             des/desnamelist.inc                                         
@@ -3151,6 +3162,7 @@ set_bc0.$(OBJ_EXT) : set_bc0.f \
             SCALARS.mod \
             BOUNDFUNIJK.mod \
             TOLERANC.mod \
+            SENDRECV.mod \
             sc_p_g1.inc                                                  \
             function.inc                                                 \
             sc_p_g2.inc                                                 
@@ -3479,6 +3491,7 @@ solve_k_epsilon_eq.$(OBJ_EXT) : solve_k_epsilon_eq.f \
             PHYSPROP.mod \
             GEOMETRY.mod \
             FLDVAR.mod \
+            CONSTANT.mod \
             OUTPUT.mod \
             INDICES.mod \
             DRAG.mod \
@@ -4044,7 +4057,8 @@ time_march.$(OBJ_EXT) : time_march.f \
             DISCRETELEMENT.mod \
             MCHEM.mod \
             LEQSOL.mod \
-            KINTHEORY2.mod 
+            KINTHEORY2.mod \
+            MPI_UTILITY.mod 
 transfer.$(OBJ_EXT) : transfer.f \
             PARAM.mod \
             PARAM1.mod \
@@ -4390,7 +4404,6 @@ zero_norm_vel.$(OBJ_EXT) : zero_norm_vel.f \
             function.inc                                                
 calc_jacobian.$(OBJ_EXT) : ./chem/calc_jacobian.f \
             PARAM1.mod \
-            USR.mod \
             MCHEM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/calc_jacobian.f 
 check_data_chem.$(OBJ_EXT) : ./chem/check_data_chem.f \
@@ -4510,7 +4523,8 @@ calc_force_des.$(OBJ_EXT) : ./des/calc_force_des.f \
             PARAM1.mod \
             DISCRETELEMENT.mod \
             GEOMETRY.mod \
-            COMPAR.mod 
+            COMPAR.mod \
+            CONSTANT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_force_des.f 
 cell_near_wall.$(OBJ_EXT) : ./des/cell_near_wall.f \
             DISCRETELEMENT.mod \
@@ -4598,7 +4612,8 @@ cfnocontact.$(OBJ_EXT) : ./des/cfnocontact.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnocontact.f 
 cfnormal.$(OBJ_EXT) : ./des/cfnormal.f \
             PARAM1.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            GEOMETRY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnormal.f 
 cfnormalwall.$(OBJ_EXT) : ./des/cfnormalwall.f \
             PARAM1.mod \
@@ -4654,7 +4669,8 @@ cftotaloverlapswall.$(OBJ_EXT) : ./des/cftotaloverlapswall.f \
             DISCRETELEMENT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cftotaloverlapswall.f 
 cfupdateold.$(OBJ_EXT) : ./des/cfupdateold.f \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            RUN.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfupdateold.f 
 cfvrn.$(OBJ_EXT) : ./des/cfvrn.f \
             PARAM1.mod \
@@ -4697,6 +4713,7 @@ cfwallposvel.$(OBJ_EXT) : ./des/cfwallposvel.f \
 des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             PARAM.mod \
             PARAM1.mod \
+            CONSTANT.mod \
             DISCRETELEMENT.mod \
             INDICES.mod \
             GEOMETRY.mod \
@@ -4750,7 +4767,10 @@ des_granular_temperature.$(OBJ_EXT) : ./des/des_granular_temperature.f \
             DRAG.mod \
             CONSTANT.mod \
             COMPAR.mod \
-            function.inc                                                
+            SENDRECV.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_granular_temperature.f 
 des_init_arrays.$(OBJ_EXT) : ./des/des_init_arrays.f \
             PARAM.mod \
@@ -4795,7 +4815,12 @@ des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
             RXNS.mod \
             COMPAR.mod \
             TIME_CPU.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            CONSTANT.mod \
+            SENDRECV.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_time_march.f 
 drag_fgs.$(OBJ_EXT) : ./des/drag_fgs.f \
             PARAM.mod \
@@ -4853,18 +4878,55 @@ gas_drag.$(OBJ_EXT) : ./des/gas_drag.f \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/gas_drag.f 
+generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
+            PARAM1.mod \
+            GEOMETRY.mod \
+            FUNITS.mod \
+            COMPAR.mod \
+            DISCRETELEMENT.mod \
+            RUN.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            PARAM.mod \
+            PARALLEL.mod \
+            MATRIX.mod \
+            SCALES.mod \
+            FLDVAR.mod \
+            VISC_G.mod \
+            RXNS.mod \
+            TOLERANC.mod \
+            INDICES.mod \
+            IS.mod \
+            TAU_G.mod \
+            BC.mod \
+            SENDRECV.mod \
+            DRAG.mod \
+            INTERPOLATION.mod \
+            RANDOMNO.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/generate_particle_config.f 
+grid_based_neighbor_search.$(OBJ_EXT) : ./des/grid_based_neighbor_search.f \
+            PARAM1.mod \
+            DISCRETELEMENT.mod \
+            GEOMETRY.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/grid_based_neighbor_search.f 
 make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             PARAM1.mod \
             GEOMETRY.mod \
             FUNITS.mod \
             COMPAR.mod \
             DISCRETELEMENT.mod \
-            RUN.mod 
+            RUN.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/make_arrays_des.f 
 neighbour.$(OBJ_EXT) : ./des/neighbour.f \
             PARAM1.mod \
-            DISCRETELEMENT.mod \
-            GEOMETRY.mod 
+            DISCRETELEMENT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/neighbour.f 
 nsquare.$(OBJ_EXT) : ./des/nsquare.f \
             PARAM1.mod \
@@ -4976,9 +5038,18 @@ wallnodecontact.$(OBJ_EXT) : ./des/wallnodecontact.f \
             COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/wallnodecontact.f 
 write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
+            PARAM.mod \
             PARAM1.mod \
+            PARALLEL.mod \
+            FLDVAR.mod \
             DISCRETELEMENT.mod \
-            RUN.mod 
+            RUN.mod \
+            GEOMETRY.mod \
+            PHYSPROP.mod \
+            SENDRECV.mod \
+            function.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/write_des_data.f 
 write_des_restart.$(OBJ_EXT) : ./des/write_des_restart.f \
             PARAM1.mod \

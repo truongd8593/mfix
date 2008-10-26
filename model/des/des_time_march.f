@@ -38,18 +38,31 @@
       USE compar     
       USE time_cpu  
       USE discretelement   
-      
+      USE constant
+      USE sendrecv
+
       IMPLICIT NONE
 !-----------------------------------------------
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !     
-      INTEGER NN, LN, I, J, K, FACTOR, NSN
+      INTEGER NN, LN, I, J, K, FACTOR, NSN, NP, L, IJK, GTC_COUNT, GTC_FACTOR
       DOUBLE PRECISION TEMP_DTS, DTSOLIDTEMP 
       CHARACTER*5 FILENAME
 !     Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
-
+      LOGICAL DES_CONTINUUM_COUPLED_FT
+      DOUBLE PRECISION  pgrad_tmp(1:DIMN), GRAV_TMP(1:DIMN)
+      DOUBLE PRECISION:: xmintmp, xmax, ymin, ymax, Ax, bx, ay, by, az, bz , mean_free_path, t_mfp
+                                !     
+      INCLUDE 'function.inc'
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'fun_avg2.inc'
+      
+      
+      !write(*,*) ' dt, dtsolid = ', dt, dtsolid
+      !read(*,*)
+      
       IF(FIRST_PASS) THEN 
          
          FIRST_PASS = .FALSE.
@@ -59,13 +72,13 @@
          TEMP_DTS = ZERO
          PTC = ZERO
          INQC = INIT_QUAD_COUNT
-!        IF(RUN_TYPE == 'NEW') THEN
-!           DES_SPX_TIME =  TIME
-!           DES_RES_TIME =  TIME
-! ELSE
-!           DES_SPX_TIME = (INT((TIME+DT+0.1d0*DT)/SPX_DT(1))+1)*SPX_DT(1)
-!           DES_RES_TIME = (INT((TIME+DT+0.1d0*DT)/RES_DT)   +1)*RES_DT
-!        ENDIF
+         IF(RUN_TYPE == 'NEW') THEN
+            DES_SPX_TIME =  TIME
+            DES_RES_TIME =  TIME
+         ELSE
+            DES_SPX_TIME = (INT((TIME+DT+0.1d0*DT)/SPX_DT(1))+1)*SPX_DT(1)
+            DES_RES_TIME = (INT((TIME+DT+0.1d0*DT)/RES_DT)   +1)*RES_DT
+         ENDIF
 
 !        PRINT *,'SPX TIME', SPX_DT(1), DES_SPX_TIME
          
@@ -87,39 +100,46 @@
                DO FACTOR = 1, NFACTOR
                   PRINT *,'DES FIRST PASS IN TIME MARCH', FACTOR, DTSOLID, INIT_QUAD_COUNT
 !     New values
+                                       
+                  !     Force calculation         
+                  IF(DES_PERIODIC_WALLS) THEN
+                     CALL CALC_FORCE_DES
+                  ELSE IF(INLET_OUTLET) THEN
+                     CALL DES_INLET_OUTLET
+                  ELSE
+                     CALL CALC_FORCE_DES
+                  END IF
+                  
                   DO LN = 1, PARTICLES
                      CALL CFNEWVALUES(LN)
                   END DO
-!     Neighbor search     
+                  !     Neighbor search     
+                  CALL PARTICLES_IN_CELL
+                  
                   NSN = NSN + 1    
-
+                  
                   IF(MOD(FACTOR,INT(NEIGHBOR_SEARCH_N)).EQ.0) THEN 
                      CALL NEIGHBOUR
                      
                   ELSE IF(DO_NSEARCH) THEN 
                      CALL NEIGHBOUR
                      DO_NSEARCH = .FALSE.
-                        NSN = 0
-                     END IF
-                     
-!     Force calculation         
-                  IF(DES_PERIODIC_WALLS) THEN
-                     CALL PERIODIC_WALL_CALC_FORCE_DES
-                  ELSE IF(INLET_OUTLET) THEN
-                     CALL DES_INLET_OUTLET
-                  ELSE
-                     CALL CALC_FORCE_DES
-                  END IF 
+                     NSN = 0
+                  END IF
                END DO
                DES_CONTINUUM_COUPLED = .TRUE.
-               CALL PARTICLES_IN_CELL
             END IF
+            IF(DES_INTERP_ON) THEN 
+               CALC_FC = .FALSE.
+               CALLFROMDES = .FALSE.
+            end IF
+            CALL PARTICLES_IN_CELL
+            
             CALL WRITE_DES_DATA
          END IF ! end if on new run type
 
       END IF
-      !write(*,*) ' dt, dtsolid = ', dt, dtsolid
-      !read(*,*)
+      
       IF(DES_CONTINUUM_COUPLED) THEN
          S_TIME = TIME
          IF(DT.GE.DTSOLID) THEN
@@ -148,46 +168,69 @@
 
          IF(DES_CONTINUUM_COUPLED) THEN
 !           PRINT *,"DES-MFIX COUPLED, ITER, TIMESTEP, TIME", NN, DTSOLID, S_TIME
-            PRINT *,"DES-MFIX Co , ITER, TIME, DES_INTERP_ON ?", NN, S_TIME, DES_INTERP_ON
-         ELSE
-            CALL PARTICLES_IN_CELL
-            PRINT *,"DES UNCOUPLED", NN, S_TIME
-         END IF 
+            !PRINT *,"DES-MFIX Co , ITER, TIME, DES_INTERP_ON ?", NN, S_TIME, DES_INTERP_ON
+            IF(DES_INTERP_ON) THEN 
+               CALC_FC = .TRUE.
+               IF(NN.EQ.FACTOR) THEN
+                  !calculate the mean fields only at the last DEM time step
+                  CALLFROMDES = .FALSE.
+               ELSE 
+                  CALLFROMDES = .TRUE.
+               ENDIF
+            ELSE
+               CALC_FC = .TRUE.
+               CALLFROMDES = .TRUE.
+            ENDIF
 
-!     New values
-         DO LN = 1, PARTICLES
-            CALL CFNEWVALUES(LN)
-         END DO
-         NSN = NSN + 1    
+         ELSE
+            PRINT *,"DES UNCOUPLED", NN, S_TIME
+
+         END IF 
          
-         IF(NN.EQ.1.OR.MOD(NN,INT(NEIGHBOR_SEARCH_N)).EQ.0) THEN 
-            CALL NEIGHBOUR
-         ELSE IF(DO_NSEARCH) THEN 
-            CALL NEIGHBOUR
-            
-            PRINT*, 'CALLING NEIGHBOR BECASUE DO_NSEARCH = ', DO_NSEARCH
-            DO_NSEARCH = .FALSE.
-            NSN = 0
-         END IF
 
 !     Force calculation         
          IF(DES_PERIODIC_WALLS) THEN
-            CALL PERIODIC_WALL_CALC_FORCE_DES
+            CALL CALC_FORCE_DES
+
          ELSE IF(INLET_OUTLET) THEN
             CALL DES_INLET_OUTLET
          ELSE
             CALL CALC_FORCE_DES
          END IF
          
-!     CALL DES_GRANULAR_TEMPERATURE(NN, FACTOR)
+         DO LN = 1, PARTICLES
+            CALL CFNEWVALUES(LN)
+         END DO
+
+         CALL PARTICLES_IN_CELL
+
+         NSN = NSN + 1    
+         
+                                !     New values
+         IF(NN.EQ.1.OR.MOD(NN,INT(NEIGHBOR_SEARCH_N)).EQ.0) THEN 
+            
+            !PRINT*, 'CALLING NEIGHBOR BECASUE NN = ', NN
+            CALL NEIGHBOUR
+         ELSE IF(DO_NSEARCH) THEN 
+            CALL NEIGHBOUR
+            
+            !PRINT*, 'CALLING NEIGHBOR BECASUE DO_NSEARCH = ', DO_NSEARCH
+            DO_NSEARCH = .FALSE.
+            NSN = 0
+         END IF
+
+
          
          IF(PRINT_DES_DATA) THEN    
             IF(.NOT.DES_CONTINUUM_COUPLED) THEN
                PTC = PTC + DTSOLID
-               IF(PTC.GE.P_TIME) THEN 
+               IF(PTC.GE.P_TIME) THEN
+                  
+                  CALL DES_GRANULAR_TEMPERATURE
                   CALL WRITE_DES_DATA
+         
                   WRITE(*,*) 'DES_SPX file written at Time= ', S_TIME
-                  WRITE(UNIT_LOG,*) 'DES_SPX file written at Time= ', S_TIME
+                   WRITE(UNIT_LOG,*) 'DES_SPX file written at Time= ', S_TIME
                   PTC = ZERO
                END IF
             END IF
@@ -199,6 +242,7 @@
             IF(DESRESDT.GE.RES_DT) THEN
                CALL WRITE_DES_RESTART
                WRITE(*,*) 'DES_RES file written at Time= ', S_TIME
+
                WRITE(UNIT_LOG,*) 'DES_RES file written at Time= ', S_TIME
                DESRESDT = 0.0d0
             END IF
@@ -215,34 +259,21 @@
          ELSE
             S_TIME = S_TIME + DTSOLID
          END IF 
-                  
+         IF(DES_CONTINUUM_COUPLED.AND.NN.eq.factor) CALL DES_GRANULAR_TEMPERATURE
       END DO                    ! end do NN = 1, FACTOR
-      
-      !CALL WRITE_DES_DATA
-                                !read(*,*)
-      
-!     IF(PRINT_DES_DATA) THEN
-!        IF(((TIME+DT+0.1*DT).GE.DES_SPX_TIME) .OR. ((TIME+DT+0.1*DT).GE.TSTOP)) THEN
-!           WRITE (FILENAME, 3020) IFI
-!           OPEN(UNIT=99, FILE=TRIM(RUN_NAME)//'_DES_'//FILENAME//'.vtp', STATUS='NEW')
-!           CALL WRITE_DES_DATA(99)
-!           CLOSE(99)
-!           DES_SPX_TIME =  (INT((TIME+DT+0.1*DT)/SPX_DT(1))+1)*SPX_DT(1)
-!           IFI = IFI + 1
-!           WRITE(*,*) 'DES_SPX file written at Time= ', TIME+DT
-!           WRITE(UNIT_LOG,*) 'DES_SPX file written at Time= ', TIME+DT
-!        END IF
-!     END IF
+
+      WRITE(*,*) 'max neigh = ',NEIGH_MAX, OVERLAP_MAX
       
 !     Write Restart
-!     IF(((TIME+DT+0.1d0*DT)>=DES_RES_TIME).OR.((TIME+DT+0.1d0*DT)>=TSTOP)) THEN
-!        CALL WRITE_DES_RESTART
-!        WRITE(*,*) 'DES_RES file written at Time= ', TIME+DT
-!        WRITE(*,*) 'DES_RES Debug', TIME+1.1*DT, DES_RES_TIME, RES_DT
-!        WRITE(UNIT_LOG,*) 'DES_RES file written at Time= ', TIME+DT
-!        DES_RES_TIME = (INT((TIME+DT+0.1d0*DT)/RES_DT) + 1)*RES_DT
-!     END IF
+      IF(((TIME+DT+0.1d0*DT)>=DES_RES_TIME).OR.((TIME+DT+0.1d0*DT)>=TSTOP)) THEN
+         CALL WRITE_DES_RESTART
+         WRITE(*,*) 'DES_RES file written at Time= ', TIME+DT
+         WRITE(*,*) 'DES_RES Debug', TIME+1.1*DT, DES_RES_TIME, RES_DT
+         WRITE(UNIT_LOG,*) 'DES_RES file written at Time= ', TIME+DT
+         DES_RES_TIME = (INT((TIME+DT+0.1d0*DT)/RES_DT) + 1)*RES_DT
+      END IF
 
+100   continue
       IF(.NOT.DES_CONTINUUM_COUPLED) TSTOP = DT
 
       IF(DT.LT.DTSOLIDTEMP) THEN

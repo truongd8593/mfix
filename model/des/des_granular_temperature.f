@@ -9,7 +9,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE DES_GRANULAR_TEMPERATURE(GTC, FAC)
+      SUBROUTINE DES_GRANULAR_TEMPERATURE
 
       USE discretelement
       USE param
@@ -24,58 +24,68 @@
       USE drag
       USE constant
       USE compar
+      USE sendrecv
+
       IMPLICIT NONE
       
       INTEGER I, J, K, IJK
-      INTEGER NT, M
+      INTEGER NT, M, NP, IPART, NPG
       INTEGER GTC, FAC
-      DOUBLE PRECISION AVE_VEL_X(DIMENSION_3,MMAX)
-      DOUBLE PRECISION AVE_VEL_Y(DIMENSION_3,MMAX)
-      DOUBLE PRECISION AVE_VEL_Z(DIMENSION_3,MMAX), TEMP
-
-        INCLUDE 'function.inc'
-
-      IF(GTC.EQ.1) THEN
-         AVE_VEL_X(:,:) = ZERO
-         AVE_VEL_Y(:,:) = ZERO
-         IF(DIMN.EQ.3) THEN
-            AVE_VEL_Z(:,:) = ZERO
-         END IF
-      END IF   
-  
+      DOUBLE PRECISION  TEMP
+      
+      INCLUDE 'function.inc'
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'fun_avg2.inc'
+      
       DO IJK = 1, DIMENSION_3
          DO M = 1, MMAX
-            AVE_VEL_X(IJK,M) = AVE_VEL_X(IJK,M) + DES_U_s(IJK,M)/FAC
-            AVE_VEL_Y(IJK,M) = AVE_VEL_Y(IJK,M) + DES_V_s(IJK,M)/FAC
+            AVE_VEL_X(IJK,M) = DES_U_s(IJK,M)
+            AVE_VEL_Y(IJK,M) = DES_V_s(IJK,M)
             IF(DIMN.EQ.3) THEN  
-               AVE_VEL_Z(IJK,M) = AVE_VEL_Z(IJK,M) + DES_W_s(IJK,M)/FAC  
+               AVE_VEL_Z(IJK,M) = DES_W_s(IJK,M)
             END IF
          END DO
       END DO
-
-      IF(GTC.EQ.FAC) THEN
-        DO IJK = 1, DIMENSION_3
-            DO M = 1, MMAX
-               TEMP = 0.0
-               TEMP = (AVE_VEL_X(IJK,M)-DES_U_s(IJK,M))**2 
-               TEMP = TEMP + (AVE_VEL_Y(IJK,M)-DES_V_s(IJK,M))**2
+      
+      DO IJK = 1, DIMENSION_3
+         
+         IF(FLUID_AT(IJK)) THEN
+            i = i_of(ijk)
+            j = j_of(ijk)
+            k = k_of(ijk)
+            
+            If (ASSOCIATED(PIC(I,J,K)%p)) then
+               NPG = SIZE(PIC(I,J,K)%p)
+            Else
+               NPG = 0
+            Endif
+            
+            DO IPART = 1, NPG 
+               NP = PIC(I,J,K)%p(IPART)
+               M = PIJK(NP,5)
+               
+               TEMP = ZERO
+               TEMP = (DES_VEL_NEW(NP,1)-DES_U_s(IJK,M))**2 
+               TEMP = TEMP + (DES_VEL_NEW(NP,2)-DES_V_s(IJK,M))**2
                IF(DIMN.EQ.3) THEN 
-                  TEMP = TEMP + (AVE_VEL_Z(IJK,M)-DES_W_s(IJK,M))**2     
-               END IF 
-               DES_THETA(IJK,M) = TEMP/3
-            END DO
-         END DO
+                  TEMP = TEMP + (DES_VEL_NEW(NP,3)-DES_W_s(IJK,M))**2     
+               END IF
+               DES_THETA(IJK,M) = TEMP/3.0d0
+            end DO
+         end IF
+         
+      end DO
 
-         OPEN (UNIT=17,FILE='des_granular_temp.out',STATUS='REPLACE')
-         WRITE(17,*)' '
-         WRITE(17,*)'T="',S_TIME,'"'
-         DO IJK = IJKSTART3, IJKEND3
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = k_OF(IJK)
-            WRITE(17,*) IJK, I, J, K, DES_THETA(IJK,1)
-         END DO
-      END IF
+
+!         OPEN (UNIT=17,FILE='des_granular_temp.out',STATUS='REPLACE')
+!         WRITE(17,*)' '
+!         WRITE(17,*)'T="',S_TIME,'"'
+!         DO IJK = IJKSTART3, IJKEND3
+!            I = I_OF(IJK)
+!            J = J_OF(IJK)
+!            K = k_OF(IJK)
+!            WRITE(17,*) IJK, I, J, K, DES_THETA(IJK,1)
+!         END DO
 
       RETURN
       END SUBROUTINE DES_GRANULAR_TEMPERATURE

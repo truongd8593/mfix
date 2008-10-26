@@ -70,7 +70,7 @@
       INTEGER          M
 !     
 !     Flag for exchange functions
-      LOGICAL          DRAGD(0:DIMENSION_M, 0:DIMENSION_M), CALC_FC, CALLFROMDES
+      LOGICAL          DRAGD(0:DIMENSION_M, 0:DIMENSION_M)
 !     
 !     Local index for solids phase l
       INTEGER          L
@@ -87,7 +87,15 @@
 !     
 !     
       DO M = 1, MMAX 
-         IF (DRAGD(0,M) .AND. RO_G0/=ZERO) CALL DRAG_GS (M, IER)
+         IF(DISCRETE_ELEMENT) THEN 
+            IF(.NOT.DES_INTERP_ON) THEN 
+               IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN 
+                  CALL DRAG_GS (M, IER)
+               ENDIF
+            ENDIF
+         ELSE IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN 
+            CALL DRAG_GS (M, IER)
+         ENDIF
          IF(.NOT.DISCRETE_ELEMENT) THEN 
 !
 !              JEG Added 
@@ -103,11 +111,11 @@
                ENDIF
          END IF
       END DO 
-   
-      IF(DISCRETE_ELEMENT.AND.DES_INTERP_ON) THEN
+      
+      IF(DISCRETE_ELEMENT.AND.DES_INTERP_ON) THEN 
          CALC_FC = .FALSE. 
          CALLFROMDES = .FALSE.
-         CALL DRAG_FGS (CALC_FC, CALLFROMDES)
+         CALL DRAG_FGS
       ENDIF
       RETURN  
       END SUBROUTINE CALC_DRAG 

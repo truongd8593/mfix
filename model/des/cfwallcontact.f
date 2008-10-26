@@ -35,7 +35,6 @@
 !---------------------------------------------------------------------
 !     
 
-
       A = ZERO
       OMEGA = ZERO
       ASINOMEGAT = ZERO
@@ -48,32 +47,38 @@
 
       WALLCONTACTI = 0
 
-      IF(WALL.EQ.1) THEN
+! west wall (X)
+      IF(WALL.EQ.1.AND.(.NOT.DES_PERIODIC_WALLS_X)) THEN
          IF((DES_POS_NEW(L,1)-WX1).LE.DES_RADIUS(L)) THEN
             WALLCONTACTI = 1
          END IF
 
-      ELSE IF(WALL.EQ.2) THEN
+! east wall (X)
+      ELSE IF(WALL.EQ.2.AND.(.NOT.DES_PERIODIC_WALLS_X)) THEN
          IF((EX2-DES_POS_NEW(L,1)).LE.DES_RADIUS(L)) THEN
             WALLCONTACTI = 1
          END IF
 
-      ELSE IF(WALL.EQ.3) THEN
+! bottom wall (Y)
+      ELSE IF(WALL.EQ.3.AND.(.NOT.DES_PERIODIC_WALLS_Y)) THEN
          IF((DES_POS_NEW(L,2)-(BY1+ASINOMEGAT)).LE.DES_RADIUS(L)) THEN
             WALLCONTACTI = 1
          END IF
 
-      ELSE IF(WALL.EQ.4) THEN
+! top wall (Y)
+      ELSE IF(WALL.EQ.4.AND.(.NOT.DES_PERIODIC_WALLS_Y)) THEN
          IF((TY2-DES_POS_NEW(L,2)).LE.DES_RADIUS(L)) THEN
             WALLCONTACTI = 1
          END IF
 
-      ELSE IF(WALL.EQ.5) THEN
+! south wall (Z)
+      ELSE IF(WALL.EQ.5.AND.(.NOT.DES_PERIODIC_WALLS_Z)) THEN
          IF((DES_POS_NEW(L,3)-SZ1).LE.DES_RADIUS(L)) THEN
             WALLCONTACTI = 1
          END IF
 
-      ELSE IF(WALL.EQ.6) THEN
+! north wall (Z)
+      ELSE IF(WALL.EQ.6.AND.(.NOT.DES_PERIODIC_WALLS_Z)) THEN
          IF((NZ2-DES_POS_NEW(L,3)).LE.DES_RADIUS(L)) THEN
             WALLCONTACTI = 1
          END IF

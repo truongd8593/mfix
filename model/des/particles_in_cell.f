@@ -80,8 +80,8 @@
       
       DO L = 1, PARTICLES
 
-	 IF(FIRST_PASS1) THEN ! Brute force technique to determine the particle locations in the Eulerian grid
-
+ 	 IF(FIRST_PASS1) THEN ! Brute force technique to determine the particle locations in the Eulerian grid
+            
 	 !IF(S_TIME.LE.DTSOLID.OR.FIRST_PASS1) THEN ! Brute force technique to determine the particle locations in the Eulerian grid
             
             DO M = 1, MMAX
@@ -90,7 +90,8 @@
                PIJK(L,5) = M 
                END IF
             END DO
- 
+            
+            !PRINT*,'M = ', PIJK(L,5)
             IF(PIJK(L,5).EQ.0) THEN
               WRITE(*,*) 'Problem determining the solids association in PIC for particle no: ', L
 	      write(*,*) 'Particle diameter = ', 2.d0*DES_RADIUS(L),' and dp =', D_P0(1:MMAX)
@@ -130,7 +131,8 @@
            
 
          ELSE                   ! Incremental approach to determine the new location of the particles
-
+            
+            
             I = PIJK(L,1)
             J = PIJK(L,2)
             K = PIJK(L,3)
@@ -138,14 +140,10 @@
             !    & XE(I), des_pos_new(L,1)
             IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I)).OR.I.EQ.1) THEN
                GO TO 40 
-            ELSE IF(DES_VEL_NEW(L,1).GT.ZERO) THEN
-               IF((DES_POS_NEW(L,1).GE.XE(I)).AND.(DES_POS_NEW(L,1).LT.XE(I+1))) PIJK(L,1) = I+1
-            ELSE IF(DES_VEL_NEW(L,1).LT.ZERO) THEN
-               IF(I.EQ.2) THEN
-                 ! PRINT *,'des/particles_in_cell.f : CHECK CELL I, Problem with I.EQ.2'
-                  !STOP
-               END IF
-               IF((DES_POS_NEW(L,1).GE.XE(I-2)).AND.(DES_POS_NEW(L,1).LT.XE(I-1))) PIJK(L,1) = I-1
+            ELSEIF((DES_POS_NEW(L,1).GE.XE(I)).AND.(DES_POS_NEW(L,1).LT.XE(I+1))) THEN 
+               PIJK(L,1) = I+1
+            ELSEIF((DES_POS_NEW(L,1).GE.XE(I-2)).AND.(DES_POS_NEW(L,1).LT.XE(I-1))) THEN 
+               PIJK(L,1) = I-1
             ELSE 
                PRINT *,'des/particles_in_cell.f : CHECK CELL I' , PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,1), DES_VEL_NEW(L,1)
                STOP
@@ -154,32 +152,25 @@
 !           write(*,*) 'pijk2', L, PIJK(L,1),  PIJK(L,2) 
             IF((DES_POS_NEW(L,2).GE.YN(J-1)).AND.(DES_POS_NEW(L,2).LT.YN(J)).OR.J.EQ.1) THEN
                GO TO 50 
-            ELSE IF(DES_VEL_NEW(L,2).GT.ZERO) THEN
-               IF((DES_POS_NEW(L,2).GE.YN(J)).AND.(DES_POS_NEW(L,2).LT.YN(J+1))) PIJK(L,2) = J+1
-            ELSE IF(DES_VEL_NEW(L,2).LT.ZERO) THEN
-               IF(J.EQ.2) THEN
-                !  PRINT *,'des/particles_in_cell.f : CHECK CELL J, Problem with J.EQ.2'
-                  !STOP
-               END IF
-               IF((DES_POS_NEW(L,2).GE.YN(J-2)).AND.(DES_POS_NEW(L,2).LT.YN(J-1))) PIJK(L,2) = J-1
+            ELSEIF((DES_POS_NEW(L,2).GE.YN(J)).AND.(DES_POS_NEW(L,2).LT.YN(J+1))) THEN 
+               PIJK(L,2) = J+1
+            ELSEIF((DES_POS_NEW(L,2).GE.YN(J-2)).AND.(DES_POS_NEW(L,2).LT.YN(J-1))) THEN 
+               PIJK(L,2) = J-1
             ELSE
                PRINT *,'des/particles_in_cell.f : CHECK CELL J' 
+               PRINT*, 'Y POSITION = ', DES_POS_NEW(L,2), DES_RADIUS(L)
                STOP
             END IF
- 50         CONTINUE
+50          CONTINUE
             IF(DIMN.EQ.2) THEN
                PIJK(L,3) = 1
             ELSE
                IF((DES_POS_NEW(L,3).GE.ZT(K-1)).AND.(DES_POS_NEW(L,3).LT.ZT(K)).OR.K.EQ.1) THEN
                   GO TO 30 
-               ELSE IF(DES_VEL_NEW(L,3).GT.ZERO) THEN
-                  IF((DES_POS_NEW(L,3).GE.ZT(K)).AND.(DES_POS_NEW(L,3).LT.ZT(K+1))) PIJK(L,3) = K+1
-               ELSE IF(DES_VEL_NEW(L,3).LT.ZERO) THEN
-               IF(K.EQ.2) THEN
-                !  PRINT *,'des/particles_in_cell.f : CHECK CELL K, Problem with K.EQ.2'
-                  !STOP
-               END IF
-                  IF((DES_POS_NEW(L,3).GE.ZT(K-2)).AND.(DES_POS_NEW(L,3).LT.ZT(K-1))) PIJK(L,3) = K-1
+               ELSEIF((DES_POS_NEW(L,3).GE.ZT(K)).AND.(DES_POS_NEW(L,3).LT.ZT(K+1))) THEN
+                  PIJK(L,3) = K+1
+               ELSEIF((DES_POS_NEW(L,3).GE.ZT(K-2)).AND.(DES_POS_NEW(L,3).LT.ZT(K-1))) THEN
+                  PIJK(L,3) = K-1
                ELSE 
                   PRINT *,'des/particles_in_cell.f : CHECK CELL K'
                   STOP
@@ -187,7 +178,7 @@
             END IF
 
          END IF
-
+         
  30      CONTINUE
          I = PIJK(L,1)
          J = PIJK(L,2)
@@ -219,18 +210,32 @@
                   DES_W_s(IJK,M) = DES_W_s(IJK,M)*OSOLVOL
                END IF
             END IF
-            IF(VOL(IJK).GT.0) THEN
+            IF(VOL(IJK).GT.0) THEN 
+               
                OVOL = ONE/(VOL(IJK))
-               ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)*OVOL
+               !ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)*OVOL
+               IF(FIRST_PASS1) THEN
+                  OVOL = ONE/(VOL(IJK))
+                  ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)*OVOL
+               ELSE 
+                  IF(.NOT.(FIRST_PASS1).AND.(.NOT.DES_INTERP_ON)) THEN 
+                  !IF(M.EQ.1) WRITE(*,*) 'SOLVO = ;', SOLVOLINC(IJK,M)
+                     
+                  OVOL = ONE/(VOL(IJK))
+                     ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)*OVOL
+                  ENDIF
+               end IF
             END IF
             IF(PINC(IJK).GT.0) THEN
                EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
+               !EP_G(IJK) = ONE
                IF(EP_G(IJK).LT.ZERO) then 
                   WRITE(*,*) 'IN DES/PARTICLES_IN_CELL'
-                  write(*,*) 'vol(Ij,K) =  ', vol(IJK), DZ(K)
-                  Write(*,*)'warning EP_G becoming LT zero at ',I_OF(IJK),J_OF(IJK),PINC(IJK), EP_S(IJK,1)
-                  
-                  stop
+                                !write(*,*) 'vol(Ij,K) =  ', vol(IJK)
+                  Write(*,*)'warning EP_G becoming LT zero at ',I_OF(IJK),J_OF(IJK), EP_S(IJK,M)
+                  !PRINT*,'Number of particles in cell = ', PINC(IJK)
+                  !PRINT*,'Eps calculated here = ', PINC(IJK)*PVOL(1)/VOL(IJK)
+                  !stop
                endif 
                ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
                hcell = 0.5d0*(YN(J)+YN(J-1))
@@ -240,7 +245,7 @@
          END DO
       END DO
 
-      bed_height(:) = tmp_num(:)/tmp_den(:)
+      !bed_height(:) = tmp_num(:)/tmp_den(:)
 
 
       IF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
@@ -270,8 +275,7 @@
             PC(:) =  PIJK(IP,1:3)
             pos = icount(pc(1),pc(2),pc(3))
             pic(pc(1),pc(2),pc(3))%p(pos) = ip
-            icount(pc(1),pc(2),pc(3)) = &
-            & icount(pc(1),pc(2),pc(3)) + 1
+            icount(pc(1),pc(2),pc(3)) = icount(pc(1),pc(2),pc(3)) + 1
          ENDDO
       ENDIF
      FIRST_PASS1 = .False.

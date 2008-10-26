@@ -24,13 +24,14 @@
 !---------------------------------------------------------------------
 
 
-      !TEMP_FT(:) = FTS1(:)
       TEMP_FN(:) = FN(L, :)
 
       FTMD = SQRT(DES_DOTPRDCT(TEMP_FT,TEMP_FT))
       FNMD = SQRT(DES_DOTPRDCT(TEMP_FN,TEMP_FN))
 
-      IF (FTMD.GT.(MEW*FNMD)) THEN
+      IF (FTMD.GT.(MEW_W*FNMD)) THEN
+         IF(DEBUG_DES) PRINT*,'From cfslidewall.f'
+         IF(DEBUG_DES) PRINT*,'SLIDE, FTMD, mu*FNMD = ', FTMD, MEW*FNMD
          PARTICLE_SLIDE = .TRUE.
          FT(L,:) = - MEW_W*FNMD*TANGNT(:)
       ELSE

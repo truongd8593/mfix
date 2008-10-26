@@ -18,7 +18,7 @@
 
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
       LOGICAL CHECK_CON
-            
+      
       INTEGER J, K, L, II
       DOUBLE PRECISION N_OVERLAP, T_OVERLAP
       DOUBLE PRECISION D(DIMN), VRT, R_LM, DIST, VRN
@@ -63,25 +63,25 @@
                END IF
             END IF
          END IF
-         !D(:) = DES_POS_NEW(L,K) - DES_POS_NEW(II,K)
-         !BUG FIXED RAHUL 07/20/07
+!     D(:) = DES_POS_NEW(L,K) - DES_POS_NEW(II,K)
+!     BUG FIXED RAHUL 07/20/07
          D(:) = DES_POS_NEW(L,:) - DES_POS_NEW(II,:)
          DIST = SQRT(DES_DOTPRDCT(D,D))
          DES_POS_NEW(II,1) = TEMPX
          DES_POS_NEW(II,2) = TEMPY
          IF (DIMN.EQ.3) DES_POS_NEW(II,3) = TEMPZ
       END IF
- 
-      !      N_OVERLAP = PN_RLM(L,J) - PN_DIST(L,J)
+      
+!     N_OVERLAP = PN_RLM(L,J) - PN_DIST(L,J)
       IF(R_LM - DIST.gt.SMALL_NUMBER) then 
          
-         N_OVERLAP =  VRN*DTSOLID!R_LM - DIST!
-         T_OVERLAP = ZERO!VRT*DTSOLID
+         N_OVERLAP =  VRN*DTSOLID !R_LM - DIST!
+         T_OVERLAP = ZERO       !VRT*DTSOLID
          CHECk_CON = .TRUE.
-         !IF(L.EQ.29) PRINT*, 'OVELAP T= ',L,II, N_OVERLAP
+!     IF(L.EQ.29) PRINT*, 'OVELAP T= ',L,II, N_OVERLAP
 
       else 
-         !WRITE(*,*) 'CHECK CON FALSE', L, II
+!     WRITE(*,*) 'CHECK CON FALSE', L, II
          N_OVERLAP = zero
          T_OVERLAP = zero
          CHECk_CON = .FALSE.

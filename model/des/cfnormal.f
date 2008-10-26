@@ -17,6 +17,8 @@
 
       USE param1      
       USE discretelement
+      USE geometry
+      
       IMPLICIT NONE
 
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
@@ -26,64 +28,63 @@
       DOUBLE PRECISION TEMPX, TEMPY, TEMPZ, TEMPD
 
 !----------------------------------------------------------------------------
-
       IF(DES_PERIODIC_WALLS) THEN
-      TEMPX = DES_POS_NEW(II,1)
-      TEMPY = DES_POS_NEW(II,2)
-      IF(DIMN.EQ.3) TEMPZ = DES_POS_NEW(II,3)        
-      IF(DES_PERIODIC_WALLS_X) THEN 
-        TEMPD = DES_POS_NEW(L,1) - DES_POS_NEW(II,1)
-        TEMPD = SQRT(TEMPD**2)
-        IF(TEMPD.GT.(DES_RADIUS(L)+DES_RADIUS(II))) THEN
-           IF(DES_POS_NEW(II,1).GE.(EX2 - 2*RADIUS_EQ)) THEN
-              DES_POS_NEW(II,1) = DES_POS_NEW(II,1) - (EX2-WX1)
-           ELSE IF(DES_POS_NEW(II,1).LE.(WX1 + 2*RADIUS_EQ)) THEN
-                   DES_POS_NEW(II,1) = DES_POS_NEW(II,1) + (EX2-WX1)
-           END IF
-        END IF
-      ELSE IF(DES_PERIODIC_WALLS_Y) THEN
-             TEMPD = DES_POS_NEW(L,2) - DES_POS_NEW(II,2)
-             TEMPD = SQRT(TEMPD**2)
-             IF(TEMPD.GT.(DES_RADIUS(L)+DES_RADIUS(II))) THEN
-                IF(DES_POS_NEW(II,2).GE.(TY2 - 2*RADIUS_EQ)) THEN
-                   DES_POS_NEW(II,2) = DES_POS_NEW(II,2) - (TY2-BY1)
-                ELSE IF(DES_POS_NEW(II,2).LE.(BY1 + 2*RADIUS_EQ)) THEN
-                        DES_POS_NEW(II,2) = DES_POS_NEW(II,2) + (TY2-BY1)
-                END IF
-             END IF
-      ELSE IF(DES_PERIODIC_WALLS_Z) THEN
-           IF(DIMN.EQ.3) THEN
-             TEMPD = DES_POS_NEW(L,3) - DES_POS_NEW(II,3)
-             TEMPD = SQRT(TEMPD**2)
-             IF(TEMPD.GT.(DES_RADIUS(L)+DES_RADIUS(II))) THEN
-                IF(DES_POS_NEW(II,3).GE.(NZ2 - 2*RADIUS_EQ)) THEN
-                   DES_POS_NEW(II,3) = DES_POS_NEW(II,3) - (NZ2-SZ1)
-                ELSE IF(DES_POS_NEW(II,3).LE.(SZ1 + 2*RADIUS_EQ)) THEN
-                        DES_POS_NEW(II,3) = DES_POS_NEW(II,3) + (NZ2-SZ1)
-                END IF
-             END IF
-           ELSE
-             PRINT *,'2D PROBLEM: PERIODIC WALLS IN Z'
-             STOP
-           END IF
-      END IF
+         TEMPX = DES_POS_NEW(II,1)
+         TEMPY = DES_POS_NEW(II,2)
+         IF(DIMN.EQ.3) TEMPZ = DES_POS_NEW(II,3)        
+         TEMPD = ABS(DES_POS_NEW(L,1) - DES_POS_NEW(II,1))
+         IF(TEMPD.GT.4.d0*MAX_RADIUS.AND.DES_PERIODIC_WALLS_X) THEN 
+            IF(DEBUG_DES) PRINT*, 'From cfnormal.f'
+            IF(DEBUG_DES) PRINT*,'II, L = ', II,L
+            IF(DEBUG_DES) PRINT*,'OLD POS, II, L = ', DES_POS_NEW(II,1), DES_POS_NEW(L,1)
+            IF(TEMPX.GT.DES_POS_NEW(L,1)) THEN 
+               DES_POS_NEW(II,1) = DES_POS_NEW(II,1) - XE(IMAX1)
+               IF(DEBUG_DES) PRINT*,'NEW POS WEST= ', DES_POS_NEW(II,1)
+            ELSE
+               DES_POS_NEW(II,1) = DES_POS_NEW(II,1) + XE(IMAX1)
+               
+               IF(DEBUG_DES) PRINT*,'NEW POS EAST = ', DES_POS_NEW(II,1)
+            ENDIF
+         ENDIF
+         
+         TEMPD = ABS(DES_POS_NEW(L,2) - DES_POS_NEW(II,2))
+         IF(TEMPD.GT.4.d0*MAX_RADIUS.AND.DES_PERIODIC_WALLS_Y) THEN 
+            IF(TEMPY.GT.DES_POS_NEW(L,2)) THEN 
+               DES_POS_NEW(II,2) = DES_POS_NEW(II,2) - YN(JMAX1)
+            ELSE
+               DES_POS_NEW(II,2) = DES_POS_NEW(II,2) + YN(JMAX1)
+            ENDIF
+         ENDIF
+         
+         IF(DIMN.EQ.3) THEN
+            TEMPD = ABS(DES_POS_NEW(L,3) - DES_POS_NEW(II,3))
+            IF(TEMPD.GT.4.d0*MAX_RADIUS.AND.DES_PERIODIC_WALLS_Z) THEN 
+               IF(TEMPZ.GT.DES_POS_NEW(L,3)) THEN 
+                  DES_POS_NEW(II,3) = DES_POS_NEW(II,3) - ZT(KMAX1)
+               ELSE
+                  DES_POS_NEW(II,3) = DES_POS_NEW(II,3) + ZT(KMAX1)
+               ENDIF
+            ENDIF
+         ENDIF
+         
       END IF
       
       DIST(:) = DES_POS_NEW(II,:) - DES_POS_NEW(L,:)
       NORMOD = SQRT(DES_DOTPRDCT(DIST,DIST))
       IF(NORMOD.NE.ZERO) THEN
-!         NORM(:)= DIST(:)/PN_DIST(L,J)
+!     NORM(:)= DIST(:)/PN_DIST(L,J)
          NORM(:)= DIST(:)/NORMOD
       ELSE 
+         PRINT*, 'From cfnormal.f'
          PRINT *,'NORMOD IS ZERO', II,L
          PRINT *,'NORMOD IS ZERO', DES_POS_NEW(II,:), DES_POS_NEW(L,:) 
          STOP
       END IF
 
       IF(DES_PERIODIC_WALLS) THEN
-           DES_POS_NEW(II,1) = TEMPX
-           DES_POS_NEW(II,2) = TEMPY
-           IF (DIMN.EQ.3) DES_POS_NEW(II,3) = TEMPZ              
+         DES_POS_NEW(II,1) = TEMPX
+         DES_POS_NEW(II,2) = TEMPY
+         IF (DIMN.EQ.3) DES_POS_NEW(II,3) = TEMPZ              
       END IF  
 
       RETURN

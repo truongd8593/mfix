@@ -58,10 +58,11 @@
       INLET_OUTLET_X = .FALSE.
       INLET_OUTLET_Y = .FALSE.
       INLET_OUTLET_Z = .FALSE.
-      NON_RECT_BC=.FALSE.
       DES_CONTINUUM_COUPLED = .FALSE.
       TSUJI_DRAG = .FALSE.
       PARTICLE_SLIDE = .FALSE.
+      DEBUG_DES = .FALSE.
+      NON_RECT_BC=.FALSE.
 
       KN = UNDEFINED
       KT = UNDEFINED
@@ -114,7 +115,25 @@
       DES_INTERP_ON = .FALSE.
       intx_per = .false.
       inty_per = .false.
-      intz_per = .false.    
+      intz_per = .false.
       NPC = 1
+      pgrad(:) = zero 
+      pvel_mean = zero 
+      pvel_var = zero 
+
+      DES_EN_INPUT = UNDEFINED
+      DES_ET_INPUT = UNDEFINED
+      
+      DES_EN_WALL_INPUT = UNDEFINED
+      DES_ET_WALL_INPUT = UNDEFINED
+      
+      DEM_OUTPUT_DATA_TECPLOT = .FALSE.
+      LID_VEL = 0.0d0
+
+      GENER_PART_CONFIG = .FALSE.
+      VOL_FRAC = 0.2
+      DES_EPS_XSTART = UNDEFINED
+      DES_EPS_YSTART = UNDEFINED 
+      DES_EPS_ZSTART = UNDEFINED 	 
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST

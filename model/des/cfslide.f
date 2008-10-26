@@ -35,8 +35,8 @@
       FNMD = SQRT(DES_DOTPRDCT(TEMP_FN,TEMP_FN))
 
       IF (FTMD.GT.(MEW*FNMD)) THEN
-          PARTICLE_SLIDE = .TRUE.
-          FT(L,:) = - MEW*FNMD*TANGNT(:)
+         PARTICLE_SLIDE = .TRUE.
+         FT(L,:) = - MEW*FNMD*TANGNT(:)
       ELSE
          FT(L, :) = TEMP_FT(:)
       END IF

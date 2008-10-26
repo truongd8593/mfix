@@ -6,13 +6,11 @@
 !   Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !   Reviewer: Jin Sun and Rahul Garg                   Date: 01-Aug-07  C
 !   Comments: Added declaration of interpolation related data           C
-!   Reviewer: Tingwen Li                               Date: 23-Jan-08  C
-!   Comments: Added declaration of variable for cell_near_wall          C
 !                                                                       C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !   
-!   Common Block containing DEM conditions 
-!   
+!     Common Block containing DEM conditions 
+!     
 
       MODULE DISCRETELEMENT
 
@@ -31,10 +29,10 @@
 !     the coefficient add to gas momentum B matrix  at cell corners
       DOUBLE PRECISION, DIMENSION(:,:,:,:,:), ALLOCATABLE ::drag_bm 
 
-                                ! fluid velocity at particle position
+! fluid velocity at particle position
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::vel_fp 
       
-      DOUBLE PRECISION, DIMENSION(:,:,:),POINTER :: weightp
+      DOUBLE PRECISION, DIMENSION(:,:,:),POINTER :: weightp    
       DOUBLE PRECISION, DIMENSION(:),   ALLOCATABLE :: f_gp 
       DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: wtderivp, wtbar
       
@@ -49,7 +47,7 @@
       TYPE iap1
       INTEGER, DIMENSION(:), POINTER:: p
       END TYPE iap1
-                                !id's of particles in a cell 
+!id's of particles in a cell 
       TYPE(iap1), DIMENSION(:,:,:), ALLOCATABLE:: pic
 !===============end of interpolation related data set==============
 
@@ -57,11 +55,18 @@
 !     
 !     DES Variables      
 !     
-      INTEGER DIMN, MAXNEIGHBORS, MAXQUADS, NMQD, NWALLS, PBP
-      DOUBLE PRECISION S_TIME, DES_SPX_TIME, DES_RES_TIME
-      DOUBLE PRECISION DTSOLID, DTSOLID_FACTOR 
+      LOGICAL :: DEM_OUTPUT_DATA_TECPLOT !If true, then DEM output data is written in tecplot format
+      LOGICAL :: GENER_PART_CONFIG
+      LOGICAL :: DEBUG_DES
+      DOUBLE PRECISION ::  VOL_FRAC(DIM_M), DES_EPS_XSTART,DES_EPS_YSTART,DES_EPS_ZSTART
+      INTEGER DIMN, MAXNEIGHBORS, MAXQUADS, NMQD, NWALLS, PBP,PART_MPHASE(DIM_M)
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: MARK_PART
+      INTEGER, PARAMETER :: DES_EXTRA_UNIT = 2000, DES_VOLFRAC_UNIT = 2001
+      DOUBLE PRECISION S_TIME, DES_SPX_TIME, DES_RES_TIME, OVERLAP_MAX
+      DOUBLE PRECISION DTSOLID, DTSOLID_FACTOR , lid_vel
       DOUBLE PRECISION P_TIME, PTC
       INTEGER NFACTOR
+      DOUBLE PRECISION AVG_RAD, RMS_RAD
 !     
 !     Particle properties 
       INTEGER PARTICLES, NPC
@@ -74,8 +79,19 @@
 !     Damping coeffients      
       DOUBLE PRECISION ETA_DES_N, ETA_N_W ! Normal
       DOUBLE PRECISION ETA_DES_T, ETA_T_W ! Tangential
+!     Damping coeffients in array form 
+      DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE :: DES_ETAN, DES_ETAT !(MMAX, MMAX)
+      
+      DOUBLE PRECISION , DIMENSION(:), ALLOCATABLE :: DES_ETAN_WALL, DES_ETAT_WALL !(MMAX)
 !     Friction coefiicients and coeff of restitution
       DOUBLE PRECISION MEW, MEW_W, E_RESTITUTION 
+!coeff of restituion input in one D array, solid solid
+      DOUBLE PRECISION DES_EN_INPUT(DIM_M+DIM_M*(DIM_M-1)/2),DES_ET_INPUT(DIM_M+DIM_M*(DIM_M-1)/2)
+!     coeff of restituion input in one D array, solid wall 
+      DOUBLE PRECISION  DES_EN_WALL_INPUT(DIM_M),  DES_ET_WALL_INPUT(DIM_M)
+!actual coeff of rest.'s rearranged 
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::  REAL_EN, REAL_ET !(MMAX,MMAX)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  REAL_EN_WALL,  REAL_ET_WALL !(MMAX)
 !     
 !     Wall treatment      
       INTEGER WALLCONTACT
@@ -84,7 +100,7 @@
       DOUBLE PRECISION  DES_GAMMA, DES_F
 !     
 !     Neighbor search      
-      INTEGER DES_NEIGHBOR_SEARCH, MN, NQUAD
+      INTEGER DES_NEIGHBOR_SEARCH, MN, NQUAD,  NEIGH_MAX
       INTEGER QLM, QLN, INIT_QUAD_COUNT, INQC
       DOUBLE PRECISION RADIUS_EQ, NEIGHBOR_SEARCH_N
       DOUBLE PRECISION NEIGHBOR_SEARCH_RAD_RATIO, NEIGHBOR_SEARCH_DIST
@@ -92,9 +108,18 @@
 !     
 !     Kinetic and Potential energy of the system
       DOUBLE PRECISION DES_KE, DES_PE
+!     Global Granular Energy
+      
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  GLOBAL_GRAN_ENERGY,GLOBAL_GRAN_TEMP
 !     
 !     Output file count
       INTEGER IFI
+      
+!     Constant input pressure gradient 
+      DOUBLE PRECISION  pgrad(3)
+
+!Intial particle velocity distribution's mean and variance
+      DOUBLE PRECISION pvel_mean, pvel_var
 !     
 !     Restart
       DOUBLE PRECISION DESRESDT
@@ -102,12 +127,16 @@
 !     foctor for sum of radii in des_grid_based_neighbor_search
       DOUBLE PRECISION FACTOR_RLM
 !     
-                                !    
+      
 !     DES Logicals
 !     
+!     WHETHER to calculate forces on drag and pressure forces on  particles (decided by Calc_fc)
+
+!     IF CALLFROMDES is TRUE, then mean fields are not computed in the call to drag_fgs; it is done to speed up the simulation.
+      LOGICAL CALC_FC, CALLFROMDES
 !     DES - Continuum       
       LOGICAL DISCRETE_ELEMENT 
-      LOGICAL DES_CONTINUUM_COUPLED
+      LOGICAL DES_CONTINUUM_COUPLED,DES_CONTINUUM_COUPLED_F
 !     
 !     Slide check
       LOGICAL PARTICLE_SLIDE
@@ -118,7 +147,7 @@
       LOGICAL DO_NSQUARE
       LOGICAL DO_NSEARCH
       LOGICAL DO_GRID_BASED_SEARCH
-                                !
+!
 !     Particle treatment at the walls  
       LOGICAL WALLFIXEDOVERLAP
       LOGICAL WALLDTSPLIT
@@ -141,8 +170,11 @@
 !     
 !     Print DES Data
       LOGICAL PRINT_DES_DATA 
-
+      
       DOUBLE PRECISION :: MIN_RADIUS, MAX_RADIUS
+      
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE::   AVE_VEL_X, AVE_VEL_Y,  AVE_VEL_Z
+
 !     
 !     
 !     Allocatable arrays
@@ -206,6 +238,9 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_U_s
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_V_s
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_W_s
+
+!     Averaged velocity obtained by avraging over all the particles
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_VEL_AVG
 !     
 !     Drag exerted by the gas o solids
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: SOLID_DRAG

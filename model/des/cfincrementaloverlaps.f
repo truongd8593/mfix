@@ -29,11 +29,11 @@
          OVERLP_N =Vno*DTSOLID
          OVERLP_T = (Vtan) * DTSOLID
          CHECk_CON = .TRUE.
-	         
+         
       else 
          OVERLP_N = ZERO
          OVERLP_T = ZERO
-        
+         
          CHECk_CON = .FALSE.
 
       endif

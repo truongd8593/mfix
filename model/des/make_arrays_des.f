@@ -7,8 +7,6 @@
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Rahul Garg                               Date: 01-Aug-07  C
 !  Comments: Added some calls that are necessary if INTERPOLATION IS ON C
-!  Reviewer: Tingwen Li                               Date: 23-Jan-08  C
-!  Comments: Call cell_near_wall                                       C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -20,12 +18,15 @@
       USE compar      
       USE discretelement
       USE run
+      USE constant
+      USE physprop
+
       IMPLICIT NONE
       
-      INTEGER LN, K
+      INTEGER LN, K, M, NP
       INTEGER CHECK_MPI
-      INTEGER L, I, II
-      DOUBLE PRECISION DIST, R_LM
+      INTEGER L, I, II, PART_COUNT
+      DOUBLE PRECISION DIST, R_LM, DOML(DIMN)
 
       IF(COORDINATES == 'CYLINDRICAL') THEN
          WRITE (UNIT_LOG, *) ' '
@@ -68,14 +69,25 @@
       END IF
       
       IF(RUN_TYPE == 'NEW') THEN ! Fresh run
-         OPEN(UNIT=10, FILE='particle_input.dat', STATUS='OLD') 
-         DO LN = 1, PARTICLES
-            READ (10, *) (DES_POS_OLD(LN,K),K=1,DIMN),DES_RADIUS(LN),RO_Sol(LN),(DES_VEL_OLD(LN,K),K=1,DIMN)
-            OMEGA_OLD(LN,:) = ZERO
-            DES_POS_NEW(LN,:) = DES_POS_OLD(LN,:)
-            DES_VEL_NEW(LN,:) = DES_VEL_OLD(LN,:)
-            OMEGA_NEW(LN,:) = OMEGA_OLD(LN,:)
-         END DO
+         PRINT*,'PARTICLES  = ', particles
+         PRINT*,'DIMN  = ', dimn
+         
+         IF(.NOT.GENER_PART_CONFIG) THEN 
+            OPEN(UNIT=10, FILE='particle_input.dat', STATUS='OLD') 
+                     
+            WRITE(*,*) 'READING PARTICLE CONFIGURATION FROM THE supplied particle_input.dat file'
+
+            DO LN = 1, PARTICLES
+               READ (10, *) (DES_POS_OLD(LN,K),K=1,DIMN),DES_RADIUS(LN),RO_Sol(LN) ,(DES_VEL_OLD(LN,K),K=1,DIMN)
+               OMEGA_OLD(LN,:) = ZERO
+               DES_POS_NEW(LN,:) = DES_POS_OLD(LN,:)
+               DES_VEL_NEW(LN,:) = DES_VEL_OLD(LN,:)
+               OMEGA_NEW(LN,:) = OMEGA_OLD(LN,:)
+            END DO
+         ELSE
+            call generate_particle_config
+         ENDIF
+            
       ELSE IF(RUN_TYPE == 'RESTART_1') THEN !  Read Restart
          CALL READ_DES_RESTART
          DES_POS_NEW(:,:) = DES_POS_OLD(:,:)
@@ -95,11 +107,14 @@
          WRITE(*,*) 'Restart 2 is not implemented with DES'
          CALL MFIX_EXIT(myPE)
       END IF
+      !des_radius(2) = 2.d0*des_radius(1)
       CALL CFASSIGN
-      CALL PARTICLES_IN_CELL     
-
-!     call cell_near_wall and set non_rect_bc
-      if(NON_RECT_BC) call cell_near_wall
-
+      
+      CALL PARTICLES_IN_CELL
+      IF(PVEL_VAR.GT.ZERO)       CALL init_particles_jn
+      !IF(RUN_TYPE == 'NEW'.and.DES_INTERP_ON.AND.DES_CONTINUUM_COUPLED) CALL SET_INITIAL_VELOCITY
+       
+      CALL writeic
+      
       RETURN
       END SUBROUTINE MAKE_ARRAYS_DES 
