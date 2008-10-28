@@ -82,6 +82,11 @@
       CALL READ_NAMELIST (0) 
       CALL CHECK_DATA_00
 
+!  Set constants
+!
+      CALL SET_CONSTANTS 
+!
+
       CYCLIC_X_BAK = CYCLIC_X
       CYCLIC_Y_BAK = CYCLIC_Y
       CYCLIC_Z_BAK = CYCLIC_Z
@@ -213,11 +218,6 @@
       CALL CHECK_DATA_04                         ! solid phase section 
       CALL CHECK_DATA_05                         ! gas phase section 
 !
-!  Set constants
-!
-      CALL SET_CONSTANTS 
-!
-
       CALL CHECK_DATA_06                         ! initial condition section 
 
       CALL CHECK_DATA_07                         ! boundary condition section 
