@@ -111,7 +111,7 @@
       CALL CFASSIGN
       
       CALL PARTICLES_IN_CELL
-      IF(PVEL_VAR.GT.ZERO)       CALL init_particles_jn
+      IF(PVEL_StDev.GT.ZERO)       CALL init_particles_jn
       !IF(RUN_TYPE == 'NEW'.and.DES_INTERP_ON.AND.DES_CONTINUUM_COUPLED) CALL SET_INITIAL_VELOCITY
        
       CALL writeic

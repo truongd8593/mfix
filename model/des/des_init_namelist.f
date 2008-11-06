@@ -119,7 +119,7 @@
       NPC = 1
       pgrad(:) = zero 
       pvel_mean = zero 
-      pvel_var = zero 
+      PVEL_StDev = zero 
 
       DES_EN_INPUT = UNDEFINED
       DES_ET_INPUT = UNDEFINED

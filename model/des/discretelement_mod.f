@@ -118,8 +118,8 @@
 !     Constant input pressure gradient 
       DOUBLE PRECISION  pgrad(3)
 
-!Intial particle velocity distribution's mean and variance
-      DOUBLE PRECISION pvel_mean, pvel_var
+!Intial particle velocity distribution's mean and Standard Deviation
+      DOUBLE PRECISION pvel_mean, PVEL_StDev
 !     
 !     Restart
       DOUBLE PRECISION DESRESDT

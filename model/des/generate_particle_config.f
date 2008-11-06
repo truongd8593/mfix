@@ -313,12 +313,12 @@
       REAL*8 :: umf0(dimn), rsf(DIMN, DIMN)
       
       WRITE(*,*) 'INITIALIZING NORMAL VELOCITY DISTRIBUTION'
-      WRITE(*,*) 'MEAN  = ', pvel_mean, ' AND VARIANCE = ', pvel_var
+      WRITE(*,*) 'MEAN  = ', pvel_mean, ' AND Standard Deviation = ', PVEL_StDev
       do j=1,DIMN
          umf0(j)=pvel_mean
          do i=1,dimn
             if(i.eq.j)then
-               rsf(i,j)=pvel_var
+               rsf(i,j)=PVEL_StDev
             else
                rsf(i,j)=0.0
             endif
