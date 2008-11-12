@@ -377,6 +377,7 @@ mfix.exe : \
     cfvrt.$(OBJ_EXT) \
     cfwallcontact.$(OBJ_EXT) \
     cfwallposvel.$(OBJ_EXT) \
+    check_des_data.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
     des_calc_d.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
@@ -775,6 +776,7 @@ mfix.exe : \
     cfvrt.$(OBJ_EXT) \
     cfwallcontact.$(OBJ_EXT) \
     cfwallposvel.$(OBJ_EXT) \
+    check_des_data.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
     des_calc_d.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
@@ -4710,6 +4712,16 @@ cfwallposvel.$(OBJ_EXT) : ./des/cfwallposvel.f \
             CONSTANT.mod \
             COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfwallposvel.f 
+check_des_data.$(OBJ_EXT) : ./des/check_des_data.f \
+            PARAM1.mod \
+            GEOMETRY.mod \
+            FUNITS.mod \
+            COMPAR.mod \
+            DISCRETELEMENT.mod \
+            RUN.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_data.f 
 des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             PARAM.mod \
             PARAM1.mod \

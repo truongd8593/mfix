@@ -35,7 +35,7 @@
       
       INCLUDE 'des/desnamelist.inc'
       
-      PARTICLES = 100 
+      PARTICLES = UNDEFINED_I
       PARTICLES_FACTOR = 1.2D0
       MAXNEIGHBORS = 10
       MQUAD_FACTOR = 1.1D0
@@ -74,7 +74,6 @@
       ETA_T_W = UNDEFINED
       MEW = UNDEFINED
       MEW_W = UNDEFINED
-      E_RESTITUTION = UNDEFINED
       DES_GAMMA = ZERO
       DES_F = ZERO
       DES_KE = UNDEFINED
@@ -121,17 +120,17 @@
       pvel_mean = zero 
       PVEL_StDev = zero 
 
-      DES_EN_INPUT = UNDEFINED
-      DES_ET_INPUT = UNDEFINED
+      DES_EN_INPUT(:) = UNDEFINED
+      DES_ET_INPUT(:) = UNDEFINED
       
-      DES_EN_WALL_INPUT = UNDEFINED
-      DES_ET_WALL_INPUT = UNDEFINED
+      DES_EN_WALL_INPUT(:) = UNDEFINED
+      DES_ET_WALL_INPUT(:) = UNDEFINED
       
       DEM_OUTPUT_DATA_TECPLOT = .FALSE.
       LID_VEL = 0.0d0
 
       GENER_PART_CONFIG = .FALSE.
-      VOL_FRAC = 0.2
+      VOL_FRAC(:) = UNDEFINED
       DES_EPS_XSTART = UNDEFINED
       DES_EPS_YSTART = UNDEFINED 
       DES_EPS_ZSTART = UNDEFINED 	 

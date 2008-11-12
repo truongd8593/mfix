@@ -38,15 +38,30 @@
 !     Check if des_eps_xstart and related variables are correctly initialized in mfix.dat file
          IF(DIMN.EQ.2) THEN 
             IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.DES_EPS_YSTART.EQ.UNDEFINED) THEN
+               WRITE (*,*) 'From des_allocate_arrays:'
                WRITE(*,*)'ERROR MESSAGE: DES_EPS_XSTART OR DES_EPS_YSTART NOT PROPERLY DEFINED IN THE INPUT FILE'
-               STOP
+               CALL MFIX_EXIT(myPE)
             ENDIF
          ELSE
             IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.DES_EPS_YSTART.EQ.UNDEFINED.OR.DES_EPS_ZSTART.EQ.UNDEFINED) THEN
+               WRITE (*,*) 'From des_allocate_arrays:'
                WRITE(*,*)'ERROR MESSAGE: DES_EPS_XSTART OR DES_EPS_YSTART OR DES_EPS_ZSTART NOT PROPERLY DEFINED IN THE INPUT FILE'
-               STOP
+               CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
+!
+         DO M = 1, MMAX
+            IF(VOL_FRAC(M) == UNDEFINED) THEN
+               WRITE (*,*) 'From des_allocate_arrays:'
+               WRITE (*,*) 'VOL_FRAC(M) must be defined in mfix.dat for M = 1, MMAX'
+               CALL MFIX_EXIT(myPE)
+            END IF
+            IF(VOL_FRAC(M) < ZERO .OR. VOL_FRAC(M) > (ONE-EP_STAR)) THEN
+               WRITE (*,*) 'From des_allocate_arrays:'
+               WRITE (*,*) 'Unphysical ( > 1-EP_STAR or < 0) values of VOL_FRAC(M) set in mfix.dat'
+               CALL MFIX_EXIT(myPE)
+            END IF
+         ENDDO
          
          WRITE(*,*) 'PARTILCE CONFIGURATION WILL BE AUTOMATICALLY GENERATED'
          PARTICLES = 0

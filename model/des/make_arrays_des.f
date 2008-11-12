@@ -24,30 +24,9 @@
       IMPLICIT NONE
       
       INTEGER LN, K, M, NP
-      INTEGER CHECK_MPI
+!      INTEGER CHECK_MPI
       INTEGER L, I, II, PART_COUNT
       DOUBLE PRECISION DIST, R_LM, DOML(DIMN)
-
-      IF(COORDINATES == 'CYLINDRICAL') THEN
-         WRITE (UNIT_LOG, *) ' '
-         WRITE (UNIT_LOG, *) 'Cylindrical coordinates are being used. STOP'
-         WRITE (UNIT_LOG, *) 'DES should only be run using cartesian coordinates.'
-         WRITE (*, *) ' '
-         WRITE (*, *) 'Cylindrical coordinates are being used. STOP'
-         WRITE (*, *) 'DES should only be run using cartesian coordinates.'
-         CALL MFIX_EXIT(myPE)
-      END IF
-
-      CHECK_MPI = NODESI * NODESJ * NODESK
-      IF((CHECK_MPI.NE.1).AND.(DISCRETE_ELEMENT)) THEN
-         WRITE (UNIT_LOG, *) ' '
-         WRITE (UNIT_LOG, *) 'DES being run on multiple processors. STOP'
-         WRITE (UNIT_LOG, *) 'DES should only be run serially on one processor.'
-         WRITE (*, *) ' '
-         WRITE (*, *) 'DES being run on multiple processors. STOP'
-         WRITE (*, *) 'DES should only be run serially on one processor.'
-         CALL MFIX_EXIT(myPE)
-      END IF
 
       IF(DES_NEIGHBOR_SEARCH.EQ.UNDEFINED_I) THEN
          DES_NEIGHBOR_SEARCH = 1

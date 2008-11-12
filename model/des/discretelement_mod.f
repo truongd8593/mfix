@@ -83,8 +83,8 @@
       DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE :: DES_ETAN, DES_ETAT !(MMAX, MMAX)
       
       DOUBLE PRECISION , DIMENSION(:), ALLOCATABLE :: DES_ETAN_WALL, DES_ETAT_WALL !(MMAX)
-!     Friction coefiicients and coeff of restitution
-      DOUBLE PRECISION MEW, MEW_W, E_RESTITUTION 
+!     Friction coeficients
+      DOUBLE PRECISION MEW, MEW_W
 !coeff of restituion input in one D array, solid solid
       DOUBLE PRECISION DES_EN_INPUT(DIM_M+DIM_M*(DIM_M-1)/2),DES_ET_INPUT(DIM_M+DIM_M*(DIM_M-1)/2)
 !     coeff of restituion input in one D array, solid wall 

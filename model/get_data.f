@@ -148,11 +148,25 @@
 
 !     DES
       IF(DISCRETE_ELEMENT) THEN
-         IF(NO_K) DIMN = 2       
+         IF(NO_K) THEN
+	    DIMN = 2 
+            WRITE(*,1001)
+         ENDIF
          IF(NO_I.OR.NO_J) THEN
-            WRITE(UNIT_LOG,*) 'DES can be run only in XY plane in 2D'
-            WRITE(*,*) 'DES can be run only in XY plane in 2D'
-            STOP
+            WRITE(*,1002)
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+         IF(DIMN == UNDEFINED_I) THEN
+            WRITE(*,1003)
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+         IF(DIMN > 3) THEN
+            WRITE(*,1004)
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+         IF(PARTICLES == UNDEFINED_I .AND. .NOT.GENER_PART_CONFIG) THEN
+            WRITE(*,1005)
+            CALL MFIX_EXIT(myPE)
          ENDIF
          CALL DES_ALLOCATE_ARRAYS
          CALL DES_INIT_ARRAYS 
@@ -227,7 +241,11 @@
 !     CHEM & ISAT begin (nan xie)
 !  check rxns
       CALL CHECK_DATA_CHEM      
-!     CHEM & ISAT end (nan xie)
+!     CHEM & ISAT end (nan xie)    
+!
+!  check DEM
+      IF(DISCRETE_ELEMENT) CALL CHECK_DES_DATA
+!  end of check dem data
 !
 ! close .LOG file
 !
@@ -235,7 +253,17 @@
 !
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
-         'RUN_NAME not specified in mfix.dat',/1X,70('*')/) 
+         'RUN_NAME not specified in mfix.dat',/1X,70('*')/)  
+ 1001 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
+         'DES running in 2D plane since NO_K is true',/1X,70('*')/) 
+ 1002 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
+         'DES can only be run in XY plane in 2D',/1X,70('*')/)
+ 1003 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
+         'Geometry dimension DIMN not specified',/1X,70('*')/)
+ 1004 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
+         'Physical dimension DIMN cannot be > 3',/1X,70('*')/)
+ 1005 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
+         'Number of PARTICLES not specified in mfix.dat',/1X,70('*')/)
       END SUBROUTINE GET_DATA 
       
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
