@@ -1,17 +1,21 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CFSLIDE(L, TANGNT_VREL, FT1)                           C
-!  Purpose: DES - calculate sliding between particles                  C
+!>
+!!  Purpose: DES - calculate sliding between particles                  
+!<
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !                                                                      C
-!  Comments: Implements Eqns 9 & 10 from the following paper           C
-!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical         C
-!  simulation of plug glow of cohesionless particles in a              C
-!  horizontal pipe", Powder technology, 71, 239-250, 1992              C
+!>
+!!  Comments: Implements Eqns 9 & 10 from the following paper           
+!!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical        
+!!  simulation of plug glow of cohesionless particles in a            
+!!  horizontal pipe", Powder technology, 71, 239-250, 1992           
+!<
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 

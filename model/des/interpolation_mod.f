@@ -1,8 +1,8 @@
 ! vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: INTERPOLATION                                          C
-!  Purpose: Contains number of generic interfaces that are used if     C
-!           DES_INTERP_ON is TRUE                                      C
+!>  Purpose: Contains number of generic interfaces that are used if     
+!>           DES_INTERP_ON is TRUE                                     
 !                                                                      C
 !                                                                      C
 !  Author: Chidambaram Narayanan and Rahul Garg       Date: 01-Aug-07  C

@@ -1,8 +1,8 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: NEIGHBOUR                                              C
-!  Purpose: DES - Neighbors search; N-Square, Quadtree(2D)/Octree(3D)  C
-!           Now also Cell linked search Aug 07                         C
+!>  Purpose: DES - Neighbors search; N-Square, Quadtree(2D)/Octree(3D)  
+!>           Now also Cell linked search Aug 07                         
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C

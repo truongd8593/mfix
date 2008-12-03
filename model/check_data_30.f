@@ -732,18 +732,20 @@
  1331 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  DIF_s .LT. 0') 
  1400 FORMAT(1X,I4,T11,I4,T21,I4,T41,G12.5,'  T_g .EQ. TMIN or TMAX') 
  1410 FORMAT(1X,I4,T11,I4,T21,I4,T31,I4,T41,G12.5,'  T_s .EQ. TMIN or TMAX') 
+! gfortran format string bugfix (stray tab in the last line of the format statement)
  1415 FORMAT(//1X,'Sum of all the reaction rates is not zero!',/,1X,&
          'Number of cells with discrepancy < error tolerance = ',I5,/,1X,&
          'Number of cells with discrepancy > error tolerance = ',I5,/,1X,&
          'Maximum discrepancy = ',G12.5,/,1X,&
          'Location of maximum discrepancy: I = ',I4, '  J = ', I4, '  K = ', I4&
-	 ) 
+         ) 
+! gfortran format string bugfix (stray tab in the lst line of the format statement)
  1420 FORMAT(//1X,'Production of phase ', I2, ' not equal to total mass transfer from other phases!',/,1X,&
          'Number of cells with discrepancy < error tolerance = ',I5,/,1X,&
          'Number of cells with discrepancy > error tolerance = ',I5,/,1X,&
          'Maximum discrepancy = ',G12.5,/,1X,&
          'Location of maximum discrepancy: I = ',I4, '  J = ', I4, '  K = ', I4&
-	 ) 
+         ) 
  1430 FORMAT(//1X,'Statistics of sum of gas species mass fraction',/,1X,&
          'Sum of X_g',9X,'No of cells',2X,'Distribution') 
  1432 FORMAT(1X,'<0.9',T20,I4,T33,G12.5,/,1X,'0.9    - 0.99',T20,I4,T33,G12.5,/&

@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CHECK_DES_DATA                                         C
-!  Purpose: DES - Check user input Data                                C
+!>  Purpose: DES - Check user input Data   
 !                                                                      C
 !                                                                      C
 !  Author: S. Benyahia                                Date: 10-Nov-08  C

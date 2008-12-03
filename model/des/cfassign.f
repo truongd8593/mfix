@@ -1,14 +1,15 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 ! Module name: CFASSIGN                                                C
-! Purpose: Assign the necessary values for DEM                         C
-! computation. For example, assigning DEM                              C
-! boundaries from the values entered for MFIX                          C
-! input in mfix.dat. Assigning DEM gravity vector                      C
-! from MFIX input. Calculating RADIUS_EQ.                              C
-! Calculating DTSOLID based on rotational and translational            C 
-! constraints                                                          C
-!                                                                      C
+!>
+!! Purpose: Assign the necessary values for DEM                         
+!! computation. For example, assigning DEM                           
+!! boundaries from the values entered for MFIX                        
+!! input in mfix.dat. Assigning DEM gravity vector                     
+!! from MFIX input. Calculating RADIUS_EQ.                          
+!! Calculating DTSOLID based on rotational and translational       
+!! constraints                                                    
+!<                                                               
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C

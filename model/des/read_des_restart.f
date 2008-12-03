@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: READ_DES_RESTART                                       C
-!  Purpose: Reading DES data for restart                               C
+!>  Purpose: Reading DES data for restart                               
 !                                                                      C
 !                                                                      C
 !  Author: Sreekanth Pannala                          Date: 09-Nov-06  C

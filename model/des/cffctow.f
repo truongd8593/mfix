@@ -1,16 +1,20 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CFFCTOW(L, II, NORM)                                   C
-!  Purpose: DES - Calculate the total force and torque on a particle   C
+!>
+!!  Purpose: DES - Calculate the total force and torque on a particle
+!<
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Rahul Garg                               Date: 02-Aug-07  C
 !  Comments: 2-D case torque calculation corrected                     C
-!  Comments: Implements Eqns 13 & 14 from the following paper          C
-!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical         C
-!  simulation of plug glow of cohesionless particles in a              C
-!  horizontal pipe", Powder technology, 71, 239-250, 1992              C
+!>
+!!  Comments: Implements Eqns 13 & 14 from the following paper       
+!!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical       
+!!  simulation of plug glow of cohesionless particles in a             
+!!  horizontal pipe", Powder technology, 71, 239-250, 1992              
+!<
 !                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CFFCTOW(L, II,  NORM)

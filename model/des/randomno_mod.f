@@ -1,8 +1,8 @@
 ! vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: Random Number Generation Utilities                     C
-!  Purpose: Removed from interpolation mod and added built-in random   C
-!           number routines instead of Pope's                          C
+!>  Purpose: Removed from interpolation mod and added built-in random   
+!>           number routines instead of Pope's                          
 !                                                                      C
 !                                                                      C
 !  Author: Sreekanth Pannala and Rahul Garg           Date: 23-Oct-08  C

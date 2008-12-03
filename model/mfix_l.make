@@ -81,10 +81,11 @@ mfix.exe : \
     adjust_rop.$(OBJ_EXT) \
     adjust_theta.$(OBJ_EXT) \
     allocate_arrays.$(OBJ_EXT) \
+    b_m_p_star.$(OBJ_EXT) \
     bc_phi.$(OBJ_EXT) \
     bc_theta.$(OBJ_EXT) \
-    b_m_p_star.$(OBJ_EXT) \
     bound_x.$(OBJ_EXT) \
+    cal_d.$(OBJ_EXT) \
     calc_cell.$(OBJ_EXT) \
     calc_coeff.$(OBJ_EXT) \
     calc_d.$(OBJ_EXT) \
@@ -111,7 +112,6 @@ mfix.exe : \
     calc_u_friction.$(OBJ_EXT) \
     calc_vol_fr.$(OBJ_EXT) \
     calc_xsi.$(OBJ_EXT) \
-    cal_d.$(OBJ_EXT) \
     check_ab_m.$(OBJ_EXT) \
     check_convergence.$(OBJ_EXT) \
     check_data_01.$(OBJ_EXT) \
@@ -170,6 +170,7 @@ mfix.exe : \
     get_philoss.$(OBJ_EXT) \
     get_smass.$(OBJ_EXT) \
     get_stats.$(OBJ_EXT) \
+    get_values.$(OBJ_EXT) \
     get_walls_bc.$(OBJ_EXT) \
     in_bin_512.$(OBJ_EXT) \
     in_bin_512i.$(OBJ_EXT) \
@@ -190,8 +191,8 @@ mfix.exe : \
     leq_gmres.$(OBJ_EXT) \
     leq_sor.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
-    location_check.$(OBJ_EXT) \
     location.$(OBJ_EXT) \
+    location_check.$(OBJ_EXT) \
     machine.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
     mark_phase_4_cor.$(OBJ_EXT) \
@@ -201,10 +202,10 @@ mfix.exe : \
     mod_bc_k.$(OBJ_EXT) \
     open_file.$(OBJ_EXT) \
     open_files.$(OBJ_EXT) \
-    out_array_c.$(OBJ_EXT) \
     out_array.$(OBJ_EXT) \
-    out_array_kc.$(OBJ_EXT) \
+    out_array_c.$(OBJ_EXT) \
     out_array_k.$(OBJ_EXT) \
+    out_array_kc.$(OBJ_EXT) \
     out_bin_512.$(OBJ_EXT) \
     out_bin_512i.$(OBJ_EXT) \
     out_bin_512r.$(OBJ_EXT) \
@@ -220,8 +221,8 @@ mfix.exe : \
     read_res1.$(OBJ_EXT) \
     remove_comment.$(OBJ_EXT) \
     reset_new.$(OBJ_EXT) \
-    rrates0.$(OBJ_EXT) \
     rrates.$(OBJ_EXT) \
+    rrates0.$(OBJ_EXT) \
     rrates_init.$(OBJ_EXT) \
     scalar_prop.$(OBJ_EXT) \
     seek_comment.$(OBJ_EXT) \
@@ -232,14 +233,14 @@ mfix.exe : \
     set_constprop.$(OBJ_EXT) \
     set_flags.$(OBJ_EXT) \
     set_fluidbed_p.$(OBJ_EXT) \
-    set_geometry1.$(OBJ_EXT) \
     set_geometry.$(OBJ_EXT) \
+    set_geometry1.$(OBJ_EXT) \
     set_ic.$(OBJ_EXT) \
-    set_increments3.$(OBJ_EXT) \
     set_increments.$(OBJ_EXT) \
-    set_index1a3.$(OBJ_EXT) \
-    set_index1a.$(OBJ_EXT) \
+    set_increments3.$(OBJ_EXT) \
     set_index1.$(OBJ_EXT) \
+    set_index1a.$(OBJ_EXT) \
+    set_index1a3.$(OBJ_EXT) \
     set_l_scale.$(OBJ_EXT) \
     set_max2.$(OBJ_EXT) \
     set_mw_mix_g.$(OBJ_EXT) \
@@ -339,8 +340,8 @@ mfix.exe : \
     check_link.$(OBJ_EXT) \
     check_sw_wall_interaction.$(OBJ_EXT) \
     check_vdw_wall_interaction.$(OBJ_EXT) \
-    initialize_cohesion_parameters.$(OBJ_EXT) \
     initialize_coh_int_search.$(OBJ_EXT) \
+    initialize_cohesion_parameters.$(OBJ_EXT) \
     linked_interaction_eval.$(OBJ_EXT) \
     remove_part_from_link_list.$(OBJ_EXT) \
     unlinked_interaction_eval.$(OBJ_EXT) \
@@ -348,43 +349,22 @@ mfix.exe : \
     calc_force_des.$(OBJ_EXT) \
     cell_near_wall.$(OBJ_EXT) \
     cfassign.$(OBJ_EXT) \
-    cffctowall.$(OBJ_EXT) \
     cffctow.$(OBJ_EXT) \
-    cffn.$(OBJ_EXT) \
-    cffnwall.$(OBJ_EXT) \
-    cfft.$(OBJ_EXT) \
-    cfftwall.$(OBJ_EXT) \
-    cfincrementaloverlaps.$(OBJ_EXT) \
+    cffctowall.$(OBJ_EXT) \
     cfnewvalues.$(OBJ_EXT) \
     cfnocontact.$(OBJ_EXT) \
-    cfnormal.$(OBJ_EXT) \
-    cfnormalwall.$(OBJ_EXT) \
-    cfperiodicwallneighborx.$(OBJ_EXT) \
-    cfperiodicwallneighbory.$(OBJ_EXT) \
-    cfperiodicwallneighborz.$(OBJ_EXT) \
-    cfperiodicwallx.$(OBJ_EXT) \
-    cfperiodicwally.$(OBJ_EXT) \
-    cfperiodicwallz.$(OBJ_EXT) \
     cfrelvel.$(OBJ_EXT) \
     cfslide.$(OBJ_EXT) \
     cfslidewall.$(OBJ_EXT) \
-    cfslipvel.$(OBJ_EXT) \
-    cftangent.$(OBJ_EXT) \
-    cftotaloverlaps.$(OBJ_EXT) \
-    cftotaloverlapswall.$(OBJ_EXT) \
     cfupdateold.$(OBJ_EXT) \
-    cfvrn.$(OBJ_EXT) \
-    cfvrt.$(OBJ_EXT) \
     cfwallcontact.$(OBJ_EXT) \
     cfwallposvel.$(OBJ_EXT) \
     check_des_data.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
-    des_calc_d.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
-    des_inlet_outlet.$(OBJ_EXT) \
     des_time_march.$(OBJ_EXT) \
     drag_fgs.$(OBJ_EXT) \
     gas_drag.$(OBJ_EXT) \
@@ -395,7 +375,6 @@ mfix.exe : \
     nsquare.$(OBJ_EXT) \
     octree.$(OBJ_EXT) \
     particles_in_cell.$(OBJ_EXT) \
-    periodic_wall_calc_force_des.$(OBJ_EXT) \
     quadtree.$(OBJ_EXT) \
     read_des_restart.$(OBJ_EXT) \
     walledgecontact.$(OBJ_EXT) \
@@ -427,13 +406,14 @@ mfix.exe : \
     adjust_theta.$(OBJ_EXT) \
     allocate_arrays.$(OBJ_EXT) \
     ambm_mod.$(OBJ_EXT) \
+    b_m_p_star.$(OBJ_EXT) \
     bc_mod.$(OBJ_EXT) \
     bc_phi.$(OBJ_EXT) \
     bc_theta.$(OBJ_EXT) \
-    b_m_p_star.$(OBJ_EXT) \
+    bound_x.$(OBJ_EXT) \
     boundfunijk3_mod.$(OBJ_EXT) \
     boundfunijk_mod.$(OBJ_EXT) \
-    bound_x.$(OBJ_EXT) \
+    cal_d.$(OBJ_EXT) \
     calc_cell.$(OBJ_EXT) \
     calc_coeff.$(OBJ_EXT) \
     calc_d.$(OBJ_EXT) \
@@ -460,7 +440,6 @@ mfix.exe : \
     calc_u_friction.$(OBJ_EXT) \
     calc_vol_fr.$(OBJ_EXT) \
     calc_xsi.$(OBJ_EXT) \
-    cal_d.$(OBJ_EXT) \
     cdist_mod.$(OBJ_EXT) \
     check_ab_m.$(OBJ_EXT) \
     check_convergence.$(OBJ_EXT) \
@@ -532,6 +511,7 @@ mfix.exe : \
     get_philoss.$(OBJ_EXT) \
     get_smass.$(OBJ_EXT) \
     get_stats.$(OBJ_EXT) \
+    get_values.$(OBJ_EXT) \
     get_walls_bc.$(OBJ_EXT) \
     ic_mod.$(OBJ_EXT) \
     in_bin_512.$(OBJ_EXT) \
@@ -555,11 +535,11 @@ mfix.exe : \
     leq_bicgst.$(OBJ_EXT) \
     leq_cg.$(OBJ_EXT) \
     leq_gmres.$(OBJ_EXT) \
-    leqsol_mod.$(OBJ_EXT) \
     leq_sor.$(OBJ_EXT) \
+    leqsol_mod.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
-    location_check.$(OBJ_EXT) \
     location.$(OBJ_EXT) \
+    location_check.$(OBJ_EXT) \
     machine.$(OBJ_EXT) \
     machine_mod.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
@@ -572,10 +552,10 @@ mfix.exe : \
     mod_bc_k.$(OBJ_EXT) \
     open_file.$(OBJ_EXT) \
     open_files.$(OBJ_EXT) \
-    out_array_c.$(OBJ_EXT) \
     out_array.$(OBJ_EXT) \
-    out_array_kc.$(OBJ_EXT) \
+    out_array_c.$(OBJ_EXT) \
     out_array_k.$(OBJ_EXT) \
+    out_array_kc.$(OBJ_EXT) \
     out_bin_512.$(OBJ_EXT) \
     out_bin_512i.$(OBJ_EXT) \
     out_bin_512r.$(OBJ_EXT) \
@@ -600,8 +580,8 @@ mfix.exe : \
     remove_comment.$(OBJ_EXT) \
     reset_new.$(OBJ_EXT) \
     residual_mod.$(OBJ_EXT) \
-    rrates0.$(OBJ_EXT) \
     rrates.$(OBJ_EXT) \
+    rrates0.$(OBJ_EXT) \
     rrates_init.$(OBJ_EXT) \
     run_mod.$(OBJ_EXT) \
     rxns_mod.$(OBJ_EXT) \
@@ -616,14 +596,14 @@ mfix.exe : \
     set_constprop.$(OBJ_EXT) \
     set_flags.$(OBJ_EXT) \
     set_fluidbed_p.$(OBJ_EXT) \
-    set_geometry1.$(OBJ_EXT) \
     set_geometry.$(OBJ_EXT) \
+    set_geometry1.$(OBJ_EXT) \
     set_ic.$(OBJ_EXT) \
-    set_increments3.$(OBJ_EXT) \
     set_increments.$(OBJ_EXT) \
-    set_index1a3.$(OBJ_EXT) \
-    set_index1a.$(OBJ_EXT) \
+    set_increments3.$(OBJ_EXT) \
     set_index1.$(OBJ_EXT) \
+    set_index1a.$(OBJ_EXT) \
+    set_index1a3.$(OBJ_EXT) \
     set_l_scale.$(OBJ_EXT) \
     set_max2.$(OBJ_EXT) \
     set_mw_mix_g.$(OBJ_EXT) \
@@ -738,8 +718,8 @@ mfix.exe : \
     check_link.$(OBJ_EXT) \
     check_sw_wall_interaction.$(OBJ_EXT) \
     check_vdw_wall_interaction.$(OBJ_EXT) \
-    initialize_cohesion_parameters.$(OBJ_EXT) \
     initialize_coh_int_search.$(OBJ_EXT) \
+    initialize_cohesion_parameters.$(OBJ_EXT) \
     linked_interaction_eval.$(OBJ_EXT) \
     remove_part_from_link_list.$(OBJ_EXT) \
     unlinked_interaction_eval.$(OBJ_EXT) \
@@ -747,43 +727,22 @@ mfix.exe : \
     calc_force_des.$(OBJ_EXT) \
     cell_near_wall.$(OBJ_EXT) \
     cfassign.$(OBJ_EXT) \
-    cffctowall.$(OBJ_EXT) \
     cffctow.$(OBJ_EXT) \
-    cffn.$(OBJ_EXT) \
-    cffnwall.$(OBJ_EXT) \
-    cfft.$(OBJ_EXT) \
-    cfftwall.$(OBJ_EXT) \
-    cfincrementaloverlaps.$(OBJ_EXT) \
+    cffctowall.$(OBJ_EXT) \
     cfnewvalues.$(OBJ_EXT) \
     cfnocontact.$(OBJ_EXT) \
-    cfnormal.$(OBJ_EXT) \
-    cfnormalwall.$(OBJ_EXT) \
-    cfperiodicwallneighborx.$(OBJ_EXT) \
-    cfperiodicwallneighbory.$(OBJ_EXT) \
-    cfperiodicwallneighborz.$(OBJ_EXT) \
-    cfperiodicwallx.$(OBJ_EXT) \
-    cfperiodicwally.$(OBJ_EXT) \
-    cfperiodicwallz.$(OBJ_EXT) \
     cfrelvel.$(OBJ_EXT) \
     cfslide.$(OBJ_EXT) \
     cfslidewall.$(OBJ_EXT) \
-    cfslipvel.$(OBJ_EXT) \
-    cftangent.$(OBJ_EXT) \
-    cftotaloverlaps.$(OBJ_EXT) \
-    cftotaloverlapswall.$(OBJ_EXT) \
     cfupdateold.$(OBJ_EXT) \
-    cfvrn.$(OBJ_EXT) \
-    cfvrt.$(OBJ_EXT) \
     cfwallcontact.$(OBJ_EXT) \
     cfwallposvel.$(OBJ_EXT) \
     check_des_data.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
-    des_calc_d.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
-    des_inlet_outlet.$(OBJ_EXT) \
     des_time_march.$(OBJ_EXT) \
     discretelement_mod.$(OBJ_EXT) \
     drag_fgs.$(OBJ_EXT) \
@@ -796,7 +755,6 @@ mfix.exe : \
     nsquare.$(OBJ_EXT) \
     octree.$(OBJ_EXT) \
     particles_in_cell.$(OBJ_EXT) \
-    periodic_wall_calc_force_des.$(OBJ_EXT) \
     quadtree.$(OBJ_EXT) \
     randomno_mod.$(OBJ_EXT) \
     read_des_restart.$(OBJ_EXT) \
@@ -1302,6 +1260,26 @@ allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             mchem.mod \
             kintheory.mod \
             kintheory2.mod 
+b_m_p_star.$(OBJ_EXT) : b_m_p_star.f \
+            param.mod \
+            param1.mod \
+            scales.mod \
+            constant.mod \
+            physprop.mod \
+            fldvar.mod \
+            run.mod \
+            rxns.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            compar.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
+            b_force2.inc                                                
 bc_phi.$(OBJ_EXT) : bc_phi.f \
             param.mod \
             param1.mod \
@@ -1348,29 +1326,33 @@ bc_theta.$(OBJ_EXT) : bc_theta.f \
             function.inc                                                 \
             fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-b_m_p_star.$(OBJ_EXT) : b_m_p_star.f \
+bound_x.$(OBJ_EXT) : bound_x.f \
+            param.mod \
+            param1.mod 
+cal_d.$(OBJ_EXT) : cal_d.f \
             param.mod \
             param1.mod \
+            parallel.mod \
+            matrix.mod \
             scales.mod \
             constant.mod \
             physprop.mod \
             fldvar.mod \
-            run.mod \
+            visc_s.mod \
             rxns.mod \
             toleranc.mod \
             geometry.mod \
             indices.mod \
+            is.mod \
+            tau_s.mod \
+            bc.mod \
+            vshear.mod \
             compar.mod \
-            b_force1.inc                                                 \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
-bound_x.$(OBJ_EXT) : bound_x.f \
-            param.mod \
-            param1.mod 
+            ep_s2.inc                                                   
 calc_cell.$(OBJ_EXT) : calc_cell.f \
             param.mod \
             param1.mod 
@@ -1746,30 +1728,6 @@ calc_xsi.$(OBJ_EXT) : calc_xsi.f \
             xsi1.inc                                                     \
             function.inc                                                 \
             xsi2.inc                                                    
-cal_d.$(OBJ_EXT) : cal_d.f \
-            param.mod \
-            param1.mod \
-            parallel.mod \
-            matrix.mod \
-            scales.mod \
-            constant.mod \
-            physprop.mod \
-            fldvar.mod \
-            visc_s.mod \
-            rxns.mod \
-            toleranc.mod \
-            geometry.mod \
-            indices.mod \
-            is.mod \
-            tau_s.mod \
-            bc.mod \
-            vshear.mod \
-            compar.mod \
-            ep_s1.inc                                                    \
-            fun_avg1.inc                                                 \
-            function.inc                                                 \
-            fun_avg2.inc                                                 \
-            ep_s2.inc                                                   
 check_ab_m.$(OBJ_EXT) : check_ab_m.f \
             param.mod \
             param1.mod \
@@ -2534,6 +2492,7 @@ get_stats.$(OBJ_EXT) : get_stats.f \
             run.mod \
             compar.mod \
             function.inc                                                
+get_values.$(OBJ_EXT) : get_values.f 
 get_walls_bc.$(OBJ_EXT) : get_walls_bc.f \
             param.mod \
             param1.mod \
@@ -2808,14 +2767,14 @@ leq_sor.$(OBJ_EXT) : leq_sor.f \
             leqsol.mod \
             function.inc                                                
 line_too_big.$(OBJ_EXT) : line_too_big.f 
+location.$(OBJ_EXT) : location.f \
+            param.mod \
+            param1.mod 
 location_check.$(OBJ_EXT) : location_check.f \
             param.mod \
             param1.mod \
             funits.mod \
             geometry.mod 
-location.$(OBJ_EXT) : location.f \
-            param.mod \
-            param1.mod 
 machine.$(OBJ_EXT) : machine.f \
             machine.mod \
             param.mod \
@@ -2897,6 +2856,16 @@ open_files.$(OBJ_EXT) : open_files.f \
             compar.mod \
             cdist.mod \
             run.mod 
+out_array.$(OBJ_EXT) : out_array.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
+            function.inc                                                
 out_array_c.$(OBJ_EXT) : out_array_c.f \
             param.mod \
             param1.mod \
@@ -2907,7 +2876,7 @@ out_array_c.$(OBJ_EXT) : out_array_c.f \
             funits.mod \
             compar.mod \
             function.inc                                                
-out_array.$(OBJ_EXT) : out_array.f \
+out_array_k.$(OBJ_EXT) : out_array_k.f \
             param.mod \
             param1.mod \
             geometry.mod \
@@ -2927,16 +2896,6 @@ out_array_kc.$(OBJ_EXT) : out_array_kc.f \
             funits.mod \
             compar.mod \
             mpi_utility.mod \
-            function.inc                                                
-out_array_k.$(OBJ_EXT) : out_array_k.f \
-            param.mod \
-            param1.mod \
-            geometry.mod \
-            fldvar.mod \
-            physprop.mod \
-            indices.mod \
-            funits.mod \
-            compar.mod \
             function.inc                                                
 out_bin_512.$(OBJ_EXT) : out_bin_512.f \
             machine.mod 
@@ -3088,6 +3047,22 @@ reset_new.$(OBJ_EXT) : reset_new.f \
             trace.mod \
             run.mod \
             scalars.mod 
+rrates.$(OBJ_EXT) : rrates.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            rxns.mod \
+            energy.mod \
+            geometry.mod \
+            run.mod \
+            indices.mod \
+            physprop.mod \
+            constant.mod \
+            funits.mod \
+            compar.mod \
+            sendrecv.mod \
+            function.inc                                                
 rrates0.$(OBJ_EXT) : rrates0.f \
             param.mod \
             param1.mod \
@@ -3106,22 +3081,6 @@ rrates0.$(OBJ_EXT) : rrates0.f \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
-rrates.$(OBJ_EXT) : rrates.f \
-            param.mod \
-            param1.mod \
-            parallel.mod \
-            fldvar.mod \
-            rxns.mod \
-            energy.mod \
-            geometry.mod \
-            run.mod \
-            indices.mod \
-            physprop.mod \
-            constant.mod \
-            funits.mod \
-            compar.mod \
-            sendrecv.mod \
-            function.inc                                                
 rrates_init.$(OBJ_EXT) : rrates_init.f \
             param.mod \
             param1.mod \
@@ -3249,6 +3208,12 @@ set_fluidbed_p.$(OBJ_EXT) : set_fluidbed_p.f \
             function.inc                                                 \
             b_force2.inc                                                 \
             sc_p_g2.inc                                                 
+set_geometry.$(OBJ_EXT) : set_geometry.f \
+            param.mod \
+            param1.mod \
+            run.mod \
+            geometry.mod \
+            compar.mod 
 set_geometry1.$(OBJ_EXT) : set_geometry1.f \
             param.mod \
             param1.mod \
@@ -3258,12 +3223,6 @@ set_geometry1.$(OBJ_EXT) : set_geometry1.f \
             indices.mod \
             compar.mod \
             function.inc                                                
-set_geometry.$(OBJ_EXT) : set_geometry.f \
-            param.mod \
-            param1.mod \
-            run.mod \
-            geometry.mod \
-            compar.mod 
 set_ic.$(OBJ_EXT) : set_ic.f \
             param.mod \
             param1.mod \
@@ -3285,6 +3244,16 @@ set_ic.$(OBJ_EXT) : set_ic.f \
             function.inc                                                 \
             s_pr2.inc                                                    \
             sc_p_g2.inc                                                 
+set_increments.$(OBJ_EXT) : set_increments.f \
+            param.mod \
+            param1.mod \
+            indices.mod \
+            geometry.mod \
+            compar.mod \
+            physprop.mod \
+            fldvar.mod \
+            funits.mod \
+            function.inc                                                
 set_increments3.$(OBJ_EXT) : set_increments3.f \
             param.mod \
             param1.mod \
@@ -3296,25 +3265,15 @@ set_increments3.$(OBJ_EXT) : set_increments3.f \
             funits.mod \
             function.inc                                                 \
             function3.inc                                               
-set_increments.$(OBJ_EXT) : set_increments.f \
-            param.mod \
-            param1.mod \
-            indices.mod \
-            geometry.mod \
-            compar.mod \
-            physprop.mod \
-            fldvar.mod \
-            funits.mod \
-            function.inc                                                
-set_index1a3.$(OBJ_EXT) : set_index1a3.f \
+set_index1.$(OBJ_EXT) : set_index1.f \
             param.mod \
             param1.mod \
             physprop.mod \
-            geometry.mod \
-            compar.mod \
             fldvar.mod \
+            geometry.mod \
+            constant.mod \
             indices.mod \
-            boundfunijk3.mod \
+            compar.mod \
             function.inc                                                
 set_index1a.$(OBJ_EXT) : set_index1a.f \
             param.mod \
@@ -3326,15 +3285,15 @@ set_index1a.$(OBJ_EXT) : set_index1a.f \
             indices.mod \
             boundfunijk.mod \
             function.inc                                                
-set_index1.$(OBJ_EXT) : set_index1.f \
+set_index1a3.$(OBJ_EXT) : set_index1a3.f \
             param.mod \
             param1.mod \
             physprop.mod \
-            fldvar.mod \
             geometry.mod \
-            constant.mod \
-            indices.mod \
             compar.mod \
+            fldvar.mod \
+            indices.mod \
+            boundfunijk3.mod \
             function.inc                                                
 set_l_scale.$(OBJ_EXT) : set_l_scale.f \
             param.mod \
@@ -4501,12 +4460,12 @@ check_vdw_wall_interaction.$(OBJ_EXT) : ./cohesion/check_vdw_wall_interaction.f 
             param1.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_vdw_wall_interaction.f 
-initialize_cohesion_parameters.$(OBJ_EXT) : ./cohesion/initialize_cohesion_parameters.f \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/initialize_cohesion_parameters.f 
 initialize_coh_int_search.$(OBJ_EXT) : ./cohesion/initialize_coh_int_search.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/initialize_coh_int_search.f 
+initialize_cohesion_parameters.$(OBJ_EXT) : ./cohesion/initialize_cohesion_parameters.f \
+            discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/initialize_cohesion_parameters.f 
 linked_interaction_eval.$(OBJ_EXT) : ./cohesion/linked_interaction_eval.f \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/linked_interaction_eval.f 
@@ -4566,29 +4525,14 @@ cfassign.$(OBJ_EXT) : ./des/cfassign.f \
             b_force1.inc                                                 \
             b_force2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfassign.f 
-cffctowall.$(OBJ_EXT) : ./des/cffctowall.f \
-            param1.mod \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cffctowall.f 
 cffctow.$(OBJ_EXT) : ./des/cffctow.f \
             param1.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cffctow.f 
-cffn.$(OBJ_EXT) : ./des/cffn.f \
+cffctowall.$(OBJ_EXT) : ./des/cffctowall.f \
+            param1.mod \
             discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cffn.f 
-cffnwall.$(OBJ_EXT) : ./des/cffnwall.f \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cffnwall.f 
-cfft.$(OBJ_EXT) : ./des/cfft.f \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfft.f 
-cfftwall.$(OBJ_EXT) : ./des/cfftwall.f \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfftwall.f 
-cfincrementaloverlaps.$(OBJ_EXT) : ./des/cfincrementaloverlaps.f \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfincrementaloverlaps.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cffctowall.f 
 cfnewvalues.$(OBJ_EXT) : ./des/cfnewvalues.f \
             param.mod \
             param1.mod \
@@ -4612,36 +4556,6 @@ cfnocontact.$(OBJ_EXT) : ./des/cfnocontact.f \
             param1.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnocontact.f 
-cfnormal.$(OBJ_EXT) : ./des/cfnormal.f \
-            param1.mod \
-            discretelement.mod \
-            geometry.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnormal.f 
-cfnormalwall.$(OBJ_EXT) : ./des/cfnormalwall.f \
-            param1.mod \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnormalwall.f 
-cfperiodicwallneighborx.$(OBJ_EXT) : ./des/cfperiodicwallneighborx.f \
-            param1.mod \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallneighborx.f 
-cfperiodicwallneighbory.$(OBJ_EXT) : ./des/cfperiodicwallneighbory.f \
-            param1.mod \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallneighbory.f 
-cfperiodicwallneighborz.$(OBJ_EXT) : ./des/cfperiodicwallneighborz.f \
-            param1.mod \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallneighborz.f 
-cfperiodicwallx.$(OBJ_EXT) : ./des/cfperiodicwallx.f \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallx.f 
-cfperiodicwally.$(OBJ_EXT) : ./des/cfperiodicwally.f \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwally.f 
-cfperiodicwallz.$(OBJ_EXT) : ./des/cfperiodicwallz.f \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfperiodicwallz.f 
 cfrelvel.$(OBJ_EXT) : ./des/cfrelvel.f \
             discretelement.mod \
             param1.mod 
@@ -4654,34 +4568,10 @@ cfslidewall.$(OBJ_EXT) : ./des/cfslidewall.f \
             discretelement.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfslidewall.f 
-cfslipvel.$(OBJ_EXT) : ./des/cfslipvel.f \
-            discretelement.mod \
-            param1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfslipvel.f 
-cftangent.$(OBJ_EXT) : ./des/cftangent.f \
-            discretelement.mod \
-            param1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cftangent.f 
-cftotaloverlaps.$(OBJ_EXT) : ./des/cftotaloverlaps.f \
-            param1.mod \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cftotaloverlaps.f 
-cftotaloverlapswall.$(OBJ_EXT) : ./des/cftotaloverlapswall.f \
-            param1.mod \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cftotaloverlapswall.f 
 cfupdateold.$(OBJ_EXT) : ./des/cfupdateold.f \
             discretelement.mod \
             run.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfupdateold.f 
-cfvrn.$(OBJ_EXT) : ./des/cfvrn.f \
-            param1.mod \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfvrn.f 
-cfvrt.$(OBJ_EXT) : ./des/cfvrt.f \
-            param1.mod \
-            discretelement.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfvrt.f 
 cfwallcontact.$(OBJ_EXT) : ./des/cfwallcontact.f \
             discretelement.mod \
             param.mod \
@@ -4732,25 +4622,6 @@ des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             compar.mod \
             physprop.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_allocate_arrays.f 
-des_calc_d.$(OBJ_EXT) : ./des/des_calc_d.f \
-            param.mod \
-            param1.mod \
-            parallel.mod \
-            fldvar.mod \
-            geometry.mod \
-            indices.mod \
-            physprop.mod \
-            run.mod \
-            scales.mod \
-            compar.mod \
-            sendrecv.mod \
-            discretelement.mod \
-            ep_s1.inc                                                    \
-            fun_avg1.inc                                                 \
-            function.inc                                                 \
-            fun_avg2.inc                                                 \
-            ep_s2.inc                                                   
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_calc_d.f 
 des_functions.$(OBJ_EXT) : ./des/des_functions.f \
             param.mod \
             param1.mod \
@@ -4798,12 +4669,6 @@ des_init_namelist.$(OBJ_EXT) : ./des/des_init_namelist.f \
             discretelement.mod \
             des/desnamelist.inc                                         
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_namelist.f 
-des_inlet_outlet.$(OBJ_EXT) : ./des/des_inlet_outlet.f \
-            param1.mod \
-            run.mod \
-            discretelement.mod \
-            geometry.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_inlet_outlet.f 
 des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
             param.mod \
             param1.mod \
@@ -4978,12 +4843,6 @@ particles_in_cell.$(OBJ_EXT) : ./des/particles_in_cell.f \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/particles_in_cell.f 
-periodic_wall_calc_force_des.$(OBJ_EXT) : ./des/periodic_wall_calc_force_des.f \
-            param1.mod \
-            run.mod \
-            discretelement.mod \
-            geometry.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/periodic_wall_calc_force_des.f 
 quadtree.$(OBJ_EXT) : ./des/quadtree.f \
             run.mod \
             param1.mod \

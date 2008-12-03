@@ -1,16 +1,20 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CFNEWVALUES(L)                                         C
-!  Purpose: DES - Calculate the new values of particle velocity,       C
-!           position, angular velocity etc                             C
+!>
+!!  Purpose: DES - Calculate the new values of particle velocity,       
+!!           position, angular velocity etc                            
+!<
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
 !                                                                      C 
-!  Comments: Implements Eqns 1, 2, 3, 4 & 5  from the following paper  C
-!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical         C
-!  simulation of plug glow of cohesionless particles in a              C
-!  horizontal pipe", Powder technology, 71, 239-250, 1992              C
+!>
+!!  Comments: Implements Eqns 1, 2, 3, 4 & 5  from the following paper  
+!!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical         
+!!  simulation of plug glow of cohesionless particles in a              
+!!  horizontal pipe", Powder technology, 71, 239-250, 1992             
+!<
 !                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CFNEWVALUES(L)

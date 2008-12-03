@@ -1,7 +1,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CFUPDATEOLD(PARTS)                                     C
-!  Purpose: DES - Update arrays                                        C
+!>
+!!  Purpose: DES - Update arrays                                        
+!<
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C

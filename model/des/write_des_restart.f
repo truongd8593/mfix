@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: WRITE_DES_RESTART                                      C
-!  Purpose: Writing DES data for restart                               C
+!>  Purpose: Writing DES data for restart
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 26-Jul-06  C

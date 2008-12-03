@@ -1,6 +1,6 @@
 !                                                                       C
 !   Module name: DISCRETELEMENT                                         C
-!   Purpose: DES mod file                                               C
+!>   Purpose: DES mod file 
 !                                                                       C
 !                                                                       C
 !   Author: Jay Boyalakuntla                           Date: 12-Jun-04  C

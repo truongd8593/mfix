@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: WRITE_DES_DATA                                         C
-!  Purpose: Writing DES output in Paraview format                      C
+!>  Purpose: Writing DES output in Paraview format                      
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 26-Jul-06  C
@@ -205,9 +205,11 @@
             OPEN(UNIT = DES_UNIT, FILE=FILENAME_DES, status='new')
             IF(DIMN.EQ.3) THEN 
                
-               WRITE (DES_UNIT, '(10(A))')  'VARIABLES = ',  ' "x" ',  ' "y" ',  ' "z" ',  ' "vx" ',  ' "vy" ',  ' "vz" ',  ' "rad" ', ' "den" ', ' "mark" '
+               WRITE (DES_UNIT, '(10(A))')  'VARIABLES = ',  ' "x" ',  ' "y" ',&
+               ' "z" ',  ' "vx" ',  ' "vy" ',  ' "vz" ',  ' "rad" ', ' "den" ', ' "mark" '
             ELSE 
-               WRITE (DES_UNIT, '(10(A))')  'VARIABLES = ',  ' "x" ',  ' "y" ', ' "vx" ',  ' "vy" ', ' "omega" ',  ' "rad" ', ' "den" ', ' "mark" '
+               WRITE (DES_UNIT, '(10(A))')  'VARIABLES = ',  ' "x" ',  ' "y" ',&
+              ' "vx" ',  ' "vy" ', ' "omega" ',  ' "rad" ', ' "den" ', ' "mark" '
             ENDIF
             
             ONCE_OPEN = .TRUE.
@@ -216,7 +218,8 @@
                IF(.NOT.ONCE_OPEN) THEN 
                   OPEN(unit=des_extra_unit,FILE=FILENAME_EXTRA, status="replace")
 
-                  write(des_extra_unit,*)'VARIABLES= ',' "t" ', ' "MAX_NEIGH" ', ' "MAX_OVERLAP" ', ' "GRAN_ENERGY" ', ' "GRAN_TEMP" '
+                  write(des_extra_unit,*)'VARIABLES= ',' "t" ', ' "MAX_NEIGH" ',&
+              ' "MAX_OVERLAP" ', ' "GRAN_ENERGY" ', ' "GRAN_TEMP" '
                
                   OPEN(unit=des_volfrac_unit,FILE=FILENAME_EXTRA2, status='replace')
                
@@ -226,9 +229,11 @@
                   OPEN(UNIT = DES_UNIT, FILE=FILENAME_DES, status="replace")
                   IF(DIMN.EQ.3) THEN 
                      
-                     WRITE (DES_UNIT, '(10(A))')  'VARIABLES = ',  ' "x" ',  ' "y" ',  ' "z" ',  ' "vx" ',  ' "vy" ',  ' "vz" ',  ' "rad" ', ' "den" ', ' "mark" '
+                     WRITE (DES_UNIT, '(10(A))')  'VARIABLES = ',  ' "x" ',  ' "y" '&
+             ,  ' "z" ',  ' "vx" ',  ' "vy" ',  ' "vz" ',  ' "rad" ', ' "den" ', ' "mark" '
                   ELSE 
-                     WRITE (DES_UNIT, '(10(A))')  'VARIABLES = ',  ' "x" ',  ' "y" ', ' "vx" ',  ' "vy" ', ' "omega" ',  ' "rad" ', ' "den" ', ' "mark" '
+                     WRITE (DES_UNIT, '(10(A))')  'VARIABLES = ',  ' "x" ',  ' "y" '&
+             , ' "vx" ',  ' "vy" ', ' "omega" ',  ' "rad" ', ' "den" ', ' "mark" '
                   ENDIF
                   
                   ONCE_OPEN = .TRUE.
@@ -251,7 +256,8 @@
 
 
 
-         WRITE(des_extra_unit,3022) s_time, NEIGH_MAX, OVERLAP_MAX,  SUM(GLOBAL_GRAN_ENERGY(1:DIMN))*HALF, SUM(GLOBAL_GRAN_TEMP(1:DIMN))*1.d0/3.d0
+         WRITE(des_extra_unit,3022) s_time, NEIGH_MAX, OVERLAP_MAX,  &
+         SUM(GLOBAL_GRAN_ENERGY(1:DIMN))*HALF, SUM(GLOBAL_GRAN_TEMP(1:DIMN))*1.d0/3.d0
          
          Write(DES_VOLFRAC_UNIT, *)'ZONE T = "', ROUTINE_COUNT, '"',',DATAPACKING=POINT, J=',JMAX, ', SOLUTIONTIME=', s_time
          
@@ -259,9 +265,11 @@
          
           DO NP = 1, PARTICLES 
              IF(DIMN.EQ.3) THEN
-                WRITE (DES_UNIT, '(10(2x,g12.5))') (DES_POS_NEW(NP, IDIM), IDIM = 1,DIMN), (DES_VEL_NEW(NP, IDIM), IDIM = 1,DIMN), DES_RADIUS(NP), Ro_Sol(NP), mark_part(NP)
+                WRITE (DES_UNIT, '(10(2x,g12.5))') (DES_POS_NEW(NP, IDIM), IDIM = 1,DIMN), &
+             (DES_VEL_NEW(NP, IDIM), IDIM = 1,DIMN), DES_RADIUS(NP), Ro_Sol(NP), mark_part(NP)
              ELSE
-                WRITE (DES_UNIT, '(10(2x,g12.5))') (DES_POS_NEW(NP, IDIM), IDIM = 1,DIMN), (DES_VEL_NEW(NP, IDIM), IDIM = 1,DIMN),OMEGA_NEW(NP,1), DES_RADIUS(NP), Ro_Sol(NP), mark_part(NP)
+                WRITE (DES_UNIT, '(10(2x,g12.5))') (DES_POS_NEW(NP, IDIM), IDIM = 1,DIMN), &
+             (DES_VEL_NEW(NP, IDIM), IDIM = 1,DIMN),OMEGA_NEW(NP,1), DES_RADIUS(NP), Ro_Sol(NP), mark_part(NP)
              ENDIF
           ENDDO
           

@@ -1,7 +1,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CFSLIDEWALL(L, TANGNT)                                 C
-!  Purpose: DES - Calculate slide between particles and walls          C
+!>
+!!  Purpose: DES - Calculate slide between particles and walls 
+!<
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C

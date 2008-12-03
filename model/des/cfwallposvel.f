@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CFWALLPOSVEL(L, I)
-!  Purpose:  DES -Calculate the position and velocity of wall particle C
+!>  Purpose:  DES -Calculate the position and velocity of wall particle 
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C

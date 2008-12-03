@@ -1,7 +1,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CFFCTOWALL(L, NORM)                                    C
-!  Purpose: DES - Calculate the total force and torque on a particle   C
+!>
+!!  Purpose: DES - Calculate the total force and torque on a particle 
+!<
 !  Reviewer: Rahul Garg                               Date: 02-Aug-07  C
 !  Comments: 2-D case torque calculation corrected                     C
 !                                                                      C

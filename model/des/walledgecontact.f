@@ -3,8 +3,8 @@
 !  Module name: WALLEDGECONTACT(CELL, L, WALLCONTACTI)                 C
 !                                                                      C
 !  Author: Tingwen Li                                 Date: 15-Jan-08  C
-!  Purposes: Check if particle contacts with the edge of wall cell, if C 
-!            it does, generate the wall particle                       C  
+!>  Purposes: Check if particle contacts with the edge of wall cell, if 
+!>            it does, generate the wall particle                       
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !  Any questions, please contact litw@interchange.ubc.ca or dem@lists.mfix.org
 

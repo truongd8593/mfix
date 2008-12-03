@@ -1,8 +1,10 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CALC_FORCE_DES(C)                                      C
-!  Purpose: DES calculations of force acting on a particle,            C
-!           its velocity and its position                              C
+!>
+!!  Purpose: DES calculations of force acting on a particle, 
+!!           its velocity and its position                  
+!<
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Sreekanth Pannala                        Date: 06-Dec-06  C
@@ -211,7 +213,8 @@
                      PRINT*, 'STIME, DTSOLID = ',S_TIME, DTSOLID
                      PRINT*, 'DES_VEL = ',DES_VEL_NEW(LL,1:DIMN), des_radius(LL)*OMEGA_NEW(LL,1)
                      PRINT*,'MAA'
-                     PRINT*,'V-OMEGA R = ',DES_VEL_NEW(LL,1)+ des_radius(LL)*OMEGA_NEW(LL,1), (DES_VEL_NEW(LL,1)+ des_radius(LL)*OMEGA_NEW(LL,1))*DTSOLID
+                     WRITE(*,*) 'V-OMEGA R = ',DES_VEL_NEW(LL,1)+ des_radius(LL)* OMEGA_NEW(LL,1),   &
+                     (DES_VEL_NEW(LL,1)+ des_radius(LL)*OMEGA_NEW(LL,1))*DTSOLID
 
                      PRINT*,'Mg = ', PMASS(LL)*gravity
                      PRINT*,'K_N, ETA_N = ', KN_W, ETA_N_W, KT_W, ETA_T_W

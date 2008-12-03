@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CFWALLCONTACT(WALL, L, WALLCONTACTI)            C
-!  Purpose: DES - Checking for contact with walls                      C
+!>  Purpose: DES - Checking for contact with walls
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C

@@ -183,7 +183,7 @@ ln -sf "$mpi_include/mpif.h" .
 #  Check if the system is a Linux system, if yes then ask the user which 
 #  compiler to use    
 #
-    if test $opsys = "CYGWIN_NT-5.1"
+    if test $opsys = "CYGWIN_NT-6.0"
     then
        echo
        echo
@@ -201,12 +201,12 @@ ln -sf "$mpi_include/mpif.h" .
          1 )
            echo " "
            echo "g95 compiler selected"
-           opsys="CYGWIN_NT-5.1-g95"
+           opsys="CYGWIN_NT-6.0-g95"
            ;;
          * )
            echo " "
            echo "gfortran Compiler selected"
-           opsys="CYGWIN_NT-5.1-gfortran"
+           opsys="CYGWIN_NT-6.0-gfortran"
            ;;
          esac
     fi
@@ -1675,7 +1675,7 @@ qcache=auto "
 
             ;;
 	    
-    CYGWIN_NT-5.1-g95)
+    CYGWIN_NT-6.0-g95)
 	    mach_file="CYGNT.F"
    
             FORTRAN_CMD=g95
@@ -1696,11 +1696,11 @@ qcache=auto "
 
             ;;
 
-    CYGWIN_NT-5.1-gfortran)
+    CYGWIN_NT-6.0-gfortran)
             mach_file="CYGNT.F"
 
-            FORTRAN_CMD=gfortran
-            LINK_CMD=gfortran
+            FORTRAN_CMD=gfortran-4
+            LINK_CMD=gfortran-4
             libs_d="odepack.a blas90.a dgtsv90.a"
             libs="odepack.a blas90.a dgtsv90.a"
 

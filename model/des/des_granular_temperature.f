@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: DES_GRANULAR_TEMPERATURE(GTC, FAC)                     C
-!  Purpose: DES - Calculate the DES granular temperature               C
+!>  Purpose: DES - Calculate the DES granular temperature               
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C

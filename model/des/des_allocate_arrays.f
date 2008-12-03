@@ -4,8 +4,8 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !                                                                    
 !  Module name: DES_ALLOCATE_ARRAYS                                     
-!  Purpose: allocate arrays for DES
-!                                                                    C
+!>  Purpose: allocate arrays for DES
+!                                  
 !                                                                   
 !-----------------------------------------------
 !   M o d u l e s 
@@ -73,7 +73,8 @@
          DO M = 1, MMAX
             PART_MPHASE(M) = FLOOR((6.D0*VOL_FRAC(M)*VOL_DOMAIN)/(PI*(D_P0(M)**3.D0)))
          ENDDO
-         WRITE(*,*) 'MMAX = ', MMAX, 'PART_MPHASE = ',  PART_MPHASE, VOL_DOMAIN,D_P0(1), pi,  (6.D0*VOL_FRAC(1)*VOL_DOMAIN)/(PI*(D_P0(1)**3.D0))
+         WRITE(*,*) 'MMAX = ', MMAX, 'PART_MPHASE = ',  PART_MPHASE, VOL_DOMAIN, &       
+         D_P0(1), pi,  (6.D0*VOL_FRAC(1)*VOL_DOMAIN)/(PI*(D_P0(1)**3.D0))
          PARTICLES = SUM(PART_MPHASE(1:MMAX))
          
       ENDIF

@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GRID_BASED_NEIGHBOR_SEARCH                             C
-!  Purpose: Cell linked search                                         C
+!>  Purpose: Cell linked search 
 !                                                                      C
 !  Author: Rahul Garg                                 Date: 01-Aug-07  C
 !  Reviewer: Sreekanth Pannala                        Date: 24-OCT-08  C
@@ -204,7 +204,8 @@
                                  DIST(:) = DES_POS_NEW(NEIGHBOURS(LL,NEIGH_L),:) - DES_POS_NEW(LL,:)
                                  DISTMAG = SQRT(DES_DOTPRDCT(DIST,DIST))
                                  PRINT*,'LL =',NEIGHBOURS(LL,NEIGH_L), DES_POS_NEW(NEIGHBOURS(LL,NEIGH_L),:)
-                                 PRINT*,DISTMAG, FACTOR_RLM*(DES_RADIUS(LL) + DES_RADIUS(NEIGHBOURS(LL,NEIGH_L))),DES_RADIUS(LL),  DES_RADIUS(NEIGHBOURS(LL,NEIGH_L)), FACTOR_RLM
+                                 PRINT*,DISTMAG, FACTOR_RLM*(DES_RADIUS(LL) + DES_RADIUS(NEIGHBOURS(LL,NEIGH_L))), &
+                                 DES_RADIUS(LL),  DES_RADIUS(NEIGHBOURS(LL,NEIGH_L)), FACTOR_RLM
                               ENDDO
                               STOP 
                            end IF

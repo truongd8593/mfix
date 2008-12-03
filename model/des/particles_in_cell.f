@@ -1,9 +1,11 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name:  PARTICLES_IN_CELL                                     C
-!  Purpose: DES - Finding the fluid computational cell in which        C
-!           a particle lies, to calculte void fraction and also        C
-!           the volume averaged solids velocity of the cell            C
+!>
+!!  Purpose: DES - Finding the fluid computational cell in which      
+!!           a particle lies, to calculte void fraction and also       
+!!           the volume averaged solids velocity of the cell            
+!<
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C 

@@ -1,18 +1,22 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: DRAG_FGS                                               C
-!  Purpose: DES - Calculte the drag force and pressure force           C
-!           on particles exerted by the gas. Cell centered             C
+!>
+!!  Purpose: DES - Calculte the drag force and pressure force           
+!!           on particles exerted by the gas. Cell centered            
+!<
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !  Revision Number 3                                  Date: 2-July-07  C
 !  Author: Rahul Garg                                                  C
-!  Purpose: Now the drag_fgs routine is called from calc_drag in model C
-!  directory as well as by calc_forces_des. Calling arguments have     C
-!  also changed. Depending on the choice, once can obtain drag force   C
-!  based on local velocities or averaged velocities
+!>
+!!  Purpose: Now the drag_fgs routine is called from calc_drag in model 
+!!  directory as well as by calc_forces_des. Calling arguments have     
+!!  also changed. Depending on the choice, once can obtain drag force   
+!!  based on local velocities or averaged velocities
+!<
 !   
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE DRAG_FGS

@@ -1,7 +1,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CFNOCONTACT(L)                                         C
-!  Purpose: DES - Zeroing values when particles are not in contact     C
+!>
+!!  Purpose: DES - Zeroing values when particles are not in contact     
+!<
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C

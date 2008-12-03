@@ -1,8 +1,10 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name:  CELL_NEAR_WALL                                        C
-!  Purpose: FIND THE CELLS THAT IN THE NEIGHBORHOOD OF WALLS OR INTERNAL C
-!           SURFACES                                                   C
+!>
+!!  Purpose: FIND THE CELLS THAT IN THE NEIGHBORHOOD OF WALLS OR INTERNAL 
+!!           SURFACES                                                   
+!<
 !                                                                      C
 !  Author: Tingwen Li                                 Date: 17-Jan-08  C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C

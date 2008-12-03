@@ -1,7 +1,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CFRELVEL(L, II, VRELTRANS)                             C
-!  Purpose: DES - Calculate relative velocity between a particle pair  C
+!>
+!!  Purpose: DES - Calculate relative velocity between a particle pair  
+!<
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
@@ -10,11 +12,13 @@
 !            The tangent, tangential and normal velocity components    C
 !            are now calculated in this routine only                   C
 !                                                                      C
-!  Comments: Relative (translational) velocity required                C
-!  for Eqn 6  from the following paper                                 C
-!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical         C
-!  simulation of plug glow of cohesionless particles in a              C
-!  horizontal pipe", Powder technology, 71, 239-250, 1992              C
+!>
+!!  Comments: Relative (translational) velocity required                
+!!  for Eqn 6  from the following paper                                
+!!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical       
+!!  simulation of plug glow of cohesionless particles in a           
+!!  horizontal pipe", Powder technology, 71, 239-250, 1992          
+!<
 !                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CFRELVEL(L, II, VRELTRANS,VRN, VRT,  TANGNT, NORM)
@@ -62,5 +66,3 @@
 
       RETURN
       END SUBROUTINE CFRELVEL
-
-

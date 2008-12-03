@@ -1,9 +1,11 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GAS_DRAG(A_M, B_M, VXF_GS, IER, UV, VV, WV)            C
-!  Purpose: DES - Accounting for the equal and opposite drag force     C
-!           on gas due to particles by introducing the drag            C      
-!           as a source term. Face centered                            C
+!>
+!!  Purpose: DES - Accounting for the equal and opposite drag force   
+!!           on gas due to particles by introducing the drag           
+!!           as a source term. Face centered                            
+!<
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C

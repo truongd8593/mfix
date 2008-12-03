@@ -1,7 +1,12 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                         C  
 !     Module name: DES_TIME_MARCH                                         C
-!     Purpose: Called in time_march.f to do DES calcs                     C
+
+!>
+!>    Purpose: Called in model/time_march.f to do DES calcs
+!>    Main DEM driver routine
+!>
+
 !                                                                         C
 !     Author: Jay Boyalakuntla                           Date: 21-Jun-04  C
 !     Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C
@@ -102,13 +107,7 @@
 !     New values
                                        
                   !     Force calculation         
-                  IF(DES_PERIODIC_WALLS) THEN
-                     CALL CALC_FORCE_DES
-                  ELSE IF(INLET_OUTLET) THEN
-                     CALL DES_INLET_OUTLET
-                  ELSE
-                     CALL CALC_FORCE_DES
-                  END IF
+                  CALL CALC_FORCE_DES
                   
                   DO LN = 1, PARTICLES
                      CALL CFNEWVALUES(LN)
@@ -189,14 +188,7 @@
          
 
 !     Force calculation         
-         IF(DES_PERIODIC_WALLS) THEN
-            CALL CALC_FORCE_DES
-
-         ELSE IF(INLET_OUTLET) THEN
-            CALL DES_INLET_OUTLET
-         ELSE
-            CALL CALC_FORCE_DES
-         END IF
+         CALL CALC_FORCE_DES
          
          DO LN = 1, PARTICLES
             CALL CFNEWVALUES(LN)
