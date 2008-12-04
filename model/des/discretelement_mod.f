@@ -75,10 +75,12 @@
 !     Particle-particle and Particle-wall contact parameters
 !     Spring contants      
       DOUBLE PRECISION KN, KN_W ! Normal
-      DOUBLE PRECISION KT, KT_W ! Tangential
+      DOUBLE PRECISION KT, KT_W, KT_FAC, KT_W_FAC ! Tangential factors = KT/KN and KT_w/KN_w, resp.
 !     Damping coeffients      
       DOUBLE PRECISION ETA_DES_N, ETA_N_W ! Normal
       DOUBLE PRECISION ETA_DES_T, ETA_T_W ! Tangential
+!     Tangential damping factors, eta_t = eta_t_factor * eta_N
+      DOUBLE PRECISION DES_ETAT_FAC, DES_ETAT_W_FAC
 !     Damping coeffients in array form 
       DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE :: DES_ETAN, DES_ETAT !(MMAX, MMAX)
       
@@ -86,12 +88,13 @@
 !     Friction coeficients
       DOUBLE PRECISION MEW, MEW_W
 !coeff of restituion input in one D array, solid solid
-      DOUBLE PRECISION DES_EN_INPUT(DIM_M+DIM_M*(DIM_M-1)/2),DES_ET_INPUT(DIM_M+DIM_M*(DIM_M-1)/2)
+! Tangential rest. coef. are not used in the code and thus are removed (sof) DEC-04-2008
+      DOUBLE PRECISION DES_EN_INPUT(DIM_M+DIM_M*(DIM_M-1)/2) !DES_ET_INPUT(DIM_M+DIM_M*(DIM_M-1)/2)
 !     coeff of restituion input in one D array, solid wall 
-      DOUBLE PRECISION  DES_EN_WALL_INPUT(DIM_M),  DES_ET_WALL_INPUT(DIM_M)
+      DOUBLE PRECISION  DES_EN_WALL_INPUT(DIM_M) !  DES_ET_WALL_INPUT(DIM_M)
 !actual coeff of rest.'s rearranged 
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::  REAL_EN, REAL_ET !(MMAX,MMAX)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  REAL_EN_WALL,  REAL_ET_WALL !(MMAX)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::  REAL_EN
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  REAL_EN_WALL
 !     
 !     Wall treatment      
       INTEGER WALLCONTACT

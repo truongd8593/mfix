@@ -73,9 +73,20 @@
       RMS_RAD = SQRT(RMS_RAD/PARTICLES)
       AVG_MASS = SUM(PMASS(1:PARTICLES))/PARTICLES
       AVG_RAD = SUM(DES_RADIUS(1:PARTICLES))/PARTICLES
-      KT = (2.d0/7.d0)*KN
-      KT_W = (2.d0/7.d0)*KN_W
-
+! 
+! User's input for KT_FAC and KT_W_FAC will be used, otherwise these values are
+! estimated using: Silbert et al, 2001, Physical Review E, vol. 64-5, see page 051302-5
+      IF(KT_FAC == UNDEFINED) THEN
+         KT = (2.d0/7.d0)*KN
+      ELSE
+         KT = KT_FAC*KN
+      ENDIF
+      IF(KT_W_FAC == UNDEFINED) THEN
+         KT_W = (2.d0/7.d0)*KN_W
+      ELSE
+         KT_W = KT_W_FAC*KN_W
+      ENDIF
+      
       IF(.NOT.DES_PERIODIC_WALLS) THEN
          DES_PERIODIC_WALLS_X = .FALSE.
          DES_PERIODIC_WALLS_Y = .FALSE.
@@ -124,13 +135,19 @@
          DO J = I, MMAX
             COUNT_E = COUNT_E + 1
             REAL_EN(I,J) = DES_EN_INPUT(COUNT_E)
-            REAL_ET(I,J) = DES_ET_INPUT(COUNT_E)
             MASS_I = (PI*(D_P0(I)**3.d0)*RO_S(I))/6.d0
             MASS_J = (PI*(D_P0(J)**3.d0)*RO_S(J))/6.d0
             MASS_EFF = (MASS_I*MASS_J)/(MASS_I + MASS_J)
             DES_ETAN(I,J) = 2.D0*SQRT(KN*MASS_EFF)*ABS(LOG(REAL_EN(I,J)))
             DES_ETAN(I,J) = DES_ETAN(I,J)/SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2.0)
-            DES_ETAT(I,J) = HALF*DES_ETAN(I,J)
+! 
+! User's input for DES_ETAT_FAC will be used, otherwise these values are
+! estimated using: Silbert et al, 2003, Physics of Fluids, vol. 15-1, see page 3
+	    IF(DES_ETAT_FAC == UNDEFINED) THEN
+	       DES_ETAT(I,J) = HALF*DES_ETAN(I,J)
+	    ELSE
+	       DES_ETAT(I,J) = DES_ETAT_FAC*DES_ETAN(I,J)
+	    ENDIF
 
             TCOLL_TMP = PI/SQRT(KN/MASS_EFF - ((DES_ETAN(I,J)/MASS_EFF)**2.d0)/4.d0)
             
@@ -142,7 +159,6 @@
       DO I = 1, MMAX
          COUNT_E = COUNT_E + 1  
          REAL_EN_WALL(I) = DES_EN_WALL_INPUT(COUNT_E)
-         REAL_ET_WALL(I) = DES_ET_WALL_INPUT(COUNT_E)
          MASS_I = (PI*(D_P0(I)**3.d0)*RO_S(I))/6.d0
          MASS_J = MASS_I
 !     MASS_EFF = (MASS_I*MASS_J)/(MASS_I + MASS_J)
@@ -150,7 +166,14 @@
          MASS_EFF = MASS_I
          DES_ETAN_WALL(I) = 2.d0*SQRT(KN_W*MASS_EFF)*ABS(LOG(REAL_EN_WALL(I)))
          DES_ETAN_WALL(I) = DES_ETAN_WALL(I)/SQRT(PI*PI + (LOG(REAL_EN_WALL(I)))**2.0)
-         DES_ETAT_WALL(I) = HALF*DES_ETAN_WALL(I)
+! 
+! User's input for DES_ETA_W_FAC will be used, otherwise these values are
+! estimated using: Silbert et al, 2003, Physics of Fluids, vol. 15-1, see page 3
+	 IF(DES_ETAT_W_FAC == UNDEFINED) THEN
+            DES_ETAT_WALL(I) = HALF*DES_ETAN_WALL(I)
+	 ELSE
+            DES_ETAT_WALL(I) = DES_ETAT_W_FAC*DES_ETAN_WALL(I)
+	 ENDIF
 
          TCOLL_TMP = PI/SQRT(KN_W/MASS_EFF - ((DES_ETAN_WALL(I)/MASS_EFF)**2.d0)/4.d0)
          
@@ -161,7 +184,6 @@
       DO I = 1, MMAX
          DO J = I, MMAX
             REAL_EN(J, I) = REAL_EN(I,J)
-            REAL_ET(J, I) = REAL_ET(I,J)
             DES_ETAN(J,I) = DES_ETAN(I,J)
             DES_ETAT(J,I) = DES_ETAT(I,J)
          ENDDO
