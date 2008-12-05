@@ -135,6 +135,9 @@
          WRITE (UNIT_LOG, 1015)
          CALL MFIX_EXIT(myPE)
       END IF
+!
+! Overwrite user's input in case of DEM (no fluid)
+      IF(.NOT.DES_CONTINUUM_COUPLED) DES_INTERP_ON = .FALSE.
       
       RETURN
  1000 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA.',/' Message: ',&
