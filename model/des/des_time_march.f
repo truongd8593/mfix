@@ -151,7 +151,12 @@
          END IF
       ELSE
          write(*,*) ' dt, dtsolid = ', dt, dtsolid, nint(dt/dtsolid)
-         FACTOR = CEILING(real(TSTOP/DTSOLID)) + 1
+         FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID)) ! added TIME for restart & +1 removed
+         S_TIME = TIME  ! get the right s_time from MFIX time in case of DEM restarts
+	 IF(RUN_TYPE .NE. 'NEW') THEN
+	   PTC = DTSOLID ! for restarts these two counters shoud not start from zero.
+	   DESRESDT = DTSOLID
+	 ENDIF
       END IF
       
       PRINT *,"Discrete Element Simulation is being called"&
@@ -216,14 +221,15 @@
          IF(PRINT_DES_DATA) THEN    
             IF(.NOT.DES_CONTINUUM_COUPLED) THEN
                PTC = PTC + DTSOLID
-               IF(PTC.GE.P_TIME) THEN
+         ! Additional check was added to make sure DEM data are written at exactly NN = FACTOR.
+	       IF((PTC.GE.P_TIME .AND. NN .NE. (FACTOR-1)) .OR. NN == FACTOR) THEN
                   
                   CALL DES_GRANULAR_TEMPERATURE
                   CALL WRITE_DES_DATA
          
                   WRITE(*,*) 'DES_SPX file written at Time= ', S_TIME
-                   WRITE(UNIT_LOG,*) 'DES_SPX file written at Time= ', S_TIME
-                  PTC = ZERO
+                  WRITE(UNIT_LOG,*) 'DES_SPX file written at Time= ', S_TIME
+                  PTC = PTC - P_TIME ! this should not be set to zero but to the residual time difference.
                END IF
             END IF
          END IF
@@ -231,12 +237,13 @@
 !     Write Restart for DEM only case
          IF(.NOT.DES_CONTINUUM_COUPLED) THEN
             DESRESDT = DESRESDT + DTSOLID
-            IF(DESRESDT.GE.RES_DT) THEN
+            IF((DESRESDT.GE.RES_DT .AND. NN .NE. (FACTOR-1)) .OR. NN == FACTOR) THEN ! same as PTC
                CALL WRITE_DES_RESTART
+	       CALL WRITE_RES1 ! write RES1 here instead of time_march, this will also keep track of TIME.
                WRITE(*,*) 'DES_RES file written at Time= ', S_TIME
 
                WRITE(UNIT_LOG,*) 'DES_RES file written at Time= ', S_TIME
-               DESRESDT = 0.0d0
+               DESRESDT = DESRESDT - RES_DT
             END IF
          END IF
 
@@ -250,6 +257,7 @@
             S_TIME = S_TIME + DTSOLID
          ELSE
             S_TIME = S_TIME + DTSOLID
+	    TIME = S_TIME ! keep track of TIME for DEM simulations.
          END IF 
          IF(DES_CONTINUUM_COUPLED.AND.NN.eq.factor) CALL DES_GRANULAR_TEMPERATURE
       END DO                    ! end do NN = 1, FACTOR
@@ -259,9 +267,9 @@
 !     Write Restart
       IF(((TIME+DT+0.1d0*DT)>=DES_RES_TIME).OR.((TIME+DT+0.1d0*DT)>=TSTOP)) THEN
          CALL WRITE_DES_RESTART
-         WRITE(*,*) 'DES_RES file written at Time= ', TIME+DT
-         WRITE(*,*) 'DES_RES Debug', TIME+1.1*DT, DES_RES_TIME, RES_DT
-         WRITE(UNIT_LOG,*) 'DES_RES file written at Time= ', TIME+DT
+	 CALL WRITE_RES1 ! write RES1 here instead of time_march
+         WRITE(*,*) 'DES_RES file written at Time= ', TIME
+         WRITE(UNIT_LOG,*) 'DES_RES file written at Time= ', TIME
          DES_RES_TIME = (INT((TIME+DT+0.1d0*DT)/RES_DT) + 1)*RES_DT
       END IF
 
