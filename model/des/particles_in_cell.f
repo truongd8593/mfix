@@ -228,7 +228,7 @@
                   ENDIF
                end IF
             END IF
-            IF(PINC(IJK).GT.0) THEN
+            IF(ROP_S(IJK,M) > ZERO) THEN
                EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
                !EP_G(IJK) = ONE
                IF(EP_G(IJK).LT.ZERO) then 
