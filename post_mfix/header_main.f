@@ -59,6 +59,8 @@
       WRITE (*,*)&
         '  9   - Perform ORNL calculations'
       WRITE (*,*)&
+        ' 10   - run scavenger code'
+       WRITE (*,*)&
         ' *************************************************'
 !
       CALL GET_SELECTION (SELECTION)
