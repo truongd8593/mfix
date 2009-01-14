@@ -41,13 +41,18 @@
       Use vshear
       Use mflux
       Use mchem
-!   JEG Added 
+!     JEG Added 04/01/2005
+!     University of Colorado, Hrenya Research Group
       use kintheory
       use kintheory2
-!   END JEG
+      Use cdist
+!     END JEG
       IMPLICIT NONE
       
       INTEGER M
+
+      integer :: dimension_3p   ! used during post_mfix to reduce allocations
+
 
 !// Modified the DIMENSION_X based on the new domain decomposition variables
       DIMENSION_I   = IMAX3
@@ -62,7 +67,13 @@
       DIMENSION_N_g = 1
       IF(NMAX(0) .NE. UNDEFINED_I)DIMENSION_N_g = NMAX(0)
       
-      
+      ! to reduce allocation space when doing post_mfix
+      if (bDoing_postmfix) then
+         dimension_3p = 1
+      else
+         dimension_3p = dimension_3
+      end if
+
       DIMENSION_N_s = 1
       DO M = 1, MMAX
         IF(NMAX(M) .NE. UNDEFINED_I)DIMENSION_N_s = MAX(DIMENSION_N_s, NMAX(M))
@@ -112,57 +123,57 @@
 
 !fldvar
       Allocate(  EP_g (DIMENSION_3) )
-      Allocate(  EP_go (DIMENSION_3) )
+      Allocate(  EP_go (DIMENSION_3p) )
       Allocate(  P_g (DIMENSION_3) )
-      Allocate(  P_go (DIMENSION_3) )
+      Allocate(  P_go (DIMENSION_3p) )
       Allocate(  RO_g (DIMENSION_3) )
-      Allocate(  RO_go (DIMENSION_3) )
+      Allocate(  RO_go (DIMENSION_3p) )
       Allocate(  ROP_g (DIMENSION_3) )
-      Allocate(  ROP_go (DIMENSION_3) )
+      Allocate(  ROP_go (DIMENSION_3p) )
       Allocate(  ROP_s (DIMENSION_3, DIMENSION_M) )
-      Allocate(  ROP_so (DIMENSION_3, DIMENSION_M) )
+      Allocate(  ROP_so (DIMENSION_3p, DIMENSION_M) )
       Allocate(  T_g (DIMENSION_3) )
       Allocate(  T_s (DIMENSION_3, DIMENSION_M) )
-      Allocate(  T_go (DIMENSION_3) )
-      Allocate(  T_so (DIMENSION_3, DIMENSION_M) )
+      Allocate(  T_go (DIMENSION_3p) )
+      Allocate(  T_so (DIMENSION_3p, DIMENSION_M) )
       Allocate(  X_g (DIMENSION_3, DIMENSION_N_g) )
       Allocate(  X_s (DIMENSION_3, DIMENSION_M, DIMENSION_N_s) )
-      Allocate(  X_go (DIMENSION_3, DIMENSION_N_g) )
-      Allocate(  X_so (DIMENSION_3, DIMENSION_M, DIMENSION_N_s) )
+      Allocate(  X_go (DIMENSION_3p, DIMENSION_N_g) )
+      Allocate(  X_so (DIMENSION_3p, DIMENSION_M, DIMENSION_N_s) )
       Allocate(  U_g (DIMENSION_3) )
-      Allocate(  U_go (DIMENSION_3) )
+      Allocate(  U_go (DIMENSION_3p) )
       Allocate(  U_s (DIMENSION_3, DIMENSION_M) )
-      Allocate(  U_so (DIMENSION_3, DIMENSION_M) )
+      Allocate(  U_so (DIMENSION_3p, DIMENSION_M) )
       Allocate(  V_g (DIMENSION_3) )
-      Allocate(  V_go (DIMENSION_3) )
+      Allocate(  V_go (DIMENSION_3p) )
       Allocate(  V_s (DIMENSION_3, DIMENSION_M) )
-      Allocate(  V_so (DIMENSION_3, DIMENSION_M) )
+      Allocate(  V_so (DIMENSION_3p, DIMENSION_M) )
       Allocate(  W_g (DIMENSION_3) )
-      Allocate(  W_go (DIMENSION_3) )
+      Allocate(  W_go (DIMENSION_3p) )
       Allocate(  W_s (DIMENSION_3, DIMENSION_M) )
-      Allocate(  W_so (DIMENSION_3, DIMENSION_M) )
+      Allocate(  W_so (DIMENSION_3p, DIMENSION_M) )
       Allocate(  P_s (DIMENSION_3, DIMENSION_M) )
       Allocate(  P_s_c (DIMENSION_3, DIMENSION_M) )
       Allocate(  P_s_v (DIMENSION_3) )
       Allocate(  P_s_f (DIMENSION_3) )
       Allocate(  P_s_p (DIMENSION_3) )
       Allocate(  P_star (DIMENSION_3) )
-      Allocate(  P_staro (DIMENSION_3) )
+      Allocate(  P_staro (DIMENSION_3p) )
       Allocate(  THETA_m (DIMENSION_3, DIMENSION_M) )
-      Allocate(  THETA_mo (DIMENSION_3, DIMENSION_M) )
+      Allocate(  THETA_mo (DIMENSION_3p, DIMENSION_M) )
 
 
 
       IF(K_Epsilon)then
         Allocate(  K_Turb_G (DIMENSION_3) )
-        Allocate(  K_Turb_Go (DIMENSION_3) )
+        Allocate(  K_Turb_Go (DIMENSION_3p) )
         Allocate(  E_Turb_G (DIMENSION_3) )
-        Allocate(  E_Turb_Go (DIMENSION_3) )
+        Allocate(  E_Turb_Go (DIMENSION_3p) )
       ENDIF
       
       IF(DIMENSION_Scalar /= 0)then
         Allocate(  Scalar (DIMENSION_3,  DIMENSION_Scalar) )
-        Allocate(  Scalaro (DIMENSION_3, DIMENSION_Scalar) )
+        Allocate(  Scalaro (DIMENSION_3p, DIMENSION_Scalar) )
       
       ENDIF
 
@@ -193,21 +204,21 @@
       Allocate(  FY_N_bar (0:DIMENSION_J) )
       Allocate(  FZ_T (0:DIMENSION_K) )
       Allocate(  FZ_T_bar (0:DIMENSION_K) )
-      Allocate(  AYZ (DIMENSION_3) )
-      Allocate(  AXZ (DIMENSION_3) )
-      Allocate(  AXY (DIMENSION_3) )
+      Allocate(  AYZ (DIMENSION_3p) )
+      Allocate(  AXZ (DIMENSION_3p) )
+      Allocate(  AXY (DIMENSION_3p) )
       Allocate(  VOL (DIMENSION_3) )
-      Allocate(  AYZ_U (DIMENSION_3) )
-      Allocate(  AXZ_U (DIMENSION_3) )
-      Allocate(  AXY_U (DIMENSION_3) )
+      Allocate(  AYZ_U (DIMENSION_3p) )
+      Allocate(  AXZ_U (DIMENSION_3p) )
+      Allocate(  AXY_U (DIMENSION_3p) )
       Allocate(  VOL_U (DIMENSION_3) )
-      Allocate(  AYZ_V (DIMENSION_3) )
-      Allocate(  AXZ_V (DIMENSION_3) )
-      Allocate(  AXY_V (DIMENSION_3) )
+      Allocate(  AYZ_V (DIMENSION_3p) )
+      Allocate(  AXZ_V (DIMENSION_3p) )
+      Allocate(  AXY_V (DIMENSION_3p) )
       Allocate(  VOL_V (DIMENSION_3) )
-      Allocate(  AYZ_W (DIMENSION_3) )
-      Allocate(  AXZ_W (DIMENSION_3) )
-      Allocate(  AXY_W (DIMENSION_3) )
+      Allocate(  AYZ_W (DIMENSION_3p) )
+      Allocate(  AXZ_W (DIMENSION_3p) )
+      Allocate(  AXY_W (DIMENSION_3p) )
       Allocate(  VOL_W (DIMENSION_3) )
 
 !indices
@@ -226,11 +237,11 @@
 
 
 !pgcor
-      Allocate(  d_e(DIMENSION_3, 0:DIMENSION_M) )
-      Allocate(  d_n(DIMENSION_3, 0:DIMENSION_M) )
-      Allocate(  d_t(DIMENSION_3, 0:DIMENSION_M) )
-      Allocate(  Pp_g(DIMENSION_3) )
-      Allocate(           PHASE_4_P_g(DIMENSION_3) )
+      Allocate(  d_e(DIMENSION_3p, 0:DIMENSION_M) )
+      Allocate(  d_n(DIMENSION_3p, 0:DIMENSION_M) )
+      Allocate(  d_t(DIMENSION_3p, 0:DIMENSION_M) )
+      Allocate(  Pp_g(DIMENSION_3p) )
+      Allocate(  PHASE_4_P_g(DIMENSION_3p) )
 
 !physprop
       Allocate(  MU_g (DIMENSION_3) )
@@ -240,17 +251,17 @@
       Allocate(  K_s (DIMENSION_3, DIMENSION_M) )
       Allocate(  Kth_s (DIMENSION_3, DIMENSION_M) )
       Allocate(  Kphi_s (DIMENSION_3, DIMENSION_M) )
-      Allocate(  DIF_g (DIMENSION_3, DIMENSION_N_g) )
-      Allocate(  DIF_s (DIMENSION_3, DIMENSION_M, DIMENSION_N_s) )
+      Allocate(  DIF_g (DIMENSION_3p, DIMENSION_N_g) )
+      Allocate(  DIF_s (DIMENSION_3p, DIMENSION_M, DIMENSION_N_s) )
       Allocate(  MW_MIX_g (DIMENSION_3) )
 
 !pscor
-      Allocate(  e_e(DIMENSION_3) )
-      Allocate(  e_n(DIMENSION_3) )
-      Allocate(  e_t(DIMENSION_3) )
-      Allocate(  K_cp(DIMENSION_3) )
-      Allocate(  EPp(DIMENSION_3) )
-      Allocate(           PHASE_4_P_s(DIMENSION_3) )
+      Allocate(  e_e(DIMENSION_3p) )
+      Allocate(  e_n(DIMENSION_3p) )
+      Allocate(  e_t(DIMENSION_3p) )
+      Allocate(  K_cp(DIMENSION_3p) )
+      Allocate(  EPp(DIMENSION_3p) )
+      Allocate(  PHASE_4_P_s(DIMENSION_3p) )
 
 !residual
       Allocate( RESID(NRESID, 0:DIMENSION_M) )
@@ -262,12 +273,12 @@
  
 !rxns
       if (nRR .gt. 0) Allocate( ReactionRates(DIMENSION_3,nRR) )
-      Allocate(  R_gp (DIMENSION_3, DIMENSION_N_g) )
-      Allocate(  R_sp (DIMENSION_3, DIMENSION_M, DIMENSION_N_s) )
-      Allocate(  RoX_gc (DIMENSION_3, DIMENSION_N_g) )
-      Allocate(  RoX_sc (DIMENSION_3, DIMENSION_M, DIMENSION_N_s) )
-      Allocate(  SUM_R_g (DIMENSION_3) )
-      Allocate(  SUM_R_s (DIMENSION_3, DIMENSION_M) )
+      Allocate(  R_gp (DIMENSION_3p, DIMENSION_N_g) )
+      Allocate(  R_sp (DIMENSION_3p, DIMENSION_M, DIMENSION_N_s) )
+      Allocate(  RoX_gc (DIMENSION_3p, DIMENSION_N_g) )
+      Allocate(  RoX_sc (DIMENSION_3p, DIMENSION_M, DIMENSION_N_s) )
+      Allocate(  SUM_R_g (DIMENSION_3p) )
+      Allocate(  SUM_R_s (DIMENSION_3p, DIMENSION_M) )
       Allocate(  R_phase (DIMENSION_3, DIMENSION_LM+DIMENSION_M-1) )
       Allocate(  MW_all (DIMENSION_N_all) )
       Allocate(  SPECIES_ID2N(DIMENSION_N_all, 2) )
@@ -277,9 +288,9 @@
 !scalars
       
       IF(DIMENSION_Scalar /= 0)then
-        Allocate(  Scalar_c (DIMENSION_3,  DIMENSION_Scalar) )
-        Allocate(  Scalar_p (DIMENSION_3,  DIMENSION_Scalar) )
-        Allocate(  Dif_Scalar (DIMENSION_3, DIMENSION_Scalar) )
+        Allocate(  Scalar_c (DIMENSION_3p,  DIMENSION_Scalar) )
+        Allocate(  Scalar_p (DIMENSION_3p,  DIMENSION_Scalar) )
+        Allocate(  Dif_Scalar (DIMENSION_3p, DIMENSION_Scalar) )
       
       ENDIF
 
@@ -310,12 +321,12 @@
 !K-Epsilon Turbulence model
       
       IF(K_Epsilon)then
-        Allocate(  K_Turb_G_c (DIMENSION_3) )
-        Allocate(  K_Turb_G_p (DIMENSION_3) )
-        Allocate(  Dif_K_Turb_G (DIMENSION_3) )
-        Allocate(  E_Turb_G_c (DIMENSION_3) )
-        Allocate(  E_Turb_G_p (DIMENSION_3) )
-        Allocate(  Dif_E_Turb_G (DIMENSION_3) )
+        Allocate(  K_Turb_G_c   (DIMENSION_3p) )
+        Allocate(  K_Turb_G_p   (DIMENSION_3p) )
+        Allocate(  Dif_K_Turb_G (DIMENSION_3p) )
+        Allocate(  E_Turb_G_c   (DIMENSION_3p) )
+        Allocate(  E_Turb_G_p   (DIMENSION_3p) )
+        Allocate(  Dif_E_Turb_G (DIMENSION_3p) )
       
       ENDIF
 ! Simonin or Ahmadi model
@@ -328,14 +339,14 @@
       ENDIF
 
 !tau_g
-      Allocate(  TAU_U_g(DIMENSION_3) )
-      Allocate(  TAU_V_g(DIMENSION_3) )
-      Allocate(  TAU_W_g(DIMENSION_3) )
+      Allocate(  TAU_U_g(DIMENSION_3p) )
+      Allocate(  TAU_V_g(DIMENSION_3p) )
+      Allocate(  TAU_W_g(DIMENSION_3p) )
 
 !tau_s
-      Allocate(  TAU_U_s(DIMENSION_3, DIMENSION_M) )
-      Allocate(  TAU_V_s(DIMENSION_3, DIMENSION_M) )
-      Allocate(  TAU_W_s(DIMENSION_3, DIMENSION_M) )
+      Allocate(  TAU_U_s(DIMENSION_3p, DIMENSION_M) )
+      Allocate(  TAU_V_s(DIMENSION_3p, DIMENSION_M) )
+      Allocate(  TAU_W_s(DIMENSION_3p, DIMENSION_M) )
       
 !tmp_array
       Allocate(  Array1(DIMENSION_3) )
@@ -404,55 +415,54 @@
 !
 
 ! array allocation for higher order implementation
-      Allocate(           FLAG3 (DIMENSION_4) )
-      Allocate(           CELL_CLASS3 (DIMENSION_4) )
-      Allocate(           I3_OF (DIMENSION_4) )
-      Allocate(           J3_OF (DIMENSION_4) )
-      Allocate(           K3_OF (DIMENSION_4) )
-      Allocate(           Im1_3 (-1:DIMENSION_I+1) )
-      Allocate(           Ip1_3 (-1:DIMENSION_I+1) )
-      Allocate(           Jm1_3 (-1:DIMENSION_J+1) )
-      Allocate(           Jp1_3 (-1:DIMENSION_J+1) )
-      Allocate(           Km1_3 (-1:DIMENSION_K+1) )
-      Allocate(           Kp1_3 (-1:DIMENSION_K+1) )
+      Allocate( FLAG3 (DIMENSION_4) )
+      Allocate( CELL_CLASS3 (DIMENSION_4) )
+      Allocate( I3_OF (DIMENSION_4) )
+      Allocate( J3_OF (DIMENSION_4) )
+      Allocate( K3_OF (DIMENSION_4) )
+      Allocate( Im1_3 (-1:DIMENSION_I+1) )
+      Allocate( Ip1_3 (-1:DIMENSION_I+1) )
+      Allocate( Jm1_3 (-1:DIMENSION_J+1) )
+      Allocate( Jp1_3 (-1:DIMENSION_J+1) )
+      Allocate( Km1_3 (-1:DIMENSION_K+1) )
+      Allocate( Kp1_3 (-1:DIMENSION_K+1) )
  
 !mflux
-      Allocate(    Flux_gE(DIMENSION_3) ) 
-      Allocate(    Flux_sE(DIMENSION_3, DIMENSION_M) ) 
-      Allocate(    Flux_gN(DIMENSION_3) ) 
-      Allocate(    Flux_sN(DIMENSION_3, DIMENSION_M) ) 
-      Allocate(    Flux_gT(DIMENSION_3) ) 
-      Allocate(    Flux_sT(DIMENSION_3, DIMENSION_M) ) 
-      Allocate(    ROP_gE(DIMENSION_3) ) 
-      Allocate(    ROP_sE(DIMENSION_3, DIMENSION_M) ) 
-      Allocate(    ROP_gN(DIMENSION_3) ) 
-      Allocate(    ROP_sN(DIMENSION_3, DIMENSION_M) ) 
-      Allocate(    ROP_gT(DIMENSION_3) ) 
-      Allocate(    ROP_sT(DIMENSION_3, DIMENSION_M) ) 
+      Allocate( Flux_gE(DIMENSION_3p) )
+      Allocate( Flux_sE(DIMENSION_3p, DIMENSION_M) )
+      Allocate( Flux_gN(DIMENSION_3p) )
+      Allocate( Flux_sN(DIMENSION_3p, DIMENSION_M) )
+      Allocate( Flux_gT(DIMENSION_3p) )
+      Allocate( Flux_sT(DIMENSION_3p, DIMENSION_M) )
+      Allocate( ROP_gE(DIMENSION_3p) )
+      Allocate( ROP_sE(DIMENSION_3p, DIMENSION_M) )
+      Allocate( ROP_gN(DIMENSION_3p) )
+      Allocate( ROP_sN(DIMENSION_3p, DIMENSION_M) )
+      Allocate( ROP_gT(DIMENSION_3p) )
+      Allocate( ROP_sT(DIMENSION_3p, DIMENSION_M) )
 
 !     JEG Added 
+!     University of Colorado, Hrenya Research Group
 !     Arising from kinetic theory of Iddir & Arastoopour (2005)
-!     EDvel_sM_ip & ED_ss_ip are also used for kinetic theory
-!          of Garzo & Dufty (1999)
-      Allocate(    KTMOM_U_s(DIMENSION_3, DIMENSION_M) )
-      Allocate(    KTMOM_V_s(DIMENSION_3, DIMENSION_M) )
-      Allocate(    KTMOM_W_s(DIMENSION_3, DIMENSION_M) )
+      Allocate(    KTMOM_U_s(DIMENSION_3p, DIMENSION_M) )
+      Allocate(    KTMOM_V_s(DIMENSION_3p, DIMENSION_M) )
+      Allocate(    KTMOM_W_s(DIMENSION_3p, DIMENSION_M) )
       Allocate(    trD_s2_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )      
       Allocate(    MU_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
       Allocate(    MU_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
       Allocate(    XI_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
       Allocate(    XI_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    Fnu_s_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    FT_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    FT_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+      Allocate(    Fnu_s_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+      Allocate(    FT_sM_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+      Allocate(    FT_sL_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
       Allocate(    Kth_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
       Allocate(    Knu_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
       Allocate(    Knu_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
       Allocate(    Kvel_s_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    EDT_s_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    EDvel_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    EDvel_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    ED_ss_ip(DIMENSION_3, 0:DIMENSION_LM) )
+      Allocate(    EDT_s_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+      Allocate(    EDvel_sM_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+      Allocate(    EDvel_sL_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+      Allocate(    ED_ss_ip(DIMENSION_3p, 0:DIMENSION_LM) )
       Allocate(    GRAN_DISS(0:DIMENSION_M) )
 
      
