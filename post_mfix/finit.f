@@ -284,7 +284,7 @@
 
       implicit none
 
-      integer   :: L , nb , n , i , nArrays 
+      integer   :: L , nb , n , i , nArrays , kfile
 
       ! deallocate some of MFIX variables so we can
       ! allocate in ProcessSpxFile without worrying
@@ -364,6 +364,17 @@
       write (*,*) 'enter number of processors'
       read (*,*) np
 
+      write (*,*) ' '
+      write (*,*) 'what files should be stitched together ?'
+      write (*,*) ' '
+      write (*,*) '    -1 : RES and all SPX'
+      write (*,*) '     0 : RES only'
+      write (*,*) '   k>0 : The kth SPx file (k=1 to 11)'
+      write (*,*) ' '
+      read  (*,*) kfile
+      write (*,*) ' '
+
+
 
 
       allocate ( cell_map(ijkmax2) )
@@ -391,7 +402,7 @@
 
       call ReadProcessorInfo       ! istart3/iend3 etc for each processor
 
-      call OpenScavengerFiles(NB)
+      call OpenScavengerFiles(NB,kfile)
 
 
       ! process the files 
@@ -417,7 +428,8 @@
          if (L .eq. 10) nArrays = nRR
          if (L .eq. 11 .and. k_Epsilon) nArrays = 2
 
-         call ProcessSpxFile(L,nb,nArrays)
+         if ( kfile.lt.0 .or. (kfile.gt.0 .and. kfile.eq.l) )  &
+                     call ProcessSpxFile(L,nb,nArrays,kfile)
 
       end do
 
@@ -425,7 +437,7 @@
 
       ! now let's look at the RES files
 
-      call CreateOpen_RES_files(NB)
+      call CreateOpen_RES_files(NB,kfile)
 
       deallocate( cell_map )
       deallocate ( is3 )
@@ -444,7 +456,7 @@
 
 ! *************************  subroutine ProcessSpxFile *********************
 
-      subroutine ProcessSpxFile(L,nb,nArrays)
+      subroutine ProcessSpxFile(L,nb,nArrays,kfile)
 
       Use param
       Use param1
@@ -455,19 +467,20 @@
       implicit none
 
       integer   :: L , n , nb , last_r , ijk , k , nArrays , NA
-      integer   :: next_rec , tstep , num_rec
+      integer   :: next_rec , tstep , num_rec , kfile
       real      :: time_r
       real, dimension(:,:) , allocatable :: r_array
 
       write (fname_scav(NB+8:NB+8),'(a1)') ext(L:L)
-      write (*,*) 'processing file : ' , fname_scav(1:nb+8)
 
       if (nArrays.eq.0) then
-         write (*,*) '            .... not processing'
+         write (*,*) fname_scav(1:nb+8) , ' : no time records added'
+	 if (kfile .gt. 0) write (*,*) ' '
          return
       end if
 
- 
+      write (*,*)  fname_scav(1:nb+8) , ' : processing'
+
       allocate( r_array(ijkmax2,nArrays) )
 
       open (unit=10,file=fname_scav,status='old',recl=512, &
@@ -495,6 +508,7 @@
               close(unit=20)
               close(unit=10)
               deallocate( r_array )
+              if (kfile .gt. 0) write (*,*) ' '
               return
            end if
 
@@ -537,6 +551,8 @@
 
       deallocate(r_array)
 
+      if (kfile .gt. 0) write (*,*) ' '
+
       return 
       end
 
@@ -559,7 +575,6 @@
       ! (xxxx = processor number)
 
       do L = 1,np
-!!!!!!!!!!      do L = np,1,-1
          fname = 'p_info_xxxxx.txt'
          write (fname(8:12),'(i5.5)') L-1
 
@@ -592,10 +607,6 @@
             if (ijk_io .gt. 0  .and. ijk_io .le. ijkmax2) then
                cell_map(ijk_io)%proc = L
                cell_map(ijk_io)%ijk  = ijk_proc
-
-               if (ijk_io .eq. 92346) then
-                  write (*,*) ' ***** ' , L,ijk_proc
-               end if
             end if
          end do
        
@@ -608,7 +619,7 @@
 
 ! *************************  subroutine OpenScavengerFiles *********************
 
-      subroutine OpenScavengerFiles(nb)
+      subroutine OpenScavengerFiles(nb,kfile)
 
       Use param
       Use param1
@@ -617,13 +628,17 @@
 
       implicit none
 
-      integer   :: L , NB
+      integer   :: L , NB , kfile
+
+      if (kfile .eq. 0) return  ! only doing RES file
 
       fname_scav = run_name(1:NB-1) // '_SCAV.SPx'
  
       ! create the scavenger files ... write out the first 3 records
       do L = 1,N_SPX
-      
+
+         if (kfile.gt.0 .and. l.ne.kfile) goto 100
+
          write (fname_scav(NB+8:NB+8),'(a1)') ext(L:L)
        
          open (unit=10,file=fname_scav,status='unknown',recl=512, &
@@ -642,7 +657,9 @@
           
          write(10,rec=3) 4,-1
          close (unit=20)
-       
+
+ 100     continue
+
       end do     
 
       return
@@ -653,7 +670,7 @@
 
 ! *************************  subroutine CreateOpen_RES_files *********************
 
-      subroutine CreateOpen_RES_files(nb)
+      subroutine CreateOpen_RES_files(nb,kfile)
 
       Use param
       Use param1
@@ -667,27 +684,32 @@
 
       implicit none
 
-      integer :: L , NB , next_rec , ntot 
-      integer :: max_dim , n , ijk , k
+      integer :: L , NB , next_rec , ntot
+      integer :: max_dim , n , ijk , k , kfile
 
       double precision, dimension(:) , allocatable :: d_tmp
       double precision, dimension(:) , allocatable :: array
 
       character :: fname*80
 
+      if (kfile .gt. 0) return
+
       call close_old_run()
 
       fname_scav = run_name(1:NB-1) // '_SCAV.RES'
-      fname_dist = run_name(1:NB-1) // '.RES'        ! the "0000" file (but currently
+      fname_dist = run_name(1:NB-1) // '.RES'        ! the "00000" file (but currently
                                                       ! still has original name
 
-      open (unit=10,file=fname_scav,status='unknown',recl=512, &
+      write (*,*) fname_scav(1:nb+8) , ' : processing'
+
+
+      open (unit=10,file=fname_scav(1:nb+8),status='unknown',recl=512, &
                          access='direct',form='unformatted')
 
       open(unit=20,file=fname_dist,status='old',recl=512, &
                          access='direct',form='unformatted')
 
-      open(unit=11,file='deb.txt',status='unknown')
+!      open(unit=11,file='deb.txt',status='unknown')
 
       ! the following writes all of the RES0 header data
       read(20,rec=3) next_rec
@@ -715,8 +737,8 @@
 
          read(21,rec=3) cr(L)
 
-         cr(L) = cr(L) + 1   ! TIME, DT, NSTEP 
-         write (*,*) ' l,cr(l) = ' , L,CR(L)
+         cr(L) = cr(L) + 1   ! TIME, DT, NSTEP
+!         write (*,*) ' l,cr(l) = ' , L,CR(L)
 
          close(unit=21)
 
@@ -757,26 +779,11 @@
             call in_bin_512(20,d_tmp,n_cells(N),cr(N))
            close (unit=20)
 
-            ! ???? when writing out the processor RES
-            ! files ... are we converting to IO ????
-
             do ijk = 1,ijkmax2
-              ! if (ijk.eq.90262) then
-              !     if (L.eq.1 .and. N.eq.26) then
-              !        write (*,*) ' *******************'
-              !        write (*,*) N,d_tmp(3118)
-              !    else if (L.eq.1 .and. N.eq.27) then
-               !       write (*,*) ' *******************'
-               !       write (*,*) N,d_tmp(3082)
-              !     end if
-               ! end if
 
                 if ( cell_map(ijk)%proc .eq. n ) then
                    k = cell_map(ijk)%ijk
                    array( ijk ) = d_tmp ( k )
-               !    if (L.eq.1 .and. ijk.eq.90262) then
-               !       write (*,*) ' using processor = ' , n
-               !    end if
                end if
             end do
 
@@ -791,6 +798,8 @@
 
       deallocate (array)
       deallocate (d_tmp)
+
+      write (*,*) ' '
 
       return
       end
