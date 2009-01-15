@@ -5,10 +5,10 @@
 !  A dummy variable is defined, so that the code can be compiled with the
 !  template include file.
 !
-      DOUBLE PRECISION DUMMY_DP
+      DOUBLE PRECISION DUMMY_DPA
 !
 !     Double Precision variables
-      COMMON / USR_DATA_DP / DUMMY_DP
+      COMMON / USR_DATA_DP / DUMMY_DPA
 !
 !     Integer variables
 !      COMMON / USR_DATA_I /
@@ -20,4 +20,4 @@
 !      COMMON / USR_DATA_C /
 !
 !
-      NAMELIST / USR_INPUT_DATA / DUMMY_DP
+      NAMELIST / USR_INPUT_DATA / DUMMY_DPA

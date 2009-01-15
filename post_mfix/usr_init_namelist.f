@@ -28,7 +28,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !-----------------------------------------------
-      NAMELIST /USR_INPUT_DATA/DUMMY_DP 
+      NAMELIST /USR_INPUT_DATA/DUMMY_DPA 
 !
 !
       RETURN  
