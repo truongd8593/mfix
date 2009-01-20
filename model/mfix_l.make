@@ -1257,7 +1257,8 @@ allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             mflux.mod \
             mchem.mod \
             kintheory.mod \
-            kintheory2.mod 
+            kintheory2.mod \
+            cdist.mod 
 bc_phi.$(OBJ_EXT) : bc_phi.f \
             param.mod \
             param1.mod \
