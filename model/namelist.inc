@@ -175,4 +175,10 @@
 ! 1.13 Parallel related
 
 	     IS_SERIAL, USE_DOLOOP, minimize_dotproducts, icheck_bicgs, &
-             solver_statistics, opt_parallel
+             solver_statistics, opt_parallel , &
+
+! 1.14 Distributed IO (version 1) related variables
+
+             bDist_IO , bStart_with_one_RES
+
+     
