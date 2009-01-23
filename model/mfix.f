@@ -344,7 +344,7 @@
 ! for creating files needed by post_mfix with distributed IO
 
 !AEOLUS DEBUG PRINT 
-    if (DBGPRN_LAYOUT) then
+    if (DBGPRN_LAYOUT .or. bdist_io) then
 !     write (*,*) myPE , ' E.4 ... version = ' , version(1:33)
       call debug_write_layout(1,ier)
       call write_parallel_info(1,ier)
