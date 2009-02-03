@@ -33,6 +33,7 @@
       USE indices
       USE physprop
       USE constant
+      USE discretelement
       USE funits 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -46,6 +47,17 @@
 !-----------------------------------------------
       INTEGER :: LC, N 
 !-----------------------------------------------
+!
+!
+! Overwrite any user's DES logicals set with discrete_element = .false.
+!
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         DES_CONTINUUM_COUPLED = .FALSE.
+         DES_INTERP_ON = .FALSE.
+         TSUJI_DRAG = .FALSE.
+         WALLDTSPLIT = .FALSE.
+         PRINT_DES_DATA = .FALSE.
+      ENDIF
 !
 !
 ! CHECK MMAX
