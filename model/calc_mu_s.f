@@ -81,24 +81,23 @@
       Implicit NONE
 
 !     Local Variables
-!     
 !     Error index
       INTEGER          IER
 !     Solids Phase
       INTEGER          M, IJK
 !     Blend Factor
       Double Precision blend
-!
+
       DOUBLE PRECISION , EXTERNAL :: BLEND_FUNCTION
-!     
+     
       Include 'function.inc'
       
       IF (SHEAR) CALL add_shear(M)
 
       CALL init_mu_s(M, IER)    ! initializing/calculating all the quantities needed for various options
-!     
-      IF (SHEAR) call remove_shear(M)  	 
-        	 
+     
+      IF (SHEAR) call remove_shear(M)
+
       IF(MU_s0 /= UNDEFINED) RETURN ! constant solids viscosity case 
 
 !     GRANULAR_ENERGY
@@ -118,13 +117,13 @@
 !     .FALSE.
 !     EP_g < EP_star  -->  friction_schaeffer + viscous(pde)
 !     EP_g >= EP_star -->  viscous (pde)
-!     
+     
 !     
 !     Viscous-flow stress tensor
 !     
       IF(.NOT.GRANULAR_ENERGY) then
          call gt_algebraic(M,IER) !algebraic granular energy equation
-      ELSE                      !granular energy transport equation
+      ELSE                        !granular energy transport equation
           IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                CALL gt_pde_ia_nonep(M,IER)   ! complete polydisperse IA theory
           ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
@@ -137,20 +136,19 @@
 !     Frictional stress tensors
 !     
       IF (SCHAEFFER .AND. CLOSE_PACKED(M)) call friction_schaeffer(M,IER) ! Schaeffer's Frictional Formulation
-!     
+     
       IF(FRICTION .AND. CLOSE_PACKED(M)) call friction_princeton(M,IER) ! Princeton's frictional implementation
       
       IF(BLENDING_STRESS) THEN
 
          DO 200 IJK = ijkstart3, ijkend3
-	    
+    
             blend =  blend_function(IJK)
            
             Mu_s_c(IJK,M) = Mu_s_v(IJK)
             Mu_s(IJK,M) = (1.0d0-blend)*Mu_s_p(IJK) &
             + blend*Mu_s_v(IJK) + Mu_s_f(IJK)
             
-!     
 !     bulk viscosity in Mth solids phase   (add to plastic part)
             
             LAMBDA_s_c(IJK,M)= Lambda_s_v(IJK)
@@ -160,18 +158,17 @@
             P_s_c(IJK,M) = P_s_v(IJK)
             P_s(IJK,M) = (1.0d0-blend)*P_s_p(IJK) + blend*P_s_v(IJK) &
             + P_s_f(IJK)        !add to P_s
-!     
+     
             ALPHA_s(IJK,M) = (1.0d0-blend)*ALPHA_s_p(IJK) &
             + blend*ALPHA_s_v(IJK) + ALPHA_s_f(IJK)
-!     
+     
  200     ENDDO
 
       ELSE                      ! Blending Stress
 
          Mu_s_c(:,M) = Mu_s_v(:)
          Mu_s(:,M) = Mu_s_p(:) + Mu_s_v(:) + Mu_s_f(:)
-         
-!     
+     
 !     bulk viscosity in Mth solids phase   (add to plastic part)
          
          LAMBDA_s_c(:,M)= Lambda_s_v(:)
@@ -179,10 +176,9 @@
          
          P_s_c(:,M) = P_s_v(:)
          P_s(:,M) = P_s_p(:) + P_s_v(:) + P_s_f(:) !add to P_s
-!     
+     
       ENDIF                     ! Blending Stress
       
-!     
       RETURN
       END
 
@@ -191,7 +187,7 @@
 
 
       Subroutine friction_schaeffer(M, IER)
-!     
+     
       USE param
       USE param1
       USE geometry
@@ -206,7 +202,6 @@
       IMPLICIT NONE
 
 !     Local Variables
-!     
 !     Index
       INTEGER          IJK
 !     Solids phase
@@ -214,24 +209,24 @@
 !     Maximum value of solids viscosity in poise
       DOUBLE PRECISION MAX_MU_s
       PARAMETER (MAX_MU_s = 1000.D0)
-!     
+     
 !     Sum of all solids volume fractions
       DOUBLE PRECISION   SUM_EPS_CP
-!     
+     
 !     Factor in frictional-flow stress terms
       DOUBLE PRECISION qxP_s
 !     Error index
       INTEGER          IER     
 !     Include statement functions
-!     
+     
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
       INCLUDE 's_pr1.inc'
       INCLUDE 's_pr2.inc'
-!     
+     
       DO 200 IJK = ijkstart3, ijkend3       
-!     
+     
          IF ( FLUID_AT(IJK) ) THEN
             
 !     added closed pack, this has to be consistent with the normal frictional force
@@ -279,7 +274,7 @@
                LAMBDA_s_p(IJK) = ZERO
                ALPHA_s_p(IJK)  = ZERO
                P_s_p(IJK)  = ZERO
-!     
+     
 !     when solving for the granular energy equation (PDE) setting theta = 0 is done 
 !     in solve_granular_energy.f to avoid convergence problems. (sof)
                IF(.NOT.GRANULAR_ENERGY) THETA_m(IJK, M) = ZERO
@@ -313,7 +308,6 @@
       IMPLICIT NONE
 
 !     Local Variables
-!     
 !     Index
       INTEGER          IJK
 !     Solids phase
@@ -411,19 +405,19 @@
                ELSE
                   THETA_m(IJK,M) = ZERO
                ENDIF
-!     
+     
 !     Find pressure in the Mth solids phase
                P_s_v(IJK) = K_1m * EP_s2xTHETA
-!     
+     
 !     bulk viscosity in Mth solids phase
                LAMBDA_s_v(IJK) = K_2m * EP_sxSQRTHETA
-!     
+     
 !     shear viscosity in Mth solids phase
                MU_s_v(IJK) = K_3m * EP_sxSQRTHETA
-!     
+     
 !     Boyle-Massoudi stress coefficient
                ALPHA_s(IJK, M) = -K_5m * EP_s2xTHETA
-	    ENDIF
+            ENDIF
 
          Endif                  ! Fluid_at
  200  Continue                  ! outer IJK loop
@@ -435,7 +429,6 @@
 
       Subroutine gt_pde (M, IER)
 
-!     
       USE param
       USE param1
       USE geometry
@@ -500,13 +493,13 @@
 !     
       DO 200 IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
-	 J = J_OF(IJK)
-	 K = K_OF(IJK)       
-!     
+         J = J_OF(IJK)
+         K = K_OF(IJK)       
+     
          IF ( FLUID_AT(IJK) ) THEN
-!     
+     
 !     Defining a single particle drag coefficient (similar to one defined in drag_gs)
-!     
+     
             Re = D_p(IJK,M)*VREL_array(IJK)*ROP_G(IJK)/(MU_G(IJK) + small_number)
             IF(Re .LE. 1000D0)THEN
                C_d = (24.D0/(Re+SMALL_NUMBER)) * (ONE + 0.15D0 * Re**0.687D0)
@@ -514,17 +507,17 @@
                C_d = 0.44D0
             ENDIF
 !     This is from Wen-Yu correlation, you can put here your own single particle drag
-!     
+     
             DgA = 0.75D0 * C_d * VREL_array(IJK) * ROP_g(IJK) / D_p(IJK,M)
             IF(VREL_array(IJK) == ZERO) DgA = LARGE_NUMBER !for 1st iteration and 1st time step
-!     
+     
 !     Define some time scales and constants related to Simonin and Ahmadi models
-!     
+     
             IF(SIMONIN .OR. AHMADI) THEN
                C_mu = 9.0D-02
 !     particle relaxation time. For very dilute flows avoid singularity by
 !     redefining the drag as single partilce drag
-!     
+     
                IF(Ep_s(IJK,M) > DIL_EP_S .AND. F_GS(IJK,1) > small_number) THEN
                   Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
                ELSE             !for dilute flows, drag equals single particle drag law
@@ -535,32 +528,32 @@
 !     time scale of turbulent eddies
                Tau_1(ijk) = 3.d0/2.d0*C_MU*K_Turb_G(IJK)/(E_Turb_G(IJK)+small_number)
             ENDIF
-!     
+     
 !     Define some time scales and constants and K_12 related to Simonin model only	  
-!     
+     
             IF(SIMONIN) THEN
 !     This is Zeta_r**2 as defined by Simonin
                Zeta_r = 3.0d0 * VREL_array(IJK)**2 / (2.0d0*K_Turb_G(IJK)+small_number)
-!     
+     
 !     parameters for defining Tau_12: time-scale of the fluid turbulent motion
 !     viewed by the particles (crossing trajectory effect)
-!     
+     
                C_Beta = 1.8d0 - 1.35d0*Cos_Theta(IJK)**2
-!     
+     
 !     Lagrangian Integral time scale: Tau_12	    
                Tau_12(ijk) = Tau_1(ijk)/sqrt(ONE+C_Beta*Zeta_r)
-!     
+     
 !     Defining the inter-particle collision time
-!     
+     
                IF(Ep_s(IJK,M) > DIL_EP_S) THEN
                   Tau_2_c = D_p(IJK,M)/(6.d0*Ep_s(IJK,M)*G_0(IJK,M,M) &
                   *DSQRT(16.d0*(Theta_m(ijk,m)+Small_number)/PI))
                ELSE             ! assign it a large number
                   Tau_2_c = LARGE_NUMBER
                ENDIF
-!     
+     
                Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
-!     
+     
 !     Zeta_c: const. to be used in the K_2 Diffusion coefficient.
                Zeta_c  = (ONE+ C_e)*(49.d0-33.d0*C_e)/100.d0
 
@@ -571,13 +564,13 @@
 !     mixed time scale in the generalized Simonin theory (switch between dilute
 !     and kinetic theory formulation of the stresses)
                Tau_2 = ONE/(2./Tau_12_st+Sigma_c/Tau_2_c)
-!     
+     
 !     The ratio of densities
                X_21 = Ep_s(IJK,M)*RO_s(M)/(EP_g(IJK)*RO_g(IJK))
-!     
+     
 !     The ratio of these two time scales.
                Nu_t =  Tau_12(ijk)/Tau_12_st
-!     
+     
 !     Definition of an "algebraic" form of of Simonin K_12 PDE. This is obtained
 !     by equating the dissipation term to the exchange terms in the PDE and 
 !     neglecting all other terms, i.e. production, convection and diffusion.
@@ -589,34 +582,33 @@
                IF(K_12(ijk) > DSQRT(6.0D0*K_Turb_G(IJK)*theta_m(ijk,m))) THEN
                   K_12(ijk) = DSQRT(6.0D0*K_Turb_G(IJK)*theta_m(ijk,m))
                ENDIF
-!     
+     
             ENDIF               ! for Simonin
-!     
 
 !     This is added for consistency of multi-particles kinetic theory. Solids pressure,
 !     viscosity and conductivity must be additive. Thus non-linear terms (eps^2) are 
 !     corrected so the stresses of two identical solids phases are equal to those
 !     of a single solids phase. sof June 15 2005.
-!     
-	    SUM_EpsGo = ZERO
+     
+            SUM_EpsGo = ZERO
             DO MM = 1, MMAX
                SUM_EpsGo =  SUM_EpsGo+EP_s(IJK,MM)*G_0(IJK,M,MM)
-	    ENDDO 
-!     
+            ENDDO 
+     
 !     Find pressure in the Mth solids phase
             P_s_v(IJK) = ROP_s(IJK,M)*(1d0+ 4.D0 * Eta *&
             SUM_EpsGo)*Theta_m(IJK,M)
-!     
+     
 !     implement Simonin (same as granular) and Ahmadi solids pressures
             IF(SIMONIN) THEN
                P_s_v(IJK) = P_s_v(IJK) ! no changes to solids pressure
-	    ELSE IF(AHMADI) THEN
+            ELSE IF(AHMADI) THEN
                P_s_v(IJK) = ROP_s(IJK,M)*Theta_m(IJK,M) * ( (ONE + 4.0D0* &
                SUM_EpsGo ) + HALF*(ONE - C_e*C_e) )
-	    ENDIF
+            ENDIF
 
 !     find bulk and shear viscosity
-!     
+     
             Mu_s_v(IJK) = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(IJK,M)*RO_s(M))/96d0
             
             Mu_b_v(IJK) = (256d0*Mu_s_v(IJK)*EP_s(IJK,M)*SUM_EpsGo)&
@@ -626,7 +618,7 @@
             IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN !sof modifications (May 20 2005)
                Mu_star = Mu_s_v(IJK)
                
-	    ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
+            ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                Mu_star = ZERO
                
             ELSEIF(EP_S(IJK,M) < DIL_EP_S) THEN
@@ -636,94 +628,87 @@
                (RO_S(M)*SUM_EpsGo*Theta_m(IJK,M) &
                + 2.0d0*SWITCH*DgA/RO_S(M)* Mu_s_v(IJK))
                
-	    ELSE
+            ELSE
                Mu_star = RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)*Mu_s_v(IJK)/ &
                (RO_S(M)*SUM_EpsGo*Theta_m(IJK,M)+ &
                (2d0*SWITCH*F_gs(IJK,M)*Mu_s_v(IJK)/(RO_S(M)*EP_s(IJK,M))) )
             ENDIF
-!     
+     
 !     shear viscosity in Mth solids phase  (add to frictional part)
             Mu_s_v(IJK) =&
             ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*&
             G_0(IJK,M,M)))*(ONE+1.6d0*Eta*SUM_EpsGo)&
             *(ONE+1.6d0*Eta*(3d0*Eta-2d0)*&
             SUM_EpsGo)+(0.6d0*Mu_b_v(IJK)*Eta))
-!     
+     
 !     implement Simonin and Ahmadi solids viscosities
             IF(SIMONIN) THEN
-!     
+     
 !     Defining Simonin solids turbulent Kinetic (MU_2_T_Kin) and collisional (Mu_2_Col)
 !     viscosities
                MU_2_T_Kin = (2.0d0/3.0d0*K_12(ijk)*Nu_t + Theta_m(IJK,M) * &
                (ONE+ zeta_c_2*EP_s(IJK,M)*G_0(IJK,M,M)))*Tau_2
-!     
+     
                Mu_2_Col = 8.d0/5.d0*EP_s(IJK,M)*G_0(IJK,M,M)*Eta* (MU_2_T_Kin+ &
                D_p(IJK,M)*DSQRT(Theta_m(IJK,M)/PI))
-!     
+     
                Mu_b_v(IJK) = 5.d0/3.d0*EP_s(IJK,M)*RO_s(M)*Mu_2_Col
-!     
+     
                Mu_s_v(IJK) = EP_s(IJK,M)*RO_s(M)*(MU_2_T_Kin + Mu_2_Col)
                
-	    ELSE IF(AHMADI) THEN
-!
+            ELSE IF(AHMADI) THEN
+
               IF(EP_s(IJK,M) < (ONE-EP_star_array(ijk))) THEN
-	        Tmp_Ahmadi_Const = &
-	          ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/(ONE-EP_star_array(ijk)))**3)
+                Tmp_Ahmadi_Const = &
+                  ONE/(ONE+ Tau_1(ijk)/Tau_12_st * (ONE-EP_s(IJK,M)/(ONE-EP_star_array(ijk)))**3)
               ELSE
-	        Tmp_Ahmadi_Const = ONE
+                Tmp_Ahmadi_Const = ONE
               ENDIF
-!     
+     
 !     Defining Ahmadi shear and bulk viscosities. Ahmadi coefficient 0.0853 in C_mu
 !     was replaced by 0.1567 to include 3/2*sqrt(3/2) because K = 3/2 Theta_m
-!     
                Mu_s_v(IJK) = Tmp_Ahmadi_Const &
                *0.1045d0*(ONE/G_0(IJK,M,M)+3.2d0*EP_s(IJK,M)+12.1824d0*   &
                G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M))*D_p(IJK,M)*RO_s(M)*  &
                DSQRT(Theta_m(IJK,M))
-!     
+     
 !     This is a guess of what Mu_b might be by taking 5/3 of the collisional viscosity
 !     contribution. In this case col. visc. is the eps^2 contribution to Mu_s_v(IJK). This
 !     might be changed later if communications with Ahmadi reveals a diffrent appoach
-!     
                Mu_b_v(IJK) = 5.d0/3.d0* Tmp_Ahmadi_Const                  &
                *0.1045d0*(12.1824d0*G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M)) &
                *D_p(IJK,M)*RO_s(M)* DSQRT(Theta_m(IJK,M))
                
-	    ENDIF               !for simonin or ahmadi viscosity
+            ENDIF               !for simonin or ahmadi viscosity
             
             
             Kth=75d0*RO_s(M)*D_p(IJK,M)*DSQRT(Pi*Theta_m(IJK,M))/&
-            (48d0*Eta*(41d0-33d0*Eta))
+               (48d0*Eta*(41d0-33d0*Eta))
             
             IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN ! sof modifications (May 20 2005)
                Kth_star=Kth
-               
-	    ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
+            ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                Kth_star = ZERO
-               
-	    ELSEIF(EP_S(IJK,M) < DIL_EP_S) THEN
-               
+            ELSEIF(EP_S(IJK,M) < DIL_EP_S) THEN
                Kth_star = RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)* Kth/ &
                (RO_S(M)*SUM_EpsGo*Theta_m(IJK,M) &
                + 1.2d0*SWITCH*DgA/RO_S(M)* Kth)
-
-	    ELSE
+            ELSE
                Kth_star = RO_S(M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)*Kth/ &
                (RO_S(M)*SUM_EpsGo*Theta_m(IJK,M)+ &
                (1.2d0*SWITCH*F_gs(IJK,M)*Kth/(RO_S(M)*EP_s(IJK,M))) )
             ENDIF
-!     
+     
 !     granular conductivity in Mth solids phase
             Kth_s(IJK,M) = Kth_star/G_0(IJK,M,M)*(&
             ( ONE + (12d0/5.d0)*Eta*SUM_EpsGo )&
             * ( ONE + (12d0/5.d0)*Eta*Eta*(4d0*Eta-3d0)* SUM_EpsGo )&
             + (64d0/(25d0*Pi)) * (41d0-33d0*Eta) * (Eta*SUM_EpsGo)**2 )
-!     
+     
 !     implement Simonin and Ahmadi solids conductivities
             IF(SIMONIN) THEN
 
 !     Defining Simonin's Solids Turbulent Kinetic diffusivity: Kappa
-               
                Kappa_kin = (9.d0/10.d0*K_12(ijk)*Nu_t + 3.0D0/2.0D0 * &
                Theta_m(IJK,M)*(ONE+ Omega_c*EP_s(IJK,M)*G_0(IJK,M,M)))/&
                (9.d0/(5.d0*Tau_12_st) + zeta_c/Tau_2_c)
@@ -732,22 +717,20 @@
                (Kappa_kin+ 5.d0/9.d0*D_p(IJK,M)*DSQRT(Theta_m(IJK,M)/PI))
                
                Kth_s(IJK,M) =  EP_s(IJK,M)*RO_s(M)*(Kappa_kin + Kappa_Col)
-!     
+     
             ELSE IF(AHMADI) THEN
 
 !     Defining Ahmadi conductivity from his equation 42 in Cao and Ahmadi 1995 paper
 !     note the constant 0.0711 is now 0.1306 because K = 3/2 theta_m
-!     
                Kth_s(IJK,M) = 0.1306D0*RO_s(M)*D_p(IJK,M)*(ONE+C_e**2)* &
                (ONE/G_0(IJK,M,M)+4.8D0*EP_s(IJK,M)+12.1184D0 &
                *EP_s(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M) )  &
                *DSQRT(Theta_m(IJK,M))
-!     
+     
             ENDIF
 
-
             LAMBDA_S_V(IJK) = Eta*Mu_b_v(IJK) - (2d0*Mu_s_v(IJK))/3d0
-!     
+     
 !     granular 'conductivity' in the Mth solids phase associated
 !     with gradient in volume fraction
             
@@ -761,8 +744,7 @@
 !     &            DG_0DNU(EP_s(IJK,M))
 !     &            + 2*G_0(IJK,M,M))*Theta_m(IJK,M)
 !--------------------------------------------------------------------
-            
-!     
+     
 !     Boyle-Massoudi stress coefficient
             ALPHA_s_v(IJK) = ZERO
 
@@ -847,13 +829,12 @@
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------   
-!     
+     
       DO 200 IJK = ijkstart3, ijkend3
           I = I_OF(IJK)
           J = J_OF(IJK)
           K = K_OF(IJK)
 
-!     
           IF ( FLUID_AT(IJK) ) THEN
     
 !              Defining a single particle drag coefficient (similar to one defined in drag_gs)
@@ -910,7 +891,6 @@
                     * (1.d0+C_E) ) + (3.d0/5.d0)*gamma_star
 
                eta0 = 5.0d0*M_PM*DSQRT(Theta_m(IJK,M)/PI) / (16.d0*D_PM*D_PM)
-
     
 !              added Ro_g = 0 for granular flows (no gas). 
                IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN 
@@ -941,7 +921,6 @@
  
 !              Granular Conductivity
 !-----------------------------------
-!
                kappa0 = (15.d0/4.d0)*eta0
 
                nu_kappa_star = (G_0(IJK,M,M)/3.d0)*(1.d0+C_E) * ( 1.d0 + &
@@ -975,10 +954,8 @@
                          (1.2d0*F_gs(IJK,M)*kappa0/(RO_S(M)*EP_s(IJK,M))) )
                ENDIF
 
-  
 !              granular conductivity in Mth solids phase
                Kth_s(IJK,M) = Kth_star * kappa_star
-   
    
 !              transport coefficient of the Mth solids phase associated
 !              with gradient in volume fraction in heat flux
@@ -996,7 +973,7 @@
 
                IF (EP_S(IJK,M) .LT. SMALL_NUMBER) THEN
                     Kphi_s(IJK,M) = ZERO
-               ELSE			   
+               ELSE   
                     Kphi_s(IJK,M) = (Theta_m(IJK,M)*Kth_star/NU_PM)*qmu_star
                ENDIF
 
@@ -1104,13 +1081,13 @@
                IF (VREL_array(IJK) == ZERO) THEN
                     DgA = LARGE_NUMBER     ! for 1st iteration and 1st time step
                ENDIF
-!  
+  
 ! Added for concistancy of IA KT: 2 identical solids phases must yield same
 ! results as one solids phase. Both Mus and Kths are modified. 
 ! This is an ad-hoc modification as there are other possible ways of doing this.
 ! SWITCH_IA can be set to false in constant_mod to use standard IA theory.
 ! sof Dec 05 2006. 
-!   
+   
                IF(SWITCH_IA) THEN
                   SUM_EpsGo = ZERO
                   DO L = 1, MMAX
@@ -1268,7 +1245,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    
 ! find the granular conductivity in Mth solids phase      
                K_s_sum = ZERO
-!
+
                K_s_dil = (75.d0/384.d0)*D_PM* RO_S(M)*&
                     DSQRT(PI*Theta_m(IJK,M)/M_PM)
                
@@ -1276,7 +1253,7 @@
                     Kth_star = K_s_dil ! do nothing... granular flow
                ELSEIF(Theta_m(IJK,M)/M_PM < SMALL_NUMBER)THEN
                     Kth_star = ZERO
-!        
+        
                ELSEIF(EP_S(IJK,M) <= DIL_EP_s) THEN
                     Kth_star = K_s_dil*EP_s(IJK,M)*G_0(IJK,M,M)/ &
                          (SUM_EpsGo+ 1.2d0*DgA*K_s_dil &
@@ -1306,7 +1283,6 @@
 ! difference in velocity. again these terms cancel when
 ! added together so do not explicity include them
 ! in calculations
-
                          Kvel_s_ip(IJK,M,L) = ZERO
 
                          !     K_common_term*NU_PM*NU_PL*&
@@ -1316,7 +1292,6 @@
 ! difference in the gradient in number densities.
 ! again these terms cancel so do not explicity include
 ! them in calculations
-
                          Knu_sL_ip(IJK,M,L) = ZERO
 
                          !     K_common_term*NU_PM*&
@@ -1356,22 +1331,22 @@
                               Dp_lm**4 ) )+&
                               ( (14.d0*Bp_lm**4)/( Ap_lm**4.5 * Dp_lm**5 ) )
                          
-			 R6p_lm = ( 1.d0/( Ap_lm**3.5 * Dp_lm**3 ) )+ &
+                         R6p_lm = ( 1.d0/( Ap_lm**3.5 * Dp_lm**3 ) )+ &
                               ( (7.d0*Bp_lm*Bp_lm)/( Ap_lm**4.5 * Dp_lm**4 ) )+&
                               ( (126.d0*Bp_lm**4)/( 5.d0*Ap_lm**5.5 * Dp_lm**5 ) )
                          
-			 R7p_lm = ( 3.d0/( 2.d0*Ap_lm**2.5 * Dp_lm**4 ) )+ &
+                         R7p_lm = ( 3.d0/( 2.d0*Ap_lm**2.5 * Dp_lm**4 ) )+ &
                               ( (10.d0*Bp_lm*Bp_lm)/( Ap_lm**3.5 * Dp_lm**5 ) )+&
                               ( (35.d0*Bp_lm**4)/( Ap_lm**4.5 * Dp_lm**6 ) )
                          
-			 R8p_lm = ( 1.d0/( 2.d0*Ap_lm**1.5 * Dp_lm**4 ) )+ &
+                         R8p_lm = ( 1.d0/( 2.d0*Ap_lm**1.5 * Dp_lm**4 ) )+ &
                               ( (6.d0*Bp_lm*Bp_lm)/( Ap_lm**2.5 * Dp_lm**5 ) )+&
                               ( (25.d0*Bp_lm**4)/( Ap_lm**3.5 * Dp_lm**6 ) )
                          
-			 R9p_lm = ( 1.d0/( Ap_lm**2.5 * Dp_lm**3 ) )+ &
+                         R9p_lm = ( 1.d0/( Ap_lm**2.5 * Dp_lm**3 ) )+ &
                               ( (15.d0*Bp_lm*Bp_lm)/( Ap_lm**3.5 * Dp_lm**4 ) )+&
                               ( (70.d0*Bp_lm**4)/( Ap_lm**4.5 * Dp_lm**5 ) )
-!
+
                          K_common_term = DPSUMo2**3 * M_PL*M_PM/(2.d0*MPSUM)*&
                               (1.d0+C_E)*G_0(IJK,M,L) * (M_PM*M_PL)**1.5
 
@@ -1440,7 +1415,6 @@
 !              granular conductivity in Mth solids phase
                Kth_s(IJK,M) = K_s_sum
 
-
 !              Boyle-Massoudi stress coefficient
                ALPHA_s_v(IJK) = ZERO
 
@@ -1455,7 +1429,6 @@
 
 
       Subroutine Friction_princeton(M, IER)
-
 !     
 !     
       USE param
@@ -1473,7 +1446,6 @@
       IMPLICIT NONE
 !
 !     Local Variables
-!     
 !     Index
       INTEGER          IJK
 !
@@ -1490,43 +1462,39 @@
 !
 !     Error index
       INTEGER          IER     
-!     
-!
+     
+
 !     Function subroutines
-!     
       DOUBLE PRECISION G_0
-!
+
 !     Include statement functions
-!     
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
-!
-!
+
       DO 200 IJK = ijkstart3, ijkend3       
-!     
+     
          IF ( FLUID_AT(IJK) ) THEN
 
 !     close_packed was added for concistency with the Schaeffer model
 !     I'm also extending this model in the case where more than 1 solids
 !     phase are used (not completed yet). sof May24 2005.
-!
+
                IF (EP_g(IJK) .LT. (ONE-eps_f_min)) THEN
-!     
+     
 !     part copied from source_v_s.f (sof)
                   SUM_EPS_CP=0.0
                   DO MM=1,MMAX
                      IF (CLOSE_PACKED(MM)) SUM_EPS_CP=SUM_EPS_CP+EP_S(IJK,MM)
                   END DO
 !     end of part copied
-!     
+     
                   IF (SAVAGE.EQ.1) THEN !form of Savage
-            	     Mu_zeta =&
+                     Mu_zeta =&
                      ((2d0+ALPHA)/3d0)*((Mu_s_v(IJK)/(Eta*(2d0-Eta)*&
                      G_0(IJK,M,M)))*(1d0+1.6d0*Eta*EP_s(IJK,M)*&
                      G_0(IJK,M,M))*(1d0+1.6d0*Eta*(3d0*Eta-2d0)*&
                      EP_s(IJK,M)*G_0(IJK,M,M))+(0.6d0*Mu_b_v(IJK)*Eta))
-                     
                      
                      ZETA =&
                      ((48d0*Eta*(1d0-Eta)*RO_s(M)*EP_s(IJK,M)*&
@@ -1540,20 +1508,18 @@
                      trD_s_C(IJK,M))/3.d0))**0.5d0
                      
                   ELSE          !combined form
-                     
                      ZETA = ((Theta_m(IJK,M)/(D_p(IJK,M)*D_p(IJK,M))) +&
                      (trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
                      trD_s_C(IJK,M))/3.d0)))**0.5d0
                      
                   ENDIF
                   
-                  
                   IF ((ONE-EP_G(IJK)) .GT. (ONE-ep_star_array(ijk))) THEN
                      Pc = 1d25*(((ONE-EP_G(IJK))- (ONE-ep_star_array(ijk)))**10d0)
                   ELSE
                      Pc = Fr*(((ONE-EP_G(IJK)) - EPS_f_min)**N_Pc)/&
                      (((ONE-ep_star_array(ijk)) - (ONE-EP_G(IJK)) +&
-		     SMALL_NUMBER)**D_Pc)
+                     SMALL_NUMBER)**D_Pc)
                   ENDIF
  
                   IF (trD_s_C(IJK,M) .GE. ZERO) THEN
@@ -1567,12 +1533,12 @@
                     P_s_f(IJK) =ZERO
                     PfoPc = ZERO
                   
-		  ELSEIF(trD_s_C(IJK,M) == ZERO) THEN
+                  ELSEIF(trD_s_C(IJK,M) == ZERO) THEN
                     
-		    P_s_f(IJK) = Pc
+                    P_s_f(IJK) = Pc
                     PfoPc = ONE
                   
-		  ELSE
+                  ELSE
                   
                     P_s_f(IJK) = Pc*(1d0 - (trD_s_C(IJK,M)/(ZETA&
                     *N_Pff*DSQRT(2d0)*Sin_Phi)))**(N_Pff-1d0)
@@ -1580,8 +1546,6 @@
                     PfoPc = (1d0 - (trD_s_C(IJK,M)/(ZETA&
                     *N_Pff*DSQRT(2d0)*Sin_Phi)))**(N_Pff-1d0)
                  ENDIF
-               
-               
                
                  Chi = DSQRT(2d0)*P_s_f(IJK)*Sin_Phi*(N_Pff - (N_Pff-1d0)*&
                  (PfoPc)**(1d0/(N_Pff-1d0)))
@@ -1591,12 +1555,10 @@
                     Chi = ZERO
                  ENDIF
                
-               
                  Mu_s_f(IJK) = Chi/(2d0*ZETA)
                  Lambda_s_f(IJK) = - 2d0*Mu_s_f(IJK)/3d0
-!     
+     
 !     modification of the stresses in case of more than one solids phase are used (sof)
-!     
                  P_s_f(IJK) = P_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
                  Mu_s_f(IJK) = Mu_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
                  Lambda_s_f(IJK) = Lambda_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
@@ -1628,22 +1590,20 @@
       IMPLICIT NONE
 
 !     Local Variables
-!     
 !     Index
       INTEGER          IJK
 !     Solids phase
       INTEGER          M
-!     
+     
 !     Include statement functions
-!
       INCLUDE 'function.inc'
-!
+
 !     $omp parallel do private(IJK)
-      Do IJK= ijkstart3, ijkend3         
-         IF (FLUID_AT(IJK)) THEN  	 
-            V_s(ijk,m)=V_s(IJK,m)+VSH(IJK)	
+      DO IJK= ijkstart3, ijkend3         
+         IF (FLUID_AT(IJK)) THEN  
+            V_s(ijk,m)=V_s(IJK,m)+VSH(IJK)
          END IF
-      END DO	
+      ENDDO
 
       Return
       End                       ! add_shear
@@ -1662,22 +1622,20 @@
       IMPLICIT NONE
 
 !     Local Variables
-!     
 !     Index
       INTEGER          IJK
 !     Solids phase
       INTEGER          M
-!     
+     
 !     Include statement functions
-!
       INCLUDE 'function.inc'
-!
+
 !     $omp parallel do private(IJK)
-      Do IJK= ijkstart3, ijkend3
-         IF (FLUID_AT(IJK)) THEN  	 
-            V_s(IJK,m)=V_s(IJK,m)-VSH(IJK)	
-	 END IF
-      END DO
+      DO IJK= ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) THEN  
+            V_s(IJK,m)=V_s(IJK,m)-VSH(IJK)
+         ENDIF
+      ENDDO
 
       Return
       End                       ! remove_shear
@@ -1709,13 +1667,10 @@
       IMPLICIT NONE
       
 !     Function subroutines
-!     
       DOUBLE PRECISION G_0
-!
       double precision calc_ep_star
-!     
+
 !     Local Variables
-!     
 !     Error index
       INTEGER          IER
 !     
@@ -1769,10 +1724,8 @@
 !     Cell center value of solids and gas velocities 
       DOUBLE PRECISION USCM, UGC, VSCM, VGC, WSCM, WGC 
 !     
-
 !     Local DO-LOOP counters and phase index
       INTEGER          I1, I2, MM
-
 !     
 !     d(EP_sm)/dX
       DOUBLE PRECISION DEP_soDX
@@ -1798,10 +1751,8 @@
 !     
 !     Shear related reciprocal time scale
       DOUBLE PRECISION SRT
-!     
+     
 !     Include statement functions
-!     
-!     
       INCLUDE 's_pr1.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -1843,10 +1794,9 @@
       IF (SHEAR) SRT=(2d0*V_sh/XLENGTH)
 
       DO 200 IJK = ijkstart3, ijkend3       
-!     
+     
          IF ( FLUID_AT(IJK) ) THEN
-            
-!     
+     
 !------------------------------------------------------------------------
 !     CALL SET_INDEX1(IJK, I, J, K, IMJK, IPJK, IJMK, IJPK,
 !     &                       IJKM, IJKP, IJKW, IJKE, IJKS, IJKN,
@@ -1944,7 +1894,7 @@
             W_s_W = AVG_X(                                 & !i-1/2, j, k
             AVG_Z_T(W_s(IMJKM, M), W_s(IMJK, M)),&
             AVG_Z_T(W_s(IJKM, M), W_s(IJK, M)), IM )
-!     
+     
             IF(CYLINDRICAL) THEN
                U_s_C = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I) !i, j, k
                W_s_C = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M)) !i, j, k
@@ -1952,23 +1902,23 @@
                U_s_C = ZERO
                W_s_C = ZERO
             ENDIF
-!     
+     
 !     Check for IS surfaces and modify solids velocity-comp accordingly
             IF(ANY_IS_DEFINED) THEN
-	      IF(IS_AT_N(IJK) .AND. .NOT.WALL_AT(IJPK)) U_s_N = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
-	      IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) U_s_S = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
-	      IF(IS_AT_T(IJK) .AND. .NOT.WALL_AT(IJKP)) U_s_T = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
-	      IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) U_s_B = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
-	      IF(IS_AT_E(IJK) .AND. .NOT.WALL_AT(IPJK)) V_s_E = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
-	      IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) V_s_W = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
-	      IF(IS_AT_T(IJK) .AND. .NOT.WALL_AT(IJKP)) V_s_T = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
-	      IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) V_s_B = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
-	      IF(IS_AT_N(IJK) .AND. .NOT.WALL_AT(IJPK)) W_s_N = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
-	      IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) W_s_S = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
-	      IF(IS_AT_E(IJK) .AND. .NOT.WALL_AT(IPJK)) W_s_E = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
-	      IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) W_s_W = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
+              IF(IS_AT_N(IJK) .AND. .NOT.WALL_AT(IJPK)) U_s_N = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
+              IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) U_s_S = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
+              IF(IS_AT_T(IJK) .AND. .NOT.WALL_AT(IJKP)) U_s_T = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
+              IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) U_s_B = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
+              IF(IS_AT_E(IJK) .AND. .NOT.WALL_AT(IPJK)) V_s_E = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
+              IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) V_s_W = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
+              IF(IS_AT_T(IJK) .AND. .NOT.WALL_AT(IJKP)) V_s_T = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
+              IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) V_s_B = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
+              IF(IS_AT_N(IJK) .AND. .NOT.WALL_AT(IJPK)) W_s_N = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
+              IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) W_s_S = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
+              IF(IS_AT_E(IJK) .AND. .NOT.WALL_AT(IPJK)) W_s_E = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
+              IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) W_s_W = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
             ENDIF
-!     
+     
 !     Find components of Mth solids phase continuum strain rate
 !     tensor, D_s, at center of THETA cell-(i, j, k)
             D_s(1,1) = ( U_s(IJK,M) - U_s(IMJK,M) ) * oDX(I)
@@ -1993,12 +1943,9 @@
             D_s(3,3) = ( W_s(IJK,M) - W_s(IJKM,M) ) * (oX(I)*oDZ(K)) +&
             U_s_C * oX(I)
 
-
-!     
 !     Calculate the trace of D_s
             trD_s_C(IJK,M) = D_s(1,1) + D_s(2,2) + D_s(3,3)
 
-!     
 !     Calculate trace of the square of D_s
             trD_s2(IJK,M) = 0.D0 !Initialize the totalizer
             DO 20 I1 = 1,3
@@ -2006,18 +1953,16 @@
                   trD_s2(IJK,M) = trD_s2(IJK,M) + D_s(I1,I2)*D_s(I1,I2)
  10            CONTINUE
  20         CONTINUE
-!            use this fact to prevent underflow during theta calculation
+!     use this fact to prevent underflow during theta calculation
              if(trD_s2(IJK,M) == zero)trD_s_C(IJK,M) = zero 
-!     
-!              JEG Added 
-!              University of Colorado, Hrenya Research Group
-!              The trace of D_sm dot D_sl is required in the implementation of
-!              Iddir's (2004) kinetic theory 
-!
+
+
+!     The trace of D_sm dot D_sl is required in the implementation of
+!     Iddir's (2004) kinetic theory 
             IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                DO L = 1,MMAX
-		  IF (L .ne. M) THEN
-		     IF (L > M) THEN !done because trD_s2_ip(IJK,M,L) is symmetric, sof.
+                  IF (L .ne. M) THEN
+                     IF (L > M) THEN !done because trD_s2_ip(IJK,M,L) is symmetric, sof.
                          Usl_N = AVG_Y(&                    !i, j+1/2, k
                               AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I),&
                               AVG_X_E(U_s(IMJPK, L), U_s(IJPK, L), I), J)
@@ -2083,7 +2028,7 @@
                          Wsl_W = AVG_X(&                    !i-1/2, j, k
                               AVG_Z_T(W_s(IMJKM, L), W_s(IMJK, L)),&
                               AVG_Z_T(W_s(IJKM, L), W_s(IJK, L)), IM )
-!     
+     
                          IF(CYLINDRICAL) THEN
                               Usl_C = AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I) !i, j, k
                               Wsl_C = AVG_Z_T(W_s(IJKM, L), W_s(IJK, L))    !i, j, k
@@ -2091,10 +2036,25 @@
                               Usl_C = ZERO
                               Wsl_C = ZERO
                          ENDIF
-!
-!                        Find components of Lth solids phase continuum strain rate
-!                        tensor, D_sl, at center of THETA cell-(i, j, k) 
-!  
+
+!     Check for IS surfaces and modify solids velocity-comp accordingly
+            IF(ANY_IS_DEFINED) THEN
+              IF(IS_AT_N(IJK)  .AND. .NOT.WALL_AT(IJPK)) Usl_N = AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I)
+              IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) Usl_S = AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I)
+              IF(IS_AT_T(IJK)  .AND. .NOT.WALL_AT(IJKP)) Usl_T = AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I)
+              IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) Usl_B = AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I)
+              IF(IS_AT_E(IJK)  .AND. .NOT.WALL_AT(IPJK)) Vsl_E = AVG_Y_N(V_s(IJMK, L), V_s(IJK, L))
+              IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) Vsl_W = AVG_Y_N(V_s(IJMK, L), V_s(IJK, L))
+              IF(IS_AT_T(IJK)  .AND. .NOT.WALL_AT(IJKP)) Vsl_T = AVG_Y_N(V_s(IJMK, L), V_s(IJK, L))
+              IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) Vsl_B = AVG_Y_N(V_s(IJMK, L), V_s(IJK, L))
+              IF(IS_AT_N(IJK)  .AND. .NOT.WALL_AT(IJPK)) Wsl_N = AVG_Z_T(W_s(IJKM, L), W_s(IJK, L))
+              IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) Wsl_S = AVG_Z_T(W_s(IJKM, L), W_s(IJK, L))
+              IF(IS_AT_E(IJK)  .AND. .NOT.WALL_AT(IPJK)) Wsl_E = AVG_Z_T(W_s(IJKM, L), W_s(IJK, L))
+              IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) Wsl_W = AVG_Z_T(W_s(IJKM, L), W_s(IJK, L))
+            ENDIF
+
+!     Find components of Lth solids phase continuum strain rate
+!     tensor, D_sl, at center of THETA cell-(i, j, k) 
                          D_sl(1,1) = ( U_s(IJK,L) - U_s(IMJK,L) ) * oDX(I)
                          D_sl(1,2) = HALF * ( (Usl_N - Usl_S) * oDY(J) +&
                               (Vsl_E - Vsl_W) * oDX(I) )
@@ -2108,9 +2068,9 @@
                          D_sl(3,2) = D_sl(2,3)
                          D_sl(3,3) = ( W_s(IJK,L) - W_s(IJKM,L) ) * (oX(I)*oDZ(K)) +&
                                Usl_C * oX(I)
-!     
-!                        Calculate trace of the D_sl dot D_sm 
-!                        (normal matrix multiplication)
+     
+!     Calculate trace of the D_sl dot D_sm 
+!     (normal matrix multiplication)
                          trD_s2_ip(IJK,M,L) = 0.D0 !Initialize the totalizer
                          DO 50 I1 = 1,3
                          DO 60 I2 = 1,3
@@ -2119,17 +2079,16 @@
  60                      CONTINUE
  50                      CONTINUE
                      ELSE
-		        trD_s2_ip(IJK,M,L) = trD_s2_ip(IJK,L,M)
+                        trD_s2_ip(IJK,M,L) = trD_s2_ip(IJK,L,M)
                      ENDIF ! for L > M
-		  ELSE
+                  ELSE
                        trD_s2_ip(IJK,M,M) = trD_s2(IJK,M)
                   ENDIF !for m NE L
                ENDDO
              ENDIF ! if kt_type = IA theory
-!              END JEG
-!     
+
+
 !     Start definition of Relative Velocity
-!     
 !     Calculate velocity components at i, j, k
             UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
             VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
@@ -2137,26 +2096,23 @@
             USCM = AVG_X_E(U_S(IMJK,1),U_S(IJK,1),I) 
             VSCM = AVG_Y_N(V_S(IJMK,1),V_S(IJK,1)) 
             WSCM = AVG_Z_T(W_S(IJKM,1),W_S(IJK,1)) 
-!     
+     
 !     magnitude of gas-solids relative velocity
-!     
-	    VREL_array(IJK) = SQRT((UGC - USCM)**2 + &
+            VREL_array(IJK) = SQRT((UGC - USCM)**2 + &
             (VGC - VSCM)**2 + &
             (WGC - WSCM)**2)
 
 !     Frictional-flow stress tensor
-!     
 !     Calculate the second invariant of the deviator of D_s
             I2_devD_s(IJK) = ( (D_s(1,1)-D_s(2,2))**2&
             +(D_s(2,2)-D_s(3,3))**2&
             +(D_s(3,3)-D_s(1,1))**2 )/6.&
             + D_s(1,2)**2 + D_s(2,3)**2 + D_s(3,1)**2
-!     
+     
             IF(SIMONIN) THEN
-!     
+     
 !     parameters for defining Tau_12: time-scale of the fluid turbulent motion
 !     viewed by the particles (crossing trajectory effect)
-!     
                IF(SQRT(USCM**2+VSCM**2+WSCM**2) .GT. zero) THEN
                   Cos_Theta(IJK) = ((UGC-USCM)*USCM+(VGC-VSCM)*VSCM+(WGC-WSCM)*WSCM)/ &
                   (SQRT((UGC-USCM)**2+(VGC-VSCM)**2+(WGC-WSCM)**2)*  &
@@ -2168,9 +2124,8 @@
 
             IF(.NOT.GRANULAR_ENERGY) THEN !algebraic granular energy equation
                IF(EP_g(IJK) .GE. EP_star_array(IJK)) THEN
-!     
+    
 !     Boyle-Massoudi Stress term
-!     
                   IF(V_ex .NE. ZERO) THEN
                      DEP_soDX  = ( EP_s(IJKE, M) - EP_s(IJK, M) ) * oDX_E(I)&
                      * ( ONE / ( (oDX_E(IM)/oDX_E(I)) + ONE ) ) +&
@@ -2206,7 +2161,7 @@
                   ENDIF
                ENDIF
             ENDIF
-!
+
          Endif                  ! Fluid_at
  200  Continue                  ! outer IJK loop
       
