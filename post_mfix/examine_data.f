@@ -1769,6 +1769,10 @@
            IF (FILE_NAME(1:1) .NE. '*') CLOSE(40)
            RETURN
         ELSE
+           IF (FILE_NAME(1:1) .NE. '*') then
+              close (40)
+              open (unit=40,file=file_name,access='append')
+           end if
            GOTO 10
         END IF
       END IF
@@ -1778,6 +1782,10 @@
            IF (FILE_NAME(1:1) .NE. '*') CLOSE(UNIT=40)
            RETURN
         ELSE
+           IF (FILE_NAME(1:1) .NE. '*') then
+              close (40)
+              open (unit=40,file=file_name,access='append')
+           end if
            GOTO 10
         END IF
       END IF
