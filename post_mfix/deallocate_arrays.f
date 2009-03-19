@@ -41,6 +41,7 @@
       Use mchem
       use kintheory
       use kintheory2
+      use ghdtheory
       IMPLICIT NONE
       
       INTEGER M
@@ -355,6 +356,18 @@
       Deallocate(    EDvel_sL_ip)
       Deallocate(    ED_ss_ip)
       Deallocate(    GRAN_DISS)
+
+!     GHD theory
+      Deallocate(    Zeta0)
+      Deallocate(    ZetaU)
+      Deallocate(    DiT)
+      Deallocate(    DijF)
+      Deallocate(    Lij)
+      Deallocate(    Dij)
+      Deallocate(    DijQ)
+      Deallocate(    JoiX)
+      Deallocate(    JoiY)
+      Deallocate(    JoiZ)
 
 
 !

@@ -28,6 +28,7 @@ post_mfix : \
     param1.mod \
     param.mod \
     discretelement.mod \
+    ghdtheory.mod \
     parse.mod \
     pgcor.mod \
     physprop.mod \
@@ -168,6 +169,20 @@ post_mfix : \
     ornl_filt_c.$(OBJ_EXT) \
     ornl_zone.$(OBJ_EXT) \
     ornl_sym.$(OBJ_EXT) \
+    transport_coeff_ghd.$(OBJ_EXT) \
+    ghd.$(OBJ_EXT) \
+    cooling_rate.$(OBJ_EXT) \
+    cooling_rate_tc.$(OBJ_EXT) \
+    pressure.$(OBJ_EXT) \
+    bulk_viscosity.$(OBJ_EXT) \
+    shear_viscosity.$(OBJ_EXT) \
+    thermal_diffusivity.$(OBJ_EXT) \
+    mass_mobility.$(OBJ_EXT) \
+    thermal_conductivity.$(OBJ_EXT) \
+    thermal_mobility.$(OBJ_EXT) \
+    ordinary_diff.$(OBJ_EXT) \
+    dufour_coeff.$(OBJ_EXT) \
+    chi_ij_GHD.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT)
 	$(LINK_CMD) $(LINK_FLAGS) \
     ambm_mod.$(OBJ_EXT) \
@@ -336,7 +351,22 @@ post_mfix : \
     parallel_mpi_mod.$(OBJ_EXT)                    \
     sendrecv_mod.$(OBJ_EXT)                        \
     des_init_namelist.$(OBJ_EXT)                   \
+    transport_coeff_ghd.$(OBJ_EXT)                 \
+    ghd.$(OBJ_EXT)                 \
+    cooling_rate.$(OBJ_EXT) \
+    cooling_rate_tc.$(OBJ_EXT) \
+    pressure.$(OBJ_EXT) \
+    bulk_viscosity.$(OBJ_EXT) \
+    shear_viscosity.$(OBJ_EXT) \
+    thermal_diffusivity.$(OBJ_EXT) \
+    mass_mobility.$(OBJ_EXT) \
+    thermal_conductivity.$(OBJ_EXT) \
+    thermal_mobility.$(OBJ_EXT) \
+    ordinary_diff.$(OBJ_EXT) \
+    dufour_coeff.$(OBJ_EXT) \
+    chi_ij_GHD.$(OBJ_EXT) \
     discretelement_mod.$(OBJ_EXT)                  \
+    ghdtheory_mod.$(OBJ_EXT)                  \
   -o post_mfix $(LIB_FLAGS)
   
 ambm.mod : ../model/ambm_mod.f \
@@ -1340,5 +1370,35 @@ write_error.$(OBJ_EXT) : ../model/write_error.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_error.f 
 discretelement.mod : ../model/des/discretelement_mod.f
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/discretelement_mod.f
+ghdtheory.mod : ../model/GhdTheory/ghdtheory_mod.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/ghdtheory_mod.f
+transport_coeff_ghd.$(OBJ_EXT) : ../model/GhdTheory/transport_coeff_ghd.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/transport_coeff_ghd.f
+ghd.$(OBJ_EXT) : ../model/GhdTheory/ghd.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/ghd.f
+cooling_rate.$(OBJ_EXT) : ../model/GhdTheory/cooling_rate.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/cooling_rate.f
+cooling_rate_tc.$(OBJ_EXT) : ../model/GhdTheory/cooling_rate_tc.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/cooling_rate_tc.f
+pressure.$(OBJ_EXT) : ../model/GhdTheory/pressure.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/pressure.f
+bulk_viscosity.$(OBJ_EXT) : ../model/GhdTheory/bulk_viscosity.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/bulk_viscosity.f
+shear_viscosity.$(OBJ_EXT) : ../model/GhdTheory/shear_viscosity.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/shear_viscosity.f
+thermal_diffusivity.$(OBJ_EXT) : ../model/GhdTheory/thermal_diffusivity.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/thermal_diffusivity.f
+mass_mobility.$(OBJ_EXT) : ../model/GhdTheory/mass_mobility.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/mass_mobility.f
+thermal_conductivity.$(OBJ_EXT) : ../model/GhdTheory/thermal_conductivity.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/thermal_conductivity.f
+thermal_mobility.$(OBJ_EXT) : ../model/GhdTheory/thermal_mobility.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/thermal_mobility.f
+ordinary_diff.$(OBJ_EXT) : ../model/GhdTheory/ordinary_diff.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/ordinary_diff.f
+dufour_coeff.$(OBJ_EXT) : ../model/GhdTheory/dufour_coeff.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/dufour_coeff.f
+chi_ij_GHD.$(OBJ_EXT) : ../model/GhdTheory/chi_ij_GHD.f
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/chi_ij_GHD.f
 des_init_namelist.$(OBJ_EXT) : ../model/des/des_init_namelist.f
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_init_namelist.f 
