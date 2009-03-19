@@ -1,0 +1,224 @@
+#
+#  1D simple granular shear flow using GHD theory.
+#  This case is for a binary mixture of powders (mmax = 2)
+
+#  Momentum and granular temperature are solved for the mixture and not
+#  for individual solids phases. Internally the code uses mmax = 3, and
+#  smax repressents the 'real' number of solids phase (smax = 2).
+
+#  GHD not yet working with a fluid (no drag) and
+#  no complex boundary conditions
+
+  
+# Run-control section
+# ----------------------------------------
+  RUN_NAME = 'SSF'
+  DESCRIPTION = 'Granular SSF'
+  RUN_TYPE = 'new'
+  UNITS = 'cgs'
+  TIME  =0.0 
+  TSTOP = 1000.0 
+  DT = 1.0e-4 
+  DT_MIN = 1.0e-4
+
+  ENERGY_EQ = .FALSE.
+  SPECIES_EQ = 3*.FALSE.
+  MOMENTUM_X_EQ(0) =  .FALSE.
+  MOMENTUM_Y_EQ(0) =  .FALSE.
+  GRANULAR_ENERGY = .T.
+  
+  KT_TYPE = 'GHD'   ! Garzo, Hrenya & Dufty (2007) polydisperse kinetic theory
+  
+# Right now GHD theory uses its own RDF internally called Chi.
+  RDF_TYPE   = 'LEBOWITZ'  ! this is default radial distribution function
+
+# gas-solid drag will not be used for this granular flow
+  DRAG_TYPE  = 'WEN_YU' 
+  
+#  FRICTION = .T.
+#  SAVAGE = 2
+   SCHAEFFER = .F. !no frictional viscosity will be used in this simulation
+
+
+   GRAVITY = 0.0
+
+   MAX_NIT = 100
+   NORM_G = 0.0
+   TOL_RESID = 1D-06  
+
+   DISCRETIZE = 9*2
+   DEF_COR = .T.
+
+
+# Geometry Section
+# ----------------------------------------
+  COORDINATES = 'CARTESIAN'
+
+  XLENGTH  = 10.0    IMAX = 4 
+  YLENGTH  = 10.0    JMAX = 1
+
+  NO_K     = .TRUE.
+  CYCLIC_Y = .TRUE.
+
+
+# Gas-phase Section                                                            
+# ----------------------------------------
+  MU_g0 = 1.8E-4			!constant gas viscosity
+  MW_avg = 29.
+  MU_gmax = 1000.                                                            
+ 
+  RO_g0 = 0.0   ! no gas phase
+
+
+# Solids-phase Section
+# ----------------------------------------
+  MMAX = 2
+  RO_s           = 1.131768484d0    0.257782544d0
+  D_p0(1)        = 1.5
+  D_p0(2)        = 2.1
+
+  CLOSE_PACKED = 2*.TRUE.
+
+  C_e       = 0.8   !  particle-particle collisions
+  e_w       = 0.7   !  particle-wall collisions (doesn't matter w/o certain BC)
+#  C_f       = 0.0d0 !  coefficient of friction (used by default solid-solid drag)
+
+# r_p is the new restitution coefficient.
+  r_p(1,1) = 0.7
+  r_p(2,2) = 0.8
+  r_p(1,2) = 0.75
+  
+  PHIP    = 0.0001     ! specularity coefficient (doesn't matter w/o certain BC) 
+  
+  Phi     = 30         ! angle of internal friction  (employed for plastic or frictional stress contributions)
+  EP_star = 0.4d0
+
+  ep_s_max(1)		   = 0.6d0
+  ep_s_max(2)		   = 0.6d0
+
+
+# Initial Conditions Section
+# ----------------------------------------
+  IC_X_w(1)       =       0.0 
+  IC_X_e(1)       =      10.0 
+  IC_Y_s(1)       =       0.0 
+  IC_Y_n(1)       =      10.0
+ 
+  IC_EP_g(1)      =       0.79d0
+  IC_ROP_s(1,1)   =   @(0.1d0*1.131768484d0)
+  IC_ROP_s(1,2)   =   @(0.11d0*0.257782544d0)
+ 
+  IC_U_g(1)       =       0.0
+  IC_V_g(1)       =       0.0 
+  IC_P_g(1)       = 1013250.0
+  IC_T_g(1)       =     298.0
+
+  IC_U_s(1,1)     =       0.0
+  IC_V_s(1,1)     =       0.0
+  IC_Theta_m(1,1) =       10.0d0   ! theta includes mass of particle
+  IC_U_s(1,2)     =       0.0
+  IC_V_s(1,2)     =       0.0
+  IC_Theta_m(1,2) =       10.0d0
+                        
+                               
+
+#  Boundary Conditions Section
+# ----------------------------------------
+# IMPORTANT:
+# Boundary conditions are still required for the mixture (mmax = 3).
+#
+#            South wall  
+  BC_X_w(5)       =       0.0 
+  BC_X_e(5)       =       0.0 
+  BC_Y_s(5)       =       0.0
+  BC_Y_n(5)       =      10.0
+  
+  BC_TYPE(5)      =      'PSW' 
+  BC_JJ_PS(5)     =       0      ! Johnson-Jackson slip bc
+# solids are partial slip
+  BC_Uw_s(5,1)    =       0.0   
+  BC_Vw_s(5,1)    =       0.5d0 
+  BC_Ww_s(5,1)    =       0.0
+  BC_Uw_s(5,2)    =       0.0   
+  BC_Vw_s(5,2)    =       0.5d0 
+  BC_Ww_s(5,2)    =       0.0
+  BC_Uw_s(5,3)    =       0.0   
+  BC_Vw_s(5,3)    =       0.5d0 
+  BC_Ww_s(5,3)    =       0.0
+#  BC_hw_s(5, 1)   =       0.0  ! no slip by 'commenting out'
+#  BC_hw_s(5, 2)   =       0.0
+#  BC_hw_s(5, 3)   =       0.0
+# gas is free slip
+  BC_Uw_g(5)      =       0.0 
+  BC_Vw_g(5)      =       0.0 
+  BC_Ww_g(5)      =       0.0
+  BC_hw_g(5)      =       0.0   ! free slip by setting
+# granular energy is free slip (zero-gradient)
+#  BC_Thetaw_m(5,1)   =    0.0 
+  BC_C_Theta_m(5,1)  =    0.0
+  BC_hw_Theta_m(5,1) =    0.0
+#  BC_Thetaw_m(5,2)   =    0.0 
+  BC_C_Theta_m(5,2)  =    0.0
+  BC_hw_Theta_m(5,2) =    0.0
+#  BC_Thetaw_m(5,3)   =    0.0 
+  BC_C_Theta_m(5,3)  =    0.0
+  BC_hw_Theta_m(5,3) =    0.0
+
+#                North wall
+  BC_X_w(6)       =      10.0
+  BC_X_e(6)       =      10.0
+  BC_Y_s(6)       =       0.0
+  BC_Y_n(6)       =      10.0
+
+  BC_TYPE(6)      =      'PSW' 
+  BC_JJ_PS(6)     =       0     ! Johnson-Jackson slip bc
+# solids are partial slip
+  BC_Uw_s(6,1)    =       0.0
+  BC_Vw_s(6,1)    =      -0.5d0
+  BC_Ww_s(6,1)    =       0.0
+  BC_Uw_s(6,2)    =       0.0
+  BC_Vw_s(6,2)    =      -0.5d0
+  BC_Ww_s(6,2)    =       0.0
+  BC_Uw_s(6,3)    =       0.0
+  BC_Vw_s(6,3)    =      -0.5d0
+  BC_Ww_s(6,3)    =       0.0
+#  BC_hw_s(6, 1)   =       0.0   ! no slip by 'commenting out'
+#  BC_hw_s(6, 2)   =       0.0
+#  BC_hw_s(6, 3)   =       0.0
+# gas is no slip
+  BC_Uw_g(6)      =       0.0 
+  BC_Vw_g(6)      =       0.0 
+  BC_Ww_g(6)      =       0.0
+  BC_hw_g(6)      =       0.0
+# granular energy is free slip (zero-gradient)
+#  BC_Thetaw_m(6,1)   =    0.0
+  BC_C_Theta_m(6,1)  =    0.0
+  BC_hw_Theta_m(6,1) =    0.0
+#  BC_Thetaw_m(6,2)   =    0.0
+  BC_C_Theta_m(6,2)  =    0.0
+  BC_hw_Theta_m(6,2) =    0.0
+#  BC_Thetaw_m(6,3)   =    0.0
+  BC_C_Theta_m(6,3)  =    0.0
+  BC_hw_Theta_m(6,3) =    0.0
+
+
+#  Output Control
+# ----------------------------------------
+  RES_DT = 10     ! interval to update restart file
+  OUT_DT = 1e5    ! interval to update out file
+        !
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g   Theta_m
+        !      P_star    V_g  V_s            T_s1 X_s
+        !                W_g  W_s            T_s2
+  SPX_DT = 9*10
+
+  FULL_LOG = .T.  ! whether to display residual to screen and to .log file
+  NLOG = 25       ! interval (in time steps) to write to .log file
+  RESID_STRING  = 'U3' 'V3' 'W3' 'G3'
+  
+
+# DMP control
+# ---------------------------------------- 
+  NODESI = 1 
+  NODESJ = 1
+  NODESK = 1
