@@ -49,6 +49,7 @@
       USE physprop
       USE geometry
       USE fldvar
+      USE ghdtheory
       USE output
       USE indices
       USE drag
@@ -82,7 +83,7 @@
 ! 
 !                      phase index 
       INTEGER          m, UVEL, VVEL, WVEL 
-      INTEGER          IJK 
+      INTEGER          IJK
 ! 
 !                      temporary velocity arrays 
       DOUBLE PRECISION U_gtmp(DIMENSION_3),  V_gtmp(DIMENSION_3), W_gtmp(DIMENSION_3)
@@ -97,7 +98,7 @@
 !                      linear equation solver method and iterations 
       INTEGER          LEQM, LEQI 
 !-----------------------------------------------
-!
+
       call lock_ambm
       call lock_tmp_array1
       call lock_tmp_array2
@@ -121,12 +122,12 @@
          VVEL = 0
          WVEL = 0
       END IF
-!
+
       IF (MMAX == 0) CALL ZERO_ARRAY (VXF_GS(1,1), IER)
-	  IF (MMAX == 1) CALL ZERO_ARRAY (VXF_SS(1,1), IER)
-!
-!  2.1 Calculate U_m_star and residuals
-!
+      IF (MMAX == 1) CALL ZERO_ARRAY (VXF_SS(1,1), IER)
+
+! Calculate U_m_star and residuals
+! ----------------------------------------
       DO M = 0, MMAX 
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
       END DO 
@@ -136,24 +137,24 @@
       IF(.NOT.DISCRETE_ELEMENT) THEN
          CALL CONV_DIF_U_S (A_M, B_M, IER) 
       END IF
-!
+
       CALL SOURCE_U_G (A_M, B_M, IER) 
       IF(.NOT.DISCRETE_ELEMENT) THEN
          CALL SOURCE_U_S (A_M, B_M, IER) 
       END IF
-!
+
       IF (MMAX > 0) CALL VF_GS_X (VXF_GS, IER)
       IF(.NOT.DISCRETE_ELEMENT) THEN
          IF (MMAX > 0) CALL VF_SS_X (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
       END IF
-!
+
       CALL CALC_D_E (A_M, VXF_GS, VXF_SS, D_E, IER)  !S. Dartevelle, LANL, Feb.2004
-!  
+  
       IF(.NOT.DISCRETE_ELEMENT) THEN
          IF (MMAX > 0) CALL CALC_E_E (A_M, MCP, E_E, IER) 
          IF (MMAX > 0) CALL PARTIAL_ELIM_U (U_G, U_S, VXF_GS, A_M, B_M, IER) 
       END IF
-!
+
       CALL ADJUST_A_U_G (A_M, B_M, IER) 
       IF(.NOT.DISCRETE_ELEMENT) THEN
          CALL ADJUST_A_U_S (A_M, B_M, IER)
@@ -165,13 +166,13 @@
          CALL GAS_DRAG(A_M, B_M, VXF_GS, IER, UVEL, VVEL, WVEL)
          UVEL = 0
       END IF
-!
+
       IF (MOMENTUM_X_EQ(0)) THEN 
          CALL CALC_RESID_U (U_G, V_G, W_G, A_M, B_M, 0, NUM_RESID(RESID_U,0), &
             DEN_RESID(RESID_U,0), RESID(RESID_U,0), &
             MAX_RESID(RESID_U,0), IJK_RESID(RESID_U,0), IER) 
          CALL UNDER_RELAX_U (U_G, A_M, B_M, 0, UR_FAC(3), IER) 
-!
+
 !        call check_ab_m(a_m, b_m, 0, .false., ier)
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 !        write(*,*)
@@ -180,8 +181,9 @@
 !
       ENDIF 
       
-!
-      DO M = 1, MMAX 
+
+      DO M = 1, MMAX   
+       IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
          IF (MOMENTUM_X_EQ(M)) THEN 
             CALL CALC_RESID_U (U_S(1,M), V_S(1,M), W_S(1,M), A_M, B_M, M,  &
                NUM_RESID(RESID_U,M), DEN_RESID(RESID_U,M), RESID&
@@ -193,70 +195,75 @@
 !     &      ijk_resid(resid_u, m)
 !          call write_ab_m(a_m, b_m, ijkmax2, m, ier)
          ENDIF 
+       ENDIF ! for GHD Theory
       END DO 
 
       
       IF (MOMENTUM_X_EQ(0)) THEN 
 !        call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, DO_K,
 !     &    ier)
-!
+
          CALL ADJUST_LEQ (RESID(RESID_U,0), LEQ_IT(3), LEQ_METHOD(3), LEQI, &
             LEQM, IER) 
-!
+
          CALL SOLVE_LIN_EQ ('U_g', 3, U_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
-	                     LEQ_SWEEP(3), LEQ_TOL(3),  LEQ_PC(3), IER) 
+            LEQ_SWEEP(3), LEQ_TOL(3),  LEQ_PC(3), IER) 
 !        call out_array(u_g, 'u_g')
       ENDIF 
-!
+
       DO M = 1, MMAX 
+       IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
          IF (MOMENTUM_X_EQ(M)) THEN 
 !          call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, M), 1, DO_K,
 !     &    ier)
             CALL ADJUST_LEQ (RESID(RESID_U,M), LEQ_IT(3), LEQ_METHOD(3), LEQI, &
                LEQM, IER) 
-!
+
             CALL SOLVE_LIN_EQ ('U_s', 3, U_Stmp(1,M), A_M, B_M, M, LEQI, LEQM, &
-	                     LEQ_SWEEP(3), LEQ_TOL(3),  LEQ_PC(3), IER) 
+               LEQ_SWEEP(3), LEQ_TOL(3),  LEQ_PC(3), IER) 
 !          call out_array(u_s(1,m), 'u_s')
          ENDIF 
-      END DO 
+       ENDIF ! for GHD Theory
+      ENDDO 
       
       DO M = 0, MMAX 
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
       END DO 
-     
+
+
+! Calculate V_m_star and residuals
+! ----------------------------------------
       CALL CONV_DIF_V_G (A_M, B_M, IER) 
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       IF(.NOT.DISCRETE_ELEMENT) THEN
          CALL CONV_DIF_V_S (A_M, B_M, IER) 
       END IF
-!
+
       CALL SOURCE_V_G (A_M, B_M, IER) 
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       IF(.NOT.DISCRETE_ELEMENT) THEN
          CALL SOURCE_V_S (A_M, B_M, IER)
       END IF 
 
-!
       IF (MMAX > 0) CALL VF_GS_Y (VXF_GS, IER)
       IF(.NOT.DISCRETE_ELEMENT) THEN
          IF (MMAX > 0) CALL VF_SS_Y (VXF_SS, IER)    !S. Dartevelle, LANL, Feb.2004
       END IF
-!
+
       CALL CALC_D_N (A_M, VXF_GS, VXF_SS, D_N, IER) !S. Dartevelle, LANL, Feb.2004
-!
+
       IF(.NOT.DISCRETE_ELEMENT) THEN
          IF (MMAX > 0) CALL CALC_E_N (A_M, MCP, E_N, IER) 
          IF (MMAX > 0) CALL PARTIAL_ELIM_V (V_G, V_S, VXF_GS, A_M, B_M, IER) 
       END IF
-!
+
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       CALL ADJUST_A_V_G (A_M, B_M, IER)
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       IF(.NOT.DISCRETE_ELEMENT) THEN
          CALL ADJUST_A_V_S (A_M, B_M, IER) 
       END IF
-!
+
       IF(DES_CONTINUUM_COUPLED) THEN
          VVEL = 1     
          CALL GAS_DRAG(A_M, B_M, VXF_GS, IER, UVEL, VVEL, WVEL)
@@ -268,16 +275,16 @@
             DEN_RESID(RESID_V,0), RESID(RESID_V,0), &
             MAX_RESID(RESID_V,0), IJK_RESID(RESID_V,0), IER) 
          CALL UNDER_RELAX_V (V_G, A_M, B_M, 0, UR_FAC(4), IER) 
-!
+
 !        call check_ab_m(a_m, b_m, 0, .false., ier)
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 !        write(*,*)
 !     &    resid(resid_v, 0), max_resid(resid_v, 0),
 !     &    ijk_resid(resid_v, 0)
       ENDIF 
-!
 
       DO M = 1, MMAX 
+       IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
          IF (MOMENTUM_Y_EQ(M)) THEN 
             CALL CALC_RESID_V (U_S(1,M), V_S(1,M), W_S(1,M), A_M, B_M, M, &
                 NUM_RESID(RESID_V,M), DEN_RESID(RESID_V,M), RESID&
@@ -289,77 +296,83 @@
 !     &      ijk_resid(resid_v, m)
 !          call write_ab_m(a_m, b_m, ijkmax2, m, ier)
          ENDIF 
-      END DO 
+       ENDIF ! for GHD Theory
+      ENDDO 
+
       IF (MOMENTUM_Y_EQ(0)) THEN 
 !        call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, DO_K,
 !     &    ier)
-!
+
          CALL ADJUST_LEQ (RESID(RESID_V,0), LEQ_IT(4), LEQ_METHOD(4), LEQI, &
             LEQM, IER) 
-!
+
          CALL SOLVE_LIN_EQ ('V_g', 4, V_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
-	                     LEQ_SWEEP(4), LEQ_TOL(4),  LEQ_PC(4), IER) 
+            LEQ_SWEEP(4), LEQ_TOL(4),  LEQ_PC(4), IER) 
 !        call out_array(v_g, 'v_g')
       ENDIF 
-!
+
       DO M = 1, MMAX 
+       IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
          IF (MOMENTUM_Y_EQ(M)) THEN 
 !          call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, M), 1, DO_K,
 !     &    ier)
-!
+
             CALL ADJUST_LEQ (RESID(RESID_V,M), LEQ_IT(4), LEQ_METHOD(4), LEQI, &
                LEQM, IER) 
-!
+
             CALL SOLVE_LIN_EQ ('V_s', 4, V_Stmp(1,M), A_M, B_M, M, LEQI, LEQM, &
-	                     LEQ_SWEEP(4), LEQ_TOL(4), LEQ_PC(4), IER) 
+               LEQ_SWEEP(4), LEQ_TOL(4), LEQ_PC(4), IER) 
 !          call out_array(v_s(1,m), 'v_s')
          ENDIF 
+       ENDIF ! for GHD Theory
       END DO 
 
-!
+
+
+! Calculate W_m_star and residuals
+! ----------------------------------------
       IF (DO_K)THEN
 
         DO M = 0, MMAX 
           CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
         END DO 
         CALL CONV_DIF_W_G (A_M, B_M, IER) 
-!
+
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
         IF(.NOT.DISCRETE_ELEMENT) THEN
           CALL CONV_DIF_W_S (A_M, B_M, IER) 
         END IF
-!
+
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-!         
+         
         CALL SOURCE_W_G (A_M, B_M, IER) 
 
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-!     
+    
         IF(.NOT.DISCRETE_ELEMENT) THEN    
           CALL SOURCE_W_S (A_M, B_M, IER) 
         END IF
-!
+
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 ! call mfix_exit(myPE)
-!
+
         IF (MMAX > 0) CALL VF_GS_Z (VXF_GS, IER)
         IF(.NOT.DISCRETE_ELEMENT) THEN
           IF (MMAX > 0) CALL VF_SS_Z (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
         END IF
-!
         
         CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER) !S. Dartevelle, LANL, Feb.2004
-!
+
         IF(.NOT.DISCRETE_ELEMENT) THEN
           IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T, IER) 
           IF (MMAX > 0) CALL PARTIAL_ELIM_W (W_G, W_S, VXF_GS, A_M, B_M, IER)
         END IF 
-!
+
         CALL ADJUST_A_W_G (A_M, B_M, IER)
         IF(.NOT.DISCRETE_ELEMENT) THEN 
           CALL ADJUST_A_W_S (A_M, B_M, IER)
         END IF 
-!
+
         IF(DIMN.EQ.3) THEN
           IF(DES_CONTINUUM_COUPLED) THEN
             WVEL = 1
@@ -373,13 +386,14 @@
             DEN_RESID(RESID_W,0), RESID(RESID_W,0), &
             MAX_RESID(RESID_W,0), IJK_RESID(RESID_W,0), IER) 
           CALL UNDER_RELAX_W (W_G, A_M, B_M, 0, UR_FAC(5), IER) 
-!
+
 !        call check_ab_m(a_m, b_m, 0, .false., ier)
 !     &      resid(resid_w, 0), max_resid(resid_w, 0),
 !     &      ijk_resid(resid_w, 0)
         ENDIF 
-!
+
         DO M = 1, MMAX 
+         IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
           IF (MOMENTUM_Z_EQ(M)) THEN 
             CALL CALC_RESID_W (U_S(1,M), V_S(1,M), W_S(1,M), A_M, B_M, M, &
                 NUM_RESID(RESID_W,M), DEN_RESID(RESID_W,M), RESID&
@@ -391,32 +405,36 @@
 !     &      ijk_resid(resid_w, m)
 !          call write_ab_m(a_m, b_m, ijkmax2, m, ier)
           ENDIF 
-        END DO 
+         ENDIF ! for GHD Theory
+        ENDDO 
+
         IF (MOMENTUM_Z_EQ(0)) THEN 
 !        call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, DO_K,
 !     &    ier)
-!
+
           CALL ADJUST_LEQ (RESID(RESID_W,0), LEQ_IT(5), LEQ_METHOD(5), LEQI, &
             LEQM, IER) 
-!
+
           CALL SOLVE_LIN_EQ ('W_g', 5, W_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
-	                     LEQ_SWEEP(5), LEQ_TOL(5), LEQ_PC(5), IER) 
+            LEQ_SWEEP(5), LEQ_TOL(5), LEQ_PC(5), IER) 
 !        call out_array(w_g, 'w_g')
         ENDIF 
-!
+
         DO M = 1, MMAX 
+         IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
           IF (MOMENTUM_Z_EQ(M)) THEN 
 !          call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, M), 1, DO_K,
 !     &    ier)
-!
+
             CALL ADJUST_LEQ (RESID(RESID_W,M), LEQ_IT(5), LEQ_METHOD(5), LEQI, &
                LEQM, IER) 
-!
+
             CALL SOLVE_LIN_EQ ('W_s', 5, W_Stmp(1,M), A_M, B_M, M, LEQI, LEQM, &
-	                     LEQ_SWEEP(5), LEQ_TOL(5), LEQ_PC(5), IER) 
+               LEQ_SWEEP(5), LEQ_TOL(5), LEQ_PC(5), IER) 
 !          call out_array(w_s(1,m), 'w_s')
           ENDIF 
-        END DO 
+         ENDIF ! for GHD Theory
+        ENDDO 
       ENDIF
       
 !     Now update all velocity components
@@ -432,6 +450,15 @@
         W_s(IJK, M) = W_stmp(IJK, M)
         ENDDO
       ENDDO
+
+! modification for GHD theory to compute species velocity: Ui = Joi/(mi ni) + U.
+      IF(TRIM(KT_TYPE) == 'GHD') THEN
+	DO M = 1, SMAX
+          CALL GHDMassFlux(M,IER) ! to compute solid species mass flux
+	  CALL UpdateSpeciesVelocities(M,IER) ! located at end of ghdMassFlux.f file
+        ENDDO 
+      ENDIF
+! end of modification for GHD theory
 
       call unlock_ambm
       call unlock_tmp_array1

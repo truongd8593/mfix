@@ -49,29 +49,29 @@
       INTEGER :: M, N, L
       Character*80  Line(1)
 !-----------------------------------------------
-!
-!
-!
-!                      Solids phase
-!
+
+
+
+!     Solids phase
+
       IF (DESCRIPTION == UNDEFINED_C) DESCRIPTION = ' ' 
-!
+
       IF ( (UNITS /= 'CGS').AND. (UNITS /= 'SI') ) CALL ERROR_ROUTINE ('check_data_01', &
          'UNITS not specified or illegal in mfix.dat', 1, 1) 
-!
+
       IF (DT /= UNDEFINED) THEN 
          IF (TIME==UNDEFINED .OR. TIME<ZERO) CALL ERROR_ROUTINE (&
             'check_data_01', 'TIME not specified OR < 0.0 in mfix.dat', 1, 1) 
       ELSE 
          TIME = ZERO 
       ENDIF 
-!
+
       IF (DT /= UNDEFINED) THEN 
          IF (TSTOP==UNDEFINED .OR. TSTOP<TIME) CALL ERROR_ROUTINE (&
             'check_data_01', 'TSTOP not specified OR TSTOP < TIME in mfix.dat'&
             , 1, 1) 
       ENDIF 
-!
+
 !      IF (DT.EQ.UNDEFINED .OR. DT.LT.ZERO)
 !     &          CALL ERROR_ROUTINE ('check_data_01',
 !     &          'DT not specified OR DT < 0.0 in mfix.dat',1,1)
@@ -92,54 +92,56 @@
          SCHAEFFER = .FALSE.    
          IF (BLENDING_STRESS) CALL ERROR_ROUTINE ('check_data_01', &
             'Use only blending_stress with Schaeffer not with Friction', 1, 1)    
-      ENDIF  
-!
+      ENDIF
+
+! GHD Theory requires some do loops over MMAX - 1, which is the real # of solids phases
+      SMAX = MMAX
+      IF(TRIM(KT_TYPE) == 'GHD') SMAX = MMAX - 1
+! end of GHD Theory requirement
+
 ! sof: cannot use both Ahmadi and Simonin models at the same time.
       IF (AHMADI .AND. SIMONIN) CALL ERROR_ROUTINE ('check_data_01', &
             'Cannot set both AHMADI = .T. and SIMONIN = .T.', 1, 1)  
-!
+
 ! sof: cannot use both L_scale0 and K-epsilon models at the same time.
-      IF (K_Epsilon .AND. L_SCALE0/=ZERO) CALL ERROR_ROUTINE ('check_data_01', &
-            'Cannot set both K_Epsilon = .T. and L_SCALE0 /= ZERO', 1, 1)
-!
-! sof: The only option for KT type is Iddir-Arastoopour non-equip theory
+      IF (K_Epsilon .AND. L_SCALE0/=ZERO) &
+           CALL ERROR_ROUTINE ('check_data_01', &
+          'Cannot set both K_Epsilon = .T. and L_SCALE0 /= ZERO', 1, 1)
+
+! check for valid options for KT type
       IF (KT_TYPE /= UNDEFINED_C) THEN
-         IF(KT_TYPE /= 'IA_NONEP' .AND. KT_TYPE /= 'GD_99') CALL ERROR_ROUTINE ('check_data_01', &
-            'The only option for KT_TYPE is IA_NONEP or GD_99', 1, 1)
+         IF(KT_TYPE /= 'IA_NONEP' .AND. KT_TYPE /= 'GD_99' .AND. KT_TYPE /= 'GHD') &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'The only option for KT_TYPE is IA_NONEP, GD_99 or GHD', 1, 1)
       ENDIF
-!
+
 ! sof: Check name of radial distribution function
       IF (RDF_TYPE /= 'LEBOWITZ') THEN
          IF(RDF_TYPE /= 'MODIFIED_LEBOWITZ' .AND. RDF_TYPE /= 'MANSOORI' .AND. &
-	    RDF_TYPE /= 'MODIFIED_MANSOORI') CALL ERROR_ROUTINE ('check_data_01', &
+            RDF_TYPE /= 'MODIFIED_MANSOORI') CALL ERROR_ROUTINE ('check_data_01', &
             'Unknown RDF_TYPE', 1, 1)
       ENDIF
-!
-!  Set variable ANY_SPECIES_EQ
-!
+
+! Set variable ANY_SPECIES_EQ
+! modify to only check for real number of solid phases in case KT_TYPE='GHD'
       ANY_SPECIES_EQ = .FALSE. 
       M = 0 
-      IF (MMAX + 1 > 0) THEN 
-         ANY_SPECIES_EQ = ANY_SPECIES_EQ .OR. ANY(SPECIES_EQ(:MMAX)) 
-         M = MMAX + 1 
+      IF (SMAX + 1 > 0) THEN 
+         ANY_SPECIES_EQ = ANY_SPECIES_EQ .OR. ANY(SPECIES_EQ(:SMAX)) 
+         M = SMAX + 1 
       ENDIF 
       
-!
 !  Check phase specification for Scalars
-!
-
       DO N = 1, NScalar
         IF(Phase4Scalar(N) < 0 .OR. Phase4Scalar(N) > MMAX) THEN
-	  WRITE (Line,'(A, I3, A, I4, A)')&
-	  'Phase4Scalar( ', N, ') = ', Phase4Scalar(N), ' is invalid'
-
-	  CALL ERROR_ROUTINE ('check_data_01', Line, 1, 1) 
-	END IF
-      END DO
+          WRITE (Line,'(A, I3, A, I4, A)')&
+          'Phase4Scalar( ', N, ') = ', Phase4Scalar(N), ' is invalid'
+          CALL ERROR_ROUTINE ('check_data_01', Line, 1, 1) 
+        ENDIF
+      ENDDO
       
-!
-! CHECK THE DISCRETIZATION METHDS
-!
+
+! CHECK THE DISCRETIZATION METHODS
 
 !      IF (DISCRETIZE(1) > 1 .OR. DISCRETIZE(2) > 1) THEN 
 !         DISCRETIZE(1) = 0
@@ -155,16 +157,15 @@
       IF (FPFOI) THEN
          DO L = 1,8
             IF(DISCRETIZE(L).LE.1) DISCRETIZE(L) = 2
-         END DO
-	 IF(DMP_LOG)WRITE (UNIT_LOG, 1502) 
+         ENDDO
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1502) 
       ENDIF
       
       IF(Chi_scheme)THEN
         IF(DISCRETIZE(7).NE.3 .and. DISCRETIZE(7).NE.5) THEN
-	   IF(DMP_LOG)WRITE (UNIT_LOG, 1503)
-	   CALL Mfix_exit(0) 
-	ENDIF
-
+           IF(DMP_LOG)WRITE (UNIT_LOG, 1503)
+           CALL Mfix_exit(0) 
+        ENDIF
       ENDIF
 
 
@@ -180,5 +181,5 @@
          'fourth order scheme',G12.5,/1X,70('*')/) 
  1503 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
          'Only schemes 3 and 5 are Chi-scheme enabled for',/&
-	 'species equations [DISCRETIZE(7)].',/1X,70('*')/) 
+         'species equations [DISCRETIZE(7)].',/1X,70('*')/) 
       END SUBROUTINE CHECK_DATA_01 

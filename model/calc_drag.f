@@ -97,14 +97,12 @@
             CALL DRAG_GS (M, IER)
          ENDIF
          IF(.NOT.DISCRETE_ELEMENT) THEN 
-!
-!              JEG Added 
-!              University of Colorado, Hrenya Research Group
+
                IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                     DO L = 1, MMAX
                          IF (DRAGD(L,M)) CALL CALC_IA_NONEP_DRAG_SS (L,M,IER)
                     ENDDO
-               ELSE
+               ELSEIF (TRIM(KT_TYPE) /= 'GHD') THEN  ! do nothing for GHD theory
                     DO L = 1, M - 1 
                          IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER) 
                     END DO 

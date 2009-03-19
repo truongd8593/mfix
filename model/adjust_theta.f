@@ -42,8 +42,7 @@
       INTEGER          IJK
 !
 !                      Solids phase
-      INTEGER          M
-!
+      INTEGER          M, L
 !                      Particle mass and diameter for use with IA theory only
 !                      because theta definition includes mass of particle.
       DOUBLE PRECISION M_PM, D_PM
@@ -56,24 +55,35 @@
 !      CHARACTER*80     LINE
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!
-!
+
       IER = 0 
       smallTheta = (to_SI)**4 * ZERO_EP_S
-!
+
 !!!HPF$ independent
       DO IJK = IJKSTART3, IJKEND3
-         IF ( FLUID_AT(IJK) ) THEN 
-            IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
-	       D_PM = D_P(IJK,M)
-	       M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
-	       IF (THETA_M(IJK,M) < smallTheta*M_PM) THETA_M(IJK,M) = smallTheta*M_PM 
-            ELSE
-	       IF (THETA_M(IJK,M) < smallTheta) THETA_M(IJK,M) = smallTheta 
-            ENDIF
-!
-         ENDIF 
-      END DO 
+        IF ( FLUID_AT(IJK) ) THEN 
+          IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP' &
+          .OR. TRIM(KT_TYPE) .EQ. 'GHD') THEN
+
+              IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+                D_PM = D_P(IJK,M)
+                M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
+              ELSE
+                M_PM = ZERO
+                DO L = 1,SMAX
+                  D_PM = D_P(IJK,L)
+                  M_PM = M_PM +(PI/6.d0)*(D_PM**3)*RO_S(L)
+                ENDDO
+                M_PM = M_PM/DBLE(SMAX)
+              ENDIF 
+              IF (THETA_M(IJK,M) < smallTheta*M_PM) THETA_M(IJK,M) = smallTheta*M_PM 
+          ELSE
+              IF (THETA_M(IJK,M) < smallTheta) THETA_M(IJK,M) = smallTheta 
+          ENDIF
+
+        ENDIF 
+      ENDDO 
+
       RETURN  
       END SUBROUTINE ADJUST_THETA 
 

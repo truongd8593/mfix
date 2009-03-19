@@ -36,6 +36,7 @@
       USE geometry
       USE indices
       USE physprop
+      USE constant
       USE scalars
       USE run
       USE compar        !//d
@@ -113,29 +114,33 @@
                   ENDIF 
                   P_STAR(IJK) = P_STAR(LFLUID) 
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE 
-		  
-		  DO N = 1, NScalar
-		    M = Phase4Scalar(N)
-		    IF(M == 0)Then
-                      IF (U_G(LFLUID)>=ZERO) THEN 
-		        Scalar(IJK, N) = Scalar(LFLUID, N)
-		      ENDIF
-		    Else
-                      IF (U_s(LFLUID, M)>=ZERO) THEN 
-		        Scalar(IJK, N) = Scalar(LFLUID, N)
-		      ENDIF
-		    Endif
-		  END DO
-		  
-		  IF(K_Epsilon) THEN
-                    IF (U_G(LFLUID) >= ZERO) THEN 
-		      K_Turb_G(IJK) = K_Turb_G(LFLUID)
-		      E_Turb_G(IJK) = E_Turb_G(LFLUID)
-		    ENDIF
-		  ENDIF
-		  
-		  
-                  DO M = 1, MMAX 
+  
+                  DO N = 1, NScalar
+                     M = Phase4Scalar(N)
+                     IF(M == 0)Then
+                        IF (U_G(LFLUID)>=ZERO) THEN 
+                           Scalar(IJK, N) = Scalar(LFLUID, N)
+                        ENDIF
+                     Else
+                        IF (U_s(LFLUID, M)>=ZERO) THEN 
+                           Scalar(IJK, N) = Scalar(LFLUID, N)
+                        ENDIF
+                     Endif
+                  ENDDO
+
+                  IF(K_Epsilon) THEN
+                     IF (U_G(LFLUID) >= ZERO) THEN 
+                        K_Turb_G(IJK) = K_Turb_G(LFLUID)
+                        E_Turb_G(IJK) = E_Turb_G(LFLUID)
+                     ENDIF
+                  ENDIF
+
+                  IF (TRIM(KT_TYPE) == 'GHD') THEN 
+                     P_S(IJK,MMAX) = P_S(LFLUID,MMAX) 
+                     ROP_S(IJK,MMAX) = ZERO
+                  ENDIF
+
+                  DO M = 1, SMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (U_S(LFLUID,M) >= ZERO) THEN 
                         ROP_S(IJK,M) = ROP_S(LFLUID,M) 
@@ -143,17 +148,21 @@
                      ELSE 
                         ROP_S(IJK,M) = ZERO 
                      ENDIF 
-!
+
                      IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M) 
-!
+
+                     IF (TRIM(KT_TYPE) == 'GHD') THEN
+                        ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+                     ENDIF
+
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M) 
-!
+
                      N = 1 
                      IF (NMAX(M) > 0) THEN 
                         X_S(IJK,M,:NMAX(M)) = X_S(LFLUID,M,:NMAX(M)) 
                         N = NMAX(M) + 1 
                      ENDIF 
-                  END DO 
+                  ENDDO 
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK) 
                   IF (ROP_G(IJK) > ZERO) THEN 
                      U_G(IJK) = ROP_G(LFLUID)*U_G(LFLUID)/ROP_G(IJK) 
@@ -163,8 +172,16 @@
                   V_G(IJK) = V_G(LFLUID) 
                   W_G(IJK) = W_G(LFLUID) 
                   Flux_gE(IJK) = Flux_gE(LFLUID)
-		  Flux_gN(IJK) = Flux_gN(LFLUID)
-		  Flux_gT(IJK) = Flux_gT(LFLUID) 
+                  Flux_gN(IJK) = Flux_gN(LFLUID)
+                  Flux_gT(IJK) = Flux_gT(LFLUID) 
+
+! for GHD theory
+                  IF (TRIM(KT_TYPE) == 'GHD') THEN 
+                     Flux_nE(IJK) = Flux_nE(LFLUID)
+                     Flux_nN(IJK) = Flux_nN(LFLUID)
+                     Flux_nT(IJK) = Flux_nT(LFLUID) 
+                  ENDIF
+! end of GHD theory
 
                   IF (MMAX > 0) THEN 
                      WHERE (ROP_S(IJK,:MMAX) > ZERO)  
@@ -176,10 +193,10 @@
                      V_S(IJK,:MMAX) = V_S(LFLUID,:MMAX) 
                      W_S(IJK,:MMAX) = W_S(LFLUID,:MMAX) 
                      Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
-		     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
-		     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
+                     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
+                     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
                   ENDIF 
-               ENDIF 
+               ENDIF          ! if (FLUID_AT(IM_OF(IJK)))
 !
 ! Fluid cell at East
 !
@@ -199,28 +216,33 @@
                   ENDIF 
                   P_STAR(IJK) = P_STAR(LFLUID) 
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE 
-		  
-		  DO N = 1, NScalar
-		    M = Phase4Scalar(N)
-		    IF(M == 0)Then
-                      IF (U_G(LFLUID) <= ZERO) THEN 
-		        Scalar(IJK, N) = Scalar(LFLUID, N)
-		      ENDIF
-		    Else
-                      IF (U_s(LFLUID, M) <= ZERO) THEN 
-		        Scalar(IJK, N) = Scalar(LFLUID, N)
-		      ENDIF
-		    Endif
-		  END DO
-		  
-		  IF(K_Epsilon) THEN
-                    IF (U_G(LFLUID) <= ZERO) THEN 
-		      K_Turb_G(IJK) = K_Turb_G(LFLUID)
-		      E_Turb_G(IJK) = E_Turb_G(LFLUID)
-		    ENDIF
-		  ENDIF
-		  
-                  DO M = 1, MMAX 
+
+                  DO N = 1, NScalar
+                     M = Phase4Scalar(N)
+                     IF(M == 0)Then
+                        IF (U_G(LFLUID) <= ZERO) THEN 
+                           Scalar(IJK, N) = Scalar(LFLUID, N)
+                        ENDIF
+                     Else
+                        IF (U_s(LFLUID, M) <= ZERO) THEN 
+                           Scalar(IJK, N) = Scalar(LFLUID, N)
+                        ENDIF
+                     Endif
+                  ENDDO
+
+                  IF(K_Epsilon) THEN
+                     IF (U_G(LFLUID) <= ZERO) THEN 
+                        K_Turb_G(IJK) = K_Turb_G(LFLUID)
+                        E_Turb_G(IJK) = E_Turb_G(LFLUID)
+                     ENDIF
+                  ENDIF
+
+                  IF (TRIM(KT_TYPE) == 'GHD') THEN 
+                     P_S(IJK,MMAX) = P_S(LFLUID,MMAX) 
+                     ROP_S(IJK,MMAX) = ZERO
+                  ENDIF
+
+                  DO M = 1, SMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (U_S(IJK,M) <= ZERO) THEN 
                         ROP_S(IJK,M) = ROP_S(LFLUID,M) 
@@ -228,16 +250,21 @@
                      ELSE 
                         ROP_S(IJK,M) = ZERO 
                      ENDIF 
-!
-                     IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M) 
-!
+
+                     IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)   
+
+                     IF (TRIM(KT_TYPE) == 'GHD') THEN
+                        ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+                     ENDIF
+
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M) 
+
                      N = 1 
                      IF (NMAX(M) > 0) THEN 
                         X_S(IJK,M,:NMAX(M)) = X_S(LFLUID,M,:NMAX(M)) 
                         N = NMAX(M) + 1 
                      ENDIF 
-                  END DO 
+                  ENDDO 
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK) 
                   IF (U_G(IJK) == UNDEFINED) THEN 
                      IF (ROP_G(IJK) > ZERO) THEN 
@@ -249,8 +276,16 @@
                   V_G(IJK) = V_G(LFLUID) 
                   W_G(IJK) = W_G(LFLUID) 
                   Flux_gE(IJK) = Flux_gE(LFLUID)
-		  Flux_gN(IJK) = Flux_gN(LFLUID)
-		  Flux_gT(IJK) = Flux_gT(LFLUID) 
+                  Flux_gN(IJK) = Flux_gN(LFLUID)
+                  Flux_gT(IJK) = Flux_gT(LFLUID) 
+
+! for GHD theory
+                  IF (TRIM(KT_TYPE) == 'GHD') THEN 
+                     Flux_nE(IJK) = Flux_nE(LFLUID)
+                     Flux_nN(IJK) = Flux_nN(LFLUID)
+                     Flux_nT(IJK) = Flux_nT(LFLUID) 
+                  ENDIF
+! end of GHD theory
 
                   DO M = 1, MMAX 
                      IF (U_S(IJK,M) == UNDEFINED) THEN 
@@ -264,10 +299,10 @@
                      V_S(IJK,M) = V_S(LFLUID,M) 
                      W_S(IJK,M) = W_S(LFLUID,M) 
                      Flux_sE(IJK,M) = Flux_sE(LFLUID,M)
-		     Flux_sN(IJK,M) = Flux_sN(LFLUID,M)
-		     Flux_sT(IJK,M) = Flux_sT(LFLUID,M) 
+                     Flux_sN(IJK,M) = Flux_sN(LFLUID,M)
+                     Flux_sT(IJK,M) = Flux_sT(LFLUID,M) 
                   END DO 
-               ENDIF 
+               ENDIF          ! if (FLUID_AT(IP_OF(IJK)))
 !
 ! Fluid cell at South
 !
@@ -287,28 +322,32 @@
                   ENDIF 
                   P_STAR(IJK) = P_STAR(LFLUID) 
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE 
-		  
-		  DO N = 1, NScalar
-		    M = Phase4Scalar(N)
-		    IF(M == 0)Then
-                      IF (V_G(LFLUID) >= ZERO) THEN 
-		        Scalar(IJK, N) = Scalar(LFLUID, N)
-		      ENDIF
-		    Else
-                      IF (V_s(LFLUID, M) >= ZERO) THEN 
-		        Scalar(IJK, N) = Scalar(LFLUID, N)
-		      ENDIF
-		    Endif
-		  END DO
-		  
-		  IF(K_Epsilon) THEN
+
+                  DO N = 1, NScalar
+                     M = Phase4Scalar(N)
+                     IF(M == 0)Then
+                        IF (V_G(LFLUID) >= ZERO) THEN 
+                           Scalar(IJK, N) = Scalar(LFLUID, N)
+                        ENDIF
+                     Else
+                        IF (V_s(LFLUID, M) >= ZERO) THEN 
+                           Scalar(IJK, N) = Scalar(LFLUID, N)
+                        ENDIF
+                     Endif
+                  ENDDO
+
+                  IF(K_Epsilon) THEN
                     IF (V_G(LFLUID) >= ZERO) THEN 
-		      K_Turb_G(IJK) = K_Turb_G(LFLUID)
-		      E_Turb_G(IJK) = E_Turb_G(LFLUID)
-		    ENDIF
-		  ENDIF
-		  
-                  DO M = 1, MMAX 
+                       K_Turb_G(IJK) = K_Turb_G(LFLUID)
+                       E_Turb_G(IJK) = E_Turb_G(LFLUID)
+                    ENDIF
+                  ENDIF
+
+                  IF (TRIM(KT_TYPE) == 'GHD') THEN 
+                     P_S(IJK,MMAX) = P_S(LFLUID,MMAX) 
+                     ROP_S(IJK,MMAX) = ZERO
+                  ENDIF
+                  DO M = 1, SMAX  
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (V_S(LFLUID,M) >= 0.) THEN 
                         ROP_S(IJK,M) = ROP_S(LFLUID,M) 
@@ -316,16 +355,20 @@
                      ELSE 
                         ROP_S(IJK,M) = ZERO 
                      ENDIF 
-!
-                     IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M) 
-!
+
+                     IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)   
+                     IF (TRIM(KT_TYPE) == 'GHD') THEN
+                        ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+                     ENDIF
+
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M) 
+
                      N = 1 
                      IF (NMAX(M) > 0) THEN 
                         X_S(IJK,M,:NMAX(M)) = X_S(LFLUID,M,:NMAX(M)) 
                         N = NMAX(M) + 1 
                      ENDIF 
-                  END DO 
+                  ENDDO 
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK) 
                   U_G(IJK) = U_G(LFLUID) 
                   IF (ROP_G(IJK) > ZERO) THEN 
@@ -335,18 +378,25 @@
                   ENDIF 
                   W_G(IJK) = W_G(LFLUID) 
                   Flux_gE(IJK) = Flux_gE(LFLUID)
-		  Flux_gN(IJK) = Flux_gN(LFLUID)
-		  Flux_gT(IJK) = Flux_gT(LFLUID) 
-		  
+                  Flux_gN(IJK) = Flux_gN(LFLUID)
+                  Flux_gT(IJK) = Flux_gT(LFLUID) 
+! for GHD theory
+                  IF (TRIM(KT_TYPE) == 'GHD') THEN 
+                     Flux_nE(IJK) = Flux_nE(LFLUID)
+                     Flux_nN(IJK) = Flux_nN(LFLUID)
+                     Flux_nT(IJK) = Flux_nT(LFLUID) 
+                  ENDIF
+! end of GHD theory
+
                   IF (MMAX > 0) THEN 
                      U_S(IJK,:MMAX) = U_S(LFLUID,:MMAX) 
                      V_S(IJK,:MMAX) = V_S(LFLUID,:MMAX) 
                      W_S(IJK,:MMAX) = W_S(LFLUID,:MMAX) 
                      Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
-		     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
-		     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
+                     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
+                     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
                   ENDIF 
-               ENDIF 
+               ENDIF          ! if FLUID_AT(JM_OF(IJK)))
 !
 ! Fluid cell at North
 !
@@ -366,28 +416,33 @@
                   ENDIF 
                   P_STAR(IJK) = P_STAR(LFLUID) 
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE 
-		  
-		  DO N = 1, NScalar
-		    M = Phase4Scalar(N)
-		    IF(M == 0)Then
-                      IF (V_G(LFLUID) <= ZERO) THEN 
-		        Scalar(IJK, N) = Scalar(LFLUID, N)
-		      ENDIF
-		    Else
-                      IF (V_s(LFLUID, M) <= ZERO) THEN 
-		        Scalar(IJK, N) = Scalar(LFLUID, N)
-		      ENDIF
-		    Endif
-		  END DO
-		  
-		  IF(K_Epsilon) THEN
+
+                  DO N = 1, NScalar
+                     M = Phase4Scalar(N)
+                     IF(M == 0)Then
+                        IF (V_G(LFLUID) <= ZERO) THEN 
+                           Scalar(IJK, N) = Scalar(LFLUID, N)
+                        ENDIF
+                     Else
+                        IF (V_s(LFLUID, M) <= ZERO) THEN 
+                           Scalar(IJK, N) = Scalar(LFLUID, N)
+                        ENDIF
+                     Endif
+                  ENDDO
+
+                  IF(K_Epsilon) THEN
                     IF (V_G(LFLUID) <= ZERO) THEN 
-		      K_Turb_G(IJK) = K_Turb_G(LFLUID)
-		      E_Turb_G(IJK) = E_Turb_G(LFLUID)
-		    ENDIF
-		  ENDIF
-		  
-                  DO M = 1, MMAX 
+                       K_Turb_G(IJK) = K_Turb_G(LFLUID)
+                       E_Turb_G(IJK) = E_Turb_G(LFLUID)
+                    ENDIF
+                  ENDIF
+
+                  IF (TRIM(KT_TYPE) == 'GHD') THEN 
+                     P_S(IJK,MMAX) = P_S(LFLUID,MMAX) 
+                     ROP_S(IJK,MMAX) = ZERO
+                  ENDIF
+
+                  DO M = 1, SMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (V_S(IJK,M) <= ZERO) THEN 
                         ROP_S(IJK,M) = ROP_S(LFLUID,M) 
@@ -395,16 +450,20 @@
                      ELSE 
                         ROP_S(IJK,M) = ZERO 
                      ENDIF 
-!
-                     IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M) 
-!
+
+                     IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)   
+                     IF (TRIM(KT_TYPE) == 'GHD') THEN
+                        ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+                     ENDIF
+
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M) 
+
                      N = 1 
                      IF (NMAX(M) > 0) THEN 
                         X_S(IJK,M,:NMAX(M)) = X_S(LFLUID,M,:NMAX(M)) 
                         N = NMAX(M) + 1 
                      ENDIF 
-                  END DO 
+                  ENDDO 
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK) 
                   U_G(IJK) = U_G(LFLUID) 
                   IF (V_G(IJK) == UNDEFINED) THEN 
@@ -416,8 +475,16 @@
                   ENDIF 
                   W_G(IJK) = W_G(LFLUID) 
                   Flux_gE(IJK) = Flux_gE(LFLUID)
-		  Flux_gN(IJK) = Flux_gN(LFLUID)
-		  Flux_gT(IJK) = Flux_gT(LFLUID) 
+                  Flux_gN(IJK) = Flux_gN(LFLUID)
+                  Flux_gT(IJK) = Flux_gT(LFLUID) 
+
+! for GHD theory
+                  IF (TRIM(KT_TYPE) == 'GHD') THEN 
+                     Flux_nE(IJK) = Flux_nE(LFLUID)
+                     Flux_nN(IJK) = Flux_nN(LFLUID)
+                     Flux_nT(IJK) = Flux_nT(LFLUID) 
+                  ENDIF
+! end of GHD theory
 
                   IF (MMAX > 0) THEN 
                      U_S(IJK,:MMAX) = U_S(LFLUID,:MMAX) 
@@ -425,10 +492,10 @@
                         LFLUID,:MMAX) 
                      W_S(IJK,:MMAX) = W_S(LFLUID,:MMAX) 
                      Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
-		     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
-		     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
+                     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
+                     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
                   ENDIF 
-               ENDIF 
+               ENDIF          ! if (FLUID_AT(JP_OF(IJK)))
 !
 ! Fluid cell at Bottom
 !
@@ -448,28 +515,32 @@
                   ENDIF 
                   P_STAR(IJK) = P_STAR(LFLUID) 
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE 
-		  
-		  DO N = 1, NScalar
-		    M = Phase4Scalar(N)
-		    IF(M == 0)Then
-                      IF (W_G(LFLUID) >= ZERO) THEN 
-		        Scalar(IJK, N) = Scalar(LFLUID, N)
-		      ENDIF
-		    Else
-                      IF (W_s(LFLUID, M) >= ZERO) THEN 
-		        Scalar(IJK, N) = Scalar(LFLUID, N)
-		      ENDIF
-		    Endif
-		  END DO
-		  
-		  IF(K_Epsilon) THEN
-                    IF (W_G(LFLUID) >= ZERO) THEN 
-		      K_Turb_G(IJK) = K_Turb_G(LFLUID)
-		      E_Turb_G(IJK) = E_Turb_G(LFLUID)
-		    ENDIF
-		  ENDIF
-		  
-                  DO M = 1, MMAX 
+
+                  DO N = 1, NScalar
+                     M = Phase4Scalar(N)
+                     IF(M == 0)Then
+                        IF (W_G(LFLUID) >= ZERO) THEN 
+                           Scalar(IJK, N) = Scalar(LFLUID, N)
+                        ENDIF
+                     Else
+                        IF (W_s(LFLUID, M) >= ZERO) THEN 
+                           Scalar(IJK, N) = Scalar(LFLUID, N)
+                        ENDIF
+                     Endif
+                  END DO
+
+                  IF(K_Epsilon) THEN
+                     IF (W_G(LFLUID) >= ZERO) THEN 
+                        K_Turb_G(IJK) = K_Turb_G(LFLUID)
+                        E_Turb_G(IJK) = E_Turb_G(LFLUID)
+                     ENDIF
+                  ENDIF
+
+                  IF (TRIM(KT_TYPE) == 'GHD') THEN 
+                     P_S(IJK,MMAX) = P_S(LFLUID,MMAX) 
+                     ROP_S(IJK,MMAX) = ZERO
+                  ENDIF
+                  DO M = 1, SMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (W_S(LFLUID,M) >= 0.) THEN 
                         ROP_S(IJK,M) = ROP_S(LFLUID,M) 
@@ -477,9 +548,13 @@
                      ELSE 
                         ROP_S(IJK,M) = ZERO 
                      ENDIF 
-!
-                     IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M) 
-!
+
+                     IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)  
+
+                     IF (TRIM(KT_TYPE) == 'GHD') THEN
+                        ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+                     ENDIF
+
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M) 
                      N = 1 
                      IF (NMAX(M) > 0) THEN 
@@ -496,18 +571,26 @@
                      W_G(IJK) = ZERO 
                   ENDIF 
                   Flux_gE(IJK) = Flux_gE(LFLUID)
-		  Flux_gN(IJK) = Flux_gN(LFLUID)
-		  Flux_gT(IJK) = Flux_gT(LFLUID) 
+                  Flux_gN(IJK) = Flux_gN(LFLUID)
+                  Flux_gT(IJK) = Flux_gT(LFLUID) 
+
+! for GHD theory
+                  IF (TRIM(KT_TYPE) == 'GHD') THEN 
+                     Flux_nE(IJK) = Flux_nE(LFLUID)
+                     Flux_nN(IJK) = Flux_nN(LFLUID)
+                     Flux_nT(IJK) = Flux_nT(LFLUID) 
+                  ENDIF
+! end of GHD theory
 
                   IF (MMAX > 0) THEN 
                      U_S(IJK,:MMAX) = U_S(LFLUID,:MMAX) 
                      V_S(IJK,:MMAX) = V_S(LFLUID,:MMAX) 
                      W_S(IJK,:MMAX) = W_S(LFLUID,:MMAX) 
                      Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
-		     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
-		     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
+                     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
+                     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
                   ENDIF 
-               ENDIF 
+               ENDIF          ! if (FLUID_AT(KM_OF(IJK)))
 !
 ! Fluid cell at Top
 !
@@ -527,28 +610,32 @@
                   ENDIF 
                   P_STAR(IJK) = P_STAR(LFLUID) 
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE 
-		  
-		  DO N = 1, NScalar
-		    M = Phase4Scalar(N)
-		    IF(M == 0)Then
-                      IF (W_G(LFLUID) <= ZERO) THEN 
-		        Scalar(IJK, N) = Scalar(LFLUID, N)
-		      ENDIF
-		    Else
-                      IF (W_s(LFLUID, M) <= ZERO) THEN 
-		        Scalar(IJK, N) = Scalar(LFLUID, N)
-		      ENDIF
-		    Endif
-		  END DO
-		  
-		  IF(K_Epsilon) THEN
-                    IF (W_G(LFLUID) <= ZERO) THEN 
-		      K_Turb_G(IJK) = K_Turb_G(LFLUID)
-		      E_Turb_G(IJK) = E_Turb_G(LFLUID)
-		    ENDIF
-		  ENDIF
-		  
-                  DO M = 1, MMAX 
+
+                  DO N = 1, NScalar
+                     M = Phase4Scalar(N)
+                     IF(M == 0)Then
+                       IF (W_G(LFLUID) <= ZERO) THEN 
+                          Scalar(IJK, N) = Scalar(LFLUID, N)
+                        ENDIF
+                     Else
+                        IF (W_s(LFLUID, M) <= ZERO) THEN 
+                           Scalar(IJK, N) = Scalar(LFLUID, N)
+                        ENDIF
+                     Endif
+                  END DO
+
+                  IF(K_Epsilon) THEN
+                     IF (W_G(LFLUID) <= ZERO) THEN 
+                        K_Turb_G(IJK) = K_Turb_G(LFLUID)
+                        E_Turb_G(IJK) = E_Turb_G(LFLUID)
+                     ENDIF
+                  ENDIF
+
+                  IF (TRIM(KT_TYPE) == 'GHD') THEN 
+                     P_S(IJK,MMAX) = P_S(LFLUID,MMAX) 
+                     ROP_S(IJK,MMAX) = ZERO
+                  ENDIF
+                  DO M = 1, SMAX 
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (W_S(IJK,M) <= ZERO) THEN 
                         ROP_S(IJK,M) = ROP_S(LFLUID,M) 
@@ -556,10 +643,15 @@
                      ELSE 
                         ROP_S(IJK,M) = ZERO 
                      ENDIF 
-!
-                     IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M) 
-!
+
+                     IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)   
+
+                     IF (TRIM(KT_TYPE) == 'GHD') THEN
+                        ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+                     ENDIF
+
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M) 
+
                      N = 1 
                      IF (NMAX(M) > 0) THEN 
                         X_S(IJK,M,:NMAX(M)) = X_S(LFLUID,M,:NMAX(M)) 
@@ -577,8 +669,16 @@
                      ENDIF 
                   ENDIF 
                   Flux_gE(IJK) = Flux_gE(LFLUID)
-		  Flux_gN(IJK) = Flux_gN(LFLUID)
-		  Flux_gT(IJK) = Flux_gT(LFLUID) 
+                  Flux_gN(IJK) = Flux_gN(LFLUID)
+                  Flux_gT(IJK) = Flux_gT(LFLUID) 
+
+! for GHD theory
+                  IF (TRIM(KT_TYPE) == 'GHD') THEN 
+                     Flux_nE(IJK) = Flux_nE(LFLUID)
+                     Flux_nN(IJK) = Flux_nN(LFLUID)
+                     Flux_nT(IJK) = Flux_nT(LFLUID) 
+                  ENDIF
+! end of GHD theory
 
                   IF (MMAX > 0) THEN 
                      U_S(IJK,:MMAX) = U_S(LFLUID,:MMAX) 
@@ -586,10 +686,11 @@
                      WHERE (W_S(IJK,:MMAX) == UNDEFINED) W_S(IJK,:MMAX) = W_S(&
                         LFLUID,:MMAX) 
                      Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
-		     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
-		     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
+                     Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
+                     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
                   ENDIF 
-               ENDIF 
+               ENDIF          ! if (FLUID_AT(KP_OF(IJK)))
+
             END DO 
          END DO 
       END DO 

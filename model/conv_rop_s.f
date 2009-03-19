@@ -30,6 +30,7 @@
       USE param1 
       USE fldvar
       USE run
+      USE physprop
       USE compar 
       
       IMPLICIT NONE
@@ -45,7 +46,7 @@
       INTEGER          IER 
 ! 
 !                      phase index 
-      INTEGER          M 
+      INTEGER          M, M1 
 ! 
 !                      Septadiagonal matrix A_m 
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
@@ -54,10 +55,12 @@
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
 ! 
 !
+      M1 = M
+      IF(TRIM(KT_TYPE) == 'GHD') M1 = MMAX
       IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding 
-         CALL CONV_ROP_S0 (A_M, B_M, M, IER) 
+         CALL CONV_ROP_S0 (A_M, B_M, M, M1, IER) 
       ELSE 
-         CALL CONV_ROP_S1 (A_M, B_M, M, IER) 
+         CALL CONV_ROP_S1 (A_M, B_M, M, M1, IER) 
       ENDIF 
       
       RETURN  
@@ -85,7 +88,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_ROP_S0(A_M, B_M, M, IER) 
+      SUBROUTINE CONV_ROP_S0(A_M, B_M, M, M1, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -125,7 +128,7 @@
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
 ! 
 !                      phase index 
-      INTEGER          M 
+      INTEGER          M, M1 
 ! 
 !                      Indices 
       INTEGER          I, J, K, IJK, IPJK, IJPK, IJKP 
@@ -151,27 +154,27 @@
             IJKM = KM_OF(IJK) 
 !
 !         East face (i+1/2, j, k)
-            A_M(IJK,E,M) = ZMAX((-U_S(IJK,M)))*AYZ(IJK) 
-            A_M(IPJK,W,M) = ZMAX(U_S(IJK,M))*AYZ(IJK) 
+            A_M(IJK,E,M) = ZMAX((-U_S(IJK,M1)))*AYZ(IJK) 
+            A_M(IPJK,W,M) = ZMAX(U_S(IJK,M1))*AYZ(IJK) 
 !
 !         North face (i, j+1/2, k)
-            A_M(IJK,N,M) = ZMAX((-V_S(IJK,M)))*AXZ(IJK) 
-            A_M(IJPK,S,M) = ZMAX(V_S(IJK,M))*AXZ(IJK) 
+            A_M(IJK,N,M) = ZMAX((-V_S(IJK,M1)))*AXZ(IJK) 
+            A_M(IJPK,S,M) = ZMAX(V_S(IJK,M1))*AXZ(IJK) 
 !
 !         Top face (i, j, k+1/2)
             IF (DO_K) THEN 
-               A_M(IJK,T,M) = ZMAX((-W_S(IJK,M)))*AXY(IJK) 
-               A_M(IJKP,B,M) = ZMAX(W_S(IJK,M))*AXY(IJK) 
+               A_M(IJK,T,M) = ZMAX((-W_S(IJK,M1)))*AXY(IJK) 
+               A_M(IJKP,B,M) = ZMAX(W_S(IJK,M1))*AXY(IJK) 
             ENDIF 
             IF (PHASE_4_P_G(IMJK)==M .OR. PHASE_4_P_S(IMJK)==M) A_M(IJK,W,M) = &
-               ZMAX(U_S(IMJK,M))*AYZ(IMJK) 
+               ZMAX(U_S(IMJK,M1))*AYZ(IMJK) 
             IF (PHASE_4_P_G(IJMK)==M .OR. PHASE_4_P_S(IJMK)==M) A_M(IJK,S,M) = &
-               ZMAX(V_S(IJMK,M))*AXZ(IJMK) 
+               ZMAX(V_S(IJMK,M1))*AXZ(IJMK) 
 !
 !         Bottom face (i, j, k-1/2)
             IF (DO_K) THEN 
                IF (PHASE_4_P_G(IJKM)==M .OR. PHASE_4_P_S(IJKM)==M) A_M(IJK,B,M)&
-                   = ZMAX(W_S(IJKM,M))*AXY(IJKM) 
+                   = ZMAX(W_S(IJKM,M1))*AXY(IJKM) 
             ENDIF 
          ENDIF 
       END DO 
@@ -201,7 +204,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_ROP_S1(A_M, B_M, M, IER) 
+      SUBROUTINE CONV_ROP_S1(A_M, B_M, M, M1, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -246,7 +249,7 @@
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
 ! 
 !                      phase index 
-      INTEGER          M 
+      INTEGER          M, M1 
 ! 
 !                      Indices 
       INTEGER          I, J, K, IJK, IPJK, IJPK, IJKP 
@@ -270,7 +273,7 @@
 	 incr=0
 ! loezos
 
-      CALL CALC_XSI (DISCRETIZE(2), ROP_S(1,M), U_S(1,M), V_S(1,M), W_S(1,M), &
+      CALL CALC_XSI (DISCRETIZE(2), ROP_S(1,M), U_S(1,M1), V_S(1,M1), W_S(1,M1), &
          XSI_E, XSI_N, XSI_T,incr) 
 !
 !     Calculate convection-diffusion fluxes through each of the faces
@@ -291,27 +294,27 @@
             IJKM = KM_OF(IJK) 
 !
 !         East face (i+1/2, j, k)
-            A_M(IJK,E,M) = -XSI_E(IJK)*U_S(IJK,M)*AYZ(IJK) 
-            A_M(IPJK,W,M) = (ONE - XSI_E(IJK))*U_S(IJK,M)*AYZ(IJK) 
+            A_M(IJK,E,M) = -XSI_E(IJK)*U_S(IJK,M1)*AYZ(IJK) 
+            A_M(IPJK,W,M) = (ONE - XSI_E(IJK))*U_S(IJK,M1)*AYZ(IJK) 
 !
 !         North face (i, j+1/2, k)
-            A_M(IJK,N,M) = -XSI_N(IJK)*V_S(IJK,M)*AXZ(IJK) 
-            A_M(IJPK,S,M) = (ONE - XSI_N(IJK))*V_S(IJK,M)*AXZ(IJK) 
+            A_M(IJK,N,M) = -XSI_N(IJK)*V_S(IJK,M1)*AXZ(IJK) 
+            A_M(IJPK,S,M) = (ONE - XSI_N(IJK))*V_S(IJK,M1)*AXZ(IJK) 
 !
 !         Top face (i, j, k+1/2)
             IF (DO_K) THEN 
-               A_M(IJK,T,M) = -XSI_T(IJK)*W_S(IJK,M)*AXY(IJK) 
-               A_M(IJKP,B,M) = (ONE - XSI_T(IJK))*W_S(IJK,M)*AXY(IJK) 
+               A_M(IJK,T,M) = -XSI_T(IJK)*W_S(IJK,M1)*AXY(IJK) 
+               A_M(IJKP,B,M) = (ONE - XSI_T(IJK))*W_S(IJK,M1)*AXY(IJK) 
             ENDIF 
             IF (PHASE_4_P_G(IMJK)==M .OR. PHASE_4_P_S(IMJK)==M) A_M(IJK,W,M) = &
-               (ONE - XSI_E(IMJK))*U_S(IMJK,M)*AYZ(IMJK) 
+               (ONE - XSI_E(IMJK))*U_S(IMJK,M1)*AYZ(IMJK) 
             IF (PHASE_4_P_G(IJMK)==M .OR. PHASE_4_P_S(IJMK)==M) A_M(IJK,S,M) = &
-               (ONE - XSI_N(IJMK))*V_S(IJMK,M)*AXZ(IJMK) 
+               (ONE - XSI_N(IJMK))*V_S(IJMK,M1)*AXZ(IJMK) 
 !
 !         Bottom face (i, j, k-1/2)
             IF (DO_K) THEN 
                IF (PHASE_4_P_G(IJKM)==M .OR. PHASE_4_P_S(IJKM)==M) A_M(IJK,B,M)&
-                   = (ONE - XSI_T(IJKM))*W_S(IJKM,M)*AXY(IJKM) 
+                   = (ONE - XSI_T(IJKM))*W_S(IJKM,M1)*AXY(IJKM) 
             ENDIF 
          ENDIF 
       END DO 

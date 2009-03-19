@@ -47,52 +47,48 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-! 
-! 
 !                      Error index 
       INTEGER          IER 
-! 
+ 
 !                      Solids phase index 
       INTEGER          M 
-! 
+ 
 !                      Septadiagonal matrix A_m 
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
-! 
+ 
 !                      Vector b_m 
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
- 
 !-----------------------------------------------
-!
-!
+
       DO M = 1, MMAX 
-        IF (MOMENTUM_X_EQ(M)) THEN
+        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+          IF (MOMENTUM_X_EQ(M)) THEN
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+
 !	  IF DEFERRED CORRECTION IS USED TO SOLVE U_S
-!
-	  IF(DEF_COR)THEN
-	    CALL STORE_A_U_S0 (A_M(1,-3,M), M, IER)
-	    IF (DISCRETIZE(3) > 1) CALL STORE_A_U_SDC (A_M(1,-3,M), M, B_M, IER)
-	  ELSE
-!
-!	  NO DEFERRED CORRECTION IS TO BE USED TO SOLVE FOR U_S
-!  
-            IF (DISCRETIZE(3) == 0) THEN         ! 0 & 1 => FOUP 
-               CALL STORE_A_U_S0 (A_M(1,-3,M), M, IER) 
-            ELSE 
-               CALL STORE_A_U_S1 (A_M(1,-3,M), M, IER) 
-            ENDIF 
-!
-          ENDIF
-	  	  
-	  CALL DIF_U_IS (MU_S(1,M), A_M, B_M, M, IER)
-	ENDIF 
+            IF(DEF_COR)THEN
+              CALL STORE_A_U_S0 (A_M(1,-3,M), M, IER)
+              IF (DISCRETIZE(3) > 1) CALL STORE_A_U_SDC (A_M(1,-3,M), M, B_M, IER)
+            ELSE
+
+!         NO DEFERRED CORRECTION IS TO BE USED TO SOLVE FOR U_S
+              IF (DISCRETIZE(3) == 0) THEN         ! 0 & 1 => FOUP 
+                 CALL STORE_A_U_S0 (A_M(1,-3,M), M, IER) 
+              ELSE 
+                 CALL STORE_A_U_S1 (A_M(1,-3,M), M, IER) 
+              ENDIF 
+
+            ENDIF
+            
+            CALL DIF_U_IS (MU_S(1,M), A_M, B_M, M, IER)
+          ENDIF  
+        ENDIF
       END DO 
       
       RETURN  
       END SUBROUTINE CONV_DIF_U_S 
-!
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: STORE_A_U_s0(A_U_s, M, IER)                            C

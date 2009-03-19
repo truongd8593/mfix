@@ -68,6 +68,7 @@ mfix.exe : \
     parallel_mpi.mod \
     sendrecv3.mod \
     sendrecv.mod \
+    ghdtheory.mod \
     accum_resid.$(OBJ_EXT) \
     adjust_a_u_g.$(OBJ_EXT) \
     adjust_a_u_s.$(OBJ_EXT) \
@@ -387,6 +388,23 @@ mfix.exe : \
     rkqs.$(OBJ_EXT) \
     source_population_eq.$(OBJ_EXT) \
     usr_dqmom.$(OBJ_EXT) \
+    bulk_viscosity.$(OBJ_EXT) \
+    calc_nflux.$(OBJ_EXT) \
+    chi_ij_GHD.$(OBJ_EXT) \
+    cooling_rate.$(OBJ_EXT) \
+    cooling_rate_tc.$(OBJ_EXT) \
+    dufour_coeff.$(OBJ_EXT) \
+    ghd.$(OBJ_EXT) \
+    ghdmassflux.$(OBJ_EXT) \
+    mass_mobility.$(OBJ_EXT) \
+    ordinary_diff.$(OBJ_EXT) \
+    pressure.$(OBJ_EXT) \
+    shear_viscosity.$(OBJ_EXT) \
+    source_ghd_granular_energy.$(OBJ_EXT) \
+    thermal_conductivity.$(OBJ_EXT) \
+    thermal_diffusivity.$(OBJ_EXT) \
+    thermal_mobility.$(OBJ_EXT) \
+    transport_coeff_ghd.$(OBJ_EXT) \
     get_values.$(OBJ_EXT) \
     readTherm.$(OBJ_EXT) \
     blas90.a odepack.a dgtsv90.a
@@ -776,6 +794,24 @@ mfix.exe : \
     rkqs.$(OBJ_EXT) \
     source_population_eq.$(OBJ_EXT) \
     usr_dqmom.$(OBJ_EXT) \
+    bulk_viscosity.$(OBJ_EXT) \
+    calc_nflux.$(OBJ_EXT) \
+    chi_ij_GHD.$(OBJ_EXT) \
+    cooling_rate.$(OBJ_EXT) \
+    cooling_rate_tc.$(OBJ_EXT) \
+    dufour_coeff.$(OBJ_EXT) \
+    ghd.$(OBJ_EXT) \
+    ghdmassflux.$(OBJ_EXT) \
+    ghdtheory_mod.$(OBJ_EXT) \
+    mass_mobility.$(OBJ_EXT) \
+    ordinary_diff.$(OBJ_EXT) \
+    pressure.$(OBJ_EXT) \
+    shear_viscosity.$(OBJ_EXT) \
+    source_ghd_granular_energy.$(OBJ_EXT) \
+    thermal_conductivity.$(OBJ_EXT) \
+    thermal_diffusivity.$(OBJ_EXT) \
+    thermal_mobility.$(OBJ_EXT) \
+    transport_coeff_ghd.$(OBJ_EXT) \
     get_values.$(OBJ_EXT) \
     readTherm.$(OBJ_EXT) \
   -o mfix.exe $(LIB_FLAGS)
@@ -1084,6 +1120,10 @@ sendrecv.mod : ./dmp_modules/sendrecv_mod.f \
             mpi.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/sendrecv_mod.f 
+ghdtheory.mod : ./GhdTheory/ghdtheory_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/ghdtheory_mod.f 
 accum_resid.$(OBJ_EXT) : accum_resid.f \
             param.mod \
             param1.mod \
@@ -1256,6 +1296,7 @@ allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             vshear.mod \
             mflux.mod \
             mchem.mod \
+            ghdtheory.mod \
             kintheory.mod \
             kintheory2.mod \
             cdist.mod 
@@ -1675,6 +1716,7 @@ calc_vol_fr.$(OBJ_EXT) : calc_vol_fr.f \
             param.mod \
             param1.mod \
             parallel.mod \
+            run.mod \
             geometry.mod \
             indices.mod \
             physprop.mod \
@@ -1777,6 +1819,7 @@ check_data_04.$(OBJ_EXT) : check_data_04.f \
             indices.mod \
             physprop.mod \
             constant.mod \
+            discretelement.mod \
             funits.mod 
 check_data_05.$(OBJ_EXT) : check_data_05.f \
             param.mod \
@@ -2158,10 +2201,10 @@ conv_rop_s.$(OBJ_EXT) : conv_rop_s.f \
             param1.mod \
             fldvar.mod \
             run.mod \
+            physprop.mod \
             compar.mod \
             parallel.mod \
             matrix.mod \
-            physprop.mod \
             geometry.mod \
             indices.mod \
             pgcor.mod \
@@ -3112,6 +3155,7 @@ set_bc0.$(OBJ_EXT) : set_bc0.f \
             compar.mod \
             mpi_utility.mod \
             physprop.mod \
+            constant.mod \
             bc.mod \
             fldvar.mod \
             indices.mod \
@@ -3326,6 +3370,7 @@ set_outflow.$(OBJ_EXT) : set_outflow.f \
             geometry.mod \
             indices.mod \
             physprop.mod \
+            constant.mod \
             scalars.mod \
             run.mod \
             compar.mod \
@@ -3558,6 +3603,7 @@ solve_vel_star.$(OBJ_EXT) : solve_vel_star.f \
             physprop.mod \
             geometry.mod \
             fldvar.mod \
+            ghdtheory.mod \
             output.mod \
             indices.mod \
             drag.mod \
@@ -3658,6 +3704,9 @@ source_rop_s.$(OBJ_EXT) : source_rop_s.f \
             fldvar.mod \
             rxns.mod \
             run.mod \
+            physprop.mod \
+            constant.mod \
+            ghdtheory.mod \
             geometry.mod \
             indices.mod \
             pgcor.mod \
@@ -4958,6 +5007,105 @@ usr_dqmom.$(OBJ_EXT) : ./dqmom/usr_dqmom.f \
             ep_s2.inc                                                    \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/usr_dqmom.f 
+bulk_viscosity.$(OBJ_EXT) : ./GhdTheory/bulk_viscosity.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/bulk_viscosity.f 
+calc_nflux.$(OBJ_EXT) : ./GhdTheory/calc_nflux.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            geometry.mod \
+            physprop.mod \
+            constant.mod \
+            indices.mod \
+            mflux.mod \
+            compar.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/calc_nflux.f 
+chi_ij_GHD.$(OBJ_EXT) : ./GhdTheory/chi_ij_GHD.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/chi_ij_GHD.f 
+cooling_rate.$(OBJ_EXT) : ./GhdTheory/cooling_rate.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/cooling_rate.f 
+cooling_rate_tc.$(OBJ_EXT) : ./GhdTheory/cooling_rate_tc.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/cooling_rate_tc.f 
+dufour_coeff.$(OBJ_EXT) : ./GhdTheory/dufour_coeff.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/dufour_coeff.f 
+ghd.$(OBJ_EXT) : ./GhdTheory/ghd.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/ghd.f 
+ghdmassflux.$(OBJ_EXT) : ./GhdTheory/ghdmassflux.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            compar.mod \
+            fldvar.mod \
+            indices.mod \
+            visc_s.mod \
+            ghdtheory.mod \
+            physprop.mod \
+            run.mod \
+            constant.mod \
+            toleranc.mod \
+            is.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                 \
+            b_force1.inc                                                 \
+            b_force2.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/ghdmassflux.f 
+mass_mobility.$(OBJ_EXT) : ./GhdTheory/mass_mobility.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/mass_mobility.f 
+ordinary_diff.$(OBJ_EXT) : ./GhdTheory/ordinary_diff.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/ordinary_diff.f 
+pressure.$(OBJ_EXT) : ./GhdTheory/pressure.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/pressure.f 
+shear_viscosity.$(OBJ_EXT) : ./GhdTheory/shear_viscosity.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/shear_viscosity.f 
+source_ghd_granular_energy.$(OBJ_EXT) : ./GhdTheory/source_ghd_granular_energy.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            run.mod \
+            drag.mod \
+            geometry.mod \
+            fldvar.mod \
+            visc_s.mod \
+            ghdtheory.mod \
+            trace.mod \
+            indices.mod \
+            constant.mod \
+            compar.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                    \
+            b_force1.inc                                                 \
+            b_force2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/source_ghd_granular_energy.f 
+thermal_conductivity.$(OBJ_EXT) : ./GhdTheory/thermal_conductivity.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/thermal_conductivity.f 
+thermal_diffusivity.$(OBJ_EXT) : ./GhdTheory/thermal_diffusivity.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/thermal_diffusivity.f 
+thermal_mobility.$(OBJ_EXT) : ./GhdTheory/thermal_mobility.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/thermal_mobility.f 
+transport_coeff_ghd.$(OBJ_EXT) : ./GhdTheory/transport_coeff_ghd.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            compar.mod \
+            fldvar.mod \
+            indices.mod \
+            visc_s.mod \
+            ghdtheory.mod \
+            physprop.mod \
+            run.mod \
+            constant.mod \
+            toleranc.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/transport_coeff_ghd.f 
 get_values.$(OBJ_EXT) : ./thermochemical/get_values.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./thermochemical/get_values.f 
 readTherm.$(OBJ_EXT) : ./thermochemical/readTherm.f 

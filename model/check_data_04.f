@@ -47,8 +47,8 @@
 !-----------------------------------------------
       INTEGER :: LC, N 
 !-----------------------------------------------
-!
-!
+
+
 ! Overwrite any user's DES logicals set with discrete_element = .false.
 !
       IF(.NOT.DISCRETE_ELEMENT) THEN
@@ -61,16 +61,15 @@
 !
 !
 ! CHECK MMAX
-!
       IF (MMAX<0 .OR. MMAX>DIMENSION_M) THEN 
          CALL ERROR_ROUTINE ('check_data_04', &
             'MMAX not specified or unphysical', 0, 2) 
             IF(DMP_LOG)WRITE (UNIT_LOG, 1000) MMAX, DIMENSION_M 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
       ENDIF 
-!
+
 ! CHECK NMAX
-!
+! only need to check species for real phases (for GHD theory) 
       DO LC = 1, MMAX 
          IF (NMAX(LC) == UNDEFINED_I) THEN 
             IF (SPECIES_EQ(LC)) THEN 
@@ -87,29 +86,39 @@
                IF(DMP_LOG)WRITE (UNIT_LOG, 1050) LC, NMAX, DIMENSION_N_S 
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
-      END DO 
+      ENDDO 
+
       IF (MMAX > 0) THEN 
          IF (C_E == UNDEFINED) CALL ERROR_ROUTINE ('check_data_04', &
             'Coefficient of restitution (C_e) not specified', 1, 1) 
-         IF (C_F==UNDEFINED .AND. MMAX>=2) CALL ERROR_ROUTINE ('check_data_04'&
+         IF (C_F==UNDEFINED .AND. MMAX>=2 .AND. KT_TYPE .EQ. UNDEFINED_C) &
+            CALL ERROR_ROUTINE ('check_data_04'&
             , 'Coefficient of friction (C_f) not specified', 1, 1) 
          IF (PHI == UNDEFINED) CALL ERROR_ROUTINE ('check_data_04', &
             'Angle of internal friction (Phi) not specified', 1, 1) 
-         IF (PHI_W == UNDEFINED) CALL ERROR_ROUTINE ('check_data_04', &
+         IF (PHI_W == UNDEFINED) &
+             CALL ERROR_ROUTINE ('check_data_04', &
             'Angle of wall-particle friction (Phi_w) not specified', 1, 1) 
       ENDIF 
-!
+
+      DO LC = 1, SMAX 
+         DO N = 1, SMAX
+            IF(r_p(LC,N) == UNDEFINED) r_p(LC,N) = C_e
+            r_p(N,LC) = r_p(LC,N) ! just need to define r_p(1,2) and r_p(2,1) will be set.
+         ENDDO
+      ENDDO
+
 ! CHECK D_p
-!
-      DO LC = 1, MMAX 
+! only need to check for real phases (for GHD theory)      
+      DO LC = 1, SMAX 
          IF (D_P0(LC)<ZERO .OR. D_P0(LC)==UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
                'D_p0 not specified or unphysical', 0, 2) 
                IF(DMP_LOG)WRITE (UNIT_LOG, 1100) LC, D_P0(LC) 
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
-      END DO 
-      DO LC = MMAX + 1, DIMENSION_M 
+      ENDDO 
+      DO LC = SMAX + 1, DIMENSION_M 
          IF (D_P0(LC) /= UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
                'too many D_p0 values specified', 0, 2) 
@@ -117,7 +126,7 @@
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       END DO 
-      DO LC = 1, MMAX 
+      DO LC = 1, SMAX 
          IF (RO_S(LC)<ZERO .OR. RO_S(LC)==UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
                'RO_s not specified or unphysical', 0, 2) 
@@ -125,7 +134,7 @@
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       END DO 
-      DO LC = MMAX + 1, DIMENSION_M 
+      DO LC = SMAX + 1, DIMENSION_M 
          IF (RO_S(LC) /= UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
                'too many RO_s values specified', 0, 2) 
@@ -133,7 +142,7 @@
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       END DO 
-      DO LC = 1, MMAX 
+      DO LC = 1, SMAX 
          IF (SPECIES_EQ(LC)) THEN 
             DO N = 1, NMAX(LC) 
                IF (MW_S(LC,N) == UNDEFINED) THEN 
@@ -152,52 +161,47 @@
                ENDIF 
             END DO 
          ENDIF 
-      END DO 
+      ENDDO 
+
       IF (MODEL_B) THEN 
-!
          DO LC = 1, MMAX 
-!
             IF (.NOT.CLOSE_PACKED(LC)) THEN 
                CALL ERROR_ROUTINE ('check_data_04', ' ', 0, 2) 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1420) LC
                CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
-!
             ENDIF 
          END DO 
       ENDIF 
-!
-!
-! check EP_star
-!
+
+
+! CHECK EP_star
       IF (MMAX > 0) THEN 
-         IF (EP_STAR<ZERO .OR. EP_STAR>ONE) CALL ERROR_ROUTINE ('check_data_04'&
+         IF (EP_STAR<ZERO .OR. EP_STAR>ONE) &
+            CALL ERROR_ROUTINE ('check_data_04'&
             , 'Value of EP_star is unphysical', 1, 1) 
       ENDIF 
-!
+
 ! Yu_Standish and Fedors_Landel correlations are used with more than one solids phase
-!
-      IF (MMAX < 2 .AND. (YU_STANDISH .OR. FEDORS_LANDEL)) &
+      IF (SMAX < 2 .AND. (YU_STANDISH .OR. FEDORS_LANDEL)) &
          CALL ERROR_ROUTINE ('check_data_04', &
        'MMAX must be >= 2 for Yu_Standish or Fedors_Landel correlations', 1, 1)
-!
+
 ! Fedors_Landel correlations is limited to a binary mixture of powders
-!
-      IF (MMAX > 2 .AND. FEDORS_LANDEL) &
+      IF (SMAX > 2 .AND. FEDORS_LANDEL) &
          CALL ERROR_ROUTINE ('check_data_04' &
          , 'Fedors_Landel requires MMAX = 2 ', 1, 1)
-!
+
 ! Must choose between Yu_Standish and Fedors_Landel correlations, can't use both.
-!
       IF (YU_STANDISH .AND. FEDORS_LANDEL) &
          CALL ERROR_ROUTINE ('check_data_04', &
          'Cannot use both Yu_Standish and Fedors_Landel correlations', 1, 1)
-!
+
       RETURN  
-!
+
       IF (SIGM_BLEND) THEN
          TANH_BLEND = .FALSE. ! Setting tanh blending to be false
       ENDIF
-!
+
  1000 FORMAT(1X,/,1X,'MMAX        in  mfix.dat = ',I6,/,1X,&
          'DIMENSION_M in  param.inc  = ',I6,/) 
  1045 FORMAT(1X,/,1X,'NMAX is not specified for solids phase',I2) 
@@ -210,5 +214,5 @@
  1410 FORMAT(1X,/,1X,'Solids phase = ',I2,'   Species = ',I3) 
  1420 FORMAT(1X,/,1X,'Solids phase = ',I2,' is not Close_Packed.',/,&
          ' With Model B all solids phases should have that property') 
-!
+
       END SUBROUTINE CHECK_DATA_04 

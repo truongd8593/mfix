@@ -65,23 +65,17 @@
                        IJKB, IJKBE, IJKM, IPJKM 
 ! 
 !                      Phase index 
-      INTEGER          M 
+      INTEGER          M, L
 !
 ! loezos
        INTEGER I1,J1    
 ! loezos
  
 !                      Average volume fraction 
-      DOUBLE PRECISION EPGA 
-! 
-!                      Average density 
-      DOUBLE PRECISION ROPGA 
-! 
-!                      Average viscosity 
-      DOUBLE PRECISION MUGA 
+      DOUBLE PRECISION EPSA, EPStmp
 ! 
 !                      Average EP_s*viscosity 
-      DOUBLE PRECISION EPMU_ste, EPMU_sbe, EPMUGA 
+      DOUBLE PRECISION EPMU_ste, EPMU_sbe, EPMUSA 
 ! 
 !                      Average dW/Xdz 
       DOUBLE PRECISION dWoXdz 
@@ -105,108 +99,119 @@
 
 
       DO M = 1, MMAX 
-
+        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
 ! loezos
 ! update to true velocity
-      IF (SHEAR) THEN        
+        IF (SHEAR) THEN        
 !$omp  parallel do private(IJK)
-	 DO IJK = IJKSTART3, IJKEND3
-          IF (FLUID_AT(IJK)) THEN 
-	   V_S(IJK,m)=V_S(IJK,m)+VSH(IJK)
-          END IF
-        END DO     
-      END IF
+          DO IJK = IJKSTART3, IJKEND3
+            IF (FLUID_AT(IJK)) THEN 
+              V_S(IJK,m)=V_S(IJK,m)+VSH(IJK)
+            ENDIF
+          ENDDO     
+        ENDIF
 ! loezos
 
-	
-!!$omp  parallel do private( IJK, I, IJKE, EPGA, IP, J, JM, K, KM,  &
+
+!!$omp  parallel do private( IJK, I, IJKE, EPSA, EPStmp, IP, J, JM, K, KM,  &
 !!$omp&  IPJK,IMJK,IJKN,IJKNE,IJKS,IJKSE,IPJMK,IJMK,IJKT,IJKTE,  &
 !!$omp&  IJKB,IJKBE,IJKM,IPJKM, &
 !!$omp&  SBV,  SSX,SSY,   SSZ, EPMU_STE,EPMU_SBE, &
-!!$omp&  EPMUGA,DWOXDZ,VTZB ) &
+!!$omp&  EPMUSA,DWOXDZ,VTZB ) &
 !!$omp&  schedule(static)
-      DO IJK = IJKSTART3, IJKEND3
+
+        DO IJK = IJKSTART3, IJKEND3
             I = I_OF(IJK) 
             IJKE = EAST_OF(IJK) 
-            EPGA = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I) 
-            IF ( .NOT.SIP_AT_E(IJK) .AND. EPGA>DIL_EP_S) THEN 
-               IP = IP1(I) 
-               J = J_OF(IJK) 
-               JM = JM1(J) 
-               K = K_OF(IJK) 
-               KM = KM1(K) 
-               IPJK = IP_OF(IJK) 
-               IMJK = IM_OF(IJK) 
-               IJKN = NORTH_OF(IJK) 
-               IJKNE = EAST_OF(IJKN) 
-               IJKS = SOUTH_OF(IJK) 
-               IJKSE = EAST_OF(IJKS) 
-               IPJMK = JM_OF(IPJK) 
-               IJMK = JM_OF(IJK) 
-               IJKT = TOP_OF(IJK) 
-               IJKTE = EAST_OF(IJKT) 
-               IJKB = BOTTOM_OF(IJK) 
-               IJKBE = EAST_OF(IJKB) 
-               IJKM = KM_OF(IJK) 
-               IPJKM = IP_OF(IJKM) 
-!
-!       Surface forces
-!
-!         bulk viscosity term
-               SBV = (LAMBDA_S(IJKE,M)*TRD_S(IJKE,M)-LAMBDA_S(IJK,M)*TRD_S(IJK,&
+            IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+              EPStmp = ZERO                
+              DO L = 1, SMAX
+                EPStmp = EPStmp + AVG_X(EP_S(IJK,L),EP_S(IJKE,L),I) 
+              ENDDO
+              EPSA = EPStmp
+            ELSE                  
+              EPSA = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I) 
+            ENDIF 
+
+            IF ( .NOT.SIP_AT_E(IJK) .AND. EPSA>DIL_EP_S) THEN 
+              IP = IP1(I) 
+              J = J_OF(IJK) 
+              JM = JM1(J) 
+              K = K_OF(IJK) 
+              KM = KM1(K) 
+              IPJK = IP_OF(IJK) 
+              IMJK = IM_OF(IJK) 
+              IJKN = NORTH_OF(IJK) 
+              IJKNE = EAST_OF(IJKN) 
+              IJKS = SOUTH_OF(IJK) 
+              IJKSE = EAST_OF(IJKS) 
+              IPJMK = JM_OF(IPJK) 
+              IJMK = JM_OF(IJK) 
+              IJKT = TOP_OF(IJK) 
+              IJKTE = EAST_OF(IJKT) 
+              IJKB = BOTTOM_OF(IJK) 
+              IJKBE = EAST_OF(IJKB) 
+              IJKM = KM_OF(IJK) 
+              IPJKM = IP_OF(IJKM) 
+
+! Surface forces
+
+! bulk viscosity term
+              SBV = (LAMBDA_S(IJKE,M)*TRD_S(IJKE,M)-LAMBDA_S(IJK,M)*TRD_S(IJK,&
                   M))*AYZ(IJK) 
-!
-!         shear stress terms
-               SSX = MU_S(IJKE,M)*(U_S(IPJK,M)-U_S(IJK,M))*ODX(IP)*AYZ_U(IJK)&
+
+! shear stress terms
+              SSX = MU_S(IJKE,M)*(U_S(IPJK,M)-U_S(IJK,M))*ODX(IP)*AYZ_U(IJK)&
                    - MU_S(IJK,M)*(U_S(IJK,M)-U_S(IMJK,M))*ODX(I)*AYZ_U(IMJK) 
-               SSY = AVG_X_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
+              SSY = AVG_X_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
                   IJKE,M),MU_S(IJKNE,M),J),I)*(V_S(IPJK,M)-V_S(IJK,M))*ODX_E(I)&
                   *AXZ_U(IJK) - AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJK,M),JM),&
                   AVG_Y_H(MU_S(IJKSE,M),MU_S(IJKE,M),JM),I)*(V_S(IPJMK,M)-V_S(&
                   IJMK,M))*ODX_E(I)*AXZ_U(IJMK) 
-               EPMU_STE = AVG_X_H(AVG_Z_H(MU_S(IJK,M),MU_S(IJKT,M),K),AVG_Z_H(&
+              EPMU_STE = AVG_X_H(AVG_Z_H(MU_S(IJK,M),MU_S(IJKT,M),K),AVG_Z_H(&
                   MU_S(IJKE,M),MU_S(IJKTE,M),K),I) 
-               EPMU_SBE = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJK,M),KM),AVG_Z_H(&
+              EPMU_SBE = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJK,M),KM),AVG_Z_H(&
                   MU_S(IJKBE,M),MU_S(IJKE,M),KM),I) 
-               SSZ = EPMU_STE*(W_S(IPJK,M)-W_S(IJK,M))*ODX_E(I)*AXY_U(IJK) - &
+              SSZ = EPMU_STE*(W_S(IPJK,M)-W_S(IJK,M))*ODX_E(I)*AXY_U(IJK) - &
                   EPMU_SBE*(W_S(IPJKM,M)-W_S(IJKM,M))*ODX_E(I)*AXY_U(IJKM) 
-!
-!
-!         Special terms for cylindrical coordinates
-               IF (CYLINDRICAL) THEN 
-!
-!           modify Ssz: integral of (1/x) (d/dz) (mu*(-w/x))
-                  SSZ = SSZ - (EPMU_STE*(HALF*(W_S(IPJK,M)+W_S(IJK,M))*OX_E(I))&
+
+
+! Special terms for cylindrical coordinates
+              IF (CYLINDRICAL) THEN 
+!   modify Ssz: integral of (1/x) (d/dz) (mu*(-w/x))
+                SSZ = SSZ - (EPMU_STE*(HALF*(W_S(IPJK,M)+W_S(IJK,M))*OX_E(I))&
                      *AXY_U(IJK)-EPMU_SBE*(HALF*(W_S(IPJKM,M)+W_S(IJKM,M))*OX_E&
                      (I))*AXY_U(IJKM)) 
-!
-!            -(2mu/x)*(1/x)*dw/dz part of Tau_zz/X
-                  EPMUGA = AVG_X(MU_S(IJK,M),MU_S(IJKE,M),I) 
-                  DWOXDZ = HALF*((W_S(IJK,M)-W_S(IJKM,M))*OX(I)*ODZ(K)+(W_S(&
-                     IPJK,M)-W_S(IPJKM,M))*OX(IP)*ODZ(K)) 
-                  VTZB = -2.d0*EPMUGA*OX_E(I)*DWOXDZ 
-               ELSE 
-                  VTZB = ZERO 
-               ENDIF 
-!
-!         Add the terms
-               TAU_U_S(IJK,M) = SBV + SSX + SSY + SSZ + VTZB*VOL_U(IJK) 
-            ELSE 
-               TAU_U_S(IJK,M) = ZERO 
-            ENDIF 
-         END DO 
-! loezos 
-       IF (SHEAR) THEN
-!$omp  parallel do private(IJK) 
-	 DO IJK = IJKSTART3, IJKEND3
-          IF (FLUID_AT(IJK)) THEN  	 
-	   V_S(IJK,m)=V_S(IJK,m)-VSH(IJK)	
-	  END IF
-         END DO	
-        END IF
-! loezos      
 
-      END DO 
+!  -(2mu/x)*(1/x)*dw/dz part of Tau_zz/X
+                EPMUSA = AVG_X(MU_S(IJK,M),MU_S(IJKE,M),I) 
+                DWOXDZ = HALF*((W_S(IJK,M)-W_S(IJKM,M))*OX(I)*ODZ(K)+(W_S(&
+                     IPJK,M)-W_S(IPJKM,M))*OX(IP)*ODZ(K)) 
+                VTZB = -2.d0*EPMUSA*OX_E(I)*DWOXDZ 
+              ELSE 
+                VTZB = ZERO 
+              ENDIF 
+
+! Add the terms
+              TAU_U_S(IJK,M) = SBV + SSX + SSY + SSZ + VTZB*VOL_U(IJK) 
+            ELSE 
+              TAU_U_S(IJK,M) = ZERO 
+            ENDIF 
+        ENDDO 
+
+! loezos 
+        IF (SHEAR) THEN
+!$omp  parallel do private(IJK) 
+          DO IJK = IJKSTART3, IJKEND3
+            IF (FLUID_AT(IJK)) THEN   
+              V_S(IJK,m)=V_S(IJK,m)-VSH(IJK)
+            ENDIF
+          ENDDO
+        ENDIF
+! loezos
+       
+        ENDIF !  end if GHD theory
+      ENDDO 
       call send_recv(tau_u_s,2)
       RETURN  
       END SUBROUTINE CALC_TAU_U_S 

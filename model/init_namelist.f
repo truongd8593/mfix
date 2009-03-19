@@ -92,13 +92,10 @@
       DOUBLE PRECISION :: E 
 !-----------------------------------------------
 !
-!
       INCLUDE 'namelist.inc'
 
-!
-!
+
 ! INITIALIZE THE RUN CONTROL SECTION
-!
       RUN_NAME = UNDEFINED_C 
       DESCRIPTION = UNDEFINED_C 
       UNITS = UNDEFINED_C 
@@ -109,7 +106,7 @@
       CHK_BATCHQ_END = .FALSE. 
       BATCH_WALLCLOCK = 9000.0    ! set to 2.5 hrs for jaguarcnl w/ nproc<=512
       TERM_BUFFER = 180.0         ! set to 3 minutes prior to end of job
-!
+
       DT = UNDEFINED 
       DT_MAX = ONE 
       DT_MIN = 1.D-6 
@@ -132,20 +129,18 @@
 ! start peter 7/15
       V_sh=0d0
 
-!     JEG Added (4/01/2005)
-!     University of Colorado, Hrenya Research Group
+! JEG Added (4/01/2005)
       KT_TYPE = UNDEFINED_C
-!     Added (6/15/2005)
+! Added (6/15/2005)
       RDF_TYPE = 'LEBOWITZ'
-!     END JEG
-!
-!
+! END JEG
+
+
 ! start anuj 04/20
-!
       FRICTION = .FALSE. 
       SAVAGE = 1 
 ! end anuj 04/20
-!
+
 ! sof (02/16/2005)
       SCHAEFFER = .TRUE. 
 ! end sof
@@ -160,20 +155,18 @@
       DEBUG_RESID     = .TRUE.
 ! end sp
 
-!DISTIO start distributed IO
+! DISTIO start distributed IO
       bDist_IO            = .false.
       bStart_with_one_RES = .false.
 ! end distributed IO
  
 ! start loezos 
-!
-       SHEAR = .FALSE.
-
+      SHEAR = .FALSE.
 ! end loezos   
-!
-       DRAG_TYPE = 'SYAM_OBRIEN'
-       drag_c1 = 0.8d0
-       drag_d1 = 2.65d0
+
+      DRAG_TYPE = 'SYAM_OBRIEN'
+      drag_c1 = 0.8d0
+      drag_d1 = 2.65d0
 
 !AE TIME 041601 Set the default to 1st order accurate time implementation
        CN_ON = .FALSE.
@@ -194,9 +187,9 @@
 
       nRR = 0
       Call_DQMOM = .FALSE.      
-!
+
+
 ! INITIALIZE THE OUTPUT CONTROL SECTION
-!
       report_mass_balance_dt = UNDEFINED
       NLOG = 25 
       FULL_LOG = .FALSE. 
@@ -235,9 +228,9 @@
       CYCLIC_X_PD = .FALSE. 
       CYCLIC_Y_PD = .FALSE. 
       CYCLIC_Z_PD = .FALSE. 
-!
+
+
 !  Constants
-!
       DO LC = 1, DIMENSION_C 
          C(LC) = UNDEFINED 
          C_NAME(LC) = '....................' 
@@ -248,23 +241,26 @@
       PHI = UNDEFINED 
       PHIP = 0.6D0 
       E_W = 1D0 
+
 ! GERA 08/15/03
       SEGREGATION_SLOPE_COEFFICIENT=0.D0
+
 ! modified by sof (05-04-2005)
 !      MAX_SOLID_1_PACKING=0.6
 !      MAX_SOLID_2_PACKING=0.6
-!
       EP_S_MAX(:DIM_M) = UNDEFINED
-!      
-! END GERA
-!
+! coefficient of restitution
+      r_p(:DIM_M, :DIM_M) = UNDEFINED
+
+! eps_max: not needed anymore (sof, Nov-17-2005) 
+!      EPS_MAX = 0.65D0      
+
 ! start rong
       AGGREGATION_EFF=0.D0
       BREAKAGE_EFF=0.D0
 ! end rong
+
       EPS_F_MIN = 0.5D0 
-! eps_max: not needed anymore (sof, Nov-17-2005) 
-!      EPS_MAX = 0.65D0 
       PHI_W = ZERO 
       L_SCALE0 = ZERO 
       MU_GMAX = UNDEFINED 
@@ -336,10 +332,10 @@
       UR_FAC(7) = 1.0D0                            !X 
       UR_FAC(8) = 0.5D0                            !Th 
       UR_FAC(9) = 0.8D0                            !Scalar
-      UR_F_gs   = 1.0D0				 !drag coefficient update
-!
+      UR_F_gs   = 1.0D0                            !drag coefficient update
+
+
 ! INITIALIZE THE GAS PHASE SECTION
-!
       RO_G0 = UNDEFINED 
       MU_G0 = UNDEFINED 
       K_G0 = UNDEFINED 
@@ -359,9 +355,9 @@
 !      MW_S(1,1+:DIM_N_S+) = UNDEFINED 
       MW_S = UNDEFINED
       EP_STAR = UNDEFINED 
-!
+
+
 ! INITIALIZE THE INITIAL CONDITIONS
-!
       DO LC = 1, DIMENSION_IC 
          IC_X_W(LC) = UNDEFINED 
          IC_X_E(LC) = UNDEFINED 
@@ -394,10 +390,12 @@
          IC_T_S(LC,:DIM_M) = UNDEFINED 
          IC_THETA_M(LC,:DIM_M) = UNDEFINED 
          IC_SCALAR(LC,:DIM_SCALAR) = UNDEFINED 
+
 ! sof: force users to set initial values for K and Epsilon. 
          IC_K_Turb_G(LC) = UNDEFINED  
          IC_E_Turb_G(LC) = UNDEFINED
 ! sof: end
+
          IC_GAMA_RS(LC,:DIM_M) = ZERO 
          IC_T_RS(LC,:DIM_M) = UNDEFINED 
 !         IC_X_S(LC,1,1+:DIM_N_S+) = UNDEFINED 
@@ -446,20 +444,20 @@
          BC_JET_G0(LC) = UNDEFINED 
          BC_JET_GH(LC) = UNDEFINED 
          BC_JET_GL(LC) = UNDEFINED 
-!
+
          BC_HW_G(LC) = UNDEFINED 
          BC_UW_G(LC) = UNDEFINED 
          BC_VW_G(LC) = UNDEFINED 
          BC_WW_G(LC) = UNDEFINED 
-!
+
          BC_HW_T_G(LC) = UNDEFINED 
          BC_TW_G(LC) = UNDEFINED 
          BC_C_T_G(LC) = UNDEFINED 
-!
+
 !start kapil&anuj 01/19/98
          BC_JJ_PS(LC) = UNDEFINED_I 
 !end   kapil&anuj 01/19/98
-!
+
          BC_ROP_S(LC,:DIM_M) = UNDEFINED 
          BC_U_S(LC,:DIM_M) = UNDEFINED 
          BC_V_S(LC,:DIM_M) = UNDEFINED 
@@ -467,37 +465,38 @@
          BC_T_S(LC,:DIM_M) = UNDEFINED 
          BC_VOLFLOW_S(LC,:DIM_M) = UNDEFINED 
          BC_MASSFLOW_S(LC,:DIM_M) = UNDEFINED 
-!
+
          BC_HW_S(LC,:DIM_M) = UNDEFINED 
          BC_UW_S(LC,:DIM_M) = UNDEFINED 
          BC_VW_S(LC,:DIM_M) = UNDEFINED 
          BC_WW_S(LC,:DIM_M) = UNDEFINED 
-!
+
          BC_HW_T_S(LC,:DIM_M) = UNDEFINED 
          BC_TW_S(LC,:DIM_M) = UNDEFINED 
          BC_C_T_S(LC,:DIM_M) = UNDEFINED 
-!
-!
+
          BC_HW_THETA_M(LC,:DIM_M) = UNDEFINED 
          BC_THETAW_M(LC,:DIM_M) = UNDEFINED 
          BC_C_THETA_M(LC,:DIM_M) = UNDEFINED 
-!
+
          BC_HW_Scalar(LC,:DIM_SCALAR) = UNDEFINED 
          BC_ScalarW(LC,:DIM_SCALAR) = UNDEFINED 
          BC_C_Scalar(LC,:DIM_SCALAR) = UNDEFINED 
       END DO 
-!   
+   
       BC_THETA_M = UNDEFINED 
       BC_Scalar = UNDEFINED
+
 ! sof: force users to set inlet BC for K and Epsilon  
       BC_K_Turb_G = UNDEFINED  
       BC_E_Turb_G = UNDEFINED 
 ! sof: end
+
       BC_X_S = UNDEFINED 
       BC_HW_X_S = UNDEFINED 
       BC_XW_S = UNDEFINED 
       BC_C_X_S = UNDEFINED 
-!
+
       DO LC = 1, DIMENSION_IS 
          IS_X_W(LC) = UNDEFINED 
          IS_X_E(LC) = UNDEFINED 
@@ -527,16 +526,15 @@
       IS_SERIAL = .TRUE.
       USE_DOLOOP = .FALSE.
 
-!     CHEM & ISAT begin (nan xie)
-!
+! CHEM & ISAT begin (nan xie)
       CALL_DI = .FALSE.
       CALL_GROW = .FALSE.
       CALL_ISAT = .FALSE.  
       ISATdt    = UNDEFINED
-!     CHEM & ISAT end (nan xie)
+! CHEM & ISAT end (nan xie)
 
       CALL DES_INIT_NAMELIST
       CALL USR_INIT_NAMELIST 
-!
+
       RETURN  
       END SUBROUTINE INIT_NAMELIST 

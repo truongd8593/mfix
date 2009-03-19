@@ -65,7 +65,8 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
 !
-      DO M = 1, MMAX 
+      DO M = 1, MMAX  
+       IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
          IF (MOMENTUM_X_EQ(M)) THEN 
 !
 !!$omp     parallel do private(I, IP, IJK, IJKE, IMJK )
@@ -99,7 +100,8 @@
                   ENDIF 
                ENDIF 
             END DO 
-         ENDIF 
+         ENDIF  
+       ENDIF ! for GHD Theory
       END DO       
       RETURN  
       END SUBROUTINE ADJUST_A_U_S

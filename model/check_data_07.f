@@ -288,11 +288,11 @@
                 END SELECT 
 
                 SUM_EP = BC_EP_G(BCV) 
-                DO M = 1, MMAX 
+                DO M = 1, SMAX 
                     IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
                         IF (BC_EP_G(BCV) == ONE) THEN 
                             BC_ROP_S(BCV,M) = ZERO 
-                        ELSEIF (MMAX == 1) THEN 
+                        ELSEIF (SMAX == 1) THEN 
                             BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M) 
                         ELSE 
                             IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_ROP_s', BCV, M 
@@ -478,7 +478,7 @@
                     ENDIF 
                 END SELECT 
 
-                DO M = 1, MMAX 
+                DO M = 1, SMAX 
                     IF (BC_U_S(BCV,M) == UNDEFINED) THEN 
                         IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_I) THEN 
                             BC_U_S(BCV,M) = ZERO 
@@ -572,11 +572,11 @@
                     ENDIF 
                 ENDIF 
 
-                DO M = 1, MMAX 
+                DO M = 1, SMAX 
                     IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
                         IF (BC_EP_G(BCV) == ONE) THEN 
                             BC_ROP_S(BCV,M) = ZERO 
-                        ELSEIF (MMAX == 1) THEN 
+                        ELSEIF (SMAX == 1) THEN 
                             BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M) 
                         ELSE 
                             IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_ROP_s', BCV, M 
@@ -676,7 +676,7 @@
                 ENDIF 
             ENDDO 
 
-            DO M = 1, MMAX 
+            DO M = 1, SMAX 
                 IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'BC_ROP_s', BCV, M 
                     call mfix_exit(myPE)  
@@ -788,7 +788,7 @@
                         call mfix_exit(myPE)  
                     ENDIF 
 
-                    DO M = 1, MMAX 
+                    DO M = 1, SMAX 
                         IF (BC_HW_T_S(BCV,M) < ZERO) THEN 
                             IF(DMP_LOG)WRITE (UNIT_LOG, 1103) 'BC_hw_T_s', BCV, M 
                             call mfix_exit(myPE)  
@@ -850,7 +850,7 @@
                     ENDDO 
                 ENDIF 
 
-                DO M = 1, MMAX 
+                DO M = 1, SMAX 
                     IF (SPECIES_EQ(M)) THEN 
                         DO N = 1, NMAX(M) 
                             IF (BC_HW_X_S(BCV,M,N) < ZERO) THEN 

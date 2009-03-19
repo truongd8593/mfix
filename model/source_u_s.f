@@ -57,10 +57,8 @@
       USE bc
       USE compar    
       USE sendrecv  
-!     JEG Added--- University of Colorado, Hrenya Research Group
       use kintheory
       use kintheory2
-!     END JEG
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -77,7 +75,7 @@
       INTEGER          I, IJK,IMJK, IJMK, IJKE, IJKM, IPJK, IPJKM 
 ! 
 !                      Phase index 
-      INTEGER          M,MM 
+      INTEGER          M, MM, L 
       DOUBLE PRECISION   SUM_EPS_CP
 ! 
 !                      Internal surface number 
@@ -87,7 +85,8 @@
       DOUBLE PRECISION PgE 
 ! 
 !                      average volume fraction 
-      DOUBLE PRECISION EPGA 
+      DOUBLE PRECISION EPSA, EPStmp, epse, epsw, epsn, epss, &
+                       epst, epsb, epsMix, epsMixE
 ! 
 !                      Average density 
       DOUBLE PRECISION ROPSA 
@@ -96,7 +95,7 @@
       DOUBLE PRECISION dro1, dro2, droa 
 ! 
 !                      Average quantities 
-      DOUBLE PRECISION wse, EPMUGA 
+      DOUBLE PRECISION wse, EPMUSA 
 ! 
 !                      Septadiagonal matrix A_m 
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
@@ -108,7 +107,7 @@
       DOUBLE PRECISION Sdp, Sdps 
 ! 
 !                      Source terms (Volumetric) 
-      DOUBLE PRECISION V0, Vmt, Vbf, Vcf, Vtza 
+      DOUBLE PRECISION V0, Vmt, Vbf, Vcf, Vtza, Vmttmp
 ! 
 !                      error message 
       CHARACTER*80     LINE(2) 
@@ -124,35 +123,47 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
       INCLUDE 'b_force2.inc'
-!
+
       DO M = 1, MMAX 
-         IF (MOMENTUM_X_EQ(M)) THEN 
-!
-!     CHEM & ISAT begin (nan xie)
+        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+          IF (MOMENTUM_X_EQ(M)) THEN 
+
+! CHEM & ISAT begin (nan xie)
 ! Set the source terms zero
             IF (CALL_DI .or. CALL_ISAT) THEN
-               SUM_R_S_temp = SUM_R_S
-               SUM_R_S = ZERO
-            END IF
-!     CHEM & ISAT end (nan xie)
-!
-!
+              SUM_R_S_temp = SUM_R_S
+              SUM_R_S = ZERO
+            ENDIF
+! CHEM & ISAT end (nan xie)
+
 !$omp  parallel do private( IJK, IJKE, ISV, Sdp, Sdps, V0, Vmt, Vbf, &
-!$omp&  I,PGE,DRO1,DRO2,DROA, IJKM,IPJK,IPJKM,  WSE,VCF,EPMUGA,VTZA, &
-!$omp&  EPGA, ROPSA, LINE,SUM_EPS_CP,MM) &
+!$omp&  I,PGE,DRO1,DRO2,DROA, IJKM,IPJK,IPJKM,  WSE,VCF,EPMUSA,VTZA, &
+!$omp&  EPSA, EPStmp, ROPSA, LINE,SUM_EPS_CP,MM) &
 !$omp&  schedule(static)
             DO IJK = ijkstart3, ijkend3 
-!
-!           Wall or impermeable internal surface
-               I = I_OF(IJK) 
-               IJKE = EAST_OF(IJK)
-               IMJK = IM_OF(IJK) 
-	       IJMK = JM_OF(IJK)
-               IJKM = KM_OF(IJK) 
-               IPJK = IP_OF(IJK) 
-               IPJKM = IP_OF(IJKM) 
-               EPGA = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I) 
-               IF (IP_AT_E(IJK)) THEN 
+
+! Wall or impermeable internal surface
+                I = I_OF(IJK) 
+                IJKE = EAST_OF(IJK)
+                IMJK = IM_OF(IJK) 
+                IJMK = JM_OF(IJK)
+                IJKM = KM_OF(IJK) 
+                IPJK = IP_OF(IJK) 
+                IPJKM = IP_OF(IJKM)
+                IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  EPStmp = ZERO     
+		  epsMix = ZERO
+		  epsMixE= ZERO          
+                  DO L = 1, SMAX
+                    EPStmp = EPStmp + AVG_X(EP_S(IJK,L),EP_S(IJKE,L),I) 
+		    epsMix  = epsMix  + EP_S(IJK,L) ! epsMix, epsMixE to be used for modelB
+		    epsMixE = epsMixE + EP_S(IJKE,L)
+                  ENDDO                        
+                  EPSA = EPStmp
+                ELSE                  
+                  EPSA = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I) 
+                ENDIF                  
+                IF (IP_AT_E(IJK)) THEN 
                   A_M(IJK,E,M) = ZERO 
                   A_M(IJK,W,M) = ZERO 
                   A_M(IJK,N,M) = ZERO 
@@ -161,7 +172,7 @@
                   A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO 
-               ELSE IF (SIP_AT_E(IJK)) THEN 
+                ELSEIF (SIP_AT_E(IJK)) THEN 
                   A_M(IJK,E,M) = ZERO 
                   A_M(IJK,W,M) = ZERO 
                   A_M(IJK,N,M) = ZERO 
@@ -171,9 +182,9 @@
                   A_M(IJK,0,M) = -ONE 
                   ISV = IS_ID_AT_E(IJK) 
                   B_M(IJK,M) = -IS_VEL_S(ISV,M) 
-!
-!           dilute flow
-               ELSE IF (EPGA <= DIL_EP_S) THEN 
+
+! Dilute flow
+                ELSEIF (EPSA <= DIL_EP_S) THEN 
                   A_M(IJK,E,M) = ZERO 
                   A_M(IJK,W,M) = ZERO 
                   A_M(IJK,N,M) = ZERO 
@@ -182,133 +193,168 @@
                   A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO 
-!
+                  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                      EPSw = ZERO
+                      EPSe = ZERO
+                      EPSn = ZERO
+                      EPSs = ZERO
+                      EPSt = ZERO
+                      EPSb = ZERO
+                      DO L = 1, SMAX
+                        EPSw = EPSw + EP_S(WEST_OF(IJK),L)
+                        EPSe = EPSe + EP_S(EAST_OF(IJK),L)
+                        EPSn = EPSn + EP_S(NORTH_OF(IJK),L)
+                        EPSs = EPSs + EP_S(SOUTH_OF(IJK),L)
+                        IF(.NOT. NO_K) THEN
+                          EPSt = EPSt + EP_S(TOP_OF(IJK),L)
+                          EPSb = EPSb + EP_S(BOTTOM_OF(IJK),L)
+                        ENDIF
+                      ENDDO
+                  ELSE
+                      EPSw = EP_S(WEST_OF(IJK),M)
+                      EPSe = EP_S(EAST_OF(IJK),M)
+                      EPSn = EP_S(NORTH_OF(IJK),M)
+                      EPSs = EP_S(SOUTH_OF(IJK),M)
+                      IF(.NOT. NO_K) THEN
+                        EPSt = EP_S(TOP_OF(IJK),M)
+                        EPSb = EP_S(BOTTOM_OF(IJK),M)
+                      ENDIF
+                  ENDIF
 ! using the average boundary cell values to compute U_s (sof, Aug 23 2005)
-!
-                  IF (EP_S(WEST_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_E(IMJK)) A_M(IJK,W,M) = ONE 
-                  IF (EP_S(EAST_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_E(IJK)) A_M(IJK,E,M) = ONE 
-                  IF (EP_S(SOUTH_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_N(IJMK)) A_M(IJK,S,M) = ONE 
-                  IF (EP_S(NORTH_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_N(IJK)) A_M(IJK,N,M) = ONE
+                  IF (EPSw > DIL_EP_S .AND. .NOT.IS_AT_E(IMJK)) A_M(IJK,W,M) = ONE 
+                  IF (EPSe > DIL_EP_S .AND. .NOT.IS_AT_E(IJK)) A_M(IJK,E,M) = ONE 
+                  IF (EPSs > DIL_EP_S .AND. .NOT.IS_AT_N(IJMK)) A_M(IJK,S,M) = ONE 
+                  IF (EPSn > DIL_EP_S .AND. .NOT.IS_AT_N(IJK)) A_M(IJK,N,M) = ONE
                   IF(.NOT. NO_K) THEN
-                    IF (EP_S(BOTTOM_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_T(IJKM)) A_M(IJK,B,M) = ONE 
-                    IF (EP_S(TOP_OF(IJK),M) > DIL_EP_S .AND. .NOT.IS_AT_T(IJK)) A_M(IJK,T,M) = ONE 
-		  ENDIF
-!               
-	          IF((A_M(IJK,W,M)+A_M(IJK,E,M)+A_M(IJK,S,M)+A_M(IJK,N,M)+ &
-	              A_M(IJK,B,M)+A_M(IJK,T,M)) == ZERO) THEN
-	             B_M(IJK,M) = -U_S(IJK,M)          
-	          ELSE
-	            A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+ &
+                    IF (EPSb > DIL_EP_S .AND. .NOT.IS_AT_T(IJKM)) A_M(IJK,B,M) = ONE 
+                    IF (EPSt > DIL_EP_S .AND. .NOT.IS_AT_T(IJK)) A_M(IJK,T,M) = ONE 
+                  ENDIF
+ 
+                  IF((A_M(IJK,W,M)+A_M(IJK,E,M)+A_M(IJK,S,M)+A_M(IJK,N,M)+ &
+                    A_M(IJK,B,M)+A_M(IJK,T,M)) == ZERO) THEN
+                    B_M(IJK,M) = -U_S(IJK,M)          
+                  ELSE
+                    A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+ &
                                      A_M(IJK,S,M)+A_M(IJK,T,M)+A_M(IJK,B,M))
-	          ENDIF
-!
-!           Normal case
-               ELSE 
-!
-!           Surface forces
-!
-!             Pressure terms
+                  ENDIF
+
+! Normal case
+                ELSE 
+
+! Surface forces
+!   Pressure terms
                   PGE = P_G(IJKE) 
                   IF (CYCLIC_X_PD) THEN 
-                     IF (CYCLIC_AT_E(IJK)) PGE = P_G(IJKE) - DELP_X 
+                    IF (CYCLIC_AT_E(IJK)) PGE = P_G(IJKE) - DELP_X 
                   ENDIF 
                   IF (MODEL_B) THEN 
-                     SDP = ZERO 
-!
+                    SDP = ZERO 
                   ELSE 
-                     SDP = -P_SCALE*EPGA*(PGE - P_G(IJK))*AYZ(IJK) 
-!
+                    SDP = -P_SCALE*EPSA*(PGE - P_G(IJK))*AYZ(IJK) 
                   ENDIF 
-!
+
                   IF (CLOSE_PACKED(M)) THEN 
-		     IF(MMAX > 1) THEN ! extra work is done only in case of polydispersity.
-		       SUM_EPS_CP=0.0 
-		       DO MM=1,MMAX
-		         IF (CLOSE_PACKED(MM))&
-			       SUM_EPS_CP=SUM_EPS_CP+AVG_X(EP_S(IJK,MM),EP_S(IJKE,MM),I)
-		       END DO
-		       SUM_EPS_CP = Max(SUM_EPS_CP, small_number)
-                       SDPS = -((P_S(IJKE,M)-P_S(IJK,M))+(EPGA/SUM_EPS_CP)*&
-			  (P_STAR(IJKE)-P_STAR(IJK&
-                          )))*AYZ(IJK) 
-		     ELSE
-                       SDPS =-((P_S(IJKE,M)-P_S(IJK,M))+(P_STAR(IJKE)-P_STAR(IJK)))*AYZ(IJK) 
-		     ENDIF
+                    IF(SMAX > 1 .AND. TRIM(KT_TYPE) /= 'GHD') THEN
+                      SUM_EPS_CP=0.0 
+                      DO MM=1,SMAX
+                        IF (CLOSE_PACKED(MM))&
+                          SUM_EPS_CP=SUM_EPS_CP+AVG_X(EP_S(IJK,MM),EP_S(IJKE,MM),I)
+                      ENDDO
+                      SUM_EPS_CP = Max(SUM_EPS_CP, small_number)
+                      SDPS = -( (P_S(IJKE,M)-P_S(IJK,M))+(EPSA/SUM_EPS_CP)*&
+                        (P_STAR(IJKE)-P_STAR(IJK)) )*AYZ(IJK) 
+                    ELSE
+                      SDPS =-((P_S(IJKE,M)-P_S(IJK,M))+(P_STAR(IJKE)-P_STAR(IJK)))*AYZ(IJK) 
+                    ENDIF
                   ELSE 
-                     SDPS = -(P_S(IJKE,M)-P_S(IJK,M))*AYZ(IJK) 
+                    SDPS = -(P_S(IJKE,M)-P_S(IJK,M))*AYZ(IJK) 
                   ENDIF 
-!
-!             Shear stress terms
-!
-!           Volumetric forces
+
+! Shear stress terms
+
+! Volumetric forces
                   ROPSA = HALF * (VOL(IJK)*ROP_S(IJK,M) + VOL(IPJK)*ROP_S(IJKE,M))/VOL_U(IJK) 
-!
-!             Previous time step
+
+! Previous time step
                   V0 = HALF * (VOL(IJK)*ROP_SO(IJK,M) + VOL(IPJK)*ROP_SO(IJKE,M))*ODT/VOL_U(IJK) 
-!
-!             Interphase mass transfer
-                  VMT = HALF * (VOL(IJK)*SUM_R_S(IJK,M) + VOL(IPJK)*SUM_R_S(IJKE,M))/VOL_U(IJK) 
-!
-!             Body force
+
+! Interphase mass transfer
+                  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                    VMTtmp = ZERO
+                    DO L = 1,SMAX
+                      VMTtmp = VMTtmp + HALF*(VOL(IJK)*SUM_R_S(IJK,L) + &
+                             VOL(IPJK)*SUM_R_S(IJKE,L))/VOL_U(IJK)
+                    ENDDO
+                    VMT = VMTtmp
+                  ELSE
+                    VMT = HALF * (VOL(IJK)*SUM_R_S(IJK,M) + VOL(IPJK)*SUM_R_S(IJKE,M))/VOL_U(IJK) 
+                  ENDIF
+
+! Body force
                   IF (MODEL_B) THEN 
-                     DRO1 = (RO_S(M)-RO_G(IJK))*EP_S(IJK,M) 
-                     DRO2 = (RO_S(M)-RO_G(IJKE))*EP_S(IJKE,M) 
-                     DROA = AVG_X(DRO1,DRO2,I) 
-!
-                     VBF = DROA*BFX_S(IJK,M) 
-!
-                  ELSE 
-                     VBF = ROPSA*BFX_S(IJK,M) 
+                    IF (TRIM(KT_TYPE) /= 'GHD') THEN
+                      DRO1 = (RO_S(M)-RO_G(IJK))*EP_S(IJK,M) 
+                      DRO2 = (RO_S(M)-RO_G(IJKE))*EP_S(IJKE,M) 
+                      DROA = AVG_X(DRO1,DRO2,I) 
+                      VBF = DROA*BFX_S(IJK,M) 
+                    ELSE ! GHD and M = MMAX
+                      DRO1 = ROP_S(IJK,M)  - RO_G(IJK) *epsMix
+                      DRO2 = ROP_S(IJKE,M) - RO_G(IJKE)*epsMixE
+                      DROA = AVG_X(DRO1,DRO2,I) 
+                      VBF = DROA*BFX_S(IJK,M) 
+                    ENDIF
+                  ELSE ! model A
+                    VBF = ROPSA*BFX_S(IJK,M) 
                   ENDIF 
-!
-!
-!           Special terms for cylindrical coordinates
+
+
+! Special terms for cylindrical coordinates
                   IF (CYLINDRICAL) THEN 
-!
-!             centrifugal force
-                     WSE = AVG_X(HALF*(W_S(IJK,M)+W_S(IJKM,M)),HALF*(W_S(IPJK,M&
+
+!   centrifugal force
+                    WSE = AVG_X(HALF*(W_S(IJK,M)+W_S(IJKM,M)),HALF*(W_S(IPJK,M&
                         )+W_S(IPJKM,M)),I) 
-                     VCF = ROPSA*WSE**2*OX_E(I) 
-!
-!             -(2mu/x)*(u/x) part of Tau_zz/X
-                     EPMUGA = AVG_X(MU_S(IJK,M),MU_S(IJKE,M),I) 
-                     VTZA = 2.d0*EPMUGA*OX_E(I)*OX_E(I) 
+                    VCF = ROPSA*WSE**2*OX_E(I) 
+
+!   -(2mu/x)*(u/x) part of Tau_zz/X
+                    EPMUSA = AVG_X(MU_S(IJK,M),MU_S(IJKE,M),I) 
+                    VTZA = 2.d0*EPMUSA*OX_E(I)*OX_E(I) 
                   ELSE 
-                     VCF = ZERO 
-                     VTZA = ZERO 
+                    VCF = ZERO 
+                    VTZA = ZERO 
                   ENDIF 
-!
-!             Collect the terms
+
+! Collect the terms
                   A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+A_M(&
                      IJK,S,M)+A_M(IJK,T,M)+A_M(IJK,B,M)+(V0+ZMAX(VMT)+VTZA)*&
                      VOL_U(IJK)) 
-!
-!             JEG Modified--University of Colorado, Hrenya Research Group
+
                   IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN 
-                     B_M(IJK,M) = -(SDP + KTMOM_U_S(IJK,M) + SDPS + TAU_U_S(IJK,M)+&
-		     ((V0+ZMAX((-VMT)))*U_SO(IJK,M)+VBF+VCF)*VOL_U(IJK))+B_M(IJK,M) 
+                    B_M(IJK,M) = -(SDP + KTMOM_U_S(IJK,M) + SDPS + TAU_U_S(IJK,M)+&
+                    ((V0+ZMAX((-VMT)))*U_SO(IJK,M)+VBF+VCF)*VOL_U(IJK))+B_M(IJK,M) 
                   ELSE
-                     B_M(IJK,M) = -(SDP + SDPS + TAU_U_S(IJK,M)+&
-		     ((V0+ZMAX((-VMT)))*U_SO(IJK,M)+VBF+VCF)*VOL_U(IJK))+B_M(IJK,M)
+                    B_M(IJK,M) = -(SDP + SDPS + TAU_U_S(IJK,M)+&
+                    ((V0+ZMAX((-VMT)))*U_SO(IJK,M)+VBF+VCF)*VOL_U(IJK))+B_M(IJK,M)
                   ENDIF
-               ENDIF 
-            END DO 
+                ENDIF ! end if sip or ip or dilute flow branch
+            ENDDO 
+
             CALL SOURCE_U_S_BC (A_M, B_M, M, IER) 
-!
-!     CHEM & ISAT begin (nan xie)
+
+! CHEM & ISAT begin (nan xie)
             IF (CALL_DI .or. CALL_ISAT) THEN
-               SUM_R_S = SUM_R_S_temp
-            END IF
-!     CHEM & ISAT end (nan xie)
-! 
-         ENDIF 
+                SUM_R_S = SUM_R_S_temp
+            ENDIF
+! CHEM & ISAT end (nan xie)
+ 
+          ENDIF  
+        ENDIF ! for GHD Theory
 
-      END DO 
-
+      ENDDO 
       
       RETURN  
       END SUBROUTINE SOURCE_U_S 
-!
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SOURCE_U_s_BC(A_m, B_m, M, IER)                        C

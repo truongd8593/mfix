@@ -37,6 +37,9 @@
 !                      Number of solids phases
       INTEGER          MMAX
 !
+!                      Real number of solids phases for GHD theory
+      INTEGER          SMAX
+!
 !                      Scale factor for gas turbulence length scale
       DOUBLE PRECISION K_scale
 !

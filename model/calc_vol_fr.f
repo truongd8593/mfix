@@ -31,6 +31,7 @@
       USE param 
       USE param1 
       USE parallel 
+      USE run
       USE geometry
       USE indices
       USE physprop
@@ -63,6 +64,9 @@
 !                      solids bulk densities
       DOUBLE PRECISION ROP_s(DIMENSION_3, DIMENSION_M)
 !
+!                      volume of particle type M for GHD theory
+      DOUBLE PRECISION VOL_M
+!
 !                      error index
       INTEGER          IER
 !
@@ -83,37 +87,53 @@
       INCLUDE 'function.inc'
       INCLUDE 's_pr2.inc'
       INCLUDE 'ep_s2.inc'
-!
+
       IER = 0 
-!
+
 !$omp  parallel do private( Mcp, EPcp, SUM, Mf, M) &
 !$omp&  schedule(static)
+
       DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN 
-!
-!         bulk density of phase used for solids pr. correction
+
+! bulk density of phase used for solids pr. correction
             IF (PHASE_4_P_S(IJK) /= UNDEFINED_I) THEN 
-!            Mcp   = PHASE_4_P_s(IJK)
+!               Mcp   = PHASE_4_P_s(IJK)
                EPCP = 1. - INV_H(P_STAR(IJK),EP_g_blend_end(ijk))
-!
+
                SUM = ZERO 
                DO M = 1, MMAX 
                   IF (CLOSE_PACKED(M) .AND. M/=MCP) SUM = SUM + EP_S(IJK,M) 
                END DO 
                ROP_S(IJK,MCP) = (EPCP - SUM)*RO_S(MCP) 
             ENDIF 
-!
-!         bulk density of phase used for gas pr. correction
+
+! bulk density of phase used for gas pr. correction
             MF = PHASE_4_P_G(IJK) 
-!
+
             SUM = ZERO 
             IF (0 /= MF) THEN 
                EP_G(IJK) = ROP_G(IJK)/RO_G(IJK) 
                SUM = SUM + EP_G(IJK) 
             ENDIF 
-            DO M = 1, MMAX 
-               IF (M /= MF) SUM = SUM + EP_S(IJK,M) 
-            END DO 
+
+! modified for GHD theory
+            IF(TRIM(KT_TYPE) == 'GHD') THEN
+              ROP_S(IJK,MMAX) = ZERO  ! mixture density
+              DO M = 1, SMAX 
+                 VOL_M = PI*D_P0(M)**3/6d0 ! volume of particle M based on fixed diamter Dp0
+                 IF (M /= MF) THEN
+                   SUM = SUM + EP_S(IJK,M) 
+                   ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + RO_S(M)*EP_S(IJK,M) 
+                 ENDIF
+              ENDDO 
+            ELSE
+              DO M = 1, MMAX 
+                 IF (M /= MF) SUM = SUM + EP_S(IJK,M) 
+              ENDDO 
+            ENDIF 
+! end of modifications for GHD theory
+
             IF (0 == MF) THEN 
                EP_G(IJK) = ONE - SUM 
 !efd
@@ -126,9 +146,9 @@
             ELSE 
                ROP_S(IJK,MF) = (ONE - SUM)*RO_S(MF) 
             ENDIF 
-!
+
          ENDIF 
-      END DO 
+      ENDDO 
 
       CALL send_recv(EP_G, 2)
       CALL send_recv(ROP_G, 2)

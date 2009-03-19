@@ -91,7 +91,12 @@
       DOUBLE PRECISION , EXTERNAL :: BLEND_FUNCTION
      
       Include 'function.inc'
-      
+
+
+! GHD Theory is called only for the mixture granular energy, i.e. for m == mmax
+      IF (TRIM(KT_TYPE) == 'GHD' .AND. M /= MMAX) RETURN
+! end of GHD theory
+
       IF (SHEAR) CALL add_shear(M)
 
       CALL init_mu_s(M, IER)    ! initializing/calculating all the quantities needed for various options
@@ -128,6 +133,8 @@
                CALL gt_pde_ia_nonep(M,IER)   ! complete polydisperse IA theory
           ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
                CALL gt_pde_gd_99(M,IER)      ! monodisperse GD theory
+          ELSEIF (TRIM(KT_TYPE) == 'GHD') THEN
+               CALL TRANSPORT_COEFF_GHD(M,IER) ! GHD theory for mixture temperature               
           ELSE
                CALL gt_pde(M,IER)   ! This is also used whith Simonin or Ahmadi models
           END IF
@@ -1430,7 +1437,6 @@
 
       Subroutine Friction_princeton(M, IER)
 !     
-!     
       USE param
       USE param1
       USE geometry
@@ -1444,7 +1450,7 @@
       USE constant
       USE trace
       IMPLICIT NONE
-!
+
 !     Local Variables
 !     Index
       INTEGER          IJK
@@ -1452,7 +1458,7 @@
 !     Solids phase
       INTEGER          M, MM
 !
-!                      Used to compute frictional terms
+!     Used to compute frictional terms
       DOUBLE PRECISION Chi, Pc, Mu_zeta,Phin,PfoPc, N_Pff
 !
       DOUBLE PRECISION ZETA
@@ -1462,7 +1468,6 @@
 !
 !     Error index
       INTEGER          IER     
-     
 
 !     Function subroutines
       DOUBLE PRECISION G_0
@@ -1484,7 +1489,7 @@
      
 !     part copied from source_v_s.f (sof)
                   SUM_EPS_CP=0.0
-                  DO MM=1,MMAX
+                  DO MM=1,SMAX
                      IF (CLOSE_PACKED(MM)) SUM_EPS_CP=SUM_EPS_CP+EP_S(IJK,MM)
                   END DO
 !     end of part copied
@@ -1572,8 +1577,6 @@
 
       Return
       End
-
-
 
 
 

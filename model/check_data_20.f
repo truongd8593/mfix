@@ -223,7 +223,7 @@
                     ENDIF 
                   END DO 
 		     
-                  DO M = 1, MMAX 
+                  DO M = 1, SMAX 
                      IF (ROP_S(IJK,M) == UNDEFINED) THEN 
                         IF (.NOT.ABORT) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
@@ -313,19 +313,22 @@
 !
                   DIF = ONE - EP_G(IJK) 
                   M = 1 
-                  IF (MMAX > 0) THEN 
-                     DIF = DIF - SUM(ROP_S(IJK,:MMAX)/RO_S(:MMAX)) 
-                     M = MMAX + 1 
+                  IF (SMAX > 0) THEN 
+                     DIF = DIF - SUM(ROP_S(IJK,:SMAX)/RO_S(:SMAX)) 
+                     M = SMAX + 1 
                   ENDIF 
                   IF (ABS(DIF) > small_number) THEN 
                      IF (.NOT.ABORT) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1050) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1050)  
+! i don't know why the user should be warned since rop_s(MMAX) doesn't seem to
+! enter any calculations (jeg)
+!                        IF(DMP_LOG .AND. TRIM(KT_TYPE) == 'GHD')WRITE (UNIT_LOG, 1060) 
                         ABORT = .TRUE. 
                      ENDIF 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1100) I, J, K, (1.- dif) 
                   ENDIF  
 !
-		  IF (MMAX > 0) THEN
+		  IF (SMAX > 0) THEN
 !
 ! ep_g must have a value > 0 for all models, (sof)
 		    IF (EP_G(IJK) < SMALL_NUMBER) THEN 
@@ -344,7 +347,7 @@
                        ENDIF 
                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) I, J, K
                     ENDIF  
-		  ENDIF ! for MMAX > 0
+		  ENDIF ! for SMAX > 0
 !
 !     CHEM & ISAT begin (nan xie) Commented by sof, because this is a duplication of line 320.
 !                  IF ((RUN_TYPE /= 'NEW') .AND. (CALL_ISAT .OR. CALL_DI))THEN
@@ -395,7 +398,9 @@
  1013 FORMAT(1X,'I = ',I4,' J = ',I4,' K = ',I4,' M = ',I4,' N = ',I4,5X,A) 
  1050 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
          ' Message: The sum of volume fractions is not equal to 1',/&
-         '          in the following cells:',/4X,'I',T14,'J',T24,'K') 
+         '          in the following cells:',/4X,'I',T14,'J',T24,'K')  
+ 1060 FORMAT(/1X,70('*')//' Important note for GHD Theory users:',/&
+         ' MMAX is reserved for the mixture, do not set rop_s for M = MMAX')
  1070 FORMAT(/1X,70('*')//' From: CHECK_DATA_20',/&
          ' Message: EP_g is less than SMALL_NUMBER ',/&
          '          in the following cells:',/4X,'I',T14,'J',T24,'K') 

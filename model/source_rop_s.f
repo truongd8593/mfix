@@ -35,6 +35,9 @@
       USE fldvar
       USE rxns
       USE run
+      USE physprop
+      USE constant
+      USE ghdtheory
       USE geometry
       USE indices
       USE pgcor
@@ -59,10 +62,10 @@
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
 ! 
 !                      phase index 
-      INTEGER          M 
+      INTEGER          M, M1 
 ! 
 !                      DEL dot V 
-      DOUBLE PRECISION DEL_V 
+      DOUBLE PRECISION DEL_V, DelDotJoi
 ! 
 !                      Mass source 
       DOUBLE PRECISION Src 
@@ -88,6 +91,8 @@
       END IF
 !     CHEM & ISAT end (nan xie)
 !
+      M1 = M
+      IF(TRIM(KT_TYPE) == 'GHD') M1 = MMAX
 !
 !
 !!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
@@ -105,12 +110,18 @@
             IJMK = JM_OF(IJK) 
             IJKM = KM_OF(IJK) 
 !
-            DEL_V = U_S(IJK,M)*AYZ(IJK) - U_S(IMJK,M)*AYZ(IMJK) + V_S(IJK,M)*&
-               AXZ(IJK) - V_S(IJMK,M)*AXZ(IJMK) + W_S(IJK,M)*AXY(IJK) - W_S(&
-               IJKM,M)*AXY(IJKM) 
+            DEL_V = U_S(IJK,M1)*AYZ(IJK) - U_S(IMJK,M1)*AYZ(IMJK) + V_S(IJK,M1)*&
+               AXZ(IJK) - V_S(IJMK,M1)*AXZ(IJMK) + W_S(IJK,M1)*AXY(IJK) - W_S(&
+               IJKM,M1)*AXY(IJKM) 
+      
+            DelDotJoi =  ZERO
+            IF(TRIM(KT_TYPE) == 'GHD') DelDotJoi =  ( &
+	              JoiX(IJK,M)*AYZ(IJK) - JoiX(IMJK,M)*AYZ(IMJK) + JoiY(IJK,M)*&
+                      AXZ(IJK) - JoiY(IJMK,M)*AXZ(IJMK) + JoiZ(IJK,M)*AXY(IJK) - JoiZ(&
+                      IJKM,M)*AXY(IJKM) )
 !
             IF (ROP_S(IJK,M) > ZERO) THEN 
-               SRC = VOL(IJK)*ZMAX((-SUM_R_S(IJK,M)))/ROP_S(IJK,M) 
+               SRC = VOL(IJK)*ZMAX((-SUM_R_S(IJK,M)))/ROP_S(IJK,M) + ZMAX(DelDotJoi)/ROP_S(IJK,M)
             ELSE 
                SRC = ZERO 
             ENDIF 
@@ -118,7 +129,7 @@
             A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+A_M(IJK,S,M&
                )+A_M(IJK,T,M)+A_M(IJK,B,M)+VOL(IJK)*ODT+ZMAX(DEL_V)+SRC) 
             B_M(IJK,M) = -(ROP_SO(IJK,M)*VOL(IJK)*ODT+ZMAX((-DEL_V))*ROP_S(IJK,&
-               M)+ZMAX(SUM_R_S(IJK,M))*VOL(IJK)) 
+               M)+ZMAX((-DelDotJoi))+ZMAX(SUM_R_S(IJK,M))*VOL(IJK)) 
             IF (ABS(A_M(IJK,0,M)) < SMALL_NUMBER) THEN 
                IF (ABS(B_M(IJK,M)) < SMALL_NUMBER) THEN 
                   A_M(IJK,0,M) = -ONE            ! Equation is undefined. 

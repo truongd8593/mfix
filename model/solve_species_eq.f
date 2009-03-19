@@ -78,7 +78,7 @@
 ! 
 ! 
       DOUBLE PRECISION apo
-      DOUBLE PRECISION errorpercent(0:MMAX)
+      DOUBLE PRECISION errorpercent(0:SMAX)
 ! 
 !                      Indices 
       INTEGER          IJK, IMJK, IJMK, IJKM 
@@ -170,7 +170,7 @@
 !
 !     Granular phase species balance equations
 !
-      DO M = 1, MMAX 
+      DO M = 1, SMAX 
 !
          IF (SPECIES_EQ(M)) THEN 
 !

@@ -67,16 +67,10 @@
                        IMJKP, K, IJKT, JM, KP, IJKM, IPJK 
 ! 
 !                      Phase index 
-      INTEGER          M 
+      INTEGER          M, L 
 ! 
 !                      Average volume fraction 
-      DOUBLE PRECISION EPGA 
-! 
-!                      Average density 
-      DOUBLE PRECISION ROPGA 
-! 
-!                      Average viscosity 
-      DOUBLE PRECISION MUGA 
+      DOUBLE PRECISION EPSA, EPStmp
 ! 
 !                      Average velocity gradients 
       DOUBLE PRECISION dWoXdz, duodz 
@@ -96,11 +90,11 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-!
-!
-      DO M = 1, MMAX 
 
-!!$omp  parallel do private( IJK, I, IJKE, EPGA,  J,  K,   &
+      DO M = 1, MMAX 
+        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+
+!!$omp  parallel do private( IJK, I, IJKE, EPSA, EPStmp  J,  K,   &
 !!$omp&  JM,IJKP,IJKNT,IJKS,IJKST,IJMKP,IJKTE,IJKTW,IMJKP,KP, &
 !!$omp&  DUODZ,VXZ, &
 !!$omp&  IM,IJKW, IPJK,&
@@ -108,84 +102,91 @@
 !!$omp&  IJKM, &
 !!$omp&  SBV,  SSX,SSY,   SSZ) &
 !!$omp&  schedule(static)
-      DO IJK = IJKSTART3, IJKEND3
+
+        DO IJK = IJKSTART3, IJKEND3
             K = K_OF(IJK) 
-            IJKT = TOP_OF(IJK) 
-            EPGA = AVG_Z(EP_S(IJK,M),EP_S(IJKT,M),K) 
-            IF ( .NOT.SIP_AT_T(IJK) .AND. EPGA>DIL_EP_S) THEN 
-               J = J_OF(IJK) 
-               I = I_OF(IJK) 
-               IM = IM1(I) 
-               JM = JM1(J) 
-               IJKP = KP_OF(IJK) 
-               IMJK = IM_OF(IJK) 
-               IJKN = NORTH_OF(IJK) 
-               IJKNT = TOP_OF(IJKN) 
-               IJKS = SOUTH_OF(IJK) 
-               IJKST = TOP_OF(IJKS) 
-               IJMKP = JM_OF(IJKP) 
-               IJMK = JM_OF(IJK) 
-               IJKE = EAST_OF(IJK) 
-               IJKTE = EAST_OF(IJKT) 
-               IJKW = WEST_OF(IJK) 
-               IJKTW = WEST_OF(IJKT) 
-               IMJKP = KP_OF(IMJK) 
-               KP = KP1(K) 
-               IJKM = KM_OF(IJK) 
-!
-!       Surface forces
-!
-!         bulk viscosity term
-               SBV = (LAMBDA_S(IJKT,M)*TRD_S(IJKT,M)-LAMBDA_S(IJK,M)*TRD_S(IJK,&
+            IJKT = TOP_OF(IJK)
+            IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+              EPStmp = ZERO
+              DO L = 1, SMAX
+                EPStmp = EPStmp + AVG_Z(EP_S(IJK,L),EP_S(IJKT,L),K)  
+              ENDDO
+              EPSA = EPStmp
+            ELSE                  
+              EPSA = AVG_Z(EP_S(IJK,M),EP_S(IJKT,M),K) 
+            ENDIF  
+            IF ( .NOT.SIP_AT_T(IJK) .AND. EPSA>DIL_EP_S) THEN 
+              J = J_OF(IJK) 
+              I = I_OF(IJK) 
+              IM = IM1(I) 
+              JM = JM1(J) 
+              IJKP = KP_OF(IJK) 
+              IMJK = IM_OF(IJK) 
+              IJKN = NORTH_OF(IJK) 
+              IJKNT = TOP_OF(IJKN) 
+              IJKS = SOUTH_OF(IJK) 
+              IJKST = TOP_OF(IJKS) 
+              IJMKP = JM_OF(IJKP) 
+              IJMK = JM_OF(IJK) 
+              IJKE = EAST_OF(IJK) 
+              IJKTE = EAST_OF(IJKT) 
+              IJKW = WEST_OF(IJK) 
+              IJKTW = WEST_OF(IJKT) 
+              IMJKP = KP_OF(IMJK) 
+              KP = KP1(K) 
+              IJKM = KM_OF(IJK) 
+
+! Surface forces
+
+! bulk viscosity term
+              SBV = (LAMBDA_S(IJKT,M)*TRD_S(IJKT,M)-LAMBDA_S(IJK,M)*TRD_S(IJK,&
                   M))*AXY(IJK) 
-!
-!         shear stress terms
-               SSX = AVG_Z_H(AVG_X_H(MU_S(IJK,M),MU_S(IJKE,M),I),AVG_X_H(MU_S(&
+
+! shear stress terms
+              SSX = AVG_Z_H(AVG_X_H(MU_S(IJK,M),MU_S(IJKE,M),I),AVG_X_H(MU_S(&
                   IJKT,M),MU_S(IJKTE,M),I),K)*(U_S(IJKP,M)-U_S(IJK,M))*OX_E(I)*&
                   ODZ_T(K)*AYZ_W(IJK) - AVG_Z_H(AVG_X_H(MU_S(IJKW,M),MU_S(IJK,M&
                   ),IM),AVG_X_H(MU_S(IJKTW,M),MU_S(IJKT,M),IM),K)*(U_S(IMJKP,M)&
                   -U_S(IMJK,M))*ODZ_T(K)*DY(J)*(HALF*(DZ(K)+DZ(KP))) 
-			!same as oX_E(IM)*AYZ_W(IMJK), but avoids singularity
-!
-               SSY = AVG_Z_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
+                     !same as oX_E(IM)*AYZ_W(IMJK), but avoids singularity
+
+              SSY = AVG_Z_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
                   IJKT,M),MU_S(IJKNT,M),J),K)*(V_S(IJKP,M)-V_S(IJK,M))*OX(I)*&
                   ODZ_T(K)*AXZ_W(IJK) - AVG_Z_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJK,M&
                   ),JM),AVG_Y_H(MU_S(IJKST,M),MU_S(IJKT,M),JM),K)*(V_S(IJMKP,M)&
                   -V_S(IJMK,M))*OX(I)*ODZ_T(K)*AXZ_W(IJMK) 
-!
-               SSZ = MU_S(IJKT,M)*(W_S(IJKP,M)-W_S(IJK,M))*OX(I)*ODZ(KP)*AXY_W(&
+              SSZ = MU_S(IJKT,M)*(W_S(IJKP,M)-W_S(IJK,M))*OX(I)*ODZ(KP)*AXY_W(&
                   IJK) - MU_S(IJK,M)*(W_S(IJK,M)-W_S(IJKM,M))*OX(I)*ODZ(K)*&
                   AXY_W(IJKM) 
-!
-!
-!         Special terms for cylindrical coordinates
-               IF (CYLINDRICAL) THEN 
-!
-!                 modify Szz to include integral of (1/x)*(d/dz)(2*u/x)
+
+! Special terms for cylindrical coordinates
+              IF (CYLINDRICAL) THEN 
+!   modify Szz to include integral of (1/x)*(d/dz)(2*u/x)
                   SSZ = SSZ + MU_S(IJKT,M)*(U_S(IJKP,M)+U_S(IMJKP,M))*OX(I)*&
                      AXY_W(IJK) - MU_S(IJK,M)*(U_S(IJK,M)+U_S(IMJK,M))*OX(I)*&
                      AXY_W(IJKM) 
-!
-!                 (mu_s/x)* part of tau_xz/X
+
+!   (mu_s/x)* part of tau_xz/X
                   IF (OX_E(IM) /= UNDEFINED) THEN 
-                     DUODZ = (U_S(IMJKP,M)-U_S(IMJK,M))*OX_E(IM)*ODZ_T(K) 
+                    DUODZ = (U_S(IMJKP,M)-U_S(IMJK,M))*OX_E(IM)*ODZ_T(K) 
                   ELSE 
-                     DUODZ = ZERO 
+                    DUODZ = ZERO 
                   ENDIF 
                   VXZ = AVG_Z(MU_S(IJK,M),MU_S(IJKT,M),K)*OX(I)*HALF*((U_S(IJKP&
                      ,M)-U_S(IJK,M))*OX_E(I)*ODZ_T(K)+DUODZ) 
-!
-               ELSE 
+              ELSE 
                   VXZ = ZERO 
-               ENDIF 
-!
-!         Add the terms
-               TAU_W_S(IJK,M) = SBV + SSX + SSY + SSZ + VXZ*VOL_W(IJK) 
+              ENDIF 
+
+! Add the terms
+              TAU_W_S(IJK,M) = SBV + SSX + SSY + SSZ + VXZ*VOL_W(IJK) 
             ELSE 
                TAU_W_S(IJK,M) = ZERO 
             ENDIF 
-         END DO 
-      END DO 
+        ENDDO
+        ENDIF  ! end if for GHD theory
+      ENDDO 
+
       call send_recv(tau_w_s,2)
       RETURN  
       END SUBROUTINE CALC_TAU_W_S 

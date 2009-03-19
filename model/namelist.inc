@@ -15,10 +15,11 @@
 ! start anuj 4/20
              FRICTION, SAVAGE,&
 ! end anuj 4/20
-!
+
 ! sof (02/16/2005)
              SCHAEFFER,&
 ! end sof
+
 ! blending switch
              BLENDING_STRESS, TANH_BLEND, SIGM_BLEND, &
 ! residual calculation
@@ -29,12 +30,10 @@
 ! end peter 7/15
              DRAG_TYPE, &
 
-!     JEG Added 
-!     University of Colorado, Hrenya Research Group
+! JEG Added 
              KT_TYPE, &
-!
              RDF_TYPE, &
-!     END JEG
+! END JEG
 
 !AE TIME 043001  added new logical flag var for 2nd order time into NAMELIST
              CN_ON,&
@@ -69,32 +68,32 @@
              ENABLE_DMP_LOG, &
 !
 ! 1.3 Physical and numerical parameters section
-!            (e and C_e are same)
-             e, C_e, C_f, C, C_NAME, Phi, Phi_w, L_scale0, MU_gmax,&
+!            (e, r_p, and C_e are same)
+             e, C_e, r_p, C_f, C, C_NAME, Phi, Phi_w, L_scale0, MU_gmax,&
              TOL_RESID, TOL_DIVERGE, TOL_RESID_Scalar, MAX_NIT, LEQ_IT, LEQ_METHOD, LEQ_SWEEP,&
 	     LEQ_TOL, DO_TRANSPOSE, V_ex,&
              P_ref, P_scale, UR_FAC, UR_F_gs, GRAVITY, TOL_RESID_T, TOL_RESID_X,&
 	     TOL_RESID_Th, MAX_INLET_VEL_FAC, &
              NORM_g, NORM_s, PHIP, e_w, EPS_f_min, & !EPS_max,
 	     drag_c1, drag_d1, &
-!
+
 ! start GERA 8/15/03
              SEGREGATION_SLOPE_COEFFICIENT, ep_s_max,&
 ! modified by sof, removed MAX_SOLID_1_PACKING and MAX_SOLID_2_PACKING
 ! end GERA 8/15/03     
-!
+
 ! start sof 5/04/05 (for rearanging indices from coarsest to finest particles)
              M_MAX,&
 ! end sof 5/04/05      
-!
+
 ! start sof 5/04/05 Adding automatic_restart
              AUTO_RESTART,&
 ! end sof 5/04/05    
-!	     	     
+	     	     
 ! start rong
              AGGREGATION_EFF,BREAKAGE_EFF,&
 ! end rong 
-!
+
 ! 1.4 Geometry and discretization section
 !
              COORDINATES, IMAX, DX, XMIN, XLENGTH, JMAX, DY, YLENGTH,&
@@ -159,26 +158,23 @@
 ! 1.10 Chemical reactions
 !
              SPECIES_NAME, &
-!
-!     CHEM & ISAT begin (nan xie)
-!
+! CHEM & ISAT begin (nan xie)
 	     CALL_DI, CALL_GROW, CALL_ISAT, ISATdt,&
-!     CHEM & ISAT end (nan xie)
+! CHEM & ISAT end (nan xie)
+!
 ! 1.11 distributed parallel
 !
              NODESI , NODESJ , NODESK, &
-!
+!	     
 ! 1.12 Preconditioner
 !
 	     LEQ_PC, &
-
+!
 ! 1.13 Parallel related
-
+!
 	     IS_SERIAL, USE_DOLOOP, minimize_dotproducts, icheck_bicgs, &
              solver_statistics, opt_parallel , &
 
 ! 1.14 Distributed IO (version 1) related variables
 
              bDist_IO , bStart_with_one_RES
-
-     

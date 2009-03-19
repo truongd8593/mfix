@@ -234,15 +234,15 @@
       CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
                GRAN_DISS, RRATE, DRAGCOEF, HEAT_TR, WALL_TR, IER)
 
-      IF (Call_DQMOM) PSIZE(1:MMAX)=.TRUE.
+      IF (Call_DQMOM) PSIZE(1:SMAX)=.TRUE.
 !      IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
       WALL_TR = .TRUE. 
       IF (ENERGY_EQ) THEN 
-        SP_HEAT(:MMAX) = .TRUE. 
-        COND(:MMAX) = .TRUE. 
-        HEAT_TR(:MMAX,:MMAX) = .TRUE. 
+        SP_HEAT(:SMAX) = .TRUE. 
+        COND(:SMAX) = .TRUE. 
+        HEAT_TR(:SMAX,:SMAX) = .TRUE. 
       ENDIF 
-      IF(ANY_SPECIES_EQ) DIFF(:MMAX) = .TRUE.
+      IF(ANY_SPECIES_EQ) DIFF(:SMAX) = .TRUE.
       DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
       VISC(0) = RECALC_VISC_G 
       VISC(1:MMAX) = .TRUE. 
@@ -299,7 +299,7 @@
             CALL SOLVE_EPP (NORMS, RESS, IER)
             CALL CORRECT_1 (IER) 
           ELSE
-            DO M=1,MMAX 
+            DO M=1,SMAX ! mmax -> smax for GHD theory
 !   	      IF (M .EQ. MCp) THEN !Volume fraction correction technique for multiparticle types is 
               IF (.FALSE.) THEN    !not implemented.  This will only slow down convergence.
                 CALL CALC_K_CP (K_CP, IER)
@@ -464,42 +464,41 @@
                IF(DMP_LOG)WRITE (UNIT_LOG, '(46X, A, F9.3, 1X, A)') '    CPU time left = '&
                   , TLEFT, TUNIT 
             ENDIF 
-!
+
             IF (CYCLIC_X .OR. CYCLIC_Y .OR. CYCLIC_Z) THEN 
-	      
                IF (DO_I) THEN
-	         Vavg = VAVG_U_G()
-	         IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'U_g = ', Vavg
-	       ENDIF
+                 Vavg = VAVG_U_G()
+                 IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'U_g = ', Vavg
+               ENDIF
                IF (DO_J) THEN
-	         Vavg = VAVG_V_G()
-	         IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'V_g = ',  Vavg
-	       ENDIF
+                 Vavg = VAVG_V_G()
+                 IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'V_g = ',  Vavg
+               ENDIF
                IF (DO_K) THEN
-	         Vavg = VAVG_W_G()
-	         IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'W_g = ', Vavg 
-	       ENDIF
-               DO M = 1, MMAX 
+                 Vavg = VAVG_W_G()
+                 IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'W_g = ', Vavg 
+               ENDIF
+               DO M = 1, SMAX 
                   IF (DO_I) Then
-		    Vavg = VAVG_U_S(M)
-		    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'U_s(', M, ') = ', Vavg
-		  ENDIF
+                    Vavg = VAVG_U_S(M)
+                    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'U_s(', M, ') = ', Vavg
+                  ENDIF
                   IF (DO_J) Then
-		    Vavg = VAVG_V_S(M)
-		    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'V_s(', M, ') = ', Vavg
-		  ENDIF
+                    Vavg = VAVG_V_S(M)
+                    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'V_s(', M, ') = ', Vavg
+                  ENDIF
                   IF (DO_K) Then
-		    Vavg = VAVG_W_S(M) 
-		    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'W_s(', M, ') = ', Vavg
-		  ENDIF
+                    Vavg = VAVG_W_S(M) 
+                    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'W_s(', M, ') = ', Vavg
+                  ENDIF
                END DO 
             ENDIF 
-!
+
             CALL END_LOG 
          ENDIF 
          IER = 0 
          RETURN  
-!                                                ! diverged or
+                                                ! diverged or
       ELSE IF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN 
          IF (FULL_LOG) THEN 
             CALL START_LOG 

@@ -41,6 +41,7 @@
       Use vshear
       Use mflux
       Use mchem
+      USE ghdtheory
 !     JEG Added 04/01/2005
 !     University of Colorado, Hrenya Research Group
       use kintheory
@@ -440,10 +441,28 @@
       Allocate( ROP_sN(DIMENSION_3p, DIMENSION_M) )
       Allocate( ROP_gT(DIMENSION_3p) )
       Allocate( ROP_sT(DIMENSION_3p, DIMENSION_M) )
+ 
+! allocate variables for GHD Theory
+      IF (TRIM(KT_TYPE) == 'GHD') THEN 
+        Allocate(    Flux_nE(DIMENSION_3p) ) 
+        Allocate(    Flux_nN(DIMENSION_3p) ) 
+        Allocate(    Flux_nT(DIMENSION_3p) )  
+        Allocate(    Zeta0(DIMENSION_3p) )   ! zeroth rate of cooling  
+        Allocate(    ZetaU(DIMENSION_3p) )   ! 1st order cooling rate transport coefficient
+        Allocate(    DiT(DIMENSION_3p, DIMENSION_M) )   ! thermal diffusivity
+        Allocate(    DijF(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )   ! mass mobility
+        Allocate(    Lij(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )   ! thermal mobility
+        Allocate(    Dij(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )   ! ordinary diffusion
+        Allocate(    DijQ(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )   ! Dufour coeff.
+        Allocate(    JoiX(DIMENSION_3p, DIMENSION_M) )   ! X- species mass flux
+        Allocate(    JoiY(DIMENSION_3p, DIMENSION_M) )   ! Y- species mass flux
+        Allocate(    JoiZ(DIMENSION_3p, DIMENSION_M) )   ! Z- species mass flux
+      ENDIF
+! end of GHD Theory modification
 
-!     JEG Added 
-!     University of Colorado, Hrenya Research Group
 !     Arising from kinetic theory of Iddir & Arastoopour (2005)
+!     EDvel_sM_ip & ED_ss_ip are also used for kinetic theory
+!          of Garzo & Dufty (1999)
       Allocate(    KTMOM_U_s(DIMENSION_3p, DIMENSION_M) )
       Allocate(    KTMOM_V_s(DIMENSION_3p, DIMENSION_M) )
       Allocate(    KTMOM_W_s(DIMENSION_3p, DIMENSION_M) )

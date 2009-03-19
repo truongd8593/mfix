@@ -59,7 +59,7 @@
       INTEGER          M
 !                      Sum of (very small) solids volume fractions that
 !                      are set to zero.
-      DOUBLE PRECISION EPSUM
+      DOUBLE PRECISION EPSUM, epsMix, epSolid
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
@@ -68,17 +68,21 @@
       DO K = Kstart1, Kend1 
          DO J = Jstart1, Jend1 
             DO I = Istart1, Iend1 
-	    
+    
                IJK = FUNIJK(I,J,K) 
                IF (FLUID_AT(IJK)) THEN 
                   EPSUM = ZERO 
-                  DO M = 1, MMAX 
-                     IF (ROP_S(IJK,M) < ZERO_EP_S*RO_S(M)) THEN 
-!
+		  epsMix = ZERO
+                  DO M = 1, SMAX 
+                     epSolid = ROP_S(IJK,M)/RO_S(M)
+		     epsMix = epsMix +  epSolid
+		     IF (epSolid < ZERO_EP_S) THEN 
+
 !  Remove solids in very small quantities and set solids velocity to zero
 !  if there is outflow from the present cell.
-!
-                        EPSUM = EPSUM + ROP_S(IJK,M)/RO_S(M) 
+
+                        EPSUM = EPSUM + epSolid
+                        IF(TRIM(KT_TYPE) == 'GHD') ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) - ROP_S(IJK,M)
                         ROP_S(IJK,M) = ZERO 
                         U_S(IJK,M) = MIN(U_S(IJK,M),ZERO) 
                         V_S(IJK,M) = MIN(V_S(IJK,M),ZERO) 
@@ -88,6 +92,15 @@
                         W_S(KM_OF(IJK),M) = MAX(W_S(KM_OF(IJK),M),ZERO) 
                      ENDIF 
                   END DO 
+                  epsMix = epsMix - EPSUM
+		  IF(TRIM(KT_TYPE) == 'GHD' .AND. epsMix < ZERO_EP_S) THEN
+                    U_S(IJK,MMAX) = MIN(U_S(IJK,MMAX),ZERO) 
+                    V_S(IJK,MMAX) = MIN(V_S(IJK,MMAX),ZERO) 
+                    W_S(IJK,MMAX) = MIN(W_S(IJK,MMAX),ZERO) 
+                    U_S(IM_OF(IJK),MMAX) = MAX(U_S(IM_OF(IJK),MMAX),ZERO) 
+                    V_S(JM_OF(IJK),MMAX) = MAX(V_S(JM_OF(IJK),MMAX),ZERO) 
+                    W_S(KM_OF(IJK),MMAX) = MAX(W_S(KM_OF(IJK),MMAX),ZERO)  
+                  ENDIF
                   EP_G(IJK) = EP_G(IJK) + EPSUM 
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK) 
                ENDIF 

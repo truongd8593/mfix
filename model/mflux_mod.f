@@ -66,5 +66,16 @@
 !                      macroscopic solids density at top face
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  ROP_sT 
  
+ 
+! for GHD Theory
+!                      x-component of solids total number density flux
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Flux_nE 
+!                      y-component of solids total number density flux
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Flux_nN 
+!                      z-component of solids total number density flux
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Flux_nT 
+ 
+! end GHD Theory modification
+ 
 
       END MODULE mflux

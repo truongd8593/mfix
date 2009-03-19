@@ -45,48 +45,47 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-! 
-! 
 !                      Error index 
       INTEGER          IER 
-! 
+ 
 !                      Solids phase index 
       INTEGER          M 
-! 
+ 
 !                      Septadiagonal matrix A_m 
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
-! 
+ 
 !                      Vector b_m 
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
-!
-      DO M = 1, MMAX 
-        IF (MOMENTUM_Z_EQ(M)) THEN
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!	IF DEFERRED CORRECTION IS TO BE USED TO SOLVE W_S
-!
-          IF (DEF_COR) THEN
-	    CALL STORE_A_W_S0 (A_M(1,-3,M), M, IER) 
-	    IF (DISCRETIZE(5) > 1)CALL STORE_A_W_SDC (A_M(1,-3,M), M, B_M, IER)
-          ELSE
-!	   NO DEFERRED CORRECTION IS TO BE USED TO SOLVE FOR W_S
-!
-            IF (DISCRETIZE(5) == 0) THEN         ! 0 & 1 => FOUP 
-              CALL STORE_A_W_S0 (A_M(1,-3,M), M, IER) 
-            ELSE 
-              CALL STORE_A_W_S1 (A_M(1,-3,M), M, IER) 
-            ENDIF 
-          ENDIF
-!
+!-----------------------------------------------
 
-          CALL DIF_W_IS (MU_S(1,M), A_M, B_M, M, IER) 
-!
-        ENDIF 
+      DO M = 1, MMAX 
+        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+          IF (MOMENTUM_Z_EQ(M)) THEN
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!          IF DEFERRED CORRECTION IS TO BE USED TO SOLVE W_S
+            IF (DEF_COR) THEN
+              CALL STORE_A_W_S0 (A_M(1,-3,M), M, IER) 
+              IF (DISCRETIZE(5) > 1)CALL STORE_A_W_SDC (A_M(1,-3,M), M, B_M, IER)
+            ELSE
+
+!	   NO DEFERRED CORRECTION IS TO BE USED TO SOLVE FOR W_S
+              IF (DISCRETIZE(5) == 0) THEN         ! 0 & 1 => FOUP 
+                CALL STORE_A_W_S0 (A_M(1,-3,M), M, IER) 
+              ELSE 
+                CALL STORE_A_W_S1 (A_M(1,-3,M), M, IER) 
+              ENDIF 
+            ENDIF
+
+            CALL DIF_W_IS (MU_S(1,M), A_M, B_M, M, IER) 
+
+          ENDIF  
+        ENDIF
       END DO 
       RETURN  
       END SUBROUTINE CONV_DIF_W_S 
-!
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: STORE_A_W_s0(A_W_s, M, IER)                            C

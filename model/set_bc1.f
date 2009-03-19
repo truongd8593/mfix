@@ -111,7 +111,7 @@
                   CALL START_LOG 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) L, TIME 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1100) BC_MOUT_G(L), BC_VOUT_G(L) 
-                  DO M = 1, MMAX 
+                  DO M = 1, SMAX 
                      BC_MOUT_S(L,M) = ABS(BC_MOUT_S(L,M))/BC_OUT_N(L) 
                      BC_VOUT_S(L,M) = ABS(BC_VOUT_S(L,M))/BC_OUT_N(L) 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1200) M, BC_MOUT_S(L,M), BC_VOUT_S(L,M) 
@@ -158,7 +158,7 @@
                   ENDIF 
                   BC_MOUT_G(L) = ZERO 
                   BC_VOUT_G(L) = ZERO 
-                  DO M = 1, MMAX 
+                  DO M = 1, SMAX 
                      IF (BC_MASSFLOW_S(L,M) /= UNDEFINED) THEN 
                         IF (BC_MOUT_S(L,M) > SMALL_NUMBER) THEN 
                            SELECT CASE (TRIM(BC_PLANE(L)))  
@@ -231,7 +231,7 @@
                            CASE ('T')  
                               W_G(IJK) = BC_W_G(L) 
                            END SELECT 
-                           DO M = 1, MMAX 
+                           DO M = 1, SMAX 
                               SELECT CASE (TRIM(BC_PLANE(L)))  
                               CASE ('W')  
                                  IJK2 = IM_OF(IJK) 
@@ -249,7 +249,59 @@
                               CASE ('T')  
                                  W_S(IJK,M) = BC_W_S(L,M) 
                               END SELECT 
-                           END DO 
+                           END DO  
+! for GHD theory to compute mixture BC of velocity and density
+                           IF(TRIM(KT_TYPE) == 'GHD') THEN
+                             ROP_S(IJK,MMAX) = ZERO
+                             U_S(IJK,MMAX) =  ZERO 
+                             V_S(IJK,MMAX) =  ZERO 
+                             W_S(IJK,MMAX) =  ZERO 
+                             U_S(IJK2,MMAX) =  ZERO 
+                             V_S(IJK2,MMAX) =  ZERO 
+                             W_S(IJK2,MMAX) =  ZERO 
+                             DO M = 1, SMAX 
+                                ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+                                SELECT CASE (TRIM(BC_PLANE(L)))  
+                                CASE ('W')  
+                                   IJK2 = IM_OF(IJK) 
+                                   U_S(IJK2,MMAX) =  U_S(IJK2,MMAX) + BC_U_S(L,M)*ROP_S(IJK2,M)
+                                CASE ('E')  
+                                   IJK2 = IP_OF(IJK)
+                                   U_S(IJK,MMAX) =  U_S(IJK,MMAX) + BC_U_S(L,M)*ROP_S(IJK2,M)
+                                CASE ('S')  
+                                   IJK2 = JM_OF(IJK) 
+                                   V_S(IJK2,MMAX) =  V_S(IJK2,MMAX) + BC_V_S(L,M)*ROP_S(IJK2,M)
+                                CASE ('N')  
+                                   IJK2 = JP_OF(IJK)
+                                   V_S(IJK,MMAX) =  V_S(IJK,MMAX) + BC_V_S(L,M)*ROP_S(IJK2,M)
+                                CASE ('B')  
+                                   IJK2 = KM_OF(IJK) 
+                                   W_S(IJK2,MMAX) =  W_S(IJK2,MMAX) + BC_W_S(L,M)*ROP_S(IJK2,M)
+                                CASE ('T')  
+                                   IJK2 = KP_OF(IJK)
+                                   W_S(IJK,MMAX) =  W_S(IJK,MMAX) + BC_W_S(L,M)*ROP_S(IJK2,M)
+                                END SELECT 
+                             END DO 
+                             SELECT CASE (TRIM(BC_PLANE(L)))  
+                             CASE ('W')  
+                                IJK2 = IM_OF(IJK) 
+                                U_S(IJK2,MMAX) =  U_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
+                             CASE ('E')  
+                                U_S(IJK,MMAX) =  U_S(IJK,MMAX) / ROP_S(IJK,MMAX)
+                             CASE ('S')  
+                                IJK2 = JM_OF(IJK) 
+                                V_S(IJK2,MMAX) =  V_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
+                             CASE ('N')  
+                                V_S(IJK,MMAX) =  V_S(IJK,MMAX) / ROP_S(IJK,MMAX)
+                             CASE ('B')  
+                                IJK2 = KM_OF(IJK) 
+                                W_S(IJK2,MMAX) =  W_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
+                             CASE ('T')  
+                                W_S(IJK,MMAX) =  W_S(IJK,MMAX) / ROP_S(IJK,MMAX)
+                             END SELECT 
+                           ENDIF
+! end of modifications for GHD theory
+                                           
                         END DO 
                      END DO 
                   END DO 
@@ -272,8 +324,8 @@
                   DO K = BC_K_B(L), BC_K_T(L) 
                      DO J = BC_J_S(L), BC_J_N(L) 
                         DO I = BC_I_W(L), BC_I_E(L)
-   		          IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE			
-                           IJK = FUNIJK(I,J,K) 
+                          IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                          IJK = FUNIJK(I,J,K) 
                            SELECT CASE (TRIM(BC_PLANE(L)))  
                            CASE ('W')  
                               IJK2 = IM_OF(IJK) 
@@ -318,7 +370,7 @@
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1100) BC_MOUT_G(L), BC_VOUT_G(L) 
                      BC_MOUT_G(L) = ZERO 
                      BC_VOUT_G(L) = ZERO 
-                     DO M = 1, MMAX 
+                     DO M = 1, SMAX 
                         BC_MOUT_S(L,M) = ABS(BC_MOUT_S(L,M))/BC_OUT_N(L) 
                         BC_VOUT_S(L,M) = ABS(BC_VOUT_S(L,M))/BC_OUT_N(L) 
                         IF(DMP_LOG)WRITE(UNIT_LOG,1200)M,BC_MOUT_S(L,M),BC_VOUT_S(L,M) 
@@ -329,9 +381,9 @@
                      BC_OUT_N(L) = 0 
                   ENDIF 
                ENDIF 
-!
+
             ENDIF 
-	    
+    
          ENDIF 
       END DO 
 

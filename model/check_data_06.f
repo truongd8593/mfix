@@ -64,6 +64,7 @@
 !
       INTEGER I_w , I_e , J_s , J_n , K_b , K_t , ICV
       INTEGER I, J, k, IJK, IC2, M, N, IER
+!
       DOUBLE PRECISION SUM, SUM_EP, old_value, DP_TMP(MMAX)
 
 !-----------------------------------------------
@@ -77,9 +78,10 @@
       If(.not.database_read .and. species_name(1) /= UNDEFINED_C) &
         call read_database(IER)
 
+
 ! Initialize the icbc_flag array.  If not a NEW run then do not
 ! check the initial conditions.
-!
+
        DO K = Kstart3, Kend3       
          DO J = Jstart3, Jend3 
            DO I = Istart3, Iend3 
@@ -92,11 +94,11 @@
 
                IF (DO_K) THEN 
                   IF (K==KMIN3 .OR. K==KMIN2 .OR. &
- 		      K==KMAX2 .OR. K==KMAX3) THEN 		  
-!//SP
+                      K==KMAX2 .OR. K==KMAX3) THEN 
+
                      IF (CYCLIC_Z_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
-!//SP
+
                      ELSE IF (CYCLIC_Z) THEN 
                         ICBC_FLAG(IJK) = 'c--' 
                      ELSE 
@@ -107,11 +109,11 @@
 
                IF (DO_J) THEN 
                   IF (J==JMIN3 .OR. J==JMIN2 .OR. &
- 		      J==JMAX2 .OR. J==JMAX3) THEN 		  		  
-!//SP
+                      J==JMAX2 .OR. J==JMAX3) THEN 
+
                      IF (CYCLIC_Y_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
-!//SP
+
                      ELSE IF (CYCLIC_Y) THEN 
                         ICBC_FLAG(IJK) = 'c--' 
                      ELSE 
@@ -122,12 +124,9 @@
 
                IF (DO_I) THEN 
                   IF (I==IMIN3 .OR. I==IMIN2 .OR. &
- 		      I==IMAX2 .OR. I==IMAX3) THEN 		  
-		  
-!//SP
+                      I==IMAX2 .OR. I==IMAX3) THEN 
                      IF (CYCLIC_X_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
-!//SP
                      ELSE IF (CYCLIC_X) THEN 
                         ICBC_FLAG(IJK) = 'c--' 
                      ELSE 
@@ -137,18 +136,18 @@
                   IF (I==1 .AND. CYLINDRICAL .AND. XMIN==ZERO) ICBC_FLAG(IJK)&
                       = 'S--' 
                ENDIF 
-!
+
 !              corner cells are wall cells
                IF ((I==IMIN3 .OR. I==IMIN2 .OR. I==IMAX2 .OR. I==IMAX3) .AND. &
- 	           (J==JMIN3 .OR. J==JMIN2 .OR. J==JMAX2 .OR. J==JMIN3) .AND. &
- 		   (K==KMIN3 .OR. K==KMIN2 .OR. K==KMAX2 .OR. K==KMAX3)) THEN 		   
+                   (J==JMIN3 .OR. J==JMIN2 .OR. J==JMAX2 .OR. J==JMIN3) .AND. &
+                   (K==KMIN3 .OR. K==KMIN2 .OR. K==KMAX2 .OR. K==KMAX3)) THEN 
                   IF (ICBC_FLAG(IJK) /= 'S--') ICBC_FLAG(IJK) = 'W--' 
-		  
+          
                ENDIF 
-	       
-            END DO 
-         END DO 	 
-      END DO 
+       
+            ENDDO 
+         ENDDO 
+      ENDDO 
 
       
       DO ICV = 1, DIMENSION_IC 
@@ -170,7 +169,8 @@
                IF (NO_I) THEN 
                   IC_X_W(ICV) = ZERO 
                ELSE 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_X_w and IC_I_w ', ICV 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) &
+                     'IC_X_w and IC_I_w ', ICV 
                      call mfix_exit(myPE) 
                ENDIF 
             ENDIF 
@@ -215,11 +215,10 @@
                ENDIF 
             ENDIF 
          ENDIF 
-      END DO 
+      ENDDO 
 
 
       DO ICV = 1, DIMENSION_IC 
-!
          IF (IC_X_W(ICV)/=UNDEFINED .AND. IC_X_E(ICV)/=UNDEFINED) THEN 
             IF (NO_I) THEN 
                I_W = 1 
@@ -237,7 +236,7 @@
                IC_I_E(ICV) = I_E 
             ENDIF 
          ENDIF 
-!
+
          IF (IC_Y_S(ICV)/=UNDEFINED .AND. IC_Y_N(ICV)/=UNDEFINED) THEN 
             IF (NO_J) THEN 
                J_S = 1 
@@ -255,7 +254,7 @@
                IC_J_N(ICV) = J_N 
             ENDIF 
          ENDIF 
-!
+
          IF (IC_Z_B(ICV)/=UNDEFINED .AND. IC_Z_T(ICV)/=UNDEFINED) THEN 
             IF (NO_K) THEN 
                K_B = 1 
@@ -273,18 +272,18 @@
                IC_K_T(ICV) = K_T 
             ENDIF 
          ENDIF 
-      END DO 
+      ENDDO 
 
+      
       DO ICV = 1, DIMENSION_IC 
          IF (IC_DEFINED(ICV)) THEN 
-!
+
 !   For Restart runs IC is defined only if IC_TYPE='PATCH'
-!
             IF (RUN_TYPE/='NEW' .AND. IC_TYPE(ICV)/='PATCH') THEN 
                IC_DEFINED(ICV) = .FALSE. 
                CYCLE  
             ENDIF 
-!
+
             IF (IC_I_W(ICV) > IC_I_E(ICV)) GO TO 900 
             IF (IC_J_S(ICV) > IC_J_N(ICV)) GO TO 900 
             IF (IC_K_B(ICV) > IC_K_T(ICV)) GO TO 900 
@@ -295,13 +294,11 @@
             IF (IC_K_B(ICV)<KMIN1 .OR. IC_K_B(ICV)>KMAX1) GO TO 900 
             IF (IC_K_T(ICV)<KMIN1 .OR. IC_K_T(ICV)>KMAX1) GO TO 900 
 
-!
+
 !  If a 'PATCH' need not check whether all the variables are specified
-!
             IF (IC_TYPE(ICV) /= 'PATCH') THEN 
-!
+
 !  Check the specification of physical quantities
-!
                IF (IC_U_G(ICV) == UNDEFINED) THEN 
                   IF (NO_I) THEN 
                      IC_U_G(ICV) = ZERO 
@@ -310,7 +307,7 @@
                      call mfix_exit(myPE) 
                   ENDIF 
                ENDIF 
-	       	       
+
                IF (IC_V_G(ICV) == UNDEFINED) THEN 
                   IF (NO_J) THEN 
                      IC_V_G(ICV) = ZERO 
@@ -327,7 +324,7 @@
                      call mfix_exit(myPE) 
                   ENDIF 
                ENDIF 
-	       
+       
                IF (IC_EP_G(ICV) == UNDEFINED) THEN 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_EP_g', ICV 
                   call mfix_exit(myPE) 
@@ -339,13 +336,12 @@
                   ENDIF 
                ENDIF 
 
-!
                IF ((ENERGY_EQ .OR. RO_G0==UNDEFINED .OR. MU_G0==UNDEFINED)&
                    .AND. IC_T_G(ICV)==UNDEFINED) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_T_g', ICV 
                      call mfix_exit(myPE) 
                ENDIF 
-!
+
                IF (ENERGY_EQ) THEN 
                   IF (IC_GAMA_RG(ICV) < ZERO) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1001) 'IC_GAMA_Rg', ICV 
@@ -357,7 +353,7 @@
                      ENDIF 
                   ENDIF 
                ENDIF 
-!
+
                SUM = ZERO 
                DO N = 1, NMAX(0) 
                   IF (IC_X_G(ICV,N) /= UNDEFINED) SUM = SUM + IC_X_G(ICV,N) 
@@ -374,35 +370,33 @@
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1055) ICV 
                   IF (SPECIES_EQ(0) .OR. RO_G0==UNDEFINED .AND. MW_AVG==&
                      UNDEFINED) then
-		     call mfix_exit(myPE)  
-		  ENDIF
+                     call mfix_exit(myPE)  
+                  ENDIF
                ENDIF 
 
                DO N = 1, NScalar
                   IF (IC_Scalar(ICV,N) == UNDEFINED) THEN 
                      IC_Scalar(ICV,N) = ZERO 
                   ENDIF 
-               END DO  
+               ENDDO  
                
-	       IF(K_Epsilon) THEN
+               IF(K_Epsilon) THEN
                   IF (IC_K_Turb_G(ICV) == UNDEFINED) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_K_Turb_G', ICV 
                      call mfix_exit(myPE) 
                   ENDIF
-
                   IF (IC_E_Turb_G(ICV) == UNDEFINED) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_E_Turb_G', ICV 
                      call mfix_exit(myPE) 
                   ENDIF
-
-	       ENDIF
+               ENDIF
 
                SUM_EP = IC_EP_G(ICV) 
-               DO M = 1, MMAX 
+               DO M = 1, SMAX 
                   IF (IC_ROP_S(ICV,M) == UNDEFINED) THEN 
                      IF (IC_EP_G(ICV) == ONE) THEN 
                         IC_ROP_S(ICV,M) = ZERO 
-                     ELSE IF (MMAX == 1) THEN 
+                     ELSE IF (SMAX == 1) THEN 
                         IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*RO_S(M) 
                      ELSE 
                         IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_ROP_s', ICV, M 
@@ -413,7 +407,7 @@
                   SUM = ZERO 
                   DO N = 1, NMAX(M) 
                      IF(IC_X_S(ICV,M,N)/=UNDEFINED)SUM=SUM+IC_X_S(ICV,M,N) 
-                  END DO 
+                  ENDDO 
                   IF (IC_ROP_S(ICV,M)==ZERO .AND. SUM==ZERO) THEN 
                      IC_X_S(ICV,M,1) = ONE 
                      SUM = ONE 
@@ -423,7 +417,7 @@
                         IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)WRITE (UNIT_LOG, 1110)ICV,M,N 
                         IC_X_S(ICV,M,N) = ZERO 
                      ENDIF 
-                  END DO 
+                  ENDDO 
 
                   IF (.NOT.COMPARE(ONE,SUM)) THEN 
                         IF(DMP_LOG)WRITE (UNIT_LOG, 1120) ICV, M 
@@ -454,7 +448,7 @@
                         call mfix_exit(myPE) 
                      ENDIF 
                   ENDIF 
-!
+
                   IF (ENERGY_EQ .AND. IC_T_S(ICV,M)==UNDEFINED) THEN 
                      IF (IC_ROP_S(ICV,M) == ZERO) THEN 
                         IC_T_S(ICV,M) = IC_T_G(ICV) 
@@ -463,7 +457,7 @@
                         call mfix_exit(myPE) 
                      ENDIF 
                   ENDIF 
-!
+
                   IF (GRANULAR_ENERGY .AND. IC_THETA_M(ICV,M)==UNDEFINED) THEN 
                      IF (IC_ROP_S(ICV,M) == ZERO) THEN 
                         IC_THETA_M(ICV,M) = ZERO 
@@ -472,7 +466,7 @@
                         call mfix_exit(myPE) 
                      ENDIF 
                   ENDIF 
-!
+
                   IF (ENERGY_EQ) THEN 
                      IF (IC_GAMA_RS(ICV,M) < ZERO) THEN 
                         IF(DMP_LOG)WRITE (UNIT_LOG, 1101) 'IC_GAMA_Rs', ICV, M 
@@ -484,22 +478,21 @@
                         ENDIF 
                      ENDIF 
                   ENDIF 
-               END DO 
+               ENDDO   ! end loop over smax 
 
                IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1125) ICV 
                      call mfix_exit(myPE)
                ENDIF 
-!
+
 !  Set ICBC flag
-!
-            ENDIF 
+            ENDIF      ! end if ic_type != patch branch
 
 
             DO K = IC_K_B(ICV), IC_K_T(ICV) 
                DO J = IC_J_S(ICV), IC_J_N(ICV) 
                   DO I = IC_I_W(ICV), IC_I_E(ICV) 
-   		    IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE	
+                     IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                      IJK = FUNIJK(I,J,K) 
                      ICBC_FLAG(IJK)(1:1) = '.' 
                      IC2 = MOD(ICV,100) 
@@ -507,12 +500,11 @@
                   END DO 
                END DO 
             END DO 
-	    
+            
          ELSE                             ! for if IC_DEFINED branch
-!
+
 !  Check whether physical quantities are specified for undefined
 !  initial conditions
-!
             IF (IC_U_G(ICV) /= UNDEFINED) THEN 
                 IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_U_g', ICV 
                 call mfix_exit(myPE) 
@@ -543,34 +535,34 @@
                   call mfix_exit(myPE) 
                ENDIF 
             END DO 
-	    
+    
             DO N = 1, NScalar 
                IF (IC_Scalar(ICV,N) /= UNDEFINED) THEN 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_Scalar', ICV 
                   CALL MFIX_EXIT(myPE)
                ENDIF 
             END DO 
-	    
-	    IF( K_Epsilon ) THEN
+    
+            IF( K_Epsilon ) THEN
                IF (IC_K_Turb_G(ICV) /= UNDEFINED) THEN 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_K_Turb_G', ICV 
                   CALL MFIX_EXIT(myPE)
                ENDIF 
-	    
+    
                IF (IC_E_Turb_G(ICV) /= UNDEFINED) THEN 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_E_Turb_G', ICV 
                   CALL MFIX_EXIT(myPE)
                ENDIF 
-	    ENDIF
+            ENDIF
             
-	    DO M = 1, DIMENSION_M 
+            DO M = 1, DIMENSION_M 
                IF (IC_ROP_S(ICV,M) /= UNDEFINED) THEN 
                    IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_ROP_s', ICV, M 
                    call mfix_exit(myPE) 
                ENDIF 
                DO N = 1, DIMENSION_N_S 
                   IF (IC_X_S(ICV,M,N) /= UNDEFINED) THEN 
-                      IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_X_s', ICV, M 
+                      IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_X_s', ICV, M
                       call mfix_exit(myPE) 
                   ENDIF 
                END DO 
@@ -591,12 +583,12 @@
                      call mfix_exit(myPE) 
                ENDIF 
                IF (IC_T_RS(ICV,M) /= UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_T_Rs', ICV, M 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_T_Rs', ICV, M
                      call mfix_exit(myPE) 
                ENDIF 
-            END DO 
-         ENDIF 
-      END DO 
+            ENDDO  ! end loop over dimension_M
+         ENDIF     ! end if  IC_DEFINED branch
+      ENDDO        ! end loop over dimension_IC
 
 !//SP Send Receive
       call send_recv(icbc_flag,2)

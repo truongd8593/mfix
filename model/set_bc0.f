@@ -41,6 +41,7 @@
       USE compar     
       USE mpi_utility 
       USE physprop
+      USE constant
       USE bc
       USE fldvar
       USE indices
@@ -80,6 +81,9 @@
 ! 
 !                      Dummy variable for gas pressure 
       DOUBLE PRECISION PJ 
+! 
+!                      number densities for use in GHD theory only
+      DOUBLE PRECISION nM, nTOT
 ! 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -147,52 +151,54 @@
 
       CALL BCAST(PJ)
       CALL BCAST(IJK_P_G)
-!
-!  Set the boundary conditions.
-!
+
+
+
+! Set the boundary conditions.
+
       DO L = 1, DIMENSION_BC 
          IF (BC_DEFINED(L)) THEN 
             IF (BC_TYPE(L)=='FREE_SLIP_WALL' .OR. BC_TYPE(L)=='NO_SLIP_WALL'&
                 .OR. BC_TYPE(L)=='PAR_SLIP_WALL') THEN
-!
-!             Initialization of wall boundary conditions. These are not the
-!             real values in the wall cells, only iniitial guesses
+
+! Initialization of wall boundary conditions. These are not the
+! real values in the wall cells, only initial guesses
+
               DO K = BC_K_B(L), BC_K_T(L) 
                 DO J = BC_J_S(L), BC_J_N(L) 
-                  DO I = BC_I_W(L), BC_I_E(L) 	
-		    IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-                    IJK = BOUND_FUNIJK(I,J,K) 
-		     
-                    IF (WALL_AT(IJK)) THEN
-                      IF(BC_Tw_g(L) /= UNDEFINED)&
-			         T_g(IJK) = BC_Tw_g(L) 
-		      IF(MMAX > 0) & 
-                        WHERE(BC_Tw_s(L,:MMAX) /= UNDEFINED)&
-			         T_s(IJK,:MMAX) = BC_Tw_s(L,:MMAX) 
-		      IF(MMAX > 0) & 
-                        WHERE(BC_Thetaw_m(L,:MMAX) /= UNDEFINED)&
-			         Theta_m(IJK,:MMAX) = BC_Thetaw_m(L,:MMAX) 
-		      IF(NMAX(0) > 0) & 
-                        WHERE (BC_Xw_G(L,:NMAX(0)) /= UNDEFINED) X_G(IJK,:&
-                                 NMAX(0)) = BC_Xw_G(L,:NMAX(0))
-		      DO M = 1, MMAX 
-		        IF(NMAX(M) > 0) & 
-                          WHERE (BC_Xw_s(L, M, :NMAX(M)) /= UNDEFINED) X_s(IJK,M,:&
-                                 NMAX(M)) = BC_Xw_s(L, M, :NMAX(M))
-		      ENDDO
-		      IF(NScalar > 0) & 
-                        WHERE (BC_ScalarW(L,:NScalar) /= UNDEFINED)&
-			         Scalar(IJK,:NScalar) = BC_ScalarW(L,:NScalar) 
-		    END IF
-		    
-		  END DO
-		END DO
-	      END DO
+                  DO I = BC_I_W(L), BC_I_E(L) 
+              IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                  IJK = BOUND_FUNIJK(I,J,K) 
+     
+              IF (WALL_AT(IJK)) THEN
+                  IF(BC_Tw_g(L) /= UNDEFINED)&
+                    T_g(IJK) = BC_Tw_g(L) 
+                  IF(MMAX > 0) & 
+                    WHERE(BC_Tw_s(L,:MMAX) /= UNDEFINED)&
+                      T_s(IJK,:MMAX) = BC_Tw_s(L,:MMAX) 
+                  IF(MMAX > 0) & 
+                    WHERE(BC_Thetaw_m(L,:MMAX) /= UNDEFINED)&
+                      Theta_m(IJK,:MMAX) = BC_Thetaw_m(L,:MMAX) 
+                  IF(NMAX(0) > 0) & 
+                    WHERE (BC_Xw_G(L,:NMAX(0)) /= UNDEFINED) X_G(IJK,:&
+                      NMAX(0)) = BC_Xw_G(L,:NMAX(0))
+                  DO M = 1, MMAX 
+                    IF(NMAX(M) > 0) & 
+                      WHERE (BC_Xw_s(L, M, :NMAX(M)) /= UNDEFINED) X_s(IJK,M,:&
+                       NMAX(M)) = BC_Xw_s(L, M, :NMAX(M))
+                  ENDDO
+                  IF(NScalar > 0) & 
+                    WHERE (BC_ScalarW(L,:NScalar) /= UNDEFINED)&
+                      Scalar(IJK,:NScalar) = BC_ScalarW(L,:NScalar) 
+                  ENDIF
+                  ENDDO
+                ENDDO
+              ENDDO
               
-	    ELSE  
-!
-!             Initialization for time dependent mass inflow
-!
+              ELSE  ! if (not FSW, NSW or PSW)
+
+! Initialization for time dependent mass inflow
+
               BC_JET_G(L) = UNDEFINED 
               IF (BC_DT_0(L) /= UNDEFINED) THEN 
                 BC_TIME(L) = TIME + BC_DT_0(L) 
@@ -225,143 +231,211 @@
               ELSE 
                 BC_TIME(L) = UNDEFINED 
               ENDIF 
-!
-!             set the field variables with bc variables
-!
+
+! set the field variables with bc variables
+
               DO K = BC_K_B(L), BC_K_T(L) 
                 DO J = BC_J_S(L), BC_J_N(L) 
-                  DO I = BC_I_W(L), BC_I_E(L) 	
-		    IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-                     IJK = BOUND_FUNIJK(I,J,K) 
-		     
-                     IF (.NOT.WALL_AT(IJK)) THEN 
-!
-                        IF (P_OUTFLOW_AT(IJK) .OR. OUTFLOW_AT(IJK)) THEN 
-                           P_STAR(IJK) = ZERO 
-                           P_G(IJK) = SCALE(BC_P_G(L)) 
-!
-                           IF (BC_EP_G(L) /= UNDEFINED) EP_G(IJK) = BC_EP_G(L) 
-                           IF (BC_T_G(L) /= UNDEFINED) then
-			     T_G(IJK) = BC_T_G(L) 
-			   else
-			     T_g(IJK) = TMIN
-			   endif
-                           N = 1 
-                           IF (NMAX(0) > 0) THEN 
-                              WHERE (BC_X_G(L,:NMAX(0)) /= UNDEFINED) X_G(IJK,:&
-                                 NMAX(0)) = BC_X_G(L,:NMAX(0)) 
-                              N = NMAX(0) + 1 
-                           ENDIF 
-			   
-                           IF (NScalar > 0) THEN 
-                              WHERE (BC_Scalar(L,:NScalar) /= UNDEFINED)&
-			         Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
-                           ENDIF  
-			   
-                           IF (K_Epsilon) THEN 
-                              IF (BC_K_Turb_G(L) /= UNDEFINED)&
-			         K_Turb_G(IJK) = BC_K_Turb_G(L) 
-                              
-			      IF (BC_E_Turb_G(L) /= UNDEFINED)&
-			         E_Turb_G(IJK) = BC_E_Turb_G(L)
-                           ENDIF
-			   
-                           DO M = 1, MMAX 
-                              IF (BC_ROP_S(L,M) /= UNDEFINED) ROP_S(IJK,M) = &
-                                 BC_ROP_S(L,M) 
-                              IF(BC_T_S(L,M)/=UNDEFINED)T_S(IJK,M)=BC_T_S(L,M) 
-                              IF (BC_THETA_M(L,M) /= UNDEFINED) THETA_M(IJK,M)&
-                                  = BC_THETA_M(L,M) 
-                              N = 1 
-                              IF (NMAX(M) > 0) THEN 
-                                 WHERE (BC_X_S(L,M,:NMAX(M)) /= UNDEFINED) X_S(&
-                                    IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M)) 
-                                 N = NMAX(M) + 1 
-                              ENDIF 
-                           END DO 
-                        ELSE 
-!
-                           P_STAR(IJK) = ZERO 
-!
-                           EP_G(IJK) = BC_EP_G(L) 
-                           P_G(IJK) = SCALE(BC_P_G(L)) 
-                           T_G(IJK) = BC_T_G(L) 
- 
-                           IF (NMAX(0) > 0) THEN 
-                              X_G(IJK,:NMAX(0)) = BC_X_G(L,:NMAX(0)) 
-                           ENDIF 
-			   
-                           IF (NScalar > 0) THEN 
-                              Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
-                           ENDIF  
-			   
-                           IF (K_Epsilon) THEN 
-                              K_Turb_G(IJK) = BC_K_Turb_G(L) 
-                              E_Turb_G(IJK) = BC_E_Turb_G(L)
-                           ENDIF
-			   
-                           DO M = 1, MMAX 
-                              ROP_S(IJK,M) = BC_ROP_S(L,M) 
-                              T_S(IJK,M) = BC_T_S(L,M) 
-                              THETA_M(IJK,M) = BC_THETA_M(L,M) 
- 
-                              IF (NMAX(M) > 0) THEN 
-                                 X_S(IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M)) 
-                              ENDIF 
-			      
-                           END DO 
-                           IJK1 = IJK 
-                           IJK2 = IJK 
-                           IJK3 = IJK 
-                           SELECT CASE (TRIM(BC_PLANE(L)))  
-                           CASE ('W')  
+                  DO I = BC_I_W(L), BC_I_E(L)
+              IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                  IJK = BOUND_FUNIJK(I,J,K) 
+
+              IF (.NOT.WALL_AT(IJK)) THEN 
+
+                IF (P_OUTFLOW_AT(IJK) .OR. OUTFLOW_AT(IJK)) THEN 
+
+                  P_STAR(IJK) = ZERO 
+                  P_G(IJK) = SCALE(BC_P_G(L)) 
+                  IF (BC_EP_G(L) /= UNDEFINED) EP_G(IJK) = BC_EP_G(L) 
+                  IF (BC_T_G(L) /= UNDEFINED) then
+                    T_G(IJK) = BC_T_G(L) 
+                  else
+                    T_g(IJK) = TMIN
+                  endif
+
+                  N = 1 
+                  IF (NMAX(0) > 0) THEN 
+                    WHERE (BC_X_G(L,:NMAX(0)) /= UNDEFINED) X_G(IJK,:&
+                      NMAX(0)) = BC_X_G(L,:NMAX(0)) 
+                    N = NMAX(0) + 1 
+                  ENDIF 
+   
+                  IF (NScalar > 0) THEN 
+                    WHERE (BC_Scalar(L,:NScalar) /= UNDEFINED)&
+                      Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
+                  ENDIF  
+   
+                  IF (K_Epsilon) THEN 
+                    IF (BC_K_Turb_G(L) /= UNDEFINED)&
+                      K_Turb_G(IJK) = BC_K_Turb_G(L) 
+                             
+                    IF (BC_E_Turb_G(L) /= UNDEFINED)&
+                      E_Turb_G(IJK) = BC_E_Turb_G(L)
+                  ENDIF
+   
+                  DO M = 1, MMAX 
+                    IF (BC_ROP_S(L,M) /= UNDEFINED) ROP_S(IJK,M) = &
+                      BC_ROP_S(L,M) 
+                    IF(BC_T_S(L,M)/=UNDEFINED)T_S(IJK,M)=BC_T_S(L,M) 
+                    IF (BC_THETA_M(L,M) /= UNDEFINED) THETA_M(IJK,M)&
+                      = BC_THETA_M(L,M) 
+
+                    N = 1 
+                    IF (NMAX(M) > 0) THEN 
+                      WHERE (BC_X_S(L,M,:NMAX(M)) /= UNDEFINED) X_S(&
+                        IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M)) 
+                      N = NMAX(M) + 1 
+                    ENDIF 
+                  ENDDO 
+
+! for GHD theory to compute mixture BC of velocity and density
+                  IF(TRIM(KT_TYPE) == 'GHD') THEN
+                    ROP_S(IJK,MMAX) = ZERO
+                    nTOT = ZERO
+                    THETA_M(IJK,MMAX) = ZERO
+                    DO M = 1, SMAX 
+                      IF (BC_ROP_S(L,M) /= UNDEFINED) THEN
+                        ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + BC_ROP_S(L,M) 
+                        nM = BC_ROP_S(L,M)*6d0/(PI*D_p(IJK,M)**3*RO_S(M))
+                        nTOT = nTOT + nM
+                        IF (BC_THETA_M(L,M) /= UNDEFINED) THETA_M(IJK,MMAX) = &
+                          THETA_M(IJK,MMAX) + nM*BC_THETA_M(L,M) 
+                      ENDIF
+                    ENDDO 
+                    IF(ROP_S(IJK,MMAX) > ZERO) THETA_M(IJK,MMAX) = THETA_M(IJK,MMAX) / nTOT
+                  ENDIF
+! end of modifications for GHD theory
+
+                ELSE  ! if (not wall_at) and (not P_outflow_at or outflow_at)
+                      ! branch. i.e. for p_inflow, mass_inflow or mass_outflow 
+
+                  P_STAR(IJK) = ZERO 
+                  EP_G(IJK) = BC_EP_G(L) 
+                  P_G(IJK) = SCALE(BC_P_G(L)) 
+                  T_G(IJK) = BC_T_G(L) 
+
+                  IF (NMAX(0) > 0) THEN 
+                    X_G(IJK,:NMAX(0)) = BC_X_G(L,:NMAX(0)) 
+                  ENDIF 
+   
+                  IF (NScalar > 0) THEN 
+                    Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
+                  ENDIF  
+   
+                  IF (K_Epsilon) THEN 
+                    K_Turb_G(IJK) = BC_K_Turb_G(L) 
+                    E_Turb_G(IJK) = BC_E_Turb_G(L)
+                  ENDIF
+   
+                  DO M = 1, MMAX 
+                    ROP_S(IJK,M) = BC_ROP_S(L,M) 
+                    T_S(IJK,M) = BC_T_S(L,M) 
+                    THETA_M(IJK,M) = BC_THETA_M(L,M) 
+
+                    IF (NMAX(M) > 0) THEN 
+                      X_S(IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M)) 
+                    ENDIF 
+                  ENDDO 
+
+                  IJK1 = IJK 
+                  IJK2 = IJK 
+                  IJK3 = IJK 
+                  SELECT CASE (TRIM(BC_PLANE(L)))  
+                    CASE ('W')  
 !// Changed to make consistent approach
-                              IJK1 = BOUND_FUNIJK(IM1(I),J,K) 
-                           CASE ('S')  
+                      IJK1 = BOUND_FUNIJK(IM1(I),J,K) 
+                    CASE ('S')  
 !// Changed to make consistent approach
-                              IJK2 = BOUND_FUNIJK(I,JM1(J),K) 
-                           CASE ('B')  
+                      IJK2 = BOUND_FUNIJK(I,JM1(J),K) 
+                    CASE ('B')  
 !// Changed to make consistent approach
-                              IJK3 = BOUND_FUNIJK(I,J,KM1(K)) 
-                           END SELECT 
-!
-!             When the boundary plane is W, S, or B the velocity components
-!             need to be set for both sides of the boundary cell.
-                           U_G(IJK) = BC_U_G(L) 
-                           V_G(IJK) = BC_V_G(L) 
-                           W_G(IJK) = BC_W_G(L) 
-                           U_G(IJK1) = BC_U_G(L) 
-                           V_G(IJK2) = BC_V_G(L) 
-                           W_G(IJK3) = BC_W_G(L) 
-!
-                           M = 1 
-                           IF (MMAX > 0) THEN 
-                              U_S(IJK,:MMAX) = BC_U_S(L,:MMAX) 
-                              V_S(IJK,:MMAX) = BC_V_S(L,:MMAX) 
-                              W_S(IJK,:MMAX) = BC_W_S(L,:MMAX) 
-                              U_S(IJK1,:MMAX) = BC_U_S(L,:MMAX) 
-                              V_S(IJK2,:MMAX) = BC_V_S(L,:MMAX) 
-                              W_S(IJK3,:MMAX) = BC_W_S(L,:MMAX) 
-                              M = MMAX + 1 
-                           ENDIF 
-!                                                ! 'MASS_OUTFLOW'
-                           IF (.NOT.MASS_OUTFLOW_AT(IJK)) THEN 
-!
-                              IF (MW_AVG == UNDEFINED) MW_MIX_G(IJK) = CALC_MW(&
-                                 X_G,DIMENSION_3,IJK,NMAX(0),MW_G) 
-                              IF (RO_G0 == UNDEFINED) RO_G(IJK) = EOSG(MW_MIX_G&
-                                 (IJK),P_G(IJK),T_G(IJK)) 
-                              ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
-                           ENDIF 
-                        ENDIF 
-                     ENDIF 
-		     
-                   END DO 
-                 END DO 
-              END DO 
-            ENDIF 
-         ENDIF 
-      END DO 
+                      IJK3 = BOUND_FUNIJK(I,J,KM1(K)) 
+                  END SELECT 
+
+! When the boundary plane is W, S, or B the velocity components
+! need to be set for both sides of the boundary cell.
+                  U_G(IJK) = BC_U_G(L) 
+                  V_G(IJK) = BC_V_G(L) 
+                  W_G(IJK) = BC_W_G(L) 
+                  U_G(IJK1) = BC_U_G(L) 
+                  V_G(IJK2) = BC_V_G(L) 
+                  W_G(IJK3) = BC_W_G(L) 
+
+                  M = 1 
+                  IF (MMAX > 0) THEN 
+                    U_S(IJK,:MMAX) = BC_U_S(L,:MMAX) 
+                    V_S(IJK,:MMAX) = BC_V_S(L,:MMAX) 
+                    W_S(IJK,:MMAX) = BC_W_S(L,:MMAX) 
+                    U_S(IJK1,:MMAX) = BC_U_S(L,:MMAX) 
+                    V_S(IJK2,:MMAX) = BC_V_S(L,:MMAX) 
+                    W_S(IJK3,:MMAX) = BC_W_S(L,:MMAX) 
+                    M = MMAX + 1 
+                  ENDIF 
+
+! for GHD theory to compute mixture BC of velocity and density
+                  IF(TRIM(KT_TYPE) == 'GHD') THEN
+                    ROP_S(IJK,MMAX) = ZERO
+                    nTOT = ZERO 
+                    THETA_M(IJK,MMAX) = ZERO 
+                    U_S(IJK,MMAX) =  ZERO 
+                    V_S(IJK,MMAX) =  ZERO 
+                    W_S(IJK,MMAX) =  ZERO 
+                    U_S(IJK1,MMAX) =  ZERO 
+                    V_S(IJK2,MMAX) =  ZERO 
+                    W_S(IJK3,MMAX) =  ZERO 
+                    DO M = 1, SMAX 
+                      ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + BC_ROP_S(L,M) 
+                      nM = BC_ROP_S(L,M)*6d0/(PI*D_p(IJK,M)**3*RO_S(M))
+                      nTOT = nTOT + nM
+                      THETA_M(IJK,MMAX) = THETA_M(IJK,MMAX) + nM*BC_THETA_M(L,M) 
+                      U_S(IJK,MMAX) = U_S(IJK,MMAX) + BC_ROP_S(L,M)*BC_U_S(L,M) 
+                      V_S(IJK,MMAX) = V_S(IJK,MMAX) + BC_ROP_S(L,M)*BC_V_S(L,M) 
+                      W_S(IJK,MMAX) = W_S(IJK,MMAX) + BC_ROP_S(L,M)*BC_W_S(L,M) 
+                      SELECT CASE (TRIM(BC_PLANE(L)))    
+                      CASE ('W')  
+                        U_S(IJK1,MMAX) = U_S(IJK1,MMAX) + BC_ROP_S(L,M)*BC_U_S(L,M)     
+                      CASE ('S')  
+                        V_S(IJK2,MMAX) = V_S(IJK2,MMAX) + BC_ROP_S(L,M)*BC_V_S(L,M)     
+                      CASE ('B')  
+                        W_S(IJK3,MMAX) = W_S(IJK3,MMAX) + BC_ROP_S(L,M)*BC_W_S(L,M) 
+                      END SELECT 
+                    ENDDO 
+                    IF(ROP_S(IJK,MMAX) > ZERO) THEN
+                      THETA_M(IJK,MMAX) = THETA_M(IJK,MMAX) / nTOT 
+                      U_S(IJK,MMAX) = U_S(IJK,MMAX) / ROP_S(IJK,MMAX)
+                      V_S(IJK,MMAX) = V_S(IJK,MMAX) / ROP_S(IJK,MMAX)
+                      W_S(IJK,MMAX) = W_S(IJK,MMAX) / ROP_S(IJK,MMAX) 
+                      SELECT CASE (TRIM(BC_PLANE(L)))   
+                        CASE ('W')   
+                          U_S(IJK1,MMAX) = U_S(IJK1,MMAX) / ROP_S(IJK,MMAX)   
+                        CASE ('S')   
+                          V_S(IJK2,MMAX) = V_S(IJK2,MMAX) / ROP_S(IJK,MMAX)  
+                        CASE ('B')   
+                          W_S(IJK3,MMAX) = W_S(IJK3,MMAX) / ROP_S(IJK,MMAX) 
+                      END SELECT 
+                    ENDIF
+                  ENDIF
+! end of modifications for GHD theory
+
+
+! 'MASS_OUTFLOW'
+                  IF (.NOT.MASS_OUTFLOW_AT(IJK)) THEN 
+                    IF (MW_AVG == UNDEFINED) MW_MIX_G(IJK) = CALC_MW(&
+                      X_G,DIMENSION_3,IJK,NMAX(0),MW_G) 
+                    IF (RO_G0 == UNDEFINED) RO_G(IJK) = EOSG(MW_MIX_G&
+                      (IJK),P_G(IJK),T_G(IJK)) 
+                    ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
+                  ENDIF 
+
+                ENDIF     ! end if (P_outflow_at or outflow_at)
+              ENDIF       ! end if (not wall_at)
+     
+                  ENDDO   ! do i
+                ENDDO     ! do j
+              ENDDO       ! do k
+            ENDIF         ! if (FSW, NSW or PSW)
+         ENDIF            ! if (bc_defined)
+      ENDDO               ! do dimension_bc
 
 !FIX AEOLUS Sofiane's bug fix to make T_g nonzero in k=0,1 ghost layers when k-decomposition employed
       call send_recv(T_G,2)
