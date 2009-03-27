@@ -134,8 +134,11 @@
       ALLOCATE(BED_HEIGHT(MMAX))
       
       ALLOCATE(AVE_VEL_X(DIMENSION_3,MMAX), AVE_VEL_Y(DIMENSION_3,MMAX), AVE_VEL_Z(DIMENSION_3,MMAX))
-      
-      IF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
+
+! dbg
+! doesn't matter if not used PIC still needs to be allocated 
+! or problems arise in other routines while running 
+!      IF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
          ALLOCATE(PIC(IMAX2,JMAX2,KMAX2))
          
          DO  k  = 1,KMAX2       !MAX(KMAX1-1,1)
@@ -145,7 +148,7 @@
                ENDDO
             ENDDO
          ENDDO
-      ENDIF
+!      ENDIF
       
       
       Allocate(  DES_RADIUS (NPARTICLES) )
