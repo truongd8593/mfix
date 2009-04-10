@@ -49,9 +49,9 @@
       LOGICAL :: focus
 !INTEGER, INTENT(IN) , OPTIONAL :: ERROR_INDEX
       
-      INTEGER IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IPJPK, IPJKP, IJPKP&
-      &, IPJPKP, IJK_EAST, IJK_NORTH, IJK_TOP
-      INTEGER L, LL, I, J, K, KK, M, MM, IJK, IER, IJKFOCUS, FOCUS_PARTICLE2
+      INTEGER IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IPJPK, IPJKP, IJPKP, &
+              IPJPKP, IJK_EAST, IJK_NORTH, IJK_TOP
+      INTEGER L, LL, I, J, K, M, IJK, IER, IJKFOCUS, FOCUS_PARTICLE2
 
       DOUBLE PRECISION P_FORCE(DIMENSION_3,DIMN), D_FORCE(DIMN)
 
@@ -61,11 +61,11 @@
       DOUBLE PRECISION OEPS, OVOL, F_pf(DIMN), drag_bm_tmp(DIMN)
 
       INTEGER, DIMENSION(3):: PCELL
-      INTEGER:: ONEW,PART_IJK
-      INTEGER:: IB, IE, JB, JE, KB, KE, II,JJ
+      INTEGER :: ONEW,PART_IJK
+      INTEGER :: IB, IE, JB, JE, KB, KE, II, JJ, KK
       DOUBLE PRECISION, DIMENSION(3) :: DRAG_P 
-      DOUBLE PRECISION:: EPS_P, VCELL
-      INTEGER:: NP
+      DOUBLE PRECISION :: EPS_P, VCELL
+      INTEGER :: NP
       
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
@@ -82,365 +82,350 @@
 !   IF(CALLFROMDES) PRINT*,'UG = ', U_G(IJK), U_G(IJK_EAST), (U_G(IJK)+U_G(IJK_EAST))/2.d0
 !ENDDO
 
-      IF(.NOT.CALC_FC) GOTO 500 
-      DO IJK = IJKSTART3, IJKEND3
-         
-         I = I_OF(IJK)
-         J = J_OF(IJK)
-         K = K_OF(IJK)
-         IMJK = IM_OF(IJK)
-         IPJK = IP_OF(IJK)
-         IJMK = JM_OF(IJK)
-         IJPK = JP_OF(IJK)
-         IJKM = KM_OF(IJK)
-         IJKP = KP_OF(IJK)
-         IF(PINC(IJK).GT.0) THEN
-            UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
-            VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
-            DO M = 1, MMAX
-               IF(EP_S(IJK,M).GT.ZERO) THEN
-                  SOLID_DRAG(IJK,M,1) = -F_GS(IJK,M)*&
-                  (DES_U_S(IJK,M)-UGC)
-                  SOLID_DRAG(IJK,M,2) = -F_GS(IJK,M)*&
-                  (DES_V_S(IJK,M)-VGC)
-                  IF(DIMN.EQ.3) THEN
-                     WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
-                     SOLID_DRAG(IJK,M,3) = -F_GS(IJK,M)*&
-                     (DES_W_S(IJK,M)-WGC)
-                  END IF
-                  OEPS = ONE/EP_S(IJK,M)
-                  SOLID_DRAG(IJK,M,:) = SOLID_DRAG(IJK,M,:)*OEPS
-               END IF
-            END DO
-            
-            IF(I.EQ.IMIN1) THEN
-               TEMP2 = (P_G(IJK)+P_G(IPJK))/2
-               TEMP1 = (P_G(IJK)*DX(I) - TEMP2*DX(I)/2)/(DX(I)/2)
-               P_FORCE(IJK,1) = (TEMP1-TEMP2)*DY(J)*DZ(K )
-            ELSE IF(I.EQ.IMAX1) THEN
-               TEMP2 = (P_G(IMJK)+P_G(IJK))/2
-               TEMP1 = (P_G(IJK)*DX(I) - TEMP2*DX(I)/2)/(DX(I)/2)
-               P_FORCE(IJK,1) = (TEMP2 - TEMP1)*DY(J)*DZ(K)
-            ELSE IF((I.GT.IMIN1).AND.(I.LT.IMAX1)) THEN
-               TEMP2 = (P_G(IJK)+P_G(IPJK))/2
-               TEMP1 = (P_G(IMJK)+P_G(IJK))/2
-               P_FORCE(IJK,1) = (TEMP1 - TEMP2)*DY(J)*DZ(K)
-            END IF
+      IF(CALC_FC) THEN 
+         DO IJK = IJKSTART3, IJKEND3
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+            IMJK = IM_OF(IJK)
+            IPJK = IP_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IJPK = JP_OF(IJK)
+            IJKM = KM_OF(IJK)
+            IJKP = KP_OF(IJK)
 
-            IF(J.EQ.JMIN1) THEN
-               TEMP2 = (P_G(IJK)+P_G(IJPK))/2
-               TEMP1 = (P_G(IJK)*DY(J) - TEMP2*DY(J)/2)/(DY(J)/2)
-               P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K)
-            ELSE IF(J.EQ.JMAX1) THEN
-               TEMP2 = (P_G(IJMK)+P_G(IJK))/2
-               TEMP1 = (P_G(IJK)*DY(J) - TEMP2*DY(J)/2)/(DY(J)/2)
-               P_FORCE(IJK,2) = (TEMP2 - TEMP1)*DX(I)*DZ(K)
-            ELSE IF((J.GT.JMIN1).AND.(J.LT.JMAX1)) THEN
-               TEMP2 = (P_G(IJK)+P_G(IJPK))/2
-               TEMP1 = (P_G(IJMK)+P_G(IJK))/2
-               P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K)
-            END IF
+            IF(PINC(IJK).GT.0) THEN
+               IF(I.EQ.IMIN1) THEN
+                  TEMP2 = (P_G(IJK)+P_G(IPJK))/2
+                  TEMP1 = (P_G(IJK)*DX(I) - TEMP2*DX(I)/2)/(DX(I)/2)
+                  P_FORCE(IJK,1) = (TEMP1-TEMP2)*DY(J)*DZ(K )
+               ELSEIF(I.EQ.IMAX1) THEN
+                  TEMP2 = (P_G(IMJK)+P_G(IJK))/2
+                  TEMP1 = (P_G(IJK)*DX(I) - TEMP2*DX(I)/2)/(DX(I)/2)
+                  P_FORCE(IJK,1) = (TEMP2 - TEMP1)*DY(J)*DZ(K)
+               ELSEIF((I.GT.IMIN1).AND.(I.LT.IMAX1)) THEN
+                  TEMP2 = (P_G(IJK)+P_G(IPJK))/2
+                  TEMP1 = (P_G(IMJK)+P_G(IJK))/2
+                  P_FORCE(IJK,1) = (TEMP1 - TEMP2)*DY(J)*DZ(K)
+               ENDIF
+               IF(J.EQ.JMIN1) THEN
+                  TEMP2 = (P_G(IJK)+P_G(IJPK))/2
+                  TEMP1 = (P_G(IJK)*DY(J) - TEMP2*DY(J)/2)/(DY(J)/2)
+                  P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K)
+               ELSEIF(J.EQ.JMAX1) THEN
+                  TEMP2 = (P_G(IJMK)+P_G(IJK))/2
+                  TEMP1 = (P_G(IJK)*DY(J) - TEMP2*DY(J)/2)/(DY(J)/2)
+                  P_FORCE(IJK,2) = (TEMP2 - TEMP1)*DX(I)*DZ(K)
+               ELSEIF((J.GT.JMIN1).AND.(J.LT.JMAX1)) THEN
+                  TEMP2 = (P_G(IJK)+P_G(IJPK))/2
+                  TEMP1 = (P_G(IJMK)+P_G(IJK))/2
+                  P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K)
+               ENDIF
+               IF(DIMN.EQ.3) THEN
+                  IF(K.EQ.KMIN1) THEN
+                     TEMP2 = (P_G(IJK)+P_G(IJKP))/2
+                     TEMP1 = (P_G(IJK)*DZ(K) - TEMP2*DZ(K)/2)/(DZ(K)/2)
+                     P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J)
+                  ELSEIF(K.EQ.KMAX1) THEN
+                     TEMP2 = (P_G(IJKM)+P_G(IJK))/2
+                     TEMP1 = (P_G(IJK)*DZ(K) - TEMP2*DZ(K)/2)/(DZ(K)/2)
+                     P_FORCE(IJK,3) = (TEMP2 - TEMP1)*DX(I)*DY(J)
+                  ELSEIF((K.GT.KMIN1).AND.(K.LT.KMAX1)) THEN
+                     TEMP2 = (P_G(IJK)+P_G(IJKP))/2
+                     TEMP1 = (P_G(IJKM)+P_G(IJK))/2
+                     P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J)
+                  ENDIF
+               ENDIF
 
-            IF(DIMN.EQ.3) THEN
-               IF(K.EQ.KMIN1) THEN
-                  TEMP2 = (P_G(IJK)+P_G(IJKP))/2
-                  TEMP1 = (P_G(IJK)*DZ(K) - TEMP2*DZ(K)/2)/(DZ(K)/2)
-                  P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J)
-               ELSE IF(K.EQ.KMAX1) THEN
-                  TEMP2 = (P_G(IJKM)+P_G(IJK))/2
-                  TEMP1 = (P_G(IJK)*DZ(K) - TEMP2*DZ(K)/2)/(DZ(K)/2)
-                  P_FORCE(IJK,3) = (TEMP2 - TEMP1)*DX(I)*DY(J)
-               ELSE IF((K.GT.KMIN1).AND.(K.LT.KMAX1)) THEN
-                  TEMP2 = (P_G(IJK)+P_G(IJKP))/2
-                  TEMP1 = (P_G(IJKM)+P_G(IJK))/2
-                  P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J)
-               END IF
-            END IF
-         END IF
-      END DO
+               IF (.NOT. DES_INTERP_ON) THEN
+                  UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
+                  VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
+                  DO M = 1, MMAX
+                     IF(EP_S(IJK,M).GT.ZERO) THEN
+                        SOLID_DRAG(IJK,M,1) = -F_GS(IJK,M)*&
+                        (DES_U_S(IJK,M)-UGC)
+                        SOLID_DRAG(IJK,M,2) = -F_GS(IJK,M)*&
+                        (DES_V_S(IJK,M)-VGC)
+                        IF(DIMN.EQ.3) THEN
+                           WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
+                           SOLID_DRAG(IJK,M,3) = -F_GS(IJK,M)*&
+                           (DES_W_S(IJK,M)-WGC)
+                        ENDIF
+                        OEPS = ONE/EP_S(IJK,M)
+                        SOLID_DRAG(IJK,M,:) = SOLID_DRAG(IJK,M,:)*OEPS
+                     ENDIF
+                  ENDDO
+               ENDIF
+            ENDIF      ! end IF(PINC(IJK).GT.0)
+         ENDDO         ! end do loop over ijk
+      ENDIF            ! end IF(CALC_FC)
 
- 500  CONTINUE
-      if(.not.DES_INTERP_ON) goto 200
 
-      IF(INTX_PER) THEN 
-         I = 1
-         DO J = 1, JMAX2
-            DO K = 1, KMAX2
-               IJK = funijk(I,J,K)
-               IJK_EAST = funijk(IMAX1, J, K)
-               TEMP_U_G(J,K) = U_G(IJK) 
-               U_G(IJK) = U_G(IJK_EAST)
-            end DO
+      IF(CALC_FC .AND. .NOT.DES_INTERP_ON) THEN
+         DO NP = 1, PARTICLES
+            IJK = PIJK(NP,4)
+            M = PIJK(NP,5)
+            OVOL = ONE/VOL(IJK)
+            FC(NP,:)=FC(NP,:)  + (SOLID_DRAG(IJK,M,:)*PVOL(NP)) 
+            FC(NP,:) = FC(NP,:) + (P_FORCE(IJK,:)*OVOL)*PVOL(NP) 
          ENDDO
       ENDIF
-      
-      IF(INTY_PER) THEN 
-         J = 1
-         DO I = 1, IMAX2
-            DO K = 1, KMAX2
-               IJK = funijk(I,J,K)
-               IJK_NORTH = funijk(I, JMAX1, K)
-               TEMP_V_G(I,K) = V_G(IJK) 
-               V_G(IJK) = V_G(IJK_NORTH)
+
+
+      IF(DES_INTERP_ON) THEN 
+
+         IF(INTX_PER) THEN 
+            I = 1
+            DO J = 1, JMAX2
+               DO K = 1, KMAX2
+                  IJK = funijk(I,J,K)
+                  IJK_EAST = funijk(IMAX1, J, K)
+                  TEMP_U_G(J,K) = U_G(IJK) 
+                  U_G(IJK) = U_G(IJK_EAST)
+               ENDDO
             ENDDO
-         ENDDO
-      ENDIF 
-
-      IF(INTZ_PER.AND.DIMN.EQ.3) THEN 
-         K = 1
-         DO J = 1, JMAX2
-            DO I = 1, IMAX2
-               IJK = funijk(I,J,K)
-               IJK_TOP = funijk(I, J, KMAX1)
-               TEMP_W_G(I,J) = W_G(IJK) 
-               W_G(IJK) = W_G(IJK_TOP)
-            ENDDO
-         ENDDO
-      ENDIF 
-
-      call set_interpolation_scheme(2)
-      AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
-      AVG_FACTOR2 = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)
-      
-      DRAG_AM = ZERO
-      DRAG_BM = ZERO
-      wtbar = zero
-      DO NP = 1, PARTICLES
-         FOCUS = .FALSE.
-! CALCUALTE THE DRAG FORCE ON EACH PARTICLE USING THE PARTICLE VELOCITY
-         I = PIJK(NP, 1)
-         J = PIJK(NP, 2)
-         K = PIJK(NP, 3)
-
-         IJK = PIJK(NP, 4)
-         M = PIJK(NP,5)
-         
-         PART_IJK = PINC(IJK)
-         
-         OVOL = ONE/VOL(IJK)
-         PCELL(1) = I-1
-         PCELL(2) = J-1
-         PCELL(3) = (3-DIMN)*1+(DIMN-2)*(K-1)
-
-         
-         CALL SET_INTERPOLATION_STENCIL(PCELL, IB, IE, JB, JE, KB,&
-         &KE, INTERP_SCHEME, DIMN, ORDERNEW = ONEW) 
-         IF(NP.EQ.FOCUS_PARTICLE2) THEN 
-            FOCUS = .TRUE.
-            PRINT*, 'CELL = ', PIJK(NP, 1)-1,PIJK(NP, 2)-1, PIJK(NP, 3)-1
-            PRINT*,' IB IE1  = ', IB,IE, JB, JE, KB, KE
          ENDIF
-         CALL INTERPOLATE_QUANTS( IB, IE, JB, JE, KB, KE, onew,&
-         & DES_POS_NEW(NP, 1:DIMN), VEL_FP(NP, 1:DIMN), FOCUS)
+         IF(INTY_PER) THEN 
+            J = 1
+            DO I = 1, IMAX2
+               DO K = 1, KMAX2
+                  IJK = funijk(I,J,K)
+                  IJK_NORTH = funijk(I, JMAX1, K)
+                  TEMP_V_G(I,K) = V_G(IJK) 
+                  V_G(IJK) = V_G(IJK_NORTH)
+               ENDDO
+            ENDDO
+         ENDIF 
+         IF(INTZ_PER.AND.DIMN.EQ.3) THEN 
+            K = 1
+            DO J = 1, JMAX2
+               DO I = 1, IMAX2
+                  IJK = funijk(I,J,K)
+                  IJK_TOP = funijk(I, J, KMAX1)
+                  TEMP_W_G(I,J) = W_G(IJK) 
+                  W_G(IJK) = W_G(IJK_TOP)
+               ENDDO
+            ENDDO
+         ENDIF 
+
+         CALL SET_INTERPOLATION_SCHEME(2)
+
+         AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
+         AVG_FACTOR2 = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)
+         DRAG_AM = ZERO
+         DRAG_BM = ZERO
+         wtbar = zero
+
+         DO NP = 1, PARTICLES
+            FOCUS = .FALSE.
+! CALCUALTE THE DRAG FORCE ON EACH PARTICLE USING THE PARTICLE VELOCITY
+            I = PIJK(NP, 1)
+            J = PIJK(NP, 2)
+            K = PIJK(NP, 3)
+            IJK = PIJK(NP, 4)
+
+            M = PIJK(NP,5)
+            PART_IJK = PINC(IJK)
          
+            OVOL = ONE/VOL(IJK)
+            PCELL(1) = I-1
+            PCELL(2) = J-1
+            PCELL(3) = (3-DIMN)*1+(DIMN-2)*(K-1)
+         
+            CALL SET_INTERPOLATION_STENCIL(PCELL, IB, IE, JB, JE, KB,&
+               &KE, INTERP_SCHEME, DIMN, ORDERNEW = ONEW) 
+
+            IF(NP.EQ.FOCUS_PARTICLE2) THEN 
+               FOCUS = .TRUE.
+               PRINT*, 'CELL = ', PIJK(NP, 1)-1,PIJK(NP, 2)-1, PIJK(NP, 3)-1
+               PRINT*,' IB IE1  = ', IB,IE, JB, JE, KB, KE
+            ENDIF
+
+            CALL INTERPOLATE_QUANTS( IB, IE, JB, JE, KB, KE, onew,&
+               & DES_POS_NEW(NP, 1:DIMN), VEL_FP(NP, 1:DIMN), FOCUS)
          
 !=========================================================
 !NOW CALCULATE THE PARTICLE CENTERED DRAG COEFFICIENT
 !=========================================================
-         CALL DES_DRAG_GS(NP, vel_fp(NP,1:DIMN),des_vel_new(np,1:dimn))
+            CALL DES_DRAG_GS(NP, vel_fp(NP,1:DIMN),des_vel_new(np,1:dimn))
          
-         IF(CALC_FC) then
-            OVOL = (ONE/VOL(PIJK(NP,4)))
-            
-            
-            D_FORCE(1:dimn) = (f_gp(np)*(vel_fp(np,1:dimn)-des_vel_new(np,1:dimn)))
-            
-!PRINT*, 'D_FORCE = ', D_FORCE(2), FC(NP,2), f_gp(np)
-            FC(NP,:) = FC(NP,:) + D_FORCE(:)
-            FC(NP,:) = FC(NP,:) +  (P_FORCE(PIJK(NP,4),:)*OVOL)*PVOL(NP)
-         ENDIF
+            IF(CALC_FC) THEN
+               OVOL = (ONE/VOL(PIJK(NP,4)))
+               D_FORCE(1:dimn) = (f_gp(np)*(vel_fp(np,1:dimn)-des_vel_new(np,1:dimn)))
+               !PRINT*, 'D_FORCE = ', D_FORCE(2), FC(NP,2), f_gp(np)
+               FC(NP,:) = FC(NP,:) + D_FORCE(:)
+               FC(NP,:) = FC(NP,:) +  (P_FORCE(PIJK(NP,4),:)*OVOL)*PVOL(NP)
+            ENDIF
          
-         IF(CALLFROMDES) GOTO 300 
-         
-         
-         DO k = 1, (3-dimn)*1+(dimn-2)*onew
-            DO j = 1, onew
-               DO i = 1, onew
-                  II = IB+I-1
-                  JJ = JB+J-1
-                  KK = KB+K-1
+            IF(.NOT.CALLFROMDES) THEN 
+               DO K = 1, (3-dimn)*1+(dimn-2)*onew
+                  DO J = 1, onew
+                     DO I = 1, onew
+                        II = IB+I-1
+                        JJ = JB+J-1
+                        KK = KB+K-1
                   
-                  IF(II.LT.1.and.intx_per) II = IMAX1+II-1
-                  IF(II.GT.IMAX1.and.intx_per) II = II-IMAX1+1
-                  IF(JJ.LT.1.and.inty_per) JJ = JMAX1+JJ-1
-                  IF(JJ.GT.JMAX1.and.inty_per) JJ = JJ-JMAX1+1
-                  IF(KK.LT.1.and.intz_per) KK = KMAX1+KK-1
-                  IF(KK.GT.KMAX1.and.intz_per) KK = KK-KMAX1+1
+                        IF(II.LT.1.and.intx_per) II = IMAX1+II-1
+                        IF(II.GT.IMAX1.and.intx_per) II = II-IMAX1+1
+                        IF(JJ.LT.1.and.inty_per) JJ = JMAX1+JJ-1
+                        IF(JJ.GT.JMAX1.and.inty_per) JJ = JJ-JMAX1+1
+                        IF(KK.LT.1.and.intz_per) KK = KMAX1+KK-1
+                        IF(KK.GT.KMAX1.and.intz_per) KK = KK-KMAX1+1
                   
-                  IJK = funijk(II,JJ,KK)
-                  VCELL = VOL(PIJK(NP,4))
+                        IJK = funijk(II,JJ,KK)
+                        VCELL = VOL(PIJK(NP,4))
                   
-                  IF(II.EQ.1.or.II.EQ.IMAX1) VCELL = 0.5d0*VCELL
-                  IF(JJ.EQ.1.or.JJ.EQ.JMAX1) VCELL = 0.5d0*VCELL
-                  IF(DIMN.EQ.3)THEN
-                     IF(KK.EQ.1.or.KK.EQ.KMAX1) VCELL = 0.5d0*VCELL
-                  ENDIF
+                        IF(II.EQ.1.or.II.EQ.IMAX1) VCELL = 0.5d0*VCELL
+                        IF(JJ.EQ.1.or.JJ.EQ.JMAX1) VCELL = 0.5d0*VCELL
+                        IF(DIMN.EQ.3)THEN
+                           IF(KK.EQ.1.or.KK.EQ.KMAX1) VCELL = 0.5d0*VCELL
+                        ENDIF
 
-                  OVOL = ONE/VCELL
+                        OVOL = ONE/VCELL
                   
-                  drag_am(ii,jj,kk,M) = drag_am(ii,jj,kk,M) + F_gp(np)  &
-                  & *(weightp(i,j,k))*OVOL
-! drag_am(ii,jj,kk,M) = zero
-!First remove the velocity component at this grid point from the vel_fp
-                  drag_bm_tmp(1:dimn) = VEL_FP(NP, 1:DIMN) - WEIGHTP(I,J,K)*VSTENCIL(I,J,K, 1:dimn)
+                        drag_am(ii,jj,kk,M) = drag_am(ii,jj,kk,M) + &
+                           F_gp(np)*(weightp(i,j,k))*OVOL
+                        !drag_am(ii,jj,kk,M) = zero
+
+! First remove the velocity component at this grid point from the vel_fp
+                        drag_bm_tmp(1:dimn) = VEL_FP(NP, 1:DIMN) -&
+                           WEIGHTP(I,J,K)*VSTENCIL(I,J,K, 1:dimn)
 ! Now find the remaning drag force
-                  drag_bm_tmp(1:dimn) = des_vel_new(np,1:dimn) !- DRAG_BM_TMP(1:DIMN)
+                        drag_bm_tmp(1:dimn) = des_vel_new(np,1:dimn) !- DRAG_BM_TMP(1:DIMN)
                   
-                  drag_bm(ii,jj,kk, 1:DIMN,M) = drag_bm(ii,jj,kk,1:DIMN,M) + &
-                  & F_gp(np)*(DRAG_BM_TMP(1:DIMN)) * weightp(i&
-                  &,j,k)*OVOL
+                        drag_bm(ii,jj,kk, 1:DIMN,M) = drag_bm(ii,jj,kk,1:DIMN,M) + &
+                           F_gp(np)*(DRAG_BM_TMP(1:DIMN)) * &
+                           weightp(i,j,k)*OVOL
+                        !drag_bm(ii,jj,kk, 1:DIMN,M) = zero 
+
+                        wtbar(ii,jj,kk,M) = wtbar(ii,jj,kk,M) +&
+                           weightp(i,j,k)*RO_S(M)*OVOL*PVOL(NP)
+
+                     ENDDO
+                  ENDDO
+               ENDDO
+            ENDIF          ! end if(.not.callfromdes)
+         ENDDO             ! end loop over NP = 1, PARTICLES
+
+
+         IF(.NOT.CALLFROMDES) THEN 
+            IF(INTX_PER) THEN
+               I = 1
+               DO K = 1, KMAX1
+                  DO J = 1, JMAX1
+                     DRAG_BM(i,j,k, 1,1:MMAX) =HALF*(DRAG_BM(I,J,K,1,1:MMAX) + &
+                        DRAG_BM(IMAX1,J,K,1,1:MMAX) )
+                     DRAG_BM(IMAX1,J,K,1,1:MMAX) = DRAG_BM(1, J, K, 1, 1:MMAX)
+
+                     WTBAR(I,J,K,:) = HALF*(WTBAR(I,J,K,:) + WTBAR(IMAX1, J, K, :))
+                     WTBAR(IMAX1,J,K,:) = WTBAR(1,J,K,:)
+
+                     DRAG_AM(I,J,K,:) = HALF*(DRAG_AM(I,J,K,:) + DRAG_AM(IMAX1, J, K, :))
+                     DRAG_AM(IMAX1, J,K,:) = DRAG_AM(1,J,K,:)
+                  ENDDO
+               ENDDO
+            ENDIF
+            IF(INTY_PER) THEN
+               J = 1
+               DO K = 1, KMAX1
+                  DO I = 1, IMAX1
+                     DRAG_BM(I,J,K,2,1:MMAX) = HALF*(DRAG_BM(I,J,K,2,1:MMAX)+&
+                        DRAG_BM(I,JMAX1,K,2,1:MMAX) )
+                     DRAG_BM(I, JMAX1, K,  2,1:MMAX) = DRAG_BM(I, 1, K,  2,1:MMAX)
+
+                     WTBAR(I,J,K,:) =HALF*( WTBAR(I,J,K,:) + WTBAR(I, JMAX1, K, :))
+                     WTBAR(I, JMAX1,K,:) = WTBAR(I,1,K,:)
+               
+                     DRAG_AM(I,J,K,:) =HALF*( DRAG_AM(I,J,K,:) + DRAG_AM(I, JMAX1, K, :))
+                     DRAG_AM(I, JMAX1,K,:) = DRAG_AM(I,1,K,:)
+                  ENDDO
+               ENDDO
+            ENDIF
+            IF(INTZ_PER.AND.DIMN.EQ.3) THEN
+               K = 1
+               DO J = 1, JMAX1
+                  DO I = 1, IMAX1
+                     DRAG_BM(I,J,K,3,1:MMAX) = HALF*(DRAG_BM(I,J,K,3,1:MMAX) + &
+                        DRAG_BM(I,J,KMAX1,3,1:MMAX) )
+                     DRAG_BM(I,J,KMAX1,3,1:MMAX) = DRAG_BM(I,J,1,3,1:MMAX)
+
+                     WTBAR(I,J,K,:) = HALF*(WTBAR(I,J,K,:) + WTBAR(I,J,KMAX1,:))
+                     WTBAR(I,J,KMAX1,:) = WTBAR(I,J,1,:)
+
+                     DRAG_AM(I,J,K,:) = HALF*(DRAG_AM(I,J,K,:) + DRAG_AM(I, J, KMAX1, :))
+                     DRAG_AM(I,J,KMAX1,:) = DRAG_AM(I,J,1,:)
+                  ENDDO
+               ENDDO
+            ENDIF
+
+            DO M = 1, MMAX
+               DO IJK = IJKSTART3, IJKEND3
+                  IF(FLUID_AT(IJK)) THEN
+                     I = I_of(ijk)
+                     J = J_of(ijk)
+                     K = K_of(ijk)
+               
+                     F_GS(IJK,M) = AVG_FACTOR2*(DRAG_AM(I,J,K,M) +&
+                        DRAG_AM(I,J-1,K,M) + DRAG_AM(I-1,J-1,K,M) +&
+                        DRAG_AM(I-1,J,K,M))
+               
+                     ROP_S(IJK,M) = AVG_FACTOR2*(WTBAR(I,J,K,M) +&
+                        WTBAR(I,J-1,K,M) + WTBAR(I-1,J-1,K,M) +&
+                        WTBAR(I-1,J,K,M))
+               
+                     IF(DIMN.EQ.3) THEN 
+                        F_GS(IJK,M) = F_GS(IJK,M) + AVG_FACTOR2*&
+                           (DRAG_AM(I,J,K-1,M) + DRAG_AM(I,J-1,K-1,M) +&
+                           DRAG_AM(I-1,J-1,K-1,M)+DRAG_AM(I-1,J,K-1,M) )
                   
-!drag_bm(ii,jj,kk, 1:DIMN,M) = zero 
-
-                  wtbar(ii,jj,kk,M) = wtbar(ii,jj,kk,M) + weightp(i,j,k)*RO_S(M)*OVOL*PVOL(NP)
-
-               enddo
-            enddo
-         enddo
-         
- 300     continue
-
-      end DO                    !NP = 1, PARTICLES
-      
-      IF(callfromdes) goto 400
-      IF(INTX_PER) THEN
-         I = 1
-         DO K = 1, KMAX1
-            DO J = 1, JMAX1
-               DRAG_BM(i,j,k, 1,1:MMAX) =HALF*( DRAG_BM(i,j,k, 1,1:MMAX) + DRAG_BM(IMAX1, J&
-               &,K,1, 1:MMAX))
-               DRAG_BM(IMAX1, j, k, 1, 1:MMAX) = DRAG_BM(1, J, K, 1, 1:MMAX)
-
-               WTBAR(I,J,K,:) = HALF*(WTBAR(I,J,K,:) + WTBAR(IMAX1, J, K, :))
-               WTBAR(IMAX1, J,K,:) = WTBAR(1,J,K,:)
-
-               DRAG_AM(I,J,K,:) = HALF*(DRAG_AM(I,J,K,:) + DRAG_AM(IMAX1, J, K, :))
-               DRAG_AM(IMAX1, J,K,:) = DRAG_AM(1,J,K,:)
-            end DO
-         ENDDO
-      ENDIF
-      
-      IF(INTY_PER) THEN
-         J = 1
-         DO K = 1, KMAX1
-            DO I = 1, IMAX1
-               
-
-               DRAG_BM(i,j,k, 2,1:MMAX) = HALF*(DRAG_BM(i,j,k,  2,1:MMAX) + DRAG_BM(I, JMAX1&
-               &,K, 2,1:MMAX))
-               DRAG_BM(I, JMAX1, K,  2,1:MMAX) = DRAG_BM(I, 1, K,  2,1:MMAX)
-               WTBAR(I,J,K,:) =HALF*( WTBAR(I,J,K,:) + WTBAR(I, JMAX1, K, :))
-               WTBAR(I, JMAX1,K,:) = WTBAR(I,1,K,:)
-               
-               DRAG_AM(I,J,K,:) =HALF*( DRAG_AM(I,J,K,:) + DRAG_AM(I, JMAX1, K, :))
-               DRAG_AM(I, JMAX1,K,:) = DRAG_AM(I,1,K,:)
-            end DO
-         ENDDO
-      ENDIF
-
-      IF(INTZ_PER.AND.DIMN.EQ.3) THEN
-         K = 1
-         DO J = 1, JMAX1
-            DO I = 1, IMAX1
-               DRAG_BM(i,j,k, 3,1:MMAX) = HALF*(DRAG_BM(i,j,k, 3,1:MMAX) + DRAG_BM(I, J&
-               &,KMAX1, 3,1:MMAX))
-               DRAG_BM(I, J, KMAX1,  3,1:MMAX) = DRAG_BM(I, J, 1,  3,1:MMAX)
-               WTBAR(I,J,K,:) = HALF*(WTBAR(I,J,K,:) + WTBAR(I, J, KMAX1, :))
-               WTBAR(I, J,KMAX1,:) = WTBAR(I,J,1,:)
-
-               DRAG_AM(I,J,K,:) = HALF*(DRAG_AM(I,J,K,:) + DRAG_AM(I, J, KMAX1, :))
-               DRAG_AM(I, J,KMAX1,:) = DRAG_AM(I,J,1,:)
-            end DO
-         ENDDO
-      ENDIF
-
-
-      DO M = 1, MMAX
-         DO IJK = IJKSTART3, IJKEND3
-            IF(FLUID_AT(IJK)) THEN
-               i = i_of(ijk)
-               j = j_of(ijk)
-               k = k_of(ijk)
-               
-               F_GS(IJK,M) = AVG_FACTOR2*(DRAG_AM(i,j,k,M) +&
-               & DRAG_AM(I,J-1,K,M) + DRAG_AM(I-1,J-1,K,M)&
-               &+DRAG_AM(I-1,J,K,M))
-               
-               ROP_S(IJK,M) = AVG_FACTOR2*(WTBAR(i,j,k,M) +&
-               & WTBAR(I,J-1,K,M) + WTBAR(I-1,J-1,K,M)&
-               &+WTBAR(I-1,J,K,M))
-
-               
-               if(dimn.eq.3) then 
-                  F_GS(IJK,M) = F_GS(IJK,M) + AVG_FACTOR2*(DRAG_AM(i&
-                  &,j,k-1,M) + DRAG_AM(I,J-1,K-1,M) + DRAG_AM(I-1,J&
-                  &-1,K-1,M)+DRAG_AM(I-1,J,K-1,M))
-                  
-                  ROP_S(IJK,M) = ROP_S(IJK,M) + AVG_FACTOR2*(WTBAR(i&
-                  &,j,k-1,M) + WTBAR(I,J-1,K-1,M) + WTBAR(I-1,J&
-                  &-1,K-1,M)+WTBAR(I-1,J,K-1,M))
-               end IF
-               
-               
-            end IF
+                        ROP_S(IJK,M) = ROP_S(IJK,M) + AVG_FACTOR2*&
+                           (WTBAR(I,J,K-1,M) + WTBAR(I,J-1,K-1,M) + &
+                           WTBAR(I-1,J-1,K-1,M)+WTBAR(I-1,J,K-1,M) )
+                     ENDIF
+                  ENDIF
 !     IF(J.EQ.JMAX/2) PRINT*, F_GS(IJK,M), EP_S(IJK,M),(18*MU_g0*EP_S(IJK,M))/((2.d0*DES_RADIUS(1))**2.d0)
-         end DO
-      end DO
- 400  continue        
+               ENDDO
+            ENDDO
+         ENDIF        ! end if(.not.callfromdes)
 
-      IF(INTX_PER) THEN 
-         I = 1
-         DO J = 1, JMAX2
+         IF(INTX_PER) THEN 
+            I = 1
+            DO J = 1, JMAX2
+               DO K = 1, KMAX2
+                  IJK = funijk(I,J,K)
+                  U_G(IJK) = TEMP_U_G(J, K)
+               ENDDO
+            ENDDO
+         ENDIF
+         IF(INTY_PER) THEN 
+            J = 1
             DO K = 1, KMAX2
-               IJK = funijk(I,J,K)
-               U_G(IJK) = TEMP_U_G(J, K)
-            end DO
-         ENDDO
-      ENDIF
-      
-      IF(INTY_PER) THEN 
-         J = 1
-         DO K = 1, KMAX2
-            DO I = 1, IMAX2
-               IJK = funijk(I,J,K)
-               V_G(IJK) = TEMP_V_G(I,K)
+               DO I = 1, IMAX2
+                  IJK = funijk(I,J,K)
+                  V_G(IJK) = TEMP_V_G(I,K)
+               ENDDO
             ENDDO
-         ENDDO
-      ENDIF 
+         ENDIF 
+         IF(INTZ_PER.AND.DIMN.EQ.3) THEN 
+            K = 1
+            DO J = 1, JMAX2
+               DO I = 1, IMAX2
+                  IJK = funijk(I,J,K)
+                  W_G(IJK) = TEMP_W_G(I,J)
+               ENDDO
+            ENDDO
+         ENDIF 
 
-      IF(INTZ_PER.AND.DIMN.EQ.3) THEN 
-         K = 1
-         DO J = 1, JMAX2
-            DO I = 1, IMAX2
-               IJK = funijk(I,J,K)
-               W_G(IJK) = TEMP_W_G(I,J)
-            ENDDO
-         ENDDO
-      ENDIF 
+      ENDIF        ! end if(des_interp_on)
 
       RETURN
-
- 200  continue
-      if(calc_fc) then
-         
-         DO KK = 1, PARTICLES
-            IJK = PIJK(KK,4)
-            K = PIJK(KK,3)
-            MM = PIJK(KK,5)
-            OVOL = ONE/VOL(IJK)
-            FC(KK,:)=FC(KK,:)  + (SOLID_DRAG(IJK,MM,:)*PVOL(KK)) 
-            FC(KK,:) = FC(KK,:) + (P_FORCE(IJK,:)*OVOL)*PVOL(KK) 
-            
-         END DO
-      end if
-
-      RETURN
-
       END SUBROUTINE DRAG_FGS
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
       SUBROUTINE INTERPOLATE_QUANTS( IB, IE, JB, JE, KB, KE, onew, POSP, fvel, focus)
-      
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       USE param
       USE param1
       USE parallel
@@ -563,7 +548,7 @@
 
       END SUBROUTINE INTERPOLATE_QUANTS
 
-!
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: DES_DRAG_GS (NP)                                       C
@@ -585,7 +570,6 @@
 !  Local variables: A, B, V_rm, Re                                     C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!     
 
       SUBROUTINE DES_DRAG_GS(KK, fvel, des_vel) 
 
