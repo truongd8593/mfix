@@ -43,12 +43,14 @@
       
       INTEGER L, KK, K, NSPLIT, CHECK
       INTEGER IJK, I, J, KKK 
-      DOUBLE PRECISION TEMPTIME, PASSTIME, D(DIMN), DIST,  V, rhat(dimn), rhat2, force_tmpy
-!     
+      DOUBLE PRECISION PASSTIME, D(DIMN), DIST, V, &
+                       NEIGHBOR_SEARCH_DIST, rhat(dimn), rhat2, &
+                       force_tmpy
+     
 !---------------------------------------------------------------------
 !     Calculate new values
 !---------------------------------------------------------------------
-!     
+     
       IF(L.EQ.1) THEN 
          DES_KE = ZERO
          DES_PE = ZERO 
@@ -56,7 +58,6 @@
       ENDIF
       CHECK = 0 
 
-      TEMPTIME = DTSOLID
       FC(L, :) = FC(L,:)/PMASS(L) + GRAV(:)
 
       DES_VEL_NEW(L,:) = FC(L,:)
@@ -76,15 +77,15 @@
          IF(DIST.GE.NEIGHBOR_SEARCH_DIST) DO_NSEARCH = .TRUE.
       END IF
 
-!     Chacking if the partcile moved more than a dia in a solid time step   
+! Checking if the partcile moved more than a dia in a solid time step   
       D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
       DIST = SQRT(DES_DOTPRDCT(D,D))
       IF(DIST.GE.DES_RADIUS(L)) THEN
          PRINT *,'MOVEMENT UNDESIRED: PARTICLE', L
          STOP
-      END IF
+      ENDIF
 
-!     Periodic treatment
+! Periodic treatment
       IF(DES_PERIODIC_WALLS) THEN
          IF(DES_PERIODIC_WALLS_X) THEN
             IF(DES_POS_NEW(L,1).GT.EX2) THEN
@@ -93,45 +94,43 @@
             ELSE IF(DES_POS_NEW(L,1).LT.WX1) THEN
                DES_POS_NEW(L,1) = DES_POS_NEW(L,1) + (EX2 - WX1)
                PIJK(L,1) = IMAX1
-            END IF
-         END IF
+            ENDIF
+         ENDIF
          IF(DES_PERIODIC_WALLS_Y) THEN
             IF(DES_POS_NEW(L,2).GT.TY2) THEN
                DES_POS_NEW(L,2) = DES_POS_NEW(L,2) - (TY2 - BY1)
                PIJK(L,2) = 2
-            ELSE IF(DES_POS_NEW(L,2).LT.BY1) THEN
+            ELSEIF(DES_POS_NEW(L,2).LT.BY1) THEN
                DES_POS_NEW(L,2) = DES_POS_NEW(L,2) + (TY2 - BY1)
                PIJK(L,2) = JMAX1
-            END IF
-         END IF
+            ENDIF
+         ENDIF
          IF(DES_PERIODIC_WALLS_Z) THEN
             IF(DES_POS_NEW(L,3).GT.NZ2) THEN
                DES_POS_NEW(L,3) = DES_POS_NEW(L,3) - (NZ2 - SZ1)
                PIJK(L,3) = 2
-            ELSE IF(DES_POS_NEW(L,3).LT.SZ1) THEN
+            ELSEIF(DES_POS_NEW(L,3).LT.SZ1) THEN
                DES_POS_NEW(L,3) = DES_POS_NEW(L,3) + (NZ2 - SZ1)
                PIJK(L,3) = KMAX1
-            END IF
-         END IF
-      END IF
+            ENDIF
+         ENDIF
+      ENDIF
 
-      IF(INLET_OUTLET) THEN
-         IF(DES_POS_NEW(L,1).GT.(EX2+DES_RADIUS(L))) THEN
-            DES_POS_NEW(L,1) = -1000
-         END IF
-      END IF
+!      IF(INLET_OUTLET) THEN
+!         IF(DES_POS_NEW(L,1).GT.(EX2+DES_RADIUS(L))) THEN
+!            DES_POS_NEW(L,1) = -1000
+!         ENDIF
+!      ENDIF
 
       V = ZERO 
       DO K = 1, DIMN
          V = V + DES_VEL_NEW(L,K)**2
-      END DO 
+      ENDDO 
       
       DES_VEL_AVG(:) =  DES_VEL_AVG(:) + DES_VEL_NEW(L,:)
 
       DES_KE = DES_KE + HALF*V*PMASS(L) 
       DES_PE = DES_PE + PMASS(L)*DES_POS_NEW(L,2)*SQRT(DES_DOTPRDCT(GRAV,GRAV))
-
-      DTSOLID = TEMPTIME
 
       FC(L,:) = ZERO
       TOW(L,:) = ZERO

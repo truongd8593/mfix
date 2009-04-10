@@ -52,9 +52,9 @@
 !===============end of interpolation related data set==============
 
 
-!     
+     
 !     DES Variables      
-!     
+     
       LOGICAL :: DEM_OUTPUT_DATA_TECPLOT !If true, then DEM output data is written in tecplot format
       LOGICAL :: GENER_PART_CONFIG
       LOGICAL :: DEBUG_DES
@@ -67,11 +67,11 @@
       DOUBLE PRECISION P_TIME, PTC
       INTEGER NFACTOR
       DOUBLE PRECISION AVG_RAD, RMS_RAD
-!     
+     
 !     Particle properties 
       INTEGER PARTICLES, NPC
       DOUBLE PRECISION PARTICLES_FACTOR 
-!     
+     
 !     Particle-particle and Particle-wall contact parameters
 !     Spring contants      
       DOUBLE PRECISION KN, KN_W ! Normal
@@ -82,95 +82,95 @@
 !     Tangential damping factors, eta_t = eta_t_factor * eta_N
       DOUBLE PRECISION DES_ETAT_FAC, DES_ETAT_W_FAC
 !     Damping coeffients in array form 
-      DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE :: DES_ETAN, DES_ETAT !(MMAX, MMAX)
-      
+      DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE :: DES_ETAN, DES_ETAT         !(MMAX, MMAX)
       DOUBLE PRECISION , DIMENSION(:), ALLOCATABLE :: DES_ETAN_WALL, DES_ETAT_WALL !(MMAX)
 !     Friction coeficients
       DOUBLE PRECISION MEW, MEW_W
-!coeff of restituion input in one D array, solid solid
-! Tangential rest. coef. are not used in the code and thus are removed (sof) DEC-04-2008
+!     coeff of restituion input in one D array, solid solid
+!     Tangential rest. coef. are not used in the code and thus are removed (sof) DEC-04-2008
       DOUBLE PRECISION DES_EN_INPUT(DIM_M+DIM_M*(DIM_M-1)/2) !DES_ET_INPUT(DIM_M+DIM_M*(DIM_M-1)/2)
 !     coeff of restituion input in one D array, solid wall 
       DOUBLE PRECISION  DES_EN_WALL_INPUT(DIM_M) !  DES_ET_WALL_INPUT(DIM_M)
-!actual coeff of rest.'s rearranged 
+!     actual coeff of rest.'s rearranged 
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::  REAL_EN
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  REAL_EN_WALL
-!     
+     
 !     Wall treatment      
       INTEGER WALLCONTACT
       DOUBLE PRECISION WX1, EX2, BY1, TY2, SZ1, NZ2
 !     Wall vibration parameters
       DOUBLE PRECISION  DES_GAMMA, DES_F
-!     
+     
 !     Neighbor search      
       INTEGER DES_NEIGHBOR_SEARCH, MN, NQUAD,  NEIGH_MAX
       INTEGER QLM, QLN, INIT_QUAD_COUNT, INQC
       DOUBLE PRECISION RADIUS_EQ, NEIGHBOR_SEARCH_N
-      DOUBLE PRECISION NEIGHBOR_SEARCH_RAD_RATIO, NEIGHBOR_SEARCH_DIST
+      DOUBLE PRECISION NEIGHBOR_SEARCH_RAD_RATIO
       DOUBLE PRECISION N2CT, NBSCT, QUADCT, OCTCT, MQUAD_FACTOR
-!     
+     
 !     Kinetic and Potential energy of the system
       DOUBLE PRECISION DES_KE, DES_PE
+
 !     Global Granular Energy
-      
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  GLOBAL_GRAN_ENERGY,GLOBAL_GRAN_TEMP
-!     
+     
 !     Output file count
       INTEGER IFI
       
 !     Constant input pressure gradient 
       DOUBLE PRECISION  pgrad(3)
 
-!Intial particle velocity distribution's mean and Standard Deviation
+!     Intial particle velocity distribution's mean and Standard Deviation
       DOUBLE PRECISION pvel_mean, PVEL_StDev
-!     
+     
 !     Restart
       DOUBLE PRECISION DESRESDT
 
-!     foctor for sum of radii in des_grid_based_neighbor_search
+!     factor for sum of radii in des_grid_based_neighbor_search
       DOUBLE PRECISION FACTOR_RLM
-!     
+     
       
 !     DES Logicals
-!     
+     
 !     WHETHER to calculate forces on drag and pressure forces on  particles (decided by Calc_fc)
-
-!     IF CALLFROMDES is TRUE, then mean fields are not computed in the call to drag_fgs; it is done to speed up the simulation.
+!     IF CALLFROMDES is TRUE, then mean fields are not computed in the call to drag_fgs-
+!     it is done to speed up the simulation.
       LOGICAL CALC_FC, CALLFROMDES
+
 !     DES - Continuum       
       LOGICAL DISCRETE_ELEMENT 
       LOGICAL DES_CONTINUUM_COUPLED,DES_CONTINUUM_COUPLED_F
-!     
+     
 !     Slide check
       LOGICAL PARTICLE_SLIDE
-!     
+     
 !     Neighbor search     
       LOGICAL DO_QUADTREE
       LOGICAL DO_OCTREE
       LOGICAL DO_NSQUARE
       LOGICAL DO_NSEARCH
       LOGICAL DO_GRID_BASED_SEARCH
-!
+
 !     Particle treatment at the walls  
       LOGICAL WALLFIXEDOVERLAP
       LOGICAL WALLDTSPLIT
       LOGICAL WALLREFLECT
-!     
+     
 !     Periodic Wall BC
       LOGICAL DES_PERIODIC_WALLS
       LOGICAL DES_PERIODIC_WALLS_X
       LOGICAL DES_PERIODIC_WALLS_Y
       LOGICAL DES_PERIODIC_WALLS_Z
-!     
+     
 !     Inlet Outlet BC 
       LOGICAL INLET_OUTLET
       LOGICAL INLET_OUTLET_X
       LOGICAL INLET_OUTLET_Y
       LOGICAL INLET_OUTLET_Z
-!     
+     
 !     Drag      
       LOGICAL TSUJI_DRAG
-!     
+     
 !     Print DES Data
       LOGICAL PRINT_DES_DATA 
       
@@ -178,10 +178,10 @@
       
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE::   AVE_VEL_X, AVE_VEL_Y,  AVE_VEL_Z
 
-!     
-!     
+     
+     
 !     Allocatable arrays
-!     
+     
 !     Particle attributes
 !     Radius, density, mass, moment of inertia      
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_RADIUS ! (PARTICLES)
@@ -189,7 +189,7 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PVOL !(PARTICLES)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PMASS ! (PARTICLES)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: OMOI ! (PARTICLES)
-!     
+     
 !     Old and new particle positions, velocities (translational and
 !     rotational)      
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_POS_OLD ! (PARTICLES,DIMN)
@@ -199,7 +199,7 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: OMEGA_OLD ! (PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: OMEGA_NEW ! (PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PPOS ! (PARTICLES,DIMN)
-!     
+     
 !     Total, normal and tangetial forces      
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC ! (PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FN ! (PARTICLES,DIMN)
@@ -209,21 +209,21 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FNS1 ! (DIMN)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FTS1 ! (DIMN)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GRAV ! (DIMN)
-!     
+     
 !     Torque      
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW ! (PARTICLES,DIMN)
-!     
+     
 !     Accumulated spring forces      
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN ! (PARTICLES,DIMN,MAXNEIGHBORS)
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT ! (PARTICLES,DIMN,MAXNEIGHBORS)
-!     
+     
 !     Wall position, velocity and normal vector
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_WALL_POS ! (NWALLS,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_WALL_VEL ! (NWALLS,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: WALL_NORMAL ! (NWALLS,DIMN)
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN ! (PARTICLES, MAXNEIGHBORS)
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PV ! (PARTICLES, MAXNEIGHBORS)
-!     
+     
 !     Periodic walls
       INTEGER, DIMENSION(:), ALLOCATABLE :: WWALL ! (PBP)
       INTEGER, DIMENSION(:), ALLOCATABLE :: EWALL ! (PBP)
@@ -231,12 +231,11 @@
       INTEGER, DIMENSION(:), ALLOCATABLE :: TWALL ! (PBP)
       INTEGER, DIMENSION(:), ALLOCATABLE :: SWALL ! (PBP)
       INTEGER, DIMENSION(:), ALLOCATABLE :: NWALL ! (PBP)
-!     
+     
 !     Particles in a computational cell (for volume fraction)
       INTEGER, DIMENSION(:), ALLOCATABLE :: PINC 
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PIJK ! (PARTCILES,5)=>I,J,K,IJK,M 
 
-!     
 !     Volume averaged solids volume in a cell      
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_U_s
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_V_s
@@ -244,30 +243,29 @@
 
 !     Averaged velocity obtained by avraging over all the particles
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_VEL_AVG
-!     
+     
 !     Drag exerted by the gas o solids
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: SOLID_DRAG
-!     
+     
 !     Neighbor search
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: NEIGHBOURS ! (PARTICLES, MAXNEIGHBORS)
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: LQUAD ! (MAXQUADS, NMQD)
       INTEGER, DIMENSION(:), ALLOCATABLE :: PQUAD ! (PARTICLES) 
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: CQUAD ! (NWALLS,MAXQUADS)
-!     
+     
 !     Neighbor distances
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PN_DIST ! (PARTICLES,MAXNEIGHBORS)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PN_RLM ! (PARTICLES,MAXNEIGHBORS)
-!     
+   
 !     Granular temperature
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_THETA ! (PARTICLES,MMAX)
-!     
+     
 !     Cell faces
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: XE ! (IMAX3)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: YN ! (JMAX3)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ZT ! (KMAX3)
 
-!     
-!     
+     
 !********************************************************************************
 !     
 !     COHESION      

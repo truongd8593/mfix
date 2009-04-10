@@ -6,7 +6,7 @@
 !! computation. For example, assigning DEM                           
 !! boundaries from the values entered for MFIX                        
 !! input in mfix.dat. Assigning DEM gravity vector                     
-!! from MFIX input. Calculating RADIUS_EQ.                          
+!! from MFIX input. 
 !! Calculating DTSOLID based on rotational and translational       
 !! constraints                                                    
 !<                                                               
@@ -36,7 +36,7 @@
       IMPLICIT NONE
       LOGICAL:: filexist, isopen
       
-      INTEGER L, IJK, M, I,J, K, COUNT_E
+      INTEGER L, IJK, M, I, J, K, COUNT_E
       DOUBLE PRECISION FOUR_BY_THREE, MINMASS, MASS_I, MASS_J, MASS_EFF
       DOUBLE PRECISION :: TCOLL, TCOLL_TMP, AVG_MASS, MAXMASS
      
@@ -70,8 +70,6 @@
       RMS_RAD = SQRT(RMS_RAD/PARTICLES)
       AVG_MASS = SUM(PMASS(1:PARTICLES))/PARTICLES
       AVG_RAD = SUM(DES_RADIUS(1:PARTICLES))/PARTICLES
-      RADIUS_EQ = DES_RADIUS(1)*1.05D0
-      NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO * RADIUS_EQ
       Print*,'MAX_RADIUS = ', MAX_RADIUS     
 
 
@@ -96,7 +94,7 @@
          NZ2 = ZLENGTH
       ENDIF
 !     IF((DIMN.EQ.2).AND.(COORDINATES == 'CARTESIAN')) THEN
-!     DZ(:) = 2D0*RADIUS_EQ
+!     DZ(:) = 2D0*DES_RADIUS(1)*1.05D0
 !     END IF
 
       GRAV(1) = BFX_s(1,1)
