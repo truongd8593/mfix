@@ -75,45 +75,39 @@
 !     Local index for solids phase l
       INTEGER          L
 !-----------------------------------------------
-!     
-!     
-!     
-!     
+    
 !     Function subroutines
-!     
-!     
+     
 !     Local variables
-!     
-!     
-!     
-      DO M = 1, MMAX 
-         IF(DISCRETE_ELEMENT) THEN 
-            IF(.NOT.DES_INTERP_ON) THEN 
-               IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN 
-                  CALL DRAG_GS (M, IER)
-               ENDIF
-            ENDIF
-         ELSE IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN 
-            CALL DRAG_GS (M, IER)
-         ENDIF
-         IF(.NOT.DISCRETE_ELEMENT) THEN 
+    
 
-               IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
-                    DO L = 1, MMAX
-                         IF (DRAGD(L,M)) CALL CALC_IA_NONEP_DRAG_SS (L,M,IER)
-                    ENDDO
-               ELSEIF (TRIM(KT_TYPE) /= 'GHD') THEN  ! do nothing for GHD theory
-                    DO L = 1, M - 1 
-                         IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER) 
-                    END DO 
-               ENDIF
-         END IF
-      END DO 
+      DO M = 1, MMAX 
+         IF(.NOT.DES_INTERP_ON) THEN 
+! des_interp_on is F if discrete_element is F
+            IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN 
+               CALL DRAG_GS (M, IER)
+            ENDIF
+         ENDIF
+
+         IF(.NOT.DISCRETE_ELEMENT) THEN 
+            IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+               DO L = 1, MMAX
+                  IF (DRAGD(L,M)) CALL CALC_IA_NONEP_DRAG_SS (L,M,IER)
+               ENDDO
+            ELSEIF (TRIM(KT_TYPE) /= 'GHD') THEN  ! do nothing for GHD theory
+               DO L = 1, M - 1 
+                  IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER) 
+               ENDDO 
+            ENDIF
+         ENDIF
+      ENDDO 
       
-      IF(DISCRETE_ELEMENT.AND.DES_INTERP_ON) THEN 
+      IF(DES_INTERP_ON) THEN 
+! des_interp_on can only be set to T if discrete_element is T
          CALC_FC = .FALSE. 
          CALLFROMDES = .FALSE.
          CALL DRAG_FGS
       ENDIF
+
       RETURN  
       END SUBROUTINE CALC_DRAG 
