@@ -24,8 +24,6 @@
 
 !     the coefficient add to gas momentum A matrix  at cell corners
       DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE ::drag_am 
-!     the coefficient add to gas momentum A matrix  at cell surface 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::dragam 
 !     the coefficient add to gas momentum B matrix  at cell corners
       DOUBLE PRECISION, DIMENSION(:,:,:,:,:), ALLOCATABLE ::drag_bm 
 
@@ -106,7 +104,7 @@
       INTEGER QLM, QLN, INIT_QUAD_COUNT, INQC
       DOUBLE PRECISION RADIUS_EQ, NEIGHBOR_SEARCH_N
       DOUBLE PRECISION NEIGHBOR_SEARCH_RAD_RATIO
-      DOUBLE PRECISION N2CT, NBSCT, QUADCT, OCTCT, MQUAD_FACTOR
+      DOUBLE PRECISION N2CT, QUADCT, OCTCT, MQUAD_FACTOR
      
 !     Kinetic and Potential energy of the system
       DOUBLE PRECISION DES_KE, DES_PE
@@ -139,7 +137,7 @@
 
 !     DES - Continuum       
       LOGICAL DISCRETE_ELEMENT 
-      LOGICAL DES_CONTINUUM_COUPLED,DES_CONTINUUM_COUPLED_F
+      LOGICAL DES_CONTINUUM_COUPLED
      
 !     Slide check
       LOGICAL PARTICLE_SLIDE
@@ -152,7 +150,6 @@
       LOGICAL DO_GRID_BASED_SEARCH
 
 !     Particle treatment at the walls  
-      LOGICAL WALLFIXEDOVERLAP
       LOGICAL WALLDTSPLIT
       LOGICAL WALLREFLECT
      
@@ -223,14 +220,6 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: WALL_NORMAL ! (NWALLS,DIMN)
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN ! (PARTICLES, MAXNEIGHBORS)
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PV ! (PARTICLES, MAXNEIGHBORS)
-     
-!     Periodic walls
-      INTEGER, DIMENSION(:), ALLOCATABLE :: WWALL ! (PBP)
-      INTEGER, DIMENSION(:), ALLOCATABLE :: EWALL ! (PBP)
-      INTEGER, DIMENSION(:), ALLOCATABLE :: BWALL ! (PBP)
-      INTEGER, DIMENSION(:), ALLOCATABLE :: TWALL ! (PBP)
-      INTEGER, DIMENSION(:), ALLOCATABLE :: SWALL ! (PBP)
-      INTEGER, DIMENSION(:), ALLOCATABLE :: NWALL ! (PBP)
      
 !     Particles in a computational cell (for volume fraction)
       INTEGER, DIMENSION(:), ALLOCATABLE :: PINC 

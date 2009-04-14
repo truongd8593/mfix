@@ -194,14 +194,6 @@
       Allocate(  PN (NPARTICLES, MAXNEIGHBORS) )
       Allocate(  PV (NPARTICLES, MAXNEIGHBORS) )
      
-! Periodic walls
-      Allocate(  WWALL (PBP) )
-      Allocate(  EWALL (PBP) )
-      Allocate(  BWALL (PBP) )
-      Allocate(  TWALL (PBP) )
-      Allocate(  SWALL (PBP) )
-      Allocate(  NWALL (PBP) )
-     
 ! Particles in a computational cell (for volume fraction) )
       Allocate(  PINC (DIMENSION_3) )
       Allocate(  PIJK (PARTICLES,5) )

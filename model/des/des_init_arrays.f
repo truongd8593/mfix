@@ -87,12 +87,5 @@
                       YN(:) = ZERO
                       ZT(:) = ZERO
  
-                      WWALL(:) = 0
-                      EWALL(:) = 0
-                      BWALL(:) = 0
-                      TWALL(:) = 0
-                      SWALL(:) = 0
-                      NWALL(:) = 0
-                  
                   RETURN
                   END SUBROUTINE DES_INIT_ARRAYS
