@@ -99,7 +99,7 @@
       DOUBLE PRECISION V0, Vpm, Vmt, Vbf 
 !
 !                      Source terms (Volumetric) for GHD theory
-      DOUBLE PRECISION Ghd_drag
+      DOUBLE PRECISION Ghd_drag, avgRop
 ! 
 ! loezos 
       DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
@@ -228,8 +228,9 @@
                   Ghd_drag = ZERO
 		  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
 		    DO L = 1,SMAX
-		      Ghd_drag = Ghd_drag + AVG_Y(F_GS(IJK,L),F_GS(IJKN,L),J) &
-		               * JoiY(IJK,L) * AVG_Y(ROP_S(IJK,L),ROP_S(IJKN,L),J)
+		      avgRop = AVG_Y(ROP_S(IJK,L),ROP_S(IJKN,L),J)
+		      if(avgRop > ZERO) Ghd_drag = Ghd_drag +&
+		           AVG_Y(F_GS(IJK,L),F_GS(IJKN,L),J) * JoiY(IJK,L) / avgRop
 		    ENDDO
 		  ENDIF
 ! end of modifications for GHD theory

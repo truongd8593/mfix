@@ -239,7 +239,9 @@
 	  dragFy = F_GS(IJK ,M)/ROP_S(IJK,M) * (VGC - VSCM)
 	  dragFz = F_GS(IJK ,M)/ROP_S(IJK,M) * (WGC - WSCM)
 	  
-	  FiDotJoi  = FiDotJoi  + JoiXC*BFX_S(IJK,M) + JoiYC*BFY_S(IJK,M) + JoiZC*BFZ_S(IJK,M)
+	  FiDotJoi  = FiDotJoi  + JoiXC * (BFX_S(IJK,M)+dragFx) &
+	                        + JoiYC * (BFY_S(IJK,M)+dragFy) &
+				+ JoiZC * (BFZ_S(IJK,M)+dragFz)
           
 
 
