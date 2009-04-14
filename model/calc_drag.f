@@ -81,7 +81,7 @@
 !     Local variables
     
 
-      DO M = 1, MMAX 
+      DO M = 1, SMAX 
          IF(.NOT.DES_INTERP_ON) THEN 
 ! des_interp_on is F if discrete_element is F
             IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN 

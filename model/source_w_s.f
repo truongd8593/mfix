@@ -58,6 +58,8 @@
       USE sendrecv 
       use kintheory
       use kintheory2
+      USE ghdtheory
+      USE drag
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -108,6 +110,9 @@
 ! 
 !                      Source terms (Volumetric) 
       DOUBLE PRECISION V0, Vmt, Vbf, Vcoa, Vcob, Vmttmp
+!
+!                      Source terms (Volumetric) for GHD theory
+      DOUBLE PRECISION Ghd_drag
 ! 
 !                      error message 
       CHARACTER*80     LINE
@@ -299,6 +304,16 @@
                     VBF = ROPSA*BFZ_S(IJK,M) 
                   ENDIF 
 
+! Additional force for GHD from darg force sum(beta_ig * Joi/rhop_i)
+                  Ghd_drag = ZERO
+		  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+		    DO L = 1,SMAX
+		      Ghd_drag = Ghd_drag - AVG_Z(F_GS(IJK,L),F_GS(IJKT,L),K) &
+		               * JoiZ(IJK,L) * AVG_Z(ROP_S(IJK,L),ROP_S(IJKT,L),K)
+		    ENDDO
+		  ENDIF
+! end of modifications for GHD theory
+
 ! Special terms for cylindrical coordinates
                   VCOA = ZERO 
                   VCOB = ZERO 
@@ -367,7 +382,7 @@
                         VOL_W(IJK)) + B_m(IJK, M) 
                   ELSE 
                     B_M(IJK,M) = -(SDP + SDPS + TAU_W_S(IJK,M)+SXZB+((V0+ZMAX((-&
-                        VMT)))*W_SO(IJK,M)+VBF+VCOB+VXZB)*VOL_W(IJK)) + B_m(IJK, M) 
+                        VMT)))*W_SO(IJK,M)+VBF+VCOB+VXZB+Ghd_drag)*VOL_W(IJK)) + B_m(IJK, M) 
                   ENDIF
                 ENDIF   ! end if sip or ip or dilute flow branch
             ENDDO 

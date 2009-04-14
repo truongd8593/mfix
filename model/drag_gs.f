@@ -909,10 +909,19 @@
             ENDIF
       
             F_gs(IJK, M) = (ONE - UR_F_gs) * F_gs(IJK, M) + UR_F_gs * F_gstmp
+	    
+	    IF(TRIM(KT_TYPE) == 'GHD') THEN
+	      IF(M==1) THEN
+	        F_gs(IJK, MMAX) = F_gs(IJK, M)
+	      ELSE
+	        F_gs(IJK, MMAX) = F_gs(IJK, MMAX) + F_gs(IJK, M)
+	      ENDIF
+	    ENDIF
          
-      ELSE 
+         ELSE 
             F_gs(IJK, M) = ZERO 
-          ENDIF 
+	    IF(TRIM(KT_TYPE) == 'GHD') F_gs(IJK, MMAX) = ZERO
+         ENDIF 
 
       END DO
       

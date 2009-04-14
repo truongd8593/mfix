@@ -36,6 +36,7 @@
       USE run
       USE constant
       USE toleranc
+      USE drag
       IMPLICIT NONE
 !-----------------------------------------------
 !     Local variables
@@ -66,6 +67,9 @@
       DOUBLE PRECISION DiTE, DiTN, DiTT
       DOUBLE PRECISION DijE, DijN, DijT
       DOUBLE PRECISION DijFE, DijFN, DijFT
+!     
+!     darg force on a particle
+      DOUBLE PRECISION dragFc, dragFe, dragFn, dragFt, dragFx, dragFy, dragFz
 !     
 !     Terms in the calculation of Joi-X,Y,Z
       DOUBLE PRECISION ordinDiffTermX, ordinDiffTermY, ordinDiffTermZ
@@ -129,6 +133,15 @@
                  NjE = ROP_S(IJKE,L) / Mj
                  NjN = ROP_S(IJKN,L) / Mj
                  NjT = ROP_S(IJKT,L) / Mj
+! drag force on a particle in -x -y -z directions
+                 dragFc = F_GS(IJK ,L)/NjC
+		 dragFe = F_GS(IJKE,L)/NjE 
+		 dragFn = F_GS(IJKN,L)/NjN
+		 dragFt = F_GS(IJKT,L)/NjT
+		 
+		 dragFx = AVG_X(dragFc,dragFe,I) * (U_g(IJK) - U_s(IJK,L))
+		 dragFy = AVG_Y(dragFc,dragFn,J) * (V_g(IJK) - V_s(IJK,L))
+		 dragFz = AVG_Z(dragFc,dragFt,K) * (W_g(IJK) - W_s(IJK,L))
 
 		 DijE = AVG_X(Dij(IJK,M,L),Dij(IJKE,M,L),I)
 		 DijN = AVG_Y(Dij(IJK,M,L),Dij(IJKN,M,L),J)
@@ -142,9 +155,9 @@
 		 ordinDiffTermY = ordinDiffTermY + Mj * DijN * (NjN - NjC) * oDY_N(J)
 		 ordinDiffTermZ = ordinDiffTermZ + Mj * DijT * (NjT - NjC) * (oX_E(I)*oDZ_T(K))
 		 
-		 massMobilityTermX = massMobilityTermX + DijFE * Mj * BFX_S(IJK,L)
-		 massMobilityTermY = massMobilityTermY + DijFN * Mj * BFY_S(IJK,L)
-		 massMobilityTermZ = massMobilityTermZ + DijFT * Mj * BFZ_S(IJK,L)
+		 massMobilityTermX = massMobilityTermX + DijFE * (Mj * BFX_S(IJK,L) + dragFx)
+		 massMobilityTermY = massMobilityTermY + DijFN * (Mj * BFY_S(IJK,L) + dragFy)
+		 massMobilityTermZ = massMobilityTermZ + DijFT * (Mj * BFZ_S(IJK,L) + dragFz)
                  
                ENDDO
 	       

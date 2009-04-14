@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SOURCE_GHD_GRANULAR_ENERGY(sourcelhs,sourcerhs,IJK,M,IER)
+!  Module name: SOURCE_GHD_GRANULAR_ENERGY(sourcelhs,sourcerhs,IJK,IER)
 !  Purpose: Calculate the source terms in the granular energy equation C
 !           for GHD theory                                             C
 !                                                                      C
@@ -17,7 +17,7 @@
 !     Local variables: sourcelhs, sourcerhs                            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SOURCE_GHD_GRANULAR_ENERGY(SOURCELHS, SOURCERHS, IJK, M, IER) 
+      SUBROUTINE SOURCE_GHD_GRANULAR_ENERGY(SOURCELHS, SOURCERHS, IJK, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -67,6 +67,7 @@
 !
 !                      del.Joi and Fi.Joi terms
       DOUBLE PRECISION DelDotJoi, FiDotJoi, JoiXC, JoiYC, JoiZC
+      DOUBLE PRECISION UGC, VGC, WGC, USCM, VSCM, WSCM, dragFx, dragFy, dragFz
 !
 !                      phase index 
       INTEGER          M, L
@@ -225,7 +226,19 @@
           JoiXC = AVG_X_E(JoiX(IMJK,M),JoiX(IJK,M),I) 
           JoiYC = AVG_Y_N(JoiY(IJMK,M),JoiY(IJK,M)) 
           JoiZC = AVG_Z_T(JoiZ(IJKM,M),JoiZ(IJK,M))
-          
+
+! drag force on a particle
+          UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
+          VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
+	  WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
+	  USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I)
+	  VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M))
+	  WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
+	  
+	  dragFx = F_GS(IJK ,M)/ROP_S(IJK,M) * (UGC - USCM)
+	  dragFy = F_GS(IJK ,M)/ROP_S(IJK,M) * (VGC - VSCM)
+	  dragFz = F_GS(IJK ,M)/ROP_S(IJK,M) * (WGC - WSCM)
+	  
 	  FiDotJoi  = FiDotJoi  + JoiXC*BFX_S(IJK,M) + JoiYC*BFY_S(IJK,M) + JoiZC*BFZ_S(IJK,M)
           
 

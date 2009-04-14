@@ -144,15 +144,23 @@
       END IF
 
       IF (MMAX > 0) CALL VF_GS_X (VXF_GS, IER)
-      IF(.NOT.DISCRETE_ELEMENT) THEN
+      IF(.NOT.DISCRETE_ELEMENT .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
          IF (MMAX > 0) CALL VF_SS_X (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
       END IF
 
-      CALL CALC_D_E (A_M, VXF_GS, VXF_SS, D_E, IER)  !S. Dartevelle, LANL, Feb.2004
+      IF(TRIM(KT_TYPE) == 'GHD') THEN
+         CALL CALC_D_GHD_E (A_M, VXF_GS, D_E, IER)
+      ELSE
+         CALL CALC_D_E (A_M, VXF_GS, VXF_SS, D_E, IER)  !S. Dartevelle, LANL, Feb.2004
+      ENDIF
   
       IF(.NOT.DISCRETE_ELEMENT) THEN
          IF (MMAX > 0) CALL CALC_E_E (A_M, MCP, E_E, IER) 
-         IF (MMAX > 0) CALL PARTIAL_ELIM_U (U_G, U_S, VXF_GS, A_M, B_M, IER) 
+         IF(TRIM(KT_TYPE) == 'GHD') THEN
+	   IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_U (U_G, U_S, VXF_GS, A_M, B_M, IER) 
+	 ELSE
+	   IF (MMAX > 0) CALL PARTIAL_ELIM_U (U_G, U_S, VXF_GS, A_M, B_M, IER) 
+	 ENDIF
       END IF
 
       CALL ADJUST_A_U_G (A_M, B_M, IER) 
@@ -246,15 +254,23 @@
       END IF 
 
       IF (MMAX > 0) CALL VF_GS_Y (VXF_GS, IER)
-      IF(.NOT.DISCRETE_ELEMENT) THEN
+      IF(.NOT.DISCRETE_ELEMENT .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
          IF (MMAX > 0) CALL VF_SS_Y (VXF_SS, IER)    !S. Dartevelle, LANL, Feb.2004
       END IF
 
-      CALL CALC_D_N (A_M, VXF_GS, VXF_SS, D_N, IER) !S. Dartevelle, LANL, Feb.2004
+      IF(TRIM(KT_TYPE) == 'GHD') THEN
+         CALL CALC_D_GHD_N (A_M, VXF_GS, D_N, IER)
+      ELSE
+         CALL CALC_D_N (A_M, VXF_GS, VXF_SS, D_N, IER) !S. Dartevelle, LANL, Feb.2004
+      ENDIF
 
       IF(.NOT.DISCRETE_ELEMENT) THEN
          IF (MMAX > 0) CALL CALC_E_N (A_M, MCP, E_N, IER) 
-         IF (MMAX > 0) CALL PARTIAL_ELIM_V (V_G, V_S, VXF_GS, A_M, B_M, IER) 
+         IF(TRIM(KT_TYPE) == 'GHD') THEN
+           IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_V (V_G, V_S, VXF_GS, A_M, B_M, IER) 
+	 ELSE
+           IF (MMAX > 0) CALL PARTIAL_ELIM_V (V_G, V_S, VXF_GS, A_M, B_M, IER)
+	 ENDIF 
       END IF
 
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
@@ -357,15 +373,23 @@
 ! call mfix_exit(myPE)
 
         IF (MMAX > 0) CALL VF_GS_Z (VXF_GS, IER)
-        IF(.NOT.DISCRETE_ELEMENT) THEN
+        IF(.NOT.DISCRETE_ELEMENT .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
           IF (MMAX > 0) CALL VF_SS_Z (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
         END IF
         
-        CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER) !S. Dartevelle, LANL, Feb.2004
+        IF(TRIM(KT_TYPE) == 'GHD') THEN
+           CALL CALC_D_GHD_T (A_M, VXF_GS, D_T, IER)
+        ELSE
+	   CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER) !S. Dartevelle, LANL, Feb.2004
+	ENDIF
 
         IF(.NOT.DISCRETE_ELEMENT) THEN
           IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T, IER) 
-          IF (MMAX > 0) CALL PARTIAL_ELIM_W (W_G, W_S, VXF_GS, A_M, B_M, IER)
+          IF(TRIM(KT_TYPE) == 'GHD') THEN
+            IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_W (W_G, W_S, VXF_GS, A_M, B_M, IER)
+	  ELSE
+            IF (MMAX > 0) CALL PARTIAL_ELIM_W (W_G, W_S, VXF_GS, A_M, B_M, IER)
+	  ENDIF
         END IF 
 
         CALL ADJUST_A_W_G (A_M, B_M, IER)

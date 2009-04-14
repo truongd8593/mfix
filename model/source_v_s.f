@@ -59,6 +59,8 @@
       USE sendrecv 
       use kintheory
       use kintheory2
+      USE ghdtheory
+      USE drag
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -105,6 +107,9 @@
 ! 
 !                      Source terms (Volumetric) 
       DOUBLE PRECISION V0, Vmt, Vbf, Vmttmp 
+!
+!                      Source terms (Volumetric) for GHD theory
+      DOUBLE PRECISION Ghd_drag
 !
 ! loezos
       DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
@@ -306,6 +311,16 @@
                     VBF = ROPSA*BFY_S(IJK,M) 
                   ENDIF 
 
+! Additional force for GHD from darg force sum(beta_ig * Joi/rhop_i)
+                  Ghd_drag = ZERO
+		  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+		    DO L = 1,SMAX
+		      Ghd_drag = Ghd_drag - AVG_Y(F_GS(IJK,L),F_GS(IJKN,L),J) &
+		               * JoiY(IJK,L) * AVG_Y(ROP_S(IJK,L),ROP_S(IJKN,L),J)
+		    ENDDO
+		  ENDIF
+! end of modifications for GHD theory
+
 ! loezos, Source terms from convective mom. flux
                   IF (SHEAR) THEN
                     SRT=(2d0*V_sh/XLENGTH)        
@@ -334,7 +349,7 @@
                   ELSE
                     B_M(IJK,M) = -(SDP + SDPS + TAU_V_S(IJK,M)&
                        +Source_conv+((V0+ZMAX((-VMT)))&
-                        *V_SO(IJK,M)+VBF)*VOL_V(IJK))+B_M(IJK,M) 
+                        *V_SO(IJK,M)+VBF+Ghd_drag)*VOL_V(IJK))+B_M(IJK,M) 
                   ENDIF
                 ENDIF   ! end if sip or ip or dilute flow branch
             ENDDO

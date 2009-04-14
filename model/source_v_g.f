@@ -50,7 +50,9 @@
       USE bc
       USE vshear
       USE compar  
-      USE sendrecv   
+      USE sendrecv 
+      USE ghdtheory
+      USE drag  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -67,7 +69,7 @@
       INTEGER          I, J, K, IJK, IJKN 
 ! 
 !                      Phase index 
-      INTEGER          M 
+      INTEGER          M, L
 ! 
 !                      Internal surface 
       INTEGER          ISV 
@@ -95,6 +97,9 @@
 ! 
 !                      Source terms (Volumetric) 
       DOUBLE PRECISION V0, Vpm, Vmt, Vbf 
+!
+!                      Source terms (Volumetric) for GHD theory
+      DOUBLE PRECISION Ghd_drag
 ! 
 ! loezos 
       DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
@@ -219,6 +224,16 @@
 !
             ENDIF 
 
+! Additional force for GHD from darg force sum(beta_ig * Joi/rhop_i)
+                  Ghd_drag = ZERO
+		  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+		    DO L = 1,SMAX
+		      Ghd_drag = Ghd_drag + AVG_Y(F_GS(IJK,L),F_GS(IJKN,L),J) &
+		               * JoiY(IJK,L) * AVG_Y(ROP_S(IJK,L),ROP_S(IJKN,L),J)
+		    ENDDO
+		  ENDIF
+! end of modifications for GHD theory
+
 ! loezos	 Source terms from convective mom. flux
 	         IF (SHEAR) THEN
 		SRT=(2d0*V_sh/XLENGTH)
@@ -248,7 +263,7 @@
             A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+A_M(IJK,S,M&
                )+A_M(IJK,T,M)+A_M(IJK,B,M)+(V0+VPM+ZMAX(VMT))*VOL_V(IJK)) 
             B_M(IJK,M) = -(SDP + TAU_V_G(IJK)&
-	       +Source_conv+((V0+ZMAX((-VMT)))*V_GO(IJK)+VBF)&
+	       +Source_conv+((V0+ZMAX((-VMT)))*V_GO(IJK)+VBF+Ghd_drag)&
                *VOL_V(IJK))+B_M(IJK,M) 
          ENDIF 
       END DO 

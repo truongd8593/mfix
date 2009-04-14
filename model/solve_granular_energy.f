@@ -239,7 +239,7 @@
               CpxFlux_T(IJK) = 1.5D0 * Flux_nT(IJK)
 
               IF (FLUID_AT(IJK)) THEN
-                  CALL SOURCE_GHD_GRANULAR_ENERGY (SOURCELHS, SOURCERHS, IJK, M, IER) 
+                  CALL SOURCE_GHD_GRANULAR_ENERGY (SOURCELHS, SOURCERHS, IJK, IER) 
                   APO = 1.5D0 * TOT_NO(IJK)*VOL(IJK)*ODT 
                   S_P(IJK) = APO + SOURCELHS + 1.5d0 *ZMAX(TOT_SUM_RS(IJK)) * VOL(IJK) 
                   S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS + &

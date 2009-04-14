@@ -49,7 +49,9 @@
       USE tau_g
       USE bc
       USE compar  
-      USE sendrecv    
+      USE sendrecv  
+      USE ghdtheory
+      USE drag  
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -67,7 +69,7 @@
                        IJKE, IJKW, IJKTE, IJKTW, IM, IPJK 
 ! 
 !                      Phase index 
-      INTEGER          M 
+      INTEGER          M, L
 ! 
 !                      Internal surface 
       INTEGER          ISV 
@@ -101,6 +103,9 @@
 ! 
 !                      Source terms (Volumetric) 
       DOUBLE PRECISION V0, Vpm, Vmt, Vbf, Vcoa, Vcob, Vxza, Vxzb 
+!
+!                      Source terms (Volumetric) for GHD theory
+      DOUBLE PRECISION Ghd_drag
 ! 
 !                      error message 
       CHARACTER*80     LINE 
@@ -211,7 +216,17 @@
             ELSE 
                VBF = ROPGA*BFZ_G(IJK) 
 !
-            ENDIF 
+            ENDIF  
+
+! Additional force for GHD from darg force sum(beta_ig * Joi/rhop_i)
+                  Ghd_drag = ZERO
+		  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+		    DO L = 1,SMAX
+		      Ghd_drag = Ghd_drag + AVG_Z(F_GS(IJK,L),F_GS(IJKT,L),K) &
+		               * JoiZ(IJK,L) * AVG_Z(ROP_S(IJK,L),ROP_S(IJKT,L),K)
+		    ENDDO
+		  ENDIF
+! end of modifications for GHD theory
 !
 !         Special terms for cylindrical coordinates
                VCOA = ZERO 
@@ -276,7 +291,7 @@
             A_M(IJK,W,M) = A_M(IJK,W,M) + CTW 
 	       
             B_M(IJK,M) = -(SDP + TAU_W_G(IJK)+SXZB+((V0+ZMAX((-VMT)))*W_GO(IJK)&
-               +VBF+VCOB+VXZB)*VOL_W(IJK)) + B_M(IJK, M) 
+               +VBF+VCOB+VXZB+Ghd_drag)*VOL_W(IJK)) + B_M(IJK, M) 
          ENDIF 
       END DO 
       CALL SOURCE_W_G_BC (A_M, B_M, IER) 

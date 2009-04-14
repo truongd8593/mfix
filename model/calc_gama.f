@@ -114,7 +114,7 @@
       INCLUDE 'ep_s2.inc'
 !
 !        this needs to be generalized
-      DO M = 1, MMAX 
+      DO M = 1, SMAX 
          IF (HEAT_TR(0,M)) THEN 
 !
 
