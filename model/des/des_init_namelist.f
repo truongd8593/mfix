@@ -37,9 +37,8 @@
       
       PARTICLES = UNDEFINED_I
       PARTICLES_FACTOR = 1.2D0
-      MAXNEIGHBORS = 10
+      MN = 10
       MQUAD_FACTOR = 1.1D0
-      PBP = 0.2*PARTICLES
       NFACTOR = 10
       
       DISCRETE_ELEMENT = .FALSE.
