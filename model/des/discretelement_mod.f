@@ -19,23 +19,19 @@
       USE param1
 
 !===========START of Interpolation related data======================
-
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: bed_height
-
 !     the coefficient add to gas momentum A matrix  at cell corners
       DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE ::drag_am 
+
 !     the coefficient add to gas momentum B matrix  at cell corners
       DOUBLE PRECISION, DIMENSION(:,:,:,:,:), ALLOCATABLE ::drag_bm 
 
-! fluid velocity at particle position
+!     fluid velocity at particle position
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::vel_fp 
       
       DOUBLE PRECISION, DIMENSION(:,:,:),POINTER :: weightp    
       DOUBLE PRECISION, DIMENSION(:),   ALLOCATABLE :: f_gp 
       DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: wtderivp, wtbar
-      
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE:: sstencil
-      
       DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE:: gstencil, vstencil,pgradstencil
       
       LOGICAL:: intx_per, inty_per, intz_per
@@ -45,31 +41,51 @@
       TYPE iap1
       INTEGER, DIMENSION(:), POINTER:: p
       END TYPE iap1
-!id's of particles in a cell 
+!     id's of particles in a cell 
       TYPE(iap1), DIMENSION(:,:,:), ALLOCATABLE:: pic
-!===============end of interpolation related data set==============
-
+!===========END of Interpolation related data======================
 
      
 !     DES Variables      
      
-      LOGICAL :: DEM_OUTPUT_DATA_TECPLOT !If true, then DEM output data is written in tecplot format
-      LOGICAL :: GENER_PART_CONFIG
-      LOGICAL :: DEBUG_DES
-      DOUBLE PRECISION ::  VOL_FRAC(DIM_M), DES_EPS_XSTART,DES_EPS_YSTART,DES_EPS_ZSTART
-      INTEGER DIMN, MAXNEIGHBORS, MAXQUADS, NMQD, NWALLS, PBP,PART_MPHASE(DIM_M)
-      INTEGER, ALLOCATABLE, DIMENSION(:) :: MARK_PART
       INTEGER, PARAMETER :: DES_EXTRA_UNIT = 2000, DES_VOLFRAC_UNIT = 2001
-      DOUBLE PRECISION S_TIME, DES_SPX_TIME, DES_RES_TIME, OVERLAP_MAX
-      DOUBLE PRECISION DTSOLID, DTSOLID_FACTOR , lid_vel
-      DOUBLE PRECISION P_TIME, PTC
-      INTEGER NFACTOR
-      DOUBLE PRECISION AVG_RAD, RMS_RAD
-     
-!     Particle properties 
-      INTEGER PARTICLES, NPC
-      DOUBLE PRECISION PARTICLES_FACTOR 
-     
+      DOUBLE PRECISION DES_SPX_TIME, DES_RES_TIME
+      DOUBLE PRECISION DTSOLID_FACTOR 
+
+      DOUBLE PRECISION DTSOLID, S_TIME, PTC
+
+!     Print DES Data
+      LOGICAL PRINT_DES_DATA 
+
+!     usr specified time interal that controls frequency of writing DEM 
+!     output when doing pure granular flow simulation
+      DOUBLE PRECISION P_TIME
+
+!     If true, then DEM output data is written in tecplot format
+      LOGICAL :: DEM_OUTPUT_DATA_TECPLOT 
+
+!     Restart
+      DOUBLE PRECISION DESRESDT
+
+      LOGICAL :: DEBUG_DES
+
+!     Output file count
+      INTEGER IFI
+
+!     if gener_part_config is true, then the particle_input.dat file
+!     does not need to be supplied nor does the total number of
+!     particles as these are determined based on the specified volume
+!     fraction (vol_frac) in the specified domain (des_eps_xyzstart)     
+      LOGICAL :: GENER_PART_CONFIG
+      DOUBLE PRECISION ::  VOL_FRAC(DIM_M), DES_EPS_XSTART, &
+                           DES_EPS_YSTART, DES_EPS_ZSTART
+!     the number of particles that belong to solid phase M according
+!     to the D_p0 specified in the mfix.dat 
+      INTEGER PART_MPHASE(DIM_M)
+
+!     Total number of particles in simulation 
+      INTEGER PARTICLES
+
 !     Particle-particle and Particle-wall contact parameters
 !     Spring contants      
       DOUBLE PRECISION KN, KN_W ! Normal
@@ -93,66 +109,66 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::  REAL_EN
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  REAL_EN_WALL
      
-!     Wall treatment      
-      INTEGER WALLCONTACT
-      DOUBLE PRECISION WX1, EX2, BY1, TY2, SZ1, NZ2
-!     Wall vibration parameters
-      DOUBLE PRECISION  DES_GAMMA, DES_F
-     
 !     Neighbor search      
-      INTEGER DES_NEIGHBOR_SEARCH, MN, NQUAD,  NEIGH_MAX
+      INTEGER DES_NEIGHBOR_SEARCH, NQUAD, NEIGH_MAX
       INTEGER QLM, QLN, INIT_QUAD_COUNT, INQC
+      INTEGER MAXQUADS, NMQD 
       DOUBLE PRECISION RADIUS_EQ, NEIGHBOR_SEARCH_N
       DOUBLE PRECISION NEIGHBOR_SEARCH_RAD_RATIO
       DOUBLE PRECISION N2CT, QUADCT, OCTCT, MQUAD_FACTOR
-     
-!     Kinetic and Potential energy of the system
-      DOUBLE PRECISION DES_KE, DES_PE
+      LOGICAL DO_NSEARCH
 
-!     Global Granular Energy
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  GLOBAL_GRAN_ENERGY,GLOBAL_GRAN_TEMP
-     
-!     Output file count
-      INTEGER IFI
-      
-!     Constant input pressure gradient 
-      DOUBLE PRECISION  pgrad(3)
-
-!     Intial particle velocity distribution's mean and Standard Deviation
-      DOUBLE PRECISION pvel_mean, PVEL_StDev
-     
-!     Restart
-      DOUBLE PRECISION DESRESDT
-
-!     factor for sum of radii in des_grid_based_neighbor_search
-      DOUBLE PRECISION FACTOR_RLM
-     
-      
-!     DES Logicals
-     
-!     WHETHER to calculate forces on drag and pressure forces on  particles (decided by Calc_fc)
-!     IF CALLFROMDES is TRUE, then mean fields are not computed in the call to drag_fgs-
-!     it is done to speed up the simulation.
-      LOGICAL CALC_FC, CALLFROMDES
-
-!     DES - Continuum       
-      LOGICAL DISCRETE_ELEMENT 
-      LOGICAL DES_CONTINUUM_COUPLED
-     
-!     Slide check
-      LOGICAL PARTICLE_SLIDE
-     
 !     Neighbor search     
       LOGICAL DO_QUADTREE
       LOGICAL DO_OCTREE
       LOGICAL DO_NSQUARE
-      LOGICAL DO_NSEARCH
-      LOGICAL DO_GRID_BASED_SEARCH
+      LOGICAL DO_GRID_BASED_SEARCH    
+
+!     factor for sum of radii in des_grid_based_neighbor_search
+      DOUBLE PRECISION FACTOR_RLM
+
+      INTEGER DIMN, NWALLS
+      INTEGER MN, MAXNEIGHBORS
+      DOUBLE PRECISION PARTICLES_FACTOR 
+      INTEGER NFACTOR
+      DOUBLE PRECISION lid_vel
+
+!     DES - Continuum       
+      LOGICAL DISCRETE_ELEMENT 
+      LOGICAL DES_CONTINUUM_COUPLED
+
+!     Switch to decide whether to call drag_gs or to call des_drag_gs via
+!     drag_fgs to calculate the gas-solids drag coefficient.  if false
+!     then drag_gs is used, otherwise des_drag_gs via drag_fgs is used
+      LOGICAL DES_INTERP_ON
+
+!     Drag      
+      LOGICAL TSUJI_DRAG
+
+!     run time logic.  if calc_fc is true, then the contact forces (FC) are 
+!     updated to include gas-solids drag and gas pressure in the call to 
+!     drag_fgs.  calc_fc does not play a role in pure granular flow simulations
+      LOGICAL CALC_FC
+
+!     run time logic.  if callfromdes is true, then the pertinent mean fields
+!     (in this case ROP_S and F_GS) are not computed/updated in the call to
+!     drag_fgs.  it is done to speed up the simulation. callfromdes does
+!     not play a role in pure granular flow simulations and is only relevant
+!     when des_interp_on is set to T
+      LOGICAL CALLFROMDES
+   
+!     Wall vibration parameters
+      DOUBLE PRECISION  DES_GAMMA, DES_F
 
 !     Particle treatment at the walls  
       LOGICAL WALLDTSPLIT
       LOGICAL WALLREFLECT
-     
+ 
+!     variables for cell_near_wall
+      LOGICAL NON_RECT_BC   
+      INTEGER NPC
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: c_near_w
+
 !     Periodic Wall BC
       LOGICAL DES_PERIODIC_WALLS
       LOGICAL DES_PERIODIC_WALLS_X
@@ -164,19 +180,34 @@
       LOGICAL INLET_OUTLET_X
       LOGICAL INLET_OUTLET_Y
       LOGICAL INLET_OUTLET_Z
+
+!     Position of domain boundaries
+      DOUBLE PRECISION WX1, EX2, BY1, TY2, SZ1, NZ2
+
+!     run time logic. is set to T when a sliding contact occurs
+      LOGICAL PARTICLE_SLIDE
+
+!     Kinetic and Potential energy of the system
+      DOUBLE PRECISION DES_KE, DES_PE
+
+!     Global Granular Energy
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  GLOBAL_GRAN_ENERGY,GLOBAL_GRAN_TEMP
      
-!     Drag      
-      LOGICAL TSUJI_DRAG
-     
-!     Print DES Data
-      LOGICAL PRINT_DES_DATA 
-      
+!     Constant input pressure gradient 
+      DOUBLE PRECISION  pgrad(3)
+
+!     Intial particle velocity distribution's mean and Standard Deviation
+      DOUBLE PRECISION pvel_mean, PVEL_StDev
+
+      DOUBLE PRECISION AVG_RAD, RMS_RAD
       DOUBLE PRECISION :: MIN_RADIUS, MAX_RADIUS
-      
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE::   AVE_VEL_X, AVE_VEL_Y,  AVE_VEL_Z
 
-     
-     
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: MARK_PART
+      DOUBLE PRECISION OVERLAP_MAX
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: bed_height   
+
+
 !     Allocatable arrays
      
 !     Particle attributes
@@ -233,7 +264,7 @@
 !     Averaged velocity obtained by avraging over all the particles
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_VEL_AVG
      
-!     Drag exerted by the gas o solids
+!     Drag exerted by the gas on solids
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: SOLID_DRAG
      
 !     Neighbor search
@@ -256,9 +287,8 @@
 
      
 !********************************************************************************
-!     
 !     COHESION      
-!     
+     
 !     Square-well potential parameters
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WELL_WIDTH ! (PARTICLES)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WELL_DEPTH ! (PARTICLES)
@@ -279,9 +309,7 @@
 
 !     Does particle have at least one linked partner
       INTEGER, DIMENSION(:), ALLOCATABLE :: IS_LINKED ! (PARTICLES)
-!     Switch to decide if to call des_drag_fgs or drag_gs to calculate the drag coeff
-      
-      LOGICAL DES_INTERP_ON
+
 !     Switch to turn cohesion on and off
       LOGICAL USE_COHESION      
 
@@ -347,14 +375,12 @@
       DOUBLE PRECISION SURFACE_ENERGY
       DOUBLE PRECISION WALL_SURFACE_ENERGY
 
-
 !     Parameters to control Rhodes (2001) cohesion model (10/16/03)
       LOGICAL RHODES_COHESION
       DOUBLE PRECISION RHODES_COHESION_FACTOR
       DOUBLE PRECISION RHODES_COHESION_FACTOR_WALL
       DOUBLE PRECISION RHODES_COHESION_LENGTH_SCALE
       DOUBLE PRECISION RHODES_COHESION_LENGTH_SCALE_WALL
-
 
 !     Variables used in net force measurements
       LOGICAL RECORD_NET_FORCES
@@ -376,8 +402,7 @@
       INTEGER CAP_COH_DIST_INT
       INTEGER ESC_COH_DIST_INT
 
-!     variables for cell_near_wall
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: c_near_w
-      LOGICAL NON_RECT_BC
-
+!     END COHESION 
+!********************************************************************************
+     
       END MODULE DISCRETELEMENT
