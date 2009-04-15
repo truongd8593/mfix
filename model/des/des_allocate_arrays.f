@@ -30,7 +30,8 @@
 
 ! Check if des_eps_xstart and related variables are correctly initialized in mfix.dat file
          IF(DIMN.EQ.2) THEN 
-            IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.DES_EPS_YSTART.EQ.UNDEFINED) THEN
+            IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.&
+               DES_EPS_YSTART.EQ.UNDEFINED) THEN
                WRITE (*,*) 'From des_allocate_arrays:'
                WRITE(*,*) 'ERROR MESSAGE: DES_EPS_XSTART OR DES_EPS_YSTART NOT PROPERLY DEFINED IN THE INPUT FILE'
                CALL MFIX_EXIT(myPE)
@@ -61,15 +62,18 @@
          WRITE(*,*) 'PARTILCE CONFIGURATION WILL BE AUTOMATICALLY GENERATED'
          PARTICLES = 0
          IF(DIMN.EQ.2) THEN 
-            VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*ZLENGTH ! DZ(1) is not yet defined here.
+            VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*ZLENGTH 
+            ! DZ(1) is not yet defined here.
          ELSE 
             VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*DES_EPS_ZSTART
          ENDIF
          DO M = 1, MMAX
-            PART_MPHASE(M) = FLOOR((6.D0*VOL_FRAC(M)*VOL_DOMAIN)/(PI*(D_P0(M)**3.D0)))
+            PART_MPHASE(M) = FLOOR((6.D0*VOL_FRAC(M)*VOL_DOMAIN)/&
+               (PI*(D_P0(M)**3.D0)))
          ENDDO
-         WRITE(*,*) 'MMAX = ', MMAX, 'PART_MPHASE = ',  PART_MPHASE, VOL_DOMAIN, &       
-            D_P0(1), pi, (6.D0*VOL_FRAC(1)*VOL_DOMAIN)/(PI*(D_P0(1)**3.D0))
+         WRITE(*,*) 'MMAX = ', MMAX, 'PART_MPHASE = ',&
+            PART_MPHASE, VOL_DOMAIN, D_P0(1), pi, &
+            (6.D0*VOL_FRAC(1)*VOL_DOMAIN)/(PI*(D_P0(1)**3.D0))
          PARTICLES = SUM(PART_MPHASE(1:MMAX))
          
       ENDIF !  end if gener_part_config
@@ -91,12 +95,6 @@
       MAXQUADS = 5*PARTICLES*MQUAD_FACTOR
       IF(MAXQUADS.LE.80000) MAXQUADS = 80000
       MAXNEIGHBORS = MN + 1 + NWALLS
-
-      IF(DIMN.EQ.2) THEN
-         PBP = PARTICLES/7
-      ELSE
-         PBP = NPARTICLES/5
-      ENDIF
 
       IF(DIMN.EQ.3) THEN
          NMQD = 11
