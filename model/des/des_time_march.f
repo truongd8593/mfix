@@ -153,7 +153,6 @@
             PRINT *,"DT_SOLID greater than DT_FLUID. DEM is called once"
          ENDIF
       ELSE
-         write(*,*) ' dt, dtsolid = ', dt, dtsolid, nint(dt/dtsolid)
 ! added TIME for restart & +1 removed
          FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID)) 
          IF(RUN_TYPE .NE. 'NEW') THEN
@@ -162,9 +161,12 @@
            DESRESDT = DTSOLID
          ENDIF
       ENDIF
-      
+
+      write(*,*) '              dt = ', dt
+      write(*,*) '         dtsolid = ', dtsolid
+      write(*,*),' int(dt/dtsolid) = ', nint(dt/dtsolid)      
       PRINT *,"Discrete Element Simulation is being called"&
-             , FACTOR," times.", dt, dtsolid
+             , FACTOR," times"
 
       IF(NEIGHBOR_SEARCH_N.GT.FACTOR) THEN 
          !NEIGHBOR_SEARCH_N = FACTOR
@@ -254,9 +256,6 @@
       ENDDO     ! end do NN = 1, FACTOR
 
 
-      WRITE(*,*) 'max neigh = ',NEIGH_MAX, OVERLAP_MAX
-
-
 ! Write Restart
       IF(((TIME+DT+0.1d0*DT)>=DES_RES_TIME).OR.((TIME+DT+0.1d0*DT)>=TSTOP)) THEN
          CALL WRITE_DES_RESTART
@@ -270,14 +269,14 @@
       IF(DT.LT.DTSOLID_TMP) THEN
          DTSOLID = DTSOLID_TMP
       ENDIF
-      !write(*,*) 'loop end dt, dtsolid = ', dt, dtsolid
 
       IF(TMP_DTS.NE.ZERO) THEN
          DTSOLID = TMP_DTS
          TMP_DTS = ZERO
       ENDIF
-      !write(*,*) 'end dt, dtsolid = ', dt, dtsolid     
 
- 3020 FORMAT(I5.5)
+      WRITE(*,*) 'MAX neigh & overlap = ', NEIGH_MAX, OVERLAP_MAX
+      !write(*,*) 'loop end dt, dtsolid = ', dt, dtsolid     
+
 
       END SUBROUTINE DES_TIME_MARCH

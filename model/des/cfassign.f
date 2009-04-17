@@ -176,8 +176,8 @@
 
       DO I = 1, MMAX
          DO J = 1, MMAX
-            WRITE(*,*) 'I AND J = ', I, J
-            WRITE(*,'(A,i2,1x,i2,A,2(g17.8))') 'ETA_N AND ETA_T  FOR PAIR',I,J,' = ', DES_ETAN(I,J), DES_ETAT(I,J)
+            WRITE(*,'(x,A,i2,1x,i2,A,2(g17.8))') 'ETA_N AND ETA_T FOR PAIR',&
+            I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
          ENDDO
       ENDDO
 
