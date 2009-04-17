@@ -72,7 +72,6 @@
          DES_POS_NEW(:,:) = DES_POS_OLD(:,:)
          DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
          OMEGA_NEW(:,:) = OMEGA_OLD(:,:)
-         DESRESDT = 0.0d0
          WRITE(*,*) 'DES_RES file read at Time= ', TIME
          WRITE(UNIT_LOG,*) 'DES_RES file read at Time= ', TIME
          IF(USE_COHESION) THEN

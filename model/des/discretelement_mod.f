@@ -52,7 +52,7 @@
       DOUBLE PRECISION DES_SPX_TIME, DES_RES_TIME
       DOUBLE PRECISION DTSOLID_FACTOR 
 
-      DOUBLE PRECISION DTSOLID, S_TIME, PTC
+      DOUBLE PRECISION DTSOLID, S_TIME 
 
 !     Print DES Data
       LOGICAL PRINT_DES_DATA 
@@ -63,9 +63,6 @@
 
 !     If true, then DEM output data is written in tecplot format
       LOGICAL :: DEM_OUTPUT_DATA_TECPLOT 
-
-!     Restart
-      DOUBLE PRECISION DESRESDT
 
       LOGICAL :: DEBUG_DES
 
