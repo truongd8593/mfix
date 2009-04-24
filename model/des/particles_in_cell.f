@@ -43,13 +43,11 @@
       LOGICAL,SAVE:: FIRST_PASS1 = .TRUE.
       DOUBLE PRECISION :: OVOL, tmp_num(MMAX), tmp_den(MMAX), hcell 
       integer:: ijpkp, ipjkp, ipjpk
-      integer, dimension(3):: pcell
       integer:: ib, ie, jb, je, kb, ke, ii
       integer:: onew !order
       
-      INTEGER:: ng, ip, npic, pos, count
-      INTEGER, DIMENSION(3):: pc
-      INTEGER, DIMENSION(IMAX2,JMAX2,KMAX2):: icount
+      INTEGER:: npic, pos
+      INTEGER, DIMENSION(IMAX2,JMAX2,KMAX2):: particle_count
 
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
@@ -66,74 +64,72 @@
          YN(1) = ZERO
          DO I = IMIN1, IMAX2
             XE(I) = XE(I-1) + DX(I)
-         END DO
+         ENDDO
          DO J  = JMIN1, JMAX2
             YN(J) = YN(J-1) + DY(J)
-         END DO
+         ENDDO
          IF(DIMN.EQ.3) THEN
             ZT(1) = ZERO
             DO K = KMIN1, KMAX2
                ZT(K) = ZT(K-1) + DZ(K)
-            END DO
-         END IF
-
-
+            ENDDO
+         ENDIF
       ENDIF
       
       DO L = 1, PARTICLES
 
- 	 IF(FIRST_PASS1) THEN ! Brute force technique to determine the particle locations in the Eulerian grid
-            
-	 !IF(S_TIME.LE.DTSOLID.OR.FIRST_PASS1) THEN ! Brute force technique to determine the particle locations in the Eulerian grid
-            
+
+         IF(FIRST_PASS1) THEN 
+! Brute force technique to determine the particle locations in the Eulerian grid 
+         !IF(S_TIME.LE.DTSOLID.OR.FIRST_PASS1) THEN 
+
             DO M = 1, MMAX
                IF(ABS(2.0d0*DES_RADIUS(L)-D_P0(M)).LT.SMALL_NUMBER.AND. &
                ABS( RO_Sol(L)-RO_S(M)).LT.SMALL_NUMBER) THEN
                PIJK(L,5) = M 
-               END IF
-            END DO
+               ENDIF
+            ENDDO
             
             !PRINT*,'M = ', PIJK(L,5)
             IF(PIJK(L,5).EQ.0) THEN
               WRITE(*,*) 'Problem determining the solids association in PIC for particle no: ', L
-	      write(*,*) 'Particle diameter = ', 2.d0*DES_RADIUS(L),' and dp =', D_P0(1:MMAX)
-	      write(*,*) 'Particle density = ', Ro_Sol(L), 'and RO_S =', RO_S(1:MMAX)
-	      write(*,*) 'Particle position =' , DES_POS_NEW(L,:)
+              write(*,*) 'Particle diameter = ', 2.d0*DES_RADIUS(L),' and dp =', D_P0(1:MMAX)
+              write(*,*) 'Particle density = ', Ro_Sol(L), 'and RO_S =', RO_S(1:MMAX)
+              write(*,*) 'Particle position =' , DES_POS_NEW(L,:)
             ENDIF
 
 
             DO I = IMIN1, IMAX3
                IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I))) THEN
                   PIJK(L,1) = I
-                  GO TO 10
-               END IF
-            END DO
+                  GOTO 10
+               ENDIF
+            ENDDO
 
  10         CONTINUE
             DO J = JMIN1, JMAX3
                IF((DES_POS_NEW(L,2).GE.YN(J-1)).AND.(DES_POS_NEW(L,2).LT.YN(J))) THEN
                   PIJK(L,2) = J
-                  GO TO 20
-               END IF
-            END DO
+                  GOTO 20
+               ENDIF
+            ENDDO
+            !write(*,*) 'pijk', L, PIJK(L,1),  PIJK(L,2)
 
  20         CONTINUE
-!           write(*,*) 'pijk', L, PIJK(L,1),  PIJK(L,2)
             IF(DIMN.EQ.2) THEN
                PIJK(L,3)  = 1
-               GO TO 30
+               GOTO 30
             ELSE
                DO K = KMIN1, KMAX3
                   IF((DES_POS_NEW(L,3).GT.ZT(K-1)).AND.(DES_POS_NEW(L,3).LE.ZT(K))) THEN 
                      PIJK(L,3) = K
-                     GO TO 30
-                  END IF
-               END DO
-            END IF
-           
+                     GOTO 30
+                  ENDIF
+               ENDDO
+            ENDIF
 
-         ELSE                   ! Incremental approach to determine the new location of the particles
-            
+         ELSE     ! if not first_pass
+! Incremental approach to determine the new location of the particles  
             
             I = PIJK(L,1)
             J = PIJK(L,2)
@@ -141,7 +137,7 @@
             !write(*,*) 'pijk2', L, PIJK(L,1),  PIJK(L,2) , XE(I-1),&
             !    & XE(I), des_pos_new(L,1)
             IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I)).OR.I.EQ.1) THEN
-               GO TO 40 
+               GOTO 40 
             ELSEIF((DES_POS_NEW(L,1).GE.XE(I)).AND.(DES_POS_NEW(L,1).LT.XE(I+1))) THEN 
                PIJK(L,1) = I+1
             ELSEIF((DES_POS_NEW(L,1).GE.XE(I-2)).AND.(DES_POS_NEW(L,1).LT.XE(I-1))) THEN 
@@ -149,11 +145,11 @@
             ELSE 
                PRINT *,'des/particles_in_cell.f : CHECK CELL I' , PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,1), DES_VEL_NEW(L,1)
                STOP
-            END IF
+            ENDIF
+
  40         CONTINUE
-!           write(*,*) 'pijk2', L, PIJK(L,1),  PIJK(L,2) 
             IF((DES_POS_NEW(L,2).GE.YN(J-1)).AND.(DES_POS_NEW(L,2).LT.YN(J)).OR.J.EQ.1) THEN
-               GO TO 50 
+               GOTO 50 
             ELSEIF((DES_POS_NEW(L,2).GE.YN(J)).AND.(DES_POS_NEW(L,2).LT.YN(J+1))) THEN 
                PIJK(L,2) = J+1
             ELSEIF((DES_POS_NEW(L,2).GE.YN(J-2)).AND.(DES_POS_NEW(L,2).LT.YN(J-1))) THEN 
@@ -162,8 +158,10 @@
                PRINT *,'des/particles_in_cell.f : CHECK CELL J' 
                PRINT*, 'Y POSITION = ', DES_POS_NEW(L,2), DES_RADIUS(L)
                STOP
-            END IF
-50          CONTINUE
+            ENDIF
+            ! write(*,*) 'pijk2', L, PIJK(L,1),  PIJK(L,2) 
+
+ 50         CONTINUE
             IF(DIMN.EQ.2) THEN
                PIJK(L,3) = 1
             ELSE
@@ -176,11 +174,12 @@
                ELSE 
                   PRINT *,'des/particles_in_cell.f : CHECK CELL K'
                   STOP
-               END IF
-            END IF
+               ENDIF
+            ENDIF
 
-         END IF
-         
+         ENDIF       ! end of (if first_pass)
+
+
  30      CONTINUE
          I = PIJK(L,1)
          J = PIJK(L,2)
@@ -195,7 +194,9 @@
          DES_V_s(IJK,MM) = DES_V_s(IJK,MM) + PVOL(L)*DES_VEL_NEW(L,2)
          IF(DIMN.EQ.3) DES_W_s(IJK,MM) = DES_W_s(IJK,MM) + PVOL(L)*DES_VEL_NEW(L,3)
 
-      END DO
+      ENDDO      ! end loop over L = 1,particles
+
+
       tmp_num = zero
       tmp_den = zero
       DO IJK = IJKSTART3, IJKEND3
@@ -210,8 +211,8 @@
                !Print*,'DES_US = ', DES_U_S(IJK,M)
                IF(DIMN.EQ.3) THEN
                   DES_W_s(IJK,M) = DES_W_s(IJK,M)*OSOLVOL
-               END IF
-            END IF
+               ENDIF
+            ENDIF
             IF(VOL(IJK).GT.0) THEN 
                
                OVOL = ONE/(VOL(IJK))
@@ -226,60 +227,65 @@
                   OVOL = ONE/(VOL(IJK))
                      ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)*OVOL
                   ENDIF
-               end IF
-            END IF
+               ENDIF
+            ENDIF
             IF(ROP_S(IJK,M) > ZERO) THEN
                EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
                !EP_G(IJK) = ONE
-               IF(EP_G(IJK).LT.ZERO) then 
+               IF(EP_G(IJK).LT.ZERO .AND. DES_CONTINUUM_COUPLED) THEN 
+! ep_g should not matter in a pure granular flow simulation (i.e. when no fluid)
                   WRITE(*,*) 'IN DES/PARTICLES_IN_CELL'
                                 !write(*,*) 'vol(Ij,K) =  ', vol(IJK)
                   Write(*,*)'warning EP_G becoming LT zero at ',I_OF(IJK),J_OF(IJK), EP_S(IJK,M)
                   !PRINT*,'Number of particles in cell = ', PINC(IJK)
                   !PRINT*,'Eps calculated here = ', PINC(IJK)*PVOL(1)/VOL(IJK)
                   !stop
-               endif 
+               ENDIF 
                ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
                hcell = 0.5d0*(YN(J)+YN(J-1))
                tmp_num(M) = tmp_num(M) + EP_S(IJK,M)*hcell*VOL(IJK)
                tmp_den(M) = tmp_den(M) + EP_S(IJK,M)*VOL(IJK)
-            END IF
-         END DO
-      END DO
+            ENDIF
+         ENDDO   ! end loop over M=1,MMAX
+      ENDDO     ! end loop over IJK=ijkstart3,ijkend3
+
 
       !bed_height(:) = tmp_num(:)/tmp_den(:)
 
-
       IF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
 
-         DO  k = 1,KMAX2        !MAX(KMAX1-1,1)
-            DO  j = 1,JMAX2
-               DO  i = 1,IMAX2
+         DO K = 1,KMAX2        !MAX(KMAX1-1,1)
+            DO J = 1,JMAX2
+               DO I = 1,IMAX2
                   IJK = FUNIJK(I,J,K)
                   NPIC = PINC(IJK)
                
-                  IF (ASSOCIATED(pic(i,j,k)%p)) THEN
-                     IF (npic.NE.SIZE(pic(i,j,k)%p)) THEN
-                        DEALLOCATE(pic(i,j,k)%p)
-                        IF (npic.GT.0) ALLOCATE(pic(i,j,k)%p(npic))
+                  IF (ASSOCIATED(pic(I,J,K)%p)) THEN
+                     IF (npic.NE.SIZE(pic(I,J,K)%p)) THEN
+                        DEALLOCATE(pic(I,J,K)%p)
+                        IF (npic.GT.0) ALLOCATE(pic(I,J,K)%p(npic))
                      ENDIF
                   ELSE
-                     IF (npic.GT.0) ALLOCATE(pic(i,j,k)%p(npic))
+                     IF (npic.GT.0) ALLOCATE(pic(I,J,K)%p(npic))
                   ENDIF
                   
-               end DO
-            end DO
-         end DO
+               ENDDO
+            ENDDO
+         ENDDO
       
-         icount(:,:,:) = 1
+         particle_count(:,:,:) = 1
          
-         DO ip = 1, PARTICLES
-            PC(:) =  PIJK(IP,1:3)
-            pos = icount(pc(1),pc(2),pc(3))
-            pic(pc(1),pc(2),pc(3))%p(pos) = ip
-            icount(pc(1),pc(2),pc(3)) = icount(pc(1),pc(2),pc(3)) + 1
+         DO L = 1, PARTICLES
+            I = PIJK(L,1)
+            J = PIJK(L,2)
+            K = PIJK(L,3)
+            pos = particle_count(I,J,K)
+            pic(I,J,K)%p(pos) = L
+            particle_count(I,J,K) = particle_count(I,J,K) + 1
          ENDDO
       ENDIF
-     FIRST_PASS1 = .False.
-    RETURN
-  END SUBROUTINE PARTICLES_IN_CELL
+
+      FIRST_PASS1 = .FALSE.
+
+      RETURN
+      END SUBROUTINE PARTICLES_IN_CELL
