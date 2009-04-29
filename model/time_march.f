@@ -319,7 +319,8 @@
       IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN 
 ! write_res1 is done in des_time_march.f (sof--Dec-08-2008)
          !CALL WRITE_RES1 
-         IF (RUN_TYPE == 'NEW') CALL WRITE_DES_DATA
+! write_des_data is also done in des_time_march.f 
+         !IF (RUN_TYPE == 'NEW') CALL WRITE_DES_DATA
                   
          CALL DES_TIME_MARCH
          !CALL WRITE_RES1 
