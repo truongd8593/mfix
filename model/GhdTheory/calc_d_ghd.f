@@ -118,7 +118,7 @@
  IF (Pass1) THEN    !Gas and at least one solid phase X-momentum equation
 !$omp   parallel do private(I,IJK, IJKE, EPGA, EPSA,EPStmp, numeratorxEP, &
 !$omp&  M, L, Lp, LpL, LM, other_ratio_1, FOA1, &
-!$omp&  SUM_VXF_SS_wt_M, SUM_VXF_GS, other_denominator, denominator ),&
+!$omp&  SUM_VXF_GS, other_denominator, denominator ),&
 !$omp&  schedule(static)
   DO IJK = ijkstart3, ijkend3
      IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN   !impermeable
@@ -222,7 +222,7 @@
  ELSE IF (Pass2) THEN    !at least one solid phase X-momentum equation is solved
                          !but the gas phase X-momentum is not solved
 !$omp    parallel do private(IJK, I, IJKE, EPSA,EPStmp, L, Lp, M, &
-!$omp&   numeratorxEP, denominator, SUM_VXF_SS_wt_M), &
+!$omp&   numeratorxEP, denominator), &
 !$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
      IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK) .OR. MODEL_B) THEN
@@ -375,7 +375,7 @@
  IF (Pass1) THEN    !Gas and at least one solid phases Y-momentum equation
 !$omp   parallel do private(J,IJK, IJKN, EPGA, EPSA, EPStmp, numeratorxEP, &
 !$omp&  M, L, Lp, LpL, LM, other_ratio_1, FOA1, &
-!$omp&  SUM_VXF_SS_wt_M, SUM_VXF_GS, other_denominator, denominator ),&
+!$omp&  SUM_VXF_GS, other_denominator, denominator ),&
 !$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
      IF (IP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN   !impermeable
@@ -479,7 +479,7 @@
  ELSE IF (Pass2) THEN    !at least one solid phase momentum Y-equation is solved
                          !but the gas phase Y-momentum is not solved
 !$omp    parallel do private(IJK, J, IJKN, EPSA, EPStmp, L, Lp, M, &
-!$omp&   numeratorxEP, denominator, SUM_VXF_SS_wt_M), &
+!$omp&   numeratorxEP, denominator), &
 !$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
      IF (IP_AT_N(IJK) .OR. MFLOW_AT_N(IJK) .OR. MODEL_B) THEN
@@ -632,7 +632,7 @@
  IF (Pass1) THEN    !Gas and at least one solid phases Z-momentum equation
 !$omp   parallel do private(K,IJK, IJKT, EPGA, EPSA, EPStmp, numeratorxEP, &
 !$omp&  M, L, Lp, LpL, LM, other_ratio_1, FOA1,  &
-!$omp&  SUM_VXF_SS_wt_M, SUM_VXF_GS, other_denominator, denominator ),&
+!$omp&  SUM_VXF_GS, other_denominator, denominator ),&
 !$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
      IF (IP_AT_T(IJK) .OR. MFLOW_AT_T(IJK)) THEN   !impermeable
@@ -735,7 +735,7 @@
  ELSE IF (Pass2) THEN    !at least one solid phase momentum Z-equation is solved
                          !but the gas phase Z-momentum is not solved
 !$omp    parallel do private(IJK, K, IJKT, EPSA, EPStmp, L, Lp, M, &
-!$omp&   numeratorxEP, denominator, SUM_VXF_SS_wt_M), &
+!$omp&   numeratorxEP, denominator), &
 !$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
      IF (IP_AT_T(IJK) .OR. MFLOW_AT_T(IJK) .OR. MODEL_B) THEN
