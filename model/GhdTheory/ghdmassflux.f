@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: GHDMASSFLUX (M, IER)                                   C
+!  Module name: GHDMASSFLUX (IER)                                      C
 !  Purpose: Calculate the species mass flux 3-components of Joi at cellC
 !           faces to compute species velocities and source terms in T  C
 !           equation.                                                  C
@@ -19,7 +19,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE GHDMASSFLUX (M, IER)
+      SUBROUTINE GHDMASSFLUX (IER)
 !
 !-----------------------------------------------
 !     Modules 
@@ -68,9 +68,6 @@
       DOUBLE PRECISION DijE, DijN, DijT
       DOUBLE PRECISION DijFE, DijFN, DijFT
 !     
-!     darg force on a particle
-      DOUBLE PRECISION dragFc, dragFe, dragFn, dragFt, dragFx, dragFy, dragFz
-!     
 !     Terms in the calculation of Joi-X,Y,Z
       DOUBLE PRECISION ordinDiffTermX, ordinDiffTermY, ordinDiffTermZ
       DOUBLE PRECISION massMobilityTermX, massMobilityTermY, massMobilityTermZ
@@ -86,10 +83,8 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-      INCLUDE 'b_force1.inc'
-      INCLUDE 'b_force2.inc'
 !-----------------------------------------------   
-     
+    DO M = 1, SMAX 
       DO 200 IJK = ijkstart3, ijkend3
           I = I_OF(IJK)
           J = J_OF(IJK)
@@ -129,19 +124,10 @@
 	       DO L = 1, SMAX
                  Mj  = (PI/6.d0)*D_P(IJK,L)**3 * RO_S(L)
 
-                 NjC = ROP_s(IJK,L) / Mj
-                 NjE = ROP_S(IJKE,L) / Mj
-                 NjN = ROP_S(IJKN,L) / Mj
-                 NjT = ROP_S(IJKT,L) / Mj
-! drag force on a particle in -x -y -z directions
-                 dragFc = F_GS(IJK ,L)/NjC
-		 dragFe = F_GS(IJKE,L)/NjE 
-		 dragFn = F_GS(IJKN,L)/NjN
-		 dragFt = F_GS(IJKT,L)/NjT
-		 
-		 dragFx = AVG_X(dragFc,dragFe,I) * (U_g(IJK) - U_s(IJK,L))
-		 dragFy = AVG_Y(dragFc,dragFn,J) * (V_g(IJK) - V_s(IJK,L))
-		 dragFz = AVG_Z(dragFc,dragFt,K) * (W_g(IJK) - W_s(IJK,L))
+                 NjC = ROP_s(IJK,M) / Mj
+                 NjE = ROP_S(IJKE,M) / Mj
+                 NjN = ROP_S(IJKN,M) / Mj
+                 NjT = ROP_S(IJKT,M) / Mj
 
 		 DijE = AVG_X(Dij(IJK,M,L),Dij(IJKE,M,L),I)
 		 DijN = AVG_Y(Dij(IJK,M,L),Dij(IJKN,M,L),J)
@@ -155,16 +141,27 @@
 		 ordinDiffTermY = ordinDiffTermY + Mj * DijN * (NjN - NjC) * oDY_N(J)
 		 ordinDiffTermZ = ordinDiffTermZ + Mj * DijT * (NjT - NjC) * (oX_E(I)*oDZ_T(K))
 		 
-		 massMobilityTermX = massMobilityTermX + DijFE * (Mj * BFX_S(IJK,L) + dragFx)
-		 massMobilityTermY = massMobilityTermY + DijFN * (Mj * BFY_S(IJK,L) + dragFy)
-		 massMobilityTermZ = massMobilityTermZ + DijFT * (Mj * BFZ_S(IJK,L) + dragFz)
-                 
-               ENDDO
+		 massMobilityTermX = massMobilityTermX + DijFE * FiX(IJK,L)
+		 massMobilityTermY = massMobilityTermY + DijFN * FiY(IJK,L)
+		 massMobilityTermZ = massMobilityTermZ + DijFT * FiZ(IJK,L)
+               ENDDO  
+
 	       
-	       
-	       ordinDiffTermX = ordinDiffTermX * Mi/ropsE
-	       ordinDiffTermY = ordinDiffTermY * Mi/ropsN
-	       ordinDiffTermZ = ordinDiffTermZ * Mi/ropsT
+	       IF(ropsE > ZERO) THEN  ! just to make sure we're not / zero
+	         ordinDiffTermX = ordinDiffTermX * Mi/ropsE
+	       ELSE
+	         ordinDiffTermX = zero
+	       ENDIF
+	       IF(ropsN > ZERO) THEN
+	         ordinDiffTermY = ordinDiffTermY * Mi/ropsN
+	       ELSE
+	         ordinDiffTermY = zero
+	       ENDIF
+	       IF(ropsT > ZERO) THEN
+	         ordinDiffTermZ = ordinDiffTermZ * Mi/ropsT
+	       ELSE
+	         ordinDiffTermZ = zero
+	       ENDIF
 	       
 	       thermalDiffTermX = ropsE*DiTE/ThetaE * ( THETA_M(IJKE,MMAX) - THETA_M(IJK,MMAX) )  * oDX_E(I)
 	       thermalDiffTermY = ropsN*DiTN/ThetaN * ( THETA_M(IJKN,MMAX) - THETA_M(IJK,MMAX) )  * oDY_N(J)
@@ -193,14 +190,15 @@
 	       JoiZ(IJK,M) = ZERO
 
           ENDIF     ! Fluid_at
- 200  CONTINUE     ! outer IJK loop
+ 200  CONTINUE     ! outer IJK loop  
+    ENDDO ! for m = 1,smax
 
       RETURN
       END SUBROUTINE GHDMASSFLUX
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name:UpdateSpeciesVelocities(M,IER)                          C
+!  Module name:UpdateSpeciesVelocities(IER)                            C
 !  Purpose: Update solids velocities at celll faces based on the       C
 !           formula Ui = U + Joi/(mi ni); also calculate averaged      C
 !           velocities for dilute conditions.                          C
@@ -219,7 +217,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE UpdateSpeciesVelocities (M, IER)
+      SUBROUTINE UpdateSpeciesVelocities (IER)
 !
 !-----------------------------------------------
 !     Modules 
@@ -272,7 +270,7 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------   
-     
+    DO M = 1, SMAX     
       DO 200 IJK = ijkstart3, ijkend3
           I = I_OF(IJK)
           J = J_OF(IJK)
@@ -467,7 +465,8 @@
 ! if .not. fluid_at(ijk), do nothing (keep old values of velocities). 
 
           ENDIF     ! Fluid_at
- 200  CONTINUE     ! outer IJK loop
+ 200  CONTINUE     ! outer IJK loop   
+    ENDDO ! for m = 1, smax
 
       RETURN
       END SUBROUTINE UpdateSpeciesVelocities

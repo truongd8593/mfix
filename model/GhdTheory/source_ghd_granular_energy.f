@@ -39,6 +39,7 @@
       USE trace
       USE indices
       USE constant
+      USE toleranc
       USE compar        !//d
       IMPLICIT NONE
 !-----------------------------------------------
@@ -67,7 +68,7 @@
 !
 !                      del.Joi and Fi.Joi terms
       DOUBLE PRECISION DelDotJoi, FiDotJoi, JoiXC, JoiYC, JoiZC
-      DOUBLE PRECISION UGC, VGC, WGC, USCM, VSCM, WSCM, dragFx, dragFy, dragFz
+      DOUBLE PRECISION FiXC, FiYC, FiZC
 !
 !                      phase index 
       INTEGER          M, L
@@ -157,21 +158,30 @@
  
           DO L = 1,SMAX      
               Mi = (Pi/6.d0)*D_P(IJK,L)**3 * RO_S(L)
-              Nip = ROP_S(IJK,L) /Mi
+              
+	      Nip = ROP_S(IJK,L) /Mi
               NiE = ROP_S(IJKE,L)/Mi
               NiW = ROP_S(IJKW,L)/Mi
               NiN = ROP_S(IJKN,L)/Mi
               NiS = ROP_S(IJKS,L)/Mi
+              
+	      DijQTerm  = zero
+              DijQTermE = zero
+              DijQTermW = zero
+              DijQTermN = zero
+              DijQTermS = zero
 
-              DijQTerm = Theta_m(IJK,MMAX)**2 * DijQ(IJK,M,L) / Nip
-              DijQTermE = AVG_X_S(DijQTerm, &
-	                          Theta_m(IJKE,MMAX)**2*DijQ(IJKE,M,L)/NiE, I)
-              DijQTermW = AVG_X_S(Theta_m(IJKW,MMAX)**2*DijQ(IJKW,M,L)/NiW, &
-	                          DijQTerm, IM)
-              DijQTermN = AVG_Y_S(DijQTerm, &
-	                          Theta_m(IJKN,MMAX)**2*DijQ(IJKN,M,L)/NiN, J)
-              DijQTermS = AVG_Y_S(Theta_m(IJKS,MMAX)**2*DijQ(IJKS,M,L)/NiS, &
-	                          DijQTerm, JM) 
+              if(Nip > zero) DijQTerm = Theta_m(IJK,MMAX)**2 * DijQ(IJK,M,L) / Nip
+              if(NiE > zero) DijQTermE =Theta_m(IJKE,MMAX)**2*DijQ(IJKE,M,L) / NiE
+	      if(NiW > zero) DijQTermW =Theta_m(IJKW,MMAX)**2*DijQ(IJKW,M,L) / NiW
+	      if(NiN > zero) DijQTermN =Theta_m(IJKN,MMAX)**2*DijQ(IJKN,M,L) / NiN
+	      if(NiS > zero) DijQTermS =Theta_m(IJKS,MMAX)**2*DijQ(IJKS,M,L) / NiS
+	      
+              DijQTermE = AVG_X_S(DijQTerm, DijQTermE, I)
+              DijQTermW = AVG_X_S(DijQTermW, DijQTerm, IM)
+              DijQTermN = AVG_Y_S(DijQTerm, DijQTermN, J)
+              DijQTermS = AVG_Y_S(DijQTermS, DijQTerm, JM) 
+	      
 	      DufourX = DufourX + ( DijQTermE*(NiE-Nip)*ODX_E(I)*AYZ(IJK) - &
 	                            DijQTermW*(Nip-NiW)*ODX_E(IM)*AYZ(IMJK) )
 	      DufourY = DufourY + ( DijQTermN*(NiN-Nip)*ODY_N(J)*AXZ(IJK) - &
@@ -181,30 +191,33 @@
                  NiT = ROP_S(IJKT,L)/Mi
                  NiB = ROP_S(IJKB,L)/Mi
                 
-		 DijQTermT = AVG_Z_S(DijQTerm, &
-	                          Theta_m(IJKT,MMAX)**2*DijQ(IJKT,M,L)/NiT, K)
-                 DijQTermB = AVG_Z_S(Theta_m(IJKB,MMAX)**2*DijQ(IJKB,M,L)/NiB, &
-	                          DijQTerm, KM)
+		 DijQTermT = zero
+                 DijQTermB = zero
+
+                 if(NiT > zero) DijQTermT = Theta_m(IJKT,MMAX)**2*DijQ(IJKT,M,L)/NiT
+                 if(NiB > zero) DijQTermB = Theta_m(IJKB,MMAX)**2*DijQ(IJKB,M,L)/NiB
+                
+		 DijQTermT = AVG_Z_S(DijQTerm , DijQTermT, K)
+                 DijQTermB = AVG_Z_S(DijQTermB, DijQTerm, KM)
 	         
 		 DufourZ = DufourZ + ( DijQTermT*(NiT-Nip)*ODZ_T(K)*OX(I)*AXY(IJK) - &
 		                       DijQTermB*(Nip-NiB)*ODZ_T(KM)*OX(I)*AXY(IJKM) )
-	      ENDIF
+	      ENDIF    
 
 !     Sum_ij [ div( Lij*Fj) ]; thermal mobility term
 !     Where Fj = Body Force
               
-	       ThermMobilityX = ThermMobilityX + Mi * BFX_S(IJK,L) * ( &
-	                        AVG_X_S(Lij(IJK,M,L), Lij(IJKE,M,L), I)*AYZ(IJK) - &
-				AVG_X_S(Lij(IJKW,M,L), Lij(IJK,M,L), IM)*AYZ(IMJK) )
+	       ThermMobilityX = ThermMobilityX + ( &
+	               FiX(IJK,L) *AVG_X_S(Lij(IJK,M,L), Lij(IJKE,M,L), I)*AYZ(IJK) - &
+		       FiX(IMJK,L)*AVG_X_S(Lij(IJKW,M,L), Lij(IJK,M,L), IM)*AYZ(IMJK) )
               
-	       ThermMobilityY = ThermMobilityY + Mi * BFY_S(IJK,L) * ( &
-	                        AVG_Y_S(Lij(IJK,M,L), Lij(IJKN,M,L), J)*AXZ(IJK) - &
-				AVG_Y_S(Lij(IJKS,M,L), Lij(IJK,M,L), JM)*AXZ(IJMK) )
+	       ThermMobilityY = ThermMobilityY + ( &
+	                FiY(IJK,L) *AVG_Y_S(Lij(IJK,M,L), Lij(IJKN,M,L), J)*AXZ(IJK) - &
+			FiY(IJMK,L)*AVG_Y_S(Lij(IJKS,M,L), Lij(IJK,M,L), JM)*AXZ(IJMK) )
 
-	      IF(.NOT. NO_K) ThermMobilityZ = ThermMobilityZ + Mi * BFZ_S(IJK,L) * ( &
-	                        AVG_Z_S(Lij(IJK,M,L), Lij(IJKT,M,L), K) *AXY(IJK) -&
-				AVG_Z_S(Lij(IJKB,M,L), Lij(IJK,M,L), KM) *AXY(IJKM) )
-
+	      IF(.NOT. NO_K) ThermMobilityZ = ThermMobilityZ + ( &
+	                FiZ(IJK,L) *AVG_Z_S(Lij(IJK,M,L), Lij(IJKT,M,L), K) *AXY(IJK) -&
+			FiZ(IJKM,L)*AVG_Z_S(Lij(IJKB,M,L), Lij(IJK,M,L), KM) *AXY(IJKM) )
           ENDDO ! for L = 1, smax
 
 ! Additional term arising from subtraction of 3/2*T*continuity
@@ -227,26 +240,16 @@
           JoiYC = AVG_Y_N(JoiY(IJMK,M),JoiY(IJK,M)) 
           JoiZC = AVG_Z_T(JoiZ(IJKM,M),JoiZ(IJK,M))
 
-! drag force on a particle
-          UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
-          VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
-	  WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
-	  USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I)
-	  VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M))
-	  WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
+! external forces evaluated at cell center
+          FiXC = AVG_X_E(FiX(IMJK,M),FiX(IJK,M),I) 
+          FiYC = AVG_Y_N(FiY(IJMK,M),FiY(IJK,M)) 
+          FiZC = AVG_Z_T(FiZ(IJKM,M),FiZ(IJK,M))
 	  
-	  dragFx = F_GS(IJK ,M)/ROP_S(IJK,M) * (UGC - USCM)
-	  dragFy = F_GS(IJK ,M)/ROP_S(IJK,M) * (VGC - VSCM)
-	  dragFz = F_GS(IJK ,M)/ROP_S(IJK,M) * (WGC - WSCM)
-	  
-	  FiDotJoi  = FiDotJoi  + JoiXC * (BFX_S(IJK,M)+dragFx) &
-	                        + JoiYC * (BFY_S(IJK,M)+dragFy) &
-				+ JoiZC * (BFZ_S(IJK,M)+dragFz)
+	  FiDotJoi  = FiDotJoi  + ( JoiXC*FiXC + JoiYC*FiYC + JoiZC*FiZC ) / Mi
           
 
 
       ENDDO ! for M = 1, smax
-
 
       SOURCERHS = (PressureRhs + ShearProduction + BulkViscRhs + DissDivURhs)*VOL(IJK) &
                  + ZMAX(DufourX)+ZMAX(DufourY)+ZMAX(DufourZ) &

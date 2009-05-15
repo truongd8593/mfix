@@ -390,6 +390,7 @@ mfix.exe : \
     usr_dqmom.$(OBJ_EXT) \
     bulk_viscosity.$(OBJ_EXT) \
     calc_d_ghd.$(OBJ_EXT) \
+    calc_external_forces.$(OBJ_EXT) \
     calc_nflux.$(OBJ_EXT) \
     chi_ij_GHD.$(OBJ_EXT) \
     cooling_rate.$(OBJ_EXT) \
@@ -798,6 +799,7 @@ mfix.exe : \
     usr_dqmom.$(OBJ_EXT) \
     bulk_viscosity.$(OBJ_EXT) \
     calc_d_ghd.$(OBJ_EXT) \
+    calc_external_forces.$(OBJ_EXT) \
     calc_nflux.$(OBJ_EXT) \
     chi_ij_GHD.$(OBJ_EXT) \
     cooling_rate.$(OBJ_EXT) \
@@ -5043,6 +5045,26 @@ calc_d_ghd.$(OBJ_EXT) : ./GhdTheory/calc_d_ghd.f \
             fun_avg2.inc                                                 \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/calc_d_ghd.f 
+calc_external_forces.$(OBJ_EXT) : ./GhdTheory/calc_external_forces.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            compar.mod \
+            fldvar.mod \
+            indices.mod \
+            ghdtheory.mod \
+            physprop.mod \
+            run.mod \
+            constant.mod \
+            drag.mod \
+            bc.mod \
+            scales.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                 \
+            b_force1.inc                                                 \
+            b_force2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/calc_external_forces.f 
 calc_nflux.$(OBJ_EXT) : ./GhdTheory/calc_nflux.f \
             param.mod \
             param1.mod \
@@ -5084,8 +5106,6 @@ ghdmassflux.$(OBJ_EXT) : ./GhdTheory/ghdmassflux.f \
             function.inc                                                 \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                 \
-            b_force1.inc                                                 \
-            b_force2.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/ghdmassflux.f 

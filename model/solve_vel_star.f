@@ -110,11 +110,13 @@
         W_gtmp(IJK) = W_g(IJK)
       ENDDO
       DO M = 1, MMAX
-        DO IJK = ijkstart3, ijkend3
-          U_stmp(IJK, M) = U_s(IJK, M)
-          V_stmp(IJK, M) = V_s(IJK, M)
-          W_stmp(IJK, M) = W_s(IJK, M)
-        ENDDO
+        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+           DO IJK = ijkstart3, ijkend3
+             U_stmp(IJK, M) = U_s(IJK, M)
+             V_stmp(IJK, M) = V_s(IJK, M)
+             W_stmp(IJK, M) = W_s(IJK, M)
+           ENDDO
+        ENDIF
       ENDDO
       
       IF(DISCRETE_ELEMENT) THEN
@@ -468,19 +470,20 @@
         W_g(IJK) = W_gtmp(IJK)
       ENDDO
       DO M = 1, MMAX
-        DO IJK = ijkstart3, ijkend3
-        U_s(IJK, M) = U_stmp(IJK, M)
-        V_s(IJK, M) = V_stmp(IJK, M)
-        W_s(IJK, M) = W_stmp(IJK, M)
-        ENDDO
+        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+           DO IJK = ijkstart3, ijkend3
+              U_s(IJK, M) = U_stmp(IJK, M)
+              V_s(IJK, M) = V_stmp(IJK, M)
+              W_s(IJK, M) = W_stmp(IJK, M)
+           ENDDO
+        ENDIF
       ENDDO
 
 ! modification for GHD theory to compute species velocity: Ui = Joi/(mi ni) + U.
       IF(TRIM(KT_TYPE) == 'GHD') THEN
-	DO M = 1, SMAX
-          CALL GHDMassFlux(M,IER) ! to compute solid species mass flux
-	  CALL UpdateSpeciesVelocities(M,IER) ! located at end of ghdMassFlux.f file
-        ENDDO 
+	CALL calc_external_forces(IER)
+        CALL GHDMassFlux(IER) ! to compute solid species mass flux
+	CALL UpdateSpeciesVelocities(IER) ! located at end of ghdMassFlux.f file
       ENDIF
 ! end of modification for GHD theory
 
