@@ -34,6 +34,15 @@
 !
 !     Species mass flux in Z-direction
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: JoiZ
+!
+!     external force in X-direction
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: FiX
+!
+!     external force in Y-direction
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: FiY
+!
+!     external force in Z-direction
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: FiZ
 
 
       END MODULE ghdtheory
