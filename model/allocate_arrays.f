@@ -457,6 +457,9 @@
         Allocate(    JoiX(DIMENSION_3p, DIMENSION_M) )   ! X- species mass flux
         Allocate(    JoiY(DIMENSION_3p, DIMENSION_M) )   ! Y- species mass flux
         Allocate(    JoiZ(DIMENSION_3p, DIMENSION_M) )   ! Z- species mass flux
+        Allocate(    FiX(DIMENSION_3p, DIMENSION_M) )   ! X- external force
+        Allocate(    FiY(DIMENSION_3p, DIMENSION_M) )   ! Y- external force
+        Allocate(    FiZ(DIMENSION_3p, DIMENSION_M) )   ! Z- external force
       ENDIF
 ! end of GHD Theory modification
 
