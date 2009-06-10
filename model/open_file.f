@@ -72,7 +72,7 @@
 
       FILE_NAME = ' ' 
 
-      IF (bDist_IO == .true. .and.ext(2:3) == 'SP') THEN
+      IF (bDist_IO .and.ext(2:3) == 'SP') THEN
 
          file_name(1:nb+4) = run_name(1:nb-1) // "_xxxxx"
          write(file_name(nb+1:nb+5),'(i5.5)') myPE
@@ -86,7 +86,7 @@
       ENDIF
 
 
-      IF (bDist_IO == .true. .and. EXT(2:4) =="RES") THEN
+      IF (bDist_IO .and. EXT(2:4) =="RES") THEN
 
          ! if starting with one RES file, do no append
 	   ! processor number to filename for PE_IO

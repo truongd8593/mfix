@@ -232,6 +232,7 @@ ln -sf "$mpi_include/mpif.h" .
        echo " [8] PathScale Compiler (pathf90) on Cray XT4 at NCCS"        
        echo " [9] Pathscale Compiler (pathf90) on Cray XT4 at NERSC"
        echo " [10] IBM Fortran Compiler (xlf90) on Blue Gene at ANL ALCF"
+       echo " [11] gfortran"
        echo " "
        echo -n "Select the compiler to compile MFIX? [1] "
        read lnx_compiler
@@ -285,6 +286,11 @@ ln -sf "$mpi_include/mpif.h" .
            echo " "
            echo "IBM Fortran Compiler (xlf90) on Blue Gene at ANL ALCF"
            opsys="Linux_64_xlf_anl"
+           ;;
+         11 )
+           echo " "
+           echo "Gfortran"
+           opsys="Linux_64_gfort"
            ;;
          *)
            echo " "
@@ -1404,6 +1410,26 @@ qcache=auto "
             preinline_flags=" "
             
             MODULE_CODE=1
+            ;;
+
+    Linux_64_gfort )
+
+            FORTRAN_CMD=gfortran
+            LINK_CMD=gfortran
+            libs_d="odepack.a blas90.a dgtsv90.a"
+            libs="odepack.a blas90.a dgtsv90.a"
+
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-mp"
+            compile_d="-c -g"
+            link_d="-g"
+            compile="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O3 "
+            compile2="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O1 "
+            compile3="-c -I. -fconvert='big-endian' -I$mpi_include -O1 "
+            link=" "
+            MODULE_CODE=1
+
             ;;
 
 

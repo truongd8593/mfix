@@ -54,13 +54,13 @@
       if (start .ne. len(line)) nTokens = nTokens - 1
                        
       if (nTokens .ge. 4) then
-         read (tokens(nTokens  ),'(f)') value3
-         read (tokens(nTokens-1),'(f)',err=111) value2
-         read (tokens(nTokens-2),'(f)') value1
+         read (tokens(nTokens  ),'(f16.8)') value3
+         read (tokens(nTokens-1),'(f16.8)',err=111) value2
+         read (tokens(nTokens-2),'(f16.8)') value1
          return
  111     continue
-         read (tokens(nTokens-3),'(f)') value1
-         read (tokens(nTokens-2),'(f)') value2
+         read (tokens(nTokens-3),'(f16.8)') value1
+         read (tokens(nTokens-2),'(f16.8)') value2
        end if
        
        
