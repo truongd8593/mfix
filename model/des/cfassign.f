@@ -87,13 +87,8 @@
       EX2 = XLENGTH 
       BY1 = ZERO
       TY2 = YLENGTH 
-      IF((DIMN.EQ.2).AND.(COORDINATES == 'CARTESIAN')) THEN
-         SZ1 = ZERO 
-         NZ2 = ZLENGTH
-      ELSE
-         SZ1 = ZERO
-         NZ2 = ZLENGTH
-      ENDIF
+      SZ1 = ZERO 
+      NZ2 = ZLENGTH
 !     IF((DIMN.EQ.2).AND.(COORDINATES == 'CARTESIAN')) THEN
 !     DZ(:) = 2D0*DES_RADIUS(1)*1.05D0
 !     END IF

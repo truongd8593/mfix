@@ -115,12 +115,6 @@
       DOUBLE PRECISION N2CT, QUADCT, OCTCT, MQUAD_FACTOR
       LOGICAL DO_NSEARCH
 
-!     Neighbor search     
-      LOGICAL DO_QUADTREE
-      LOGICAL DO_OCTREE
-      LOGICAL DO_NSQUARE
-      LOGICAL DO_GRID_BASED_SEARCH    
-
 !     factor for sum of radii in des_grid_based_neighbor_search
       DOUBLE PRECISION FACTOR_RLM
 
@@ -253,7 +247,7 @@
       INTEGER, DIMENSION(:), ALLOCATABLE :: PINC 
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PIJK ! (PARTCILES,5)=>I,J,K,IJK,M 
 
-!     Volume averaged solids volume in a cell      
+!     Volume averaged solids velocity in a cell      
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_U_s
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_V_s
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_W_s

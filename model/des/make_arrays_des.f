@@ -28,24 +28,15 @@
       INTEGER L, I, II, PART_COUNT
       DOUBLE PRECISION DIST, R_LM, DOML(DIMN)
 
-      IF(DES_NEIGHBOR_SEARCH.EQ.UNDEFINED_I) THEN
-         DES_NEIGHBOR_SEARCH = 1
-         WRITE(*,*) 'Default N-Square search will be used'
-      END IF
-
       IF(DES_NEIGHBOR_SEARCH.EQ.1) THEN
-         DO_NSQUARE = .TRUE.
          WRITE(*,*) 'DEM USING N-SQUARE Search'
       ELSE IF(DES_NEIGHBOR_SEARCH.EQ.2) THEN
-         DO_QUADTREE = .TRUE.
          WRITE(*,*) 'DEM USING QUADTREE Search'
       ELSE IF(DES_NEIGHBOR_SEARCH.EQ.3) THEN
-         DO_OCTREE = .TRUE.
          WRITE(*,*) 'DEM USING OCTREE Search'
       ELSE IF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
-         DO_GRID_BASED_SEARCH = .TRUE.
          WRITE(*,*) 'DEM USING CELL LINKED SEARCH'
-      END IF
+      ENDIF
       
       IF(RUN_TYPE == 'NEW') THEN ! Fresh run
          PRINT*,'PARTICLES  = ', particles
@@ -54,7 +45,8 @@
          IF(.NOT.GENER_PART_CONFIG) THEN 
             OPEN(UNIT=10, FILE='particle_input.dat', STATUS='OLD') 
                      
-            WRITE(*,*) 'READING PARTICLE CONFIGURATION FROM THE supplied particle_input.dat file'
+            WRITE(*,*) 'READING PARTICLE CONFIGURATION FROM THE ', &
+               'supplied particle_input.dat file'
 
             DO LN = 1, PARTICLES
                READ (10, *) (DES_POS_OLD(LN,K),K=1,DIMN),DES_RADIUS(LN),RO_Sol(LN) ,(DES_VEL_OLD(LN,K),K=1,DIMN)
@@ -75,8 +67,10 @@
          WRITE(*,*) 'DES_RES file read at Time= ', TIME
          WRITE(UNIT_LOG,*) 'DES_RES file read at Time= ', TIME
          IF(USE_COHESION) THEN
-            WRITE(UNIT_LOG,*) 'Restart 1 is not implemented with DES-COHESION'
-            WRITE(*,*) 'Restart 1 is not implemented with DES-COHESION'
+            WRITE(UNIT_LOG,*) &
+               'Restart 1 is not implemented with DES-COHESION'
+            WRITE(*,*) &
+               'Restart 1 is not implemented with DES-COHESION'
             CALL MFIX_EXIT(myPE)
          END IF
          

@@ -28,24 +28,24 @@
          NEIGHBOURS(I,1) = 0
       END DO
 
-      IF (DO_NSQUARE) THEN
+      IF (DES_NEIGHBOR_SEARCH.EQ.1) THEN
          CALL NSQUARE
       ELSE
          N2CT = ZERO
       END IF
 
-      IF (DO_QUADTREE) THEN
+      IF (DES_NEIGHBOR_SEARCH.EQ.2) THEN
          CALL QUADTREE
       ELSE
          QUADCT = ZERO
       END IF
 
-      IF (DO_OCTREE) THEN
+      IF (DES_NEIGHBOR_SEARCH.EQ.3) THEN
          CALL OCTREE
       ELSE
          OCTCT = ZERO
       END IF
-      IF (DO_GRID_BASED_SEARCH) THEN 
+      IF (DES_NEIGHBOR_SEARCH.EQ.4) THEN 
          CALL GRID_BASED_NEIGHBOR_SEARCH
       ENDIF 
       

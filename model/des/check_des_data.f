@@ -35,11 +35,11 @@
          WRITE (UNIT_LOG, 1001)
          CALL MFIX_EXIT(myPE)
       END IF
-!
+
       IF(DES_PERIODIC_WALLS) THEN
          IF(.NOT.DES_PERIODIC_WALLS_X .AND. .NOT.DES_PERIODIC_WALLS_Y .AND. &
-	    .NOT.DES_PERIODIC_WALLS_Z) THEN
-	    WRITE (UNIT_LOG, 1002)
+            .NOT.DES_PERIODIC_WALLS_Z) THEN
+            WRITE (UNIT_LOG, 1002)
             CALL MFIX_EXIT(myPE)
          ENDIF
       END IF
@@ -53,89 +53,89 @@
 !      END IF
 !
       IF(INLET_OUTLET .OR. INLET_OUTLET_X .OR. INLET_OUTLET_Y .OR. &
-	    INLET_OUTLET_Z) THEN
-	 WRITE (UNIT_LOG, 1003)
+            INLET_OUTLET_Z) THEN
+         WRITE (UNIT_LOG, 1003)
          CALL MFIX_EXIT(myPE)
       END IF
-!
+
       IF(KN == UNDEFINED .OR. KN_W == UNDEFINED) THEN
          WRITE (UNIT_LOG, 1004)
          CALL MFIX_EXIT(myPE)
       END IF
-!
+
       IF(KT_FAC == UNDEFINED .OR. KT_W_FAC == UNDEFINED) THEN
          WRITE (UNIT_LOG, 1005)
       END IF
-!
+
       IF(KT_FAC .NE. UNDEFINED) THEN
          IF(KT_FAC > ONE .OR. KT_FAC < ZERO) THEN
             WRITE (UNIT_LOG, 1017)
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDIF
-!
+
       IF(KT_W_FAC .NE. UNDEFINED) THEN
          IF(KT_W_FAC > ONE .OR. KT_W_FAC < ZERO) THEN
             WRITE (UNIT_LOG, 1017)
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDIF
-!
+
       IF(ETA_DES_N .NE. UNDEFINED .OR. ETA_DES_T .NE. UNDEFINED .OR. &
          ETA_N_W   .NE. UNDEFINED .OR. ETA_T_W   .NE. UNDEFINED ) THEN
          WRITE (UNIT_LOG, 1006)
          CALL MFIX_EXIT(myPE)
       END IF
-!
+
       DO M = 1, MMAX+MMAX*(MMAX-1)/2
          IF(DES_EN_INPUT(M) == UNDEFINED) THEN
             WRITE (UNIT_LOG, 1008)
-	    write(UNIT_LOG,*) 'Must be specified in mfix.dat for interactions M = 1, to', MMAX+MMAX*(MMAX-1)/2
+            write(UNIT_LOG,*) 'Must be specified in mfix.dat for interactions M = 1, to', MMAX+MMAX*(MMAX-1)/2
             WRITE (UNIT_LOG, 1009)
             CALL MFIX_EXIT(myPE)
          END IF
       ENDDO
-!
+
       DO M = 1, MMAX
          IF(DES_EN_WALL_INPUT(M) == UNDEFINED) THEN
             WRITE (UNIT_LOG, 1010)
             CALL MFIX_EXIT(myPE)
          END IF
       ENDDO
-!
+
       IF(DES_ETAT_FAC == UNDEFINED) THEN
          WRITE (UNIT_LOG, 1011)
       ELSEIF(DES_ETAT_FAC > ONE .OR. DES_ETAT_FAC < ZERO) THEN
          WRITE (UNIT_LOG, 1016)
          CALL MFIX_EXIT(myPE)
       END IF
-!
+
       IF(DES_ETAT_W_FAC == UNDEFINED) THEN
          WRITE (UNIT_LOG, 1012)
       ELSEIF(DES_ETAT_W_FAC > ONE .OR. DES_ETAT_W_FAC < ZERO) THEN
          WRITE (UNIT_LOG, 1016)
          CALL MFIX_EXIT(myPE)
       END IF
-!
+
       DO M = 1, MMAX+MMAX*(MMAX-1)/2
          IF(DES_EN_INPUT(M) > ONE .OR. DES_EN_INPUT(M) < ZERO) THEN
             WRITE (UNIT_LOG, 1013)
             CALL MFIX_EXIT(myPE)
          END IF
       ENDDO
-!
+
       DO M = 1, MMAX
          IF(DES_EN_WALL_INPUT(M) > ONE .OR. DES_EN_WALL_INPUT(M) < ZERO) THEN
             WRITE (UNIT_LOG, 1014)
             CALL MFIX_EXIT(myPE)
          END IF
       ENDDO
-!
+
       IF(MEW > ONE .OR. MEW_W > ONE .OR. MEW < ZERO .OR. MEW_W < ZERO) THEN
          WRITE (UNIT_LOG, 1015)
          CALL MFIX_EXIT(myPE)
       END IF
-!
+
 ! Overwrite user's input in case of DEM (no fluid)
       IF(.NOT.DES_CONTINUUM_COUPLED) DES_INTERP_ON = .FALSE.
       

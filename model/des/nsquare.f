@@ -28,6 +28,7 @@
                END DO
                DIST = SQRT(DIST)
                R_LM = DES_RADIUS(L) + DES_RADIUS(I)
+               R_LM = FACTOR_RLM*R_LM
                IF (DIST.LE.R_LM) THEN
                   NEIGHBOURS(L,1) = NEIGHBOURS(L,1)+1
                   NEIGHBOURS(I,1) = NEIGHBOURS(I,1)+1

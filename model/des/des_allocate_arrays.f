@@ -213,9 +213,12 @@
      
 ! Neighbor search
       Allocate(  NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )
-      Allocate(  LQUAD (MAXQUADS, NMQD) )
-      Allocate(  PQUAD (PARTICLES) )
-      Allocate(  CQUAD (MAXQUADS, NWALLS) )
+
+      IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. DES_NEIGHBOR_SEARCH .EQ. 3) THEN
+         Allocate(  LQUAD (MAXQUADS, NMQD) )
+         Allocate(  PQUAD (PARTICLES) )
+         Allocate(  CQUAD (MAXQUADS, NWALLS) )
+      ENDIF
      
 ! Neighbor distances
       Allocate(  PN_DIST (NPARTICLES, MAXNEIGHBORS) )

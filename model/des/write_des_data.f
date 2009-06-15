@@ -37,6 +37,7 @@
       DOUBLE PRECISION :: height_avg, height_rms, AVG_EPS(JMAX2, MMAX), AVG_THETA(JMAX2, MMAX)
             CHARACTER*50 :: FILENAME_EXTRA, FILENAME_EXTRA2, FILENAME_DES
       CHARACTER*100 ::  TMP_CHARLINE2
+      DOUBLE PRECISION :: tmp_time
 
 !---------------------------------------------------------------------------
 
@@ -57,9 +58,14 @@
 
       POS_Z = 0
       VEL_W = 0
+! for granular flow simulations only:
+! currently s_time not updated until after files are written
+! so advance time appropriate to position 
+      tmp_time = S_TIME + DTSOLID  
 
 
       WRITE(DES_UNIT,3029) '<?xml version="1.0"?>'
+      IF (.NOT.DES_CONTINUUM_COUPLED)  WRITE(DES_UNIT,*) '<?Time=',tmp_time,'s?>'
 !     WRITE(DES_UNIT,*) '<?Time =',S_TIME,'s?>'
       WRITE(DES_UNIT,3030) ' <VTKFile type="PolyData" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">'
       WRITE(DES_UNIT,*) '  <PolyData>'
@@ -85,7 +91,7 @@
       WRITE(DES_UNIT,*) '     <CellData>'
       WRITE(DES_UNIT,*) '     </CellData>'
       WRITE(DES_UNIT,*) '     <Points>'
-      WRITE(DES_UNIT,*) '       <DataArray type="Float32" NumberOfComponents="3" format="ascii">'
+      WRITE(DES_UNIT,*) '       <DataArray type="Float32" NAME="Position" NumberOfComponents="3" format="ascii">'
       IF(DIMN.EQ.2) THEN
          DO LN = 1, PARTICLES
             WRITE (DES_UNIT,*) (real(DES_POS_NEW(LN,K)),K=1,DIMN), POS_Z 
