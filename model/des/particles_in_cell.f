@@ -36,18 +36,17 @@
       
       IMPLICIT NONE
 
-      INTEGER L, I, J, K, M, MM , IPLAST
+      INTEGER L, I, J, K, M, MM 
       INTEGER IJK, IPJK, IJPK, IJKP
+      DOUBLE PRECISION :: OVOL 
       DOUBLE PRECISION SOLVOLINC(DIMENSION_3,MMAX), OSOLVOL
-!     Logical to see whether this is the first entry to this routine
-      LOGICAL,SAVE:: FIRST_PASS1 = .TRUE.
-      DOUBLE PRECISION :: OVOL, tmp_num(MMAX), tmp_den(MMAX), hcell 
-      integer:: ijpkp, ipjkp, ipjpk
-      integer:: ib, ie, jb, je, kb, ke, ii
-      integer:: onew !order
-      
       INTEGER:: npic, pos
       INTEGER, DIMENSION(IMAX2,JMAX2,KMAX2):: particle_count
+
+! Variables to calculate bed height of each solids phase
+      DOUBLE PRECISION :: tmp_num(MMAX), tmp_den(MMAX), hcell 
+! Logical to see whether this is the first entry to this routine
+      LOGICAL,SAVE:: FIRST_PASS1 = .TRUE.
 
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
@@ -75,9 +74,9 @@
             ENDDO
          ENDIF
       ENDIF
-      
-      DO L = 1, PARTICLES
+     
 
+      DO L = 1, PARTICLES
 
          IF(FIRST_PASS1) THEN 
 ! Brute force technique to determine the particle locations in the Eulerian grid 
@@ -102,54 +101,50 @@
             DO I = IMIN1, IMAX3
                IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I))) THEN
                   PIJK(L,1) = I
-                  GOTO 10
+                  EXIT                  
                ENDIF
             ENDDO
 
- 10         CONTINUE
             DO J = JMIN1, JMAX3
                IF((DES_POS_NEW(L,2).GE.YN(J-1)).AND.(DES_POS_NEW(L,2).LT.YN(J))) THEN
                   PIJK(L,2) = J
-                  GOTO 20
+                  EXIT
                ENDIF
             ENDDO
             !write(*,*) 'pijk', L, PIJK(L,1),  PIJK(L,2)
 
- 20         CONTINUE
             IF(DIMN.EQ.2) THEN
                PIJK(L,3)  = 1
-               GOTO 30
             ELSE
                DO K = KMIN1, KMAX3
                   IF((DES_POS_NEW(L,3).GT.ZT(K-1)).AND.(DES_POS_NEW(L,3).LE.ZT(K))) THEN 
                      PIJK(L,3) = K
-                     GOTO 30
+                     EXIT
                   ENDIF
                ENDDO
             ENDIF
 
+
          ELSE     ! if not first_pass
 ! Incremental approach to determine the new location of the particles  
-            
             I = PIJK(L,1)
             J = PIJK(L,2)
             K = PIJK(L,3)
-            !write(*,*) 'pijk2', L, PIJK(L,1),  PIJK(L,2) , XE(I-1),&
-            !    & XE(I), des_pos_new(L,1)
+
             IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I)).OR.I.EQ.1) THEN
-               GOTO 40 
+               
             ELSEIF((DES_POS_NEW(L,1).GE.XE(I)).AND.(DES_POS_NEW(L,1).LT.XE(I+1))) THEN 
                PIJK(L,1) = I+1
             ELSEIF((DES_POS_NEW(L,1).GE.XE(I-2)).AND.(DES_POS_NEW(L,1).LT.XE(I-1))) THEN 
                PIJK(L,1) = I-1
-            ELSE 
-               PRINT *,'des/particles_in_cell.f : CHECK CELL I' , PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,1), DES_VEL_NEW(L,1)
+            ELSE
+               PRINT *,'des/particles_in_cell.f : CHECK CELL I ',&
+                  PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,1), DES_VEL_NEW(L,1)
                STOP
             ENDIF
 
- 40         CONTINUE
             IF((DES_POS_NEW(L,2).GE.YN(J-1)).AND.(DES_POS_NEW(L,2).LT.YN(J)).OR.J.EQ.1) THEN
-               GOTO 50 
+
             ELSEIF((DES_POS_NEW(L,2).GE.YN(J)).AND.(DES_POS_NEW(L,2).LT.YN(J+1))) THEN 
                PIJK(L,2) = J+1
             ELSEIF((DES_POS_NEW(L,2).GE.YN(J-2)).AND.(DES_POS_NEW(L,2).LT.YN(J-1))) THEN 
@@ -159,14 +154,12 @@
                PRINT*, 'Y POSITION = ', DES_POS_NEW(L,2), DES_RADIUS(L)
                STOP
             ENDIF
-            ! write(*,*) 'pijk2', L, PIJK(L,1),  PIJK(L,2) 
 
- 50         CONTINUE
             IF(DIMN.EQ.2) THEN
                PIJK(L,3) = 1
             ELSE
                IF((DES_POS_NEW(L,3).GE.ZT(K-1)).AND.(DES_POS_NEW(L,3).LT.ZT(K)).OR.K.EQ.1) THEN
-                  GO TO 30 
+
                ELSEIF((DES_POS_NEW(L,3).GE.ZT(K)).AND.(DES_POS_NEW(L,3).LT.ZT(K+1))) THEN
                   PIJK(L,3) = K+1
                ELSEIF((DES_POS_NEW(L,3).GE.ZT(K-2)).AND.(DES_POS_NEW(L,3).LT.ZT(K-1))) THEN
@@ -180,7 +173,6 @@
          ENDIF       ! end of (if first_pass)
 
 
- 30      CONTINUE
          I = PIJK(L,1)
          J = PIJK(L,2)
          K = PIJK(L,3)
@@ -197,10 +189,9 @@
       ENDDO      ! end loop over L = 1,particles
 
 
-      tmp_num = zero
-      tmp_den = zero
+      tmp_num(:) = ZERO 
+      tmp_den(:) = ZERO 
       DO IJK = IJKSTART3, IJKEND3
-         K = K_OF(IJK) 
          J = J_OF(IJK)
          EP_G(IJK) = ONE   
          DO M = 1, MMAX
@@ -208,40 +199,33 @@
                OSOLVOL = ONE/SOLVOLINC(IJK,M)   
                DES_U_s(IJK,M) = DES_U_s(IJK,M)*OSOLVOL
                DES_V_s(IJK,M) = DES_V_s(IJK,M)*OSOLVOL
-               !Print*,'DES_US = ', DES_U_S(IJK,M)
                IF(DIMN.EQ.3) THEN
                   DES_W_s(IJK,M) = DES_W_s(IJK,M)*OSOLVOL
                ENDIF
             ENDIF
             IF(VOL(IJK).GT.0) THEN 
-               
                OVOL = ONE/(VOL(IJK))
-               !ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)*OVOL
-               IF(FIRST_PASS1) THEN
-                  OVOL = ONE/(VOL(IJK))
+               IF(FIRST_PASS1 .OR. &
+                 ((.NOT.FIRST_PASS1).AND.(.NOT.DES_INTERP_ON))) THEN
                   ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)*OVOL
-               ELSE 
-                  IF(.NOT.(FIRST_PASS1).AND.(.NOT.DES_INTERP_ON)) THEN 
-                  !IF(M.EQ.1) WRITE(*,*) 'SOLVO = ;', SOLVOLINC(IJK,M)
-                     
-                  OVOL = ONE/(VOL(IJK))
-                     ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)*OVOL
-                  ENDIF
                ENDIF
             ENDIF
             IF(ROP_S(IJK,M) > ZERO) THEN
                EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
-               !EP_G(IJK) = ONE
                IF(EP_G(IJK).LT.ZERO .AND. DES_CONTINUUM_COUPLED) THEN 
-! ep_g should not matter in a pure granular flow simulation (i.e. when no fluid)
-                  WRITE(*,*) 'IN DES/PARTICLES_IN_CELL'
-                                !write(*,*) 'vol(Ij,K) =  ', vol(IJK)
-                  Write(*,*)'warning EP_G becoming LT zero at ',I_OF(IJK),J_OF(IJK), EP_S(IJK,M)
-                  !PRINT*,'Number of particles in cell = ', PINC(IJK)
-                  !PRINT*,'Eps calculated here = ', PINC(IJK)*PVOL(1)/VOL(IJK)
+! this should not matter if pure granular flow simulation (i.e. no fluid)
+                  WRITE(*,*) '------------------------------'
+                  WRITE(*,*) '     IN SUBROUTINE DES/PARTICLES_IN_CELL'
+                  WRITE(*,*) '     WARNING EP_G becoming LT zero at ',&
+                     I_OF(IJK),J_OF(IJK), EP_S(IJK,M)
+                  WRITE(*,*) '------------------------------'
+                  !write(*,*) 'IJK = ', IJK, ' VOL(IJK) =  ', vol(IJK)
+                  !write(*,*) 'Number of particles in cell = ', PINC(IJK)
+                  !write(*,*) 'Eps calculated here = ', ROP_S(M)/RO_S(M)
                   !stop
                ENDIF 
                ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
+! bed height calculations for each solids phase
                hcell = 0.5d0*(YN(J)+YN(J-1))
                tmp_num(M) = tmp_num(M) + EP_S(IJK,M)*hcell*VOL(IJK)
                tmp_den(M) = tmp_den(M) + EP_S(IJK,M)*VOL(IJK)
@@ -249,8 +233,9 @@
          ENDDO   ! end loop over M=1,MMAX
       ENDDO     ! end loop over IJK=ijkstart3,ijkend3
 
+! calculate bed height for each phase      
+      bed_height(:) = tmp_num(:)/tmp_den(:)
 
-      !bed_height(:) = tmp_num(:)/tmp_den(:)
 
       IF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
 

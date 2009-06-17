@@ -31,22 +31,26 @@
       CHARACTER*5 FILENAME
       CHARACTER*6 IPART
       CHARACTER*115 INUMBER
-      INTEGER, SAVE :: unitht, tcount = 1, ROUTINE_COUNT = 0
+      INTEGER, SAVE :: ROUTINE_COUNT = 0
+      DOUBLE PRECISION :: height_avg, height_rms
+      DOUBLE PRECISION :: AVG_EPS(JMAX2, MMAX), AVG_THETA(JMAX2, MMAX)
+      CHARACTER*50     :: FILENAME_EXTRA, FILENAME_EXTRA2, FILENAME_DES
+      CHARACTER*100    ::  TMP_CHARLINE2
+! variables for bed height calculation
+      INTEGER, SAVE :: tcount = 1, unitht
       DOUBLE PRECISION, PARAMETER :: tmin = 5.d0
       DOUBLE PRECISION, DIMENSION(5000), SAVE :: bed_height_time, dt_time
-      DOUBLE PRECISION :: height_avg, height_rms, AVG_EPS(JMAX2, MMAX), AVG_THETA(JMAX2, MMAX)
-            CHARACTER*50 :: FILENAME_EXTRA, FILENAME_EXTRA2, FILENAME_DES
-      CHARACTER*100 ::  TMP_CHARLINE2
 
 !---------------------------------------------------------------------------
 
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
+
       ROUTINE_COUNT  = ROUTINE_COUNT + 1
       DES_UNIT = 99
-      IF(DEM_OUTPUT_DATA_TECPLOT) GOTO 200
 
+      IF(DEM_OUTPUT_DATA_TECPLOT) GOTO 200
 
       WRITE (FILENAME, 3020) IFI
       WRITE (IPART, 3021) PARTICLES
@@ -129,7 +133,10 @@
       IFI = IFI+1
 
       return
- 
+
+! after tmin start storing bed height. after enough measurements
+! have been taken (i.e. tcount > 20) start to calculate a running
+! average bed height and running rms bed height for solids phase 1 only      
       height_avg = zero
       height_rms = zero
       
@@ -142,33 +149,27 @@
             if(tcount.gt.20)  then
                do i = 1, tcount-1,1
                   height_avg = height_avg + bed_height_time(i)!*dt_time(i)
-               end do
+               enddo
                height_avg = height_avg/(tcount-1)
                do i = 1, tcount-1,1
                   height_rms = height_rms + ((bed_height_time(i)&
                        &-height_avg)**2)!*dt_time(i)
-               end do
-               
+               enddo
                
                height_rms = sqrt(height_rms/(tcount-1))
-            end if
-         end if
-         
-      end if
+            endif
+         endif
+      endif
       
-
- 
       
       INQUIRE(FILE='bed_height.dat',EXIST=filexist,OPENED=isopen)
       IF (.NOT.filexist.OR.(.NOT.isopen)) THEN
-
          unitht = 400
-       OPEN(unit=unitht,file='bed_height.dat',form='formatted', status='replace')
-    END IF
-      write(*, '(10(2x,e20.12))') time, (bed_height(j) , j = 1, size(bed_height,1))
-      !read(*,*)
-      write(unitht, '(10(2x,e20.12))') time, (bed_height(j) , j = 1,&
-      & size(bed_height,1)), height_avg, height_rms
+         OPEN(unit=unitht,file='bed_height.dat',form='formatted', status='replace')
+      ENDIF
+      write(*,      '(10(2x,e20.12))') time, (bed_height(j) , j = 1, MMAX) 
+      write(unitht, '(10(2x,e20.12))') time, (bed_height(j) , j = 1, MMAX),&
+         height_avg, height_rms
            
 
 
