@@ -38,6 +38,9 @@
 
       A = ZERO
       OMEGA_W = ZERO
+      SINOMEGAT = ZERO
+      COSOMEGAT = ZERO
+
       IF(DES_F.NE.ZERO) THEN
          OMEGA_W = 2.0d0*Pi*DES_F
          OOMEGAW2 = ONE/(OMEGA_W**2)
@@ -49,23 +52,23 @@
       DES_R = DES_RADIUS(L)
       IF(WALLREFLECT) THEN
          DES_R = ZERO
-      END IF
+      ENDIF
 
       DES_WALL_VEL(I,1) = ZERO
       DES_WALL_VEL(I,2) = ZERO
       IF(DIMN.EQ.3) DES_WALL_VEL(I,3) = ZERO
 
-!     west (X)
+! west (X)
       IF(I.EQ.1) THEN
-         DES_WALL_POS(I,1) = WX1 - DES_R	
+         DES_WALL_POS(I,1) = WX1 - DES_R
          DES_WALL_POS(I,2) = DES_POS_NEW(L,2)
          IF(DIMN.EQ.3) DES_WALL_POS(I,3) = DES_POS_NEW(L,3)
          WALL_NORMAL(1,1) = -ONE
          WALL_NORMAL(1,2) = ZERO
          IF(DIMN.EQ.3) WALL_NORMAL(1,3) = ZERO
 
-!     east (X)
-      ELSE IF(I.EQ.2) THEN
+! east (X)
+      ELSEIF(I.EQ.2) THEN
          DES_WALL_POS(I,1) = EX2 + DES_R
          DES_WALL_POS(I,2) = DES_POS_NEW(L,2)
          IF(DIMN.EQ.3) DES_WALL_POS(I,3) = DES_POS_NEW(L,3)
@@ -73,8 +76,8 @@
          WALL_NORMAL(2,2) = ZERO
          IF(DIMN.EQ.3) WALL_NORMAL(2,3) = ZERO
 
-!     bottom (Y)
-      ELSE IF(I.EQ.3) THEN
+! bottom (Y)
+      ELSEIF(I.EQ.3) THEN
          DES_WALL_POS(I,1) = DES_POS_NEW(L,1)
          DES_WALL_POS(I,2) = BY1 - DES_R + (A*SINOMEGAT)
          IF(DIMN.EQ.3) DES_WALL_POS(I,3) = DES_POS_NEW(L,3)
@@ -84,8 +87,8 @@
          WALL_NORMAL(3,2) = -ONE
          IF(DIMN.EQ.3) WALL_NORMAL(3,3) = ZERO
 
-!     top (Y)
-      ELSE IF(I.EQ.4) THEN
+! top (Y)
+      ELSEIF(I.EQ.4) THEN
          DES_WALL_POS(I,1) = DES_POS_NEW(L,1)
          DES_WALL_POS(I,2) = TY2 + DES_R
          IF(DIMN.EQ.3) DES_WALL_POS(I,3) = DES_POS_NEW(L,3)
@@ -94,8 +97,8 @@
          WALL_NORMAL(4,2) = ONE
          IF(DIMN.EQ.3) WALL_NORMAL(4,3) = ZERO
 
-!     south (Z)
-      ELSE IF(I.EQ.5) THEN
+! south (Z)
+      ELSEIF(I.EQ.5) THEN
          DES_WALL_POS(I,1) = DES_POS_NEW(L,1)
          DES_WALL_POS(I,2) = DES_POS_NEW(L,2)
          IF(DIMN.EQ.3) DES_WALL_POS(I,3) = SZ1 - DES_R
@@ -103,15 +106,15 @@
          WALL_NORMAL(5,2) = ZERO
          IF(DIMN.EQ.3) WALL_NORMAL(5,3) = -ONE
 
-!     north (Z)
-      ELSE IF(I.EQ.6) THEN
+! north (Z)
+      ELSEIF(I.EQ.6) THEN
          DES_WALL_POS(I,1) = DES_POS_NEW(L,1)
          DES_WALL_POS(I,2) = DES_POS_NEW(L,2)
          IF(DIMN.EQ.3) DES_WALL_POS(I,3) = NZ2 + DES_R
          WALL_NORMAL(6,1) = ZERO
          WALL_NORMAL(6,2) = ZERO
          IF(DIMN.EQ.3) WALL_NORMAL(6,3) = ONE
-      END IF
+      ENDIF
       
       RETURN
       END SUBROUTINE CFWALLPOSVEL
