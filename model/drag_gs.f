@@ -37,6 +37,7 @@
 !        448: 213-241.                                                 C
 !      Hill RJ, Koch DL, Ladd JC (2001). Journal of Fluid Mechanics    C
 !        448: 243-278.                                                 C
+!      Yin, X, Sundaresan, S. (2008).  AIChE			       C
 !                                                                      C
 !  Variables referenced: EP_g, RO_g, MU_g, D_p                         C
 !  Variables modified: DRAG_gs                                         C
@@ -152,6 +153,9 @@
 ! --- Correction factors for implementing polydisperse drag model 
 !     proposed by van der Hoef et al. (2005)
       DOUBLE PRECISION FA_cor, FB_cor, FA, FB, tmp_sum, tmp_fac
+
+! --- Correction factor for implementing HYS drag law
+      DOUBLE PRECISION del_U_mix,tmp_del_U_mix 
 !
 !     
 !     Gas Laminar viscosity redefined here to set
@@ -185,7 +189,7 @@
 !      
 !      transition Reynolds numbers
        DOUBLE PRECISION Re_Trans_1, Re_Trans_2
-!      
+! 
 !      solids volume fraction
        DOUBLE PRECISION phis
 !      
@@ -199,6 +203,56 @@
 !***********************************************************
 !     
 !     
+
+!***********************************************************
+!     Declaration of variables relevant to the HYS drag correlation
+!***********************************************************
+
+!     Index for particles of other species
+      INTEGER j
+
+!     Polydisperse correction factor for YS drag relation
+      DOUBLE PRECISION a_YS
+
+!     Cell center value of x-particle velocity (HYS drag relation)
+      DOUBLE PRECISION USCM_HYS
+
+!     Cell center value of y-particle velocity (HYS drag relation)
+      DOUBLE PRECISION VSCM_HYS
+
+!     Cell center value of z-particle velocity (HYS drag relation)
+      DOUBLE PRECISION WSCM_HYS
+
+!     Lubrication interaction prefactor in YS drag relation	
+      DOUBLE PRECISION alpha_YS
+
+!     Friction coefficient for a particle of type i (HYS drag relation)
+      DOUBLE PRECISION beta_i_HYS
+
+!     Friction coefficient for a particle of type j (HYS drag relation)
+      DOUBLE PRECISION beta_j_HYS
+
+!     Magnitude of gas-solids relative velocity for polydisperse HYS drag 
+!     implementation
+      DOUBLE PRECISION VREL_poly 
+
+!     Stokes drag of a particle of type j
+      DOUBLE PRECISION	FSTOKES_j
+
+!     Diameter ratio used as temp variable
+      DOUBLE PRECISION Y_i_temp
+
+!     Variable for Beetstra et. al. drag relation
+      DOUBLE PRECISION F_D_BVK
+
+!     Variable for YS drag relation
+      DOUBLE PRECISION F_YS
+
+!     Minimum particle diameter in mixture
+      DOUBLE PRECISION min_D_p
+
+!      End of variable definition for HYS drag relation
+!***********************************************************
 !     Current value of F_gs (i.e., without underrelaxation)
       DOUBLE PRECISION F_gstmp
 !-----------------------------------------------
@@ -899,6 +953,167 @@
 !     
 !---- End Beetstra, van der Hoef, Kuipers, Chem. Eng. Science 62 (Jan 2007) -----
 ! 
+
+!-------------------------- Begin HYS drag relation -----------------------------
+
+	ELSE IF(TRIM(DRAG_TYPE).EQ.'HYS') THEN
+	
+        	F_STOKES = 18D0*Mu*EP_s(IJK,M)*EP_g(IJK)/D_p(IJK,M)**2 
+                F_gstmp = ZERO 
+                phis = ZERO
+	        
+                DO IM = 1, MMAX
+
+	          phis = phis + EP_S(IJK,IM)
+
+	        ENDDO 		
+
+		D_p_av = ZERO
+                tmp_sum = ZERO
+	        tmp_fac = ZERO
+
+	        DO IM = 1, MMAX
+                 IF (phis .GT. ZERO) THEN
+
+                   tmp_fac = EP_S(IJK,Im)/phis
+                   tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
+
+                 ELSE
+
+                   tmp_sum = tmp_sum + ONE/ D_p(IJK,Im) ! not important, but will avoid NaN's in empty cells
+
+		 ENDIF
+               ENDDO 
+
+               D_p_av = ONE / tmp_sum
+               Y_i = ZERO
+               Y_i = D_p(IJK,M)/D_p_av
+	       a_YS = 1d0 - 2.66d0*phis + 9.096d0*phis**2 - 11.338d0*phis**3 
+
+!	       Calculate smallest particle diameter in the mixture
+	       min_D_p= MIN(D_p(IJK,1),D_p(IJK,2))
+
+!	       Calculate smallest diameter if number of particle types is greater than 2
+	       IF (MMAX > 2) THEN
+		  DO IM=3,MMAX
+		     min_D_p = MIN(min_D_p,D_p(IJK,IM))
+		  ENDDO
+	       ENDIF
+
+!		Calculate the prefactor of the off-diagonal friction coefficient
+!		Use default value of lamdba if there are no particle asparities
+	       IF (use_def_lam_HYS)THEN
+                  IF (TRIM(UNITS).EQ.'CGS')THEN
+
+		     lam_HYS = 0.0001d0
+		     alpha_YS = 1.313d0*LOG10(min_D_p/lam_HYS) - 1.249d0
+
+		  ELSEIF (TRIM(UNITS).EQ.'SI')THEN
+
+		     lam_HYS = 0.000001d0
+		     alpha_YS = 1.313d0*LOG10(min_D_p/lam_HYS) - 1.249d0
+
+		  ENDIF
+	        ELSE
+
+		   alpha_YS = 1.313d0*LOG10(min_D_p/lam_HYS) - 1.249d0
+
+		ENDIF
+
+!	Calculate velocity components of each species
+		USCM_HYS = ZERO
+		VSCM_HYS = ZERO	
+		WSCM_HYS = ZERO
+		
+		DO IM = 1, MMAX
+
+	           USCM_HYS = USCM_HYS + EP_S(IJK,Im)*(UGC - AVG_X_E(U_S(IMJK,Im),U_S(IJK,Im),I))
+		   VSCM_HYS = VSCM_HYS + EP_S(IJK,Im)*(VGC - AVG_Y_N(V_S(IJMK,Im),V_S(IJK,Im)))
+		   WSCM_HYS = WSCM_HYS + EP_S(IJK,Im)*(WGC - AVG_Z_T(W_S(IJKM,Im),W_S(IJK,Im))) 
+                   
+	        ENDDO 
+		
+		USCM_HYS = USCM_HYS/phis
+		VSCM_HYS = VSCM_HYS/phis
+		WSCM_HYS = WSCM_HYS/phis
+		
+		VREL_poly = SQRT(USCM_HYS**2 + VSCM_HYS**2 + WSCM_HYS**2)
+		
+		IF (Mu > ZERO) THEN	      
+
+                    RE = D_p_av*VREL_poly*ROP_G(IJK)/Mu
+
+                ELSE
+
+ 		    RE = LARGE_NUMBER
+
+                ENDIF
+
+!	Beetstra correction for monodisperse drag
+                F_D_BVK = ZERO
+
+		F = 10d0 * phis / EP_g(IJK)**2 + EP_g(IJK)**2 * (ONE+1.5d0*DSQRT(phis))
+
+        	F_D_BVK = F + 0.413d0*Re/(24d0*EP_g(IJK)**2) * (ONE/EP_G(IJK) + 3d0*EP_G(IJK) &
+                	*phis + 8.4d0/Re**0.343d0) / (ONE+10**(3d0*phis)/Re**(0.5d0+2*phis))
+	
+!	YS correction for polydisperse drag
+		beta_i_HYS = ZERO
+                F_YS = ZERO
+
+		F_YS = 1d0/EP_g(IJK) + (F_D_BVK - 1d0/EP_g(IJK))*(a_YS*Y_i+(1d0-a_YS)*Y_i**2)
+		F_YS = F_YS*F_STOKES
+		beta_i_HYS = F_YS
+              
+	
+		DO j = 1,MMAX
+
+	   	   IF (j /= M)THEN
+
+		      beta_j_HYS = ZERO
+		      Y_i_temp = ZERO
+		      FSTOKES_j = ZERO
+		      Y_i_temp = D_p(IJK,j)/D_p_av
+		      
+		      beta_j_HYS = 1d0/EP_g(IJK) + (F_D_BVK - 1d0/EP_g(IJK))*(a_YS*Y_i_temp+(1d0-a_YS)*Y_i_temp**2)
+		      FSTOKES_j = 18D0*Mu*EP_s(IJK,j)*EP_g(IJK)/D_p(IJK,j)**2 
+		      
+		      beta_j_HYS = beta_j_HYS*FSTOKES_j
+                      
+!	Calculate off-diagonal friction coefficient
+                      
+		      beta_ij(IJK,M,j) = ZERO
+                      
+!	This if statement prevents NaN values from appearing for beta_ij
+                      IF ((EP_S(IJK,M) == ZERO) .or. (EP_S(IJK,j)==ZERO))THEN
+                      
+                         beta_ij(IJK,M,j) = ZERO
+                     
+                      ELSE
+
+		      beta_ij(IJK,M,j) = (2d0*alpha_YS*EP_S(IJK,M)*EP_S(IJK,j))/(EP_S(IJK,M)/beta_i_HYS + EP_S(IJK,j)/beta_j_HYS) 
+         
+                      ENDIF
+                      
+                      F_YS = F_YS + beta_ij(IJK,M,j)
+	   
+	            ENDIF
+		ENDDO
+
+		IF (Model_B)THEN
+
+	   	   F_gstmp = F_YS/EP_g(IJK)
+
+	   	ELSE
+
+	           F_gstmp = F_YS
+
+		ENDIF
+
+
+!***************************END HYS drag relation**************************************
+
+
             ELSE
               CALL START_LOG 
               IF(.not.DMP_LOG)call open_pe_log(ier)
@@ -909,7 +1124,7 @@
             ENDIF
       
             F_gs(IJK, M) = (ONE - UR_F_gs) * F_gs(IJK, M) + UR_F_gs * F_gstmp
-	    
+	! Copy above line for beta_ij to keep drag correct for polydisperse case    
 	    IF(TRIM(KT_TYPE) == 'GHD') THEN
 	      IF(M==1) THEN
 	        F_gs(IJK, MMAX) = F_gs(IJK, M)

@@ -112,6 +112,13 @@
       Allocate(  F_gs(DIMENSION_3, DIMENSION_M) )
       Allocate(  F_ss(DIMENSION_3, 0:DIMENSION_LM) )
 
+!-----------------------HYS drag only--------------------------------
+!Off diagonal friction coefficient in HYS drag relation
+
+      IF(TRIM(DRAG_TYPE).EQ.'HYS') &
+         Allocate(  beta_ij(DIMENSION_3, 0:DIMENSION_M, 0:DIMENSION_M) )
+
+!--------------------------------------------------------------------
 
 !energy
       Allocate(  HOR_g (DIMENSION_3) )

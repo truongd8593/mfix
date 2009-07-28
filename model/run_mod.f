@@ -154,6 +154,12 @@
 !                      (if C(2) and C(3) are defined), gidaspow, Wen_Yu
 !                      koch_hill
       CHARACTER(64)    DRAG_TYPE
+      
+!	Parameter used to calculate lubrication interactions between different
+!	particles in HYS drag model
+      LOGICAL		use_def_lam_HYS
+
+      DOUBLE PRECISION	lam_HYS 
 !
 ! start anuj 4/20
 !	               If. TRUE. calculate frictional stress terms

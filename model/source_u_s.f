@@ -113,6 +113,9 @@
 !
 !                      Source terms (Volumetric) for GHD theory
       DOUBLE PRECISION Ghd_drag, avgRop
+
+!			Source terms for HYS drag relation
+      DOUBLE PRECISION HYS_drag, avgDrag
 ! 
 !                      error message 
       CHARACTER*80     LINE(2) 
@@ -323,6 +326,18 @@
 		  ENDIF
 ! end of modifications for GHD theory
 
+! Additional force for HYS drag force
+                  HYS_drag = ZERO
+		  IF (TRIM(DRAG_TYPE) .EQ. 'HYS') THEN
+		     DO L = 1,MMAX
+		        IF (L /= M) THEN
+		           avgDrag = AVG_X(beta_ij(IJK,M,L),beta_ij(IJKE,M,L),I)
+		           HYS_drag = HYS_drag - avgDrag * (U_g(ijk) - U_s(IJK,L))
+		        ENDIF
+		     ENDDO
+		  ENDIF
+! end of modifications for HYS drag
+
 
 ! Special terms for cylindrical coordinates
                   IF (CYLINDRICAL) THEN 
@@ -347,10 +362,10 @@
 
                   IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN 
                     B_M(IJK,M) = -(SDP + KTMOM_U_S(IJK,M) + SDPS + TAU_U_S(IJK,M)+&
-                    ((V0+ZMAX((-VMT)))*U_SO(IJK,M)+VBF+VCF)*VOL_U(IJK))+B_M(IJK,M) 
+                    ((V0+ZMAX((-VMT)))*U_SO(IJK,M)+VBF+VCF+HYS_drag)*VOL_U(IJK))+B_M(IJK,M) 
                   ELSE
                     B_M(IJK,M) = -(SDP + SDPS + TAU_U_S(IJK,M)+&
-                    ((V0+ZMAX((-VMT)))*U_SO(IJK,M)+VBF+VCF+Ghd_drag)*VOL_U(IJK))+B_M(IJK,M)
+                    ((V0+ZMAX((-VMT)))*U_SO(IJK,M)+VBF+VCF+Ghd_drag+HYS_drag)*VOL_U(IJK))+B_M(IJK,M)
                   ENDIF
                 ENDIF ! end if sip or ip or dilute flow branch
             ENDDO 

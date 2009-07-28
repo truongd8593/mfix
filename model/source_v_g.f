@@ -69,7 +69,7 @@
       INTEGER          I, J, K, IJK, IJKN 
 ! 
 !                      Phase index 
-      INTEGER          M, L
+      INTEGER          M, L, IM
 ! 
 !                      Internal surface 
       INTEGER          ISV 
@@ -100,6 +100,10 @@
 !
 !                      Source terms (Volumetric) for GHD theory
       DOUBLE PRECISION Ghd_drag, avgRop
+
+!			Source terms for HYS drag relation
+      DOUBLE PRECISION HYS_drag, avgDrag
+
 ! 
 ! loezos 
       DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
@@ -235,6 +239,21 @@
 		  ENDIF
 ! end of modifications for GHD theory
 
+! Additional force for HYS drag force
+                  avgDrag = ZERO
+                  HYS_drag = ZERO
+		  IF (TRIM(DRAG_TYPE) .EQ. 'HYS') THEN
+                     DO IM=1,MMAX
+		        DO L = 1,MMAX
+		           IF (L /= IM) THEN
+		              avgDrag = AVG_Y(beta_ij(IJK,IM,L),beta_ij(IJKN,IM,L),J)
+		              HYS_drag = HYS_drag + avgDrag * (V_g(ijk) - V_s(IJK,L))
+		           ENDIF
+		        ENDDO
+                     ENDDO        
+		  ENDIF
+! end of modifications for HYS drag
+
 ! loezos	 Source terms from convective mom. flux
 	         IF (SHEAR) THEN
 		SRT=(2d0*V_sh/XLENGTH)
@@ -264,7 +283,7 @@
             A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+A_M(IJK,S,M&
                )+A_M(IJK,T,M)+A_M(IJK,B,M)+(V0+VPM+ZMAX(VMT))*VOL_V(IJK)) 
             B_M(IJK,M) = -(SDP + TAU_V_G(IJK)&
-	       +Source_conv+((V0+ZMAX((-VMT)))*V_GO(IJK)+VBF+Ghd_drag)&
+	       +Source_conv+((V0+ZMAX((-VMT)))*V_GO(IJK)+VBF+Ghd_drag+HYS_drag)&
                *VOL_V(IJK))+B_M(IJK,M) 
          ENDIF 
       END DO 

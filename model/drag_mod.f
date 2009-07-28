@@ -29,7 +29,10 @@
 !
 !                      Solids-solids drag
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  F_ss
- 
+
+!			Off diagonal friction coefficient in HYS drag relation
+      DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE ::  beta_ij 
+
 !
 !                   temporary storage: Volume x average at momentum cell centers
 !      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  VxF_gs

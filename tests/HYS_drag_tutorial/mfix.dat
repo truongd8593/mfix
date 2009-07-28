@@ -1,0 +1,135 @@
+#  developed flow -- 0-D using cyclic condition
+#
+#  S. Benyahia                  07-25-2009
+#
+#  Gas/solids flow in 0-D channel using 
+#  Holloway, Yin, and Sundaresan (HYS) drag model.
+#  
+# Run-control section
+#
+  RUN_NAME = 'R_HYS'
+  DESCRIPTION = 'Binary mixture using IA theory'
+  RUN_TYPE = 'NEW'
+  UNITS = 'cgs'
+  TIME  =0.0  TSTOP = 1000.0   DT = 1.0e-4 
+  DT_MIN = 1.0e-8
+  ENERGY_EQ = .FALSE.
+  SPECIES_EQ = .FALSE. .FALSE. .FALSE.
+
+  GRANULAR_ENERGY = .FALSE.
+  
+#  KT_TYPE = 'IA_NONEP'   ! NOT using IA polydisperse kinetic theory
+  
+  RDF_TYPE = 'LEBOWITZ'  ! this is default radial distribution function
+
+
+   MOMENTUM_X_EQ =  3*.T.
+   MOMENTUM_Y_EQ =  3*.T.
+
+   GRAVITY = 981
+   MAX_NIT = 200 !high NIT for convergence
+   LEQ_TOL = 9*1D-10
+   LEQ_IT  = 9*300
+   
+   DISCRETIZE = 9*2
+   DEF_COR = .T.
+   NORM_G = 0.0
+   TOL_RESID = 1D-7
+   
+#
+# Geometry Section
+#
+  COORDINATES = 'CARTESIAN'
+
+  XLENGTH  =   1.0    IMAX =  1 
+  YLENGTH  = 1.0    JMAX = 1
+
+  NO_K     = .TRUE.
+  CYCLIC_X = .TRUE.
+  CYCLIC_Y_PD = .TRUE.     ! Periodic in Y-direction with 
+  delp_y = 118.931535d0    ! constant gas pressure drop
+
+#
+# Gas-phase Section                                                            
+  NMAX(0)=0 
+  MU_g0 = 1.8E-4			!constant gas viscosity
+  RO_g0 = 1.3E-3			!constant gas density
+  MW_avg = 29.
+  MU_gmax = 1000.
+
+#
+# Solids-phase Section
+#
+  NMAX(1)=0
+  MU_s0 = 1.8E-4
+  DRAG_TYPE             = 'HYS'		!Holloway, Yin, and Sundaresan drag model
+  USE_DEF_LAM_HYS = .F.
+  LAM_HYS = 0.0001d0 
+  
+  SCHAEFFER = .F. !no frictional viscosity will be used in this simulation
+
+  MMAX = 2     ! bi-disperse powder with same density and different diameter
+  RO_s         = 2*2.4d0
+  D_p0(1)         = 0.02
+  D_p0(2)         = 0.012
+ 
+  CLOSE_PACKED = 2*.TRUE.
+
+  C_e       = 1.0  !  particle-particle collisions
+  e_w       = 0.7   !  particle-wall collisions
+  C_f       = 0.0d0
+  
+  PHIP    = 0.0001     ! specularity coefficient              
+  
+  Phi     = 30
+  EP_star = 0.44d0
+
+  ep_s_max(1)		   = 0.56d0
+  ep_s_max(2)		   = 0.56d0
+#
+# Initial Conditions Section
+#
+
+  IC_X_w(1)           =  0.0 
+  IC_X_e(1)           =  1.0 
+  IC_Y_s(1)           =  0.0 
+  IC_Y_n(1)           = 1.0
+ 
+  IC_EP_g(1)          = 0.95d0
+  IC_ROP_s(1,1)         =  @(0.025d0*2.4d0)
+  IC_ROP_s(1,2)         =  @(0.025d0*2.4d0)
+ 
+  IC_U_g(1)           =   0.0
+  IC_V_g(1)           =  567.0         
+  IC_P_g(1) = 1013250.        
+  IC_T_g(1) = 298.
+
+  IC_U_s(1,1)      = 0.0
+  IC_V_s(1,1)     = 400.0
+  IC_Theta_m(1,1)  = 1.0d-5 ! Warning! theta includes mass of particle
+  IC_U_s(1,2)      = 0.0
+  IC_V_s(1,2)     = 400.0
+  IC_Theta_m(1,2)  = 1.0d-5
+                        
+                               
+#
+#  Boundary Conditions Section
+
+
+#
+#  Output Control
+#
+  RES_DT = 0.001
+  OUT_DT = 10.
+        !
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g   Theta_m
+        !      P_star    V_g  V_s            T_s1 X_s
+        !                W_g  W_s            T_s2
+  SPX_DT = 0.1 0.1   0.1  0.1  0.1  100. 100.  0.1        100.
+
+#   FULL_LOG = .TRUE.
+  RESID_STRING  = 'P0' 'U1' 'V1' 'U2' 'V0' 'G1' 'G2'
+  
+# DMP control
+  
+  NODESI = 1   NODESJ = 1   NODESK = 1

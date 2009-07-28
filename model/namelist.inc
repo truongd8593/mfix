@@ -28,8 +28,9 @@
 ! start peter 7/15
              SHEAR, V_sh,&
 ! end peter 7/15
-             DRAG_TYPE, &
-
+! begin bill 7/10/09
+             DRAG_TYPE, use_def_lam_HYS, lam_HYS, &
+! end bill 7/10/09
 ! JEG Added 
              KT_TYPE, &
              RDF_TYPE, &

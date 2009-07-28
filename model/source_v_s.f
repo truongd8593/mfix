@@ -110,6 +110,9 @@
 !
 !                      Source terms (Volumetric) for GHD theory
       DOUBLE PRECISION Ghd_drag, avgRop
+
+!			Source terms for HYS drag relation
+      DOUBLE PRECISION HYS_drag, avgDrag
 !
 ! loezos
       DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
@@ -322,6 +325,19 @@
 		  ENDIF
 ! end of modifications for GHD theory
 
+! Additional force for HYS drag force
+                  HYS_drag = ZERO
+                  avgDrag = ZERO
+		  IF (TRIM(DRAG_TYPE) .EQ. 'HYS') THEN
+		     DO L = 1,MMAX
+		        IF (L /= M) THEN
+		           avgDrag = AVG_Y(beta_ij(IJK,M,L),beta_ij(IJKN,M,L),J)
+		           HYS_drag = HYS_drag - avgDrag * (V_g(ijk) - V_s(IJK,L))
+		        ENDIF
+		     ENDDO
+		  ENDIF
+! end of modifications for HYS drag
+
 ! loezos, Source terms from convective mom. flux
                   IF (SHEAR) THEN
                     SRT=(2d0*V_sh/XLENGTH)        
@@ -346,11 +362,12 @@
                   IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN 
                     B_M(IJK,M) = -(SDP + KTMOM_V_S(IJK,M) + SDPS + TAU_V_S(IJK,M)&
                         +Source_conv+((V0+ZMAX((-VMT)))&
-                        *V_SO(IJK,M)+VBF)*VOL_V(IJK))+B_M(IJK,M) 
+                        *V_SO(IJK,M)+VBF+HYS_drag)*VOL_V(IJK))+B_M(IJK,M)
+
                   ELSE
                     B_M(IJK,M) = -(SDP + SDPS + TAU_V_S(IJK,M)&
                        +Source_conv+((V0+ZMAX((-VMT)))&
-                        *V_SO(IJK,M)+VBF+Ghd_drag)*VOL_V(IJK))+B_M(IJK,M) 
+                        *V_SO(IJK,M)+VBF+Ghd_drag+HYS_drag)*VOL_V(IJK))+B_M(IJK,M) 
                   ENDIF
                 ENDIF   ! end if sip or ip or dilute flow branch
             ENDDO

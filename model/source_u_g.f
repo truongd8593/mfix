@@ -68,7 +68,7 @@
       INTEGER          I, IJK, IJKE, IPJK, IJKM, IPJKM 
 ! 
 !                      Phase index 
-      INTEGER          M, L
+      INTEGER          M, L, IM
 ! 
 !                      Internal surface 
       INTEGER          ISV 
@@ -108,6 +108,9 @@
 !
 !                      Source terms (Volumetric) for GHD theory
       DOUBLE PRECISION Ghd_drag, avgRop
+
+!			Source terms for HYS drag relation
+      DOUBLE PRECISION HYS_drag, avgDrag
 ! 
 !                      error message 
       CHARACTER*80     LINE 
@@ -231,7 +234,23 @@
 		    ENDDO
 		  ENDIF
 ! end of modifications for GHD theory
+
+! Additional force for HYS drag force
+                avgDrag = ZERO
+                  HYS_drag = ZERO
+		  IF (TRIM(DRAG_TYPE) .EQ. 'HYS') THEN
+		     DO IM=1,MMAX
+                        DO L = 1,MMAX
+		           IF (L /= IM) THEN
+		              avgDrag = AVG_X(beta_ij(IJK,IM,L),beta_ij(IJKE,IM,L),I)
+		              HYS_drag = HYS_drag + avgDrag * (U_g(ijk) - U_s(IJK,L))
+		           ENDIF
+		        ENDDO
+		     ENDDO
+		  ENDIF
+! end of modifications for HYS drag
 !
+
 !         Special terms for cylindrical coordinates
             IF (CYLINDRICAL) THEN 
 !
@@ -252,7 +271,7 @@
             A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+A_M(IJK,S,M&
                )+A_M(IJK,T,M)+A_M(IJK,B,M)+(V0+VPM+ZMAX(VMT)+VTZA)*VOL_U(IJK)) 
             B_M(IJK,M) = -(SDP + TAU_U_G(IJK)+((V0+ZMAX((-VMT)))*U_GO(IJK)+VBF+&
-               VCF+Ghd_drag)*VOL_U(IJK))+B_M(IJK,M)
+               VCF+Ghd_drag+HYS_drag)*VOL_U(IJK))+B_M(IJK,M)
 	ENDIF 
       END DO 
       CALL SOURCE_U_G_BC (A_M, B_M, IER) 

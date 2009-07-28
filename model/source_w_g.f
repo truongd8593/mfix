@@ -69,7 +69,7 @@
                        IJKE, IJKW, IJKTE, IJKTW, IM, IPJK 
 ! 
 !                      Phase index 
-      INTEGER          M, L
+      INTEGER          M, L, MM
 ! 
 !                      Internal surface 
       INTEGER          ISV 
@@ -106,6 +106,10 @@
 !
 !                      Source terms (Volumetric) for GHD theory
       DOUBLE PRECISION Ghd_drag, avgRop
+
+!			Source terms for HYS drag relation
+      DOUBLE PRECISION HYS_drag, avgDrag
+
 ! 
 !                      error message 
       CHARACTER*80     LINE 
@@ -228,6 +232,21 @@
 		    ENDDO
 		  ENDIF
 ! end of modifications for GHD theory
+
+! Additional force for HYS drag force
+		 avgDrag = ZERO
+                 HYS_drag = ZERO
+		 IF (TRIM(DRAG_TYPE) .EQ. 'HYS') THEN
+		     DO MM=1,MMAX
+		        DO L = 1,MMAX
+		           IF (L /= MM) THEN
+		              avgDrag = AVG_Z(beta_ij(IJK,MM,L),beta_ij(IJKT,MM,L),K)
+		              HYS_drag = HYS_drag + avgDrag * (W_g(ijk) - W_s(IJK,L))
+		           ENDIF
+		        ENDDO
+		   ENDDO
+		 ENDIF
+! end of modifications for HYS drag
 !
 !         Special terms for cylindrical coordinates
                VCOA = ZERO 
@@ -292,7 +311,7 @@
             A_M(IJK,W,M) = A_M(IJK,W,M) + CTW 
 	       
             B_M(IJK,M) = -(SDP + TAU_W_G(IJK)+SXZB+((V0+ZMAX((-VMT)))*W_GO(IJK)&
-               +VBF+VCOB+VXZB+Ghd_drag)*VOL_W(IJK)) + B_M(IJK, M) 
+               +VBF+VCOB+VXZB+Ghd_drag+HYS_drag)*VOL_W(IJK)) + B_M(IJK, M) 
          ENDIF 
       END DO 
       CALL SOURCE_W_G_BC (A_M, B_M, IER) 

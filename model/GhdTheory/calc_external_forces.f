@@ -47,7 +47,7 @@
       INTEGER          IJKE, IJKN, IJKT
 !     
 !                      Solids phase
-      INTEGER          M 
+      INTEGER          M ,IM
 !     
 !     Error index
       INTEGER          IER  
@@ -66,6 +66,9 @@
 !     
 !     pressure terms in mass mobility
       DOUBLE PRECISION PGE, PGN, PGT, SDPx, SDPy, SDPz
+
+!     off-diagonal terms for HYS drag relation
+      DOUBLE PRECISION  avgDragx, avgDragy, avgDragz
 !
 !----------------------------------------------- 
 !     Function subroutines
@@ -133,9 +136,31 @@
 		 dragFy = AVG_Y(dragFc,dragFn,J) * (V_g(IJK) - V_s(IJK,M))
 		 dragFz = AVG_Z(dragFc,dragFt,K) * (W_g(IJK) - W_s(IJK,M))
 		 
+                 IF(TRIM(DRAG_TYPE) == 'HYS')THEN
+                    DO IM=1,SMAX
+                       IF(IM /= M)THEN
+
+                          avgDragx = ZERO
+                          avgDragy = ZERO
+                          avgDragz = ZERO
+                          
+                          avgDragx = AVG_X(beta_ij(IJK,M,IM),beta_ij(IJKE,M,IM),I)
+                          dragFx = dragFx - avgDragx*(U_g(IJK) - U_s(IJK,IM))
+                        
+                          avgDragy = AVG_Y(beta_ij(IJK,M,IM),beta_ij(IJKN,M,IM),J)
+                          dragFy = dragFy - avgDragy*(V_g(IJK) - V_s(IJK,IM))
+
+                          avgDragz = AVG_Z(beta_ij(IJK,M,IM),beta_ij(IJKT,M,IM),K)
+                          dragFz = dragFz - avgDragz*(W_g(IJK) - W_s(IJK,IM))
+
+                       ENDIF
+                    ENDDO
+                 ENDIF
+
 		 FiX(IJK,M) =  (Mj * BFX_S(IJK,M) + dragFx + Vj*SDPx)
 		 FiY(IJK,M) =  (Mj * BFY_S(IJK,M) + dragFy + Vj*SDPy)
 		 FiZ(IJK,M) =  (Mj * BFZ_S(IJK,M) + dragFz + Vj*SDPz)
+
                ENDDO
           ENDIF     ! Fluid_at
  200  CONTINUE     ! outer IJK loop
