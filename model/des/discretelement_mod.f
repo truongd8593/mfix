@@ -189,8 +189,6 @@
 
 !     Intial particle velocity distribution's mean and Standard Deviation
       DOUBLE PRECISION pvel_mean, PVEL_StDev
-
-      DOUBLE PRECISION AVG_RAD, RMS_RAD
       DOUBLE PRECISION :: MIN_RADIUS, MAX_RADIUS
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE::   AVE_VEL_X, AVE_VEL_Y,  AVE_VEL_Z
 

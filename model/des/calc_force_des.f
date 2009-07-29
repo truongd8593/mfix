@@ -21,15 +21,13 @@
       USE constant
       IMPLICIT NONE
       
-      INTEGER LL, I, II, K, LC, IW, KK, TEMP, TEMPN, JJ, J, FOCUS_PART2, NEIGH_L
-      INTEGER NI, IJ, NLIM, N_NOCON, IP2
-      INTEGER KM1, KP1, IM1, IP1, JM1, JP1, PNO, NPG, PC(3),  OVERLAP_MAXP
+      INTEGER LL, I, K, J, II, IW, FOCUS_PART2, NEIGH_L
+      INTEGER NI, NLIM, N_NOCON 
+      INTEGER OVERLAP_MAXP
       INTEGER WALLCONTACT, WALLCHECK
 
       DOUBLE PRECISION OVERLAP_N, OVERLAP_T, TEMPX, TEMPY, TEMPZ, TEMPD
-      DOUBLE PRECISION V_REL_TRANS(DIMN), V_SLIP(DIMN)
-      DOUBLE PRECISION V_REL_TRANS_NORM, V_REL_TRANS_TANG, VSLIPMAG
-      DOUBLE PRECISION MASS_I, MASS_J, MASS_EFF
+      DOUBLE PRECISION V_REL_TRANS_NORM, V_REL_TRANS_TANG 
       DOUBLE PRECISION FTMD, FNMD
       DOUBLE PRECISION TEMPFN(DIMN), TEMPFT(DIMN), DIST(DIMN), R_LM
       DOUBLE PRECISION NORMAL(DIMN), TANGENT(DIMN), DISTMOD
@@ -47,38 +45,35 @@
 !---------------------------------------------------------------------
       OVERLAP_MAXP = UNDEFINED_I
       OVERLAP_MAX_WALL = .FALSE.
-!     
+     
       OVERLAP_MAX = ZERO
       NEIGH_MAX = -1
       FOCUS_PARTICLE = 0
       FOCUS_PART2 = 200000000
       IF (S_TIME.LE.DTSOLID) THEN
-         V_REL_TRANS(:) = ZERO
          TANGENT(:) = ZERO
          NORMAL(:) = ZERO
          FC(:,:) = ZERO
          FN(:,:) = ZERO
          FT(:,:) = ZERO
-      END IF
+      ENDIF
 
-!     
 !---------------------------------------------------------------------
 !     Calculate contact force and torque
 !---------------------------------------------------------------------
-!     
+     
       DO LL = 1, PARTICLES
          
          IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN 
             PRINT*, DES_POS_NEW(LL,1), DES_POS_NEW(LL,2)
             PRINT*, DES_VEL_NEW(LL,1), DES_VEL_NEW(LL,2)
             PRINT*,'PFN', PFN(LL,NI,1:2)
-         end IF
+         ENDIF
 
          NI = 0
          TEMPFN(:) = ZERO
          TEMPFT(:) = ZERO
          K = 0
-         KK = 0
          IF(PN(LL,1).GE.1) THEN
             NLIM = PN(LL,1)+1
             N_NOCON = 0
@@ -164,10 +159,10 @@
                      ELSE 
                         PRINT *,'DISTMOD IS ZERO', I,LL
                         STOP
-                     END IF
+                     ENDIF
 
 !     Calculate the translational relative velocity for a contacting particle pair
-                     CALL CFRELVEL(LL, I, V_REL_TRANS, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
+                     CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
                      
                      IF(ALREADY_NEIGHBOURS) THEN 
                         PV(LL,NI) = 1
@@ -187,7 +182,7 @@
                   ELSE
                      CHECk_CON = .FALSE.
                      GOTO 200
-                  endif
+                  ENDIF
                   
                   
                   ETA_N_W = DES_ETAN_WALL(PIJK(LL,5))
@@ -245,14 +240,14 @@
                   ELSE
                      PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
                      PARTICLE_SLIDE = .FALSE.
-                  END IF
+                  ENDIF
                   
                   
 
                END IF           !Wall Contact
  200           CONTINUE
-            END DO
-         END IF                 !if(walldtsplit)
+            ENDDO
+         ENDIF                 !if(walldtsplit)
          
          
          IF (NEIGHBOURS(LL,1).GT.0) THEN
@@ -270,9 +265,9 @@
                            ALREADY_NEIGHBOURS=.TRUE.
                            NI = NEIGH_L
                            EXIT
-                        end IF
+                        ENDIF
                      ENDDO
-                  end IF
+                  ENDIF
                   
                   IF(DES_PERIODIC_WALLS) THEN
                      TEMPX = DES_POS_NEW(I,1)
@@ -314,7 +309,7 @@
                            ENDIF
                         ENDIF
                      ENDIF
-                  END IF
+                  ENDIF
                   
                   R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
                   DIST(:) = DES_POS_NEW(I,:) - DES_POS_NEW(LL,:)
@@ -323,14 +318,14 @@
                   IF(DES_PERIODIC_WALLS) THEN
                      DES_POS_NEW(I,1) = TEMPX
                      DES_POS_NEW(I,2) = TEMPY
-                     IF (DIMN.EQ.3) DES_POS_NEW(I,3) = TEMPZ              
-                  END IF
+                     IF (DIMN.EQ.3) DES_POS_NEW(I,3) = TEMPZ  
+                  ENDIF
 
                   IF(R_LM - DISTMOD.gt.SMALL_NUMBER) then 
                      IF(LL.EQ.FOCUS_PARTICLE) Print*, 'NEIGHBORS', NEIGHBOURS(LL,:)
 
                      
-                     IF((((R_LM-DISTMOD)/R_LM)*100.d0).GT.OVERLAP_MAX) THen
+                     IF((((R_LM-DISTMOD)/R_LM)*100.d0).GT.OVERLAP_MAX) THEN
                         OVERLAP_MAX = (((R_LM-DISTMOD)/R_LM)*100.d0)
                         OVERLAP_MAXP = LL
                         OVERLAP_MAX_WALL = .FALSE.
@@ -342,9 +337,9 @@
                      ELSE 
                         PRINT *,'DISTMOD IS ZERO FOR PART. PAIR', I,LL
                         STOP
-                     END IF
+                     ENDIF
 !     Calculate the translational relative velocity for a contacting particle pair.
-                     CALL CFRELVEL(LL, I, V_REL_TRANS, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
+                     CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
                      IF(ALREADY_NEIGHBOURS) THEN 
                         PV(LL,NI) = 1
                         OVERLAP_N = V_REL_TRANS_NORM*DTSOLID
@@ -363,7 +358,7 @@
                      END IF
                   ELSE
                      GOTO 300
-                  END IF
+                  ENDIF
                   
                   ETA_DES_N = DES_ETAN(PIJK(LL,5), PIJK(I,5))
                   ETA_DES_T = DES_ETAT(PIJK(LL,5), PIJK(I,5))
@@ -406,7 +401,7 @@
                   ELSE
                      PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
                      PARTICLE_SLIDE = .FALSE.
-                  END IF
+                  ENDIF
                   
 !     !impulse is effectively doubled for wall interactions
 
@@ -424,43 +419,43 @@
                         WRITE(1,'(2(1x,A,E12.5))')&
                         'FNx=',FN(LL,1)&
                         ,'FNy=',FN(LL,2)
-                     END IF
+                     ENDIF
                      CLOSE (1)
                      Print*, 'PN', PN(LL,:)
-                  END IF
+                  ENDIF
 !--   END DEBUGGING
                   
-               END IF
+               ENDIF
 
                
  300           CONTINUE
                
                
-            END DO              !II = 2, NEIGHBOURS(LL,1)+I
-         END IF                 !(NEIGHBOURS(LL,1).GT.0)
+            ENDDO              !II = 2, NEIGHBOURS(LL,1)+I
+         ENDIF                 !(NEIGHBOURS(LL,1).GT.0)
          
          IF((NEIGHBOURS(LL,1).EQ.0).AND.(WALLCHECK.EQ.0)) THEN
 !     The subroutine sets all forces on a particle to zero is the particle is found to have no neighbors (either particles or walls)
             CALL CFNOCONTACT(LL)
-         END IF
+         ENDIF
 
-      END DO
+      ENDDO
 
       IF(DES_CONTINUUM_COUPLED) THEN
 !     Treats wall interaction also as a two-particle interaction but accounting for the wall properties
          CALL DRAG_FGS
-      END IF
+      ENDIF
 !     COHESION
       IF(USE_COHESION)THEN
          CALL CALC_COHESIVE_FORCES
-      END IF
+      ENDIF
 !     !COHESION
 !-------------------------------------------------------------------
 !     Update old values with new values
 !-------------------------------------------------------------------
       
 !     Update the old values of particle position and velocity with the new values computed
-      CALL CFUPDATEOLD(PARTICLES)
+      CALL CFUPDATEOLD
       RETURN
       END SUBROUTINE CALC_FORCE_DES
 

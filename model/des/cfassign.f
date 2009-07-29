@@ -37,8 +37,8 @@
       LOGICAL:: filexist, isopen
       
       INTEGER L, IJK, M, I, J, K, COUNT_E
-      DOUBLE PRECISION FOUR_BY_THREE, MINMASS, MASS_I, MASS_J, MASS_EFF
-      DOUBLE PRECISION :: TCOLL, TCOLL_TMP, AVG_MASS, MAXMASS
+      DOUBLE PRECISION MINMASS, MASS_I, MASS_J, MASS_EFF
+      DOUBLE PRECISION :: TCOLL, TCOLL_TMP, MAXMASS
      
 !---------------------------------------------------------------------
 !     Assignments
@@ -46,32 +46,28 @@
 
       INCLUDE 'b_force1.inc'
       INCLUDE 'b_force2.inc'
-      
-      FOUR_BY_THREE = 4.0d0/3.0d0
+
+      WRITE(*,*) '---------- START CFASSIGN ---------->'
+
       MINMASS = LARGE_NUMBER
       MAXMASS = SMALL_NUMBER
       MAX_RADIUS = ZERO
       MIN_RADIUS = LARGE_NUMBER
       TCOLL = LARGE_NUMBER
-      RMS_RAD = ZERO
       DO L = 1, PARTICLES
-         PVOL(L) = FOUR_BY_THREE*Pi*DES_RADIUS(L)**3
+         PVOL(L) = (4.0d0/3.0d0)*Pi*DES_RADIUS(L)**3
          PMASS(L) = PVOL(L)*RO_Sol(L) 
          OMOI(L) = 2.5d0/(PMASS(L)*DES_RADIUS(L)**2) !one over MOI
          MAX_RADIUS = MAX(MAX_RADIUS, DES_RADIUS(L))
          MIN_RADIUS = MIN(MIN_RADIUS, DES_RADIUS(L))
-         RMS_RAD = RMS_RAD + DES_RADIUS(L)**2
          IF(PMASS(L).LT.MINMASS) MINMASS = PMASS(L) 
          MAXMASS = MAX(PMASS(L), MAXMASS)
          MARK_PART(L) = 1
          IF(DES_POS_NEW(L,2).LE.YLENGTH/2.d0) MARK_PART(L) = 0
       ENDDO
 
-      RMS_RAD = SQRT(RMS_RAD/PARTICLES)
-      AVG_MASS = SUM(PMASS(1:PARTICLES))/PARTICLES
-      AVG_RAD = SUM(DES_RADIUS(1:PARTICLES))/PARTICLES
       RADIUS_EQ = MAX_RADIUS*1.05d0
-      Print*,'MAX_RADIUS = ', MAX_RADIUS     
+      WRITE(*,*) '     MAX_RADIUS = ', MAX_RADIUS     
 
 
       IF(.NOT.DES_PERIODIC_WALLS) THEN
@@ -171,8 +167,9 @@
 
       DO I = 1, MMAX
          DO J = 1, MMAX
-            WRITE(*,'(x,A,i2,1x,i2,A,2(g17.8))') 'ETA_N AND ETA_T FOR PAIR',&
-            I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
+            WRITE(*,'(x,A,i2,1x,i2,A,2(g17.8))') &
+               'ETA_N AND ETA_T FOR PAIR',&
+               I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
          ENDDO
       ENDDO
 
@@ -182,7 +179,9 @@
       !DTSOLID = DTSOLID/50     
       DTSOLID = TCOLL/50.d0
       
-      WRITE(*,*) 'MIN TCOLL AND DTSOLID = ', TCOLL, DTSOLID
-      
+      WRITE(*,*) '     MIN TCOLL AND DTSOLID = ', TCOLL, DTSOLID
+
+      WRITE(*,*) '<---------- END CFASSIGN ----------'    
+
       RETURN
       END SUBROUTINE CFASSIGN

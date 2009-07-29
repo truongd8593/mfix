@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFRELVEL(L, II, VRELTRANS)                             C
+!  Module name: CFRELVEL(I, J, VRELTRANS)                             C
 !>
 !!  Purpose: DES - Calculate relative velocity between a particle pair  
 !<
@@ -21,47 +21,54 @@
 !<
 !                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CFRELVEL(L, II, VRELTRANS,VRN, VRT,  TANGNT, NORM)
+      SUBROUTINE CFRELVEL(I, J, VRN, VRT, TANGNT, NORM)
       
       USE discretelement
       USE param1
       IMPLICIT NONE     
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
       
-      INTEGER L, KK, II
+      INTEGER I, J
+      DOUBLE PRECISION TANGNT(DIMN), NORM(DIMN)
+      DOUBLE PRECISION TANMOD, VRN, VRT
       DOUBLE PRECISION VRELTRANS(DIMN)
-      DOUBLE PRECISION TANMOD, TANGNT(DIMN), NORM(DIMN), VSLIP(DIMN), V_ROT(DIMN), OMEGA_SUM(DIMN), VRN, VRT
-!
+      DOUBLE PRECISION VSLIP(DIMN), &
+                       V_ROT(DIMN), OMEGA_SUM(DIMN)
+            
 !-----------------------------------------------------------------------
 
-!     V_ROT(:) = ZERO
-      
-      VRELTRANS(:) = (DES_VEL_NEW(L,:) - DES_VEL_NEW(II,:))
+! translational relative velocity 
+      VRELTRANS(:) = (DES_VEL_NEW(I,:) - DES_VEL_NEW(J,:))
 
+! rotational contribution  : v_rot
       IF(DIMN.EQ.3) THEN
-         OMEGA_SUM(:) = OMEGA_NEW(L,:)*DES_RADIUS(L)+ OMEGA_NEW(II,:)*DES_RADIUS(II)
+         OMEGA_SUM(:) = OMEGA_NEW(I,:)*DES_RADIUS(I)+ OMEGA_NEW(J,:)*DES_RADIUS(J)
       ELSE
-         OMEGA_SUM(1) = OMEGA_NEW(L,1)*DES_RADIUS(L)+ OMEGA_NEW(II,1)*DES_RADIUS(II)
+         OMEGA_SUM(1) = OMEGA_NEW(I,1)*DES_RADIUS(I)+ OMEGA_NEW(J,1)*DES_RADIUS(J)
          OMEGA_SUM(2) = ZERO
       ENDIF
 
       CALL DES_CROSSPRDCT(V_ROT, OMEGA_SUM, NORM)
-      
+
+! total relative velocity 
       VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
 
+! normal component of relative velocity (scalar)
       VRN = DES_DOTPRDCT(VRELTRANS,NORM)
-      
+
+! relative surface velocity in tangential direction 
       VSLIP(:) =  VRELTRANS(:) - VRN*NORM(:)
       
-!     TANMOD = ZERO
-      
+! the magnitude of the tangential vector      
       TANMOD = SQRT(DES_DOTPRDCT(VSLIP,VSLIP))     
       IF(TANMOD.NE.ZERO) THEN
+! the unit vector in the tangential direction  
          TANGNT(:) = VSLIP(:)/TANMOD
       ELSE
          TANGNT(:) = ZERO
       END IF
-      
+
+! tangential component of relative surface velocity (scalar)
       VRT  = DES_DOTPRDCT(VRELTRANS,TANGNT)
 
       RETURN

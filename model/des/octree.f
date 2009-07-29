@@ -171,15 +171,16 @@
       IMPLICIT NONE
 
       INTEGER I, J
-      DOUBLE PRECISION A, OMEGA, OOMEGA2, ASINOMEGAT, BOXLIMIT
+      DOUBLE PRECISION A, OMEGA, OOMEGA2, BOXLIMIT
 
+!     Vibrated bottom wall 
+      A = ZERO
       IF(DES_F.NE.ZERO) THEN
-         A = ZERO
-         ASINOMEGAT = ZERO
          OMEGA = 2.0D0*Pi*DES_F
          OOMEGA2 = ONE/(OMEGA**2)
          A = DES_GAMMA*GRAV(2)*OOMEGA2
       END IF
+!     End - Bottom wall vibration calculations
 
       DO I = 1, MAXQUADS
          DO J = 1, NMQD 
