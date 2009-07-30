@@ -15,31 +15,31 @@
       USE constant
       USE discretelement
       IMPLICIT NONE
-
-      INTEGER I, J, K, TC1, TC2, TCR, TCM
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------  
+      INTEGER I, J, K
       INTEGER PQ, PQM(10), PQXL, PQXU, PQYL, PQYU
       DOUBLE PRECISION CT
+!----------------------------------------------- 
 
       IF(DES_CONTINUUM_COUPLED) THEN
          IF(S_TIME.EQ.TIME) THEN
             INQC = INIT_QUAD_COUNT
-         END IF
-      END IF
+         ENDIF
+      ENDIF
 
       IF(INQC.EQ.INIT_QUAD_COUNT) THEN
 
          CALL INIT_QUAD
-         
          DO I = 1, PARTICLES
             PQ = 1
             CALL ADD_QUAD(I,PQ)
-         END DO
-
+         ENDDO
          DO I = 1, PARTICLES
             J = 1
             CALL QUAD_NEIGHBOURS(I, J)
-         END DO
-
+         ENDDO
          INQC = INQC - 1
          IF(INQC.EQ.0) INQC = INIT_QUAD_COUNT 
 
@@ -48,87 +48,87 @@
          DO I = 1, PARTICLES
             J = 1
             PQ = PQUAD(I)
-!     Removing a moved particle from its old quad 
+! Removing a moved particle from its old quad 
             IF(.NOT.((DES_POS_NEW(I,1).GE.CQUAD(PQ,1)).AND.&
             (DES_POS_NEW(I,1).LT.CQUAD(PQ,3)).AND.& 
             (DES_POS_NEW(I,2).GE.CQUAD(PQ,2)).AND.&
             (DES_POS_NEW(I,2).LT.CQUAD(PQ,4)))) THEN
-            CALL REMOVE_PARTICLE(I,PQ)
-!     Placing the particle in a new quad
-            IF(QLM.LE.2) THEN
-               PQ = 1
-               GO TO 40
-            ELSE
-               PQM(1) = PQ
-               IF(PQM(1).EQ.1) THEN
-                  GO TO 40
+               CALL REMOVE_PARTICLE(I,PQ)
+! Placing the particle in a new quad
+               IF(QLM.LE.2) THEN
+                  PQ = 1
+                  GOTO 40
                ELSE
-                  DO J = 2, QLM 
+                  PQM(1) = PQ
+                  IF(PQM(1).EQ.1) THEN
+                     GOTO 40
+                  ELSE
+                     DO J = 2, QLM 
+                        PQM(J) = LQUAD(PQM(J-1),6)
+                        IF(PQM(J).EQ.1) THEN
+                           PQ = 1
+                           GOTO 40
+                        ELSE
+                           PQ = PQM(J) 
+                           IF((DES_POS_NEW(I,1).GE.CQUAD(PQ,1)).AND.&
+                           (DES_POS_NEW(I,1).LT.CQUAD(PQ,3)).AND.&
+                           (DES_POS_NEW(I,2).GE.CQUAD(PQ,2)).AND.&
+                           (DES_POS_NEW(I,2).LT.CQUAD(PQ,4))) THEN
+                              PQ = LQUAD(PQM(J),6)
+                              GOTO 40    
+                           ENDIF
+                        ENDIF
+                     ENDDO
+                     IF(J.GT.QLM) PQ = 1
+                  ENDIF
+               ENDIF
+ 40    CONTINUE
+               CALL ADD_QUAD(I,PQ)
+            ENDIF
+         ENDDO
+
+! Neighbor search
+         DO I = 1, PARTICLES
+            J = 1
+            IF(QLN.LE.2) THEN
+               PQ = 1
+               GO TO 50
+            ELSE
+               PQM(1) = PQUAD(I)
+               IF(PQM(1).EQ.1) THEN
+                  GOTO 50
+               ELSE
+                  DO J = 2, QLN  
                      PQM(J) = LQUAD(PQM(J-1),6)
                      IF(PQM(J).EQ.1) THEN
                         PQ = 1
-                        GO TO 40
+                        GOTO 50
                      ELSE
                         PQ = PQM(J) 
-                        IF((DES_POS_NEW(I,1).GE.CQUAD(PQ,1)).AND.&
-                        (DES_POS_NEW(I,1).LT.CQUAD(PQ,3)).AND.&
-                        (DES_POS_NEW(I,2).GE.CQUAD(PQ,2)).AND.&
-                        (DES_POS_NEW(I,2).LT.CQUAD(PQ,4))) THEN
-                        PQ = LQUAD(PQM(J),6)
-                        GO TO 40    
-                     END IF
-                  END IF
-               END DO
-               IF(J.GT.QLM) PQ = 1
-            END IF
-         END IF
- 40      CONTINUE
-         CALL ADD_QUAD(I,PQ)
-      END IF
-      END DO
-
-!     Neighbor search
-      DO I = 1, PARTICLES
-         J = 1
-         IF(QLN.LE.2) THEN
-            PQ = 1
-            GO TO 50
-         ELSE
-            PQM(1) = PQUAD(I)
-            IF(PQM(1).EQ.1) THEN
-               GO TO 50
-            ELSE
-               DO J = 2, QLN  
-                  PQM(J) = LQUAD(PQM(J-1),6)
-                  IF(PQM(J).EQ.1) THEN
-                     PQ = 1
-                     GO TO 50
-                  ELSE
-                     PQ = PQM(J) 
-                     PQXL = CQUAD(PQ,1) + 2.1D0 * DES_RADIUS(I)
-                     PQXU = CQUAD(PQ,3) - 2.1D0 * DES_RADIUS(I)
-                     PQYL = CQUAD(PQ,2) + 2.1D0 * DES_RADIUS(I)
-                     PQYU = CQUAD(PQ,4) - 2.1D0 * DES_RADIUS(I)
-
-                     IF((DES_POS_NEW(I,1).GE.PQXL).AND.&
-                     (DES_POS_NEW(I,1).LT.PQXU).AND.&
-                     (DES_POS_NEW(I,2).GE.PQYL).AND.&
-                     (DES_POS_NEW(I,2).LT.PQYU)) THEN
-                     GO TO 50    
-                  END IF
-               END IF
-            END DO
-            IF(J.GT.QLN) PQ = 1
-         END IF
-      END IF
+                        PQXL = CQUAD(PQ,1) + 2.1D0 * DES_RADIUS(I)
+                        PQXU = CQUAD(PQ,3) - 2.1D0 * DES_RADIUS(I)
+                        PQYL = CQUAD(PQ,2) + 2.1D0 * DES_RADIUS(I)
+                        PQYU = CQUAD(PQ,4) - 2.1D0 * DES_RADIUS(I)
+   
+                        IF((DES_POS_NEW(I,1).GE.PQXL).AND.&
+                        (DES_POS_NEW(I,1).LT.PQXU).AND.&
+                        (DES_POS_NEW(I,2).GE.PQYL).AND.&
+                        (DES_POS_NEW(I,2).LT.PQYU)) THEN
+                           GOTO 50    
+                        ENDIF
+                     ENDIF
+                  ENDDO
+                  IF(J.GT.QLN) PQ = 1
+               ENDIF
+            ENDIF
  50   CONTINUE
-      CALL QUAD_NEIGHBOURS(I, PQ)
-      END DO
+            CALL QUAD_NEIGHBOURS(I, PQ)
+         ENDDO
       
-      INQC = INQC - 1		
-      IF(INQC.EQ.0) INQC = INIT_QUAD_COUNT
+         INQC = INQC - 1
+         IF(INQC.EQ.0) INQC = INIT_QUAD_COUNT
 
-      END IF
+      ENDIF
       
       RETURN
       END SUBROUTINE QUADTREE 
@@ -160,9 +160,12 @@
       USE constant
       USE compar
       IMPLICIT NONE
-
+!-----------------------------------------------
+! Local variables
+!----------------------------------------------- 
       INTEGER I, J
       DOUBLE PRECISION A, OMEGA, OOMEGA2, BOXLIMIT
+!-----------------------------------------------
 
 !     Vibrated bottom wall 
       A = ZERO 
@@ -171,17 +174,17 @@
          OMEGA = 2.0D0*Pi*DES_F
          OOMEGA2 = ONE/(OMEGA**2)
          A = DES_GAMMA*GRAV(2)*OOMEGA2
-      END IF
+      ENDIF
 !     End - Bottom wall vibration calculations 
       
       DO I = 1, MAXQUADS
          DO J = 1, NMQD 
             LQUAD(I,J) = 0
-         END DO
+         ENDDO
          DO J = 1, NWALLS
             CQUAD(I,J) = ZERO
-         END DO
-      END DO
+         ENDDO
+      ENDDO
 
       NQUAD = 1
       BOXLIMIT = RADIUS_EQ 
@@ -189,7 +192,6 @@
       CQUAD(1,2) = BY1 - BOXLIMIT - A !Adding minimum displacement to the bottom wall
       CQUAD(1,3) = EX2 + BOXLIMIT
       CQUAD(1,4) = TY2 + BOXLIMIT
-
 
       RETURN
       END SUBROUTINE INIT_QUAD 
@@ -210,8 +212,11 @@
       USE param1
       USE discretelement
       IMPLICIT NONE
-      
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------      
       INTEGER II, PQD, J, K
+!----------------------------------------------- 
 
       LQUAD(PQD,7) =  LQUAD(PQD,7) - 1
 
@@ -223,12 +228,13 @@
                END DO
             ELSE
                LQUAD(PQD,J) = 0
-            END IF
-         END IF
-      END DO
+            ENDIF
+         ENDIF
+      ENDDO
 
       RETURN
       END SUBROUTINE REMOVE_PARTICLE 
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -245,9 +251,12 @@
       USE param1
       USE discretelement
       IMPLICIT NONE
-      
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------   
       INTEGER II, IQS
       INTEGER J ,IQ, IFOUND, K
+!-----------------------------------------------
 
       IFOUND = 0
  10   CONTINUE
@@ -261,12 +270,13 @@
          LQUAD(IQS,7) = J+1
          LQUAD(IQS,J+1) = II
          IFOUND = 1
-      END IF
-      IF(IFOUND.EQ.0) GO TO 10 
+      ENDIF
+      IF(IFOUND.EQ.0) GOTO 10 
+
       RETURN
       END SUBROUTINE ADD_QUAD 
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE FIND_QUAD(I,Q)
@@ -274,9 +284,11 @@
       USE param1
       USE discretelement
       IMPLICIT NONE
-      
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------        
       INTEGER I, Q, I_F, IC, IX, IY, NC
-
+!-----------------------------------------------  
 
       I_F = 0
  20   CONTINUE
@@ -288,32 +300,36 @@
             IX = 1
          ELSE 
             IX = 0
-         END IF
+         ENDIF
          IF(DES_POS_NEW(I,2).GE.CQUAD(IC,4)) THEN
             IY = 1
          ELSE
             IY = 0
-         END IF
+         ENDIF
          NC = IX + 2*IY
          Q = IC + NC
-      END IF
-      IF(I_F.EQ.0) GO TO 20 
+      ENDIF
+      IF(I_F.EQ.0) GOTO 20 
       PQUAD(I) = Q
 
       RETURN
       END SUBROUTINE FIND_QUAD
 
+
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C           
 
-      SUBROUTINE SPLIT_QUAD(Q)	
+      SUBROUTINE SPLIT_QUAD(Q)
       
       USE param1   
       USE discretelement
       IMPLICIT NONE
-      
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------       
       INTEGER Q
       INTEGER I_FQ, J, K, ORPHANS(4), NC
       DOUBLE PRECISION XL, YL, XU, YU, XMID, YMID
+!----------------------------------------------- 
 
       LQUAD(Q,7) = -1
       DO J = 1, 4
@@ -334,7 +350,7 @@
       CQUAD(NQUAD+1,3) = XL+XMID
       CQUAD(NQUAD+1,4) = YL+YMID
 
-      CQUAD(NQUAD+2,1) = XL+XMID	
+      CQUAD(NQUAD+2,1) = XL+XMID
       CQUAD(NQUAD+2,2) = YL
       CQUAD(NQUAD+2,3) = XU
       CQUAD(NQUAD+2,4) = YL+YMID
@@ -357,17 +373,17 @@
          NC = LQUAD(I_FQ,7)
          LQUAD(I_FQ,7) = NC+1
          LQUAD(I_FQ,NC+1) = K 
-      END DO
+      ENDDO
 
       IF(I_FQ.GT.MAXQUADS-100) THEN 
          PRINT *,'I_FQ.GT.MAXQUADS. CALLING REARRANGE'
          CALL REARRANGE_QUADTREE(I_FQ) 
-      END IF
+      ENDIF
 
       IF(I_FQ.GT.MAXQUADS-100) THEN
          PRINT *,'QUADTREE: NQUADS GREATER THAN MAXQUADS SPECIFIED', I_FQ
          STOP
-      END IF
+      ENDIF
 
       RETURN
       END SUBROUTINE SPLIT_QUAD
@@ -388,27 +404,30 @@
       USE param1
       USE discretelement
       IMPLICIT NONE
-      
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------       
       INTEGER II, J
+!----------------------------------------------- 
 
-!     If all child quads of II are empty then remove the child quads
+! If all child quads of II are empty then remove the child quads
       IF((LQUAD(LQUAD(II,1),7).EQ.0).AND.&
-      (LQUAD(LQUAD(II,2),7).EQ.0).AND.&
-      (LQUAD(LQUAD(II,3),7).EQ.0).AND.&
-      (LQUAD(LQUAD(II,4),7).EQ.0)) THEN
+         (LQUAD(LQUAD(II,2),7).EQ.0).AND.&
+         (LQUAD(LQUAD(II,3),7).EQ.0).AND.&
+         (LQUAD(LQUAD(II,4),7).EQ.0)) THEN
 
-      DO J = 1, 4
-         LQUAD(LQUAD(II,J),6) = -2 
-         LQUAD(II,J) = 0
-      END DO
-      LQUAD(II,7) = 0
-
-      END IF      
+         DO J = 1, 4
+            LQUAD(LQUAD(II,J),6) = -2 
+            LQUAD(II,J) = 0
+         ENDDO
+         LQUAD(II,7) = 0
+   
+      ENDIF      
 
       RETURN
       END SUBROUTINE DELETE_QUADS 
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: REARRANGE_QUADTREE(II)                                 C
@@ -424,12 +443,15 @@
       USE param1
       USE discretelement
       IMPLICIT NONE
-      
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------       
       INTEGER MNQD, I, J, K, LQ
+!-----------------------------------------------
 
       DO I = 1, MNQD
          IF(LQUAD(I,7).EQ.-1) CALL DELETE_QUADS(I)
-      END DO
+      ENDDO
 
       I = 1
  30   CONTINUE
@@ -441,14 +463,14 @@
                IF(K.LE.4) THEN
                   CQUAD(J,K) = CQUAD(J+4,K) ! moving the cquad array
                   IF(LQUAD(LQ,7).LT.0) LQUAD(LQ,K) = LQUAD(LQ,K) - 4 
-               END IF
-            END DO
-         END DO
+               ENDIF
+            ENDDO
+         ENDDO
          MNQD = MNQD - 4
          I = I + 4
       ELSE
          I = I + 1
-      END IF
+      ENDIF
       IF(I.LE.MNQD) GO TO 30 
 
       RETURN
@@ -472,9 +494,12 @@
       USE param1
       USE discretelement
       IMPLICIT NONE
-
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
       INTEGER II, I, N, LL, IC, J, JJ, K, POS, IXU, IXL, IYU, IYL, KK, NQ
       DOUBLE PRECISION XM, YM, DIST, R_LM, XL, XU, YL, YU 
+!-----------------------------------------------
 
       IF (LQUAD(NQ,7).GT.0) THEN
 
@@ -484,37 +509,33 @@
                DIST = ZERO 
                DO K = 1, DIMN
                   DIST = DIST + (DES_POS_NEW(II,K)-DES_POS_NEW(N,K))**2
-               END DO
+               ENDDO
                DIST = SQRT(DIST)
                R_LM = DES_RADIUS(II)+DES_RADIUS(N)
                IF(DIST.LE.R_LM) THEN
-		  NEIGHBOURS(II,1) = NEIGHBOURS(II,1) + 1
-		  NEIGHBOURS(N,1) = NEIGHBOURS(N,1) + 1
-		  J = NEIGHBOURS(II,1)
-		  JJ = NEIGHBOURS(N,1)
+                  NEIGHBOURS(II,1) = NEIGHBOURS(II,1) + 1
+                  NEIGHBOURS(N,1) = NEIGHBOURS(N,1) + 1
+                  J = NEIGHBOURS(II,1)
+                  JJ = NEIGHBOURS(N,1)
                   IF(J.LE.MN) THEN
                      NEIGHBOURS(II,J+1) = N
-                     PN_DIST(II,J+1) = DIST
-                     PN_RLM(II,J+1) = R_LM
-	          ELSE 
+                  ELSE 
                      PRINT *,'QUADTREE - NEIGHBORS GT MN'
                      PRINT *, II,':', (NEIGHBOURS(II,LL),LL=1,MAXNEIGHBORS)
                      STOP
-	          END IF
+                  ENDIF
                   IF(JJ.LE.MN) THEN
                      NEIGHBOURS(N,JJ+1) = II 
-                     PN_DIST(N,JJ+1) = DIST
-                     PN_RLM(N,JJ+1) = R_LM
-	          ELSE 
+                  ELSE 
                      PRINT *,'QUADTREE - NEIGHBORS GT MN'
                      PRINT *, II,':', (NEIGHBOURS(N,LL),LL=1,MAXNEIGHBORS)
                      STOP
-	          END IF
-               END IF
-            END IF
-         END DO
+                  ENDIF
+               ENDIF
+            ENDIF
+         ENDDO
 
-      ELSE IF(LQUAD(NQ,7).EQ.-1) THEN
+      ELSEIF(LQUAD(NQ,7).EQ.-1) THEN
          IC = LQUAD(NQ,1)
          XM = CQUAD(IC,3)
          YM = CQUAD(IC,4)
@@ -533,60 +554,60 @@
             IXL = 1
          ELSE 
             IXL = 0
-         END IF
+         ENDIF
          IF(YL.GE.YM) THEN
             IYL = 1
          ELSE 
             IYL = 0
-         END IF
+         ENDIF
          IF(XU.GE.XM) THEN
             IXU = 1
          ELSE
             IXU = 0
-         END IF
+         ENDIF
          IF(YU.GE.YM) THEN
             IYU = 1
          ELSE
             IYU = 0
-         END IF
+         ENDIF
          POS = IXL + 2*IYL + 4*IXU + 8*IYU
 
          IF(POS.EQ.0) THEN 
             CALL QUAD_NEIGHBOURS(II, IC) 
 
-         ELSE IF(POS.EQ.4) THEN
+         ELSEIF(POS.EQ.4) THEN
             CALL QUAD_NEIGHBOURS(II,IC)
             CALL QUAD_NEIGHBOURS(II, IC+1)
             
-         ELSE IF(POS.EQ.8) THEN
+         ELSEIF(POS.EQ.8) THEN
             CALL QUAD_NEIGHBOURS(II, IC) 
             CALL QUAD_NEIGHBOURS(II, IC+2) 
             
-         ELSE IF(POS.EQ.12) THEN
+         ELSEIF(POS.EQ.12) THEN
             CALL QUAD_NEIGHBOURS(II, IC)
             CALL QUAD_NEIGHBOURS(II, IC+1) 
             CALL QUAD_NEIGHBOURS(II, IC+2) 
             CALL QUAD_NEIGHBOURS(II, IC+3)
             
-         ELSE IF(POS.EQ.5) THEN
+         ELSEIF(POS.EQ.5) THEN
             CALL QUAD_NEIGHBOURS(II, IC+1)
             
-         ELSE IF(POS.EQ.13) THEN
+         ELSEIF(POS.EQ.13) THEN
             CALL QUAD_NEIGHBOURS(II, IC+1)
             CALL QUAD_NEIGHBOURS(II, IC+3)
             
-         ELSE IF(POS.EQ.10) THEN
+         ELSEIF(POS.EQ.10) THEN
             CALL QUAD_NEIGHBOURS(II, IC+2)
             
-         ELSE IF(POS.EQ.14) THEN
+         ELSEIF(POS.EQ.14) THEN
             CALL QUAD_NEIGHBOURS(II, IC+2)
             CALL QUAD_NEIGHBOURS(II, IC+3)
             
-         ELSE IF(POS.EQ.15) THEN
+         ELSEIF(POS.EQ.15) THEN
             CALL QUAD_NEIGHBOURS(II, IC+3) 
             
-         END IF
-      END IF
+         ENDIF
+      ENDIF
 
       RETURN
       END SUBROUTINE QUAD_NEIGHBOURS 

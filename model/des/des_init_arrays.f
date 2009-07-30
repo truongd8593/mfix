@@ -68,14 +68,12 @@
       PFN(:,:,:) = ZERO
       PFT(:,:,:) = ZERO
 
+      PINC(:) = ZERO
       PIJK(:,:) = ZERO
-      PN_DIST(:,:) = ZERO
-      PN_RLM(:,:) = ZERO
 
       DES_WALL_POS(:,:) = UNDEFINED
       DES_WALL_VEL(:,:) = UNDEFINED
 
-      PINC(:) = ZERO
       DES_U_s(:,:) = ZERO
       DES_W_s(:,:) = ZERO
       DES_W_s(:,:) = ZERO

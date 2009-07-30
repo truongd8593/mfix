@@ -14,9 +14,9 @@
 
       MODULE DISCRETELEMENT
 
-
       USE param
       USE param1
+
 
 !===========START of Interpolation related data======================
 !     the coefficient add to gas momentum A matrix  at cell corners
@@ -262,10 +262,6 @@
       INTEGER, DIMENSION(:), ALLOCATABLE :: PQUAD ! (PARTICLES) 
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: CQUAD ! (NWALLS,MAXQUADS)
      
-!     Neighbor distances
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PN_DIST ! (PARTICLES,MAXNEIGHBORS)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PN_RLM ! (PARTICLES,MAXNEIGHBORS)
-   
 !     Granular temperature
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_THETA ! (PARTICLES,MMAX)
      

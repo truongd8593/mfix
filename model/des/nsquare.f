@@ -15,9 +15,13 @@
       USE discretelement
       IMPLICIT NONE
 
-      INTEGER L, I, K, KK, II, TC1, TC2, TCR, TCM, J
-      DOUBLE PRECISION CT
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      INTEGER L, I, K, KK, II
       DOUBLE PRECISION DIST, R_LM
+
+!-----------------------------------------------
 
       DO L = 1, PARTICLES 
          DO I = 1, PARTICLES
@@ -25,7 +29,7 @@
             IF (I.GT.L) THEN
                DO II = 1, DIMN
                   DIST = DIST + (DES_POS_NEW(I,II)-DES_POS_NEW(L,II))**2 
-               END DO
+               ENDDO
                DIST = SQRT(DIST)
                R_LM = DES_RADIUS(L) + DES_RADIUS(I)
                R_LM = FACTOR_RLM*R_LM
@@ -36,26 +40,22 @@
                   KK = NEIGHBOURS(I,1)
                   IF (K.LE.MN) THEN
                      NEIGHBOURS(L,K+1) = I
-                     PN_DIST(L,K+1) = DIST
-                     PN_RLM(L,K+1) = R_LM
                   ELSE 
                      PRINT *,'NSQUARE - NEIGHBORS GT MN'
                      PRINT *, L,':',(NEIGHBOURS(L,II), II=1,MAXNEIGHBORS) 
                      STOP
-                  END IF
+                  ENDIF
                   IF (KK.LE.MN) THEN
                      NEIGHBOURS(I,KK+1) = L
-                     PN_DIST(I,KK+1) = DIST
-                     PN_RLM(I,KK+1) = R_LM
                   ELSE 
                      PRINT *,'NSQUARE - NEIGHBORS GT MN'
                      PRINT *, I,':',(NEIGHBOURS(I,II), II=1,MAXNEIGHBORS) 
                      STOP
-                  END IF
-               END IF
-            END IF
-         END DO
-      END DO
+                  ENDIF
+               ENDIF
+            ENDIF
+         ENDDO
+      ENDDO
 
       RETURN
       END SUBROUTINE NSQUARE

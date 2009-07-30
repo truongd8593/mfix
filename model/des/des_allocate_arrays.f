@@ -19,10 +19,17 @@
       Use compar
       Use physprop
       IMPLICIT NONE
-      
-      INTEGER NPARTICLES, I,J,K, NP, M 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------        
+! indices
+      INTEGER I, J, K, NP, M 
+! domain volume      
       DOUBLE PRECISION :: VOL_DOMAIN
-      
+! the number of particles in the system 
+      INTEGER NPARTICLES      
+!----------------------------------------------- 
+
       IF(GENER_PART_CONFIG) THEN 
          WRITE(*,*) 'GENER_PART_CONFIG = ', GENER_PART_CONFIG
          WRITE(*,*) 'DES_EPS_XSTART, YSTART, ZSTART = ',&
@@ -219,10 +226,6 @@
          Allocate(  PQUAD (PARTICLES) )
          Allocate(  CQUAD (MAXQUADS, NWALLS) )
       ENDIF
-     
-! Neighbor distances
-      Allocate(  PN_DIST (NPARTICLES, MAXNEIGHBORS) )
-      Allocate(  PN_RLM (NPARTICLES, MAXNEIGHBORS) )
      
 ! Granular temperature
       Allocate(  DES_THETA (DIMENSION_3, DIMENSION_M) )
