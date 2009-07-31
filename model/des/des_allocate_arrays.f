@@ -175,10 +175,6 @@
       Allocate(  FC (NPARTICLES,DIMN) )
       Allocate(  FN (NPARTICLES,DIMN) )
       Allocate(  FT (NPARTICLES,DIMN) )
-      Allocate(  FNS2 (DIMN) )
-      Allocate(  FTS2 (DIMN) )
-      Allocate(  FNS1 (DIMN) )
-      Allocate(  FTS1 (DIMN) )
       Allocate(  GRAV (DIMN) )
 
 ! Torque     

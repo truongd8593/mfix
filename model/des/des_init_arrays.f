@@ -50,8 +50,6 @@
       PPOS(:,:) = ZERO
    
       GRAV(:) = ZERO
-      FNS1(:) = ZERO
-      FTS1(:) = ZERO
 
       IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. &
         DES_NEIGHBOR_SEARCH .EQ. 3) THEN

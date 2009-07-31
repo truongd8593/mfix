@@ -21,25 +21,38 @@
       USE constant
       IMPLICIT NONE
       
-      INTEGER LL, I, K, J, II, IW, FOCUS_PART2, NEIGH_L
-      INTEGER NI, NLIM, N_NOCON 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------      
+      INTEGER I, J, LL, II, IW
+      INTEGER NI, NLIM, N_NOCON, NEIGH_L
       INTEGER OVERLAP_MAXP
       INTEGER WALLCONTACT, WALLCHECK
 
-      DOUBLE PRECISION OVERLAP_N, OVERLAP_T, TEMPX, TEMPY, TEMPZ, TEMPD
+      DOUBLE PRECISION OVERLAP_N, OVERLAP_T
+      DOUBLE PRECISION TEMPX, TEMPY, TEMPZ, TEMPD
       DOUBLE PRECISION V_REL_TRANS_NORM, V_REL_TRANS_TANG 
       DOUBLE PRECISION FTMD, FNMD
-      DOUBLE PRECISION TEMPFN(DIMN), TEMPFT(DIMN), DIST(DIMN), R_LM
-      DOUBLE PRECISION NORMAL(DIMN), TANGENT(DIMN), DISTMOD
+      DOUBLE PRECISION TEMPFN(DIMN), TEMPFT(DIMN)
+      DOUBLE PRECISION FTS1(DIMN), FTS2(DIMN)
+      DOUBLE PRECISION FNS1(DIMN), FNS2(DIMN)
+      DOUBLE PRECISION NORMAL(DIMN), TANGENT(DIMN)
+      DOUBLE PRECISION DIST(DIMN), DISTMOD, R_LM
 
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
       DOUBLE PRECISION, SAVE :: FTHIST(2)
       INTEGER, SAVE ::  CONTACT_COUNT = 1
 
       LOGICAL ALREADY_EXISTS
-      LOGICAL CHECK_CON, ALREADY_NEIGHBOURS, OVERLAP_MAX_WALL
+      LOGICAL ALREADY_NEIGHBOURS, OVERLAP_MAX_WALL
 
-!     
+!-----------------------------------------------      
+! Functions
+!-----------------------------------------------      
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+
+!-----------------------------------------------   
+
+
 !---------------------------------------------------------------------
 !     Calculate new values
 !---------------------------------------------------------------------
@@ -49,7 +62,8 @@
       OVERLAP_MAX = ZERO
       NEIGH_MAX = -1
       FOCUS_PARTICLE = 0
-      FOCUS_PART2 = 200000000
+
+
       IF (S_TIME.LE.DTSOLID) THEN
          TANGENT(:) = ZERO
          NORMAL(:) = ZERO
@@ -70,10 +84,13 @@
             PRINT*,'PFN', PFN(LL,NI,1:2)
          ENDIF
 
-         NI = 0
          TEMPFN(:) = ZERO
          TEMPFT(:) = ZERO
-         K = 0
+         FTS1(:)=ZERO
+         FTS2(:)=ZERO
+         FNS1(:)=ZERO
+         FNS2(:)=ZERO
+
          IF(PN(LL,1).GE.1) THEN
             NLIM = PN(LL,1)+1
             N_NOCON = 0
@@ -106,9 +123,7 @@
          END IF
          
 !     Initializing the particle
-         DO K = 2, MAXNEIGHBORS
-            PV(LL,K) = 0
-         END DO
+         PV(LL,2:MAXNEIGHBORS) = 0
          
 !     Treats wall interaction also as a two-particle interaction but accounting for the wall properties
          IF(WALLDTSPLIT) THEN
@@ -153,7 +168,7 @@
                         OVERLAP_MAXP = LL
                         OVERLAP_MAX_WALL = .TRUE.
                      ENDIF
-                     CHECk_CON = .TRUE.
+
                      IF(DISTMOD.NE.ZERO) THEN
                         NORMAL(:)= DIST(:)/DISTMOD
                      ELSE 
@@ -180,7 +195,6 @@
                         FTHIST = ZERO
                      ENDIF
                   ELSE
-                     CHECk_CON = .FALSE.
                      GOTO 200
                   ENDIF
                   
@@ -188,13 +202,11 @@
                   ETA_N_W = DES_ETAN_WALL(PIJK(LL,5))
                   ETA_T_W = DES_ETAT_WALL(PIJK(LL,5))
                   
-                  
                   FNS1(:) = -KN_W*((OVERLAP_N))*NORMAL(:)
                   FNS2(:) = -ETA_N_W*V_REL_TRANS_NORM*NORMAL(:)
                   
                   FTS1(:) = -KT_W*((OVERLAP_T)) *TANGENT(:)
                   FTS2(:) = -ETA_T_W*V_REL_TRANS_TANG*TANGENT(:)
-                  
                   
                   FT(LL,:) = FTS1(:) + FTS2(:) 
                   FN(LL,:) = FNS1(:) + FNS2(:) 
@@ -209,6 +221,8 @@
                   CALL CFFCTOWALL(LL, NORMAL)
 
                   PFN(LL,NI,:) =  PFN(LL,NI,:) + FNS1(:)
+                  PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
+
                   IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN 
                      PRINT*,'WALL CONTACT ON', NI
                      PRINT*, 'ALREADY_NEIGHBOURS? = ', ALREADY_NEIGHBOURS   
@@ -234,17 +248,9 @@
                      READ(*,*)
                   ENDIF
 
-                  
-                  IF(.NOT.PARTICLE_SLIDE) THEN
-                     PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
-                  ELSE
-                     PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
-                     PARTICLE_SLIDE = .FALSE.
-                  ENDIF
-                  
-                  
+                  PARTICLE_SLIDE = .FALSE.
 
-               END IF           !Wall Contact
+               ENDIF           !Wall Contact
  200           CONTINUE
             ENDDO
          ENDIF                 !if(walldtsplit)
@@ -331,7 +337,6 @@
                         OVERLAP_MAX_WALL = .FALSE.
                      ENDIF
 
-                     CHECk_CON = .TRUE.
                      IF(DISTMOD.NE.ZERO) THEN
                         NORMAL(:)= DIST(:)/DISTMOD
                      ELSE 
@@ -391,20 +396,13 @@
 !     Check for Coulomb’s friction law and limit the maximum value of the tangential force on a particle in contact with another particle
                   CALL CFSLIDE(LL, TANGENT, TEMPFT)
                   
-                  PFN(LL,NI,:) = PFN(LL,NI,:) +  FNS1(:)
-
 !     Calculate the total force Fc and Tow on a particle in a particle-particle collision
                   CALL CFFCTOW(LL, I, NORMAL)
 
-                  IF(.NOT.PARTICLE_SLIDE) THEN
-                     PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
-                  ELSE
-                     PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
-                     PARTICLE_SLIDE = .FALSE.
-                  ENDIF
+                  PFN(LL,NI,:) = PFN(LL,NI,:) +  FNS1(:)
+                  PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
+                  PARTICLE_SLIDE = .FALSE.
                   
-!     !impulse is effectively doubled for wall interactions
-
                   IF(DEBUG_DES.AND.LL.eq.FOCUS_PARTICLE)THEN
                      INQUIRE(FILE='debug_file',EXIST=ALREADY_EXISTS)
                      IF(ALREADY_EXISTS)THEN
@@ -423,7 +421,6 @@
                      CLOSE (1)
                      Print*, 'PN', PN(LL,:)
                   ENDIF
-!--   END DEBUGGING
                   
                ENDIF
 
