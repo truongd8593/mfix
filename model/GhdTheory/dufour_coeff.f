@@ -94,7 +94,7 @@
             enddo
             dq_bar(i,j) = -2.5d0*ni(i)*ni(j)*Ti(i)**3/mi(i)/T**2   &
                         *(mi(j)/rho/Ti(i)*sum1(i,j)  &
-                        -2.5d0*mi(i)*T/ni(i)/Ti(i)**3*dzeta0_dnj(j) &
+                        -0.4d0*mi(i)*T/ni(i)/Ti(i)**3*dzeta0_dnj(j) &
                         *lambdai(i) - dTl_dnj(i,j)/3.d0/Ti(i)**2)  &
                         +sum2(i,j)/3.d0/T**2 
          enddo

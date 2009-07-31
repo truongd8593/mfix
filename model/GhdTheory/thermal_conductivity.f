@@ -39,7 +39,7 @@
 ! calculate quantities on p.14-15 of CMH notes
       do i=1,s
          do j=1,s
-            E(i,j) = 2.d0*mu(j,i)**2/theta(i)**2*(theta(i) &
+            E(i,j) = 2.d0*mu(j,i)/theta(i)**2*(theta(i) &
                +theta(j))**2   &
                *(2.d0*alpha(i,j)**2-3.d0*alpha(i,j)+4.d0) &
                *(5.d0*theta(i)+8.d0*theta(j)) &
