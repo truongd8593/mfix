@@ -80,6 +80,7 @@
       USE parallel    
       USE discretelement
       USE usr
+      USE des_bc
 !DISTIO
       USE cdist
       
@@ -87,49 +88,47 @@
 !-----------------------------------------------
 !     G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
+
 !-----------------------------------------------
 !     D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!     
 !     This routine is called from: 0 -  mfix; 1 - post_mfix
       INTEGER POST 
+
 !-----------------------------------------------
 !     L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-!     
 !     LINE_STRING(1:MAXCOL) has valid input data
       INTEGER, PARAMETER :: MAXCOL = 80 
+
 !-----------------------------------------------
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
-!     
 !     holds one line in the input file
       CHARACTER LINE_STRING*132
-!     
+     
 !     integer function ... if > 0 ... data past column
 !     MAXCOL in input file
       INTEGER   LINE_TOO_BIG 
-!     
+     
 !     Length of noncomment string
       INTEGER   LINE_LEN
 !     
 !     integer function which returns COMMENT_INDEX
       INTEGER   SEEK_COMMENT 
-!     
+     
 !     Line number
       INTEGER   LINE_NO 
-!     
+     
 !     Coefficient of restitution (old symbol)
       DOUBLE PRECISION e
-
-!     
+     
 !     Indicate whether currently reading rxns or rate
       LOGICAL          RXN_FLAG
-!     
+     
 !     Indicate whether to do a namelist read on the line
       LOGICAL          READ_FLAG
-
-!     
+     
 !     blank line function
       LOGICAL          BLANK_LINE
       INTEGER   L
@@ -143,19 +142,14 @@
 !     INTEGER , EXTERNAL :: LINE_TOO_BIG, SEEK_COMMENT 
 !     LOGICAL , EXTERNAL :: BLANK_LINE 
 !-----------------------------------------------
-!     
 
       INCLUDE 'usrnlst.inc' 
       INCLUDE 'namelist.inc'
       INCLUDE 'des/desnamelist.inc'
-!     
-!     
+    
       E = UNDEFINED 
-!     
       RXN_FLAG = .FALSE. 
-!     
       READ_FLAG = .TRUE. 
-!     
       NO_OF_RXNS = 0 
 
 !//   PAR_I/O Generate file basename for LOG files
@@ -179,50 +173,45 @@
          myPE,'mfix.dat'
          call mfix_exit(myPE) 
       endif
-!     
-!     
-!     OPEN MFIX ASCII INPUT FILE, AND LOOP THRU IT
-!     
+     
+     
+! OPEN MFIX ASCII INPUT FILE, AND LOOP THRU IT
+     
       OPEN(UNIT=UNIT_DAT, FILE='mfix.dat', STATUS='OLD', ERR=910) 
-!     
+     
       LINE_NO = 0
  100  CONTINUE 
       READ (UNIT_DAT, 1100, END=500) LINE_STRING
       LINE_NO = LINE_NO + 1 
-!     
+     
       LINE_LEN = SEEK_COMMENT(LINE_STRING,LEN(LINE_STRING)) - 1 
       CALL REMOVE_COMMENT (LINE_STRING, LINE_LEN + 1, LEN(LINE_STRING)) 
-!     
+     
       IF (LINE_LEN <= 0) GO TO 100 !comment line 
       IF (BLANK_LINE(LINE_STRING)) GO TO 100 !blank line 
-!     
+     
       IF (LINE_TOO_BIG(LINE_STRING,LINE_LEN,MAXCOL) > 0) THEN 
          WRITE (*, 1300) LINE_NO, LINE_STRING 
          CALL MFIX_EXIT(myPE) 
       ENDIF 
-!     
-!
-!     Make upper case all except species names     
+     
+! Make upper case all except species names     
       if(index(LINE_STRING,'SPECIES_NAME') == 0 .AND. &
          index(LINE_STRING,'species_name') == 0 .AND. &
          index(LINE_STRING,'Species_Name') == 0       &
-	 ) &
-	   CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN) 
+         ) &
+            CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN) 
       IF(LINE_STRING(1:11) == 'THERMO DATA')  GOTO 500  !All subsequent lines are thermochemical data
       
-      
       CALL REPLACE_TAB (LINE_STRING, LINE_LEN) 
-!     
-!     
-!     Complete arithmetic operations and expand line
-!     
-!     
+     
+     
+! Complete arithmetic operations and expand line
       CALL PARSE_LINE (LINE_STRING, LINE_LEN, RXN_FLAG, READ_FLAG) 
-!     
-!     
-!     Write the current line to a scratch file
-!     and read the scratch file in NAMELIST format
-!     
+     
+     
+! Write the current line to a scratch file
+! and read the scratch file in NAMELIST format
       IF (READ_FLAG) THEN 
 !        OPEN(UNIT=UNIT_TMP, STATUS='SCRATCH', ERR=900) 
          OPEN(UNIT=UNIT_TMP, FILE='scr'//fbname, STATUS='UNKNOWN', ERR=900)
@@ -253,40 +242,33 @@
  420     CONTINUE 
          CLOSE(UNIT=UNIT_TMP) 
       ENDIF 
-!     
-      GO TO 100 
-!     
+     
+      GOTO 100 
+     
  500  CONTINUE 
 
       CLOSE(UNIT=UNIT_DAT) 
-!     
+     
       IF (E /= UNDEFINED) C_E = E 
-!     
+
+
       DO L = 1, NO_OF_RXNS 
-!     
-!     Do all the rxns have a rate defined?
-!     
+! Do all the rxns have a rate defined?
          IF (.NOT.GOT_RATE(L)) THEN 
-!     
             WRITE (*, 1610) myPE,RXN_NAME(L) 
             call mfix_exit(myPE) 
-!     
          ENDIF 
-!     
-!     Do all the rxns have a stoichiometry defined?
-!     
+! Do all the rxns have a stoichiometry defined?
          IF (.NOT.GOT_RXN(L)) THEN 
-!     
             WRITE (*, 1620) myPE,RXN_NAME(L) 
             call mfix_exit(myPE) 
-!     
          ENDIF 
-      END DO 
+      ENDDO 
 
       RETURN  
-!     
-!     HERE IF AN ERROR OCCURED OPENNING/READING THE FILES
-!     
+     
+! HERE IF AN ERROR OCCURED OPENNING/READING THE FILES
+     
  900  CONTINUE 
       WRITE (*, 1400) 
       CALL MFIX_EXIT(myPE) 
@@ -296,7 +278,7 @@
  930  CONTINUE 
       WRITE (*, 1600) LINE_NO, LINE_STRING(1:LINE_LEN) 
       CALL MFIX_EXIT(myPE) 
-!     
+     
  1000 FORMAT(1X,'$INPUT_DATA') 
  1010 FORMAT(1X,'$DES_INPUT_DATA') 
  1020 FORMAT(1X,'$USR_INPUT_DATA') 
@@ -318,10 +300,11 @@
       'No rxn rate defined for rxn: ',A,/1X,70('*')/) 
  1620 FORMAT(/1X,70('*')//'(PE ',I6,'): From: READ_NAMELIST',/' Message: ',&
       'No stoichiometry defined for rxn: ',A,/1X,70('*')/) 
-!     
+     
       END SUBROUTINE READ_NAMELIST 
-!
-!
+
+
+!-----------------------------------------------      
       logical function blank_line (line) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
@@ -330,21 +313,20 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       character line*(*) 
+
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: l
 !-----------------------------------------------
-!
-!
+
       blank_line = .FALSE. 
       do l = 1, len(line) 
        if (line(l:l)/=' ' .and. line(l:l)/='    ') return
       end do 
-!
       blank_line = .TRUE. 
       return  
-!
+
       end function blank_line 
 
 !// Comments on the modifications for DMP version implementation      

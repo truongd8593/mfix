@@ -56,6 +56,7 @@ mfix.exe : \
     vshear.mod \
     xsi_array.mod \
     mchem.mod \
+    des_bc.mod \
     discretelement.mod \
     interpolation.mod \
     randomno.mod \
@@ -360,11 +361,13 @@ mfix.exe : \
     cfwallcontact.$(OBJ_EXT) \
     cfwallposvel.$(OBJ_EXT) \
     check_des_data.$(OBJ_EXT) \
+    check_des_inlet.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
+    des_mass_inlet.$(OBJ_EXT) \
     des_time_march.$(OBJ_EXT) \
     drag_fgs.$(OBJ_EXT) \
     gas_drag.$(OBJ_EXT) \
@@ -757,11 +760,14 @@ mfix.exe : \
     cfwallcontact.$(OBJ_EXT) \
     cfwallposvel.$(OBJ_EXT) \
     check_des_data.$(OBJ_EXT) \
+    check_des_inlet.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
+    des_bc_mod.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
+    des_mass_inlet.$(OBJ_EXT) \
     des_time_march.$(OBJ_EXT) \
     discretelement_mod.$(OBJ_EXT) \
     drag_fgs.$(OBJ_EXT) \
@@ -1057,6 +1063,8 @@ xsi_array.mod : xsi_array_mod.f \
 mchem.mod : ./chem/mchem_mod.f \
             param.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_mod.f 
+des_bc.mod : ./des/des_bc_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_bc_mod.f 
 discretelement.mod : ./des/discretelement_mod.f \
             param.mod \
             param1.mod 
@@ -3042,6 +3050,7 @@ read_namelist.$(OBJ_EXT) : read_namelist.f \
             parallel.mod \
             discretelement.mod \
             usr.mod \
+            des_bc.mod \
             cdist.mod \
             usrnlst.inc                                                  \
             namelist.inc                                                 \
@@ -4677,6 +4686,15 @@ check_des_data.$(OBJ_EXT) : ./des/check_des_data.f \
             constant.mod \
             physprop.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_data.f 
+check_des_inlet.$(OBJ_EXT) : ./des/check_des_inlet.f \
+            compar.mod \
+            constant.mod \
+            des_bc.mod \
+            discretelement.mod \
+            funits.mod \
+            param1.mod \
+            run.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_inlet.f 
 des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             param.mod \
             param1.mod \
@@ -4685,20 +4703,12 @@ des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             indices.mod \
             geometry.mod \
             compar.mod \
-            physprop.mod 
+            physprop.mod \
+            des_bc.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_allocate_arrays.f 
 des_functions.$(OBJ_EXT) : ./des/des_functions.f \
             param.mod \
             param1.mod \
-            run.mod \
-            parallel.mod \
-            fldvar.mod \
-            bc.mod \
-            geometry.mod \
-            physprop.mod \
-            indices.mod \
-            compar.mod \
-            mpi_utility.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_functions.f 
 des_granular_temperature.$(OBJ_EXT) : ./des/des_granular_temperature.f \
@@ -4732,8 +4742,17 @@ des_init_arrays.$(OBJ_EXT) : ./des/des_init_arrays.f \
 des_init_namelist.$(OBJ_EXT) : ./des/des_init_namelist.f \
             param1.mod \
             discretelement.mod \
+            des_bc.mod \
             des/desnamelist.inc                                         
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_namelist.f 
+des_mass_inlet.$(OBJ_EXT) : ./des/des_mass_inlet.f \
+            compar.mod \
+            constant.mod \
+            des_bc.mod \
+            discretelement.mod \
+            funits.mod \
+            geometry.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_mass_inlet.f 
 des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
             param.mod \
             param1.mod \
@@ -4760,6 +4779,7 @@ des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
             discretelement.mod \
             constant.mod \
             sendrecv.mod \
+            des_bc.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
@@ -5147,6 +5167,7 @@ source_ghd_granular_energy.$(OBJ_EXT) : ./GhdTheory/source_ghd_granular_energy.f
             trace.mod \
             indices.mod \
             constant.mod \
+            toleranc.mod \
             compar.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
