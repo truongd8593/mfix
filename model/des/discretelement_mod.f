@@ -14,9 +14,9 @@
 
       MODULE DISCRETELEMENT
 
+
       USE param
       USE param1
-
 
 !===========START of Interpolation related data======================
 !     the coefficient add to gas momentum A matrix  at cell corners
@@ -76,6 +76,7 @@
       LOGICAL :: GENER_PART_CONFIG
       DOUBLE PRECISION ::  VOL_FRAC(DIM_M), DES_EPS_XSTART, &
                            DES_EPS_YSTART, DES_EPS_ZSTART
+
 !     the number of particles that belong to solid phase M according
 !     to the D_p0 specified in the mfix.dat 
       INTEGER PART_MPHASE(DIM_M)
@@ -266,6 +267,21 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: YN ! (JMAX3)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ZT ! (KMAX3)
 
+!********************************************************************************
+!     J.MUSSER
+
+!     Dynamic particle count elements:
+!     Particle exists array
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: PEA! (MAX_PIS)
+
+!     Number of particles in the system (current)
+      INTEGER PIS
+
+!     Maximum particles permitted in the system at once
+      INTEGER MAX_PIS
+
+!     END J.MUSSER
+!********************************************************************************
      
 !********************************************************************************
 !     COHESION      

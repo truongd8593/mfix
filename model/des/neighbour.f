@@ -17,34 +17,31 @@
       USE discretelement
       IMPLICIT NONE
 
-      INTEGER I, II, LL, CO, NI, TEMP
-      
 
-      DO I = 1, PARTICLES
-         PPOS(I,:) = DES_POS_NEW(I,:)
-         DO II = 1, MAXNEIGHBORS
-            NEIGHBOURS(I,II) = -1
-         END DO
-         NEIGHBOURS(I,1) = 0
-      END DO
+! J.Musser
+! Reset PPOS and NEIGHBOURS back to initialized values
+      PPOS(:,:) = DES_POS_NEW(:,:)
+      NEIGHBOURS(:,:) = -1
+      NEIGHBOURS(:,1) = 0
 
       IF (DES_NEIGHBOR_SEARCH.EQ.1) THEN
          CALL NSQUARE
       ELSE
          N2CT = ZERO
-      END IF
+      ENDIF
 
       IF (DES_NEIGHBOR_SEARCH.EQ.2) THEN
          CALL QUADTREE
       ELSE
          QUADCT = ZERO
-      END IF
+      ENDIF
 
       IF (DES_NEIGHBOR_SEARCH.EQ.3) THEN
          CALL OCTREE
       ELSE
          OCTCT = ZERO
-      END IF
+      ENDIF
+
       IF (DES_NEIGHBOR_SEARCH.EQ.4) THEN 
          CALL GRID_BASED_NEIGHBOR_SEARCH
       ENDIF 

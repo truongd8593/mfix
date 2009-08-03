@@ -4,7 +4,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !                                                                    
 !  Module name: DES_ALLOCATE_ARRAYS                                     
-!>  Purpose: allocate arrays for DES
+!  Purpose: allocate arrays for DES
 !                                  
 !                                                                   
 !-----------------------------------------------
@@ -18,55 +18,63 @@
       Use geometry
       Use compar
       Use physprop
+      Use des_bc
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------        
-! indices
-      INTEGER I, J, K, NP, M 
+!-----------------------------------------------      
+! indices      
+      INTEGER I, J, K, M 
 ! domain volume      
       DOUBLE PRECISION :: VOL_DOMAIN
-! the number of particles in the system 
-      INTEGER NPARTICLES      
-!----------------------------------------------- 
+! the number of particles in the system      
+      INTEGER NPARTICLES
+
+!-----------------------------------------------
+
+
+      WRITE(*,*) '---------- START DES_ALLOCATE_ARRAYS ---------->'
 
       IF(GENER_PART_CONFIG) THEN 
-         WRITE(*,*) 'GENER_PART_CONFIG = ', GENER_PART_CONFIG
-         WRITE(*,*) 'DES_EPS_XSTART, YSTART, ZSTART = ',&
+         WRITE(*,*) '     gener_part_config = ', GENER_PART_CONFIG
+         WRITE(*,*) '     des_eps_xstart, ystart, zstart = ',&
             DES_EPS_XSTART, DES_EPS_YSTART, DES_EPS_ZSTART
 
 ! Check if des_eps_xstart and related variables are correctly initialized in mfix.dat file
          IF(DIMN.EQ.2) THEN 
             IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.&
                DES_EPS_YSTART.EQ.UNDEFINED) THEN
-               WRITE (*,*) 'From des_allocate_arrays:'
-               WRITE(*,*) 'ERROR MESSAGE: DES_EPS_XSTART OR DES_EPS_YSTART NOT PROPERLY DEFINED IN THE INPUT FILE'
+               WRITE (*,*) '     ERROR MESSAGE: des_eps_xstart or ',&
+                  'des_eps_ystart not properly defined in the ', &
+                  'input file'
                CALL MFIX_EXIT(myPE)
             ENDIF
          ELSE
             IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.&
                DES_EPS_YSTART.EQ.UNDEFINED.OR.&
                DES_EPS_ZSTART.EQ.UNDEFINED) THEN
-               WRITE (*,*) 'From des_allocate_arrays:'
-               WRITE(*,*)'ERROR MESSAGE: DES_EPS_XSTART OR DES_EPS_YSTART OR DES_EPS_ZSTART NOT PROPERLY DEFINED IN THE INPUT FILE'
+               WRITE (*,*) '     ERROR MESSAGE: des_eps_xstart or ',&
+                  'des_eps_ystart or des_eps_zstart not properly ',&
+                  'defined in the input file'
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
 
          DO M = 1, MMAX
             IF(VOL_FRAC(M) == UNDEFINED) THEN
-               WRITE (*,*) 'From des_allocate_arrays:'
-               WRITE (*,*) 'VOL_FRAC(M) must be defined in mfix.dat for M = 1, MMAX'
+               WRITE (*,*) '     VOL_FRAC(M) must be defined in ',&
+                  'mfix.dat for M = 1, MMAX'
                CALL MFIX_EXIT(myPE)
-            END IF
+            ENDIF
             IF(VOL_FRAC(M) < ZERO .OR. VOL_FRAC(M) > (ONE-EP_STAR)) THEN
-               WRITE (*,*) 'From des_allocate_arrays:'
-               WRITE (*,*) 'Unphysical ( > 1-EP_STAR or < 0) values of VOL_FRAC(M) set in mfix.dat'
+               WRITE (*,*) '     Unphysical ( > 1-EP_STAR or < 0) ',&
+                  'values of VOL_FRAC(M) set in mfix.dat'
                CALL MFIX_EXIT(myPE)
-            END IF
+            ENDIF
          ENDDO
          
-         WRITE(*,*) 'PARTILCE CONFIGURATION WILL BE AUTOMATICALLY GENERATED'
+         WRITE(*,*) '     particle configuration will be ', &
+            'automatically generated'
          PARTICLES = 0
          IF(DIMN.EQ.2) THEN 
             VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*ZLENGTH 
@@ -76,29 +84,34 @@
          ENDIF
          DO M = 1, MMAX
             PART_MPHASE(M) = FLOOR((6.D0*VOL_FRAC(M)*VOL_DOMAIN)/&
-               (PI*(D_P0(M)**3.D0)))
+               (PI*(D_P0(M)**3)))
          ENDDO
-         WRITE(*,*) 'MMAX = ', MMAX, 'PART_MPHASE = ',&
+         WRITE(*,*) '     MMAX = ', MMAX, 'PART_MPHASE = ',&
             PART_MPHASE, VOL_DOMAIN, D_P0(1), pi, &
-            (6.D0*VOL_FRAC(1)*VOL_DOMAIN)/(PI*(D_P0(1)**3.D0))
+            (6.D0*VOL_FRAC(1)*VOL_DOMAIN)/(PI*(D_P0(1)**3))
          PARTICLES = SUM(PART_MPHASE(1:MMAX))
          
       ENDIF !  end if gener_part_config
 
-
-      WRITE(*,*) 'TOTAL NUMBER OF PARTICLES  = ', PARTICLES      
+      WRITE(*,*) '    total number of particles = ', PARTICLES      
+      WRITE(*,*) '    dimension = ', DIMN
       NWALLS = 2*DIMN
 
       IF(.NOT.NON_RECT_BC) THEN
-! particles = npc*(imax)*(jmax)*kmax
+! +nwalls is included since calc_force_des temporarily uses the variables 
+! pos, vel, etc at elements beyond the array index given by particles. 
+! unclear why additional array space is needed via particles_factor
          NPARTICLES = PARTICLES * PARTICLES_FACTOR + NWALLS
       ELSE
-! By Tingwen 19/01/2008 6:51:31 PM
+! Tingwen 19/01/2008 
 ! +2 to include the contact with edge and node
 ! only one edge contact or one node contact with wall is allowed for a particle
          NPARTICLES = PARTICLES * PARTICLES_FACTOR + NWALLS + 2 + NWALLS +1
       ENDIF
-      
+
+! J.Musser : Dynamic Particle Info
+      IF(DES_MI) NPARTICLES = MAX_PIS     
+
       MAXQUADS = 5*PARTICLES*MQUAD_FACTOR
       IF(MAXQUADS.LE.80000) MAXQUADS = 80000
       MAXNEIGHBORS = MN + 1 + NWALLS
@@ -111,7 +124,9 @@
 
 
 ! DES Allocatable arrays
-
+! J.Musser : Dynamic Particle Info
+      ALLOCATE( PEA (NPARTICLES) )
+      
 ! COEFF OF RESITUTIONS 
       ALLOCATE(REAL_EN(MMAX,MMAX)) !REAL_ET(MMAX,MMAX)) specify eta_t_fact instead of e_t (sof, dec-04-2008)
       ALLOCATE(REAL_EN_WALL(MMAX)) !REAL_ET_WALL(MMAX)) specify eta_t_w_fact instead of e_t_w (sof, dec-04-2008)
@@ -197,7 +212,7 @@
      
 ! Particles in a computational cell (for volume fraction) )
       Allocate(  PINC (DIMENSION_3) )
-      Allocate(  PIJK (PARTICLES,5) )
+      Allocate(  PIJK (NPARTICLES,5) )
      
 ! Volume averaged solids volume in a cell      
       Allocate(  DES_U_s (DIMENSION_3, DIMENSION_M) )
@@ -219,7 +234,7 @@
 
       IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. DES_NEIGHBOR_SEARCH .EQ. 3) THEN
          Allocate(  LQUAD (MAXQUADS, NMQD) )
-         Allocate(  PQUAD (PARTICLES) )
+         Allocate(  PQUAD (NPARTICLES) )
          Allocate(  CQUAD (MAXQUADS, NWALLS) )
       ENDIF
      
@@ -247,6 +262,7 @@
 ! Matrix location of particle 
       Allocate(  PART_GRID (NPARTICLES,4) )
 
+      WRITE(*,*) '<---------- END DES_ALLOCATE_ARRAYS ----------'
 
       RETURN
       END SUBROUTINE DES_ALLOCATE_ARRAYS 

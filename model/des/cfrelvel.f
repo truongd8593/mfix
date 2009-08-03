@@ -1,9 +1,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFRELVEL(I, J, VRELTRANS)                             C
-!>
-!!  Purpose: DES - Calculate relative velocity between a particle pair  
-!<
+!  Module name: CFRELVEL(L, II, VRN, VRT, TANGNT, NORM, WALLCONTACT)   C
+!
+!  Purpose: DES - Calculate relative velocity between a particle pair  
+!
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
@@ -21,31 +21,55 @@
 !<
 !                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CFRELVEL(I, J, VRN, VRT, TANGNT, NORM)
+      SUBROUTINE CFRELVEL(L, II, VRN, VRT, TANGNT, NORM, WALLCONTACT)
       
       USE discretelement
       USE param1
       IMPLICIT NONE     
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-      
-      INTEGER I, J
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------         
+      INTEGER L, II
+
+! Marker for particle/wall contact (1=p/w)
+      INTEGER WALLCONTACT
+
       DOUBLE PRECISION TANGNT(DIMN), NORM(DIMN)
       DOUBLE PRECISION TANMOD, VRN, VRT
       DOUBLE PRECISION VRELTRANS(DIMN)
       DOUBLE PRECISION VSLIP(DIMN), &
                        V_ROT(DIMN), OMEGA_SUM(DIMN)
-            
-!-----------------------------------------------------------------------
+
+!-----------------------------------------------      
+! Functions
+!-----------------------------------------------   
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT         
+!-----------------------------------------------   
+
 
 ! translational relative velocity 
-      VRELTRANS(:) = (DES_VEL_NEW(I,:) - DES_VEL_NEW(J,:))
+      IF (WALLCONTACT.EQ.1) THEN
+         VRELTRANS(:) = (DES_VEL_NEW(L,:) - DES_WALL_VEL(II,:))
+      ELSE
+         VRELTRANS(:) = (DES_VEL_NEW(L,:) - DES_VEL_NEW(II,:))
+      ENDIF
 
 ! rotational contribution  : v_rot
-      IF(DIMN.EQ.3) THEN
-         OMEGA_SUM(:) = OMEGA_NEW(I,:)*DES_RADIUS(I)+ OMEGA_NEW(J,:)*DES_RADIUS(J)
-      ELSE
-         OMEGA_SUM(1) = OMEGA_NEW(I,1)*DES_RADIUS(I)+ OMEGA_NEW(J,1)*DES_RADIUS(J)
-         OMEGA_SUM(2) = ZERO
+      IF (WALLCONTACT.EQ.1) THEN
+         IF(DIMN.EQ.3) THEN
+            OMEGA_SUM(:) = OMEGA_NEW(L,:)*DES_RADIUS(L)
+         ELSE
+            OMEGA_SUM(1) = OMEGA_NEW(L,1)*DES_RADIUS(L)
+            OMEGA_SUM(2) = ZERO
+         ENDIF
+      ELSE              
+         IF(DIMN.EQ.3) THEN
+            OMEGA_SUM(:) = OMEGA_NEW(L,:)*DES_RADIUS(L)+ OMEGA_NEW(II,:)*DES_RADIUS(II)
+         ELSE
+            OMEGA_SUM(1) = OMEGA_NEW(L,1)*DES_RADIUS(L)+ OMEGA_NEW(II,1)*DES_RADIUS(II)
+            OMEGA_SUM(2) = ZERO
+         ENDIF
       ENDIF
 
       CALL DES_CROSSPRDCT(V_ROT, OMEGA_SUM, NORM)
@@ -66,10 +90,11 @@
          TANGNT(:) = VSLIP(:)/TANMOD
       ELSE
          TANGNT(:) = ZERO
-      END IF
+      ENDIF
 
 ! tangential component of relative surface velocity (scalar)
       VRT  = DES_DOTPRDCT(VRELTRANS,TANGNT)
 
       RETURN
       END SUBROUTINE CFRELVEL
+

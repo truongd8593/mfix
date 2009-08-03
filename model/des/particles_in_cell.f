@@ -35,7 +35,9 @@
       USE sendrecv
       
       IMPLICIT NONE
-
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
       INTEGER L, I, J, K, M, MM 
       INTEGER IJK, IPJK, IJPK, IJKP
       DOUBLE PRECISION :: OVOL 
@@ -47,16 +49,22 @@
       DOUBLE PRECISION :: tmp_num(MMAX), tmp_den(MMAX), hcell 
 ! Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS1 = .TRUE.
-
+! Logical for local debug warnings
+      LOGICAL DES_LOC_DEBUG
+! Accounted for particles
+      INTEGER PC
+!-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
+
 
       PINC(:) = 0
       SOLVOLINC(:,:) = ZERO
       DES_U_s(:,:) = ZERO
       DES_V_s(:,:) = ZERO
       DES_W_s(:,:) = ZERO
+      DES_LOC_DEBUG = .FALSE.
 
       IF(FIRST_PASS1) THEN
          XE(1) = ZERO
@@ -75,12 +83,14 @@
          ENDIF
       ENDIF
      
+      PC = 1
+      DO L = 1, MAX_PIS
 
-      DO L = 1, PARTICLES
+         IF(PC .GT. PIS) EXIT
+         IF(.NOT.PEA(L)) CYCLE
 
          IF(FIRST_PASS1) THEN 
 ! Brute force technique to determine the particle locations in the Eulerian grid 
-         !IF(S_TIME.LE.DTSOLID.OR.FIRST_PASS1) THEN 
 
             DO M = 1, MMAX
                IF(ABS(2.0d0*DES_RADIUS(L)-D_P0(M)).LT.SMALL_NUMBER.AND. &
@@ -89,14 +99,19 @@
                ENDIF
             ENDDO
             
-            !PRINT*,'M = ', PIJK(L,5)
             IF(PIJK(L,5).EQ.0) THEN
-              WRITE(*,*) 'Problem determining the solids association in PIC for particle no: ', L
-              write(*,*) 'Particle diameter = ', 2.d0*DES_RADIUS(L),' and dp =', D_P0(1:MMAX)
-              write(*,*) 'Particle density = ', Ro_Sol(L), 'and RO_S =', RO_S(1:MMAX)
-              write(*,*) 'Particle position =' , DES_POS_NEW(L,:)
+               IF (.NOT.DES_LOC_DEBUG) THEN
+                  DES_LOC_DEBUG = .TRUE.
+                  WRITE(*,1000) 
+               ENDIF
+               WRITE(*,*) '     Problem determining the solids',&
+                  ' association for particle no: ', L
+               WRITE(*,*) '     Particle diameter = ', 2.d0*DES_RADIUS(L), &
+                  ' and dp =', D_P0(1:MMAX)
+               WRITE(*,*) '     Particle density = ', &
+                  Ro_Sol(L), 'and RO_S =', RO_S(1:MMAX)
+               WRITE(*,*) '     Particle position =' , DES_POS_NEW(L,:)
             ENDIF
-
 
             DO I = IMIN1, IMAX3
                IF((DES_POS_NEW(L,1).GE.XE(I-1)).AND.(DES_POS_NEW(L,1).LT.XE(I))) THEN
@@ -111,7 +126,6 @@
                   EXIT
                ENDIF
             ENDDO
-            !write(*,*) 'pijk', L, PIJK(L,1),  PIJK(L,2)
 
             IF(DIMN.EQ.2) THEN
                PIJK(L,3)  = 1
@@ -126,7 +140,7 @@
 
 
          ELSE     ! if not first_pass
-! Incremental approach to determine the new location of the particles  
+! incremental approach to determine the new location of the particles  
             I = PIJK(L,1)
             J = PIJK(L,2)
             K = PIJK(L,3)
@@ -138,8 +152,15 @@
             ELSEIF((DES_POS_NEW(L,1).GE.XE(I-2)).AND.(DES_POS_NEW(L,1).LT.XE(I-1))) THEN 
                PIJK(L,1) = I-1
             ELSE
-               PRINT *,'des/particles_in_cell.f : CHECK CELL I ',&
-                  PIJK(L,1),  PIJK(L,2), L, DES_POS_NEW(L,1), DES_VEL_NEW(L,1)
+               IF (.NOT.DES_LOC_DEBUG) THEN
+                  DES_LOC_DEBUG = .TRUE.
+                  WRITE(*,1000)
+               ENDIF                    
+               WRITE(*,*) '     CHECK CELL I: ', I
+               WRITE(*,*) '        Particle: ', L, ' Radius: ', &
+                  DES_RADIUS(L)
+               WRITE(*,*) '        X-POS: ', DES_POS_NEW(L,1), &
+                  ' X-VEL: ', DES_VEL_NEW(L,1)
                STOP
             ENDIF
 
@@ -150,8 +171,15 @@
             ELSEIF((DES_POS_NEW(L,2).GE.YN(J-2)).AND.(DES_POS_NEW(L,2).LT.YN(J-1))) THEN 
                PIJK(L,2) = J-1
             ELSE
-               PRINT *,'des/particles_in_cell.f : CHECK CELL J' 
-               PRINT*, 'Y POSITION = ', DES_POS_NEW(L,2), DES_RADIUS(L)
+               IF (.NOT.DES_LOC_DEBUG) THEN
+                  DES_LOC_DEBUG = .TRUE.
+                  WRITE(*,1000)
+               ENDIF                    
+               WRITE(*,*) '     CHECK CELL J: ', J
+               WRITE(*,*) '        Particle: ', L, ' Radius: ', &
+                  DES_RADIUS(L)
+               WRITE(*,*) '        Y-POS: ', DES_POS_NEW(L,2), &
+                  ' Y-VEL: ', DES_VEL_NEW(L,2)
                STOP
             ENDIF
 
@@ -165,7 +193,15 @@
                ELSEIF((DES_POS_NEW(L,3).GE.ZT(K-2)).AND.(DES_POS_NEW(L,3).LT.ZT(K-1))) THEN
                   PIJK(L,3) = K-1
                ELSE 
-                  PRINT *,'des/particles_in_cell.f : CHECK CELL K'
+                  IF (.NOT.DES_LOC_DEBUG) THEN
+                     DES_LOC_DEBUG = .TRUE.
+                     WRITE(*,1000)
+                  ENDIF                    
+                  WRITE(*,*) '     CHECK CELL K: ', K
+                  WRITE(*,*) '        Particle: ', L, ' Radius: ', &
+                     DES_RADIUS(L)
+                  WRITE(*,*) '        Z-POS: ', DES_POS_NEW(L,2), &
+                     ' Z-VEL: ', DES_VEL_NEW(L,2)
                   STOP
                ENDIF
             ENDIF
@@ -177,15 +213,23 @@
          J = PIJK(L,2)
          K = PIJK(L,3)
          IJK = FUNIJK(I,J,K)
-         IF(IJK.LT.0) write(*,*), 'WARNING.. IJK < 0 ', L, DES_POS_NEW(L,:)
+         IF(IJK.LT.0) THEN
+            IF (.NOT.DES_LOC_DEBUG) THEN
+               DES_LOC_DEBUG = .TRUE.
+               WRITE(*,1000) 
+            ENDIF                    
+            WRITE(*,*) '     WARNING IJK < 0  Particle: ', L,&
+               ' Position: ', DES_POS_NEW(L,:)
+         ENDIF
          PIJK(L,4) = IJK
          PINC(IJK) = PINC(IJK) + 1
-         MM = PIJK(L,5)
-         SOLVOLINC(IJK,MM) = SOLVOLINC(IJK,MM) +  PVOL(L)
-         DES_U_s(IJK,MM) = DES_U_s(IJK,MM) + PVOL(L)*DES_VEL_NEW(L,1)
-         DES_V_s(IJK,MM) = DES_V_s(IJK,MM) + PVOL(L)*DES_VEL_NEW(L,2)
-         IF(DIMN.EQ.3) DES_W_s(IJK,MM) = DES_W_s(IJK,MM) + PVOL(L)*DES_VEL_NEW(L,3)
+         M = PIJK(L,5)
+         SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) +  PVOL(L)
+         DES_U_s(IJK,M) = DES_U_s(IJK,M) + PVOL(L)*DES_VEL_NEW(L,1)
+         DES_V_s(IJK,M) = DES_V_s(IJK,M) + PVOL(L)*DES_VEL_NEW(L,2)
+         IF(DIMN.EQ.3) DES_W_s(IJK,M) = DES_W_s(IJK,M) + PVOL(L)*DES_VEL_NEW(L,3)
 
+         PC = PC + 1 
       ENDDO      ! end loop over L = 1,particles
 
 
@@ -214,11 +258,12 @@
                EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
                IF(EP_G(IJK).LT.ZERO .AND. DES_CONTINUUM_COUPLED) THEN 
 ! this should not matter if pure granular flow simulation (i.e. no fluid)
-                  WRITE(*,*) '------------------------------'
-                  WRITE(*,*) '     IN SUBROUTINE DES/PARTICLES_IN_CELL'
-                  WRITE(*,*) '     WARNING EP_G becoming LT zero at ',&
-                     I_OF(IJK),J_OF(IJK), EP_S(IJK,M)
-                  WRITE(*,*) '------------------------------'
+                  IF (.NOT.DES_LOC_DEBUG) THEN
+                     DES_LOC_DEBUG = .TRUE.
+                     WRITE(*,1000)
+                  ENDIF
+                  WRITE(*,*) '     WARNING EP_G LT zero at I,J: ',&
+                     I_OF(IJK), J, '   where EP_S: ', EP_S(IJK,M)
                   !write(*,*) 'IJK = ', IJK, ' VOL(IJK) =  ', vol(IJK)
                   !write(*,*) 'Number of particles in cell = ', PINC(IJK)
                   !write(*,*) 'Eps calculated here = ', ROP_S(M)/RO_S(M)
@@ -260,17 +305,28 @@
       
          particle_count(:,:,:) = 1
          
-         DO L = 1, PARTICLES
+         PC = 1
+         DO L = 1, MAX_PIS
+            IF(PC .GT. PIS) EXIT
+            IF(.NOT.PEA(L)) CYCLE
+
             I = PIJK(L,1)
             J = PIJK(L,2)
             K = PIJK(L,3)
             pos = particle_count(I,J,K)
             pic(I,J,K)%p(pos) = L
             particle_count(I,J,K) = particle_count(I,J,K) + 1
+
+            PC = PC + 1
          ENDDO
       ENDIF
 
       FIRST_PASS1 = .FALSE.
+      IF (DES_LOC_DEBUG) WRITE(*,1001)
+
+
+ 1000 FORMAT('---------- FROM PARTICLES_IN_CELL ---------->')
+ 1001 FORMAT('<---------- END PARTICLES_IN_CELL ----------') 
 
       RETURN
       END SUBROUTINE PARTICLES_IN_CELL

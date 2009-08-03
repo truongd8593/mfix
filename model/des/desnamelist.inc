@@ -1,7 +1,6 @@
        NAMELIST / DES_INPUT_DATA /&
 
-!	    USE discretelement
-! start Jay 
+! USE discretelement
 	DISCRETE_ELEMENT, DES_CONTINUUM_COUPLED, DES_INTERP_ON, &
         TSUJI_DRAG, &
 	PARTICLES, GENER_PART_CONFIG, VOL_FRAC, DES_EPS_XSTART,&
@@ -19,28 +18,27 @@
         INLET_OUTLET, INLET_OUTLET_X, INLET_OUTLET_Y, INLET_OUTLET_Z,&
 	WALLDTSPLIT, WALLREFLECT, NON_RECT_BC, & 
 	DES_GAMMA, DES_F, &
+	DEM_OUTPUT_DATA_TECPLOT, DEBUG_DES, &
+	DES_SPX_TIME, DTSOLID_FACTOR, PRINT_DES_DATA, P_TIME,&	
+!
+! DES Cohesion Information: M.Weber
 	MASTER_WELL_DEPTH, MASTER_WALL_WELL_DEPTH,&
         RADIUS_RATIO, WALL_RADIUS_RATIO, USE_COHESION, SQUARE_WELL,&
 	MAX_LOG_STEP, VAN_DER_WAALS, HAMAKER_CONSTANT, VDW_INNER_CUTOFF,& 
         VDW_OUTER_CUTOFF, WALL_HAMAKER_CONSTANT,&
         WALL_VDW_INNER_CUTOFF, WALL_VDW_OUTER_CUTOFF,COHESION_DEBUG,FOCUS_PARTICLE,&
         MAX_LOG_STEP, MIN_LOG_STEP, COHESION_DEBUG_START,&
+!
+! Obsolete Controls
         ANIMATION_WRITE_INTERVAL, ANIMATION_WRITE_COUNTER, TIME_FACTOR,&
         MAX_ANIMATOR_STEP, MIN_ANIMATOR_STEP, &
-	DEM_OUTPUT_DATA_TECPLOT, DEBUG_DES, &
-	DES_SPX_TIME, DTSOLID_FACTOR, PRINT_DES_DATA, P_TIME
- ! end Jay 
-
 !
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: DESNAMELIST.INC                                        C
-!  Purpose: Variables needed for DES input                             C
-!                                                                      C
-!                                                                      C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+! DES Mass Inflow Information: J.Musser
 !
-      
+      DES_MI, MAX_PIS, &
+      DES_BC_X_w, DES_BC_X_e, &
+      DES_BC_Y_s, DES_BC_Y_n, &
+      DES_BC_Z_b, DES_BC_Z_t, &
+      DES_BC_VOLFLOW_s, DES_BC_MASSFLOW_s
+!
+!

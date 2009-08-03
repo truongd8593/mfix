@@ -13,6 +13,7 @@
 
       USE param1
       USE discretelement
+      USE des_bc
       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -24,17 +25,13 @@
 !-----------------------------------------------
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
-!     loop counters
-      INTEGER :: LC, LCM, M, N, K, KKK
-!     
-!     Coefficient of restitution (old symbol)
-      DOUBLE PRECISION :: E
+
 !-----------------------------------------------
-!     
-!     
-      
+
       INCLUDE 'des/desnamelist.inc'
-      
+
+
+
       PARTICLES = UNDEFINED_I
       PARTICLES_FACTOR = 1.2D0
       MN = 10
@@ -128,5 +125,17 @@
       DES_EPS_XSTART = UNDEFINED
       DES_EPS_YSTART = UNDEFINED 
       DES_EPS_ZSTART = UNDEFINED 
+
+      DES_MI = .FALSE.
+      MAX_PIS = UNDEFINED_I
+      DES_BC_X_w = UNDEFINED
+      DES_BC_X_e = UNDEFINED
+      DES_BC_Y_s = UNDEFINED
+      DES_BC_Y_n = UNDEFINED
+      DES_BC_Z_b = UNDEFINED
+      DES_BC_Z_t = UNDEFINED
+      DES_BC_VOLFLOW_s = UNDEFINED
+      DES_BC_MASSFLOW_s = UNDEFINED
+
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST

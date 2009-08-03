@@ -19,33 +19,46 @@
       USE run
       USE geometry
       USE physprop
-      
       USE sendrecv
       IMPLICIT NONE
 
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
+
       LOGICAL:: filexist, isopen
       LOGICAL, SAVE :: ONCE_OPEN = .FALSE.
-      INTEGER DES_UNIT, LN, K , j, i, M, IJK, NP, IDIM
-      INTEGER POS_Z, VEL_W
+      INTEGER DES_UNIT, L, I, J, K, M, IJK
+      INTEGER, SAVE :: ROUTINE_COUNT = 0
+
       CHARACTER*5 FILENAME
       CHARACTER*6 IPART
       CHARACTER*115 INUMBER
-      INTEGER, SAVE :: ROUTINE_COUNT = 0
-      DOUBLE PRECISION :: height_avg, height_rms
-      DOUBLE PRECISION :: AVG_EPS(JMAX2, MMAX), AVG_THETA(JMAX2, MMAX)
       CHARACTER*50     :: FILENAME_EXTRA, FILENAME_EXTRA2, FILENAME_DES
       CHARACTER*100    ::  TMP_CHARLINE2
+
+      DOUBLE PRECISION :: AVG_EPS(JMAX2, MMAX), AVG_THETA(JMAX2, MMAX)
+
 ! variables for bed height calculation
       INTEGER, SAVE :: tcount = 1, unitht
+      DOUBLE PRECISION :: height_avg, height_rms
       DOUBLE PRECISION, PARAMETER :: tmin = 5.d0
       DOUBLE PRECISION, DIMENSION(5000), SAVE :: bed_height_time, dt_time
+! dummy values to maintain format for dimn=2
+      INTEGER POS_Z, VEL_W
+! index to track accounted for particles
+      INTEGER PC 
 
-!---------------------------------------------------------------------------
+!-----------------------------------------------
+! Functions 
+!-----------------------------------------------
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+!-----------------------------------------------
 
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
+
 
       ROUTINE_COUNT  = ROUTINE_COUNT + 1
       DES_UNIT = 99
@@ -53,12 +66,15 @@
       IF(DEM_OUTPUT_DATA_TECPLOT) GOTO 200
 
       WRITE (FILENAME, 3020) IFI
-      WRITE (IPART, 3021) PARTICLES
+! J.Musser : change particles to pis      
+      WRITE (IPART, 3021) PIS
+
       IPART = ADJUSTL(IPART)
       IPART = TRIM(IPART)
       INUMBER = '     <Piece NumberOfPoints="'//IPART//'" NumberOfVerts="0" NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
       OPEN(UNIT=DES_UNIT, FILE=TRIM(RUN_NAME)//'_DES_'//FILENAME//'.vtp', STATUS='NEW')
 
+! dummy values to maintain format      
       POS_Z = 0
       VEL_W = 0
 
@@ -69,35 +85,58 @@
       WRITE(DES_UNIT,3031) INUMBER
       WRITE(DES_UNIT,*) '      <PointData Scalars="Diameter">'
       WRITE(DES_UNIT,*) '        <DataArray type="Float64" Name="Diameter" format="ascii">'
-      DO LN = 1, PARTICLES
-         WRITE (DES_UNIT,*) (real(2D0 * DES_RADIUS(LN))) 
+      
+      PC = 1
+      DO L = 1, MAX_PIS
+         IF(PC .GT. PIS) EXIT
+         IF(.NOT.PEA(L)) CYCLE
+         WRITE (DES_UNIT,*) (real(2D0 * DES_RADIUS(L))) 
+         PC = PC + 1
       END DO
-      WRITE(DES_UNIT,*) '       </DataArray>'
-      WRITE(DES_UNIT,3032) '       <DataArray type="Float64" Name="Velocity" NumberOfComponents="3" format="ascii">'
+
       IF(DIMN.EQ.2) THEN
-         DO LN = 1, PARTICLES
-            WRITE (DES_UNIT,*) (real(DES_VEL_NEW(LN,K)),K=1,DIMN), VEL_W 
-         END DO
-      ELSE
-         DO LN = 1, PARTICLES
-            WRITE (DES_UNIT,*) (real(DES_VEL_NEW(LN,K)),K=1,DIMN) 
-         END DO
-      END IF
+         PC = 1
+         DO L = 1, MAX_PIS
+            IF(PC .GT. PIS) EXIT
+            IF(.NOT.PEA(L)) CYCLE
+            WRITE (DES_UNIT,*) (real(DES_VEL_NEW(L,K)),K=1,DIMN), VEL_W 
+            PC = PC + 1
+         ENDDO
+      ELSE         
+         PC = 1
+         DO L = 1, MAX_PIS
+            IF(PC .GT. PIS) EXIT
+            IF(.NOT.PEA(L)) CYCLE
+            WRITE (DES_UNIT,*) (real(DES_VEL_NEW(L,K)),K=1,DIMN) 
+            PC = PC + 1
+         ENDDO
+      ENDIF
+
       WRITE(DES_UNIT,*) '       </DataArray>'
       WRITE(DES_UNIT,*) '     </PointData>'
       WRITE(DES_UNIT,*) '     <CellData>'
       WRITE(DES_UNIT,*) '     </CellData>'
       WRITE(DES_UNIT,*) '     <Points>'
       WRITE(DES_UNIT,*) '       <DataArray type="Float32" NAME="Position" NumberOfComponents="3" format="ascii">'
+
       IF(DIMN.EQ.2) THEN
-         DO LN = 1, PARTICLES
-            WRITE (DES_UNIT,*) (real(DES_POS_NEW(LN,K)),K=1,DIMN), POS_Z 
-         END DO
+         PC = 1
+         DO L = 1, MAX_PIS
+            IF(PC .GT. PIS) EXIT
+            IF(.NOT.PEA(L)) CYCLE
+            WRITE (DES_UNIT,*) (real(DES_POS_NEW(L,K)),K=1,DIMN), POS_Z 
+            PC = PC + 1
+         ENDDO
       ELSE
-         DO LN = 1, PARTICLES
-            WRITE (DES_UNIT,*) (real(DES_POS_NEW(LN,K)),K=1,DIMN) 
-         END DO
-      END IF
+         PC = 1
+         DO L = 1, MAX_PIS
+            IF(PC .GT. PIS) EXIT
+            IF(.NOT.PEA(L)) CYCLE
+            WRITE (DES_UNIT,*) (real(DES_POS_NEW(L,K)),K=1,DIMN) 
+            PC = PC + 1
+         ENDDO
+      ENDIF
+
       WRITE(DES_UNIT,*) '       </DataArray>'
       WRITE(DES_UNIT,*) '     </Points>'
       WRITE(DES_UNIT,*) '     <Verts>'
@@ -263,15 +302,21 @@
          
          WRITE (DES_UNIT, *) 'ZONE T = "', s_time, '"'!, SOLUTIONTIME=', s_time
          
-          DO NP = 1, PARTICLES 
-             IF(DIMN.EQ.3) THEN
-                WRITE (DES_UNIT, '(10(2x,g12.5))') (DES_POS_NEW(NP, IDIM), IDIM = 1,DIMN), &
-             (DES_VEL_NEW(NP, IDIM), IDIM = 1,DIMN), DES_RADIUS(NP), Ro_Sol(NP), mark_part(NP)
-             ELSE
-                WRITE (DES_UNIT, '(10(2x,g12.5))') (DES_POS_NEW(NP, IDIM), IDIM = 1,DIMN), &
-             (DES_VEL_NEW(NP, IDIM), IDIM = 1,DIMN),OMEGA_NEW(NP,1), DES_RADIUS(NP), Ro_Sol(NP), mark_part(NP)
-             ENDIF
-          ENDDO
+         PC = 1
+         DO L = 1, MAX_PIS 
+            IF(PC .GT. PIS) EXIT
+            IF(.NOT.PEA(L)) CYCLE 
+
+            IF(DIMN.EQ.3) THEN
+               WRITE (DES_UNIT, '(10(2x,g12.5))') (DES_POS_NEW(L, K), K = 1,DIMN), &
+                  (DES_VEL_NEW(L, K), K = 1,DIMN), DES_RADIUS(L), Ro_Sol(L), mark_part(L)
+            ELSE
+               WRITE (DES_UNIT, '(10(2x,g12.5))') (DES_POS_NEW(L, K), K = 1,DIMN), &
+                  (DES_VEL_NEW(L, K), K = 1,DIMN),OMEGA_NEW(L,1), DES_RADIUS(L), Ro_Sol(L), mark_part(L)
+            ENDIF
+
+            PC = PC + 1
+         ENDDO
           
          DO J = JMIN1, JMAX1
             AVG_EPS(J,:) = ZERO 

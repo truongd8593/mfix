@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CALC_FORCE_DES(C)                                      C
+!  Module name: CALC_FORCE_DES                                         C
 !>
 !!  Purpose: DES calculations of force acting on a particle, 
 !!           its velocity and its position                  
@@ -20,7 +20,7 @@
       USE compar
       USE constant
       IMPLICIT NONE
-      
+
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------      
@@ -33,9 +33,9 @@
       DOUBLE PRECISION TEMPX, TEMPY, TEMPZ, TEMPD
       DOUBLE PRECISION V_REL_TRANS_NORM, V_REL_TRANS_TANG 
       DOUBLE PRECISION FTMD, FNMD
-      DOUBLE PRECISION TEMPFN(DIMN), TEMPFT(DIMN)
-      DOUBLE PRECISION FTS1(DIMN), FTS2(DIMN)
+      DOUBLE PRECISION TEMPFT(DIMN)
       DOUBLE PRECISION FNS1(DIMN), FNS2(DIMN)
+      DOUBLE PRECISION FTS1(DIMN), FTS2(DIMN)
       DOUBLE PRECISION NORMAL(DIMN), TANGENT(DIMN)
       DOUBLE PRECISION DIST(DIMN), DISTMOD, R_LM
 
@@ -45,24 +45,30 @@
       LOGICAL ALREADY_EXISTS
       LOGICAL ALREADY_NEIGHBOURS, OVERLAP_MAX_WALL
 
+! Logical for local debug warnings
+      LOGICAL DES_LOC_DEBUG
+! index to track accounted for particles      
+      INTEGER PC
+
 !-----------------------------------------------      
 ! Functions
 !-----------------------------------------------      
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
 
-!-----------------------------------------------   
+!-----------------------------------------------      
+
 
 
 !---------------------------------------------------------------------
-!     Calculate new values
+! Calculate new values
 !---------------------------------------------------------------------
       OVERLAP_MAXP = UNDEFINED_I
       OVERLAP_MAX_WALL = .FALSE.
-     
+      DES_LOC_DEBUG = .FALSE.
+
       OVERLAP_MAX = ZERO
       NEIGH_MAX = -1
       FOCUS_PARTICLE = 0
-
 
       IF (S_TIME.LE.DTSOLID) THEN
          TANGENT(:) = ZERO
@@ -76,20 +82,28 @@
 !     Calculate contact force and torque
 !---------------------------------------------------------------------
      
-      DO LL = 1, PARTICLES
+      PC = 1      
+      DO LL = 1, MAX_PIS
+
+         IF(PC .GT. PIS) EXIT
+         IF(.NOT.PEA(LL)) CYCLE
          
          IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN 
-            PRINT*, DES_POS_NEW(LL,1), DES_POS_NEW(LL,2)
-            PRINT*, DES_VEL_NEW(LL,1), DES_VEL_NEW(LL,2)
-            PRINT*,'PFN', PFN(LL,NI,1:2)
+            IF (.NOT.DES_LOC_DEBUG) THEN
+               DES_LOC_DEBUG = .TRUE.
+               WRITE(*,1000)
+            ENDIF
+            WRITE(*,*) '     X,Y POS: ', DES_POS_NEW(LL,1), DES_POS_NEW(LL,2)
+            WRITE(*,*) '     X,Y VEL: ', DES_VEL_NEW(LL,1), DES_VEL_NEW(LL,2)
+            WRITE(*,*) '     PFN: ', PFN(LL,NI,1:2)
          ENDIF
 
-         TEMPFN(:) = ZERO
+         FTS1(:) = ZERO
+         FTS2(:) = ZERO
+         FNS1(:) = ZERO
+         FNS2(:) = ZERO
+
          TEMPFT(:) = ZERO
-         FTS1(:)=ZERO
-         FTS2(:)=ZERO
-         FNS1(:)=ZERO
-         FNS2(:)=ZERO
 
          IF(PN(LL,1).GE.1) THEN
             NLIM = PN(LL,1)+1
@@ -107,63 +121,70 @@
             END DO
          ENDIF
          
-!     Initializing rest of the neighbor list which is not in contact
-
+! Initializing rest of the neighbor list which is not in contact
          NLIM = MAX(2,PN(LL,1) + 2) 
          PN(LL,NLIM:MAXNEIGHBORS) = -1
          PFN(LL,NLIM:MAXNEIGHBORS,:) = ZERO
          PFT(LL,NLIM:MAXNEIGHBORS,:) = ZERO
-         
          NEIGH_MAX = MAX(NEIGH_MAX, PN(LL,1)+1)
-!     Initializing the neighbor list contact information when particles are not in contact
 
+! Initializing the neighbor list contact information when particles are not in contact
+! Particle LL has no neighbors         
          IF (PN(LL,1).EQ.0) THEN
             PFN(LL,:,:) = ZERO
             PFT(LL,:,:) = ZERO
-         END IF
+         ENDIF
          
-!     Initializing the particle
+! Initializing the particle
          PV(LL,2:MAXNEIGHBORS) = 0
-         
-!     Treats wall interaction also as a two-particle interaction but accounting for the wall properties
+
+
+
+! Check particle LL for wall contacts
+!---------------------------------------------------------------------
+! Treats wall interaction also as a two-particle interaction but accounting
+! for the wall properties
          IF(WALLDTSPLIT) THEN
             WALLCHECK = 0
             DO IW = 1, NWALLS
                WALLCONTACT = 0
-!     Check to see if a particle is in contact with any of the walls
+! Check to see if a particle is in contact with any of the walls
                CALL CFWALLCONTACT(IW, LL, WALLCONTACT)
                IF(WALLCONTACT.EQ.1) THEN
                   WALLCHECK = 1
-                  IF(DEBUG_DES) PRINT*, 'WAll = ', IW, LL
-                  I = PARTICLES + IW
-                  
+
+                  IF(DEBUG_DES) THEN
+                     IF (.NOT.DES_LOC_DEBUG) THEN
+                        DES_LOC_DEBUG = .TRUE.
+                        WRITE(*,1000)
+                     ENDIF
+                     WRITE(*,*) '     Wall No. & Particle No.: ', IW, LL
+                  ENDIF
+
+! J.Musser : changed particles to max_pis                  
+                  I = MAX_PIS + IW
                   ALREADY_NEIGHBOURS=.FALSE.
                   
-                  IF(PN(LL,1).GT.0) THEN
-                     
+                  IF(PN(LL,1).GT.0) THEN                     
                      DO NEIGH_L = 2, PN(LL,1)+1
                         IF(I.EQ. PN(LL,NEIGH_L)) THEN 
                            ALREADY_NEIGHBOURS=.TRUE.
                            NI = NEIGH_L
                            EXIT
-                        end IF
-                        
+                        ENDIF                        
                      ENDDO
-                  end IF
+                  ENDIF
                   
-!     Assign the wall particle a position and velocity
+! Assign the wall particle a position and velocity
                   CALL CFWALLPOSVEL(LL, IW)
-                  DES_POS_NEW(I,:) = DES_WALL_POS(IW,:)
-                  DES_VEL_NEW(I,:) = DES_WALL_VEL(IW,:)
-                  OMEGA_NEW(I,:) = ZERO
-                  DES_RADIUS(I) = DES_RADIUS(LL)
-                  R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
-                  DIST(:) = DES_POS_NEW(I,:) - DES_POS_NEW(LL,:)
+
+                  R_LM = DES_RADIUS(LL) + DES_RADIUS(LL)
+                  DIST(:) = DES_WALL_POS(IW,:) - DES_POS_NEW(LL,:)
                   DISTMOD = SQRT(DES_DOTPRDCT(DIST,DIST))
 
-                  IF(R_LM - DISTMOD.gt.SMALL_NUMBER) then 
+                  IF(R_LM - DISTMOD.GT.SMALL_NUMBER) THEN 
                      
-                     IF((((R_LM-DISTMOD)/R_LM)*100.d0).GT.OVERLAP_MAX) THen
+                     IF((((R_LM-DISTMOD)/R_LM)*100.d0).GT.OVERLAP_MAX) THEN
                         OVERLAP_MAX = (((R_LM-DISTMOD)/R_LM)*100.d0)
                         OVERLAP_MAXP = LL
                         OVERLAP_MAX_WALL = .TRUE.
@@ -172,35 +193,42 @@
                      IF(DISTMOD.NE.ZERO) THEN
                         NORMAL(:)= DIST(:)/DISTMOD
                      ELSE 
-                        PRINT *,'DISTMOD IS ZERO', I,LL
+                        IF (.NOT.DES_LOC_DEBUG) THEN
+                           DES_LOC_DEBUG = .TRUE.
+                           WRITE(*,1000)
+                        ENDIF                             
+                        WRITE(*,*) '     Particle ', LL, ' completely',&
+                           ' crossed through wall ', I, &
+                           ' so that DISTMOD is zero'
                         STOP
                      ENDIF
 
-!     Calculate the translational relative velocity for a contacting particle pair
-                     CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
-                     
+! Calculate the translational relative velocity for a contacting particle pair
+                     CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, &
+                        V_REL_TRANS_TANG, TANGENT, NORMAL, 1)
+
                      IF(ALREADY_NEIGHBOURS) THEN 
                         PV(LL,NI) = 1
-                        OVERLAP_N = V_REL_TRANS_NORM*DTSOLID
-                        OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                         contact_count = contact_count + 1
+                        OVERLAP_N = V_REL_TRANS_NORM*DTSOLID 
+                        OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ELSE 
                         PN(LL,1) = PN(LL,1) + 1
                         NI = PN(LL,1) + 1
                         PN(LL,NI) = I
                         PV(LL,NI) = 1
-                        OVERLAP_N = V_REL_TRANS_NORM*DTSOLID ! R_LM-DISTMOD !
-                        OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                         contact_count = 1
                         FTHIST = ZERO
+                        OVERLAP_N = V_REL_TRANS_NORM*DTSOLID ! R_LM-DISTMOD 
+                        OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ENDIF
+
                   ELSE
                      GOTO 200
                   ENDIF
                   
-                  
                   ETA_N_W = DES_ETAN_WALL(PIJK(LL,5))
-                  ETA_T_W = DES_ETAT_WALL(PIJK(LL,5))
+                  ETA_T_W = DES_ETAT_WALL(PIJK(LL,5))                  
                   
                   FNS1(:) = -KN_W*((OVERLAP_N))*NORMAL(:)
                   FNS2(:) = -ETA_N_W*V_REL_TRANS_NORM*NORMAL(:)
@@ -214,37 +242,47 @@
                   FN(LL, :) = FN(LL,:) + PFN(LL,NI,:)
                   TEMPFT(:) = FT(LL, :) + PFT(LL,NI,:)
                   
-!     Check for Coulomb’s friction law and limit the maximum value of the tangential force on a particle in contact with a wall
+! Check for Coulombs friction law and limit the maximum value of the
+! tangential force on a particle in contact with a wall
                   CALL CFSLIDEWALL(LL, TANGENT, TEMPFT)
                   
-!     Calculate the total force Fc and Tow on a particle in a particle-wall collision
+! Calculate the total force Fc and Tow on a particle in a particle-wall
+! collision
                   CALL CFFCTOWALL(LL, NORMAL)
-
+                  
                   PFN(LL,NI,:) =  PFN(LL,NI,:) + FNS1(:)
                   PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
 
-                  IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN 
-                     PRINT*,'WALL CONTACT ON', NI
-                     PRINT*, 'ALREADY_NEIGHBOURS? = ', ALREADY_NEIGHBOURS   
-                     PRINT*, 'STIME, DTSOLID = ',S_TIME, DTSOLID
-                     PRINT*, 'DES_VEL = ',DES_VEL_NEW(LL,1:DIMN), des_radius(LL)*OMEGA_NEW(LL,1)
-                     PRINT*,'MAA'
-                     WRITE(*,*) 'V-OMEGA R = ',DES_VEL_NEW(LL,1)+ des_radius(LL)* OMEGA_NEW(LL,1),   &
-                     (DES_VEL_NEW(LL,1)+ des_radius(LL)*OMEGA_NEW(LL,1))*DTSOLID
-
-                     PRINT*,'Mg = ', PMASS(LL)*gravity
-                     PRINT*,'K_N, ETA_N = ', KN_W, ETA_N_W, KT_W, ETA_T_W
-                     PRINT*,'TANGENT= ', TANGENT
-                     PRINT*,'HIST = ', PFT(LL,NI,1:2), PFN(LL,NI,1:2)
-                     PRINT*, 'PARTICLE_SLIDE ? ', PARTICLE_SLIDE
-                     PRINT*,' FT and FN= ', FT( LL,:), FN(LL,:)
-                     PRINT*,'KW*OT*TAN = ', KT_W*((OVERLAP_T)) *TANGENT(:)
-                     PRINT*,'OVERLAP_T = ', OVERLAP_T, TANGENT
+                  IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
+                     IF (.NOT.DES_LOC_DEBUG) THEN
+                        DES_LOC_DEBUG = .TRUE.
+                        WRITE(*,1000)
+                     ENDIF                          
+                     WRITE(*,*) '     WALL CONTACT ON ', NI
+                     WRITE(*,*) '     ALREADY_NEIGHBOURS? = ',&
+                        ALREADY_NEIGHBOURS
+                     WRITE(*,*) '     STIME, DTSOLID = ', S_TIME, DTSOLID
+                     WRITE(*,*) '     DES_VEL = ', DES_VEL_NEW(LL,1:DIMN),&
+                        des_radius(LL)*OMEGA_NEW(LL,1)
+                     WRITE(*,*) '     MAA'
+                     WRITE(*,*) '     V-OMEGA R = ', &
+                        DES_VEL_NEW(LL,1)+des_radius(LL)* OMEGA_NEW(LL,1),&
+                        (DES_VEL_NEW(LL,1)+des_radius(LL)*OMEGA_NEW(LL,1))*DTSOLID
+                     WRITE(*,*) '     Mg = ', PMASS(LL)*gravity
+                     WRITE(*,*) '     KN_W, ETA_N_W, KT_W, ETA_T_W = ',&
+                        KN_W, ETA_N_W, KT_W, ETA_T_W
+                     WRITE(*,*) '     TANGENT= ', TANGENT
+                     WRITE(*,*) '     HIST = ', PFT(LL,NI,1:2), PFN(LL,NI,1:2)
+                     WRITE(*,*) '     PARTICLE_SLIDE ? ', PARTICLE_SLIDE
+                     WRITE(*,*) '     FT and FN= ', FT( LL,:), FN(LL,:)
+                     WRITE(*,*) '     KW*OT*TAN = ', &
+                        KT_W*((OVERLAP_T)) *TANGENT(:)
+                     WRITE(*,*) '     OVERLAP_T = ', OVERLAP_T, TANGENT
                      FTMD = SQRT(DES_DOTPRDCT(TEMPFT,TEMPFT))
                      FNMD = SQRT(DES_DOTPRDCT(FN(LL,1:DIMN),FN(LL,1:DIMN)))
-                     PRINT*,'FTMD, mu FNMD = ', FTMD, MEW_W*FNMD
+                     WRITE(*,*) '     FTMD, mu FNMD = ', FTMD, MEW_W*FNMD
                      FTHIST(:) = FTHIST(:) + FT(LL,:)
-                     PRINT*,'FT AVG = ', FTHIST/contact_count, mew_w*PMASS(LL)*gravity, contact_count
+                     PRINT*, '     FT AVG = ', FTHIST/contact_count, mew_w*PMASS(LL)*gravity, contact_count
                      READ(*,*)
                   ENDIF
 
@@ -254,8 +292,12 @@
  200           CONTINUE
             ENDDO
          ENDIF                 !if(walldtsplit)
-         
-         
+!---------------------------------------------------------------------
+! End check particle LL for wall contacts         
+
+
+! Check particle LL neighbour contacts         
+!---------------------------------------------------------------------
          IF (NEIGHBOURS(LL,1).GT.0) THEN
             DO II = 2, NEIGHBOURS(LL,1)+1
                I = NEIGHBOURS(LL,II)
@@ -264,8 +306,7 @@
                   
                   ALREADY_NEIGHBOURS=.FALSE.
                   
-                  IF(PN(LL,1).GT.0) THEN
-                     
+                  IF(PN(LL,1).GT.0) THEN                     
                      DO NEIGH_L = 2, PN(LL,1)+1
                         IF(I.EQ. PN(LL,NEIGH_L)) THEN 
                            ALREADY_NEIGHBOURS=.TRUE.
@@ -281,19 +322,40 @@
                      IF(DIMN.EQ.3) TEMPZ = DES_POS_NEW(I,3)        
                      TEMPD = ABS(DES_POS_NEW(LL,1) - DES_POS_NEW(I,1))
                      IF(TEMPD.GT.4.d0*MAX_RADIUS.AND.DES_PERIODIC_WALLS_X) THEN 
+
                         IF(DEBUG_DES) THEN
-                           PRINT*,'II, L = ', I,LL
-                           PRINT*,'OLD POS, I', DES_POS_NEW(I,:)
-                           PRINT*,'OLD POS, LL = ', DES_POS_NEW(LL,:)
+                           IF (.NOT.DES_LOC_DEBUG) THEN
+                              DES_LOC_DEBUG = .TRUE.
+                              WRITE(*,1000)
+                           ENDIF                                
+                           WRITE(*,*) '     PARTICLE & NEIGHBOR ',&
+                              'LL, I: ', LL, I
+                           WRITE(*,*) '     OLD POS, I', DES_POS_NEW(I,:)
+                           WRITE(*,*),'     OLD POS, LL = ', DES_POS_NEW(LL,:)
                         ENDIF
+
                         IF(TEMPX.GT.DES_POS_NEW(LL,1)) THEN 
                            DES_POS_NEW(I,1) = DES_POS_NEW(I,1) - (EX2-WX1)
-                           IF(DEBUG_DES) PRINT*,'NEW POS WEST= ', DES_POS_NEW(I,1)
+
+                           IF(DEBUG_DES) THEN
+                              IF (.NOT.DES_LOC_DEBUG) THEN
+                                 DES_LOC_DEBUG = .TRUE.
+                                 WRITE(*,1000) 
+                              ENDIF                                
+                              WRITE(*,*) '     NEW POS WEST= ', DES_POS_NEW(I,1)
+                           ENDIF
                         ELSE
                            DES_POS_NEW(I,1) = DES_POS_NEW(I,1) + EX2 - WX1
-                           
-                           IF(DEBUG_DES) PRINT*,'NEW POS EAST = ', DES_POS_NEW(I,1)
+
+                           IF(DEBUG_DES) THEN
+                              IF (.NOT.DES_LOC_DEBUG) THEN
+                                 DES_LOC_DEBUG = .TRUE.
+                                 WRITE(*,1000)
+                              ENDIF
+                              WRITE(*,*) '     NEW POS EAST = ', DES_POS_NEW(I,1)
+                           ENDIF
                         ENDIF
+
                      ENDIF
                      
                      TEMPD = ABS(DES_POS_NEW(LL,2) - DES_POS_NEW(I,2))
@@ -327,10 +389,16 @@
                      IF (DIMN.EQ.3) DES_POS_NEW(I,3) = TEMPZ  
                   ENDIF
 
-                  IF(R_LM - DISTMOD.gt.SMALL_NUMBER) then 
-                     IF(LL.EQ.FOCUS_PARTICLE) Print*, 'NEIGHBORS', NEIGHBOURS(LL,:)
+                  IF(R_LM - DISTMOD.GT.SMALL_NUMBER) THEN
 
-                     
+                     IF(DEBUG_DES .AND. LL.EQ.FOCUS_PARTICLE) THEN
+                        IF (.NOT.DES_LOC_DEBUG) THEN
+                           DES_LOC_DEBUG = .TRUE.
+                           WRITE(*,1000) 
+                        ENDIF
+                        WRITE(*,*) '     NEIGHBORS: ', NEIGHBOURS(LL,:)
+                     ENDIF
+
                      IF((((R_LM-DISTMOD)/R_LM)*100.d0).GT.OVERLAP_MAX) THEN
                         OVERLAP_MAX = (((R_LM-DISTMOD)/R_LM)*100.d0)
                         OVERLAP_MAXP = LL
@@ -340,27 +408,41 @@
                      IF(DISTMOD.NE.ZERO) THEN
                         NORMAL(:)= DIST(:)/DISTMOD
                      ELSE 
-                        PRINT *,'DISTMOD IS ZERO FOR PART. PAIR', I,LL
+                        IF (.NOT.DES_LOC_DEBUG) THEN
+                           DES_LOC_DEBUG = .TRUE.
+                           WRITE(*,1000)
+                        ENDIF
+                        WRITE(*,*) '     Particle pair ', LL, I, &
+                           'crossed through one another ', &
+                           'so that DISTMOD is zero'
                         STOP
                      ENDIF
-!     Calculate the translational relative velocity for a contacting particle pair.
-                     CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, V_REL_TRANS_TANG, TANGENT, NORMAL)
+
+! Calculate the translational relative velocity for a contacting particle pair.
+                     CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, &
+                        V_REL_TRANS_TANG, TANGENT, NORMAL, 0)
+
                      IF(ALREADY_NEIGHBOURS) THEN 
                         PV(LL,NI) = 1
                         OVERLAP_N = V_REL_TRANS_NORM*DTSOLID
                         OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ELSE 
                         IF(DEBUG_DES) THEN
-                           PRINT*,'INITIATING CONTACT'
-                           PRINT*,'OVERLAP = ', ((R_LM-DISTMOD)/R_LM)*100.d0
+                           IF (.NOT.DES_LOC_DEBUG) THEN
+                              DES_LOC_DEBUG = .TRUE.
+                              WRITE(*,1000)
+                           ENDIF
+                           WRITE(*,*) '     Overlap for ',&
+                              ' particle pair: ', LL, I, &
+                              ' is: ', ((R_LM-DISTMOD)/R_LM)*100.d0
                         ENDIF
                         PN(LL,1) = PN(LL,1) + 1
                         NI = PN(LL,1) + 1
                         PN(LL,NI) = I
                         PV(LL,NI) = 1
-                        OVERLAP_N = R_LM-DISTMOD !V_REL_TRANS_NORM*DTSOLID! 
+                        OVERLAP_N = R_LM-DISTMOD          !V_REL_TRANS_NORM*DTSOLID! 
                         OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
-                     END IF
+                     ENDIF
                   ELSE
                      GOTO 300
                   ENDIF
@@ -380,23 +462,28 @@
                   TEMPFT(:) = FT(LL, :) + PFT(LL,NI,:)
                   
                   IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN 
-                     PRINT*, 'I = ', I
-                     PRINT*,'ETAs =  ', ETA_DES_N, ETA_DES_T
-                     PRINT*,'overlap = ', overlap_n, (R_LM - DISTMOD)*100.d0/R_LM
-                     
-                     PRINT*,'rad ratio = ', DES_RADIUS(LL)/DES_RADIUS(I)
-                     PRINT*, 'FNS1 and FNS2 = ', FNS1(:), FNS2(:)
-                     PRINT*, 'PFN = ', PFN(LL,NI,:)
-                     PRINT*, 'PFT = ', PFT(LL,NI,:)
-                     PRINT*, 'FORCEST = ', FT(LL,:)
-                     PRINT*, 'FORCESN = ', FN(LL,:)
-                     PRINT*, 'FORCEST = ', FT(LL,:)
+                     IF (.NOT.DES_LOC_DEBUG) THEN
+                        DES_LOC_DEBUG = .TRUE.
+                        WRITE(*,1000) 
+                     ENDIF
+
+                     PRINT*, '     I = ', I
+                     PRINT*, '     EtaN, EtaT =  ', ETA_DES_N, ETA_DES_T
+                     PRINT*, '     Overlap = ', overlap_n, (R_LM - DISTMOD)*100.d0/R_LM
+                     PRINT*, '     rad ratio = ', DES_RADIUS(LL)/DES_RADIUS(I)
+                     PRINT*, '     FNS1 and FNS2 = ', FNS1(:), FNS2(:)
+                     PRINT*, '     PFN = ', PFN(LL,NI,:)
+                     PRINT*, '     PFT = ', PFT(LL,NI,:)
+                     PRINT*, '     FORCEST = ', FT(LL,:)
+                     PRINT*, '     FORCESN = ', FN(LL,:)
+                     PRINT*, '     FORCEST = ', FT(LL,:)
                   ENDIF
 
-!     Check for Coulomb’s friction law and limit the maximum value of the tangential force on a particle in contact with another particle
+! Check for Coulombs friction law and limit the maximum value of the tangential
+! force on a particle in contact with another particle
                   CALL CFSLIDE(LL, TANGENT, TEMPFT)
                   
-!     Calculate the total force Fc and Tow on a particle in a particle-particle collision
+! Calculate the total force Fc and Tow on a particle in a particle-particle collision
                   CALL CFFCTOW(LL, I, NORMAL)
 
                   PFN(LL,NI,:) = PFN(LL,NI,:) +  FNS1(:)
@@ -409,50 +496,55 @@
                         OPEN(UNIT=1,FILE='debug_file',STATUS='OLD',POSITION='APPEND')
                         WRITE(1,'(A,I5)')'CALC FORCE -- NEIGHBOR',II
                         WRITE(1,'(2(1x,A,E12.5))')&
-                        'FNx=',FN(LL,1)&
-                        ,'FNy=',FN(LL,2)
+                        'FNx=',FN(LL,1), 'FNy=',FN(LL,2)
                      ELSE
                         OPEN(UNIT=1,FILE='debug_file',STATUS='NEW')
                         WRITE(1,'(A,I5)')'CALC FORCE -- NEIGHBOR',II
                         WRITE(1,'(2(1x,A,E12.5))')&
-                        'FNx=',FN(LL,1)&
-                        ,'FNy=',FN(LL,2)
+                        'FNx=',FN(LL,1),'FNy=',FN(LL,2)
                      ENDIF
                      CLOSE (1)
                      Print*, 'PN', PN(LL,:)
                   ENDIF
                   
-               ENDIF
-
-               
+               ENDIF         ! IF (I>LL)
  300           CONTINUE
-               
-               
-            ENDDO              !II = 2, NEIGHBOURS(LL,1)+I
-         ENDIF                 !(NEIGHBOURS(LL,1).GT.0)
-         
+            ENDDO            ! DO II = 2, NEIGHBOURS(LL,1)+I
+         ENDIF               ! IF(NEIGHBOURS(LL,1).GT.0)
+
+!---------------------------------------------------------------------
+! End check particle LL neighbour contacts         
+
+
          IF((NEIGHBOURS(LL,1).EQ.0).AND.(WALLCHECK.EQ.0)) THEN
-!     The subroutine sets all forces on a particle to zero is the particle is found to have no neighbors (either particles or walls)
+! The subroutine sets all forces on a particle to zero is the particle is 
+! found to have no neighbors (either particles or walls)
             CALL CFNOCONTACT(LL)
          ENDIF
+      
+      PC = PC + 1
+      ENDDO   ! end loop over paticles LL
 
-      ENDDO
 
+! Treats wall interaction also as a two-particle interaction but accounting
+! for the wall properties
       IF(DES_CONTINUUM_COUPLED) THEN
-!     Treats wall interaction also as a two-particle interaction but accounting for the wall properties
          CALL DRAG_FGS
       ENDIF
-!     COHESION
+
+! COHESION
       IF(USE_COHESION)THEN
          CALL CALC_COHESIVE_FORCES
       ENDIF
-!     !COHESION
-!-------------------------------------------------------------------
-!     Update old values with new values
-!-------------------------------------------------------------------
       
-!     Update the old values of particle position and velocity with the new values computed
+! Update the old values of particle position and velocity with the new values computed
       CALL CFUPDATEOLD
+
+      IF (DES_LOC_DEBUG) WRITE(*,1001)
+
+ 1000 FORMAT('---------- FROM CALC_FORCE_DES ---------->')
+ 1001 FORMAT('<---------- END CALC_FORCE_DES ----------') 
+
       RETURN
       END SUBROUTINE CALC_FORCE_DES
 

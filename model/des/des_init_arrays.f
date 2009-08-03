@@ -29,6 +29,7 @@
 !-----------------------------------------------
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
+      INTEGER I
 !-----------------------------------------------
 
 
@@ -80,6 +81,11 @@
       XE(:) = ZERO
       YN(:) = ZERO
       ZT(:) = ZERO
+
+      PEA(:) = .FALSE.
+      DO I=1, PARTICLES
+         PEA(I)=.TRUE.
+      ENDDO      
 
       RETURN
       END SUBROUTINE DES_INIT_ARRAYS 

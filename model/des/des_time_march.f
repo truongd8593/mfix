@@ -43,6 +43,7 @@
       USE discretelement   
       USE constant
       USE sendrecv
+      USE des_bc
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -63,6 +64,9 @@
 !     Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 
+!     index to track accounted for particles  
+      INTEGER PC    
+!-----------------------------------------------
 
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
@@ -90,7 +94,7 @@
          ENDIF
 
          !PRINT *,'SPX TIME', SPX_DT(1), DES_SPX_TIME
-         
+
          CALL NEIGHBOUR
          
 ! COHESION INITIALIZE
@@ -112,8 +116,12 @@
                   ! Force calculation         
                   CALL CALC_FORCE_DES
                   
-                  DO NP = 1, PARTICLES
+                  PC = 1
+                  DO NP = 1, MAX_PIS
+                     IF(PC .GT. PIS) EXIT
+                     IF(.NOT.PEA(NP)) CYCLE
                      CALL CFNEWVALUES(NP)
+                     PC = PC + 1
                   ENDDO
 
                   CALL PARTICLES_IN_CELL
@@ -201,8 +209,12 @@
          ! Force calculation         
          CALL CALC_FORCE_DES
 
-         DO NP = 1, PARTICLES
+         PC = 1
+         DO NP = 1, MAX_PIS
+            IF(PC .GT. PIS) EXIT
+            IF(.NOT.PEA(NP)) CYCLE
             CALL CFNEWVALUES(NP)
+            PC = PC + 1
          ENDDO
 
          CALL PARTICLES_IN_CELL
@@ -256,6 +268,10 @@
             ENDIF
          ENDIF  ! end if (.not.des_continuum_coupled)
 
+! J.Musser : mass inlet/outlet -> particles entering the system
+         IF(DES_MI .AND. MOD(NN,PI_FACTOR).EQ.0)THEN
+           CALL DES_MASS_INLET
+         ENDIF
 
       ENDDO     ! end do NN = 1, FACTOR
 

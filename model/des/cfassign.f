@@ -34,21 +34,22 @@
       USE sendrecv
 
       IMPLICIT NONE
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
       LOGICAL:: filexist, isopen
-      
       INTEGER L, IJK, M, I, J, K, COUNT_E
       DOUBLE PRECISION MINMASS, MASS_I, MASS_J, MASS_EFF
-      DOUBLE PRECISION :: TCOLL, TCOLL_TMP, MAXMASS
-     
-!---------------------------------------------------------------------
-!     Assignments
-!---------------------------------------------------------------------
+      DOUBLE PRECISION TCOLL, TCOLL_TMP, MAXMASS
 
+!-----------------------------------------------
       INCLUDE 'b_force1.inc'
       INCLUDE 'b_force2.inc'
 
+
       WRITE(*,*) '---------- START CFASSIGN ---------->'
 
+      PIS = PARTICLES  ! J.Musser 
       MINMASS = LARGE_NUMBER
       MAXMASS = SMALL_NUMBER
       MAX_RADIUS = ZERO
@@ -106,7 +107,7 @@
       ELSE
          KT_W = KT_W_FAC*KN_W
       ENDIF
-      WRITE(*,*) 'KN AND KT = ', KN, KT
+      WRITE(*,*) '     KN AND KT = ', KN, KT
 
 ! Arrange the coefficient of restitution matrix from en_input values
 ! use coef of rest to determine damping coefficient 
@@ -168,12 +169,12 @@
       DO I = 1, MMAX
          DO J = 1, MMAX
             WRITE(*,'(x,A,i2,1x,i2,A,2(g17.8))') &
-               'ETA_N AND ETA_T FOR PAIR',&
+               '     ETA_N AND ETA_T FOR PAIR',&
                I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
          ENDDO
       ENDDO
 
-      !DTSOLID = DTSOLID_FACTOR*2.0D0*PI*SQRT((MINMASS)/(15*KN)) ! DTs - Rotational Constraint
+      !DTSOLID = DTSOLID_FACTOR*2.0D0*PI*SQRT((MINMASS)/(15*KN)) 
       !DTSOLID = DTSOLID_FACTOR*2D0*PI*SQRT(MINMASS/(6*KN)) ! DTs - Translational Constraint
       !DTSOLID = pi*SQRT(one/(KN/PMASS(1) - (ETA_DES_N**2)/4.d0))
       !DTSOLID = DTSOLID/50     
@@ -181,7 +182,7 @@
       
       WRITE(*,*) '     MIN TCOLL AND DTSOLID = ', TCOLL, DTSOLID
 
-      WRITE(*,*) '<---------- END CFASSIGN ----------'    
-
+      WRITE(*,*) '<---------- END CFASSIGN ----------'      
+      
       RETURN
       END SUBROUTINE CFASSIGN
