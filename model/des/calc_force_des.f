@@ -204,7 +204,7 @@
                      ENDIF
 
 ! Calculate the translational relative velocity for a contacting particle pair
-                     CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, &
+                     CALL CFRELVEL(LL, IW, V_REL_TRANS_NORM, &
                         V_REL_TRANS_TANG, TANGENT, NORMAL, 1)
 
                      IF(ALREADY_NEIGHBOURS) THEN 
