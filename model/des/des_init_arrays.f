@@ -74,7 +74,7 @@
       DES_WALL_VEL(:,:) = UNDEFINED
 
       DES_U_s(:,:) = ZERO
-      DES_W_s(:,:) = ZERO
+      DES_V_s(:,:) = ZERO
       DES_W_s(:,:) = ZERO
       SOLID_DRAG(:,:,:) = ZERO
 
