@@ -1024,18 +1024,20 @@
 		USCM_HYS = ZERO
 		VSCM_HYS = ZERO	
 		WSCM_HYS = ZERO
-		
-		DO IM = 1, MMAX
+		 
+		IF(phis > ZERO) THEN
+		  DO IM = 1, MMAX
 
 	           USCM_HYS = USCM_HYS + EP_S(IJK,Im)*(UGC - AVG_X_E(U_S(IMJK,Im),U_S(IJK,Im),I))
 		   VSCM_HYS = VSCM_HYS + EP_S(IJK,Im)*(VGC - AVG_Y_N(V_S(IJMK,Im),V_S(IJK,Im)))
 		   WSCM_HYS = WSCM_HYS + EP_S(IJK,Im)*(WGC - AVG_Z_T(W_S(IJKM,Im),W_S(IJK,Im))) 
                    
-	        ENDDO 
+	          ENDDO 
 		
-		USCM_HYS = USCM_HYS/phis
-		VSCM_HYS = VSCM_HYS/phis
-		WSCM_HYS = WSCM_HYS/phis
+		  USCM_HYS = USCM_HYS/phis
+		  VSCM_HYS = VSCM_HYS/phis
+		  WSCM_HYS = WSCM_HYS/phis
+		ENDIF
 		
 		VREL_poly = SQRT(USCM_HYS**2 + VSCM_HYS**2 + WSCM_HYS**2)
 		
@@ -1054,8 +1056,9 @@
 
 		F = 10d0 * phis / EP_g(IJK)**2 + EP_g(IJK)**2 * (ONE+1.5d0*DSQRT(phis))
 
-        	F_D_BVK = F + 0.413d0*Re/(24d0*EP_g(IJK)**2) * (ONE/EP_G(IJK) + 3d0*EP_G(IJK) &
-                	*phis + 8.4d0/Re**0.343d0) / (ONE+10**(3d0*phis)/Re**(0.5d0+2*phis))
+        	IF(RE > ZERO) F_D_BVK = F + 0.413d0*Re/(24d0*EP_g(IJK)**2) * &
+                	(ONE/EP_G(IJK) + 3d0*EP_G(IJK) *phis + 8.4d0/Re**0.343d0) &
+			 / (ONE+10**(3d0*phis)/Re**(0.5d0+2*phis))
 	
 !	YS correction for polydisperse drag
 		beta_i_HYS = ZERO
@@ -1085,15 +1088,8 @@
 		      beta_ij(IJK,M,j) = ZERO
                       
 !	This if statement prevents NaN values from appearing for beta_ij
-                      IF ((EP_S(IJK,M) == ZERO) .or. (EP_S(IJK,j)==ZERO))THEN
-                      
-                         beta_ij(IJK,M,j) = ZERO
-                     
-                      ELSE
-
-		      beta_ij(IJK,M,j) = (2d0*alpha_YS*EP_S(IJK,M)*EP_S(IJK,j))/(EP_S(IJK,M)/beta_i_HYS + EP_S(IJK,j)/beta_j_HYS) 
-         
-                      ENDIF
+                      IF ((EP_S(IJK,M) > ZERO) .AND. (EP_S(IJK,j) > ZERO)) beta_ij(IJK,M,j) = &
+		       (2d0*alpha_YS*EP_S(IJK,M)*EP_S(IJK,j))/(EP_S(IJK,M)/beta_i_HYS + EP_S(IJK,j)/beta_j_HYS)
                       
                       F_YS = F_YS + beta_ij(IJK,M,j)
 	   
