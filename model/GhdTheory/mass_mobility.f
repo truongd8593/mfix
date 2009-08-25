@@ -42,8 +42,7 @@
 
       do i=1,s
          do j=1,s
-             Amat(i,j) = (nu(i,j)+0.5d0*zeta0*kronecker(i,j))* &
-                mi(j)/mi(i)                                      !A matrix for solution of DF (p 8 CMH notes)
+             Amat(i,j) = (nu(i,j)+0.5d0*zeta0*kronecker(i,j))    !A matrix for solution of DF (p 8 CMH notes)
              bmat(i,j) = -ni(i)*mi(i)/mi(j)*(kronecker(i,j)-ni(j) &
                 *mi(j)/rho)                                      !b matrix for solution of DF (p 8 CMH notes)
          enddo
