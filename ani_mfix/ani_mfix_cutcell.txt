@@ -3,7 +3,7 @@ Animate_mfix : 2D cut-cell usage / notes
 
 1. Download the latest devlopment version from the MFIX website
 
-2. The executable is in mfix/ani_mfix/ani_mfix_intel_64bit.exe
+2. The executable is in mfix/ani_mfix/Linux/ani_mfix_intel_64bit.exe
    It is a 64 bit Linux executable (so at NETL, use on HPC).
 
 3. 2D cut-cell runs usage
