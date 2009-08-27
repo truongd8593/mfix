@@ -1,0 +1,537 @@
+Animate_mfix : 2D cut-cell usage / notes
+
+
+1. Download the latest devlopment version from the MFIX website
+
+2. The executable is in mfix/ani_mfix/ani_mfix_intel_64bit.exe
+   It is a 64 bit Linux executable (so at NETL, use on HPC).
+
+3. 2D cut-cell runs usage
+
+   a.  The code looks for the cut-cell geometry data in the
+       file : ani_cutcell.vtk
+
+   b.  copy one of the time dependent VTK files created when
+       MFIX is run to that filename.
+
+   c.  Run the animate_mfix_64bits.exe downloaded from the website
+
+
+
+4. Notes
+
+   a. If ani_cutcell.vtk is not found or it is a 3D case, the
+      animation code will run as if it is not a cut-cell case.
+
+   b. The first time animate is run, there will be a delay
+      while the code reads the ani_cutcell.vtk file and maps
+      the polygons specified in that file with the MFIX-IJK 
+      cell that they correspond to.  The mapping information is
+      written to the cutcell_map.txt.
+
+   c. The SP* files are used in the animation, not the time
+      dependent VTK files.  Therefore,  you will need to change
+      the output SPX_DT values if you run the cut-cell tutorials.
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+I have reviewed this invoice. It is approved for processing.
+
+
+ 
+smtp:jhildebrand@egginc.com
+smtp:bsell@egginc.com
+
+
+New job number -- Ansys License lease
+
+
+
+
+
+bi directional streams
+
+http://www.codeguru.com/forum/showthread.php?t=398773
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+This technical effort was performed in support of the 
+U.S. Department of Energy, Innovations for Existing Plants 
+Program at the National Energy Technology Laboratory, 
+under RDS contract DE-AC26-04NT41817.
+
+
+
+
+
+
+Monthly reports due by COB Tuesday July 7 2009.
+
+Thanks,
+Phil
+
+
+
+
+
+
+NOTE TO SELF : CHECK what the max is 1023 decimal ??
+
+
+
+
+
+
+http://www.libxl.com/  $199   xls from c++
+
+
+
+
+
+
+
+
+
+
+
+Task   : Finish netCDF support in MFIX
+
+Result : Able to (optionally) create netCDF files in
+         MFIX (on NCCS and HPC).  Ability to post process
+         netCDF output (animate / post / Ensight)
+
+
+Task   : Investigate and implement parallel netCDF in MFIX
+
+Result : Based on some benchmarks done by Aytekin, this could
+         reduce wall clock time by 10 to 30 percent.
+
+
+
+Task   : Investigate ways to post process very large runs.  This
+         could include creating spatial subsets or grids with
+         every other cell.
+
+Result : Ability to process very large runs on a single processor,
+         without having to modify the post processing codes to
+         use MPI.
+
+
+
+
+	
+
+
+bool binarySearch(int array[], int Size, int value,  int& position)
+{
+    int* p = std::lower_bound(
+        &array[0],
+        &array[Size],
+        value);
+    position = p - &array[0];
+    return position != Size && *p == value;
+}
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+NETL status report due by NOON March 31, 2009.
+
+The report should cover February/March 2009.
+
+
+If you did a February 2009 report, just edit it and add
+your March input.
+
+Thanks,
+Phil
+
+
+
+
+
+
+
+aytek.gel@gmail.com
+aike@alpemi.com
+
+
+Mike Prinkey home phone : (724) 438-5165
+mprinkey@gmail.com
+
+
+Julia.Korkus@ansys.com
+Mehrdad.Shahnam@ansys.com
+Beth.Lewis@ansys.com
+
+
+
+
+
+
+Phil, 
+
+I just ran over to the office to check and the signature page was not received.  Please ask him to re-send and make sure he is sending to the correct fax number.  304-599-8904. (Becky Sell)
+
+Thanks!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Greg,
+
+FYI : below are the performance review comments from DOE
+on your work.  
+
+ 
+Excellent support has been provided by Aeolus personnel in the 
+systems administration of the SciLAN and computational clusters 
+in ORD.  Aeolus support of procurement and installation of 
+new clusters has been excellent.  
+
+I am supposed to "review these and discuss them with those 
+                  that support you".
+
+Good Job !  There ... I have officially discussed them with
+you.  Seriously, let me if you have any questions/comments.
+
+Thanks,
+Phil
+
+
+--------------------------------------------------------------
+
+Aytekin,
+
+
+FYI : below are the performance review comments from DOE
+on your work.  
+
+
+Excellent support has been performed by the Aeolus personnel 
+in their continued support of MFIX and MFIX-NG using OPEN-FOAM 
+architecture.  Aeolus personnel have provided excellent support 
+in the maintenance of software compiler systems and assistance 
+in porting the MFIX code to new computational clusters.  
+
+--------------------------------------------------------------
+
+RDS work products are consistently accurate and complete and consistently accepted without revision. Data, analyses, literature searches, and reports are consistently of good quality.  
+
+Excellent support has been performed by the Aeolus personnel in their continued support of MFIX and MFIX-NG using OPEN-FOAM architecture.  Aeolus personnel have provided excellent support in the maintenance of software compiler systems and assistance in porting the MFIX code to new computational clusters.  
+
+Work processes are consistently executed according to procedures and require minimal intervention from the Government.   
+
+Milestones, deliverables, and DOE requests are mostly completed on time. 
+
+ES&H requirements are always achieved and continuous improvement initiatives are achieved.
+
+
+
+
+
+--------------------------------------------------------------
+
+RDS work products are consistently accurate and complete and consistently accepted without revision. Data, analyses, literature searches, and reports are consistently of good quality.  
+
+Excellent work continues to be performed by the ANSYS personnel in their development and application of the FLUENT-based Gasifier model and Transport Desulfurizer model. Excellent support has been provided by ANSYS in their development of chemical looping and oxy-fired coal combustion models.  
+
+-------------------------------------------------------------------
+
+Greg,
+
+FYI : below are the performance review comments from DOE
+on your work.  
+
+ 
+Excellent support has been provided by Aeolus personnel in the 
+systems administration of the SciLAN and computational clusters 
+in ORD.  Aeolus support of procurement and installation of 
+new clusters has been excellent.  
+
+
+
+---------------------------------------------------------------------
+Work processes are consistently executed according to procedures and require minimal intervention from the Government.   
+
+Milestones, deliverables, and DOE requests are mostly completed on time. 
+
+Work is mostly within or under budget and costs are mostly accurately estimated.  
+
+ES&H requirements are always achieved and continuous improvement initiatives are occasionally achieved. 
+
+
+
+--------------------------------------------------------------
+
+
+gluCylinder
+
+
+http://opengl.czweb.org/ch13/433-436.html#Heading1
+
+#pragma warning(disable : 4996)
+
+
+1. Guest LAN account.
+
+2. Access to the guest LAN will be through a laptop that Mr. Kasule will
+obtain from WVU. This will provide Mr. Kasule access to AspenTech support
+gasification research.
+
+3. SciLAN access in order to run PC-Coal LAB
+
+
+
+
+----------------------------------------------------------------------
+
+
+
+
+
+
+
+                         670.01.01 
+
+The actuals costs are under plan because Ansys(Fluent) has
+been working at less than plan.  They are planning to
+make the time up in the next period.
+
+Here is an exerpt from an email from Ansys on this subject:
+
+"The plan is to use more resources to come back up to 4 FTEs.  
+Part of the problem is that one of the projects in 670.01.01, 
+is still not well defined.  This is the "CO2 capture using sorbent".  
+I have been planning to get help from two engineers from the NH 
+office.  But, since the scope is not well determined, I'm not 
+able to pass on any thing meaningful to them."
+
+-------------------------------------------------------------
+
+                          670.01.06
+
+The actuals are under plan because:
+
+1) Ansys employee working on this task left the company during
+   and was not replaced.
+
+2) Even while still with the company, the employee worked
+   less than plan hours
+
+This work will not be made up in the next period.  Ansys is
+not planning on replacing the employee.  The plan is for DOE
+to take the Ansys task out of the SOW and re-submit to RDS,
+but this has not occurred yet.
+
+
+
+
+
+
+---------------------------------------------------------------------
+Every 4 months or so, I have to compare the actual costs versus
+the plan costs for RDS management, and if there is more than
+a 10 percent difference, I need to explain why.
+
+I noticed that Ansys' actual charges are quite a bit under plan
+in 670.01.01.
+
+Part of that was because I inflated the Aug/Sep/Oct plan to have 
+5 full time FTEs instead of 4.  From November on, the plan calls
+for 4 full time FTEs.  It is the period starting with November
+than I am looking at now.
+
+In November and December, Ansys only worked to about 57 percent
+of the plan (probably due to the holidays).
+
+   plan hours   = 1302
+   actual hours ~  737
+
+
+So my question : From March thru October, do you expect to be 
+                 working slightly more than the plan (which
+                 is 4 FTE ... with some vacation taken in), or
+                 to just continue to work at plan ?
+
+Here are the number of FTE hours for 1 full time employee in these months:
+
+March     : 192
+April     : 154
+May       : 154
+June      : 184
+July      : 146
+August    : 154
+September : 184
+October   : 146
+
+
+
+
+
+   aytek.gel@gmail.com
+   (480) 782-9474
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------
+
+http://msdn2.microsoft.com/en-us/library/c9ceah3b(VS.71).aspx
+
+-----------------------
+
+http://mfix.org/members/wininst.html
+
+---------------------
+
+
+
+--------------------------------------------------------
+	UINT nHash = 0;
+	while (*key)
+		nHash = (nHash<<5) + nHash + *key++;
+	return nHash;
+
+--------------------------------------------------
+
+-----------------------------------------------------------------------------
+
+
+                           Travel over per diem
+
+
+Aug 30, 2007 : sent email to Bill asking for proper procedure
+
+
+------------------------------------------------------------------------------
+
+
+                               211 tasks
+
+
+Aug 29, 2007
+
+1. merge 28-aug-2007
+
+   Loop thru the "combined" file below. Get the MasterPlat_ID ... find it
+   in "OIL FMP_PLATS.xls" put the corresponding Oil FMP number in that file
+   into the "combined file"
+
+
+2. compare fields in 2 files
+
+   Loop thru the "active" .. for each FMP, see if it is in the 
+   "masterplatfile" if not found ... output it to a list.
+
+
+
+Sep 5, 2007
+
+1. Fieldname Rollup
+
+ 
+-------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------
+
+                                   PIO
+
+10-sep-2007
+
+This is strange as READ_RES0 and READ_RES1 have not been changed.
+And if you can do a restart_2 with the version of MFIX without
+any IO changes, you should be able to read the file with the
+distributed IO changes.
+
+
+Since the following gets printed out:
+
+0 :CHK2: READ_RES1:203  1.60000002
+
+I assume that the problem occurs during the 
+
+call readScatterRes(GAMA_RG, array2, array1, NEXT_REC)
+
+1) What is NEXT_REC before the call ? Compare that value to the
+version of MFIX without distributed IO changes.
+
+2) In allocate_arrays , verify that dimension_3p = dimension_3
+(approximately line 71). This is just to make sure that all
+the arrays are being allocated so we are not overwriting memory
+anywhere.
+
+
+3) could you zip and send to me the entire source, so I can take 
+a quick look at the other routines.
+
+
+
+
+
+
