@@ -1,0 +1,745 @@
+ size : 9 * 102 * 1 = 918
+There are 15 variables defined
+
+	EP_g
+	P_g
+	P_star
+	U_g
+	V_g
+	W_g
+	U_s_1
+	V_s_1
+	W_s_1
+	ROP_s_1
+	T_g
+	T_s_1
+	X_g_1
+	X_s_1_1
+	Theta_m_1
+	
+
+
+There are 201 times
+
+	0
+	0.00998705
+	0.0202903
+	0.0304773
+	0.0405615
+	0.0503506
+	0.0599411
+	0.0711126
+	0.0811728
+	0.0901496
+	0.100736
+	0.110208
+	0.120888
+	0.130499
+	0.140946
+	0.151316
+	0.159983
+	0.170291
+	0.180196
+	0.191374
+	0.200164
+	0.211841
+	0.220333
+	0.231892
+	0.241853
+	0.252337
+	0.261773
+	0.271733
+	0.282217
+	0.290954
+	0.30039
+	0.310612
+	0.321388
+	0.330125
+	0.342422
+	0.352129
+	0.36119
+	0.371179
+	0.381795
+	0.39123
+	0.401191
+	0.410691
+	0.420053
+	0.430244
+	0.44001
+	0.451687
+	0.459967
+	0.471055
+	0.48049
+	0.491106
+	0.500542
+	0.510502
+	0.520784
+	0.530117
+	0.540982
+	0.550269
+	0.560587
+	0.570141
+	0.58065
+	0.590108
+	0.600254
+	0.611528
+	0.621294
+	0.631485
+	0.641676
+	0.651654
+	0.660147
+	0.671611
+	0.681242
+	0.691388
+	0.700751
+	0.711451
+	0.720909
+	0.731227
+	0.740781
+	0.751184
+	0.760149
+	0.772206
+	0.780069
+	0.790029
+	0.801588
+	0.81008
+	0.821639
+	0.830271
+	0.840325
+	0.850772
+	0.861142
+	0.870938
+	0.880466
+	0.889938
+	0.900617
+	0.910935
+	0.920222
+	0.93054
+	0.940094
+	0.95063
+	0.960283
+	0.969895
+	0.980901
+	0.99141
+	1.00096
+	1.01158
+	1.02078
+	1.03129
+	1.04084
+	1.05146
+	1.06122
+	1.07142
+	1.08161
+	1.09137
+	1.09986
+	1.11142
+	1.12138
+	1.13187
+	1.14083
+	1.15127
+	1.16142
+	1.17029
+	1.18101
+	1.19014
+	1.20005
+	1.21105
+	1.2212
+	1.23033
+	1.24039
+	1.25002
+	1.26
+	1.27037
+	1.28074
+	1.2908
+	1.3011
+	1.31116
+	1.3208
+	1.3315
+	1.34126
+	1.35188
+	1.36131
+	1.37127
+	1.38071
+	1.39022
+	1.4013
+	1.41028
+	1.42005
+	1.43067
+	1.4401
+	1.45055
+	1.46074
+	1.47072
+	1.48091
+	1.492
+	1.50144
+	1.50993
+	1.5216
+	1.5301
+	1.54142
+	1.55112
+	1.5616
+	1.57005
+	1.5817
+	1.59218
+	1.60034
+	1.61199
+	1.62137
+	1.63108
+	1.6415
+	1.65082
+	1.66167
+	1.67111
+	1.67983
+	1.69092
+	1.70036
+	1.71084
+	1.7208
+	1.73024
+	1.74072
+	1.75099
+	1.76139
+	1.77035
+	1.78053
+	1.79033
+	1.80122
+	1.81099
+	1.82075
+	1.83001
+	1.84117
+	1.85063
+	1.86078
+	1.86991
+	1.87997
+	1.89132
+	1.90112
+	1.90994
+	1.92031
+	1.93037
+	1.94068
+	1.95074
+	1.96111
+	1.9703
+	1.98117
+	1.99046
+	2.00007
+	
+
+BUB01.SP1
+	time = 0 at position = 1536
+	time = 0.00998705 at position = 6144
+	time = 0.0202903 at position = 10752
+	time = 0.0304773 at position = 15360
+	time = 0.0405615 at position = 19968
+	time = 0.0503506 at position = 24576
+	time = 0.0599411 at position = 29184
+	time = 0.0711126 at position = 33792
+	time = 0.0811728 at position = 38400
+	time = 0.0901496 at position = 43008
+	time = 0.100736 at position = 47616
+	time = 0.110208 at position = 52224
+	time = 0.120888 at position = 56832
+	time = 0.130499 at position = 61440
+	time = 0.140946 at position = 66048
+	time = 0.151316 at position = 70656
+	time = 0.159983 at position = 75264
+	time = 0.170291 at position = 79872
+	time = 0.180196 at position = 84480
+	time = 0.191374 at position = 89088
+	time = 0.200164 at position = 93696
+	time = 0.211841 at position = 98304
+	time = 0.220333 at position = 102912
+	time = 0.231892 at position = 107520
+	time = 0.241853 at position = 112128
+	time = 0.252337 at position = 116736
+	time = 0.261773 at position = 121344
+	time = 0.271733 at position = 125952
+	time = 0.282217 at position = 130560
+	time = 0.290954 at position = 135168
+	time = 0.30039 at position = 139776
+	time = 0.310612 at position = 144384
+	time = 0.321388 at position = 148992
+	time = 0.330125 at position = 153600
+	time = 0.342422 at position = 158208
+	time = 0.352129 at position = 162816
+	time = 0.36119 at position = 167424
+	time = 0.371179 at position = 172032
+	time = 0.381795 at position = 176640
+	time = 0.39123 at position = 181248
+	time = 0.401191 at position = 185856
+	time = 0.410691 at position = 190464
+	time = 0.420053 at position = 195072
+	time = 0.430244 at position = 199680
+	time = 0.44001 at position = 204288
+	time = 0.451687 at position = 208896
+	time = 0.459967 at position = 213504
+	time = 0.471055 at position = 218112
+	time = 0.48049 at position = 222720
+	time = 0.491106 at position = 227328
+	time = 0.500542 at position = 231936
+	time = 0.510502 at position = 236544
+	time = 0.520784 at position = 241152
+	time = 0.530117 at position = 245760
+	time = 0.540982 at position = 250368
+	time = 0.550269 at position = 254976
+	time = 0.560587 at position = 259584
+	time = 0.570141 at position = 264192
+	time = 0.58065 at position = 268800
+	time = 0.590108 at position = 273408
+	time = 0.600254 at position = 278016
+	time = 0.611528 at position = 282624
+	time = 0.621294 at position = 287232
+	time = 0.631485 at position = 291840
+	time = 0.641676 at position = 296448
+	time = 0.651654 at position = 301056
+	time = 0.660147 at position = 305664
+	time = 0.671611 at position = 310272
+	time = 0.681242 at position = 314880
+	time = 0.691388 at position = 319488
+	time = 0.700751 at position = 324096
+	time = 0.711451 at position = 328704
+	time = 0.720909 at position = 333312
+	time = 0.731227 at position = 337920
+	time = 0.740781 at position = 342528
+	time = 0.751184 at position = 347136
+	time = 0.760149 at position = 351744
+	time = 0.772206 at position = 356352
+	time = 0.780069 at position = 360960
+	time = 0.790029 at position = 365568
+	time = 0.801588 at position = 370176
+	time = 0.81008 at position = 374784
+	time = 0.821639 at position = 379392
+	time = 0.830271 at position = 384000
+	time = 0.840325 at position = 388608
+	time = 0.850772 at position = 393216
+	time = 0.861142 at position = 397824
+	time = 0.870938 at position = 402432
+	time = 0.880466 at position = 407040
+	time = 0.889938 at position = 411648
+	time = 0.900617 at position = 416256
+	time = 0.910935 at position = 420864
+	time = 0.920222 at position = 425472
+	time = 0.93054 at position = 430080
+	time = 0.940094 at position = 434688
+	time = 0.95063 at position = 439296
+	time = 0.960283 at position = 443904
+	time = 0.969895 at position = 448512
+	time = 0.980901 at position = 453120
+	time = 0.99141 at position = 457728
+	time = 1.00096 at position = 462336
+	time = 1.01158 at position = 466944
+	time = 1.02078 at position = 471552
+	time = 1.03129 at position = 476160
+	time = 1.04084 at position = 480768
+	time = 1.05146 at position = 485376
+	time = 1.06122 at position = 489984
+	time = 1.07142 at position = 494592
+	time = 1.08161 at position = 499200
+	time = 1.09137 at position = 503808
+	time = 1.09986 at position = 508416
+	time = 1.11142 at position = 513024
+	time = 1.12138 at position = 517632
+	time = 1.13187 at position = 522240
+	time = 1.14083 at position = 526848
+	time = 1.15127 at position = 531456
+	time = 1.16142 at position = 536064
+	time = 1.17029 at position = 540672
+	time = 1.18101 at position = 545280
+	time = 1.19014 at position = 549888
+	time = 1.20005 at position = 554496
+	time = 1.21105 at position = 559104
+	time = 1.2212 at position = 563712
+	time = 1.23033 at position = 568320
+	time = 1.24039 at position = 572928
+	time = 1.25002 at position = 577536
+	time = 1.26 at position = 582144
+	time = 1.27037 at position = 586752
+	time = 1.28074 at position = 591360
+	time = 1.2908 at position = 595968
+	time = 1.3011 at position = 600576
+	time = 1.31116 at position = 605184
+	time = 1.3208 at position = 609792
+	time = 1.3315 at position = 614400
+	time = 1.34126 at position = 619008
+	time = 1.35188 at position = 623616
+	time = 1.36131 at position = 628224
+	time = 1.37127 at position = 632832
+	time = 1.38071 at position = 637440
+	time = 1.39022 at position = 642048
+	time = 1.4013 at position = 646656
+	time = 1.41028 at position = 651264
+	time = 1.42005 at position = 655872
+	time = 1.43067 at position = 660480
+	time = 1.4401 at position = 665088
+	time = 1.45055 at position = 669696
+	time = 1.46074 at position = 674304
+	time = 1.47072 at position = 678912
+	time = 1.48091 at position = 683520
+	time = 1.492 at position = 688128
+	time = 1.50144 at position = 692736
+	time = 1.50993 at position = 697344
+	time = 1.5216 at position = 701952
+	time = 1.5301 at position = 706560
+	time = 1.54142 at position = 711168
+	time = 1.55112 at position = 715776
+	time = 1.5616 at position = 720384
+	time = 1.57005 at position = 724992
+	time = 1.5817 at position = 729600
+	time = 1.59218 at position = 734208
+	time = 1.60034 at position = 738816
+	time = 1.61199 at position = 743424
+	time = 1.62137 at position = 748032
+	time = 1.63108 at position = 752640
+	time = 1.6415 at position = 757248
+	time = 1.65082 at position = 761856
+	time = 1.66167 at position = 766464
+	time = 1.67111 at position = 771072
+	time = 1.67983 at position = 775680
+	time = 1.69092 at position = 780288
+	time = 1.70036 at position = 784896
+	time = 1.71084 at position = 789504
+	time = 1.7208 at position = 794112
+	time = 1.73024 at position = 798720
+	time = 1.74072 at position = 803328
+	time = 1.75099 at position = 807936
+	time = 1.76139 at position = 812544
+	time = 1.77035 at position = 817152
+	time = 1.78053 at position = 821760
+	time = 1.79033 at position = 826368
+	time = 1.80122 at position = 830976
+	time = 1.81099 at position = 835584
+	time = 1.82075 at position = 840192
+	time = 1.83001 at position = 844800
+	time = 1.84117 at position = 849408
+	time = 1.85063 at position = 854016
+	time = 1.86078 at position = 858624
+	time = 1.86991 at position = 863232
+	time = 1.87997 at position = 867840
+	time = 1.89132 at position = 872448
+	time = 1.90112 at position = 877056
+	time = 1.90994 at position = 881664
+	time = 1.92031 at position = 886272
+	time = 1.93037 at position = 890880
+	time = 1.94068 at position = 895488
+	time = 1.95074 at position = 900096
+	time = 1.96111 at position = 904704
+	time = 1.9703 at position = 909312
+	time = 1.98117 at position = 913920
+	time = 1.99046 at position = 918528
+	time = 2.00007 at position = 923136
+BUB01.SP2
+	time = 0 at position = 1536
+	time = 0.100736 at position = 10240
+	time = 0.200164 at position = 18944
+	time = 0.30039 at position = 27648
+	time = 0.401191 at position = 36352
+	time = 0.500542 at position = 45056
+	time = 0.600254 at position = 53760
+	time = 0.700751 at position = 62464
+	time = 0.801588 at position = 71168
+	time = 0.900617 at position = 79872
+	time = 1.00096 at position = 88576
+	time = 1.09986 at position = 97280
+	time = 1.20005 at position = 105984
+	time = 1.3011 at position = 114688
+	time = 1.4013 at position = 123392
+	time = 1.50144 at position = 132096
+	time = 1.60034 at position = 140800
+	time = 1.70036 at position = 149504
+	time = 1.80122 at position = 158208
+	time = 1.90112 at position = 166912
+	time = 2.00007 at position = 175616
+BUB01.SP3
+	time = 0 at position = 1536
+	time = 0.100736 at position = 14336
+	time = 0.200164 at position = 27136
+	time = 0.30039 at position = 39936
+	time = 0.401191 at position = 52736
+	time = 0.500542 at position = 65536
+	time = 0.600254 at position = 78336
+	time = 0.700751 at position = 91136
+	time = 0.801588 at position = 103936
+	time = 0.900617 at position = 116736
+	time = 1.00096 at position = 129536
+	time = 1.09986 at position = 142336
+	time = 1.20005 at position = 155136
+	time = 1.3011 at position = 167936
+	time = 1.4013 at position = 180736
+	time = 1.50144 at position = 193536
+	time = 1.60034 at position = 206336
+	time = 1.70036 at position = 219136
+	time = 1.80122 at position = 231936
+	time = 1.90112 at position = 244736
+	time = 2.00007 at position = 257536
+BUB01.SP4
+	time = 0 at position = 1536
+	time = 0.100736 at position = 14336
+	time = 0.200164 at position = 27136
+	time = 0.30039 at position = 39936
+	time = 0.401191 at position = 52736
+	time = 0.500542 at position = 65536
+	time = 0.600254 at position = 78336
+	time = 0.700751 at position = 91136
+	time = 0.801588 at position = 103936
+	time = 0.900617 at position = 116736
+	time = 1.00096 at position = 129536
+	time = 1.09986 at position = 142336
+	time = 1.20005 at position = 155136
+	time = 1.3011 at position = 167936
+	time = 1.4013 at position = 180736
+	time = 1.50144 at position = 193536
+	time = 1.60034 at position = 206336
+	time = 1.70036 at position = 219136
+	time = 1.80122 at position = 231936
+	time = 1.90112 at position = 244736
+	time = 2.00007 at position = 257536
+BUB01.SP5
+	time = 0 at position = 1536
+	time = 2.00007 at position = 6144
+BUB01.SP6
+	time = 0 at position = 1536
+	time = 2.00007 at position = 10240
+BUB01.SP7
+	time = 0 at position = 1536
+	time = 2.00007 at position = 10240
+BUB01.SP8
+	time = 0 at position = 1536
+	time = 2.00007 at position = 6144
+BUB01.SP9
+BUB01.SPa
+BUB01.SPb
+
+
+  Paraview  MfixData	 variable*
+
+         0         0	EP_g         
+         1         1	P_g         
+         2         2	P_star         
+         3         3	U_g         
+         4         6	U_s_1         
+         5         9	ROP_s_1         
+         6        10	T_g         
+         7        11	T_s_1         
+         8        12	X_g_1         
+         9        13	X_s_1_1         
+        10        14	Theta_m_1         
+The value of EP_g[15] = 0.42 at timestep index = 0
+The value of EP_g[15] = 0.424831 at timestep index = 1
+The value of EP_g[15] = 0.435106 at timestep index = 2
+The value of EP_g[15] = 0.445385 at timestep index = 3
+The value of EP_g[15] = 0.45284 at timestep index = 4
+The value of EP_g[15] = 0.45651 at timestep index = 5
+The value of EP_g[15] = 0.456583 at timestep index = 6
+The value of EP_g[15] = 0.453054 at timestep index = 7
+The value of EP_g[15] = 0.447763 at timestep index = 8
+The value of EP_g[15] = 0.442346 at timestep index = 9
+The value of EP_g[15] = 0.436646 at timestep index = 10
+The value of EP_g[15] = 0.433192 at timestep index = 11
+The value of EP_g[15] = 0.431747 at timestep index = 12
+The value of EP_g[15] = 0.433067 at timestep index = 13
+The value of EP_g[15] = 0.437069 at timestep index = 14
+The value of EP_g[15] = 0.443017 at timestep index = 15
+The value of EP_g[15] = 0.448763 at timestep index = 16
+The value of EP_g[15] = 0.454886 at timestep index = 17
+The value of EP_g[15] = 0.458708 at timestep index = 18
+The value of EP_g[15] = 0.460344 at timestep index = 19
+The value of EP_g[15] = 0.459363 at timestep index = 20
+The value of EP_g[15] = 0.455202 at timestep index = 21
+The value of EP_g[15] = 0.450566 at timestep index = 22
+The value of EP_g[15] = 0.443373 at timestep index = 23
+The value of EP_g[15] = 0.437281 at timestep index = 24
+The value of EP_g[15] = 0.431823 at timestep index = 25
+The value of EP_g[15] = 0.428585 at timestep index = 26
+The value of EP_g[15] = 0.427705 at timestep index = 27
+The value of EP_g[15] = 0.429905 at timestep index = 28
+The value of EP_g[15] = 0.433957 at timestep index = 29
+The value of EP_g[15] = 0.440236 at timestep index = 30
+The value of EP_g[15] = 0.447653 at timestep index = 31
+The value of EP_g[15] = 0.453345 at timestep index = 32
+The value of EP_g[15] = 0.457248 at timestep index = 33
+The value of EP_g[15] = 0.460033 at timestep index = 34
+The value of EP_g[15] = 0.460029 at timestep index = 35
+The value of EP_g[15] = 0.458145 at timestep index = 36
+The value of EP_g[15] = 0.454418 at timestep index = 37
+The value of EP_g[15] = 0.448988 at timestep index = 38
+The value of EP_g[15] = 0.443618 at timestep index = 39
+The value of EP_g[15] = 0.43797 at timestep index = 40
+The value of EP_g[15] = 0.433074 at timestep index = 41
+The value of EP_g[15] = 0.429545 at timestep index = 42
+The value of EP_g[15] = 0.427681 at timestep index = 43
+The value of EP_g[15] = 0.428363 at timestep index = 44
+The value of EP_g[15] = 0.432454 at timestep index = 45
+The value of EP_g[15] = 0.437153 at timestep index = 46
+The value of EP_g[15] = 0.444971 at timestep index = 47
+The value of EP_g[15] = 0.450255 at timestep index = 48
+The value of EP_g[15] = 0.45551 at timestep index = 49
+The value of EP_g[15] = 0.458672 at timestep index = 50
+The value of EP_g[15] = 0.460093 at timestep index = 51
+The value of EP_g[15] = 0.459493 at timestep index = 52
+The value of EP_g[15] = 0.457007 at timestep index = 53
+The value of EP_g[15] = 0.452115 at timestep index = 54
+The value of EP_g[15] = 0.446692 at timestep index = 55
+The value of EP_g[15] = 0.4401 at timestep index = 56
+The value of EP_g[15] = 0.434327 at timestep index = 57
+The value of EP_g[15] = 0.429162 at timestep index = 58
+The value of EP_g[15] = 0.426733 at timestep index = 59
+The value of EP_g[15] = 0.42725 at timestep index = 60
+The value of EP_g[15] = 0.43163 at timestep index = 61
+The value of EP_g[15] = 0.438173 at timestep index = 62
+The value of EP_g[15] = 0.443171 at timestep index = 63
+The value of EP_g[15] = 0.448634 at timestep index = 64
+The value of EP_g[15] = 0.453823 at timestep index = 65
+The value of EP_g[15] = 0.457258 at timestep index = 66
+The value of EP_g[15] = 0.459856 at timestep index = 67
+The value of EP_g[15] = 0.459737 at timestep index = 68
+The value of EP_g[15] = 0.457207 at timestep index = 69
+The value of EP_g[15] = 0.452892 at timestep index = 70
+The value of EP_g[15] = 0.446096 at timestep index = 71
+The value of EP_g[15] = 0.4396 at timestep index = 72
+The value of EP_g[15] = 0.433087 at timestep index = 73
+The value of EP_g[15] = 0.428467 at timestep index = 74
+The value of EP_g[15] = 0.425965 at timestep index = 75
+The value of EP_g[15] = 0.426512 at timestep index = 76
+The value of EP_g[15] = 0.431231 at timestep index = 77
+The value of EP_g[15] = 0.436486 at timestep index = 78
+The value of EP_g[15] = 0.444239 at timestep index = 79
+The value of EP_g[15] = 0.451509 at timestep index = 80
+The value of EP_g[15] = 0.456084 at timestep index = 81
+The value of EP_g[15] = 0.459793 at timestep index = 82
+The value of EP_g[15] = 0.460701 at timestep index = 83
+The value of EP_g[15] = 0.459401 at timestep index = 84
+The value of EP_g[15] = 0.455398 at timestep index = 85
+The value of EP_g[15] = 0.449355 at timestep index = 86
+The value of EP_g[15] = 0.442468 at timestep index = 87
+The value of EP_g[15] = 0.436023 at timestep index = 88
+The value of EP_g[15] = 0.430645 at timestep index = 89
+The value of EP_g[15] = 0.427048 at timestep index = 90
+The value of EP_g[15] = 0.426953 at timestep index = 91
+The value of EP_g[15] = 0.429934 at timestep index = 92
+The value of EP_g[15] = 0.435987 at timestep index = 93
+The value of EP_g[15] = 0.442764 at timestep index = 94
+The value of EP_g[15] = 0.44917 at timestep index = 95
+The value of EP_g[15] = 0.454673 at timestep index = 96
+The value of EP_g[15] = 0.458408 at timestep index = 97
+The value of EP_g[15] = 0.460129 at timestep index = 98
+The value of EP_g[15] = 0.459042 at timestep index = 99
+The value of EP_g[15] = 0.455742 at timestep index = 100
+The value of EP_g[15] = 0.450197 at timestep index = 101
+The value of EP_g[15] = 0.444524 at timestep index = 102
+The value of EP_g[15] = 0.438002 at timestep index = 103
+The value of EP_g[15] = 0.432986 at timestep index = 104
+The value of EP_g[15] = 0.429648 at timestep index = 105
+The value of EP_g[15] = 0.42907 at timestep index = 106
+The value of EP_g[15] = 0.431169 at timestep index = 107
+The value of EP_g[15] = 0.435779 at timestep index = 108
+The value of EP_g[15] = 0.441397 at timestep index = 109
+The value of EP_g[15] = 0.446759 at timestep index = 110
+The value of EP_g[15] = 0.453186 at timestep index = 111
+The value of EP_g[15] = 0.457069 at timestep index = 112
+The value of EP_g[15] = 0.45914 at timestep index = 113
+The value of EP_g[15] = 0.459009 at timestep index = 114
+The value of EP_g[15] = 0.456641 at timestep index = 115
+The value of EP_g[15] = 0.452432 at timestep index = 116
+The value of EP_g[15] = 0.44751 at timestep index = 117
+The value of EP_g[15] = 0.44131 at timestep index = 118
+The value of EP_g[15] = 0.436522 at timestep index = 119
+The value of EP_g[15] = 0.432508 at timestep index = 120
+The value of EP_g[15] = 0.430494 at timestep index = 121
+The value of EP_g[15] = 0.431028 at timestep index = 122
+The value of EP_g[15] = 0.433422 at timestep index = 123
+The value of EP_g[15] = 0.437546 at timestep index = 124
+The value of EP_g[15] = 0.442411 at timestep index = 125
+The value of EP_g[15] = 0.447839 at timestep index = 126
+The value of EP_g[15] = 0.452664 at timestep index = 127
+The value of EP_g[15] = 0.45582 at timestep index = 128
+The value of EP_g[15] = 0.457128 at timestep index = 129
+The value of EP_g[15] = 0.456281 at timestep index = 130
+The value of EP_g[15] = 0.453408 at timestep index = 131
+The value of EP_g[15] = 0.449169 at timestep index = 132
+The value of EP_g[15] = 0.443534 at timestep index = 133
+The value of EP_g[15] = 0.438433 at timestep index = 134
+The value of EP_g[15] = 0.433783 at timestep index = 135
+The value of EP_g[15] = 0.431297 at timestep index = 136
+The value of EP_g[15] = 0.430648 at timestep index = 137
+The value of EP_g[15] = 0.432033 at timestep index = 138
+The value of EP_g[15] = 0.435122 at timestep index = 139
+The value of EP_g[15] = 0.440371 at timestep index = 140
+The value of EP_g[15] = 0.445022 at timestep index = 141
+The value of EP_g[15] = 0.449667 at timestep index = 142
+The value of EP_g[15] = 0.453376 at timestep index = 143
+The value of EP_g[15] = 0.454983 at timestep index = 144
+The value of EP_g[15] = 0.454736 at timestep index = 145
+The value of EP_g[15] = 0.452398 at timestep index = 146
+The value of EP_g[15] = 0.448333 at timestep index = 147
+The value of EP_g[15] = 0.443219 at timestep index = 148
+The value of EP_g[15] = 0.437569 at timestep index = 149
+The value of EP_g[15] = 0.433577 at timestep index = 150
+The value of EP_g[15] = 0.43123 at timestep index = 151
+The value of EP_g[15] = 0.430754 at timestep index = 152
+The value of EP_g[15] = 0.432453 at timestep index = 153
+The value of EP_g[15] = 0.436948 at timestep index = 154
+The value of EP_g[15] = 0.441946 at timestep index = 155
+The value of EP_g[15] = 0.447525 at timestep index = 156
+The value of EP_g[15] = 0.451072 at timestep index = 157
+The value of EP_g[15] = 0.453968 at timestep index = 158
+The value of EP_g[15] = 0.454025 at timestep index = 159
+The value of EP_g[15] = 0.452437 at timestep index = 160
+The value of EP_g[15] = 0.44792 at timestep index = 161
+The value of EP_g[15] = 0.443347 at timestep index = 162
+The value of EP_g[15] = 0.438358 at timestep index = 163
+The value of EP_g[15] = 0.434062 at timestep index = 164
+The value of EP_g[15] = 0.431576 at timestep index = 165
+The value of EP_g[15] = 0.430845 at timestep index = 166
+The value of EP_g[15] = 0.432273 at timestep index = 167
+The value of EP_g[15] = 0.435137 at timestep index = 168
+The value of EP_g[15] = 0.439868 at timestep index = 169
+The value of EP_g[15] = 0.44424 at timestep index = 170
+The value of EP_g[15] = 0.448284 at timestep index = 171
+The value of EP_g[15] = 0.450841 at timestep index = 172
+The value of EP_g[15] = 0.45152 at timestep index = 173
+The value of EP_g[15] = 0.450324 at timestep index = 174
+The value of EP_g[15] = 0.447475 at timestep index = 175
+The value of EP_g[15] = 0.443572 at timestep index = 176
+The value of EP_g[15] = 0.439954 at timestep index = 177
+The value of EP_g[15] = 0.436137 at timestep index = 178
+The value of EP_g[15] = 0.433502 at timestep index = 179
+The value of EP_g[15] = 0.432258 at timestep index = 180
+The value of EP_g[15] = 0.432816 at timestep index = 181
+The value of EP_g[15] = 0.434791 at timestep index = 182
+The value of EP_g[15] = 0.437711 at timestep index = 183
+The value of EP_g[15] = 0.441758 at timestep index = 184
+The value of EP_g[15] = 0.445112 at timestep index = 185
+The value of EP_g[15] = 0.448125 at timestep index = 186
+The value of EP_g[15] = 0.449766 at timestep index = 187
+The value of EP_g[15] = 0.450101 at timestep index = 188
+The value of EP_g[15] = 0.448611 at timestep index = 189
+The value of EP_g[15] = 0.445842 at timestep index = 190
+The value of EP_g[15] = 0.442575 at timestep index = 191
+The value of EP_g[15] = 0.438546 at timestep index = 192
+The value of EP_g[15] = 0.434896 at timestep index = 193
+The value of EP_g[15] = 0.432302 at timestep index = 194
+The value of EP_g[15] = 0.43138 at timestep index = 195
+The value of EP_g[15] = 0.432363 at timestep index = 196
+The value of EP_g[15] = 0.434888 at timestep index = 197
+The value of EP_g[15] = 0.439203 at timestep index = 198
+The value of EP_g[15] = 0.44337 at timestep index = 199
+The value of EP_g[15] = 0.447558 at timestep index = 200
+
+
+       Flags                    
+
+ flag frequency ... 
+	1	:700
+	11	:7
+	20	:7
+	100	:100
+	101	:104
+
+
+cells with flag = 20
+	1
+	2
+	3
+	4
+	5
+	6
+	7
