@@ -17,6 +17,7 @@
       USE funits
       USE compar      
       USE discretelement
+      USE des_bc
       USE run
       USE constant
       USE physprop
@@ -87,7 +88,7 @@
 ! J.Musser      
 ! Check data for des mass inflow boundary condtion 
 ! dtsolid is needed so call is made after cfassign.f       
-      CALL CHECK_DES_INLET
+      IF (DES_MI) CALL CHECK_DES_INLET
 
       CALL PARTICLES_IN_CELL
       IF(PVEL_StDev.GT.ZERO)       CALL init_particles_jn
