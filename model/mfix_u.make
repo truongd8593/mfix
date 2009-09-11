@@ -55,6 +55,12 @@ mfix.exe : \
     VISC_S.mod \
     VSHEAR.mod \
     XSI_ARRAY.mod \
+    CUTCELL.mod \
+    DASHBOARD.mod \
+    POLYGON.mod \
+    PROGRESS_BAR.mod \
+    QUADRIC.mod \
+    VTK.mod \
     MCHEM.mod \
     DES_BC.mod \
     DISCRETELEMENT.mod \
@@ -318,6 +324,35 @@ mfix.exe : \
     xerbla.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
+    allocate_cut_cell_arrays.$(OBJ_EXT) \
+    allocate_dummy_cut_cell_arrays.$(OBJ_EXT) \
+    calc_vort_out.$(OBJ_EXT) \
+    cartesian_grid_init_namelist.$(OBJ_EXT) \
+    CG_set_bc0.$(OBJ_EXT) \
+    CG_set_outflow.$(OBJ_EXT) \
+    CG_source_u_g.$(OBJ_EXT) \
+    CG_source_u_s.$(OBJ_EXT) \
+    CG_source_v_g.$(OBJ_EXT) \
+    CG_source_v_s.$(OBJ_EXT) \
+    CG_source_w_g.$(OBJ_EXT) \
+    CG_source_w_s.$(OBJ_EXT) \
+    check_data_cartesian.$(OBJ_EXT) \
+    cut_cell_preprocessing.$(OBJ_EXT) \
+    deallocate_cut_cell_arrays.$(OBJ_EXT) \
+    define_quadrics.$(OBJ_EXT) \
+    dmp_cartesian.$(OBJ_EXT) \
+    eval_usr_fct.$(OBJ_EXT) \
+    get_alpha.$(OBJ_EXT) \
+    get_connectivity.$(OBJ_EXT) \
+    get_cut_cell_flags.$(OBJ_EXT) \
+    get_cut_cell_volume_area.$(OBJ_EXT) \
+    get_delh.$(OBJ_EXT) \
+    get_master.$(OBJ_EXT) \
+    get_poly_data.$(OBJ_EXT) \
+    set_Odxyz.$(OBJ_EXT) \
+    update_dashboard.$(OBJ_EXT) \
+    vtk_out.$(OBJ_EXT) \
+    write_progress_bar.$(OBJ_EXT) \
     calc_jacobian.$(OBJ_EXT) \
     check_data_chem.$(OBJ_EXT) \
     dgpadm.$(OBJ_EXT) \
@@ -716,6 +751,41 @@ mfix.exe : \
     xsi_array_mod.$(OBJ_EXT) \
     zero_array.$(OBJ_EXT) \
     zero_norm_vel.$(OBJ_EXT) \
+    allocate_cut_cell_arrays.$(OBJ_EXT) \
+    allocate_dummy_cut_cell_arrays.$(OBJ_EXT) \
+    calc_vort_out.$(OBJ_EXT) \
+    cartesian_grid_init_namelist.$(OBJ_EXT) \
+    CG_set_bc0.$(OBJ_EXT) \
+    CG_set_outflow.$(OBJ_EXT) \
+    CG_source_u_g.$(OBJ_EXT) \
+    CG_source_u_s.$(OBJ_EXT) \
+    CG_source_v_g.$(OBJ_EXT) \
+    CG_source_v_s.$(OBJ_EXT) \
+    CG_source_w_g.$(OBJ_EXT) \
+    CG_source_w_s.$(OBJ_EXT) \
+    check_data_cartesian.$(OBJ_EXT) \
+    cutcell_mod.$(OBJ_EXT) \
+    cut_cell_preprocessing.$(OBJ_EXT) \
+    dashboard_mod.$(OBJ_EXT) \
+    deallocate_cut_cell_arrays.$(OBJ_EXT) \
+    define_quadrics.$(OBJ_EXT) \
+    dmp_cartesian.$(OBJ_EXT) \
+    eval_usr_fct.$(OBJ_EXT) \
+    get_alpha.$(OBJ_EXT) \
+    get_connectivity.$(OBJ_EXT) \
+    get_cut_cell_flags.$(OBJ_EXT) \
+    get_cut_cell_volume_area.$(OBJ_EXT) \
+    get_delh.$(OBJ_EXT) \
+    get_master.$(OBJ_EXT) \
+    get_poly_data.$(OBJ_EXT) \
+    polygon_mod.$(OBJ_EXT) \
+    progress_bar_mod.$(OBJ_EXT) \
+    quadric_mod.$(OBJ_EXT) \
+    set_Odxyz.$(OBJ_EXT) \
+    update_dashboard.$(OBJ_EXT) \
+    vtk_mod.$(OBJ_EXT) \
+    vtk_out.$(OBJ_EXT) \
+    write_progress_bar.$(OBJ_EXT) \
     calc_jacobian.$(OBJ_EXT) \
     check_data_chem.$(OBJ_EXT) \
     dgpadm.$(OBJ_EXT) \
@@ -1060,6 +1130,27 @@ XSI_ARRAY.mod : xsi_array_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) xsi_array_mod.f 
+CUTCELL.mod : ./cartesian_grid/cutcell_mod.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PROGRESS_BAR.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/cutcell_mod.f 
+DASHBOARD.mod : ./cartesian_grid/dashboard_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/dashboard_mod.f 
+POLYGON.mod : ./cartesian_grid/polygon_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/polygon_mod.f 
+PROGRESS_BAR.mod : ./cartesian_grid/progress_bar_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/progress_bar_mod.f 
+QUADRIC.mod : ./cartesian_grid/quadric_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/quadric_mod.f 
+VTK.mod : ./cartesian_grid/vtk_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/vtk_mod.f 
 MCHEM.mod : ./chem/mchem_mod.f \
             PARAM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_mod.f 
@@ -1407,6 +1498,7 @@ calc_d.$(OBJ_EXT) : calc_d.f \
             SCALES.mod \
             COMPAR.mod \
             SENDRECV.mod \
+            CUTCELL.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1695,6 +1787,9 @@ calc_trd_g.$(OBJ_EXT) : calc_trd_g.f \
             INDICES.mod \
             COMPAR.mod \
             SENDRECV.mod \
+            BC.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
             function.inc                                                
 calc_trd_s.$(OBJ_EXT) : calc_trd_s.f \
             PARAM.mod \
@@ -1706,6 +1801,9 @@ calc_trd_s.$(OBJ_EXT) : calc_trd_s.f \
             PHYSPROP.mod \
             COMPAR.mod \
             SENDRECV.mod \
+            BC.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
             function.inc                                                
 calc_u_friction.$(OBJ_EXT) : calc_u_friction.f \
             PARAM.mod \
@@ -2028,6 +2126,7 @@ conv_dif_u_g.$(OBJ_EXT) : conv_dif_u_g.f \
             FLDVAR.mod \
             OUTPUT.mod \
             MFLUX.mod \
+            CUTCELL.mod \
             VSHEAR.mod \
             XSI_ARRAY.mod \
             TMP_ARRAY.mod \
@@ -2054,6 +2153,7 @@ conv_dif_u_s.$(OBJ_EXT) : conv_dif_u_s.f \
             FLDVAR.mod \
             OUTPUT.mod \
             MFLUX.mod \
+            CUTCELL.mod \
             XSI_ARRAY.mod \
             TMP_ARRAY.mod \
             SENDRECV.mod \
@@ -2080,6 +2180,7 @@ conv_dif_v_g.$(OBJ_EXT) : conv_dif_v_g.f \
             FLDVAR.mod \
             OUTPUT.mod \
             MFLUX.mod \
+            CUTCELL.mod \
             XSI_ARRAY.mod \
             VSHEAR.mod \
             TMP_ARRAY.mod \
@@ -2106,6 +2207,7 @@ conv_dif_v_s.$(OBJ_EXT) : conv_dif_v_s.f \
             FLDVAR.mod \
             OUTPUT.mod \
             MFLUX.mod \
+            CUTCELL.mod \
             XSI_ARRAY.mod \
             TMP_ARRAY.mod \
             SENDRECV.mod \
@@ -2132,6 +2234,7 @@ conv_dif_w_g.$(OBJ_EXT) : conv_dif_w_g.f \
             FLDVAR.mod \
             OUTPUT.mod \
             MFLUX.mod \
+            CUTCELL.mod \
             XSI_ARRAY.mod \
             TMP_ARRAY.mod \
             SENDRECV.mod \
@@ -2158,6 +2261,7 @@ conv_dif_w_s.$(OBJ_EXT) : conv_dif_w_s.f \
             FLDVAR.mod \
             OUTPUT.mod \
             MFLUX.mod \
+            CUTCELL.mod \
             XSI_ARRAY.mod \
             TMP_ARRAY.mod \
             SENDRECV.mod \
@@ -2279,6 +2383,8 @@ correct_0.$(OBJ_EXT) : correct_0.f \
             INDICES.mod \
             PHYSPROP.mod \
             COMPAR.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
             function.inc                                                
 correct_1.$(OBJ_EXT) : correct_1.f \
             PARAM.mod \
@@ -2292,6 +2398,7 @@ correct_1.$(OBJ_EXT) : correct_1.f \
             CONSTANT.mod \
             COMPAR.mod \
             SENDRECV.mod \
+            CUTCELL.mod \
             ep_s1.inc                                                    \
             s_pr1.inc                                                    \
             function.inc                                                 \
@@ -2642,6 +2749,9 @@ iterate.$(OBJ_EXT) : iterate.f \
             MPI_UTILITY.mod \
             DISCRETELEMENT.mod \
             RESIDUAL.mod \
+            CUTCELL.mod \
+            VTK.mod \
+            DASHBOARD.mod \
             BC.mod \
             CONSTANT.mod 
 k_epsilon_prop.$(OBJ_EXT) : k_epsilon_prop.f \
@@ -2861,6 +2971,10 @@ mfix.$(OBJ_EXT) : mfix.f \
             MPI_UTILITY.mod \
             PARALLEL_MPI.mod \
             CDIST.mod \
+            FLDVAR.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
+            DASHBOARD.mod \
             PARALLEL.mod \
             MATRIX.mod \
             GEOMETRY.mod \
@@ -3052,9 +3166,15 @@ read_namelist.$(OBJ_EXT) : read_namelist.f \
             USR.mod \
             DES_BC.mod \
             CDIST.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            VTK.mod \
+            POLYGON.mod \
+            DASHBOARD.mod \
             usrnlst.inc                                                  \
             namelist.inc                                                 \
-            des/desnamelist.inc                                         
+            des/desnamelist.inc                                          \
+            cartesian_grid/cartesian_grid_namelist.inc                  
 read_res0.$(OBJ_EXT) : read_res0.f \
             PARAM.mod \
             PARAM1.mod \
@@ -3697,6 +3817,9 @@ source_pp_g.$(OBJ_EXT) : source_pp_g.f \
             XSI_ARRAY.mod \
             COMPAR.mod \
             UR_FACS.mod \
+            CONSTANT.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
             function.inc                                                
 source_rop_g.$(OBJ_EXT) : source_rop_g.f \
             PARAM.mod \
@@ -3750,6 +3873,8 @@ source_u_g.$(OBJ_EXT) : source_u_g.f \
             SENDRECV.mod \
             GHDTHEORY.mod \
             DRAG.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
             OUTPUT.mod \
             TURB.mod \
             MPI_UTILITY.mod \
@@ -3784,6 +3909,8 @@ source_u_s.$(OBJ_EXT) : source_u_s.f \
             KINTHEORY2.mod \
             GHDTHEORY.mod \
             DRAG.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
             OUTPUT.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -3815,6 +3942,8 @@ source_v_g.$(OBJ_EXT) : source_v_g.f \
             SENDRECV.mod \
             GHDTHEORY.mod \
             DRAG.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
             OUTPUT.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -3848,6 +3977,8 @@ source_v_s.$(OBJ_EXT) : source_v_s.f \
             KINTHEORY2.mod \
             GHDTHEORY.mod \
             DRAG.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
             OUTPUT.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -3878,6 +4009,8 @@ source_w_g.$(OBJ_EXT) : source_w_g.f \
             SENDRECV.mod \
             GHDTHEORY.mod \
             DRAG.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
             OUTPUT.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -3910,6 +4043,8 @@ source_w_s.$(OBJ_EXT) : source_w_s.f \
             KINTHEORY2.mod \
             GHDTHEORY.mod \
             DRAG.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
             OUTPUT.mod \
             b_force1.inc                                                 \
             ep_s1.inc                                                    \
@@ -3936,6 +4071,9 @@ tau_u_g.$(OBJ_EXT) : tau_u_g.f \
             IS.mod \
             COMPAR.mod \
             SENDRECV.mod \
+            BC.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -3960,6 +4098,9 @@ tau_u_s.$(OBJ_EXT) : tau_u_s.f \
             VSHEAR.mod \
             SENDRECV.mod \
             COMPAR.mod \
+            BC.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -3983,6 +4124,9 @@ tau_v_g.$(OBJ_EXT) : tau_v_g.f \
             IS.mod \
             SENDRECV.mod \
             COMPAR.mod \
+            BC.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -4006,6 +4150,9 @@ tau_v_s.$(OBJ_EXT) : tau_v_s.f \
             IS.mod \
             SENDRECV.mod \
             COMPAR.mod \
+            BC.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -4029,6 +4176,9 @@ tau_w_g.$(OBJ_EXT) : tau_w_g.f \
             IS.mod \
             SENDRECV.mod \
             COMPAR.mod \
+            BC.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -4052,6 +4202,9 @@ tau_w_s.$(OBJ_EXT) : tau_w_s.f \
             IS.mod \
             SENDRECV.mod \
             COMPAR.mod \
+            BC.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -4093,7 +4246,10 @@ time_march.$(OBJ_EXT) : time_march.f \
             MCHEM.mod \
             LEQSOL.mod \
             KINTHEORY2.mod \
-            MPI_UTILITY.mod 
+            MPI_UTILITY.mod \
+            CUTCELL.mod \
+            VTK.mod \
+            DASHBOARD.mod 
 transfer.$(OBJ_EXT) : transfer.f \
             PARAM.mod \
             PARAM1.mod \
@@ -4141,7 +4297,20 @@ usr1.$(OBJ_EXT) : usr1.f \
 usr2.$(OBJ_EXT) : usr2.f \
             USR.mod 
 usr3.$(OBJ_EXT) : usr3.f \
-            USR.mod 
+            USR.mod \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            FLDVAR.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
 usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             USR.mod 
 usr_write_out0.$(OBJ_EXT) : usr_write_out0.f 
@@ -4437,6 +4606,566 @@ zero_norm_vel.$(OBJ_EXT) : zero_norm_vel.f \
             IS.mod \
             COMPAR.mod \
             function.inc                                                
+allocate_cut_cell_arrays.$(OBJ_EXT) : ./cartesian_grid/allocate_cut_cell_arrays.f \
+            PARAM.mod \
+            PARAM1.mod \
+            INDICES.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/allocate_cut_cell_arrays.f 
+allocate_dummy_cut_cell_arrays.$(OBJ_EXT) : ./cartesian_grid/allocate_dummy_cut_cell_arrays.f \
+            PARAM.mod \
+            PARAM1.mod \
+            INDICES.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/allocate_dummy_cut_cell_arrays.f 
+calc_vort_out.$(OBJ_EXT) : ./cartesian_grid/calc_vort_out.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            FLDVAR.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/calc_vort_out.f 
+cartesian_grid_init_namelist.$(OBJ_EXT) : ./cartesian_grid/cartesian_grid_init_namelist.f \
+            PARAM1.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            POLYGON.mod \
+            VTK.mod \
+            PROGRESS_BAR.mod \
+            DASHBOARD.mod \
+            cartesian_grid/cartesian_grid_namelist.inc                  
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/cartesian_grid_init_namelist.f 
+CG_set_bc0.$(OBJ_EXT) : ./cartesian_grid/CG_set_bc0.f \
+            PARAM.mod \
+            PARAM1.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            PHYSPROP.mod \
+            BC.mod \
+            FLDVAR.mod \
+            INDICES.mod \
+            RUN.mod \
+            FUNITS.mod \
+            SCALES.mod \
+            SCALARS.mod \
+            BOUNDFUNIJK.mod \
+            TOLERANC.mod \
+            SENDRECV.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
+            sc_p_g1.inc                                                  \
+            function.inc                                                 \
+            sc_p_g2.inc                                                 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/CG_set_bc0.f 
+CG_set_outflow.$(OBJ_EXT) : ./cartesian_grid/CG_set_outflow.f \
+            PARAM.mod \
+            PARAM1.mod \
+            BC.mod \
+            FLDVAR.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            PHYSPROP.mod \
+            SCALARS.mod \
+            RUN.mod \
+            COMPAR.mod \
+            MFLUX.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
+            ep_s1.inc                                                    \
+            function.inc                                                 \
+            ep_s2.inc                                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/CG_set_outflow.f 
+CG_source_u_g.$(OBJ_EXT) : ./cartesian_grid/CG_source_u_g.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            MATRIX.mod \
+            SCALES.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            VISC_G.mod \
+            RXNS.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            IS.mod \
+            TAU_G.mod \
+            BC.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
+            OUTPUT.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
+            b_force2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/CG_source_u_g.f 
+CG_source_u_s.$(OBJ_EXT) : ./cartesian_grid/CG_source_u_s.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            MATRIX.mod \
+            SCALES.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            VISC_S.mod \
+            RXNS.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            IS.mod \
+            TAU_S.mod \
+            BC.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            KINTHEORY.mod \
+            KINTHEORY2.mod \
+            GHDTHEORY.mod \
+            DRAG.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
+            OUTPUT.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
+            b_force2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/CG_source_u_s.f 
+CG_source_v_g.$(OBJ_EXT) : ./cartesian_grid/CG_source_v_g.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            MATRIX.mod \
+            SCALES.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            VISC_G.mod \
+            RXNS.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            IS.mod \
+            TAU_G.mod \
+            BC.mod \
+            VSHEAR.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            GHDTHEORY.mod \
+            DRAG.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
+            OUTPUT.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
+            b_force2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/CG_source_v_g.f 
+CG_source_v_s.$(OBJ_EXT) : ./cartesian_grid/CG_source_v_s.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            MATRIX.mod \
+            SCALES.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            VISC_S.mod \
+            RXNS.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            IS.mod \
+            TAU_S.mod \
+            BC.mod \
+            VSHEAR.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            KINTHEORY.mod \
+            KINTHEORY2.mod \
+            GHDTHEORY.mod \
+            DRAG.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
+            OUTPUT.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
+            b_force2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/CG_source_v_s.f 
+CG_source_w_g.$(OBJ_EXT) : ./cartesian_grid/CG_source_w_g.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            MATRIX.mod \
+            SCALES.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            VISC_G.mod \
+            RXNS.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            IS.mod \
+            TAU_G.mod \
+            BC.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            GHDTHEORY.mod \
+            DRAG.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
+            OUTPUT.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
+            b_force2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/CG_source_w_g.f 
+CG_source_w_s.$(OBJ_EXT) : ./cartesian_grid/CG_source_w_s.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            MATRIX.mod \
+            SCALES.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            VISC_S.mod \
+            RXNS.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            IS.mod \
+            TAU_S.mod \
+            BC.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            KINTHEORY.mod \
+            KINTHEORY2.mod \
+            GHDTHEORY.mod \
+            DRAG.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
+            OUTPUT.mod \
+            b_force1.inc                                                 \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                    \
+            b_force2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/CG_source_w_s.f 
+check_data_cartesian.$(OBJ_EXT) : ./cartesian_grid/check_data_cartesian.f \
+            PARAM.mod \
+            PARAM1.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            PHYSPROP.mod \
+            INDICES.mod \
+            SCALARS.mod \
+            FUNITS.mod \
+            LEQSOL.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            BC.mod \
+            DISCRETELEMENT.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
+            VTK.mod \
+            POLYGON.mod \
+            DASHBOARD.mod \
+            FLDVAR.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/check_data_cartesian.f 
+cut_cell_preprocessing.$(OBJ_EXT) : ./cartesian_grid/cut_cell_preprocessing.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            VTK.mod \
+            FLDVAR.mod \
+            POLYGON.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/cut_cell_preprocessing.f 
+deallocate_cut_cell_arrays.$(OBJ_EXT) : ./cartesian_grid/deallocate_cut_cell_arrays.f \
+            PARAM.mod \
+            PARAM1.mod \
+            INDICES.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/deallocate_cut_cell_arrays.f 
+define_quadrics.$(OBJ_EXT) : ./cartesian_grid/define_quadrics.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            VTK.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/define_quadrics.f 
+dmp_cartesian.$(OBJ_EXT) : ./cartesian_grid/dmp_cartesian.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            MPI_UTILITY.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/dmp_cartesian.f 
+eval_usr_fct.$(OBJ_EXT) : ./cartesian_grid/eval_usr_fct.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            FLDVAR.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/eval_usr_fct.f 
+get_alpha.$(OBJ_EXT) : ./cartesian_grid/get_alpha.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            BC.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/get_alpha.f 
+get_connectivity.$(OBJ_EXT) : ./cartesian_grid/get_connectivity.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            POLYGON.mod \
+            FLDVAR.mod \
+            VTK.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/get_connectivity.f 
+get_cut_cell_flags.$(OBJ_EXT) : ./cartesian_grid/get_cut_cell_flags.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            VTK.mod \
+            POLYGON.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            SCALARS.mod \
+            FUNITS.mod \
+            RXNS.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/get_cut_cell_flags.f 
+get_cut_cell_volume_area.$(OBJ_EXT) : ./cartesian_grid/get_cut_cell_volume_area.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            POLYGON.mod \
+            BC.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/get_cut_cell_volume_area.f 
+get_delh.$(OBJ_EXT) : ./cartesian_grid/get_delh.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/get_delh.f 
+get_master.$(OBJ_EXT) : ./cartesian_grid/get_master.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            BC.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/get_master.f 
+get_poly_data.$(OBJ_EXT) : ./cartesian_grid/get_poly_data.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            RUN.mod \
+            SCALARS.mod \
+            FUNITS.mod \
+            RXNS.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            PROGRESS_BAR.mod \
+            POLYGON.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/get_poly_data.f 
+set_Odxyz.$(OBJ_EXT) : ./cartesian_grid/set_Odxyz.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            VTK.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/set_Odxyz.f 
+update_dashboard.$(OBJ_EXT) : ./cartesian_grid/update_dashboard.f \
+            COMPAR.mod \
+            PARALLEL.mod \
+            SENDRECV.mod \
+            RUN.mod \
+            LEQSOL.mod \
+            TIME_CPU.mod \
+            RESIDUAL.mod \
+            DASHBOARD.mod \
+            VTK.mod \
+            CONSTANT.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/update_dashboard.f 
+vtk_out.$(OBJ_EXT) : ./cartesian_grid/vtk_out.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            FLDVAR.mod \
+            VISC_S.mod \
+            PHYSPROP.mod \
+            PGCOR.mod \
+            VTK.mod \
+            RXNS.mod \
+            OUTPUT.mod \
+            PSCOR.mod \
+            MPI_UTILITY.mod \
+            POLYGON.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/vtk_out.f 
+write_progress_bar.$(OBJ_EXT) : ./cartesian_grid/write_progress_bar.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            RUN.mod \
+            SCALARS.mod \
+            FUNITS.mod \
+            RXNS.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            PROGRESS_BAR.mod \
+            PARALLEL.mod \
+            SENDRECV.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/write_progress_bar.f 
 calc_jacobian.$(OBJ_EXT) : ./chem/calc_jacobian.f \
             PARAM1.mod \
             MCHEM.mod 
