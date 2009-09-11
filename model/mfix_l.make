@@ -4882,6 +4882,7 @@ make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             funits.mod \
             compar.mod \
             discretelement.mod \
+            des_bc.mod \
             run.mod \
             constant.mod \
             physprop.mod 
