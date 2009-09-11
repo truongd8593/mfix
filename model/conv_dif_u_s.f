@@ -100,6 +100,9 @@
 !  Author: M. Syamlal                                 Date: 29-APR-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -132,7 +135,14 @@
       USE fldvar
       USE output
       USE compar 
-      USE mflux 
+      USE mflux
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -166,6 +176,13 @@
 ! 
 !                      Septadiagonal matrix A_U_s 
       DOUBLE PRECISION A_U_s(DIMENSION_3, -3:3, M:M) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      DOUBLE PRECISION :: AW,HW,VELW
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -201,8 +218,21 @@
             IJKNE = EAST_OF(IJKN) 
 !
 !           East face (i+1, j, k)
-	    Flux = HALF * (Flux_sE(IJK,M) + Flux_sE(IPJK,M))
-            D_F = MU_S(IJKE,M)*ODX(IP)*AYZ_U(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(CUT_U_TREATMENT_AT(IJK)) THEN
+               Flux = (Theta_Ue_bar(IJK) * Flux_sE(IJK,M) + Theta_Ue(IJK) * Flux_sE(IPJK,M))
+               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',alpha_Ue_c(IJK),AW,HW,VELW)
+               Flux = Flux * AW 
+               D_F = MU_S(IJKE,M)*ONEoDX_E_U(IJK)*AYZ_U(IJK)  
+            ELSE   ! Original terms
+               Flux = HALF * (Flux_sE(IJK,M) + Flux_sE(IPJK,M))
+               D_F = MU_S(IJKE,M)*ODX(IP)*AYZ_U(IJK) 
+            ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
             IF (Flux >= ZERO) THEN 
                A_U_S(IJK,E,M) = D_F 
                A_U_S(IPJK,W,M) = D_F + Flux
@@ -212,9 +242,23 @@
             ENDIF 
 !
 !           North face (i+1/2, j+1/2, k)
-	    Flux = HALF * (Flux_sN(IJK,M) + Flux_sN(IPJK,M))
-            D_F = AVG_X_H(AVG_Y_H(MU_S(IJKC,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
-               IJKE,M),MU_S(IJKNE,M),J),I)*ODY_N(J)*AXZ_U(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(CUT_U_TREATMENT_AT(IJK)) THEN
+               Flux = (Theta_U_nw(IJK) * Flux_sN(IJK,M) +Theta_U_ne(IJK) * Flux_sN(IPJK,M))
+               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Un_c(IJK),AW,HW,VELW)
+               Flux = Flux * AW 
+               D_F = AVG_X_H(AVG_Y_H(MU_S(IJKC,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
+                  IJKE,M),MU_S(IJKNE,M),J),I)*ONEoDY_N_U(IJK)*AXZ_U(IJK)  
+            ELSE   ! Original terms
+               Flux = HALF * (Flux_sN(IJK,M) + Flux_sN(IPJK,M))
+               D_F = AVG_X_H(AVG_Y_H(MU_S(IJKC,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
+                  IJKE,M),MU_S(IJKNE,M),J),I)*ODY_N(J)*AXZ_U(IJK) 
+            ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
             IF (Flux >= ZERO) THEN 
                A_U_S(IJK,N,M) = D_F 
                A_U_S(IJPK,S,M) = D_F + Flux
@@ -228,9 +272,23 @@
                IJKP = KP_OF(IJK) 
                IJKT = TOP_OF(IJK) 
                IJKTE = EAST_OF(IJKT) 
-	       Flux = HALF * (Flux_sT(IJK,M) + Flux_sT(IPJK,M))
-               D_F = AVG_X_H(AVG_Z_H(MU_S(IJKC,M),MU_S(IJKT,M),K),AVG_Z_H(MU_S(&
-                  IJKE,M),MU_S(IJKTE,M),K),I)*OX_E(I)*ODZ_T(K)*AXY_U(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_U_TREATMENT_AT(IJK)) THEN
+                  Flux = (Theta_U_tw(IJK) * Flux_sT(IJK,M) + Theta_U_te(IJK) * Flux_sT(IPJK,M))
+                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Ut_c(IJK),AW,HW,VELW)
+                  Flux = Flux * AW 
+                  D_F = AVG_X_H(AVG_Z_H(MU_S(IJKC,M),MU_S(IJKT,M),K),AVG_Z_H(MU_S(&
+                     IJKE,M),MU_S(IJKTE,M),K),I)*OX_E(I)*ONEoDZ_T_U(IJK)*AXY_U(IJK) 
+               ELSE   ! Original terms
+                  Flux = HALF * (Flux_sT(IJK,M) + Flux_sT(IPJK,M))
+                  D_F = AVG_X_H(AVG_Z_H(MU_S(IJKC,M),MU_S(IJKT,M),K),AVG_Z_H(MU_S(&
+                     IJKE,M),MU_S(IJKTE,M),K),I)*OX_E(I)*ODZ_T(K)*AXY_U(IJK) 
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
                IF (Flux >= ZERO) THEN 
                   A_U_S(IJK,T,M) = D_F 
                   A_U_S(IJKP,B,M) = D_F + Flux
@@ -246,8 +304,21 @@
                IM = IM1(I) 
                IJKW = WEST_OF(IJK) 
 !
-	       Flux = HALF * (Flux_sE(IMJK,M) + Flux_sE(IJK,M))
-               D_F = MU_S(IJKC,M)*ODX(I)*AYZ_U(IMJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_U_TREATMENT_AT(IJK)) THEN
+                  Flux = (Theta_Ue_bar(IMJK) * Flux_sE(IMJK,M) + Theta_Ue(IMJK) * Flux_sE(IJK,M))
+                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',alpha_Ue_c(IMJK),AW,HW,VELW)
+                  Flux = Flux * AW 
+                  D_F = MU_S(IJKC,M)*ONEoDX_E_U(IMJK)*AYZ_U(IMJK)  
+               ELSE   ! Original terms
+                  Flux = HALF * (Flux_sE(IMJK,M) + Flux_sE(IJK,M))
+                  D_F = MU_S(IJKC,M)*ODX(I)*AYZ_U(IMJK) 
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
                IF (Flux >= ZERO) THEN 
                   A_U_S(IJK,W,M) = D_F + Flux
                ELSE 
@@ -262,9 +333,23 @@
                IPJMK = IP_OF(IJMK) 
                IJKS = SOUTH_OF(IJK) 
                IJKSE = EAST_OF(IJKS) 
-	       Flux = HALF * (Flux_sN(IJMK,M) + Flux_sN(IPJMK,M))
-               D_F = AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJKC,M),JM),AVG_Y_H(MU_S&
-                  (IJKSE,M),MU_S(IJKE,M),JM),I)*ODY_N(JM)*AXZ_U(IJMK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_U_TREATMENT_AT(IJK)) THEN
+                  Flux = (Theta_U_nw(IJMK) * Flux_sN(IJMK,M) +Theta_U_ne(IJMK) * Flux_sN(IPJMK,M))
+                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Un_c(IJMK),AW,HW,VELW)
+                  Flux = Flux * AW 
+                  D_F = AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJKC,M),JM),AVG_Y_H(MU_S&
+                     (IJKSE,M),MU_S(IJKE,M),JM),I)*ONEoDY_N_U(IJMK)*AXZ_U(IJMK) 
+               ELSE   ! Original terms
+                  Flux = HALF * (Flux_sN(IJMK,M) + Flux_sN(IPJMK,M))
+                  D_F = AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJKC,M),JM),AVG_Y_H(MU_S&
+                     (IJKSE,M),MU_S(IJKE,M),JM),I)*ODY_N(JM)*AXZ_U(IJMK) 
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
                IF (Flux >= ZERO) THEN 
                   A_U_S(IJK,S,M) = D_F + Flux
                ELSE 
@@ -280,10 +365,25 @@
                   IPJKM = IP_OF(IJKM) 
                   IJKB = BOTTOM_OF(IJK) 
                   IJKBE = EAST_OF(IJKB) 
-	          Flux = HALF * (Flux_sT(IJKM,M) + Flux_sT(IPJKM,M))
-                  D_F = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJKC,M),KM),AVG_Z_H(&
-                     MU_S(IJKBE,M),MU_S(IJKE,M),KM),I)*OX_E(I)*ODZ_T(KM)*AXY_U(&
-                     IJKM) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+                  IF(CUT_U_TREATMENT_AT(IJK)) THEN
+                     Flux = (Theta_U_tw(IJKM) * Flux_sT(IJKM,M) + Theta_U_te(IJKM) * Flux_sT(IPJKM,M))
+                     CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Ut_c(IJKM),AW,HW,VELW)
+                     Flux = Flux * AW 
+                     D_F = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJKC,M),KM),AVG_Z_H(&
+                        MU_S(IJKBE,M),MU_S(IJKE,M),KM),I)*OX_E(I)*ONEoDZ_T_U(IJKM)*AXY_U(&
+                        IJKM) 
+                  ELSE   ! Original terms
+                     Flux = HALF * (Flux_sT(IJKM,M) + Flux_sT(IPJKM,M))
+                     D_F = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJKC,M),KM),AVG_Z_H(&
+                        MU_S(IJKBE,M),MU_S(IJKE,M),KM),I)*OX_E(I)*ODZ_T(KM)*AXY_U(&
+                        IJKM) 
+                  ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
                   IF (Flux >= ZERO) THEN 
                      A_U_S(IJK,B,M) = D_F + Flux
                   ELSE 
@@ -310,6 +410,9 @@
 !  Author: C. GUENTHER                                 Date: 8-APR-99  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -347,6 +450,13 @@
       USE sendrecv
       USE sendrecv3
       USE mflux 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -403,6 +513,13 @@
 	DOUBLE PRECISION  SOUTH_DC
         DOUBLE PRECISION  TOP_DC
         DOUBLE PRECISION  BOTTOM_DC
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      DOUBLE PRECISION :: AW,HW,VELW
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
 !
 !
@@ -452,16 +569,42 @@
          IJKE = EAST_OF(IJK) 
 !
 !
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !           East face (i+1, j, k)
-         U(IJK) = AVG_X_E(U_S(IJK,M),U_S(IPJK,M),IP) 
+         IF(CUT_U_TREATMENT_AT(IJK)) THEN
+            U(IJK) = (Theta_Ue_bar(IJK) * U_S(IJK,M) + Theta_Ue(IJK) * U_S(IPJK,M))
+            CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',alpha_Ue_c(IJK),AW,HW,VELW)
+            U(IJK) = U(IJK) * AW 
+         ELSE   ! Original terms
+            U(IJK) = AVG_X_E(U_S(IJK,M),U_S(IPJK,M),IP) 
+         ENDIF
 !
 !
 !           North face (i+1/2, j+1/2, k)
-         V(IJK) = AVG_X(V_S(IJK,M),V_S(IPJK,M),I) 
+         IF(CUT_U_TREATMENT_AT(IJK)) THEN
+            V(IJK) = (Theta_U_nw(IJK) * V_S(IJK,M) + Theta_U_ne(IJK) * V_S(IPJK,M))
+            CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Un_c(IJK),AW,HW,VELW)
+            V(IJK) = V(IJK) * AW 
+         ELSE   ! Original terms
+            V(IJK) = AVG_X(V_S(IJK,M),V_S(IPJK,M),I) 
+         ENDIF
 !
 !
 !           Top face (i+1/2, j, k+1/2)
-         IF (DO_K) WW(IJK) = AVG_X(W_S(IJK,M),W_S(IPJK,M),I) 
+         IF(CUT_U_TREATMENT_AT(IJK)) THEN
+            IF (DO_K) THEN
+               WW(IJK) = (Theta_U_tw(IJK) * W_S(IJK,M) + Theta_U_te(IJK) * W_S(IPJK,M))
+               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Ut_c(IJK),AW,HW,VELW)
+               WW(IJK) = WW(IJK) * AW 
+            ENDIF
+         ELSE   ! Original terms
+            IF (DO_K) WW(IJK) = AVG_X(W_S(IJK,M),W_S(IPJK,M),I) 
+         ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       END DO 
 
 ! loezos
@@ -536,7 +679,19 @@
                 IF (.NOT. FPFOI ) &
 		      MOM_HO = XSI_E(IJK)*U_S(IPJK,M)+ &
                                 (1.0-XSI_E(IJK))*U_S(IJK,M)
-	        Flux = HALF * (Flux_sE(IJK,M) + Flux_sE(IPJK,M))
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+                IF(CUT_U_TREATMENT_AT(IJK)) THEN
+                   Flux = (Theta_Ue_bar(IJK) * Flux_sE(IJK,M) + Theta_Ue(IJK) * Flux_sE(IPJK,M))
+                   CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',alpha_Ue_c(IJK),AW,HW,VELW)
+                   Flux = Flux * AW 
+                ELSE   ! Original terms
+                   Flux = HALF * (Flux_sE(IJK,M) + Flux_sE(IPJK,M))
+                ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 		EAST_DC = Flux *(MOM_LO - MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE North face (i+1/2, j+1/2, k)
@@ -555,7 +710,19 @@
                 IF (.NOT. FPFOI ) &
 		      MOM_HO = XSI_N(IJK)*U_S(IJPK,M)+ &
                               (1.0-XSI_N(IJK))*U_S(IJK,M)
-	        Flux = HALF * (Flux_sN(IJK,M) + Flux_sN(IPJK,M))
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+                IF(CUT_U_TREATMENT_AT(IJK)) THEN
+                   Flux = (Theta_U_nw(IJK) * Flux_sN(IJK,M) +Theta_U_ne(IJK) * Flux_sN(IPJK,M))
+                   CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Un_c(IJK),AW,HW,VELW)
+                   Flux = Flux * AW 
+                ELSE   ! Original terms
+                   Flux = HALF * (Flux_sN(IJK,M) + Flux_sN(IPJK,M))
+                ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 		NORTH_DC = Flux * (MOM_LO - MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Top face (i+1/2, j, k+1/2)
@@ -578,7 +745,19 @@
                IF (.NOT. FPFOI ) &
 	              MOM_HO = XSI_T(IJK)*U_S(IJKP,M)+ &
                                  (1.0-XSI_T(IJK))*U_S(IJK,M)
-	       Flux = HALF * (Flux_sT(IJK,M) + Flux_sT(IPJK,M))
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_U_TREATMENT_AT(IJK)) THEN
+                  Flux = (Theta_U_tw(IJK) * Flux_sT(IJK,M) + Theta_U_te(IJK) * Flux_sT(IPJK,M))
+                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Ut_c(IJK),AW,HW,VELW)
+                  Flux = Flux * AW 
+               ELSE   ! Original terms
+                  Flux = HALF * (Flux_sT(IJK,M) + Flux_sT(IPJK,M))
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 	       TOP_DC = Flux *(MOM_LO - MOM_HO)
 	    ELSE
 	       TOP_DC = ZERO
@@ -604,7 +783,19 @@
             IF (.NOT. FPFOI ) &
 	              MOM_HO = XSI_E(IMJK)*U_S(IJK,M)+ &
                                (1.0-XSI_E(IMJK))*U_S(IMJK,M)
-	    Flux = HALF * (Flux_sE(IMJK,M) + Flux_sE(IJK,M))
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(CUT_U_TREATMENT_AT(IJK)) THEN
+               Flux = (Theta_Ue_bar(IMJK) * Flux_sE(IMJK,M) + Theta_Ue(IMJK) * Flux_sE(IJK,M))
+               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',alpha_Ue_c(IMJK),AW,HW,VELW)
+               Flux = Flux * AW 
+            ELSE   ! Original terms
+               Flux = HALF * (Flux_sE(IMJK,M) + Flux_sE(IJK,M))
+            ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 	    WEST_DC = Flux * (MOM_LO - MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE South face (i+1/2, j-1/2, k)
@@ -628,7 +819,19 @@
             IF (.NOT. FPFOI ) &
 	              MOM_HO = XSI_N(IJMK)*U_S(IJK,M)+ &
                                (1.0-XSI_N(IJMK))*U_S(IJMK,M)
-	    Flux = HALF * (Flux_sN(IJMK,M) + Flux_sN(IPJMK,M))
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(CUT_U_TREATMENT_AT(IJK)) THEN
+               Flux = (Theta_U_nw(IJMK) * Flux_sN(IJMK,M) +Theta_U_ne(IJMK) * Flux_sN(IPJMK,M))
+               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Un_c(IJMK),AW,HW,VELW)
+               Flux = Flux * AW 
+            ELSE   ! Original terms
+               Flux = HALF * (Flux_sN(IJMK,M) + Flux_sN(IPJMK,M))
+            ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 	    SOUTH_DC = Flux * (MOM_LO - MOM_HO)
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Bottom face (i+1/2, j, k-1/2)
@@ -653,7 +856,19 @@
                IF (.NOT. FPFOI ) &
 	              MOM_HO = XSI_T(IJKM)*U_S(IJK,M)+ &
                                (1.0-XSI_T(IJKM))*U_S(IJKM,M)
-	       Flux = HALF * (Flux_sT(IJKM,M) + Flux_sT(IPJKM,M))
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_U_TREATMENT_AT(IJK)) THEN
+                  Flux = (Theta_U_tw(IJKM) * Flux_sT(IJKM,M) + Theta_U_te(IJKM) * Flux_sT(IPJKM,M))
+                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Ut_c(IJKM),AW,HW,VELW)
+                  Flux = Flux * AW 
+               ELSE   ! Original terms
+                  Flux = HALF * (Flux_sT(IJKM,M) + Flux_sT(IPJKM,M))
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 	       BOTTOM_DC = Flux * (MOM_LO - MOM_HO)
             ELSE
 	       BOTTOM_DC = ZERO
@@ -688,6 +903,9 @@
 !  Author: M. Syamlal                                 Date: 20-MAR-97  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -724,6 +942,13 @@
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar  
       USE mflux 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -767,6 +992,13 @@
 !                       XSI_t(DIMENSION_3) 
 !      DOUBLE PRECISION U(DIMENSION_3),& 
 !                       V(DIMENSION_3), WW(DIMENSION_3) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      DOUBLE PRECISION :: AW,HW,VELW
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -792,16 +1024,42 @@
 
 !
 !
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !           East face (i+1, j, k)
-         U(IJK) = AVG_X_E(U_S(IJK,M),U_S(IPJK,M),IP) 
+         IF(CUT_U_TREATMENT_AT(IJK)) THEN
+            U(IJK) = (Theta_Ue_bar(IJK) * U_S(IJK,M) + Theta_Ue(IJK) * U_S(IPJK,M))
+            CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',alpha_Ue_c(IJK),AW,HW,VELW)
+            U(IJK) = U(IJK) * AW 
+         ELSE   ! Original terms
+            U(IJK) = AVG_X_E(U_S(IJK,M),U_S(IPJK,M),IP) 
+         ENDIF
 !
 !
 !           North face (i+1/2, j+1/2, k)
-         V(IJK) = AVG_X(V_S(IJK,M),V_S(IPJK,M),I) 
+         IF(CUT_U_TREATMENT_AT(IJK)) THEN
+            V(IJK) = (Theta_U_nw(IJK) * V_S(IJK,M) + Theta_U_ne(IJK) * V_S(IPJK,M))
+            CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Un_c(IJK),AW,HW,VELW)
+            V(IJK) = V(IJK) * AW 
+         ELSE   ! Original terms
+            V(IJK) = AVG_X(V_S(IJK,M),V_S(IPJK,M),I) 
+         ENDIF
 !
 !
 !           Top face (i+1/2, j, k+1/2)
-         IF (DO_K) WW(IJK) = AVG_X(W_S(IJK,M),W_S(IPJK,M),I) 
+         IF(CUT_U_TREATMENT_AT(IJK)) THEN
+            IF (DO_K) THEN
+               WW(IJK) = (Theta_U_tw(IJK) * W_S(IJK,M) + Theta_U_te(IJK) * W_S(IPJK,M))
+               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Ut_c(IJK),AW,HW,VELW)
+               WW(IJK) = WW(IJK) * AW 
+            ENDIF
+         ELSE   ! Original terms
+            IF (DO_K) WW(IJK) = AVG_X(W_S(IJK,M),W_S(IPJK,M),I) 
+         ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       END DO 
 
 ! loezos
@@ -852,8 +1110,21 @@
             IJKNE = EAST_OF(IJKN) 
 !
 !           East face (i+1, j, k)
-	    Flux = HALF * (Flux_sE(IJK,M) + Flux_sE(IPJK,M))
-            D_F = MU_S(IJKE,M)*ODX(IP)*AYZ_U(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(CUT_U_TREATMENT_AT(IJK)) THEN
+               Flux = (Theta_Ue_bar(IJK) * Flux_sE(IJK,M) + Theta_Ue(IJK) * Flux_sE(IPJK,M))
+               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',alpha_Ue_c(IJK),AW,HW,VELW)
+               Flux = Flux * AW 
+               D_F = MU_S(IJKE,M)*ONEoDX_E_U(IJK)*AYZ_U(IJK)  
+            ELSE   ! Original terms
+               Flux = HALF * (Flux_sE(IJK,M) + Flux_sE(IPJK,M))
+               D_F = MU_S(IJKE,M)*ODX(IP)*AYZ_U(IJK) 
+            ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
             A_U_S(IJK,E,M) = D_F - XSI_E(IJK) * Flux 
 !
@@ -861,9 +1132,23 @@
 !
 !
 !           North face (i+1/2, j+1/2, k)
-	    Flux = HALF * (Flux_sN(IJK,M) + Flux_sN(IPJK,M))
-            D_F = AVG_X_H(AVG_Y_H(MU_S(IJKC,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
-               IJKE,M),MU_S(IJKNE,M),J),I)*ODY_N(J)*AXZ_U(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(CUT_U_TREATMENT_AT(IJK)) THEN
+               Flux = (Theta_U_nw(IJK) * Flux_sN(IJK,M) +Theta_U_ne(IJK) * Flux_sN(IPJK,M))
+               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Un_c(IJK),AW,HW,VELW)
+               Flux = Flux * AW 
+               D_F = AVG_X_H(AVG_Y_H(MU_S(IJKC,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
+                  IJKE,M),MU_S(IJKNE,M),J),I)*ONEoDY_N_U(IJK)*AXZ_U(IJK)  
+            ELSE   ! Original terms
+               Flux = HALF * (Flux_sN(IJK,M) + Flux_sN(IPJK,M))
+               D_F = AVG_X_H(AVG_Y_H(MU_S(IJKC,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
+                  IJKE,M),MU_S(IJKNE,M),J),I)*ODY_N(J)*AXZ_U(IJK) 
+            ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
             A_U_S(IJK,N,M) = D_F - XSI_N(IJK) * Flux
 !
@@ -876,9 +1161,23 @@
                IJKT = TOP_OF(IJK) 
                IJKTE = EAST_OF(IJKT) 
 !
-	       Flux = HALF * (Flux_sT(IJK,M) + Flux_sT(IPJK,M))
-               D_F = AVG_X_H(AVG_Z_H(MU_S(IJKC,M),MU_S(IJKT,M),K),AVG_Z_H(MU_S(&
-                  IJKE,M),MU_S(IJKTE,M),K),I)*OX_E(I)*ODZ_T(K)*AXY_U(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_U_TREATMENT_AT(IJK)) THEN
+                  Flux = (Theta_U_tw(IJK) * Flux_sT(IJK,M) + Theta_U_te(IJK) * Flux_sT(IPJK,M))
+                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Ut_c(IJK),AW,HW,VELW)
+                  Flux = Flux * AW 
+                  D_F = AVG_X_H(AVG_Z_H(MU_S(IJKC,M),MU_S(IJKT,M),K),AVG_Z_H(MU_S(&
+                     IJKE,M),MU_S(IJKTE,M),K),I)*OX_E(I)*ONEoDZ_T_U(IJK)*AXY_U(IJK) 
+               ELSE   ! Original terms
+                  Flux = HALF * (Flux_sT(IJK,M) + Flux_sT(IPJK,M))
+                  D_F = AVG_X_H(AVG_Z_H(MU_S(IJKC,M),MU_S(IJKT,M),K),AVG_Z_H(MU_S(&
+                     IJKE,M),MU_S(IJKTE,M),K),I)*OX_E(I)*ODZ_T(K)*AXY_U(IJK) 
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
                A_U_S(IJK,T,M) = D_F - XSI_T(IJK) * Flux 
 !
@@ -891,8 +1190,21 @@
                IM = IM1(I) 
                IJKW = WEST_OF(IJK) 
 !
-	       Flux = HALF * (Flux_sE(IMJK,M) + Flux_sE(IJK,M))
-               D_F = MU_S(IJKC,M)*ODX(I)*AYZ_U(IMJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_U_TREATMENT_AT(IJK)) THEN
+                  Flux = (Theta_Ue_bar(IMJK) * Flux_sE(IMJK,M) + Theta_Ue(IMJK) * Flux_sE(IJK,M))
+                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',alpha_Ue_c(IMJK),AW,HW,VELW)
+                  Flux = Flux * AW 
+                  D_F = MU_S(IJKC,M)*ONEoDX_E_U(IMJK)*AYZ_U(IMJK)  
+               ELSE   ! Original terms
+                  Flux = HALF * (Flux_sE(IMJK,M) + Flux_sE(IJK,M))
+                  D_F = MU_S(IJKC,M)*ODX(I)*AYZ_U(IMJK) 
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
                A_U_S(IJK,W,M) = D_F + (ONE - XSI_E(IMJK)) * Flux 
             ENDIF 
@@ -905,9 +1217,23 @@
                IJKS = SOUTH_OF(IJK) 
                IJKSE = EAST_OF(IJKS) 
 !
-	       Flux = HALF * (Flux_sN(IJMK,M) + Flux_sN(IPJMK,M))
-               D_F = AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJKC,M),JM),AVG_Y_H(MU_S&
-                  (IJKSE,M),MU_S(IJKE,M),JM),I)*ODY_N(JM)*AXZ_U(IJMK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_U_TREATMENT_AT(IJK)) THEN
+                  Flux = (Theta_U_nw(IJMK) * Flux_sN(IJMK,M) +Theta_U_ne(IJMK) * Flux_sN(IPJMK,M))
+                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Un_c(IJMK),AW,HW,VELW)
+                  Flux = Flux * AW 
+                  D_F = AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJKC,M),JM),AVG_Y_H(MU_S&
+                     (IJKSE,M),MU_S(IJKE,M),JM),I)*ONEoDY_N_U(IJMK)*AXZ_U(IJMK) 
+               ELSE   ! Original terms
+                  Flux = HALF * (Flux_sN(IJMK,M) + Flux_sN(IPJMK,M))
+                  D_F = AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJKC,M),JM),AVG_Y_H(MU_S&
+                     (IJKSE,M),MU_S(IJKE,M),JM),I)*ODY_N(JM)*AXZ_U(IJMK) 
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
                A_U_S(IJK,S,M) = D_F + (ONE - XSI_N(IJMK)) * Flux 
             ENDIF 
@@ -921,10 +1247,25 @@
                   IJKB = BOTTOM_OF(IJK) 
                   IJKBE = EAST_OF(IJKB) 
 !
-	          Flux = HALF * (Flux_sT(IJKM,M) + Flux_sT(IPJKM,M))
-                  D_F = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJKC,M),KM),AVG_Z_H(&
-                     MU_S(IJKBE,M),MU_S(IJKE,M),KM),I)*OX_E(I)*ODZ_T(KM)*AXY_U(&
-                     IJKM) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+                  IF(CUT_U_TREATMENT_AT(IJK)) THEN
+                     Flux = (Theta_U_tw(IJKM) * Flux_sT(IJKM,M) + Theta_U_te(IJKM) * Flux_sT(IPJKM,M))
+                     CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',ALPHA_Ut_c(IJKM),AW,HW,VELW)
+                     Flux = Flux * AW 
+                     D_F = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJKC,M),KM),AVG_Z_H(&
+                        MU_S(IJKBE,M),MU_S(IJKE,M),KM),I)*OX_E(I)*ONEoDZ_T_U(IJKM)*AXY_U(&
+                        IJKM) 
+                  ELSE   ! Original terms
+                     Flux = HALF * (Flux_sT(IJKM,M) + Flux_sT(IPJKM,M))
+                     D_F = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJKC,M),KM),AVG_Z_H(&
+                        MU_S(IJKBE,M),MU_S(IJKE,M),KM),I)*OX_E(I)*ODZ_T(KM)*AXY_U(&
+                        IJKM) 
+                  ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
                   A_U_S(IJK,B,M) = D_F + (ONE - XSI_T(IJKM)) * Flux 
                ENDIF 

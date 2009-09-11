@@ -18,6 +18,10 @@
 !  Purpose: To call DES_Init_Namelist                                  C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                      C
+!  Revision Number: 4                                                  C
+!  Purpose: To call CARTESIAN_GRID_INIT_NAMELIST                       C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
+!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced: None                                          C
@@ -535,6 +539,13 @@
 
       CALL DES_INIT_NAMELIST
       CALL USR_INIT_NAMELIST 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      CALL CARTESIAN_GRID_INIT_NAMELIST
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 
       RETURN  
       END SUBROUTINE INIT_NAMELIST 

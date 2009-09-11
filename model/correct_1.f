@@ -9,6 +9,9 @@
 !  Author: M. Syamlal                                 Date: 25-SEP-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -37,6 +40,13 @@
       USE constant
       USE compar 
       USE sendrecv 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -79,6 +89,17 @@
                EPCOR = EP_S(IJK,M) + EPP(IJK) 
                IF (EPCOR>EP_S_CP .AND. EPP(IJK)>ZERO) THEN 
                   EPP(IJK) = UR_FAC(2)*EPP(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!      Using a low value of CG_UR_FAC(2) for the cut cell tends to 
+!      stabilize code (limits occurrence of negative void fraction)
+!=======================================================================
+                  IF(CARTESIAN_GRID) THEN
+                     IF(CUT_CELL_AT(IJK)) EPP(IJK) = CG_UR_FAC(2)*EPP(IJK) 
+                  ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
                   EPCOR = EP_S(IJK,M) + EPP(IJK) 
                ENDIF 
                ROP_S(IJK,M) = MAX(ZERO,RO_S(M)*EPCOR) 

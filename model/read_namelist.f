@@ -21,6 +21,11 @@
 !     Author:Jay Boyalakuntla                            Date: 12-Jun-04  C
 !     Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                         C
+!     Revision Number: 3                                                  C
+!     Purpose: To incorporate the reading of Cartesian grid variables     C
+!     Author:Jeff Dietiker                               Date: 01-Jul-09  C
+!     Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                         C
 !     Literature/Document References:                                     C
 !                                                                         C
 !     Variables referenced: None                                          C
@@ -83,6 +88,17 @@
       USE des_bc
 !DISTIO
       USE cdist
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE quadric
+      USE cutcell
+      USE vtk
+      USE polygon
+      USE dashboard
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -146,6 +162,14 @@
       INCLUDE 'usrnlst.inc' 
       INCLUDE 'namelist.inc'
       INCLUDE 'des/desnamelist.inc'
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      INCLUDE 'cartesian_grid/cartesian_grid_namelist.inc'
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
     
       E = UNDEFINED 
       RXN_FLAG = .FALSE. 
@@ -221,7 +245,7 @@
          REWIND (UNIT=UNIT_TMP) 
 !     READ (UNIT_TMP,NML=INPUT_DATA,ERR=930,END=930)  ! Use this for FPS
          READ (UNIT_TMP, NML=INPUT_DATA, ERR=400, END=930) 
-         GO TO 420 
+         GO TO 430 
  400     CONTINUE 
          IF (POST == 1) GO TO 410 
          REWIND (UNIT=UNIT_TMP) !If called from POST_MFIX ignore the error 
@@ -230,7 +254,7 @@
          WRITE (UNIT_TMP, 1200) 
          REWIND (UNIT=UNIT_TMP) 
          READ (UNIT_TMP, NML=DES_INPUT_DATA, ERR=410, END=930) 
-         GO TO 420 
+         GO TO 430 
  410     CONTINUE 
          IF (POST == 1) GO TO 420 
          REWIND (UNIT=UNIT_TMP) !If called from POST_MFIX ignore the error 
@@ -238,8 +262,22 @@
          WRITE (UNIT_TMP, 1100) LINE_STRING(1:LINE_LEN) 
          WRITE (UNIT_TMP, 1200) 
          REWIND (UNIT=UNIT_TMP) 
-         READ (UNIT_TMP, NML=USR_INPUT_DATA, ERR=930, END=930) 
+         READ (UNIT_TMP, NML=USR_INPUT_DATA, ERR=420, END=930) 
  420     CONTINUE 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+         IF (POST == 1) GO TO 430 
+         REWIND (UNIT=UNIT_TMP) !If called from POST_MFIX ignore the error 
+         WRITE (UNIT_TMP, 1030) 
+         WRITE (UNIT_TMP, 1100) LINE_STRING(1:LINE_LEN) 
+         WRITE (UNIT_TMP, 1200) 
+         REWIND (UNIT=UNIT_TMP) 
+         READ (UNIT_TMP, NML=CARTESIAN_GRID_INPUT_DATA, ERR=930, END=930)  
+ 430     CONTINUE 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          CLOSE(UNIT=UNIT_TMP) 
       ENDIF 
      
@@ -282,6 +320,13 @@
  1000 FORMAT(1X,'$INPUT_DATA') 
  1010 FORMAT(1X,'$DES_INPUT_DATA') 
  1020 FORMAT(1X,'$USR_INPUT_DATA') 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+ 1030 FORMAT(1X,'$CARTESIAN_GRID_INPUT_DATA') 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
  1100 FORMAT(A) 
  1200 FORMAT(1X,'$END') 
  1300 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&

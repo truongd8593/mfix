@@ -24,6 +24,9 @@
 !  Author: S. Dartevelle, LANL                        Date: 17-MAR-04  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
+!  Revision Number: 4                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -53,6 +56,13 @@
       USE scales 
       USE compar
       USE sendrecv
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -162,7 +172,19 @@
         IF (MODEL_B) THEN   !Model B
           !Linking velocity correction coefficient to pressure - GAS Phase
           if ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) then
-             D_E(IJK,0) = P_SCALE*AYZ(IJK)/( (-A_M(IJK,0,0))+other_ratio_1 )
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_E(IJK,0) = P_SCALE*AYZ(IJK)/( (-A_M(IJK,0,0))+other_ratio_1 )
+            ELSE
+               D_E(IJK,0) = P_SCALE         /( (-A_M(IJK,0,0))+other_ratio_1 )
+            ENDIF
+! Original terms
+!             D_E(IJK,0) = P_SCALE*AYZ(IJK)/( (-A_M(IJK,0,0))+other_ratio_1 )
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
           else
              D_E(IJK,0) = ZERO
           endif
@@ -213,7 +235,19 @@
           END DO
           !Linking velocity correction coefficient to pressure - GAS Phase
           if ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) then
-            D_E(IJK,0) = P_SCALE*AYZ(IJK)*(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_E(IJK,0) = P_SCALE*AYZ(IJK)*(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+            ELSE
+               D_E(IJK,0) = P_SCALE         *(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+            ENDIF
+! Original terms
+!            D_E(IJK,0) = P_SCALE*AYZ(IJK)*(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
           else
             D_E(IJK,0) = ZERO
           endif
@@ -222,10 +256,29 @@
             if ( MOMENTUM_X_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER)        .OR. &
                                                 (other_denominator(M)>SMALL_NUMBER) .OR. &
                                                 (denominator(M)>SMALL_NUMBER) ) )     then
-              D_E(IJK,M) = P_SCALE*AYZ(IJK)*(&
-                        ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                        ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
-                                                   )
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_E(IJK,M) = P_SCALE*AYZ(IJK)*(&
+                         ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+                         ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+                                                    )
+            ELSE
+               D_E(IJK,M) = P_SCALE           *(&
+                         ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+                         ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+                                                    )
+
+            ENDIF
+! Original terms
+!              D_E(IJK,M) = P_SCALE*AYZ(IJK)*(&
+!                        ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+!                        ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+!                                                   )
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
             else
               D_E(IJK,M) = ZERO
             endif
@@ -253,9 +306,28 @@
 
        IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
          IF (MODEL_B) THEN
-           D_E(IJK,0) = P_SCALE*AYZ(IJK)/((-A_M(IJK,0,0))+SUM_VXF_GS)
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_E(IJK,0) = P_SCALE*AYZ(IJK)/((-A_M(IJK,0,0))+SUM_VXF_GS)
+            ELSE
+               D_E(IJK,0) = P_SCALE         /((-A_M(IJK,0,0))+SUM_VXF_GS)
+            ENDIF
+! Original terms
+!           D_E(IJK,0) = P_SCALE*AYZ(IJK)/((-A_M(IJK,0,0))+SUM_VXF_GS)
          ELSE
-           D_E(IJK,0) = P_SCALE*AYZ(IJK)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_E(IJK,0) = P_SCALE*AYZ(IJK)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+            ELSE
+               D_E(IJK,0) = P_SCALE         *EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+            ENDIF
+! Original terms
+!          D_E(IJK,0) = P_SCALE*AYZ(IJK)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          ENDIF
        ELSE
          D_E(IJK,0) = ZERO
@@ -318,8 +390,22 @@
          if ( MOMENTUM_X_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER) .OR. &
                                         (VXF_GS(IJK,M)>SMALL_NUMBER) .OR. &
                                         (denominator(M)>SMALL_NUMBER) ) ) then
-           D_E(IJK,M) = P_SCALE*AYZ(IJK)*( EPSA(M) + numeratorxEP(M) )/&
-                                          ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_E(IJK,M) = P_SCALE*AYZ(IJK)*( EPSA(M) + numeratorxEP(M) )/&
+                                             ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+            ELSE
+               D_E(IJK,M) = P_SCALE         *( EPSA(M) + numeratorxEP(M) )/&
+                                             ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+            ENDIF
+! Original terms
+!           D_E(IJK,M) = P_SCALE*AYZ(IJK)*( EPSA(M) + numeratorxEP(M) )/&
+!                                          ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          else
            D_E(IJK,M) = ZERO
          endif
@@ -386,6 +472,14 @@
       USE scales 
       USE compar
       USE sendrecv
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -494,7 +588,19 @@
        IF (MODEL_B) THEN   !Model B
           !Linking velocity correction coefficient to pressure - GAS Phase
          if ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) then
-           D_N(IJK,0) = P_SCALE*AXZ(IJK)/( (-A_M(IJK,0,0))+other_ratio_1 )
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_N(IJK,0) = P_SCALE*AXZ(IJK)/( (-A_M(IJK,0,0))+other_ratio_1 )
+            ELSE
+               D_N(IJK,0) = P_SCALE         /( (-A_M(IJK,0,0))+other_ratio_1 )
+            ENDIF
+! Original terms
+!           D_N(IJK,0) = P_SCALE*AXZ(IJK)/( (-A_M(IJK,0,0))+other_ratio_1 )
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          else
            D_N(IJK,0) = ZERO
          endif
@@ -545,7 +651,19 @@
          END DO
          !Linking velocity correction coefficient to pressure - GAS Phase
          if ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) then
-           D_N(IJK,0) = P_SCALE*AXZ(IJK)*(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_N(IJK,0) = P_SCALE*AXZ(IJK)*(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 ) 
+            ELSE
+               D_N(IJK,0) = P_SCALE          *(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+            ENDIF
+! Original terms
+!           D_N(IJK,0) = P_SCALE*AXZ(IJK)*(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          else
            D_N(IJK,0) = ZERO
          endif
@@ -554,10 +672,28 @@
            if ( MOMENTUM_Y_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER)        .OR. &
                                                 (other_denominator(M)>SMALL_NUMBER) .OR. &
                                                 (denominator(M)>SMALL_NUMBER) ) )     then
-             D_N(IJK,M) = P_SCALE*AXZ(IJK)*(&
-                        ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                        ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
-                                                   )
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_N(IJK,M) = P_SCALE*AXZ(IJK)*(&
+                           ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+                           ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+                                                      )
+            ELSE
+               D_N(IJK,M) = P_SCALE         *(&
+                         ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+                         ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+                                                      )
+            ENDIF
+! Original terms
+!             D_N(IJK,M) = P_SCALE*AXZ(IJK)*(&
+!                        ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+!                        ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+!                                                   )
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
            else
              D_N(IJK,M) = ZERO
            endif
@@ -585,9 +721,27 @@
 
        IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
          IF (MODEL_B) THEN
-           D_N(IJK,0) = P_SCALE*AXZ(IJK)/((-A_M(IJK,0,0))+SUM_VXF_GS)
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_N(IJK,0) = P_SCALE*AXZ(IJK)/((-A_M(IJK,0,0))+SUM_VXF_GS)
+            ELSE
+               D_N(IJK,0) = P_SCALE         /((-A_M(IJK,0,0))+SUM_VXF_GS)
+            ENDIF
+! Original terms
+!           D_N(IJK,0) = P_SCALE*AXZ(IJK)/((-A_M(IJK,0,0))+SUM_VXF_GS)
          ELSE
-           D_N(IJK,0) = P_SCALE*AXZ(IJK)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_N(IJK,0) = P_SCALE*AXZ(IJK)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+            ELSE
+               D_N(IJK,0) = P_SCALE         *EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+            ENDIF
+! Original terms
+!              D_N(IJK,0) = P_SCALE*AXZ(IJK)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          ENDIF
        ELSE
          D_N(IJK,0) = ZERO
@@ -650,8 +804,22 @@
          if ( MOMENTUM_Y_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER) .OR. &
                                         (VXF_GS(IJK,M)>SMALL_NUMBER) .OR. &
                                         (denominator(M)>SMALL_NUMBER) ) ) then
-           D_N(IJK,M) = P_SCALE*AXZ(IJK)*( EPSA(M) + numeratorxEP(M) )/&
-                                          ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_N(IJK,M) = P_SCALE*AXZ(IJK)*( EPSA(M) + numeratorxEP(M) )/&
+                                             ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+            ELSE
+               D_N(IJK,M) = P_SCALE         *( EPSA(M) + numeratorxEP(M) )/&
+                                             ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+            ENDIF
+! Original terms
+!           D_N(IJK,M) = P_SCALE*AXZ(IJK)*( EPSA(M) + numeratorxEP(M) )/&
+!                                          ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          else
            D_N(IJK,M) = ZERO
          endif
@@ -718,6 +886,14 @@
       USE scales 
       USE compar
       USE sendrecv
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -826,7 +1002,19 @@
        IF (MODEL_B) THEN   !Model B
          !Linking velocity correction coefficient to pressure - GAS Phase
          if ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) then
-           D_T(IJK,0) = P_SCALE*AXY(IJK)/( (-A_M(IJK,0,0))+other_ratio_1 )
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_T(IJK,0) = P_SCALE*AXY(IJK)/( (-A_M(IJK,0,0))+other_ratio_1 )
+            ELSE
+               D_T(IJK,0) = P_SCALE         /( (-A_M(IJK,0,0))+other_ratio_1 )
+            ENDIF
+! Original terms
+!           D_T(IJK,0) = P_SCALE*AXY(IJK)/( (-A_M(IJK,0,0))+other_ratio_1 )
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          else
            D_T(IJK,0) = ZERO
          endif
@@ -877,7 +1065,19 @@
          END DO
          !Linking velocity correction coefficient to pressure - GAS Phase
          if ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) then
-           D_T(IJK,0) = P_SCALE*AXY(IJK)*(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_T(IJK,0) = P_SCALE*AXY(IJK)*(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+            ELSE
+               D_T(IJK,0) = P_SCALE         *(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+            ENDIF
+! Original terms
+!           D_T(IJK,0) = P_SCALE*AXY(IJK)*(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          else
            D_T(IJK,0) = ZERO
          endif
@@ -886,10 +1086,28 @@
            if ( MOMENTUM_Z_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER)        .OR. &
                                                 (other_denominator(M)>SMALL_NUMBER) .OR. &
                                                 (denominator(M)>SMALL_NUMBER) ) )     then
-             D_T(IJK,M) = P_SCALE*AXY(IJK)*(&
-                        ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                        ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
-                                                   )
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_T(IJK,M) = P_SCALE*AXY(IJK)*(&
+                          ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+                          ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+                                                     )
+            ELSE
+               D_T(IJK,M) = P_SCALE        *(&
+                         ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+                         ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+                                                    )
+            ENDIF
+! Original terms
+!             D_T(IJK,M) = P_SCALE*AXY(IJK)*(&
+!                        ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+!                        ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+!                                                   )
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
            else
              D_T(IJK,M) = ZERO
            endif
@@ -917,9 +1135,27 @@
 
        IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
          IF (MODEL_B) THEN
-           D_T(IJK,0) = P_SCALE*AXY(IJK)/((-A_M(IJK,0,0))+SUM_VXF_GS)
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_T(IJK,0) = P_SCALE*AXY(IJK)/((-A_M(IJK,0,0))+SUM_VXF_GS)
+            ELSE
+               D_T(IJK,0) = P_SCALE         /((-A_M(IJK,0,0))+SUM_VXF_GS)
+            ENDIF
+! Original terms
+!           D_T(IJK,0) = P_SCALE*AXY(IJK)/((-A_M(IJK,0,0))+SUM_VXF_GS)
          ELSE
-           D_T(IJK,0) = P_SCALE*AXY(IJK)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_T(IJK,0) = P_SCALE*AXY(IJK)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+            ELSE
+               D_T(IJK,0) = P_SCALE         *EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+            ENDIF
+! Original terms
+!           D_T(IJK,0) = P_SCALE*AXY(IJK)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          ENDIF
        ELSE
          D_T(IJK,0) = ZERO
@@ -982,8 +1218,22 @@
          if ( MOMENTUM_Z_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER) .OR. &
                                         (VXF_GS(IJK,M)>SMALL_NUMBER) .OR. &
                                         (denominator(M)>SMALL_NUMBER) ) ) then
-            D_T(IJK,M) = P_SCALE*AXY(IJK)*( EPSA(M) + numeratorxEP(M) )/&
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               D_T(IJK,M) = P_SCALE*AXY(IJK)*( EPSA(M) + numeratorxEP(M) )/&
+                                             ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+            ELSE
+             D_T(IJK,M) = P_SCALE         *( EPSA(M) + numeratorxEP(M) )/&
                                           ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+            ENDIF
+! Original terms
+!            D_T(IJK,M) = P_SCALE*AXY(IJK)*( EPSA(M) + numeratorxEP(M) )/&
+!                                          ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          else
            D_T(IJK,M) = ZERO
          endif

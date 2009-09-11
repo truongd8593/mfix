@@ -12,6 +12,10 @@
 !           to convert mass and volumetric flows to velocities.        C
 !  Author: M. Syamlal                                 Date: 24-JUL-92  C
 !  Reviewer: W. Rogers                                Date: 11-DEC-92  C
+!                                                                      C  
+!  Revision Number: 2                                                  C
+!  Purpose: Include Cartesian grid boundary condition types.           C
+!  Author: Jeff Dietiker                              Date: 01-JUL-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -50,7 +54,14 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: DIM_BCTYPE = 16 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      INTEGER, PARAMETER :: DIM_BCTYPE = 21 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -62,6 +73,9 @@
       INTEGER BCV , I , J , K , IJK, M, N
 !
 !     valid boundary condition types
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       CHARACTER*16, DIMENSION(1:DIM_BCTYPE) ::VALID_BC_TYPE = (/&
            'MASS_INFLOW     ', 'MI              ',&
            'MASS_OUTFLOW    ', 'MO              ',&
@@ -70,9 +84,17 @@
            'FREE_SLIP_WALL  ', 'FSW             ',&
            'NO_SLIP_WALL    ', 'NSW             ',&
            'PAR_SLIP_WALL   ', 'PSW             ',&
-           'OUTFLOW         ', 'OF              '&
+           'OUTFLOW         ', 'OF              ',&
+           'CG_NSW          ', 'CG_FSW          ',&
+           'CG_PSW          ', 'CG_MI           ',&
+           'CG_PO           '                     &
             /)
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
       DOUBLE PRECISION SUM, SUM_EP
+
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -97,6 +119,17 @@
         IF (BC_K_B(BCV) /= UNDEFINED_I) BC_DEFINED(BCV) = .TRUE. 
         IF (BC_K_T(BCV) /= UNDEFINED_I) BC_DEFINED(BCV) = .TRUE. 
         IF (BC_TYPE(BCV) == 'DUMMY') BC_DEFINED(BCV) = .FALSE. 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+        IF (BC_TYPE(BCV) == 'CG_NSW') BC_DEFINED(BCV) = .FALSE. 
+        IF (BC_TYPE(BCV) == 'CG_FSW') BC_DEFINED(BCV) = .FALSE. 
+        IF (BC_TYPE(BCV) == 'CG_PSW') BC_DEFINED(BCV) = .FALSE. 
+        IF (BC_TYPE(BCV) == 'CG_MI') BC_DEFINED(BCV) = .FALSE. 
+        IF (BC_TYPE(BCV) == 'CG_PO') BC_DEFINED(BCV) = .FALSE. 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
         IF (BC_DEFINED(BCV)) THEN 
             IF (BC_X_W(BCV)==UNDEFINED .AND. BC_I_W(BCV)==UNDEFINED_I) THEN 
                 IF (NO_I) THEN 
@@ -642,8 +675,13 @@
 
             END SELECT 
 
-        ELSEIF (BC_TYPE(BCV) /= 'DUMMY') THEN 
-
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+        ELSEIF ((BC_TYPE(BCV) /= 'DUMMY').AND.(BC_TYPE(BCV)(1:2) /= 'CG')) THEN 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !           Check whether BC values are specified for undefined BC locations
             IF (BC_U_G(BCV) /= UNDEFINED) THEN 
                 IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'BC_U_g', BCV 

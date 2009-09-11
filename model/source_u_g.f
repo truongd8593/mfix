@@ -12,6 +12,9 @@
 !  Author: M. Syamlal                                 Date: 14-MAY-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -52,6 +55,15 @@
       USE sendrecv  
       USE ghdtheory
       USE drag
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+      USE quadric
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -117,6 +129,13 @@
 !
 !     FOR CALL_DI and CALL_ISAT = .true.
       DOUBLE PRECISION SUM_R_G_temp(DIMENSION_3)
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+!      INTEGER :: J,K,IMJK 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
@@ -187,19 +206,61 @@
                IF (IMAP(I_OF(IJK)).EQ.IMAX1) PGE = P_G(IJKE) - DELP_X 
             ENDIF 
             IF (MODEL_B) THEN 
-               SDP = -P_SCALE*(PGE - P_G(IJK))*AYZ(IJK) 
-!
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(.NOT.CUT_U_TREATMENT_AT(IJK)) THEN
+                   SDP = -P_SCALE*(PGE - P_G(IJK))*AYZ(IJK) 
+               ELSE
+                   SDP = -P_SCALE*(PGE * A_UPG_E(IJK) - P_G(IJK) * A_UPG_W(IJK) )
+               ENDIF
+! Original terms
+!                   SDP = -P_SCALE*(PGE - P_G(IJK))*AYZ(IJK)
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
             ELSE 
-               SDP = -P_SCALE*EPGA*(PGE - P_G(IJK))*AYZ(IJK) 
-!
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(.NOT.CUT_U_TREATMENT_AT(IJK)) THEN
+                   SDP = -P_SCALE*EPGA*(PGE - P_G(IJK))*AYZ(IJK) 
+               ELSE
+                   SDP = -P_SCALE*EPGA*(PGE * A_UPG_E(IJK) - P_G(IJK) * A_UPG_W(IJK) )
+               ENDIF
+! Original terms
+!                   SDP = -P_SCALE*EPGA*(PGE - P_G(IJK))*AYZ(IJK) 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
             ENDIF 
 !
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CUT_U_TREATMENT_AT(IJK)) THEN
 !       Volumetric forces
-            ROPGA = HALF * (VOL(IJK)*ROP_G(IJK) + VOL(IPJK)*ROP_G(IJKE))/VOL_U(IJK)
-            ROGA  = HALF * (VOL(IJK)*RO_G(IJK) + VOL(IPJK)*RO_G(IJKE))/VOL_U(IJK) 
-!
+               ROPGA = HALF * (VOL(IJK)*ROP_G(IJK) + VOL(IPJK)*ROP_G(IJKE))/VOL_U(IJK)
+               ROGA  = HALF * (VOL(IJK)*RO_G(IJK) + VOL(IPJK)*RO_G(IJKE))/VOL_U(IJK) 
 !         Previous time step
-            V0 = HALF * (VOL(IJK)*ROP_GO(IJK) + VOL(IPJK)*ROP_GO(IJKE))*ODT/VOL_U(IJK) 
+               V0 = HALF * (VOL(IJK)*ROP_GO(IJK) + VOL(IPJK)*ROP_GO(IJKE))*ODT/VOL_U(IJK)  
+            ELSE
+!       Volumetric forces
+               ROPGA = (VOL(IJK)*ROP_G(IJK) + VOL(IPJK)*ROP_G(IJKE))/(VOL(IJK) + VOL(IPJK))
+               ROGA  = (VOL(IJK)*RO_G(IJK)  + VOL(IPJK)*RO_G(IJKE) )/(VOL(IJK) + VOL(IPJK))
+!         Previous time step
+               V0 = (VOL(IJK)*ROP_GO(IJK) + VOL(IPJK)*ROP_GO(IJKE))*ODT/(VOL(IJK) + VOL(IPJK))  
+            ENDIF
+
+! Original terms
+!       Volumetric forces
+!            ROPGA = HALF * (VOL(IJK)*ROP_G(IJK) + VOL(IPJK)*ROP_G(IJKE))/VOL_U(IJK)
+!            ROGA  = HALF * (VOL(IJK)*RO_G(IJK) + VOL(IPJK)*RO_G(IJKE))/VOL_U(IJK) 
+!         Previous time step
+!            V0 = HALF * (VOL(IJK)*ROP_GO(IJK) + VOL(IPJK)*ROP_GO(IJKE))*ODT/VOL_U(IJK)  
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
 !         pressure drop through porous media
             IF (SIP_AT_E(IJK)) THEN 
@@ -213,8 +274,19 @@
             ENDIF 
 !
 !         Interphase mass transfer
-            VMT = HALF * (VOL(IJK)*SUM_R_G(IJK) + VOL(IPJK)*SUM_R_G(IJKE))/VOL_U(IJK) 
-!
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CUT_U_TREATMENT_AT(IJK)) THEN
+               VMT = HALF * (VOL(IJK)*SUM_R_G(IJK) + VOL(IPJK)*SUM_R_G(IJKE))/VOL_U(IJK)  
+            ELSE
+               VMT = (VOL(IJK)*SUM_R_G(IJK) + VOL(IPJK)*SUM_R_G(IJKE))/(VOL(IJK) + VOL(IPJK))  
+            ENDIF
+! Original terms
+!            VMT = HALF * (VOL(IJK)*SUM_R_G(IJK) + VOL(IPJK)*SUM_R_G(IJKE))/VOL_U(IJK)  
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !         Body force
             IF (MODEL_B) THEN 
                VBF = ROGA*BFX_G(IJK) 
@@ -274,7 +346,19 @@
                VCF+Ghd_drag+HYS_drag)*VOL_U(IJK))+B_M(IJK,M)
 	ENDIF 
       END DO 
+
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G(A_M, B_M, IER)
+
       CALL SOURCE_U_G_BC (A_M, B_M, IER) 
+
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G_BC(A_M, B_M, IER)
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
 !
 !     CHEM & ISAT begin (nan xie)
 !

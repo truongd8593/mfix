@@ -11,6 +11,9 @@
 !  Author: M. Syamlal                                 Date: 21-JUN-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -46,6 +49,16 @@
       Use xsi_array
       USE compar    
       USE ur_facs 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE constant
+      USE cutcell
+      USE quadric
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -160,12 +173,28 @@
             bmr = SUM_R_G(IJK)*VOL(IJK) 
             B_M(IJK,0) = -((-(bma + bme - bmw + bmn - bms + bmt - bmb ))+ bmr ) 
             B_MMAX(IJK,0) = max(abs(bma), abs(bme), abs(bmw), abs(bmn), abs(bms), abs(bmt), abs(bmb), abs(bmr) ) 
+
             A_M(IJK,E,0) = A_M(IJK,E,0)*D_E(IJK,0) 
             A_M(IJK,W,0) = A_M(IJK,W,0)*D_E(IMJK,0) 
             A_M(IJK,N,0) = A_M(IJK,N,0)*D_N(IJK,0) 
             A_M(IJK,S,0) = A_M(IJK,S,0)*D_N(IJMK,0) 
             A_M(IJK,T,0) = A_M(IJK,T,0)*D_T(IJK,0) 
             A_M(IJK,B,0) = A_M(IJK,B,0)*D_T(IJKM,0) 
+
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(CARTESIAN_GRID) THEN
+               A_M(IJK,E,0) = A_M(IJK,E,0) * A_UPG_E(IJK)
+               A_M(IJK,W,0) = A_M(IJK,W,0) * A_UPG_E(IMJK) 
+               A_M(IJK,N,0) = A_M(IJK,N,0) * A_VPG_N(IJK)
+               A_M(IJK,S,0) = A_M(IJK,S,0) * A_VPG_N(IJMK)
+               A_M(IJK,T,0) = A_M(IJK,T,0) * A_WPG_T(IJK)
+               A_M(IJK,B,0) = A_M(IJK,B,0) * A_WPG_T(IJKM)
+            ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
             DO M = 1, MMAX 
                IF (.NOT.CLOSE_PACKED(M)) THEN 
                   B_M(IJK,0) = B_M(IJK,0) - ((-((ROP_S(IJK,M)-ROP_SO(IJK,M))*&
@@ -173,12 +202,31 @@
                      ,M)+A_M(IJK,N,M)*V_S(IJK,M)-A_M(IJK,S,M)*V_S(IJMK,M)+A_M(&
                      IJK,T,M)*W_S(IJK,M)-A_M(IJK,B,M)*W_S(IJKM,M)))+SUM_R_S(IJK&
                      ,M)*VOL(IJK)) 
-                  A_M(IJK,E,0) = A_M(IJK,E,0) + A_M(IJK,E,M)*D_E(IJK,M) 
-                  A_M(IJK,W,0) = A_M(IJK,W,0) + A_M(IJK,W,M)*D_E(IMJK,M) 
-                  A_M(IJK,N,0) = A_M(IJK,N,0) + A_M(IJK,N,M)*D_N(IJK,M) 
-                  A_M(IJK,S,0) = A_M(IJK,S,0) + A_M(IJK,S,M)*D_N(IJMK,M) 
-                  A_M(IJK,T,0) = A_M(IJK,T,0) + A_M(IJK,T,M)*D_T(IJK,M) 
-                  A_M(IJK,B,0) = A_M(IJK,B,0) + A_M(IJK,B,M)*D_T(IJKM,M) 
+
+                  IF(.NOT.CARTESIAN_GRID) THEN
+                     A_M(IJK,E,0) = A_M(IJK,E,0) + A_M(IJK,E,M)*D_E(IJK,M) 
+                     A_M(IJK,W,0) = A_M(IJK,W,0) + A_M(IJK,W,M)*D_E(IMJK,M) 
+                     A_M(IJK,N,0) = A_M(IJK,N,0) + A_M(IJK,N,M)*D_N(IJK,M) 
+                     A_M(IJK,S,0) = A_M(IJK,S,0) + A_M(IJK,S,M)*D_N(IJMK,M) 
+                     A_M(IJK,T,0) = A_M(IJK,T,0) + A_M(IJK,T,M)*D_T(IJK,M) 
+                     A_M(IJK,B,0) = A_M(IJK,B,0) + A_M(IJK,B,M)*D_T(IJKM,M) 
+                  ELSE
+                     A_M(IJK,E,0) = A_M(IJK,E,0) + A_M(IJK,E,M)*D_E(IJK,M)  * A_UPG_E(IJK)
+                     A_M(IJK,W,0) = A_M(IJK,W,0) + A_M(IJK,W,M)*D_E(IMJK,M) * A_UPG_E(IMJK)  
+                     A_M(IJK,N,0) = A_M(IJK,N,0) + A_M(IJK,N,M)*D_N(IJK,M)  * A_VPG_N(IJK) 
+                     A_M(IJK,S,0) = A_M(IJK,S,0) + A_M(IJK,S,M)*D_N(IJMK,M) * A_VPG_N(IJMK) 
+                     A_M(IJK,T,0) = A_M(IJK,T,0) + A_M(IJK,T,M)*D_T(IJK,M)  * A_WPG_T(IJK) 
+                     A_M(IJK,B,0) = A_M(IJK,B,0) + A_M(IJK,B,M)*D_T(IJKM,M) * A_WPG_T(IJKM) 
+                  ENDIF
+
+! Original terms
+!                  A_M(IJK,E,0) = A_M(IJK,E,0) + A_M(IJK,E,M)*D_E(IJK,M) 
+!                  A_M(IJK,W,0) = A_M(IJK,W,0) + A_M(IJK,W,M)*D_E(IMJK,M) 
+!                  A_M(IJK,N,0) = A_M(IJK,N,0) + A_M(IJK,N,M)*D_N(IJK,M) 
+!                  A_M(IJK,S,0) = A_M(IJK,S,0) + A_M(IJK,S,M)*D_N(IJMK,M) 
+!                  A_M(IJK,T,0) = A_M(IJK,T,0) + A_M(IJK,T,M)*D_T(IJK,M) 
+!                  A_M(IJK,B,0) = A_M(IJK,B,0) + A_M(IJK,B,M)*D_T(IJKM,M) 
+
                ENDIF 
             END DO 
             A_M(IJK,0,0) = -(A_M(IJK,E,0)+A_M(IJK,W,0)+A_M(IJK,N,0)+A_M(IJK,S,0&

@@ -6,6 +6,9 @@
 !  Author: M. Syamlal                                 Date: 19-DEC-96  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -33,6 +36,15 @@
       USE indices
       USE compar
       USE sendrecv
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE bc
+      USE cutcell
+      USE quadric
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -48,6 +60,22 @@
 !
 !                      Strain rate tensor components for mth solids phase
       DOUBLE PRECISION trD_g(DIMENSION_3)
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz
+      DOUBLE PRECISION :: dudx,dvdy,dwdz
+      DOUBLE PRECISION :: Xw,Xe,Yn,Ys,Xc,Yc
+      DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
+
+      LOGICAL :: U_NODE_AT_E, U_NODE_AT_W
+      LOGICAL :: V_NODE_AT_N, V_NODE_AT_S
+      LOGICAL :: W_NODE_AT_T, W_NODE_AT_B
+      INTEGER :: BCV
+      CHARACTER(LEN=9) :: BCT
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
@@ -63,8 +91,175 @@
             IMJK = IM_OF(IJK) 
             IJMK = JM_OF(IJK) 
             IJKM = KM_OF(IJK) 
-            TRD_G(IJK) = (X_E(I)*U_G(IJK)-X_E(IM)*U_G(IMJK))*OX(I)*ODX(I) + (&
-               V_G(IJK)-V_G(IJMK))*ODY(J) + (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CUT_CELL_AT(IJK)) THEN
+
+               TRD_G(IJK) = (X_E(I)*U_G(IJK)-X_E(IM)*U_G(IMJK))*OX(I)*ODX(I) + (&
+                 V_G(IJK)-V_G(IJMK))*ODY(J) + (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) 
+
+            ELSE  ! CUT CELL
+
+               BCV = BC_ID(IJK)
+
+               IF(BCV > 0 ) THEN
+                  BCT = BC_TYPE(BCV)
+               ELSE
+                  BCT = 'NONE'
+               ENDIF
+
+               SELECT CASE (BCT)
+                  CASE ('CG_NSW')
+                     NOC_TRDG = .TRUE.
+                  CASE ('CG_FSW')
+                     NOC_TRDG = .FALSE.
+                  CASE('CG_PSW')
+                     IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
+                        NOC_TRDG = .TRUE.
+                     ELSEIF(BC_HW_G(BCV)==ZERO) THEN   ! same as FSW
+                        NOC_TRDG = .FALSE.
+                     ELSE                              ! partial slip
+                        NOC_TRDG = .FALSE.
+                     ENDIF
+                  CASE ('CG_MI')
+                     TRD_G(IJK) = ZERO
+                     RETURN 
+                  CASE ('CG_PO')
+                     TRD_G(IJK) = ZERO
+                     RETURN 
+                  CASE ('NONE')
+                     TRD_G(IJK) = ZERO
+                     RETURN 
+               END SELECT 
+
+
+               IF(FLOW_AT(IJK)) THEN
+                  TRD_G(IJK) = ZERO
+                  RETURN 
+               ENDIF
+
+!              du/dx
+
+               U_NODE_AT_E = ((.NOT.BLOCKED_U_CELL_AT(IJK)) .AND.(.NOT.WALL_U_AT(IJK)))
+               U_NODE_AT_W = ((.NOT.BLOCKED_U_CELL_AT(IMJK)).AND.(.NOT.WALL_U_AT(IMJK)))
+
+               IF(U_NODE_AT_E.AND.U_NODE_AT_W) THEN
+
+                  Ui = HALF * (U_G(IJK) + U_G(IMJK))
+                  Xi = HALF * (X_U(IJK) + X_U(IMJK))
+                  Yi = HALF * (Y_U(IJK) + Y_U(IMJK))
+                  Zi = HALF * (Z_U(IJK) + Z_U(IMJK))
+                  Sx = X_U(IJK) - X_U(IMJK)
+                  Sy = Y_U(IJK) - Y_U(IMJK)
+                  Sz = Z_U(IJK) - Z_U(IMJK)
+
+                  CALL GET_DEL_H(IJK,'SCALAR',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
+
+                  IF(Sx /= ZERO) THEN
+                     dudx =  (U_G(IJK) - U_G(IMJK))/Sx
+                     IF(NOC_TRDG) dudx = dudx - (Ui/(Sx*DEL_H)*(Sy*Ny+Sz*Nz))    
+                  ELSE
+                     dudx = ZERO
+                  ENDIF
+
+               ELSE
+                  dudx = ZERO
+               ENDIF
+
+!              dv/dy
+
+               V_NODE_AT_N = ((.NOT.BLOCKED_V_CELL_AT(IJK)) .AND.(.NOT.WALL_V_AT(IJK)))
+               V_NODE_AT_S = ((.NOT.BLOCKED_V_CELL_AT(IJMK)).AND.(.NOT.WALL_V_AT(IJMK)))
+
+               IF(V_NODE_AT_N.AND.V_NODE_AT_S) THEN
+
+                  Vi = HALF * (V_G(IJK) + V_G(IJMK))
+                  Xi = HALF * (X_V(IJK) + X_V(IJMK))
+                  Yi = HALF * (Y_V(IJK) + Y_V(IJMK))
+                  Zi = HALF * (Z_V(IJK) + Z_V(IJMK))
+                  Sx = X_V(IJK) - X_V(IJMK)
+                  Sy = Y_V(IJK) - Y_V(IJMK)
+                  Sz = Z_V(IJK) - Z_V(IJMK)
+
+                  CALL GET_DEL_H(IJK,'SCALAR',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
+
+                  IF(Sy /= ZERO) THEN
+                     dvdy =  (V_G(IJK) - V_G(IJMK))/Sy
+                     IF(NOC_TRDG) dvdy = dvdy - (Vi/(Sy*DEL_H)*(Sx*Nx+Sz*Nz)) 
+                  ELSE
+                     dvdy =  ZERO
+                  ENDIF
+
+               ELSE IF (V_NODE_AT_N.AND.(.NOT.V_NODE_AT_S).AND.NOC_TRDG) THEN
+                  CALL GET_DEL_H(IJK,'SCALAR',X_V(IJK),Y_V(IJK),Z_V(IJK),DEL_H,Nx,Ny,Nz)
+                  dvdy = (V_g(IJK) - ZERO) / DEL_H * Ny
+
+               ELSE IF ((.NOT.V_NODE_AT_N).AND.V_NODE_AT_S.AND.NOC_TRDG) THEN
+                  CALL GET_DEL_H(IJK,'SCALAR',X_V(IJMK),Y_V(IJMK),Z_V(IJMK),DEL_H,Nx,Ny,Nz)
+                  dvdy = (V_g(IJMK) - ZERO) / DEL_H * Ny
+
+
+               ELSE
+                  dvdy = ZERO
+               ENDIF
+
+!              dw/dz
+
+               IF(NO_K) THEN 
+
+                  dwdz = ZERO
+
+               ELSE   
+
+                  W_NODE_AT_T = ((.NOT.BLOCKED_W_CELL_AT(IJK)) .AND.(.NOT.WALL_W_AT(IJK)))
+                  W_NODE_AT_B = ((.NOT.BLOCKED_W_CELL_AT(IJKM)).AND.(.NOT.WALL_W_AT(IJKM)))
+
+                  IF(W_NODE_AT_T.AND.W_NODE_AT_B) THEN
+
+                     Wi = HALF * (W_G(IJK) + W_G(IJKM))
+                     Xi = HALF * (X_W(IJK) + X_W(IJKM))
+                     Yi = HALF * (Y_W(IJK) + Y_W(IJKM))
+                     Zi = HALF * (Z_W(IJK) + Z_W(IJKM))
+                     Sx = X_W(IJK) - X_W(IJKM)
+                     Sy = Y_W(IJK) - Y_W(IJKM)
+                     Sz = Z_W(IJK) - Z_W(IJKM)
+
+                     CALL GET_DEL_H(IJK,'SCALAR',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
+
+                     IF(Sz /= ZERO) THEN
+                        dwdz =  (W_G(IJK) - W_G(IJKM))/Sz
+                        IF(NOC_TRDG) dwdz = dwdz - (Wi/(Sz*DEL_H)*(Sx*Nx+Sy*Ny))  
+                     ELSE
+                        dwdz = ZERO
+                     ENDIF
+
+                  ELSE IF (W_NODE_AT_T.AND.(.NOT.W_NODE_AT_B).AND.NOC_TRDG) THEN
+                     CALL GET_DEL_H(IJK,'SCALAR',X_W(IJK),Y_W(IJK),Z_W(IJK),DEL_H,Nx,Ny,Nz)
+                     dwdz = (W_g(IJK) - ZERO) / DEL_H * Nz
+
+                  ELSE IF ((.NOT.W_NODE_AT_T).AND.W_NODE_AT_B.AND.NOC_TRDG) THEN
+                     CALL GET_DEL_H(IJK,'SCALAR',X_W(IJKM),Y_W(IJKM),Z_W(IJKM),DEL_H,Nx,Ny,Nz)
+                     dwdz = (W_g(IJKM) - ZERO) / DEL_H * Nz
+
+                  ELSE
+                     dwdz = ZERO
+                  ENDIF
+
+               ENDIF
+
+
+               TRD_G(IJK) = dudx + dvdy + dwdz
+
+
+            ENDIF  ! CUT CELL
+
+! Original term:
+!            TRD_G(IJK) = (X_E(I)*U_G(IJK)-X_E(IM)*U_G(IMJK))*OX(I)*ODX(I) + (&
+!               V_G(IJK)-V_G(IJMK))*ODY(J) + (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          ENDIF 
       END DO 
 

@@ -19,13 +19,17 @@
 !  Author: M. Syamlal                                 Date: 12-APR-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-!  Reavision Number: 2                                                 C
+!  Revision Number: 2                                                  C
 !  Purpose: To call DES related routines when doing DES                C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                      C
-!  Reavision Number: 3                                                 C
+!  Revision Number: 3                                                  C
 !  Purpose: To call ISAT to calculate chemical rxns                    C
 !  Author: Nan Xie                                    Date: 02-Aug-04  C 
+!                                                                      C
+!  Revision Number: 4                                                  C
+!  Purpose: To call Cartesian grid subroutines, and update dasboard    C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C 
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -35,7 +39,7 @@
 !  Variables modified: TIME, NSTEP                                     C
 !                                                                      C
 !  Local variables: OUT_TIME, RES_TIME, USR_TIME, SPX_TIME, USR_TIME,  C
-!                   L, FINISH                                      C
+!                   L, FINISH                                          C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE TIME_MARCH 
@@ -75,6 +79,15 @@
 !     END JEG
 !AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
       use mpi_utility
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+      USE vtk
+      USE dashboard
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IMPLICIT NONE
 !-----------------------------------------------
 !     G l o b a l   P a r a m e t e r s
@@ -225,7 +238,23 @@
             ENDIF 
          ENDIF 
       END DO
-      
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+! Initialize VTK_TIME
+      IF(WRITE_VTK_FILES) THEN
+         VTK_TIME = UNDEFINED 
+         IF (VTK_DT /= UNDEFINED) THEN 
+            IF (RUN_TYPE == 'NEW') THEN 
+               VTK_TIME = TIME 
+            ELSE 
+               VTK_TIME = (INT((TIME + 0.1d0*DT)/VTK_DT)+1)*VTK_DT
+            ENDIF 
+         ENDIF 
+      ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================      
 !     
 !     Parse residual strings
 !     
@@ -517,6 +546,21 @@
             if (myPE.eq.PE_IO) CALL WRITE_USR1 (L) 
          ENDIF 
       END DO 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+!     Write vtk file, if needed
+      IF(WRITE_VTK_FILES) THEN
+         IF (DT == UNDEFINED) THEN 
+            IF (FINISH.and.myPE.eq.PE_IO) CALL WRITE_VTK_FILE
+         ELSE IF (VTK_TIME/=UNDEFINED .AND. TIME+0.1d0*DT>=VTK_TIME) THEN 
+            VTK_TIME = (INT((TIME + 0.1d0*DT)/VTK_DT)+1)*VTK_DT 
+            CALL WRITE_VTK_FILE
+         ENDIF 
+      ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IF (DT == UNDEFINED) THEN 
          IF (FINISH) THEN 
             RETURN  
@@ -558,7 +602,7 @@
       CALL CALC_TRD_G (TRD_G, IER) 
 
       CALL CALC_TRD_S (TRD_S, IER) 
-      
+
       CALL CALC_TAU_U_G (TAU_U_G, IER) 
       CALL CALC_TAU_V_G (TAU_V_G, IER) 
       CALL CALC_TAU_W_G (TAU_W_G, IER) 
@@ -632,6 +676,16 @@
             IF(TIME.LE.RES_DT) THEN
                IF (AUTO_RESTART .AND. DMP_LOG)WRITE(UNIT_LOG,*) &
 	                       'Automatic restart not possible as Total Time < RES_DT'
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(WRITE_DASHBOARD) THEN
+                  RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
+                  CALL UPDATE_DASHBOARD(NIT,0.0,'    ')
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
                CALL MFIX_EXIT(MyPE)
             ENDIF
             IF(AUTO_RESTART) AUTOMATIC_RESTART = .TRUE.

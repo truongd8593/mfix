@@ -18,6 +18,23 @@
 !	and d for double precision. 0 for scalar, 1 for vector, 2 for
 !	2-D array and similarly 3.
 
+!==============================================================================
+!  JFD: Interfaces used for vtk file writting (Cartesian grid):
+!==============================================================================
+
+	interface allgather
+	module  procedure allgather_1i
+	end interface 
+
+	interface gatherv
+	module  procedure gatherv_1d
+	end interface 
+
+!==============================================================================
+!  JFD: End of Interfaces used for vtk file writting (Cartesian grid):
+!==============================================================================
+
+
 	interface scatter
 	module  procedure scatter_1i, scatter_2i, scatter_3i, &
                           scatter_1r, scatter_2r, scatter_3r, &
@@ -118,6 +135,35 @@
         end interface
 
         contains
+
+!==============================================================================
+!  JFD: Subroutines used for vtk file writting (Cartesian grid):
+!==============================================================================
+
+	subroutine allgather_1i( lbuf, gbuf, idebug )
+        integer, intent(in) :: lbuf
+        integer, intent(out), dimension(:) :: gbuf
+	integer, optional, intent(in) :: idebug
+!       do nothing
+        gbuf = 0
+	return
+	end subroutine allgather_1i
+
+
+	subroutine gatherv_1d( lbuf, sendcnt, gbuf, rcount, disp, mroot, idebug )
+        double precision, intent(in), dimension(:) :: lbuf
+        double precision, intent(out), dimension(:) :: gbuf
+        integer, intent(in), dimension(:) :: rcount
+        integer, intent(in), dimension(:) :: disp
+	integer, optional, intent(in) :: mroot, idebug
+	integer :: sendtype,recvtype,sendcnt,recvcnt,lroot,ierr,lidebug
+	gbuf = lbuf
+	return
+	end subroutine gatherv_1d
+
+!==============================================================================
+!  JFD: End of Subroutines used for vtk file writting (Cartesian grid):
+!==============================================================================
 
 
 !	Routine to scatter gbuf available on root to all the processors

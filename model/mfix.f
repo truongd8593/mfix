@@ -16,14 +16,21 @@
 !  Author: M. Syamlal                                 Date: 14-MAY-92  C
 !  Reviewer: W. Rogers                                Date: 11-DEC-92  C
 !                                                                      C
-!  Revision Number:                                                    C
+!  Revision Number: 3                                                  C
 !  Purpose:  Modifications for initializing & finalizing MPI through   C
 !            parallel_mpi module developed by ORNL and also starts     C
 !            the MPI Timer (MPI_WTIME)                                 C
-!
+!                                                                      C
 !  Author:   Aeolus Res. Inc.                         Date: 01-AUG-99  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
-!
+!                                                                      C
+!  Revision Number: 4                                                  C
+!  Purpose: Modifications to call Cartesian grid subroutines           C
+!           and dashboard                                              C
+!                                                                      C
+!  Author:   Jeff Dietiker                            Date: 01-JUL-09  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced: RUN_TYPE                                      C
@@ -51,6 +58,18 @@
       USE parallel_mpi
 !DISTIO      
       USE cdist      
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE fldvar
+      USE cutcell
+      USE quadric
+      USE dashboard
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -68,6 +87,9 @@
 !
 !                       CPU time used for the computations.
        DOUBLE PRECISION CPUTIME_USED
+! JFD
+!                       CPU time unit.
+      CHARACTER(LEN=4)  :: TUNIT
 !
 !                       Save TIME in input file for RESTART_2
        DOUBLE PRECISION TIME_SAVE
@@ -170,6 +192,18 @@
 !
       CALL SET_FLAGS 
 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      CALL CHECK_DATA_CARTESIAN
+      IF(CARTESIAN_GRID) THEN
+         CALL CUT_CELL_PREPROCESSING
+      ELSE
+         CALL ALLOCATE_DUMMY_CUT_CELL_ARRAYS
+      ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
 !  Set constant physical properties
 !
@@ -294,16 +328,29 @@
 !
       CALL SET_FLAGS1 
 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
 !  Calculate cell volumes and face areas
 !
-      CALL SET_GEOMETRY1 
-
+      IF(.NOT.CARTESIAN_GRID)  THEN
+         CALL SET_GEOMETRY1 
+       ELSE
+         CALL SET_GEOMETRY
+       ENDIF
 !
 !  Find corner cells and set their face areas to zero
 !
-      CALL GET_CORNER_CELLS (IER) 
+      IF(.NOT.CARTESIAN_GRID)  THEN
+         CALL GET_CORNER_CELLS (IER) 
+      ELSE
+         IF (SET_CORNER_CELLS)  CALL GET_CORNER_CELLS (IER)
+      ENDIF
 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
 !  Set initial conditions
 !
@@ -314,6 +361,14 @@
 !
       CALL ZERO_NORM_VEL 
       CALL SET_BC0 
+
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      IF(CARTESIAN_GRID) CALL CG_SET_BC0 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
 !  Set gas mixture molecular weight
 !
@@ -338,7 +393,13 @@
 !
 !  Check the field variable data and report errors.
 !
-      CALL CHECK_DATA_20 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      IF(.NOT.CARTESIAN_GRID)      CALL CHECK_DATA_20
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 
 !DISTIO
 ! for creating files needed by post_mfix with distributed IO
@@ -382,6 +443,23 @@
       WRITE(*,*) '************** CPU TIME for IO **********************',CPU_IO
       endif
       CALL WRITE_OUT3 (CPUTIME_USED) 
+
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      IF(WRITE_DASHBOARD) THEN
+         IF(DT>=DT_MIN) THEN
+            RUN_STATUS = 'Complete.'
+         ELSE
+            RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
+         ENDIF
+         CALL GET_TUNIT(CPUTIME_USED,TUNIT) 
+         CALL UPDATE_DASHBOARD(0,CPUTIME_USED,TUNIT)
+      ENDIF
+      IF(CARTESIAN_GRID)  CALL CLOSE_CUT_CELL_FILES
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 
 !// Finalize and terminate MPI
       call parallel_fin

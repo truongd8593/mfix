@@ -2079,6 +2079,13 @@ updatesubdir()
      updatesubdir des  
   fi  
 
+#JFD Check for Cartesian Grid subdirectory under run directory
+  if test -d $run_dir/cartesian_grid
+  then
+     updatesubdir cartesian_grid  
+  fi  
+
+
   cd $mfix
 #
 #------------------------------------------------------------------------

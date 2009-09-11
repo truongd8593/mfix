@@ -7,6 +7,9 @@
 !  Author: M. Syamlal                                 Date: 19-DEC-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -44,6 +47,16 @@
       USE vshear
       USE sendrecv  
       USE compar   
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE bc
+      USE quadric
+      USE cutcell
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -89,6 +102,23 @@
 !                      error message 
       CHARACTER*80     LINE 
 ! 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      INTEGER :: IM,JP,KP
+      DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz
+      LOGICAL :: V_NODE_AT_NE,V_NODE_AT_NW,V_NODE_AT_SE,V_NODE_AT_SW
+      LOGICAL :: W_NODE_AT_TE,W_NODE_AT_TW,W_NODE_AT_BE,W_NODE_AT_BW
+      DOUBLE PRECISION :: V_SUM,W_SUM,X_SUM,Y_SUM,Z_SUM,Vc,Wc
+      DOUBLE PRECISION :: Xvc,Yvc,Zvc,Xwc,Ywc,Zwc,Nxv,Nyv,Nzv,Nxw,Nyw,Nzw
+      DOUBLE PRECISION :: dvdx_at_N,dvdx_at_S
+      DOUBLE PRECISION :: dwdx_at_T,dwdx_at_B
+      DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
+      DOUBLE PRECISION :: MU_S_CUT,SSY_CUT,SSZ_CUT
+      INTEGER :: N_SUM 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -153,28 +183,256 @@
               IJKBE = EAST_OF(IJKB) 
               IJKM = KM_OF(IJK) 
               IPJKM = IP_OF(IJKM) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+              IF(.NOT.CARTESIAN_GRID) THEN
+! Surface forces
+
+! bulk viscosity term
+                 SBV = (LAMBDA_S(IJKE,M)*TRD_S(IJKE,M)-LAMBDA_S(IJK,M)*TRD_S(IJK,&
+                     M))*AYZ(IJK) 
+
+! shear stress terms
+                 SSX = MU_S(IJKE,M)*(U_S(IPJK,M)-U_S(IJK,M))*ODX(IP)*AYZ_U(IJK)&
+                      - MU_S(IJK,M)*(U_S(IJK,M)-U_S(IMJK,M))*ODX(I)*AYZ_U(IMJK) 
+                 SSY = AVG_X_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
+                     IJKE,M),MU_S(IJKNE,M),J),I)*(V_S(IPJK,M)-V_S(IJK,M))*ODX_E(I)&
+                     *AXZ_U(IJK) - AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJK,M),JM),&
+                     AVG_Y_H(MU_S(IJKSE,M),MU_S(IJKE,M),JM),I)*(V_S(IPJMK,M)-V_S(&
+                     IJMK,M))*ODX_E(I)*AXZ_U(IJMK) 
+                 EPMU_STE = AVG_X_H(AVG_Z_H(MU_S(IJK,M),MU_S(IJKT,M),K),AVG_Z_H(&
+                     MU_S(IJKE,M),MU_S(IJKTE,M),K),I) 
+                 EPMU_SBE = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJK,M),KM),AVG_Z_H(&
+                     MU_S(IJKBE,M),MU_S(IJKE,M),KM),I) 
+                 SSZ = EPMU_STE*(W_S(IPJK,M)-W_S(IJK,M))*ODX_E(I)*AXY_U(IJK) - &
+                     EPMU_SBE*(W_S(IPJKM,M)-W_S(IJKM,M))*ODX_E(I)*AXY_U(IJKM) 
+
+              ELSE ! CARTESIAN GRID CASE
 
 ! Surface forces
 
 ! bulk viscosity term
-              SBV = (LAMBDA_S(IJKE,M)*TRD_S(IJKE,M)-LAMBDA_S(IJK,M)*TRD_S(IJK,&
-                  M))*AYZ(IJK) 
+                 SBV =  (LAMBDA_S(IJKE,M)*TRD_S(IJKE,M)) * AYZ_U(IJK) &
+                       -(LAMBDA_S(IJK,M) *TRD_S(IJK,M) ) * AYZ_U(IMJK) 
 
-! shear stress terms
-              SSX = MU_S(IJKE,M)*(U_S(IPJK,M)-U_S(IJK,M))*ODX(IP)*AYZ_U(IJK)&
-                   - MU_S(IJK,M)*(U_S(IJK,M)-U_S(IMJK,M))*ODX(I)*AYZ_U(IMJK) 
-              SSY = AVG_X_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
-                  IJKE,M),MU_S(IJKNE,M),J),I)*(V_S(IPJK,M)-V_S(IJK,M))*ODX_E(I)&
-                  *AXZ_U(IJK) - AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJK,M),JM),&
-                  AVG_Y_H(MU_S(IJKSE,M),MU_S(IJKE,M),JM),I)*(V_S(IPJMK,M)-V_S(&
-                  IJMK,M))*ODX_E(I)*AXZ_U(IJMK) 
-              EPMU_STE = AVG_X_H(AVG_Z_H(MU_S(IJK,M),MU_S(IJKT,M),K),AVG_Z_H(&
-                  MU_S(IJKE,M),MU_S(IJKTE,M),K),I) 
-              EPMU_SBE = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJK,M),KM),AVG_Z_H(&
-                  MU_S(IJKBE,M),MU_S(IJKE,M),KM),I) 
-              SSZ = EPMU_STE*(W_S(IPJK,M)-W_S(IJK,M))*ODX_E(I)*AXY_U(IJK) - &
-                  EPMU_SBE*(W_S(IPJKM,M)-W_S(IJKM,M))*ODX_E(I)*AXY_U(IJKM) 
+!         shear stress terms
 
+                 IF(.NOT.CUT_U_CELL_AT(IJK))   THEN            
+
+                    SSX = MU_S(IJKE,M)*(U_S(IPJK,M)-U_S(IJK,M))*ONEoDX_E_U(IJK)*AYZ_U(IJK) - MU_S(&
+                       IJK,M)*(U_S(IJK,M)-U_S(IMJK,M))*ONEoDX_E_U(IMJK)*AYZ_U(IMJK) 
+
+                    SSY = AVG_X_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(IJKE,M)&
+                       ,MU_S(IJKNE,M),J),I)*(V_S(IPJK,M)-V_S(IJK,M))*ONEoDX_E_V(IJK)*AXZ_U(IJK) - &
+                       AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJK,M),JM),AVG_Y_H(MU_S(IJKSE,M),&
+                       MU_S(IJKE,M),JM),I)*(V_S(IPJMK,M)-V_S(IJMK,M))*ONEoDX_E_V(IJMK)*AXZ_U(IJMK) 
+
+
+                    IF(DO_K) THEN
+                       EPMU_STE = AVG_X_H(AVG_Z_H(MU_S(IJK,M),MU_S(IJKT,M),K),AVG_Z_H(MU_S(&
+                          IJKE,M),MU_S(IJKTE,M),K),I) 
+                       EPMU_SBE = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJK,M),KM),AVG_Z_H(MU_S&
+                          (IJKBE,M),MU_S(IJKE,M),KM),I) 
+
+                       SSZ = EPMU_STE*(W_S(IPJK,M)-W_S(IJK,M))*ONEoDX_E_W(IJK)*AXY_U(IJK) - EPMU_SBE*&
+                          (W_S(IPJKM,M)-W_S(IJKM,M))*ONEoDX_E_W(IJKM)*AXY_U(IJKM) 
+
+                    ELSE
+                       SSZ = ZERO
+                    ENDIF
+
+                 ELSE
+
+                    SELECT CASE (BC_TYPE(BC_U_ID(IJK)))
+                       CASE ('CG_NSW')
+                          CUT_TAU_US = .TRUE.
+                          NOC_US     = .TRUE.
+                       CASE ('CG_FSW')
+                          CUT_TAU_US = .FALSE.
+                          NOC_US     = .FALSE.
+                       CASE('CG_PSW')
+                          IF(BC_HW_S(BC_U_ID(IJK),M)==UNDEFINED) THEN   ! same as NSW
+                             CUT_TAU_US = .TRUE.
+                             NOC_US     = .TRUE.
+                          ELSEIF(BC_HW_S(BC_U_ID(IJK),M)==ZERO) THEN   ! same as FSW
+                             CUT_TAU_US = .FALSE.
+                             NOC_US     = .FALSE.
+                          ELSE                              ! partial slip
+                             CUT_TAU_US = .FALSE.
+                             NOC_US     = .FALSE.
+                          ENDIF
+
+                    END SELECT 
+
+                    IF(CUT_TAU_US) THEN
+                       MU_S_CUT =  (VOL(IJK)*MU_S(IJK,M) + VOL(IPJK)*MU_S(IJKE,M))/(VOL(IJK) + VOL(IPJK))
+                    ELSE
+                       MU_S_CUT = ZERO
+                    ENDIF
+
+!           SSX:
+
+                    CALL GET_DEL_H(IJK,'U_MOMENTUM',X_U(IJK),Y_U(IJK),Z_U(IJK),Del_H,Nx,Ny,Nz)
+
+                    SSX = MU_S(IJKE,M)*(U_S(IPJK,M)-U_S(IJK,M))*ONEoDX_E_U(IJK)*AYZ_U(IJK) - MU_S(&
+                          IJK,M)*(U_S(IJK,M)-U_S(IMJK,M))*ONEoDX_E_U(IMJK)*AYZ_U(IMJK) &
+                        - MU_S_CUT * (U_S(IJK,M) - ZERO) / DEL_H * (Nx**2) * Area_U_CUT(IJK)         
+
+!           SSY:
+
+                    V_NODE_AT_NE = ((.NOT.BLOCKED_V_CELL_AT(IPJK)).AND.(.NOT.WALL_V_AT(IPJK)))
+                    V_NODE_AT_NW = ((.NOT.BLOCKED_V_CELL_AT(IJK)).AND.(.NOT.WALL_V_AT(IJK)))
+                    V_NODE_AT_SE = ((.NOT.BLOCKED_V_CELL_AT(IPJMK)).AND.(.NOT.WALL_V_AT(IPJMK)))
+                    V_NODE_AT_SW = ((.NOT.BLOCKED_V_CELL_AT(IJMK)).AND.(.NOT.WALL_V_AT(IJMK)))
+
+                    IF(V_NODE_AT_NE.AND.V_NODE_AT_NW) THEN
+
+                       Vi = HALF * (V_S(IPJK,M) + V_S(IJK,M))
+                       Xi = HALF * (X_V(IPJK) + X_V(IJK))
+                       Yi = HALF * (Y_V(IPJK) + Y_V(IJK))
+                       Zi = HALF * (Z_V(IPJK) + Z_V(IJK))
+                       Sx = X_V(IPJK) - X_V(IJK)
+                       Sy = Y_V(IPJK) - Y_V(IJK)
+                       Sz = Z_V(IPJK) - Z_V(IJK)
+
+                       CALL GET_DEL_H(IJK,'U_MOMENTUM',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
+
+                       dvdx_at_N =  (V_S(IPJK,M) - V_S(IJK,M)) * ONEoDX_E_V(IJK)
+
+                       IF(NOC_US) dvdx_at_N = dvdx_at_N - (Vi * ONEoDX_E_V(IJK) /DEL_H*(Sy*Ny+Sz*Nz))            
+
+                    ELSE
+                       dvdx_at_N =  ZERO
+                    ENDIF
+
+
+                    IF(V_NODE_AT_SE.AND.V_NODE_AT_SW) THEN
+
+                       Vi = HALF * (V_S(IPJMK,M) + V_S(IJMK,M))
+                       Xi = HALF * (X_V(IPJMK) + X_V(IJMK))
+                       Yi = HALF * (Y_V(IPJMK) + Y_V(IJMK))
+                       Zi = HALF * (Z_V(IPJMK) + Z_V(IJMK))
+                       Sx = X_V(IPJMK) - X_V(IJMK)
+                       Sy = Y_V(IPJMK) - Y_V(IJMK)
+                       Sz = Z_V(IPJMK) - Z_V(IJMK)
+
+                       CALL GET_DEL_H(IJK,'U_MOMENTUM',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
+
+                       dvdx_at_S =  (V_S(IPJMK,M) - V_S(IJMK,M)) * ONEoDX_E_V(IJMK)
+
+                       IF(NOC_US) dvdx_at_S = dvdx_at_S - (Vi * ONEoDX_E_V(IJMK)/DEL_H*(Sy*Ny+Sz*Nz))        
+
+                    ELSE
+                       dvdx_at_S =  ZERO
+                    ENDIF
+
+                    IF(V_NODE_AT_NW) THEN
+                       CALL GET_DEL_H(IJK,'U_MOMENTUM',X_V(IJK),Y_V(IJK),Z_V(IJK),Del_H,Nx,Ny,Nz)
+                       SSY_CUT = - MU_S_CUT * (V_S(IJK,M) - ZERO) / DEL_H * (Nx*Ny) * Area_U_CUT(IJK)        
+                    ELSE
+                       SSY_CUT =  ZERO     
+                    ENDIF
+
+                    SSY = AVG_X_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(IJKE,M)&
+                       ,MU_S(IJKNE,M),J),I)*dvdx_at_N*AXZ_U(IJK) - &
+                       AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJK,M),JM),AVG_Y_H(MU_S(IJKSE,M),&
+                       MU_S(IJKE,M),JM),I)*dvdx_at_S*AXZ_U(IJMK) &
+                      + SSY_CUT
+
+!           SSZ:
+
+                    IF(DO_K) THEN  
+
+                       W_NODE_AT_TE = ((.NOT.BLOCKED_W_CELL_AT(IPJK)).AND.(.NOT.WALL_W_AT(IPJK)))
+                       W_NODE_AT_TW = ((.NOT.BLOCKED_W_CELL_AT(IJK)).AND.(.NOT.WALL_W_AT(IJK)))
+                       W_NODE_AT_BE = ((.NOT.BLOCKED_W_CELL_AT(IPJKM)).AND.(.NOT.WALL_W_AT(IPJKM)))
+                       W_NODE_AT_BW = ((.NOT.BLOCKED_W_CELL_AT(IJKM)).AND.(.NOT.WALL_W_AT(IJKM)))
+
+                       IF(W_NODE_AT_TE.AND.W_NODE_AT_TW) THEN
+
+                          Wi = HALF * (W_S(IPJK,M) + W_S(IJK,M))
+                          Xi = HALF * (X_W(IPJK) + X_W(IJK))
+                          Yi = HALF * (Y_W(IPJK) + Y_W(IJK))
+                          Zi = HALF * (Z_W(IPJK) + Z_W(IJK))
+                          Sx = X_W(IPJK) - X_W(IJK)
+                          Sy = Y_W(IPJK) - Y_W(IJK)
+                          Sz = Z_W(IPJK) - Z_W(IJK)
+
+
+                          CALL GET_DEL_H(IJK,'U_MOMENTUM',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
+
+                          dwdx_at_T =  (W_S(IPJK,M) - W_S(IJK,M)) * ONEoDX_E_W(IJK)  
+      
+                          IF(NOC_US) dwdx_at_T = dwdx_at_T - (Wi * ONEoDX_E_W(IJK)/DEL_H*(Sy*Ny+Sz*Nz))    
+
+                       ELSE
+                          dwdx_at_T =  ZERO
+                       ENDIF
+
+
+                       IF(W_NODE_AT_BE.AND.W_NODE_AT_BW) THEN
+
+                          Wi = HALF * (W_S(IPJKM,M) + W_S(IJKM,M))
+                          Xi = HALF * (X_W(IPJKM) + X_W(IJKM))
+                          Yi = HALF * (Y_W(IPJKM) + Y_W(IJKM))
+                          Zi = HALF * (Z_W(IPJKM) + Z_W(IJKM))
+                          Sx = X_W(IPJKM) - X_W(IJKM)
+                          Sy = Y_W(IPJKM) - Y_W(IJKM)
+                          Sz = Z_W(IPJKM) - Z_W(IJKM)
+
+                          CALL GET_DEL_H(IJK,'U_MOMENTUM',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
+
+                          dwdx_at_B =  (W_S(IPJKM,M) - W_S(IJKM,M)) * ONEoDX_E_W(IJKM) 
+
+                          IF(NOC_US) dwdx_at_B = dwdx_at_B  - (Wi * ONEoDX_E_W(IJKM)/DEL_H*(Sy*Ny+Sz*Nz))      
+
+                       ELSE
+                          dwdx_at_B =  ZERO
+                       ENDIF
+
+                       IF(W_NODE_AT_TW) THEN
+                          CALL GET_DEL_H(IJK,'U_MOMENTUM',X_W(IJK),Y_W(IJK),Z_W(IJK),Del_H,Nx,Ny,Nz)
+                          SSZ_CUT = - MU_S_CUT * (W_S(IJK,M) - ZERO) / DEL_H * (Nx*Nz) * Area_U_CUT(IJK) 
+                       ELSE
+                          SSZ_CUT =  ZERO
+                       ENDIF
+
+                       EPMU_STE = AVG_X_H(AVG_Z_H(MU_S(IJK,M),MU_S(IJKT,M),K),AVG_Z_H(MU_S(&
+                          IJKE,M),MU_S(IJKTE,M),K),I) 
+                       EPMU_SBE = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJK,M),KM),AVG_Z_H(MU_S&
+                          (IJKBE,M),MU_S(IJKE,M),KM),I) 
+                       SSZ =   EPMU_STE*dwdx_at_T*AXY_U(IJK)  &
+                             - EPMU_SBE*dwdx_at_B*AXY_U(IJKM) &
+                             + SSZ_CUT
+                    ELSE
+
+                      SSZ = ZERO
+
+                    ENDIF  ! DO_K
+
+                 END IF  ! CUT CELL
+
+!  Original terms
+
+!               SSX = MU_S(IJKE,M)*(U_S(IPJK,M)-U_S(IJK,M))*ODX(IP)*AYZ_U(IJK)&
+!                   - MU_S(IJK,M)*(U_S(IJK,M)-U_S(IMJK,M))*ODX(I)*AYZ_U(IMJK) 
+!               SSY = AVG_X_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),AVG_Y_H(MU_S(&
+!                  IJKE,M),MU_S(IJKNE,M),J),I)*(V_S(IPJK,M)-V_S(IJK,M))*ODX_E(I)&
+!                  *AXZ_U(IJK) - AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJK,M),JM),&
+!                  AVG_Y_H(MU_S(IJKSE,M),MU_S(IJKE,M),JM),I)*(V_S(IPJMK,M)-V_S(&
+!                  IJMK,M))*ODX_E(I)*AXZ_U(IJMK) 
+!               EPMU_STE = AVG_X_H(AVG_Z_H(MU_S(IJK,M),MU_S(IJKT,M),K),AVG_Z_H(&
+!                  MU_S(IJKE,M),MU_S(IJKTE,M),K),I) 
+!               EPMU_SBE = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJK,M),KM),AVG_Z_H(&
+!                  MU_S(IJKBE,M),MU_S(IJKE,M),KM),I) 
+!               SSZ = EPMU_STE*(W_S(IPJK,M)-W_S(IJK,M))*ODX_E(I)*AXY_U(IJK) - &
+!                  EPMU_SBE*(W_S(IPJKM,M)-W_S(IJKM,M))*ODX_E(I)*AXY_U(IJKM) 
+
+              ENDIF  ! CARTESIAN GRID
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 
 ! Special terms for cylindrical coordinates
               IF (CYLINDRICAL) THEN 

@@ -12,7 +12,7 @@
 !  Author: M. Syamlal                                 Date: 17-JUN-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-!  Revision Number:                                                    C
+!  Revision Number: 1                                                  C
 !  Purpose: Allow for partial-slip boundary conditions proposed by     C
 !           by Johnson & Jackson (1987) if the Granular Temperature    C
 !           equation is used.                                          C
@@ -20,6 +20,10 @@
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Literature/Document References:                                     C
+!                                                                      C
+!  Revision Number: 2                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Variables referenced:                                               C
 !  Variables modified:                                                 C
@@ -60,6 +64,15 @@
       use kintheory2
       USE ghdtheory
       USE drag
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+      USE quadric
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -122,6 +135,19 @@
 !
 !                      FOR CALL_DI and CALL_ISAT = .true.
       DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      INTEGER :: JM,IP,JP,IJPK,IJKC,IJKN,IJKNE,IJKS,IJKSE,IPJMK,KM,KP
+      INTEGER :: IJKTN,IJKWT,IJKST
+      DOUBLE PRECISION :: We,Ww,Wn,Ws,Wt,Wb
+      DOUBLE PRECISION :: B_NOC
+      DOUBLE PRECISION :: MU_S_E,MU_S_W,MU_S_N,MU_S_S,MU_S_T,MU_S_B,MU_S_CUT
+      INTEGER :: BCV
+      CHARACTER(LEN=9) :: BCT
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 ! 
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
@@ -253,7 +279,20 @@
                   IF (MODEL_B) THEN 
                      SDP = ZERO 
                   ELSE 
-                     SDP = -P_SCALE*EPSA*(PGT - P_G(IJK))*AXY(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+                     IF(.NOT.CUT_W_TREATMENT_AT(IJK)) THEN
+                        SDP = -P_SCALE*EPSA*(PGT - P_G(IJK))*AXY(IJK)
+                     ELSE
+                        SDP = -P_SCALE*EPSA*(PGT * A_WPG_T(IJK) - P_G(IJK) * A_WPG_B(IJK) )
+                     ENDIF
+! Original term
+!                  SDP = -P_SCALE*EPGA*(PGT - P_G(IJK))*AXY(IJK) 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
                   ENDIF 
 
                   IF (CLOSE_PACKED(M)) THEN 
@@ -267,17 +306,59 @@
                       SDPS = -((P_S(IJKT,M)-P_S(IJK,M))+(EPSA/SUM_EPS_CP)*&
                         (P_STAR(IJKT)-P_STAR(IJK)))*AXY(IJK) 
                     ELSE
-                      SDPS =-((P_S(IJKT,M)-P_S(IJK,M))+(P_STAR(IJKT)-P_STAR(IJK)))*AXY(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+                        IF(.NOT.CUT_W_TREATMENT_AT(IJK)) THEN
+                           SDPS =-((P_S(IJKT,M)-P_S(IJK,M))+(P_STAR(IJKT)-P_STAR(IJK)))*AXY(IJK) 
+                        ELSE
+                           SDPS =-((P_S(IJKT,M)* A_WPG_T(IJK)-P_S(IJK,M)* A_WPG_B(IJK))+(P_STAR(IJKT)* A_WPG_T(IJK)-P_STAR(IJK)* A_WPG_B(IJK)))
+                        ENDIF
+! Original term
+!                     SDPS =-((P_S(IJKT,M)-P_S(IJK,M))+(P_STAR(IJKT)-P_STAR(IJK)))*AXY(IJK) 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
                     ENDIF
                   ELSE 
-                     SDPS = -(P_S(IJKT,M)-P_S(IJK,M))*AXY(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+                     IF(.NOT.CUT_W_TREATMENT_AT(IJK)) THEN
+                        SDPS = -(P_S(IJKT,M)-P_S(IJK,M))*AXY(IJK) 
+                     ELSE
+                        SDPS = -(P_S(IJKT,M) * A_WPG_T(IJK) - P_S(IJK,M) * A_WPG_B(IJK))
+                     ENDIF
+! Original term
+!                  SDPS = -(P_S(IJKT,M)-P_S(IJK,M))*AXY(IJK) 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
                   ENDIF 
 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+                  IF(.NOT.CUT_W_TREATMENT_AT(IJK)) THEN
 ! Volumetric forces
-                  ROPSA = AVG_Z(ROP_S(IJK,M),ROP_S(IJKT,M),K) 
-
+                     ROPSA = AVG_Z(ROP_S(IJK,M),ROP_S(IJKT,M),K) 
 ! Previous time step
-                  V0 = AVG_Z(ROP_SO(IJK,M),ROP_SO(IJKT,M),K)*ODT 
+                     V0 = AVG_Z(ROP_SO(IJK,M),ROP_SO(IJKT,M),K)*ODT  
+                  ELSE
+! Volumetric forces
+                     ROPSA = (VOL(IJK)*ROP_S(IJK,M) + VOL(IJKT)*ROP_S(IJKT,M))/(VOL(IJK) + VOL(IJKT))
+! Previous time step
+                     V0 = (VOL(IJK)*ROP_SO(IJK,M) + VOL(IJKT)*ROP_SO(IJKT,M))*ODT/(VOL(IJK) + VOL(IJKT))
+                  ENDIF
+! Original terms
+! Volumetric forces
+!                  ROPSA = AVG_Z(ROP_S(IJK,M),ROP_S(IJKT,M),K) 
+! Previous time step
+!                  V0 = AVG_Z(ROP_SO(IJK,M),ROP_SO(IJKT,M),K)*ODT  
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 
 ! Interphase mass transfer
                   IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
@@ -287,7 +368,21 @@
                     ENDDO
                     VMT = VMTtmp
                   ELSE
-                    VMT = AVG_Z(SUM_R_S(IJK,M),SUM_R_S(IJKT,M),K) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+                  IF(.NOT.CUT_W_TREATMENT_AT(IJK)) THEN
+                     VMT = AVG_Z(SUM_R_S(IJK,M),SUM_R_S(IJKT,M),K) 
+                  ELSE
+                     VMT = (VOL(IJK)*SUM_R_S(IJK,M) + VOL(IJKT)*SUM_R_S(IJKT,M))/(VOL(IJK) + VOL(IJKT))
+                  ENDIF
+
+! Original terms
+!                  VMT = AVG_Z(SUM_R_S(IJK,M),SUM_R_S(IJKT,M),K) 
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
                   ENDIF
 
 ! Body force
@@ -403,7 +498,18 @@
                 ENDIF   ! end if sip or ip or dilute flow branch
             ENDDO 
 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(CARTESIAN_GRID) CALL CG_SOURCE_W_S(A_M, B_M, M, IER)
+
             CALL SOURCE_W_S_BC (A_M, B_M, M, IER) 
+
+            IF(CARTESIAN_GRID) CALL CG_SOURCE_W_S_BC(A_M, B_M, M, IER)
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
 
 ! CHEM & ISAT begin (nan xie)
             IF (CALL_DI .or. CALL_ISAT) THEN

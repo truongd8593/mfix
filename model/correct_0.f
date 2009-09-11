@@ -65,6 +65,9 @@
 !  Author: M. Syamlal                                 Date: 24-JUN-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -88,6 +91,14 @@
       USE indices
       USE physprop
       USE compar 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+      USE quadric
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -136,12 +147,27 @@
 !
             IJKE = EAST_OF(IJK) 
             IJKN = NORTH_OF(IJK) 
-            U_G(IJK) = U_G(IJK) - D_E(IJK,0)*(PP_G(IJKE)-PP_G(IJK)) 
-            V_G(IJK) = V_G(IJK) - D_N(IJK,0)*(PP_G(IJKN)-PP_G(IJK)) 
-            IF (DO_K) THEN 
-               IJKT = TOP_OF(IJK) 
-               W_G(IJK) = W_G(IJK) - D_T(IJK,0)*(PP_G(IJKT)-PP_G(IJK)) 
-            ENDIF 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(.NOT.CARTESIAN_GRID) THEN
+               U_G(IJK) = U_G(IJK) - D_E(IJK,0)*(PP_G(IJKE)-PP_G(IJK)) 
+               V_G(IJK) = V_G(IJK) - D_N(IJK,0)*(PP_G(IJKN)-PP_G(IJK)) 
+               IF (DO_K) THEN 
+                  IJKT = TOP_OF(IJK) 
+                  W_G(IJK) = W_G(IJK) - D_T(IJK,0)*(PP_G(IJKT)-PP_G(IJK)) 
+               ENDIF 
+            ELSE
+               U_G(IJK) = U_G(IJK) - D_E(IJK,0)*(PP_G(IJKE) * A_UPG_E(IJK) -PP_G(IJK) * A_UPG_W(IJK)) 
+               V_G(IJK) = V_G(IJK) - D_N(IJK,0)*(PP_G(IJKN) * A_VPG_N(IJK) -PP_G(IJK) * A_VPG_S(IJK)) 
+               IF (DO_K) THEN 
+                  IJKT = TOP_OF(IJK) 
+                  W_G(IJK) = W_G(IJK) - D_T(IJK,0)*(PP_G(IJKT) * A_WPG_T(IJK) -PP_G(IJK) * A_WPG_B(IJK))
+               ENDIF 
+            ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          ENDIF 
       END DO 
 
@@ -156,6 +182,9 @@
 !  Author: M. Syamlal                                 Date: 24-JUN-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
@@ -179,6 +208,14 @@
       USE indices
       USE physprop
       USE compar 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+      USE quadric
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -222,12 +259,27 @@
 !
                IJKE = EAST_OF(IJK) 
                IJKN = NORTH_OF(IJK) 
-               U_S(IJK,M) = U_S(IJK,M) - D_E(IJK,M)*(PP_G(IJKE)-PP_G(IJK)) 
-               V_S(IJK,M) = V_S(IJK,M) - D_N(IJK,M)*(PP_G(IJKN)-PP_G(IJK)) 
-               IF (DO_K) THEN 
-                  IJKT = TOP_OF(IJK) 
-                  W_S(IJK,M) = W_S(IJK,M) - D_T(IJK,M)*(PP_G(IJKT)-PP_G(IJK)) 
-               ENDIF 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(.NOT.CARTESIAN_GRID) THEN
+                  U_S(IJK,M) = U_S(IJK,M) - D_E(IJK,M)*(PP_G(IJKE)-PP_G(IJK)) 
+                  V_S(IJK,M) = V_S(IJK,M) - D_N(IJK,M)*(PP_G(IJKN)-PP_G(IJK)) 
+                  IF (DO_K) THEN 
+                     IJKT = TOP_OF(IJK) 
+                     W_S(IJK,M) = W_S(IJK,M) - D_T(IJK,M)*(PP_G(IJKT)-PP_G(IJK)) 
+                  ENDIF 
+               ELSE
+                  U_S(IJK,M) = U_S(IJK,M) - D_E(IJK,M)*(PP_G(IJKE) * A_UPG_E(IJK) -PP_G(IJK) * A_UPG_W(IJK)) 
+                  V_S(IJK,M) = V_S(IJK,M) - D_N(IJK,M)*(PP_G(IJKN) * A_VPG_N(IJK) -PP_G(IJK) * A_VPG_S(IJK)) 
+                  IF (DO_K) THEN 
+                     IJKT = TOP_OF(IJK) 
+                    W_S(IJK,M) = W_S(IJK,M) - D_T(IJK,M)*(PP_G(IJKT) * A_WPG_T(IJK) -PP_G(IJK) * A_WPG_B(IJK))
+                  ENDIF
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!======================================================================= 
             ENDIF 
          END DO 
       END DO 

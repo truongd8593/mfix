@@ -12,6 +12,11 @@
 !  calculations are not done using Continuum when doing DES            C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                      C
+!  Revision Number: 2                                                  C
+!  Purpose: To incorporate Cartesian grid modifications                C
+!  and utilization of the dashboard                                    C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
+!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced:                                               C
@@ -52,6 +57,16 @@
       USE mpi_utility 
       USE discretelement
       USE residual
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+      USE vtk
+      USE dashboard
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -197,7 +212,13 @@
       CALL CONV_ROP(IER)
       CALL CALC_MFLUX (IER)
       CALL SET_BC1
-
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !     Begin iterations
 !
 !------------------------------------------------------------------------------
@@ -284,6 +305,8 @@
       IF (Neg_RHO_G) THEN
          MUSTIT = 2                              !indicates divergence 
          Neg_RHO_G = .FALSE.
+         IF(FULL_LOG.and.myPE.eq.PE_IO) &
+            WRITE(*,6000)'Negative gas density detected.'   ! JFD
          IF(DT/=UNDEFINED)GO TO 1000  
       ENDIF
       CALL CALC_RRATE(RRATE)
@@ -320,6 +343,8 @@
           IF (abort_ier) THEN 
               ier = 1
               MUSTIT = 2                           !indicates divergence 
+              IF(FULL_LOG.and.myPE.eq.PE_IO) &
+                 WRITE(*,6000)'Negative void fraction detected.'  ! JFD
               IF(DT/=UNDEFINED)GO TO 1000 
           ENDIF 
  
@@ -354,6 +379,8 @@
         IF (Neg_RHO_G) THEN
            MUSTIT = 2                              !indicates divergence 
            Neg_RHO_G = .FALSE.
+           IF(FULL_LOG.and.myPE.eq.PE_IO) &
+              WRITE(*,6000)'Negative gas density detected.' ! JFD
            IF(DT/=UNDEFINED)GO TO 1000  
         ENDIF 
       ENDIF 
@@ -368,6 +395,13 @@
 !     Calculate the face values of mass fluxes.
       CALL CALC_MFLUX (IER)
       CALL SET_BC1
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
 !     Solve energy equations
 !
@@ -496,6 +530,21 @@
 
             CALL END_LOG 
          ENDIF 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+         IF(WRITE_DASHBOARD) THEN
+            RUN_STATUS = 'In Progress...'
+            N_DASHBOARD = N_DASHBOARD + 1 
+            IF(MOD(N_DASHBOARD,F_DASHBOARD)==0) THEN
+               TLEFT = (TSTOP - TIME)*CPUOS 
+               CALL GET_TUNIT (TLEFT, TUNIT) 
+               CALL UPDATE_DASHBOARD(NIT,TLEFT,TUNIT)
+            ENDIF
+         ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          IER = 0 
          RETURN  
                                                 ! diverged or
@@ -508,6 +557,21 @@
 
             if (myPE.eq.PE_IO) WRITE (*, 5200) TIME, DT, NIT, errorpercent(0)   !//
          ENDIF 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+         IF(WRITE_DASHBOARD) THEN
+            RUN_STATUS = 'Diverged/stalled...'
+            N_DASHBOARD = N_DASHBOARD + 1 
+            IF(MOD(N_DASHBOARD,F_DASHBOARD)==0) THEN
+               TLEFT = (TSTOP - TIME)*CPUOS 
+               CALL GET_TUNIT (TLEFT, TUNIT) 
+               CALL UPDATE_DASHBOARD(NIT,TLEFT,TUNIT)
+            ENDIF
+         ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
          IER = 1 
          RETURN  
       ENDIF 
@@ -541,7 +605,7 @@
  5100 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT>',I3,' Sm= ',G10.5, 'MbErr%=', G10.4) 
  5200 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',&
       I3,'MbErr%=', G10.4, ': Run diverged/stalled :-(') 
-
+6000  FORMAT(1X,A) ! JFD
       END SUBROUTINE ITERATE 
 !
 !
