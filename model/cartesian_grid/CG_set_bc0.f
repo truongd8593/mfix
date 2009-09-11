@@ -1,0 +1,256 @@
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CG_SET_BC0                                             C
+!  Purpose: This module does the initial setting of boundary           C
+!           conditions for cut cells only                              C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: BC_DEFINED, BC_TYPE, BC_DT_0, TIME, BC_Jet_g0,C
+!                        BC_K_b, BC_K_t, BC_J_s, BC_J_n, BC_I_w,       C
+!                        BC_I_e, BC_PLANE, BC_EP_g, BC_P_g, BC_T_g,    C
+!                        BC_T_s,  BC_U_g, BC_V_g, BC_W_g,              C
+!                        MMAX, BC_ROP_s, BC_U_s, BC_V_s, BC_W_s        C
+!  Variables modified: BC_TIME, BC_V_g, I, J, K, IJK, EP_g, P_g, T_g,  C
+!                      T_s, U_g, V_g, W_g, ROP_s, U_s, V_s, W_s,       C
+!                      M                                               C
+!                                                                      C
+!  Local variables: L, IJK1, IJK2, IJK3                                C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE CG_SET_BC0 
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Switches: -xf
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE geometry
+      USE compar     
+      USE mpi_utility 
+      USE physprop
+      USE bc
+      USE fldvar
+      USE indices
+      USE run
+      USE funits 
+      USE scales 
+      USE scalars
+      USE boundfunijk 
+      USE toleranc
+      USE sendrecv
+
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+      USE quadric
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+ 
+! 
+!                      Local index for boundary condition 
+      INTEGER          L 
+! 
+!                      indices 
+      INTEGER          I, J, K, IJK, M, N ,IJKW,IJKS,IJKB
+! 
+!                      Local index for setting U velocity b.c. 
+      INTEGER          IJK1 
+! 
+!                      Local index for setting V velocity b.c. 
+      INTEGER          IJK2 
+! 
+!                      Local index for setting W velocity b.c. 
+      INTEGER          IJK3 
+! 
+!                      Dummy variable for gas pressure 
+      DOUBLE PRECISION PJ 
+! 
+!-----------------------------------------------
+!   E x t e r n a l   F u n c t i o n s
+!-----------------------------------------------
+      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW 
+!-----------------------------------------------
+!----------------------------------------------
+!// Temporary variable to gather fluid_at. 
+      INTEGER, DIMENSION(:), ALLOCATABLE :: FLAG_G
+!// Logical function to identify a fluid cell in global coordiantes
+      LOGICAL          FLUID_AT_G
+
+      INCLUDE 'sc_p_g1.inc'
+      INCLUDE 'function.inc'
+      INCLUDE 'sc_p_g2.inc'
+!
+!  Set the boundary conditions.
+
+      CALL CHECK_BC_FLAGS
+
+
+ 
+      DO IJK = ijkstart3, ijkend3
+
+         L = BC_ID(IJK)
+
+         IF(L>0) THEN
+         IF(BC_TYPE(L)=='CG_PO') THEN
+
+            P_STAR(IJK) = ZERO 
+            P_G(IJK) = SCALE(BC_P_G(L)) 
+!
+            IF (BC_EP_G(L) /= UNDEFINED) EP_G(IJK) = BC_EP_G(L) 
+            IF (BC_T_G(L) /= UNDEFINED) then
+               T_G(IJK) = BC_T_G(L) 
+            ELSE
+               T_g(IJK) = TMIN
+            ENDIF
+
+            N = 1 
+            IF (NMAX(0) > 0) THEN 
+               WHERE (BC_X_G(L,:NMAX(0)) /= UNDEFINED) X_G(IJK,:&
+                      NMAX(0)) = BC_X_G(L,:NMAX(0)) 
+               N = NMAX(0) + 1 
+            ENDIF 
+   
+            IF (NScalar > 0) THEN 
+               WHERE (BC_Scalar(L,:NScalar) /= UNDEFINED)&
+               Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
+            ENDIF  
+   
+            IF (K_Epsilon) THEN 
+               IF (BC_K_Turb_G(L) /= UNDEFINED) K_Turb_G(IJK) = BC_K_Turb_G(L) 
+               IF (BC_E_Turb_G(L) /= UNDEFINED) E_Turb_G(IJK) = BC_E_Turb_G(L)
+            ENDIF
+   
+            DO M = 1, MMAX 
+               IF (BC_ROP_S(L,M) /= UNDEFINED) ROP_S(IJK,M) = BC_ROP_S(L,M) 
+               IF(BC_T_S(L,M)/=UNDEFINED)T_S(IJK,M)=BC_T_S(L,M) 
+               IF (BC_THETA_M(L,M) /= UNDEFINED) THETA_M(IJK,M)= BC_THETA_M(L,M) 
+               N = 1 
+               IF (NMAX(M) > 0) THEN 
+                  WHERE (BC_X_S(L,M,:NMAX(M)) /= UNDEFINED) X_S(&
+                         IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M)) 
+                  N = NMAX(M) + 1 
+               ENDIF 
+            END DO 
+
+         ELSEIF(BC_TYPE(L)=='CG_MI') THEN
+
+            P_STAR(IJK) = ZERO 
+!
+            EP_G(IJK) = BC_EP_G(L) 
+            P_G(IJK) = SCALE(BC_P_G(L)) 
+            T_G(IJK) = BC_T_G(L) 
+ 
+            IF (NMAX(0) > 0) THEN 
+               X_G(IJK,:NMAX(0)) = BC_X_G(L,:NMAX(0)) 
+            ENDIF 
+   
+            IF (NScalar > 0) THEN 
+               Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
+            ENDIF  
+   
+            IF (K_Epsilon) THEN 
+               K_Turb_G(IJK) = BC_K_Turb_G(L) 
+               E_Turb_G(IJK) = BC_E_Turb_G(L)
+            ENDIF
+   
+            DO M = 1, MMAX 
+               ROP_S(IJK,M) = BC_ROP_S(L,M) 
+               T_S(IJK,M) = BC_T_S(L,M) 
+               THETA_M(IJK,M) = BC_THETA_M(L,M) 
+ 
+               IF (NMAX(M) > 0) THEN 
+                  X_S(IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M)) 
+               ENDIF 
+      
+            END DO 
+
+            U_G(IJK) = BC_U_G(L) 
+            V_G(IJK) = BC_V_G(L) 
+            W_G(IJK) = BC_W_G(L) 
+
+            IJKW = WEST_OF(IJK)
+            IJKS = SOUTH_OF(IJK)
+            IJKB = BOTTOM_OF(IJK)
+
+            IF(FLUID_AT(IJKW)) THEN
+               U_G(IJKW) = BC_U_G(L)
+            ENDIF           
+
+            IF(FLUID_AT(IJKS)) THEN
+               V_G(IJKS) = BC_V_G(L)
+            ENDIF           
+
+            IF(FLUID_AT(IJKB)) THEN
+               W_G(IJKB) = BC_W_G(L)
+            ENDIF 
+
+!
+            M = 1 
+
+            IF (MMAX > 0) THEN 
+               U_S(IJK,:MMAX) = BC_U_S(L,:MMAX) 
+               V_S(IJK,:MMAX) = BC_V_S(L,:MMAX) 
+               W_S(IJK,:MMAX) = BC_W_S(L,:MMAX) 
+
+               IF(FLUID_AT(IJKW)) THEN
+                  U_S(IJKW,:MMAX) = BC_U_S(L,:MMAX) 
+               ENDIF           
+
+               IF(FLUID_AT(IJKS)) THEN
+                  V_S(IJKS,:MMAX) = BC_V_S(L,:MMAX) 
+               ENDIF           
+
+               IF(FLUID_AT(IJKB)) THEN
+                  W_S(IJKB,:MMAX) = BC_W_S(L,:MMAX) 
+               ENDIF 
+
+
+
+
+               M = MMAX + 1 
+            ENDIF 
+
+
+            IF (MW_AVG == UNDEFINED) THEN
+               MW_MIX_G(IJK) = CALC_MW(X_G,DIMENSION_3,IJK,NMAX(0),MW_G) 
+            ELSE
+               MW_MIX_G(IJK) = MW_AVG
+            ENDIF
+            IF (RO_G0 == UNDEFINED) RO_G(IJK) = EOSG(MW_MIX_G&
+               (IJK),P_G(IJK),T_G(IJK)) 
+            ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
+
+
+         ENDIF
+         ENDIF
+
+      ENDDO
+
+
+
+
+      RETURN  
+      END SUBROUTINE CG_SET_BC0 
+
+!// Comments on the modifications for DMP version implementation      
+!// 001 Include header file and common declarations for parallelization
+!// 020 New local variables for parallelization: FLAG_G , FLUID_AT_G
+!// 360 Check if i,j,k resides on current processor
