@@ -28,16 +28,18 @@
 ! start peter 7/15
              SHEAR, V_sh,&
 ! end peter 7/15
+
 ! begin bill 7/10/09
              DRAG_TYPE, use_def_lam_HYS, lam_HYS, &
 ! end bill 7/10/09
-! JEG Added 
+
+! start jeg
              KT_TYPE, &
              RDF_TYPE, &
-! END JEG
+! end jeg
 
 !AE TIME 043001  added new logical flag var for 2nd order time into NAMELIST
-             CN_ON,&
+            CN_ON,&
 !AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
 !  flag variable to check for end of batch queue when set to TRUE
 !      check performed at the beginning of each time step and termination of
@@ -73,7 +75,8 @@
              e, C_e, r_p, C_f, C, C_NAME, Phi, Phi_w, L_scale0, MU_gmax,&
              TOL_RESID, TOL_DIVERGE, TOL_RESID_Scalar, MAX_NIT, LEQ_IT, LEQ_METHOD, LEQ_SWEEP,&
 	     LEQ_TOL, DO_TRANSPOSE, V_ex,&
-             P_ref, P_scale, UR_FAC, UR_F_gs, GRAVITY, TOL_RESID_T, TOL_RESID_X,&
+             P_ref, P_scale, UR_FAC, UR_F_gs, UR_Kth_sml,&
+	     GRAVITY, TOL_RESID_T, TOL_RESID_X,&
 	     TOL_RESID_Th, MAX_INLET_VEL_FAC, &
              NORM_g, NORM_s, PHIP, e_w, EPS_f_min, & !EPS_max,
 	     drag_c1, drag_d1, &

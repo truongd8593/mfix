@@ -1691,6 +1691,7 @@ calc_mu_s.$(OBJ_EXT) : calc_mu_s.f \
             TURB.mod \
             DRAG.mod \
             KINTHEORY.mod \
+            UR_FACS.mod \
             PARALLEL.mod \
             VISC_G.mod \
             IS.mod \

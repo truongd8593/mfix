@@ -133,12 +133,10 @@
 ! start peter 7/15
       V_sh=0d0
 
-! JEG Added (4/01/2005)
+! start jeg (4/01/2005)
       KT_TYPE = UNDEFINED_C
-! Added (6/15/2005)
       RDF_TYPE = 'LEBOWITZ'
-! END JEG
-
+! end jeg
 
 ! start anuj 04/20
       FRICTION = .FALSE. 
@@ -173,8 +171,8 @@
       drag_d1 = 2.65d0
 
 !AE TIME 041601 Set the default to 1st order accurate time implementation
-       CN_ON = .FALSE.
-!              
+      CN_ON = .FALSE.
+              
       IF (DIM_M + 1 > 0) THEN 
          MOMENTUM_X_EQ(:DIM_M) = .TRUE. 
          MOMENTUM_Y_EQ(:DIM_M) = .TRUE. 
@@ -248,14 +246,14 @@
 
 ! GERA 08/15/03
       SEGREGATION_SLOPE_COEFFICIENT=0.D0
+      EP_S_MAX(:DIM_M) = UNDEFINED
+
+! coefficient of restitution
+      r_p(:DIM_M, :DIM_M) = UNDEFINED
 
 ! modified by sof (05-04-2005)
 !      MAX_SOLID_1_PACKING=0.6
 !      MAX_SOLID_2_PACKING=0.6
-      EP_S_MAX(:DIM_M) = UNDEFINED
-! coefficient of restitution
-      r_p(:DIM_M, :DIM_M) = UNDEFINED
-
 ! eps_max: not needed anymore (sof, Nov-17-2005) 
 !      EPS_MAX = 0.65D0      
 
@@ -327,17 +325,17 @@
       DBGPRN_LAYOUT = .FALSE.
 !AEOLUS set default value for enabling all processors write out their *.LOG invidually 
       ENABLE_DMP_LOG = .FALSE.
-      UR_FAC(1) = 0.8D0                            !pressure 
-      UR_FAC(2) = 0.5D0                            !rho, ep 
-      UR_FAC(3) = 0.5D0                            !U 
-      UR_FAC(4) = 0.5D0                            !V 
-      UR_FAC(5) = 0.5D0                            !W 
-      UR_FAC(6) = 1.0D0                            !T 
-      UR_FAC(7) = 1.0D0                            !X 
-      UR_FAC(8) = 0.5D0                            !Th 
-      UR_FAC(9) = 0.8D0                            !Scalar
-      UR_F_gs   = 1.0D0                            !drag coefficient update
-
+      UR_FAC(1)  = 0.8D0             !pressure 
+      UR_FAC(2)  = 0.5D0             !rho, ep 
+      UR_FAC(3)  = 0.5D0             !U 
+      UR_FAC(4)  = 0.5D0             !V 
+      UR_FAC(5)  = 0.5D0             !W 
+      UR_FAC(6)  = 1.0D0             !T 
+      UR_FAC(7)  = 1.0D0             !X 
+      UR_FAC(8)  = 0.5D0             !Th 
+      UR_FAC(9)  = 0.8D0             !Scalar
+      UR_F_gs    = 1.0D0             !drag coefficient update
+      UR_Kth_sml = 1.0D0            ! conductivity term in IA theory
 
 ! INITIALIZE THE GAS PHASE SECTION
       RO_G0 = UNDEFINED 
