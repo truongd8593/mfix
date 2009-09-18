@@ -1,64 +1,68 @@
 #
-#  Packed bed
+# 2 Particle DEM 
 #
-#  F.B. Modeler                  9-6-94
-#
+
+
 # Run-control section
-#
+# -----------------------------
   RUN_NAME = 'des_2p' 
-  DESCRIPTION = '2 solid phase fluid bed with hybrid des&kt solid treatment'
+  DESCRIPTION = 'Two particle collision w/o gravity'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-  TIME  =0.0  TSTOP = 0.5    DT = 1.0e-4
+  TIME  =0.0 
+  TSTOP = 0.1
+  DT = 1.0e-4
+  DT_MAX = 1E-2
+
   ENERGY_EQ = .FALSE.
-  SPECIES_EQ = .FALSE.    .FALSE. !.FALSE.    .FALSE.
+  SPECIES_EQ = .FALSE.    .FALSE.
 
   MOMENTUM_X_EQ(1) = .FALSE.
   MOMENTUM_Y_EQ(1) = .FALSE.
   MOMENTUM_Z_EQ(1) = .FALSE.
 
-  DISCRETIZE = 7*0
-  DT_MAX = 1E-2
-#
+  GRAVITY = 0.0D0
+
+
 # Geometry Section
-#
+# -----------------------------
   COORDINATES = 'Cartesian'
-
-  DISCRETIZE = 9*2
-  XLENGTH  = 1   IMAX = 5
-  YLENGTH  = 1   JMAX = 5
-
-  UR_FAC(2) = .5
-
+  XLENGTH  = 1   IMAX = 10
+  YLENGTH  = 1   JMAX = 10
   NO_K     = .TRUE.
 
-  MAX_NIT = 500
-  TOL_RESID_T  = 1.E-6
 
-#
+# Numeric
+# -----------------------------
+  MAX_NIT = 500
+  DISCRETIZE = 9*0
+
+
 # Gas-phase Section
-#
-  RO_g0 = 1.0
+# -----------------------------
+  RO_g0 = 0.0
   MU_g0 = 2E-1
   MW_avg = 29.
-#
+
+
 # Solids-phase Section
-#
-  MMAX         = 1
-  RO_s         =  10.0
-  D_p0          = 0.1
-  e       = 0.8
+# -----------------------------
+  MMAX     = 1
+  RO_s     =  10.0
+  D_p0     = 0.1
+  e        = 0.8
   Phi     = 0.0
-  EP_star = 0.43               
-#
+  EP_star = 0.40            
+
+
 # Initial Conditions Section
-#
+# -----------------------------
        !              
   IC_X_w(1)           =  0.0
   IC_X_e(1)           =  1.0
   IC_Y_s(1)           =  0.0
   IC_Y_n(1)           =  1.0
- 
+
   IC_EP_g(1)          =  1.0
  
   IC_U_g(1)           =  0.0
@@ -71,65 +75,102 @@
   IC_T_g(1)           =  273. 
 
      
-#
 #  Boundary Conditions Section
-#
-       !              bottom      Top
+# -----------------------------
+      !              bottom      Top
   BC_X_w            =  0.0        0.0
   BC_X_e            =  1.0        1.0
   BC_Y_s            =  0.0        1.0
   BC_Y_n            =  0.0        1.0
- 
+! 
   BC_TYPE          =  'MI'     'PO'
 
   BC_EP_g          =  1.0      1.0
 
   BC_U_g           =  0.0 
-  BC_V_g           =  0.5
+  BC_V_g           =  0.0
   BC_W_g           =  0.0
 
   BC_P_g           =  2*0
 
-  GRAVITY = 980.0D0
+
 
 #  DES
-     PARTICLES = 2 
-     MN = 2
-     KN = 800000
-     KT = 800000
-     ETA_DES_N = 18
-     ETA_DES_T = 18
-     MEW = 0.2
-     KN_W = 1200000
-     KT_W = 1200000
-     ETA_N_W = 22
-     ETA_T_W = 22
-     MEW_W = 0.1
-     DTSOLID_FACTOR = 0.1D0
-     P_TIME = 0.00005    
+# -----------------------------
+  DISCRETE_ELEMENT = .TRUE. 
 
-   !  DES Logicals
-     DISCRETE_ELEMENT = .TRUE.
-     WALLDTSPLIT = .TRUE.
-#
+! decide whether gas and solids are coupled [FALSE]
+  !DES_CONTINUUM_COUPLED = .T.   
+
+! use interpolation to calculate individual drag forces on 
+! particles based on particle location rather than cell
+! average [FALSE]
+  !DES_INTERP_ON = .T.     
+
+! treat wall interaction as two-particle interaction but
+! accounting for wall properties; must be true for DEM [FALSE]
+  WALLDTSPLIT = .T  
+
+! use tsuji drag correlation; specific to syam_obrien drag model
+! only valid for coupled case [FALSE]
+  TSUJI_DRAG = .F.        
+
+  PARTICLES = 2 
+
+  DIMN = 2                 ! if no_k set to 2 otherwise undefined
+
+! Particle neighbor search method; 1=n-square; 2=quadtree; 3=octree
+  DES_NEIGHBOR_SEARCH = 1 
+
+! Maximum number of neighbors allowed per particle
+  MN = 2 
+
+! Number of solid time steps when neighbor search is performed
+  NEIGHBOR_SEARCH_N = 1  
+
+  P_TIME = 0.0005
+  PRINT_DES_DATA = .TRUE.
+
+  KN       = 8.0D6       ! Normal inter-particle collision spring constant
+  KT_FAC   = 1.d0        ! Tangential spring factor = KT/KN
+
+  KN_W     = 8.0D6       ! Normal particle-wall collision spring constant
+  KT_W_FAC = 1.d0        ! Tangential spring factor = KT_W/KN_W
+
+  MEW      = 0.0         ! Inter-particle friction coeffienct
+  MEW_W    = 0.0         ! Particle-wall friction coefficient
+
+  DES_EN_INPUT      = 1.0     ! particle-particle rest coef
+  DES_ETAT_FAC      = @(1/2)  ! damping coefficient factor = ETAN/ETAT
+
+  DES_EN_WALL_INPUT = 0.9     ! particle-wall rest coef
+  DES_ETAT_W_FAC    = @(1/2)  ! damping coefficient factor = ETAN_W/ETAT_W
+
+
 #  Output Control
-#
-  RES_DT = 0.01
-  OUT_DT = 1.
-        !
-        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
-        !      P_star    V_g  V_s            T_s1 X_s
-        !                W_g  W_s            T_s2
-  SPX_DT = 0.001  .001      .001  .001    .1     .1  100.    100.  100.
+# -----------------------------
+  RES_DT = 0.01    ! interval at which restart (.RES) file is updated
+  OUT_DT = 1.      ! interval at which standard output (.OUT) file is updated
+  NLOG = 25        ! interval in no. of time steps at which (.LOG) file is written
 
-  USR_DT = 0.1
-  
-  NLOG   = 25
+! Interval at which .SPX files are written 
+  SPX_DT(1)       = 0.001     ! Void fraction (EP_g)
+  SPX_DT(2)       = 0.001     ! Gas and solids pressure (P_g, P_star)
+  SPX_DT(3)       = 0.01      ! Gas velocity (U_g, V_g, W_g)
+  SPX_DT(4)       = 0.01      ! Solids velocity (U_s, V_s, W_s)
+  SPX_DT(5)       = 100.0     ! Solids density (ROP_s)
+  SPX_DT(6)       = 100.0     ! Gas and solids temp. (T_g, T_s1, T_s2)
+  SPX_DT(7)       = 100.0     ! Gas and solids mass fractions (X_g, X_s)
+  SPX_DT(8)       = 0.01      ! Granular Temperature (G)
+  SPX_DT(9)       = 100.0     ! User defined scalars
+
   FULL_LOG = .TRUE.
   RESID_STRING = 'P0' 'P1' 'V1'
 
 
 # DMP control
-  
-  NODESI = 1   NODESJ = 1   NODESK = 1
+# -----------------------------
+  NODESI = 1 
+  NODESJ = 1
+  NODESK = 1
 
