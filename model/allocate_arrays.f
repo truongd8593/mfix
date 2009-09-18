@@ -42,18 +42,16 @@
       Use mflux
       Use mchem
       USE ghdtheory
-!     JEG Added 04/01/2005
-!     University of Colorado, Hrenya Research Group
       use kintheory
-      use kintheory2
       Use cdist
-!     END JEG
       IMPLICIT NONE
-      
+!-----------------------------------------------     
+! Variables     
+!-----------------------------------------------     
       INTEGER M
 
       integer :: dimension_3p   ! used during post_mfix to reduce allocations
-
+!-----------------------------------------------     
 
 !// Modified the DIMENSION_X based on the new domain decomposition variables
       DIMENSION_I   = IMAX3
@@ -68,30 +66,27 @@
       DIMENSION_N_g = 1
       IF(NMAX(0) .NE. UNDEFINED_I)DIMENSION_N_g = NMAX(0)
       
-      ! to reduce allocation space when doing post_mfix
+! to reduce allocation space when doing post_mfix
       if (bDoing_postmfix) then
          dimension_3p = 1
       else
          dimension_3p = dimension_3
-      end if
+      endif
 
       DIMENSION_N_s = 1
       DO M = 1, MMAX
         IF(NMAX(M) .NE. UNDEFINED_I)DIMENSION_N_s = MAX(DIMENSION_N_s, NMAX(M))
-        
-      END DO
+      ENDDO
       
       DIMENSION_LM    = (DIMENSION_M * (DIMENSION_M-1) / 2)+1
       DIMENSION_N_all = DIMENSION_N_g + DIMENSION_M * DIMENSION_N_s
-      
       DIMENSION_Scalar = NScalar
-!     add by rong
+!add by rong
       DIM_Scalar2 = 2*NScalar
-!     add by rong
+
 !ambm
       Allocate( A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) )
       Allocate( B_m(DIMENSION_3, 0:DIMENSION_M) )
-
 
 !coeff
       
@@ -103,22 +98,18 @@
       Allocate( DIFF(0:DIMENSION_M) )
       Allocate( DRAGCOEF(0:DIMENSION_M, 0:DIMENSION_M) )
       Allocate( HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M))
-      
+      Allocate( GRAN_DISS(0:DIMENSION_M) )
+
 !cont
       Allocate( DO_CONT(0:DIMENSION_M) )
-
 
 !drag
       Allocate(  F_gs(DIMENSION_3, DIMENSION_M) )
       Allocate(  F_ss(DIMENSION_3, 0:DIMENSION_LM) )
 
-!-----------------------HYS drag only--------------------------------
 !Off diagonal friction coefficient in HYS drag relation
-
       IF(TRIM(DRAG_TYPE).EQ.'HYS') &
          Allocate(  beta_ij(DIMENSION_3, 0:DIMENSION_M, 0:DIMENSION_M) )
-
-!--------------------------------------------------------------------
 
 !energy
       Allocate(  HOR_g (DIMENSION_3) )
@@ -171,7 +162,6 @@
       Allocate(  THETA_mo (DIMENSION_3p, DIMENSION_M) )
 
 
-
       IF(K_Epsilon)then
         Allocate(  K_Turb_G (DIMENSION_3) )
         Allocate(  K_Turb_Go (DIMENSION_3p) )
@@ -182,16 +172,15 @@
       IF(DIMENSION_Scalar /= 0)then
         Allocate(  Scalar (DIMENSION_3,  DIMENSION_Scalar) )
         Allocate(  Scalaro (DIMENSION_3p, DIMENSION_Scalar) )
-      
       ENDIF
 
 
 !geometry
-      Allocate(           FLAG (DIMENSION_3) )
-      Allocate(           FLAG_E (DIMENSION_3) )
-      Allocate(           FLAG_N (DIMENSION_3) )
-      Allocate(           FLAG_T (DIMENSION_3) )
-      Allocate(           ICBC_FLAG (DIMENSION_3L) )
+      Allocate(  FLAG (DIMENSION_3) )
+      Allocate(  FLAG_E (DIMENSION_3) )
+      Allocate(  FLAG_N (DIMENSION_3) )
+      Allocate(  FLAG_T (DIMENSION_3) )
+      Allocate(  ICBC_FLAG (DIMENSION_3L) )
       Allocate(  oDX (0:DIMENSION_I) )
       Allocate(  oDY (0:DIMENSION_J) )
       Allocate(  oDZ (0:DIMENSION_K) )
@@ -230,20 +219,18 @@
       Allocate(  VOL_W (DIMENSION_3) )
 
 !indices
-      Allocate(           STORE_LM (DIMENSION_M, DIMENSION_M) )
-      Allocate(           CELL_CLASS (DIMENSION_3) )
-      Allocate(           I_OF (DIMENSION_3) )
-      Allocate(           J_OF (DIMENSION_3) )
-      Allocate(           K_OF (DIMENSION_3) )
-      Allocate(           Im1 (0:DIMENSION_I) )
-      Allocate(           Ip1 (0:DIMENSION_I) )
-      Allocate(           Jm1 (0:DIMENSION_J) )
-      Allocate(           Jp1 (0:DIMENSION_J) )
-      Allocate(           Km1 (0:DIMENSION_K) )
-      Allocate(           Kp1 (0:DIMENSION_K) )
+      Allocate(  STORE_LM (DIMENSION_M, DIMENSION_M) )
+      Allocate(  CELL_CLASS (DIMENSION_3) )
+      Allocate(  I_OF (DIMENSION_3) )
+      Allocate(  J_OF (DIMENSION_3) )
+      Allocate(  K_OF (DIMENSION_3) )
+      Allocate(  Im1 (0:DIMENSION_I) )
+      Allocate(  Ip1 (0:DIMENSION_I) )
+      Allocate(  Jm1 (0:DIMENSION_J) )
+      Allocate(  Jp1 (0:DIMENSION_J) )
+      Allocate(  Km1 (0:DIMENSION_K) )
+      Allocate(  Kp1 (0:DIMENSION_K) )
       
-
-
 !pgcor
       Allocate(  d_e(DIMENSION_3p, 0:DIMENSION_M) )
       Allocate(  d_n(DIMENSION_3p, 0:DIMENSION_M) )
@@ -299,7 +286,6 @@
         Allocate(  Scalar_c (DIMENSION_3p,  DIMENSION_Scalar) )
         Allocate(  Scalar_p (DIMENSION_3p,  DIMENSION_Scalar) )
         Allocate(  Dif_Scalar (DIMENSION_3p, DIMENSION_Scalar) )
-      
       ENDIF
 
 !isat
@@ -323,11 +309,8 @@
       ALLocate(  ystart( 1:DIM_Scalar2))
 !     ALLocate(  g_a( 1:DIMENSION_Scalar))
  
-! add by rong for dqmom
-
 
 !K-Epsilon Turbulence model
-      
       IF(K_Epsilon)then
         Allocate(  K_Turb_G_c   (DIMENSION_3p) )
         Allocate(  K_Turb_G_p   (DIMENSION_3p) )
@@ -335,13 +318,12 @@
         Allocate(  E_Turb_G_c   (DIMENSION_3p) )
         Allocate(  E_Turb_G_p   (DIMENSION_3p) )
         Allocate(  Dif_E_Turb_G (DIMENSION_3p) )
-      
       ENDIF
-! Simonin or Ahmadi model
 
+! Simonin or Ahmadi model
       IF(SIMONIN .OR. AHMADI)then
         Allocate(  K_12 (DIMENSION_3) )
-	Allocate(  Tau_12 (DIMENSION_3) )
+        Allocate(  Tau_12 (DIMENSION_3) )
         Allocate(  Tau_1 (DIMENSION_3) )
         Allocate(  Cos_theta (DIMENSION_3) )
       ENDIF
@@ -410,7 +392,6 @@
       Allocate(  Xsi_e(DIMENSION_3) )
       Allocate(  Xsi_n(DIMENSION_3) )
       Allocate(  Xsi_t(DIMENSION_3) )
-      
 
 !VSH
       Allocate(  VSH(DIMENSION_3) )
@@ -418,9 +399,9 @@
 !VSHE
       Allocate(  VSHE(DIMENSION_3) )
 
-!
+
 ! array allocation of add on packages, such as linear equation solvers
-!
+
 
 ! array allocation for higher order implementation
       Allocate( FLAG3 (DIMENSION_4) )
@@ -451,50 +432,52 @@
  
 ! allocate variables for GHD Theory
       IF (TRIM(KT_TYPE) == 'GHD') THEN 
-        Allocate(    Flux_nE(DIMENSION_3p) ) 
-        Allocate(    Flux_nN(DIMENSION_3p) ) 
-        Allocate(    Flux_nT(DIMENSION_3p) )  
-        Allocate(    Zeta0(DIMENSION_3p) )   ! zeroth rate of cooling  
-        Allocate(    ZetaU(DIMENSION_3p) )   ! 1st order cooling rate transport coefficient
-        Allocate(    DiT(DIMENSION_3p, DIMENSION_M) )   ! thermal diffusivity
-        Allocate(    DijF(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )   ! mass mobility
-        Allocate(    Lij(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )   ! thermal mobility
-        Allocate(    Dij(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )   ! ordinary diffusion
-        Allocate(    DijQ(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )   ! Dufour coeff.
-        Allocate(    JoiX(DIMENSION_3p, DIMENSION_M) )   ! X- species mass flux
-        Allocate(    JoiY(DIMENSION_3p, DIMENSION_M) )   ! Y- species mass flux
-        Allocate(    JoiZ(DIMENSION_3p, DIMENSION_M) )   ! Z- species mass flux
-        Allocate(    FiX(DIMENSION_3p, DIMENSION_M) )   ! X- external force
-        Allocate(    FiY(DIMENSION_3p, DIMENSION_M) )   ! Y- external force
-        Allocate(    FiZ(DIMENSION_3p, DIMENSION_M) )   ! Z- external force
+        Allocate(  Flux_nE(DIMENSION_3p) ) 
+        Allocate(  Flux_nN(DIMENSION_3p) ) 
+        Allocate(  Flux_nT(DIMENSION_3p) )  
+        Allocate(  Zeta0(DIMENSION_3p) )   ! zeroth rate of cooling  
+        Allocate(  ZetaU(DIMENSION_3p) )   ! 1st order cooling rate transport coefficient
+        Allocate(  DiT(DIMENSION_3p, DIMENSION_M) )   ! thermal diffusivity
+        Allocate(  DijF(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )   ! mass mobility
+        Allocate(  Lij(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )   ! thermal mobility
+        Allocate(  Dij(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )   ! ordinary diffusion
+        Allocate(  DijQ(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )   ! Dufour coeff.
+        Allocate(  JoiX(DIMENSION_3p, DIMENSION_M) )   ! X- species mass flux
+        Allocate(  JoiY(DIMENSION_3p, DIMENSION_M) )   ! Y- species mass flux
+        Allocate(  JoiZ(DIMENSION_3p, DIMENSION_M) )   ! Z- species mass flux
+        Allocate(  FiX(DIMENSION_3p, DIMENSION_M) )   ! X- external force
+        Allocate(  FiY(DIMENSION_3p, DIMENSION_M) )   ! Y- external force
+        Allocate(  FiZ(DIMENSION_3p, DIMENSION_M) )   ! Z- external force
       ENDIF
-! end of GHD Theory modification
 
-!     Arising from kinetic theory of Iddir & Arastoopour (2005)
-!     EDvel_sM_ip & ED_ss_ip are also used for kinetic theory
-!          of Garzo & Dufty (1999)
-      Allocate(    KTMOM_U_s(DIMENSION_3p, DIMENSION_M) )
-      Allocate(    KTMOM_V_s(DIMENSION_3p, DIMENSION_M) )
-      Allocate(    KTMOM_W_s(DIMENSION_3p, DIMENSION_M) )
-      Allocate(    trD_s2_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )      
-      Allocate(    MU_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    MU_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    XI_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    XI_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    Fnu_s_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
-      Allocate(    FT_sM_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
-      Allocate(    FT_sL_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
-      Allocate(    Kth_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    Knu_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    Knu_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    Kvel_s_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
-      Allocate(    EDT_s_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
-      Allocate(    EDvel_sM_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
-      Allocate(    EDvel_sL_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
-      Allocate(    ED_ss_ip(DIMENSION_3p, 0:DIMENSION_LM) )
-      Allocate(    GRAN_DISS(0:DIMENSION_M) )
 
-     
+! allocate variables for Iddir & Arastoopour (2005) kinetic theory
+! EDvel_sM_ip & EDT_s_ip are also used for Garzy & Dufty (1999) kinetic theory
+      IF (TRIM(KT_TYPE) == 'IA_NONEP') THEN      
+         Allocate(  KTMOM_U_s(DIMENSION_3p, DIMENSION_M) )
+         Allocate(  KTMOM_V_s(DIMENSION_3p, DIMENSION_M) )
+         Allocate(  KTMOM_W_s(DIMENSION_3p, DIMENSION_M) )
+         Allocate(  trD_s2_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+         Allocate(  MU_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+         Allocate(  MU_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+         Allocate(  XI_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+         Allocate(  XI_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+         Allocate(  Fnu_s_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+         Allocate(  FT_sM_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+         Allocate(  FT_sL_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+         Allocate(  Kth_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+         Allocate(  Knu_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+         Allocate(  Knu_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+         Allocate(  Kvel_s_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
+         Allocate(  EDvel_sL_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+         Allocate(  ED_ss_ip(DIMENSION_3p, 0:DIMENSION_LM) )
+      ENDIF
+      IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD99') THEN
+         Allocate(  EDT_s_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+         Allocate(  EDvel_sM_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+      ENDIF
+
+
       RETURN
       END SUBROUTINE ALLOCATE_ARRAYS 
       

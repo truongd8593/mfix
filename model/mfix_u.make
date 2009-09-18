@@ -22,7 +22,6 @@ mfix.exe : \
     IC.mod \
     INDICES.mod \
     IS.mod \
-    KINTHEORY2.mod \
     KINTHEORY.mod \
     LEQSOL.mod \
     MACHINE.mod \
@@ -581,7 +580,6 @@ mfix.exe : \
     is_mod.$(OBJ_EXT) \
     iterate.$(OBJ_EXT) \
     k_epsilon_prop.$(OBJ_EXT) \
-    kintheory2_mod.$(OBJ_EXT) \
     kintheory_drag_ss.$(OBJ_EXT) \
     kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     kintheory_mod.$(OBJ_EXT) \
@@ -1003,10 +1001,6 @@ IS.mod : is_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) is_mod.f 
-KINTHEORY2.mod : kintheory2_mod.f \
-            PARAM.mod \
-            PARAM1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) kintheory2_mod.f 
 KINTHEORY.mod : kintheory_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -1403,7 +1397,6 @@ allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             MCHEM.mod \
             GHDTHEORY.mod \
             KINTHEORY.mod \
-            KINTHEORY2.mod \
             CDIST.mod 
 bc_phi.$(OBJ_EXT) : bc_phi.f \
             PARAM.mod \
@@ -2821,9 +2814,9 @@ kintheory_u_s.$(OBJ_EXT) : kintheory_u_s.f \
             GEOMETRY.mod \
             INDICES.mod \
             COMPAR.mod \
+            KINTHEORY.mod \
             FLDVAR.mod \
             VISC_S.mod \
-            KINTHEORY.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -2841,9 +2834,9 @@ kintheory_v_s.$(OBJ_EXT) : kintheory_v_s.f \
             GEOMETRY.mod \
             INDICES.mod \
             COMPAR.mod \
+            KINTHEORY.mod \
             FLDVAR.mod \
             VISC_S.mod \
-            KINTHEORY.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -2861,9 +2854,9 @@ kintheory_w_s.$(OBJ_EXT) : kintheory_w_s.f \
             GEOMETRY.mod \
             INDICES.mod \
             COMPAR.mod \
+            KINTHEORY.mod \
             FLDVAR.mod \
             VISC_S.mod \
-            KINTHEORY.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -3906,7 +3899,6 @@ source_u_s.$(OBJ_EXT) : source_u_s.f \
             COMPAR.mod \
             SENDRECV.mod \
             KINTHEORY.mod \
-            KINTHEORY2.mod \
             GHDTHEORY.mod \
             DRAG.mod \
             CUTCELL.mod \
@@ -3974,7 +3966,6 @@ source_v_s.$(OBJ_EXT) : source_v_s.f \
             COMPAR.mod \
             SENDRECV.mod \
             KINTHEORY.mod \
-            KINTHEORY2.mod \
             GHDTHEORY.mod \
             DRAG.mod \
             CUTCELL.mod \
@@ -4040,7 +4031,6 @@ source_w_s.$(OBJ_EXT) : source_w_s.f \
             COMPAR.mod \
             SENDRECV.mod \
             KINTHEORY.mod \
-            KINTHEORY2.mod \
             GHDTHEORY.mod \
             DRAG.mod \
             CUTCELL.mod \
@@ -4245,7 +4235,6 @@ time_march.$(OBJ_EXT) : time_march.f \
             DISCRETELEMENT.mod \
             MCHEM.mod \
             LEQSOL.mod \
-            KINTHEORY2.mod \
             MPI_UTILITY.mod \
             CUTCELL.mod \
             VTK.mod \
@@ -4297,20 +4286,7 @@ usr1.$(OBJ_EXT) : usr1.f \
 usr2.$(OBJ_EXT) : usr2.f \
             USR.mod 
 usr3.$(OBJ_EXT) : usr3.f \
-            USR.mod \
-            PARAM.mod \
-            PARAM1.mod \
-            PARALLEL.mod \
-            CONSTANT.mod \
-            RUN.mod \
-            TOLERANC.mod \
-            GEOMETRY.mod \
-            INDICES.mod \
-            COMPAR.mod \
-            SENDRECV.mod \
-            FLDVAR.mod \
-            QUADRIC.mod \
-            CUTCELL.mod 
+            USR.mod 
 usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             USR.mod 
 usr_write_out0.$(OBJ_EXT) : usr_write_out0.f 
@@ -4736,7 +4712,6 @@ CG_source_u_s.$(OBJ_EXT) : ./cartesian_grid/CG_source_u_s.f \
             COMPAR.mod \
             SENDRECV.mod \
             KINTHEORY.mod \
-            KINTHEORY2.mod \
             GHDTHEORY.mod \
             DRAG.mod \
             CUTCELL.mod \
@@ -4806,7 +4781,6 @@ CG_source_v_s.$(OBJ_EXT) : ./cartesian_grid/CG_source_v_s.f \
             COMPAR.mod \
             SENDRECV.mod \
             KINTHEORY.mod \
-            KINTHEORY2.mod \
             GHDTHEORY.mod \
             DRAG.mod \
             CUTCELL.mod \
@@ -4874,7 +4848,6 @@ CG_source_w_s.$(OBJ_EXT) : ./cartesian_grid/CG_source_w_s.f \
             COMPAR.mod \
             SENDRECV.mod \
             KINTHEORY.mod \
-            KINTHEORY2.mod \
             GHDTHEORY.mod \
             DRAG.mod \
             CUTCELL.mod \

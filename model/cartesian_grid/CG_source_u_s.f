@@ -48,7 +48,6 @@
       USE compar    
       USE sendrecv  
       use kintheory
-      use kintheory2
       USE ghdtheory
       USE drag
 

@@ -61,7 +61,6 @@
       USE compar  
       USE sendrecv 
       use kintheory
-      use kintheory2
       USE ghdtheory
       USE drag
 !=======================================================================
@@ -148,7 +147,7 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-! 
+ 
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
@@ -157,18 +156,18 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
       INCLUDE 'b_force2.inc'
+!-----------------------------------------------
 
       DO M = 1, MMAX  
         IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
           IF (MOMENTUM_Z_EQ(M)) THEN 
 
-! CHEM & ISAT begin (nan xie)
+! CHEM & ISAT (nan xie)
 ! Set the source terms zero
             IF (CALL_DI .or. CALL_ISAT) THEN
               SUM_R_S_temp = SUM_R_S
               SUM_R_S = ZERO
             ENDIF
-! CHEM & ISAT end (nan xie)
 
 !$omp  parallel do &
 !$omp& private(IJK, I, J, K, IJKT, EPSA, EPStmp, ISV, &
@@ -186,12 +185,12 @@
                 IJKT = TOP_OF(IJK)
                 IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN ! with ghd theory, m = mmax
                   EPStmp = ZERO     
-		  epsMix = ZERO
-		  epsMixT= ZERO   
+                  epsMix = ZERO
+                  epsMixT= ZERO   
                   DO L = 1, SMAX
                     EPStmp = EPStmp + AVG_Z(EP_S(IJK,L),EP_S(IJKT,L),K)  
-		    epsMix  = epsMix  + EP_S(IJK,L) ! epsMix, epsMixT to be used for modelB
-		    epsMixT = epsMixT + EP_S(IJKT,L)
+                    epsMix  = epsMix  + EP_S(IJK,L) ! epsMix, epsMixT to be used for modelB
+                    epsMixT = epsMixT + EP_S(IJKT,L)
                   ENDDO
                   EPSA = EPStmp
                 ELSE                  
@@ -404,24 +403,24 @@
 
 ! Additional force for GHD from darg force sum(beta_ig * Joi/rhop_i)
                   Ghd_drag = ZERO
-		  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
-		    DO L = 1,SMAX
-		      avgRop = AVG_Z(ROP_S(IJK,L),ROP_S(IJKT,L),K)
-		      if(avgRop > ZERO) Ghd_drag = Ghd_drag -&
-		           AVG_Z(F_GS(IJK,L),F_GS(IJKT,L),K) * JoiZ(IJK,L) / avgRop
-		    ENDDO
-		  ENDIF
+                  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                    DO L = 1,SMAX
+                      avgRop = AVG_Z(ROP_S(IJK,L),ROP_S(IJKT,L),K)
+                      if(avgRop > ZERO) Ghd_drag = Ghd_drag -&
+                           AVG_Z(F_GS(IJK,L),F_GS(IJKT,L),K) * JoiZ(IJK,L) / avgRop
+                    ENDDO
+                  ENDIF
 ! end of modifications for GHD theory
 
 ! Additional force for HYS drag force
                   HYS_drag = ZERO
-		  IF (TRIM(DRAG_TYPE) .EQ. 'HYS') THEN
-		     DO L = 1,MMAX
-		        IF (L /= M) THEN
-		           avgDrag = AVG_Z(beta_ij(IJK,M,L),beta_ij(IJKT,M,L),K)
-		           HYS_drag = HYS_drag - avgDrag * (W_g(ijk) - W_s(IJK,L))
-		        ENDIF
-		     ENDDO
+                  IF (TRIM(DRAG_TYPE) .EQ. 'HYS') THEN
+                     DO L = 1,MMAX
+                        IF (L /= M) THEN
+                           avgDrag = AVG_Z(beta_ij(IJK,M,L),beta_ij(IJKT,M,L),K)
+                           HYS_drag = HYS_drag - avgDrag * (W_g(ijk) - W_s(IJK,L))
+                        ENDIF
+                     ENDDO
                   ENDIF
 ! end of modifications for HYS drag
 
@@ -511,11 +510,10 @@
 !=======================================================================
 
 
-! CHEM & ISAT begin (nan xie)
+! CHEM & ISAT (nan xie)
             IF (CALL_DI .or. CALL_ISAT) THEN
                SUM_R_S = SUM_R_S_temp
-            END IF
-! CHEM & ISAT end (nan xie)
+            ENDIF
 
           ENDIF 
         ENDIF ! for GHD Theory
