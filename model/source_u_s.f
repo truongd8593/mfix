@@ -420,9 +420,9 @@
                   ENDIF
 ! end of modifications for GHD theory
 
-! Additional force for HYS drag force
+! Additional force for HYS drag force, do not use with mixture GHD theory
                   HYS_drag = ZERO
-                  IF (TRIM(DRAG_TYPE) .EQ. 'HYS') THEN
+                  IF (TRIM(DRAG_TYPE) .EQ. 'HYS' .AND. TRIM(KT_TYPE) /= 'GHD') THEN
                      DO L = 1,MMAX
                         IF (L /= M) THEN
                            avgDrag = AVG_X(beta_ij(IJK,M,L),beta_ij(IJKE,M,L),I)

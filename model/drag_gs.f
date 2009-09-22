@@ -424,13 +424,13 @@
             ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW_PCF') THEN
 !
                phis = ZERO
-	       DO IM = 1, MMAX
+	       DO IM = 1, SMAX
 	         phis = phis + EP_S(IJK,IM)
 	       ENDDO 
                D_p_av = ZERO
                tmp_sum = ZERO
 	       tmp_fac = ZERO
-	       DO IM = 1, MMAX
+	       DO IM = 1, SMAX
                  IF (phis .GT. ZERO) THEN
                    tmp_fac = EP_S(IJK,Im)/phis
                    tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
@@ -526,13 +526,13 @@
             ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW_BLEND_PCF') THEN
 !
                phis = ZERO
-	       DO IM = 1, MMAX
+	       DO IM = 1, SMAX
 	         phis = phis + EP_S(IJK,IM)
 	       ENDDO 
                D_p_av = ZERO
                tmp_sum = ZERO
 	       tmp_fac = ZERO
-	       DO IM = 1, MMAX
+	       DO IM = 1, SMAX
                  IF (phis .GT. ZERO) THEN
                    tmp_fac = EP_S(IJK,Im)/phis
                    tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
@@ -623,13 +623,13 @@
             ELSE IF(TRIM(DRAG_TYPE).EQ.'WEN_YU_PCF') then
 !
                phis = ZERO
-	       DO IM = 1, MMAX
+	       DO IM = 1, SMAX
 	         phis = phis + EP_S(IJK,IM)
 	       ENDDO 
                D_p_av = ZERO
                tmp_sum = ZERO
 	       tmp_fac = ZERO
-	       DO IM = 1, MMAX
+	       DO IM = 1, SMAX
                  IF (phis .GT. ZERO) THEN
                    tmp_fac = EP_S(IJK,Im)/phis
                    tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
@@ -700,7 +700,7 @@
                F_STOKES = 18D0*Mu*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
 	       
                phis = ZERO
-	       DO IM = 1, MMAX
+	       DO IM = 1, SMAX
 	         phis = phis + EP_S(IJK,IM) ! this is slightly /= one-ep_g due to round-off
 	       ENDDO 
                w = EXP(-10.0D0*(0.4D0-phis)/phis)
@@ -778,13 +778,13 @@
                F_STOKES = 18D0*Mu*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
 	       
                phis = ZERO
-	       DO IM = 1, MMAX
+	       DO IM = 1, SMAX
 	         phis = phis + EP_S(IJK,IM)
 	       ENDDO 
                D_p_av = ZERO
                tmp_sum = ZERO
 	       tmp_fac = ZERO
-	       DO IM = 1, MMAX
+	       DO IM = 1, SMAX
                  IF (phis .GT. ZERO) THEN
                    tmp_fac = EP_S(IJK,Im)/phis
                    tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
@@ -895,13 +895,13 @@
                F_STOKES = 18D0*Mu*EP_g(IJK)/D_p(IJK,M)**2 
 	       
                phis = ZERO
-	       DO IM = 1, MMAX
+	       DO IM = 1, SMAX
 	         phis = phis + EP_S(IJK,IM)
 	       ENDDO 
                D_p_av = ZERO
                tmp_sum = ZERO
 	       tmp_fac = ZERO
-	       DO IM = 1, MMAX
+	       DO IM = 1, SMAX
                  IF (phis .GT. ZERO) THEN
                    tmp_fac = EP_S(IJK,Im)/phis
                    tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
@@ -962,7 +962,7 @@
                 F_gstmp = ZERO 
                 phis = ZERO
 	        
-                DO IM = 1, MMAX
+                DO IM = 1, SMAX
 
 	          phis = phis + EP_S(IJK,IM)
 
@@ -972,7 +972,7 @@
                 tmp_sum = ZERO
 	        tmp_fac = ZERO
 
-	        DO IM = 1, MMAX
+	        DO IM = 1, SMAX
                  IF (phis .GT. ZERO) THEN
 
                    tmp_fac = EP_S(IJK,Im)/phis
@@ -994,8 +994,8 @@
 	       min_D_p= MIN(D_p(IJK,1),D_p(IJK,2))
 
 !	       Calculate smallest diameter if number of particle types is greater than 2
-	       IF (MMAX > 2) THEN
-		  DO IM=3,MMAX
+	       IF (SMAX > 2) THEN
+		  DO IM=3,SMAX
 		     min_D_p = MIN(min_D_p,D_p(IJK,IM))
 		  ENDDO
 	       ENDIF
@@ -1026,7 +1026,7 @@
 		WSCM_HYS = ZERO
 		 
 		IF(phis > ZERO) THEN
-		  DO IM = 1, MMAX
+		  DO IM = 1, SMAX
 
 	           USCM_HYS = USCM_HYS + EP_S(IJK,Im)*(UGC - AVG_X_E(U_S(IMJK,Im),U_S(IJK,Im),I))
 		   VSCM_HYS = VSCM_HYS + EP_S(IJK,Im)*(VGC - AVG_Y_N(V_S(IJMK,Im),V_S(IJK,Im)))
@@ -1069,7 +1069,7 @@
 		beta_i_HYS = F_YS
               
 	
-		DO j = 1,MMAX
+		DO j = 1,SMAX
 
 	   	   IF (j /= M)THEN
 

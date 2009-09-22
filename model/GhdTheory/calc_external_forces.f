@@ -53,7 +53,7 @@
       INTEGER          IER  
 !     
 !     number densities to compute del(Nj)
-      DOUBLE PRECISION NjC, NjE, NjN, NjT  
+      DOUBLE PRECISION NjC, NjE, NjN, NjT
 !     
 !     mass, volume of species
       DOUBLE PRECISION Mj, Vj
@@ -140,17 +140,23 @@
                     DO IM=1,SMAX
                        IF(IM /= M)THEN
 
-                          avgDragx = ZERO
-                          avgDragy = ZERO
-                          avgDragz = ZERO
+! HYS additional drag force on a particle in -x -y -z directions
+                          dragFc = zero
+		          dragFe = zero 
+		          dragFn = zero
+		          dragFt = zero
+                          if(NjC > zero) dragFc = beta_ij(IJK,M,IM) /NjC
+		          if(NjE > zero) dragFe = beta_ij(IJKE,M,IM)/NjE 
+		          if(NjN > zero) dragFn = beta_ij(IJKN,M,IM)/NjN
+		          if(NjT > zero) dragFt = beta_ij(IJKT,M,IM)/NjT
                           
-                          avgDragx = AVG_X(beta_ij(IJK,M,IM),beta_ij(IJKE,M,IM),I)
+                          avgDragx = AVG_X(dragFc,dragFe,I)
                           dragFx = dragFx - avgDragx*(U_g(IJK) - U_s(IJK,IM))
                         
-                          avgDragy = AVG_Y(beta_ij(IJK,M,IM),beta_ij(IJKN,M,IM),J)
+                          avgDragy = AVG_Y(dragFc,dragFn,J)
                           dragFy = dragFy - avgDragy*(V_g(IJK) - V_s(IJK,IM))
 
-                          avgDragz = AVG_Z(beta_ij(IJK,M,IM),beta_ij(IJKT,M,IM),K)
+                          avgDragz = AVG_Z(dragFc,dragFt,K)
                           dragFz = dragFz - avgDragz*(W_g(IJK) - W_s(IJK,IM))
 
                        ENDIF
