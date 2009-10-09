@@ -17,11 +17,17 @@ post_mfix : \
     ic.mod \
     indices.mod \
     is.mod \
-    kintheory2.mod \
     kintheory.mod \
     leqsol.mod \
     machine.mod \
     mchem.mod \
+    des_bc.mod \
+    progress_bar.mod \
+    quadric.mod \
+    cutcell.mod \
+    vtk.mod \
+    polygon.mod \
+    dashboard.mod \
     mflux.mod \
     output.mod \
     parallel.mod \
@@ -53,6 +59,7 @@ post_mfix : \
     visc_s.mod \
     vshear.mod \
     xsi_array.mod \
+    cartesian_grid_init_namelist.$(OBJ_EXT)  \
     write_error.$(OBJ_EXT)                    \
     compar.mod                                \
     dbg_util.mod                              \
@@ -201,11 +208,11 @@ post_mfix : \
     ic_mod.$(OBJ_EXT) \
     indices_mod.$(OBJ_EXT) \
     is_mod.$(OBJ_EXT) \
-    kintheory2_mod.$(OBJ_EXT) \
     kintheory_mod.$(OBJ_EXT) \
     leqsol_mod.$(OBJ_EXT) \
     machine_mod.$(OBJ_EXT) \
     mchem_mod.$(OBJ_EXT) \
+    des_bc_mod.$(OBJ_EXT) \
     mflux_mod.$(OBJ_EXT) \
     output_mod.$(OBJ_EXT) \
     parallel_mod.$(OBJ_EXT) \
@@ -357,6 +364,14 @@ post_mfix : \
     cooling_rate_tc.$(OBJ_EXT) \
     pressure.$(OBJ_EXT) \
     bulk_viscosity.$(OBJ_EXT) \
+    progress_bar.$(OBJ_EXT) \
+    cartesian_grid_init_namelist.$(OBJ_EXT) \
+    quadric_mod.$(OBJ_EXT) \
+    cutcell_mod.$(OBJ_EXT) \
+    vtk_mod.$(OBJ_EXT) \
+    polygon_mod.$(OBJ_EXT) \
+    progress_bar_mod.$(OBJ_EXT) \
+    dashboard_mod.$(OBJ_EXT) \
     shear_viscosity.$(OBJ_EXT) \
     thermal_diffusivity.$(OBJ_EXT) \
     mass_mobility.$(OBJ_EXT) \
@@ -394,6 +409,8 @@ cont.mod : ../model/cont_mod.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cont_mod.f 
 correl.mod : correl_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) correl_mod.f 
+des_bc.mod : ../model/des/des_bc_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_bc_mod.f 
 drag.mod : ../model/drag_mod.f \
             param.mod \
             param1.mod 
@@ -424,10 +441,6 @@ is.mod : ../model/is_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/is_mod.f   
-kintheory2.mod : ../model/kintheory2_mod.f \
-            param.mod \
-            param1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/kintheory2_mod.f 
 kintheory.mod : ../model/kintheory_mod.f \
             param.mod \
             param1.mod 
@@ -580,8 +593,7 @@ allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             mflux.mod \
             mchem.mod \
             vshear.mod \
-            kintheory.mod \
-            kintheory2.mod 
+            kintheory.mod
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/allocate_arrays.f 
 any_more_data.$(OBJ_EXT) : any_more_data.f 
 calc_cell2.$(OBJ_EXT) : calc_cell2.f 
@@ -742,6 +754,38 @@ deallocate_arrays.$(OBJ_EXT) : deallocate_arrays.f \
             visc_s.mod \
             xsi_array.mod \
             vshear.mod 
+progress_bar.mod : ../model/cartesian_grid/progress_bar_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/progress_bar_mod.f 
+quadric.mod : ../model/cartesian_grid/quadric_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/quadric_mod.f 
+vtk.mod : ../model/cartesian_grid/vtk_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/vtk_mod.f 
+cutcell.mod : ../model/cartesian_grid/cutcell_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/cutcell_mod.f 
+polygon.mod : ../model/cartesian_grid/polygon_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/polygon_mod.f 
+dashboard.mod : ../model/cartesian_grid/dashboard_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/dashboard_mod.f 
+cartesian_grid_init_namelist.$(OBJ_EXT) : ../model/cartesian_grid/cartesian_grid_init_namelist.f \
+            param1.mod \
+            quadric.mod \
+            cutcell.mod \
+            polygon.mod \
+            vtk.mod \
+            progress_bar.mod \
+            dashboard.mod \
+            ../model/cartesian_grid/cartesian_grid_namelist.inc
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/cartesian_grid_init_namelist.f 
 eosg.$(OBJ_EXT) : ../model/eosg.f \
             param.mod \
             param1.mod \
@@ -1049,6 +1093,12 @@ read_namelist.$(OBJ_EXT) : ../model/read_namelist.f \
             ic.mod \
             is.mod \
             bc.mod \
+            des_bc.mod \
+            quadric.mod \
+            cutcell.mod \
+            vtk.mod \
+            polygon.mod \
+            dashboard.mod \
             fldvar.mod \
             constant.mod \
             indices.mod \

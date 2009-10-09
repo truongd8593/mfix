@@ -40,7 +40,6 @@
       Use mflux
       Use mchem
       use kintheory
-      use kintheory2
       use ghdtheory
       IMPLICIT NONE
       
