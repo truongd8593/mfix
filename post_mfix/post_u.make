@@ -4,6 +4,7 @@
 post_mfix : \
     AMBM.mod \
     BC.mod \
+    CDIST.mod \
     COEFF.mod \
     CONSTANT.mod \
     CONT.mod \
@@ -16,11 +17,17 @@ post_mfix : \
     IC.mod \
     INDICES.mod \
     IS.mod \
-    KINTHEORY2.mod \
     KINTHEORY.mod \
     LEQSOL.mod \
     MACHINE.mod \
     MCHEM.mod \
+    DES_BC.mod \
+    PROGRESS_BAR.mod \
+    QUADRIC.mod \
+    CUTCELL.mod \
+    VTK.mod \
+    POLYGON.mod \
+    DASHBOARD.mod \
     MFLUX.mod \
     OUTPUT.mod \
     PARALLEL.mod \
@@ -52,6 +59,7 @@ post_mfix : \
     VISC_S.mod \
     VSHEAR.mod \
     XSI_ARRAY.mod \
+    cartesian_grid_init_namelist.$(OBJ_EXT)  \
     write_error.$(OBJ_EXT)                    \
     COMPAR.mod                                \
     DBG_UTIL.mod                              \
@@ -187,6 +195,7 @@ post_mfix : \
     ambm_mod.$(OBJ_EXT) \
     bc_mod.$(OBJ_EXT) \
     boundfunijk_mod.$(OBJ_EXT)                           \
+    cdist_mod.$(OBJ_EXT) \
     coeff_mod.$(OBJ_EXT) \
     constant_mod.$(OBJ_EXT) \
     cont_mod.$(OBJ_EXT) \
@@ -199,11 +208,11 @@ post_mfix : \
     ic_mod.$(OBJ_EXT) \
     indices_mod.$(OBJ_EXT) \
     is_mod.$(OBJ_EXT) \
-    kintheory2_mod.$(OBJ_EXT) \
     kintheory_mod.$(OBJ_EXT) \
     leqsol_mod.$(OBJ_EXT) \
     machine_mod.$(OBJ_EXT) \
     mchem_mod.$(OBJ_EXT) \
+    des_bc_mod.$(OBJ_EXT) \
     mflux_mod.$(OBJ_EXT) \
     output_mod.$(OBJ_EXT) \
     parallel_mod.$(OBJ_EXT) \
@@ -251,8 +260,6 @@ post_mfix : \
     check_data_05.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
-    discretelement_mod.$(OBJ_EXT) \
-    ghdtheory_mod.$(OBJ_EXT) \
     deallocate_arrays.$(OBJ_EXT) \
     eosg.$(OBJ_EXT) \
     error_routine.$(OBJ_EXT) \
@@ -357,6 +364,14 @@ post_mfix : \
     cooling_rate_tc.$(OBJ_EXT) \
     pressure.$(OBJ_EXT) \
     bulk_viscosity.$(OBJ_EXT) \
+    progress_bar.$(OBJ_EXT) \
+    cartesian_grid_init_namelist.$(OBJ_EXT) \
+    quadric_mod.$(OBJ_EXT) \
+    cutcell_mod.$(OBJ_EXT) \
+    vtk_mod.$(OBJ_EXT) \
+    polygon_mod.$(OBJ_EXT) \
+    progress_bar_mod.$(OBJ_EXT) \
+    dashboard_mod.$(OBJ_EXT) \
     shear_viscosity.$(OBJ_EXT) \
     thermal_diffusivity.$(OBJ_EXT) \
     mass_mobility.$(OBJ_EXT) \
@@ -365,6 +380,8 @@ post_mfix : \
     ordinary_diff.$(OBJ_EXT) \
     dufour_coeff.$(OBJ_EXT) \
     chi_ij_GHD.$(OBJ_EXT) \
+    discretelement_mod.$(OBJ_EXT)                  \
+    ghdtheory_mod.$(OBJ_EXT)                  \
   -o post_mfix $(LIB_FLAGS)
   
 AMBM.mod : ../model/ambm_mod.f \
@@ -376,6 +393,8 @@ BC.mod : ../model/bc_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/bc_mod.f 
+CDIST.mod : ../model/cdist_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cdist_mod.f 
 COEFF.mod : ../model/coeff_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -390,6 +409,8 @@ CONT.mod : ../model/cont_mod.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cont_mod.f 
 CORREL.mod : correl_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) correl_mod.f 
+DES_BC.mod : ../model/des/des_bc_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_bc_mod.f 
 DRAG.mod : ../model/drag_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -420,10 +441,6 @@ IS.mod : ../model/is_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/is_mod.f 
-KINTHEORY2.mod : ../model/kintheory2_mod.f \
-            PARAM.mod \
-            PARAM1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/kintheory2_mod.f 
 KINTHEORY.mod : ../model/kintheory_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -569,14 +586,14 @@ allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             TMP_ARRAY.mod \
             TMP_ARRAY1.mod \
             TRACE.mod \
+            TURB.mod \
             VISC_G.mod \
             VISC_S.mod \
             XSI_ARRAY.mod \
             MFLUX.mod \
             MCHEM.mod \
             VSHEAR.mod \
-            KINTHEORY.mod \
-            KINTHEORY2.mod 
+            KINTHEORY.mod
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/allocate_arrays.f 
 any_more_data.$(OBJ_EXT) : any_more_data.f 
 calc_cell2.$(OBJ_EXT) : calc_cell2.f 
@@ -737,6 +754,38 @@ deallocate_arrays.$(OBJ_EXT) : deallocate_arrays.f \
             VISC_S.mod \
             XSI_ARRAY.mod \
             VSHEAR.mod 
+PROGRESS_BAR.mod : ../model/cartesian_grid/progress_bar_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/progress_bar_mod.f 
+QUADRIC.mod : ../model/cartesian_grid/quadric_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/quadric_mod.f 
+VTK.mod : ../model/cartesian_grid/vtk_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/vtk_mod.f 
+CUTCELL.mod : ../model/cartesian_grid/cutcell_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/cutcell_mod.f 
+POLYGON.mod : ../model/cartesian_grid/polygon_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/polygon_mod.f 
+DSAHBOARD.mod : ../model/cartesian_grid/dashboard_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/dashboard_mod.f 
+cartesian_grid_init_namelist.$(OBJ_EXT) : ../model/cartesian_grid/cartesian_grid_init_namelist.f \
+            PARAM1.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            POLYGON.mod \
+            VTK.mod \
+            PROGRESS_BAR.mod \
+            DASHBOARD.mod \
+            ../model/cartesian_grid/cartesian_grid_namelist.inc
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/cartesian_grid_init_namelist.f 
 eosg.$(OBJ_EXT) : ../model/eosg.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1044,6 +1093,12 @@ read_namelist.$(OBJ_EXT) : ../model/read_namelist.f \
             IC.mod \
             IS.mod \
             BC.mod \
+            DES_BC.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            VTK.mod \
+            POLYGON.mod \
+            DASHBOARD.mod \
             FLDVAR.mod \
             CONSTANT.mod \
             INDICES.mod \
