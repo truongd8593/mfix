@@ -364,7 +364,6 @@ post_mfix : \
     cooling_rate_tc.$(OBJ_EXT) \
     pressure.$(OBJ_EXT) \
     bulk_viscosity.$(OBJ_EXT) \
-    progress_bar.$(OBJ_EXT) \
     cartesian_grid_init_namelist.$(OBJ_EXT) \
     quadric_mod.$(OBJ_EXT) \
     cutcell_mod.$(OBJ_EXT) \
