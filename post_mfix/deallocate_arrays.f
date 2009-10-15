@@ -27,6 +27,7 @@
       Use pscor
       Use residual
       Use rxns
+      Use run
       Use scalars
       Use tau_g
       Use tau_s
@@ -335,6 +336,7 @@
 
 !     University of Colorado, Hrenya Research Group
 !     Arising from kinetic theory of Iddir & Arastoopour (2005)
+      IF (TRIM(KT_TYPE) == 'IA_NONEP') THEN      
       Deallocate(    KTMOM_U_s)
       Deallocate(    KTMOM_V_s)
       Deallocate(    KTMOM_W_s)
@@ -350,13 +352,20 @@
       Deallocate(    Knu_sM_ip)
       Deallocate(    Knu_sL_ip)
       Deallocate(    Kvel_s_ip)
-      Deallocate(    EDT_s_ip)
-      Deallocate(    EDvel_sM_ip)
       Deallocate(    EDvel_sL_ip)
       Deallocate(    ED_ss_ip)
+      ENDIF
       Deallocate(    GRAN_DISS)
+      IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD99') THEN
+      Deallocate(    EDvel_sM_ip)
+      Deallocate(    EDT_s_ip)
+      ENDIF
 
 !     GHD theory
+      IF (TRIM(KT_TYPE) == 'GHD') THEN      
+      Deallocate(    Flux_nE)
+      Deallocate(    Flux_nN)
+      Deallocate(    Flux_nT)
       Deallocate(    Zeta0)
       Deallocate(    ZetaU)
       Deallocate(    DiT)
@@ -367,6 +376,10 @@
       Deallocate(    JoiX)
       Deallocate(    JoiY)
       Deallocate(    JoiZ)
+      Deallocate(    FiX)
+      Deallocate(    FiY)
+      Deallocate(    FiZ)
+      ENDIF
 
 
 !
