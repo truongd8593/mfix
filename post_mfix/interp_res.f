@@ -244,7 +244,9 @@
       CALL CALC_DISTANCE (XMIN,DX,IMAX2,XDIST_SC,XDIST_VEC)
       CALL CALC_DISTANCE (ZERO,DY,JMAX2,YDIST_SC,YDIST_VEC)
       CALL CALC_DISTANCE (ZERO,DZ,KMAX2,ZDIST_SC,ZDIST_VEC)
-      
+!
+! set smax value since check_data_01 and constant_prop are not called in post_mfix.
+      SMAX = MMAX
       CALL CHECK_DATA_04                         ! solid phase section 
       CALL CHECK_DATA_05                         ! gas phase section 
 !
