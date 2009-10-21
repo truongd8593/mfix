@@ -58,6 +58,8 @@
       double precision dTl_dnj(s,s)          !partial derivative of Tl wrt nj: p 6 CMH notes
       double precision dzeta0_dnj(s)         !partial derivative of zeta 0 wrt nj: p 6 CMH notes
       double precision dchi0il_dnj(s,s,s)    !partial derivative of chi_il wrt nj: p 6 CMH notes
+      double precision domegaij_dnj(s,s)
+      double precision domegaii_dni(s)
       double precision Dq(s,s)               !Dufour coefficient
 !
 ! COMMONLY USED QUANTITIES
@@ -195,31 +197,8 @@
 !
       call mass_mobility(s,mi,ni,rho,zeta0,theta,nu,DF)
 
-!      write(6,*) 'MASS MOBILITY COEFFICIENT (DF)'
+!     write(6,*) 'MASS MOBILITY COEFFICIENT (DF)'
 !      write(6,*) '   ', DF
-!
-!---------------------------------------------------------------------
-! CONDUCTIVITY (lambda)
-!---------------------------------------------------------------------
-!
-      call thermal_conductivity(s,mi,T,sigmai,alpha,ni,rho,v0,mu, &
-                         sigma,chi,beta,zeta0,theta,Ti,DT,lambda, &
-                         omega,gammaij,lambdai)
-
-!      write(6,*) 'THERMAL CONDUCTIVITY'
-!      write(6,*) '   ', lambda
-!
-!
-!---------------------------------------------------------------------
-! THERMAL MOBILITY COEFFICIENT (Lij)
-!---------------------------------------------------------------------
-!
-      call thermal_mobility(s,mi,alpha,ni,mu,sigma,chi,zeta0,theta, &
-                           Ti,DF,gammaij,omega,Lij)
-
-!      write(6,*) 'THERMAL MOBILITY COEFFICIENT (Lij)'
-!      write(6,*) '   ', Lij
-!
 !
 !---------------------------------------------------------------------
 ! ORDINARY DIFFUSION (Dij)
@@ -238,6 +217,36 @@
 !
 !
 !---------------------------------------------------------------------
+! CONDUCTIVITY (lambda)
+!---------------------------------------------------------------------
+
+      call thermal_conductivity(s,mi,m,T,sigmai,alpha,ni,rho,v0,mu,&
+                         sigma,chi,beta,zeta0,theta,Ti,DT,&
+                         dchi0il_dnj,dTl_dnj,&
+                         lambda,omega,gammaij,lambdai,&
+                         domegaij_dnj,domegaii_dni)
+
+!      write(6,*) 'THERMAL CONDUCTIVITY'
+!      write(6,*) '   lambda', lambda
+!      write(6,*) '   omega', omega
+!      write(6,*) '   gammaij', gammaij
+!      write(6,*) '   lambdai', lambdai
+!      write(6,*) '   domegaij_dnj', domegaij_dnj
+!      write(6,*) '   domegaii_dni', domegaii_dni
+
+!---------------------------------------------------------------------
+! THERMAL MOBILITY COEFFICIENT (Lij)
+!---------------------------------------------------------------------
+!
+      call thermal_mobility(s,mi,m,sigmai,v0,alpha,ni,n,T,phii,phi,rho,rhoi,mu,&
+                            sigma,chi,zeta0,theta,Ti,DF,gammaij,omega,dTl_dnj,&
+                            dzeta0_dnj,domegaij_dnj,domegaii_dni,Lij)
+
+!      write(6,*) 'THERMAL MOBILITY COEFFICIENT (Lij)'
+!      write(6,*) '   ', Lij
+!
+!
+!---------------------------------------------------------------------
 ! DUFOUR COEFFICIENT (Dq)
 !---------------------------------------------------------------------
 !
@@ -245,7 +254,7 @@
              mu,sigma,chi,beta,zeta0,theta,Ti,Dij,lambdai,gammaij, &
              omega,I_ilj,dTl_dnj,dzeta0_dnj,dchi0il_dnj,Dq)
 
-!      write(6,*) 'DUFOUR COEFFICIENT (Dq)'
+!     write(6,*) 'DUFOUR COEFFICIENT (Dq)'
 !      write(6,*) '   ', Dq
 !
       RETURN

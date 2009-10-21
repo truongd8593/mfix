@@ -159,18 +159,52 @@
       enddo
 
 !determination of I_ilj - p 6.1 of CMH notes
-      do i=1,s
-         do l=1,s
-            do j=1,s
-               I_ilj(i,l,j) = (1.5d0/pi*(kronecker(j,l)*ni(l)* &
-                 dmuioverT_dnl(i,l)  &
-                 -ni(l)/ni(i)*kronecker(j,l)*kronecker(i,j)  &
-                 -4.d0*pi/3.d0*kronecker(j,l)*ni(l)*chi(i,j)* &
-                 sigma(i,j)**3)-ni(l)**2*sigma(i,l)**3* &
-                 dchi0il_dnj(i,l,j)) 
-            enddo
-         enddo
-      enddo
+!      do i=1,s
+!         do l=1,s
+!            do j=1,s
+!               I_ilj(i,l,j) = (1.5d0/pi*(kronecker(j,l)*ni(l)* &
+!                 dmuioverT_dnl(i,l)  &
+!                 -ni(l)/ni(i)*kronecker(j,l)*kronecker(i,j)  &
+!                 -4.d0*pi/3.d0*kronecker(j,l)*ni(l)*chi(i,j)* &
+!                 sigma(i,j)**3)-ni(l)**2*sigma(i,l)**3* &
+!                 dchi0il_dnj(i,l,j)) 
+!            enddo
+!         enddo
+!      enddo
+!
+!CMH correction (10/9/09) to previous error in notes - this I_ilj for binary mix only
+      I_ilj(1,2,1) = (3.d0*ni(1)/2.d0/pi*(dmuioverT_dnl(1,1)- &
+          1.d0/ni(1)-4.d0*pi/3.d0*chi(1,1)*sigma(1,1)**3) &
+          -ni(1)*chi(1,1)*sigma(1,1)**3*(ni(1)/chi(1,1)* &
+          dchi0il_dnj(1,1,1)) &
+          -ni(2)*chi(1,2)*sigma(1,2)**3*(ni(1)/chi(1,2)* &
+          dchi0il_dnj(1,2,1))) &
+          /(ni(2)*chi(1,2)*sigma(1,2)**3)
+      I_ilj(1,2,2) = (3.d0*ni(2)/2.d0/pi*(dmuioverT_dnl(1,2)- &
+          4.d0*pi/3.d0*chi(1,2)*sigma(1,2)**3) &
+          -ni(1)*chi(1,1)*sigma(1,1)**3*(ni(2)/chi(1,1)* &
+          dchi0il_dnj(1,1,2)) &
+          -ni(2)*chi(1,2)*sigma(1,2)**3*(ni(2)/chi(1,2)* &
+          dchi0il_dnj(1,2,2))) &
+          /(ni(2)*chi(1,2)*sigma(1,2)**3)
+      I_ilj(2,1,1) = (3.d0*ni(1)/2.d0/pi*(dmuioverT_dnl(2,1)- &
+          4.d0*pi/3.d0*chi(2,1)*sigma(2,1)**3) &
+         -ni(2)*chi(2,2)*sigma(2,2)**3*(ni(1)/chi(2,2)* &
+          dchi0il_dnj(2,2,1)) & 
+          -ni(1)*chi(2,1)*sigma(2,1)**3*(ni(1)/chi(2,1)* &
+          dchi0il_dnj(2,1,1))) &
+          /(ni(1)*chi(2,1)*sigma(2,1)**3)
+      I_ilj(2,1,2) = (3.d0*ni(2)/2.d0/pi*(dmuioverT_dnl(2,2)- &
+          1.d0/ni(2)-4.d0*pi/3.d0*chi(2,2)*sigma(2,2)**3) &
+          -ni(2)*chi(2,2)*sigma(2,2)**3*(ni(2)/chi(2,2)* &
+          dchi0il_dnj(2,2,2)) &
+          -ni(1)*chi(2,1)*sigma(2,1)**3*(ni(2)/chi(2,1)* &
+          dchi0il_dnj(2,1,2))) &
+          /(ni(1)*chi(2,1)*sigma(2,1)**3)
+      I_ilj(1,1,1) = 0.d0
+      I_ilj(1,1,2) = 0.d0
+      I_ilj(2,2,1) = 0.d0
+      I_ilj(2,2,2) = 0.d0
 
 !Numerical evaulation of several partial derivatives - p 6.6 of CMH notes.
 !Each of the partial derivatives is with respect to nj, where T and other
