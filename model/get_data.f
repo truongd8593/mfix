@@ -80,6 +80,11 @@
 !
       CALL INIT_NAMELIST 
       CALL READ_NAMELIST (0) 
+      IF( IMAX == UNDEFINED_I .OR. JMAX == UNDEFINED_I .OR. &
+         (.NOT.NO_K .AND. KMAX == UNDEFINED_I) ) THEN
+         WRITE(*,1006)
+         CALL MFIX_EXIT(myPE) 
+      ENDIF
       CALL CHECK_DATA_00
 
 !  Set constants
@@ -264,6 +269,8 @@
          'Physical dimension DIMN cannot be > 3',/1X,70('*')/)
  1005 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
          'Number of PARTICLES not specified in mfix.dat',/1X,70('*')/)
+ 1006 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
+         'imax or jmax or kmax not specified in mfix.dat',/1X,70('*')/)
       END SUBROUTINE GET_DATA 
       
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
