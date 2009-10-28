@@ -907,13 +907,13 @@ void MfixData::ReadTimeValues(ifstream & in , int offset , int spxNum)
 
     float time;
 
-    map<float,ULONGLONG> tmap2;
+    map<float,FILE_POSITION> tmap2;
 
     while (in.read( (char*)&time,sizeof(float) ) )
     {
         SWAP_FLOAT(time);
 
-        ULONGLONG pos = in.tellg();
+        FILE_POSITION pos = in.tellg();
 //        cout << "------> " << time << "  " << pos << "\n";
 
         tmap2.insert( make_pair(time,pos - sizeof(float)) );
@@ -1260,11 +1260,11 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
     // spx_timeMap2 ... map of times and file position for the
     //                 specified SPX file
 
-    map<float,ULONGLONG> & spx_timeMap2 = timeMap2[spx-1];
+    map<float,FILE_POSITION> & spx_timeMap2 = timeMap2[spx-1];
 
     // find where the requested time  , times[tstep] , is located in the map
 
-    map<float,ULONGLONG>::iterator mit = spx_timeMap2.lower_bound(times[tstep]);
+    map<float,FILE_POSITION>::iterator mit = spx_timeMap2.lower_bound(times[tstep]);
 
     if (mit == spx_timeMap2.end()) // time is greater than last time in file
     {
@@ -1445,7 +1445,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
 
     // get the requested variable/time data
 
-    ULONGLONG nBytesSkip = mit->second;
+    FILE_POSITION nBytesSkip = mit->second;
 
     nBytesSkip += 512; // record with time in it
 
@@ -1816,7 +1816,7 @@ int MfixData::GetRec3_value(fstream & in)
 
 
 
-void MfixData::CombineSPX(int SPX_file , MfixData & data2)
+void MfixData::CombineSPX(int SPX_file , MfixData & data2 , int add_time_code)
 {
 	if ( NVARS_SPX_file(SPX_file)  != data2.NVARS_SPX_file(SPX_file) )
 	{
@@ -1853,9 +1853,9 @@ void MfixData::CombineSPX(int SPX_file , MfixData & data2)
 	// skip first time in second file ... it is a repeat
 	// of the last time in the first file
 
-        ULONGLONG pos  = 3*512;  				// header
-                  pos += 512;    				// first time
-                  pos += 512*nvars*spx_records_per_timestep;	// data for first time
+        FILE_POSITION pos  = 3*512;  					// header
+                      pos += 512;    					// first time
+                      pos += 512*nvars*spx_records_per_timestep;	// data for first time
 
         in2.seekg(pos,ios::beg);
 
@@ -1865,6 +1865,8 @@ void MfixData::CombineSPX(int SPX_file , MfixData & data2)
 
 	char  buf[512];
 	float time2 , time_file;
+
+        if (add_time_code == 0) last_time = 0;
 
         while (in2.read(buf,512))
         {

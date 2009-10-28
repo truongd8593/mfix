@@ -8,7 +8,7 @@
 
 using namespace std;
 
-typedef unsigned long ULONGLONG;
+typedef long long FILE_POSITION;
 
 
 struct Pair_string_int
@@ -186,7 +186,7 @@ public:
 
    void Split_SP1(int SPX_file);
 
-   void CombineSPX(int SPX_file , MfixData & data2);
+   void CombineSPX(int SPX_file , MfixData & data2 , int add_time_code = 0);
 
    int NVARS_SPX_file(int SPX_file);
 
@@ -229,7 +229,7 @@ public:
    // from the header file. They are here to make
    // debugging easier
 
-   std::vector< std::map<float,ULONGLONG> >  timeMap2;
+   std::vector< std::map<float,FILE_POSITION> >  timeMap2;
 
    SimpleSet times;
 

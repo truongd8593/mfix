@@ -64,7 +64,12 @@ int main()
    cout << "enter the SPX file to combine (1-9) > ";
    cin  >> SPX_file;
 
-   data1.CombineSPX( SPX_file-1 , data2);
+   int add_time_code;
+
+   cout << "add last time of first file to each time in second file ? (0 = no) > ";
+   cin >> add_time_code;
+
+   data1.CombineSPX( SPX_file-1 , data2 , add_time_code);
 
    return 0;
 }
