@@ -394,9 +394,10 @@ mfix.exe : \
     cfupdateold.$(OBJ_EXT) \
     cfwallcontact.$(OBJ_EXT) \
     cfwallposvel.$(OBJ_EXT) \
+    check_des_bc.$(OBJ_EXT) \
     check_des_data.$(OBJ_EXT) \
-    check_des_inlet.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
+    des_check_particle.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
@@ -827,10 +828,11 @@ mfix.exe : \
     cfupdateold.$(OBJ_EXT) \
     cfwallcontact.$(OBJ_EXT) \
     cfwallposvel.$(OBJ_EXT) \
+    check_des_bc.$(OBJ_EXT) \
     check_des_data.$(OBJ_EXT) \
-    check_des_inlet.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
     des_bc_mod.$(OBJ_EXT) \
+    des_check_particle.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
@@ -1148,7 +1150,8 @@ VTK.mod : ./cartesian_grid/vtk_mod.f \
 MCHEM.mod : ./chem/mchem_mod.f \
             PARAM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_mod.f 
-DES_BC.mod : ./des/des_bc_mod.f 
+DES_BC.mod : ./des/des_bc_mod.f \
+            PARAM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_bc_mod.f 
 DISCRETELEMENT.mod : ./des/discretelement_mod.f \
             PARAM.mod \
@@ -5327,7 +5330,8 @@ cfnewvalues.$(OBJ_EXT) : ./des/cfnewvalues.f \
             GEOMETRY.mod \
             INDICES.mod \
             DRAG.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            DES_BC.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnewvalues.f 
 cfnocontact.$(OBJ_EXT) : ./des/cfnocontact.f \
             PARAM1.mod \
@@ -5362,7 +5366,8 @@ cfwallcontact.$(OBJ_EXT) : ./des/cfwallcontact.f \
             PHYSPROP.mod \
             DRAG.mod \
             CONSTANT.mod \
-            COMPAR.mod 
+            COMPAR.mod \
+            DES_BC.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfwallcontact.f 
 cfwallposvel.$(OBJ_EXT) : ./des/cfwallposvel.f \
             DISCRETELEMENT.mod \
@@ -5379,6 +5384,19 @@ cfwallposvel.$(OBJ_EXT) : ./des/cfwallposvel.f \
             CONSTANT.mod \
             COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfwallposvel.f 
+check_des_bc.$(OBJ_EXT) : ./des/check_des_bc.f \
+            COMPAR.mod \
+            CONSTANT.mod \
+            DES_BC.mod \
+            DISCRETELEMENT.mod \
+            FUNITS.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            PARAM.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            RUN.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_bc.f 
 check_des_data.$(OBJ_EXT) : ./des/check_des_data.f \
             PARAM1.mod \
             GEOMETRY.mod \
@@ -5389,15 +5407,6 @@ check_des_data.$(OBJ_EXT) : ./des/check_des_data.f \
             CONSTANT.mod \
             PHYSPROP.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_data.f 
-check_des_inlet.$(OBJ_EXT) : ./des/check_des_inlet.f \
-            COMPAR.mod \
-            CONSTANT.mod \
-            DES_BC.mod \
-            DISCRETELEMENT.mod \
-            FUNITS.mod \
-            PARAM1.mod \
-            RUN.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_inlet.f 
 des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             PARAM.mod \
             PARAM1.mod \
@@ -5407,8 +5416,21 @@ des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             GEOMETRY.mod \
             COMPAR.mod \
             PHYSPROP.mod \
-            DES_BC.mod 
+            DES_BC.mod \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_allocate_arrays.f 
+des_check_particle.$(OBJ_EXT) : ./des/des_check_particle.f \
+            COMPAR.mod \
+            CONSTANT.mod \
+            DES_BC.mod \
+            DISCRETELEMENT.mod \
+            FUNITS.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_check_particle.f 
 des_functions.$(OBJ_EXT) : ./des/des_functions.f \
             PARAM.mod \
             PARAM1.mod \
@@ -5440,7 +5462,8 @@ des_init_arrays.$(OBJ_EXT) : ./des/des_init_arrays.f \
             INDICES.mod \
             GEOMETRY.mod \
             COMPAR.mod \
-            PHYSPROP.mod 
+            PHYSPROP.mod \
+            DES_BC.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_arrays.f 
 des_init_namelist.$(OBJ_EXT) : ./des/des_init_namelist.f \
             PARAM1.mod \
@@ -5454,7 +5477,11 @@ des_mass_inlet.$(OBJ_EXT) : ./des/des_mass_inlet.f \
             DES_BC.mod \
             DISCRETELEMENT.mod \
             FUNITS.mod \
-            GEOMETRY.mod 
+            GEOMETRY.mod \
+            INDICES.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_mass_inlet.f 
 des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
             PARAM.mod \
@@ -5577,7 +5604,8 @@ generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
 grid_based_neighbor_search.$(OBJ_EXT) : ./des/grid_based_neighbor_search.f \
             PARAM1.mod \
             DISCRETELEMENT.mod \
-            GEOMETRY.mod 
+            GEOMETRY.mod \
+            DES_BC.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/grid_based_neighbor_search.f 
 make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             PARAM1.mod \
