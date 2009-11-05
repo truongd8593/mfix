@@ -47,7 +47,7 @@
       INCLUDE 'b_force2.inc'
 
 
-      WRITE(*,*) '---------- START CFASSIGN ---------->'
+      WRITE(*,'(3X,A)') '---------- START CFASSIGN ---------->'
 
       PIS = PARTICLES  ! J.Musser 
       MINMASS = LARGE_NUMBER
@@ -68,7 +68,7 @@
       ENDDO
 
       RADIUS_EQ = MAX_RADIUS*1.05d0
-      WRITE(*,*) '     MAX_RADIUS = ', MAX_RADIUS     
+      WRITE(*,'(5X,A,ES15.8)') 'MAX_RADIUS = ', MAX_RADIUS     
 
 
       IF(.NOT.DES_PERIODIC_WALLS) THEN
@@ -107,7 +107,7 @@
       ELSE
          KT_W = KT_W_FAC*KN_W
       ENDIF
-      WRITE(*,*) '     KN AND KT = ', KN, KT
+      WRITE(*,'(5X,A,ES17.10,2X,ES17.10)') 'KN AND KT = ', KN, KT
 
 ! Arrange the coefficient of restitution matrix from en_input values
 ! use coef of rest to determine damping coefficient 
@@ -168,8 +168,8 @@
 
       DO I = 1, MMAX
          DO J = 1, MMAX
-            WRITE(*,'(x,A,i2,1x,i2,A,2(g17.8))') &
-               '     ETA_N AND ETA_T FOR PAIR',&
+            WRITE(*,'(5X,A,I,2X,I,A,2(ES17.10))') &
+               'ETA_N AND ETA_T FOR PAIR ',&
                I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
          ENDDO
       ENDDO
@@ -180,9 +180,10 @@
       !DTSOLID = DTSOLID/50     
       DTSOLID = TCOLL/50.d0
       
-      WRITE(*,*) '     MIN TCOLL AND DTSOLID = ', TCOLL, DTSOLID
+      WRITE(*,'(5X,A,E17.10,2X,E17.10)') 'MIN TCOLL AND DTSOLID = ',&
+         TCOLL, DTSOLID
 
-      WRITE(*,*) '<---------- END CFASSIGN ----------'      
-      
+      WRITE(*,'(3X,A)') '<---------- END CFASSIGN ----------'
+
       RETURN
       END SUBROUTINE CFASSIGN

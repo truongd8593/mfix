@@ -1,9 +1,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GENERATE_PARTICLE_CONFIG                               C
-!>
-!!  Purpose: Generate particle configuration based on input             
-!<
+!
+!  Purpose: Generate particle configuration based on input             
+!
 !                                                                      C
 !                                                                      C
 !  Authors: Rahul Garg                                Date: 01-Aug-07  C
@@ -24,11 +24,14 @@
       USE physprop
 
       IMPLICIT NONE
-      
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------       
       INTEGER LN, K, M, NP
       INTEGER CHECK_MPI
       INTEGER L, I, II, PART_COUNT
       DOUBLE PRECISION DIST, R_LM, DOML(DIMN)
+!-----------------------------------------------       
 
       PART_COUNT = 0
       DO M = 1, MMAX
@@ -45,85 +48,129 @@
          DOML(3) = DES_EPS_ZSTART
       ENDIF
       
-      CALL gener_lattice_mod(PARTICLES,doml(1:DIMN), DES_POS_OLD(1:PARTICLES,1:DIMN),DES_RADIUS(1:PARTICLES))   
+      CALL GENER_LATTICE_MOD(PARTICLES,doml(1:DIMN),&
+         DES_POS_OLD(1:PARTICLES,1:DIMN),DES_RADIUS(1:PARTICLES))   
 
-      OPEN(unit = 1000, file="particle_gener_conf_out.dat", form="formatted")
+      OPEN(unit=1000, file="particle_gener_conf_out.dat",&
+         form="formatted")
       
       DO LN = 1, PARTICLES
          OMEGA_OLD(LN,:) = ZERO
          DES_POS_NEW(LN,:) = DES_POS_OLD(LN,:)
          DES_VEL_NEW(LN,:) = DES_VEL_OLD(LN,:)
          OMEGA_NEW(LN,:) = OMEGA_OLD(LN,:)
-         WRITE(1000, '(10(2x,g12.5))') (DES_POS_OLD(LN,K),K=1,DIMN),DES_RADIUS(LN),RO_Sol(LN) 
+         WRITE(1000, '(10(2X,ES12.5))') (DES_POS_OLD(LN,K),K=1,DIMN),&
+            DES_RADIUS(LN),RO_Sol(LN) 
       ENDDO
       CLOSE(1000, STATUS = "KEEP")
 
-      IF(MAXVAL(DES_POS_NEW(1:PARTICLES,2)).GT.YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES))) THEN 
-         WRITE(*,*)'---------------------------------------------------'
-         WRITE(*,*)'WARNING MESSAGE'
-         WRITE(*,*)'MAXIMUM POSITION OF PARTICLE IN Y DIRECTION (=', &
-         MAXVAL(DES_POS_NEW(1:PARTICLES,2)), ') > YLENGTH - DMAX =  ', &
-         YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES))
-         WRITE(*,*) 'REASON: THIS WOULD PROBABLY BE HAPPENING IF YOU ARE TRYING TO START WITH CLOSE PACKING'
-         WRITE(*,*)'PROBLEM: POSITIVE OVERLAPS WITH WALLS OR PARTICLES FOR PERIODIC BCs'
-         WRITE(*,*) 'RESOLUTION: INCREASE THE DOMAIN LENGTH IN Y- DIRECTION &
-         IF POSSIBLE OR GENERATE THE PARTICLE CONFIGURATION IN A BIGGER  &
-         BOX AND SHRINK IT TO FIT IN THE DESIRED BOX'
-         WRITE(*,*) 'STOPPING THE SIMULATION'
+      IF(MAXVAL(DES_POS_NEW(1:PARTICLES,2)).GT.&
+      YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES))) THEN 
+         WRITE(*,1001) MAXVAL(DES_POS_NEW(1:PARTICLES,2)), &
+            YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES))
          STOP 
       ENDIF
 
+ 1001 FORMAT(/1X,70('*')//&
+         ' From: GENERATE_PARTICLE_CONFIG -',/&
+         ' Message: Positive overlap with walls in y-dir',/&
+         ' Max. y-position of particle (=', G12.5,&
+         ') > YLENGTH-DMAX = ', G12.5,/&
+         ' This may occur if starting with close packing',/&
+         ' Increase the domain length in the y-dir or generate',/&
+         ' the particle configuration in a bigger box and',/&
+         ' shrink it to fit in the desired box size',/&
+         ' STOPPING THE SIMULATION',/&
+         1X,70('*')/)
+
       END SUBROUTINE GENERATE_PARTICLE_CONFIG
       
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!
+!      
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE GENER_LATTICE_MOD(NBODY,DOMLIN,XC,DBDY)
-      
+
       USE discretelement
-      implicit none
+
+      IMPLICIT NONE
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------  
+! specified domain length for generating particle configuration
       double precision, INTENT(IN) ::  DOMLIN(DIMN)
+      double precision :: DOML(DIMN)
+! radius of particles/diameter
       double precision, INTENT(INOUT) ::  DBDY(NBODY)
+! number of particles      
       INTEGER, INTENT(IN) :: NBODY
+! old position of particles      
       DOUBLE PRECISION, INTENT(OUT) :: xc(nbody,DIMN)
-      double precision :: DOML(DIMN), FAC, DMAX, XP, YP, ZP
-      integer :: nprob1 , i, j, k, nx, ny, nz, np1, n
-      
+! maximum diameter
+      DOUBLE PRECISION DMAX
+      double precision :: FAC, XP, YP, ZP
+      integer :: nprob1 , i, k, nx,  nz, np1, n
+!-----------------------------------------------  
+
+      WRITE(*,'(7X,A)') '---------- START GENER_LATTICE_MOD ---------->'
+
       DOML(:) = DOMLIN(:)
+! convert radius to diameter      
       dbdy(1:NBODY) = 2.d0*dbdy(1:NBODY)
-      
-      fac = 1.05
-      dmax =  MAXVAL(dbdy(1:nbody))
+      dmax =  MAXVAL(dbdy(1:nbody))     
+
+      FAC = 1.05
       N = 1
-      yp = dmax*fac/2.d0
+      YP = dmax*fac/2.d0
       
-      DO While (n.lt.nbody) 
+      DO WHILE (N.LT.NBODY) 
+
          IF(DIMN.EQ.3) THEN 
             nz = floor((real(DOML(3))/(dmax*fac)))
          ELSE 
             nz = 1
          ENDIF
          nx = floor((real(doml(1))/(dmax*fac)))
-         DO k = 1, nz
-            zp =  dmax*half*fac +  (k-1)*dmax*fac
-            DO i = 1, nx
-               xp = dmax*half*fac + (i-1)*dmax*fac
-               XC(n,1) = xp
-               XC(n,2) = yp
-               IF(DIMN.EQ.3) XC(n,3) = zp
-               IF(N.Eq.NBODY) GOTO 200
+
+         DO K = 1, nz
+            ZP =  dmax*half*fac +  (K-1)*dmax*fac
+            DO I = 1, nx
+               XP = dmax*half*fac + (I-1)*dmax*fac
+               XC(N,1) = XP
+               XC(N,2) = YP
+               IF(DIMN.EQ.3) XC(N,3) = ZP
+               IF(N.EQ.NBODY) GOTO 200
                n = n+1
                
-            END DO
-            
-         END DO
-         yp = yp + dmax*fac
+            ENDDO
+         ENDDO
+
+         YP = YP + dmax*fac
          
- 200     CONTINUE       
-      END DO
-      PRINT*,'NUMBER OF PARTICLE IN GENER LATTICE MOD = ', N
+ 200     CONTINUE 
+      ENDDO
+
+      WRITE(*,'(9X,A,I)') &
+         'Number of particles in gener_lattice_mod = ', N
+      WRITE(*,'(7X,A)') '<---------- END GENER_LATTICE_MOD ----------'
+
+! convert back to radius
       DBDY(1:NBODY) = 0.5d0*DBDY(1:NBODY)
+
       END SUBROUTINE GENER_LATTICE_MOD
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!
+! This routine is no longer called     
+!      
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE SET_INITIAL_VELOCITY
+
       USE param
       USE param1
       USE parallel
@@ -148,9 +195,11 @@
       USE interpolation
       
       IMPLICIT NONE
-      
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
       INTEGER IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IPJPK, IPJKP, IJPKP&
-      &, IPJPKP
+         &, IPJPKP
       INTEGER L, LL, I, J, K, KK, M, MM, IJK, IER
 
       DOUBLE PRECISION TEMP1, TEMP2, AVG_FACTOR, AVG_FACTOR2
@@ -162,13 +211,19 @@
       INTEGER:: IB, IE, JB, JE, KB, KE, II,JJ, IJK_EAST
       DOUBLE PRECISION:: EPS_P, VCELL, TEMP_U_G(JMAX2)
       INTEGER:: NP, IJK_PER, IJKP_PER
+!-----------------------------------------------  
       
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
-      PRINT*,'SETTING THE INITIAL PARTICLE VELOCITY EQUAL TO LOCAL FLUID VELOCITY'
+
+      WRITE(*,'(7X,A)') &
+         '---------- START SET_INITIAL_VELOCITY ---------->'
+      WRITE(*,'(9X,A,/,A)') &
+         'Setting the initial particle velocity equal ',&
+         'to the local fluid velocity'
       
       K = 1
       J = JMAX1
@@ -178,16 +233,16 @@
          IJK_EAST = funijk(I,JMAX2,K)
          PRINT*,'UG = ', U_G(IJK), U_G(IJK_EAST)
       ENDDO
+
       IF(INTX_PER) THEN 
          I = 1
          K = 1
-         DO J = 1, JMAX2
-            
+         DO J = 1, JMAX2            
             IJK = funijk(I,J,K)
             IJK_EAST = funijk(IMAX1, J, K)
             TEMP_U_G(J) = U_G(IJK) 
             U_G(IJK) = U_G(IJK_EAST)
-         END DO
+         ENDDO
       ENDIF
       CALL set_interpolation_scheme(2)
       
@@ -195,7 +250,7 @@
       AVG_FACTOR2 = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)
       
       DO NP = 1, PARTICLES
-                                ! CALCUALTE THE DRAG FORCE ON EACH PARTICLE USING THE PARTICLE VELOCITY
+         ! CALCUALTE THE DRAG FORCE ON EACH PARTICLE USING THE PARTICLE VELOCITY
          I = PIJK(NP, 1)
          J = PIJK(NP, 2)
          K = PIJK(NP, 3)
@@ -235,16 +290,13 @@
                   IJPKP = KP_OF(IJPK)
                   IPJKP = KP_OF(IPJK)
                   IPJPK = JP_OF(IPJK)
-                  IPJPKP = KP_OF(IPJPK)
-                  
+                  IPJPKP = KP_OF(IPJPK)                  
                   
                   vstencil(i,j,k,1) = AVG_FACTOR*( u_g(ijk) + u_g(ijpk)&
                   & + (u_g(ijkp) + u_g(ijpkp))*(dimn-2) )
                   
-                  
                   vstencil(i,j,k,2) = AVG_FACTOR*( v_g(ijk) + v_g(ipjk)&
                   & + (v_g(ijkp) + v_g(ipjkp))*(dimn-2) )
-                  
                   
                   if(dimn.eq.3) then 
                      vstencil(i,j,k,3) = AVG_FACTOR*(w_g(ijk) +&
@@ -252,12 +304,11 @@
                   else 
                      vstencil(i,j,k,3) = 0.d0 !doesn't matter what
                                 ! ever value is put here
-                  end if
+                  endif                  
                   
-                  
-               END DO
-            END DO
-         END DO
+               ENDDO
+            ENDDO
+         ENDDO
          
                                 !PRINT*, 'VSTENCIL = ', VSTENCIL(1:ONEW, 1:ONEW, 1:ONEW, 1:DIMN)
          if(dimn.eq.2) then 
@@ -282,50 +333,81 @@
       
       IF(INTX_PER) THEN 
          I = 1
-         K = 1
-         
+         K = 1         
          DO J = 1, JMAX2
             IJK = funijk(I,J,K)
             U_G(IJK) = TEMP_U_G(J)
-         end DO
+         ENDDO
       ENDIF
+
+      WRITE(*,'(7X,A)')&
+         '<---------- END SET_INITIAL_VELOCITY ----------'   
+
       END SUBROUTINE SET_INITIAL_VELOCITY
-      
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!
+!      
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE writeic
       USE discretelement
-      Implicit None 
-      INTEGER:: ng, ip   
+      IMPLICIT NONE
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      INTEGER:: NP   
+!-----------------------------------------------
+
       OPEN(1002,file='ic.dat',form='formatted')
-      DO ip = 1,particles 
-         WRITE(1002,32)des_pos_new(ip,1:2), DES_VEL_NEW(IP,1:2), DES_VEL_OLD(IP,1:2)
+
+      DO NP = 1,particles 
+         WRITE(1002,32)des_pos_new(NP,1:2), DES_VEL_NEW(NP,1:2), DES_VEL_OLD(NP,1:2)
       ENDDO
+
       CLOSE(1002)
+
  32   FORMAT(10(2xe17.8))
 
-      close(1002)
       END SUBROUTINE writeic
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!
+!      
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
       SUBROUTINE init_particles_jn
       USE randomno
       USE discretelement
       USE constant 
       IMPLICIT NONE 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
       INTEGER :: i,j, k 
       REAL*8 :: umf0(dimn), rsf(DIMN, DIMN)
-      
-      WRITE(*,*) 'INITIALIZING NORMAL VELOCITY DISTRIBUTION'
-      WRITE(*,*) 'MEAN  = ', pvel_mean, ' AND Standard Deviation = ', PVEL_StDev
-      do j=1,DIMN
+!-----------------------------------------------      
+
+      WRITE(*,'(5X,A)') '---------- START INIT_PARTICLES_JN ---------->'
+      WRITE(*,'(7X,A)') 'Initializing normal velocity distribution:'
+      WRITE(*,'(7X,A,ES17.9,A,ES17.9)') 'mean= ', pvel_mean,&
+         ' and standard deviation= ', PVEL_StDev
+
+      DO J=1,DIMN
          umf0(j)=pvel_mean
-         do i=1,dimn
-            if(i.eq.j)then
-               rsf(i,j)=PVEL_StDev
+         DO I=1,DIMN
+            if(I.eq.J)then
+               rsf(I,J)=PVEL_StDev
             else
-               rsf(i,j)=0.0
+               rsf(I,J)=0.0
             endif
-         enddo
-         CALL nor_rno(DES_VEL_OLD(1:PARTICLES, j),umf0(j),rsf(j,j))
-      enddo
+         ENDDO
+         CALL nor_rno(DES_VEL_OLD(1:PARTICLES,J),umf0(J),rsf(J,J))
+      ENDDO
 
       DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
+      WRITE(*,'(5X,A)') '<---------- END INIT_PARTICLES_JN ----------'
+
       END SUBROUTINE init_particles_jn
