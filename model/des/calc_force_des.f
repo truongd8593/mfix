@@ -86,7 +86,7 @@
       DO LL = 1, MAX_PIS
 
          IF(PC .GT. PIS) EXIT
-         IF(.NOT.PEA(LL)) CYCLE
+         IF(.NOT.PEA(LL,1)) CYCLE
          
          IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN 
             IF (.NOT.DES_LOC_DEBUG) THEN
@@ -108,43 +108,55 @@
          IF(PN(LL,1).GE.1) THEN
             NLIM = PN(LL,1)+1
             N_NOCON = 0
-            DO NI = 2, PN(LL,1)+1
-               IF(PV(LL,NI-N_NOCON).EQ.0.AND.NI-N_NOCON.GE.2) THEN
-                  PN(LL,NI-N_NOCON:NLIM-1) = PN(LL,NI-N_NOCON+1:NLIM) 
-                  PV(LL,NI-N_NOCON:NLIM-1) = PV(LL,NI-N_NOCON+1:NLIM) 
-                  PFN(LL,NI-N_NOCON:NLIM-1,:) = PFN(LL,NI-N_NOCON+1:NLIM,:) 
-                  PFT(LL,NI-N_NOCON:NLIM-1,:) = PFT(LL,NI-N_NOCON+1:NLIM,:) 
+! For each particle listed as in contact with particle LL in array PN,
+! check the flag array PV to determine if particles remained in contact 
+! after the previous call of CALC_FORCE_DES. 
+            DO NI = 2, NLIM
+               IF(PV(LL,NI-N_NOCON).EQ.0) THEN
+! For each particle in PN(LL,2:MAXNEIGHBORS) that is no longer in 
+! contact, shift the remaining particle contact information PN, PN, PFN,
+! PFT left by one and reduce PN(LL,1) by one.
+                  PN(LL,(NI-N_NOCON):MAXNEIGHBORS-1) = &
+                     PN(LL,(NI-N_NOCON+1):MAXNEIGHBORS) 
+                  PV(LL,(NI-N_NOCON):(MAXNEIGHBORS-1)) = &
+                     PV(LL,(NI-N_NOCON+1):MAXNEIGHBORS)
+                  PFN(LL,(NI-N_NOCON):(MAXNEIGHBORS-1),:) = &
+                     PFN(LL,(NI-N_NOCON+1):MAXNEIGHBORS,:)
+                  PFT(LL,(NI-N_NOCON):(MAXNEIGHBORS-1),:) = &
+                     PFT(LL,(NI-N_NOCON+1):MAXNEIGHBORS,:)
                   N_NOCON = N_NOCON + 1
                   PN(LL,1) = PN(LL,1) - 1
-                  NLIM = PN(LL,1) + 1
                ENDIF
-            END DO
+            ENDDO
          ENDIF
-         
-! Initializing rest of the neighbor list which is not in contact
+
+! Initializing rest of the neighbor list which is not in contact and
+! clean up after the above array left shifts
          NLIM = MAX(2,PN(LL,1) + 2) 
          PN(LL,NLIM:MAXNEIGHBORS) = -1
          PFN(LL,NLIM:MAXNEIGHBORS,:) = ZERO
          PFT(LL,NLIM:MAXNEIGHBORS,:) = ZERO
          NEIGH_MAX = MAX(NEIGH_MAX, PN(LL,1)+1)
 
-! Initializing the neighbor list contact information when particles are not in contact
-! Particle LL has no neighbors         
+! Initializing the neighbor list contact information when particles are
+! not in contact; i.e. when particle LL has no neighbors         
          IF (PN(LL,1).EQ.0) THEN
             PFN(LL,:,:) = ZERO
             PFT(LL,:,:) = ZERO
          ENDIF
          
-! Initializing the particle
+! Reset the flag array PV; during each call to calc_force_des this
+! variable tracks whether particle LL has any current neighbors
+! the array is used in the next call to calc_force_des to update
+! particle LL neighbor history above
          PV(LL,2:MAXNEIGHBORS) = 0
-
 
 
 ! Check particle LL for wall contacts
 !---------------------------------------------------------------------
 ! Treats wall interaction also as a two-particle interaction but accounting
 ! for the wall properties
-         IF(WALLDTSPLIT) THEN
+         IF(WALLDTSPLIT .AND. .NOT.PEA(LL,2) .AND. .NOT.PEA(LL,3)) THEN
             WALLCHECK = 0
             DO IW = 1, NWALLS
                WALLCONTACT = 0
@@ -288,10 +300,10 @@
 
                   PARTICLE_SLIDE = .FALSE.
 
-               ENDIF           !Wall Contact
+               ENDIF   !wall contact
  200           CONTINUE
             ENDDO
-         ENDIF                 !if(walldtsplit)
+         ENDIF   !if(walldtsplit .and. .not.pea(LL,2))
 !---------------------------------------------------------------------
 ! End check particle LL for wall contacts         
 
@@ -302,7 +314,7 @@
             DO II = 2, NEIGHBOURS(LL,1)+1
                I = NEIGHBOURS(LL,II)
 
-               IF(I.GT.LL) THEN
+               IF(I.GT.LL .AND. PEA(I,1)) THEN
                   
                   ALREADY_NEIGHBOURS=.FALSE.
                   
@@ -507,7 +519,7 @@
                      Print*, 'PN', PN(LL,:)
                   ENDIF
                   
-               ENDIF         ! IF (I>LL)
+               ENDIF         ! IF (I>LL .AND. PEA(I,1))
  300           CONTINUE
             ENDDO            ! DO II = 2, NEIGHBOURS(LL,1)+I
          ENDIF               ! IF(NEIGHBOURS(LL,1).GT.0)
@@ -542,7 +554,7 @@
 
       IF (DES_LOC_DEBUG) WRITE(*,1001)
 
- 1000 FORMAT('---------- FROM CALC_FORCE_DES ---------->')
+ 1000 FORMAT('---------- START CALC_FORCE_DES ---------->')
  1001 FORMAT('<---------- END CALC_FORCE_DES ----------') 
 
       RETURN

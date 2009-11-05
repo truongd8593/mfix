@@ -1,5 +1,5 @@
        NAMELIST / DES_INPUT_DATA /&
-
+!
 ! USE discretelement
 	DISCRETE_ELEMENT, DES_CONTINUUM_COUPLED, DES_INTERP_ON, &
         TSUJI_DRAG, &
@@ -34,11 +34,11 @@
         MAX_ANIMATOR_STEP, MIN_ANIMATOR_STEP, &
 !
 ! DES Mass Inflow Information: J.Musser
-!
-      DES_MI, MAX_PIS, &
+      MAX_PIS, &
       DES_BC_X_w, DES_BC_X_e, &
       DES_BC_Y_s, DES_BC_Y_n, &
       DES_BC_Z_b, DES_BC_Z_t, &
-      DES_BC_VOLFLOW_s, DES_BC_MASSFLOW_s
+      DES_BC_VOLFLOW_s, DES_BC_MASSFLOW_s, &
+      DES_BC_U_s, DES_BC_V_s, DES_BC_W_s, DES_BC_TYPE 
 !
 !

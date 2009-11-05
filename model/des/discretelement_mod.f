@@ -38,15 +38,16 @@
       CHARACTER(LEN=7):: scheme, interp_scheme
       INTEGER:: order, ob2l, ob2r
       
-      TYPE iap1
-      INTEGER, DIMENSION(:), POINTER:: p
-      END TYPE iap1
-!     id's of particles in a cell 
-      TYPE(iap1), DIMENSION(:,:,:), ALLOCATABLE:: pic
 !===========END of Interpolation related data======================
 
+
+!     dynamic variable; for each cell stores the total number of particles
+!     and the id's of the particles in that cell
+      TYPE iap1
+         INTEGER, DIMENSION(:), POINTER:: p
+      END TYPE iap1
+      TYPE(iap1), DIMENSION(:,:,:), ALLOCATABLE:: pic
      
-!     DES Variables      
      
       INTEGER, PARAMETER :: DES_EXTRA_UNIT = 2000, DES_VOLFRAC_UNIT = 2001
       DOUBLE PRECISION DES_SPX_TIME, DES_RES_TIME
@@ -263,16 +264,29 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_THETA ! (PARTICLES,MMAX)
      
 !     Cell faces
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: XE ! (IMAX3)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: YN ! (JMAX3)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ZT ! (KMAX3)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: XE ! (DIMENSION_I)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: YN ! (DIMENSION_J)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ZT ! (DIMENSION_K)
 
 !********************************************************************************
 !     J.MUSSER
 
-!     Dynamic particle count elements:
-!     Particle exists array
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: PEA! (MAX_PIS)
+! Dynamic particle count elements:
+! PEA(n,1) : This column identifies particle as 'existing' if true or 'not existing'
+! if false. It is used with the inlet/outlet to skip indices that do not represent particles
+! in the system or indices that represent particles that have exited the system.
+! PEA(n,2) : This column identifies a particle as 'new' if true, or 'existing' if false.
+! Particles with a classification of 'new' do not react when in contact with a wall or 
+! another particle, however particles that are 'existing' do collide and interact with
+! 'new' particles. The classification of 'new' allows new particles to push particles 
+! already in the system out of the way when entering to prevent overlap.
+! PEA(n,3) : This column identifies a particle as 'exiting' if true and 'not exiting' 
+! if false. If a particle initiates contact with a wall surface designated as a des outlet,
+! this flag is set to true. Thus the particle's contact with the wall is ignored and the 
+! location of the particle is checked to assess if the particle has fully exited the system.
+! Once the particle is outside the domain space, the particle attributes are removed
+! and the particle is no longer tracked.
+      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PEA! (MAX_PIS,3)
 
 !     Number of particles in the system (current)
       INTEGER PIS

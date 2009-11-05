@@ -12,153 +12,171 @@
       USE param1
       USE discretelement
       USE geometry
-      
+      USE des_bc
+
       IMPLICIT NONE
-      LOGICAL PER_COND, ALREADY_NEIGHBOURS
-      INTEGER I, II, LL, CO, NI, TEMP, JJ, KK , J, K, NEIGH_L
-      INTEGER KM1, KP1, IM1, IP1, JM1, JP1, PNO, NPG, PC(3), IP2, NLIM
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      LOGICAL ALREADY_NEIGHBOURS
+
+      INTEGER PC ! Index to track accounted for particles
+      INTEGER I, II, IP1, IM1   ! X-coordinate loop indices
+      INTEGER J, JJ, JP1, JM1   ! Y-coordinate loop indices
+      INTEGER K, KK, KP1, KM1   ! Z-coordinate loop indices
+      INTEGER PNO ! Temp. particle number variable
+      INTEGER NPG ! Temp. cell particle count
+      INTEGER LL, NP, NEIGH_L  ! Loop Counters
+      INTEGER NLIM ! 
       
-      DOUBLE PRECISION  DIST(DIMN), DISTMAG, R_LM, LX, LY, LZ, XPER_FAC, YPER_FAC, ZPER_FAC,  CORD_PNO(DIMN)
-      
+      DOUBLE PRECISION DISTVEC(DIMN), DIST, R_LM ! Contact variables
+      DOUBLE PRECISION LX, LY, LZ ! System dimensions
+      DOUBLE PRECISION XPER_FAC, YPER_FAC, ZPER_FAC !Periodic BC info
+      DOUBLE PRECISION CORD_PNO(DIMN) !Periodic BC neighbor check
+
+!-----------------------------------------------
+! Functions
+!-----------------------------------------------         
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-      PRINT*, 'IN CELL LINKED LIST SEARCH'
 
-      LX = XE(IMAX1) - XE(IMIN2)
-      LY = YN(JMAX1) - YN(JMIN2)
-      LZ = ZT(KMAX1) - ZT(KMIN2)
+!-----------------------------------------------  
+
+! Determine system dimensions for periodic BC neighbor search
+! Look at cells imin2=1 through imax1=imax+1
+      LX = XLENGTH ! XE(IMAX1) - XE(1)
+      LY = YLENGTH ! YN(JMAX1) - YN(1)
+      LZ = ZLENGTH ! ZT(KMAX1) - ZT(1)
       
-!WRITE(*,*) ' DOMAIN LENGTH = ', LX, LY, LZ, INTX_PER
-      DO LL = 1, PARTICLES
-         
-         NEIGHBOURS(LL,1) = NEIGHBOURS(LL,1) + 1
-         NLIM  = NEIGHBOURS(LL,1) + 1
-         IF(NLIM.GT.MAXNEIGHBORS) THEN 
-            WRITE(*,*) 'NLIM =', NLIM,' > MAXNEIGHBORS =', MAXNEIGHBORS, ' FOR PARTICLE ', LL 
-            STOP 
-         end IF
-         
-         NEIGHBOURS(LL,NLIM) = LL
-         
-         PC(:) =  PIJK(LL,1:3)
-         
-         II = PC(1)
-         JJ = PC(2)
-         KK = PC(3)
-         IP1 = II
-         IM1 = II
-         JP1 = JJ
-         JM1 = JJ
-         KM1 = KK
-         KP1 = KK
+! Loop only over particles in the system
+!   cycle if there is no particle in the LL seat
+!   skip new particles entering the system and particles 
+!   exiting the system
+      PC = 1
+      DO LL = 1, MAX_PIS
+         IF(PC .GT. PIS) EXIT
+         IF(.NOT.PEA(LL,1)) CYCLE
 
-         IP1 = II+1
-         IM1 = II-1
-         JP1 = JJ+1
-         JM1 = JJ-1
-         
-         IF(DIMN.EQ.3) THEN 
-            KP1 = KK+1
-            KM1 = KK-1
-         end IF
+! Initialize and set II indices
+         II = PIJK(LL,1); IP1=II+1; IM1=II-1
+! Initialize and set JJ indices
+         JJ = PIJK(LL,2); JP1=JJ+1; JM1=JJ-1
+! Initialize and set KK indices
+         KK = PIJK(LL,3); KP1=KK;   KM1=KK
+         IF(DIMN.EQ.3)THEN 
+            KP1 = KK+1;   KM1 = KK-1
+         ENDIF
 
-
-!     !$         IF((XE(II) - DES_POS_NEW(LL,1)).LT.(DES_RADIUS(LL)+MAX_RADIUS))  IP1 = (II+1)
-!     !$         IF((DES_POS_NEW(LL,1) - XE(II-1)).LT.(DES_RADIUS(LL)+MAX_RADIUS))  IM1 = (II-1)
-!     !$         IF((YN(JJ) - DES_POS_NEW(LL,2)).LT.(DES_RADIUS(LL)+MAX_RADIUS))  JP1 =  (JJ+1)
-!     !$         IF((DES_POS_NEW(LL,2) - YN(JJ-1)).LT.(DES_RADIUS(LL)+MAX_RADIUS))  JM1 = (JJ-1)
-!     !$         IF(DIMN.EQ.3) THEN 
-!     !$            IF((ZT(KK) - DES_POS_NEW(LL,3)).LT.(DES_RADIUS(LL)+MAX_RADIUS))  KP1 = (KK+1)
-!     !$            IF((DES_POS_NEW(LL,3) - ZT(KK-1)).LT.(DES_RADIUS(LL)+MAX_RADIUS))  KM1 = (KK-1)
-!     !$         ENDIF
-!     !$         IF(LL.EQ.1) PRINT*, 'CHEC',PC(1), PIJK(2,1), IP1, (XE(II) - DES_POS_NEW(LL,1)),(DES_RADIUS(LL)+MAX_RADIUS), DES_RADIUS(LL), MAX_RADIUS
+! Check fluid cells neighboring PIJK(LL,4) for potential neighbors of LL
          DO KK = KM1, KP1
             DO JJ = JM1, JP1
                DO II = IM1, IP1
-                  
-                  I = II
-                  J = JJ
-                  K = KK
-                  
-                  XPER_FAC = 0
-                  YPER_FAC = 0
-                  ZPER_FAC = 0
-                  PER_COND = .FALSE.
-                  IF(II.GT.IMAX1) THEN 
-                     IF(INTX_PER) THEN 
-                        I = IMIN1
-                        XPER_FAC = one
-                        PER_COND = .true.
-!WRITE(*,*) 'cond true EAST',I,J,K,SIZE(PIC(I,J,K)%p)
-                     ELSE
-                        I = IMAX1
-                     ENDIF
-                  ENDIF
-                  
-                  IF(II.LT.IMIN1) THEN 
-                     IF(INTX_PER) THEN 
-                        I = IMAX1
-                        XPER_FAC = -one
-                        PER_COND = .true.
-!WRITE(*,*) 'cond true WEST', I,J,K,SIZE(PIC(I,J,K)%p)
-                     ELSE 
-                        I = IMIN1
-                     ENDIF
-                  ENDIF
-                  
-                  IF(JJ.GT.JMAX1) THEN 
-                     IF(INTY_PER) THEN 
-                        J = JMIN1
-                        YPER_FAC = one
-                        PER_COND = .true.
-!WRITE(*,*) 'cond true NORTH', I,J,K,SIZE(PIC(I,J,K)%p)
-                     ELSE
-                        J = JMAX1
-                     ENDIF
-                  ENDIF
-                  
-                  IF(JJ.LT.JMIN1) THEN 
-                     IF(INTY_PER) THEN 
-                        J = JMAX1
-                        YPER_FAC = -one
-                        PER_COND = .true.
-!WRITE(*,*) 'cond true SOUTH', I,J,K,SIZE(PIC(I,J,K)%p)
-                     ELSE
-                        J = JMIN1
-                     ENDIF
-                  ENDIF
-                  
-                  IF(DIMN.EQ.3) THEN 
-                     IF(KK.GT.KMAX1) THEN 
-                        IF(INTZ_PER) THEN
-                           K = KMIN1
-                           ZPER_FAC = one
+
+! Shift loop index to new variables for manipulation
+                  I = II;   J = JJ;   K = KK
+
+! Initizalize PER_FAC values 
+                  XPER_FAC = 0; YPER_FAC = 0; ZPER_FAC = 0
+
+! Correct indices for neighbor cells that are not in the domain and
+! also set up periodic BC neighbor search, unless DES_MI is true
+! DES_MI currently not setup with periodic conditions
+                  IF (.NOT. DES_MI) THEN
+
+                     IF(II.GT.IMAX1) THEN 
+                        IF(DES_PERIODIC_WALLS_X) THEN 
+                           I = IMIN1  ! min fluid cell no. 
+                           XPER_FAC = one
                         ELSE
-                           K = KMAX1
+                           I = IMAX1  ! max fluid cell no.
                         ENDIF
                      ENDIF
-                     
-                     IF(KK.LT.KMIN1) THEN 
-                        IF(INTZ_PER) THEN
-                           K = KMAX1
-                           ZPER_FAC = -one
+                     IF(II.LT.IMIN1) THEN 
+                        IF(DES_PERIODIC_WALLS_X) THEN 
+                           I = IMAX1
+                           XPER_FAC = -one
+                        ELSE 
+                           I = IMIN1
+                        ENDIF
+                     ENDIF
+                     IF(JJ.GT.JMAX1) THEN
+                        IF(DES_PERIODIC_WALLS_Y) THEN 
+                           J = JMIN1
+                           YPER_FAC = one
                         ELSE
-                           K = KMIN1
+                           J = JMAX1
+                        ENDIF
+                     ENDIF
+                     IF(JJ.LT.JMIN1) THEN
+                        IF(DES_PERIODIC_WALLS_Y) THEN 
+                           J = JMAX1
+                           YPER_FAC = -one
+                        ELSE
+                           J = JMIN1
+                        ENDIF
+                     ENDIF
+                     IF(DIMN.EQ.3) THEN 
+                        IF(KK.GT.KMAX1) THEN 
+                           IF(DES_PERIODIC_WALLS_Z) THEN
+                              K = KMIN1
+                              ZPER_FAC = one
+                           ELSE
+                              K = KMAX1
+                           ENDIF
+                        ENDIF
+                        IF(KK.LT.KMIN1) THEN 
+                           IF(DES_PERIODIC_WALLS_Z) THEN
+                              K = KMAX1
+                              ZPER_FAC = -one
+                           ELSE
+                              K = KMIN1
+                           ENDIF
+                        ENDIF
+                     ENDIF
+
+                  ELSE  ! DES_MI == TRUE
+
+                     IF(II.GT.IMAX2) THEN 
+                        I = IMAX2  ! max cell no.
+                     ENDIF
+                     IF(II.LT.IMIN2) THEN 
+                        I = IMIN2  ! min cell no.
+                     ENDIF
+                     IF(JJ.GT.JMAX2) THEN
+                        J = JMAX2
+                     ENDIF
+                     IF(JJ.LT.JMIN2) THEN
+                        J = JMIN2
+                     ENDIF
+                     IF(DIMN.EQ.3) THEN 
+                        IF(KK.GT.KMAX2) THEN 
+                           K = KMAX2
+                        ENDIF
+                        IF(KK.LT.KMIN2) THEN 
+                           K = KMIN2
                         ENDIF
                      ENDIF
                   ENDIF
-                  
-                  If (ASSOCIATED(PIC(I,J,K)%p)) then
-                     NPG = SIZE(PIC(I,J,K)%p)
-                  Else
+
+
+! If cell IJK contains particles, store the amount in NPG
+                  IF(ASSOCIATED(PIC(I,J,K)%P))THEN
+                     NPG = SIZE(PIC(I,J,K)%P)
+                  ELSE
                      NPG = 0
-                  Endif
-                  
-                  Do IP2 = 1,NPG
-                     PNO = PIC(I,J,K)%p(ip2)
-                     
-                     
-                     
-                     if(PNO.GT.LL) then 
+                  ENDIF
+
+! Loop over the particles in IJK cell to determine if they are
+! neighbors to particle LL
+                  DO NP = 1,NPG
+
+                     PNO = PIC(I,J,K)%P(NP)
+                     IF(.NOT.PEA(PNO,1)) CYCLE 
+
+                     IF(PNO.GT.LL)THEN 
+
+! Calculate the distance between particles, accounting for neighbors 
+! with a periodic boundary condition (wrap arround)
                         R_LM = DES_RADIUS(LL) + DES_RADIUS(PNO)
                         R_LM = FACTOR_RLM*R_LM
                         CORD_PNO(1) = DES_POS_NEW(PNO,1) + XPER_FAC*LX
@@ -166,66 +184,57 @@
                         IF(DIMN.EQ.3) THEN 
                            CORD_PNO(3) = DES_POS_NEW(PNO,3) + ZPER_FAC*LZ
                         ENDIF 
-                        
-                        
-                        DIST(:) = CORD_PNO(:) - DES_POS_NEW(LL,:)
-                        DISTMAG = SQRT(DES_DOTPRDCT(DIST,DIST))
-                        
+                        DISTVEC(:) = CORD_PNO(:) - DES_POS_NEW(LL,:)
+                        DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
+
+! Check if LL and PNO are already neighbors
                         ALREADY_NEIGHBOURS = .FALSE.
-                        
-!IF(LL.EQ.1.AND.PNO.EQ.2) THEN 
-!   WRITE(*,*)'CORD=', CORD_PNO(1)
-!   WRITE(*,*)'DISTMAG', DISTMAG, R_LM-DISTMAG
-!ENDIF
-                        
                         DO NEIGH_L = 2, NEIGHBOURS(LL,1)+1
-                           IF(PNO.EQ. NEIGHBOURS(LL,NEIGH_L)) ALREADY_NEIGHBOURS=.true.
+                           IF(PNO .EQ. NEIGHBOURS(LL,NEIGH_L)) ALREADY_NEIGHBOURS=.TRUE.
                         ENDDO
-                        
-                        IF(R_LM - DISTMAG.gt.SMALL_NUMBER.AND.(.NOT.ALREADY_NEIGHBOURS)) THEN 
-                           IF(PER_COND) THEN 
-!WRITE(*,*) 'pC = ', pc
-!WRITE(*,*) 'II, JJ = ', II, JJ
-!WRITE(*,*) 'I, J = ', I, J
-!WRITE(*,*) 'XYPER_FAC ', XPER_FAC, YPER_FAC
-!WRITE(*,*) 'DES_VEL_NEW = ', DES_POS_NEW(PNO,:)
-!WRITE(*,*) 'MODIFIED POSITION = ', CORD_PNO(:)
-                           ENDIF
-                           
-                           
+
+! Check the contact condition       
+                        IF( (DIST .LE. R_LM) .AND. &
+                        (.NOT.ALREADY_NEIGHBOURS)) THEN 
+
+! Check that the array is not full and store PNO                           
                            NEIGHBOURS(LL,1) = NEIGHBOURS(LL,1) + 1
                            NLIM  = NEIGHBOURS(LL,1) + 1
-                           IF(NLIM.GT.MAXNEIGHBORS) THEN 
-                              WRITE(*,*) 'NLIM =', NLIM,' > MAXNEIGHBORS =', MAXNEIGHBORS, ' FOR PARTICLE LL', LL 
-                              WRITE(*,*) 'EITHER REDUCE THE R_LM FACTOR OR INCREASE MN IN MFIX.DAT'
-                              PRINT*,'POSL = ',DES_POS_NEW(LL,:)
-                              DO NEIGH_L = 2, NEIGHBOURS(LL,1)+1
-
-                                 DIST(:) = DES_POS_NEW(NEIGHBOURS(LL,NEIGH_L),:) - DES_POS_NEW(LL,:)
-                                 DISTMAG = SQRT(DES_DOTPRDCT(DIST,DIST))
-                                 PRINT*,'LL =',NEIGHBOURS(LL,NEIGH_L), DES_POS_NEW(NEIGHBOURS(LL,NEIGH_L),:)
-                                 PRINT*,DISTMAG, FACTOR_RLM*(DES_RADIUS(LL) + DES_RADIUS(NEIGHBOURS(LL,NEIGH_L))), &
-                                 DES_RADIUS(LL),  DES_RADIUS(NEIGHBOURS(LL,NEIGH_L)), FACTOR_RLM
-                              ENDDO
+                           IF(NLIM.GT.MN) THEN 
+                              WRITE(*,1000) NLIM, MN, LL
                               STOP 
-                           end IF
-                           NEIGHBOURS(LL,NLIM) = PNO
+                           ELSE
+                              NEIGHBOURS(LL,NLIM) = PNO
+                           ENDIF
 
+! Check that the array is not full and store LL
                            NEIGHBOURS(PNO,1) = NEIGHBOURS(PNO,1) + 1
                            NLIM  = NEIGHBOURS(PNO,1) + 1
-                           IF(NLIM.GT.MAXNEIGHBORS) THEN 
-                              WRITE(*,*) 'NLIM =', NLIM,' > MAXNEIGHBORS =', MAXNEIGHBORS, ' FOR PARTICLE PNO', PNO
-                              WRITE(*,*) 'EITHER REDUCE THE R_LM FACTOR OR INCREASE MN IN MFIX.DAT'
+                           IF(NLIM.GT.MN) THEN 
+                              WRITE(*,1000) NLIM, MN, PNO
                               STOP 
-                           end IF
-                           NEIGHBOURS(PNO,NLIM) = LL
-                           
-                        end IF  !contact condition
-                     end if     !PNO.GT.LL
-                  end Do        !IP2
-               end DO
-            end DO
-         end DO
-      end DO
+                           ELSE
+                              NEIGHBOURS(PNO,NLIM) = LL
+                           ENDIF
+                        ENDIF  !contact condition
+
+                     ENDIF  !PNO.GT.LL
+
+                  ENDDO  !NP
+
+               ENDDO  ! II cell loop
+            ENDDO  ! JJ cell loop
+         ENDDO  ! KK cell loop
+         PC = PC + 1
+
+      ENDDO  ! Particles in system loop
+
+ 1000 FORMAT(/1X,70('*')//&
+         ' From: GRID_BASED_NEIGHBOR_SEARCH -',/&
+         ' Message: Neighbors(=', I4,') > MN(=', I4,&
+         ') for particle: ', I,/&
+         ' Either reduce the factor R_LM or increase ',&
+         'MN in mfix.dat'/,&
+         1X,70('*')/)         
+
       END SUBROUTINE GRID_BASED_NEIGHBOR_SEARCH
-    

@@ -18,20 +18,15 @@
       Use geometry
       Use compar
       Use physprop
+      USE des_bc
       
       IMPLICIT NONE
 !-----------------------------------------------
-!     G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!     L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!     L o c a l   V a r i a b l e s
+! Local variables
 !-----------------------------------------------
       INTEGER I
-!-----------------------------------------------
 
+!-----------------------------------------------
 
       DES_RADIUS(:) = ZERO
       PMASS(:) = ZERO
@@ -82,11 +77,12 @@
       YN(:) = ZERO
       ZT(:) = ZERO
 
-      PEA(:) = .FALSE.
+      PEA(:,:) = .FALSE.
       DO I=1, PARTICLES
-         PEA(I)=.TRUE.
-      ENDDO      
+         PEA(I,1)=.TRUE.
+      ENDDO
 
       RETURN
       END SUBROUTINE DES_INIT_ARRAYS 
+
 

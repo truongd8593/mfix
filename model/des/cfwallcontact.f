@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFWALLCONTACT(WALL, L, WALLCONTACTI)            C
-!>  Purpose: DES - Checking for contact with walls
+!  Module name: CFWALLCONTACT(WALL, L, WALLCONTACTI)                   C
+!  Purpose: DES - Checking for contact with walls
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
@@ -24,16 +24,17 @@
       USE drag
       USE constant
       USE compar
+      USE des_bc
       IMPLICIT NONE
-      
-      INTEGER L, I, K, WALL, WALLCONTACTI	
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------        
+      INTEGER L, I, K, WALL, WALLCONTACTI, WC
       DOUBLE PRECISION A, OMEGA, OOMEGA2, ASINOMEGAT 
-      
-!     
-!---------------------------------------------------------------------
-!     Checking if a particle is in contact with any of the walls
-!---------------------------------------------------------------------
-!     
+
+!-----------------------------------------------        
+     
 
       A = ZERO
       OMEGA = ZERO
@@ -50,37 +51,61 @@
 ! west wall (X)
       IF(WALL.EQ.1.AND.(.NOT.DES_PERIODIC_WALLS_X)) THEN
          IF((DES_POS_NEW(L,1)-WX1).LE.DES_RADIUS(L)) THEN
-            WALLCONTACTI = 1
+            IF(DES_MO_X)THEN
+               CALL DES_MASS_OUTLET(L,'Xwe',WALLCONTACTI)
+            ELSE
+               WALLCONTACTI = 1
+            ENDIF
          END IF
 
 ! east wall (X)
       ELSE IF(WALL.EQ.2.AND.(.NOT.DES_PERIODIC_WALLS_X)) THEN
          IF((EX2-DES_POS_NEW(L,1)).LE.DES_RADIUS(L)) THEN
-            WALLCONTACTI = 1
+            IF(DES_MO_X)THEN
+               CALL DES_MASS_OUTLET(L,'Xwe',WALLCONTACTI)
+            ELSE
+               WALLCONTACTI = 1
+            ENDIF
          END IF
 
-! bottom wall (Y)
+! south wall (Y)
       ELSE IF(WALL.EQ.3.AND.(.NOT.DES_PERIODIC_WALLS_Y)) THEN
          IF((DES_POS_NEW(L,2)-(BY1+ASINOMEGAT)).LE.DES_RADIUS(L)) THEN
-            WALLCONTACTI = 1
+            IF(DES_MO_Y)THEN
+               CALL DES_MASS_OUTLET(L,'Ysn',WALLCONTACTI)
+            ELSE
+               WALLCONTACTI = 1
+            ENDIF
          END IF
 
-! top wall (Y)
+! north wall (Y)
       ELSE IF(WALL.EQ.4.AND.(.NOT.DES_PERIODIC_WALLS_Y)) THEN
          IF((TY2-DES_POS_NEW(L,2)).LE.DES_RADIUS(L)) THEN
-            WALLCONTACTI = 1
+            IF(DES_MO_Y)THEN
+               CALL DES_MASS_OUTLET(L,'Ysn',WALLCONTACTI)
+            ELSE
+               WALLCONTACTI = 1
+            ENDIF
          END IF
 
-! south wall (Z)
+! bottom wall (Z)
       ELSE IF(WALL.EQ.5.AND.(.NOT.DES_PERIODIC_WALLS_Z)) THEN
          IF((DES_POS_NEW(L,3)-SZ1).LE.DES_RADIUS(L)) THEN
-            WALLCONTACTI = 1
+            IF(DES_MO_Z)THEN
+               CALL DES_MASS_OUTLET(L,'Zbt',WALLCONTACTI)
+            ELSE
+               WALLCONTACTI = 1
+            ENDIF
          END IF
 
-! north wall (Z)
+! top wall (Z)
       ELSE IF(WALL.EQ.6.AND.(.NOT.DES_PERIODIC_WALLS_Z)) THEN
          IF((NZ2-DES_POS_NEW(L,3)).LE.DES_RADIUS(L)) THEN
-            WALLCONTACTI = 1
+            IF(DES_MO_Z)THEN
+               CALL DES_MASS_OUTLET(L,'Zbt',WALLCONTACTI)
+            ELSE
+               WALLCONTACTI = 1
+            ENDIF
          END IF
       END IF
 
@@ -88,3 +113,115 @@
       END SUBROUTINE CFWALLCONTACT
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: DES_MASS_OUTLET(NP, BCC, WC)                           !
+!                                                                      !
+!  Purpose:                                                            !
+!  Check if the particle's position overlaps the outlet position 
+!  by more than its radius (i.e., the particle is more than just
+!  touching the boundary)
+!                                                                      !
+!  Author: J.Musser                                   Date:  5-Oct-09  !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+      SUBROUTINE DES_MASS_OUTLET(NP, BCC, WC)
+
+      USE des_bc
+      USE discretelement
+      USE param1
+
+      IMPLICIT NONE
+
+!-----------------------------------------------  
+! Local variables
+!-----------------------------------------------  
+      INTEGER NP        ! Particle ID Number
+      INTEGER WC        ! Wall contact value (0: No Contact, 1: Contact)
+      INTEGER BCV_I, BCV
+      CHARACTER*3 BCC   ! Boundary condition class (Xwe,Ysn,Zbt)
+
+!-----------------------------------------------  
+
+      WC = 1
+      
+ 
+      DO BCV_I = 1, SIZE(DES_BC_MO_ID)
+         BCV = DES_BC_MO_ID(BCV_I)
+! find which outlet boundary(s) index coincide with the passed boundary
+! condition class
+         IF(DES_MO_CLASS(BCV_I) == BCC)THEN 
+
+            IF(DIMN == 2)THEN   ! 2D domain
+               IF(BCC == 'Xwe')THEN
+                  IF(DES_BC_Y_s(BCV) .LT. &
+                    (DES_POS_NEW(NP,2) - DES_RADIUS(NP)) .AND. &
+                    (DES_POS_NEW(NP,2) + DES_RADIUS(NP)) .LT. &
+                     DES_BC_Y_n(BCV))THEN
+                     WC = 0
+                     PEA(NP,3) = .TRUE.
+                  ENDIF
+               ENDIF
+               IF(BCC == 'Ysn')THEN
+                  IF(DES_BC_X_w(BCV) .LT. &
+                    (DES_POS_NEW(NP,1) - DES_RADIUS(NP)) .AND. &
+                    (DES_POS_NEW(NP,1) + DES_RADIUS(NP)) .LT. &
+                     DES_BC_X_e(BCV))THEN
+                     WC = 0
+                     PEA(NP,3) = .TRUE.
+                  ENDIF
+               ENDIF
+
+            ELSE  ! 3D domain
+
+               IF(BCC == 'Xwe')THEN
+                  IF(DES_BC_Y_s(BCV) .LT. &
+                    (DES_POS_NEW(NP,2) - DES_RADIUS(NP)) .AND. &
+                    (DES_POS_NEW(NP,2) + DES_RADIUS(NP)) .LT. &
+                     DES_BC_Y_n(BCV) .AND. &
+                     DES_BC_Z_b(BCV) .LT. &
+                    (DES_POS_NEW(NP,3) - DES_RADIUS(NP)) .AND. &
+                    (DES_POS_NEW(NP,3) + DES_RADIUS(NP)) .LT. &
+                     DES_BC_Z_t(BCV))THEN
+                     WC = 0
+                     PEA(NP,3) = .TRUE.
+                  ENDIF
+               ENDIF
+               IF(BCC == 'Ysn')THEN
+                  IF(DES_BC_X_w(BCV) .LT. &
+                    (DES_POS_NEW(NP,1) - DES_RADIUS(NP)) .AND. &
+                    (DES_POS_NEW(NP,1) + DES_RADIUS(NP)) .LT. &
+                     DES_BC_X_e(BCV) .AND. &
+                     DES_BC_Z_b(BCV) .LT. &
+                    (DES_POS_NEW(NP,3) - DES_RADIUS(NP)) .AND. &
+                    (DES_POS_NEW(NP,3) + DES_RADIUS(NP)) .LT. &
+                     DES_BC_Z_t(BCV))THEN
+                     WC = 0
+                     PEA(NP,3) = .TRUE.
+                  ENDIF
+               ENDIF
+               IF(BCC == 'Zbt')THEN
+                  IF(DES_BC_X_w(BCV) .LT. &
+                    (DES_POS_NEW(NP,1) - DES_RADIUS(NP)) .AND. &
+                    (DES_POS_NEW(NP,1) + DES_RADIUS(NP)) .LT. &
+                     DES_BC_X_e(BCV) .AND. &
+                     DES_BC_Y_s(BCV) .LT. &
+                    (DES_POS_NEW(NP,2) - DES_RADIUS(NP)) .AND. &
+                    (DES_POS_NEW(NP,2) + DES_RADIUS(NP)) .LT. &
+                     DES_BC_Y_n(BCV))THEN
+                     WC = 0
+                     PEA(NP,3) = .TRUE.
+                  ENDIF
+               ENDIF
+
+            ENDIF   ! endif dimn == 2
+         ENDIF   ! endif DES_MO_CLASS(BCV_I) == BCC
+
+      ENDDO  ! loop over BCV_I the no. of outlet boundaries
+
+ 9000 FORMAT(F9.4,2X,'PEA(3)=T ',I4,1X,6(F9.4,1X))
+
+      END SUBROUTINE DES_MASS_OUTLET

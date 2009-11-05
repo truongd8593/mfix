@@ -50,7 +50,7 @@
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
      
-      INTEGER NN, FACTOR, NSN, NP, IJK, I, J, K
+      INTEGER NN, FACTOR, NSN, NP, IJK, I, J, K, BCV_I
 
 !     Temporary variables when des_continuum_coupled is F to track
 !     reporting time 
@@ -74,7 +74,6 @@
       
       
       !write(*,*) ' dt, dtsolid = ', dt, dtsolid
-      !read(*,*)
       
       IF(FIRST_PASS) THEN 
          
@@ -111,7 +110,8 @@
             IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
                DES_CONTINUUM_COUPLED = .FALSE.
                DO FACTOR = 1, NFACTOR
-                  PRINT *,'DES FIRST PASS IN TIME MARCH', FACTOR, DTSOLID, INIT_QUAD_COUNT
+                  WRITE(*,'(A,I)') &
+                     'FIRST PASS IN DES TIME MARCH', FACTOR
 
                   ! Force calculation         
                   CALL CALC_FORCE_DES
@@ -119,7 +119,7 @@
                   PC = 1
                   DO NP = 1, MAX_PIS
                      IF(PC .GT. PIS) EXIT
-                     IF(.NOT.PEA(NP)) CYCLE
+                     IF(.NOT.PEA(NP,1)) CYCLE
                      CALL CFNEWVALUES(NP)
                      PC = PC + 1
                   ENDDO
@@ -158,7 +158,6 @@
             FACTOR = 1
             DTSOLID_TMP = DTSOLID
             DTSOLID = DT
-            PRINT *,"DT_SOLID greater than DT_FLUID. DEM is called once"
          ENDIF
       ELSE
 ! added TIME for restart & +1 removed
@@ -172,16 +171,15 @@
 
       write(*,*) '              dt = ', dt
       write(*,*) '         dtsolid = ', dtsolid
-      write(*,*),' int(dt/dtsolid) = ', nint(dt/dtsolid)      
-      PRINT *,"Discrete Element Simulation is being called"&
-             , FACTOR," times"
+      write(*,*) ' int(dt/dtsolid) = ', nint(dt/dtsolid)      
+      write(*,'(A,I,A)') &
+         'Discrete Element Simulation will be called ', &
+         FACTOR, ' times'
 
       IF(NEIGHBOR_SEARCH_N.GT.FACTOR) THEN 
          !NEIGHBOR_SEARCH_N = FACTOR
          NSN = NEIGHBOR_SEARCH_N - 1
       ENDIF 
-
-
 
       DO NN = 1, FACTOR         !  do NN = 1, FACTOR
 
@@ -194,7 +192,7 @@
             ENDIF 
 
             !PRINT *,"DES-MFIX COUPLED, ITER, TIMESTEP, TIME", NN, DTSOLID, S_TIME
-            !PRINT *,"DES-MFIX Co , ITER, TIME, DES_INTERP_ON ?", NN, S_TIME, DES_INTERP_ON
+            !PRINT *,"DES-MFIX COUPLED, ITER, TIME, DES_INTERP_ON ?", NN, S_TIME, DES_INTERP_ON
             CALC_FC = .TRUE.
             IF(DES_INTERP_ON .AND. NN.EQ.FACTOR) THEN 
                ! calculate the mean fields only at the last DEM time step
@@ -203,7 +201,7 @@
                CALLFROMDES = .TRUE.
             ENDIF
          ELSE
-            PRINT *,"DES UNCOUPLED", NN, S_TIME
+            IF(DEBUG_DES) PRINT *,"DES UNCOUPLED", NN, S_TIME 
          ENDIF 
          
          ! Force calculation         
@@ -212,10 +210,15 @@
          PC = 1
          DO NP = 1, MAX_PIS
             IF(PC .GT. PIS) EXIT
-            IF(.NOT.PEA(NP)) CYCLE
+            IF(.NOT.PEA(NP,1)) CYCLE
             CALL CFNEWVALUES(NP)
             PC = PC + 1
          ENDDO
+
+! For systems with inlets/outlets check to determine if a particle has
+! fully entered or exited the domain.  If the former, remove the status
+! of 'new' and if the latter, remove the particle.
+         IF (DES_MI) CALL DES_CHECK_PARTICLE
 
          CALL PARTICLES_IN_CELL
          NSN = NSN + 1    
@@ -269,10 +272,18 @@
          ENDIF  ! end if (.not.des_continuum_coupled)
 
 ! J.Musser : mass inlet/outlet -> particles entering the system
-         IF(DES_MI .AND. MOD(NN,PI_FACTOR).EQ.0)THEN
-           CALL DES_MASS_INLET
+         IF(DES_MI)THEN 
+            DO BCV_I = 1, SIZE(DES_BC_MI_ID)
+               IF(PI_FACTOR(BCV_I) .GT. 1)THEN
+                  IF(DES_MI_TIME(BCV_I) .LE. S_TIME) THEN   !Verify start time
+                     CALL DES_MASS_INLET(BCV_I)
+                     DES_MI_TIME(BCV_I) = S_TIME + PI_FACTOR(BCV_I) * DTSOLID
+                  ENDIF
+               ELSE
+                  CALL DES_MASS_INLET(BCV_I)
+               ENDIF
+            ENDDO
          ENDIF
-
       ENDDO     ! end do NN = 1, FACTOR
 
 
@@ -298,5 +309,5 @@
       WRITE(*,*) 'MAX neigh & overlap = ', NEIGH_MAX, OVERLAP_MAX
       !write(*,*) 'loop end dt, dtsolid = ', dt, dtsolid     
 
-
       END SUBROUTINE DES_TIME_MARCH
+

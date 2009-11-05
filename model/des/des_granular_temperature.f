@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: DES_GRANULAR_TEMPERATURE(GTC, FAC)                     C
+!  Module name: DES_GRANULAR_TEMPERATURE
 !>  Purpose: DES - Calculate the DES granular temperature               
 !                                                                      C
 !                                                                      C
@@ -27,38 +27,40 @@
       USE sendrecv
 
       IMPLICIT NONE
-      
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------      
       INTEGER I, J, K, IJK
-      INTEGER NT, M, NP, IPART, NPG
-      INTEGER GTC, FAC
+      INTEGER M, NP, IPART, NPG
       DOUBLE PRECISION  TEMP
-      
+!-----------------------------------------------      
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
       
-      DO IJK = 1, DIMENSION_3
-         DO M = 1, MMAX
-            AVE_VEL_X(IJK,M) = DES_U_s(IJK,M)
-            AVE_VEL_Y(IJK,M) = DES_V_s(IJK,M)
-            IF(DIMN.EQ.3) THEN  
-               AVE_VEL_Z(IJK,M) = DES_W_s(IJK,M)
-            END IF
-         END DO
-      END DO
-      
-      DO IJK = 1, DIMENSION_3
-         
+      DO IJK = IJKSTART3, IJKEND3
          IF(FLUID_AT(IJK)) THEN
-            i = i_of(ijk)
-            j = j_of(ijk)
-            k = k_of(ijk)
+            DO M = 1, MMAX
+               AVE_VEL_X(IJK,M) = DES_U_s(IJK,M)
+               AVE_VEL_Y(IJK,M) = DES_V_s(IJK,M)
+               IF(DIMN.EQ.3) THEN  
+                  AVE_VEL_Z(IJK,M) = DES_W_s(IJK,M)
+               ENDIF
+            ENDDO
+         ENDIF
+      ENDDO
+
+      DO IJK = ijkstart3, ijkend3 
+         IF(FLUID_AT(IJK)) THEN
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
             
-            If (ASSOCIATED(PIC(I,J,K)%p)) then
+            IF (ASSOCIATED(PIC(I,J,K)%p)) THEN
                NPG = SIZE(PIC(I,J,K)%p)
-            Else
+            ELSE
                NPG = 0
-            Endif
+            ENDIF
             
             TEMP = ZERO
             DO IPART = 1, NPG 
@@ -68,13 +70,13 @@
                TEMP = TEMP + (DES_VEL_NEW(NP,1)-DES_U_s(IJK,M))**2 
                TEMP = TEMP + (DES_VEL_NEW(NP,2)-DES_V_s(IJK,M))**2
                IF(DIMN.EQ.3) THEN 
-                  TEMP = TEMP + (DES_VEL_NEW(NP,3)-DES_W_s(IJK,M))**2     
-               END IF
-            end DO
+                  TEMP = TEMP + (DES_VEL_NEW(NP,3)-DES_W_s(IJK,M))**2 
+               ENDIF
+            ENDDO
             IF(NPG>0)  DES_THETA(IJK,M) = TEMP/(3.0d0 * DFLOAT(NPG))
-         end IF
+         ENDIF
          
-      end DO
+      ENDDO
 
 
 !         OPEN (UNIT=17,FILE='des_granular_temp.out',STATUS='REPLACE')

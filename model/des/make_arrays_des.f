@@ -31,16 +31,17 @@
 !-----------------------------------------------
 
 
-      WRITE(*,*) '---------- START MAKE_ARRAYS_DES ---------->'
+      WRITE(*,'(1X,A)')&
+         '---------- START MAKE_ARRAYS_DES ---------->'
 
       IF(DES_NEIGHBOR_SEARCH.EQ.1) THEN
-         WRITE(*,*) '     dem using n-square search'
+         WRITE(*,'(3X,A)') 'dem using n-square search'
       ELSE IF(DES_NEIGHBOR_SEARCH.EQ.2) THEN
-         WRITE(*,*) '     dem using quadtree search'
+         WRITE(*,'(3X,A)') 'dem using quadtree search'
       ELSE IF(DES_NEIGHBOR_SEARCH.EQ.3) THEN
-         WRITE(*,*) '     dem using octree search'
+         WRITE(*,'(3X,A)') 'dem using octree search'
       ELSE IF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
-         WRITE(*,*) '     dem using linked cell search'
+         WRITE(*,'(3X,A)') 'dem using linked cell search'
       ENDIF
       
       IF(RUN_TYPE == 'NEW') THEN ! Fresh run
@@ -48,11 +49,12 @@
          IF(.NOT.GENER_PART_CONFIG) THEN 
             OPEN(UNIT=10, FILE='particle_input.dat', STATUS='OLD') 
                      
-            WRITE(*,*) '     reading particle configuration from the ', & 
-               'supplied particle_input.dat file'
+            WRITE(*,'(3X,A,/,5X,A)') &
+               'reading particle configuration from the supplied ',& 
+               'particle_input.dat file'
 
             DO L = 1, PARTICLES
-               READ (10, *) (DES_POS_OLD(L,K),K=1,DIMN),DES_RADIUS(L),RO_Sol(L) ,(DES_VEL_OLD(L,K),K=1,DIMN)
+               READ (10,*) (DES_POS_OLD(L,K),K=1,DIMN),DES_RADIUS(L),RO_Sol(L) ,(DES_VEL_OLD(L,K),K=1,DIMN)
                OMEGA_OLD(L,:) = ZERO
                DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
                DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:)
@@ -67,19 +69,19 @@
          DES_POS_NEW(:,:) = DES_POS_OLD(:,:)
          DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
          OMEGA_NEW(:,:) = OMEGA_OLD(:,:)
-         WRITE(*,*) '     DES_RES file read at Time= ', TIME
+         WRITE(*,'(3X,A,G17.8)') 'DES_RES file read at Time= ', TIME
          WRITE(UNIT_LOG,*) 'DES_RES file read at Time= ', TIME
          IF(USE_COHESION) THEN
             WRITE(UNIT_LOG,*) &
                'Restart 1 is not implemented with DES-COHESION'
-            WRITE(*,*) &
-               '     Restart 1 is not implemented with DES-COHESION'
+            WRITE(*,'(3X,A)') &
+               'Restart 1 is not implemented with DES-COHESION'
             CALL MFIX_EXIT(myPE)
          END IF
          
       ELSE IF (RUN_TYPE == 'RESTART_2') THEN 
          WRITE(UNIT_LOG,*) 'Restart 2 is not implemented with DES'
-         WRITE(*,*) '     Restart 2 is not implemented with DES'
+         WRITE(*,'(3X,A)') 'Restart 2 is not implemented with DES'
          CALL MFIX_EXIT(myPE)
       END IF
       !des_radius(2) = 2.d0*des_radius(1)
@@ -88,7 +90,7 @@
 ! J.Musser      
 ! Check data for des mass inflow boundary condtion 
 ! dtsolid is needed so call is made after cfassign.f       
-      IF (DES_MI) CALL CHECK_DES_INLET
+      CALL CHECK_DES_BC
 
       CALL PARTICLES_IN_CELL
       IF(PVEL_StDev.GT.ZERO)       CALL init_particles_jn
@@ -96,7 +98,9 @@
        
       CALL writeic
 
-      WRITE(*,*) '<---------- END MAKE_ARRAYS_DES ----------'     
+      WRITE(*,'(1X,A)')&
+         '<---------- END MAKE_ARRAYS_DES ----------'
 
       RETURN
+
       END SUBROUTINE MAKE_ARRAYS_DES 

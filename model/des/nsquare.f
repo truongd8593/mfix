@@ -37,13 +37,13 @@
       DO L=1, MAX_PIS
 
          IF(PC .GE. PIS ) EXIT
-         IF(.NOT.PEA(L)) CYCLE
+         IF(.NOT.PEA(L,1)) CYCLE
 
          PNPC = PIS - PC        
          DO I = L+1, MAX_PIS
 
             IF(PNPC .LE. 0) EXIT
-            IF(.NOT.PEA(I)) CYCLE
+            IF(.NOT.PEA(I,1)) CYCLE
 
             DISTVEC(:) = DES_POS_NEW(I,:) - DES_POS_NEW(L,:)
             DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
@@ -59,19 +59,19 @@
 
                IF (K.LE.MN) THEN
                   NEIGHBOURS(L,K+1) = I
-               ELSE 
-                  WRITE(*,*) '---------- FROM NSQUARE ---------->'
-                  WRITE(*,*) '     NEIGHBORS GT MN'
-                  PRINT *, L,':',(NEIGHBOURS(L,II), II=1,MAXNEIGHBORS) 
+               ELSE
+                  WRITE(*,1000) 
+                  PRINT *, L, ':', (NEIGHBOURS(L,II), II=1,MN+1) 
+                  WRITE(*,1001)
                   STOP
                ENDIF
 
                IF (KK.LE.MN) THEN
                   NEIGHBOURS(I,KK+1) = L
                ELSE 
-                  WRITE(*,*) '---------- FROM NSQUARE ---------->'
-                  WRITE(*,*) '     NEIGHBORS GT MN'
-                  PRINT *, I,':',(NEIGHBOURS(I,II), II=1,MAXNEIGHBORS) 
+                  WRITE(*,1000) 
+                  PRINT *, I, ':', (NEIGHBOURS(I,II), II=1,MN+1) 
+                  WRITE(*,1001)
                   STOP
                ENDIF
 
@@ -83,7 +83,13 @@
          PC = PC + 1
       ENDDO      
 
+ 1000 FORMAT(/1X,70('*')//&
+         ' From: NSQUARE -',/&
+         ' Message: Neighbors GT MN')
+ 1001 FORMAT(/,1X,70('*')/)
+
       RETURN
       END SUBROUTINE NSQUARE
+
 
 

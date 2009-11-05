@@ -1,22 +1,20 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: DRAG_FGS                                               C
-!>
-!!  Purpose: DES - Calculte the drag force and pressure force           
-!!           on particles exerted by the gas. Cell centered            
-!<
+!  Purpose: DES - Calculte the drag force and pressure force           
+!           on particles exerted by the gas. Cell centered            
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !  Revision Number 3                                  Date: 2-July-07  C
 !  Author: Rahul Garg                                                  C
-!>
-!!  Purpose: Now the drag_fgs routine is called from calc_drag in model 
-!!  directory as well as by calc_forces_des. Calling arguments have     
-!!  also changed. Depending on the choice, once can obtain drag force   
-!!  based on local velocities or averaged velocities
-!<
+!
+!  Purpose: Now the drag_fgs routine is called from calc_drag in model 
+!  directory as well as by calc_forces_des. Calling arguments have     
+!  also changed. Depending on the choice, once can obtain drag force   
+!  based on local velocities or averaged velocities
+!
 !   
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE DRAG_FGS
@@ -45,13 +43,16 @@
       USE interpolation
       
       IMPLICIT NONE
-!Logical to decide if to calculate darg forces on particles
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------         
+! Logical to decide if to calculate darg forces on particles
       LOGICAL :: focus
-!INTEGER, INTENT(IN) , OPTIONAL :: ERROR_INDEX
-      
+      INTEGER IJKFOCUS, FOCUS_PARTICLE2
+
       INTEGER IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IPJPK, IPJKP, IJPKP, &
               IPJPKP, IJK_EAST, IJK_NORTH, IJK_TOP
-      INTEGER L, LL, I, J, K, M, IJK, IER, IJKFOCUS, FOCUS_PARTICLE2
+      INTEGER L, LL, I, J, K, M, IJK, IER
 
       DOUBLE PRECISION P_FORCE(DIMENSION_3,DIMN), D_FORCE(DIMN)
 
@@ -66,7 +67,11 @@
       DOUBLE PRECISION, DIMENSION(3) :: DRAG_P 
       DOUBLE PRECISION :: EPS_P, VCELL
       INTEGER :: NP
-      
+
+! Accounted for particles      
+      INTEGER PC             
+!-----------------------------------------------   
+
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
@@ -74,11 +79,10 @@
       INCLUDE 'ep_s2.inc'
       
       FOCUS_PARTICLE2 = 400000
-!J = JMAX1
-!K = 1
+
 !DO I = 1, IMAX1
-!   IJK = funijk(I,J,K)
-!   IJK_EAST = funijk(I,JMAX2,K)
+!   IJK = funijk(I,JMAX1,1)
+!   IJK_EAST = funijk(I,JMAX2,1)
 !   IF(CALLFROMDES) PRINT*,'UG = ', U_G(IJK), U_G(IJK_EAST), (U_G(IJK)+U_G(IJK_EAST))/2.d0
 !ENDDO
 
@@ -162,12 +166,16 @@
 
 
       IF(CALC_FC .AND. .NOT.DES_INTERP_ON) THEN
-         DO NP = 1, PARTICLES
+         PC = 1              
+         DO NP = 1, MAX_PIS
+            IF(PC .GT. PIS) EXIT
+            IF (.NOT.PEA(NP,1)) CYCLE
             IJK = PIJK(NP,4)
             M = PIJK(NP,5)
             OVOL = ONE/VOL(IJK)
             FC(NP,:)=FC(NP,:)  + (SOLID_DRAG(IJK,M,:)*PVOL(NP)) 
             FC(NP,:) = FC(NP,:) + (P_FORCE(IJK,:)*OVOL)*PVOL(NP) 
+            PC = PC + 1
          ENDDO
       ENDIF
 
@@ -216,7 +224,10 @@
          DRAG_BM = ZERO
          wtbar = zero
 
-         DO NP = 1, PARTICLES
+         PC = 1
+         DO NP = 1, MAX_PIS
+            IF(PC .GT. PIS) EXIT
+            IF (.NOT.PEA(NP,1)) CYCLE
             FOCUS = .FALSE.
 ! CALCUALTE THE DRAG FORCE ON EACH PARTICLE USING THE PARTICLE VELOCITY
             I = PIJK(NP, 1)
@@ -305,6 +316,7 @@
                   ENDDO
                ENDDO
             ENDIF          ! end if(.not.callfromdes)
+            PC = PC + 1
          ENDDO             ! end loop over NP = 1, PARTICLES
 
 
@@ -450,6 +462,9 @@
       USE interpolation
       
       IMPLICIT NONE
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------        
       INTEGER, INTENT(IN) :: IB, IE, JB, JE, KB, KE, onew
       DOUBLE PRECISION :: AVG_FACTOR
       DOUBLE PRECISION, DIMENSION(DIMN) , INTENT(OUT) :: FVEL
@@ -459,6 +474,8 @@
 
       INTEGER IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IPJPK, IPJKP, IJPKP&
       &, IPJPKP
+!-----------------------------------------------  
+
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
@@ -593,15 +610,10 @@
 
       IMPLICIT NONE
 !-----------------------------------------------
-!     G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
 !     D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!     
 !     particle number
       INTEGER , INTENT(IN) ::          KK
-
 
 !-----------------------------------------------
 !     L o c a l   P a r a m e t e r s
@@ -618,7 +630,6 @@
 !-----------------------------------------------
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      
       DOUBLE PRECISION, DIMENSION(DIMN), INTENT(IN) :: fvel, des_vel
 !     
 !     Indices 
@@ -718,8 +729,8 @@
 !     
 !     End of Koch and Hill variables declaration, sof
 !***********************************************************
-!     
-!     
+     
+     
 !     Current value of F_gs (i.e., without underrelaxation)
 
       DOUBLE PRECISION F_gstmp
@@ -736,10 +747,8 @@
       C_DSXRE(RE) = (0.63D0*SQRT(RE) + 4.8D0)**2 ! Dalla Valle (1948) 
 !     C_DsxRe (Re) = 24.D0 * (1.D0 + 0.173D0 * Re**0.657D0)      ! Turton and
 !     &          + 0.413D0 * Re**2.09D0 / (Re**1.09D0 + 16300.D0) ! Levenspiel (1986)
-!     
-!     
-!     
-!PRINT*,'IN CALC_DRAG, DRAG_TYPE = ', DRAG_TYPE
+
+
       IJK = PIJK(KK,4)
       M = PIJK(KK,5)
       EPS  = EP_S(IJK, M)
@@ -782,7 +791,6 @@
 !     Note Reynolds' number for Hill and Koch has an additional factor of 1/2 & ep_g
          RE_kh = (0.5D0*diameter*VREL*ROP_G(IJK))/Mu
          
-!Print*,'eps= ',eps
       else 
          RE = LARGE_NUMBER 
          RE_G = LARGE_NUMBER

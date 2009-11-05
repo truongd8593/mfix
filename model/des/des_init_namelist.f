@@ -17,20 +17,12 @@
       
       IMPLICIT NONE
 !-----------------------------------------------
-!     G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!     L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!     L o c a l   V a r i a b l e s
+! Local variables
 !-----------------------------------------------
 
 !-----------------------------------------------
 
       INCLUDE 'des/desnamelist.inc'
-
-
 
       PARTICLES = UNDEFINED_I
       PARTICLES_FACTOR = 1.2D0
@@ -46,6 +38,9 @@
       DES_PERIODIC_WALLS_X = .FALSE.
       DES_PERIODIC_WALLS_Y = .FALSE.
       DES_PERIODIC_WALLS_Z = .FALSE.
+      intx_per = .false.
+      inty_per = .false.
+      intz_per = .false.
       INLET_OUTLET = .FALSE.
       INLET_OUTLET_X = .FALSE.
       INLET_OUTLET_Y = .FALSE.
@@ -103,9 +98,6 @@
       USE_COHESION = .FALSE.
       FACTOR_RLM = 1.2 
       DES_INTERP_ON = .FALSE.
-      intx_per = .false.
-      inty_per = .false.
-      intz_per = .false.
       NPC = 1
       pgrad(:) = zero 
       pvel_mean = zero 
@@ -126,16 +118,21 @@
       DES_EPS_YSTART = UNDEFINED 
       DES_EPS_ZSTART = UNDEFINED 
 
-      DES_MI = .FALSE.
+! J.Musser : mass inlet/outlet 
       MAX_PIS = UNDEFINED_I
-      DES_BC_X_w = UNDEFINED
-      DES_BC_X_e = UNDEFINED
-      DES_BC_Y_s = UNDEFINED
-      DES_BC_Y_n = UNDEFINED
-      DES_BC_Z_b = UNDEFINED
-      DES_BC_Z_t = UNDEFINED
-      DES_BC_VOLFLOW_s = UNDEFINED
-      DES_BC_MASSFLOW_s = UNDEFINED
+
+      DES_BC_X_w(:) = UNDEFINED
+      DES_BC_X_e(:) = UNDEFINED
+      DES_BC_Y_s(:) = UNDEFINED
+      DES_BC_Y_n(:) = UNDEFINED
+      DES_BC_Z_b(:) = UNDEFINED
+      DES_BC_Z_t(:) = UNDEFINED
+      DES_BC_VOLFLOW_s(:) = UNDEFINED
+      DES_BC_MASSFLOW_s(:) = UNDEFINED
+      DES_BC_U_s(:) = UNDEFINED
+      DES_BC_V_s(:) = UNDEFINED
+      DES_BC_W_s(:) = UNDEFINED
+      DES_BC_TYPE(:) = UNDEFINED_C
 
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST

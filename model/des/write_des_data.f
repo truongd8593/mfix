@@ -83,24 +83,25 @@
       WRITE(DES_UNIT,3030) ' <VTKFile type="PolyData" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">'
       WRITE(DES_UNIT,*) '  <PolyData>'
       WRITE(DES_UNIT,3031) INUMBER
-
       WRITE(DES_UNIT,*) '      <PointData Scalars="Diameter">'
       WRITE(DES_UNIT,*) '        <DataArray type="Float64" Name="Diameter" format="ascii">'
+      
       PC = 1
       DO L = 1, MAX_PIS
          IF(PC .GT. PIS) EXIT
-         IF(.NOT.PEA(L)) CYCLE
+         IF(.NOT.PEA(L,1)) CYCLE
          WRITE (DES_UNIT,*) (real(2D0 * DES_RADIUS(L))) 
          PC = PC + 1
       END DO
 
-      WRITE(DES_UNIT,*) '       </DataArray>' 
+      WRITE(DES_UNIT,*) '       </DataArray>'
       WRITE(DES_UNIT,3032) '       <DataArray type="Float64" Name="Velocity" NumberOfComponents="3" format="ascii">'
+
       IF(DIMN.EQ.2) THEN
          PC = 1
          DO L = 1, MAX_PIS
             IF(PC .GT. PIS) EXIT
-            IF(.NOT.PEA(L)) CYCLE
+            IF(.NOT.PEA(L,1)) CYCLE
             WRITE (DES_UNIT,*) (real(DES_VEL_NEW(L,K)),K=1,DIMN), VEL_W 
             PC = PC + 1
          ENDDO
@@ -108,7 +109,7 @@
          PC = 1
          DO L = 1, MAX_PIS
             IF(PC .GT. PIS) EXIT
-            IF(.NOT.PEA(L)) CYCLE
+            IF(.NOT.PEA(L,1)) CYCLE
             WRITE (DES_UNIT,*) (real(DES_VEL_NEW(L,K)),K=1,DIMN) 
             PC = PC + 1
          ENDDO
@@ -120,11 +121,12 @@
       WRITE(DES_UNIT,*) '     </CellData>'
       WRITE(DES_UNIT,*) '     <Points>'
       WRITE(DES_UNIT,*) '       <DataArray type="Float32" NAME="Position" NumberOfComponents="3" format="ascii">'
+
       IF(DIMN.EQ.2) THEN
          PC = 1
          DO L = 1, MAX_PIS
             IF(PC .GT. PIS) EXIT
-            IF(.NOT.PEA(L)) CYCLE
+            IF(.NOT.PEA(L,1)) CYCLE
             WRITE (DES_UNIT,*) (real(DES_POS_NEW(L,K)),K=1,DIMN), POS_Z 
             PC = PC + 1
          ENDDO
@@ -132,7 +134,7 @@
          PC = 1
          DO L = 1, MAX_PIS
             IF(PC .GT. PIS) EXIT
-            IF(.NOT.PEA(L)) CYCLE
+            IF(.NOT.PEA(L,1)) CYCLE
             WRITE (DES_UNIT,*) (real(DES_POS_NEW(L,K)),K=1,DIMN) 
             PC = PC + 1
          ENDDO
@@ -306,7 +308,7 @@
          PC = 1
          DO L = 1, MAX_PIS 
             IF(PC .GT. PIS) EXIT
-            IF(.NOT.PEA(L)) CYCLE 
+            IF(.NOT.PEA(L,1)) CYCLE 
 
             IF(DIMN.EQ.3) THEN
                WRITE (DES_UNIT, '(10(2x,g12.5))') (DES_POS_NEW(L, K), K = 1,DIMN), &
@@ -354,3 +356,4 @@
  3020 FORMAT(I5.5)
  3021 FORMAT(I6)
       END SUBROUTINE WRITE_DES_DATA 
+

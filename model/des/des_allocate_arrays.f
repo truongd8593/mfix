@@ -24,56 +24,61 @@
 ! Local variables
 !-----------------------------------------------      
 ! indices      
-      INTEGER I, J, K, M 
+      INTEGER I, J, K, IJK, M 
 ! domain volume      
       DOUBLE PRECISION :: VOL_DOMAIN
 ! the number of particles in the system      
       INTEGER NPARTICLES
-
 !-----------------------------------------------
+      INCLUDE 'function.inc'
 
 
-      WRITE(*,*) '---------- START DES_ALLOCATE_ARRAYS ---------->'
+
+      WRITE(*,'(1X,A)')&
+         '---------- START DES_ALLOCATE_ARRAYS ---------->'
 
       IF(GENER_PART_CONFIG) THEN 
-         WRITE(*,*) '     gener_part_config = ', GENER_PART_CONFIG
-         WRITE(*,*) '     des_eps_xstart, ystart, zstart = ',&
+         WRITE(*,'(3X,A)') 'Checking usr info for gener_part_config'
+         WRITE(*,'(3X,A,3(G15.8))') &
+            'des_eps_xstart, ystart, zstart = ',&
             DES_EPS_XSTART, DES_EPS_YSTART, DES_EPS_ZSTART
 
 ! Check if des_eps_xstart and related variables are correctly initialized in mfix.dat file
          IF(DIMN.EQ.2) THEN 
             IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.&
                DES_EPS_YSTART.EQ.UNDEFINED) THEN
-               WRITE (*,*) '     ERROR MESSAGE: des_eps_xstart or ',&
-                  'des_eps_ystart not properly defined in the ', &
-                  'input file'
+               WRITE (*,'(3X,A,/,5X,A,/,5X,A)') 'ERROR MESSAGE: ', &
+                  'des_eps_xstart or des_eps_ystart ',&
+                  'not properly defined in the input file'
                CALL MFIX_EXIT(myPE)
             ENDIF
          ELSE
             IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.&
                DES_EPS_YSTART.EQ.UNDEFINED.OR.&
                DES_EPS_ZSTART.EQ.UNDEFINED) THEN
-               WRITE (*,*) '     ERROR MESSAGE: des_eps_xstart or ',&
-                  'des_eps_ystart or des_eps_zstart not properly ',&
-                  'defined in the input file'
+               WRITE (*,'(3X,A,/,5X,A,/,5X,A)') 'ERROR MESSAGE: ', &
+                  'des_eps_xstart, des_eps_ystart or des_eps_zstart ',&
+                  'not properly defined in the input file'
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
 
          DO M = 1, MMAX
             IF(VOL_FRAC(M) == UNDEFINED) THEN
-               WRITE (*,*) '     VOL_FRAC(M) must be defined in ',&
+               WRITE (*,'(3X,A,A)') &
+                  'VOL_FRAC(M) must be defined in ',&
                   'mfix.dat for M = 1, MMAX'
                CALL MFIX_EXIT(myPE)
             ENDIF
             IF(VOL_FRAC(M) < ZERO .OR. VOL_FRAC(M) > (ONE-EP_STAR)) THEN
-               WRITE (*,*) '     Unphysical ( > 1-EP_STAR or < 0) ',&
+               WRITE (*,'(3X,A,A)') &
+                  'Unphysical ( > 1-EP_STAR or < 0) ',&
                   'values of VOL_FRAC(M) set in mfix.dat'
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDDO
          
-         WRITE(*,*) '     particle configuration will be ', &
+         WRITE(*,'(3X,A,A)') 'particle configuration will be ', &
             'automatically generated'
          PARTICLES = 0
          IF(DIMN.EQ.2) THEN 
@@ -93,8 +98,9 @@
          
       ENDIF !  end if gener_part_config
 
-      WRITE(*,*) '    total number of particles = ', PARTICLES      
-      WRITE(*,*) '    dimension = ', DIMN
+      WRITE(*,'(3X,A,I)') &
+         'total number of particles = ', PARTICLES      
+      WRITE(*,'(3X,A,I)') 'dimension = ', DIMN
       NWALLS = 2*DIMN
 
       IF(.NOT.NON_RECT_BC) THEN
@@ -110,7 +116,8 @@
       ENDIF
 
 ! J.Musser : Dynamic Particle Info
-      IF(DES_MI) NPARTICLES = MAX_PIS     
+      IF(MAX_PIS /= UNDEFINED_I .AND. &
+         MAX_PIS .GT. NPARTICLES) NPARTICLES = MAX_PIS
 
       MAXQUADS = 5*PARTICLES*MQUAD_FACTOR
       IF(MAXQUADS.LE.80000) MAXQUADS = 80000
@@ -125,7 +132,8 @@
 
 ! DES Allocatable arrays
 ! J.Musser : Dynamic Particle Info
-      ALLOCATE( PEA (NPARTICLES) )
+      ALLOCATE( PEA (NPARTICLES, 3) )
+
       
 ! COEFF OF RESITUTIONS 
       ALLOCATE(REAL_EN(MMAX,MMAX)) !REAL_ET(MMAX,MMAX)) specify eta_t_fact instead of e_t (sof, dec-04-2008)
@@ -149,19 +157,14 @@
       ALLOCATE(AVE_VEL_X(DIMENSION_3,MMAX), AVE_VEL_Y(DIMENSION_3,MMAX), AVE_VEL_Z(DIMENSION_3,MMAX))
 
 
-! dbg
-! doesn't matter if PIC is not used it still needs to be allocated
-! or problems arise in other routines while running
-!      IF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
-         ALLOCATE(PIC(IMAX2,JMAX2,KMAX2))
-         DO K = 1,KMAX2       !MAX(KMAX1-1,1)
-            DO J = 1,JMAX2
-               DO I = 1,IMAX2
-                  NULLIFY(pic(i,j,k)%p)
-               ENDDO
-            ENDDO
-         ENDDO
-!      ENDIF
+      ALLOCATE(PIC(DIMENSION_I,DIMENSION_J,DIMENSION_K))
+      DO IJK = ijkstart3, ijkend3
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
+         NULLIFY(pic(i,j,k)%p)
+      ENDDO
+
       
 ! Particle attributes
 ! Radius, density, mass, moment of inertia           
@@ -262,7 +265,8 @@
 ! Matrix location of particle 
       Allocate(  PART_GRID (NPARTICLES,4) )
 
-      WRITE(*,*) '<---------- END DES_ALLOCATE_ARRAYS ----------'
+      WRITE(*,'(1X,A)')&
+         '<---------- END DES_ALLOCATE_ARRAYS ----------'
 
       RETURN
       END SUBROUTINE DES_ALLOCATE_ARRAYS 
