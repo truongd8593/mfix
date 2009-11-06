@@ -124,10 +124,10 @@
 	       DO L = 1, SMAX
                  Mj  = (PI/6.d0)*D_P(IJK,L)**3 * RO_S(L)
 
-                 NjC = ROP_s(IJK,M) / Mj
-                 NjE = ROP_S(IJKE,M) / Mj
-                 NjN = ROP_S(IJKN,M) / Mj
-                 NjT = ROP_S(IJKT,M) / Mj
+                 NjC = ROP_s(IJK,L) / Mj
+                 NjE = ROP_S(IJKE,L) / Mj
+                 NjN = ROP_S(IJKN,L) / Mj
+                 NjT = ROP_S(IJKT,L) / Mj
 
 		 DijE = AVG_X(Dij(IJK,M,L),Dij(IJKE,M,L),I)
 		 DijN = AVG_Y(Dij(IJK,M,L),Dij(IJKN,M,L),J)
