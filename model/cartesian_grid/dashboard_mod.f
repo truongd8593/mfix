@@ -1,7 +1,7 @@
       MODULE dashboard
  
       LOGICAL            :: WRITE_DASHBOARD
-      INTEGER            :: F_DASHBOARD ,N_DASHBOARD
+      INTEGER            :: F_DASHBOARD,N_DASHBOARD
       INTEGER            :: NIT_MIN,NIT_MAX
       DOUBLE PRECISION   :: DTMIN,DTMAX
       DOUBLE PRECISION   :: INIT_TIME,SMMIN,SMMAX
