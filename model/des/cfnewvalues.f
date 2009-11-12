@@ -114,9 +114,9 @@
          ENDIF         
          WRITE(*,'(5X,A,I)') &
             'X position outside domain for particle: ', L
-         WRITE(*,'(7X,A,(ES15.9))')&
+         WRITE(*,'(7X,A,3(ES17.9))')&
             'particle pos : ', DES_POS_NEW(L,:)
-         WRITE(*,'(7X,A,(ES15.9))')&
+         WRITE(*,'(7X,A,3(ES17.9))')&
             'particle vel : ', DES_VEL_NEW(L,:)
       ENDIF 
 
@@ -130,9 +130,9 @@
          ENDIF         
          WRITE(*,'(5X,A,I)') &
             'Y position outside domain for particle: ', L
-         WRITE(*,'(7X,A,(ES15.9))')&
+         WRITE(*,'(7X,A,3(ES17.9))')&
             'particle pos : ', DES_POS_NEW(L,:)
-         WRITE(*,'(7X,A,(ES15.9))')&
+         WRITE(*,'(7X,A,3(ES17.9))')&
             'particle vel : ', DES_VEL_NEW(L,:)
       ENDIF 
 
@@ -147,9 +147,9 @@
             ENDIF         
             WRITE(*,'(5X,A,I)') &
                'Z position outside domain for particle: ', L
-            WRITE(*,'(7X,A,(ES15.9))')&
+            WRITE(*,'(7X,A,3(ES17.9))')&
                'particle pos : ', DES_POS_NEW(L,:)
-            WRITE(*,'(7X,A,(ES15.9))')&
+            WRITE(*,'(7X,A,3(ES17.9))')&
                'particle vel : ', DES_VEL_NEW(L,:)
          ENDIF
       ENDIF 

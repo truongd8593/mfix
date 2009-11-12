@@ -367,8 +367,8 @@
 
  1007 FORMAT(/1X,70('*')//&
          ' From: PARTICLES_IN_CELL -',/&         
-         ' Message: Particle ',I4,' still found in',&
-         ' ghost cell with index ',A,': ',I4,/1X,A,&
+         ' Message: Particle ',I4,' moved into a',&
+         ' ghost cell; from cell with ',A,' index : ',I4,/1X,A,&
          '-position: ',ES17.9,4X,A,'-velocity: ',ES17.9,/&
          1X,70('*')/)
 
