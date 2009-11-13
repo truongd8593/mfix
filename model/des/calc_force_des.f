@@ -231,7 +231,7 @@
                         PV(LL,NI) = 1
                         contact_count = 1
                         FTHIST = ZERO
-                        OVERLAP_N = V_REL_TRANS_NORM*DTSOLID ! R_LM-DISTMOD 
+                        OVERLAP_N = R_LM-DISTMOD     !V_REL_TRANS_NORM*DTSOLID 
                         OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ENDIF
 
@@ -452,7 +452,7 @@
                         NI = PN(LL,1) + 1
                         PN(LL,NI) = I
                         PV(LL,NI) = 1
-                        OVERLAP_N = R_LM-DISTMOD          !V_REL_TRANS_NORM*DTSOLID! 
+                        OVERLAP_N = R_LM-DISTMOD     !V_REL_TRANS_NORM*DTSOLID
                         OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ENDIF
                   ELSE
