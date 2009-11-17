@@ -49,7 +49,7 @@
       enddo
       do i=1,s               
          do j=1,s
-            if (i.ne.j) then
+            if (i.ne.j .and. ni(i).ne.0d0 .and. ni(j).ne.0d0) then
                sum1(i) = sum1(i)+dsqrt(pi)/2.d0*ni(i)*ni(j)*chi(i,j)* &
                 sigma(i,j)**2*v0*mu(j,i)*(1.d0+alpha(i,j))/ &
                 dsqrt(theta(i)*theta(j))/(theta(i)+theta(j))**2.5d0  &
@@ -74,7 +74,7 @@
       enddo
       do i=1,s
          do j=1,s
-            if (i.eq.j) then
+            if (i.eq.j .and. ni(i).ne.0d0) then
                psi(i,i) = -2.d0/(15.d0*ni(i))*(sum1(i)+dsqrt(2.d0*pi) &
                  /32.d0*ni(i)**2*chi(i,i)*sigmai(i)**2*(1.d0+ &
                  alpha(i,i))/dsqrt(theta(i))*v0*(30.d0*alpha(i,i)**3 &
@@ -84,8 +84,8 @@
                  (1.d0+alpha(i,i))/dsqrt(theta(i))*v0  &
                  *(10.d0*alpha(i,i)**3+22.d0*alpha(i,i)**2+ &
                  11.d0*alpha(i,i)-3.d0)) 
-             else
-                psi(i,j) = -2.d0/(15.d0*ni(i))*(dsqrt(pi)/2.d0*ni(i)* &
+             elseif(i.ne.j .and. ni(j).ne.0d0) then
+                psi(i,j) = -2.d0/15.d0*(dsqrt(pi)/2.d0* &
                   ni(j)*chi(i,j)*sigma(i,j)**2*v0*mu(j,i)*(1.d0+ &
                   alpha(i,j))*(theta(i)/theta(j))**1.5d0/(theta(i)+ &
                   theta(j))**2.5d0*((2.d0*theta(j)+5.d0*theta(i))* &
@@ -96,14 +96,18 @@
                   theta(j))**3/theta(j)-5.d0*(theta(i)+theta(j))* &
                   (2.d0*theta(j)+3.d0*mu(j,i)*(1.d0+alpha(i,j))* &
                   (theta(i)+theta(j))))) 
+             else
+                psi(i,j) = 0d0
              endif
-             eid_bar(i) = eid_bar(i) - pi/6.d0*ni(i)*ni(j)*chi(i,j)* &
-                  sigma(i,j)**3*mu(j,i)*(1.d0+alpha(i,j))   &
-                  *(40.d0*(mu(i,j)-1.d0)+4.d0*(19.d0+9.d0* &
-                  alpha(i,j))*mu(j,i)-48.d0*mu(j,i)**2*(theta(i)+ &
-                  theta(j))/theta(j)*(1.d0+alpha(i,j))**2   &
-                  +15.d0*mu(j,i)**3*(theta(i)+theta(j))**2/ &
-                  theta(j)**2*(1.d0+alpha(i,j))**3)  
+             if(ni(i).ne.0d0 .and. ni(j).ne.0d0) then
+	       eid_bar(i) = eid_bar(i) - pi/6.d0*ni(i)*ni(j)*chi(i,j)* &
+                    sigma(i,j)**3*mu(j,i)*(1.d0+alpha(i,j))   &
+                    *(40.d0*(mu(i,j)-1.d0)+4.d0*(19.d0+9.d0* &
+                    alpha(i,j))*mu(j,i)-48.d0*mu(j,i)**2*(theta(i)+ &
+                    theta(j))/theta(j)*(1.d0+alpha(i,j))**2   &
+                    +15.d0*mu(j,i)**3*(theta(i)+theta(j))**2/ &
+                    theta(j)**2*(1.d0+alpha(i,j))**3) 
+             endif ! this will avoid doing extra computation
          enddo
       enddo
 
@@ -111,7 +115,8 @@
          do j=1,s
             Amat(i,j) = psi(i,j) - 1.5d0*zeta0*kronecker(i,j)     !A matrix for solution of ejd (p 4 CMH notes)
          enddo
-         bmat(i) = 2.d0*eid_bar(i)/(15.d0*ni(i))                  !b matrix for solution of ejd (p 4 CMH notes)
+         bmat(i) = 0d0
+	 if(ni(i).ne.0d0) bmat(i) = 2.d0*eid_bar(i)/(15.d0*ni(i)) !b matrix for solution of ejd (p 4 CMH notes)
       enddo
 
       CALL LUDCMP(Amat, s, NP, indx, d)     ! solve system of s linear equations using
