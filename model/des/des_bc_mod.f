@@ -100,7 +100,6 @@
 
 ! Grid search loop counter arrays
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: GS_ARRAY   !(number of MI boundaries, 6)
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: GR_ARRAY   !(number of MO boundaries, 6)
 
 
      

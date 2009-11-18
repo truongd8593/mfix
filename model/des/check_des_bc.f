@@ -177,6 +177,7 @@
       WRITE(*,1012) BC_MI, BC_MO
 
       IF(BC_MI /= 0 .OR. BC_MO /=0)THEN
+         DES_MI = .TRUE.
 ! Allocate necessary arrays for discrete mass inlets
          CALL ALLOCATE_DES_MIO(BC_MI, BC_MO)
 
@@ -240,7 +241,7 @@
 
       IF(BC_MO/=0)THEN
 
-!        Check each discrete mass inlet for necessary data
+! Check each discrete mass inlet for necessary data
          BCV_I = 1
          DO BCV = 1, DIMENSION_BC 
 
@@ -255,6 +256,17 @@
             ENDIF
          ENDDO
       ENDIF
+
+! Check MAX_PIS requirements
+      IF(BC_MI == 0 .AND. MAX_PIS == UNDEFINED_I)THEN
+         WRITE(*,'(5X,A)')'Setting MAX_PIS = PARTICLES'
+         MAX_PIS = PARTICLES
+      ELSEIF(BC_MI /= 0 .AND. MAX_PIS == UNDEFINED_I)THEN
+         WRITE(UNIT_LOG, 1010)
+         WRITE(*, 1010)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
 
       WRITE(*,'(3X,A)') '<---------- END CHECK_DES_BC ----------'
 
@@ -308,6 +320,13 @@
        ' DES_BC_VOLFLOW_s or DES_BC_MASSFLOW_s must be specified',/&
          1X,70('*')/)
 
+1010 FORMAT(/1X,70('*')//&
+       ' From: CHECK_DES_BC -',/&
+       ' Message: The maximum number of particles permitted',&
+       ' in the system (MAX_PIS)',/&
+       ' must be set in the mfix.dat file if an inlet is specified.',/&
+       1X,70('*')/)
+         
       RETURN
       END SUBROUTINE CHECK_DES_BC
 
@@ -561,7 +580,6 @@
 !-----------------------------------------------
 
       IF(BC_MI /= 0)THEN
-         DES_MI = .TRUE.
 
 ! Boundary condition ID array
          Allocate( DES_BC_MI_ID (BC_MI) )
@@ -601,12 +619,6 @@
          Allocate( DES_BC_MO_ID (BC_MO) )
 
          Allocate( DES_MO_CLASS (BC_MO) )
-! Comp cells near the outlet
-         IF(DIMN ==2)THEN
-            Allocate( GR_ARRAY (BC_MO,2) )
-         ELSE
-            Allocate( GR_ARRAY (BC_MO,4) )
-         ENDIF
       ENDIF
 
       RETURN
@@ -1117,7 +1129,7 @@
 ! Construct an array of integers from 0 to TMP_FACTOR-1 in a random
 ! order. This is used when placing new particles.            
             LL = 1
-            GEN_ORDER: DO
+            GEN_ORDER2D: DO
                CALL RANDOM_NUMBER(TMP_DP)
                TMP = FLOOR(real(TMP_DP*dble(TMP_FACTOR)))
                MI_ORDER(BCV_I)%VALUE(LL) = TMP
@@ -1125,15 +1137,15 @@
 ! The first value of tmp is stored while all subsequent values are
 ! checked to make sure none are duplicated (if so generate new number)
                  DO LC = 1, LL - 1
-                    IF(MI_ORDER(BCV_I)%VALUE(LC) .EQ. TMP)CYCLE GEN_ORDER
+                    IF(MI_ORDER(BCV_I)%VALUE(LC) .EQ. TMP)CYCLE GEN_ORDER2D
                  ENDDO
                ENDIF
                IF(LL .LT. TMP_FACTOR)THEN
                   LL = LL + 1
-                  CYCLE GEN_ORDER
+                  CYCLE GEN_ORDER2D
                ENDIF
-               IF(LL .EQ. TMP_FACTOR) EXIT GEN_ORDER
-            ENDDO GEN_ORDER
+               IF(LL .EQ. TMP_FACTOR) EXIT GEN_ORDER2D
+            ENDDO GEN_ORDER2D
          ENDIF     ! endif particle_plcmnt(bcv_i) == 'ordr'
 
 

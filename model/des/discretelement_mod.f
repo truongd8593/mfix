@@ -272,20 +272,19 @@
 !     J.MUSSER
 
 ! Dynamic particle count elements:
-! PEA(n,1) : This column identifies particle as 'existing' if true or 'not existing'
-! if false. It is used with the inlet/outlet to skip indices that do not represent particles
-! in the system or indices that represent particles that have exited the system.
-! PEA(n,2) : This column identifies a particle as 'new' if true, or 'existing' if false.
-! Particles with a classification of 'new' do not react when in contact with a wall or 
-! another particle, however particles that are 'existing' do collide and interact with
-! 'new' particles. The classification of 'new' allows new particles to push particles 
-! already in the system out of the way when entering to prevent overlap.
-! PEA(n,3) : This column identifies a particle as 'exiting' if true and 'not exiting' 
-! if false. If a particle initiates contact with a wall surface designated as a des outlet,
-! this flag is set to true. Thus the particle's contact with the wall is ignored and the 
-! location of the particle is checked to assess if the particle has fully exited the system.
-! Once the particle is outside the domain space, the particle attributes are removed
-! and the particle is no longer tracked.
+! PEA(n,1) : This column identifies particle as 'existing' if true. 
+!   It is used with the inlet/outlet to skip indices that do not represent particles
+!   in the system or indices that represent particles that have exited the system.
+! PEA(n,2) : This column identifies a particle as 'new' if true.
+!   Particles with a classification of 'new' do not react when in contact with a wall 
+!   or another particle, however existing particles do collide and interact with
+!   'new' particles. The classification allows new particles to push particles 
+!   already in the system out of the way when entering to prevent overlap.
+! PEA(n,3) : This column identifies a particle as 'exiting' if true. 
+!   If a particle initiates contact with a wall surface designated as a des outlet,
+!   this flag is set to true. With this classification the location of the particle 
+!   is checked to assess if the particle has fully exited the system.  At this point,
+!   the particle is removed from the list.
       LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PEA! (MAX_PIS,3)
 
 !     Number of particles in the system (current)

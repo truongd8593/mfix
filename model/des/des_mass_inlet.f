@@ -236,7 +236,7 @@
 ! the associated bc no.      
       INTEGER BCV_I, BCV  
 ! a random number between 0-1
-      DOUBLE PRECISION RAND, RAND1, TMPDP
+      DOUBLE PRECISION RAND1, RAND2, TMPDP
 ! 'lower' x,y,z location of current window
       DOUBLE PRECISION MI_WIN
 ! a random index number for I_OF_MI or J_OF_MI
@@ -259,8 +259,8 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'RAND')THEN
                DO WHILE (TOUCHING)
 ! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV)
-                  CALL RANDOM_NUMBER(RAND)
-                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND*&
+                  CALL RANDOM_NUMBER(RAND1)
+                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND1*&
                      (DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, TOUCHING, BCV_I)
@@ -268,10 +268,10 @@
             ENDIF
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
-               CALL RANDOM_NUMBER(RAND)
+               CALL RANDOM_NUMBER(RAND1)
                MI_WIN = dble(MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I)))*&
                   MI_WINDOW(BCV_I)   
-               DES_POS_OLD(NP,2) = RAND *&
+               DES_POS_OLD(NP,2) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window 
                   DES_BC_Y_s(BCV)   !shift relative to BC location
@@ -291,9 +291,9 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'RAND')THEN
                DO WHILE (TOUCHING)
 ! Obtain a random number from (0,1]
-                  CALL RANDOM_NUMBER(RAND)
+                  CALL RANDOM_NUMBER(RAND1)
 ! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV)
-                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND*&
+                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND1*&
                      (DES_BC_Y_n(BCV)-DES_BC_Y_s(BCV))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, TOUCHING, BCV_I)
@@ -301,10 +301,10 @@
             ENDIF
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
-               CALL RANDOM_NUMBER(RAND)
+               CALL RANDOM_NUMBER(RAND1)
                MI_WIN = dble(MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I)))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,2) = RAND *&
+               DES_POS_OLD(NP,2) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_Y_s(BCV)   !shift relative to BC location
@@ -324,9 +324,9 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'RAND')THEN
                DO WHILE (TOUCHING)
 ! Obtain a random number from (0,1]
-                  CALL RANDOM_NUMBER(RAND)
+                  CALL RANDOM_NUMBER(RAND1)
 ! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV)
-                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND*&
+                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND1*&
                      (DES_BC_X_e(BCV) - DES_BC_X_w(BCV))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, TOUCHING, BCV_I)
@@ -334,10 +334,10 @@
             ENDIF
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
-               CALL RANDOM_NUMBER(RAND)
+               CALL RANDOM_NUMBER(RAND1)
                MI_WIN = dble(MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I)))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,1) = RAND *&
+               DES_POS_OLD(NP,1) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_X_w(BCV)   !shift relative to BC location
@@ -357,9 +357,9 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'RAND')THEN
                DO WHILE (TOUCHING)
 ! Obtain a random number from (0,1]
-                  CALL RANDOM_NUMBER(RAND)
+                  CALL RANDOM_NUMBER(RAND1)
 ! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV)
-                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND*&
+                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND1*&
                      (DES_BC_X_e(BCV) - DES_BC_X_w(BCV))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, TOUCHING, BCV_I)
@@ -367,10 +367,10 @@
             ENDIF
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
-               CALL RANDOM_NUMBER(RAND)
+               CALL RANDOM_NUMBER(RAND1)
                MI_WIN = dble(MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I)))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,1) = RAND *&
+               DES_POS_OLD(NP,1) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) + &   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_X_w(BCV)   !shift relative to BC location
@@ -390,13 +390,13 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'RAND')THEN
                DO WHILE (TOUCHING)
 ! Obtain a random number from (0,1]
-                  CALL RANDOM_NUMBER(RAND)
                   CALL RANDOM_NUMBER(RAND1)
+                  CALL RANDOM_NUMBER(RAND2)
 ! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV)
-                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV)+ RAND*&
+                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV)+ RAND1*&
                      (DES_BC_X_e(BCV) - DES_BC_X_w(BCV))
 ! Place randomly between DES_BC_Z_b(BCV) and DES_BC_Z_t(BCV)
-                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + RAND1*&
+                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + RAND2*&
                      (DES_BC_Z_t(BCV) - DES_BC_Z_b(BCV))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, TOUCHING, BCV_I)
@@ -404,19 +404,20 @@
             ENDIF
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
-               CALL RANDOM_NUMBER(RAND)
+               CALL RANDOM_NUMBER(RAND1)
+               CALL RANDOM_NUMBER(RAND2)
 ! Determine x-coordinate from ordered grid position I
                MI_ORD = MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I))
                MI_WIN = dble(I_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,1) = RAND *&
+               DES_POS_OLD(NP,1) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_X_w(BCV)   !shift relative to BC location
 ! Determine z-coordinate from ordered grid position J
                MI_WIN = dble(J_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,3) = RAND *&
+               DES_POS_OLD(NP,3) = RAND2 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_Z_b(BCV)   !shift relative to BC location
@@ -436,13 +437,13 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'RAND')THEN
                DO WHILE (TOUCHING)
 ! Obtain a random number from (0,1]
-                  CALL RANDOM_NUMBER(RAND)
                   CALL RANDOM_NUMBER(RAND1)
+                  CALL RANDOM_NUMBER(RAND2)
 ! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV)
-                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND*&
+                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND1*&
                      (DES_BC_X_e(BCV) - DES_BC_X_w(BCV))
 ! Place randomly between DES_BC_Z_b(BCV) and DES_BC_Z_t(BCV)
-                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + RAND1*&
+                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + RAND2*&
                      (DES_BC_Z_t(BCV) - DES_BC_Z_b(BCV))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, TOUCHING, BCV_I)
@@ -450,19 +451,20 @@
             ENDIF
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
-               CALL RANDOM_NUMBER(RAND)
+               CALL RANDOM_NUMBER(RAND1)
+               CALL RANDOM_NUMBER(RAND2)
                MI_ORD = MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I))
 ! Determine x-coordinate from ordered grid position I
                MI_WIN = dble(I_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,1) = RAND *&
+               DES_POS_OLD(NP,1) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_X_w(BCV)   !shift relative to BC location
 ! Determine z-coordinate from ordered grid position J
                MI_WIN = dble(J_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)                  
-               DES_POS_OLD(NP,3) = RAND *&
+               DES_POS_OLD(NP,3) = RAND2 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_Z_b(BCV)   !shift relative to BC location
@@ -483,13 +485,13 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'RAND')THEN
                DO WHILE (TOUCHING)
 ! Obtain a random number from (0,1]
-                  CALL RANDOM_NUMBER(RAND)
                   CALL RANDOM_NUMBER(RAND1)
+                  CALL RANDOM_NUMBER(RAND2)
 ! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV)
-                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND*&
+                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND1*&
                      (DES_BC_X_e(BCV) - DES_BC_X_w(BCV))
 ! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV)
-                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND1*&
+                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND2*&
                      (DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, TOUCHING, BCV_I)
@@ -497,19 +499,20 @@
             ENDIF
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
-               CALL RANDOM_NUMBER(RAND)
+               CALL RANDOM_NUMBER(RAND1)
+               CALL RANDOM_NUMBER(RAND2)
                MI_ORD = MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I))
 ! Determine x-coordinate from ordered grid position I
                MI_WIN = dble(I_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,1) = RAND *&
+               DES_POS_OLD(NP,1) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_X_w(BCV)   !shift relative to BC location
 ! Determine y-coordinate from ordered grid position J
                MI_WIN = dble(J_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,2) = RAND *&
+               DES_POS_OLD(NP,2) = RAND2 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_Y_s(BCV)   !shift relative to BC location
@@ -530,13 +533,13 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'RAND')THEN
                DO WHILE (TOUCHING)
 ! Obtain a random number from (0,1]
-                  CALL RANDOM_NUMBER(RAND)
                   CALL RANDOM_NUMBER(RAND1)
+                  CALL RANDOM_NUMBER(RAND2)
 ! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV)
-                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND*&
+                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND1*&
                      (DES_BC_X_e(BCV) - DES_BC_X_w(BCV))
 ! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV)
-                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND1*&
+                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND2*&
                      (DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, TOUCHING, BCV_I)
@@ -544,19 +547,20 @@
             ENDIF
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
-               CALL RANDOM_NUMBER(RAND)
+               CALL RANDOM_NUMBER(RAND1)
+               CALL RANDOM_NUMBER(RAND2)
                MI_ORD = MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I))
 ! Determine x-coordinate from ordered grid position I
                MI_WIN = dble(I_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,1) = RAND *&
+               DES_POS_OLD(NP,1) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_X_w(BCV)   !shift relative to BC location
 ! Determine y-coordinate from ordered grid position J
                MI_WIN = dble(J_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,2) = RAND *&
+               DES_POS_OLD(NP,2) = RAND2 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_Y_s(BCV)   !shift relative to BC location
@@ -577,13 +581,13 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'RAND')THEN
                DO WHILE (TOUCHING)
 ! Obtain a random number from (0,1]
-                  CALL RANDOM_NUMBER(RAND)
                   CALL RANDOM_NUMBER(RAND1)
+                  CALL RANDOM_NUMBER(RAND2)
 ! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV)
-                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND*&
+                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND1*&
                      (DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV))
 ! Place randomly between DES_BC_Z_b(BCV) and DES_BC_Z_t(BCV)
-                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + RAND1*&
+                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + RAND2*&
                      (DES_BC_Z_t(BCV) - DES_BC_Z_b(BCV))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, TOUCHING, BCV_I)
@@ -591,19 +595,20 @@
             ENDIF
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
-               CALL RANDOM_NUMBER(RAND)
+               CALL RANDOM_NUMBER(RAND1)
+               CALL RANDOM_NUMBER(RAND2)
                MI_ORD = MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I))
 ! Determine y-coordinate from ordered grid position I
                MI_WIN = dble(I_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,2) = RAND *&
+               DES_POS_OLD(NP,2) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_Y_s(BCV)   !shift relative to BC location
 ! Determine z-coordinate from ordered grid position J
                MI_WIN = dble(J_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,3) = RAND *&
+               DES_POS_OLD(NP,3) = RAND2 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) + &   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_Z_b(BCV)   !shift relative to BC location
@@ -624,13 +629,13 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'RAND')THEN
                DO WHILE (TOUCHING)
 !  Obtain a random number from (0,1]
-                  CALL RANDOM_NUMBER(RAND)
                   CALL RANDOM_NUMBER(RAND1)
+                  CALL RANDOM_NUMBER(RAND2)
 ! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV)
-                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND*&
+                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND1*&
                      (DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV))
 ! Place randomly between DES_BC_Z_b(BCV) and DES_BC_Z_t(BCV)
-                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + RAND1*&
+                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + RAND2*&
                      (DES_BC_Z_t(BCV) - DES_BC_Z_b(BCV)) 
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, TOUCHING, BCV_I)
@@ -638,19 +643,20 @@
             ENDIF
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
-               CALL RANDOM_NUMBER(RAND)
+               CALL RANDOM_NUMBER(RAND1)
+               CALL RANDOM_NUMBER(RAND2)
                MI_ORD = MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I))
 ! Determine y-coordinate from ordered grid position I
                MI_WIN = dble(I_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,2) = RAND *&
+               DES_POS_OLD(NP,2) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_Y_s(BCV)   !shift relative to BC location
 ! Determine z-coordinate from ordered grid position J
                MI_WIN = dble(J_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
-               DES_POS_OLD(NP,3) = RAND *&
+               DES_POS_OLD(NP,3) = RAND2 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window
                   DES_BC_Z_b(BCV)   !shift relative to BC location
