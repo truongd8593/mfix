@@ -47,6 +47,8 @@ Contains
             RETURN
       END SUBROUTINE UNI_RNO
 
+
+
       SUBROUTINE NOR_RNO(Y, mean, sigma)
 
             implicit none
@@ -56,6 +58,13 @@ Contains
             double precision lmean, lvariance, lsigma
             double precision x(2), w
             integer i, nsize, n
+            ! no. of times this routine has been called (should = dimn)
+            integer, save :: COUNTER = 0
+            ! so all components are written
+            integer fileunit 
+
+            COUNTER = COUNTER + 1
+            fileunit = 20 + COUNTER
 
             nsize = size(y(:))
 
@@ -80,13 +89,19 @@ Contains
             write(*,*) 'specified mean', mean
             write(*,*) 'computed mean', lmean
 
+            write(fileunit,'(A)') '---------- FROM NOR_RNO ----------'
+! specific to the call from init_particles_jn            
+            write(fileunit,'(A,I5,A)') 'FOR DIRECTION = ', &
+               COUNTER, ' where (1=X,2=Y,3=Z)'
+            write(fileunit,'(5X,A,5X,A)') 'particle no.', 'velocity component'
+
             lvariance = 0.0
             do i = 1, nsize
-               write(21,*) i, y(i)
+               write(fileunit,'(I,5X,F)') i, y(i)
                lvariance = lvariance + (y(i)-lmean)**2
             end do
 
-            close(21)
+            close(fileunit)
 
             lvariance = lvariance/nsize
             lsigma = sqrt(lvariance)

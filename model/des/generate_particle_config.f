@@ -404,6 +404,8 @@
                rsf(I,J)=0.0
             endif
          ENDDO
+         WRITE(*,'(7X,A,I5,2X,A)') 'FOR DIRECTION= ', J,&
+            ' where (1=X,2=Y,3=Z):   '
          CALL nor_rno(DES_VEL_OLD(1:PARTICLES,J),umf0(J),rsf(J,J))
       ENDDO
 
