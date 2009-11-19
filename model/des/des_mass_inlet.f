@@ -269,8 +269,9 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
                CALL RANDOM_NUMBER(RAND1)
-               MI_WIN = dble(MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I)))*&
-                  MI_WINDOW(BCV_I)   
+               MI_ORD = MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I))
+               MI_WIN = dble(I_OF_MI(BCV_I)%VALUE(MI_ORD))*&
+                  MI_WINDOW(BCV_I)
                DES_POS_OLD(NP,2) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
                   MI_WIN + D_P0(1)*HALF +&   !shift loc. into window 
@@ -302,7 +303,8 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
                CALL RANDOM_NUMBER(RAND1)
-               MI_WIN = dble(MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I)))*&
+               MI_ORD = MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I))
+               MI_WIN = dble(I_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
                DES_POS_OLD(NP,2) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
@@ -335,7 +337,8 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
                CALL RANDOM_NUMBER(RAND1)
-               MI_WIN = dble(MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I)))*&
+               MI_ORD = MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I))
+               MI_WIN = dble(I_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
                DES_POS_OLD(NP,1) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) +&   !play room
@@ -368,7 +371,8 @@
             IF(PARTICLE_PLCMNT(BCV_I) == 'ORDR')THEN
 ! Obtain a random number from (0,1]
                CALL RANDOM_NUMBER(RAND1)
-               MI_WIN = dble(MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I)))*&
+               MI_ORD = MI_ORDER(BCV_I)%VALUE(MI_FACTOR(BCV_I))
+               MI_WIN = dble(I_OF_MI(BCV_I)%VALUE(MI_ORD))*&
                   MI_WINDOW(BCV_I)
                DES_POS_OLD(NP,1) = RAND1 *&
                   (MI_WINDOW(BCV_I) - D_P0(1)) + &   !play room

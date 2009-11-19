@@ -239,9 +239,30 @@
          ENDDO
       ENDIF
 
+! If the system is started without any particles and an inlet is not
+! specified, the run is aborted.
+      IF(BC_MI == 0 .AND. PARTICLES == 0)THEN
+         WRITE(UNIT_LOG, 1009)
+         WRITE(*, 1009)
+         CALL MFIX_EXIT(myPE)
+      ELSEIF(PARTICLES == 0)THEN
+         WRITE(*,'(5X,A)') &
+            'Run initiated with no particles in the system'
+      ENDIF
+
+! Check MAX_PIS requirements
+      IF(BC_MI == 0 .AND. MAX_PIS == UNDEFINED_I)THEN
+         WRITE(*,'(5X,A)')'Setting MAX_PIS = PARTICLES'
+         MAX_PIS = PARTICLES
+      ELSEIF(BC_MI /= 0 .AND. MAX_PIS == UNDEFINED_I)THEN
+         WRITE(UNIT_LOG, 1010)
+         WRITE(*, 1010)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
       IF(BC_MO/=0)THEN
 
-! Check each discrete mass inlet for necessary data
+
+! Check each discrete mass outlet for necessary data
          BCV_I = 1
          DO BCV = 1, DIMENSION_BC 
 
@@ -257,26 +278,12 @@
          ENDDO
       ENDIF
 
-! Check MAX_PIS requirements
-      IF(BC_MI == 0 .AND. MAX_PIS == UNDEFINED_I)THEN
-         WRITE(*,'(5X,A)')'Setting MAX_PIS = PARTICLES'
-         MAX_PIS = PARTICLES
-      ELSEIF(BC_MI /= 0 .AND. MAX_PIS == UNDEFINED_I)THEN
-         WRITE(UNIT_LOG, 1010)
-         WRITE(*, 1010)
-         CALL MFIX_EXIT(myPE)
-      ENDIF
+
 
 
       WRITE(*,'(3X,A)') '<---------- END CHECK_DES_BC ----------'
 
- 1012 FORMAT(5X,'No. of mass inlet BC = ', I4,/,&
-         5X,'No. of mass outlet BC = ', I4)
 
- 1013 FORMAT(5X,'For mass inlet BC: ', I3,/,&
-         7X,'No. particles injected per solids time step = ', ES15.8,/,&
-         7X,'PI_FACTOR = ', I,' PI_COUNT = ', I5,/,&
-         7X,'start DES_MI_TIME = ', ES15.8)
 
  1000 FORMAT(/1X,70('*')//&
          ' From: CHECK_DES_BC -',/&
@@ -294,7 +301,6 @@
          ' Message: Illegal BC_TYPE for boundary condition ',I3,/&
          ' BC_TYPE = ',A,' and the valid types are:') 
  1003 FORMAT(5X,A16)
- 1008 FORMAT(/1X,70('*')/) 
 
  1004 FORMAT(/1X,70('*')//&
          ' From: CHECK_DES_BC -',/&
@@ -320,13 +326,30 @@
        ' DES_BC_VOLFLOW_s or DES_BC_MASSFLOW_s must be specified',/&
          1X,70('*')/)
 
-1010 FORMAT(/1X,70('*')//&
+ 1008 FORMAT(/1X,70('*')/) 
+
+ 1009 FORMAT(/1X,70('*')//&
+       ' From: CHECK_DES_BC -',/&
+       ' Message: The system was initiated with no particles',&
+       ' and no DES inlet.',/&
+       ' The run is being terminated.',/&
+         1X,70('*')/)
+
+ 1010 FORMAT(/1X,70('*')//&
        ' From: CHECK_DES_BC -',/&
        ' Message: The maximum number of particles permitted',&
        ' in the system (MAX_PIS)',/&
        ' must be set in the mfix.dat file if an inlet is specified.',/&
-       1X,70('*')/)
-         
+         1X,70('*')/)
+
+ 1012 FORMAT(5X,'No. of mass inlet BC = ', I4,/,&
+         5X,'No. of mass outlet BC = ', I4)
+
+ 1013 FORMAT(5X,'For mass inlet BC: ', I3,/,&
+         7X,'No. particles injected per solids time step = ', ES15.8,/,&
+         7X,'PI_FACTOR = ', I,' PI_COUNT = ', I5,/,&
+         7X,'start DES_MI_TIME = ', ES15.8)
+
       RETURN
       END SUBROUTINE CHECK_DES_BC
 
@@ -606,6 +629,7 @@
          Allocate( I_OF_MI ( BC_MI) )   ! type dmi
          Allocate( J_OF_MI ( BC_MI) )   ! type dmi
 
+! Initializiation
          DO I = 1,BC_MI
             NULLIFY( MI_ORDER(I)%VALUE )
             NULLIFY( I_OF_MI(I)%VALUE )
@@ -1102,9 +1126,6 @@
 ! The inlet velocity is sufficient to permit random placement of the new
 ! particles without risk of overlap
             PARTICLE_PLCMNT(BCV_I) = 'RAND'
-! Allocated to prevent errors; value itself not needed for this
-! particular BCV_I scenario
-            ALLOCATE( MI_ORDER(BCV_I)%VALUE( 1 ) )
          ELSEIF(MINIPV .LE. ABS(BC_VEL) - SMALL_NUMBER .AND. &
          ABS(BC_VEL) .LT. MAXIPV + SMALL_NUMBER)THEN
 ! Then inlet velocity will require that the new particles be placed with
@@ -1126,33 +1147,32 @@
             TMP_FACTOR = CEILING(real(D_P0(1) / &
                (dble(PI_FACTOR(BCV_I)) * DTSOLID * ABS(BC_VEL))))
             ALLOCATE( MI_ORDER(BCV_I)%VALUE( TMP_FACTOR ) )
+            ALLOCATE( I_OF_MI(BCV_I)%VALUE( TMP_FACTOR ) )
 
+! Initialize            
             MI_ORDER(BCV_I)%VALUE(:) = -1
             MI_FACTOR(BCV_I) = 1
 ! Dimension of grid cell; this may be larger than than the particle
 ! diameter but not smaller              
             MI_WINDOW(BCV_I) = LEN1/dble(TMP_FACTOR)            
+            DO I = 1, TMP_LEN1
+               I_OF_MI(BCV_I)%VALUE(I) = I - 1
+            ENDDO
 
-! Construct an array of integers from 0 to TMP_FACTOR-1 in a random
-! order. This is used when placing new particles.            
+! Construct an array of integers from 1 to TMP_FACTOR in a random
+! order. This is used when placing new particles. 
             LL = 1
-            GEN_ORDER2D: DO
+            DO WHILE (MI_ORDER(BCV_I)%VALUE(TMP_FACTOR) .EQ. -1)
                CALL RANDOM_NUMBER(TMP_DP)
-               TMP = FLOOR(real(TMP_DP*dble(TMP_FACTOR)))
-               MI_ORDER(BCV_I)%VALUE(LL) = TMP
-               IF(LL .GT. 1)THEN
-! The first value of tmp is stored while all subsequent values are
-! checked to make sure none are duplicated (if so generate new number)
-                 DO LC = 1, LL - 1
-                    IF(MI_ORDER(BCV_I)%VALUE(LC) .EQ. TMP)CYCLE GEN_ORDER2D
-                 ENDDO
-               ENDIF
-               IF(LL .LT. TMP_FACTOR)THEN
-                  LL = LL + 1
-                  CYCLE GEN_ORDER2D
-               ENDIF
-               IF(LL .EQ. TMP_FACTOR) EXIT GEN_ORDER2D
-            ENDDO GEN_ORDER2D
+               TMP = CEILING(real(TMP_DP*dble(TMP_FACTOR)))
+               DO LC = 1, LL
+                 IF(TMP .EQ. MI_ORDER(BCV_I)%VALUE(LC) )EXIT
+                 IF(LC .EQ. LL)THEN
+                    MI_ORDER(BCV_I)%VALUE(LC) = TMP
+                    LL = LL + 1
+                 ENDIF
+               ENDDO
+            ENDDO           
          ENDIF     ! endif particle_plcmnt(bcv_i) == 'ordr'
 
 
@@ -1176,7 +1196,6 @@
 ! The inlet velocity is sufficient to permit random placement of the new
 ! particles without risk of overlap
             PARTICLE_PLCMNT(BCV_I) = 'RAND'
-            ALLOCATE( MI_ORDER(BCV_I)%VALUE( 1 ) )
          ELSE IF(MINIPV .LE. ABS(BC_VEL) - SMALL_NUMBER .AND. &
                  ABS(BC_VEL) .LT. MAXIPV + SMALL_NUMBER)THEN
 ! Then inlet velocity will require that the new particles be placed with
@@ -1199,6 +1218,7 @@
             ALLOCATE( I_OF_MI(BCV_I)%VALUE( TMP_FACTOR ) )
             ALLOCATE( J_OF_MI(BCV_I)%VALUE( TMP_FACTOR ) )
 
+! Initialize            
             MI_ORDER(BCV_I)%VALUE(:) = -1
             MI_FACTOR(BCV_I) = 1
 ! Dimension of grid cell; this may be larger than than the particle
@@ -1215,7 +1235,7 @@
                ENDDO
             ENDDO
 
-! Construct an array of integers from 0 to TMP_FACTOR-1 in a random
+! Construct an array of integers from 1 to TMP_FACTOR in a random
 ! order. This is used when placing new particles.
             LL = 1
             DO WHILE (MI_ORDER(BCV_I)%VALUE(TMP_FACTOR) .EQ. -1)
