@@ -577,6 +577,7 @@
 !-----------------------------------------------
       INTEGER BC_MI ! Number of valid discrete mass inlets
       INTEGER BC_MO ! Number of valid discrete mass outlets
+      INTEGER I     ! Loop counter for no. of BC_MI
 !-----------------------------------------------
 
       IF(BC_MI /= 0)THEN
@@ -585,25 +586,31 @@
          Allocate( DES_BC_MI_ID (BC_MI) )
 
 ! Particle injection factor
-         Allocate(  PI_FACTOR (BC_MI) )
+         Allocate( PI_FACTOR (BC_MI) )
 
 ! Particle injection count (injection number)
-         Allocate(  PI_COUNT (BC_MI) )
+         Allocate( PI_COUNT (BC_MI) )
 
 ! Particle injection time scale
-         Allocate(  DES_MI_TIME (BC_MI) )
+         Allocate( DES_MI_TIME (BC_MI) )
 
 ! Boundary classification
-         Allocate(  DES_MI_CLASS (BC_MI) )
-         Allocate(  PARTICLE_PLCMNT (BC_MI) )
+         Allocate( DES_MI_CLASS (BC_MI) )
+         Allocate( PARTICLE_PLCMNT (BC_MI) )
 
 ! Order inlet condition variables
 ! (only needed if particle_plcmt is assigned 'ordr')
-         Allocate(  MI_FACTOR (BC_MI) )
-         Allocate(  MI_WINDOW (BC_MI) )
-         Allocate(  MI_ORDER (BC_MI) )
-         Allocate(  I_OF_MI ( BC_MI) )
-         Allocate(  J_OF_MI ( BC_MI) )
+         Allocate( MI_FACTOR (BC_MI) )
+         Allocate( MI_WINDOW (BC_MI) )
+         Allocate( MI_ORDER (BC_MI) )   ! type dmi
+         Allocate( I_OF_MI ( BC_MI) )   ! type dmi
+         Allocate( J_OF_MI ( BC_MI) )   ! type dmi
+
+         DO I = 1,BC_MI
+            NULLIFY( MI_ORDER(I)%VALUE )
+            NULLIFY( I_OF_MI(I)%VALUE )
+            NULLIFY( J_OF_MI(I)%VALUE )
+         ENDDO
 
 ! Grid search loop counter array; 6 = no. of faces
          Allocate(  GS_ARRAY (BC_MI, 6) )
@@ -1097,7 +1104,7 @@
             PARTICLE_PLCMNT(BCV_I) = 'RAND'
 ! Allocated to prevent errors; value itself not needed for this
 ! particular BCV_I scenario
-            ALLOCATE( MI_ORDER(BCV_I)%VALUE( (1) ))
+            ALLOCATE( MI_ORDER(BCV_I)%VALUE( 1 ) )
          ELSEIF(MINIPV .LE. ABS(BC_VEL) - SMALL_NUMBER .AND. &
          ABS(BC_VEL) .LT. MAXIPV + SMALL_NUMBER)THEN
 ! Then inlet velocity will require that the new particles be placed with
@@ -1118,7 +1125,7 @@
 ! mass flow rate and particle velocity;
             TMP_FACTOR = CEILING(real(D_P0(1) / &
                (dble(PI_FACTOR(BCV_I)) * DTSOLID * ABS(BC_VEL))))
-            ALLOCATE(MI_ORDER(BCV_I)%VALUE(TMP_FACTOR))
+            ALLOCATE( MI_ORDER(BCV_I)%VALUE( TMP_FACTOR ) )
 
             MI_ORDER(BCV_I)%VALUE(:) = -1
             MI_FACTOR(BCV_I) = 1
@@ -1169,7 +1176,7 @@
 ! The inlet velocity is sufficient to permit random placement of the new
 ! particles without risk of overlap
             PARTICLE_PLCMNT(BCV_I) = 'RAND'
-            ALLOCATE( MI_ORDER(BCV_I)%VALUE( (1) ))
+            ALLOCATE( MI_ORDER(BCV_I)%VALUE( 1 ) )
          ELSE IF(MINIPV .LE. ABS(BC_VEL) - SMALL_NUMBER .AND. &
                  ABS(BC_VEL) .LT. MAXIPV + SMALL_NUMBER)THEN
 ! Then inlet velocity will require that the new particles be placed with
@@ -1189,8 +1196,8 @@
 ! with length dimension of 1 particle diameter
             TMP_FACTOR = TMP_LEN1 * TMP_LEN2
             ALLOCATE( MI_ORDER(BCV_I)%VALUE( TMP_FACTOR ) )
-            ALLOCATE(  I_OF_MI(BCV_I)%VALUE( TMP_FACTOR ) )
-            ALLOCATE(  J_OF_MI(BCV_I)%VALUE( TMP_FACTOR ) )
+            ALLOCATE( I_OF_MI(BCV_I)%VALUE( TMP_FACTOR ) )
+            ALLOCATE( J_OF_MI(BCV_I)%VALUE( TMP_FACTOR ) )
 
             MI_ORDER(BCV_I)%VALUE(:) = -1
             MI_FACTOR(BCV_I) = 1

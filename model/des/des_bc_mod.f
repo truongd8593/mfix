@@ -89,7 +89,7 @@
 ! the dimension of this variable is equal to the number of grid cells
 ! in the inlet edge/face
       TYPE dmi
-         INTEGER, DIMENSION(:), ALLOCATABLE :: VALUE   
+         INTEGER, DIMENSION(:), POINTER :: VALUE   
       END TYPE dmi
       TYPE(dmi), DIMENSION(:), ALLOCATABLE :: I_OF_MI
       TYPE(dmi), DIMENSION(:), ALLOCATABLE :: J_OF_MI   !(number of MI boundaries)
