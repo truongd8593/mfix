@@ -44,8 +44,8 @@
 !-----------------------------------------------
       INTEGER L, I
       DOUBLE PRECISION D(DIMN), DIST, &
-                       NEIGHBOR_SEARCH_DIST, &
-                       SQR_VEL
+                       NEIGHBOR_SEARCH_DIST
+
 ! Logical for local debug warnings
       LOGICAL DES_LOC_DEBUG
 
@@ -102,8 +102,8 @@
 
 
 ! Warning message for particles moving into ghost cells:
-! Note that if this occurs then the particles_in_cell s
-! subroutine should call stop
+! Note that if this occurs then the particle_in_cell subroutine 
+! will call stop
       IF((DES_POS_NEW(L,1) < ZERO .OR. DES_POS_NEW(L,1) > XLENGTH) .AND.&
       .NOT.DES_PERIODIC_WALLS_X .AND. &
       .NOT.PEA(L,2) .AND. .NOT.PEA(L,3)) THEN
@@ -185,16 +185,6 @@
             ENDIF
          ENDIF
       ENDIF
-
-
-! Calculation of total kinetic and potential energy and average velocity
-      SQR_VEL = ZERO 
-      DO I = 1, DIMN
-         SQR_VEL = SQR_VEL + DES_VEL_NEW(L,I)**2
-      ENDDO 
-      DES_VEL_AVG(:) =  DES_VEL_AVG(:) + DES_VEL_NEW(L,:)
-      DES_KE = DES_KE + HALF*SQR_VEL*PMASS(L) 
-      DES_PE = DES_PE + PMASS(L)*DES_POS_NEW(L,2)*SQRT(DES_DOTPRDCT(GRAV,GRAV))
 
 
 ! Reset total contact force and torque      

@@ -66,6 +66,10 @@
 
 !     index to track accounted for particles  
       INTEGER PC    
+
+!     logical that tells whether to perform calculations in subroutine
+      LOGICAL FLAGTEMP
+
 !-----------------------------------------------
 
       INCLUDE 'function.inc'
@@ -73,7 +77,7 @@
       INCLUDE 'fun_avg2.inc'
       
       
-      !write(*,*) ' dt, dtsolid = ', dt, dtsolid
+      !write(*,'(3X,A,ES,2X,ES)') 'dt, dtsolid = ', dt, dtsolid
       
       IF(FIRST_PASS) THEN 
          
@@ -169,12 +173,13 @@
          ENDIF
       ENDIF
 
-      write(*,*) '              dt = ', dt
-      write(*,*) '         dtsolid = ', dtsolid
-      write(*,*) ' int(dt/dtsolid) = ', nint(dt/dtsolid)      
-      write(*,'(A,I,A)') &
-         'Discrete Element Simulation will be called ', &
-         FACTOR, ' times'
+      write(*,'(3X,A,X,I,X,A)') &
+         'DEM SIMULATION will be called ', &
+         FACTOR, 'times'
+      write(*,'(3X,A,X,ES,2X,A,X,ES)') &
+           'dt=', dt, 'dtsolid=', dtsolid
+      write(*,'(3X,A,X,ES)') &
+           'int(dt/dtsolid)=', nint(dt/dtsolid)
 
       IF(NEIGHBOR_SEARCH_N.GT.FACTOR) THEN 
          !NEIGHBOR_SEARCH_N = FACTOR
@@ -224,7 +229,7 @@
          NSN = NSN + 1    
          
          IF(NN.EQ.1.OR.MOD(NN,INT(NEIGHBOR_SEARCH_N)).EQ.0) THEN 
-            !PRINT*, 'CALLING NEIGHBOR BECASUE NN = ', NN
+            !WRITE(*,'(3X,A,I)') 'CALLING NEIGHBOR BECAUSE NN = ', NN
             CALL NEIGHBOUR
          ELSEIF(DO_NSEARCH) THEN 
             CALL NEIGHBOUR
@@ -233,16 +238,17 @@
             NSN = 0
          ENDIF
 
-         IF(DES_CONTINUUM_COUPLED) THEN
-            S_TIME = S_TIME + DTSOLID
-            IF(NN.EQ.FACTOR) CALL DES_GRANULAR_TEMPERATURE
-         ENDIF
-
-
-         IF(.NOT.DES_CONTINUUM_COUPLED) THEN    
 ! Update time before any write statements to reflect that the particle has
 ! already been moved for the current time step                  
-            S_TIME = S_TIME + DTSOLID
+         S_TIME = S_TIME + DTSOLID
+
+! So that section of granular_temperature routine is only calculated at
+! end of current DEM simulation         
+         FLAGTEMP = .FALSE.
+         IF(DES_CONTINUUM_COUPLED .AND. NN.EQ.FACTOR) FLAGTEMP = .TRUE.
+         CALL DES_GRANULAR_TEMPERATURE(FLAGTEMP)
+        
+         IF(.NOT.DES_CONTINUUM_COUPLED) THEN    
 ! Keep track of TIME for DEM simulations
             TIME = S_TIME
 
@@ -251,7 +257,7 @@
                  PTC = PTC + DTSOLID
 ! Additional check was added to make sure DEM data are written at exactly NN = FACTOR.
                IF((PTC.GE.P_TIME .AND. NN .NE. (FACTOR-1)) .OR. NN == FACTOR) THEN
-                  CALL DES_GRANULAR_TEMPERATURE
+                  CALL DES_GRANULAR_TEMPERATURE(FLAGTEMP)
                   CALL WRITE_DES_DATA
                   WRITE(*,*) 'DES_SPX file written at Time= ', S_TIME
                   WRITE(UNIT_LOG,*) 'DES_SPX file written at Time= ', S_TIME
@@ -261,7 +267,8 @@
 
 ! Write Restart for DEM only case
             DESRESDT = DESRESDT + DTSOLID
-            IF((DESRESDT.GE.RES_DT .AND. NN .NE. (FACTOR-1)) .OR. NN == FACTOR) THEN ! same as PTC
+            IF((DESRESDT.GE.RES_DT .AND. NN .NE. (FACTOR-1)) &
+            .OR. NN == FACTOR) THEN ! same as PTC
                CALL WRITE_DES_RESTART
 ! Write RES1 here instead of time_march, this will also keep track of TIME.
                CALL WRITE_RES1 
@@ -269,7 +276,9 @@
                WRITE(UNIT_LOG,*) 'DES_RES file written at Time= ', S_TIME
                DESRESDT = DESRESDT - RES_DT
             ENDIF
+
          ENDIF  ! end if (.not.des_continuum_coupled)
+
 
 ! J.Musser : mass inlet/outlet -> particles entering the system
          IF(DES_MI)THEN 
@@ -284,6 +293,11 @@
                ENDIF
             ENDDO
          ENDIF
+
+         IF (NN .EQ. FACTOR) &
+            WRITE(*,'(3X,A,I5,2X,ES)') &
+               'MAX no. neigh & % overlap = ', NEIGH_MAX, OVERLAP_MAX
+
       ENDDO     ! end do NN = 1, FACTOR
 
 
@@ -306,8 +320,6 @@
          TMP_DTS = ZERO
       ENDIF
 
-      WRITE(*,*) 'MAX neigh & overlap = ', NEIGH_MAX, OVERLAP_MAX
-      !write(*,*) 'loop end dt, dtsolid = ', dt, dtsolid     
 
       END SUBROUTINE DES_TIME_MARCH
 

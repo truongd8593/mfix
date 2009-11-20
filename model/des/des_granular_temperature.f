@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: DES_GRANULAR_TEMPERATURE
-!>  Purpose: DES - Calculate the DES granular temperature               
+!  Module name: DES_GRANULAR_TEMPERATURE(FLAGTEMP)
+!  Purpose: DES - Calculate the DES granular temperature               
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
@@ -9,7 +9,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE DES_GRANULAR_TEMPERATURE
+      SUBROUTINE DES_GRANULAR_TEMPERATURE(FLAGTEMP)
 
       USE discretelement
       USE param
@@ -30,66 +30,122 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------      
+! indices
       INTEGER I, J, K, IJK
-      INTEGER M, NP, IPART, NPG
+! 
+      INTEGER M, NP, NPG, LL
+! temporary variable for granular temperature      
       DOUBLE PRECISION  TEMP
+! accounted for particles
+      INTEGER PC             
+! squared particle velocity v.v
+      DOUBLE PRECISION SQR_VEL
+! determine whether to perform section of calculation currently reserved
+! for coupled dem simulations (and only necessary at end of dem
+! simulation)
+      LOGICAL FLAGTEMP
 !-----------------------------------------------      
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-      
-      DO IJK = IJKSTART3, IJKEND3
-         IF(FLUID_AT(IJK)) THEN
-            DO M = 1, MMAX
-               AVE_VEL_X(IJK,M) = DES_U_s(IJK,M)
-               AVE_VEL_Y(IJK,M) = DES_V_s(IJK,M)
-               IF(DIMN.EQ.3) THEN  
-                  AVE_VEL_Z(IJK,M) = DES_W_s(IJK,M)
-               ENDIF
-            ENDDO
-         ENDIF
-      ENDDO
 
-      DO IJK = ijkstart3, ijkend3 
-         IF(FLUID_AT(IJK)) THEN
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
+
+! Calculate local granular temperature
+!-------------------------------------      
+      IF (FLAGTEMP) THEN
+
+         DO IJK = IJKSTART3, IJKEND3
+            IF(FLUID_AT(IJK)) THEN
+               I = I_OF(IJK)
+               J = J_OF(IJK)
+               K = K_OF(IJK)
             
-            IF (ASSOCIATED(PIC(I,J,K)%p)) THEN
-               NPG = SIZE(PIC(I,J,K)%p)
-            ELSE
-               NPG = 0
-            ENDIF
-            
-            TEMP = ZERO
-            DO IPART = 1, NPG 
-               NP = PIC(I,J,K)%p(IPART)
-               M = PIJK(NP,5)
+               IF (ASSOCIATED(PIC(I,J,K)%p)) THEN
+                  NPG = SIZE(PIC(I,J,K)%p)
+                         
+                  TEMP = ZERO
+                  DO LL = 1, NPG 
+                     NP = PIC(I,J,K)%p(LL)
+                     M = PIJK(NP,5)
                
-               TEMP = TEMP + (DES_VEL_NEW(NP,1)-DES_U_s(IJK,M))**2 
-               TEMP = TEMP + (DES_VEL_NEW(NP,2)-DES_V_s(IJK,M))**2
-               IF(DIMN.EQ.3) THEN 
-                  TEMP = TEMP + (DES_VEL_NEW(NP,3)-DES_W_s(IJK,M))**2 
+                     TEMP = TEMP + (DES_VEL_NEW(NP,1)-DES_U_s(IJK,M))**2 
+                     TEMP = TEMP + (DES_VEL_NEW(NP,2)-DES_V_s(IJK,M))**2
+                     IF(DIMN.EQ.3) THEN 
+                        TEMP = TEMP + (DES_VEL_NEW(NP,3)-DES_W_s(IJK,M))**2 
+                     ENDIF
+                  ENDDO
+                  DES_THETA(IJK,M) = TEMP/(3.0d0 * DBLE(NPG))
                ENDIF
-            ENDDO
-            IF(NPG>0)  DES_THETA(IJK,M) = TEMP/(3.0d0 * DFLOAT(NPG))
-         ENDIF
+            ENDIF
          
+         ENDDO
+
+!      OPEN (UNIT=17,FILE='des_granular_temp.out',STATUS='REPLACE')
+!      WRITE(17,*)' '
+!      WRITE(17,*)'T="',S_TIME,'"'
+!      DO IJK = IJKSTART3, IJKEND3
+!         IF(FLUID_AT(IJK)) THEN
+!            I = I_OF(IJK)
+!            J = J_OF(IJK)
+!            K = k_OF(IJK)
+!            WRITE(17,*) IJK, I, J, K, DES_THETA(IJK,1)
+!         ENDIF
+!      ENDDO
+
+      ENDIF   ! endif flagtemp 
+
+! Calculate global quantities: granular temperature, 
+! kinetic energy, potential energy and average velocity
+! Most of the code here was moved from cfupdateold and
+! cfnewvalues 
+!-------------------------------------
+
+! initialization for calculations
+      DES_KE = ZERO
+      DES_PE = ZERO 
+      DES_VEL_AVG(:) = ZERO
+
+! Calculate global average velocity, kinetic energy &
+! potential energy
+      PC = 1
+      DO LL = 1, MAX_PIS
+         IF(PC .GT. PIS) EXIT
+         IF(.NOT.PEA(LL,1)) CYCLE
+
+         SQR_VEL = ZERO
+         DO I = 1, DIMN
+            SQR_VEL = SQR_VEL + DES_VEL_NEW(LL,I)**2
+         ENDDO
+
+         DES_KE = DES_KE + PMASS(LL)/2.d0 * SQR_VEL 
+         DES_PE = DES_PE + PMASS(LL)*DBLE(ABS(GRAV(2)))*&
+            DES_POS_NEW(LL,2)
+         DES_VEL_AVG(:) =  DES_VEL_AVG(:) + DES_VEL_NEW(LL,:)
+
+         PC = PC + 1
       ENDDO
 
+!J.Musser changed PARTICLES TO PIS 
+      DES_VEL_AVG(:) = DES_VEL_AVG(:)/PIS       
 
-!         OPEN (UNIT=17,FILE='des_granular_temp.out',STATUS='REPLACE')
-!         WRITE(17,*)' '
-!         WRITE(17,*)'T="',S_TIME,'"'
-!         DO IJK = IJKSTART3, IJKEND3
-!           IF(FLUID_AT(IJK)) THEN
-!             I = I_OF(IJK)
-!             J = J_OF(IJK)
-!             K = k_OF(IJK)
-!             WRITE(17,*) IJK, I, J, K, DES_THETA(IJK,1)
-!           ENDIF
-!         END DO
+! Calculate global granular temperature
+      GLOBAL_GRAN_ENERGY = ZERO
+      GLOBAL_GRAN_TEMP  = ZERO
+      PC = 1
+      DO LL = 1, MAX_PIS
+         IF(PC .GT. PIS) EXIT
+         IF(.NOT.PEA(LL,1)) CYCLE
+
+         GLOBAL_GRAN_ENERGY(:) = GLOBAL_GRAN_ENERGY(:) + &
+            PMASS(LL)*(DES_VEL_NEW(LL,:)-DES_VEL_AVG(:))**2
+         GLOBAL_GRAN_TEMP(:) = GLOBAL_GRAN_TEMP(:) + &
+            PMASS(LL)*(DES_VEL_NEW(LL,:)-DES_VEL_AVG(:))**2
+
+         PC = PC + 1
+      ENDDO
+
+      GLOBAL_GRAN_ENERGY(:) =  GLOBAL_GRAN_ENERGY(:) 
+      GLOBAL_GRAN_TEMP(:) =  GLOBAL_GRAN_TEMP(:)     
 
       RETURN
       END SUBROUTINE DES_GRANULAR_TEMPERATURE
