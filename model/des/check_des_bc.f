@@ -1155,7 +1155,7 @@
 ! Dimension of grid cell; this may be larger than than the particle
 ! diameter but not smaller              
             MI_WINDOW(BCV_I) = LEN1/dble(TMP_FACTOR)            
-            DO I = 1, TMP_LEN1
+            DO I = 1, TMP_FACTOR 
                I_OF_MI(BCV_I)%VALUE(I) = I - 1
             ENDDO
 
