@@ -136,7 +136,8 @@
          PN(LL,NLIM:MAXNEIGHBORS) = -1
          PFN(LL,NLIM:MAXNEIGHBORS,:) = ZERO
          PFT(LL,NLIM:MAXNEIGHBORS,:) = ZERO
-         NEIGH_MAX = MAX(NEIGH_MAX, PN(LL,1)+1)
+         IF (PN(LL,1) .GT. NEIGH_MAX) NEIGH_MAX = PN(LL,1)
+
 
 ! Initializing the neighbor list contact information when particles are
 ! not in contact; i.e. when particle LL has no neighbors         
