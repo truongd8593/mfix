@@ -191,9 +191,9 @@
 
 !     Intial particle velocity distribution's mean and Standard Deviation
       DOUBLE PRECISION pvel_mean, PVEL_StDev
-      DOUBLE PRECISION :: MIN_RADIUS, MAX_RADIUS
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE::   AVE_VEL_X, AVE_VEL_Y,  AVE_VEL_Z
 
+!     Additional quantities
+      DOUBLE PRECISION :: MIN_RADIUS, MAX_RADIUS
       INTEGER, ALLOCATABLE, DIMENSION(:) :: MARK_PART
       DOUBLE PRECISION OVERLAP_MAX
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: bed_height   

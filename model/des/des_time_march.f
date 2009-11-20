@@ -77,8 +77,6 @@
       INCLUDE 'fun_avg2.inc'
       
       
-      !write(*,'(3X,A,ES,2X,ES)') 'dt, dtsolid = ', dt, dtsolid
-      
       IF(FIRST_PASS) THEN 
          
          FIRST_PASS = .FALSE.
@@ -114,8 +112,10 @@
             IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
                DES_CONTINUUM_COUPLED = .FALSE.
                DO FACTOR = 1, NFACTOR
-                  WRITE(*,'(A,I)') &
-                     'FIRST PASS IN DES TIME MARCH', FACTOR
+                  IF (FACTOR .EQ. 1)&
+                     WRITE(*,'(/,2X,A,/,4X,A,X,I,X,A)') &
+                     'FIRST PASS IN DES_TIME_MARCH BEFORE COUPLING',&
+                     'DEM settling period performed', NFACTOR, 'times'
 
                   ! Force calculation         
                   CALL CALC_FORCE_DES
@@ -141,6 +141,7 @@
                   ENDIF
                ENDDO
                DES_CONTINUUM_COUPLED = .TRUE.
+               WRITE(*,'(2X,A,/)') 'END DEM settling period'
             ENDIF
             IF(DES_INTERP_ON) THEN 
                CALC_FC = .FALSE.
@@ -163,6 +164,12 @@
             DTSOLID_TMP = DTSOLID
             DTSOLID = DT
          ENDIF
+         write(*,'(2X,A,X,I,X,A)') &
+            'DEM SIMULATION will be called', &
+            FACTOR, 'times this fluid time step' 
+         write(*,'(4X,A,X,ES)') 'dt =', dt
+         write(*,'(4X,A,X,ES)') 'dtsolid =', dtsolid
+         write(*,'(4X,A,X,I)') 'int(dt/dtsolid) =', nint(dt/dtsolid)
       ELSE
 ! added TIME for restart & +1 removed
          FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID)) 
@@ -171,20 +178,16 @@
            PTC = DTSOLID 
            DESRESDT = DTSOLID
          ENDIF
+         write(*,'(1X,A,X,I,X,A)') &
+            'DEM SIMULATION will be called', FACTOR, 'times'
       ENDIF
 
-      write(*,'(3X,A,X,I,X,A)') &
-         'DEM SIMULATION will be called ', &
-         FACTOR, 'times'
-      write(*,'(3X,A,X,ES,2X,A,X,ES)') &
-           'dt=', dt, 'dtsolid=', dtsolid
-      write(*,'(3X,A,X,ES)') &
-           'int(dt/dtsolid)=', nint(dt/dtsolid)
 
       IF(NEIGHBOR_SEARCH_N.GT.FACTOR) THEN 
          !NEIGHBOR_SEARCH_N = FACTOR
          NSN = NEIGHBOR_SEARCH_N - 1
       ENDIF 
+
 
       DO NN = 1, FACTOR         !  do NN = 1, FACTOR
 
@@ -208,7 +211,7 @@
          ELSE
             IF(DEBUG_DES) PRINT *,"DES UNCOUPLED", NN, S_TIME 
          ENDIF 
-         
+
          ! Force calculation         
          CALL CALC_FORCE_DES
 
@@ -229,7 +232,7 @@
          NSN = NSN + 1    
          
          IF(NN.EQ.1.OR.MOD(NN,INT(NEIGHBOR_SEARCH_N)).EQ.0) THEN 
-            !WRITE(*,'(3X,A,I)') 'CALLING NEIGHBOR BECAUSE NN = ', NN
+            !WRITE(*,'(4X,A,I)') 'CALLING NEIGHBOR BECAUSE NN = ', NN
             CALL NEIGHBOUR
          ELSEIF(DO_NSEARCH) THEN 
             CALL NEIGHBOUR
@@ -295,7 +298,7 @@
          ENDIF
 
          IF (NN .EQ. FACTOR) &
-            WRITE(*,'(3X,A,I5,2X,ES)') &
+            WRITE(*,'(4X,A,I5,2X,ES15.7)') &
                'MAX no. neigh & % overlap = ', NEIGH_MAX, OVERLAP_MAX
 
       ENDDO     ! end do NN = 1, FACTOR

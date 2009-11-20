@@ -390,10 +390,10 @@
       REAL*8 :: umf0(dimn), rsf(DIMN, DIMN)
 !-----------------------------------------------      
 
-      WRITE(*,'(5X,A)') '---------- START INIT_PARTICLES_JN ---------->'
-      WRITE(*,'(7X,A)') 'Initializing normal velocity distribution:'
-      WRITE(*,'(7X,A,ES17.9,A,ES17.9)') 'mean= ', pvel_mean,&
-         ' and standard deviation= ', PVEL_StDev
+      WRITE(*,'(3X,A)') '---------- START INIT_PARTICLES_JN ---------->'
+      WRITE(*,'(5X,A)') 'Initializing normal velocity distribution:'
+      WRITE(*,'(5X,A,ES17.8,A,ES17.8)') 'mean = ', pvel_mean,&
+         ' and standard deviation = ', PVEL_StDev
 
       DO J=1,DIMN
          umf0(j)=pvel_mean
@@ -404,12 +404,12 @@
                rsf(I,J)=0.0
             endif
          ENDDO
-         WRITE(*,'(7X,A,I5,2X,A)') 'FOR DIRECTION= ', J,&
+         WRITE(*,'(5X,A,I5,2X,A)') 'FOR DIRECTION= ', J,&
             ' where (1=X,2=Y,3=Z):   '
          CALL nor_rno(DES_VEL_OLD(1:PARTICLES,J),umf0(J),rsf(J,J))
       ENDDO
 
       DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
-      WRITE(*,'(5X,A)') '<---------- END INIT_PARTICLES_JN ----------'
+      WRITE(*,'(3X,A)') '<---------- END INIT_PARTICLES_JN ----------'
 
       END SUBROUTINE init_particles_jn

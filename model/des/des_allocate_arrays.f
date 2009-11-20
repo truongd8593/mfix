@@ -154,17 +154,16 @@
 
       ALLOCATE(MARK_PART(NPARTICLES))
       ALLOCATE(BED_HEIGHT(MMAX))
-      ALLOCATE(AVE_VEL_X(DIMENSION_3,MMAX), AVE_VEL_Y(DIMENSION_3,MMAX), AVE_VEL_Z(DIMENSION_3,MMAX))
 
 
       ALLOCATE(PIC(DIMENSION_I,DIMENSION_J,DIMENSION_K))
       DO K = 1,KMAX3
          DO J = 1,JMAX3
             DO I = 1,IMAX3
-               NULLIFY(pic(i,j,k)%p) 	 
-            ENDDO 	 
-          ENDDO 	 
-       ENDDO
+               NULLIFY(pic(i,j,k)%p) 
+            ENDDO 
+          ENDDO 
+       ENDDO 
       
 ! Particle attributes
 ! Radius, density, mass, moment of inertia           
