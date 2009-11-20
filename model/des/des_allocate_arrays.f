@@ -158,13 +158,13 @@
 
 
       ALLOCATE(PIC(DIMENSION_I,DIMENSION_J,DIMENSION_K))
-      DO IJK = ijkstart3, ijkend3
-         I = I_OF(IJK)
-         J = J_OF(IJK)
-         K = K_OF(IJK)
-         NULLIFY(pic(i,j,k)%p)
-      ENDDO
-
+      DO K = 1,KMAX3
+         DO J = 1,JMAX3
+            DO I = 1,IMAX3
+               NULLIFY(pic(i,j,k)%p) 	 
+            ENDDO 	 
+          ENDDO 	 
+       ENDDO
       
 ! Particle attributes
 ! Radius, density, mass, moment of inertia           
