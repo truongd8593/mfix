@@ -248,11 +248,13 @@
                       W_S(IJK,MMAX) = W_S(IJK,MMAX) / ROP_S(IJK,MMAX) 
                       THETA_M(IJK,MMAX) = THETA_M(IJK,MMAX) / nTOT 
                     ELSE ! for initially empty bed
-                      U_S(IJK,MMAX) = USX(MMAX)
-                      V_S(IJK,MMAX) = VSX(MMAX)
-                      W_S(IJK,MMAX) = WSX(MMAX)
-                      THETA_M(IJK,MMAX) = IC_THETA_M(L,MMAX) 
-                      IF(IC_THETA_M(L,MMAX)==ZERO) THETA_M(IJK,MMAX) = SMALL_NUMBER
+                      U_S(IJK,MMAX) = U_S(IJK,MMAX)
+                      V_S(IJK,MMAX) = V_S(IJK,MMAX)
+                      W_S(IJK,MMAX) = W_S(IJK,MMAX)
+                      DO M = 1, SMAX 
+		        THETA_M(IJK,MMAX) = THETA_M(IJK,M) ! set T > 0 in case Ti > 0
+                      ENDDO
+                      IF(THETA_M(IJK,MMAX)==ZERO) THETA_M(IJK,MMAX) = small_number
                     ENDIF
                   ENDIF
 ! end of modifications for GHD theory
