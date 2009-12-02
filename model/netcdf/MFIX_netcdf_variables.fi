@@ -1,0 +1,617 @@
+
+ function MFIX_nf90_def_var_Scalar(ncid, name, xtype, varid)
+
+    use netcdf
+
+    integer,               intent( in) :: ncid
+    character (len = *),   intent( in) :: name
+    integer,               intent( in) :: xtype
+    integer,               intent(out) :: varid
+    integer                            :: MFIX_nf90_def_var_Scalar
+    
+    ! Dummy - shouldn't get used
+    integer, dimension(1) :: dimids
+    
+    MFIX_nf90_def_var_Scalar = nf90_def_var(ncid, name, xtype, varid)
+  end function MFIX_nf90_def_var_Scalar
+  ! ----- 
+  function MFIX_nf90_def_var_oneDim(ncid, name, xtype, dimids, varid)
+
+    use netcdf
+
+    integer,               intent( in) :: ncid
+    character (len = *),   intent( in) :: name
+    integer,               intent( in) :: xtype
+    integer,               intent( in) :: dimids
+    integer,               intent(out) :: varid
+    integer                            :: MFIX_nf90_def_var_oneDim
+    
+    integer, dimension(1) :: dimidsA
+    dimidsA(1) = dimids
+    MFIX_nf90_def_var_oneDim = nf90_def_var(ncid, name, xtype, dimids, varid)
+  end function MFIX_nf90_def_var_oneDim
+  ! ----- 
+  function MFIX_nf90_def_var_ManyDims(ncid, name, xtype, dimids, varid)
+
+    use netcdf
+
+    integer,               intent( in) :: ncid
+    character (len = *),   intent( in) :: name
+    integer,               intent( in) :: xtype
+    integer, dimension(:), intent( in) :: dimids
+    integer,               intent(out) :: varid
+    integer                            :: MFIX_nf90_def_var_ManyDims
+    
+    MFIX_nf90_def_var_ManyDims = nf90_def_var(ncid, name, xtype, dimids, varid)
+  end function MFIX_nf90_def_var_ManyDims
+
+
+   function MFIX_nf90_put_var_text(ncid, varid, values, start, count, stride, map)
+
+     use netcdf
+
+     integer,                         intent( in) :: ncid, varid
+     character (len = *),             intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_text
+
+ 
+     MFIX_nf90_put_var_text = nf90_put_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_put_var_text
+
+   function MFIX_nf90_get_var_text(ncid, varid, values, start, count, stride, map)
+
+     use netcdf
+
+     integer,                         intent( in) :: ncid, varid
+     character (len = *),             intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_text
+ 
+
+     MFIX_nf90_get_var_text = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_text
+
+
+   function MFIX_nf90_put_var_1D_text(ncid, varid, values, start, count, stride, map)
+
+     use netcdf
+
+     integer,                         intent( in) :: ncid, varid
+     character (len = *), dimension(:), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_1D_text
+ 
+     integer, parameter                    :: numDims = 1
+ 
+     MFIX_nf90_put_var_1D_text = nf90_put_var(ncid, varid, values, start, count, stride, map)
+
+   end function MFIX_nf90_put_var_1D_text
+
+
+   function MFIX_nf90_put_var_2D_text(ncid, varid, values, start, count, stride, map)
+
+     use netcdf
+
+     integer,                         intent( in) :: ncid, varid
+     character (len = *), dimension(:, :), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_2D_text
+ 
+     integer, parameter                    :: numDims = 2
+ 
+     MFIX_nf90_put_var_2D_text = nf90_put_var(ncid, varid, values, start, count, stride, map)
+
+   end function MFIX_nf90_put_var_2D_text
+
+
+   function MFIX_nf90_put_var_3D_text(ncid, varid, values, start, count, stride, map)
+
+     use netcdf
+
+     integer,                         intent( in) :: ncid, varid
+     character (len = *), dimension(:, :, :), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_3D_text
+ 
+     integer, parameter                    :: numDims = 3
+        MFIX_nf90_put_var_3D_text = nf90_put_var(ncid, varid, values, start, count, stride, map)
+
+   end function MFIX_nf90_put_var_3D_text
+
+
+
+   function MFIX_nf90_get_var_1D_text(ncid, varid, values, start, count, stride, map)
+
+     use netcdf
+
+     integer,                         intent( in) :: ncid, varid
+     character (len = *), dimension(:), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_1D_text
+ 
+     integer, parameter                  :: numDims = 1
+       MFIX_nf90_get_var_1D_text = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_1D_text
+
+
+   function MFIX_nf90_get_var_2D_text(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     character (len = *), dimension(:, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_2D_text
+ 
+     integer, parameter                  :: numDims = 2
+       MFIX_nf90_get_var_2D_text = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_2D_text
+
+
+   function MFIX_nf90_get_var_3D_text(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     character (len = *), dimension(:, :, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_3D_text
+ 
+     integer, parameter                  :: numDims = 3
+      MFIX_nf90_get_var_3D_text = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_3D_text
+
+
+   function MFIX_nf90_get_var_4D_text(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     character (len = *), dimension(:, :, :, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_4D_text
+ 
+     integer, parameter                  :: numDims = 4
+       MFIX_nf90_get_var_4D_text = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_4D_text
+
+
+   function MFIX_nf90_get_var_5D_text(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     character (len = *), dimension(:, :, :, :, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_5D_text
+ 
+     integer, parameter                  :: numDims = 5
+ 
+       MFIX_nf90_get_var_5D_text = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_5D_text
+
+
+   function MFIX_nf90_get_var_6D_text(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     character (len = *), dimension(:, :, :, :, :, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_6D_text
+ 
+     integer, parameter                  :: numDims = 6
+        MFIX_nf90_get_var_6D_text = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_6D_text
+
+
+   function MFIX_nf90_get_var_7D_text(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     character (len = *), dimension(:, :, :, :, :, :, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_7D_text
+ 
+     integer, parameter                  :: numDims = 7
+       MFIX_nf90_get_var_7D_text = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_7D_text
+
+
+
+
+   function MFIX_nf90_put_var_FourByteInt(ncid, varid, values, start)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start
+     integer                                      :: MFIX_nf90_put_var_FourByteInt
+  
+     MFIX_nf90_put_var_FourByteInt = nf90_put_var(ncid, varid, values, start)
+   end function MFIX_nf90_put_var_FourByteInt
+
+
+
+   function MFIX_nf90_put_var_FourByteReal(ncid, varid, values, start)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     real , intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start
+     integer                                      :: MFIX_nf90_put_var_FourByteReal
+ 
+  
+     MFIX_nf90_put_var_FourByteReal = nf90_put_var(ncid, varid, values, start)
+   end function MFIX_nf90_put_var_FourByteReal
+
+
+   function MFIX_nf90_put_var_EightByteReal(ncid, varid, values, start)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     double precision, intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start
+     integer                                      :: MFIX_nf90_put_var_EightByteReal
+ 
+  
+     MFIX_nf90_put_var_EightByteReal = nf90_put_var(ncid, varid, values, start)
+   end function MFIX_nf90_put_var_EightByteReal
+
+
+
+   function MFIX_nf90_get_var_TwoByteInt(ncid, varid, values, start)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start
+     integer                                      :: MFIX_nf90_get_var_TwoByteInt
+ 
+     integer                               :: counter
+ 
+  
+     MFIX_nf90_get_var_TwoByteInt = nf90_get_var(ncid, varid, values, start)
+   end function MFIX_nf90_get_var_TwoByteInt
+
+
+   function MFIX_nf90_get_var_FourByteInt(ncid, varid, values, start)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start
+     integer                                      :: MFIX_nf90_get_var_FourByteInt
+ 
+     integer                               :: counter
+     integer                               :: defaultInteger
+
+      MFIX_nf90_get_var_FourByteInt = nf90_get_var(ncid, varid, values, start)
+   end function MFIX_nf90_get_var_FourByteInt
+
+
+   function MFIX_nf90_get_var_EightByteInt(ncid, varid, values, start)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start
+     integer                                      :: MFIX_nf90_get_var_EightByteInt
+ 
+ 
+     MFIX_nf90_get_var_EightByteInt = nf90_get_var(ncid, varid, values, start)
+   end function MFIX_nf90_get_var_EightByteInt
+
+
+   function MFIX_nf90_get_var_FourByteReal(ncid, varid, values, start)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     real , intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start
+     integer                                      :: MFIX_nf90_get_var_FourByteReal
+ 
+ 
+     MFIX_nf90_get_var_FourByteReal = nf90_get_var(ncid, varid, values, start)
+   end function MFIX_nf90_get_var_FourByteReal
+
+
+   function MFIX_nf90_get_var_EightByteReal(ncid, varid, values, start)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     double precision, intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start
+     integer                                      :: MFIX_nf90_get_var_EightByteReal
+ 
+     MFIX_nf90_get_var_EightByteReal = nf90_get_var(ncid, varid, values, start)
+   end function MFIX_nf90_get_var_EightByteReal
+
+
+   function MFIX_nf90_get_var_1D_TwoByteInt(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , dimension(:), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_1D_TwoByteInt
+ 
+     MFIX_nf90_get_var_1D_TwoByteInt = nf90_get_var(ncid, varid, values, start, count, stride, map)
+     
+   end function MFIX_nf90_get_var_1D_TwoByteInt
+
+
+   function MFIX_nf90_get_var_2D_TwoByteInt(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , dimension(:, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_2D_TwoByteInt
+ 
+       MFIX_nf90_get_var_2D_TwoByteInt = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_2D_TwoByteInt
+
+
+   function MFIX_nf90_get_var_3D_TwoByteInt(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , dimension(:, :, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_3D_TwoByteInt
+ 
+        MFIX_nf90_get_var_3D_TwoByteInt = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_3D_TwoByteInt
+
+
+
+
+ 
+
+
+   function MFIX_nf90_get_var_1D_FourByteInt(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , dimension(:), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_1D_FourByteInt
+       MFIX_nf90_get_var_1D_FourByteInt = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_1D_FourByteInt
+
+
+   function MFIX_nf90_get_var_2D_FourByteInt(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , dimension(:, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_2D_FourByteInt
+ 
+      MFIX_nf90_get_var_2D_FourByteInt = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_2D_FourByteInt
+
+
+   function MFIX_nf90_get_var_3D_FourByteInt(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , dimension(:, :, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_3D_FourByteInt
+       MFIX_nf90_get_var_3D_FourByteInt = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_3D_FourByteInt
+
+
+
+   function MFIX_nf90_get_var_1D_FourByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     real , dimension(:), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_1D_FourByteReal
+       MFIX_nf90_get_var_1D_FourByteReal = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_1D_FourByteReal
+
+
+   function MFIX_nf90_get_var_2D_FourByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     real , dimension(:, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_2D_FourByteReal
+ 
+       MFIX_nf90_get_var_2D_FourByteReal = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_2D_FourByteReal
+
+
+   function MFIX_nf90_get_var_3D_FourByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     real , dimension(:, :, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_3D_FourByteReal
+      MFIX_nf90_get_var_3D_FourByteReal = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_3D_FourByteReal
+
+
+
+   function MFIX_nf90_get_var_1D_EightByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     double precision, dimension(:), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_1D_EightByteReal
+ 
+       MFIX_nf90_get_var_1D_EightByteReal = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_1D_EightByteReal
+
+
+   function MFIX_nf90_get_var_2D_EightByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     double precision, dimension(:, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_2D_EightByteReal
+ 
+       MFIX_nf90_get_var_2D_EightByteReal = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_2D_EightByteReal
+
+
+   function MFIX_nf90_get_var_3D_EightByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     double precision, dimension(:, :, :), &
+                                      intent(out) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_get_var_3D_EightByteReal
+ 
+        MFIX_nf90_get_var_3D_EightByteReal = nf90_get_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_get_var_3D_EightByteReal
+
+
+
+  function MFIX_nf90_inquire_dimension(ncid, dimid, name, len)
+    use netcdf
+    integer,                       intent( in) :: ncid, dimid
+    character (len = *), optional, intent(out) :: name
+    integer,             optional, intent(out) :: len
+    integer                                    :: MFIX_nf90_inquire_dimension
+
+
+    MFIX_nf90_inquire_dimension = nf90_inquire_dimension(ncid, dimid, name, len)
+  end function MFIX_nf90_inquire_dimension
+
+
+
+
+
+   function MFIX_nf90_put_var_1D_FourByteInt(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , dimension(:), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_1D_FourByteInt
+ 
+       MFIX_nf90_put_var_1D_FourByteInt = nf90_put_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_put_var_1D_FourByteInt
+
+
+   function MFIX_nf90_put_var_2D_FourByteInt(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , dimension(:, :), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_2D_FourByteInt
+ 
+       MFIX_nf90_put_var_2D_FourByteInt = nf90_put_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_put_var_2D_FourByteInt
+
+
+   function MFIX_nf90_put_var_3D_FourByteInt(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , dimension(:, :, :), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_3D_FourByteInt
+       MFIX_nf90_put_var_3D_FourByteInt = nf90_put_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_put_var_3D_FourByteInt
+
+   function MFIX_nf90_put_var_4D_FourByteInt(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     integer , dimension(:, :, : , :), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_4D_FourByteInt
+       MFIX_nf90_put_var_4D_FourByteInt = nf90_put_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_put_var_4D_FourByteInt
+
+   function MFIX_nf90_put_var_1D_FourByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     real , dimension(:), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_1D_FourByteReal
+ 
+        MFIX_nf90_put_var_1D_FourByteReal = nf90_put_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_put_var_1D_FourByteReal
+
+
+   function MFIX_nf90_put_var_2D_FourByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     real , dimension(:, :), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_2D_FourByteReal
+ 
+       MFIX_nf90_put_var_2D_FourByteReal = nf90_put_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_put_var_2D_FourByteReal
+
+
+   function MFIX_nf90_put_var_3D_FourByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     real , dimension(:, :, :), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_3D_FourByteReal
+       MFIX_nf90_put_var_3D_FourByteReal = nf90_put_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_put_var_3D_FourByteReal
+
+
+
+
+  function MFIX_nf90_put_var_1D_EightByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     double precision, dimension(:), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_1D_EightByteReal
+ 
+       MFIX_nf90_put_var_1D_EightByteReal = nf90_put_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_put_var_1D_EightByteReal
+
+
+   function MFIX_nf90_put_var_2D_EightByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     double precision, dimension(:, :), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_2D_EightByteReal
+       MFIX_nf90_put_var_2D_EightByteReal = nf90_put_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_put_var_2D_EightByteReal
+
+
+   function MFIX_nf90_put_var_3D_EightByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     double precision, dimension(:, :, :), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_3D_EightByteReal
+       MFIX_nf90_put_var_3D_EightByteReal = nf90_put_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_put_var_3D_EightByteReal
+
+
+   function MFIX_nf90_put_var_4D_EightByteReal(ncid, varid, values, start, count, stride, map)
+     use netcdf
+     integer,                         intent( in) :: ncid, varid
+     double precision, dimension(:, :, : , :), &
+                                      intent( in) :: values
+     integer, dimension(:), optional, intent( in) :: start, count, stride, map
+     integer                                      :: MFIX_nf90_put_var_4D_EightByteReal
+       MFIX_nf90_put_var_4D_EightByteReal = nf90_put_var(ncid, varid, values, start, count, stride, map)
+   end function MFIX_nf90_put_var_4D_EightByteReal
+
+   function MFIX_usingNETCDF()
+   logical :: MFIX_usingNETCDF
+   MFIX_usingNETCDF = .true.
+   end function MFIX_usingNETCDF
+
+
