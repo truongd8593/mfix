@@ -196,11 +196,11 @@
          CALL ERROR_ROUTINE ('check_data_04', &
          'Cannot use both Yu_Standish and Fedors_Landel correlations', 1, 1)
 
-      RETURN  
-
       IF (SIGM_BLEND) THEN
          TANH_BLEND = .FALSE. ! Setting tanh blending to be false
       ENDIF
+
+      RETURN  
 
  1000 FORMAT(1X,/,1X,'MMAX        in  mfix.dat = ',I6,/,1X,&
          'DIMENSION_M in  param.inc  = ',I6,/) 

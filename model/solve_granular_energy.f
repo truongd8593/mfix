@@ -164,7 +164,7 @@
           IF (SCHAEFFER) THEN
                DO M = 1, MMAX
                     DO IJK = ijkstart3, ijkend3
-                         IF (FLUID_AT(IJK) .AND. EP_g(IJK) .LT. EP_star_array(ijk)) THEN 
+                         IF (FLUID_AT(IJK) .AND. EP_g(IJK) .LT. EP_g_blend_start(ijk)) THEN 
 
                               D_PM = D_P(IJK,M)
                               M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
@@ -339,7 +339,7 @@
          IF (SCHAEFFER) THEN
            DO IJK = ijkstart3, ijkend3
 
-              IF (FLUID_AT(IJK) .AND. EP_g(IJK) .LT. EP_star_array(ijk)) THEN 
+              IF (FLUID_AT(IJK) .AND. EP_g(IJK) .LT. EP_g_blend_start(ijk)) THEN 
 
                  A_M(IJK,1,M) = ZERO 
                  A_M(IJK,-1,M) = ZERO 
