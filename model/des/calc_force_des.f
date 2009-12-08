@@ -49,7 +49,8 @@
       LOGICAL DES_LOC_DEBUG
 ! index to track accounted for particles      
       INTEGER PC
-
+! local values used damping coefficients
+      DOUBLE PRECISION ETA_DES_N, ETA_DES_NW, ETA_DES_T, ETA_DES_TW
 !-----------------------------------------------      
 ! Functions
 !-----------------------------------------------      
@@ -240,14 +241,14 @@
                      GOTO 200
                   ENDIF
                   
-                  ETA_N_W = DES_ETAN_WALL(PIJK(LL,5))
-                  ETA_T_W = DES_ETAT_WALL(PIJK(LL,5))                  
+                  ETA_DES_NW = DES_ETAN_WALL(PIJK(LL,5))
+                  ETA_DES_TW = DES_ETAT_WALL(PIJK(LL,5))
                   
                   FNS1(:) = -KN_W*((OVERLAP_N))*NORMAL(:)
-                  FNS2(:) = -ETA_N_W*V_REL_TRANS_NORM*NORMAL(:)
+                  FNS2(:) = -ETA_DES_NW*V_REL_TRANS_NORM*NORMAL(:)
                   
                   FTS1(:) = -KT_W*((OVERLAP_T)) *TANGENT(:)
-                  FTS2(:) = -ETA_T_W*V_REL_TRANS_TANG*TANGENT(:)
+                  FTS2(:) = -ETA_DES_TW*V_REL_TRANS_TANG*TANGENT(:)
                   
                   FT(LL,:) = FTS1(:) + FTS2(:) 
                   FN(LL,:) = FNS1(:) + FNS2(:) 
@@ -280,8 +281,8 @@
                         DES_VEL_NEW(LL,1)+des_radius(LL)* OMEGA_NEW(LL,1),&
                         (DES_VEL_NEW(LL,1)+des_radius(LL)*OMEGA_NEW(LL,1))*DTSOLID
                      WRITE(*,*) '     Mg = ', PMASS(LL)*gravity
-                     WRITE(*,*) '     KN_W, ETA_N_W, KT_W, ETA_T_W = ',&
-                        KN_W, ETA_N_W, KT_W, ETA_T_W
+                     WRITE(*,*) '     KN_W, ETA_DES_NW, KT_W, ETA_DES_TW = ',&
+                        KN_W, ETA_DES_NW, KT_W, ETA_DES_TW
                      WRITE(*,*) '     TANGENT= ', TANGENT
                      WRITE(*,*) '     HIST = ', PFT(LL,NI,1:2)
                      WRITE(*,*) '     PARTICLE_SLIDE ? ', PARTICLE_SLIDE

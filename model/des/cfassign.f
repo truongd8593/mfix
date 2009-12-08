@@ -141,7 +141,6 @@
          REAL_EN_WALL(I) = DES_EN_WALL_INPUT(COUNT_E)
          MASS_I = (PI*(D_P0(I)**3.d0)*RO_S(I))/6.d0
          MASS_J = MASS_I
-         !MASS_EFF = (MASS_I*MASS_J)/(MASS_I + MASS_J)
          MASS_EFF = MASS_I
          DES_ETAN_WALL(I) = 2.d0*SQRT(KN_W*MASS_EFF)*ABS(LOG(REAL_EN_WALL(I)))
          DES_ETAN_WALL(I) = DES_ETAN_WALL(I)/SQRT(PI*PI + (LOG(REAL_EN_WALL(I)))**2.0)
@@ -174,10 +173,6 @@
          ENDDO
       ENDDO
 
-      !DTSOLID = DTSOLID_FACTOR*2.0D0*PI*SQRT((MINMASS)/(15*KN)) 
-      !DTSOLID = DTSOLID_FACTOR*2D0*PI*SQRT(MINMASS/(6*KN)) ! DTs - Translational Constraint
-      !DTSOLID = pi*SQRT(one/(KN/PMASS(1) - (ETA_DES_N**2)/4.d0))
-      !DTSOLID = DTSOLID/50     
       DTSOLID = TCOLL/50.d0
       
       WRITE(*,'(5X,A,E17.10,2X,E17.10)') 'MIN TCOLL AND DTSOLID = ',&

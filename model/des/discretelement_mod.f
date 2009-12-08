@@ -89,14 +89,11 @@
 !     Spring contants      
       DOUBLE PRECISION KN, KN_W ! Normal
       DOUBLE PRECISION KT, KT_W, KT_FAC, KT_W_FAC ! Tangential factors = KT/KN and KT_w/KN_w, resp.
-!     Damping coeffients      
-      DOUBLE PRECISION ETA_DES_N, ETA_N_W ! Normal
-      DOUBLE PRECISION ETA_DES_T, ETA_T_W ! Tangential
 !     Tangential damping factors, eta_t = eta_t_factor * eta_N
       DOUBLE PRECISION DES_ETAT_FAC, DES_ETAT_W_FAC
 !     Damping coeffients in array form 
-      DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE :: DES_ETAN, DES_ETAT         !(MMAX, MMAX)
-      DOUBLE PRECISION , DIMENSION(:), ALLOCATABLE :: DES_ETAN_WALL, DES_ETAT_WALL !(MMAX)
+      DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE :: DES_ETAN, DES_ETAT   !(MMAX, MMAX)
+      DOUBLE PRECISION , DIMENSION(:), ALLOCATABLE :: DES_ETAN_WALL, DES_ETAT_WALL   !(MMAX)
 !     Friction coeficients
       DOUBLE PRECISION MEW, MEW_W
 !     coeff of restituion input in one D array, solid solid

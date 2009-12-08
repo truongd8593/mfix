@@ -90,17 +90,9 @@
          ENDIF
       ENDIF
 
-      IF(ETA_DES_N .NE. UNDEFINED .OR. ETA_DES_T .NE. UNDEFINED .OR. &
-         ETA_N_W   .NE. UNDEFINED .OR. ETA_T_W   .NE. UNDEFINED ) THEN
-         WRITE (UNIT_LOG, 1006)
-         CALL MFIX_EXIT(myPE)
-      END IF
-
       DO M = 1, MMAX+MMAX*(MMAX-1)/2
          IF(DES_EN_INPUT(M) == UNDEFINED) THEN
-            WRITE (UNIT_LOG, 1008)
-            write(UNIT_LOG,*) 'Must be specified in mfix.dat for interactions M = 1, to', MMAX+MMAX*(MMAX-1)/2
-            WRITE (UNIT_LOG, 1009)
+            WRITE (UNIT_LOG, 1008) MMAX+MMAX*(MMAX-1)/2
             CALL MFIX_EXIT(myPE)
          END IF
       ENDDO
@@ -169,8 +161,9 @@
  1007 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Friction coefficients MEW or MEW_W not specified in mfix.dat',/1X,70('*')/)
  1008 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Particle-particle restitution coefficient DES_EN_INPUT(M)')
- 1009 FORMAT(/1X,70('*')/)
+         'Particle-particle restitution coefficient DES_EN_INPUT(M)',/10X,&
+         'Must be specified in mfix.dat for interactions M = 1 to ',I5,&
+          /1X,70('*')/)
  1010 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Particle-wall restitution coefficients DES_EN_WALL_INPUT(M),'/10X,&
          'Must be specified in mfix.dat for interactions M = 1 to MMAX',/1X,70('*')/)
