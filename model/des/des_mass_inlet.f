@@ -96,7 +96,7 @@
          PIJK(NP,5) = 1
 
 ! Calculate the new particle's Volume, Mass, OMOI
-         PVOL(NP) = PI * DES_RADIUS(NP)**3
+         PVOL(NP) = (4.d0/3.d0)*PI*DES_RADIUS(NP)**3
          PMASS(NP) = PVOL(NP) * RO_Sol(NP)
          OMOI(NP) = 5.d0 / (2.d0 * PMASS(NP) * DES_RADIUS(NP)**2) 
 
