@@ -201,8 +201,7 @@
          Allocate(  TOW (NPARTICLES,1) )
       ENDIF
      
-! Accumulated spring forces      
-      Allocate(  PFN (NPARTICLES,MAXNEIGHBORS,DIMN) )
+! Accumulated spring force      
       Allocate(  PFT (NPARTICLES,MAXNEIGHBORS,DIMN) )
      
 ! Wall position, velocity and normal vector

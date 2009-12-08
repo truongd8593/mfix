@@ -59,7 +59,6 @@
       PN(:,:) = -1
       PN(:,1) = 0
       PV(:,:) = 1
-      PFN(:,:,:) = ZERO
       PFT(:,:,:) = ZERO
 
       PINC(:) = ZERO

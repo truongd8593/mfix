@@ -95,7 +95,6 @@
             ENDIF
             WRITE(*,*) '     X,Y POS: ', DES_POS_NEW(LL,1), DES_POS_NEW(LL,2)
             WRITE(*,*) '     X,Y VEL: ', DES_VEL_NEW(LL,1), DES_VEL_NEW(LL,2)
-            WRITE(*,*) '     PFN: ', PFN(LL,NI,1:2)
          ENDIF
 
          FTS1(:) = ZERO
@@ -114,14 +113,12 @@
             DO NI = 2, NLIM
                IF(PV(LL,NI-N_NOCON).EQ.0) THEN
 ! For each particle in PN(LL,2:MAXNEIGHBORS) that is no longer in 
-! contact, shift the remaining particle contact information PN, PN, PFN,
+! contact, shift the remaining particle contact information PN, PN,
 ! PFT left by one and reduce PN(LL,1) by one.
                   PN(LL,(NI-N_NOCON):MAXNEIGHBORS-1) = &
                      PN(LL,(NI-N_NOCON+1):MAXNEIGHBORS) 
                   PV(LL,(NI-N_NOCON):(MAXNEIGHBORS-1)) = &
                      PV(LL,(NI-N_NOCON+1):MAXNEIGHBORS)
-                  PFN(LL,(NI-N_NOCON):(MAXNEIGHBORS-1),:) = &
-                     PFN(LL,(NI-N_NOCON+1):MAXNEIGHBORS,:)
                   PFT(LL,(NI-N_NOCON):(MAXNEIGHBORS-1),:) = &
                      PFT(LL,(NI-N_NOCON+1):MAXNEIGHBORS,:)
                   N_NOCON = N_NOCON + 1
@@ -134,7 +131,6 @@
 ! clean up after the above array left shifts
          NLIM = MAX(2,PN(LL,1) + 2) 
          PN(LL,NLIM:MAXNEIGHBORS) = -1
-         PFN(LL,NLIM:MAXNEIGHBORS,:) = ZERO
          PFT(LL,NLIM:MAXNEIGHBORS,:) = ZERO
          IF (PN(LL,1) .GT. NEIGH_MAX) NEIGH_MAX = PN(LL,1)
 
@@ -142,7 +138,6 @@
 ! Initializing the neighbor list contact information when particles are
 ! not in contact; i.e. when particle LL has no neighbors         
          IF (PN(LL,1).EQ.0) THEN
-            PFN(LL,:,:) = ZERO
             PFT(LL,:,:) = ZERO
          ENDIF
          
@@ -220,10 +215,16 @@
                      CALL CFRELVEL(LL, IW, V_REL_TRANS_NORM, &
                         V_REL_TRANS_TANG, TANGENT, NORMAL, 1)
 
+! The normal overlap calculation was changed so that it no longer
+! depends on the contact history (i.e., integration of incremental
+! overlap found by velocity*dtsolid).  Now overlap is based purely on
+! position of neighbors.  The change was made because the former
+! method was found not to conserve energy 
+                     OVERLAP_N =  R_LM-DISTMOD 
+
                      IF(ALREADY_NEIGHBOURS) THEN 
                         PV(LL,NI) = 1
                         contact_count = contact_count + 1
-                        OVERLAP_N = V_REL_TRANS_NORM*DTSOLID 
                         OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ELSE 
                         PN(LL,1) = PN(LL,1) + 1
@@ -232,7 +233,6 @@
                         PV(LL,NI) = 1
                         contact_count = 1
                         FTHIST = ZERO
-                        OVERLAP_N = R_LM-DISTMOD     !V_REL_TRANS_NORM*DTSOLID 
                         OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ENDIF
 
@@ -252,7 +252,6 @@
                   FT(LL,:) = FTS1(:) + FTS2(:) 
                   FN(LL,:) = FNS1(:) + FNS2(:) 
                   
-                  FN(LL, :) = FN(LL,:) + PFN(LL,NI,:)
                   TEMPFT(:) = FT(LL, :) + PFT(LL,NI,:)
                   
 ! Check for Coulombs friction law and limit the maximum value of the
@@ -263,7 +262,6 @@
 ! collision
                   CALL CFFCTOWALL(LL, NORMAL)
                   
-                  PFN(LL,NI,:) =  PFN(LL,NI,:) + FNS1(:)
                   PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
 
                   IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
@@ -285,7 +283,7 @@
                      WRITE(*,*) '     KN_W, ETA_N_W, KT_W, ETA_T_W = ',&
                         KN_W, ETA_N_W, KT_W, ETA_T_W
                      WRITE(*,*) '     TANGENT= ', TANGENT
-                     WRITE(*,*) '     HIST = ', PFT(LL,NI,1:2), PFN(LL,NI,1:2)
+                     WRITE(*,*) '     HIST = ', PFT(LL,NI,1:2)
                      WRITE(*,*) '     PARTICLE_SLIDE ? ', PARTICLE_SLIDE
                      WRITE(*,*) '     FT and FN= ', FT( LL,:), FN(LL,:)
                      WRITE(*,*) '     KW*OT*TAN = ', &
@@ -435,9 +433,11 @@
                      CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, &
                         V_REL_TRANS_TANG, TANGENT, NORMAL, 0)
 
+! Overlap calculation changed from history based to current position 
+                     OVERLAP_N = R_LM-DISTMOD
+
                      IF(ALREADY_NEIGHBOURS) THEN 
                         PV(LL,NI) = 1
-                        OVERLAP_N = V_REL_TRANS_NORM*DTSOLID
                         OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ELSE 
                         IF(DEBUG_DES) THEN
@@ -453,7 +453,6 @@
                         NI = PN(LL,1) + 1
                         PN(LL,NI) = I
                         PV(LL,NI) = 1
-                        OVERLAP_N = R_LM-DISTMOD     !V_REL_TRANS_NORM*DTSOLID
                         OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ENDIF
                   ELSE
@@ -471,7 +470,6 @@
                   FT(LL,:) = FTS1(:) + FTS2(:) 
                   FN(LL,:) = FNS1(:) + FNS2(:) 
                   
-                  FN(LL, :) = FN(LL,:) + PFN(LL,NI,:)
                   TEMPFT(:) = FT(LL, :) + PFT(LL,NI,:)
                   
                   IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN 
@@ -485,7 +483,6 @@
                      PRINT*, '     Overlap = ', overlap_n, (R_LM - DISTMOD)*100.d0/R_LM
                      PRINT*, '     rad ratio = ', DES_RADIUS(LL)/DES_RADIUS(I)
                      PRINT*, '     FNS1 and FNS2 = ', FNS1(:), FNS2(:)
-                     PRINT*, '     PFN = ', PFN(LL,NI,:)
                      PRINT*, '     PFT = ', PFT(LL,NI,:)
                      PRINT*, '     FORCEST = ', FT(LL,:)
                      PRINT*, '     FORCESN = ', FN(LL,:)
@@ -499,7 +496,6 @@
 ! Calculate the total force Fc and Tow on a particle in a particle-particle collision
                   CALL CFFCTOW(LL, I, NORMAL)
 
-                  PFN(LL,NI,:) = PFN(LL,NI,:) +  FNS1(:)
                   PFT(LL,NI,:) = PFT(LL,NI,:) + FTS1(:)
                   PARTICLE_SLIDE = .FALSE.
                   

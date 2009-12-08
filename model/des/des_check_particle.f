@@ -129,7 +129,6 @@
                PN(NP,:) = -1
                PN(NP,1) = 0
                PV(NP,:) = 1
-               PFN(NP,:,:) = ZERO
                PFT(NP,:,:) = ZERO
 
 ! Note that if particle NP has any neighbors then the particle NP will
