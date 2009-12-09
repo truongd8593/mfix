@@ -78,7 +78,10 @@
       
       
       IF(FIRST_PASS) THEN 
-         
+
+      WRITE(*,'(1X,A)')&
+         '---------- FIRST PASS DES_TIME_MARCH ---------->'
+
          FIRST_PASS = .FALSE.
          DESRESDT = 0.0d0
          NSN = 0
@@ -93,8 +96,6 @@
             DES_SPX_TIME = (INT((TIME+DT+0.1d0*DT)/SPX_DT(1))+1)*SPX_DT(1)
             DES_RES_TIME = (INT((TIME+DT+0.1d0*DT)/RES_DT)   +1)*RES_DT
          ENDIF
-
-         !PRINT *,'SPX TIME', SPX_DT(1), DES_SPX_TIME
 
          CALL NEIGHBOUR
          
@@ -113,8 +114,8 @@
                DES_CONTINUUM_COUPLED = .FALSE.
                DO FACTOR = 1, NFACTOR
                   IF (FACTOR .EQ. 1)&
-                     WRITE(*,'(/,2X,A,/,4X,A,X,I,X,A)') &
-                     'FIRST PASS IN DES_TIME_MARCH BEFORE COUPLING',&
+                     WRITE(*,'(3X,A,/,5X,A,X,I,X,A)') &
+                     'FIRST PASS in DES_TIME_MARCH for new runs',&
                      'DEM settling period performed', NFACTOR, 'times'
 
                   ! Force calculation         
@@ -141,7 +142,7 @@
                   ENDIF
                ENDDO
                DES_CONTINUUM_COUPLED = .TRUE.
-               WRITE(*,'(2X,A,/)') 'END DEM settling period'
+               WRITE(*,'(3X,A)') 'END DEM settling period'
             ENDIF
             IF(DES_INTERP_ON) THEN 
                CALC_FC = .FALSE.
@@ -150,6 +151,9 @@
             CALL PARTICLES_IN_CELL
             CALL WRITE_DES_DATA
          ENDIF ! end if on new run type
+         WRITE(*,'(1X,A)')&
+            '<---------- END FIRST PASS DES_TIME_MARCH ----------'
+         
       ENDIF    ! end if first pass
 
 
@@ -164,12 +168,12 @@
             DTSOLID_TMP = DTSOLID
             DTSOLID = DT
          ENDIF
-         write(*,'(2X,A,X,I,X,A)') &
+         write(*,'(1X,A,X,I,X,A)') &
             'DEM SIMULATION will be called', &
             FACTOR, 'times this fluid time step' 
-         write(*,'(4X,A,X,ES)') 'dt =', dt
-         write(*,'(4X,A,X,ES)') 'dtsolid =', dtsolid
-         write(*,'(4X,A,X,I)') 'int(dt/dtsolid) =', nint(dt/dtsolid)
+         write(*,'(3X,2(A,X,ES15.7,2X))') 'dt =', dt,&
+            'dtsolid =', dtsolid
+         write(*,'(3X,A,X,I)') 'int(dt/dtsolid) =', nint(dt/dtsolid)
       ELSE
 ! added TIME for restart & +1 removed
          FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID)) 
@@ -178,7 +182,9 @@
            PTC = DTSOLID 
            DESRESDT = DTSOLID
          ENDIF
-         write(*,'(1X,A,X,I,X,A)') &
+         WRITE(*,'(1X,A)')&
+            '---------- START DES_TIME_MARCH ---------->'
+         WRITE(*,'(3X,A,X,I,X,A)') &
             'DEM SIMULATION will be called', FACTOR, 'times'
       ENDIF
 
@@ -209,7 +215,8 @@
                CALLFROMDES = .TRUE.
             ENDIF
          ELSE
-            IF(DEBUG_DES) PRINT *,"DES UNCOUPLED", NN, S_TIME 
+            IF(DEBUG_DES) WRITE(*,'(3X,A,X,I,X,A,X,ES15.7)') &
+               'DEM LOOP NO.=', NN, 'S_TIME=', S_TIME 
          ENDIF 
 
          ! Force calculation         
@@ -260,23 +267,27 @@
                  PTC = PTC + DTSOLID
 ! Additional check was added to make sure DEM data are written at exactly NN = FACTOR.
                IF((PTC.GE.P_TIME .AND. NN .NE. (FACTOR-1)) .OR. NN == FACTOR) THEN
-                  CALL DES_GRANULAR_TEMPERATURE(FLAGTEMP)
                   CALL WRITE_DES_DATA
-                  WRITE(*,*) 'DES_SPX file written at Time= ', S_TIME
-                  WRITE(UNIT_LOG,*) 'DES_SPX file written at Time= ', S_TIME
+                  WRITE(*,'(3X,A,X,ES)') &
+                     'DES_SPX file written at time=', S_TIME
+                  WRITE(UNIT_LOG,*) &
+                     'DES_SPX file written at time= ', S_TIME
                   PTC = PTC - P_TIME ! this should not be set to zero but to the residual time difference.
                ENDIF
             ENDIF
 
-! Write Restart for DEM only case
+! Write restart for DEM only case
             DESRESDT = DESRESDT + DTSOLID
             IF((DESRESDT.GE.RES_DT .AND. NN .NE. (FACTOR-1)) &
             .OR. NN == FACTOR) THEN ! same as PTC
                CALL WRITE_DES_RESTART
-! Write RES1 here instead of time_march, this will also keep track of TIME.
+! Write RES1 here for DEM case instead of time_march since it won't be
+! called in time_march.  This will also keep track of TIME.
                CALL WRITE_RES1 
-               WRITE(*,*) 'DES_RES file written at Time= ', S_TIME
-               WRITE(UNIT_LOG,*) 'DES_RES file written at Time= ', S_TIME
+               WRITE(*,'(3X,A,X,ES)') &
+                  'DES_RES file written at time=', S_TIME
+               WRITE(UNIT_LOG,*) &
+                  'DES_RES file written at time= ', S_TIME
                DESRESDT = DESRESDT - RES_DT
             ENDIF
 
@@ -298,21 +309,11 @@
          ENDIF
 
          IF (NN .EQ. FACTOR) &
-            WRITE(*,'(4X,A,I5,2X,ES15.7)') &
+            WRITE(*,'(3X,A,I5,2X,ES15.7)') &
                'MAX no. neigh & % overlap = ', NEIGH_MAX, OVERLAP_MAX
 
       ENDDO     ! end do NN = 1, FACTOR
 
-
-! Write Restart
-      IF(((TIME+DT+0.1d0*DT)>=DES_RES_TIME).OR.((TIME+DT+0.1d0*DT)>=TSTOP)) THEN
-         CALL WRITE_DES_RESTART
-! Write RES1 here instead of time_march
-         CALL WRITE_RES1 
-         WRITE(*,*) 'DES_RES file written at Time= ', TIME
-         WRITE(UNIT_LOG,*) 'DES_RES file written at Time= ', TIME
-         DES_RES_TIME = (INT((TIME+DT+0.1d0*DT)/RES_DT) + 1)*RES_DT
-      ENDIF
 
       IF(DT.LT.DTSOLID_TMP) THEN
          DTSOLID = DTSOLID_TMP
@@ -323,6 +324,8 @@
          TMP_DTS = ZERO
       ENDIF
 
+     IF(.NOT.DES_CONTINUUM_COUPLED) WRITE(*,'(1X,A)')&
+        '<---------- END DES_TIME_MARCH ----------'
 
       END SUBROUTINE DES_TIME_MARCH
 
