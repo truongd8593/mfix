@@ -268,10 +268,11 @@
 ! Additional check was added to make sure DEM data are written at exactly NN = FACTOR.
                IF((PTC.GE.P_TIME .AND. NN .NE. (FACTOR-1)) .OR. NN == FACTOR) THEN
                   CALL WRITE_DES_DATA
+
                   WRITE(*,'(3X,A,X,ES)') &
-                     'DES_SPX file written at time=', S_TIME
+                     'DES data files written at time=', S_TIME
                   WRITE(UNIT_LOG,*) &
-                     'DES_SPX file written at time= ', S_TIME
+                     'DES data files written at time= ', S_TIME
                   PTC = PTC - P_TIME ! this should not be set to zero but to the residual time difference.
                ENDIF
             ENDIF
@@ -285,9 +286,9 @@
 ! called in time_march.  This will also keep track of TIME.
                CALL WRITE_RES1 
                WRITE(*,'(3X,A,X,ES)') &
-                  'DES_RES file written at time=', S_TIME
+                  'DES.RES and .RES file written at time=', S_TIME
                WRITE(UNIT_LOG,*) &
-                  'DES_RES file written at time= ', S_TIME
+                  'DES.RES and .RES file written at time= ', S_TIME
                DESRESDT = DESRESDT - RES_DT
             ENDIF
 
