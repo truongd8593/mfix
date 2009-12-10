@@ -70,10 +70,13 @@
       KT_W_FAC = UNDEFINED
       MEW = UNDEFINED
       MEW_W = UNDEFINED
-! restitution coefficients used to calculate damping coefficients
+
       DES_EN_INPUT(:) = UNDEFINED
-      DES_ETAT_FAC = UNDEFINED
       DES_EN_WALL_INPUT(:) = UNDEFINED
+      DES_ET_INPUT(:) = UNDEFINED
+      DES_ET_WALL_INPUT(:) = UNDEFINED
+
+      DES_ETAT_FAC = UNDEFINED
       DES_ETAT_W_FAC = UNDEFINED
 
       DES_GAMMA = ZERO
@@ -130,6 +133,13 @@
       DES_BC_V_s(:) = UNDEFINED
       DES_BC_W_s(:) = UNDEFINED
       DES_BC_TYPE(:) = UNDEFINED_C
+
+      COLL_MODEL = UNDEFINED_C
+! T.Li : Hertzian collision model
+      ew_young = undefined
+      vw_poisson = undefined
+      e_young(:) = undefined
+      v_poisson(:) = undefined
 
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST

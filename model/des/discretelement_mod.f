@@ -89,6 +89,9 @@
 !     Spring contants      
       DOUBLE PRECISION KN, KN_W ! Normal
       DOUBLE PRECISION KT, KT_W, KT_FAC, KT_W_FAC ! Tangential factors = KT/KN and KT_w/KN_w, resp.
+!     Damping coeffients      
+      DOUBLE PRECISION ETA_DES_N, ETA_N_W ! Normal
+      DOUBLE PRECISION ETA_DES_T, ETA_T_W ! Tangential
 !     Tangential damping factors, eta_t = eta_t_factor * eta_N
       DOUBLE PRECISION DES_ETAT_FAC, DES_ETAT_W_FAC
 !     Damping coeffients in array form 
@@ -97,13 +100,15 @@
 !     Friction coeficients
       DOUBLE PRECISION MEW, MEW_W
 !     coeff of restituion input in one D array, solid solid
-!     Tangential rest. coef. are not used in the code and thus are removed (sof) DEC-04-2008
-      DOUBLE PRECISION DES_EN_INPUT(DIM_M+DIM_M*(DIM_M-1)/2) !DES_ET_INPUT(DIM_M+DIM_M*(DIM_M-1)/2)
+!     Tangential rest. coef. are used for hertzian collision model but not linear
+      DOUBLE PRECISION DES_EN_INPUT(DIM_M+DIM_M*(DIM_M-1)/2)
+      DOUBLE PRECISION DES_ET_INPUT(DIM_M+DIM_M*(DIM_M-1)/2)
 !     coeff of restituion input in one D array, solid wall 
-      DOUBLE PRECISION  DES_EN_WALL_INPUT(DIM_M) !  DES_ET_WALL_INPUT(DIM_M)
+      DOUBLE PRECISION DES_EN_WALL_INPUT(DIM_M) 
+      DOUBLE PRECISION DES_ET_WALL_INPUT(DIM_M)
 !     actual coeff of rest.'s rearranged 
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::  REAL_EN
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  REAL_EN_WALL
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::  REAL_EN, REAL_ET   !(MMAX,MMAX)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  REAL_EN_WALL, REAL_ET_WALL   !(MMAX)
      
 !     Neighbor search      
       INTEGER DES_NEIGHBOR_SEARCH, NQUAD, NEIGH_MAX
@@ -263,6 +268,17 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: XE ! (DIMENSION_I)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: YN ! (DIMENSION_J)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ZT ! (DIMENSION_K)
+
+!     Collision model, options are 'hertzian', & the default/undefined is
+!     a linear model 
+      CHARACTER(64) COLL_MODEL
+
+!     Hertzian model: T.Li
+      double precision ew_young, vw_poisson
+      double precision e_young(dim_m), v_poisson(dim_m)    
+      double precision, dimension(:,:), allocatable :: hert_kn, hert_kt  ! (MMAX,MMAX)
+      double precision, dimension(:), allocatable :: hert_kwn, hert_kwt  ! (MMAX)
+      double precision, dimension(:), allocatable :: g_mod               ! (MMAX
 
 !********************************************************************************
 !     J.MUSSER

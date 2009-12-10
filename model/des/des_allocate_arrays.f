@@ -134,10 +134,20 @@
 ! J.Musser : Dynamic Particle Info
       ALLOCATE( PEA (NPARTICLES, 3) )
 
+! T. Li: Hertzian collision model
+      allocate(hert_kn(MMAX,MMAX))
+      allocate(hert_kt(MMAX,MMAX))
+      allocate(hert_kwn(MMAX))
+      allocate(hert_kwt(MMAX)) 
+      allocate(g_mod(MMAX))
       
 ! COEFF OF RESITUTIONS 
-      ALLOCATE(REAL_EN(MMAX,MMAX)) !REAL_ET(MMAX,MMAX)) specify eta_t_fact instead of e_t (sof, dec-04-2008)
-      ALLOCATE(REAL_EN_WALL(MMAX)) !REAL_ET_WALL(MMAX)) specify eta_t_w_fact instead of e_t_w (sof, dec-04-2008)
+      ALLOCATE(REAL_EN(MMAX,MMAX)) 
+      ALLOCATE(REAL_EN_WALL(MMAX))
+! for hertzian model need real_et, otherwise specify eta_t_fact 
+      ALLOCATE(REAL_ET(MMAX,MMAX)) 
+! for hertzian model need real_et_wall, otherwise specifiy eta_t_w_fact
+      ALLOCATE(REAL_ET_WALL(MMAX)) 
 
       ALLOCATE(DES_ETAN(MMAX,MMAX))
       ALLOCATE(DES_ETAT(MMAX,MMAX))

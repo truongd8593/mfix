@@ -41,6 +41,8 @@
       INTEGER L, IJK, M, I, J, K, COUNT_E
       DOUBLE PRECISION MINMASS, MASS_I, MASS_J, MASS_EFF
       DOUBLE PRECISION TCOLL, TCOLL_TMP, MAXMASS
+! local variables for calculation of hertzian contact parameters
+      DOUBLE PRECISION R_EFF, E_EFF, G_MOD_EFF     
 
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
@@ -57,7 +59,7 @@
       TCOLL = LARGE_NUMBER
       DO L = 1, PARTICLES
          PVOL(L) = (4.0d0/3.0d0)*Pi*DES_RADIUS(L)**3
-         PMASS(L) = PVOL(L)*RO_Sol(L) 
+         PMASS(L) = PVOL(L)*RO_SOL(L) 
          OMOI(L) = 2.5d0/(PMASS(L)*DES_RADIUS(L)**2) !one over MOI
          MAX_RADIUS = MAX(MAX_RADIUS, DES_RADIUS(L))
          MIN_RADIUS = MIN(MIN_RADIUS, DES_RADIUS(L))
@@ -68,9 +70,11 @@
       ENDDO
 
       RADIUS_EQ = MAX_RADIUS*1.05d0
-      WRITE(*,'(5X,A,ES15.8)') 'MAX_RADIUS = ', MAX_RADIUS     
+      WRITE(*,'(5X,A,ES15.8)') '1.05*MAX_RADIUS = ', MAX_RADIUS     
 
-
+! In some instances des_periodic_walls_x, etc are used and in other
+! instances intx_per, etc are used.  todo: code should be modified for
+! consistency throughout
       IF(.NOT.DES_PERIODIC_WALLS) THEN
          DES_PERIODIC_WALLS_X = .FALSE.
          DES_PERIODIC_WALLS_Y = .FALSE.
@@ -79,87 +83,189 @@
       INTX_PER =  DES_PERIODIC_WALLS_X
       INTY_PER =  DES_PERIODIC_WALLS_Y
       INTZ_PER =  DES_PERIODIC_WALLS_Z
-      
+
+! Set boundary edges 
+! In some instances wx1,ex2, etc have been used and in others
+! xlength,zero, etc are used.  todo: code should be modified for
+! consistency throughout      
       WX1 = ZERO 
       EX2 = XLENGTH 
       BY1 = ZERO
       TY2 = YLENGTH 
       SZ1 = ZERO 
       NZ2 = ZLENGTH
-!     IF((DIMN.EQ.2).AND.(COORDINATES == 'CARTESIAN')) THEN
-!     DZ(:) = 2D0*DES_RADIUS(1)*1.05D0
-!     END IF
 
+      
       GRAV(1) = BFX_s(1,1)
       GRAV(2) = BFY_s(1,1)
       IF(DIMN.EQ.3) GRAV(3) = BFZ_s(1,1)
 
+! Calculate collision parameters
+!--------------------------------------------------------
+
+      IF (TRIM(COLL_MODEL) == 'HERTZIAN') THEN 
+
+         write(*,'(5X,A)') 'COLLISION MODEL: Hertzian'
+
+! particle-particle contact --------------------
+         DO I=1,MMAX
+            G_MOD(I) = 0.5d0*e_young(I)/(1.d0+v_poisson(I))   ! shear modulus 
+            WRITE(*,'(5X,A,I5,X,A,X,2(ES15.7))') &
+               'E_YOUNG AND V_POISSON FOR M = ', I, '=',&
+               E_YOUNG(I), V_POISSON(I) 
+         ENDDO
+
+         COUNT_E = 0
+         DO I=1,MMAX
+            DO J=I,MMAX
+! Arrange the coefficient of restitution matrix from en_input values
+! use coef of rest to determine damping coefficient 
+               COUNT_E = COUNT_E + 1
+               REAL_EN(I,J) = DES_EN_INPUT(COUNT_E)
+               REAL_ET(I,J) = DES_ET_INPUT(COUNT_E)            
+               MASS_I = (PI/6.d0)*(D_P0(I)**3)*RO_S(I)
+               MASS_J = (PI/6.d0)*(D_P0(J)**3)*RO_S(J)
+               MASS_EFF = (MASS_I*MASS_J)/(MASS_I+MASS_J)
+               R_EFF = 0.5d0*(D_P0(I)*D_P0(J)/(D_P0(I)+D_P0(J)))
+               E_EFF = e_young(I)*e_young(J)/ &
+                  (e_young(I)*(1.d0-v_poisson(J)**2)+&
+                   e_young(J)*(1.d0-v_poisson(I)**2))
+               G_MOD_EFF = G_MOD(I)*G_MOD(J)/&
+                  (G_MOD(I)*(2.d0-v_poisson(J))+&
+                   G_MOD(J)*(2.d0-v_poisson(I)))
+
+               hert_kn(I,J)=(4.d0/3.d0)*E_EFF*SQRT(R_EFF)
+               hert_kt(I,J)=(16.d0/3.d0)*G_MOD_EFF*SQRT(R_EFF)
+
+               DES_ETAN(I,J) = 2.d0*SQRT(hert_kn(I,J)*MASS_EFF)*&
+                  ABS(LOG(REAL_EN(I,J)))
+               DES_ETAN(I,J) = DES_ETAN(I,J)/&
+                  SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2)
+               DES_ETAT(I,J) = 2.d0*SQRT(hert_kt(I,J)*MASS_EFF)*&
+                  ABS(LOG(REAL_ET(I,J)))
+               DES_ETAT(I,J) = DES_ETAT(I,J)/&
+                  SQRT(PI*PI + (LOG(REAL_ET(I,J)))**2) 
+
+               hert_kn(J,I) = hert_kn(I,J)
+               hert_kt(J,I) = hert_kt(I,J)
+
+               TCOLL_TMP = PI/SQRT(hert_kn(I,J)/MASS_EFF - ((DES_ETAN(I,J)/MASS_EFF)**2)/4.d0)
+               TCOLL = MIN(TCOLL_TMP, TCOLL) 
+
+               WRITE(*,'(5X,A,I5,X,I5,X,A,X,2(ES15.7))') &
+                  'KN AND KT FOR PAIR ',&
+                   I, J, '=', hert_kn(I,J), hert_kt(I,J)
+            ENDDO
+         ENDDO
+
+! particle-wall contact --------------------          
+         COUNT_E = 0
+         DO I = 1, MMAX
+            COUNT_E = COUNT_E + 1  
+            REAL_EN_WALL(I) = DES_EN_WALL_INPUT(COUNT_E)
+            REAL_ET_WALL(I) = DES_ET_WALL_INPUT(COUNT_E)
+            MASS_I = (PI/6.d0)*(D_P0(I)**3)*RO_S(I)
+            MASS_J = MASS_I
+            MASS_EFF = MASS_I
+            R_EFF = 0.5d0*D_P0(I)
+            E_EFF = e_young(I)*ew_young/ &
+               (e_young(I)*(1.d0-vw_poisson**2)+&
+                ew_young*(1.d0-v_poisson(I)**2))
+            G_MOD_EFF = G_MOD(I)/(2.d0-v_poisson(I))
+
+            hert_kwn(I) =(4.d0/3.d0)*E_EFF*SQRT(R_EFF)
+            hert_kwt(I) = 8.d0*G_MOD_EFF*SQRT(R_EFF)    
+
+            DES_ETAN_WALL(I) = 2.d0*SQRT(hert_kwn(I)*MASS_EFF)*&
+               ABS(LOG(REAL_EN_WALL(I)))
+            DES_ETAN_WALL(I) = DES_ETAN_WALL(I)/&
+               SQRT(PI*PI + (LOG(REAL_EN_WALL(I)))**2)
+            DES_ETAT_WALL(I) = 2.d0*SQRT(hert_kwt(I)*MASS_EFF)*&
+               ABS(LOG(REAL_ET_WALL(I)))
+            DES_ETAT_WALL(I) = DES_ETAT_WALL(I)/&
+               SQRT(PI*PI + (LOG(REAL_ET_WALL(I)))**2) 
+
+            TCOLL_TMP = PI/SQRT(hert_kwn(i)/MASS_EFF - ((DES_ETAN_WALL(I)/MASS_EFF)**2)/4.d0) 
+         ENDDO
+
+      ELSE   ! Linear model
+
+         write(*,'(5X,A)') 'COLLISION MODEL: Linear (default)'
 
 ! User's input for KT_FAC and KT_W_FAC will be used, otherwise these values are
 ! estimated using: Silbert et al, 2001, Physical Review E, vol. 64-5, see page 051302-5
-      IF(KT_FAC == UNDEFINED) THEN
-         KT = (2.d0/7.d0)*KN
-      ELSE
-         KT = KT_FAC*KN
-      ENDIF
-      IF(KT_W_FAC == UNDEFINED) THEN
-         KT_W = (2.d0/7.d0)*KN_W
-      ELSE
-         KT_W = KT_W_FAC*KN_W
-      ENDIF
-      WRITE(*,'(5X,A,ES17.10,2X,ES17.10)') 'KN AND KT = ', KN, KT
+         IF(KT_FAC == UNDEFINED) THEN
+            KT = (2.d0/7.d0)*KN
+         ELSE
+            KT = KT_FAC*KN
+         ENDIF
+         IF(KT_W_FAC == UNDEFINED) THEN
+            KT_W = (2.d0/7.d0)*KN_W
+         ELSE
+            KT_W = KT_W_FAC*KN_W
+         ENDIF
+         WRITE(*,'(5X,A,ES17.10,2X,ES15.7)') 'KN AND KT = ', KN, KT
 
+! particle-particle contact --------------------
+         COUNT_E = 0
+         DO I = 1, MMAX
+            DO J = I, MMAX
 ! Arrange the coefficient of restitution matrix from en_input values
 ! use coef of rest to determine damping coefficient 
-      COUNT_E = 0
-      DO I = 1, MMAX
-         DO J = I, MMAX
-            COUNT_E = COUNT_E + 1
-            REAL_EN(I,J) = DES_EN_INPUT(COUNT_E)
-            MASS_I = (PI*(D_P0(I)**3.d0)*RO_S(I))/6.d0
-            MASS_J = (PI*(D_P0(J)**3.d0)*RO_S(J))/6.d0
-            MASS_EFF = (MASS_I*MASS_J)/(MASS_I + MASS_J)
-            DES_ETAN(I,J) = 2.D0*SQRT(KN*MASS_EFF)*ABS(LOG(REAL_EN(I,J)))
-            DES_ETAN(I,J) = DES_ETAN(I,J)/SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2.0)
+               COUNT_E = COUNT_E + 1
+               REAL_EN(I,J) = DES_EN_INPUT(COUNT_E)
+               MASS_I = (PI/6.d0)*(D_P0(I)**3.d0)*RO_S(I)
+               MASS_J = (PI/6.d0)*(D_P0(J)**3.d0)*RO_S(J)
+               MASS_EFF = (MASS_I*MASS_J)/(MASS_I + MASS_J)
+               DES_ETAN(I,J) = 2.D0*SQRT(KN*MASS_EFF)*&
+                  ABS(LOG(REAL_EN(I,J)))
+               DES_ETAN(I,J) = DES_ETAN(I,J)/&
+                  SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2)
  
 ! User's input for DES_ETAT_FAC will be used, otherwise these values are
 ! estimated using: Silbert et al, 2003, Physics of Fluids, vol. 15-1, see page 3
-            IF(DES_ETAT_FAC == UNDEFINED) THEN
-               DES_ETAT(I,J) = HALF*DES_ETAN(I,J)
+               IF(DES_ETAT_FAC == UNDEFINED) THEN
+                  DES_ETAT(I,J) = HALF*DES_ETAN(I,J)
+               ELSE
+                  DES_ETAT(I,J) = DES_ETAT_FAC*DES_ETAN(I,J)
+               ENDIF
+
+               TCOLL_TMP = PI/SQRT(KN/MASS_EFF - ((DES_ETAN(I,J)/MASS_EFF)**2)/4.d0)
+               TCOLL = MIN(TCOLL_TMP, TCOLL)
+            ENDDO
+         ENDDO
+
+! particle-wall contact --------------------     
+         COUNT_E = 0 
+         DO I = 1, MMAX
+            COUNT_E = COUNT_E + 1  
+            REAL_EN_WALL(I) = DES_EN_WALL_INPUT(COUNT_E)
+            MASS_I = (PI*(D_P0(I)**3)*RO_S(I))/6.d0
+            MASS_J = MASS_I
+            MASS_EFF = MASS_I
+            DES_ETAN_WALL(I) = 2.d0*SQRT(KN_W*MASS_EFF)*&
+               ABS(LOG(REAL_EN_WALL(I)))
+            DES_ETAN_WALL(I) = DES_ETAN_WALL(I)/&
+               SQRT(PI*PI + (LOG(REAL_EN_WALL(I)))**2)
+ 
+            IF(DES_ETAT_W_FAC == UNDEFINED) THEN
+               DES_ETAT_WALL(I) = HALF*DES_ETAN_WALL(I)
             ELSE
-               DES_ETAT(I,J) = DES_ETAT_FAC*DES_ETAN(I,J)
+               DES_ETAT_WALL(I) = DES_ETAT_W_FAC*DES_ETAN_WALL(I)
             ENDIF
 
-            TCOLL_TMP = PI/SQRT(KN/MASS_EFF - ((DES_ETAN(I,J)/MASS_EFF)**2.d0)/4.d0)
-            TCOLL = MIN(TCOLL_TMP, TCOLL)
+            TCOLL_TMP = PI/SQRT(KN_W/MASS_EFF - ((DES_ETAN_WALL(I)/MASS_EFF)**2.d0)/4.d0)
+            !TCOLL = MIN(TCOLL_TMP, TCOLL)
          ENDDO
-      ENDDO
-      
-      COUNT_E = 0 
-      DO I = 1, MMAX
-         COUNT_E = COUNT_E + 1  
-         REAL_EN_WALL(I) = DES_EN_WALL_INPUT(COUNT_E)
-         MASS_I = (PI*(D_P0(I)**3.d0)*RO_S(I))/6.d0
-         MASS_J = MASS_I
-         MASS_EFF = MASS_I
-         DES_ETAN_WALL(I) = 2.d0*SQRT(KN_W*MASS_EFF)*ABS(LOG(REAL_EN_WALL(I)))
-         DES_ETAN_WALL(I) = DES_ETAN_WALL(I)/SQRT(PI*PI + (LOG(REAL_EN_WALL(I)))**2.0)
- 
-! User's input for DES_ETA_W_FAC will be used, otherwise these values are
-! estimated using: Silbert et al, 2003, Physics of Fluids, vol. 15-1, see page 3
-         IF(DES_ETAT_W_FAC == UNDEFINED) THEN
-            DES_ETAT_WALL(I) = HALF*DES_ETAN_WALL(I)
-         ELSE
-            DES_ETAT_WALL(I) = DES_ETAT_W_FAC*DES_ETAN_WALL(I)
-         ENDIF
 
-         TCOLL_TMP = PI/SQRT(KN_W/MASS_EFF - ((DES_ETAN_WALL(I)/MASS_EFF)**2.d0)/4.d0)
-         !TCOLL = MIN(TCOLL_TMP, TCOLL)
-      ENDDO
+      ENDIF   ! endif coll_model = 'hertzian'
+!--------------------------------------------------------
+
 
       DO I = 1, MMAX
          DO J = I, MMAX
             REAL_EN(J, I) = REAL_EN(I,J)
+            REAL_ET(J, I) = REAL_ET(J,I)
             DES_ETAN(J,I) = DES_ETAN(I,J)
             DES_ETAT(J,I) = DES_ETAT(I,J)
          ENDDO
@@ -167,8 +273,8 @@
 
       DO I = 1, MMAX
          DO J = 1, MMAX
-            WRITE(*,'(5X,A,I,2X,I,A,2(ES17.10))') &
-               'ETA_N AND ETA_T FOR PAIR ',&
+            WRITE(*,'(5X,A,I,2X,I,A,2(ES15.7))') &
+               'ETAN AND ETAT FOR PAIR ',&
                I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
          ENDDO
       ENDDO

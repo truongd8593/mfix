@@ -76,11 +76,19 @@
       YN(:) = ZERO
       ZT(:) = ZERO
 
+! J.Musser: DEM inlet/outlet      
       PEA(:,:) = .FALSE.
       DO I=1, PARTICLES
          PEA(I,1)=.TRUE.
       ENDDO
 
+! T.Li : Hertzian collision model
+      g_mod(:) = zero
+      hert_kn(:,:) = zero
+      hert_kwn(:) = zero
+      hert_kt(:,:) = zero
+      hert_kwt(:) = zero
+      
       RETURN
       END SUBROUTINE DES_INIT_ARRAYS 
 

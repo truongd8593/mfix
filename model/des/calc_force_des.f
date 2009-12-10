@@ -29,7 +29,7 @@
       INTEGER OVERLAP_MAXP
       INTEGER WALLCONTACT, WALLCHECK
 
-      DOUBLE PRECISION OVERLAP_N, OVERLAP_T
+      DOUBLE PRECISION OVERLAP_N, OVERLAP_T, SQRT_OVERLAP
       DOUBLE PRECISION TEMPX, TEMPY, TEMPZ, TEMPD
       DOUBLE PRECISION V_REL_TRANS_NORM, V_REL_TRANS_TANG 
       DOUBLE PRECISION FTMD, FNMD
@@ -49,8 +49,12 @@
       LOGICAL DES_LOC_DEBUG
 ! index to track accounted for particles      
       INTEGER PC
+! store solids phase index of particle (i.e. pijk(np,5))
+      INTEGER PHASEI, PHASELL
 ! local values used damping coefficients
-      DOUBLE PRECISION ETA_DES_N, ETA_DES_NW, ETA_DES_T, ETA_DES_TW
+      DOUBLE PRECISION ETAN_DES, ETAN_DES_W, ETAT_DES, ETAT_DES_W,&
+                       KN_DES, KN_DES_W, KT_DES, KT_DES_W
+
 !-----------------------------------------------      
 ! Functions
 !-----------------------------------------------      
@@ -240,15 +244,29 @@
                   ELSE
                      GOTO 200
                   ENDIF
+
+                  phaseLL = PIJK(LL,5) 
+
+! T.Li : Hertz vs Linear contact model
+                  IF (TRIM(COLL_MODEL) .EQ. 'HERTZIAN') THEN
+                     sqrt_overlap = SQRT(OVERLAP_N)
+                     KN_DES_W = hert_kwn(phaseLL)*sqrt_overlap
+                     KT_DES_W = hert_kwt(phaseLL)*sqrt_overlap
+                     sqrt_overlap = SQRT(sqrt_overlap)
+                     ETAN_DES_W = DES_ETAN_WALL(phaseLL)*sqrt_overlap
+                     ETAT_DES_W = DES_ETAT_WALL(phaseLL)*sqrt_overlap
+                  ELSE
+                     KN_DES_W = KN_W
+                     KT_DES_W = KT_W
+                     ETAN_DES_W = DES_ETAN_WALL(phaseLL)
+                     ETAT_DES_W = DES_ETAT_WALL(phaseLL)
+                  ENDIF
+
+                  FNS1(:) = -KN_DES_W*((OVERLAP_N))*NORMAL(:)
+                  FNS2(:) = -ETAN_DES_W*V_REL_TRANS_NORM*NORMAL(:)
                   
-                  ETA_DES_NW = DES_ETAN_WALL(PIJK(LL,5))
-                  ETA_DES_TW = DES_ETAT_WALL(PIJK(LL,5))
-                  
-                  FNS1(:) = -KN_W*((OVERLAP_N))*NORMAL(:)
-                  FNS2(:) = -ETA_DES_NW*V_REL_TRANS_NORM*NORMAL(:)
-                  
-                  FTS1(:) = -KT_W*((OVERLAP_T)) *TANGENT(:)
-                  FTS2(:) = -ETA_DES_TW*V_REL_TRANS_TANG*TANGENT(:)
+                  FTS1(:) = -KT_DES_W*((OVERLAP_T)) *TANGENT(:)
+                  FTS2(:) = -ETAT_DES_W*V_REL_TRANS_TANG*TANGENT(:)
                   
                   FT(LL,:) = FTS1(:) + FTS2(:) 
                   FN(LL,:) = FNS1(:) + FNS2(:) 
@@ -281,20 +299,21 @@
                         DES_VEL_NEW(LL,1)+des_radius(LL)* OMEGA_NEW(LL,1),&
                         (DES_VEL_NEW(LL,1)+des_radius(LL)*OMEGA_NEW(LL,1))*DTSOLID
                      WRITE(*,*) '     Mg = ', PMASS(LL)*gravity
-                     WRITE(*,*) '     KN_W, ETA_DES_NW, KT_W, ETA_DES_TW = ',&
-                        KN_W, ETA_DES_NW, KT_W, ETA_DES_TW
+                     WRITE(*,*) '     KN_W, ETAN_W, KT_W, ETAT_W = ',&
+                        KN_DES_W, ETAN_DES_W, KT_DES_W, ETAT_DES_W
                      WRITE(*,*) '     TANGENT= ', TANGENT
                      WRITE(*,*) '     HIST = ', PFT(LL,NI,1:2)
                      WRITE(*,*) '     PARTICLE_SLIDE ? ', PARTICLE_SLIDE
                      WRITE(*,*) '     FT and FN= ', FT( LL,:), FN(LL,:)
-                     WRITE(*,*) '     KW*OT*TAN = ', &
-                        KT_W*((OVERLAP_T)) *TANGENT(:)
+                     WRITE(*,*) '     KT_W*OT*TAN = ', &
+                        KT_DES_W*((OVERLAP_T)) *TANGENT(:)
                      WRITE(*,*) '     OVERLAP_T = ', OVERLAP_T, TANGENT
                      FTMD = SQRT(DES_DOTPRDCT(TEMPFT,TEMPFT))
                      FNMD = SQRT(DES_DOTPRDCT(FN(LL,1:DIMN),FN(LL,1:DIMN)))
                      WRITE(*,*) '     FTMD, mu FNMD = ', FTMD, MEW_W*FNMD
                      FTHIST(:) = FTHIST(:) + FT(LL,:)
-                     PRINT*, '     FT AVG = ', FTHIST/contact_count, mew_w*PMASS(LL)*gravity, contact_count
+                     PRINT*, '     FT AVG = ', FTHIST/contact_count,&
+                        mew_w*PMASS(LL)*gravity, contact_count
                      READ(*,*)
                   ENDIF
 
@@ -459,14 +478,30 @@
                   ELSE
                      GOTO 300
                   ENDIF
+
+                  phaseLL = PIJK(LL,5)                  
+                  phaseI = PIJK(I,5)
+
+! T.Li : Hertz vs Linear contact model
+                  IF (TRIM(COLL_MODEL) .EQ. 'HERTZIAN') THEN
+                     sqrt_overlap = SQRT(OVERLAP_N)
+                     KN_DES = hert_kn(phaseLL,phaseI)*sqrt_overlap
+                     KT_DES = hert_kt(phaseLL,phaseI)*sqrt_overlap
+                     sqrt_overlap = SQRT(sqrt_overlap)
+                     ETAN_DES = DES_ETAN(phaseLL,phaseI)*sqrt_overlap
+                     ETAT_DES = DES_ETAT(phaseLL,phaseI)*sqrt_overlap
+                  ELSE
+                     KN_DES = KN
+                     KT_DES = KT
+                     ETAN_DES = DES_ETAN(phaseLL,phaseI)
+                     ETAT_DES = DES_ETAT(phaseLL,phaseI)
+                  ENDIF
+
+                  FNS1(:) = -KN_DES*(OVERLAP_N)*NORMAL(:)
+                  FNS2(:) = -ETAN_DES*V_REL_TRANS_NORM*NORMAL(:)
                   
-                  ETA_DES_N = DES_ETAN(PIJK(LL,5), PIJK(I,5))
-                  ETA_DES_T = DES_ETAT(PIJK(LL,5), PIJK(I,5))
-                  FNS1(:) = -KN*((OVERLAP_N))*NORMAL(:)
-                  FNS2(:) = -ETA_DES_N*V_REL_TRANS_NORM*NORMAL(:)
-                  
-                  FTS1(:) = -KT*((OVERLAP_T)) *TANGENT(:)
-                  FTS2(:) = -ETA_DES_T*V_REL_TRANS_TANG*TANGENT(:)
+                  FTS1(:) = -KT_DES*(OVERLAP_T)*TANGENT(:)
+                  FTS2(:) = -ETAT_DES*V_REL_TRANS_TANG*TANGENT(:)
                   
                   FT(LL,:) = FTS1(:) + FTS2(:) 
                   FN(LL,:) = FNS1(:) + FNS2(:) 
@@ -480,7 +515,7 @@
                      ENDIF
 
                      PRINT*, '     I = ', I
-                     PRINT*, '     EtaN, EtaT =  ', ETA_DES_N, ETA_DES_T
+                     PRINT*, '     EtaN, EtaT =  ', ETAN_DES, ETAT_DES
                      PRINT*, '     Overlap = ', overlap_n, (R_LM - DISTMOD)*100.d0/R_LM
                      PRINT*, '     rad ratio = ', DES_RADIUS(LL)/DES_RADIUS(I)
                      PRINT*, '     FNS1 and FNS2 = ', FNS1(:), FNS2(:)
