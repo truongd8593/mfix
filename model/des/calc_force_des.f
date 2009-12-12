@@ -303,7 +303,7 @@
                   
 ! Calculate the total force Fc and Tow on a particle in a particle-wall
 ! collision
-                  CALL CFFCTOWALL(LL, NORMAL)
+                  CALL CFFCTOWALL(LL, NORMAL, DISTMOD)
                   
 ! Save the tangential displacement history with the correction of Coulomb's law
                   IF (PARTICLE_SLIDE) PFT(LL,NI,:) = PFT_TMP(:)
