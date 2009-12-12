@@ -220,7 +220,10 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: OMEGA_OLD ! (PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: OMEGA_NEW ! (PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PPOS ! (PARTICLES,DIMN)
-     
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_VEL_OOLD ! (PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_ACC_OLD ! (PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: ROT_ACC_OLD ! (PARTICLES,DIMN)
+
 !     Total, normal and tangetial forces      
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC ! (PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FN ! (PARTICLES,DIMN)
@@ -269,6 +272,12 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: YN ! (DIMENSION_J)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ZT ! (DIMENSION_K)
 
+!     Integration method, options are as follows
+!        0 = first-order (default/undefined)
+!        1 =second-order Adams-Bashforth scheme (T.Li)
+!     a linear model 
+      INTEGER INT_METHOD 
+      
 !     Collision model, options are 'hertzian', & the default/undefined is
 !     a linear model 
       CHARACTER(64) COLL_MODEL

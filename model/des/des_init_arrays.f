@@ -33,26 +33,33 @@
       PVOL(:) = ZERO
       OMOI(:) = ZERO
       RO_Sol(:) = ZERO 
+
       DES_POS_OLD(:,:) = ZERO
       DES_POS_NEW(:,:) = ZERO
       DES_VEL_OLD(:,:) = ZERO
       DES_VEL_NEW(:,:) = ZERO
+
+      DES_VEL_OOLD(:,:) = ZERO
+      DES_ACC_OLD(:,:) = ZERO
+
+      OMEGA_OLD(:,:) = ZERO
+      OMEGA_NEW(:,:) = ZERO
+      ROT_ACC_OLD(:,:) = ZERO
+
+      DES_U_s(:,:) = ZERO
+      DES_V_s(:,:) = ZERO
+      DES_W_s(:,:) = ZERO
+      SOLID_DRAG(:,:,:) = ZERO
+
       FC(:,:) = ZERO
       FN(:,:) = ZERO
       FT(:,:) = ZERO
       TOW(:,:) = ZERO
-      OMEGA_OLD(:,:) = ZERO
-      OMEGA_NEW(:,:) = ZERO
-      PPOS(:,:) = ZERO
-   
-      GRAV(:) = ZERO
 
-      IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. &
-        DES_NEIGHBOR_SEARCH .EQ. 3) THEN
-          LQUAD(:,:) = UNDEFINED_I
-          CQUAD(:,:) = UNDEFINED
-          PQUAD(:) = 0
-      ENDIF
+      PPOS(:,:) = ZERO
+      GRAV(:) = ZERO
+      DES_WALL_POS(:,:) = UNDEFINED
+      DES_WALL_VEL(:,:) = UNDEFINED
 
       NEIGHBOURS(:,:) = -1
       NEIGHBOURS(:,1) = 0
@@ -61,16 +68,15 @@
       PV(:,:) = 1
       PFT(:,:,:) = ZERO
 
+      IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. &
+        DES_NEIGHBOR_SEARCH .EQ. 3) THEN
+          LQUAD(:,:) = UNDEFINED_I
+          CQUAD(:,:) = UNDEFINED
+          PQUAD(:) = 0
+      ENDIF      
+
       PINC(:) = ZERO
       PIJK(:,:) = ZERO
-
-      DES_WALL_POS(:,:) = UNDEFINED
-      DES_WALL_VEL(:,:) = UNDEFINED
-
-      DES_U_s(:,:) = ZERO
-      DES_V_s(:,:) = ZERO
-      DES_W_s(:,:) = ZERO
-      SOLID_DRAG(:,:,:) = ZERO
 
       XE(:) = ZERO
       YN(:) = ZERO

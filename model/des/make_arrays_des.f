@@ -58,6 +58,7 @@
                OMEGA_OLD(L,:) = ZERO
                DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
                DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:)
+               DES_VEL_OOLD(L,:) = DES_VEL_OLD(L,:)
                OMEGA_NEW(L,:) = OMEGA_OLD(L,:)
             END DO
          ELSE
@@ -68,6 +69,7 @@
          CALL READ_DES_RESTART
          DES_POS_NEW(:,:) = DES_POS_OLD(:,:)
          DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
+         DES_VEL_OOLD(:,:) = DES_VEL_OLD(:,:)
          OMEGA_NEW(:,:) = OMEGA_OLD(:,:)
          WRITE(*,'(3X,A,G17.8)') 'DES_RES file read at Time= ', TIME
          WRITE(UNIT_LOG,*) 'DES_RES file read at Time= ', TIME

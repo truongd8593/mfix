@@ -10,10 +10,10 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C 
 !
-!  Comments: Implements Eqns 1, 2, 3, 4 & 5  from the following paper  
-!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical         
-!  simulation of plug glow of cohesionless particles in a              
-!  horizontal pipe", Powder technology, 71, 239-250, 1992             
+!  Comments: Implements Eqns 1, 2, 3, 4 & 5  from the following paper:
+!    Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical
+!    simulation of plug glow of cohesionless particles in a
+!    horizontal pipe", Powder technology, 71, 239-250, 1992
 !
 !                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
@@ -58,12 +58,6 @@
 
       DES_LOC_DEBUG = .FALSE.
 
-      IF(L.EQ.1) THEN 
-         DES_KE = ZERO
-         DES_PE = ZERO 
-         DES_VEL_AVG = ZERO
-      ENDIF
-
 ! If a particle is classified as new, then forces are ignored. 
 ! Classification from new to existing is performed in routine
 ! des_check_new_particle.f
@@ -74,10 +68,27 @@
          TOW(L,:) = ZERO         
       ENDIF
 
-      DES_VEL_NEW(L,:) = FC(L,:)
-      DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID
-      DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID 
-      OMEGA_NEW(L,:) = OMEGA_OLD(L,:) + TOW(L,:)*OMOI(L)*DTSOLID
+
+! Advance particle position, velocity...
+      IF (INT_METHOD .EQ. 0) THEN
+         DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + FC(L,:)*DTSOLID
+         DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID 
+! following is equivalent to x=xold + vold*dt + 1/2acc*dt^2
+!         DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
+!             (DES_VEL_NEW(L,:)+DES_VEL_OLD(L,:))*DTSOLID 
+
+         OMEGA_NEW(L,:)   = OMEGA_OLD(L,:) + TOW(L,:)*OMOI(L)*DTSOLID
+      ELSEIF (INT_METHOD .EQ. 1) THEN
+! T.Li:  second-order Adams-Bashforth scheme
+         DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
+            ( 3.d0*DES_VEL_OLD(L,:)-DES_VEL_OOLD(L,:) )*DTSOLID
+         DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + 0.5d0*&
+            ( 3.d0*FC(L,:)-DES_ACC_OLD(L,:) )*DTSOLID
+         OMEGA_NEW(L,:)   =  OMEGA_OLD(L,:) + 0.5d0*&
+            ( 3.d0*TOW(L,:)*OMOI(L)-ROT_ACC_OLD(L,:) )*DTSOLID
+         DES_ACC_OLD(L,:) = FC(L,:)
+         ROT_ACC_OLD(L,:) = TOW(L,:)*OMOI(L)
+      ENDIF
 
 
 ! Check if the particle has moved a distance greater than or equal to

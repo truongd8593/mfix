@@ -189,12 +189,17 @@
       Allocate(  DES_POS_NEW (NPARTICLES,DIMN) )
       Allocate(  DES_VEL_OLD (NPARTICLES,DIMN) )
       Allocate(  DES_VEL_NEW (NPARTICLES,DIMN) )
+      Allocate(  DES_VEL_OOLD(NPARTICLES,DIMN) )
+      Allocate(  DES_ACC_OLD (NPARTICLES,DIMN) )
+
       IF(DIMN.GT.2) THEN
          Allocate(  OMEGA_OLD (NPARTICLES,DIMN) )
          Allocate(  OMEGA_NEW (NPARTICLES,DIMN) )
+         ALLOCATE(  ROT_ACC_OLD (NPARTICLES,DIMN))
       ELSE
          Allocate(  OMEGA_OLD (NPARTICLES,1) )
          Allocate(  OMEGA_NEW (NPARTICLES,1) )
+         ALLOCATE(  ROT_ACC_OLD (NPARTICLES,1))
       ENDIF        
       Allocate(  PPOS (NPARTICLES,DIMN) )
      
