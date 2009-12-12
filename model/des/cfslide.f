@@ -1,49 +1,63 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CFSLIDE(L, TANGNT_VREL, FT1)                           C
-!>
-!!  Purpose: DES - calculate sliding between particles                  
-!<
+!
+!  Purpose: DES - calculate sliding between particles                  
+!
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !                                                                      C
-!>
-!!  Comments: Implements Eqns 9 & 10 from the following paper           
-!!  Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical        
-!!  simulation of plug glow of cohesionless particles in a            
-!!  horizontal pipe", Powder technology, 71, 239-250, 1992           
-!<
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFSLIDE(L, TANGNT, TEMP_FT)
+      SUBROUTINE CFSLIDE(L, TANGNT, TMP_FT)
 
       USE param1
       USE discretelement
       IMPLICIT NONE
 
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
       INTEGER L, K
       DOUBLE PRECISION FTMD, FNMD, TANGNT(DIMN)
-      DOUBLE PRECISION TEMP_FT(DIMN), TEMP_FN(DIMN)
-!     
-!---------------------------------------------------------------------
+      DOUBLE PRECISION TMP_FT(DIMN), TMP_FN(DIMN)
 
-      TEMP_FN(:) = FN(L, :)
+!-----------------------------------------------      
+! Functions
+!-----------------------------------------------     
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
-      FTMD = SQRT(DES_DOTPRDCT(TEMP_FT,TEMP_FT))
-      FNMD = SQRT(DES_DOTPRDCT(TEMP_FN,TEMP_FN))
+!-----------------------------------------------     
+
+      TMP_FN(:) = FN(L, :)
+
+      FTMD = SQRT(DES_DOTPRDCT(TMP_FT,TMP_FT))
+      FNMD = SQRT(DES_DOTPRDCT(TMP_FN,TMP_FN))
 
       IF (FTMD.GT.(MEW*FNMD)) THEN
+! tangential force based on sliding friction              
          PARTICLE_SLIDE = .TRUE.
-         FT(L,:) = - MEW*FNMD*TANGNT(:)
+         IF(DES_DOTPRDCT(TANGNT,TANGNT).EQ.0) THEN
+            FT(L,:) =  MEW * FNMD * TMP_FT(:)/FTMD
+         ELSE
+            FT(L,:) = -MEW * FNMD * TANGNT(:)
+         ENDIF
       ELSE
-         FT(L, :) = TEMP_FT(:)
-      END IF
+! no sliding friction so tangential force is not changed              
+         FT(L, :) = TMP_FT(:)
+      ENDIF
+      IF(DEBUG_DES .AND. PARTICLE_SLIDE) THEN
+         WRITE(*,'(7X,A)') &
+            'FROM CFSLIDE.F ---------->'
+         WRITE(*,'(9X,A)') 'PARTICLE_SLIDE = T'
+         WRITE(*,'(9X,A,2(ES15.7,X))')&
+         'FTMD, mu*FNMD = ', FTMD, MEW*FNMD
+         WRITE(*,'(7X,A)') '<----------END CFSLIDE.F'
+      ENDIF
 
       RETURN
       END SUBROUTINE CFSLIDE
