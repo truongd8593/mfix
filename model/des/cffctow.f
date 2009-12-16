@@ -45,7 +45,7 @@
 
 ! calculate the distance from the particle center to the contact point,
 ! which is taken as the radical line
-! dist_ci+dist_cl=dist_li; dist_li^2+a^2=ri^2;  dist_lj^2+a^2=rj^2       
+! dist_ci+dist_cl=dist_li; dist_ci^2+a^2=ri^2;  dist_cl^2+a^2=rl^2       
       DIST_CL = (DIST_LI**2 + DES_RADIUS(L)**2 - DES_RADIUS(II)**2)/&
          (2.d0*DIST_LI)
       DIST_CI = DIST_LI - DIST_CL
