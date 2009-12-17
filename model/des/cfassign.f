@@ -188,9 +188,10 @@
             TCOLL_TMP = PI/SQRT(hert_kwn(i)/MASS_EFF - ((DES_ETAN_WALL(I)/MASS_EFF)**2)/4.d0) 
          ENDDO
 
-      ELSE   ! Linear model
+      ELSE   ! Linear spring-dashpot model
 
-         write(*,'(5X,A)') 'COLLISION MODEL: Linear (default)'
+         write(*,'(5X,A)') &
+            'COLLISION MODEL: Linear Spring-Dashpot (default)'
 
 ! User's input for KT_FAC and KT_W_FAC will be used, otherwise these values are
 ! estimated using: Silbert et al, 2001, Physical Review E, vol. 64-5, see page 051302-5

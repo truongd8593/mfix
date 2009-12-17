@@ -140,7 +140,7 @@
          IF(DES_ETAT_FAC .NE. UNDEFINED .OR. &
             DES_ETAT_W_FAC .NE. UNDEFINED) WRITE (UNIT_LOG, 1030)
 
-      ELSE  ! default linear model
+      ELSE  ! default linear spring-dashpot model
 
 ! check normal spring constants 
          IF(KN == UNDEFINED .OR. KN_W == UNDEFINED) THEN
@@ -240,6 +240,7 @@
  1003 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA.',/' Message: ',&
          'INLET_OUTLET option is disabled: does not work properly in',/10X,&
          'this MFIX version',/1X,70('*')/)
+
  1004 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Spring constants KN or KN_W not specified in mfix.dat',/1X,70('*')/)
  1005 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
@@ -283,6 +284,7 @@
  1017 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Values of KT_FAC or KT_W_FAC unphysical (< 0 or > 1) ',/10X,&
          'defined in mfix.dat',/1X,70('*')/)
+
  1018 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: nsquare neighbor search may be slow with periodic',/10X,&
          'boundaries.  Grid based search is recommended.',/1X,70('*')/)
@@ -291,6 +293,7 @@
          'currently work with periodic boundaries. Change ',&
          'value of',/10X,&
          'des_neighbor_search in mfix.dat',/1X,70('*')/)
+
  1020 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Wall value for Youngs modulus (EW_YOUNG) must be,'/10X,&
          'specified in mfix.dat',/1X,70('*')/)
