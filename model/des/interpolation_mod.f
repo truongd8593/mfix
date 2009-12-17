@@ -1,8 +1,8 @@
 ! vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: INTERPOLATION                                          C
-!>  Purpose: Contains number of generic interfaces that are used if     
-!>           DES_INTERP_ON is TRUE                                     
+!  Purpose: Contains number of generic interfaces that are used if     
+!           DES_INTERP_ON is TRUE                                     
 !                                                                      C
 !                                                                      C
 !  Author: Chidambaram Narayanan and Rahul Garg       Date: 01-Aug-07  C
@@ -15,8 +15,10 @@ MODULE interpolation
   IMPLICIT NONE
   
   PRIVATE 
-  
-  PUBLIC:: interpolator, set_interpolation_stencil,  set_interpolation_scheme
+
+  PUBLIC:: set_interpolation_stencil,  set_interpolation_scheme
+
+  PUBLIC:: interpolator
   INTERFACE interpolator
      MODULE PROCEDURE interp_oned_scalar
      MODULE PROCEDURE interp_oned_vector
@@ -51,12 +53,20 @@ MODULE interpolation
  CONTAINS
 
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE set_interpolation_stencil(pc, ib,ie,jb,je,kb,ke, isch&
        &,dimprob, ordernew)
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       
        !USE discretelement, ONLY : order,ob2l,ob2r,  intx_per, inty_per, intz_per
+
     USE geometry 
   
     IMPLICIT NONE 
+!-----------------------------------------------
+! Local variables
+!----------------------------------------------- 
     INTEGER, DIMENSION(3), INTENT(in):: pc
     INTEGER :: im,jm,km
     INTEGER, INTENT(out):: ib, ie, jb, je, kb, ke 
@@ -64,6 +74,8 @@ MODULE interpolation
     INTEGER, OPTIONAL :: ordernew
     CHARACTER*5, INTENT(in) :: isch 
     INTEGER :: ob2rtmp, ob2ltmp, ordertemp, ordernewtmp
+!----------------------------------------------- 
+
     ob2l = (order+1)/2
     ob2r = order/2 
     im = imax1
@@ -163,10 +175,20 @@ MODULE interpolation
        !Print*,'kb,ke  =', kb,ke
     ENDIF
     IF(PRESENT(ordernew)) ordernew = ordernewtmp
+
   END SUBROUTINE set_interpolation_stencil
-  !--------
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
   SUBROUTINE interp_oned_scalar(coor,scalar,ppos,interp_scl,order,&
        & isch, weight_pointer) 
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!----------------------------------------------- 
     REAL(prcn), DIMENSION(:), INTENT(in):: coor, scalar
     REAL(prcn), INTENT(in):: ppos
     REAL(prcn), INTENT(out):: interp_scl
@@ -176,7 +198,7 @@ MODULE interpolation
     INTEGER, Intent(in):: order
     Integer ::  iorig, i
     REAL(prcn):: zeta
-
+!----------------------------------------------- 
 
     DO i = 1,order-1
        dx(i) = coor(i+1) - coor(i)
@@ -259,17 +281,23 @@ MODULE interpolation
     IF (PRESENT(weight_pointer)) THEN
        weight_pointer => xval
     ENDIF
+
   END SUBROUTINE interp_oned_scalar
 
-  !--------
-  !--------
-  ! Interpolate an arbitrary sized array in one space dimension.
-  ! Uses the scalar interpolation to obtain the weights.
-  !--------
-  !--------
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
   SUBROUTINE interp_oned_vector(coor,vector,ppos,interp_vec,order,&
        & fun, weight_pointer)
+
+! Interpolate an arbitrary sized array in one space dimension.
+! Uses the scalar interpolation to obtain the weights.
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!----------------------------------------------- 
     REAL(prcn), DIMENSION(:), INTENT(in):: coor
     REAL(prcn), DIMENSION(:,:), INTENT(in):: vector
     REAL(prcn), INTENT(in):: ppos
@@ -279,6 +307,8 @@ MODULE interpolation
     Integer, Intent(in) :: order 
     INTEGER:: vec_size, nv, i
     REAL(prcn), DIMENSION(:), POINTER:: weights_scalar
+!----------------------------------------------- 
+
     !order    = SIZE(coor)
     !print*,'In Interp_onedvector:order = ',order
     vec_size = SIZE(vector,2)
@@ -306,17 +336,22 @@ MODULE interpolation
     IF (PRESENT(weight_pointer)) THEN
        weight_pointer => weights_scalar
     ENDIF
+
   END SUBROUTINE interp_oned_vector
 
-  !--------
-  !--------
-  ! Interpolate a scalar quantity in two dimensions.
-  !--------
-  !--------
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE interp_twod_scalar(coor,scalar,ppos,interp_scl,order&
        &,isch,weight_pointer) 
+
+! Interpolate a scalar quantity in two dimensions.
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
     REAL(prcn), DIMENSION(:,:,:), INTENT(in):: coor
     REAL(prcn), DIMENSION(:,:), INTENT(in):: scalar
     REAL(prcn), DIMENSION(2), INTENT(in):: ppos
@@ -328,6 +363,7 @@ MODULE interpolation
     INTEGER, INTENT(in):: order
     INTEGER:: iorig
     REAL(prcn), DIMENSION(2):: zeta 
+!----------------------------------------------- 
 
     !-------
     ! Get order of interpolation
@@ -489,16 +525,23 @@ MODULE interpolation
     IF (PRESENT(weight_pointer)) THEN
        weight_pointer => weights
     ENDIF
+
   END SUBROUTINE interp_twod_scalar
 
-  !-------
-  !-------
-  ! Interpolate an arbitrary sized array in two dimensions.
-  ! Uses the scalar interpolation to obtain the weights.
-  !-------
-  !-------
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE interp_twod_vector(coor,vector,ppos,interp_vec,order&
        &,fun,weight_pointer) 
+
+! Interpolate an arbitrary sized array in two dimensions.
+! Uses the scalar interpolation to obtain the weights.
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
     REAL(prcn), DIMENSION(:,:,:), INTENT(in):: coor, vector
     REAL(prcn), DIMENSION(2), INTENT(in):: ppos
     REAL(prcn), DIMENSION(:), INTENT(out):: interp_vec
@@ -508,6 +551,7 @@ MODULE interpolation
     INTEGER :: vec_size
     INTEGER:: i, j, k, nv
     REAL(prcn), DIMENSION(:,:,:), POINTER:: weights_scalar
+!-----------------------------------------------
 
     !-------
     ! Get order of interpolation
@@ -543,13 +587,19 @@ MODULE interpolation
 
   END SUBROUTINE interp_twod_vector
 
-  !--------
-  !--------
-  ! Interpolate a scalar quantity in three dimensions.
-  !--------
-  !--------
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
   SUBROUTINE interp_threed_scalar(coor,scalar,ppos,interp_scl,order&
        &,isch,weight_pointer) 
+
+! Interpolate a scalar quantity in three dimensions.
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
     REAL(prcn), DIMENSION(:,:,:,:), INTENT(in):: coor
     REAL(prcn), DIMENSION(:,:,:), INTENT(in):: scalar
     REAL(prcn), DIMENSION(3), INTENT(in):: ppos
@@ -563,6 +613,8 @@ MODULE interpolation
     REAL(prcn) :: zeta(3), zetasph, sigma, bandwidth
     
     Logical :: calcwts
+!-----------------------------------------------
+
     !-------
     ! Get order of interpolation
     !-------
@@ -778,14 +830,21 @@ MODULE interpolation
     ENDIF
   END SUBROUTINE interp_threed_scalar
 
-  !-------
-  !-------
-  ! Interpolate an arbitrary sized array in three dimensions.
-  ! Uses the scalar interpolation to obtain the weights.
-  !-------
-  !-------
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv    
   SUBROUTINE interp_threed_vector(coor,vector,ppos,interp_vec,order&
        &,fun,weight_pointer) 
+
+! Interpolate an arbitrary sized array in three dimensions.
+! Uses the scalar interpolation to obtain the weights.
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
     REAL(prcn), DIMENSION(:,:,:,:), INTENT(in):: coor, vector
     REAL(prcn), DIMENSION(3), INTENT(in):: ppos
     REAL(prcn), DIMENSION(:), INTENT(out):: interp_vec
@@ -795,6 +854,7 @@ MODULE interpolation
     INTEGER :: vec_size
     INTEGER:: i, j, k, nv
     REAL(prcn), DIMENSION(:,:,:), POINTER:: weights_scalar
+!-----------------------------------------------
 
     !-------
     ! Get order of interpolation
@@ -831,7 +891,15 @@ MODULE interpolation
   END SUBROUTINE interp_threed_vector
 
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
   SUBROUTINE calc_weightderiv_threed(coor,ppos,weight_pointer,order, isch)
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
     REAL(prcn), DIMENSION(:,:,:,:), INTENT(in):: coor
     !Real(prcn), Dimension(:,:,:), Intent(in):: scalar
     REAL(prcn), DIMENSION(3), INTENT(in):: ppos
@@ -845,6 +913,7 @@ MODULE interpolation
     REAL(prcn):: zeta(3), zetasph, bandwidth, sigma, tmp
     REAL(prcn), DIMENSION(3,order) :: zetacsi !right now only
     ! for cubic spline interp rg 03/14/05 
+!-----------------------------------------------
 
     weight_pointer = zero
     !-------
@@ -1031,7 +1100,15 @@ MODULE interpolation
   END SUBROUTINE calc_weightderiv_threed
 
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
   SUBROUTINE calc_weightderiv_twod(coor,ppos,weight_pointer,order, isch)
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
     REAL(prcn), DIMENSION(:,:,:), INTENT(in):: coor
     !Real(prcn), Dimension(:,:,:), Intent(in):: scalar
     REAL(prcn), DIMENSION(2), INTENT(in):: ppos
@@ -1045,6 +1122,7 @@ MODULE interpolation
     REAL(prcn):: zeta(3), zetasph, bandwidth, sigma, tmp
     REAL(prcn), DIMENSION(2,order) :: zetacsi !right now only
     ! for cubic spline interp rg 03/14/05 
+!-----------------------------------------------
 
     weight_pointer = zero
     !-------
@@ -1194,15 +1272,19 @@ MODULE interpolation
           END SELECT
 
        END SELECT
+
      END SUBROUTINE calc_weightderiv_twod
 
 
-  !-------
-  !-------
-  ! To calculate just the weights using trilinear interpolation 
-  !-------
-  !-------
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
   FUNCTION justweights(coor,ppos)
+! To calculate just the weights using trilinear interpolation 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------  
     REAL(prcn), DIMENSION(:,:,:), POINTER:: justweights 
     REAL(prcn), DIMENSION(:,:,:,:), INTENT(IN):: coor
     REAL(prcn), DIMENSION(3), INTENT(IN):: ppos
@@ -1211,6 +1293,7 @@ MODULE interpolation
     INTEGER:: i, j, k, iorig
     REAL(prcn):: dxl, dyl, dzl
     REAL(prcn), DIMENSION(3):: zeta
+!-----------------------------------------------
 
     iorig = order/2
 
@@ -1244,16 +1327,20 @@ MODULE interpolation
     justweights => weights
   END FUNCTION justweights
 
-  !-------
-  !-------
-  ! Second-order (linear) shape functions
-  !-------
-  !-------
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv    
   FUNCTION shape2(zeta,i)
+! Second-order (linear) shape functions  
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------    
     REAL(prcn):: shape2
     REAL(prcn):: zeta
     INTEGER:: i
-
+!-----------------------------------------------  
     SELECT CASE (i)
     CASE (1)
        shape2 = 1 - zeta
@@ -1262,18 +1349,22 @@ MODULE interpolation
     END SELECT
   END FUNCTION shape2
 
-  !-------
-  !-------
-  ! Third-order (quadratic) shape functions
-  !-------
-  !-------
+ 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv    
   FUNCTION shape3(zeta,i,dx)
+! Third-order (quadratic) shape functions  
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------  
     REAL(prcn):: shape3
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
-
     REAL(prcn):: zh, num, denom
+!-----------------------------------------------  
 
     SELECT CASE (i)
     CASE (1)
@@ -1294,18 +1385,22 @@ MODULE interpolation
     END SELECT
   END FUNCTION shape3
 
-  !-------
-  !-------
-  ! Fourth-order (cubic) shape functions
-  !-------
-  !-------
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
   FUNCTION shape4(zeta,i,dx)
+! Fourth-order (cubic) shape functions
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------  
     REAL(prcn):: shape4
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
-
     REAL(prcn):: r1, r2, c1, c2, c3
+!-----------------------------------------------
 
     r1 = dx(2)/dx(1)
     r2 = dx(3)/dx(1)
@@ -1332,19 +1427,23 @@ MODULE interpolation
     END SELECT
   END FUNCTION shape4
 
-  !-------
-  !-------
-  ! Fifth-order (power of 4) shape functions
-  !-------
-  !-------
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv 
   FUNCTION shape5(zeta,i,dx)
+! Fifth-order (power of 4) shape functions  
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------  
     REAL(prcn):: shape5
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
-
     REAL(prcn):: d1, d2, d3, d4
     REAL(prcn):: num, denom, zh
+!-----------------------------------------------  
 
     SELECT CASE (i)
     CASE (1)
@@ -1400,19 +1499,22 @@ MODULE interpolation
     END SELECT
   END FUNCTION shape5
 
-  !-------
-  !-------
-  ! Sixth-order (power of 5) shape functions
-  !-------
-  !-------
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv 
   FUNCTION shape6(zeta,i,dx)
+! Sixth-order (power of 5) shape functions  
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
     REAL(prcn):: shape6
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
-
     REAL(prcn):: d1, d2, d3, d4, d5
     REAL(prcn):: num, denom, zh
+!-----------------------------------------------
 
     SELECT CASE (i)
     CASE (1)
@@ -1484,12 +1586,20 @@ MODULE interpolation
     END SELECT
   END FUNCTION shape6
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
   FUNCTION shape3deriv_csi(zeta,i,dx)
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------  
     REAL(prcn):: shape3deriv_csi
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
     REAL(prcn) :: tmp
+!-----------------------------------------------
 
 !!$    IF (zeta.GE.-two.AND.zeta.LE.-one) THEN 
 !!$       shape3deriv_csi = (half)*(two+zeta)**2.0
@@ -1512,12 +1622,21 @@ MODULE interpolation
     END SELECT
   END FUNCTION shape3deriv_csi
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
   FUNCTION shape4deriv_csi(zeta,i,dx)
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------   
     REAL(prcn):: shape4deriv_csi
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
     REAL(prcn) :: tmp
+!----------------------------------------------- 
 
     IF (zeta.GE.-two.AND.zeta.LE.-one) THEN 
        shape4deriv_csi = (half)*(two+zeta)**2.0
@@ -1532,14 +1651,21 @@ MODULE interpolation
     ENDIF
   END FUNCTION shape4deriv_csi
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv    
   FUNCTION shape4deriv(zeta,i,dx)
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------     
     REAL(prcn):: shape4deriv
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
     REAL(prcn) :: tmp
-
     REAL(prcn):: r1, r2, c1, c2, c3
+!-----------------------------------------------   
 
     r1 = dx(2)/dx(1)
     r2 = dx(3)/dx(1)
@@ -1579,10 +1705,19 @@ MODULE interpolation
     END SELECT
   END FUNCTION shape4deriv
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
   FUNCTION shape2deriv(zeta,i)
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------  
     REAL(prcn):: shape2deriv
     REAL(prcn):: zeta
     INTEGER:: i
+!-----------------------------------------------
 
     SELECT CASE (i)
     CASE (1)
@@ -1592,11 +1727,20 @@ MODULE interpolation
     END SELECT
   END FUNCTION shape2deriv
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
   FUNCTION shape4csi(zeta,i,dx,dim)
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------    
     REAL(prcn):: shape4csi
     REAL(prcn),INTENT(in):: zeta
     REAL(prcn), DIMENSION(:),INTENT(in):: dx
     INTEGER,INTENT(in):: i,dim
+!-----------------------------------------------  
 
     IF (zeta.GE.-two.AND.zeta.LE.-one) THEN 
        shape4csi = (one/six)*(two+zeta)**3.0
@@ -1613,11 +1757,20 @@ MODULE interpolation
 
   END FUNCTION shape4csi
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
   FUNCTION shape3csileft(zeta,i,dx,dim)
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------    
     REAL(prcn):: shape3csileft
     REAL(prcn),INTENT(in):: zeta
     REAL(prcn), DIMENSION(:),INTENT(in):: dx
     INTEGER,INTENT(in):: i,dim
+!-----------------------------------------------  
 
     IF (zeta.GE.-one.AND.zeta.LE.zero) THEN 
        shape3csileft = (half)*(zeta+one)**2.0
@@ -1654,13 +1807,19 @@ MODULE interpolation
   END FUNCTION shape3csileft
 
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
   FUNCTION shape3csiright(zeta,i,dx,dim)
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------      
     REAL(prcn):: shape3csiright
     REAL(prcn),INTENT(in):: zeta
     REAL(prcn), DIMENSION(:),INTENT(in):: dx
     INTEGER,INTENT(in):: i,dim
-
-
+!-----------------------------------------------    
 
     IF (zeta.GE.-two.AND.zeta.LE.-one) THEN 
        shape3csiright = (half)*(two+zeta)**2.0
@@ -1674,13 +1833,21 @@ MODULE interpolation
     ENDIF
   END FUNCTION shape3csiright
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
   FUNCTION shape4new(pos,x,i)
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------   
     REAL(prcn):: shape4new
     REAL(prcn):: pos
     REAL(prcn), DIMENSION(:):: x
     INTEGER:: i
-
     REAL(prcn):: r1, r2,num,den
+!-----------------------------------------------    
 
     SELECT CASE (i)
     CASE (1) 
@@ -1702,13 +1869,22 @@ MODULE interpolation
     END SELECT
   END FUNCTION shape4new
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
   SUBROUTINE set_interpolation_scheme(choice)
 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
     !USE discretelement, ONLY : scheme, interp_scheme, order,ob2l,ob2r,&
     !     & gstencil, vstencil, sstencil, wtderivp
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------     
     IMPLICIT NONE 
     INTEGER, INTENT(in) :: choice
     INTEGER :: order_orig
+!-----------------------------------------------     
+
     order_orig = order
     IF(choice.EQ.1) THEN 
        interp_scheme = 'lpi'
@@ -1766,5 +1942,7 @@ MODULE interpolation
     END IF
     
   END SUBROUTINE set_interpolation_scheme
+
+
 
 END MODULE interpolation
