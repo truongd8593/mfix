@@ -34,7 +34,9 @@
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE:: sstencil
       DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE:: gstencil, vstencil,pgradstencil
       
-      LOGICAL:: intx_per, inty_per, intz_per
+!     quantities are set in subroutine set_interpolation_scheme
+!     order = order of the interpolation method, ob2l = (order+1)/2,
+!     ob2r = order/2      
       CHARACTER(LEN=7):: scheme, interp_scheme
       INTEGER:: order, ob2l, ob2r
       
@@ -169,7 +171,9 @@
       LOGICAL DES_PERIODIC_WALLS_X
       LOGICAL DES_PERIODIC_WALLS_Y
       LOGICAL DES_PERIODIC_WALLS_Z
-     
+! duplicate of above, todo: will need to make consistent throughout      
+      LOGICAL:: intx_per, inty_per, intz_per
+
 !     Inlet Outlet BC 
       LOGICAL INLET_OUTLET
       LOGICAL INLET_OUTLET_X
