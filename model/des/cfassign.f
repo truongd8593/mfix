@@ -1,15 +1,15 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 ! Module name: CFASSIGN                                                C
-!>
-!! Purpose: Assign the necessary values for DEM                         
-!! computation. For example, assigning DEM                           
-!! boundaries from the values entered for MFIX                        
-!! input in mfix.dat. Assigning DEM gravity vector                     
-!! from MFIX input. 
-!! Calculating DTSOLID based on rotational and translational       
-!! constraints                                                    
-!<                                                               
+!
+! Purpose:
+! Assign the necessary values for DEM  computation. For example:
+! - assigning DEM boundaries from the values entered for MFIX input
+!   in mfix.datat
+! - assigning DEM gravity vector from MFIX input. 
+! - calculating DTSOLID based on particle properties: spring 
+!   coefficient, damping factor & mass 
+!      
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C
@@ -39,7 +39,8 @@
 !-----------------------------------------------
       LOGICAL:: filexist, isopen
       INTEGER L, IJK, M, I, J, K, COUNT_E
-      DOUBLE PRECISION MINMASS, MASS_I, MASS_J, MASS_EFF
+      DOUBLE PRECISION MINMASS, MASS_I, MASS_J, &
+                       MASS_EFF, RED_MASS_EFF
       DOUBLE PRECISION TCOLL, TCOLL_TMP, MAXMASS
 ! local variables for calculation of hertzian contact parameters
       DOUBLE PRECISION R_EFF, E_EFF, G_MOD_EFF     
@@ -126,6 +127,11 @@
                MASS_I = (PI/6.d0)*(D_P0(I)**3)*RO_S(I)
                MASS_J = (PI/6.d0)*(D_P0(J)**3)*RO_S(J)
                MASS_EFF = (MASS_I*MASS_J)/(MASS_I+MASS_J)
+! In the Hertzian model introduce a factor of 2/7 to the effective mass 
+! for tangential direction to get a reduced mass.  Reference: Van der Hoef
+! et al., Multi-scale modeling of gas-fluidized beds, Advances in Chemical
+! Engineering, 2006
+               RED_MASS_EFF = (2.d0/7.d0)*MASS_EFF               
                R_EFF = 0.5d0*(D_P0(I)*D_P0(J)/(D_P0(I)+D_P0(J)))
                E_EFF = e_young(I)*e_young(J)/ &
                   (e_young(I)*(1.d0-v_poisson(J)**2)+&
@@ -141,7 +147,7 @@
                   ABS(LOG(REAL_EN(I,J)))
                DES_ETAN(I,J) = DES_ETAN(I,J)/&
                   SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2)
-               DES_ETAT(I,J) = 2.d0*SQRT(hert_kt(I,J)*MASS_EFF)*&
+               DES_ETAT(I,J) = 2.d0*SQRT(hert_kt(I,J)*RED_MASS_EFF)*&
                   ABS(LOG(REAL_ET(I,J)))
                DES_ETAT(I,J) = DES_ETAT(I,J)/&
                   SQRT(PI*PI + (LOG(REAL_ET(I,J)))**2) 
@@ -167,6 +173,7 @@
             MASS_I = (PI/6.d0)*(D_P0(I)**3)*RO_S(I)
             MASS_J = MASS_I
             MASS_EFF = MASS_I
+            RED_MASS_EFF = (2.d0/7.d0)*MASS_I
             R_EFF = 0.5d0*D_P0(I)
             E_EFF = e_young(I)*ew_young/ &
                (e_young(I)*(1.d0-vw_poisson**2)+&
@@ -174,13 +181,13 @@
             G_MOD_EFF = G_MOD(I)/(2.d0-v_poisson(I))
 
             hert_kwn(I) =(4.d0/3.d0)*E_EFF*SQRT(R_EFF)
-            hert_kwt(I) = 8.d0*G_MOD_EFF*SQRT(R_EFF)    
+            hert_kwt(I) = (16.d0/3.d0)*G_MOD_EFF*SQRT(R_EFF)    
 
             DES_ETAN_WALL(I) = 2.d0*SQRT(hert_kwn(I)*MASS_EFF)*&
                ABS(LOG(REAL_EN_WALL(I)))
             DES_ETAN_WALL(I) = DES_ETAN_WALL(I)/&
                SQRT(PI*PI + (LOG(REAL_EN_WALL(I)))**2)
-            DES_ETAT_WALL(I) = 2.d0*SQRT(hert_kwt(I)*MASS_EFF)*&
+            DES_ETAT_WALL(I) = 2.d0*SQRT(hert_kwt(I)*RED_MASS_EFF)*&
                ABS(LOG(REAL_ET_WALL(I)))
             DES_ETAT_WALL(I) = DES_ETAT_WALL(I)/&
                SQRT(PI*PI + (LOG(REAL_ET_WALL(I)))**2) 
