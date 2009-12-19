@@ -91,6 +91,7 @@
       P_TIME = UNDEFINED
       DEM_OUTPUT_DATA_TECPLOT = .FALSE.
       DEBUG_DES = .FALSE.
+      FOCUS_PARTICLE = 0
       IFI = 0
 
       DIMN = UNDEFINED_I  
