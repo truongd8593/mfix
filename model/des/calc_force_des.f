@@ -1,10 +1,10 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CALC_FORCE_DES                                         C
-!>
-!!  Purpose: DES calculations of force acting on a particle, 
-!!           its velocity and its position                  
-!<
+!
+!  Purpose: DES calculations of force acting on a particle, 
+!           its velocity and its position                  
+!
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Sreekanth Pannala                        Date: 06-Dec-06  C
@@ -54,7 +54,7 @@
       INTEGER PC
 ! store solids phase index of particle (i.e. pijk(np,5))
       INTEGER PHASEI, PHASELL
-! local values used damping coefficients
+! local values used spring constants and damping coefficients
       DOUBLE PRECISION ETAN_DES, ETAN_DES_W, ETAT_DES, ETAT_DES_W,&
                        KN_DES, KN_DES_W, KT_DES, KT_DES_W
 
@@ -67,15 +67,12 @@
 
 
 
-!---------------------------------------------------------------------
 ! Calculate new values
 !---------------------------------------------------------------------
       OVERLAP_MAXP = UNDEFINED_I
       DES_LOC_DEBUG = .FALSE.
-
       OVERLAP_MAX = ZERO
       NEIGH_MAX = -1
-      FOCUS_PARTICLE = 0
 
       IF (S_TIME.LE.DTSOLID) THEN
          TANGENT(:) = ZERO
@@ -85,7 +82,6 @@
          FT(:,:) = ZERO
       ENDIF
 
-!---------------------------------------------------------------------
 !     Calculate contact force and torque
 !---------------------------------------------------------------------
      
@@ -162,7 +158,8 @@
 ! Check particle LL for wall contacts
 !---------------------------------------------------------------------
 ! Treats wall interaction also as a two-particle interaction but accounting
-! for the wall properties
+! for the wall properties; make sure the particle is not classified as
+! a new 'entering' particle or is already marked as a potential exiting particle
          IF(WALLDTSPLIT .AND. .NOT.PEA(LL,2) .AND. .NOT.PEA(LL,3)) THEN
             WALLCHECK = 0
             DO IW = 1, NWALLS
@@ -266,7 +263,7 @@
 
                   phaseLL = PIJK(LL,5) 
 
-! T.Li : Hertz vs Linear contact model
+! T.Li : Hertz vs linear spring-dashpot contact model
                   IF (TRIM(COLL_MODEL) .EQ. 'HERTZIAN') THEN
                      sqrt_overlap = SQRT(OVERLAP_N)
                      KN_DES_W = hert_kwn(phaseLL)*sqrt_overlap
@@ -301,7 +298,7 @@
 ! tangential force on a particle in contact with a wall
                   CALL CFSLIDEWALL(LL, TANGENT, FT_TMP)
                   
-! Calculate the total force Fc and Tow on a particle in a particle-wall
+! Calculate the total force FC and TOW on a particle in a particle-wall
 ! collision
                   CALL CFFCTOWALL(LL, NORMAL, DISTMOD)
                   
@@ -526,7 +523,7 @@
                   phaseLL = PIJK(LL,5)                  
                   phaseI = PIJK(I,5)
 
-! T.Li : Hertz vs Linear contact model
+! T.Li : Hertz vs linear spring-dashpot contact model
                   IF (TRIM(COLL_MODEL) .EQ. 'HERTZIAN') THEN
                      sqrt_overlap = SQRT(OVERLAP_N)
                      KN_DES = hert_kn(phaseLL,phaseI)*sqrt_overlap
@@ -561,7 +558,7 @@
 ! force on a particle in contact with another particle
                   CALL CFSLIDE(LL, TANGENT, FT_TMP)
                   
-! Calculate the total force Fc and Tow on a particle in a particle-particle collision
+! Calculate the total force FC and TOW on a particle in a particle-particle collision
                   CALL CFFCTOW(LL, I, NORMAL, DISTMOD)
 
 ! Save the tangential displacement history with the correction of Coulomb's law

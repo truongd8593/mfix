@@ -31,35 +31,60 @@ MODULE interpolation
   END INTERFACE
       
   SAVE
-  
+
+! the interpolator subroutine essentially returns the value of interp_scl/interp_vec 
+! which is the interpolated value of the quantity passed through 'scalar/vector'.
+! the value is interpolated based on grid (x,y,z position of grid)  passed 
+! through coor at the x,y,z position of the particle passed through ppos
+! the interpolation order is specified by order and the interpolation scheme is
+! specified by isch/fun 
+
+! interp_oned_scalar  (coor,scalar,ppos,interp_scl,order, isch,weight_pointer) 
+!    REAL coor(:), scalar(:), PPOS, INTERP_SCL 
+!    INTEGER ORDER; CHARACTER ISCH; REAL WEIGHT_POINTER(:)
+! interp_oned_vector  (coor,vector,ppos,interp_vec,order, fun, weight_pointer)
+!    REAL coor(:), vector(:,:), PPOS, INTERP_VEC(:) 
+!    INTEGER ORDER; CHARACTER FUN; REAL WEIGHT_POINTER(:)
+! interp_twod_scalar  (coor,scalar,ppos,interp_scl,order, isch,weight_pointer) 
+!    REAL coor(:,:,:), scalar(:,:), PPOS(2), INTERP_SCL 
+!    INTEGER ORDER; CHARACTER ISCH; REAL WEIGHT_POINTER(:,:,:)
+! interp_twod_vector  (coor,vector,ppos,interp_vec,order, fun, weight_pointer)
+!    REAL coor(:,:,:), vector(:,:,:), PPOS(2), INTERP_VEC(:) 
+!    INTEGER ORDER; CHARACTER FUN; REAL WEIGHT_POINTER(:,:,:)
+! interp_threed_scalar(coor,scalar,ppos,interp_scl,order, isch,weight_pointer) 
+!    REAL coor(:,:,:,:), scalar(:,:,:), PPOS(3), INTERP_SCL 
+!    INTEGER ORDER; CHARACTER ISCH; REAL WEIGHT_POINTER(:,:,:)
+! interp_threed_vector(coor,vector,ppos,interp_vec,order, fun, weight_pointer) 
+!    REAL coor(:,:,:,:), vector(:,:,:,:), PPOS(3), INTERP_VEC(:) 
+!    INTEGER ORDER; CHARACTER FUN; REAL WEIGHT_POINTER(:,:,:)
+
   INTEGER, PARAMETER :: prcn=8
   INTEGER, PARAMETER :: iprec=8
   !double precision, Parameter:: zero = 0.0_iprec
   !double precision, Parameter:: one  = 1.0_iprec
-  !double precision, Parameter:: half = 0.5_iprec
-  DOUBLE PRECISION, PARAMETER  :: fourth = 0.25_iprec
   DOUBLE PRECISION, PARAMETER  :: two = 2.0_iprec  
   DOUBLE PRECISION, PARAMETER  :: three = 3.0_iprec
   DOUBLE PRECISION, PARAMETER  :: four = 4.0_iprec
   DOUBLE PRECISION, PARAMETER :: six = 6.0_iprec
+
+  !double precision, Parameter:: half = 0.5_iprec
+  DOUBLE PRECISION, PARAMETER  :: fourth = 0.25_iprec
+
   INTEGER, PARAMETER :: maxorder=6
   DOUBLE PRECISION, DIMENSION(maxorder), TARGET :: xval, yval, zval
   DOUBLE PRECISION, DIMENSION(maxorder-1) :: dx, dy, dz
-  DOUBLE PRECISION, DIMENSION(maxorder,maxorder,maxorder)   &
-       , TARGET :: weights
- ! DOUBLE PRECISION, DIMENSION(maxorder,maxorder)   &
- !      , TARGET:: weights2d
+  DOUBLE PRECISION, DIMENSION(maxorder,maxorder,maxorder), TARGET :: weights
 
  CONTAINS
 
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-  SUBROUTINE set_interpolation_stencil(pc, ib,ie,jb,je,kb,ke, isch&
-       &,dimprob, ordernew)
+  SUBROUTINE set_interpolation_stencil(PC, IW, IE, JS, JN, KB, KTP,&
+      isch,dimprob,ordernew)
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       
-       !USE discretelement, ONLY : order,ob2l,ob2r,  intx_per, inty_per, intz_per
+       !USE discretelement, ONLY : order,ob2l,ob2r, des_periodic_walls_x,y,z
 
     USE geometry 
   
@@ -67,113 +92,114 @@ MODULE interpolation
 !-----------------------------------------------
 ! Local variables
 !----------------------------------------------- 
-    INTEGER, DIMENSION(3), INTENT(in):: pc
-    INTEGER :: im,jm,km
-    INTEGER, INTENT(out):: ib, ie, jb, je, kb, ke 
-    INTEGER, INTENT(in) :: dimprob
-    INTEGER, OPTIONAL :: ordernew
-    CHARACTER*5, INTENT(in) :: isch 
+    INTEGER, DIMENSION(3), INTENT(in):: pc   ! i,j,k indices of particle - 1
+    INTEGER, INTENT(out):: IW, IE, JS, JN, KB, KTP 
+    CHARACTER*5, INTENT(in) :: isch   ! interpolation scheme 
+    INTEGER, INTENT(in) :: dimprob   ! dimension of system = DIMN
+    INTEGER, OPTIONAL :: ordernew   ! interpolation order
+
+    INTEGER :: im, jm, km   ! local variables assigned maximum i,j,k fluid cell indices
     INTEGER :: ob2rtmp, ob2ltmp, ordertemp, ordernewtmp
 !----------------------------------------------- 
 
+! reassigning ob2l and ob2r ?
     ob2l = (order+1)/2
     ob2r = order/2 
-    im = imax1
+! local variables for maximum fluid cell indices
+    im = imax1    
     jm = jmax1
     km = kmax1
-    
+
     SELECT CASE(isch)
     CASE('csi')
        
        ob2rtmp = ob2r
        ob2ltmp = ob2l
        ordertemp = order
-!!$       IF(order.NE.3.AND.(pc(1).EQ.1.OR.pc(1).EQ.im&
-!!$            &-1.OR.pc(2).EQ.1.OR.pc(2).EQ.jm&
-!!$            &-1.OR.pc(3).EQ.1.OR.pc(3).EQ.km-1)) order = 3
-       !To make the order at boundary cells for csi equal to 3. 
-       !print*,'ob2l = ',ob2l,ob2r
-       ib = MAX(1 ,pc(1) - (ob2l - 1)) !non-periodic
-       ie = MIN(im,pc(1) + ob2r)
-       IF(.NOT.intx_per) THEN 
-          IF (ib.EQ.1 ) ie = ib + order - 1
-          IF (ie.EQ.im) ib = ie - order + 1
+
+! lowest IW will be assigned is 1 (ghost cell)
+       IW = MAX(1 ,pc(1) - (ob2l - 1)) 
+! highest IE will be assigned is maximum fluid cell index
+       IE = MIN(im,pc(1) + ob2r)
+! if IW is west ghost cell and/or IE is maximum fluid cell
+! reassign IW and/or IE accordingly
+       IF(.NOT.DES_PERIODIC_WALLS_X) THEN 
+          IF (IW.EQ.1 ) IE = IW + order - 1
+          IF (IE.EQ.im) IW = IE - order + 1
        ELSE 
-          IF (ib.EQ.1 ) ib = ie - order + 1
-          IF (ie.EQ.im) ie = ib + order - 1
-          !Print*,'ib, ie  = ', ib,ie
-       END IF
+          IF (IW.EQ.1 ) IW = IE - order + 1
+          IF (IE.EQ.im) IE = IW + order - 1
+       ENDIF
 
-       jb = MAX(1 ,pc(2) - (ob2l - 1)) !non-periodic
-       je = MIN(jm,pc(2) + ob2r)
-       IF(.NOT.inty_per) THEN
-          IF (jb.EQ.1 ) je = jb + order - 1
-          IF (je.EQ.jm) jb = je - order + 1
+       JS = MAX(1 ,pc(2) - (ob2l - 1)) !non-periodic
+       JN = MIN(jm,pc(2) + ob2r)
+       IF(.NOT.DES_PERIODIC_WALLS_Y) THEN
+          IF (JS.EQ.1 ) JN = JS + order - 1
+          IF (JN.EQ.jm) JS = JN - order + 1
        ELSE
-          IF (jb.EQ.1 ) jb = je - order + 1
-          IF (je.EQ.jm) je = jb + order - 1
-       END IF
+          IF (JS.EQ.1 ) JS = JN - order + 1
+          IF (JN.EQ.jm) JN = JS + order - 1
+       ENDIF
 
-       kb = MAX(1 ,pc(3) - (ob2l - 1)) !non-periodic
-       ke = MIN(km,pc(3) + ob2r)
-       IF(.NOT.intz_per) THEN 
-          IF (kb.EQ.1 ) ke = kb + order - 1
-          IF (ke.EQ.km) kb = ke - order + 1
+       KB = MAX(1 ,pc(3) - (ob2l - 1)) !non-periodic
+       KTP = MIN(km,pc(3) + ob2r)
+       IF(.NOT.DES_PERIODIC_WALLS_Z) THEN 
+          IF (KB.EQ.1 ) KTP = KB + order - 1
+          IF (KTP.EQ.km) KB = KTP - order + 1
        ELSE
-          IF (kb.EQ.1 ) kb = ke - order + 1
-          IF (ke.EQ.km) ke = kb + order - 1
-       END IF
+          IF (KB.EQ.1 ) KB = KTP - order + 1
+          IF (KTP.EQ.km) KTP = KB + order - 1
+       ENDIF
 
        ob2r =  ob2rtmp 
        ob2l = ob2ltmp
-       ordernewtmp = order
-
-       !Print*,'ib,ie .... in processing =', ib,ie,jb,je,kb,ke,&
-       !     & ordernewtmp
-       !PRINT*, 'pc = ',pc(1),pc(2),pc(3)!
+       ordernewtmp = order       
        order = ordertemp !reset the order
 
     CASE('lpi')
-       !print*, 'order in set stencil = ', order,pc(3)
-       !Print*,'ib, ie = ', pc(1), ib, ie
-       
-       
-       ib = MAX(1 ,pc(1) - (ob2l - 1)) !non-periodic
-       ie = MIN(im,pc(1) + ob2r)
-       IF(.NOT.intx_per) THEN 
-          IF (ib.EQ.1 ) ie = ib + order - 1
-          IF (ie.EQ.im) ib = ie - order + 1
+
+       IW = MAX(1 ,pc(1) - (ob2l - 1)) !non-periodic
+       IE = MIN(im,pc(1) + ob2r)
+       IF(.NOT.DES_PERIODIC_WALLS_X) THEN 
+          IF (IW.EQ.1 ) IE = IW + order - 1
+          IF (IE.EQ.im) IW = IE - order + 1
        ELSE 
-          IF (ib.EQ.1 ) ib = ie - order + 1
-          IF (ie.EQ.im) ie = ib + order - 1
-       END IF
+          IF (IW.EQ.1 ) IW = IE - order + 1
+          IF (IE.EQ.im) IE = IW + order - 1
+       ENDIF
 
-       jb = MAX(1 ,pc(2) - (ob2l - 1)) !non-periodic
-       je = MIN(jm,pc(2) + ob2r)
-       IF(.NOT.inty_per) THEN
-          IF (jb.EQ.1 ) je = jb + order - 1
-          IF (je.EQ.jm) jb = je - order + 1
+       JS = MAX(1 ,pc(2) - (ob2l - 1)) !non-periodic
+       JN = MIN(jm,pc(2) + ob2r)
+       IF(.NOT.DES_PERIODIC_WALLS_Y) THEN
+          IF (JS.EQ.1 ) JN = JS + order - 1
+          IF (JN.EQ.jm) JS = JN - order + 1
        ELSE
-          IF (jb.EQ.1 ) jb = je - order + 1
-          IF (je.EQ.jm) je = jb + order - 1
-       END IF
+          IF (JS.EQ.1 ) JS = JN - order + 1
+          IF (JN.EQ.jm) JN = JS + order - 1
+       ENDIF
 
-       kb = MAX(1 ,pc(3) - (ob2l - 1)) !non-periodic
-       ke = MIN(km,pc(3) + ob2r)
-       IF(.NOT.intz_per) THEN 
-          IF (kb.EQ.1 ) ke = kb + order - 1
-          IF (ke.EQ.km) kb = ke - order + 1
+       KB = MAX(1 ,pc(3) - (ob2l - 1)) !non-periodic
+       KTP = MIN(km,pc(3) + ob2r)
+       IF(.NOT.DES_PERIODIC_WALLS_Z) THEN 
+          IF (KB.EQ.1 ) KTP = KB + order - 1
+          IF (KTP.EQ.km) KB = KTP - order + 1
        ELSE
-          IF (kb.EQ.1 ) kb = ke - order + 1
-          IF (ke.EQ.km) ke = kb + order - 1
-       END IF
+          IF (KB.EQ.1 ) KB = KTP - order + 1
+          IF (KTP.EQ.km) KTP = KB + order - 1
+       ENDIF
        ordernewtmp = order
+       
     END SELECT
+
     IF(dimprob == 2) THEN 
-       kb = pc(3)
-       ke = pc(3)
-       !Print*,'kb,ke  =', kb,ke
+       KB = pc(3)
+       KTP = pc(3)
     ENDIF
+
+! for debugging    
+    !print*, 'order in set stencil = ', order,pc(3)
+    !Print*,'IW, IE = ', pc(1), IW, IE    
+
     IF(PRESENT(ordernew)) ordernew = ordernewtmp
 
   END SUBROUTINE set_interpolation_stencil
@@ -181,8 +207,8 @@ MODULE interpolation
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
-  SUBROUTINE interp_oned_scalar(coor,scalar,ppos,interp_scl,order,&
-       & isch, weight_pointer) 
+  SUBROUTINE interp_oned_scalar(coor,scalar,ppos,interp_scl,order, &
+      isch, weight_pointer) 
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
 
@@ -192,11 +218,12 @@ MODULE interpolation
     REAL(prcn), DIMENSION(:), INTENT(in):: coor, scalar
     REAL(prcn), INTENT(in):: ppos
     REAL(prcn), INTENT(out):: interp_scl
-    REAL(prcn), DIMENSION(:), POINTER, OPTIONAL:: weight_pointer
+    INTEGER, INTENT(in):: order
     CHARACTER*5, INTENT(in) :: isch
+    REAL(prcn), DIMENSION(:), POINTER, OPTIONAL:: weight_pointer
+
     REAL(prcn), DIMENSION(:), ALLOCATABLE:: zetacsi
-    INTEGER, Intent(in):: order
-    Integer ::  iorig, i
+    INTEGER ::  iorig, i
     REAL(prcn):: zeta
 !----------------------------------------------- 
 
@@ -288,7 +315,7 @@ MODULE interpolation
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
   SUBROUTINE interp_oned_vector(coor,vector,ppos,interp_vec,order,&
-       & fun, weight_pointer)
+      fun, weight_pointer)
 
 ! Interpolate an arbitrary sized array in one space dimension.
 ! Uses the scalar interpolation to obtain the weights.
@@ -302,9 +329,10 @@ MODULE interpolation
     REAL(prcn), DIMENSION(:,:), INTENT(in):: vector
     REAL(prcn), INTENT(in):: ppos
     REAL(prcn), DIMENSION(:), INTENT(out):: interp_vec
+    INTEGER, INTENT(in) :: order 
     CHARACTER*5 :: fun
     REAL(prcn), DIMENSION(:), POINTER, OPTIONAL:: weight_pointer
-    Integer, Intent(in) :: order 
+
     INTEGER:: vec_size, nv, i
     REAL(prcn), DIMENSION(:), POINTER:: weights_scalar
 !----------------------------------------------- 
@@ -342,8 +370,8 @@ MODULE interpolation
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-  SUBROUTINE interp_twod_scalar(coor,scalar,ppos,interp_scl,order&
-       &,isch,weight_pointer) 
+  SUBROUTINE interp_twod_scalar(coor,scalar,ppos,interp_scl,order,&
+      isch,weight_pointer) 
 
 ! Interpolate a scalar quantity in two dimensions.
 
@@ -356,11 +384,12 @@ MODULE interpolation
     REAL(prcn), DIMENSION(:,:), INTENT(in):: scalar
     REAL(prcn), DIMENSION(2), INTENT(in):: ppos
     REAL(prcn), INTENT(out):: interp_scl
-    REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
+    INTEGER, INTENT(in):: order
     CHARACTER*5, INTENT(in) :: isch
+    REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
+
     REAL(prcn), DIMENSION(:,:), ALLOCATABLE:: zetacsi
     INTEGER:: i, j, k
-    INTEGER, INTENT(in):: order
     INTEGER:: iorig
     REAL(prcn), DIMENSION(2):: zeta 
 !----------------------------------------------- 
@@ -531,8 +560,8 @@ MODULE interpolation
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-  SUBROUTINE interp_twod_vector(coor,vector,ppos,interp_vec,order&
-       &,fun,weight_pointer) 
+  SUBROUTINE interp_twod_vector(coor,vector,ppos,interp_vec,order,&
+      fun,weight_pointer) 
 
 ! Interpolate an arbitrary sized array in two dimensions.
 ! Uses the scalar interpolation to obtain the weights.
@@ -545,9 +574,10 @@ MODULE interpolation
     REAL(prcn), DIMENSION(:,:,:), INTENT(in):: coor, vector
     REAL(prcn), DIMENSION(2), INTENT(in):: ppos
     REAL(prcn), DIMENSION(:), INTENT(out):: interp_vec
-    REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
-    CHARACTER*5 :: fun
     INTEGER, INTENT(in):: order
+    CHARACTER*5 :: fun
+    REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
+
     INTEGER :: vec_size
     INTEGER:: i, j, k, nv
     REAL(prcn), DIMENSION(:,:,:), POINTER:: weights_scalar
@@ -590,8 +620,8 @@ MODULE interpolation
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
-  SUBROUTINE interp_threed_scalar(coor,scalar,ppos,interp_scl,order&
-       &,isch,weight_pointer) 
+  SUBROUTINE interp_threed_scalar(coor,scalar,ppos,interp_scl,order,&
+      isch,weight_pointer) 
 
 ! Interpolate a scalar quantity in three dimensions.
 
@@ -604,15 +634,15 @@ MODULE interpolation
     REAL(prcn), DIMENSION(:,:,:), INTENT(in):: scalar
     REAL(prcn), DIMENSION(3), INTENT(in):: ppos
     REAL(prcn), INTENT(out):: interp_scl
-    REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
+    INTEGER, INTENT(in):: order
     CHARACTER*5, INTENT(in) :: isch
+    REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
+
     REAL(prcn), DIMENSION(:,:), ALLOCATABLE:: zetacsi
     INTEGER:: i, j, k
-    INTEGER, INTENT(in):: order
     INTEGER:: iorig
     REAL(prcn) :: zeta(3), zetasph, sigma, bandwidth
-    
-    Logical :: calcwts
+    LOGICAL :: calcwts
 !-----------------------------------------------
 
     !-------
@@ -834,8 +864,8 @@ MODULE interpolation
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv    
-  SUBROUTINE interp_threed_vector(coor,vector,ppos,interp_vec,order&
-       &,fun,weight_pointer) 
+  SUBROUTINE interp_threed_vector(coor,vector,ppos,interp_vec,order,&
+      fun,weight_pointer) 
 
 ! Interpolate an arbitrary sized array in three dimensions.
 ! Uses the scalar interpolation to obtain the weights.
@@ -848,9 +878,10 @@ MODULE interpolation
     REAL(prcn), DIMENSION(:,:,:,:), INTENT(in):: coor, vector
     REAL(prcn), DIMENSION(3), INTENT(in):: ppos
     REAL(prcn), DIMENSION(:), INTENT(out):: interp_vec
-    REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
-    CHARACTER*5 :: fun
     INTEGER, INTENT(in):: order
+    CHARACTER*5 :: fun
+    REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
+
     INTEGER :: vec_size
     INTEGER:: i, j, k, nv
     REAL(prcn), DIMENSION(:,:,:), POINTER:: weights_scalar
@@ -901,14 +932,13 @@ MODULE interpolation
 ! Local variables
 !-----------------------------------------------
     REAL(prcn), DIMENSION(:,:,:,:), INTENT(in):: coor
-    !Real(prcn), Dimension(:,:,:), Intent(in):: scalar
     REAL(prcn), DIMENSION(3), INTENT(in):: ppos
-    !Real(prcn), Intent(out):: interp_scl
     REAL(prcn), DIMENSION(:,:,:,:) :: weight_pointer
-    CHARACTER(len=5), INTENT(in) :: isch
-    INTEGER:: i, j, k,kk
-    Real(prcn) :: dx1,dy1,dz1
     INTEGER, INTENT(in) :: order
+    CHARACTER(len=5), INTENT(in) :: isch
+
+    INTEGER:: i, j, k, kk
+    Real(prcn) :: dx1,dy1,dz1
     INTEGER :: iorig
     REAL(prcn):: zeta(3), zetasph, bandwidth, sigma, tmp
     REAL(prcn), DIMENSION(3,order) :: zetacsi !right now only
@@ -1110,14 +1140,13 @@ MODULE interpolation
 ! Local variables
 !-----------------------------------------------
     REAL(prcn), DIMENSION(:,:,:), INTENT(in):: coor
-    !Real(prcn), Dimension(:,:,:), Intent(in):: scalar
     REAL(prcn), DIMENSION(2), INTENT(in):: ppos
-    !Real(prcn), Intent(out):: interp_scl
     REAL(prcn), DIMENSION(:,:,:,:) :: weight_pointer
-    CHARACTER(len=5), INTENT(in) :: isch
-    INTEGER:: i, j, k,kk
-    Real(prcn) :: dx1,dy1
     INTEGER, INTENT(in) :: order
+    CHARACTER(len=5), INTENT(in) :: isch
+
+    INTEGER:: i, j, k, kk
+    REAL(prcn) :: dx1,dy1
     INTEGER :: iorig
     REAL(prcn):: zeta(3), zetasph, bandwidth, sigma, tmp
     REAL(prcn), DIMENSION(2,order) :: zetacsi !right now only
@@ -1876,11 +1905,10 @@ MODULE interpolation
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
     !USE discretelement, ONLY : scheme, interp_scheme, order,ob2l,ob2r,&
     !     & gstencil, vstencil, sstencil, wtderivp
-
+    IMPLICIT NONE 
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------     
-    IMPLICIT NONE 
     INTEGER, INTENT(in) :: choice
     INTEGER :: order_orig
 !-----------------------------------------------     
@@ -1908,38 +1936,40 @@ MODULE interpolation
     CASE("6-order")
        order = 6
     END SELECT
-    ob2l = (order+1)/2
+
+! if ob2l is even then ob2l will equal ob2r since results after decimal are
+! discarded (truncated)
+    ob2l = (order+1)/2  
     ob2r = order/2 
 
-    if(.not.allocated(gstencil)) then 
+    IF(.not.allocated(gstencil)) THEN
+! max(1*(3-dimn), order*(dimn-2)) =order (in 3D) or =1 (in 2D)            
        ALLOCATE(gstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
-    ElseIF(ALLOCATED(gstencil).AND.order_orig.NE.order) THEN 
+    ELSEIF(ALLOCATED(gstencil).AND.order_orig.NE.order) THEN 
        DEALLOCATE(gstencil) 
        ALLOCATE(gstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
-    END IF
+    ENDIF
     
-    
-    if(.not.allocated(vstencil)) then 
+    IF(.not.allocated(vstencil)) THEN
        ALLOCATE(vstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
-    elseIF(ALLOCATED(vstencil).AND.order_orig.NE.order) THEN 
+    ELSEIF(ALLOCATED(vstencil).AND.order_orig.NE.order) THEN 
        DEALLOCATE(vstencil) 
        ALLOCATE(vstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
-    END IF
+    ENDIF
 
-    if(.not.allocated(pgradstencil)) then 
+    IF(.not.allocated(pgradstencil)) THEN
        ALLOCATE(pgradstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
-    elseIF(ALLOCATED(pgradstencil).AND.order_orig.NE.order) THEN 
+    ELSEIF(ALLOCATED(pgradstencil).AND.order_orig.NE.order) THEN 
        DEALLOCATE(pgradstencil) 
        ALLOCATE(pgradstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
-    END IF
+    ENDIF
 
-    
-    if(.not.allocated(sstencil)) then 
+    IF(.not.allocated(sstencil)) THEN
        ALLOCATE(sstencil  (order,order,max(1*(3-dimn), order*(dimn-2))))
-    elseIF(ALLOCATED(sstencil).AND.order_orig.NE.order) THEN 
+    ELSEIF(ALLOCATED(sstencil).AND.order_orig.NE.order) THEN 
        DEALLOCATE(sstencil) 
        ALLOCATE(sstencil  (order,order,max(1*(3-dimn), order*(dimn-2))))
-    END IF
+    ENDIF
     
   END SUBROUTINE set_interpolation_scheme
 
