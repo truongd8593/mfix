@@ -40,6 +40,12 @@
          CALL MFIX_EXIT(myPE)
       ENDIF
 
+      IF ( (DES_PERIODIC_WALLS_X .OR. DES_PERIODIC_WALLS_Z .OR. &
+            DES_PERIODIC_WALLS_Z) .AND. .NOT.DES_PERIODIC_WALLS) THEN
+         DES_PERIODIC_WALLS = .TRUE.
+         WRITE(UNIT_LOG, 1017)
+      ENDIF
+
       IF(DES_PERIODIC_WALLS) THEN
          IF(.NOT.DES_PERIODIC_WALLS_X .AND. .NOT.DES_PERIODIC_WALLS_Y .AND. &
             .NOT.DES_PERIODIC_WALLS_Z) THEN
@@ -56,6 +62,7 @@
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDIF
+
 ! Code commented since inlet_outlet option is not working in the current code. Dec 04 2008 (sof)
 !      IF(INLET_OUTLET) THEN
 !         IF(.NOT.INLET_OUTLET_X .AND. .NOT.INLET_OUTLET_Y .AND. &
@@ -153,27 +160,27 @@
          ENDIF
          IF(KT_FAC .NE. UNDEFINED) THEN
             IF(KT_FAC > ONE .OR. KT_FAC < ZERO) THEN
-               WRITE (UNIT_LOG, 1017)
+               WRITE (UNIT_LOG, 1016)
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
          IF(KT_W_FAC .NE. UNDEFINED) THEN
             IF(KT_W_FAC > ONE .OR. KT_W_FAC < ZERO) THEN
-               WRITE (UNIT_LOG, 1017)
+               WRITE (UNIT_LOG, 1016)
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
 ! check for tangential damping factor
          IF(DES_ETAT_FAC == UNDEFINED) THEN
-            WRITE (UNIT_LOG, 1011)
+            WRITE (UNIT_LOG, 1010)
          ELSEIF(DES_ETAT_FAC > ONE .OR. DES_ETAT_FAC < ZERO) THEN
-            WRITE (UNIT_LOG, 1016)
+            WRITE (UNIT_LOG, 1015)
             CALL MFIX_EXIT(myPE)
          ENDIF
          IF(DES_ETAT_W_FAC == UNDEFINED) THEN
-            WRITE (UNIT_LOG, 1012)
+            WRITE (UNIT_LOG, 1011)
          ELSEIF(DES_ETAT_W_FAC > ONE .OR. DES_ETAT_W_FAC < ZERO) THEN
-            WRITE (UNIT_LOG, 1016)
+            WRITE (UNIT_LOG, 1015)
             CALL MFIX_EXIT(myPE)
          ENDIF
 ! if following are assigned warn user they are discarded
@@ -201,7 +208,7 @@
       ENDDO
       DO M = 1, MMAX+MMAX*(MMAX-1)/2
          IF(DES_EN_INPUT(M) > ONE .OR. DES_EN_INPUT(M) < ZERO) THEN
-            WRITE (UNIT_LOG, 1013)
+            WRITE (UNIT_LOG, 1012)
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDDO
@@ -209,20 +216,20 @@
 ! check particle-wall normal restitution coefficient
       DO M = 1, MMAX
          IF(DES_EN_WALL_INPUT(M) == UNDEFINED) THEN
-            WRITE (UNIT_LOG, 1010)
+            WRITE (UNIT_LOG, 1009)
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDDO
       DO M = 1, MMAX
          IF(DES_EN_WALL_INPUT(M) > ONE .OR. DES_EN_WALL_INPUT(M) < ZERO) THEN
-            WRITE (UNIT_LOG, 1014)
+            WRITE (UNIT_LOG, 1013)
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDDO
 
 ! check coefficient friction 
       IF(MEW > ONE .OR. MEW_W > ONE .OR. MEW < ZERO .OR. MEW_W < ZERO) THEN
-         WRITE (UNIT_LOG, 1015)
+         WRITE (UNIT_LOG, 1014)
          CALL MFIX_EXIT(myPE)
       END IF
 
@@ -259,31 +266,37 @@
          'Particle-particle restitution coefficient DES_EN_INPUT(M)',/10X,&
          'Must be specified in mfix.dat for interactions M = 1 to ',I5,&
           /1X,70('*')/)
- 1010 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+ 1009 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Particle-wall restitution coefficients DES_EN_WALL_INPUT(M),'/10X,&
          'Must be specified in mfix.dat for interactions M = 1 to MMAX',/1X,70('*')/)
- 1011 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+ 1010 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: Tangential damping factors DES_ETAT_FAC not ',&
          'specified in',/,10X, 'mfix.dat. This factor will be set in ',&
          'cfassign.f as 1/2 based on:',/,10X, 'Silbert et al, 2003, ',&
          'Physics of Fluids, vol. 15-1, see page 3',/1X,70('*')/)
- 1012 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+ 1011 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: Tangential damping factors DES_ETAT_W_FAC not ',&
          'specified in mfix.dat',/,10X,'This factor will be set in ',&
          'cfassign.f as 1/2 based on:',/,10X,'Silbert et al, 2003,',&
          'Physics of Fluids, vol. 15-1, see page 3',/1X,70('*')/)
- 1013 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+ 1012 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Unphysical ( > 1 or < 0) values of DES_EN_INPUT(M)',/1X,70('*')/)
- 1014 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+ 1013 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Unphysical ( > 1 or < 0) values of DES_EN_WALL_INPUT(M)',/1X,70('*')/)
- 1015 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+ 1014 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Unphysical ( > 1 or < 0) values of friction coefficients',/1X,70('*')/)
- 1016 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+ 1015 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Values of DES_ETAT_FAC or DES_ETAT_W_FAC unphysical ',/10X,&
          '(< 0 or > 1) defined in mfix.dat',/1X,70('*')/)
- 1017 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+ 1016 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Values of KT_FAC or KT_W_FAC unphysical (< 0 or > 1) ',/10X,&
          'defined in mfix.dat',/1X,70('*')/)
+
+ 1017 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'WARNING: A direction of periodicity was defined (i.e. ',/10X,&
+         'DES_PERIODIC_WALLS_ X, Y or Z=T) but DES_PERIODIC_WALLS ',&
+         'was set to F.',/,10X,&
+         'So the latter was reset to T for consistency.',/1X,70('*')/)
 
  1018 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: nsquare neighbor search may be slow with periodic',/10X,&
