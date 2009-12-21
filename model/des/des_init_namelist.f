@@ -55,9 +55,6 @@
       DES_PERIODIC_WALLS_X = .FALSE.
       DES_PERIODIC_WALLS_Y = .FALSE.
       DES_PERIODIC_WALLS_Z = .FALSE.
-      intx_per = .false.
-      inty_per = .false.
-      intz_per = .false.
       INLET_OUTLET = .FALSE.
       INLET_OUTLET_X = .FALSE.
       INLET_OUTLET_Y = .FALSE.

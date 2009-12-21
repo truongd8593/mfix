@@ -198,19 +198,24 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IPJPK, IPJKP, IJPKP&
-         &, IPJPKP
-      INTEGER L, LL, I, J, K, KK, M, MM, IJK, IER
+      INTEGER IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IPJPK, IPJKP, IJPKP, &
+              IPJPKP, IJK
+      INTEGER I, J, K, II, JJ, KK, IJK_IMAX1, IJK_JMAX1, IJK_KMAX1
+      INTEGER IW, IE, JS, JN, KB, KTP
 
-      DOUBLE PRECISION TEMP1, TEMP2, AVG_FACTOR, AVG_FACTOR2
-      DOUBLE PRECISION UGC, VGC, WGC
-      DOUBLE PRECISION OEPS, OVOL
+! local variables to temporarily store gas velocities near periodic boundaries      
+      DOUBLE PRECISION TEMP_U_G_X(JMAX2, KMAX2),&
+         TEMP_V_G_X(JMAX2,KMAX2), TEMP_W_G_X(JMAX2, KMAX2)
+      DOUBLE PRECISION TEMP_U_G_Y(IMAX2, KMAX2),&
+         TEMP_V_G_Y(IMAX2,KMAX2), TEMP_W_G_Y(IMAX2, KMAX2)
+      DOUBLE PRECISION TEMP_U_G_Z(IMAX2, JMAX2),&
+          TEMP_V_G_Z(IMAX2,JMAX2), TEMP_W_G_Z(IMAX2, JMAX2)
+
+      DOUBLE PRECISION AVG_FACTOR, AVG_FACTOR2
 
       INTEGER, DIMENSION(3):: PCELL
-      INTEGER:: ONEW,PART_IJK
-      INTEGER:: IB, IE, JB, JE, KB, KE, II,JJ, IJK_EAST
-      DOUBLE PRECISION:: EPS_P, VCELL, TEMP_U_G(JMAX2)
-      INTEGER:: NP, IJK_PER, IJKP_PER
+      INTEGER ONEW
+      INTEGER NP, M
 !-----------------------------------------------  
       
       INCLUDE 'function.inc'
@@ -225,62 +230,109 @@
          'Setting the initial particle velocity equal ',&
          'to the local fluid velocity'
       
-      K = 1
-      J = JMAX1
-      
-      DO I = 1, IMAX1
-         IJK = funijk(I,J,K)
-         IJK_EAST = funijk(I,JMAX2,K)
-         PRINT*,'UG = ', U_G(IJK), U_G(IJK_EAST)
-      ENDDO
+      IF (DES_PERIODIC_WALLS) THEN
+         IF(DES_PERIODIC_WALLS_X) THEN 
+            I = 1   ! ghost cell
+            DO J = 1, JMAX2
+               DO K = 1, KMAX2
+                  IJK = funijk(I,J,K)
+                  IJK_IMAX1 = funijk(IMAX1,J,K)   ! imax1=fluid cell
+                  TEMP_U_G_X(J,K) = U_G(IJK) 
+                  U_G(IJK) = U_G(IJK_IMAX1)
+                  TEMP_V_G_X(J,K) = V_G(IJK) 
+                  V_G(IJK) = V_G(IJK_IMAX1)
+                  IF(DIMN.EQ.3) THEN
+                     TEMP_W_G_X(J,K) = W_G(IJK) 
+                     W_G(IJK) = W_G(IJK_IMAX1)
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDIF
+         IF(DES_PERIODIC_WALLS_Y) THEN
+            J = 1   ! ghost cell
+            DO I = 1, IMAX2
+               DO K = 1, KMAX2
+                  IJK = funijk(I,J,K)
+                  IJK_JMAX1 = funijk(I,JMAX1,K)   ! jmax1=fluid cell
+                  TEMP_U_G_Y(I,K) = U_G(IJK) 
+                  U_G(IJK) = U_G(IJK_JMAX1)
+                  TEMP_V_G_Y(I,K) = V_G(IJK) 
+                  V_G(IJK) = V_G(IJK_JMAX1)
+                  IF(DIMN.EQ.3) THEN 
+                     TEMP_W_G_Y(I,K) = W_G(IJK) 
+                     W_G(IJK) = W_G(IJK_JMAX1)
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDIF 
+         IF(DES_PERIODIC_WALLS_Z .AND. DIMN .EQ. 3) THEN
+            K = 1   ! ghost cell
+            DO J = 1, JMAX2
+               DO I = 1, IMAX2
+                  IJK = funijk(I,J,K)
+                  IJK_KMAX1 = funijk(I,J,KMAX1)   ! kmax1=fluid cell
+                  TEMP_U_G_Z(I,J) = U_G(IJK) 
+                  U_G(IJK) = U_G(IJK_KMAX1)
+                  TEMP_V_G_Z(I,J) = V_G(IJK) 
+                  V_G(IJK) = V_G(IJK_KMAX1)
+                  TEMP_W_G_Z(I,J) = W_G(IJK) 
+                  W_G(IJK) = W_G(IJK_KMAX1)
+               ENDDO
+            ENDDO
+         ENDIF 
+      ENDIF   ! end if des_periodic_wallsF
 
-      IF(INTX_PER) THEN 
-         I = 1
-         K = 1
-         DO J = 1, JMAX2            
-            IJK = funijk(I,J,K)
-            IJK_EAST = funijk(IMAX1, J, K)
-            TEMP_U_G(J) = U_G(IJK) 
-            U_G(IJK) = U_G(IJK_EAST)
-         ENDDO
-      ENDIF
-      CALL set_interpolation_scheme(2)
-      
+! sets several quantities including interp_scheme, scheme, and order and
+! allocates arrays necessary for interpolation
+      CALL SET_INTERPOLATION_SCHEME(2)
+
+! avg_factor =0.25  (in 3D) or =0.50 (in 2D)  
+! avg_factor2=0.125 (in 3D) or =0.25 (in 2D)  
       AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
       AVG_FACTOR2 = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)
       
       DO NP = 1, PARTICLES
-         ! CALCUALTE THE DRAG FORCE ON EACH PARTICLE USING THE PARTICLE VELOCITY
+
          I = PIJK(NP, 1)
          J = PIJK(NP, 2)
          K = PIJK(NP, 3)
          
-         IJK = PIJK(NP, 4)
-         M = PIJK(NP,5)
-         
-         PART_IJK = PINC(IJK)
-         
          PCELL(1) = I-1
          PCELL(2) = J-1
          PCELL(3) = (3-DIMN)*1+(DIMN-2)*(K-1)
-         
-         CALL SET_INTERPOLATION_STENCIL(PCELL, IB, IE, JB, JE, KB,&
-         &KE, INTERP_SCHEME, DIMN, ORDERNEW = ONEW) 
+
+! setup the stencil based on the order of interpolation and factoring in
+! whether the system has any periodic boundaries. sets onew to order.         
+         CALL SET_INTERPOLATION_STENCIL(PCELL, IW, IE, JS, JN, KB, &
+            KTP, INTERP_SCHEME, DIMN, ORDERNEW = ONEW) 
+
          DO K = 1, (3-DIMN)*1+(DIMN-2)*ONEW
             DO J = 1, ONEW
                DO I = 1, ONEW
-                  II = IB+I-1
-                  JJ = JB+J-1
+                  II = IW+I-1
+                  JJ = JS+J-1
                   KK = KB+K-1
+
                   GSTENCIL(I,J,K,1) = XE(II)
                   GSTENCIL(I,J,K,2) = YN(JJ)
+! =K-1 (in 3D) or =1 (in 2D)
                   GSTENCIL(I,J,K,3) = ZT(KK)*(DIMN-2) + DZ(1)*(3-DIMN)
-                  IF(II.LT.1.and.intx_per) II = IMAX1+II
-                  IF(II.GT.IMAX1.and.intx_per) II = II-IMAX1
-                  IF(JJ.LT.1.and.inty_per) JJ = JMAX1+JJ
-                  IF(JJ.GT.JMAX1.and.inty_per) JJ = JJ-JMAX1
-                  IF(KK.LT.1.and.intz_per) KK = KMAX1+KK
-                  IF(KK.GT.KMAX1.and.intz_per) KK = KK-KMAX1
+
+! adjust for periodic boundaries
+                  IF (DES_PERIODIC_WALLS) THEN
+                     IF (DES_PERIODIC_WALLS_X) THEN
+                        IF(II.LT.1)     II = IMAX1+II-1
+                        IF(II.GT.IMAX1) II = II-IMAX1+1
+                     ENDIF
+                     IF (DES_PERIODIC_WALLS_Y) THEN
+                        IF(JJ.LT.1)     JJ = JMAX1+JJ-1
+                        IF(JJ.GT.JMAX1) JJ = JJ-JMAX1+1
+                     ENDIF
+                     IF (DIMN.EQ.3 .AND. DES_PERIODIC_WALLS_Z) THEN
+                        IF(KK.LT.1)     KK = KMAX1+KK-1
+                        IF(KK.GT.KMAX1) KK = KK-KMAX1+1
+                     ENDIF
+                  ENDIF
 
                   IJK = FUNIJK(II,JJ,KK)
                   
@@ -292,53 +344,78 @@
                   IPJPK = JP_OF(IPJK)
                   IPJPKP = KP_OF(IPJPK)                  
                   
-                  vstencil(i,j,k,1) = AVG_FACTOR*( u_g(ijk) + u_g(ijpk)&
-                  & + (u_g(ijkp) + u_g(ijpkp))*(dimn-2) )
+                  vstencil(i,j,k,1) = AVG_FACTOR*( u_g(ijk) + u_g(ijpk) &
+                     + (u_g(ijkp) + u_g(ijpkp))*(DIMN-2) )
                   
                   vstencil(i,j,k,2) = AVG_FACTOR*( v_g(ijk) + v_g(ipjk)&
-                  & + (v_g(ijkp) + v_g(ipjkp))*(dimn-2) )
+                     + (v_g(ijkp) + v_g(ipjkp))*(DIMN-2) )
                   
-                  if(dimn.eq.3) then 
+                  IF(DIMN.EQ.3) THEN 
                      vstencil(i,j,k,3) = AVG_FACTOR*(w_g(ijk) +&
-                     & w_g(ijpk) + w_g(ipjk) + w_g(ipjpk) ) 
-                  else 
-                     vstencil(i,j,k,3) = 0.d0 !doesn't matter what
-                                ! ever value is put here
-                  endif                  
+                        w_g(ijpk) + w_g(ipjk) + w_g(ipjpk) ) 
+                  ELSE 
+! doesn't matter what value is put here                          
+                     vstencil(i,j,k,3) = 0.d0 
+                  ENDIF                  
                   
                ENDDO
             ENDDO
          ENDDO
          
-                                !PRINT*, 'VSTENCIL = ', VSTENCIL(1:ONEW, 1:ONEW, 1:ONEW, 1:DIMN)
-         if(dimn.eq.2) then 
-            CALL interpolator(gstencil(1:onew,1:onew,1,1:dimn)&
-            &,vstencil(1:onew,1:onew,1,1:2),DES_POS_NEW(np,&
-            & 1:2),vel_fp(np,1:2),onew&  
-            &,Interp_scheme,weightp)
-            
-         else 
-            CALL interpolator(gstencil(1:onew,1:onew,1:onew,1:dimn)&
-            &,vstencil(1:onew,1:onew,1:onew,1:dimn)&
-            &,DES_POS_NEW(np, 1:3),vel_fp(np,1:3),onew&
-            &,interp_scheme,weightp)   
-         end if
-                                !Print*,'Np = ', PCELL(:), vel_fp(np,1:dimn)
+         IF(DIMN.EQ.2) THEN
+            CALL interpolator( gstencil(1:onew,1:onew,1,1:DIMN), &
+               vstencil(1:onew,1:onew,1,1:2), &
+               DES_POS_NEW(np,1:2), vel_fp(np,1:2), &
+               onew, interp_scheme, weightp)
+         ELSE
+            CALL interpolator( gstencil(1:onew,1:onew,1:onew,1:DIMN), &
+               vstencil(1:onew,1:onew,1:onew,1:DIMN), &
+               DES_POS_NEW(np, 1:3),vel_fp(np,1:3), &
+               onew, interp_scheme, weightp )   
+         ENDIF
          
          DES_VEL_NEW(NP,:) = VEL_FP(NP,:)
          DES_VEL_OLD(NP,:) = VEL_FP(NP,:)
-                                !Print*,'Np = ', PCELL(:), DES_VEL_NEW(np,1:dimn)
          
-      END DO
+      ENDDO
       
-      IF(INTX_PER) THEN 
-         I = 1
-         K = 1         
-         DO J = 1, JMAX2
-            IJK = funijk(I,J,K)
-            U_G(IJK) = TEMP_U_G(J)
-         ENDDO
-      ENDIF
+! reset the velocities which were previously adjusted for periodic boundaries
+      IF (DES_PERIODIC_WALLS) THEN      
+         IF(DES_PERIODIC_WALLS_X) THEN 
+            I = 1
+            DO J = 1, JMAX2
+               DO K = 1, KMAX2
+                  IJK = funijk(I,J,K)
+                  U_G(IJK) = TEMP_U_G_X(J,K)
+                  V_G(IJK) = TEMP_V_G_X(J,K)
+                  IF(DIMN.EQ.3) W_G(IJK) = TEMP_W_G_X(J,K)
+               ENDDO
+            ENDDO
+         ENDIF
+         IF(DES_PERIODIC_WALLS_Y) THEN 
+            J = 1
+            DO K = 1, KMAX2
+               DO I = 1, IMAX2
+                  IJK = funijk(I,J,K)
+                  U_G(IJK) = TEMP_U_G_Y(I,K)
+                  V_G(IJK) = TEMP_V_G_Y(I,K)
+                  IF(DIMN.EQ.3) W_G(IJK) = TEMP_W_G_Y(I,K)
+               ENDDO
+            ENDDO
+         ENDIF 
+         IF(DES_PERIODIC_WALLS_Z.AND.DIMN.EQ.3) THEN 
+            K = 1
+            DO J = 1, JMAX2
+               DO I = 1, IMAX2
+                  IJK = funijk(I,J,K)
+                  U_G(IJK) = TEMP_U_G_Z(I,J)
+                  V_G(IJK) = TEMP_V_G_Z(I,J)
+                  W_G(IJK) = TEMP_W_G_Z(I,J)
+               ENDDO
+            ENDDO
+         ENDIF 
+      ENDIF   ! end if des_periodic_walls
+
 
       WRITE(*,'(7X,A)')&
          '<---------- END SET_INITIAL_VELOCITY ----------'   

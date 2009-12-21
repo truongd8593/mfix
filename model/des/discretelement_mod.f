@@ -171,8 +171,6 @@
       LOGICAL DES_PERIODIC_WALLS_X
       LOGICAL DES_PERIODIC_WALLS_Y
       LOGICAL DES_PERIODIC_WALLS_Z
-! duplicate of above, todo: will need to make consistent throughout      
-      LOGICAL:: intx_per, inty_per, intz_per
 
 !     Inlet Outlet BC 
       LOGICAL INLET_OUTLET
