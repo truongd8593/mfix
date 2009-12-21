@@ -15,7 +15,6 @@
 !  also changed. Depending on the choice, once can obtain drag force   
 !  based on local velocities or averaged velocities
 !
-!   
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE DRAG_FGS
       
@@ -46,30 +45,64 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------         
-! Logical to decide if to calculate darg forces on particles
-      LOGICAL :: focus
-      INTEGER IJKFOCUS, FOCUS_PARTICLE2
-
-      INTEGER IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IPJPK, IPJKP, IJPKP, &
-              IPJPKP, IJK_EAST, IJK_NORTH, IJK_TOP
-      INTEGER L, LL, I, J, K, M, IJK, IER
+! local variable used for debugging
+      LOGICAL FOCUS 
 
       DOUBLE PRECISION P_FORCE(DIMENSION_3,DIMN), D_FORCE(DIMN)
+      DOUBLE PRECISION drag_bm_tmp(DIMN)
 
-      DOUBLE PRECISION TEMP_U_G(JMAX2, KMAX2), TEMP_V_G(IMAX2,KMAX2), TEMP_W_G(IMAX2, JMAX2)
-      DOUBLE PRECISION TEMP1, TEMP2, AVG_FACTOR, AVG_FACTOR2
+! temporary variables used to calculate pressure at scalar cell edge      
+      DOUBLE PRECISION TEMP1, TEMP2
+
+! average fluid velocity in x, y, z direction at scalar cell center      
       DOUBLE PRECISION UGC, VGC, WGC
-      DOUBLE PRECISION OEPS, OVOL, F_pf(DIMN), drag_bm_tmp(DIMN)
 
+! local variables to temporarily store gas velocities near periodic boundaries      
+      DOUBLE PRECISION TEMP_U_G_X(JMAX2, KMAX2),&
+         TEMP_V_G_X(JMAX2,KMAX2), TEMP_W_G_X(JMAX2, KMAX2)
+      DOUBLE PRECISION TEMP_U_G_Y(IMAX2, KMAX2),&
+         TEMP_V_G_Y(IMAX2,KMAX2), TEMP_W_G_Y(IMAX2, KMAX2)
+      DOUBLE PRECISION TEMP_U_G_Z(IMAX2, JMAX2),&
+          TEMP_V_G_Z(IMAX2,JMAX2), TEMP_W_G_Z(IMAX2, JMAX2)
+
+! indices used with periodic boundaries
+      INTEGER IJK_IMAX1, IJK_JMAX1, IJK_KMAX1
+
+! general i, j, k indices
+      INTEGER I, J, K, IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
+              IPJPK, IPJKP, IJPKP, IPJPKP, II, JJ, KK
+
+! i,j,k indices of the fluid cell the particle resides in minus 1 
+! (e.g., shifted 1 in west, south, bottom direction)
       INTEGER, DIMENSION(3):: PCELL
-      INTEGER :: ONEW,PART_IJK
-      INTEGER :: IB, IE, JB, JE, KB, KE, II, JJ, KK
-      DOUBLE PRECISION, DIMENSION(3) :: DRAG_P 
-      DOUBLE PRECISION :: EPS_P, VCELL
-      INTEGER :: NP
 
-! Accounted for particles      
-      INTEGER PC             
+! indices used for interpolation stencil (unclear why IE, JN, KTP are
+! needed)
+      INTEGER IW, IE, JS, JN, KB, KTP
+
+! order of interpolation set in the call to set_interpolation_scheme unless it
+! is re/set later through the call to set_interpolation_stencil
+      INTEGER :: ONEW
+
+! constant whose value depends on dimension of system      
+      DOUBLE PRECISION AVG_FACTOR     
+
+! index of solid phase that particle NP belongs to      
+      INTEGER M
+
+! volume of fluid cell particle resides in
+      DOUBLE PRECISION VCELL
+! one over the solids volume fraction and one over the volume       
+      DOUBLE PRECISION OEPS, OVOL 
+
+! particle number index, used for looping      
+      INTEGER NP
+
+! index to track accounted for particles 
+      INTEGER PC 
+
+! for error messages      
+      INTEGER IER
 !-----------------------------------------------   
 
       INCLUDE 'function.inc'
@@ -77,15 +110,17 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
-      
-      FOCUS_PARTICLE2 = 400000
 
-!DO I = 1, IMAX1
-!   IJK = funijk(I,JMAX1,1)
-!   IJK_EAST = funijk(I,JMAX2,1)
-!   IF(CALLFROMDES) PRINT*,'UG = ', U_G(IJK), U_G(IJK_EAST), (U_G(IJK)+U_G(IJK_EAST))/2.d0
-!ENDDO
+! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
+      AVG_FACTOR = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)   
 
+! if calc_fc is true, then the contact forces (FC) will be updated 
+! to include gas-solids drag and gas pressure force on the particle
+! in this section the gas pressure force on the particle is computed.
+! if the user did not specify using an interpolated drag force (i.e.,
+! des_interp_on=t), then the gas solid drag force on the particle is
+! also computed based on cell average quantities
+!-----------------------------------------------      
       IF(CALC_FC) THEN 
          DO IJK = IJKSTART3, IJKEND3
             I = I_OF(IJK)
@@ -98,8 +133,12 @@
             IJKM = KM_OF(IJK)
             IJKP = KP_OF(IJK)
 
+! todo: fix interpolation of p_force points for consistency with mfix
+! and to allow non-uniform grids            
             IF(PINC(IJK).GT.0) THEN
-               IF(I.EQ.IMIN1) THEN
+               IF(IMIN1.EQ.IMAX1) THEN
+                  P_FORCE(IJK,1) = ZERO
+               ELSEIF(I.EQ.IMIN1) THEN
                   TEMP2 = (P_G(IJK)+P_G(IPJK))/2
                   TEMP1 = (P_G(IJK)*DX(I) - TEMP2*DX(I)/2)/(DX(I)/2)
                   P_FORCE(IJK,1) = (TEMP1-TEMP2)*DY(J)*DZ(K )
@@ -112,7 +151,9 @@
                   TEMP1 = (P_G(IMJK)+P_G(IJK))/2
                   P_FORCE(IJK,1) = (TEMP1 - TEMP2)*DY(J)*DZ(K)
                ENDIF
-               IF(J.EQ.JMIN1) THEN
+               IF(JMIN1.EQ.JMAX1) THEN
+                  P_FORCE(IJK,2) = ZERO
+               ELSEIF(J.EQ.JMIN1) THEN
                   TEMP2 = (P_G(IJK)+P_G(IJPK))/2
                   TEMP1 = (P_G(IJK)*DY(J) - TEMP2*DY(J)/2)/(DY(J)/2)
                   P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K)
@@ -126,7 +167,9 @@
                   P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K)
                ENDIF
                IF(DIMN.EQ.3) THEN
-                  IF(K.EQ.KMIN1) THEN
+                  IF(KMIN1.EQ.KMAX1) THEN
+                     P_FORCE(IJK,3) = ZERO
+                  ELSEIF(K.EQ.KMIN1) THEN
                      TEMP2 = (P_G(IJK)+P_G(IJKP))/2
                      TEMP1 = (P_G(IJK)*DZ(K) - TEMP2*DZ(K)/2)/(DZ(K)/2)
                      P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J)
@@ -142,18 +185,19 @@
                ENDIF
 
                IF (.NOT. DES_INTERP_ON) THEN
+! average fluid velocity at scalar cell center
                   UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
                   VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
                   DO M = 1, MMAX
                      IF(EP_S(IJK,M).GT.ZERO) THEN
                         SOLID_DRAG(IJK,M,1) = -F_GS(IJK,M)*&
-                        (DES_U_S(IJK,M)-UGC)
+                           (DES_U_S(IJK,M)-UGC)
                         SOLID_DRAG(IJK,M,2) = -F_GS(IJK,M)*&
-                        (DES_V_S(IJK,M)-VGC)
+                           (DES_V_S(IJK,M)-VGC)
                         IF(DIMN.EQ.3) THEN
                            WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
                            SOLID_DRAG(IJK,M,3) = -F_GS(IJK,M)*&
-                           (DES_W_S(IJK,M)-WGC)
+                              (DES_W_S(IJK,M)-WGC)
                         ENDIF
                         OEPS = ONE/EP_S(IJK,M)
                         SOLID_DRAG(IJK,M,:) = SOLID_DRAG(IJK,M,:)*OEPS
@@ -163,8 +207,13 @@
             ENDIF      ! end IF(PINC(IJK).GT.0)
          ENDDO         ! end do loop over ijk
       ENDIF            ! end IF(CALC_FC)
+!----------------------------------------------- 
 
 
+! update the contact forces (FC) on the particle to include gas pressure
+! and gas-solids drag (this section is performed when drag is not interpolated -
+! otherwise code further down is used for updating FC)
+!-----------------------------------------------
       IF(CALC_FC .AND. .NOT.DES_INTERP_ON) THEN
          PC = 1              
          DO NP = 1, MAX_PIS
@@ -173,119 +222,181 @@
             IJK = PIJK(NP,4)
             M = PIJK(NP,5)
             OVOL = ONE/VOL(IJK)
-            FC(NP,:)=FC(NP,:)  + (SOLID_DRAG(IJK,M,:)*PVOL(NP)) 
-            FC(NP,:) = FC(NP,:) + (P_FORCE(IJK,:)*OVOL)*PVOL(NP) 
+            FC(NP,:) = FC(NP,:) + (SOLID_DRAG(IJK,M,:)*PVOL(NP)) 
+            FC(NP,:) = FC(NP,:) + (P_FORCE(IJK,:)*OVOL)*PVOL(NP)
             PC = PC + 1
          ENDDO
       ENDIF
+!----------------------------------------------- 
 
 
+! this section is used to calculate the gas solids drag force on each particle
+! using particle velocity and the fluid velocity interpolated to particle
+! position
+!-----------------------------------------------      
       IF(DES_INTERP_ON) THEN 
 
-         IF(INTX_PER) THEN 
-            I = 1
-            DO J = 1, JMAX2
-               DO K = 1, KMAX2
-                  IJK = funijk(I,J,K)
-                  IJK_EAST = funijk(IMAX1, J, K)
-                  TEMP_U_G(J,K) = U_G(IJK) 
-                  U_G(IJK) = U_G(IJK_EAST)
+! when periodic boundaries are used some care needs to be taken when
+! the velocity adjacent to a ghost cell is interpolated as the velocity
+! in a ghost cell is undefined. therefore the velocity in ghost cells
+! along the west, south and bottom edges is temporarily set to the 
+! velocity of the fluid cell adjacent to the opposing boundary so that
+! the velocity will be interpolated correctly.  the velocity in ghost
+! cells along the east, north and top edges does not need to be set
+! since these particular cells are never explictly indexed in the
+! interpolation routines.  the velocities are reset at the end.
+         IF (DES_PERIODIC_WALLS) THEN
+            IF(DES_PERIODIC_WALLS_X) THEN 
+               I = 1   ! ghost cell
+               DO J = 1, JMAX2
+                  DO K = 1, KMAX2
+                     IJK = funijk(I,J,K)
+                     IJK_IMAX1 = funijk(IMAX1,J,K)   ! imax1=fluid cell
+                     TEMP_U_G_X(J,K) = U_G(IJK) 
+                     U_G(IJK) = U_G(IJK_IMAX1)
+                     TEMP_V_G_X(J,K) = V_G(IJK) 
+                     V_G(IJK) = V_G(IJK_IMAX1)
+                     IF(DIMN.EQ.3) THEN
+                        TEMP_W_G_X(J,K) = W_G(IJK) 
+                        W_G(IJK) = W_G(IJK_IMAX1)
+                     ENDIF
+                  ENDDO
                ENDDO
-            ENDDO
-         ENDIF
-         IF(INTY_PER) THEN 
-            J = 1
-            DO I = 1, IMAX2
-               DO K = 1, KMAX2
-                  IJK = funijk(I,J,K)
-                  IJK_NORTH = funijk(I, JMAX1, K)
-                  TEMP_V_G(I,K) = V_G(IJK) 
-                  V_G(IJK) = V_G(IJK_NORTH)
-               ENDDO
-            ENDDO
-         ENDIF 
-         IF(INTZ_PER.AND.DIMN.EQ.3) THEN 
-            K = 1
-            DO J = 1, JMAX2
+            ENDIF
+            IF(DES_PERIODIC_WALLS_Y) THEN
+               J = 1   ! ghost cell
                DO I = 1, IMAX2
-                  IJK = funijk(I,J,K)
-                  IJK_TOP = funijk(I, J, KMAX1)
-                  TEMP_W_G(I,J) = W_G(IJK) 
-                  W_G(IJK) = W_G(IJK_TOP)
+                  DO K = 1, KMAX2
+                     IJK = funijk(I,J,K)
+                     IJK_JMAX1 = funijk(I,JMAX1,K)   ! jmax1=fluid cell
+                     TEMP_U_G_Y(I,K) = U_G(IJK) 
+                     U_G(IJK) = U_G(IJK_JMAX1)
+                     TEMP_V_G_Y(I,K) = V_G(IJK) 
+                     V_G(IJK) = V_G(IJK_JMAX1)
+                     IF(DIMN.EQ.3) THEN 
+                        TEMP_W_G_Y(I,K) = W_G(IJK) 
+                        W_G(IJK) = W_G(IJK_JMAX1)
+                     ENDIF
+                  ENDDO
                ENDDO
-            ENDDO
-         ENDIF 
+            ENDIF 
+            IF(DES_PERIODIC_WALLS_Z .AND. DIMN .EQ. 3) THEN
+               K = 1   ! ghost cell
+               DO J = 1, JMAX2
+                  DO I = 1, IMAX2
+                     IJK = funijk(I,J,K)
+                     IJK_KMAX1 = funijk(I,J,KMAX1)   ! kmax1=fluid cell
+                     TEMP_U_G_Z(I,J) = U_G(IJK) 
+                     U_G(IJK) = U_G(IJK_KMAX1)
+                     TEMP_V_G_Z(I,J) = V_G(IJK) 
+                     V_G(IJK) = V_G(IJK_KMAX1)
+                     TEMP_W_G_Z(I,J) = W_G(IJK) 
+                     W_G(IJK) = W_G(IJK_KMAX1)
+                  ENDDO
+               ENDDO
+            ENDIF 
+         ENDIF   ! end if des_periodic_walls
 
+
+! sets several quantities including interp_scheme, scheme, and order and
+! allocates arrays necessary for interpolation
          CALL SET_INTERPOLATION_SCHEME(2)
 
-         AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
-         AVG_FACTOR2 = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)
-         DRAG_AM = ZERO
-         DRAG_BM = ZERO
-         wtbar = zero
+         drag_am = ZERO
+         drag_bm = ZERO
+         WTBAR = zero
 
          PC = 1
          DO NP = 1, MAX_PIS
             IF(PC .GT. PIS) EXIT
             IF (.NOT.PEA(NP,1)) CYCLE
             FOCUS = .FALSE.
-! CALCUALTE THE DRAG FORCE ON EACH PARTICLE USING THE PARTICLE VELOCITY
+        
             I = PIJK(NP, 1)
             J = PIJK(NP, 2)
             K = PIJK(NP, 3)
-            IJK = PIJK(NP, 4)
 
-            M = PIJK(NP,5)
-            PART_IJK = PINC(IJK)
-         
-            OVOL = ONE/VOL(IJK)
+! generally a particle may not exist in a ghost cell. however, if the
+! particle is adjacent to the west, south or bottom boundary, then pcell
+! may be assigned indices of a ghost cell which will be passed to
+! set_interpolation_stencil
             PCELL(1) = I-1
             PCELL(2) = J-1
-            PCELL(3) = (3-DIMN)*1+(DIMN-2)*(K-1)
-         
-            CALL SET_INTERPOLATION_STENCIL(PCELL, IB, IE, JB, JE, KB,&
-               &KE, INTERP_SCHEME, DIMN, ORDERNEW = ONEW) 
+            PCELL(3) = (3-DIMN)*1+(DIMN-2)*(K-1)  ! =K-1 (in 3D) or =1 (in 2D)
 
-            IF(NP.EQ.FOCUS_PARTICLE2) THEN 
+! setup the stencil based on the order of interpolation and factoring in
+! whether the system has any periodic boundaries. sets onew to order.
+            CALL SET_INTERPOLATION_STENCIL(PCELL, IW, IE, JS, JN, KB,&
+               KTP, INTERP_SCHEME, DIMN, ORDERNEW = ONEW) 
+
+            IF(NP.EQ.FOCUS_PARTICLE) THEN 
                FOCUS = .TRUE.
-               PRINT*, 'CELL = ', PIJK(NP, 1)-1,PIJK(NP, 2)-1, PIJK(NP, 3)-1
-               PRINT*,' IB IE1  = ', IB,IE, JB, JE, KB, KE
+               PRINT*, 'PCELL : I-1, J-1, K-1 = ',&
+                  PCELL(1), PCELL(2), PCELL(3)
+               PRINT*, 'IW, IE, JS, JN, KB, KTP = ', &
+                  IW, IE, JS, JN, KB, KTP
             ENDIF
 
-            CALL INTERPOLATE_QUANTS( IB, IE, JB, JE, KB, KE, onew,&
-               & DES_POS_NEW(NP, 1:DIMN), VEL_FP(NP, 1:DIMN), FOCUS)
-         
-!=========================================================
-!NOW CALCULATE THE PARTICLE CENTERED DRAG COEFFICIENT
-!=========================================================
-            CALL DES_DRAG_GS(NP, vel_fp(NP,1:DIMN),des_vel_new(np,1:dimn))
-         
+! compute the fluid velocity interpolated to the particle position
+! (VEL_FP)
+            CALL INTERPOLATE_QUANTS(IW, IE, JS, JN, KB, KTP, ONEW, &
+               DES_POS_NEW(NP,1:DIMN), VEL_FP(NP,1:DIMN), FOCUS)
+ 
+
+! calculate the particle centered drag coefficient (F_GP) using the
+! particle velocity and gas velocity interpolated to the particle position
+            CALL DES_DRAG_GS(NP, VEL_FP(NP,1:DIMN), &
+               DES_VEL_NEW(NP,1:DIMN))
+
+
+! update the contact forces (FC) to include gas pressure and gas-solids
+! drag forces on the particle  
             IF(CALC_FC) THEN
-               OVOL = (ONE/VOL(PIJK(NP,4)))
-               D_FORCE(1:dimn) = (f_gp(np)*(vel_fp(np,1:dimn)-des_vel_new(np,1:dimn)))
-               !PRINT*, 'D_FORCE = ', D_FORCE(2), FC(NP,2), f_gp(np)
+               IJK = PIJK(NP, 4)
+               OVOL = ONE/VOL(IJK)
+               D_FORCE(1:DIMN) = F_GP(NP)*&
+                  ( VEL_FP(NP,1:DIMN)-DES_VEL_NEW(NP,1:DIMN) )
                FC(NP,:) = FC(NP,:) + D_FORCE(:)
-               FC(NP,:) = FC(NP,:) +  (P_FORCE(PIJK(NP,4),:)*OVOL)*PVOL(NP)
+               FC(NP,:) = FC(NP,:) + P_FORCE(IJK,:)*OVOL*PVOL(NP)
             ENDIF
-         
+
+
+! if callfromdes is true, then the pertinent mean fields (in this case
+! ROP_S and F_GS) are not computed/updated in this call. this is done to
+! speed up the simulation.  so the following section will only be called
+! at the end of a given DEM simulation for a given fluid time step
+! (i.e., only called once per fluid time step)
             IF(.NOT.CALLFROMDES) THEN 
-               DO K = 1, (3-dimn)*1+(dimn-2)*onew
-                  DO J = 1, onew
-                     DO I = 1, onew
-                        II = IB+I-1
-                        JJ = JB+J-1
-                        KK = KB+K-1
-                  
-                        IF(II.LT.1.and.intx_per) II = IMAX1+II-1
-                        IF(II.GT.IMAX1.and.intx_per) II = II-IMAX1+1
-                        IF(JJ.LT.1.and.inty_per) JJ = JMAX1+JJ-1
-                        IF(JJ.GT.JMAX1.and.inty_per) JJ = JJ-JMAX1+1
-                        IF(KK.LT.1.and.intz_per) KK = KMAX1+KK-1
-                        IF(KK.GT.KMAX1.and.intz_per) KK = KK-KMAX1+1
-                  
-                        IJK = funijk(II,JJ,KK)
+               M = PIJK(NP,5)
+
+               DO K = 1, (3-DIMN)*1+(DIMN-2)*ONEW
+                  DO J = 1, ONEW
+                     DO I = 1, ONEW
+
+! Shift loop index to new variables for manipulation                     
+                        II = IW + I-1
+                        JJ = JS + J-1
+                        KK = KB + K-1
+
+! adjust for periodic boundaries
+                        IF (DES_PERIODIC_WALLS) THEN
+                           IF (DES_PERIODIC_WALLS_X) THEN
+                              IF(II.LT.1)     II = IMAX1+II-1
+                              IF(II.GT.IMAX1) II = II-IMAX1+1
+                           ENDIF
+                           IF (DES_PERIODIC_WALLS_Y) THEN
+                              IF(JJ.LT.1)     JJ = JMAX1+JJ-1
+                              IF(JJ.GT.JMAX1) JJ = JJ-JMAX1+1
+                           ENDIF
+                           IF (DIMN.EQ.3 .AND. DES_PERIODIC_WALLS_Z) THEN
+                              IF(KK.LT.1)     KK = KMAX1+KK-1
+                              IF(KK.GT.KMAX1) KK = KK-KMAX1+1
+                           ENDIF
+                        ENDIF
+
+! should this volume be for current ijk index or always particle index?                        
                         VCELL = VOL(PIJK(NP,4))
-                  
+! todo: adjust this for non-uniform cell sizes
                         IF(II.EQ.1.or.II.EQ.IMAX1) VCELL = 0.5d0*VCELL
                         IF(JJ.EQ.1.or.JJ.EQ.JMAX1) VCELL = 0.5d0*VCELL
                         IF(DIMN.EQ.3)THEN
@@ -294,23 +405,24 @@
 
                         OVOL = ONE/VCELL
                   
-                        drag_am(ii,jj,kk,M) = drag_am(ii,jj,kk,M) + &
-                           F_gp(np)*(weightp(i,j,k))*OVOL
-                        !drag_am(ii,jj,kk,M) = zero
+                        drag_am(II,JJ,KK,M) = drag_am(II,JJ,KK,M) + &
+                           F_GP(NP) * WEIGHTP(I,J,K)*OVOL
+                        !drag_am(II,JJ,KK,M) = zero
 
-! First remove the velocity component at this grid point from the vel_fp
-                        drag_bm_tmp(1:dimn) = VEL_FP(NP, 1:DIMN) -&
-                           WEIGHTP(I,J,K)*VSTENCIL(I,J,K, 1:dimn)
-! Now find the remaning drag force
-                        drag_bm_tmp(1:dimn) = des_vel_new(np,1:dimn) !- DRAG_BM_TMP(1:DIMN)
+! first remove the velocity component at this grid point from the vel_fp
+                        drag_bm_tmp(1:DIMN) = VEL_FP(NP, 1:DIMN) - &
+                           WEIGHTP(I,J,K)*vstencil(I,J,K, 1:DIMN)
+! now find the remaning drag force
+                        drag_bm_tmp(1:DIMN) = DES_VEL_NEW(NP,1:DIMN) !- DRAG_BM_TMP(1:DIMN)
                   
-                        drag_bm(ii,jj,kk, 1:DIMN,M) = drag_bm(ii,jj,kk,1:DIMN,M) + &
-                           F_gp(np)*(DRAG_BM_TMP(1:DIMN)) * &
-                           weightp(i,j,k)*OVOL
-                        !drag_bm(ii,jj,kk, 1:DIMN,M) = zero 
+                        drag_bm(II,JJ,KK, 1:DIMN,M) = &
+                           drag_bm(II,JJ,KK,1:DIMN,M) + &
+                           F_GP(NP) * drag_bm_tmp(1:DIMN) * &
+                           WEIGHTP(I,J,K)*OVOL
+                        !drag_bm(II,JJ,KK, 1:DIMN,M) = zero 
 
-                        wtbar(ii,jj,kk,M) = wtbar(ii,jj,kk,M) +&
-                           weightp(i,j,k)*RO_S(M)*OVOL*PVOL(NP)
+                        WTBAR(II,JJ,KK,M) = WTBAR(II,JJ,KK,M) + &
+                           WEIGHTP(I,J,K) *RO_S(M)*OVOL*PVOL(NP)
 
                      ENDDO
                   ENDDO
@@ -321,121 +433,147 @@
 
 
          IF(.NOT.CALLFROMDES) THEN 
-            IF(INTX_PER) THEN
-               I = 1
-               DO K = 1, KMAX1
+
+! adjust for periodic boundaries
+            IF (DES_PERIODIC_WALLS) THEN
+               IF (DES_PERIODIC_WALLS_X) THEN
+                  I = 1
+                  DO K = 1, KMAX1
+                     DO J = 1, JMAX1
+                        drag_bm(I,J,K,1, 1:MMAX) = HALF*&
+                           ( drag_bm(I,J,K,1, 1:MMAX) + &
+                             drag_bm(IMAX1,J,K,1, 1:MMAX) )
+                        drag_bm(IMAX1,J,K,1,1:MMAX) = drag_bm(1,J,K,1, 1:MMAX)
+   
+                        WTBAR(I,J,K,:) = HALF*&
+                           ( WTBAR(I,J,K,:) + WTBAR(IMAX1,J,K,:) )
+                        WTBAR(IMAX1,J,K,:) = WTBAR(1,J,K,:)
+   
+                        drag_am(I,J,K,:) = HALF*&
+                           ( drag_am(I,J,K,:) + drag_am(IMAX1,J,K, :) )
+                        drag_am(IMAX1,J,K,:) = drag_am(1,J,K,:)
+                     ENDDO
+                  ENDDO
+               ENDIF
+               IF(DES_PERIODIC_WALLS_Y) THEN
+                  J = 1
+                  DO K = 1, KMAX1
+                     DO I = 1, IMAX1
+                        drag_bm(I,J,K,2, 1:MMAX) = HALF*&
+                           ( drag_bm(I,J,K,2, 1:MMAX)+&
+                             drag_bm(I,JMAX1,K,2, 1:MMAX) )
+                        drag_bm(I,JMAX1,K,2, 1:MMAX) = drag_bm(I,1,K,2, 1:MMAX)
+   
+                        WTBAR(I,J,K,:) = HALF*&
+                           ( WTBAR(I,J,K,:) + WTBAR(I,JMAX1,K,:) )
+                        WTBAR(I,JMAX1,K,:) = WTBAR(I,1,K,:)
+                  
+                        drag_am(I,J,K,:) = HALF*&
+                           ( drag_am(I,J,K,:) + drag_am(I,JMAX1,K,:) )
+                        drag_am(I,JMAX1,K,:) = drag_am(I,1,K,:)
+                     ENDDO
+                  ENDDO
+               ENDIF
+               IF(DES_PERIODIC_WALLS_Z .AND. DIMN .EQ. 3) THEN
+                  K = 1
                   DO J = 1, JMAX1
-                     DRAG_BM(i,j,k, 1,1:MMAX) =HALF*(DRAG_BM(I,J,K,1,1:MMAX) + &
-                        DRAG_BM(IMAX1,J,K,1,1:MMAX) )
-                     DRAG_BM(IMAX1,J,K,1,1:MMAX) = DRAG_BM(1, J, K, 1, 1:MMAX)
-
-                     WTBAR(I,J,K,:) = HALF*(WTBAR(I,J,K,:) + WTBAR(IMAX1, J, K, :))
-                     WTBAR(IMAX1,J,K,:) = WTBAR(1,J,K,:)
-
-                     DRAG_AM(I,J,K,:) = HALF*(DRAG_AM(I,J,K,:) + DRAG_AM(IMAX1, J, K, :))
-                     DRAG_AM(IMAX1, J,K,:) = DRAG_AM(1,J,K,:)
+                     DO I = 1, IMAX1
+                        drag_bm(I,J,K,3, 1:MMAX) = HALF*&
+                           ( drag_bm(I,J,K,3, 1:MMAX) + &
+                             drag_bm(I,J,KMAX1,3, 1:MMAX) )
+                        drag_bm(I,J,KMAX1,3,1:MMAX) = drag_bm(I,J,1,3,1:MMAX)
+   
+                        WTBAR(I,J,K,:) = HALF*&
+                           ( WTBAR(I,J,K,:) + WTBAR(I,J,KMAX1,:) )
+                        WTBAR(I,J,KMAX1,:) = WTBAR(I,J,1,:)
+   
+                        drag_am(I,J,K,:) = HALF*&
+                           ( drag_am(I,J,K,:) + drag_am(I,J,KMAX1,:) )
+                        drag_am(I,J,KMAX1,:) = drag_am(I,J,1,:)
+                     ENDDO
                   ENDDO
-               ENDDO
-            ENDIF
-            IF(INTY_PER) THEN
-               J = 1
-               DO K = 1, KMAX1
-                  DO I = 1, IMAX1
-                     DRAG_BM(I,J,K,2,1:MMAX) = HALF*(DRAG_BM(I,J,K,2,1:MMAX)+&
-                        DRAG_BM(I,JMAX1,K,2,1:MMAX) )
-                     DRAG_BM(I, JMAX1, K,  2,1:MMAX) = DRAG_BM(I, 1, K,  2,1:MMAX)
-
-                     WTBAR(I,J,K,:) =HALF*( WTBAR(I,J,K,:) + WTBAR(I, JMAX1, K, :))
-                     WTBAR(I, JMAX1,K,:) = WTBAR(I,1,K,:)
-               
-                     DRAG_AM(I,J,K,:) =HALF*( DRAG_AM(I,J,K,:) + DRAG_AM(I, JMAX1, K, :))
-                     DRAG_AM(I, JMAX1,K,:) = DRAG_AM(I,1,K,:)
-                  ENDDO
-               ENDDO
-            ENDIF
-            IF(INTZ_PER.AND.DIMN.EQ.3) THEN
-               K = 1
-               DO J = 1, JMAX1
-                  DO I = 1, IMAX1
-                     DRAG_BM(I,J,K,3,1:MMAX) = HALF*(DRAG_BM(I,J,K,3,1:MMAX) + &
-                        DRAG_BM(I,J,KMAX1,3,1:MMAX) )
-                     DRAG_BM(I,J,KMAX1,3,1:MMAX) = DRAG_BM(I,J,1,3,1:MMAX)
-
-                     WTBAR(I,J,K,:) = HALF*(WTBAR(I,J,K,:) + WTBAR(I,J,KMAX1,:))
-                     WTBAR(I,J,KMAX1,:) = WTBAR(I,J,1,:)
-
-                     DRAG_AM(I,J,K,:) = HALF*(DRAG_AM(I,J,K,:) + DRAG_AM(I, J, KMAX1, :))
-                     DRAG_AM(I,J,KMAX1,:) = DRAG_AM(I,J,1,:)
-                  ENDDO
-               ENDDO
+               ENDIF
             ENDIF
 
             DO M = 1, MMAX
                DO IJK = IJKSTART3, IJKEND3
                   IF(FLUID_AT(IJK)) THEN
-                     I = I_of(ijk)
-                     J = J_of(ijk)
-                     K = K_of(ijk)
+                     I = I_of(IJK)
+                     J = J_of(IJK)
+                     K = K_of(IJK)
                
-                     F_GS(IJK,M) = AVG_FACTOR2*(DRAG_AM(I,J,K,M) +&
-                        DRAG_AM(I,J-1,K,M) + DRAG_AM(I-1,J-1,K,M) +&
-                        DRAG_AM(I-1,J,K,M))
+                     F_GS(IJK,M) = AVG_FACTOR*(drag_am(I,J,K,M) +&
+                        drag_am(I,J-1,K,M) + drag_am(I-1,J-1,K,M) +&
+                        drag_am(I-1,J,K,M))
                
-                     ROP_S(IJK,M) = AVG_FACTOR2*(WTBAR(I,J,K,M) +&
+                     ROP_S(IJK,M) = AVG_FACTOR*(WTBAR(I,J,K,M) +&
                         WTBAR(I,J-1,K,M) + WTBAR(I-1,J-1,K,M) +&
                         WTBAR(I-1,J,K,M))
                
                      IF(DIMN.EQ.3) THEN 
-                        F_GS(IJK,M) = F_GS(IJK,M) + AVG_FACTOR2*&
-                           (DRAG_AM(I,J,K-1,M) + DRAG_AM(I,J-1,K-1,M) +&
-                           DRAG_AM(I-1,J-1,K-1,M)+DRAG_AM(I-1,J,K-1,M) )
+                        F_GS(IJK,M) = F_GS(IJK,M) + AVG_FACTOR*&
+                           (drag_am(I,J,K-1,M) + drag_am(I,J-1,K-1,M) +&
+                           drag_am(I-1,J-1,K-1,M)+drag_am(I-1,J,K-1,M) )
                   
-                        ROP_S(IJK,M) = ROP_S(IJK,M) + AVG_FACTOR2*&
+                        ROP_S(IJK,M) = ROP_S(IJK,M) + AVG_FACTOR*&
                            (WTBAR(I,J,K-1,M) + WTBAR(I,J-1,K-1,M) + &
                            WTBAR(I-1,J-1,K-1,M)+WTBAR(I-1,J,K-1,M) )
                      ENDIF
                   ENDIF
-!     IF(J.EQ.JMAX/2) PRINT*, F_GS(IJK,M), EP_S(IJK,M),(18*MU_g0*EP_S(IJK,M))/((2.d0*DES_RADIUS(1))**2.d0)
-               ENDDO
-            ENDDO
+               ENDDO  ! end do loop over ijk
+            ENDDO   ! end do loop over m=1,mmax
+
          ENDIF        ! end if(.not.callfromdes)
 
-         IF(INTX_PER) THEN 
-            I = 1
-            DO J = 1, JMAX2
+
+! reset the velocities which were previously adjusted for periodic boundaries
+         IF (DES_PERIODIC_WALLS) THEN      
+            IF(DES_PERIODIC_WALLS_X) THEN 
+               I = 1
+               DO J = 1, JMAX2
+                  DO K = 1, KMAX2
+                     IJK = funijk(I,J,K)
+                     U_G(IJK) = TEMP_U_G_X(J,K)
+                     V_G(IJK) = TEMP_V_G_X(J,K)
+                     IF(DIMN.EQ.3) W_G(IJK) = TEMP_W_G_X(J,K)
+                  ENDDO
+               ENDDO
+            ENDIF
+            IF(DES_PERIODIC_WALLS_Y) THEN 
+               J = 1
                DO K = 1, KMAX2
-                  IJK = funijk(I,J,K)
-                  U_G(IJK) = TEMP_U_G(J, K)
+                  DO I = 1, IMAX2
+                     IJK = funijk(I,J,K)
+                     U_G(IJK) = TEMP_U_G_Y(I,K)
+                     V_G(IJK) = TEMP_V_G_Y(I,K)
+                     IF(DIMN.EQ.3) W_G(IJK) = TEMP_W_G_Y(I,K)
+                  ENDDO
                ENDDO
-            ENDDO
-         ENDIF
-         IF(INTY_PER) THEN 
-            J = 1
-            DO K = 1, KMAX2
-               DO I = 1, IMAX2
-                  IJK = funijk(I,J,K)
-                  V_G(IJK) = TEMP_V_G(I,K)
+            ENDIF 
+            IF(DES_PERIODIC_WALLS_Z.AND.DIMN.EQ.3) THEN 
+               K = 1
+               DO J = 1, JMAX2
+                  DO I = 1, IMAX2
+                     IJK = funijk(I,J,K)
+                     U_G(IJK) = TEMP_U_G_Z(I,J)
+                     V_G(IJK) = TEMP_V_G_Z(I,J)
+                     W_G(IJK) = TEMP_W_G_Z(I,J)
+                  ENDDO
                ENDDO
-            ENDDO
-         ENDIF 
-         IF(INTZ_PER.AND.DIMN.EQ.3) THEN 
-            K = 1
-            DO J = 1, JMAX2
-               DO I = 1, IMAX2
-                  IJK = funijk(I,J,K)
-                  W_G(IJK) = TEMP_W_G(I,J)
-               ENDDO
-            ENDDO
-         ENDIF 
+            ENDIF 
+         ENDIF   ! end if des_periodic_walls
 
       ENDIF        ! end if(des_interp_on)
+!-----------------------------------------------  
+
 
       RETURN
       END SUBROUTINE DRAG_FGS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-      SUBROUTINE INTERPOLATE_QUANTS( IB, IE, JB, JE, KB, KE, onew, POSP, fvel, focus)
+      SUBROUTINE INTERPOLATE_QUANTS(IW, IE, JS, JN, KB, KTP, ONEW, &
+         POSP, FVEL, FOCUS)
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       USE param
@@ -464,40 +602,58 @@
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------        
-      INTEGER, INTENT(IN) :: IB, IE, JB, JE, KB, KE, onew
-      DOUBLE PRECISION :: AVG_FACTOR
-      DOUBLE PRECISION, DIMENSION(DIMN) , INTENT(OUT) :: FVEL
-      LOGICAL :: FOCUS
+!----------------------------------------------- 
+! starting grid indices used in interpolation 
+! appears that only IW, JS, and KB are necessary
+      INTEGER, INTENT(IN) :: IW, IE, JS, JN, KB, KTP
+! interpolation order      
+      INTEGER, INTENT(IN) :: onew
+! the x,y,z position of particle
       DOUBLE PRECISION, DIMENSION(DIMN) , INTENT(IN) :: POSP
-      INTEGER :: I,J,K, II, JJ, KK , IJK, IJK_PER, IJKP_PER
-
-      INTEGER IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IPJPK, IPJKP, IJPKP&
-      &, IPJPKP
+! the x,y,z velocity of the gas at the particle position (interpolated
+! to particle position after this call)
+      DOUBLE PRECISION, DIMENSION(DIMN) , INTENT(OUT) :: FVEL
+! flag to tell whether local debugging was called in drag_fgs      
+      LOGICAL :: FOCUS
+! constant whose value depends on dimension of system            
+      DOUBLE PRECISION :: AVG_FACTOR
+! indices
+      INTEGER I, J, K, II, JJ, KK, IJK
+      INTEGER IPJK, IJPK, IJKP, IPJPK, IPJKP, IJPKP, &
+              IPJPKP
 !-----------------------------------------------  
 
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-      
+
+! avg_factor=0.25 (in 3D) or =0.50 (in 2D)  
       AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
 
       DO K = 1, (3-DIMN)*1+(DIMN-2)*ONEW
          DO J = 1, ONEW
             DO I = 1, ONEW
-               II = IB+I-1
-               JJ = JB+J-1
-               KK = KB+K-1
+               II = IW + I-1
+               JJ = JS + J-1
+               KK = KB + K-1
                GSTENCIL(I,J,K,1) = XE(II)
                GSTENCIL(I,J,K,2) = YN(JJ)
                GSTENCIL(I,J,K,3) = ZT(KK)*(DIMN-2) + DZ(1)*(3-DIMN)
-               
-               IF(II.LT.1.and.intx_per) II = IMAX1+II
-               IF(II.GT.IMAX1.and.intx_per) II = II-IMAX1
-               IF(JJ.LT.1.and.inty_per) JJ = JMAX1+JJ
-               IF(JJ.GT.JMAX1.and.inty_per) JJ = JJ-JMAX1
-               IF(KK.LT.1.and.intz_per) KK = KMAX1+KK
-               IF(KK.GT.KMAX1.and.intz_per) KK = KK-KMAX1
+              
+               IF (DES_PERIODIC_WALLS) THEN 
+                  IF (DES_PERIODIC_WALLS_X) THEN
+                     IF(II.LT.1)     II = IMAX1+II
+                     IF(II.GT.IMAX1) II = II-IMAX1
+                  ENDIF
+                  IF (DES_PERIODIC_WALLS_Y) THEN
+                     IF(JJ.LT.1)     JJ = JMAX1+JJ
+                     IF(JJ.GT.JMAX1) JJ = JJ-JMAX1
+                  ENDIF
+                  IF (DES_PERIODIC_WALLS_Z .AND. DIMN .EQ. 3) THEN
+                     IF(KK.LT.1)     KK = KMAX1+KK
+                     IF(KK.GT.KMAX1) KK = KK-KMAX1
+                  ENDIF
+               ENDIF
                
                ijk = funijk(II,JJ,KK)
                
@@ -509,58 +665,58 @@
                ipjpk = jp_of(ipjk)
                ipjpkp = kp_of(ipjpk)
                
-               vstencil(i,j,k,1) = AVG_FACTOR*( u_g(ijk) + u_g(ijpk)&
-               & + (u_g(ijkp) + u_g(ijpkp))*(dimn-2) )
+               vstencil(i,j,k,1) = AVG_FACTOR*( u_g(ijk) + u_g(ijpk) + &
+                  (u_g(ijkp) + u_g(ijpkp)) * (DIMN-2) )
                
-               
-               vstencil(i,j,k,2) = AVG_FACTOR*( v_g(ijk) + v_g(ipjk)&
-               & + (v_g(ijkp) + v_g(ipjkp))*(dimn-2) )
+               vstencil(i,j,k,2) = AVG_FACTOR*( v_g(ijk) + v_g(ipjk) + &
+                  (v_g(ijkp) + v_g(ipjkp)) * (DIMN-2) )
                
                IF(FOCUS) THEN 
-                  print*,'II JJ KK = ', ii, jj, kk
-                  PRINT*,'v_g = ', v_g(ijk), v_g(ipjk), v_g(ijkp), v_g(ipjkp), vstencil(i,j,k,2)
+                  print*, 'II, JJ, KK = ', ii, jj, kk
+                  PRINT*, 'v_g = ', v_g(ijk), v_g(ipjk), &
+                     v_g(ijkp), v_g(ipjkp), vstencil(i,j,k,2)
                ENDIF
                
-               if(dimn.eq.3) then 
+               IF(DIMN.eq.3) THEN 
                   vstencil(i,j,k,3) = AVG_FACTOR*(w_g(ijk) +&
                   & w_g(ijpk) + w_g(ipjk) + w_g(ipjpk) )
-               else 
-                  vstencil(i,j,k,3) = 0.d0 !doesn't matter what
-! ever value is put here
-               end if
-               
-            END DO
-         END DO
-      END DO
+               ELSE 
+! doesn't matter what value is put here
+                  vstencil(i,j,k,3) = 0.d0
+               ENDIF               
+            ENDDO
+         ENDDO
+      ENDDO
       
-      if(dimn.eq.2) then 
-         CALL interpolator(gstencil(1:onew,1:onew,1,1:dimn)&
-         &,vstencil(1:onew,1:onew,1,1:2),POSP(1:2),FVEL(1:2),onew&  
-         &,Interp_scheme,weightp)
-         
-      else 
-         CALL interpolator(gstencil(1:onew,1:onew,1:onew,1:dimn)&
-         &,vstencil(1:onew,1:onew,1:onew,1:dimn)&
-         &,POSP( 1:3),FVEL(1:3),onew&
-         &,interp_scheme,weightp)   
-      end if
+      IF(DIMN.EQ.2) THEN 
+         CALL interpolator( GSTENCIL(1:onew, 1:onew, 1, 1:DIMN), &
+            VSTENCIL(1:onew, 1:onew, 1, 1:2), &
+            POSP(1:2), FVEL(1:2), ONEW, INTERP_SCHEME, &
+            WEIGHTP )
+      ELSE 
+         CALL interpolator( GSTENCIL(1:onew, 1:onew, 1:onew, 1:DIMN), &
+            VSTENCIL(1:onew, 1:onew, 1:onew, 1:DIMN), &
+            POSP(1:3), FVEL(1:3), ONEW, INTERP_SCHEME, &
+            WEIGHTP )   
+      ENDIF
+
+! local debugging
       IF(FOCUS) THEN 
          PRINT*, ' '
-         PRINT*,'IN INTERP'
-         
-         PRINT*,' IB IE2  = ', IB,IE, JB, JE, KB, KE
+         PRINT*, 'IN INTERP'
+         PRINT*, 'IW, IE, JS, JN, KB, KTP = ', IW, IE, JS, JN, KB, KTP
+
          DO K = 1, (3-DIMN)*1+(DIMN-2)*ONEW
             DO J = 1, ONEW
                DO I = 1, ONEW
-                  
-                  PRINT*,' V and Weight= ', VSTENCIL(I,J,K, 2), weightp(I,J,K)
-               end DO
-            end DO
-         end DO
+                  PRINT*, 'V and Weight= ',&
+                     VSTENCIL(I,J,K, 2), WEIGHTP(I,J,K)
+               ENDDO
+            ENDDO
+         ENDDO
 
-         print*, ' fvel = ', fvel(2)
-         PRINT*, ' PPOS = ', POSP(2) !, gstencil(1:onew,1:onew,1,1)
-!PRINT*, 'weight =', weightp(1:onew,1:onew,1:onew), SUM(weightp)
+         PRINT*, 'FVEL(Y) = ', fvel(2)
+         PRINT*, 'PPOSY) = ', POSP(2) !, gstencil(1:onew,1:onew,1,1)
       ENDIF
 
       END SUBROUTINE INTERPOLATE_QUANTS
@@ -633,7 +789,7 @@
       DOUBLE PRECISION, DIMENSION(DIMN), INTENT(IN) :: fvel, des_vel
 !     
 !     Indices 
-      INTEGER          I,  IJK, IMJK, IJMK, IJKM, Im, M
+      INTEGER          I,  IJK, IMJK, IJMK, IJKM, IM, M
 !     
 !     Cell center value of U_sm 
       DOUBLE PRECISION USCM 
