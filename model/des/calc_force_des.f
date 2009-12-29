@@ -264,7 +264,7 @@
                   phaseLL = PIJK(LL,5) 
 
 ! T.Li : Hertz vs linear spring-dashpot contact model
-                  IF (TRIM(COLL_MODEL) .EQ. 'HERTZIAN') THEN
+                  IF (TRIM(DES_COLL_MODEL) .EQ. 'HERTZIAN') THEN
                      sqrt_overlap = SQRT(OVERLAP_N)
                      KN_DES_W = hert_kwn(phaseLL)*sqrt_overlap
                      KT_DES_W = hert_kwt(phaseLL)*sqrt_overlap
@@ -524,7 +524,7 @@
                   phaseI = PIJK(I,5)
 
 ! T.Li : Hertz vs linear spring-dashpot contact model
-                  IF (TRIM(COLL_MODEL) .EQ. 'HERTZIAN') THEN
+                  IF (TRIM(DES_COLL_MODEL) .EQ. 'HERTZIAN') THEN
                      sqrt_overlap = SQRT(OVERLAP_N)
                      KN_DES = hert_kn(phaseLL,phaseI)*sqrt_overlap
                      KT_DES = hert_kt(phaseLL,phaseI)*sqrt_overlap

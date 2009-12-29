@@ -2,7 +2,7 @@
 !
 ! USE discretelement
 	DISCRETE_ELEMENT, DES_CONTINUUM_COUPLED, DES_INTERP_ON, &
-        TSUJI_DRAG, PARTICLES, INT_METHOD, &
+        TSUJI_DRAG, PARTICLES, DES_INTG_METHOD, &
 	GENER_PART_CONFIG, VOL_FRAC, DES_EPS_XSTART,&
        	DES_EPS_YSTART, DES_EPS_ZSTART, &
         pgrad, pvel_mean, pvel_stdev, lid_vel, &
@@ -41,4 +41,4 @@
       DES_BC_U_s, DES_BC_V_s, DES_BC_W_s, DES_BC_TYPE, &
 !      
 ! Hertzian model: T.Li
-      coll_model, ew_young, vw_poisson, e_young, v_poisson
+      DES_COLL_MODEL, ew_young, vw_poisson, e_young, v_poisson

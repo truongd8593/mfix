@@ -78,14 +78,22 @@
          CALL MFIX_EXIT(myPE)
       ENDIF
 
-      IF (COLL_MODEL /= UNDEFINED_C) THEN      
-         IF (TRIM(COLL_MODEL) .NE. 'HERTZIAN') THEN
+      IF (TRIM(DES_INTG_METHOD) /= 'ADAMS_BASHFORTH' .AND. &
+          TRIM(DES_INTG_METHOD) /= 'EULER') THEN
+! stop if the specified integration method is unavailable
+         WRITE (UNIT_LOG, 1034)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+
+      IF (DES_COLL_MODEL /= UNDEFINED_C) THEN      
+         IF (TRIM(DES_COLL_MODEL) .NE. 'HERTZIAN') THEN
             WRITE(UNIT_LOG, 1006)
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDIF
 
-      IF (TRIM(COLL_MODEL) .EQ. 'HERTZIAN') THEN
+      IF (TRIM(DES_COLL_MODEL) .EQ. 'HERTZIAN') THEN
 ! check young's modulus and poisson ratio
          IF(EW_YOUNG == UNDEFINED ) THEN
             WRITE (UNIT_LOG, 1020)
@@ -196,7 +204,7 @@
          IF (FLAG_WARN) WRITE(UNIT_LOG,1032)
          FLAG_WARN = .FALSE.
 
-      ENDIF   ! endif coll_model .eq. hertzian
+      ENDIF   ! endif des_coll_model .eq. hertzian
 
 
 ! check particle-particle normal restitution coefficient      
@@ -257,9 +265,10 @@
          'Physical Review E, vol. 64-5, see',/10X,&
          'page 051302-5',/1X,70('*')/)
  1006 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'change the value COLL_MODEL in mfix.dat.'/10X,&
-         'Either leave it undefined to use the (default) linear',/10X&
-         'model or set it to hertzian.',/1X,70('*')/)
+         'Change the value DES_COLL_MODEL in mfix.dat.  Options are'/10X,&
+         'leave it undefined to use the (default) linear spring-',/10X&
+         'dashpot model or set it to HERTZIAN for hertz model.',&
+          /1X,70('*')/)
  1007 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Friction coefficients MEW or MEW_W not specified in mfix.dat',/1X,70('*')/)
  1008 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
@@ -296,8 +305,7 @@
          'WARNING: A direction of periodicity was defined (i.e. ',/10X,&
          'DES_PERIODIC_WALLS_ X, Y or Z=T) but DES_PERIODIC_WALLS ',&
          'was set to F.',/,10X,&
-         'So the latter was reset to T for consistency.',/1X,70('*')/)
-
+         'The latter was forced to T for consistency.',/1X,70('*')/)
  1018 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: nsquare neighbor search may be slow with periodic',/10X,&
          'boundaries.  Grid based search is recommended.',/1X,70('*')/)
@@ -349,5 +357,10 @@
  1033 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: Values of VW_POISSON OR V_POISSON unphysical',/10X,&
          '(> 0.50 or =< -1.d0) defined in mfix.dat',/1X,70('*')/)
+
+ 1034 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'Change the value of DES_INTG_METHOD in mfix.dat.  Options',&
+         /,10X,'are EULER (default/undefined) or ADAMS_BASHFORTH',/,&
+         1X,70('*')/)
 
          END SUBROUTINE CHECK_DES_DATA

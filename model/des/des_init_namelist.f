@@ -36,7 +36,7 @@
       DES_CONTINUUM_COUPLED = .FALSE.
       DES_INTERP_ON = .FALSE.
       TSUJI_DRAG = .FALSE.
-      INT_METHOD = 0
+      DES_INTG_METHOD = 'EULER'
 
       PARTICLE_SLIDE = .FALSE.
       DO_NSEARCH = .FALSE.
@@ -133,7 +133,7 @@
       DES_BC_W_s(:) = UNDEFINED
       DES_BC_TYPE(:) = UNDEFINED_C
 
-      COLL_MODEL = UNDEFINED_C
+      DES_COLL_MODEL = UNDEFINED_C
 ! T.Li : Hertzian collision model
       ew_young = undefined
       vw_poisson = undefined

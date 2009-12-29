@@ -275,14 +275,15 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ZT ! (DIMENSION_K)
 
 !     Integration method, options are as follows
-!        0 = first-order (default/undefined)
-!        1 =second-order Adams-Bashforth scheme (T.Li)
+!        'euler' first-order scheme (default)
+!        'adams_bashforth' second-order scheme (by T.Li)
 !     a linear model 
-      INTEGER INT_METHOD 
+      CHARACTER(64) DES_INTG_METHOD 
       
-!     Collision model, options are 'hertzian', & the default/undefined is
-!     a linear model 
-      CHARACTER(64) COLL_MODEL
+!     Collision model, options are as follows
+!        linear spring dashpot model (default/undefined)
+!        'hertzian' model
+      CHARACTER(64) DES_COLL_MODEL
 
 !     Hertzian model: T.Li
       double precision ew_young, vw_poisson

@@ -69,8 +69,9 @@
       ENDIF
 
 
-! Advance particle position, velocity...
-      IF (INT_METHOD .EQ. 0) THEN
+! Advance particle position, velocity
+      IF (TRIM(DES_INTG_METHOD) .EQ. 'EULER') THEN 
+! first-order method              
          DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + FC(L,:)*DTSOLID
          DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + DES_VEL_NEW(L,:)*DTSOLID 
 ! following is equivalent to x=xold + vold*dt + 1/2acc*dt^2
@@ -78,7 +79,7 @@
 !             (DES_VEL_NEW(L,:)+DES_VEL_OLD(L,:))*DTSOLID 
 
          OMEGA_NEW(L,:)   = OMEGA_OLD(L,:) + TOW(L,:)*OMOI(L)*DTSOLID
-      ELSEIF (INT_METHOD .EQ. 1) THEN
+      ELSEIF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') THEN
 ! T.Li:  second-order Adams-Bashforth scheme
          DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
             ( 3.d0*DES_VEL_OLD(L,:)-DES_VEL_OOLD(L,:) )*DTSOLID

@@ -93,7 +93,7 @@
 ! Calculate collision parameters
 !--------------------------------------------------------
 
-      IF (TRIM(COLL_MODEL) == 'HERTZIAN') THEN 
+      IF (TRIM(DES_COLL_MODEL) == 'HERTZIAN') THEN 
 
          write(*,'(5X,A)') 'COLLISION MODEL: Hertzian'
 
@@ -255,7 +255,7 @@
             !TCOLL = MIN(TCOLL_TMP, TCOLL)
          ENDDO
 
-      ENDIF   ! endif coll_model = 'hertzian'
+      ENDIF   ! endif des_coll_model = 'hertzian'
 !--------------------------------------------------------
 
 
@@ -269,7 +269,7 @@
       ENDDO
 
       DO I = 1, MMAX
-         DO J = 1, MMAX
+         DO J = I, MMAX
             WRITE(*,'(5X,A,I,2X,I,A,2(ES15.7))') &
                'ETAN AND ETAT FOR PAIR ',&
                I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
