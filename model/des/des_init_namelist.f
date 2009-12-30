@@ -103,6 +103,11 @@
       DES_F = ZERO
       LID_VEL = 0.0d0
 
+! des wall boundaries: wall velocities
+      DES_BC_Uw_s(:,:) = ZERO
+      DES_BC_Vw_s(:,:) = ZERO
+      DES_BC_Ww_s(:,:) = ZERO
+
 ! J.Musser : des mass inlet/outlet (flow) boundaries
       MAX_PIS = UNDEFINED_I
       DES_BC_X_w(:) = UNDEFINED

@@ -31,9 +31,12 @@
 ! Not presently used
         WALLREFLECT, NON_RECT_BC,& 
 !
-! DES wall vibration parameters 
+! Use either DES wall vibration parameters 
 	DES_F, DES_GAMMA, LID_VEL,&
 !
+! or DES wall boundary condition information
+        DES_BC_Uw_s, DES_BC_Vw_s, DES_BC_Ww_s,&
+!	
 ! DES flow boundary condition information: J.Musser
         MAX_PIS, &
         DES_BC_X_w, DES_BC_X_e, &

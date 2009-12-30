@@ -32,10 +32,16 @@
       DOUBLE PRECISION DES_BC_MASSFLOW_s(DIMENSION_BC)
       CHARACTER*16 DES_BC_TYPE(DIMENSION_BC)
 
-! DES Mass inlet solids-phase velocity at the BC plane
+! DES mass INLET solids-phase velocity at the BC plane
       DOUBLE PRECISION DES_BC_U_s(DIMENSION_BC)
       DOUBLE PRECISION DES_BC_V_s(DIMENSION_BC)
       DOUBLE PRECISION DES_BC_W_s(DIMENSION_BC)
+
+! DES specification for solids phase velocity for WALL boundary conditions    
+! Currently limited setup as des_bc_uw_s(nwalls,1), etc...
+      DOUBLE PRECISION DES_BC_Uw_s(DIMENSION_BC, DIM_M)   !(number of des boundaries, number of solids phases)
+      DOUBLE PRECISION DES_BC_Vw_s(DIMENSION_BC, DIM_M)
+      DOUBLE PRECISION DES_BC_Ww_s(DIMENSION_BC, DIM_M)
 
 ! DES boundary condition ID number (boundary number used in mfix.dat
 ! when the boundary is originally defined)
