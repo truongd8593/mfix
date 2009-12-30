@@ -25,11 +25,9 @@
       INCLUDE 'des/desnamelist.inc'
 
       PARTICLES = UNDEFINED_I
-      FACTOR_RLM = 1.2 
+
       MN = 10
       NFACTOR = 10
-
-      NON_RECT_BC=.FALSE.
       PARTICLES_FACTOR = 1.2D0
 
       DISCRETE_ELEMENT = .FALSE.
@@ -37,29 +35,25 @@
       DES_INTERP_ON = .FALSE.
       TSUJI_DRAG = .FALSE.
       DES_INTG_METHOD = 'EULER'
-
-      PARTICLE_SLIDE = .FALSE.
-      DO_NSEARCH = .FALSE.
+      USE_COHESION = .FALSE.
 
       DES_NEIGHBOR_SEARCH = 1
+      DO_NSEARCH = .FALSE.
       NEIGHBOR_SEARCH_N = 25
       NEIGHBOR_SEARCH_RAD_RATIO = 1.0D0
+      FACTOR_RLM = 1.2 
 
-      USE_COHESION = .FALSE.
-      RADIUS_EQ = UNDEFINED     
+      MQUAD_FACTOR = 1.1D0
+      NQUAD = UNDEFINED_I
+      INIT_QUAD_COUNT = UNDEFINED_I 
+      INQC = UNDEFINED_I 
+      QLM = 1       ! Number of levels to go up in the tree to move particle to a new quad 
+      QLN = 1       ! Number of levels to go up in the tree to do neighbor search
+      N2CT = UNDEFINED
+      QUADCT = UNDEFINED
+      OCTCT = UNDEFINED
 
-      WALLDTSPLIT = .FALSE.
-      WALLREFLECT = .FALSE.
-
-      DES_PERIODIC_WALLS = .FALSE.
-      DES_PERIODIC_WALLS_X = .FALSE.
-      DES_PERIODIC_WALLS_Y = .FALSE.
-      DES_PERIODIC_WALLS_Z = .FALSE.
-      INLET_OUTLET = .FALSE.
-      INLET_OUTLET_X = .FALSE.
-      INLET_OUTLET_Y = .FALSE.
-      INLET_OUTLET_Z = .FALSE.
-
+! particle properties      
       KN = UNDEFINED
       KT = UNDEFINED
       KT_FAC = UNDEFINED
@@ -73,23 +67,15 @@
       DES_EN_WALL_INPUT(:) = UNDEFINED
       DES_ET_INPUT(:) = UNDEFINED
       DES_ET_WALL_INPUT(:) = UNDEFINED
-
       DES_ETAT_FAC = UNDEFINED
       DES_ETAT_W_FAC = UNDEFINED
 
-      DES_GAMMA = ZERO
-      DES_F = ZERO
-      LID_VEL = 0.0d0
-
-      S_TIME = UNDEFINED
-      DES_SPX_TIME = UNDEFINED
-      DTSOLID = UNDEFINED
-      DTSOLID_FACTOR = 0.1D0
-      P_TIME = UNDEFINED
-      DEM_OUTPUT_DATA_TECPLOT = .FALSE.
-      DEBUG_DES = .FALSE.
-      FOCUS_PARTICLE = 0
-      IFI = 0
+      DES_COLL_MODEL = UNDEFINED_C
+! T.Li : Hertzian collision model
+      ew_young = undefined
+      vw_poisson = undefined
+      e_young(:) = undefined
+      v_poisson(:) = undefined
 
       DIMN = UNDEFINED_I  
       WX1 = UNDEFINED
@@ -99,26 +85,25 @@
       SZ1 = UNDEFINED
       NZ2 = UNDEFINED
 
-      MQUAD_FACTOR = 1.1D0
-      NQUAD = UNDEFINED_I
-      INIT_QUAD_COUNT = UNDEFINED_I 
-      INQC = UNDEFINED_I 
-      QLM = 1       ! Number of levels to go up in the tree to move particle to a new quad 
-      QLN = 1       ! Number of levels to go up in the tree to do neighbor search
-      N2CT = UNDEFINED
-      QUADCT = UNDEFINED
-      OCTCT = UNDEFINED
+      DES_PERIODIC_WALLS = .FALSE.
+      DES_PERIODIC_WALLS_X = .FALSE.
+      DES_PERIODIC_WALLS_Y = .FALSE.
+      DES_PERIODIC_WALLS_Z = .FALSE.
+      INLET_OUTLET = .FALSE.
+      INLET_OUTLET_X = .FALSE.
+      INLET_OUTLET_Y = .FALSE.
+      INLET_OUTLET_Z = .FALSE.
 
-      GENER_PART_CONFIG = .FALSE.
-      VOL_FRAC(:) = UNDEFINED
-      DES_EPS_XSTART = UNDEFINED
-      DES_EPS_YSTART = UNDEFINED 
-      DES_EPS_ZSTART = UNDEFINED 
-      pvel_mean = zero 
-      PVEL_StDev = zero 
-      pgrad(:) = zero 
+      NON_RECT_BC=.FALSE.
+      WALLDTSPLIT = .FALSE.
+      WALLREFLECT = .FALSE.
 
-! J.Musser : mass inlet/outlet 
+! des wall boundaries: vibrational parameters      
+      DES_GAMMA = ZERO
+      DES_F = ZERO
+      LID_VEL = 0.0d0
+
+! J.Musser : des mass inlet/outlet (flow) boundaries
       MAX_PIS = UNDEFINED_I
       DES_BC_X_w(:) = UNDEFINED
       DES_BC_X_e(:) = UNDEFINED
@@ -133,12 +118,29 @@
       DES_BC_W_s(:) = UNDEFINED
       DES_BC_TYPE(:) = UNDEFINED_C
 
-      DES_COLL_MODEL = UNDEFINED_C
-! T.Li : Hertzian collision model
-      ew_young = undefined
-      vw_poisson = undefined
-      e_young(:) = undefined
-      v_poisson(:) = undefined
+      DTSOLID = UNDEFINED
+      DTSOLID_FACTOR = 0.1D0
+
+      PRINT_DES_DATA = .FALSE.
+      P_TIME = UNDEFINED
+      DEM_OUTPUT_DATA_TECPLOT = .FALSE.
+      DEBUG_DES = .FALSE.
+      FOCUS_PARTICLE = 0
+      IFI = 0
+
+      DES_SPX_TIME = UNDEFINED
+
+
+      GENER_PART_CONFIG = .FALSE.
+      VOL_FRAC(:) = UNDEFINED
+      DES_EPS_XSTART = UNDEFINED
+      DES_EPS_YSTART = UNDEFINED 
+      DES_EPS_ZSTART = UNDEFINED 
+      pvel_mean = zero 
+      PVEL_StDev = zero 
+      pgrad(:) = zero 
+
+
 
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST

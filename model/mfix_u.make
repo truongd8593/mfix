@@ -5371,6 +5371,7 @@ cfwallcontact.$(OBJ_EXT) : ./des/cfwallcontact.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfwallcontact.f 
 cfwallposvel.$(OBJ_EXT) : ./des/cfwallposvel.f \
             DISCRETELEMENT.mod \
+            DES_BC.mod \
             PARAM.mod \
             PARAM1.mod \
             PARALLEL.mod \
@@ -5624,7 +5625,9 @@ neighbour.$(OBJ_EXT) : ./des/neighbour.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/neighbour.f 
 nsquare.$(OBJ_EXT) : ./des/nsquare.f \
             PARAM1.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            GEOMETRY.mod \
+            DES_BC.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/nsquare.f 
 octree.$(OBJ_EXT) : ./des/octree.f \
             RUN.mod \

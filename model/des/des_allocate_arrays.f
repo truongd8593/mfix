@@ -33,7 +33,6 @@
       INCLUDE 'function.inc'
 
 
-
       WRITE(*,'(1X,A)')&
          '---------- START DES_ALLOCATE_ARRAYS ---------->'
 
@@ -131,6 +130,7 @@
 
 
 ! DES Allocatable arrays
+!-----------------------------------------------
 ! J.Musser : Dynamic Particle Info
       ALLOCATE( PEA (NPARTICLES, 3) )
 
@@ -153,27 +153,6 @@
       ALLOCATE(DES_ETAT(MMAX,MMAX))
       ALLOCATE(DES_ETAN_WALL(MMAX), DES_ETAT_WALL(MMAX))
 
-      IF(DES_INTERP_ON) THEN
-         ALLOCATE(DRAG_AM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), MMAX))
-         ALLOCATE(DRAG_BM(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1), DIMN, MMAX))
-         ALLOCATE(WTBAR(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1),  MMAX))
-         ALLOCATE(VEL_FP(NPARTICLES,3))
-         ALLOCATE(F_gp(NPARTICLES ))  
-         F_gp(1:NPARTICLES)  = ZERO
-      ENDIF 
-
-      ALLOCATE(MARK_PART(NPARTICLES))
-      ALLOCATE(BED_HEIGHT(MMAX))
-
-
-      ALLOCATE(PIC(DIMENSION_I,DIMENSION_J,DIMENSION_K))
-      DO K = 1,KMAX3
-         DO J = 1,JMAX3
-            DO I = 1,IMAX3
-               NULLIFY(pic(i,j,k)%p) 
-            ENDDO 
-          ENDDO 
-       ENDDO 
       
 ! Particle attributes
 ! Radius, density, mass, moment of inertia           
@@ -218,31 +197,38 @@
      
 ! Accumulated spring force      
       Allocate(  PFT (NPARTICLES,MAXNEIGHBORS,DIMN) )
-     
-! Wall position, velocity and normal vector
-      Allocate(  DES_WALL_POS (NWALLS,DIMN) )
-      Allocate(  DES_WALL_VEL (NWALLS,DIMN) )
-      Allocate(  WALL_NORMAL (NWALLS,DIMN) )
+! Tracking variables for particle contact history
       Allocate(  PN (NPARTICLES, MAXNEIGHBORS) )
       Allocate(  PV (NPARTICLES, MAXNEIGHBORS) )
-     
+    
+! Temporary variables to store wall position, velocity and normal vector
+      Allocate(  DES_WALL_POS (NWALLS,DIMN) )
+      Allocate(  DES_WALL_VEL (NWALLS,DIMN) )
+      Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
+
+      ALLOCATE(PIC(DIMENSION_I,DIMENSION_J,DIMENSION_K))
+      DO K = 1,KMAX3
+         DO J = 1,JMAX3
+            DO I = 1,IMAX3
+               NULLIFY(pic(i,j,k)%p) 
+            ENDDO 
+          ENDDO 
+       ENDDO 
+
 ! Particles in a computational cell (for volume fraction) )
       Allocate(  PINC (DIMENSION_3) )
       Allocate(  PIJK (NPARTICLES,5) )
-     
-! Volume averaged solids volume in a cell      
-      Allocate(  DES_U_s (DIMENSION_3, DIMENSION_M) )
-      Allocate(  DES_V_s (DIMENSION_3, DIMENSION_M) )
-      Allocate(  DES_W_s (DIMENSION_3, DIMENSION_M) )
 
-! Averaged velocity obtained by avraging over all the particles
-      ALLOCATE(DES_VEL_AVG(DIMN))
-
-! Global Granular Energy
-      ALLOCATE(GLOBAL_GRAN_ENERGY(DIMN))
-      ALLOCATE(GLOBAL_GRAN_TEMP(DIMN))
+      IF(DES_INTERP_ON) THEN
+         ALLOCATE(DRAG_AM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), MMAX))
+         ALLOCATE(DRAG_BM(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1), DIMN, MMAX))
+         ALLOCATE(WTBAR(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1),  MMAX))
+         ALLOCATE(VEL_FP(NPARTICLES,3))
+         ALLOCATE(F_gp(NPARTICLES ))  
+         F_gp(1:NPARTICLES)  = ZERO
+      ENDIF 
     
-! Drag exerted by the gas o solids
+! Drag exerted by the gas on solids
       Allocate(  SOLID_DRAG (DIMENSION_3, DIMENSION_M, DIMN) )
      
 ! Neighbor search
@@ -253,10 +239,25 @@
          Allocate(  PQUAD (NPARTICLES) )
          Allocate(  CQUAD (MAXQUADS, NWALLS) )
       ENDIF
-     
+
+      ALLOCATE(MARK_PART(NPARTICLES))
+      ALLOCATE(BED_HEIGHT(MMAX))
+
+! Volume averaged solids volume in a cell      
+      Allocate(  DES_U_s (DIMENSION_3, DIMENSION_M) )
+      Allocate(  DES_V_s (DIMENSION_3, DIMENSION_M) )
+      Allocate(  DES_W_s (DIMENSION_3, DIMENSION_M) )
+
+! Averaged velocity obtained by avraging over all the particles
+      ALLOCATE(  DES_VEL_AVG(DIMN) )
+
 ! Granular temperature
       Allocate(  DES_THETA (DIMENSION_3, DIMENSION_M) )
-     
+
+! Global Granular Energy
+      ALLOCATE(  GLOBAL_GRAN_ENERGY(DIMN) )
+      ALLOCATE(  GLOBAL_GRAN_TEMP(DIMN) )
+    
 ! Cell faces
       Allocate(  XE (DIMENSION_I) )
       Allocate(  YN (DIMENSION_J) )
