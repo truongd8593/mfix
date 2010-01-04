@@ -238,7 +238,6 @@
                         NI = PN(LL,1) + 1
                         PN(LL,NI) = I
                         PV(LL,NI) = 1
-                        OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                         IF (V_REL_TRANS_NORM .GT. ZERO) THEN
                            DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
                         ELSEIF (V_REL_TRANS_NORM .LT. ZERO) THEN
@@ -286,6 +285,7 @@
 ! relative velocity with respect to contact time. Correction in the tangential 
 ! direction is imposed                   
                   PFT(LL,NI,:) = PFT(LL,NI,:)+OVERLAP_T*TANGENT(:)
+                  PFT_TMP(:) = PFT(LL,NI,:)   ! for an easy pass to dotprdct
                   PFT_TMP(:) = PFT(LL,NI,:) - &
                      DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
                   FTS1(:) = -KT_DES_W * PFT_TMP(:)
@@ -303,7 +303,8 @@
                   CALL CFFCTOWALL(LL, NORMAL, DISTMOD)
                   
 ! Save the tangential displacement history with the correction of Coulomb's law
-                  IF (PARTICLE_SLIDE) PFT(LL,NI,:) = PFT_TMP(:)
+                  IF (PARTICLE_SLIDE) PFT(LL,NI,:) = -( FT(LL,:) - &
+                     FTS2(:) ) / KT_DES_W
         
                   IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
                      IF (.NOT.DES_LOC_DEBUG) THEN
@@ -546,6 +547,7 @@
 ! relative velocity with respect to contact time. Correction in the tangential 
 ! direction is imposed                   
                   PFT(LL,NI,:) = PFT(LL,NI,:) + OVERLAP_T * TANGENT(:)
+                  PFT_TMP(:) = PFT(LL,NI,:)   ! for an easy pass to dotprdct
                   PFT_TMP(:) = PFT(LL,NI,:) - &
                      DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
                   FTS1(:) = -KT_DES * PFT_TMP(:)
@@ -562,8 +564,9 @@
                   CALL CFFCTOW(LL, I, NORMAL, DISTMOD)
 
 ! Save the tangential displacement history with the correction of Coulomb's law
-                  IF (PARTICLE_SLIDE) PFT(LL,NI,:) = PFT_TMP(:)
-                  
+                  IF (PARTICLE_SLIDE) PFT(LL,NI,:) = -( FT(LL,:) - &
+                     FTS2(:) ) / KT_DES
+                 
                   IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN 
                      IF (.NOT.DES_LOC_DEBUG) THEN
                         DES_LOC_DEBUG = .TRUE.
