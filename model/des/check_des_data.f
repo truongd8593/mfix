@@ -63,20 +63,6 @@
          ENDIF
       ENDIF
 
-! Code commented since inlet_outlet option is not working in the current code. Dec 04 2008 (sof)
-!      IF(INLET_OUTLET) THEN
-!         IF(.NOT.INLET_OUTLET_X .AND. .NOT.INLET_OUTLET_Y .AND. &
-!	    .NOT.INLET_OUTLET_Z) THEN
-!	    WRITE (UNIT_LOG, 1003)
-!            CALL MFIX_EXIT(myPE)
-!         ENDIF
-!      END IF
-!
-      IF(INLET_OUTLET .OR. INLET_OUTLET_X .OR. INLET_OUTLET_Y .OR. &
-            INLET_OUTLET_Z) THEN
-         WRITE (UNIT_LOG, 1003)
-         CALL MFIX_EXIT(myPE)
-      ENDIF
 
       IF (TRIM(DES_INTG_METHOD) /= 'ADAMS_BASHFORTH' .AND. &
           TRIM(DES_INTG_METHOD) /= 'EULER') THEN
@@ -252,9 +238,6 @@
          'allowed',/1X,70('*')/)
  1002 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Direction of periodicity not defined in mfix.dat',/1X,70('*')/)
- 1003 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA.',/' Message: ',&
-         'INLET_OUTLET option is disabled: does not work properly in',/10X,&
-         'this MFIX version',/1X,70('*')/)
 
  1004 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Spring constants KN or KN_W not specified in mfix.dat',/1X,70('*')/)

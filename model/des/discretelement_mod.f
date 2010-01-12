@@ -194,18 +194,11 @@
 ! Currently obsolete variable
       LOGICAL NON_RECT_BC   
 
-! Periodic Wall BC
+! Periodic wall BC
       LOGICAL DES_PERIODIC_WALLS
       LOGICAL DES_PERIODIC_WALLS_X
       LOGICAL DES_PERIODIC_WALLS_Y
       LOGICAL DES_PERIODIC_WALLS_Z
-
-! Currently obsolete variables
-! Inlet/Outlet BC  - should be removed
-      LOGICAL INLET_OUTLET
-      LOGICAL INLET_OUTLET_X
-      LOGICAL INLET_OUTLET_Y
-      LOGICAL INLET_OUTLET_Z
 
 ! Constant input pressure gradient (currently unused?)
       DOUBLE PRECISION pgrad(3)

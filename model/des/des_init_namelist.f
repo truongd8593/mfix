@@ -1,14 +1,14 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                         C 
 !     Module name: DES_INIT_NAMELIST                                      C
-!>     Purpose: DES - initialize the des-namelist                          
+!     Purpose: DES - initialize the des-namelist                          
 !                                                                         C
 !                                                                         C
 !     Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !     Reviewer: Rahul Garg                               Date: 01-Aug-07  C
 !     Comments: Added some interpolation based inputs                     C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!     
+   
       SUBROUTINE DES_INIT_NAMELIST 
 
       USE param1
@@ -89,10 +89,6 @@
       DES_PERIODIC_WALLS_X = .FALSE.
       DES_PERIODIC_WALLS_Y = .FALSE.
       DES_PERIODIC_WALLS_Z = .FALSE.
-      INLET_OUTLET = .FALSE.
-      INLET_OUTLET_X = .FALSE.
-      INLET_OUTLET_Y = .FALSE.
-      INLET_OUTLET_Z = .FALSE.
 
       NON_RECT_BC=.FALSE.
       WALLDTSPLIT = .FALSE.

@@ -103,11 +103,11 @@
 ! specified domain length for generating particle configuration
       double precision, INTENT(IN) ::  DOMLIN(DIMN)
       double precision :: DOML(DIMN)
-! radius of particles/diameter
+! radius of particles/diameter (DES_RADIUS(PARTICLES))
       double precision, INTENT(INOUT) ::  DBDY(NBODY)
-! number of particles      
+! number of particles  (PARTICLES)
       INTEGER, INTENT(IN) :: NBODY
-! old position of particles      
+! old position of particles (DES_POS_OLD(PARTICLES,DIMN)) 
       DOUBLE PRECISION, INTENT(OUT) :: xc(nbody,DIMN)
 ! maximum diameter
       DOUBLE PRECISION DMAX
@@ -124,10 +124,14 @@
 
       FAC = 1.05
       N = 1
+! slightly greater (factor1.05) than the max particle radius      
       YP = dmax*fac/2.d0
       
+! loop over N-1 particles      
       DO WHILE (N.LT.NBODY) 
 
+! grid the domain in x and z directions according to 1.05
+! times the max particle diameter
          IF(DIMN.EQ.3) THEN 
             nz = floor((real(DOML(3))/(dmax*fac)))
          ELSE 
@@ -135,6 +139,7 @@
          ENDIF
          nx = floor((real(doml(1))/(dmax*fac)))
 
+! fill the domain starting from the bottom:         
          DO K = 1, nz
             ZP =  dmax*half*fac +  (K-1)*dmax*fac
             DO I = 1, nx

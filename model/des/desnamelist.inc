@@ -45,9 +45,6 @@
         DES_BC_VOLFLOW_s, DES_BC_MASSFLOW_s, &
         DES_BC_U_s, DES_BC_V_s, DES_BC_W_s, DES_BC_TYPE, &
 !
-! Obsolete variables
-        INLET_OUTLET, INLET_OUTLET_X, INLET_OUTLET_Y, INLET_OUTLET_Z,&
-!
 ! DES output control information
         DEBUG_DES, FOCUS_PARTICLE,&
         PRINT_DES_DATA, P_TIME,&

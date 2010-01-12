@@ -93,7 +93,7 @@
 
 
 ! Check if the particle has moved a distance greater than or equal to
-! its radius since the last time a neighbor search was called; if so, 
+! its radius since the last time a neighbor search was called. if so, 
 ! make sure that neighbor is called in des_time_march
       IF(.NOT.DO_NSEARCH) THEN
          D(:) = DES_POS_NEW(L,:) - PPOS(L,:)
@@ -104,18 +104,25 @@
 
 
 ! Check if the particle has moved a distance greater than or equal to 
-! its radius during one solids time step; if so, call stop
+! its radius during one solids time step. if so, call stop
       D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
       DIST = SQRT(DES_DOTPRDCT(D,D))
       IF(DIST.GE.DES_RADIUS(L)) THEN
-         WRITE(*,1002) L
+         WRITE(*,1002) L, DES_RADIUS(L)
+         WRITE(*,'(5X,A,3(ES17.9))') &
+            'old particle pos : ', DES_POS_OLD(L,:)
+         WRITE(*,'(5X,A,3(ES17.9))') &
+            'new particle pos : ', DES_POS_NEW(L,:)
+         WRITE(*,'(5X,A,3(ES17.9))')&
+            'new particle vel : ', DES_VEL_NEW(L,:) 
+         WRITE(*,1003)
          STOP
       ENDIF
 
 
 ! Warning message for particles moving into ghost cells:
-! Note that if this occurs then the particle_in_cell subroutine 
-! will call stop
+! Note that if this occurs then the particle_in_cell 
+! subroutine will call a stop
       IF((DES_POS_NEW(L,1) < ZERO .OR. DES_POS_NEW(L,1) > XLENGTH) .AND.&
       .NOT.DES_PERIODIC_WALLS_X .AND. &
       .NOT.PEA(L,2) .AND. .NOT.PEA(L,3)) THEN
@@ -211,8 +218,9 @@
 
  1002 FORMAT(/1X,70('*')//&
          ' From: CFNEWVALUES -',/&
-         ' Message: Movement undesired for particle: ',I,/&
-         1X,70('*')/)         
+         ' Message: Particle ',I, 'moved a distance greater than its',/,&
+         ' radius ', ES17.9,' during 1 solids time step.')
+ 1003 FORMAT(1X,70('*')/)         
 
       RETURN
       END SUBROUTINE CFNEWVALUES
