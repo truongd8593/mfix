@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: DES_GRANULAR_TEMPERATURE(FLAGTEMP)
+!  Module name: DES_GRANULAR_TEMPERATURE
 !  Purpose: DES - Calculate the DES granular temperature               
 !                                                                      C
 !                                                                      C
@@ -9,7 +9,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE DES_GRANULAR_TEMPERATURE(FLAGTEMP)
+      SUBROUTINE DES_GRANULAR_TEMPERATURE
 
       USE discretelement
       USE param
@@ -40,45 +40,42 @@
       INTEGER PC             
 ! squared particle velocity v.v
       DOUBLE PRECISION SQR_VEL
-! determine whether to perform section of calculation currently reserved
-! for coupled dem simulations (and only necessary at end of dem
-! simulation)
-      LOGICAL FLAGTEMP
 !-----------------------------------------------      
+
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
 
 
-! Calculate local granular temperature
-!-------------------------------------      
-      IF (FLAGTEMP) THEN
+! Calculate a local granular temperature for current instant of time
+!------------------------------------- 
+! loop over all fluid cells      
+      DO IJK = IJKSTART3, IJKEND3
+         IF(FLUID_AT(IJK)) THEN
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
 
-         DO IJK = IJKSTART3, IJKEND3
-            IF(FLUID_AT(IJK)) THEN
-               I = I_OF(IJK)
-               J = J_OF(IJK)
-               K = K_OF(IJK)
+! loop over all particles in ijk fluid cell            
+            IF (ASSOCIATED(PIC(I,J,K)%p)) THEN
+               NPG = SIZE(PIC(I,J,K)%p)
+                      
+               TEMP = ZERO
+               DO LL = 1, NPG 
+                  NP = PIC(I,J,K)%p(LL)
+                  M = PIJK(NP,5)
             
-               IF (ASSOCIATED(PIC(I,J,K)%p)) THEN
-                  NPG = SIZE(PIC(I,J,K)%p)
-                         
-                  TEMP = ZERO
-                  DO LL = 1, NPG 
-                     NP = PIC(I,J,K)%p(LL)
-                     M = PIJK(NP,5)
-               
-                     TEMP = TEMP + (DES_VEL_NEW(NP,1)-DES_U_s(IJK,M))**2 
-                     TEMP = TEMP + (DES_VEL_NEW(NP,2)-DES_V_s(IJK,M))**2
-                     IF(DIMN.EQ.3) THEN 
-                        TEMP = TEMP + (DES_VEL_NEW(NP,3)-DES_W_s(IJK,M))**2 
-                     ENDIF
-                  ENDDO
-                  DES_THETA(IJK,M) = TEMP/(3.0d0 * DBLE(NPG))
-               ENDIF
+                  TEMP = TEMP + (DES_VEL_NEW(NP,1)-DES_U_s(IJK,M))**2 
+                  TEMP = TEMP + (DES_VEL_NEW(NP,2)-DES_V_s(IJK,M))**2
+                  IF(DIMN.EQ.3) THEN 
+                     TEMP = TEMP + (DES_VEL_NEW(NP,3)-DES_W_s(IJK,M))**2 
+                  ENDIF
+               ENDDO
+               DES_THETA(IJK,M) = TEMP/(3.0d0 * DBLE(NPG))
             ENDIF
-         
-         ENDDO
+         ENDIF
+      
+      ENDDO
 
 !      OPEN (UNIT=17,FILE='des_granular_temp.out',STATUS='REPLACE')
 !      WRITE(17,*)' '
@@ -87,17 +84,15 @@
 !         IF(FLUID_AT(IJK)) THEN
 !            I = I_OF(IJK)
 !            J = J_OF(IJK)
-!            K = k_OF(IJK)
+!            K = K_OF(IJK)
 !            WRITE(17,*) IJK, I, J, K, DES_THETA(IJK,1)
 !         ENDIF
 !      ENDDO
 
-      ENDIF   ! endif flagtemp 
 
 ! Calculate global quantities: granular temperature, 
 ! kinetic energy, potential energy and average velocity
-! Most of the code here was moved from cfupdateold and
-! cfnewvalues 
+! at current instant of time      
 !-------------------------------------
 
 ! initialization for calculations
@@ -128,7 +123,7 @@
 !J.Musser changed PARTICLES TO PIS 
       DES_VEL_AVG(:) = DES_VEL_AVG(:)/PIS       
 
-! Calculate global granular temperature
+! Calculate x,y,z components of global energy & granular temperature
       GLOBAL_GRAN_ENERGY = ZERO
       GLOBAL_GRAN_TEMP  = ZERO
       PC = 1
@@ -137,7 +132,7 @@
          IF(.NOT.PEA(LL,1)) CYCLE
 
          GLOBAL_GRAN_ENERGY(:) = GLOBAL_GRAN_ENERGY(:) + &
-            PMASS(LL)*(DES_VEL_NEW(LL,:)-DES_VEL_AVG(:))**2
+            0.5d0*PMASS(LL)*(DES_VEL_NEW(LL,:)-DES_VEL_AVG(:))**2
          GLOBAL_GRAN_TEMP(:) = GLOBAL_GRAN_TEMP(:) + &
             PMASS(LL)*(DES_VEL_NEW(LL,:)-DES_VEL_AVG(:))**2
 

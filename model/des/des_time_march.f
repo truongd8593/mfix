@@ -252,11 +252,10 @@
 ! already been moved for the current time step                  
          S_TIME = S_TIME + DTSOLID
 
-! So that section of granular_temperature routine is only calculated at
-! end of current DEM simulation         
-         FLAGTEMP = .FALSE.
-         IF(DES_CONTINUUM_COUPLED .AND. NN.EQ.FACTOR) FLAGTEMP = .TRUE.
-         CALL DES_GRANULAR_TEMPERATURE(FLAGTEMP)
+! When coupled the granular temperature subroutine is only calculated at end 
+! of the current DEM simulation 
+         IF(DES_CONTINUUM_COUPLED .AND. NN.EQ.FACTOR) &
+            CALL DES_GRANULAR_TEMPERATURE
         
          IF(.NOT.DES_CONTINUUM_COUPLED) THEN    
 ! Keep track of TIME for DEM simulations
@@ -265,8 +264,9 @@
 ! Write DES data for DEM only case 
             IF(PRINT_DES_DATA) THEN
                  PTC = PTC + DTSOLID
-! Additional check was added to make sure DEM data are written at exactly NN = FACTOR.
+! Additional check to make sure DEM data are written at exactly NN = FACTOR.
                IF((PTC.GE.P_TIME .AND. NN .NE. (FACTOR-1)) .OR. NN == FACTOR) THEN
+                  CALL DES_GRANULAR_TEMPERATURE
                   CALL WRITE_DES_DATA
 
                   WRITE(*,'(3X,A,X,ES)') &
