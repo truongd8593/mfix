@@ -50,11 +50,11 @@
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
      
-      INTEGER NN, FACTOR, NSN, NP, IJK, I, J, K, BCV_I
+      INTEGER NN, FACTOR, NP, IJK, I, J, K, BCV_I
 
-!     Temporary variables when des_continuum_coupled is F to track
-!     reporting time 
-      DOUBLE PRECISION PTC, DESRESDT 
+!     Local variable to keep track of time when dem restart and des
+!     write data need to be written
+      DOUBLE PRECISION DES_RES_TIME, DES_SPX_TIME
 
 !     Temporary variables when des_continuum_coupled is T to track
 !     changes in solid time step 
@@ -67,35 +67,22 @@
 !     index to track accounted for particles  
       INTEGER PC    
 
-!     logical that tells whether to perform calculations in subroutine
-      LOGICAL FLAGTEMP
-
 !-----------------------------------------------
 
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-      
-      
+
+! initialization      
+      TMP_DTS = ZERO
+
       IF(FIRST_PASS) THEN 
 
       WRITE(*,'(1X,A)')&
          '---------- FIRST PASS DES_TIME_MARCH ---------->'
-
-         FIRST_PASS = .FALSE.
-         DESRESDT = 0.0d0
-         NSN = 0
          S_TIME = ZERO
-         TMP_DTS = ZERO
-         PTC = ZERO
+         FIRST_PASS = .FALSE.
          INQC = INIT_QUAD_COUNT
-         IF(RUN_TYPE == 'NEW') THEN
-            DES_SPX_TIME =  TIME
-            DES_RES_TIME =  TIME
-         ELSE
-            DES_SPX_TIME = (INT((TIME+DT+0.1d0*DT)/SPX_DT(1))+1)*SPX_DT(1)
-            DES_RES_TIME = (INT((TIME+DT+0.1d0*DT)/RES_DT)   +1)*RES_DT
-         ENDIF
 
          CALL NEIGHBOUR
          
@@ -104,7 +91,6 @@
             CALL INITIALIZE_COHESION_PARAMETERS
             CALL INITIALIZE_COH_INT_SEARCH
          END IF
-! COHESION
 
 ! To do only des in the 1st time step only for a new run so the particles settle down
 ! before the coupling is turned on
@@ -130,34 +116,36 @@
                   ENDDO
 
                   CALL PARTICLES_IN_CELL
-                  NSN = NSN + 1    
 
                   ! Neighbor search                      
-                  IF(MOD(FACTOR,INT(NEIGHBOR_SEARCH_N)).EQ.0) THEN 
+                  IF(MOD(FACTOR,NEIGHBOR_SEARCH_N).EQ.0) THEN 
                      CALL NEIGHBOUR
                   ELSEIF(DO_NSEARCH) THEN 
                      CALL NEIGHBOUR
                      DO_NSEARCH = .FALSE.
-                     NSN = 0
                   ENDIF
                ENDDO
                DES_CONTINUUM_COUPLED = .TRUE.
                WRITE(*,'(3X,A)') 'END DEM settling period'
-            ENDIF
+            ENDIF   ! end if coupled and no cohesion
             IF(DES_INTERP_ON) THEN 
                CALC_FC = .FALSE.
                CALLFROMDES = .FALSE.
             ENDIF
             CALL PARTICLES_IN_CELL
             CALL WRITE_DES_DATA
-         ENDIF ! end if on new run type
+            WRITE(*,'(3X,A,X,ES)') &
+               'DES data files written at time=', S_TIME
+            WRITE(UNIT_LOG,*) &
+               'DES data files written at time= ', S_TIME
+         ENDIF   ! end if on new run type
          WRITE(*,'(1X,A)')&
             '<---------- END FIRST PASS DES_TIME_MARCH ----------'
          
       ENDIF    ! end if first pass
 
 
-! get the right s_time from MFIX time in case of restarts
+! In case of restarts assign S_TIME from MFIX TIME 
       S_TIME = TIME
 
       IF(DES_CONTINUUM_COUPLED) THEN
@@ -168,30 +156,32 @@
             DTSOLID_TMP = DTSOLID
             DTSOLID = DT
          ENDIF
-         write(*,'(1X,A,X,I,X,A)') &
+         WRITE(*,'(1X,A,X,I,X,A)') &
             'DEM SIMULATION will be called', &
             FACTOR, 'times this fluid time step' 
-         write(*,'(3X,2(A,X,ES15.7,2X))') 'dt =', dt,&
+         WRITE(*,'(3X,2(A,X,ES15.7,2X))') 'dt =', dt,&
             'dtsolid =', dtsolid
-         write(*,'(3X,A,X,I)') 'int(dt/dtsolid) =', nint(dt/dtsolid)
+         WRITE(*,'(3X,A,X,I)') 'int(dt/dtsolid) =', nint(dt/dtsolid)
       ELSE
-! added TIME for restart & +1 removed
          FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID)) 
-         IF(RUN_TYPE .NE. 'NEW') THEN
-! for restarts these two counters should not start from zero.
-           PTC = DTSOLID 
-           DESRESDT = DTSOLID
-         ENDIF
          WRITE(*,'(1X,A)')&
             '---------- START DES_TIME_MARCH ---------->'
          WRITE(*,'(3X,A,X,I,X,A)') &
             'DEM SIMULATION will be called', FACTOR, 'times'
-      ENDIF
-
+! Initialization for des_spx_time, des_res_time         
+         IF(RUN_TYPE .EQ. 'NEW') THEN
+            DES_SPX_TIME =  S_TIME
+            DES_RES_TIME =  S_TIME
+         ELSE
+            DES_SPX_TIME = ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) +&
+               1 ) * DES_SPX_DT
+            DES_RES_TIME = ( INT((S_TIME+0.1d0*DTSOLID)/DES_RES_DT) +&
+               1 ) * DES_RES_DT
+         ENDIF
+      ENDIF   ! end if/else (des_continuum_coupled)
 
       IF(NEIGHBOR_SEARCH_N.GT.FACTOR) THEN 
          !NEIGHBOR_SEARCH_N = FACTOR
-         NSN = NEIGHBOR_SEARCH_N - 1
       ENDIF 
 
 
@@ -199,33 +189,44 @@
 
          IF(DES_CONTINUUM_COUPLED) THEN
             IF(S_TIME.GE.(TIME+DT)) EXIT
-
+! If the current time in the discrete loop exceeds the current time in
+! the continuum simulation, exit the discrete loop
             IF((S_TIME+DTSOLID).GT.(TIME+DT)) THEN 
+! If next time step in the discrete loop will exceed the current time 
+! in the continuum simulation, modify the discrete time step so final
+! time will match 
                TMP_DTS = DTSOLID
                DTSOLID = TIME + DT - S_TIME
             ENDIF 
+            IF(DEBUG_DES) THEN
+               WRITE(*,'(3X,A,X,I,X,A,X,ES15.7)') &
+                  'DES-COUPLED LOOP NO.=', NN, ' S_TIME=', S_TIME 
+               WRITE(*,'(3X,A,X,ES15.7)') &
+                  'DTSOLID=', DTSOLID
+            ENDIF
 
-            !PRINT *,"DES-MFIX COUPLED, ITER, TIMESTEP, TIME", NN, DTSOLID, S_TIME
-            !PRINT *,"DES-MFIX COUPLED, ITER, TIME, DES_INTERP_ON ?", NN, S_TIME, DES_INTERP_ON
             CALC_FC = .TRUE.
             IF(DES_INTERP_ON .AND. NN.EQ.FACTOR) THEN 
-               ! calculate the mean fields only at the last DEM time step
+! Toggle flag so the mean fields are calculated only at the last DEM
+! time step
                CALLFROMDES = .FALSE.
             ELSE 
                CALLFROMDES = .TRUE.
             ENDIF
-         ELSE
+         ELSE   ! else if (des_continuum_coupled)
             IF(DEBUG_DES) WRITE(*,'(3X,A,X,I,X,A,X,ES15.7)') &
-               'DEM LOOP NO.=', NN, 'S_TIME=', S_TIME 
-         ENDIF 
+               'DEM LOOP NO.=', NN, ' S_TIME=', S_TIME 
+         ENDIF   ! end if/else (des_continuum_coupled) 
+         
 
-         ! Force calculation         
+! Force calculation         
          CALL CALC_FORCE_DES
 
          PC = 1
          DO NP = 1, MAX_PIS
             IF(PC .GT. PIS) EXIT
             IF(.NOT.PEA(NP,1)) CYCLE
+! Update particle position, velocity            
             CALL CFNEWVALUES(NP)
             PC = PC + 1
          ENDDO
@@ -236,62 +237,72 @@
          IF (DES_MI) CALL DES_CHECK_PARTICLE
 
          CALL PARTICLES_IN_CELL
-         NSN = NSN + 1    
-         
-         IF(NN.EQ.1.OR.MOD(NN,INT(NEIGHBOR_SEARCH_N)).EQ.0) THEN 
-            !WRITE(*,'(4X,A,I)') 'CALLING NEIGHBOR BECAUSE NN = ', NN
+
+         IF(NN.EQ.1 .OR. MOD(NN,NEIGHBOR_SEARCH_N).EQ.0) THEN 
+            IF(DEBUG_DES) WRITE(*,'(3X,A,A,/,5X,A,I)') &
+               'Calling NEIGHBOUR: NN=1 or ',&
+               'MOD(NN,NEIGHBOR_SEARCH_N)=0',&
+               'NEIGHBOR_SEARCH_N = ', NEIGHBOR_SEARCH_N
             CALL NEIGHBOUR
          ELSEIF(DO_NSEARCH) THEN 
+            IF(DEBUG_DES) WRITE(*,'(3X,A,A,/,5X,A,A,L)') &
+               'Calling NEIGHBOUR: a particle moved ',&
+               'more than its radius since', 'last time NEIGHBOUR ',&
+               'was called; DO_NSEARCH = ', DO_NSEARCH
             CALL NEIGHBOUR
-            !PRINT*, 'CALLING NEIGHBOR BECASUE DO_NSEARCH = ', DO_NSEARCH
             DO_NSEARCH = .FALSE.
-            NSN = 0
          ENDIF
 
-! Update time before any write statements to reflect that the particle has
-! already been moved for the current time step                  
+! Update time to reflect changes 
          S_TIME = S_TIME + DTSOLID
 
 ! When coupled the granular temperature subroutine is only calculated at end 
 ! of the current DEM simulation 
          IF(DES_CONTINUUM_COUPLED .AND. NN.EQ.FACTOR) &
             CALL DES_GRANULAR_TEMPERATURE
-        
+
+! When coupled, all write calls are made in time_march (the continuum 
+! portion) according to user settings for spx_time and res_time.
+! The following section targets data writes for DEM only cases:
          IF(.NOT.DES_CONTINUUM_COUPLED) THEN    
 ! Keep track of TIME for DEM simulations
             TIME = S_TIME
-
-! Write DES data for DEM only case 
+ 
+! Write data using des_spx_time and des_res_time; note the time will
+! reflect current position of particles  
             IF(PRINT_DES_DATA) THEN
-                 PTC = PTC + DTSOLID
-! Additional check to make sure DEM data are written at exactly NN = FACTOR.
-               IF((PTC.GE.P_TIME .AND. NN .NE. (FACTOR-1)) .OR. NN == FACTOR) THEN
+               IF ( (S_TIME+0.1d0*DTSOLID >= DES_SPX_TIME) .OR. &
+                    (S_TIME+0.1d0*DTSOLID >= TSTOP) .OR. &
+                    (NN == FACTOR) ) THEN
+                  DES_SPX_TIME = &
+                     ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) &
+                     + 1 )*DES_SPX_DT
+! Granular temperature subroutine should be called/calculated when
+! writing DES data 
                   CALL DES_GRANULAR_TEMPERATURE
                   CALL WRITE_DES_DATA
-
                   WRITE(*,'(3X,A,X,ES)') &
                      'DES data files written at time=', S_TIME
                   WRITE(UNIT_LOG,*) &
                      'DES data files written at time= ', S_TIME
-                  PTC = PTC - P_TIME ! this should not be set to zero but to the residual time difference.
                ENDIF
             ENDIF
 
-! Write restart for DEM only case
-            DESRESDT = DESRESDT + DTSOLID
-            IF((DESRESDT.GE.RES_DT .AND. NN .NE. (FACTOR-1)) &
-            .OR. NN == FACTOR) THEN ! same as PTC
-               CALL WRITE_DES_RESTART
-! Write RES1 here for DEM case instead of time_march since it won't be
-! called in time_march.  This will also keep track of TIME.
+            IF ( (S_TIME+0.1d0*DTSOLID >= DES_RES_TIME) .OR. &
+                 (S_TIME+0.1d0*DTSOLID >= TSTOP) .OR. &
+                 (NN == FACTOR) ) THEN
+               DES_RES_TIME = &
+                  ( INT((S_TIME+0.1d0*DTSOLID)/DES_RES_DT) &
+                  + 1 )*DES_RES_DT
+                  CALL WRITE_DES_RESTART
+! Write RES1 here since it won't be called in time_march.  This will
+! also keep track of TIME
                CALL WRITE_RES1 
                WRITE(*,'(3X,A,X,ES)') &
                   'DES.RES and .RES file written at time=', S_TIME
                WRITE(UNIT_LOG,*) &
                   'DES.RES and .RES file written at time= ', S_TIME
-               DESRESDT = DESRESDT - RES_DT
             ENDIF
-
          ENDIF  ! end if (.not.des_continuum_coupled)
 
 
@@ -311,11 +322,12 @@
 
          IF (NN .EQ. FACTOR) &
             WRITE(*,'(3X,A,I5,2X,ES15.7)') &
-               'MAX no. neigh & % overlap = ', NEIGH_MAX, OVERLAP_MAX
+               'MAX no. neigh & % overlap = ',&
+               NEIGH_MAX, OVERLAP_MAX
 
       ENDDO     ! end do NN = 1, FACTOR
 
-
+! When coupled, and if needed, reset the discrete time step accordingly
       IF(DT.LT.DTSOLID_TMP) THEN
          DTSOLID = DTSOLID_TMP
       ENDIF

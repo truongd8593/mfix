@@ -47,8 +47,8 @@
 !
 ! DES output control information
         DEBUG_DES, FOCUS_PARTICLE,&
-        PRINT_DES_DATA, P_TIME,&
-        DEM_OUTPUT_DATA_TECPLOT, DES_SPX_TIME,&
+        PRINT_DES_DATA, DES_SPX_DT, DES_RES_DT, &
+        DEM_OUTPUT_DATA_TECPLOT, &
 !
 ! DES Cohesion Information: M.Weber
 	MASTER_WELL_DEPTH, MASTER_WALL_WELL_DEPTH,&

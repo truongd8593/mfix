@@ -20,10 +20,11 @@
 ! coupled)
       LOGICAL PRINT_DES_DATA 
 
-! Usr specified time interal that controls frequency of writing DEM 
-! output when doing pure granular flow simulation; otherwise coupled DEM
-! simulation output is controlled by value of spx(1) frequency
-      DOUBLE PRECISION P_TIME
+! Usr specified time interval that controls frequency of writing DEM
+! output and restart for pure granular flow; otherwise (when coupled)
+! the frequency of writing output and restart is controlled by the
+! value of spx_dt(1) and res_dt
+      DOUBLE PRECISION DES_SPX_DT, DES_RES_DT
 
 ! If true, then DEM output data is written in tecplot format
       LOGICAL :: DEM_OUTPUT_DATA_TECPLOT 
@@ -40,8 +41,6 @@
 ! File units     
       INTEGER, PARAMETER :: DES_EXTRA_UNIT = 2000, DES_VOLFRAC_UNIT = 2001
 
-! Currently unused quantities 
-      DOUBLE PRECISION DES_SPX_TIME, DES_RES_TIME
 
 
 ! Total number of particles in simulation 
@@ -133,7 +132,7 @@
 
 ! Related quantities used to determine whether neighbor search 
 ! should be called       
-      DOUBLE PRECISION NEIGHBOR_SEARCH_N
+      INTEGER NEIGHBOR_SEARCH_N
       DOUBLE PRECISION NEIGHBOR_SEARCH_RAD_RATIO
       LOGICAL DO_NSEARCH
 
