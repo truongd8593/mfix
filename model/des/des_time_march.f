@@ -52,8 +52,8 @@
      
       INTEGER NN, FACTOR, NP, IJK, I, J, K, BCV_I
 
-!     Local variable to keep track of time when dem restart and des
-!     write data need to be written
+!     Local variables to keep track of time when dem restart and des
+!     write data need to be written when des_continuum_coupled is F
       DOUBLE PRECISION DES_RES_TIME, DES_SPX_TIME
 
 !     Temporary variables when des_continuum_coupled is T to track
@@ -135,9 +135,9 @@
             CALL PARTICLES_IN_CELL
             CALL WRITE_DES_DATA
             WRITE(*,'(3X,A,X,ES)') &
-               'DES data files written at time=', S_TIME
+               'DES data file written at time =', S_TIME
             WRITE(UNIT_LOG,*) &
-               'DES data files written at time= ', S_TIME
+               'DES data file written at time = ', S_TIME
          ENDIF   ! end if on new run type
          WRITE(*,'(1X,A)')&
             '<---------- END FIRST PASS DES_TIME_MARCH ----------'
@@ -200,9 +200,9 @@
             ENDIF 
             IF(DEBUG_DES) THEN
                WRITE(*,'(3X,A,X,I,X,A,X,ES15.7)') &
-                  'DES-COUPLED LOOP NO.=', NN, ' S_TIME=', S_TIME 
+                  'DES-COUPLED LOOP NO. =', NN, ' S_TIME =', S_TIME 
                WRITE(*,'(3X,A,X,ES15.7)') &
-                  'DTSOLID=', DTSOLID
+                  'DTSOLID =', DTSOLID
             ENDIF
 
             CALC_FC = .TRUE.
@@ -215,7 +215,7 @@
             ENDIF
          ELSE   ! else if (des_continuum_coupled)
             IF(DEBUG_DES) WRITE(*,'(3X,A,X,I,X,A,X,ES15.7)') &
-               'DEM LOOP NO.=', NN, ' S_TIME=', S_TIME 
+               'DEM LOOP NO. =', NN, ' S_TIME =', S_TIME 
          ENDIF   ! end if/else (des_continuum_coupled) 
          
 
@@ -282,9 +282,9 @@
                   CALL DES_GRANULAR_TEMPERATURE
                   CALL WRITE_DES_DATA
                   WRITE(*,'(3X,A,X,ES)') &
-                     'DES data files written at time=', S_TIME
+                     'DES data file written at time =', S_TIME
                   WRITE(UNIT_LOG,*) &
-                     'DES data files written at time= ', S_TIME
+                     'DES data file written at time = ', S_TIME
                ENDIF
             ENDIF
 
@@ -299,9 +299,9 @@
 ! also keep track of TIME
                CALL WRITE_RES1 
                WRITE(*,'(3X,A,X,ES)') &
-                  'DES.RES and .RES file written at time=', S_TIME
+                  'DES.RES and .RES files written at time =', S_TIME
                WRITE(UNIT_LOG,*) &
-                  'DES.RES and .RES file written at time= ', S_TIME
+                  'DES.RES and .RES files written at time = ', S_TIME
             ENDIF
          ENDIF  ! end if (.not.des_continuum_coupled)
 
@@ -321,9 +321,10 @@
          ENDIF
 
          IF (NN .EQ. FACTOR) &
-            WRITE(*,'(3X,A,I5,2X,ES15.7)') &
-               'MAX no. neigh & % overlap = ',&
-               NEIGH_MAX, OVERLAP_MAX
+            WRITE(*,'(3X,A,X,I,A,/,5X,A,X,I5,2X,A,X,ES15.7)') &
+               'For loop NN =', I, ' :',&
+               'MAX number of neighbors =',NEIGH_MAX,&
+               'and MAX percent overlap =', OVERLAP_MAX
 
       ENDDO     ! end do NN = 1, FACTOR
 

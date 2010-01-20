@@ -29,6 +29,9 @@
       LOGICAL FLAG_WARN
 !----------------------------------------------- 
 
+      WRITE(*,'(1X,A)')&
+         '---------- START CHECK_DES_DATA ---------->'
+
       IF(COORDINATES == 'CYLINDRICAL') THEN
          WRITE (UNIT_LOG, 1000)
          CALL MFIX_EXIT(myPE)
@@ -44,6 +47,24 @@
             DES_PERIODIC_WALLS_Z) .AND. .NOT.DES_PERIODIC_WALLS) THEN
          DES_PERIODIC_WALLS = .TRUE.
          WRITE(UNIT_LOG, 1017)
+      ENDIF
+
+      IF(DES_NEIGHBOR_SEARCH.EQ.1) THEN
+         WRITE(*,'(3X,A)') &
+            'DES_NEIGHBOR_SEARCH set to N-SQUARE'
+      ELSEIF(DES_NEIGHBOR_SEARCH.EQ.2) THEN
+         WRITE(*,'(3X,A)') &
+            'DES_NEIGHBOR_SEARCH set to QUADTREE'
+      ELSEIF(DES_NEIGHBOR_SEARCH.EQ.3) THEN
+         WRITE(*,'(3X,A)') &
+            'DES_NEIGHBOR_SEARCH set to OCTREE'
+      ELSEIF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
+         WRITE(*,'(3X,A)') &
+            'DES_NEIGHBOR_SEARCH set to GRID BASED'
+      ELSE
+         WRITE (UNIT_LOG, 1003)
+         WRITE (*, 1003)
+         CALL MFIX_EXIT(myPE)         
       ENDIF
 
       IF(DES_PERIODIC_WALLS) THEN
@@ -230,6 +251,10 @@
 ! Overwrite user's input in case of DEM (no fluid)
       IF(.NOT.DES_CONTINUUM_COUPLED) DES_INTERP_ON = .FALSE.
       
+      WRITE(*,'(1X,A)')&
+         '<---------- END CHECK_DES_DATA ----------'
+
+
       RETURN
  1000 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'DES should only be run using CARTESIAN coordinates',/1X,70('*')/)
@@ -238,6 +263,10 @@
          'allowed',/1X,70('*')/)
  1002 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Direction of periodicity not defined in mfix.dat',/1X,70('*')/)
+
+ 1003 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'Invalid option for DES_NEIGHBOR_SEARCH in mfix.dat',/10X,&
+         'Must be > 0 or < 5',/1X,70('*')/)
 
  1004 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Spring constants KN or KN_W not specified in mfix.dat',/1X,70('*')/)

@@ -33,16 +33,6 @@
 
       WRITE(*,'(1X,A)')&
          '---------- START MAKE_ARRAYS_DES ---------->'
-
-      IF(DES_NEIGHBOR_SEARCH.EQ.1) THEN
-         WRITE(*,'(3X,A)') 'dem using n-square search'
-      ELSE IF(DES_NEIGHBOR_SEARCH.EQ.2) THEN
-         WRITE(*,'(3X,A)') 'dem using quadtree search'
-      ELSE IF(DES_NEIGHBOR_SEARCH.EQ.3) THEN
-         WRITE(*,'(3X,A)') 'dem using octree search'
-      ELSE IF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
-         WRITE(*,'(3X,A)') 'dem using linked cell search'
-      ENDIF
       
       IF(RUN_TYPE == 'NEW') THEN ! Fresh run
          
@@ -65,7 +55,7 @@
             call generate_particle_config
          ENDIF
             
-      ELSE IF(RUN_TYPE == 'RESTART_1') THEN !  Read Restart
+      ELSEIF(RUN_TYPE == 'RESTART_1') THEN !  Read Restart
          CALL READ_DES_RESTART
          DES_POS_NEW(:,:) = DES_POS_OLD(:,:)
          DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
@@ -79,14 +69,14 @@
             WRITE(*,'(3X,A)') &
                'Restart 1 is not implemented with DES-COHESION'
             CALL MFIX_EXIT(myPE)
-         END IF
+         ENDIF
          
-      ELSE IF (RUN_TYPE == 'RESTART_2') THEN 
+      ELSEIF (RUN_TYPE == 'RESTART_2') THEN 
          WRITE(UNIT_LOG,*) 'Restart 2 is not implemented with DES'
          WRITE(*,'(3X,A)') 'Restart 2 is not implemented with DES'
          CALL MFIX_EXIT(myPE)
-      END IF
-      !des_radius(2) = 2.d0*des_radius(1)
+      ENDIF
+
       CALL CFASSIGN
 
 ! J.Musser      
@@ -95,10 +85,13 @@
       CALL CHECK_DES_BC
 
       CALL PARTICLES_IN_CELL
-      IF(PVEL_StDev.GT.ZERO)       CALL init_particles_jn
-      !IF(RUN_TYPE == 'NEW'.and.DES_INTERP_ON.AND.DES_CONTINUUM_COUPLED) CALL SET_INITIAL_VELOCITY
+
+! Overrides initial particle velocity with velocities assigned from a
+! Gaussian distribution based on usr specified standard deviation and
+! mean
+      IF(PVEL_StDev.GT.ZERO)  CALL INIT_PARTICLES_JN
        
-      CALL writeic
+      CALL WRITEIC
 
       WRITE(*,'(1X,A)')&
          '<---------- END MAKE_ARRAYS_DES ----------'
