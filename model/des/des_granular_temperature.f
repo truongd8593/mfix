@@ -71,7 +71,7 @@
                      TEMP = TEMP + (DES_VEL_NEW(NP,3)-DES_W_s(IJK,M))**2 
                   ENDIF
                ENDDO
-               DES_THETA(IJK,M) = TEMP/(3.0d0 * DBLE(NPG))
+               DES_THETA(IJK,M) = TEMP/(DBLE(DIMN) * DBLE(NPG))
             ENDIF
          ENDIF
       
