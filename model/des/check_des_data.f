@@ -51,16 +51,16 @@
 
       IF(DES_NEIGHBOR_SEARCH.EQ.1) THEN
          WRITE(*,'(3X,A)') &
-            'DES_NEIGHBOR_SEARCH set to N-SQUARE'
+            'DES_NEIGHBOR_SEARCH set to 1 (N-SQUARE)'
       ELSEIF(DES_NEIGHBOR_SEARCH.EQ.2) THEN
          WRITE(*,'(3X,A)') &
-            'DES_NEIGHBOR_SEARCH set to QUADTREE'
+            'DES_NEIGHBOR_SEARCH set to 2 (QUADTREE)'
       ELSEIF(DES_NEIGHBOR_SEARCH.EQ.3) THEN
          WRITE(*,'(3X,A)') &
-            'DES_NEIGHBOR_SEARCH set to OCTREE'
+            'DES_NEIGHBOR_SEARCH set to 3 (OCTREE)'
       ELSEIF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
          WRITE(*,'(3X,A)') &
-            'DES_NEIGHBOR_SEARCH set to GRID BASED'
+            'DES_NEIGHBOR_SEARCH set to 4 (GRID BASED)'
       ELSE
          WRITE (UNIT_LOG, 1003)
          WRITE (*, 1003)
@@ -371,8 +371,9 @@
          '(> 0.50 or =< -1.d0) defined in mfix.dat',/1X,70('*')/)
 
  1034 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Change the value of DES_INTG_METHOD in mfix.dat.  Options',&
-         /,10X,'are EULER (default/undefined) or ADAMS_BASHFORTH',/,&
+         'Invalid option for DES_INTG_METHOD in mfix.dat.  Must be',&
+         /,10X,'EULER (default/undefined) or ADAMS_BASHFORTH',/,&
          1X,70('*')/)
+         
 
          END SUBROUTINE CHECK_DES_DATA

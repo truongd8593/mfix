@@ -38,14 +38,17 @@
 ! Local Variables
 !-----------------------------------------------
       LOGICAL:: filexist, isopen
-      INTEGER L, IJK, M, I, J, K, COUNT_E
-      DOUBLE PRECISION MINMASS, MASS_I, MASS_J, &
+      INTEGER I, J, K, IJK, L, M
+      INTEGER COUNT_E
+      DOUBLE PRECISION MIN_MASS, MASS_I, MASS_J, &
                        MASS_EFF, RED_MASS_EFF
       DOUBLE PRECISION TCOLL, TCOLL_TMP, MAXMASS
 ! local variables for calculation of hertzian contact parameters
       DOUBLE PRECISION R_EFF, E_EFF, G_MOD_EFF     
-
+! local variable to determine minimum grid size
+      DOUBLE PRECISION MIN_GRID
 !-----------------------------------------------
+      INCLUDE 'function.inc'
       INCLUDE 'b_force1.inc'
       INCLUDE 'b_force2.inc'
 
@@ -53,7 +56,7 @@
       WRITE(*,'(3X,A)') '---------- START CFASSIGN ---------->'
 
       PIS = PARTICLES  ! J.Musser 
-      MINMASS = LARGE_NUMBER
+      MIN_MASS = LARGE_NUMBER
       MAXMASS = SMALL_NUMBER
       MAX_RADIUS = ZERO
       MIN_RADIUS = LARGE_NUMBER
@@ -64,7 +67,7 @@
          OMOI(L) = 2.5d0/(PMASS(L)*DES_RADIUS(L)**2) !one over MOI
          MAX_RADIUS = MAX(MAX_RADIUS, DES_RADIUS(L))
          MIN_RADIUS = MIN(MIN_RADIUS, DES_RADIUS(L))
-         IF(PMASS(L).LT.MINMASS) MINMASS = PMASS(L) 
+         IF(PMASS(L).LT.MIN_MASS) MIN_MASS = PMASS(L) 
          MAXMASS = MAX(PMASS(L), MAXMASS)
          MARK_PART(L) = 1
          IF(DES_POS_NEW(L,2).LE.YLENGTH/2.d0) MARK_PART(L) = 0
@@ -72,6 +75,25 @@
 
       RADIUS_EQ = MAX_RADIUS*1.05d0
       WRITE(*,'(5X,A,ES15.8)') '1.05*MAX_RADIUS = ', MAX_RADIUS     
+
+      IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN
+         MIN_GRID = LARGE_NUMBER
+         DO IJK = ijkstart3, ijkend3
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+            MIN_GRID = MIN(MIN_GRID, DX(I))
+            MIN_GRID = MIN(MIN_GRID, DY(J))
+            IF (DIMN.EQ.3) MIN_GRID = MIN(MIN_GRID, DZ(K))
+         ENDDO
+         IF (MIN_GRID <= MIN_RADIUS) THEN
+            WRITE(*,'(/,5X,A,A,/7X,A,A,/7X,A,/)') &
+               'WARNING: for grid based search the grid size should ',&
+               'be greater than the', 'radius of the smallest ',&
+               'particle or neighbor contacts may be missed',&
+               'giving bad simulation results' 
+         ENDIF
+      ENDIF
 
 
 ! Set boundary edges 

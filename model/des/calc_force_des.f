@@ -30,6 +30,10 @@
       INTEGER WALLCONTACT, WALLCHECK
 
       DOUBLE PRECISION OVERLAP_N, OVERLAP_T, SQRT_OVERLAP
+      DOUBLE PRECISION FRAC_OVERLAP1, FRAC_OVERLAP2
+! percent of particle radius when excess overlap will be flagged
+      DOUBLE PRECISION, PARAMETER :: flag_overlap = 0.20d0
+
       DOUBLE PRECISION V_REL_TRANS_NORM, V_REL_TRANS_TANG, &
                        V_REL_NORM_OLD, VRN_OLD(DIMN)
       DOUBLE PRECISION FT_TMP(DIMN), PFT_TMP(DIMN)
@@ -169,15 +173,6 @@
                IF(WALLCONTACT.EQ.1) THEN
                   WALLCHECK = 1
 
-                  IF(DEBUG_DES) THEN
-                     IF (.NOT.DES_LOC_DEBUG) THEN
-                        DES_LOC_DEBUG = .TRUE.
-                        WRITE(*,1000)
-                     ENDIF
-                     WRITE(*,'(5X,A,I)') &
-                        'Possible wall contact with wall: ', IW
-                  ENDIF
-
 ! J.Musser : changed particles to max_pis                  
                   I = MAX_PIS + IW
                   ALREADY_NEIGHBOURS=.FALSE.
@@ -204,6 +199,19 @@
                      IF((((R_LM-DISTMOD)/R_LM)*100.d0).GT.OVERLAP_MAX) THEN
                         OVERLAP_MAX = (((R_LM-DISTMOD)/R_LM)*100.d0)
                         OVERLAP_MAXP = LL
+                     ENDIF
+
+                     FRAC_OVERLAP1 = (R_LM-DISTMOD)/DES_RADIUS(LL)
+                     IF (FRAC_OVERLAP1 > flag_overlap) THEN
+                        WRITE(*,'(5X,A,A,ES15.7)') &
+                           'WARNING: excessive overlap detected ', &
+                           'at time ', S_TIME
+                        WRITE(*,'(7X,A,I,2X,A,I5,2X,A)') &
+                           'between particle ', LL, 'and wall ',&
+                           IW, 'with'
+                        WRITE(*,'(7X,A,ES15.7,2X,A,ES15.7)') &
+                          'overlap = ', (R_LM-DISTMOD), &
+                           ' radius = ', DES_RADIUS(LL)
                      ENDIF
 
                      IF(DISTMOD.NE.ZERO) THEN
@@ -238,16 +246,19 @@
                         NI = PN(LL,1) + 1
                         PN(LL,NI) = I
                         PV(LL,NI) = 1
+                        OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                         IF (V_REL_TRANS_NORM .GT. ZERO) THEN
                            DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
                         ELSEIF (V_REL_TRANS_NORM .LT. ZERO) THEN
                           DTSOLID_TMP = DTSOLID
-                          WRITE(*,'(5X,A,A,/5X,A,I,X,I)') &
+                          WRITE(*,'(5X,A,A,ES15.7)') &
                              'WARNING: normal relative velocity less ',&
-                             'than zero for first contact between',&
-                             'particle-wall: ', LL, IW
-                          WRITE(*,'(5X,A,ES15.7)') &
-                             'V_REL_NORM: ', V_REL_TRANS_NORM
+                             'than zero at time ', S_TIME
+                          WRITE(*,'(7X,A,I,2X,A,I5,2X,A)') &
+                             'for first contact between particle', LL, &
+                             'and wall ', IW, 'with'
+                          WRITE(*,'(7X,A,ES15.7)') &
+                             'V_REL_NORM = ', V_REL_TRANS_NORM
                         ELSE
                            DTSOLID_TMP = OVERLAP_N/&
                               (V_REL_TRANS_NORM+SMALL_NUMBER)
@@ -285,7 +296,6 @@
 ! relative velocity with respect to contact time. Correction in the tangential 
 ! direction is imposed                   
                   PFT(LL,NI,:) = PFT(LL,NI,:)+OVERLAP_T*TANGENT(:)
-                  PFT_TMP(:) = PFT(LL,NI,:)   ! for an easy pass to dotprdct
                   PFT_TMP(:) = PFT(LL,NI,:) - &
                      DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
                   FTS1(:) = -KT_DES_W * PFT_TMP(:)
@@ -303,25 +313,23 @@
                   CALL CFFCTOWALL(LL, NORMAL, DISTMOD)
                   
 ! Save the tangential displacement history with the correction of Coulomb's law
-                  IF (PARTICLE_SLIDE) PFT(LL,NI,:) = -( FT(LL,:) - &
-                     FTS2(:) ) / KT_DES_W
+                  IF (PARTICLE_SLIDE) PFT(LL,NI,:) = PFT_TMP(:)
         
                   IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
                      IF (.NOT.DES_LOC_DEBUG) THEN
                         DES_LOC_DEBUG = .TRUE.
                         WRITE(*,1000)
                      ENDIF                          
-                     WRITE(*,*) '     WALL CONTACT ON ', NI
-                     WRITE(*,*) '     ALREADY_NEIGHBOURS? = ',&
-                        ALREADY_NEIGHBOURS
                      WRITE(*,*) '     STIME, DTSOLID = ', S_TIME, DTSOLID
+                     WRITE(*,*) '     WALL CONTACT ON WALL =', IW
+                     WRITE(*,*) '     ALREADY_NEIGHBOURS = ',&
+                        ALREADY_NEIGHBOURS
                      WRITE(*,*) '     DES_VEL = ', DES_VEL_NEW(LL,1:DIMN),&
                         des_radius(LL)*OMEGA_NEW(LL,1)
-                     WRITE(*,*) '     MAA'
                      WRITE(*,*) '     V-OMEGA R = ', &
                         DES_VEL_NEW(LL,1)+des_radius(LL)* OMEGA_NEW(LL,1),&
                         (DES_VEL_NEW(LL,1)+des_radius(LL)*OMEGA_NEW(LL,1))*DTSOLID
-                     WRITE(*,*) '     Mg = ', PMASS(LL)*gravity
+                     WRITE(*,*) '     M*g = ', PMASS(LL)*gravity
                      WRITE(*,*) '     KN_W, ETAN_W, KT_W, ETAT_W = ',&
                         KN_DES_W, ETAN_DES_W, KT_DES_W, ETAT_DES_W
                      WRITE(*,*) '     TANGENT= ', TANGENT
@@ -370,9 +378,9 @@
                      TEMPX = DES_POS_NEW(I,1)
                      TEMPY = DES_POS_NEW(I,2)
                      IF(DIMN.EQ.3) TEMPZ = DES_POS_NEW(I,3)        
+
                      TEMPD = ABS(DES_POS_NEW(LL,1) - DES_POS_NEW(I,1))
                      IF(TEMPD.GT.4.d0*MAX_RADIUS.AND.DES_PERIODIC_WALLS_X) THEN 
-
                         IF(DEBUG_DES) THEN
                            IF (.NOT.DES_LOC_DEBUG) THEN
                               DES_LOC_DEBUG = .TRUE.
@@ -385,29 +393,25 @@
                            WRITE(*,'(5X,A,(ES15.7))') &
                               'I DES_POS = ', DES_POS_NEW(I,:)
                         ENDIF
-
                         IF(TEMPX.GT.DES_POS_NEW(LL,1)) THEN 
                            DES_POS_NEW(I,1) = DES_POS_NEW(I,1) - (EX2-WX1)
-
                            IF(DEBUG_DES) THEN
                               IF (.NOT.DES_LOC_DEBUG) THEN
                                  DES_LOC_DEBUG = .TRUE.
                                  WRITE(*,1000) 
                               ENDIF                                
-                              WRITE(*,*) '     NEW POS WEST= ', DES_POS_NEW(I,1)
+                              WRITE(*,*) '     NEW I POS WEST= ', DES_POS_NEW(I,1)
                            ENDIF
                         ELSE
                            DES_POS_NEW(I,1) = DES_POS_NEW(I,1) + EX2 - WX1
-
                            IF(DEBUG_DES) THEN
                               IF (.NOT.DES_LOC_DEBUG) THEN
                                  DES_LOC_DEBUG = .TRUE.
                                  WRITE(*,1000)
                               ENDIF
-                              WRITE(*,*) '     NEW POS EAST = ', DES_POS_NEW(I,1)
+                              WRITE(*,*) '     NEW I POS EAST = ', DES_POS_NEW(I,1)
                            ENDIF
                         ENDIF
-
                      ENDIF
                      
                      TEMPD = ABS(DES_POS_NEW(LL,2) - DES_POS_NEW(I,2))
@@ -454,6 +458,21 @@
                      IF((((R_LM-DISTMOD)/R_LM)*100.d0).GT.OVERLAP_MAX) THEN
                         OVERLAP_MAX = (((R_LM-DISTMOD)/R_LM)*100.d0)
                         OVERLAP_MAXP = LL
+                     ENDIF
+                     
+                     FRAC_OVERLAP1 = (R_LM-DISTMOD)/DES_RADIUS(LL)
+                     FRAC_OVERLAP2 = (R_LM-DISTMOD)/DES_RADIUS(I)
+                     IF (FRAC_OVERLAP1 > flag_overlap .OR. &
+                         FRAC_OVERLAP2 > flag_overlap) THEN
+                        WRITE(*,'(5X,A,A,ES15.7)') &
+                           'WARNING: excessive overlap detected ', &
+                           'at time ', S_TIME
+                        WRITE(*,'(7X,A,I,2X,A,I5,2X,A)') &
+                           'between particles ', LL, 'and ',&
+                           I, 'with'
+                        WRITE(*,'(7X,A,ES15.7,2X,A,ES15.7,2X,ES15.7)') &
+                           'overlap = ', (R_LM-DISTMOD), &
+                           ' radii = ', DES_RADIUS(LL), DES_RADIUS(I)
                      ENDIF
 
                      IF(DISTMOD.NE.ZERO) THEN
@@ -502,14 +521,15 @@
                           NORMAL_OLD(:)=DIST_OLD(:)/DISTMOD_OLD
                           VRN_OLD(:)=DES_VEL_OLD(LL,:)-DES_VEL_OLD(I,:)
                           V_REL_NORM_OLD=DES_DOTPRDCT(VRN_OLD,NORMAL_OLD)
-                          WRITE(*,'(5X,A,A,/5X,A,I,X,I)') &
+                          WRITE(*,'(5X,A,A,ES15.7)') &
                              'WARNING: normal relative velocity less ',&
-                             'than zero for first contact between',&
-                             'particle pair: ', LL, I
-                          WRITE(*,'(5X,A,ES15.7)') &
-                             'V_REL_NORM: ', V_REL_TRANS_NORM
-                          WRITE(*,'(5X,A,ES15.7)') &
-                             'V_REL_NORM_OLD: ', V_REL_NORM_OLD
+                             'than zero at time ', S_TIME
+                          WRITE(*,'(7X,A,I,2X,A,I,2X,A)') &
+                             'for first contact between particles', LL, &
+                             'and ', I, 'with'
+                          WRITE(*,'(7X,A,ES15.7,2X,A,ES15.7)') &
+                             'V_REL_NORM = ', V_REL_TRANS_NORM, &
+                             'and V_REL_NORM_OLD = ', V_REL_NORM_OLD
                         ELSE
                            DTSOLID_TMP = OVERLAP_N/&
                               (V_REL_TRANS_NORM+SMALL_NUMBER)
@@ -547,7 +567,6 @@
 ! relative velocity with respect to contact time. Correction in the tangential 
 ! direction is imposed                   
                   PFT(LL,NI,:) = PFT(LL,NI,:) + OVERLAP_T * TANGENT(:)
-                  PFT_TMP(:) = PFT(LL,NI,:)   ! for an easy pass to dotprdct
                   PFT_TMP(:) = PFT(LL,NI,:) - &
                      DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
                   FTS1(:) = -KT_DES * PFT_TMP(:)
@@ -564,9 +583,8 @@
                   CALL CFFCTOW(LL, I, NORMAL, DISTMOD)
 
 ! Save the tangential displacement history with the correction of Coulomb's law
-                  IF (PARTICLE_SLIDE) PFT(LL,NI,:) = -( FT(LL,:) - &
-                     FTS2(:) ) / KT_DES
-                 
+                  IF (PARTICLE_SLIDE) PFT(LL,NI,:) = PFT_TMP(:)
+                  
                   IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN 
                      IF (.NOT.DES_LOC_DEBUG) THEN
                         DES_LOC_DEBUG = .TRUE.
