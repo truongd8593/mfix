@@ -321,8 +321,8 @@
          ENDIF
 
          IF (NN .EQ. FACTOR) &
-            WRITE(*,'(3X,A,X,I,A,/,5X,A,X,I5,2X,A,X,ES15.7)') &
-               'For loop NN =', I, ' :',&
+            WRITE(*,'(3X,A,I,A,/,5X,A,X,I5,2X,A,X,ES15.7)') &
+               'For loop ', NN, ' :',&
                'MAX number of neighbors =',NEIGH_MAX,&
                'and MAX percent overlap =', OVERLAP_MAX
 
