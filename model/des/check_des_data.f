@@ -32,6 +32,7 @@
       WRITE(*,'(1X,A)')&
          '---------- START CHECK_DES_DATA ---------->'
 
+
       IF(COORDINATES == 'CYLINDRICAL') THEN
          WRITE (UNIT_LOG, 1000)
          CALL MFIX_EXIT(myPE)
@@ -40,6 +41,15 @@
       CHECK_MPI = NODESI * NODESJ * NODESK
       IF(CHECK_MPI.NE.1) THEN
          WRITE (UNIT_LOG, 1001)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+! if you want to run DEM with the existing cohesion implementation then
+! comment out the following 4 lines; also note that this feature is
+! unlikely to function correctly with the current version of DEM so
+! proceed at your own risk
+      IF(USE_COHESION) THEN
+         WRITE(UNIT_LOG, 1035)
          CALL MFIX_EXIT(myPE)
       ENDIF
 
@@ -374,6 +384,12 @@
          'Invalid option for DES_INTG_METHOD in mfix.dat.  Must be',&
          /,10X,'EULER (default/undefined) or ADAMS_BASHFORTH',/,&
          1X,70('*')/)
-         
+
+ 1035 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'USE_COHESION and corresponding code has been disabled as',/10X,&
+         'this feature has not verified with the current DEM code. To',&
+         /10X,'activate this feature comment out this check and ',&
+         'proceed at',/10X,'your own risk',/,1X,70('*')/)
+        
 
          END SUBROUTINE CHECK_DES_DATA
