@@ -87,10 +87,10 @@
             IF (DIMN.EQ.3) MIN_GRID = MIN(MIN_GRID, DZ(K))
          ENDDO
          IF (MIN_GRID <= MIN_RADIUS) THEN
-            WRITE(*,'(/,5X,A,A,/7X,A,A,/7X,A,/)') &
+            WRITE(*,'(/,5X,A,A,/14X,A,A,/14X,A,A,/)') &
                'WARNING: for grid based search the grid size should ',&
-               'be greater than the', 'radius of the smallest ',&
-               'particle or neighbor contacts may be missed',&
+               'be greater than', 'the radius of the smallest ',&
+               'particle or neighbor contacts','may be missed ',&
                'giving bad simulation results' 
          ENDIF
       ENDIF

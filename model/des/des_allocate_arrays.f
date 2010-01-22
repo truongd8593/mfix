@@ -1,14 +1,14 @@
-
-      SUBROUTINE DES_ALLOCATE_ARRAYS 
-      
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !                                                                    
 !  Module name: DES_ALLOCATE_ARRAYS                                     
 !  Purpose: allocate arrays for DES
 !                                  
-!                                                                   
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+      SUBROUTINE DES_ALLOCATE_ARRAYS 
+                                                                   
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1
@@ -27,7 +27,11 @@
       INTEGER I, J, K, IJK, M 
 ! domain volume      
       DOUBLE PRECISION :: VOL_DOMAIN
-! the number of particles in the system      
+! for gener_part_config, the maximum specified particle diameter 
+      DOUBLE PRECISION MAX_DIAM
+! for gener_part_config, the total solids volume fraction
+      DOUBLE PRECISION TOT_VOL_FRAC
+! the number of particles in the system
       INTEGER NPARTICLES
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -37,69 +41,125 @@
          '---------- START DES_ALLOCATE_ARRAYS ---------->'
 
       IF(GENER_PART_CONFIG) THEN 
+         TOT_VOL_FRAC = ZERO
+         MAX_DIAM = ZERO 
          WRITE(*,'(3X,A)') 'Checking usr info for gener_part_config'
-         WRITE(*,'(3X,A,3(G15.8))') &
-            'des_eps_xstart, ystart, zstart = ',&
-            DES_EPS_XSTART, DES_EPS_YSTART, DES_EPS_ZSTART
+         WRITE(*,'(5X,A,G15.8)') 'DES_EPS_XSTART = ', DES_EPS_XSTART
+         WRITE(*,'(5X,A,G15.8)') 'DES_EPS_YSTART = ', DES_EPS_YSTART
+         IF (DIMN .EQ. 3) &
+            WRITE(*,'(5X,A,G15.8)') 'DES_EPS_ZSTART = ', DES_EPS_ZSTART
 
 ! Check if des_eps_xstart and related variables are correctly initialized in mfix.dat file
          IF(DIMN.EQ.2) THEN 
             IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.&
                DES_EPS_YSTART.EQ.UNDEFINED) THEN
-               WRITE (*,'(3X,A,/,5X,A,/,5X,A)') 'ERROR MESSAGE: ', &
-                  'des_eps_xstart or des_eps_ystart ',&
-                  'not properly defined in the input file'
+               WRITE (*,'(/,5X,A,A,A,/)') 'ERROR MESSAGE: ', &
+                  'DES_EPS_XSTART or DES_EPS_YSTART ',&
+                  'not defined in mfix.dat'
                CALL MFIX_EXIT(myPE)
             ENDIF
          ELSE
             IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.&
                DES_EPS_YSTART.EQ.UNDEFINED.OR.&
                DES_EPS_ZSTART.EQ.UNDEFINED) THEN
-               WRITE (*,'(3X,A,/,5X,A,/,5X,A)') 'ERROR MESSAGE: ', &
-                  'des_eps_xstart, des_eps_ystart or des_eps_zstart ',&
-                  'not properly defined in the input file'
+               WRITE (*,'(/,5X,A,A,A,/)') 'ERROR MESSAGE: ', &
+                  'DES_EPS_XSTART, DES_EPS_YSTART, or DES_EPS_ZSTART ',&
+                  'not defined in mfix.dat'
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
 
+! perform a quick series of checks for quantities immediately needed in
+! calculations; a more comprehensive series of checks is performed later
+! (e.g., check_data_03, check_des_data)         
          DO M = 1, MMAX
             IF(VOL_FRAC(M) == UNDEFINED) THEN
-               WRITE (*,'(3X,A,A)') &
+               WRITE (*,'(/,5X,A,A,/)') &
                   'VOL_FRAC(M) must be defined in ',&
                   'mfix.dat for M = 1, MMAX'
                CALL MFIX_EXIT(myPE)
             ENDIF
             IF(VOL_FRAC(M) < ZERO .OR. VOL_FRAC(M) > (ONE-EP_STAR)) THEN
-               WRITE (*,'(3X,A,A)') &
+               WRITE (*,'(/,5X,A,A,/)') &
                   'Unphysical ( > 1-EP_STAR or < 0) ',&
                   'values of VOL_FRAC(M) set in mfix.dat'
                CALL MFIX_EXIT(myPE)
             ENDIF
+            IF (D_P0(M)<ZERO .OR. D_P0(M)==UNDEFINED) THEN 
+               WRITE (*,'(/,5X,A,A,/)') &
+                  'D_P0 must be defined and >0 in mfix.dat ',&
+                  'for M = 1,MMAX'
+                  CALL MFIX_EXIT(myPE)
+            ENDIF
+            MAX_DIAM = MAX(MAX_DIAM, D_P0(M))            
+            TOT_VOL_FRAC = TOT_VOL_FRAC + VOL_FRAC(M)
          ENDDO
-         
-         WRITE(*,'(3X,A,A)') 'particle configuration will be ', &
-            'automatically generated'
+         IF (MAX_DIAM .EQ. ZERO) MAX_DIAM = ONE 
+
+         IF(TOT_VOL_FRAC > (ONE-EP_STAR)) THEN
+            WRITE (*,'(/,5X,A,A,/7X,A,ES15.7,2X,A,ES15.7,/)') &
+               'Total solids volume fraction should not exceed ', &
+               '1-EP_STAR where', 'EP_STAR = ', EP_STAR, &
+               ' and TOT_VOL_FRAC = ', TOT_VOL_FRAC
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+         WRITE(*,'(/5X,A,A,/)') 'Particle configuration will ', &
+            'automatically be generated'
+
          PARTICLES = 0
          IF(DIMN.EQ.2) THEN 
-            VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*ZLENGTH 
-            ! DZ(1) is not yet defined here.
+! Values of DZ(1) or zlength are not guaranteed at this point; however,
+! some value is needed to calculate the number of particles
+            IF (DZ(1) == UNDEFINED .AND. ZLENGTH == UNDEFINED) THEN
+               WRITE(*,'(5X,A,A,/11X,A,A,ES15.7,/11X,A,A,/11X,A,A,/)') &
+                  'NOTE: neither zlength or dz(1) were specified ',&
+                  'so a depth equal','to the maximum particle ',&
+                  'diameter of ', MAX_DIAM, 'is temporarily used ',&
+                  'to provide a basis','for calculating ', &
+                  'the number of particles in the system'
+               VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*MAX_DIAM
+            ELSEIF (DZ(1) == UNDEFINED) THEN
+               WRITE(*,'(5X,A,G15.8,A,/11X,A,A,/11X,A,/)') &
+                  'NOTE: specified zlength of ', ZLENGTH,&
+                  ' is used','to provide a basis for calculating ',&
+                  'the number of','particles in the system'
+               VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*ZLENGTH
+            ELSE
+               WRITE(*,'(5X,A,G15.8,A,/11X,A,A,/11X,A,/)') &
+                  'NOTE: specified dz(1) of ', DZ(1),&
+                  ' is used','to provide a basis for calculating ',&
+                  'the number of','particles in the system'
+               VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*DZ(1)
+            ENDIF
          ELSE 
             VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*DES_EPS_ZSTART
          ENDIF
+
          DO M = 1, MMAX
             PART_MPHASE(M) = FLOOR((6.D0*VOL_FRAC(M)*VOL_DOMAIN)/&
                (PI*(D_P0(M)**3)))
          ENDDO
-         WRITE(*,*) '     MMAX = ', MMAX, 'PART_MPHASE = ',&
-            PART_MPHASE, VOL_DOMAIN, D_P0(1), pi, &
-            (6.D0*VOL_FRAC(1)*VOL_DOMAIN)/(PI*(D_P0(1)**3))
+         WRITE(*,'(5X,A,I5,2X,A,G15.7)') 'MMAX = ', MMAX, &
+           ' VOL_DOMAIN = ', VOL_DOMAIN
+         WRITE(*,'(5X,A,/7X,(ES15.7,2X,$))') 'D_P0(M) = ', &
+            D_P0(1:MMAX)
+         WRITE(*,'')
+         WRITE(*,'(5X,A,/7X,(G15.8,2X,$))') &
+            'VOL_FRAC(M) (solids volume fraction of phase M) = ', &
+            VOL_FRAC(1:MMAX)
+         WRITE(*,'')
+         WRITE(*,'(5X,A,/7X,(I,2X,$))') &
+            'PART_MPHASE(M) (number particles in phase M) = ', &
+            PART_MPHASE(1:MMAX)
+         WRITE(*,'')
          PARTICLES = SUM(PART_MPHASE(1:MMAX))
          
       ENDIF !  end if gener_part_config
 
       WRITE(*,'(3X,A,I)') &
-         'total number of particles = ', PARTICLES      
-      WRITE(*,'(3X,A,I)') 'dimension = ', DIMN
+         'Total number of particles = ', PARTICLES      
+      WRITE(*,'(3X,A,I5)') 'Dimension = ', DIMN
       NWALLS = 2*DIMN
 
       IF(.NOT.NON_RECT_BC) THEN

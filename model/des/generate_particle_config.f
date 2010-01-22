@@ -33,6 +33,9 @@
       DOUBLE PRECISION DIST, R_LM, DOML(DIMN)
 !-----------------------------------------------       
 
+      WRITE(*,'(3X,A)') &
+         '---------- START GENERATE_PARTICLE_CONFIG ---------->'
+
       PART_COUNT = 0
       DO M = 1, MMAX
          DO NP = 1, PART_MPHASE(M) 
@@ -71,17 +74,18 @@
          STOP 
       ENDIF
 
- 1001 FORMAT(/1X,70('*')//&
-         ' From: GENERATE_PARTICLE_CONFIG -',/&
-         ' Message: Positive overlap with walls in y-dir',/&
-         ' Max. y-position of particle (=', G12.5,&
-         ') > YLENGTH-DMAX = ', G12.5,/&
-         ' This may occur if starting with close packing',/&
-         ' Increase the domain length in the y-dir or generate',/&
-         ' the particle configuration in a bigger box and',/&
-         ' shrink it to fit in the desired box size',/&
-         ' STOPPING THE SIMULATION',/&
-         1X,70('*')/)
+      WRITE(*,'(3X,A)') &
+         '<---------- END GENERATE_PARTICLE_CONFIG ----------'
+      
+
+ 1001 FORMAT(/1X,70('*')//' From: GENERATE_PARTICLE_CONFIG',/,&
+         ' Message: Positive overlap with walls in y-dir. Max. ',&
+         'y-position of',/10X, 'particle (=', G12.5, &
+         ') > YLENGTH-DMAX = ', G12.5,/10X, 'This may occur if',&
+         'starting with close packing. Increase',/10X, 'the domain ',&
+         'length in the y-dir or generate the particle',/10X,&
+         'configuration in a bigger box and shrink it to fit',/10X,&
+         'in the desired box size',/1X,70('*')/)
 
       END SUBROUTINE GENERATE_PARTICLE_CONFIG
       
@@ -115,7 +119,7 @@
       integer :: nprob1 , i, k, nx,  nz, np1, n
 !-----------------------------------------------  
 
-      WRITE(*,'(7X,A)') '---------- START GENER_LATTICE_MOD ---------->'
+      WRITE(*,'(5X,A)') '---------- START GENER_LATTICE_MOD ---------->'
 
       DOML(:) = DOMLIN(:)
 ! convert radius to diameter      
@@ -158,9 +162,9 @@
  200     CONTINUE 
       ENDDO
 
-      WRITE(*,'(9X,A,I)') &
+      WRITE(*,'(7X,A,I)') &
          'Number of particles in gener_lattice_mod = ', N
-      WRITE(*,'(7X,A)') '<---------- END GENER_LATTICE_MOD ----------'
+      WRITE(*,'(5X,A)') '<---------- END GENER_LATTICE_MOD ----------'
 
 ! convert back to radius
       DBDY(1:NBODY) = 0.5d0*DBDY(1:NBODY)
