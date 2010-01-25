@@ -108,13 +108,13 @@
       D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
       DIST = SQRT(DES_DOTPRDCT(D,D))
       IF(DIST.GE.DES_RADIUS(L)) THEN
-         WRITE(*,1002) L, DES_RADIUS(L)
+         WRITE(*,1002) L, DIST, DES_RADIUS(L)
          WRITE(*,'(5X,A,3(ES17.9))') &
-            'old particle pos : ', DES_POS_OLD(L,:)
+            'old particle pos = ', DES_POS_OLD(L,:)
          WRITE(*,'(5X,A,3(ES17.9))') &
-            'new particle pos : ', DES_POS_NEW(L,:)
+            'new particle pos = ', DES_POS_NEW(L,:)
          WRITE(*,'(5X,A,3(ES17.9))')&
-            'new particle vel : ', DES_VEL_NEW(L,:) 
+            'new particle vel = ', DES_VEL_NEW(L,:) 
          WRITE(*,1003)
          STOP
       ENDIF
@@ -132,11 +132,11 @@
             WRITE(*,1000) 
          ENDIF         
          WRITE(*,'(5X,A,I)') &
-            'X position outside domain for particle: ', L
+            'X position outside domain for particle ', L
          WRITE(*,'(7X,A,3(ES17.9))')&
-            'particle pos : ', DES_POS_NEW(L,:)
+            'particle pos = ', DES_POS_NEW(L,:)
          WRITE(*,'(7X,A,3(ES17.9))')&
-            'particle vel : ', DES_VEL_NEW(L,:)
+            'particle vel = ', DES_VEL_NEW(L,:)
       ENDIF 
 
       IF((DES_POS_NEW(L,2) < ZERO .OR. DES_POS_NEW(L,2) > YLENGTH) .AND.&
@@ -148,11 +148,11 @@
             WRITE(*,1000) 
          ENDIF         
          WRITE(*,'(5X,A,I)') &
-            'Y position outside domain for particle: ', L
+            'Y position outside domain for particle=: ', L
          WRITE(*,'(7X,A,3(ES17.9))')&
-            'particle pos : ', DES_POS_NEW(L,:)
+            'particle pos = ', DES_POS_NEW(L,:)
          WRITE(*,'(7X,A,3(ES17.9))')&
-            'particle vel : ', DES_VEL_NEW(L,:)
+            'particle vel = ', DES_VEL_NEW(L,:)
       ENDIF 
 
       IF (DIMN > 2) THEN
@@ -165,11 +165,11 @@
                WRITE(*,1000) 
             ENDIF         
             WRITE(*,'(5X,A,I)') &
-               'Z position outside domain for particle: ', L
+               'Z position outside domain for particle ', L
             WRITE(*,'(7X,A,3(ES17.9))')&
-               'particle pos : ', DES_POS_NEW(L,:)
+               'particle pos = ', DES_POS_NEW(L,:)
             WRITE(*,'(7X,A,3(ES17.9))')&
-               'particle vel : ', DES_VEL_NEW(L,:)
+               'particle vel = ', DES_VEL_NEW(L,:)
          ENDIF
       ENDIF 
 
@@ -218,8 +218,9 @@
 
  1002 FORMAT(/1X,70('*')//&
          ' From: CFNEWVALUES -',/&
-         ' Message: Particle ',I, 'moved a distance greater than its',/,&
-         ' radius ', ES17.9,' during 1 solids time step.')
+         ' Message: Particle ',I, ' moved a distance ', ES17.9, &
+         ' during a',/10X, 'single solids time step, which is ',&
+         ' greater than',/10X,'its radius: ', ES17.9)
  1003 FORMAT(1X,70('*')/)         
 
       RETURN
