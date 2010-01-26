@@ -34,6 +34,8 @@
       INTEGER L
 ! index of wall no. (1-6)
       INTEGER IW
+! solids phase index of particle L
+      INTEGER M      
 ! local quantities for a vibrating wall 
       DOUBLE PRECISION A, OMEGA_W, OOMEGAW2, COSOMEGAT, SINOMEGAT
 ! local value for particle radius
@@ -67,6 +69,8 @@
       ENDIF
 
 ! Assigning wall position and velocity
+! Find which solids phase the particle belongs to      
+         M = PIJK(L,5)
 
 ! west wall; in 3D on yz plane (x=wx1->0)
       IF(IW.EQ.1) THEN
@@ -77,8 +81,8 @@
          IF(DES_F.NE.ZERO) THEN
          ELSE                 
             DES_WALL_VEL(IW,1) = ZERO
-            DES_WALL_VEL(IW,2) = DES_BC_Vw_s(IW,1)
-            IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = DES_BC_Ww_s(IW,1)
+            DES_WALL_VEL(IW,2) = DES_BC_Vw_s(IW,M)
+            IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = DES_BC_Ww_s(IW,M)
          ENDIF
 
          WALL_NORMAL(1,1) = -ONE
@@ -94,8 +98,8 @@
          IF(DES_F.NE.ZERO) THEN
          ELSE                 
             DES_WALL_VEL(IW,1) = ZERO
-            DES_WALL_VEL(IW,2) = DES_BC_Vw_s(IW,1)
-            IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = DES_BC_Ww_s(IW,1)
+            DES_WALL_VEL(IW,2) = DES_BC_Vw_s(IW,M)
+            IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = DES_BC_Ww_s(IW,M)
          ENDIF
 
          WALL_NORMAL(2,1) = ONE
@@ -112,9 +116,9 @@
             DES_WALL_VEL(IW,1) = lid_vel
             DES_WALL_VEL(IW,2) =  A*OMEGA_W*COSOMEGAT
          ELSE
-            DES_WALL_VEL(IW,1) = DES_BC_Uw_s(IW,1)
+            DES_WALL_VEL(IW,1) = DES_BC_Uw_s(IW,M)
             DES_WALL_VEL(IW,2) = ZERO
-            IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = DES_BC_Ww_s(IW,1)
+            IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = DES_BC_Ww_s(IW,M)
          ENDIF
 
          WALL_NORMAL(3,1) = ZERO
@@ -130,9 +134,9 @@
          IF(DES_F.NE.ZERO) THEN
             DES_WALL_VEL(IW,1) = -lid_vel
          ELSE
-            DES_WALL_VEL(IW,1) = DES_BC_Uw_s(IW,1)
+            DES_WALL_VEL(IW,1) = DES_BC_Uw_s(IW,M)
             DES_WALL_VEL(IW,2) = ZERO
-            IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = DES_BC_Ww_s(IW,1)
+            IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = DES_BC_Ww_s(IW,M)
          ENDIF
 
          WALL_NORMAL(4,1) = ZERO
@@ -147,8 +151,8 @@
 
          IF(DES_F.NE.ZERO) THEN
          ELSE
-            DES_WALL_VEL(IW,1) = DES_BC_Uw_s(IW,1)
-            DES_WALL_VEL(IW,2) = DES_BC_Vw_s(IW,1)
+            DES_WALL_VEL(IW,1) = DES_BC_Uw_s(IW,M)
+            DES_WALL_VEL(IW,2) = DES_BC_Vw_s(IW,M)
             DES_WALL_VEL(IW,3) = ZERO 
          ENDIF
 
@@ -164,8 +168,8 @@
 
          IF(DES_F.NE.ZERO) THEN
          ELSE
-            DES_WALL_VEL(IW,1) = DES_BC_Uw_s(IW,1)
-            DES_WALL_VEL(IW,2) = DES_BC_Vw_s(IW,1)
+            DES_WALL_VEL(IW,1) = DES_BC_Uw_s(IW,M)
+            DES_WALL_VEL(IW,2) = DES_BC_Vw_s(IW,M)
             DES_WALL_VEL(IW,3) = ZERO 
          ENDIF
 
