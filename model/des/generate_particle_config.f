@@ -50,6 +50,23 @@
       IF(DIMN.EQ.3) THEN
          DOML(3) = DES_EPS_ZSTART
       ENDIF
+
+      IF (DES_EPS_XSTART > XLENGTH) THEN
+         WRITE(UNIT_LOG,1001) 'X', 'X'
+         WRITE(*,1003)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+      IF (DES_EPS_YSTART > YLENGTH) THEN
+         WRITE(UNIT_LOG,1001) 'Y', 'Y'
+         WRITE(*,1003)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+      IF (DIMN .EQ. 3 .AND. DES_EPS_ZSTART > ZLENGTH) THEN
+         WRITE(UNIT_LOG,1001) 'Z', 'Z'
+         WRITE(*,1003)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
       
       CALL GENER_LATTICE_MOD(PARTICLES,doml(1:DIMN),&
          DES_POS_OLD(1:PARTICLES,1:DIMN),DES_RADIUS(1:PARTICLES))   
@@ -69,16 +86,21 @@
 
       IF(MAXVAL(DES_POS_NEW(1:PARTICLES,2)).GT.&
       YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES))) THEN 
-         WRITE(*,1001) MAXVAL(DES_POS_NEW(1:PARTICLES,2)), &
+         WRITE(UNIT_LOG,1002) MAXVAL(DES_POS_NEW(1:PARTICLES,2)), &
             YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES))
-         STOP 
+         WRITE(*,1003)
+         CALL MFIX_EXIT(myPE)  
       ENDIF
 
       WRITE(*,'(3X,A)') &
          '<---------- END GENERATE_PARTICLE_CONFIG ----------'
       
-
  1001 FORMAT(/1X,70('*')//' From: GENERATE_PARTICLE_CONFIG',/,&
+         ' Message: DES_EPS_',A1,'START exceeds ',A1, 'LENGTH',/10X,&
+         'Particles cannot be seeded outside the simulation ', &
+         'domain',/1X,70('*')/)
+
+ 1002 FORMAT(/1X,70('*')//' From: GENERATE_PARTICLE_CONFIG',/,&
          ' Message: Positive overlap with walls in y-dir. Max. ',&
          'y-position of',/10X, 'particle (=', G12.5, &
          ') > YLENGTH-DMAX = ', G12.5,/10X, 'This may occur if',&
@@ -86,6 +108,8 @@
          'length in the y-dir or generate the particle',/10X,&
          'configuration in a bigger box and shrink it to fit',/10X,&
          'in the desired box size',/1X,70('*')/)
+
+ 1003 FORMAT(5X,'An error has occured see the *.LOG FILE for details')
 
       END SUBROUTINE GENERATE_PARTICLE_CONFIG
       
