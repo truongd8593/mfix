@@ -71,7 +71,7 @@
       CALL GENER_LATTICE_MOD(PARTICLES,doml(1:DIMN),&
          DES_POS_OLD(1:PARTICLES,1:DIMN),DES_RADIUS(1:PARTICLES))   
 
-      OPEN(unit=1000, file="particle_gener_conf_out.dat",&
+      OPEN(unit=24, file="particle_gener_conf.dat",&
          form="formatted")
       
       DO LN = 1, PARTICLES
@@ -79,10 +79,10 @@
          DES_POS_NEW(LN,:) = DES_POS_OLD(LN,:)
          DES_VEL_NEW(LN,:) = DES_VEL_OLD(LN,:)
          OMEGA_NEW(LN,:) = OMEGA_OLD(LN,:)
-         WRITE(1000, '(10(2X,ES12.5))') (DES_POS_OLD(LN,K),K=1,DIMN),&
-            DES_RADIUS(LN),RO_Sol(LN) 
+         WRITE(24,'(10(2X,ES12.5))') (DES_POS_OLD(LN,K),K=1,DIMN),&
+            DES_RADIUS(LN),RO_Sol(LN), (DES_VEL_OLD(LN,K),K=1,DIMN) 
       ENDDO
-      CLOSE(1000, STATUS = "KEEP")
+      CLOSE(24)
 
       IF(MAXVAL(DES_POS_NEW(1:PARTICLES,2)).GT.&
       YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES))) THEN 
@@ -470,15 +470,19 @@
       INTEGER:: NP   
 !-----------------------------------------------
 
-      OPEN(1002,file='ic.dat',form='formatted')
+      OPEN(25,file='ic.dat',form='formatted')
 
-      DO NP = 1,particles 
-         WRITE(1002,32)des_pos_new(NP,1:2), DES_VEL_NEW(NP,1:2), DES_VEL_OLD(NP,1:2)
+      DO NP = 1,particles
+         IF (DIMN .EQ. 2) THEN
+            WRITE(25,32) DES_POS_NEW(NP,1:2), DES_VEL_NEW(NP,1:2)
+         ELSE
+            WRITE(25,32) DES_POS_NEW(NP,1:3), DES_VEL_NEW(NP,1:3)
+         ENDIF
       ENDDO
 
-      CLOSE(1002)
+      CLOSE(25)
 
- 32   FORMAT(10(2xe17.8))
+ 32   FORMAT(10(2XE17.8))
 
       END SUBROUTINE writeic
 
@@ -496,7 +500,8 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: i,j, k 
+      INTEGER I, J, K, LN
+      LOGICAL FILE_EXIST
       REAL*8 :: umf0(dimn), rsf(DIMN, DIMN)
 !-----------------------------------------------      
 
@@ -508,11 +513,11 @@
       DO J=1,DIMN
          umf0(j)=pvel_mean
          DO I=1,DIMN
-            if(I.eq.J)then
+            IF(I.EQ.J) THEN
                rsf(I,J)=PVEL_StDev
-            else
+            ELSE
                rsf(I,J)=0.0
-            endif
+            ENDIF
          ENDDO
          WRITE(*,'(5X,A,I5,2X,A)') 'FOR DIRECTION= ', J,&
             ' where (1=X,2=Y,3=Z):   '
@@ -520,6 +525,32 @@
       ENDDO
 
       DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
+
+! updating/writing initial particle configuration files      
+      IF (GENER_PART_CONFIG) THEN
+         INQUIRE(FILE='particle_gener_conf.dat',exist=FILE_EXIST)
+         IF (FILE_EXIST) THEN
+            OPEN(UNIT=24,FILE='particle_gener_conf.dat',&
+                 STATUS='REPLACE')
+            DO LN = 1, PARTICLES
+               WRITE(24,'(10(X,ES12.5))')&
+                  (DES_POS_OLD(LN,K),K=1,DIMN), DES_RADIUS(LN),&
+                  RO_Sol(LN), (DES_VEL_OLD(LN,K),K=1,DIMN) 
+            ENDDO
+            CLOSE(24)
+         ENDIF
+      ELSE
+         OPEN(UNIT=24,FILE='particle_input2.dat',&
+              STATUS='REPLACE')
+         DO LN = 1, PARTICLES
+            WRITE(24,'(10(X,ES))')&
+               (DES_POS_OLD(LN,K),K=1,DIMN), DES_RADIUS(LN),&
+               RO_Sol(LN), (DES_VEL_OLD(LN,K),K=1,DIMN) 
+         ENDDO
+         CLOSE(24)
+      ENDIF
+
       WRITE(*,'(3X,A)') '<---------- END INIT_PARTICLES_JN ----------'
+
 
       END SUBROUTINE init_particles_jn
