@@ -5,7 +5,7 @@
 #
 # Run-control section
 #
-  RUN_NAME = 'des_45deg_bounce'
+  RUN_NAME = 'des_2p' 
   DESCRIPTION = '2 solid phase fluid bed with hybrid des&kt solid treatment'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
@@ -25,8 +25,8 @@
   COORDINATES = 'Cartesian'
 
   DISCRETIZE = 9*2
-  XLENGTH  = 0.1   IMAX = 5
-  YLENGTH  = 0.1   JMAX = 5
+  XLENGTH  = 1   IMAX = 5
+  YLENGTH  = 1   JMAX = 5
 
   UR_FAC(2) = .5
 
@@ -55,9 +55,9 @@
 #
        !              
   IC_X_w(1)           =  0.0
-  IC_X_e(1)           =  0.1
+  IC_X_e(1)           =  1.0
   IC_Y_s(1)           =  0.0
-  IC_Y_n(1)           =  0.1
+  IC_Y_n(1)           =  1.0
  
   IC_EP_g(1)          =  1.0
  
@@ -76,41 +76,47 @@
 #
        !              bottom      Top
   BC_X_w            =  0.0        0.0
-  BC_X_e            =  0.1        0.1
-  BC_Y_s            =  0.0        0.1
-  BC_Y_n            =  0.0        0.1
+  BC_X_e            =  1.0        1.0
+  BC_Y_s            =  0.0        1.0
+  BC_Y_n            =  0.0        1.0
  
   BC_TYPE          =  'MI'     'PO'
 
   BC_EP_g          =  1.0      1.0
 
   BC_U_g           =  0.0 
-  BC_V_g           =  0.1
+  BC_V_g           =  0.5
   BC_W_g           =  0.0
 
-  BC_P_g           =  2*0.0
+  BC_P_g           =  2*0
 
-  GRAVITY = 0.0D0
-
+  GRAVITY = 490.0d0
+  LID_VEL = 0.0D0
 #  DES
-     PARTICLES = 2 
+     PARTICLES =1
      MN = 2
-     KN = 5 
-     KT = 5
-     ETA_DES_N = 0 
-     ETA_DES_T = 0 
+     KN = 800000
+     DES_EN_INPUT = 1.0
+     DES_EN_WALL_INPUT = 1.0
+	
      MEW = 0.0
-     KN_W = 5 
-     KT_W = 5
-     ETA_N_W = 0 
-     ETA_T_W = 0 
-     MEW_W = 0.0
-     DTSOLID_FACTOR = 0.1D0
-     P_TIME = 0.00005   
- 
+     KN_W = 800000
+     MEW_W = 0.6
+     DTSOLID_FACTOR = 0.0D0
+     DES_SPX_DT = 0.001
+     PRINT_DES_DATA = .TRUE.
+     DES_NEIGHBOR_SEARCH = 4
+        NEIGHBOR_SEARCH_N = 1
    !  DES Logicals
      DISCRETE_ELEMENT = .TRUE.
      WALLDTSPLIT = .TRUE.
+
+      DES_PERIODIC_WALLS = .TRUE.
+      DES_PERIODIC_WALLS_X = .TRUE.
+      DES_PERIODIC_WALLS_Y = .FALSE.
+      DES_PERIODIC_WALLS_Z = .FALSE.
+	
+#  DES
 #
 #  Output Control
 #

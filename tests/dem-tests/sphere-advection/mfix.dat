@@ -1,0 +1,158 @@
+!  Square periodic box with diagonal flow and particle injected along the diagonal
+
+! Run-control section                                                           
+  RUN_NAME 		= 'SQUARE_DES'             
+  DESCRIPTION 		= 'square periodic box'
+  RUN_TYPE 		= 'NEW'             
+  UNITS 		= 'cgs'
+  TIME  		= 0.0			!start time
+  TSTOP 		= 4.0 
+  DT 			= 0.5E-5			!time step
+  DT_FAC                = 1.0
+  DT_MAX                = 1E-4
+ 
+  ENERGY_EQ 		= .FALSE.		!do not solve energy eq
+  SPECIES_EQ 		= .FALSE.    .FALSE. 	!do not solve species eq
+
+  MOMENTUM_X_EQ(0) = .FALSE.
+  MOMENTUM_Y_EQ(0) = .FALSE.
+  MOMENTUM_Z_EQ(0) = .FALSE.
+
+  MOMENTUM_X_EQ(1) = .FALSE.
+  MOMENTUM_Y_EQ(1) = .FALSE.
+  MOMENTUM_Z_EQ(1) = .FALSE.
+
+  CYCLIC_X = .TRUE.
+  CYCLIC_Y = .TRUE.
+  CYCLIC_Z = .TRUE.
+
+!  DT_FAC = 1.0
+
+  MAX_NIT = 250
+  TOL_RESID = 1.E-3
+
+  CALL_USR = .TRUE.
+                                                               
+! Geometry Section                                                      
+                                                                         
+  DIMN = 3
+
+  COORDINATES 		= 'cartesian' 
+  XLENGTH  		=   1.0	        !X length	
+  IMAX 			=   32		!cells in i direction
+  YLENGTH  		=   1.0		!height
+  JMAX 			=   32 		!cells in j direction
+  ZLENGTH  		=   1.0		!width
+  KMAX 			=   32 			!cells in k direction
+
+! NO_K     		= .TRUE. 		!2D
+
+  GRAVITY = 0
+                                                                             
+! Gas-phase Section                                                             
+ 
+  MU_g0 		= 1.8E-4		!constant gas viscosity
+  RO_g0			= 1.205E-3		!constant gas density
+ 
+! Solids-phase Section                                                  
+
+  RO_s    		= 2.7			!solids density
+  D_p0    		= 0.01d0		!particle diameter
+  e       		= 0.9 			!restitution coefficient
+  Phi    		= 30.0			!angle of internal friction
+  EP_star 		= 0.42			!void fraction at minimum
+						!  fluidization
+  
+! Initial Conditions Section                                                    
+
+    ! 1. bed
+  IC_X_w(1)           	=  0.0				!domain
+  IC_X_e(1)           	=  1.0		! 0 < x < 15, 0 < y < 30
+  IC_Y_s(1)          	=  0.0
+  IC_Y_n(1)           	=  1.0  
+  IC_Z_b(1)          	=  0.0
+  IC_Z_t(1)           	=  1.0  
+                                	! initial values in the region
+  IC_EP_g(1)          	=  1.00  	! void fraction
+  IC_U_g(1)           	=  0.0		! x-dir gas velocity
+  IC_V_g(1)          	=  0.0 		! y-dir gas velocity
+  IC_W_g(1)          	=  0.0 		! z-dir gas velocity
+
+  IC_U_s(1,1) = 0.0
+  IC_V_s(1,1) = 0.0
+  IC_W_s(1,1) = 0.0
+
+!  Boundary Conditions Section
+!
+! DES INPUT
+               
+PARTICLES = 64    ! Number of particles
+MN = 14             ! Maximum number of neighbors allowed per particle
+KN = 800000         ! Normal inter-particle collision spring constant
+ DES_EN_INPUT = 0.80 
+ DES_EN_WALL_INPUT = 0.80
+MEW = 0.2           ! Inter-particle friction coeffienct
+KN_W = 800000      ! Normal particle-wall collision spring constant
+MEW_W = 0.1         ! Particle-wall friction coefficient
+DES_NEIGHBOR_SEARCH = 4 ! Particle neighbor search method; 1=n-square; 2=quadtree; 3=octree
+NEIGHBOR_SEARCH_N = 1
+DTSOLID_FACTOR = 0.1D0
+P_TIME = 10.0
+NFACTOR = 0
+DES_INTERP_ON=.TRUE.
+PRINT_DES_DATA = .TRUE.
+!  DES Logicals
+DISCRETE_ELEMENT = .TRUE. 
+WALLDTSPLIT = .TRUE.
+DES_CONTINUUM_COUPLED = .TRUE.
+!TSUJI_DRAG = .TRUE.
+DRAG_TYPE = 'WEN_YU'
+GENER_PART_CONFIG = .TRUE.
+! Periodic walls for DES
+DES_PERIODIC_WALLS = .TRUE.
+DES_PERIODIC_WALLS_X = .TRUE.
+DES_PERIODIC_WALLS_Y = .TRUE.
+DES_PERIODIC_WALLS_Z = .TRUE.
+
+DES_EPS_XSTART = 0.0d0
+DES_EPS_YSTART = 0.0d0
+DES_EPS_ZSTART = 0.0d0
+VOL_FRAC(1) = 0.01
+
+! End DES Input
+
+! Output Control
+!
+  OUT_DT 		= 0.05		!write text file BUB01.OUT
+					!  every 0.1s
+  RES_DT 		= 0.01		!write binary restart file
+					!  BUB01.RES every 0.01 s
+  NLOG   		= 25 		!write logfile BUB01.LOG
+					!every 25 time steps
+  FULL_LOG 		= .TRUE. 	!display residuals on screen
+
+
+!SPX_DT values determine how often SPx files are written.  Here BUB01.SP1, which
+!contains void fraction (EP_g), is written every 0.01 s, BUB01.SP2, which contains
+! gas and solids pressure (P_g, P_star), is written every 0.1 s, and so forth.
+!
+        ! EP_g P_g    U_g  U_s  ROP_s     T_g  X_g
+        !      P_star V_g  V_s            T_s  X_s     Theta   Scalar 
+        !             W_g  W_s
+  SPX_DT = 0.05 0.05  0.05  0.05  100.  100. 100.   0.5   100. 100.  100.
+                                                                                
+!  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
+  
+  NODESI = 1   NODESJ = 1   NODESK = 1
+
+!  Sweep Direction
+
+LEQ_SWEEP(1) = 'ISIS' 
+LEQ_SWEEP(2) = 'ISIS'  
+LEQ_SWEEP(3) = 'ISIS' 
+LEQ_SWEEP(4) = 'ISIS'  
+LEQ_SWEEP(5) = 'ISIS'  
+LEQ_SWEEP(6) = 'ISIS'  
+LEQ_SWEEP(7) = 'ISIS' 
+LEQ_SWEEP(8) = 'ISIS'  
+LEQ_SWEEP(9) = 'ISIS'
