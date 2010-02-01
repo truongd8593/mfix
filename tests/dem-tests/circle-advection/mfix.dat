@@ -82,7 +82,7 @@
   IC_V_s(1,1) = 0.0
 ! IC_W_s(1,1) = 0.0
 
-!  Boundary Conditions Section
+! Boundary Conditions Section
 
 
 ! DES INPUT
@@ -142,11 +142,11 @@ PRINT_DES_DATA = .TRUE.
         !             W_g  W_s
   SPX_DT = 0.05 0.05  0.05  0.05  100.  100. 100.   0.5   100. 100.  100.
                                                                                 
-!  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
+!The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
   
   NODESI = 1   NODESJ = 1   NODESK = 1
 
-!  Sweep Direction
+! Sweep Direction
 
 LEQ_SWEEP(1) = 'ISIS' 
 LEQ_SWEEP(2) = 'ISIS'  
