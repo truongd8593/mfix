@@ -83,7 +83,8 @@
 ! IC_W_s(1,1) = 0.0
 
 !  Boundary Conditions Section
-!
+
+
 ! DES INPUT
 
 DISCRETE_ELEMENT = .TRUE. 
@@ -119,14 +120,10 @@ MEW = 0.2           ! Inter-particle friction coeffienct
 MEW_W = 0.1         ! Particle-wall friction coefficient
 
 PRINT_DES_DATA = .TRUE.
-DES_SPX_DT = 10.0
-DES_RES_DT = 10.0
 
-
-! End DES Input
 
 ! Output Control
-!
+
   OUT_DT 		= 0.05		!write text file BUB01.OUT
 					!  every 0.1s
   RES_DT 		= 0.01		!write binary restart file
