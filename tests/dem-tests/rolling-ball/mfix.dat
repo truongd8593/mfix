@@ -91,32 +91,36 @@
   BC_P_g           =  2*0
 
   GRAVITY = 490.0d0
-  LID_VEL = 0.0D0
-#  DES
-     PARTICLES =1
-     MN = 2
-     KN = 800000
-     DES_EN_INPUT = 1.0
-     DES_EN_WALL_INPUT = 1.0
-	
-     MEW = 0.0
-     KN_W = 800000
-     MEW_W = 0.6
-     DTSOLID_FACTOR = 0.0D0
-     DES_SPX_DT = 0.001
-     PRINT_DES_DATA = .TRUE.
-     DES_NEIGHBOR_SEARCH = 4
-        NEIGHBOR_SEARCH_N = 1
-   !  DES Logicals
-     DISCRETE_ELEMENT = .TRUE.
-     WALLDTSPLIT = .TRUE.
 
-      DES_PERIODIC_WALLS = .TRUE.
-      DES_PERIODIC_WALLS_X = .TRUE.
-      DES_PERIODIC_WALLS_Y = .FALSE.
-      DES_PERIODIC_WALLS_Z = .FALSE.
-	
+#
 #  DES
+#
+   DISCRETE_ELEMENT = .TRUE.
+   WALLDTSPLIT = .TRUE.
+
+   PARTICLES =1
+
+   DES_NEIGHBOR_SEARCH = 4
+   NEIGHBOR_SEARCH_N = 1
+   MN = 2
+
+   KN = 800000
+   KN_W = 800000
+   DES_EN_INPUT = 1.0
+   DES_EN_WALL_INPUT = 1.0
+   MEW = 0.0
+   MEW_W = 0.6
+
+   PRINT_DES_DATA = .TRUE.
+   DES_SPX_DT = 0.001
+   DES_RES_DT = 0.001
+
+   DES_PERIODIC_WALLS = .TRUE.
+   DES_PERIODIC_WALLS_X = .TRUE.
+   DES_PERIODIC_WALLS_Y = .FALSE.
+   DES_PERIODIC_WALLS_Z = .FALSE.
+	
+
 #
 #  Output Control
 #
