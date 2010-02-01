@@ -1,4 +1,4 @@
-!  Square periodic box with diagonal flow and particle injected along the diagonal
+!  Square periodic box with particles aligned along sphere boundaries
 
 ! Run-control section                                                           
   RUN_NAME 		= 'SQUARE_DES'             
@@ -34,9 +34,7 @@
   CALL_USR = .TRUE.
                                                                
 ! Geometry Section                                                      
-                                                                         
   DIMN = 3
-
   COORDINATES 		= 'cartesian' 
   XLENGTH  		=   1.0	        !X length	
   IMAX 			=   32		!cells in i direction
@@ -44,18 +42,16 @@
   JMAX 			=   32 		!cells in j direction
   ZLENGTH  		=   1.0		!width
   KMAX 			=   32 			!cells in k direction
-
 ! NO_K     		= .TRUE. 		!2D
-
   GRAVITY = 0
-                                                                             
+  
+                                                                           
 ! Gas-phase Section                                                             
- 
   MU_g0 		= 1.8E-4		!constant gas viscosity
   RO_g0			= 1.205E-3		!constant gas density
+
  
 ! Solids-phase Section                                                  
-
   RO_s    		= 2.7			!solids density
   D_p0    		= 0.01d0		!particle diameter
   e       		= 0.9 			!restitution coefficient
@@ -64,7 +60,6 @@
 						!  fluidization
   
 ! Initial Conditions Section                                                    
-
     ! 1. bed
   IC_X_w(1)           	=  0.0				!domain
   IC_X_e(1)           	=  1.0		! 0 < x < 15, 0 < y < 30
@@ -82,10 +77,11 @@
   IC_V_s(1,1) = 0.0
   IC_W_s(1,1) = 0.0
 
+
 ! Boundary Conditions Section
 
-! DES INPUT
 
+! DES INPUT
   DISCRETE_ELEMENT = .TRUE. 
   DES_CONTINUUM_COUPLED = .TRUE.
   DES_INTERP_ON=.TRUE.
@@ -96,12 +92,16 @@
 
   GENER_PART_CONFIG = .TRUE.
   PARTICLES = 64    ! Number of particles
+! the generate_particle_config subroutine was specially modified
+! for this case so the value of des_eps_xstart, des_eps_ystart
+! des_eps_zstart do not matter
   DES_EPS_XSTART = 0.0d0
   DES_EPS_YSTART = 0.0d0
   DES_EPS_ZSTART = 0.0d0
   VOL_FRAC(1) = 0.01
 
-  DES_NEIGHBOR_SEARCH = 4 ! Particle neighbor search method; 1=n-square; 2=quadtree; 3=octree
+  DES_NEIGHBOR_SEARCH = 4 ! Particle neighbor search method;
+                          ! 1=n-square; 2=quadtree; 3=octree; 4=grid-based
   NEIGHBOR_SEARCH_N = 1
   MN = 14             ! Maximum number of neighbors allowed per particle
 
@@ -122,7 +122,6 @@
 
 
 ! Output Control
-
   OUT_DT 		= 0.05		!write text file BUB01.OUT
 					!  every 0.1s
   RES_DT 		= 0.01		!write binary restart file
@@ -143,12 +142,10 @@
 
                                                                                 
 ! The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
-  
   NODESI = 1   NODESJ = 1   NODESK = 1
 
 
 ! Sweep Direction
-
   LEQ_SWEEP(1) = 'ISIS' 
   LEQ_SWEEP(2) = 'ISIS'  
   LEQ_SWEEP(3) = 'ISIS' 
