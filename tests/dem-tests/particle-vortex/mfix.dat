@@ -84,39 +84,39 @@
   IC_V_s(1,1) = 0.0
 ! IC_W_s(1,1) = 0.0
 
-!  Boundary Conditions Section
-!
+! Boundary Conditions Section
+
 ! DES INPUT
-               
-PARTICLES = 625    ! Number of particles
-MN = 14             ! Maximum number of neighbors allowed per particle
-KN = 80         ! Normal inter-particle collision spring constant
-DES_EN_INPUT = 0.80 
-DES_EN_WALL_INPUT = 0.80
-MEW = 0.2           ! Inter-particle friction coeffienct
-KN_W = 80      ! Normal particle-wall collision spring constant
-MEW_W = 0.1         ! Particle-wall friction coefficient
-DES_NEIGHBOR_SEARCH = 4 ! Particle neighbor search method; 1=n-square; 2=quadtree; 3=octree
-NEIGHBOR_SEARCH_N = 1
-DTSOLID_FACTOR = 0.1D0
-NFACTOR = 0
-DES_INTERP_ON=.TRUE.
-PRINT_DES_DATA = .TRUE.
-!  DES Logicals
-DISCRETE_ELEMENT = .TRUE. 
-WALLDTSPLIT = .TRUE.
-DES_CONTINUUM_COUPLED = .TRUE.
-!TSUJI_DRAG = .TRUE.
-DRAG_TYPE = 'WEN_YU'
-GENER_PART_CONFIG = .f.
+  DISCRETE_ELEMENT = .TRUE. 
+  DES_CONTINUUM_COUPLED = .TRUE.
+  DES_INTERP_ON=.TRUE.
+  NFACTOR = 0
+  WALLDTSPLIT = .TRUE.
+  !TSUJI_DRAG = .TRUE.
+  DRAG_TYPE = 'WEN_YU'
+
+  GENER_PART_CONFIG = .F.
+  PARTICLES = 625    ! Number of particles
+
+  DES_NEIGHBOR_SEARCH = 4 ! Particle neighbor search method; 1=n-square; 2=quadtree; 3=octree
+  NEIGHBOR_SEARCH_N = 1
+  MN = 14             ! Maximum number of neighbors allowed per particle
 
 ! Periodic walls for DES
-DES_PERIODIC_WALLS = .TRUE.
-DES_PERIODIC_WALLS_X = .TRUE.
-DES_PERIODIC_WALLS_Y = .TRUE.
-!DES_PERIODIC_WALLS_Z = .TRUE.
+  DES_PERIODIC_WALLS = .TRUE.
+  DES_PERIODIC_WALLS_X = .TRUE.
+  DES_PERIODIC_WALLS_Y = .TRUE.
+  !DES_PERIODIC_WALLS_Z = .TRUE.
 
-! End DES Input
+  KN = 80         ! Normal inter-particle collision spring constant
+  KN_W = 80      ! Normal particle-wall collision spring constant
+  DES_EN_INPUT = 0.80 
+  DES_EN_WALL_INPUT = 0.80
+  MEW = 0.2           ! Inter-particle friction coeffienct
+  MEW_W = 0.1         ! Particle-wall friction coefficient
+
+  PRINT_DES_DATA = .TRUE.
+
 
 ! Output Control
 !
@@ -137,19 +137,21 @@ DES_PERIODIC_WALLS_Y = .TRUE.
         !      P_star V_g  V_s            T_s  X_s     Theta   Scalar 
         !             W_g  W_s
   SPX_DT = 0.05 0.05  0.05  0.05  100.  100. 100.   0.5   100. 100.  100.
-                                                                                
-!  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
+ 
+                                                                               
+! The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
   
   NODESI = 1   NODESJ = 1   NODESK = 1
 
+
 !  Sweep Direction
 
-LEQ_SWEEP(1) = 'ISIS' 
-LEQ_SWEEP(2) = 'ISIS'  
-LEQ_SWEEP(3) = 'ISIS' 
-LEQ_SWEEP(4) = 'ISIS'  
-LEQ_SWEEP(5) = 'ISIS'  
-LEQ_SWEEP(6) = 'ISIS'  
-LEQ_SWEEP(7) = 'ISIS' 
-LEQ_SWEEP(8) = 'ISIS'  
-LEQ_SWEEP(9) = 'ISIS'
+  LEQ_SWEEP(1) = 'ISIS' 
+  LEQ_SWEEP(2) = 'ISIS'  
+  LEQ_SWEEP(3) = 'ISIS' 
+  LEQ_SWEEP(4) = 'ISIS'  
+  LEQ_SWEEP(5) = 'ISIS'  
+  LEQ_SWEEP(6) = 'ISIS'  
+  LEQ_SWEEP(7) = 'ISIS' 
+  LEQ_SWEEP(8) = 'ISIS'  
+  LEQ_SWEEP(9) = 'ISIS'
