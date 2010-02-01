@@ -149,12 +149,12 @@
 
 ! Sweep Direction
 
-LEQ_SWEEP(1) = 'ISIS' 
-LEQ_SWEEP(2) = 'ISIS'  
-LEQ_SWEEP(3) = 'ISIS' 
-LEQ_SWEEP(4) = 'ISIS'  
-LEQ_SWEEP(5) = 'ISIS'  
-LEQ_SWEEP(6) = 'ISIS'  
-LEQ_SWEEP(7) = 'ISIS' 
-LEQ_SWEEP(8) = 'ISIS'  
-LEQ_SWEEP(9) = 'ISIS'
+  LEQ_SWEEP(1) = 'ISIS' 
+  LEQ_SWEEP(2) = 'ISIS'  
+  LEQ_SWEEP(3) = 'ISIS' 
+  LEQ_SWEEP(4) = 'ISIS'  
+  LEQ_SWEEP(5) = 'ISIS'  
+  LEQ_SWEEP(6) = 'ISIS'  
+  LEQ_SWEEP(7) = 'ISIS' 
+  LEQ_SWEEP(8) = 'ISIS'  
+  LEQ_SWEEP(9) = 'ISIS'
