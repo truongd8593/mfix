@@ -34,9 +34,7 @@
   CALL_USR = .TRUE.
                                                                
 ! Geometry Section                                                      
-                                                                         
   DIMN = 2
-
   COORDINATES 		= 'cartesian' 
   XLENGTH  		=   0.01	        !X length	
   IMAX 			=   32		!cells in i direction
@@ -44,7 +42,6 @@
   JMAX 			=   32 		!cells in j direction
 ! ZLENGTH  		=   1.0		!width
 ! KMAX 			=   32 			!cells in k direction
-
   NO_K     		= .TRUE. 		!2D
   DZ                    = 0.0001
   ZLENGTH               = 0.0001  
@@ -52,12 +49,10 @@
   GRAVITY = 0
                                                                              
 ! Gas-phase Section                                                             
- 
   MU_g0 		= 1.E-6		!constant gas viscosity
   RO_g0			= 1.2			!constant gas density
  
 ! Solids-phase Section                                                  
-
   RO_s    		= 1800		!solids density
   D_p0    		= 0.0001d0		!particle diameter
   e       		= 0.9 			!restitution coefficient
@@ -66,7 +61,6 @@
 						!  fluidization
   
 ! Initial Conditions Section                                                    
-
     ! 1. bed
   IC_X_w(1)           	=  0.0				!domain
   IC_X_e(1)           	=  0.01		! 0 < x < 15, 0 < y < 30
@@ -119,7 +113,6 @@
 
 
 ! Output Control
-!
   OUT_DT 		= 0.05		!write text file BUB01.OUT
 					!  every 0.1s
   RES_DT 		= 0.01		!write binary restart file
@@ -140,12 +133,10 @@
  
                                                                                
 ! The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
-  
   NODESI = 1   NODESJ = 1   NODESK = 1
 
 
-!  Sweep Direction
-
+! Sweep Direction
   LEQ_SWEEP(1) = 'ISIS' 
   LEQ_SWEEP(2) = 'ISIS'  
   LEQ_SWEEP(3) = 'ISIS' 
