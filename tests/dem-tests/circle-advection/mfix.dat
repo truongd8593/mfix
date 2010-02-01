@@ -85,39 +85,43 @@
 !  Boundary Conditions Section
 !
 ! DES INPUT
-               
-PARTICLES = 64    ! Number of particles
-MN = 14             ! Maximum number of neighbors allowed per particle
-KN = 800000         ! Normal inter-particle collision spring constant
- DES_EN_INPUT = 0.80 
- DES_EN_WALL_INPUT = 0.80
-MEW = 0.2           ! Inter-particle friction coeffienct
-KN_W = 800000      ! Normal particle-wall collision spring constant
-MEW_W = 0.1         ! Particle-wall friction coefficient
-DES_NEIGHBOR_SEARCH = 4 ! Particle neighbor search method; 1=n-square; 2=quadtree; 3=octree
-NEIGHBOR_SEARCH_N = 1
-DTSOLID_FACTOR = 0.1D0
-P_TIME = 10.0
-NFACTOR = 0
-DES_INTERP_ON=.TRUE.
-PRINT_DES_DATA = .TRUE.
-!  DES Logicals
+
 DISCRETE_ELEMENT = .TRUE. 
+DES_INTERP_ON=.TRUE.
+NFACTOR = 0
 WALLDTSPLIT = .TRUE.
 DES_CONTINUUM_COUPLED = .TRUE.
 !TSUJI_DRAG = .TRUE.
 DRAG_TYPE = 'WEN_YU'
+              
+PARTICLES = 64    ! Number of particles
 GENER_PART_CONFIG = .TRUE.
+DES_EPS_XSTART = 1.0d0
+DES_EPS_YSTART = 1.0d0
+DES_EPS_ZSTART = 0.0d0
+VOL_FRAC(1) = 0.01
+
 ! Periodic walls for DES
 DES_PERIODIC_WALLS = .TRUE.
 DES_PERIODIC_WALLS_X = .TRUE.
 DES_PERIODIC_WALLS_Y = .TRUE.
 !DES_PERIODIC_WALLS_Z = .TRUE.
 
-DES_EPS_XSTART = 0.0d0
-DES_EPS_YSTART = 0.0d0
-DES_EPS_ZSTART = 0.0d0
-VOL_FRAC(1) = 0.01
+DES_NEIGHBOR_SEARCH = 4 ! Particle neighbor search method; 1=n-square; 2=quadtree; 3=octree
+NEIGHBOR_SEARCH_N = 1
+MN = 14             ! Maximum number of neighbors allowed per particle
+
+KN = 800000         ! Normal inter-particle collision spring constant
+KN_W = 800000      ! Normal particle-wall collision spring constant
+DES_EN_INPUT = 0.80 
+DES_EN_WALL_INPUT = 0.80
+MEW = 0.2           ! Inter-particle friction coeffienct
+MEW_W = 0.1         ! Particle-wall friction coefficient
+
+PRINT_DES_DATA = .TRUE.
+DES_SPX_DT = 10.0
+DES_RES_DT = 10.0
+
 
 ! End DES Input
 
