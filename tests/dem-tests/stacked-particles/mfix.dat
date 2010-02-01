@@ -145,7 +145,7 @@
 
   PRINT_DES_DATA = .TRUE.     ! write *.vtp file
   DES_SPX_DT = 0.0005         ! interval to write *.vtp files in pure DEM simulation
-  DES_SPX_DT = 0.0010         ! interval to write des.res and .res files in pure DEM simulation
+  DES_RES_DT = 0.0010         ! interval to write des.res and .res files in pure DEM simulation
 
   KN       = 1.0D6       ! Normal inter-particle collision spring constant
   KT_FAC   = 1.d0        ! Tangential spring factor = KT/KN
