@@ -1,51 +1,64 @@
-Changes from MFIX2005-4 to MFIX2006-4 (Date: 12/12/06)
-------------------------------------------------------
+Changes from MFIX2007-4 (Date: 12/31/2007) to MFIX2010-1 (Date: 02/02/2010)
 
 Changes in existing features:
 -----------------------------
 
-    * Significant changes were made to the DEM model implemented in MFIX and the current implementation is documented in a detailed report [1]. The changes not only improve the efficiency of the code but also accuracy to some extent. Here is a brief summary of the changes:
-          o The neighbor search algorithms have been improved so that one can perform neighbor search after a prescribed number of times or when the particles move out of a prescribed halo region of influence.
-          o The quadtree/octree is not initialized at every iteration but only at user-specified interval and when the maximum number of quads is reached.
-          o Additional optimizations to the quadtree were made which are described in the DEM document [1]
-          o Particle search within fluid cells has been drastically improved by taking advantage of the Cartesian topology and looking only at the neighboring cells based on the local particle velocity.
-          o All the information being passed from DEM to MFIX in coupled simulations was not consistently adhering to the staggered grid formulation and this has been fixed. In addition, there were other bugs related to the coupling and are fixed. For more details, probe the CVS log at [2]
-          o All geometric inputs and other duplicate initializations for the discrete part are removed and the information would be obtained from MFIX inputs.
-          o All the arrays have been made allocatable so that better management of the memory can be made.
-          o The array indexing has been swapped so that the longest index is in the first location so that better cache utilization can been accomplished during calculations.
-          o The code has been extensively cleaned and several alternate computations were constructed to improve the overall efficiency of the code.
-          o A major bug related to transferring void-fraction information from DEM to MFIX continuum side has been fixed.
-          o The code was additional commented, formatted and made more modular for easy readability.
-          o Many variables are renamed for easy understanding and consistency.
-          o The code has tested 2D and 3D capability.
-          o The interphase coupling inconsistency reported by Jin Sun at Iowa State is fixed and details are available in DEM document's appendix [1]
-    * Added/modified some test cases and tutorial cases. The test and tutorial cases are benchmarked and the summary tables are located in respective directories.
-    * Minor Open-MP bug fixes
-    * A major bug related to NFS writes which was causing premature exits for parallel jobs has been fixed
-    * One can look at the log history for a more detailed list of changes at [3]
+   * Bug fixes and enhancements:
+      o Solids inventory reporting problem for parallel runs
+      o Unit conversion from CGS to SI for dimensional quantities.
+      o Print format changes to accommodate processor counts > 100
+   * Enhancements:
+      o Semi-implicit treatment of IA conductivity term
+   * conducted extensive debugging and verification of the DEM code
+   * updated DEM test cases
+   * Updated documents:
+      o Equations document [1]
+      o Readme file [2]
+
 
 New features added:
 -------------------
 
-    * The following additions were made to the DEM code and refer to the report [1] for more details:
-          o The DEM output is written out in VTK format at the same frequency as the void fraction for coupled simulations and at user-specified frequency for DEM only simulations. One could now superpose DEM particle visualization on top of continuum field information in Paraview.
-          o Added restart capability to DEM.
-          o Added a small tool to generate input deck for DEM cases in mfix/tools/DES_Particle_Generator/
-          o The adjustable time sequence is restored so that the simulation time depends on the characteristic time-scales rather than something imposed artificially. This seems to accelerate the simulations considerably.
-          o Newtonâ€™s 3rd Law is implemented for force calculations to eliminate the duplicate force calculation for any given pair.
-    * Iddir & Arastoopour's [4] kinetic theory for multiparticle types was added.  Available via MFIX input KT_TYPE. Refer to documentation [5] for more details.
-          o Added a tutorial case for this model
-    * Added several new radial distribution functions. Available via a new MFIX input RDF_TYPE.
-    * Added a small tool to the mfix/tools/MFIX_Grid_Generator/ to generate grid input to MFIX for more complicated cases with non-uniform grid.
-    * Added functionality to do both hyperbolic tangent as well has sigmoidal functional blending of the Schaeffer/Kinetic theory stresses.
+   * HYS polydisperse drag model and test case
+      o The Holloway, Yin and Sundaresan (HYS) drag relation accounts for the effect of finite Reynolds 
+        number on the fluid-particle drag experienced by particles in polydisperse suspensions.
+      o The HYS drag model is described in mfix/doc/HYS_drag.pdf.
+   * DEM
+      o Expanded DEM code so particles of differing size and density can be modeled (polydispersity).
+      o Added a second order integration method (Adams Bashforth) to DEM as an option (DES_INTG_METHOD).
+      o Added the Hertzian collision model to DEM as an option (DES_COLL_MODEL).
+      o Created an updated user guide/document for the DEM code that includes a discussion on theory, numerics, and the verification tests [3]
+   * Cartesian Grid cut cell technique
+      o This new capability allows the definition of curved or sloping boundaries, instead of the usual stair-step representation.
+      o Computational cells are truncated at the wall to conform to the shape of the boundaries.
+      o The Cartesian grid technique is available for the Euler-Euler approach and includes no-slip 
+        and free-slip boundary conditions for either gas or solids phases.
+      o A user guide describing the utilization of the cut cell technique is located in mfix/doc/Cartesian_grid_user_guide.pdf [4].
+      o Some tutorials located at mfix/Cartesian_grid_tutorials illustrate the new capability.
+   * Distributed I/O 
+   * Option to compile using gfortran
+
+
+Under development:
+------------------
+
+   * GHD (Garzó, Hrenya, and Dufty) granular kinetic theory 
+      o Code was updated with GHD granular kinetic theory and a simple shear flow case was added to tests/GHD to show how this model is used.
+      o The major difference between this theory and previous KT's that it solves mixture momentum and granular 
+        energy equations instead of the individual solids phases equations.
+      o Currently this theory is for granular flows (no fluid) and only simple wall BC can be applied (i.e. no slip, free slip)
+      o The effect of fluid-solid drag was included in the GHD theory.
+   * DEM
+      o Adding inlet/outlet capabilities to DEM
+
+
 
 References:
-----------
+-----------
 
-   1. http://www.mfix.org/documents/MFIXDEM2006-4-1.pdf
-   2. http://www.mfix.org/cgi-bin/cvsweb.cgi/mfix/model/des/#dirlist
-   3. http://www.mfix.org/cgi-bin/cvsweb.cgi/mfix/model/#dirlist
-   4. Iddir, Y.H. and H. Arastoopour, Modeling of multitype particle flow using the kinetic theory approach. AIChE Journal, 2005. 51(6): p. 1620-1632.
-   5. http://www.mfix.org/documents/MFIXIAEqns2006-4-1.pdf
-
+1. S. Benyahia, M. Syamlal, T.J. O'Brien, "Summary of MFIX Equations", 
+   From URL https://mfix.netl.doe.gov/documentation/MfixEquations2005-4-4.pdf, August 2009. 
+2. https://mfix.netl.doe.gov/documentation/Readme.pdf 
+3. https://mfix.netl.doe.gov/documentation/dem_doc_2010.pdf
+4. http://mfix.netl.doe.gov/documentation/Cartesian_grid_user_guide.pdf 
 
