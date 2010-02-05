@@ -12,7 +12,7 @@
   RUN_TYPE 		= 'NEW'             
   UNITS 		= 'cgs'
   TIME  		= 0.0			!start time
-  TSTOP 		= 10.0 
+  TSTOP 		= 40.0 
   DT 			= 5E-4			!time step
   DT_MAX                = 1E-3
  
@@ -52,9 +52,9 @@
  
 ! Solids-phase Section                                                  
 
-
-  RO_s    		= 2.7			!solids density
-  D_p0    		= 0.4			!particle diameter
+! MMAX                  = 2
+  RO_s    		= 2.7           	!solids density
+  D_p0    		= 0.4                  !particle diameter
   e       		= 0.9 			!restitution coefficient
   Phi    		= 30.0			!angle of internal friction
   EP_star 		= 0.42			!void fraction at minimum
@@ -123,29 +123,37 @@
 
 !
 ! DES INPUT
-               
-PARTICLES = 2400    ! Number of particles
-MN = 14             ! Maximum number of neighbors allowed per particle
-KN = 800000         ! Normal inter-particle collision spring constant
-KT = 800000         ! Tangential     "        "         "       "
-ETA_DES_N = 18      ! Normal inter-particle damping coefficient
-ETA_DES_T = 18      ! Tangential  "          "        "
-MEW = 0.2           ! Inter-particle friction coeffienct
-KN_W = 1200000      ! Normal particle-wall collision spring constant
-KT_W = 1200000      ! Tangential   "           "       "      "
-ETA_N_W = 22        ! Normal particle-wall damping coefficient
-ETA_T_W = 22        ! Tangential    "         "        "
-MEW_W = 0.1         ! Particle-wall friction coefficient
-DES_NEIGHBOR_SEARCH = 2 ! Particle neighbor search method; 1=n-square; 2=quadtree; 3=octree
-NEIGHBOR_SEARCH_N = 1
-DTSOLID_FACTOR = 0.1D0
-P_TIME = 10.0
+ PARTICLES = 2400              
+ MN = 14             ! Maximum number of neighbors allowed per particle
+ DIMN = 2
+
+ KN = 1.0d+6         ! Normal inter-particle collision spring constant
+ KT_FAC = @(2/7)         ! Tangential spring factor = KN/KT
+ PRINT_DES_DATA = .T.
+ MEW = 0.1           ! Inter-particle friction coeffienct
+
+ KN_W = 1.0d+6      ! Normal particle-wall collision spring constant
+ KT_W_FAC = @(2/7)      ! Tangential spring factor = KN_W/KT_W
+
+ MEW_W = 0.1         ! Particle-wall friction coefficient
+ NFACTOR = 500
+ DES_NEIGHBOR_SEARCH = 4 !d; 1=n-square; 2=quadtree; 3=octree
+ MN = 20                 ! Maximum number of neighbors allowed per particle
+ NEIGHBOR_SEARCH_N = 20
+ DTSOLID_FACTOR = 0.1D0
+ DES_INTERP_ON = .TRUE.
+ DES_EN_INPUT = 3*0.9       !particle-particle rest coef
+ DES_EN_WALL_INPUT = 2*1.0  !particle-wall rest coef
+
+ DES_ETAT_FAC = @(1/2)  ! damping coefficient factor = ETAN/ETAT
+ DES_ETAT_W_FAC = @(1/2) ! damping coefficient factor = ETAN_W/ETAT_W
 
 !  DES Logicals
 DISCRETE_ELEMENT = .TRUE. 
 WALLDTSPLIT = .TRUE.
 DES_CONTINUUM_COUPLED = .TRUE.
-TSUJI_DRAG = .TRUE.
+DRAG_TYPE = 'GIDASPOW'
+TSUJI_DRAG = .FALSE.
 
 ! End DES Input
 
@@ -167,7 +175,7 @@ TSUJI_DRAG = .TRUE.
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
         !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
         !                W_g  W_s
-  SPX_DT = 0.01 0.01   0.01  0.1  100.  100. 100.   100.0   100. 100.  100.        
+  SPX_DT = 0.2 10.2   0.2  101.  100.  100. 100.   100.0   100. 100.  100.        
                                                                                 
 !  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
   
