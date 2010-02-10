@@ -323,7 +323,8 @@
               write (*,*) ' '
               write (*,*) ' NMAX(0) = ' , nmax(0)
               write (*,*) ' '
-              write (*,*) ' if this is not correct , see mfix/tools/fix_RES_file'
+              write (*,*) ' if this is not correct ... '
+              write (*,*) ' see mfix/tools/doc/fix_RES_file.pdf'
               write (*,*) ' '
               write (*,*) ' *********************************************************'
               write (*,*) ' '
