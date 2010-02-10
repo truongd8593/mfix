@@ -507,7 +507,7 @@
 !           some converegence issues, remove them from LHS and RHS for debugging (sof).
 
       SOURCELHS = ( (S11_sum_lhs+S12_sum_lhs)+&
-          + (S10_lhs+S16_lhs+S17_sum_lhs+&
+           (S10_lhs+S16_lhs+S17_sum_lhs+&
           S18_sum_lhs-S20_sum_lhs+S13_sum_lhs)*VOL(IJK) + &
           ZMAX(S21a_sum+S21b_sum+S21c_sum)+ &
           ZMAX(S14a_sum+S14b_sum+S14c_sum)+ ZMAX(S9_sum) ) / &
