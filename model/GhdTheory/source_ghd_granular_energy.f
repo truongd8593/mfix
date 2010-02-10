@@ -259,7 +259,7 @@
       SOURCELHS = ( (PressureLhs + BulkViscLhs)/NonZeroTheta   + &
                   (CollDissipation + DissDivULhs) ) * VOL(IJK) + &
 		  ( ZMAX(-DufourX)+ZMAX(-DufourY)+ZMAX(-DufourZ)    + &
-                 + ZMAX(-ThermMobilityX)+ZMAX(-ThermMobilityY)+ZMAX(-ThermMobilityZ)   &
+                  ZMAX(-ThermMobilityX)+ZMAX(-ThermMobilityY)+ZMAX(-ThermMobilityZ)   &
 		 + ZMAX(-DelDotJoi) + ZMAX(-FiDotJoi)*VOL(IJK) )/ NonZeroTheta
       
       RETURN  
