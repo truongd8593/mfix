@@ -317,7 +317,7 @@
         ENDIF
 
         if (myPE == PE_IO) then
-           if (nmax(0) > 50000) then
+           if (nmax(0) > 5000) then
               write (*,*) ' '
               write (*,*) ' *********************************************************'
               write (*,*) ' '
