@@ -136,7 +136,7 @@
          WRITE (UNIT_RES, REC=NEXT_RECA) C_NAME(LC) 
          NEXT_RECA = NEXT_RECA + 1 
       END DO
-      write (*,*) 'next_reca = ' , next_reca
+!      write (*,*) 'next_reca = ' , next_reca
       do l = 0,mmax
          write (*,*) L,nmax(l)
 	 work_around(L+1) = nmax(L)
@@ -151,7 +151,7 @@
  !      end do
 !      write (unit_res,rec=next_reca) nmax(0) , nmax(1)
       NEXT_RECA = NEXT_RECA + 1
-      write (*,*) ' next_reca = ' , next_reca
+!      write (*,*) ' next_reca = ' , next_reca
 !
       CALL OUT_BIN_512 (UNIT_RES, DX(1), IMAX2, NEXT_RECA) 
       CALL OUT_BIN_512 (UNIT_RES, DY(1), JMAX2, NEXT_RECA) 
