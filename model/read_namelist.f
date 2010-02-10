@@ -263,6 +263,7 @@
          WRITE (UNIT_TMP, 1200) 
          REWIND (UNIT=UNIT_TMP) 
          READ (UNIT_TMP, NML=USR_INPUT_DATA, ERR=420, END=930) 
+         goto 430
  420     CONTINUE 
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
