@@ -485,38 +485,26 @@ void MfixData::ReadRes0()
           size_t pos = in.tellg();
 
           IN_BIN_512I(in,&NMAX[0],MMAX+1);
-
-          if (res_option == 11111111)  // was == 1
-          {
-             /*
-             cout << "\n\nif imax2/jmax2/kmax2 are incorrect ... kill program\n\n";
-
-             cout << "MMAX = " << MMAX << "\n";
-
-             for (int qq=0; qq<MMAX+1; ++qq)
-             {
-                 cout << "value of NMAX(" << qq << ") in RES file = " << NMAX[qq]
-                      << "    ...  enter new value > ";
-
-                 cin >> NMAX[qq];
-
-                 SWAP_INT( NMAX[qq] );
-             }
-             cout << "attempting ...\n";
-             if (!in) cout << "problem at start\n";
-             in.seekp(pos);
-             in.write( reinterpret_cast<char *>( &NMAX[0] ), (MMAX+1)*sizeof(NMAX[0]) );
-             if (!in) 
-                cout << "problem at end\n";
-             else
-                cout << "file has been modified\n";
-
-            return;
-            */
-         }
       }
    }
-  
+
+   if (NMAX[0] > 5000)
+   {
+      cout << "\n";
+      cout << "*******************************************\n";
+      cout << "\n";
+      cout << "NMAX(0) = " << NMAX[0] << "\n";
+      cout << "\n";
+      cout << "Is that correct ?\n";
+      cout << "If not, see mfix/tools/IO_tools/doc/fix_RES_file.pdf\n";
+      cout << "\n";
+      cout << "kill program , or hit enter to continue > ";
+      cin.ignore(1000,'\n');
+      cout << "\ncontinuing ...\n";
+      cout << "*******************************************\n";
+      cout << "\n";
+   }
+
    DX.resize(imax2);
    DY.resize(jmax2);
    DZ.resize(kmax2);

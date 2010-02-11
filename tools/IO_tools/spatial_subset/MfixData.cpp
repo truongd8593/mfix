@@ -651,14 +651,23 @@ void MfixData::ReadRes0()
          IN_BIN_512I(in,&NMAX[0],MMAX+1); 
          OUT_BIN_512I(out,&NMAX[0],MMAX+1); 
       }
+   }
 
-      if (NMAX[0] > 10000)
-      {
-         cout << "NMAX variable incorrect ... CTRL-C out of code\n\n";
-         cout << " and run modify_res.exe to fix\n\n";
-         std::string temp_str;
-         cin >> temp_str;
-      }
+   if (NMAX[0] > 5000)
+   {
+      cout << "\n";
+      cout << "*******************************************\n";
+      cout << "\n";
+      cout << "NMAX(0) = " << NMAX[0] << "\n";
+      cout << "\n";
+      cout << "Is that correct ?\n";
+      cout << "If not, see mfix/tools/IO_tools/doc/fix_RES_file.pdf\n";
+      cout << "\n";
+      cout << "kill program , or hit enter to continue > ";
+      cin.ignore(1000,'\n');
+      cout << "\ncontinuing ...\n";
+      cout << "*******************************************\n";
+      cout << "\n";
    }
 
    DX.resize(imax2);

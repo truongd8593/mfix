@@ -508,7 +508,25 @@ void MfixData::ReadRes0()
          }
       }
    }
-  
+
+
+   if (NMAX[0] > 5000)
+   {
+      cout << "\n";
+      cout << "*******************************************\n";
+      cout << "\n";
+      cout << "NMAX(0) = " << NMAX[0] << "\n";
+      cout << "\n";
+      cout << "Is that correct ?\n";
+      cout << "If not, see mfix/tools/IO_tools/doc/fix_RES_file.pdf\n";
+      cout << "\n";
+      cout << "kill program , or hit enter to continue > ";
+      cin.ignore(1000,'\n');
+      cout << "\ncontinuing ...\n";
+      cout << "*******************************************\n";
+      cout << "\n";
+   }
+
    DX.resize(imax2);
    DY.resize(jmax2);
    DZ.resize(kmax2);
