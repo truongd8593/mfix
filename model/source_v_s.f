@@ -1085,7 +1085,7 @@
 	          IJPK = JP_OF(EAST_OF(IJK))
                   IF (WALL_AT(IJPK)) CYCLE
                   IF (EP_S(EAST_OF(IJK),M) <= DIL_EP_S) THEN 
-                     A_M(IJK,E,M) = -ONE 
+                     A_M(IJK,E,M) = ONE 
                   ELSE 
 ! start anuj 04/20
 		     IF (FRICTION .AND. (ONE-EP_G(EAST_OF(IJK)))>EPS_F_MIN) THEN 
@@ -1116,7 +1116,7 @@
 	          IJPK = JP_OF(WEST_OF(IJK))
                   IF (WALL_AT(IJPK)) CYCLE
                   IF (EP_S(WEST_OF(IJK),M) <= DIL_EP_S) THEN 
-                     A_M(IJK,W,M) = -ONE 
+                     A_M(IJK,W,M) = ONE 
                   ELSE 
                      IF (FRICTION .AND. (ONE-EP_G(WEST_OF(IJK)))>EPS_F_MIN) THEN 
                         CALL CALC_U_FRICTION (IJK, WEST_OF(IJK), 'W', 'V', L, M&
@@ -1146,7 +1146,7 @@
 	          IJPK = JP_OF(TOP_OF(IJK))
                   IF (WALL_AT(IJPK)) CYCLE
                   IF (EP_S(TOP_OF(IJK),M) <= DIL_EP_S) THEN 
-                     A_M(IJK,T,M) = -ONE 
+                     A_M(IJK,T,M) = ONE 
                   ELSE 
                      IF (FRICTION .AND. (ONE-EP_G(TOP_OF(IJK)))>EPS_F_MIN) THEN 
                         CALL CALC_U_FRICTION (IJK, TOP_OF(IJK), 'T', 'V', L, M&
@@ -1175,7 +1175,7 @@
 	          IJPK = JP_OF(BOTTOM_OF(IJK))
                   IF (WALL_AT(IJPK)) CYCLE
                   IF (EP_S(BOTTOM_OF(IJK),M) <= DIL_EP_S) THEN 
-                     A_M(IJK,B,M) = -ONE 
+                     A_M(IJK,B,M) = ONE 
                   ELSE 
                      IF (FRICTION .AND. (ONE-EP_G(BOTTOM_OF(IJK)))>EPS_F_MIN) THEN 
                         CALL CALC_U_FRICTION (IJK, BOTTOM_OF(IJK), 'B', 'V', L&
