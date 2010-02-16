@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cstring>
 #include <map>
 
 #include <sys/types.h>
