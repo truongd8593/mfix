@@ -313,8 +313,11 @@
                   CALL CFFCTOWALL(LL, NORMAL, DISTMOD)
                   
 ! Save the tangential displacement history with the correction of Coulomb's law
-                  IF (PARTICLE_SLIDE) PFT(LL,NI,:) = -( FT(LL,:) - &
-                     FTS2(:) ) / KT_DES_W
+                  IF (PARTICLE_SLIDE) THEN
+                     PFT(LL,NI,:) = -( FT(LL,:) - FTS2(:) ) / KT_DES_W
+                  ELSE
+                     PFT(LL,NI,:) = PFT_TMP(:)
+                  ENDIF 
         
                   IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
                      IF (.NOT.DES_LOC_DEBUG) THEN
@@ -585,8 +588,11 @@
                   CALL CFFCTOW(LL, I, NORMAL, DISTMOD)
 
 ! Save the tangential displacement history with the correction of Coulomb's law
-                  IF (PARTICLE_SLIDE) PFT(LL,NI,:) = -( FT(LL,:) - &
-                     FTS2(:) ) / KT_DES
+                  IF (PARTICLE_SLIDE) THEN
+                     PFT(LL,NI,:) = -( FT(LL,:) - FTS2(:) ) / KT_DES
+                  ELSE
+                     PFT(LL,NI,:) = PFT_TMP(:)
+                  ENDIF
                   
                   IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN 
                      IF (.NOT.DES_LOC_DEBUG) THEN
