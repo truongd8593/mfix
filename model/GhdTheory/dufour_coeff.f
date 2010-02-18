@@ -10,6 +10,9 @@
 !
 !  Literature/References:  
 !     C. Hrenya handwritten notes & Garzo, Hrenya, Dufty papers (PRE, 2007)
+!
+!  Modifications:
+!     Sof: removed divisions by ni.
 !                                                         
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -52,13 +55,14 @@
       enddo
 
 !determination of integral - p 18 of CMH notes (eq. 3) - via summation of two smaller integrals
+! Note that the new I_ilj(i,l,j) is now defined as old I_ilj(i,l,j)*ni(l)/ni(j)
       do i=1,s
          do l=1,s
             do j=1,s
                !integral 1 - p 18.1 of CMH notes
-               integ1(i,l,j) = (kronecker(l,j) + 0.5d0*(ni(l)/chi(i,l) &
-                 *dchi0il_dnj(i,l,j)+I_ilj(i,l,j)))  &
-                 *pi*mi(i)*ni(i)*ni(l)*chi(i,l)*sigma(i,l)**3*mu(l,i) &
+               integ1(i,l,j) = (kronecker(l,j)*ni(l) + 0.5d0*(ni(l)/chi(i,l) &
+                 *dchi0il_dnj(i,l,j)*ni(l)+I_ilj(i,l,j)*ni(j)))  &
+                 *pi*mi(i)*ni(i)*chi(i,l)*sigma(i,l)**3*mu(l,i) &
                  *(1.d0+alpha(i,l))  &
                  *((11.d0*mu(i,l)**2+(13.d0-9.d0*alpha(i,l))*mu(i,l) &
                  *mu(l,i)+(5.d0+3.d0*alpha(i,l)**2-3.d0*alpha(i,l)) &
@@ -87,15 +91,15 @@
       sum2(1:s,1:s) = 0.d0           !calculate 2nd summation used in dq_bar - p 18 CMH notes
       do i=1,s
          do j=1,s
-            do l=1,s
-               sum1(i,j) = sum1(i,j) + mi(l)*(omega(i,l)-zeta0 &
+            do l=1,s  ! modification to ni(l) > 0 same as in thermal_mobility.f
+               if(ni(l) > 0d0) sum1(i,j) = sum1(i,j) + mi(l)*(omega(i,l)-zeta0 &
                           *kronecker(i,l))/ni(l)/Ti(l)*Dij(l,j) 
                sum2(i,j) = sum2(i,j) + integ(i,l,j) 
             enddo
-            dq_bar(i,j) = -2.5d0*ni(i)*ni(j)*Ti(i)**3/mi(i)/T**2   &
-                        *(mi(j)/rho/Ti(i)*sum1(i,j)  &
-                        -0.4d0*mi(i)*T/ni(i)/Ti(i)**3*dzeta0_dnj(j) &
-                        *lambdai(i) - dTl_dnj(i,j)/3.d0/Ti(i)**2)  &
+            dq_bar(i,j) = -2.5d0*ni(j)*Ti(i)**3/mi(i)/T**2   &
+                        *(mi(j)/rho/Ti(i)*sum1(i,j)*ni(i)  &
+                        -0.4d0*mi(i)*T/Ti(i)**3*dzeta0_dnj(j) &           ! ni(i)/ni(i) cancels
+                        *lambdai(i) - dTl_dnj(i,j)/3.d0/Ti(i)**2*ni(i))  &
                         +sum2(i,j)/3.d0/T**2 
          enddo
       enddo
