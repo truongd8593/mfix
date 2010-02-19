@@ -1,9 +1,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CFNOCONTACT(L)                                         C
-!>
-!!  Purpose: DES - Zeroing values when particles are not in contact     
-!<
+!
+!  Purpose: DES - Zeroing values when particles are not in contact     
+!
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
@@ -23,13 +23,13 @@
 !-----------------------------------------------
 
       
-         FN(L,:) = ZERO
-         FT(L,:) = ZERO
-         FC(L,:) = ZERO
-         TOW(L,:) = ZERO
-         OMEGA_NEW(L,:) = ZERO
+      FN(L,:) = ZERO
+      FT(L,:) = ZERO
+      FC(L,:) = ZERO
+      TOW(L,:) = ZERO
 
       RETURN
+
       END SUBROUTINE CFNOCONTACT
 
 
