@@ -734,12 +734,12 @@ void MfixData::ReadRes0()
           {
               for (int i=0; i<imax2; ++i)
               {
-                  if (i==0 && FLAG[ppp]==0) FLAG[ppp] = 0;
-                  if (j==0 && FLAG[ppp]==0) FLAG[ppp] = 0;
-                  if (k==0 && FLAG[ppp]==0) FLAG[ppp] = 0;
-                  if (i==imax2-1 && FLAG[ppp]==0) FLAG[ppp] = 0;
-                  if (j==jmax2-1 && FLAG[ppp]==0) FLAG[ppp] = 0;
-                  if (k==kmax2-1 && FLAG[ppp]==0) FLAG[ppp] = 0;
+                  if (i==0 && FLAG[ppp]==1) FLAG[ppp] = 0;
+                  if (j==0 && FLAG[ppp]==1) FLAG[ppp] = 0;
+                  if (k==0 && FLAG[ppp]==1) FLAG[ppp] = 0;
+                  if (i==imax2-1 && FLAG[ppp]==1) FLAG[ppp] = 0;
+                  if (j==jmax2-1 && FLAG[ppp]==1) FLAG[ppp] = 0;
+                  if (k==kmax2-1 && FLAG[ppp]==1) FLAG[ppp] = 0;
                   ++ppp;
               }
           }
@@ -1366,7 +1366,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
             }
             else
             {
-                int m = Convert<string,int>(vname.substr(2));
+                int m = Convert<string,int>(vname.substr(4));
                 nskip = m; // 1 + (m-1)
             }
 
@@ -1382,7 +1382,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
 
             if (vname.substr(0,3) == "X_g")
             {
-                int ng = Convert<string,int>(vname.substr(2));
+                int ng = Convert<string,int>(vname.substr(4));
                 nskip = ng - 1;
             }
             else

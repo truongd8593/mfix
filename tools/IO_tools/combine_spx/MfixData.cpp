@@ -1327,7 +1327,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
             }
             else
             {
-                int m = Convert<string,int>(vname.substr(2));
+                int m = Convert<string,int>(vname.substr(4));
                 nskip = m; // 1 + (m-1)
             }
 
@@ -1343,7 +1343,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
 
             if (vname.substr(0,3) == "X_g")
             {
-                int ng = Convert<string,int>(vname.substr(2));
+                int ng = Convert<string,int>(vname.substr(4));
                 nskip = ng - 1;
             }
             else

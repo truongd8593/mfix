@@ -17,6 +17,16 @@ using namespace std;
 
 namespace
 {
+    template<typename T1 , typename T2>
+    T2 Convert(const T1 & t1)
+    {
+       T2 t2;
+       stringstream ss;
+       ss << t1;
+       ss >> t2;
+       return t2;
+    }
+
     void SWAP_DOUBLE(double & value)
     {
     
@@ -34,7 +44,6 @@ namespace
         Swapped[7]=*((char*)Addr  );
 
         value = *(reinterpret_cast<double*>(Swapped));
-    
     }
 
     void SWAP_FLOAT(float & value)
@@ -73,15 +82,6 @@ namespace
     string ConvertIntToString(int in)
     {
         string out;
-        stringstream buff;
-        buff << in;
-        buff >> out;
-        return out;
-    }
-
-    int ConvertCharToInt(char in)
-    {
-        int out;
         stringstream buff;
         buff << in;
         buff >> out;
@@ -452,6 +452,7 @@ void MfixData::ReadRes0()
    IN_BIN_512(in,&DX[0],imax2);
    IN_BIN_512(in,&DY[0],jmax2);
    IN_BIN_512(in,&DZ[0],kmax2);
+   
  
    // run_name etc.
    
@@ -498,7 +499,6 @@ void MfixData::ReadRes0()
    tmpI.resize(DIM_IC);
    tmpD.resize(DIM_IC);
 
-
    IN_BIN_512(in,&tmpD[0],DIM_IC);  // ic_x_w
    IN_BIN_512(in,&tmpD[0],DIM_IC);  // ic_x_e
    IN_BIN_512(in,&tmpD[0],DIM_IC);  // ic_y_s
@@ -514,7 +514,6 @@ void MfixData::ReadRes0()
    IN_BIN_512(in,&tmpD[0],DIM_IC);  // ic_ep_g
    IN_BIN_512(in,&tmpD[0],DIM_IC);  // ic_p_g
    IN_BIN_512(in,&tmpD[0],DIM_IC);  // ic_t_g
-
 
    if (version_number < 1.15)
    {
@@ -542,7 +541,7 @@ void MfixData::ReadRes0()
       {
          IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_t_s
       }
-      
+
       if (version_number >= 1.04)
       {
          for (n=0; n<NMAX[lc+1]; ++n) // ...
@@ -594,7 +593,7 @@ void MfixData::ReadRes0()
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc rop s
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc u s
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc v s
-      
+
       if (version_number >= 1.04)
       {
          IN_BIN_512(in,&tmpD[0],DIM_BC); // bc w s
@@ -678,7 +677,7 @@ void MfixData::ReadRes0()
       IN_BIN_512(in,&tmpD[0],DIMENSION_USR); // usr z b
       IN_BIN_512(in,&tmpD[0],DIMENSION_USR); // usr z t
 
-       for (lc=0; lc<DIMENSION_USR; ++lc) in.read(buffer,512);    // usr_ext etc.
+      for (lc=0; lc<DIMENSION_USR; ++lc) in.read(buffer,512);    // usr_ext etc.
 
       tmpD.resize(DIM_IC);      
       IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_p_star
@@ -692,22 +691,22 @@ void MfixData::ReadRes0()
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_jet_gh
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_dt_l
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_jet_gl
-   }
+    }
 
-
+      
    if (version_number >= 1.1)  in.read(buffer,512);  // mu_gmax
    if (version_number >= 1.11) in.read(buffer,512);  // x_ex , model_b
-
+      
    if (version_number >= 1.12)
    {
       in.read(buffer,512);   // p_ref , etc.
       in.read(buffer,512);   // leq_it , leq_method
-
+    
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_hw_g
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_uw_g
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_vw_g
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_ww_g
-
+    
       for (lc=0; lc<MMAX; ++lc)
       {
          IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_hw_s
@@ -723,21 +722,21 @@ void MfixData::ReadRes0()
    if (version_number >= 1.15)
    {
       in.read(buffer,512);    // k_g0 , etc.
-
+     
       tmpD.resize(DIM_IC);   
-
+     
       IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_gama_rg
       IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_t_rg
-
+        
       for (lc=0; lc<MMAX; ++lc)
       {
          IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_gama_rs
          IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_t_rs
       }
   }
-
+     
   if (version_number >= 1.2) in.read(buffer,512); // norm_g , norm_s
-
+ 
   if (version_number >= 1.3)
   {
      GetInt(in,NScalar);
@@ -746,26 +745,26 @@ void MfixData::ReadRes0()
      int DIM_tmp;
      GetInt(in,DIM_tmp);
      SkipBytes(in,512-sizeof(double)-2*sizeof(int));
-
+    
      tmpI.resize(DIM_tmp);
      IN_BIN_512I(in,&tmpI[0],DIM_tmp);  // Phase4Scalar;
   }
-
+        
   if (version_number >= 1.5)
   {
      GetInt(in,nRR);
      SkipBytes(in,508);
   }
-
-
+     
+     
   if (version_number >= 1.5999)
   {
      int tmp;
      GetInt(in,tmp);
      SkipBytes(in,508);
-
+    
      if (tmp != 0) bKepsilon = true;
-  }
+  }      
 }
 
 
@@ -783,7 +782,6 @@ void MfixData::ReadTimeValues(ifstream & in , int offset , int spxNum)
         SWAP_FLOAT(time);
 
         FILE_POSITION pos = in.tellg();
-
         pos -= sizeof(float);
 
         tmap2.insert( make_pair(time,pos) );
@@ -1118,9 +1116,6 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
 
     // get filename that vaiable # vari is located in
 
-    // assumptions : there are <10 solid phases,
-    // <10 scalars and <10 ReactionRates (need to change this)
-
     string & vname = variable_names[vari];
 
     int spx = varNameToSPX[vname];
@@ -1195,7 +1190,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
 
             // examples : U_s_1 , W_s_2
 
-            int m = ConvertCharToInt(vname[ vname.size()-1 ]);
+            int m = Convert<string,int>(vname.substr(4));
 
             nskip = 3*(m-1);
             
@@ -1210,7 +1205,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
             // form of variable : "ROP_s_b"
             // "b" = solid phase index ( 1 - based )
 
-            int m = ConvertCharToInt(vname[ vname.size()-1 ]);
+            int m = Convert<string,int>(vname.substr(6));
             nskip = m - 1;
 
             break;
@@ -1227,7 +1222,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
             }
             else
             {
-                int m = ConvertCharToInt(vname[ vname.size()-1 ]);
+                int m = Convert<string,int>(vname.substr(4));
                 nskip = m; // 1 + (m-1)
             }
 
@@ -1243,18 +1238,19 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
 
             if (vname.substr(0,3) == "X_g")
             {
-                int ng = ConvertCharToInt(vname[ vname.size()-1 ]);
+                int ng = Convert<string,int>(vname.substr(4));
                 nskip = ng - 1;
             }
             else
             {
-                int ns = ConvertCharToInt(vname[ vname.size()-1 ]);
 
                 string::size_type pos1 = vname.find_first_of('_');
                 string::size_type pos2 = vname.find_last_of('_');
 
                 string str_m = vname.substr( pos1+3 , pos2-pos1-3 );
                 int m = ConvertStringToInt(str_m);
+
+                int ns = Convert<string,int>(vname.substr(pos2+1));
 
                 nskip = NMAX[0];
 
@@ -1274,7 +1270,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
             // form of variable : "Theta_m_b"
             // "b" = solid phase index ( 1 - based )
 
-            int m = ConvertCharToInt(vname[ vname.size()-1 ]);
+            int m = Convert<string,int>(vname.substr(8));
             nskip = m - 1;
 
             break;
@@ -1285,7 +1281,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
             // form of variable : "Scalar_s"
             // "s" = scalar index ( 1 - based )
 
-            int m = ConvertCharToInt(vname[ vname.size()-1 ]);
+            int m = Convert<string,int>(vname.substr(7));
             nskip = m - 1;
 
             break;
@@ -1296,7 +1292,8 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
             // form of variable : "RRates_r"
             // "r" = reaction rate index ( 1 - based )
 
-            int m = ConvertCharToInt(vname[ vname.size()-1 ]);
+            int m = Convert<string,int>(vname.substr(7));
+
             nskip = m - 1;
 
             break;
