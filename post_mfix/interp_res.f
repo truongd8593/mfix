@@ -54,7 +54,8 @@
         ROP_g_OLD, T_g_OLD, &
         U_g_OLD, &
         V_g_OLD, W_g_OLD, &
-        GAMA_RG_OLD, T_RG_OLD
+        GAMA_RG_OLD, T_RG_OLD, &
+        K_TURB_G_OLD, E_TURB_G_OLD
 
       DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE ::  &
         X_g_OLD
@@ -111,6 +112,10 @@
       Allocate(  T_g_OLD(DIMENSION_3) )
       Allocate(  GAMA_RG_OLD(DIMENSION_3) )
       Allocate(  T_RG_OLD(DIMENSION_3) )
+      if(k_epsilon) then
+        Allocate(  K_TURB_G_OLD(DIMENSION_3) )
+        Allocate(  E_TURB_G_OLD(DIMENSION_3) )
+      endif
       
       Allocate(  X_g_OLD(DIMENSION_3, DIMENSION_N_g) )
       
@@ -179,6 +184,12 @@
         DO LC = 1, NScalar 
           Scalar_OLD (IJK, LC) = Scalar (IJK, LC) 
         END DO
+!
+
+        if(k_epsilon) then
+          k_turb_g_OLD (IJK) = k_turb_g (IJK) 
+          e_turb_g_OLD (IJK) = e_turb_g (IJK) 
+        endif
 !
 !       Version 1.4 -- write radiation variables in write_res1 
         GAMA_RG_OLD(IJK) = GAMA_RG(IJK) 
@@ -449,6 +460,10 @@
         DO LC = 1, NScalar 
           Scalar (IJK, LC) = Scalar_OLD (IJK_OLD, LC) 
         END DO
+        if(k_epsilon) then
+          k_turb_g (IJK) = k_turb_g_OLD (IJK_OLD) 
+          e_turb_g (IJK) = e_turb_g_OLD (IJK_OLD) 
+        endif
 !
 !       Version 1.4 -- write radiation variables in write_res1 
         GAMA_RG(IJK) = GAMA_RG_OLD(IJK_OLD)

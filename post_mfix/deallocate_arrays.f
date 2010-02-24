@@ -125,7 +125,11 @@
       IF(DIMENSION_Scalar /= 0)then
         Deallocate(  Scalar  )
         Deallocate(  Scalaro  )
+      ENDIF
       
+      IF(K_Epsilon)then
+        Deallocate(  K_Turb_G  )
+        Deallocate(  E_Turb_G  )
       ENDIF
 
 
