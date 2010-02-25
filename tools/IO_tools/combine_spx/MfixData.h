@@ -173,7 +173,7 @@ public:
    void IN_BIN_512R(std::istream& in, float* v, int n);
 
    void GetTimes();
-   void ReadTimeValues(std::ifstream & in , int offset , int spxNum);
+   void ReadTimeValues(std::ifstream & in , FILE_POSITION offset , int spxNum);
    void ReadWriteValues(std::ifstream & in , int spxNum , int nvars ,
                 const std::string & s1 , const std::string & s2);
 
@@ -183,8 +183,6 @@ public:
    void GetVariableAtTimestep(int var , int tstep);
 
    void SetResOption(int option) { res_option = option; }
-
-   void Split_SP1(int SPX_file);
 
    void CombineSPX(int SPX_file , MfixData & data2 , int add_time_code = 0);
 

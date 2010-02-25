@@ -284,79 +284,8 @@ void MfixData::ReadRes0()
 
    // skip 2 lines : records 2 and 3
 
-   if (res_option != 3626262)  // was == 3
-   {
-       in.read(buffer,512);
-   }
-   else
-   {
-      /*
-      size_t pos_rec2 = in.tellg();
-      in.read(buffer,60);
-
-      int id_month , id_day , id_year , id_hour , id_minute , id_second;
-      in.read( reinterpret_cast<char*>(&id_month),sizeof(int));
-      in.read( reinterpret_cast<char*>(&id_day),sizeof(int));
-      in.read( reinterpret_cast<char*>(&id_year),sizeof(int));
-      in.read( reinterpret_cast<char*>(&id_hour),sizeof(int));
-      in.read( reinterpret_cast<char*>(&id_minute),sizeof(int));
-      in.read( reinterpret_cast<char*>(&id_second),sizeof(int));
-
-      SWAP_INT(id_month);
-      SWAP_INT(id_day);
-      SWAP_INT(id_year);
-      SWAP_INT(id_hour);
-      SWAP_INT(id_minute);
-      SWAP_INT(id_second);
-
-      cout << "month  in RES file = " << id_month << "   enter new value > ";
-      cin  >> id_month;
-
-      cout << "day    in RES file = " << id_day   << "   enter new value > ";
-      cin  >> id_day;
-
-      cout << "year   in RES file = " << id_year  << "   enter new value > ";
-      cin  >> id_year;
-
-   
-      cout << "hour   in RES file = " << id_hour  << "   enter new value > ";
-      cin  >> id_hour;
-
-      cout << "minute in RES file = " << id_minute << "   enter new value > ";
-      cin  >> id_minute;
-
-      cout << "second in RES file = " << id_second << "   enter new value > ";
-      cin  >> id_second;
-   
-   
-
-      SWAP_INT(id_month);
-      SWAP_INT(id_day);
-      SWAP_INT(id_year);
-      SWAP_INT(id_hour);
-      SWAP_INT(id_minute);
-      SWAP_INT(id_second);
-
-      in.seekp(pos_rec2);
-      in.write(buffer,60);
-
-      in.write( reinterpret_cast<char*>(&id_month),sizeof(int));
-      in.write( reinterpret_cast<char*>(&id_day),sizeof(int));
-      in.write( reinterpret_cast<char*>(&id_year),sizeof(int));
-      in.write( reinterpret_cast<char*>(&id_hour),sizeof(int));
-      in.write( reinterpret_cast<char*>(&id_minute),sizeof(int));
-      in.write( reinterpret_cast<char*>(&id_second),sizeof(int));
-
-      cout << "\ndates changed\n\n";
-
-      return;
-      */
-   }
-
-
-
-
-   in.read(buffer,512);
+    in.read(buffer,512);
+    in.read(buffer,512);
 
    // imin1 etc : record 4
    memset(buffer,0,513);
@@ -481,9 +410,7 @@ void MfixData::ReadRes0()
       if (version_number < 1.12)
           IN_BIN_512I(in,&NMAX[0],MMAX+1);
       else
-      {  
-          size_t pos = in.tellg();
-
+      {
           IN_BIN_512I(in,&NMAX[0],MMAX+1);
       }
    }
@@ -574,9 +501,6 @@ void MfixData::ReadRes0()
    IN_BIN_512(in,&tmpD[0],DIM_IC);  // ic_ep_g
    IN_BIN_512(in,&tmpD[0],DIM_IC);  // ic_p_g
    IN_BIN_512(in,&tmpD[0],DIM_IC);  // ic_t_g
-   
-//   cout << "after ic_t_g " << in.tellg() << "\n";
-//   cout << "vn = " << version_number << "\n";
 
    if (version_number < 1.15)
    {
@@ -588,7 +512,6 @@ void MfixData::ReadRes0()
    {
       for (int i=0; i<NMAX[0]; ++i) IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_x_g
    }
-//   cout << "after ic_x_g " << in.tellg() << "\n";
 
    IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_u_g
    IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_v_g
@@ -600,8 +523,7 @@ void MfixData::ReadRes0()
       IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_u_s
       IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_v_s
       IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_w_s
-      
- //     cout << "after ic_w_s " << in.tellg() << "\n";
+
       if (version_number >= 1.15)
       {
          IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_t_s
@@ -617,9 +539,6 @@ void MfixData::ReadRes0()
    // read in the "DIM_BC" variables (and ignore ... not used by ani_mfix)
    tmpI.resize(DIM_BC);
    tmpD.resize(DIM_BC);
-   
-//   cout << "bc_start = " << in.tellg() << "\n";
-
 
    IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_x_w
    IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_x_e
@@ -687,33 +606,10 @@ void MfixData::ReadRes0()
 
    for (lc=0; lc<l; ++lc) in.read(buffer,512); // BC TYPE
    
-   size_t flag_pos = in.tellg();
-//   cout << " before flag " << in.tellg() << "\n";
+   FILE_POSITION flag_pos = in.tellg();
 
    FLAG.resize(ijkmax2);
    IN_BIN_512I(in,&FLAG[0],ijkmax2);
-
-   if (res_option == 2222222)  // was == 2
-   {
-      /*
-      int cccc = 0;
-      for (int qqq=0; qqq<ijkmax2; ++qqq) 
-      {
-         if (FLAG[qqq] == 1) cccc = cccc + 1;
-         FLAG[qqq] = 1;
-         SWAP_INT( FLAG[qqq] );
-      }
-      cout << "number of initial FLAG=1 cells = " << cccc << " out of " << ijkmax2 << " cells \n";
-
-      in.seekp(flag_pos);
-      in.write( reinterpret_cast<char*>(&FLAG[0]),ijkmax2*sizeof(FLAG[0]));
-
-      cout << "\nfile modified\n";
-
-      return;
-      */
-   }
-      
 
    // DIM_IS varibles (not needed by ani_mfix)
    tmpI.resize(DIM_IS);
@@ -745,9 +641,7 @@ void MfixData::ReadRes0()
    }
 
    if (version_number >= 1.08) in.read(buffer,512);
-   
-//   cout << "after >= 1.08 " << in.tellg() << "\n";
-//   
+
    if (version_number >= 1.09) 
    {
       in.read(buffer,512);
@@ -757,9 +651,7 @@ void MfixData::ReadRes0()
          GetInt(in,nspx_use);
          SkipBytes(in,508);
       }
- //     cout << "after n_spx_use " << in.tellg() << "\n";
- //     cout << nspx_use << "\n";
-      
+       
       for (lc=0; lc< nspx_use; ++lc) in.read(buffer,512); // spx_dt
       
       for (lc=0; lc<MMAX+1; ++lc) in.read(buffer,512);    // species_eq
@@ -774,7 +666,6 @@ void MfixData::ReadRes0()
       IN_BIN_512(in,&tmpD[0],DIMENSION_USR); // usr z b
       IN_BIN_512(in,&tmpD[0],DIMENSION_USR); // usr z t
      
- //     cout << "after usr z t " << in.tellg() << "\n";
       for (lc=0; lc<DIMENSION_USR; ++lc) in.read(buffer,512);    // usr_ext etc.
         
           
@@ -790,7 +681,6 @@ void MfixData::ReadRes0()
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_jet_gh
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_dt_l
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_jet_gl
- //     cout << "after bc_jet_gl " << in.tellg() << "\n";
    }
 
       
@@ -815,7 +705,6 @@ void MfixData::ReadRes0()
          IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_ww_s
       }
    }
-//   cout << "after bc_ww_s " << in.tellg() << "\n";
       
    if (version_number >= 1.13) in.read(buffer,512);    // momentum_x_eq , etc.
    if (version_number >= 1.14) in.read(buffer,512);    // detect_small
@@ -866,11 +755,10 @@ void MfixData::ReadRes0()
     
      if (tmp != 0) bKepsilon = true;
   }      
-//  cout << "at end " << in.tellg() << "\n";
 }
 
 
-void MfixData::ReadTimeValues(ifstream & in , int offset , int spxNum)
+void MfixData::ReadTimeValues(ifstream & in , FILE_POSITION offset , int spxNum)
 {
     in.clear();
     in.seekg( 3*512, ios::beg ); // first time
@@ -971,7 +859,9 @@ void MfixData::GetTimes()
 
             if (nvars > 0) 
             {
-                int offset = 512-sizeof(float) + 512*(nvars*spx_records_per_timestep);
+                FILE_POSITION offset = (FILE_POSITION)512 - (FILE_POSITION)sizeof(float) + 
+                                       (FILE_POSITION)512 * 
+                                     ( (FILE_POSITION)nvars * (FILE_POSITION)spx_records_per_timestep);
                 ReadTimeValues( in , offset , i );
             }
         }
@@ -1419,102 +1309,13 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
 
     nBytesSkip += 512; // record with time in it
 
-    nBytesSkip += nskip*spx_records_per_timestep*512;
+    nBytesSkip += (FILE_POSITION)nskip * (FILE_POSITION)spx_records_per_timestep * (FILE_POSITION)512;
 
     ifstream in(fname.c_str(),ios::binary);
 
     in.seekg(nBytesSkip,ios::beg);
 
     IN_BIN_512R (in,&var[0],ijkmax2);
-}
-
-
-
-
-void MfixData::Split_SP1(int SPX_file)
-{
-//    for (int i=0; i<nspx_use; ++i)
-    for (int i=SPX_file; i<SPX_file+1; ++i)   // just do one file
-    {
-        int nvars = 0;
-
-        string fname = run_name + ".SP" + ext[i];
-
-	string fname_a = run_name + ".SP" + ext[i] + "a";
-	string fname_b = run_name + ".SP" + ext[i] + "b";
-
-        ifstream in(fname.c_str(),ios::binary);
-
-        if (in) // file exists
-        {
-
-            switch (i+1)
-            {
-
-            case 1: nvars = 1; break;
-
-            case 2: nvars = 2; break; 
-
-            case 3: nvars = 3; break;
-
-            case 4: nvars = 3*MMAX; break;
-   int NVARS_SPX_file(int SPX_file);
-
-            case 5: nvars = MMAX; break;
-
-            case 6:
-                {
-                    if (version_number <= 1.15)
-                        nvars = 3;
-                    else
-                        nvars = MMAX + 1;
-
-                    break;
-                }
-
-            case 7:
-                {
-                    nvars = NMAX[0];
-
-                    for (int m=1; m<=MMAX; ++m) // bug
-                    {
-                        nvars += NMAX[m];
-                    }
-
-                    break;
-                }
-
-
-            case 8: nvars = MMAX; break;
-
-
-            case 9: nvars = NScalar; break;
-
-            case 10: nvars = nRR; break; 
-
-            case 11:
-                {
-                    if (bKepsilon) nvars = 2;
-
-                    break;
-                }
-
-
-            default:
-                {
-                    cout << "unknown SPx file : " << i << "\n";
-                    break;
-                }
-            }
-
-            if (nvars > 0) 
-            {
-                int offset = 512-sizeof(float) + 512*(nvars*spx_records_per_timestep);
-            //    ReadTimeValues( in , offset , i );
-                ReadWriteValues( in , i , nvars , fname_a , fname_b);
-            }
-        }
-    }
 }
 
 
@@ -1528,7 +1329,7 @@ void MfixData::ReadWriteValues(ifstream & in , int spxNum , int nvars ,
 
     in.clear();
     in.seekg( 0, ios::beg ); 
-   int NVARS_SPX_file(int SPX_file);
+    int NVARS_SPX_file(int SPX_file);
 
     char buf[512];
 
@@ -1632,7 +1433,8 @@ void MfixData::ReadWriteValues(ifstream & in , int spxNum , int nvars ,
         }
         else
         {
-             in.seekg( 512*nvars*spx_records_per_timestep , ios::cur);
+             FILE_POSITION pos = (FILE_POSITION)512 * (FILE_POSITION)nvars * (FILE_POSITION)spx_records_per_timestep;
+             in.seekg(pos,ios::cur);
              c += nvars*spx_records_per_timestep;
         }
         cout << "rec1/2 = " << rec1 << " : " << rec2 << "\n";
@@ -1743,7 +1545,9 @@ float MfixData::GetLastTime(int SPX_file)
 	string fname = run_name + ".SP" + ext[SPX_file];
         ifstream in(fname.c_str(),ios::binary);
 
-        long pos = 512 + 512*NVARS_SPX_file(SPX_file)*spx_records_per_timestep;
+        FILE_POSITION pos = (FILE_POSITION)512 + (FILE_POSITION)512 * 
+                            (FILE_POSITION)NVARS_SPX_file(SPX_file) *
+                            (FILE_POSITION)spx_records_per_timestep;
 
         in.seekg(0,ios::end);
 
@@ -1757,7 +1561,8 @@ float MfixData::GetLastTime(int SPX_file)
 
 float MfixData::GetLastTime(fstream & in , int nvars)
 {
-        long pos = 512 + 512*nvars*spx_records_per_timestep;
+        FILE_POSITION pos = (FILE_POSITION)512 + (FILE_POSITION)512 *
+                            (FILE_POSITION)nvars * (FILE_POSITION)spx_records_per_timestep;
 
 	in.clear();
 
