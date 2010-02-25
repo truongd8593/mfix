@@ -86,10 +86,10 @@
             MIN_GRID = MIN(MIN_GRID, DY(J))
             IF (DIMN.EQ.3) MIN_GRID = MIN(MIN_GRID, DZ(K))
          ENDDO
-         IF (MIN_GRID <= MIN_RADIUS) THEN
+         IF (MIN_GRID <= (2.0d0*MIN_RADIUS)) THEN
             WRITE(*,'(/,5X,A,A,/14X,A,A,/14X,A,A,/)') &
                'WARNING: for grid based search the grid size should ',&
-               'be greater than', 'the radius of the smallest ',&
+               'be greater than', 'the diameter of the smallest ',&
                'particle or neighbor contacts','may be missed ',&
                'giving bad simulation results' 
          ENDIF
@@ -139,9 +139,9 @@
                MASS_J = (PI/6.d0)*(D_P0(J)**3)*RO_S(J)
                MASS_EFF = (MASS_I*MASS_J)/(MASS_I+MASS_J)
 ! In the Hertzian model introduce a factor of 2/7 to the effective mass 
-! for tangential direction to get a reduced mass.  Reference: Van der Hoef
-! et al., Multi-scale modeling of gas-fluidized beds, Advances in Chemical
-! Engineering, 2006
+! for tangential direction to get a reduced mass.  See reference: 
+! Van der Hoef et al., Advances in Chemical Engineering, 2006, 31, 65-149
+!   (see page 94-95)                
                RED_MASS_EFF = (2.d0/7.d0)*MASS_EFF               
                R_EFF = 0.5d0*(D_P0(I)*D_P0(J)/(D_P0(I)+D_P0(J)))
                E_EFF = e_young(I)*e_young(J)/ &
@@ -154,15 +154,22 @@
                hert_kn(I,J)=(4.d0/3.d0)*E_EFF*SQRT(R_EFF)
                hert_kt(I,J)=(16.d0/3.d0)*G_MOD_EFF*SQRT(R_EFF)
 
-               DES_ETAN(I,J) = 2.d0*SQRT(hert_kn(I,J)*MASS_EFF)*&
-                  ABS(LOG(REAL_EN(I,J)))
-               DES_ETAN(I,J) = DES_ETAN(I,J)/&
-                  SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2)
-               DES_ETAT(I,J) = 2.d0*SQRT(hert_kt(I,J)*RED_MASS_EFF)*&
-                  ABS(LOG(REAL_ET(I,J)))
-               DES_ETAT(I,J) = DES_ETAT(I,J)/&
-                  SQRT(PI*PI + (LOG(REAL_ET(I,J)))**2) 
-
+               IF (REAL_EN(I,J) .NE. ZERO) THEN
+                  DES_ETAN(I,J) = 2.d0*SQRT(hert_kn(I,J)*MASS_EFF)*&
+                     ABS(LOG(REAL_EN(I,J)))
+                  DES_ETAN(I,J) = DES_ETAN(I,J)/&
+                     SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2)
+               ELSE
+                  DES_ETAN(I,J) = 2.d0*SQRT(hert_kn(I,J)*MASS_EFF)
+               ENDIF
+               IF (REAL_ET(I,J) .NE. ZERO) THEN
+                  DES_ETAT(I,J) = 2.d0*SQRT(hert_kt(I,J)*RED_MASS_EFF)*&
+                     ABS(LOG(REAL_ET(I,J)))
+                  DES_ETAT(I,J) = DES_ETAT(I,J)/&
+                     SQRT(PI*PI + (LOG(REAL_ET(I,J)))**2) 
+               ELSE
+                  DES_ETAT(I,J) = 2.d0*SQRT(hert_kt(I,J)*RED_MASS_EFF)
+               ENDIF
                hert_kn(J,I) = hert_kn(I,J)
                hert_kt(J,I) = hert_kt(I,J)
 
@@ -212,8 +219,15 @@
             'COLLISION MODEL: Linear Spring-Dashpot (default)'
 
 ! User's input for KT_FAC and KT_W_FAC will be used, otherwise these values are
-! estimated using: Silbert et al, 2001, Physical Review E, vol. 64-5, see page 051302-5
+! estimated using set factors.  See following references: 
+!   Schafer et al., J. Phys. I France, 1996, 6, 5-20 (see page 7&13), or
+!   Van der Hoef et al., Advances in Chemical Engineering, 2006, 31, 65-149,
+! (see page 94-95), or
+!   Silbert et al., Physical Review E, 2001, 64, 051302 1-14
+! (see page 051302-5)
          IF(KT_FAC == UNDEFINED) THEN
+! in LSD model a factor of 2/7 makes period of tangential and normal 
+! oscillation equal for univorm spehres when en=1 (no dissipation)
             KT = (2.d0/7.d0)*KN
          ELSE
             KT = KT_FAC*KN
@@ -236,13 +250,19 @@
                MASS_I = (PI/6.d0)*(D_P0(I)**3.d0)*RO_S(I)
                MASS_J = (PI/6.d0)*(D_P0(J)**3.d0)*RO_S(J)
                MASS_EFF = (MASS_I*MASS_J)/(MASS_I + MASS_J)
-               DES_ETAN(I,J) = 2.D0*SQRT(KN*MASS_EFF)*&
-                  ABS(LOG(REAL_EN(I,J)))
-               DES_ETAN(I,J) = DES_ETAN(I,J)/&
-                  SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2)
+
+               IF (REAL_EN(I,J) .NE. ZERO) THEN               
+                  DES_ETAN(I,J) = 2.D0*SQRT(KN*MASS_EFF)*&
+                     ABS(LOG(REAL_EN(I,J)))
+                  DES_ETAN(I,J) = DES_ETAN(I,J)/&
+                     SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2)
+               ELSE
+                  DES_ETAN(I,J) = 2.D0*SQRT(KN*MASS_EFF)
+               ENDIF
  
 ! User's input for DES_ETAT_FAC will be used, otherwise these values are
-! estimated using: Silbert et al, 2003, Physics of Fluids, vol. 15-1, see page 3
+! estimated using set factors: See following reference:
+!   Silbert et al., Physics of Fluids, 2003, 15, no. 1, 1-10 (see page 3)
                IF(DES_ETAT_FAC == UNDEFINED) THEN
                   DES_ETAT(I,J) = HALF*DES_ETAN(I,J)
                ELSE
@@ -262,16 +282,21 @@
             MASS_I = (PI*(D_P0(I)**3)*RO_S(I))/6.d0
             MASS_J = MASS_I
             MASS_EFF = MASS_I
-            DES_ETAN_WALL(I) = 2.d0*SQRT(KN_W*MASS_EFF)*&
-               ABS(LOG(REAL_EN_WALL(I)))
-            DES_ETAN_WALL(I) = DES_ETAN_WALL(I)/&
-               SQRT(PI*PI + (LOG(REAL_EN_WALL(I)))**2)
- 
+            IF (REAL_EN_WALL(I) .NE. ZERO) THEN
+               DES_ETAN_WALL(I) = 2.d0*SQRT(KN_W*MASS_EFF)*&
+                  ABS(LOG(REAL_EN_WALL(I)))
+               DES_ETAN_WALL(I) = DES_ETAN_WALL(I)/&
+                  SQRT(PI*PI + (LOG(REAL_EN_WALL(I)))**2)
+            ELSE
+               DES_ETAN_WALL(I) = 2.D0*SQRT(KN_W*MASS_EFF)
+            ENDIF          
+
             IF(DES_ETAT_W_FAC == UNDEFINED) THEN
                DES_ETAT_WALL(I) = HALF*DES_ETAN_WALL(I)
             ELSE
                DES_ETAT_WALL(I) = DES_ETAT_W_FAC*DES_ETAN_WALL(I)
             ENDIF
+  
 
             TCOLL_TMP = PI/SQRT(KN_W/MASS_EFF - ((DES_ETAN_WALL(I)/MASS_EFF)**2.d0)/4.d0)
             !TCOLL = MIN(TCOLL_TMP, TCOLL)
