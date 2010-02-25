@@ -476,7 +476,7 @@ void MfixData::ReadRes0()
    // imin1 etc : record 4
    memset(buffer,0,513);
 
-   size_t pos_xlength;
+   FILE_POSITION pos_xlength;
    
    if (version == "RES = 01.00")
    {
@@ -645,9 +645,7 @@ void MfixData::ReadRes0()
           IN_BIN_512I(in,&NMAX[0],MMAX+1);
       }
       else
-      {  
-          size_t pos = in.tellg();
-
+      {
          IN_BIN_512I(in,&NMAX[0],MMAX+1); 
          OUT_BIN_512I(out,&NMAX[0],MMAX+1); 
       }
@@ -794,10 +792,6 @@ void MfixData::ReadRes0()
    IN_BIN_512(in,&tmpD[0],DIM_IC);  // ic_t_g
    OUT_BIN_512(out,&tmpD[0],DIM_IC);  // ic_t_g
 
-   
-//   cout << "after ic_t_g " << in.tellg() << "\n";
-//   cout << "vn = " << version_number << "\n";
-
    if (version_number < 1.15)
    {
       IN_BIN_512(in,&tmpD[0],DIM_IC);  // ic_t_s(1,1)
@@ -812,7 +806,6 @@ void MfixData::ReadRes0()
         OUT_BIN_512(out,&tmpD[0],DIM_IC); // ic_x_g
       }
    }
-//   cout << "after ic_x_g " << in.tellg() << "\n";
 
    IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_u_g
    OUT_BIN_512(out,&tmpD[0],DIM_IC);  // ic_u_g
@@ -831,8 +824,7 @@ void MfixData::ReadRes0()
       OUT_BIN_512(out,&tmpD[0],DIM_IC);  // ic_w_g
       IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_w_s
       OUT_BIN_512(out,&tmpD[0],DIM_IC);  // ic_w_g
-      
- //     cout << "after ic_w_s " << in.tellg() << "\n";
+
       if (version_number >= 1.15)
       {
          IN_BIN_512(in,&tmpD[0],DIM_IC); // ic_t_s
@@ -853,9 +845,6 @@ void MfixData::ReadRes0()
    // read in the "DIM_BC" variables (and ignore ... not used by ani_mfix)
    tmpI.resize(DIM_BC);
    tmpD.resize(DIM_BC);
-   
-//   cout << "bc_start = " << in.tellg() << "\n";
-
 
    IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_x_w
    OUT_BIN_512(out,&tmpD[0],DIM_BC);  // ic_w_g
@@ -961,8 +950,7 @@ void MfixData::ReadRes0()
       out.write(buffer,512);
    }
    
-   size_t flag_pos = in.tellg();
-//   cout << " before flag " << in.tellg() << "\n";
+   FILE_POSITION flag_pos = in.tellg();
 
    FLAG.resize(ijkmax2);
    IN_BIN_512I(in,&FLAG[0],ijkmax2);
@@ -1053,9 +1041,7 @@ void MfixData::ReadRes0()
      in.read(buffer,512);
      out.write(buffer,512);
    }
-   
-//   cout << "after >= 1.08 " << in.tellg() << "\n";
-//   
+
    if (version_number >= 1.09) 
    {
       in.read(buffer,512);
@@ -1068,9 +1054,7 @@ void MfixData::ReadRes0()
          SkipBytes(in,508);
          out.write(buffer,508);
       }
- //     cout << "after n_spx_use " << in.tellg() << "\n";
- //     cout << nspx_use << "\n";
-      
+
       for (lc=0; lc< nspx_use; ++lc) 
       {
          in.read(buffer,512); // spx_dt
@@ -1100,7 +1084,6 @@ void MfixData::ReadRes0()
       IN_BIN_512(in,&tmpD[0],DIMENSION_USR); // usr z t
       OUT_BIN_512(out,&tmpD[0],DIMENSION_USR); // usr_dt
 
- //     cout << "after usr z t " << in.tellg() << "\n";
       for (lc=0; lc<DIMENSION_USR; ++lc) 
       {
          in.read(buffer,512);    // usr_ext etc.
@@ -1132,7 +1115,6 @@ void MfixData::ReadRes0()
       OUT_BIN_512(out,&tmpD[0],DIM_BC); // bc_dt_0
       IN_BIN_512(in,&tmpD[0],DIM_BC); // bc_jet_gl
       OUT_BIN_512(out,&tmpD[0],DIM_BC); // bc_dt_0
- //     cout << "after bc_jet_gl " << in.tellg() << "\n";
    }
 
       
@@ -1176,7 +1158,6 @@ void MfixData::ReadRes0()
          OUT_BIN_512(out,&tmpD[0],DIM_BC); // bc_hw_g
       }
    }
-//   cout << "after bc_ww_s " << in.tellg() << "\n";
       
    if (version_number >= 1.13) 
    {
@@ -1252,13 +1233,11 @@ void MfixData::ReadRes0()
      out.write(buffer,508);
     
      if (tmp != 0) bKepsilon = true;
-  }      
-  cout << "at end " << in.tellg() << "\n";
+  }
 
+  FILE_POSITION end_pos = out.tellp();
 
-  unsigned long end_pos = out.tellp();
-
-  unsigned long nrec3_res = end_pos/512 + 1;
+  FILE_POSITION nrec3_res = end_pos/(FILE_POSITION)512 + (FILE_POSITION)1;
 
   int rec3_res = nrec3_res;
 
@@ -1277,14 +1256,6 @@ void MfixData::ReadRes0()
   vector<double>  v(IMAX2*JMAX2*KMAX2,0.0);
   vector<double> vi(imax2*jmax2*kmax2,0.0);
 
-
-
-
-
-
-
-
- 
   n = IMAX2*JMAX2*KMAX2;
   int ni = imax2 * jmax2 * kmax2;
 
@@ -1483,7 +1454,7 @@ void MfixData::ReadRes0()
 }
 
 
-void MfixData::ReadTimeValues(ifstream & in , int offset , int spxNum)
+void MfixData::ReadTimeValues(ifstream & in , FILE_POSITION offset , int spxNum)
 {
     in.clear();
     in.seekg( 3*512, ios::beg ); // first time
@@ -1584,7 +1555,9 @@ void MfixData::GetTimes()
 
             if (nvars > 0) 
             {
-                int offset = 512-sizeof(float) + 512*(nvars*spx_records_per_timestep);
+                FILE_POSITION offset = (FILE_POSITION)512 - (FILE_POSITION)sizeof(float) + 
+                                       (FILE_POSITION)512 * 
+                                     ( (FILE_POSITION)nvars * (FILE_POSITION)spx_records_per_timestep );
                 ReadTimeValues( in , offset , i );
             }
         }
@@ -2117,8 +2090,9 @@ void MfixData::Split_SP1(int SPX_file)
 
             if (nvars > 0) 
             {
-                int offset = 512-sizeof(float) + 512*(nvars*spx_records_per_timestep);
-            //    ReadTimeValues( in , offset , i );
+                FILE_POSITION offset = (FILE_POSITION)512 - (FILE_POSITION)sizeof(float) + 
+                                       (FILE_POSITION)512 *
+                                     ( (FILE_POSITION)nvars * (FILE_POSITION)spx_records_per_timestep );
                 ReadWriteValues( in , i , nvars , fname_a , fname_b);
             }
         }
