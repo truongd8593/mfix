@@ -710,7 +710,7 @@ void MfixData::ReadRes0()
 
    for (lc=0; lc<l; ++lc) in.read(buffer,512); // BC TYPE
    
-   size_t flag_pos = in.tellg();
+   FILE_POSITION flag_pos = in.tellg();
 //   cout << " before flag " << in.tellg() << "\n";
 
    FLAG.resize(ijkmax2);
