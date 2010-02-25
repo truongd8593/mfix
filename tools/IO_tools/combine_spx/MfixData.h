@@ -174,8 +174,6 @@ public:
 
    void GetTimes();
    void ReadTimeValues(std::ifstream & in , FILE_POSITION offset , int spxNum);
-   void ReadWriteValues(std::ifstream & in , int spxNum , int nvars ,
-                const std::string & s1 , const std::string & s2);
 
    int Get_NVARS() { return variable_names.size(); }
    int Get_NTIMES() { return nTimes; }

@@ -172,8 +172,8 @@ public:
    void IN_BIN_512R(std::istream& in, float* v, int n);
 
    void GetTimes();
-   void ReadTimeValues(std::ifstream & in , int offset , int spxNum);
-   void ReadWriteValues(std::ifstream & in , int offset , int spxNum , int nvars ,
+   void ReadTimeValues(std::ifstream & in , FILE_POSITION offset , int spxNum);
+   void ReadWriteValues(std::ifstream & in , FILE_POSITION offset , int spxNum , int nvars ,
                 const std::string & s1 , const std::string & s2);
 
    int Get_NVARS() { return variable_names.size(); }
