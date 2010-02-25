@@ -2004,7 +2004,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
 
     nBytesSkip += 512; // record with time in it
 
-    nBytesSkip += nskip*spx_records_per_timestep*512;
+    nBytesSkip += nskip * (FILE_POSITION)spx_records_per_timestep * (FILE_POSITION)512;
 
     ifstream in(fname.c_str(),ios::binary);
 
@@ -2090,9 +2090,9 @@ void MfixData::Split_SP1(int SPX_file)
 
             if (nvars > 0) 
             {
-                FILE_POSITION offset = (FILE_POSITION)512 - (FILE_POSITION)sizeof(float) + 
-                                       (FILE_POSITION)512 *
-                                     ( (FILE_POSITION)nvars * (FILE_POSITION)spx_records_per_timestep );
+//                FILE_POSITION offset = (FILE_POSITION)512 - (FILE_POSITION)sizeof(float) + 
+//                                       (FILE_POSITION)512 *
+//                                     ( (FILE_POSITION)nvars * (FILE_POSITION)spx_records_per_timestep );
                 ReadWriteValues( in , i , nvars , fname_a , fname_b);
             }
         }
@@ -2213,10 +2213,12 @@ void MfixData::ReadWriteValues(ifstream & in , int spxNum , int nvars ,
         }
         else
         {
-             in.seekg( 512*nvars*spx_records_per_timestep , ios::cur);
+             FILE_POSITION pos = (FILE_POSITION)512 * (FILE_POSITION)nvars * 
+                                 (FILE_POSITION)spx_records_per_timestep;
+
+             in.seekg( pos , ios::cur );
              c += nvars*spx_records_per_timestep;
         }
-     //   cout << "rec1/2 = " << rec1 << " : " << rec2 << "\n";
     }
 
     if (!bSwitched)
@@ -2324,7 +2326,9 @@ float MfixData::GetLastTime(int SPX_file)
 	string fname = run_name + ".SP" + ext[SPX_file];
         ifstream in(fname.c_str(),ios::binary);
 
-        long pos = 512 + 512*NVARS_SPX_file(SPX_file)*spx_records_per_timestep;
+        FILE_POSITION pos = (FILE_POSITION)512 + (FILE_POSITION)512 * 
+                            (FILE_POSITION)NVARS_SPX_file(SPX_file) *
+                            (FILE_POSITION)spx_records_per_timestep;
 
         in.seekg(0,ios::end);
 
@@ -2338,7 +2342,8 @@ float MfixData::GetLastTime(int SPX_file)
 
 float MfixData::GetLastTime(fstream & in , int nvars)
 {
-        long pos = 512 + 512*nvars*spx_records_per_timestep;
+        FILE_POSITION pos = (FILE_POSITION)512   + (FILE_POSITION)512 * 
+                            (FILE_POSITION)nvars * (FILE_POSITION)spx_records_per_timestep;
 
 	in.clear();
 
