@@ -768,7 +768,7 @@ void MfixData::ReadRes0()
 }
 
 
-void MfixData::ReadTimeValues(ifstream & in , int offset , int spxNum)
+void MfixData::ReadTimeValues(ifstream & in , FILE_POSITION offset , int spxNum)
 {
     in.clear();
     in.seekg( 3*512, ios::beg ); // first time
@@ -869,7 +869,9 @@ void MfixData::GetTimes()
 
             if (nvars > 0) 
             {
-                int offset = 512-sizeof(float) + 512*(nvars*spx_records_per_timestep);
+                FILE_POSITION offset = (FILE_POSITION)512 - (FILE_POSITION)sizeof(float) + 
+                                       (FILE_POSITION)512 * 
+                                     ( (FILE_POSITION)nvars * (FILE_POSITION)spx_records_per_timestep );
                 ReadTimeValues( in , offset , i );
             }
         }
@@ -1316,7 +1318,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
 
     nBytesSkip += 512; // record with time in it
 
-    nBytesSkip += nskip*spx_records_per_timestep*512;
+    nBytesSkip += (FILE_POSITION)nskip * (FILE_POSITION)spx_records_per_timestep * (FILE_POSITION)512;
 
     ifstream in(fname.c_str(),ios::binary);
 
