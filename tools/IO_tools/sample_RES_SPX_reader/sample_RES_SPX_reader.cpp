@@ -281,18 +281,16 @@ int main(int argc , char **argv)
 
 //   PrintVariable_bottom_to_top(data,var_index,time_index,out);
 
-   PrintVariable_top_to_bottom(data,var_index,time_index,out,bPrintIndices,bPrintFlags);
+//   PrintVariable_top_to_bottom(data,var_index,time_index,out,bPrintIndices,bPrintFlags);
 
    bPrintFlags   = false;
    bOneBased     = false;
 
-   PrintVariable_top_to_bottom(data,var_index,time_index,out,bPrintIndices,bPrintFlags);
+//   PrintVariable_top_to_bottom(data,var_index,time_index,out,bPrintIndices,bPrintFlags);
 
 //   var_index = 1;
 //   PrintVariable_top_to_bottom(data,var_index,time_index,out);
 
-
- 
 
    return 0;
 }
