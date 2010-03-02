@@ -1264,7 +1264,7 @@
          ' Message: Inlet velocity for BC ',I3,&
          ' is too low '/3X,'for the specified ',A,' flow rate.')
  1303 FORMAT(3X,&
-         'The particle inlet velocity should have a '/3X&
+         'The particle inlet velocity should have a ',/,3X,&
          'magnitude greater than ',ES17.5,/1X,70('*')/)
 
  1304 FORMAT(9X,'For mass inlet BC: ', I3,&

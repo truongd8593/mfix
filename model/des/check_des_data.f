@@ -283,11 +283,12 @@
  1005 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: Tangential spring factors KT_FAC or KT_W_FAC not',/10X,&
          'specified in mfix.dat.  These factors will be defined in ',&
-         'cfassign.f',/10X,'as 2/7 see cfassign.f for references.',&
-         /1X,70('*')/)
+         'cfassign.f',/10X,'as 2/7 based on: Silbert et al., 2001, '&
+         'Physical Review E, vol. 64-5, see',/10X,&
+         'page 051302-5',/1X,70('*')/)
  1006 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Change the value DES_COLL_MODEL in mfix.dat.  Options are'/10X,&
-         'leave it undefined to use the (default) linear spring-',/10X&
+         'Change the value DES_COLL_MODEL in mfix.dat.  Options are',/,10X,&
+         'leave it undefined to use the (default) linear spring-',/,10X,&
          'dashpot model or set it to HERTZIAN for hertz model.',&
           /1X,70('*')/)
  1007 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
@@ -302,13 +303,13 @@
  1010 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: Tangential damping factors DES_ETAT_FAC not ',&
          'specified in',/,10X, 'mfix.dat. This factor will be set in ',&
-         'cfassign.f as 1/2.  See subroutine for references',&
-         /1X,70('*')/)
+         'cfassign.f as 1/2 based on:',/,10X, 'Silbert et al, 2003, ',&
+         'Physics of Fluids, vol. 15-1, see page 3',/1X,70('*')/)
  1011 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: Tangential damping factors DES_ETAT_W_FAC not ',&
          'specified in mfix.dat',/,10X,'This factor will be set in ',&
-         'cfassign.f as 1/2. See subroutine for references',&
-         /1X,70('*')/)
+         'cfassign.f as 1/2 based on:',/,10X,'Silbert et al, 2003,',&
+         'Physics of Fluids, vol. 15-1, see page 3',/1X,70('*')/)
  1012 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Unphysical ( > 1 or < 0) values of DES_EN_INPUT(M)',/1X,70('*')/)
  1013 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
