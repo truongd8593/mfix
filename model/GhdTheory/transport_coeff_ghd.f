@@ -77,6 +77,7 @@
                  phii(M)   = ROP_S(IJK,M) / RO_S(M)
                ENDDO
                TMix = THETA_M(IJK,MMAX)
+	       Ti(:)= THETA_M(IJK,:)
                
                CALL GHD(SMAX, SIGMAI, r_p(:smax,:smax), Mi, phii, TMix, tmpZeta0, &
                         tmpZetaU, Ti, tmpP, tmpKappa, tmpEta, tmpDT, tmpDF, &
