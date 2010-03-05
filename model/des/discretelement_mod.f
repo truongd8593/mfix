@@ -35,7 +35,8 @@
 ! Single particle no. index that is followed if debugging
       INTEGER FOCUS_PARTICLE
 
-! Output file count
+! Output file count for .vtp type files; used to label .vtp file names in
+! sequential order and is saved so restarts begin at the correct count
       INTEGER IFI
 
 ! File units     
