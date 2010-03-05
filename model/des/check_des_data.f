@@ -260,62 +260,78 @@
 
 ! Overwrite user's input in case of DEM (no fluid)
       IF(.NOT.DES_CONTINUUM_COUPLED) DES_INTERP_ON = .FALSE.
-      
+
+      IF (DES_CONTINUUM_COUPLED .AND. DIMN == 2) THEN
+         DO M = 1, MMAX              
+            IF (D_P0(M) > ZLENGTH) THEN
+               WRITE(UNIT_LOG, 1036)
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ENDDO
+      ENDIF
+
       WRITE(*,'(1X,A)')&
          '<---------- END CHECK_DES_DATA ----------'
 
 
       RETURN
  1000 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'DES should only be run using CARTESIAN coordinates',/1X,70('*')/)
+         'DES should only be run using CARTESIAN coordinates',&
+         /1X,70('*')/)
  1001 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'DES being run on multiple processors. Only serial runs',/10X,&
          'allowed',/1X,70('*')/)
  1002 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Direction of periodicity not defined in mfix.dat',/1X,70('*')/)
+         'Direction of periodicity not defined in mfix.dat',&
+         /1X,70('*')/)
 
  1003 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Invalid option for DES_NEIGHBOR_SEARCH in mfix.dat',/10X,&
          'Must be > 0 or < 5',/1X,70('*')/)
 
  1004 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Spring constants KN or KN_W not specified in mfix.dat',/1X,70('*')/)
+         'Spring constants KN or KN_W not specified in mfix.dat',&
+         /1X,70('*')/)
  1005 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: Tangential spring factors KT_FAC or KT_W_FAC not',/10X,&
          'specified in mfix.dat.  These factors will be defined in ',&
-         'cfassign.f',/10X,'as 2/7 based on: Silbert et al., 2001, '&
-         'Physical Review E, vol. 64-5, see',/10X,&
-         'page 051302-5',/1X,70('*')/)
+         'cfassign.f',/10X,'as 2/7.  See subroutine for references.',&
+         /1X,70('*')/)
  1006 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Change the value DES_COLL_MODEL in mfix.dat.  Options are',/,10X,&
-         'leave it undefined to use the (default) linear spring-',/,10X,&
+         'Change the value DES_COLL_MODEL in mfix.dat. Options are',/10X,&
+         'leave it undefined to use the (default) linear spring-',/10X,&
          'dashpot model or set it to HERTZIAN for hertz model.',&
           /1X,70('*')/)
  1007 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Friction coefficients MEW or MEW_W not specified in mfix.dat',/1X,70('*')/)
+         'Friction coefficients MEW or MEW_W not specified in mfix.dat',&
+         /1X,70('*')/)
  1008 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Particle-particle restitution coefficient DES_EN_INPUT(M)',/10X,&
-         'Must be specified in mfix.dat for interactions M = 1 to ',I5,&
+         'not specified in mfix.dat for interactions M = 1 to ',I5,&
           /1X,70('*')/)
  1009 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Particle-wall restitution coefficients DES_EN_WALL_INPUT(M),'/10X,&
-         'Must be specified in mfix.dat for interactions M = 1 to MMAX',/1X,70('*')/)
+         'Particle-wall restitution coefficients DES_EN_WALL_INPUT(M)',&
+         /10X,'not specified in mfix.dat for interactions M= 1 to MMAX',&
+         /1X,70('*')/)
  1010 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: Tangential damping factors DES_ETAT_FAC not ',&
-         'specified in',/,10X, 'mfix.dat. This factor will be set in ',&
-         'cfassign.f as 1/2 based on:',/,10X, 'Silbert et al, 2003, ',&
-         'Physics of Fluids, vol. 15-1, see page 3',/1X,70('*')/)
+         'specified in',/10X, 'mfix.dat. This factor will be set in ',&
+         'cfassign.f as 1/2. See subroutine for references.',&
+         /1X,70('*')/)
  1011 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: Tangential damping factors DES_ETAT_W_FAC not ',&
-         'specified in mfix.dat',/,10X,'This factor will be set in ',&
-         'cfassign.f as 1/2 based on:',/,10X,'Silbert et al, 2003,',&
-         'Physics of Fluids, vol. 15-1, see page 3',/1X,70('*')/)
+         'specified in mfix.dat',/10X,'This factor will be set in ',&
+         'cfassign.f as 1/2. See subroutine for references.',&
+         /1X,70('*')/)
  1012 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Unphysical ( > 1 or < 0) values of DES_EN_INPUT(M)',/1X,70('*')/)
+         'Unphysical ( > 1 or < 0) values of DES_EN_INPUT(M)',&
+         /1X,70('*')/)
  1013 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Unphysical ( > 1 or < 0) values of DES_EN_WALL_INPUT(M)',/1X,70('*')/)
+         'Unphysical ( > 1 or < 0) values of DES_EN_WALL_INPUT(M)',&
+         /1X,70('*')/)
  1014 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Unphysical ( > 1 or < 0) values of friction coefficients',/1X,70('*')/)
+         'Unphysical ( > 1 or < 0) values of friction coefficients',&
+         /1X,70('*')/)
  1015 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Values of DES_ETAT_FAC or DES_ETAT_W_FAC unphysical ',/10X,&
          '(< 0 or > 1) defined in mfix.dat',/1X,70('*')/)
@@ -325,8 +341,8 @@
 
  1017 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: A direction of periodicity was defined (i.e. ',/10X,&
-         'DES_PERIODIC_WALLS_ X, Y or Z=T) but DES_PERIODIC_WALLS ',&
-         'was set to F.',/,10X,&
+         'DES_PERIODIC_WALLS_X, _Y or _Z=T) but DES_PERIODIC_WALLS ',&
+         'was set to F.',/10X,&
          'The latter was forced to T for consistency.',/1X,70('*')/)
  1018 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'WARNING: nsquare neighbor search may be slow with periodic',/10X,&
@@ -334,20 +350,19 @@
  1019 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'octree and quadtree neighbor search methods do not',/10X,&
          'currently work with periodic boundaries. Change ',&
-         'value of',/10X,&
-         'des_neighbor_search in mfix.dat',/1X,70('*')/)
+         'value of',/10X,'DES_NEIGHBOR_SEARCH in mfix.dat',/1X,70('*')/)
 
  1020 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Wall value for Youngs modulus (EW_YOUNG) must be,'/10X,&
          'specified in mfix.dat',/1X,70('*')/)
  1021 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Wall value for Poissons ratio (VW_POISSON) must be,'/10X,&
+         'Wall value for Poissons ratio (VW_POISSON) must be',/10X,&
          'specified in mfix.dat',/1X,70('*')/)
  1022 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Youngs modulus (E_YOUNG) must be specified in mfix.dat,'/10X,&
+         'Youngs modulus (E_YOUNG) must be specified in mfix.dat',/10X,&
          'for all particle types M = 1 to MMAX',/1X,70('*')/)
  1023 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Poissons ratio (V_POISSON) must be specified in mfix.dat,'/10X,&
+         'Poissons ratio (V_POISSON) must be specified in mfix.dat',/10X,&
          'for all particle types M = 1 to MMAX',/1X,70('*')/)
  1024 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Particle-particle tangential restitution coefficient',/10X,&
@@ -382,14 +397,18 @@
 
  1034 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Invalid option for DES_INTG_METHOD in mfix.dat.  Must be',&
-         /,10X,'EULER (default/undefined) or ADAMS_BASHFORTH',/,&
-         1X,70('*')/)
+         /10X,'EULER (default/undefined) or ADAMS_BASHFORTH',&
+         /1X,70('*')/)
 
  1035 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'USE_COHESION and corresponding code has been disabled as',/10X,&
          'this feature has not verified with the current DEM code. To',&
          /10X,'activate this feature comment out this check and ',&
-         'proceed at',/10X,'your own risk',/,1X,70('*')/)
-        
+         'proceed at',/10X,'your own risk',/1X,70('*')/)
+
+ 1036 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         '2D coupled simulation with a particle diameter > ZLENGTH.',/10X,&
+         'This will create problems for calculations of void ',&
+         'fraction. Check',/10X, 'mfix.dat file.',/1X,70('*')/)
 
          END SUBROUTINE CHECK_DES_DATA
