@@ -199,7 +199,7 @@
       integer       :: w3,w4,w5
       
       if (nPrec1.lt.0) then
-         spec = '(1X,5(G12.5,2X)'
+         spec = '(1X,5(G12.5,2X))'
 	 sLen = 71 ! = 1 + 5*14
       else
          w1 = nPrec1 + 8
