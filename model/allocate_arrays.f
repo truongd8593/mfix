@@ -1,14 +1,15 @@
-
-      SUBROUTINE ALLOCATE_ARRAYS 
-      
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !                                                                      
 !  Module name: ALLOCATE_ARRAYS                                     
 !  Purpose: allocate arrays
-!                                                                      C
+!                                                                      
 !  Author: M. Syamlal                                Date: 17-DEC-98 
 !  Reviewer: 
 !                                                                     
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+      SUBROUTINE ALLOCATE_ARRAYS 
+
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -45,6 +46,7 @@
       use kintheory
       Use cdist
       IMPLICIT NONE
+
 !-----------------------------------------------     
 ! Variables     
 !-----------------------------------------------     
@@ -472,7 +474,7 @@
          Allocate(  EDvel_sL_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
          Allocate(  ED_ss_ip(DIMENSION_3p, 0:DIMENSION_LM) )
       ENDIF
-      IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD99') THEN
+      IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD_99') THEN
          Allocate(  EDT_s_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
          Allocate(  EDvel_sM_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
       ENDIF

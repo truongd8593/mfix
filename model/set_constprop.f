@@ -10,6 +10,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE SET_CONSTPROP 
+
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !-----------------------------------------------
@@ -82,7 +83,7 @@
          ED_ss_ip(:,:) = ZERO
          EDvel_sL_ip(:,:,:) = ZERO
       ENDIF
-      IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD99') THEN
+      IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD_99') THEN
          EDT_s_ip(:,:,:) = ZERO
          EDvel_sM_ip(:,:,:) = ZERO
       ENDIF
@@ -136,11 +137,11 @@
 ! set ep_star_array to user input ep_star in all cells. sof--> Nov-17-05
             EP_star_array(ijk) = ep_star
 
+
 ! initializing Sreekanth blending stress parameters (sof)
 ! changed blend_start to 0.99*ep_star from 0.97*ep_star [ceaf 2006-03-17]
 ! changed blend_end to 1.01*ep_star from 1.03*ep_star [ceaf 2006-03-17]
 ! added option for sigmoid function [sp 2006-10-24]
-            
             IF(BLENDING_STRESS.AND.TANH_BLEND) THEN
                ep_g_blend_start(ijk) = ep_star_array(ijk) * 0.99d0
                ep_g_blend_end(ijk)   = ep_star_array(ijk) * 1.01d0
@@ -175,30 +176,29 @@
                IF(D_P0(I) == UNDEFINED) RETURN
                DP_TMP(I) = D_P0(I)
                M_MAX(I) = I
-            END DO
+            ENDDO
+
 ! rearrange the indices from coarsest particles to finest to be used in CALC_ep_star
 ! I did this here because it may need to be done for auto_restart
             DO I = 1, MMAX
-               DO J = I, MMAX
-                  
+               DO J = I, MMAX                  
                   IF(DP_TMP(I) < DP_TMP(J)) THEN
                      old_value = DP_TMP(I)
                      DP_TMP(I) = DP_TMP(J)
                      DP_TMP(J) = old_value
-                  ENDIF
-                  
-               END DO
-            END DO
+                  ENDIF                  
+               ENDDO
+            ENDDO
 
             DO I = 1, MMAX
                DO J = 1, MMAX
                   IF(DP_TMP(I) == D_P0(J) .AND. D_P0(I) .NE. D_P0(J)) THEN
                      M_MAX(I) = J 
                   ENDIF
-               END DO
-            END DO
-         ENDIF                  ! for .not. call_dqmom
-      ENDIF                     ! for Yu-standish or Fedors-Landel
+               ENDDO
+            ENDDO
+         ENDIF    ! if.not. call_dqmom
+      ENDIF       ! if Yu-standish or Fedors-Landel
 
 
       RETURN  
