@@ -1094,7 +1094,7 @@
 ! are adequate but must be carefully controlled
       DOUBLE PRECISION MAXIPV, MINIPV 
 ! used to clarify log messages in the event of an error      
-      CHARACTER (17) SMIC
+      CHARACTER*17 SMIC
 !-----------------------------------------------
 
       IF(DES_BC_VOLFLOW_s(BCV)  /= UNDEFINED)SMIC = 'DES_BC_VOLFLOW_s'

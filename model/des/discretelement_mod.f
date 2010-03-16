@@ -69,7 +69,7 @@
 ! Integration method, options are as follows
 !   'euler' first-order scheme (default)
 !   'adams_bashforth' second-order scheme (by T.Li)
-      CHARACTER(64) DES_INTG_METHOD 
+      CHARACTER*64 DES_INTG_METHOD 
 
 ! Particle-particle and Particle-wall contact parameters
 !     Spring contants      
@@ -99,7 +99,7 @@
 ! Collision model, options are as follows
 !   linear spring dashpot model (default/undefined)
 !   'hertzian' model
-      CHARACTER(64) DES_COLL_MODEL
+      CHARACTER*64 DES_COLL_MODEL
 
 ! Hertzian model: T.Li
       double precision ew_young, vw_poisson
