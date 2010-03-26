@@ -235,6 +235,8 @@
       ! and ijk      : cell_map(ijk_io)%ijk
       TYPE (CellMap) , dimension (:) , allocatable :: cell_map
 
+      integer , allocatable :: cell_map_v2(:,:)
+
 
       
       ! the following are defined for each processor
@@ -262,6 +264,8 @@
       character :: ext*35
 
       character :: pbuffer*512
+
+      integer , allocatable :: cellcount(:)
 
      
       end module ParallelData
@@ -401,7 +405,6 @@
 100   CONTINUE
 
       call ReadProcessorInfo       ! istart3/iend3 etc for each processor
-
       call OpenScavengerFiles(NB,kfile)
 
 
@@ -521,14 +524,19 @@
               do NA = 1,nArrays
                  call in_bin_512r(20,r_tmp,n_cells(n),cr(n))
 
-                 do ijk = 1,ijkmax2
-                    if ( cell_map(ijk)%proc .eq. n ) then
-                       k = cell_map(ijk)%ijk
-                     !  if (k.gt.0 .and. k.le.n_cells(n)) then
-                           r_array( ijk , NA ) = r_tmp ( k )
-                     !  end if
-                    end if
+
+                 do k = 1,cellcount(n)
+                    ijk = cell_map_v2(n,k)   ! ijk is global IJK
+                    r_array(ijk,NA) = r_tmp( cell_map(ijk)%ijk)
                  end do
+
+
+!                 do ijk = 1,ijkmax2
+!                    if ( cell_map(ijk)%proc .eq. n ) then
+!                       k = cell_map(ijk)%ijk
+!                           r_array( ijk , NA ) = r_tmp ( k )
+!                    end if
+!                 end do
               end do
            end if
 
@@ -553,6 +561,8 @@
 
       if (kfile .gt. 0) write (*,*) ' '
 
+      close (unit=10)
+
       return 
       end
 
@@ -568,11 +578,22 @@
 
       implicit none
 
-      integer   :: L , idummy , ijk_proc , ijk_io , i
+      integer   :: L , idummy , ijk_proc , ijk_io , i , cellcount_max
+
+      integer , allocatable :: cell_index(:)
+
       character :: fname*80
       
       ! read in the cell info for each processor (using p_info_xxxxx.txt'
       ! (xxxx = processor number)
+
+
+      allocate ( cellcount(np) )
+      allocate ( cell_index(np) )
+      do l = 1,np
+         cellcount(l)  = 0;
+         cell_index(l) = 0
+      end do
 
       do L = 1,np
          fname = 'p_info_xxxxx.txt'
@@ -597,6 +618,8 @@
        
          n_cells(L) = (ie3(L)-is3(L)+1) * (je3(L)-js3(L)+1) * &
                                         (ke3(L)-ks3(L)+1)
+
+ !        if (n_cells(L) .gt. ncells_max) ncells_max = n_cells(L)
                         
          cr(L) = 4
           
@@ -612,7 +635,24 @@
        
          close (unit=10)
       end do
-      
+
+      do L = 1,ijkmax2
+         i = cell_map(L)%proc
+         cellcount(i) = cellcount(i) + 1
+      end do
+
+      cellcount_max = 0
+      do l = 1,np
+         if (cellcount(l) .gt. cellcount_max) cellcount_max = cellcount(l)
+      end do
+ 
+      allocate(cell_map_v2(np,cellcount_max))
+
+      do L = 1,ijkmax2
+         i = cell_map(L)%proc
+         cell_index(i) = cell_index(i) + 1
+         cell_map_v2(i,cell_index(i)) = L  !cell_map(L)%ijk
+      end do
 
       return
       end
@@ -657,6 +697,7 @@
           
          write(10,rec=3) 4,-1
          close (unit=20)
+         close (unit=10)
 
  100     continue
 
@@ -768,24 +809,33 @@
 
       ntot = ntot + 2*mmax  ! Gama_rs , T_rs
 
-
       do L = 1,ntot
          do n = 1,np
 
             call set_res_name(run_name,nb,N,fname)
 
-           open(unit=20,file=fname,status='old',recl=512, &
+            open(unit=20,file=fname,status='old',recl=512, &
                          access='direct',form='unformatted')
             call in_bin_512(20,d_tmp,n_cells(N),cr(N))
-           close (unit=20)
+            close (unit=20)
 
-            do ijk = 1,ijkmax2
-
-                if ( cell_map(ijk)%proc .eq. n ) then
-                   k = cell_map(ijk)%ijk
-                   array( ijk ) = d_tmp ( k )
-               end if
+!
+! newer, faster method
+!
+            do k = 1,cellcount(n)                            !change ... was cellcount(NP)
+               ijk = cell_map_v2(n,k)   ! ijk is global IJK
+               array(ijk) = d_tmp( cell_map(ijk)%ijk)
             end do
+
+!
+! previous method
+!            do ijk = 1,ijkmax2
+!
+!                if ( cell_map(ijk)%proc .eq. n ) then
+!                   k = cell_map(ijk)%ijk
+!                   array( ijk ) = d_tmp ( k )
+!               end if
+!            end do
 
          end do
 
