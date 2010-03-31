@@ -40,33 +40,8 @@
       WRITE(*,'(1X,A)')&
          '---------- START DES_ALLOCATE_ARRAYS ---------->'
 
-! A second check for realistic d_p0 values is made in check_data_04 but
-! this routine is called after des_allocate_arrays (i.e. too late).
-! Valid D_p0(M) are needed here if gener_part_config or if using 
-! des_neighbor_search=4. Valid D_P0(M) are also needed to ensure that
-! particles can be binned according to their solid phase (although this
-! sorting is performed after check_des_04 is called)
-      MAX_DIAM = ZERO
-      DO M = 1,MMAX
-         IF (D_P0(M)<ZERO .OR. D_P0(M)==UNDEFINED) THEN 
-            WRITE (*,'(3X,A,A)') &
-               'D_P0 must be defined and >0 in mfix.dat ',&
-               'for M = 1,MMAX'
-               CALL MFIX_EXIT(myPE)
-         ENDIF
-         MAX_DIAM = MAX(MAX_DIAM, D_P0(M))
-      ENDDO
-      DO M = MMAX+1, DIMENSION_M
-         IF (D_P0(M) /= UNDEFINED) THEN
-            WRITE (*,'(3X,A,A)') &
-               'Too many D_P0 are defined for given MMAX'
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDDO
-      IF (MAX_DIAM .EQ. ZERO) MAX_DIAM = ONE 
-
 ! If gener_part_config ensure various quantities are defined and valid
-! ------------------------------------------------------------      
+! ------------------------------------------------------------
       IF(GENER_PART_CONFIG) THEN 
          TOT_VOL_FRAC = ZERO
          WRITE(*,'(3X,A)') 'Checking usr info for gener_part_config'
@@ -97,7 +72,7 @@
 
 ! perform a quick series of checks for quantities immediately needed in
 ! calculations; a more comprehensive series of checks is performed later
-! (e.g., check_data_03, check_des_data which are called from get_data)         
+! (e.g., check_data_03, check_des_data which are called from get_data)
          DO M = 1, MMAX
             IF(VOL_FRAC(M) == UNDEFINED) THEN
                WRITE (*,'(/,5X,A,A,/)') &
@@ -111,8 +86,19 @@
                   'values of VOL_FRAC(M) set in mfix.dat'
                CALL MFIX_EXIT(myPE)
             ENDIF
+! Valid D_p0(M) are needed here if gener_part_config.  A second check 
+! for realistic d_p0 values is made in check_data_04 but this routine 
+! is called after des_allocate_arrays (i.e. would be too late).
+            IF (D_P0(M)<ZERO .OR. D_P0(M)==UNDEFINED) THEN 
+               WRITE (*,'(/,5X,A,A,/)') &
+                  'D_P0 must be defined and >0 in mfix.dat ',&
+                  'for M = 1,MMAX'
+                  CALL MFIX_EXIT(myPE)
+            ENDIF
+            MAX_DIAM = MAX(MAX_DIAM, D_P0(M))
             TOT_VOL_FRAC = TOT_VOL_FRAC + VOL_FRAC(M)
          ENDDO
+         IF (MAX_DIAM .EQ. ZERO) MAX_DIAM = ONE
 
          IF(TOT_VOL_FRAC > (ONE-EP_STAR)) THEN
             WRITE (*,'(/,5X,A,A,/7X,A,ES15.7,2X,A,ES15.7,/)') &
