@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GRID_BASED_NEIGHBOR_SEARCH                             C
-!>  Purpose: Cell linked search 
+!  Purpose: Cell linked search 
 !                                                                      C
 !  Author: Rahul Garg                                 Date: 01-Aug-07  C
 !  Reviewer: Sreekanth Pannala                        Date: 24-OCT-08  C
@@ -29,7 +29,13 @@
       INTEGER NPG ! Temp. cell particle count
       INTEGER LL, NP, NEIGH_L  ! Loop Counters
       INTEGER NLIM ! 
-      
+
+! min and max fluid cell index for grid based search mesh
+      INTEGER DESGS_IMIN1, DESGS_IMAX1, DESGS_JMIN1, DESGS_JMAX1, &
+              DESGS_KMIN1, DESGS_KMAX1
+! min cell index for grid based search mesh
+      INTEGER DESGS_IMIN2,DESGS_JMIN2, DESGS_KMIN2
+
       DOUBLE PRECISION DISTVEC(DIMN), DIST, R_LM ! Contact variables
       DOUBLE PRECISION LX, LY, LZ ! System dimensions
       DOUBLE PRECISION XPER_FAC, YPER_FAC, ZPER_FAC !Periodic BC info
@@ -47,7 +53,24 @@
       LX = XLENGTH ! XE(IMAX1) - XE(1)
       LY = YLENGTH ! YN(JMAX1) - YN(1)
       LZ = ZLENGTH ! ZT(KMAX1) - ZT(1)
-      
+
+
+      DESGS_IMAX1 = DESGRIDSEARCH_IMAX+1
+      DESGS_IMIN1 = 2
+      DESGS_IMIN2 = 1
+      DESGS_JMAX1 = DESGRIDSEARCH_JMAX+1
+      DESGS_JMIN1 = 2
+      DESGS_JMIN2 = 1
+      IF (DIMN .EQ. 2) THEN
+         DESGS_KMAX1 = DESGRIDSEARCH_KMAX
+         DESGS_KMIN1 = DESGRIDSEARCH_KMAX
+         DESGS_KMIN2 = DESGRIDSEARCH_KMAX
+      ELSE
+         DESGS_KMAX1 = DESGRIDSEARCH_KMAX+1
+         DESGS_KMIN1 = 2
+         DESGS_KMIN2 = 1
+      ENDIF
+
 ! Loop only over particles in the system
 !   cycle if there is no particle in the LL seat
 !   skip new particles entering the system and particles 
@@ -57,12 +80,15 @@
          IF(PC .GT. PIS) EXIT
          IF(.NOT.PEA(LL,1)) CYCLE
 
-! Initialize and set II indices
-         II = PIJK(LL,1); IP1=II+1; IM1=II-1
+         II = DESGRIDSEARCH_PIJK(LL,1)
+         JJ = DESGRIDSEARCH_PIJK(LL,2)
+         KK = DESGRIDSEARCH_PIJK(LL,3)
+! Initialize and set II, JJ, KK indices
+         IP1=II+1; IM1=II-1
 ! Initialize and set JJ indices
-         JJ = PIJK(LL,2); JP1=JJ+1; JM1=JJ-1
+         JP1=JJ+1; JM1=JJ-1
 ! Initialize and set KK indices
-         KK = PIJK(LL,3); KP1=KK;   KM1=KK
+         KP1=KK;   KM1=KK
          IF(DIMN.EQ.3)THEN 
             KP1 = KK+1;   KM1 = KK-1
          ENDIF
@@ -83,85 +109,85 @@
 ! DES_MI currently not setup with periodic conditions
                   IF (.NOT. DES_MI) THEN
 
-                     IF(II.GT.IMAX1) THEN 
+                     IF(II.GT.DESGS_IMAX1) THEN 
                         IF(DES_PERIODIC_WALLS_X) THEN 
-                           I = IMIN1  ! min fluid cell no. 
+                           I = DESGS_IMIN1  ! min fluid cell no. 
                            XPER_FAC = one
                         ELSE
-                           I = IMAX1  ! max fluid cell no.
+                           I = DESGS_IMAX1  ! max fluid cell no.
                         ENDIF
                      ENDIF
-                     IF(II.LT.IMIN1) THEN 
+                     IF(II.LT.DESGS_IMIN1) THEN 
                         IF(DES_PERIODIC_WALLS_X) THEN 
-                           I = IMAX1
+                           I = DESGS_IMAX1
                            XPER_FAC = -one
                         ELSE 
-                           I = IMIN1
+                           I = DESGS_IMIN1
                         ENDIF
                      ENDIF
-                     IF(JJ.GT.JMAX1) THEN
+                     IF(JJ.GT.DESGS_JMAX1) THEN
                         IF(DES_PERIODIC_WALLS_Y) THEN 
-                           J = JMIN1
+                           J = DESGS_JMIN1
                            YPER_FAC = one
                         ELSE
-                           J = JMAX1
+                           J = DESGS_JMAX1
                         ENDIF
                      ENDIF
-                     IF(JJ.LT.JMIN1) THEN
+                     IF(JJ.LT.DESGS_JMIN1) THEN
                         IF(DES_PERIODIC_WALLS_Y) THEN 
-                           J = JMAX1
+                           J = DESGS_JMAX1
                            YPER_FAC = -one
                         ELSE
-                           J = JMIN1
+                           J = DESGS_JMIN1
                         ENDIF
                      ENDIF
                      IF(DIMN.EQ.3) THEN 
-                        IF(KK.GT.KMAX1) THEN 
+                        IF(KK.GT.DESGS_KMAX1) THEN 
                            IF(DES_PERIODIC_WALLS_Z) THEN
-                              K = KMIN1
+                              K = DESGS_KMIN1
                               ZPER_FAC = one
                            ELSE
-                              K = KMAX1
+                              K = DESGS_KMAX1
                            ENDIF
                         ENDIF
-                        IF(KK.LT.KMIN1) THEN 
+                        IF(KK.LT.DESGS_KMIN1) THEN 
                            IF(DES_PERIODIC_WALLS_Z) THEN
-                              K = KMAX1
+                              K = DESGS_KMAX1
                               ZPER_FAC = -one
                            ELSE
-                              K = KMIN1
+                              K = DESGS_KMIN1
                            ENDIF
                         ENDIF
                      ENDIF
 
                   ELSE  ! DES_MI == TRUE
 
-                     IF(II.GT.IMAX2) THEN 
-                        I = IMAX2  ! max cell no.
+                     IF(II.GT.DESGS_IMAX2) THEN 
+                        I = DESGS_IMAX2  ! max cell no.
                      ENDIF
-                     IF(II.LT.IMIN2) THEN 
-                        I = IMIN2  ! min cell no.
+                     IF(II.LT.DESGS_IMIN2) THEN 
+                        I = DESGS_IMIN2  ! min cell no.
                      ENDIF
-                     IF(JJ.GT.JMAX2) THEN
-                        J = JMAX2
+                     IF(JJ.GT.DESGS_JMAX2) THEN
+                        J = DESGS_JMAX2
                      ENDIF
-                     IF(JJ.LT.JMIN2) THEN
-                        J = JMIN2
+                     IF(JJ.LT.1) THEN
+                        J = DESGS_JMIN2
                      ENDIF
                      IF(DIMN.EQ.3) THEN 
-                        IF(KK.GT.KMAX2) THEN 
-                           K = KMAX2
+                        IF(KK.GT.DESGS_KMAX2) THEN 
+                           K = DESGS_KMAX2
                         ENDIF
-                        IF(KK.LT.KMIN2) THEN 
-                           K = KMIN2
+                        IF(KK.LT.DESGS_KMIN2) THEN 
+                           K = DESGS_KMIN2
                         ENDIF
                      ENDIF
                   ENDIF
 
 
 ! If cell IJK contains particles, store the amount in NPG
-                  IF(ASSOCIATED(PIC(I,J,K)%P))THEN
-                     NPG = SIZE(PIC(I,J,K)%P)
+                  IF(ASSOCIATED(DESGRIDSEARCH_PIC(I,J,K)%P))THEN
+                     NPG = SIZE(DESGRIDSEARCH_PIC(I,J,K)%P)
                   ELSE
                      NPG = 0
                   ENDIF
@@ -170,7 +196,7 @@
 ! neighbors to particle LL
                   DO NP = 1,NPG
 
-                     PNO = PIC(I,J,K)%P(NP)
+                     PNO = DESGRIDSEARCH_PIC(I,J,K)%P(NP)
                      IF(.NOT.PEA(PNO,1)) CYCLE 
 
                      IF(PNO.GT.LL)THEN 

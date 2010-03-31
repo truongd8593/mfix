@@ -40,9 +40,10 @@
       LOGICAL:: filexist, isopen
       INTEGER I, J, K, IJK, L, M
       INTEGER COUNT_E
-      DOUBLE PRECISION MIN_MASS, MASS_I, MASS_J, &
+      DOUBLE PRECISION MIN_MASS, MAX_MASS, &
+                       MASS_I, MASS_J, &
                        MASS_EFF, RED_MASS_EFF
-      DOUBLE PRECISION TCOLL, TCOLL_TMP, MAXMASS
+      DOUBLE PRECISION TCOLL, TCOLL_TMP
 ! local variables for calculation of hertzian contact parameters
       DOUBLE PRECISION R_EFF, E_EFF, G_MOD_EFF     
 ! local variable to determine minimum grid size
@@ -55,45 +56,30 @@
 
       WRITE(*,'(3X,A)') '---------- START CFASSIGN ---------->'
 
-      PIS = PARTICLES  ! J.Musser 
       MIN_MASS = LARGE_NUMBER
-      MAXMASS = SMALL_NUMBER
+      MAX_MASS = SMALL_NUMBER
       MAX_RADIUS = ZERO
       MIN_RADIUS = LARGE_NUMBER
       TCOLL = LARGE_NUMBER
-      DO L = 1, PARTICLES
+
+! If RESTART_1 is being used with DEM inlets/outlets, then it is possible
+! that the particle arrays have indices without data (without particles).
+! Skip 'empty' locations when populating the particle property arrays.
+      DO L = 1, MAX_PIS
+         IF(.NOT.PEA(L,1)) CYCLE      
          PVOL(L) = (4.0d0/3.0d0)*Pi*DES_RADIUS(L)**3
          PMASS(L) = PVOL(L)*RO_SOL(L) 
          OMOI(L) = 2.5d0/(PMASS(L)*DES_RADIUS(L)**2) !one over MOI
-         MAX_RADIUS = MAX(MAX_RADIUS, DES_RADIUS(L))
+         MAX_RADIUS = MAX(MAX_RADIUS, DES_RADIUS(L))         
          MIN_RADIUS = MIN(MIN_RADIUS, DES_RADIUS(L))
-         IF(PMASS(L).LT.MIN_MASS) MIN_MASS = PMASS(L) 
-         MAXMASS = MAX(PMASS(L), MAXMASS)
+         MAX_MASS = MAX(PMASS(L), MAX_MASS)
+         MIN_MASS = MIN(PMASS(L),MIN_MASS)         
          MARK_PART(L) = 1
          IF(DES_POS_NEW(L,2).LE.YLENGTH/2.d0) MARK_PART(L) = 0
       ENDDO
 
       RADIUS_EQ = MAX_RADIUS*1.05d0
-      WRITE(*,'(5X,A,ES15.8)') '1.05*MAX_RADIUS = ', MAX_RADIUS     
-
-      IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN
-         MIN_GRID = LARGE_NUMBER
-         DO IJK = ijkstart3, ijkend3
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
-            MIN_GRID = MIN(MIN_GRID, DX(I))
-            MIN_GRID = MIN(MIN_GRID, DY(J))
-            IF (DIMN.EQ.3) MIN_GRID = MIN(MIN_GRID, DZ(K))
-         ENDDO
-         IF (MIN_GRID <= (2.0d0*MIN_RADIUS)) THEN
-            WRITE(*,'(/,5X,A,A,/14X,A,A,/14X,A,A,/)') &
-               'WARNING: for grid based search the grid size should ',&
-               'be greater than', 'the diameter of the smallest ',&
-               'particle or neighbor contacts','may be missed ',&
-               'giving bad simulation results' 
-         ENDIF
-      ENDIF
+      WRITE(*,'(5X,A,ES15.8)') '1.05*MAX_RADIUS = ', RADIUS_EQ
 
 
 ! Set boundary edges 
@@ -227,7 +213,7 @@
 ! (see page 051302-5)
          IF(KT_FAC == UNDEFINED) THEN
 ! in LSD model a factor of 2/7 makes period of tangential and normal 
-! oscillation equal for univorm spehres when en=1 (no dissipation)
+! oscillation equal for uniform spheres when en=1 (no dissipation)
             KT = (2.d0/7.d0)*KN
          ELSE
             KT = KT_FAC*KN

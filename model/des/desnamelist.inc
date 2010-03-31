@@ -10,6 +10,10 @@
 	MN, PARTICLES_FACTOR, &
 	DES_NEIGHBOR_SEARCH, NEIGHBOR_SEARCH_N,&
         FACTOR_RLM, NEIGHBOR_SEARCH_RAD_RATIO,&
+!	
+! Used for grid/cell based search methods
+        DESGRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, &
+	DESGRIDSEARCH_KMAX, &
 ! 
 ! Used for quadtree or octree neighbor search methods
 	MQUAD_FACTOR, QLM, QLN, INIT_QUAD_COUNT,&

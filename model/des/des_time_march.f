@@ -12,12 +12,12 @@
 !     Comments: Changed the calling rules to neighbor search routines     C
 !                                                                         C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE DES_TIME_MARCH
-!     
-!-------------------
-!     M o d u l e s
-!-------------------
+     
+!------------------------------------------------
+! Modules
+!------------------------------------------------
       USE param 
       USE param1 
       USE run
@@ -46,9 +46,9 @@
       USE des_bc
 
       IMPLICIT NONE
-!-----------------------------------------------
-!     L o c a l   V a r i a b l e s
-!-----------------------------------------------
+!------------------------------------------------
+! Local variables
+!------------------------------------------------
      
       INTEGER NN, FACTOR, NP, IJK, I, J, K, BCV_I
 
@@ -84,64 +84,71 @@
          FIRST_PASS = .FALSE.
          INQC = INIT_QUAD_COUNT
 
-         CALL NEIGHBOUR
+! When no particles are present, skip the startup routines that loop over particles.
+! That is, account for a setup that starts with no particles in the system.
+         IF(PARTICLES /= 0) THEN
+            CALL NEIGHBOUR         
+
          
 ! COHESION INITIALIZE
-         IF(USE_COHESION)THEN
-            CALL INITIALIZE_COHESION_PARAMETERS
-            CALL INITIALIZE_COH_INT_SEARCH
-         END IF
+            IF(USE_COHESION)THEN
+               CALL INITIALIZE_COHESION_PARAMETERS
+               CALL INITIALIZE_COH_INT_SEARCH
+            ENDIF
 
 ! To do only des in the 1st time step only for a new run so the particles settle down
 ! before the coupling is turned on
 
-         IF(RUN_TYPE == 'NEW') THEN
-            IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
-               DES_CONTINUUM_COUPLED = .FALSE.
-               DO FACTOR = 1, NFACTOR
-                  IF (FACTOR .EQ. 1)&
-                     WRITE(*,'(3X,A,/,5X,A,X,I,X,A)') &
-                     'FIRST PASS in DES_TIME_MARCH for new runs',&
-                     'DEM settling period performed', NFACTOR, 'times'
+            IF(RUN_TYPE == 'NEW') THEN
+               IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
+                  DES_CONTINUUM_COUPLED = .FALSE.
+                  DO FACTOR = 1, NFACTOR
+                     IF (FACTOR .EQ. 1)&
+                        WRITE(*,'(3X,A,/,5X,A,X,I,X,A)') &
+                        'FIRST PASS in DES_TIME_MARCH for new runs',&
+                        'DEM settling period performed', NFACTOR, &
+                        'times'
 
-                  ! Force calculation         
-                  CALL CALC_FORCE_DES
+                     ! Force calculation         
+                     CALL CALC_FORCE_DES
                   
-                  PC = 1
-                  DO NP = 1, MAX_PIS
-                     IF(PC .GT. PIS) EXIT
-                     IF(.NOT.PEA(NP,1)) CYCLE
-                     CALL CFNEWVALUES(NP)
-                     PC = PC + 1
+                     PC = 1
+                     DO NP = 1, MAX_PIS
+                        IF(PC .GT. PIS) EXIT
+                        IF(.NOT.PEA(NP,1)) CYCLE
+                        CALL CFNEWVALUES(NP)
+                        PC = PC + 1
+                     ENDDO
+
+                     CALL PARTICLES_IN_CELL
+
+                     ! Neighbor search                      
+                     IF(MOD(FACTOR,NEIGHBOR_SEARCH_N).EQ.0) THEN 
+                        CALL NEIGHBOUR
+                     ELSEIF(DO_NSEARCH) THEN 
+                        CALL NEIGHBOUR
+                        DO_NSEARCH = .FALSE.
+                     ENDIF
                   ENDDO
+                  DES_CONTINUUM_COUPLED = .TRUE.
+                  WRITE(*,'(3X,A)') 'END DEM settling period'
+               ENDIF   ! end if coupled and no cohesion
+               IF(DES_INTERP_ON) THEN 
+                  CALC_FC = .FALSE.
+                  CALLFROMDES = .FALSE.
+               ENDIF
+               CALL PARTICLES_IN_CELL
+               CALL WRITE_DES_DATA
+               WRITE(*,'(3X,A,X,ES)') &
+                  'DES data file written at time =', S_TIME
+               WRITE(UNIT_LOG,*) &
+                  'DES data file written at time = ', S_TIME
+            ENDIF   ! end if on new run type
 
-                  CALL PARTICLES_IN_CELL
+            WRITE(*,'(1X,A)')&
+               '<---------- END FIRST PASS DES_TIME_MARCH ----------'
 
-                  ! Neighbor search                      
-                  IF(MOD(FACTOR,NEIGHBOR_SEARCH_N).EQ.0) THEN 
-                     CALL NEIGHBOUR
-                  ELSEIF(DO_NSEARCH) THEN 
-                     CALL NEIGHBOUR
-                     DO_NSEARCH = .FALSE.
-                  ENDIF
-               ENDDO
-               DES_CONTINUUM_COUPLED = .TRUE.
-               WRITE(*,'(3X,A)') 'END DEM settling period'
-            ENDIF   ! end if coupled and no cohesion
-            IF(DES_INTERP_ON) THEN 
-               CALC_FC = .FALSE.
-               CALLFROMDES = .FALSE.
-            ENDIF
-            CALL PARTICLES_IN_CELL
-            CALL WRITE_DES_DATA
-            WRITE(*,'(3X,A,X,ES)') &
-               'DES data file written at time =', S_TIME
-            WRITE(UNIT_LOG,*) &
-               'DES data file written at time = ', S_TIME
-         ENDIF   ! end if on new run type
-         WRITE(*,'(1X,A)')&
-            '<---------- END FIRST PASS DES_TIME_MARCH ----------'
-         
+         ENDIF   ! end if particles /= 0         
       ENDIF    ! end if first pass
 
 
@@ -219,39 +226,42 @@
          ENDIF   ! end if/else (des_continuum_coupled) 
          
 
-! Force calculation         
-         CALL CALC_FORCE_DES
+! If system is empty, skip force calculation calls
+         IF (PIS /= 0) THEN
+            CALL CALC_FORCE_DES
 
-         PC = 1
-         DO NP = 1, MAX_PIS
-            IF(PC .GT. PIS) EXIT
-            IF(.NOT.PEA(NP,1)) CYCLE
+            PC = 1
+            DO NP = 1, MAX_PIS
+               IF(PC .GT. PIS) EXIT
+               IF(.NOT.PEA(NP,1)) CYCLE
 ! Update particle position, velocity            
-            CALL CFNEWVALUES(NP)
-            PC = PC + 1
-         ENDDO
+               CALL CFNEWVALUES(NP)
+               PC = PC + 1
+            ENDDO
 
 ! For systems with inlets/outlets check to determine if a particle has
 ! fully entered or exited the domain.  If the former, remove the status
 ! of 'new' and if the latter, remove the particle.
-         IF (DES_MI) CALL DES_CHECK_PARTICLE
+            IF (DES_MI) CALL DES_CHECK_PARTICLE
 
-         CALL PARTICLES_IN_CELL
+            CALL PARTICLES_IN_CELL
 
-         IF(NN.EQ.1 .OR. MOD(NN,NEIGHBOR_SEARCH_N).EQ.0) THEN 
-            IF(DEBUG_DES) WRITE(*,'(3X,A,A,/,5X,A,I)') &
-               'Calling NEIGHBOUR: NN=1 or ',&
-               'MOD(NN,NEIGHBOR_SEARCH_N)=0',&
-               'NEIGHBOR_SEARCH_N = ', NEIGHBOR_SEARCH_N
-            CALL NEIGHBOUR
-         ELSEIF(DO_NSEARCH) THEN 
-            IF(DEBUG_DES) WRITE(*,'(3X,A,A,/,5X,A,A,L)') &
-               'Calling NEIGHBOUR: a particle moved ',&
-               'more than its radius since', 'last time NEIGHBOUR ',&
-               'was called; DO_NSEARCH = ', DO_NSEARCH
-            CALL NEIGHBOUR
-            DO_NSEARCH = .FALSE.
-         ENDIF
+            IF(NN.EQ.1 .OR. MOD(NN,NEIGHBOR_SEARCH_N).EQ.0) THEN 
+               IF(DEBUG_DES) WRITE(*,'(3X,A,A,/,5X,A,I)') &
+                  'Calling NEIGHBOUR: NN=1 or ',&
+                  'MOD(NN,NEIGHBOR_SEARCH_N)=0',&
+                  'NEIGHBOR_SEARCH_N = ', NEIGHBOR_SEARCH_N
+               CALL NEIGHBOUR
+            ELSEIF(DO_NSEARCH) THEN 
+               IF(DEBUG_DES) WRITE(*,'(3X,A,A,/,5X,A,A,L)') &
+                  'Calling NEIGHBOUR: a particle moved ',&
+                  'more than its radius since', 'last time NEIGHBOUR ',&
+                  'was called; DO_NSEARCH = ', DO_NSEARCH
+               CALL NEIGHBOUR
+               DO_NSEARCH = .FALSE.
+            ENDIF
+         ENDIF   ! end if particles /= 0
+
 
 ! Update time to reflect changes 
          S_TIME = S_TIME + DTSOLID

@@ -27,6 +27,11 @@
 !-----------------------------------------------      
       INTEGER CHECK_MPI, M
       LOGICAL FLAG_WARN
+      INTEGER I, J, K
+! quantities used to check/specify mesh size if des_neighbor_search = 4      
+      DOUBLE PRECISION DL_TMP, TMP_FACTOR     
+! needed if des_neighbor_search=4, the maximum specified particle diameter 
+      DOUBLE PRECISION MAX_DIAM      
 !----------------------------------------------- 
 
       WRITE(*,'(1X,A)')&
@@ -261,6 +266,10 @@
 ! Overwrite user's input in case of DEM (no fluid)
       IF(.NOT.DES_CONTINUUM_COUPLED) DES_INTERP_ON = .FALSE.
 
+! Check that the depth of the simulation in 2D exceeds the largest 
+! particle size to ensure correct calculation of volume fraction.  This
+! is important for coupled simulations (not essential for pure granular
+! simulations)
       IF (DES_CONTINUUM_COUPLED .AND. DIMN == 2) THEN
          DO M = 1, MMAX              
             IF (D_P0(M) > ZLENGTH) THEN
@@ -270,6 +279,98 @@
          ENDDO
       ENDIF
 
+! Ensure settings for grid based neighbor search method. This section
+! was placed here since the domain lengths (xlength, ylength, zlength)
+! are needed and their value is not gauranteed until check_data_03 is
+! called
+! ------------------------------------------------------------
+      IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN
+         MAX_DIAM = ZERO
+         DO M = 1,MMAX
+            MAX_DIAM = MAX(MAX_DIAM, D_P0(M))
+         ENDDO
+
+         TMP_FACTOR = 3.0d0*(MAX_DIAM)
+
+! If the search grid is undefined then set it to approximately 3 times
+! the maximum particle. Otherwise, check to see that the user set search
+! grid is at least greater than or equal to the maximum particle
+! diameter and warn the user if not         
+         IF (DESGRIDSEARCH_IMAX == UNDEFINED_I) THEN
+            DL_TMP = XLENGTH/TMP_FACTOR
+            DESGRIDSEARCH_IMAX = INT(DL_TMP)
+            IF (DESGRIDSEARCH_IMAX <= 0) DESGRIDSEARCH_IMAX = 1
+            WRITE(*,'(3X,A,I8)') &
+               'DESGRIDSEARCH_IMAX was set to ', DESGRIDSEARCH_IMAX
+         ELSE
+            DL_TMP = XLENGTH/DBLE(DESGRIDSEARCH_IMAX)
+            IF (DL_TMP < MAX_DIAM) THEN
+               WRITE(*,1037) 'x', 'x', 'i', 'i'                    
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ENDIF
+         IF (DESGRIDSEARCH_JMAX == UNDEFINED_I) THEN
+            DL_TMP = YLENGTH/TMP_FACTOR
+            DESGRIDSEARCH_JMAX = INT(DL_TMP)
+            IF (DESGRIDSEARCH_JMAX <= 0) DESGRIDSEARCH_JMAX = 1
+            WRITE(*,'(3X,A,I8)') &
+               'DESGRIDSEARCH_JMAX was set to ', DESGRIDSEARCH_JMAX
+         ELSE
+            DL_TMP = YLENGTH/DBLE(DESGRIDSEARCH_JMAX)
+            IF (DL_TMP < MAX_DIAM) THEN
+               WRITE(*,1037) 'y', 'y', 'j', 'j'
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ENDIF
+         IF (DIMN .EQ. 2) THEN
+            IF (DESGRIDSEARCH_KMAX == UNDEFINED_I) THEN
+               DESGRIDSEARCH_KMAX = 1
+            ELSEIF(DESGRIDSEARCH_KMAX /= 1) THEN
+               DESGRIDSEARCH_KMAX = 1            
+               WRITE(*,'(3X,A,I8)') &
+                  'DESGRIDSEARCH_KMAX was set to ', DESGRIDSEARCH_KMAX
+            ENDIF            
+         ELSE
+            IF (DESGRIDSEARCH_KMAX == UNDEFINED_I) THEN
+                DL_TMP = ZLENGTH/TMP_FACTOR
+                DESGRIDSEARCH_KMAX = INT(DL_TMP)
+                IF (DESGRIDSEARCH_KMAX <= 0) DESGRIDSEARCH_JMAX = 1
+                WRITE(*,'(3X,A,I8)') &
+                  'DESGRIDSEARCH_KMAX was set to ', DESGRIDSEARCH_KMAX
+            ELSE
+                DL_TMP = ZLENGTH/DBLE(DESGRIDSEARCH_KMAX)
+                IF (DL_TMP < MAX_DIAM) THEN
+                   WRITE(*,1037) 'z', 'z', 'k', 'k'
+                   CALL MFIX_EXIT(myPE)
+               ENDIF
+            ENDIF
+         ENDIF   ! end if/else dimn == 2
+
+         DESGS_IMAX2= DESGRIDSEARCH_IMAX+2
+         DESGS_JMAX2 = DESGRIDSEARCH_JMAX+2
+         IF (DIMN .EQ. 2) THEN
+            DESGS_KMAX2 = DESGRIDSEARCH_KMAX
+         ELSE
+            DESGS_KMAX2 = DESGRIDSEARCH_KMAX+2
+         ENDIF         
+
+! Variable that stores the particle in cell information (ID) on the
+! computational grid defined by cell/grid based search.  Similar to the
+! variable PIC but tailored for the grid based neighbor search option
+         ALLOCATE(DESGRIDSEARCH_PIC(DESGS_IMAX2,DESGS_JMAX2,DESGS_KMAX2))
+         DO K = 1,DESGS_KMAX2
+            DO J = 1,DESGS_JMAX2
+               DO I = 1,DESGS_IMAX2
+                  NULLIFY(DESGRIDSEARCH_PIC(I,J,K)%p) 
+               ENDDO 
+             ENDDO 
+          ENDDO                      
+
+      ENDIF   ! end if des_neighbor_search == 4
+! End checks if grid based neighbor search         
+! ------------------------------------------------------------
+
+      
       WRITE(*,'(1X,A)')&
          '<---------- END CHECK_DES_DATA ----------'
 
@@ -410,5 +511,13 @@
          '2D coupled simulation with a particle diameter > ZLENGTH.',/10X,&
          'This will create problems for calculations of void ',&
          'fraction. Check',/10X, 'mfix.dat file.',/1X,70('*')/)
+
+ 1037 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+          'The neighbor search grid is too fine in the ',A, &
+          '-direction',/10X,'with a particle diameter > ',A, &
+          'length/dessearchgrid_',A,'max. This will',/10X,'create ',&
+          'problems for the search method and detecting neighbors',/10X,&
+          'Decrease desgridsearch_',A,'max in mfix.dat to coarsen ',&
+          'grid.',/1X,70('*')/)
 
          END SUBROUTINE CHECK_DES_DATA

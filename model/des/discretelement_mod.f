@@ -267,13 +267,44 @@
          INTEGER, DIMENSION(:), POINTER:: p
       END TYPE iap1
       TYPE(iap1), DIMENSION(:,:,:), ALLOCATABLE:: pic  ! (DIMENSION_I,DIMENSION_J,DIMENSION_K)
-    
+
 ! Particles in a computational cell (for volume fraction)
       INTEGER, DIMENSION(:), ALLOCATABLE :: PINC  ! (DIMENSION_3)
 
 ! For each particle track its i,j,k location on grid and phase no.:      
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PIJK ! (PARTICLES,5)=>I,J,K,IJK,M 
-     
+
+
+!********************************************************************************
+! START when des_neighbor_search = 4 
+
+! Dynamic variable; for each cell stores the total number of particles
+! and the id's of the particles in that cell. This variable is used
+! exclusively for the des_neighbor_search option 4 (cell based search
+! method) and was created so that the mesh used to perform the cell
+! based search is independent of the standard mesh used to solve the
+! fluid equations in coupled dem cases
+      TYPE(iap1), DIMENSION(:,:,:), ALLOCATABLE:: DESGRIDSEARCH_PIC  
+                                                       ! (desgs_imax2,desgs_jmax2,desgs_kmax2)
+
+! The number of i, j, k divisions in the grid used to perform the
+! cell based neighbor search
+      INTEGER :: DESGRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, &
+                 DESGRIDSEARCH_KMAX
+! The number of i, j, k divisions in the grid used to perform the
+! cell based neighbor search plus 2 to account for ghost cells
+      INTEGER :: DESGS_IMAX2, DESGS_JMAX2, &
+                 DESGS_KMAX2
+
+! For each particle track its i,j,k location on the mesh used for the
+! cell based neighbor search option
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: DESGRIDSEARCH_PIJK  ! (PARTICLES,3)=>I,J,K
+
+! END when des_neighbor_search = 4       
+!********************************************************************************
+
+
+
 ! Stores number of neighbors based on neighbor search
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: NEIGHBOURS ! (PARTICLES, MAXNEIGHBORS)
 

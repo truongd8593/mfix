@@ -33,28 +33,46 @@
 
       WRITE(*,'(1X,A)')&
          '---------- START MAKE_ARRAYS_DES ---------->'
-      
-      IF(RUN_TYPE == 'NEW') THEN ! Fresh run
-         
-         IF(.NOT.GENER_PART_CONFIG) THEN 
-            OPEN(UNIT=10, FILE='particle_input.dat', STATUS='OLD') 
-                     
-            WRITE(*,'(3X,A,/,5X,A)') &
-               'reading particle configuration from the supplied ',& 
-               'particle_input.dat file'
 
-            DO L = 1, PARTICLES
-               READ (10,*) (DES_POS_OLD(L,K),K=1,DIMN),DES_RADIUS(L),RO_Sol(L) ,(DES_VEL_OLD(L,K),K=1,DIMN)
-               OMEGA_OLD(L,:) = ZERO
-               DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
-               DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:)
-               DES_VEL_OOLD(L,:) = DES_VEL_OLD(L,:)
-               OMEGA_NEW(L,:) = OMEGA_OLD(L,:)
-            END DO
-         ELSE
-            call generate_particle_config
+! Temporary placement of code until all new dem inlet/outlet checked in
+      IF (MAX_PIS == UNDEFINED_I)THEN
+         WRITE(*,'(3X,A)')'Setting MAX_PIS = PARTICLES'
+         MAX_PIS = PARTICLES
+      ENDIF
+
+
+      IF(RUN_TYPE == 'NEW') THEN ! Fresh run
+! J.Musser 
+! If no particles are in the system then there is no need to read 
+! particle_input.dat or call generate_particle_config. Note, if no 
+! particles are in the system and no dem inlet is specified, then 
+! the run will have already been aborted from checks conducted in 
+! check_des_bc                     
+         IF (PARTICLES /= 0) THEN         
+            IF(.NOT.GENER_PART_CONFIG) THEN 
+               OPEN(UNIT=10, FILE='particle_input.dat',STATUS='OLD',ERR=999)
+                     
+               WRITE(*,'(3X,A,/,5X,A)') &
+                  'reading particle configuration from the supplied ',& 
+                  'particle_input.dat file'
+
+               DO L = 1, PARTICLES
+                  READ (10,*) (DES_POS_OLD(L,K),K=1,DIMN),DES_RADIUS(L),RO_Sol(L) ,(DES_VEL_OLD(L,K),K=1,DIMN)
+                  OMEGA_OLD(L,:) = ZERO
+                  DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
+                  DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:)
+                  DES_VEL_OOLD(L,:) = DES_VEL_OLD(L,:)
+                  OMEGA_NEW(L,:) = OMEGA_OLD(L,:)
+               ENDDO
+            ELSE
+               call generate_particle_config
+            ENDIF
          ENDIF
-            
+
+! J.Musser : Set the number of particles in the system 
+! If RESTART_1, PIS is read from restart         
+         PIS = PARTICLES         
+
       ELSEIF(RUN_TYPE == 'RESTART_1') THEN !  Read Restart
          CALL READ_DES_RESTART
          DES_POS_NEW(:,:) = DES_POS_OLD(:,:)
@@ -97,5 +115,11 @@
          '<---------- END MAKE_ARRAYS_DES ----------'
 
       RETURN
+
+! Flag that file particle_input.dat is missing and exit         
+  999 WRITE(*,"(/1X,70('*')//,A,/,A,/1X,70('*'))")&
+         ' From: MAKE_ARRAYS_DES -',&
+         ' particle_input.dat file is missing.  Terminating run.'
+      CALL MFIX_EXIT(myPE)
 
       END SUBROUTINE MAKE_ARRAYS_DES 

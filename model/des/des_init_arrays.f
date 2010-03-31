@@ -75,6 +75,11 @@
           PQUAD(:) = 0
       ENDIF      
 
+      IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN
+         DESGRIDSEARCH_PIJK(:,:) = ZERO
+      ENDIF
+
+
       PINC(:) = ZERO
       PIJK(:,:) = ZERO
 
