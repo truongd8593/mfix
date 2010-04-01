@@ -271,24 +271,19 @@
 ! is important for coupled simulations (not essential for pure granular
 ! simulations)
       IF (DES_CONTINUUM_COUPLED .AND. DIMN == 2) THEN
-         DO M = 1, MMAX              
-            IF (D_P0(M) > ZLENGTH) THEN
-               WRITE(UNIT_LOG, 1036)
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-         ENDDO
+         IF (2.0d0*MAX_RADIUS > ZLENGTH) THEN
+            WRITE(UNIT_LOG, 1036)
+            CALL MFIX_EXIT(myPE)
+         ENDIF
       ENDIF
 
 ! Ensure settings for grid based neighbor search method. This section
 ! was placed here since the domain lengths (xlength, ylength, zlength)
-! are needed and their value is not gauranteed until check_data_03 is
-! called
+! are needed and their value is not gauranteed until after 
+! check_data_03 is called
 ! ------------------------------------------------------------
       IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN
-         MAX_DIAM = ZERO
-         DO M = 1,MMAX
-            MAX_DIAM = MAX(MAX_DIAM, D_P0(M))
-         ENDDO
+         MAX_DIAM = 2.0d0*MAX_RADIUS
 
          TMP_FACTOR = 3.0d0*(MAX_DIAM)
 

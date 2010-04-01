@@ -40,8 +40,7 @@
       LOGICAL:: filexist, isopen
       INTEGER I, J, K, IJK, L, M
       INTEGER COUNT_E
-      DOUBLE PRECISION MIN_MASS, MAX_MASS, &
-                       MASS_I, MASS_J, &
+      DOUBLE PRECISION MASS_I, MASS_J, &
                        MASS_EFF, RED_MASS_EFF
       DOUBLE PRECISION TCOLL, TCOLL_TMP
 ! local variables for calculation of hertzian contact parameters
@@ -56,10 +55,6 @@
 
       WRITE(*,'(3X,A)') '---------- START CFASSIGN ---------->'
 
-      MIN_MASS = LARGE_NUMBER
-      MAX_MASS = SMALL_NUMBER
-      MAX_RADIUS = ZERO
-      MIN_RADIUS = LARGE_NUMBER
       TCOLL = LARGE_NUMBER
 
 ! If RESTART_1 is being used with DEM inlets/outlets, then it is possible
@@ -70,10 +65,6 @@
          PVOL(L) = (4.0d0/3.0d0)*Pi*DES_RADIUS(L)**3
          PMASS(L) = PVOL(L)*RO_SOL(L) 
          OMOI(L) = 2.5d0/(PMASS(L)*DES_RADIUS(L)**2) !one over MOI
-         MAX_RADIUS = MAX(MAX_RADIUS, DES_RADIUS(L))         
-         MIN_RADIUS = MIN(MIN_RADIUS, DES_RADIUS(L))
-         MAX_MASS = MAX(PMASS(L), MAX_MASS)
-         MIN_MASS = MIN(PMASS(L),MIN_MASS)         
          MARK_PART(L) = 1
          IF(DES_POS_NEW(L,2).LE.YLENGTH/2.d0) MARK_PART(L) = 0
       ENDDO
