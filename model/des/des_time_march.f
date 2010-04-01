@@ -318,7 +318,7 @@
 
 ! J.Musser : mass inlet/outlet -> particles entering the system
          IF(DES_MI)THEN 
-            DO BCV_I = 1, SIZE(DES_BC_MI_ID)
+            DO BCV_I = 1, DES_BCMI
                IF(PI_FACTOR(BCV_I) .GT. 1)THEN
                   IF(DES_MI_TIME(BCV_I) .LE. S_TIME) THEN   !Verify start time
                      CALL DES_MASS_INLET(BCV_I)

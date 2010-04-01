@@ -401,6 +401,7 @@ mfix.exe : \
     des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
+    des_init_bc.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
     des_mass_inlet.$(OBJ_EXT) \
     des_time_march.$(OBJ_EXT) \
@@ -836,6 +837,7 @@ mfix.exe : \
     des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
+    des_init_bc.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
     des_mass_inlet.$(OBJ_EXT) \
     des_time_march.$(OBJ_EXT) \
@@ -5302,6 +5304,7 @@ cfassign.$(OBJ_EXT) : ./des/cfassign.f \
             CONSTANT.mod \
             COMPAR.mod \
             SENDRECV.mod \
+            function.inc                                                 \
             b_force1.inc                                                 \
             b_force2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfassign.f 
@@ -5464,8 +5467,22 @@ des_init_arrays.$(OBJ_EXT) : ./des/des_init_arrays.f \
             GEOMETRY.mod \
             COMPAR.mod \
             PHYSPROP.mod \
-            DES_BC.mod 
+            DES_BC.mod \
+            RUN.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_arrays.f 
+des_init_bc.$(OBJ_EXT) : ./des/des_init_bc.f \
+            COMPAR.mod \
+            CONSTANT.mod \
+            DES_BC.mod \
+            DISCRETELEMENT.mod \
+            FUNITS.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            PARAM.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            RUN.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_bc.f 
 des_init_namelist.$(OBJ_EXT) : ./des/des_init_namelist.f \
             PARAM1.mod \
             DISCRETELEMENT.mod \
@@ -5681,7 +5698,8 @@ quadtree.$(OBJ_EXT) : ./des/quadtree.f \
 read_des_restart.$(OBJ_EXT) : ./des/read_des_restart.f \
             PARAM1.mod \
             RUN.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            DES_BC.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/read_des_restart.f 
 walledgecontact.$(OBJ_EXT) : ./des/walledgecontact.f \
             DISCRETELEMENT.mod \
@@ -5745,7 +5763,8 @@ write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
 write_des_restart.$(OBJ_EXT) : ./des/write_des_restart.f \
             PARAM1.mod \
             DISCRETELEMENT.mod \
-            RUN.mod 
+            RUN.mod \
+            DES_BC.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/write_des_restart.f 
 gaussj.$(OBJ_EXT) : ./dqmom/gaussj.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/gaussj.f 

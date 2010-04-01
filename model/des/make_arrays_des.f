@@ -34,13 +34,6 @@
       WRITE(*,'(1X,A)')&
          '---------- START MAKE_ARRAYS_DES ---------->'
 
-! Temporary placement of code until all new dem inlet/outlet checked in
-      IF (MAX_PIS == UNDEFINED_I)THEN
-         WRITE(*,'(3X,A)')'Setting MAX_PIS = PARTICLES'
-         MAX_PIS = PARTICLES
-      ENDIF
-
-
       IF(RUN_TYPE == 'NEW') THEN ! Fresh run
 ! J.Musser 
 ! If no particles are in the system then there is no need to read 
@@ -97,17 +90,17 @@
 
       CALL CFASSIGN
 
-! J.Musser      
-! Check data for des mass inflow boundary condtion 
-! dtsolid is needed so call is made after cfassign.f       
-      CALL CHECK_DES_BC
+! J.Musser
+! Make the necessary calculations for the mass inflow/outflow boundary
+! conditions.  DTSOLID is needed so call is made after cfassign.f
+      CALL DES_INIT_BC
 
       CALL PARTICLES_IN_CELL
 
 ! Overrides initial particle velocity with velocities assigned from a
 ! Gaussian distribution based on usr specified standard deviation and
 ! mean
-      IF(PVEL_StDev.GT.ZERO)  CALL INIT_PARTICLES_JN
+      IF(PVEL_StDev.GT.ZERO) CALL INIT_PARTICLES_JN
        
       CALL WRITEIC
 
@@ -117,7 +110,7 @@
       RETURN
 
 ! Flag that file particle_input.dat is missing and exit         
-  999 WRITE(*,"(/1X,70('*')//,A,/,A,/1X,70('*'))")&
+  999 WRITE(*,"(/1X,70('*')//,A,/10X,A,/1X,70('*')/)")&
          ' From: MAKE_ARRAYS_DES -',&
          ' particle_input.dat file is missing.  Terminating run.'
       CALL MFIX_EXIT(myPE)

@@ -84,13 +84,17 @@
          JJ = DESGRIDSEARCH_PIJK(LL,2)
          KK = DESGRIDSEARCH_PIJK(LL,3)
 ! Initialize and set II, JJ, KK indices
-         IP1=II+1; IM1=II-1
+         IP1=II+1
+         IM1=II-1
 ! Initialize and set JJ indices
-         JP1=JJ+1; JM1=JJ-1
+         JP1=JJ+1
+         JM1=JJ-1
 ! Initialize and set KK indices
-         KP1=KK;   KM1=KK
+         KP1=KK
+         KM1=KK
          IF(DIMN.EQ.3)THEN 
-            KP1 = KK+1;   KM1 = KK-1
+            KP1 = KK+1
+            KM1 = KK-1
          ENDIF
 
 ! Check fluid cells neighboring PIJK(LL,4) for potential neighbors of LL
@@ -105,10 +109,10 @@
                   XPER_FAC = 0; YPER_FAC = 0; ZPER_FAC = 0
 
 ! Correct indices for neighbor cells that are not in the domain and
-! also set up periodic BC neighbor search, unless DES_MI is true
-! DES_MI currently not setup with periodic conditions
-                  IF (.NOT. DES_MI) THEN
-
+! also set up periodic BC neighbor search.  Note if a boundary is
+! periodic then the boundary cannot have a DEM inlet/outlet (that is,
+! DEM_MI/MO cannot also be true) and will have already exited.
+                  IF (.NOT. DES_MI_X .AND. .NOT. DES_MO_X) THEN
                      IF(II.GT.DESGS_IMAX1) THEN 
                         IF(DES_PERIODIC_WALLS_X) THEN 
                            I = DESGS_IMIN1  ! min fluid cell no. 
@@ -125,6 +129,15 @@
                            I = DESGS_IMIN1
                         ENDIF
                      ENDIF
+                  ELSE
+! If DEM inlet or outlet, then a particle may exist in a ghost cell.
+! Note that this cannot occur simultaneously with a periodic boundary
+! and the code will have already exited.
+                     IF(II.GT.DESGS_IMAX2) I = DESGS_IMAX2   ! max cell no.
+                     IF(II.LT.DESGS_IMIN2) I = DESGS_IMIN2   ! min cell no.
+                  ENDIF
+
+                  IF(.NOT.DES_MI_Y .AND. .NOT.DES_MO_Y) THEN
                      IF(JJ.GT.DESGS_JMAX1) THEN
                         IF(DES_PERIODIC_WALLS_Y) THEN 
                            J = DESGS_JMIN1
@@ -141,7 +154,13 @@
                            J = DESGS_JMIN1
                         ENDIF
                      ENDIF
-                     IF(DIMN.EQ.3) THEN 
+                  ELSE
+                     IF(JJ.GT.DESGS_JMAX2) J = DESGS_JMAX2   ! max cell no.
+                     IF(JJ.LT.DESGS_JMIN2) J = DESGS_JMIN2   ! min cell no.
+                  ENDIF
+
+                  IF(DIMN.EQ.3) THEN 
+                     IF(.NOT.DES_MI_Z .AND. .NOT.DES_MO_Z)THEN
                         IF(KK.GT.DESGS_KMAX1) THEN 
                            IF(DES_PERIODIC_WALLS_Z) THEN
                               K = DESGS_KMIN1
@@ -158,29 +177,9 @@
                               K = DESGS_KMIN1
                            ENDIF
                         ENDIF
-                     ENDIF
-
-                  ELSE  ! DES_MI == TRUE
-
-                     IF(II.GT.DESGS_IMAX2) THEN 
-                        I = DESGS_IMAX2  ! max cell no.
-                     ENDIF
-                     IF(II.LT.DESGS_IMIN2) THEN 
-                        I = DESGS_IMIN2  ! min cell no.
-                     ENDIF
-                     IF(JJ.GT.DESGS_JMAX2) THEN
-                        J = DESGS_JMAX2
-                     ENDIF
-                     IF(JJ.LT.1) THEN
-                        J = DESGS_JMIN2
-                     ENDIF
-                     IF(DIMN.EQ.3) THEN 
-                        IF(KK.GT.DESGS_KMAX2) THEN 
-                           K = DESGS_KMAX2
-                        ENDIF
-                        IF(KK.LT.DESGS_KMIN2) THEN 
-                           K = DESGS_KMIN2
-                        ENDIF
+                     ELSE
+                        IF(KK.GT.DESGS_KMAX2) K = DESGS_KMAX2   ! max cell no.
+                        IF(KK.LT.DESGS_KMIN2) K = DESGS_KMIN2   ! min cell no.
                      ENDIF
                   ENDIF
 
@@ -255,12 +254,10 @@
 
       ENDDO  ! Particles in system loop
 
- 1000 FORMAT(/1X,70('*')//&
-         ' From: GRID_BASED_NEIGHBOR_SEARCH -',/&
+ 1000 FORMAT(/1X,70('*')//,' From: GRID_BASED_NEIGHBOR_SEARCH -',/,&
          ' Message: Neighbors(=', I4,') > MN(=', I4,&
-         ') for particle: ', I,/&
-         ' Either reduce the factor R_LM or increase ',&
-         'MN in mfix.dat'/,&
-         1X,70('*')/)         
+         ') for particle: ', I,/10X,&
+         'Either reduce the factor R_LM or increase ',&
+         'MN in mfix.dat',/1X,70('*')/)         
 
       END SUBROUTINE GRID_BASED_NEIGHBOR_SEARCH

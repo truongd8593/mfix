@@ -33,7 +33,7 @@
 !  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE GET_DATA 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
@@ -60,24 +60,21 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-! 
 !                    Shift or not shift DX, DY and DZ values 
       LOGICAL        SHIFT 
       LOGICAL        CYCLIC_X_BAK, CYCLIC_Y_BAK, CYCLIC_Z_BAK, CYLINDRICAL_BAK
-!-----------------------------------------------
+
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
       LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
-!
-!
-!
-!
+
+
 ! This module call routines to initialize the namelist variables,
 ! read in the namelist variables from the ascii input file,
 ! checks that the input is valid, and opens the files.
-!
+
       CALL INIT_NAMELIST 
       CALL READ_NAMELIST (0) 
       IF( IMAX == UNDEFINED_I .OR. JMAX == UNDEFINED_I .OR. &
@@ -85,12 +82,12 @@
          WRITE(*,1006)
          CALL MFIX_EXIT(myPE) 
       ENDIF
+
       CALL CHECK_DATA_00
 
-!  Set constants
-!
+
+! Set constants
       CALL SET_CONSTANTS 
-!
 
       CYCLIC_X_BAK = CYCLIC_X
       CYCLIC_Y_BAK = CYCLIC_Y
@@ -102,7 +99,7 @@
       IF (CYCLIC_Z_PD) CYCLIC_Z = .TRUE.
       
       DO_K = .NOT.NO_K
-!
+
       IF (COORDINATES == 'CYLINDRICAL') CYLINDRICAL = .TRUE.
 
       IF (CYLINDRICAL .AND. COMPARE(ZLENGTH,8.D0*ATAN(ONE)) .AND. DO_K) &
@@ -119,20 +116,19 @@
          LEQ_METHOD(3:9) = 1
       ENDIF
 
-!// Partition the domain and set indices
+
+! Partition the domain and set indices
       call SET_MAX2
       call GRIDMAP_INIT
 
-!\\SP Copying back logical variables to original values to retain the structure of the code
-!     For cylindrical case making CYCLIC_Z = .TRUE., makes CYCLIC TRUE in set_geometry and
-!     which in turn leads to fixing the pressure in source_pp_g.
 
+! Copying back logical variables to original values to retain the structure of the code
+! For cylindrical case making CYCLIC_Z = .TRUE., makes CYCLIC TRUE in set_geometry and
+! which in turn leads to fixing the pressure in source_pp_g.  (SP)
       CYCLIC_X = CYCLIC_X_BAK
       CYCLIC_Y = CYCLIC_Y_BAK
       CYCLIC_Z = CYCLIC_Z_BAK
       CYLINDRICAL = CYLINDRICAL_BAK
-
-
 
 
 !     write(*,*) 'ISTART-IEND'
@@ -141,20 +137,23 @@
 !     write(*,*) JSTART3, JSTART2, JSTART, JSTART1, JEND1, JEND, JEND2, JEND3
 !     write(*,*) 'KSTART-KEND'
 !     write(*,*) KSTART3, KSTART2, KSTART, KSTART1, KEND1, KEND, KEND2, KEND3
-!
+
+
 ! MUST use k-epsilon model and granular temperature PDE with Simonin
 ! and Ahmadi models (must be done before allocate_arrays). Sof --> 02/01/05
       IF(SIMONIN .OR. AHMADI) THEN
         K_Epsilon = .TRUE.
-	GRANULAR_ENERGY = .TRUE.
+        GRANULAR_ENERGY = .TRUE.
       ENDIF
+
 
       CALL ALLOCATE_ARRAYS    
 
-!     DES
+
+! Set constants and allocate/initialize DEM variables
       IF(DISCRETE_ELEMENT) THEN
          IF(NO_K) THEN
-	    DIMN = 2 
+            DIMN = 2 
             WRITE(*,1001)
          ENDIF
          IF(NO_I.OR.NO_J) THEN
@@ -169,24 +168,24 @@
             WRITE(*,1004)
             CALL MFIX_EXIT(myPE)
          ENDIF
-         IF(PARTICLES == UNDEFINED_I .AND. .NOT.GENER_PART_CONFIG) THEN
-            WRITE(*,1005)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
+! J.Musser :
+! Removed following to allow system to start empty.  If no discrete mass inlet
+! is specified, then this error is flagged and exited in check_des_bc.f 
+!         IF(PARTICLES == UNDEFINED_I .AND. .NOT.GENER_PART_CONFIG) THEN
+!            WRITE(*,1005)
+!            CALL MFIX_EXIT(myPE)
+!         ENDIF         
          CALL DES_ALLOCATE_ARRAYS
          CALL DES_INIT_ARRAYS 
-      END IF
-!
-!
+      ENDIF
+
       IF (RUN_NAME == UNDEFINED_C) THEN 
          WRITE (*, 1000) 
          CALL MFIX_EXIT(myPE) 
       ENDIF 
 
-!
-! open files
-!
 
+! open files
       IF (RUN_TYPE == 'RESTART_3') THEN 
          RUN_TYPE = 'RESTART_1' 
          CALL OPEN_FILES (RUN_NAME, RUN_TYPE, N_SPX) 
@@ -211,51 +210,50 @@
          SHIFT = .TRUE. 
       ENDIF 
 
-!
-! write header in the .LOG file
-!
-      CALL WRITE_HEADER 
-!
-!  Check data and do some preliminary computations
-!
-      CALL START_LOG 
-!
-      CALL CHECK_DATA_01                         ! run_control input 
 
+! write header in the .LOG file
+      CALL WRITE_HEADER 
+
+
+! Check data and do some preliminary computations
+      CALL START_LOG 
+
+      CALL CHECK_DATA_01                         ! run_control input 
 
       CALL CHECK_DATA_02                         ! output_control input 
 
       CALL CHECK_DATA_03 (SHIFT)                 ! geometry input 
 
-!
-!  Set X, X_E, oX, oX_E ... etc.
-!
+
+! Set X, X_E, oX, oX_E ... etc.
       CALL SET_GEOMETRY 
-!
+
       CALL SET_L_SCALE 
-!
+
       CALL CHECK_DATA_04                         ! solid phase section 
       CALL CHECK_DATA_05                         ! gas phase section 
-!
+
       CALL CHECK_DATA_06                         ! initial condition section 
 
       CALL CHECK_DATA_07                         ! boundary condition section 
       CALL CHECK_DATA_08                         ! Internal surfaces section 
       CALL CHECK_DATA_09                         ! Chemical reactions section       
-!
-!     CHEM & ISAT begin (nan xie)
-!  check rxns
+
+
+! CHEM & ISAT: check rxns (nan xie)
       CALL CHECK_DATA_CHEM      
-!     CHEM & ISAT end (nan xie)    
-!
-!  check DEM
-      IF(DISCRETE_ELEMENT) CALL CHECK_DES_DATA
-!  end of check dem data
-!
+
+
+! check DEM
+      IF(DISCRETE_ELEMENT) THEN
+         CALL CHECK_DES_DATA
+         CALL CHECK_DES_BC
+      ENDIF
+
 ! close .LOG file
-!
       CALL END_LOG 
-!
+
+
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
          'RUN_NAME not specified in mfix.dat',/1X,70('*')/)  
@@ -273,6 +271,7 @@
          'imax or jmax or kmax not specified in mfix.dat',/1X,70('*')/)
       END SUBROUTINE GET_DATA 
       
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CHECK_DATA_00                                          C
@@ -295,16 +294,16 @@
 !  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE CHECK_DATA_00
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
-!
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
       USE param1 
       USE compar
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -315,22 +314,23 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-!
+
 !-----------------------------------------------
-!
-      if( numPEs > 1 ) then
-        IF (NODESI .EQ. UNDEFINED_I .AND. NODESJ .EQ. UNDEFINED_I &
-	    .AND. NODESK .EQ. UNDEFINED_I) THEN
-          WRITE (*,*) ' No grid partitioning data (NODESI, NODESJ, or NODESK) in mfix.dat'
-          CALL MFIX_EXIT(myPE)
-        END IF
-      endif
-!
+
+      IF( numPEs > 1 ) then
+         IF (NODESI .EQ. UNDEFINED_I .AND. NODESJ .EQ. UNDEFINED_I &
+             .AND. NODESK .EQ. UNDEFINED_I) THEN
+            WRITE (*,*) ' No grid partitioning data ',&
+               '(NODESI, NODESJ, or NODESK) in mfix.dat'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+      ENDIF
+
       IF (NODESI .EQ. UNDEFINED_I) NODESI = 1
       IF (NODESJ .EQ. UNDEFINED_I) NODESJ = 1
       IF (NODESK .EQ. UNDEFINED_I) NODESK = 1
-!
-!
+
+
       RETURN  
       END SUBROUTINE CHECK_DATA_00
  

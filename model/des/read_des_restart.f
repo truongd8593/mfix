@@ -13,13 +13,17 @@
       USE param1      
       USE run
       USE discretelement
+      USE des_bc
 
       IMPLICIT NONE
 
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
+      INTEGER BCV    ! Loop counter for no. of DES_BCMI
+      INTEGER ALL_SZ ! Size used to allocate derived data types
 
+      LOGICAL ASSOC  ! If a derived data type is associated
 !-----------------------------------------------
 
       OPEN (UNIT=901,FILE=TRIM(RUN_NAME)//'_DES.RES',FORM='Unformatted',STATUS='unknown')
@@ -47,6 +51,43 @@
 ! J. Musser : DES boundary condition data
       READ (901) PIS
       READ (901) PEA
+
+! These arrays are allocated only if inlet exists
+      IF(DES_BCMI)THEN
+         READ (901) DES_MI_TIME
+         READ (901) MI_FACTOR
+         READ (901) MI_WINDOW
+
+         DO BCV =1, DES_BCMI
+
+            READ (901) PARTICLE_PLCMNT(BCV)
+
+            IF(PARTICLE_PLCMNT(BCV) == 'ORDR')THEN
+
+               READ (901) ASSOC
+               IF(ASSOC)THEN
+                  READ (901) ALL_SZ
+                  ALLOCATE( MI_ORDER(BCV)%VALUE( ALL_SZ ) )
+                  READ (901) MI_ORDER(BCV)%VALUE
+               ENDIF
+
+               READ (901) ASSOC
+               IF(ASSOC)THEN
+                  READ (901) ALL_SZ
+                  ALLOCATE( I_OF_MI(BCV)%VALUE( ALL_SZ ) )
+                  READ (901) I_OF_MI(BCV)%VALUE
+               ENDIF
+
+               READ (901) ASSOC
+               IF(ASSOC)THEN
+                  READ (901) ALL_SZ
+                  ALLOCATE( J_OF_MI(BCV)%VALUE( ALL_SZ ) )
+                  READ (901) J_OF_MI(BCV)%VALUE
+               ENDIF
+
+            ENDIF  
+         ENDDO
+      ENDIF
 
       END SUBROUTINE READ_DES_RESTART 
 

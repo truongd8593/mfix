@@ -115,12 +115,11 @@
       DES_BC_Y_n(:) = UNDEFINED
       DES_BC_Z_b(:) = UNDEFINED
       DES_BC_Z_t(:) = UNDEFINED
-      DES_BC_VOLFLOW_s(:) = UNDEFINED
-      DES_BC_MASSFLOW_s(:) = UNDEFINED
-      DES_BC_U_s(:) = UNDEFINED
-      DES_BC_V_s(:) = UNDEFINED
-      DES_BC_W_s(:) = UNDEFINED
+      DES_BC_VOLFLOW_s(:,:) = UNDEFINED
+      DES_BC_MASSFLOW_s(:,:) = UNDEFINED
       DES_BC_TYPE(:) = UNDEFINED_C
+      DES_BC_ROP_s(:,:) = UNDEFINED
+      FORCE_ORD_BC = .FALSE.
 
       DTSOLID = UNDEFINED
       DTSOLID_FACTOR = 0.1D0

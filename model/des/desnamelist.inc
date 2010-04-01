@@ -17,6 +17,7 @@
 ! 
 ! Used for quadtree or octree neighbor search methods
 	MQUAD_FACTOR, QLM, QLN, INIT_QUAD_COUNT,&
+!	
 ! Particle properties	
         KN, KN_W, KT_FAC, KT_W_FAC, MEW, MEW_W, & 
         DES_EN_INPUT, DES_ET_INPUT, DES_ETAT_FAC, &
@@ -32,7 +33,8 @@
         DES_PERIODIC_WALLS, DES_PERIODIC_WALLS_X,&
         DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z,&
         WALLDTSPLIT,&
-! Not presently used
+!	
+! Wall conditions not presently used
         WALLREFLECT, NON_RECT_BC,& 
 !
 ! Use either DES wall vibration parameters 
@@ -47,7 +49,8 @@
         DES_BC_Y_s, DES_BC_Y_n, &
         DES_BC_Z_b, DES_BC_Z_t, &
         DES_BC_VOLFLOW_s, DES_BC_MASSFLOW_s, &
-        DES_BC_U_s, DES_BC_V_s, DES_BC_W_s, DES_BC_TYPE, &
+        DES_BC_ROP_s, DES_BC_TYPE, &
+	FORCE_ORD_BC, &
 !
 ! DES output control information
         DEBUG_DES, FOCUS_PARTICLE,&

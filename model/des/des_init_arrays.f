@@ -1,24 +1,25 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                         C 
 !     Module name: DES_INIT_NAMELIST                                      C
-!>     Purpose: DES - initialize the des-namelist                          
+!     Purpose: DES - initialize the des-namelist                          
 !                                                                         C
 !                                                                         C
 !     Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !     Reviewer:                                          Date:            C
 !                                                                         C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!     
+    
       SUBROUTINE DES_INIT_ARRAYS
 
       USE param
       USE param1
       USE discretelement
-      Use indices
-      Use geometry
-      Use compar
-      Use physprop
+      USE indices
+      USE geometry
+      USE compar
+      USE physprop
       USE des_bc
+      USE run
       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -87,11 +88,17 @@
       YN(:) = ZERO
       ZT(:) = ZERO
 
-! J.Musser: DEM inlet/outlet      
+! J.Musser: DEM inlet/outlet
       PEA(:,:) = .FALSE.
-      DO I=1, PARTICLES
-         PEA(I,1)=.TRUE.
-      ENDDO
+! If RESTART_1, PEA will be read in from the restart file
+      IF(RUN_TYPE == 'NEW') THEN
+         DO I=1, PARTICLES
+            PEA(I,1)=.TRUE.
+         ENDDO
+      ENDIF
+      DES_BC_U_s(:) = ZERO
+      DES_BC_V_s(:) = ZERO
+      DES_BC_W_s(:) = ZERO
 
 ! T.Li : Hertzian collision model
       g_mod(:) = zero

@@ -13,11 +13,14 @@
       USE param1      
       USE discretelement
       USE run
+      USE des_bc
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
+      INTEGER BCV     ! Loop counter for no. of DES_BCMI
+      LOGICAL ASSOC   ! If a derived data type is associated
 
 !-----------------------------------------------
 
@@ -44,10 +47,46 @@
       WRITE (901) PN
       WRITE (901) PV
 
-
 ! J. Musser DES boundary condition data
       WRITE (901) PIS
       WRITE (901) PEA
+
+! These arrays are allocated only if inlet exists
+      IF(DES_MI)THEN
+         WRITE (901) DES_MI_TIME
+         WRITE (901) MI_FACTOR
+         WRITE (901) MI_WINDOW
+
+         DO BCV =1, DES_BCMI
+
+            WRITE (901) PARTICLE_PLCMNT(BCV)
+
+            IF(PARTICLE_PLCMNT(BCV) == 'ORDR')THEN
+
+               ASSOC = ASSOCIATED(MI_ORDER(BCV)%VALUE)
+               WRITE (901) ASSOC
+               IF(ASSOC)THEN
+                  WRITE (901) SIZE(MI_ORDER(BCV)%VALUE)
+                  WRITE (901) MI_ORDER(BCV)%VALUE
+               ENDIF
+
+               ASSOC = ASSOCIATED(I_OF_MI(BCV)%VALUE)
+               WRITE (901) ASSOC
+               IF(ASSOC)THEN
+                  WRITE (901) SIZE(I_OF_MI(BCV)%VALUE)
+                  WRITE (901) I_OF_MI(BCV)%VALUE
+               ENDIF
+
+               ASSOC = ASSOCIATED(J_OF_MI(BCV)%VALUE)
+               WRITE (901) ASSOC
+               IF(ASSOC)THEN
+                  WRITE (901) SIZE(J_OF_MI(BCV)%VALUE)
+                  WRITE (901) J_OF_MI(BCV)%VALUE
+               ENDIF
+
+            ENDIF  
+         ENDDO
+      ENDIF
 
       END SUBROUTINE WRITE_DES_RESTART 
 

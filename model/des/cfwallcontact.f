@@ -44,7 +44,7 @@
          OOMEGA2 = ONE/(OMEGA**2)
          A = DES_GAMMA*GRAV(2)*OOMEGA2
          ASINOMEGAT = A*SIN(OMEGA*S_TIME)
-      END IF
+      ENDIF
 
       WALLCONTACTI = 0
 
@@ -52,62 +52,62 @@
       IF(WALL.EQ.1.AND.(.NOT.DES_PERIODIC_WALLS_X)) THEN
          IF((DES_POS_NEW(L,1)-WX1).LE.DES_RADIUS(L)) THEN
             IF(DES_MO_X)THEN
-               CALL DES_MASS_OUTLET(L,'Xwe',WALLCONTACTI)
+               CALL DES_MASS_OUTLET(L,'XW',WALLCONTACTI)
             ELSE
                WALLCONTACTI = 1
             ENDIF
-         END IF
+         ENDIF
 
 ! east wall (X)
       ELSE IF(WALL.EQ.2.AND.(.NOT.DES_PERIODIC_WALLS_X)) THEN
          IF((EX2-DES_POS_NEW(L,1)).LE.DES_RADIUS(L)) THEN
             IF(DES_MO_X)THEN
-               CALL DES_MASS_OUTLET(L,'Xwe',WALLCONTACTI)
+               CALL DES_MASS_OUTLET(L,'XE',WALLCONTACTI)
             ELSE
                WALLCONTACTI = 1
             ENDIF
-         END IF
+         ENDIF
 
 ! south wall (Y)
       ELSE IF(WALL.EQ.3.AND.(.NOT.DES_PERIODIC_WALLS_Y)) THEN
          IF((DES_POS_NEW(L,2)-(BY1+ASINOMEGAT)).LE.DES_RADIUS(L)) THEN
             IF(DES_MO_Y)THEN
-               CALL DES_MASS_OUTLET(L,'Ysn',WALLCONTACTI)
+               CALL DES_MASS_OUTLET(L,'YS',WALLCONTACTI)
             ELSE
                WALLCONTACTI = 1
             ENDIF
-         END IF
+         ENDIF
 
 ! north wall (Y)
       ELSE IF(WALL.EQ.4.AND.(.NOT.DES_PERIODIC_WALLS_Y)) THEN
          IF((TY2-DES_POS_NEW(L,2)).LE.DES_RADIUS(L)) THEN
             IF(DES_MO_Y)THEN
-               CALL DES_MASS_OUTLET(L,'Ysn',WALLCONTACTI)
+               CALL DES_MASS_OUTLET(L,'YN',WALLCONTACTI)
             ELSE
                WALLCONTACTI = 1
             ENDIF
-         END IF
+         ENDIF
 
 ! bottom wall (Z)
       ELSE IF(WALL.EQ.5.AND.(.NOT.DES_PERIODIC_WALLS_Z)) THEN
          IF((DES_POS_NEW(L,3)-SZ1).LE.DES_RADIUS(L)) THEN
             IF(DES_MO_Z)THEN
-               CALL DES_MASS_OUTLET(L,'Zbt',WALLCONTACTI)
+               CALL DES_MASS_OUTLET(L,'ZB',WALLCONTACTI)
             ELSE
                WALLCONTACTI = 1
             ENDIF
-         END IF
+         ENDIF
 
 ! top wall (Z)
       ELSE IF(WALL.EQ.6.AND.(.NOT.DES_PERIODIC_WALLS_Z)) THEN
          IF((NZ2-DES_POS_NEW(L,3)).LE.DES_RADIUS(L)) THEN
             IF(DES_MO_Z)THEN
-               CALL DES_MASS_OUTLET(L,'Zbt',WALLCONTACTI)
+               CALL DES_MASS_OUTLET(L,'ZT',WALLCONTACTI)
             ELSE
                WALLCONTACTI = 1
             ENDIF
-         END IF
-      END IF
+         ENDIF
+      ENDIF
 
       RETURN
       END SUBROUTINE CFWALLCONTACT
@@ -138,38 +138,53 @@
 
 !-----------------------------------------------  
 ! Local variables
-!-----------------------------------------------  
+!-----------------------------------------------
       INTEGER NP        ! Particle ID Number
       INTEGER WC        ! Wall contact value (0: No Contact, 1: Contact)
       INTEGER BCV_I, BCV
-      CHARACTER*3 BCC   ! Boundary condition class (Xwe,Ysn,Zbt)
+
+      DOUBLE PRECISION XPOS, YPOS, ZPOS ! particle x,y,z position
+      DOUBLE PRECISION RAD ! particle radius
+ 
+      CHARACTER*2 BCC   ! Boundary condition class (Xw,Xe,Ys,Yn,Zb,Zt)
 
 !-----------------------------------------------  
 
+      RAD = DES_RADIUS(NP)
+
+      XPOS = DES_POS_NEW(NP,1) 
+      YPOS = DES_POS_NEW(NP,2)
+      IF (DIMN .EQ. 2) THEN
+         ZPOS = ONE
+      ELSE
+         ZPOS = DES_POS_NEW(NP,3)
+      ENDIF
+
+! Set the flag identifying a wall contact to 1 (contact exists).  If the
+! particle is in contact with a region of the wall that is listed as an
+! outlet for DES particles, then the wall contact is ignored by setting 
+! the flag back to zero.
       WC = 1
       
- 
-      DO BCV_I = 1, SIZE(DES_BC_MO_ID)
+! Loop over all outflow boundary conditions
+      DO BCV_I = 1, DES_BCMO
          BCV = DES_BC_MO_ID(BCV_I)
-! find which outlet boundary(s) index coincide with the passed boundary
-! condition class
+! Find which outlet boundary(s) index coincide with the passed boundary
+! condition class.
          IF(DES_MO_CLASS(BCV_I) == BCC)THEN 
 
             IF(DIMN == 2)THEN   ! 2D domain
-               IF(BCC == 'Xwe')THEN
-                  IF(DES_BC_Y_s(BCV) .LT. &
-                    (DES_POS_NEW(NP,2) - DES_RADIUS(NP)) .AND. &
-                    (DES_POS_NEW(NP,2) + DES_RADIUS(NP)) .LT. &
-                     DES_BC_Y_n(BCV))THEN
+
+               IF(BCC == 'XW' .OR. BCC == 'XE')THEN
+                  IF(DES_BC_Y_s(BCV) < (YPOS - RAD) .AND. &
+                     DES_BC_Y_n(BCV) > (YPOS + RAD) )THEN
                      WC = 0
                      PEA(NP,3) = .TRUE.
                   ENDIF
                ENDIF
-               IF(BCC == 'Ysn')THEN
-                  IF(DES_BC_X_w(BCV) .LT. &
-                    (DES_POS_NEW(NP,1) - DES_RADIUS(NP)) .AND. &
-                    (DES_POS_NEW(NP,1) + DES_RADIUS(NP)) .LT. &
-                     DES_BC_X_e(BCV))THEN
+               IF(BCC == 'YS' .OR. BCC == 'YN' )THEN
+                  IF(DES_BC_X_w(BCV) < (XPOS - RAD) .AND. &
+                     DES_BC_X_e(BCV) > (XPOS + RAD) )THEN
                      WC = 0
                      PEA(NP,3) = .TRUE.
                   ENDIF
@@ -177,41 +192,29 @@
 
             ELSE  ! 3D domain
 
-               IF(BCC == 'Xwe')THEN
-                  IF(DES_BC_Y_s(BCV) .LT. &
-                    (DES_POS_NEW(NP,2) - DES_RADIUS(NP)) .AND. &
-                    (DES_POS_NEW(NP,2) + DES_RADIUS(NP)) .LT. &
-                     DES_BC_Y_n(BCV) .AND. &
-                     DES_BC_Z_b(BCV) .LT. &
-                    (DES_POS_NEW(NP,3) - DES_RADIUS(NP)) .AND. &
-                    (DES_POS_NEW(NP,3) + DES_RADIUS(NP)) .LT. &
-                     DES_BC_Z_t(BCV))THEN
+                IF(BCC == 'XW' .OR. BCC == 'XE')THEN
+                  IF(DES_BC_Y_s(BCV) < (YPOS - RAD) .AND. &
+                     DES_BC_Y_n(BCV) > (YPOS + RAD) .AND. &
+                     DES_BC_Z_b(BCV) < (ZPOS - RAD) .AND. &
+                     DES_BC_Z_t(BCV) > (ZPOS + RAD) )THEN
                      WC = 0
                      PEA(NP,3) = .TRUE.
                   ENDIF
                ENDIF
-               IF(BCC == 'Ysn')THEN
-                  IF(DES_BC_X_w(BCV) .LT. &
-                    (DES_POS_NEW(NP,1) - DES_RADIUS(NP)) .AND. &
-                    (DES_POS_NEW(NP,1) + DES_RADIUS(NP)) .LT. &
-                     DES_BC_X_e(BCV) .AND. &
-                     DES_BC_Z_b(BCV) .LT. &
-                    (DES_POS_NEW(NP,3) - DES_RADIUS(NP)) .AND. &
-                    (DES_POS_NEW(NP,3) + DES_RADIUS(NP)) .LT. &
-                     DES_BC_Z_t(BCV))THEN
+               IF(BCC == 'YS' .OR. BCC == 'YN')THEN
+                  IF(DES_BC_X_w(BCV) < (XPOS - RAD) .AND. &
+                     DES_BC_X_e(BCV) > (XPOS + RAD) .AND. &
+                     DES_BC_Z_b(BCV) < (ZPOS - RAD) .AND. &
+                     DES_BC_Z_t(BCV) > (ZPOS + RAD) )THEN
                      WC = 0
                      PEA(NP,3) = .TRUE.
                   ENDIF
                ENDIF
-               IF(BCC == 'Zbt')THEN
-                  IF(DES_BC_X_w(BCV) .LT. &
-                    (DES_POS_NEW(NP,1) - DES_RADIUS(NP)) .AND. &
-                    (DES_POS_NEW(NP,1) + DES_RADIUS(NP)) .LT. &
-                     DES_BC_X_e(BCV) .AND. &
-                     DES_BC_Y_s(BCV) .LT. &
-                    (DES_POS_NEW(NP,2) - DES_RADIUS(NP)) .AND. &
-                    (DES_POS_NEW(NP,2) + DES_RADIUS(NP)) .LT. &
-                     DES_BC_Y_n(BCV))THEN
+               IF(BCC == 'ZB' .OR. BCC == 'ZT')THEN
+                  IF(DES_BC_X_w(BCV) < (XPOS - RAD) .AND. &
+                     DES_BC_X_e(BCV) > (XPOS + RAD) .AND. &
+                     DES_BC_Y_s(BCV) < (YPOS - RAD) .AND. &
+                     DES_BC_Y_n(BCV) > (YPOS + RAD) )THEN
                      WC = 0
                      PEA(NP,3) = .TRUE.
                   ENDIF
