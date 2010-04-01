@@ -200,7 +200,7 @@
 
       WRITE(*,'(3X,A)') '<---------- END DES_INIT_BC ----------'
 
- 1000 FORMAT(5X,'For mass inlet BC: ', I3,/,&
+ 1000 FORMAT(/5X,'For mass inlet BC: ', I3,/,&
          7X,'No. particles injected per solids time step = ', ES15.8,/,&
          7X,'PI_FACTOR = ', I,' PI_COUNT = ', I5,/,&
          7X,'start DES_MI_TIME = ', ES15.8)
@@ -737,6 +737,7 @@
       ENDDO
 
 ! Output the new data values (screen/log file)
+      WRITE(*,1249)
 ! Table Header
       WRITE(*,1250) BCV
       WRITE(*,1251) UI_VEL
@@ -769,7 +770,8 @@
       WRITE(*,"(//)")
       WRITE(UNIT_LOG,"(//)")
 
- 1250 FORMAT(//,5X,'|<--- Boundary Condition ',I2,1X,26('-'),'>|')
+ 1249 FORMAT(//,5X,'From: DES_BC_VEL_ASSIGN - ')
+ 1250 FORMAT(5X,'|<--- Boundary Condition ',I2,1X,26('-'),'>|')
  1251 FORMAT(5X,'| Uniform Inlet Velocity: ',ES11.4,18(' '),'|')
  1252 FORMAT(5X,'| Adjusted DES_BC_ROP_s Values',25(' '),'|')
  1253 FORMAT(5X,'|',54('-'),'|')
@@ -1075,12 +1077,11 @@
 
  1302 FORMAT(1X,70('*'))
 
- 1303 FORMAT(7X,' From: DES_MI_LAYOUT - ', /10X,&
-         'For mass inlet BC: ', I3,/12X,&
-         'LEN1 = ', ES17.5, ' LEN2 = ', ES17.5,&
-         ' TMP_LEN1 = ', I6, ' TMP_LEN2 = ', I6,/12X,&
-         'MAXIPV = ', ES17.5,' MINIPV = ', ES17.5,&
-         ' and PLCMNT = ',A)
+ 1303 FORMAT(5X,'From: DES_MI_LAYOUT - BC: ', I3, /7X,&
+         'LEN1 = ', ES17.5,4X, ' LEN2 = ', ES17.5,/7X,&
+         'TMP_LEN1 = ', I6,11X, ' TMP_LEN2 = ', I6,/7X,&
+         'MAXIPV = ', ES17.5,2X,' MINIPV = ', ES17.5,/7X,&
+         'PLCMNT = ',3X,A,//)
 
       RETURN
       END SUBROUTINE DES_MI_LAYOUT
