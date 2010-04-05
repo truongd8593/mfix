@@ -143,7 +143,7 @@
 !
 ! set the version.release of the software
 !
-      ID_VERSION = '2007-4'
+      ID_VERSION = '2010-1'
 
 !
 ! set automatic restart flag to false
