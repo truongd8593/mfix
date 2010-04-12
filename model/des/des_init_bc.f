@@ -282,10 +282,11 @@
 
 ! Inlet length
             LEN1 = DES_BC_X_e(BCV) - DES_BC_X_w(BCV)
-
          ENDIF
 
-         CALL DES_BC_VEL_ASSIGN(BCV,BCV_I,LEN1,ZERO,PHASE_CNT,PHASE_LIST)
+! max_dia is used for the 'depth/width' of the inlet 
+! (see des_bc_vel_assign for details)         
+         CALL DES_BC_VEL_ASSIGN(BCV,BCV_I,LEN1,MAX_DIA,PHASE_CNT,PHASE_LIST)
 
 ! This subroutine determines the pattern that the particles will need to
 ! enter the system, if any. This routine only needs to be called if a
@@ -585,7 +586,6 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-
 ! passed arguments giving index information of the boundary
       INTEGER BCV_I, BCV
 ! Number of solid phases at bc
@@ -638,11 +638,17 @@
       MAX_VEL = ZERO
 
 ! BC inlet area
-      IF(DIMN == 2) THEN
-         BCV_AREA = LEN1*ZLENGTH
-      ELSE
-         BCV_AREA = LEN1*LEN2
-      ENDIF
+! To calculate velocity based on specified mass/volumetric inflow and
+! bulk density the inlet needs to have dimension of length^2 (area).  
+! In the 2D case the depth of the inlet is taken to be the maximum
+! particle diameter which is consistent with how the criteria for
+! maximum and minimum velocity for the boundary are defined and how
+! particles are seeded for a 2D inlet (particles are seeded along a 
+! line that has a depth equal to the maximum particle diameter).  
+! Alternatively, the  depth of the inlet could be taken as zlength, 
+! but zlength is not guaranteed to be equal to the maximum particle 
+! diameter.
+      BCV_AREA = LEN1*LEN2
 
 ! Calculate the individual velocities for each solid phase
       DO MM = 1, PHASE_CNT
@@ -917,8 +923,10 @@
                WRITE(*,1300) BCV
                DO MM = 1, PHASE_CNT
                   M = PHASE_LIST(MM)
+! Even though the system is 2D, an area of the inlet is needed for
+! the following calculation.  This 'depth' is taken as max_dia.
                   MAX_ROPs = (DES_BC_VOLFLOW_s(BCV,M)*RO_s(M)) / &
-                     (MINIPV * LEN1 * ZLENGTH)
+                     (MINIPV * LEN1 *  MAX_DIA)
                   WRITE(UNIT_LOG,1301) BCV, M, MAX_ROPs
                   WRITE(*,1301) BCV, M, MAX_ROPs
                ENDDO
@@ -1132,7 +1140,7 @@
       ELSE
 ! note dx(1) = length of ghost cell (x < zero)
          I=2; LOCATION = ZERO
-         DO WHILE (LOCATION < XLENGTH)
+         DO WHILE (LOCATION <= XLENGTH)
             IF((DES_BC_X_w(BCV) >= LOCATION) .AND. &
             (DES_BC_X_w(BCV) < LOCATION + DX(I))) THEN
                GS_ARRAY(BCV_I,1) = I
@@ -1153,7 +1161,7 @@
       ELSE
 ! note dy(1) = length of ghost cell (y < zero)
          J=2; LOCATION = ZERO
-         DO WHILE (LOCATION < YLENGTH)
+         DO WHILE (LOCATION <= YLENGTH)
             IF((DES_BC_Y_s(BCV) >= LOCATION) .AND. &
             (DES_BC_Y_s(BCV) < LOCATION + DY(J))) THEN
                GS_ARRAY(BCV_I,3) = J
@@ -1176,7 +1184,7 @@
             IF(DES_BC_Z_b(BCV) == ZLENGTH) GS_ARRAY(BCV_I,5:6) = KMAX2
          ELSE
             K=2; LOCATION = ZERO
-            DO WHILE (LOCATION < ZLENGTH)
+            DO WHILE (LOCATION <= ZLENGTH)
                IF((DES_BC_Z_b(BCV) >= LOCATION) .AND. &
                (DES_BC_Z_b(BCV) < LOCATION + DZ(K))) THEN
                   GS_ARRAY(BCV_I,5) = K

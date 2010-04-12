@@ -111,7 +111,7 @@
                ENDIF
             ENDIF
 
-! Require the inlet to be on a boundary/wall of the system
+! Require the inlet/outlet to be on a boundary/wall of the system
             CALL DES_CHECK_MIO_LOCATION(BCV)
 
             DO I = 1, DIM_BCTYPE 
@@ -342,11 +342,12 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_CHECK_MIO_LOCATION                                  !
+!  Module name: DES_CHECK_MIO_LOCATION                                 !
 !                                                                      !
-!  Purpose:  This subroutine verifies that the location of the DES Mass!
-!  Inlet was specified to on a wall of the system.  If an inlet is     !
-!  located elsewhere, an error is flagged and the prgram terminated.   !
+!  Purpose: This subroutine verifies that the location of the DES mass !
+!  inlet/outlet was specified to on a wall of the system.  If an inlet !
+!  or outlet is located elsewhere, an error is flagged and the program !
+!  terminated.                                                         !
 !                                                                      !
 !  Author: J.Musser                                   Date: 17-Aug-09  !
 !                                                                      !
@@ -393,18 +394,18 @@
          IF(DES_BC_X_w(BCV) == DES_BC_X_e(BCV) .AND. &
             DES_BC_Y_s(BCV) == DES_BC_Y_n(BCV)) THEN
             WRITE (UNIT_LOG, 1101)&
-            'DES mass inlet must larger than a single point.',BCV
+            'DES mass inlet/outlet must larger than a single point.',BCV
             WRITE (*, 1101)&
-            'DES mass inlet must larger than a single point.',BCV
+            'DES mass inlet/outlet must larger than a single point.',BCV
             CALL MFIX_EXIT(myPE)
          ENDIF
 ! Require the inlet be an edge in 2D not a plane
          IF(DES_BC_X_w(BCV) /= DES_BC_X_e(BCV) .AND. &
             DES_BC_Y_s(BCV) /= DES_BC_Y_n(BCV)) THEN
             WRITE (UNIT_LOG, 1101)&
-            'For DIMN=2, DES mass inlet cannot be an area.',BCV
+            'For DIMN=2, DES mass inlet/outlet cannot be an area.',BCV
             WRITE (*, 1101)&
-            'For DIMN=2, DES mass inlet cannot be an area.',BCV
+            'For DIMN=2, DES mass inlet/outlet cannot be an area.',BCV
             CALL MFIX_EXIT(myPE)
          ENDIF
 
@@ -494,7 +495,7 @@
             ENDIF
          ENDIF
 
-      ENDIF ! end if dimn == 2 
+      ENDIF ! end if dimn == 2 / else
 
 
 ! The following checks target potential bc problems in 3D systems   
@@ -504,9 +505,9 @@
          DES_BC_Z_b(BCV) == DES_BC_Z_t(BCV))THEN
 ! Prohibit point-based mass inlet
          WRITE (UNIT_LOG, 1101)&
-         'DES mass inlet must larger than a single point.',BCV
+         'DES mass inlet/outlet must larger than a single point.',BCV
          WRITE (*, 1101)&
-         'DES mass inlet must larger than a single point.',BCV
+         'DES mass inlet/outlet must larger than a single point.',BCV
          CALL MFIX_EXIT(myPE)
       ENDIF
       IF(DES_BC_X_w(BCV) /= DES_BC_X_e(BCV) .AND. &
@@ -514,9 +515,9 @@
          DES_BC_Z_b(BCV) /= DES_BC_Z_t(BCV))THEN
 ! Prohibit volume-based mass inlet
          WRITE (UNIT_LOG, 1101)&
-         'For DIMN=3, DES mass inlet cannot be a volume.',BCV
+         'For DIMN=3, DES mass inlet/outlet cannot be a volume.',BCV
          WRITE (*, 1101)&
-         'For DIMN=3, DES mass inlet cannot be a volume.',BCV
+         'For DIMN=3, DES mass inlet/outlet cannot be a volume.',BCV
          CALL MFIX_EXIT(myPE)
       ENDIF
 
@@ -540,9 +541,9 @@
             .OR. (DES_BC_Y_s(BCV) == YLENGTH .AND. DES_BC_Z_b(BCV) == ZLENGTH))))THEN
 ! Prohibit DES mass inlet along domain edges
          WRITE (UNIT_LOG, 1101)&
-         'DES mass inlet cannot be positioned in a corner.',BCV
+         'DES mass inlet/outlet cannot be positioned in a corner.',BCV
          WRITE (*, 1101)&
-         'DES mass inlet cannot be positioned in a corner.',BCV
+         'DES mass inlet/outlet cannot be positioned in a corner.',BCV
          CALL MFIX_EXIT(myPE)
       ENDIF
 
