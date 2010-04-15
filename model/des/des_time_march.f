@@ -61,6 +61,10 @@
       DOUBLE PRECISION TMP_DTS, DTSOLID_TMP 
       CHARACTER*5 FILENAME
 
+!     Temporary variables used for reporting the maximum overlap when
+!     pure granular simulation
+      INTEGER TMP_FACTOR, TMP_INCMT
+
 !     Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 
@@ -171,6 +175,16 @@
          WRITE(*,'(3X,A,X,I)') 'int(dt/dtsolid) =', nint(dt/dtsolid)
       ELSE
          FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID)) 
+         IF (FACTOR >= 1000) THEN
+! will report overlap/neighbor ~1000 times over the course of the dem
+! simulation
+            TMP_INCMT = INT(FACTOR/1000)
+         ELSE
+! will report overlap/neighbor every 100 solid time steps in dem
+            TMP_INCMT = 100
+         ENDIF
+         TMP_FACTOR = TMP_INCMT         
+
          WRITE(*,'(1X,A)')&
             '---------- START DES_TIME_MARCH ---------->'
          WRITE(*,'(3X,A,X,I,X,A)') &
@@ -330,11 +344,15 @@
             ENDDO
          ENDIF
 
-         IF (NN .EQ. FACTOR) &
+         IF (NN .EQ. FACTOR .OR. &
+             (.NOT.DES_CONTINUUM_COUPLED .AND. NN .EQ. TMP_FACTOR) ) THEN
             WRITE(*,'(3X,A,I,A,/,5X,A,X,I5,2X,A,X,ES15.7)') &
                'For loop ', NN, ' :',&
                'MAX number of neighbors =',NEIGH_MAX,&
                'and MAX percent overlap =', OVERLAP_MAX
+            IF(.NOT.DES_CONTINUUM_COUPLED) &
+               TMP_FACTOR = TMP_FACTOR + TMP_INCMT
+         ENDIF
 
       ENDDO     ! end do NN = 1, FACTOR
 
