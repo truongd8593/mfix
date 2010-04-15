@@ -34,8 +34,10 @@
       INTEGER I, J, K, IJK
 ! 
       INTEGER M, NP, NPG, LL
-! temporary variable for granular temperature      
-      DOUBLE PRECISION  TEMP
+! counter for no. of particles in phase m      
+      INTEGER NPG_PHASE(MMAX)
+! temporary variable for mth phase granular temperature
+      DOUBLE PRECISION TEMP(MMAX)
 ! accounted for particles
       INTEGER PC             
 ! squared particle velocity v.v
@@ -47,12 +49,12 @@
       INCLUDE 'fun_avg2.inc'
 
 
-! Calculate a local granular temperature for current instant of time.
-! Note that the definition of granular temperature below is that of a 
-! species granular temperature wwhere the flutuating particle velocity 
-! is taken as the difference between a particles velocity and the 
-! corresponding local mean particle velocity of that species evaluated
-! during the same instant
+! Calculate a local species granular temperature for current instant of
+! time.  Note that the following calculation of species granular
+! temperature employes a fluctuating particle velocity that is defined
+! as the difference between a particles velocity and the corresponding
+! local mean velocity of that particles species evaluated at the same
+! instant of time.
 !------------------------------------- 
 ! loop over all fluid cells      
       DO IJK = IJKSTART3, IJKEND3
@@ -64,19 +66,33 @@
 ! loop over all particles in ijk fluid cell            
             IF (ASSOCIATED(PIC(I,J,K)%p)) THEN
                NPG = SIZE(PIC(I,J,K)%p)
-                      
-               TEMP = ZERO
+               TEMP(:) = ZERO
+               NPG_PHASE(:) = ZERO
+
                DO LL = 1, NPG 
                   NP = PIC(I,J,K)%p(LL)
                   M = PIJK(NP,5)
+                  NPG_PHASE(M) = NPG_PHASE(M) + 1
             
-                  TEMP = TEMP + (DES_VEL_NEW(NP,1)-DES_U_s(IJK,M))**2 
-                  TEMP = TEMP + (DES_VEL_NEW(NP,2)-DES_V_s(IJK,M))**2
+                  TEMP(M) = TEMP(M) + &
+                     (DES_VEL_NEW(NP,1)-DES_U_s(IJK,M))**2 
+                  TEMP(M) = TEMP(M) + &
+                     (DES_VEL_NEW(NP,2)-DES_V_s(IJK,M))**2
                   IF(DIMN.EQ.3) THEN 
-                     TEMP = TEMP + (DES_VEL_NEW(NP,3)-DES_W_s(IJK,M))**2 
+                     TEMP(M) = TEMP(M) + &
+                        (DES_VEL_NEW(NP,3)-DES_W_s(IJK,M))**2 
                   ENDIF
                ENDDO
-               DES_THETA(IJK,M) = TEMP/(DBLE(DIMN) * DBLE(NPG))
+
+               DO M = 1,MMAX
+                  IF (NPG_PHASE(M) > 0 ) THEN
+                     DES_THETA(IJK,M) = TEMP(M)/&
+                        DBLE(DIMN*NPG_PHASE(M))
+                  ELSE
+                     DES_THETA(IJK,M) = ZERO
+                  ENDIF 
+               ENDDO
+
             ENDIF
          ENDIF
       
@@ -95,9 +111,8 @@
 !      ENDDO
 
 
-! Calculate global quantities: granular temperature, 
-! kinetic energy, potential energy and average velocity
-! at current instant of time      
+! Calculate global quantities: granular temperature, kinetic energy,
+! potential energy and average velocity at the current instant of time
 !-------------------------------------
 
 ! initialization for calculations
