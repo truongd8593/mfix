@@ -175,7 +175,7 @@
          WRITE(*,'(3X,A,X,I)') 'int(dt/dtsolid) =', nint(dt/dtsolid)
       ELSE
          FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID)) 
-         IF (FACTOR >= 1000) THEN
+         IF (FACTOR >= 10000) THEN
 ! will report overlap/neighbor ~1000 times over the course of the dem
 ! simulation
             TMP_INCMT = INT(FACTOR/1000)
