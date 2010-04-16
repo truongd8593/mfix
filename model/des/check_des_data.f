@@ -510,7 +510,7 @@
  1037 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
           'The neighbor search grid is too fine in the ',A, &
           '-direction',/10X,'with a particle diameter > ',A, &
-          'length/dessearchgrid_',A,'max. This will',/10X,'create ',&
+          'length/desgridsearch_',A,'max. This will',/10X,'create ',&
           'problems for the search method and detecting neighbors',/10X,&
           'Decrease desgridsearch_',A,'max in mfix.dat to coarsen ',&
           'grid.',/1X,70('*')/)
