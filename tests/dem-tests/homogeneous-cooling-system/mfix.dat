@@ -1,0 +1,189 @@
+#                                                                               
+#  Particles in a 3D periodic box using des_neighbor_search option 4 
+#            
+
+
+# Run-control section
+  RUN_NAME = 'des_gb' 
+  DESCRIPTION = 'homogeneous cooling system'
+  RUN_TYPE = 'new'
+  UNITS = 'cgs'
+  TIME  = 0.0
+  TSTOP = 5.0
+  DT = 1.0e-4
+  DT_MAX = 2E-4
+
+  ENERGY_EQ = .FALSE.
+  SPECIES_EQ = .FALSE.    .FALSE.    ! solve species equations for phase m  
+  MOMENTUM_X_EQ(1) = .FALSE.   ! solve momentum equations for phase m
+  MOMENTUM_Y_EQ(1) = .FALSE.
+  MOMENTUM_Z_EQ(1) = .FALSE.
+
+# Numeric Section
+  MAX_NIT = 500
+  DISCRETIZE = 9*2
+  DEF_COR  = .TRUE.
+  LEQ_IT = 9*100
+  LEQ_TOL = 9*1E-6
+  TOL_RESID = 1.0E-3
+
+
+# Geometry Section
+  COORDINATES = 'Cartesian'
+  XLENGTH  = 8.0    IMAX = 5
+  YLENGTH  = 8.0    JMAX = 5
+  ZLENGTH  = 8.0    KMAX = 5
+!  NO_K     = .TRUE.
+
+  CYCLIC_X = .TRUE.
+  CYCLIC_Y = .TRUE.
+  CYCLIC_Z = .TRUE.
+
+# Gas-phase Section
+  RO_g0 = 0.0  !1.3E-3
+  MU_g0 = 1.8E-4
+
+
+# Solids-phase Section
+  MMAX    = 1
+  RO_s    = 1.0 
+  D_p0    = 1.0
+  e       = 0.9   ! this must be defined even for DEM simulation, however,
+                  ! the values of des_en_input are used to define the restitution
+                  ! coefficient(s) in DEM cases
+  Phi     = 30.0
+  EP_star = 0.42               
+
+
+# Initial Conditions Section
+       !              
+  IC_X_w(1)         =   0.0
+  IC_X_e(1)         =   8.0
+  IC_Y_s(1)         =   0.0
+  IC_Y_n(1)         =   8.0
+  IC_Z_b(1)         =   0.0
+  IC_Z_t(1)         =   8.0 
+  IC_EP_g(1)        =   1.0
+
+  IC_U_g(1)         =   0.0
+  IC_V_g(1)         =   1.0
+  IC_W_g(1)         =   0.0
+  IC_U_s(1,1)       =   0.0  
+  IC_V_s(1,1)       =   0.0
+  IC_W_s(1,1)       =   0.0  
+  IC_P_g(1)         =   1.013E6
+  IC_T_g(1)         = 273. 
+
+
+# Boundary Conditions Section
+  ! Flow boundary conditions
+       !               Top
+!  BC_X_w            =   0.0
+!  BC_X_e            =   8.0
+!  BC_Y_s            =   8.0
+!  BC_Y_n            =   8.0
+!  BC_TYPE           =  'PO'
+
+!  BC_EP_g           =   1.0
+!  BC_P_g            =   1.013E6
+
+  ! Wall boundary conditions
+       !              bottom
+!  BC_X_w(2)         =  0.0 
+!  BC_X_e(2)         =  8.0
+!  BC_Y_s(2)         =  0.0 
+!  BC_Y_n(2)         =  0.0
+!  BC_TYPE(2)        =  'FSW' 
+
+!  BC_JJ_PS(2)       = 0
+!  BC_Uw_g(2)        = 0.0 
+!  BC_Vw_g(2)        = 0.0 
+!  BC_Ww_g(2)        = 0.0
+!  !BC_hw_g(2)       = 0.0
+!  BC_Uw_s(2,1)      = 0.0   
+!  BC_Vw_s(2,1)      = 0.0
+!  BC_Ww_s(2,1)      = 0.0 
+!  BC_hw_s(2,1)      = 0.0
+
+
+# Output Control
+  OUT_DT  = 10.    ! interval at which start output (.OUT) file is written (every xx s)
+  RES_DT  = 0.01   ! interval at which restart (.RES) file is updated (every xx s) 
+  NLOG    = 100    ! Interval at which .LOG file is written (every xx time steps)
+
+! Interval at which .SPX files are updated.
+  SPX_DT(1)                    = 0.001      ! Void fraction (EP_g)
+  SPX_DT(2)                    = 0.1       ! Gas and solids pressure (P_g, P_star)
+  SPX_DT(3)                    = 0.1       ! Gas velocity (U_g, V_g, W_g)
+  SPX_DT(4)                    = 0.1       ! Solids velocity (U_s, V_s, W_s)
+  SPX_DT(5)                    = 100.0     ! Solids density (ROP_s)
+  SPX_DT(6)                    = 100.0     ! Gas and solids temp. (T_g, T_s1, T_s2)
+  SPX_DT(7)                    = 100.0     ! Gas and solids mass fractions (X_g, X_s)
+  SPX_DT(8)                    = 0.1       ! Granular Temperature (G)
+  SPX_DT(9)                    = 100.0     ! User defined scalars
+
+  FULL_LOG  = .TRUE.   ! display residuals on screen
+  RESID_STRING = 'P0' 'U0' 'V0' ! display residuals
+
+
+# DMP control
+  NODESI = 1   NODESJ = 1   NODESK = 1
+  !LEQ_PC = 'NONE'
+
+# DES
+  DISCRETE_ELEMENT = .TRUE. 
+  !DES_INTERP_ON = .TRUE.       ! [default=.false.]
+  !DES_CONTINUUM_COUPLED = .T.  ! [default=.false.]
+  WALLDTSPLIT = .TRUE.          ! [default=.false.] (must be true for DEM)
+  TSUJI_DRAG = .F.              ! [default=.false.] (only used for coupled case)
+                                ! specific to syam_obrien drag model
+  NFACTOR = 500    ! no. time steps for system settling before real sim 
+                   ! only relevant when coupled
+  
+  DIMN = 3
+  GRAVITY=0.0d0
+
+  PARTICLES = 195 
+  !PVEL_STDev = 2.236d0
+
+  DES_PERIODIC_WALLS   = .TRUE.
+  DES_PERIODIC_WALLS_X = .TRUE.
+  DES_PERIODIC_WALLS_Y = .TRUE.
+  DES_PERIODIC_WALLS_Z = .TRUE.
+  DES_NEIGHBOR_SEARCH =  4    ! Particle neighbor search method: [1]=n-square;
+                              ! 2=quadtree; 3=octree; 4=cell based grid search
+
+! the following are only used when des_neighbor_search=4 and are used to fine
+! the grid mesh used for the neighbor search
+  DESGRIDSEARCH_IMAX = 3    ! no. of i (x) cells on neighbor search grid 
+  DESGRIDSEARCH_JMAX = 3    ! no. of j (y) cells
+  DESGRIDSEARCH_KMAX = 3    ! no. of k (z) cells
+
+  NEIGHBOR_SEARCH_N  = 3    ! ~Maximum number of steps through DEM stage until 
+                            ! a neighbor search is performed [default=25]
+
+  MN = 20    ! Maximum number of neighbors allowed per particle [ default=20]
+
+
+  KN       = 1.0D6       ! Normal inter-particle collision spring constant
+  KT_FAC   = @(2/7)      ! Tangential spring factor = KT/KN  [2/7]
+
+  KN_W     = 1.0D6       ! Normal particle-wall collision spring constant
+  KT_W_FAC = @(2/7)      ! Tangential spring factor = KT_W/KN_W [2/7]
+
+  MEW      = 0.0         ! Inter-particle friction coeffienct
+  MEW_W    = 0.0         ! Particle-wall friction coefficient
+
+  DES_EN_INPUT      = 1.0     ! particle-particle rest coef
+  DES_ETAT_FAC      = @(1/2)  ! damping coefficient factor = ETAN/ETAT [1/2]
+
+  DES_EN_WALL_INPUT = 1.0     ! particle-wall rest coef
+  DES_ETAT_W_FAC    = @(1/2)  ! damping coefficient factor = ETAN_W/ETAT_W [1/2]
+
+
+  PRINT_DES_DATA = .TRUE.    ! Whether to print DEM output [default=.FALSE.]
+  DES_SPX_DT = 0.1    ! Time interval to print DEM output for pure DEM sims
+                      ! spx_dt(1) controls frequency of dem output for coupled sims
+  DES_RES_DT = 0.1
+
+ 
