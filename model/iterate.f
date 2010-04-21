@@ -356,7 +356,7 @@
 !     solved
 !
       IF(.NOT.DISCRETE_ELEMENT) THEN
-        IF (MMAX > 0) CALL CALC_P_STAR (EP_G, P_STAR, IER) 
+        IF (MMAX > 0 .AND. .NOT.FRICTION) CALL CALC_P_STAR (EP_G, P_STAR, IER) 
       END IF
 !
 !     Calculate the face values of densities.
