@@ -82,6 +82,14 @@
          CALL MFIX_EXIT(myPE)         
       ENDIF
 
+! Check the output file format 
+      IF (DES_OUTPUT_TYPE /= UNDEFINED_C) THEN
+         IF(TRIM(DES_OUTPUT_TYPE) /= 'TECPLOT') THEN
+            WRITE (*, 1038)
+            CALL MFIX_EXIT(myPE)   
+         ENDIF
+      ENDIF
+
       IF(DES_PERIODIC_WALLS) THEN
          IF(.NOT.DES_PERIODIC_WALLS_X .AND. .NOT.DES_PERIODIC_WALLS_Y .AND. &
             .NOT.DES_PERIODIC_WALLS_Z) THEN
@@ -514,5 +522,9 @@
           'problems for the search method and detecting neighbors',/10X,&
           'Decrease desgridsearch_',A,'max in mfix.dat to coarsen ',&
           'grid.',/1X,70('*')/)
+  
+ 1038 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+          'The only option for DES_OUTPUT_DATA is TECPLOT',&
+          /1X,70('*')/)
 
          END SUBROUTINE CHECK_DES_DATA

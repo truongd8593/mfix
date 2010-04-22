@@ -26,8 +26,11 @@
 ! value of spx_dt(1) and res_dt
       DOUBLE PRECISION DES_SPX_DT, DES_RES_DT
 
-! If true, then DEM output data is written in tecplot format
-      LOGICAL :: DEM_OUTPUT_DATA_TECPLOT 
+! This specifies the file type used for outputting DES data
+! options are :      
+!    TECPLOT - data is written in Tecplot format
+!    undefined - data is written in ParaView format (default)
+      CHARACTER*64 DES_OUTPUT_TYPE
 
 ! Used sporadically to control screen dumps (for debug purposes)
       LOGICAL :: DEBUG_DES
@@ -35,14 +38,10 @@
 ! Single particle no. index that is followed if debugging
       INTEGER FOCUS_PARTICLE
 
-! Output file count for .vtp type files; used to label .vtp file names in
-! sequential order and is saved so restarts begin at the correct count
-      INTEGER IFI
-
-! File units     
-      INTEGER, PARAMETER :: DES_EXTRA_UNIT = 2000, DES_VOLFRAC_UNIT = 2001
-
-
+! Output file count for .vtp type files and for tecplot files;
+! for vtp output used to label .vtp file names in sequential order
+! and is saved so restarts begin at the correct count
+      INTEGER VTP_FINDEX, TECPLOT_FINDEX
 
 ! Total number of particles in simulation 
       INTEGER PARTICLES
