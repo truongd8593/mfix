@@ -368,8 +368,9 @@
                DO WHILE (TOUCHING)
 ! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV)
                   CALL RANDOM_NUMBER(RAND1)
-                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND1*&
-                     (DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV))
+                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + DES_RADIUS(NP) +&
+                     RAND1*(DES_BC_Y_n(BCV)-DES_BC_Y_s(BCV) -&
+                     DES_RADIUS(NP)*2.0d0)
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, BCV_I, TOUCHING)
                ENDDO
@@ -401,9 +402,12 @@
                DO WHILE (TOUCHING)
 ! Obtain a random number from (0,1]
                   CALL RANDOM_NUMBER(RAND1)
-! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV)
-                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND1*&
-                     (DES_BC_Y_n(BCV)-DES_BC_Y_s(BCV))
+! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV) and ensure
+! that the particle center will be placed a radius away from either edge
+! of the inlet
+                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + DES_RADIUS(NP) +&
+                     RAND1*(DES_BC_Y_n(BCV)-DES_BC_Y_s(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, BCV_I, TOUCHING)
                ENDDO
@@ -435,9 +439,12 @@
                DO WHILE (TOUCHING)
 ! Obtain a random number from (0,1]
                   CALL RANDOM_NUMBER(RAND1)
-! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV)
-                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND1*&
-                     (DES_BC_X_e(BCV) - DES_BC_X_w(BCV))
+! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV) and ensure
+! that the particle center will be placed a radius away from either edge
+! of the inlet
+                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + DES_RADIUS(NP) +&
+                     RAND1*(DES_BC_X_e(BCV) - DES_BC_X_w(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, BCV_I, TOUCHING)
                 ENDDO
@@ -469,9 +476,12 @@
                DO WHILE (TOUCHING)
 ! Obtain a random number from (0,1]
                   CALL RANDOM_NUMBER(RAND1)
-! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV)
-                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND1*&
-                     (DES_BC_X_e(BCV) - DES_BC_X_w(BCV))
+! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV) and ensure
+! that the particle center will be placed a radius away from either edge
+! of the inlet
+                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + DES_RADIUS(NP) +&
+                     RAND1*(DES_BC_X_e(BCV) - DES_BC_X_w(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, BCV_I, TOUCHING)
                ENDDO
@@ -504,12 +514,16 @@
 ! Obtain a random number from (0,1]
                   CALL RANDOM_NUMBER(RAND1)
                   CALL RANDOM_NUMBER(RAND2)
-! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV)
-                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV)+ RAND1*&
-                     (DES_BC_X_e(BCV) - DES_BC_X_w(BCV))
+! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV) and ensure
+! that the particle center will be placed a radius away from either edge
+! of the inlet
+                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV)+ DES_RADIUS(NP) +&
+                     RAND1*(DES_BC_X_e(BCV) - DES_BC_X_w(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Place randomly between DES_BC_Z_b(BCV) and DES_BC_Z_t(BCV)
-                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + RAND2*&
-                     (DES_BC_Z_t(BCV) - DES_BC_Z_b(BCV))
+                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + DES_RADIUS(NP) +&
+                     RAND2*(DES_BC_Z_t(BCV) - DES_BC_Z_b(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, BCV_I, TOUCHING)
                ENDDO
@@ -551,12 +565,16 @@
 ! Obtain a random number from (0,1]
                   CALL RANDOM_NUMBER(RAND1)
                   CALL RANDOM_NUMBER(RAND2)
-! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV)
-                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND1*&
-                     (DES_BC_X_e(BCV) - DES_BC_X_w(BCV))
+! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV) and ensure
+! that the particle center will be placed a radius away from either edge
+! of the inlet
+                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + DES_RADIUS(NP) +&
+                     RAND1*(DES_BC_X_e(BCV) - DES_BC_X_w(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Place randomly between DES_BC_Z_b(BCV) and DES_BC_Z_t(BCV)
-                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + RAND2*&
-                     (DES_BC_Z_t(BCV) - DES_BC_Z_b(BCV))
+                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + DES_RADIUS(NP) +&
+                     RAND2*(DES_BC_Z_t(BCV) - DES_BC_Z_b(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, BCV_I, TOUCHING)
                ENDDO
@@ -599,12 +617,16 @@
 ! Obtain a random number from (0,1]
                   CALL RANDOM_NUMBER(RAND1)
                   CALL RANDOM_NUMBER(RAND2)
-! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV)
-                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND1*&
-                     (DES_BC_X_e(BCV) - DES_BC_X_w(BCV))
+! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV) and ensure
+! that the particle center will be placed a radius away from either edge
+! of the inlet
+                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + DES_RADIUS(NP) +&
+                     RAND1*(DES_BC_X_e(BCV) - DES_BC_X_w(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV)
-                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND2*&
-                     (DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV))
+                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + DES_RADIUS(NP) +&
+                     RAND2*(DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, BCV_I, TOUCHING)
                ENDDO
@@ -647,12 +669,16 @@
 ! Obtain a random number from (0,1]
                   CALL RANDOM_NUMBER(RAND1)
                   CALL RANDOM_NUMBER(RAND2)
-! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV)
-                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + RAND1*&
-                     (DES_BC_X_e(BCV) - DES_BC_X_w(BCV))
+! Place randomly between DES_BC_X_w(BCV) and DES_BC_X_e(BCV) and ensure
+! that the particle center will be placed a radius away from either edge
+! of the inlet
+                  DES_POS_OLD(NP,1) = DES_BC_X_w(BCV) + DES_RADIUS(NP) +&
+                     RAND1*(DES_BC_X_e(BCV) - DES_BC_X_w(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV)
-                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND2*&
-                     (DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV))
+                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + DES_RADIUS(NP) +&
+                     RAND2*(DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, BCV_I, TOUCHING)
                ENDDO
@@ -695,12 +721,16 @@
 ! Obtain a random number from (0,1]
                   CALL RANDOM_NUMBER(RAND1)
                   CALL RANDOM_NUMBER(RAND2)
-! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV)
-                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND1*&
-                     (DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV))
+! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV) and ensure
+! that the particle center will be placed a radius away from either edge
+! of the inlet
+                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + DES_RADIUS(NP) +&
+                     RAND1*(DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Place randomly between DES_BC_Z_b(BCV) and DES_BC_Z_t(BCV)
-                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + RAND2*&
-                     (DES_BC_Z_t(BCV) - DES_BC_Z_b(BCV))
+                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + DES_RADIUS(NP) +&
+                     RAND2*(DES_BC_Z_t(BCV) - DES_BC_Z_b(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, BCV_I, TOUCHING)
                ENDDO
@@ -743,12 +773,16 @@
 !  Obtain a random number from (0,1]
                   CALL RANDOM_NUMBER(RAND1)
                   CALL RANDOM_NUMBER(RAND2)
-! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV)
-                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + RAND1*&
-                     (DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV))
+! Place randomly between DES_BC_Y_s(BCV) and DES_BC_Y_n(BCV) and ensure
+! that the particle center will be placed a radius away from either edge
+! of the inlet
+                  DES_POS_OLD(NP,2) = DES_BC_Y_s(BCV) + DES_RADIUS(NP) +&
+                     RAND1*(DES_BC_Y_n(BCV) - DES_BC_Y_s(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Place randomly between DES_BC_Z_b(BCV) and DES_BC_Z_t(BCV)
-                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + RAND2*&
-                     (DES_BC_Z_t(BCV) - DES_BC_Z_b(BCV)) 
+                  DES_POS_OLD(NP,3) = DES_BC_Z_b(BCV) + DES_RADIUS(NP) +&
+                     RAND2*(DES_BC_Z_t(BCV) - DES_BC_Z_b(BCV) -&
+                     2.0d0*DES_RADIUS(NP))
 ! Test that no new particles are touching
                   CALL DES_NEW_PARTICLE_TEST(NP, BCV_I, TOUCHING)
                ENDDO
