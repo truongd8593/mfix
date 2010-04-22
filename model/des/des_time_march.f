@@ -191,10 +191,10 @@
          ENDIF
       ENDIF   ! end if/else (des_continuum_coupled)
 
+      IF (DES_CONTINUUM_COUPLED) DES_SPX_DT = SPX_DT(1)
       IF (RUN_TYPE .EQ. 'NEW') THEN
          DES_TMP_TIME = S_TIME
       ELSE
-         IF (DES_CONTINUUM_COUPLED) DES_SPX_DT = SPX_DT(1)
          DES_TMP_TIME = ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) +1 ) *&
             DES_SPX_DT
       ENDIF
@@ -344,7 +344,8 @@
          ENDIF
 
          IF ( (S_TIME+0.1d0*DTSOLID >= DES_TMP_TIME) .OR. &
-              (S_TIME+0.1d0*DTSOLID >= TSTOP) .OR. &          
+              ( (S_TIME+0.1d0*DTSOLID >= TSTOP) .AND. &
+               (.NOT.DES_CONTINUUM_COUPLED) ) .OR. &          
               (NN .EQ. FACTOR) ) THEN
             DES_TMP_TIME = ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) &
                + 1 )*DES_RES_DT
