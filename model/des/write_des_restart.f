@@ -88,6 +88,8 @@
             ENDIF  
          ENDDO
       ENDIF
+ 
+      CLOSE(901)
 
       END SUBROUTINE WRITE_DES_RESTART 
 
