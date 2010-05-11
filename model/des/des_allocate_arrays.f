@@ -137,12 +137,16 @@
 ! some value is needed to calculate the number of particles
             IF (DZ(1) == UNDEFINED .AND. ZLENGTH == UNDEFINED) THEN
                IF (MAX_DIAM .EQ. ZERO) MAX_DIAM = ONE ! for calculations
-               WRITE(*,'(5X,A,A,/11X,A,A,ES15.7,/11X,A,A,/11X,A,A,/)') &
+               WRITE(*,'(5X,A,A,/11X,A,A,ES15.7,/11X,A,A,/11X,A,/)') &
                   'NOTE: neither zlength or dz(1) were specified ',&
-                  'so a depth equal','to the maximum particle ',&
-                  'diameter of ', MAX_DIAM, 'is temporarily used ',&
-                  'to provide a basis','for calculating ', &
-                  'the number of particles in the system'
+                  'so ZLENGTH is being set','to the maximum particle ',&
+                  'diameter of ', MAX_DIAM, 'to provide a basis ',&
+                  'for calculating the number of particles',&
+                  'in the system'
+! set zlength to ensure consistency with calculations later on especially 
+! when conducting coupled simulations when zlength/dz(1) are not set in 
+! the mfix.dat file
+               ZLENGTH = MAX_DIAM 
                VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*MAX_DIAM
             ELSEIF (DZ(1) == UNDEFINED) THEN
                WRITE(*,'(5X,A,G15.8,A,/11X,A,A,/11X,A,/)') &
