@@ -56,15 +56,15 @@
 !  Reviewer: Rahul Garg                               Dare: 01-Aug-07
 !  Comments: Added one more output file containing averaged bed height
 !     
-! NOTE: If the system starts with zero particles, ParaView may have
-! trouble showing the results. To view the results in the current
-! version of ParaView, Version 3.6.1:
-!   i - load the *.vtp files
-!  ii - filter with glyph (Filters > Common > Glyph)
-!       a - change glyph to sphere
-!       b - change scale mode to scalar
-!       c - check the "Edit" Set Scale Factor Box
-!       d - change the value to 1.0
+!  NOTE: If the system starts with zero particles, ParaView may have
+!  trouble showing the results. To view the results in the current
+!  version of ParaView, Version 3.6.1:
+!    i - load the *.vtp files
+!   ii - filter with glyph (Filters > Common > Glyph)
+!        a - change glyph to sphere
+!        b - change scale mode to scalar
+!        c - check the "Edit" Set Scale Factor Box
+!        d - change the value to 1.0
 !     
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       SUBROUTINE WRITE_DES_VTP
@@ -86,24 +86,24 @@
 !-----------------------------------------------
       INTEGER, PARAMETER :: DES_UNIT = 2000  ! ParaView *.vtp data
 
-! Logicals used for testing is the data files already exist 
+! logical used for testing is the data files already exist 
       LOGICAL :: F_EXISTS
 
-! Output file for bed height calculations
+! output file for bed height calculations
       CHARACTER*50     :: FNAME_BH
       INTEGER, PARAMETER :: BH_UNIT = 2010  ! bed height data
 
-! This logical identifies that a data file has been created and
-! already opened.
+! logical that identifies that a data file has been created and
+! already opened
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 
-! Index used when writing DES_*.vtp file
+! index used when writing DES_*.vtp file
       CHARACTER*5 F_INDEX
 
 ! index to track accounted for particles
       INTEGER PC
 
-! Dummy index values
+! dummy index values
       INTEGER L, I, J, K, M, IJK
 
 ! dummy values to maintain format for dimn=2
@@ -361,36 +361,36 @@
       INTEGER, PARAMETER :: DES_EX   = 2002  ! Tecplot extra data
       INTEGER, PARAMETER :: DES_EPS  = 2003  ! Tecplot solids fraction
 
-! This logical identifies that the data files have been created and
-! already opened.
+! logical that identifies that the data files have been created and
+! already opened
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 
-! Logicals used for testing is the data files already exist and/or
-! if the file is currently open.
+! logical used for testing is the data files already exist and/or
+! if the file is currently open
       LOGICAL :: F_EXISTS
 
-! Output file for basic DES variables including: position, velocity,
+! output file for basic DES variables including: position, velocity,
 ! radius, density, mark (flag)
       CHARACTER*50     :: FNAME_DATA
 
-! Output file for extra DES variables including:
+! output file for extra DES variables including:
 ! solids time (S_TIME), maximum neighbor count, maximum overlap
 ! granular energy and granular temperature
       CHARACTER*50     :: FNAME_EXTRA
 
-! Output file for axial solids volume fraction and granular temp
+! output file for axial solids volume fraction and granular temp
       CHARACTER*50     :: FNAME_EPS
 
-! Tmp character value
+! tmp character value
       CHARACTER*150    :: TMP_CHAR
 
-! Dummy indices
+! dummy indices
       INTEGER L, I, J, K, M, IJK 
 
-! Index to track accounted for particles
+! index to track accounted for particles
       INTEGER PC
 
-! Tmp variables for calculationsof axial solids volume fraction, and
+! tmp variables for calculations of axial solids volume fraction, and
 ! granular temperature
       DOUBLE PRECISION :: AVG_EPS(JMAX2, MMAX), AVG_THETA(JMAX2, MMAX)
 
@@ -416,7 +416,7 @@
 ! create the files or flag with errors and exit.
                  
 
-! Check"RUN_NAME"_DES_DATA.dat
+! Check "RUN_NAME"_DES_DATA.dat
 ! the file associated with particle position, velocity, radius,
 ! denisty, and tagged particles.                 
 !-----------------------------------------------
@@ -457,7 +457,7 @@
 !-----------------------------------------------
 
 
-! Check"RUN_NAME"_DES_EXTRA.dat
+! Check "RUN_NAME"_DES_EXTRA.dat
 ! the file associated with extra simulation data: (at current time step)
 !   MAX_NEIGH: Maximum number of neighbors on any particle
 !   MAX_OVERLAP: Maximum overlap between any two particles
@@ -492,7 +492,7 @@
 !-----------------------------------------------
 
 
-! Check"RUN_NAME"_AVG_EPS.dat
+! Check "RUN_NAME"_AVG_EPS.dat
 ! the file associated with axial profile in solids volume fraction and
 ! granular temperature
 !----------------------------------------------------------------------
@@ -615,9 +615,6 @@
       ENDIF ! if ifi > 0
 
 ! Index file iteration count
-! Note: This value is also indexed in the subroutine WRITE_DES_DATA. 
-! Currently these routines can not be called at the same time so this
-! should not create any problems.
       TECPLOT_FINDEX = TECPLOT_FINDEX+1
       
       RETURN
