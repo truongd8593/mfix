@@ -54,7 +54,7 @@
       READ (901) PEA
 
 ! These arrays are allocated only if inlet exists
-      IF(DES_BCMI)THEN
+      IF(DES_BCMI.NE.0)THEN
          READ (901) DES_MI_TIME
          READ (901) MI_FACTOR
          READ (901) MI_WINDOW

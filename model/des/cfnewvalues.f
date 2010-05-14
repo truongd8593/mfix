@@ -131,7 +131,7 @@
             DES_LOC_DEBUG = .TRUE.
             WRITE(*,1000) 
          ENDIF         
-         WRITE(*,'(5X,A,I)') &
+         WRITE(*,'(5X,A,I10)') &
             'X position outside domain for particle ', L
          WRITE(*,'(7X,A,3(ES17.9))')&
             'particle pos = ', DES_POS_NEW(L,:)
@@ -147,7 +147,7 @@
             DES_LOC_DEBUG = .TRUE.
             WRITE(*,1000) 
          ENDIF         
-         WRITE(*,'(5X,A,I)') &
+         WRITE(*,'(5X,A,I10)') &
             'Y position outside domain for particle=: ', L
          WRITE(*,'(7X,A,3(ES17.9))')&
             'particle pos = ', DES_POS_NEW(L,:)
@@ -164,7 +164,7 @@
                DES_LOC_DEBUG = .TRUE.
                WRITE(*,1000) 
             ENDIF         
-            WRITE(*,'(5X,A,I)') &
+            WRITE(*,'(5X,A,I10)') &
                'Z position outside domain for particle ', L
             WRITE(*,'(7X,A,3(ES17.9))')&
                'particle pos = ', DES_POS_NEW(L,:)
@@ -218,7 +218,7 @@
 
  1002 FORMAT(/1X,70('*')//&
          ' From: CFNEWVALUES -',/&
-         ' Message: Particle ',I, ' moved a distance ', ES17.9, &
+         ' Message: Particle ',I10, ' moved a distance ', ES17.9, &
          ' during a',/10X, 'single solids time step, which is ',&
          ' greater than',/10X,'its radius: ', ES17.9)
  1003 FORMAT(1X,70('*')/)         

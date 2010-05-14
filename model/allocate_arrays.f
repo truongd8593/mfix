@@ -453,12 +453,15 @@
       ENDIF
 
 
+! We need to set this even when KT_TYPE is not set to IA_NONEP - at least in the current version of the code and needs to be revisited
+
+      Allocate(  KTMOM_U_s(DIMENSION_3p, DIMENSION_M) )
+      Allocate(  KTMOM_V_s(DIMENSION_3p, DIMENSION_M) )
+      Allocate(  KTMOM_W_s(DIMENSION_3p, DIMENSION_M) )
+
 ! allocate variables for Iddir & Arastoopour (2005) kinetic theory
 ! EDvel_sM_ip & EDT_s_ip are also used for Garzy & Dufty (1999) kinetic theory
       IF (TRIM(KT_TYPE) == 'IA_NONEP') THEN      
-         Allocate(  KTMOM_U_s(DIMENSION_3p, DIMENSION_M) )
-         Allocate(  KTMOM_V_s(DIMENSION_3p, DIMENSION_M) )
-         Allocate(  KTMOM_W_s(DIMENSION_3p, DIMENSION_M) )
          Allocate(  trD_s2_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
          Allocate(  MU_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
          Allocate(  MU_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )

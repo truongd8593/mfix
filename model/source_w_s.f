@@ -311,7 +311,8 @@
                         IF(.NOT.CUT_W_TREATMENT_AT(IJK)) THEN
                            SDPS =-((P_S(IJKT,M)-P_S(IJK,M))+(P_STAR(IJKT)-P_STAR(IJK)))*AXY(IJK) 
                         ELSE
-                           SDPS =-((P_S(IJKT,M)* A_WPG_T(IJK)-P_S(IJK,M)* A_WPG_B(IJK))+(P_STAR(IJKT)* A_WPG_T(IJK)-P_STAR(IJK)* A_WPG_B(IJK)))
+                           SDPS =-((P_S(IJKT,M)* A_WPG_T(IJK)-P_S(IJK,M)* A_WPG_B(IJK)) & 
+                                 +(P_STAR(IJKT)* A_WPG_T(IJK)-P_STAR(IJK)* A_WPG_B(IJK)))
                         ENDIF
 ! Original term
 !                     SDPS =-((P_S(IJKT,M)-P_S(IJK,M))+(P_STAR(IJKT)-P_STAR(IJK)))*AXY(IJK) 

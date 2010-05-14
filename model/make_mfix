@@ -370,6 +370,7 @@ ln -sf "$mpi_include/mpif.h" .
        echo " [1] Portland Group Linux Fortran Compiler (pgf90)"
        echo " [2] Intel Fortran Compiler version 9.X (ifort) "
        echo " [3] Intel Fortran Compiler version 10.X (ifort)"
+       echo " [4] GNU Gfortran"
        echo " "
        echo -n "Select the compiler to compile MFIX? [2] "
        read lnx_compiler
@@ -389,6 +390,11 @@ ln -sf "$mpi_include/mpif.h" .
            echo " "
            echo "Intel Linux Fortran Compiler version 9.X selected"
            opsys="Linux_ifc9"
+           ;;
+         4 )
+           echo " "
+           echo "Intel Linux Fortran Compiler version 9.X selected"
+           opsys="Linux_gfortran"
            ;;
          *)
            echo " "
@@ -1422,7 +1428,31 @@ qcache=auto "
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-mp"
-            compile_d="-c -g"
+            compile_d="-c -I. -fconvert='big-endian' -ffree-form -g "
+            compile_d2="-c -I. -fconvert='big-endian' -ffree-form -g "
+            compile_d3="-c -I. -fconvert='big-endian' -g "
+            link_d="-g"
+            compile="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O3 "
+            compile2="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O1 "
+            compile3="-c -I. -fconvert='big-endian' -I$mpi_include -O1 "
+            link=" "
+            MODULE_CODE=1
+
+            ;;
+
+    Linux_gfortran )
+
+            FORTRAN_CMD=gfortran
+            LINK_CMD=gfortran
+            libs_d="odepack.a blas90.a dgtsv90.a"
+            libs="odepack.a blas90.a dgtsv90.a"
+
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-mp"
+            compile_d="-c -I. -fconvert='big-endian' -ffree-form -g "
+            compile_d2="-c -I. -fconvert='big-endian' -ffree-form -g "
+            compile_d3="-c -I. -fconvert='big-endian' -g "
             link_d="-g"
             compile="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O3 "
             compile2="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O1 "
@@ -1733,7 +1763,9 @@ qcache=auto "
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-mp"
-            compile_d="-c -g"
+            compile_d="-c -I. -fconvert='big-endian' -ffree-form -g "
+            compile_d2="-c -I. -fconvert='big-endian' -ffree-form -g "
+            compile_d3="-c -I. -fconvert='big-endian' -g "
             link_d="-g"
             compile="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O3 "
             compile2="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O1 "

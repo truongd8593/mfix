@@ -100,7 +100,7 @@
                DES_LOC_DEBUG = .TRUE.
                WRITE(*,1000)
             ENDIF
-            WRITE(*,'(5X,A,I)') 'On Particle ', LL
+            WRITE(*,'(5X,A,I10)') 'On Particle ', LL
             WRITE(*,'(5X,A,2(ES15.7))') &
                'X,Y POS: ', DES_POS_NEW(LL,1), DES_POS_NEW(LL,2)
             WRITE(*,'(5X,A,2(ES15.7))') &
@@ -206,7 +206,7 @@
                         WRITE(*,'(5X,A,A,ES15.7)') &
                            'WARNING: excessive overlap detected ', &
                            'at time ', S_TIME
-                        WRITE(*,'(7X,A,I,2X,A,I5,2X,A)') &
+                        WRITE(*,'(7X,A,I10,2X,A,I5,2X,A)') &
                            'between particle ', LL, 'and wall ',&
                            IW, 'with'
                         WRITE(*,'(7X,A,ES15.7,2X,A,ES15.7)') &
@@ -221,7 +221,7 @@
                            DES_LOC_DEBUG = .TRUE.
                            WRITE(*,1000)
                         ENDIF                             
-                        WRITE(*,'(5X,A,I,A,I5)') &
+                        WRITE(*,'(5X,A,I10,A,I5)') &
                            'DISTMOD is zero between particle ', LL, &
                            ' and wall ', IW
                         STOP
@@ -253,7 +253,7 @@
                           WRITE(*,'(5X,A,A,ES15.7)') &
                              'WARNING: normal relative velocity less ',&
                              'than zero at time ', S_TIME
-                          WRITE(*,'(7X,A,I,2X,A,I5,2X,A)') &
+                          WRITE(*,'(7X,A,I10,2X,A,I5,2X,A)') &
                              'for first contact between particle', LL, &
                              'and wall ', IW, 'with'
                           WRITE(*,'(7X,A,ES15.7)') &
@@ -390,7 +390,7 @@
                               DES_LOC_DEBUG = .TRUE.
                               WRITE(*,1000)
                            ENDIF                                
-                           WRITE(*,'(5X,A,I,X,I)') &
+                           WRITE(*,'(5X,A,I10,X,I10)') &
                               'PARTICLE LL & NEIGHBOR I: ', LL, I
                            WRITE(*,'(5X,A,(ES15.7))') &
                               'LL DES_POS = ', DES_POS_NEW(LL,:)
@@ -456,7 +456,7 @@
                            DES_LOC_DEBUG = .TRUE.
                            WRITE(*,1000) 
                         ENDIF
-                        WRITE(*,'(5X,A,(I))') 'NEIGHBORS: ', NEIGHBOURS(LL,:)
+                        WRITE(*,'(5X,A,I10)') 'NEIGHBORS: ', NEIGHBOURS(LL,:)
                      ENDIF
 
                      IF((((R_LM-DISTMOD)/R_LM)*100.d0).GT.OVERLAP_MAX) THEN
@@ -471,7 +471,7 @@
                         WRITE(*,'(5X,A,A,ES15.7)') &
                            'WARNING: excessive overlap detected ', &
                            'at time ', S_TIME
-                        WRITE(*,'(7X,A,I,2X,A,I5,2X,A)') &
+                        WRITE(*,'(7X,A,I10,2X,A,I5,2X,A)') &
                            'between particles ', LL, 'and ',&
                            I, 'with'
                         WRITE(*,'(7X,A,ES15.7,2X,A,ES15.7,2X,ES15.7)') &
@@ -486,7 +486,7 @@
                            DES_LOC_DEBUG = .TRUE.
                            WRITE(*,1000)
                         ENDIF
-                        WRITE(*,'(5X,A,I,I)') &
+                        WRITE(*,'(5X,A,I10,I10)') &
                            'DISTMOD is zero between particle-pair ',&
                            LL, I
                         STOP
@@ -508,7 +508,7 @@
                               DES_LOC_DEBUG = .TRUE.
                               WRITE(*,1000)
                            ENDIF
-                           WRITE(*,'(5X,A,2(I,X),A,ES15.7)') &
+                           WRITE(*,'(5X,A,2(I10,X),A,ES15.7)') &
                               'Normal overlap for particle pair ',&
                               LL, I, ' : ', OVERLAP_N 
                         ENDIF
@@ -528,7 +528,7 @@
                           WRITE(*,'(5X,A,A,ES15.7)') &
                              'WARNING: normal relative velocity less ',&
                              'than zero at time ', S_TIME
-                          WRITE(*,'(7X,A,I,2X,A,I,2X,A)') &
+                          WRITE(*,'(7X,A,I10,2X,A,I10,2X,A)') &
                              'for first contact between particles', LL, &
                              'and ', I, 'with'
                           WRITE(*,'(7X,A,ES15.7,2X,A,ES15.7)') &

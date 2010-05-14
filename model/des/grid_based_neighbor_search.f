@@ -256,7 +256,7 @@
 
  1000 FORMAT(/1X,70('*')//,' From: GRID_BASED_NEIGHBOR_SEARCH -',/,&
          ' Message: Neighbors(=', I4,') > MN(=', I4,&
-         ') for particle: ', I,/10X,&
+         ') for particle: ', I10,/10X,&
          'Either reduce the factor R_LM or increase ',&
          'MN in mfix.dat',/1X,70('*')/)         
 

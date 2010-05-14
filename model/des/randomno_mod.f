@@ -104,8 +104,8 @@
       lmean = sum(y(:))/nsize
 
       write(*,'(7X,A)') 'Generating Normal Random Variables'
-      write(*,'(7X,A,2X,ES)') 'specified mean =', mean
-      write(*,'(7X,A,2X,ES)') 'computed mean =', lmean
+      write(*,'(7X,A,2X,ES15.5)') 'specified mean =', mean
+      write(*,'(7X,A,2X,ES15.5)') 'computed mean =', lmean
 
       write(fileunit,'(A)') 'FROM NOR_RNO'
 ! specific to the call from init_particles_jn            
@@ -115,7 +115,7 @@
 
       lvariance = 0.0
       do i = 1, nsize
-         write(fileunit,'(I,5X,F)') i, y(i)
+         write(fileunit,'(I10,5X,ES15.5)') i, y(i)
          lvariance = lvariance + (y(i)-lmean)**2
       end do
 
@@ -124,8 +124,8 @@
       lvariance = lvariance/nsize
       lsigma = sqrt(lvariance)
 
-      write(*,'(7X,A,2X,ES)') 'specified sigma =', sigma
-      write(*,'(7X,A,2X,ES)') 'computed sigma =', lsigma
+      write(*,'(7X,A,2X,ES15.5)') 'specified sigma =', sigma
+      write(*,'(7X,A,2X,ES15.5)') 'computed sigma =', lsigma
 
       RETURN
       END SUBROUTINE NOR_RNO

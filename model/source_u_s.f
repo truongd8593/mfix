@@ -317,7 +317,8 @@
                      IF(.NOT.CUT_U_TREATMENT_AT(IJK)) THEN
                         SDPS =-((P_S(IJKE,M)-P_S(IJK,M))+(P_STAR(IJKE)-P_STAR(IJK)))*AYZ(IJK)  
                      ELSE
-                        SDPS =-((P_S(IJKE,M)* A_UPG_E(IJK)-P_S(IJK,M)* A_UPG_W(IJK))+(P_STAR(IJKE)* A_UPG_E(IJK)-P_STAR(IJK)* A_UPG_W(IJK)))
+                        SDPS =-((P_S(IJKE,M)* A_UPG_E(IJK)-P_S(IJK,M)* A_UPG_W(IJK)) & 
+                              +(P_STAR(IJKE)* A_UPG_E(IJK)-P_STAR(IJK)* A_UPG_W(IJK)))
                      ENDIF
 ! Original terms
 !                     SDPS =-((P_S(IJKE,M)-P_S(IJK,M))+(P_STAR(IJKE)-P_STAR(IJK)))*AYZ(IJK) 

@@ -294,7 +294,7 @@
 
       DO I = 1, MMAX
          DO J = I, MMAX
-            WRITE(*,'(5X,A,I,2X,I,A,2(ES15.7))') &
+            WRITE(*,'(5X,A,I10,2X,I10,A,2(ES15.7))') &
                'ETAN AND ETAT FOR PAIR ',&
                I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
          ENDDO

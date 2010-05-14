@@ -202,7 +202,7 @@
 
  1000 FORMAT(/5X,'For mass inlet BC: ', I3,/,&
          7X,'No. particles injected per solids time step = ', ES15.8,/,&
-         7X,'PI_FACTOR = ', I,' PI_COUNT = ', I5,/,&
+         7X,'PI_FACTOR = ', I10,' PI_COUNT = ', I5,/,&
          7X,'start DES_MI_TIME = ', ES15.8)
 
       RETURN
@@ -213,8 +213,8 @@
 !                                                                      !
 !  Module name: DES_MI_CLASSIFY                                        !
 !                                                                      !
-!  Purpose: This subroutine is used to give a classification to the    !
-!  inlet. The classification is used in the placement of new particles !
+!  Purpose:  This subroutine is used to give a classification to the   !
+!  inlet.  The classification is used in the placement of new particles!
 !  in ghost cells behind the inlet.                                    !
 !                                                                      !
 !  Author: J.Musser                                   Date: 14-Aug-09  !
@@ -854,8 +854,6 @@
       INTEGER TMP_FACTOR
 ! indices      
       INTEGER LL, LC, I, J, IJ, M, MM
-! tmp variable 
-      INTEGER K      
 ! a random number between 0 and 1
       DOUBLE PRECISION TMP_DP
 ! a random integer between 1 and tmp_factor      
@@ -887,14 +885,11 @@
 !   ceiling(tmp_len1/2)         = the minimum no. of particles that can
 !                                 be arranged along the inlet so that an 
 !                                 additional particle cannot fit
-!   k > 1 represents cases with more than 1 particles injected in a single
-!   solids timestep
 
-         K = PI_COUNT(BCV_I)    
          MAXIPV = MAX_DIA/( DTSOLID*dble(PI_FACTOR(BCV_I))*&
-            dble( FLOOR( CEILING( real(TMP_LEN1)/2.0 ) /real(K) ) )) 
+                  dble( CEILING(real(TMP_LEN1)/2.0)) ) 
          MINIPV = MAX_DIA/( DTSOLID*dble(PI_FACTOR(BCV_I))*&
-            dble( FLOOR( real(TMP_LEN1)/real(K) ) ))
+                  dble(TMP_LEN1) )
          IF (MINIPV .LT. SMALL_NUMBER) MINIPV = ZERO
 
          DMCL = DES_MI_CLASS(BCV_I)
@@ -981,17 +976,15 @@
          TMP_LEN1 = FLOOR(real(LEN1/MAX_DIA))
          TMP_LEN2 = FLOOR(real(LEN2/MAX_DIA))
 
-         K = PI_COUNT(BCV_I)
 ! In the 3D case the calculation for MAXIPV is conservative.  That is,
 ! the actual bc velocity could be somewhat lower than the calculated 
 ! value of MAXIPV and still allow for random particle placement
          MAXIPV = MAX_DIA/( DTSOLID*dble(PI_FACTOR(BCV_I)) * &
-            dble( FLOOR( CEILING( &
-            real(TMP_LEN1*TMP_LEN2)/2.0 ) /real(K) ) )) 
+                     dble( CEILING(real(TMP_LEN1*TMP_LEN2)/2.0)) ) 
 ! The cutoff is associated with square packing of disks on a plane
 ! A lower velocity would be possible with hexagonal packing
          MINIPV = MAX_DIA/( DTSOLID*dble(PI_FACTOR(BCV_I)) * &
-            dble( FLOOR( real(TMP_LEN1*TMP_LEN2)/real(K) ) ))
+                     dble(TMP_LEN1*TMP_LEN2) )
 
          IF (MINIPV .LT. SMALL_NUMBER) MINIPV = ZERO
 

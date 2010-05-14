@@ -186,7 +186,7 @@
  200     CONTINUE 
       ENDDO
 
-      WRITE(*,'(7X,A,I)') &
+      WRITE(*,'(7X,A,I10)') &
          'Number of particles in gener_lattice_mod = ', N
       WRITE(*,'(5X,A)') '<---------- END GENER_LATTICE_MOD ----------'
 
@@ -543,7 +543,7 @@
          OPEN(UNIT=24,FILE='particle_input2.dat',&
               STATUS='REPLACE')
          DO LN = 1, PARTICLES
-            WRITE(24,'(10(X,ES))')&
+            WRITE(24,'(10(X,ES15.5))')&
                (DES_POS_OLD(LN,K),K=1,DIMN), DES_RADIUS(LN),&
                RO_Sol(LN), (DES_VEL_OLD(LN,K),K=1,DIMN) 
          ENDDO

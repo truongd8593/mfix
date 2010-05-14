@@ -11,7 +11,9 @@
 !  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C 
 !  Reviewer: Rahul Garg                               Date: 01-Aug-07  C
 !  Comments: Removed the separate volume definitions and added pic     C
-!            array formulation and bed height calculation.             C
+!            array formulation and bed height caluclation.             C
+!  Note:     PIC array is currently used only if cell linked list      C
+!            search is used.                                           C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -113,7 +115,7 @@
             ENDDO
             
             IF(PIJK(L,5).EQ.0) THEN
-               WRITE(*,'(5X,A,A,I)') &
+               WRITE(*,'(5X,A,A,I10)') &
                   'Problem determining the solids ',&
                   'association for particle: ',L
                WRITE(*,'(7X,A,(ES15.9))') &
@@ -299,7 +301,7 @@
                DES_LOC_DEBUG = .TRUE.
                WRITE(*,1000) 
             ENDIF                    
-            WRITE(*,'(5X,A,I,/,7X,A,(ES15.9))') &
+            WRITE(*,'(5X,A,I10,/,7X,A,(ES15.9))') &
                'WARNING IJK < 0 for particle: ', L,&
                'Particle position = ', DES_POS_NEW(L,:)            
          ENDIF
@@ -348,7 +350,7 @@
                      DES_LOC_DEBUG = .TRUE.
                      WRITE(*,1000)
                   ENDIF
-          WRITE(*,'(5X,A,I,/,7X,A,I,2X,I,2X,A,ES15.9,/,7X,A,I)') &
+          WRITE(*,'(5X,A,I10,/,7X,A,I10,2X,I10,2X,A,ES15.9,/,7X,A,I10)') &
                     'WARNING EP_G LT zero at IJK: ', IJK,&
                     'I,J = ', I_OF(IJK), J, ' EP_S = ', EP_S(IJK,M), & 
                     'No. of particles in cell = ', PINC(IJK)
