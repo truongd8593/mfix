@@ -107,7 +107,6 @@
 !  Grid coordinates:
 !======================================================================
 
-      ALONG_DOMAIN_BOUNDARY = .FALSE.
       SMALL_CELL_AT = .FALSE.
       SMALL_CELL_FLAG = 0
       NUMBER_OF_SMALL_CELLS = 0

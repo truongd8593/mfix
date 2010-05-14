@@ -305,7 +305,6 @@
 
 
 
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: ALONG_DOMAIN_BOUNDARY
 
 !     Location of intersection points
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Xn_int
