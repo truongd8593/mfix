@@ -1,0 +1,13 @@
+
+1) The code uses the Qt library:
+
+   http://qt.nokia.com/downloads
+
+
+2) Once Qt is installed ...
+
+   a) cd DEM-PLOT-mfix_source
+
+   b) qmake dem_plot.pro
+
+   c) make
