@@ -11,9 +11,7 @@
 !  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C 
 !  Reviewer: Rahul Garg                               Date: 01-Aug-07  C
 !  Comments: Removed the separate volume definitions and added pic     C
-!            array formulation and bed height caluclation.             C
-!  Note:     PIC array is currently used only if cell linked list      C
-!            search is used.                                           C
+!            array formulation and bed height calculation.             C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
