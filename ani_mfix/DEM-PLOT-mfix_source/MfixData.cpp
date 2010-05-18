@@ -1017,7 +1017,7 @@ void MfixData::CreateVariableNames()
 
                     for (int m=0; m<MMAX; ++m)
                     {
-                        for (int i=0; i<NMAX[m]; ++i)
+                        for (int i=0; i<NMAX[m+1]; ++i)
                         {
                             string name = var + ConvertIntToString(m+1) + "_"
                                               + ConvertIntToString(i+1);
