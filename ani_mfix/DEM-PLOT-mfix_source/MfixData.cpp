@@ -1255,7 +1255,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep , int kslice)
 
                 nskip = NMAX[0];
 
-                for (int mm=1; mm<m-1; ++mm)
+                for (int mm=1; mm<m; ++mm)
                 {
                     nskip += NMAX[mm];
                 }
