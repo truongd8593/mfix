@@ -1018,7 +1018,7 @@ void MfixData::CreateVariableNames()
 
                     for (int m=0; m<MMAX; ++m)
                     {
-                        for (int i=0; i<NMAX[m]; ++i)
+                        for (int i=0; i<NMAX[m+1]; ++i)
                         {
                             string name = var + ConvertIntToString(m+1) + "_"
                                               + ConvertIntToString(i+1);
@@ -1256,7 +1256,7 @@ void MfixData::GetVariableAtTimestep(int vari , int tstep)
 
                 nskip = NMAX[0];
 
-                for (int mm=1; mm<m-1; ++mm)
+                for (int mm=1; mm<m; ++mm)
                 {
                     nskip += NMAX[mm];
                 }
