@@ -1,0 +1,39 @@
+Animate_mfix : 2D cut-cell usage / notes
+
+
+1. Download the latest devlopment version from the MFIX website
+
+2. The executable is in mfix/ani_mfix/Linux/ani_mfix_intel_64bit.exe
+   It is a 64 bit Linux executable (so at NETL, use on HPC).
+
+   You will probably need to make it executable:
+
+   chmod +x ani_mfix_intel_64bit.exe
+
+3. 2D cut-cell runs usage
+
+   a.  The code looks for the cut-cell geometry data in the
+       file : ani_cutcell.vtk
+
+   b.  It should automatically be created in 2D cutcell cases.  If
+       not, copy one of the time dependent VTK files created when
+       MFIX is run to that filename.
+
+   c.  Run the animate_mfix_64bits.exe downloaded from the website
+
+
+
+4. Notes
+
+   a. If ani_cutcell.vtk is not found or it is a 3D case, the
+      animation code will run as if it is not a cut-cell case.
+
+   b. The first time animate is run, there will be a delay
+      while the code reads the ani_cutcell.vtk file and maps
+      the polygons specified in that file with the MFIX-IJK 
+      cell that they correspond to.  The mapping information is
+      written to the cutcell_map.txt.
+
+   c. The SP* files are used in the animation, not the time
+      dependent VTK files.  Therefore,  you will need to change
+      the output SPX_DT values if you run the cut-cell tutorials.
