@@ -1,0 +1,258 @@
+#
+# Simple system with a DEM mass polydisperse inlet and outlet
+#
+
+
+# Run-control section
+# -----------------------------
+  RUN_NAME = 'des_mio' 
+  DESCRIPTION = 'test dem polydisperse inlet and outlet'
+  RUN_TYPE = 'new'
+  UNITS = 'cgs'
+  TIME  =0.0 
+  TSTOP = 5.0
+  DT = 1.0e-4
+  DT_MAX = 2E-4
+
+  ENERGY_EQ = .FALSE.
+  SPECIES_EQ(0) = .FALSE.
+  SPECIES_EQ(1) = .FALSE. .FALSE. .FALSE. .FALSE. .FALSE.
+
+! value of momentum_()_eq for solid phases do not matter when
+! conducting dem simulations
+  MOMENTUM_X_EQ(1) = .FALSE. .FALSE. .FALSE. .FALSE. .FALSE. 
+  MOMENTUM_Y_EQ(1) = .FALSE. .FALSE. .FALSE. .FALSE. .FALSE. 
+  MOMENTUM_Z_EQ(1) = .FALSE. .FALSE. .FALSE. .FALSE. .FALSE. 
+
+  DRAG_TYPE = 'WEN_YU'
+
+  GRAVITY = 980.665D0    ! [980.665d0 in set_constants]
+
+
+# Geometry Section
+# -----------------------------
+  COORDINATES = 'Cartesian'
+  XLENGTH  = 3    IMAX = 3
+  YLENGTH  = 15   JMAX = 15
+! for coupled dem simulations a defined 'depth' (i.e. zlength) is needed 
+! even when conducting 2D simulations (spheres in a plane) for calculating
+! void fraction
+  ZLENGTH  = 0.25
+  NO_K     = .TRUE.
+
+
+# Numeric
+# -----------------------------
+  MAX_NIT = 500
+  DISCRETIZE = 9*2
+  DEF_COR = .T.
+  LEQ_IT = 9*200
+  LEQ_TOL  = 9*1.0E-6
+  TOL_RESID = 1.0E-3
+
+! The sweep direction used in the linear equation solver. The sweep 
+! direction for preconditioning line relation:
+!      ISIS  : 1 sweep with do IK loop followed by send_recv
+!     [RSRS] : 1 red-black sweep with do IK loop followed by send_recv 
+!      ASAS  : 1 red-black sweep with do IK loop followed by do JK
+!                followed by IJ followed by send_recv
+  LEQ_SWEEP = 9*'ISIS'   
+
+
+# Gas-phase Section
+# -----------------------------
+  RO_g0 = 1.3E-3    !0.   ! incompressible
+  MU_g0 = 1.8E-4    
+!  MW_avg = 29.    ! slight incompressibility
+
+
+# Solids-phase Section
+# -----------------------------
+  MMAX     = 5
+  RO_s     = 1.75    1.85    1.95    2.05    2.15
+  D_p0     = 0.100   0.125   0.150   0.175   0.200
+
+! e must be defined, even in DEM simulations where it is not used
+  e        = 0.9
+
+! phi must be set if MMAX >0, however, it is only used if schaeffer 
+! or friction models are invoked
+  Phi     = 0.0 
+  EP_star = 0.40  
+
+! if MMAX>1 and using default KT_TYPE [undefined] then C_F must be set 
+! even if not used as in DEM case
+  C_f     = 0.1          
+
+
+# Initial Conditions Section
+# -----------------------------
+       !             section 1     section 2
+  IC_X_w(1)        =  0.0           
+  IC_X_e(1)        =  3.0           
+  IC_Y_s(1)        =  0.0           
+  IC_Y_n(1)        =  15.0          
+
+  IC_EP_g(1)       =  1.0           
+ 
+  IC_U_g(1)        =  0.0           
+  IC_V_g(1)        =  @(0.0/1.0)     ! interstitial velocity
+  IC_W_g(1)        =  0.0           
+
+  IC_P_g(1)        =  0.0           
+  IC_T_g(1)        =  273.        
+
+     
+#  Boundary Conditions Section
+# -----------------------------
+! BC are not necessary for pure DEM simulations as particles see all 
+! boundaries as walls unless the boundary is a DEM inlet/outlet (which 
+! is defined later). BC are needed for coupled simulations to define
+! fluid interaction.  
+
+! SINGLE INLET ORIFICE
+!                   bottom mid      top
+  BC_X_w(1)           =    1.0         0.0
+  BC_X_e(1)           =    2.0         3.0
+  BC_Y_s(1)           =    0.0        15.0
+  BC_Y_n (1)          =    0.0        15.0
+
+  BC_TYPE(1)          =   'MI'        'PO'
+! even though this fluid inlet boundary is overlaid with a DEM inlet 
+! boundary wherein solids are injected set ep_g to one here to avoid
+! defining additional conditions for solids 
+  BC_EP_g(1)          =    1.0            
+
+  BC_U_g(1)           =    0.0
+! approx. interstitial velocity (using bc_ep_g as 1)
+  BC_V_g(1)           = 1200.0      
+  BC_W_g(1)           =    0.0        
+
+  BC_P_g(1)           =    2*0
+
+! remaining sides of system (left/right) are treated as walls by default
+! no slip for gas phase
+
+
+#  Output Control
+# -----------------------------
+  RES_DT = 0.1     ! interval at which restart (.RES) file is updated
+  OUT_DT = 1.      ! interval at which standard output (.OUT) file is updated
+  NLOG = 25        ! interval in no. of time steps at which (.LOG) file is written
+
+! Interval at which .SPX files are written 
+  SPX_DT(1)  = 0.01      ! Void fraction (EP_g)
+  SPX_DT(2)  = 0.1       ! Gas and solids pressure (P_g, P_star)
+  SPX_DT(3)  = 0.1       ! Gas velocity (U_g, V_g, W_g)
+  SPX_DT(4)  = 0.1       ! Solids velocity (U_s, V_s, W_s)
+  SPX_DT(5)  = 100.0     ! Solids density (ROP_s)
+  SPX_DT(6)  = 100.0     ! Gas and solids temp. (T_g, T_s1, T_s2)
+  SPX_DT(7)  = 100.0     ! Gas and solids mass fractions (X_g, X_s)
+  SPX_DT(8)  = 100.0     ! Granular Temperature (G)
+  SPX_DT(9)  = 100.0     ! User defined scalars
+
+  FULL_LOG = .TRUE.               ! display residuals on screen
+  RESID_STRING = 'P0' 'U0' 'V0'   ! which residuals to display
+
+
+# DMP control
+# -----------------------------
+  NODESI = 1 
+  NODESJ = 1
+  NODESK = 1
+
+
+#  DES
+# -----------------------------
+  DISCRETE_ELEMENT = .TRUE. 
+
+  DES_CONTINUUM_COUPLED = .T.    ! decide whether gas and solids are 
+                                 ! coupled [FALSE]
+
+  DES_INTERP_ON = .T.    ! use interpolation to calculate individual 
+                         ! drag forces on particles based on particle 
+                         ! location rather than cell average [FALSE]
+
+  WALLDTSPLIT = .T.    ! treat wall interaction as two-particle interaction 
+                       ! but accounting for wall properties; must be true 
+                       ! for DEM [FALSE]
+
+  TSUJI_DRAG = .F.    ! use tsuji drag correlation; specific to syam_obrien 
+                      ! drag model only valid for coupled case [FALSE]
+
+  DIMN = 2    ! if no_k, then DIMN is set to 2 otherwise it undefined by default
+
+  PARTICLES = 0       ! starting with an empty system
+
+
+! DES MASS INLET
+! -----------------------------
+  MAX_PIS = 5000    ! Mass inflow or outflow boundary conditions require
+                    ! MAX_PIS be set
+
+! Inlet boundary on bottom
+  DES_BC_X_w(1)          =   1.0
+  DES_BC_X_e(1)          =   2.0
+  DES_BC_Y_s(1)          =   0.0
+  DES_BC_Y_n(1)          =   0.0
+  DES_BC_TYPE(1)         =   'MI'
+
+  DES_BC_ROP_s(1,1)      = 0.0125
+  DES_BC_VOLFLOW_s(1,1)  = 0.00785   !15 particles/s, eps=0.00714, vel~5.50
+  DES_BC_ROP_s(1,2)      = 0.0325
+  DES_BC_VOLFLOW_s(1,2)  = 0.02045   !20 particles/s, eps=0.01757, vel~4.82
+  DES_BC_ROP_s(1,3)      = 0.0950
+  DES_BC_VOLFLOW_s(1,3)  = 0.05301   !30 particles/s, eps=0.0487,  vel~5.44
+  DES_BC_ROP_s(1,4)      = 0.1000
+  DES_BC_VOLFLOW_s(1,4)  = 0.05612   !20 particles/s, eps=0.0488,  vel~5.75
+  DES_BC_ROP_s(1,5)      = 0.1500
+  DES_BC_VOLFLOW_s(1,5)  = 0.06283   !15 particles/s, eps=0.0698,  vel~4.50
+
+
+! DES MASS OUTLET
+! -----------------------------
+! Outlet boundary on top
+  DES_BC_X_w(2)          =   0.0
+  DES_BC_X_e(2)          =   3.0
+  DES_BC_Y_s(2)          =   15.0
+  DES_BC_Y_n(2)          =   15.0
+  DES_BC_TYPE(2)         =   'MO'
+
+
+! -----------------------------
+  DES_NEIGHBOR_SEARCH =  4    ! Particle neighbor search method: [1]=n-square;
+                              ! 2=quadtree; 3=octree; 4=cell based grid search
+
+! the following are used only when des_neighbor_search=4 
+! used to define the grid mesh used for the neighbor search
+  DESGRIDSEARCH_IMAX =  6    ! no. of i (x) cells on neighbor search grid 
+  DESGRIDSEARCH_JMAX =  30   ! no. of j (y) cells
+!  DESGRIDSEARCH_KMAX = 3     ! no. of k (z) cells
+
+  NEIGHBOR_SEARCH_N  = 10    ! ~Maximum number of steps through DEM stage until 
+                             ! a neighbor search is performed [25]
+
+  MN = 20    ! Maximum number of neighbors allowed per particle [20]
+
+  KN       = 1.6D7        ! Normal inter-particle collision spring constant
+  KT_FAC   = 0.0  !@(2.0/7.0)   ! Tangential spring factor = KT/KN   [2/7]
+  KN_W     = 1.6D7        ! Normal particle-wall collision spring constant
+  KT_W_FAC = 0.0  !@(2.0/7.0)   ! Tangential spring factor = KT_W/KN_W   [2/7]
+  MEW      = 0.0          ! Inter-particle friction coeffienct
+  MEW_W    = 0.0          ! Particle-wall friction coefficient
+
+! set the particle-particle restitution coefficient in an array arranged as
+  DES_EN_INPUT      = 0.9 0.9 0.9 0.9 0.9    ! e11 e12 e13 e14 e15
+  DES_EN_INPUT(6)   = 0.9 0.9 0.9 0.9        ! e22 e23 e24 e25
+  DES_EN_INPUT(10)  = 0.9 0.9 0.9            ! e33 e34 e35
+  DES_EN_INPUT(13)  = 0.9 0.9                ! e44 e45
+  DES_EN_INPUT(15)  = 0.9                    ! e55
+! particle-wall rest coef arranged in array arranged as
+  DES_EN_WALL_INPUT = 0.9 0.9 0.9 0.9 0.9    ! e1w e2w e3w e4w e5w
+
+  DES_ETAT_FAC    = 0  !@(1/2)  ! damping coefficient factor = ETAN/ETAT   [1/2]
+  DES_ETAT_W_FAC  = 0  !@(1/2)  ! damping coefficient factor = ETAN_W/ETAT_W   [1/2]
+
+  PRINT_DES_DATA = .TRUE. ! write DEM data : *.vtp files
+  DES_RES_DT = 0.01       
+  DES_SPX_DT = 0.01       ! interval to write *.vtp files in pure DEM simulation
