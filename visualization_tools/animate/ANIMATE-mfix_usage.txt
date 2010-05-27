@@ -11,7 +11,10 @@ You can resize the entire window or the individual dialogs.
 The bottom dialog lets you do the following:
 
   a) toggle between "go" and "pause" mode (click on the
-     button)
+     button).  Note: on some systems, the "go-mode" does
+     not seem to work correctly.  If that is the case,
+     stay in "pause-mode" and use the left and right arrows
+     as described below.
 
   b) change the number of plots (variables) displayed
 
@@ -23,7 +26,8 @@ The bottom dialog lets you do the following:
   e) step forward or backwards one time step while in
      paused mode.  Click on the slider and use the 
      left and right arrows to move to the next time step.
-
+     You can "click and hold" the arrow keys to simulate
+     the "go" button.
 
 
 The left dialog lets you do the following:
