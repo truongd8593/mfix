@@ -23,6 +23,10 @@ USE RESTRICTION:
 			*want* to use their format... each point is described
 			in eight bytes as "xxx yyy:", where xxx and yyy are
 			the coordinate values as ASCII numbers.
+			
+
+	The following font was converted from data located at:
+	http://www.gameprogrammer.com/polyfonts/polyfonts.html
 */
 
 #include <string>
