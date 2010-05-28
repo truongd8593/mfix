@@ -109,6 +109,8 @@ struct Data
   static bool bTable;
   static bool bSlice_only;
   static bool bBusy;
+  static bool bScaleChanged;
+
   
   static MyFont myfont;
   static bool bPaused;

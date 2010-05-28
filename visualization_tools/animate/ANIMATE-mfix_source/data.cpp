@@ -13,6 +13,8 @@ bool Data::bSlice_only = false;
 bool Data::bPaused = true;
 bool Data::bTable  = false;
 bool Data::bBusy   = false;
+bool Data::bScaleChanged = false;
+
 
 int  Data::gl_width = 10;
 int  Data::gl_height = 10;
@@ -85,6 +87,8 @@ void Data::init()
    bSlice_only = false;
    bPaused    = true;
    bTable     = false;
+   bScaleChanged = false;
+
    table_last_time = -2.0f;
    gl_width   = 10;
    gl_height  = 10;
@@ -980,7 +984,7 @@ void Data::ReadVariables()
       map<int,WindowVariable>::iterator it = map_windowVariables.begin();
       while (it !=  map_windowVariables.end())
       {
-	if (it->second.bMustRead)
+	if (it->second.bMustRead || Data::bScaleChanged)
 	{
 	    it->second.bMustRead = false;
 	    it->second.bColorsCalculated = true;
@@ -1015,6 +1019,8 @@ void Data::ReadVariables()
 	        cout << "error : position ABC\n";
 	    }
 	}
+
+        Data::bScaleChanged = false;
 	
 	++it;
       }

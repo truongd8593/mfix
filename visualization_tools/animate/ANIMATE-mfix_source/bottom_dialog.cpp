@@ -119,6 +119,8 @@ void bottomDialog::VMIN_changed(const QString & s)
    
    Data::vVariableRange[var].vmin = s.toFloat();
    
+   Data::bScaleChanged = true;
+
    StepGL();
 }
 
@@ -128,6 +130,8 @@ void bottomDialog::VMAX_changed(const QString & s)
    
    Data::vVariableRange[var].vmax = s.toFloat();
    
+   Data::bScaleChanged = true;
+
    StepGL();
 }
 
