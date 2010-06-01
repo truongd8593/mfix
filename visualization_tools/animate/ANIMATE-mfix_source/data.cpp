@@ -15,6 +15,7 @@ bool Data::bTable  = false;
 bool Data::bBusy   = false;
 bool Data::bScaleChanged = false;
 
+std::string Data::sCWD;
 
 int  Data::gl_width = 10;
 int  Data::gl_height = 10;
@@ -260,6 +261,9 @@ void Data::Set_Viewport_time(int & ix , int & iy)
   iy = title_height;
 }
 
+extern void plot_ij_slice_(const int & k_use , float * ra , float * ga , float * ba ,
+					int * color_array , const int & filling_pass , 
+                                        const int * flag , int & status);
 
 void Data::Plot_IJ_slice(int win)
 {  
@@ -277,9 +281,16 @@ void Data::Plot_IJ_slice(int win)
       return;
    }
    
+   int * color_array = &itm->second.colors[0];
+   int * flag        = &mfix.FLAG[0];
    
- ///////////  float vmin = vVariableRange[ vPlotWindowInfo[win].win_var ].vmin;
- //////////  float vmax = vVariableRange[ vPlotWindowInfo[win].win_var ].vmax;
+   int status;
+   
+   plot_ij_slice_(vPlotWindowInfo[win].win_k , rra , gga , bba ,
+		  color_array , 1 , flag ,  status);
+		  
+   if (status == 1) return;
+   
    
    double y1 = -mfix.DY[0];
    for (int j=0; j<mfix.jmax2; j=j+jstep)

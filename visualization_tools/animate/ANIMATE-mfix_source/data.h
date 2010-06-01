@@ -122,6 +122,8 @@ struct Data
   static int npixels_y;
     
   static MfixData mfix;
+
+  static std::string sCWD;
   
   // information for each plot window
   
