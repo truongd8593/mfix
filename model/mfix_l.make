@@ -5756,6 +5756,7 @@ write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
             geometry.mod \
             physprop.mod \
             sendrecv.mod \
+            des_bc.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   

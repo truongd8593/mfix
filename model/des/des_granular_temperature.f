@@ -33,11 +33,11 @@
 ! indices
       INTEGER I, J, K, IJK
 ! 
-      INTEGER M, NP, NPG, LL
-! counter for no. of particles in phase m      
-      INTEGER NPG_PHASE(MMAX)
-! temporary variable for mth phase granular temperature
-      DOUBLE PRECISION TEMP(MMAX)
+      INTEGER M, LL
+! counter for no. of particles in phase m in cell ijk 
+      INTEGER NP_PHASE(DIMENSION_3, MMAX)
+! temporary variable for mth phase granular temperature in cell ijk
+      DOUBLE PRECISION TEMP(DIMENSION_3, MMAX)
 ! accounted for particles
       INTEGER PC             
 ! squared particle velocity v.v
@@ -51,69 +51,58 @@
 
 ! Calculate a local species granular temperature for current instant of
 ! time.  Note that the following calculation of species granular
-! temperature employes a fluctuating particle velocity that is defined
+! temperature employs a fluctuating particle velocity that is defined
 ! as the difference between a particles velocity and the corresponding
 ! local mean velocity of that particles species evaluated at the same
 ! instant of time.
-!------------------------------------- 
+!----------------------------------------------- 
+! The following calculations are performed on the 'fluid' grid
+      TEMP(:,:) = ZERO
+      NP_PHASE(:,:) = ZERO
+      PC = 1
+      DO LL = 1, MAX_PIS
+         IF(PC .GT. PIS) EXIT
+         IF(.NOT.PEA(LL,1)) CYCLE    
+
+         I = PIJK(LL,1)
+         J = PIJK(LL,2)
+         K = PIJK(LL,3)  
+         IJK = PIJK(LL,4)
+
+         M = PIJK(LL,5)
+         NP_PHASE(IJK,M) = NP_PHASE(IJK,M) + 1
+
+         TEMP(IJK,M) = TEMP(IJK,M) + &
+            (DES_VEL_NEW(LL,1)-DES_U_s(IJK,M))**2 
+         TEMP(IJK,M) = TEMP(IJK,M) + &
+            (DES_VEL_NEW(LL,2)-DES_V_s(IJK,M))**2
+         IF(DIMN.EQ.3) THEN 
+            TEMP(IJK,M) = TEMP(IJK,M) + &
+               (DES_VEL_NEW(LL,3)-DES_W_s(IJK,M))**2 
+         ENDIF
+
+         PC = PC + 1
+      ENDDO
+
 ! loop over all fluid cells      
       DO IJK = IJKSTART3, IJKEND3
          IF(FLUID_AT(IJK)) THEN
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
 
-! loop over all particles in ijk fluid cell            
-            IF (ASSOCIATED(PIC(I,J,K)%p)) THEN
-               NPG = SIZE(PIC(I,J,K)%p)
-               TEMP(:) = ZERO
-               NPG_PHASE(:) = ZERO
-
-               DO LL = 1, NPG 
-                  NP = PIC(I,J,K)%p(LL)
-                  M = PIJK(NP,5)
-                  NPG_PHASE(M) = NPG_PHASE(M) + 1
-            
-                  TEMP(M) = TEMP(M) + &
-                     (DES_VEL_NEW(NP,1)-DES_U_s(IJK,M))**2 
-                  TEMP(M) = TEMP(M) + &
-                     (DES_VEL_NEW(NP,2)-DES_V_s(IJK,M))**2
-                  IF(DIMN.EQ.3) THEN 
-                     TEMP(M) = TEMP(M) + &
-                        (DES_VEL_NEW(NP,3)-DES_W_s(IJK,M))**2 
-                  ENDIF
-               ENDDO
-
-               DO M = 1,MMAX
-                  IF (NPG_PHASE(M) > 0 ) THEN
-                     DES_THETA(IJK,M) = TEMP(M)/&
-                        DBLE(DIMN*NPG_PHASE(M))
-                  ELSE
-                     DES_THETA(IJK,M) = ZERO
-                  ENDIF 
-               ENDDO
-
-            ENDIF
+            DO M = 1,MMAX
+               IF (NP_PHASE(IJK,M) > 0 ) THEN
+                  DES_THETA(IJK,M) = TEMP(IJK,M)/&
+                     DBLE(DIMN*NP_PHASE(IJK,M))
+               ELSE
+                  DES_THETA(IJK,M) = ZERO
+               ENDIF 
+            ENDDO
          ENDIF
-      
       ENDDO
-
-!      OPEN (UNIT=17,FILE='des_granular_temp.out',STATUS='REPLACE')
-!      WRITE(17,*)' '
-!      WRITE(17,*)'T="',S_TIME,'"'
-!      DO IJK = IJKSTART3, IJKEND3
-!         IF(FLUID_AT(IJK)) THEN
-!            I = I_OF(IJK)
-!            J = J_OF(IJK)
-!            K = K_OF(IJK)
-!            WRITE(17,*) IJK, I, J, K, DES_THETA(IJK,1)
-!         ENDIF
-!      ENDDO
 
 
 ! Calculate global quantities: granular temperature, kinetic energy,
 ! potential energy and average velocity at the current instant of time
-!-------------------------------------
+!-----------------------------------------------
 
 ! initialization for calculations
       DES_KE = ZERO
@@ -166,5 +155,6 @@
       GLOBAL_GRAN_TEMP(:) =  GLOBAL_GRAN_TEMP(:)/DBLE(PIS)
 
       RETURN
+
       END SUBROUTINE DES_GRANULAR_TEMPERATURE
 
