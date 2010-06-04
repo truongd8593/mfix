@@ -343,6 +343,7 @@
             ENDDO
          ENDIF
 
+! Report some statistics on overlap and neighbors to screen log
          IF ( (S_TIME+0.1d0*DTSOLID >= DES_TMP_TIME) .OR. &
               ( (S_TIME+0.1d0*DTSOLID >= TSTOP) .AND. &
                (.NOT.DES_CONTINUUM_COUPLED) ) .OR. &          
