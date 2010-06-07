@@ -22,78 +22,121 @@
       USE run
       USE constant
       USE physprop
-      USE usr
+      USE usr      
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------       
-      INTEGER LN, K, M, NP
+      INTEGER L, K, M
       INTEGER CHECK_MPI
-      INTEGER L, I, J, II, PART_COUNT
+      INTEGER PART_COUNT
       DOUBLE PRECISION DIST, R_LM, DOML(DIMN)
-!-----------------------------------------------       
+! for sphere-advection case
       DOUBLE PRECISION theta, phi_local
       DOUBLE PRECISION XM, YM, ZM
-      DOUBLE PRECISION, PARAMETER :: T_per=0.25d0
-      INTEGER  jmax_local, imax_local
+      INTEGER I, J, LN 
+      INTEGER JMAX_local, IMAX_local     
+!-----------------------------------------------       
 
       WRITE(*,'(3X,A)') &
          '---------- START GENERATE_PARTICLE_CONFIG ---------->'
 
+! following code commented out for sphere-advection case           
+!      PART_COUNT = 0
+!      DO M = 1, MMAX
+!         DO L = 1, PART_MPHASE(M) 
+!            PART_COUNT = PART_COUNT + 1
+!            DES_RADIUS(PART_COUNT) = D_P0(M)*HALF
+!            RO_Sol(PART_COUNT) = RO_S(M)
+!         ENDDO
+!      ENDDO
+      
+!      DOML(1) = DES_EPS_XSTART
+!      DOML(2) = DES_EPS_YSTART
+!      IF(DIMN.EQ.3) THEN
+!         DOML(3) = DES_EPS_ZSTART
+!      ENDIF
 
-      allocate(x_store(particles,dimn))
+!      IF (DES_EPS_XSTART > XLENGTH) THEN
+!         WRITE(UNIT_LOG,1001) 'X', 'X'
+!         WRITE(*,1003)
+!         CALL MFIX_EXIT(myPE)
+!      ENDIF
+!      IF (DES_EPS_YSTART > YLENGTH) THEN
+!         WRITE(UNIT_LOG,1001) 'Y', 'Y'
+!         WRITE(*,1003)
+!         CALL MFIX_EXIT(myPE)
+!      ENDIF
+!      IF (DIMN .EQ. 3 .AND. DES_EPS_ZSTART > ZLENGTH) THEN
+!         WRITE(UNIT_LOG,1001) 'Z', 'Z'
+!         WRITE(*,1003)
+!         CALL MFIX_EXIT(myPE)
+!      ENDIF
+
+      
+!      CALL GENER_LATTICE_MOD(PARTICLES,doml(1:DIMN),&
+!         DES_POS_OLD(1:PARTICLES,1:DIMN),DES_RADIUS(1:PARTICLES))   
+
+! following code added for sphere-advection case      
+      ALLOCATE(x_store(PARTICLES,DIMN))
 
       ln = 0
+      IMAX_local = 32
+      DO I = 1, IMAX_local
+         theta = (I-1)*PI/(IMAX_local-1)
+         IF(I.le.(IMAX_local/2+1)) THEN
+            JMAX_local = I*2 - 1
+         ELSE
+            JMAX_local = (IMAX_local-I)*2+1
+         ENDIF
+   
+         DO J = 1, JMAX_local
 
-      imax_local = 32
-      do i = 1, imax_local
-      theta = (i-1)*pi/(imax_local-1)
-      if(i.le.(imax_local/2+1)) then
-         jmax_local = i*2 - 1
-      else
-         jmax_local = (imax_local-i)*2+1
-      end if
-      do j = 1, jmax_local
+            phi_local = J*2.0d0*PI/(JMAX_local)
+            ln = ln + 1
 
-      phi_local = j*2.0d0*pi/(jmax_local)
-      ln = ln + 1
+            DES_RADIUS(LN) = D_P0(1)*HALF
+            RO_SOL(LN) = RO_S(1)
 
-      DES_RADIUS(LN) = D_P0(1)*HALF
-      RO_SOL(LN) = RO_S(1)
+            DES_POS_OLD(LN, 1) = 0.15d0*sin(theta)*cos(phi_local) + 0.35d0
+            DES_POS_OLD(LN, 2) = 0.15d0*sin(theta)*sin(phi_local) + 0.35d0
+            DES_POS_OLD(LN, 3) = 0.15d0*cos(theta) + 0.35d0
 
-      DES_POS_OLD(LN, 1) = 0.15d0*sin(theta)*cos(phi_local) + 0.35d0
-      DES_POS_OLD(LN, 2) = 0.15d0*sin(theta)*sin(phi_local) + 0.35d0
-      DES_POS_OLD(LN, 3) = 0.15d0*cos(theta) + 0.35d0
+            XM = DES_POS_OLD(LN, 1)
+            YM = DES_POS_OLD(LN, 2)
+            ZM = DES_POS_OLD(LN, 3)
 
-      XM = DES_POS_OLD(LN, 1)
-      YM = DES_POS_OLD(LN, 2)
-      ZM = DES_POS_OLD(LN, 3)
+            x_store(ln,1) = XM
+            x_store(ln,2) = YM
+            x_store(ln,3) = ZM
 
-      x_store(ln,1) = xm
-      x_store(ln,2) = ym
-      x_store(ln,3) = zm
+            DES_VEL_OLD(LN, 1) = 2.0d0*(sin(PI*XM))**2*&
+               sin(2.d0*PI*YM)*sin(2.d0*PI*ZM)
+            DES_VEL_OLD(LN, 2) = -sin(2.d0*PI*XM)*(sin(PI*YM))**2*&
+               sin(2.d0*PI*ZM)
+            DES_VEL_OLD(LN, 3) = -sin(2.d0*PI*XM)*sin(2.d0*PI*YM)*&
+               (sin(PI*ZM))**2
+            write(*,*) XM, YM, ZM, DES_VEL_OLD(LN, 1), &
+               DES_VEL_OLD(LN, 2),  DES_VEL_OLD(LN, 3),  ln
 
-      DES_VEL_OLD(LN, 1) = 2.0d0*(sin(pi*xm))**2*sin(2*pi*ym)*sin(2*pi*zm)
-      DES_VEL_OLD(LN, 2) = -sin(2*pi*xm)*(sin(pi*ym))**2*sin(2*pi*zm)
-      DES_VEL_OLD(LN, 3) = -sin(2*pi*xm)*sin(2*pi*ym)*(sin(pi*zm))**2
-      write(*,*) XM, YM, ZM, DES_VEL_OLD(LN, 1), DES_VEL_OLD(LN, 2),  DES_VEL_OLD(LN, 3),  ln
+         ENDDO 
+      ENDDO
 
-      end do
-      end do
+      PARTICLES = LN
+! end of added code
 
-      particles = ln
 
       OPEN(unit=24, file="particle_gener_conf.dat",&
          form="formatted")
       
-      DO LN = 1, PARTICLES
-         OMEGA_OLD(LN,:) = ZERO
-         DES_POS_NEW(LN,:) = DES_POS_OLD(LN,:)
-         DES_VEL_NEW(LN,:) = DES_VEL_OLD(LN,:)
-         OMEGA_NEW(LN,:) = OMEGA_OLD(LN,:)
-         WRITE(24,'(10(2X,ES12.5))') (DES_POS_OLD(LN,K),K=1,DIMN),&
-            DES_RADIUS(LN),RO_Sol(LN), (DES_VEL_OLD(LN,K),K=1,DIMN) 
+      DO L = 1, PARTICLES
+         OMEGA_OLD(L,:) = ZERO
+         DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
+         DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:)
+         OMEGA_NEW(L,:) = OMEGA_OLD(L,:)
+         WRITE(24,'(10(2X,ES12.5))') (DES_POS_OLD(L,K),K=1,DIMN),&
+            DES_RADIUS(L),RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
       ENDDO
       CLOSE(24)
 
@@ -199,7 +242,7 @@
  200     CONTINUE 
       ENDDO
 
-      WRITE(*,'(7X,A,I)') &
+      WRITE(*,'(7X,A,I10)') &
          'Number of particles in gener_lattice_mod = ', N
       WRITE(*,'(5X,A)') '<---------- END GENER_LATTICE_MOD ----------'
 
@@ -513,7 +556,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER I, J, K, LN
+      INTEGER I, J, K, L
       LOGICAL FILE_EXIST
       REAL*8 :: umf0(dimn), rsf(DIMN, DIMN)
 !-----------------------------------------------      
@@ -545,20 +588,20 @@
          IF (FILE_EXIST) THEN
             OPEN(UNIT=24,FILE='particle_gener_conf.dat',&
                  STATUS='REPLACE')
-            DO LN = 1, PARTICLES
+            DO L = 1, PARTICLES
                WRITE(24,'(10(X,ES12.5))')&
-                  (DES_POS_OLD(LN,K),K=1,DIMN), DES_RADIUS(LN),&
-                  RO_Sol(LN), (DES_VEL_OLD(LN,K),K=1,DIMN) 
+                  (DES_POS_OLD(L,K),K=1,DIMN), DES_RADIUS(L),&
+                  RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
             ENDDO
             CLOSE(24)
          ENDIF
       ELSE
          OPEN(UNIT=24,FILE='particle_input2.dat',&
               STATUS='REPLACE')
-         DO LN = 1, PARTICLES
-            WRITE(24,'(10(X,ES))')&
-               (DES_POS_OLD(LN,K),K=1,DIMN), DES_RADIUS(LN),&
-               RO_Sol(LN), (DES_VEL_OLD(LN,K),K=1,DIMN) 
+         DO L = 1, PARTICLES
+            WRITE(24,'(10(X,ES15.5))')&
+               (DES_POS_OLD(L,K),K=1,DIMN), DES_RADIUS(L),&
+               RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
          ENDDO
          CLOSE(24)
       ENDIF

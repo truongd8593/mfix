@@ -40,9 +40,9 @@
       LOGICAL:: filexist, isopen
       INTEGER I, J, K, IJK, L, M
       INTEGER COUNT_E
-      DOUBLE PRECISION MIN_MASS, MASS_I, MASS_J, &
+      DOUBLE PRECISION MASS_I, MASS_J, &
                        MASS_EFF, RED_MASS_EFF
-      DOUBLE PRECISION TCOLL, TCOLL_TMP, MAXMASS
+      DOUBLE PRECISION TCOLL, TCOLL_TMP
 ! local variables for calculation of hertzian contact parameters
       DOUBLE PRECISION R_EFF, E_EFF, G_MOD_EFF     
 ! local variable to determine minimum grid size
@@ -55,45 +55,22 @@
 
       WRITE(*,'(3X,A)') '---------- START CFASSIGN ---------->'
 
-      PIS = PARTICLES  ! J.Musser 
-      MIN_MASS = LARGE_NUMBER
-      MAXMASS = SMALL_NUMBER
-      MAX_RADIUS = ZERO
-      MIN_RADIUS = LARGE_NUMBER
       TCOLL = LARGE_NUMBER
-      DO L = 1, PARTICLES
+
+! If RESTART_1 is being used with DEM inlets/outlets, then it is possible
+! that the particle arrays have indices without data (without particles).
+! Skip 'empty' locations when populating the particle property arrays.
+      DO L = 1, MAX_PIS
+         IF(.NOT.PEA(L,1)) CYCLE      
          PVOL(L) = (4.0d0/3.0d0)*Pi*DES_RADIUS(L)**3
          PMASS(L) = PVOL(L)*RO_SOL(L) 
          OMOI(L) = 2.5d0/(PMASS(L)*DES_RADIUS(L)**2) !one over MOI
-         MAX_RADIUS = MAX(MAX_RADIUS, DES_RADIUS(L))
-         MIN_RADIUS = MIN(MIN_RADIUS, DES_RADIUS(L))
-         IF(PMASS(L).LT.MIN_MASS) MIN_MASS = PMASS(L) 
-         MAXMASS = MAX(PMASS(L), MAXMASS)
          MARK_PART(L) = 1
          IF(DES_POS_NEW(L,2).LE.YLENGTH/2.d0) MARK_PART(L) = 0
       ENDDO
 
       RADIUS_EQ = MAX_RADIUS*1.05d0
-      WRITE(*,'(5X,A,ES15.8)') '1.05*MAX_RADIUS = ', MAX_RADIUS     
-
-      IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN
-         MIN_GRID = LARGE_NUMBER
-         DO IJK = ijkstart3, ijkend3
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
-            MIN_GRID = MIN(MIN_GRID, DX(I))
-            MIN_GRID = MIN(MIN_GRID, DY(J))
-            IF (DIMN.EQ.3) MIN_GRID = MIN(MIN_GRID, DZ(K))
-         ENDDO
-         IF (MIN_GRID <= MIN_RADIUS) THEN
-            WRITE(*,'(/,5X,A,A,/14X,A,A,/14X,A,A,/)') &
-               'WARNING: for grid based search the grid size should ',&
-               'be greater than', 'the radius of the smallest ',&
-               'particle or neighbor contacts','may be missed ',&
-               'giving bad simulation results' 
-         ENDIF
-      ENDIF
+      WRITE(*,'(5X,A,ES15.8)') '1.05*MAX_RADIUS = ', RADIUS_EQ
 
 
 ! Set boundary edges 
@@ -139,9 +116,9 @@
                MASS_J = (PI/6.d0)*(D_P0(J)**3)*RO_S(J)
                MASS_EFF = (MASS_I*MASS_J)/(MASS_I+MASS_J)
 ! In the Hertzian model introduce a factor of 2/7 to the effective mass 
-! for tangential direction to get a reduced mass.  Reference: Van der Hoef
-! et al., Multi-scale modeling of gas-fluidized beds, Advances in Chemical
-! Engineering, 2006
+! for tangential direction to get a reduced mass.  See reference: 
+! Van der Hoef et al., Advances in Chemical Engineering, 2006, 31, 65-149
+!   (see page 94-95)                
                RED_MASS_EFF = (2.d0/7.d0)*MASS_EFF               
                R_EFF = 0.5d0*(D_P0(I)*D_P0(J)/(D_P0(I)+D_P0(J)))
                E_EFF = e_young(I)*e_young(J)/ &
@@ -154,15 +131,22 @@
                hert_kn(I,J)=(4.d0/3.d0)*E_EFF*SQRT(R_EFF)
                hert_kt(I,J)=(16.d0/3.d0)*G_MOD_EFF*SQRT(R_EFF)
 
-               DES_ETAN(I,J) = 2.d0*SQRT(hert_kn(I,J)*MASS_EFF)*&
-                  ABS(LOG(REAL_EN(I,J)))
-               DES_ETAN(I,J) = DES_ETAN(I,J)/&
-                  SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2)
-               DES_ETAT(I,J) = 2.d0*SQRT(hert_kt(I,J)*RED_MASS_EFF)*&
-                  ABS(LOG(REAL_ET(I,J)))
-               DES_ETAT(I,J) = DES_ETAT(I,J)/&
-                  SQRT(PI*PI + (LOG(REAL_ET(I,J)))**2) 
-
+               IF (REAL_EN(I,J) .NE. ZERO) THEN
+                  DES_ETAN(I,J) = 2.d0*SQRT(hert_kn(I,J)*MASS_EFF)*&
+                     ABS(LOG(REAL_EN(I,J)))
+                  DES_ETAN(I,J) = DES_ETAN(I,J)/&
+                     SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2)
+               ELSE
+                  DES_ETAN(I,J) = 2.d0*SQRT(hert_kn(I,J)*MASS_EFF)
+               ENDIF
+               IF (REAL_ET(I,J) .NE. ZERO) THEN
+                  DES_ETAT(I,J) = 2.d0*SQRT(hert_kt(I,J)*RED_MASS_EFF)*&
+                     ABS(LOG(REAL_ET(I,J)))
+                  DES_ETAT(I,J) = DES_ETAT(I,J)/&
+                     SQRT(PI*PI + (LOG(REAL_ET(I,J)))**2) 
+               ELSE
+                  DES_ETAT(I,J) = 2.d0*SQRT(hert_kt(I,J)*RED_MASS_EFF)
+               ENDIF
                hert_kn(J,I) = hert_kn(I,J)
                hert_kt(J,I) = hert_kt(I,J)
 
@@ -212,8 +196,15 @@
             'COLLISION MODEL: Linear Spring-Dashpot (default)'
 
 ! User's input for KT_FAC and KT_W_FAC will be used, otherwise these values are
-! estimated using: Silbert et al, 2001, Physical Review E, vol. 64-5, see page 051302-5
+! estimated using set factors.  See following references: 
+!   Schafer et al., J. Phys. I France, 1996, 6, 5-20 (see page 7&13), or
+!   Van der Hoef et al., Advances in Chemical Engineering, 2006, 31, 65-149,
+! (see page 94-95), or
+!   Silbert et al., Physical Review E, 2001, 64, 051302 1-14
+! (see page 051302-5)
          IF(KT_FAC == UNDEFINED) THEN
+! in LSD model a factor of 2/7 makes period of tangential and normal 
+! oscillation equal for uniform spheres when en=1 (no dissipation)
             KT = (2.d0/7.d0)*KN
          ELSE
             KT = KT_FAC*KN
@@ -236,13 +227,19 @@
                MASS_I = (PI/6.d0)*(D_P0(I)**3.d0)*RO_S(I)
                MASS_J = (PI/6.d0)*(D_P0(J)**3.d0)*RO_S(J)
                MASS_EFF = (MASS_I*MASS_J)/(MASS_I + MASS_J)
-               DES_ETAN(I,J) = 2.D0*SQRT(KN*MASS_EFF)*&
-                  ABS(LOG(REAL_EN(I,J)))
-               DES_ETAN(I,J) = DES_ETAN(I,J)/&
-                  SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2)
+
+               IF (REAL_EN(I,J) .NE. ZERO) THEN               
+                  DES_ETAN(I,J) = 2.D0*SQRT(KN*MASS_EFF)*&
+                     ABS(LOG(REAL_EN(I,J)))
+                  DES_ETAN(I,J) = DES_ETAN(I,J)/&
+                     SQRT(PI*PI + (LOG(REAL_EN(I,J)))**2)
+               ELSE
+                  DES_ETAN(I,J) = 2.D0*SQRT(KN*MASS_EFF)
+               ENDIF
  
 ! User's input for DES_ETAT_FAC will be used, otherwise these values are
-! estimated using: Silbert et al, 2003, Physics of Fluids, vol. 15-1, see page 3
+! estimated using set factors: See following reference:
+!   Silbert et al., Physics of Fluids, 2003, 15, no. 1, 1-10 (see page 3)
                IF(DES_ETAT_FAC == UNDEFINED) THEN
                   DES_ETAT(I,J) = HALF*DES_ETAN(I,J)
                ELSE
@@ -262,16 +259,21 @@
             MASS_I = (PI*(D_P0(I)**3)*RO_S(I))/6.d0
             MASS_J = MASS_I
             MASS_EFF = MASS_I
-            DES_ETAN_WALL(I) = 2.d0*SQRT(KN_W*MASS_EFF)*&
-               ABS(LOG(REAL_EN_WALL(I)))
-            DES_ETAN_WALL(I) = DES_ETAN_WALL(I)/&
-               SQRT(PI*PI + (LOG(REAL_EN_WALL(I)))**2)
- 
+            IF (REAL_EN_WALL(I) .NE. ZERO) THEN
+               DES_ETAN_WALL(I) = 2.d0*SQRT(KN_W*MASS_EFF)*&
+                  ABS(LOG(REAL_EN_WALL(I)))
+               DES_ETAN_WALL(I) = DES_ETAN_WALL(I)/&
+                  SQRT(PI*PI + (LOG(REAL_EN_WALL(I)))**2)
+            ELSE
+               DES_ETAN_WALL(I) = 2.D0*SQRT(KN_W*MASS_EFF)
+            ENDIF          
+
             IF(DES_ETAT_W_FAC == UNDEFINED) THEN
                DES_ETAT_WALL(I) = HALF*DES_ETAN_WALL(I)
             ELSE
                DES_ETAT_WALL(I) = DES_ETAT_W_FAC*DES_ETAN_WALL(I)
             ENDIF
+  
 
             TCOLL_TMP = PI/SQRT(KN_W/MASS_EFF - ((DES_ETAN_WALL(I)/MASS_EFF)**2.d0)/4.d0)
             !TCOLL = MIN(TCOLL_TMP, TCOLL)
@@ -292,13 +294,14 @@
 
       DO I = 1, MMAX
          DO J = I, MMAX
-            WRITE(*,'(5X,A,I,2X,I,A,2(ES15.7))') &
+            WRITE(*,'(5X,A,I10,2X,I10,A,2(ES15.7))') &
                'ETAN AND ETAT FOR PAIR ',&
                I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
          ENDDO
       ENDDO
 
-      DTSOLID = DT ! TCOLL/50.d0 - Hardwired for the circle convection case
+! Hardwired for the sphere convection case
+      DTSOLID = DT ! TCOLL/50.d0
       
       WRITE(*,'(5X,A,E17.10,2X,E17.10)') 'MIN TCOLL AND DTSOLID = ',&
          TCOLL, DTSOLID

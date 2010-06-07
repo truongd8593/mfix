@@ -64,7 +64,7 @@
          TEMP_V_G_Y(IMAX2,KMAX2), TEMP_W_G_Y(IMAX2, KMAX2)
       DOUBLE PRECISION TEMP_U_G_Z(IMAX2, JMAX2),&
           TEMP_V_G_Z(IMAX2,JMAX2), TEMP_W_G_Z(IMAX2, JMAX2)
-
+          
 ! indices used with periodic boundaries
       INTEGER IJK_IMAX1, IJK_JMAX1, IJK_KMAX1
 
@@ -84,6 +84,8 @@
 ! is re/set later through the call to set_interpolation_stencil
       INTEGER :: ONEW
 
+!mean pressure gradient for the case of periodic boundaries
+      DOUBLE PRECISION MPG_CYCLIC(DIMN)
 ! constant whose value depends on dimension of system      
       DOUBLE PRECISION AVG_FACTOR     
 
@@ -113,6 +115,10 @@
 
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
       AVG_FACTOR = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)   
+      MPG_CYCLIC(1:DIMN) = ZERO 
+      IF(CYCLIC_X_PD) MPG_CYCLIC(1) = DELP_X/XLENGTH
+      IF(CYCLIC_Y_PD) MPG_CYCLIC(2) = DELP_Y/YLENGTH
+      IF(CYCLIC_Z_PD.AND.DIMN.EQ.3) MPG_CYCLIC(3) = DELP_Z/ZLENGTH
 
 ! if calc_fc is true, then the contact forces (FC) will be updated 
 ! to include gas-solids drag and gas pressure force on the particle
@@ -137,50 +143,50 @@
 ! and to allow non-uniform grids            
             IF(PINC(IJK).GT.0) THEN
                IF(IMIN1.EQ.IMAX1) THEN
-                  P_FORCE(IJK,1) = ZERO
+                  P_FORCE(IJK,1) = MPG_CYCLIC(1)*DX(I)*DY(J)*DZ(K ) 
                ELSEIF(I.EQ.IMIN1) THEN
                   TEMP2 = (P_G(IJK)+P_G(IPJK))/2
                   TEMP1 = (P_G(IJK)*DX(I) - TEMP2*DX(I)/2)/(DX(I)/2)
-                  P_FORCE(IJK,1) = (TEMP1-TEMP2)*DY(J)*DZ(K )
+                  P_FORCE(IJK,1) = (TEMP1-TEMP2)*DY(J)*DZ(K )  +  MPG_CYCLIC(1)*DX(I)*DY(J)*DZ(K )
                ELSEIF(I.EQ.IMAX1) THEN
                   TEMP2 = (P_G(IMJK)+P_G(IJK))/2
                   TEMP1 = (P_G(IJK)*DX(I) - TEMP2*DX(I)/2)/(DX(I)/2)
-                  P_FORCE(IJK,1) = (TEMP2 - TEMP1)*DY(J)*DZ(K)
+                  P_FORCE(IJK,1) = (TEMP2 - TEMP1)*DY(J)*DZ(K) +  MPG_CYCLIC(1)*DX(I)*DY(J)*DZ(K )
                ELSEIF((I.GT.IMIN1).AND.(I.LT.IMAX1)) THEN
                   TEMP2 = (P_G(IJK)+P_G(IPJK))/2
                   TEMP1 = (P_G(IMJK)+P_G(IJK))/2
-                  P_FORCE(IJK,1) = (TEMP1 - TEMP2)*DY(J)*DZ(K)
+                  P_FORCE(IJK,1) = (TEMP1 - TEMP2)*DY(J)*DZ(K) + MPG_CYCLIC(1)*DX(I)*DY(J)*DZ(K )
                ENDIF
                IF(JMIN1.EQ.JMAX1) THEN
-                  P_FORCE(IJK,2) = ZERO
+                  P_FORCE(IJK,2) = MPG_CYCLIC(2)*DX(I)*DY(J)*DZ(K )
                ELSEIF(J.EQ.JMIN1) THEN
                   TEMP2 = (P_G(IJK)+P_G(IJPK))/2
                   TEMP1 = (P_G(IJK)*DY(J) - TEMP2*DY(J)/2)/(DY(J)/2)
-                  P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K)
+                  P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K) + MPG_CYCLIC(2)*DX(I)*DY(J)*DZ(K )
                ELSEIF(J.EQ.JMAX1) THEN
                   TEMP2 = (P_G(IJMK)+P_G(IJK))/2
                   TEMP1 = (P_G(IJK)*DY(J) - TEMP2*DY(J)/2)/(DY(J)/2)
-                  P_FORCE(IJK,2) = (TEMP2 - TEMP1)*DX(I)*DZ(K)
+                  P_FORCE(IJK,2) = (TEMP2 - TEMP1)*DX(I)*DZ(K) + MPG_CYCLIC(2)*DX(I)*DY(J)*DZ(K )
                ELSEIF((J.GT.JMIN1).AND.(J.LT.JMAX1)) THEN
                   TEMP2 = (P_G(IJK)+P_G(IJPK))/2
                   TEMP1 = (P_G(IJMK)+P_G(IJK))/2
-                  P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K)
+                  P_FORCE(IJK,2) = (TEMP1 - TEMP2)*DX(I)*DZ(K) +  MPG_CYCLIC(2)*DX(I)*DY(J)*DZ(K )
                ENDIF
                IF(DIMN.EQ.3) THEN
                   IF(KMIN1.EQ.KMAX1) THEN
-                     P_FORCE(IJK,3) = ZERO
+                     P_FORCE(IJK,3) = MPG_CYCLIC(3)*DX(I)*DY(J)*DZ(K )
                   ELSEIF(K.EQ.KMIN1) THEN
                      TEMP2 = (P_G(IJK)+P_G(IJKP))/2
                      TEMP1 = (P_G(IJK)*DZ(K) - TEMP2*DZ(K)/2)/(DZ(K)/2)
-                     P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J)
+                     P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J) +  MPG_CYCLIC(3)*DX(I)*DY(J)*DZ(K )
                   ELSEIF(K.EQ.KMAX1) THEN
                      TEMP2 = (P_G(IJKM)+P_G(IJK))/2
                      TEMP1 = (P_G(IJK)*DZ(K) - TEMP2*DZ(K)/2)/(DZ(K)/2)
-                     P_FORCE(IJK,3) = (TEMP2 - TEMP1)*DX(I)*DY(J)
+                     P_FORCE(IJK,3) = (TEMP2 - TEMP1)*DX(I)*DY(J) +  MPG_CYCLIC(3)*DX(I)*DY(J)*DZ(K )
                   ELSEIF((K.GT.KMIN1).AND.(K.LT.KMAX1)) THEN
                      TEMP2 = (P_G(IJK)+P_G(IJKP))/2
                      TEMP1 = (P_G(IJKM)+P_G(IJK))/2
-                     P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J)
+                     P_FORCE(IJK,3) = (TEMP1 - TEMP2)*DX(I)*DY(J) +  MPG_CYCLIC(3)*DX(I)*DY(J)*DZ(K )
                   ENDIF
                ENDIF
 
@@ -223,7 +229,10 @@
             M = PIJK(NP,5)
             OVOL = ONE/VOL(IJK)
             FC(NP,:) = FC(NP,:) + (SOLID_DRAG(IJK,M,:)*PVOL(NP)) 
-            FC(NP,:) = FC(NP,:) + (P_FORCE(IJK,:)*OVOL)*PVOL(NP)
+            IF(MODEL_B) THEN    !Do not add the pressure gradient force
+            ELSE !Add the pressure gradient force 
+               FC(NP,:) = FC(NP,:) + (P_FORCE(IJK,:)*OVOL)*PVOL(NP)
+            ENDIF
             PC = PC + 1
          ENDDO
       ENDIF
@@ -342,7 +351,7 @@
             CALL INTERPOLATE_QUANTS(IW, IE, JS, JN, KB, KTP, ONEW, &
                DES_POS_NEW(NP,1:DIMN), VEL_FP(NP,1:DIMN), FOCUS)
  
-!           Massless particles for the circle convection test
+!Massless particles for the sphere advection test
             des_vel_new(np,:) = vel_fp(np,:)
 
 ! calculate the particle centered drag coefficient (F_GP) using the
@@ -359,7 +368,11 @@
                D_FORCE(1:DIMN) = F_GP(NP)*&
                   ( VEL_FP(NP,1:DIMN)-DES_VEL_NEW(NP,1:DIMN) )
                FC(NP,:) = FC(NP,:) + D_FORCE(:)
-               FC(NP,:) = FC(NP,:) + P_FORCE(IJK,:)*OVOL*PVOL(NP)
+               
+            IF(MODEL_B) THEN    !Do not add the pressure gradient force
+            ELSE !Add the pressure gradient force 
+               FC(NP,:) = FC(NP,:) + (P_FORCE(IJK,:)*OVOL)*PVOL(NP)
+            ENDIF
             ENDIF
 
 
@@ -446,7 +459,7 @@
                            ( drag_bm(I,J,K,1, 1:MMAX) + &
                              drag_bm(IMAX1,J,K,1, 1:MMAX) )
                         drag_bm(IMAX1,J,K,1,1:MMAX) = drag_bm(1,J,K,1, 1:MMAX)
-   
+                        
                         WTBAR(I,J,K,:) = HALF*&
                            ( WTBAR(I,J,K,:) + WTBAR(IMAX1,J,K,:) )
                         WTBAR(IMAX1,J,K,:) = WTBAR(1,J,K,:)

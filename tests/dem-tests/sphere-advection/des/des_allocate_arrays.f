@@ -27,8 +27,8 @@
       INTEGER I, J, K, IJK, M 
 ! domain volume      
       DOUBLE PRECISION :: VOL_DOMAIN
-! for gener_part_config, the maximum specified particle diameter 
-      DOUBLE PRECISION MAX_DIAM
+! the maximum and minimum specified particle diameter 
+      DOUBLE PRECISION MAX_DIAM, MIN_DIAM
 ! for gener_part_config, the total solids volume fraction
       DOUBLE PRECISION TOT_VOL_FRAC
 ! the number of particles in the system
@@ -40,9 +40,41 @@
       WRITE(*,'(1X,A)')&
          '---------- START DES_ALLOCATE_ARRAYS ---------->'
 
+! Valid D_p0(M) are needed here if gener_part_config.  A second check 
+! for realistic d_p0 values is made in check_data_04 but this routine 
+! is called after des_allocate_arrays (i.e. would be too late).
+! Valid D_P0(M) are also needed to identify which solids phase each
+! particle belongs in (although the sorting is performed after 
+! check_data_04 is called), and to determine the maximum particle size
+! in the system (MAX_RADIUS), which in turn is used for various tasks
+       MAX_DIAM = ZERO
+       MIN_DIAM = LARGE_NUMBER
+       DO M = 1,MMAX   
+          IF (D_P0(M)<ZERO .OR. D_P0(M)==UNDEFINED) THEN    
+             WRITE (*,'(3X,A,A)') &   
+                'D_P0 must be defined and >0 in mfix.dat ',&   
+                'for M = 1,MMAX'   
+                CALL MFIX_EXIT(myPE)   
+          ENDIF   
+          MAX_DIAM = MAX(MAX_DIAM, D_P0(M))
+          MIN_DIAM = MIN(MIN_DIAM, D_P0(M))
+       ENDDO   
+       DO M = MMAX+1, DIMENSION_M   
+          IF (D_P0(M) /= UNDEFINED) THEN   
+             WRITE (*,'(3X,A,A)') &   
+                'Too many D_P0 are defined for given MMAX'   
+             CALL MFIX_EXIT(myPE)   
+          ENDIF   
+       ENDDO
+       MAX_RADIUS = 0.5d0*MAX_DIAM
+       MIN_RADIUS = 0.5d0*MIN_DIAM
+
+
+! If gener_part_config ensure various quantities are defined and valid
+! ------------------------------------------------------------
+
       IF(GENER_PART_CONFIG) THEN 
          TOT_VOL_FRAC = ZERO
-         MAX_DIAM = ZERO 
          WRITE(*,'(3X,A)') 'Checking usr info for gener_part_config'
          WRITE(*,'(5X,A,G15.8)') 'DES_EPS_XSTART = ', DES_EPS_XSTART
          WRITE(*,'(5X,A,G15.8)') 'DES_EPS_YSTART = ', DES_EPS_YSTART
@@ -71,7 +103,7 @@
 
 ! perform a quick series of checks for quantities immediately needed in
 ! calculations; a more comprehensive series of checks is performed later
-! (e.g., check_data_03, check_des_data)         
+! (e.g., check_data_03, check_des_data which are called from get_data)
          DO M = 1, MMAX
             IF(VOL_FRAC(M) == UNDEFINED) THEN
                WRITE (*,'(/,5X,A,A,/)') &
@@ -85,16 +117,8 @@
                   'values of VOL_FRAC(M) set in mfix.dat'
                CALL MFIX_EXIT(myPE)
             ENDIF
-            IF (D_P0(M)<ZERO .OR. D_P0(M)==UNDEFINED) THEN 
-               WRITE (*,'(/,5X,A,A,/)') &
-                  'D_P0 must be defined and >0 in mfix.dat ',&
-                  'for M = 1,MMAX'
-                  CALL MFIX_EXIT(myPE)
-            ENDIF
-            MAX_DIAM = MAX(MAX_DIAM, D_P0(M))            
             TOT_VOL_FRAC = TOT_VOL_FRAC + VOL_FRAC(M)
          ENDDO
-         IF (MAX_DIAM .EQ. ZERO) MAX_DIAM = ONE 
 
          IF(TOT_VOL_FRAC > (ONE-EP_STAR)) THEN
             WRITE (*,'(/,5X,A,A,/7X,A,ES15.7,2X,A,ES15.7,/)') &
@@ -112,12 +136,17 @@
 ! Values of DZ(1) or zlength are not guaranteed at this point; however,
 ! some value is needed to calculate the number of particles
             IF (DZ(1) == UNDEFINED .AND. ZLENGTH == UNDEFINED) THEN
-               WRITE(*,'(5X,A,A,/11X,A,A,ES15.7,/11X,A,A,/11X,A,A,/)') &
+               IF (MAX_DIAM .EQ. ZERO) MAX_DIAM = ONE ! for calculations
+               WRITE(*,'(5X,A,A,/11X,A,A,ES15.7,/11X,A,A,/11X,A,/)') &
                   'NOTE: neither zlength or dz(1) were specified ',&
-                  'so a depth equal','to the maximum particle ',&
-                  'diameter of ', MAX_DIAM, 'is temporarily used ',&
-                  'to provide a basis','for calculating ', &
-                  'the number of particles in the system'
+                  'so ZLENGTH is being set','to the maximum particle ',&
+                  'diameter of ', MAX_DIAM, 'to provide a basis ',&
+                  'for calculating the number of particles',&
+                  'in the system'
+! set zlength to ensure consistency with calculations later on especially 
+! when conducting coupled simulations when zlength/dz(1) are not set in 
+! the mfix.dat file
+               ZLENGTH = MAX_DIAM 
                VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*MAX_DIAM
             ELSEIF (DZ(1) == UNDEFINED) THEN
                WRITE(*,'(5X,A,G15.8,A,/11X,A,A,/11X,A,/)') &
@@ -144,21 +173,47 @@
            ' VOL_DOMAIN = ', VOL_DOMAIN
          WRITE(*,'(5X,A,/7X,(ES15.7,2X,$))') 'D_P0(M) = ', &
             D_P0(1:MMAX)
-         WRITE(*,'')
+         WRITE(*,*)
          WRITE(*,'(5X,A,/7X,(G15.8,2X,$))') &
             'VOL_FRAC(M) (solids volume fraction of phase M) = ', &
             VOL_FRAC(1:MMAX)
-         WRITE(*,'')
-         WRITE(*,'(5X,A,/7X,(I,2X,$))') &
+         WRITE(*,*)
+         WRITE(*,'(5X,A,/7X,(I0,2X,$))') &
             'PART_MPHASE(M) (number particles in phase M) = ', &
             PART_MPHASE(1:MMAX)
-         WRITE(*,'')
+         WRITE(*,*)
          PARTICLES = SUM(PART_MPHASE(1:MMAX))
-         
-         PARTICLES = 32*31 ! Hardwired for the circle convection case
+! Hardwired for the sphere convection case
+         PARTICLES = 32*31 
       ENDIF !  end if gener_part_config
 
-      WRITE(*,'(3X,A,I)') &
+! End checks if gener_part_config    
+! ------------------------------------------------------------
+
+
+! J.Musser 
+! If the particle count is not defined, but MAX_PIS, the maximum number
+! of particles permitted in the system at any given time, is set, assume
+! that a mass inlet has been specified and that the system is starting
+! empty.  Further checks are conducted in check_des_bc which is called
+! from get_data to verify this assumption.
+      IF (.NOT.GENER_PART_CONFIG) THEN
+         IF(PARTICLES == UNDEFINED_I .AND. MAX_PIS /= UNDEFINED_I)THEN
+            PARTICLES = 0
+         ELSEIF(PARTICLES == UNDEFINED_I .AND. MAX_PIS == UNDEFINED_I)THEN
+            WRITE(*,'(3X,A)')&
+               'Either PARTICLES or MAX_PIS must specified in mfix.dat'
+            CALL MFIX_EXIT(myPE)
+         ELSEIF(PARTICLES == 0 .AND. MAX_PIS == UNDEFINED_I) THEN
+            WRITE(*,'(3X,A,A)')&
+               'If starting with 0 PARTICLES, MAX_PIS must be ', &
+               'specified in mfix.dat'
+            CALL MFIX_EXIT(myPE)         
+         ENDIF 
+      ENDIF   ! if .not.gener_part_config
+
+
+      WRITE(*,'(3X,A,I10)') &
          'Total number of particles = ', PARTICLES      
       WRITE(*,'(3X,A,I5)') 'Dimension = ', DIMN
       NWALLS = 2*DIMN
@@ -267,6 +322,8 @@
       Allocate(  DES_WALL_VEL (NWALLS,DIMN) )
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
 
+! Variable that stores the particle in cell information (ID) on the
+! computational grid defined by imax, jmax and kmax in mfix.dat
       ALLOCATE(PIC(DIMENSION_I,DIMENSION_J,DIMENSION_K))
       DO K = 1,KMAX3
          DO J = 1,JMAX3
@@ -276,9 +333,17 @@
           ENDDO 
        ENDDO 
 
-! Particles in a computational cell (for volume fraction) )
+! Particles in a computational cell (for volume fraction)
       Allocate(  PINC (DIMENSION_3) )
+! For each particle track its i,j,k location on computational grid
+! defined by imax, jmax and kmax in mfix.dat and phase no.         
       Allocate(  PIJK (NPARTICLES,5) )
+
+! For each particle track its i, j, k index according to the grid
+! based search mesh when des_neighbor_search=4
+      IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN      
+         ALLOCATE( DESGRIDSEARCH_PIJK (NPARTICLES,3) )
+      ENDIF
 
       IF(DES_INTERP_ON) THEN
          ALLOCATE(DRAG_AM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), MMAX))

@@ -56,7 +56,7 @@
 !                      Indices
       INTEGER          I, J, K, IJK
       DOUBLE PRECISION XX, YY, ZZ, XM, YM, ZM, LN
-      DOUBLE PRECISION, PARAMETER :: T_per=0.25d0
+
       DOUBLE PRECISION ERROR(PARTICLES)
 !
 !  Include files defining statement functions here
@@ -74,13 +74,16 @@
          YM = YN(J) - 0.5d0*DY(J)
          ZM = ZT(K) - 0.5d0*DZ(K)
 
-         u_g(ijk) = 2.0d0*(sin(pi*xx))**2*sin(2*pi*ym)*sin(2*pi*zm)*cos(pi*time/T_per)
-         v_g(ijk) = -sin(2*pi*xm)*(sin(pi*yy))**2*sin(2*pi*zm)*cos(pi*time/T_per)
-         w_g(ijk) = -sin(2*pi*xm)*sin(2*pi*ym)*(sin(pi*zz))**2*cos(pi*time/T_per)
+         u_g(ijk) = 2.0d0*(sin(PI*XX))**2*sin(2.d0*PI*YM)*&
+            sin(2.d0*PI*ZM)*cos(PI*time/T_per)
+         v_g(ijk) = -sin(2.d0*PI*XM)*(sin(PI*YY))**2*&
+            sin(2*PI*ZM)*cos(PI*time/T_per)
+         w_g(ijk) = -sin(2.d0*PI*XM)*sin(2.d0*PI*YM)*&
+            (sin(PI*ZZ))**2*cos(PI*time/T_per)
 
 !        write(101,*) ijk, i, j, k, time, u_g(ijk), v_g(ijk), w_g(ijk)
-!        write(102,*) ijk, i, j, k, time, pi, xx, yy, zz, zm, ym, zm, cos(pi*time/T_per)
-!        write(103,*) ijk, i, j, k, time, pi, sin(pi*xx), sin(2*pi*ym), sin(2*pi*zm)
+!        write(102,*) ijk, i, j, k, time, PI, xx, yy, zz, zm, ym, zm, cos(PI*time/T_per)
+!        write(103,*) ijk, i, j, k, time, PI, sin(PI*xx), sin(2*PI*ym), sin(2*PI*zm)
 
 !        write(104,*) i, j, k, xx, yy, zz, xm, ym, zm
 
