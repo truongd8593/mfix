@@ -110,7 +110,7 @@
                   DES_CONTINUUM_COUPLED = .FALSE.
                   DO FACTOR = 1, NFACTOR
                      IF (FACTOR .EQ. 1)&
-                        WRITE(*,'(3X,A,/,5X,A,X,I,X,A)') &
+                        WRITE(*,'(3X,A,/,5X,A,X,I10,X,A)') &
                         'FIRST PASS in DES_TIME_MARCH for new runs',&
                         'DEM settling period performed', NFACTOR, &
                         'times'
@@ -145,7 +145,7 @@
                ENDIF
                CALL PARTICLES_IN_CELL
                CALL WRITE_DES_DATA
-               WRITE(*,'(3X,A,X,ES)') &
+               WRITE(*,'(3X,A,X,ES15.5)') &
                   'DES data file written at time =', S_TIME
                WRITE(UNIT_LOG,*) &
                   'DES data file written at time = ', S_TIME
@@ -169,17 +169,17 @@
             DTSOLID_TMP = DTSOLID
             DTSOLID = DT
          ENDIF
-         WRITE(*,'(1X,A,X,I,X,A)') &
+         WRITE(*,'(1X,A,X,I10,X,A)') &
             'DEM SIMULATION will be called', &
             FACTOR, 'times this fluid time step' 
          WRITE(*,'(3X,2(A,X,ES15.7,2X))') 'dt =', dt,&
             'dtsolid =', dtsolid
-         WRITE(*,'(3X,A,X,I)') 'int(dt/dtsolid) =', nint(dt/dtsolid)
+         WRITE(*,'(3X,A,X,I10)') 'int(dt/dtsolid) =', nint(dt/dtsolid)
       ELSE
          FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID)) 
          WRITE(*,'(1X,A)')&
             '---------- START DES_TIME_MARCH ---------->'
-         WRITE(*,'(3X,A,X,I,X,A)') &
+         WRITE(*,'(3X,A,X,I10,X,A)') &
             'DEM SIMULATION will be called', FACTOR, 'times'
 ! Initialization for des_spx_time, des_res_time         
          IF(RUN_TYPE .EQ. 'NEW') THEN
@@ -193,10 +193,10 @@
          ENDIF
       ENDIF   ! end if/else (des_continuum_coupled)
 
+      IF (DES_CONTINUUM_COUPLED) DES_SPX_DT = SPX_DT(1)
       IF (RUN_TYPE .EQ. 'NEW') THEN
          DES_TMP_TIME = S_TIME
       ELSE
-         IF (DES_CONTINUUM_COUPLED) DES_SPX_DT = SPX_DT(1)
          DES_TMP_TIME = ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) +1 ) *&
             DES_SPX_DT
       ENDIF
@@ -232,7 +232,7 @@
                DTSOLID = TIME + DT - S_TIME
             ENDIF 
             IF(DEBUG_DES) THEN
-               WRITE(*,'(3X,A,X,I,X,A,X,ES15.7)') &
+               WRITE(*,'(3X,A,X,I10,X,A,X,ES15.7)') &
                   'DES-COUPLED LOOP NO. =', NN, ' S_TIME =', S_TIME 
                WRITE(*,'(3X,A,X,ES15.7)') &
                   'DTSOLID =', DTSOLID
@@ -247,7 +247,7 @@
                CALLFROMDES = .TRUE.
             ENDIF
          ELSE   ! else if (des_continuum_coupled)
-            IF(DEBUG_DES) WRITE(*,'(3X,A,X,I,X,A,X,ES15.7)') &
+            IF(DEBUG_DES) WRITE(*,'(3X,A,X,I10,X,A,X,ES15.7)') &
                'DEM LOOP NO. =', NN, ' S_TIME =', S_TIME 
          ENDIF   ! end if/else (des_continuum_coupled) 
          
@@ -273,7 +273,7 @@
             CALL PARTICLES_IN_CELL
 
             IF(NN.EQ.1 .OR. MOD(NN,NEIGHBOR_SEARCH_N).EQ.0) THEN 
-               IF(DEBUG_DES) WRITE(*,'(3X,A,A,/,5X,A,I)') &
+               IF(DEBUG_DES) WRITE(*,'(3X,A,A,/,5X,A,I10)') &
                   'Calling NEIGHBOUR: NN=1 or ',&
                   'MOD(NN,NEIGHBOR_SEARCH_N)=0',&
                   'NEIGHBOR_SEARCH_N = ', NEIGHBOR_SEARCH_N
@@ -329,10 +329,9 @@
                   AVG_VEL = (ONE/DIMN)*SUM( DES_VEL_AVG(1:DIMN) )
                   WRITE(101,'(ES11.5,2X,I,2X,4(ES15.7,X),I5)') &
                      s_time, NN, gran_temp, des_ke, avg_vel,&
-                     OVERLAP_MAX, NEIGH_MAX
-
+                     OVERLAP_MAX, NEIGH_MAX                  
                   CALL WRITE_DES_DATA
-                  WRITE(*,'(3X,A,X,ES)') &
+                  WRITE(*,'(3X,A,X,ES15.5)') &
                      'DES data file written at time =', S_TIME
                   WRITE(UNIT_LOG,*) &
                      'DES data file written at time = ', S_TIME
@@ -349,7 +348,7 @@
 ! Write RES1 here since it won't be called in time_march.  This will
 ! also keep track of TIME
                CALL WRITE_RES1 
-               WRITE(*,'(3X,A,X,ES)') &
+               WRITE(*,'(3X,A,X,ES15.5)') &
                   'DES.RES and .RES files written at time =', S_TIME
                WRITE(UNIT_LOG,*) &
                   'DES.RES and .RES files written at time = ', S_TIME
@@ -372,12 +371,14 @@
             ENDDO
          ENDIF
 
+! Report some statistics on overlap and neighbors to screen log
          IF ( (S_TIME+0.1d0*DTSOLID >= DES_TMP_TIME) .OR. &
-              (S_TIME+0.1d0*DTSOLID >= TSTOP) .OR. &          
+              ( (S_TIME+0.1d0*DTSOLID >= TSTOP) .AND. &
+               (.NOT.DES_CONTINUUM_COUPLED) ) .OR. &          
               (NN .EQ. FACTOR) ) THEN
             DES_TMP_TIME = ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) &
-               + 1 )*DES_RES_DT
-            WRITE(*,'(3X,A,I,A,/,5X,A,X,I5,2X,A,X,ES15.7)') &
+               + 1 )*DES_SPX_DT
+            WRITE(*,'(3X,A,I10,A,/,5X,A,X,I5,2X,A,X,ES15.7)') &
                'For loop ', NN, ' :',&
                'MAX no. of neighbors =',NEIGH_MAX,&
                'and MAX % overlap =', OVERLAP_MAX
