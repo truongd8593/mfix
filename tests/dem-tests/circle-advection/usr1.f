@@ -56,7 +56,7 @@
 !                      Indices
       INTEGER          I, J, K, IJK
       DOUBLE PRECISION XX, YY, ZZ, XM, YM, ZM, LN
-      DOUBLE PRECISION, PARAMETER :: T_per=0.25d0
+
       DOUBLE PRECISION ERROR(PARTICLES)
 !
 !  Include files defining statement functions here
@@ -73,8 +73,8 @@
          XM = XE(I) - 0.5d0*DX(I)
          YM = YN(J) - 0.5d0*DY(J)
 
-         u_g(ijk) = (sin(pi*xx))**2*sin(2.0d0*pi*ym)*cos(pi*time/T_per)
-         v_g(ijk) = -sin(2.0d0*pi*xm)*(sin(pi*yy))**2*cos(pi*time/T_per)
+         u_g(ijk) = (sin(PI*XX))**2*sin(2.0d0*PI*YM)*cos(PI*time/T_per)
+         v_g(ijk) = -sin(2.0d0*PI*XM)*(sin(PI*YM))**2*cos(PI*time/T_per)
 
 !        write(101,*) ijk, i, j, k, time, u_g(ijk), v_g(ijk), w_g(ijk)
 !        write(102,*) ijk, i, j, k, time, pi, xx, yy, zz, zm, ym, zm, cos(pi*time/T_per)

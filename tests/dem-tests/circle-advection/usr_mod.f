@@ -18,6 +18,7 @@
 !
 !                       a dummy variable listed in usrnlst.inc   
         DOUBLE PRECISION DUMMY_DP
+        DOUBLE PRECISION, PARAMETER :: T_per=0.25d0
         DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: x_store
 
       END MODULE usr                                                                             
