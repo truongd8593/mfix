@@ -1130,12 +1130,12 @@ void MfixData::CreateVariableNames()
                         {
                             string ts = "T_s_";
 
-                            for (int i=0; i<MMAX; ++i)
-                            {
+                         //   for (int i=0; i<MMAX; ++i)  // fix : 6-16-2010
+                         //   {
                                 variable_names.push_back(ts+Convert<int,string>(i+1));
                                 index_map.push_back(variable_names.size()-1);
                                 varNameToSPX.insert(make_pair(ts+Convert<int,string>(i+1) , 6));
-                            }
+                         //   }
                         }
                     }
 
