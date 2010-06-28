@@ -13,24 +13,18 @@
       SUBROUTINE MAKE_ARRAYS_DES
       
       USE param1
-      USE constant
-      USE geometry
       USE funits
+      USE run
       USE compar      
       USE discretelement
-      USE run
-
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------      
       INTEGER I, J, K, L
-      INTEGER IJK, M  ! needed for calling bfx_s, etc
-!-----------------------------------------------
-      INCLUDE 'b_force1.inc'
-      INCLUDE 'b_force2.inc'
 
+!-----------------------------------------------
 
       WRITE(*,'(1X,A)')&
          '---------- START MAKE_ARRAYS_DES ---------->'
@@ -88,47 +82,6 @@
          WRITE(*,'(3X,A)') 'Restart 2 is not implemented with DES'
          CALL MFIX_EXIT(myPE)
       ENDIF
-
-! Set misc quantities 
-! -------------------------------
-! Note : the quantities xe, zt cannot be readily replaced with the
-! similar appearing variables x_e, z_t in main mfix code as they 
-! are not the same.  also the variable y_n does not exist in main
-!  mfix code. each loop starts at 2 and goes to max+2 (i.e., imin1=2,
-! imax2=imax+2) 
-      XE(1) = ZERO
-      YN(1) = ZERO
-      DO I = IMIN1, IMAX2
-         XE(I) = XE(I-1) + DX(I)
-      ENDDO
-      DO J  = JMIN1, JMAX2
-         YN(J) = YN(J-1) + DY(J)
-      ENDDO
-      IF(DIMN.EQ.3) THEN
-         ZT(1) = ZERO
-         DO K = KMIN1, KMAX2
-            ZT(K) = ZT(K-1) + DZ(K)
-         ENDDO
-      ENDIF
-
-! Set boundary edges 
-! In some instances wx1,ex2, etc have been used and in others
-! xlength,zero, etc are used.  todo: code should be modified for
-! consistency throughout      
-      WX1 = ZERO 
-      EX2 = XLENGTH 
-      BY1 = ZERO
-      TY2 = YLENGTH 
-      SZ1 = ZERO 
-      NZ2 = ZLENGTH
-
-! the DEM variable grav(:) will not accomodate a body force that varies
-! in space or on phases unlike the implementation in the continuum 
-! simulations
-      GRAV(1) = BFX_s(1,1)
-      GRAV(2) = BFY_s(1,1)
-      IF(DIMN.EQ.3) GRAV(3) = BFZ_s(1,1)     
-! -------------------------------
 
       CALL CFASSIGN
 

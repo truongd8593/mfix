@@ -5292,11 +5292,14 @@ cell_near_wall.$(OBJ_EXT) : ./des/cell_near_wall.f \
 cfassign.$(OBJ_EXT) : ./des/cfassign.f \
             PARAM1.mod \
             PHYSPROP.mod \
+            GEOMETRY.mod \
             CONSTANT.mod \
             COMPAR.mod \
             PARALLEL.mod \
             SENDRECV.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            b_force1.inc                                                 \
+            b_force2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfassign.f 
 cffctowall.$(OBJ_EXT) : ./des/cffctowall.f \
             PARAM1.mod \
@@ -5617,14 +5620,10 @@ grid_based_neighbor_search.$(OBJ_EXT) : ./des/grid_based_neighbor_search.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/grid_based_neighbor_search.f 
 make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             PARAM1.mod \
-            CONSTANT.mod \
-            GEOMETRY.mod \
             FUNITS.mod \
-            COMPAR.mod \
-            DISCRETELEMENT.mod \
             RUN.mod \
-            b_force1.inc                                                 \
-            b_force2.inc                                                
+            COMPAR.mod \
+            DISCRETELEMENT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/make_arrays_des.f 
 neighbour.$(OBJ_EXT) : ./des/neighbour.f \
             PARAM1.mod \
