@@ -5290,23 +5290,13 @@ cell_near_wall.$(OBJ_EXT) : ./des/cell_near_wall.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cell_near_wall.f 
 cfassign.$(OBJ_EXT) : ./des/cfassign.f \
-            DISCRETELEMENT.mod \
-            PARAM.mod \
             PARAM1.mod \
-            PARALLEL.mod \
-            FLDVAR.mod \
-            RUN.mod \
-            GEOMETRY.mod \
-            MATRIX.mod \
-            INDICES.mod \
             PHYSPROP.mod \
-            DRAG.mod \
             CONSTANT.mod \
             COMPAR.mod \
+            PARALLEL.mod \
             SENDRECV.mod \
-            function.inc                                                 \
-            b_force1.inc                                                 \
-            b_force2.inc                                                
+            DISCRETELEMENT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfassign.f 
 cffctowall.$(OBJ_EXT) : ./des/cffctowall.f \
             PARAM1.mod \
@@ -5627,14 +5617,14 @@ grid_based_neighbor_search.$(OBJ_EXT) : ./des/grid_based_neighbor_search.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/grid_based_neighbor_search.f 
 make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             PARAM1.mod \
+            CONSTANT.mod \
             GEOMETRY.mod \
             FUNITS.mod \
             COMPAR.mod \
             DISCRETELEMENT.mod \
-            DES_BC.mod \
             RUN.mod \
-            CONSTANT.mod \
-            PHYSPROP.mod 
+            b_force1.inc                                                 \
+            b_force2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/make_arrays_des.f 
 neighbour.$(OBJ_EXT) : ./des/neighbour.f \
             PARAM1.mod \
@@ -5662,20 +5652,16 @@ octree.$(OBJ_EXT) : ./des/octree.f \
             COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/octree.f 
 particles_in_cell.$(OBJ_EXT) : ./des/particles_in_cell.f \
-            DISCRETELEMENT.mod \
             PARAM.mod \
             PARAM1.mod \
-            PARALLEL.mod \
             FLDVAR.mod \
-            RUN.mod \
             GEOMETRY.mod \
-            MATRIX.mod \
             INDICES.mod \
             PHYSPROP.mod \
-            DRAG.mod \
-            CONSTANT.mod \
             COMPAR.mod \
+            PARALLEL.mod \
             SENDRECV.mod \
+            DISCRETELEMENT.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   

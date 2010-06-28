@@ -18,40 +18,26 @@
 
       SUBROUTINE CFASSIGN
 
-      USE discretelement
-      USE param
       USE param1
-      USE parallel
-      USE fldvar
-      USE run
-      USE geometry
-      USE matrix
-      USE indices
       USE physprop
-      USE drag
       USE constant
       USE compar
+      USE parallel
       USE sendrecv
+      USE discretelement
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      LOGICAL:: filexist, isopen
-      INTEGER I, J, K, IJK, L, M
+      INTEGER I, J, L
       INTEGER COUNT_E
       DOUBLE PRECISION MASS_I, MASS_J, &
                        MASS_EFF, RED_MASS_EFF
       DOUBLE PRECISION TCOLL, TCOLL_TMP
 ! local variables for calculation of hertzian contact parameters
       DOUBLE PRECISION R_EFF, E_EFF, G_MOD_EFF     
-! local variable to determine minimum grid size
-      DOUBLE PRECISION MIN_GRID
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'b_force1.inc'
-      INCLUDE 'b_force2.inc'
-
 
       WRITE(*,'(3X,A)') '---------- START CFASSIGN ---------->'
 
@@ -72,22 +58,6 @@
       RADIUS_EQ = MAX_RADIUS*1.05d0
       WRITE(*,'(5X,A,ES15.8)') '1.05*MAX_RADIUS = ', RADIUS_EQ
 
-
-! Set boundary edges 
-! In some instances wx1,ex2, etc have been used and in others
-! xlength,zero, etc are used.  todo: code should be modified for
-! consistency throughout      
-      WX1 = ZERO 
-      EX2 = XLENGTH 
-      BY1 = ZERO
-      TY2 = YLENGTH 
-      SZ1 = ZERO 
-      NZ2 = ZLENGTH
-
-      
-      GRAV(1) = BFX_s(1,1)
-      GRAV(2) = BFY_s(1,1)
-      IF(DIMN.EQ.3) GRAV(3) = BFZ_s(1,1)
 
 ! Calculate collision parameters
 !--------------------------------------------------------
