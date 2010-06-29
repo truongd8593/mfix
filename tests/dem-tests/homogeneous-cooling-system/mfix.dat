@@ -175,10 +175,10 @@
   MEW_W    = 0.0         ! Particle-wall friction coefficient
 
   DES_EN_INPUT      = 1.0     ! particle-particle rest coef
-  DES_ETAT_FAC      = @(1/2)  ! damping coefficient factor = ETAN/ETAT [1/2]
+  DES_ETAT_FAC      = @(1/2)  ! damping coefficient factor = ETAT/ETAN [1/2]
 
   DES_EN_WALL_INPUT = 1.0     ! particle-wall rest coef
-  DES_ETAT_W_FAC    = @(1/2)  ! damping coefficient factor = ETAN_W/ETAT_W [1/2]
+  DES_ETAT_W_FAC    = @(1/2)  ! damping coefficient factor = ETAT_W/ETAN_W [1/2]
 
 
   PRINT_DES_DATA = .TRUE.    ! Whether to print DEM output [default=.FALSE.]

@@ -250,8 +250,8 @@
 ! particle-wall rest coef arranged in array arranged as
   DES_EN_WALL_INPUT = 0.9 0.9 0.9 0.9 0.9    ! e1w e2w e3w e4w e5w
 
-  DES_ETAT_FAC    = 0  !@(1/2)  ! damping coefficient factor = ETAN/ETAT   [1/2]
-  DES_ETAT_W_FAC  = 0  !@(1/2)  ! damping coefficient factor = ETAN_W/ETAT_W   [1/2]
+  DES_ETAT_FAC    = 0  !@(1/2)  ! damping coefficient factor = ETAT/ETAN   [1/2]
+  DES_ETAT_W_FAC  = 0  !@(1/2)  ! damping coefficient factor = ETAT_W/ETAN_W   [1/2]
 
   PRINT_DES_DATA = .TRUE. ! write DEM data : *.vtp files
   DES_RES_DT = 0.01       

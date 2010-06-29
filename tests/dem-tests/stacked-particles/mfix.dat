@@ -157,10 +157,10 @@
   MEW_W    = 0.0         ! Particle-wall friction coefficient
 
   DES_EN_INPUT      = 0.8  0.8  0.8    ! particle-particle rest coef
-  DES_ETAT_FAC      = 1.0     ! damping coefficient factor = ETAN/ETAT
+  DES_ETAT_FAC      = 1.0     ! damping coefficient factor = ETAT/ETAN
 
   DES_EN_WALL_INPUT = 0.8  0.8  0.8    ! particle-wall rest coef
-  DES_ETAT_W_FAC    = 1.0     ! damping coefficient factor = ETAN_W/ETAT_W
+  DES_ETAT_W_FAC    = 1.0     ! damping coefficient factor = ETAT_W/ETAN_W
 
 
 #  Output Control
