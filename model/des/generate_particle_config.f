@@ -27,9 +27,9 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------       
-      INTEGER L, K, M
+      INTEGER LN, K, M, NP
       INTEGER CHECK_MPI
-      INTEGER PART_COUNT
+      INTEGER L, I, II, PART_COUNT
       DOUBLE PRECISION DIST, R_LM, DOML(DIMN)
 !-----------------------------------------------       
 
@@ -38,7 +38,7 @@
 
       PART_COUNT = 0
       DO M = 1, MMAX
-         DO L = 1, PART_MPHASE(M) 
+         DO NP = 1, PART_MPHASE(M) 
             PART_COUNT = PART_COUNT + 1
             DES_RADIUS(PART_COUNT) = D_P0(M)*HALF
             RO_Sol(PART_COUNT) = RO_S(M)
@@ -74,13 +74,13 @@
       OPEN(unit=24, file="particle_gener_conf.dat",&
          form="formatted")
       
-      DO L = 1, PARTICLES
-         OMEGA_OLD(L,:) = ZERO
-         DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
-         DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:)
-         OMEGA_NEW(L,:) = OMEGA_OLD(L,:)
-         WRITE(24,'(10(2X,ES12.5))') (DES_POS_OLD(L,K),K=1,DIMN),&
-            DES_RADIUS(L),RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
+      DO LN = 1, PARTICLES
+         OMEGA_OLD(LN,:) = ZERO
+         DES_POS_NEW(LN,:) = DES_POS_OLD(LN,:)
+         DES_VEL_NEW(LN,:) = DES_VEL_OLD(LN,:)
+         OMEGA_NEW(LN,:) = OMEGA_OLD(LN,:)
+         WRITE(24,'(10(2X,ES12.5))') (DES_POS_OLD(LN,K),K=1,DIMN),&
+            DES_RADIUS(LN),RO_Sol(LN), (DES_VEL_OLD(LN,K),K=1,DIMN) 
       ENDDO
       CLOSE(24)
 
@@ -500,7 +500,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER I, J, K, L
+      INTEGER I, J, K, LN
       LOGICAL FILE_EXIST
       REAL*8 :: umf0(dimn), rsf(DIMN, DIMN)
 !-----------------------------------------------      
@@ -532,20 +532,20 @@
          IF (FILE_EXIST) THEN
             OPEN(UNIT=24,FILE='particle_gener_conf.dat',&
                  STATUS='REPLACE')
-            DO L = 1, PARTICLES
+            DO LN = 1, PARTICLES
                WRITE(24,'(10(X,ES12.5))')&
-                  (DES_POS_OLD(L,K),K=1,DIMN), DES_RADIUS(L),&
-                  RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
+                  (DES_POS_OLD(LN,K),K=1,DIMN), DES_RADIUS(LN),&
+                  RO_Sol(LN), (DES_VEL_OLD(LN,K),K=1,DIMN) 
             ENDDO
             CLOSE(24)
          ENDIF
       ELSE
          OPEN(UNIT=24,FILE='particle_input2.dat',&
               STATUS='REPLACE')
-         DO L = 1, PARTICLES
+         DO LN = 1, PARTICLES
             WRITE(24,'(10(X,ES15.5))')&
-               (DES_POS_OLD(L,K),K=1,DIMN), DES_RADIUS(L),&
-               RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
+               (DES_POS_OLD(LN,K),K=1,DIMN), DES_RADIUS(LN),&
+               RO_Sol(LN), (DES_VEL_OLD(LN,K),K=1,DIMN) 
          ENDDO
          CLOSE(24)
       ENDIF

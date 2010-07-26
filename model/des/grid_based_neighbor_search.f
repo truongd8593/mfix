@@ -39,7 +39,7 @@
       DOUBLE PRECISION DISTVEC(DIMN), DIST, R_LM ! Contact variables
       DOUBLE PRECISION LX, LY, LZ ! System dimensions
       DOUBLE PRECISION XPER_FAC, YPER_FAC, ZPER_FAC !Periodic BC info
-      DOUBLE PRECISION PARTLL_POS(DIMN) !Periodic BC neighbor check
+      DOUBLE PRECISION CORD_PNO(DIMN) !Periodic BC neighbor check
 
 !-----------------------------------------------
 ! Functions
@@ -98,9 +98,9 @@
          ENDIF
 
 ! Check fluid cells neighboring PIJK(LL,4) for potential neighbors of LL
-         KLOOP : DO KK = KM1, KP1
-            JLOOP : DO JJ = JM1, JP1
-               ILOOP : DO II = IM1, IP1
+         DO KK = KM1, KP1
+            DO JJ = JM1, JP1
+               DO II = IM1, IP1
 
 ! Shift loop index to new variables for manipulation
                   I = II;   J = JJ;   K = KK
@@ -116,20 +116,17 @@
                      IF(II.GT.DESGS_IMAX1) THEN 
                         IF(DES_PERIODIC_WALLS_X) THEN 
                            I = DESGS_IMIN1  ! min fluid cell no. 
-                           XPER_FAC = -ONE
+                           XPER_FAC = one
                         ELSE
                            I = DESGS_IMAX1  ! max fluid cell no.
-! No need to search over this index as it would be a repeat
-                           CYCLE ILOOP
                         ENDIF
                      ENDIF
                      IF(II.LT.DESGS_IMIN1) THEN 
                         IF(DES_PERIODIC_WALLS_X) THEN 
                            I = DESGS_IMAX1
-                           XPER_FAC = ONE
+                           XPER_FAC = -one
                         ELSE 
                            I = DESGS_IMIN1
-                           CYCLE ILOOP                           
                         ENDIF
                      ENDIF
                   ELSE
@@ -144,19 +141,17 @@
                      IF(JJ.GT.DESGS_JMAX1) THEN
                         IF(DES_PERIODIC_WALLS_Y) THEN 
                            J = DESGS_JMIN1
-                           YPER_FAC = -ONE
+                           YPER_FAC = one
                         ELSE
                            J = DESGS_JMAX1
-                           CYCLE JLOOP
                         ENDIF
                      ENDIF
                      IF(JJ.LT.DESGS_JMIN1) THEN
                         IF(DES_PERIODIC_WALLS_Y) THEN 
                            J = DESGS_JMAX1
-                           YPER_FAC = ONE
+                           YPER_FAC = -one
                         ELSE
                            J = DESGS_JMIN1
-                           CYCLE JLOOP
                         ENDIF
                      ENDIF
                   ELSE
@@ -169,19 +164,17 @@
                         IF(KK.GT.DESGS_KMAX1) THEN 
                            IF(DES_PERIODIC_WALLS_Z) THEN
                               K = DESGS_KMIN1
-                              ZPER_FAC = -ONE
+                              ZPER_FAC = one
                            ELSE
                               K = DESGS_KMAX1
-                              CYCLE KLOOP
                            ENDIF
                         ENDIF
                         IF(KK.LT.DESGS_KMIN1) THEN 
                            IF(DES_PERIODIC_WALLS_Z) THEN
                               K = DESGS_KMAX1
-                              ZPER_FAC = ONE
+                              ZPER_FAC = -one
                            ELSE
                               K = DESGS_KMIN1
-                              CYCLE KLOOP
                            ENDIF
                         ENDIF
                      ELSE
@@ -198,26 +191,25 @@
                      NPG = 0
                   ENDIF
 
-! Search for neighbors in indicated IJK cell with particle LL (the
-! current target particle) with its position shifted according to the
-! boundary rules (e.g., wrap around for periodic)
-                  PARTLL_POS(1) = DES_POS_NEW(LL,1) + XPER_FAC*LX
-                  PARTLL_POS(2) = DES_POS_NEW(LL,2) + YPER_FAC*LY
-                  IF(DIMN.EQ.3) THEN 
-                     PARTLL_POS(3) = DES_POS_NEW(LL,3) + ZPER_FAC*LZ
-                  ENDIF 
-
-! Loop over the particles in IJK cell to determine if any are neighbors
-! to particle LL
+! Loop over the particles in IJK cell to determine if they are
+! neighbors to particle LL
                   DO NP = 1,NPG
+
                      PNO = DESGRIDSEARCH_PIC(I,J,K)%P(NP)
                      IF(.NOT.PEA(PNO,1)) CYCLE 
 
                      IF(PNO.GT.LL)THEN 
-! Calculate the distance between particles
+
+! Calculate the distance between particles, accounting for neighbors 
+! with a periodic boundary condition (wrap arround)
                         R_LM = DES_RADIUS(LL) + DES_RADIUS(PNO)
                         R_LM = FACTOR_RLM*R_LM
-                        DISTVEC(:) = DES_POS_NEW(PNO,:) - PARTLL_POS(:)
+                        CORD_PNO(1) = DES_POS_NEW(PNO,1) + XPER_FAC*LX
+                        CORD_PNO(2) = DES_POS_NEW(PNO,2) + YPER_FAC*LY
+                        IF(DIMN.EQ.3) THEN 
+                           CORD_PNO(3) = DES_POS_NEW(PNO,3) + ZPER_FAC*LZ
+                        ENDIF 
+                        DISTVEC(:) = CORD_PNO(:) - DES_POS_NEW(LL,:)
                         DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
 
 ! Check if LL and PNO are already neighbors
@@ -255,9 +247,9 @@
 
                   ENDDO  !NP
 
-               ENDDO ILOOP   ! II cell loop
-            ENDDO JLOOP   ! JJ cell loop
-         ENDDO KLOOP   ! KK cell loop
+               ENDDO  ! II cell loop
+            ENDDO  ! JJ cell loop
+         ENDDO  ! KK cell loop
          PC = PC + 1
 
       ENDDO  ! Particles in system loop

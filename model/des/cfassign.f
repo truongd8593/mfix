@@ -18,28 +18,37 @@
 
       SUBROUTINE CFASSIGN
 
+      USE discretelement
+      USE param
       USE param1
-      USE physprop
+      USE parallel
+      USE fldvar
+      USE run
       USE geometry
+      USE matrix
+      USE indices
+      USE physprop
+      USE drag
       USE constant
       USE compar
-      USE parallel
       USE sendrecv
-      USE discretelement
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      INTEGER I, J, K, L
-      INTEGER IJK, M  ! needed for calling bfx_s, etc      
+      LOGICAL:: filexist, isopen
+      INTEGER I, J, K, IJK, L, M
       INTEGER COUNT_E
       DOUBLE PRECISION MASS_I, MASS_J, &
                        MASS_EFF, RED_MASS_EFF
       DOUBLE PRECISION TCOLL, TCOLL_TMP
 ! local variables for calculation of hertzian contact parameters
       DOUBLE PRECISION R_EFF, E_EFF, G_MOD_EFF     
+! local variable to determine minimum grid size
+      DOUBLE PRECISION MIN_GRID
 !-----------------------------------------------
+      INCLUDE 'function.inc'
       INCLUDE 'b_force1.inc'
       INCLUDE 'b_force2.inc'
 
@@ -47,49 +56,6 @@
       WRITE(*,'(3X,A)') '---------- START CFASSIGN ---------->'
 
       TCOLL = LARGE_NUMBER
-
-
-! Set misc quantities defining the system
-! -------------------------------
-! Set boundary edges 
-! In some instances wx1,ex2, etc have been used and in others
-! xlength,zero, etc are used.  todo: code should be modified for
-! consistency throughout      
-      WX1 = ZERO 
-      EX2 = XLENGTH 
-      BY1 = ZERO
-      TY2 = YLENGTH 
-      SZ1 = ZERO 
-      NZ2 = ZLENGTH
-
-! the DEM variable grav(:) will not accomodate a body force that varies
-! in space or on phases unlike the implementation in the continuum 
-! simulations
-      GRAV(1) = BFX_s(1,1)
-      GRAV(2) = BFY_s(1,1)
-      IF(DIMN.EQ.3) GRAV(3) = BFZ_s(1,1)     
-
-! Note : the quantities xe, zt cannot be readily replaced with the
-! similar appearing variables x_e, z_t in main mfix code as they 
-! are not the same.  also the variable y_n does not exist in main
-!  mfix code. each loop starts at 2 and goes to max+2 (i.e., imin1=2,
-! imax2=imax+2) 
-      XE(1) = ZERO
-      YN(1) = ZERO
-      DO I = IMIN1, IMAX2
-         XE(I) = XE(I-1) + DX(I)
-      ENDDO
-      DO J  = JMIN1, JMAX2
-         YN(J) = YN(J-1) + DY(J)
-      ENDDO
-      IF(DIMN.EQ.3) THEN
-         ZT(1) = ZERO
-         DO K = KMIN1, KMAX2
-            ZT(K) = ZT(K-1) + DZ(K)
-         ENDDO
-      ENDIF
-! -------------------------------
-
 
 ! If RESTART_1 is being used with DEM inlets/outlets, then it is possible
 ! that the particle arrays have indices without data (without particles).
@@ -106,6 +72,22 @@
       RADIUS_EQ = MAX_RADIUS*1.05d0
       WRITE(*,'(5X,A,ES15.8)') '1.05*MAX_RADIUS = ', RADIUS_EQ
 
+
+! Set boundary edges 
+! In some instances wx1,ex2, etc have been used and in others
+! xlength,zero, etc are used.  todo: code should be modified for
+! consistency throughout      
+      WX1 = ZERO 
+      EX2 = XLENGTH 
+      BY1 = ZERO
+      TY2 = YLENGTH 
+      SZ1 = ZERO 
+      NZ2 = ZLENGTH
+
+      
+      GRAV(1) = BFX_s(1,1)
+      GRAV(2) = BFY_s(1,1)
+      IF(DIMN.EQ.3) GRAV(3) = BFZ_s(1,1)
 
 ! Calculate collision parameters
 !--------------------------------------------------------

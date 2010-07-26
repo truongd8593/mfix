@@ -11,62 +11,60 @@
 !  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C 
 !  Reviewer: Rahul Garg                               Date: 01-Aug-07  C
 !  Comments: Removed the separate volume definitions and added pic     C
-!            array formulation and bed height calculation.             C
+!            array formulation and bed height caluclation.             C
+!  Note:     PIC array is currently used only if cell linked list      C
+!            search is used.                                           C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE PARTICLES_IN_CELL
 
+      USE discretelement
       USE param
       USE param1
+      USE parallel
       USE fldvar
+      USE run
       USE geometry
+      USE matrix
       USE indices
       USE physprop
+      USE drag
+      USE constant
       USE compar
-      USE parallel
       USE sendrecv
-      USE discretelement
-
+      
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-! particle no.
-      INTEGER L
-! accounted for particles
-      INTEGER PC
-! solids phase no.    
-      INTEGER M
-! ijk indices      
-      INTEGER I, J, K, IJK
-! 1 over volume of fluid cell      
-      DOUBLE PRECISION :: OVOL
-! total volume of mth phase solids in cell and 1 over that value      
+      INTEGER L, I, J, K, M, MM
+      INTEGER IJK, IPJK, IJPK, IJKP
+      DOUBLE PRECISION :: OVOL 
       DOUBLE PRECISION SOLVOLINC(DIMENSION_3,MMAX), OSOLVOL
-! variables that count/store the number of particles in i, j, k cell
       INTEGER:: npic, pos
       INTEGER, DIMENSION(DIMENSION_I,DIMENSION_J,DIMENSION_K):: particle_count
 ! particle x,y,z position
       DOUBLE PRECISION XPOS, YPOS, ZPOS
+! Variables to calculate bed height of each solids phase
+      DOUBLE PRECISION :: tmp_num(MMAX), tmp_den(MMAX), hcell 
 ! Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 ! Logical for local debug warnings
       LOGICAL DES_LOC_DEBUG
+! Accounted for particles
+      INTEGER PC
 ! size of mesh for grid based search      
       DOUBLE PRECISION SIZEDX, SIZEDY, SIZEDZ 
-! variables that count/store the number of particles in i, j, k cell
+! local variable that counts number of particles in i,j, k cell      
       INTEGER, DIMENSION(DESGS_IMAX2,DESGS_JMAX2,DESGS_KMAX2) :: DESGRIDSEARCH_NPIC
       INTEGER, DIMENSION(DESGS_IMAX2,DESGS_JMAX2,DESGS_KMAX2) :: DESGS_particle_count
-! Variables to calculate bed height of each solids phase
-      DOUBLE PRECISION :: tmp_num(MMAX), tmp_den(MMAX), hcell 
-
 !-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
 
-! following quantities are reset every call to particles_in_clel
+
       PINC(:) = 0
       SOLVOLINC(:,:) = ZERO
       DES_U_s(:,:) = ZERO
@@ -74,10 +72,28 @@
       DES_W_s(:,:) = ZERO
       DES_LOC_DEBUG = .FALSE.
 
-
+! Note : the quantities xe, zt cannot be readily replaced with the
+! similar variables x_e, z_t in main mfix code as they are not the
+! same.  also the variable y_n does not exist in main mfix code.
+! each ijk loop starts at 2 and goes to max+2 (i.e., imin1=2,
+! imax2=imax+2) 
       IF(FIRST_PASS) THEN
-         WRITE(*,'(3X,A)') &
-            '---------- START FIRST PASS PARTICLES_IN_CELL ---------->'
+      WRITE(*,'(3X,A)') &
+         '---------- START FIRST PASS PARTICLES_IN_CELL ---------->'
+         XE(1) = ZERO
+         YN(1) = ZERO
+         DO I = IMIN1, IMAX2
+            XE(I) = XE(I-1) + DX(I)
+         ENDDO
+         DO J  = JMIN1, JMAX2
+            YN(J) = YN(J-1) + DY(J)
+         ENDDO
+         IF(DIMN.EQ.3) THEN
+            ZT(1) = ZERO
+            DO K = KMIN1, KMAX2
+               ZT(K) = ZT(K-1) + DZ(K)
+            ENDDO
+         ENDIF
       ENDIF
      
       PC = 1
