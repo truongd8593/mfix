@@ -305,8 +305,10 @@
 
       OPEN(UNIT     = VTK_UNIT,           &
            FILE     = TRIM(VTK_FILENAME), &
-           FORM     = 'BINARY',    &
-           ACCESS   = 'SEQUENTIAL',   &
+           FORM     = 'UNFORMATTED',    &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
+                                           ! use 'BINARY' if 'UNFORMATTED' is not supported 
+           ACCESS   = 'STREAM',   &        ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
+                                           ! use 'SEQUENTIAL' if 'STREAM' is not supported 
            ACTION   = 'WRITE', &
            CONVERT  = 'BIG_ENDIAN')
 
