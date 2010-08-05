@@ -343,12 +343,13 @@
             ENDDO
          ENDIF
 
+! Report some statistics on overlap and neighbors to screen log
          IF ( (S_TIME+0.1d0*DTSOLID >= DES_TMP_TIME) .OR. &
               ( (S_TIME+0.1d0*DTSOLID >= TSTOP) .AND. &
                (.NOT.DES_CONTINUUM_COUPLED) ) .OR. &          
               (NN .EQ. FACTOR) ) THEN
             DES_TMP_TIME = ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) &
-               + 1 )*DES_RES_DT
+               + 1 )*DES_SPX_DT
             WRITE(*,'(3X,A,I10,A,/,5X,A,X,I5,2X,A,X,ES15.7)') &
                'For loop ', NN, ' :',&
                'MAX no. of neighbors =',NEIGH_MAX,&
