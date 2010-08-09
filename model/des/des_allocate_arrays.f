@@ -178,7 +178,7 @@
             'VOL_FRAC(M) (solids volume fraction of phase M) = ', &
             VOL_FRAC(1:MMAX)
          WRITE(*,*)
-         WRITE(*,'(5X,A,/7X,(I0,2X,$))') &
+         WRITE(*,'(5X,A,/7X,(I10,2X,$))') &
             'PART_MPHASE(M) (number particles in phase M) = ', &
             PART_MPHASE(1:MMAX)
          WRITE(*,*)
