@@ -68,9 +68,6 @@
 !     Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 
-!     index to track accounted for particles  
-      INTEGER PC    
-
 !-----------------------------------------------
 
       INCLUDE 'function.inc'
@@ -115,14 +112,9 @@
 
                      ! Force calculation         
                      CALL CALC_FORCE_DES
-                  
-                     PC = 1
-                     DO NP = 1, MAX_PIS
-                        IF(PC .GT. PIS) EXIT
-                        IF(.NOT.PEA(NP,1)) CYCLE
-                        CALL CFNEWVALUES(NP)
-                        PC = PC + 1
-                     ENDDO
+
+                     ! Update particle position, velocity 
+                     CALL CFNEWVALUES(NP)
 
                      CALL PARTICLES_IN_CELL
 
@@ -242,14 +234,8 @@
          IF (PIS /= 0) THEN
             CALL CALC_FORCE_DES
 
-            PC = 1
-            DO NP = 1, MAX_PIS
-               IF(PC .GT. PIS) EXIT
-               IF(.NOT.PEA(NP,1)) CYCLE
 ! Update particle position, velocity            
-               CALL CFNEWVALUES(NP)
-               PC = PC + 1
-            ENDDO
+            CALL CFNEWVALUES(NP)
 
 ! For systems with inlets/outlets check to determine if a particle has
 ! fully entered or exited the domain.  If the former, remove the status
