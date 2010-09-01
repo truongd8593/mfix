@@ -336,6 +336,10 @@
             END DO
           ENDIF
 
+          IF(TRIM(KT_TYPE) .eq. 'GHD')THEN
+             CALL ADJUST_EPS_GHD
+          ENDIF
+
           CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
 
           abort_ier = ier.eq.1

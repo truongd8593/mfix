@@ -427,6 +427,7 @@ mfix.exe : \
     rkqs.$(OBJ_EXT) \
     source_population_eq.$(OBJ_EXT) \
     usr_dqmom.$(OBJ_EXT) \
+    adjust_eps_ghd.$(OBJ_EXT) \
     bulk_viscosity.$(OBJ_EXT) \
     calc_d_ghd.$(OBJ_EXT) \
     calc_external_forces.$(OBJ_EXT) \
@@ -875,6 +876,7 @@ mfix.exe : \
     rkqs.$(OBJ_EXT) \
     source_population_eq.$(OBJ_EXT) \
     usr_dqmom.$(OBJ_EXT) \
+    adjust_eps_ghd.$(OBJ_EXT) \
     bulk_viscosity.$(OBJ_EXT) \
     calc_d_ghd.$(OBJ_EXT) \
     calc_external_forces.$(OBJ_EXT) \
@@ -5785,6 +5787,25 @@ usr_dqmom.$(OBJ_EXT) : ./dqmom/usr_dqmom.f \
             ep_s2.inc                                                    \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/usr_dqmom.f 
+adjust_eps_ghd.$(OBJ_EXT) : ./GhdTheory/adjust_eps_ghd.f \
+            PARAM.mod \
+            PARAM1.mod \
+            TOLERANC.mod \
+            CONSTANT.mod \
+            FLDVAR.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            PHYSPROP.mod \
+            RUN.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            GHDTHEORY.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/adjust_eps_ghd.f 
 bulk_viscosity.$(OBJ_EXT) : ./GhdTheory/bulk_viscosity.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/bulk_viscosity.f 
 calc_d_ghd.$(OBJ_EXT) : ./GhdTheory/calc_d_ghd.f \
