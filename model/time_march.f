@@ -284,7 +284,7 @@
 
 
 ! Calculate all the coefficients once before entering the time loop
-      CALL CALC_COEFF_ALL (0, IER) 
+      IF(TRIM(KT_TYPE) == UNDEFINED_C) CALL CALC_COEFF_ALL (0, IER) 
 
      
 ! Remove undefined values at wall cells for scalars
