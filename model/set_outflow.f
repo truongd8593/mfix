@@ -144,15 +144,18 @@
                      P_S(IJK,M) = P_S(LFLUID,M) 
                      IF (U_S(LFLUID,M) >= ZERO) THEN 
                         ROP_S(IJK,M) = ROP_S(LFLUID,M) 
-                        T_S(IJK,M) = T_S(LFLUID,M) 
+                        T_S(IJK,M) = T_S(LFLUID,M)
+			THETA_M(IJK,M) =  THETA_M(LFLUID,M)
                      ELSE 
                         ROP_S(IJK,M) = ZERO 
+			THETA_M(IJK,M) =  THETA_M(LFLUID,M)  ! cannot have theta_m = zero anywhere
                      ENDIF 
 
                      IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M) 
 
                      IF (TRIM(KT_TYPE) == 'GHD') THEN
                         ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+			IF(M==SMAX) THETA_M(IJK,MMAX) =  THETA_M(LFLUID,MMAX)
                      ENDIF
 
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M) 
@@ -247,14 +250,17 @@
                      IF (U_S(IJK,M) <= ZERO) THEN 
                         ROP_S(IJK,M) = ROP_S(LFLUID,M) 
                         T_S(IJK,M) = T_S(LFLUID,M) 
+			THETA_M(IJK,M) =  THETA_M(LFLUID,M)
                      ELSE 
                         ROP_S(IJK,M) = ZERO 
+			THETA_M(IJK,M) =  THETA_M(LFLUID,M)
                      ENDIF 
 
                      IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)   
 
                      IF (TRIM(KT_TYPE) == 'GHD') THEN
                         ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+			IF(M==SMAX) THETA_M(IJK,MMAX) =  THETA_M(LFLUID,MMAX)
                      ENDIF
 
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M) 
@@ -352,13 +358,16 @@
                      IF (V_S(LFLUID,M) >= 0.) THEN 
                         ROP_S(IJK,M) = ROP_S(LFLUID,M) 
                         T_S(IJK,M) = T_S(LFLUID,M) 
+			THETA_M(IJK,M) =  THETA_M(LFLUID,M)
                      ELSE 
                         ROP_S(IJK,M) = ZERO 
+			THETA_M(IJK,M) =  THETA_M(LFLUID,M)
                      ENDIF 
 
                      IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)   
                      IF (TRIM(KT_TYPE) == 'GHD') THEN
                         ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+			IF(M==SMAX) THETA_M(IJK,MMAX) =  THETA_M(LFLUID,MMAX)
                      ENDIF
 
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M) 
@@ -447,13 +456,16 @@
                      IF (V_S(IJK,M) <= ZERO) THEN 
                         ROP_S(IJK,M) = ROP_S(LFLUID,M) 
                         T_S(IJK,M) = T_S(LFLUID,M) 
+			THETA_M(IJK,M) =  THETA_M(LFLUID,M)
                      ELSE 
                         ROP_S(IJK,M) = ZERO 
+			THETA_M(IJK,M) =  THETA_M(LFLUID,M)
                      ENDIF 
 
                      IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)   
                      IF (TRIM(KT_TYPE) == 'GHD') THEN
                         ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+			IF(M==SMAX) THETA_M(IJK,MMAX) =  THETA_M(LFLUID,MMAX)
                      ENDIF
 
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M) 
@@ -545,14 +557,17 @@
                      IF (W_S(LFLUID,M) >= 0.) THEN 
                         ROP_S(IJK,M) = ROP_S(LFLUID,M) 
                         T_S(IJK,M) = T_S(LFLUID,M) 
+			THETA_M(IJK,M) =  THETA_M(LFLUID,M)
                      ELSE 
                         ROP_S(IJK,M) = ZERO 
+			THETA_M(IJK,M) =  THETA_M(LFLUID,M)
                      ENDIF 
 
                      IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)  
 
                      IF (TRIM(KT_TYPE) == 'GHD') THEN
                         ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+			IF(M==SMAX) THETA_M(IJK,MMAX) =  THETA_M(LFLUID,MMAX)
                      ENDIF
 
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M) 
@@ -640,14 +655,17 @@
                      IF (W_S(IJK,M) <= ZERO) THEN 
                         ROP_S(IJK,M) = ROP_S(LFLUID,M) 
                         T_S(IJK,M) = T_S(LFLUID,M) 
+			THETA_M(IJK,M) =  THETA_M(LFLUID,M)
                      ELSE 
                         ROP_S(IJK,M) = ZERO 
+			THETA_M(IJK,M) =  THETA_M(LFLUID,M)
                      ENDIF 
 
                      IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)   
 
                      IF (TRIM(KT_TYPE) == 'GHD') THEN
                         ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
+			IF(M==SMAX) THETA_M(IJK,MMAX) =  THETA_M(LFLUID,MMAX)
                      ENDIF
 
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M) 
