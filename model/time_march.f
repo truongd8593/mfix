@@ -378,7 +378,13 @@
       IF (CALL_USR) CALL USR1 
 
 ! Remove solids from cells containing very small quantities of solids
-      IF(.NOT.DISCRETE_ELEMENT) CALL ADJUST_EPS
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         IF(TRIM(KT_TYPE) == 'GHD') THEN
+	    CALL ADJUST_EPS_GHD
+         ELSE
+	    CALL ADJUST_EPS
+         ENDIF
+      ENDIF
 
      
 ! Mark the phase whose continuity will be used for forming Pp_g and Pp_s eqs.
