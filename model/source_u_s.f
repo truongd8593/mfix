@@ -192,6 +192,12 @@
                     EPStmp = EPStmp + AVG_X(EP_S(IJK,L),EP_S(IJKE,L),I) 
                     epsMix  = epsMix  + EP_S(IJK,L) ! epsMix, epsMixE to be used for modelB
                     epsMixE = epsMixE + EP_S(IJKE,L)
+		    IF(IP_AT_E(IJK)) THEN
+		       U_S(IJK,L) = ZERO
+                    ELSEIF(SIP_AT_E(IJK)) THEN 
+		       ISV = IS_ID_AT_E(IJK)
+		       U_S(IJK,L) = IS_VEL_S(ISV,L)
+		    ENDIF
                   ENDDO                        
                   EPSA = EPStmp
                 ELSE                  
