@@ -1415,6 +1415,9 @@
 !     
 !     Sum of all solids volume fractions
       DOUBLE PRECISION   SUM_EPS_CP
+!     
+!     parameters in pressure linearization; simple averaged Dp
+      DOUBLE PRECISION   delta, dpc_dphi, dp_avg
 !
 !     Error index
       INTEGER          IER     
@@ -1429,7 +1432,7 @@
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------      
-
+      delta = 0.01d0
       DO 200 IJK = ijkstart3, ijkend3       
      
          IF ( FLUID_AT(IJK) ) THEN
@@ -1441,13 +1444,16 @@
                IF (EP_g(IJK) .LT. (ONE-eps_f_min)) THEN
      
 ! part copied from source_v_s.f (sof)
-                  SUM_EPS_CP=0.0
+                  SUM_EPS_CP = ZERO
+		  dp_avg = ZERO
                   DO MM=1,SMAX
+		     dp_avg = dp_avg + D_p(IJK,MM)
                      IF (CLOSE_PACKED(MM)) SUM_EPS_CP=SUM_EPS_CP+EP_S(IJK,MM)
                   END DO
+		  dp_avg = dp_avg/DFLOAT(SMAX)
 ! end of part copied
      
-                  IF (SAVAGE.EQ.1) THEN !form of Savage
+                  IF (SAVAGE.EQ.1) THEN !form of Savage (not to be used with GHD theory)
                      Mu_zeta =&
                      ((2d0+ALPHA)/3d0)*((Mu_s_v(IJK)/(Eta*(2d0-Eta)*&
                      G_0(IJK,M,M)))*(1d0+1.6d0*Eta*EP_s(IJK,M)*&
@@ -1466,14 +1472,30 @@
                      trD_s_C(IJK,M))/3.d0))**0.5d0
                      
                   ELSE          !combined form
-                     ZETA = ((Theta_m(IJK,M)/(D_p(IJK,M)*D_p(IJK,M))) +&
-                     (trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
-                     trD_s_C(IJK,M))/3.d0)))**0.5d0
+                     IF(TRIM(KT_TYPE) == 'GHD') THEN
+		       ZETA = ((Theta_m(IJK,M)/dp_avg**2) +&
+                       (trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
+                       trD_s_C(IJK,M))/3.d0)))**0.5d0
+                     ELSE
+		       ZETA = ((Theta_m(IJK,M)/D_p(IJK,M)**2) +&
+                       (trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
+                       trD_s_C(IJK,M))/3.d0)))**0.5d0
+                     ENDIF
                      
                   ENDIF
                   
-                  IF ((ONE-EP_G(IJK)) .GT. (ONE-ep_star_array(ijk))) THEN
-                     Pc = 1d25*(((ONE-EP_G(IJK))- (ONE-ep_star_array(ijk)))**10d0)
+                  IF ((ONE-EP_G(IJK)) .GT. ((ONE-ep_star_array(ijk))-delta)) THEN
+!
+! Linearized form of Pc; this is more stable and provides continuous function.
+                    
+                     dpc_dphi = Fr*((delta**5)*(2d0*(ONE-ep_star_array(IJK)-delta) - &
+		         2d0*eps_f_min)+((ONE-ep_star_array(ijk)-delta)-eps_f_min)*(5*delta**4))/(delta**10)
+
+                     Pc = Fr*(((ONE-ep_star_array(IJK)-delta) - EPS_f_min)**N_Pc)/(delta**D_Pc)
+
+                     Pc = Pc + dpc_dphi*((ONE-EP_G(IJK))+delta-(ONE-ep_star_array(IJK)))
+
+                   ! Pc = 1d25*(((ONE-EP_G(IJK))- (ONE-ep_star_array(ijk)))**10d0) ! old commented Pc
                   ELSE
                      Pc = Fr*(((ONE-EP_G(IJK)) - EPS_f_min)**N_Pc)/&
                      (((ONE-ep_star_array(ijk)) - (ONE-EP_G(IJK)) +&
@@ -1504,22 +1526,25 @@
                     PfoPc = (1d0 - (trD_s_C(IJK,M)/(ZETA&
                     *N_Pff*DSQRT(2d0)*Sin_Phi)))**(N_Pff-1d0)
                  ENDIF
-               
-                 Chi = DSQRT(2d0)*P_s_f(IJK)*Sin_Phi*(N_Pff - (N_Pff-1d0)*&
+              
+                  Chi = DSQRT(2d0)*P_s_f(IJK)*Sin_Phi*(N_Pff - (N_Pff-1d0)*&
                  (PfoPc)**(1d0/(N_Pff-1d0)))
-               
+ 
                  IF (Chi < ZERO) THEN
                     P_s_f(IJK) = Pc*((N_Pff/(N_Pff-1d0))**(N_Pff-1d0))
                     Chi = ZERO
                  ENDIF
                
                  Mu_s_f(IJK) = Chi/(2d0*ZETA)
-                 Lambda_s_f(IJK) = - 2d0*Mu_s_f(IJK)/3d0
+                 Lambda_s_f(IJK) = -2d0*Mu_s_f(IJK)/3d0
      
 ! modification of the stresses in case of more than one solids phase are used (sof)
-                 P_s_f(IJK) = P_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
-                 Mu_s_f(IJK) = Mu_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
-                 Lambda_s_f(IJK) = Lambda_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
+! This is NOT done when mixture mom. eq. are solved (i.e. for GHD theory)
+                 IF(TRIM(KT_TYPE) /= 'GHD') THEN
+                    P_s_f(IJK) = P_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
+                    Mu_s_f(IJK) = Mu_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
+                    Lambda_s_f(IJK) = Lambda_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
+                 ENDIF
 
                
                ENDIF
