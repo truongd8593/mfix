@@ -75,11 +75,11 @@
                  SIGMAI(M) = D_P(IJK,M)
                  Mi(M)     = (PI/6.d0)*SIGMAI(M)**3 * RO_S(M)
                  phii(M)   = ROP_S(IJK,M) / RO_S(M)
+	         Ti(M)= THETA_M(IJK,M)
                ENDDO
                TMix = THETA_M(IJK,MMAX)
-	       Ti(:)= THETA_M(IJK,:)
                
-               CALL GHD(SMAX, SIGMAI, r_p(:smax,:smax), Mi, phii, TMix, tmpZeta0, &
+               CALL GHD(SMAX, SIGMAI, IJK, r_p(:smax,:smax), Mi, phii, TMix, tmpZeta0, &
                         tmpZetaU, Ti, tmpP, tmpKappa, tmpEta, tmpDT, tmpDF, &
 			tmpLambda, tmpLij, tmpDij, tmpDijQ)
 

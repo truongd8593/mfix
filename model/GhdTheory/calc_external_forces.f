@@ -62,7 +62,7 @@
       DOUBLE PRECISION ropsE, ropsN, ropsT
 !     
 !     drag force on a particle
-      DOUBLE PRECISION dragFc, dragFe, dragFn, dragFt, dragFx, dragFy, dragFz
+      DOUBLE PRECISION dragFc, dragFe, dragFn, dragFt
 !     
 !     pressure terms in mass mobility
       DOUBLE PRECISION PGE, PGN, PGT, SDPx, SDPy, SDPz
@@ -132,10 +132,18 @@
 		 if(NjN > zero) dragFn = F_GS(IJKN,M)/NjN
 		 if(NjT > zero) dragFt = F_GS(IJKT,M)/NjT
 		 
-		 dragFx = AVG_X(dragFc,dragFe,I) * (U_g(IJK) - U_s(IJK,M))
-		 dragFy = AVG_Y(dragFc,dragFn,J) * (V_g(IJK) - V_s(IJK,M))
-		 dragFz = AVG_Z(dragFc,dragFt,K) * (W_g(IJK) - W_s(IJK,M))
+		 dragFxflux(IJK,M) = AVG_X(dragFc,dragFe,I) * (U_g(IJK) - U_s(IJK,M))
+		 dragFyflux(IJK,M) = AVG_Y(dragFc,dragFn,J) * (V_g(IJK) - V_s(IJK,M))
+		 dragFzflux(IJK,M) = AVG_Z(dragFc,dragFt,K) * (W_g(IJK) - W_s(IJK,M))
 		 
+		 dragFx(IJK,M) = AVG_X(dragFc,dragFe,I) * (U_g(IJK))
+		 dragFy(IJK,M) = AVG_Y(dragFc,dragFn,J) * (V_g(IJK))
+		 dragFz(IJK,M) = AVG_Z(dragFc,dragFt,K) * (W_g(IJK))
+                 
+                 beta_cell_X(IJK,M)=AVG_X(dragFc,dragFe,I)
+                 beta_cell_Y(IJK,M)=AVG_Y(dragFc,dragFn,J)
+                 beta_cell_Z(IJK,M)=AVG_Z(dragFc,dragFt,K)
+
                  IF(TRIM(DRAG_TYPE) == 'HYS')THEN
                     DO IM=1,SMAX
                        IF(IM /= M)THEN
@@ -151,22 +159,36 @@
 		          if(NjT > zero) dragFt = beta_ij(IJKT,M,IM)/NjT
                           
                           avgDragx = AVG_X(dragFc,dragFe,I)
-                          dragFx = dragFx - avgDragx*(U_g(IJK) - U_s(IJK,IM))
-                        
+                          dragFx(IJK,M) = dragFx(IJK,M) - avgDragx*(U_g(IJK))
+                          dragFxflux(IJK,M) = dragFxflux(IJK,M) - avgDragx*(U_g(IJK) - U_s(IJK,IM))
+                          beta_ij_cell_X(IJK,M,IM)= AVG_X(dragFc,dragFe,I)
+
                           avgDragy = AVG_Y(dragFc,dragFn,J)
-                          dragFy = dragFy - avgDragy*(V_g(IJK) - V_s(IJK,IM))
+                          dragFy(IJK,M) = dragFy(IJK,M) - avgDragy*(V_g(IJK))
+                          dragFyflux(IJK,M) = dragFyflux(IJK,M) - avgDragy*(V_g(IJK) - V_s(IJK,IM))
+                          beta_ij_cell_Y(IJK,M,IM)=AVG_Y(dragFc,dragFn,J)
 
                           avgDragz = AVG_Z(dragFc,dragFt,K)
-                          dragFz = dragFz - avgDragz*(W_g(IJK) - W_s(IJK,IM))
+                          dragFz(IJK,M) = dragFz(IJK,M) - avgDragz*(W_g(IJK))
+                          dragFzflux(IJK,M) = dragFzflux(IJK,M) - avgDragz*(W_g(IJK) - W_s(IJK,IM))
+                          beta_ij_cell_Z(IJK,M,IM)=AVG_Z(dragFc,dragFt,K)
 
                        ENDIF
                     ENDDO
                  ENDIF
+                
+                
+		 FiXvel(IJK,M) =  (Mj * BFX_S(IJK,M)+dragFx(IJK,M) +Vj*SDPx)
+		 FiYvel(IJK,M) =  (Mj * BFY_S(IJK,M)+dragFy(IJK,M) +Vj*SDPy)
+		 FiZvel(IJK,M) =  (Mj * BFZ_S(IJK,M)+dragFz(IJK,M) +Vj*SDPz)
 
-		 FiX(IJK,M) =  (Mj * BFX_S(IJK,M) + dragFx + Vj*SDPx)
-		 FiY(IJK,M) =  (Mj * BFY_S(IJK,M) + dragFy + Vj*SDPy)
-		 FiZ(IJK,M) =  (Mj * BFZ_S(IJK,M) + dragFz + Vj*SDPz)
+		 FiX(IJK,M) =  (Mj * BFX_S(IJK,M)+dragFxflux(IJK,M) +Vj*SDPx)
+		 FiY(IJK,M) =  (Mj * BFY_S(IJK,M)+dragFyflux(IJK,M) +Vj*SDPy)
+		 FiZ(IJK,M) =  (Mj * BFZ_S(IJK,M)+dragFzflux(IJK,M) +Vj*SDPz)
 
+		 FiMinusDragX(IJK,M) =  (Mj * BFX_S(IJK,M) + Vj*SDPx)
+		 FiMinusDragY(IJK,M) =  (Mj * BFY_S(IJK,M) + Vj*SDPy)
+		 FiMinusDragZ(IJK,M) =  (Mj * BFZ_S(IJK,M) + Vj*SDPz)
                ENDDO
           ENDIF     ! Fluid_at
  200  CONTINUE     ! outer IJK loop

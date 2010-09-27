@@ -10,8 +10,11 @@
 !                                                         
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      SUBROUTINE  GHD (S, SIGMAI, alpha, MI, phii, T, Zeta0, zetau, &
+      SUBROUTINE  GHD (S, SIGMAI,IJK, alpha, MI, phii, T, Zeta0, zetau, &
                        Ti, P, Kappa, Eta, DT, DF, Lambda, Lij, Dij, Dq)
+      
+      USE drag
+
       Implicit NONE
 
       integer s                              !number of species
@@ -19,9 +22,8 @@
       double precision pi
       parameter (pi=3.14159265458979323846d0)
       
-      double precision, parameter          ::  ZERO = 0.0d0
 
-      integer i,j, k
+      integer i,j, k, IJK
       double precision mi(s)                 !mass of each species
       double precision sigmai(s)             !diameter of each species
       double precision alpha(s,s)            !restitution coeff of each pair
@@ -59,14 +61,17 @@
       double precision dzeta0_dnj(s)         !partial derivative of zeta 0 wrt nj: p 6 CMH notes
       double precision dchi0il_dnj(s,s,s)    !partial derivative of chi_il wrt nj: p 6 CMH notes
       double precision Dq(s,s)               !Dufour coefficient
-!
+
+      double precision Beta_tot, niTi, scale_fac
+ !
 ! COMMONLY USED QUANTITIES
 !
-      phi = zero
-      n   = zero
-      rho = zero
-      m   = zero
-
+      phi = 0.d0
+      n   = 0.d0
+      rho = 0.d0
+      m   = 0.d0
+      niTi = 0.d0
+      Beta_tot = 0.d0
       do i=1,s
          phi = phi + phii(i)
          ni(i) = 6.d0*phii(i) / (pi*sigmai(i)**3)
@@ -74,22 +79,24 @@
          rhoi(i) = mi(i)*ni(i)
          rho = rho + rhoi(i)
          m = m + mi(i)
+         Beta_tot = Beta_tot + F_GS(IJK,s)
       enddo
-      
-      if(n==zero) then  ! do not do any calculation if total solids concentration is zero.
-         Ti(:)      = T
-         zeta0      = zero
-	 zetau      = zero
-         p          = zero
-         kappa      = zero
-         eta        = zero
-         DT(:)      = zero
-	 DF(:,:)    = zero
-         lambda     = zero
-	 Lij(:,:)   = zero
-	 Dij(:,:)   = zero
-         RETURN
-      endif
+      do i=1,s 
+        if(n .eq. 0) then  ! do not do any calculation if total solids concentration is zero.
+          Ti(:)      = T
+          zeta0      = 0.d0
+	  zetau      = 0.d0
+          p          = 0.d0
+          kappa      = 0.d0
+          eta        = 0.d0
+          DT(:)      = 0.d0
+	  DF(:,:)    = 0.d0
+          lambda     = 0.d0
+	  Lij(:,:)   = 0.d0
+	  Dij(:,:)   = 0.d0
+          RETURN
+        endif
+      enddo
       m = m/dfloat(s)
       v0 = dsqrt(2.d0*T/m)
 
@@ -107,12 +114,13 @@
 !
 ! This subroutine solves the nonlinear alegraic equations for theta
 !
-      call cooling_rate(s,mi,ni,n,m,T,Ti,chi,sigmai,alpha,rhoi,theta)
+      call cooling_rate(s,mi,ni,n,m,T,chi,sigmai,alpha,rhoi,theta)
 !
 ! Ti and zeta0 are calculated from theta
 !
       do i=1,s
          Ti(i) = mi(i)*T/(m*theta(i))
+         niTi = niTi + ni(i)*Ti(i)
       enddo
 
       do j=1,s                                   
@@ -136,38 +144,23 @@
          enddo
       enddo
 
-!      write(6,*) 'COOLING RATE'
-!      write(6,*) '   Theta', theta
-!      write(6,*) '   Ti', Ti
-!      write(6,*) '   zeta0', zeta0
-
 !---------------------------------------------------------------------
 ! COOLING RATE TRANSPORT COEFFICIENT (zetaU)
 !---------------------------------------------------------------------
 !
       call cooling_rate_tc(s,mi,sigmai,alpha,ni,n,v0,mu,sigma,chi,T, &
                           zeta0,theta,Ti,zetau)
-
-!      write(6,*) 'COOLING RATE TRANSPORT COEFFICIENT (zetau)'
-!      write(6,*) '   ', zetau
-!
 !---------------------------------------------------------------------
 ! PRESSURE (p)
 !---------------------------------------------------------------------
 !
       call pressure (s,alpha,ni,n,mu,sigma,chi,T,Ti,p)
-
-!      write(6,*) 'PRESSURE'
-!      write(6,*) '   ', p
 !
 !---------------------------------------------------------------------
 ! BULK VISCOSITY (kappa)
 !---------------------------------------------------------------------
 !
       call bulk_viscosity(s,mi,alpha,ni,v0,mu,sigma,chi,theta,kappa)
-
-!      write(6,*) 'BULK VISCOSITY'
-!      write(6,*) '   ', kappa
 !
 !---------------------------------------------------------------------
 ! SHEAR VISCOSITY (eta)
@@ -175,9 +168,6 @@
 !
       call shear_viscosity(s,mi,sigmai,alpha,ni,v0,mu,sigma,chi, &
                            beta,zeta0,theta,Ti,kappa,eta)
-
-!      write(6,*) 'SHEAR VISCOSITY'
-!      write(6,*) '   ', eta
 !
 !---------------------------------------------------------------------
 ! THERMAL DIFFUSION COEFFICIENT (DT) & nu
@@ -185,18 +175,12 @@
 !
       call thermal_diffusivity(s,alpha,ni,mi,rho,v0,mu,sigma,chi, &
                                zeta0,theta,Ti,p,DT,nu)
-
-!      write(6,*) 'THERMAL DIFFUSIVITY'
-!      write(6,*) '   ', DT, nu
 !
 !---------------------------------------------------------------------
 ! MASS MOBILITY COEFFICIENT (DF)
 !---------------------------------------------------------------------
 !
       call mass_mobility(s,mi,ni,rho,zeta0,theta,nu,DF)
-
-!     write(6,*) 'MASS MOBILITY COEFFICIENT (DF)'
-!      write(6,*) '   ', DF
 !
 !---------------------------------------------------------------------
 ! ORDINARY DIFFUSION (Dij)
@@ -205,13 +189,6 @@
       call ordinary_diff(s,mi,sigmai,alpha,phii,T,phi,ni,n,rhoi,rho, &
              m,mu,sigma,chi,zeta0,theta,Ti,DT,nu,Dij,I_ilj,dTl_dnj, &
              dzeta0_dnj,dchi0il_dnj)
-
-!      write(6,*) 'ORDINARY DIFFUSION'
-!      write(6,*) '   Dij', Dij
-!      write(6,*) '   I_ilj', I_ilj
-!      write(6,*) '   dTl_dnj', dTl_dnj
-!      write(6,*) '   dzeta0_dnj', dzeta0_dnj
-!      write(6,*) '   dchi0il_dnj', dchi0il_dnj
 !
 !
 !---------------------------------------------------------------------
@@ -222,23 +199,12 @@
                          sigma,chi,beta,zeta0,theta,Ti,DT,&
                          lambda,omega,gammaij,lambdai)
 
-!      write(6,*) 'THERMAL CONDUCTIVITY'
-!      write(6,*) '   lambda', lambda
-!      write(6,*) '   omega', omega
-!      write(6,*) '   gammaij', gammaij
-!      write(6,*) '   lambdai', lambdai
-!      write(6,*) '   domegaij_dnj', domegaij_dnj
-!      write(6,*) '   domegaii_dni', domegaii_dni
-
 !---------------------------------------------------------------------
 ! THERMAL MOBILITY COEFFICIENT (Lij)
 !---------------------------------------------------------------------
 ! 
       call thermal_mobility(s,mi,alpha,ni,mu,sigma,chi,zeta0,&
                             theta,Ti,DF,gammaij,omega,Lij)
-
-!      write(6,*) 'THERMAL MOBILITY COEFFICIENT (Lij)'
-!      write(6,*) '   ', Lij
 !
 !
 !---------------------------------------------------------------------
@@ -248,10 +214,28 @@
       call dufour_coeff(s,mi,alpha,T,ni,rho,v0, &
              mu,sigma,chi,beta,zeta0,theta,Ti,Dij,lambdai,gammaij, &
              omega,I_ilj,dTl_dnj,dzeta0_dnj,dchi0il_dnj,Dq)
-
-!     write(6,*) 'DUFOUR COEFFICIENT (Dq)'
-!      write(6,*) '   ', Dq
 !
+
+!!!!SCALE ALL TRANSPORT COEFFICIENTS FOR THE LOW NUMBER DENSITY LIMIT
+
+      scale_fac = 1d0+2d0*eta*Beta_tot/(rho*niTi)
+
+
+      lambda = lambda/scale_fac
+      eta = eta/scale_fac
+      kappa = kappa/scale_fac
+      do i=1,s
+          DT(i) = DT(i)/scale_fac
+        do j=1,s
+          Lij(i,j) = Lij(i,j)/scale_fac
+          Dq(i,j) = Dq(i,j)/scale_fac
+          Dij(i,j) = Dij(i,j)/scale_fac
+!
+! do not scale mass mobility as fluxes need be computed correctly in dilute limit.
+!          DF(i,j) = DF(i,j)/scale_fac
+        enddo
+      enddo
+
       RETURN
       END SUBROUTINE GHD
 

@@ -18,7 +18,7 @@
 
       double precision mi(s),ni(s),chi(s,s),sigmai(s),alpha(s,s), &
                        rhoi(s),xvec(s)
-      double precision n,m,T,Ti(s)
+      double precision n,m,T
 
       integer L
       integer ntrial
@@ -31,7 +31,7 @@
 ! Initial guess for theta
 
       DO L = 1, s
-          xvec(L) = mi(L)*T / (m*Ti(L))
+          xvec(L) = mi(L) / m
       ENDDO
       
       CALL MNEWT(ntrial, xvec, s, tolx, tolf, &

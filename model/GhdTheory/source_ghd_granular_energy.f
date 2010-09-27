@@ -68,20 +68,24 @@
 !
 !                      del.Joi and Fi.Joi terms
       DOUBLE PRECISION DelDotJoi, FiDotJoi, JoiXC, JoiYC, JoiZC
-      DOUBLE PRECISION FiXC, FiYC, FiZC
+      DOUBLE PRECISION FiXC, FiYC, FiZC,ni(smax), SIGMAI(smax)
 !
 !                      phase index 
       INTEGER          M, L
 !
 !                      Dufour-related source terms
       DOUBLE PRECISION DufourX, DufourY, DufourZ, DijQTerm, &
-                       DijQTermE, DijQTermW, DijQTermN, DijQTermS, DijQTermT, DijQTermB
+                       DijQTermE, DijQTermW, DijQTermN, DijQTermS, DijQTermT, DijQTermB,LijTermW,LijTermE,LijTermN,LijTermS
+ 
+      DOUBLE PRECISION DijQTermE_H,DijQTermE_A,DijQTermW_H,DijQTermW_A,DijQTermN_H,DijQTermN_A,DijQTermS_H,DijQTermS_A,LijTermE_H, &
+                       LijTermE_A,LijTermW_H,LijTermW_A,LijTermN_H,LijTermN_A,LijTermS_H,LijTermS_A
 !                       
 !                      Source terms to be kept on RHS
-      DOUBLE PRECISION SOURCERHS, PressureRhs, ShearProduction, BulkViscRhs, DissDivURhs
+      DOUBLE PRECISION SOURCERHS, PressureRhs, ShearProduction, BulkViscRhs, DissDivURhs, phi_tot, SOURCE_FLUID,chi_ij,SINK_FLUID
 !
 !                      Source terms to be kept on LHS
-      DOUBLE PRECISION SOURCELHS, PressureLhs, CollDissipation, BulkViscLhs, DissDivULhs
+      DOUBLE PRECISION SOURCELHS, PressureLhs, CollDissipation, BulkViscLhs, DissDivULhs,VSLIP
+      DOUBLE PRECISION UGC, USCM, VGC, VSCM, WGC, WSCM
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -116,9 +120,13 @@
 
       NonZeroTheta = MAX(THETA_M(IJK,MMAX), SMALL_NUMBER)
       
-      Ntotal = ZERO       
+      Ntotal = ZERO      
+      phi_tot = ZERO
       DO M = 1,SMAX
           Ntotal = Ntotal + ROP_S(IJK,M)*6.d0/(Pi*D_P(IJK,M)**3 * RO_S(M))
+          ni(M) = ROP_S(IJK,M)*6.d0/(Pi*D_P(IJK,M)**3 * RO_S(M))
+          phi_tot = phi_tot + ROP_S(IJK,M)/RO_S(M)
+	  SIGMAI(M) = D_P(IJK,M)
       ENDDO          
 
 ! Production by shear: (S:grad(v))
@@ -127,7 +135,7 @@
       PressureLhs = P_S_C(IJK,MMAX)*ZMAX((  TRD_S_C(IJK,MMAX) ))
 
 !     mu_s*tr(D^2)   
-      ShearProduction = 2.d0*MU_S_C(IJK,MMAX)*TRD_S2(IJK,MMAX)
+      ShearProduction = 2d0*MU_S_C(IJK,MMAX)*TRD_S2(IJK,MMAX)
 
 !     lambda_s*tr(D)^2  
       BulkViscRhs = ZMAX(  LAMBDA_S_C(IJK,MMAX) ) * TRD_S_C(IJK,MMAX)**2
@@ -137,7 +145,6 @@
 ! Energy dissipation by collisions: (3/2)*n*T*zeta
 !     (3/2)*n*T*zeta0; zeroth order cooling rate term    
       CollDissipation = 1.5d0*Ntotal*Zeta0(IJK)
-
 !     (3/2)*n*T*zetaU*div(U) : 
       DissDivURhs = 1.5d0*Ntotal*Theta_m(IJK,MMAX)* ZMAX( -ZetaU(IJK)*TRD_S_C(IJK,MMAX) )
       DissDivULhs = 1.5d0*Ntotal* ZMAX(  ZetaU(IJK)*TRD_S_C(IJK,MMAX) )
@@ -151,6 +158,8 @@
       ThermMobilityZ = ZERO
       DelDotJoi = ZERO
       FiDotJoi  = ZERO
+      SOURCE_FLUID = ZERO
+      SINK_FLUID = ZERO
       DO M = 1,SMAX
 
 ! Part of heat flux: div (q)
@@ -170,18 +179,45 @@
               DijQTermW = zero
               DijQTermN = zero
               DijQTermS = zero
+	      
+              if(ROP_S(IJK,L)/RO_S(L) > DIL_EP_S) DijQTerm = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / Nip
+              if(ROP_S(IJKE,L)/RO_S(L) > DIL_EP_S) DijQTermE =Theta_m(IJKE,MMAX)**2*DijQ(IJKE,M,L) / NiE
+	      if(ROP_S(IJKW,L)/RO_S(L) > DIL_EP_S) DijQTermW =Theta_m(IJKW,MMAX)**2*DijQ(IJKW,M,L) / NiW
+	      if(ROP_S(IJKN,L)/RO_S(L) > DIL_EP_S) DijQTermN =Theta_m(IJKN,MMAX)**2*DijQ(IJKN,M,L) / NiN
+	      if(ROP_S(IJKS,L)/RO_S(L) > DIL_EP_S) DijQTermS =Theta_m(IJKS,MMAX)**2*DijQ(IJKS,M,L) / NiS
+	     
+                DijQTermE_H = AVG_X_S(DijQTerm, DijQTermE, I)
+                DijQTermE_A = AVG_X(DijQTerm, DijQTermE, I)
+              IF(MIN(ABS(DijQTermE_H),ABS(DijQTermE_A)) .eq. ABS(DijQTermE_H))THEN
+                DijQTermE = DijQTermE_H
+              ELSE
+                DijQTermE = DijQTermE_A
+              ENDIF
 
-              if(Nip > zero) DijQTerm = Theta_m(IJK,MMAX)**2 * DijQ(IJK,M,L) / Nip
-              if(NiE > zero) DijQTermE =Theta_m(IJKE,MMAX)**2*DijQ(IJKE,M,L) / NiE
-	      if(NiW > zero) DijQTermW =Theta_m(IJKW,MMAX)**2*DijQ(IJKW,M,L) / NiW
-	      if(NiN > zero) DijQTermN =Theta_m(IJKN,MMAX)**2*DijQ(IJKN,M,L) / NiN
-	      if(NiS > zero) DijQTermS =Theta_m(IJKS,MMAX)**2*DijQ(IJKS,M,L) / NiS
-	      
-              DijQTermE = AVG_X_S(DijQTerm, DijQTermE, I)
-              DijQTermW = AVG_X_S(DijQTermW, DijQTerm, IM)
-              DijQTermN = AVG_Y_S(DijQTerm, DijQTermN, J)
-              DijQTermS = AVG_Y_S(DijQTermS, DijQTerm, JM) 
-	      
+                DijQTermW_H = AVG_X_S(DijQTermW, DijQTerm, IM)
+                DijQTermW_A = AVG_X(DijQTermW, DijQTerm, IM)
+              IF(MIN(ABS(DijQTermW_H),ABS(DijQTermW_A)) .eq. ABS(DijQTermW_H))THEN
+                DijQTermW = DijQTermW_H
+              ELSE
+                DijQTermW = DijQTermW_A
+              ENDIF
+
+                DijQTermN_H = AVG_Y_S(DijQTerm, DijQTermN, J)
+                DijQTermN_A = AVG_Y(DijQTerm, DijQTermN, J)
+              IF(MIN(ABS(DijQTermN_H),ABS(DijQTermN_A)) .eq. ABS(DijQTermN_H))THEN
+                DijQTermN = DijQTermN_H
+              ELSE
+                DijQTermN = DijQTermN_A
+              ENDIF
+
+                DijQTermS_H = AVG_Y_S(DijQTermS, DijQTerm, JM)
+                DijQTermS_A = AVG_Y(DijQTermS, DijQTerm, JM)
+              IF(MIN(ABS(DijQTermS_H),ABS(DijQTermS_A)) .eq. ABS(DijQTermS_H))THEN
+                DijQTermS = DijQTermS_H
+              ELSE
+                DijQTermS = DijQTermS_A
+              ENDIF
+
 	      DufourX = DufourX + ( DijQTermE*(NiE-Nip)*ODX_E(I)*AYZ(IJK) - &
 	                            DijQTermW*(Nip-NiW)*ODX_E(IM)*AYZ(IMJK) )
 	      DufourY = DufourY + ( DijQTermN*(NiN-Nip)*ODY_N(J)*AXZ(IJK) - &
@@ -197,8 +233,8 @@
                  if(NiT > zero) DijQTermT = Theta_m(IJKT,MMAX)**2*DijQ(IJKT,M,L)/NiT
                  if(NiB > zero) DijQTermB = Theta_m(IJKB,MMAX)**2*DijQ(IJKB,M,L)/NiB
                 
-		 DijQTermT = AVG_Z_S(DijQTerm , DijQTermT, K)
-                 DijQTermB = AVG_Z_S(DijQTermB, DijQTerm, KM)
+		 DijQTermT = AVG_Z(DijQTerm , DijQTermT, K)
+                 DijQTermB = AVG_Z(DijQTermB, DijQTerm, KM)
 	         
 		 DufourZ = DufourZ + ( DijQTermT*(NiT-Nip)*ODZ_T(K)*OX(I)*AXY(IJK) - &
 		                       DijQTermB*(Nip-NiB)*ODZ_T(KM)*OX(I)*AXY(IJKM) )
@@ -206,18 +242,50 @@
 
 !     Sum_ij [ div( Lij*Fj) ]; thermal mobility term
 !     Where Fj = Body Force
+
+                LijTermW_H = AVG_X_S(Lij(IJKW,M,L),Lij(IJK,M,L),IM)
+                LijTermW_A = AVG_X(Lij(IJKW,M,L),Lij(IJK,M,L),IM)
+              IF(MIN(ABS(LijTermW_H),ABS(LijTermW_A)) .eq. ABS(LijTermW_H))THEN
+                LijTermW = LijTermW_H
+              ELSE
+                LijTermW = LijTermW_A
+              ENDIF
+ 
+                LijTermE_H = AVG_X_S(Lij(IJK,M,L),Lij(IJKE,M,L),I)
+                LijTermE_A = AVG_X(Lij(IJK,M,L),Lij(IJKE,M,L),I)
+
+              IF(MIN(ABS(LijTermE_H),ABS(LijTermE_A)) .eq. ABS(LijTermE_H))THEN
+                LijTermE = LijTermE_H
+              ELSE
+                LijTermE = LijTermE_A
+              ENDIF
+
+                LijTermN_H = AVG_Y_S(Lij(IJK,M,L),Lij(IJKN,M,L),J)
+                LijTermN_A = AVG_Y(Lij(IJK,M,L),Lij(IJKN,M,L),J)
+              IF(MIN(ABS(LijTermN_H),ABS(LijTermN_A)) .eq. ABS(LijTermN_H))THEN
+                LijTermN = LijTermN_H
+              ELSE
+                LijTermN = LijTermN_A
+              ENDIF
+
+                LijTermS_H = AVG_Y_S(Lij(IJKS,M,L),Lij(IJK,M,L),JM)
+                LijTermS_A = AVG_Y(Lij(IJKS,M,L),Lij(IJK,M,L),JM)
+              IF(MIN(ABS(LijTermS_H),ABS(LijTermS_A)) .eq. ABS(LijTermS_H))THEN
+                LijTermS = LijTermS_H
+              ELSE
+                LijTermS = LijTermS_A
+              ENDIF
+	      
+	      ThermMobilityX = ThermMobilityX + ( &
+	               FiX(IJK,L) *LijTermE*AYZ(IJK) - FiX(IMJK,L)*LijTermW*AYZ(IMJK) )
               
-	       ThermMobilityX = ThermMobilityX + ( &
-	               FiX(IJK,L) *AVG_X_S(Lij(IJK,M,L), Lij(IJKE,M,L), I)*AYZ(IJK) - &
-		       FiX(IMJK,L)*AVG_X_S(Lij(IJKW,M,L), Lij(IJK,M,L), IM)*AYZ(IMJK) )
-              
-	       ThermMobilityY = ThermMobilityY + ( &
-	                FiY(IJK,L) *AVG_Y_S(Lij(IJK,M,L), Lij(IJKN,M,L), J)*AXZ(IJK) - &
-			FiY(IJMK,L)*AVG_Y_S(Lij(IJKS,M,L), Lij(IJK,M,L), JM)*AXZ(IJMK) )
+	      ThermMobilityY = ThermMobilityY + ( &
+	                FiY(IJK,L) *LijTermN*AXZ(IJK) - &
+			FiY(IJMK,L)*LijTermS*AXZ(IJMK) )
 
 	      IF(.NOT. NO_K) ThermMobilityZ = ThermMobilityZ + ( &
-	                FiZ(IJK,L) *AVG_Z_S(Lij(IJK,M,L), Lij(IJKT,M,L), K) *AXY(IJK) -&
-			FiZ(IJKM,L)*AVG_Z_S(Lij(IJKB,M,L), Lij(IJK,M,L), KM) *AXY(IJKM) )
+	                FiZ(IJK,L) *AVG_Z(Lij(IJK,M,L), Lij(IJKT,M,L), K) *AXY(IJK) -&
+			FiZ(IJKM,L)*AVG_Z(Lij(IJKB,M,L), Lij(IJK,M,L), KM) *AXY(IJKM) )
           ENDDO ! for L = 1, smax
 
 ! Additional term arising from subtraction of 3/2*T*continuity
@@ -229,7 +297,6 @@
 	              JoiX(IJK,M)*AYZ(IJK) - JoiX(IMJK,M)*AYZ(IMJK) + JoiY(IJK,M)*&
                       AXZ(IJK) - JoiY(IJMK,M)*AXZ(IJMK) + JoiZ(IJK,M)*AXY(IJK) - JoiZ(&
                       IJKM,M)*AXY(IJKM) )
-
 
 
 ! Species force dot species mass flux 
@@ -246,21 +313,46 @@
           FiZC = AVG_Z_T(FiZ(IJKM,M),FiZ(IJK,M))
 	  
 	  FiDotJoi  = FiDotJoi  + ( JoiXC*FiXC + JoiYC*FiYC + JoiZC*FiZC ) / Mi
-          
 
+
+          IF(SWITCH > ZERO .AND. RO_g0 /= ZERO) THEN ! do nothing for gran. flow
+            UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
+            VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
+            WGC = AVG_Z_T(W_G(IJKM),W_G(IJK)) 
+            USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I) 
+            VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M)) 
+            WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M)) 
+
+            VSLIP = (USCM-UGC)**2 + (VSCM-VGC)**2 + (WSCM-WGC)**2
+            VSLIP = DSQRT(VSLIP)
+
+! Source/Sink due to fluid do not work well with fluid-solids cases that we run
+! uncomment the lines of code below to use (W. Holloway and S. Benyahia).
+!      
+!            call chi_ij_GHD(smax,M,M,SIGMAi,phi_tot,ni,chi_ij)
+       
+!            SOURCE_FLUID = SOURCE_FLUID + (81D0*EP_S(IJK,M)*(MU_G(IJK)*VSLIP)**2D0/ &
+!                   (chi_ij*(D_P(IJK,M)**3D0*RO_S(M)*THETA_M(IJK,M))**0.5D0))*VOL(IJK)
+        
+!            SINK_FLUID = SINK_FLUID + 3.d0*F_GS(IJK,M)*THETA_M(IJK,M)/Mi
+          ENDIF
 
       ENDDO ! for M = 1, smax
-
+      
+      SINK_FLUID = SINK_FLUID/NonZeroTheta
+ 
       SOURCERHS = (PressureRhs + ShearProduction + BulkViscRhs + DissDivURhs)*VOL(IJK) &
                  + ZMAX(DufourX)+ZMAX(DufourY)+ZMAX(DufourZ) &
                  + ZMAX(ThermMobilityX)+ZMAX(ThermMobilityY)+ZMAX(ThermMobilityZ)      &
 		 + ZMAX(DelDotJoi) + ZMAX(FiDotJoi)*VOL(IJK)
 
+      SOURCERHS = SOURCERHS + SOURCE_FLUID
+
       SOURCELHS = ( (PressureLhs + BulkViscLhs)/NonZeroTheta   + &
-                  (CollDissipation + DissDivULhs) ) * VOL(IJK) + &
-		  ( ZMAX(-DufourX)+ZMAX(-DufourY)+ZMAX(-DufourZ)    + &
-                  ZMAX(-ThermMobilityX)+ZMAX(-ThermMobilityY)+ZMAX(-ThermMobilityZ)   &
-		 + ZMAX(-DelDotJoi) + ZMAX(-FiDotJoi)*VOL(IJK) )/ NonZeroTheta
-      
+                  (CollDissipation + DissDivULhs + SINK_FLUID) ) * VOL(IJK) + &
+		  ( ZMAX(-DufourX)+ZMAX(-DufourY)+ZMAX(-DufourZ) + &
+                   ZMAX(-ThermMobilityX)+ZMAX(-ThermMobilityY)+ZMAX(-ThermMobilityZ) + &
+		   ZMAX(-DelDotJoi) + ZMAX(-FiDotJoi)*VOL(IJK) )/ NonZeroTheta
+  
       RETURN  
       END SUBROUTINE SOURCE_GHD_GRANULAR_ENERGY 

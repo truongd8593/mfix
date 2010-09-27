@@ -174,8 +174,8 @@
 !
 !CMH correction (10/9/09) to previous error in notes - this I_ilj for binary mix only
       I_ilj(1,2,1) = ( 3.d0/2.d0/pi*(dmuioverT_dnl(1,1)-4.d0*pi/3.d0*chi(1,1)*sigma(1,1)**3) &
-          -ni(1)*chi(1,1)*sigma(1,1)**3/chi(1,1)*dchi0il_dnj(1,1,1) &
-          -ni(2)*chi(1,2)*sigma(1,2)**3/chi(1,2)*dchi0il_dnj(1,2,1) ) &
+          -ni(1)*sigma(1,1)**3*dchi0il_dnj(1,1,1) &
+          -ni(2)*sigma(1,2)**3*dchi0il_dnj(1,2,1) ) &
           /(chi(1,2)*sigma(1,2)**3)
      
       I_ilj(1,2,2) = ( 3.d0/2.d0/pi*(dmuioverT_dnl(1,2)- 4.d0*pi/3.d0*chi(1,2)*sigma(1,2)**3) &
@@ -208,7 +208,7 @@
 !   5) calculate partial derivative
 !   6) return nj & n to original values
 
-      perturbation = 0.001d0    !perturb 0.1% of current value in each direction
+      perturbation = 0.000001d0    ! small perturb of current value in each direction
       do j=1,s
          !calculate perturbation amounts
 	    if(ni(j)/=0d0) then
@@ -235,7 +235,7 @@
                enddo
             enddo
          !evaluate dependent quantites at increased value of nj et al.
-            call cooling_rate(s,mi,ni,n,m,T,Ti,chi,sigmai,alpha,rhoi, &
+            call cooling_rate(s,mi,ni,n,m,T,chi,sigmai,alpha,rhoi, &
                              theta_pos)
             do i=1,s
                Ti_pos(i) = mi(i)*T/(m*theta_pos(i))
@@ -280,7 +280,7 @@
                enddo
             enddo
          !evaluate dependent quantites at decreased value of nj et al.
-            call cooling_rate(s,mi,ni,n,m,T,Ti,chi,sigmai,alpha,rhoi, &
+            call cooling_rate(s,mi,ni,n,m,T,chi,sigmai,alpha,rhoi, &
                              theta_neg)
             do i=1,s
                Ti_neg(i) = mi(i)*T/(m*theta_neg(i))
@@ -381,6 +381,11 @@
             Dij(i,kk) = bmat0(i)
          enddo
       enddo
+        
+      if(s==2) then ! for binary only
+        Dij(1,1) = -mi(2)/mi(1)*Dij(2,1)
+        Dij(1,2) = -mi(2)/mi(1)*Dij(2,2)
+      endif
 
       return
       end subroutine ordinary_diff

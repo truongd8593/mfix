@@ -450,6 +450,40 @@
         Allocate(  FiX(DIMENSION_3p, DIMENSION_M) )   ! X- external force
         Allocate(  FiY(DIMENSION_3p, DIMENSION_M) )   ! Y- external force
         Allocate(  FiZ(DIMENSION_3p, DIMENSION_M) )   ! Z- external force
+        Allocate(  FiXvel(DIMENSION_3p, DIMENSION_M) )   ! X- external force
+        Allocate(  FiYvel(DIMENSION_3p, DIMENSION_M) )   ! Y- external force
+        Allocate(  FiZvel(DIMENSION_3p, DIMENSION_M) )   ! Z- external force
+        Allocate(  DELTAU(DIMENSION_3p, DIMENSION_M) )   
+        Allocate(  DELTAV(DIMENSION_3p, DIMENSION_M) )   
+        Allocate(  DELTAW(DIMENSION_3p, DIMENSION_M) )   
+        Allocate(  dragFx(DIMENSION_3p, DIMENSION_M) )   ! X- drag force
+        Allocate(  dragFy(DIMENSION_3p, DIMENSION_M) )   ! Y- drag force
+        Allocate(  dragFz(DIMENSION_3p, DIMENSION_M) )   ! Z- drag force
+        Allocate(  dragFxflux(DIMENSION_3p, DIMENSION_M) )   ! X- drag force
+        Allocate(  dragFyflux(DIMENSION_3p, DIMENSION_M) )   ! Y- drag force
+        Allocate(  dragFzflux(DIMENSION_3p, DIMENSION_M) )   ! Z- drag force
+        Allocate(  FiMinusDragX(DIMENSION_3p, DIMENSION_M) )   ! X- drag force
+        Allocate(  JoiMinusDragX(DIMENSION_3p, DIMENSION_M) )   ! X- drag force
+        Allocate(  FiMinusDragY(DIMENSION_3p, DIMENSION_M) )   ! Y- drag force
+        Allocate(  JoiMinusDragY(DIMENSION_3p, DIMENSION_M) )   ! Y- drag force
+        Allocate(  FiMinusDragZ(DIMENSION_3p, DIMENSION_M) )   ! Z- drag force
+        Allocate(  JoiMinusDragZ(DIMENSION_3p, DIMENSION_M) )   ! Z- drag force
+        Allocate(  beta_cell_X(DIMENSION_3p, DIMENSION_M) )   ! X- drag force
+        Allocate(  beta_cell_Y(DIMENSION_3p, DIMENSION_M) )   ! Y- drag force
+        Allocate(  beta_cell_Z(DIMENSION_3p, DIMENSION_M) )   ! Y- drag force
+        Allocate(  beta_ij_cell_X(DIMENSION_3p, DIMENSION_M,DIMENSION_M) )   ! X- drag force
+        Allocate(  beta_ij_cell_Y(DIMENSION_3p, DIMENSION_M,DIMENSION_M) )   ! Y- drag force
+        Allocate(  beta_ij_cell_Z(DIMENSION_3p, DIMENSION_M,DIMENSION_M) )   ! Y- drag force
+        Allocate(  DEL_DOT_J(DIMENSION_3p, DIMENSION_M) )   
+        Allocate(  DiT_HarmE(DIMENSION_3p) )   
+        Allocate(  DiT_HarmN(DIMENSION_3p) )   
+        Allocate(  DiT_HarmT(DIMENSION_3p) )   
+        Allocate(  Dij_HarmE(DIMENSION_3p, DIMENSION_M) )   
+        Allocate(  Dij_HarmN(DIMENSION_3p, DIMENSION_M) )   
+        Allocate(  Dij_HarmT(DIMENSION_3p, DIMENSION_M) )   
+        Allocate(  DijF_HarmE(DIMENSION_3p, DIMENSION_M) )   
+        Allocate(  DijF_HarmN(DIMENSION_3p, DIMENSION_M) )   
+        Allocate(  DijF_HarmT(DIMENSION_3p, DIMENSION_M) )   
       ENDIF
 
 

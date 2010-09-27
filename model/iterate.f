@@ -336,9 +336,7 @@
             END DO
           ENDIF
 
-          IF(TRIM(KT_TYPE) .eq. 'GHD')THEN
-             CALL ADJUST_EPS_GHD
-          ENDIF
+          IF(TRIM(KT_TYPE) .eq. 'GHD')CALL ADJUST_EPS_GHD
 
           CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
 

@@ -2,7 +2,7 @@
 !                                                                      C
 !  Module name: ADJUST_EPS_GHD                                         C
 !  Purpose: Eliminate the solids phases that occupy only very small    C
-!           fractions of the computational cell volume                 C
+!           fractions of the computational cell volume for GHD theory  C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 28-JAN-92  C
 !  Reviewer: P. Nicoletti, W. Rogers, S. Venkatesan   Date: 29-JAN-92  C
@@ -80,7 +80,7 @@
 !  Remove solids in very small quantities and set solids velocity to zero
 !  if there is outflow from the present cell.
 
-                        IF(TRIM(KT_TYPE) == 'GHD') ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) - ROP_S(IJK,M) ! mmax = mixture phase
+                        ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) - ROP_S(IJK,M) ! mmax = mixture phase
                         EP_G(IJK) = EP_G(IJK) + epSolid
                         ROP_G(IJK) = RO_G(IJK)*EP_G(IJK) 
                         ROP_S(IJK,M) = ZERO 
@@ -139,8 +139,6 @@
                      ENDIF 
                   END DO 
 !
-		  IF(TRIM(KT_TYPE) == 'GHD') THEN
-!
 ! compute corrected mixture velcoity and species mass fluxes based on their definition.
 !
 		     IF (epsMixE > ZERO .AND. DiluteCellE) THEN
@@ -183,7 +181,6 @@
 		         W_S(IJK,MMAX) = ZERO
 		       ENDIF
 		     ENDIF
-                  ENDIF
                ENDIF 
       END DO    
 
