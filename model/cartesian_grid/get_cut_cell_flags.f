@@ -1204,7 +1204,7 @@
 
       IF(J==JMIN1) THEN
 
-         DO J = JSTART2,JSTART3
+         DO J23 = JSTART2,JSTART3
             DO K = KSTART3,KEND3
                DO I = ISTART3, IEND3
 
