@@ -254,7 +254,7 @@
             ELSE
 !       Volumetric forces
                ROPGA = (VOL(IJK)*ROP_G(IJK) + VOL(IJKT)*ROP_G(IJKT))/(VOL(IJK) + VOL(IJKT))
-               ROGA  = (VOL(IJK)*RO_G(IJK)  + VOL(IPJK)*RO_G(IJKT) )/(VOL(IJK) + VOL(IJKT))
+               ROGA  = (VOL(IJK)*RO_G(IJK)  + VOL(IJKT)*RO_G(IJKT) )/(VOL(IJK) + VOL(IJKT))
 !         Previous time step
                V0 = (VOL(IJK)*ROP_GO(IJK) + VOL(IJKT)*ROP_GO(IJKT))*ODT/(VOL(IJK) + VOL(IJKT))  
             ENDIF
