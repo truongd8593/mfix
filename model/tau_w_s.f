@@ -110,6 +110,8 @@
       DOUBLE PRECISION :: MU_S_CUT,SSX_CUT,SSY_CUT
       DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
       INTEGER :: N_SUM 
+      INTEGER :: BCV
+      CHARACTER(LEN=9) :: BCT
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -218,8 +220,16 @@
                        MU_S(IJK,M)*(W_S(IJK,M)-W_S(IJKM,M))*ONEoDZ_T_W(IJKM)*AXY_W(IJKM)
 
                  ELSE ! CUT CELL
+                  
+                    BCV = BC_W_ID(IJK)
+              
+                    IF(BCV > 0 ) THEN
+                       BCT = BC_TYPE(BCV)
+                    ELSE
+                       BCT = 'NONE'
+                    ENDIF
 
-                    SELECT CASE (BC_TYPE(BC_W_ID(IJK)))
+                    SELECT CASE (BCT) 
                        CASE ('CG_NSW')
                           CUT_TAU_WS = .TRUE.
                           NOC_WS     = .TRUE.
@@ -237,7 +247,9 @@
                              CUT_TAU_WS = .FALSE.
                              NOC_WS     = .FALSE.
                           ENDIF
-
+                       CASE ('NONE')
+                        TAU_W_S(IJK,M) = ZERO 
+                        RETURN 
                     END SELECT 
 
                     IF(CUT_TAU_WS) THEN
