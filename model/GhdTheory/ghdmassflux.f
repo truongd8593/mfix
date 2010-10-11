@@ -72,7 +72,8 @@
       DOUBLE PRECISION ordinDiffTermX, ordinDiffTermY, ordinDiffTermZ
       DOUBLE PRECISION massMobilityTermX, massMobilityTermY, massMobilityTermZ 
       DOUBLE PRECISION massMobilityTermXvelupdate, massMobilityTermYvelupdate, massMobilityTermZvelupdate 
-      DOUBLE PRECISION thermalDiffTermX, thermalDiffTermY, thermalDiffTermZ, ropsx,ropsy,ropsz,ropsmmx,ropsmmy,ropsmmz,ropsme,ropsmn,ropsmt
+      DOUBLE PRECISION thermalDiffTermX, thermalDiffTermY, thermalDiffTermZ
+      DOUBLE PRECISION ropsx,ropsy,ropsz,ropsmmx,ropsmmy,ropsmmz,ropsme,ropsmn,ropsmt
 !
 
       DOUBLE PRECISION tmpdragx, tmpdragy,tmpdragz,addtermx,addtermy,addtermz,dragFc,dragFe,dragFn,dragFt,totropsx,totropsy,totropsz
