@@ -90,6 +90,20 @@ read dmp_version
 
     set `uname -s` ; opsys=$1
     set `uname -p` ; proctyp=$1
+
+    echo ""
+    echo "Operating System :" $opsys
+    echo "Processor type :" $proctyp
+    echo ""
+
+    if test $proctyp = "unknown"
+    then
+    echo "Unknown processor type, using machine type instead"
+    set `uname -m` ; proctyp=$1
+    echo "Machine type is " $proctyp
+    echo ""
+    fi
+
     
 #------------------------------------------------------------------------
 #  Check if the system is a Linux system, to display WARNING message 
@@ -187,7 +201,7 @@ ln -sf "$mpi_include/mpif.h" .
     then
        echo
        echo
-       echo "CYGWIN on Windows Detected"
+       echo "CYGWIN 6.0 on Windows Detected"
        echo
        echo "=============================================================="
        echo "MFIX Compilation directives available for following compilers:"
@@ -207,6 +221,34 @@ ln -sf "$mpi_include/mpif.h" .
            echo " "
            echo "gfortran Compiler selected"
            opsys="CYGWIN_NT-6.0-gfortran"
+           ;;
+         esac
+    fi
+
+    if test $opsys = "CYGWIN_NT-5.1"
+    then
+       echo
+       echo
+       echo "CYGWIN 5.1 on Windows Detected"
+       echo
+       echo "=============================================================="
+       echo "MFIX Compilation directives available for following compilers:"
+       echo "=============================================================="
+       echo " [1] g95"
+       echo " [2] gfortran"       
+       echo " "
+       echo -n "Select the compiler to compile MFIX? [2] "
+       read cygwin_compiler
+       case $cygwin_compiler in
+         1 )
+           echo " "
+           echo "g95 compiler selected"
+           opsys="CYGWIN_NT-5.1-g95"
+           ;;
+         * )
+           echo " "
+           echo "gfortran Compiler selected"
+           opsys="CYGWIN_NT-5.1-gfortran"
            ;;
          esac
     fi
@@ -1731,7 +1773,7 @@ qcache=auto "
 
             ;;
 	    
-    CYGWIN_NT-6.0-g95)
+    CYGWIN_NT-6.0-g95|CYGWIN_NT-5.1-g95)
 	    mach_file="CYGNT.F"
    
             FORTRAN_CMD=g95
@@ -1752,7 +1794,7 @@ qcache=auto "
 
             ;;
 
-    CYGWIN_NT-6.0-gfortran)
+    CYGWIN_NT-6.0-gfortran|CYGWIN_NT-5.1-gfortran)
             mach_file="CYGNT.F"
 
             FORTRAN_CMD=gfortran-4
@@ -1774,7 +1816,6 @@ qcache=auto "
             MODULE_CODE=1
 
             ;;
-
 	    
       *) echo "Sorry, no support for operating system: $opsys"
          echo 
