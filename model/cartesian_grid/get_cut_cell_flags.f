@@ -237,6 +237,12 @@
                   AXZ(IJK) = ZERO
                   AYZ(IJK) = ZERO
                   VOL(IJK) = ZERO
+
+                  AXY(BOTTOM_OF(IJK)) = ZERO
+                  AXZ(SOUTH_OF(IJK)) = ZERO
+                  AYZ(WEST_OF(IJK)) = ZERO
+
+
                ENDIF
 
                IF(NO_K) THEN
@@ -284,7 +290,6 @@
 
          ENDIF
       END DO
-
 
       RETURN
       END SUBROUTINE SET_3D_CUT_CELL_FLAGS
@@ -1079,6 +1084,12 @@
       END DO
 
 
+      IF(CG_SAFE_MODE(1)==1) CUT_TREATMENT_AT   = .FALSE.
+      IF(CG_SAFE_MODE(3)==1) CUT_U_TREATMENT_AT = .FALSE.
+      IF(CG_SAFE_MODE(4)==1) CUT_V_TREATMENT_AT = .FALSE.
+      IF(CG_SAFE_MODE(5)==1) CUT_W_TREATMENT_AT = .FALSE.
+
+
       RETURN
 
       
@@ -1144,6 +1155,26 @@
  
                   IF(BLOCKED_CELL_AT(IPJK)) FLAG(IPJK) = 100
 
+                  VOL(IPJK)   = VOL(IJK)
+                  VOL_U(IPJK) = VOL_U(IJK)
+                  VOL_V(IPJK) = VOL_V(IJK)
+                  VOL_W(IPJK) = VOL_W(IJK)
+
+                  AYZ(IPJK)   = AYZ(IJK)
+                  AYZ_U(IPJK) = AYZ_U(IJK) 
+                  AYZ_V(IPJK) = AYZ_V(IJK)
+                  AYZ_W(IPJK) = AYZ_W(IJK)
+
+                  AXY(IPJK)   = AXY(IJK)
+                  AXY_U(IPJK) = AXY_U(IJK) 
+                  AXY_V(IPJK) = AXY_V(IJK)
+                  AXY_W(IPJK) = AXY_W(IJK)
+
+                  AXZ(IPJK)   = AXZ(IJK)
+                  AXZ_U(IPJK) = AXZ_U(IJK) 
+                  AXZ_V(IPJK) = AXZ_V(IJK)
+                  AXZ_W(IPJK) = AXZ_W(IJK)
+
                END DO
             END DO
          END DO
@@ -1155,7 +1186,7 @@
 
       IF(I==IMIN1) THEN
 
-         DO I23 = ISTART2,ISTART3
+         DO I23 = ISTART3,ISTART2
             DO K = KSTART3,KEND3
                DO J = JSTART3, JEND3
 
@@ -1168,6 +1199,26 @@
                   BLOCKED_W_CELL_AT(IMJK) = BLOCKED_W_CELL_AT(IJK)
 
                   IF(BLOCKED_CELL_AT(IMJK)) FLAG(IMJK) = 100
+
+                  VOL(IMJK)   = VOL(IJK)
+                  VOL_U(IMJK) = VOL_U(IJK)
+                  VOL_V(IMJK) = VOL_V(IJK)
+                  VOL_W(IMJK) = VOL_W(IJK)
+
+                  AYZ(IMJK)   = AYZ(IJK)
+                  AYZ_U(IMJK) = AYZ_U(IJK) 
+                  AYZ_V(IMJK) = AYZ_V(IJK)
+                  AYZ_W(IMJK) = AYZ_W(IJK)
+
+                  AXY(IMJK)   = AXY(IJK)
+                  AXY_U(IMJK) = AXY_U(IJK) 
+                  AXY_V(IMJK) = AXY_V(IJK)
+                  AXY_W(IMJK) = AXY_W(IJK)
+
+                  AXZ(IMJK)   = AXZ(IJK)
+                  AXZ_U(IMJK) = AXZ_U(IJK) 
+                  AXZ_V(IMJK) = AXZ_V(IJK)
+                  AXZ_W(IMJK) = AXZ_W(IJK)
 
                END DO
             END DO
@@ -1194,6 +1245,26 @@
 
                   IF(BLOCKED_CELL_AT(IJPK)) FLAG(IJPK) = 100
 
+                  VOL(IJPK)   = VOL(IJK)
+                  VOL_U(IJPK) = VOL_U(IJK)
+                  VOL_V(IJPK) = VOL_V(IJK)
+                  VOL_W(IJPK) = VOL_W(IJK)
+
+                  AYZ(IJPK)   = AYZ(IJK)
+                  AYZ_U(IJPK) = AYZ_U(IJK) 
+                  AYZ_V(IJPK) = AYZ_V(IJK)
+                  AYZ_W(IJPK) = AYZ_W(IJK)
+
+                  AXY(IJPK)   = AXY(IJK)
+                  AXY_U(IJPK) = AXY_U(IJK) 
+                  AXY_V(IJPK) = AXY_V(IJK)
+                  AXY_W(IJPK) = AXY_W(IJK)
+
+                  AXZ(IJPK)   = AXZ(IJK)
+                  AXZ_U(IJPK) = AXZ_U(IJK) 
+                  AXZ_V(IJPK) = AXZ_V(IJK)
+                  AXZ_W(IJPK) = AXZ_W(IJK)
+
                END DO
             END DO
          END DO
@@ -1204,7 +1275,7 @@
 
       IF(J==JMIN1) THEN
 
-         DO J23 = JSTART2,JSTART3
+         DO J23 = JSTART3,JSTART2
             DO K = KSTART3,KEND3
                DO I = ISTART3, IEND3
 
@@ -1217,6 +1288,26 @@
                   BLOCKED_W_CELL_AT(IJMK) = BLOCKED_W_CELL_AT(IJK)
 
                   IF(BLOCKED_CELL_AT(IJMK)) FLAG(IJMK) = 100
+
+                  VOL(IJMK)   = VOL(IJK)
+                  VOL_U(IJMK) = VOL_U(IJK)
+                  VOL_V(IJMK) = VOL_V(IJK)
+                  VOL_W(IJMK) = VOL_W(IJK)
+
+                  AYZ(IJMK)   = AYZ(IJK)
+                  AYZ_U(IJMK) = AYZ_U(IJK) 
+                  AYZ_V(IJMK) = AYZ_V(IJK)
+                  AYZ_W(IJMK) = AYZ_W(IJK)
+
+                  AXY(IJMK)   = AXY(IJK)
+                  AXY_U(IJMK) = AXY_U(IJK) 
+                  AXY_V(IJMK) = AXY_V(IJK)
+                  AXY_W(IJMK) = AXY_W(IJK)
+
+                  AXZ(IJMK)   = AXZ(IJK)
+                  AXZ_U(IJMK) = AXZ_U(IJK) 
+                  AXZ_V(IJMK) = AXZ_V(IJK)
+                  AXZ_W(IJMK) = AXZ_W(IJK)
 
                END DO
             END DO
@@ -1232,7 +1323,6 @@
          IF(K==KMAX1) THEN
          
             DO K23=KEND2,KEND3
-
                DO J = JSTART3,JEND3
                   DO I = ISTART3, IEND3
 
@@ -1246,6 +1336,26 @@
 
                      IF(BLOCKED_CELL_AT(IJKP)) FLAG(IJKP) = 100
 
+                     VOL(IJKP)   = VOL(IJK)
+                     VOL_U(IJKP) = VOL_U(IJK)
+                     VOL_V(IJKP) = VOL_V(IJK)
+                     VOL_W(IJKP) = VOL_W(IJK)
+
+                     AYZ(IJKP)   = AYZ(IJK)
+                     AYZ_U(IJKP) = AYZ_U(IJK) 
+                     AYZ_V(IJKP) = AYZ_V(IJK)
+                     AYZ_W(IJKP) = AYZ_W(IJK)
+
+                     AXY(IJKP)   = AXY(IJK)
+                     AXY_U(IJKP) = AXY_U(IJK) 
+                     AXY_V(IJKP) = AXY_V(IJK)
+                     AXY_W(IJKP) = AXY_W(IJK)
+
+                     AXZ(IJKP)   = AXZ(IJK)
+                     AXZ_U(IJKP) = AXZ_U(IJK) 
+                     AXZ_V(IJKP) = AXZ_V(IJK)
+                     AXZ_W(IJKP) = AXZ_W(IJK)
+
                   END DO
                END DO
             END DO
@@ -1257,7 +1367,7 @@
 
          IF(K==KMIN1) THEN
 
-            DO K23 = KSTART2,KSTART3
+            DO K23 = KSTART3,KSTART2
                DO J = JSTART3,JEND3
                   DO I = ISTART3, IEND3
 
@@ -1270,6 +1380,26 @@
                      BLOCKED_W_CELL_AT(IJKM) = BLOCKED_W_CELL_AT(IJK)
 
                      IF(BLOCKED_CELL_AT(IJKM)) FLAG(IJKM) = 100
+
+                     VOL(IJKM)   = VOL(IJK)
+                     VOL_U(IJKM) = VOL_U(IJK)
+                     VOL_V(IJKM) = VOL_V(IJK)
+                     VOL_W(IJKM) = VOL_W(IJK)
+
+                     AYZ(IJKM)   = AYZ(IJK)
+                     AYZ_U(IJKM) = AYZ_U(IJK) 
+                     AYZ_V(IJKM) = AYZ_V(IJK)
+                     AYZ_W(IJKM) = AYZ_W(IJK)
+
+                     AXY(IJKM)   = AXY(IJK)
+                     AXY_U(IJKM) = AXY_U(IJK) 
+                     AXY_V(IJKM) = AXY_V(IJK)
+                     AXY_W(IJKM) = AXY_W(IJK)
+
+                     AXZ(IJKM)   = AXZ(IJK)
+                     AXZ_U(IJKM) = AXZ_U(IJK) 
+                     AXZ_V(IJKM) = AXZ_V(IJK)
+                     AXZ_W(IJKM) = AXZ_W(IJK)
 
                   END DO
                END DO
