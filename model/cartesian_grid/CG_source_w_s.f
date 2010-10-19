@@ -143,6 +143,9 @@
       INCLUDE 'b_force2.inc'
 
 
+      IF(CG_SAFE_MODE(5)==1) RETURN
+
+
         IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
           IF (MOMENTUM_Z_EQ(M)) THEN 
 
@@ -252,8 +255,10 @@
                      IJPK = JP_OF(IJK) 
                      IJKE = EAST_OF(IJK) 
 
+                     ijkt = top_of(ijk)
+
                      IF (WALL_AT(IJK)) THEN 
-                        IJKC = IJKE 
+                        IJKC = IJKT
                      ELSE 
                         IJKC = IJK 
                      ENDIF 
@@ -290,7 +295,7 @@
                               AVG_Y_H(MU_S(IJKST,M),MU_S(IJKT,M),JM),K)
 
                      MU_S_T = MU_S(IJKT,M)
-                     MU_S_B = MU_S(IJK,M)
+                     MU_S_B = MU_S(IJKC,M)
 
                      B_NOC =     MU_S_E * Ayz_W(IJK)  * We * NOC_W_E(IJK)  &
                              -   MU_S_W * Ayz_W(IMJK) * Ww * NOC_W_E(IMJK) &
@@ -419,6 +424,8 @@
       INCLUDE 'ep_s2.inc'
       INCLUDE 'b_force2.inc'
 
+      IF(CG_SAFE_MODE(5)==1) RETURN
+
       DO IJK = ijkstart3, ijkend3
 
          BCV = BC_W_ID(IJK)
@@ -463,19 +470,23 @@
 
                   B_M(IJK,M) = ZERO 
 
-                  IF (W_MASTER_OF(IJK) == EAST_OF(IJK)) THEN 
-                     A_M(IJK,E,M) = ONE 
-                  ELSEIF (W_MASTER_OF(IJK) == WEST_OF(IJK)) THEN 
-                     A_M(IJK,W,M) = ONE 
-                  ELSEIF (W_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN 
-                     A_M(IJK,N,M) = ONE 
-                  ELSEIF (W_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN 
-                     A_M(IJK,S,M) = ONE 
-                  ELSEIF (W_MASTER_OF(IJK) == TOP_OF(IJK)) THEN 
-                     A_M(IJK,T,M) = ONE 
-                  ELSEIF (W_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN 
-                     A_M(IJK,B,M) = ONE 
-                  ENDIF 
+                  IF(DABS(NORMAL_W(IJK,3))/=ONE) THEN
+
+                     IF (W_MASTER_OF(IJK) == EAST_OF(IJK)) THEN 
+                        A_M(IJK,E,M) = ONE 
+                     ELSEIF (W_MASTER_OF(IJK) == WEST_OF(IJK)) THEN 
+                        A_M(IJK,W,M) = ONE 
+                     ELSEIF (W_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN 
+                        A_M(IJK,N,M) = ONE 
+                     ELSEIF (W_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN 
+                        A_M(IJK,S,M) = ONE 
+                     ELSEIF (W_MASTER_OF(IJK) == TOP_OF(IJK)) THEN 
+                        A_M(IJK,T,M) = ONE 
+                     ELSEIF (W_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN 
+                        A_M(IJK,B,M) = ONE 
+                     ENDIF 
+
+                  ENDIF
 
                ENDIF  
 
@@ -496,19 +507,25 @@
                      B_M(IJK,M) = ZERO
                   ELSEIF(BC_HW_S(BCV,M)==ZERO) THEN   ! same as FSW
                      B_M(IJK,M) = ZERO 
-                     IF (W_MASTER_OF(IJK) == EAST_OF(IJK)) THEN 
-                        A_M(IJK,E,M) = ONE 
-                     ELSEIF (W_MASTER_OF(IJK) == WEST_OF(IJK)) THEN 
-                        A_M(IJK,W,M) = ONE 
-                     ELSEIF (W_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN 
-                        A_M(IJK,N,M) = ONE 
-                     ELSEIF (W_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN 
-                        A_M(IJK,S,M) = ONE 
-                     ELSEIF (W_MASTER_OF(IJK) == TOP_OF(IJK)) THEN 
-                        A_M(IJK,T,M) = ONE 
-                     ELSEIF (W_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN 
-                        A_M(IJK,B,M) = ONE 
-                     ENDIF 
+
+                     IF(DABS(NORMAL_W(IJK,3))/=ONE) THEN   
+
+                        IF (W_MASTER_OF(IJK) == EAST_OF(IJK)) THEN 
+                           A_M(IJK,E,M) = ONE 
+                        ELSEIF (W_MASTER_OF(IJK) == WEST_OF(IJK)) THEN 
+                           A_M(IJK,W,M) = ONE 
+                        ELSEIF (W_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN 
+                           A_M(IJK,N,M) = ONE 
+                        ELSEIF (W_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN 
+                           A_M(IJK,S,M) = ONE 
+                        ELSEIF (W_MASTER_OF(IJK) == TOP_OF(IJK)) THEN 
+                           A_M(IJK,T,M) = ONE 
+                        ELSEIF (W_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN 
+                           A_M(IJK,B,M) = ONE 
+                        ENDIF 
+
+                     ENDIF
+
                   ELSE                              ! partial slip
 
                   ENDIF
