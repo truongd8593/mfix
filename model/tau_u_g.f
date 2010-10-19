@@ -117,7 +117,7 @@
       DOUBLE PRECISION :: MU_GT_CUT,SSY_CUT,SSZ_CUT
       INTEGER :: N_SUM
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT 
+      CHARACTER(LEN=9) :: BCT  
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -163,7 +163,7 @@
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-            IF(.NOT.CARTESIAN_GRID) THEN
+            IF((.NOT.CARTESIAN_GRID).OR.(CG_SAFE_MODE(3)==1)) THEN
 !
 !       Surface forces
 !
@@ -218,7 +218,7 @@
                ELSE
 
                   BCV = BC_U_ID(IJK)
-              
+             
                   IF(BCV > 0 ) THEN
                      BCT = BC_TYPE(BCV)
                   ELSE
@@ -226,6 +226,7 @@
                   ENDIF
 
                   SELECT CASE (BCT)  
+
                      CASE ('CG_NSW')
                         CUT_TAU_UG = .TRUE.
                         NOC_UG     = .TRUE.
@@ -285,14 +286,8 @@
 
                      IF(NOC_UG) dvdx_at_N = dvdx_at_N - (Vi*ONEoDX_E_V(IJK)/DEL_H*(Sy*Ny+Sz*Nz))    
 
-                  ELSEIF(V_NODE_AT_NE.AND.CUT_TAU_UG) THEN
-                     CALL GET_DEL_H(IJK,'U_MOMENTUM',X_V(IPJK),Y_V(IPJK),Z_V(IPJK),DEL_H,Nx,Ny,Nz)
-                     dvdx_at_N =  (V_G(IPJK) - ZERO) / DEL_H * Nx
-                  ELSEIF(V_NODE_AT_NW.AND.CUT_TAU_UG) THEN
-                     CALL GET_DEL_H(IJK,'U_MOMENTUM',X_V(IJK),Y_V(IJK),Z_V(IJK),DEL_H,Nx,Ny,Nz)
-                     dvdx_at_N =  (V_g(IJK) - ZERO) / DEL_H * Nx
                   ELSE
-                     IF(.NOT.WALL_U_AT(IJK)) dvdx_at_N =  ZERO
+                     dvdx_at_N =  ZERO
                   ENDIF
 
                   IF(V_NODE_AT_SE.AND.V_NODE_AT_SW) THEN
@@ -311,64 +306,23 @@
 
                      IF(NOC_UG) dvdx_at_S = dvdx_at_S - (Vi*ONEoDX_E_V(IJMK)/DEL_H*(Sy*Ny+Sz*Nz))      
 
-                  ELSEIF(V_NODE_AT_SE.AND.CUT_TAU_UG) THEN
-                     CALL GET_DEL_H(IJK,'U_MOMENTUM',X_V(IPJMK),Y_V(IPJMK),Z_V(IPJMK),DEL_H,Nx,Ny,Nz)
-                     dvdx_at_S =  (V_g(IPJMK) - ZERO) / DEL_H * Nx
-                  ELSEIF(V_NODE_AT_SW.AND.CUT_TAU_UG) THEN
-                     CALL GET_DEL_H(IJK,'U_MOMENTUM',X_V(IJMK),Y_V(IJMK),Z_V(IJMK),DEL_H,Nx,Ny,Nz)
-                     dvdx_at_S =  (V_g(IJMK) - ZERO) / DEL_H * Nx
                   ELSE
-                     IF(.NOT.WALL_U_AT(IJK))  dvdx_at_S =  ZERO
+                     dvdx_at_S =  ZERO
                   ENDIF
 
-                  V_SUM = ZERO
-                  X_SUM = ZERO
-                  Y_SUM = ZERO
-                  Z_SUM = ZERO
-                  N_SUM = 0
+                    IF(V_NODE_AT_NW) THEN
+                       CALL GET_DEL_H(IJK,'U_MOMENTUM',X_V(IJK),Y_V(IJK),Z_V(IJK),Del_H,Nx,Ny,Nz)
+                       SSY_CUT = - MU_GT_CUT * (V_G(IJK) - ZERO) / DEL_H * (Nx*Ny) * Area_U_CUT(IJK)        
+                    ELSE
+                       SSY_CUT =  ZERO     
+                    ENDIF
 
-                  IF(V_NODE_AT_NE) THEN
-                     V_SUM = V_SUM + V_g(IPJK)
-                     X_SUM = X_SUM + X_V(IPJK)
-                     Y_SUM = Y_SUM + Y_V(IPJK)
-                     Z_SUM = Z_SUM + Z_V(IPJK)
-                     N_SUM = N_SUM + 1
-                  ENDIF
-                  IF(V_NODE_AT_NW) THEN
-                     V_SUM = V_SUM + V_g(IJK)
-                     X_SUM = X_SUM + X_V(IJK)
-                     Y_SUM = Y_SUM + Y_V(IJK)
-                     Z_SUM = Z_SUM + Z_V(IJK)
-                     N_SUM = N_SUM + 1
-                  ENDIF
-                  IF(V_NODE_AT_SE) THEN
-                     V_SUM = V_SUM + V_g(IPJMK)
-                     X_SUM = X_SUM + X_V(IPJMK)
-                     Y_SUM = Y_SUM + Y_V(IPJMK)
-                     Z_SUM = Z_SUM + Z_V(IPJMK)
-                     N_SUM = N_SUM + 1
-                  ENDIF
-                  IF(V_NODE_AT_SW) THEN
-                     V_SUM = V_SUM + V_g(IJMK)
-                     X_SUM = X_SUM + X_V(IJMK)
-                     Y_SUM = Y_SUM + Y_V(IJMK)
-                     Z_SUM = Z_SUM + Z_V(IJMK)
-                     N_SUM = N_SUM + 1
-                  ENDIF
-
-                  Vc =  V_SUM / N_SUM
-                  Xvc = X_SUM / N_SUM
-                  Yvc = Y_SUM / N_SUM
-                  Zvc = Z_SUM / N_SUM
-
-                  CALL GET_DEL_H(IJK,'U_MOMENTUM',X_U(IJK),Y_U(IJK),Z_U(IJK),DEL_H,Nx,Ny,Nz)
-                  CALL GET_DEL_H(IJK,'U_MOMENTUM',Xvc,Yvc,Zvc,DEL_H,Nxv,Nyv,Nzv)
 
                   SSY = AVG_X_H(AVG_Y_H(MU_GT(IJK),MU_GT(IJKN),J),AVG_Y_H(MU_GT(IJKE)&
                      ,MU_GT(IJKNE),J),I)*dvdx_at_N*AXZ_U(IJK) - &
                      AVG_X_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJK),JM),AVG_Y_H(MU_GT(IJKSE),&
                      MU_GT(IJKE),JM),I)*dvdx_at_S*AXZ_U(IJMK) &
-                   - MU_GT_CUT * (Vc - ZERO) / DEL_H * (Nxv*Ny) * Area_U_CUT(IJK)                
+                    + SSY_CUT
 
 !           SSZ:
 
