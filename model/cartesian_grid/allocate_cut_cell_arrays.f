@@ -80,6 +80,7 @@
       Allocate(  WALL_V_AT (DIMENSION_3) )
       Allocate(  WALL_W_AT (DIMENSION_3) )
 
+      Allocate( Area_CUT  (DIMENSION_3) )
       Allocate( Area_U_CUT  (DIMENSION_3) )
       Allocate( Area_V_CUT  (DIMENSION_3) )
       Allocate( Area_W_CUT  (DIMENSION_3) )
