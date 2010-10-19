@@ -46,6 +46,15 @@
       USE indices
       USE bc
       USE compar    
+
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+      USE quadric
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -80,6 +89,14 @@
       DOUBLE PRECISION BC_phif(DIMENSION_BC), BC_Phiw(DIMENSION_BC), &
                       BC_hw_Phi(DIMENSION_BC), BC_C_Phi(DIMENSION_BC)
 !-----------------------------------------------
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      INTEGER :: BCV
+      CHARACTER(LEN=9) :: BCT
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
@@ -405,6 +422,198 @@
          ENDIF 
       END DO 
 
+
+
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      
+      IF((.NOT.CARTESIAN_GRID).OR.(CG_SAFE_MODE(1)==1)) RETURN
+
+      DO IJK = ijkstart3, ijkend3
+
+         IF(BLOCKED_CELL_AT(IJK)) THEN
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+            IM = IM1(I) 
+            JM = JM1(J) 
+            KM = KM1(K) 
+            A_M(IJK,E,M) = ZERO 
+            A_M(IJK,W,M) = ZERO 
+            A_M(IJK,N,M) = ZERO 
+            A_M(IJK,S,M) = ZERO 
+            A_M(IJK,T,M) = ZERO 
+            A_M(IJK,B,M) = ZERO 
+            A_M(IJK,0,M) = -ONE 
+            B_M(IJK,M) = VAR(IJK) 
+
+            IF (CUT_CELL_AT(EAST_OF(IJK))) THEN 
+
+               BCV = BC_ID(EAST_OF(IJK))
+
+               IF(BCV > 0 ) THEN
+                  BCT = BC_TYPE(BCV)
+               ELSE
+                  BCT = 'NONE'
+               ENDIF
+
+               IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
+
+                  L = BCV
+                  IF (BC_HW_PHI(L) == UNDEFINED) THEN 
+                     A_M(IJK,E,M) = -HALF 
+                     A_M(IJK,0,M) = -HALF 
+                     B_M(IJK,M) = -BC_PHIW(L) 
+                  ELSE 
+                     A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODX_E(I)) 
+                     A_M(IJK,E,M) = -(HALF*BC_HW_PHI(L)-ODX_E(I)) 
+                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
+                  ENDIF 
+
+               ENDIF
+
+            ELSE IF (CUT_CELL_AT(WEST_OF(IJK))) THEN  
+
+               BCV = BC_ID(WEST_OF(IJK))
+
+               IF(BCV > 0 ) THEN
+                  BCT = BC_TYPE(BCV)
+               ELSE
+                  BCT = 'NONE'
+               ENDIF
+
+               IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
+
+                  L = BCV
+
+                  IF (BC_HW_PHI(L) == UNDEFINED) THEN 
+                     A_M(IJK,W,M) = -HALF 
+                     A_M(IJK,0,M) = -HALF 
+                     B_M(IJK,M) = -BC_PHIW(L) 
+                  ELSE 
+                     A_M(IJK,W,M) = -(HALF*BC_HW_PHI(L)-ODX_E(IM)) 
+                     A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODX_E(IM)) 
+                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
+                  ENDIF 
+
+               ENDIF
+
+
+            ELSE IF (CUT_CELL_AT(NORTH_OF(IJK))) THEN  
+
+               BCV = BC_ID(NORTH_OF(IJK))
+
+               IF(BCV > 0 ) THEN
+                  BCT = BC_TYPE(BCV)
+               ELSE
+                  BCT = 'NONE'
+               ENDIF
+
+               IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
+
+                  L = BCV
+
+                  IF (BC_HW_PHI(L) == UNDEFINED) THEN 
+                     A_M(IJK,N,M) = -HALF 
+                     A_M(IJK,0,M) = -HALF 
+                     B_M(IJK,M) = -BC_PHIW(L) 
+                  ELSE 
+                     A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODY_N(J)) 
+                     A_M(IJK,N,M) = -(HALF*BC_HW_PHI(L)-ODY_N(J)) 
+                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
+                  ENDIF 
+
+               ENDIF
+
+            ELSE IF (CUT_CELL_AT(SOUTH_OF(IJK))) THEN  
+
+               BCV = BC_ID(SOUTH_OF(IJK))
+
+               IF(BCV > 0 ) THEN
+                  BCT = BC_TYPE(BCV)
+               ELSE
+                  BCT = 'NONE'
+               ENDIF
+
+               IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
+
+                  L = BCV
+
+                  IF (BC_HW_PHI(L) == UNDEFINED) THEN 
+                     A_M(IJK,S,M) = -HALF 
+                     A_M(IJK,0,M) = -HALF 
+                     B_M(IJK,M) = -BC_PHIW(L) 
+                  ELSE 
+                     A_M(IJK,S,M) = -(HALF*BC_HW_PHI(L)-ODY_N(JM)) 
+                     A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODY_N(JM)) 
+                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
+                  ENDIF 
+
+               ENDIF
+
+            ELSE IF (CUT_CELL_AT(TOP_OF(IJK))) THEN  
+
+               BCV = BC_ID(TOP_OF(IJK))
+
+               IF(BCV > 0 ) THEN
+                  BCT = BC_TYPE(BCV)
+               ELSE
+                  BCT = 'NONE'
+               ENDIF
+
+               IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
+
+                  L = BCV
+
+                  IF (BC_HW_PHI(L) == UNDEFINED) THEN 
+                     A_M(IJK,T,M) = -HALF 
+                     A_M(IJK,0,M) = -HALF 
+                     B_M(IJK,M) = -BC_PHIW(L) 
+                  ELSE 
+                     A_M(IJK,0,M)=-(HALF*BC_HW_PHI(L)+OX(I)*ODZ_T(K)) 
+                     A_M(IJK,T,M)=-(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(K)) 
+                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
+                  ENDIF 
+
+               ENDIF
+
+            ELSE IF (CUT_CELL_AT(BOTTOM_OF(IJK))) THEN  
+
+               BCV = BC_ID(BOTTOM_OF(IJK))
+
+               IF(BCV > 0 ) THEN
+                  BCT = BC_TYPE(BCV)
+               ELSE
+                  BCT = 'NONE'
+               ENDIF
+
+               IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
+
+                  L = BCV
+
+                  IF (BC_HW_PHI(L) == UNDEFINED) THEN 
+                     A_M(IJK,B,M) = -HALF 
+                     A_M(IJK,0,M) = -HALF 
+                     B_M(IJK,M) = -BC_PHIW(L) 
+                  ELSE 
+                     A_M(IJK,B,M) = -(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(KM)) 
+                     A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+OX(I)*ODZ_T(KM)) 
+                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
+                  ENDIF 
+
+               ENDIF
+
+            ENDIF 
+
+         ENDIF
+
+      ENDDO
+
+
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 
       RETURN  
       END SUBROUTINE BC_PHI 

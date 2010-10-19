@@ -148,6 +148,13 @@
       USE compar
       USE sendrecv
       USE indices
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -228,6 +235,18 @@
 !           East face (i+1/2, j, k)
             V_F = UF(IJK) 
             D_F = AVG_X_H(DIF(IJK),DIF(IJKE),I)*ODX_E(I)*AYZ(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(CUT_TREATMENT_AT(IJK)) THEN
+               IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IPJK)) THEN
+                  D_F = AVG_X_H(DIF(IJK),DIF(IJKE),I)*ODX_E(I)*DY(J)*DZ(K)
+               ENDIF
+            ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
             IF (V_F >= ZERO) THEN 
                A_M(IJK,E,M) = D_F 
                A_M(IPJK,W,M) = D_F + FLUX_E(IJK) 
@@ -240,6 +259,17 @@
 !           North face (i, j+1/2, k)
             V_F = VF(IJK) 
             D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*AXZ(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(CUT_TREATMENT_AT(IJK)) THEN
+               IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJPK)) THEN
+                  D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*DX(I)*DZ(K)
+               ENDIF
+            ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
             IF (V_F >= ZERO) THEN 
                A_M(IJK,N,M) = D_F 
                A_M(IJPK,S,M) = D_F + FLUX_N(IJK) 
@@ -254,6 +284,17 @@
                IJKT = TOP_OF(IJK) 
                V_F = WF(IJK) 
                D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*AXY(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_TREATMENT_AT(IJK)) THEN
+                  IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJPK)) THEN
+                     D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*DX(I)*DY(J)
+                  ENDIF
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
                IF (V_F >= ZERO) THEN 
                   A_M(IJK,T,M) = D_F 
                   A_M(IJKP,B,M) = D_F + FLUX_T(IJK) 
@@ -271,6 +312,17 @@
                IJKW = WEST_OF(IJK) 
                V_F = UF(IMJK) 
                D_F = AVG_X_H(DIF(IJKW),DIF(IJK),IM)*ODX_E(IM)*AYZ(IMJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_TREATMENT_AT(IJK)) THEN
+                  IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IMJK)) THEN
+                     D_F = AVG_X_H(DIF(IJKW),DIF(IJK),IM)*ODX_E(IM)*DY(J)*DZ(K)
+                  ENDIF
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
                IF (V_F >= ZERO) THEN 
                   A_M(IJK,W,M) = D_F + FLUX_E(IMJK) 
                ELSE 
@@ -285,6 +337,17 @@
                IJKS = SOUTH_OF(IJK) 
                V_F = VF(IJMK) 
                D_F = AVG_Y_H(DIF(IJKS),DIF(IJK),JM)*ODY_N(JM)*AXZ(IJMK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_TREATMENT_AT(IJK)) THEN
+                  IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJMK)) THEN
+                     D_F = AVG_Y_H(DIF(IJKS),DIF(IJK),JM)*ODY_N(JM)*DX(I)*DZ(K)
+                  ENDIF
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
                IF (V_F >= ZERO) THEN 
                   A_M(IJK,S,M) = D_F + FLUX_N(IJMK) 
                ELSE 
@@ -301,6 +364,17 @@
                   V_F = WF(IJKM) 
                   D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX(I)*ODZ_T(KM)*AXY(&
                      IJKM) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+                  IF(CUT_TREATMENT_AT(IJK)) THEN
+                     IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJMK)) THEN
+                        D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX(I)*ODZ_T(KM)*DX(I)*DY(J)
+                     ENDIF
+                  ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
                   IF (V_F >= ZERO) THEN 
                      A_M(IJK,B,M) = D_F + FLUX_T(IJKM) 
                   ELSE 
@@ -707,7 +781,13 @@
       USE indices
       USE vshear
       Use xsi_array
-
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+      USE cutcell
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -819,6 +899,17 @@
 !
 !           East face (i+1/2, j, k)
             D_F = AVG_X_H(DIF(IJK),DIF(IJKE),I)*ODX_E(I)*AYZ(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(CUT_TREATMENT_AT(IJK)) THEN
+               IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IPJK)) THEN
+                  D_F = AVG_X_H(DIF(IJK),DIF(IJKE),I)*ODX_E(I)*DY(J)*DZ(K)
+               ENDIF
+            ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
             A_M(IJK,E,M) = D_F - XSI_E(IJK)*FLUX_E(IJK) 
 !
@@ -827,6 +918,17 @@
 !
 !           North face (i, j+1/2, k)
             D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*AXZ(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+            IF(CUT_TREATMENT_AT(IJK)) THEN
+               IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJPK)) THEN
+                  D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*DX(I)*DZ(K)
+               ENDIF
+            ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
             A_M(IJK,N,M) = D_F - XSI_N(IJK)*FLUX_N(IJK) 
 !
@@ -839,6 +941,17 @@
                IJKT = TOP_OF(IJK) 
 !
                D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*AXY(IJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_TREATMENT_AT(IJK)) THEN
+                  IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJPK)) THEN
+                     D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*DX(I)*DY(J)
+                  ENDIF
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
                A_M(IJK,T,M) = D_F - XSI_T(IJK)*FLUX_T(IJK) 
 !
@@ -852,6 +965,18 @@
                IJKW = WEST_OF(IJK) 
 !
                D_F = AVG_X_H(DIF(IJKW),DIF(IJK),IM)*ODX_E(IM)*AYZ(IMJK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_TREATMENT_AT(IJK)) THEN
+                  IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IMJK)) THEN
+                     D_F = AVG_X_H(DIF(IJKW),DIF(IJK),IM)*ODX_E(IM)*DY(J)*DZ(K)
+                  ENDIF
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
 !
                A_M(IJK,W,M) = D_F + (ONE - XSI_E(IMJK))*FLUX_E(IMJK) 
             ENDIF 
@@ -863,6 +988,18 @@
                IJKS = SOUTH_OF(IJK) 
 !
                D_F = AVG_Y_H(DIF(IJKS),DIF(IJK),JM)*ODY_N(JM)*AXZ(IJMK) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+               IF(CUT_TREATMENT_AT(IJK)) THEN
+                  IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJMK)) THEN
+                     D_F = AVG_Y_H(DIF(IJKS),DIF(IJK),JM)*ODY_N(JM)*DX(I)*DZ(K)
+                  ENDIF
+               ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
 !
                A_M(IJK,S,M) = D_F + (ONE - XSI_N(IJMK))*FLUX_N(IJMK) 
             ENDIF 
@@ -876,6 +1013,17 @@
 !
                   D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX(I)*ODZ_T(KM)*AXY(&
                      IJKM) 
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+                  IF(CUT_TREATMENT_AT(IJK)) THEN
+                     IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJMK)) THEN
+                        D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX(I)*ODZ_T(KM)*DX(I)*DY(J)
+                     ENDIF
+                  ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 !
                   A_M(IJK,B,M) = D_F + (ONE - XSI_T(IJKM))*FLUX_T(IJKM) 
                ENDIF 
