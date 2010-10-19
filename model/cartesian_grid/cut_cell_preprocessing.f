@@ -35,8 +35,9 @@
 
       IMPLICIT NONE
 
-      INTEGER IJK
-      INTEGER I,J,K
+      INTEGER :: IJK
+      INTEGER :: I,J,K
+      INTEGER :: SAFE_MODE_COUNT
       DOUBLE PRECISION :: CPU_PP_START,CPU_PP_END
 
       include "function.inc"   
@@ -117,12 +118,13 @@
          WRITE(*,10)'============================================================================='
       ENDIF
 
-      IF(CG_SAFE_MODE) THEN
+      IF(myPE == PE_IO) THEN
 
-         CARTESIAN_GRID=.FALSE.  ! Revert to original mfix subroutines
-                                 ! using new volumes and areas
+         SAFE_MODE_COUNT = SUM(CG_SAFE_MODE)
 
-         IF(myPE == PE_IO) THEN
+         IF(SAFE_MODE_COUNT>0) THEN
+
+
             WRITE(*,10)'######################################################################'
             WRITE(*,10)'######################################################################'
             WRITE(*,10)'##                                                                  ##'
@@ -132,12 +134,21 @@
             WRITE(*,10)'##                                                                  ##'
             WRITE(*,10)'##  ===>   WARNING: RUNNING CARTESIAN GRID IN SAFE MODE !  <===     ##'
             WRITE(*,10)'##                                                                  ##'
+            WRITE(*,10)'##  SAFE MODE ACTIVATED FOR :                                       ##'
+            IF(CG_SAFE_MODE(1)==1) WRITE(*,10)'##                            - All scalar quantities               ##'
+            IF(CG_SAFE_MODE(3)==1) WRITE(*,10)'##                            - X-Velocity (Gas and Solids)         ##'
+            IF(CG_SAFE_MODE(4)==1) WRITE(*,10)'##                            - Y-Velocity (Gas and Solids)         ##'
+            IF(CG_SAFE_MODE(5)==1) WRITE(*,10)'##                            - Z-Velocity (Gas and Solids)         ##'
+            WRITE(*,10)'##                                                                  ##'
             WRITE(*,10)'##                              /\                                  ##'
             WRITE(*,10)'##                              ||                                  ##'
             WRITE(*,10)'##                              ||                                  ##'
             WRITE(*,10)'##                                                                  ##'
             WRITE(*,10)'######################################################################'
             WRITE(*,10)'######################################################################'
+
+
+
          ENDIF
       ENDIF
 
@@ -683,7 +694,7 @@
       yb = Y_NODE(8)
       zb = Z_NODE(8)
 
-      DFC_MAX = TOL_SNAP * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
+      DFC_MAX = TOL_SNAP(1) * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
 
       IF(INTERSECT_X(IJK)) THEN
 
@@ -738,7 +749,7 @@
       ya = Y_NODE(6)
       za = Z_NODE(6)
 
-      DFC_MAX = TOL_SNAP * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
+      DFC_MAX = TOL_SNAP(2) * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
 
       IF(INTERSECT_Y(IJK)) THEN
 
@@ -793,7 +804,7 @@
          ya = Y_NODE(4)
          za = Z_NODE(4)
 
-      DFC_MAX = TOL_SNAP * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
+      DFC_MAX = TOL_SNAP(3) * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
 
       IF(INTERSECT_Y(IJK)) THEN
 
