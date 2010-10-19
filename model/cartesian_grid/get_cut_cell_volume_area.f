@@ -48,7 +48,7 @@
       DOUBLE PRECISION :: X_MEAN,Y_MEAN,Z_MEAN,F_MEAN
       DOUBLE PRECISION :: AREA_EAST,AREA_NORTH,AREA_TOP
       DOUBLE PRECISION :: AREA_WEST,AREA_SOUTH,AREA_BOTTOM
-      DOUBLE PRECISION :: AREA_CUT
+      DOUBLE PRECISION :: CUT_AREA
       DOUBLE PRECISION, DIMENSION(3) :: CENTROID_EAST,CENTROID_NORTH,CENTROID_TOP
       DOUBLE PRECISION, DIMENSION(3) :: CENTROID_WEST,CENTROID_SOUTH,CENTROID_BOTTOM
       DOUBLE PRECISION, DIMENSION(3) :: CENTROID_CUT
@@ -397,7 +397,7 @@
 
       CALL GET_POLYGON_AREA_AND_CENTROID(N_TOP_FACE_NODES,COORD_TOP_FACE_NODES,AREA_TOP,CENTROID_TOP)
 
-      CALL GET_POLYGON_AREA_AND_CENTROID(N_CUT_FACE_NODES,COORD_CUT_FACE_NODES,AREA_CUT,CENTROID_CUT)
+      CALL GET_POLYGON_AREA_AND_CENTROID(N_CUT_FACE_NODES,COORD_CUT_FACE_NODES,CUT_AREA,CENTROID_CUT)
 
       CALL STORE_CUT_FACE_INFO(IJK,TYPE_OF_CELL,N_CUT_FACE_NODES,COORD_CUT_FACE_NODES,X_MEAN,Y_MEAN,Z_MEAN)     
 
@@ -421,6 +421,7 @@
             AYZ(IJK) = AREA_EAST
             AXZ(IJK) = AREA_NORTH
             AXY(IJK) = AREA_TOP
+            Area_CUT(IJK) = CUT_AREA
 
             IF(NO_K) THEN
                VOL(IJK) = AXY(IJK) * ZLENGTH
@@ -434,16 +435,48 @@
                         + AREA_WEST   * (X_MEAN - X_NODE(1))                   &
                         + AREA_SOUTH  * (Y_MEAN - Y_NODE(1))                   &
                         + AREA_BOTTOM * (Z_MEAN - Z_NODE(1))                   &
-                        + AREA_CUT    * DEL_H
+                        + CUT_AREA    * DEL_H
 
                VOL(IJK) = VOLUME / 3.0D0
 
             ENDIF
 
 
-            IF(VOL(IJK) < TOL_SMALL_CELL * DX(I)*DY(J)*DZ(K) ) THEN
+            IF(VOL(IJK)==ZERO) THEN
+
+               IF(PRINT_WARNINGS) THEN
+                  PRINT*,'WARNING: ZERO VOLUME CUT CELL DETECTED AT IJK =',IJK
+                  PRINT*,'REMOVING CUT CELL FROM COMPUTATION (FLAGGED AS BLOCKED CELL)'
+               ENDIF
+
+               FLAG(IJK) = 100
+               CUT_CELL_AT(IJK) = .FALSE.
+               BLOCKED_CELL_AT(IJK) = .TRUE.
+               STANDARD_CELL_AT(IJK) = .FALSE.
+               AYZ(IJK) = ZERO
+               AXZ(IJK) = ZERO
+               AXY(IJK) = ZERO
+               VOL(IJK) = ZERO
+               
+
+            ELSEIF(VOL(IJK) < TOL_SMALL_CELL * DX(I)*DY(J)*DZ(K) ) THEN
                SMALL_CELL_AT(IJK) = .TRUE.
                NUMBER_OF_SMALL_CELLS = NUMBER_OF_SMALL_CELLS + 1
+
+
+               IF(PRINT_WARNINGS) THEN
+                  PRINT*,'WARNING: SMALL SCALAR CELL CUT CELL DETECTED AT IJK =',IJK
+                  PRINT*,'REMOVING CUT CELL FROM COMPUTATION (FLAGGED AS BLOCKED CELL)'
+               ENDIF
+
+               FLAG(IJK) = 100
+               CUT_CELL_AT(IJK) = .FALSE.
+               BLOCKED_CELL_AT(IJK) = .TRUE.
+               STANDARD_CELL_AT(IJK) = .FALSE.
+               AYZ(IJK) = ZERO
+               AXZ(IJK) = ZERO
+               AXY(IJK) = ZERO
+               VOL(IJK) = ZERO
 
             ENDIF
 
@@ -544,7 +577,7 @@
             AYZ_U(IJK) = AREA_EAST
             AXZ_U(IJK) = AREA_NORTH
             AXY_U(IJK) = AREA_TOP
-            Area_U_CUT(IJK) = AREA_CUT
+            Area_U_CUT(IJK) = CUT_AREA
 
             IF(AREA_EAST > ZERO) THEN
                X_U_ec(IJK) = CENTROID_EAST(1)
@@ -576,7 +609,7 @@
                         + AREA_WEST   * (X_MEAN - X_NODE(1))                   &
                         + AREA_SOUTH  * (Y_MEAN - Y_NODE(1))                   &
                         + AREA_BOTTOM * (Z_MEAN - Z_NODE(1))                   &
-                        + AREA_CUT    * DEL_H
+                        + CUT_AREA    * DEL_H
 
                VOL_U(IJK) = VOLUME / 3.0D0
             ENDIF
@@ -585,6 +618,7 @@
                WALL_U_AT(IJK) = .TRUE.
                
                NUMBER_OF_U_WALL_CELLS = NUMBER_OF_U_WALL_CELLS + 1
+
                X_U(IJK) = CENTROID_CUT(1)
                Y_U(IJK) = CENTROID_CUT(2)
                Z_U(IJK) = CENTROID_CUT(3)
@@ -655,7 +689,7 @@
             AYZ_V(IJK) = AREA_EAST
             AXZ_V(IJK) = AREA_NORTH
             AXY_V(IJK) = AREA_TOP
-            Area_V_CUT(IJK) = AREA_CUT
+            Area_V_CUT(IJK) = CUT_AREA
 
             IF(AREA_EAST > ZERO) THEN
                X_V_ec(IJK) = CENTROID_EAST(1)
@@ -687,7 +721,7 @@
                         + AREA_WEST   * (X_MEAN - X_NODE(1))                   &
                         + AREA_SOUTH  * (Y_MEAN - Y_NODE(1))                   &
                         + AREA_BOTTOM * (Z_MEAN - Z_NODE(1))                   &
-                        + AREA_CUT    * DEL_H
+                        + CUT_AREA    * DEL_H
 
                VOL_V(IJK) = VOLUME / 3.0D0
             ENDIF
@@ -765,7 +799,7 @@
             AYZ_W(IJK) = AREA_EAST
             AXZ_W(IJK) = AREA_NORTH
             AXY_W(IJK) = AREA_TOP
-            Area_W_CUT(IJK) = AREA_CUT
+            Area_W_CUT(IJK) = CUT_AREA
 
             IF(AREA_EAST > ZERO) THEN
                X_W_ec(IJK) = CENTROID_EAST(1)
@@ -794,7 +828,7 @@
                      + AREA_WEST   * (X_MEAN - X_NODE(1))                   &
                      + AREA_SOUTH  * (Y_MEAN - Y_NODE(1))                   &
                      + AREA_BOTTOM * (Z_MEAN - Z_NODE(1))                   &
-                     + AREA_CUT    * DEL_H
+                     + CUT_AREA    * DEL_H
 
             VOL_W(IJK) = VOLUME / 3.0D0
 
