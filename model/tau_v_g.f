@@ -106,7 +106,7 @@
       DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
       DOUBLE PRECISION :: x_circle,y_circle,angle
       DOUBLE PRECISION :: MU_GT_CUT,SSX_CUT,SSZ_CUT
-      INTEGER :: N_SUM
+      INTEGER :: N_SUM 
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT 
 !=======================================================================
@@ -153,7 +153,7 @@
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-            IF(.NOT.CARTESIAN_GRID) THEN 
+            IF((.NOT.CARTESIAN_GRID).OR.(CG_SAFE_MODE(4)==1)) THEN
 !
 !       Surface forces
 !
@@ -271,17 +271,8 @@
 
                      IF(NOC_VG) dudy_at_E = dudy_at_E - (Ui * ONEoDY_N_U(IJK)/DEL_H*(Sx*Nx+Sz*Nz))        
 
-
-                  ELSEIF(U_NODE_AT_NE.AND.CUT_TAU_VG) THEN
-                     CALL GET_DEL_H(IJK,'V_MOMENTUM',X_U(IJPK),Y_U(IJPK),Z_U(IJPK),DEL_H,Nx,Ny,Nz)
-                     dudy_at_E =  (U_g(IJPK) - ZERO) / DEL_H * Ny
-                  ELSEIF(U_NODE_AT_SE.AND.CUT_TAU_VG) THEN
-                     CALL GET_DEL_H(IJK,'V_MOMENTUM',X_U(IJK),Y_U(IJK),Z_U(IJK),DEL_H,Nx,Ny,Nz)
-                     dudy_at_E =  (U_g(IJK) - ZERO) / DEL_H * Ny
                   ELSE
-                     IF(.NOT.WALL_V_AT(IJK)) THEN
-                        dudy_at_E =  ZERO
-                     ENDIF
+                     dudy_at_E =  ZERO
                   ENDIF
 
                   IF(U_NODE_AT_NW.AND.U_NODE_AT_SW) THEN
@@ -300,16 +291,8 @@
 
                      IF(NOC_VG) dudy_at_W = dudy_at_W - (Ui * ONEoDY_N_U(IMJK)/DEL_H*(Sx*Nx+Sz*Nz))    
 
-                  ELSEIF(U_NODE_AT_NW.AND.CUT_TAU_VG) THEN
-                     CALL GET_DEL_H(IJK,'V_MOMENTUM',X_U(IMJPK),Y_U(IMJPK),Z_U(IMJPK),DEL_H,Nx,Ny,Nz)
-                     dudy_at_W =  (U_g(IMJPK) - ZERO) / DEL_H * Ny
-                  ELSEIF(U_NODE_AT_SW.AND.CUT_TAU_VG) THEN
-                     CALL GET_DEL_H(IJK,'V_MOMENTUM',X_U(IMJK),Y_U(IMJK),Z_U(IMJK),DEL_H,Nx,Ny,Nz)
-                     dudy_at_W =  (U_g(IMJK) - ZERO) / DEL_H * Ny
                   ELSE   
-                     IF(.NOT.WALL_V_AT(IJK)) THEN
-                        dudy_at_W =  ZERO
-                     ENDIF
+                     dudy_at_W =  ZERO
                   ENDIF
 
                   U_SUM = ZERO
@@ -318,48 +301,18 @@
                   Z_SUM = ZERO
                   N_SUM = 0
 
-                  IF(U_NODE_AT_NE) THEN
-                     U_SUM = U_SUM + U_g(IJPK)
-                     X_SUM = X_SUM + X_U(IJPK)
-                     Y_SUM = Y_SUM + Y_U(IJPK)
-                     Z_SUM = Z_SUM + Z_U(IJPK)
-                     N_SUM = N_SUM + 1
-                  ENDIF
-                  IF(U_NODE_AT_NW) THEN
-                     U_SUM = U_SUM + U_g(IMJPK)
-                     X_SUM = X_SUM + X_U(IMJPK)
-                     Y_SUM = Y_SUM + Y_U(IMJPK)
-                     Z_SUM = Z_SUM + Z_U(IMJPK)
-                     N_SUM = N_SUM + 1
-                  ENDIF
-                  IF(U_NODE_AT_SE) THEN
-                     U_SUM = U_SUM + U_g(IJK)
-                     X_SUM = X_SUM + X_U(IJK)
-                     Y_SUM = Y_SUM + Y_U(IJK)
-                     Z_SUM = Z_SUM + Z_U(IJK)
-                     N_SUM = N_SUM + 1
-                  ENDIF
-                  IF(U_NODE_AT_SW) THEN
-                     U_SUM = U_SUM + U_g(IMJK)
-                     X_SUM = X_SUM + X_U(IMJK)
-                     Y_SUM = Y_SUM + Y_U(IMJK)
-                     Z_SUM = Z_SUM + Z_U(IMJK)
-                     N_SUM = N_SUM + 1
-                  ENDIF
-
-                  Uc =  U_SUM / N_SUM
-                  Xuc = X_SUM / N_SUM
-                  Yuc = Y_SUM / N_SUM
-                  Zuc = Z_SUM / N_SUM
-
-                  CALL GET_DEL_H(IJK,'V_MOMENTUM',X_V(IJK),Y_V(IJK),Z_V(IJK),DEL_H,Nx,Ny,Nz)
-                  CALL GET_DEL_H(IJK,'V_MOMENTUM',Xuc,Yuc,Zuc,DEL_H,Nxu,Nyu,Nzu)
+                 IF(U_NODE_AT_SE) THEN
+                    CALL GET_DEL_H(IJK,'V_MOMENTUM',X_U(IJK),Y_U(IJK),Z_U(IJK),Del_H,Nx,Ny,Nz)
+                    SSX_CUT = - MU_GT_CUT * (U_G(IJK) - ZERO) / DEL_H * (Ny*Nx) * Area_V_CUT(IJK)        
+                 ELSE
+                    SSX_CUT =  ZERO
+                 ENDIF
 
                   SSX = AVG_Y_H(AVG_X_H(MU_GT(IJK),MU_GT(IJKE),I),AVG_X_H(MU_GT(IJKN)&
                      ,MU_GT(IJKNE),I),J)*dudy_at_E*AYZ_V(IJK) - &
                      AVG_Y_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJK),IM),AVG_X_H(MU_GT(IJKNW),&
                      MU_GT(IJKN),IM),J)*dudy_at_W*AYZ_V(IMJK) &
-                   - MU_GT_CUT * (Uc - ZERO) / DEL_H * (Nyu*Nx) * Area_V_CUT(IJK)                   
+                    + SSX_CUT
 
 !           SSY:
                   CALL GET_DEL_H(IJK,'V_MOMENTUM',X_V(IJK),Y_V(IJK),Z_V(IJK),Del_H,Nx,Ny,Nz)
