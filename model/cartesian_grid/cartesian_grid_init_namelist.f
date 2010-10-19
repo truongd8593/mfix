@@ -115,7 +115,7 @@
 
       PG_OPTION = 0
 
-      CG_SAFE_MODE = .FALSE.
+      CG_SAFE_MODE = 0
       PRINT_WARNINGS = .FALSE.
 
       CG_UR_FAC = 1.0
