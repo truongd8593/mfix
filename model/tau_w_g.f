@@ -112,9 +112,9 @@
       DOUBLE PRECISION :: dvdz_at_N,dvdz_at_S
       DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
       DOUBLE PRECISION :: MU_GT_CUT,SSX_CUT,SSY_CUT
-      INTEGER :: N_SUM 
+      INTEGER :: N_SUM
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      CHARACTER(LEN=9) :: BCT 
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -164,7 +164,7 @@
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-            IF(.NOT.CARTESIAN_GRID) THEN 
+            IF((.NOT.CARTESIAN_GRID).OR.(CG_SAFE_MODE(5)==1)) THEN
 !
 !       Surface forces
 !

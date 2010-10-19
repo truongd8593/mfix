@@ -106,7 +106,7 @@
       DOUBLE PRECISION :: MU_S_CUT,SSX_CUT,SSZ_CUT
       INTEGER :: N_SUM
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT 
+      CHARACTER(LEN=9) :: BCT  
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -163,7 +163,7 @@
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-              IF(.NOT.CARTESIAN_GRID) THEN
+            IF((.NOT.CARTESIAN_GRID).OR.(CG_SAFE_MODE(4)==1)) THEN
 ! Surface forces
 
 ! bulk viscosity term

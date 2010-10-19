@@ -117,7 +117,7 @@
       DOUBLE PRECISION :: MU_S_CUT,SSY_CUT,SSZ_CUT
       INTEGER :: N_SUM
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT 
+      CHARACTER(LEN=9) :: BCT  
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -188,7 +188,7 @@
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-              IF(.NOT.CARTESIAN_GRID) THEN
+            IF((.NOT.CARTESIAN_GRID).OR.(CG_SAFE_MODE(3)==1)) THEN
 ! Surface forces
 
 ! bulk viscosity term
@@ -247,7 +247,7 @@
                  ELSE
 
                     BCV = BC_U_ID(IJK)
-              
+               
                     IF(BCV > 0 ) THEN
                        BCT = BC_TYPE(BCV)
                     ELSE
@@ -272,9 +272,10 @@
                              CUT_TAU_US = .FALSE.
                              NOC_US     = .FALSE.
                           ENDIF
+
                        CASE ('NONE')
                           TAU_U_S(IJK,M) = ZERO 
-                          RETURN   
+                          RETURN  
                     END SELECT 
 
                     IF(CUT_TAU_US) THEN
