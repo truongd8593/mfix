@@ -641,6 +641,7 @@
       USE fldvar
       USE vtk
       USE polygon
+      USE stl
       
       IMPLICIT NONE
 
@@ -729,7 +730,7 @@
 
                CALL EVAL_F('USR_DEF',X_COPY,Y_COPY,Z_COPY,N_USR_DEF,F_COPY,CLIP_FLAG)
 
-
+               CALL EVAL_F('STL    ',X_COPY,Y_COPY,Z_COPY,N_FACETS,F_COPY,CLIP_FLAG)
          
                IF (ABS(F_COPY) < TOL_F ) THEN ! belongs to cut face
                   N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1

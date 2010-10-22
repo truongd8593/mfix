@@ -27,6 +27,7 @@
       USE quadric
       USE cutcell
       USE polygon
+      USE stl
       USE bc
       
       IMPLICIT NONE
@@ -159,6 +160,7 @@
 
          CALL EVAL_F('USR_DEF',X_COPY,Y_COPY,Z_COPY,N_USR_DEF,F_COPY,CLIP_FLAG)
 
+         CALL EVAL_F('STL    ',X_COPY,Y_COPY,Z_COPY,N_FACETS,F_COPY,CLIP_FLAG)
 
          IF (DABS(F_COPY) < TOL_F ) THEN ! belongs to cut face
             N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1
@@ -555,6 +557,7 @@
             ENDIF
 
 
+            IF(USE_STL) BC_ID(IJK) = STL_BC_ID
 
 
 !            Reordering connectivity such that polygon is defined appropriately for 2D vtk file
@@ -679,6 +682,8 @@
             ENDIF
 
 
+            IF(USE_STL) BC_U_ID(IJK) = STL_BC_ID
+
 
          CASE('V_MOMENTUM')
 
@@ -789,7 +794,7 @@
                ENDDO
             ENDIF
 
-
+            IF(USE_STL) BC_V_ID(IJK) = STL_BC_ID
 
          CASE('W_MOMENTUM')
             IF(I>ISTART1) AREA_WEST   = AYZ_W(IMJK)
@@ -890,7 +895,7 @@
                ENDDO
             ENDIF
 
-
+            IF(USE_STL) BC_W_ID(IJK) = STL_BC_ID
 
          CASE DEFAULT
             WRITE(*,*)'SUBROUTINE: GET_CUT_CELL_VOLUME_AND_AREAS'

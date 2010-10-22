@@ -36,6 +36,7 @@
       USE vtk
       USE polygon
       USE dashboard
+      USE stl
 
 
       IMPLICIT NONE
@@ -78,6 +79,23 @@
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
+      IF(USE_STL) THEN
+         IF(DO_K) THEN 
+            CALL GET_STL_DATA
+         ELSE
+            WRITE(*,*) 'ERROR: STL METHOD VALID ONLY IN 3D.'
+            CALL MFIX_EXIT(MYPE) 
+         ENDIF
+         IF(N_QUADRIC > 0) THEN
+            WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND STL INPUT ARE SPECIFIED.'
+            WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
+            CALL MFIX_EXIT(MYPE) 
+         ENDIF
+         IF(STL_BC_ID == UNDEFINED_I) THEN
+            WRITE(*,*) 'ERROR: STL_BC_ID NOT DEFINED.'
+            CALL MFIX_EXIT(MYPE) 
+         ENDIF
+      ENDIF
 
       IF(USE_POLYGON) THEN
          IF(DO_K) THEN 
@@ -91,7 +109,7 @@
       IF(N_QUADRIC > 0) THEN
          IF(N_POLYGON > 0) THEN 
             WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND POLYGON(S) DEFINED.'
-            WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE.'
+            WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
             CALL MFIX_EXIT(MYPE) 
          ENDIF
          IF(N_USR_DEF > 0) THEN 

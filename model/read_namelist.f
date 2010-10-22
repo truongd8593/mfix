@@ -96,6 +96,7 @@
       USE vtk
       USE polygon
       USE dashboard
+      Use stl
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================

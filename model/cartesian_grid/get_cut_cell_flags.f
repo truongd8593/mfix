@@ -29,7 +29,7 @@
       USE cutcell
       Use vtk
       USE polygon
-
+      USE stl
 
       USE physprop
       USE fldvar
@@ -220,6 +220,8 @@
 
                CALL EVAL_F('USR_DEF',X_NODE(0),Y_NODE(0),Z_NODE(0),N_USR_DEF,F_NODE(0),CLIP_FLAG)
 
+               CALL EVAL_F('STL    ',X_NODE(0),Y_NODE(0),Z_NODE(0),N_FACETS,F_NODE(0),CLIP_FLAG)
+
 
                IF(F_NODE(0) < ZERO) THEN
                   IF((FLAG(IJK)>=100).AND.(FLAG(IJK)<=102)) THEN
@@ -324,6 +326,7 @@
       USE quadric
       USE cutcell
       USE polygon
+      USE stl
       
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
@@ -433,6 +436,8 @@
                CALL EVAL_F('POLYGON',X_NODE(0),Y_NODE(0),Z_NODE(0),N_POLYGON,F_NODE(0),CLIP_FLAG)
 
                CALL EVAL_F('USR_DEF',X_NODE(0),Y_NODE(0),Z_NODE(0),N_USR_DEF,F_NODE(0),CLIP_FLAG)
+
+               CALL EVAL_F('STL    ',X_NODE(0),Y_NODE(0),Z_NODE(0),N_FACETS,F_NODE(0),CLIP_FLAG)
 
                IF(F_NODE(0) < ZERO) THEN
                   BLOCKED_U_CELL_AT(IJK) = .FALSE.
@@ -554,6 +559,7 @@
       USE quadric
       USE cutcell
       USE polygon
+      USE stl
       
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
@@ -662,6 +668,8 @@
                CALL EVAL_F('POLYGON',X_NODE(0),Y_NODE(0),Z_NODE(0),N_POLYGON,F_NODE(0),CLIP_FLAG)
 
                CALL EVAL_F('USR_DEF',X_NODE(0),Y_NODE(0),Z_NODE(0),N_USR_DEF,F_NODE(0),CLIP_FLAG)
+
+               CALL EVAL_F('STL    ',X_NODE(0),Y_NODE(0),Z_NODE(0),N_FACETS,F_NODE(0),CLIP_FLAG)
 
                IF(F_NODE(0) < ZERO) THEN
                   BLOCKED_V_CELL_AT(IJK) = .FALSE.
@@ -782,6 +790,7 @@
       USE quadric
       USE cutcell
       USE polygon
+      USE stl
       
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
@@ -877,6 +886,8 @@
                CALL EVAL_F('POLYGON',X_NODE(0),Y_NODE(0),Z_NODE(0),N_POLYGON,F_NODE(0),CLIP_FLAG)
 
                CALL EVAL_F('USR_DEF',X_NODE(0),Y_NODE(0),Z_NODE(0),N_USR_DEF,F_NODE(0),CLIP_FLAG)
+
+               CALL EVAL_F('STL    ',X_NODE(0),Y_NODE(0),Z_NODE(0),N_FACETS,F_NODE(0),CLIP_FLAG)
 
                IF(F_NODE(0) < ZERO) THEN
                   BLOCKED_W_CELL_AT(IJK) = .FALSE.

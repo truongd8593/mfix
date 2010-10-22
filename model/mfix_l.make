@@ -59,6 +59,7 @@ mfix.exe : \
     polygon.mod \
     progress_bar.mod \
     quadric.mod \
+    stl.mod \
     vtk.mod \
     mchem.mod \
     des_bc.mod \
@@ -348,6 +349,7 @@ mfix.exe : \
     get_delh.$(OBJ_EXT) \
     get_master.$(OBJ_EXT) \
     get_poly_data.$(OBJ_EXT) \
+    get_stl_data.$(OBJ_EXT) \
     set_Odxyz.$(OBJ_EXT) \
     update_dashboard.$(OBJ_EXT) \
     vtk_out.$(OBJ_EXT) \
@@ -779,10 +781,12 @@ mfix.exe : \
     get_delh.$(OBJ_EXT) \
     get_master.$(OBJ_EXT) \
     get_poly_data.$(OBJ_EXT) \
+    get_stl_data.$(OBJ_EXT) \
     polygon_mod.$(OBJ_EXT) \
     progress_bar_mod.$(OBJ_EXT) \
     quadric_mod.$(OBJ_EXT) \
     set_Odxyz.$(OBJ_EXT) \
+    stl_mod.$(OBJ_EXT) \
     update_dashboard.$(OBJ_EXT) \
     vtk_mod.$(OBJ_EXT) \
     vtk_out.$(OBJ_EXT) \
@@ -1147,6 +1151,10 @@ quadric.mod : ./cartesian_grid/quadric_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/quadric_mod.f 
+stl.mod : ./cartesian_grid/stl_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/stl_mod.f 
 vtk.mod : ./cartesian_grid/vtk_mod.f \
             param.mod \
             param1.mod 
@@ -1422,6 +1430,8 @@ bc_phi.$(OBJ_EXT) : bc_phi.f \
             indices.mod \
             bc.mod \
             compar.mod \
+            cutcell.mod \
+            quadric.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -2096,6 +2106,7 @@ conv_dif_phi.$(OBJ_EXT) : conv_dif_phi.f \
             parallel.mod \
             matrix.mod \
             toleranc.mod \
+            cutcell.mod \
             sendrecv3.mod \
             tmp_array.mod \
             vshear.mod \
@@ -3172,6 +3183,7 @@ read_namelist.$(OBJ_EXT) : read_namelist.f \
             vtk.mod \
             polygon.mod \
             dashboard.mod \
+            stl.mod \
             usrnlst.inc                                                  \
             namelist.inc                                                 \
             des/desnamelist.inc                                          \
@@ -4625,6 +4637,7 @@ cartesian_grid_init_namelist.$(OBJ_EXT) : ./cartesian_grid/cartesian_grid_init_n
             vtk.mod \
             progress_bar.mod \
             dashboard.mod \
+            stl.mod \
             cartesian_grid/cartesian_grid_namelist.inc                  
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/cartesian_grid_init_namelist.f 
 CG_set_bc0.$(OBJ_EXT) : ./cartesian_grid/CG_set_bc0.f \
@@ -4888,6 +4901,7 @@ check_data_cartesian.$(OBJ_EXT) : ./cartesian_grid/check_data_cartesian.f \
             vtk.mod \
             polygon.mod \
             dashboard.mod \
+            stl.mod \
             fldvar.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/check_data_cartesian.f 
@@ -4988,6 +5002,7 @@ get_connectivity.$(OBJ_EXT) : ./cartesian_grid/get_connectivity.f \
             quadric.mod \
             cutcell.mod \
             polygon.mod \
+            stl.mod \
             fldvar.mod \
             vtk.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/get_connectivity.f 
@@ -5007,6 +5022,7 @@ get_cut_cell_flags.$(OBJ_EXT) : ./cartesian_grid/get_cut_cell_flags.f \
             cutcell.mod \
             vtk.mod \
             polygon.mod \
+            stl.mod \
             physprop.mod \
             fldvar.mod \
             scalars.mod \
@@ -5027,6 +5043,7 @@ get_cut_cell_volume_area.$(OBJ_EXT) : ./cartesian_grid/get_cut_cell_volume_area.
             quadric.mod \
             cutcell.mod \
             polygon.mod \
+            stl.mod \
             bc.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/get_cut_cell_volume_area.f 
 get_delh.$(OBJ_EXT) : ./cartesian_grid/get_delh.f \
@@ -5080,6 +5097,29 @@ get_poly_data.$(OBJ_EXT) : ./cartesian_grid/get_poly_data.f \
             quadric.mod \
             cutcell.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/get_poly_data.f 
+get_stl_data.$(OBJ_EXT) : ./cartesian_grid/get_stl_data.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            fldvar.mod \
+            run.mod \
+            scalars.mod \
+            funits.mod \
+            rxns.mod \
+            compar.mod \
+            mpi_utility.mod \
+            progress_bar.mod \
+            stl.mod \
+            vtk.mod \
+            quadric.mod \
+            constant.mod \
+            parallel.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            sendrecv.mod \
+            stl.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/get_stl_data.f 
 set_Odxyz.$(OBJ_EXT) : ./cartesian_grid/set_Odxyz.f \
             param.mod \
             param1.mod \
@@ -5130,7 +5170,8 @@ vtk_out.$(OBJ_EXT) : ./cartesian_grid/vtk_out.f \
             output.mod \
             pscor.mod \
             mpi_utility.mod \
-            polygon.mod 
+            polygon.mod \
+            stl.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/vtk_out.f 
 write_progress_bar.$(OBJ_EXT) : ./cartesian_grid/write_progress_bar.f \
             param.mod \
@@ -5867,7 +5908,8 @@ cooling_rate_tc.$(OBJ_EXT) : ./GhdTheory/cooling_rate_tc.f
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/cooling_rate_tc.f 
 dufour_coeff.$(OBJ_EXT) : ./GhdTheory/dufour_coeff.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/dufour_coeff.f 
-ghd.$(OBJ_EXT) : ./GhdTheory/ghd.f 
+ghd.$(OBJ_EXT) : ./GhdTheory/ghd.f \
+            drag.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/ghd.f 
 ghdmassflux.$(OBJ_EXT) : ./GhdTheory/ghdmassflux.f \
             param.mod \

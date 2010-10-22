@@ -258,6 +258,10 @@
 
             CALL EVAL_USR_FCT(x1,x2,x3,Q,f,CLIP_FLAG)
 
+         CASE('STL')
+
+            CALL EVAL_STL_FCT(x1,x2,x3,Q,f,CLIP_FLAG,BCID)
+
          CASE DEFAULT
 
             WRITE(*,*)'ERROR IN SUBROUTINE EVAL_F.'
@@ -266,6 +270,7 @@
             WRITE(*,*)'QUADRIC'
             WRITE(*,*)'POLYGON'
             WRITE(*,*)'USR_DEF'
+            WRITE(*,*)'STL'
             CALL MFIX_EXIT(myPE)
 
       END SELECT
@@ -506,6 +511,11 @@
          IF(INTERSECT_X(IJK)) Xi = xc
       ENDDO
 
+      IF(USE_STL) THEN
+         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_X(IJK),xc,yc,zc)
+         IF(INTERSECT_X(IJK)) Xi = xc 
+      ENDIF
+
       IF(TYPE_OF_CELL=='U_MOMENTUM') THEN
          IF(SNAP(IJK)) THEN
             INTERSECT_X(IJK) = .TRUE.
@@ -549,6 +559,11 @@
          IF(INTERSECT_Y(IJK)) Yi = yc
       ENDDO
 
+      IF(USE_STL) THEN
+         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_Y(IJK),xc,yc,zc)
+         IF(INTERSECT_Y(IJK)) Yi = yc 
+      ENDIF
+
       IF(TYPE_OF_CELL=='V_MOMENTUM') THEN
          IF(SNAP(IJK)) THEN
             INTERSECT_Y(IJK) = .TRUE.
@@ -591,14 +606,18 @@
          IF(INTERSECT_Z(IJK)) Zi = zc
       ENDDO
 
+      IF(USE_STL) THEN
+         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_Z(IJK),xc,yc,zc)
+         IF(INTERSECT_Z(IJK)) Zi = zc 
+      ENDIF
 
-         IF(TYPE_OF_CELL=='W_MOMENTUM') THEN
-            IF(SNAP(IJK)) THEN
-               INTERSECT_Z(IJK) = .TRUE.
-               K = K_OF(IJK) 
-               Zi = ZG_T(K)
-            ENDIF
+      IF(TYPE_OF_CELL=='W_MOMENTUM') THEN
+         IF(SNAP(IJK)) THEN
+            INTERSECT_Z(IJK) = .TRUE.
+            K = K_OF(IJK) 
+            Zi = ZG_T(K)
          ENDIF
+      ENDIF
 
       ENDIF
 

@@ -18,6 +18,7 @@
       USE vtk
       USE progress_bar
       USE dashboard
+      Use stl
      
       IMPLICIT NONE
 !-----------------------------------------------
@@ -38,6 +39,8 @@
       CARTESIAN_GRID = .FALSE.
 
       N_QUADRIC = 0
+
+      USE_STL = .FALSE.
 
       USE_POLYGON = .FALSE.
 
@@ -97,6 +100,16 @@
       TOL_POLY  = 1.0D-9
 
       ITERMAX_INT = 10000
+
+      TOL_STL = 1.0D-6
+      STL_SMALL_ANGLE = 5.0   ! Degrees
+      STL_RAY_DIR = 'X-'
+      OUT_STL_VALUE = 1.0 
+      STL_BC_ID = UNDEFINED_I
+      TX_STL = ZERO
+      TY_STL = ZERO
+      TZ_STL = ZERO
+      SCALE_STL = ONE
 
       SET_CORNER_CELLS = .FALSE.
 

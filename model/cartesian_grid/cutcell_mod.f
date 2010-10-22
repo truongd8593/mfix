@@ -401,6 +401,8 @@
 
       LOGICAL :: USE_POLYGON
 
+      LOGICAL :: USE_STL
+
 !     Boundary condition flag
       INTEGER,  DIMENSION(:), ALLOCATABLE ::  BC_ID
       INTEGER,  DIMENSION(:), ALLOCATABLE ::  BC_U_ID

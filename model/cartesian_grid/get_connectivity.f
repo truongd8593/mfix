@@ -28,6 +28,7 @@
       USE quadric
       USE cutcell
       USE polygon
+      USE stl
       
       IMPLICIT NONE
       INTEGER :: I,J,K,L,IM,JM,KM
@@ -98,6 +99,7 @@
 
             CALL EVAL_F('USR_DEF',X_NODE(NODE),Y_NODE(NODE),Z_NODE(NODE),N_USR_DEF,F_NODE(NODE),CLIP_FLAG)
 
+            CALL EVAL_F('STL    ',X_NODE(NODE),Y_NODE(NODE),Z_NODE(NODE),N_FACETS,F_NODE(NODE),CLIP_FLAG)
 
             IF (ABS(F_NODE(NODE)) < TOL_F ) THEN
                CORNER_INTERSECTION(NODE) = .TRUE.
