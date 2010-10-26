@@ -867,7 +867,7 @@
                eta_k_star = (1.d0 - (2.d0/5.d0)*(1.d0+C_E)*(1.d0-3.d0*C_E) &
                     * EP_s(IJK,M)*G_0(IJK,M,M) ) / (nu_eta_star - 0.5d0*zeta0_star)
 
-               eta_star = eta_k_star*(1.d0 + (4.d0/5.d0)*EP_s(IJK,M)*G_0(IJK,M) &
+               eta_star = eta_k_star*(1.d0 + (4.d0/5.d0)*EP_s(IJK,M)*G_0(IJK,M,M) &
                     * (1.d0+C_E) ) + (3.d0/5.d0)*gamma_star
 
                eta0 = 5.0d0*M_PM*DSQRT(Theta_m(IJK,M)/PI) / (16.d0*D_PM*D_PM)
