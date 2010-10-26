@@ -628,7 +628,7 @@
 !=======================================================================
                IF(WRITE_DASHBOARD) THEN
                   RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
-                  CALL UPDATE_DASHBOARD(NIT,0.0,'    ')
+                  CALL UPDATE_DASHBOARD(NIT,0.0d0,'    ')
                ENDIF
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
