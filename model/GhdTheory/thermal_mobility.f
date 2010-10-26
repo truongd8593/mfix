@@ -19,7 +19,7 @@
                                  theta,Ti,DF,gammaij,omega,Lij)
       Implicit NONE
 
-      integer s 
+      integer s, indx(s) 
 
       double precision mi(s),alpha(s,s),ni(s),mu(s,s),sigma(s,s), &
                       chi(s,s),zeta0,theta(s),Ti(s),DF(s,s), &
@@ -29,7 +29,7 @@
       double precision kronecker(s,s),sum1(s,s),l_bar(s,s),lkj(s,s), &
                       Lkin(s,s),Lcol(s,s),Amat(s,s),bmat(s,s), &
                       Amat0(s,s),bmat0(s)
-      double precision indx(s),d
+      double precision d
 
       integer NP
       parameter (NP=15)     !max no. of linear equations to solve

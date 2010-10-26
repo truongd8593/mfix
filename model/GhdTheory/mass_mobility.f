@@ -14,7 +14,7 @@
       subroutine mass_mobility(s,mi,ni,rho,zeta0,theta,nu,DF)
       Implicit NONE
 
-      integer s 
+      integer s, indx(s) 
 
       double precision mi(s),sigmai(s),ni(s),n,rho, &
                       zeta0,theta(s),nu(s,s),DF(s,s)
@@ -22,7 +22,7 @@
       integer i,j,kk
       double precision kronecker(s,s),Amat(s,s),bmat(s,s), &
                       Amat0(s,s),bmat0(s)
-      double precision indx(s),d
+      double precision d
 
       integer NP
       parameter (NP=15)     !max no. of linear equations to solve

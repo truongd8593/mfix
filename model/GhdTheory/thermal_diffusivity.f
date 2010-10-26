@@ -17,7 +17,7 @@
       
       Implicit NONE
 
-      integer s 
+      integer s, indx(s) 
 
       double precision alpha(s,s),ni(s),mi(s),rho,v0,mu(s,s), &
                        sigma(s,s),chi(s,s),zeta0,theta(s), &
@@ -25,7 +25,7 @@
 
       integer i,j
       double precision sum1(s),sum2(s),nu(s,s),Amat(s,s),bmat(s)
-      double precision indx(s),d
+      double precision d
 
       integer NP
       parameter (NP=15)     !max no. of linear equations to solve

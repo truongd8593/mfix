@@ -18,7 +18,7 @@
                                omega,gamma,lambdai)
       Implicit NONE
 
-      integer s 
+      integer s, indx(s) 
 
       double precision mi(s),sigmai(s),T,alpha(s,s),ni(s),rho,v0, &
                        mu(s,s),sigma(s,s),chi(s,s),beta(s,s),zeta0, &
@@ -29,7 +29,7 @@
                        sum3(s),sum4(s),omega(s,s),lambdai_bar(s), &
                        gamma(s,s),Amat(s,s),bmat(s),lambdai(s), &
                        lambdakini(s),lambdakin,lambdacol,CT(s,s)
-      double precision indx(s),d
+      double precision d
 
       integer NP
       parameter (NP=15)     !max no. of linear equations to solve

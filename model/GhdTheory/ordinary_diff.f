@@ -18,7 +18,7 @@
           dzeta0_dnj,dchi0il_dnj)
       Implicit NONE
 
-      integer s 
+      integer s, indx(s) 
 
       double precision mi(s),sigmai(s),alpha(s,s),phii(s),T,phi, &
                       ni(s),n,rhoi(s),rho,m,mu(s,s),sigma(s,s), &
@@ -40,7 +40,7 @@
                       dp_dnj(s),dniTi_dnj(s,s),sum1(s,s), &
                       Amat(s,s),bmat(s,s), &
                       Amat0(s,s),bmat0(s)
-      double precision indx(s),d, twoDeltaNi
+      double precision d, twoDeltaNi
 
       integer NP
       parameter (NP=15)     !max no. of linear equations to solve
