@@ -231,7 +231,7 @@
       IF(DES_BCMI /= 0 .OR. DES_BCMO /=0)THEN
          DES_MIO = .TRUE.
 ! Allocate necessary arrays for discrete mass inlets
-         CALL ALLOCATE_DES_MIO(DES_BCMI, DES_BCMO)
+         CALL ALLOCATE_DES_MIO
 
 ! Verify that either the nsquare or grid based neighbor searches are
 ! used, otherwise flag and exit

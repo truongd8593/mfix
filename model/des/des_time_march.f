@@ -114,7 +114,7 @@
                      CALL CALC_FORCE_DES
 
                      ! Update particle position, velocity 
-                     CALL CFNEWVALUES(NP)
+                     CALL CFNEWVALUES
 
                      CALL PARTICLES_IN_CELL
 
@@ -235,7 +235,7 @@
             CALL CALC_FORCE_DES
 
 ! Update particle position, velocity            
-            CALL CFNEWVALUES(NP)
+            CALL CFNEWVALUES
 
 ! For systems with inlets/outlets check to determine if a particle has
 ! fully entered or exited the domain.  If the former, remove the status
