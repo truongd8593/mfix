@@ -337,7 +337,7 @@
             IF (DESGRIDSEARCH_KMAX == UNDEFINED_I) THEN
                 DL_TMP = ZLENGTH/TMP_FACTOR
                 DESGRIDSEARCH_KMAX = INT(DL_TMP)
-                IF (DESGRIDSEARCH_KMAX <= 0) DESGRIDSEARCH_JMAX = 1
+                IF (DESGRIDSEARCH_KMAX <= 0) DESGRIDSEARCH_KMAX = 1
                 WRITE(*,'(3X,A,I8)') &
                   'DESGRIDSEARCH_KMAX was set to ', DESGRIDSEARCH_KMAX
             ELSE
