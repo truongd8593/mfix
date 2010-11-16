@@ -2085,12 +2085,12 @@
             IF(SIMONIN) THEN
 ! parameters for defining Tau_12: time-scale of the fluid turbulent motion
 ! viewed by the particles (crossing trajectory effect)
-               IF(SQRT(USCM**2+VSCM**2+WSCM**2) .GT. zero) THEN
+               IF(SQRT(USCM**2+VSCM**2+WSCM**2) .GT. zero .AND. EP_S(IJK,1) > ZERO_EP_S) THEN
                   Cos_Theta(IJK) = ((UGC-USCM)*USCM+(VGC-VSCM)*VSCM+(WGC-WSCM)*WSCM)/ &
                   (SQRT((UGC-USCM)**2+(VGC-VSCM)**2+(WGC-WSCM)**2)*  &
                   SQRT(USCM**2+VSCM**2+WSCM**2))
                ELSE
-                  Cos_Theta(IJK) = ONE
+                  Cos_Theta(IJK) = ZERO ! no solids -> tau_12 = tau_1
                ENDIF
             ENDIF
 
