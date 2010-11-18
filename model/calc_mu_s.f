@@ -1720,7 +1720,7 @@
       DOUBLE PRECISION W_s_C, Wsl_C
 !     
 !     Cell center value of solids and gas velocities 
-      DOUBLE PRECISION USCM, UGC, VSCM, VGC, WSCM, WGC 
+      DOUBLE PRECISION USCM, UGC, VSCM, VGC, WSCM, WGC, SqrtVs, SqrtVgMinusVs 
 !     
 !     Local DO-LOOP counters and phase index
       INTEGER          I1, I2, MM
@@ -2085,10 +2085,11 @@
             IF(SIMONIN) THEN
 ! parameters for defining Tau_12: time-scale of the fluid turbulent motion
 ! viewed by the particles (crossing trajectory effect)
-               IF(SQRT(USCM**2+VSCM**2+WSCM**2) .GT. zero .AND. EP_S(IJK,1) > ZERO_EP_S) THEN
+               SqrtVs = SQRT(USCM**2+VSCM**2+WSCM**2)
+	       SqrtVgMinusVs = SQRT((UGC-USCM)**2+(VGC-VSCM)**2+(WGC-WSCM)**2)
+	       IF(SqrtVs > Small_Number .AND. SqrtVgMinusVs > Small_Number .AND. EP_S(IJK,1) > ZERO_EP_S) THEN
                   Cos_Theta(IJK) = ((UGC-USCM)*USCM+(VGC-VSCM)*VSCM+(WGC-WSCM)*WSCM)/ &
-                  (SQRT((UGC-USCM)**2+(VGC-VSCM)**2+(WGC-WSCM)**2)*  &
-                  SQRT(USCM**2+VSCM**2+WSCM**2))
+                  (SqrtVgMinusVs * SqrtVs)
                ELSE
                   Cos_Theta(IJK) = ZERO ! no solids -> tau_12 = tau_1
                ENDIF
