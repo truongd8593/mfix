@@ -113,15 +113,27 @@
          K = K_OF(IJK) 
 
          IF (IS_ON_myPE_plus2layers(IP1(I),J,K)) THEN
-           CpxFlux_E(IJK) = HALF * (C_pg(IJK) + C_pg(IP_OF(IJK))) * Flux_gE(IJK)
+           IF(.NOT.ADDED_MASS) THEN
+	     CpxFlux_E(IJK) = HALF * (C_pg(IJK) + C_pg(IP_OF(IJK))) * Flux_gE(IJK)
+           ELSE
+	     CpxFlux_E(IJK) = HALF * (C_pg(IJK) + C_pg(IP_OF(IJK))) * Flux_gSE(IJK)
+           ENDIF
          ENDIF
          
          IF (IS_ON_myPE_plus2layers(I,JP1(J),K)) THEN
-           CpxFlux_N(IJK) = HALF * (C_pg(IJK) + C_pg(JP_OF(IJK))) * Flux_gN(IJK)
+           IF(.NOT.ADDED_MASS) THEN
+             CpxFlux_N(IJK) = HALF * (C_pg(IJK) + C_pg(JP_OF(IJK))) * Flux_gN(IJK)
+           ELSE
+             CpxFlux_N(IJK) = HALF * (C_pg(IJK) + C_pg(JP_OF(IJK))) * Flux_gSN(IJK)
+           ENDIF
          ENDIF
          
          IF (IS_ON_myPE_plus2layers(I,J,KP1(K))) THEN
-           CpxFlux_T(IJK) = HALF * (C_pg(IJK) + C_pg(KP_OF(IJK))) * Flux_gT(IJK)
+           IF(.NOT.ADDED_MASS) THEN
+             CpxFlux_T(IJK) = HALF * (C_pg(IJK) + C_pg(KP_OF(IJK))) * Flux_gT(IJK)
+           ELSE
+             CpxFlux_T(IJK) = HALF * (C_pg(IJK) + C_pg(KP_OF(IJK))) * Flux_gST(IJK)
+           ENDIF
          ENDIF
 
          IF (FLUID_AT(IJK)) THEN 
@@ -151,15 +163,27 @@
            K = K_OF(IJK) 
 
            IF (IS_ON_myPE_plus2layers(IP1(I),J,K)) THEN
-             CpxFlux_E(IJK) = HALF * (C_ps(IJK,M) + C_ps(IP_OF(IJK),M)) * Flux_sE(IJK,M)
+             IF(.NOT.ADDED_MASS .OR. M /= M_AM) THEN
+               CpxFlux_E(IJK) = HALF * (C_ps(IJK,M) + C_ps(IP_OF(IJK),M)) * Flux_sE(IJK,M)
+             ELSE ! M=M_AM is the only phase for which virtual mass is added
+               CpxFlux_E(IJK) = HALF * (C_ps(IJK,M) + C_ps(IP_OF(IJK),M)) * Flux_sSE(IJK)
+             ENDIF
            ENDIF
          
            IF (IS_ON_myPE_plus2layers(I,JP1(J),K)) THEN
-             CpxFlux_N(IJK) = HALF * (C_ps(IJK,M) + C_ps(JP_OF(IJK),M)) * Flux_sN(IJK,M)
+             IF(.NOT.ADDED_MASS .OR. M /= M_AM) THEN
+               CpxFlux_N(IJK) = HALF * (C_ps(IJK,M) + C_ps(JP_OF(IJK),M)) * Flux_sN(IJK,M)
+             ELSE
+               CpxFlux_N(IJK) = HALF * (C_ps(IJK,M) + C_ps(JP_OF(IJK),M)) * Flux_sSN(IJK)
+             ENDIF
            ENDIF
 
            IF (IS_ON_myPE_plus2layers(I,J,KP1(K))) THEN
-             CpxFlux_T(IJK) = HALF * (C_ps(IJK,M) + C_ps(KP_OF(IJK),M)) * Flux_sT(IJK,M)
+             IF(.NOT.ADDED_MASS .OR. M /= M_AM) THEN
+               CpxFlux_T(IJK) = HALF * (C_ps(IJK,M) + C_ps(KP_OF(IJK),M)) * Flux_sT(IJK,M)
+             ELSE
+               CpxFlux_T(IJK) = HALF * (C_ps(IJK,M) + C_ps(KP_OF(IJK),M)) * Flux_sST(IJK)
+             ENDIF
            ENDIF
    
            IF (FLUID_AT(IJK)) THEN 

@@ -77,7 +77,7 @@
       INTEGER          IER 
 ! 
 !                      Indices 
-      INTEGER          I, IJK, IJKE, IPJK, IJKM, IPJKM 
+      INTEGER          I, J, K, IJK, IJKE, IPJK, IJKM, IPJKM, IMJK, IJMK, IPJMK, IJPK, IJKP
 ! 
 !                      Phase index 
       INTEGER          M, L, IM
@@ -123,6 +123,9 @@
 
 !			Source terms for HYS drag relation
       DOUBLE PRECISION HYS_drag, avgDrag
+
+!			virtual (added) mass
+      DOUBLE PRECISION F_vir, ROP_MA, Use, Usw, Vsw, Vse, Usn, Uss, Wsb, Wst, Wse, Usb, Ust
 ! 
 !                      error message 
       CHARACTER*80     LINE 
@@ -163,10 +166,17 @@
 !$omp&                  MUGA, ROPGA, EPGA )
       DO IJK = ijkstart3, ijkend3 
          I = I_OF(IJK) 
+	 J = J_OF(IJK)
+	 K = K_OF(IJK)
          IJKE = EAST_OF(IJK) 
          IJKM = KM_OF(IJK) 
-         IPJK = IP_OF(IJK) 
+         IPJK = IP_OF(IJK)  
+         IMJK = IM_OF(IJK) 
          IPJKM = IP_OF(IJKM) 
+	 IJMK = JM_OF(IJK)
+	 IPJMK = IP_OF(IJMK)
+	 IJPK = JP_OF(IJK)
+	 IJKP = KP_OF(IJK)
          EPGA = AVG_X(EP_G(IJK),EP_G(IJKE),I) 
          IF (IP_AT_E(IJK)) THEN 
             A_M(IJK,E,M) = ZERO 
@@ -244,13 +254,58 @@
                ROGA  = HALF * (VOL(IJK)*RO_G(IJK) + VOL(IPJK)*RO_G(IJKE))/VOL_U(IJK) 
 !         Previous time step
                V0 = HALF * (VOL(IJK)*ROP_GO(IJK) + VOL(IPJK)*ROP_GO(IJKE))*ODT/VOL_U(IJK)  
+!         Added mass implicit transient term {Cv eps rop_g dU/dt}
+               IF(Added_Mass) THEN
+	         ROP_MA = AVG_X(ROP_g(IJK)*EP_s(IJK,M_AM),ROP_g(IJKE)*EP_s(IJKE,M_AM),I)
+		 V0 = V0 + Cv * ROP_MA * ODT
+               ENDIF
             ELSE
 !       Volumetric forces
                ROPGA = (VOL(IJK)*ROP_G(IJK) + VOL(IPJK)*ROP_G(IJKE))/(VOL(IJK) + VOL(IPJK))
                ROGA  = (VOL(IJK)*RO_G(IJK)  + VOL(IPJK)*RO_G(IJKE) )/(VOL(IJK) + VOL(IPJK))
 !         Previous time step
                V0 = (VOL(IJK)*ROP_GO(IJK) + VOL(IPJK)*ROP_GO(IJKE))*ODT/(VOL(IJK) + VOL(IPJK))  
+!         Added mass implicit transient term {Cv eps rop_g dU/dt}
+               IF(Added_Mass) THEN
+                 ROP_MA = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M_AM) + VOL(IPJK)*ROP_g(IJKE)*EP_s(IJKE,M_AM) )/(VOL(IJK) + VOL(IPJK))
+		 V0 = V0 + Cv * ROP_MA * ODT
+               ENDIF
             ENDIF
+!
+!!! BEGIN VIRTUAL MASS SECTION (explicit terms)
+! adding transient term dvg/dt - dVs/dt to virtual mass term			    
+	    F_vir = ZERO
+	    IF(Added_Mass.AND.(.NOT.CUT_U_TREATMENT_AT(IJK))) THEN        
+	      F_vir = ( (U_s(IJK,M_AM) - U_sO(IJK,M_AM)) )*ODT*VOL_U(IJK)
+!
+! defining gas-particles velocity at momentum cell faces (or scalar cell center)    
+	      Usw = AVG_X_E(U_S(IMJK,M_AM),U_s(IJK,M_AM),I)
+	      Use = AVG_X_E(U_s(IJK,M_AM),U_s(IPJK,M_AM),IP1(I))
+	      
+	      Vsw = AVG_Y_N(V_s(IJMK,M_AM),V_s(IJK,M_AM))  
+	      Vse = AVG_Y_N(V_s(IPJMK,M_AM),V_s(IPJK,M_AM)) 
+	      Uss = AVG_Y(U_s(IJMK,M_AM),U_s(IJK,M_AM),JM1(J))
+	      Usn = AVG_Y(U_s(IJK,M_AM),U_s(IJPK,M_AM),J)
+
+	      IF(DO_K) THEN
+	         Wsb = AVG_Z_T(W_s(IJKM,M_AM),W_s(IJK,M_AM))  
+	         Wst = AVG_Z_T(W_s(IPJKM,M_AM),W_s(IPJK,M_AM)) 
+		 Wse = AVG_X(Wsb,Wst,I)
+	         Usb = AVG_Z(U_s(IJKM,M_AM),U_s(IJK,M_AM),KM1(K))
+	         Ust = AVG_Z(U_s(IJK,M_AM),U_s(IJKP,M_AM),K)
+	         F_vir = F_vir + Wse*OX_E(I) * (Ust*AXY(IJKP) - Usb*(AXY(IJK)))
+		 IF (CYLINDRICAL) F_vir = F_vir - Wse**2*OX_E(I) ! centrifugal force
+	      ENDIF
+!
+! adding convective terms (U dU/dx + V dU/dy + W dU/dz) to virtual mass
+	      F_vir = F_vir + U_s(IJK,M_AM)*(Use*AYZ(IPJK) - Usw*AYZ(IJK)) + &
+	         AVG_X(Vsw,Vse,I) * (Usn*AXZ(IJPK) - Uss*(AXZ(IJK)))
+	         
+	    
+	      F_vir = F_vir * Cv * ROP_MA
+	    ENDIF
+!
+!!! END VIRTUAL MASS SECTION
 
 ! Original terms
 !       Volumetric forces
@@ -330,6 +385,7 @@
                WGE = AVG_X(HALF*(W_G(IJK)+W_G(IJKM)),HALF*(W_G(IPJK)+W_G(IPJKM)&
                   ),I) 
                VCF = ROPGA*WGE**2*OX_E(I) 
+	       IF(Added_Mass) VCF = VCF + Cv*ROP_MA*WGE**2*OX_E(I) ! virtual mass contribution.
 !
 !           -(2mu/x)*(u/x) part of Tau_zz/X
                EPMUGA = AVG_X(MU_GT(IJK),MU_GT(IJKE),I) 
@@ -343,7 +399,10 @@
             A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+A_M(IJK,S,M&
                )+A_M(IJK,T,M)+A_M(IJK,B,M)+(V0+VPM+ZMAX(VMT)+VTZA)*VOL_U(IJK)) 
             B_M(IJK,M) = -(SDP + TAU_U_G(IJK)+((V0+ZMAX((-VMT)))*U_GO(IJK)+VBF+&
-               VCF+Ghd_drag+HYS_drag)*VOL_U(IJK))+B_M(IJK,M)
+               VCF+Ghd_drag+HYS_drag)*VOL_U(IJK))+B_M(IJK,M) 
+
+            B_M(IJK,M) = B_M(IJK,M) - F_vir ! explicit part of virtual mass force
+
 	ENDIF 
       END DO 
 

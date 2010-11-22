@@ -66,6 +66,9 @@
 !                      Specified constant gas viscosity
       DOUBLE PRECISION MU_g0
 !
+!                      Virtual (added) mass coefficient Cv
+      DOUBLE PRECISION Cv
+!
 !                      gas viscosity
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MU_g 
 !

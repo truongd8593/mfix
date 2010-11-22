@@ -104,20 +104,27 @@
 
       DO IJK = ijkstart3, ijkend3
 !
+! modified by Sof. pressure correction equation is solved for the gas-phase
+! i.e. M = 0. The user must decide which phase (M=0) is the continuous phase for
+! which pressure correction is solved. This is necessary for bubble column 
+! to work. This effectively marks all cells the same way. The code below can be
+! uncommented to revert back to original MFIX implementation.
 !
          IF (FLUID_AT(IJK)) THEN 
-            IF (MF /= UNDEFINED_I) THEN 
-               IF (EP_G(IJK)/RO_G(IJK) > EP_S(IJK,MF)/RO_S(MF)) THEN 
-                  PHASE_4_P_G(IJK) = 0 
-                  SW_G(0) = .TRUE. 
-               ELSE 
-                  PHASE_4_P_G(IJK) = MF 
-                  SW_G(MF) = .TRUE. 
-               ENDIF 
-            ELSE 
+!            IF (MF /= UNDEFINED_I) THEN 
+!               IF (EP_G(IJK)/RO_G(IJK) > EP_S(IJK,MF)/RO_S(MF)) THEN 
+!                  PHASE_4_P_G(IJK) = 0 
+!                  SW_G(0) = .TRUE. 
+!               ELSE 
+!                  PHASE_4_P_G(IJK) = MF 
+!                  SW_G(MF) = .TRUE. 
+!               ENDIF 
+!            ELSE 
+!
                PHASE_4_P_G(IJK) = 0 
                SW_G(0) = .TRUE. 
-            ENDIF 
+!
+!            ENDIF 
 !
 !
 !         Solids phase with the highest conc. that can be close-packed

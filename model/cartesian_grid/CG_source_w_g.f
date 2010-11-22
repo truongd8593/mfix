@@ -120,13 +120,15 @@
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-      INTEGER :: JM,IP,JP,IJMK,IJPK,IJKC,IJKN,IJKNE,IJKS,IJKSE,IPJMK,IJKM,KM,KP
+      INTEGER :: JM,IP,JP,IJMK,IJPK,IJKC,IJKN,IJKNE,IJKS,IJKSE,IPJMK,IJKM,KM,KP,IJMKP
       INTEGER :: IJKTN,IJKWT,IJKST
       DOUBLE PRECISION :: We,Ww,Wn,Ws,Wt,Wb
       DOUBLE PRECISION :: B_NOC
       DOUBLE PRECISION :: MU_GT_E,MU_GT_W,MU_GT_N,MU_GT_S,MU_GT_T,MU_GT_B,MU_GT_CUT
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
+!			virtual (added) mass
+      DOUBLE PRECISION F_vir, ROP_MA, Use, Usw, Ust, Vsb, Vst, Wse, Wsw, Wsn, Wss, Wst, Wsb, Usc,Vsc,Vsn,Vss
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -282,6 +284,82 @@
                B_M(IJK,M) = B_M(IJK,M)   +  B_NOC
             ENDIF
 
+            IF(CUT_W_TREATMENT_AT(IJK)) THEN
+!
+!!! BEGIN VIRTUAL MASS SECTION (explicit terms)
+! adding transient term  dWs/dt to virtual mass term			    
+               F_vir = ZERO
+	       IF(Added_Mass) THEN 
+
+	          F_vir = ( (W_s(IJK,M_AM) - W_sO(IJK,M_AM)) )*ODT*VOL_W(IJK)
+
+                  I = I_OF(IJK) 
+                  J = J_OF(IJK) 
+                  K = K_OF(IJK)
+   
+                  IM = I - 1 
+                  JM = J - 1 
+                  KM = K - 1
+
+                  IP = I + 1 
+                  JP = J + 1 
+                  KP = K + 1
+
+                  IMJK = FUNIJK(IM,J,K)
+                  IJMK = FUNIJK(I,JM,K)
+                  IPJK = FUNIJK(IP,J,K)
+                  IJPK = FUNIJK(I,JP,K)
+                  IJKP = FUNIJK(I,J,KP)
+                  IJKM = FUNIJK(I,J,KM)
+
+                  IMJKP = KP_OF(IMJK)
+                  IJMKP = KP_OF(IJMK)
+
+                  IJKE = EAST_OF(IJK) 
+!
+! defining gas-particles velocity at momentum cell faces (or scalar cell center)    
+
+
+                  Wse = Theta_We_bar(IJK) * W_s(IJK,M_AM) + Theta_We(IJK) * W_s(IPJK,M_AM)
+                  Wsw = Theta_We_bar(IMJK) * W_s(IMJK,M_AM) + Theta_We(IMJK) * W_s(IJK,M_AM)
+
+                  Use = Theta_W_te(IJK) * U_s(IJK,M_AM) + Theta_W_be(IJK) * U_s(IJKP,M_AM)
+                  Usw = Theta_W_te(IMJK) * U_s(IMJK,M_AM) + Theta_W_be(IMJK) * U_s(IMJKP,M_AM)
+
+                  Usc = (DELX_we(IJK) * Usw + DELX_ww(IJK) * Use) / (DELX_we(IJK) + DELX_ww(IJK))
+
+
+                  Wsn = Theta_Wn_bar(IJK) * W_s(IJK,M_AM) + Theta_Wn(IJK) * W_s(IJPK,M_AM)
+                  Wss = Theta_Wn_bar(IJMK) * W_s(IJMK,M_AM) + Theta_Wn(IJMK) * W_s(IJK,M_AM)
+
+                  Vsn =  Theta_W_tn(IJK)  * V_s(IJK,M_AM)  + Theta_W_bn(IJK)  * V_s(IJKP,M_AM)
+                  Vss =  Theta_W_tn(IJMK) * V_s(IJMK,M_AM) + Theta_W_bn(IJMK) * V_s(IJMKP,M_AM)
+
+                  Vsc = (DELY_wn(IJK) * Vss + DELY_ws(IJK) * Vsn) / (DELY_wn(IJK) + DELY_ws(IJK))
+
+
+                  Wst = Theta_Wt_bar(IJK)  * W_s(IJK,M_AM)  + Theta_Wt(IJK)  * W_s(IJKP,M_AM)
+                  Wsb = Theta_Wt_bar(IMJK) * W_s(IMJK,M_AM) + Theta_Wt(IMJK) * W_s(IMJKP,M_AM)
+
+!
+! adding convective terms (U dW/dx + V dW/dy + W dW/dz) to virtual mass
+
+	          F_vir = F_vir +  Usc * (Wse*AYZ(IPJK) - Wsw*AYZ(IJK))    + &
+                                   Vsc * (Wsn*AXZ(IJPK) - Wss*(AXZ(IJK)))  + &
+                                   W_s(IJK,M_AM)*(Wst*AYZ(IJKP) - Wsb*AYZ(IJK))
+
+	         
+                  ROP_MA = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M_AM) + VOL(IJKT)*ROP_g(IJKT)*EP_s(IJKT,M_AM))/(VOL(IJK) + VOL(IJKT))
+
+	          F_vir = F_vir * Cv * ROP_MA
+
+                  B_M(IJK,M) = B_M(IJK,M) - F_vir ! explicit part of virtual mass force
+
+               ENDIF
+!
+!!! END VIRTUAL MASS SECTION
+
+            ENDIF
 
          ENDIF 
       END DO 

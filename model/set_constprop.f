@@ -64,6 +64,9 @@
       ELSE 
          RECALC_VISC_G = .FALSE. 
       ENDIF 
+!
+! Set default value for virtual mass coefficient
+      Cv = HALF
 
 ! variables for Iddir & Arastoopour (2005) kinetic theory
 ! EDvel_sM_ip & EDT_s_ip are also used for Garzy & Dufty (1999) 

@@ -194,6 +194,7 @@
       IF (SIMONIN .OR. AHMADI) WRITE (UNIT_OUT, 1107)
       IF (SCHAEFFER) WRITE (UNIT_OUT, 1108)
       IF (FRICTION) WRITE (UNIT_OUT, 1109)
+      IF (ADDED_MASS) WRITE (UNIT_OUT, 1111)
 !
 !  Physical and numerical parameters
 !
@@ -521,6 +522,7 @@
              /7X,'Scalar No.        Carrier Phase (Phase4Scalar)')
  1103 FORMAT(/7X, I4,'               ',I4)
  1104 FORMAT(/7X,'* K and Epsilon equations are solved.')
+ 1111 FORMAT(/7X,'* Virtual mass force is applied to momentum equations.')
  1105 FORMAT(/7X,'* Simonin model is solved')
  1106 FORMAT(/7X,'* Ahmadi model is solved')
  1107 FORMAT(/7X,'** Note: When Simonin or Ahmadi model is solved, K-Epsilon' &

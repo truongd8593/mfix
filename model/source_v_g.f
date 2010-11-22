@@ -78,7 +78,7 @@
       INTEGER          IER 
 ! 
 !                      Indices 
-      INTEGER          I, J, K, IJK, IJKN 
+      INTEGER          I, J, K, IJK, IJKN
 ! 
 !                      Phase index 
       INTEGER          M, L, IM
@@ -116,6 +116,9 @@
 !			Source terms for HYS drag relation
       DOUBLE PRECISION HYS_drag, avgDrag
 
+!			virtual (added) mass
+      DOUBLE PRECISION F_vir, ROP_MA, Vsn, Vss, Use, Usw, Vse, Vsw, Wst, Wsb, Vst, Vsb
+
 ! 
 ! loezos 
       DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
@@ -132,7 +135,7 @@
 !=======================================================================
       INTEGER ::          JM,IP,JP,KM,KP
       INTEGER ::          IMJK,IPJK,IJMK,IJPK,IJKP,IJKM,IJKC,IJKE,IJKNE,IJKW,IJKWN,IMJPK
-      INTEGER ::          IJKT,IJKTN,IJKB,IJKBN
+      INTEGER ::          IJKT,IJKTN,IJKB,IJKBN, IJPKM
       DOUBLE PRECISION :: Vn,Vs,Ve,Vw, Vt,Vb
       DOUBLE PRECISION :: B_NOC
       DOUBLE PRECISION :: MU_GT_E,MU_GT_W,MU_GT_N,MU_GT_S,MU_GT_T,MU_GT_B,MU_GT_CUT
@@ -176,7 +179,15 @@
          I = I_OF(IJK) 
          J = J_OF(IJK) 
          K = K_OF(IJK) 
-         IJKN = NORTH_OF(IJK) 
+         IJKN = NORTH_OF(IJK)  
+         IMJK = IM_OF(IJK) 
+         IPJK = IP_OF(IJK)   
+         IJMK = JM_OF(IJK) 
+         IJPK = JP_OF(IJK) 
+	 IMJPK = IM_OF(IJPK)
+	 IJKM = KM_OF(IJK) 
+	 IJPKM = KM_OF(IJPK) 
+	 IJKP = KP_OF(IJK) 
          EPGA = AVG_Y(EP_G(IJK),EP_G(IJKN),J) 
          IF (IP_AT_N(IJK)) THEN 
             A_M(IJK,E,M) = ZERO 
@@ -259,13 +270,55 @@
                ROGA = AVG_Y(RO_G(IJK),RO_G(IJKN),J) 
 !         Previous time step
                V0 = AVG_Y(ROP_GO(IJK),ROP_GO(IJKN),J)*ODT 
+!         Added mass implicit transient term {Cv eps rop_g dV/dt}
+	       IF(Added_Mass) THEN
+                 ROP_MA = AVG_Y(ROP_g(IJK)*EP_s(IJK,M_AM),ROP_g(IJKN)*EP_s(IJKN,M_AM),J)
+	         V0 = V0 + Cv * ROP_MA * ODT
+	       ENDIF
             ELSE
 !       Volumetric forces
                ROPGA = (VOL(IJK)*ROP_G(IJK) + VOL(IJKN)*ROP_G(IJKN))/(VOL(IJK) + VOL(IJKN))
                ROGA  = (VOL(IJK)*RO_G(IJK)  + VOL(IJKN)*RO_G(IJKN) )/(VOL(IJK) + VOL(IJKN))
 !         Previous time step
             V0 = (VOL(IJK)*ROP_GO(IJK) + VOL(IJKN)*ROP_GO(IJKN))*ODT/(VOL(IJK) + VOL(IJKN))  
+!         Added mass implicit transient term {Cv eps rop_g dV/dt}
+	       IF(Added_Mass) THEN
+                 ROP_MA  = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M_AM)  + VOL(IJKN)*ROP_g(IJKN)*EP_s(IJKN,M_AM) )/(VOL(IJK) + VOL(IJKN))
+	         V0 = V0 + Cv * ROP_MA * ODT
+	       ENDIF
             ENDIF
+!
+!!! BEGIN VIRTUAL MASS SECTION (explicit terms)
+! adding transient term dVs/dt to virtual mass term		    
+	    F_vir = ZERO
+	    IF(Added_Mass.AND.(.NOT.CUT_V_TREATMENT_AT(IJK))) THEN        
+	      F_vir = ( (V_s(IJK,M_AM) - V_sO(IJK,M_AM)) )*ODT*VOL_V(IJK)
+!
+! defining gas-particles velocity at momentum cell faces (or scalar cell center)     
+	      Vss = AVG_Y_N(V_S(IJMK,M_AM),V_s(IJK,M_AM))
+	      Vsn = AVG_Y_N(V_s(IJK,M_AM),V_s(IJPK,M_AM))  
+	      
+	      Use = AVG_Y(U_s(IJK,M_AM),U_s(IJPK,M_AM),J)
+	      Usw = AVG_Y(U_s(IMJK,M_AM),U_s(IMJPK,M_AM),J)
+	      Vse = AVG_X(V_s(IJK,M_AM),V_s(IPJK,M_AM),IP1(I))
+	      Vsw = AVG_X(V_s(IMJK,M_AM),V_s(IJK,M_AM),I)
+	      
+	      IF(DO_K) THEN
+	         Wst = AVG_Y(W_s(IJK,M_AM),W_s(IJPK,M_AM),J)
+	         Wsb = AVG_Y(W_s(IJKM,M_AM),W_s(IJPKM,M_AM),J)
+	         Vst = AVG_Z(V_s(IJK,M_AM),V_s(IJKP,M_AM),KP1(K))
+	         Vsb = AVG_Z(V_s(IJKM,M_AM),V_s(IJK,M_AM),K)
+	         F_vir = F_vir + AVG_Z_T(Wsb,Wst)*OX(I) * (Vst*AXY(IJKP) - Vsb*AXY(IJK))
+	      ENDIF
+!
+! adding convective terms (U dV/dx + V dV/dy) to virtual mass; W dV/dz added above.
+	      F_vir = F_vir + V_s(IJK,M_AM)*(Vsn*AXZ(IJPK) - Vss*AXZ(IJK)) + &
+	              AVG_X_E(Usw,Use,IP1(I))*(Vse*AYZ(IPJK) - Vsw*AYZ(IJK))
+	    
+	      F_vir = F_vir * Cv * ROP_MA
+	    ENDIF
+!
+!!! END VIRTUAL MASS SECTION
 
 ! Original terms
 !       Volumetric forces
@@ -370,6 +423,7 @@
             B_M(IJK,M) = -(SDP + TAU_V_G(IJK)&
 	       +Source_conv+((V0+ZMAX((-VMT)))*V_GO(IJK)+VBF+Ghd_drag+HYS_drag)&
                *VOL_V(IJK))+B_M(IJK,M) 
+            B_M(IJK,M) = B_M(IJK,M) - F_vir ! adding explicit-part of virtual mass force.
          ENDIF 
       END DO 
 !

@@ -108,6 +108,18 @@
            CALL ERROR_ROUTINE ('check_data_01', &
           'Cannot set both K_Epsilon = .T. and L_SCALE0 /= ZERO', 1, 1)
 
+! Check that phase number where added mass applies is properly defined.
+      IF (ADDED_MASS) THEN
+           IF(M_AM == UNDEFINED_I) CALL ERROR_ROUTINE ('check_data_01', &
+          'Must set disperse phase number M_AM where virtual mass applies', 1, 1)
+!
+           IF(M_AM == 0 .OR. M_AM > MMAX) CALL ERROR_ROUTINE ('check_data_01', &
+          'M_AM must be > 0 and <= MMAX', 1, 1)
+!
+           IF(KT_TYPE == 'GHD') CALL ERROR_ROUTINE ('check_data_01', &
+          'Added mass force cannot be implemented with GHD theory that solves for mixture eqs.', 1, 1)
+      ENDIF
+
 ! check for valid options for KT type
       IF (KT_TYPE /= UNDEFINED_C) THEN
          IF(KT_TYPE /= 'IA_NONEP' .AND. KT_TYPE /= 'GD_99' .AND. KT_TYPE /= 'GHD') &

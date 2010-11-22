@@ -66,6 +66,7 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
+      IF (MCP == UNDEFINED_I) RETURN
       IF (.NOT.MOMENTUM_X_EQ(MCP)) RETURN  
 !
 !
@@ -152,6 +153,7 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
+      IF (MCP == UNDEFINED_I) RETURN
       IF (.NOT.MOMENTUM_Y_EQ(MCP)) RETURN  
 !
 !
@@ -239,6 +241,7 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
+      IF (MCP == UNDEFINED_I) RETURN
       IF (.NOT.MOMENTUM_Z_EQ(MCP)) RETURN  
 !
 !

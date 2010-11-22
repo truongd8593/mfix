@@ -127,6 +127,9 @@
 
 !			Source terms for HYS drag relation
       DOUBLE PRECISION HYS_drag, avgDrag
+
+!			virtual (added) mass
+      DOUBLE PRECISION F_vir, ROP_MA, Uge, Ugw, Vgw, Vge, Ugn, Ugs, Wgb, Wgt, Wge, Ugb, Ugt
 ! 
 !                      error message 
       CHARACTER*80     LINE(2) 
@@ -178,12 +181,17 @@
 
 ! Wall or impermeable internal surface
                 I = I_OF(IJK) 
+		J = J_OF(IJK)
+		K = K_OF(IJK)
                 IJKE = EAST_OF(IJK)
                 IMJK = IM_OF(IJK) 
                 IJMK = JM_OF(IJK)
                 IJKM = KM_OF(IJK) 
                 IPJK = IP_OF(IJK) 
+                IJPK = JP_OF(IJK) 
+		IPJMK = IP_OF(IJMK)
                 IPJKM = IP_OF(IJKM)
+		IJKP = KP_OF(IJK)
                 IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
                   EPStmp = ZERO     
                   epsMix = ZERO
@@ -358,13 +366,58 @@
 ! Volumetric forces
                      ROPSA = HALF * (VOL(IJK)*ROP_S(IJK,M) + VOL(IPJK)*ROP_S(IJKE,M))/VOL_U(IJK) 
 ! Previous time step
-                     V0 = HALF * (VOL(IJK)*ROP_SO(IJK,M) + VOL(IPJK)*ROP_SO(IJKE,M))*ODT/VOL_U(IJK) 
+                     V0 = HALF * (VOL(IJK)*ROP_SO(IJK,M) + VOL(IPJK)*ROP_SO(IJKE,M))*ODT/VOL_U(IJK)  
+!         Added mass implicit transient term {Cv eps rop_g dU/dt}
+                     IF(Added_Mass .AND. M==M_AM) THEN
+		       ROP_MA = AVG_X(ROP_g(IJK)*EP_s(IJK,M),ROP_g(IJKE)*EP_s(IJKE,M),I)
+		       V0 = V0 + Cv * ROP_MA * ODT
+                     ENDIF
                   ELSE
 ! Volumetric forces
                      ROPSA =  (VOL(IJK)*ROP_S(IJK,M) + VOL(IPJK)*ROP_S(IJKE,M))/(VOL(IJK) + VOL(IPJK))
 ! Previous time step
                      V0 = (VOL(IJK)*ROP_SO(IJK,M) + VOL(IPJK)*ROP_SO(IJKE,M))*ODT/(VOL(IJK) + VOL(IPJK))
+!         Added mass implicit transient term {Cv eps rop_g dU/dt}
+                     IF(Added_Mass .AND. M==M_AM) THEN
+                       ROP_MA = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M) + VOL(IPJK)*ROP_g(IJKE)*EP_s(IJKE,M))/(VOL(IJK) + VOL(IPJK))
+		       V0 = V0 + Cv * ROP_MA * ODT
+                     ENDIF
                   ENDIF
+!
+!!! BEGIN VIRTUAL MASS SECTION (explicit terms)
+! adding transient term dvg/dt - dVs/dt to virtual mass term    
+	    F_vir = ZERO
+	    IF(Added_Mass .AND. M==M_AM .AND.(.NOT.CUT_U_TREATMENT_AT(IJK))) THEN      
+	      F_vir = ( (U_G(IJK) - U_GO(IJK)) )*ODT*VOL_U(IJK)
+!
+! defining gas-particles velocity at momentum cell faces (or scalar cell center)    
+	      Ugw = AVG_X_E(U_G(IMJK),U_G(IJK),I)
+	      Uge = AVG_X_E(U_G(IJK),U_G(IPJK),IP1(I))  
+	      Vgw = AVG_Y_N(V_G(IJMK),V_G(IJK))  
+	      
+	      Vge = AVG_Y_N(V_G(IPJMK),V_G(IPJK)) 
+	      Ugs = AVG_Y(U_G(IJMK),U_G(IJK),JM1(J))
+	      Ugn = AVG_Y(U_G(IJK),U_G(IJPK),J)
+	      
+	      IF(DO_K) THEN
+	         Wgb = AVG_Z_T(W_g(IJKM),W_g(IJK))  
+	         Wgt = AVG_Z_T(W_g(IPJKM),W_g(IPJK)) 
+		 Wge = AVG_X(Wgb,Wgt,I)
+	         Ugb = AVG_Z(U_g(IJKM),U_g(IJK),KM1(K))
+	         Ugt = AVG_Z(U_g(IJK),U_g(IJKP),K)
+	         F_vir = F_vir + Wge*OX_E(I) * (Ugt*AXY(IJKP) - Ugb*(AXY(IJK)))
+		 IF (CYLINDRICAL) F_vir = F_vir - Wge**2*OX_E(I) ! centrifugal force
+	      ENDIF
+!
+! adding convective terms (U dU/dx + V dU/dy + W dU/dz) to virtual mass
+	      F_vir = F_vir + U_g(IJK)*(Uge*AYZ(IPJK) - Ugw*AYZ(IJK)) + &
+	         AVG_X(Vgw,Vge,I) * (Ugn*AXZ(IJPK) - Ugs*(AXZ(IJK)))
+	                      
+	    
+	      F_vir = F_vir * Cv * ROP_MA
+	    ENDIF
+!
+!!! END VIRTUAL MASS SECTION
 
 ! Original terms
 ! Volumetric forces
@@ -447,6 +500,7 @@
                     WSE = AVG_X(HALF*(W_S(IJK,M)+W_S(IJKM,M)),HALF*(W_S(IPJK,M&
                         )+W_S(IPJKM,M)),I) 
                     VCF = ROPSA*WSE**2*OX_E(I) 
+		    IF(Added_Mass .AND. M==M_AM) VCF = VCF + Cv*ROP_MA*WSE**2*OX_E(I) ! virtual mass contribution.
 
 !   -(2mu/x)*(u/x) part of Tau_zz/X
                     EPMUSA = AVG_X(MU_S(IJK,M),MU_S(IJKE,M),I) 
@@ -468,6 +522,8 @@
                     B_M(IJK,M) = -(SDP + SDPS + TAU_U_S(IJK,M)+&
                     ((V0+ZMAX((-VMT)))*U_SO(IJK,M)+VBF+VCF+Ghd_drag+HYS_drag)*VOL_U(IJK))+B_M(IJK,M)
                   ENDIF
+
+                  B_M(IJK,M) = B_M(IJK,M) - F_vir ! explicit term of virtual mass force
                 ENDIF ! end if sip or ip or dilute flow branch
             ENDDO 
 

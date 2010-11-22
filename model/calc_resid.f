@@ -729,9 +729,15 @@
 !            call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), & 
 !            BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_g, V_g, W_g, &
 !            ROP_g, fin, fout, IER) 
-            call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), & 
-            BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), Flux_gE, Flux_gN, Flux_gT, &
-            fin, fout, IER) 
+            IF(.NOT.Added_Mass) THEN
+	      call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), & 
+              BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), Flux_gE, Flux_gN, Flux_gT, &
+              fin, fout, IER)  
+            ELSE
+	      call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), & 
+              BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), Flux_gSE, Flux_gSN, Flux_gST, &
+              fin, fout, IER)  
+            ENDIF
 	    flux_out = flux_out + fout  * dt_local
             flux_in = flux_in + fin * dt_local
           ENDIF 
@@ -758,10 +764,16 @@
             IF (BC_DEFINED(L)) THEN
 !              call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), &
 !              BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_s(1,M), V_s(1,M), W_s(1,M), &
-!              ROP_s(1,M), fin, fout, IER) 
-              call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), &
-              BC_K_B(L), BC_K_T(L), BC_PLANE(L), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), &
-              fin, fout, IER) 
+!              ROP_s(1,M), fin, fout, IER)  
+              IF(.NOT.Added_Mass .OR. M /= M_AM) THEN
+                call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), &
+                BC_K_B(L), BC_K_T(L), BC_PLANE(L), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), &
+                fin, fout, IER)  
+              ELSE 
+                call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), &
+                BC_K_B(L), BC_K_T(L), BC_PLANE(L), Flux_sSE, Flux_sSN, Flux_sST, &
+                fin, fout, IER)  
+              ENDIF
 	      flux_out = flux_out + fout  * dt_local
               flux_in = flux_in + fin * dt_local
             ENDIF 

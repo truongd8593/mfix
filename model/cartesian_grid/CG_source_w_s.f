@@ -121,13 +121,15 @@
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-      INTEGER :: JM,IP,JP,IJPK,IJKC,IJKN,IJKNE,IJKS,IJKSE,IPJMK,KM,KP
+      INTEGER :: JM,IP,JP,IJPK,IJKC,IJKN,IJKNE,IJKS,IJKSE,IPJMK,KM,KP,IJMKP
       INTEGER :: IJKTN,IJKWT,IJKST
       DOUBLE PRECISION :: We,Ww,Wn,Ws,Wt,Wb
       DOUBLE PRECISION :: B_NOC
       DOUBLE PRECISION :: MU_S_E,MU_S_W,MU_S_N,MU_S_S,MU_S_T,MU_S_B,MU_S_CUT
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
+!			virtual (added) mass
+      DOUBLE PRECISION F_vir, ROP_MA, Uge, Ugw, Vgb, Vgt, Wge, Wgw, Wgn, Wgs, Wgt, Wgb,Ugc,Vgc,Vgn,Vgs
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -306,6 +308,84 @@
 
                      B_M(IJK,M) = B_M(IJK,M)   +  B_NOC
                   ENDIF
+
+                  IF(CUT_W_TREATMENT_AT(IJK)) THEN
+!
+!!! BEGIN VIRTUAL MASS SECTION (explicit terms)
+! adding transient term  dWg/dt to virtual mass term			    
+                     F_vir = ZERO
+	             IF(Added_Mass.AND. M == M_AM ) THEN 
+
+                        F_vir = ( (W_g(IJK) - W_gO(IJK)) )*ODT*VOL_W(IJK)
+
+                        I = I_OF(IJK) 
+                        J = J_OF(IJK) 
+                        K = K_OF(IJK)
+   
+                        IM = I - 1 
+                        JM = J - 1 
+                        KM = K - 1
+
+                        IP = I + 1 
+                        JP = J + 1 
+                        KP = K + 1
+
+                        IMJK = FUNIJK(IM,J,K)
+                        IJMK = FUNIJK(I,JM,K)
+                        IPJK = FUNIJK(IP,J,K)
+                        IJPK = FUNIJK(I,JP,K)
+                        IJKP = FUNIJK(I,J,KP)
+                        IJKM = FUNIJK(I,J,KM)
+
+                        IMJKP = KP_OF(IMJK)
+                        IJMKP = KP_OF(IJMK)
+
+                        IJKE = EAST_OF(IJK) 
+!
+! defining gas-particles velocity at momentum cell faces (or scalar cell center)    
+
+
+                        Wge = Theta_We_bar(IJK) * W_g(IJK) + Theta_We(IJK) * W_g(IPJK)
+                        Wgw = Theta_We_bar(IMJK) * W_g(IMJK) + Theta_We(IMJK) * W_g(IJK)
+
+                        Uge = Theta_W_te(IJK) * U_g(IJK) + Theta_W_be(IJK) * U_g(IJKP)
+                        Ugw = Theta_W_te(IMJK) * U_g(IMJK) + Theta_W_be(IMJK) * U_g(IMJKP)
+
+                        Ugc = (DELX_we(IJK) * Ugw + DELX_ww(IJK) * Uge) / (DELX_we(IJK) + DELX_ww(IJK))
+
+
+                        Wgn = Theta_Wn_bar(IJK) * W_g(IJK) + Theta_Wn(IJK) * W_g(IJPK)
+                        Wgs = Theta_Wn_bar(IJMK) * W_g(IJMK) + Theta_Wn(IJMK) * W_g(IJK)
+
+                        Vgn =  Theta_W_tn(IJK)  * V_g(IJK)  + Theta_W_bn(IJK)  * V_g(IJKP)
+                        Vgs =  Theta_W_tn(IJMK) * V_g(IJMK) + Theta_W_bn(IJMK) * V_g(IJMKP)
+
+                        Vgc = (DELY_wn(IJK) * Vgs + DELY_ws(IJK) * Vgn) / (DELY_wn(IJK) + DELY_ws(IJK))
+
+
+                        Wgt = Theta_Wt_bar(IJK)  * W_g(IJK)  + Theta_Wt(IJK)  * W_g(IJKP)
+                        Wgb = Theta_Wt_bar(IMJK) * W_g(IMJK) + Theta_Wt(IMJK) * W_g(IMJKP)
+
+!
+! adding convective terms (U dW/dx + V dW/dy + W dW/dz) to virtual mass
+
+                        F_vir = F_vir +  Ugc * (Wge*AYZ(IPJK) - Wgw*AYZ(IJK))    + &
+                                         Vgc * (Wgn*AXZ(IJPK) - Wgs*(AXZ(IJK)))  + &
+                                         W_g(IJK)*(Wgt*AYZ(IJKP) - Wgb*AYZ(IJK))
+
+	         
+                        ROP_MA = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M) + VOL(IJKT)*ROP_g(IJKT)*EP_s(IJKT,M))/(VOL(IJK) + VOL(IJKT))
+
+	                F_vir = F_vir * Cv * ROP_MA
+
+                        B_M(IJK,M) = B_M(IJK,M) - F_vir ! explicit part of virtual mass force
+
+                     ENDIF
+!
+!!! END VIRTUAL MASS SECTION
+
+                  ENDIF
+
 
                 ENDIF   ! end if sip or ip or dilute flow branch
             ENDDO 

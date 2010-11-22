@@ -47,6 +47,11 @@
 !                      z-component of solids mass flux
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Flux_sT 
 !
+!                      Added mass Flux Components to be used for scalar eq.
+!                      Note: added mass apply only to one solids phase (M=M_AM)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Flux_gSE, Flux_sSE, Flux_gSN
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Flux_sSN, Flux_gST, Flux_sST
+!
 !
 !                      macroscopic gas density at east face
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  ROP_gE 

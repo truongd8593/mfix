@@ -121,10 +121,17 @@
                     M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
 
 ! In Iddir & Arastoopour (2005) the granular temperature includes 
-! mass of the particle in the definition
-                    CpxFlux_E(IJK) = (1.5D0/M_PM) * Flux_sE(IJK,M)
-                    CpxFlux_N(IJK) = (1.5D0/M_PM) * Flux_sN(IJK,M)
-                    CpxFlux_T(IJK) = (1.5D0/M_PM) * Flux_sT(IJK,M)
+! mass of the particle in the definition.
+!
+                    IF(.NOT.ADDED_MASS .OR. M /= M_AM) THEN
+                       CpxFlux_E(IJK) = (1.5D0/M_PM) * Flux_sE(IJK,M)
+                       CpxFlux_N(IJK) = (1.5D0/M_PM) * Flux_sN(IJK,M)
+                       CpxFlux_T(IJK) = (1.5D0/M_PM) * Flux_sT(IJK,M)
+                    ELSE ! in case added mass is used.
+                       CpxFlux_E(IJK) = (1.5D0/M_PM) * Flux_sSE(IJK)
+                       CpxFlux_N(IJK) = (1.5D0/M_PM) * Flux_sSN(IJK)
+                       CpxFlux_T(IJK) = (1.5D0/M_PM) * Flux_sST(IJK)
+                    ENDIF
 
                     IF (FLUID_AT(IJK)) THEN 
                          CALL SOURCE_IA_NONEP_GRANULAR_ENERGY (SOURCELHS, SOURCERHS, IJK, M, IER) 
@@ -294,9 +301,15 @@
 
          DO IJK = ijkstart3, ijkend3
 
-            CpxFlux_E(IJK) = 1.5D0 * Flux_sE(IJK,M)
-            CpxFlux_N(IJK) = 1.5D0 * Flux_sN(IJK,M)
-            CpxFlux_T(IJK) = 1.5D0 * Flux_sT(IJK,M)
+            IF(.NOT.ADDED_MASS .OR. M /= M_AM) THEN
+               CpxFlux_E(IJK) = 1.5D0 * Flux_sE(IJK,M)
+               CpxFlux_N(IJK) = 1.5D0 * Flux_sN(IJK,M)
+               CpxFlux_T(IJK) = 1.5D0 * Flux_sT(IJK,M)
+            ELSE
+               CpxFlux_E(IJK) = 1.5D0 * Flux_sSE(IJK)
+               CpxFlux_N(IJK) = 1.5D0 * Flux_sSN(IJK)
+               CpxFlux_T(IJK) = 1.5D0 * Flux_sST(IJK)
+            ENDIF
  
             IF (FLUID_AT(IJK)) THEN 
 

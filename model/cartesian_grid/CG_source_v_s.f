@@ -124,13 +124,15 @@
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
       INTEGER ::          IM,JM,IP,JP,KM,KP
-      INTEGER ::          IPJK,IJPK,IJKP,IJKC,IJKE,IJKNE,IJKW,IJKWN,IMJPK
+      INTEGER ::          IPJK,IJPK,IJKP,IJKC,IJKE,IJKNE,IJKW,IJKWN,IMJPK,IJPKM
       INTEGER ::          IJKT,IJKTN,IJKB,IJKBN
       DOUBLE PRECISION :: Vn,Vs,Ve,Vw, Vt,Vb
       DOUBLE PRECISION :: B_NOC
       DOUBLE PRECISION :: MU_S_E,MU_S_W,MU_S_N,MU_S_S,MU_S_T,MU_S_B,MU_S_CUT
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
+!			virtual (added) mass
+      DOUBLE PRECISION F_vir, ROP_MA, Vgn, Vgs, Uge, Ugw, Ugc,Vge, Vgw, Wgt, Wgb, Wgc,Vgt, Vgb
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -313,6 +315,75 @@
 
                   ENDIF
 
+
+                  IF(CUT_V_TREATMENT_AT(IJK)) THEN
+
+!
+!!! BEGIN VIRTUAL MASS SECTION (explicit terms)
+! adding transient term dVg/dt to virtual mass term		    
+	             F_vir = ZERO
+                     IF(Added_Mass.AND. M==M_AM ) THEN         
+                        F_vir = ( (V_g(IJK) - V_gO(IJK)) )*ODT*VOL_V(IJK)
+
+                        IM = I - 1 
+                        JM = J - 1 
+                        KM = K - 1
+
+                        IP = I + 1 
+                        JP = J + 1 
+                        KP = K + 1
+    
+                        IMJK = FUNIJK(IM,J,K)
+                        IJMK = FUNIJK(I,JM,K)
+                        IPJK = FUNIJK(IP,J,K)
+                        IJPK = FUNIJK(I,JP,K)
+                        IJKP = FUNIJK(I,J,KP)
+                        IJKM = FUNIJK(I,J,KM)
+
+                        IMJPK = IM_OF(IJPK)
+
+                        IJKN = NORTH_OF(IJK)  
+!
+! defining gas-particles velocity at momentum cell faces (or scalar cell center)     
+
+                        Vge = Theta_Ve_bar(IJK)  * V_g(IJK)  + Theta_Ve(IJK)  * V_g(IPJK)
+                        Vgw = Theta_Ve_bar(IMJK) * V_g(IMJK) + Theta_Ve(IMJK) * V_g(IJK)
+
+                        Uge =  Theta_V_ne(IJK)  * U_g(IJK)  + Theta_V_se(IJK)  * U_g(IJPK)
+                        Ugw =  Theta_V_ne(IMJK) * U_g(IMJK) + Theta_V_se(IMJK) * U_g(IMJPK)
+
+                        Ugc = (DELX_ve(IJK) * Ugw + DELX_vw(IJK) * Uge) / (DELX_ve(IJK) + DELX_vw(IJK))
+
+                        Vgn = Theta_Vn_bar(IJK)  * V_g(IJK)  + Theta_Vn(IJK)  * V_g(IJPK)
+                        Vgs = Theta_Vn_bar(IJMK) * V_g(IJMK) + Theta_Vn(IJMK) * V_g(IJK)
+	      
+	                IF(DO_K) THEN
+
+                           IJPKM = KM_OF(IJPK) 
+
+                           Vgt = Theta_Vt_bar(IJK)  * V_g(IJK)  + Theta_Vt(IJK)  * V_g(IJKP)
+                           Vgb = Theta_Vt_bar(IJKM) * V_g(IJKM) + Theta_Vt(IJKM) * V_g(IJK)
+
+                           Wgt = Theta_V_nt(IJK)  * W_g(IJK)  + Theta_V_st(IJK)  * W_g(IJPK)
+                           Wgb = Theta_V_nt(IJKM) * W_g(IJKM) + Theta_V_st(IJKM) * W_g(IJPKM)
+                           Wgc = (DELZ_vt(IJK) * Wgb + DELZ_vb(IJK) * Wgt) / (DELZ_vt(IJK) + DELZ_vb(IJK))
+
+                           F_vir = F_vir +  Wgc* (Vgt*AXY(IJKP) - Vgb*(AXY(IJK)))
+
+                        ENDIF
+!
+! adding convective terms (U dV/dx + V dV/dy) to virtual mass; W dV/dz added above.
+                        F_vir = F_vir + V_g(IJK)*(Vgn*AXZ(IJPK) - Vgs*AXZ(IJK)) + &
+                        Ugc*(Vge*AYZ(IPJK) - Vgw*AYZ(IJK))
+	    
+                        ROP_MA =  (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M) + VOL(IJKN)*ROP_g(IJKN)*EP_s(IJKN,M))/(VOL(IJK) + VOL(IJKN))
+                        F_vir = F_vir * Cv * ROP_MA
+
+                        B_M(IJK,M) = B_M(IJK,M) - F_vir ! adding explicit-part of virtual mass force.
+                     ENDIF
+!
+!!! END VIRTUAL MASS SECTION
+                  ENDIF
                   
                 ENDIF   ! end if sip or ip or dilute flow branch
             ENDDO

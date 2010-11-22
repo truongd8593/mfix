@@ -122,6 +122,8 @@
       FPFOI = .FALSE.
       GRANULAR_ENERGY = .FALSE.
       K_Epsilon = .FALSE.
+      Added_Mass = .FALSE.
+      M_AM = UNDEFINED_I
       SIMONIN = .FALSE.
       AHMADI = .FALSE.
       JENKINS = .FALSE.

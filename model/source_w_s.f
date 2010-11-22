@@ -128,6 +128,9 @@
 
 !			Source terms for HYS drag relation
       DOUBLE PRECISION HYS_drag, avgDrag
+
+!			virtual (added) mass
+      DOUBLE PRECISION F_vir, ROP_MA, Uge, Ugw, Vgb, Vgt, Wge, Wgw, Wgn, Wgs, Wgt, Wgb
 ! 
 !                      error message 
       CHARACTER*80     LINE
@@ -138,7 +141,7 @@
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
       INTEGER :: JM,IP,JP,IJPK,IJKC,IJKN,IJKNE,IJKS,IJKSE,IPJMK,KM,KP
-      INTEGER :: IJKTN,IJKWT,IJKST
+      INTEGER :: IJKTN,IJKWT,IJKST, IJMKP
       DOUBLE PRECISION :: We,Ww,Wn,Ws,Wt,Wb
       DOUBLE PRECISION :: B_NOC
       DOUBLE PRECISION :: MU_S_E,MU_S_W,MU_S_N,MU_S_S,MU_S_T,MU_S_B,MU_S_CUT
@@ -182,6 +185,11 @@
                 IMJK = IM_OF(IJK)
                 IJMK = JM_OF(IJK)
                 IJKM = KM_OF(IJK) 
+	        IJKP = KP_OF(IJK)
+	        IPJK = IP_OF(IJK)
+	        IMJKP = KP_OF(IMJK)
+	        IJPK = JP_OF(IJK)
+	        IJMKP = KP_OF(IJMK)
                 IJKT = TOP_OF(IJK)
                 IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN ! with ghd theory, m = mmax
                   EPStmp = ZERO     
@@ -351,12 +359,55 @@
                      ROPSA = AVG_Z(ROP_S(IJK,M),ROP_S(IJKT,M),K) 
 ! Previous time step
                      V0 = AVG_Z(ROP_SO(IJK,M),ROP_SO(IJKT,M),K)*ODT  
+!         Added mass implicit transient term {Cv eps rop_g dW/dt}
+                     IF(Added_Mass .AND. M == M_AM) THEN
+	               ROP_MA = AVG_Z(ROP_g(IJK)*EP_s(IJK,M),ROP_g(IJKT)*EP_s(IJKT,M),K)
+		       V0 = V0 + Cv * ROP_MA * ODT
+                     ENDIF
                   ELSE
 ! Volumetric forces
                      ROPSA = (VOL(IJK)*ROP_S(IJK,M) + VOL(IJKT)*ROP_S(IJKT,M))/(VOL(IJK) + VOL(IJKT))
 ! Previous time step
                      V0 = (VOL(IJK)*ROP_SO(IJK,M) + VOL(IJKT)*ROP_SO(IJKT,M))*ODT/(VOL(IJK) + VOL(IJKT))
+!         Added mass implicit transient term {Cv eps rop_g dW/dt}
+                     IF(Added_Mass .AND. M == M_AM) THEN
+                       ROP_MA = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M) + VOL(IJKT)*ROP_g(IJKT)*EP_s(IJKT,M))/(VOL(IJK) + VOL(IJKT))
+		       V0 = V0 + Cv * ROP_MA * ODT
+                     ENDIF
                   ENDIF
+!
+!!! BEGIN VIRTUAL MASS SECTION (explicit terms)
+! adding transient term dWg/dt to virtual mass term		    
+	    F_vir = ZERO
+	    IF(Added_Mass .AND. M == M_AM .AND.(.NOT.CUT_W_TREATMENT_AT(IJK))) THEN        
+	      F_vir = ( (W_g(IJK) - W_gO(IJK)) )*ODT*VOL_W(IJK)
+!
+! defining gas-particles velocity at momentum cell faces (or scalar cell center)
+	      Wgb = AVG_Z_T(W_g(IJKM),W_g(IJK))
+	      Wgt = AVG_Z_T(W_g(IJK),W_g(IJKP))  
+	      
+	      Uge = AVG_Z(U_g(IJK),U_g(IJKP),K)
+	      Ugw = AVG_Z(U_g(IMJK),U_g(IMJKP),K)
+	      Ugt = AVG_X_E(Ugw,Uge,IP1(I))
+	      Wge = AVG_X(W_g(IJK),W_g(IPJK),IP1(I))
+	      Wgw = AVG_X(W_g(IMJK),W_g(IJK),I)
+	      
+	      Vgb = AVG_Y_N(V_g(IJMK),V_g(IJK))  
+	      Vgt = AVG_Y_N(V_g(IJMKP),V_g(IJKP)) 
+	      Wgs = AVG_Y(W_g(IJMK),W_g(IJK),JM1(J))
+	      Wgn = AVG_Y(W_g(IJK),W_g(IJPK),J)
+!
+! adding convective terms (U dW/dx + V dW/dy + W dW/dz) to virtual mass.
+	      F_vir = F_vir + W_g(IJK)*OX(I) * (Wgt*AXY(IJKP) - Wgb*AXY(IJK)) + &
+	              Ugt*(Wge*AYZ(IPJK) - Wgw*AYZ(IJK)) + &
+		      AVG_Z(Vgb,Vgt,K) * (Wgn*AXZ(IJPK) - Wgs*(AXZ(IJK)))
+	      
+	      IF (CYLINDRICAL) F_vir = F_vir + Ugt*W_g(IJK)*OX(I) ! Coriolis force
+	    
+	      F_vir = F_vir * Cv * ROP_MA
+	    ENDIF
+!
+!!! END VIRTUAL MASS SECTION
 ! Original terms
 ! Volumetric forces
 !                  ROPSA = AVG_Z(ROP_S(IJK,M),ROP_S(IJKT,M),K) 
@@ -449,9 +500,11 @@
                       IF (UGT > ZERO) THEN 
                         VCOA = ROPSA*UGT*OX(I) 
                         VCOB = ZERO 
+			IF(Added_Mass .AND. M == M_AM) VCOA = VCOA + Cv*ROP_MA*UGT*OX(I) ! term due to added mass
                       ELSE 
                         VCOA = ZERO 
                         VCOB = -ROPSA*UGT*W_S(IJK,M)*OX(I) 
+			IF(Added_Mass .AND. M == M_AM) VCOB = VCOB - Cv*ROP_MA*UGT*W_S(IJK,M)*OX(I) ! term due to added mass
                       ENDIF 
 
 !   Term from tau_xz: intergral of (1/x)*(d/dx)(x*mu*(-w/x))
@@ -501,6 +554,8 @@
                     B_M(IJK,M) = -(SDP + SDPS + TAU_W_S(IJK,M)+SXZB+((V0+ZMAX((-&
                         VMT)))*W_SO(IJK,M)+VBF+VCOB+VXZB+Ghd_drag+HYS_drag)*VOL_W(IJK)) + B_m(IJK, M) 
                   ENDIF
+
+                  B_M(IJK,M) = B_M(IJK,M) - F_vir ! explicit term of virtual mass force
                 ENDIF   ! end if sip or ip or dilute flow branch
             ENDDO 
 

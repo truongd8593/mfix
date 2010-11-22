@@ -148,13 +148,21 @@
             K2 = BC_K_T(L)
 	     
 !            call Calc_mass_flux(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_g, V_g, W_g, ROP_g, fin, fout, IER) 
-            call Calc_mass_fluxHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_gE, Flux_gN, Flux_gT, fin, fout, IER) 
+            IF(.NOT.Added_Mass) THEN
+	      call Calc_mass_fluxHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_gE, Flux_gN, Flux_gT, fin, fout, IER)  
+            ELSE
+	      call Calc_mass_fluxHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_gSE, Flux_gSN, Flux_gST, fin, fout, IER) 
+            ENDIF
 	    flux_out_g(L) = flux_out_g(L) + fout  * dt_prev
             flux_in_g(L) = flux_in_g(L) + fin * dt_prev
 	    
 	    DO M = 1, MMAX
 !              call Calc_mass_flux(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_s(1,m), V_s(1,m), W_s(1,m), ROP_s(1,m), fin, fout, IER) 
-              call Calc_mass_fluxHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_sE(1,m), Flux_sN(1,m), Flux_sT(1,m), fin, fout, IER) 
+              IF(.NOT.Added_Mass .OR. M /= M_AM) THEN
+                call Calc_mass_fluxHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_sE(1,m), Flux_sN(1,m), Flux_sT(1,m), fin, fout, IER) 
+              ELSE
+                call Calc_mass_fluxHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_sSE, Flux_sSN, Flux_sST, fin, fout, IER)
+              ENDIF
 	      flux_out_s(L, M) = flux_out_s(L, M) + fout  * dt_prev
               flux_in_s(L, M) = flux_in_s(L, M) + fin * dt_prev
 	    END DO
@@ -174,8 +182,13 @@
                 K1 = BC_K_B(L) 
                 K2 = BC_K_T(L) 
 !                call Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, BC_PLANE(L), U_g, V_g, W_g, ROP_g, X_g(1, N), fin, fout, IER) 
-                call Calc_mass_flux_spHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_gE, &
-                Flux_gN, Flux_gT, X_g(1, N), DISCRETIZE(7), fin, fout, IER) 
+                IF(.NOT.Added_Mass) THEN
+                  call Calc_mass_flux_spHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_gE, &
+                  Flux_gN, Flux_gT, X_g(1, N), DISCRETIZE(7), fin, fout, IER)  
+                ELSE
+                  call Calc_mass_flux_spHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), Flux_gSE, &
+                  Flux_gSN, Flux_gST, X_g(1, N), DISCRETIZE(7), fin, fout, IER)  
+		ENDIF
 	        flux_out_X_g(L, N) = flux_out_X_g(L, N) + fout  * dt_prev
                 flux_in_X_g(L, N) = flux_in_X_g(L, N) + fin * dt_prev
               ENDIF 
@@ -208,9 +221,14 @@
                   K2 = BC_K_T(L) 
 !                  call Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, BC_PLANE(L), &
 !                  U_s(1,M), V_s(1,M), W_s(1,M), ROP_s(1,M), X_s(1, M, N), fin, fout, &
-                  call Calc_mass_flux_spHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), &
-                  Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), X_s(1, M, N), DISCRETIZE(7), fin, fout, &
-                  IER) 
+                  IF(.NOT.Added_Mass .OR. M /= M_AM) THEN
+                    call Calc_mass_flux_spHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), &
+                    Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), X_s(1, M, N), DISCRETIZE(7), fin, fout, &
+                    IER) 
+                  ELSE
+                    call Calc_mass_flux_spHR(I1, I2, J1, J2, K1, K2, BC_PLANE(L), &
+                    Flux_sSE, Flux_sSN, Flux_sST, X_s(1, M, N), DISCRETIZE(7), fin, fout, IER)  
+                  ENDIF
 	          flux_out_X_s(L, M, N) = flux_out_X_s(L, M, N) + fout  * dt_prev
                   flux_in_X_s(L, M, N) = flux_in_X_s(L, M, N) + fin * dt_prev
                 ENDIF 

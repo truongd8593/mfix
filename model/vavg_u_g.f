@@ -104,6 +104,7 @@
       USE param 
       USE param1 
       USE parallel 
+      USE run
       USE fldvar
       USE bc
       USE geometry
@@ -145,7 +146,11 @@
       DO IJK = IJKSTART3, IJKEND3 
       IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK), J_OF(IJK), K_OF(IJK))) CYCLE
          IF (FLUID_AT(IJK)) THEN 
-           SUM_U_G = SUM_U_G + Flux_gE(IJK)
+           IF(.NOT.ADDED_MASS) THEN
+	      SUM_U_G = SUM_U_G + Flux_gE(IJK)
+           ELSE
+	      SUM_U_G = SUM_U_G + Flux_gSE(IJK)
+           ENDIF
            SUM_AREA = SUM_AREA + AYZ(IJK)
          ENDIF 
       END DO 

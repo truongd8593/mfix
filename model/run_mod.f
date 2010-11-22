@@ -117,6 +117,12 @@
 !                      If .TRUE. solve K_Epsilon turbulence eq.
       LOGICAL          K_Epsilon
 !
+!                      If .TRUE. include added (virtual) mass in momentum eq.
+      LOGICAL          Added_Mass
+!
+!                      phase number where added mass is applied.
+      INTEGER          M_AM
+!
 !                      If .TRUE. use Simonin model (k_epsilon will
 !                      automatically be set to true in check_data_02.
       LOGICAL          SIMONIN

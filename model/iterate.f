@@ -317,7 +317,8 @@
 !
       IF(.NOT.DISCRETE_ELEMENT) THEN
         IF (MMAX > 0) THEN
-          IF(MMAX == 1)THEN
+! Sof Modification: if secondary phase can overpack (i.e. bubbles) then solve continuity eq.
+          IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN
             CALL CALC_K_CP (K_CP, IER)
             CALL SOLVE_EPP (NORMS, RESS, IER)
             CALL CORRECT_1 (IER) 

@@ -139,8 +139,13 @@
             END DO
 	    
 	     
-            CALL CONV_DIF_PHI (X_G(1,LN), DIF_G(1,LN), DISCRETIZE(7), U_G, V_G, &
-               W_G, Flux_gE, Flux_gN, Flux_gT, 0, A_M, B_M, IER)
+            IF(.NOT.ADDED_MASS) THEN
+	       CALL CONV_DIF_PHI (X_G(1,LN), DIF_G(1,LN), DISCRETIZE(7), U_G, V_G, &
+                  W_G, Flux_gE, Flux_gN, Flux_gT, 0, A_M, B_M, IER)
+            ELSE
+	       CALL CONV_DIF_PHI (X_G(1,LN), DIF_G(1,LN), DISCRETIZE(7), U_G, V_G, &
+                  W_G, Flux_gSE, Flux_gSN, Flux_gST, 0, A_M, B_M, IER)
+            ENDIF
 
 !
             CALL BC_PHI (X_G(1,LN), BC_X_G(1,LN), BC_XW_G(1,LN), BC_HW_X_G(1,LN), BC_C_X_G(1,&
@@ -201,8 +206,13 @@
 !
                   ENDIF 
                END DO 
-               CALL CONV_DIF_PHI (X_S(1,M,LN), DIF_S(1,M,LN), DISCRETIZE(7), U_S(&
-                  1,M), V_S(1,M), W_S(1,M), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), M, A_M, B_M, IER)
+               IF(.NOT.ADDED_MASS .OR. M /= M_AM) THEN
+	          CALL CONV_DIF_PHI (X_S(1,M,LN), DIF_S(1,M,LN), DISCRETIZE(7), U_S(&
+                    1,M), V_S(1,M), W_S(1,M), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), M, A_M, B_M, IER)
+               ELSE
+	          CALL CONV_DIF_PHI (X_S(1,M,LN), DIF_S(1,M,LN), DISCRETIZE(7), U_S(&
+                    1,M), V_S(1,M), W_S(1,M), Flux_sSE, Flux_sSN, Flux_sST, M, A_M, B_M, IER)
+               ENDIF
 !
                CALL BC_PHI (X_S(1,M,LN), BC_X_S(1,M,LN), BC_XW_S(1,M,LN), BC_HW_X_S(1,M,LN), &
                   BC_C_X_S(1,M,LN), M, A_M, B_M, IER) 

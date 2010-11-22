@@ -316,6 +316,11 @@
 ! reporting interval (hard-wired in the routine) to activate the routine.
       Call check_mass_balance (0)
 
+! sof modification: now it's only needed to do this once before time-loop     
+! Mark the phase whose continuity will be used for forming Pp_g and Pp_s eqs.
+      CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP, DO_P_S, &
+          SWITCH_4_P_G, SWITCH_4_P_S, IER) 
+
  
 
 ! The TIME loop begins here.............................................
@@ -387,9 +392,11 @@
       ENDIF
 
      
+! sof modification: uncomment code below and modify MARK_PHASE_4_COR to use
+! previous MFIX algorithm. Oct. 18 2010.
 ! Mark the phase whose continuity will be used for forming Pp_g and Pp_s eqs.
-      CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP, DO_P_S, &
-          SWITCH_4_P_G, SWITCH_4_P_S, IER) 
+!      CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP, DO_P_S, &
+!          SWITCH_4_P_G, SWITCH_4_P_S, IER) 
 
 ! Set wall boundary conditions and transient flow b.c.'s
       CALL SET_BC1 

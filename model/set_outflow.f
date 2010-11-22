@@ -177,6 +177,11 @@
                   Flux_gE(IJK) = Flux_gE(LFLUID)
                   Flux_gN(IJK) = Flux_gN(LFLUID)
                   Flux_gT(IJK) = Flux_gT(LFLUID) 
+                  IF(ADDED_MASS) THEN
+                    Flux_gSE(IJK) = Flux_gSE(LFLUID)
+                    Flux_gSN(IJK) = Flux_gSN(LFLUID)
+                    Flux_gST(IJK) = Flux_gST(LFLUID) 
+                  ENDIF
 
 ! for GHD theory
                   IF (TRIM(KT_TYPE) == 'GHD') THEN 
@@ -197,7 +202,12 @@
                      W_S(IJK,:MMAX) = W_S(LFLUID,:MMAX) 
                      Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
                      Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
-                     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
+                     Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX)  
+                     IF(ADDED_MASS) THEN 
+                       Flux_sSE(IJK) = Flux_sSE(LFLUID)
+                       Flux_sSN(IJK) = Flux_sSN(LFLUID)
+                       Flux_sST(IJK) = Flux_sST(LFLUID)  
+                     ENDIF
                   ENDIF 
                ENDIF          ! if (FLUID_AT(IM_OF(IJK)))
 !
@@ -283,7 +293,12 @@
                   W_G(IJK) = W_G(LFLUID) 
                   Flux_gE(IJK) = Flux_gE(LFLUID)
                   Flux_gN(IJK) = Flux_gN(LFLUID)
-                  Flux_gT(IJK) = Flux_gT(LFLUID) 
+                  Flux_gT(IJK) = Flux_gT(LFLUID)  
+                  IF(ADDED_MASS) THEN
+                    Flux_gSE(IJK) = Flux_gSE(LFLUID)
+                    Flux_gSN(IJK) = Flux_gSN(LFLUID)
+                    Flux_gST(IJK) = Flux_gST(LFLUID) 
+                  ENDIF
 
 ! for GHD theory
                   IF (TRIM(KT_TYPE) == 'GHD') THEN 
@@ -307,6 +322,11 @@
                      Flux_sE(IJK,M) = Flux_sE(LFLUID,M)
                      Flux_sN(IJK,M) = Flux_sN(LFLUID,M)
                      Flux_sT(IJK,M) = Flux_sT(LFLUID,M) 
+                     IF(ADDED_MASS) THEN 
+                       Flux_sSE(IJK) = Flux_sSE(LFLUID)
+                       Flux_sSN(IJK) = Flux_sSN(LFLUID)
+                       Flux_sST(IJK) = Flux_sST(LFLUID)  
+                     ENDIF
                   END DO 
                ENDIF          ! if (FLUID_AT(IP_OF(IJK)))
 !
@@ -388,7 +408,12 @@
                   W_G(IJK) = W_G(LFLUID) 
                   Flux_gE(IJK) = Flux_gE(LFLUID)
                   Flux_gN(IJK) = Flux_gN(LFLUID)
-                  Flux_gT(IJK) = Flux_gT(LFLUID) 
+                  Flux_gT(IJK) = Flux_gT(LFLUID)  
+                  IF(ADDED_MASS) THEN
+                    Flux_gSE(IJK) = Flux_gSE(LFLUID)
+                    Flux_gSN(IJK) = Flux_gSN(LFLUID)
+                    Flux_gST(IJK) = Flux_gST(LFLUID) 
+                  ENDIF
 ! for GHD theory
                   IF (TRIM(KT_TYPE) == 'GHD') THEN 
                      Flux_nE(IJK) = Flux_nE(LFLUID)
@@ -404,6 +429,11 @@
                      Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
                      Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
                      Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
+                     IF(ADDED_MASS) THEN 
+                       Flux_sSE(IJK) = Flux_sSE(LFLUID)
+                       Flux_sSN(IJK) = Flux_sSN(LFLUID)
+                       Flux_sST(IJK) = Flux_sST(LFLUID)  
+                     ENDIF
                   ENDIF 
                ENDIF          ! if FLUID_AT(JM_OF(IJK)))
 !
@@ -489,6 +519,11 @@
                   Flux_gE(IJK) = Flux_gE(LFLUID)
                   Flux_gN(IJK) = Flux_gN(LFLUID)
                   Flux_gT(IJK) = Flux_gT(LFLUID) 
+                  IF(ADDED_MASS) THEN
+                    Flux_gSE(IJK) = Flux_gSE(LFLUID)
+                    Flux_gSN(IJK) = Flux_gSN(LFLUID)
+                    Flux_gST(IJK) = Flux_gST(LFLUID) 
+                  ENDIF
 
 ! for GHD theory
                   IF (TRIM(KT_TYPE) == 'GHD') THEN 
@@ -506,6 +541,11 @@
                      Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
                      Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
                      Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
+                     IF(ADDED_MASS) THEN 
+                       Flux_sSE(IJK) = Flux_sSE(LFLUID)
+                       Flux_sSN(IJK) = Flux_sSN(LFLUID)
+                       Flux_sST(IJK) = Flux_sST(LFLUID)  
+                     ENDIF
                   ENDIF 
                ENDIF          ! if (FLUID_AT(JP_OF(IJK)))
 !
@@ -588,6 +628,11 @@
                   Flux_gE(IJK) = Flux_gE(LFLUID)
                   Flux_gN(IJK) = Flux_gN(LFLUID)
                   Flux_gT(IJK) = Flux_gT(LFLUID) 
+                  IF(ADDED_MASS) THEN
+                    Flux_gSE(IJK) = Flux_gSE(LFLUID)
+                    Flux_gSN(IJK) = Flux_gSN(LFLUID)
+                    Flux_gST(IJK) = Flux_gST(LFLUID) 
+                  ENDIF
 
 ! for GHD theory
                   IF (TRIM(KT_TYPE) == 'GHD') THEN 
@@ -604,6 +649,11 @@
                      Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
                      Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
                      Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
+                     IF(ADDED_MASS) THEN 
+                       Flux_sSE(IJK) = Flux_sSE(LFLUID)
+                       Flux_sSN(IJK) = Flux_sSN(LFLUID)
+                       Flux_sST(IJK) = Flux_sST(LFLUID)  
+                     ENDIF
                   ENDIF 
                ENDIF          ! if (FLUID_AT(KM_OF(IJK)))
 !
@@ -689,6 +739,11 @@
                   Flux_gE(IJK) = Flux_gE(LFLUID)
                   Flux_gN(IJK) = Flux_gN(LFLUID)
                   Flux_gT(IJK) = Flux_gT(LFLUID) 
+                  IF(ADDED_MASS) THEN
+                    Flux_gSE(IJK) = Flux_gSE(LFLUID)
+                    Flux_gSN(IJK) = Flux_gSN(LFLUID)
+                    Flux_gST(IJK) = Flux_gST(LFLUID) 
+                  ENDIF
 
 ! for GHD theory
                   IF (TRIM(KT_TYPE) == 'GHD') THEN 
@@ -706,6 +761,11 @@
                      Flux_sE(IJK,:MMAX) = Flux_sE(LFLUID,:MMAX)
                      Flux_sN(IJK,:MMAX) = Flux_sN(LFLUID,:MMAX)
                      Flux_sT(IJK,:MMAX) = Flux_sT(LFLUID,:MMAX) 
+                     IF(ADDED_MASS) THEN 
+                       Flux_sSE(IJK) = Flux_sSE(LFLUID)
+                       Flux_sSN(IJK) = Flux_sSN(LFLUID)
+                       Flux_sST(IJK) = Flux_sST(LFLUID)  
+                     ENDIF
                   ENDIF 
                ENDIF          ! if (FLUID_AT(KP_OF(IJK)))
 

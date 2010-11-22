@@ -8,7 +8,7 @@
              MOMENTUM_X_EQ, MOMENTUM_Y_EQ,MOMENTUM_Z_EQ, DISCRETIZE,&
              GRANULAR_ENERGY,& 
 	     NScalar, Phase4Scalar, &
-	     K_Epsilon, Call_DQMOM,&
+	     K_Epsilon, Added_Mass, M_AM, Call_DQMOM,&
 ! sof 02-01-05 (modified Nov-16-05)
 	     SIMONIN, AHMADI, JENKINS, YU_STANDISH, FEDORS_LANDEL,&
              nRR, chi_scheme, &

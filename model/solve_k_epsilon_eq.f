@@ -168,8 +168,13 @@
 
             END DO   
     
-            CALL CONV_DIF_PHI (K_Turb_G, DIF_K_Turb_G, DISCRETIZE(9), &
+            IF(.NOT.ADDED_MASS) THEN
+	       CALL CONV_DIF_PHI (K_Turb_G, DIF_K_Turb_G, DISCRETIZE(9), &
                                U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, M, A_M, B_M, IER) 
+            ELSE
+	       CALL CONV_DIF_PHI (K_Turb_G, DIF_K_Turb_G, DISCRETIZE(9), &
+                               U_G, V_G, W_G, Flux_gSE, Flux_gSN, Flux_gST, M, A_M, B_M, IER) 
+            ENDIF
 !
 !
             CALL BC_PHI (K_Turb_G, BC_K_Turb_G, BC_K_Turb_GW, BC_HW_K_Turb_G, &
@@ -236,8 +241,13 @@
 
             END DO   
     
-            CALL CONV_DIF_PHI (E_Turb_G, DIF_E_Turb_G, DISCRETIZE(9), &
+            IF(.NOT.ADDED_MASS) THEN
+	       CALL CONV_DIF_PHI (E_Turb_G, DIF_E_Turb_G, DISCRETIZE(9), &
                                U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, M, A_M, B_M, IER) 
+            ELSE
+	       CALL CONV_DIF_PHI (E_Turb_G, DIF_E_Turb_G, DISCRETIZE(9), &
+                               U_G, V_G, W_G, Flux_gSE, Flux_gSN, Flux_gST, M, A_M, B_M, IER) 
+            ENDIF
 !
 !
             CALL BC_PHI (E_Turb_G, BC_E_Turb_G, BC_E_Turb_GW, BC_HW_E_Turb_G, &
