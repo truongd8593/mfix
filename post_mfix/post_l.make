@@ -24,6 +24,7 @@ post_mfix : \
     des_bc.mod \
     progress_bar.mod \
     quadric.mod \
+    stl.mod \
     cutcell.mod \
     vtk.mod \
     polygon.mod \
@@ -366,6 +367,7 @@ post_mfix : \
     bulk_viscosity.$(OBJ_EXT) \
     cartesian_grid_init_namelist.$(OBJ_EXT) \
     quadric_mod.$(OBJ_EXT) \
+    stl_mod.$(OBJ_EXT) \
     cutcell_mod.$(OBJ_EXT) \
     vtk_mod.$(OBJ_EXT) \
     polygon_mod.$(OBJ_EXT) \
@@ -759,6 +761,10 @@ quadric.mod : ../model/cartesian_grid/quadric_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/quadric_mod.f 
+stl.mod : ../model/cartesian_grid/stl_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/stl_mod.f 
 vtk.mod : ../model/cartesian_grid/vtk_mod.f \
             param.mod \
             param1.mod 
@@ -778,6 +784,7 @@ dashboard.mod : ../model/cartesian_grid/dashboard_mod.f \
 cartesian_grid_init_namelist.$(OBJ_EXT) : ../model/cartesian_grid/cartesian_grid_init_namelist.f \
             param1.mod \
             quadric.mod \
+            stl.mod \
             cutcell.mod \
             polygon.mod \
             vtk.mod \
@@ -1094,6 +1101,7 @@ read_namelist.$(OBJ_EXT) : ../model/read_namelist.f \
             bc.mod \
             des_bc.mod \
             quadric.mod \
+            stl.mod \
             cutcell.mod \
             vtk.mod \
             polygon.mod \
