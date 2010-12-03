@@ -351,13 +351,13 @@
                      Wsb = Theta_U_te(IJKM) * W_s(IJKM,M_AM) + Theta_U_tw(IJKM) * W_s(IPJKM,M_AM)
 		     Wsc = (DELZ_ut(IJK) * Wsb + DELZ_ub(IJK) * Wst) / (DELZ_ut(IJK) + DELZ_ub(IJK))
 
-	             F_vir = F_vir +  Wsc* (Ust*AXY(IJKP) - Usb*(AXY(IJK)))
+	             F_vir = F_vir +  Wsc* (Ust - Usb)*AXY(IJK)
 
 	          ENDIF
 !
 ! adding convective terms (U dU/dx + V dU/dy + W dU/dz) to virtual mass
-	          F_vir = F_vir + U_s(IJK,M_AM)*(Use*AYZ(IPJK) - Usw*AYZ(IJK)) + &
-	                      Vsc * (Usn*AXZ(IJPK) - Uss*(AXZ(IJK)))
+	          F_vir = F_vir + U_s(IJK,M_AM)*(Use - Usw)*AYZ(IJK) + &
+	                      Vsc * (Usn - Uss)*AXZ(IJK)
 	         
                   ROP_MA = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M_AM) + VOL(IPJK)*ROP_g(IJKE)*EP_s(IJKE,M_AM) )/(VOL(IJK) + VOL(IPJK))
 

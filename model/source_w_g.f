@@ -302,9 +302,9 @@
 	      Wsn = AVG_Y(W_s(IJK,M_AM),W_s(IJPK,M_AM),J)
 !
 ! adding convective terms (U dW/dx + V dW/dy + W dW/dz) to virtual mass.
-	      F_vir = F_vir + W_s(IJK,M_AM)*OX(I) * (Wst*AXY(IJKP) - Wsb*AXY(IJK)) + &
-	              Ust*(Wse*AYZ(IPJK) - Wsw*AYZ(IJK)) + &
-		      AVG_Z(Vsb,Vst,K) * (Wsn*AXZ(IJPK) - Wss*(AXZ(IJK)))
+	      F_vir = F_vir + W_s(IJK,M_AM)*OX(I) * (Wst - Wsb)*AXY(IJK) + &
+	              Ust*(Wse - Wsw)*AYZ(IJK) + &
+		      AVG_Z(Vsb,Vst,K) * (Wsn - Wss)*AXZ(IJK)
 	      
 	      IF (CYLINDRICAL) F_vir = F_vir + Ust*W_s(IJK,M_AM)*OX(I) ! Coriolis force
 	    

@@ -398,9 +398,9 @@
 	      Wgn = AVG_Y(W_g(IJK),W_g(IJPK),J)
 !
 ! adding convective terms (U dW/dx + V dW/dy + W dW/dz) to virtual mass.
-	      F_vir = F_vir + W_g(IJK)*OX(I) * (Wgt*AXY(IJKP) - Wgb*AXY(IJK)) + &
-	              Ugt*(Wge*AYZ(IPJK) - Wgw*AYZ(IJK)) + &
-		      AVG_Z(Vgb,Vgt,K) * (Wgn*AXZ(IJPK) - Wgs*(AXZ(IJK)))
+	      F_vir = F_vir + W_g(IJK)*OX(I) * (Wgt - Wgb)*AXY(IJK) + &
+	              Ugt*(Wge - Wgw)*AYZ(IJK) + &
+		      AVG_Z(Vgb,Vgt,K) * (Wgn - Wgs)*AXZ(IJK)
 	      
 	      IF (CYLINDRICAL) F_vir = F_vir + Ugt*W_g(IJK)*OX(I) ! Coriolis force
 	    

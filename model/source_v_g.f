@@ -308,12 +308,12 @@
 	         Wsb = AVG_Y(W_s(IJKM,M_AM),W_s(IJPKM,M_AM),J)
 	         Vst = AVG_Z(V_s(IJK,M_AM),V_s(IJKP,M_AM),KP1(K))
 	         Vsb = AVG_Z(V_s(IJKM,M_AM),V_s(IJK,M_AM),K)
-	         F_vir = F_vir + AVG_Z_T(Wsb,Wst)*OX(I) * (Vst*AXY(IJKP) - Vsb*AXY(IJK))
+	         F_vir = F_vir + AVG_Z_T(Wsb,Wst)*OX(I) * (Vst - Vsb)*AXY(IJK)
 	      ENDIF
 !
 ! adding convective terms (U dV/dx + V dV/dy) to virtual mass; W dV/dz added above.
-	      F_vir = F_vir + V_s(IJK,M_AM)*(Vsn*AXZ(IJPK) - Vss*AXZ(IJK)) + &
-	              AVG_X_E(Usw,Use,IP1(I))*(Vse*AYZ(IPJK) - Vsw*AYZ(IJK))
+	      F_vir = F_vir + V_s(IJK,M_AM)*(Vsn - Vss)*AXZ(IJK) + &
+	              AVG_X_E(Usw,Use,IP1(I))*(Vse - Vsw)*AYZ(IJK)
 	    
 	      F_vir = F_vir * Cv * ROP_MA
 	    ENDIF

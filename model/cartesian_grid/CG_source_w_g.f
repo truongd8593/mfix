@@ -344,9 +344,9 @@
 !
 ! adding convective terms (U dW/dx + V dW/dy + W dW/dz) to virtual mass
 
-	          F_vir = F_vir +  Usc * (Wse*AYZ(IPJK) - Wsw*AYZ(IJK))    + &
-                                   Vsc * (Wsn*AXZ(IJPK) - Wss*(AXZ(IJK)))  + &
-                                   W_s(IJK,M_AM)*(Wst*AYZ(IJKP) - Wsb*AYZ(IJK))
+	          F_vir = F_vir +  Usc * (Wse - Wsw)*AYZ(IJK)    + &
+                                   Vsc * (Wsn - Wss)*AXZ(IJK)  + &
+                                   W_s(IJK,M_AM)*(Wst - Wsb)*AXY(IJK)
 
 	         
                   ROP_MA = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M_AM) + VOL(IJKT)*ROP_g(IJKT)*EP_s(IJKT,M_AM))/(VOL(IJK) + VOL(IJKT))

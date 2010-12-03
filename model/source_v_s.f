@@ -413,12 +413,12 @@
 	         Wgb = AVG_Y(W_g(IJKM),W_g(IJPKM),J)
 	         Vgt = AVG_Z(V_g(IJK),V_g(IJKP),KP1(K))
 	         Vgb = AVG_Z(V_g(IJKM),V_g(IJK),K)
-	         F_vir = F_vir + AVG_Z_T(Wgb,Wgt)*OX(I) * (Vgt*AXY(IJKP) - Vgb*AXY(IJK))
+	         F_vir = F_vir + AVG_Z_T(Wgb,Wgt)*OX(I) * (Vgt - Vgb)*AXY(IJK)
 	      ENDIF
 !
 ! adding convective terms (U dV/dx + V dV/dy) to virtual mass; W dV/dz added above.
-	      F_vir = F_vir + V_g(IJK)*(Vgn*AXZ(IJPK) - Vgs*AXZ(IJK)) + &
-	              AVG_X_E(Ugw,Uge,IP1(I))*(Vge*AYZ(IPJK) - Vgw*AYZ(IJK))
+	      F_vir = F_vir + V_g(IJK)*(Vgn - Vgs)*AXZ(IJK) + &
+	              AVG_X_E(Ugw,Uge,IP1(I))*(Vge - Vgw)*AYZ(IJK)
 	    
 	      F_vir = F_vir * Cv * ROP_MA
 	    ENDIF

@@ -293,13 +293,13 @@
 		 Wse = AVG_X(Wsb,Wst,I)
 	         Usb = AVG_Z(U_s(IJKM,M_AM),U_s(IJK,M_AM),KM1(K))
 	         Ust = AVG_Z(U_s(IJK,M_AM),U_s(IJKP,M_AM),K)
-	         F_vir = F_vir + Wse*OX_E(I) * (Ust*AXY(IJKP) - Usb*(AXY(IJK)))
+	         F_vir = F_vir + Wse*OX_E(I) * (Ust - Usb) *AXY(IJK)
 		 IF (CYLINDRICAL) F_vir = F_vir - Wse**2*OX_E(I) ! centrifugal force
 	      ENDIF
 !
 ! adding convective terms (U dU/dx + V dU/dy + W dU/dz) to virtual mass
-	      F_vir = F_vir + U_s(IJK,M_AM)*(Use*AYZ(IPJK) - Usw*AYZ(IJK)) + &
-	         AVG_X(Vsw,Vse,I) * (Usn*AXZ(IJPK) - Uss*(AXZ(IJK)))
+	      F_vir = F_vir + U_s(IJK,M_AM)*(Use - Usw)*AYZ(IJK) + &
+	         AVG_X(Vsw,Vse,I) * (Usn - Uss)*AXZ(IJK)
 	         
 	    
 	      F_vir = F_vir * Cv * ROP_MA

@@ -405,13 +405,13 @@
 		 Wge = AVG_X(Wgb,Wgt,I)
 	         Ugb = AVG_Z(U_g(IJKM),U_g(IJK),KM1(K))
 	         Ugt = AVG_Z(U_g(IJK),U_g(IJKP),K)
-	         F_vir = F_vir + Wge*OX_E(I) * (Ugt*AXY(IJKP) - Ugb*(AXY(IJK)))
+	         F_vir = F_vir + Wge*OX_E(I) * (Ugt - Ugb) *AXY(IJK)
 		 IF (CYLINDRICAL) F_vir = F_vir - Wge**2*OX_E(I) ! centrifugal force
 	      ENDIF
 !
 ! adding convective terms (U dU/dx + V dU/dy + W dU/dz) to virtual mass
-	      F_vir = F_vir + U_g(IJK)*(Uge*AYZ(IPJK) - Ugw*AYZ(IJK)) + &
-	         AVG_X(Vgw,Vge,I) * (Ugn*AXZ(IJPK) - Ugs*(AXZ(IJK)))
+	      F_vir = F_vir + U_g(IJK)*(Uge - Ugw) *AYZ(IJK) + &
+	         AVG_X(Vgw,Vge,I) * (Ugn - Ugs) *AXZ(IJK)
 	                      
 	    
 	      F_vir = F_vir * Cv * ROP_MA

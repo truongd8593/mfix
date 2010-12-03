@@ -373,13 +373,13 @@
                            Wgb = Theta_U_te(IJKM) * W_g(IJKM) + Theta_U_tw(IJKM) * W_g(IPJKM)
 	                   Wgc = (DELZ_ut(IJK) * Wgb + DELZ_ub(IJK) * Wgt) / (DELZ_ut(IJK) + DELZ_ub(IJK))
 
-                           F_vir = F_vir +  Wgc* (Ugt*AXY(IJKP) - Ugb*(AXY(IJK)))
+                           F_vir = F_vir +  Wgc* (Ugt - Ugb)*AXY(IJK)
 
                         ENDIF
 !
 ! adding convective terms (U dU/dx + V dU/dy + W dU/dz) to virtual mass
-                        F_vir = F_vir + U_g(IJK)*(Uge*AYZ(IPJK) - Ugw*AYZ(IJK)) + &
-	                                Vgc * (Ugn*AXZ(IJPK) - Ugs*(AXZ(IJK)))
+                        F_vir = F_vir + U_g(IJK)*(Uge - Ugw)*AYZ(IJK) + &
+	                                Vgc * (Ugn - Ugs)*AXZ(IJK)
 
                         ROP_MA = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M) + VOL(IPJK)*ROP_g(IJKE)*EP_s(IJKE,M))/(VOL(IJK) + VOL(IPJK))
 
