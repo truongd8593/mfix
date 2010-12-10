@@ -75,10 +75,11 @@
 !
 !                      Dufour-related source terms
       DOUBLE PRECISION DufourX, DufourY, DufourZ, DijQTerm, &
-                       DijQTermE, DijQTermW, DijQTermN, DijQTermS, DijQTermT, DijQTermB,LijTermW,LijTermE,LijTermN,LijTermS
+                       DijQTermE, DijQTermW, DijQTermN, DijQTermS, DijQTermT, DijQTermB,LijTermW,LijTermE,LijTermN,LijTermS,LijTermT,LijTermB
  
-      DOUBLE PRECISION DijQTermE_H,DijQTermE_A,DijQTermW_H,DijQTermW_A,DijQTermN_H,DijQTermN_A,DijQTermS_H,DijQTermS_A,LijTermE_H, &
-                       LijTermE_A,LijTermW_H,LijTermW_A,LijTermN_H,LijTermN_A,LijTermS_H,LijTermS_A
+      DOUBLE PRECISION DijQTermE_H,DijQTermE_A,DijQTermW_H,DijQTermW_A,DijQTermN_H,DijQTermN_A,DijQTermS_H,DijQTermS_A,DijQTermT_H,DijQTermT_A,& 
+                       DijQTermB_H,DijQTermB_A,LijTermE_H,LijTermE_A,LijTermW_H,LijTermW_A,LijTermN_H,LijTermN_A,LijTermS_H,LijTermS_A,LijTermT_H,&
+                       LijTermT_A,LijTermB_H,LijTermB_A
 !                       
 !                      Source terms to be kept on RHS
       DOUBLE PRECISION SOURCERHS, PressureRhs, ShearProduction, BulkViscRhs, DissDivURhs, phi_tot, SOURCE_FLUID,chi_ij,SINK_FLUID
@@ -218,10 +219,10 @@
                 DijQTermS = DijQTermS_A
               ENDIF
 
-	      DufourX = DufourX + ( DijQTermE*(NiE-Nip)*ODX_E(I)*AYZ(IJK) - &
-	                            DijQTermW*(Nip-NiW)*ODX_E(IM)*AYZ(IMJK) )
-	      DufourY = DufourY + ( DijQTermN*(NiN-Nip)*ODY_N(J)*AXZ(IJK) - &
-	                            DijQTermS*(Nip-NiS)*ODY_N(JM)*AXZ(IJMK) )
+	      DufourX = DufourX + ( DijQTermE*(NiE-Nip)*ODX_E(I) - &
+	                            DijQTermW*(Nip-NiW)*ODX_E(IM) )*AYZ(IJK)
+	      DufourY = DufourY + ( DijQTermN*(NiN-Nip)*ODY_N(J) - &
+	                            DijQTermS*(Nip-NiS)*ODY_N(JM) )*AXZ(IJK)
 
 	      IF(.NOT. NO_K) THEN 
                  NiT = ROP_S(IJKT,L)/Mi
@@ -233,11 +234,29 @@
                  if(NiT > zero) DijQTermT = Theta_m(IJKT,MMAX)**2*DijQ(IJKT,M,L)/NiT
                  if(NiB > zero) DijQTermB = Theta_m(IJKB,MMAX)**2*DijQ(IJKB,M,L)/NiB
                 
-		 DijQTermT = AVG_Z(DijQTerm , DijQTermT, K)
-                 DijQTermB = AVG_Z(DijQTermB, DijQTerm, KM)
+                 if(ROP_S(IJK,L)/RO_S(L) > DIL_EP_S) DijQTermT = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / NiT
+                 if(ROP_S(IJK,L)/RO_S(L) > DIL_EP_S) DijQTermB = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / NiB
+
+		 DijQTermT_H = AVG_Z_S(DijQTerm , DijQTermT, K)
+		 DijQTermT_A = AVG_Z(DijQTerm , DijQTermT, K)
+              
+                 IF(MIN(ABS(DijQTermT_H),ABS(DijQTermT_A)) .eq. ABS(DijQTermT_H))THEN
+                   DijQTermT=DijQTermT_H
+                 ELSE
+                   DijQTermT=DijQTermT_A
+                 ENDIF
+                         
+                 DijQTermB_H = AVG_Z_S(DijQTermB, DijQTerm, KM)
+                 DijQTermB_A = AVG_Z(DijQTermB, DijQTerm, KM)
+
+                 IF(MIN(ABS(DijQTermB_H),ABS(DijQTermB_A)) .eq. ABS(DijQTermB_H))THEN
+                   DijQTermB=DijQTermB_H
+                 ELSE
+                   DijQTermB=DijQTermB_A
+                 ENDIF
 	         
-		 DufourZ = DufourZ + ( DijQTermT*(NiT-Nip)*ODZ_T(K)*OX(I)*AXY(IJK) - &
-		                       DijQTermB*(Nip-NiB)*ODZ_T(KM)*OX(I)*AXY(IJKM) )
+		 DufourZ = DufourZ + ( DijQTermT*(NiT-Nip)*ODZ_T(K)*OX(I) - &
+		                       DijQTermB*(Nip-NiB)*ODZ_T(KM)*OX(I) )*AXY(IJK)
 	      ENDIF    
 
 !     Sum_ij [ div( Lij*Fj) ]; thermal mobility term
@@ -277,15 +296,32 @@
               ENDIF
 	      
 	      ThermMobilityX = ThermMobilityX + ( &
-	               FiX(IJK,L) *LijTermE*AYZ(IJK) - FiX(IMJK,L)*LijTermW*AYZ(IMJK) )
+	               FiX(IJK,L) *LijTermE - FiX(IMJK,L)*LijTermW )*AYZ(IJK)
               
 	      ThermMobilityY = ThermMobilityY + ( &
-	                FiY(IJK,L) *LijTermN*AXZ(IJK) - &
-			FiY(IJMK,L)*LijTermS*AXZ(IJMK) )
+	               FiY(IJK,L) *LijTermN - FiY(IJMK,L)*LijTermS )*AXZ(IJK)
 
-	      IF(.NOT. NO_K) ThermMobilityZ = ThermMobilityZ + ( &
-	                FiZ(IJK,L) *AVG_Z(Lij(IJK,M,L), Lij(IJKT,M,L), K) *AXY(IJK) -&
-			FiZ(IJKM,L)*AVG_Z(Lij(IJKB,M,L), Lij(IJK,M,L), KM) *AXY(IJKM) )
+	      IF(.NOT. NO_K) THEN
+                 
+              LijTermT_H = AVG_Z_S(Lij(IJK,M,L),Lij(IJKT,M,L),K)
+              LijTermT_A = AVG_Z(Lij(IJK,M,L),Lij(IJKT,M,L),K)
+              IF(MIN(ABS(LijTermT_H),ABS(LijTermT_A)) .eq. ABS(LijTermT_H))THEN
+                LijTermT = LijTermT_H
+              ELSE
+                LijTermT = LijTermT_A
+              ENDIF
+
+              LijTermB_H = AVG_Z_S(Lij(IJKB,M,L),Lij(IJK,M,L),KM)
+              LijTermB_A = AVG_Z(Lij(IJKB,M,L),Lij(IJK,M,L),KM)
+              IF(MIN(ABS(LijTermB_H),ABS(LijTermB_A)) .eq. ABS(LijTermB_H))THEN
+                LijTermB = LijTermB_H
+              ELSE
+                LijTermB = LijTermB_A
+              ENDIF
+                  
+              ThermMobilityZ = ThermMobilityZ + ( &
+	               FiZ(IJK,L) *LijTermT  - FiZ(IJKM,L)*LijTermB )*AXY(IJK)
+              ENDIF
           ENDDO ! for L = 1, smax
 
 ! Additional term arising from subtraction of 3/2*T*continuity
@@ -294,9 +330,9 @@
           Mi = (Pi/6.d0)*D_P(IJK,M)**3 * RO_S(M)
       
           DelDotJoi = DelDotJoi + 1.5d0*THETA_M(IJK,MMAX)/Mi * ( &
-	              JoiX(IJK,M)*AYZ(IJK) - JoiX(IMJK,M)*AYZ(IMJK) + JoiY(IJK,M)*&
-                      AXZ(IJK) - JoiY(IJMK,M)*AXZ(IJMK) + JoiZ(IJK,M)*AXY(IJK) - JoiZ(&
-                      IJKM,M)*AXY(IJKM) )
+	              (JoiX(IJK,M) - JoiX(IMJK,M))*AYZ(IJK) + &
+		      (JoiY(IJK,M) - JoiY(IJMK,M))*AXZ(IJK) + &
+		      (JoiZ(IJK,M) - JoiZ(IJKM,M))*AXY(IJK) )
 
 
 ! Species force dot species mass flux 
