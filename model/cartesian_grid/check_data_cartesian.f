@@ -301,6 +301,11 @@
                   dquadric(Q) = ZERO
                ENDIF
 
+            CASE ('C2C')        ! Cylinder to cylinder junction using cone
+                                ! Internal flow
+
+               CALL BUILD_CONE_FOR_C2C(Q)
+
 
             CASE DEFAULT
                WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, ' HAS INCORRECT FORM: ',quadric_form(Q)
@@ -1005,3 +1010,232 @@
  1420 FORMAT(/1X,70('*')/) 
 
       END SUBROUTINE CHECK_BC_FLAGS
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CALL BUILD_CONE_FOR_C2C                                C
+!  Purpose: Define cone parameters for Cylider to Cylinder junction.   C
+!           The C2C quadric ID must be between the two cylinders ID    C
+!           (e.g., if Quadric 4 is a C2C, then Quadrics 3 and 5        C
+!            must be cylinders). The two cylinders must be aligned     C
+!           in the same direction and be clipped to define the extent  C
+!           of the conical junction.                                   C
+!           This method is currentl available for internal flow only.  C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 02-Dec-10  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE BUILD_CONE_FOR_C2C(Q)
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE constant 
+      USE run
+      USE physprop
+      USE indices
+      USE scalars
+      USE funits
+      USE leqsol
+      USE compar             
+      USE mpi_utility        
+      USE bc
+      USE DISCRETELEMENT
+
+      USE cutcell
+      USE quadric
+      USE vtk
+      USE polygon
+      USE dashboard
+      USE stl
+
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+      INTEGER :: Q,QM1,QP1
+      Character*80  Line(1)
+      DOUBLE PRECISION :: x1,x2,y1,y2,z1,z2,R1,R2
+      DOUBLE PRECISION :: norm, tan_half_angle
+      LOGICAL :: aligned
+!-----------------------------------------------
+!
+
+      QM1 = Q-1
+      QP1 = Q+1
+
+      WRITE(*,*)' INFO FOR QUADRIC', Q
+      WRITE(*,*)' Defining Cone for Cylinder to Cylinder junction'
+      WRITE(*,*)' Between Quadrics ',QM1,' AND ', QP1
+
+
+      IF((TRIM(QUADRIC_FORM(QM1))=='X_CYL_INT').AND.(TRIM(QUADRIC_FORM(QP1))=='X_CYL_INT')) THEN
+
+         QUADRIC_FORM(Q) = 'X_CONE'
+
+         aligned = (t_y(QM1)==t_y(QP1)).AND.(t_z(QM1)==t_z(QP1)) 
+         IF(.NOT.aligned) THEN
+            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            call mfix_exit(myPE)
+         ENDIF
+
+         R1 = RADIUS(QM1)
+         R2 = RADIUS(QP1)
+         IF(R1==R2) THEN
+            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' HAVE THE SAME RADIUS'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            call mfix_exit(myPE)
+         ENDIF
+
+         x1 = clip_xmax(QM1)
+         x2 = clip_xmin(QP1)
+         IF(x2<=x1) THEN
+
+            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT CLIPPED PROPERLY'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            call mfix_exit(myPE)
+         ENDIF
+
+         tan_half_angle = (R2-R1)/(x2-x1)
+
+         HALF_ANGLE(Q) = DATAN(tan_half_angle)/PI*180.0D0
+         lambda_x(Q) = -ONE
+         lambda_y(Q) = ONE/(tan_half_angle)**2
+         lambda_z(Q) = ONE/(tan_half_angle)**2 
+         dquadric(Q) = ZERO
+
+         clip_xmin(Q) = x1
+         clip_xmax(Q) = x2
+
+         t_x(Q) = x1 - R1/tan_half_angle 
+         t_y(Q) = t_y(QM1)
+         t_z(Q) = t_z(QM1)
+
+         WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
+         WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
+
+
+      ELSEIF((TRIM(QUADRIC_FORM(QM1))=='Y_CYL_INT').AND.(TRIM(QUADRIC_FORM(QP1))=='Y_CYL_INT')) THEN
+
+         QUADRIC_FORM(Q) = 'Y_CONE'
+
+         aligned = (t_x(QM1)==t_x(QP1)).AND.(t_z(QM1)==t_z(QP1)) 
+         IF(.NOT.aligned) THEN
+            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            call mfix_exit(myPE)
+         ENDIF
+
+         R1 = RADIUS(QM1)
+         R2 = RADIUS(QP1)
+         IF(R1==R2) THEN
+            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' HAVE THE SAME RADIUS'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            call mfix_exit(myPE)
+         ENDIF
+
+         y1 = clip_ymax(QM1)
+         y2 = clip_ymin(QP1)
+         IF(y2<=y1) THEN
+
+            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT CLIPPED PROPERLY'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            call mfix_exit(myPE)
+         ENDIF
+
+         tan_half_angle = (R2-R1)/(y2-y1)
+
+         HALF_ANGLE(Q) = DATAN(tan_half_angle)/PI*180.0D0
+         lambda_x(Q) = ONE/(tan_half_angle)**2
+         lambda_y(Q) = -ONE
+         lambda_z(Q) = ONE/(tan_half_angle)**2
+         dquadric(Q) = ZERO
+
+         clip_ymin(Q) = y1
+         clip_ymax(Q) = y2
+
+         t_x(Q) = t_x(QM1)
+         t_y(Q) = y1 - R1/tan_half_angle
+         t_z(Q) = t_z(QM1)
+
+
+         WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
+         WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
+       
+
+      ELSEIF((TRIM(QUADRIC_FORM(QM1))=='Z_CYL_INT').AND.(TRIM(QUADRIC_FORM(QP1))=='Z_CYL_INT')) THEN
+
+         QUADRIC_FORM(Q) = 'Z_CONE'
+
+         aligned = (t_x(QM1)==t_x(QP1)).AND.(t_y(QM1)==t_y(QP1)) 
+         IF(.NOT.aligned) THEN
+            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            call mfix_exit(myPE)
+         ENDIF
+
+         R1 = RADIUS(QM1)
+         R2 = RADIUS(QP1)
+         IF(R1==R2) THEN
+            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' HAVE THE SAME RADIUS'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            call mfix_exit(myPE)
+         ENDIF
+
+         z1 = clip_zmax(QM1)
+         z2 = clip_zmin(QP1)
+         IF(z2<=z1) THEN
+
+            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT CLIPPED PROPERLY'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            call mfix_exit(myPE)
+         ENDIF
+
+         tan_half_angle = (R2-R1)/(z2-z1)
+
+         HALF_ANGLE(Q) = DATAN(tan_half_angle)/PI*180.0D0
+         lambda_x(Q) = ONE/(tan_half_angle)**2
+         lambda_y(Q) = ONE/(tan_half_angle)**2
+         lambda_z(Q) = -ONE
+         dquadric(Q) = ZERO
+
+         clip_zmin(Q) = z1
+         clip_zmax(Q) = z2
+
+         t_x(Q) = t_x(QM1)
+         t_y(Q) = t_y(QM1)
+         t_z(Q) = z1 - R1/tan_half_angle
+
+         WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
+         WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
+
+      ELSE
+         
+         WRITE(*,*) ' ERROR: C2C MUST BE DEFINED BETWEEN 2 CYLINDERS'
+         WRITE(*,*) ' QUADRIC:',QM1, ' IS ',  TRIM(QUADRIC_FORM(QM1))
+         WRITE(*,*) ' QUADRIC:',QP1, ' IS ',  TRIM(QUADRIC_FORM(QP1))
+         call mfix_exit(myPE)
+
+      ENDIF
+
+      RETURN
+      END
