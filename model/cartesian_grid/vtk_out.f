@@ -54,6 +54,7 @@
       CHARACTER (LEN=32) :: SUBM,SUBN
       CHARACTER (LEN=64) :: VAR_NAME
 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID
 
       include "function.inc"
 
@@ -193,9 +194,13 @@
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
             
             CASE (101)
-               CALL WRITE_SCALAR_IN_VTK('BC_ID',DFLOAT(BC_ID))
+       
+               Allocate(DP_BC_ID(DIMENSION_3))
+               DP_BC_ID = DFLOAT(BC_ID)
+!               CALL WRITE_SCALAR_IN_VTK('BC_ID',DFLOAT(BC_ID))
+               CALL WRITE_SCALAR_IN_VTK('BC_ID',DP_BC_ID)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+               DeAllocate(DP_BC_ID)
 
             CASE (0) ! do nothing
 
