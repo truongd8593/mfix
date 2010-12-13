@@ -123,7 +123,7 @@
       DOUBLE PRECISION HYS_drag, avgDrag
 
 !			virtual (added) mass
-      DOUBLE PRECISION F_vir, ROP_MA, Use, Usw, Ust, Vsb, Vst, Wse, Wsw, Wsn, Wss, Wst, Wsb
+      DOUBLE PRECISION F_vir, ROP_MA, U_se, Usw, Ust, Vsb, Vst, Wse, Wsw, Wsn, Wss, Wst, Wsb
 
 ! 
 !                      error message 
@@ -290,9 +290,9 @@
 	      Wsb = AVG_Z_T(W_S(IJKM,M_AM),W_s(IJK,M_AM))
 	      Wst = AVG_Z_T(W_s(IJK,M_AM),W_s(IJKP,M_AM))  
 	      
-	      Use = AVG_Z(U_s(IJK,M_AM),U_s(IJKP,M_AM),K)
+	      U_se = AVG_Z(U_s(IJK,M_AM),U_s(IJKP,M_AM),K)
 	      Usw = AVG_Z(U_s(IMJK,M_AM),U_s(IMJKP,M_AM),K)
-	      Ust = AVG_X_E(Usw,Use,IP1(I))
+	      Ust = AVG_X_E(Usw,U_se,IP1(I))
 	      Wse = AVG_X(W_s(IJK,M_AM),W_s(IPJK,M_AM),IP1(I))
 	      Wsw = AVG_X(W_s(IMJK,M_AM),W_s(IJK,M_AM),I)
 	      

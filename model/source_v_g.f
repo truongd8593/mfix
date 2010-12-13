@@ -117,7 +117,7 @@
       DOUBLE PRECISION HYS_drag, avgDrag
 
 !			virtual (added) mass
-      DOUBLE PRECISION F_vir, ROP_MA, Vsn, Vss, Use, Usw, Vse, Vsw, Wst, Wsb, Vst, Vsb
+      DOUBLE PRECISION F_vir, ROP_MA, Vsn, Vss, U_se, Usw, Vse, Vsw, Wst, Wsb, Vst, Vsb
 
 ! 
 ! loezos 
@@ -298,7 +298,7 @@
 	      Vss = AVG_Y_N(V_S(IJMK,M_AM),V_s(IJK,M_AM))
 	      Vsn = AVG_Y_N(V_s(IJK,M_AM),V_s(IJPK,M_AM))  
 	      
-	      Use = AVG_Y(U_s(IJK,M_AM),U_s(IJPK,M_AM),J)
+	      U_se = AVG_Y(U_s(IJK,M_AM),U_s(IJPK,M_AM),J)
 	      Usw = AVG_Y(U_s(IMJK,M_AM),U_s(IMJPK,M_AM),J)
 	      Vse = AVG_X(V_s(IJK,M_AM),V_s(IPJK,M_AM),IP1(I))
 	      Vsw = AVG_X(V_s(IMJK,M_AM),V_s(IJK,M_AM),I)
@@ -313,7 +313,7 @@
 !
 ! adding convective terms (U dV/dx + V dV/dy) to virtual mass; W dV/dz added above.
 	      F_vir = F_vir + V_s(IJK,M_AM)*(Vsn - Vss)*AXZ(IJK) + &
-	              AVG_X_E(Usw,Use,IP1(I))*(Vse - Vsw)*AYZ(IJK)
+	              AVG_X_E(Usw,U_se,IP1(I))*(Vse - Vsw)*AYZ(IJK)
 	    
 	      F_vir = F_vir * Cv * ROP_MA
 	    ENDIF

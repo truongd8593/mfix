@@ -125,7 +125,7 @@
       DOUBLE PRECISION HYS_drag, avgDrag
 
 !			virtual (added) mass
-      DOUBLE PRECISION F_vir, ROP_MA, Use, Usw, Vsw, Vse, Usn, Uss, Wsb, Wst, Wse, Usb, Ust
+      DOUBLE PRECISION F_vir, ROP_MA, U_se, Usw, Vsw, Vse, Usn, Uss, Wsb, Wst, Wse, Usb, Ust
 ! 
 !                      error message 
       CHARACTER*80     LINE 
@@ -280,7 +280,7 @@
 !
 ! defining gas-particles velocity at momentum cell faces (or scalar cell center)    
 	      Usw = AVG_X_E(U_S(IMJK,M_AM),U_s(IJK,M_AM),I)
-	      Use = AVG_X_E(U_s(IJK,M_AM),U_s(IPJK,M_AM),IP1(I))
+	      U_se = AVG_X_E(U_s(IJK,M_AM),U_s(IPJK,M_AM),IP1(I))
 	      
 	      Vsw = AVG_Y_N(V_s(IJMK,M_AM),V_s(IJK,M_AM))  
 	      Vse = AVG_Y_N(V_s(IPJMK,M_AM),V_s(IPJK,M_AM)) 
@@ -298,7 +298,7 @@
 	      ENDIF
 !
 ! adding convective terms (U dU/dx + V dU/dy + W dU/dz) to virtual mass
-	      F_vir = F_vir + U_s(IJK,M_AM)*(Use - Usw)*AYZ(IJK) + &
+	      F_vir = F_vir + U_s(IJK,M_AM)*(U_se - Usw)*AYZ(IJK) + &
 	         AVG_X(Vsw,Vse,I) * (Usn - Uss)*AXZ(IJK)
 	         
 	    

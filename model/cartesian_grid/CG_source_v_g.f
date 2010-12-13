@@ -128,7 +128,7 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !			virtual (added) mass
-      DOUBLE PRECISION F_vir, ROP_MA, Vsn, Vss, Use, Usc, Usw, Vse, Vsw, Wst, Wsb, Wsc, Vst, Vsb
+      DOUBLE PRECISION F_vir, ROP_MA, Vsn, Vss, U_se, Usc, Usw, Vse, Vsw, Wst, Wsb, Wsc, Vst, Vsb
 
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -329,10 +329,10 @@
                   Vse = Theta_Ve_bar(IJK)  * V_s(IJK,M_AM)  + Theta_Ve(IJK)  * V_s(IPJK,M_AM)
                   Vsw = Theta_Ve_bar(IMJK) * V_s(IMJK,M_AM) + Theta_Ve(IMJK) * V_s(IJK,M_AM)
 
-                  Use =  Theta_V_ne(IJK)  * U_s(IJK,M_AM)  + Theta_V_se(IJK)  * U_s(IJPK,M_AM)
+                  U_se =  Theta_V_ne(IJK)  * U_s(IJK,M_AM)  + Theta_V_se(IJK)  * U_s(IJPK,M_AM)
                   Usw =  Theta_V_ne(IMJK) * U_s(IMJK,M_AM) + Theta_V_se(IMJK) * U_s(IMJPK,M_AM)
 
-                  Usc = (DELX_ve(IJK) * Usw + DELX_vw(IJK) * Use) / (DELX_ve(IJK) + DELX_vw(IJK))
+                  Usc = (DELX_ve(IJK) * Usw + DELX_vw(IJK) * U_se) / (DELX_ve(IJK) + DELX_vw(IJK))
 
 
                   Vsn = Theta_Vn_bar(IJK)  * V_s(IJK,M_AM)  + Theta_Vn(IJK)  * V_s(IJPK,M_AM)

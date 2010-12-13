@@ -134,7 +134,7 @@
       LOGICAL :: PRINT_FLAG
 
 !			virtual (added) mass
-      DOUBLE PRECISION F_vir, ROP_MA, Use, Usw, Vsn, Vss, Vsc, Usn, Uss, Wsb, Wst, Wse, Wsc, Usb, Ust
+      DOUBLE PRECISION F_vir, ROP_MA, U_se, Usw, Vsn, Vss, Vsc, Usn, Uss, Wsb, Wst, Wse, Wsc, Usb, Ust
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -329,7 +329,7 @@
                   IJKE = EAST_OF(IJK) 
 !
 ! defining gas-particles velocity at momentum cell faces (or scalar cell center)    
-                  Use = Theta_Ue_bar(IJK)  * U_s(IJK,M_AM)  + Theta_Ue(IJK)  * U_s(IPJK,M_AM)
+                  U_se = Theta_Ue_bar(IJK)  * U_s(IJK,M_AM)  + Theta_Ue(IJK)  * U_s(IPJK,M_AM)
                   Usw = Theta_Ue_bar(IMJK) * U_s(IMJK,M_AM) + Theta_Ue(IMJK) * U_s(IJK,M_AM)
 
                   Usn = Theta_Un_bar(IJK)  * U_s(IJK,M_AM)  + Theta_Un(IJK)  * U_s(IJPK,M_AM)
@@ -356,7 +356,7 @@
 	          ENDIF
 !
 ! adding convective terms (U dU/dx + V dU/dy + W dU/dz) to virtual mass
-	          F_vir = F_vir + U_s(IJK,M_AM)*(Use - Usw)*AYZ(IJK) + &
+	          F_vir = F_vir + U_s(IJK,M_AM)*(U_se - Usw)*AYZ(IJK) + &
 	                      Vsc * (Usn - Uss)*AXZ(IJK)
 	         
                   ROP_MA = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M_AM) + VOL(IPJK)*ROP_g(IJKE)*EP_s(IJKE,M_AM) )/(VOL(IJK) + VOL(IPJK))
