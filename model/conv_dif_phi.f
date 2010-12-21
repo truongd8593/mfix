@@ -288,7 +288,7 @@
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
                IF(CUT_TREATMENT_AT(IJK)) THEN
-                  IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJPK)) THEN
+                  IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJKP)) THEN
                      D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*DX(I)*DY(J)
                   ENDIF
                ENDIF
@@ -368,7 +368,7 @@
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
                   IF(CUT_TREATMENT_AT(IJK)) THEN
-                     IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJMK)) THEN
+                     IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJKM)) THEN
                         D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX(I)*ODZ_T(KM)*DX(I)*DY(J)
                      ENDIF
                   ENDIF
@@ -945,7 +945,7 @@
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
                IF(CUT_TREATMENT_AT(IJK)) THEN
-                  IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJPK)) THEN
+                  IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJKP)) THEN
                      D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*DX(I)*DY(J)
                   ENDIF
                ENDIF
@@ -1017,7 +1017,7 @@
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
                   IF(CUT_TREATMENT_AT(IJK)) THEN
-                     IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJMK)) THEN
+                     IF(CUT_CELL_AT(IJK).AND.BLOCKED_CELL_AT(IJKM)) THEN
                         D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX(I)*ODZ_T(KM)*DX(I)*DY(J)
                      ENDIF
                   ENDIF
