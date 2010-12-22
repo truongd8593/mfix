@@ -737,7 +737,7 @@
             ENDIF
         ENDDO
 
-        CALL LUDCMP(fjac, s, NP, indx, d)  ! solve system of s linear equations using
+        CALL LUDCMP(fjac, s, NP, indx, d, 'UrNewt')  ! solve system of s linear equations using
         CALL LUBKSB(fjac, s, NP, indx, p)  ! LU decomposition
                   
         ERRX = 0d0
@@ -898,7 +898,7 @@
         enddo
       enddo
 
-        CALL LUDCMP(fjac, s, NP, indx, d)  ! solve system of s linear equations using
+        CALL LUDCMP(fjac, s, NP, indx, d, 'velocity_update')  ! solve system of s linear equations using
         CALL LUBKSB(fjac, s, NP, indx, FVEC)  ! LU decomposition
 
         RETURN

@@ -85,7 +85,7 @@
             P(I) = -FVEC(I) ! RHS of linear equations.
         ENDDO
 
-        CALL LUDCMP(fjac, s, NP, indx, d)  ! solve system of s linear equations using
+        CALL LUDCMP(fjac, s, NP, indx, d, 'MNewt')  ! solve system of s linear equations using
         CALL LUBKSB(fjac, s, NP, indx, p)  ! LU decomposition
                   
         ERRX = 0d0
@@ -254,7 +254,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !                                                                      
-!  subroutine name: ludcmp(a,n,np,indx,d)
+!  subroutine name: ludcmp(a,n,np,indx,d, calledFrom)
 !  Purpose: Replaces matrix a (n,n) by the LU decomposition of a rowwise 
 !           permutation of itself. Used in combination with lubksb.
 !
@@ -263,11 +263,12 @@
 !                                                         
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !
-      subroutine ludcmp(a,n,np,indx,d)
-!
+      subroutine ludcmp(a,n,np,indx,d,calledFrom)
+      USE compar
 !
       implicit none
 !
+      CHARACTER*16 calledFrom
       integer np,n,indx(n),nmax
       double precision a(n,n),d, TINY
       parameter (NMAX=500, TINY=1.0D-20)
@@ -281,7 +282,10 @@
          do j = 1,n
             if (dabs(a(i,j)).gt.aamax) aamax = dabs(a(i,j))
          enddo
-         if (aamax.eq.0.0d0) pause 'Singular Matrix in ludcmp'
+         if (aamax.eq.0.0d0) then
+	   if(myPE==PE_IO) write(*,*) 'Singular Matrix in ludcmp called from ', calledFrom
+	   call mfix_exit(myPE)
+         endif
          vv(i) = 1.d0/aamax
       enddo
       do j = 1,n

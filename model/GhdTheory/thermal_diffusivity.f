@@ -67,7 +67,7 @@
                       /(mi(i)*p))+2d0*pi/3d0*ni(i)/rho*sum2(i)
       enddo
 
-      CALL LUDCMP(Amat, s, NP, indx, d)     ! solve system of s linear equations using
+      CALL LUDCMP(Amat, s, NP, indx, d, 'thermal_diffusivity')     ! solve system of s linear equations using
       CALL LUBKSB(Amat, s, NP, indx, bmat)  ! LU decomposition
 
       do i=1,s

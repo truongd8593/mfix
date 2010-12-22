@@ -175,7 +175,7 @@
          bmat(i) = lambdai_bar(i)                 !B vector for solution of lambdai (p 13 CMH notes)
       enddo
 
-      CALL LUDCMP(Amat, s, NP, indx, d)     ! solve system of s linear equations using
+      CALL LUDCMP(Amat, s, NP, indx, d, 'thermal_conductivity')     ! solve system of s linear equations using
       CALL LUBKSB(Amat, s, NP, indx, bmat)  ! LU decomposition
 
       do i=1,s

@@ -114,7 +114,7 @@
          bmat(i) = 2.d0*eid_bar(i)/15.d0                  !b matrix for solution of ejd (p 4 CMH notes)
       enddo
 
-      CALL LUDCMP(Amat, s, NP, indx, d)     ! solve system of s linear equations using
+      CALL LUDCMP(Amat, s, NP, indx, d, 'cooling_rate_tc')     ! solve system of s linear equations using
       CALL LUBKSB(Amat, s, NP, indx, bmat)  ! LU decomposition
 
       do i=1,s

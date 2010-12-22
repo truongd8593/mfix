@@ -125,7 +125,7 @@
             bmat0(i) = bmat(i,kk)
          enddo
 
-         CALL LUDCMP(Amat0, s, NP, indx, d) ! solve system of s linear equations using
+         CALL LUDCMP(Amat0, s, NP, indx, d, 'dufour_coeff') ! solve system of s linear equations using
          CALL LUBKSB(Amat0, s, NP, indx, bmat0) ! LU decomposition
 
          do i=1,s

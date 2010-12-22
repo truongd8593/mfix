@@ -80,7 +80,7 @@
          bmat(i) = ni(i)*Ti(i)+sum2(i)              !b matrix for solution of etajk (p 10 CMH notes)
       enddo
 
-      CALL LUDCMP(Amat, s, NP, indx, d)     ! solve system of s linear equations using
+      CALL LUDCMP(Amat, s, NP, indx, d, 'shear_viscosity')     ! solve system of s linear equations using
       CALL LUBKSB(Amat, s, NP, indx, bmat)  ! LU decomposition
 
       etakin = 0.d0
