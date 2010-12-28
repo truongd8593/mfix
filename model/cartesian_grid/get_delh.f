@@ -1,8 +1,10 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name:  GET_DEL_H                                             C
-!  Purpose: Finds the normal distance and unit vector from any point   C
-!  (x0,y0,z0) to a Cut face                                            C
+!  Purpose: Finds the normal distance and unit vector from a cut face  C
+!  to any point (x0,y0,z0)                                             C
+!  The unit normal vector points away from the boundary,               C
+!  towards the fluid.                                                  C                              
 !  This subroutine must be called from a cut-cell                      C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
