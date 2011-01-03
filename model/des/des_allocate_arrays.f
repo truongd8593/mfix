@@ -25,12 +25,6 @@
 !-----------------------------------------------      
 ! indices      
       INTEGER I, J, K, IJK, M 
-! domain volume      
-      DOUBLE PRECISION :: VOL_DOMAIN
-! the maximum and minimum specified particle diameter 
-      DOUBLE PRECISION MAX_DIAM, MIN_DIAM
-! for gener_part_config, the total solids volume fraction
-      DOUBLE PRECISION TOT_VOL_FRAC
 ! the number of particles in the system
       INTEGER NPARTICLES
 !-----------------------------------------------
@@ -40,180 +34,9 @@
       WRITE(*,'(1X,A)')&
          '---------- START DES_ALLOCATE_ARRAYS ---------->'
 
-! Valid D_p0(M) are needed here if gener_part_config.  A second check 
-! for realistic d_p0 values is made in check_data_04 but this routine 
-! is called after des_allocate_arrays (i.e. would be too late).
-! Valid D_P0(M) are also needed to identify which solids phase each
-! particle belongs in (although the sorting is performed after 
-! check_data_04 is called), and to determine the maximum particle size
-! in the system (MAX_RADIUS), which in turn is used for various tasks
-       MAX_DIAM = ZERO
-       MIN_DIAM = LARGE_NUMBER
-       DO M = 1,MMAX   
-          IF (D_P0(M)<ZERO .OR. D_P0(M)==UNDEFINED) THEN    
-             WRITE (*,'(3X,A,A)') &   
-                'D_P0 must be defined and >0 in mfix.dat ',&   
-                'for M = 1,MMAX'   
-                CALL MFIX_EXIT(myPE)   
-          ENDIF   
-          MAX_DIAM = MAX(MAX_DIAM, D_P0(M))
-          MIN_DIAM = MIN(MIN_DIAM, D_P0(M))
-       ENDDO   
-       DO M = MMAX+1, DIMENSION_M   
-          IF (D_P0(M) /= UNDEFINED) THEN   
-             WRITE (*,'(3X,A,A)') &   
-                'Too many D_P0 are defined for given MMAX'   
-             CALL MFIX_EXIT(myPE)   
-          ENDIF   
-       ENDDO
-       MAX_RADIUS = 0.5d0*MAX_DIAM
-       MIN_RADIUS = 0.5d0*MIN_DIAM
 
-
-! If gener_part_config ensure various quantities are defined and valid
-! ------------------------------------------------------------
-
-      IF(GENER_PART_CONFIG) THEN 
-         TOT_VOL_FRAC = ZERO
-         WRITE(*,'(3X,A)') 'Checking usr info for gener_part_config'
-         WRITE(*,'(5X,A,G15.8)') 'DES_EPS_XSTART = ', DES_EPS_XSTART
-         WRITE(*,'(5X,A,G15.8)') 'DES_EPS_YSTART = ', DES_EPS_YSTART
-         IF (DIMN .EQ. 3) &
-            WRITE(*,'(5X,A,G15.8)') 'DES_EPS_ZSTART = ', DES_EPS_ZSTART
-
-! Check if des_eps_xstart and related variables are correctly initialized in mfix.dat file
-         IF(DIMN.EQ.2) THEN 
-            IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.&
-               DES_EPS_YSTART.EQ.UNDEFINED) THEN
-               WRITE (*,'(/,5X,A,A,A,/)') 'ERROR MESSAGE: ', &
-                  'DES_EPS_XSTART or DES_EPS_YSTART ',&
-                  'not defined in mfix.dat'
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-         ELSE
-            IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.&
-               DES_EPS_YSTART.EQ.UNDEFINED.OR.&
-               DES_EPS_ZSTART.EQ.UNDEFINED) THEN
-               WRITE (*,'(/,5X,A,A,A,/)') 'ERROR MESSAGE: ', &
-                  'DES_EPS_XSTART, DES_EPS_YSTART, or DES_EPS_ZSTART ',&
-                  'not defined in mfix.dat'
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-         ENDIF
-
-! perform a quick series of checks for quantities immediately needed in
-! calculations; a more comprehensive series of checks is performed later
-! (e.g., check_data_03, check_des_data which are called from get_data)
-         DO M = 1, MMAX
-            IF(VOL_FRAC(M) == UNDEFINED) THEN
-               WRITE (*,'(/,5X,A,A,/)') &
-                  'VOL_FRAC(M) must be defined in ',&
-                  'mfix.dat for M = 1, MMAX'
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-            IF(VOL_FRAC(M) < ZERO .OR. VOL_FRAC(M) > (ONE-EP_STAR)) THEN
-               WRITE (*,'(/,5X,A,A,/)') &
-                  'Unphysical ( > 1-EP_STAR or < 0) ',&
-                  'values of VOL_FRAC(M) set in mfix.dat'
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-            TOT_VOL_FRAC = TOT_VOL_FRAC + VOL_FRAC(M)
-         ENDDO
-
-         IF(TOT_VOL_FRAC > (ONE-EP_STAR)) THEN
-            WRITE (*,'(/,5X,A,A,/7X,A,ES15.7,2X,A,ES15.7,/)') &
-               'Total solids volume fraction should not exceed ', &
-               '1-EP_STAR where', 'EP_STAR = ', EP_STAR, &
-               ' and TOT_VOL_FRAC = ', TOT_VOL_FRAC
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-
-         WRITE(*,'(/5X,A,A,/)') 'Particle configuration will ', &
-            'automatically be generated'
-
-         PARTICLES = 0
-         IF(DIMN.EQ.2) THEN 
-! Values of DZ(1) or zlength are not guaranteed at this point; however,
-! some value is needed to calculate the number of particles
-            IF (DZ(1) == UNDEFINED .AND. ZLENGTH == UNDEFINED) THEN
-               IF (MAX_DIAM .EQ. ZERO) MAX_DIAM = ONE ! for calculations
-               WRITE(*,'(5X,A,A,/11X,A,A,ES15.7,/11X,A,A,/11X,A,/)') &
-                  'NOTE: neither zlength or dz(1) were specified ',&
-                  'so ZLENGTH is being set','to the maximum particle ',&
-                  'diameter of ', MAX_DIAM, 'to provide a basis ',&
-                  'for calculating the number of particles',&
-                  'in the system'
-! set zlength to ensure consistency with calculations later on especially 
-! when conducting coupled simulations when zlength/dz(1) are not set in 
-! the mfix.dat file
-               ZLENGTH = MAX_DIAM 
-               VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*MAX_DIAM
-            ELSEIF (DZ(1) == UNDEFINED) THEN
-               WRITE(*,'(5X,A,G15.8,A,/11X,A,A,/11X,A,/)') &
-                  'NOTE: specified zlength of ', ZLENGTH,&
-                  ' is used','to provide a basis for calculating ',&
-                  'the number of','particles in the system'
-               VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*ZLENGTH
-            ELSE
-               WRITE(*,'(5X,A,G15.8,A,/11X,A,A,/11X,A,/)') &
-                  'NOTE: specified dz(1) of ', DZ(1),&
-                  ' is used','to provide a basis for calculating ',&
-                  'the number of','particles in the system'
-               VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*DZ(1)
-            ENDIF
-         ELSE 
-            VOL_DOMAIN  = DES_EPS_XSTART*DES_EPS_YSTART*DES_EPS_ZSTART
-         ENDIF
-
-         DO M = 1, MMAX
-            PART_MPHASE(M) = FLOOR((6.D0*VOL_FRAC(M)*VOL_DOMAIN)/&
-               (PI*(D_P0(M)**3)))
-         ENDDO
-         WRITE(*,'(5X,A,I5,2X,A,G15.7)') 'MMAX = ', MMAX, &
-           ' VOL_DOMAIN = ', VOL_DOMAIN
-         WRITE(*,'(5X,A,/7X,(ES15.7,2X,$))') 'D_P0(M) = ', &
-            D_P0(1:MMAX)
-         WRITE(*,*)
-         WRITE(*,'(5X,A,/7X,(G15.8,2X,$))') &
-            'VOL_FRAC(M) (solids volume fraction of phase M) = ', &
-            VOL_FRAC(1:MMAX)
-         WRITE(*,*)
-         WRITE(*,'(5X,A,/7X,(I10,2X,$))') &
-            'PART_MPHASE(M) (number particles in phase M) = ', &
-            PART_MPHASE(1:MMAX)
-         WRITE(*,*)
-         PARTICLES = SUM(PART_MPHASE(1:MMAX))
-      ENDIF !  end if gener_part_config
-
-! End checks if gener_part_config    
-! ------------------------------------------------------------
-
-
-! J.Musser 
-! If the particle count is not defined, but MAX_PIS, the maximum number
-! of particles permitted in the system at any given time, is set, assume
-! that a mass inlet has been specified and that the system is starting
-! empty.  Further checks are conducted in check_des_bc which is called
-! from get_data to verify this assumption.
-      IF (.NOT.GENER_PART_CONFIG) THEN
-         IF(PARTICLES == UNDEFINED_I .AND. MAX_PIS /= UNDEFINED_I)THEN
-            PARTICLES = 0
-         ELSEIF(PARTICLES == UNDEFINED_I .AND. MAX_PIS == UNDEFINED_I)THEN
-            WRITE(*,'(3X,A)')&
-               'Either PARTICLES or MAX_PIS must specified in mfix.dat'
-            CALL MFIX_EXIT(myPE)
-         ELSEIF(PARTICLES == 0 .AND. MAX_PIS == UNDEFINED_I) THEN
-            WRITE(*,'(3X,A,A)')&
-               'If starting with 0 PARTICLES, MAX_PIS must be ', &
-               'specified in mfix.dat'
-            CALL MFIX_EXIT(myPE)         
-         ENDIF 
-      ENDIF   ! if .not.gener_part_config
-
-
-      WRITE(*,'(3X,A,I10)') &
-         'Total number of particles = ', PARTICLES      
-      WRITE(*,'(3X,A,I5)') 'Dimension = ', DIMN
+! Further initialization         
+!-----------------------------------------------         
       NWALLS = 2*DIMN
 
       IF(.NOT.NON_RECT_BC) THEN
@@ -222,7 +45,7 @@
 ! unclear why additional array space is needed via particles_factor
          NPARTICLES = PARTICLES * PARTICLES_FACTOR + NWALLS
       ELSE
-! Tingwen 19/01/2008 
+! T. Li : 19/01/2008 
 ! +2 to include the contact with edge and node
 ! only one edge contact or one node contact with wall is allowed for a particle
          NPARTICLES = PARTICLES * PARTICLES_FACTOR + NWALLS + 2 + NWALLS +1
@@ -232,22 +55,18 @@
       IF(MAX_PIS /= UNDEFINED_I .AND. &
          MAX_PIS .GT. NPARTICLES) NPARTICLES = MAX_PIS
 
-      MAXQUADS = 5*PARTICLES*MQUAD_FACTOR
-      IF(MAXQUADS.LE.80000) MAXQUADS = 80000
       MAXNEIGHBORS = MN + 1 + NWALLS
-
-      IF(DIMN.EQ.3) THEN
-         NMQD = 11
-      ELSE
-         NMQD = 7
-      ENDIF
-
-
-! DES Allocatable arrays
 !-----------------------------------------------
-! J.Musser : Dynamic Particle Info
+
+
+! Start allocate DES arrays
+!-----------------------------------------------
+! J.Musser: BC and dynamic particle info
       ALLOCATE( PEA (NPARTICLES, 3) )
 
+! J.Musser: Allocate necessary arrays for discrete mass inlets      
+      IF(DES_BCMI /= 0 .OR. DES_BCMO /=0) CALL ALLOCATE_DES_MIO
+ 
 ! T. Li: Hertzian collision model
       allocate(hert_kn(MMAX,MMAX))
       allocate(hert_kt(MMAX,MMAX))
@@ -330,18 +149,30 @@
             ENDDO 
           ENDDO 
        ENDDO 
-
 ! Particles in a computational cell (for volume fraction)
       Allocate(  PINC (DIMENSION_3) )
 ! For each particle track its i,j,k location on computational grid
 ! defined by imax, jmax and kmax in mfix.dat and phase no.         
       Allocate(  PIJK (NPARTICLES,5) )
 
+
 ! For each particle track its i, j, k index according to the grid
 ! based search mesh when des_neighbor_search=4
       IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN      
          ALLOCATE( DESGRIDSEARCH_PIJK (NPARTICLES,3) )
-      ENDIF
+! Variable that stores the particle in cell information (ID) on the
+! computational grid defined by cell/grid based search.  Similar to the
+! variable PIC but tailored for the grid based neighbor search option
+         ALLOCATE(DESGRIDSEARCH_PIC(DESGS_IMAX2,DESGS_JMAX2,DESGS_KMAX2))
+         DO K = 1,DESGS_KMAX2
+            DO J = 1,DESGS_JMAX2
+               DO I = 1,DESGS_IMAX2
+                  NULLIFY(DESGRIDSEARCH_PIC(I,J,K)%p) 
+               ENDDO 
+             ENDDO 
+          ENDDO                      
+      ENDIF   ! end if des_neighbor_search == 4
+
 
       IF(DES_INTERP_ON) THEN
          ALLOCATE(DRAG_AM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), MMAX))
@@ -407,4 +238,127 @@
          '<---------- END DES_ALLOCATE_ARRAYS ----------'
 
       RETURN
-      END SUBROUTINE DES_ALLOCATE_ARRAYS 
+      END SUBROUTINE DES_ALLOCATE_ARRAYS
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: ALLOCATE_DES_MIO                                       !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!  Author: J.Musser                                   Date: 17-Aug-09  !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+      SUBROUTINE ALLOCATE_DES_MIO
+
+      USE des_bc
+      USE discretelement
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      INTEGER I     ! Loop counter for no. of DES_BCMI
+
+!-----------------------------------------------
+
+! Allocate/Initialize for inlets      
+      IF(DES_BCMI /= 0)THEN
+
+! Boundary condition ID array
+         Allocate( DES_BC_MI_ID (DES_BCMI) )
+
+! Distance offset of incoming particles in ghost cell
+         Allocate( DES_BC_OFFSET (DES_BCMI) )
+
+! Particle injection factor
+         Allocate( PI_FACTOR (DES_BCMI) )
+
+! Particle injection count (injection number)
+         Allocate( PI_COUNT (DES_BCMI) )
+
+! Particle injection time scale
+         Allocate( DES_MI_TIME (DES_BCMI) )
+
+! Boundary classification
+         Allocate( DES_MI_CLASS (DES_BCMI) )
+         Allocate( PARTICLE_PLCMNT (DES_BCMI) )
+
+! Order inlet condition variables
+! (only needed if particle_plcmt is assigned 'ordr')
+         Allocate( MI_FACTOR (DES_BCMI) )
+         Allocate( MI_WINDOW (DES_BCMI) )
+         Allocate( MI_ORDER (DES_BCMI) )   ! type dmi
+         Allocate( I_OF_MI ( DES_BCMI) )   ! type dmi
+         Allocate( J_OF_MI ( DES_BCMI) )   ! type dmi
+
+! Grid search loop counter array; 6 = no. of faces
+         Allocate(  GS_ARRAY (DES_BCMI, 6) )
+
+! Logical array stating if a bounday condition is polydisperse
+         Allocate( DES_BC_POLY( DES_BCMI ) )
+
+! Array used for polydisperse inlets: stores the particle number
+! distribution of an inlet scaled with numfrac_limit
+         Allocate( DES_BC_POLY_LAYOUT( DES_BCMI, NUMFRAC_LIMIT ) )
+
+! Initializiation
+! Logical for whether inlet is polydisperse         
+         DES_BC_POLY(:) = .FALSE.
+! Logical for inlet existance on IJK face         
+         DES_MI_X = .FALSE.
+         DES_MI_Y = .FALSE.
+         DES_MI_Z = .FALSE.          
+! Integer arrays
+         DES_BC_MI_ID(:) = -1
+         PI_FACTOR(:) = -1
+         PI_COUNT(:) = -1
+         MI_FACTOR(:) = -1
+         MI_WINDOW(:) = -1
+         GS_ARRAY(:,:) = -1
+         DES_BC_POLY_LAYOUT(:,:) = -1
+! Double precision arrays
+         DES_MI_TIME(:) = UNDEFINED
+! Character precision arrays
+         DES_MI_CLASS(:) = UNDEFINED_C
+         PARTICLE_PLCMNT(:) = UNDEFINED_C
+! Derived data types
+         DO I = 1,DES_BCMI
+            NULLIFY( MI_ORDER(I)%VALUE )
+            NULLIFY( I_OF_MI(I)%VALUE )
+            NULLIFY( J_OF_MI(I)%VALUE )
+         ENDDO
+
+      ENDIF  ! end if des_bcmi /= 0
+
+
+! Allocate/Initialize for outlets
+      IF(DES_BCMO /= 0)THEN
+ 
+! Boundary Condition ID array
+         Allocate( DES_BC_MO_ID (DES_BCMO) )
+
+! Boundary classification
+         Allocate( DES_MO_CLASS (DES_BCMO) )
+
+! Initializiation
+! Integer arrays         
+         DES_BC_MO_ID(:) = -1
+! Character arrays         
+         DES_MO_CLASS(:) = UNDEFINED_C         
+! Logical for outlet existance on IJK face         
+         DES_MO_X = .FALSE.
+         DES_MO_Y = .FALSE.
+         DES_MO_Z = .FALSE.         
+
+      ENDIF   ! end if des_bcmo /= 0
+
+
+      RETURN
+      END SUBROUTINE ALLOCATE_DES_MIO
+

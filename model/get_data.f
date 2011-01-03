@@ -146,38 +146,7 @@
         GRANULAR_ENERGY = .TRUE.
       ENDIF
 
-
       CALL ALLOCATE_ARRAYS    
-
-
-! Set constants and allocate/initialize DEM variables
-      IF(DISCRETE_ELEMENT) THEN
-         IF(NO_K) THEN
-            DIMN = 2 
-            WRITE(*,1001)
-         ENDIF
-         IF(NO_I.OR.NO_J) THEN
-            WRITE(*,1002)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-         IF(DIMN == UNDEFINED_I) THEN
-            WRITE(*,1003)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-         IF(DIMN > 3) THEN
-            WRITE(*,1004)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-! J.Musser :
-! Removed following to allow system to start empty.  If no discrete mass inlet
-! is specified, then this error is flagged and exited in check_des_bc.f 
-!         IF(PARTICLES == UNDEFINED_I .AND. .NOT.GENER_PART_CONFIG) THEN
-!            WRITE(*,1005)
-!            CALL MFIX_EXIT(myPE)
-!         ENDIF         
-         CALL DES_ALLOCATE_ARRAYS
-         CALL DES_INIT_ARRAYS 
-      ENDIF
 
       IF (RUN_NAME == UNDEFINED_C) THEN 
          WRITE (*, 1000) 
@@ -219,11 +188,8 @@
       CALL START_LOG 
 
       CALL CHECK_DATA_01                         ! run_control input 
-
       CALL CHECK_DATA_02                         ! output_control input 
-
       CALL CHECK_DATA_03 (SHIFT)                 ! geometry input 
-
 
 ! Set X, X_E, oX, oX_E ... etc.
       CALL SET_GEOMETRY 
@@ -232,9 +198,7 @@
 
       CALL CHECK_DATA_04                         ! solid phase section 
       CALL CHECK_DATA_05                         ! gas phase section 
-
       CALL CHECK_DATA_06                         ! initial condition section 
-
       CALL CHECK_DATA_07                         ! boundary condition section 
       CALL CHECK_DATA_08                         ! Internal surfaces section 
       CALL CHECK_DATA_09                         ! Chemical reactions section       
@@ -244,29 +208,23 @@
       CALL CHECK_DATA_CHEM      
 
 
-! check DEM
+! Set constants and allocate/initialize DEM variables
       IF(DISCRETE_ELEMENT) THEN
          CALL CHECK_DES_DATA
          CALL CHECK_DES_BC
+         CALL DES_ALLOCATE_ARRAYS
+         CALL DES_INIT_ARRAYS 
       ENDIF
+
 
 ! close .LOG file
       CALL END_LOG 
 
-
       RETURN  
+
  1000 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
          'RUN_NAME not specified in mfix.dat',/1X,70('*')/)  
- 1001 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
-         'DES running in 2D plane since NO_K is true',/1X,70('*')/) 
- 1002 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
-         'DES can only be run in XY plane in 2D',/1X,70('*')/)
- 1003 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
-         'Geometry dimension DIMN not specified',/1X,70('*')/)
- 1004 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
-         'Physical dimension DIMN cannot be > 3',/1X,70('*')/)
- 1005 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
-         'Number of PARTICLES not specified in mfix.dat',/1X,70('*')/)
+
  1006 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
          'imax or jmax or kmax not specified in mfix.dat',/1X,70('*')/)
       END SUBROUTINE GET_DATA 

@@ -61,7 +61,7 @@
 
       DES_BCMI = 0; DES_MI = .FALSE.
       DES_BCMO = 0
-      WRITE(*,'(3X,A)') '---------- START CHECK_DES_BC ---------->'
+      WRITE(*,'(1X,A)') '---------- START CHECK_DES_BC ---------->'
 
 ! Check for des inlet/outlet information:
       CHECK_BC: DO BCV = 1, DIMENSION_BC 
@@ -230,8 +230,6 @@
 
       IF(DES_BCMI /= 0 .OR. DES_BCMO /=0)THEN
          DES_MIO = .TRUE.
-! Allocate necessary arrays for discrete mass inlets
-         CALL ALLOCATE_DES_MIO
 
 ! Verify that either the nsquare or grid based neighbor searches are
 ! used, otherwise flag and exit
@@ -244,6 +242,31 @@
       ENDIF
 
 
+
+! If the particle count is not defined, but MAX_PIS, the maximum number
+! of particles permitted in the system at any given time, is set, assume
+! the system is starting empty then check whether a mass inlet has been
+! specified.
+
+! The variable PARTICLES should already be set by this point if using
+! gener_part_config option      
+      IF(PARTICLES == UNDEFINED_I .AND. MAX_PIS /= UNDEFINED_I)THEN
+         PARTICLES = 0
+      ELSEIF(PARTICLES == UNDEFINED_I .AND. MAX_PIS == UNDEFINED_I)THEN
+         WRITE(*,'(3X,A)')&
+            'Either PARTICLES or MAX_PIS must specified in mfix.dat'
+         CALL MFIX_EXIT(myPE)
+      ELSEIF(PARTICLES == 0 .AND. MAX_PIS == UNDEFINED_I) THEN
+         WRITE(*,'(3X,A,A)')&
+            'If starting with 0 PARTICLES, MAX_PIS must be ', &
+            'specified in mfix.dat'
+         CALL MFIX_EXIT(myPE)         
+      ENDIF
+
+      IF (.NOT.GENER_PART_CONFIG) WRITE(*,'(3X,A,I10)') &
+         'Total number of particles = ', PARTICLES
+
+
 ! If the system is started without any particles and an inlet is not
 ! specified, the run is aborted.
       IF(DES_BCMI == 0 .AND. PARTICLES == 0)THEN
@@ -251,13 +274,13 @@
          WRITE(*, 1009)
          CALL MFIX_EXIT(myPE)
       ELSEIF(PARTICLES == 0)THEN
-         WRITE(*,'(5X,A)') &
+         WRITE(*,'(3X,A)') &
             'Run initiated with no particles in the system'
       ENDIF
 
 ! Check MAX_PIS requirements
       IF(DES_BCMI == 0 .AND. MAX_PIS == UNDEFINED_I)THEN
-         WRITE(*,'(5X,A)')'Setting MAX_PIS = PARTICLES'
+         WRITE(*,'(3X,A)')'Setting MAX_PIS = PARTICLES'
          MAX_PIS = PARTICLES
       ELSEIF(DES_BCMI /= 0 .AND. MAX_PIS == UNDEFINED_I)THEN
          WRITE(UNIT_LOG, 1010)
@@ -266,7 +289,7 @@
       ENDIF
 
 
-      WRITE(*,'(3X,A)') '<---------- END CHECK_DES_BC ----------'
+      WRITE(*,'(1X,A)') '<---------- END CHECK_DES_BC ----------'
 
 
 
@@ -281,11 +304,9 @@
  1002 FORMAT(/1X,70('*')//, ' From: CHECK_DES_BC',/, ' Message: ',&
          'Illegal BC_TYPE for boundary condition ',I3,/10X,&
          'BC_TYPE = ',A,' and the valid types are: ') 
+ 
  1003 FORMAT(5X,A16)
 
- 1004 FORMAT(/1X,70('*')//, ' From: CHECK_DES_BC',/, ' Message: ',&
-         A,' not specified in mfix.dat file for BC ',I3,/10X,&
-         'Setting value to ZERO',/,1X,70('*')/)
 
  1005 FORMAT(/1X,70('*')//, ' From: CHECK_DES_BC',/, ' Message: ',&
          'Currently, DEM inlet/outlet only supports the NSQUARE',/10X,&
@@ -294,11 +315,6 @@
  1006 FORMAT(/1X,70('*')//, ' From: CHECK_DES_BC',/, ' Message: ',&
          'Solids phase ',I3,' is used at DEM boundary condition ',I3,/10X,&
          'but its density RO_s is defined as zero.',/1X,70('*')/)
-
- 1007 FORMAT(/1X,70('*')//, ' From: CHECK_DES_BC',/, ' Message: ',&
-         'Both DES_BC_MASSFLOW_s and DES_BC_VOLFOW are defined',/10X,&
-         'for boundary condition ',I3, ' and solids phase ',I2,&
-         ' but they',/10X, 'are not consistent.',/1X,70('*')/)
 
  1008 FORMAT(/1X,70('*')/) 
 
@@ -316,8 +332,8 @@
          'condition ',I3, ' and solids phase ',I2,' without defining',/10X,&
          'either DES_BC_MASSFLOW_s or DES_BC_VOLFOW.'/,1X,70('*')/)
 
- 1012 FORMAT(5X,'No. of mass inlet BC = ', I4,/,&
-             5X,'No. of mass outlet BC = ', I4)
+ 1012 FORMAT(3X,'No. of mass inlet BC = ', I4,/,&
+             3X,'No. of mass outlet BC = ', I4)
 
  1013 FORMAT(/1X,70('*')//, ' From: CHECK_DES_BC',/, ' Message: ',&
          'Boundary condition ',I3,' is identifed as an DEM inlet',/10X,&
@@ -560,125 +576,7 @@
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Module name: ALLOCATE_DES_MIO                                       !
-!                                                                      !
-!  Purpose:                                                            !
-!                                                                      !
-!  Author: J.Musser                                   Date: 17-Aug-09  !
-!                                                                      !
-!  Comments:                                                           !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-      SUBROUTINE ALLOCATE_DES_MIO
-
-      USE des_bc
-      USE discretelement
-
-      IMPLICIT NONE
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER I     ! Loop counter for no. of DES_BCMI
-
-!-----------------------------------------------
-
-! Allocate/Initialize for inlets      
-      IF(DES_BCMI /= 0)THEN
-
-! Boundary condition ID array
-         Allocate( DES_BC_MI_ID (DES_BCMI) )
-
-! Distance offset of incoming particles in ghost cell
-         Allocate( DES_BC_OFFSET (DES_BCMI) )
-
-! Particle injection factor
-         Allocate( PI_FACTOR (DES_BCMI) )
-
-! Particle injection count (injection number)
-         Allocate( PI_COUNT (DES_BCMI) )
-
-! Particle injection time scale
-         Allocate( DES_MI_TIME (DES_BCMI) )
-
-! Boundary classification
-         Allocate( DES_MI_CLASS (DES_BCMI) )
-         Allocate( PARTICLE_PLCMNT (DES_BCMI) )
-
-! Order inlet condition variables
-! (only needed if particle_plcmt is assigned 'ordr')
-         Allocate( MI_FACTOR (DES_BCMI) )
-         Allocate( MI_WINDOW (DES_BCMI) )
-         Allocate( MI_ORDER (DES_BCMI) )   ! type dmi
-         Allocate( I_OF_MI ( DES_BCMI) )   ! type dmi
-         Allocate( J_OF_MI ( DES_BCMI) )   ! type dmi
-
-! Grid search loop counter array; 6 = no. of faces
-         Allocate(  GS_ARRAY (DES_BCMI, 6) )
-
-! Logical array stating if a bounday condition is polydisperse
-         Allocate( DES_BC_POLY( DES_BCMI ) )
-
-! Array used for polydisperse inlets: stores the particle number
-! distribution of an inlet scaled with numfrac_limit
-         Allocate( DES_BC_POLY_LAYOUT( DES_BCMI, NUMFRAC_LIMIT ) )
-
-! Initializiation
-! Logical for whether inlet is polydisperse         
-         DES_BC_POLY(:) = .FALSE.
-! Logical for inlet existance on IJK face         
-         DES_MI_X = .FALSE.
-         DES_MI_Y = .FALSE.
-         DES_MI_Z = .FALSE.          
-! Integer arrays
-         DES_BC_MI_ID(:) = -1
-         PI_FACTOR(:) = -1
-         PI_COUNT(:) = -1
-         MI_FACTOR(:) = -1
-         MI_WINDOW(:) = -1
-         GS_ARRAY(:,:) = -1
-         DES_BC_POLY_LAYOUT(:,:) = -1
-! Double precision arrays
-         DES_MI_TIME(:) = UNDEFINED
-! Character precision arrays
-         DES_MI_CLASS(:) = UNDEFINED_C
-         PARTICLE_PLCMNT(:) = UNDEFINED_C
-! Derived data types
-         DO I = 1,DES_BCMI
-            NULLIFY( MI_ORDER(I)%VALUE )
-            NULLIFY( I_OF_MI(I)%VALUE )
-            NULLIFY( J_OF_MI(I)%VALUE )
-         ENDDO
-
-      ENDIF  ! end if des_bcmi /= 0
-
-
-! Allocate/Initialize for outlets
-      IF(DES_BCMO /= 0)THEN
- 
-! Boundary Condition ID array
-         Allocate( DES_BC_MO_ID (DES_BCMO) )
-
-! Boundary classification
-         Allocate( DES_MO_CLASS (DES_BCMO) )
-
-! Initializiation
-! Integer arrays         
-         DES_BC_MO_ID(:) = -1
-! Character arrays         
-         DES_MO_CLASS(:) = UNDEFINED_C         
-! Logical for outlet existance on IJK face         
-         DES_MO_X = .FALSE.
-         DES_MO_Y = .FALSE.
-         DES_MO_Z = .FALSE.         
-
-      ENDIF   ! end if des_bcmo /= 0
-
-
-      RETURN
-      END SUBROUTINE ALLOCATE_DES_MIO
 
 
 
