@@ -129,12 +129,9 @@
                   DES_CONTINUUM_COUPLED = .TRUE.
                   WRITE(*,'(3X,A)') 'END DEM settling period'
                ENDIF   ! end if coupled and no cohesion
-               IF(DES_INTERP_ON) THEN 
-                  CALC_FC = .FALSE.
-                  CALLFROMDES = .FALSE.
-               ENDIF
-               CALL PARTICLES_IN_CELL
+
                CALL WRITE_DES_DATA
+
                WRITE(*,'(3X,A,X,ES15.5)') &
                   'DES data file written at time =', S_TIME
                WRITE(UNIT_LOG,*) &
