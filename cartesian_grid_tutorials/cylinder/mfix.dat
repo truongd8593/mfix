@@ -6,19 +6,23 @@
    RUN_TYPE              = 'new'             
    UNITS                 = 'SI'
    TIME                  = 0.0                !start time
-   TSTOP                 = 10.0
-   DT                    = 1.0E-2             !time step
+   TSTOP                 = 300.0
+   DT                    = 0.25               !time step
    ENERGY_EQ             = .FALSE.            !do not solve energy eq
    SPECIES_EQ            = .FALSE.    .FALSE. !do not solve species eq
   
    DT_FAC = 1.0
    DETECT_STALL = .FALSE.
 
-   TOL_RESID             = 1.0E-6
-
    GRAVITY = 0.0
+
+   DISCRETIZE(1) = 2
+   DISCRETIZE(3) = 2
+   DISCRETIZE(4) = 2
+   DEF_COR       = .TRUE.
+   FPFOI         = .FALSE.
  
-   TOL_RESID             = 1.0E-6
+   TOL_RESID     = 1.0E-6
 
    NORM_g = 0.0
 
@@ -32,7 +36,7 @@
 ! Regions where f(x,y,z) < 0 are part of the computational domain.
 ! Regions where f(x,y,z) > 0 are excluded from the computational domain.
 !
-! Predefined quadrics: set QUADRIC_FORM to on eof the following:
+! Predefined quadrics: set QUADRIC_FORM to one of the following:
 ! Plane:                    'PLANE'
 ! Cylinder (internal flow): 'X_CYL_INT' or 'Y_CYL_INT' or 'Z_CYL_INT'
 ! Cylinder (external flow): 'X_CYL_EXT' or 'Y_CYL_EXT' or 'Z_CYL_EXT'
@@ -46,18 +50,10 @@
   QUADRIC_FORM(1) = 'Z_CYL_EXT'
   RADIUS(1) = 0.05
 
-!  lambda_x(1) =   -1.0  
-!  lambda_y(1) =   -1.0  
-!  lambda_z(1) =    0.0  
-!  dquadric(1) =    0.0025  
-
   t_x(1)      =  2.0  
   t_y(1)      =  2.0  
 
   BC_ID_Q(1) = 12 
-
-
-  PG_OPTION = 1
 
   PRINT_WARNINGS = .TRUE.
 
@@ -69,7 +65,7 @@
 !===============================================================================
   WRITE_VTK_FILES  = .TRUE.
   TIME_DEPENDENT_FILENAME = .TRUE.
-  VTK_DT = 0.1
+  VTK_DT = 0.5
 
 ! Available flags for VTK_VAR are :
 !  1 : Void fraction (EP_g)
@@ -307,7 +303,7 @@ DY(  79)=    0.36612049
 ! Gas-phase Section                                                             
  
  ! Gas-phase Section                                                   
-   MU_g0                 = 0.0006             !constant gas viscosity
+   MU_g0                 = 1.8E-5             !constant gas viscosity
    RO_g0                 = 1.2                !constant gas density
  
 ! Solids-phase Section                                                          
@@ -322,7 +318,7 @@ IC_Y_s(1)             =     0.0
 IC_Y_n(1)             =     4.0 
 
 IC_EP_g(1)            =     1.0 
-IC_U_g(1)             =     1.0 
+IC_U_g(1)             =     0.0 
 IC_V_g(1)             =     0.0 
 
 
@@ -334,7 +330,7 @@ BC_Y_s(  1)     =   0.0
 BC_Y_n(  1)     =   4.0
 BC_TYPE(  1)    =   'MI'
 BC_Ep_g(  1)    =   1.0
-BC_U_g(  1)     =   1.0
+BC_U_g(  1)     =   0.03
 BC_V_g(  1)     =   0.0
 BC_P_g(  1)     =   0.0
 
@@ -386,16 +382,12 @@ BC_TYPE(4)    =     'FSW'
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
         !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
         !                W_g  W_s
- SPX_DT = 0.1  0.1       0.1  0.1  100.      100. 100.    100.   100.        
+ SPX_DT = 100. 0.1       0.1  0.1  100.      100. 100.    100.   100.        
                                                                                 
 !  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
   
   NODESI = 1   NODESJ = 1  NODESK = 1
 
-!  LEQ_IT(1)     = 50
-!  LEQ_TOL       = 9*1D-12
-!  LEQ_PC        = 9*'NONE'
-!  LEQ_METHOD    = 9*2
 
 !  Sweep Direction
 
