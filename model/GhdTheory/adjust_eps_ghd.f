@@ -119,7 +119,8 @@
 			epSolidE(M) = ZERO
                         U_S(IJK,M) = ZERO 
                         JoiX(IJK,M) = ZERO
-			DiluteCellE = .TRUE. ! to make sure at least one species is very dilute before re-calculating mixture velocity
+			DiluteCellE = .TRUE. ! to make sure at least one species is very dilute before 
+			                     ! re-calculating mixture velocity
 		     ENDIF
 		     
 		     IF (epSolidN(M) < ZERO_EP_S) THEN 

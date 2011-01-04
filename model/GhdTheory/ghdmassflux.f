@@ -76,7 +76,8 @@
       DOUBLE PRECISION ropsx,ropsy,ropsz,ropsmmx,ropsmmy,ropsmmz,ropsme,ropsmn,ropsmt
 !
 
-      DOUBLE PRECISION tmpdragx, tmpdragy,tmpdragz,addtermx,addtermy,addtermz,dragFc,dragFe,dragFn,dragFt,totropsx,totropsy,totropsz
+      DOUBLE PRECISION tmpdragx, tmpdragy,tmpdragz,addtermx,addtermy,addtermz,dragFc,dragFe,dragFn,dragFt, &
+                       totropsx,totropsy,totropsz
       DOUBLE PRECISION massMobilityTermNoDragX, massMobilityTermNoDragY,massMobilityTermNoDragZ
       DOUBLE PRECISION gradTx,gradTy, gradTz, DiTE_H, DiTE_A,DiTN_H,DiTN_A, DiTT_H, DiTT_A
       DOUBLE PRECISION DijE_H,DijE_A,DijN_H,DijN_A,DijT_H,DijT_A, DijFE_H,DijFE_A,DijFN_H,DijFN_A,DijFT_H,DijFT_A

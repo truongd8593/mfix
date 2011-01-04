@@ -75,14 +75,17 @@
 !
 !                      Dufour-related source terms
       DOUBLE PRECISION DufourX, DufourY, DufourZ, DijQTerm, &
-                       DijQTermE, DijQTermW, DijQTermN, DijQTermS, DijQTermT, DijQTermB,LijTermW,LijTermE,LijTermN,LijTermS,LijTermT,LijTermB
+                       DijQTermE, DijQTermW, DijQTermN, DijQTermS, DijQTermT, DijQTermB,&
+		       LijTermW,LijTermE,LijTermN,LijTermS,LijTermT,LijTermB
  
-      DOUBLE PRECISION DijQTermE_H,DijQTermE_A,DijQTermW_H,DijQTermW_A,DijQTermN_H,DijQTermN_A,DijQTermS_H,DijQTermS_A,DijQTermT_H,DijQTermT_A,& 
-                       DijQTermB_H,DijQTermB_A,LijTermE_H,LijTermE_A,LijTermW_H,LijTermW_A,LijTermN_H,LijTermN_A,LijTermS_H,LijTermS_A,LijTermT_H,&
+      DOUBLE PRECISION DijQTermE_H,DijQTermE_A,DijQTermW_H,DijQTermW_A,DijQTermN_H,DijQTermN_A,DijQTermS_H,&
+                       DijQTermS_A,DijQTermT_H,DijQTermT_A,DijQTermB_H,DijQTermB_A,LijTermE_H,LijTermE_A, & 
+                       LijTermW_H,LijTermW_A,LijTermN_H,LijTermN_A,LijTermS_H,LijTermS_A,LijTermT_H, &
                        LijTermT_A,LijTermB_H,LijTermB_A
 !                       
 !                      Source terms to be kept on RHS
-      DOUBLE PRECISION SOURCERHS, PressureRhs, ShearProduction, BulkViscRhs, DissDivURhs, phi_tot, SOURCE_FLUID,chi_ij,SINK_FLUID
+      DOUBLE PRECISION SOURCERHS, PressureRhs, ShearProduction, BulkViscRhs, DissDivURhs, phi_tot, &
+                       SOURCE_FLUID,chi_ij,SINK_FLUID
 !
 !                      Source terms to be kept on LHS
       DOUBLE PRECISION SOURCELHS, PressureLhs, CollDissipation, BulkViscLhs, DissDivULhs,VSLIP
