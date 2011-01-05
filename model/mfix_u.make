@@ -389,7 +389,6 @@ mfix.exe : \
     cffctowall.$(OBJ_EXT) \
     cffctow.$(OBJ_EXT) \
     cfnewvalues.$(OBJ_EXT) \
-    cfnocontact.$(OBJ_EXT) \
     cfrelvel.$(OBJ_EXT) \
     cfslide.$(OBJ_EXT) \
     cfslidewall.$(OBJ_EXT) \
@@ -827,7 +826,6 @@ mfix.exe : \
     cffctowall.$(OBJ_EXT) \
     cffctow.$(OBJ_EXT) \
     cfnewvalues.$(OBJ_EXT) \
-    cfnocontact.$(OBJ_EXT) \
     cfrelvel.$(OBJ_EXT) \
     cfslide.$(OBJ_EXT) \
     cfslidewall.$(OBJ_EXT) \
@@ -2331,10 +2329,10 @@ conv_rop_s.$(OBJ_EXT) : conv_rop_s.f \
             PARAM1.mod \
             FLDVAR.mod \
             RUN.mod \
-            PHYSPROP.mod \
             COMPAR.mod \
             PARALLEL.mod \
             MATRIX.mod \
+            PHYSPROP.mod \
             GEOMETRY.mod \
             INDICES.mod \
             PGCOR.mod \
@@ -3855,9 +3853,6 @@ source_rop_s.$(OBJ_EXT) : source_rop_s.f \
             FLDVAR.mod \
             RXNS.mod \
             RUN.mod \
-            PHYSPROP.mod \
-            CONSTANT.mod \
-            GHDTHEORY.mod \
             GEOMETRY.mod \
             INDICES.mod \
             PGCOR.mod \
@@ -5372,10 +5367,6 @@ cfnewvalues.$(OBJ_EXT) : ./des/cfnewvalues.f \
             DISCRETELEMENT.mod \
             DES_BC.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnewvalues.f 
-cfnocontact.$(OBJ_EXT) : ./des/cfnocontact.f \
-            PARAM1.mod \
-            DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnocontact.f 
 cfrelvel.$(OBJ_EXT) : ./des/cfrelvel.f \
             DISCRETELEMENT.mod \
             PARAM1.mod 
@@ -5902,7 +5893,8 @@ calc_nflux.$(OBJ_EXT) : ./GhdTheory/calc_nflux.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/calc_nflux.f 
 chi_ij_GHD.$(OBJ_EXT) : ./GhdTheory/chi_ij_GHD.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/chi_ij_GHD.f 
-cooling_rate.$(OBJ_EXT) : ./GhdTheory/cooling_rate.f 
+cooling_rate.$(OBJ_EXT) : ./GhdTheory/cooling_rate.f \
+            COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/cooling_rate.f 
 cooling_rate_tc.$(OBJ_EXT) : ./GhdTheory/cooling_rate_tc.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/cooling_rate_tc.f 
