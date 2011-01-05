@@ -11,7 +11,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFSLIDEWALL(L, TANGNT, TMP_FT)
+      SUBROUTINE CFSLIDEWALL(L, TANGNT)
       
       USE discretelement
       USE param1
@@ -31,11 +31,13 @@
 !----------------------------------------------- 
 
       TMP_FN(:) = FN(L, :)
+      TMP_FT(:) = FT(L, :)
 
       FTMD = SQRT(DES_DOTPRDCT(TMP_FT,TMP_FT))
       FNMD = SQRT(DES_DOTPRDCT(TMP_FN,TMP_FN))
 
       IF (FTMD.GT.(MEW_W*FNMD)) THEN
+! tangential force based on sliding friction              
          PARTICLE_SLIDE = .TRUE.
          IF(DES_DOTPRDCT(TANGNT,TANGNT).EQ.0) THEN
             FT(L,:) =  MEW_W * FNMD * TMP_FT(:)/FTMD
@@ -43,6 +45,7 @@
             FT(L,:) = -MEW_W * FNMD * TANGNT(:)
          ENDIF
       ELSE
+! no sliding friction tangental force is not changed
          FT(L,:) = TMP_FT(:)
       ENDIF
 
