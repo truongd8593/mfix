@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFSLIDE(L, TANGNT_VREL, FT1)                           C
+!  Module name: CFSLIDE(L, TANGNT_VREL)
 !
 !  Purpose: DES - calculate sliding between particles                  
 !
@@ -13,7 +13,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFSLIDE(L, TANGNT, TMP_FT)
+      SUBROUTINE CFSLIDE(L, TANGNT)
 
       USE param1
       USE discretelement
@@ -22,7 +22,7 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      INTEGER L, K
+      INTEGER L
       DOUBLE PRECISION FTMD, FNMD, TANGNT(DIMN)
       DOUBLE PRECISION TMP_FT(DIMN), TMP_FN(DIMN)
 
@@ -34,6 +34,7 @@
 !-----------------------------------------------     
 
       TMP_FN(:) = FN(L, :)
+      TMP_FT(:) = FT(L, :)
 
       FTMD = SQRT(DES_DOTPRDCT(TMP_FT,TMP_FT))
       FNMD = SQRT(DES_DOTPRDCT(TMP_FN,TMP_FN))
@@ -50,12 +51,13 @@
 ! no sliding friction so tangential force is not changed              
          FT(L, :) = TMP_FT(:)
       ENDIF
+
       IF(DEBUG_DES .AND. PARTICLE_SLIDE) THEN
          WRITE(*,'(7X,A)') &
             'FROM CFSLIDE.F ---------->'
          WRITE(*,'(9X,A)') 'PARTICLE_SLIDE = T'
          WRITE(*,'(9X,A,2(ES15.7,X))')&
-         'FTMD, mu*FNMD = ', FTMD, MEW*FNMD
+            'FTMD, mu*FNMD = ', FTMD, MEW*FNMD
          WRITE(*,'(7X,A)') '<----------END CFSLIDE.F'
       ENDIF
 

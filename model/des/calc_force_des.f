@@ -36,7 +36,10 @@
 
       DOUBLE PRECISION V_REL_TRANS_NORM, V_REL_TRANS_TANG, &
                        V_REL_NORM_OLD, VRN_OLD(DIMN)
-      DOUBLE PRECISION FT_TMP(DIMN), PFT_TMP(DIMN)
+! temporary storage of tangential force
+      DOUBLE PRECISION FT_TMP(DIMN)
+! temporary storage of tangential displacement
+      DOUBLE PRECISION PFT_TMP(DIMN)
 ! local normal and tangential forces      
       DOUBLE PRECISION FNS1(DIMN), FNS2(DIMN)
       DOUBLE PRECISION FTS1(DIMN), FTS2(DIMN)
@@ -70,25 +73,16 @@
 !-----------------------------------------------      
 
 
-
-! Calculate new values
-!---------------------------------------------------------------------
+! Initialization
       OVERLAP_MAXP = UNDEFINED_I
       DES_LOC_DEBUG = .FALSE.
       OVERLAP_MAX = ZERO
       NEIGH_MAX = -1
 
-      IF (S_TIME.LE.DTSOLID) THEN
-         TANGENT(:) = ZERO
-         NORMAL(:) = ZERO
-         FC(:,:) = ZERO
-         FN(:,:) = ZERO
-         FT(:,:) = ZERO
-      ENDIF
 
-!     Calculate contact force and torque
-!---------------------------------------------------------------------
-     
+
+! Calculate contact force and torque
+!---------------------------------------------------------------------     
       PC = 1      
       DO LL = 1, MAX_PIS
 
@@ -107,12 +101,12 @@
                'X,Y VEL: ', DES_VEL_NEW(LL,1), DES_VEL_NEW(LL,2)
          ENDIF
 
+         TANGENT(:) = ZERO
+         NORMAL(:) = ZERO
          FTS1(:) = ZERO
          FTS2(:) = ZERO
          FNS1(:) = ZERO
          FNS2(:) = ZERO
-
-         FT_TMP(:) = ZERO
          PFT_TMP(:) = ZERO
 
          IF(PN(LL,1).GE.1) THEN
@@ -287,6 +281,7 @@
                      ETAT_DES_W = DES_ETAT_WALL(phaseLL)
                   ENDIF
 
+! Calculate the normal contact force
                   FNS1(:) = -KN_DES_W * OVERLAP_N * NORMAL(:)
                   FNS2(:) = -ETAN_DES_W * V_REL_TRANS_NORM * NORMAL(:)
                   FN(LL,:) = FNS1(:) + FNS2(:) 
@@ -295,25 +290,29 @@
 ! relative velocity with respect to contact time. Correction in the tangential 
 ! direction is imposed                   
                   PFT(LL,NI,:) = PFT(LL,NI,:)+OVERLAP_T*TANGENT(:)
-                  PFT_TMP(:) = PFT(LL,NI,:)   ! for an easy pass to des_dotprdct
+                  PFT_TMP(:) = PFT(LL,NI,:)   ! update pft_tmp before it is used
                   PFT_TMP(:) = PFT(LL,NI,:) - &
                      DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
+! Calculate the tangential contact force
                   FTS1(:) = -KT_DES_W * PFT_TMP(:)
                   FTS2(:) = -ETAT_DES_W * V_REL_TRANS_TANG * TANGENT(:)
                   FT(LL,:) = FTS1(:) + FTS2(:) 
 
+! Temporary storage of tangential contact force for reporting
                   FT_TMP(:) = FT(LL,:)
-                  
+
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall
-                  CALL CFSLIDEWALL(LL, TANGENT, FT_TMP)
+                  CALL CFSLIDEWALL(LL, TANGENT)
                   
-! Calculate the total force FC and TOW on a particle in a particle-wall
-! collision
+! Calculate the total force FC and torque TOW on a particle in a
+! particle-wall collision
                   CALL CFFCTOWALL(LL, NORMAL, DISTMOD)
                   
 ! Save the tangential displacement history with the correction of Coulomb's law
                   IF (PARTICLE_SLIDE) THEN
+! Since FT might be corrected during the call to cfslide, the tangental
+! displacement history needs to be changed accordingly                          
                      PFT(LL,NI,:) = -( FT(LL,:) - FTS2(:) ) / KT_DES_W
                   ELSE
                      PFT(LL,NI,:) = PFT_TMP(:)
@@ -563,6 +562,7 @@
                      ETAT_DES = DES_ETAT(phaseLL,phaseI)
                   ENDIF
 
+! Calculate the normal contact force                  
                   FNS1(:) = -KN_DES * OVERLAP_N * NORMAL(:)
                   FNS2(:) = -ETAN_DES * V_REL_TRANS_NORM*NORMAL(:)
                   FN(LL,:) = FNS1(:) + FNS2(:)       
@@ -571,24 +571,29 @@
 ! relative velocity with respect to contact time. Correction in the tangential 
 ! direction is imposed                   
                   PFT(LL,NI,:) = PFT(LL,NI,:) + OVERLAP_T * TANGENT(:)
-                  PFT_TMP(:) = PFT(LL,NI,:)   ! for an easy pass to des_dotprdct
+                  PFT_TMP(:) = PFT(LL,NI,:)   ! update pft_tmp before it used 
                   PFT_TMP(:) = PFT(LL,NI,:) - &
                      DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
+! Calculate the tangential contact force                     
                   FTS1(:) = -KT_DES * PFT_TMP(:)
                   FTS2(:) = -ETAT_DES * V_REL_TRANS_TANG * TANGENT(:)
                   FT(LL,:) = FTS1(:) + FTS2(:) 
 
+! Temporary storage of tangential force for reporting                  
                   FT_TMP(:) = FT(LL,:)
+
+! Check for Coulombs friction law and limit the maximum value of the
+! tangential force on a particle in contact with another particle
+                  CALL CFSLIDE(LL, TANGENT)
                   
-! Check for Coulombs friction law and limit the maximum value of the tangential
-! force on a particle in contact with another particle
-                  CALL CFSLIDE(LL, TANGENT, FT_TMP)
-                  
-! Calculate the total force FC and TOW on a particle in a particle-particle collision
+! Calculate the total force FC and torque TOW on a particle in a
+! particle-particle collision
                   CALL CFFCTOW(LL, I, NORMAL, DISTMOD)
 
 ! Save the tangential displacement history with the correction of Coulomb's law
                   IF (PARTICLE_SLIDE) THEN
+! Since FT might be corrected during the call to cfslide, the tangental
+! displacement history needs to be changed accordingly                  
                      PFT(LL,NI,:) = -( FT(LL,:) - FTS2(:) ) / KT_DES
                   ELSE
                      PFT(LL,NI,:) = PFT_TMP(:)
@@ -638,14 +643,8 @@
 !---------------------------------------------------------------------
 ! End check particle LL neighbour contacts         
 
-
-         IF((NEIGHBOURS(LL,1).EQ.0).AND.(WALLCHECK.EQ.0)) THEN
-! The subroutine sets all forces on a particle to zero is the particle is 
-! found to have no neighbors (either particles or walls)
-            CALL CFNOCONTACT(LL)
-         ENDIF
       
-      PC = PC + 1
+         PC = PC + 1
       ENDDO   ! end loop over paticles LL
 
 
