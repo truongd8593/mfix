@@ -13,15 +13,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE WRITE_DES_DATA
 
-      USE param
-      USE param1
-      USE parallel
-      USE fldvar
-      USE discretelement
       USE run
-      USE geometry
-      USE physprop
-      USE sendrecv
+      USE discretelement
       USE des_bc
       IMPLICIT NONE
 
@@ -72,16 +65,10 @@
 !     
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       SUBROUTINE WRITE_DES_VTP
-
-      USE param
-      USE param1
-      USE parallel
-      USE fldvar
-      USE discretelement
+    
       USE run
-      USE geometry
-      USE physprop
-      USE sendrecv
+      USE compar
+      USE discretelement
       USE des_bc
       IMPLICIT NONE
 
@@ -98,8 +85,17 @@
 ! file unit for ParaView *.vtp data      
       INTEGER, PARAMETER :: DES_UNIT = 2000
 
+! file unit for ParaView *.vbd data      
+      INTEGER, PARAMETER :: PVD_UNIT = 2050  
+
 ! index used when writing DES_*.vtp file
       CHARACTER*5 F_INDEX
+
+! formatted file name
+      CHARACTER*64 :: F_NAME = ''
+
+! formatted solids time
+      CHARACTER*12 :: S_TIME_CHAR = ''      
 
 ! index to track accounted for particles
       INTEGER PC
@@ -115,9 +111,6 @@
 !-----------------------------------------------
 !-----------------------------------------------
 
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 
 ! Convert the index VTP_FINDEX from an integer to a string and force
 ! leading zeros
@@ -156,7 +149,7 @@
          IF(.NOT.PEA(L,1)) CYCLE
          WRITE (DES_UNIT,"(15X,ES12.6)") (real(2.d0*DES_RADIUS(L)))
          PC = PC + 1
-      END DO
+      ENDDO
 ! Write end tag
       WRITE(DES_UNIT,"(12X,A)") '</DataArray>'
 
@@ -233,10 +226,76 @@
     
       CLOSE(DES_UNIT)
 
+
+!-----------------------      
+! Construct the file that contains all the file names and soilds time
+! in *.vbd format. This file can be read into ParaView in place of the
+! *.vtp files while providing the S_TIME data
+
+      IF(FIRST_PASS)THEN
+         FIRST_PASS = .FALSE.
+! During first pass, open the file and write the necessary file headers
+         OPEN(UNIT=PVD_UNIT,FILE=TRIM(RUN_NAME)//'_DES.pvd',&
+            ACCESS="SEQUENTIAL", STATUS='NEW',ERR=998)
+         WRITE(PVD_UNIT,"(A)")'<?xml version="1.0"?>'
+         WRITE(PVD_UNIT,"(A,A)")'<VTKFile type="Collection" ',&
+            'version="0.1" byte_order="LittleEndian">'
+         WRITE(PVD_UNIT,"(3X,A)")'<Collection>'
+! write two generic lines that will be removed later
+         WRITE(PVD_UNIT,*)"SCRAP LINE 1"
+         WRITE(PVD_UNIT,*)"SCRAP LINE 2"
+         CLOSE(PVD_UNIT)
+      ENDIF
+
+! Open the file to be appended
+      OPEN(UNIT=PVD_UNIT,FILE=TRIM(RUN_NAME)//'_DES.pvd',&
+         POSITION="APPEND",ACCESS="SEQUENTIAL", STATUS='OLD',ERR=998)
+
+! Remove the last two lines written so that additional data can be added
+      BACKSPACE(PVD_UNIT)
+      BACKSPACE(PVD_UNIT)
+
+! Force time formatting #####.######  (Forcing leading zeros)
+      IF(S_TIME .LT. 1.0d0)THEN
+         WRITE (S_TIME_CHAR,"(A,F7.6)")"00000",S_TIME
+      ELSEIF(S_TIME .LT. 10.0d0) THEN
+         WRITE (S_TIME_CHAR,"(A,F8.6)")"0000",S_TIME
+      ELSEIF(S_TIME .LT. 100.0d0) THEN
+         WRITE (S_TIME_CHAR,"(A,F9.6)")"000",S_TIME
+      ELSEIF(S_TIME .LT. 1000.0d0) THEN
+         WRITE (S_TIME_CHAR,"(A,F10.6)")"00",S_TIME
+      ELSEIF(S_TIME .LT. 10000.0d0)THEN
+         WRITE (S_TIME_CHAR,"(A,F11.6)")"0",S_TIME
+      ELSE
+         WRITE (S_TIME_CHAR,"(F12.6)"),S_TIME
+      ENDIF
+
+! Force file name format
+      F_NAME=TRIM(RUN_NAME)//'_DES_'//TRIM(F_INDEX)//'.vtp'
+
+! Write the data to the file
+      WRITE(PVD_UNIT,"(6X,A,A,A,A,A,A,A)")&
+         '<DataSet timestep="',TRIM(S_TIME_CHAR),'" ',& ! simulation time
+         'group="" part="0" ',&   ! necessary file data
+         'file="',TRIM(F_NAME),'"/>'    ! file name of vtp
+
+! Write the closing tags
+      WRITE(PVD_UNIT,"(3X,A)")'</Collection>'
+      WRITE(PVD_UNIT,"(A)")'</VTKFile>'
+
+      CLOSE(PVD_UNIT)
+
+
 ! Index output file count
       VTP_FINDEX = VTP_FINDEX+1
 
       RETURN
+
+
+  998 WRITE(*,"(/1X,70('*'),//,A,/,A,/1X,70('*'))")&
+         ' From: WRITE_DES_VTP ',&
+         ' Message: Error opening DES vbd file. Terminating run.'
+      CALL MFIX_EXIT(myPE)
 
   999 WRITE(*,"(/1X,70('*'),//,A,/,A,/1X,70('*'))")&
          ' From: WRITE_DES_VTP ',&
@@ -260,15 +319,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       SUBROUTINE WRITE_DES_TECPLOT
 
-      USE param
-      USE param1
-      USE parallel
+      USE compar
       USE fldvar
-      USE discretelement
-      USE run
+      USE funits
       USE geometry
+      USE indices      
       USE physprop
-      USE sendrecv
+      USE run
+      USE discretelement
       USE des_bc
       IMPLICIT NONE
 
@@ -560,15 +618,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       SUBROUTINE WRITE_DES_BEDHEIGHT
 
-      USE param
-      USE param1
-      USE parallel
-      USE fldvar
-      USE discretelement
-      USE run
-      USE geometry
+      USE compar
+      USE funits
       USE physprop
-      USE sendrecv
+      USE run
+      USE discretelement
       USE des_bc
       IMPLICIT NONE
 
@@ -680,15 +734,13 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       SUBROUTINE WRITE_DES_THETA
 
-      USE param
-      USE param1
-      USE parallel
-      USE fldvar
-      USE discretelement
-      USE run
+      USE compar
+      USE funits
       USE geometry
+      USE indices
       USE physprop
-      USE sendrecv
+      USE run
+      USE discretelement
       USE des_bc
       IMPLICIT NONE
 

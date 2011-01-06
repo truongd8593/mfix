@@ -5766,16 +5766,15 @@ wallnodecontact.$(OBJ_EXT) : ./des/wallnodecontact.f \
             compar.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/wallnodecontact.f 
 write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
-            param.mod \
-            param1.mod \
-            parallel.mod \
-            fldvar.mod \
-            discretelement.mod \
             run.mod \
-            geometry.mod \
-            physprop.mod \
-            sendrecv.mod \
+            discretelement.mod \
             des_bc.mod \
+            compar.mod \
+            fldvar.mod \
+            funits.mod \
+            geometry.mod \
+            indices.mod \
+            physprop.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   
