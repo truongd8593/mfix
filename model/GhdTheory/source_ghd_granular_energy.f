@@ -233,12 +233,9 @@
                 
 		 DijQTermT = zero
                  DijQTermB = zero
-
-                 if(NiT > zero) DijQTermT = Theta_m(IJKT,MMAX)**2*DijQ(IJKT,M,L)/NiT
-                 if(NiB > zero) DijQTermB = Theta_m(IJKB,MMAX)**2*DijQ(IJKB,M,L)/NiB
                 
-                 if(ROP_S(IJK,L)/RO_S(L) > DIL_EP_S) DijQTermT = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / NiT
-                 if(ROP_S(IJK,L)/RO_S(L) > DIL_EP_S) DijQTermB = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / NiB
+                 if(ROP_S(IJKT,L)/RO_S(L) > DIL_EP_S) DijQTermT = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / NiT
+                 if(ROP_S(IJKB,L)/RO_S(L) > DIL_EP_S) DijQTermB = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / NiB
 
 		 DijQTermT_H = AVG_Z_S(DijQTerm , DijQTermT, K)
 		 DijQTermT_A = AVG_Z(DijQTerm , DijQTermT, K)
