@@ -1,3 +1,4 @@
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: READ_RES0                                              C
@@ -315,23 +316,6 @@
 	   ENDIF
            call bcast(NMAX,PE_IO)   !//PAR_I/O BCAST1i total # of gas OR solid species
         ENDIF
-
-        if (myPE == PE_IO) then
-           if (nmax(0) > 5000) then
-              write (*,*) ' '
-              write (*,*) ' *********************************************************'
-              write (*,*) ' '
-              write (*,*) ' NMAX(0) = ' , nmax(0)
-              write (*,*) ' '
-              write (*,*) ' if this is not correct ... '
-              write (*,*) ' see mfix/tools/doc/fix_RES_file.pdf'
-              write (*,*) ' '
-              write (*,*) ' *********************************************************'
-              write (*,*) ' '
-           end if
-        end if
-
-
 
 
 !       The following occurs when mfix.dat has not been read and the 

@@ -14,6 +14,17 @@ vers="2010-1"
 # Set to 0 to avoid Pentium 4 specific optimizations
 P4_OPTIMIZE=1
 #
+
+
+echo "*******************************************"
+echo
+echo NETCDF_FLIB =
+echo
+echo $NETCDF_FLIB
+echo
+echo "*******************************************"
+
+
 #============ TAU related settings ===================
 # Flag variable to enable TAU automatic instrumentation for performance
 # profiling
@@ -65,6 +76,53 @@ fi
 echo
 echo "MFIX directory is $mfix"
 echo
+
+
+
+########################################################################
+#                                netCDF - start                        #
+#                                                                      #
+#
+# set USE_NETCDF=1     to use netcdf ... also set the values for
+#                      NETCDF_HOME
+#
+#                      NETCDF_INCLUDES , and NETCDF_LIBS should be OK
+#
+# set USE_NETCDF=0 not to use netcdf
+#
+
+USE_NETCDF=0
+
+if test $USE_NETCDF = 1
+then
+	echo "using netcdf"
+	NETCDF_HOME=/nfs/home/netcdf/netcdf-4.0
+
+	NETCDF_INCLUDES="-I$NETCDF_HOME/fortran -I$NETCDF_HOME/f90 -I$NETCDF_HOME/libsrc"
+
+	NETCDF_LIBS="$NETCDF_HOME/libsrc/.libs/libnetcdf.a $NETCDF_HOME/f90/.libs/libnetcdff90.a"
+
+	cmp -s $mfix/MFIX_netcdf_constants.fi  $mfix/netcdf/MFIX_netcdf_constants.fi 
+	if test $? = 1
+	then
+		cp $mfix/netcdf/*.fi .
+		echo "copying netcdf files"
+	fi
+else
+	echo "not using netcdf"
+	cmp -s $mfix/MFIX_netcdf_constants.fi  $mfix/netcdf/noop/MFIX_netcdf_constants.fi 
+	if test $? = 1
+	then
+		cp $mfix/netcdf/noop/*.fi .
+		echo "copying noop netcdf files"
+	fi
+
+        NETCDF_FLIB=" "
+fi
+
+#                                netCDF - end                          #
+########################################################################
+
 
 # write mfix/model path into the file mfix_directory_path.inc, if it already does not exist
 if grep -qs "     CHARACTER(len=132) :: MFIX_PATH = '$mfix'" mfix_directory_path.inc
@@ -730,19 +788,19 @@ ln -sf "$mpi_include/mpif.h" .
                       LINK_CMD=ifort
                       if [ "$ACML" ]
                       then                                                                    
-                         libs_d="odepack.a -L $ACML/ifort64/lib -lacml -lacml_mv"
-                         libs="odepack.a -L $ACML/ifort64/lib -lacml -lacml_mv"
+                         libs_d="odepack.a -L $ACML/ifort64/lib -lacml -lacml_mv $NETCDF_LIBS"
+                         libs="odepack.a -L $ACML/ifort64/lib -lacml -lacml_mv $NETCDF_LIBS"
 		      else 
-                         libs_d="odepack.a blas90.a dgtsv90.a"
-                         libs="odepack.a blas90.a dgtsv90.a"
+                         libs_d="odepack.a blas90.a dgtsv90.a $NETCDF_LIBS"
+                         libs="odepack.a blas90.a dgtsv90.a $NETCDF_LIBS"
 		      fi		      
                       if [ "$MKLROOT" ]
                       then
-                         libs_d="odepack.a -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide -lpthread"
-                         libs="odepack.a -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide -lpthread"
+                         libs_d="odepack.a $NETCDF_LIBS -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide -lpthread"
+                         libs="odepack.a $NETCDF_LIBS -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide -lpthread"
                       else
-                         libs_d="odepack.a blas90.a dgtsv90.a "
-                         libs="odepack.a blas90.a dgtsv90.a "
+                         libs_d="odepack.a blas90.a dgtsv90.a $NETCDF_LIBS "
+                         libs="odepack.a blas90.a dgtsv90.a $NETCDF_LIBS "
                       fi
                 ;;
               esac	  
@@ -757,16 +815,16 @@ ln -sf "$mpi_include/mpif.h" .
          #============================
             case $opsys_intel in
                     Linux_64_ifc9 )
-                         compile_common="-c -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
-                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -d1 -CB -traceback"
+                         compile_common="-c -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl $NETCDF_INCLUDES"
+                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -d1 -CB -traceback $NETCDF_INCLUDES"
                            ;;
                     Linux_64_ifc10 )
-                         compile_common="-c -I. -w -w95 -i_dynamic -convert big_endian -assume byterecl"
-                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -CB -traceback"
+                         compile_common="-c -I. -w -w95 -i_dynamic -convert big_endian -assume byterecl $NETCDF_INCLUDES"
+                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -CB -traceback $NETCDF_INCLUDES"
                            ;;
                     * )
-                         compile_common="-c -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl"
-                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -d1 -CB -traceback"
+                         compile_common="-c -I. -w -w95 -i_dynamic -ip -convert big_endian -assume byterecl $NETCDF_INCLUDES"
+                         compile_common_d="-convert big_endian -assume byterecl -O0 -fpe0 -d1 -CB -traceback $NETCDF_INCLUDES"
                            ;;
                     esac
 
@@ -941,8 +999,8 @@ ln -sf "$mpi_include/mpif.h" .
                         LINK_CMD=pgf90
                 ;;
               esac                                                                                
-            libs_d="odepack.a blas90.a dgtsv90.a"
-            libs="odepack.a blas90.a dgtsv90.a"
+            libs_d="odepack.a blas90.a dgtsv90.a $NETCDF_FLIB"
+            libs="odepack.a blas90.a dgtsv90.a $NETCDF_FLIB"
                                                                                 
                                                                                 
             OBJ_EXT=o
@@ -994,11 +1052,11 @@ ln -sf "$mpi_include/mpif.h" .
                         LINK_CMD=pgf90
                         if [ "$ACML" ]
                         then                                                                    
-                           libs_d="odepack.a -L $ACML/pgi64/lib -lacml -lacml_mv"
-                           libs="odepack.a -L $ACML/pgi64/lib -lacml -lacml_mv"
+                           libs_d="odepack.a -L $ACML/pgi64/lib -lacml -lacml_mv $NETCDF_FLIB"
+                           libs="odepack.a -L $ACML/pgi64/lib -lacml -lacml_mv $NETCDF_FLIB"
 	  	        else
-                           libs_d="odepack.a blas90.a dgtsv90.a"
-                           libs="odepack.a blas90.a dgtsv90.a"
+                           libs_d="odepack.a blas90.a dgtsv90.a $NETCDF_FLIB"
+                           libs="odepack.a blas90.a dgtsv90.a $NETCDF_FLIB"
 		        fi		      
 			
                 ;;
@@ -1012,7 +1070,7 @@ ln -sf "$mpi_include/mpif.h" .
             compile="$optimize_common -Mdalign $compile_common"
             compile2="-O1 -Mdalign $compile_common"
             compile3="-c -I. $optimize_common -Mdalign  -Mnosave -byteswapio"
-            link="-Mipa=fast -Mipa=inline"	    
+            link="-Mipa=fast -Mipa=inline $NETCDF_FLIB"	    
 
             compile_common_d="-c -I. -Mnosave -byteswapio"
             debug_common="-g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk -Ktrap=fp"
@@ -1128,11 +1186,11 @@ ln -sf "$mpi_include/mpif.h" .
                         LINK_CMD=ftn
                         if [ "$ACML_DIR" ]
                         then                                                                    
-                           libs_d="odepack.a -L $ACML_DIR/pgi6/lib -lacml -lacml_mv"
-                           libs="odepack.a -lpapi -lm -L $ACML_DIR/pgi64/lib -lacml -lacml_mv"
+                           libs_d="odepack.a $NETCDF_FLIB -L $ACML_DIR/pgi6/lib -lacml -lacml_mv"
+                           libs="odepack.a $NETCDF_FLIB -lpapi -lm -L $ACML_DIR/pgi64/lib -lacml -lacml_mv"
 		        else
-                           libs_d="odepack.a blas90.a dgtsv90.a -lhwpc -lpapi -lm"
-                           libs="odepack.a blas90.a dgtsv90.a -lhwpc -lpapi -lm"
+                           libs_d="odepack.a $NETCDF_FLIB blas90.a dgtsv90.a -lhwpc -lpapi -lm"
+                           libs="odepack.a $NETCDF_FLIB blas90.a dgtsv90.a -lhwpc -lpapi -lm"
 		        fi			
 			
                 ;;
@@ -1163,7 +1221,7 @@ ln -sf "$mpi_include/mpif.h" .
           # Activate for compiler based profiling
           # profile_common="-Mprof=func"
             profile_common=" "	    
-            compile_common="-c -I. -I/opt/xt-tools/craypat/3.1.2/cpatx/include -Mnosave -byteswapio "
+            compile_common="-c -I. -I/opt/xt-tools/craypat/3.1.2/cpatx/include -Mnosave -byteswapio $NETCDF_FLIB "
 
             compile="$optimize_common $profile_common -Mfreeform  $compile_common"
             compile2="$optimize_common $profile_common -Mfreeform $compile_common"

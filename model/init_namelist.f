@@ -537,6 +537,8 @@
       ISATdt    = UNDEFINED
 ! CHEM & ISAT end (nan xie)
 
+      bWrite_netCDF(:) = .false.
+
       CALL DES_INIT_NAMELIST
       CALL USR_INIT_NAMELIST 
 !=======================================================================

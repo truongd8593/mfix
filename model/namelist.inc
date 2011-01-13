@@ -181,4 +181,9 @@
 
 ! 1.14 Distributed IO (version 1) related variables
 
-             bDist_IO , bStart_with_one_RES
+             bDist_IO , bStart_with_one_RES , &
+
+! 1.15 netCDF related
+
+             bWrite_netCDF
+

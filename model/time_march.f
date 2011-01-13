@@ -74,6 +74,8 @@
       USE discretelement  
       USE mchem
       USE leqsol
+      USE cdist       ! netcdf
+      USE MFIX_netcdf
 !AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
       use mpi_utility
 !=======================================================================
@@ -161,6 +163,7 @@
       LOGICAL eofBATCHQ
      ! not used remove after verification
       INTEGER CHKBATCHQ_FLAG
+      logical :: bWrite_netCDF_files
 !     
 !-----------------------------------------------
 !     E x t e r n a l   F u n c t i o n s
@@ -414,10 +417,12 @@
       ENDIF 
 
 ! Write SPx files, if needed
+      bWrite_netCDF_files = .false.
       ISPX = 0 
       DO L = 1, N_SPX 
          IF (DT == UNDEFINED) THEN 
             IF (FINISH) THEN 
+               bWrite_netCDF_files = .true.
                CALL WRITE_SPX1 (L, 0) 
                DISK_TOT = DISK_TOT + DISK(L) 
                ISPX = ISPX + 1 
@@ -441,6 +446,7 @@
          ELSE IF (TIME + 0.1d0*DT>=SPX_TIME(L) .OR. TIME+0.1d0*DT>=TSTOP.OR.eofBATCHQ) THEN 
             SPX_TIME(L) = (INT((TIME + 0.1d0*DT)/SPX_DT(L))+1)*SPX_DT(L) 
             CALL WRITE_SPX1 (L, 0) 
+            bWrite_netCDF_files = .true.
             DISK_TOT = DISK_TOT + DISK(L) 
             ISPX = ISPX + 1 
             IF(DISCRETE_ELEMENT.AND.L.EQ.1.AND.PRINT_DES_DATA) CALL WRITE_DES_DATA
@@ -460,6 +466,8 @@
                WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
          ENDIF 
       ENDDO 
+
+      if (bWrite_netCDF_files) call write_netcdf(0,0,time)
 
       IF (.NOT.SPX_MSG) THEN 
          DO L = 1, N_SPX - ISPX 

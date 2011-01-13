@@ -67,7 +67,7 @@
 !
 
 !   
-      if (myPE.ne.PE_IO .and. .not.bDist_IO ) return    !// 
+      if (myPE.ne.PE_IO .and. bDist_IO .eq. .false.) return    !// 
 !
       VERSION = 'SPx = 02.00' 
       WRITE (VERSION(3:3), 1000) L 

@@ -26,6 +26,7 @@ mfix.exe : \
     leqsol.mod \
     machine.mod \
     matrix.mod \
+    mfix_netcdf.mod \
     mflux.mod \
     output.mod \
     parallel.mod \
@@ -204,6 +205,7 @@ mfix.exe : \
     make_upper_case.$(OBJ_EXT) \
     mark_phase_4_cor.$(OBJ_EXT) \
     mfix.$(OBJ_EXT) \
+    mfix_netcdf_mod.$(OBJ_EXT) \
     mod_bc_i.$(OBJ_EXT) \
     mod_bc_j.$(OBJ_EXT) \
     mod_bc_k.$(OBJ_EXT) \
@@ -867,6 +869,7 @@ mfix.exe : \
     dbg_util_mod.$(OBJ_EXT) \
     debug_mod.$(OBJ_EXT) \
     gridmap_mod.$(OBJ_EXT) \
+    mfix_netcdf_mod.$(OBJ_EXT) \
     mpi_mod.$(OBJ_EXT) \
     mpi_utility_mod.$(OBJ_EXT) \
     parallel_mpi_mod.$(OBJ_EXT) \
@@ -1198,6 +1201,12 @@ gridmap.mod : ./dmp_modules/gridmap_mod.f \
             indices.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/gridmap_mod.f 
+mfix_netcdf.mod : mfix_netcdf_mod.f \
+            MFIX_netcdf_constants.fi \
+            MFIX_netcdf_overloads.fi \
+            MFIX_netcdf_variables.fi \
+            MFIX_netcdf_misc.fi 
+	$(FORTRAN_CMD) $(FORT_FLAGS) mfix_netcdf_mod.f 
 mpi.mod : ./dmp_modules/mpi_mod.f \
             mpif.h                                                      
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/mpi_mod.f 
@@ -2981,6 +2990,7 @@ mfix.$(OBJ_EXT) : mfix.f \
             mpi_utility.mod \
             parallel_mpi.mod \
             cdist.mod \
+            mfix_netcdf.mod \
             fldvar.mod \
             cutcell.mod \
             quadric.mod \
@@ -3212,6 +3222,7 @@ read_res1.$(OBJ_EXT) : read_res1.f \
             param1.mod \
             fldvar.mod \
             geometry.mod \
+            mfix_netcdf.mod \
             physprop.mod \
             run.mod \
             rxns.mod \
@@ -4541,6 +4552,7 @@ write_res1.$(OBJ_EXT) : write_res1.f \
             param1.mod \
             fldvar.mod \
             geometry.mod \
+            mfix_netcdf.mod \
             physprop.mod \
             run.mod \
             scalars.mod \
@@ -4565,6 +4577,7 @@ write_spx1.$(OBJ_EXT) : write_spx1.f \
             param1.mod \
             fldvar.mod \
             geometry.mod \
+            mfix_netcdf.mod \
             physprop.mod \
             run.mod \
             funits.mod \

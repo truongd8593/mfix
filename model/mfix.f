@@ -57,7 +57,9 @@
       USE mpi_utility     
       USE parallel_mpi
 !DISTIO      
-      USE cdist      
+      USE cdist
+      USE MFIX_netcdf
+
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -234,6 +236,18 @@
       CALL PC_QUICKWIN 
 !
   101 CONTINUE
+
+
+!
+! if not netcdf writes asked for ... globally turn off netcdf
+      if (MFIX_usingNETCDF()) then
+         bGlobalNetcdf = .false.
+         do L = 1,20
+            if (bWrite_netcdf(L)) bGlobalNetcdf = .true.
+         end do
+      end if
+
+
       IF(AUTOMATIC_RESTART) THEN
          RUN_TYPE = 'RESTART_1'
          AUTOMATIC_RESTART = .FALSE.
@@ -294,6 +308,8 @@
             CALL WRITE_SPX0 (L, 0) 
             CALL WRITE_SPX1 (L, 0) 
          END DO 
+         call write_netcdf(0,0,time)
+
       CASE DEFAULT 
 !
          CALL START_LOG 
