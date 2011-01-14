@@ -116,6 +116,24 @@ else
 		cp $mfix/netcdf/noop/*.fi .
 		echo "copying noop netcdf files"
 	fi
+	cmp -s $mfix/MFIX_netcdf_overloads.fi  $mfix/netcdf/noop/MFIX_netcdf_overloads.fi 
+	if test $? = 1
+	then
+		cp $mfix/netcdf/noop/*.fi .
+		echo "copying noop netcdf files"
+	fi
+	cmp -s $mfix/MFIX_netcdf_misc.fi  $mfix/netcdf/noop/MFIX_netcdf_misc.fi 
+	if test $? = 1
+	then
+		cp $mfix/netcdf/noop/*.fi .
+		echo "copying noop netcdf files"
+	fi
+	cmp -s $mfix/MFIX_netcdf_variables.fi  $mfix/netcdf/noop/MFIX_netcdf_variables.fi 
+	if test $? = 1
+	then
+		cp $mfix/netcdf/noop/*.fi .
+		echo "copying noop netcdf files"
+	fi
 
         NETCDF_FLIB=" "
 fi
