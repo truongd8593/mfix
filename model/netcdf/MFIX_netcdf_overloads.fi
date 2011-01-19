@@ -29,7 +29,7 @@
 
 interface MFIX_nf90_get_var
     module procedure MFIX_nf90_get_var_text,                                   &
-                     MFIX_nf90_get_var_FourByteInt, MFIX_nf90_get_var_EightByteInt, &
+                     MFIX_nf90_get_var_FourByteInt, & ! MFIX_nf90_get_var_EightByteInt, &
                      MFIX_nf90_get_var_FourByteReal, MFIX_nf90_get_var_EightByteReal
     module procedure MFIX_nf90_get_var_1D_text,                                      &
                      MFIX_nf90_get_var_1D_FourByteInt , &
