@@ -285,16 +285,16 @@
    end function MFIX_nf90_get_var_FourByteInt
 
 
-   function MFIX_nf90_get_var_EightByteInt(ncid, varid, values, start)
-     use netcdf
-     integer,                         intent( in) :: ncid, varid
-     integer , intent(out) :: values
-     integer, dimension(:), optional, intent( in) :: start
-     integer                                      :: MFIX_nf90_get_var_EightByteInt
- 
- 
-     MFIX_nf90_get_var_EightByteInt = nf90_get_var(ncid, varid, values, start)
-   end function MFIX_nf90_get_var_EightByteInt
+!   function MFIX_nf90_get_var_EightByteInt(ncid, varid, values, start)
+!     use netcdf
+!     integer,                         intent( in) :: ncid, varid
+!     integer , intent(out) :: values
+!     integer, dimension(:), optional, intent( in) :: start
+!     integer                                      :: MFIX_nf90_get_var_EightByteInt
+! 
+! 
+!     MFIX_nf90_get_var_EightByteInt = nf90_get_var(ncid, varid, values, start)
+!   end function MFIX_nf90_get_var_EightByteInt
 
 
    function MFIX_nf90_get_var_FourByteReal(ncid, varid, values, start)
