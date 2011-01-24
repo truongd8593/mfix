@@ -1488,16 +1488,16 @@
 !
 ! Linearized form of Pc; this is more stable and provides continuous function.
                     
-                     dpc_dphi = Fr*((delta**5)*(2d0*(ONE-ep_star_array(IJK)-delta) - &
+                     dpc_dphi = (to_SI*Fr)*((delta**5)*(2d0*(ONE-ep_star_array(IJK)-delta) - &
 		         2d0*eps_f_min)+((ONE-ep_star_array(ijk)-delta)-eps_f_min)*(5*delta**4))/(delta**10)
 
-                     Pc = Fr*(((ONE-ep_star_array(IJK)-delta) - EPS_f_min)**N_Pc)/(delta**D_Pc)
+                     Pc = (to_SI*Fr)*(((ONE-ep_star_array(IJK)-delta) - EPS_f_min)**N_Pc)/(delta**D_Pc)
 
                      Pc = Pc + dpc_dphi*((ONE-EP_G(IJK))+delta-(ONE-ep_star_array(IJK)))
 
                    ! Pc = 1d25*(((ONE-EP_G(IJK))- (ONE-ep_star_array(ijk)))**10d0) ! old commented Pc
                   ELSE
-                     Pc = Fr*(((ONE-EP_G(IJK)) - EPS_f_min)**N_Pc)/&
+                     Pc = (to_SI*Fr)*(((ONE-EP_G(IJK)) - EPS_f_min)**N_Pc)/&
                      (((ONE-ep_star_array(ijk)) - (ONE-EP_G(IJK)) +&
                      SMALL_NUMBER)**D_Pc)
                   ENDIF
