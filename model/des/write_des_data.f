@@ -232,7 +232,7 @@
 ! in *.vbd format. This file can be read into ParaView in place of the
 ! *.vtp files while providing the S_TIME data
 
-      IF(FIRST_PASS)THEN
+      IF(FIRST_PASS .AND. RUN_TYPE == 'NEW')THEN
          FIRST_PASS = .FALSE.
 ! During first pass, open the file and write the necessary file headers
          OPEN(UNIT=PVD_UNIT,FILE=TRIM(RUN_NAME)//'_DES.pvd',&
