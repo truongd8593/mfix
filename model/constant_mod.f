@@ -75,7 +75,8 @@
 !     Fr, EPS_f_min, N_Pc, D_Pc all appear in the equation for Pc,the
 !     critical solids pressure. N_Pf appears as an exponent in the
 !     equation of state for Pf (frictional pressure)
-!	               Fr = Constant
+!	               Fr = Constant with dyne/cm2 units of pressure
+!                           It will be converted automatically to Pa in calc_mu_s.f
 !                      N_Pc = exponent in numerator
 !	               D_Pc = exponent in denominator
  
