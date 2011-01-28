@@ -205,7 +205,6 @@ mfix.exe : \
     make_upper_case.$(OBJ_EXT) \
     mark_phase_4_cor.$(OBJ_EXT) \
     mfix.$(OBJ_EXT) \
-    mfix_netcdf_mod.$(OBJ_EXT) \
     mod_bc_i.$(OBJ_EXT) \
     mod_bc_j.$(OBJ_EXT) \
     mod_bc_k.$(OBJ_EXT) \
@@ -607,6 +606,7 @@ mfix.exe : \
     mark_phase_4_cor.$(OBJ_EXT) \
     matrix_mod.$(OBJ_EXT) \
     mfix.$(OBJ_EXT) \
+    mfix_netcdf_mod.$(OBJ_EXT) \
     mflux_mod.$(OBJ_EXT) \
     mod_bc_i.$(OBJ_EXT) \
     mod_bc_j.$(OBJ_EXT) \
@@ -869,7 +869,6 @@ mfix.exe : \
     dbg_util_mod.$(OBJ_EXT) \
     debug_mod.$(OBJ_EXT) \
     gridmap_mod.$(OBJ_EXT) \
-    mfix_netcdf_mod.$(OBJ_EXT) \
     mpi_mod.$(OBJ_EXT) \
     mpi_utility_mod.$(OBJ_EXT) \
     parallel_mpi_mod.$(OBJ_EXT) \
@@ -1026,6 +1025,12 @@ matrix.mod : matrix_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) matrix_mod.f 
+mfix_netcdf.mod : mfix_netcdf_mod.f \
+            MFIX_netcdf_constants.fi                                     \
+            MFIX_netcdf_overloads.fi                                     \
+            MFIX_netcdf_variables.fi                                     \
+            MFIX_netcdf_misc.fi                                         
+	$(FORTRAN_CMD) $(FORT_FLAGS) mfix_netcdf_mod.f 
 mflux.mod : mflux_mod.f \
             param.mod \
             param1.mod 
@@ -1201,12 +1206,6 @@ gridmap.mod : ./dmp_modules/gridmap_mod.f \
             indices.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/gridmap_mod.f 
-mfix_netcdf.mod : mfix_netcdf_mod.f \
-            MFIX_netcdf_constants.fi \
-            MFIX_netcdf_overloads.fi \
-            MFIX_netcdf_variables.fi \
-            MFIX_netcdf_misc.fi 
-	$(FORTRAN_CMD) $(FORT_FLAGS) mfix_netcdf_mod.f 
 mpi.mod : ./dmp_modules/mpi_mod.f \
             mpif.h                                                      
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/mpi_mod.f 
@@ -3222,7 +3221,6 @@ read_res1.$(OBJ_EXT) : read_res1.f \
             param1.mod \
             fldvar.mod \
             geometry.mod \
-            mfix_netcdf.mod \
             physprop.mod \
             run.mod \
             rxns.mod \
@@ -3232,7 +3230,8 @@ read_res1.$(OBJ_EXT) : read_res1.f \
             compar.mod \
             cdist.mod \
             mpi_utility.mod \
-            sendrecv.mod 
+            sendrecv.mod \
+            mfix_netcdf.mod 
 remove_comment.$(OBJ_EXT) : remove_comment.f 
 reset_new.$(OBJ_EXT) : reset_new.f \
             param.mod \
@@ -4261,6 +4260,8 @@ time_march.$(OBJ_EXT) : time_march.f \
             discretelement.mod \
             mchem.mod \
             leqsol.mod \
+            cdist.mod \
+            mfix_netcdf.mod \
             mpi_utility.mod \
             cutcell.mod \
             vtk.mod \
@@ -4552,7 +4553,6 @@ write_res1.$(OBJ_EXT) : write_res1.f \
             param1.mod \
             fldvar.mod \
             geometry.mod \
-            mfix_netcdf.mod \
             physprop.mod \
             run.mod \
             scalars.mod \
@@ -4563,7 +4563,8 @@ write_res1.$(OBJ_EXT) : write_res1.f \
             cdist.mod \
             compar.mod \
             mpi_utility.mod \
-            sendrecv.mod 
+            sendrecv.mod \
+            mfix_netcdf.mod 
 write_spx0.$(OBJ_EXT) : write_spx0.f \
             param.mod \
             param1.mod \
@@ -4577,7 +4578,6 @@ write_spx1.$(OBJ_EXT) : write_spx1.f \
             param1.mod \
             fldvar.mod \
             geometry.mod \
-            mfix_netcdf.mod \
             physprop.mod \
             run.mod \
             funits.mod \
@@ -4587,7 +4587,8 @@ write_spx1.$(OBJ_EXT) : write_spx1.f \
             cdist.mod \
             compar.mod \
             mpi_utility.mod \
-            sendrecv.mod 
+            sendrecv.mod \
+            mfix_netcdf.mod 
 write_table.$(OBJ_EXT) : write_table.f \
             param.mod \
             param1.mod \
@@ -5783,8 +5784,8 @@ write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
             discretelement.mod \
             des_bc.mod \
             compar.mod \
-            fldvar.mod \
             funits.mod \
+            fldvar.mod \
             geometry.mod \
             indices.mod \
             physprop.mod \

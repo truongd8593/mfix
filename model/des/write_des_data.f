@@ -68,6 +68,7 @@
     
       USE run
       USE compar
+      USE funits
       USE discretelement
       USE des_bc
       IMPLICIT NONE
@@ -92,7 +93,8 @@
       CHARACTER*5 F_INDEX
 
 ! formatted file name
-      CHARACTER*64 :: F_NAME = ''
+      CHARACTER*64 :: FNAME_VTP = ''
+      CHARACTER*64 :: FNAME_PVD = ''      
 
 ! formatted solids time
       CHARACTER*12 :: S_TIME_CHAR = ''      
@@ -106,6 +108,8 @@
 ! dummy values to maintain format for dimn=2
       REAL POS_Z, VEL_W 
  
+! check whether an error occurs in opening a file
+      INTEGER ISTAT      
 !-----------------------------------------------
 ! Functions 
 !-----------------------------------------------
@@ -114,9 +118,18 @@
 
 ! Convert the index VTP_FINDEX from an integer to a string and force
 ! leading zeros
+
+
+! Force file name format
       WRITE (F_INDEX,"(I5.5)") VTP_FINDEX
-      OPEN(UNIT=DES_UNIT,FILE=TRIM(RUN_NAME)//'_DES_'//F_INDEX//'.vtp',&
-         STATUS='NEW',ERR=999)
+      FNAME_VTP=TRIM(RUN_NAME)//'_DES_'//TRIM(F_INDEX)//'.vtp'
+
+      OPEN(UNIT=DES_UNIT,FILE=FNAME_VTP,STATUS='NEW',IOSTAT=ISTAT)
+      IF (ISTAT /= 0) THEN
+         WRITE(*,999) 
+         WRITE(UNIT_LOG, 999)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
 
 ! Dummy values to maintain format for 2D runs
       POS_Z = 0.0
@@ -226,30 +239,65 @@
     
       CLOSE(DES_UNIT)
 
+! Index output file count
+      VTP_FINDEX = VTP_FINDEX+1
+
+
 
 !-----------------------      
-! Construct the file that contains all the file names and soilds time
+! Construct the file that contains all the file names and solids time
 ! in *.vbd format. This file can be read into ParaView in place of the
 ! *.vtp files while providing the S_TIME data
 
-      IF(FIRST_PASS .AND. RUN_TYPE == 'NEW')THEN
-         FIRST_PASS = .FALSE.
-! During first pass, open the file and write the necessary file headers
-         OPEN(UNIT=PVD_UNIT,FILE=TRIM(RUN_NAME)//'_DES.pvd',&
-            ACCESS="SEQUENTIAL", STATUS='NEW',ERR=998)
-         WRITE(PVD_UNIT,"(A)")'<?xml version="1.0"?>'
-         WRITE(PVD_UNIT,"(A,A)")'<VTKFile type="Collection" ',&
-            'version="0.1" byte_order="LittleEndian">'
-         WRITE(PVD_UNIT,"(3X,A)")'<Collection>'
-! write two generic lines that will be removed later
-         WRITE(PVD_UNIT,*)"SCRAP LINE 1"
-         WRITE(PVD_UNIT,*)"SCRAP LINE 2"
-         CLOSE(PVD_UNIT)
-      ENDIF
+! Determine if the "RUN_NAME"_DES_DATA.dat file exists
+      F_EXISTS = .FALSE.
+      FNAME_PVD = TRIM(RUN_NAME)//'_DES.pvd'
 
-! Open the file to be appended
-      OPEN(UNIT=PVD_UNIT,FILE=TRIM(RUN_NAME)//'_DES.pvd',&
-         POSITION="APPEND",ACCESS="SEQUENTIAL", STATUS='OLD',ERR=998)
+      IF(FIRST_PASS) THEN
+         INQUIRE(FILE=FNAME_PVD,EXIST=F_EXISTS)
+
+         IF (.NOT.F_EXISTS) THEN
+! If the file does not exist, then create it with the necessary
+! header information.
+            OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,STATUS='NEW')
+            WRITE(PVD_UNIT,"(A)")'<?xml version="1.0"?>'
+            WRITE(PVD_UNIT,"(A,A)")'<VTKFile type="Collection" ',&
+               'version="0.1" byte_order="LittleEndian">'
+            WRITE(PVD_UNIT,"(3X,A)")'<Collection>'
+! write two generic lines that will be removed later
+            WRITE(PVD_UNIT,*)"SCRAP LINE 1"
+            WRITE(PVD_UNIT,*)"SCRAP LINE 2"
+         ELSE   
+! The file exists but first_pass is also true so most likely an existing
+! file from an earlier/other run is present in the directory which it
+! should not be if the run is NEW
+            IF(RUN_TYPE .EQ. 'NEW') THEN
+! Exit to prevent overwriting existing file accidently
+               WRITE(*,997) FNAME_PVD
+               WRITE(UNIT_LOG, 997) FNAME_PVD
+               CALL MFIX_EXIT(myPE)
+            ELSE
+! Open the file for appending of new data (RESTART_1 Case)
+               OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,&
+                  POSITION="APPEND",STATUS='OLD',IOSTAT=ISTAT)
+               IF (ISTAT /= 0) THEN
+                  WRITE(*,998) 
+                  WRITE(UNIT_LOG, 998)
+                  CALL MFIX_EXIT(myPE)
+               ENDIF
+            ENDIF
+         ENDIF
+! Identify that the files has been created and opened for next pass
+         FIRST_PASS = .FALSE.         
+      ELSE
+         OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,&
+            POSITION="APPEND",STATUS='OLD',IOSTAT=ISTAT)
+         IF (ISTAT /= 0) THEN
+            WRITE(*,998) 
+            WRITE(UNIT_LOG, 998)
+            CALL MFIX_EXIT(myPE)
+         ENDIF                 
+      ENDIF
 
 ! Remove the last two lines written so that additional data can be added
       BACKSPACE(PVD_UNIT)
@@ -270,14 +318,11 @@
          WRITE (S_TIME_CHAR,"(F12.6)"),S_TIME
       ENDIF
 
-! Force file name format
-      F_NAME=TRIM(RUN_NAME)//'_DES_'//TRIM(F_INDEX)//'.vtp'
-
 ! Write the data to the file
       WRITE(PVD_UNIT,"(6X,A,A,A,A,A,A,A)")&
          '<DataSet timestep="',TRIM(S_TIME_CHAR),'" ',& ! simulation time
          'group="" part="0" ',&   ! necessary file data
-         'file="',TRIM(F_NAME),'"/>'    ! file name of vtp
+         'file="',TRIM(FNAME_VTP),'"/>'    ! file name of vtp
 
 ! Write the closing tags
       WRITE(PVD_UNIT,"(3X,A)")'</Collection>'
@@ -286,21 +331,18 @@
       CLOSE(PVD_UNIT)
 
 
-! Index output file count
-      VTP_FINDEX = VTP_FINDEX+1
-
       RETURN
 
 
-  998 WRITE(*,"(/1X,70('*'),//,A,/,A,/1X,70('*'))")&
-         ' From: WRITE_DES_VTP ',&
-         ' Message: Error opening DES vbd file. Terminating run.'
-      CALL MFIX_EXIT(myPE)
+  997 FORMAT(/1X,70('*')//, ' From: WRITE_DES_VTP',/,' Message: ',&
+         A, ' already exists in the run directory.',/10X,&
+         'Terminating run.',/1X,70('*')/)
 
-  999 WRITE(*,"(/1X,70('*'),//,A,/,A,/1X,70('*'))")&
-         ' From: WRITE_DES_VTP ',&
-         ' Message: Error opening DES vtp file. Terminating run.'
-      CALL MFIX_EXIT(myPE)
+  998 FORMAT(/1X,70('*')//, ' From: WRITE_DES_VTP',/,' Message: ',&
+         'Error opening DES vbd file. Terminating run.',/1X,70('*')/)
+
+  999 FORMAT(/1X,70('*')//, ' From: WRITE_DES_VTP',/,' Message: ',&
+         'Error opening DES vtp file. Terminating run.',/1X,70('*')/)
 
 
       END SUBROUTINE WRITE_DES_VTP 
@@ -503,7 +545,7 @@
                ELSE
 ! Open the file for appending of new data (RESTART_1 Case)
                   OPEN(UNIT=DES_EPS,FILE=FNAME_EPS,POSITION="append")
-               END IF
+               ENDIF
             ENDIF
 !-----------------------------------------------
             
@@ -511,7 +553,7 @@
             FIRST_PASS = .FALSE.
          ELSE 
 ! Open each file and mark for appending
-            OPEN(UNIT= DES_DATA, FILE=FNAME_DATA,  POSITION="append")
+            OPEN(UNIT=DES_DATA,  FILE=FNAME_DATA,  POSITION="append")
             OPEN(UNIT=DES_EX,    FILE=FNAME_EXTRA, POSITION="append")
             OPEN(UNIT=DES_EPS,   FILE=FNAME_EPS,   POSITION="append")
          ENDIF ! end if(FIRST_PASS)/else
@@ -540,8 +582,8 @@
             ENDIF
             PC = PC + 1
          ENDDO
-! Close the file and keep
-         CLOSE(DES_DATA, STATUS = "keep")
+! Close the file
+         CLOSE(DES_DATA)
 
 
 ! Write to the "RUN_NAME"_DES_EXTRA.dat file: extra simulation data at 
@@ -551,8 +593,8 @@
             S_TIME, NEIGH_MAX, OVERLAP_MAX, &
             SUM(GLOBAL_GRAN_ENERGY(1:DIMN)), &
             SUM(GLOBAL_GRAN_TEMP(1:DIMN))/(DIMN)
-! Close the file and keep
-         CLOSE(DES_EX, STATUS = "keep")
+! Close the file
+         CLOSE(DES_EX)
 
 
 ! Write to the "RUN_NAME"_AVG_EPS.dat file: axial profiles in solids 
@@ -584,8 +626,8 @@
                (AVG_THETA(J,M), M = 1, MMAX), & !
                0.5d0*(YN(J)+YN(J-1))
          ENDDO
-! Close the file and keep
-         CLOSE(DES_EPS, STATUS = "keep")
+! Close the file
+         CLOSE(DES_EPS)
 
 
       ENDIF ! if ifi > 0
@@ -708,8 +750,8 @@
 
       WRITE(BH_UNIT, '(10(2X,E20.12))') s_time, &
          (bed_height(M), M=1,MMAX), height_avg, height_rms
-! Close the file and keep
-      CLOSE(BH_UNIT, STATUS="KEEP")
+! Close the file
+      CLOSE(BH_UNIT)
 
       RETURN
 
@@ -814,8 +856,8 @@
          ENDIF
       ENDDO
 
-! Close the file and keep
-      CLOSE(GT_UNIT, STATUS='KEEP')
+! Close the file
+      CLOSE(GT_UNIT)
 
       RETURN
 
