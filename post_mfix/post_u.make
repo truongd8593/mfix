@@ -30,6 +30,7 @@ post_mfix : \
     POLYGON.mod \
     DASHBOARD.mod \
     MFLUX.mod \
+    MFIX_NETCDF.mod \
     OUTPUT.mod \
     PARALLEL.mod \
     PARAM1.mod \
@@ -123,6 +124,7 @@ post_mfix : \
     machine.$(OBJ_EXT) \
     main_f.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
+    mfix_netcdf_mod.$(OBJ_EXT) \
     open_file.$(OBJ_EXT) \
     out_from_res.$(OBJ_EXT) \
     out_from_spx.$(OBJ_EXT) \
@@ -215,6 +217,7 @@ post_mfix : \
     mchem_mod.$(OBJ_EXT) \
     des_bc_mod.$(OBJ_EXT) \
     mflux_mod.$(OBJ_EXT) \
+    mfix_netcdf_mod.$(OBJ_EXT) \
     output_mod.$(OBJ_EXT) \
     parallel_mod.$(OBJ_EXT) \
     param1_mod.$(OBJ_EXT) \
@@ -456,6 +459,12 @@ MCHEM.mod : ../model/chem/mchem_mod.f
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/chem/mchem_mod.f 
 MFLUX.mod : ../model/mflux_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/mflux_mod.f 
+MFIX_NETCDF.mod : ../model/mfix_netcdf_mod.f \
+            ../model/MFIX_netcdf_constants.fi \
+            ../model/MFIX_netcdf_overloads.fi \
+            ../model/MFIX_netcdf_variables.fi \
+            ../model/MFIX_netcdf_misc.fi 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/mfix_netcdf_mod.f 
 OUTPUT.mod : ../model/output_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -1145,6 +1154,7 @@ read_res1.$(OBJ_EXT) : ../model/read_res1.f \
             PARAM1.mod \
             FLDVAR.mod \
             GEOMETRY.mod \
+            MFIX_NETCDF.mod \
             PHYSPROP.mod \
             RUN.mod \
             SCALARS.mod \
@@ -1327,6 +1337,7 @@ write_res1.$(OBJ_EXT) : ../model/write_res1.f \
             PARAM1.mod \
             FLDVAR.mod \
             GEOMETRY.mod \
+            MFIX_NETCDF.mod \
             PHYSPROP.mod \
             RUN.mod \
             SCALARS.mod \
@@ -1346,6 +1357,7 @@ write_spx1.$(OBJ_EXT) : ../model/write_spx1.f \
             PARAM1.mod \
             FLDVAR.mod \
             GEOMETRY.mod \
+            MFIX_NETCDF.mod \
             PHYSPROP.mod \
             RUN.mod \
             FUNITS.mod \
