@@ -3,6 +3,43 @@ i#!/bin/bsh -f
 # POST_MFIX script file for executing 'make'
 # M. Syamlal/P.Nicoletti                   9-27-95
 #------------------------------------------------------------------------
+
+
+# set USE_NETCDF=1 if you want to include netCDF support
+# also set NETCDF_HOME , NETCDF_INCLUDES , and NETCDF_LIBS
+# to the appopraite locations inside the "if" statement below.
+
+USE_NETCDF=0
+
+NETCDF_HOME=" "
+NETCDF_INCLUDES=" "
+NETCDF_LIBS=" "
+
+echo " "
+
+if test $USE_NETCDF = 1
+then
+
+NETCDF_HOME=/nfs/home/pnicol/software_installs/netcdf-4.0
+NETCDF_INCLUDES="-I$NETCDF_HOME/fortran -I$NETCDF_HOME/f90 -I$NETCDF_HOME/f90 -I$NETCDF_HOME/libsrc"
+
+NETCDF_LIBS="$NETCDF_HOME/libsrc/.libs/libnetcdf.a $NETCDF_HOME/f90/.libs/libnetcdff90.a"
+
+cp ../model/netcdf/*.fi ../model
+
+echo "Using netCDF"
+
+else
+
+cp ../model/netcdf/noop/*.fi ../model
+
+echo "not using netCDF"
+
+fi
+
+echo " "
+
+
 # For compiling post_mfix the ../model directory must exist.
 #
     if test -f machine.f
@@ -721,6 +758,9 @@ read delete_files
     LINK_FLAGS="$link"
 #
 #
+
+  LIB_FLAGS="$NETCDF_LIBS"
+
   export FORT_FLAGS
   export LINK_FLAGS
   export LIB_FLAGS
