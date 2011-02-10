@@ -56,7 +56,20 @@
          MAX_PIS .GT. NPARTICLES) NPARTICLES = MAX_PIS
 
       MAXNEIGHBORS = MN + 1 + NWALLS
+
+
+      IF (DES_NEIGHBOR_SEARCH.EQ.2 .OR. DES_NEIGHBOR_SEARCH.EQ.3) THEN
+         MAXQUADS = 5*PARTICLES*MQUAD_FACTOR   
+         IF(MAXQUADS.LE.80000) MAXQUADS = 80000 
+         IF(DIMN.EQ.3) THEN   
+            NMQD = 11   
+         ELSE   
+            NMQD = 7   
+         ENDIF 
+      ENDIF 
 !-----------------------------------------------
+
+
 
 
 ! Start allocate DES arrays
