@@ -237,7 +237,7 @@
 ! For systems with inlets/outlets check to determine if a particle has
 ! fully entered or exited the domain.  If the former, remove the status
 ! of 'new' and if the latter, remove the particle.
-            IF (DES_MI) CALL DES_CHECK_PARTICLE
+            IF (DES_MIO) CALL DES_CHECK_PARTICLE
 
             CALL PARTICLES_IN_CELL
 
