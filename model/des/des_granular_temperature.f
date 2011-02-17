@@ -129,15 +129,15 @@
          PC = PC + 1
       ENDDO
 
-!J.Musser changed PARTICLES TO PIS 
-      DES_VEL_AVG(:) = DES_VEL_AVG(:)/DBLE(PIS)
+!J.Musser changed PARTICLES TO PIS
+      IF (PIS > 0) DES_VEL_AVG(:) = DES_VEL_AVG(:)/DBLE(PIS)
 
 ! The following quantities are primarily used for debugging/developing
 ! and allow a quick check of the energy conservation in the system.
 ! In their current form they are best applied to monodisperse cases. 
 ! Calculate x,y,z components of global energy & granular temperature
-      GLOBAL_GRAN_ENERGY = ZERO
-      GLOBAL_GRAN_TEMP  = ZERO
+      GLOBAL_GRAN_ENERGY(:) = ZERO
+      GLOBAL_GRAN_TEMP(:)  = ZERO
       PC = 1
       DO LL = 1, MAX_PIS
          IF(PC .GT. PIS) EXIT
@@ -151,8 +151,8 @@
          PC = PC + 1
       ENDDO
 
-      GLOBAL_GRAN_ENERGY(:) =  GLOBAL_GRAN_ENERGY(:)/DBLE(PIS)
-      GLOBAL_GRAN_TEMP(:) =  GLOBAL_GRAN_TEMP(:)/DBLE(PIS)
+      IF (PIS > 0) GLOBAL_GRAN_ENERGY(:) =  GLOBAL_GRAN_ENERGY(:)/DBLE(PIS)
+      IF (PIS > 0) GLOBAL_GRAN_TEMP(:) =  GLOBAL_GRAN_TEMP(:)/DBLE(PIS)
 
       RETURN
 
