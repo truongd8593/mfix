@@ -155,7 +155,7 @@
                CALL MFIX_EXIT(myPE)
             ENDIF
          ELSEIF(DIMN.EQ.3) THEN
-            IF(TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDY' .AND. &
+            IF(TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDY') THEN ! .AND. & 
 !               TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDZ' .AND. &
 !               TRIM(DES_LE_SHEAR_DIR) .NE. 'DVDX' .AND. &
 !               TRIM(DES_LE_SHEAR_DIR) .NE. 'DVDZ' .AND. &
