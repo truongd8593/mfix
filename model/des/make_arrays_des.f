@@ -92,10 +92,10 @@
 
       CALL PARTICLES_IN_CELL
 
-! Overrides initial particle velocity with velocities assigned from a
+! Override initial particle velocity with velocities assigned from a
 ! Gaussian distribution based on usr specified standard deviation and
 ! mean
-      IF(PVEL_StDev.GT.ZERO) CALL INIT_PARTICLES_JN
+      IF(PVEL_StDev.GT.ZERO .OR. DES_LE_BC) CALL INIT_PARTICLES_JN
        
       CALL WRITEIC
 

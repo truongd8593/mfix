@@ -1,41 +1,64 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: CFWALLCONTACT(WALL, L, WALLCONTACTI)                   C
-!  Purpose: DES - Checking for contact with walls
-!                                                                      C
-!                                                                      C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+!
+!  Module name: CFWALLCONTACT(WALL, L, WALLCONTACT)
+!  Purpose: Check if particle L is in contact with WALL.  If so, set
+!  WALLCONTACT to 1, else WALLCONTACT is 0
+!
+!
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04
+!  Reviewer:                                          Date:
+!
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      SUBROUTINE CFWALLCONTACT(WALL, L, WALLCONTACTI)
+      SUBROUTINE CFWALLCONTACT(WALL, L, WALLCONTACT)
 
-      Use discretelement
-      USE param
       USE param1
-      USE parallel
-      USE fldvar
-      USE run
-      USE geometry
-      USE matrix
-      USE indices
-      USE physprop
-      USE drag
       USE constant
+      USE parallel      
       USE compar
+      Use discretelement      
       USE des_bc
       IMPLICIT NONE
 
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------        
-      INTEGER L, I, K, WALL, WALLCONTACTI, WC
-      DOUBLE PRECISION A, OMEGA, OOMEGA2, ASINOMEGAT 
+!----------------------------------------------- 
+! Given wall ID number (1=west, 2=east, 3=south, 4=north, 5=bottom,
+! 6=top)
+      INTEGER, INTENT (IN) :: WALL
+! Given particle ID number      
+      INTEGER, INTENT (IN) :: L
+! Flag to indicate whether given particle is in contact with given wall
+! (1=contact, 0 = no contact)
+      INTEGER, INTENT (INOUT) :: WALLCONTACT
+! local variables for x, y, z position of the particle
+      DOUBLE PRECISION :: XPOS, YPOS, ZPOS      
+! local variables to define system dimensions
+      DOUBLE PRECISION :: LXE, LXW, LYN, LYS, LZT, LZB
+! local variables 
+      DOUBLE PRECISION :: A, OMEGA, OOMEGA2, ASINOMEGAT 
 
-!-----------------------------------------------        
+!-----------------------------------------------            
      
+! assign temporary local variables for quick reference
+      LXE = EX2
+      LXW = WX1
+      LYN = TY2
+      LYS = BY1
+      LZT = NZ2
+      LZB = SZ1
 
+! assign temporary local variables for manipulation/use
+      XPOS = DES_POS_NEW(L,1)
+      YPOS = DES_POS_NEW(L,2)
+      IF (DIMN .EQ. 3) THEN
+         ZPOS = DES_POS_NEW(L,3)
+      ENDIF 
+
+! initialize
+      WALLCONTACT = 0
+
+! for vibrating wall      
       A = ZERO
       OMEGA = ZERO
       ASINOMEGAT = ZERO
@@ -46,65 +69,78 @@
          ASINOMEGAT = A*SIN(OMEGA*S_TIME)
       ENDIF
 
-      WALLCONTACTI = 0
+      IF (DES_LE_BC) THEN
+! Current implementation of Lees & Edwards boundaries implies all other
+! boundaries are periodic (i.e. no walls in system)
+         RETURN
+      ELSEIF (DES_PERIODIC_WALLS) THEN
+! Check if current wall corresponds to a periodic boundary (i.e. no wall) 
+         IF( (DES_PERIODIC_WALLS_X .AND. (WALL.EQ.1.OR.WALL.EQ.2)).OR.&
+             (DES_PERIODIC_WALLS_Y .AND. (WALL.EQ.3.OR.WALL.EQ.4)).OR.&
+             (DIMN.EQ.3.AND.DES_PERIODIC_WALLS_Z .AND. &
+             (WALL.EQ.5.OR.WALL.EQ.6)) ) THEN
+            RETURN
+         ENDIF         
+      ENDIF
+
 
 ! west wall (X)
-      IF(WALL.EQ.1.AND.(.NOT.DES_PERIODIC_WALLS_X)) THEN
-         IF((DES_POS_NEW(L,1)-WX1).LE.DES_RADIUS(L)) THEN
+      IF(WALL.EQ.1) THEN
+         IF( (XPOS-LXW) <= DES_RADIUS(L) ) THEN
             IF(DES_MO_X)THEN
-               CALL DES_MASS_OUTLET(L,'XW',WALLCONTACTI)
+               CALL DES_MASS_OUTLET(L,'XW',WALLCONTACT)
             ELSE
-               WALLCONTACTI = 1
+               WALLCONTACT = 1
             ENDIF
          ENDIF
 
 ! east wall (X)
-      ELSE IF(WALL.EQ.2.AND.(.NOT.DES_PERIODIC_WALLS_X)) THEN
-         IF((EX2-DES_POS_NEW(L,1)).LE.DES_RADIUS(L)) THEN
+      ELSEIF(WALL.EQ.2) THEN
+         IF( (LXE-XPOS) <= DES_RADIUS(L) ) THEN
             IF(DES_MO_X)THEN
-               CALL DES_MASS_OUTLET(L,'XE',WALLCONTACTI)
+               CALL DES_MASS_OUTLET(L,'XE',WALLCONTACT)
             ELSE
-               WALLCONTACTI = 1
+               WALLCONTACT = 1
             ENDIF
          ENDIF
 
 ! south wall (Y)
-      ELSE IF(WALL.EQ.3.AND.(.NOT.DES_PERIODIC_WALLS_Y)) THEN
-         IF((DES_POS_NEW(L,2)-(BY1+ASINOMEGAT)).LE.DES_RADIUS(L)) THEN
+      ELSEIF(WALL.EQ.3) THEN
+         IF( (YPOS-(LYS+ASINOMEGAT)) <= DES_RADIUS(L) ) THEN
             IF(DES_MO_Y)THEN
-               CALL DES_MASS_OUTLET(L,'YS',WALLCONTACTI)
+               CALL DES_MASS_OUTLET(L,'YS',WALLCONTACT)
             ELSE
-               WALLCONTACTI = 1
+               WALLCONTACT = 1
             ENDIF
          ENDIF
 
 ! north wall (Y)
-      ELSE IF(WALL.EQ.4.AND.(.NOT.DES_PERIODIC_WALLS_Y)) THEN
-         IF((TY2-DES_POS_NEW(L,2)).LE.DES_RADIUS(L)) THEN
+      ELSEIF(WALL.EQ.4) THEN
+         IF( (LYN-YPOS) <= DES_RADIUS(L) ) THEN
             IF(DES_MO_Y)THEN
-               CALL DES_MASS_OUTLET(L,'YN',WALLCONTACTI)
+               CALL DES_MASS_OUTLET(L,'YN',WALLCONTACT)
             ELSE
-               WALLCONTACTI = 1
+               WALLCONTACT = 1
             ENDIF
          ENDIF
 
 ! bottom wall (Z)
-      ELSE IF(WALL.EQ.5.AND.(.NOT.DES_PERIODIC_WALLS_Z)) THEN
-         IF((DES_POS_NEW(L,3)-SZ1).LE.DES_RADIUS(L)) THEN
+      ELSEIF(WALL.EQ.5) THEN
+         IF( (ZPOS-LZB) <= DES_RADIUS(L) ) THEN
             IF(DES_MO_Z)THEN
-               CALL DES_MASS_OUTLET(L,'ZB',WALLCONTACTI)
+               CALL DES_MASS_OUTLET(L,'ZB',WALLCONTACT)
             ELSE
-               WALLCONTACTI = 1
+               WALLCONTACT = 1
             ENDIF
          ENDIF
 
 ! top wall (Z)
-      ELSE IF(WALL.EQ.6.AND.(.NOT.DES_PERIODIC_WALLS_Z)) THEN
-         IF((NZ2-DES_POS_NEW(L,3)).LE.DES_RADIUS(L)) THEN
+      ELSEIF(WALL.EQ.6) THEN
+         IF( (LZT-ZPOS) <= DES_RADIUS(L) ) THEN
             IF(DES_MO_Z)THEN
-               CALL DES_MASS_OUTLET(L,'ZT',WALLCONTACTI)
+               CALL DES_MASS_OUTLET(L,'ZT',WALLCONTACT)
             ELSE
-               WALLCONTACTI = 1
+               WALLCONTACT = 1
             ENDIF
          ENDIF
       ENDIF

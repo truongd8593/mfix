@@ -5398,19 +5398,11 @@ cfupdateold.$(OBJ_EXT) : ./des/cfupdateold.f \
             run.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfupdateold.f 
 cfwallcontact.$(OBJ_EXT) : ./des/cfwallcontact.f \
-            discretelement.mod \
-            param.mod \
             param1.mod \
-            parallel.mod \
-            fldvar.mod \
-            run.mod \
-            geometry.mod \
-            matrix.mod \
-            indices.mod \
-            physprop.mod \
-            drag.mod \
             constant.mod \
+            parallel.mod \
             compar.mod \
+            discretelement.mod \
             des_bc.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfwallcontact.f 
 cfwallposvel.$(OBJ_EXT) : ./des/cfwallposvel.f \
@@ -5479,7 +5471,9 @@ des_check_particle.$(OBJ_EXT) : ./des/des_check_particle.f \
 des_functions.$(OBJ_EXT) : ./des/des_functions.f \
             param.mod \
             param1.mod \
-            discretelement.mod 
+            discretelement.mod \
+            compar.mod \
+            funits.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_functions.f 
 des_granular_temperature.$(OBJ_EXT) : ./des/des_granular_temperature.f \
             discretelement.mod \
@@ -5661,10 +5655,9 @@ generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/generate_particle_config.f 
 grid_based_neighbor_search.$(OBJ_EXT) : ./des/grid_based_neighbor_search.f \
-            param1.mod \
             discretelement.mod \
-            geometry.mod \
-            des_bc.mod 
+            des_bc.mod \
+            compar.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/grid_based_neighbor_search.f 
 make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             param1.mod \

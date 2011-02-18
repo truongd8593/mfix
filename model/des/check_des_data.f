@@ -136,6 +136,48 @@
       ENDIF
 
 
+      IF(DES_LE_BC) THEN
+         IF (DES_CONTINUUM_COUPLED) THEN
+            WRITE(UNIT_LOG, 1064)
+             CALL MFIX_EXIT(myPE)
+         ENDIF 
+
+         IF (DES_NEIGHBOR_SEARCH .NE. 4) THEN
+            WRITE(UNIT_LOG, 1060)
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+! not all possible shear directions are fully coded         
+         IF (DIMN .EQ. 2) THEN
+            IF(TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDY' .AND. &
+               TRIM(DES_LE_SHEAR_DIR) .NE. 'DVDX') THEN
+               WRITE(UNIT_LOG, 1061)
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ELSEIF(DIMN.EQ.3) THEN
+            IF(TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDY' .AND. &
+!               TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDZ' .AND. &
+!               TRIM(DES_LE_SHEAR_DIR) .NE. 'DVDX' .AND. &
+!               TRIM(DES_LE_SHEAR_DIR) .NE. 'DVDZ' .AND. &
+!               TRIM(DES_LE_SHEAR_DIR) .NE. 'DWDX' .AND. &
+!               TRIM(DES_LE_SHEAR_DIR) .NE. 'DWDY') THEN
+               WRITE(UNIT_LOG, 1062)
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ENDIF
+
+         IF (DES_PERIODIC_WALLS) THEN
+            DES_PERIODIC_WALLS = .FALSE.
+            DES_PERIODIC_WALLS_X = .FALSE.
+            DES_PERIODIC_WALLS_Y = .FALSE.
+            DES_PERIODIC_WALLS_Z = .FALSE.            
+            WRITE(UNIT_LOG, 1063)
+            WRITE(*,1063)
+         ENDIF
+
+      ENDIF
+
+
       IF (TRIM(DES_INTG_METHOD) /= 'ADAMS_BASHFORTH' .AND. &
           TRIM(DES_INTG_METHOD) /= 'EULER') THEN
 ! stop if the specified integration method is unavailable
@@ -774,5 +816,28 @@
           'number',/10X,'of particles in the 2D simulation when ',&
           'GENER_PART_CONFIG is T and DIMN = 2.',/1X,70('*'))
 
+ 1060 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'Only the grid based search option is allowed when using',&
+         'using',/10X,'Lees & Edwards BC.',/1X,70('*')/)
+
+ 1061 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'Invalid option for DES_LE_SHEAR_DIR in mfix.dat. When',/10X,&
+         'DIMN=2 shear options are DUDY or DVDX',/1X,70('*')/)
+
+ 1062 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'Invalid option for DES_LE_SHEAR_DIR in mfix.dat. When',/10X,&
+         'DIMN=3 shear options are DUDY, DUDZ, DVDX, DVDZ, DWDX or',&
+         'DWDY.',/1X,70('*')/)
      
+ 1063 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'WARNING: DES_PERIODIC_WALLS set to false when DES_LE_BC.',&
+         /10X,'DES_LE_BC implies periodic walls, however, the ',&
+         'periodicity is handled',/10X, 'independently of ',&
+         'DES_PERIODIC_WALLS option and so it is shut off.',&
+         /1X,70('*')/)
+
+ 1064 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'DES_CONTINUUM_COUPLED cannot be true when using ',&
+         'DES_LE_BC.',/1X,70('*')/)
+ 
               END SUBROUTINE CHECK_DES_DATA

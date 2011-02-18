@@ -15,6 +15,16 @@
       USE param
       USE param1
 
+! Define interface - needed when passing arrays of assumed size      
+      INTERFACE
+         INTEGER FUNCTION DES_GETINDEXFROMPOS(LIM1,LIM2,PART_POS,&
+            GRID_POS,AXIS,AXIS_INDEX)
+            INTEGER :: LIM1, LIM2
+            DOUBLE PRECISION :: PART_POS            
+            DOUBLE PRECISION, DIMENSION(:) :: GRID_POS
+            CHARACTER*1 :: AXIS,AXIS_INDEX
+         END FUNCTION DES_GETINDEXFROMPOS
+      END INTERFACE
 
 ! Logic that controls whether to print data dem simulations (granular or
 ! coupled)
@@ -198,6 +208,17 @@
       LOGICAL DES_PERIODIC_WALLS_X
       LOGICAL DES_PERIODIC_WALLS_Y
       LOGICAL DES_PERIODIC_WALLS_Z
+
+! Lees & Edwards wall BC
+! Logic for Lees & Edwards BC (T = turn on LE BC)
+      LOGICAL DES_LE_BC
+! Relative velocity of LE boundaries (distance/time)      
+      DOUBLE PRECISION DES_LE_REL_VEL
+! Shear direction
+!   2D options are DUDY or DVDX 
+!   3D options are DUDY, DUDZ, DVDX, DVDZ, DWDX or DWDY
+!   Note that all other directions are treated as periodic boundaries
+      CHARACTER*4 DES_LE_SHEAR_DIR
 
 ! Constant input pressure gradient (currently unused?)
       DOUBLE PRECISION pgrad(3)

@@ -33,14 +33,16 @@
         DES_PERIODIC_WALLS, DES_PERIODIC_WALLS_X,&
         DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z,&
         WALLDTSPLIT,&
+! Lees Edwards BC (for DEM only)
+        DES_LE_BC, DES_LE_REL_VEL, DES_LE_SHEAR_DIR,&
 !	
 ! Wall conditions not presently used
         WALLREFLECT, NON_RECT_BC,& 
 !
-! Use either DES wall vibration parameters 
+! DES wall BC: vibration parameters 
 	DES_F, DES_GAMMA, LID_VEL,&
 !
-! or DES wall boundary condition information
+! DES wall BC: wall translational velocity
         DES_BC_Uw_s, DES_BC_Vw_s, DES_BC_Ww_s,&
 !	
 ! DES flow boundary condition information: J.Musser

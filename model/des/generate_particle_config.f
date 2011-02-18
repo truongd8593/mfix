@@ -493,9 +493,10 @@
 !      
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
       SUBROUTINE init_particles_jn
+      USE constant 
+      USE geometry
       USE randomno
       USE discretelement
-      USE constant 
       IMPLICIT NONE 
 !-----------------------------------------------
 ! Local variables
@@ -503,12 +504,61 @@
       INTEGER I, J, K, L
       LOGICAL FILE_EXIST
       REAL*8 :: umf0(dimn), rsf(DIMN, DIMN)
+! Quantities for LE BC      
+! local variable for shear direction
+      CHARACTER*4 SHEAR_DIR      
+! shear rate
+      DOUBLE PRECISION SHEAR_RATE
+! distance between shear boundaries      
+      DOUBLE PRECISION SHEAR_LENGTH
+! temporary variable - velocity of particle based on position between
+! shearing boundaries and shear rate
+      DOUBLE PRECISION TMP_VEL
+! indices for position and velocity
+      INTEGER POSI, VELI
 !-----------------------------------------------      
 
       WRITE(*,'(3X,A)') '---------- START INIT_PARTICLES_JN ---------->'
-      WRITE(*,'(5X,A)') 'Initializing normal velocity distribution:'
-      WRITE(*,'(5X,A,ES17.8,A,ES17.8)') 'mean = ', pvel_mean,&
-         ' and standard deviation = ', PVEL_StDev
+     
+      IF (.NOT.DES_LE_BC) THEN
+         WRITE(*,'(5X,A)') 'Initializing normal velocity distribution:'
+         WRITE(*,'(5X,A,ES17.8,A,ES17.8)') 'mean = ', pvel_mean,&
+            ' and standard deviation = ', PVEL_StDev
+      ELSE
+         SHEAR_DIR = TRIM(DES_LE_SHEAR_DIR)
+         IF(SHEAR_DIR.EQ.'DUDY') THEN
+            SHEAR_LENGTH = YLENGTH
+            POSI = 2
+            VELI = 1
+         ELSEIF(SHEAR_DIR.EQ.'DWDY') THEN
+            SHEAR_LENGTH = YLENGTH
+            POSI = 2
+            VELI = 3
+         ELSEIF(SHEAR_DIR.EQ.'DVDX') THEN
+            SHEAR_LENGTH = XLENGTH
+            POSI = 1
+            VELI = 2
+         ELSEIF(SHEAR_DIR.EQ.'DWDX') THEN
+            SHEAR_LENGTH = XLENGTH
+            POSI = 1
+            VELI = 3
+         ELSEIF(SHEAR_DIR.EQ.'DUDZ') THEN
+            SHEAR_LENGTH = ZLENGTH 
+            POSI = 3
+            VELI = 1
+         ELSEIF(SHEAR_DIR.EQ.'DVDZ') THEN
+            SHEAR_LENGTH = ZLENGTH 
+            POSI = 3
+            VELI = 2
+         ENDIF  
+         SHEAR_RATE =  (2.d0*DES_LE_REL_VEL)/SHEAR_LENGTH
+         pvel_mean = 0.0d0
+         PVEL_StDev = DABS(SHEAR_RATE)
+         WRITE(*,'(5X,A,A)') 'Setting up velocity profile consistent',&
+            'with shear'
+         WRITE(*,'(5X,A,ES17.8,A,ES17.8)') 'mean = ', pvel_mean,&
+            ' and standard deviation = ', PVEL_StDev
+      ENDIF
 
       DO J=1,DIMN
          umf0(j)=pvel_mean
@@ -524,6 +574,19 @@
          CALL nor_rno(DES_VEL_OLD(1:PARTICLES,J),umf0(J),rsf(J,J))
       ENDDO
 
+
+! Adjust initial condition: change position and velocity according to
+! shear direction and rate
+      IF (DES_LE_BC) THEN
+         DO L = 1, PARTICLES
+            DES_VEL_OLD(L,VELI) = SHEAR_RATE*DES_POS_OLD(L,POSI)-&
+               DES_LE_REL_VEL
+!            TMP_VEL = SHEAR_RATE*DES_POS_OLD(L,POSI)-&
+!               DES_LE_REL_VEL
+!            DES_VEL_OLD(L,VELI) = DES_VEL_OLD(L,VELI) +  TMP_VEL
+         ENDDO
+      ENDIF
+      
       DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
 
 ! updating/writing initial particle configuration files      
