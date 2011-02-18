@@ -273,6 +273,35 @@ ln -sf "$mpi_include/mpif.h" .
 #  Check if the system is a Linux system, if yes then ask the user which 
 #  compiler to use    
 #
+
+    if test $opsys = "MINGW32_NT-5.1"
+    then
+       echo
+       echo
+       echo "CYGWIN 6.0 on Windows Detected"
+       echo
+       echo "=============================================================="
+       echo "MFIX Compilation directives available for following compilers:"
+       echo "=============================================================="
+       echo " [1] g95"
+       echo " [2] gfortran"       
+       echo " "
+       echo -n "Select the compiler to compile MFIX? [2] "
+       read cygwin_compiler
+       case $cygwin_compiler in
+         1 )
+           echo " "
+           echo "g95 compiler selected"
+           opsys="MINGW32_NT-5.1-g95"
+           ;;
+         * )
+           echo " "
+           echo "gfortran Compiler selected"
+           opsys="MINGW32_NT-5.1-gfortran"
+           ;;
+         esac
+    fi
+
     if test $opsys = "CYGWIN_NT-6.0"
     then
        echo
@@ -1875,6 +1904,29 @@ qcache=auto "
 
             FORTRAN_CMD=gfortran-4
             LINK_CMD=gfortran-4
+            libs_d="odepack.a blas90.a dgtsv90.a"
+            libs="odepack.a blas90.a dgtsv90.a"
+
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            omp="-mp"
+            compile_d="-c -I. -fconvert='big-endian' -ffree-form -g "
+            compile_d2="-c -I. -fconvert='big-endian' -ffree-form -g "
+            compile_d3="-c -I. -fconvert='big-endian' -g "
+            link_d="-g"
+            compile="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O3 "
+            compile2="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O1 "
+            compile3="-c -I. -fconvert='big-endian' -I$mpi_include -O1 "
+            link=" "
+            MODULE_CODE=1
+
+            ;;
+
+    MINGW32_NT-5.1-gfortran)
+            mach_file="MINGW.F"
+
+            FORTRAN_CMD=gfortran
+            LINK_CMD=gfortran
             libs_d="odepack.a blas90.a dgtsv90.a"
             libs="odepack.a blas90.a dgtsv90.a"
 
