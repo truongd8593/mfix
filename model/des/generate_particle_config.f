@@ -490,6 +490,10 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !
+! Purpose: Generate a random initial particle velocity based on a normal
+!          distribution.  If Lees Edwards boundaries are selected then 
+!          a linear velocity profile is enforced consistent with the
+!          specified shear rate.      
 !      
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
       SUBROUTINE init_particles_jn
@@ -581,9 +585,6 @@
          DO L = 1, PARTICLES
             DES_VEL_OLD(L,VELI) = SHEAR_RATE*DES_POS_OLD(L,POSI)-&
                DES_LE_REL_VEL
-!            TMP_VEL = SHEAR_RATE*DES_POS_OLD(L,POSI)-&
-!               DES_LE_REL_VEL
-!            DES_VEL_OLD(L,VELI) = DES_VEL_OLD(L,VELI) +  TMP_VEL
          ENDDO
       ENDIF
       
@@ -591,17 +592,20 @@
 
 ! updating/writing initial particle configuration files      
       IF (GENER_PART_CONFIG) THEN
-         INQUIRE(FILE='particle_gener_conf.dat',exist=FILE_EXIST)
+         INQUIRE(FILE='particle_gener_conf.dat',EXIST=FILE_EXIST)
          IF (FILE_EXIST) THEN
             OPEN(UNIT=24,FILE='particle_gener_conf.dat',&
-                 STATUS='REPLACE')
-            DO L = 1, PARTICLES
-               WRITE(24,'(10(X,ES12.5))')&
-                  (DES_POS_OLD(L,K),K=1,DIMN), DES_RADIUS(L),&
-                  RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
-            ENDDO
-            CLOSE(24)
+               STATUS='REPLACE')
+         ELSE
+            OPEN(UNIT=24,FILE='particle_gener_conf.dat',&
+               STATUS='NEW')
          ENDIF
+         DO L = 1, PARTICLES
+            WRITE(24,'(10(X,ES12.5))')&
+               (DES_POS_OLD(L,K),K=1,DIMN), DES_RADIUS(L),&
+               RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
+         ENDDO
+         CLOSE(24)
       ELSE
          OPEN(UNIT=24,FILE='particle_input2.dat',&
               STATUS='REPLACE')

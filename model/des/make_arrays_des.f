@@ -55,6 +55,10 @@
             ELSE
                call generate_particle_config
             ENDIF
+! Override initial particle velocities with velocities assigned from a
+! Gaussian distribution based on usr specified standard deviation and
+! mean
+            IF(PVEL_StDev > ZERO .OR. DES_LE_BC) CALL INIT_PARTICLES_JN
          ENDIF
 
 ! J.Musser : Set the number of particles in the system 
@@ -92,11 +96,6 @@
 
       CALL PARTICLES_IN_CELL
 
-! Override initial particle velocity with velocities assigned from a
-! Gaussian distribution based on usr specified standard deviation and
-! mean
-      IF(PVEL_StDev.GT.ZERO .OR. DES_LE_BC) CALL INIT_PARTICLES_JN
-       
       CALL WRITEIC
 
       WRITE(*,'(1X,A)')&
