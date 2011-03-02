@@ -15,53 +15,51 @@
   TSTOP 		= 40.0 
   DT 			= 5E-4			!time step
   DT_MAX                = 1E-3
- 
+!  DT_FAC = 1.0
+
   ENERGY_EQ 		= .FALSE.		!do not solve energy eq
   SPECIES_EQ 		= .FALSE.    .FALSE. 	!do not solve species eq
 
   MOMENTUM_X_EQ(1) = .FALSE.
   MOMENTUM_Y_EQ(1) = .FALSE.
   MOMENTUM_Z_EQ(1) = .FALSE.
+  DRAG_TYPE = 'GIDASPOW'
 
-!  DT_FAC = 1.0
+  GRAVITY = 980
 
   MAX_NIT = 250
   TOL_RESID = 1.E-3
-                
-                                                               
-! Geometry Section                                                      
-                                                                         
+
+
+
+! Geometry Section 
   COORDINATES 		= 'cartesian' 
   XLENGTH  		=   15.0	        !X length	
   IMAX 			=   15			!cells in i direction
   YLENGTH  		=   90.0		!height
   JMAX 			=   45 			!cells in j direction
-
   NO_K     		= .TRUE. 		!2D, no k direction
-
   DZ(1)                 = 0.4d0                 !Define DZ to be particle
                                                 !for 2D DEM cases
 
-  GRAVITY = 980
-                                                                             
-! Gas-phase Section                                                             
- 
+
+! Gas-phase Section 
   MU_g0 		= 1.8E-4		!constant gas viscosity
   RO_g0			= 1.205E-3		!constant gas density
 
- 
-! Solids-phase Section                                                  
 
+ 
+! Solids-phase Section
 ! MMAX                  = 2
   RO_s    		= 2.7           	!solids density
-  D_p0    		= 0.4                  !particle diameter
+  D_p0    		= 0.4                   !particle diameter
   e       		= 0.9 			!restitution coefficient
   Phi    		= 30.0			!angle of internal friction
   EP_star 		= 0.42			!void fraction at minimum
 						!  fluidization
-  
+ 
+ 
 ! Initial Conditions Section                                                    
-
     ! 1. bed
   IC_X_w(1)           	=  0.0				!domain
   IC_X_e(1)           	=  15.0		! 0 < x < 15, 0 < y < 30
@@ -75,9 +73,10 @@
   IC_U_s(1,1) = 0.0
   IC_V_s(1,1) = 0.0
 
-!  Boundary Conditions Section
 
-      ! 1. Central jet
+
+!  Boundary Conditions Section
+! 1. Central jet
   BC_X_w(1)		=  7.0		! central jet
   BC_X_e(1)		=  8.0		! 7 < x < 8, y = 0
   BC_Y_s(1)		=  0.0
@@ -121,41 +120,35 @@
   BC_TYPE(4)		=  'PO' 	!specified pressure outflow
   BC_P_g(4)		=  0.0
 
-!
+
+
 ! DES INPUT
- PARTICLES = 2400              
- MN = 14             ! Maximum number of neighbors allowed per particle
- DIMN = 2
-
- KN = 1.0d+6         ! Normal inter-particle collision spring constant
- KT_FAC = @(2/7)         ! Tangential spring factor = KN/KT
- PRINT_DES_DATA = .T.
- MEW = 0.1           ! Inter-particle friction coeffienct
-
- KN_W = 1.0d+6      ! Normal particle-wall collision spring constant
- KT_W_FAC = @(2/7)      ! Tangential spring factor = KN_W/KT_W
-
- MEW_W = 0.1         ! Particle-wall friction coefficient
- NFACTOR = 500
- DES_NEIGHBOR_SEARCH = 4 !d; 1=n-square; 2=quadtree; 3=octree
- MN = 20                 ! Maximum number of neighbors allowed per particle
- NEIGHBOR_SEARCH_N = 20
- DTSOLID_FACTOR = 0.1D0
+ DISCRETE_ELEMENT = .TRUE. 
+ DES_CONTINUUM_COUPLED = .TRUE.
  DES_INTERP_ON = .TRUE.
- DES_EN_INPUT = 3*0.9       !particle-particle rest coef
- DES_EN_WALL_INPUT = 2*1.0  !particle-wall rest coef
+ WALLDTSPLIT = .TRUE.
+ NFACTOR = 500             ! length of dem settling period in no. of loops
 
- DES_ETAT_FAC = @(1/2)  ! damping coefficient factor = ETAN/ETAT
- DES_ETAT_W_FAC = @(1/2) ! damping coefficient factor = ETAN_W/ETAT_W
+ DIMN = 2
+ PARTICLES = 2400              
 
-!  DES Logicals
-DISCRETE_ELEMENT = .TRUE. 
-WALLDTSPLIT = .TRUE.
-DES_CONTINUUM_COUPLED = .TRUE.
-DRAG_TYPE = 'GIDASPOW'
-TSUJI_DRAG = .FALSE.
+ KN = 1.0d+6               ! Normal inter-particle collision spring constant
+ KT_FAC = @(2/7)           ! Tangential spring factor = KT/KN
+ MEW = 0.1                 ! Inter-particle friction coeffienct
+ KN_W = 1.0d+6             ! Normal particle-wall collision spring constant
+ KT_W_FAC = @(2/7)         ! Tangential spring factor = KT_W/KN_W
+ MEW_W = 0.1               ! Particle-wall friction coefficient
+ DES_EN_INPUT = 0.9        ! particle-particle rest coef
+ DES_EN_WALL_INPUT = 1.0   ! particle-wall rest coef
+ DES_ETAT_FAC = @(1/2)     ! damping coefficient factor = ETAT/ETAN
+ DES_ETAT_W_FAC = @(1/2)   ! damping coefficient factor = ETAT_W/ETAN_W
 
-! End DES Input
+ DES_NEIGHBOR_SEARCH = 4   !1=n-square; 2=quadtree; 3=octree; 4=grid-based
+ NEIGHBOR_SEARCH_N = 20
+ MN = 20                   ! Maximum number of neighbors allowed per particle
+
+ PRINT_DES_DATA = .T.
+
 
 ! Output Control
 !
