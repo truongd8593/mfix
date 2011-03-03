@@ -1249,9 +1249,9 @@
 
             ENDIF
 
-            IF (DO_SENDRECV) call send_recv(var,nlayers_bicgs)
-
          ENDIF
+
+         IF (DO_SENDRECV) call send_recv(var,nlayers_bicgs)
 
       ENDDO
 
