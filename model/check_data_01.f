@@ -48,90 +48,118 @@
 !-----------------------------------------------
       INTEGER :: M, N, L
       Character*80  Line(1)
+      CHARACTER*85 LONG_STRING
 !-----------------------------------------------
 
 
 
-!     Solids phase
 
       IF (DESCRIPTION == UNDEFINED_C) DESCRIPTION = ' ' 
 
-      IF ( (UNITS /= 'CGS').AND. (UNITS /= 'SI') ) CALL ERROR_ROUTINE ('check_data_01', &
-         'UNITS not specified or illegal in mfix.dat', 1, 1) 
+      IF ( (UNITS /= 'CGS') .AND. (UNITS /= 'SI') )&
+         CALL ERROR_ROUTINE ('check_data_01', &
+         'UNITS not specified or illegal in mfix.dat',1,1) 
 
       IF (DT /= UNDEFINED) THEN 
-         IF (TIME==UNDEFINED .OR. TIME<ZERO) CALL ERROR_ROUTINE (&
-            'check_data_01', 'TIME not specified OR < 0.0 in mfix.dat', 1, 1) 
+         IF (TIME==UNDEFINED .OR. TIME<ZERO) &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'TIME not specified OR < 0.0 in mfix.dat',1,1) 
       ELSE 
          TIME = ZERO 
       ENDIF 
 
       IF (DT /= UNDEFINED) THEN 
-         IF (TSTOP==UNDEFINED .OR. TSTOP<TIME) CALL ERROR_ROUTINE (&
-            'check_data_01', 'TSTOP not specified OR TSTOP < TIME in mfix.dat'&
-            , 1, 1) 
+         IF (TSTOP==UNDEFINED .OR. TSTOP<TIME) &
+            CALL ERROR_ROUTINE ('check_data_01',&
+            'TSTOP not specified OR TSTOP < TIME in mfix.dat',1,1) 
       ENDIF 
 
 !      IF (DT.EQ.UNDEFINED .OR. DT.LT.ZERO)
 !     &          CALL ERROR_ROUTINE ('check_data_01',
 !     &          'DT not specified OR DT < 0.0 in mfix.dat',1,1)
+
       IF (DT==UNDEFINED .OR. DT<ZERO) THEN 
          ODT = ZERO 
       ELSE 
          ODT = ONE/DT 
       ENDIF 
-      IF (.NOT.(RUN_TYPE=='NEW' .OR. RUN_TYPE=='RESTART_1' .OR. RUN_TYPE==&
-         'RESTART_2')) CALL ERROR_ROUTINE ('check_data_01', &
+
+      IF(.NOT.(RUN_TYPE=='NEW' .OR. RUN_TYPE=='RESTART_1' &
+         .OR. RUN_TYPE=='RESTART_2') )&
+         CALL ERROR_ROUTINE ('check_data_01', &
          'RUN_TYPE not specified or illegal in mfix.dat', 1, 1) 
+
+! Solids phase quantities
       IF (FRICTION) THEN 
-         IF (.NOT.GRANULAR_ENERGY) CALL ERROR_ROUTINE ('check_data_01', &
-            'For FRICTION=.T., GRANULAR_ENERGY must be turned on', 1, 1) 
-         IF (SAVAGE>2 .OR. SAVAGE<0) CALL ERROR_ROUTINE ('check_data_01', &
-            'Value of SAVAGE should be 0, 1, or 2', 1, 1) 
-! Schaeffer formulation is not used when friction is used (sof 02/16/2005)
+! Sof: Schaeffer formulation is not used when friction is used 
          SCHAEFFER = .FALSE.    
-         IF (BLENDING_STRESS) CALL ERROR_ROUTINE ('check_data_01', &
-            'Use only blending_stress with Schaeffer not with Friction', 1, 1)    
+         IF (.NOT.GRANULAR_ENERGY) &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'For FRICTION=.T., GRANULAR_ENERGY must be turned on',1,1)
+         IF (SAVAGE>2 .OR. SAVAGE<0) &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'Value of SAVAGE should be 0, 1, or 2',1,1) 
+         IF (BLENDING_STRESS) &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'Use blending_stress with Schaeffer not with Friction',1,1)
       ENDIF
 
-! GHD Theory requires some do loops over MMAX - 1, which is the real # of solids phases
+      IF (JENKINS .AND. .NOT.GRANULAR_ENERGY) &
+         CALL ERROR_ROUTINE ('check_data_01', &
+         'GRANULAR_ENERGY must = .T. if JENKINS = .T.', 1, 1)
+
+! GHD Theory requires some do loops over MMAX - 1, which is the real
+! number of solids phases
       SMAX = MMAX
       IF(TRIM(KT_TYPE) == 'GHD') SMAX = MMAX - 1
-! end of GHD Theory requirement
 
-! sof: cannot use both Ahmadi and Simonin models at the same time.
-      IF (AHMADI .AND. SIMONIN) CALL ERROR_ROUTINE ('check_data_01', &
-            'Cannot set both AHMADI = .T. and SIMONIN = .T.', 1, 1)  
+! Sof: cannot use both Ahmadi and Simonin models at the same time.
+      IF (AHMADI .AND. SIMONIN) &
+         CALL ERROR_ROUTINE ('check_data_01', &
+         'Cannot set both AHMADI = .T. and SIMONIN = .T.', 1, 1)  
 
-! sof: cannot use both L_scale0 and K-epsilon models at the same time.
+      IF (.NOT.GRANULAR_ENERGY .AND. (AHMADI .OR. SIMONIN)) &
+         CALL ERROR_ROUTINE ('check_data_01', &
+         'GRANULAR_ENERGY must = .T. if AHMADI OR SIMONIN = .T.', 1, 1)
+
+      IF (.NOT.K_EPSILON .AND. (AHMADI .OR. SIMONIN)) &
+         CALL ERROR_ROUTINE ('check_data_01', &
+         'K_EPSILON must = .T. if AHMADI OR SIMONIN = .T.', 1, 1)
+
+! Sof: cannot use both L_scale0 and K-epsilon models at the same time.
       IF (K_Epsilon .AND. L_SCALE0/=ZERO) &
-           CALL ERROR_ROUTINE ('check_data_01', &
-          'Cannot set both K_Epsilon = .T. and L_SCALE0 /= ZERO', 1, 1)
+         CALL ERROR_ROUTINE ('check_data_01', &
+         'Cannot set both K_Epsilon = .T. and L_SCALE0 /= ZERO',1,1)
 
 ! Check that phase number where added mass applies is properly defined.
       IF (ADDED_MASS) THEN
-           IF(M_AM == UNDEFINED_I) CALL ERROR_ROUTINE ('check_data_01', &
-          'Must set disperse phase number M_AM where virtual mass applies', 1, 1)
-!
-           IF(M_AM == 0 .OR. M_AM > MMAX) CALL ERROR_ROUTINE ('check_data_01', &
-          'M_AM must be > 0 and <= MMAX', 1, 1)
-!
-           IF(KT_TYPE == 'GHD') CALL ERROR_ROUTINE ('check_data_01', &
-          'Added mass force cannot be implemented with GHD theory that solves for mixture eqs.', 1, 1)
+         LONG_STRING = 'Must set disperse phase number M_AM where &
+            &virtual mass applies.'
+         IF(M_AM == UNDEFINED_I) &
+            CALL ERROR_ROUTINE ('check_data_01', TRIM(LONG_STRING),1,1)
+         IF(M_AM == 0 .OR. M_AM > MMAX) &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'M_AM must be > 0 and <= MMAX', 1, 1)
+         LONG_STRING = 'Added mass force cannot be implemented with &
+            &GHD theory that solves for mixture eqs.'
+         IF(KT_TYPE == 'GHD') &
+            CALL ERROR_ROUTINE ('check_data_01', TRIM(LONG_STRING),1,1)
       ENDIF
 
 ! check for valid options for KT type
       IF (KT_TYPE /= UNDEFINED_C) THEN
-         IF(KT_TYPE /= 'IA_NONEP' .AND. KT_TYPE /= 'GD_99' .AND. KT_TYPE /= 'GHD') &
+         IF(KT_TYPE /= 'IA_NONEP' .AND. KT_TYPE /= 'GD_99' .AND. &
+            KT_TYPE /= 'GHD') &
             CALL ERROR_ROUTINE ('check_data_01', &
-            'The only option for KT_TYPE is IA_NONEP, GD_99 or GHD', 1, 1)
+            'The only option for KT_TYPE is IA_NONEP, GD_99 or GHD',1,1)
       ENDIF
 
 ! sof: Check name of radial distribution function
       IF (RDF_TYPE /= 'LEBOWITZ') THEN
-         IF(RDF_TYPE /= 'MODIFIED_LEBOWITZ' .AND. RDF_TYPE /= 'MANSOORI' .AND. &
-            RDF_TYPE /= 'MODIFIED_MANSOORI') CALL ERROR_ROUTINE ('check_data_01', &
-            'Unknown RDF_TYPE', 1, 1)
+         IF(RDF_TYPE /= 'MODIFIED_LEBOWITZ' .AND. &
+            RDF_TYPE /= 'MANSOORI' .AND. &
+            RDF_TYPE /= 'MODIFIED_MANSOORI') &
+            CALL ERROR_ROUTINE ('check_data_01','Unknown RDF_TYPE',1,1)
       ENDIF
 
 ! Set variable ANY_SPECIES_EQ
@@ -157,14 +185,13 @@
 
 !      IF (DISCRETIZE(1) > 1 .OR. DISCRETIZE(2) > 1) THEN 
 !         DISCRETIZE(1) = 0
-!	 DISCRETIZE(2) = 0
-!	 IF(DMP_LOG)WRITE (UNIT_LOG, 1500) 
+!	  DISCRETIZE(2) = 0
+!	  IF(DMP_LOG)WRITE (UNIT_LOG, 1500) 
 !      ENDIF 
 !      IF (.not.DEF_COR) THEN 
-!        DEF_COR= .true.
-!	IF(DMP_LOG)WRITE (UNIT_LOG, 1501) 
+!         DEF_COR= .true.
+!	  IF(DMP_LOG)WRITE (UNIT_LOG, 1501) 
 !      ENDIF
-
 
       IF (FPFOI) THEN
          DO L = 1,8

@@ -139,13 +139,6 @@
 !     write(*,*) KSTART3, KSTART2, KSTART, KSTART1, KEND1, KEND, KEND2, KEND3
 
 
-! MUST use k-epsilon model and granular temperature PDE with Simonin
-! and Ahmadi models (must be done before allocate_arrays). Sof --> 02/01/05
-      IF(SIMONIN .OR. AHMADI) THEN
-        K_Epsilon = .TRUE.
-        GRANULAR_ENERGY = .TRUE.
-      ENDIF
-
       CALL ALLOCATE_ARRAYS    
 
       IF (RUN_NAME == UNDEFINED_C) THEN 
@@ -161,7 +154,7 @@
          CALL READ_RES0
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
 
-         CALL READ_NAMELIST (0)                  ! to modify the .RES data with .DAT data 
+         CALL READ_NAMELIST (0)     ! to modify the .RES data with .DAT data 
          RUN_TYPE = 'RESTART_1' 
          SHIFT = .FALSE. 
       ELSE IF (RUN_TYPE == 'RESTART_4') THEN 
@@ -171,7 +164,7 @@
          CALL READ_RES0  
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
 
-         CALL READ_NAMELIST (0)              ! to modify the .RES data with .DAT data 
+         CALL READ_NAMELIST (0)     ! to modify the .RES data with .DAT data 
          RUN_TYPE = 'RESTART_2' 
          SHIFT = .FALSE. 
       ELSE 
@@ -214,6 +207,13 @@
          CALL CHECK_DES_BC
          CALL DES_ALLOCATE_ARRAYS
          CALL DES_INIT_ARRAYS 
+      ELSE
+! If discrete_element is .false. then overwrite the following user DES
+! logicals which may be set
+         DES_CONTINUUM_COUPLED = .FALSE.
+         DES_INTERP_ON = .FALSE.
+         TSUJI_DRAG = .FALSE.
+         PRINT_DES_DATA = .FALSE.
       ENDIF
 
 

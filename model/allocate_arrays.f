@@ -163,15 +163,15 @@
       Allocate(  THETA_m (DIMENSION_3, DIMENSION_M) )
       Allocate(  THETA_mo (DIMENSION_3p, DIMENSION_M) )
 
-
-      IF(K_Epsilon)then
+! sof: MUST use k-epsilon model if using Simonin or Ahmadi model 
+      IF(K_Epsilon .OR. SIMONIN .OR. AHMADI) THEN
         Allocate(  K_Turb_G (DIMENSION_3) )
         Allocate(  K_Turb_Go (DIMENSION_3p) )
         Allocate(  E_Turb_G (DIMENSION_3) )
         Allocate(  E_Turb_Go (DIMENSION_3p) )
       ENDIF
       
-      IF(DIMENSION_Scalar /= 0)then
+      IF(DIMENSION_Scalar /= 0) THEN
         Allocate(  Scalar (DIMENSION_3,  DIMENSION_Scalar) )
         Allocate(  Scalaro (DIMENSION_3p, DIMENSION_Scalar) )
       ENDIF
@@ -290,7 +290,7 @@
         Allocate(  Dif_Scalar (DIMENSION_3p, DIMENSION_Scalar) )
       ENDIF
 
-!isat
+! isat
 !  Insert user-defined code here
       Allocate( N_sh (DIMENSION_3, DIMENSION_M) )
 
@@ -312,8 +312,9 @@
 !     ALLocate(  g_a( 1:DIMENSION_Scalar))
  
 
-!K-Epsilon Turbulence model
-      IF(K_Epsilon)then
+! K-Epsilon Turbulence model
+! sof (02/01/05): must use k-epsilon model with Simonin or Ahmadi models
+      IF(K_Epsilon .OR. SIMONIN .OR. AHMADI)then
         Allocate(  K_Turb_G_c   (DIMENSION_3p) )
         Allocate(  K_Turb_G_p   (DIMENSION_3p) )
         Allocate(  Dif_K_Turb_G (DIMENSION_3p) )
@@ -395,10 +396,8 @@
       Allocate(  Xsi_n(DIMENSION_3) )
       Allocate(  Xsi_t(DIMENSION_3) )
 
-!VSH
+!shear quantities
       Allocate(  VSH(DIMENSION_3) )
-
-!VSHE
       Allocate(  VSHE(DIMENSION_3) )
 
 
@@ -495,8 +494,8 @@
       ENDIF
 
 
-! We need to set this even when KT_TYPE is not set to IA_NONEP - at least in the current version of the code and needs to be revisited
-
+! We need to set this even when KT_TYPE is not set to IA_NONEP - at
+! least in the current version of the code and needs to be revisited
       Allocate(  KTMOM_U_s(DIMENSION_3p, DIMENSION_M) )
       Allocate(  KTMOM_V_s(DIMENSION_3p, DIMENSION_M) )
       Allocate(  KTMOM_W_s(DIMENSION_3p, DIMENSION_M) )

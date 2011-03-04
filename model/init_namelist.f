@@ -132,41 +132,36 @@
       AUTOMATIC_RESTART = .FALSE.
       AUTO_RESTART = .FALSE.
       ITER_RESTART = 1
-! start peter 7/15
+
+! peter: 7/15
       V_sh=0d0
 
-! start jeg (4/01/2005)
+! jeg: 4/01/2005
       KT_TYPE = UNDEFINED_C
       RDF_TYPE = 'LEBOWITZ'
-! end jeg
 
-! start anuj 04/20
+! anuj: 04/20
       FRICTION = .FALSE. 
       SAVAGE = 1 
-! end anuj 04/20
 
-! sof (02/16/2005)
+! sof: 02/16/2005
       SCHAEFFER = .TRUE. 
-! end sof
  
-! sp (02/08/2006)
+! sp: 02/08/2006
       BLENDING_STRESS = .FALSE. 
       TANH_BLEND      = .TRUE.
       SIGM_BLEND      = .FALSE.
-! end sp
 
-! sp (06/15/2007)
+! sp: 06/15/2007
       DEBUG_RESID     = .TRUE.
-! end sp
 
-! DISTIO start distributed IO
+! DISTIO distributed IO
       bDist_IO            = .false.
       bStart_with_one_RES = .false.
-! end distributed IO
+
  
-! start loezos 
+! loezos:
       SHEAR = .FALSE.
-! end loezos   
 
       DRAG_TYPE = 'SYAM_OBRIEN'
       drag_c1 = 0.8d0
@@ -234,19 +229,26 @@
       CYCLIC_Z_PD = .FALSE. 
 
 
-!  Constants
+! Constants
       DO LC = 1, DIMENSION_C 
          C(LC) = UNDEFINED 
          C_NAME(LC) = '....................' 
-      END DO 
+      ENDDO 
       GRAVITY = UNDEFINED 
       C_E = UNDEFINED 
       C_F = UNDEFINED 
       PHI = UNDEFINED 
       PHIP = 0.6D0 
-      E_W = 1D0 
+      E_W = 1.D0 
+      PHI_W = UNDEFINED 
+      EPS_F_MIN = 0.5D0 
+      L_SCALE0 = ZERO 
+      MU_GMAX = UNDEFINED 
+      V_EX = ZERO 
+      P_REF = ZERO 
+      P_SCALE = ONE 
 
-! GERA 08/15/03
+! gera: 08/15/03
       SEGREGATION_SLOPE_COEFFICIENT=0.D0
       EP_S_MAX(:DIM_M) = UNDEFINED
 
@@ -259,15 +261,11 @@
 ! eps_max: not needed anymore (sof, Nov-17-2005) 
 !      EPS_MAX = 0.65D0      
 
-! start rong
+! rong
       AGGREGATION_EFF=0.D0
       BREAKAGE_EFF=0.D0
-! end rong
 
-      EPS_F_MIN = 0.5D0 
-      PHI_W = ZERO 
-      L_SCALE0 = ZERO 
-      MU_GMAX = UNDEFINED 
+! numerics     
       NORM_G = UNDEFINED 
       NORM_S = UNDEFINED 
       TOL_RESID = 1.0D-3 
@@ -278,9 +276,6 @@
       TOL_RESID_Th = 1.0D-4
       TOL_DIVERGE = 1.0D+4 
       MAX_INLET_VEL_FAC = ONE
-      V_EX = ZERO 
-      P_REF = ZERO 
-      P_SCALE = ONE 
       MAX_NIT = 500 
       LEQ_IT(1) = 20 
       LEQ_IT(2) = 20 
@@ -398,12 +393,12 @@
 ! sof: force users to set initial values for K and Epsilon. 
          IC_K_Turb_G(LC) = UNDEFINED  
          IC_E_Turb_G(LC) = UNDEFINED
-! sof: end
 
          IC_GAMA_RS(LC,:DIM_M) = ZERO 
          IC_T_RS(LC,:DIM_M) = UNDEFINED 
 !         IC_X_S(LC,1,1+:DIM_N_S+) = UNDEFINED 
-      END DO 
+      ENDDO 
+
       IC_X_S = UNDEFINED
       DELP_X = UNDEFINED 
       DELP_Y = UNDEFINED 
@@ -415,6 +410,8 @@
       U_S0(:DIM_M) = UNDEFINED 
       V_S0(:DIM_M) = UNDEFINED 
       W_S0(:DIM_M) = UNDEFINED 
+
+! Boundary Conditions      
       DO LC = 1, DIMENSION_BC 
          BC_X_W(LC) = UNDEFINED 
          BC_X_E(LC) = UNDEFINED 
@@ -458,9 +455,8 @@
          BC_TW_G(LC) = UNDEFINED 
          BC_C_T_G(LC) = UNDEFINED 
 
-!start kapil&anuj 01/19/98
+! kapil&anuj: 01/19/98
          BC_JJ_PS(LC) = UNDEFINED_I 
-!end   kapil&anuj 01/19/98
 
          BC_ROP_S(LC,:DIM_M) = UNDEFINED 
          BC_U_S(LC,:DIM_M) = UNDEFINED 
@@ -486,7 +482,7 @@
          BC_HW_Scalar(LC,:DIM_SCALAR) = UNDEFINED 
          BC_ScalarW(LC,:DIM_SCALAR) = UNDEFINED 
          BC_C_Scalar(LC,:DIM_SCALAR) = UNDEFINED 
-      END DO 
+      ENDDO 
    
       BC_THETA_M = UNDEFINED 
       BC_Scalar = UNDEFINED
@@ -494,7 +490,6 @@
 ! sof: force users to set inlet BC for K and Epsilon  
       BC_K_Turb_G = UNDEFINED  
       BC_E_Turb_G = UNDEFINED 
-! sof: end
 
       BC_X_S = UNDEFINED 
       BC_HW_X_S = UNDEFINED 
@@ -518,10 +513,11 @@
          IS_PC(LC,2) = ZERO 
          IS_TYPE(LC) = UNDEFINED_C 
          IS_VEL_S(LC,:DIM_M) = ZERO 
-      END DO 
+      ENDDO 
+
       DO LC = 1, DIM_N_ALL
          SPECIES_NAME(LC) = UNDEFINED_C 
-      END DO 
+      ENDDO 
 
       NODESI = UNDEFINED_I
       NODESJ = UNDEFINED_I
@@ -530,24 +526,20 @@
       IS_SERIAL = .TRUE.
       USE_DOLOOP = .FALSE.
 
-! CHEM & ISAT begin (nan xie)
+! nan xie: CHEM & ISAT
       CALL_DI = .FALSE.
       CALL_GROW = .FALSE.
       CALL_ISAT = .FALSE.  
       ISATdt    = UNDEFINED
-! CHEM & ISAT end (nan xie)
 
       bWrite_netCDF(:) = .false.
 
       CALL DES_INIT_NAMELIST
       CALL USR_INIT_NAMELIST 
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+
+! JFD: MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION      
       CALL CARTESIAN_GRID_INIT_NAMELIST
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+
 
       RETURN  
       END SUBROUTINE INIT_NAMELIST 
