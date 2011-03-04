@@ -43,7 +43,7 @@
 ! 1 over volume of fluid cell      
       DOUBLE PRECISION :: OVOL
 ! total volume of mth phase solids in cell and 1 over that value      
-      DOUBLE PRECISION SOLVOLINC(DIMENSION_3,MMAX), OSOLVOL
+      DOUBLE PRECISION SOLVOLINC(DIMENSION_3,DES_MMAX), OSOLVOL
 ! variables that count/store the number of particles in i, j, k cell
       INTEGER:: npic, pos
       INTEGER, DIMENSION(DIMENSION_I,DIMENSION_J,DIMENSION_K):: particle_count
@@ -59,7 +59,7 @@
       INTEGER, DIMENSION(DESGS_IMAX2,DESGS_JMAX2,DESGS_KMAX2) :: DESGRIDSEARCH_NPIC
       INTEGER, DIMENSION(DESGS_IMAX2,DESGS_JMAX2,DESGS_KMAX2) :: DESGS_particle_count
 ! Variables to calculate bed height of each solids phase
-      DOUBLE PRECISION :: tmp_num(MMAX), tmp_den(MMAX), hcell 
+      DOUBLE PRECISION :: tmp_num(DES_MMAX), tmp_den(DES_MMAX), hcell 
 
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -88,29 +88,35 @@
          IF(PC .GT. PIS) EXIT
          IF(.NOT.PEA(L,1)) CYCLE
 
+
          IF(FIRST_PASS) THEN 
 ! Brute force technique to determine the particle locations in the Eulerian grid 
 
-            DO M = 1, MMAX
-               IF(ABS(2.0d0*DES_RADIUS(L)-D_P0(M)).LT.SMALL_NUMBER.AND. &
-               ABS( RO_Sol(L)-RO_S(M)).LT.SMALL_NUMBER) THEN
+
+! Determine which solids phase a particle belongs based on matching each
+! particle diameter and density to a solids phase particle diameter and
+! density
+            DO M = 1, DES_MMAX
+               IF(ABS(2.0d0*DES_RADIUS(L)-DES_D_P0(M)).LT.SMALL_NUMBER.AND. &
+                  ABS( RO_Sol(L)-DES_RO_S(M)).LT.SMALL_NUMBER) THEN
                PIJK(L,5) = M 
                ENDIF
             ENDDO
             
             IF(PIJK(L,5).EQ.0) THEN
                WRITE(*,'(5X,A,A,I10)') &
-                  'Problem determining the solids ',&
+                  'Problem determining the solids phase ',&
                   'association for particle: ',L
-               WRITE(*,'(7X,A,(ES15.9))') &
-                  'Particle position = ', DES_POS_NEW(L,:)
                WRITE(*,'(7X,A,ES15.9,/,7X,A,(ES15.9))')&
                   'Particle diameter = ', 2.0*DES_RADIUS(L),&
-                  'and D_P0(1:MMAX)= ', D_P0(1:MMAX)
+                  'and DES_D_P0(1:DES_MMAX)= ', DES_D_P0(1:DES_MMAX)
                WRITE(*,'(7X,A,ES15.9,/,7X,A,(ES15.9))')&
                   'Particle density = ', Ro_Sol(L), &
-                  'and RO_s(1:MMAX) = ', RO_S(1:MMAX)
+                  'and DES_RO_s(1:DES_MMAX) = ', DES_RO_S(1:DES_MMAX)
+               WRITE(UNIT_LOG, 1005) L
+               CALL MFIX_EXIT(myPE)                  
             ENDIF
+
 
             XPOS = DES_POS_NEW(L,1)
             YPOS = DES_POS_NEW(L,2)
@@ -310,7 +316,7 @@
       DO IJK = IJKSTART3, IJKEND3
          J = J_OF(IJK)
          EP_G(IJK) = ONE   
-         DO M = 1, MMAX
+         DO M = 1, DES_MMAX
             IF(SOLVOLINC(IJK,M).GT.ZERO) THEN
                OSOLVOL = ONE/SOLVOLINC(IJK,M)   
                DES_U_s(IJK,M) = DES_U_s(IJK,M)*OSOLVOL
@@ -323,7 +329,7 @@
                OVOL = ONE/(VOL(IJK))
                IF(FIRST_PASS .OR. &
                  ((.NOT.FIRST_PASS).AND.(.NOT.DES_INTERP_ON))) THEN
-                  ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)*OVOL
+                  ROP_S(IJK,M)  = DES_RO_S(M)*SOLVOLINC(IJK,M)*OVOL
                ENDIF
             ENDIF
             IF(ROP_S(IJK,M) > ZERO) THEN
@@ -345,7 +351,7 @@
                tmp_num(M) = tmp_num(M) + EP_S(IJK,M)*hcell*VOL(IJK)
                tmp_den(M) = tmp_den(M) + EP_S(IJK,M)*VOL(IJK)
             ENDIF
-         ENDDO   ! end loop over M=1,MMAX
+         ENDDO   ! end loop over M=1,DES_MMAX
       ENDDO     ! end loop over IJK=ijkstart3,ijkend3
 
 ! calculate avg height for each phase
@@ -517,6 +523,11 @@
 
  1000 FORMAT(3X,'---------- FROM PARTICLES_IN_CELL ---------->')
  1001 FORMAT(3X,'<---------- END PARTICLES_IN_CELL ----------') 
+
+ 1005 FORMAT(/1X,70('*')//&
+         ' From: PARTICLES_IN_CELL -',/,& 
+         ' Message: Problem determining the solids phase',&
+         ' association for particle: ',I8,1X,70('*')/)
 
  1006 FORMAT(/1X,70('*')//&
          ' Message: Particle ',I8,' moved into a',&

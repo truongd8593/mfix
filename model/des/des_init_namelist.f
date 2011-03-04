@@ -36,6 +36,7 @@
       TSUJI_DRAG = .FALSE.
       DES_INTG_METHOD = 'EULER'
       USE_COHESION = .FALSE.
+      DES_CONTINUUM_HYBRID = .FALSE.
 
       DES_NEIGHBOR_SEARCH = 1
       DO_NSEARCH = .FALSE.
@@ -80,6 +81,11 @@
       e_young(:) = undefined
       v_poisson(:) = undefined
 
+      DES_D_P0(:) = UNDEFINED
+      DES_RO_S(:) = UNDEFINED
+      DES_MMAX = 1
+
+! system properties      
       DIMN = UNDEFINED_I  
       WX1 = UNDEFINED
       EX2 = UNDEFINED

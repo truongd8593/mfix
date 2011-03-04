@@ -40,8 +40,8 @@
       DO M = 1, MMAX
          DO L = 1, PART_MPHASE(M) 
             PART_COUNT = PART_COUNT + 1
-            DES_RADIUS(PART_COUNT) = D_P0(M)*HALF
-            RO_Sol(PART_COUNT) = RO_S(M)
+            DES_RADIUS(PART_COUNT) = DES_D_P0(M)*HALF
+            RO_Sol(PART_COUNT) = DES_RO_S(M)
          ENDDO
       ENDDO
       

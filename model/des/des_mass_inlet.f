@@ -106,10 +106,10 @@
          OMEGA_NEW(NP,:) = 0
 
 ! Set the particle radius value
-         DES_RADIUS(NP) = (D_P0(M) * HALF)
+         DES_RADIUS(NP) = (DES_D_P0(M) * HALF)
 
 ! Set the particle density value
-         RO_Sol(NP) = RO_S(M)
+         RO_Sol(NP) = DES_RO_S(M)
 
 ! Set the particle mass phase
          PIJK(NP,5) = M

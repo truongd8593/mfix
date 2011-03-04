@@ -194,7 +194,7 @@
 ! average fluid velocity at scalar cell center
                   UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
                   VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
-                  DO M = 1, MMAX
+                  DO M = 1, DES_MMAX
                      IF(EP_S(IJK,M).GT.ZERO) THEN
                         SOLID_DRAG(IJK,M,1) = -F_GS(IJK,M)*&
                            (DES_U_S(IJK,M)-UGC)
@@ -435,7 +435,7 @@
                         !drag_bm(II,JJ,KK, 1:DIMN,M) = zero 
 
                         WTBAR(II,JJ,KK,M) = WTBAR(II,JJ,KK,M) + &
-                           WEIGHTP(I,J,K) *RO_S(M)*OVOL*PVOL(NP)
+                           WEIGHTP(I,J,K) *RO_Sol(NP)*OVOL*PVOL(NP)
 
                      ENDDO
                   ENDDO
@@ -453,10 +453,10 @@
                   I = 1
                   DO K = 1, KMAX1
                      DO J = 1, JMAX1
-                        drag_bm(I,J,K,1, 1:MMAX) = HALF*&
-                           ( drag_bm(I,J,K,1, 1:MMAX) + &
-                             drag_bm(IMAX1,J,K,1, 1:MMAX) )
-                        drag_bm(IMAX1,J,K,1,1:MMAX) = drag_bm(1,J,K,1, 1:MMAX)
+                        drag_bm(I,J,K,1, 1:DES_MMAX) = HALF*&
+                           ( drag_bm(I,J,K,1, 1:DES_MMAX) + &
+                             drag_bm(IMAX1,J,K,1, 1:DES_MMAX) )
+                        drag_bm(IMAX1,J,K,1,1:DES_MMAX) = drag_bm(1,J,K,1, 1:DES_MMAX)
                         
                         WTBAR(I,J,K,:) = HALF*&
                            ( WTBAR(I,J,K,:) + WTBAR(IMAX1,J,K,:) )
@@ -472,10 +472,10 @@
                   J = 1
                   DO K = 1, KMAX1
                      DO I = 1, IMAX1
-                        drag_bm(I,J,K,2, 1:MMAX) = HALF*&
-                           ( drag_bm(I,J,K,2, 1:MMAX)+&
-                             drag_bm(I,JMAX1,K,2, 1:MMAX) )
-                        drag_bm(I,JMAX1,K,2, 1:MMAX) = drag_bm(I,1,K,2, 1:MMAX)
+                        drag_bm(I,J,K,2, 1:DES_MMAX) = HALF*&
+                           ( drag_bm(I,J,K,2, 1:DES_MMAX)+&
+                             drag_bm(I,JMAX1,K,2, 1:DES_MMAX) )
+                        drag_bm(I,JMAX1,K,2, 1:DES_MMAX) = drag_bm(I,1,K,2, 1:DES_MMAX)
    
                         WTBAR(I,J,K,:) = HALF*&
                            ( WTBAR(I,J,K,:) + WTBAR(I,JMAX1,K,:) )
@@ -491,10 +491,10 @@
                   K = 1
                   DO J = 1, JMAX1
                      DO I = 1, IMAX1
-                        drag_bm(I,J,K,3, 1:MMAX) = HALF*&
-                           ( drag_bm(I,J,K,3, 1:MMAX) + &
-                             drag_bm(I,J,KMAX1,3, 1:MMAX) )
-                        drag_bm(I,J,KMAX1,3,1:MMAX) = drag_bm(I,J,1,3,1:MMAX)
+                        drag_bm(I,J,K,3, 1:DES_MMAX) = HALF*&
+                           ( drag_bm(I,J,K,3, 1:DES_MMAX) + &
+                             drag_bm(I,J,KMAX1,3, 1:DES_MMAX) )
+                        drag_bm(I,J,KMAX1,3,1:DES_MMAX) = drag_bm(I,J,1,3,1:DES_MMAX)
    
                         WTBAR(I,J,K,:) = HALF*&
                            ( WTBAR(I,J,K,:) + WTBAR(I,J,KMAX1,:) )
@@ -508,7 +508,7 @@
                ENDIF
             ENDIF
 
-            DO M = 1, MMAX
+            DO M = 1, DES_MMAX
                DO IJK = IJKSTART3, IJKEND3
                   IF(FLUID_AT(IJK)) THEN
                      I = I_of(IJK)
@@ -534,7 +534,7 @@
                      ENDIF
                   ENDIF
                ENDDO  ! end do loop over ijk
-            ENDDO   ! end do loop over m=1,mmax
+            ENDDO   ! end do loop over m=1,DES_MMAX
 
          ENDIF        ! end if(.not.callfromdes)
 

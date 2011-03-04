@@ -1,11 +1,11 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GAS_DRAG(A_M, B_M, VXF_GS, IER, UV, VV, WV)            C
-!>
-!!  Purpose: DES - Accounting for the equal and opposite drag force   
-!!           on gas due to particles by introducing the drag           
-!!           as a source term. Face centered                            
-!<
+!
+!  Purpose: DES - Accounting for the equal and opposite drag force   
+!           on gas due to particles by introducing the drag           
+!           as a source term. Face centered                            
+!
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
@@ -73,7 +73,7 @@
       AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
 
       IF(UV.EQ.1) THEN
-         DO M = 1, MMAX
+         DO M = 1, DES_MMAX
             DO IJK = IJKSTART3, IJKEND3
                IF(FLUID_AT(IJK)) THEN
                   I = I_OF(IJK)
@@ -111,7 +111,7 @@
          ENDDO
 
       ELSEIF(VV.EQ.1) THEN
-         DO M = 1, MMAX
+         DO M = 1, DES_MMAX
             DO IJK = IJKSTART3, IJKEND3
                IF(FLUID_AT(IJK)) THEN
                   I = I_OF(IJK)
@@ -149,7 +149,7 @@
           ENDDO
 
       ELSE IF(WV.EQ.1) THEN
-         DO M = 1, MMAX
+         DO M = 1, DES_MMAX
             DO IJK = IJKSTART3, IJKEND3
                IF(FLUID_AT(IJK)) THEN
                   I = I_OF(IJK)

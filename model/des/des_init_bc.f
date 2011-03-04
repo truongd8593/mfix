@@ -34,10 +34,10 @@
       INTEGER HOLD, I         ! Dummy values
       INTEGER RANGE_TOP, RANGE_BOT ! Dummy values
       INTEGER PHASE_CNT        ! Number of solid phases at bc
-      INTEGER PHASE_LIST(MMAX) ! List of phases used in current bc
+      INTEGER PHASE_LIST(DES_MMAX) ! List of phases used in current bc
 
 ! the number of particles injected in a solids time step
-      DOUBLE PRECISION NPMpSEC(MMAX) ! For solid phase m
+      DOUBLE PRECISION NPMpSEC(DES_MMAX) ! For solid phase m
       DOUBLE PRECISION NPpSEC
       DOUBLE PRECISION NPpDT        ! Total for BC
       DOUBLE PRECISION SCALED_VAL
@@ -72,12 +72,12 @@
                MAX_DIA = ZERO
 
 ! Determine if the inlet is mono or polydisperse               
-               DO M=1, MMAX
+               DO M=1, DES_MMAX
                   IF(DES_BC_ROP_s(BCV,M) /= UNDEFINED .AND. &
                      .NOT.COMPARE(DES_BC_ROP_s(BCV,M),ZERO)) THEN
                      PHASE_CNT = PHASE_CNT + 1
                      PHASE_LIST(PHASE_CNT) = M
-                     MAX_DIA = MAX(MAX_DIA,D_P0(M))
+                     MAX_DIA = MAX(MAX_DIA,DES_D_P0(M))
                   ENDIF
                ENDDO
 
@@ -101,7 +101,7 @@
                DO MM=1,PHASE_CNT
                   M = PHASE_LIST(MM)
                   NPMpSEC(M) = (DES_BC_VOLFLOW_s(BCV,M) / &
-                     (PI/6.d0 * D_P0(M)**3))
+                     (PI/6.d0 * DES_D_P0(M)**3))
                   WRITE(*,"(5X,A,I2,A,F9.5)") &
                      'NPMpSEC(',M,'): ',NPMpSEC(M)
 ! calculate the total number of particles per second at the inlet
@@ -246,7 +246,7 @@
 ! Number of solid phases at bc
       INTEGER PHASE_CNT
 ! List of phases used in current bc
-      INTEGER PHASE_LIST(MMAX)
+      INTEGER PHASE_LIST(DES_MMAX)
 ! the length of each side of the inlet boundary
       DOUBLE PRECISION LEN1, LEN2
 
@@ -591,7 +591,7 @@
 ! Number of solid phases at bc
       INTEGER PHASE_CNT
 ! List of phases used in current bc
-      INTEGER PHASE_LIST(MMAX)
+      INTEGER PHASE_LIST(DES_MMAX)
 ! the length of each side of the inlet boundary
       DOUBLE PRECISION LEN1, LEN2, BCV_AREA
 ! the number of trial velocities to test for UI_VEL in a given iteration
@@ -654,7 +654,7 @@
       DO MM = 1, PHASE_CNT
          M = PHASE_LIST(MM)
 ! Solids volume fraction for phase M
-         EP_sM = DES_BC_ROP_s(BCV,M)/RO_s(M)
+         EP_sM = DES_BC_ROP_s(BCV,M)/DES_RO_s(M)
 ! Inlet velocity for solids phase M
          TMP_VEL(M) = ( DES_BC_VOLFLOW_s(BCV,M) / &
             BCV_AREA ) / EP_sM
@@ -694,7 +694,7 @@
                DO MM = 1, PHASE_CNT
                   M = PHASE_LIST(MM)
 ! Calculate bulk density value based upon velocity 
-                  CAL_ROPSM = (RO_s(M) * DES_BC_VOLFLOW_s(BCV,M)) / &
+                  CAL_ROPSM = (DES_RO_s(M) * DES_BC_VOLFLOW_s(BCV,M)) / &
                      (STP_VEL * BCV_AREA)
                   ERR_TOT = ERR_TOT+ABS(DES_BC_ROP_s(BCV,M)-CAL_ROPSM)
                ENDDO
@@ -764,7 +764,7 @@
       DO MM = 1, PHASE_CNT
          M = PHASE_LIST(MM)
 ! Calculate bulk density value based upon velocity 
-         CAL_ROPSM = (RO_s(M) * DES_BC_VOLFLOW_s(BCV,M)) / &
+         CAL_ROPSM = (DES_RO_s(M) * DES_BC_VOLFLOW_s(BCV,M)) / &
             (UI_VEL * BCV_AREA)
          ERR_ROPSM =  ABS(DES_BC_ROP_s(BCV,M) - CAL_ROPSM)
          WRITE(*,1255) M, DES_BC_ROP_s(BCV,M), CAL_ROPSM, ERR_ROPSM
@@ -843,7 +843,7 @@
 ! Number of solid phases at bc
       INTEGER PHASE_CNT
 ! List of phases used in current bc
-      INTEGER PHASE_LIST(MMAX)
+      INTEGER PHASE_LIST(DES_MMAX)
 
 ! max number of particle diameters that fit along length of inlet
       INTEGER TMP_LEN1, TMP_LEN2
@@ -882,7 +882,7 @@
 ! notes :
 !   dtsolid*pi_factor(:)        = time elapsed between particle injections
 !                               = des_mi_time(:)
-!   d_p0/(dtsolid*pi_factor(:)) = approx velocity needed to move one particle
+!   des_d_p0/(dtsolid*pi_factor(:)) = approx velocity needed to move one particle
 !                                 diameter at the specified mass flow rate
 !   ceiling(tmp_len1/2)         = the minimum no. of particles that can
 !                                 be arranged along the inlet so that an 
@@ -930,7 +930,7 @@
                   M = PHASE_LIST(MM)
 ! Even though the system is 2D, an area of the inlet is needed for
 ! the following calculation.  This 'depth' is taken as max_dia.
-                  MAX_ROPs = (DES_BC_VOLFLOW_s(BCV,M)*RO_s(M)) / &
+                  MAX_ROPs = (DES_BC_VOLFLOW_s(BCV,M)*DES_RO_s(M)) / &
                      (MINIPV * LEN1 *  MAX_DIA)
                   WRITE(UNIT_LOG,1301) BCV, M, MAX_ROPs
                   WRITE(*,1301) BCV, M, MAX_ROPs
@@ -1025,7 +1025,7 @@
             WRITE(UNIT_LOG,1300)BCV; WRITE(*,1300)BCV
             DO MM = 1, PHASE_CNT
                M = PHASE_LIST(MM)
-               MAX_ROPs = (DES_BC_VOLFLOW_s(BCV,M)*RO_s(M)) / &
+               MAX_ROPs = (DES_BC_VOLFLOW_s(BCV,M)*DES_RO_s(M)) / &
                   (MINIPV * LEN1 * LEN2)
                WRITE(UNIT_LOG,1301)BCV,M,MAX_ROPs
                WRITE(*,1301)BCV,M,MAX_ROPs

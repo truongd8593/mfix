@@ -35,9 +35,9 @@
 ! 
       INTEGER M, LL
 ! counter for no. of particles in phase m in cell ijk 
-      INTEGER NP_PHASE(DIMENSION_3, MMAX)
+      INTEGER NP_PHASE(DIMENSION_3, DES_MMAX)
 ! temporary variable for mth phase granular temperature in cell ijk
-      DOUBLE PRECISION TEMP(DIMENSION_3, MMAX)
+      DOUBLE PRECISION TEMP(DIMENSION_3, DES_MMAX)
 ! accounted for particles
       INTEGER PC             
 ! squared particle velocity v.v
@@ -88,7 +88,7 @@
       DO IJK = IJKSTART3, IJKEND3
          IF(FLUID_AT(IJK)) THEN
 
-            DO M = 1,MMAX
+            DO M = 1,DES_MMAX
                IF (NP_PHASE(IJK,M) > 0 ) THEN
                   DES_THETA(IJK,M) = TEMP(IJK,M)/&
                      DBLE(DIMN*NP_PHASE(IJK,M))

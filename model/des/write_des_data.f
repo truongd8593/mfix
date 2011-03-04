@@ -410,7 +410,8 @@
 
 ! tmp variables for calculations of axial solids volume fraction, and
 ! granular temperature
-      DOUBLE PRECISION :: AVG_EPS(JMAX2, MMAX), AVG_THETA(JMAX2, MMAX)
+      DOUBLE PRECISION :: AVG_EPS(JMAX2, DES_MMAX), &
+         AVG_THETA(JMAX2,DES_MMAX)
 
 !-----------------------------------------------
 ! Functions 
@@ -524,11 +525,11 @@
 
                OPEN(UNIT=DES_EPS,FILE=FNAME_EPS,status='NEW')
                WRITE(TMP_CHAR, *) ""
-               DO M=1, MMAX
+               DO M=1, DES_MMAX
                   WRITE(TMP_CHAR,"(A,A,I2.2,A)")&
                   TRIM(TMP_CHAR),'"`e_S_,_', M, '",'
                ENDDO
-               DO M=1, MMAX 
+               DO M=1, DES_MMAX 
                   WRITE(TMP_CHAR,"(A,A,I2.2,A)")&
                   TRIM(TMP_CHAR), '"`Q_S_,_',M, '",'
                ENDDO
@@ -612,7 +613,7 @@
             DO K = KMIN1, KMAX1
                DO I = IMIN1, IMAX1
                   IJK = FUNIJK(I,J,K)
-                  DO M = 1, MMAX
+                  DO M = 1, DES_MMAX
                      AVG_EPS(J,M) =  AVG_EPS(J,M) + EP_S(IJK,M)
                      AVG_THETA(J,M) =  AVG_THETA(J,M) + DES_THETA(IJK,M)
                   ENDDO
@@ -622,8 +623,8 @@
             AVG_THETA(J,:) = AVG_THETA(J,:)/(IMAX*KMAX)
 
             WRITE(DES_EPS,"(20(G12.5,2X))")&
-               (AVG_EPS(J,M), M = 1, MMAX) , &  ! average solids fraction
-               (AVG_THETA(J,M), M = 1, MMAX), & !
+               (AVG_EPS(J,M), M = 1, DES_MMAX) , &  ! average solids fraction
+               (AVG_THETA(J,M), M = 1, DES_MMAX), & !
                0.5d0*(YN(J)+YN(J-1))
          ENDDO
 ! Close the file
@@ -749,7 +750,7 @@
       ENDIF
 
       WRITE(BH_UNIT, '(10(2X,E20.12))') s_time, &
-         (bed_height(M), M=1,MMAX), height_avg, height_rms
+         (bed_height(M), M=1,DES_MMAX), height_avg, height_rms
 ! Close the file
       CLOSE(BH_UNIT)
 
@@ -841,7 +842,7 @@
       WRITE(GT_UNIT,'(A6,ES24.16)') 'Time=', S_TIME
       WRITE(GT_UNIT,'(A6,2X,3(A6,2X),A8,$)') 'IJK', &
          'I', 'J', 'K', 'NP'
-      DO M = 1,MMAX
+      DO M = 1,DES_MMAX
          WRITE(GT_UNIT,'(7X,A6,I1,$)') 'THETA_',M
       ENDDO
       WRITE(GT_UNIT,*) ''
@@ -852,7 +853,7 @@
             K = K_OF(IJK)
             NP = PINC(IJK)
             WRITE(GT_UNIT,'(I6,2X,3(I6,2X),I8,(2X,ES15.5))') &
-               IJK, I, J, K, NP, (DES_THETA(IJK,M), M = 1,MMAX)
+               IJK, I, J, K, NP, (DES_THETA(IJK,M), M = 1,DES_MMAX)
          ENDIF
       ENDDO
 

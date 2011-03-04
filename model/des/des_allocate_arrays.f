@@ -81,23 +81,23 @@
       IF(DES_BCMI /= 0 .OR. DES_BCMO /=0) CALL ALLOCATE_DES_MIO
  
 ! T. Li: Hertzian collision model
-      allocate(hert_kn(MMAX,MMAX))
-      allocate(hert_kt(MMAX,MMAX))
-      allocate(hert_kwn(MMAX))
-      allocate(hert_kwt(MMAX)) 
-      allocate(g_mod(MMAX))
+      allocate(hert_kn(DES_MMAX,DES_MMAX))
+      allocate(hert_kt(DES_MMAX,DES_MMAX))
+      allocate(hert_kwn(DES_MMAX))
+      allocate(hert_kwt(DES_MMAX)) 
+      allocate(g_mod(DES_MMAX))
       
 ! COEFF OF RESITUTIONS 
-      ALLOCATE(REAL_EN(MMAX,MMAX)) 
-      ALLOCATE(REAL_EN_WALL(MMAX))
+      ALLOCATE(REAL_EN(DES_MMAX,DES_MMAX)) 
+      ALLOCATE(REAL_EN_WALL(DES_MMAX))
 ! for hertzian model need real_et, otherwise specify eta_t_fact 
-      ALLOCATE(REAL_ET(MMAX,MMAX)) 
+      ALLOCATE(REAL_ET(DES_MMAX,DES_MMAX)) 
 ! for hertzian model need real_et_wall, otherwise specifiy eta_t_w_fact
-      ALLOCATE(REAL_ET_WALL(MMAX)) 
+      ALLOCATE(REAL_ET_WALL(DES_MMAX)) 
 
-      ALLOCATE(DES_ETAN(MMAX,MMAX))
-      ALLOCATE(DES_ETAT(MMAX,MMAX))
-      ALLOCATE(DES_ETAN_WALL(MMAX), DES_ETAT_WALL(MMAX))
+      ALLOCATE(DES_ETAN(DES_MMAX,DES_MMAX))
+      ALLOCATE(DES_ETAT(DES_MMAX,DES_MMAX))
+      ALLOCATE(DES_ETAN_WALL(DES_MMAX), DES_ETAT_WALL(DES_MMAX))
 
       
 ! Particle attributes
@@ -188,9 +188,9 @@
 
 
       IF(DES_INTERP_ON) THEN
-         ALLOCATE(DRAG_AM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), MMAX))
-         ALLOCATE(DRAG_BM(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1), DIMN, MMAX))
-         ALLOCATE(WTBAR(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1),  MMAX))
+         ALLOCATE(DRAG_AM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), DES_MMAX))
+         ALLOCATE(DRAG_BM(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1), DIMN, DES_MMAX))
+         ALLOCATE(WTBAR(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1),  DES_MMAX))
          ALLOCATE(VEL_FP(NPARTICLES,3))
          ALLOCATE(F_gp(NPARTICLES ))  
          F_gp(1:NPARTICLES)  = ZERO
@@ -209,7 +209,7 @@
       ENDIF
 
       ALLOCATE(MARK_PART(NPARTICLES))
-      ALLOCATE(BED_HEIGHT(MMAX))
+      ALLOCATE(BED_HEIGHT(DES_MMAX))
 
 ! Volume averaged solids volume in a cell      
       Allocate(  DES_U_s (DIMENSION_3, DIMENSION_M) )

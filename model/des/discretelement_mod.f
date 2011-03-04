@@ -62,6 +62,10 @@
 ! DES - Continuum       
       LOGICAL DISCRETE_ELEMENT 
       LOGICAL DES_CONTINUUM_COUPLED
+     
+! DES - Invoke hybrid model where both the DEM and continuum model
+! are employed to describe solids 
+      LOGICAL DES_CONTINUUM_HYBRID 
 
 ! Only used when coupled and represents the number of times a pure DEM simulation
 ! is run before real coupled DEM simulation is started (allows settling)       
@@ -80,6 +84,14 @@
 !   'adams_bashforth' second-order scheme (by T.Li)
       CHARACTER*64 DES_INTG_METHOD 
 
+! Particle properties
+! particle diameters
+      DOUBLE PRECISION DES_D_P0 (DIM_M)
+! particle densities      
+      DOUBLE PRECISION DES_RO_s (DIM_M)
+! number of solids phases
+      INTEGER          DES_MMAX
+            
 ! Particle-particle and Particle-wall contact parameters
 !     Spring contants      
       DOUBLE PRECISION KN, KN_W ! Normal
@@ -90,8 +102,8 @@
 !     Tangential damping factors, eta_t = eta_t_factor * eta_N
       DOUBLE PRECISION DES_ETAT_FAC, DES_ETAT_W_FAC
 !     Damping coeffients in array form 
-      DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE :: DES_ETAN, DES_ETAT   !(MMAX, MMAX)
-      DOUBLE PRECISION , DIMENSION(:), ALLOCATABLE :: DES_ETAN_WALL, DES_ETAT_WALL   !(MMAX)
+      DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE :: DES_ETAN, DES_ETAT   !(DES_MMAX,DES_MMAX)
+      DOUBLE PRECISION , DIMENSION(:), ALLOCATABLE :: DES_ETAN_WALL, DES_ETAT_WALL   !(DES_MMAX)
 !     Friction coeficients
       DOUBLE PRECISION MEW, MEW_W
 !     coeff of restituion input in one D array, solid solid
@@ -102,8 +114,8 @@
       DOUBLE PRECISION DES_EN_WALL_INPUT(DIM_M) 
       DOUBLE PRECISION DES_ET_WALL_INPUT(DIM_M)
 !     actual coeff of rest.'s rearranged 
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::  REAL_EN, REAL_ET   !(MMAX,MMAX)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  REAL_EN_WALL, REAL_ET_WALL   !(MMAX)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::  REAL_EN, REAL_ET   !(DES_MMAX,DES_MMAX)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  REAL_EN_WALL, REAL_ET_WALL   !(DES_MMAX)
       
 ! Collision model, options are as follows
 !   linear spring dashpot model (default/undefined)
@@ -111,11 +123,11 @@
       CHARACTER*64 DES_COLL_MODEL
 
 ! Hertzian model: T.Li
-      double precision ew_young, vw_poisson
-      double precision e_young(dim_m), v_poisson(dim_m)    
-      double precision, dimension(:,:), allocatable :: hert_kn, hert_kt  ! (MMAX,MMAX)
-      double precision, dimension(:), allocatable :: hert_kwn, hert_kwt  ! (MMAX)
-      double precision, dimension(:), allocatable :: g_mod               ! (MMAX
+      DOUBLE PRECISION ew_young, vw_poisson
+      DOUBLE PRECISION e_young(dim_m), v_poisson(dim_m)    
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: hert_kn, hert_kt  ! (DES_MMAX,DES_MMAX)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: hert_kwn, hert_kwt  ! (DES_MMAX)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: g_mod               ! (DES_MMAX)
 
 ! Run time logic. is set to T when a sliding contact occurs
       LOGICAL PARTICLE_SLIDE
@@ -177,8 +189,8 @@
       DOUBLE PRECISION ::  VOL_FRAC(DIM_M), DES_EPS_XSTART, &
                            DES_EPS_YSTART, DES_EPS_ZSTART
 ! The number of particles that belong to solid phase M according
-! to the vol_frac and D_p0 specified in the mfix.dat; used in the event
-! of gener_part_config is true for further initialization 
+! to the vol_frac and particle diameter. this information is used
+! when gener_part_config is invoked for initialization 
       INTEGER PART_MPHASE(DIM_M)
 
 ! Assigns the initial particle velocity distribution based on user
@@ -342,7 +354,7 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_VEL_AVG !(DIMN)
      
 ! Cell based granular temperature
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_THETA ! (DIMENSION_3, MMAX)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_THETA ! (DIMENSION_3, DES_MMAX)
 
 ! Global granular energy & temp: obtained by averaging over all the particles
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GLOBAL_GRAN_ENERGY ! (DIMN)
@@ -398,9 +410,9 @@
 
 ! Dynamic particle count elements:
 ! PEA(n,1) : This column identifies particle as 'existing' if true.  It
-!   used used with the inlet/outlet to skip indices that do not
-!   represent particles in the system or indices that represent
-!   particles that have exited the system.
+!   is used with the inlet/outlet to skip indices that do not represent
+!   particles in the system or indices that represent particles that
+!   have exited the system.
 ! PEA(n,2) : This column identifies a particle as 'new' if true.
 !   Particles with a classification of 'new' do not react when in
 !   contact with a wall or another particle, however existing particles

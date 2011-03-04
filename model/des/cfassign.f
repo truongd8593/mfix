@@ -115,7 +115,7 @@
          write(*,'(5X,A)') 'COLLISION MODEL: Hertzian'
 
 ! particle-particle contact --------------------
-         DO I=1,MMAX
+         DO I=1,DES_MMAX
             G_MOD(I) = 0.5d0*e_young(I)/(1.d0+v_poisson(I))   ! shear modulus 
             WRITE(*,'(5X,A,I5,X,A,X,2(ES15.7))') &
                'E_YOUNG AND V_POISSON FOR M = ', I, '=',&
@@ -123,22 +123,23 @@
          ENDDO
 
          COUNT_E = 0
-         DO I=1,MMAX
-            DO J=I,MMAX
+         DO I=1,DES_MMAX
+            DO J=I,DES_MMAX
 ! Arrange the coefficient of restitution matrix from en_input values
 ! use coef of rest to determine damping coefficient 
                COUNT_E = COUNT_E + 1
                REAL_EN(I,J) = DES_EN_INPUT(COUNT_E)
                REAL_ET(I,J) = DES_ET_INPUT(COUNT_E)            
-               MASS_I = (PI/6.d0)*(D_P0(I)**3)*RO_S(I)
-               MASS_J = (PI/6.d0)*(D_P0(J)**3)*RO_S(J)
+               MASS_I = (PI/6.d0)*(DES_D_P0(I)**3)*DES_RO_S(I)
+               MASS_J = (PI/6.d0)*(DES_D_P0(J)**3)*DES_RO_S(J)
                MASS_EFF = (MASS_I*MASS_J)/(MASS_I+MASS_J)
 ! In the Hertzian model introduce a factor of 2/7 to the effective mass 
 ! for tangential direction to get a reduced mass.  See reference: 
 ! Van der Hoef et al., Advances in Chemical Engineering, 2006, 31, 65-149
 !   (see page 94-95)                
                RED_MASS_EFF = (2.d0/7.d0)*MASS_EFF               
-               R_EFF = 0.5d0*(D_P0(I)*D_P0(J)/(D_P0(I)+D_P0(J)))
+               R_EFF = 0.5d0*(DES_D_P0(I)*DES_D_P0(J)/&
+                  (DES_D_P0(I)+DES_D_P0(J)) )
                E_EFF = e_young(I)*e_young(J)/ &
                   (e_young(I)*(1.d0-v_poisson(J)**2)+&
                    e_young(J)*(1.d0-v_poisson(I)**2))
@@ -179,15 +180,15 @@
 
 ! particle-wall contact --------------------          
          COUNT_E = 0
-         DO I = 1, MMAX
+         DO I = 1, DES_MMAX
             COUNT_E = COUNT_E + 1  
             REAL_EN_WALL(I) = DES_EN_WALL_INPUT(COUNT_E)
             REAL_ET_WALL(I) = DES_ET_WALL_INPUT(COUNT_E)
-            MASS_I = (PI/6.d0)*(D_P0(I)**3)*RO_S(I)
+            MASS_I = (PI/6.d0)*(DES_D_P0(I)**3)*DES_RO_S(I)
             MASS_J = MASS_I
             MASS_EFF = MASS_I
             RED_MASS_EFF = (2.d0/7.d0)*MASS_I
-            R_EFF = 0.5d0*D_P0(I)
+            R_EFF = 0.5d0*DES_D_P0(I)
             E_EFF = e_young(I)*ew_young/ &
                (e_young(I)*(1.d0-vw_poisson**2)+&
                 ew_young*(1.d0-v_poisson(I)**2))
@@ -236,14 +237,14 @@
 
 ! particle-particle contact --------------------
          COUNT_E = 0
-         DO I = 1, MMAX
-            DO J = I, MMAX
+         DO I = 1, DES_MMAX
+            DO J = I, DES_MMAX
 ! Arrange the coefficient of restitution matrix from en_input values
 ! use coef of rest to determine damping coefficient 
                COUNT_E = COUNT_E + 1
                REAL_EN(I,J) = DES_EN_INPUT(COUNT_E)
-               MASS_I = (PI/6.d0)*(D_P0(I)**3.d0)*RO_S(I)
-               MASS_J = (PI/6.d0)*(D_P0(J)**3.d0)*RO_S(J)
+               MASS_I = (PI/6.d0)*(DES_D_P0(I)**3.d0)*DES_RO_S(I)
+               MASS_J = (PI/6.d0)*(DES_D_P0(J)**3.d0)*DES_RO_S(J)
                MASS_EFF = (MASS_I*MASS_J)/(MASS_I + MASS_J)
 
                IF (REAL_EN(I,J) .NE. ZERO) THEN               
@@ -271,10 +272,10 @@
 
 ! particle-wall contact --------------------     
          COUNT_E = 0 
-         DO I = 1, MMAX
+         DO I = 1, DES_MMAX
             COUNT_E = COUNT_E + 1  
             REAL_EN_WALL(I) = DES_EN_WALL_INPUT(COUNT_E)
-            MASS_I = (PI*(D_P0(I)**3)*RO_S(I))/6.d0
+            MASS_I = (PI*(DES_D_P0(I)**3)*DES_RO_S(I))/6.d0
             MASS_J = MASS_I
             MASS_EFF = MASS_I
             IF (REAL_EN_WALL(I) .NE. ZERO) THEN
@@ -301,8 +302,8 @@
 !--------------------------------------------------------
 
 
-      DO I = 1, MMAX
-         DO J = I, MMAX
+      DO I = 1, DES_MMAX
+         DO J = I, DES_MMAX
             REAL_EN(J, I) = REAL_EN(I,J)
             REAL_ET(J, I) = REAL_ET(J,I)
             DES_ETAN(J,I) = DES_ETAN(I,J)
@@ -310,8 +311,8 @@
          ENDDO
       ENDDO
 
-      DO I = 1, MMAX
-         DO J = I, MMAX
+      DO I = 1, DES_MMAX
+         DO J = I, DES_MMAX
             WRITE(*,'(5X,A,I10,2X,I10,A,2(ES15.7))') &
                'ETAN AND ETAT FOR PAIR ',&
                I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
