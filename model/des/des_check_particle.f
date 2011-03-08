@@ -84,7 +84,7 @@
 ! check the status of an exiting particle (a particle that has come into
 ! contact with a mass outlet).
 !-----------------------------------------------  
-         ELSEIF(PEA(NP,3))THEN
+         ELSEIF(PEA(NP,3) .AND. .NOT.PEA(NP,2))THEN
 
 !--------------------         
 ! if an exiting particle has altered course so that it is moving back
@@ -124,110 +124,109 @@
                ZPOS < 0 .OR. ZPOS > ZLENGTH) THEN
 
                PEA(NP,2) = .TRUE.
+               PC = PC + 1
+
+            ENDIF
+
+         ELSEIF(PEA(NP,3) .AND. PEA(NP,2))THEN
 
 !--------------------
 ! if an exiting particle has fully exited the domain, effectively
 ! remove the particle (reset PEA(NP,:) to false)                      
-               IF(DIMN == 2 .AND. &
-                  (XPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
-                  (XPOS - DES_RADIUS(NP)) .GE. XLENGTH .OR.&
-                  (YPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
-                  (YPOS - DES_RADIUS(NP)) .GT. YLENGTH &
-               .OR. &
-                  DIMN == 3 .AND. &
-                  (XPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
-                  (XPOS - DES_RADIUS(NP)) .GE. XLENGTH.OR.&
-                  (YPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
-                  (YPOS - DES_RADIUS(NP)) .GE. YLENGTH .OR. &
-                  (ZPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
-                  (ZPOS - DES_RADIUS(NP)) .GE. ZLENGTH)THEN
+            IF(DIMN == 2 .AND. &
+               (XPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
+               (XPOS - DES_RADIUS(NP)) .GE. XLENGTH .OR.&
+               (YPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
+               (YPOS - DES_RADIUS(NP)) .GT. YLENGTH &
+            .OR. &
+               DIMN == 3 .AND. &
+               (XPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
+               (XPOS - DES_RADIUS(NP)) .GE. XLENGTH.OR.&
+               (YPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
+               (YPOS - DES_RADIUS(NP)) .GE. YLENGTH .OR. &
+               (ZPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
+               (ZPOS - DES_RADIUS(NP)) .GE. ZLENGTH)THEN
 
-                  PEA(NP,:) = .FALSE.
-              
-                  DES_POS_OLD(NP,:) = ZERO
-                  DES_POS_NEW(NP,:) = ZERO
-                  DES_VEL_OLD(NP,:) = ZERO
-                  DES_VEL_NEW(NP,:) = ZERO
-                  OMEGA_OLD(NP,:) = ZERO
-                  OMEGA_NEW(NP,:) = ZERO
-                  DES_RADIUS(NP) = ZERO
-                  PMASS(NP) = ZERO
-                  PVOL(NP) = ZERO
-                  RO_Sol(NP) = ZERO
-                  OMOI(NP) = ZERO
+               PEA(NP,:) = .FALSE.
+           
+               DES_POS_OLD(NP,:) = ZERO
+               DES_POS_NEW(NP,:) = ZERO
+               DES_VEL_OLD(NP,:) = ZERO
+               DES_VEL_NEW(NP,:) = ZERO
+               OMEGA_OLD(NP,:) = ZERO
+               OMEGA_NEW(NP,:) = ZERO
+               DES_RADIUS(NP) = ZERO
+               PMASS(NP) = ZERO
+               PVOL(NP) = ZERO
+               RO_Sol(NP) = ZERO
+               OMOI(NP) = ZERO
 
-                  FC(NP,:) = ZERO
-                  FN(NP,:) = ZERO
-                  FT(NP,:) = ZERO
-                  TOW(NP,:) = ZERO
+               FC(NP,:) = ZERO
+               FN(NP,:) = ZERO
+               FT(NP,:) = ZERO
+               TOW(NP,:) = ZERO
 
-                  PN(NP,:) = -1
-                  PN(NP,1) = 0
-                  PV(NP,:) = 1
-                  PFT(NP,:,:) = ZERO
-                  PPOS(NP,:) = ZERO
+               PN(NP,:) = -1
+               PN(NP,1) = 0
+               PV(NP,:) = 1
+               PFT(NP,:,:) = ZERO
+               PPOS(NP,:) = ZERO
 
 ! Note that if particle NP has any neighbors then the particle NP will
 ! still exist in the neighbor's neighbours list.  This information would
 ! eventually be cleared in the second call to calc_force_des following
 ! the removal of NP but is forceably removed here to keep the dem
 ! inlet/outlet code self contained (does not rely on other code)
-                  NEIGHBOURS(NP,:) = -1
-                  NEIGHBOURS(NP,1) = 0 
+               NEIGHBOURS(NP,:) = -1
+               NEIGHBOURS(NP,1) = 0 
                
 ! Clear particle NP from any other neighboring particles lists               
-                  IF (NEIGHBOURS(NP,1) > 0) THEN
-                     NLIMNP = NEIGHBOURS(NP,1)+1
-                
+               IF (NEIGHBOURS(NP,1) > 0) THEN
+                  NLIMNP = NEIGHBOURS(NP,1)+1
+             
 ! Cycle through all neighbours of particle NP
-                     DO I = 2, NLIMNP
-                        NEIGHNP = NEIGHBOURS(NP,I)
-   
+                  DO I = 2, NLIMNP
+                     NEIGHNP = NEIGHBOURS(NP,I)
+
 ! If any neighbor particle has a lower index than NP then the contact 
 ! force history will be stored with that particle and needs to be cleared
-                        IF (NEIGHNP < NP) THEN
-                           IF (PN(NEIGHNP,1) > 0) THEN
-                              NLIM = PN(NEIGHNP,1)+1
-                              DO J = 2, NLIM
-                                NPT = PN(NEIGHNP,J)
-                                IF (NPT .NE. NP) CYCLE   ! find particle NP in NEIGHNP list
-                                PN(NEIGHNP,J:(MAXNEIGHBORS-1)) = &
-                                   PN(NEIGHNP,(J+1):MAXNEIGHBORS)
-                                PV(NEIGHNP,J:(MAXNEIGHBORS-1)) = &
-                                   PV(NEIGHNP,(J+1):MAXNEIGHBORS)
-                                PFT(NEIGHNP,J:(MAXNEIGHBORS-1),:) = &
-                                   PFT(NEIGHNP,(J+1):MAXNEIGHBORS,:)
-                                PN(NEIGHNP,1) = PN(NEIGHNP,1) -1
-                              ENDDO
-                           ENDIF
+                     IF (NEIGHNP < NP) THEN
+                        IF (PN(NEIGHNP,1) > 0) THEN
+                           NLIM = PN(NEIGHNP,1)+1
+                           DO J = 2, NLIM
+                             NPT = PN(NEIGHNP,J)
+                             IF (NPT .NE. NP) CYCLE   ! find particle NP in NEIGHNP list
+                             PN(NEIGHNP,J:(MAXNEIGHBORS-1)) = &
+                                PN(NEIGHNP,(J+1):MAXNEIGHBORS)
+                             PV(NEIGHNP,J:(MAXNEIGHBORS-1)) = &
+                                PV(NEIGHNP,(J+1):MAXNEIGHBORS)
+                             PFT(NEIGHNP,J:(MAXNEIGHBORS-1),:) = &
+                                PFT(NEIGHNP,(J+1):MAXNEIGHBORS,:)
+                             PN(NEIGHNP,1) = PN(NEIGHNP,1) -1
+                           ENDDO
                         ENDIF
-   
-                        NLIM_NEIGHNP = NEIGHBOURS(NEIGHNP,1)+1
+                     ENDIF
+
+                     NLIM_NEIGHNP = NEIGHBOURS(NEIGHNP,1)+1
 ! Find where particle NP is stored in its neighbours (NEIGHNP) lists
 ! and remove particle NP from the list
-                        DO J = 2, NLIM_NEIGHNP
-                           NPT = NEIGHBOURS(NEIGHNP,J)
-                           IF (NPT .NE. NP) CYCLE  ! find particle NP in NEIGHNP list
-                           NEIGHBOURS(NEIGHNP,1) = NEIGHBOURS(NEIGHNP,1)-1
-                           NEIGHBOURS(NEIGHNP,J:(MN-1)) = NEIGHBOURS(NEIGHNP,(J+1):MN)
-                        ENDDO
+                     DO J = 2, NLIM_NEIGHNP
+                        NPT = NEIGHBOURS(NEIGHNP,J)
+                        IF (NPT .NE. NP) CYCLE  ! find particle NP in NEIGHNP list
+                        NEIGHBOURS(NEIGHNP,1) = NEIGHBOURS(NEIGHNP,1)-1
+                        NEIGHBOURS(NEIGHNP,J:(MN-1)) = NEIGHBOURS(NEIGHNP,(J+1):MN)
                      ENDDO
-                  ENDIF   ! if (neighbours(np,1) >0)
+                  ENDDO
+               ENDIF   ! if (neighbours(np,1) >0)
 
-                  PIS = PIS - 1
-! In the fully exiting case do not increment pc
+               PIS = PIS - 1
+! Do not increment PC since PIS has been decremented.
 
-               ELSE  
-                  PC = PC + 1
-               ENDIF   ! endif particle has fully exited the domain
+            ENDIF   ! endif particle has fully exited the domain
 
-            ELSE
-               PC = PC + 1
-            ENDIF      ! endif particle has either re-entered or the particle center has exited the domain
-
-         ELSE
-            PC = PC + 1 
-         ENDIF   ! if (pea(np,2) & .not.pea(np,3)) / elseif pea(np,3)
+         ENDIF   ! if (pea(np,2) & .not.pea(np,3)) 
+                 ! elseif pea(np,3) & .not. pea(np,2)
+                 ! elseif pea(np.2) & pea(np,3)
 
       ENDDO   ! loop over NP=1,MAX_PIS
 
@@ -243,3 +242,4 @@
 
       RETURN
       END SUBROUTINE DES_CHECK_PARTICLE
+
