@@ -162,6 +162,11 @@
          JLOOP : DO JJ = JM, JP
             ILOOP : DO II = IM, IP
 
+! Set i,j,k indices of cell to search for neighbors
+               I_INDEX = II
+               J_INDEX = JJ
+               K_INDEX = KK
+
 ! Check i index
 ! --------------------               
                IF (.NOT. DES_MI_X .AND. .NOT. DES_MO_X) THEN
