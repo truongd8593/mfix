@@ -65,12 +65,12 @@
             CALL ERROR_ROUTINE ('check_data_04',&
                'Coefficient of friction (C_f) not specified',1,1) 
 
-         IF (FRICTION .OR. SCHAEFFER .AND. (PHI == UNDEFINED)) &
+         IF ((FRICTION .OR. SCHAEFFER) .AND. (PHI == UNDEFINED)) &
             CALL ERROR_ROUTINE ('check_data_04', &
                'Angle of internal friction (Phi) not specified',1,1)
          LONG_STRING = 'Angle of wall-particle friction (Phi_w) &
             &not specified'
-         IF (FRICTION .OR. JENKINS .AND. (PHI_W == UNDEFINED)) &
+         IF ((FRICTION .OR. JENKINS) .AND. (PHI_W == UNDEFINED)) &
              CALL ERROR_ROUTINE ('check_data_04',TRIM(LONG_STRING),1,1)
       ENDIF 
 
