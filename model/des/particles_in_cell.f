@@ -355,7 +355,7 @@
       ENDDO     ! end loop over IJK=ijkstart3,ijkend3
 
 ! calculate avg height for each phase
-      bed_height(:) = tmp_num(:)/tmp_den(:)
+      IF (PIS >0) bed_height(:) = tmp_num(:)/tmp_den(:)
 
 
 ! Assign/allocate the variable pic(i,j,k)%p(:). For each cell compare 
