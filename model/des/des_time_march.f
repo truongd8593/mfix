@@ -304,9 +304,9 @@
 ! also keep track of TIME
                CALL WRITE_RES1 
                WRITE(*,'(3X,A,X,ES15.5)') &
-                  'DES.RES and .RES files written at time =', S_TIME
+                  'DES.RES file written at time =', S_TIME
                WRITE(UNIT_LOG,*) &
-                  'DES.RES and .RES files written at time = ', S_TIME
+                  'DES.RES file written at time = ', S_TIME
             ENDIF
          ENDIF  ! end if (.not.des_continuum_coupled)
 
