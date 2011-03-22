@@ -433,20 +433,6 @@
          WRITE(*,1056)
       ENDIF
 
-! As currently coded the vtp files cannot be written more frequently
-! than the restart file for restart operation to always function for 
-! coupled cases (restart_1 will work unless the run fails early
-! wherein a *.vtp file has been written but not *.res). Note that the 
-! vtp files are written at the frequency of spx_dt(1) and the restart
-! file at res_dt.
-! The following statement warns the user.  A better fix would involve
-! removing any vtp files that were written after the most recent res 
-! file was written whenever a restart operation is requested
-      IF(DES_CONTINUUM_COUPLED .AND. SPX_DT(1) < RES_DT) THEN
-         WRITE(UNIT_LOG, 1057)
-         WRITE(*,1057)
-      ENDIF
-
 ! Determine the maximum particle size in the system (MAX_RADIUS), which
 ! in turn is used for various tasks       
       MAX_DIAM = ZERO
@@ -879,15 +865,6 @@
  1056 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
           'WARNING: TSUJI_DRAG option only available with ',&
           'SYAM_OBRIEN',/10X,'drag model.',/1X,70('*'))
-
- 1057 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' WARNING: ',&
-           'RES_DT should be <= SPX_DT(1) for the RESTART_1 ',&
-           'option',/10X,'to work properly when ',&
-           'DES_CONTINUUM_COUPLED=T. Otherwise',/10X,&
-           'the user will need to manually remove any *.vtp files',&
-           /10X,'written after the last time the *.RES file was ',&
-           'updated',/10X,'and modify the *.pvd file accordingly',&
-            /1X,70('*')/)
 
  1060 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Only the grid based search option is allowed when using',&

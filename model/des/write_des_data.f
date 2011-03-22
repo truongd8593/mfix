@@ -80,9 +80,6 @@
 ! and is already opened (initial checks/writes)
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 
-! logical used for testing is the data file already exists
-      LOGICAL :: F_EXISTS      
-
 ! file unit for ParaView *.vtp data      
       INTEGER, PARAMETER :: DES_UNIT = 2000
 
@@ -115,21 +112,14 @@
 !-----------------------------------------------
 !-----------------------------------------------
 
-
+! Force file name format
 ! Convert the index VTP_FINDEX from an integer to a string and force
 ! leading zeros
-
-
-! Force file name format
       WRITE (F_INDEX,"(I5.5)") VTP_FINDEX
       FNAME_VTP=TRIM(RUN_NAME)//'_DES_'//TRIM(F_INDEX)//'.vtp'
 
-      OPEN(UNIT=DES_UNIT,FILE=FNAME_VTP,STATUS='NEW',IOSTAT=ISTAT)
-      IF (ISTAT /= 0) THEN
-         WRITE(*,999) 
-         WRITE(UNIT_LOG, 999)
-         CALL MFIX_EXIT(myPE)
-      ENDIF
+! Open the vtp file
+      CALL OPEN_VTP
 
 ! Dummy values to maintain format for 2D runs
       POS_Z = 0.0
@@ -236,12 +226,9 @@
 ! Write end tags
       WRITE(DES_UNIT,"(6X,A,/3X,A,/A)")&
          '</Piece>','</PolyData>','</VTKFile>'
-    
+
+! Close the vtp file.
       CLOSE(DES_UNIT)
-
-! Index output file count
-      VTP_FINDEX = VTP_FINDEX+1
-
 
 
 !-----------------------      
@@ -249,59 +236,9 @@
 ! in *.vbd format. This file can be read into ParaView in place of the
 ! *.vtp files while providing the S_TIME data
 
-! Determine if the "RUN_NAME"_DES_DATA.dat file exists
-      F_EXISTS = .FALSE.
+! Obtain the file name and open the pvd file
       FNAME_PVD = TRIM(RUN_NAME)//'_DES.pvd'
-
-      IF(FIRST_PASS) THEN
-         INQUIRE(FILE=FNAME_PVD,EXIST=F_EXISTS)
-
-         IF (.NOT.F_EXISTS) THEN
-! If the file does not exist, then create it with the necessary
-! header information.
-            OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,STATUS='NEW')
-            WRITE(PVD_UNIT,"(A)")'<?xml version="1.0"?>'
-            WRITE(PVD_UNIT,"(A,A)")'<VTKFile type="Collection" ',&
-               'version="0.1" byte_order="LittleEndian">'
-            WRITE(PVD_UNIT,"(3X,A)")'<Collection>'
-! write two generic lines that will be removed later
-            WRITE(PVD_UNIT,*)"SCRAP LINE 1"
-            WRITE(PVD_UNIT,*)"SCRAP LINE 2"
-         ELSE   
-! The file exists but first_pass is also true so most likely an existing
-! file from an earlier/other run is present in the directory which it
-! should not be if the run is NEW
-            IF(RUN_TYPE .EQ. 'NEW') THEN
-! Exit to prevent overwriting existing file accidently
-               WRITE(*,997) FNAME_PVD
-               WRITE(UNIT_LOG, 997) FNAME_PVD
-               CALL MFIX_EXIT(myPE)
-            ELSE
-! Open the file for appending of new data (RESTART_1 Case)
-               OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,&
-                  POSITION="APPEND",STATUS='OLD',IOSTAT=ISTAT)
-               IF (ISTAT /= 0) THEN
-                  WRITE(*,998) 
-                  WRITE(UNIT_LOG, 998)
-                  CALL MFIX_EXIT(myPE)
-               ENDIF
-            ENDIF
-         ENDIF
-! Identify that the files has been created and opened for next pass
-         FIRST_PASS = .FALSE.         
-      ELSE
-         OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,&
-            POSITION="APPEND",STATUS='OLD',IOSTAT=ISTAT)
-         IF (ISTAT /= 0) THEN
-            WRITE(*,998) 
-            WRITE(UNIT_LOG, 998)
-            CALL MFIX_EXIT(myPE)
-         ENDIF                 
-      ENDIF
-
-! Remove the last two lines written so that additional data can be added
-      BACKSPACE(PVD_UNIT)
-      BACKSPACE(PVD_UNIT)
+      CALL OPEN_PVD
 
 ! Force time formatting #####.######  (Forcing leading zeros)
       IF(S_TIME .LT. 1.0d0)THEN
@@ -330,19 +267,201 @@
 
       CLOSE(PVD_UNIT)
 
+! Index output file count
+      VTP_FINDEX = VTP_FINDEX+1
 
+! Return to calling routine
       RETURN
 
+      CONTAINS
+!......................................................................!
+! SUBROUTINE: OPEN_VTP                                                 !
+!                                                                      !
+! Purpose: This routine opens a vtp file.                              !
+!``````````````````````````````````````````````````````````````````````!
+      SUBROUTINE OPEN_VTP
 
-  997 FORMAT(/1X,70('*')//, ' From: WRITE_DES_VTP',/,' Message: ',&
-         A, ' already exists in the run directory.',/10X,&
+!-----------------------------------------------
+! Local Variables
+!----------------------------------------------- 
+! logical used for testing is the data file already exists
+      LOGICAL :: EXISTS_VTP
+! status of the vtp file to be written
+      CHARACTER*8 :: STATUS_VTP
+!-----------------------------------------------
+
+! Check to see if the file already exists.
+      INQUIRE(FILE=FNAME_VTP,EXIST=EXISTS_VTP)
+! The given file should not exist if the run type is NEW.
+      IF(RUN_TYPE == 'NEW' .AND. EXISTS_VTP)THEN
+         WRITE(*,1000) FNAME_VTP
+         WRITE(UNIT_LOG, 1000) FNAME_VTP
+! A RESTART_1 case may need to over-write vtp files created during the
+! previous run.
+      ELSEIF(RUN_TYPE == 'RESTART_1' .AND. EXISTS_VTP)THEN
+         STATUS_VTP = 'REPLACE'
+! Set the status to NEW so that any problems in opening the file
+! will be accurately reported.
+      ELSEIF(RUN_TYPE == 'NEW' .AND. .NOT.EXISTS_VTP)THEN
+         STATUS_VTP = 'NEW'
+      ELSEIF(RUN_TYPE == 'RESTART_1' .AND. .NOT.EXISTS_VTP)THEN
+         STATUS_VTP = 'NEW'
+      ENDIF
+
+      OPEN(UNIT=DES_UNIT,FILE=FNAME_VTP,STATUS=STATUS_VTP,IOSTAT=ISTAT)
+      IF (ISTAT /= 0) THEN
+         WRITE(*,1001) FNAME_VTP
+         WRITE(UNIT_LOG, 1001) FNAME_VTP
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+
+ 1000 FORMAT(/1X,70('*')/,' From: OPEN_VTP',/,' Message: ',            &
+         'The following vtp file was found in the run directory ',     &
+         'for a',/10X,'run classified as NEW. Please correct.',/10X,   &
+         'File name: ',A,/1X,70('*')/)
+
+ 1001 FORMAT(/1X,70('*')//, ' From: OPEN_VTP',/,' Message: ',          &
+         'Error opening DES vtp file. Terminating run.',/10X,          &
+         'File name: ',A,/1X,70('*')/)
+
+      END SUBROUTINE OPEN_VTP
+
+
+!......................................................................!
+! SUBROUTINE: OPEN_PVD                                                 !
+!                                                                      !
+! Purpose: This routine opens the pvd file.                            !
+!``````````````````````````````````````````````````````````````````````!
+      SUBROUTINE OPEN_PVD
+
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------       
+! Index position of desired character
+      INTEGER IDX_f, IDX_b
+! logical used for testing is the data file already exists
+      LOGICAL :: EXISTS_PVD
+! status of the vtp file to be written
+      CHARACTER*8 :: STATUS_PVD
+! Generic input limited to 256 characters
+      CHARACTER*256 INPUT
+!----------------------------------------------- 
+
+! Check to see if the file already exists.
+      INQUIRE(FILE=FNAME_PVD,EXIST=EXISTS_PVD)
+
+      IF(FIRST_PASS) THEN
+         IF(RUN_TYPE == 'NEW')THEN
+! If the file does not exist, then create it with the necessary
+! header information.
+            IF (.NOT.EXISTS_PVD) THEN
+               OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,STATUS='NEW')
+               WRITE(PVD_UNIT,"(A)")'<?xml version="1.0"?>'
+               WRITE(PVD_UNIT,"(A,A)")'<VTKFile type="Collection" ',&
+                  'version="0.1" byte_order="LittleEndian">'
+               WRITE(PVD_UNIT,"(3X,A)")'<Collection>'
+! write two generic lines that will be removed later
+               WRITE(PVD_UNIT,*)"SCRAP LINE 1"
+               WRITE(PVD_UNIT,*)"SCRAP LINE 2"
+            ELSE
+! The file exists but first_pass is also true so most likely an existing
+! file from an earlier/other run is present in the directory which it
+! should not be if the run is NEW
+! Exit to prevent overwriting existing file accidently
+               WRITE(*,1002) TRIM(FNAME_PVD)
+               WRITE(UNIT_LOG, 1002) TRIM(FNAME_PVD)
+               STOP
+            ENDIF
+! This is the first pass of a restart run. Extra care is needed to make
+! sure that the pvd file is ready to accept new data.
+         ELSE ! a restart run
+            IF (.NOT.EXISTS_PVD) THEN
+! For a restart run, there should be a pvd file already in the run
+! directory. If there is not a pvd file, notifiy the user and exit.
+               WRITE(*,1003) TRIM(FNAME_PVD)
+               WRITE(UNIT_LOG, 1003) TRIM(FNAME_PVD)
+               STOP
+! Modify the pvd file.
+            ELSE ! a pvd file does exist
+! Open the file at the beginning.
+               OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,&
+                  POSITION="REWIND",STATUS='OLD',IOSTAT=ISTAT)
+               IF (ISTAT /= 0) THEN
+                  WRITE(*,1004) 
+                  WRITE(UNIT_LOG, 1004)
+                  STOP
+               ENDIF
+
+! Loop over the entries in the PVD file, looking for a match to the
+! file that is being written. If no match is found, the data will be
+! appended to the end of the pvd file, otherwise, the old data will
+! be over-written.
+               DO
+! Read in the entires of the PVD file.
+                  READ(PVD_UNIT,"(A)",IOSTAT=ISTAT)INPUT
+                  IF(ISTAT > 0)THEN
+                     WRITE(*,1005)
+                     STOP
+                  ELSEIF(ISTAT<0)THEN
+! The end of the pvd file has been reached without finding an entry 
+! matching the current record. Exit the loop.
+                     BACKSPACE(PVD_UNIT)
+                     EXIT
+                  ENDIF
+! Find the first instances of file=" and "/> in the read data.
+                  IDX_f = INDEX(INPUT,'file="')
+                  IDX_b = INDEX(INPUT,'"/>')
+! Skip rows that do not contain file data
+                  IF(IDX_f == 0 .AND. IDX_b == 0) CYCLE
+! Truncate the file name from the read data
+                  WRITE (INPUT,"(A)") INPUT(IDX_f+6:IDX_b-1)
+! If the file name matches the current VTP record, return to the calling
+! routine to over-write this record.
+                  IF(TRIM(FNAME_VTP) == TRIM(INPUT)) THEN
+                     BACKSPACE(PVD_UNIT)
+                     RETURN
+                  ENDIF
+               ENDDO
+
+            ENDIF ! a pvd file does not/does exist
+         ENDIF ! run_type new or restart
+
+! Identify that the files has been created and opened for next pass
+         FIRST_PASS = .FALSE.
+
+      ELSE ! not FIRST_PASS
+         OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,&
+            POSITION="APPEND",STATUS='OLD',IOSTAT=ISTAT)
+         IF (ISTAT /= 0) THEN
+            WRITE(*,1004) 
+            WRITE(UNIT_LOG, 1004)
+            STOP
+         ENDIF                 
+      ENDIF
+
+! Remove the last two lines written so that additional data can be added
+      BACKSPACE(PVD_UNIT)
+      BACKSPACE(PVD_UNIT)
+
+! Return to the calling routine
+      RETURN
+
+ 1002 FORMAT(/1X,70('*')/,' From: OPEN_PVD',/,' Message: ',            &
+         A,' already exists in the run directory.',/10X,               &
          'Terminating run.',/1X,70('*')/)
 
-  998 FORMAT(/1X,70('*')//, ' From: WRITE_DES_VTP',/,' Message: ',&
-         'Error opening DES vbd file. Terminating run.',/1X,70('*')/)
+ 1003 FORMAT(/1X,70('*')/,' From: OPEN_PVD',/,' Message: ',            &
+         A,' is missing from the  the run directory.',/10X,            &
+         'Terminating run.',/1X,70('*')/)
 
-  999 FORMAT(/1X,70('*')//, ' From: WRITE_DES_VTP',/,' Message: ',&
-         'Error opening DES vtp file. Terminating run.',/1X,70('*')/)
+ 1004 FORMAT(/1X,70('*')/,' From: OPEN_PVD',/,' Message: ',            &
+         'Error opening DES pvd file. Terminating run.',/1X,70('*')/)
+
+ 1005 FORMAT(/1X,70('*')/,' From: OPEN_PVD',/,' Message: ',            &
+         'Error reading DES pvd file. Terminating run.',/1X,70('*')/)
+
+      END SUBROUTINE OPEN_PVD
 
 
       END SUBROUTINE WRITE_DES_VTP 
