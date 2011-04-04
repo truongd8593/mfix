@@ -847,7 +847,7 @@
           G12.5,/10X,'and the total solids volume fraction = ',G12.5, &
           /1X,70('*')/)
  1053  FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-          'Total solids volume fraction should not exceed 1 for',/10X&
+          'Total solids volume fraction should not exceed 1 for',/10X,&
           'GENER_PART_CONFIG option where the total solids volume ',&
           'fraction = ',G12.5,/1X,70('*')/)
 
