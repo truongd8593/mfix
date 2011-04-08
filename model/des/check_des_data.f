@@ -13,7 +13,6 @@
       SUBROUTINE CHECK_DES_DATA
       
       USE param1
-      USE output
       USE geometry
       USE funits
       USE compar      
