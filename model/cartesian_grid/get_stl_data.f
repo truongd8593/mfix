@@ -1046,6 +1046,8 @@
 
       include "function.inc"
 
+      IF(N_FACETS < 1) RETURN
+
 !       IF(N_FACET_AT(IJK)=0) THEN
 !          WRITE(*,*)'ERROR IN EVAL_STL_FCT_AT: NO FACET INFORMATION FOR CELL:',IJK
 !          READ(*,*)
