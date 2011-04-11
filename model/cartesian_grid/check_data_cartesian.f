@@ -79,7 +79,7 @@
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
-      IF(USE_STL) THEN
+      IF(USE_STL.AND.(.NOT.USE_MSH)) THEN
          IF(DO_K) THEN 
             CALL GET_STL_DATA
          ELSE
@@ -96,6 +96,21 @@
             CALL MFIX_EXIT(MYPE) 
          ENDIF
       ENDIF
+
+      IF(USE_MSH.AND.(.NOT.USE_STL)) THEN
+         IF(DO_K) THEN 
+            CALL GET_MSH_DATA
+         ELSE
+            WRITE(*,*) 'ERROR: MSH METHOD VALID ONLY IN 3D.'
+            CALL MFIX_EXIT(MYPE) 
+         ENDIF
+         IF(N_QUADRIC > 0) THEN
+            WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND MSH INPUT ARE SPECIFIED.'
+            WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
+            CALL MFIX_EXIT(MYPE) 
+         ENDIF
+      ENDIF
+
 
       IF(USE_POLYGON) THEN
          IF(DO_K) THEN 

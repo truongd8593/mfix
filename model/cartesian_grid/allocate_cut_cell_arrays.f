@@ -17,6 +17,7 @@
       Use indices
 
       USE cutcell
+      USE stl
 
       IMPLICIT NONE
       
@@ -294,6 +295,12 @@
       Allocate(  U_s_CC (DIMENSION_3, DIMENSION_M) )
       Allocate(  V_s_CC (DIMENSION_3, DIMENSION_M) )
       Allocate(  W_s_CC (DIMENSION_3, DIMENSION_M) )
+
+
+      ALLOCATE(N_FACET_AT(DIMENSION_3))
+      ALLOCATE(LIST_FACET_AT(DIMENSION_3,10))
+
+
  
       RETURN
       END SUBROUTINE ALLOCATE_CUT_CELL_ARRAYS 

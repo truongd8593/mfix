@@ -202,6 +202,7 @@
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
                DeAllocate(DP_BC_ID)
 
+
             CASE (0) ! do nothing
 
             CASE (UNDEFINED_I) ! do nothing
@@ -653,7 +654,7 @@
       INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK,NODE
       INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       INTEGER :: POINT_ID,POLY_COUNT,FACE_ID,Q_ID,Q_ID2
-      INTEGER :: N_CUT_FACE_NODES
+      INTEGER :: N_CUT_FACE_NODES,BCID2
 
       INTEGER NUMBER_OF_FACES
       INTEGER NUMBER_OF_SURFACE_POINTS
@@ -735,7 +736,11 @@
 
                CALL EVAL_F('USR_DEF',X_COPY,Y_COPY,Z_COPY,N_USR_DEF,F_COPY,CLIP_FLAG)
 
-               CALL EVAL_F('STL    ',X_COPY,Y_COPY,Z_COPY,N_FACETS,F_COPY,CLIP_FLAG)
+               X_NODE(15) = X_COPY
+               Y_NODE(15) = Y_COPY
+               Z_NODE(15) = Z_COPY
+               CALL EVAL_STL_FCT_AT('SCALAR',IJK,15,F_COPY,CLIP_FLAG,BCID2)
+
          
                IF (ABS(F_COPY) < TOL_F ) THEN ! belongs to cut face
                   N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1

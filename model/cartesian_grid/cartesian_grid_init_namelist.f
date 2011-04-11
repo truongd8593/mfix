@@ -42,6 +42,8 @@
 
       USE_STL = .FALSE.
 
+      USE_MSH = .FALSE.
+
       USE_POLYGON = .FALSE.
 
       N_USR_DEF = 0
@@ -101,15 +103,23 @@
 
       ITERMAX_INT = 10000
 
-      TOL_STL = 1.0D-6
+      TOL_STL = 1.0D-6        ! Settings for STL file
       STL_SMALL_ANGLE = 5.0   ! Degrees
-      STL_RAY_DIR = 'X-'
       OUT_STL_VALUE = 1.0 
       STL_BC_ID = UNDEFINED_I
       TX_STL = ZERO
       TY_STL = ZERO
       TZ_STL = ZERO
       SCALE_STL = ONE
+
+      TOL_MSH = 1.0D-6        ! Settings for MSH file
+      OUT_MSH_VALUE = 1.0 
+      TX_MSH = ZERO
+      TY_MSH = ZERO
+      TZ_MSH = ZERO
+      SCALE_MSH = ONE
+
+      RAY_DIR = 'X-'
 
       SET_CORNER_CELLS = .FALSE.
 

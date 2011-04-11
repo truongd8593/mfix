@@ -258,9 +258,9 @@
 
             CALL EVAL_USR_FCT(x1,x2,x3,Q,f,CLIP_FLAG)
 
-         CASE('STL')
+!         CASE('STL')
 
-            CALL EVAL_STL_FCT(x1,x2,x3,Q,f,CLIP_FLAG,BCID)
+!            CALL EVAL_STL_FCT(x1,x2,x3,Q,f,CLIP_FLAG,BCID)
 
          CASE DEFAULT
 
@@ -270,7 +270,7 @@
             WRITE(*,*)'QUADRIC'
             WRITE(*,*)'POLYGON'
             WRITE(*,*)'USR_DEF'
-            WRITE(*,*)'STL'
+!            WRITE(*,*)'STL'
             CALL MFIX_EXIT(myPE)
 
       END SELECT
@@ -511,10 +511,10 @@
          IF(INTERSECT_X(IJK)) Xi = xc
       ENDDO
 
-      IF(USE_STL) THEN
-         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_X(IJK),xc,yc,zc)
-         IF(INTERSECT_X(IJK)) Xi = xc 
-      ENDIF
+!      IF(USE_STL) THEN
+!         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_X(IJK),xc,yc,zc)
+!         IF(INTERSECT_X(IJK)) Xi = xc 
+!      ENDIF
 
       IF(TYPE_OF_CELL=='U_MOMENTUM') THEN
          IF(SNAP(IJK)) THEN
@@ -559,10 +559,10 @@
          IF(INTERSECT_Y(IJK)) Yi = yc
       ENDDO
 
-      IF(USE_STL) THEN
-         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_Y(IJK),xc,yc,zc)
-         IF(INTERSECT_Y(IJK)) Yi = yc 
-      ENDIF
+!      IF(USE_STL) THEN
+!         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_Y(IJK),xc,yc,zc)
+!         IF(INTERSECT_Y(IJK)) Yi = yc 
+!      ENDIF
 
       IF(TYPE_OF_CELL=='V_MOMENTUM') THEN
          IF(SNAP(IJK)) THEN
@@ -606,10 +606,10 @@
          IF(INTERSECT_Z(IJK)) Zi = zc
       ENDDO
 
-      IF(USE_STL) THEN
-         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_Z(IJK),xc,yc,zc)
-         IF(INTERSECT_Z(IJK)) Zi = zc 
-      ENDIF
+!      IF(USE_STL) THEN
+!         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_Z(IJK),xc,yc,zc)
+!         IF(INTERSECT_Z(IJK)) Zi = zc 
+!      ENDIF
 
       IF(TYPE_OF_CELL=='W_MOMENTUM') THEN
          IF(SNAP(IJK)) THEN
@@ -936,4 +936,423 @@
       END SUBROUTINE CLOSE_CUT_CELL_FILES
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: INTERSECT                                              C
+!  Purpose: Intersects quadric with grid                               C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE CAD_INTERSECT(TYPE_OF_CELL,Xint,Yint,Zint)
+    
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices  
+      USE compar
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE polygon
+      USE stl
+      
+      IMPLICIT NONE
+      CHARACTER (LEN=*) :: TYPE_OF_CELL
+      INTEGER :: IJK,I,J,K,Q_ID,Q_ID2,N_int_x,N_int_y,N_int_z
+      INTEGER :: IM,IP,JM,JP,KM,KP,IMJK,IPJK,IJMK,IJPK,IJKM,IJKP
+      INTEGER :: IJPKP,IPJKP,IPJPK
+      DOUBLE PRECISION :: xa,ya,za,xb,yb,zb,xc,yc,zc,Fc
+      DOUBLE PRECISION :: Xi,Yi,Zi,Xc_backup,Yc_backup,Zc_backup
+      LOGICAL :: INTERSECT_FLAG,CLIP_FLAG
+
+      DOUBLE PRECISION :: X1,X2,Y1,Y2,Z1,Z2
+
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: Xint,Yint,Zint 
+
+      INTEGER :: N,I1,I2,J1,J2,K1,K2
+
+      DOUBLE PRECISION :: X_OFFSET, Y_OFFSET, Z_OFFSET
+
+      include "function.inc"
+
+      N_FACET_AT = 0
+      LIST_FACET_AT = 0
+
+      INTERSECT_X = .FALSE.
+      INTERSECT_Y = .FALSE.
+      INTERSECT_Z = .FALSE.
+
+      Xint = UNDEFINED
+      Yint = UNDEFINED
+      Zint = UNDEFINED
+
+
+      SELECT CASE (TYPE_OF_CELL)
+         CASE('SCALAR')
+
+            X_OFFSET = ZERO
+            Y_OFFSET = ZERO
+            Z_OFFSET = ZERO
+
+         CASE('U_MOMENTUM')
+
+            X_OFFSET = HALF
+            Y_OFFSET = ZERO
+            Z_OFFSET = ZERO
+
+         CASE('V_MOMENTUM')
+
+            X_OFFSET = ZERO
+            Y_OFFSET = HALF
+            Z_OFFSET = ZERO
+
+         CASE('W_MOMENTUM')
+
+            X_OFFSET = ZERO
+            Y_OFFSET = ZERO
+            Z_OFFSET = HALF
+
+
+         CASE DEFAULT
+            WRITE(*,*)'SUBROUTINE: GET_CELL_NODE_COORDINATES'
+            WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
+            WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
+            WRITE(*,*)'SCALAR' 
+            WRITE(*,*)'U_MOMENTUM' 
+            WRITE(*,*)'V_MOMENTUM' 
+            WRITE(*,*)'W_MOMENTUM' 
+            CALL MFIX_EXIT(myPE)
+      END SELECT
+
+
+      DO N = 1,N_FACETS
+
+
+         X1 = MINVAL(VERTEX(N,1:3,1))
+         X2 = MAXVAL(VERTEX(N,1:3,1))
+         Y1 = MINVAL(VERTEX(N,1:3,2))
+         Y2 = MAXVAL(VERTEX(N,1:3,2))
+         Z1 = MINVAL(VERTEX(N,1:3,3))
+         Z2 = MAXVAL(VERTEX(N,1:3,3))
+
+
+
+         I1 = IEND3
+         I2 = ISTART3
+
+         IF(X2>=ZERO.AND.X1<=XLENGTH) THEN
+            DO I = ISTART3, IEND3
+               IP = I+1
+               IF(XG_E(I)+X_OFFSET*DX(IP)>=X1) THEN
+                  I1=I
+                  EXIT
+               ENDIF
+            ENDDO
+
+            DO I = IEND3, ISTART3,-1
+               IP = I+1
+               IF(XG_E(I)-DX(I)+X_OFFSET*DX(IP)<=X2) THEN
+                  I2=I
+                  EXIT
+               ENDIF
+            ENDDO
+         ENDIF
+
+
+         J1 = JEND3
+         J2 = JSTART3
+
+         IF(Y2>=ZERO.AND.Y1<=YLENGTH) THEN
+            DO J = JSTART3, JEND3
+               JP = J+1
+               IF(YG_N(J)+Y_OFFSET*DY(JP)>=Y1) THEN
+                  J1=J
+                  EXIT
+               ENDIF
+            ENDDO
+
+            DO J = JEND3, JSTART3,-1
+               JP=J+1
+               IF(YG_N(J)-DY(J)+Y_OFFSET*DY(JP)<=Y2) THEN
+                  J2=J
+                  EXIT
+               ENDIF
+            ENDDO
+         ENDIF
+
+         K1 = KEND3
+         K2 = KSTART3
+
+         IF(Z2>=ZERO.AND.Z1<=ZLENGTH) THEN
+            DO K = KSTART3, KEND3
+               KP=K+1
+               IF(ZG_T(K)+Z_OFFSET*DZ(KP)>=Z1) THEN
+                  K1=K
+                  EXIT
+               ENDIF
+            ENDDO
+
+            DO K = KEND3, KSTART3,-1
+               KP = K+1
+               IF(ZG_T(K)-DZ(K)+Z_OFFSET*DZ(KP)<=Z2) THEN
+                  K2=K
+                  EXIT
+               ENDIF
+            ENDDO
+         ENDIF
+
+
+
+         DO K=K1,K2
+            DO J=J1,J2
+               DO I=I1,I2
+
+                  IJK = FUNIJK(I,J,K)
+
+                  IM = I - 1 
+                  JM = J - 1 
+                  KM = K - 1
+
+                  IP = I + 1 
+                  JP = J + 1 
+                  KP = K + 1 
+
+                  IMJK = FUNIJK(IM,J,K)
+                  IPJK = FUNIJK(IP,J,K)
+                  IJMK = FUNIJK(I,JM,K)
+                  IJPK = FUNIJK(I,JP,K)
+                  IJKM = FUNIJK(I,J,KM)
+                  IJKP = FUNIJK(I,J,KP)
+
+                  IJPKP = FUNIJK(I,JP,KP)
+                  IPJKP = FUNIJK(IP,J,KP)
+                  IPJPK = FUNIJK(IP,JP,K)
+                
+
+
+!======================================================================
+!  Get coordinates of eight nodes
+!======================================================================
+
+                  CALL GET_CELL_NODE_COORDINATES(IJK,TYPE_OF_CELL)
+
+!======================================================================
+!  Intersection with Edge 7 (node 7-8, Face North-Top):
+!======================================================================
+                  xa = X_NODE(7)
+                  ya = Y_NODE(7)
+                  za = Z_NODE(7)
+
+                  xb = X_NODE(8)
+                  yb = Y_NODE(8)
+                  zb = Z_NODE(8)
+
+
+                  INTERSECT_FLAG = .FALSE.
+
+                  CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+
+                  IF(INTERSECT_FLAG) THEN
+
+                     IF(INTERSECT_X(IJK)) THEN
+
+                        IF(DABS(Xint(IJK)-xc)>TOL_STL) THEN
+
+                           INTERSECT_X(IJK) = .FALSE.
+
+                        ENDIF                  
+
+                     ELSE
+
+                        INTERSECT_X(IJK) = .TRUE.
+                        Xint(IJK) = xc 
+
+                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+
+
+                        N_FACET_AT(IJK) = N_FACET_AT(IJK) + 1
+                        LIST_FACET_AT(IJK,N_FACET_AT(IJK)) = N
+
+                        IF(JP<=J2) THEN
+                           N_FACET_AT(IJPK) = N_FACET_AT(IJPK) + 1
+                           LIST_FACET_AT(IJPK,N_FACET_AT(IJPK)) = N
+                           BC_ID(IJPK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                        ENDIF
+                     
+                        IF(KP<=K2) THEN
+                           N_FACET_AT(IJKP) = N_FACET_AT(IJKP) + 1
+                           LIST_FACET_AT(IJKP,N_FACET_AT(IJKP)) = N
+                           BC_ID(IJKP) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                        ENDIF
+
+                        IF(JP<=J2.AND.KP<=K2) THEN
+                           N_FACET_AT(IJPKP) = N_FACET_AT(IJPKP) + 1
+                           LIST_FACET_AT(IJPKP,N_FACET_AT(IJPKP)) = N
+                           BC_ID(IJPKP) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                        ENDIF
+                     ENDIF
+
+                  ENDIF
+
+
+                  IF(TYPE_OF_CELL=='U_MOMENTUM') THEN
+                     IF(SNAP(IJK)) THEN
+                        INTERSECT_X(IJK) = .TRUE.
+                        Xn_int(IJK) = XG_E(I)
+                     ENDIF
+                  ENDIF
+
+
+
+!======================================================================
+!  Intersection with Edge 6 (node 6-8, Face East-Top):
+!======================================================================
+                  xa = X_NODE(6)
+                  ya = Y_NODE(6)
+                  za = Z_NODE(6)
+
+                  INTERSECT_FLAG = .FALSE.
+
+                  CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+
+                  IF(INTERSECT_FLAG) THEN
+
+                     IF(INTERSECT_Y(IJK)) THEN
+
+                        IF(DABS(Yint(IJK)-yc)>TOL_STL) THEN
+
+                           INTERSECT_Y(IJK) = .FALSE.
+
+                        ENDIF
+
+                     ELSE
+
+
+                        INTERSECT_Y(IJK) = .TRUE.
+                        Yint(IJK) = yc 
+
+                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+
+                        N_FACET_AT(IJK) = N_FACET_AT(IJK) + 1
+                        LIST_FACET_AT(IJK,N_FACET_AT(IJK)) = N
+
+                        IF(IP<=I2) THEN
+                           N_FACET_AT(IPJK) = N_FACET_AT(IPJK) + 1
+                           LIST_FACET_AT(IPJK,N_FACET_AT(IPJK)) = N
+                           BC_ID(IPJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                        ENDIF
+
+                        IF(KP<=K2) THEN
+                           N_FACET_AT(IJKP) = N_FACET_AT(IJKP) + 1
+                           LIST_FACET_AT(IJKP,N_FACET_AT(IJKP)) = N
+                           BC_ID(IJKP) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                        ENDIF
+
+                        IF(IP<=I2.AND.KP<=K2) THEN
+                           N_FACET_AT(IPJKP) = N_FACET_AT(IPJKP) + 1
+                           LIST_FACET_AT(IPJKP,N_FACET_AT(IPJKP)) = N
+                           BC_ID(IPJKP) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                        ENDIF
+
+
+                     ENDIF
+
+                  ENDIF
+
+                  IF(TYPE_OF_CELL=='V_MOMENTUM') THEN
+                     IF(SNAP(IJK)) THEN
+                        INTERSECT_Y(IJK) = .TRUE.
+                        Ye_int(IJK) = YG_N(J)
+                     ENDIF
+                  ENDIF
+
+                  IF(DO_K) THEN
+!======================================================================
+!  Intersection with Edge 11 (node 4-8, Face East-North):
+!======================================================================
+                     xa = X_NODE(4)
+                     ya = Y_NODE(4)
+                     za = Z_NODE(4)
+
+                     INTERSECT_FLAG = .FALSE. 
+
+                     CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+
+                     IF(INTERSECT_FLAG) THEN
+
+                        IF(INTERSECT_Z(IJK)) THEN
+
+                           IF(DABS(Zint(IJK)-zc)>TOL_STL) THEN
+
+                              INTERSECT_Z(IJK) = .FALSE.
+
+                           ENDIF
+
+                        ELSE
+
+
+                           INTERSECT_Z(IJK) = .TRUE.
+                           Zint(IJK) = zc 
+
+                           BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+
+                           N_FACET_AT(IJK) = N_FACET_AT(IJK) + 1
+                           LIST_FACET_AT(IJK,N_FACET_AT(IJK)) = N
+
+                           IF(IP<=I2) THEN
+                              N_FACET_AT(IPJK) = N_FACET_AT(IPJK) + 1
+                              LIST_FACET_AT(IPJK,N_FACET_AT(IPJK)) = N
+                              BC_ID(IPJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                           ENDIF
+
+                           IF(JP<=J2) THEN
+                              N_FACET_AT(IJPK) = N_FACET_AT(IJPK) + 1
+                              LIST_FACET_AT(IJPK,N_FACET_AT(IJPK)) = N
+                              BC_ID(IJPK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                           ENDIF
+
+                           IF(IP<=I2.AND.JP<=J2) THEN
+                              N_FACET_AT(IPJPK) = N_FACET_AT(IPJPK) + 1
+                              LIST_FACET_AT(IPJPK,N_FACET_AT(IPJPK)) = N
+                              BC_ID(IPJPK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                           ENDIF
+
+                        ENDIF
+
+                     ENDIF
+
+
+                     IF(TYPE_OF_CELL=='W_MOMENTUM') THEN
+                        IF(SNAP(IJK)) THEN
+                           INTERSECT_Z(IJK) = .TRUE.
+                           Zt_int(IJK) = ZG_T(K)
+                        ENDIF
+                     ENDIF
+
+                  ENDIF
+
+
+               ENDDO  ! I loop
+            ENDDO  ! J loop
+         ENDDO  ! K loop
+
+
+      ENDDO  ! Loop over facets
+
+
+
+
+      RETURN
+      
+      END SUBROUTINE CAD_INTERSECT
 

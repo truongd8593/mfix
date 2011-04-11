@@ -57,7 +57,7 @@
       DOUBLE PRECISION, DIMENSION(0:15):: Y_NODE
       DOUBLE PRECISION, DIMENSION(0:15):: Z_NODE
       DOUBLE PRECISION, DIMENSION(0:15):: F_NODE
-      INTEGER, DIMENSION(8) :: IJK_OF_NODE
+      INTEGER, DIMENSION(0:15) :: IJK_OF_NODE
 
 !     Location of new (along intersecting edges) nodes
       INTEGER :: NUMBER_OF_NEW_POINTS
@@ -402,6 +402,8 @@
       LOGICAL :: USE_POLYGON
 
       LOGICAL :: USE_STL
+
+      LOGICAL :: USE_MSH
 
 !     Boundary condition flag
       INTEGER,  DIMENSION(:), ALLOCATABLE ::  BC_ID

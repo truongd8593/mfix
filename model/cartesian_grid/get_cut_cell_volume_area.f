@@ -65,8 +65,8 @@
       
       INTEGER, DIMENSION(15) :: TEMP_CONNECTIVITY
 
-      LOGICAL :: CLIP_FLAG,INTERSECT_FLAG,PRINT_FLAG
-      INTEGER :: BCID,N_BC,QID_FMIN
+      LOGICAL :: CLIP_FLAG,INTERSECT_FLAG,PRINT_FLAG,INSIDE_FACET
+      INTEGER :: BCID,N_BC,QID_FMIN,BCID2,NF
 
       include "function.inc"
 
@@ -160,7 +160,11 @@
 
          CALL EVAL_F('USR_DEF',X_COPY,Y_COPY,Z_COPY,N_USR_DEF,F_COPY,CLIP_FLAG)
 
-         CALL EVAL_F('STL    ',X_COPY,Y_COPY,Z_COPY,N_FACETS,F_COPY,CLIP_FLAG)
+         X_NODE(15) = X_COPY
+         Y_NODE(15) = Y_COPY
+         Z_NODE(15) = Z_COPY
+         CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,15,F_COPY,CLIP_FLAG,BCID2)
+
 
          IF (DABS(F_COPY) < TOL_F ) THEN ! belongs to cut face
             N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1
@@ -557,7 +561,21 @@
             ENDIF
 
 
-            IF(USE_STL) BC_ID(IJK) = STL_BC_ID
+            IF(USE_STL.OR.USE_MSH) THEN
+               DO NODE = 1,N_CUT_FACE_NODES
+                  DO N=1,N_FACET_AT(IJK)
+                     NF=LIST_FACET_AT(IJK,N)
+                     CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),&
+                                                COORD_CUT_FACE_NODES(NODE,3),NF,INSIDE_FACET)
+                     IF(INSIDE_FACET) THEN
+                        BC_ID(IJK) = BC_ID_STL_FACE(NF) 
+                        IF(BC_ID(IJK)>0) THEN
+                           IF(BC_TYPE(BC_ID(IJK))  == 'CG_MI') EXIT
+                        ENDIF
+                     ENDIF
+                  ENDDO
+               ENDDO 
+            ENDIF
 
 
 !            Reordering connectivity such that polygon is defined appropriately for 2D vtk file
@@ -682,7 +700,23 @@
             ENDIF
 
 
-            IF(USE_STL) BC_U_ID(IJK) = STL_BC_ID
+            IF(USE_STL.OR.USE_MSH) THEN
+               DO NODE = 1,N_CUT_FACE_NODES
+                  DO N=1,N_FACET_AT(IJK)
+                     NF=LIST_FACET_AT(IJK,N)
+                     CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),&
+                                                COORD_CUT_FACE_NODES(NODE,3),NF,INSIDE_FACET)
+                     IF(INSIDE_FACET) THEN
+                        BC_U_ID(IJK) = BC_ID_STL_FACE(NF) 
+                        IF(BC_U_ID(IJK)>0) THEN
+                           IF(BC_TYPE(BC_U_ID(IJK))  == 'CG_MI') EXIT
+                        ENDIF
+                     ENDIF
+                  ENDDO
+               ENDDO 
+            ENDIF
+
+
 
 
          CASE('V_MOMENTUM')
@@ -794,7 +828,23 @@
                ENDDO
             ENDIF
 
-            IF(USE_STL) BC_V_ID(IJK) = STL_BC_ID
+
+            IF(USE_STL.OR.USE_MSH) THEN
+               DO NODE = 1,N_CUT_FACE_NODES
+                  DO N=1,N_FACET_AT(IJK)
+                     NF=LIST_FACET_AT(IJK,N)
+                     CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),&
+                                                COORD_CUT_FACE_NODES(NODE,3),NF,INSIDE_FACET)
+                     IF(INSIDE_FACET) THEN
+                        BC_V_ID(IJK) = BC_ID_STL_FACE(NF) 
+                        IF(BC_V_ID(IJK)>0) THEN
+                           IF(BC_TYPE(BC_V_ID(IJK))  == 'CG_MI') EXIT
+                        ENDIF
+                     ENDIF
+                  ENDDO
+               ENDDO 
+            ENDIF
+
 
          CASE('W_MOMENTUM')
             IF(I>ISTART1) AREA_WEST   = AYZ_W(IMJK)
@@ -895,7 +945,23 @@
                ENDDO
             ENDIF
 
-            IF(USE_STL) BC_W_ID(IJK) = STL_BC_ID
+
+            IF(USE_STL.OR.USE_MSH) THEN
+               DO NODE = 1,N_CUT_FACE_NODES
+                  DO N=1,N_FACET_AT(IJK)
+                     NF=LIST_FACET_AT(IJK,N)
+                     CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),&
+                                                COORD_CUT_FACE_NODES(NODE,3),NF,INSIDE_FACET)
+                     IF(INSIDE_FACET) THEN
+                        BC_W_ID(IJK) = BC_ID_STL_FACE(NF) 
+                        IF(BC_W_ID(IJK)>0) THEN
+                           IF(BC_TYPE(BC_W_ID(IJK))  == 'CG_MI') EXIT
+                        ENDIF
+                     ENDIF
+                  ENDDO
+               ENDDO 
+            ENDIF
+
 
          CASE DEFAULT
             WRITE(*,*)'SUBROUTINE: GET_CUT_CELL_VOLUME_AND_AREAS'

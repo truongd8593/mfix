@@ -49,6 +49,7 @@
       DOUBLE PRECISION :: MIN_AXZ,MAX_AXZ
       DOUBLE PRECISION :: MIN_AXY,MAX_AXY
       DOUBLE PRECISION :: F_NODE_02
+      INTEGER :: BCID
 
 
 
@@ -120,6 +121,7 @@
       INTERSECT_Z = .FALSE.
       SNAP = .FALSE.
 
+
       DO IJK = IJKSTART3, IJKEND3
 
          I = I_OF(IJK) 
@@ -141,10 +143,16 @@
          ENDIF
 
 
-         CALL INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
-
       END DO
 
+
+      IF(.NOT.(USE_STL.OR.USE_MSH)) THEN
+         DO IJK = IJKSTART3, IJKEND3
+            CALL INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
+         END DO
+      ELSE
+         CALL CAD_INTERSECT('SCALAR',Xn_int,Ye_int,Zt_int)
+      ENDIF
 !======================================================================
 !  Clean-up intersection flags in preparaton of small cells removal
 !======================================================================
@@ -220,7 +228,7 @@
 
                CALL EVAL_F('USR_DEF',X_NODE(0),Y_NODE(0),Z_NODE(0),N_USR_DEF,F_NODE(0),CLIP_FLAG)
 
-               CALL EVAL_F('STL    ',X_NODE(0),Y_NODE(0),Z_NODE(0),N_FACETS,F_NODE(0),CLIP_FLAG)
+               CALL EVAL_STL_FCT_AT('SCALAR',IJK,0,F_NODE(0),CLIP_FLAG,BCID)
 
 
                IF(F_NODE(0) < ZERO) THEN
@@ -296,7 +304,6 @@
       RETURN
       END SUBROUTINE SET_3D_CUT_CELL_FLAGS
 
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SET_3D_CUT_U_CELL_FLAGS                                C
@@ -340,6 +347,8 @@
       DOUBLE PRECISION :: MIN_AXY,MAX_AXY
       DOUBLE PRECISION :: MIN_CUT,MAX_CUT
       DOUBLE PRECISION :: F_NODE_02
+      INTEGER :: BCID
+
       include "function.inc"
 
       IF(MyPE == PE_IO) THEN
@@ -356,11 +365,14 @@
       SNAP = .FALSE.
       TOL_SNAP = ZERO
 
-      DO IJK = IJKSTART3, IJKEND3
 
-         CALL INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
-
-      END DO
+      IF(.NOT.(USE_STL.OR.USE_MSH)) THEN
+         DO IJK = IJKSTART3, IJKEND3
+            CALL INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
+         END DO
+      ELSE
+         CALL CAD_INTERSECT('U_MOMENTUM',Xn_U_int,Ye_U_int,Zt_U_int)
+      ENDIF
 
 !======================================================================
 !  Clean-up intersection flags in preparaton of small cells removal
@@ -437,7 +449,7 @@
 
                CALL EVAL_F('USR_DEF',X_NODE(0),Y_NODE(0),Z_NODE(0),N_USR_DEF,F_NODE(0),CLIP_FLAG)
 
-               CALL EVAL_F('STL    ',X_NODE(0),Y_NODE(0),Z_NODE(0),N_FACETS,F_NODE(0),CLIP_FLAG)
+               CALL EVAL_STL_FCT_AT('U_MOMENTUM',IJK,0,F_NODE(0),CLIP_FLAG,BCID)
 
                IF(F_NODE(0) < ZERO) THEN
                   BLOCKED_U_CELL_AT(IJK) = .FALSE.
@@ -506,6 +518,7 @@
             ENDIF
 
          ENDIF
+
       END DO
 
 
@@ -573,6 +586,8 @@
       DOUBLE PRECISION :: MIN_AXY,MAX_AXY
       DOUBLE PRECISION :: MIN_CUT,MAX_CUT
       DOUBLE PRECISION :: F_NODE_02
+      INTEGER :: BCID
+
       include "function.inc"
 
       IF(MyPE == PE_IO) THEN
@@ -588,11 +603,14 @@
       INTERSECT_Z = .FALSE.
       SNAP = .FALSE.
 
-      DO IJK = IJKSTART3, IJKEND3
 
-         CALL INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
-
-      END DO
+      IF(.NOT.(USE_STL.OR.USE_MSH)) THEN
+         DO IJK = IJKSTART3, IJKEND3
+            CALL INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
+         END DO
+      ELSE
+         CALL CAD_INTERSECT('V_MOMENTUM',Xn_V_int,Ye_V_int,Zt_V_int)
+      ENDIF
 
 !======================================================================
 !  Clean-up intersection flags in preparaton of small cells removal
@@ -669,7 +687,7 @@
 
                CALL EVAL_F('USR_DEF',X_NODE(0),Y_NODE(0),Z_NODE(0),N_USR_DEF,F_NODE(0),CLIP_FLAG)
 
-               CALL EVAL_F('STL    ',X_NODE(0),Y_NODE(0),Z_NODE(0),N_FACETS,F_NODE(0),CLIP_FLAG)
+               CALL EVAL_STL_FCT_AT('V_MOMENTUM',IJK,0,F_NODE(0),CLIP_FLAG,BCID)
 
                IF(F_NODE(0) < ZERO) THEN
                   BLOCKED_V_CELL_AT(IJK) = .FALSE.
@@ -803,6 +821,8 @@
       DOUBLE PRECISION :: MIN_AXY,MAX_AXY
       DOUBLE PRECISION :: MIN_CUT,MAX_CUT
       DOUBLE PRECISION :: F_NODE_02
+      INTEGER :: BCID
+
       include "function.inc"
 
       IF(MyPE == PE_IO) THEN
@@ -818,12 +838,13 @@
       INTERSECT_Z = .FALSE.
       SNAP = .FALSE.
       
-
-      DO IJK = IJKSTART3, IJKEND3
-
-         CALL INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
-
-      END DO
+      IF(.NOT.(USE_STL.OR.USE_MSH)) THEN
+         DO IJK = IJKSTART3, IJKEND3
+            CALL INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
+         END DO
+      ELSE
+         CALL CAD_INTERSECT('W_MOMENTUM',Xn_W_int,Ye_W_int,Zt_W_int)
+      ENDIF
 
 !======================================================================
 !  Clean-up intersection flags in preparaton of small cells removal
@@ -887,7 +908,7 @@
 
                CALL EVAL_F('USR_DEF',X_NODE(0),Y_NODE(0),Z_NODE(0),N_USR_DEF,F_NODE(0),CLIP_FLAG)
 
-               CALL EVAL_F('STL    ',X_NODE(0),Y_NODE(0),Z_NODE(0),N_FACETS,F_NODE(0),CLIP_FLAG)
+               CALL EVAL_STL_FCT_AT('W_MOMENTUM',IJK,0,F_NODE(0),CLIP_FLAG,BCID)
 
                IF(F_NODE(0) < ZERO) THEN
                   BLOCKED_W_CELL_AT(IJK) = .FALSE.
