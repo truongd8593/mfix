@@ -44,6 +44,8 @@
       DOUBLE PRECISION :: OVOL
 ! total volume of mth phase solids in cell and 1 over that value      
       DOUBLE PRECISION SOLVOLINC(DIMENSION_3,DES_MMAX), OSOLVOL
+! solids volume fraction of mth solids phase
+      DOUBLE PRECISION EP_SM
 ! variables that count/store the number of particles in i, j, k cell
       INTEGER:: npic, pos
       INTEGER, DIMENSION(DIMENSION_I,DIMENSION_J,DIMENSION_K):: particle_count
@@ -53,20 +55,18 @@
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 ! Logical for local debug warnings
       LOGICAL DES_LOC_DEBUG
+
 ! size of mesh for grid based search      
       DOUBLE PRECISION SIZEDX, SIZEDY, SIZEDZ 
 ! variables that count/store the number of particles in i, j, k cell
       INTEGER, DIMENSION(DESGS_IMAX2,DESGS_JMAX2,DESGS_KMAX2) :: DESGRIDSEARCH_NPIC
       INTEGER, DIMENSION(DESGS_IMAX2,DESGS_JMAX2,DESGS_KMAX2) :: DESGS_particle_count
-! Variables to calculate bed height of each solids phase
-      DOUBLE PRECISION :: tmp_num(DES_MMAX), tmp_den(DES_MMAX), hcell 
+
 
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 
-! following quantities are reset every call to particles_in_clel
+! following quantities are reset every call to particles_in_cell
       PINC(:) = 0
       SOLVOLINC(:,:) = ZERO
       DES_U_s(:,:) = ZERO
@@ -296,27 +296,28 @@
                'Particle position = ', DES_POS_NEW(L,:)            
          ENDIF
          PIJK(L,4) = IJK
-         PINC(IJK) = PINC(IJK) + 1
+
          M = PIJK(L,5)
          SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) +  PVOL(L)
          DES_U_s(IJK,M) = DES_U_s(IJK,M) + PVOL(L)*DES_VEL_NEW(L,1)
          DES_V_s(IJK,M) = DES_V_s(IJK,M) + PVOL(L)*DES_VEL_NEW(L,2)
          IF(DIMN.EQ.3) DES_W_s(IJK,M) = DES_W_s(IJK,M) + PVOL(L)*DES_VEL_NEW(L,3)
 
+         PINC(IJK) = PINC(IJK) + 1
          PC = PC + 1         
       ENDDO      ! end loop over L = 1,particles
 
 
-! Calculate the cell average solids velocity, the bulk density (if not
-! des_interp_on and not first_pass), the void fraction, and average
-! height of each solids phase
+
+
+! Calculate the cell average solids velocity, the solids bulk density
+! (if not des_interp_on and not first_pass) and the void fraction
 ! ------------------------------------------------------------
-      tmp_num(:) = ZERO 
-      tmp_den(:) = ZERO 
       DO IJK = IJKSTART3, IJKEND3
-         J = J_OF(IJK)
          EP_G(IJK) = ONE   
          DO M = 1, DES_MMAX
+
+! average solids velocity in a fluid cell         
             IF(SOLVOLINC(IJK,M).GT.ZERO) THEN
                OSOLVOL = ONE/SOLVOLINC(IJK,M)   
                DES_U_s(IJK,M) = DES_U_s(IJK,M)*OSOLVOL
@@ -325,37 +326,43 @@
                   DES_W_s(IJK,M) = DES_W_s(IJK,M)*OSOLVOL
                ENDIF
             ENDIF
+
+! bulk density in a fluid cell
             IF(VOL(IJK).GT.0) THEN 
                OVOL = ONE/(VOL(IJK))
-               IF(FIRST_PASS .OR. &
+               IF(FIRST_PASS .OR. (PIS==0) .OR. &
                  ((.NOT.FIRST_PASS).AND.(.NOT.DES_INTERP_ON))) THEN
-                  ROP_S(IJK,M)  = DES_RO_S(M)*SOLVOLINC(IJK,M)*OVOL
+                  DES_ROP_S(IJK,M)  = DES_RO_S(M)*SOLVOLINC(IJK,M)*OVOL
                ENDIF
             ENDIF
-            IF(ROP_S(IJK,M) > ZERO) THEN
-               EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
-               IF(EP_G(IJK).LT.ZERO .AND. DES_CONTINUUM_COUPLED) THEN 
-! this does not matter if pure granular flow simulation (i.e. no fluid)
+
+! assign DEM bulk density value to same variable associated with
+! continuum bulk density to avoid issues with error/consistency checks
+! conducted in continuum side of simulation
+            IF(.NOT.DES_CONTINUUM_HYBRID) &
+               ROP_S(IJK,M) = DES_ROP_S(IJK,M)
+
+! calculate void fraction in fluid cell based on solids bulk density
+            IF(DES_ROP_S(IJK,M) > ZERO) THEN
+               EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
+               EP_G(IJK) = EP_G(IJK) - EP_SM 
+               ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
+
+! ep_g does not matter if granular flow simulation (i.e. no fluid)
+               IF(EP_G(IJK)<ZERO .AND. DES_CONTINUUM_COUPLED) THEN 
                   IF (.NOT.DES_LOC_DEBUG) THEN
                      DES_LOC_DEBUG = .TRUE.
                      WRITE(*,1000)
                   ENDIF
-          WRITE(*,'(5X,A,I10,/,7X,A,I10,2X,I10,2X,A,ES15.9,/,7X,A,I10)') &
-                    'WARNING EP_G LT zero at IJK: ', IJK,&
-                    'I,J = ', I_OF(IJK), J, ' EP_S = ', EP_S(IJK,M), & 
-                    'No. of particles in cell = ', PINC(IJK)
-               ENDIF 
-               ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
-! bed height calculations for each solids phase
-               hcell = 0.5d0*(YN(J)+YN(J-1))
-               tmp_num(M) = tmp_num(M) + EP_S(IJK,M)*hcell*VOL(IJK)
-               tmp_den(M) = tmp_den(M) + EP_S(IJK,M)*VOL(IJK)
+                  WRITE(*,1004) IJK, I_OF(IJK), J_OF(IJK), EP_SM, &
+                     PINC(IJK)
+               ENDIF
             ENDIF
+
          ENDDO   ! end loop over M=1,DES_MMAX
       ENDDO     ! end loop over IJK=ijkstart3,ijkend3
 
-! calculate avg height for each phase
-      IF (PIS >0) bed_height(:) = tmp_num(:)/tmp_den(:)
+
 
 
 ! Assign/allocate the variable pic(i,j,k)%p(:). For each cell compare 
@@ -524,6 +531,11 @@
  1000 FORMAT(3X,'---------- FROM PARTICLES_IN_CELL ---------->')
  1001 FORMAT(3X,'<---------- END PARTICLES_IN_CELL ----------') 
 
+
+ 1004 FORMAT(5X,'WARNING: EP_G < 0 at IJK=', I10,' I=', I10,&
+                ' J=', I10,/5X,'EP_S=', ES15.9, ' & PINC (number of ',&
+                'particles in cell)= ',I10)
+
  1005 FORMAT(/1X,70('*')//&
          ' From: PARTICLES_IN_CELL -',/,& 
          ' Message: Problem determining the solids phase',&
@@ -557,3 +569,7 @@
 
       RETURN
       END SUBROUTINE PARTICLES_IN_CELL
+!-----------------------------------------------
+
+
+

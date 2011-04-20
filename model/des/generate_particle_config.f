@@ -15,13 +15,11 @@
       SUBROUTINE GENERATE_PARTICLE_CONFIG
       
       USE param1
-      USE geometry
       USE funits
       USE compar      
-      USE discretelement
       USE run
-      USE constant
-      USE physprop
+      USE geometry
+      USE discretelement
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -37,7 +35,7 @@
          '---------- START GENERATE_PARTICLE_CONFIG ---------->'
 
       PART_COUNT = 0
-      DO M = 1, MMAX
+      DO M = 1, DES_MMAX
          DO L = 1, PART_MPHASE(M) 
             PART_COUNT = PART_COUNT + 1
             DES_RADIUS(PART_COUNT) = DES_D_P0(M)*HALF
@@ -84,8 +82,8 @@
       ENDDO
       CLOSE(24)
 
-      IF(MAXVAL(DES_POS_NEW(1:PARTICLES,2)).GT.&
-      YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES))) THEN 
+      IF( MAXVAL(DES_POS_NEW(1:PARTICLES,2)).GT.&
+         YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES)) ) THEN 
          WRITE(UNIT_LOG,1002) MAXVAL(DES_POS_NEW(1:PARTICLES,2)), &
             YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES))
          WRITE(*,1003)
@@ -206,27 +204,14 @@
 
       USE param
       USE param1
-      USE parallel
-      USE matrix
-      USE scales
-      USE constant
-      USE physprop
       USE fldvar
-      USE visc_g
-      USE rxns
       USE run
-      USE toleranc
       USE geometry
       USE indices
-      USE is
-      USE tau_g
-      USE bc
       USE compar
-      USE sendrecv
-      USE discretelement
-      USE drag
       USE interpolation
-      
+      USE discretelement
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -254,8 +239,6 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 
       WRITE(*,'(7X,A)') &
          '---------- START SET_INITIAL_VELOCITY ---------->'
@@ -497,7 +480,6 @@
 !      
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
       SUBROUTINE init_particles_jn
-      USE constant 
       USE geometry
       USE randomno
       USE discretelement

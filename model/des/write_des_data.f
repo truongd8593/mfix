@@ -36,7 +36,7 @@
 
 ! Invoke at own risk      
       IF (.FALSE.) CALL WRITE_DES_THETA
-      IF (.FALSE.) CALL WRITE_DES_BEDHEIGHT
+      IF (DES_CALC_BEDHEIGHT .AND. .FALSE.) CALL WRITE_DES_BEDHEIGHT
 
       RETURN
       END SUBROUTINE WRITE_DES_DATA
@@ -481,11 +481,9 @@
       SUBROUTINE WRITE_DES_TECPLOT
 
       USE compar
-      USE fldvar
       USE funits
       USE geometry
       USE indices      
-      USE physprop
       USE run
       USE discretelement
       USE des_bc
@@ -532,14 +530,14 @@
       DOUBLE PRECISION :: AVG_EPS(JMAX2, DES_MMAX), &
          AVG_THETA(JMAX2,DES_MMAX)
 
+! tmp variable to calculate solids volume fraction phase M
+      DOUBLE PRECISION EP_SM
 !-----------------------------------------------
 ! Functions 
 !-----------------------------------------------
 !-----------------------------------------------
 
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 
 ! Set the file names for the output TECPLOT data
       FNAME_DATA = TRIM(RUN_NAME)//'_DES_DATA.dat'
@@ -733,7 +731,8 @@
                DO I = IMIN1, IMAX1
                   IJK = FUNIJK(I,J,K)
                   DO M = 1, DES_MMAX
-                     AVG_EPS(J,M) =  AVG_EPS(J,M) + EP_S(IJK,M)
+                     EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
+                     AVG_EPS(J,M) =  AVG_EPS(J,M) + EP_SM
                      AVG_THETA(J,M) =  AVG_THETA(J,M) + DES_THETA(IJK,M)
                   ENDDO
                ENDDO
@@ -900,7 +899,6 @@
       USE funits
       USE geometry
       USE indices
-      USE physprop
       USE run
       USE discretelement
       USE des_bc

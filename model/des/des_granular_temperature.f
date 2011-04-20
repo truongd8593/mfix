@@ -11,20 +11,13 @@
 
       SUBROUTINE DES_GRANULAR_TEMPERATURE
 
-      USE discretelement
       USE param
       USE param1
-      USE parallel
-      USE fldvar
       USE run
       USE geometry
-      USE matrix
       USE indices
-      USE physprop
-      USE drag
-      USE constant
       USE compar
-      USE sendrecv
+      USE discretelement
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -48,6 +41,8 @@
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
 
+
+      IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT
 
 ! Calculate a local species granular temperature for current instant of
 ! time.  Note that the following calculation of species granular
@@ -158,3 +153,86 @@
 
       END SUBROUTINE DES_GRANULAR_TEMPERATURE
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+!
+!  Module name: CALC_DES_BEDHEIGHT
+!  Purpose: Calculate an average bed height for each solids phase
+!  present
+!     
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      SUBROUTINE CALC_DES_BEDHEIGHT
+
+      USE indices
+      USE geometry      
+      USE compar
+      USE discretelement
+      USE des_bc
+      IMPLICIT NONE
+
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------  
+! particle index
+      INTEGER L
+! accounted for particles
+      INTEGER PC
+! solids phase no.    
+      INTEGER M      
+! ijk indices      
+      INTEGER I, J, K, IJK
+! average height of fluid cell 
+      DOUBLE PRECISION  hcell
+! height of particle (y-position)
+      DOUBLE PRECISION hpart      
+! volume fraction of phase M in fluid cell
+      DOUBLE PRECISION EP_SM      
+! tmp variables for calculations
+      DOUBLE PRECISION :: tmp_num(DES_MMAX), tmp_den(DES_MMAX)
+
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+
+! calculation of bed height following the formulation of Goldschmidt et
+! al., Powder Technology 138, 2003, 135-159
+      tmp_num(:) = ZERO 
+      tmp_den(:) = ZERO 
+      DO IJK = IJKSTART3, IJKEND3
+         J = J_OF(IJK)      
+         DO M = 1, DES_MMAX      
+            IF(DES_ROP_S(IJK,M) > ZERO) THEN
+               hcell = 0.5d0*(YN(J)+YN(J-1))
+               EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
+               tmp_num(M) = tmp_num(M) + EP_SM*hcell*VOL(IJK)
+               tmp_den(M) = tmp_den(M) + EP_SM*VOL(IJK)
+            ENDIF
+         ENDDO
+      ENDDO
+! calculate avg height for each phase
+      IF (PIS >0) bed_height(:) = tmp_num(:)/tmp_den(:)
+
+
+! alternative method to calculating bed height (turned off atm)
+      IF(.FALSE.) THEN 
+      tmp_num(:) = ZERO 
+      tmp_den(:) = ZERO 
+      PC = 1
+
+      DO L = 1, MAX_PIS
+         IF(PC .GT. PIS) EXIT
+         IF(.NOT.PEA(L,1)) CYCLE
+
+         M = PIJK(L,5)
+         hpart = DES_POS_NEW(L,2)
+         tmp_num(M) = tmp_num(M) + hpart
+         tmp_den(M) = tmp_den(M) + 1
+         PC = PC + 1
+      ENDDO
+      ! calculate avg height for each phase
+      IF (PIS >0) bed_height(:) = tmp_num(:)/tmp_den(:)
+      ENDIF
+
+      RETURN
+
+      END SUBROUTINE CALC_DES_BEDHEIGHT      
+!-----------------------------------------------            

@@ -38,6 +38,7 @@
       USE_COHESION = .FALSE.
       DES_CONTINUUM_HYBRID = .FALSE.
 
+
       DES_NEIGHBOR_SEARCH = 1
       DO_NSEARCH = .FALSE.
       NEIGHBOR_SEARCH_N = 25
@@ -143,6 +144,10 @@
       VTP_FINDEX = 0
       TECPLOT_FINDEX = 0      
 
+! flag whether calculate bed height of a phase      
+      DES_CALC_BEDHEIGHT = .FALSE.
+ 
+! flag whether to use automatic particle configuration
       GENER_PART_CONFIG = .FALSE.
       VOL_FRAC(:) = UNDEFINED
       DES_EPS_XSTART = UNDEFINED

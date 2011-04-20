@@ -57,16 +57,6 @@
 
       MAXNEIGHBORS = MN + 1 + NWALLS
 
-
-      IF (DES_NEIGHBOR_SEARCH.EQ.2 .OR. DES_NEIGHBOR_SEARCH.EQ.3) THEN
-         MAXQUADS = 5*PARTICLES*MQUAD_FACTOR   
-         IF(MAXQUADS.LE.80000) MAXQUADS = 80000 
-         IF(DIMN.EQ.3) THEN   
-            NMQD = 11   
-         ELSE   
-            NMQD = 7   
-         ENDIF 
-      ENDIF 
 !-----------------------------------------------
 
 
@@ -80,14 +70,7 @@
 ! J.Musser: Allocate necessary arrays for discrete mass inlets      
       IF(DES_BCMI /= 0 .OR. DES_BCMO /=0) CALL ALLOCATE_DES_MIO
  
-! T. Li: Hertzian collision model
-      allocate(hert_kn(DES_MMAX,DES_MMAX))
-      allocate(hert_kt(DES_MMAX,DES_MMAX))
-      allocate(hert_kwn(DES_MMAX))
-      allocate(hert_kwt(DES_MMAX)) 
-      allocate(g_mod(DES_MMAX))
-      
-! COEFF OF RESITUTIONS 
+! Coefficients of restitution (normal & tangential)
       ALLOCATE(REAL_EN(DES_MMAX,DES_MMAX)) 
       ALLOCATE(REAL_EN_WALL(DES_MMAX))
 ! for hertzian model need real_et, otherwise specify eta_t_fact 
@@ -99,75 +82,81 @@
       ALLOCATE(DES_ETAT(DES_MMAX,DES_MMAX))
       ALLOCATE(DES_ETAN_WALL(DES_MMAX), DES_ETAT_WALL(DES_MMAX))
 
-      
+! T. Li: Hertzian collision model
+      allocate(hert_kn(DES_MMAX,DES_MMAX))
+      allocate(hert_kt(DES_MMAX,DES_MMAX))
+      allocate(hert_kwn(DES_MMAX))
+      allocate(hert_kwt(DES_MMAX)) 
+      allocate(g_mod(DES_MMAX))
+            
 ! Particle attributes
 ! Radius, density, mass, moment of inertia           
-      Allocate(  DES_RADIUS (NPARTICLES) )
-      Allocate(  RO_Sol (NPARTICLES) )
-      Allocate(  PVOL (NPARTICLES) )
-      Allocate(  PMASS (NPARTICLES) )
-      Allocate(  OMOI (NPARTICLES) )
+      Allocate( DES_RADIUS (NPARTICLES) )
+      Allocate( RO_Sol (NPARTICLES) )
+      Allocate( PVOL (NPARTICLES) )
+      Allocate( PMASS (NPARTICLES) )
+      Allocate( OMOI (NPARTICLES) )
      
 ! Old and new particle positions, velocities (translational and
 ! rotational)       
-      Allocate(  DES_POS_OLD (NPARTICLES,DIMN) )
-      Allocate(  DES_POS_NEW (NPARTICLES,DIMN) )
-      Allocate(  DES_VEL_OLD (NPARTICLES,DIMN) )
-      Allocate(  DES_VEL_NEW (NPARTICLES,DIMN) )
-      Allocate(  DES_VEL_OOLD(NPARTICLES,DIMN) )
-      Allocate(  DES_ACC_OLD (NPARTICLES,DIMN) )
+      Allocate( DES_POS_OLD (NPARTICLES,DIMN) )
+      Allocate( DES_POS_NEW (NPARTICLES,DIMN) )
+      Allocate( DES_VEL_OLD (NPARTICLES,DIMN) )
+      Allocate( DES_VEL_NEW (NPARTICLES,DIMN) )
+      Allocate( DES_VEL_OOLD(NPARTICLES,DIMN) )
+      Allocate( DES_ACC_OLD (NPARTICLES,DIMN) )
 
       IF(DIMN.GT.2) THEN
-         Allocate(  OMEGA_OLD (NPARTICLES,DIMN) )
-         Allocate(  OMEGA_NEW (NPARTICLES,DIMN) )
-         ALLOCATE(  ROT_ACC_OLD (NPARTICLES,DIMN))
+         Allocate( OMEGA_OLD (NPARTICLES,DIMN) )
+         Allocate( OMEGA_NEW (NPARTICLES,DIMN) )
+         ALLOCATE( ROT_ACC_OLD (NPARTICLES,DIMN))
       ELSE
-         Allocate(  OMEGA_OLD (NPARTICLES,1) )
-         Allocate(  OMEGA_NEW (NPARTICLES,1) )
-         ALLOCATE(  ROT_ACC_OLD (NPARTICLES,1))
+         Allocate( OMEGA_OLD (NPARTICLES,1) )
+         Allocate( OMEGA_NEW (NPARTICLES,1) )
+         ALLOCATE( ROT_ACC_OLD (NPARTICLES,1))
       ENDIF        
-      Allocate(  PPOS (NPARTICLES,DIMN) )
+      Allocate( PPOS (NPARTICLES,DIMN) )
      
 ! Total, normal and tangetial forces      
-      Allocate(  FC (NPARTICLES,DIMN) )
-      Allocate(  FN (NPARTICLES,DIMN) )
-      Allocate(  FT (NPARTICLES,DIMN) )
-      Allocate(  GRAV (DIMN) )
+      Allocate( FC (NPARTICLES,DIMN) )
+      Allocate( FN (NPARTICLES,DIMN) )
+      Allocate( FT (NPARTICLES,DIMN) )
 
 ! Torque     
       IF(DIMN.EQ.3) THEN 
-         Allocate(  TOW (NPARTICLES,DIMN) )
+         Allocate( TOW (NPARTICLES,DIMN) )
       ELSE
-         Allocate(  TOW (NPARTICLES,1) )
+         Allocate( TOW (NPARTICLES,1) )
       ENDIF
      
 ! Accumulated spring force      
-      Allocate(  PFT (NPARTICLES,MAXNEIGHBORS,DIMN) )
+      Allocate( PFT (NPARTICLES,MAXNEIGHBORS,DIMN) )
 ! Tracking variables for particle contact history
-      Allocate(  PN (NPARTICLES, MAXNEIGHBORS) )
-      Allocate(  PV (NPARTICLES, MAXNEIGHBORS) )
+      Allocate( PN (NPARTICLES, MAXNEIGHBORS) )
+      Allocate( PV (NPARTICLES, MAXNEIGHBORS) )
     
 ! Temporary variables to store wall position, velocity and normal vector
-      Allocate(  DES_WALL_POS (NWALLS,DIMN) )
-      Allocate(  DES_WALL_VEL (NWALLS,DIMN) )
-      Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
+      Allocate( DES_WALL_POS (NWALLS,DIMN) )
+      Allocate( DES_WALL_VEL (NWALLS,DIMN) )
+      Allocate( WALL_NORMAL  (NWALLS,DIMN) )
 
-! Variable that stores the particle in cell information (ID) on the
-! computational grid defined by imax, jmax and kmax in mfix.dat
-      ALLOCATE(PIC(DIMENSION_I,DIMENSION_J,DIMENSION_K))
-      DO K = 1,KMAX3
-         DO J = 1,JMAX3
-            DO I = 1,IMAX3
-               NULLIFY(pic(i,j,k)%p) 
-            ENDDO 
-          ENDDO 
-       ENDDO 
-! Particles in a computational cell (for volume fraction)
-      Allocate(  PINC (DIMENSION_3) )
-! For each particle track its i,j,k location on computational grid
-! defined by imax, jmax and kmax in mfix.dat and phase no.         
-      Allocate(  PIJK (NPARTICLES,5) )
 
+! Neighbor search
+      Allocate( NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )
+
+      IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. DES_NEIGHBOR_SEARCH .EQ. 3) THEN
+         MAXQUADS = 5*PARTICLES*MQUAD_FACTOR   
+         IF(MAXQUADS.LE.80000) MAXQUADS = 80000 
+         IF(DIMN.EQ.3) THEN   
+            NMQD = 11   
+         ELSE   
+            NMQD = 7   
+         ENDIF 
+
+         Allocate( LQUAD (MAXQUADS, NMQD) )
+         Allocate( PQUAD (NPARTICLES) )
+         Allocate( CQUAD (MAXQUADS, NWALLS) )
+      ENDIF
 
 ! For each particle track its i, j, k index according to the grid
 ! based search mesh when des_neighbor_search=4
@@ -186,50 +175,68 @@
           ENDDO                      
       ENDIF   ! end if des_neighbor_search == 4
 
+! Variable that stores the particle in cell information (ID) on the
+! computational fluid grid defined by imax, jmax and kmax in mfix.dat
+      ALLOCATE(PIC(DIMENSION_I,DIMENSION_J,DIMENSION_K))
+      DO K = 1,KMAX3
+         DO J = 1,JMAX3
+            DO I = 1,IMAX3
+               NULLIFY(pic(i,j,k)%p) 
+            ENDDO 
+          ENDDO 
+       ENDDO 
+
+! Particles in a computational fluid cell (for volume fraction)
+      Allocate( PINC (DIMENSION_3) )
+! For each particle track its i,j,k location on computational fluid grid
+! defined by imax, jmax and kmax in mfix.dat and phase no.         
+      Allocate( PIJK (NPARTICLES,5) )
 
       IF(DES_INTERP_ON) THEN
          ALLOCATE(DRAG_AM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), DES_MMAX))
-         ALLOCATE(DRAG_BM(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1), DIMN, DES_MMAX))
-         ALLOCATE(WTBAR(DIMENSION_I-1, DIMENSION_J-1,  MAX(1,DIMENSION_K-1),  DES_MMAX))
+         ALLOCATE(DRAG_BM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), DIMN, DES_MMAX))
+         ALLOCATE(  WTBAR(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), DES_MMAX))
          ALLOCATE(VEL_FP(NPARTICLES,3))
-         ALLOCATE(F_gp(NPARTICLES ))  
+         ALLOCATE(F_gp(NPARTICLES))  
          F_gp(1:NPARTICLES)  = ZERO
       ENDIF 
-    
 ! Drag exerted by the gas on solids
-      Allocate(  SOLID_DRAG (DIMENSION_3, DIMENSION_M, DIMN) )
-     
-! Neighbor search
-      Allocate(  NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )
+      Allocate(  SOLID_DRAG (DIMENSION_3, DIMENSION_M, DIMN) )      
 
-      IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. DES_NEIGHBOR_SEARCH .EQ. 3) THEN
-         Allocate(  LQUAD (MAXQUADS, NMQD) )
-         Allocate(  PQUAD (NPARTICLES) )
-         Allocate(  CQUAD (MAXQUADS, NWALLS) )
-      ENDIF
-
-      ALLOCATE(MARK_PART(NPARTICLES))
-      ALLOCATE(BED_HEIGHT(DES_MMAX))
+! Bulk density in a computational fluid cell / for communication with
+! MFIX continuum
+      ALLOCATE( DES_ROP_S(DIMENSION_3, DES_MMAX) )
 
 ! Volume averaged solids volume in a cell      
-      Allocate(  DES_U_s (DIMENSION_3, DIMENSION_M) )
-      Allocate(  DES_V_s (DIMENSION_3, DIMENSION_M) )
-      Allocate(  DES_W_s (DIMENSION_3, DIMENSION_M) )
+      Allocate( DES_U_s(DIMENSION_3, DES_MMAX) )
+      Allocate( DES_V_s(DIMENSION_3, DES_MMAX) )
+      Allocate( DES_W_s(DIMENSION_3, DES_MMAX) )
 
-! Averaged velocity obtained by avraging over all the particles
-      ALLOCATE(  DES_VEL_AVG(DIMN) )
+! Gravity vector      
+      Allocate(GRAV(DIMN))
+
+! Cell faces
+      Allocate( XE(DIMENSION_I) )
+      Allocate( YN(DIMENSION_J) )
+      Allocate( ZT(DIMENSION_K) )
 
 ! Granular temperature
-      Allocate(  DES_THETA (DIMENSION_3, DIMENSION_M) )
+      Allocate(DES_THETA(DIMENSION_3, DES_MMAX))
 
-! Global Granular Energy
-      ALLOCATE(  GLOBAL_GRAN_ENERGY(DIMN) )
-      ALLOCATE(  GLOBAL_GRAN_TEMP(DIMN) )
-    
-! Cell faces
-      Allocate(  XE (DIMENSION_I) )
-      Allocate(  YN (DIMENSION_J) )
-      Allocate(  ZT (DIMENSION_K) )
+! Global granular energy
+      ALLOCATE(GLOBAL_GRAN_ENERGY(DIMN))
+      ALLOCATE(GLOBAL_GRAN_TEMP(DIMN))
+
+! Averaged velocity obtained by averaging over all the particles
+      ALLOCATE(DES_VEL_AVG(DIMN))
+
+! flag that can be used to mark particles in paraview
+      ALLOCATE(MARK_PART(NPARTICLES))
+
+! variable for bed height of solids phase M      
+      ALLOCATE(BED_HEIGHT(DES_MMAX))
+
+
 
      
 ! COHESION      

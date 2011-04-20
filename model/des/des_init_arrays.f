@@ -29,6 +29,13 @@
 
 !-----------------------------------------------
 
+! T.Li : Hertzian collision model
+      g_mod(:) = zero
+      hert_kn(:,:) = zero
+      hert_kwn(:) = zero
+      hert_kt(:,:) = zero
+      hert_kwt(:) = zero
+
       DES_RADIUS(:) = ZERO
       PMASS(:) = ZERO
       PVOL(:) = ZERO
@@ -47,27 +54,27 @@
       OMEGA_NEW(:,:) = ZERO
       ROT_ACC_OLD(:,:) = ZERO
 
-      DES_U_s(:,:) = ZERO
-      DES_V_s(:,:) = ZERO
-      DES_W_s(:,:) = ZERO
-      SOLID_DRAG(:,:,:) = ZERO
-
       FC(:,:) = ZERO
       FN(:,:) = ZERO
       FT(:,:) = ZERO
       TOW(:,:) = ZERO
+      SOLID_DRAG(:,:,:) = ZERO
+
+      PN(:,:) = -1
+      PN(:,1) = 0
+      PV(:,:) = 1
+      PFT(:,:,:) = ZERO
 
       PPOS(:,:) = ZERO
       GRAV(:) = ZERO
       DES_WALL_POS(:,:) = UNDEFINED
       DES_WALL_VEL(:,:) = UNDEFINED
+      DES_BC_U_s(:) = ZERO
+      DES_BC_V_s(:) = ZERO
+      DES_BC_W_s(:) = ZERO
 
       NEIGHBOURS(:,:) = -1
       NEIGHBOURS(:,1) = 0
-      PN(:,:) = -1
-      PN(:,1) = 0
-      PV(:,:) = 1
-      PFT(:,:,:) = ZERO
 
       IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. &
         DES_NEIGHBOR_SEARCH .EQ. 3) THEN
@@ -80,9 +87,13 @@
          DESGRIDSEARCH_PIJK(:,:) = ZERO
       ENDIF
 
-
       PINC(:) = ZERO
       PIJK(:,:) = ZERO
+
+      DES_U_s(:,:) = ZERO
+      DES_V_s(:,:) = ZERO
+      DES_W_s(:,:) = ZERO
+      DES_ROP_S(:,:) = ZERO
 
       XE(:) = ZERO
       YN(:) = ZERO
@@ -96,16 +107,7 @@
             PEA(I,1)=.TRUE.
          ENDDO
       ENDIF
-      DES_BC_U_s(:) = ZERO
-      DES_BC_V_s(:) = ZERO
-      DES_BC_W_s(:) = ZERO
 
-! T.Li : Hertzian collision model
-      g_mod(:) = zero
-      hert_kn(:,:) = zero
-      hert_kwn(:) = zero
-      hert_kt(:,:) = zero
-      hert_kwt(:) = zero
       
       RETURN
       END SUBROUTINE DES_INIT_ARRAYS 

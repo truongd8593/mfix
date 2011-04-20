@@ -58,7 +58,7 @@
 ! DES output control information
         DEBUG_DES, FOCUS_PARTICLE,&
         PRINT_DES_DATA, DES_SPX_DT, DES_RES_DT, &
-        DES_OUTPUT_TYPE, &
+        DES_OUTPUT_TYPE, DES_CALC_BEDHEIGHT, &
 !
 ! DES Cohesion Information: M.Weber
 	MASTER_WELL_DEPTH, MASTER_WALL_WELL_DEPTH,&

@@ -4615,7 +4615,8 @@ allocate_cut_cell_arrays.$(OBJ_EXT) : ./cartesian_grid/allocate_cut_cell_arrays.
             param.mod \
             param1.mod \
             indices.mod \
-            cutcell.mod 
+            cutcell.mod \
+            stl.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/allocate_cut_cell_arrays.f 
 allocate_dummy_cut_cell_arrays.$(OBJ_EXT) : ./cartesian_grid/allocate_dummy_cut_cell_arrays.f \
             param.mod \
@@ -4929,7 +4930,8 @@ cut_cell_preprocessing.$(OBJ_EXT) : ./cartesian_grid/cut_cell_preprocessing.f \
             cutcell.mod \
             vtk.mod \
             fldvar.mod \
-            polygon.mod 
+            polygon.mod \
+            stl.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/cut_cell_preprocessing.f 
 deallocate_cut_cell_arrays.$(OBJ_EXT) : ./cartesian_grid/deallocate_cut_cell_arrays.f \
             param.mod \
@@ -5122,6 +5124,8 @@ get_stl_data.$(OBJ_EXT) : ./cartesian_grid/get_stl_data.f \
             vtk.mod \
             quadric.mod \
             constant.mod \
+            bc.mod \
+            cutcell.mod \
             parallel.mod \
             toleranc.mod \
             geometry.mod \
@@ -5476,20 +5480,14 @@ des_functions.$(OBJ_EXT) : ./des/des_functions.f \
             funits.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_functions.f 
 des_granular_temperature.$(OBJ_EXT) : ./des/des_granular_temperature.f \
-            discretelement.mod \
             param.mod \
             param1.mod \
-            parallel.mod \
-            fldvar.mod \
             run.mod \
             geometry.mod \
-            matrix.mod \
             indices.mod \
-            physprop.mod \
-            drag.mod \
-            constant.mod \
             compar.mod \
-            sendrecv.mod \
+            discretelement.mod \
+            des_bc.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
@@ -5571,19 +5569,14 @@ drag_fgs.$(OBJ_EXT) : ./des/drag_fgs.f \
             param.mod \
             param1.mod \
             parallel.mod \
-            matrix.mod \
             scales.mod \
             constant.mod \
             physprop.mod \
             fldvar.mod \
-            visc_g.mod \
-            rxns.mod \
             run.mod \
             toleranc.mod \
             geometry.mod \
             indices.mod \
-            is.mod \
-            tau_g.mod \
             bc.mod \
             compar.mod \
             sendrecv.mod \
@@ -5593,9 +5586,7 @@ drag_fgs.$(OBJ_EXT) : ./des/drag_fgs.f \
             ur_facs.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
-            fun_avg2.inc                                                 \
-            ep_s1.inc                                                    \
-            ep_s2.inc                                                   
+            fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/drag_fgs.f 
 gas_drag.$(OBJ_EXT) : ./des/gas_drag.f \
             param.mod \
@@ -5625,34 +5616,19 @@ gas_drag.$(OBJ_EXT) : ./des/gas_drag.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/gas_drag.f 
 generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
             param1.mod \
-            geometry.mod \
             funits.mod \
             compar.mod \
-            discretelement.mod \
             run.mod \
-            constant.mod \
-            physprop.mod \
+            geometry.mod \
+            discretelement.mod \
             param.mod \
-            parallel.mod \
-            matrix.mod \
-            scales.mod \
             fldvar.mod \
-            visc_g.mod \
-            rxns.mod \
-            toleranc.mod \
             indices.mod \
-            is.mod \
-            tau_g.mod \
-            bc.mod \
-            sendrecv.mod \
-            drag.mod \
             interpolation.mod \
             randomno.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
-            fun_avg2.inc                                                 \
-            ep_s1.inc                                                    \
-            ep_s2.inc                                                   
+            fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/generate_particle_config.f 
 grid_based_neighbor_search.$(OBJ_EXT) : ./des/grid_based_neighbor_search.f \
             discretelement.mod \
@@ -5702,9 +5678,7 @@ particles_in_cell.$(OBJ_EXT) : ./des/particles_in_cell.f \
             parallel.mod \
             sendrecv.mod \
             discretelement.mod \
-            function.inc                                                 \
-            ep_s1.inc                                                    \
-            ep_s2.inc                                                   
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/particles_in_cell.f 
 quadtree.$(OBJ_EXT) : ./des/quadtree.f \
             run.mod \
@@ -5778,13 +5752,10 @@ write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
             des_bc.mod \
             compar.mod \
             funits.mod \
-            fldvar.mod \
             geometry.mod \
             indices.mod \
             physprop.mod \
-            function.inc                                                 \
-            ep_s1.inc                                                    \
-            ep_s2.inc                                                   
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/write_des_data.f 
 write_des_restart.$(OBJ_EXT) : ./des/write_des_restart.f \
             param1.mod \
