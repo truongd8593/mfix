@@ -302,7 +302,8 @@
       USE geometry
       USE indices
       USE bc
-      USE compar         
+      USE compar 
+      USE toleranc        
       USE mpi_utility    
       IMPLICIT NONE
 !
@@ -323,7 +324,7 @@
       INTEGER          IPJK2T
 !
 !                      Average scalars
-      DOUBLE PRECISION EPg_avg, Mu_g_avg, RO_g_avg
+      DOUBLE PRECISION EPg_avg, Mu_g_avg, RO_g_avg, smallTheta
 !
 !                      Average scalars modified to include all solid phases
       DOUBLE PRECISION EPs_avg(DIMENSION_M), DP_avg(DIMENSION_M), &
@@ -391,6 +392,8 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
+      
+      smallTheta = (to_SI)**4 * ZERO_EP_S
 !
 !  Note:  EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).  Hence
 !         IJK2 (fluid cell) is used in averages.
@@ -404,12 +407,13 @@
         RO_g_avg = RO_g(IJK2)
         g0EPs_avg = ZERO
 !
-          DO MM = 1, MMAX
+          DO MM = 1, SMAX
                g0(MM)      = G_0(IJK2, M, MM)
                EPs_avg(MM) = EP_s(IJK2,MM)
                DP_avg(MM)  = D_P(IJK2,MM)
                g0EPs_avg   = g0EPs_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
                TH_avg(MM) = AVG_Y(Theta_m(IJK1,MM),Theta_m(IJK2,MM),J_OF(IJK1))
+	       IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta ! for some corner cells
 !            
 !              added for IA (2005) theory:
 !                   include -1 since normal vector is pointing south (-y)
@@ -473,13 +477,14 @@
 	ep_star_avg = EP_star_array(IJK2)
         g0EPs_avg = ZERO
 !
-          DO MM = 1, MMAX
+          DO MM = 1, SMAX
                g0(MM)      = G_0(IJK2,M,MM)
                EPs_avg(MM) = EP_s(IJK2,MM)
                DP_avg(MM)  = D_P(IJK2,MM)
                g0EPs_avg   = g0EPs_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
 !
                TH_avg(MM) = AVG_Y(Theta_m(IJK2, MM),Theta_m(IJK1, MM),J_OF(IJK2))
+	       IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta ! for some corner cells
 !
 !              added for IA (2005) theory:
 !                   include 1 since normal vector is pointing north (+y)
@@ -542,13 +547,14 @@
 	ep_star_avg = EP_star_array(IJK2)
         g0EPs_avg = ZERO
 !
-          DO MM = 1, MMAX
+          DO MM = 1, SMAX
                g0(MM)      = G_0(IJK2,M,MM)
                EPs_avg(MM) = EP_s(IJK2,MM)
                DP_avg(MM)  = D_P(IJK2,MM)
                g0EPs_avg   = g0EPs_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
 !
                TH_avg(MM) = AVG_X(Theta_m(IJK1,MM),Theta_m(IJK2,MM),I_OF(IJK1))
+	       IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta ! for some corner cells
 !
 !              added for IA (2005) theory:
 !                   include -1 since normal vector is pointing west (-x)
@@ -611,13 +617,14 @@
 	ep_star_avg = EP_star_array(IJK2)
         g0EPs_avg = ZERO
 !
-          DO MM = 1, MMAX
+          DO MM = 1, SMAX
                g0(MM)      = G_0(IJK2,M,MM)
                EPs_avg(MM) = EP_s(IJK2,MM)
                DP_avg(MM)  = D_P(IJK2,MM)
                g0EPs_avg   = g0EPs_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
 !
                TH_avg(MM) = AVG_X(Theta_m(IJK2,MM),Theta_m(IJK1,MM),I_OF(IJK2))
+	       IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta ! for some corner cells
 !
 !              added for IA (2005) theory:
 !                   include 1 since normal vector is pointing west (+x)
@@ -679,13 +686,14 @@
 	ep_star_avg = EP_star_array(IJK2)
         g0EPs_avg = ZERO
 !
-          DO MM = 1, MMAX
+          DO MM = 1, SMAX
                g0(MM)      = G_0(IJK2,M,MM)
                EPs_avg(MM) = EP_s(IJK2,MM)
                DP_avg(MM)  = D_P(IJK2,MM)
                g0EPs_avg   = g0EPs_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
 !
                TH_avg(MM) = AVG_Z(Theta_m(IJK1,MM),Theta_m(IJK2,MM),K_OF(IJK1))
+	       IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta ! for some corner cells
 !
 !              added for IA (2005) theory:
 !                   include -1 since normal vector is pointing in bottom dir (-z)
@@ -750,13 +758,14 @@
 	ep_star_avg = EP_star_array(IJK2)
         g0EPs_avg = ZERO
 !
-          DO MM = 1, MMAX
+          DO MM = 1, SMAX
                g0(MM)      = G_0(IJK2,M,MM)
                EPs_avg(MM) = EP_s(IJK2,MM)
                DP_avg(MM)  = D_P(IJK2,MM)
                g0EPs_avg   = g0EPs_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
 !
                TH_avg(MM) = AVG_Z(Theta_m(IJK2,MM),Theta_m(IJK1,MM),K_OF(IJK2))
+	       IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta ! for some corner cells
 !
 !              added for IA (2005) theory:
 !                   include 1 since normal vector is pointing in bottom dir (+z)
@@ -1035,7 +1044,7 @@
           K_s_MM = (Kgran_star/(M_PM*g0(M)))*&  ! Kth doesn't include the mass.
                     (1.d0+(3.d0/5.d0)*(1.d0+C_E)*(1.d0+C_E)*g0EPs_avg)**2
 
-          DO LL = 1, MMAX
+          DO LL = 1, SMAX
 
                D_PL = DP_avg(LL)
                M_PL = (PI/6.d0)*(D_PL**3.)*RO_S(LL)

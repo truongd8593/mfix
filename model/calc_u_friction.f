@@ -35,6 +35,7 @@
       USE indices
       USE bc
       USE compar
+      USE toleranc
       IMPLICIT NONE
 !
 !  Function subroutines
@@ -54,6 +55,7 @@
 !
 !                      Average scalars
       DOUBLE PRECISION EP_avg, EPg_avg, TH_avg, Mu_g_avg, RO_g_avg,Dp_avg
+      DOUBLE PRECISION AVGX1, AVGX2, smallTheta
 !
 !                      Average velocities
       DOUBLE PRECISION WGC1, WGC2, WGCM, VGC1, VGC2, UGC1, UGC2
@@ -134,6 +136,8 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
+      
+      smallTheta = (to_SI)**4 * ZERO_EP_S
  
  
       IF (BC_JJ_PS(L).EQ.3) THEN
@@ -171,18 +175,24 @@
 	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
-	  DO MM = 1, MMAX
+	  DO MM = 1, SMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
 	               * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
           ENDDO
-	  
+! code modified for some corner cells
           IF(GRANULAR_ENERGY) THEN
-	    TH_avg = AVG_Y(&
-                AVG_X(Theta_m(IJK1, M), Theta_m(IPJMK2, M), I_OF(IJK1)),&
-                AVG_X(Theta_m(IJK2, M), Theta_m(IPJK2, M), I_OF(IJK2)),&
-                J_OF(IJK1))
-          ELSE
-	    TH_avg = AVG_X(THETA_M(IJK2,M), THETA_M(IJK2E,M), I_OF(IJK2))
+                 AVGX1 = AVG_X(Theta_m(IJK1,M), Theta_m(IPJMK2,M), I_OF(IJK1))
+		 AVGX2 = AVG_X(Theta_m(IJK2,M), Theta_m(IPJK2,M), I_OF(IJK2))
+		 IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+		 IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+		 IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+		   TH_avg = smallTheta
+		 ELSE
+		   TH_avg = AVG_Y(AVGX1, AVGX2, J_OF(IJK1))
+		 ENDIF
+             ELSE
+                 TH_avg = AVG_X(THETA_M(IJK2,M), THETA_M(IJK2E,M), I_OF(IJK2))
+		 IF(TH_avg < ZERO) TH_avg = smallTheta
           ENDIF
           Mu_g_avg = AVG_X(Mu_g(IJK2), Mu_g(IJK2E), I_OF(IJK2))
           RO_g_avg = AVG_X(RO_g(IJK2), RO_g(IJK2E), I_OF(IJK2))
@@ -249,18 +259,24 @@
 	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
-	  DO MM = 1, MMAX
+	  DO MM = 1, SMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
 	               * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
           ENDDO
  
           IF(GRANULAR_ENERGY) THEN
-	    TH_avg = AVG_Y(&
-                  AVG_X(Theta_m(IJK2, M),Theta_m(IPJK2, M),I_OF(IJK2)),&
-                  AVG_X(Theta_m(IJK1, M),Theta_m(IPJPK2, M),I_OF(IJK1)),&
-                  J_OF(IJK2))
-          ELSE
-	    TH_avg =  AVG_X(THETA_M(IJK2,M), THETA_M(IJK2E,M), I_OF(IJK2))
+                 AVGX1 = AVG_X(Theta_m(IJK2,M),Theta_m(IPJK2,M),I_OF(IJK2))
+		 AVGX2 = AVG_X(Theta_m(IJK1,M),Theta_m(IPJPK2,M),I_OF(IJK1))
+		 IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+		 IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+		 IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+		   TH_avg = smallTheta
+		 ELSE
+		   TH_avg = AVG_Y(AVGX1, AVGX2, J_OF(IJK2))
+		 ENDIF
+             ELSE
+                 TH_avg =  AVG_X(THETA_M(IJK2,M), THETA_M(IJK2E,M), I_OF(IJK2))
+		 IF(TH_avg < ZERO) TH_avg = smallTheta
 	  ENDIF
           Mu_g_avg = AVG_X(Mu_g(IJK2), Mu_g(IJK2E), I_OF(IJK2))
  
@@ -327,18 +343,24 @@
 	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
-	  DO MM = 1, MMAX
+	  DO MM = 1, SMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
 	               * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
           ENDDO
  
           IF(GRANULAR_ENERGY) THEN
-	    TH_avg = AVG_Z(&
-                  AVG_X(Theta_m(IJK1,M),Theta_m(IPJKM2, M),I_OF(IJK1)),&
-                  AVG_X(Theta_m(IJK2,M),Theta_m(IPJK2, M),I_OF(IJK2)),&
-                  K_OF(IJK1))
-          ELSE
-	    TH_avg = AVG_X(THETA_M(IJK2,M), THETA_M(IJK2E,M), I_OF(IJK2))
+                 AVGX1 = AVG_X(Theta_m(IJK1,M),Theta_m(IPJKM2,M),I_OF(IJK1))
+		 AVGX2 = AVG_X(Theta_m(IJK2,M),Theta_m(IPJK2,M),I_OF(IJK2))
+		 IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+		 IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+		 IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+		   TH_avg = smallTheta
+		 ELSE
+		   TH_avg = AVG_Z(AVGX1, AVGX2, K_OF(IJK1))
+		 ENDIF
+             ELSE
+                 TH_avg = AVG_X(THETA_M(IJK2,M), THETA_M(IJK2E,M), I_OF(IJK2))
+		 IF(TH_avg < ZERO) TH_avg = smallTheta
 	  ENDIF
           Mu_g_avg =&
                 AVG_X(Mu_g(IJK2), Mu_g(IJK2E), I_OF(IJK2))
@@ -408,18 +430,24 @@
 	  EPg_avg = AVG_X(EP_g(IJK2), EP_g(IJK2E), I_OF(IJK2))
 	  ep_star_avg = AVG_X(EP_star_array(IJK2), EP_star_array(IJK2E), I_OF(IJK2))
           g0EP_avg = ZERO
-	  DO MM = 1, MMAX
+	  DO MM = 1, SMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
 	               * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
           ENDDO
  
           IF(GRANULAR_ENERGY) THEN
-	    TH_avg = AVG_Z(&
-                  AVG_X(Theta_m(IJK2,M), Theta_m(IPJK2,M),I_OF(IJK2)),&
-                  AVG_X(Theta_m(IJK1,M), Theta_m(IPJKP2,M),I_OF(IJK1)),&
-                  K_OF(IJK2))
-          ELSE
-	    TH_avg = AVG_X(THETA_M(IJK2,M), THETA_M(IJK2E,M), I_OF(IJK2))
+                 AVGX1 = AVG_X(Theta_m(IJK1,M), Theta_m(IPJKP2,M),I_OF(IJK1))
+		 AVGX2 = AVG_X(Theta_m(IJK2,M), Theta_m(IPJK2,M),I_OF(IJK2))
+		 IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+		 IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+		 IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+		   TH_avg = smallTheta
+		 ELSE
+		   TH_avg = AVG_Z(AVGX1, AVGX2, K_OF(IJK2))
+		 ENDIF
+             ELSE
+                 TH_avg = AVG_X(THETA_M(IJK2,M), THETA_M(IJK2E,M), I_OF(IJK2))
+		 IF(TH_avg < ZERO) TH_avg = smallTheta
 	  ENDIF
           Mu_g_avg =&
                 AVG_X(Mu_g(IJK2), Mu_g(IJK2E), I_OF(IJK2))
@@ -494,18 +522,24 @@
 	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
 	  ep_star_avg = AVG_Y(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
-	  DO MM = 1, MMAX
+	  DO MM = 1, SMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, MM) &
 	               * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
           ENDDO
  
           IF(GRANULAR_ENERGY) THEN
-	    TH_avg = AVG_Y(&
-             AVG_Z(Theta_m(IJK1, M), Theta_m(IJK2, M), K_OF(IJK1)),&
-             AVG_Z(Theta_m(IJPKM2, M), Theta_m(IJPK2, M), K_OF(IJPKM2)),&
-             J_OF(IJK1))
-          ELSE
-	    TH_avg = AVG_Y(THETA_M(IJK2,M), THETA_M(IJK2N,M), J_OF(IJK2))
+                 AVGX1 = AVG_Z(Theta_m(IJK1,M), Theta_m(IJK2,M), K_OF(IJK1))
+		 AVGX2 = AVG_Z(Theta_m(IJPKM2,M), Theta_m(IJPK2,M), K_OF(IJPKM2))
+		 IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+		 IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+		 IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+		   TH_avg = smallTheta
+		 ELSE
+		   TH_avg = AVG_Y(AVGX1, AVGX2, J_OF(IJK1))
+		 ENDIF
+             ELSE
+                 TH_avg = AVG_Y(THETA_M(IJK2,M), THETA_M(IJK2N,M), J_OF(IJK2))
+		 IF(TH_avg < ZERO) TH_avg = smallTheta
           ENDIF
           Mu_g_avg =&
                      AVG_Y(Mu_g(IJK2), Mu_g(IJK2N), J_OF(IJK2))
@@ -583,18 +617,24 @@
 	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
 	  ep_star_avg = AVG_Y(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
-	  DO MM = 1, MMAX
+	  DO MM = 1, SMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, MM) &
 	               * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
           ENDDO
  
           IF(GRANULAR_ENERGY) THEN
-	    TH_avg = AVG_Y(&
-                AVG_Z(Theta_m(IJK2, M), Theta_m(IJK1, M), K_OF(IJK2)),&
-                AVG_Z(Theta_m(IJPK2, M), Theta_m(IJPKP2, M), K_OF(IJPK2)),&
-                J_OF(IJK2))
-          ELSE
-	    TH_avg = AVG_Y(THETA_M(IJK2,M), THETA_M(IJK2N,M), J_OF(IJK2))
+                 AVGX1 = AVG_Z(Theta_m(IJK2,M), Theta_m(IJK1,M), K_OF(IJK2))
+		 AVGX2 = AVG_Z(Theta_m(IJPK2,M), Theta_m(IJPKP2,M), K_OF(IJPK2))
+		 IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+		 IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+		 IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+		   TH_avg = smallTheta
+		 ELSE
+		   TH_avg = AVG_Y(AVGX1, AVGX2, J_OF(IJK2))
+		 ENDIF
+             ELSE
+                 TH_avg = AVG_Y(THETA_M(IJK2,M), THETA_M(IJK2N,M), J_OF(IJK2))
+		 IF(TH_avg < ZERO) TH_avg = smallTheta
           ENDIF
           Mu_g_avg =&
                      AVG_Y(Mu_g(IJK2), Mu_g(IJK2N), J_OF(IJK2))
@@ -673,18 +713,24 @@
 	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
 	  ep_star_avg = AVG_Y(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
-	  DO MM = 1, MMAX
+	  DO MM = 1, SMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, MM) &
 	               * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
           ENDDO
  
           IF(GRANULAR_ENERGY) THEN
-	    TH_avg = AVG_Y(&
-                  AVG_X(Theta_m(IJK1,M),Theta_m(IJK2, M),I_OF(IJK1)),&
-                  AVG_X(Theta_m(IMJPK2,M),Theta_m(IJPK2, M),I_OF(IMJPK2)),&
-                  J_OF(IJK1))
-          ELSE
-	    TH_avg = AVG_Y(THETA_M(IJK2,M), THETA_M(IJK2N,M), J_OF(IJK2))
+                 AVGX1 = AVG_X(Theta_m(IJK1,M),Theta_m(IJK2,M),I_OF(IJK1))
+		 AVGX2 = AVG_X(Theta_m(IMJPK2,M),Theta_m(IJPK2,M),I_OF(IMJPK2))
+		 IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+		 IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+		 IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+		   TH_avg = smallTheta
+		 ELSE
+		   TH_avg = AVG_Y(AVGX1, AVGX2, J_OF(IJK1))
+		 ENDIF
+             ELSE
+                 TH_avg = AVG_Y(THETA_M(IJK2,M), THETA_M(IJK2N,M), J_OF(IJK2))
+		 IF(TH_avg < ZERO) TH_avg = smallTheta
 	  ENDIF
           Mu_g_avg =&
                 AVG_Y(Mu_g(IJK2), Mu_g(IJK2N), J_OF(IJK2))
@@ -754,18 +800,24 @@
 	  EPg_avg = AVG_Y(EP_g(IJK2), EP_g(IJK2N), J_OF(IJK2))
 	  ep_star_avg = AVG_Y(EP_star_array(IJK2), EP_star_array(IJK2N), J_OF(IJK2))
           g0EP_avg = ZERO
-	  DO MM = 1, MMAX
+	  DO MM = 1, SMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, MM) &
 	               * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
           ENDDO
  
           IF(GRANULAR_ENERGY) THEN
-	     TH_avg = AVG_Y(&
-                  AVG_X(Theta_m(IJK2,M),Theta_m(IJK1, M),I_OF(IJK2)),&
-                  AVG_X(Theta_m(IJPK2,M),Theta_m(IPJPK2, M),I_OF(IJPK2)),&
-                  J_OF(IJK2))
-          ELSE
-	    TH_avg = AVG_Y(THETA_M(IJK2,M), THETA_M(IJK2N,M), J_OF(IJK2))
+                 AVGX1 = AVG_X(Theta_m(IJK2,M),Theta_m(IJK1,M),I_OF(IJK2))
+		 AVGX2 = AVG_X(Theta_m(IJPK2,M),Theta_m(IPJPK2,M),I_OF(IJPK2))
+		 IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+		 IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+		 IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+		   TH_avg = smallTheta
+		 ELSE
+		   TH_avg = AVG_Y(AVGX1, AVGX2, J_OF(IJK2))
+		 ENDIF
+             ELSE
+                 TH_avg = AVG_Y(THETA_M(IJK2,M), THETA_M(IJK2N,M), J_OF(IJK2))
+		 IF(TH_avg < ZERO) TH_avg = smallTheta
 	  ENDIF
           Mu_g_avg =&
                 AVG_Y(Mu_g(IJK2), Mu_g(IJK2N), J_OF(IJK2))
@@ -840,18 +892,24 @@
 	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
 	  ep_star_avg = AVG_Z(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
-	  DO MM = 1, MMAX
+	  DO MM = 1, SMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, MM) &
 	               * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
           ENDDO
  
           IF(GRANULAR_ENERGY) THEN
-	    TH_avg = AVG_Y(&
-                AVG_Z(Theta_m(IJK1, M), Theta_m(IJMKP2, M), K_OF(IJK1)),&
-                AVG_Z(Theta_m(IJK2, M), Theta_m(IJKP2, M), K_OF(IJK2)),&
-                J_OF(IJK1))
-          ELSE
-	    TH_avg = AVG_Z(THETA_M(IJK2, M), THETA_M(IJK2T, M), K_OF(IJK2))
+                 AVGX1 = AVG_Z(Theta_m(IJK1,M), Theta_m(IJMKP2,M), K_OF(IJK1))
+		 AVGX2 = AVG_Z(Theta_m(IJK2,M), Theta_m(IJKP2,M), K_OF(IJK2))
+		 IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+		 IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+		 IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+		   TH_avg = smallTheta
+		 ELSE
+		   TH_avg = AVG_Y(AVGX1, AVGX2, J_OF(IJK1))
+		 ENDIF
+             ELSE
+                 TH_avg = AVG_Z(THETA_M(IJK2,M), THETA_M(IJK2T,M), K_OF(IJK2))
+		 IF(TH_avg < ZERO) TH_avg = smallTheta
 	  ENDIF
           Mu_g_avg =&
                      AVG_Z(Mu_g(IJK2), Mu_g(IJK2T), K_OF(IJK2))
@@ -929,18 +987,24 @@
 	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
 	  ep_star_avg = AVG_Z(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
-	  DO MM = 1, MMAX
+	  DO MM = 1, SMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, MM) &
 	               * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
           ENDDO
  
           IF(GRANULAR_ENERGY) THEN
-	    TH_avg = AVG_Y(&
-                AVG_Z(Theta_m(IJK2, M), Theta_m(IJKP2, M), K_OF(IJK2)),&
-                AVG_Z(Theta_m(IJK1, M), Theta_m(IJPKP2, M), K_OF(IJK1)),&
-                J_OF(IJK2))
-          ELSE
-	    TH_avg = AVG_Z(THETA_M(IJK2, M), THETA_M(IJK2T, M), K_OF(IJK2))
+                 AVGX1 = AVG_Z(Theta_m(IJK2,M), Theta_m(IJKP2,M), K_OF(IJK2))
+		 AVGX2 = AVG_Z(Theta_m(IJK1,M), Theta_m(IJPKP2,M), K_OF(IJK1))
+		 IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+		 IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+		 IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+		   TH_avg = smallTheta
+		 ELSE
+		   TH_avg = AVG_Y(AVGX1, AVGX2, J_OF(IJK2))
+		 ENDIF
+             ELSE
+                 TH_avg = AVG_Z(THETA_M(IJK2,M), THETA_M(IJK2T,M), K_OF(IJK2))
+		 IF(TH_avg < ZERO) TH_avg = smallTheta
 	  ENDIF
           Mu_g_avg =&
                      AVG_Z(Mu_g(IJK2), Mu_g(IJK2T), K_OF(IJK2))
@@ -1018,18 +1082,24 @@
 	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
 	  ep_star_avg = AVG_Z(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
-	  DO MM = 1, MMAX
+	  DO MM = 1, SMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, MM) &
 	               * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
           ENDDO
  
           IF(GRANULAR_ENERGY) THEN
-	    TH_avg = AVG_Z(&
-                  AVG_X(Theta_m(IJK1,M),Theta_m(IJK2, M),I_OF(IJK1)),&
-                  AVG_X(Theta_m(IMJKP2,M),Theta_m(IJKP2, M),I_OF(IMJKP2)),&
-                  K_OF(IJK1))
-          ELSE
-	    TH_avg = AVG_Z(THETA_M(IJK2, M), THETA_M(IJK2T, M), K_OF(IJK2))
+                 AVGX1 = AVG_X(Theta_m(IJK1,M),Theta_m(IJK2,M),I_OF(IJK1))
+		 AVGX2 = AVG_X(Theta_m(IMJKP2,M),Theta_m(IJKP2,M),I_OF(IMJKP2))
+		 IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+		 IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+		 IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+		   TH_avg = smallTheta
+		 ELSE
+		   TH_avg = AVG_Z(AVGX1, AVGX2, K_OF(IJK1))
+		 ENDIF
+             ELSE
+                 TH_avg = AVG_Z(THETA_M(IJK2,M), THETA_M(IJK2T,M), K_OF(IJK2))
+		 IF(TH_avg < ZERO) TH_avg = smallTheta
 	  ENDIF
           Mu_g_avg =&
                 AVG_Z(Mu_g(IJK2), Mu_g(IJK2T), K_OF(IJK2))
@@ -1098,18 +1168,24 @@
 	  EPg_avg = AVG_Z(EP_g(IJK2), EP_g(IJK2T), K_OF(IJK2))
 	  ep_star_avg = AVG_Z(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
           g0EP_avg = ZERO
-	  DO MM = 1, MMAX
+	  DO MM = 1, SMAX
 	    g0EP_avg = g0EP_avg + g_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, MM) &
 	               * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
           ENDDO
  
           IF(GRANULAR_ENERGY) THEN
-	    TH_avg = AVG_Z(&
-                  AVG_X(Theta_m(IJK2,M),Theta_m(IJK1, M),I_OF(IJK2)),&
-                  AVG_X(Theta_m(IJKP2,M),Theta_m(IPJKP2, M),I_OF(IJKP2)),&
-                  K_OF(IJK2))
-          ELSE
-	    TH_avg = AVG_Z(THETA_M(IJK2, M), THETA_M(IJK2T, M), K_OF(IJK2))
+                 AVGX1 = AVG_X(Theta_m(IJK2,M),Theta_m(IJK1,M),I_OF(IJK2))
+		 AVGX2 = AVG_X(Theta_m(IJKP2,M),Theta_m(IPJKP2,M),I_OF(IJKP2))
+		 IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+		 IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+		 IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+		   TH_avg = smallTheta
+		 ELSE
+		   TH_avg = AVG_Z(AVGX1, AVGX2, K_OF(IJK2))
+		 ENDIF
+             ELSE
+                 TH_avg = AVG_Z(THETA_M(IJK2,M), THETA_M(IJK2T,M), K_OF(IJK2))
+		 IF(TH_avg < ZERO) TH_avg = smallTheta
 	  ENDIF
           Mu_g_avg =&
                 AVG_Z(Mu_g(IJK2), Mu_g(IJK2T), K_OF(IJK2))
