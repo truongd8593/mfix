@@ -271,6 +271,35 @@
                   dquadric(Q) = Radius(Q)**2
                ENDIF
 
+            CASE ('SPHERE_INT')   ! The quadric is predefined as a sphere
+                                  ! Internal flow
+
+               IF( Radius(Q) <= ZERO) THEN
+                  WRITE(*,*)'INPUT ERROR: SPHERE:', Q, ' HAS INVALID RADIUS.'
+                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  CALL MFIX_EXIT(MYPE)             
+               ELSE
+                  lambda_x(Q) = ONE
+                  lambda_y(Q) = ONE
+                  lambda_z(Q) = ONE
+                  dquadric(Q) = -Radius(Q)**2
+               ENDIF
+ 
+           CASE ('SPHERE_EXT')   ! The quadric is predefined as a sphere
+                                  ! External flow
+
+               IF( Radius(Q) <= ZERO) THEN
+                  WRITE(*,*)'INPUT ERROR: SPHERE:', Q, ' HAS INVALID RADIUS.'
+                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  CALL MFIX_EXIT(MYPE)             
+               ELSE
+                  lambda_x(Q) = -ONE
+                  lambda_y(Q) = -ONE
+                  lambda_z(Q) = -ONE
+                  dquadric(Q) = Radius(Q)**2
+               ENDIF
+
+
             CASE ('X_CONE')    ! The quadric is predefined as a cone, along x-axis
                                ! Internal flow
 
