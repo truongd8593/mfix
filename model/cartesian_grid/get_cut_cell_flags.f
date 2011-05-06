@@ -1207,6 +1207,11 @@
                   AXZ_V(IPJK) = AXZ_V(IJK)
                   AXZ_W(IPJK) = AXZ_W(IJK)
 
+                  BC_ID(IPJK)   = BC_ID(IJK) 
+                  BC_U_ID(IPJK) = BC_U_ID(IJK) 
+                  BC_V_ID(IPJK) = BC_V_ID(IJK) 
+                  BC_W_ID(IPJK) = BC_W_ID(IJK) 
+
                END DO
             END DO
          END DO
@@ -1251,6 +1256,11 @@
                   AXZ_U(IMJK) = AXZ_U(IJK) 
                   AXZ_V(IMJK) = AXZ_V(IJK)
                   AXZ_W(IMJK) = AXZ_W(IJK)
+  
+                  BC_ID(IMJK)   = BC_ID(IJK) 
+                  BC_U_ID(IMJK) = BC_U_ID(IJK) 
+                  BC_V_ID(IMJK) = BC_V_ID(IJK) 
+                  BC_W_ID(IMJK) = BC_W_ID(IJK) 
 
                END DO
             END DO
@@ -1297,6 +1307,11 @@
                   AXZ_V(IJPK) = AXZ_V(IJK)
                   AXZ_W(IJPK) = AXZ_W(IJK)
 
+                  BC_ID(IJPK)   = BC_ID(IJK) 
+                  BC_U_ID(IJPK) = BC_U_ID(IJK) 
+                  BC_V_ID(IJPK) = BC_V_ID(IJK) 
+                  BC_W_ID(IJPK) = BC_W_ID(IJK) 
+
                END DO
             END DO
          END DO
@@ -1340,6 +1355,11 @@
                   AXZ_U(IJMK) = AXZ_U(IJK) 
                   AXZ_V(IJMK) = AXZ_V(IJK)
                   AXZ_W(IJMK) = AXZ_W(IJK)
+
+                  BC_ID(IJMK)   = BC_ID(IJK) 
+                  BC_U_ID(IJMK) = BC_U_ID(IJK) 
+                  BC_V_ID(IJMK) = BC_V_ID(IJK) 
+                  BC_W_ID(IJMK) = BC_W_ID(IJK) 
 
                END DO
             END DO
@@ -1388,6 +1408,11 @@
                      AXZ_V(IJKP) = AXZ_V(IJK)
                      AXZ_W(IJKP) = AXZ_W(IJK)
 
+                     BC_ID(IJKP)   = BC_ID(IJK) 
+                     BC_U_ID(IJKP) = BC_U_ID(IJK) 
+                     BC_V_ID(IJKP) = BC_V_ID(IJK) 
+                     BC_W_ID(IJKP) = BC_W_ID(IJK) 
+
                   END DO
                END DO
             END DO
@@ -1432,6 +1457,11 @@
                      AXZ_U(IJKM) = AXZ_U(IJK) 
                      AXZ_V(IJKM) = AXZ_V(IJK)
                      AXZ_W(IJKM) = AXZ_W(IJK)
+
+                     BC_ID(IJKM)   = BC_ID(IJK) 
+                     BC_U_ID(IJKM) = BC_U_ID(IJK) 
+                     BC_V_ID(IJKM) = BC_V_ID(IJK) 
+                     BC_W_ID(IJKM) = BC_W_ID(IJK) 
 
                   END DO
                END DO
