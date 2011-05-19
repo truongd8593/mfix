@@ -114,7 +114,7 @@
 !
 ! This subroutine solves the nonlinear alegraic equations for theta
 !
-      call cooling_rate(s,mi,ni,n,m,T,chi,sigmai,alpha,rhoi,theta)
+      call cooling_rate(s,mi,ni,n,m,Ti,T,chi,sigmai,alpha,rhoi,theta)
 !
 ! Ti and zeta0 are calculated from theta
 !

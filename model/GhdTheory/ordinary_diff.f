@@ -235,7 +235,7 @@
                enddo
             enddo
          !evaluate dependent quantites at increased value of nj et al.
-            call cooling_rate(s,mi,ni,n,m,T,chi,sigmai,alpha,rhoi, &
+            call cooling_rate(s,mi,ni,n,m,Ti,T,chi,sigmai,alpha,rhoi, &
                              theta_pos)
             do i=1,s
                Ti_pos(i) = mi(i)*T/(m*theta_pos(i))
@@ -280,7 +280,7 @@
                enddo
             enddo
          !evaluate dependent quantites at decreased value of nj et al.
-            call cooling_rate(s,mi,ni,n,m,T,chi,sigmai,alpha,rhoi, &
+            call cooling_rate(s,mi,ni,n,m,Ti,T,chi,sigmai,alpha,rhoi, &
                              theta_neg)
             do i=1,s
                Ti_neg(i) = mi(i)*T/(m*theta_neg(i))
