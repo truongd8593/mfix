@@ -15,13 +15,10 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE CALC_DIF_S(M, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
-!
-!     Include param.inc file to specify parameter values
-!
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -44,45 +41,41 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
 !                      Error index
       INTEGER          IER
-!
+
 !                      Indices
       INTEGER          IJK, N
-!
+
 !                      Solids phase
       INTEGER          M
       
-      DOUBLE PRECISION	Dab
-!
+      DOUBLE PRECISION Dab
+
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!
+
       Dab = ZERO       !cm^2/s
       IF(UNITS == 'SI') Dab = Dab*0.0001D0   !m^2/s
-!
+
       IF (DIF_s0  /= UNDEFINED) RETURN  
 
 !!$omp  parallel do private(n,ijk) &
 !!$omp& schedule(dynamic,chunk_size)
 
       DO N = 1, NMAX(M) 
-         DO IJK = IJKSTART3, IJKEND3 	 
+         DO IJK = IJKSTART3, IJKEND3
             IF (FLUID_AT(IJK)) THEN 
                DIF_S(IJK,M,N) = ROP_S(IJK,M)*Dab 
             ELSE 
                DIF_S(IJK,M,N) = ZERO 
             ENDIF 
-         END DO 
-      END DO 
+         ENDDO 
+      ENDDO 
 
       CALL SEND_RECV(DIF_S, 2)     
       
       RETURN  
       END SUBROUTINE CALC_DIF_S 
       
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization 
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-!// 400 Added sendrecv module and send_recv calls for COMMunication
+

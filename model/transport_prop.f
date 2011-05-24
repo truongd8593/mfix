@@ -19,11 +19,10 @@
 !  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE TRANSPORT_PROP(VISC, COND, DIFF, GRAN_DISS, IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
-!
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -36,6 +35,7 @@
       USE run
       USE toleranc 
       USE compar
+      USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -43,63 +43,54 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
+
 !                       Error index
       INTEGER          IER
-!
+
 !                      Phase index
       INTEGER          M
-!
+
 !                      Flags to tell whether to calculate or not
       LOGICAL          VISC(0:DIMENSION_M), COND(0:DIMENSION_M), &
                        DIFF(0:DIMENSION_M)
-!
+
 !                      Flags to tell whether to calculate or not
       LOGICAL          GRAN_DISS(0:DIMENSION_M)         
-!                 
+                
 !-----------------------------------------------
-!
-! 1.2.1 Fluid viscosity
+
+! Fluid viscosity
       IF (VISC(0)) CALL CALC_MU_G (IER) 
 
-!
-! 1.2.2 Solids viscosity
-      DO M = 1, MMAX 
-         IF (VISC(M)) CALL CALC_MU_S (M, IER) 
-      END DO 
-
-!
-! 1.2.3 Fluid conductivity
+! Fluid conductivity
       IF (COND(0)) CALL CALC_K_G (IER) 
-!
-! 1.2.4 Solids conductivity
-      DO M = 1, MMAX 
-         IF (COND(M)) CALL CALC_K_S (M, IER) 
-      END DO 
-!
-! 1.2.5 Fluid diffusivity
+
+! Fluid diffusivity
       IF (DIFF(0)) CALL CALC_DIF_G (IER) 
-!
-! 1.2.6 Solids diffusivity
-      DO M = 1, MMAX 
-         IF (DIFF(M)) CALL CALC_DIF_S (M, IER) 
-      END DO 
-!
-!     JEG Added
-!     Particle-Particle Energy Dissipation
-      DO M = 1, MMAX
-           IF (GRAN_DISS(M)) THEN
-                IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
-                     CALL CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER)
-                ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
-                     CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
-                ENDIF
-           ENDIF
-      END DO
-!     END JEG
+
+
+      IF (.NOT. DISCRETE_ELEMENT) THEN
+         DO M = 1, MMAX 
+! Solids conductivity
+            IF (COND(M)) CALL CALC_K_S (M, IER) 
+
+! Solids viscosity
+            IF (VISC(M)) CALL CALC_MU_S (M, IER) 
+
+! Solids diffusivity
+            IF (DIFF(M)) CALL CALC_DIF_S (M, IER) 
+
+! Particle-Particle Energy Dissipation
+            IF (GRAN_DISS(M)) THEN
+               IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+                  CALL CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER)
+               ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+                  CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
+               ENDIF
+            ENDIF
+         ENDDO   ! end do (m=1,mmax)
+      ENDIF   ! end if (.not.discrete_element)
       
       RETURN  
       END SUBROUTINE TRANSPORT_PROP 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization

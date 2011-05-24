@@ -19,13 +19,10 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE CALC_DIF_G(IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
-!
-!     Include param.inc file to specify parameter values
-!
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -48,117 +45,108 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
 !                      Error index
       INTEGER          IER
-!
+
 !                      Indices
       INTEGER          IJK, N, N1, N2
       
       DOUBLE PRECISION Dab(3,3), SUMJ, Tg0, Pg0
-!
+
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!
-!
-!     Default gas diffusion coefficient
-!     Bird, Stewart, and Lightfoot (1960) -- CO2--N2 at 298.2 K
+
+
+! Default gas diffusion coefficient
+! Bird, Stewart, and Lightfoot (1960) -- CO2--N2 at 298.2 K
       Dab(1,2) = 0.165D0       !cm^2/s
       Tg0 = 298.2D0
-      Pg0 = 1.01D6
-!
+      Pg0 = 1.01D6             !dyne
+
       IF(UNITS == 'SI') THEN
          Dab(1,2) = Dab(1,2)*0.0001D0   !m^2/s
-	 Pg0 = Pg0/10.D0                !Pa
+         Pg0 = Pg0/10.D0                !Pa
       ENDIF
 
 
 !********Gas diffusion coef for a system of 3 species***************
-!
-!     Calculated using relation derived from Chapman and Enskog's
-!     theory of gases - Reid, Prausnitz and Poling (1987)
+! Species: SiH4, H2 & N2
+! Calculated using relation derived from Chapman and Enskog's theory 
+! of gases - Reid, Prausnitz and Poling (1987)
 
-!     Binary diffusion coefficient SiH4/H2 at 873 K
+! Binary diffusion coefficient SiH4/H2 at 873 K
 !      Dab(1,2) = 3.78      ! cm^2/s
-!	Dab(2,1) = Dab(1,2)
+!      Dab(2,1) = Dab(1,2)
 
-!     Binary diffusion coefficient SiH4/N2 at 873 K
+! Binary diffusion coefficient SiH4/N2 at 873 K
 !      Dab(1,3) = 1.02      ! cm^2/s
-!	Dab(3,1) = Dab(1,3)
+!      Dab(3,1) = Dab(1,3)
 
-!     Binary diffusion coefficient H2/N2 at 873 K
+! Binary diffusion coefficient H2/N2 at 873 K
 !      Dab(2,3) = 4.52      ! cm^2/s
-!	Dab(3,2) = Dab(2,3)
+!      Dab(3,2) = Dab(2,3)
 
 !      Tg0 = 873.0
-!	Pg0 = 1.01e6
-
+!      Pg0 = 1.01e6         ! dyne
 
 !      IF(UNITS == 'SI') THEN
-!	  DO N1 = 1, NMAX(0)-1
-!	    DO N2 = N1+1, NMAX(0)
-!	      Dab(N1,N2) = Dab(N1,N2)*0.0001D0   !m^2/s
-!	      Dab(N2,N1) = Dab(N1,N2)
-!	    END DO
-!        END DO
-!        Pg0 = Pg0/10.D0                    !Pa
-!	ENDIF
+!         DO N1 = 1, NMAX(0)-1
+!            DO N2 = N1+1, NMAX(0)
+!               Dab(N1,N2) = Dab(N1,N2)*0.0001D0   !m^2/s
+!               Dab(N2,N1) = Dab(N1,N2)
+!            ENDDO
+!         ENDDO
+!         Pg0 = Pg0/10.D0                    !Pa
+!      ENDIF
 
 !*******************************************************************
 
-!
       IF (DIF_G0 /= UNDEFINED) RETURN  
-
-
+         
 !!$omp  parallel do private(ijk) &
 !!$omp& schedule(dynamic,chunk_size)
 
-!     Default calculation of diffusivities
-!     Influence of gas temperature and gas pressure from Fuller relation
-!
-      DO N = 1, NMAX(0) 
-         DO IJK = IJKSTART3, IJKEND3 	 
+! Default calculation of diffusivities
+! Influence of gas temperature and gas pressure from Fuller relation
+      DO N = 1, NMAX(0)
+         DO IJK = IJKSTART3, IJKEND3 
             IF (FLUID_AT(IJK)) THEN
-	       DIF_G(IJK,N) = ROP_G(IJK)*Dab(1,2)*(T_g(IJK)/Tg0)**1.75&
-                             *Pg0/(P_g(IJK)+P_REF)
+               DIF_G(IJK,N) = ROP_G(IJK)*Dab(1,2)*(T_g(IJK)/Tg0)**1.75 * &
+                              Pg0/(P_g(IJK)+P_REF)
             ELSE 
                DIF_G(IJK,N) = ZERO 
             ENDIF 
-         END DO 
-      END DO 
+         ENDDO 
+      ENDDO 
          
 
-!***************************************************************************
-!     Caculation of diffusivities using the dilute mixture approximation for 
-!     multicomponent diffusion - ref : Curtiss-Hirschfelder / Wilke / Blanc
-!     Valid if the mass fraction of the carrier species > 0.9
-!     Influence of gas temperature and gas pressure from Fuller relation
-!
+!*******************************************************************
+! Caculation of diffusivities using the dilute mixture approximation for 
+! multicomponent diffusion - Curtiss-Hirschfelder, Wilke & Blanc
+! Valid if the mass fraction of the carrier species > 0.9
 
+! Influence of gas temperature and gas pressure from Fuller relation
 !      DO N = 1, NMAX(0) 
 !         DO IJK = IJKSTART3, IJKEND3 	 
-!           IF (FLUID_AT(IJK)) THEN 
-!	       IF ((1.0-X_g(IJK,N)) > 1.e-8) THEN
-!       	     SUMJ = ZERO      
-!	         DO N2 = 1, NMAX(0)
-!	           IF (N2 /= N) SUMJ = SUMJ+X_g(IJK,N2)/Dab(N,N2)
-!	         END DO 
-!               DIF_G(IJK,N) = ROP_G(IJK)*(1-X_g(IJK,N))/SUMJ&
-!	         *(T_g(IJK)/Tg0)**1.75*Pg0/P_g(IJK)
-!	       ELSE
-!	         DIF_G(IJK,N) = ROP_G(IJK)*Dab(1,2) 
-!	       END IF
-!           ELSE 
+!            IF (FLUID_AT(IJK)) THEN 
+!               IF ((1.0-X_g(IJK,N)) > 1.e-8) THEN
+!                  SUMJ = ZERO      
+!                  DO N2 = 1, NMAX(0)
+!                     IF (N2 /= N) SUMJ = SUMJ+X_g(IJK,N2)/Dab(N,N2)
+!                  ENDDO 
+!                  DIF_G(IJK,N) = ROP_G(IJK)*(1-X_g(IJK,N))/SUMJ * &
+!                                 (T_g(IJK)/Tg0)**1.75*Pg0/P_g(IJK)
+!               ELSE
+!                  DIF_G(IJK,N) = ROP_G(IJK)*Dab(1,2) 
+!               ENDIF
+!            ELSE 
 !               DIF_G(IJK,N) = ZERO 
-!           ENDIF 
-!         END DO 
-!      END DO 
+!            ENDIF 
+!         ENDDO 
+!      ENDDO 
 !****************************************************************************
 
 
       RETURN  
       END SUBROUTINE CALC_DIF_G 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization 
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

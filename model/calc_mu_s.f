@@ -1,70 +1,68 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!     C
-!     Module name: CALC_MU_s(M, IER)                                      C
-!     Purpose: Calculate granular stress terms: THETA, P_s, LAMBDA_s, MU_sC
-!     C
-!     Author: W. Rogers                                  Date: 04-mar-92  C
-!     Reviewer: M. Syamlal                               Date: 16-MAR-92  C
-!     C
-!     Revision Number: 1                                                  C
-!     Purpose: Modifications for cylindrical geometry                     C
-!     Author: M. Syamlal                                 Date: 15-MAY-92  C
-!     Revision Number: 2                                                  C
-!     Purpose: Add volume-weighted averaging statement functions for      C
-!     variable grid capability                                   C
-!     Author:  W. Rogers                                 Date: 21-JUL-92  C
-!     Reviewer: P. Nicoletti                             Date: 11-DEC-92  C
-!     Revision Number: 3                                                  C
-!     Purpose: Add frictional-flow stress terms                           C
-!     Author: M. Syamlal                                 Date: 10-FEB-93  C
-!     Revision Number: 4                                                  C
-!     Purpose: Add Boyle-Massoudi stress terms                            C
-!     Author: M. Syamlal                                 Date: 2-NOV-95   C
-!     Revision Number: 5                                                  C
-!     Purpose: MFIX 2.0 mods  (old name CALC_THETA)                       C
-!     Author: M. Syamlal                                 Date: 24-APR_96  C
-!     Author: Kapil Agrawal, Princeton University        Date: 6-FEB-98   C
-!     Revision Number: 6                                                  C
-!     Purpose: Add calculation of viscosities and conductivities for use  C
-!     with granular temperature PDE. New common block contained  C
-!     in 'trace.inc' contains trD_s_C(DIMENSION_3, DIMENSION_M)  C
-!     and trD_s2(DIMENSION_3, DIMENSION_M)                       C
-!     Author: Anuj Srivastava, Princeton University      Date: 20-APR-98  C
-!     Revision Number:7                                                   C
-!     Purpose: Add calculation of frictional stress terms                 C
-!     C
-!     Author: Sofiane Benyahia, Fluent Inc.      Date: 02-01-05           C
-!     Revision Number:8                                                   C
-!     Purpose: Add Simonin and Ahmadi models                              C
-!     C
-!     Literature/Document References:                                     C
-!     1- Simonin, O., 1996. Combustion and turbulence in two-phase flows. C
-!     Von Karman institute for fluid dynamics, lecture series 1996-02  C
-!     2- Balzer, G., Simonin, O., Boelle, A., and Lavieville, J., 1996.   C
-!     A unifying modelling approach for the numerical prediction of    C
-!     dilute and dense gas-solid two phase flow. CFB5, 5th int. conf.  C
-!     on circulating fluidized beds, Beijing, China.                   C
-!     3- Cao, J. and Ahmadi, G., 1995. Gas-particle two-phase turbulent   C
-!     flow in a vertical duct. Int. J. Multiphase Flow, vol. 21 No. 6  C
-!     pp. 1203-1228.                                                   C
-!     C
-!     Author: Sreekanth Pannala, ORNL            Date: 10-08-05           C
-!     Revision Number:9                                                   C
-!     Purpose: Rewrite different modules to increase modularity           C
-!     C
-!     Variables referenced: U_s, V_s, W_s, IMAX2, JMAX2, KMAX2, DX, DY,   C
-!     DZ, IMJPK, IMJK, IPJMK, IPJK, IJMK, IJKP,     C
-!     IMJKP, IPJKM, IJKM, IJMKP, IJPK, IJPKM, IJMK, C
-!     M,  RO_s, C_e, D_p, Pi, G_0, X                C
-!     C
-!     Variables modified: I, J, K, IJK, MU_s, LAMBDA_s, P_s               C
-!     C
-!     Local variables: K_1m, K_2m, K_3m, K_4m, D_s, U_s_N, U_s_S, V_s_E,  C
-!     V_s_W, U_s_T, U_s_B, W_s_E, W_s_W, V_s_T, V_s_B,   C
-!     W_s_N, W_s_S, trD_s_C, W_s_C                       C
-!     trD_s2, EP_s2xTHETA, EP_sxSQRTHETA, I1, I2, U_s_C, C
-!     C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+!     Module name: CALC_MU_s(M, IER)
+!     Purpose: Calculate granular stress terms:
+!        grnaular viscosity, bulk viscosity, solids pressure, granular
+!        conductivity
+
+!     Author: W. Rogers                                  Date: 04-mar-92
+!     Reviewer: M. Syamlal                               Date: 16-MAR-92
+
+!     Revision Number: 1
+!     Purpose: Modifications for cylindrical geometry
+!     Author: M. Syamlal                                 Date: 15-MAY-92
+
+!     Revision Number: 2
+!     Purpose: Add volume-weighted averaging statement functions for
+!     variable grid capability
+!     Author:  W. Rogers                                 Date: 21-JUL-92
+!     Reviewer: P. Nicoletti                             Date: 11-DEC-92
+
+!     Revision Number: 3
+!     Purpose: Add frictional-flow stress terms
+!     Author: M. Syamlal                                 Date: 10-FEB-93
+
+!     Revision Number: 4
+!     Purpose: Add Boyle-Massoudi stress terms
+!     Author: M. Syamlal                                 Date: 2-NOV-95
+
+!     Revision Number: 5
+!     Purpose: MFIX 2.0 mods  (old name CALC_THETA)
+!     Author: M. Syamlal                                 Date: 24-APR_96
+
+!     Author: Kapil Agrawal, Princeton University        Date: 6-FEB-98
+!     Revision Number: 6
+!     Purpose: Add calculation of viscosities and conductivities for use
+!     with granular temperature PDE. New common block contained
+!     in 'trace.inc' contains trD_s_C(DIMENSION_3, DIMENSION_M)
+!     and trD_s2(DIMENSION_3, DIMENSION_M)
+
+!     Author: Anuj Srivastava, Princeton University      Date: 20-APR-98
+!     Revision Number:7
+!     Purpose: Add calculation of frictional stress terms
+
+!     Author: Sofiane Benyahia, Fluent Inc.      Date: 02-01-05
+!     Revision Number:8
+!     Purpose: Add Simonin and Ahmadi models
+!     Literature/Document References:
+!     1- Simonin, O., 1996. Combustion and turbulence in two-phase flows.
+!     Von Karman institute for fluid dynamics, lecture series 1996-02
+!     2- Balzer, G., Simonin, O., Boelle, A., and Lavieville, J., 1996.
+!     A unifying modelling approach for the numerical prediction of
+!     dilute and dense gas-solid two phase flow. CFB5, 5th int. conf.
+!     on circulating fluidized beds, Beijing, China.
+!     3- Cao, J. and Ahmadi, G., 1995. Gas-particle two-phase turbulent 
+!     flow in a vertical duct. Int. J. Multiphase Flow, vol. 21 No. 6
+!     pp. 1203-1228.                                                 
+
+!     Author: Sreekanth Pannala, ORNL            Date: 10-08-05
+!     Revision Number:9
+!     Purpose: Rewrite different modules to increase modularity
+
+!     Variables referenced: 
+!     Variables modified: 
+!     Local variables: 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
      
       SUBROUTINE CALC_MU_s(M, IER)
 
@@ -103,33 +101,27 @@
 
 ! GHD Theory is called only for the mixture granular energy, i.e. for m == mmax
       IF (TRIM(KT_TYPE) == 'GHD' .AND. M /= MMAX) RETURN
-! end of GHD theory
 
       IF (SHEAR) CALL add_shear(M)
 
-      CALL init_mu_s(M, IER)    ! initializing/calculating all the quantities needed for various options
+! Initialize/calculate all the quantities needed for various options
+      CALL init_mu_s(M, IER)    
      
       IF (SHEAR) call remove_shear(M)
 
       IF(MU_s0 /= UNDEFINED) RETURN ! constant solids viscosity case 
 
-!     GRANULAR_ENERGY
-!     .FALSE.
-!     EP_g < EP_star   -->    friction_schaeffer
-!     EP_g >= EP_star  -->    viscous (algebraic)
+! GRANULAR_ENERGY = .FALSE.
+!   EP_g < EP_star   -->    friction_schaeffer
+!   EP_g >= EP_star  -->    viscous (algebraic)
       
-!     GRANULAR_ENERGY
-!     .TRUE.
-!     
-!     FRICTION
-!     .TRUE.
-!     EP_s(IJK,M) > EPS_f_min  -->  friction + viscous(pde)
-!     EP_s(IJK,M) < EP_f_min   -->  viscous (pde)
-      
-!     FRICTION
-!     .FALSE.
-!     EP_g < EP_star  -->  friction_schaeffer + viscous(pde)
-!     EP_g >= EP_star -->  viscous (pde)
+! GRANULAR_ENERGY = .TRUE.
+!    FRICTION = .TRUE.
+!       EP_s(IJK,M) > EPS_f_min  -->  friction + viscous(pde)
+!       EP_s(IJK,M) < EP_f_min   -->  viscous (pde)
+!    FRICTION = .FALSE.
+!       EP_g < EP_star  -->  friction_schaeffer + viscous(pde)
+!       EP_g >= EP_star -->  viscous (pde)
      
      
 ! Viscous-flow stress tensor
@@ -159,31 +151,39 @@
             Mu_s(IJK,M) = (1.0d0-blend)*Mu_s_p(IJK) &
                 + blend*Mu_s_v(IJK) + Mu_s_f(IJK)
 
-! bulk viscosity in Mth solids phase   (add to plastic part)
+! Bulk viscosity in Mth solids phase   
             LAMBDA_s_c(IJK,M)= Lambda_s_v(IJK)
             LAMBDA_s(IJK,M) = (1.0d0-blend)*LAMBDA_s_p(IJK) &
                 + blend*Lambda_s_v(IJK) + Lambda_s_f(IJK)
-            
+
+! Solids pressure in the Mth solids phase 
+! Note that the plastic pressure component (represented here by P_s_p)
+! is calculated in a separate routine (see calc_p_star) which is then
+! directly incorporated into each of thhe solids momentum equations 
+! (see source_u_s, source_v_s and source_w_s).
             P_s_c(IJK,M) = P_s_v(IJK)
             P_s(IJK,M) = (1.0d0-blend)*P_s_p(IJK) + blend*P_s_v(IJK) &
-                + P_s_f(IJK)        !add to P_s
-     
+                + P_s_f(IJK) 
+
+! Boyle-Massoudi stress coefficient
+! Alpha_s is only calculated in the algebraic granular energy
+! subroutine.  No other values of alpha_s are set (i.e. no
+! plastic, viscous or frictional components)
             ALPHA_s(IJK,M) = (1.0d0-blend)*ALPHA_s_p(IJK) &
                 + blend*ALPHA_s_v(IJK) + ALPHA_s_f(IJK)
- 200     ENDDO
+ 200     ENDDO  
 
-      ELSE                      ! Blending Stress
+        ELSE   ! else branch of if(blending_stress)
          Mu_s_c(:,M) = Mu_s_v(:)
          Mu_s(:,M) = Mu_s_p(:) + Mu_s_v(:) + Mu_s_f(:)
      
-! bulk viscosity in Mth solids phase   (add to plastic part)
          LAMBDA_s_c(:,M)= Lambda_s_v(:)
          LAMBDA_s(:,M) = LAMBDA_s_p(:) + Lambda_s_v(:) + Lambda_s_f(:)
          
          P_s_c(:,M) = P_s_v(:)
-         P_s(:,M) = P_s_p(:) + P_s_v(:) + P_s_f(:) !add to P_s
+         P_s(:,M) = P_s_p(:) + P_s_v(:) + P_s_f(:)
      
-      ENDIF                     ! Blending Stress
+      ENDIF  ! end if/else (blending_stress)
       
       RETURN
 
@@ -284,8 +284,6 @@
                MU_s_p(IJK)     = MIN(MU_s_p(IJK), to_SI*MAX_MU_s)
                
                LAMBDA_s_p(IJK) = ZERO
-               ALPHA_s_p(IJK)  = ZERO
-               P_s_p(IJK)  = ZERO
      
 ! when solving for the granular energy equation (PDE) setting theta = 0 is done 
 ! in solve_granular_energy.f to avoid convergence problems. (sof)
@@ -731,9 +729,6 @@
 !     &            DG_0DNU(EP_s(IJK,M))
 !     &            + 2*G_0(IJK,M,M))*Theta_m(IJK,M)
 !--------------------------------------------------------------------
-     
-!     Boyle-Massoudi stress coefficient
-            ALPHA_s_v(IJK) = ZERO
 
          Endif                  ! Fluid_at
  200  Continue                  ! outer IJK loop
@@ -950,8 +945,6 @@
                     Kphi_s(IJK,M) = (Theta_m(IJK,M)*Kth_star/NU_PM)*qmu_star
                ENDIF
 
-! Boyle-Massoudi stress coefficient
-               ALPHA_s_v(IJK) = ZERO
 
           ENDIF     ! Fluid_at
  200  Continue     ! outer IJK loop
@@ -1368,9 +1361,6 @@
 ! granular conductivity in Mth solids phase
              Kth_s(IJK,M) = K_s_sum
 
-! Boyle-Massoudi stress coefficient
-             ALPHA_s_v(IJK) = ZERO
-
           ENDIF     ! Fluid_at
  200  Continue     ! outer IJK loop
 
@@ -1445,12 +1435,12 @@
      
 ! part copied from source_v_s.f (sof)
                   SUM_EPS_CP = ZERO
-		  dp_avg = ZERO
+                  dp_avg = ZERO
                   DO MM=1,SMAX
-		     dp_avg = dp_avg + D_p(IJK,MM)
+                  dp_avg = dp_avg + D_p(IJK,MM)
                      IF (CLOSE_PACKED(MM)) SUM_EPS_CP=SUM_EPS_CP+EP_S(IJK,MM)
                   END DO
-		  dp_avg = dp_avg/DFLOAT(SMAX)
+                  dp_avg = dp_avg/DFLOAT(SMAX)
 ! end of part copied
      
                   IF (SAVAGE.EQ.1) THEN !form of Savage (not to be used with GHD theory)
@@ -1473,11 +1463,11 @@
                      
                   ELSE          !combined form
                      IF(TRIM(KT_TYPE) == 'GHD') THEN
-		       ZETA = ((Theta_m(IJK,M)/dp_avg**2) +&
+                       ZETA = ((Theta_m(IJK,M)/dp_avg**2) +&
                        (trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
                        trD_s_C(IJK,M))/3.d0)))**0.5d0
                      ELSE
-		       ZETA = ((Theta_m(IJK,M)/D_p(IJK,M)**2) +&
+                       ZETA = ((Theta_m(IJK,M)/D_p(IJK,M)**2) +&
                        (trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
                        trD_s_C(IJK,M))/3.d0)))**0.5d0
                      ENDIF
@@ -1489,7 +1479,7 @@
 ! Linearized form of Pc; this is more stable and provides continuous function.
                     
                      dpc_dphi = (to_SI*Fr)*((delta**5)*(2d0*(ONE-ep_star_array(IJK)-delta) - &
-		         2d0*eps_f_min)+((ONE-ep_star_array(ijk)-delta)-eps_f_min)*(5*delta**4))/(delta**10)
+                         2d0*eps_f_min)+((ONE-ep_star_array(ijk)-delta)-eps_f_min)*(5*delta**4))/(delta**10)
 
                      Pc = (to_SI*Fr)*(((ONE-ep_star_array(IJK)-delta) - EPS_f_min)**N_Pc)/(delta**D_Pc)
 
@@ -2086,8 +2076,9 @@
 ! parameters for defining Tau_12: time-scale of the fluid turbulent motion
 ! viewed by the particles (crossing trajectory effect)
                SqrtVs = SQRT(USCM**2+VSCM**2+WSCM**2)
-	       SqrtVgMinusVs = SQRT((UGC-USCM)**2+(VGC-VSCM)**2+(WGC-WSCM)**2)
-	       IF(SqrtVs > Small_Number .AND. SqrtVgMinusVs > Small_Number .AND. EP_S(IJK,1) > ZERO_EP_S) THEN
+               SqrtVgMinusVs = SQRT((UGC-USCM)**2+(VGC-VSCM)**2+(WGC-WSCM)**2)
+               IF(SqrtVs > Small_Number .AND. SqrtVgMinusVs > &
+                  Small_Number .AND. EP_S(IJK,1) > ZERO_EP_S) THEN
                   Cos_Theta(IJK) = ((UGC-USCM)*USCM+(VGC-VSCM)*VSCM+(WGC-WSCM)*WSCM)/ &
                   (SqrtVgMinusVs * SqrtVs)
                ELSE

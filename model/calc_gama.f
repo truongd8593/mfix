@@ -50,123 +50,109 @@
       USE rxns
       USE indices
       USE compar    
-      USE sendrecv  
+      USE sendrecv
+      USE discretelement
 
       IMPLICIT NONE
+
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy Arguments
 !-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
 !                      Error index
       INTEGER          IER
-!
-!                      Indices
-      INTEGER          I, IJK
-!
-!                      Solids phase
-      INTEGER          M
-!
 !                      Flag for exchange functions
       LOGICAL          HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M)
-!
-!                      Cell center value of U_g [Recall U_g (IJK) refers to
-!                      U_g at I+1/2, J, K]
-      DOUBLE PRECISION UGC
-!
-!                      Cell center value of U_sm
-      DOUBLE PRECISION USCM
-!
-!                      Cell center value of V_g
-      DOUBLE PRECISION VGC
-!
-!                      Cell center value of V_sm
-      DOUBLE PRECISION VSCM
-!
-!                      Cell center value of W_g
-      DOUBLE PRECISION WGC
-!
-!                      Cell center value of W_sm
-      DOUBLE PRECISION WSCM
-!
+
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
+!                      Indices
+      INTEGER          I, IJK
+
+!                      Solids phase
+      INTEGER          M
+
+!                      Cell center value of U_g, Vg, and Wg [Recall
+!                      U_g(IJK) refers to U_g at I+1/2, J, K 
+!                      V_g(IJK) refers to V_g at I, J+1/2, K and 
+!                      W_g [W_G(IJK) refers to W_G at I, J, K+1/2]
+      DOUBLE PRECISION UGC, VGC, WGC
+
+!                      Cell center value of U_sm, V_sm, W_sm
+      DOUBLE PRECISION USCM, VSCM, WSCM
+
 !                      Gas-solids relative velocity
       DOUBLE PRECISION VREL
-!
+
 !                      function of Prandtl number, Pr^(1/3)
       DOUBLE PRECISION Pr1o3
-!
+
 !                      Reynolds number, Re
       DOUBLE PRECISION Re
-!
+
 !                      EP_g^2
       DOUBLE PRECISION EP_g2
-!
+
 !                      a factor
       DOUBLE PRECISION FAC
-!
+
       INTEGER          LM
-!
+
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
-!
-!        this needs to be generalized
+
+
+      IF (DISCRETE_ELEMENT) RETURN
+
+! this needs to be generalized
       DO M = 1, SMAX 
          IF (HEAT_TR(0,M)) THEN 
-!
 
 !!$omp  parallel do &
 !!$omp& private(I, IJK, M, EP_g2, Pr1o3, UGC, VGC, WGC, USCM, VSCM, &
 !!$omp&  WSCM, VREL, Re, LM, FAC ) &
 !!$omp& schedule(dynamic,chunk_size)
-         DO IJK = ijkstart3, ijkend3
-	 
+            DO IJK = ijkstart3, ijkend3
+ 
                IF (FLUIDorP_FLOW_AT(IJK)) THEN 
                   I = I_OF(IJK) 
                   EP_G2 = EP_G(IJK)*EP_G(IJK) 
-!
-!  Calculate Prandtl number
-!
+
+! Calculate Prandtl number to the 1/3 power
                   if(K_G(IJK) > ZERO) then
                     PR1O3 = (C_PG(IJK)*MU_G(IJK)/K_G(IJK))**(1.D0/3.D0) 
-		  else
+                  else
                     PR1O3 = LARGE_NUMBER 
-		  endif
-!
-!  Calculate velocity components at the cell center for gas phase
-!
+                  endif
+
+! Calculate velocity components at the cell center for gas phase
                   UGC = HALF*(U_G(IJK)+U_G(IM_OF(IJK))) 
                   VGC = HALF*(V_G(IJK)+V_G(JM_OF(IJK))) 
                   WGC = HALF*(W_G(IJK)+W_G(KM_OF(IJK))) 
-!
-!  Calculate velocity components at the cell center for solids phase m
-!
+
+! Calculate velocity components at the cell center for solids phase m
                   USCM = HALF*(U_S(IJK,M)+U_S(IM_OF(IJK),M)) 
                   VSCM = HALF*(V_S(IJK,M)+V_S(JM_OF(IJK),M)) 
                   WSCM = HALF*(W_S(IJK,M)+W_S(KM_OF(IJK),M)) 
-!
-!  Calculate the magnitude of gas-solids relative velocity
-!
+
+! Calculate the magnitude of gas-solids relative velocity
                   VREL=SQRT((UGC-USCM)**2+(VGC-VSCM)**2+(WGC-WSCM)**2) 
-		  
+  
                   if(MU_G(IJK) > ZERO)then
-                     RE = EP_G(IJK)*D_P(IJK,M)*VREL*RO_G(IJK)/MU_G(IJK)                     
+                     RE = EP_G(IJK)*D_P(IJK,M)*VREL*RO_G(IJK)/MU_G(IJK)
                   else 
-	             RE = LARGE_NUMBER
-                  endif		  		  
-!
-!  Calculate gas-solids heat transfer coefficient (Gunn 1978)
-!
+                     RE = LARGE_NUMBER
+                  endif
+
+! Calculate gas-solids heat transfer coefficient (Gunn 1978)
                   GAMA_GS(IJK,M) = ((7.D0 - 10.D0*EP_G(IJK)+5.D0*EP_G2)*(ONE+0.7D0*RE**&
                      0.2D0*PR1O3)+(1.33D0 - 2.4D0*EP_G(IJK)+1.2D0*EP_G2)*RE**0.7D0*PR1O3)*(&
                      K_G(IJK)/D_P(IJK,M))*(6.D0*EP_S(IJK,M)/D_P(IJK,M)) 
-!
-!  Correct the heat transfer coefficient for transpiration
-!  Bird, Stewart, and Lightfoot (1960, p.663)
-!
+
+! Correct the heat transfer coefficient for transpiration
+! Bird, Stewart, and Lightfoot (1960, p.663)
                   IF (GAMA_GS(IJK,M) > ZERO) THEN 
                      LM = 1 
                      FAC = R_PHASE(IJK,LM)*C_PG(IJK)/GAMA_GS(IJK,M) 
@@ -181,11 +167,12 @@
                                - ONE) 
                         ENDIF 
                      ENDIF 
-                  ENDIF 
-               ENDIF 
-            END DO 
-         ENDIF 
-      END DO 
+                  ENDIF   ! end if gama_gs(ijk,M) > 0
+
+               ENDIF   ! end if (fluidorp_flow_at(ijk) 
+            ENDDO    ! end do loop (ijk=ijkstart3,ijkend3)
+         ENDIF    ! end if (heat_tr(0,m))
+      ENDDO    ! end do loop (m=1,smax)
 
       call send_recv(GAMA_GS,2)
 
@@ -193,7 +180,4 @@
       END SUBROUTINE CALC_GAMA 
 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization 
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-!// 400 Added sendrecv module and send_recv calls for COMMunication
+

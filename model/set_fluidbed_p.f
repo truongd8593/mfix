@@ -28,14 +28,11 @@
 !  IS_ON_MYPE_K, IS_ON_MYPE_I
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE SET_FLUIDBED_P 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
-!
-!
-!  Include param.inc file to specify parameter values
-!
+
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -53,42 +50,36 @@
       USE compar    
       USE mpi_utility 
       USE sendrecv 
+      USE discretelement
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-! 
-! 
-!                      indices 
+ 
+! indices 
       INTEGER          I, J, K, IJK, M 
-! 
-!                      Local loop counter 
+ 
+! Local loop counter 
       INTEGER          L 
-! 
-!                      Gas pressure at the axial location j 
+ 
+! Gas pressure at the axial location j 
       DOUBLE PRECISION PJ 
-! 
-!                      Bed weight per unit area 
+ 
+! Bed weight per unit area 
       DOUBLE PRECISION BED_WEIGHT 
-! 
-!                      Total area of a x-z plane 
+ 
+! Total area of a x-z plane 
       DOUBLE PRECISION AREA 
-! 
-!                      x-z plane area of one cell 
+ 
+! x-z plane area of one cell 
       DOUBLE PRECISION dAREA 
-! 
-!                      Average pressure drop per unit length 
+ 
+! Average pressure drop per unit length 
       DOUBLE PRECISION DPoDX, DPoDY, DPoDZ 
 
-!//   New Bound Checking variables
+! New Bound Checking variables
       LOGICAL IS_ON_MYPE_K, IS_ON_MYPE_I
-! 
+ 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -99,15 +90,16 @@
       INCLUDE 'function.inc'
       INCLUDE 'b_force2.inc'
       INCLUDE 'sc_p_g2.inc'
-!
-!  IF all initial pressures are specified, then return.
-!
+
+
+! If all initial pressures are specified, then return.
       DO L = 1, DIMENSION_IC 
          IF (IC_DEFINED(L)) THEN 
-            IF (IC_P_G(L) == UNDEFINED) GO TO 60 
+            IF (IC_P_G(L) == UNDEFINED) GOTO 60 
             PJ = IC_P_G(L) 
          ENDIF 
-      END DO 
+      ENDDO 
+
       IF (DO_I .AND. DELP_X/=UNDEFINED) THEN 
          DPODX = DELP_X/XLENGTH 
          PJ = PJ - DPODX*HALF*(DX(IMAX1)+DX(IMAX2)) 
@@ -115,15 +107,15 @@
             PJ = PJ + DPODX*HALF*(DX(I)+DX(I+1)) 
             DO K = KMIN1, KMAX1 
                DO J = JMIN1, JMAX1 
-!// Bound Checking
-	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
+! Bound Checking
+                  IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                   IJK = FUNIJK(I,J,K) 
                   IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ) 
-               END DO 
-            END DO 
-         END DO 
+               ENDDO 
+            ENDDO 
+         ENDDO 
       ENDIF 
-!
+
       IF (DO_J .AND. DELP_Y/=UNDEFINED) THEN 
          DPODY = DELP_Y/YLENGTH 
          PJ = PJ - DPODY*HALF*(DY(JMAX1)+DY(JMAX2)) 
@@ -131,15 +123,15 @@
             PJ = PJ + DPODY*HALF*(DY(J)+DY(J+1)) 
             DO K = KMIN1, KMAX1 
                DO I = IMIN1, IMAX1 
-!// Bound Checking
-	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
+! Bound Checking
+                  IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                   IJK = FUNIJK(I,J,K) 
                   IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ) 
-               END DO 
-            END DO 
-         END DO 
+               ENDDO 
+            ENDDO 
+         ENDDO 
       ENDIF 
-!
+
       IF (DO_K .AND. DELP_Z/=UNDEFINED) THEN 
          DPODZ = DELP_Z/ZLENGTH 
          PJ = PJ - DPODZ*HALF*(DZ(KMAX1)+DZ(KMAX2)) 
@@ -147,57 +139,55 @@
             PJ = PJ + DPODZ*HALF*(DZ(K)+DZ(K+1)) 
             DO J = JMIN1, JMAX1 
                DO I = IMIN1, IMAX1 
-!// Bound Checking
-	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
+! Bound Checking 
+                  IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                   IJK = FUNIJK(I,J,K) 
                   IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ) 
-               END DO 
-            END DO 
-         END DO 
+               ENDDO 
+            ENDDO 
+         ENDDO 
       ENDIF 
 
       GOTO 100
-!
-!  Search for an outflow boundary condition where pressure is specified
-!
+
+
    60 CONTINUE 
+
+!  Search for an outflow boundary condition where pressure is specified
       PJ = UNDEFINED 
       DO L = 1, DIMENSION_BC 
          IF (BC_DEFINED(L) .AND. BC_TYPE(L)=='P_OUTFLOW') PJ = BC_P_G(L) 
-      END DO 
+      ENDDO 
+
       IF (PJ == UNDEFINED) THEN 
          IF (RO_G0 /= UNDEFINED) THEN 
-!
-!         If incompressible flow set P_g to zero.
-!
+! If incompressible flow set P_g to zero
             DO IJK = IJKSTART3, IJKEND3 
                IF (FLUID_AT(IJK)) P_G(IJK) = ZERO 
             END DO 
 
-            GOTO 100  
+            GOTO 100 
+
          ELSE 
-!
-!         Error condition -- no pressure outflow boundary condition is specified
-!
+! Error condition -- no pressure outflow boundary condition is specified
             CALL START_LOG 
             IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
             CALL MFIX_EXIT(myPE) 
          ENDIF 
       ENDIF 
-!
-!  Set an approximate pressure field assuming that the pressure drop
-!  balances the weight of the bed, if the initial pressure-field is not
-!  specified
-!
+
+
+! Set an approximate pressure field assuming that the pressure drop
+! balances the weight of the bed, if the initial pressure-field is not
+! specified
       DO J = JMAX2, JMIN1, -1 
-!
-!  Find the average weight per unit area over an x-z slice
-!
+
+! Find the average weight per unit area over an x-z slice
          BED_WEIGHT = 0.0 
          AREA = 0.0 
          DO K = KMIN1, KMAX1 
             DO I = IMIN1, IMAX1 
-	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
+               IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                IJK = FUNIJK(I,J,K) 
                IF (FLUID_AT(IJK)) THEN 
                   IF (COORDINATES == 'CARTESIAN') THEN 
@@ -213,44 +203,44 @@
                      BED_WEIGHT = BED_WEIGHT - DY(J)*BFY_G(IJK)*EP_G(IJK)*RO_G0&
                         *DAREA 
                   ENDIF 
-                  DO M = 1, MMAX 
-                     BED_WEIGHT = BED_WEIGHT - DY(J)*BFY_S(IJK,1)*ROP_S(IJK,M)*&
-                        DAREA 
-                  END DO 
-               ENDIF 
-            END DO 
-         END DO 
-	 
-!// Global Sum
- 	 call global_all_sum(bed_weight)
- 	 call global_all_sum(area)
+! This code is turned off for DEM runs until the value of rop_s can be
+! ensured valid values for a DEM run at this point in the code.  
+                  IF (.NOT.DISCRETE_ELEMENT) THEN
+                     DO M = 1, MMAX 
+                        BED_WEIGHT = BED_WEIGHT - DY(J)*BFY_S(IJK,1)*ROP_S(IJK,M)*&
+                           DAREA 
+                     ENDDO 
+                  ENDIF  ! end if (.not.discrete_element)
+               ENDIF  ! end if (fluid_at(ijk))
+            ENDDO    ! end do loop (i=imin1,imax1)
+         ENDDO    ! end do loop (k=kmin1,kmax1)
+ 
+! Global Sum
+         call global_all_sum(bed_weight)
+         call global_all_sum(area)
          IF (AREA /= 0.0) BED_WEIGHT = BED_WEIGHT/AREA 
 
          PJ = PJ + BED_WEIGHT 
          DO K = KMIN1, KMAX1
             DO I = IMIN1, IMAX1 
-	       IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
+               IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                IJK = FUNIJK(I,J,K) 
                IF(FLUID_AT(IJK).AND.P_G(IJK)==UNDEFINED)P_G(IJK)=SCALE(PJ) 
-            END DO 
-         END DO 
-      END DO 
-!//
+            ENDDO    ! end do (i=imin1,imax1)
+         ENDDO   ! end do (k = kmin1,kmax1)
+      ENDDO   ! end do (j=jmax2,jimn1, -1)
+
   100 CONTINUE
 
       call send_recv(P_G,2)
 
-!
       RETURN  
+
  1000 FORMAT(/1X,70('*')//' From: SET_FLUIDBED_P'/' Message: Outflow ',&
          'pressure boundary condition (P_OUTFLOW) not found.',/&
          'All the initial pressures (IC_P_g) or at least one P_OUTFLOW',/&
          'condition need to be specified',/1X,70('*')/) 
+
       END SUBROUTINE SET_FLUIDBED_P 
       
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 020 New local variables for parallelization: IS_ON_MYPE_K, IS_ON_MYPE_I
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-!// 400 Added sendrecv module and send_recv calls for COMMunication
 

@@ -29,7 +29,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE CALC_MU_G(IER) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
@@ -66,7 +66,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-!
+
 !                      Error index
       INTEGER          IER
 !                      Indices
@@ -74,60 +74,60 @@
                       IM, JM, KM, M !sof added M
       INTEGER          IMJPK, IMJMK, IMJKP, IMJKM, IPJKM, IPJMK, IJMKP, &
                       IJMKM, IJPKM
-!
+
 !                      Strain rate tensor components for mth solids phase
       DOUBLE PRECISION D_g(3,3)
-!
+
 !                      U_g at the north face of the THETA cell-(i, j+1/2, k)
       DOUBLE PRECISION U_g_N
-!
+
 !                      U_g at the south face of the THETA cell-(i, j-1/2, k)
       DOUBLE PRECISION U_g_S
-!
+
 !                      U_g at the top face of the THETA cell-(i, j, k+1/2)
       DOUBLE PRECISION U_g_T
-!
+
 !                      U_g at the bottom face of the THETA cell-(i, j, k-1/2)
       DOUBLE PRECISION U_g_B
-!
+
 !                      U_g at the center of the THETA cell-(i, j, k)
 !                      Calculated for Cylindrical coordinates only.
       DOUBLE PRECISION U_g_C
-!
+
 !                      V_g at the east face of the THETA cell-(i+1/2, j, k)
       DOUBLE PRECISION V_g_E
-!
+
 !                      V_g at the west face of the THETA cell-(i-1/2, j, k)
       DOUBLE PRECISION V_g_W
-!
+
 !                      V_g at the top face of the THETA cell-(i, j, k+1/2)
       DOUBLE PRECISION V_g_T
-!
+
 !                      V_g at the bottom face of the THETA cell-(i, j, k-1/2)
       DOUBLE PRECISION V_g_B
-!
+
 !                      W_g at the east face of the THETA cell-(i+1/2, j, k)
       DOUBLE PRECISION W_g_E
-!
+
 !                      W_g at the west face of the THETA cell-(1-1/2, j, k)
       DOUBLE PRECISION W_g_W
-!
+
 !                      W_g at the north face of the THETA cell-(i, j+1/2, k)
       DOUBLE PRECISION W_g_N
-!
+
 !                      W_g at the south face of the THETA cell-(i, j-1/2, k)
       DOUBLE PRECISION W_g_S
-!
+
 !                      W_g at the center of the THETA cell-(i, j, k).
 !                      Calculated for Cylindrical coordinates only.
       DOUBLE PRECISION W_g_C
-!
+
 !                      Second invariant of the deviator of D_g
       DOUBLE PRECISION I2_devD_g
-!
+
 !                      Constant in turbulent viscosity formulation
       DOUBLE PRECISION C_MU
-!
+
 !                      particle relaxation time
       DOUBLE PRECISION Tau_12_st
 !-----------------------------------------------
@@ -136,60 +136,55 @@
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
       INCLUDE 'fun_avg2.inc'
-!
+
       M = 1 ! for solids phase
-!
+
 !!$omp parallel do private(ijk) schedule(dynamic,chunk_size)
       DO IJK = ijkstart3, ijkend3 
-!
-         IF (FLUID_AT(IJK)) THEN 
-!
-           C_MU = 9D-02
-!
-!  Molecular viscosity
-!
-           IF (MU_G0 == UNDEFINED) MU_G(IJK) = to_SI*1.7D-4*(T_G(IJK)/273.0D0)**1.5D0*(&
-               383.D0/(T_G(IJK)+110.D0))   !in Poise or Pa.s
-             MU_GT(IJK) = MU_G(IJK) 
-             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
 
-	   IF (K_Epsilon) THEN
+         IF (FLUID_AT(IJK)) THEN 
+
+            C_MU = 9D-02
+
+! Molecular viscosity
+            IF (MU_G0 == UNDEFINED) &
+               MU_G(IJK) = to_SI*1.7D-4*(T_G(IJK)/273.0D0)**1.5D0*&
+                           (383.D0/(T_G(IJK)+110.D0))   !in Poise or Pa.s
+               MU_GT(IJK) = MU_G(IJK) 
+               LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
+
+            IF (K_Epsilon) THEN
 
 ! I'm not very confident about this correction in Peirano paper, but it's made
 ! available here, uncomment to use it. sof@fluent.com --> 02/01/05
-!	   
-!	     IF(SIMONIN .AND. F_GS(IJK,1) > small_number) THEN
-!	       Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
-!	       X_21 = Ep_s(IJK,M)*RO_s(M)/(EP_g(IJK)*RO_g(IJK))
-!
+!               IF(SIMONIN .AND. F_GS(IJK,1) > small_number) THEN
+!                  Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
+!                  X_21 = Ep_s(IJK,M)*RO_s(M)/(EP_g(IJK)*RO_g(IJK))
 ! new definition of C_mu (equation A.12, Peirano et al. (2002) Powder tech. 122,69-82)
-!	       
-!	       IF( K_12(ijk)/(2.0D0*K_Turb_G(IJK)) < ONE) &
-!	         C_MU = C_MU/(ONE+ 0.314D0*X_21*Tau_12_st / Tau_1(ijk) &
-!	                    *(ONE - K_12(ijk)/(2.0D0*K_Turb_G(IJK))) )
-!	     ENDIF
-!
+!                  IF( K_12(ijk)/(2.0D0*K_Turb_G(IJK)) < ONE) &
+!                     C_MU = C_MU/(ONE+ 0.314D0*X_21*Tau_12_st / Tau_1(ijk) * &
+!	                     (ONE - K_12(ijk)/(2.0D0*K_Turb_G(IJK))) )
+!               ENDIF
+
 ! On the other hand, I used this correction found in Ahmadi paper (Cao and Ahmadi)	       
-	     IF(AHMADI .AND. F_GS(IJK,1) > small_number) THEN
-	       Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
-	       C_MU = &
-	          C_MU/(ONE+ Tau_12_st/Tau_1(ijk) * (EP_s(IJK,M)/(ONE-EP_star_array(ijk)))**3)
-	     ENDIF
+               IF(AHMADI .AND. F_GS(IJK,1) > small_number) THEN
+                  Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
+                  C_MU = C_MU/(ONE+ Tau_12_st/Tau_1(ijk) * &
+                         (EP_s(IJK,M)/(ONE-EP_star_array(ijk)))**3)
+               ENDIF
 
 ! Definition of the turbulent viscosity
-!	     
-	     MU_GT(IJK) = MU_G(IJK) +  RO_G(IJK)*C_mu*K_Turb_G(IJK)**2&
-                        /(E_Turb_G(IJK)+Small_number)
-! 
-	     MU_GT(IJK) = MIN(MU_GMAX, MU_GT(IJK))
-             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
-	   ENDIF
-	 ELSE
+               MU_GT(IJK) = MU_G(IJK) +  RO_G(IJK)*C_mu*K_Turb_G(IJK)**2 / &
+                  (E_Turb_G(IJK)+Small_number)
+               MU_GT(IJK) = MIN(MU_GMAX, MU_GT(IJK))
+               LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
+            ENDIF
+         ELSE
             MU_G(IJK)  = ZERO 
             MU_GT(IJK) = ZERO 
             LAMBDA_GT(IJK) = ZERO
-         ENDIF 
-      END DO 
+         ENDIF   ! end if (fluid_at(ijk))
+      ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 
 !!$omp parallel do &
 !!$omp$ schedule(dynamic,chunk_size) &
@@ -198,8 +193,8 @@
 !!$omp& IMJKM,IPJKM,IPJMK,IJMKP,IJMKM,IJPKM, &
 !!$omp& U_G_N,U_G_S,U_G_T,U_G_B,V_G_E,V_G_W,V_G_T,V_G_B, &
 !!$omp$ W_G_N,W_G_S,W_G_E,W_G_W,  U_G_C,W_G_C, D_G,I2_DEVD_G )
+
       DO IJK = ijkstart3, ijkend3
-!//SP
          IF ( FLUID_AT(IJK) .AND. L_SCALE(IJK)/=ZERO) THEN 
             I = I_OF(IJK) 
             J = J_OF(IJK) 
@@ -222,9 +217,9 @@
             IPJMK = IP_OF(IJMK) 
             IJMKP = JM_OF(IJKP) 
             IJMKM = JM_OF(IJKM) 
-            IJPKM = JP_OF(IJKM) 	    
-!
-!         Find fluid velocity values at faces of the cell
+            IJPKM = JP_OF(IJKM)
+
+! Find fluid velocity values at faces of the cell
             U_G_N = AVG_Y(AVG_X_E(U_G(IMJK),U_G(IJK),I),AVG_X_E(U_G(IMJPK),U_G(&
                IJPK),I),J)                       !i, j+1/2, k 
             U_G_S = AVG_Y(AVG_X_E(U_G(IMJMK),U_G(IJMK),I),AVG_X_E(U_G(IMJK),U_G&
@@ -249,20 +244,18 @@
                IPJK)),I)                         !i+1/2, j, k 
             W_G_W = AVG_X(AVG_Z_T(W_G(IMJKM),W_G(IMJK)),AVG_Z_T(W_G(IJKM),W_G(&
                IJK)),IM)                         !i-1/2, j, k 
-!
+
             IF (CYLINDRICAL) THEN 
-!                                                !i, j, k
-               U_G_C = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
-!                                                !i, j, k
-               W_G_C = AVG_Z_T(W_G(IJKM),W_G(IJK)) 
+               U_G_C = AVG_X_E(U_G(IMJK),U_G(IJK),I)  !i, j, k
+               W_G_C = AVG_Z_T(W_G(IJKM),W_G(IJK))    !i, j, k 
             ELSE 
                U_G_C = ZERO 
                W_G_C = ZERO 
             ENDIF 
 
-!
-!         Find components of fluid phase strain rate
-!         tensor, D_g, at center of the cell - (i, j, k)
+
+! Find components of fluid phase strain rate tensor, D_g, at center of the cell
+! - (i,j,k)
             D_G(1,1) = (U_G(IJK)-U_G(IMJK))*ODX(I) 
             D_G(1,2) = HALF*((U_G_N - U_G_S)*ODY(J)+(V_G_E-V_G_W)*ODX(I)) 
             D_G(1,3) = HALF*((W_G_E - W_G_W)*ODX(I)+(U_G_T-U_G_B)*(OX(I)*ODZ(K)&
@@ -273,23 +266,18 @@
             D_G(3,1) = D_G(1,3) 
             D_G(3,2) = D_G(2,3) 
             D_G(3,3) = (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) + U_G_C*OX(I)
-!
-!
-!         Calculate the second invariant of the deviator of D_g
-!
+
+
+! Calculate the second invariant of the deviator of D_g
             I2_DEVD_G = ((D_G(1,1)-D_G(2,2))**2+(D_G(2,2)-D_G(3,3))**2+(D_G(3,3&
                )-D_G(1,1))**2)/6.D0 + D_G(1,2)**2 + D_G(2,3)**2 + D_G(3,1)**2 
-!
             MU_GT(IJK) = MIN(MU_GMAX,MU_G(IJK)+2.0*L_SCALE(IJK)*L_SCALE(IJK)*&
                RO_G(IJK)*SQRT(I2_DEVD_G)) 
             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK) 
-	    
-         ENDIF 
-      END DO 
+
+         ENDIF ! end if (fluid_at(ijk) and l_scale(ijk)/=0))
+      ENDDO    ! end loop (ijk=ijkstart3,ijkend3)
 
       RETURN  
       END SUBROUTINE CALC_MU_G 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization 
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

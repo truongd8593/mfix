@@ -1589,6 +1589,7 @@ calc_gama.$(OBJ_EXT) : calc_gama.f \
             INDICES.mod \
             COMPAR.mod \
             SENDRECV.mod \
+            DISCRETELEMENT.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -1605,6 +1606,7 @@ calc_grbdry.$(OBJ_EXT) : calc_grbdry.f \
             INDICES.mod \
             BC.mod \
             COMPAR.mod \
+            TOLERANC.mod \
             MPI_UTILITY.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -1835,6 +1837,7 @@ calc_u_friction.$(OBJ_EXT) : calc_u_friction.f \
             INDICES.mod \
             BC.mod \
             COMPAR.mod \
+            TOLERANC.mod \
             MPI_UTILITY.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -3142,6 +3145,7 @@ physical_prop.$(OBJ_EXT) : physical_prop.f \
             FUNITS.mod \
             USR.mod \
             MPI_UTILITY.mod \
+            DISCRETELEMENT.mod \
             usrnlst.inc                                                  \
             cp_fun1.inc                                                  \
             fun_avg1.inc                                                 \
@@ -3401,6 +3405,7 @@ set_fluidbed_p.$(OBJ_EXT) : set_fluidbed_p.f \
             COMPAR.mod \
             MPI_UTILITY.mod \
             SENDRECV.mod \
+            DISCRETELEMENT.mod \
             sc_p_g1.inc                                                  \
             b_force1.inc                                                 \
             function.inc                                                 \
@@ -4280,7 +4285,8 @@ transport_prop.$(OBJ_EXT) : transport_prop.f \
             INDICES.mod \
             RUN.mod \
             TOLERANC.mod \
-            COMPAR.mod 
+            COMPAR.mod \
+            DISCRETELEMENT.mod 
 undef_2_0.$(OBJ_EXT) : undef_2_0.f \
             PARAM.mod \
             PARAM1.mod \
