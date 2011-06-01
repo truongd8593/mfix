@@ -529,7 +529,7 @@
 ! Write vtk file, if needed
       IF(WRITE_VTK_FILES) THEN
          IF (DT == UNDEFINED) THEN 
-            IF (FINISH.and.myPE.eq.PE_IO) CALL WRITE_VTK_FILE
+            IF (FINISH) CALL WRITE_VTK_FILE
          ELSEIF (VTK_TIME/=UNDEFINED .AND. TIME+0.1d0*DT>=VTK_TIME) THEN
             VTK_TIME = (INT((TIME + 0.1d0*DT)/VTK_DT)+1)*VTK_DT 
             CALL WRITE_VTK_FILE
