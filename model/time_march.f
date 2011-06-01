@@ -74,23 +74,23 @@
       USE discretelement  
       USE mchem
       USE leqsol
-      USE cdist       ! netcdf
+! netcdf
+      USE cdist
       USE MFIX_netcdf
-!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+! AEOLUS: stop trigger mechanism to terminate MFIX normally before
+! batch queue terminates
       use mpi_utility
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+! JFD modification: cartesian grid implementation 
       USE cutcell
       USE vtk
       USE dashboard
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+
       IMPLICIT NONE
+
 !-----------------------------------------------
 !     G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
+
 !-----------------------------------------------
 !     L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -99,72 +99,66 @@
 !-----------------------------------------------
 !     L o c a l   V a r i a b l e s
 !-----------------------------------------------
-!     
-!     Flag to indicate one pass through iterate for steady 
-!     state conditions. 
+     
+! Flag to indicate one pass through iterate for steady 
+! state conditions. 
       LOGICAL          FINISH 
-!     
-!     Time at which standard output is to be written 
+     
+! Time at which standard output is to be written 
       DOUBLE PRECISION OUT_TIME 
-!     
-!     Time at which restart file is to be written 
+     
+! Time at which restart file is to be written 
       DOUBLE PRECISION RES_TIME 
-!     
-!     Time at which REAL restart file is to be written 
+     
+! Time at which REAL restart file is to be written 
       DOUBLE PRECISION SPX_TIME(N_SPX) 
-!     
-!     DIsk space needed for one variable and each 
-!     SPx file 
+     
+! Disk space needed for one variable and each SPX file
       DOUBLE PRECISION DISK_ONE, DISK(N_SPX) 
-!     
-!     Total DIsk space 
+
+! Total Disk space 
       DOUBLE PRECISION DISK_TOT 
-!     
-!     number SPX writes 
+     
+! number SPX writes 
       INTEGER          ISPX 
       
       LOGICAL          RES_MSG, SPX_MSG 
-!     
-!     Time at which special output is to be written 
+     
+! Time at which special output is to be written 
       DOUBLE PRECISION USR_TIME (DIMENSION_USR) 
-!     
-!     Loop indices 
+     
+! Loop indices 
       INTEGER          L, M , I
-!     
-!     Error index 
+     
+! Error index 
       INTEGER          IER 
-      
-!     
-!     Number of iterations 
+
+! Number of iterations 
       INTEGER          NIT, NIT_TOTAL 
-!     
-!     used for activating check_data_30 
+     
+! used for activating check_data_30 
       INTEGER          NCHECK, DNCHECK,ijk 
-!     
-!     dummy logical variable for initializing adjust_dt 
+
+! dummy logical variable for initializing adjust_dt 
       LOGICAL          dummy 
 
       CHARACTER        EXT_END*35 
-!     
-!     use function vavg_v_g to catch NaN's 
+
+! use function vavg_v_g to catch NaN's 
       DOUBLE PRECISION VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg     
-!
-!     use function MAX_VEL_INLET to compute max. velocity at inlet
+
+! use function MAX_VEL_INLET to compute max. velocity at inlet
       DOUBLE PRECISION MAX_VEL_INLET
-!
-!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+
+! AEOLUS : stop trigger mechanism to terminate MFIX normally before
+! batch queue terminates
       DOUBLE PRECISION CPU_STOP 
-     !LOGICAL CHK_BATCHQ_END
       LOGICAL AlreadyThere
-     ! Buffer time prior to end of batch queue to force proper MFIX shutdown 
-     !DOUBLE PRECISION TERM_BUFFER
-     ! Wallclock in seconds requested in the batch queue 
-     !DOUBLE PRECISION BATCH_WALLCLOCK  
       LOGICAL eofBATCHQ
-     ! not used remove after verification
+! not used remove after verification
       INTEGER CHKBATCHQ_FLAG
       logical :: bWrite_netCDF_files
-!     
+     
 !-----------------------------------------------
 !     E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -180,7 +174,7 @@
       DNCHECK = 1 
       CPU_IO  = ZERO 
       NIT_TOTAL = 0
-!AEOLUS STOP before batch queue terminates
+! AEOLUS: stop before batch queue terminates
       AlreadyThere = .FALSE.
       eofBATCHQ = .FALSE.
       
@@ -218,8 +212,8 @@
       ELSE 
          IF (DT /= UNDEFINED) THEN 
             RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT 
-            SPX_TIME(:N_SPX) = (INT((TIME + 0.1d0*DT)/SPX_DT(:N_SPX))+1)*SPX_DT(:&
-            N_SPX) 
+            SPX_TIME(:N_SPX) = (INT((TIME+0.1d0*DT)/SPX_DT(:N_SPX))+1)*&
+               SPX_DT(:N_SPX) 
             L = N_SPX + 1 
          ENDIF 
       ENDIF 
@@ -230,13 +224,12 @@
             IF (RUN_TYPE == 'NEW') THEN 
                USR_TIME(L) = TIME 
             ELSE 
-               USR_TIME(L) = (INT((TIME + 0.1d0*DT)/USR_DT(L))+1)*USR_DT(L) 
+               USR_TIME(L) = (INT((TIME+0.1d0*DT)/USR_DT(L))+1)*USR_DT(L) 
             ENDIF 
          ENDIF 
-      END DO
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+      ENDDO
+
+! JFD modification: cartesian grid implementation 
 ! Initialize VTK_TIME
       IF(WRITE_VTK_FILES) THEN
          VTK_TIME = UNDEFINED 
@@ -248,10 +241,7 @@
             ENDIF 
          ENDIF 
       ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================      
-     
+ 
 ! Parse residual strings
       CALL PARSE_RESID_STRING (IER) 
 
@@ -263,27 +253,26 @@
       IF (CALL_DI) THEN 
          CALL MCHEM_INIT
          CALL MCHEM_ODEPACK_INIT
-      END IF
+      ENDIF
       IF (CALL_ISAT) THEN 
          CALL MCHEM_INIT
          CALL MCHEM_ODEPACK_INIT
          CALL MISAT_TABLE_INIT
-      END IF
+      ENDIF
 
 
       CALL RRATES_INIT(IER)
 
       DO M=1, MMAX 
          CALL ZERO_ARRAY (F_gs(1,M), IER)
-      END DO
+      ENDDO
 
-! DES 
-! This call to make_arrays_des has now been moved ahead of calc_coeff_all 
-! so that on the call to des/drag_fgs.f, the particle in cell info and also
-! Ep_s are known.  Rahul Garg 
+! Initialization of DEM quantities: set initial conditions (bulk
+! density, velocities), boundary conditions (mass inlet/outlet),
+! physical constants, PIC
       IF(DISCRETE_ELEMENT) THEN
          CALL MAKE_ARRAYS_DES
-      END IF
+      ENDIF
 
 
 ! Calculate all the coefficients once before entering the time loop
@@ -294,14 +283,14 @@
       CALL UNDEF_2_0 (ROP_G, IER) 
       DO M = 1, MMAX 
          CALL UNDEF_2_0 (ROP_S(1,M), IER) 
-      END DO 
+      ENDDO 
 
 ! Initialize d's and e's to zero   
       DO M = 0, MMAX 
          CALL ZERO_ARRAY (D_E(1,M), IER) 
          CALL ZERO_ARRAY (D_N(1,M), IER) 
          CALL ZERO_ARRAY (D_T(1,M), IER) 
-      END DO 
+      ENDDO 
       CALL ZERO_ARRAY (E_E, IER) 
       CALL ZERO_ARRAY (E_N, IER) 
       CALL ZERO_ARRAY (E_T, IER) 
@@ -313,16 +302,17 @@
 ! calculate shear velocities if periodic shear BCs are used
       IF (SHEAR) THEN
          call CAL_D(V_sh)
-      END IF
+      ENDIF
 
-! Initialize check_mass_balance.  This routine is not active by default.  Specify a
-! reporting interval (hard-wired in the routine) to activate the routine.
+! Initialize check_mass_balance.  This routine is not active by default.
+! Specify a reporting interval (hard-wired in the routine) to activate 
+! the routine.
       Call check_mass_balance (0)
 
 ! sof modification: now it's only needed to do this once before time-loop     
 ! Mark the phase whose continuity will be used for forming Pp_g and Pp_s eqs.
-      CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP, DO_P_S, &
-          SWITCH_4_P_G, SWITCH_4_P_S, IER) 
+      CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
+          DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S, IER) 
 
  
 
@@ -334,63 +324,74 @@
          STOP
       ENDIF 
 
-!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch 
+! queue terminates
       IF (CHK_BATCHQ_END) THEN
-       CHKBATCHQ_FLAG = 0 
-       if (myPE.eq.PE_IO) then   
-          CALL CPU_TIME(CPU_STOP)
-        ! need to use CPU00, a timestamp from first line of mfix.f to take 
-        ! account the time spent in I/O
-          CPU_STOP = CPU_STOP - CPU00
-          write(*,"('Elapsed CPU time = ',E15.6,' sec')") CPU_STOP
+         CHKBATCHQ_FLAG = 0 
+         IF (myPE.eq.PE_IO) THEN
+            CALL CPU_TIME(CPU_STOP)
+! need to use CPU00, a timestamp from first line of mfix.f to take 
+! account the time spent in I/O
+            CPU_STOP = CPU_STOP - CPU00
+            write(*,"('Elapsed CPU time = ',E15.6,' sec')") CPU_STOP
         
-          IF ((CPU_STOP+TERM_BUFFER) .ge. BATCH_WALLCLOCK) THEN
-             write(*,"(/,'=============== REQUESTED CPU TIME LIMIT REACHED ===========')")
- 	     write(*,*) 'Elapsed CPU time                        = ',CPU_STOP,' sec'
-	     write(*,*) 'Buffer CPU time before triggering abort = ',TERM_BUFFER,' sec'
-	     write(*,*) 'Elapsed+Buffer CPU time = ',(CPU_STOP+TERM_BUFFER),&
-	&     ' sec >= Allocated Wallclock ',BATCH_WALLCLOCK,' sec'
-	  !  write(*,"('Buffer CPU time before triggering abort = ',E10.2,' sec')") TERM_BUFFER
-	  !  write(*,"('Elapsed+Buffer CPU time = ',E10.2,&
-	  !&  ' sec >= Allocated Wallclock ',E10.2,' sec')") (CPU_STOP+TERM_BUFFER),BATCH_WALLCLOCK
-             write(*,"('=============== REQUESTED CPU TIME LIMIT REACHED ===========',/)")
-             eofBATCHQ = .TRUE.
-             CHKBATCHQ_FLAG = 1
-            !FINISH = .TRUE.	  
-            !DT = UNDEFINED
-          END IF 
+            IF ((CPU_STOP+TERM_BUFFER) .ge. BATCH_WALLCLOCK) THEN
+               write(*,'(/,A,A)') '=============== REQUESTED CPU ',&
+                  'TIME LIMIT REACHED ==========='
+               write(*,*) 'Elapsed CPU time                        = ',&
+                  CPU_STOP,' sec'
+               write(*,*) 'Buffer CPU time before triggering abort = ',&
+                  TERM_BUFFER,' sec'
+               write(*,*) 'Elapsed+Buffer CPU time = ',&
+                  (CPU_STOP+TERM_BUFFER), &
+                  ' sec >= Allocated Wallclock ',&
+                  BATCH_WALLCLOCK, ' sec'
+!               write(*,'(A,A,E10.2,A)') 'Buffer CPU time before ',&
+!                  'triggering abort = ', TERM_BUFFER, ' sec'
+!               write(*,'(A,E10.2,A,E10.2,A)') &
+!                  'Elapsed+Buffer CPU time = ', (CPU_STOP+TERM_BUFFER), &
+!                  ' sec >= Allocated Wallclock ', &
+!                  BATCH_WALLCLOCK, ' sec'
+               write(*,'(A,A,/)') '=============== REQUESTED CPU ',&
+                  'TIME LIMIT REACHED ==========='
+               eofBATCHQ = .TRUE.
+               CHKBATCHQ_FLAG = 1
+!              FINISH = .TRUE.	  
+!              DT = UNDEFINED
+            ENDIF 
         
-          INQUIRE(file="MFIX.STOP",exist=AlreadyThere)
-          IF (AlreadyThere) THEN
-   write(*,"(/,'=============== MFIX STOP SIGNAL DETECTED ===========')")
-         write(*,"('  MFIX.STOP file detected in working directory, terminating MFIX run')")
-         write(*,"('  Please DO NOT FORGET to erase MFIX.STOP file before next run')") 
-        !write(*,"('  Elapsed CPU time = ',E10.2,' sec')") CPU_STOP
-         write(*,*) ' Elapsed CPU time = ',CPU_STOP,' sec'
-         write(*,"('=============== MFIX STOP SIGNAL DETECTED ===========',/)")	
-         eofBATCHQ = .TRUE.
-         CHKBATCHQ_FLAG = 1
-
-           !FINISH = .TRUE.
-           !DT = UNDEFINED          
-           AlreadyThere = .FALSE.
-          ENDIF
-       ENDIF     ! myPE = PE_IO
+            INQUIRE(file="MFIX.STOP",exist=AlreadyThere)
+            IF (AlreadyThere) THEN
+               write(*,'(/,A,A)') '=============== MFIX STOP SIGNAL ',&
+                  'DETECTED ==========='
+               write(*,'(A,A)') '  MFIX.STOP file detected in ',&
+                  'working directory, terminating MFIX run'
+               write(*,'(A,A)') '  Please DO NOT FORGET to erase ',&
+                  'MFIX.STOP file before next run'
+!               write(*,'(A,E10.2,A)') '  Elapsed CPU time = ',&
+!                 CPU_STOP, ' sec'
+               write(*,*) ' Elapsed CPU time = ',CPU_STOP,' sec'
+               write(*,'(A,A,/)') '=============== MFIX STOP ',&
+                  'SIGNAL DETECTED ==========='
+               eofBATCHQ = .TRUE.
+               CHKBATCHQ_FLAG = 1
+!              FINISH = .TRUE.
+!              DT = UNDEFINED          
+               AlreadyThere = .FALSE.
+            ENDIF
+         ENDIF     ! myPE = PE_IO
 ! Try to move this bcast call to another location where there is barrier or bcast 
-       call bcast (eofBATCHQ,PE_IO)
-      END IF   
-! eof AEOLUS STOP
-
-
+         call bcast (eofBATCHQ,PE_IO)
+      ENDIF   
 
       IF (CALL_USR) CALL USR1 
 
 ! Remove solids from cells containing very small quantities of solids
       IF(.NOT.DISCRETE_ELEMENT) THEN
          IF(TRIM(KT_TYPE) == 'GHD') THEN
-	    CALL ADJUST_EPS_GHD
-         ELSE
-	    CALL ADJUST_EPS
+            CALL ADJUST_EPS_GHD
+         ELSE 
+            CALL ADJUST_EPS
          ENDIF
       ENDIF
 
@@ -440,11 +441,11 @@
                IF(DMP_LOG)WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
                IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
             ENDIF 
-!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
-!            added additional condition .OR.eofBATCHQ
-!         ELSE IF (TIME + 0.1d0*DT>=SPX_TIME(L) .OR. TIME+0.1d0*DT>=TSTOP) THEN 
-         ELSE IF (TIME + 0.1d0*DT>=SPX_TIME(L) .OR. TIME+0.1d0*DT>=TSTOP.OR.eofBATCHQ) THEN 
-            SPX_TIME(L) = (INT((TIME + 0.1d0*DT)/SPX_DT(L))+1)*SPX_DT(L) 
+! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch 
+! queue terminates
+         ELSEIF (TIME + 0.1d0*DT>=SPX_TIME(L) .OR. &
+                 TIME+0.1d0*DT>=TSTOP.OR.eofBATCHQ) THEN 
+            SPX_TIME(L) = (INT((TIME + 0.1d0*DT)/SPX_DT(L))+1)*SPX_DT(L)
             CALL WRITE_SPX1 (L, 0) 
             bWrite_netCDF_files = .true.
             DISK_TOT = DISK_TOT + DISK(L) 
@@ -473,10 +474,10 @@
          DO L = 1, N_SPX - ISPX 
             IF(DMP_LOG)WRITE (UNIT_LOG, '(A,$)') '   ' 
             IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, '(A,$)') '   ' !//
-         END DO 
+         ENDDO 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1015) DISK_TOT 
          IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, 1015) DISK_TOT !//
-      ELSE IF (.NOT.RES_MSG) THEN 
+      ELSEIF (.NOT.RES_MSG) THEN 
          IF(DMP_LOG)WRITE (UNIT_LOG, *) 
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, *) !//
       ENDIF 
@@ -492,10 +493,10 @@
                WRITE (*, 1000,  ADVANCE="NO") TIME 
             ENDIF
          ENDIF 
-!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
-!            added additional condition .OR.eofBATCHQ
-!      ELSE IF (TIME + 0.1d0*DT>=RES_TIME .OR. TIME+0.1d0*DT>=TSTOP) THEN 
-      ELSE IF (TIME + 0.1d0*DT>=RES_TIME .OR. TIME+0.1d0*DT>=TSTOP.OR.eofBATCHQ) THEN 
+! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
+! queue terminates
+      ELSEIF (TIME + 0.1d0*DT>=RES_TIME .OR. TIME+0.1d0*DT>=TSTOP &
+              .OR. eofBATCHQ) THEN 
          RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT 
          CALL WRITE_RES1 
          IF(DISCRETE_ELEMENT) CALL WRITE_DES_RESTART
@@ -515,29 +516,26 @@
       DO L = 1, DIMENSION_USR 
          IF (DT == UNDEFINED) THEN 
             IF (FINISH.and.myPE.eq.PE_IO) CALL WRITE_USR1 (L) 
-!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
-!            added additional condition .OR.eofBATCHQ
-!         ELSE IF (USR_TIME(L)/=UNDEFINED .AND. TIME+0.1d0*DT>=USR_TIME(L)) THEN 
-         ELSE IF (USR_TIME(L)/=UNDEFINED .AND. TIME+0.1d0*DT>=USR_TIME(L).OR.eofBATCHQ) THEN 
-            USR_TIME(L) = (INT((TIME + 0.1d0*DT)/USR_DT(L))+1)*USR_DT(L) 
+! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
+! queue terminates
+         ELSEIF (USR_TIME(L)/=UNDEFINED .AND. &
+                 TIME+0.1d0*DT>=USR_TIME(L) .OR. eofBATCHQ) THEN 
+            USR_TIME(L) = (INT((TIME + 0.1d0*DT)/USR_DT(L))+1)*USR_DT(L)
             if (myPE.eq.PE_IO) CALL WRITE_USR1 (L) 
          ENDIF 
-      END DO 
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-!     Write vtk file, if needed
+      ENDDO 
+
+! JFD modification: cartesian grid implementation
+! Write vtk file, if needed
       IF(WRITE_VTK_FILES) THEN
          IF (DT == UNDEFINED) THEN 
-            IF (FINISH) CALL WRITE_VTK_FILE
-         ELSE IF (VTK_TIME/=UNDEFINED .AND. TIME+0.1d0*DT>=VTK_TIME) THEN 
+            IF (FINISH.and.myPE.eq.PE_IO) CALL WRITE_VTK_FILE
+         ELSEIF (VTK_TIME/=UNDEFINED .AND. TIME+0.1d0*DT>=VTK_TIME) THEN
             VTK_TIME = (INT((TIME + 0.1d0*DT)/VTK_DT)+1)*VTK_DT 
             CALL WRITE_VTK_FILE
          ENDIF 
       ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+
       IF (DT == UNDEFINED) THEN 
          IF (FINISH) THEN 
             RETURN  
@@ -545,22 +543,24 @@
             FINISH = .TRUE. 
          ENDIF 
 
-!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
-!            added additional condition .OR.eofBATCHQ
-!      ELSE IF (TIME + 0.1d0*DT >= TSTOP) THEN 	 
-      ELSE IF (TIME + 0.1d0*DT >= TSTOP.OR.eofBATCHQ) THEN 
+! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
+! queue terminates 
+      ELSEIF (TIME + 0.1d0*DT >= TSTOP.OR.eofBATCHQ) THEN 
          IF(solver_statistics) then
-            WRITE(*,*) 'Total number of non-linear iterations', NIT_TOTAL
+            WRITE(*,*) 'Total number of non-linear iterations', &
+               NIT_TOTAL
             WRITE(*,*) 'Average number per time-step', NIT_TOTAL/NSTEP
-            WRITE(*,*) 'Equation number', '-----', 'Number of linear solves'
+            WRITE(*,*) 'Equation number', '-----', &
+               'Number of linear solves'
             DO I = 1, 10
-               Write(*,*) I, '---------',  iter_tot(I)
-            END DO
-            WRITE(*,*) 'Equation number', '-----', 'Avg. number of linear solves for NIT'
+               WRITE(*,*) I, '---------',  iter_tot(I)
+            ENDDO
+            WRITE(*,*) 'Equation number', '-----', &
+               'Avg. number of linear solves for NIT'
             DO I = 1, 10
-               Write(*,*) I, '---------',  iter_tot(I)/NIT_TOTAL
-            END DO
-         END IF
+               WRITE(*,*) I, '---------',  iter_tot(I)/NIT_TOTAL
+            ENDDO
+         ENDIF
          RETURN  
       ENDIF 
 
@@ -573,21 +573,25 @@
      
 ! Calculate the trace of the stress tensor
       CALL CALC_TRD_G (TRD_G, IER) 
-      CALL CALC_TRD_S (TRD_S, IER)
+      IF (.NOT.DISCRETE_ELEMENT) CALL CALC_TRD_S (TRD_S, IER)
 
 ! Calculate the cross terms of the stress tensor
       CALL CALC_TAU_U_G (TAU_U_G, IER) 
       CALL CALC_TAU_V_G (TAU_V_G, IER) 
       CALL CALC_TAU_W_G (TAU_W_G, IER) 
-      CALL CALC_TAU_U_S (TAU_U_S, IER) 
-      CALL CALC_TAU_V_S (TAU_V_S, IER) 
-      CALL CALC_TAU_W_S (TAU_W_S, IER) 
+      IF (.NOT.DISCRETE_ELEMENT) THEN
+         CALL CALC_TAU_U_S (TAU_U_S, IER) 
+         CALL CALC_TAU_V_S (TAU_V_S, IER) 
+         CALL CALC_TAU_W_S (TAU_W_S, IER) 
+      ENDIF
 
 ! Calculate additional solid phase momentum source terms 
 ! that arise from kinetic theory constitutive relations
-     CALL CALC_KTMOMSOURCE_U_S (IER)
-     CALL CALC_KTMOMSOURCE_V_S (IER)
-     CALL CALC_KTMOMSOURCE_W_S (IER)
+      IF (.NOT.DISCRETE_ELEMENT) THEN
+         CALL CALC_KTMOMSOURCE_U_S (IER)
+         CALL CALC_KTMOMSOURCE_V_S (IER)
+         CALL CALC_KTMOMSOURCE_W_S (IER)
+      ENDIF
 
 ! Check rates and sums of mass fractions every NLOG time steps
       IF (NSTEP == NCHECK) THEN 
@@ -609,7 +613,8 @@
       
 ! Check for maximum velocity at inlet to avoid convergence problems 
       MAX_INLET_VEL = 100.0d0*MAX_VEL_INLET ()
-! if no inlet velocity is specified, use an upper limit defined in toleranc_mod.f
+! if no inlet velocity is specified, use an upper limit defined in 
+! toleranc_mod.f
       IF(MAX_INLET_VEL == ZERO) THEN
          MAX_INLET_VEL = MAX_ALLOWED_VEL
          IF (UNITS == 'SI') MAX_INLET_VEL = 1D-2 * MAX_ALLOWED_VEL
@@ -631,28 +636,26 @@
 
      
 ! Adjust time step and reiterate if necessary
-         DO WHILE (ADJUST_DT(IER,NIT))
-            CALL ITERATE (IER, NIT) 
-         END DO
-         IF(DT.LT.DT_MIN) THEN
-            IF(TIME.LE.RES_DT) THEN
-               IF (AUTO_RESTART .AND. DMP_LOG)WRITE(UNIT_LOG,*) &
-                 'Automatic restart not possible as Total Time < RES_DT'
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               IF(WRITE_DASHBOARD) THEN
-                  RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
-                  CALL UPDATE_DASHBOARD(NIT,0.0d0,'    ')
-               ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               CALL MFIX_EXIT(MyPE)
+      DO WHILE (ADJUST_DT(IER,NIT))
+         CALL ITERATE (IER, NIT) 
+      ENDDO
+
+      IF(DT.LT.DT_MIN) THEN
+         IF(TIME.LE.RES_DT) THEN
+            IF (AUTO_RESTART .AND. DMP_LOG)WRITE(UNIT_LOG,*) &
+               'Automatic restart not possible as Total Time < RES_DT'
+
+! JFD modification: cartesian grid implementation
+            IF(WRITE_DASHBOARD) THEN
+               RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
+               CALL UPDATE_DASHBOARD(NIT,0.0d0,'    ')
             ENDIF
-            IF(AUTO_RESTART) AUTOMATIC_RESTART = .TRUE.
-            RETURN
+
+            CALL MFIX_EXIT(MyPE)
          ENDIF
+         IF(AUTO_RESTART) AUTOMATIC_RESTART = .TRUE.
+         RETURN
+      ENDIF
 
       
 ! Check over mass and elemental balances.  This routine is not active by default.
@@ -682,7 +685,7 @@
 ! AE TIME 043001 Perform the explicit extrapolation for CN implementation
 ! IF (CN_ON.AND.NSTEP>1) then
       IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
-      (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN     
+      (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
          CALL CN_EXTRAPOL
       ENDIF
 
@@ -703,14 +706,16 @@
       IF(solver_statistics) then
          WRITE(*,*) 'Total number of non-linear iterations', NIT_TOTAL
          WRITE(*,*) 'Average number per time-step', NIT_TOTAL/NSTEP
-         WRITE(*,*) 'Equation number', '-----', 'Number of linear solves'
+         WRITE(*,*) 'Equation number', '-----', &
+            'Number of linear solves'
          DO I = 1, 10
             Write(*,*) I, '---------',  iter_tot(I)
-         END DO
-         WRITE(*,*) 'Equation number', '-----', 'Avg. number of linear solves for NIT'
+         ENDDO
+         WRITE(*,*) 'Equation number', '-----',&
+            'Avg. number of linear solves for NIT'
          DO I = 1, 10
             Write(*,*) I, '---------',  iter_tot(I)/NIT_TOTAL
-         END DO
+         ENDDO
       ENDIF
      
 ! The TIME loop ends here....................................................
@@ -729,7 +734,4 @@
  1015 FORMAT(14X,'Disk=',F7.2,' Mb') 
 
       END SUBROUTINE TIME_MARCH 
-!     
-!//   Comments on the modifications for DMP version implementation      
-!//   001 Include header file and common declarations for parallelization
-!//   Additional I/O checks done by root processor
+     
