@@ -200,8 +200,8 @@
 ! average fluid velocity at scalar cell center
                   UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
                   VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
-                  EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
                   DO M = 1, DES_MMAX
+                     EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
                      IF(EP_SM.GT.ZERO) THEN
                         SOLID_DRAG(IJK,M,1) = -F_GS(IJK,M)*&
                            (DES_U_S(IJK,M)-UGC)
