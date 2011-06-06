@@ -18,37 +18,29 @@
 
       SUBROUTINE CFASSIGN
 
-      USE discretelement
-      USE param
       USE param1
-      USE parallel
-      USE fldvar
-      USE run
-      USE geometry
-      USE matrix
-      USE indices
       USE physprop
-      USE drag
+      USE geometry
       USE constant
       USE compar
+      USE parallel
       USE sendrecv
-
+      USE discretelement
+! TEST CASE MODIFICATIONS: circle-advection
+      USE run
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      LOGICAL:: filexist, isopen
-      INTEGER I, J, K, IJK, L, M
+      INTEGER I, J, K, L
+      INTEGER IJK, M  ! needed for calling bfx_s, etc      
       INTEGER COUNT_E
       DOUBLE PRECISION MASS_I, MASS_J, &
                        MASS_EFF, RED_MASS_EFF
       DOUBLE PRECISION TCOLL, TCOLL_TMP
 ! local variables for calculation of hertzian contact parameters
       DOUBLE PRECISION R_EFF, E_EFF, G_MOD_EFF     
-! local variable to determine minimum grid size
-      DOUBLE PRECISION MIN_GRID
 !-----------------------------------------------
-      INCLUDE 'function.inc'
       INCLUDE 'b_force1.inc'
       INCLUDE 'b_force2.inc'
 
@@ -56,6 +48,49 @@
       WRITE(*,'(3X,A)') '---------- START CFASSIGN ---------->'
 
       TCOLL = LARGE_NUMBER
+
+
+! Set misc quantities defining the system
+! -------------------------------
+! Set boundary edges 
+! In some instances wx1,ex2, etc have been used and in others
+! xlength,zero, etc are used.  todo: code should be modified for
+! consistency throughout      
+      WX1 = ZERO 
+      EX2 = XLENGTH 
+      BY1 = ZERO
+      TY2 = YLENGTH 
+      SZ1 = ZERO 
+      NZ2 = ZLENGTH
+
+! the DEM variable grav(:) will not accomodate a body force that varies
+! in space or on phases unlike the implementation in the continuum 
+! simulations
+      GRAV(1) = BFX_s(1,1)
+      GRAV(2) = BFY_s(1,1)
+      IF(DIMN.EQ.3) GRAV(3) = BFZ_s(1,1)     
+
+! Note : the quantities xe, zt cannot be readily replaced with the
+! similar appearing variables x_e, z_t in main mfix code as they 
+! are not the same.  also the variable y_n does not exist in main
+!  mfix code. each loop starts at 2 and goes to max+2 (i.e., imin1=2,
+! imax2=imax+2) 
+      XE(1) = ZERO
+      YN(1) = ZERO
+      DO I = IMIN1, IMAX2
+         XE(I) = XE(I-1) + DX(I)
+      ENDDO
+      DO J  = JMIN1, JMAX2
+         YN(J) = YN(J-1) + DY(J)
+      ENDDO
+      IF(DIMN.EQ.3) THEN
+         ZT(1) = ZERO
+         DO K = KMIN1, KMAX2
+            ZT(K) = ZT(K-1) + DZ(K)
+         ENDDO
+      ENDIF
+! -------------------------------
+
 
 ! If RESTART_1 is being used with DEM inlets/outlets, then it is possible
 ! that the particle arrays have indices without data (without particles).
@@ -73,22 +108,6 @@
       WRITE(*,'(5X,A,ES15.8)') '1.05*MAX_RADIUS = ', RADIUS_EQ
 
 
-! Set boundary edges 
-! In some instances wx1,ex2, etc have been used and in others
-! xlength,zero, etc are used.  todo: code should be modified for
-! consistency throughout      
-      WX1 = ZERO 
-      EX2 = XLENGTH 
-      BY1 = ZERO
-      TY2 = YLENGTH 
-      SZ1 = ZERO 
-      NZ2 = ZLENGTH
-
-      
-      GRAV(1) = BFX_s(1,1)
-      GRAV(2) = BFY_s(1,1)
-      IF(DIMN.EQ.3) GRAV(3) = BFZ_s(1,1)
-
 ! Calculate collision parameters
 !--------------------------------------------------------
 
@@ -97,7 +116,7 @@
          write(*,'(5X,A)') 'COLLISION MODEL: Hertzian'
 
 ! particle-particle contact --------------------
-         DO I=1,MMAX
+         DO I=1,DES_MMAX
             G_MOD(I) = 0.5d0*e_young(I)/(1.d0+v_poisson(I))   ! shear modulus 
             WRITE(*,'(5X,A,I5,X,A,X,2(ES15.7))') &
                'E_YOUNG AND V_POISSON FOR M = ', I, '=',&
@@ -105,22 +124,23 @@
          ENDDO
 
          COUNT_E = 0
-         DO I=1,MMAX
-            DO J=I,MMAX
+         DO I=1,DES_MMAX
+            DO J=I,DES_MMAX
 ! Arrange the coefficient of restitution matrix from en_input values
 ! use coef of rest to determine damping coefficient 
                COUNT_E = COUNT_E + 1
                REAL_EN(I,J) = DES_EN_INPUT(COUNT_E)
                REAL_ET(I,J) = DES_ET_INPUT(COUNT_E)            
-               MASS_I = (PI/6.d0)*(D_P0(I)**3)*RO_S(I)
-               MASS_J = (PI/6.d0)*(D_P0(J)**3)*RO_S(J)
+               MASS_I = (PI/6.d0)*(DES_D_P0(I)**3)*DES_RO_S(I)
+               MASS_J = (PI/6.d0)*(DES_D_P0(J)**3)*DES_RO_S(J)
                MASS_EFF = (MASS_I*MASS_J)/(MASS_I+MASS_J)
 ! In the Hertzian model introduce a factor of 2/7 to the effective mass 
 ! for tangential direction to get a reduced mass.  See reference: 
 ! Van der Hoef et al., Advances in Chemical Engineering, 2006, 31, 65-149
 !   (see page 94-95)                
                RED_MASS_EFF = (2.d0/7.d0)*MASS_EFF               
-               R_EFF = 0.5d0*(D_P0(I)*D_P0(J)/(D_P0(I)+D_P0(J)))
+               R_EFF = 0.5d0*(DES_D_P0(I)*DES_D_P0(J)/&
+                  (DES_D_P0(I)+DES_D_P0(J)) )
                E_EFF = e_young(I)*e_young(J)/ &
                   (e_young(I)*(1.d0-v_poisson(J)**2)+&
                    e_young(J)*(1.d0-v_poisson(I)**2))
@@ -161,15 +181,15 @@
 
 ! particle-wall contact --------------------          
          COUNT_E = 0
-         DO I = 1, MMAX
+         DO I = 1, DES_MMAX
             COUNT_E = COUNT_E + 1  
             REAL_EN_WALL(I) = DES_EN_WALL_INPUT(COUNT_E)
             REAL_ET_WALL(I) = DES_ET_WALL_INPUT(COUNT_E)
-            MASS_I = (PI/6.d0)*(D_P0(I)**3)*RO_S(I)
+            MASS_I = (PI/6.d0)*(DES_D_P0(I)**3)*DES_RO_S(I)
             MASS_J = MASS_I
             MASS_EFF = MASS_I
             RED_MASS_EFF = (2.d0/7.d0)*MASS_I
-            R_EFF = 0.5d0*D_P0(I)
+            R_EFF = 0.5d0*DES_D_P0(I)
             E_EFF = e_young(I)*ew_young/ &
                (e_young(I)*(1.d0-vw_poisson**2)+&
                 ew_young*(1.d0-v_poisson(I)**2))
@@ -218,14 +238,14 @@
 
 ! particle-particle contact --------------------
          COUNT_E = 0
-         DO I = 1, MMAX
-            DO J = I, MMAX
+         DO I = 1, DES_MMAX
+            DO J = I, DES_MMAX
 ! Arrange the coefficient of restitution matrix from en_input values
 ! use coef of rest to determine damping coefficient 
                COUNT_E = COUNT_E + 1
                REAL_EN(I,J) = DES_EN_INPUT(COUNT_E)
-               MASS_I = (PI/6.d0)*(D_P0(I)**3.d0)*RO_S(I)
-               MASS_J = (PI/6.d0)*(D_P0(J)**3.d0)*RO_S(J)
+               MASS_I = (PI/6.d0)*(DES_D_P0(I)**3.d0)*DES_RO_S(I)
+               MASS_J = (PI/6.d0)*(DES_D_P0(J)**3.d0)*DES_RO_S(J)
                MASS_EFF = (MASS_I*MASS_J)/(MASS_I + MASS_J)
 
                IF (REAL_EN(I,J) .NE. ZERO) THEN               
@@ -253,10 +273,10 @@
 
 ! particle-wall contact --------------------     
          COUNT_E = 0 
-         DO I = 1, MMAX
+         DO I = 1, DES_MMAX
             COUNT_E = COUNT_E + 1  
             REAL_EN_WALL(I) = DES_EN_WALL_INPUT(COUNT_E)
-            MASS_I = (PI*(D_P0(I)**3)*RO_S(I))/6.d0
+            MASS_I = (PI*(DES_D_P0(I)**3)*DES_RO_S(I))/6.d0
             MASS_J = MASS_I
             MASS_EFF = MASS_I
             IF (REAL_EN_WALL(I) .NE. ZERO) THEN
@@ -283,8 +303,8 @@
 !--------------------------------------------------------
 
 
-      DO I = 1, MMAX
-         DO J = I, MMAX
+      DO I = 1, DES_MMAX
+         DO J = I, DES_MMAX
             REAL_EN(J, I) = REAL_EN(I,J)
             REAL_ET(J, I) = REAL_ET(J,I)
             DES_ETAN(J,I) = DES_ETAN(I,J)
@@ -292,16 +312,18 @@
          ENDDO
       ENDDO
 
-      DO I = 1, MMAX
-         DO J = I, MMAX
+      DO I = 1, DES_MMAX
+         DO J = I, DES_MMAX
             WRITE(*,'(5X,A,I10,2X,I10,A,2(ES15.7))') &
                'ETAN AND ETAT FOR PAIR ',&
                I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
          ENDDO
       ENDDO
 
+    
+! TEST CASE MODIFICATIONS      
 ! Hardwired for the circle convection case
-      DTSOLID = DT ! TCOLL/50.d0
+      DTSOLID = DT  !TCOLL/50.d0
       
       WRITE(*,'(5X,A,E17.10,2X,E17.10)') 'MIN TCOLL AND DTSOLID = ',&
          TCOLL, DTSOLID

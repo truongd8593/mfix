@@ -15,14 +15,14 @@
       SUBROUTINE GENERATE_PARTICLE_CONFIG
       
       USE param1
-      USE geometry
       USE funits
       USE compar      
-      USE discretelement
       USE run
-      USE constant
-      USE physprop
-      USE usr      
+      USE geometry
+      USE discretelement
+! TEST CASE MODIFICATIONS: circle-advection
+      USE constant      
+      USE usr
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -32,61 +32,62 @@
       INTEGER CHECK_MPI
       INTEGER PART_COUNT
       DOUBLE PRECISION DIST, R_LM, DOML(DIMN)
+! TEST CASE MODIFICATIONS
 ! for circle-advection case
-      DOUBLE PRECISION theta, phi_local
-      DOUBLE PRECISION XM, YM, ZM
-      INTEGER I, LN      
+      DOUBLE PRECISION phi_local
+      DOUBLE PRECISION XM, YM
+      INTEGER I, LN         
 !-----------------------------------------------       
 
       WRITE(*,'(3X,A)') &
          '---------- START GENERATE_PARTICLE_CONFIG ---------->'
 
-! following code commented out for circle-advection case           
-!      PART_COUNT = 0
-!      DO M = 1, MMAX
-!         DO L = 1, PART_MPHASE(M) 
-!            PART_COUNT = PART_COUNT + 1
-!            DES_RADIUS(PART_COUNT) = D_P0(M)*HALF
-!            RO_Sol(PART_COUNT) = RO_S(M)
-!         ENDDO
-!      ENDDO
+      PART_COUNT = 0
+      DO M = 1, DES_MMAX
+         DO L = 1, PART_MPHASE(M) 
+            PART_COUNT = PART_COUNT + 1
+            DES_RADIUS(PART_COUNT) = DES_D_P0(M)*HALF
+            RO_Sol(PART_COUNT) = DES_RO_S(M)
+         ENDDO
+      ENDDO
       
-!      DOML(1) = DES_EPS_XSTART
-!      DOML(2) = DES_EPS_YSTART
-!      IF(DIMN.EQ.3) THEN
-!         DOML(3) = DES_EPS_ZSTART
-!      ENDIF
+      DOML(1) = DES_EPS_XSTART
+      DOML(2) = DES_EPS_YSTART
+      IF(DIMN.EQ.3) THEN
+         DOML(3) = DES_EPS_ZSTART
+      ENDIF
 
-!      IF (DES_EPS_XSTART > XLENGTH) THEN
-!         WRITE(UNIT_LOG,1001) 'X', 'X'
-!         WRITE(*,1003)
-!         CALL MFIX_EXIT(myPE)
-!      ENDIF
-!      IF (DES_EPS_YSTART > YLENGTH) THEN
-!         WRITE(UNIT_LOG,1001) 'Y', 'Y'
-!         WRITE(*,1003)
-!         CALL MFIX_EXIT(myPE)
-!      ENDIF
-!      IF (DIMN .EQ. 3 .AND. DES_EPS_ZSTART > ZLENGTH) THEN
-!         WRITE(UNIT_LOG,1001) 'Z', 'Z'
-!         WRITE(*,1003)
-!         CALL MFIX_EXIT(myPE)
-!      ENDIF
+      IF (DES_EPS_XSTART > XLENGTH) THEN
+         WRITE(UNIT_LOG,1001) 'X', 'X'
+         WRITE(*,1003)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+      IF (DES_EPS_YSTART > YLENGTH) THEN
+         WRITE(UNIT_LOG,1001) 'Y', 'Y'
+         WRITE(*,1003)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+      IF (DIMN .EQ. 3 .AND. DES_EPS_ZSTART > ZLENGTH) THEN
+         WRITE(UNIT_LOG,1001) 'Z', 'Z'
+         WRITE(*,1003)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
 
-      
+! TEST CASE MODIFICATIONS         
+     
 !      CALL GENER_LATTICE_MOD(PARTICLES,doml(1:DIMN),&
 !         DES_POS_OLD(1:PARTICLES,1:DIMN),DES_RADIUS(1:PARTICLES))   
 
-! following code added for circle-advection case      
+! Code for circle-advection case      
       ALLOCATE(x_store(PARTICLES,DIMN))
 
-      ln = 0
+      LN = 0
       DO I = 1, 64
          phi_local = (I-1)*2.0d0*PI/64
          ln = ln + 1
 
-         DES_RADIUS(LN) = D_P0(1)*HALF
-         RO_SOL(LN) = RO_S(1)
+         DES_RADIUS(LN) = DES_D_P0(1)*HALF
+         RO_SOL(LN) = DES_RO_S(1)
 
          DES_POS_OLD(LN, 1) = 0.15d0*cos(phi_local) + 0.5d0
          DES_POS_OLD(LN, 2) = 0.15d0*sin(phi_local) + 0.75d0
@@ -101,11 +102,7 @@
          DES_VEL_OLD(LN, 2) = -sin(2.d0*PI*XM) * (sin(PI*YM))**2*&
             cos(PI*time/T_per)
 
-         write(*,*) XM, YM, DES_VEL_OLD(LN, 1), DES_VEL_OLD(LN, 2), ln
-
       ENDDO
-
-      PARTICLES = LN
 ! end of added code
 
 
@@ -122,8 +119,8 @@
       ENDDO
       CLOSE(24)
 
-      IF(MAXVAL(DES_POS_NEW(1:PARTICLES,2)).GT.&
-      YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES))) THEN 
+      IF( MAXVAL(DES_POS_NEW(1:PARTICLES,2)).GT.&
+         YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES)) ) THEN 
          WRITE(UNIT_LOG,1002) MAXVAL(DES_POS_NEW(1:PARTICLES,2)), &
             YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES))
          WRITE(*,1003)
@@ -244,27 +241,14 @@
 
       USE param
       USE param1
-      USE parallel
-      USE matrix
-      USE scales
-      USE constant
-      USE physprop
       USE fldvar
-      USE visc_g
-      USE rxns
       USE run
-      USE toleranc
       USE geometry
       USE indices
-      USE is
-      USE tau_g
-      USE bc
       USE compar
-      USE sendrecv
-      USE discretelement
-      USE drag
       USE interpolation
-      
+      USE discretelement
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -292,8 +276,6 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 
       WRITE(*,'(7X,A)') &
          '---------- START SET_INITIAL_VELOCITY ---------->'
@@ -528,12 +510,16 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !
+! Purpose: Generate a random initial particle velocity based on a normal
+!          distribution.  If Lees Edwards boundaries are selected then 
+!          a linear velocity profile is enforced consistent with the
+!          specified shear rate.      
 !      
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
       SUBROUTINE init_particles_jn
+      USE geometry
       USE randomno
       USE discretelement
-      USE constant 
       IMPLICIT NONE 
 !-----------------------------------------------
 ! Local variables
@@ -541,12 +527,61 @@
       INTEGER I, J, K, L
       LOGICAL FILE_EXIST
       REAL*8 :: umf0(dimn), rsf(DIMN, DIMN)
+! Quantities for LE BC      
+! local variable for shear direction
+      CHARACTER*4 SHEAR_DIR      
+! shear rate
+      DOUBLE PRECISION SHEAR_RATE
+! distance between shear boundaries      
+      DOUBLE PRECISION SHEAR_LENGTH
+! temporary variable - velocity of particle based on position between
+! shearing boundaries and shear rate
+      DOUBLE PRECISION TMP_VEL
+! indices for position and velocity
+      INTEGER POSI, VELI
 !-----------------------------------------------      
 
       WRITE(*,'(3X,A)') '---------- START INIT_PARTICLES_JN ---------->'
-      WRITE(*,'(5X,A)') 'Initializing normal velocity distribution:'
-      WRITE(*,'(5X,A,ES17.8,A,ES17.8)') 'mean = ', pvel_mean,&
-         ' and standard deviation = ', PVEL_StDev
+     
+      IF (.NOT.DES_LE_BC) THEN
+         WRITE(*,'(5X,A)') 'Initializing normal velocity distribution:'
+         WRITE(*,'(5X,A,ES17.8,A,ES17.8)') 'mean = ', pvel_mean,&
+            ' and standard deviation = ', PVEL_StDev
+      ELSE
+         SHEAR_DIR = TRIM(DES_LE_SHEAR_DIR)
+         IF(SHEAR_DIR.EQ.'DUDY') THEN
+            SHEAR_LENGTH = YLENGTH
+            POSI = 2
+            VELI = 1
+         ELSEIF(SHEAR_DIR.EQ.'DWDY') THEN
+            SHEAR_LENGTH = YLENGTH
+            POSI = 2
+            VELI = 3
+         ELSEIF(SHEAR_DIR.EQ.'DVDX') THEN
+            SHEAR_LENGTH = XLENGTH
+            POSI = 1
+            VELI = 2
+         ELSEIF(SHEAR_DIR.EQ.'DWDX') THEN
+            SHEAR_LENGTH = XLENGTH
+            POSI = 1
+            VELI = 3
+         ELSEIF(SHEAR_DIR.EQ.'DUDZ') THEN
+            SHEAR_LENGTH = ZLENGTH 
+            POSI = 3
+            VELI = 1
+         ELSEIF(SHEAR_DIR.EQ.'DVDZ') THEN
+            SHEAR_LENGTH = ZLENGTH 
+            POSI = 3
+            VELI = 2
+         ENDIF  
+         SHEAR_RATE =  (2.d0*DES_LE_REL_VEL)/SHEAR_LENGTH
+         pvel_mean = 0.0d0
+         PVEL_StDev = DABS(SHEAR_RATE)
+         WRITE(*,'(5X,A,A)') 'Setting up velocity profile consistent',&
+            'with shear'
+         WRITE(*,'(5X,A,ES17.8,A,ES17.8)') 'mean = ', pvel_mean,&
+            ' and standard deviation = ', PVEL_StDev
+      ENDIF
 
       DO J=1,DIMN
          umf0(j)=pvel_mean
@@ -562,21 +597,34 @@
          CALL nor_rno(DES_VEL_OLD(1:PARTICLES,J),umf0(J),rsf(J,J))
       ENDDO
 
+
+! Adjust initial condition: change position and velocity according to
+! shear direction and rate
+      IF (DES_LE_BC) THEN
+         DO L = 1, PARTICLES
+            DES_VEL_OLD(L,VELI) = SHEAR_RATE*DES_POS_OLD(L,POSI)-&
+               DES_LE_REL_VEL
+         ENDDO
+      ENDIF
+      
       DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
 
 ! updating/writing initial particle configuration files      
       IF (GENER_PART_CONFIG) THEN
-         INQUIRE(FILE='particle_gener_conf.dat',exist=FILE_EXIST)
+         INQUIRE(FILE='particle_gener_conf.dat',EXIST=FILE_EXIST)
          IF (FILE_EXIST) THEN
             OPEN(UNIT=24,FILE='particle_gener_conf.dat',&
-                 STATUS='REPLACE')
-            DO L = 1, PARTICLES
-               WRITE(24,'(10(X,ES12.5))')&
-                  (DES_POS_OLD(L,K),K=1,DIMN), DES_RADIUS(L),&
-                  RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
-            ENDDO
-            CLOSE(24)
+               STATUS='REPLACE')
+         ELSE
+            OPEN(UNIT=24,FILE='particle_gener_conf.dat',&
+               STATUS='NEW')
          ENDIF
+         DO L = 1, PARTICLES
+            WRITE(24,'(10(X,ES12.5))')&
+               (DES_POS_OLD(L,K),K=1,DIMN), DES_RADIUS(L),&
+               RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
+         ENDDO
+         CLOSE(24)
       ELSE
          OPEN(UNIT=24,FILE='particle_input2.dat',&
               STATUS='REPLACE')
