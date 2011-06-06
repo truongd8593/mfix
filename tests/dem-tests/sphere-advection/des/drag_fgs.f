@@ -21,19 +21,14 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE scales
       USE constant
       USE physprop
       USE fldvar
-      USE visc_g
-      USE rxns
       USE run
       USE toleranc
       USE geometry
       USE indices
-      USE is
-      USE tau_g
       USE bc
       USE compar
       USE sendrecv
@@ -48,7 +43,8 @@
 ! local variable used for debugging
       LOGICAL FOCUS 
 
-      DOUBLE PRECISION P_FORCE(DIMENSION_3,DIMN), D_FORCE(DIMN)
+      DOUBLE PRECISION P_FORCE(DIMENSION_3,DIMN)
+      DOUBLE PRECISION D_FORCE(DIMN)
       DOUBLE PRECISION drag_bm_tmp(DIMN)
 
 ! temporary variables used to calculate pressure at scalar cell edge      
@@ -86,22 +82,28 @@
 
 !mean pressure gradient for the case of periodic boundaries
       DOUBLE PRECISION MPG_CYCLIC(DIMN)
+
 ! constant whose value depends on dimension of system      
       DOUBLE PRECISION AVG_FACTOR     
 
 ! index of solid phase that particle NP belongs to      
       INTEGER M
 
-! volume of fluid cell particle resides in
-      DOUBLE PRECISION VCELL
-! one over the solids volume fraction and one over the volume       
-      DOUBLE PRECISION OEPS, OVOL 
-
 ! particle number index, used for looping      
       INTEGER NP
 
 ! index to track accounted for particles 
       INTEGER PC 
+
+! volume of fluid cell 
+      DOUBLE PRECISION VCELL
+
+! solids volume fraction of phase M in fluid cell
+      DOUBLE PRECISION EP_SM
+
+! one over solids volume fraction in fluid cell and one over the
+! volume of fluid cell
+      DOUBLE PRECISION OEPS, OVOL 
 
 ! for error messages      
       INTEGER IER
@@ -110,8 +112,7 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
+
 
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
       AVG_FACTOR = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)   
@@ -127,7 +128,12 @@
 ! des_interp_on=t), then the gas solid drag force on the particle is
 ! also computed based on cell average quantities
 !-----------------------------------------------      
-      IF(CALC_FC) THEN 
+      IF(CALC_FC) THEN
+
+! initialization              
+         SOLID_DRAG(:,:,:) = ZERO
+         P_FORCE(:,:) = ZERO
+
          DO IJK = IJKSTART3, IJKEND3
             I = I_OF(IJK)
             J = J_OF(IJK)
@@ -194,8 +200,9 @@
 ! average fluid velocity at scalar cell center
                   UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
                   VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
-                  DO M = 1, MMAX
-                     IF(EP_S(IJK,M).GT.ZERO) THEN
+                  DO M = 1, DES_MMAX
+                     EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
+                     IF(EP_SM.GT.ZERO) THEN
                         SOLID_DRAG(IJK,M,1) = -F_GS(IJK,M)*&
                            (DES_U_S(IJK,M)-UGC)
                         SOLID_DRAG(IJK,M,2) = -F_GS(IJK,M)*&
@@ -205,14 +212,14 @@
                            SOLID_DRAG(IJK,M,3) = -F_GS(IJK,M)*&
                               (DES_W_S(IJK,M)-WGC)
                         ENDIF
-                        OEPS = ONE/EP_S(IJK,M)
+                        OEPS = ONE/EP_SM
                         SOLID_DRAG(IJK,M,:) = SOLID_DRAG(IJK,M,:)*OEPS
                      ENDIF
                   ENDDO
                ENDIF
-            ENDIF      ! end IF(PINC(IJK).GT.0)
-         ENDDO         ! end do loop over ijk
-      ENDIF            ! end IF(CALC_FC)
+            ENDIF      ! end if(pinc(ijk).gt.0)
+         ENDDO         ! end do loop (ijk=ijkstart3,ijkend3)
+      ENDIF            ! end if(calc_fc)
 !----------------------------------------------- 
 
 
@@ -228,7 +235,7 @@
             IJK = PIJK(NP,4)
             M = PIJK(NP,5)
             OVOL = ONE/VOL(IJK)
-            FC(NP,:) = FC(NP,:) + (SOLID_DRAG(IJK,M,:)*PVOL(NP)) 
+            FC(NP,:) = FC(NP,:) + SOLID_DRAG(IJK,M,:)*PVOL(NP)
             IF(MODEL_B) THEN    !Do not add the pressure gradient force
             ELSE !Add the pressure gradient force 
                FC(NP,:) = FC(NP,:) + (P_FORCE(IJK,:)*OVOL)*PVOL(NP)
@@ -350,9 +357,10 @@
 ! (VEL_FP)
             CALL INTERPOLATE_QUANTS(IW, IE, JS, JN, KB, KTP, ONEW, &
                DES_POS_NEW(NP,1:DIMN), VEL_FP(NP,1:DIMN), FOCUS)
- 
-!Massless particles for the sphere advection test
-            des_vel_new(np,:) = vel_fp(np,:)
+
+! TEST CASE MODIFICATIONS               
+! Massless particles for the sphere advection test
+            DES_VEL_NEW(NP,:) = VEL_FP(NP,:)
 
 ! calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and gas velocity interpolated to the particle position
@@ -437,7 +445,7 @@
                         !drag_bm(II,JJ,KK, 1:DIMN,M) = zero 
 
                         WTBAR(II,JJ,KK,M) = WTBAR(II,JJ,KK,M) + &
-                           WEIGHTP(I,J,K) *RO_S(M)*OVOL*PVOL(NP)
+                           WEIGHTP(I,J,K) *RO_Sol(NP)*OVOL*PVOL(NP)
 
                      ENDDO
                   ENDDO
@@ -455,10 +463,10 @@
                   I = 1
                   DO K = 1, KMAX1
                      DO J = 1, JMAX1
-                        drag_bm(I,J,K,1, 1:MMAX) = HALF*&
-                           ( drag_bm(I,J,K,1, 1:MMAX) + &
-                             drag_bm(IMAX1,J,K,1, 1:MMAX) )
-                        drag_bm(IMAX1,J,K,1,1:MMAX) = drag_bm(1,J,K,1, 1:MMAX)
+                        drag_bm(I,J,K,1, 1:DES_MMAX) = HALF*&
+                           ( drag_bm(I,J,K,1, 1:DES_MMAX) + &
+                             drag_bm(IMAX1,J,K,1, 1:DES_MMAX) )
+                        drag_bm(IMAX1,J,K,1,1:DES_MMAX) = drag_bm(1,J,K,1, 1:DES_MMAX)
                         
                         WTBAR(I,J,K,:) = HALF*&
                            ( WTBAR(I,J,K,:) + WTBAR(IMAX1,J,K,:) )
@@ -474,10 +482,10 @@
                   J = 1
                   DO K = 1, KMAX1
                      DO I = 1, IMAX1
-                        drag_bm(I,J,K,2, 1:MMAX) = HALF*&
-                           ( drag_bm(I,J,K,2, 1:MMAX)+&
-                             drag_bm(I,JMAX1,K,2, 1:MMAX) )
-                        drag_bm(I,JMAX1,K,2, 1:MMAX) = drag_bm(I,1,K,2, 1:MMAX)
+                        drag_bm(I,J,K,2, 1:DES_MMAX) = HALF*&
+                           ( drag_bm(I,J,K,2, 1:DES_MMAX)+&
+                             drag_bm(I,JMAX1,K,2, 1:DES_MMAX) )
+                        drag_bm(I,JMAX1,K,2, 1:DES_MMAX) = drag_bm(I,1,K,2, 1:DES_MMAX)
    
                         WTBAR(I,J,K,:) = HALF*&
                            ( WTBAR(I,J,K,:) + WTBAR(I,JMAX1,K,:) )
@@ -493,10 +501,10 @@
                   K = 1
                   DO J = 1, JMAX1
                      DO I = 1, IMAX1
-                        drag_bm(I,J,K,3, 1:MMAX) = HALF*&
-                           ( drag_bm(I,J,K,3, 1:MMAX) + &
-                             drag_bm(I,J,KMAX1,3, 1:MMAX) )
-                        drag_bm(I,J,KMAX1,3,1:MMAX) = drag_bm(I,J,1,3,1:MMAX)
+                        drag_bm(I,J,K,3, 1:DES_MMAX) = HALF*&
+                           ( drag_bm(I,J,K,3, 1:DES_MMAX) + &
+                             drag_bm(I,J,KMAX1,3, 1:DES_MMAX) )
+                        drag_bm(I,J,KMAX1,3,1:DES_MMAX) = drag_bm(I,J,1,3,1:DES_MMAX)
    
                         WTBAR(I,J,K,:) = HALF*&
                            ( WTBAR(I,J,K,:) + WTBAR(I,J,KMAX1,:) )
@@ -510,7 +518,7 @@
                ENDIF
             ENDIF
 
-            DO M = 1, MMAX
+            DO M = 1, DES_MMAX
                DO IJK = IJKSTART3, IJKEND3
                   IF(FLUID_AT(IJK)) THEN
                      I = I_of(IJK)
@@ -521,7 +529,7 @@
                         drag_am(I,J-1,K,M) + drag_am(I-1,J-1,K,M) +&
                         drag_am(I-1,J,K,M))
                
-                     ROP_S(IJK,M) = AVG_FACTOR*(WTBAR(I,J,K,M) +&
+                     DES_ROP_S(IJK,M) = AVG_FACTOR*(WTBAR(I,J,K,M) +&
                         WTBAR(I,J-1,K,M) + WTBAR(I-1,J-1,K,M) +&
                         WTBAR(I-1,J,K,M))
                
@@ -530,13 +538,13 @@
                            (drag_am(I,J,K-1,M) + drag_am(I,J-1,K-1,M) +&
                            drag_am(I-1,J-1,K-1,M)+drag_am(I-1,J,K-1,M) )
                   
-                        ROP_S(IJK,M) = ROP_S(IJK,M) + AVG_FACTOR*&
+                        DES_ROP_S(IJK,M) = DES_ROP_S(IJK,M) + AVG_FACTOR*&
                            (WTBAR(I,J,K-1,M) + WTBAR(I,J-1,K-1,M) + &
                            WTBAR(I-1,J-1,K-1,M)+WTBAR(I-1,J,K-1,M) )
                      ENDIF
                   ENDIF
                ENDDO  ! end do loop over ijk
-            ENDDO   ! end do loop over m=1,mmax
+            ENDDO   ! end do loop over m=1,DES_MMAX
 
          ENDIF        ! end if(.not.callfromdes)
 
@@ -593,25 +601,13 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       USE param
       USE param1
-      USE parallel
-      USE matrix
-      USE scales
       USE constant
-      USE physprop
       USE fldvar
-      USE visc_g
-      USE rxns
       USE run
-      USE toleranc
       USE geometry
       USE indices
-      USE is
-      USE tau_g
-      USE bc
       USE compar
-      USE sendrecv
       USE discretelement
-      USE drag
       USE interpolation
       
       IMPLICIT NONE
@@ -737,15 +733,19 @@
       END SUBROUTINE INTERPOLATE_QUANTS
 
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: DES_DRAG_GS (NP)                                       C
+!  Module name: DES_DRAG_GS                                            C
 !  Purpose: Calculate the gas-particle drag coefficient for des        C
-!           calculation such that in drag correlation, exact values of C
-!            u_g and  v_sm are used                                    C
-! Comments: No BVK drag model in this subroutine. BVK requires average C
-!           diameter which needs to be defined for DEM case            C
-
+!  calculation such that in drag correlation the gas velocity
+!  interpolated to the particle position and the particle velocity
+!  are used
+!      
+!  Comments: No BVK drag model in this subroutine. BVK requires an
+!  average particle diameter which needs to be defined for DEM case
+!  diameter which needs
+!
 !  Author: R. Garg and Jin Sun                        date 06/28/07    C 
 !  Comments: It is not used in this current version pending some more  C
 !            tests. 
@@ -781,15 +781,19 @@
 
       IMPLICIT NONE
 !-----------------------------------------------
-!     D u m m y   A r g u m e n t s
+! Arguments
 !-----------------------------------------------
-!     particle number
-      INTEGER , INTENT(IN) ::          KK
+! particle number id.
+      INTEGER , INTENT(IN) ::  KK
+! fluid velocity interpolated to particle position      
+      DOUBLE PRECISION, DIMENSION(DIMN), INTENT(IN) :: fvel
+! particle velocity
+      DOUBLE PRECISION, DIMENSION(DIMN), INTENT(IN) :: des_vel
 
 !-----------------------------------------------
-!     L o c a l   P a r a m e t e r s
+! Local Parameters 
 !-----------------------------------------------
-!     Parameters in the Cluster-effect model
+! Parameters in the Cluster-effect model
 !     PARAMETER (a1 = 250.)   !for G_s = 98 kg/m^2.s
 !     PARAMETER (a1 = 1500.)  !for G_s = 147 kg/m^2.s
 !     a1 depends upon solids flux.  It has been represented by C(1) 
@@ -798,122 +802,102 @@
       DOUBLE PRECISION, PARAMETER :: A3 = 90.0D0 
       DOUBLE PRECISION, PARAMETER :: RE_C = 5.D0 
       DOUBLE PRECISION, PARAMETER :: EP_C = 0.92D0 
+
 !-----------------------------------------------
-!     L o c a l   V a r i a b l e s
+! Local Variables
 !-----------------------------------------------
-      DOUBLE PRECISION, DIMENSION(DIMN), INTENT(IN) :: fvel, des_vel
-!     
-!     Indices 
-      INTEGER          I,  IJK, IMJK, IJMK, IJKM, IM, M
-!     
-!     Cell center value of U_sm 
-      DOUBLE PRECISION USCM 
-!     
-!     Cell center value of U_g 
-      DOUBLE PRECISION UGC 
-!     
-!     Cell center value of V_sm 
-      DOUBLE PRECISION VSCM 
-!     
-!     Cell center value of V_g 
-      DOUBLE PRECISION VGC 
-!     
-!     Cell center value of W_sm 
-      DOUBLE PRECISION WSCM 
-!     
-!     Cell center value of W_g 
-      DOUBLE PRECISION WGC 
-!     
-!     Magnitude of gas-solids relative velocity 
+! Indices 
+      INTEGER I, IJK, IMJK, IJMK, IJKM, IM, M
+     
+! Cell center value of U_sm, V_sm, W_sm
+      DOUBLE PRECISION USCM, VSCM, WSCM
+
+! Cell center value of U_g , V_g, W_g
+      DOUBLE PRECISION UGC, VGC, WGC
+     
+! Magnitude of gas-solids relative velocity 
       DOUBLE PRECISION VREL 
-!     
-!     Reynolds number 
+
+! Gas laminar viscosity redefined here to set viscosity at pressure
+! boundaries
+      DOUBLE PRECISION Mu
+
+! Reynolds number 
       DOUBLE PRECISION Re 
-!     
-!     Ratio of settling velocity of a multiparticle 
-!     system to that of a single particle 
+
+! Reynolds number that includes void fraction
+      DOUBLE PRECISION Re_g
+    
+! Ratio of settling velocity of a multiparticle system to that of a
+! single particle 
       DOUBLE PRECISION V_rm 
-!     
-!     Function of EP_g 
-      DOUBLE PRECISION A 
-!     
-!     Function of EP_g 
-      DOUBLE PRECISION B 
-!     
-!     Single sphere drag coefficient x Re 
-      DOUBLE PRECISION C_DsxRe, C_DsxReT 
-!     
-!     single sphere drag coefficient 
+     
+! Single sphere drag coefficient 
       DOUBLE PRECISION C_d 
-!     
-!     drag coefficient 
+
+! Single sphere drag coefficient x Re 
+      DOUBLE PRECISION C_DsxRe, C_DsxReT 
+     
+! Drag coefficient 
       DOUBLE PRECISION DgA  
 
-!     --- Gidaspow switch function variables [ceaf 2006-03-23]
+! CEAF: 03/23/06 Gidaspow switch function variables
       DOUBLE PRECISION Ergun
       DOUBLE PRECISION WenYu
       DOUBLE PRECISION PHI_gs
-!     --- end Gidaspow switch function variables
 
-!     
-!     Gas Laminar viscosity redefined here to set
-!     viscosity at pressure boundaries
-      DOUBLE PRECISION Mu
-!     
-!     Gidaspow Reynolds number
-      DOUBLE PRECISION Re_g
-!     
-!***********************************************************
-!     Declaration of variables relevant to the Koch and Hill
-!     drag correlation, sof
-!***********************************************************
-!     Stokes Drag Force
-      DOUBLE PRECISION F_STOKES
-!     
-!     zero Re function for low Reynolds number
-      DOUBLE PRECISION F_0
-!     
-!     inertial function for low Reynolds number
-      DOUBLE PRECISION F_1
-!     
-!     zero Re function for high Reynolds number
-      DOUBLE PRECISION F_2
-!     
-!     inertial function for high Reynolds number
-      DOUBLE PRECISION F_3
-!     
-!     dimensionless drag force F
-      DOUBLE PRECISION F
-!     
-!     transition Reynolds numbers
-      DOUBLE PRECISION Re_Trans_1, Re_Trans_2
-!     
-!     solids volume fraction
+! Function of EP_g in Syam O'Brien Model
+      DOUBLE PRECISION A_SO, B_SO
+
+! total solids volume fraction
       DOUBLE PRECISION phis
-!     
-!     weighting factor to compute F_0 and F_2
-      DOUBLE PRECISION w, D_p_av, Y_i
-!     
-!     Hill and Koch Reynolds number
-      DOUBLE PRECISION Re_kh
-      
-!     
-!     End of Koch and Hill variables declaration, sof
-!***********************************************************
-     
-     
-!     Current value of F_gs (i.e., without underrelaxation)
 
+! solids volume fraction of phase M in fluid cell of interest
+      DOUBLE PRECISION EP_SM    
+! tmp variable for particle diameter      
+      DOUBLE PRECISION PART_DIAM
+! tmp variable for particle volume   
+      DOUBLE PRECISION PART_VOL   
+
+! Current value of F_gs (i.e., without underrelaxation)
       DOUBLE PRECISION F_gstmp
 
-      DOUBLE PRECISION:: EPS, DIAMETER
+! Koch and Hill drag correlation variables
+!**************************************
+! Stokes Drag Force
+      DOUBLE PRECISION F_STOKES
+     
+! zero Re function for low Reynolds number
+      DOUBLE PRECISION F_0
+     
+! inertial function for low Reynolds number
+      DOUBLE PRECISION F_1
+     
+! zero Re function for high Reynolds number
+      DOUBLE PRECISION F_2
+     
+! inertial function for high Reynolds number
+      DOUBLE PRECISION F_3
+     
+! dimensionless drag force F
+      DOUBLE PRECISION F
+     
+! transition Reynolds numbers
+      DOUBLE PRECISION Re_Trans_1, Re_Trans_2
+     
+! weighting factor to compute F_0 and F_2
+      DOUBLE PRECISION w, D_p_av, Y_i
+     
+! Hill and Koch Reynolds number
+      DOUBLE PRECISION Re_kh
+!**************************************
+     
+!-----------------------------------------------    
 
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
-!     
+     
       C_DSXRET(RE) = 24D0*(1 + 0.15D0*RE**0.687D0)/(RE+SMALL_NUMBER) ! Tsuji drag
       C_DSXRE(RE) = (0.63D0*SQRT(RE) + 4.8D0)**2 ! Dalla Valle (1948) 
 !     C_DsxRe (Re) = 24.D0 * (1.D0 + 0.173D0 * Re**0.657D0)      ! Turton and
@@ -922,16 +906,17 @@
 
       IJK = PIJK(KK,4)
       M = PIJK(KK,5)
-      EPS  = EP_S(IJK, M)
-      DIAMETER = 2.D0*DES_RADIUS(KK)
-      
+      EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
+      PART_DIAM = 2.D0*DES_RADIUS(KK)
+      PART_VOL = PVOL(KK)
+
       IF(DIMN == 2)THEN
          VREL = SQRT((FVEL(1)- DES_VEL(1))**2 +&
-         (FVEL(2) - DES_VEL(2))**2)
+                     (FVEL(2) - DES_VEL(2))**2)
       ELSE
          VREL = SQRT((FVEL(1) - DES_VEL(1))**2 +&
-         (FVEL(2) - DES_VEL(2))**2 +&
-         (FVEL(3) - DES_VEL (3))**2)
+                     (FVEL(2) - DES_VEL(2))**2 +&
+                     (FVEL(3) - DES_VEL (3))**2)
       ENDIF
       
       IF (P_OUTFLOW_AT(IJK)) THEN
@@ -952,184 +937,171 @@
          Mu = MU_G(IJK)
       ENDIF
 
-!     Reynolds number
-      if(Mu > ZERO)then
-         RE = diameter * VREL*RO_G(IJK)/Mu 
+! Reynolds numbers
+      IF(Mu > ZERO)THEN
+         RE = PART_DIAM * VREL*RO_G(IJK)/Mu 
+! Note the presence of gas volume fraction in ROP_G
+         RE_G = (PART_DIAM * VREL*ROP_G(IJK))/Mu
+! Note the presence of gas volume fraction in ROP_G and additional
+! factor of 1/2
+         RE_kh = (0.5D0*PART_DIAM*VREL*ROP_G(IJK))/Mu
          
-!     Note the presence of gas volume fraction in ROP_G
-         RE_G = (diameter * VREL*ROP_G(IJK))/Mu
-         
-!     Note Reynolds' number for Hill and Koch has an additional factor of 1/2 & ep_g
-         RE_kh = (0.5D0*diameter*VREL*ROP_G(IJK))/Mu
-         
-      else 
+      ELSE
          RE = LARGE_NUMBER 
          RE_G = LARGE_NUMBER
          RE_kh = LARGE_NUMBER
-      endif
+      ENDIF
 !     f_gp() =  single particle drag excluding vector(v_g - v_p)
 !     
 
-!---------------Begin Syamlal and O'Brien ---------------------------
-!     
-!     Calculate V_rm
-!     
-      IF(TRIM(DRAG_TYPE).EQ.'SYAM_OBRIEN') then
 
-         IF (EP_s(IJK,M) <= ZERO) THEN 
+!---------------Begin Syamlal and O'Brien ---------------------------
+
+      IF(TRIM(DRAG_TYPE).EQ.'SYAM_OBRIEN') then
+         IF (EP_sM <= ZERO) THEN 
             F_gstmp = ZERO 
-         ELSE IF (EP_G(IJK) == ZERO) THEN 
+         ELSEIF (EP_G(IJK) == ZERO) THEN 
             F_gstmp = ZERO 
          ELSE 
-            A = EP_G(IJK)**4.14D0 
+            A_SO = EP_G(IJK)**4.14D0 
             IF (EP_G(IJK) <= 0.85D0) THEN 
-               B = drag_c1*EP_G(IJK)**1.28D0 
+               B_SO = drag_c1*EP_G(IJK)**1.28D0 
             ELSE 
-               B = EP_G(IJK)**drag_d1
+               B_SO = EP_G(IJK)**drag_d1
             ENDIF 
-            V_RM=HALF*(A-0.06D0*RE+SQRT(3.6D-3*RE*RE+0.12D0*RE*(2.D0*B-A)+A*A)) 
+
+! Calculate V_rm
+            V_RM=HALF*(A_SO - 0.06D0*RE + SQRT(3.6D0-3.D0*RE*RE + &
+               0.12D0*RE*(2.D0*B_SO-A_SO) + A_SO*A_SO) ) 
 !------------------Begin cluster correction --------------------------
 !     uncomment the following four lines and comment the above line V_RM=... 
-!     V_RM=HALF*(A-0.06D0*RE+SQRT(3.6D-3*RE*RE+0.12D0*RE*(2.D0*B-A)+A*A)) & 
-!     * ( ONE + C(1) * exp( -a2*(Re - Re_c)**2 &
-!     - a3*(EP_g(IJK)-ep_c)**2 &
-!     )       * Re * (1. - EP_g(IJK))                )
+!     V_RM=HALF*(A_SO - 0.06D0*RE + SQRT(3.6D-3.D0*RE*RE + & 
+!        0.12D0*RE*(2.D0*B_SO-A_SO) + A_SO*A_SO) ) * (ONE + &
+!        C(1) * exp( -a2*(Re - Re_c)**2 - a3*(EP_g(IJK)-ep_c)**2 ) &
+!        * Re * (1. - EP_g(IJK))  )
 !------------------End cluster correction ----------------------------
-!     
-!     Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
-!     
+     
+! Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
             IF(TSUJI_DRAG) THEN
-               IF(EP_G(IJK).LE.0.8D0) THEN
-                  F_gstmp = (Mu*PVOL(KK)/(DIAMETER**2))*&
-                  (150D0*(EP_S(IJK,M)/EP_G(IJK)) + 1.75D0*RE)
-               ELSE IF(EP_G(IJK).GT.0.8D0) THEN
-                  IF(RE*EP_G(IJK).GT.1000D0) THEN
-                     F_gstmp = 0.75D0*0.43D0*Mu*PVOL(KK)*RE/(DIAMETER**2 *&
-                     EP_G(IJK)**1.7D0)
-                  ELSE IF(RE*EP_G(IJK).LE.1000D0) THEN
-                     F_gstmp = 0.75D0*C_DSXRET(RE*EP_G(IJK))*Mu*PVOL(KK)*&
-                     RE/(DIAMETER**2 *EP_G(IJK)**1.7D0)
-                  END IF
-               END IF 
-            ELSE IF(MODEL_B) THEN 
-               F_gstmp = 0.75D0*Mu*(PVOL(KK))*C_DSXRE(RE/V_RM)/(&
-               V_RM*DIAMETER*DIAMETER) 
+               IF(EP_G(IJK) >= 0.8D0) THEN
+                  F_gstmp = (Mu*PART_VOL/(PART_DIAM**2))*&
+                     (150.D0*(EP_SM/EP_G(IJK)) + 1.75D0*RE)
+               ELSEIF(EP_G(IJK) > 0.8D0) THEN
+                  IF(RE*EP_G(IJK) > 1000.D0) THEN
+                     F_gstmp = 0.75D0*0.43D0*Mu*PART_VOL*RE/&
+                        (PART_DIAM**2 * EP_G(IJK)**1.7D0)
+                  ELSEIF(RE*EP_G(IJK).LE.1000D0) THEN
+                     F_gstmp = 0.75D0*C_DSXRET(RE*EP_G(IJK))*Mu*&
+                       PART_VOL*RE/(PART_DIAM**2 *EP_G(IJK)**1.7D0)
+                  ENDIF
+               ENDIF 
+            ELSEIF(MODEL_B) THEN 
+               F_gstmp = 0.75D0*Mu*(PART_VOL)*&
+                  C_DSXRE(RE/V_RM) / (V_RM*PART_DIAM*PART_DIAM) 
             ELSE
-               F_gstmp = 0.75D0*Mu*(PVOL(KK))*EP_G(IJK)*C_DSXRE(RE&
-               /V_RM)/(V_RM*DIAMETER*DIAMETER) 
+               F_gstmp = 0.75D0*Mu*(PART_VOL)*EP_G(IJK)*&
+                  C_DSXRE(RE/V_RM) / (V_RM*PART_DIAM*PART_DIAM) 
             ENDIF
          ENDIF
 !---------------End Syamlal and O'Brien ---------------------------
-!     
+
+
 !--------------------------Begin Gidaspow --------------------------
-      ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW') then
-         IF(EP_g(IJK) .LE. 0.8D0) THEN
-            DgA = 150D0 * (ONE - EP_g(IJK)) * Mu &
-            / ( EP_g(IJK) * diameter**2 ) &
-            + 1.75D0 * RO_g(IJK) * VREL / diameter
+      ELSEIF(TRIM(DRAG_TYPE).EQ.'GIDASPOW') then
+         IF(EP_g(IJK) <= 0.8D0) THEN
+            DgA = 150D0 * (ONE - EP_g(IJK)) * Mu / &
+               (EP_g(IJK) * PART_DIAM**2) + &
+               1.75D0*RO_g(IJK)*VREL/PART_DIAM
          ELSE
             IF(Re_G .LE. 1000D0)THEN
-               C_d = (24.D0/(Re_G+SMALL_NUMBER)) * (ONE + 0.15D0 * Re_G**0.687D0)
+               C_d = (24.D0/(Re_G+SMALL_NUMBER)) * &
+                  (ONE + 0.15D0 * Re_G**0.687D0)
             ELSE
                C_d = 0.44D0
             ENDIF
-            DgA = 0.75D0 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65D0) &
-            /diameter
+            DgA = 0.75D0 * C_d*VREL*ROP_g(IJK)*EP_g(IJK)**(-2.65D0) / &
+               PART_DIAM
          ENDIF
          
-!     Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
-         
+! Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
          IF(Model_B)THEN
-            F_gstmp = DgA*(PVOL(KK))/EP_g(IJK)
-!F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
+            F_gstmp = DgA * PART_VOL/EP_g(IJK)
+! F_gstmp = DgA * EP_sM/EP_g(IJK)
          ELSE
-            F_gstmp = DgA * (PVOL(KK)) !EP_s(IJK, M)
+            F_gstmp = DgA * PART_VOL !EP_s(IJK, M)
          ENDIF
-
-         
 !--------------------------End Gidaspow --------------------------
-!     
+
+
 !-----------------------Begin Gidaspow_blend ---------------------
-      ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW_BLEND') then
-!     Dense phase - EP_g < 0.8
-         Ergun = 150D0 * (ONE - EP_g(IJK)) * Mu &
-         / ( EP_g(IJK) * diameter**2 ) &
-         + 1.75D0 * RO_g(IJK) * VREL / diameter
-!     
-!     Dilute phase - EP_g >= 0.8
+      ELSEIF(TRIM(DRAG_TYPE).EQ.'GIDASPOW_BLEND') then
+
+! Dense phase - EP_g < 0.8
+         Ergun = 150D0 * (ONE - EP_g(IJK)) * Mu / &
+            ( EP_g(IJK) * PART_DIAM**2 ) + &
+            + 1.75D0 * RO_g(IJK) * VREL / PART_DIAM
+     
+! Dilute phase - EP_g >= 0.8
          IF(Re_G .LE. 1000D0)THEN
-            C_d = (24.D0/(Re_G+SMALL_NUMBER)) * (ONE + 0.15D0 * Re_G**0.687D0)
+            C_d = (24.D0/(Re_G+SMALL_NUMBER)) * &
+               (ONE + 0.15D0 * Re_G**0.687D0)
          ELSE
             C_d = 0.44D0
          ENDIF
-         WenYu = 0.75D0 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65D0) &
-         /diameter
-!     
-!     Switch function
-         PHI_gs = ATAN(150D0 * 1.75D0 * (EP_g(IJK) - 0.8D0)) / PI + 0.5D0
-!     Blend the models
+         WenYu = 0.75D0 * C_d*VREL*ROP_g(IJK)*EP_g(IJK)**(-2.65D0) / &
+            PART_DIAM
+     
+! Switch function
+         PHI_gs = ATAN(150.D0 * 1.75D0 * (EP_g(IJK) - 0.8D0)) / PI + 0.5D0
+! Blend the models
          DgA = (1D0 - PHI_gs) * Ergun + PHI_gs * WenYu
          
-!     Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
-         
+! Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
          IF(Model_B)THEN
-            F_gstmp = DgA*(PVOL(KK))/EP_g(IJK)
-!F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
+            F_gstmp = DgA * PART_VOL/EP_g(IJK)
+! F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
          ELSE
-            F_gstmp = DgA * (PVOL(KK)) !EP_s(IJK, M)
+            F_gstmp = DgA * PART_VOL !EP_s(IJK, M)
          ENDIF
-         
 !-----------------------End Gidaspow_blend -----------------------
-!     
+
+
 !--------------------------Begin WEN_YU --------------------------
-      ELSE IF(TRIM(DRAG_TYPE).EQ.'WEN_YU') then
+      ELSEIF(TRIM(DRAG_TYPE).EQ.'WEN_YU') then
          IF(Re_G .LE. 1000D0)THEN
             C_d = (24.D0/(Re_G+SMALL_NUMBER)) * (ONE + 0.15D0 * Re_G**0.687D0)
          ELSE
             C_d = 0.44D0
          ENDIF
-         DgA = 0.75D0 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65D0) &
-         /diameter
+         DgA = 0.75D0 * C_d*VREL*ROP_g(IJK)*EP_g(IJK)**(-2.65D0) / &
+            PART_DIAM
          
-!     Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+! Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
          IF(Model_B)THEN
-            
-            F_gstmp = DgA*(PVOL(KK))/EP_g(IJK)
-!F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
+            F_gstmp = DgA * PART_VOL/EP_g(IJK)
+! F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
          ELSE
-            F_gstmp = DgA *(PVOL(KK))
+            F_gstmp = DgA * PART_VOL
          ENDIF
-         
 !--------------------------End WEN_YU ----------------------------
 
+
 !--------------------Begin Koch & Hill (2001) --------------------
-!     
-!!!   Added by Clay Sutton (Lehigh University) 7-14-04
-!!!   
-!!!   MODIFICATIONS:
-!!!   
-!!!   1) Declared new variables F_STOKES, F_0, F_1, F_3
-!!!   
-!!!   2) Added new drag closure lines
-!!!   
-!!!   Clay's implementation was modified by Sof (01-21-2005)
-!!!   for a report explaining these changes contact sof@fluent.com
-!     
-      ELSE IF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL') then
-!     
-         F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/diameter**2
+      ELSEIF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL') then
+     
+         F_STOKES = 18D0*MU_g(IJK)*EP_g(IJK)*EP_g(IJK)/PART_DIAM**2
          
-         phis = ONE-EP_G(IJK)   ! EP_s(IJK,M) for polydisperse systems (sof --> 03-27-2007)
+         phis = ONE-EP_G(IJK)   ! EP_s(IJK,M) for polydisperse systems 
          w = EXP(-10.0D0*(0.4D0-phis)/phis)
          
          IF(phis > 0.01D0 .AND. phis < 0.4D0) THEN
-            F_0 = (1.0D0-w) *                                           &
-            (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis    &
-            *LOG(phis) + 17.14D0*phis) / (1.0D0 + 0.681D0*      &
-            phis - 8.48D0*phis*phis + 8.16D0*phis**3) + w *   &
+            F_0 = (1.0D0-w) *                                          &
+            (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis     &
+            *LOG(phis) + 17.14D0*phis) / (1.0D0 + 0.681D0*             &
+            phis - 8.48D0*phis*phis + 8.16D0*phis**3) + w *            &
             10.0D0*phis/(1.0D0-phis)**3
             
-         ELSE IF(phis >= 0.4D0) THEN
+         ELSEIF(phis >= 0.4D0) THEN
             F_0 = 10.0D0*phis/(1.0D0-phis)**3
          ENDIF
          
@@ -1140,11 +1112,11 @@
          ENDIF
          
          IF(phis < 0.4D0) THEN
-            F_2 = (1.0D0-w) *                                           &
-            (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis    &
-            *LOG(phis) + 17.89D0*phis) / (1.0D0 + 0.681D0*      &
-            phis - 11.03D0*phis*phis + 15.41D0*phis**3)+ w *  &
-            10.0D0*phis/(1.0D0-phis)**3
+            F_2 = (1.0D0-w) *                                          &
+               (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis  &
+               *LOG(phis) + 17.89D0*phis) / (1.0D0 + 0.681D0*          &
+               phis - 11.03D0*phis*phis + 15.41D0*phis**3)+ w *        &
+               10.0D0*phis/(1.0D0-phis)**3
             
          ELSE
             F_2 = 10.0D0*phis/(1.0D0-phis)**3
@@ -1158,57 +1130,43 @@
          
          Re_Trans_1 = (F_2 - 1.0D0)/(3.0D0/8.0D0 - F_3)
          Re_Trans_2 = (F_3 + dsqrt(F_3*F_3 - 4.0D0*F_1 &
-         *(F_0-F_2))) / (2.0D0*F_1)
+            *(F_0-F_2))) / (2.0D0*F_1)
          
          IF(phis <= 0.01D0 .AND. Re_kh <= Re_Trans_1) THEN
             F = 1.0D0 + 3.0D0/8.0D0*Re_kh
-            
-         ELSE IF(phis > 0.01D0 .AND. Re_kh <= Re_Trans_2) THEN
+         ELSEIF(phis > 0.01D0 .AND. Re_kh <= Re_Trans_2) THEN
             F = F_0 + F_1*Re_kh*Re_kh
-            
-            
-         ELSE IF(phis <= 0.01D0 .AND. Re_kh > Re_Trans_1 .OR.         &
-            phis >  0.01D0 .AND. Re_kh > Re_Trans_2) THEN
+         ELSEIF(phis <= 0.01D0 .AND. Re_kh > Re_Trans_1 .OR.         &
+                phis >  0.01D0 .AND. Re_kh > Re_Trans_2) THEN
             F = F_2 + F_3*Re_kh
-            
          ELSE
             F = zero
          ENDIF
          
-!     This is a check for phis (or eps_(ijk,m)) to be within physical range
+! This is a check for phis (or eps_(ijk,m)) to be within physical range
          IF(phis <= ZERO .OR. phis > ONE) F = zero
          
          DgA = F * F_STOKES
-!!!   
-!!!   Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
-         
+
+! Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
          IF(Model_B)THEN
-            F_gstmp = DgA*(PVOL(KK))/EP_g(IJK)
+            F_gstmp = DgA * PART_VOL/EP_g(IJK)
          ELSE
-            F_gstmp = DgA *(PVOL(KK))
+            F_gstmp = DgA * PART_VOL
          ENDIF
-!-------------------End Koch and Hill (2001)---------------------------------------
-         
-      ELSE IF((DRAG_TYPE).EQ.'DILUTE_CASE') then
+!-------------------End Koch and Hill (2001)----------------------
+
+
+      ELSEIF((DRAG_TYPE).EQ.'DILUTE_CASE') then
          C_d =  C_DSXRET(RE)
-!DgA = (0.75D0 * C_d * VREL * RO_g(IJK))/diameter
-         DgA = (0.75D0 * C_d*VREL * RO_g(IJK))/(diameter)
-!              IF(RE.GT.1.d0.AND.CALLFROMDES) THEN 
-!          PRINT*,'FOR DILUTE CASE'
-!          PRINT*, 'RE>1', RE, ' PARICLE ID = ', KK
-!          PRINT*, 'PART VEL. = ', DES_VEL(:)
-!          PRINT*, 'FLU. VEL. = ', FVEL(:)
-!          PRINT*, 'PCELL: ', PIJK(KK, 1) -1 , PIJK(KK, 2) -1
-!          PRINT*, 'MIN FLUID VELOCITY: ', MINVAL(U_G), MINVAL(V_G)
-!          PRINT*, 'MAX FLUID VELOCITY: ', MAXVAL(U_G), MAXVAL(V_G)
-!       ENDIF
+         DgA = (0.75D0 * C_d*VREL * RO_g(IJK))/PART_DIAM
          IF(Model_B)THEN
-            F_gstmp = DgA*(PVOL(KK))/EP_g(IJK)
+            F_gstmp = DgA * PART_VOL/EP_g(IJK)
          ELSE
-            F_gstmp = DgA *(PVOL(KK))
+            F_gstmp = DgA * PART_VOL
          ENDIF
-!-------------------End Koch and Hill (2001)---------------------------------------
-!--------------------------End Dilue case --------------------------
+
+!--------------------------End Dilue case -------------------------
       ELSE
          CALL START_LOG 
 !IF(.not.DMP_LOG)call open_pe_log(ier)
@@ -1216,10 +1174,11 @@
          WRITE (UNIT_LOG, '(A,A)') 'Unknown DRAG_TYPE: ', DRAG_TYPE
          CALL END_LOG 
          call mfix_exit(myPE)  
+
       ENDIF
-!PRINT*,'re= ', RE, CALC_FC
-      F_gp(kk) = (ONE - UR_F_gs) * F_gp(KK) + UR_F_gs * F_gstmp
-! F_gs(IJK, M) = F_gs(IJK,M) + F_gp(KK)/VOL(IJK)
-      end SUBROUTINE DES_DRAG_GS
+
+      F_gp(KK) = (ONE - UR_F_gs) * F_gp(KK) + UR_F_gs * F_gstmp
+
+      END SUBROUTINE DES_DRAG_GS
 
     
