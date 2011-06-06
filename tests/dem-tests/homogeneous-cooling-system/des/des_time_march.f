@@ -68,9 +68,6 @@
 !     Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 
-!     index to track accounted for particles  
-      INTEGER PC    
-
 !     JEG : tmp variables used for calculation in output file
       DOUBLE PRECISION GRAN_TEMP, AVG_VEL
 !-----------------------------------------------
@@ -117,14 +114,9 @@
 
                      ! Force calculation         
                      CALL CALC_FORCE_DES
-                  
-                     PC = 1
-                     DO NP = 1, MAX_PIS
-                        IF(PC .GT. PIS) EXIT
-                        IF(.NOT.PEA(NP,1)) CYCLE
-                        CALL CFNEWVALUES(NP)
-                        PC = PC + 1
-                     ENDDO
+
+                     ! Update particle position, velocity 
+                     CALL CFNEWVALUES
 
                      CALL PARTICLES_IN_CELL
 
@@ -139,12 +131,9 @@
                   DES_CONTINUUM_COUPLED = .TRUE.
                   WRITE(*,'(3X,A)') 'END DEM settling period'
                ENDIF   ! end if coupled and no cohesion
-               IF(DES_INTERP_ON) THEN 
-                  CALC_FC = .FALSE.
-                  CALLFROMDES = .FALSE.
-               ENDIF
-               CALL PARTICLES_IN_CELL
+
                CALL WRITE_DES_DATA
+
                WRITE(*,'(3X,A,X,ES15.5)') &
                   'DES data file written at time =', S_TIME
                WRITE(UNIT_LOG,*) &
@@ -203,7 +192,7 @@
 
       IF(NEIGHBOR_SEARCH_N.GT.FACTOR) THEN 
          !NEIGHBOR_SEARCH_N = FACTOR
-      ENDIF 
+      ENDIF
 
 ! JEG : modification to write out file
       CALL DES_GRANULAR_TEMPERATURE
@@ -216,7 +205,6 @@
       WRITE(101,'(ES11.5,2X,I,2X,4(ES15.7,X),I5)') &
          s_time, 0, gran_temp, des_ke, avg_vel, &
          ZERO, 0
-
 
       DO NN = 1, FACTOR         !  do NN = 1, FACTOR
 
@@ -256,19 +244,13 @@
          IF (PIS /= 0) THEN
             CALL CALC_FORCE_DES
 
-            PC = 1
-            DO NP = 1, MAX_PIS
-               IF(PC .GT. PIS) EXIT
-               IF(.NOT.PEA(NP,1)) CYCLE
 ! Update particle position, velocity            
-               CALL CFNEWVALUES(NP)
-               PC = PC + 1
-            ENDDO
+            CALL CFNEWVALUES
 
 ! For systems with inlets/outlets check to determine if a particle has
 ! fully entered or exited the domain.  If the former, remove the status
 ! of 'new' and if the latter, remove the particle.
-            IF (DES_MI) CALL DES_CHECK_PARTICLE
+            IF (DES_MIO) CALL DES_CHECK_PARTICLE
 
             CALL PARTICLES_IN_CELL
 
@@ -294,15 +276,8 @@
 
 ! When coupled the granular temperature subroutine is only calculated at end 
 ! of the current DEM simulation 
-! JEG : slight modification for writing out file 
-         IF(DES_CONTINUUM_COUPLED .AND. NN.EQ.FACTOR) THEN
+         IF(DES_CONTINUUM_COUPLED .AND. NN.EQ.FACTOR) &
             CALL DES_GRANULAR_TEMPERATURE
-            GRAN_TEMP = (ONE/DIMN)*SUM( GLOBAL_GRAN_TEMP(1:DIMN) )
-            AVG_VEL = (ONE/DIMN)*SUM( DES_VEL_AVG(1:DIMN) )         
-            WRITE(101,'(ES11.5,2X,I,2X,4(ES15.7,X),I5)') &
-               s_time, NN, gran_temp, des_ke, avg_vel,&
-               OVERLAP_MAX, NEIGH_MAX
-         ENDIF
 
 ! When coupled, all write calls are made in time_march (the continuum 
 ! portion) according to user settings for spx_time and res_time.
@@ -329,7 +304,8 @@
                   AVG_VEL = (ONE/DIMN)*SUM( DES_VEL_AVG(1:DIMN) )
                   WRITE(101,'(ES11.5,2X,I,2X,4(ES15.7,X),I5)') &
                      s_time, NN, gran_temp, des_ke, avg_vel,&
-                     OVERLAP_MAX, NEIGH_MAX                  
+                     OVERLAP_MAX, NEIGH_MAX
+
                   CALL WRITE_DES_DATA
                   WRITE(*,'(3X,A,X,ES15.5)') &
                      'DES data file written at time =', S_TIME
@@ -349,9 +325,9 @@
 ! also keep track of TIME
                CALL WRITE_RES1 
                WRITE(*,'(3X,A,X,ES15.5)') &
-                  'DES.RES and .RES files written at time =', S_TIME
+                  'DES.RES file written at time =', S_TIME
                WRITE(UNIT_LOG,*) &
-                  'DES.RES and .RES files written at time = ', S_TIME
+                  'DES.RES file written at time = ', S_TIME
             ENDIF
          ENDIF  ! end if (.not.des_continuum_coupled)
 
