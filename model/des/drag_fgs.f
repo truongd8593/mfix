@@ -968,7 +968,7 @@
             ENDIF 
 
 ! Calculate V_rm
-            V_RM=HALF*(A_SO - 0.06D0*RE + SQRT(3.6D0-3.D0*RE*RE + &
+            V_RM=HALF*(A_SO - 0.06D0*RE + SQRT( (3.6D-3)*RE*RE + &
                0.12D0*RE*(2.D0*B_SO-A_SO) + A_SO*A_SO) ) 
 !------------------Begin cluster correction --------------------------
 !     uncomment the following four lines and comment the above line V_RM=... 
@@ -980,7 +980,7 @@
      
 ! Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
             IF(TSUJI_DRAG) THEN
-               IF(EP_G(IJK) >= 0.8D0) THEN
+               IF(EP_G(IJK) <= 0.8D0) THEN
                   F_gstmp = (Mu*PART_VOL/(PART_DIAM**2))*&
                      (150.D0*(EP_SM/EP_G(IJK)) + 1.75D0*RE)
                ELSEIF(EP_G(IJK) > 0.8D0) THEN
