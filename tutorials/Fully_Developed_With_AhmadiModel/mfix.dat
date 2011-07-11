@@ -24,7 +24,7 @@
   DISCRETIZE     =  9*2
   DEF_COR = .TRUE.
 
-  K_EPSILON = .F.  ! will be set to true when Ahmadi or Simonin models are used.
+  K_EPSILON = .T. ! Now must be set to true with Ahmad/Simonin models
   AHMADI = .T.
   JENKINS = .T.
   SIMONIN = .F.
