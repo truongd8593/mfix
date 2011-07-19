@@ -12,6 +12,27 @@ MFIX to Ensight Translator : m2e
 
       (i.e. enter the name of the RES file without the .RES)
 
+3) Bring up Ensight
+
+   a. Choose the "File" ... "open" menu
+
+   b. In the dialog,
+
+      1. change the "format" to "Case"
+      2. Highlight the RUNNAME.cas file
+      3. click on the "set case" button
+      4. click on the "load all" button
+
+   c. The part you would normally choose to plot is:
+
+      "grid for cell data"
+
+
+
+
+
+
+
 Note:
 
 I know there is a problem if kepsilon is enabled.  I am looking for my
