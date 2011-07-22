@@ -1,17 +1,17 @@
 
 ! Run-control section                                                           
-  RUN_NAME 		= 'test'             
-  DESCRIPTION 		= 'free falling'
-  RUN_TYPE 		= 'NEW'             
-  UNITS 		= 'cgs'
-  TIME  		= 0.0			!start time
-  TSTOP 		= 1.0 
-  DT 			= 1.E-5			!time step
-  DT_FAC                = 1.0
-  DT_MAX                = 1E-4
+  RUN_NAME     = 'test'             
+  DESCRIPTION  = 'free falling'
+  RUN_TYPE     = 'NEW'             
+  UNITS        = 'cgs'
+  TIME         = 0.0   !start time
+  TSTOP        = 1.0 
+  DT           = 1.E-5   !time step
+  DT_FAC        = 0.9
+  DT_MAX       = 1E-4
  
-  ENERGY_EQ 		= .FALSE.		!do not solve energy eq
-  SPECIES_EQ 		= .FALSE.    .FALSE. 	!do not solve species eq
+  ENERGY_EQ    = .FALSE.               !do not solve energy eq
+  SPECIES_EQ   = .FALSE.    .FALSE.    !do not solve species eq
 
 !  MOMENTUM_X_EQ(0) = .FALSE.
 !  MOMENTUM_Y_EQ(0) = .FALSE.
@@ -20,85 +20,84 @@
   MOMENTUM_X_EQ(1) = .FALSE.
   MOMENTUM_Y_EQ(1) = .FALSE.
   MOMENTUM_Z_EQ(1) = .FALSE.
+  CALL_USR = .TRUE.
+  GRAVITY = 980.
 
-!  CYCLIC_X = .TRUE.
-!  CYCLIC_Y = .TRUE.
-!  CYCLIC_Z = .TRUE.
 
-  DT_FAC = 0.9
-
+! Numerical Section
   MAX_NIT = 250
   TOL_RESID = 1.E-3
 
-  CALL_USR = .TRUE.
-                                                               
+
 ! Geometry Section                                                      
   DIMN = 3
-  COORDINATES 		= 'cartesian' 
-  XLENGTH  		=   1.0	        !X length	
-  IMAX 			=   5		!cells in i direction
-  YLENGTH  		=   10.0		!height
-  JMAX 			=   20 		!cells in j direction
-  ZLENGTH  		=   1.0		!width
-  KMAX 			=   5 			!cells in k direction
-!  NO_K     		= .TRUE. 		!2D
+  COORDINATES    = 'cartesian' 
+  XLENGTH        =   1.0   !X length	
+  IMAX           =   5     !cells in i direction
+  YLENGTH        =   10.0  !height
+  JMAX           =   20    !cells in j direction
+  ZLENGTH        =   1.0   !width
+  KMAX           =   5     !cells in k direction
+!  NO_K           = .TRUE.  !2D
 
-  GRAVITY = 980.
-                                                                             
+
 ! Gas-phase Section                                                             
-  MU_g0 		= 1.8e-4		!constant gas viscosity
-  RO_g0			= 1.2e-3		!constant gas density
- 
+  MU_g0   = 1.8e-4   !constant gas viscosity
+  RO_g0   = 1.2e-3   !constant gas density
+
+
 ! Solids-phase Section                                                  
-  RO_s    		= 2.			!solids density
-  D_p0    		= 0.01d0		!particle diameter
-  e       		= 0.9 			!restitution coefficient
-  Phi    		= 30.0			!angle of internal friction
-  EP_star 		= 0.42			!void fraction at minimum
-						!  fluidization
+  RO_s      = 2.      !solids density
+  D_p0      = 0.01d0  !particle diameter
+  e         = 0.9     !restitution coefficient
+  Phi      = 30.0     !angle of internal friction
+  EP_star  = 0.42     !void fraction at minimum fluidization
+
   
 ! Initial Conditions Section                                                    
     ! 1. bed
-  IC_X_w(1)           	=  0.0				!domain
-  IC_X_e(1)           	=  1.0		! 0 < x < 15, 0 < y < 30
-  IC_Y_s(1)          	=  0.0
-  IC_Y_n(1)           	=  10.0  
-  IC_Z_b(1)          	=  0.0
-  IC_Z_t(1)           	=  1.0  
-                                	! initial values in the region
-  IC_EP_g(1)          	=  1.00  	! void fraction
-  IC_U_g(1)           	=  0.0		! x-dir gas velocity
-  IC_V_g(1)          	=  40.0 		! y-dir gas velocity
-  IC_W_g(1)          	=  0.0 		! z-dir gas velocity
+  IC_X_w(1)       =  0.0 
+  IC_X_e(1)       =  1.0 
+  IC_Y_s(1)       =  0.0
+  IC_Y_n(1)       =  10.0
+  IC_Z_b(1)       =  0.0
+  IC_Z_t(1)       =  1.0
 
-  IC_U_s(1,1) = 0.0
-  IC_V_s(1,1) = 0.0
-  IC_W_s(1,1) = 0.0
+  IC_EP_g(1)      =  1.00   ! void fraction
+  IC_U_g(1)       =  0.0    ! x-dir gas velocity
+  IC_V_g(1)       =  40.0   ! y-dir gas velocity
+  IC_W_g(1)       =  0.0    ! z-dir gas velocity
+
+  IC_U_s(1,1)     = 0.0
+  IC_V_s(1,1)     = 0.0
+  IC_W_s(1,1)     = 0.0
 
 
 !  Boundary Conditions Section
-  bc_x_w             = 0. 0
-  bc_x_e             = 1. 1.
-  bc_y_s             = 0. 10.
-  bc_y_n             = 0. 10.
-  bc_z_b             = 0. 0
-  bc_z_t             = 1. 1.
+!  flow boundaries
+  bc_x_w          = 0. 0
+  bc_x_e          = 1. 1.
+  bc_y_s          = 0. 10.
+  bc_y_n          = 0. 10.
+  bc_z_b          = 0. 0
+  bc_z_t          = 1. 1.
 
-  bc_type            = "MI" "PO"
-  BC_EP_g          =  1.0      1.0
+  bc_type         = "MI" "PO"
+  BC_EP_g         =  1.0      1.0
 
-  BC_U_g           =  0.0 
-  BC_V_g           =  40.0
-  BC_W_g           =  0.0
-  bc_p_g           =  2*0.
+  BC_U_g          =  0.0 
+  BC_V_g          =  40.0
+  BC_W_g          =  0.0
+  bc_p_g          =  2*0.0
 
-  BC_X_w(3)     =    0.000  0   0   1
-  BC_X_e( 3)     =   1.000  1   0   1
-  BC_Y_s( 3)     =   0.0000 0   0   0 
-  BC_Y_n( 3)     =   10.00  10  10  10
-  bc_z_b( 3)     =   0.     1   0   0
-  bc_z_t( 3)     =   0.     1   1   1
-  BC_TYPE( 3)    =   4*'FSW'
+!  wall boundaries  
+  BC_X_w(3)       =   0.0    0   0   1
+  BC_X_e(3)       =   1.0    1   0   1
+  BC_Y_s(3)       =   0.0    0   0   0 
+  BC_Y_n(3)       =   10.0  10  10  10
+  bc_z_b(3)       =   0.     1   0   0
+  bc_z_t(3)       =   0.     1   1   1
+  BC_TYPE(3)      =   4*'FSW'
 
   
 ! DES INPUT
@@ -124,27 +123,27 @@
   MEW_W = 0.1         ! Particle-wall friction coefficient
 
   PRINT_DES_DATA = .TRUE.
-  dem_output_data_tecplot=.T.
+  DES_OUTPUT_TYPE='TECPLOT'
 
 
 ! Output Control
-  OUT_DT 		= 0.05		!write text file BUB01.OUT
-					!  every 0.1s
-  RES_DT 		= 0.01		!write binary restart file
-					!  BUB01.RES every 0.01 s
-  NLOG   		= 25 		!write logfile BUB01.LOG
-					!every 25 time steps
-  FULL_LOG 		= .TRUE. 	!display residuals on screen
+  OUT_DT = 0.05     ! frequency (in s) to write test output file (.OUT)
+  RES_DT = 0.01     ! frequency to write binary restart file (.RES)
+  NLOG   = 25       ! frequency (in no. of time steps) to write test log file (.LOG)
+  FULL_LOG = .TRUE. !display residuals on screen
 
-
-!SPX_DT values determine how often SPx files are written.  Here BUB01.SP1, which
-!contains void fraction (EP_g), is written every 0.01 s, BUB01.SP2, which contains
-! gas and solids pressure (P_g, P_star), is written every 0.1 s, and so forth.
-!
-        ! EP_g P_g    U_g  U_s  ROP_s     T_g  X_g
-        !      P_star V_g  V_s            T_s  X_s     Theta   Scalar 
-        !             W_g  W_s
-  SPX_DT = 0.01 0.05  0.05  0.05  100.  100. 100.   0.5   100. 100.  100.
+! Interval at which .SPX files are updated.
+  SPX_DT(1)                    = 0.01      ! Void fraction (EP_g)
+  SPX_DT(2)                    = 0.05      ! Gas and solids pressure (P_g, P_star)
+  SPX_DT(3)                    = 0.05      ! Gas velocity (U_g, V_g, W_g)
+  SPX_DT(4)                    = 0.05      ! Solids velocity (U_s, V_s, W_s)
+  SPX_DT(5)                    = 100.0     ! Solids density (ROP_s)
+  SPX_DT(6)                    = 100.0     ! Gas and solids temp. (T_g, T_s1, T_s2)
+  SPX_DT(7)                    = 100.0     ! Gas and solids mass fractions (X_g, X_s)
+  SPX_DT(8)                    = 100.0     ! Granular Temperature (G)
+  SPX_DT(9)                    = 100.0     ! User defined scalars
+  SPX_DT(10)                   = 100.0     ! (.SPA) Reaction rates 
+  SPX_DT(11)                   = 100.0     ! (.SPB) Turbulence
                                                                                 
 ! The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
   NODESI = 1   NODESJ = 1   NODESK = 1
