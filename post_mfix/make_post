@@ -1,4 +1,4 @@
-i#!/bin/bsh -f
+#!/bin/bsh -f
 #
 # POST_MFIX script file for executing 'make'
 # M. Syamlal/P.Nicoletti                   9-27-95
