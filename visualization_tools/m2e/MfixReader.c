@@ -2269,6 +2269,14 @@ static int readKEpsilon( void )
       if( !getInt( F->resFileName, "K_Epsilon", 0, &(F->KEpsilon) )) goto done;
 
    /****  Check variable */
+   
+   /* 
+      pan fix : 29-jul-2011 
+      
+      Some compilers are setting .true. to -1
+      
+   */
+    if ( F->KEpsilon != 0 ) F->KEpsilon = 1; 
 
       if( ( F->KEpsilon < 0 ) || ( F->KEpsilon > 1 ) ) {
 	 kErr2( K+Epsilon is %d; must be 0 to 1, F->KEpsilon );

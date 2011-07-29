@@ -27,13 +27,3 @@ MFIX to Ensight Translator : m2e
 
       "grid for cell data"
 
-
-
-
-
-
-
-Note:
-
-I know there is a problem if kepsilon is enabled.  I am looking for my
-fix to that now, but thought I would post this anyway.
