@@ -27,3 +27,13 @@ MFIX to Ensight Translator : m2e
 
       "grid for cell data"
 
+
+
+NOTE: On later versions of Ensight, some openGL features might
+      not work when running Ensight remotely.  If everything
+      seems to read correctly, but no image is displayed,
+      you can try setting the following before running
+      Ensight ....
+
+      setenv CEI_NUM_AUX_BUFFERS 0
+
