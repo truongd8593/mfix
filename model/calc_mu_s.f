@@ -1407,7 +1407,7 @@
       DOUBLE PRECISION   SUM_EPS_CP
 !     
 !     parameters in pressure linearization; simple averaged Dp
-      DOUBLE PRECISION   delta, dpc_dphi, dp_avg
+      DOUBLE PRECISION   dpc_dphi, dp_avg
 !
 !     Error index
       INTEGER          IER     
@@ -1421,8 +1421,7 @@
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
-!-----------------------------------------------      
-      delta = 0.01d0
+!-----------------------------------------------     
       DO 200 IJK = ijkstart3, ijkend3       
      
          IF ( FLUID_AT(IJK) ) THEN

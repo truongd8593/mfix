@@ -54,6 +54,7 @@
       DOUBLE PRECISION Pc, DPcoDEPs, Mu, Mu_b, Mu_zeta, ZETA
       DOUBLE PRECISION F2, DF2oDEPs, DEPs2G_0oDEPs, Pf, Pfmax, N_Pff
       DOUBLE PRECISION  DZETAoDEPs, DG_0DNU
+!
 !     Blend Factor
       Double Precision blend
       
@@ -86,11 +87,22 @@
                   IF ((ONE-EP_G(IJK)).GT.EPS_f_min) THEN
  
 	             IF ((ONE-EP_G(IJK)).GT.(ONE-ep_star_array(ijk))) THEN
-              	        Pc = 1d25*(((ONE-EP_G(IJK)) - (ONE-ep_star_array(ijk)))&
-                                                      **10d0)
-                        DPcoDEPS =&
-                             1d26*(((ONE-EP_G(IJK)) - &
-			     (ONE-ep_star_array(ijk)))**9d0)
+!
+! Linearized form of Pc; this is more stable and provides continuous function.
+                    
+                       DPcoDEPS = (to_SI*Fr)*((delta**5)*(2d0*(ONE-ep_star_array(IJK)-delta) - &
+                           2d0*eps_f_min)+((ONE-ep_star_array(ijk)-delta)-eps_f_min)*(5*delta**4))&
+			   /(delta**10)
+
+                       Pc = (to_SI*Fr)*(((ONE-ep_star_array(IJK)-delta) - EPS_f_min)**N_Pc)/&
+		                       (delta**D_Pc)
+
+                       Pc = Pc + DPcoDEPS*((ONE-EP_G(IJK))+delta-(ONE-ep_star_array(IJK)))
+!              	            Pc = 1d25*(((ONE-EP_G(IJK)) - (ONE-ep_star_array(ijk)))&
+!                                                      **10d0)
+!                        DPcoDEPS =&
+!                             1d26*(((ONE-EP_G(IJK)) - &
+!			     (ONE-ep_star_array(ijk)))**9d0)
  
 	             ELSE
                         Pc = Fr*(((ONE-EP_G(IJK)) - EPS_f_min)**N_Pc)/&

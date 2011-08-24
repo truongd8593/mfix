@@ -1406,7 +1406,7 @@
       CHARACTER*80     LINE
  
 !              Other local terms
-      DOUBLE PRECISION phin
+      DOUBLE PRECISION phin, dpc_dphi
 !
 ! This is done here similar to bc_theta to avoid small negative values of
 ! Theta coming most probably from linear solver
@@ -1547,7 +1547,12 @@
  
  
          IF (EPG < ep_star_avg) THEN
-            Pc=  1d25*(((ONE-EPG)-(ONE-ep_star_avg))**10d0)
+            dpc_dphi = (to_SI*Fr)*((delta**5)*(2d0*(ONE-ep_star_avg-delta) - &
+                                   2d0*eps_f_min)+((ONE-ep_star_avg-delta)-eps_f_min)&
+				  *(5*delta**4))/(delta**10)
+
+            Pc = (to_SI*Fr)*(((ONE-ep_star_avg-delta) - EPS_f_min)**N_Pc)/(delta**D_Pc)
+!            Pc=  1d25*(((ONE-EPG)-(ONE-ep_star_avg))**10d0)  ! this is old Pc
          ELSE
             Pc = Fr*(((ONE-EPG) - EPS_f_min)**N_Pc)/ &
 	      (((ONE-ep_star_avg) - (ONE-EPG) +&

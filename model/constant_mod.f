@@ -79,9 +79,10 @@
 !                           It will be converted automatically to Pa in calc_mu_s.f
 !                      N_Pc = exponent in numerator
 !	               D_Pc = exponent in denominator
+!   delta: small deviation in void fraction near packing where Pc and dPc/deps are calculated.
  
-      DOUBLE PRECISION Fr, N_Pc, D_Pc, N_Pf
-      PARAMETER(Fr = 0.5d0, N_Pc=2d0, D_Pc=5d0, N_Pf=1.03d0)
+      DOUBLE PRECISION Fr, N_Pc, D_Pc, N_Pf, delta
+      PARAMETER(Fr = 0.5d0, N_Pc=2d0, D_Pc=5d0, N_Pf=1.03d0, delta=1d-2)
  
 !	               EPS_f_min = minimum solids fraction above which
 !                                  friction kicks in
