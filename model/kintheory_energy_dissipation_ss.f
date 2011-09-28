@@ -272,7 +272,7 @@
 
 !              does not include factor of 1/nu0.  the factor 1/nu0 in cD will cancel
 !              with the factor of nu0 used to obtain zeta1 from zeta1_star
-               cd_num = ( (4.d0/15.d0)*lambda_num*PI*EP_s(IJK,M)*G_0(IJK,M,M) + &
+               cd_num = ( (4.d0/15.d0)*lambda_num*EP_s(IJK,M)*G_0(IJK,M,M) + &
                     (press_star-1.d0)*(2.d0/3.d0-C_E)*c_star ) / &
                     ( 0.5d0*zeta0_star+nu_gamma_star + (5.d0*c_star/64.d0) * &
                     (1.d0+(3.d0*c_star/64.d0))*G_0(IJK,M,M)*(1.d0-C_E*C_E))
