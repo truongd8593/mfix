@@ -385,6 +385,7 @@
 !
 !
 !
+            IF(ENERGY_EQ) THEN ! calculate heat of reactions only if energy eq. are solved
             HOR_G(IJK) = zero
             DO N = 1, NMAX(0)
 	      rxn =  (R_gp(IJK, N) - RoX_gc(IJK, N) * X_g(IJK, N)) &
@@ -410,6 +411,7 @@
               END DO 
               IF (UNITS == 'SI') HOR_s(IJK, M) = 4183.925D0*HOR_s(IJK, M)    !in J/kg K
             END DO 
+            ENDIF ! for energy_eq
 !
 !
 !     Store R_tmp values in an array.  Only store the upper triangle without
