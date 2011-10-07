@@ -256,6 +256,7 @@
 !           Calculate the enthalpy of transferred material
 !
 
+            IF(ENERGY_EQ) THEN ! calculate heat of reactions only if energy eq. are solved
             DO M = 0, MMAX-1
  	      DO L = M+1, MMAX
 	        RxH_xfr(M, L) = zero 
@@ -338,6 +339,7 @@
 		 CLOSE(6)
 	       call mfix_exit(myPE)
 	    endif
+            ENDIF ! for energy_eq
 !
 !
 !     Store R_tmp values in an array.  Only store the upper triangle without

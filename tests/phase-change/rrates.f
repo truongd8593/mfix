@@ -215,6 +215,7 @@
 !           Calculate the enthalpy of transferred material
 !
 
+            IF(ENERGY_EQ) THEN ! calculate heat of reactions only if energy eq. are solved
             DO M = 0, MMAX-1
  	      DO L = M+1, MMAX
 	        RxH_xfr(M, L) = zero 
@@ -276,7 +277,8 @@
 	        if(M .NE. L) HOR_s(IJK, M) = HOR_s(IJK, M) - RxH_xfr(M, L)
 	      ENDDO
               IF (UNITS == 'SI') HOR_s(IJK, M) = 4183.925D0*HOR_s(IJK, M)    !in J/kg K
-          END DO 
+            END DO 
+            ENDIF ! for energy_eq
 !
 !
 !     Store R_tmp values in an array.  Only store the upper triangle without
