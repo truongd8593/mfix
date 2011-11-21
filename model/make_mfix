@@ -1575,12 +1575,12 @@ qcache=auto "
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-mp"
-            compile_d="-c -I. -fconvert='big-endian' -ffree-form -g "
-            compile_d2="-c -I. -fconvert='big-endian' -ffree-form -g "
+            compile_d="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -g "
+            compile_d2="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -g "
             compile_d3="-c -I. -fconvert='big-endian' -g "
             link_d="-g"
-            compile="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O3 "
-            compile2="-c -I. -fconvert='big-endian' -ffree-form -I$mpi_include -O1 "
+            compile="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -O3 "
+            compile2="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -O1 "
             compile3="-c -I. -fconvert='big-endian' -I$mpi_include -O1 "
             link=" "
             MODULE_CODE=1
@@ -2312,8 +2312,10 @@ updatesubdir()
 	echo
         /bin/cp -f mfix_l.make mfix_l_not.make
 	ex mfix_l_not.make < dmp_modules/ex.commands
+	ex mfix_l_not.make < des/ex.commands
 	/bin/cp -f mfix_u.make mfix_u_not.make
 	ex mfix_u_not.make < dmp_modules/ex.commands
+	ex mfix_u_not.make < des/ex.commands
 
         cmp -s dmp_modules/compar_mod.f dmp_modules/mpi_donothing/compar_mod.f 
         if test $? = 0

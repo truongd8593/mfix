@@ -18,7 +18,16 @@
 !     Factor used to allocate cut cells arrays
       DOUBLE PRECISION :: FAC_DIM_MAX_CUT_CELL
 
-!     Flag to identify interior cells
+!     Flag to identify interior cells. 
+!     This flag is true for any cell within the range 
+!     istart1 <= i <= iend1 and so on for j and k. 
+!     Caution: it is local to each processor and this array
+!     is not shared accross processor boundaries. 
+!     For example, consider 1-D decomposition over two procs. 
+!     on each proc, INTERIOR_CELL_AT will be true for 
+!     istart1 <= i <= iend1. On processor 1, it will be false
+!     at i=iend2 even though i=iend2 is an interior cell in the 
+!     global sense! 
       LOGICAL, DIMENSION(:), ALLOCATABLE :: INTERIOR_CELL_AT
 
 !     One-Dimensional Arrays for East, North, Top location of 
@@ -434,6 +443,13 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  dudx_OUT
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  dvdy_OUT
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  delv_OUT
+
+
+      LOGICAL, DIMENSION(:), ALLOCATABLE ::SCALAR_NODE_ATWALL
+
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::SCALAR_NODE_XYZ
+
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::Ovol_around_node
 
 
       END MODULE cutcell

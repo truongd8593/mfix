@@ -1,12 +1,8 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!  Module name: CFWALLCONTACT(WALL, L, WALLCONTACT)
-!  Purpose: Check if particle L is in contact with WALL.  If so, set
-!  WALLCONTACT to 1, else WALLCONTACT is 0
+!  Module name: CFWALLCONTACT(WALL, L, WALLCONTACTI)               
+!  Purpose: DES - Checking for contact with walls
 !
 !
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04
-!  Reviewer:                                          Date:
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -20,9 +16,9 @@
       USE des_bc
       IMPLICIT NONE
 
-!-----------------------------------------------
-! Local variables
-!----------------------------------------------- 
+
+
+
 ! Given wall ID number (1=west, 2=east, 3=south, 4=north, 5=bottom,
 ! 6=top)
       INTEGER, INTENT (IN) :: WALL
@@ -31,6 +27,10 @@
 ! Flag to indicate whether given particle is in contact with given wall
 ! (1=contact, 0 = no contact)
       INTEGER, INTENT (INOUT) :: WALLCONTACT
+
+!-----------------------------------------------
+! Local variables
+
 ! local variables for x, y, z position of the particle
       DOUBLE PRECISION :: XPOS, YPOS, ZPOS      
 ! local variables to define system dimensions
@@ -38,9 +38,8 @@
 ! local variables 
       DOUBLE PRECISION :: A, OMEGA, OOMEGA2, ASINOMEGAT 
 
-!-----------------------------------------------            
-     
-! assign temporary local variables for quick reference
+!-----------------------------------------------        
+      ! assign temporary local variables for quick reference
       LXE = EX2
       LXW = WX1
       LYN = TY2

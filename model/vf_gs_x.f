@@ -29,6 +29,7 @@
       USE physprop
       USE compar  
       USE drag  
+      USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -58,7 +59,7 @@
       DO M = 1, MMAX
 !$omp  parallel do private(I,IJK,IJKE)
          DO IJK = ijkstart3, ijkend3
-            IF (.NOT.IP_AT_E(IJK)) THEN
+            IF (.NOT.IP_AT_E(IJK).and.(.not.DES_ONEWAY_COUPLED)) THEN
                I = I_OF(IJK)
                IJKE = EAST_OF(IJK)
                VXF_GS(IJK,M) = AVG_X(F_GS(IJK,M),F_GS(IJKE,M),I)*VOL_U(IJK)

@@ -2,12 +2,13 @@
 !   Module name: DISCRETELEMENT                                         C
 !   Purpose: DES mod file 
 !            Common Block containing DEM conditions 
-!                                                                       C
-!                                                                       C
-!   Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!   Reviewer: Jin Sun and Rahul Garg                   Date: 01-Aug-07  C
-!   Comments: Added declaration of interpolation related data           C
-!                                                                       C
+
+!   PARALLEL PROCESSING: explanation of variables in parallel architecture  
+!            particles - total number of particles in the whole system 
+!            read from input or generated             
+!            pip - particles in each processor (includes the ghost particles)
+!            max_pis - Maximum allocated Particles in system  (input parameter) 
+!            max_pip - maximum allocated particles in processor 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
    
       MODULE DISCRETELEMENT
@@ -29,12 +30,31 @@
 ! Total number of particles in simulation 
       INTEGER PARTICLES
 
+! For parallel processing: global id of particles 
+      INTEGER, DIMENSION(:), ALLOCATABLE :: IGLOBAL_ID
+
+! ghost cnt of particles on each processor
+      INTEGER :: IGHOST_CNT
+! Maximum global id, new particles global id will be assigned based on this value 
+      Integer :: imax_global_id
+
+!volume of each node. Used to obtain Eulerian fields
+      double precision, allocatable, dimension(:) :: des_vol_node
+
+!Ratio of actual volume of each node to volume of node not corrected for
+!outside the domain or being in cut-cell 
+      double precision, allocatable, dimension(:) :: des_vol_node_ratio
+ 
+
 ! Constant factor used to expand size of arrays beyond particle no.      
       DOUBLE PRECISION PARTICLES_FACTOR 
 
 ! Logic that controls whether to print data dem simulations (granular or
 ! coupled)
       LOGICAL PRINT_DES_DATA 
+
+! logic that controls if des run time messages are printed on screen or not
+      LOGICAL PRINT_DES_SCREEN  
 
 ! Usr specified time interval that controls frequency of writing DEM
 ! output and restart for pure granular flow; otherwise (when coupled)
@@ -67,6 +87,11 @@
 ! are employed to describe solids 
       LOGICAL DES_CONTINUUM_HYBRID 
 
+! DES -
+      LOGICAL DES_ONEWAY_COUPLED
+!this logic is different from des_continuum coupled. Here the particles 
+! see the fluid but the fluid does not see the particles 
+
 ! Only used when coupled and represents the number of times a pure
 ! granular flow simulation is run before the actual coupled simulation
 ! is started (i.e. for particle settling w/o fluid forces)
@@ -90,6 +115,7 @@
 !   'adams_bashforth' second-order scheme (by T.Li)
       CHARACTER*64 DES_INTG_METHOD 
 
+
 ! Value of solids time step based on particle properties
       DOUBLE PRECISION DTSOLID
 ! Currently obsolete quantity
@@ -100,8 +126,8 @@
 ! Neighbor search method, options are as follows
 !   1= nsquare, 2=quadtree, 3=octree, 4=grid based search      
       INTEGER DES_NEIGHBOR_SEARCH
-! Quantities used for reporting: max no. neighbors and max overlap that
-! exists during last solid time step of dem simulation
+! Quantities used for reporting: max no. neighbors and max overlap
+! that exists during last solid time step of dem simulation
       INTEGER NEIGH_MAX
       DOUBLE PRECISION OVERLAP_MAX
 ! Quantities used for neighbor search methods octree and quadtree
@@ -115,6 +141,7 @@
       INTEGER NEIGHBOR_SEARCH_N
       DOUBLE PRECISION NEIGHBOR_SEARCH_RAD_RATIO
       LOGICAL DO_NSEARCH
+
 
 ! Factor muliplied by sum of radii in grid based neighbor search and
 ! nsquare search method.  increases the effective radius of a particle
@@ -216,14 +243,6 @@
       DOUBLE PRECISION pvel_mean, PVEL_StDev
 ! Constant input pressure gradient (currently unused?)
       DOUBLE PRECISION pgrad(3)
-
-! Particle properties
-! particle diameters
-      DOUBLE PRECISION DES_D_P0 (DIM_M)
-! particle densities      
-      DOUBLE PRECISION DES_RO_s (DIM_M)
-! number of solids phases
-      INTEGER          DES_MMAX
             
 ! Particle-particle and Particle-wall contact parameters
 !     Spring contants      
@@ -285,6 +304,10 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FN    !(PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FT    !(PARTICLES,DIMN)
 
+! There is no need to maintain FN and FT arrays. This can be accomplished by FTAN and FNORM. 
+      
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FTAN, FNORM ! (DIMN)
+
 ! Drag exerted by the gas on solids
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: SOLID_DRAG ! (DIMENSION_3, DIMENSION_M, DIMN) 
 
@@ -310,56 +333,55 @@
 ! des_interp_on is set to T
       LOGICAL CALLFROMDES
 
+
 ! Dynamic variable; for each cell stores the total number of particles
 ! and the id's of the particles in that cell
       TYPE iap1
          INTEGER, DIMENSION(:), POINTER:: p
       END TYPE iap1
-      TYPE(iap1), DIMENSION(:,:,:), ALLOCATABLE:: pic  
-                  !(DIMENSION_I,DIMENSION_J,DIMENSION_K)
+!pradeep
+! in order to facilitate the paralle processing the PIC is now defined as single array IJK
+      TYPE(iap1), DIMENSION(:), ALLOCATABLE:: pic  ! (DIMENSION_3)
 
 ! Particles in a computational cell (for volume fraction)
-      INTEGER, DIMENSION(:), ALLOCATABLE :: PINC
-               !(DIMENSION_3)
+      INTEGER, DIMENSION(:), ALLOCATABLE :: PINC  ! (DIMENSION_3)
 
-! For each particle track its i,j,k location on grid and phase no.:
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PIJK     
-               !(PARTICLES,5)=>I,J,K,IJK,M 
+! For each particle track its i,j,k location on grid and phase no.:      
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PIJK ! (PARTICLES,5)=>I,J,K,IJK,M 
 
+! pradeep all variables related to desgrid is moved to module desgrid
+! except the input variables
 
-!***********************************************************************
-! START when des_neighbor_search = 4 
-
-! Dynamic variable; for each cell stores the total number of particles
-! and the id's of the particles in that cell. This variable is used
-! exclusively for the des_neighbor_search option 4 (cell based search
-! method) and was created so that the mesh used to perform the cell
-! based search is independent of the standard mesh used to solve the
-! fluid equations in coupled dem cases
+!!********************************************************************************
+!! START when des_neighbor_search = 4 
+!
+!! Dynamic variable; for each cell stores the total number of particles
+!! and the id's of the particles in that cell. This variable is used
+!! exclusively for the des_neighbor_search option 4 (cell based search
+!! method) and was created so that the mesh used to perform the cell
+!! based search is independent of the standard mesh used to solve the
+!! fluid equations in coupled dem cases
+!! pradeep - for parallel processing
+!! modifying from 3D array to 1D array
       TYPE(iap1), DIMENSION(:,:,:), ALLOCATABLE:: DESGRIDSEARCH_PIC  
-                  !(desgs_imax2,desgs_jmax2,desgs_kmax2)
-
-! The number of i, j, k divisions in the grid used to perform the
-! cell based neighbor search
+!                                                       ! (desgs_imax2,desgs_jmax2,desgs_kmax2)
+!
+!! The number of i, j, k divisions in the grid used to perform the
+!! cell based neighbor search
       INTEGER :: DESGRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, &
                  DESGRIDSEARCH_KMAX
-
-! The number of i, j, k divisions in the grid used to perform the
-! cell based neighbor search plus 2 to account for ghost cells
+!! The number of i, j, k divisions in the grid used to perform the
+!! cell based neighbor search plus 2 to account for ghost cells
       INTEGER :: DESGS_IMAX2, DESGS_JMAX2, &
                  DESGS_KMAX2
+!
+!! For each particle track its i,j,k location on the mesh used for the
+!! cell based neighbor search option
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: DESGRIDSEARCH_PIJK  ! (PARTICLES,3)=>I,J,K
+!
+!! END when des_neighbor_search = 4       
+!!********************************************************************************
 
-! For each particle track its i,j,k location on the mesh used for the
-! cell based neighbor search option
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: DESGRIDSEARCH_PIJK  
-               !(PARTICLES,3)=>I,J,K
-
-! END when des_neighbor_search = 4       
-!***********************************************************************
-
-! Bulk density of particles in fluid cell
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_ROP_S  
-                        !(DIMENSION_3,DES_MMAX)
 
 ! Volume averaged solids velocity in a fluid cell      
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_U_s  
@@ -386,6 +408,7 @@
       DOUBLE PRECISION DES_KE, DES_PE
 
 
+
 ! Additional quantities
       DOUBLE PRECISION :: MIN_RADIUS, MAX_RADIUS
       INTEGER, ALLOCATABLE, DIMENSION(:) :: MARK_PART
@@ -396,24 +419,30 @@
 ! Used to track bed height of solids phase M 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: bed_height 
 
-!***********************************************************************
 ! START interpolation related data
 ! R.Garg 
 
 ! the coefficient add to gas momentum A matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE ::drag_am 
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::drag_am 
 
 ! the coefficient add to gas momentum B matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:,:,:,:,:), ALLOCATABLE ::drag_bm 
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::drag_bm 
 
 ! fluid velocity at particle position
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::vel_fp 
+
       
       DOUBLE PRECISION, DIMENSION(:,:,:),POINTER :: weightp    
       DOUBLE PRECISION, DIMENSION(:),   ALLOCATABLE :: f_gp 
-      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: wtderivp, wtbar
+      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: wtderivp
+      double precision, dimension (:,:), allocatable ::  wtbar
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE:: sstencil
       DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE:: gstencil, vstencil, pgradstencil
+
+!stencil for interpolation of solids pressure 
+      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE::  psgradstencil
+!stencil for interpolation of solids velocity
+      DOUBLE PRECISION, DIMENSION(:,:,:,:,:), ALLOCATABLE::  VEL_SOL_STENCIL
       
 ! quantities are set in subroutine set_interpolation_scheme
 ! order = order of the interpolation method, ob2l = (order+1)/2,
@@ -422,46 +451,73 @@
       INTEGER:: order, ob2l, ob2r
       
 ! END of interpolation related data
-!***********************************************************************
 
 
-!***********************************************************************
 ! START particle inlet/outlet related quantites 
 ! J.Musser
 
 ! Dynamic particle count elements:
-! PEA(n,1) : This column identifies particle as 'existing' if true.  It
-!   is used with the inlet/outlet to skip indices that do not represent
-!   particles in the system or indices that represent particles that
-!   have exited the system.
+! PEA(n,1) : This column identifies particle as 'existing' if true. 
+! It is used with the inlet/outlet to skip indices that do not represent particles
+! in the system or indices that represent particles that have exited the system.
 ! PEA(n,2) : This column identifies a particle as 'new' if true.
-!   Particles with a classification of 'new' do not react when in
-!   contact with a wall or another particle, however existing particles
-!   do collide and interact with 'new' particles. The classification
-!   allows new particles to push particles  already in the system out of
-!   the way when entering to prevent overlap. This flag is also used
-!   when the center of a particle crosses a dem outlet (i.e. an exiting
-!   particle; see PEA(n,3)) so that the particle will maintain its
-!   present trajectory until it has fully exited the system
-! PEA(n,3) : This column identifies a particle as 'exiting' if true.  If
-!   a particle initiates contact with a wall surface designated as a des
-!   outlet, this flag is set to true. With this classification the
-!   location of the particle is checked to assess if the particle has
-!   fully exited the system.  At this point, the particle is removed
-!   from the system.
+! Particles with a classification of 'new' do not react when in contact with a wall 
+! or another particle, however existing particles do collide and interact with
+! 'new' particles. The classification allows new particles to push particles 
+! already in the system out of the way when entering to prevent overlap.
+! PEA(n,3) : This column identifies a particle as 'exiting' if true. 
+! If a particle initiates contact with a wall surface designated as a des outlet,
+! this flag is set to true. With this classification the location of the particle 
+! is checked to assess if the particle has fully exited the system.  At this point,
+! the particle is removed from the list.
+
+! pradeep: setting flags for ghost cell 
+! PEA(n,4) : for ghost particles 
       LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PEA! (MAX_PIS,3)
 
 ! Number of particles in the system (current)
-      INTEGER PIS
+      INTEGER PIP
 
 ! Maximum particles permitted in the system at once
-      INTEGER MAX_PIS
+      INTEGER MAX_PIS, MAX_PIP
 
 ! END particle inlet/outlet related quantities
-!***********************************************************************
 
 
-!***********************************************************************
+!     Force due to gas-pressure gradient 
+      DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE :: P_FORCE
+ 
+     
+
+
+      INTEGER :: MAX_DES_BC_CELL 
+      TYPE BDRY_TYPE
+         INTEGER :: IJK_SCAL
+         CHARACTER*100 :: DES_BC_TYPE
+         DOUBLE PRECISION, DIMENSION (:) , ALLOCATABLE :: NORMAL 
+         DOUBLE PRECISION, DIMENSION (:) , ALLOCATABLE :: CNOT, VEC
+         !MI_BCID will contain the BC id for the mass inflow bc. It is made allocatable 
+         !to reduce memory usage
+         INTEGER, DIMENSION (:) , ALLOCATABLE :: MI_BCID
+      END TYPE BDRY_TYPE 
+      
+      TYPE DES_BDR
+      INTEGER :: COUNT_DES_BC
+
+      TYPE(BDRY_TYPE), DIMENSION(:), ALLOCATABLE :: BDRY_LIST 
+      END TYPE DES_BDR
+
+      TYPE(DES_BDR), DIMENSION(:), ALLOCATABLE :: DES_CELLWISE_BCDATA 
+
+
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: TOBE_DELETED
+      
+!     MAX Velocity of particles in each direction
+      DOUBLE PRECISION , DIMENSION(:), ALLOCATABLE :: DES_VEL_MAX
+
+
+
+
 ! Start Cohesion
 ! M.Weber      
      
@@ -577,7 +633,4 @@
       INTEGER ESC_COH_DIST_INT
 
 ! END Cohesion
-!***********************************************************************
-     
-
-      END MODULE DISCRETELEMENT
+    END MODULE DISCRETELEMENT

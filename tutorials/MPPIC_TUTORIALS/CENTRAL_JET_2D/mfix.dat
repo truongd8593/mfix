@@ -1,0 +1,184 @@
+!  Central jet Fluidized Bed Simulation
+!  MPPIC for solid phase and Kinetic theory of gas phase                                            
+!  Fluidized bed with a central jet                                      
+
+! Refer to Readme for the problem description and other details
+! For more details refer to PhD thesis (Dec 2003) of Jay Boyalakuntla
+! It is made available in MFIX documents
+                           
+! Run-control section                                                           
+  RUN_NAME 		= 'mppic_cjet'             
+  DESCRIPTION 		= 'fluid bed with single central jet'          
+  RUN_TYPE 		= 'NEW'             
+  UNITS 		= 'cgs'
+  TIME  		= 0.0			!start time
+  TSTOP 		= 20.0 
+  DT 			= 5E-4			!time step
+  DT_MAX                = 1E-3
+!  DT_FAC = 1.0
+
+  ENERGY_EQ 		= .FALSE.		!do not solve energy eq
+  SPECIES_EQ 		= .FALSE.    .FALSE. 	!do not solve species eq
+
+  MOMENTUM_X_EQ(1) = .FALSE. 
+  MOMENTUM_Y_EQ(1) = .FALSE.
+  MOMENTUM_Z_EQ(1) = .FALSE.
+  DRAG_TYPE = 'GIDASPOW'
+
+  GRAVITY = 980
+
+  NORM_g 		= 0
+  NORM_s 		= 0
+
+  DISCRETIZE(1) = 9*2	
+  MAX_NIT = 250
+  TOL_RESID = 1.E-3
+
+
+
+! Geometry Section 
+  COORDINATES 		= 'cartesian' 
+  XLENGTH  		=   15.0	        !X length	
+  IMAX 			=   15			!cells in i direction
+  YLENGTH  		=   90.0		!height
+  JMAX 			=   45 			!cells in j direction
+  NO_K     		= .TRUE. 		!2D, no k direction
+  DZ(1)                 = 0.4d0                 !Define DZ to be particle
+                                                !for 2D DEM cases
+  MW_avg                = 29.0
+
+
+! Gas-phase Section 
+  MU_g0 		= 1.8E-4		!constant gas viscosity
+  !RO_g0			= 1.205E-3		!constant gas density
+
+
+ 
+! Solids-phase Section
+  MMAX                  = 1
+  RO_s    		= 2.7           	!solids density
+  D_p0    		= 0.4                   !particle diameter
+  e       		= 0.9 			!restitution coefficient
+  Phi    		= 30.0			!angle of internal friction
+  EP_star 		= 0.42			!void fraction at minimum
+						!  fluidization
+
+
+  
+! Initial Conditions Section 
+    ! 1. bed
+  IC_X_w(1)           	=  0.0   0.0		!domain
+  IC_X_e(1)           	=  15.0	 15 	! 0 < x < 15, 0 < y < 30
+  IC_Y_s(1)          	=  0.0   40.0
+  IC_Y_n(1)           	=  40.0  90.0
+                                	! initial values in the region
+  IC_EP_g		=  0.55d0     1.d0
+!  IC_ROP_S(1,1)         =  0.4    0.0
+!  IC_ROP_S(1,2)         =  0.54     0.0
+
+  IC_U_g(1)           	=  0.0	 0.0	! x-dir gas velocity
+  IC_V_g(1)          	=  100.0 0.0 	! y-dir gas velocity
+
+
+  IC_U_s(1,1)          	=  0.0	 0.0	! x-dir gas velocity
+  IC_U_s(1,2)          	=  0.0   0.0 	! y-dir gas velocity
+
+  IC_V_s(1,1)          	=  0.0	 0.0	! x-dir gas velocity
+  IC_V_s(1,2)          	=  0.0   0.0 	! y-dir gas velocity
+
+  IC_P_g(1)             =  1e6   1e6
+  IC_T_g(1)             =  298.0    298.0
+ 
+ 
+
+
+
+!  Boundary Conditions Section
+! 1. Central jet
+  BC_X_w(1)		=  7.0		! central jet
+  BC_X_e(1)		=  8.0		! 7 < x < 8, y = 0
+  BC_Y_s(1)		=  0.0
+  BC_Y_n(1)		=  0.0
+  BC_TYPE(1)		= 'MI'		!specified mass inflow
+
+  BC_EP_g(1)		=  1.0
+  BC_U_g(1)		=  0.0
+  BC_V_g(1)		=  4200	        !inlet jet vel
+  BC_P_g(1)		=  1e6
+  BC_T_g(1)             =  298.0  
+
+       ! 2. Exit
+  BC_X_w(4)		=  0.0		! top exit
+  BC_X_e(4)		=  15.0	        ! 0 < x < 15, y = 90
+  BC_Y_s(4)		=  90.0
+  BC_Y_n(4)		=  90.0
+  BC_TYPE(4)		=  'PO' 	!specified pressure outflow
+  BC_P_g(4)		=  1e6
+  BC_T_g(4)             =  298.0  
+
+ BC_APPLY_TO_MPPIC(4)	= .f.
+
+! DES INPUT
+
+  DISCRETE_ELEMENT = .TRUE. 
+  DIMN = 2        
+ 
+  MPPIC = .T.	
+  MPPIC_COEFF_EN = 0.5	
+  MPPIC_PDRAG_IMPLICIT = .t.
+
+  CONSTANTNPC = .T.
+  NPC_PIC(1) = 5
+  CFL_PIC = 0.5
+
+  MPPIC_SOLID_STRESS_SNIDER = .f.    	
+  !mppic_coeff_en for the gamma in Snider's paper 
+
+  GENER_PART_CONFIG = .t.
+  PVEL_StDev = 1.d0
+  MAX_PIS = 5000
+
+  DES_CONTINUUM_COUPLED = .TRUE.
+  DES_INTERP_ON = .false.
+  NFACTOR = 500             ! length of dem settling period in no. of loops
+
+  DES_EN_WALL_INPUT = 1.0   ! particle-wall rest coef
+  PRINT_DES_DATA = .T.
+
+
+! Output Control
+!
+  OUT_DT 		= 10		!write text file BUB01.OUT
+					!  every 0.1s
+  RES_DT 		= 0.5		!write binary restart file
+					!  BUB01.RES every 0.01 s
+  NLOG   		= 25 		!write logfile BUB01.LOG
+					!every 25 time steps
+  FULL_LOG 		= .TRUE. 	!display residuals on screen
+
+
+!SPX_DT values determine how often SPx files are written.  Here BUB01.SP1, which
+!contains void fraction (EP_g), is written every 0.01 s, BUB01.SP2, which contains
+! gas and solids pressure (P_g, P_star), is written every 0.1 s, and so forth.
+!
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
+        !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
+        !                W_g  W_s
+      
+  SPX_DT = 0.5 10.       0.5   0.5  100    100.5   100.5     100.  500.                                                                           
+!  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
+  
+  NODESI = 1   NODESJ = 1   NODESK = 1
+
+!  Sweep Direction
+
+LEQ_SWEEP(1) = 'ISIS' 
+LEQ_SWEEP(2) = 'ISIS'  
+LEQ_SWEEP(3) = 'ISIS' 
+LEQ_SWEEP(4) = 'ISIS'  
+LEQ_SWEEP(5) = 'ISIS'  
+LEQ_SWEEP(6) = 'ISIS'  
+LEQ_SWEEP(7) = 'ISIS' 
+LEQ_SWEEP(8) = 'ISIS'  
+LEQ_SWEEP(9) = 'ISIS'
+

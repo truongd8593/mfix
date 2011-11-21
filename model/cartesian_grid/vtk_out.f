@@ -36,7 +36,8 @@
 
       USE pgcor
       USE pscor
-
+      USE discretelement, Only : DES_CELLWISE_BCDATA, DISCRETE_ELEMENT
+      USE mfix_pic
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys
@@ -55,7 +56,7 @@
       CHARACTER (LEN=32) :: SUBM,SUBN
       CHARACTER (LEN=64) :: VAR_NAME
 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC
 
       include "function.inc"
 
@@ -201,9 +202,18 @@
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
             
             CASE (100)
-               CALL WRITE_SCALAR_IN_VTK('PARTITION',PARTITION)
+               IF(DISCRETE_ELEMENT.AND.MPPIC) THEN
+                  ALLOCATE( COUNT_DES_BC(DIMENSION_3))
+                  DO IJK = IJKSTART3, IJKEND3
+                     COUNT_DES_BC (IJK) = 0.d0
+                     COUNT_DES_BC (IJK) = DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC
+                  ENDDO
+                  CALL WRITE_SCALAR_IN_VTK('COUNT_BC',COUNT_DES_BC)
+                  DEALLOCATE(COUNT_DES_BC)
+               ELSE
+                  CALL WRITE_SCALAR_IN_VTK('PARTITION',PARTITION)
+               ENDIF
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
             CASE (101)
        
                Allocate(DP_BC_ID(DIMENSION_3))

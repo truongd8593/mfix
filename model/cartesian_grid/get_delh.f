@@ -174,6 +174,167 @@
 
       END SUBROUTINE GET_DEL_H
 
+  SUBROUTINE GET_DEL_H_DES(IJK,TYPE_OF_CELL,X0,Y0,Z0,Del_H,Nx,Ny,Nz, allow_neg_dist)
+    
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices
+      USE compar
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      
+      IMPLICIT NONE
+      CHARACTER (LEN=*) :: TYPE_OF_CELL
+      DOUBLE PRECISION:: X0,Y0,Z0,XREF,YREF,ZREF
+      INTEGER :: IJK,I,J,K
+      DOUBLE PRECISION :: Del_H,Diagonal
+      DOUBLE PRECISION :: Nx,Ny,Nz
+
+      DOUBLE PRECISION :: old_Del_H,oldNx,oldNy,oldNz
+      LOGICAL :: ALLOW_NEG_DIST
+
+           
+      include "function.inc"   
+
+      SELECT CASE (TYPE_OF_CELL)
+         CASE('SCALAR')
+
+            IF(.NOT.CUT_CELL_AT(IJK)) THEN
+               WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H_DES:'
+               WRITE(*,*)' SCALAR CELL',IJK,' IS NOT A CUT CELL'
+               WRITE(*,*)' I, J, K =',I_OF(IJK), J_OF(IJK), K_OF(IJK)
+               WRITE(*,*)' MFiX will exit now.'             
+               CALL MFIX_EXIT(myPE) 
+            ENDIF
+
+            Nx = NORMAL_S(IJK,1)
+            Ny = NORMAL_S(IJK,2)
+            Nz = NORMAL_S(IJK,3)
+
+            Xref = REFP_S(IJK,1)
+            Yref = REFP_S(IJK,2)
+            Zref = REFP_S(IJK,3)            
+
+         CASE('U_MOMENTUM')
+
+            IF(.NOT.CUT_U_CELL_AT(IJK)) THEN
+               WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H:'
+               WRITE(*,*)' U-MOMENTUM CELL',IJK,' IS NOT A CUT CELL'
+               WRITE(*,*)' MFiX will exit now.'             
+               CALL MFIX_EXIT(myPE) 
+            ENDIF
+
+            Nx = NORMAL_U(IJK,1)
+            Ny = NORMAL_U(IJK,2)
+            Nz = NORMAL_U(IJK,3)
+
+            Xref = REFP_U(IJK,1)
+            Yref = REFP_U(IJK,2)
+            Zref = REFP_U(IJK,3)         
+
+            IF(WALL_U_AT(IJK)) THEN
+               Nx = ZERO
+               Ny = ZERO
+               Nz = ZERO
+               DEL_H = UNDEFINED
+               RETURN
+            ENDIF   
+
+         CASE('V_MOMENTUM')
+
+            IF(.NOT.CUT_V_CELL_AT(IJK)) THEN
+               WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H:'
+               WRITE(*,*)' V-MOMENTUM CELL',IJK,' IS NOT A CUT CELL'
+               WRITE(*,*)' MFiX will exit now.'             
+               CALL MFIX_EXIT(myPE) 
+            ENDIF
+
+            Nx = NORMAL_V(IJK,1)
+            Ny = NORMAL_V(IJK,2)
+            Nz = NORMAL_V(IJK,3)
+
+            Xref = REFP_V(IJK,1)
+            Yref = REFP_V(IJK,2)
+            Zref = REFP_V(IJK,3)            
+
+            IF(WALL_V_AT(IJK)) THEN
+               Nx = ZERO
+               Ny = ZERO
+               Nz = ZERO
+               DEL_H = UNDEFINED
+               RETURN
+            ENDIF   
+
+
+         CASE('W_MOMENTUM')
+
+            IF(.NOT.CUT_W_CELL_AT(IJK)) THEN
+               WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H:'
+               WRITE(*,*)' W-MOMENTUM CELL',IJK,' IS NOT A CUT CELL'
+               WRITE(*,*)' MFiX will exit now.'             
+               CALL MFIX_EXIT(myPE) 
+            ENDIF
+
+            Nx = NORMAL_W(IJK,1)
+            Ny = NORMAL_W(IJK,2)
+            Nz = NORMAL_W(IJK,3)
+
+            Xref = REFP_W(IJK,1)
+            Yref = REFP_W(IJK,2)
+            Zref = REFP_W(IJK,3)     
+
+            IF(WALL_W_AT(IJK)) THEN
+               Nx = ZERO
+               Ny = ZERO
+               Nz = ZERO
+               DEL_H = UNDEFINED
+               RETURN  
+            ENDIF
+
+         CASE DEFAULT
+            WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H:'
+            WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
+            WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
+            WRITE(*,*)'SCALAR' 
+            WRITE(*,*)'U_MOMENTUM' 
+            WRITE(*,*)'V_MOMENTUM' 
+            WRITE(*,*)'W_MOMENTUM' 
+            CALL MFIX_EXIT(myPE)
+      END SELECT
+
+
+      DEL_H = Nx * (X0 - Xref) + Ny * (Y0 - Yref) + Nz * (Z0 - Zref)
+
+!======================================================================
+! Negative values of DEL_H are not accepted
+!======================================================================
+
+       I = I_OF(IJK)  
+       J = J_OF(IJK) 
+       K = K_OF(IJK) 
+
+       IF(.NOT.ALLOW_NEG_DIST) THEN 
+          Diagonal = dsqrt(DX(I)**2 + DY(J)**2 + DZ(K)**2)
+          
+          IF (DEL_H <= TOL_DELH * Diagonal) THEN
+             DEL_H = UNDEFINED
+             Nx = ZERO
+             Ny = ZERO
+             Nz = ZERO
+
+          ENDIF
+       ENDIF
+
+      RETURN
+
+
+      END SUBROUTINE GET_DEL_H_DES
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: STORE_CUT_FACE_INFO                                    C

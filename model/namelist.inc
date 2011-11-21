@@ -132,7 +132,7 @@
              BC_EP_g, BC_P_g, BC_RO_g, BC_ROP_g, BC_ROP_s,&
              BC_T_g, BC_T_s,&
              BC_U_g, BC_U_s, BC_V_g, BC_V_s, BC_W_g, BC_W_s,&
-             BC_TYPE, BC_VOLFLOW_g, BC_VOLFLOW_s, BC_MASSFLOW_g, &
+        BC_TYPE,BC_APPLY_TO_MPPIC, BC_VOLFLOW_g, BC_VOLFLOW_s, BC_MASSFLOW_g, &
              BC_MASSFLOW_s, BC_X_g, BC_X_s,&
              BC_DT_0, BC_Jet_g0, BC_DT_h, BC_Jet_gh, BC_DT_l, &
              BC_Jet_gl,&

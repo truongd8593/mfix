@@ -66,7 +66,7 @@
       USE sendrecv 
       USE discretelement
       USE ur_facs 
-      
+      USE mfix_pic      
       IMPLICIT NONE
 !-----------------------------------------------
 !     G l o b a l   P a r a m e t e r s
@@ -198,6 +198,9 @@
 !     
 !     Hill and Koch Reynolds number
       DOUBLE PRECISION Re_kh
+
+!     Tmp variable for ep_g, and EP_S
+      DOUBLE PRECISION EPg, EPs
 !
 !     End of Koch and Hill variables declaration, sof
 !***********************************************************
@@ -394,9 +397,13 @@
 !     
 !--------------------------Begin Gidaspow --------------------------
             ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW') then
-               IF(EP_g(IJK) .LE. 0.8D0) THEN
-                  DgA = 150D0 * (ONE - EP_g(IJK)) * Mu &
-                  / ( EP_g(IJK) * D_p(IJK,M)**2 ) &
+               !EPg = MAX(EP_STAR, EP_G(IJK))
+               !EPs = MIN(EP_s(IJK,M), 1.d0-EP_STAR)
+               EP_g = EP_G(IJK)
+               EP_s = EP_s(IJK,M) 
+               IF(EPg .LE. 0.8D0) THEN
+                  DgA = 150D0 * (ONE - EPg) * Mu &
+                  / ( EPg * D_p(IJK,M)**2 ) &
                   + 1.75D0 * RO_g(IJK) * VREL / D_p(IJK,M)
                ELSE
                   IF(Re_G .LE. 1000D0)THEN
@@ -404,15 +411,15 @@
                   ELSE
                      C_d = 0.44D0
                   ENDIF
-                  DgA = 0.75D0 * C_d * VREL * ROP_g(IJK) * EP_g(IJK)**(-2.65D0) &
+                  DgA = 0.75D0 * C_d * VREL * ROP_g(IJK) * EPg**(-2.65D0) &
                   /D_p(IJK,M)
                ENDIF
                
-!              Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+!              Calculate the drag coefficient (Model B coeff = Model A coeff/EPg)
                IF(Model_B)THEN
-                  F_gstmp = DgA * EP_s(IJK, M)/EP_g(IJK)
+                  F_gstmp = DgA * EPs/EPg
                ELSE
-                  F_gstmp = DgA * EP_s(IJK, M)
+                  F_gstmp = DgA * EPs
                ENDIF
                
 !--------------------------End Gidaspow --------------------------

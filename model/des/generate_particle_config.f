@@ -9,18 +9,29 @@
 !  Authors: Rahul Garg                                Date: 01-Aug-07  C
 !  Reviewer: Sreekanth Pannala                        Date: 23-Oct-08  C
 !  Comments: Added a new routine for clarity of functions              C
+!  Revision: Modified subroutine for parallel processing 
+!  Authour : Pradeep G                                Date:28-Feb-11   C
+
+!  Revision: Added a new subroutine GENERATE_PARTICLE_CONFIG_MPPIC
+!  for generating particle position distribution for MPPIC 
+!  Author: Rahul Garg                                 Date: 3-May-2011
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE GENERATE_PARTICLE_CONFIG
       
       USE param1
+      USE geometry
       USE funits
       USE compar      
-      USE run
-      USE geometry
       USE discretelement
-
+      USE run
+      USE constant
+      USE physprop
+      use desmpi 
+      use cdist 
+      use mpi_utility
+      use mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -29,20 +40,20 @@
       INTEGER CHECK_MPI
       INTEGER PART_COUNT
       DOUBLE PRECISION DIST, R_LM, DOML(DIMN)
+      character(30) lfilename 
+      integer lunit,lproc_parcount
+      double precision lmax_dia,lfac,xp,yp,zp 
 !-----------------------------------------------       
 
-      WRITE(*,'(3X,A)') &
-         '---------- START GENERATE_PARTICLE_CONFIG ---------->'
+        
+      IF(MPPIC) THEN 
+         CALL GENERATE_PARTICLE_CONFIG_MPPIC
+         RETURN 
+      ENDIF
 
-      PART_COUNT = 0
-      DO M = 1, DES_MMAX
-         DO L = 1, PART_MPHASE(M) 
-            PART_COUNT = PART_COUNT + 1
-            DES_RADIUS(PART_COUNT) = DES_D_P0(M)*HALF
-            RO_Sol(PART_COUNT) = DES_RO_S(M)
-         ENDDO
-      ENDDO
-      
+      IF(dmp_log.and.debug_des) WRITE(unit_log,'(3X,A)') &
+      '---------- START GENERATE_PARTICLE_CONFIG ---------->'
+
       DOML(1) = DES_EPS_XSTART
       DOML(2) = DES_EPS_YSTART
       IF(DIMN.EQ.3) THEN
@@ -65,32 +76,70 @@
          CALL MFIX_EXIT(myPE)
       ENDIF
 
+! generate the particles based on the radius 
+      lproc_parcount = 0
+      lmax_dia = maxval(d_p0(1:MMAX))
+      lfac =1.05 
+      yp = lmax_dia*0.5*lfac
+      xp = lmax_dia*0.5*lfac
+      zp = lmax_dia*0.5*lfac
+      if (dimn .eq. 2) then 
+         do m = 1, mmax
+         do l = 1, part_mphase(m) 
+            if (   xp.ge.xe(istart1-1) .and. xp.lt.xe(iend1)&
+             .and. yp.ge.yn(jstart1-1) .and. yp.lt.yn(jend1)) then 
+               lproc_parcount = lproc_parcount + 1
+               pea(lproc_parcount,1) = .true.
+               des_radius(lproc_parcount) = d_p0(m)*half 
+               ro_sol(lproc_parcount) = ro_s(m)
+               des_pos_new(lproc_parcount,1) = xp 
+               des_pos_new(lproc_parcount,2) = yp 
+            end if 
+            xp = xp + lmax_dia*lfac 
+            if (xp+lmax_dia*0.5*lfac .gt. des_eps_xstart) then 
+               xp = lmax_dia*0.5*lfac
+               yp = yp + lmax_dia*lfac 
+            end if 
+         enddo
+         enddo
+      else 
+         do m = 1, mmax
+         do l = 1, part_mphase(m) 
+            if (   xp.ge.xe(istart1-1) .and. xp.lt.xe(iend1)&
+             .and. yp.ge.yn(jstart1-1) .and. yp.lt.yn(jend1)&
+             .and. zp.ge.zt(kstart1-1) .and. zp.lt.zt(kend1)) then 
+               lproc_parcount = lproc_parcount + 1
+               pea(lproc_parcount,1) = .true.
+               des_radius(lproc_parcount) = d_p0(m)*half 
+               ro_sol(lproc_parcount) = ro_s(m)
+               des_pos_new(lproc_parcount,1) = xp 
+               des_pos_new(lproc_parcount,2) = yp 
+               des_pos_new(lproc_parcount,3) = zp 
+            end if 
+            xp = xp + lmax_dia*lfac 
+            if (xp+lmax_dia*0.5*lfac .gt. des_eps_xstart) then 
+               xp = lmax_dia*0.5*lfac
+               zp = zp + lmax_dia*lfac 
+               if (zp+lmax_dia*0.5*lfac .gt. des_eps_zstart) then 
+                  zp = lmax_dia*0.5*lfac
+                  yp = yp + lmax_dia*lfac 
+               end if 
+            end if 
+         enddo
+         enddo
+      end if 
+! set pip and old position 
+      pip = lproc_parcount 
+
+      if(maxval(des_pos_new(1:pip,2)).gt.&
+      ylength-2.d0*maxval(des_radius(1:pip))) then 
+         write(unit_log,1002) maxval(des_pos_new(1:pip,2)), &
+            ylength-2.d0*maxval(des_radius(1:pip))
+         write(*,1003)
+         call des_mpi_stop
+      endif
       
-      CALL GENER_LATTICE_MOD(PARTICLES,doml(1:DIMN),&
-         DES_POS_OLD(1:PARTICLES,1:DIMN),DES_RADIUS(1:PARTICLES))   
-
-      OPEN(unit=24, file="particle_gener_conf.dat",&
-         form="formatted")
-      
-      DO L = 1, PARTICLES
-         OMEGA_OLD(L,:) = ZERO
-         DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
-         DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:)
-         OMEGA_NEW(L,:) = OMEGA_OLD(L,:)
-         WRITE(24,'(10(2X,ES12.5))') (DES_POS_OLD(L,K),K=1,DIMN),&
-            DES_RADIUS(L),RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
-      ENDDO
-      CLOSE(24)
-
-      IF( MAXVAL(DES_POS_NEW(1:PARTICLES,2)).GT.&
-         YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES)) ) THEN 
-         WRITE(UNIT_LOG,1002) MAXVAL(DES_POS_NEW(1:PARTICLES,2)), &
-            YLENGTH-2.d0*MAXVAL(DES_RADIUS(1:PARTICLES))
-         WRITE(*,1003)
-         CALL MFIX_EXIT(myPE)  
-      ENDIF
-
-      WRITE(*,'(3X,A)') &
+      IF(DMP_LOG.and.debug_des) write(UNIT_LOG,'(3x,a)') &
          '<---------- END GENERATE_PARTICLE_CONFIG ----------'
       
  1001 FORMAT(/1X,70('*')//' From: GENERATE_PARTICLE_CONFIG',/,&
@@ -111,8 +160,138 @@
 
       END SUBROUTINE GENERATE_PARTICLE_CONFIG
       
+      SUBROUTINE GENERATE_PARTICLE_CONFIG_MPPIC
+      USE param 
+      USE param1
+      USE geometry
+      USE funits
+      USE compar      
+      USE discretelement
+      USE run
+      USE constant
+      USE physprop
+      USE fldvar 
+      USE indices 
+      USE randomno
+      USE mfix_pic 
+      IMPLICIT NONE
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------       
+      INTEGER L, I, J, K, M, IDIM , IJK
+      INTEGER PART_COUNT, CNP_CELL_COUNT, IPCOUNT
+      DOUBLE PRECISION  DOML(DIMN), CORD_START(DIMN), REAL_PARTS(DIM_M), STAT_WT
+      INTEGER LPROC_PARCOUNT
 
+      DOUBLE PRECISION VOLIJK
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: RANDPOS
+      
+      INCLUDE 'function.inc'
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'ep_s2.inc'
 
+      
+      IF(dmp_log.and.debug_des) WRITE(unit_log,'(3X,A)') &
+      '---------- START GENERATE_PARTICLE_CONFIG MPPIC ---------->'
+      PART_COUNT = 0
+      
+      DO K = KSTART1, KEND1 
+         DO J = JSTART1, JEND1
+            DO I = ISTART1, IEND1 
+               
+               IJK  = FUNIJK(I,J,K)
+               CORD_START(1) = XE(I-1)
+               CORD_START(2) = YN(J-1)
+               IF(DIMN.EQ.3) CORD_START(3) = ZT(K-1)
+               DOML(1) = DX(I)
+               DOML(2) = DY(J)
+               IF(DIMN.EQ.3) DOML(3) = DZ(K)
+               DO M = 1, MMAX 
+                  CNP_CELL_COUNT = CNP_ARRAY(IJK, M)
+                  IF(CNP_CELL_COUNT.EQ.0) CYCLE 
+                  ALLOCATE(RANDPOS(CNP_CELL_COUNT, DIMN))
+                  RANDPOS = ZERO 
+                  DO IDIM = 1, DIMN
+                     CALL UNI_RNO(RANDPOS(1:CNP_CELL_COUNT, IDIM))
+                  ENDDO
+
+                  VOLIJK = VOL(IJK)
+                  REAL_PARTS(M) = 6.d0*EP_S(IJK,M)*VOLIJK/(PI*(D_p0(M)**3.d0))
+                  
+                  IF(CONSTANTNPC) THEN 
+                     !calculate the statistical weight for CP's belonging to this 
+                     !solid phase 
+                     STAT_WT = REAL_PARTS(M)/REAL(CNP_CELL_COUNT)
+                     !IF(M.eq.1) WRITE(*,*) 'R NP, CNP, EPS, VOLIJK', REAL_PARTS(M), CNP_CELL_COUNT, EP_S(IJK,M), VOLIJK, STAT_WT
+                  ELSEIF(CONSTANTWT) THEN
+                     !although the weight was specified in the input file, 
+                     !but due to the integer number of CP's, the  
+                     !statistical weight is re-calculated. This slightly different 
+                     !statistical weight will ensure that the initial volume fraction
+                     !is as inputted. If the input statwt_pic is used, then the initial
+                     !volume fraction might be slightly less than the input initial volume fraction
+
+                     STAT_WT = REAL_PARTS(M)/REAL(CNP_CELL_COUNT)
+                  ENDIF
+                  
+                  DO IPCOUNT = 1, CNP_CELL_COUNT
+                        DES_POS_OLD(PART_COUNT + IPCOUNT, :) = CORD_START(:) + RANDPOS(IPCOUNT, :)*DOML(:)
+                     
+                        DES_POS_NEW(PART_COUNT + IPCOUNT, :) =  DES_POS_OLD(PART_COUNT + IPCOUNT, :)
+                        
+                        DES_VEL_NEW(PART_COUNT + IPCOUNT, :) =  ZERO
+                        DES_VEL_OLD(PART_COUNT + IPCOUNT, :) =  ZERO
+                        DES_RADIUS(PART_COUNT + IPCOUNT) = D_p0(M)*HALF
+                        RO_Sol(PART_COUNT + IPCOUNT) = RO_S(M)
+                     
+                        DES_STAT_WT(PART_COUNT + IPCOUNT) = STAT_WT
+
+                        MARK_PART(PART_COUNT + IPCOUNT) = 1
+                        
+                        PIJK(PART_COUNT + IPCOUNT,1) = I
+                        PIJK(PART_COUNT + IPCOUNT,2) = J
+                        PIJK(PART_COUNT + IPCOUNT,3) = K
+                        PIJK(PART_COUNT + IPCOUNT,4) = IJK
+                        PIJK(PART_COUNT + IPCOUNT,5) = M
+                        
+                        IF(DES_POS_NEW(PART_COUNT + IPCOUNT,2).LE.YLENGTH/2.d0) MARK_PART(PART_COUNT + IPCOUNT) = 0
+                        !MARK_PART(PART_COUNT + IPCOUNT) = myPE 
+
+                        PEA(PART_COUNT + IPCOUNT,1) = .true.
+                  ENDDO
+                  PART_COUNT = PART_COUNT + CNP_CELL_COUNT 
+                  DEALLOCATE(RANDPOS)
+               ENDDO
+               CNP_ARRAY(IJK,:) = 0 
+               !set the cnp_array to zero. It will be used for
+               !handling inflow later 
+
+            end DO
+         end DO
+      end DO
+! set pip to part_count 
+      PIP = PART_COUNT 
+      WRITE(*,*) 'FROM pe =', mype, 'PIP = ', PIP
+
+      IF(PART_COUNT.NE.SUM(CNP_PIC(1:MMAX))) THEN 
+         IF(DMP_LOG) THEN 
+            WRITE(UNIT_LOG,*) 'ERROR IN GENERATE_PARTICLE_CONFIG_MPPIC'
+            WRITE(UNIT_LOG,*) 'NUMBER OF PARTICLES INITIALIZED (', PART_COUNT, '), NOT &
+            & EQUAL TO EARLIER CALCULATED TOTAL NUMBER OF PARTICLES (', & 
+            & SUM(CNP_PIC(1:MMAX)), ' )'
+
+            WRITE(UNIT_LOG,*) 'TERMINAL ERROR: STOPPING'
+         ENDIF
+         CALL mfix_exit(myPE) 
+         
+      END IF
+      
+      IF(DMP_LOG.and.debug_des) WRITE(UNIT_LOG,'(3X,A)') &
+      '---------- END GENERATE_PARTICLE_CONFIG MPPIC ---------->'
+      !CALL mfix_exit(mypE)
+    END SUBROUTINE GENERATE_PARTICLE_CONFIG_MPPIC
+
+! NO Longer used 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !
 !      
@@ -142,7 +321,6 @@
 !-----------------------------------------------  
 
       WRITE(*,'(5X,A)') '---------- START GENER_LATTICE_MOD ---------->'
-
       DOML(:) = DOMLIN(:)
 ! convert radius to diameter      
       dbdy(1:NBODY) = 2.d0*dbdy(1:NBODY)
@@ -194,6 +372,7 @@
       END SUBROUTINE GENER_LATTICE_MOD
 
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !
 ! This routine is no longer called     
@@ -209,9 +388,10 @@
       USE geometry
       USE indices
       USE compar
+      USE sendrecv
       USE interpolation
       USE discretelement
-
+      
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -443,27 +623,83 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !
 !      
+! Fixing for bdist_IO and parallel processing 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE writeic
+      use compar 
+      use mpi_utility 
       USE discretelement
+      use desmpi
+      use cdist 
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER:: NP   
+      INTEGER:: NP,lunit,li,lparcnt,lcurpar
+      integer :: lproc,llocalcnt,lglocnt,lgathercnts(0:numpes-1)
+      character(30) :: lfilename
+      double precision,dimension(:,:),allocatable :: ltemparray
 !-----------------------------------------------
 
-      OPEN(25,file='ic.dat',form='formatted')
+! write the intial position  and velocity of the particles 
+      lunit = 25 
+      if (bdist_io) then 
+         write(lfilename,'("ic_",I4.4,".dat")')mype
+         open(unit=lunit, file=lfilename, form="formatted")
+      else 
+         if(mype.eq.pe_io) then  
+            lfilename= "ic.dat"
+            open(unit=lunit, file=lfilename, form="formatted")
+         end if 
+      end if  
 
-      DO NP = 1,particles
-         IF (DIMN .EQ. 2) THEN
-            WRITE(25,32) DES_POS_NEW(NP,1:2), DES_VEL_NEW(NP,1:2)
-         ELSE
-            WRITE(25,32) DES_POS_NEW(NP,1:3), DES_VEL_NEW(NP,1:3)
-         ENDIF
-      ENDDO
-
-      CLOSE(25)
+      if (bdist_io) then 
+         lparcnt = 1 
+         do lcurpar = 1,pip
+            if(lparcnt.gt.pip) exit
+            if(.not.pea(lcurpar,1)) cycle 
+            lparcnt = lparcnt+1
+            if(pea(lcurpar,4)) cycle 
+            write(lunit,'(10(2x,es12.5))') (des_pos_new(lcurpar,li),li=1,dimn),&
+               (des_vel_new(lcurpar,li),li=1,dimn), des_radius(lcurpar),ro_sol(lcurpar)
+         enddo
+      else 
+! set parameters required for gathering info at PEIO and write as single file   
+         lglocnt = 10
+         llocalcnt = pip - ighost_cnt 
+         call global_sum(llocalcnt,lglocnt) 
+         allocate (ltemparray(lglocnt,2*dimn+2)) 
+         allocate (dprocbuf(llocalcnt),drootbuf(lglocnt))
+         igath_sendcnt = llocalcnt 
+         lgathercnts = 0
+         lgathercnts(mype) = llocalcnt
+         call global_sum(lgathercnts,igathercnts)
+         idispls(0) = 0 
+         do lproc = 1,numpes-1 
+            idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)  
+         end do 
+         do li = 1,dimn 
+            call des_gather(des_pos_new(:,li))
+            if(mype.eq.pe_io) ltemparray(1:lglocnt,li) = drootbuf(1:lglocnt)
+         end do 
+         do li = 1,dimn 
+            call des_gather(des_vel_new(:,li))
+            if(mype.eq.pe_io)ltemparray(1:lglocnt,dimn+li) = drootbuf(1:lglocnt)
+         end do 
+         call des_gather(des_radius)
+         if(mype.eq.pe_io)ltemparray(1:lglocnt,2*dimn+1) = drootbuf(1:lglocnt)
+         call des_gather(ro_sol)
+         if(mype.eq.pe_io)ltemparray(1:lglocnt,2*dimn+2) = drootbuf(1:lglocnt)
+         if (mype.eq.pe_io) then  
+            do lcurpar = 1,lglocnt
+               write(lunit,'(10(2x,es12.5))') (ltemparray(lcurpar,li),li=1,2*dimn+2)
+            enddo
+         end if 
+         deallocate(ltemparray)
+         deallocate(dprocbuf,drootbuf)
+      end if 
+      if(bdist_io .or. mype.eq.pe_io) close(lunit)
 
  32   FORMAT(10(2XE17.8))
 
@@ -471,18 +707,16 @@
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
-! Purpose: Generate a random initial particle velocity based on a normal
-!          distribution.  If Lees Edwards boundaries are selected then 
-!          a linear velocity profile is enforced consistent with the
-!          specified shear rate.      
 !      
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       SUBROUTINE init_particles_jn
-      USE geometry
       USE randomno
       USE discretelement
+      USE constant 
+      USE compar 
+      USE geometry
       IMPLICIT NONE 
 !-----------------------------------------------
 ! Local variables
@@ -545,6 +779,8 @@
          WRITE(*,'(5X,A,ES17.8,A,ES17.8)') 'mean = ', pvel_mean,&
             ' and standard deviation = ', PVEL_StDev
       ENDIF
+!-----------------------------------------------      
+
 
       DO J=1,DIMN
          umf0(j)=pvel_mean
@@ -572,22 +808,23 @@
       
       DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
 
+
+      IF(nodesI*nodesJ*nodesK.GT.1)       RETURN
+      !Rahul: THe writing of files below needs to be updated for 
+      !MPI case 
 ! updating/writing initial particle configuration files      
       IF (GENER_PART_CONFIG) THEN
-         INQUIRE(FILE='particle_gener_conf.dat',EXIST=FILE_EXIST)
+         INQUIRE(FILE='particle_gener_conf.dat',exist=FILE_EXIST)
          IF (FILE_EXIST) THEN
             OPEN(UNIT=24,FILE='particle_gener_conf.dat',&
-               STATUS='REPLACE')
-         ELSE
-            OPEN(UNIT=24,FILE='particle_gener_conf.dat',&
-               STATUS='NEW')
+                 STATUS='REPLACE')
+            DO L = 1, PARTICLES
+               WRITE(24,'(10(X,ES12.5))')&
+                  (DES_POS_OLD(L,K),K=1,DIMN), DES_RADIUS(L),&
+                  RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
+            ENDDO
+            CLOSE(24)
          ENDIF
-         DO L = 1, PARTICLES
-            WRITE(24,'(10(X,ES12.5))')&
-               (DES_POS_OLD(L,K),K=1,DIMN), DES_RADIUS(L),&
-               RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
-         ENDDO
-         CLOSE(24)
       ELSE
          OPEN(UNIT=24,FILE='particle_input2.dat',&
               STATUS='REPLACE')

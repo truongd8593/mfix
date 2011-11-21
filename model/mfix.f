@@ -56,10 +56,11 @@
       USE compar      
       USE mpi_utility     
       USE parallel_mpi
-!DISTIO      
-      USE cdist
-      USE MFIX_netcdf
+      USE discretelement
+      USE mfix_pic
 
+!DISTIO      
+      USE cdist      
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -184,6 +185,8 @@
 !
       CALL GET_DATA 
 
+
+
 !
 !  Initialize all field variables as undefined
 !
@@ -236,18 +239,6 @@
       CALL PC_QUICKWIN 
 !
   101 CONTINUE
-
-
-!
-! if not netcdf writes asked for ... globally turn off netcdf
-      if (MFIX_usingNETCDF()) then
-         bGlobalNetcdf = .false.
-         do L = 1,20
-            if (bWrite_netcdf(L)) bGlobalNetcdf = .true.
-         end do
-      end if
-
-
       IF(AUTOMATIC_RESTART) THEN
          RUN_TYPE = 'RESTART_1'
          AUTOMATIC_RESTART = .FALSE.
@@ -308,8 +299,6 @@
             CALL WRITE_SPX0 (L, 0) 
             CALL WRITE_SPX1 (L, 0) 
          END DO 
-         call write_netcdf(0,0,time)
-
       CASE DEFAULT 
 !
          CALL START_LOG 
@@ -416,6 +405,31 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
+
+
+
+! Set constants and allocate/initialize DEM variables
+      IF(DISCRETE_ELEMENT) THEN
+! moving all of DES related initializations from get_data.f to here.
+! This is because it is best to initialize DES once all the fluid and
+! geometry information has been obtained and initial fields set. 
+! RG 2/15/2011         
+
+         CALL CHECK_DES_DATA
+         CALL CHECK_DES_BC
+         
+         CALL MAKE_ARRAYS_DES
+         !STOP
+      ELSE
+! If discrete_element is .false. then overwrite the following user DES
+! logicals which may be set to true in the input file 
+         DES_CONTINUUM_COUPLED = .FALSE.
+         DES_INTERP_ON = .FALSE.
+         TSUJI_DRAG = .FALSE.
+         PRINT_DES_DATA = .FALSE.
+         MPPIC = .FALSE. 
+         DES_ONEWAY_COUPLED = .false. 
+      ENDIF
 
 !DISTIO
 ! for creating files needed by post_mfix with distributed IO

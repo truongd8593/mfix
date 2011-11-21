@@ -16,6 +16,9 @@
 !    horizontal pipe", Powder technology, 71, 239-250, 1992              
 !
 !                                                                      C 
+! For parallel processing computation of each particle will be independent
+! if particles 2 and 3 in contact, the force will be computed on 
+! both particles hence update of FC of II is removed 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CFFCTOW(L, II,  NORM, DIST_LI)
      
@@ -38,7 +41,8 @@
 !-----------------------------------------------
 
       FC(L,:) = FC(L,:) + FN(L,:) + FT(L,:) 
-      FC(II,:) = FC(II,:) - FN(L,:) - FT(L,:)
+! Pradeep removed the following line
+!     FC(II,:) = FC(II,:) - FN(L,:) - FT(L,:)
 
 ! temporary holder of tangential force         
       FT_TMP(:) = FT(L,:)
@@ -53,7 +57,8 @@
       IF(DIMN.EQ.3) THEN 
          CALL DES_CROSSPRDCT(CROSSP, NORM, FT_TMP)
          TOW(L,:)  = TOW(L,:)  + DIST_CL*CROSSP(:)
-         TOW(II,:) = TOW(II,:) + DIST_CI*CROSSP(:)
+! Pradeep removed updating neighbour
+!         TOW(II,:) = TOW(II,:) + DIST_CI*CROSSP(:)
 ! remember torque is R cross FT, which, compared to I particle, are
 ! both negative for the J particle.  Therefore, the toqrue, unlike tangential
 ! and normal contact forces, will be in the same direction for both the 
@@ -61,7 +66,8 @@
       ELSE 
          CROSSP(1) = NORM(1)*FT_TMP(2) - NORM(2)*FT_TMP(1)
          TOW(L,1)  = TOW(L,1)  + DIST_CL*CROSSP(1)
-         TOW(II,1) = TOW(II,1) + DIST_CI*CROSSP(1)
+! Pradeep removed updating neighbour
+!         TOW(II,1) = TOW(II,1) + DIST_CI*CROSSP(1)
       ENDIF 
 
 

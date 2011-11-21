@@ -29,6 +29,7 @@
       USE physprop
       USE compar  
       USE drag  
+      USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -58,7 +59,7 @@
       DO M = 1, MMAX
 !$omp parallel do private(K, IJK, IJKT)
          DO IJK = ijkstart3, ijkend3
-            IF (.NOT.IP_AT_T(IJK)) THEN 
+            IF (.NOT.IP_AT_T(IJK).and.(.not.DES_ONEWAY_COUPLED)) THEN 
                K = K_OF(IJK) 
                IJKT = TOP_OF(IJK) 
 !

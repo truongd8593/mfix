@@ -37,6 +37,10 @@
       USE funits 
       USE rxns
 
+      USE cutcell
+      USE quadric
+
+
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,L
@@ -52,6 +56,22 @@
       INTEGER :: BCID
 
 
+
+      INTEGER, DIMENSION(DIMENSION_3,15) :: OLD_CONNECTIVITY
+      DOUBLE PRECISION, DIMENSION(DIMENSION_MAX_CUT_CELL) :: X_OLD_POINT,Y_OLD_POINT,Z_OLD_POINT
+
+      INTEGER, DIMENSION(6) :: NB
+
+      INTEGER :: IJK_NB,NODE_NB,N,N_NB,NC
+
+      DOUBLE PRECISION :: X1,Y1,Z1,X2,Y2,Z2,D,TOT_VOL_NODE,TOT_VOL_CELLS
+
+
+      DOUBLE PRECISION :: SCALAR_NODE_XYZ_TEMP(DIMENSION_3, 3)
+
+      DOUBLE PRECISION :: DIST, NORM1, NORM2, NORM3
+      INTEGER :: IJK2, I1, I2, J1, J2, K1, K2, II, JJ, KK 
+      LOGICAL :: COND_1, COND_2 
 
       include "function.inc"
 
@@ -182,6 +202,9 @@
 
          CALL GET_CELL_NODE_COORDINATES(IJK,'SCALAR')
 
+         SCALAR_NODE_XYZ_TEMP(IJK,1) = X_NODE(8)
+         SCALAR_NODE_XYZ_TEMP(IJK,2) = Y_NODE(8)
+         SCALAR_NODE_XYZ_TEMP(IJK,3) = Z_NODE(8)
 !======================================================================
 !  Initialize location of velocity nodes
 !======================================================================
@@ -298,8 +321,268 @@
 
             ENDIF
 
+         ENDIF        ! Interior cell
+      END DO          ! IJK Loop
+
+
+!      print*,'Before removing duplicate nodes:'
+      DO IJK = IJKSTART3, IJKEND3,-1
+         IF(CUT_CELL_AT(IJK)) THEN
+            print*,'==========================================================='
+            print*,'IJK,  I,J=',IJK,I_OF(IJK),J_OF(IJK)
+            print*,'NUMBER_OF_NODES=',NUMBER_OF_NODES(IJK)
+            DO NODE = 1,NUMBER_OF_NODES(IJK)
+               IF(CONNECTIVITY(IJK,NODE)>IJKEND3) THEN
+                  print*,'CNCT=',NODE,CONNECTIVITY(IJK,NODE),X_NEW_POINT(CONNECTIVITY(IJK,NODE)-IJKEND3),Y_NEW_POINT(CONNECTIVITY(IJK,NODE)-IJKEND3)
+               ELSE
+                  print*,'CNCT=',NODE,CONNECTIVITY(IJK,NODE)
+               ENDIF
+            ENDDO
+            print*,''
          ENDIF
-      END DO
+      ENDDO
+
+
+
+      OLD_CONNECTIVITY = CONNECTIVITY
+!      X_OLD_POINT      = X_NEW_POINT
+!      Y_OLD_POINT      = Y_NEW_POINT
+!      Z_OLD_POINT      = Z_NEW_POINT
+
+
+!======================================================================
+!  Removing duplicate new points
+!  Up to here, a cut face node that is shared among neighbor cells had 
+!  a different index, and appeared as a duplicate node.
+!  The list will be updated and duplicate nodes will be removed from 
+!  the connectivity list
+!  This is done to ensure that we can assign a volume surrounding each 
+!  node, that will be used to compute solids volume fraction for MPPIC
+!======================================================================
+
+      print*,'Removing duplicate nodes...'
+
+      DO IJK = IJKSTART3, IJKEND3
+         IF(CUT_CELL_AT(IJK)) THEN          ! for each cut cell, identify neibhor cells that are also cut cells
+                                             ! Look east and north in 2D, and also Top in 3D
+            NB(1) = IP_OF(IJK)
+            NB(2) = JP_OF(IJK)
+
+            IF(NO_K) THEN
+               N_NB = 2
+            ELSE
+               N_NB = 3
+               NB(3) = KP_OF(IJK)
+            ENDIF
+
+
+            DO N = 1,N_NB
+               IF(CUT_CELL_AT(NB(N))) THEN   ! For two neighbor cut cells, compare each cut-face node to remove duplicates
+
+                  IJK_NB = NB(N)
+
+!                  print*,'comparing:',IJK,' and',IJK_NB
+
+                  DO NODE = 1,NUMBER_OF_NODES(IJK)
+                     IF(OLD_CONNECTIVITY(IJK,NODE)>IJKEND3) THEN  ! node belongs to the cut-face
+
+                        X1 = X_NEW_POINT(OLD_CONNECTIVITY(IJK,NODE)-IJKEND3)
+                        Y1 = Y_NEW_POINT(OLD_CONNECTIVITY(IJK,NODE)-IJKEND3)
+                        Z1 = Z_NEW_POINT(OLD_CONNECTIVITY(IJK,NODE)-IJKEND3)
+
+
+                        DO NODE_NB = 1,NUMBER_OF_NODES(IJK_NB)
+                           IF(OLD_CONNECTIVITY(IJK_NB,NODE_NB)>IJKEND3) THEN  ! node belongs to the cut-face
+
+                              X2 = X_NEW_POINT(OLD_CONNECTIVITY(IJK_NB,NODE_NB)-IJKEND3)
+                              Y2 = Y_NEW_POINT(OLD_CONNECTIVITY(IJK_NB,NODE_NB)-IJKEND3)
+                              Z2 = Z_NEW_POINT(OLD_CONNECTIVITY(IJK_NB,NODE_NB)-IJKEND3)
+
+                              D = (X2-X1)**2 + (Y2-Y1)**2 + (Z2-Z1)**2         ! compare coordinates of cut-face nodes
+    
+                              IF(D<TOL_F) THEN                                ! Duplicate nodes have identical coordinates (within tolerance TO_F)
+                                                                               ! keep the smallest node ID
+!                                 print*,'DULICATE NODES:',NODE,NODE_NB,OLD_CONNECTIVITY(IJK,NODE),OLD_CONNECTIVITY(IJK_NB,NODE_NB)
+
+                                 NC = MIN(OLD_CONNECTIVITY(IJK,NODE),OLD_CONNECTIVITY(IJK_NB,NODE_NB))
+                                 CONNECTIVITY(IJK   ,NODE   ) = NC
+                                 CONNECTIVITY(IJK_NB,NODE_NB) = NC
+
+                              ENDIF
+                           ENDIF
+                        ENDDO
+
+                     ENDIF
+                  ENDDO
+
+               ENDIF
+            ENDDO
+
+         ENDIF
+      ENDDO
+
+      ALLOCATE(SCALAR_NODE_XYZ(DIMENSION_3 + NUMBER_OF_NEW_POINTS,3))
+      ALLOCATE(Ovol_around_node(DIMENSION_3 + NUMBER_OF_NEW_POINTS))
+      ALLOCATE(SCALAR_NODE_ATWALL(DIMENSION_3 + NUMBER_OF_NEW_POINTS))
+
+      !first fill with standard nodes 
+      DO IJK = IJKSTART3, IJKEND3
+         SCALAR_NODE_XYZ(IJK,1:3)  = SCALAR_NODE_XYZ_TEMP(IJK,1:3)
+      ENDDO
+
+      !now fill with cut-face nodes 
+      DO IJK = 1,NUMBER_OF_NEW_POINTS
+         SCALAR_NODE_XYZ(IJKEND3+IJK,1) = X_NEW_POINT(IJK)
+         SCALAR_NODE_XYZ(IJKEND3+IJK,2) = Y_NEW_POINT(IJK)
+         SCALAR_NODE_XYZ(IJKEND3+IJK,3) = Z_NEW_POINT(IJK)
+      ENDDO
+
+
+      
+      SCALAR_NODE_ATWALL(:)  = .true. 
+      !Rahul:
+      !One could either set all scalar_node_atwall to false and 
+      !then set to true the nodes that are found as on the wall or outside 
+      !the doamin
+      !In some situations, a node can be deemed to be both inside 
+      !and outside the domain depending upon which cell you look from.
+      !Think of a small cell. According to the small cells, all the nodes
+      !are outside the domain, but from the perspective or surrounding 
+      !cut-cells, some of the nodes of this small cell are within the domain. 
+      
+      !so I'm setting all the points as being outside the domain.
+      !if a point is ever found to be in the domain, then it will stay away
+      !and further tests will not be able to revert it.
+      IJKLOOP: DO IJK = IJKSTART3, IJKEND3
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
+         IF(.not. IS_ON_myPE_wobnd(I,J,K)) cycle 
+         
+         I1 = I-1
+         I2 = I
+         J1 = J-1
+         J2 = J
+         
+         IF(NO_K) THEN 
+            K1 = K
+            K2 = K
+         ELSE
+            K1 = K-1
+            K2 = K
+         ENDIF
+         !Convention used to number node numbers is described below 
+         
+         ! i=1, j=2           i=2, j=2
+         !   _____________________
+         !   |                   |
+         !   |  I = 2, J = 2     |
+         !   |___________________|
+         ! i=1, j=1           i=2, j=1
+
+         !Let's say the scalar cell with I = 2 and J = 2, i.e., the
+         !first scalar cell in either direction.
+         !then this scalar cell's node numbering in x- direction 
+         !will go from 1 to 2 and likewise in other directions. 
+         DO KK = K1, K2
+            DO JJ = J1, J2
+               DO II = I1, I2
+                  IJK2 = funijk(II, JJ, KK) 
+                  COND_1 = .false.
+                  COND_2 = .false. 
+                  !if it was already found to be inside the domain, then don't bother
+                  IF(.not.SCALAR_NODE_ATWALL(IJK2))  CYCLE 
+
+                  IF(.not.FLUID_AT(IJK)) THEN 
+                     !do nothing 
+                  ELSE
+                     !IJK is a fluid scalar cell. Check if it is
+                     !a cut-cell or not
+                     IF(CUT_CELL_AT(IJK)) THEN 
+                        CALL GET_DEL_H_DES(IJK,'SCALAR', & 
+                        & SCALAR_NODE_XYZ(IJK2,1), SCALAR_NODE_XYZ(IJK2,2), &
+                        & SCALAR_NODE_XYZ(IJK2,3), & 
+                        & DIST, NORM1, NORM2, NORM3, .true.)
+                        IF(DIST.GE.ZERO) THEN 
+                           SCALAR_NODE_ATWALL(IJK2)  = .false.
+                           COND_1 =  .true.
+                        ENDIF
+                     ELSE
+                        SCALAR_NODE_ATWALL(IJK2)  = .false.
+                        COND_2 = .true.
+                     ENDIF
+                  ENDIF
+                  !if(II == 1) write(*,'(10x, A, 4(2x,i10),3(2x,L2))') 'I1,J1, I, J, ATWALL, COND1, COND2 =  ', II, JJ, I, J,  SCALAR_NODE_ATWALL(IJK2), COND_1, COND_2
+               ENDDO
+            ENDDO
+         ENDDO
+
+      ENDDO IJKLOOP
+
+!      print*,'After removing duplicate nodes:'
+      DO IJK = IJKSTART3, IJKEND3,-1
+         print*,'==========================================================='
+         print*,'IJK,  I,J=',IJK,I_OF(IJK),J_OF(IJK)
+         print*,'NUMBER_OF_NODES=',NUMBER_OF_NODES(IJK)
+         DO NODE = 1,NUMBER_OF_NODES(IJK)
+            print*,'CNCT=',NODE,CONNECTIVITY(IJK,NODE),SCALAR_NODE_XYZ(CONNECTIVITY(IJK,NODE),1),SCALAR_NODE_XYZ(CONNECTIVITY(IJK,NODE),2)
+         ENDDO
+         print*,''
+      ENDDO
+
+
+
+      Ovol_around_node = ZERO !UNDEFINED
+
+      TOT_VOL_CELLS = ZERO
+
+      DO IJK = IJKSTART3, IJKEND3
+
+         DO NODE = 1,NUMBER_OF_NODES(IJK)
+            NC = CONNECTIVITY(IJK,NODE)
+            Ovol_around_node(NC) = Ovol_around_node(NC) + VOL(IJK)/NUMBER_OF_NODES(IJK)
+         ENDDO
+
+!         print*,'IJK,VOL=',IJK,VOL(IJK)
+
+ 
+         IF(INTERIOR_CELL_AT(IJK)) TOT_VOL_CELLS = TOT_VOL_CELLS + VOL(IJK)
+
+
+      ENDDO
+
+
+      TOT_VOL_NODE= ZERO
+
+      DO IJK = IJKSTART3, IJKEND3 + NUMBER_OF_NEW_POINTS    ! Loop over all nodes 
+
+         IF(Ovol_around_node(IJK)>ZERO) THEN
+!             print*,'NODE,VOL=',IJK,Ovol_around_node(IJK)
+             TOT_VOL_NODE = TOT_VOL_NODE + Ovol_around_node(IJK)
+             Ovol_around_node(IJK) = ONE / Ovol_around_node(IJK)    ! Store One/volume
+         ENDIF
+
+
+      ENDDO
+
+      print*,'==========================================================='
+      print*,'Total volume around nodes=',TOT_VOL_NODE
+      print*,'Total volume =',TOT_VOL_CELLS
+      print*,'The two volumes above should be the same.'
+      print*,'==========================================================='
+      
+      
+
+
+
+
+
+
+
+
+
+
+
 
       RETURN
       END SUBROUTINE SET_3D_CUT_CELL_FLAGS

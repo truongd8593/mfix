@@ -6,18 +6,23 @@
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
+!  Revision: For parallel processing modifications are made to         C
+!            accomadate ghost cells                                    C   
+!  Author:   Pradeep G.                                                C  
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE DES_GRANULAR_TEMPERATURE
 
+      USE discretelement
       USE param
       USE param1
       USE run
       USE geometry
       USE indices
       USE compar
-      USE discretelement
+      USE sendrecv
+      USE physprop
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -28,9 +33,9 @@
 ! 
       INTEGER M, LL
 ! counter for no. of particles in phase m in cell ijk 
-      INTEGER NP_PHASE(DIMENSION_3, DES_MMAX)
+      INTEGER NP_PHASE(DIMENSION_3, MMAX)
 ! temporary variable for mth phase granular temperature in cell ijk
-      DOUBLE PRECISION TEMP(DIMENSION_3, DES_MMAX)
+      DOUBLE PRECISION TEMP(DIMENSION_3, MMAX)
 ! accounted for particles
       INTEGER PC             
 ! squared particle velocity v.v
@@ -42,8 +47,6 @@
       INCLUDE 'fun_avg2.inc'
 
 
-      IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT
-
 ! Calculate a local species granular temperature for current instant of
 ! time.  Note that the following calculation of species granular
 ! temperature employs a fluctuating particle velocity that is defined
@@ -54,10 +57,11 @@
 ! The following calculations are performed on the 'fluid' grid
       TEMP(:,:) = ZERO
       NP_PHASE(:,:) = ZERO
-      PC = 1
-      DO LL = 1, MAX_PIS
-         IF(PC .GT. PIS) EXIT
-         IF(.NOT.PEA(LL,1)) CYCLE    
+      PC = 0
+      DO LL = 1, MAX_PIP
+! pradeep skipping ghost particles
+         if(pea(ll,1)) pc = pc + 1
+         IF(.NOT.PEA(LL,1) .or. pea(ll,4)) CYCLE    
 
          I = PIJK(LL,1)
          J = PIJK(LL,2)
@@ -76,14 +80,14 @@
                (DES_VEL_NEW(LL,3)-DES_W_s(IJK,M))**2 
          ENDIF
 
-         PC = PC + 1
+         IF(PC .EQ. PIP) EXIT
       ENDDO
 
 ! loop over all fluid cells      
       DO IJK = IJKSTART3, IJKEND3
          IF(FLUID_AT(IJK)) THEN
 
-            DO M = 1,DES_MMAX
+            DO M = 1,MMAX
                IF (NP_PHASE(IJK,M) > 0 ) THEN
                   DES_THETA(IJK,M) = TEMP(IJK,M)/&
                      DBLE(DIMN*NP_PHASE(IJK,M))
@@ -106,10 +110,11 @@
 
 ! Calculate global average velocity, kinetic energy &
 ! potential energy
-      PC = 1
-      DO LL = 1, MAX_PIS
-         IF(PC .GT. PIS) EXIT
-         IF(.NOT.PEA(LL,1)) CYCLE
+      PC = 0
+      DO LL = 1, MAX_PIP
+! pradeep skipping ghost particles
+         if(pea(ll,1)) pc = pc + 1
+         IF(.NOT.PEA(LL,1) .or. pea(ll,4)) CYCLE    
 
          SQR_VEL = ZERO
          DO I = 1, DIMN
@@ -121,11 +126,11 @@
             DES_POS_NEW(LL,2)
          DES_VEL_AVG(:) =  DES_VEL_AVG(:) + DES_VEL_NEW(LL,:)
 
-         PC = PC + 1
+         IF(PC .EQ. PIP) EXIT
       ENDDO
 
-!J.Musser changed PARTICLES TO PIS
-      IF (PIS > 0) DES_VEL_AVG(:) = DES_VEL_AVG(:)/DBLE(PIS)
+!J.Musser changed PARTICLES TO PIP 
+      IF(PIP > 0) DES_VEL_AVG(:) = DES_VEL_AVG(:)/DBLE(PIP)
 
 ! The following quantities are primarily used for debugging/developing
 ! and allow a quick check of the energy conservation in the system.
@@ -133,34 +138,28 @@
 ! Calculate x,y,z components of global energy & granular temperature
       GLOBAL_GRAN_ENERGY(:) = ZERO
       GLOBAL_GRAN_TEMP(:)  = ZERO
-      PC = 1
-      DO LL = 1, MAX_PIS
-         IF(PC .GT. PIS) EXIT
-         IF(.NOT.PEA(LL,1)) CYCLE
+      PC = 0
+      DO LL = 1, MAX_PIP
+! pradeep skipping ghost particles
+         if(pea(ll,1)) pc = pc + 1
+         IF(.NOT.PEA(LL,1) .or. pea(ll,4)) CYCLE    
 
          GLOBAL_GRAN_ENERGY(:) = GLOBAL_GRAN_ENERGY(:) + &
             0.5d0*PMASS(LL)*(DES_VEL_NEW(LL,:)-DES_VEL_AVG(:))**2
          GLOBAL_GRAN_TEMP(:) = GLOBAL_GRAN_TEMP(:) + &
             (DES_VEL_NEW(LL,:)-DES_VEL_AVG(:))**2
 
-         PC = PC + 1
+         IF(PC .EQ. PIP) EXIT
       ENDDO
 
-      IF (PIS > 0) GLOBAL_GRAN_ENERGY(:) =  GLOBAL_GRAN_ENERGY(:)/DBLE(PIS)
-      IF (PIS > 0) GLOBAL_GRAN_TEMP(:) =  GLOBAL_GRAN_TEMP(:)/DBLE(PIS)
+      IF(PIP > 0) GLOBAL_GRAN_ENERGY(:) =  GLOBAL_GRAN_ENERGY(:)/DBLE(PIP)
+      IF(PIP > 0) GLOBAL_GRAN_TEMP(:) =  GLOBAL_GRAN_TEMP(:)/DBLE(PIP)
 
       RETURN
 
       END SUBROUTINE DES_GRANULAR_TEMPERATURE
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!  Module name: CALC_DES_BEDHEIGHT
-!  Purpose: Calculate an average bed height for each solids phase
-!  present
-!     
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       SUBROUTINE CALC_DES_BEDHEIGHT
 
       USE indices
@@ -168,6 +167,8 @@
       USE compar
       USE discretelement
       USE des_bc
+      USE physprop
+      USE fldvar
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -188,7 +189,7 @@
 ! volume fraction of phase M in fluid cell
       DOUBLE PRECISION EP_SM      
 ! tmp variables for calculations
-      DOUBLE PRECISION :: tmp_num(DES_MMAX), tmp_den(DES_MMAX)
+      DOUBLE PRECISION :: tmp_num(MMAX), tmp_den(MMAX)
 
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -199,37 +200,37 @@
       tmp_den(:) = ZERO 
       DO IJK = IJKSTART3, IJKEND3
          J = J_OF(IJK)      
-         DO M = 1, DES_MMAX      
-            IF(DES_ROP_S(IJK,M) > ZERO) THEN
+         DO M = 1, MMAX      
+            IF(ROP_S(IJK,M) > ZERO) THEN
                hcell = 0.5d0*(YN(J)+YN(J-1))
-               EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
+               EP_SM = ROP_S(IJK,M)/RO_S(M)
                tmp_num(M) = tmp_num(M) + EP_SM*hcell*VOL(IJK)
                tmp_den(M) = tmp_den(M) + EP_SM*VOL(IJK)
             ENDIF
          ENDDO
       ENDDO
 ! calculate avg height for each phase
-      IF (PIS >0) bed_height(:) = tmp_num(:)/tmp_den(:)
+      IF (PIP >0) bed_height(:) = tmp_num(:)/tmp_den(:)
 
 
 ! alternative method to calculating bed height (turned off atm)
       IF(.FALSE.) THEN 
       tmp_num(:) = ZERO 
       tmp_den(:) = ZERO 
-      PC = 1
 
-      DO L = 1, MAX_PIS
-         IF(PC .GT. PIS) EXIT
-         IF(.NOT.PEA(L,1)) CYCLE
-
+      PC = 0
+      DO L = 1, MAX_PIP
+! pradeep skipping ghost particles
+         IF(PEA(L,1)) PC = PC + 1
+         IF(.NOT.PEA(L,1) .OR. PEA(L,4)) CYCLE    
          M = PIJK(L,5)
          hpart = DES_POS_NEW(L,2)
          tmp_num(M) = tmp_num(M) + hpart
          tmp_den(M) = tmp_den(M) + 1
-         PC = PC + 1
+         IF(PC .EQ. PIP) EXIT
       ENDDO
       ! calculate avg height for each phase
-      IF (PIS >0) bed_height(:) = tmp_num(:)/tmp_den(:)
+      IF (PIP >0) bed_height(:) = tmp_num(:)/tmp_den(:)
       ENDIF
 
       RETURN

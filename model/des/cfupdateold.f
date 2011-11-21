@@ -27,17 +27,17 @@
 
 !-----------------------------------------------
 
-      PC = 1
-      DO LL = 1, MAX_PIS
-         IF(PC .GT. PIS) EXIT
-         IF(.NOT.PEA(LL,1)) CYCLE
+      PC = 0
+      DO LL = 1, MAX_PIP
+         if (pea(ll,1)) pc = pc + 1 
+         IF(.NOT.PEA(LL,1) .or. pea(ll,4)) CYCLE
 
          DES_VEL_OOLD(LL,:) = DES_VEL_OLD(LL,:)
          DES_POS_OLD(LL,:)  = DES_POS_NEW(LL,:)
          DES_VEL_OLD(LL,:)  = DES_VEL_NEW(LL,:)
          OMEGA_OLD(LL,:)    = OMEGA_NEW(LL,:)
 
-         PC = PC + 1
+         IF(PC .eq. PIP) EXIT
       ENDDO
  
 

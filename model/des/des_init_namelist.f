@@ -13,6 +13,7 @@
 
       USE param1
       USE discretelement
+      USE mfix_pic
       USE des_bc
       
       IMPLICIT NONE
@@ -37,7 +38,6 @@
       DES_INTG_METHOD = 'EULER'
       USE_COHESION = .FALSE.
       DES_CONTINUUM_HYBRID = .FALSE.
-
 
       DES_NEIGHBOR_SEARCH = 1
       DO_NSEARCH = .FALSE.
@@ -82,11 +82,6 @@
       e_young(:) = undefined
       v_poisson(:) = undefined
 
-      DES_D_P0(:) = UNDEFINED
-      DES_RO_S(:) = UNDEFINED
-      DES_MMAX = 1
-
-! system properties      
       DIMN = UNDEFINED_I  
       WX1 = UNDEFINED
       EX2 = UNDEFINED
@@ -157,7 +152,14 @@
       PVEL_StDev = zero 
       pgrad(:) = zero 
 
+      MAX_DES_BC_CELL = 4
+      MPPIC_SOLID_STRESS_SNIDER = .false. 
+      MPPIC_COEFF_EN = 0.0
+      MPPIC_PDRAG_IMPLICIT = .false. 
 
-
+      PSFAC_FRIC_PIC = 100 
+      FRIC_EXP_PIC = 2.5
+      FRIC_NON_SING_FAC = 1E-07
+      
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST

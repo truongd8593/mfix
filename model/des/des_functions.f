@@ -4,9 +4,9 @@
 !  Purpose: Calculate Dot Product                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
+!
       DOUBLE PRECISION FUNCTION DES_DOTPRDCT(XX,YY) 
-
+!
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -32,12 +32,12 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: DES_CROSSPRDCT                                         C
-!  Purpose: Calculate Cross Product                                    C
+!  Purpose: Calculate Cross Product                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
+!
       SUBROUTINE DES_CROSSPRDCT (AA, XX,YY) 
-
+!
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -61,6 +61,36 @@
       END SUBROUTINE DES_CROSSPRDCT
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: DES_CROSSPRDCT                                         C
+!  Purpose: Calculate Cross Product                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE DES_CROSSPRDCT_3D (AA, XX,YY) 
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1  
+      USE discretelement
+      IMPLICIT NONE
+      
+      DOUBLE PRECISION, INTENT(IN), DIMENSION(3) :: XX, YY
+      DOUBLE PRECISION, INTENT(OUT), DIMENSION(3) :: AA
+      
+ 
+      AA(1) = XX(2)*YY(3) - XX(3)*YY(2) 
+      AA(2) = XX(3)*YY(1) - XX(1)*YY(3) 
+      AA(3) = XX(1)*YY(2) - XX(2)*YY(1)
+
+      RETURN  
+      END SUBROUTINE DES_CROSSPRDCT_3D
+
+      
+      
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
@@ -133,6 +163,7 @@
          'limits ',A,'=',I5,/10X,' and ',A,'=',I5,'.',/1X,70('*')/)
 
       END FUNCTION DES_GETINDEXFROMPOS
+
 
 
 

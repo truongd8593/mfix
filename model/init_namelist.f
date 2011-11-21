@@ -437,6 +437,7 @@
          BC_V_G(LC) = UNDEFINED 
          BC_W_G(LC) = UNDEFINED 
          BC_TYPE(LC) = UNDEFINED_C 
+         BC_APPLY_TO_MPPIC(LC) = .true.
          BC_VOLFLOW_G(LC) = UNDEFINED 
          BC_MASSFLOW_G(LC) = UNDEFINED 
          BC_DT_0(LC) = UNDEFINED 

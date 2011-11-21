@@ -134,6 +134,14 @@
 !                      Type of boundary: MASS_INFLOW, MASS_OUTFLOW,
 !                      P_INFLOW, P_OUTFLOW, FREE_SLIP_WALL, NO_SLIP_WALL
       CHARACTER*16     BC_TYPE (DIMENSION_BC)
+
+!rahul:
+!                      FLAG to specify if this BC applies to solid phase 
+!                      in MPPIC implementation or not. For example, setting 
+!                      Pressure outflow only for gas-phase. 
+
+      LOGICAL          BC_APPLY_TO_MPPIC (DIMENSION_BC)
+
 !
 !                      Gas volumetric flow rate through the boundary
       DOUBLE PRECISION BC_VOLFLOW_g (DIMENSION_BC)

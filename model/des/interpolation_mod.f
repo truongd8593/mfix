@@ -16,7 +16,7 @@ MODULE interpolation
   
   PRIVATE 
 
-  PUBLIC:: set_interpolation_stencil,  set_interpolation_scheme
+  PUBLIC:: set_interpolation_stencil,  set_interpolation_scheme, set_interpolation_pstencil, array_dot_product
 
   PUBLIC:: interpolator
   INTERFACE interpolator
@@ -29,7 +29,13 @@ MODULE interpolation
      MODULE PROCEDURE calc_weightderiv_threed
      MODULE PROCEDURE calc_weightderiv_twod
   END INTERFACE
-      
+
+  INTERFACE array_dot_product
+      Module procedure array_dot_product_1d
+      Module procedure array_dot_product_2d
+      Module procedure array_dot_product_3d
+  END INTERFACE
+
   SAVE
 
 ! the interpolator subroutine essentially returns the value of interp_scl/interp_vec 
@@ -77,6 +83,60 @@ MODULE interpolation
 
  CONTAINS
 
+        !----------
+  ! A . B where A and B are arrays of the same dimensions
+  !----------
+  !----------
+  FUNCTION array_dot_product_3d(A,B)  !3D Arrays
+    Real(prcn):: array_dot_product_3d
+
+    Integer:: i, j, k, s1, s2, s3
+    Real(prcn), Dimension(:,:,:), Intent(in):: A, B
+
+    s1 = SIZE(A,1)
+    s2 = SIZE(A,2)
+    s3 = SIZE(A,3)
+
+    array_dot_product_3d = zero
+    Do 10 i = 1,s1
+    Do 10 j = 1,s2
+    Do 10 k = 1,s3
+      array_dot_product_3d = array_dot_product_3d   &
+                            + A(i,j,k)*B(i,j,k)
+    10 Continue
+  END FUNCTION array_dot_product_3d
+
+  FUNCTION array_dot_product_2d(A,B)  !2D Arrays
+    Real(prcn):: array_dot_product_2d
+
+    Integer:: i, j, s1, s2
+    Real(prcn), Dimension(:,:), Intent(in):: A, B
+
+    s1 = SIZE(A,1)
+    s2 = SIZE(A,2)
+
+    array_dot_product_2d = zero
+    Do 10 i = 1,s1
+    Do 10 j = 1,s2
+      array_dot_product_2d = array_dot_product_2d   &
+                            + A(i,j)*B(i,j)
+    10 Continue
+  END FUNCTION array_dot_product_2d
+
+  FUNCTION array_dot_product_1d(A,B)  !1D Arrays
+    Real(prcn):: array_dot_product_1d
+
+    Integer:: i, s1
+    Real(prcn), Dimension(:), Intent(in):: A, B
+
+    s1 = SIZE(A,1)
+
+    array_dot_product_1d = zero
+    Do 10 i = 1,s1
+      array_dot_product_1d = array_dot_product_1d   &
+                            + A(i)*B(i)
+    10 Continue
+  END FUNCTION array_dot_product_1d
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -203,6 +263,100 @@ MODULE interpolation
     IF(PRESENT(ordernew)) ordernew = ordernewtmp
 
   END SUBROUTINE set_interpolation_stencil
+
+  SUBROUTINE set_interpolation_pstencil(pc, ib,ie,jb,je,kb,ke, isch&
+       &,dimprob, ordernew)
+       !USE discretelement, ONLY : order,ob2l,ob2r,  intx_per, inty_per, intz_per
+    USE geometry 
+    
+    IMPLICIT NONE 
+    INTEGER, DIMENSION(3), INTENT(in):: pc
+    INTEGER :: im,jm,km
+    INTEGER, INTENT(out):: ib, ie, jb, je, kb, ke 
+    INTEGER, INTENT(in) :: dimprob
+    INTEGER, OPTIONAL :: ordernew
+    CHARACTER*5, INTENT(in) :: isch 
+    INTEGER :: ob2rtmp, ob2ltmp, ordertemp, ordernewtmp
+    ob2l = (order+1)/2
+    ob2r = order/2 
+    im = imax1
+    jm = jmax1
+    km = kmax1
+    
+    SELECT CASE(isch)
+    CASE('csi')
+       
+       ob2rtmp = ob2r
+       ob2ltmp = ob2l
+       ordertemp = order
+!!$       IF(order.NE.3.AND.(pc(1).EQ.1.OR.pc(1).EQ.im&
+!!$            &-1.OR.pc(2).EQ.1.OR.pc(2).EQ.jm&
+!!$            &-1.OR.pc(3).EQ.1.OR.pc(3).EQ.km-1)) order = 3
+       !To make the order at boundary cells for csi equal to 3. 
+       !print*,'ob2l = ',ob2l,ob2r
+       ib = MAX(1 ,pc(1) - (ob2l - 1)) !non-periodic
+       ie = MIN(im,pc(1) + ob2r)
+          IF (ib.EQ.1 ) ie = ib + order - 1
+          IF (ie.EQ.im) ib = ie - order + 1
+
+
+       jb = MAX(1 ,pc(2) - (ob2l - 1)) !non-periodic
+       je = MIN(jm,pc(2) + ob2r)
+
+          IF (jb.EQ.1 ) je = jb + order - 1
+          IF (je.EQ.jm) jb = je - order + 1
+
+
+       kb = MAX(1 ,pc(3) - (ob2l - 1)) !non-periodic
+       ke = MIN(km,pc(3) + ob2r)
+
+          IF (kb.EQ.1 ) ke = kb + order - 1
+          IF (ke.EQ.km) kb = ke - order + 1
+
+
+       ob2r =  ob2rtmp 
+       ob2l = ob2ltmp
+       ordernewtmp = order
+
+       !Print*,'ib,ie .... in processing =', ib,ie,jb,je,kb,ke,&
+       !     & ordernewtmp
+       !PRINT*, 'pc = ',pc(1),pc(2),pc(3)!
+       order = ordertemp !reset the order
+
+    CASE('lpi')
+       !print*, 'order in set stencil = ', order,pc(3)
+       !Print*,'ib, ie = ', pc(1), ib, ie
+       
+       
+       ib = MAX(1 ,pc(1) - (ob2l - 1)) !non-periodic
+       ie = MIN(im,pc(1) + ob2r)
+
+          IF (ib.EQ.1 ) ie = ib + order - 1
+          IF (ie.EQ.im) ib = ie - order + 1
+
+
+       jb = MAX(1 ,pc(2) - (ob2l - 1)) !non-periodic
+       je = MIN(jm,pc(2) + ob2r)
+
+          IF (jb.EQ.1 ) je = jb + order - 1
+          IF (je.EQ.jm) jb = je - order + 1
+
+
+       kb = MAX(1 ,pc(3) - (ob2l - 1)) !non-periodic
+       ke = MIN(km,pc(3) + ob2r)
+
+          IF (kb.EQ.1 ) ke = kb + order - 1
+          IF (ke.EQ.km) kb = ke - order + 1
+
+       ordernewtmp = order
+    END SELECT
+    IF(dimprob == 2) THEN 
+       kb = pc(3)
+       ke = pc(3)
+       !Print*,'kb,ke  =', kb,ke
+    ENDIF
+    IF(PRESENT(ordernew)) ordernew = ordernewtmp
+  END SUBROUTINE set_interpolation_pstencil
 
 
 
@@ -1905,6 +2059,7 @@ MODULE interpolation
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
     !USE discretelement, ONLY : scheme, interp_scheme, order,ob2l,ob2r,&
     !     & gstencil, vstencil, sstencil, wtderivp
+      USE param 
     IMPLICIT NONE 
 !-----------------------------------------------
 ! Local variables
@@ -1962,6 +2117,20 @@ MODULE interpolation
     ELSEIF(ALLOCATED(pgradstencil).AND.order_orig.NE.order) THEN 
        DEALLOCATE(pgradstencil) 
        ALLOCATE(pgradstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
+    ENDIF
+
+    IF(.not.allocated(psgradstencil)) THEN
+       ALLOCATE(psgradstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
+    ELSEIF(ALLOCATED(psgradstencil).AND.order_orig.NE.order) THEN 
+       DEALLOCATE(psgradstencil) 
+       ALLOCATE(psgradstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
+    ENDIF
+      
+    IF(.not.allocated(VEL_SOL_STENCIL)) THEN
+       ALLOCATE(VEL_SOL_STENCIL  (order,order,max(1*(3-dimn), order*(dimn-2)),3, DIM_M))
+    ELSEIF(ALLOCATED(VEL_SOL_STENCIL).AND.order_orig.NE.order) THEN 
+       DEALLOCATE(VEL_SOL_STENCIL) 
+       ALLOCATE(VEL_SOL_STENCIL  (order,order,max(1*(3-dimn), order*(dimn-2)),3, DIM_M))
     ENDIF
 
     IF(.not.allocated(sstencil)) THEN

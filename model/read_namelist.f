@@ -84,6 +84,7 @@
       USE compar    
       USE parallel    
       USE discretelement
+      USE mfix_pic
       USE usr
       USE des_bc
 !DISTIO

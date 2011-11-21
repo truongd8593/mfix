@@ -200,20 +200,9 @@
 ! CHEM & ISAT: check rxns (nan xie)
       CALL CHECK_DATA_CHEM      
 
-
-! Set constants and allocate/initialize DEM variables
+! Rahul: consolidated all DEM intialization related calls in mfix.f 
       IF(DISCRETE_ELEMENT) THEN
-         CALL CHECK_DES_DATA
-         CALL CHECK_DES_BC
-         CALL DES_ALLOCATE_ARRAYS
-         CALL DES_INIT_ARRAYS 
-      ELSE
-! If discrete_element is .false. then overwrite the following user DES
-! logicals which may be set
-         DES_CONTINUUM_COUPLED = .FALSE.
-         DES_INTERP_ON = .FALSE.
-         TSUJI_DRAG = .FALSE.
-         PRINT_DES_DATA = .FALSE.
+        !do nothing here 
       ENDIF
 
 

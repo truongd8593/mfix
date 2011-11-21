@@ -2,7 +2,7 @@
 !                                                                    
 !  Module name: DES_ALLOCATE_ARRAYS                                     
 !  Purpose: allocate arrays for DES
-!                                  
+!  
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       SUBROUTINE DES_ALLOCATE_ARRAYS 
@@ -19,24 +19,32 @@
       Use compar
       Use physprop
       Use des_bc
+      use funits
+      use desgrid 
+      use desmpi
+      USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------      
 ! indices      
       INTEGER I, J, K, IJK, M 
+! domain volume      
+!      DOUBLE PRECISION :: VOL_DOMAIN
+! the maximum and minimum specified particle diameter 
+!      DOUBLE PRECISION MAX_DIAM, MIN_DIAM
+! for gener_part_config, the total solids volume fraction
+!      DOUBLE PRECISION TOT_VOL_FRAC
 ! the number of particles in the system
       INTEGER NPARTICLES
 !-----------------------------------------------
       INCLUDE 'function.inc'
-
-
-      WRITE(*,'(1X,A)')&
+      
+      if(dmp_log.and.debug_des) WRITE(unit_log,'(1X,A)') &
          '---------- START DES_ALLOCATE_ARRAYS ---------->'
-
-
-! Further initialization         
-!-----------------------------------------------         
+      if(dmp_log)write(unit_log,'(3X,A,I10)') &
+         'Total number of particles = ', PARTICLES      
+      if(dmp_log)write(unit_log,'(3X,A,I5)') 'Dimension = ', DIMN
       NWALLS = 2*DIMN
 
       IF(.NOT.NON_RECT_BC) THEN
@@ -45,223 +53,296 @@
 ! unclear why additional array space is needed via particles_factor
          NPARTICLES = PARTICLES * PARTICLES_FACTOR + NWALLS
       ELSE
-! T. Li : 19/01/2008 
+! Tingwen 19/01/2008 
 ! +2 to include the contact with edge and node
 ! only one edge contact or one node contact with wall is allowed for a particle
          NPARTICLES = PARTICLES * PARTICLES_FACTOR + NWALLS + 2 + NWALLS +1
       ENDIF
 
 ! J.Musser : Dynamic Particle Info
-      IF(MAX_PIS /= UNDEFINED_I .AND. &
-         MAX_PIS .GT. NPARTICLES) NPARTICLES = MAX_PIS
+      IF(MAX_PIS /= UNDEFINED_I .AND. MAX_PIS .GT. NPARTICLES) THEN
+         IF(DMP_LOG) WRITE(unit_log, 1002) MAX_PIS, NPARTICLES, MAX_PIS
+         IF(myPE.EQ.PE_IO) WRITE(*, 1002) MAX_PIS, NPARTICLES, MAX_PIS
+         NPARTICLES = MAX_PIS
+      ENDIF
 
+
+      
+      MAXQUADS = 5*PARTICLES*MQUAD_FACTOR
+      IF(MAXQUADS.LE.80000) MAXQUADS = 80000
       MAXNEIGHBORS = MN + 1 + NWALLS
 
+      IF(DIMN.EQ.3) THEN
+         NMQD = 11
+      ELSE
+         NMQD = 7
+      ENDIF
+
+!------------------------------------------------------------------------
+! pradeep 
+! For parallel processing the array size required should be either 
+! specified by the user or could be determined from total particles 
+! with some factor  
+      if (numpes.gt.1) then    
+      nparticles = (nparticles/numPEs)
+      end if 
+      if(nparticles .lt.1000) nparticles = 1000
+!max_pip adjusted to accomodate temporary variables used for walls 
+      
+     
+      max_pip = nparticles-2*nwalls -3  
+
+
+      IF(DMP_LOG) WRITE(unit_log, 1003)  NPARTICLES, MAX_PIP
+      IF(mype.eq.pe_IO) WRITE(*, 1003)  NPARTICLES, MAX_PIP 
+
+      allocate (iglobal_id(nparticles))
+
+      !check if max_pip is greater than maximum number of 
+      !computational particles for the MPPIC case 
+      !if not, then stop the code after printing the error message
+      IF(GENER_PART_CONFIG.AND.MPPIC) THEN 
+         IF(MAX_PIP.lt. SUM(PART_MPHASE(1:MMAX))) THEN 
+            
+            IF(DMP_LOG) WRITE(UNIT_LOG,1001) MAX_PIP, SUM(PART_MPHASE(1:MMAX))
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+      ENDIF
+
+ 1001 FORMAT(/1X,70('*')//' From: DES_ALLOCATE_ARRAYS',/,&
+         ' Message: MAX_PIP',4x,i4,4x,'is smaller than number of particles ',4x,i4,4x, /, &
+         & 'INCREASE PARTICLE FACTOR',/1X,70('*')/)
+
+ 1002 FORMAT(/2X & 
+      & 'USER SUPPLIED MAX_PIS = ', i10,/2X & 
+      & '> NPARTICLES (cumulative size of particle arrays) = ', i10, /2X, &
+      & 'THEREFORE, SETTING NPARTICLES TO ', i10)
+
+ 1003 FORMAT(/2X,  & 
+      & 'PARTICLE ARRAY SIZE ON EACH PROC  = ', i10,/2X & 
+      & 'MAXIMUM PHYSICAL PARTICLES (MAX_PIP) ON EACH PROC', i10, /2X, &
+      & 'NOTE THAT THIS VALUE OF MAX_PIP IS ONLY RELEVANT FOR A NEW RUN ', /2X &
+      & 'FOR RESTARTS, MAX_PIP WILL BE SET LATER ON')
+
+
+!------------------------------------------------------------------------
+
+! DES Allocatable arrays
 !-----------------------------------------------
-
-
-
-
-! Start allocate DES arrays
-!-----------------------------------------------
-! J.Musser: BC and dynamic particle info
-      ALLOCATE( PEA (NPARTICLES, 3) )
+! J.Musser : Dynamic Particle Info
+! pradeep: for parallel processing added another index (from 3 to 4)for ghost  
+      ALLOCATE( PEA (NPARTICLES, 4) )
 
 ! J.Musser: Allocate necessary arrays for discrete mass inlets      
       IF(DES_BCMI /= 0 .OR. DES_BCMO /=0) CALL ALLOCATE_DES_MIO
- 
-! Coefficients of restitution (normal & tangential)
-      ALLOCATE(REAL_EN(DES_MMAX,DES_MMAX)) 
-      ALLOCATE(REAL_EN_WALL(DES_MMAX))
-! for hertzian model need real_et, otherwise specify eta_t_fact 
-      ALLOCATE(REAL_ET(DES_MMAX,DES_MMAX)) 
-! for hertzian model need real_et_wall, otherwise specifiy eta_t_w_fact
-      ALLOCATE(REAL_ET_WALL(DES_MMAX)) 
 
-      ALLOCATE(DES_ETAN(DES_MMAX,DES_MMAX))
-      ALLOCATE(DES_ETAT(DES_MMAX,DES_MMAX))
-      ALLOCATE(DES_ETAN_WALL(DES_MMAX), DES_ETAT_WALL(DES_MMAX))
+! volume of nodes 
+      ALLOCATE(DES_VOL_NODE(DIMENSION_3))
 
+! ratio of actual volume of nodes to volume of nodes not corrected for
+! on the wall or being outside the domain 
+      ALLOCATE(DES_VOL_NODE_RATIO(DIMENSION_3))
 ! T. Li: Hertzian collision model
-      allocate(hert_kn(DES_MMAX,DES_MMAX))
-      allocate(hert_kt(DES_MMAX,DES_MMAX))
-      allocate(hert_kwn(DES_MMAX))
-      allocate(hert_kwt(DES_MMAX)) 
-      allocate(g_mod(DES_MMAX))
-            
+      allocate(hert_kn(MMAX,MMAX))
+      allocate(hert_kt(MMAX,MMAX))
+      allocate(hert_kwn(MMAX))
+      allocate(hert_kwt(MMAX)) 
+      allocate(g_mod(MMAX))
+      
+! COEFF OF RESITUTIONS 
+      ALLOCATE(REAL_EN(MMAX,MMAX)) 
+      ALLOCATE(REAL_EN_WALL(MMAX))
+! for hertzian model need real_et, otherwise specify eta_t_fact 
+      ALLOCATE(REAL_ET(MMAX,MMAX)) 
+! for hertzian model need real_et_wall, otherwise specifiy eta_t_w_fact
+      ALLOCATE(REAL_ET_WALL(MMAX)) 
+      ALLOCATE(DES_ETAN(MMAX,MMAX))
+      ALLOCATE(DES_ETAT(MMAX,MMAX))
+      ALLOCATE(DES_ETAN_WALL(MMAX), DES_ETAT_WALL(MMAX))
+
+      
 ! Particle attributes
 ! Radius, density, mass, moment of inertia           
-      Allocate( DES_RADIUS (NPARTICLES) )
-      Allocate( RO_Sol (NPARTICLES) )
-      Allocate( PVOL (NPARTICLES) )
-      Allocate( PMASS (NPARTICLES) )
-      Allocate( OMOI (NPARTICLES) )
-     
+      Allocate(  DES_RADIUS (NPARTICLES) )
+      Allocate(  RO_Sol (NPARTICLES) )
+      Allocate(  PVOL (NPARTICLES) )
+      Allocate(  PMASS (NPARTICLES) )
+      Allocate(  OMOI (NPARTICLES) )
+
+  
 ! Old and new particle positions, velocities (translational and
 ! rotational)       
-      Allocate( DES_POS_OLD (NPARTICLES,DIMN) )
-      Allocate( DES_POS_NEW (NPARTICLES,DIMN) )
-      Allocate( DES_VEL_OLD (NPARTICLES,DIMN) )
-      Allocate( DES_VEL_NEW (NPARTICLES,DIMN) )
-      Allocate( DES_VEL_OOLD(NPARTICLES,DIMN) )
-      Allocate( DES_ACC_OLD (NPARTICLES,DIMN) )
+      Allocate(  DES_POS_OLD (NPARTICLES,DIMN) )
+      Allocate(  DES_POS_NEW (NPARTICLES,DIMN) )
+      Allocate(  DES_VEL_OLD (NPARTICLES,DIMN) )
+      Allocate(  DES_VEL_NEW (NPARTICLES,DIMN) )
+      Allocate(  DES_VEL_OOLD(NPARTICLES,DIMN) )
+      Allocate(  DES_ACC_OLD (NPARTICLES,DIMN) )
 
       IF(DIMN.GT.2) THEN
-         Allocate( OMEGA_OLD (NPARTICLES,DIMN) )
-         Allocate( OMEGA_NEW (NPARTICLES,DIMN) )
-         ALLOCATE( ROT_ACC_OLD (NPARTICLES,DIMN))
+         Allocate(  OMEGA_OLD (NPARTICLES,DIMN) )
+         Allocate(  OMEGA_NEW (NPARTICLES,DIMN) )
+         ALLOCATE(  ROT_ACC_OLD (NPARTICLES,DIMN))
       ELSE
-         Allocate( OMEGA_OLD (NPARTICLES,1) )
-         Allocate( OMEGA_NEW (NPARTICLES,1) )
-         ALLOCATE( ROT_ACC_OLD (NPARTICLES,1))
+         Allocate(  OMEGA_OLD (NPARTICLES,1) )
+         Allocate(  OMEGA_NEW (NPARTICLES,1) )
+         ALLOCATE(  ROT_ACC_OLD (NPARTICLES,1))
       ENDIF        
-      Allocate( PPOS (NPARTICLES,DIMN) )
      
 ! Total, normal and tangetial forces      
-      Allocate( FC (NPARTICLES,DIMN) )
-      Allocate( FN (NPARTICLES,DIMN) )
-      Allocate( FT (NPARTICLES,DIMN) )
+      Allocate(  FC (NPARTICLES,DIMN) )
+      Allocate(  FN (NPARTICLES,DIMN) )
+      Allocate(  FT (NPARTICLES,DIMN) )
+      Allocate(  FTAN (DIMN) )
+      Allocate(  FNORM (DIMN) )
+      Allocate(  GRAV (DIMN) )
 
 ! Torque     
       IF(DIMN.EQ.3) THEN 
-         Allocate( TOW (NPARTICLES,DIMN) )
+         Allocate(  TOW (NPARTICLES,DIMN) )
       ELSE
-         Allocate( TOW (NPARTICLES,1) )
+         Allocate(  TOW (NPARTICLES,1) )
       ENDIF
      
+!      IF(.NOT.MPPIC) THEN 
+         !particle positions at the last call neighbor search algorithm call 
+         Allocate(  PPOS (NPARTICLES,DIMN) )
+
 ! Accumulated spring force      
-      Allocate( PFT (NPARTICLES,MAXNEIGHBORS,DIMN) )
+         Allocate(  PFT (NPARTICLES,MAXNEIGHBORS,DIMN) )
 ! Tracking variables for particle contact history
-      Allocate( PN (NPARTICLES, MAXNEIGHBORS) )
-      Allocate( PV (NPARTICLES, MAXNEIGHBORS) )
+         Allocate(  PN (NPARTICLES, MAXNEIGHBORS) )
+         Allocate(  PV (NPARTICLES, MAXNEIGHBORS) )
+         
+         ! Neighbor search
+         Allocate(  NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )
+
+         IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. DES_NEIGHBOR_SEARCH .EQ. 3) THEN
+            Allocate(  LQUAD (MAXQUADS, NMQD) )
+            Allocate(  PQUAD (NPARTICLES) )
+            Allocate(  CQUAD (MAXQUADS, NWALLS) )
+         ENDIF
+
+!      ENDIF
     
 ! Temporary variables to store wall position, velocity and normal vector
-      Allocate( DES_WALL_POS (NWALLS,DIMN) )
-      Allocate( DES_WALL_VEL (NWALLS,DIMN) )
-      Allocate( WALL_NORMAL  (NWALLS,DIMN) )
+      Allocate(  DES_WALL_POS (NWALLS,DIMN) )
+      Allocate(  DES_WALL_VEL (NWALLS,DIMN) )
+      Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
 
+! Variable that stores the particle in cell information (ID) on the
+! computational grid defined by imax, jmax and kmax in mfix.dat
+! pradeep- modified from 3d to 1d array 
+      ALLOCATE(PIC(DIMENSION_3))
+      DO IJK=1,DIMENSION_3
+        NULLIFY(pic(ijk)%p) 
+      ENDDO 
 
-! Neighbor search
-      Allocate( NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )
+! Particles in a computational cell (for volume fraction)
+      Allocate(  PINC (DIMENSION_3) )
+! For each particle track its i,j,k location on computational grid
+! defined by imax, jmax and kmax in mfix.dat and phase no.         
+      Allocate(  PIJK (NPARTICLES,5) )
 
-      IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. DES_NEIGHBOR_SEARCH .EQ. 3) THEN
-         MAXQUADS = 5*PARTICLES*MQUAD_FACTOR   
-         IF(MAXQUADS.LE.80000) MAXQUADS = 80000 
-         IF(DIMN.EQ.3) THEN   
-            NMQD = 11   
-         ELSE   
-            NMQD = 7   
-         ENDIF 
+! pradeep allocation of desgrid is moved to module desgrid
+! For each particle track its i, j, k index according to the grid
+! based search mesh when des_neighbor_search=4 
+!      IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN      
+!         ALLOCATE( DESGRIDSEARCH_PIJK (NPARTICLES,3) )
+!      ENDIF
 
-         Allocate( LQUAD (MAXQUADS, NMQD) )
-         Allocate( PQUAD (NPARTICLES) )
-         Allocate( CQUAD (MAXQUADS, NWALLS) )
+! Pradeep modifying the three dimensional arrays to one dimensional arrays
+      IF(.NOT.MPPIC) THEN 
+         IF(DES_INTERP_ON) THEN
+            ALLOCATE(DRAG_AM(DIMENSION_3, MMAX))
+            ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, MMAX))
+            ALLOCATE(WTBAR(DIMENSION_3,  MMAX))
+            ALLOCATE(VEL_FP(NPARTICLES,3))
+            ALLOCATE(F_gp(NPARTICLES ))  
+            F_gp(1:NPARTICLES)  = ZERO
+         ENDIF
+      ELSE
+         ALLOCATE(DRAG_AM(DIMENSION_3, MMAX))
+         ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, MMAX))
+         ALLOCATE(WTBAR(DIMENSION_3,  MMAX))
+         ALLOCATE(VEL_FP(NPARTICLES,3))
+         ALLOCATE(F_gp(NPARTICLES ))  
+         F_gp(1:NPARTICLES)  = ZERO
       ENDIF
 
-! For each particle track its i, j, k index according to the grid
-! based search mesh when des_neighbor_search=4
-      IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN      
-         ALLOCATE( DESGRIDSEARCH_PIJK (NPARTICLES,3) )
-! Variable that stores the particle in cell information (ID) on the
-! computational grid defined by cell/grid based search.  Similar to the
-! variable PIC but tailored for the grid based neighbor search option
-         ALLOCATE(DESGRIDSEARCH_PIC(DESGS_IMAX2,DESGS_JMAX2,DESGS_KMAX2))
-         DO K = 1,DESGS_KMAX2
-            DO J = 1,DESGS_JMAX2
-               DO I = 1,DESGS_IMAX2
-                  NULLIFY(DESGRIDSEARCH_PIC(I,J,K)%p) 
-               ENDDO 
-             ENDDO 
-          ENDDO                      
-      ENDIF   ! end if des_neighbor_search == 4
-
-! Variable that stores the particle in cell information (ID) on the
-! computational fluid grid defined by imax, jmax and kmax in mfix.dat
-      ALLOCATE(PIC(DIMENSION_I,DIMENSION_J,DIMENSION_K))
-      DO K = 1,KMAX3
-         DO J = 1,JMAX3
-            DO I = 1,IMAX3
-               NULLIFY(pic(i,j,k)%p) 
-            ENDDO 
-          ENDDO 
-       ENDDO 
-
-! Particles in a computational fluid cell (for volume fraction)
-      Allocate( PINC (DIMENSION_3) )
-! For each particle track its i,j,k location on computational fluid grid
-! defined by imax, jmax and kmax in mfix.dat and phase no.         
-      Allocate( PIJK (NPARTICLES,5) )
-
-      IF(DES_INTERP_ON) THEN
-         ALLOCATE(DRAG_AM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), DES_MMAX))
-         ALLOCATE(DRAG_BM(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), DIMN, DES_MMAX))
-         ALLOCATE(  WTBAR(DIMENSION_I-1, DIMENSION_J-1, MAX(1,DIMENSION_K-1), DES_MMAX))
-         ALLOCATE(VEL_FP(NPARTICLES,3))
-         ALLOCATE(F_gp(NPARTICLES))  
-         F_gp(1:NPARTICLES)  = ZERO
-      ENDIF 
 ! Drag exerted by the gas on solids
-      Allocate(  SOLID_DRAG (DIMENSION_3, DIMENSION_M, DIMN) )      
+      Allocate(  SOLID_DRAG (DIMENSION_3, DIMENSION_M, DIMN) )
+     
 
-! Bulk density in a computational fluid cell / for communication with
-! MFIX continuum
-      ALLOCATE( DES_ROP_S(DIMENSION_3, DES_MMAX) )
+      ALLOCATE(MARK_PART(NPARTICLES))
+      ALLOCATE(BED_HEIGHT(MMAX))
 
 ! Volume averaged solids volume in a cell      
-      Allocate( DES_U_s(DIMENSION_3, DES_MMAX) )
-      Allocate( DES_V_s(DIMENSION_3, DES_MMAX) )
-      Allocate( DES_W_s(DIMENSION_3, DES_MMAX) )
+      Allocate(  DES_U_s (DIMENSION_3, DIMENSION_M) )
+      Allocate(  DES_V_s (DIMENSION_3, DIMENSION_M) )
+      Allocate(  DES_W_s (DIMENSION_3, DIMENSION_M) )
 
-! Gravity vector      
-      Allocate(GRAV(DIMN))
-
-! Cell faces
-      Allocate( XE(DIMENSION_I) )
-      Allocate( YN(DIMENSION_J) )
-      Allocate( ZT(DIMENSION_K) )
+! Averaged velocity obtained by avraging over all the particles
+      ALLOCATE(  DES_VEL_AVG(DIMN) )
 
 ! Granular temperature
-      Allocate(DES_THETA(DIMENSION_3, DES_MMAX))
+      Allocate(  DES_THETA (DIMENSION_3, DIMENSION_M) )
 
-! Global granular energy
-      ALLOCATE(GLOBAL_GRAN_ENERGY(DIMN))
-      ALLOCATE(GLOBAL_GRAN_TEMP(DIMN))
+! Global Granular Energy
+      ALLOCATE(  GLOBAL_GRAN_ENERGY(DIMN) )
+      ALLOCATE(  GLOBAL_GRAN_TEMP(DIMN) )
+    
+! Cell faces
+! Pradeep added 0 to store IMIN3 values 
+      Allocate(  XE (0:DIMENSION_I) )
+      Allocate(  YN (0:DIMENSION_J) )
+      Allocate(  ZT (0:DIMENSION_K) )
+! force due to gas-pressure gradient 
+      ALLOCATE(P_FORCE(DIMENSION_3,DIMN))
+! MP-PIC related 
+      IF(MPPIC) THEN 
+         Allocate( PS_FORCE_PIC(DIMENSION_3, DIMN))
+         
+         IF(.NOT.ALLOCATED(F_gp)) THEN 
+            ALLOCATE(F_gp(NPARTICLES ))  
+            F_gp(1:NPARTICLES)  = ZERO
+            !allocate F_gp  for the mppic case. This will be used for the implicit treatment of drag force 
+         ENDIF
 
-! Averaged velocity obtained by averaging over all the particles
-      ALLOCATE(DES_VEL_AVG(DIMN))
+         ALLOCATE(DES_STAT_WT(NPARTICLES))
+         
+         ALLOCATE(DES_VEL_MAX(DIMN))
 
-! flag that can be used to mark particles in paraview
-      ALLOCATE(MARK_PART(NPARTICLES))
+         ALLOCATE(PS_GRAD(NPARTICLES, DIMN))
+         
+         ALLOCATE(AVGSOLVEL_P(NPARTICLES, DIMN))
 
-! variable for bed height of solids phase M      
-      ALLOCATE(BED_HEIGHT(DES_MMAX))
-
-
-
+      ENDIF 
      
 ! COHESION      
 ! Square-well potential parameters
-      Allocate(  WELL_WIDTH (NPARTICLES) )
-      Allocate(  WELL_DEPTH (NPARTICLES) )
+      IF(USE_COHESION) THEN 
+         Allocate(  WELL_WIDTH (NPARTICLES) )
+         Allocate(  WELL_DEPTH (NPARTICLES) )
 ! Does particle have at least one linked partner
-      Allocate(  IS_LINKED (NPARTICLES) )
+         Allocate(  IS_LINKED (NPARTICLES) )
 ! Does particle have at least one aggloerated partner
-      Allocate(  IS_AGGLOMERATED (NPARTICLES) )
+         Allocate(  IS_AGGLOMERATED (NPARTICLES) )
 ! Array of linked partners
-      Allocate(  LINKS (NPARTICLES, MAXNEIGHBORS) )
+         Allocate(  LINKS (NPARTICLES, MAXNEIGHBORS) )
 ! Array of agglomerated partners
-      Allocate(  AGGS (NPARTICLES, MAXNEIGHBORS) )
+         Allocate(  AGGS (NPARTICLES, MAXNEIGHBORS) )
 ! Matrix location of particle 
-      Allocate(  PART_GRID (NPARTICLES,4) )
-
-      WRITE(*,'(1X,A)')&
+         Allocate(  PART_GRID (NPARTICLES,4) )
+      ENDIF
+      
+      if(dmp_log.and.debug_des)write(unit_log,'(1X,A)')&
          '<---------- END DES_ALLOCATE_ARRAYS ----------'
 
       RETURN
-      END SUBROUTINE DES_ALLOCATE_ARRAYS
+      END SUBROUTINE DES_ALLOCATE_ARRAYS 
 
-
-
+      
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Module name: ALLOCATE_DES_MIO                                       !

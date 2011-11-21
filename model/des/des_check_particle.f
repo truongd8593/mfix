@@ -49,8 +49,8 @@
       DES_LOC_DEBUG = .FALSE.
 
       PC = 1
-      DO NP = 1, MAX_PIS
-         IF(PC .GT. PIS) EXIT
+      DO NP = 1, MAX_PIP
+         IF(PC .GT. PIP) EXIT
          IF(.NOT.PEA(NP,1)) CYCLE
 
          XPOS = DES_POS_NEW(NP,1)
@@ -132,7 +132,7 @@
 
 !--------------------
 ! if an exiting particle has fully exited the domain, effectively
-! remove the particle (reset PEA(NP,:) to false)                      
+! remove the particle (reset PEA(NP,:) to false)                                    
             IF(DIMN == 2 .AND. &
                (XPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
                (XPOS - DES_RADIUS(NP)) .GE. XLENGTH .OR.&
@@ -148,7 +148,7 @@
                (ZPOS - DES_RADIUS(NP)) .GE. ZLENGTH)THEN
 
                PEA(NP,:) = .FALSE.
-           
+              
                DES_POS_OLD(NP,:) = ZERO
                DES_POS_NEW(NP,:) = ZERO
                DES_VEL_OLD(NP,:) = ZERO
@@ -183,7 +183,7 @@
 ! Clear particle NP from any other neighboring particles lists               
                IF (NEIGHBOURS(NP,1) > 0) THEN
                   NLIMNP = NEIGHBOURS(NP,1)+1
-             
+                
 ! Cycle through all neighbours of particle NP
                   DO I = 2, NLIMNP
                      NEIGHNP = NEIGHBOURS(NP,I)
@@ -217,10 +217,10 @@
                         NEIGHBOURS(NEIGHNP,J:(MN-1)) = NEIGHBOURS(NEIGHNP,(J+1):MN)
                      ENDDO
                   ENDDO
-               ENDIF   ! if (neighbours(np,1) >0)
+               ENDIF  
 
-               PIS = PIS - 1
-! Do not increment PC since PIS has been decremented.
+               PIP = PIP - 1
+! Do not increment PC since PIP has been decremented.
 
             ENDIF   ! endif particle has fully exited the domain
 
@@ -242,4 +242,3 @@
 
       RETURN
       END SUBROUTINE DES_CHECK_PARTICLE
-

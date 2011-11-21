@@ -27,7 +27,7 @@
       USE param1
       USE physprop
       USE run
-
+      USE mfix_pic
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -58,10 +58,9 @@
 !-----------------------------------------------           
 
 ! Initialize
-
       DES_BCMI = 0; DES_MI = .FALSE.
       DES_BCMO = 0
-      WRITE(*,'(1X,A)') '---------- START CHECK_DES_BC ---------->'
+      WRITE(*,'(3X,A)') '---------- START CHECK_DES_BC ---------->'
 
 ! Check for des inlet/outlet information:
       CHECK_BC: DO BCV = 1, DIMENSION_BC 
@@ -79,14 +78,14 @@
                DES_BC_X_e(BCV) == UNDEFINED .OR. &
                DES_BC_Y_s(BCV) == UNDEFINED .OR. &
                DES_BC_Y_n(BCV) == UNDEFINED) THEN
-               WRITE (UNIT_LOG, 1000) BCV
+               IF(DMP_LOG) WRITE (UNIT_LOG, 1000) BCV
                WRITE (*, 1000) BCV
                CALL MFIX_EXIT(myPE)
             ENDIF 
             IF(DIMN == 3)THEN
               IF(DES_BC_Z_b(BCV) == UNDEFINED .OR. &
                  DES_BC_Z_t(BCV) == UNDEFINED) THEN
-               WRITE (UNIT_LOG, 1000) BCV
+               IF(DMP_LOG) WRITE (UNIT_LOG, 1000) BCV
                WRITE (*, 1000) BCV
                CALL MFIX_EXIT(myPE)
               ENDIF
@@ -97,7 +96,7 @@
                DES_BC_Y_n(BCV) .GT. YLENGTH .OR. &
                DES_BC_X_w(BCV) .GT. DES_BC_X_e(BCV) .OR. &
                DES_BC_Y_s(BCV) .GT. DES_BC_Y_n(BCV))THEN
-               WRITE (UNIT_LOG, 1001) BCV
+               IF(DMP_LOG) WRITE (UNIT_LOG, 1001) BCV
                WRITE (*, 1001) BCV
                CALL MFIX_EXIT(myPE)
             ENDIF
@@ -105,7 +104,7 @@
                IF(DES_BC_Z_b(BCV) .LT. 0 .OR. &
                   DES_BC_Z_t(BCV) .GT. ZLENGTH .OR. &
                   DES_BC_Z_b(BCV) .GT. DES_BC_Z_t(BCV))THEN
-                  WRITE (UNIT_LOG, 1001) BCV
+                  IF(DMP_LOG) WRITE (UNIT_LOG, 1001) BCV
                   WRITE (*, 1001)BCV
                   CALL MFIX_EXIT(myPE)
                ENDIF
@@ -127,18 +126,17 @@
                      DES_BCMI = DES_BCMI + 1
 
                      EPs_tmp = ZERO
-                     DO M=1, DES_MMAX
+                     DO M=1, MMAX
 ! If DES_BC_ROP_s is well defined (defined and not zero), check that either
 ! DES_BC_MASSFLOW or DES_BC_VOLFLOW is also well defined.  If not, flag an
 ! error and exit.
                         IF(DES_BC_ROP_s(BCV,M) /= UNDEFINED .AND. &
                           .NOT. COMPARE(DES_BC_ROP_s(BCV,M),ZERO) ) THEN
 
-! Check that density information is not missing, if so exit.  DES_RO_s is 
-! checked for unrealistic values in check_DES_data
-
-                           IF(COMPARE(DES_RO_s(M),ZERO))THEN
-                              WRITE(UNIT_LOG,1006) M, BCV
+! Check that density information is not missing, if so exit.  RO_s is 
+! checked for unrealistic values in check_data_04.f                              
+                           IF(COMPARE(RO_s(M),ZERO))THEN
+                              IF(DMP_LOG) WRITE(UNIT_LOG,1006) M, BCV
                               WRITE(*,1006) M, BCV
                               CALL MFIX_EXIT(myPE)
                            ENDIF
@@ -149,27 +147,27 @@
 ! Both volumetric and mass flow rates have been defined. 
 ! Verify that the values match.
                                  IF(.NOT.COMPARE(DES_BC_VOLFLOW_s(BCV,M),&
-                                   DES_BC_MASSFLOW_s(BCV,M)/DES_RO_s(M))) THEN
-                                    WRITE(UNIT_LOG,1006)BCV,M
+                                   DES_BC_MASSFLOW_s(BCV,M)/RO_s(M))) THEN
+                                   IF(DMP_LOG) WRITE(UNIT_LOG,1006)BCV,M
                                     WRITE(*,1006)BCV,M
                                     CALL MFIX_EXIT(myPE)
                                  ENDIF
                               ELSE
 ! Only MASSFLOW was given. Calculate VOLFLOW.
                                  DES_BC_VOLFLOW_s(BCV,M) = &
-                                    DES_BC_MASSFLOW_s(BCV,M)/DES_RO_s(M)
+                                    DES_BC_MASSFLOW_s(BCV,M)/RO_s(M)
                               ENDIF
                            ELSE   ! no mass flow rate is specified
                               IF(DES_BC_VOLFLOW_s(BCV,M) == UNDEFINED) THEN
 ! If neither a volumetric or mass flow rate is specified, exit                                      
-                                 WRITE(UNIT_LOG,1011)BCV,M
+                                 IF(DMP_LOG) WRITE(UNIT_LOG,1011)BCV,M
                                  WRITE(*,1011)BCV,M
                                  CALL MFIX_EXIT(myPE)
                               ENDIF
                            ENDIF   
 ! Add solids volume to total solds volume to check for overflow
                            EPs_tmp = EPs_tmp + &
-                              (DES_BC_ROP_s(BCV,M)/DES_RO_s(M))
+                              (DES_BC_ROP_s(BCV,M)/RO_s(M))
                         ENDIF  ! endif des_bc_rop_s is well defined
 
 ! Back check that if either DES_BC_MASSFLOW_s or DES_BC_VOLFLOW_s are
@@ -184,22 +182,22 @@
                               COMPARE(DES_BC_ROP_s(BCV,M),ZERO))THEN
 ! A nonzero mass or volumetric flow rate is defined for BCV on mass
 ! phase M, and either ROP_s is zero or undefined.  Flag error and exit.
-                              WRITE(UNIT_LOG,1015)BCV,M
+                              IF(DMP_LOG) WRITE(UNIT_LOG,1015)BCV,M
                               WRITE(*,1015)BCV, M
                               CALL MFIX_EXIT(myPE)
                            ENDIF
                         ENDIF
-                     ENDDO   ! end loop of M=1,DES_MMAX
+                     ENDDO   ! end loop of M=1,MMAX
 
                      IF(COMPARE(EPs_tmp,ZERO))THEN
 ! A des inlet has been defined, but there is no specifed flow information
 ! (no solids are entering)                             
-                        WRITE(UNIT_LOG,1013)BCV
+                        IF(DMP_LOG) WRITE(UNIT_LOG,1013)BCV
                         WRITE(*,1013)BCV
                         CALL MFIX_EXIT(myPE)
                      ELSEIF(EPs_tmp > ONE) THEN
 ! The total solids volume exceeds one
-                        WRITE(UNIT_LOG,1014)BCV
+                        IF(DMP_LOG) WRITE(UNIT_LOG,1014)BCV
                         WRITE(*,1014)BCV
                         CALL MFIX_EXIT(myPE)
                      ENDIF
@@ -216,9 +214,9 @@
             ENDDO   ! end loop over dim_bc_type
 
 ! exit if des_bc_defined but bc_type is not valid            
-            WRITE (UNIT_LOG, 1002) BCV, DES_BC_TYPE(BCV)
+            IF(DMP_LOG) WRITE (UNIT_LOG, 1002) BCV, DES_BC_TYPE(BCV)
             WRITE (*, 1002) BCV, DES_BC_TYPE(BCV) 
-            WRITE (UNIT_LOG, 1003) VALID_BC_TYPE
+            IF(DMP_LOG) WRITE (UNIT_LOG, 1003) VALID_BC_TYPE
             WRITE (*, 1003) VALID_BC_TYPE
             WRITE (*, 1008)
             CALL MFIX_EXIT(myPE)  
@@ -231,12 +229,14 @@
 
       IF(DES_BCMI /= 0 .OR. DES_BCMO /=0)THEN
          DES_MIO = .TRUE.
+! Allocate necessary arrays for discrete mass inlets
+         CALL ALLOCATE_DES_MIO
 
 ! Verify that either the nsquare or grid based neighbor searches are
 ! used, otherwise flag and exit
          IF((DES_NEIGHBOR_SEARCH == 2) .OR. &
             (DES_NEIGHBOR_SEARCH == 3)) THEN
-            WRITE (UNIT_LOG, 1005)
+            IF(DMP_LOG) WRITE (UNIT_LOG, 1005)
             WRITE (*, 1005)
             CALL MFIX_EXIT(myPE)
          ENDIF
@@ -254,43 +254,47 @@
       IF(PARTICLES == UNDEFINED_I .AND. MAX_PIS /= UNDEFINED_I)THEN
          PARTICLES = 0
       ELSEIF(PARTICLES == UNDEFINED_I .AND. MAX_PIS == UNDEFINED_I)THEN
-         WRITE(*,'(3X,A)')&
-            'Either PARTICLES or MAX_PIS must specified in mfix.dat'
+         if(dmp_log)write(unit_log,'(3X,A)')&
+         'Either PARTICLES or MAX_PIS must specified in mfix.dat'
          CALL MFIX_EXIT(myPE)
       ELSEIF(PARTICLES == 0 .AND. MAX_PIS == UNDEFINED_I) THEN
-         WRITE(*,'(3X,A,A)')&
-            'If starting with 0 PARTICLES, MAX_PIS must be ', &
-            'specified in mfix.dat'
+         if(dmp_log)write(unit_log,'(3x,A,/3X,A,A)')'Message from check_des_bc.f', &
+         'If starting with 0 PARTICLES, MAX_PIS must be ', &
+         'specified in mfix.dat'
          CALL MFIX_EXIT(myPE)         
+      ENDIF 
+
+      IF (.NOT.GENER_PART_CONFIG) THEN
+         IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,I10)') &
+         'Total number of particles read from input file = ', PARTICLES
+         IF(mype.eq.pe_IO) WRITE(*,'(3X,A,I10)') &
+         'Total number of particles read from input file = ', PARTICLES
       ENDIF
-
-      IF (.NOT.GENER_PART_CONFIG) WRITE(*,'(3X,A,I10)') &
-         'Total number of particles = ', PARTICLES
-
 
 ! If the system is started without any particles and an inlet is not
 ! specified, the run is aborted.
-      IF(DES_BCMI == 0 .AND. PARTICLES == 0)THEN
-         WRITE(UNIT_LOG, 1009)
+      IF(DES_BCMI == 0 .AND. PARTICLES == 0.AND.(.NOT.MPPIC))THEN
+         !With MPPIC, inlet outlet are based off the regular mfix declarations, 
+         !and des_bcmi could still be zero .
+         IF(DMP_LOG) WRITE(UNIT_LOG, 1009)
          WRITE(*, 1009)
          CALL MFIX_EXIT(myPE)
       ELSEIF(PARTICLES == 0)THEN
-         WRITE(*,'(3X,A)') &
+         WRITE(*,'(5X,A)') &
             'Run initiated with no particles in the system'
       ENDIF
 
 ! Check MAX_PIS requirements
       IF(DES_BCMI == 0 .AND. MAX_PIS == UNDEFINED_I)THEN
-         WRITE(*,'(3X,A)')'Setting MAX_PIS = PARTICLES'
+         WRITE(*,'(5X,A)')'Setting MAX_PIS = PARTICLES'
          MAX_PIS = PARTICLES
       ELSEIF(DES_BCMI /= 0 .AND. MAX_PIS == UNDEFINED_I)THEN
-         WRITE(UNIT_LOG, 1010)
+         IF(DMP_LOG) WRITE(UNIT_LOG, 1010)
          WRITE(*, 1010)
          CALL MFIX_EXIT(myPE)
       ENDIF
 
-
-      WRITE(*,'(1X,A)') '<---------- END CHECK_DES_BC ----------'
+      WRITE(*,'(3X,A)') '<---------- END CHECK_DES_BC ----------'
 
 
 
@@ -394,7 +398,7 @@
          IF(DES_BC_X_w(BCV) == DES_BC_X_e(BCV)) THEN
             IF(DES_BC_X_w(BCV) /= ZERO .AND. &
                DES_BC_X_w(BCV) /= XLENGTH)THEN
-               WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
+               IF(DMP_LOG) WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF 
@@ -402,7 +406,7 @@
          IF(DES_BC_Y_s(BCV) == DES_BC_Y_n(BCV)) THEN
             IF(DES_BC_Y_s(BCV) /= ZERO .AND. &
                DES_BC_Y_s(BCV) /= YLENGTH)THEN
-               WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
+               IF(DMP_LOG) WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
@@ -410,7 +414,7 @@
 ! Require the inlet be an edge in 2D not a point
          IF(DES_BC_X_w(BCV) == DES_BC_X_e(BCV) .AND. &
             DES_BC_Y_s(BCV) == DES_BC_Y_n(BCV)) THEN
-            WRITE (UNIT_LOG, 1101)&
+            IF(DMP_LOG) WRITE (UNIT_LOG, 1101)&
             'DES mass inlet/outlet must larger than a single point.',BCV
             WRITE (*, 1101)&
             'DES mass inlet/outlet must larger than a single point.',BCV
@@ -419,7 +423,7 @@
 ! Require the inlet be an edge in 2D not a plane
          IF(DES_BC_X_w(BCV) /= DES_BC_X_e(BCV) .AND. &
             DES_BC_Y_s(BCV) /= DES_BC_Y_n(BCV)) THEN
-            WRITE (UNIT_LOG, 1101)&
+            IF(DMP_LOG) WRITE (UNIT_LOG, 1101)&
             'For DIMN=2, DES mass inlet/outlet cannot be an area.',BCV
             WRITE (*, 1101)&
             'For DIMN=2, DES mass inlet/outlet cannot be an area.',BCV
@@ -434,7 +438,7 @@
 !  Require the inlet be a slit/edge on the XZ-face
                   IF(DES_BC_Y_s(BCV) /= ZERO .AND. &
                      DES_BC_Y_s(BCV) /= YLENGTH)THEN
-                     WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
+                     IF(DMP_LOG) WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
                      CALL MFIX_EXIT(myPE)
                   ENDIF
                ENDIF
@@ -442,7 +446,7 @@
 ! Require the inlet be a slit/edge on the XY-face
                   IF(DES_BC_Z_b(BCV) /= ZERO .AND. &
                      DES_BC_Z_b(BCV) /= ZLENGTH)THEN
-                     WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
+                     IF(DMP_LOG) WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
                      CALL MFIX_EXIT(myPE)
                   ENDIF
                ENDIF
@@ -450,7 +454,7 @@
 ! one of the x-boundary edges
                IF(DES_BC_Y_s(BCV) /= DES_BC_Y_n(BCV) .AND. & 
                   DES_BC_Z_b(BCV) /= DES_BC_Z_t(BCV)) THEN
-                  WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
+                  IF(DMP_LOG) WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
                   CALL MFIX_EXIT(myPE)
                ENDIF
             ENDIF
@@ -462,7 +466,7 @@
 ! Require the inlet be a slit/edge on the YZ-face
                   IF(DES_BC_X_w(BCV) /= ZERO .AND. &
                      DES_BC_X_w(BCV) /= XLENGTH)THEN
-                     WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
+                     IF(DMP_LOG) WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
                      CALL MFIX_EXIT(myPE)
                   ENDIF
                ENDIF
@@ -470,7 +474,7 @@
 ! Require the inlet be a slit/edge on the XY-face
                   IF(DES_BC_Z_b(BCV) /= ZERO .AND. &
                      DES_BC_Z_b(BCV) /= ZLENGTH)THEN
-                     WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
+                     IF(DMP_LOG) WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
                      CALL MFIX_EXIT(myPE)
                   ENDIF
                ENDIF
@@ -478,7 +482,7 @@
                   DES_BC_Z_b(BCV) /= DES_BC_Z_t(BCV)) THEN
 ! Require an area inlet to be on the XZ-face and the face must be at
 ! one of the y-boundary edges
-                  WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
+                  IF(DMP_LOG) WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
                   CALL MFIX_EXIT(myPE)
                ENDIF
             ENDIF
@@ -490,7 +494,7 @@
 ! Require the inlet be a slit/edge on the YZ-face
                   IF(DES_BC_X_w(BCV) /= ZERO .AND. &
                      DES_BC_X_w(BCV) /= XLENGTH)THEN
-                     WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
+                     IF(DMP_LOG) WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
                      CALL MFIX_EXIT(myPE)
                   ENDIF
                ENDIF
@@ -498,14 +502,14 @@
 ! Require the inlet be a slit/edge on the XZ-face
                   IF(DES_BC_Y_s(BCV) /= ZERO .AND. &
                      DES_BC_Y_s(BCV) /= YLENGTH)THEN
-                     WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
+                     IF(DMP_LOG) WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
                      CALL MFIX_EXIT(myPE)
                   ENDIF
                   IF(DES_BC_X_w(BCV) /= DES_BC_X_e(BCV) .AND. & 
                      DES_BC_Y_s(BCV) /= DES_BC_Y_n(BCV)) THEN
 ! Require an area inlet to be on the XY-face and the face must be at
 ! one of the z-boundary edges
-                     WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
+                     IF(DMP_LOG) WRITE (UNIT_LOG, 1100)BCV; WRITE (*, 1100)BCV
                      CALL MFIX_EXIT(myPE)
                   ENDIF
                ENDIF
@@ -521,7 +525,7 @@
          DES_BC_Y_s(BCV) == DES_BC_Y_n(BCV) .AND. &
          DES_BC_Z_b(BCV) == DES_BC_Z_t(BCV))THEN
 ! Prohibit point-based mass inlet
-         WRITE (UNIT_LOG, 1101)&
+         IF(DMP_LOG) WRITE (UNIT_LOG, 1101)&
          'DES mass inlet/outlet must larger than a single point.',BCV
          WRITE (*, 1101)&
          'DES mass inlet/outlet must larger than a single point.',BCV
@@ -531,7 +535,7 @@
          DES_BC_Y_s(BCV) /= DES_BC_Y_n(BCV) .AND. &
          DES_BC_Z_b(BCV) /= DES_BC_Z_t(BCV))THEN
 ! Prohibit volume-based mass inlet
-         WRITE (UNIT_LOG, 1101)&
+         IF(DMP_LOG) WRITE (UNIT_LOG, 1101)&
          'For DIMN=3, DES mass inlet/outlet cannot be a volume.',BCV
          WRITE (*, 1101)&
          'For DIMN=3, DES mass inlet/outlet cannot be a volume.',BCV
@@ -557,7 +561,7 @@
             .OR. (DES_BC_Y_s(BCV) == YLENGTH .AND. DES_BC_Z_b(BCV) == ZERO) &
             .OR. (DES_BC_Y_s(BCV) == YLENGTH .AND. DES_BC_Z_b(BCV) == ZLENGTH))))THEN
 ! Prohibit DES mass inlet along domain edges
-         WRITE (UNIT_LOG, 1101)&
+            IF(DMP_LOG) WRITE (UNIT_LOG, 1101)&
          'DES mass inlet/outlet cannot be positioned in a corner.',BCV
          WRITE (*, 1101)&
          'DES mass inlet/outlet cannot be positioned in a corner.',BCV

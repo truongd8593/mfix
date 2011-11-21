@@ -20,7 +20,9 @@
       USE physprop
       USE des_bc
       USE run
-      
+      use desgrid 
+      use desmpi 
+ 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -28,13 +30,6 @@
       INTEGER I
 
 !-----------------------------------------------
-
-! T.Li : Hertzian collision model
-      g_mod(:) = zero
-      hert_kn(:,:) = zero
-      hert_kwn(:) = zero
-      hert_kt(:,:) = zero
-      hert_kwt(:) = zero
 
       DES_RADIUS(:) = ZERO
       PMASS(:) = ZERO
@@ -54,27 +49,27 @@
       OMEGA_NEW(:,:) = ZERO
       ROT_ACC_OLD(:,:) = ZERO
 
+      DES_U_s(:,:) = ZERO
+      DES_V_s(:,:) = ZERO
+      DES_W_s(:,:) = ZERO
+      SOLID_DRAG(:,:,:) = ZERO
+
       FC(:,:) = ZERO
       FN(:,:) = ZERO
       FT(:,:) = ZERO
       TOW(:,:) = ZERO
-      SOLID_DRAG(:,:,:) = ZERO
-
-      PN(:,:) = -1
-      PN(:,1) = 0
-      PV(:,:) = 1
-      PFT(:,:,:) = ZERO
 
       PPOS(:,:) = ZERO
       GRAV(:) = ZERO
       DES_WALL_POS(:,:) = UNDEFINED
       DES_WALL_VEL(:,:) = UNDEFINED
-      DES_BC_U_s(:) = ZERO
-      DES_BC_V_s(:) = ZERO
-      DES_BC_W_s(:) = ZERO
 
       NEIGHBOURS(:,:) = -1
       NEIGHBOURS(:,1) = 0
+      PN(:,:) = -1
+      PN(:,1) = 0
+      PV(:,:) = 1
+      PFT(:,:,:) = ZERO
 
       IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. &
         DES_NEIGHBOR_SEARCH .EQ. 3) THEN
@@ -83,32 +78,43 @@
           PQUAD(:) = 0
       ENDIF      
 
-      IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN
-         DESGRIDSEARCH_PIJK(:,:) = ZERO
-      ENDIF
+! pradeep desgrid related routines are moved to desgrid module
+!      IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN
+!         DESGRIDSEARCH_PIJK(:,:) = ZERO
+!      ENDIF
+
 
       PINC(:) = ZERO
       PIJK(:,:) = ZERO
 
-      DES_U_s(:,:) = ZERO
-      DES_V_s(:,:) = ZERO
-      DES_W_s(:,:) = ZERO
-      DES_ROP_S(:,:) = ZERO
-
+! pradeep removed this geometry is used to define des grid and setting zero here violates that 
       XE(:) = ZERO
       YN(:) = ZERO
       ZT(:) = ZERO
 
 ! J.Musser: DEM inlet/outlet
       PEA(:,:) = .FALSE.
+! Pradeep not proper location for the following setting 
 ! If RESTART_1, PEA will be read in from the restart file
-      IF(RUN_TYPE == 'NEW') THEN
-         DO I=1, PARTICLES
-            PEA(I,1)=.TRUE.
-         ENDDO
-      ENDIF
+!      IF(RUN_TYPE == 'NEW') THEN
+!         DO I=1, PARTICLES
+!            PEA(I,1)=.TRUE.
+!         ENDDO
+!      ENDIF
+      DES_BC_U_s(:) = ZERO
+      DES_BC_V_s(:) = ZERO
+      DES_BC_W_s(:) = ZERO
 
-      
+! T.Li : Hertzian collision model
+      g_mod(:) = zero
+      hert_kn(:,:) = zero
+      hert_kwn(:) = zero
+      hert_kt(:,:) = zero
+      hert_kwt(:) = zero
+
+!pradeep for parallel processin 
+      iglobal_id = 0
+
       RETURN
       END SUBROUTINE DES_INIT_ARRAYS 
 

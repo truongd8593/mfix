@@ -40,13 +40,13 @@
 !-----------------------------------------------  
 
       PC=1
-      DO L=1, MAX_PIS
+      DO L=1, MAX_PIP
 
-         IF(PC .GE. PIS ) EXIT
+         IF(PC .GE. PIP ) EXIT
          IF(.NOT.PEA(L,1)) CYCLE
 
-         PNPC = PIS - PC        
-         DO LL = L+1, MAX_PIS
+         PNPC = PIP - PC        
+         DO LL = L+1, MAX_PIP
 
             IF(PNPC .LE. 0) EXIT
             IF(.NOT.PEA(LL,1)) CYCLE

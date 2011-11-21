@@ -40,8 +40,8 @@
 
       rmean = sum(y(:))/nsize
 
-      write(*,*) 'Generating Uniform Random Variables for size', nsize
-      write(*,*) 'mean', rmean
+!      write(*,*) 'Generating Uniform Random Variables for size', nsize
+!      write(*,*) 'mean', rmean
 
       variance = 0.0
       do i = 1, nsize
@@ -54,7 +54,7 @@
       variance = variance/nsize
       sigma = sqrt(variance)
 
-      write(*,*) 'sigma', sigma
+!      write(*,*) 'sigma', sigma
 
       RETURN
       END SUBROUTINE UNI_RNO
@@ -103,29 +103,29 @@
 
       lmean = sum(y(:))/nsize
 
-      write(*,'(7X,A)') 'Generating Normal Random Variables'
-      write(*,'(7X,A,2X,ES15.5)') 'specified mean =', mean
-      write(*,'(7X,A,2X,ES15.5)') 'computed mean =', lmean
+      !write(*,'(7X,A)') 'Generating Normal Random Variables'
+      !write(*,'(7X,A,2X,ES15.5)') 'specified mean =', mean
+      !write(*,'(7X,A,2X,ES15.5)') 'computed mean =', lmean
 
-      write(fileunit,'(A)') 'FROM NOR_RNO'
+      !write(fileunit,'(A)') 'FROM NOR_RNO'
 ! specific to the call from init_particles_jn            
-      write(fileunit,'(A,I5,A)') 'FOR DIRECTION = ', &
-         COUNTER, ' where (1=X,2=Y,3=Z)'
-      write(fileunit,'(5X,A,5X,A)') 'particle no.', 'velocity component'
+      !write(fileunit,'(A,I5,A)') 'FOR DIRECTION = ', &
+      !   COUNTER, ' where (1=X,2=Y,3=Z)'
+      !write(fileunit,'(5X,A,5X,A)') 'particle no.', 'velocity component'
 
       lvariance = 0.0
       do i = 1, nsize
-         write(fileunit,'(I10,5X,ES15.5)') i, y(i)
+         !write(fileunit,'(I10,5X,ES15.5)') i, y(i)
          lvariance = lvariance + (y(i)-lmean)**2
       end do
 
-      close(fileunit)
+      !close(fileunit)
 
       lvariance = lvariance/nsize
       lsigma = sqrt(lvariance)
 
-      write(*,'(7X,A,2X,ES15.5)') 'specified sigma =', sigma
-      write(*,'(7X,A,2X,ES15.5)') 'computed sigma =', lsigma
+      !write(*,'(7X,A,2X,ES15.5)') 'specified sigma =', sigma
+      !write(*,'(7X,A,2X,ES15.5)') 'computed sigma =', lsigma
 
       RETURN
       END SUBROUTINE NOR_RNO
