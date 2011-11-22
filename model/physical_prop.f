@@ -46,13 +46,8 @@
       USE compar 
       USE funits 
       USE usr         
-<<<<<<< physical_prop.f
       USE mpi_utility
       USE discretelement
-=======
-      USE mpi_utility     
-      USE cutcell 
->>>>>>> 1.27.2.2
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -130,28 +125,12 @@
                   RO_G(IJK) = EOSG(MW_AVG,P_G(IJK),T_G(IJK))
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
                ENDIF
-<<<<<<< physical_prop.f
        
                IF(RO_G(IJK) < ZERO) THEN
                   WRITE(*,1000) I_OF(IJK), J_OF(IJK), K_OF(IJK), &
                      RO_G(IJK), P_G(IJK), T_G(IJK)
                   Neg_RHO_G = .TRUE. !this will reduce dt instead of exiting
                ENDIF
-=======
-!	       
-	       IF(RO_G(IJK) < ZERO) THEN
-                  IF(CARTESIAN_GRID) THEN 
-                     
-                     WRITE(*,1001) I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-                     RO_G(IJK), P_G(IJK), T_G(IJK), CUT_CELL_AT(IJK), SMALL_CELL_AT(IJK), xg_e(I_OF(IJK)), yg_n(J_of(ijk)), zg_t(k_of(ijk))
-                  ELSE
-                     WRITE(*,1000) I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-                     RO_G(IJK), P_G(IJK), T_G(IJK)
-                  ENDIF
-		 Neg_RHO_G = .TRUE. !this will reduce dt instead of exiting
-	       ENDIF
-!   
->>>>>>> 1.27.2.2
             ENDIF
 
 
@@ -246,25 +225,9 @@
 
  1000 FORMAT(1X,'Message from: PHYSICAL_PROP',/& 
             'WARNING: Gas density negative in this cell: ', /&
-<<<<<<< physical_prop.f
             'I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
             'Values of variables: ','RO_g = ', G12.5, 2X, &
             'P_g = ', G12.5, 2X, 'T_g = ', G12.5, /&
             'Suggestion: Lower UR_FAC(1) in mfix.dat')
 
-=======
-	    'I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
-	    'Values of variables: ','RO_g = ', G12.5, 2X, 'P_g = ', G12.5, 2X, 'T_g = ', G12.5, /&
-	    'Suggestion: Lower UR_FAC(1) in mfix.dat')
-
-
- 1001       FORMAT(1X,'Message from: PHYSICAL_PROP',/& 
-            'WARNING: Gas density negative in this cell: ', /&
-	    'I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
-	    'Values of variables: ','RO_g = ', G12.5, 2X, 'P_g = ', G12.5, 2X, 'T_g = ', G12.5, /&
-            'CUT CELL, SMALL CELL ?', 2(2x,L1), /&
-            'East, North, and Top coodinate = ', 3(2x, g17.8), / & 
-	    'Suggestion: Lower UR_FAC(1) in mfix.dat')
-
->>>>>>> 1.27.2.2
       END SUBROUTINE PHYSICAL_PROP 

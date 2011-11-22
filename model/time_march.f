@@ -74,15 +74,11 @@
       USE discretelement  
       USE mchem
       USE leqsol
-<<<<<<< time_march.f
 ! netcdf
       USE cdist
       USE MFIX_netcdf
 ! AEOLUS: stop trigger mechanism to terminate MFIX normally before
 ! batch queue terminates
-=======
-!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
->>>>>>> 1.66.2.2
       use mpi_utility
 ! JFD modification: cartesian grid implementation 
       USE cutcell
@@ -161,12 +157,8 @@
       LOGICAL eofBATCHQ
 ! not used remove after verification
       INTEGER CHKBATCHQ_FLAG
-<<<<<<< time_march.f
       logical :: bWrite_netCDF_files
      
-=======
-!     
->>>>>>> 1.66.2.2
 !-----------------------------------------------
 !     E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -275,7 +267,6 @@
          CALL ZERO_ARRAY (F_gs(1,M), IER)
       ENDDO
 
-<<<<<<< time_march.f
 ! Initialization of DEM quantities: set initial conditions (bulk
 ! density, velocities), boundary conditions (mass inlet/outlet),
 ! physical constants, PIC
@@ -283,21 +274,10 @@
          CALL MAKE_ARRAYS_DES
       ENDIF
 
-=======
-! DES 
-! This call to make_arrays_des has now been moved ahead of calc_coeff_all 
-! so that on the call to des/drag_fgs.f, the particle in cell info and also
-! Ep_s are known.  Rahul Garg 
-!      IF(DISCRETE_ELEMENT) THEN
-!         CALL MAKE_ARRAYS_DES
-!      END IF
-! rahul: make_arrays_des (along with check_des_data) is now
-! called from mfix.f. This consolidated the various DEM
-! intialization related calls to one place.  
->>>>>>> 1.66.2.2
 
 ! Calculate all the coefficients once before entering the time loop
       IF(TRIM(KT_TYPE) == UNDEFINED_C) CALL CALC_COEFF_ALL (0, IER) 
+
      
 ! Remove undefined values at wall cells for scalars
       CALL UNDEF_2_0 (ROP_G, IER) 
@@ -334,21 +314,13 @@
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
           DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S, IER) 
 
+ 
 
 ! The TIME loop begins here.............................................
  100  CONTINUE
       
       IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN 
-         IF(WRITE_VTK_FILES) THEN
-! rahul: in order to write vtk files for cut-cell
-            CALL WRITE_VTK_FILE
-         ENDIF 
          CALL DES_TIME_MARCH
-         call CPU_TIME(CPU_STOP)
-! pradeep added  finalize
-         CPU_STOP = CPU_STOP - CPU00
-         if(mype.eq.pe_io)write(*,"('Elapsed CPU time = ',E15.6,' sec')") CPU_STOP
-         call parallel_fin  
          STOP
       ENDIF 
 
@@ -446,10 +418,12 @@
       ENDIF 
 
 ! Write SPx files, if needed
+      bWrite_netCDF_files = .false.
       ISPX = 0 
       DO L = 1, N_SPX 
          IF (DT == UNDEFINED) THEN 
             IF (FINISH) THEN 
+               bWrite_netCDF_files = .true.
                CALL WRITE_SPX1 (L, 0) 
                DISK_TOT = DISK_TOT + DISK(L) 
                ISPX = ISPX + 1 
@@ -473,11 +447,10 @@
                  TIME+0.1d0*DT>=TSTOP.OR.eofBATCHQ) THEN 
             SPX_TIME(L) = (INT((TIME + 0.1d0*DT)/SPX_DT(L))+1)*SPX_DT(L)
             CALL WRITE_SPX1 (L, 0) 
+            bWrite_netCDF_files = .true.
             DISK_TOT = DISK_TOT + DISK(L) 
             ISPX = ISPX + 1 
-! pradeep temporary REMOVE***********
-!            IF(DISCRETE_ELEMENT.AND.L.EQ.1.AND.PRINT_DES_DATA) CALL WRITE_DES_DATA
-! pradeep temporary REMOVE***********
+            IF(DISCRETE_ELEMENT.AND.L.EQ.1.AND.PRINT_DES_DATA) CALL WRITE_DES_DATA
      
             IF (SPX_MSG) THEN 
                IF (RES_MSG) THEN 
@@ -494,6 +467,8 @@
                WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
          ENDIF 
       ENDDO 
+
+      if (bWrite_netCDF_files) call write_netcdf(0,0,time)
 
       IF (.NOT.SPX_MSG) THEN 
          DO L = 1, N_SPX - ISPX 
@@ -524,8 +499,7 @@
               .OR. eofBATCHQ) THEN 
          RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT 
          CALL WRITE_RES1 
-! Pradeep Changing the routine name 
-         IF(DISCRETE_ELEMENT) call des_write_restart !CALL WRITE_DES_RESTART
+         IF(DISCRETE_ELEMENT) CALL WRITE_DES_RESTART
          RES_MSG = .FALSE. 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME 
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME 
@@ -599,41 +573,25 @@
      
 ! Calculate the trace of the stress tensor
       CALL CALC_TRD_G (TRD_G, IER) 
-<<<<<<< time_march.f
       IF (.NOT.DISCRETE_ELEMENT) CALL CALC_TRD_S (TRD_S, IER)
-=======
-      IF(.NOT.DISCRETE_ELEMENT) CALL CALC_TRD_S (TRD_S, IER)
->>>>>>> 1.66.2.2
 
 ! Calculate the cross terms of the stress tensor
       CALL CALC_TAU_U_G (TAU_U_G, IER) 
       CALL CALC_TAU_V_G (TAU_V_G, IER) 
       CALL CALC_TAU_W_G (TAU_W_G, IER) 
-<<<<<<< time_march.f
       IF (.NOT.DISCRETE_ELEMENT) THEN
          CALL CALC_TAU_U_S (TAU_U_S, IER) 
          CALL CALC_TAU_V_S (TAU_V_S, IER) 
          CALL CALC_TAU_W_S (TAU_W_S, IER) 
       ENDIF
-=======
-      IF(.NOT.DISCRETE_ELEMENT) CALL CALC_TAU_U_S (TAU_U_S, IER) 
-      IF(.NOT.DISCRETE_ELEMENT) CALL CALC_TAU_V_S (TAU_V_S, IER) 
-      IF(.NOT.DISCRETE_ELEMENT) CALL CALC_TAU_W_S (TAU_W_S, IER) 
->>>>>>> 1.66.2.2
 
 ! Calculate additional solid phase momentum source terms 
 ! that arise from kinetic theory constitutive relations
-<<<<<<< time_march.f
       IF (.NOT.DISCRETE_ELEMENT) THEN
          CALL CALC_KTMOMSOURCE_U_S (IER)
          CALL CALC_KTMOMSOURCE_V_S (IER)
          CALL CALC_KTMOMSOURCE_W_S (IER)
       ENDIF
-=======
-      IF(.NOT.DISCRETE_ELEMENT) CALL CALC_KTMOMSOURCE_U_S (IER)
-      IF(.NOT.DISCRETE_ELEMENT) CALL CALC_KTMOMSOURCE_V_S (IER)
-      IF(.NOT.DISCRETE_ELEMENT) CALL CALC_KTMOMSOURCE_W_S (IER)
->>>>>>> 1.66.2.2
 
 ! Check rates and sums of mass fractions every NLOG time steps
       IF (NSTEP == NCHECK) THEN 
