@@ -124,8 +124,6 @@
       character(30) lfilename
 
 !-----------------------------------------------
-!pradeep temporary fix remove ************
-      call write_des_data
 ! remove *********************
       ltor_dimn = 1 + (dimn-2)*2 
 ! open the restart file  
