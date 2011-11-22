@@ -399,8 +399,8 @@
             ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW') then
                !EPg = MAX(EP_STAR, EP_G(IJK))
                !EPs = MIN(EP_s(IJK,M), 1.d0-EP_STAR)
-               EP_g = EP_G(IJK)
-               EP_s = EP_s(IJK,M) 
+               EPg = EP_g(IJK)
+               EPs = EP_s(IJK,M) 
                IF(EPg .LE. 0.8D0) THEN
                   DgA = 150D0 * (ONE - EPg) * Mu &
                   / ( EPg * D_p(IJK,M)**2 ) &

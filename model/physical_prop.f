@@ -48,6 +48,7 @@
       USE usr         
       USE mpi_utility
       USE discretelement
+      USE cutcell 
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -130,7 +131,8 @@
                   IF(CARTESIAN_GRID) THEN 
                      
                      WRITE(*,1001) I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-                     RO_G(IJK), P_G(IJK), T_G(IJK), CUT_CELL_AT(IJK), SMALL_CELL_AT(IJK), xg_e(I_OF(IJK)), yg_n(J_of(ijk)), zg_t(k_of(ijk))
+                     RO_G(IJK), P_G(IJK), T_G(IJK), CUT_CELL_AT(IJK), & 
+                     SMALL_CELL_AT(IJK), xg_e(I_OF(IJK)), yg_n(J_of(ijk)), zg_t(k_of(ijk))
                   ELSE
                      WRITE(*,1000) I_OF(IJK), J_OF(IJK), K_OF(IJK), &
                      RO_G(IJK), P_G(IJK), T_G(IJK)
