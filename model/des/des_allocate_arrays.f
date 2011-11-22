@@ -317,6 +317,8 @@
          
          ALLOCATE(AVGSOLVEL_P(NPARTICLES, DIMN))
 
+         ALLOCATE(EPG_P(NPARTICLES))
+
       ENDIF 
      
 ! COHESION      

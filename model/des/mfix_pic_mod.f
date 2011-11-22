@@ -22,6 +22,9 @@
 ! avg solid velocity at particle position (used for MP-PIC)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: AVGSOLVEL_P 
       
+! EP_g interpolated at particle position (used for MP-PIC)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: EPG_P 
+      
 !     Total number of real and computational 
 !     particles in each solid phase (used only for MP-PIC) 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: RNP_PIC ! MMAX

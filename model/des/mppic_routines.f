@@ -21,11 +21,14 @@
       INTEGER I, J, K, IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IDIM, M
       
       ! temporary variables used to calculate pressure at scalar cell edge      
-      DOUBLE PRECISION TEMP1, TEMP2, avg_factor 
+      DOUBLE PRECISION TEMP1, TEMP2, avg_factor, VOL_TOT_VEC(DIMN), VOL_TOT_SCAL
 
       integer :: korder, iw,ie,js,jn,kb,ktp, onew, pcell(3), cur_ijk, NP, nindx
       
       integer :: ii,jj,kk, ipjpk, ijpkp, ipjkp, ipjpkp, I1, J1, K1
+
+      double precision :: vol_ijk, vol_ipjk, vol_ijpk, vol_ipjpk
+      double precision :: vol_ijkp, vol_ipjkp, vol_ijpkp, vol_ipjpkp      
       
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
@@ -76,13 +79,14 @@
          PS_FORCE_PIC(IJK,:) = ZERO 
          IF(.NOT.FLUID_AT(IJK)) CYCLE 
 
-               !I = I_OF(IJK)
-               !J = J_OF(IJK)
-               !K = K_OF(IJK)
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
          IPJK = IP_OF(IJK)
          IJPK = JP_OF(IJK)
          IJKP = KP_OF(IJK)
-         PS_FORCE_PIC(IJK,1) = 2.d0*(P_S(IPJK,1) - P_S(IJK,1))/(DX(I)+DX(I_of(ipjk)))
+         
+          PS_FORCE_PIC(IJK,1) = 2.d0*(P_S(IPJK,1) - P_S(IJK,1))/(DX(I)+DX(I_of(ipjk)))
          
          PS_FORCE_PIC(IJK,2) = 2.d0*(P_S(IJPK,1) - P_S(IJK,1))/(DY(j)+Dy(j_of(ijpk)))
          if(dimn.eq.3) PS_FORCE_PIC(IJK,3) = 2.d0*(P_S(IJKP,1) - P_S(IJK,1))/(Dz(k)+Dz(k_of(ijkp)))
@@ -98,6 +102,10 @@
             IF(I1.NE.ISTART2)   EXIT
             IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	    
             IJK = FUNIJK(I1,J1,K1) 
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+
             IPJK = IP_OF(IJK)
             PS_FORCE_PIC(IJK,1) = 2.d0*(P_S(IPJK,1) - P_S(IJK,1))/(DX(I)+DX(I_of(ipjk)))
                      
@@ -110,6 +118,11 @@
             IF(J1.NE.JSTART2)   EXIT
             IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	    
             IJK = FUNIJK(I1,J1,K1) 
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+
+
             IJPK = JP_OF(IJK)
             PS_FORCE_PIC(IJK,2) = 2.d0*(P_S(IJPK,1) - P_S(IJK,1))/(DY(j)+Dy(j_of(ijpk)))
 
@@ -123,6 +136,11 @@
                IF(K1.NE.KSTART2)   EXIT
                IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	    
                IJK = FUNIJK(I1,J1,K1) 
+               I = I_OF(IJK)
+               J = J_OF(IJK)
+               K = K_OF(IJK)
+               
+
                IJKP = KP_OF(IJK)
                PS_FORCE_PIC(IJK,3) = 2.d0*(P_S(IJKP,1) - P_S(IJK,1))/(Dz(k)+Dz(k_of(ijkp)))
             END DO 
@@ -161,42 +179,92 @@
                   ipjk    = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk))
                   ijpk    = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk))
                   ipjpk   = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk))
+
+                  vol_ijk = zero 
+                  vol_ipjk = zero 
+                  vol_ijpk = zero 
+                  vol_ipjpk = zero 
+                  
+                  vol_ijkp = zero 
+                  vol_ipjkp = zero 
+                  vol_ijpkp = zero 
+                  vol_ipjpkp = zero 
+
+                  if(fluid_at(cur_ijk)) vol_ijk   = vol(cur_ijk)
+                  if(fluid_at(ipjk))    vol_ipjk  = vol(ipjk) 
+                  if(fluid_at(ijpk))    vol_ijpk  = vol(ijpk) 
+                  if(fluid_at(ipjpk))   vol_ipjpk = vol(ipjpk) 
+         
+         
                   if(dimn.eq.3) then 
                      ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
                      ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
                      ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
                      ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
+                     
+
+                     if(fluid_at(ijkp))     vol_ijkp   = vol(ijkp)
+                     if(fluid_at(ipjkp))    vol_ipjkp  = vol(ipjkp) 
+                     if(fluid_at(ijpkp))    vol_ijpkp  = vol(ijpkp) 
+                     if(fluid_at(ipjpkp))   vol_ipjpkp = vol(ipjpkp) 
+
                   endif
                   gstencil(i,j,k,1) = xe(ii)
                   gstencil(i,j,k,2) = yn(jj)
                   gstencil(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
+
+                  VOL_TOT_SCAL = ZERO 
+
+                  VOL_TOT_SCAL = vol_ijk + vol_ipjk + vol_ijpk + vol_ipjpk + &
+                  & vol_ijkp + vol_ipjkp + vol_ijpkp + vol_ipjpkp
+
+                  VOL_TOT_VEC = ZERO
                   
+                  VOL_TOT_VEC(1) = VOL(CUR_IJK) + VOL(IJPK)
+                  VOL_TOT_VEC(2) = VOL(CUR_IJK) + VOL(IPJK)
                   
                   DO M = 1, MMAX
-                     VEL_SOL_STENCIL(i,j,k,1,M) = avg_factor*(u_s(cur_ijk,M)+u_s(ijpk,M))
-                     VEL_SOL_STENCIL(i,j,k,2,M) = avg_factor*(v_s(cur_ijk,M)+v_s(ipjk,M)) 
-                  ENDDO
-                  psgradstencil(i,j,k,1) = avg_factor*(PS_FORCE_PIC(cur_ijk,1)+PS_FORCE_PIC(ijpk,1))
-                  psgradstencil(i,j,k,2) = avg_factor*(PS_FORCE_PIC(cur_ijk,2)+PS_FORCE_PIC(ipjk,2)) 
-
-                  vstencil(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
-                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk)) 
-                  if(dimn.eq.3) then 
-                     psgradstencil(i,j,k,1) = psgradstencil(i,j,k,1)+avg_factor*(PS_FORCE_PIC(ijkp,1) + PS_FORCE_PIC(ijpkp,1))
-                     psgradstencil(i,j,k,2) = psgradstencil(i,j,k,2)+avg_factor*(PS_FORCE_PIC(ijkp,2) + PS_FORCE_PIC(ipjkp,2))
-                     psgradstencil(i,j,k,3) = avg_factor*(PS_FORCE_PIC(cur_ijk,3)+&
-                     PS_FORCE_PIC(ijpk,3)+PS_FORCE_PIC(ipjk,3)+PS_FORCE_PIC(ipjpk,3))
+                     VEL_SOL_STENCIL(i,j,k,1,M) = u_s(cur_ijk,M)*vol(cur_ijk) + u_s(ijpk,M)*vol(ijpk)
                      
-                     vstencil(i,j,k,1) = vstencil(i,j,k,1)+avg_factor*(u_g(ijkp) + u_g(ijpkp))
-                     vstencil(i,j,k,2) = vstencil(i,j,k,2)+avg_factor*(v_g(ijkp) + v_g(ipjkp))
-                     vstencil(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
-                     & w_g(ijpk)+w_g(ipjk)+w_g(ipjpk))
+                     VEL_SOL_STENCIL(i,j,k,2,M) = v_s(cur_ijk,M)*vol(cur_ijk) + v_s(ipjk,M)*vol(ipjk)
+                  ENDDO
+                  !ep_g(cur_ijk)*vol_ijk+ ep_g(ipjk)*vol_ipjk+ & 
+                  !   &  ep_g(ijpk)*vol_ijpk + ep_g(ipjpk)*vol_ipjpk,
+                  sstencil(i,j,k) = ep_g(cur_ijk)*vol_ijk+ ep_g(ipjk)*vol_ipjk+ & 
+                  &  ep_g(ijpk)*vol_ijpk + ep_g(ipjpk)*vol_ipjpk
+                  
+                  psgradstencil(i,j,k,1) = PS_FORCE_PIC(cur_ijk,1)*VOL(CUR_IJK) + PS_FORCE_PIC(ijpk,1)*VOL(IJPK)
+
+                  psgradstencil(i,j,k,2) = PS_FORCE_PIC(cur_ijk,2)*VOL(CUR_IJK) + PS_FORCE_PIC(ipjk,2)*VOL(IPJK)
+
+                  vstencil(i,j,k,1) = u_g(cur_ijk)*vol(cur_ijk) + u_g(ijpk)*vol(ijpk)
+                  vstencil(i,j,k,2) = v_g(cur_ijk)*vol(cur_ijk) + v_g(ipjk)*vol(ipjk)
+                  if(dimn.eq.3) then 
+                     VOL_TOT_VEC(1) = VOL_TOT_VEC(1) + VOL(IJKP) + VOL(IJPKP)
+                     VOL_TOT_VEC(2) = VOL_TOT_VEC(2) + VOL(IJKP) + VOL(IPJKP)
+                     VOL_TOT_VEC(2) = VOL(CUR_IJK) + VOL(IPJK) + VOL(IJPK) + VOL(IPJPK)
+                     sstencil(i,j,k) = sstencil(i,j,k) + ep_g(ijkp)*vol_ijkp + ep_g(ipjkp)*vol_ipjkp & 
+                     & + ep_g(ijpkp)*vol_ijpkp + ep_g(ipjpkp)*vol_ipjpkp
+
+                     psgradstencil(i,j,k,1) = psgradstencil(i,j,k,1)+PS_FORCE_PIC(ijkp,1)*VOL(ijkp) + PS_FORCE_PIC(ijpkp,1)*vol(ijpkp)
+                     psgradstencil(i,j,k,2) = psgradstencil(i,j,k,2)+PS_FORCE_PIC(ijkp,2)*vol(ijkp) + PS_FORCE_PIC(ipjkp,2)*vol(ipjkp)
+                     psgradstencil(i,j,k,3) = PS_FORCE_PIC(cur_ijk,3)*vol(cur_ijk)+&
+                     & PS_FORCE_PIC(ijpk,3)*vol(ijpk)+PS_FORCE_PIC(ipjk,3)*vol(ipjk)+& 
+                     & PS_FORCE_PIC(ipjpk,3)*vol(ipjpk)
+                     
+                     vstencil(i,j,k,1) = vstencil(i,j,k,1) + u_g(ijkp)*vol(ijkp) + u_g(ijpkp)*vol(ijpkp)
+
+                     vstencil(i,j,k,2) = vstencil(i,j,k,2) + v_g(ijkp)*vol(ijkp) + v_g(ipjkp)*vol(ipjkp)
+                     vstencil(i,j,k,3) = w_g(cur_ijk)*vol(cur_ijk)+&
+                     & w_g(ijpk)*vol(ijpk)+w_g(ipjk)*vol(ipjk)+w_g(ipjpk)*vol(ipjpk)
 
                      DO M = 1, MMAX     
-                        VEL_SOL_STENCIL(i,j,k,1, M) = VEL_SOL_STENCIL(i,j,k,1,M)+avg_factor*(u_s(ijkp,M) + u_s(ijpkp,M))
-                        VEL_SOL_STENCIL(i,j,k,2, M) = VEL_SOL_STENCIL(i,j,k,2,M)+avg_factor*(v_s(ijkp,M) + v_s(ipjkp,M))
-                        VEL_SOL_STENCIL(i,j,k,3, M) = avg_factor*(w_s(cur_ijk,M)+&
-                        w_s(ijpk,M)+w_s(ipjk,M)+w_s(ipjpk,M))
+                        VEL_SOL_STENCIL(i,j,k,1, M) = VEL_SOL_STENCIL(i,j,k,1,M) & 
+                        & + u_s(ijkp,M)*vol(ijkp) + u_s(ijpkp,M)*vol(ijpkp)
+                        VEL_SOL_STENCIL(i,j,k,2, M) = VEL_SOL_STENCIL(i,j,k,2,M) & 
+                        & + v_s(ijkp,M)*vol(ijkp) + v_s(ipjkp,M)*vol(ipjkp)
+                        VEL_SOL_STENCIL(i,j,k,3, M) = w_s(cur_ijk,M)*vol(cur_ijk) +&
+                        w_s(ijpk,M)*vol(ijpk)+w_s(ipjk,M)*vol(ipjk)+w_s(ipjpk,M)*vol(ipjpk)
                      ENDDO
                   else 
                      psgradstencil(i,j,k,3) = 0.d0
@@ -204,6 +272,28 @@
                      vstencil(i,j,k,3) = 0.d0
                                           
                   endif
+                  DO IDIM = 1, DIMN 
+                     IF(VOL_TOT_VEC(IDIM).GT.ZERO)  THEN 
+                        psgradstencil(i,j,k,idim) = psgradstencil(i,j,k,idim)/VOL_TOT_VEC(idim)
+                        
+                        VEL_SOL_STENCIL(i,j,k,idim, 1:MMAX) = VEL_SOL_STENCIL(i,j,k,idim, 1:MMAX)/VOL_TOT_VEC(idim)
+                        
+                        vstencil(i,j,k,idim) = vstencil(i,j,k,idim)/VOL_TOT_VEC(idim)
+
+                        !no need for if as sum of positive numbers can only be zero
+                        !if and only if each one of them are zero 
+                     ENDIF
+                     
+                  ENDDO
+                                       
+                  
+                  !write(*,*) 'epg*vol     = ', ep_g(cur_ijk)*vol_ijk, ep_g(ipjk)*vol_ipjk, & 
+                  !&  ep_g(ijpk)*vol_ijpk , ep_g(ipjpk)*vol_ipjpk,  ep_g(cur_ijk)*vol_ijk+ ep_g(ipjk)*vol_ipjk+ & 
+                  !&  ep_g(ijpk)*vol_ijpk + ep_g(ipjpk)*vol_ipjpk,sstencil(i,j,k)
+                     
+                     
+                  if(VOL_TOT_SCAL.gt.zero) sstencil(i,j,k) = sstencil(i,j,k)/VOL_TOT_SCAL
+                     
                   
                enddo
             enddo
@@ -230,6 +320,8 @@
                AVGSOLVEL_P(NP,IDIM) = ARRAY_DOT_PRODUCT(VEL_SOL_STENCIL(:,:,:,IDIM,M),WEIGHTP(:,:,:))
                VEL_FP(NP,IDIM) = ARRAY_DOT_PRODUCT(VSTENCIL(:,:,:,IDIM),WEIGHTP(:,:,:))
             ENDDO
+            
+            EPG_P(NP) = ARRAY_DOT_PRODUCT(SSTENCIL(:,:,:),WEIGHTP(:,:,:))
             
          END DO
       END DO
@@ -976,7 +1068,9 @@
                enddo
             enddo
          enddo
-
+         
+         count_nodes_outside = 0 
+         !in order to skip the following 
          count_nodes_inside = count_nodes_inside_max - count_nodes_outside
 
          !loop through particles in the cell  
@@ -1122,7 +1216,7 @@
             DO I = ISTART2, IEND1
                IJK = funijk(I,J,K)
 
-               IF(SCALAR_NODE_ATWALL(IJK)) CYCLE
+               !IF(SCALAR_NODE_ATWALL(IJK)) CYCLE
 
                !Now going from node to scalar center. Same convention
                !as sketched earlier 
@@ -2245,6 +2339,7 @@
       USE mppic_wallbc
       USE physprop
       USE mfix_pic
+      USE cutcell
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -2273,6 +2368,7 @@
       DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, epg_min2, velf_part(dimn)
       INTEGER :: TOT_CASE, case1_count, case2_count, case3_count, case4_count 
       
+      LOGICAL :: INSIDE_DOMAIN 
 !-----------------------------------------------
 ! Functions 
 !-----------------------------------------------
@@ -2486,9 +2582,14 @@
 
          RELVEL(:) = DES_VEL_NEW(L,:) - MEANUS(:,M)
          
+         IF(EPg_P(L).gt.ep_star) cycle
+
          DO IDIM = 1, DIMN
 
             IF(ABS(PS_FORCE(IDIM)).eq.zero) cycle 
+            
+            !WRITE(*,*) 'epg = ', epg_p(l)
+            !ead(*,*) 
             IF(DES_VEL_NEW(L,IDIM).GE.ZERO) then 
                signvel = 1.d0
             else
@@ -2510,7 +2611,10 @@
                         if(DES_VEL_NEW(L,IDIM).LT.ZERO) IJK_C = KM_OF(IJK)
                         if(DES_VEL_NEW(L,IDIM).GT.ZERO) IJK_C = KP_OF(IJK)
                      ENDIF
-                     if(fluid_at(IJK_C)) then 
+                     INSIDE_DOMAIN = .false. 
+                     INSIDE_DOMAIN = fluid_at(IJK_C)!and.(.not.cut_cell_at(IJK_C))
+
+                     if(INSIDE_DOMAIN) then 
                         DES_VEL_NEW(L,IDIM) = MEANUS(IDIM,M) - COEFF_EN*RELVEL(IDIM)
                         !DES_VEL_NEW(L,IDIM) = (1.D0+COEFF_EN)*DES_VEL_NEW(L,IDIM) 
                      endif
@@ -2530,8 +2634,11 @@
                         if(DES_VEL_NEW(L,IDIM).LT.ZERO) IJK_C = KM_OF(IJK)
                         if(DES_VEL_NEW(L,IDIM).GT.ZERO) IJK_C = KP_OF(IJK)
                      ENDIF
+                     
+                     INSIDE_DOMAIN = .false. 
+                     INSIDE_DOMAIN = fluid_at(IJK_C)!.and.(.not.cut_cell_at(IJK_C))
 
-                     if((IDIM.EQ.2.AND.DES_VEL_NEW(L,IDIM).LT.ZERO).or.(.not.fluid_at(IJK_C))) then 
+                     if((IDIM.EQ.2.AND.DES_VEL_NEW(L,IDIM).LT.ZERO).or.(.not.INSIDE_DOMAIN)) then 
                      !if(.not.fluid_at(IJK_C)) then 
                         DES_VEL_NEW(L,IDIM) = -COEFF_EN*DES_VEL_NEW(L,IDIM)
                         !DES_VEL_NEW(L,IDIM) = coeff_en*des_vel_new(L, IDIM)
