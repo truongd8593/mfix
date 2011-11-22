@@ -267,13 +267,16 @@
          CALL ZERO_ARRAY (F_gs(1,M), IER)
       ENDDO
 
-! Initialization of DEM quantities: set initial conditions (bulk
-! density, velocities), boundary conditions (mass inlet/outlet),
-! physical constants, PIC
-      IF(DISCRETE_ELEMENT) THEN
-         CALL MAKE_ARRAYS_DES
-      ENDIF
-
+! DES 
+! This call to make_arrays_des has now been moved ahead of calc_coeff_all 
+! so that on the call to des/drag_fgs.f, the particle in cell info and also
+! Ep_s are known.  Rahul Garg 
+!      IF(DISCRETE_ELEMENT) THEN
+!         CALL MAKE_ARRAYS_DES
+!      END IF
+! rahul: make_arrays_des (along with check_des_data) is now
+! called from mfix.f. This consolidated the various DEM
+! intialization related calls to one place.  
 
 ! Calculate all the coefficients once before entering the time loop
       IF(TRIM(KT_TYPE) == UNDEFINED_C) CALL CALC_COEFF_ALL (0, IER) 
@@ -320,7 +323,16 @@
  100  CONTINUE
       
       IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN 
+         IF(WRITE_VTK_FILES) THEN
+! rahul: in order to write vtk files for cut-cell
+            CALL WRITE_VTK_FILE
+         ENDIF 
          CALL DES_TIME_MARCH
+         call CPU_TIME(CPU_STOP)
+! pradeep added  finalize
+         CPU_STOP = CPU_STOP - CPU00
+         if(mype.eq.pe_io)write(*,"('Elapsed CPU time = ',E15.6,' sec')") CPU_STOP
+         call parallel_fin  
          STOP
       ENDIF 
 
@@ -499,7 +511,9 @@
               .OR. eofBATCHQ) THEN 
          RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT 
          CALL WRITE_RES1 
-         IF(DISCRETE_ELEMENT) CALL WRITE_DES_RESTART
+! Pradeep Changing the routine name 
+         IF(DISCRETE_ELEMENT) call des_write_restart !CALL WRITE_DES_RESTART
+         !IF(DISCRETE_ELEMENT) CALL WRITE_DES_RESTART
          RES_MSG = .FALSE. 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME 
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME 
