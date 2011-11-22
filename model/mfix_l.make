@@ -64,9 +64,15 @@ mfix.exe : \
     vtk.mod \
     mchem.mod \
     des_bc.mod \
+    desgrid.mod \
+    desmpi.mod \
+    desmpi_wrapper.mod \
     discretelement.mod \
     interpolation.mod \
+    mfix_pic.mod \
+    mppic_wallbc.mod \
     randomno.mod \
+    sendrecvnode.mod \
     compar.mod \
     dbg_util.mod \
     debug.mod \
@@ -407,11 +413,13 @@ mfix.exe : \
     des_init_namelist.$(OBJ_EXT) \
     des_mass_inlet.$(OBJ_EXT) \
     des_time_march.$(OBJ_EXT) \
+    des_wallbc_preprocessing.$(OBJ_EXT) \
     drag_fgs.$(OBJ_EXT) \
     gas_drag.$(OBJ_EXT) \
     generate_particle_config.$(OBJ_EXT) \
     grid_based_neighbor_search.$(OBJ_EXT) \
     make_arrays_des.$(OBJ_EXT) \
+    mppic_routines.$(OBJ_EXT) \
     neighbour.$(OBJ_EXT) \
     nsquare.$(OBJ_EXT) \
     octree.$(OBJ_EXT) \
@@ -841,11 +849,15 @@ mfix.exe : \
     des_check_particle.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
+    desgrid_mod.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
     des_init_bc.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
     des_mass_inlet.$(OBJ_EXT) \
+    desmpi_mod.$(OBJ_EXT) \
+    desmpi_wrapper_mod.$(OBJ_EXT) \
     des_time_march.$(OBJ_EXT) \
+    des_wallbc_preprocessing.$(OBJ_EXT) \
     discretelement_mod.$(OBJ_EXT) \
     drag_fgs.$(OBJ_EXT) \
     gas_drag.$(OBJ_EXT) \
@@ -853,6 +865,9 @@ mfix.exe : \
     grid_based_neighbor_search.$(OBJ_EXT) \
     interpolation_mod.$(OBJ_EXT) \
     make_arrays_des.$(OBJ_EXT) \
+    mfix_pic_mod.$(OBJ_EXT) \
+    mppic_routines.$(OBJ_EXT) \
+    mppic_wallbc_mod.$(OBJ_EXT) \
     neighbour.$(OBJ_EXT) \
     nsquare.$(OBJ_EXT) \
     octree.$(OBJ_EXT) \
@@ -860,6 +875,7 @@ mfix.exe : \
     quadtree.$(OBJ_EXT) \
     randomno_mod.$(OBJ_EXT) \
     read_des_restart.$(OBJ_EXT) \
+    sendrecvnode_mod.$(OBJ_EXT) \
     walledgecontact.$(OBJ_EXT) \
     wallfacecontact.$(OBJ_EXT) \
     wallnodecontact.$(OBJ_EXT) \
@@ -1171,6 +1187,36 @@ mchem.mod : ./chem/mchem_mod.f \
 des_bc.mod : ./des/des_bc_mod.f \
             param.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_bc_mod.f 
+desgrid.mod : ./des/desgrid_mod.f \
+            param1.mod \
+            funits.mod \
+            geometry.mod \
+            compar.mod \
+            discretelement.mod \
+            constant.mod \
+            desmpi_wrapper.mod \
+            des/desgrid_functions.inc                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/desgrid_mod.f 
+desmpi.mod : ./des/desmpi_mod.f \
+            parallel_mpi.mod \
+            mpi_utility.mod \
+            discretelement.mod \
+            desgrid.mod \
+            compar.mod \
+            physprop.mod \
+            sendrecv.mod \
+            des_bc.mod \
+            desmpi_wrapper.mod \
+            sendrecvnode.mod \
+            mfix_pic.mod \
+            des/desgrid_functions.inc                                    \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/desmpi_mod.f 
+desmpi_wrapper.mod : ./des/desmpi_wrapper_mod.f \
+            parallel_mpi.mod \
+            mpi_utility.mod \
+            compar.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/desmpi_wrapper_mod.f 
 discretelement.mod : ./des/discretelement_mod.f \
             param.mod \
             param1.mod 
@@ -1178,11 +1224,46 @@ discretelement.mod : ./des/discretelement_mod.f \
 interpolation.mod : ./des/interpolation_mod.f \
             constant.mod \
             discretelement.mod \
-            geometry.mod 
+            geometry.mod \
+            param.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/interpolation_mod.f 
+mfix_pic.mod : ./des/mfix_pic_mod.f \
+            param.mod \
+            param1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mfix_pic_mod.f 
+mppic_wallbc.mod : ./des/mppic_wallbc_mod.f \
+            param.mod \
+            param1.mod \
+            discretelement.mod \
+            bc.mod \
+            geometry.mod \
+            compar.mod \
+            indices.mod \
+            funits.mod \
+            mpi_utility.mod \
+            constant.mod \
+            physprop.mod \
+            randomno.mod \
+            cutcell.mod \
+            fldvar.mod \
+            mfix_pic.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mppic_wallbc_mod.f 
 randomno.mod : ./des/randomno_mod.f \
             constant.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/randomno_mod.f 
+sendrecvnode.mod : ./des/sendrecvnode_mod.f \
+            parallel_mpi.mod \
+            mpi_utility.mod \
+            discretelement.mod \
+            compar.mod \
+            physprop.mod \
+            sendrecv.mod \
+            desmpi_wrapper.mod \
+            desgrid.mod \
+            function.inc                                                 \
+            des/desgrid_functions.inc                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/sendrecvnode_mod.f 
 compar.mod : ./dmp_modules/compar_mod.f \
             mpi.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/compar_mod.f 
@@ -2516,6 +2597,7 @@ drag_gs.$(OBJ_EXT) : drag_gs.f \
             sendrecv.mod \
             discretelement.mod \
             ur_facs.mod \
+            mfix_pic.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -2991,8 +3073,9 @@ mfix.$(OBJ_EXT) : mfix.f \
             compar.mod \
             mpi_utility.mod \
             parallel_mpi.mod \
+            discretelement.mod \
+            mfix_pic.mod \
             cdist.mod \
-            mfix_netcdf.mod \
             fldvar.mod \
             cutcell.mod \
             quadric.mod \
@@ -3146,6 +3229,7 @@ physical_prop.$(OBJ_EXT) : physical_prop.f \
             usr.mod \
             mpi_utility.mod \
             discretelement.mod \
+            cutcell.mod \
             usrnlst.inc                                                  \
             cp_fun1.inc                                                  \
             fun_avg1.inc                                                 \
@@ -3186,6 +3270,7 @@ read_namelist.$(OBJ_EXT) : read_namelist.f \
             compar.mod \
             parallel.mod \
             discretelement.mod \
+            mfix_pic.mod \
             usr.mod \
             des_bc.mod \
             cdist.mod \
@@ -4433,6 +4518,7 @@ vf_gs_x.$(OBJ_EXT) : vf_gs_x.f \
             physprop.mod \
             compar.mod \
             drag.mod \
+            discretelement.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -4444,6 +4530,7 @@ vf_gs_y.$(OBJ_EXT) : vf_gs_y.f \
             physprop.mod \
             compar.mod \
             drag.mod \
+            discretelement.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -4455,6 +4542,7 @@ vf_gs_z.$(OBJ_EXT) : vf_gs_z.f \
             physprop.mod \
             compar.mod \
             drag.mod \
+            discretelement.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                
@@ -4912,6 +5000,7 @@ check_data_cartesian.$(OBJ_EXT) : ./cartesian_grid/check_data_cartesian.f \
             mpi_utility.mod \
             bc.mod \
             discretelement.mod \
+            mfix_pic.mod \
             cutcell.mod \
             quadric.mod \
             vtk.mod \
@@ -5187,7 +5276,10 @@ vtk_out.$(OBJ_EXT) : ./cartesian_grid/vtk_out.f \
             vtk.mod \
             rxns.mod \
             output.mod \
+            scalars.mod \
             pscor.mod \
+            discretelement.mod \
+            mfix_pic.mod \
             mpi_utility.mod \
             polygon.mod \
             stl.mod 
@@ -5360,8 +5452,16 @@ cfassign.$(OBJ_EXT) : ./des/cfassign.f \
             parallel.mod \
             sendrecv.mod \
             discretelement.mod \
+            mfix_pic.mod \
+            param.mod \
+            fldvar.mod \
+            run.mod \
+            indices.mod \
+            bc.mod \
+            cutcell.mod \
             b_force1.inc                                                 \
-            b_force2.inc                                                
+            b_force2.inc                                                 \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfassign.f 
 cffctowall.$(OBJ_EXT) : ./des/cffctowall.f \
             param1.mod \
@@ -5375,21 +5475,20 @@ cfnewvalues.$(OBJ_EXT) : ./des/cfnewvalues.f \
             param.mod \
             param1.mod \
             parallel.mod \
-            matrix.mod \
-            scales.mod \
-            constant.mod \
-            compar.mod \
-            sendrecv.mod \
             physprop.mod \
+            constant.mod \
             fldvar.mod \
-            visc_g.mod \
-            rxns.mod \
-            run.mod \
-            geometry.mod \
-            indices.mod \
-            drag.mod \
             discretelement.mod \
-            des_bc.mod 
+            des_bc.mod \
+            mpi_utility.mod \
+            mfix_pic.mod \
+            mppic_wallbc.mod \
+            randomno.mod \
+            cutcell.mod \
+            geometry.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfnewvalues.f 
 cfrelvel.$(OBJ_EXT) : ./des/cfrelvel.f \
             discretelement.mod \
@@ -5442,7 +5541,8 @@ check_des_bc.$(OBJ_EXT) : ./des/check_des_bc.f \
             param.mod \
             param1.mod \
             physprop.mod \
-            run.mod 
+            run.mod \
+            mfix_pic.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_bc.f 
 check_des_data.$(OBJ_EXT) : ./des/check_des_data.f \
             param1.mod \
@@ -5452,7 +5552,18 @@ check_des_data.$(OBJ_EXT) : ./des/check_des_data.f \
             discretelement.mod \
             run.mod \
             constant.mod \
-            physprop.mod 
+            physprop.mod \
+            desgrid.mod \
+            indices.mod \
+            fldvar.mod \
+            toleranc.mod \
+            mpi_utility.mod \
+            output.mod \
+            mfix_pic.mod \
+            cutcell.mod \
+            function.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_data.f 
 des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             param.mod \
@@ -5464,6 +5575,10 @@ des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             compar.mod \
             physprop.mod \
             des_bc.mod \
+            funits.mod \
+            desgrid.mod \
+            desmpi.mod \
+            mfix_pic.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_allocate_arrays.f 
 des_check_particle.$(OBJ_EXT) : ./des/des_check_particle.f \
@@ -5486,14 +5601,17 @@ des_functions.$(OBJ_EXT) : ./des/des_functions.f \
             funits.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_functions.f 
 des_granular_temperature.$(OBJ_EXT) : ./des/des_granular_temperature.f \
+            discretelement.mod \
             param.mod \
             param1.mod \
             run.mod \
             geometry.mod \
             indices.mod \
             compar.mod \
-            discretelement.mod \
+            sendrecv.mod \
+            physprop.mod \
             des_bc.mod \
+            fldvar.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
@@ -5507,7 +5625,9 @@ des_init_arrays.$(OBJ_EXT) : ./des/des_init_arrays.f \
             compar.mod \
             physprop.mod \
             des_bc.mod \
-            run.mod 
+            run.mod \
+            desgrid.mod \
+            desmpi.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_arrays.f 
 des_init_bc.$(OBJ_EXT) : ./des/des_init_bc.f \
             compar.mod \
@@ -5525,6 +5645,7 @@ des_init_bc.$(OBJ_EXT) : ./des/des_init_bc.f \
 des_init_namelist.$(OBJ_EXT) : ./des/des_init_namelist.f \
             param1.mod \
             discretelement.mod \
+            mfix_pic.mod \
             des_bc.mod \
             des/desnamelist.inc                                         
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_namelist.f 
@@ -5538,6 +5659,8 @@ des_mass_inlet.$(OBJ_EXT) : ./des/des_mass_inlet.f \
             indices.mod \
             param1.mod \
             physprop.mod \
+            desgrid.mod \
+            mpi_utility.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_mass_inlet.f 
 des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
@@ -5567,32 +5690,60 @@ des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
             constant.mod \
             sendrecv.mod \
             des_bc.mod \
+            cutcell.mod \
+            mppic_wallbc.mod \
+            mfix_pic.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_time_march.f 
+des_wallbc_preprocessing.$(OBJ_EXT) : ./des/des_wallbc_preprocessing.f \
+            param1.mod \
+            funits.mod \
+            run.mod \
+            compar.mod \
+            discretelement.mod \
+            cutcell.mod \
+            indices.mod \
+            physprop.mod \
+            parallel.mod \
+            geometry.mod \
+            bc.mod \
+            constant.mod \
+            fldvar.mod \
+            mpi_utility.mod \
+            sendrecv.mod \
+            mfix_pic.mod \
+            discretelement.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_wallbc_preprocessing.f 
 drag_fgs.$(OBJ_EXT) : ./des/drag_fgs.f \
             param.mod \
             param1.mod \
             parallel.mod \
-            scales.mod \
-            constant.mod \
             physprop.mod \
             fldvar.mod \
             run.mod \
-            toleranc.mod \
             geometry.mod \
             indices.mod \
             bc.mod \
             compar.mod \
             sendrecv.mod \
             discretelement.mod \
+            cutcell.mod \
+            constant.mod \
             drag.mod \
             interpolation.mod \
+            desmpi.mod \
+            mfix_pic.mod \
             ur_facs.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
-            fun_avg2.inc                                                
+            fun_avg2.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/drag_fgs.f 
 gas_drag.$(OBJ_EXT) : ./des/gas_drag.f \
             param.mod \
@@ -5622,35 +5773,91 @@ gas_drag.$(OBJ_EXT) : ./des/gas_drag.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/gas_drag.f 
 generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
             param1.mod \
+            geometry.mod \
             funits.mod \
             compar.mod \
-            run.mod \
-            geometry.mod \
             discretelement.mod \
+            run.mod \
+            constant.mod \
+            physprop.mod \
+            desmpi.mod \
+            cdist.mod \
+            mpi_utility.mod \
+            mfix_pic.mod \
             param.mod \
             fldvar.mod \
             indices.mod \
-            interpolation.mod \
             randomno.mod \
+            sendrecv.mod \
+            interpolation.mod \
             function.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                    \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/generate_particle_config.f 
 grid_based_neighbor_search.$(OBJ_EXT) : ./des/grid_based_neighbor_search.f \
+            param1.mod \
             discretelement.mod \
-            des_bc.mod \
-            compar.mod 
+            geometry.mod \
+            des_bc.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/grid_based_neighbor_search.f 
 make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             param1.mod \
             funits.mod \
             run.mod \
             compar.mod \
-            discretelement.mod 
+            discretelement.mod \
+            cutcell.mod \
+            desmpi.mod \
+            mpi_utility.mod \
+            geometry.mod \
+            cdist.mod \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/make_arrays_des.f 
+mppic_routines.$(OBJ_EXT) : ./des/mppic_routines.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            physprop.mod \
+            fldvar.mod \
+            run.mod \
+            geometry.mod \
+            indices.mod \
+            bc.mod \
+            compar.mod \
+            sendrecv.mod \
+            discretelement.mod \
+            constant.mod \
+            cutcell.mod \
+            interpolation.mod \
+            mfix_pic.mod \
+            drag.mod \
+            desmpi.mod \
+            toleranc.mod \
+            quadric.mod \
+            vtk.mod \
+            matrix.mod \
+            scales.mod \
+            visc_s.mod \
+            rxns.mod \
+            is.mod \
+            tau_s.mod \
+            output.mod \
+            des_bc.mod \
+            mpi_utility.mod \
+            mppic_wallbc.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mppic_routines.f 
 neighbour.$(OBJ_EXT) : ./des/neighbour.f \
             param1.mod \
-            discretelement.mod 
+            discretelement.mod \
+            desgrid.mod \
+            compar.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/neighbour.f 
 nsquare.$(OBJ_EXT) : ./des/nsquare.f \
             param1.mod \
@@ -5684,7 +5891,13 @@ particles_in_cell.$(OBJ_EXT) : ./des/particles_in_cell.f \
             parallel.mod \
             sendrecv.mod \
             discretelement.mod \
-            function.inc                                                
+            desgrid.mod \
+            desmpi.mod \
+            cutcell.mod \
+            mfix_pic.mod \
+            function.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/particles_in_cell.f 
 quadtree.$(OBJ_EXT) : ./des/quadtree.f \
             run.mod \
@@ -5705,7 +5918,12 @@ read_des_restart.$(OBJ_EXT) : ./des/read_des_restart.f \
             param1.mod \
             run.mod \
             discretelement.mod \
-            des_bc.mod 
+            des_bc.mod \
+            compar.mod \
+            desmpi.mod \
+            machine.mod \
+            cdist.mod \
+            mpi_utility.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/read_des_restart.f 
 walledgecontact.$(OBJ_EXT) : ./des/walledgecontact.f \
             discretelement.mod \
@@ -5753,21 +5971,34 @@ wallnodecontact.$(OBJ_EXT) : ./des/wallnodecontact.f \
             compar.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/wallnodecontact.f 
 write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
-            run.mod \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
             discretelement.mod \
-            des_bc.mod \
-            compar.mod \
-            funits.mod \
+            run.mod \
             geometry.mod \
-            indices.mod \
             physprop.mod \
-            function.inc                                                
+            sendrecv.mod \
+            des_bc.mod \
+            mpi_utility.mod \
+            compar.mod \
+            desmpi.mod \
+            cdist.mod \
+            function.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/write_des_data.f 
 write_des_restart.$(OBJ_EXT) : ./des/write_des_restart.f \
             param1.mod \
             discretelement.mod \
             run.mod \
-            des_bc.mod 
+            des_bc.mod \
+            compar.mod \
+            desmpi.mod \
+            machine.mod \
+            cdist.mod \
+            mpi_utility.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/write_des_restart.f 
 gaussj.$(OBJ_EXT) : ./dqmom/gaussj.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/gaussj.f 
