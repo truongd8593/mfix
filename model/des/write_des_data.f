@@ -281,23 +281,12 @@
                '<Piece NumberOfPoints="',lglocnt,'" NumberOfVerts="0" ',&
                'NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
             write(des_unit,"(9x,a)")&
-               '<PointData Scalars="Diameter,global_id" Vectors="Velocity">'
+               '<PointData Scalars="Diameter" Vectors="Velocity">'
             write(des_unit,"(12x,a)")&
                '<DataArray type="Float32" Name="Diameter" format="ascii">'
             write (des_unit,"(15x,es12.6)") (real(2.d0*drootbuf(l)),l=1,lglocnt)
             write(des_unit,"(12x,a)") '</DataArray>'
-         endif
-         
-         
-         !call des_gather(iglobal_id)
-         call des_gather(MARK_PART)
-         if (mype.eq.pe_io) then 
-            write(des_unit,"(12x,a)")&
-               '<DataArray type="Float32" Name="Global_id" format="ascii">'
-            write (des_unit,"(15x,es12.6)") (real(irootbuf(l)),l=1,lglocnt)
-            write(des_unit,"(12x,a)") '</DataArray>'
-         end if 
-
+         endif         
 
 ! Write velocity data.
          ltemp_array = 0.0 
