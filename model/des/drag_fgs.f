@@ -295,14 +295,27 @@
 ! index to track accounted for particles 
       INTEGER PC 
 
+<<<<<<< drag_fgs.f
 ! for error messages      
       INTEGER IER
 
 ! Statistical weight of the particle. Equal to one for DEM 
    
       DOUBLE PRECISION WTP, EPS
+=======
+! for error messages      
+      INTEGER IER
+>>>>>>> 1.20.2.9
+
+<<<<<<< drag_fgs.f
+      double precision  VELG_ARR(DIMN), VELS_ARR(DIMN, MMAX)
+=======
+! Statistical weight of the particle. Equal to one for DEM 
+   
+      DOUBLE PRECISION WTP, EPS
 
       double precision  VELG_ARR(DIMN), VELS_ARR(DIMN, MMAX)
+>>>>>>> 1.20.2.9
 
 ! see the discussion for IJK_U ..... in comments       
       INTEGER  IJK_U, IJK_V, IJK_W, ICUR, JCUR, KCUR 
@@ -375,6 +388,7 @@
                   ENDIF
                ENDIF
 <<<<<<< drag_fgs.f
+<<<<<<< drag_fgs.f
 
                IF (.NOT. DES_INTERP_ON) THEN
 ! average fluid velocity at scalar cell center
@@ -393,6 +407,52 @@
                               (DES_W_S(IJK,M)-WGC)
                         ENDIF
                         OEPS = ONE/EP_SM
+=======
+                  !original terms 
+                  !UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
+                  !VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
+                  !WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
+                  
+               VELG_ARR(1) = UGC
+               VELG_ARR(2) = VGC
+               IF(DIMN.eq.3) VELG_ARR(3) = WGC 
+                  
+               VELS_ARR(1,:) = DES_U_S(IJK, :)
+               VELS_ARR(2,:) = DES_V_S(IJK, :)
+               IF(DIMN.eq.3) VELS_ARR(3,:) = DES_W_S(IJK, :)
+               DO M = 1, MMAX
+                  IF(EP_S(IJK,M).GT.ZERO) THEN
+                     SOLID_DRAG(IJK,M,1) = -F_GS(IJK,M)*&
+                     (DES_U_S(IJK,M)-UGC)
+                     SOLID_DRAG(IJK,M,2) = -F_GS(IJK,M)*&
+                     (DES_V_S(IJK,M)-VGC)
+                     
+                     IF(DIMN.EQ.3) THEN
+                        SOLID_DRAG(IJK,M,3) = -F_GS(IJK,M)*&
+                        (DES_W_S(IJK,M)-WGC)
+                     ENDIF
+                     OEPS = ONE/EP_S(IJK,M)
+                     SOLID_DRAG(IJK,M,:) = SOLID_DRAG(IJK,M,:)*OEPS
+                  ENDIF
+                     
+                  !rahul: temp start 
+                  IF(MPPIC) THEN 
+                     IF(EP_S(IJK,M).GT.ZERO) THEN
+                        
+                        if(MPPIC_PDRAG_IMPLICIT) THEN 
+                           
+                        !implicit treatment for drag term 
+                           SOLID_DRAG(IJK, M, :) = F_GS(IJK,M)*VELG_ARR(:)
+                           
+                        ELSE
+                        !explicit treatment 
+                           SOLID_DRAG(IJK, M, :) = F_GS(IJK,M)*(VELG_ARR(:)-VELS_ARR(:, M))
+                        endif
+                     
+                        EPs = MIN(EP_s(IJK,M), 1.d0-EP_STAR)
+                        !EPs = EP_s(IJK,M)
+                        OEPS = ONE/EPs
+>>>>>>> 1.20.2.9
 =======
                   !original terms 
                   !UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
@@ -993,14 +1053,27 @@
 !     End of Koch and Hill variables declaration, sof
 !***********************************************************
      
+<<<<<<< drag_fgs.f
+      double precision :: epg
+!     Current value of F_gs (i.e., without underrelaxation)
+
+      DOUBLE PRECISION F_gstmp
+=======
       double precision :: epg
 !     Current value of F_gs (i.e., without underrelaxation)
 
       DOUBLE PRECISION F_gstmp
 
       DOUBLE PRECISION:: EPS, DIAMETER
+>>>>>>> 1.20.2.9
+
+<<<<<<< drag_fgs.f
+      DOUBLE PRECISION:: EPS, DIAMETER
 
       INCLUDE 'ep_s1.inc'
+=======
+      INCLUDE 'ep_s1.inc'
+>>>>>>> 1.20.2.9
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
@@ -1046,6 +1119,7 @@
          Mu = MU_G(IJK)
       ENDIF
 
+<<<<<<< drag_fgs.f
 !     Reynolds number
       if(Mu > ZERO)then
          RE = diameter * VREL*RO_G(IJK)/Mu 
@@ -1055,8 +1129,23 @@
          
 !     Note Reynolds' number for Hill and Koch has an additional factor of 1/2 & ep_g
          RE_kh = (0.5D0*diameter*VREL*ROP_G(IJK))/Mu
+=======
+!     Reynolds number
+      if(Mu > ZERO)then
+         RE = diameter * VREL*RO_G(IJK)/Mu 
+         
+!     Note the presence of gas volume fraction in ROP_G
+         RE_G = (diameter * VREL*ROP_G(IJK))/Mu
+>>>>>>> 1.20.2.9
+         
+<<<<<<< drag_fgs.f
+      else 
+=======
+!     Note Reynolds' number for Hill and Koch has an additional factor of 1/2 & ep_g
+         RE_kh = (0.5D0*diameter*VREL*ROP_G(IJK))/Mu
          
       else 
+>>>>>>> 1.20.2.9
          RE = LARGE_NUMBER 
          RE_G = LARGE_NUMBER
          RE_kh = LARGE_NUMBER
@@ -1082,10 +1171,14 @@
                B = EP_G(IJK)**drag_d1
             ENDIF 
 <<<<<<< drag_fgs.f
+<<<<<<< drag_fgs.f
 
 ! Calculate V_rm
             V_RM=HALF*(A_SO - 0.06D0*RE + SQRT( (3.6D-3)*RE*RE + &
                0.12D0*RE*(2.D0*B_SO-A_SO) + A_SO*A_SO) ) 
+=======
+            V_RM=HALF*(A-0.06D0*RE+SQRT(3.6D-3*RE*RE+0.12D0*RE*(2.D0*B-A)+A*A)) 
+>>>>>>> 1.20.2.9
 =======
             V_RM=HALF*(A-0.06D0*RE+SQRT(3.6D-3*RE*RE+0.12D0*RE*(2.D0*B-A)+A*A)) 
 >>>>>>> 1.20.2.9
@@ -1100,6 +1193,7 @@
 !     Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
 !     
             IF(TSUJI_DRAG) THEN
+<<<<<<< drag_fgs.f
 <<<<<<< drag_fgs.f
                IF(EP_G(IJK) <= 0.8D0) THEN
                   F_gstmp = (Mu*PART_VOL/(PART_DIAM**2))*&
@@ -1116,6 +1210,23 @@
             ELSEIF(MODEL_B) THEN 
                F_gstmp = 0.75D0*Mu*(PART_VOL)*&
                   C_DSXRE(RE/V_RM) / (V_RM*PART_DIAM*PART_DIAM) 
+=======
+               IF(EP_G(IJK).LE.0.8D0) THEN
+                  F_gstmp = (Mu*PVOL(KK)/(DIAMETER**2))*&
+                  (150D0*(EP_S(IJK,M)/EP_G(IJK)) + 1.75D0*RE)
+               ELSE IF(EP_G(IJK).GT.0.8D0) THEN
+                  IF(RE*EP_G(IJK).GT.1000D0) THEN
+                     F_gstmp = 0.75D0*0.43D0*Mu*PVOL(KK)*RE/(DIAMETER**2 *&
+                     EP_G(IJK)**1.7D0)
+                  ELSE IF(RE*EP_G(IJK).LE.1000D0) THEN
+                     F_gstmp = 0.75D0*C_DSXRET(RE*EP_G(IJK))*Mu*PVOL(KK)*&
+                     RE/(DIAMETER**2 *EP_G(IJK)**1.7D0)
+                  END IF
+               END IF 
+            ELSE IF(MODEL_B) THEN 
+               F_gstmp = 0.75D0*Mu*(PVOL(KK))*C_DSXRE(RE/V_RM)/(&
+               V_RM*DIAMETER*DIAMETER) 
+>>>>>>> 1.20.2.9
 =======
                IF(EP_G(IJK).LE.0.8D0) THEN
                   F_gstmp = (Mu*PVOL(KK)/(DIAMETER**2))*&
