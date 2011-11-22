@@ -608,7 +608,7 @@
 
 ! dt's in each direction  based on cfl_pic for the mppic case 
       
-      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(DIMN, MMAX)
+      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(DIMN, MMAX), POS_Z
       DOUBLE PRECISION :: DPS_DXE, DPS_DXW, DPS_DYN, DPS_DYS, DPS_DZT, DPS_DZB
       DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, epg_min2, velf_part(dimn)
       
@@ -738,12 +738,12 @@
          MEAN_FREE_PATH  = MAX(1.d0/(1.d0-EP_STAR), 1.d0/(1.D0-EP_G(IJK_OLD)))
          MEAN_FREE_PATH = MEAN_FREE_PATH*RAD_EFF/THREEINTOSQRT2
                
-         !IF(UPRIMEMOD*DTSOLID.GT.MEAN_FREE_PATH) then 
-         !   DES_VEL_NEW(L,:) = (DES_VEL_NEW(L,:)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
-         !ENDIF
+         IF(UPRIMEMOD*DTSOLID.GT.MEAN_FREE_PATH) then 
+            DES_VEL_NEW(L,:) = (DES_VEL_NEW(L,:)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
+         ENDIF
 
          DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
-         DES_VEL_NEW(L,:)*DTSOLID! + rand_vel(L, :)*dtsolid 
+         DES_VEL_NEW(L,:)*DTSOLID + rand_vel(L, :)*dtsolid 
          
          D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
          
@@ -761,24 +761,28 @@
          INSIDE_DOMAIN = FLUID_AT(IJK)
 
          IF(CUT_CELL_AT(IJK)) THEN 
+            POS_Z = zero 
+            IF(DIMN.eq.3) POS_Z = DES_POS_NEW(L,3)
             CALL GET_DEL_H_DES(IJK,'SCALAR', & 
             & DES_POS_NEW(L,1),  DES_POS_NEW(L,2), &
-            & DES_POS_NEW(L,3), & 
+            & POS_Z, & 
             & DIST, NORM1, NORM2, NORM3, .true.)
             
             IF(DIST.LE.ZERO) INSIDE_DOMAIN = .false. 
          ENDIF
 
          !IF((EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN)) then 
-         IF(EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN) then 
+         !IF(EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN) then  
+         IF(EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN.and.IJK.NE.IJK_OLD) then 
+            
             IF(CUT_CELL_AT(IJK)) then 
                DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
-            !DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + rand_vel(L, :)*dtsolid 
+               DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + rand_vel(L, :)*dtsolid 
                DES_VEL_NEW(L,:) = 0.8d0*DES_VEL_NEW(L,:)
             ELSE
                !IF(IJK.NE.IJK_OLD) THEN 
                   DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
-                  !DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + rand_vel(L, :)*dtsolid 
+                  DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + rand_vel(L, :)*dtsolid 
                   DES_VEL_NEW(L,:) = 0.8d0*DES_VEL_NEW(L,:)
                !ENDIF
             ENDIF
