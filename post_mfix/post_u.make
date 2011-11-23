@@ -9,6 +9,7 @@ post_mfix : \
     CONSTANT.mod \
     CONT.mod \
     CORREL.mod \
+    DES_BC.mod \
     DRAG.mod \
     ENERGY.mod \
     FLDVAR.mod \
@@ -21,22 +22,12 @@ post_mfix : \
     LEQSOL.mod \
     MACHINE.mod \
     MCHEM.mod \
-    DES_BC.mod \
-    PROGRESS_BAR.mod \
-    QUADRIC.mod \
-    STL.mod \
-    CUTCELL.mod \
-    VTK.mod \
-    POLYGON.mod \
-    DASHBOARD.mod \
     MFLUX.mod \
     MFIX_NETCDF.mod \
     OUTPUT.mod \
     PARALLEL.mod \
     PARAM1.mod \
     PARAM.mod \
-    DISCRETELEMENT.mod \
-    GHDTHEORY.mod \
     PARSE.mod \
     PGCOR.mod \
     PHYSPROP.mod \
@@ -61,19 +52,30 @@ post_mfix : \
     VISC_S.mod \
     VSHEAR.mod \
     XSI_ARRAY.mod \
-    cartesian_grid_init_namelist.$(OBJ_EXT)  \
-    write_error.$(OBJ_EXT)                    \
-    COMPAR.mod                                \
-    DBG_UTIL.mod                              \
-    DEBUG.mod                                 \
-    GRIDMAP.mod                               \
-    MPI.mod                                   \
-    MPI_UTILITY.mod                           \
-    PARALLEL_MPI.mod                          \
-    SENDRECV.mod                              \
+    PROGRESS_BAR.mod \
+    QUADRIC.mod \
+    STL.mod \
+    VTK.mod \
+    CUTCELL.mod \
+    POLYGON.mod \
+    DASHBOARD.mod \
+    COMPAR.mod \
+    MPI.mod \
+    DBG_UTIL.mod \
+    PARALLEL_MPI.mod \
+    DEBUG.mod \
+    GRIDMAP.mod \
+    MPI_UTILITY.mod \
+    SENDRECV.mod \
+    BOUNDFUNIJK.mod \
+    DISCRETELEMENT.mod \
+    GHDTHEORY.mod \
+    POST_PRECISION.mod \
+    PARALLELDATA.mod \
+    USR_INPUT.mod \
+    MFIX_PIC.mod \
     allocate_arrays.$(OBJ_EXT) \
     any_more_data.$(OBJ_EXT) \
-    BOUNDFUNIJK.mod                           \
     calc_cell2.$(OBJ_EXT) \
     calc_corr_01.$(OBJ_EXT) \
     calc_corr_type_1.$(OBJ_EXT) \
@@ -91,6 +93,7 @@ post_mfix : \
     check_one_axis.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     deallocate_arrays.$(OBJ_EXT) \
+    cartesian_grid_init_namelist.$(OBJ_EXT) \
     eosg.$(OBJ_EXT) \
     error_routine.$(OBJ_EXT) \
     examine_data.$(OBJ_EXT) \
@@ -124,7 +127,6 @@ post_mfix : \
     machine.$(OBJ_EXT) \
     main_f.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
-    mfix_netcdf_mod.$(OBJ_EXT) \
     open_file.$(OBJ_EXT) \
     out_from_res.$(OBJ_EXT) \
     out_from_spx.$(OBJ_EXT) \
@@ -158,7 +160,6 @@ post_mfix : \
     streqs.$(OBJ_EXT) \
     time_avg.$(OBJ_EXT) \
     usr_init_namelist.$(OBJ_EXT) \
-    usr_input.$(OBJ_EXT) \
     usr_post.$(OBJ_EXT) \
     usr_write_out1.$(OBJ_EXT) \
     write_out1.$(OBJ_EXT) \
@@ -166,19 +167,8 @@ post_mfix : \
     write_res1.$(OBJ_EXT) \
     write_spx0.$(OBJ_EXT) \
     write_spx1.$(OBJ_EXT) \
-    ornl_header.$(OBJ_EXT) \
-    ornl_util.$(OBJ_EXT) \
-    ornl_stats.$(OBJ_EXT) \
-    ornl_stats_c.$(OBJ_EXT) \
-    ornl_corr.$(OBJ_EXT) \
-    ornl_corr_c.$(OBJ_EXT) \
-    ornl_pca.$(OBJ_EXT) \
-    ornl_ft.$(OBJ_EXT) \
-    ornl_ft_c.$(OBJ_EXT) \
-    ornl_filt.$(OBJ_EXT) \
-    ornl_filt_c.$(OBJ_EXT) \
-    ornl_zone.$(OBJ_EXT) \
-    ornl_sym.$(OBJ_EXT) \
+    usr_input.$(OBJ_EXT) \
+    write_error.$(OBJ_EXT) \
     transport_coeff_ghd.$(OBJ_EXT) \
     ghd.$(OBJ_EXT) \
     cooling_rate.$(OBJ_EXT) \
@@ -193,16 +183,30 @@ post_mfix : \
     ordinary_diff.$(OBJ_EXT) \
     dufour_coeff.$(OBJ_EXT) \
     chi_ij_GHD.$(OBJ_EXT) \
-    des_init_namelist.$(OBJ_EXT)
+    des_init_namelist.$(OBJ_EXT) \
+    ornl_header.$(OBJ_EXT) \
+    ornl_util.$(OBJ_EXT) \
+    ornl_stats.$(OBJ_EXT) \
+    ornl_stats_c.$(OBJ_EXT) \
+    ornl_corr.$(OBJ_EXT) \
+    ornl_corr_c.$(OBJ_EXT) \
+    ornl_pca.$(OBJ_EXT) \
+    ornl_ft.$(OBJ_EXT) \
+    ornl_ft_c.$(OBJ_EXT) \
+    ornl_filt.$(OBJ_EXT) \
+    ornl_filt_c.$(OBJ_EXT) \
+    ornl_zone.$(OBJ_EXT) \
+    ornl_sym.$(OBJ_EXT) \
+    
 	$(LINK_CMD) $(LINK_FLAGS) \
     ambm_mod.$(OBJ_EXT) \
     bc_mod.$(OBJ_EXT) \
-    boundfunijk_mod.$(OBJ_EXT)                           \
     cdist_mod.$(OBJ_EXT) \
     coeff_mod.$(OBJ_EXT) \
     constant_mod.$(OBJ_EXT) \
     cont_mod.$(OBJ_EXT) \
     correl_mod.$(OBJ_EXT) \
+    des_bc_mod.$(OBJ_EXT) \
     drag_mod.$(OBJ_EXT) \
     energy_mod.$(OBJ_EXT) \
     fldvar_mod.$(OBJ_EXT) \
@@ -215,7 +219,6 @@ post_mfix : \
     leqsol_mod.$(OBJ_EXT) \
     machine_mod.$(OBJ_EXT) \
     mchem_mod.$(OBJ_EXT) \
-    des_bc_mod.$(OBJ_EXT) \
     mflux_mod.$(OBJ_EXT) \
     mfix_netcdf_mod.$(OBJ_EXT) \
     output_mod.$(OBJ_EXT) \
@@ -265,6 +268,14 @@ post_mfix : \
     check_one_axis.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     deallocate_arrays.$(OBJ_EXT) \
+    progress_bar_mod.$(OBJ_EXT) \
+    quadric_mod.$(OBJ_EXT) \
+    stl_mod.$(OBJ_EXT) \
+    vtk_mod.$(OBJ_EXT) \
+    cutcell_mod.$(OBJ_EXT) \
+    polygon_mod.$(OBJ_EXT) \
+    dashboard_mod.$(OBJ_EXT) \
+    cartesian_grid_init_namelist.$(OBJ_EXT) \
     eosg.$(OBJ_EXT) \
     error_routine.$(OBJ_EXT) \
     examine_data.$(OBJ_EXT) \
@@ -331,15 +342,41 @@ post_mfix : \
     streqs.$(OBJ_EXT) \
     time_avg.$(OBJ_EXT) \
     usr_init_namelist.$(OBJ_EXT) \
-    usr_input.$(OBJ_EXT) \
     usr_post.$(OBJ_EXT) \
     usr_write_out1.$(OBJ_EXT) \
-    write_error.$(OBJ_EXT)                               \
     write_out1.$(OBJ_EXT) \
     write_res0.$(OBJ_EXT) \
     write_res1.$(OBJ_EXT) \
     write_spx0.$(OBJ_EXT) \
     write_spx1.$(OBJ_EXT) \
+    usr_input.$(OBJ_EXT) \
+    compar_mod.$(OBJ_EXT) \
+    mpi_mod.$(OBJ_EXT) \
+    dbg_util_mod.$(OBJ_EXT) \
+    parallel_mpi_mod.$(OBJ_EXT) \
+    debug_mod.$(OBJ_EXT) \
+    gridmap_mod.$(OBJ_EXT) \
+    mpi_utility_mod.$(OBJ_EXT) \
+    sendrecv_mod.$(OBJ_EXT) \
+    boundfunijk_mod.$(OBJ_EXT) \
+    write_error.$(OBJ_EXT) \
+    discretelement_mod.$(OBJ_EXT) \
+    ghdtheory_mod.$(OBJ_EXT) \
+    transport_coeff_ghd.$(OBJ_EXT) \
+    ghd.$(OBJ_EXT) \
+    cooling_rate.$(OBJ_EXT) \
+    cooling_rate_tc.$(OBJ_EXT) \
+    pressure.$(OBJ_EXT) \
+    bulk_viscosity.$(OBJ_EXT) \
+    shear_viscosity.$(OBJ_EXT) \
+    thermal_diffusivity.$(OBJ_EXT) \
+    mass_mobility.$(OBJ_EXT) \
+    thermal_conductivity.$(OBJ_EXT) \
+    thermal_mobility.$(OBJ_EXT) \
+    ordinary_diff.$(OBJ_EXT) \
+    dufour_coeff.$(OBJ_EXT) \
+    chi_ij_GHD.$(OBJ_EXT) \
+    des_init_namelist.$(OBJ_EXT) \
     ornl_header.$(OBJ_EXT) \
     ornl_util.$(OBJ_EXT) \
     ornl_stats.$(OBJ_EXT) \
@@ -349,49 +386,21 @@ post_mfix : \
     ornl_pca.$(OBJ_EXT) \
     ornl_ft.$(OBJ_EXT) \
     ornl_ft_c.$(OBJ_EXT) \
-    ornl_zone.$(OBJ_EXT) \
     ornl_filt.$(OBJ_EXT) \
     ornl_filt_c.$(OBJ_EXT) \
+    ornl_zone.$(OBJ_EXT) \
     ornl_sym.$(OBJ_EXT) \
-    debug_mod.$(OBJ_EXT)                           \
-    compar_mod.$(OBJ_EXT)                          \
-    dbg_util_mod.$(OBJ_EXT)                        \
-    gridmap_mod.$(OBJ_EXT)                         \
-    mpi_mod.$(OBJ_EXT)                             \
-    mpi_utility_mod.$(OBJ_EXT)                     \
-    parallel_mpi_mod.$(OBJ_EXT)                    \
-    sendrecv_mod.$(OBJ_EXT)                        \
-    des_init_namelist.$(OBJ_EXT)                   \
-    transport_coeff_ghd.$(OBJ_EXT)                   \
-    ghd.$(OBJ_EXT)                 \
-    cooling_rate.$(OBJ_EXT) \
-    cooling_rate_tc.$(OBJ_EXT) \
-    pressure.$(OBJ_EXT) \
-    bulk_viscosity.$(OBJ_EXT) \
-    cartesian_grid_init_namelist.$(OBJ_EXT) \
-    quadric_mod.$(OBJ_EXT) \
-    stl_mod.$(OBJ_EXT) \
-    cutcell_mod.$(OBJ_EXT) \
-    vtk_mod.$(OBJ_EXT) \
-    polygon_mod.$(OBJ_EXT) \
-    progress_bar_mod.$(OBJ_EXT) \
-    dashboard_mod.$(OBJ_EXT) \
-    shear_viscosity.$(OBJ_EXT) \
-    thermal_diffusivity.$(OBJ_EXT) \
-    mass_mobility.$(OBJ_EXT) \
-    thermal_conductivity.$(OBJ_EXT) \
-    thermal_mobility.$(OBJ_EXT) \
-    ordinary_diff.$(OBJ_EXT) \
-    dufour_coeff.$(OBJ_EXT) \
-    chi_ij_GHD.$(OBJ_EXT) \
-    discretelement_mod.$(OBJ_EXT)                  \
-    ghdtheory_mod.$(OBJ_EXT)                  \
+    post_precision_mod.$(OBJ_EXT) \
+    paralleldata_mod.$(OBJ_EXT) \
+    usr_input_mod.$(OBJ_EXT) \
+    mfix_pic_mod.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
 AMBM.mod : ../model/ambm_mod.f \
             PARAM.mod \
             PARAM1.mod \
-            MPI_UTILITY.mod
+            COMPAR.mod \
+            MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/ambm_mod.f 
 BC.mod : ../model/bc_mod.f \
             PARAM.mod \
@@ -411,9 +420,12 @@ CONT.mod : ../model/cont_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cont_mod.f 
-CORREL.mod : correl_mod.f 
+CORREL.mod : correl_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) correl_mod.f 
-DES_BC.mod : ../model/des/des_bc_mod.f 
+DES_BC.mod : ../model/des/des_bc_mod.f \
+            PARAM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_bc_mod.f 
 DRAG.mod : ../model/drag_mod.f \
             PARAM.mod \
@@ -455,15 +467,18 @@ LEQSOL.mod : ../model/leqsol_mod.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/leqsol_mod.f 
 MACHINE.mod : ../model/machine_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/machine_mod.f 
-MCHEM.mod : ../model/chem/mchem_mod.f 
+MCHEM.mod : ../model/chem/mchem_mod.f \
+            PARAM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/chem/mchem_mod.f 
-MFLUX.mod : ../model/mflux_mod.f 
+MFLUX.mod : ../model/mflux_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/mflux_mod.f 
 MFIX_NETCDF.mod : ../model/mfix_netcdf_mod.f \
-            ../model/MFIX_netcdf_constants.fi \
-            ../model/MFIX_netcdf_overloads.fi \
-            ../model/MFIX_netcdf_variables.fi \
-            ../model/MFIX_netcdf_misc.fi 
+            MFIX_netcdf_constants.fi                                     \
+            MFIX_netcdf_overloads.fi                                     \
+            MFIX_netcdf_variables.fi                                     \
+            MFIX_netcdf_misc.fi                                         
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/mfix_netcdf_mod.f 
 OUTPUT.mod : ../model/output_mod.f \
             PARAM.mod \
@@ -542,10 +557,10 @@ TOLERANC.mod : ../model/toleranc_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/toleranc_mod.f 
-TRACE.mod : ../model/trace_mod.f \
+TRACE.mod :  ../model/trace_mod.f \
             PARAM.mod \
             PARAM1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/trace_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS)  ../model/trace_mod.f 
 TURB.mod : ../model/turb_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -574,6 +589,104 @@ XSI_ARRAY.mod : ../model/xsi_array_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/xsi_array_mod.f 
+PROGRESS_BAR.mod :  ../model/cartesian_grid/progress_bar_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS)  ../model/cartesian_grid/progress_bar_mod.f 
+QUADRIC.mod : ../model/cartesian_grid/quadric_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/quadric_mod.f 
+STL.mod : ../model/cartesian_grid/stl_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/stl_mod.f 
+VTK.mod : ../model/cartesian_grid/vtk_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/vtk_mod.f 
+CUTCELL.mod : ../model/cartesian_grid/cutcell_mod.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PROGRESS_BAR.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/cutcell_mod.f 
+POLYGON.mod : ../model/cartesian_grid/polygon_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/polygon_mod.f 
+DASHBOARD.mod : ../model/cartesian_grid/dashboard_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/dashboard_mod.f 
+COMPAR.mod : ../model/dmp_modules/mpi_donothing/compar_mod.f \
+            MPI.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/compar_mod.f 
+MPI.mod : ../model/dmp_modules/mpi_donothing/mpi_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/mpi_mod.f 
+DBG_UTIL.mod : ../model/dmp_modules/mpi_donothing/dbg_util_mod.f \
+            COMPAR.mod \
+            GEOMETRY.mod \
+            PARALLEL_MPI.mod \
+            INDICES.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/dbg_util_mod.f 
+PARALLEL_MPI.mod : ../model/dmp_modules/mpi_donothing/parallel_mpi_mod.f \
+            GEOMETRY.mod \
+            COMPAR.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/parallel_mpi_mod.f 
+DEBUG.mod : ../model/dmp_modules/mpi_donothing/debug_mod.f \
+            FUNITS.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/debug_mod.f 
+GRIDMAP.mod : ../model/dmp_modules/mpi_donothing/gridmap_mod.f \
+            MPI_UTILITY.mod \
+            PARALLEL_MPI.mod \
+            GEOMETRY.mod \
+            SENDRECV.mod \
+            COMPAR.mod \
+            RUN.mod \
+            INDICES.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/gridmap_mod.f 
+MPI_UTILITY.mod : ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            PARALLEL_MPI.mod \
+            DEBUG.mod \
+            INDICES.mod \
+            FUNITS.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f 
+SENDRECV.mod : ../model/dmp_modules/mpi_donothing/sendrecv_mod.f \
+            PARALLEL_MPI.mod \
+            DEBUG.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            INDICES.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/sendrecv_mod.f 
+BOUNDFUNIJK.mod : ../model/boundfunijk_mod.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            FLDVAR.mod \
+            INDICES.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/boundfunijk_mod.f 
+DISCRETELEMENT.mod : ../model/des/discretelement_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/discretelement_mod.f 
+GHDTHEORY.mod : ../model/GhdTheory/ghdtheory_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/ghdtheory_mod.f 
+POST_PRECISION.mod : post_precision_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) post_precision_mod.f 
+PARALLELDATA.mod : paralleldata_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) paralleldata_mod.f 
+USR_INPUT.mod : usr_input_mod.f \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) usr_input_mod.f 
+MFIX_PIC.mod : ../model/des/mfix_pic_mod.f \
+            PARAM.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/mfix_pic_mod.f 
 allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             PARAM.mod \
             PARAM1.mod \
@@ -590,29 +703,39 @@ allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             PSCOR.mod \
             RESIDUAL.mod \
             RXNS.mod \
+            RUN.mod \
             SCALARS.mod \
+            TURB.mod \
             TAU_G.mod \
             TAU_S.mod \
             TMP_ARRAY.mod \
             TMP_ARRAY1.mod \
             TRACE.mod \
-            TURB.mod \
             VISC_G.mod \
             VISC_S.mod \
             XSI_ARRAY.mod \
+            VSHEAR.mod \
             MFLUX.mod \
             MCHEM.mod \
-            VSHEAR.mod \
-            KINTHEORY.mod
+            GHDTHEORY.mod \
+            KINTHEORY.mod \
+            CDIST.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/allocate_arrays.f 
-any_more_data.$(OBJ_EXT) : any_more_data.f 
-calc_cell2.$(OBJ_EXT) : calc_cell2.f 
+any_more_data.$(OBJ_EXT) : any_more_data.f \
+            PARAM.mod \
+            PARAM1.mod 
+calc_cell2.$(OBJ_EXT) : calc_cell2.f \
+            PARAM.mod \
+            PARAM1.mod 
 calc_corr_01.$(OBJ_EXT) : calc_corr_01.f \
+            PARAM.mod \
+            PARAM1.mod \
             FLDVAR.mod \
             PHYSPROP.mod \
             GEOMETRY.mod \
             INDICES.mod \
             CORREL.mod \
+            COMPAR.mod \
             xforms.inc                                                   \
             function.inc                                                
 calc_corr_type_1.$(OBJ_EXT) : calc_corr_type_1.f \
@@ -625,6 +748,7 @@ calc_corr_type_1.$(OBJ_EXT) : calc_corr_type_1.f \
             POST3D.mod \
             PHYSPROP.mod \
             CORREL.mod \
+            COMPAR.mod \
             xforms.inc                                                   \
             function.inc                                                
 calc_distance.$(OBJ_EXT) : calc_distance.f 
@@ -635,32 +759,39 @@ calc_ep_g.$(OBJ_EXT) : calc_ep_g.f \
             FLDVAR.mod \
             GEOMETRY.mod \
             INDICES.mod \
+            COMPAR.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
 calc_mu_s.$(OBJ_EXT) : ../model/calc_mu_s.f \
+            RUN.mod \
+            VSHEAR.mod \
+            VISC_S.mod \
+            PHYSPROP.mod \
+            CONSTANT.mod \
+            FLDVAR.mod \
+            COMPAR.mod \
+            INDICES.mod \
+            GEOMETRY.mod \
             PARAM.mod \
             PARAM1.mod \
-            PARALLEL.mod \
-            PHYSPROP.mod \
+            TRACE.mod \
+            TOLERANC.mod \
+            TURB.mod \
             DRAG.mod \
             KINTHEORY.mod \
-            RUN.mod \
-            GEOMETRY.mod \
-            FLDVAR.mod \
+            UR_FACS.mod \
+            PARALLEL.mod \
             VISC_G.mod \
-            VISC_S.mod \
-            TRACE.mod \
-            INDICES.mod \
-            CONSTANT.mod \
-            VSHEAR.mod \
-            s_pr1.inc                                                    \
-            ep_s1.inc                                                    \
-            fun_avg1.inc                                                 \
+            IS.mod \
+            SENDRECV.mod \
             function.inc                                                 \
+            ep_s1.inc                                                    \
             ep_s2.inc                                                    \
-            fun_avg2.inc                                                 \
-            s_pr2.inc                                                   
+            s_pr1.inc                                                    \
+            s_pr2.inc                                                    \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/calc_mu_s.f 
 calc_mw.$(OBJ_EXT) : ../model/calc_mw.f \
             PARAM.mod \
@@ -679,8 +810,19 @@ calc_p_star.$(OBJ_EXT) : ../model/calc_p_star.f \
             PSCOR.mod \
             UR_FACS.mod \
             RESIDUAL.mod \
-            COMPAR.mod
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/calc_p_star.f
+            COMPAR.mod \
+            RUN.mod \
+            VISC_S.mod \
+            FLDVAR.mod \
+            TOLERANC.mod \
+            s_pr1.inc                                                    \
+            function.inc                                                 \
+            s_pr2.inc                                                    \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                 \
+            ep_s2.inc                                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/calc_p_star.f 
 calc_quantities.$(OBJ_EXT) : calc_quantities.f \
             PARAM.mod \
             PARAM1.mod \
@@ -692,6 +834,7 @@ calc_ro_g.$(OBJ_EXT) : calc_ro_g.f \
             INDICES.mod \
             PHYSPROP.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             function.inc                                                
 calc_vol.$(OBJ_EXT) : calc_vol.f \
             PARAM.mod \
@@ -701,12 +844,16 @@ calc_vol.$(OBJ_EXT) : calc_vol.f \
             FLDVAR.mod \
             PHYSPROP.mod \
             POST3D.mod \
+            COMPAR.mod \
             function.inc                                                
 check_data_03.$(OBJ_EXT) : ../model/check_data_03.f \
             PARAM.mod \
             PARAM1.mod \
             GEOMETRY.mod \
-            FUNITS.mod 
+            BC.mod \
+            FUNITS.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data_03.f 
 check_data_04.$(OBJ_EXT) : ../model/check_data_04.f \
             PARAM.mod \
@@ -715,6 +862,7 @@ check_data_04.$(OBJ_EXT) : ../model/check_data_04.f \
             INDICES.mod \
             PHYSPROP.mod \
             CONSTANT.mod \
+            DISCRETELEMENT.mod \
             FUNITS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data_04.f 
 check_data_05.$(OBJ_EXT) : ../model/check_data_05.f \
@@ -736,6 +884,7 @@ compare.$(OBJ_EXT) : ../model/compare.f \
             TOLERANC.mod \
             GEOMETRY.mod \
             INDICES.mod \
+            COMPAR.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/compare.f 
 deallocate_arrays.$(OBJ_EXT) : deallocate_arrays.f \
@@ -754,6 +903,7 @@ deallocate_arrays.$(OBJ_EXT) : deallocate_arrays.f \
             PSCOR.mod \
             RESIDUAL.mod \
             RXNS.mod \
+            RUN.mod \
             SCALARS.mod \
             TAU_G.mod \
             TAU_S.mod \
@@ -763,43 +913,21 @@ deallocate_arrays.$(OBJ_EXT) : deallocate_arrays.f \
             VISC_G.mod \
             VISC_S.mod \
             XSI_ARRAY.mod \
-            VSHEAR.mod 
-PROGRESS_BAR.mod : ../model/cartesian_grid/progress_bar_mod.f 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/progress_bar_mod.f 
-QUADRIC.mod : ../model/cartesian_grid/quadric_mod.f \
-            PARAM.mod \
-            PARAM1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/quadric_mod.f 
-STL.mod : ../model/cartesian_grid/stl_mod.f \
-            param.mod \
-            param1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/stl_mod.f 
-VTK.mod : ../model/cartesian_grid/vtk_mod.f \
-            PARAM.mod \
-            PARAM1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/vtk_mod.f 
-CUTCELL.mod : ../model/cartesian_grid/cutcell_mod.f \
-            PARAM.mod \
-            PARAM1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/cutcell_mod.f 
-POLYGON.mod : ../model/cartesian_grid/polygon_mod.f \
-            PARAM.mod \
-            PARAM1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/polygon_mod.f 
-DSAHBOARD.mod : ../model/cartesian_grid/dashboard_mod.f \
-            PARAM.mod \
-            PARAM1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/dashboard_mod.f 
+            VSHEAR.mod \
+            MFLUX.mod \
+            MCHEM.mod \
+            KINTHEORY.mod \
+            GHDTHEORY.mod 
 cartesian_grid_init_namelist.$(OBJ_EXT) : ../model/cartesian_grid/cartesian_grid_init_namelist.f \
             PARAM1.mod \
             QUADRIC.mod \
-            STL.mod \
             CUTCELL.mod \
             POLYGON.mod \
             VTK.mod \
             PROGRESS_BAR.mod \
             DASHBOARD.mod \
-            ../model/cartesian_grid/cartesian_grid_namelist.inc
+            STL.mod \
+            cartesian_grid/cartesian_grid_namelist.inc                  
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/cartesian_grid_init_namelist.f 
 eosg.$(OBJ_EXT) : ../model/eosg.f \
             PARAM.mod \
@@ -811,7 +939,9 @@ eosg.$(OBJ_EXT) : ../model/eosg.f \
             sc_p_g2.inc                                                 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/eosg.f 
 error_routine.$(OBJ_EXT) : ../model/error_routine.f \
-            FUNITS.mod 
+            FUNITS.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/error_routine.f 
 examine_data.$(OBJ_EXT) : examine_data.f \
             PARAM.mod \
@@ -823,10 +953,16 @@ examine_data.$(OBJ_EXT) : examine_data.f \
             RUN.mod \
             GEOMETRY.mod \
             POST3D.mod \
+            RXNS.mod \
             SCALARS.mod \
+            COMPAR.mod \
+            POST_PRECISION.mod \
             xforms.inc                                                   \
             function.inc                                                
-exit.$(OBJ_EXT) : ../model/exit.f 
+exit.$(OBJ_EXT) : ../model/exit.f \
+            FUNITS.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/exit.f 
 f_init_data.$(OBJ_EXT) : f_init_data.f \
             PARAM.mod \
@@ -841,6 +977,7 @@ file_handle.$(OBJ_EXT) : file_handle.f \
             PARAM1.mod \
             POST3D.mod \
             FUNITS.mod \
+            COMPAR.mod \
             GEOMETRY.mod \
             FLDVAR.mod \
             PHYSPROP.mod \
@@ -857,8 +994,14 @@ finit.$(OBJ_EXT) : finit.f \
             PHYSPROP.mod \
             CONSTANT.mod \
             FUNITS.mod \
-            PARALLEL_MPI.mod                      \
-	    CDIST.mod \
+            PARALLEL_MPI.mod \
+            GRIDMAP.mod \
+            CDIST.mod \
+            PARALLELDATA.mod \
+            SCALARS.mod \
+            RXNS.mod \
+            DRAG.mod \
+            ENERGY.mod \
             xforms.inc                                                  
 flow_gx.$(OBJ_EXT) : flow_gx.f \
             PARAM.mod \
@@ -867,6 +1010,7 @@ flow_gx.$(OBJ_EXT) : flow_gx.f \
             INDICES.mod \
             PHYSPROP.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             function.inc                                                
 flow_gy.$(OBJ_EXT) : flow_gy.f \
             PARAM.mod \
@@ -875,6 +1019,7 @@ flow_gy.$(OBJ_EXT) : flow_gy.f \
             INDICES.mod \
             PHYSPROP.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             function.inc                                                
 flow_gz.$(OBJ_EXT) : flow_gz.f \
             PARAM.mod \
@@ -883,6 +1028,7 @@ flow_gz.$(OBJ_EXT) : flow_gz.f \
             INDICES.mod \
             PHYSPROP.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             function.inc                                                
 flow_sx.$(OBJ_EXT) : flow_sx.f \
             PARAM.mod \
@@ -891,6 +1037,7 @@ flow_sx.$(OBJ_EXT) : flow_sx.f \
             INDICES.mod \
             PHYSPROP.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -901,6 +1048,7 @@ flow_sy.$(OBJ_EXT) : flow_sy.f \
             INDICES.mod \
             PHYSPROP.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -911,6 +1059,7 @@ flow_sz.$(OBJ_EXT) : flow_sz.f \
             INDICES.mod \
             PHYSPROP.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -921,9 +1070,16 @@ g_0.$(OBJ_EXT) : ../model/g_0.f \
             FLDVAR.mod \
             GEOMETRY.mod \
             INDICES.mod \
+            COMPAR.mod \
+            VISC_S.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
-            ep_s2.inc                                                   
+            ep_s2.inc                                                    \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/g_0.f 
 gas_flux.$(OBJ_EXT) : gas_flux.f \
             PARAM.mod \
@@ -934,6 +1090,7 @@ gas_flux.$(OBJ_EXT) : gas_flux.f \
             INDICES.mod \
             POST3D.mod \
             PHYSPROP.mod \
+            COMPAR.mod \
             xforms.inc                                                   \
             function.inc                                                
 get_file_name.$(OBJ_EXT) : get_file_name.f 
@@ -955,6 +1112,7 @@ get_mu_s.$(OBJ_EXT) : get_mu_s.f \
             RUN.mod \
             CONSTANT.mod \
             FUNITS.mod \
+            COMPAR.mod \
             xforms.inc                                                   \
             ep_s1.inc                                                    \
             function.inc                                                 \
@@ -975,6 +1133,7 @@ granular_qty.$(OBJ_EXT) : granular_qty.f \
             RUN.mod \
             CONSTANT.mod \
             FUNITS.mod \
+            COMPAR.mod \
             xforms.inc                                                   \
             ep_s1.inc                                                    \
             function.inc                                                 \
@@ -990,6 +1149,7 @@ ik_avg.$(OBJ_EXT) : ik_avg.f \
             PHYSPROP.mod \
             INDICES.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             function.inc                                                
 ik_avg_out.$(OBJ_EXT) : ik_avg_out.f \
             PARAM.mod \
@@ -1019,6 +1179,10 @@ init_namelist.$(OBJ_EXT) : ../model/init_namelist.f \
             LEQSOL.mod \
             RESIDUAL.mod \
             RXNS.mod \
+            SCALARS.mod \
+            COMPAR.mod \
+            PARALLEL.mod \
+            CDIST.mod \
             namelist.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/init_namelist.f 
 interp_res.$(OBJ_EXT) : interp_res.f \
@@ -1031,8 +1195,12 @@ interp_res.$(OBJ_EXT) : interp_res.f \
             FLDVAR.mod \
             POST3D.mod \
             RUN.mod \
+            RXNS.mod \
             SCALARS.mod \
             FUNITS.mod \
+            COMPAR.mod \
+            GRIDMAP.mod \
+            TMP_ARRAY.mod \
             xforms.inc                                                   \
             function.inc                                                
 line_too_big.$(OBJ_EXT) : ../model/line_too_big.f 
@@ -1046,7 +1214,9 @@ main_f.$(OBJ_EXT) : main_f.f \
             xforms.inc                                                  
 make_upper_case.$(OBJ_EXT) : ../model/make_upper_case.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/make_upper_case.f 
-open_file.$(OBJ_EXT) : ../model/open_file.f 
+open_file.$(OBJ_EXT) : ../model/open_file.f \
+            CDIST.mod \
+            COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/open_file.f 
 out_from_res.$(OBJ_EXT) : out_from_res.f \
             PARAM.mod \
@@ -1072,6 +1242,7 @@ out_spec_time.$(OBJ_EXT) : out_spec_time.f \
             PHYSPROP.mod \
             INDICES.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             function.inc                                                
 out_time.$(OBJ_EXT) : out_time.f \
             PARAM.mod \
@@ -1081,17 +1252,20 @@ out_time.$(OBJ_EXT) : out_time.f \
             PHYSPROP.mod \
             INDICES.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             function.inc                                                
 parse_line.$(OBJ_EXT) : ../model/parse_line.f \
             PARAM.mod \
             PARAM1.mod \
-            PARSE.mod 
+            PARSE.mod \
+            COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/parse_line.f 
 parse_rxn.$(OBJ_EXT) : ../model/parse_rxn.f \
             PARAM.mod \
             PARAM1.mod \
             PARSE.mod \
-            RXNS.mod 
+            RXNS.mod \
+            COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/parse_rxn.f 
 print_out.$(OBJ_EXT) : print_out.f \
             PARAM.mod \
@@ -1108,13 +1282,6 @@ read_namelist.$(OBJ_EXT) : ../model/read_namelist.f \
             IC.mod \
             IS.mod \
             BC.mod \
-            DES_BC.mod \
-            QUADRIC.mod \
-            STL.mod \
-            CUTCELL.mod \
-            VTK.mod \
-            POLYGON.mod \
-            DASHBOARD.mod \
             FLDVAR.mod \
             CONSTANT.mod \
             INDICES.mod \
@@ -1122,13 +1289,27 @@ read_namelist.$(OBJ_EXT) : ../model/read_namelist.f \
             FUNITS.mod \
             SCALES.mod \
             UR_FACS.mod \
-            USR.mod \
             LEQSOL.mod \
             RESIDUAL.mod \
             RXNS.mod \
             SCALARS.mod \
+            COMPAR.mod \
+            PARALLEL.mod \
+            DISCRETELEMENT.mod \
+            MFIX_PIC.mod \
+            USR.mod \
+            DES_BC.mod \
+            CDIST.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            VTK.mod \
+            POLYGON.mod \
+            DASHBOARD.mod \
+            STL.mod \
             usrnlst.inc                                                  \
-            namelist.inc                                                
+            namelist.inc                                                 \
+            des/desnamelist.inc                                          \
+            cartesian_grid/cartesian_grid_namelist.inc                  
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/read_namelist.f 
 read_res0.$(OBJ_EXT) : ../model/read_res0.f \
             PARAM.mod \
@@ -1143,24 +1324,31 @@ read_res0.$(OBJ_EXT) : ../model/read_res0.f \
             FUNITS.mod \
             OUTPUT.mod \
             SCALES.mod \
-            SCALARS.mod \
             UR_FACS.mod \
             TOLERANC.mod \
             LEQSOL.mod \
-            TMP_ARRAY.mod 
+            SCALARS.mod \
+            RXNS.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            FLDVAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/read_res0.f 
 read_res1.$(OBJ_EXT) : ../model/read_res1.f \
             PARAM.mod \
             PARAM1.mod \
             FLDVAR.mod \
             GEOMETRY.mod \
-            MFIX_NETCDF.mod \
             PHYSPROP.mod \
             RUN.mod \
+            RXNS.mod \
             SCALARS.mod \
             FUNITS.mod \
             ENERGY.mod \
-            TMP_ARRAY.mod 
+            COMPAR.mod \
+            CDIST.mod \
+            MPI_UTILITY.mod \
+            SENDRECV.mod \
+            MFIX_NETCDF.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/read_res1.f 
 read_spx0.$(OBJ_EXT) : read_spx0.f \
             PARAM.mod \
@@ -1177,7 +1365,9 @@ read_spx1.$(OBJ_EXT) : read_spx1.f \
             RUN.mod \
             FUNITS.mod \
             POST3D.mod \
-            SCALARS.mod 
+            SCALARS.mod \
+            RXNS.mod \
+            MACHINE.mod 
 remove_comment.$(OBJ_EXT) : ../model/remove_comment.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/remove_comment.f 
 res_from_spx.$(OBJ_EXT) : res_from_spx.f \
@@ -1223,20 +1413,23 @@ set_constants.$(OBJ_EXT) : ../model/set_constants.f \
             CONSTANT.mod \
             RUN.mod \
             FUNITS.mod \
-            DRAG.mod 
+            DRAG.mod \
+            COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_constants.f 
 set_dollar.$(OBJ_EXT) : set_dollar.f 
 set_geometry.$(OBJ_EXT) : ../model/set_geometry.f \
             PARAM.mod \
             PARAM1.mod \
             RUN.mod \
-            GEOMETRY.mod 
+            GEOMETRY.mod \
+            COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_geometry.f 
 set_increments.$(OBJ_EXT) : ../model/set_increments.f \
             PARAM.mod \
             PARAM1.mod \
             INDICES.mod \
             GEOMETRY.mod \
+            COMPAR.mod \
             PHYSPROP.mod \
             FLDVAR.mod \
             FUNITS.mod \
@@ -1250,9 +1443,10 @@ set_index1.$(OBJ_EXT) : ../model/set_index1.f \
             GEOMETRY.mod \
             CONSTANT.mod \
             INDICES.mod \
+            COMPAR.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_index1.f 
-set_index1a.$(OBJ_EXT) : ../model/set_index1a.f                          \
+set_index1a.$(OBJ_EXT) : ../model/set_index1a.f \
             PARAM.mod \
             PARAM1.mod \
             PHYSPROP.mod \
@@ -1260,13 +1454,14 @@ set_index1a.$(OBJ_EXT) : ../model/set_index1a.f                          \
             COMPAR.mod \
             FLDVAR.mod \
             INDICES.mod \
-            BOUNDFUNIJK.mod                                               \
+            BOUNDFUNIJK.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_index1a.f 
 set_max2.$(OBJ_EXT) : ../model/set_max2.f \
             PARAM.mod \
             PARAM1.mod \
-            GEOMETRY.mod 
+            GEOMETRY.mod \
+            COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_max2.f 
 set_read_spx.$(OBJ_EXT) : set_read_spx.f 
 shift_dxyz.$(OBJ_EXT) : ../model/shift_dxyz.f \
@@ -1283,6 +1478,7 @@ sol_flux.$(OBJ_EXT) : sol_flux.f \
             INDICES.mod \
             POST3D.mod \
             PHYSPROP.mod \
+            COMPAR.mod \
             xforms.inc                                                   \
             ep_s1.inc                                                    \
             function.inc                                                 \
@@ -1290,7 +1486,19 @@ sol_flux.$(OBJ_EXT) : sol_flux.f \
 strcmp.$(OBJ_EXT) : strcmp.f 
 streqs.$(OBJ_EXT) : streqs.f 
 time_avg.$(OBJ_EXT) : time_avg.f \
-            PARAM.mod
+            PARAM.mod \
+            PARAM1.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            RUN.mod \
+            MACHINE.mod \
+            FUNITS.mod \
+            POST3D.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            SCALARS.mod \
+            RXNS.mod \
+            xforms.inc                                                  
 usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             usrnlst.inc                                                 
 usr_post.$(OBJ_EXT) : usr_post.f \
@@ -1302,6 +1510,7 @@ usr_post.$(OBJ_EXT) : usr_post.f \
             INDICES.mod \
             POST3D.mod \
             PHYSPROP.mod \
+            COMPAR.mod \
             function.inc                                                
 usr_write_out1.$(OBJ_EXT) : usr_write_out1.f 
 write_out1.$(OBJ_EXT) : ../model/write_out1.f \
@@ -1311,7 +1520,10 @@ write_out1.$(OBJ_EXT) : ../model/write_out1.f \
             FLDVAR.mod \
             RUN.mod \
             SCALARS.mod \
-            FUNITS.mod 
+            FUNITS.mod \
+            RXNS.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_out1.f 
 write_res0.$(OBJ_EXT) : ../model/write_res0.f \
             PARAM.mod \
@@ -1327,147 +1539,164 @@ write_res0.$(OBJ_EXT) : ../model/write_res0.f \
             OUTPUT.mod \
             SCALES.mod \
             SCALARS.mod \
+            RXNS.mod \
             UR_FACS.mod \
             LEQSOL.mod \
             TOLERANC.mod \
-            TMP_ARRAY.mod 
+            CDIST.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            SENDRECV.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_res0.f 
 write_res1.$(OBJ_EXT) : ../model/write_res1.f \
             PARAM.mod \
             PARAM1.mod \
             FLDVAR.mod \
             GEOMETRY.mod \
-            MFIX_NETCDF.mod \
             PHYSPROP.mod \
             RUN.mod \
             SCALARS.mod \
+            RXNS.mod \
             FUNITS.mod \
             OUTPUT.mod \
             ENERGY.mod \
-            TMP_ARRAY.mod 
+            CDIST.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            SENDRECV.mod \
+            MFIX_NETCDF.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_res1.f 
 write_spx0.$(OBJ_EXT) : ../model/write_spx0.f \
             PARAM.mod \
             PARAM1.mod \
             RUN.mod \
-            FUNITS.mod 
+            FUNITS.mod \
+            CDIST.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_spx0.f 
 write_spx1.$(OBJ_EXT) : ../model/write_spx1.f \
             PARAM.mod \
             PARAM1.mod \
             FLDVAR.mod \
             GEOMETRY.mod \
-            MFIX_NETCDF.mod \
             PHYSPROP.mod \
             RUN.mod \
             FUNITS.mod \
-            OUTPUT.mod \
             SCALARS.mod \
-            TMP_ARRAY.mod 
+            OUTPUT.mod \
+            RXNS.mod \
+            CDIST.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            SENDRECV.mod \
+            function.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_spx1.f 
 usr_input.$(OBJ_EXT) : usr_input.f \
-            PHYSPROP.mod  \
+            USR_INPUT.mod \
             PARAM1.mod \
+            PHYSPROP.mod \
             GEOMETRY.mod \
             FLDVAR.mod \
             INDICES.mod \
             COMPAR.mod \
             CONSTANT.mod \
-            POST3D.mod
-COMPAR.mod : ../model/dmp_modules/mpi_donothing/compar_mod.f \
-            MPI.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/compar_mod.f 
-MPI.mod : ../model/dmp_modules/mpi_donothing/mpi_mod.f \
-            mpif.h                                                      
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/mpi_mod.f 
-DBG_UTIL.mod : ../model/dmp_modules/mpi_donothing/dbg_util_mod.f \
-            COMPAR.mod \
-            GEOMETRY.mod \
-            PARALLEL_MPI.mod \
-            INDICES.mod \
+            POST3D.mod \
+            xforms.inc                                                   \
             function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/dbg_util_mod.f 
-PARALLEL_MPI.mod : ../model/dmp_modules/mpi_donothing/parallel_mpi_mod.f \
-            GEOMETRY.mod \
-            COMPAR.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/parallel_mpi_mod.f 
-DEBUG.mod : ../model/dmp_modules/mpi_donothing/debug_mod.f \
-            DBG_UTIL.mod \
-            FUNITS.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/debug_mod.f 
-GRIDMAP.mod : ../model/dmp_modules/mpi_donothing/gridmap_mod.f \
-            MPI_UTILITY.mod \
-            PARALLEL_MPI.mod \
-            GEOMETRY.mod \
-            SENDRECV.mod \
-            COMPAR.mod \
-            INDICES.mod \
-            function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/gridmap_mod.f 
-MPI_UTILITY.mod : ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f \
-            GEOMETRY.mod \
-            COMPAR.mod \
-            PARALLEL_MPI.mod \
-            DEBUG.mod \
-            INDICES.mod \
-            FUNITS.mod \
-            function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f 
-SENDRECV.mod : ../model/dmp_modules/mpi_donothing/sendrecv_mod.f \
-            PARALLEL_MPI.mod \
-            DEBUG.mod \
-            GEOMETRY.mod \
-            COMPAR.mod \
-            INDICES.mod \
-            MPI.mod \
-            function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/sendrecv_mod.f 
-BOUNDFUNIJK.mod : ../model/boundfunijk_mod.f \
-            PARAM.mod \
-            PARAM1.mod \
-            PHYSPROP.mod \
-            GEOMETRY.mod \
-            COMPAR.mod \
-            FLDVAR.mod \
-            INDICES.mod \
-            function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/boundfunijk_mod.f 
 write_error.$(OBJ_EXT) : ../model/write_error.f \
             PARAM.mod \
             PARAM1.mod \
             FUNITS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_error.f 
-DISCRETELEMENT.mod : ../model/des/discretelement_mod.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/discretelement_mod.f
-GHDTHEORY.mod : ../model/GhdTheory/ghdtheory_mod.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/ghdtheory_mod.f
-transport_coeff_ghd.$(OBJ_EXT) : ../model/GhdTheory/transport_coeff_ghd.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/transport_coeff_ghd.f
-ghd.$(OBJ_EXT) : ../model/GhdTheory/ghd.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/ghd.f
-cooling_rate.$(OBJ_EXT) : ../model/GhdTheory/cooling_rate.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/cooling_rate.f
-cooling_rate_tc.$(OBJ_EXT) : ../model/GhdTheory/cooling_rate_tc.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/cooling_rate_tc.f
-pressure.$(OBJ_EXT) : ../model/GhdTheory/pressure.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/pressure.f
-bulk_viscosity.$(OBJ_EXT) : ../model/GhdTheory/bulk_viscosity.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/bulk_viscosity.f
-shear_viscosity.$(OBJ_EXT) : ../model/GhdTheory/shear_viscosity.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/shear_viscosity.f
-thermal_diffusivity.$(OBJ_EXT) : ../model/GhdTheory/thermal_diffusivity.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/thermal_diffusivity.f
-mass_mobility.$(OBJ_EXT) : ../model/GhdTheory/mass_mobility.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/mass_mobility.f
-thermal_conductivity.$(OBJ_EXT) : ../model/GhdTheory/thermal_conductivity.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/thermal_conductivity.f
-thermal_mobility.$(OBJ_EXT) : ../model/GhdTheory/thermal_mobility.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/thermal_mobility.f
-ordinary_diff.$(OBJ_EXT) : ../model/GhdTheory/ordinary_diff.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/ordinary_diff.f
-dufour_coeff.$(OBJ_EXT) : ../model/GhdTheory/dufour_coeff.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/dufour_coeff.f
-chi_ij_GHD.$(OBJ_EXT) : ../model/GhdTheory/chi_ij_GHD.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/chi_ij_GHD.f
-des_init_namelist.$(OBJ_EXT) : ../model/des/des_init_namelist.f
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_init_namelist.f
+transport_coeff_ghd.$(OBJ_EXT) : ../model/GhdTheory/transport_coeff_ghd.f \
+            PARAM.mod \
+            PARAM1.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            FLDVAR.mod \
+            INDICES.mod \
+            VISC_S.mod \
+            GHDTHEORY.mod \
+            PHYSPROP.mod \
+            RUN.mod \
+            CONSTANT.mod \
+            TOLERANC.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/transport_coeff_ghd.f 
+ghd.$(OBJ_EXT) : ../model/GhdTheory/ghd.f \
+            DRAG.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/ghd.f 
+cooling_rate.$(OBJ_EXT) : ../model/GhdTheory/cooling_rate.f \
+            COMPAR.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/cooling_rate.f 
+cooling_rate_tc.$(OBJ_EXT) : ../model/GhdTheory/cooling_rate_tc.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/cooling_rate_tc.f 
+pressure.$(OBJ_EXT) : ../model/GhdTheory/pressure.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/pressure.f 
+bulk_viscosity.$(OBJ_EXT) : ../model/GhdTheory/bulk_viscosity.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/bulk_viscosity.f 
+shear_viscosity.$(OBJ_EXT) : ../model/GhdTheory/shear_viscosity.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/shear_viscosity.f 
+thermal_diffusivity.$(OBJ_EXT) : ../model/GhdTheory/thermal_diffusivity.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/thermal_diffusivity.f 
+mass_mobility.$(OBJ_EXT) :  ../model/GhdTheory/mass_mobility.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS)  ../model/GhdTheory/mass_mobility.f 
+thermal_conductivity.$(OBJ_EXT) : ../model/GhdTheory/thermal_conductivity.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/thermal_conductivity.f 
+thermal_mobility.$(OBJ_EXT) : ../model/GhdTheory/thermal_mobility.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/thermal_mobility.f 
+ordinary_diff.$(OBJ_EXT) : ../model/GhdTheory/ordinary_diff.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/ordinary_diff.f 
+dufour_coeff.$(OBJ_EXT) : ../model/GhdTheory/dufour_coeff.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/dufour_coeff.f 
+chi_ij_GHD.$(OBJ_EXT) : ../model/GhdTheory/chi_ij_GHD.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/chi_ij_GHD.f 
+des_init_namelist.$(OBJ_EXT) : ../model/des/des_init_namelist.f \
+            PARAM1.mod \
+            DISCRETELEMENT.mod \
+            MFIX_PIC.mod \
+            DES_BC.mod \
+            des/desnamelist.inc                                         
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_init_namelist.f 
+ornl_header.$(OBJ_EXT) : ornl_header.f \
+            GEOMETRY.mod \
+            RUN.mod \
+            USR_INPUT.mod 
+ornl_util.$(OBJ_EXT) : ornl_util.f 
+ornl_stats.$(OBJ_EXT) : ornl_stats.f 
+ornl_stats_c.$(OBJ_EXT) : ornl_stats_c.f \
+            GEOMETRY.mod \
+            FLDVAR.mod \
+            RUN.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            USR_INPUT.mod \
+            function.inc                                                
+ornl_corr.$(OBJ_EXT) : ornl_corr.f 
+ornl_corr_c.$(OBJ_EXT) : ornl_corr_c.f \
+            GEOMETRY.mod \
+            FLDVAR.mod \
+            RUN.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            USR_INPUT.mod \
+            function.inc                                                
+ornl_pca.$(OBJ_EXT) : ornl_pca.f 
+ornl_ft.$(OBJ_EXT) : ornl_ft.f 
+ornl_ft_c.$(OBJ_EXT) : ornl_ft_c.f \
+            USR_INPUT.mod 
+ornl_filt.$(OBJ_EXT) : ornl_filt.f 
+ornl_filt_c.$(OBJ_EXT) : ornl_filt_c.f \
+            USR_INPUT.mod 
+ornl_zone.$(OBJ_EXT) : ornl_zone.f \
+            GEOMETRY.mod \
+            FLDVAR.mod \
+            RUN.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            USR_INPUT.mod \
+            function.inc                                                
+ornl_sym.$(OBJ_EXT) : ornl_sym.f 

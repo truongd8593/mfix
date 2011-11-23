@@ -5,7 +5,7 @@
 #------------------------------------------------------------------------
 
 
-# set USE_NETCDF=1 if you want to include netCDF support
+# set USE_NETCDF=1 if you wbant to include netCDF support
 # also set NETCDF_HOME , NETCDF_INCLUDES , and NETCDF_LIBS
 # to the appopraite locations inside the "if" statement below.
 
@@ -25,21 +25,23 @@ NETCDF_INCLUDES="-I$NETCDF_HOME/fortran -I$NETCDF_HOME/f90 -I$NETCDF_HOME/f90 -I
 
 NETCDF_LIBS="$NETCDF_HOME/libsrc/.libs/libnetcdf.a $NETCDF_HOME/f90/.libs/libnetcdff90.a"
 
-cp ../model/netcdf/*.fi ../model
-
+#cp ../model/netcdf/*.fi ../model
+cp ../model/netcdf/*.fi .
+#dumping these files to post_mfix directory so that the self generated 
+#make file is able to link up to it
 echo "Using netCDF"
 
 else
 
-cp ../model/netcdf/noop/*.fi ../model
+#cp ../model/netcdf/noop/*.fi ../model
+cp ../model/netcdf/noop/*.fi . 
 
 echo "not using netCDF"
 
 fi
 
 echo " "
-
-
+ 
 # For compiling post_mfix the ../model directory must exist.
 #
     if test -f machine.f
@@ -830,3 +832,4 @@ read delete_files
  /bin/rm -f namelist.inc
  /bin/rm -f sc_p_g1.inc
  /bin/rm -f sc_p_g2.inc
+ /bin/rm -f *.fi

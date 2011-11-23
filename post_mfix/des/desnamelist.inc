@@ -1,44 +1,85 @@
        NAMELIST / DES_INPUT_DATA /&
-
-!	    USE discretelement
-! start Jay 
-        MAXNEIGHBORS, MAXQUADS, NMQD, NWALLS, PBP, DES_SPX_TIME,&	
-        DIMN, S_TIME, DTSOLID, DTSOLID_FACTOR, P_TIME, PTC,&
-        PARTICLES, PARTICLES_FACTOR, MQUAD_FACTOR,&
-        KN, KN_W, KT, KT_W, NEIGHBOR_SEARCH_N,&
-        NEIGHBOR_SEARCH_RAD_RATIO, NEIGHBOR_SEARCH_DIST,&
-        ETA_DES_N, ETA_N_W, ETA_DES_T, ETA_T_W,& 
-        MEW, MEW_W, E_RESTITUTION, WALLCONTACT,&
-        WX1, EX2, BY1, TY2, SZ1, NZ2, DES_GAMMA, DES_F,&
-        DES_NEIGHBOR_SEARCH, MN, NQUAD,&
-        QLM, QLN, INIT_QUAD_COUNT, INQC, RADIUS_EQ,&
-        N2CT, NBSCT, QUADCT, OCTCT, DES_KE, DES_PE,&
-        DISCRETE_ELEMENT, DES_CONTINUUM_COUPLED, PARTICLE_SLIDE,&
-        DO_QUADTREE, DO_OCTREE, DO_NSQUARE, DO_NSEARCH,&
-        WALLFIXEDOVERLAP, WALLDTSPLIT, WALLREFLECT, DES_PERIODIC_WALLS,& 
-	DES_PERIODIC_WALLS_X, DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z,&
-        INLET_OUTLET, INLET_OUTLET_X, INLET_OUTLET_Y, INLET_OUTLET_Z,&
-        TSUJI_DRAG, IFI,&
+!
+! USE discretelement
+	DISCRETE_ELEMENT, DES_CONTINUUM_COUPLED, DES_INTERP_ON, &
+	 DES_ONEWAY_COUPLED, &
+        TSUJI_DRAG, DES_INTG_METHOD, DES_CONTINUUM_HYBRID,&
+	PARTICLES, DIMN, NFACTOR, &
+	GENER_PART_CONFIG, VOL_FRAC, DES_EPS_XSTART,&
+       	DES_EPS_YSTART, DES_EPS_ZSTART, &
+        pgrad, pvel_mean, pvel_stdev, &
+	MN, PARTICLES_FACTOR, &
+	DES_NEIGHBOR_SEARCH, NEIGHBOR_SEARCH_N,&
+        FACTOR_RLM, NEIGHBOR_SEARCH_RAD_RATIO,&
+!	
+! Used for grid/cell based search methods
+        DESGRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, &
+	DESGRIDSEARCH_KMAX, &
+! 
+! Used for quadtree or octree neighbor search methods
+	MQUAD_FACTOR, QLM, QLN, INIT_QUAD_COUNT,&
+!	
+! Particle properties	
+        KN, KN_W, KT_FAC, KT_W_FAC, MEW, MEW_W, & 
+        DES_EN_INPUT, DES_ET_INPUT, DES_ETAT_FAC, &
+        DES_EN_WALL_INPUT, DES_ET_WALL_INPUT, DES_ETAT_W_FAC, &
+!      
+! Additional properties for Hertzian model: T.Li
+        DES_COLL_MODEL, ew_young, vw_poisson, e_young, v_poisson,&
+!	
+! Not presently used
+	DTSOLID_FACTOR,&
+!
+! Wall conditions
+        DES_PERIODIC_WALLS, DES_PERIODIC_WALLS_X,&
+        DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z,&
+        WALLDTSPLIT,&
+! Lees Edwards BC (for DEM only)
+        DES_LE_BC, DES_LE_REL_VEL, DES_LE_SHEAR_DIR,&
+!	
+! Wall conditions not presently used
+        WALLREFLECT, NON_RECT_BC,& 
+!
+! DES wall BC: vibration parameters 
+	DES_F, DES_GAMMA, LID_VEL,&
+!
+! DES wall BC: wall translational velocity
+        DES_BC_Uw_s, DES_BC_Vw_s, DES_BC_Ww_s,&
+!	
+! DES flow boundary condition information: J.Musser
+        MAX_PIS, &
+        DES_BC_X_w, DES_BC_X_e, &
+        DES_BC_Y_s, DES_BC_Y_n, &
+        DES_BC_Z_b, DES_BC_Z_t, &
+        DES_BC_VOLFLOW_s, DES_BC_MASSFLOW_s, &
+        DES_BC_ROP_s, DES_BC_TYPE, &
+	FORCE_ORD_BC, &
+!
+! DES output control information
+        DEBUG_DES, FOCUS_PARTICLE,&
+        PRINT_DES_DATA, DES_SPX_DT, DES_RES_DT, &
+        DES_OUTPUT_TYPE, DES_CALC_BEDHEIGHT, &
+!
+! DES Cohesion Information: M.Weber
 	MASTER_WELL_DEPTH, MASTER_WALL_WELL_DEPTH,&
-        RADIUS_RATIO,WALL_RADIUS_RATIO, USE_COHESION, SQUARE_WELL,&
+        RADIUS_RATIO, WALL_RADIUS_RATIO, USE_COHESION, SQUARE_WELL,&
 	MAX_LOG_STEP, VAN_DER_WAALS, HAMAKER_CONSTANT, VDW_INNER_CUTOFF,& 
         VDW_OUTER_CUTOFF, WALL_HAMAKER_CONSTANT,&
-        WALL_VDW_INNER_CUTOFF, WALL_VDW_OUTER_CUTOFF,COHESION_DEBUG,FOCUS_PARTICLE,&
+        WALL_VDW_INNER_CUTOFF, WALL_VDW_OUTER_CUTOFF,COHESION_DEBUG,&
         MAX_LOG_STEP, MIN_LOG_STEP, COHESION_DEBUG_START,&
+!
+! Obsolete Controls
         ANIMATION_WRITE_INTERVAL, ANIMATION_WRITE_COUNTER, TIME_FACTOR,&
-        MAX_ANIMATOR_STEP, MIN_ANIMATOR_STEP
-! end Jay 
+	MAX_ANIMATOR_STEP, MIN_ANIMATOR_STEP, & 
+!
 
-!
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: DESNAMELIST.INC                                        C
-!  Purpose: Variables needed for DES input                             C
-!                                                                      C
-!                                                                      C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      
+
+! MP-PIC related flags 
+
+	 MPPIC, MPPIC_SOLID_STRESS_SNIDER, PSFAC_FRIC_PIC, FRIC_EXP_PIC, FRIC_NON_SING_FAC, CONSTANTNPC, &
+	 CONSTANTWT, NPC_PIC, STATWT_PIC, CFL_PIC , MPPIC_COEFF_EN, MPPIC_PDRAG_IMPLICIT, &
+
+
+! des_cellwise_bc_data size 
+	 MAX_DES_BC_CELL
+
