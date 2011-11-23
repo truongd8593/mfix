@@ -1,0 +1,16 @@
+#!/bin/csh -f
+#main
+echo "Creating post_l.make ..."
+cd ../post_mfix
+../tools/mms_post.exe
+if ($status == 0) then
+  echo
+  echo "post_u.make created"
+  echo "post_l.make created"
+  echo
+else
+  echo
+  echo "*** make files not created ***"
+  echo "Perhaps mms_post.exe needs to be created (f90 -o mms_post.exe mms_post.f)"
+  echo
+endif
