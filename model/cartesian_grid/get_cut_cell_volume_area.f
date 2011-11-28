@@ -1186,6 +1186,7 @@
       CALL CROSS_PRODUCT(COORD(2,:)-COORD(1,:),COORD(3,:)-COORD(1,:),NORMAL)
 
       NORM = DSQRT(NORMAL(1)**2 + NORMAL(2)**2 + NORMAL(3)**2)
+      IF(NORM==ZERO) RETURN         ! Two vertices are identical and there is no need to reorder
       NORMAL = NORMAL / NORM
 
 !======================================================================
