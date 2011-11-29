@@ -69,7 +69,7 @@
 
       DOUBLE PRECISION :: SCALAR_NODE_XYZ_TEMP(DIMENSION_3, 3)
 
-      DOUBLE PRECISION :: DIST, NORM1, NORM2, NORM3
+      DOUBLE PRECISION :: DIST, NORM1, NORM2, NORM3,Diagonal
       INTEGER :: IJK2, I1, I2, J1, J2, K1, K2, II, JJ, KK 
       LOGICAL :: COND_1, COND_2 
 
@@ -365,6 +365,10 @@
       DO IJK = IJKSTART3, IJKEND3
          IF(CUT_CELL_AT(IJK)) THEN          ! for each cut cell, identify neibhor cells that are also cut cells
                                              ! Look east and north in 2D, and also Top in 3D
+         
+         Diagonal = DSQRT(DX(I_OF(IJK))**2 + DY(J_OF(IJK))**2 + DZ(K_OF(IJK))**2)
+
+
             NB(1) = IP_OF(IJK)
             NB(2) = JP_OF(IJK)
 
@@ -400,7 +404,7 @@
 
                               D = (X2-X1)**2 + (Y2-Y1)**2 + (Z2-Z1)**2         ! compare coordinates of cut-face nodes
     
-                              IF(D<TOL_F) THEN                                ! Duplicate nodes have identical coordinates (within tolerance TO_F)
+                              IF(D<TOL_MERGE*Diagonal) THEN                    ! Duplicate nodes have identical coordinates (within tolerance TOL_MERGE times diagonal)
                                                                                ! keep the smallest node ID
 !                                 print*,'DULICATE NODES:',NODE,NODE_NB,OLD_CONNECTIVITY(IJK,NODE),OLD_CONNECTIVITY(IJK_NB,NODE_NB)
 

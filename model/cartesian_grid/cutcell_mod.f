@@ -364,6 +364,9 @@
 !     Tolerances for wall distance
       DOUBLE PRECISION :: TOL_DELH
 
+!     Tolerance for merging nodes
+      DOUBLE PRECISION :: TOL_MERGE
+
 !     Tolerance for detecting small scalar cells
       DOUBLE PRECISION :: TOL_SMALL_CELL
       DOUBLE PRECISION :: TOL_SMALL_AREA

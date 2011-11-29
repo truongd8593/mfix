@@ -94,6 +94,7 @@
       TOL_SNAP       = 0.00D0  ! 0% of original edge length
       TOL_DELH       = 0.00D0  ! 0% of original Diagonal
       TOL_SMALL_CELL = 0.01D0  ! 1% of original cell volume
+      TOL_MERGE      = 1.0D-12 ! fraction of original cell diagonal
 
       TOL_SMALL_AREA = 0.01D0  ! 1% of original face area
       ALPHA_MAX      = ONE
