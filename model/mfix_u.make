@@ -83,6 +83,13 @@ mfix.exe : \
     SENDRECV3.mod \
     SENDRECV.mod \
     GHDTHEORY.mod \
+    QMOMK_BC.mod \
+    QMOMK_COLLISION.mod \
+    QMOMK_FLUXES.mod \
+    QMOM_KINETIC_EQUATION.mod \
+    QMOMK_PARAMETERS.mod \
+    QMOMK_QUADRATURE.mod \
+    QMOMK_TOOLS.mod \
     accum_resid.$(OBJ_EXT) \
     adjust_a_u_g.$(OBJ_EXT) \
     adjust_a_u_s.$(OBJ_EXT) \
@@ -458,6 +465,16 @@ mfix.exe : \
     thermal_diffusivity.$(OBJ_EXT) \
     thermal_mobility.$(OBJ_EXT) \
     transport_coeff_ghd.$(OBJ_EXT) \
+    qmomk_allocate_arrays.$(OBJ_EXT) \
+    qmomk_gas_drag.$(OBJ_EXT) \
+    qmomk_init_bc.$(OBJ_EXT) \
+    qmomk_initial_conditions.$(OBJ_EXT) \
+    qmomk_init_namelist.$(OBJ_EXT) \
+    qmomk_make_arrays.$(OBJ_EXT) \
+    qmomk_read_restart.$(OBJ_EXT) \
+    qmomk_set_bc.$(OBJ_EXT) \
+    qmomk_time_march.$(OBJ_EXT) \
+    qmomk_write_restart.$(OBJ_EXT) \
     get_values.$(OBJ_EXT) \
     readTherm.$(OBJ_EXT) \
     blas90.a odepack.a dgtsv90.a
@@ -918,6 +935,23 @@ mfix.exe : \
     thermal_diffusivity.$(OBJ_EXT) \
     thermal_mobility.$(OBJ_EXT) \
     transport_coeff_ghd.$(OBJ_EXT) \
+    qmomk_allocate_arrays.$(OBJ_EXT) \
+    qmomk_bc_mod.$(OBJ_EXT) \
+    qmomk_collision_mod.$(OBJ_EXT) \
+    qmomk_fluxes_mod.$(OBJ_EXT) \
+    qmomk_gas_drag.$(OBJ_EXT) \
+    qmom_kinetic_equation_mod.$(OBJ_EXT) \
+    qmomk_init_bc.$(OBJ_EXT) \
+    qmomk_initial_conditions.$(OBJ_EXT) \
+    qmomk_init_namelist.$(OBJ_EXT) \
+    qmomk_make_arrays.$(OBJ_EXT) \
+    qmomk_parameters_mod.$(OBJ_EXT) \
+    qmomk_quadrature_mod.$(OBJ_EXT) \
+    qmomk_read_restart.$(OBJ_EXT) \
+    qmomk_set_bc.$(OBJ_EXT) \
+    qmomk_time_march.$(OBJ_EXT) \
+    qmomk_tools_mod.$(OBJ_EXT) \
+    qmomk_write_restart.$(OBJ_EXT) \
     get_values.$(OBJ_EXT) \
     readTherm.$(OBJ_EXT) \
   -o mfix.exe $(LIB_FLAGS)
@@ -1325,6 +1359,43 @@ GHDTHEORY.mod : ./GhdTheory/ghdtheory_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/ghdtheory_mod.f 
+QMOMK_BC.mod : ./qmomk/qmomk_bc_mod.f \
+            PARAM.mod \
+            PARAM1.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            INDICES.mod \
+            BC.mod \
+            QMOM_KINETIC_EQUATION.mod \
+            QMOMK_QUADRATURE.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_bc_mod.f 
+QMOMK_COLLISION.mod : ./qmomk/qmomk_collision_mod.f \
+            CONSTANT.mod \
+            QMOMK_PARAMETERS.mod \
+            QMOMK_QUADRATURE.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_collision_mod.f 
+QMOMK_FLUXES.mod : ./qmomk/qmomk_fluxes_mod.f \
+            QMOMK_PARAMETERS.mod \
+            QMOMK_COLLISION.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_fluxes_mod.f 
+QMOM_KINETIC_EQUATION.mod : ./qmomk/qmom_kinetic_equation_mod.f \
+            PARAM.mod \
+            PARAM1.mod \
+            QMOMK_PARAMETERS.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmom_kinetic_equation_mod.f 
+QMOMK_PARAMETERS.mod : ./qmomk/qmomk_parameters_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_parameters_mod.f 
+QMOMK_QUADRATURE.mod : ./qmomk/qmomk_quadrature_mod.f \
+            QMOMK_TOOLS.mod \
+            QMOMK_PARAMETERS.mod \
+            CONSTANT.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_quadrature_mod.f 
+QMOMK_TOOLS.mod : ./qmomk/qmomk_tools_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_tools_mod.f 
 accum_resid.$(OBJ_EXT) : accum_resid.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1596,6 +1667,7 @@ calc_d.$(OBJ_EXT) : calc_d.f \
             COMPAR.mod \
             SENDRECV.mod \
             CUTCELL.mod \
+            QMOM_KINETIC_EQUATION.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1640,7 +1712,8 @@ calc_drag.$(OBJ_EXT) : calc_drag.f \
             RUN.mod \
             DRAG.mod \
             COMPAR.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            QMOM_KINETIC_EQUATION.mod 
 calc_e.$(OBJ_EXT) : calc_e.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1790,6 +1863,7 @@ calc_mu_s.$(OBJ_EXT) : calc_mu_s.f \
             COMPAR.mod \
             INDICES.mod \
             GEOMETRY.mod \
+            QMOM_KINETIC_EQUATION.mod \
             PARAM.mod \
             PARAM1.mod \
             TRACE.mod \
@@ -2687,7 +2761,8 @@ get_data.$(OBJ_EXT) : get_data.f \
             GRIDMAP.mod \
             DISCRETELEMENT.mod \
             LEQSOL.mod \
-            PARALLEL.mod 
+            PARALLEL.mod \
+            QMOM_KINETIC_EQUATION.mod 
 get_eq.$(OBJ_EXT) : get_eq.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2855,6 +2930,7 @@ iterate.$(OBJ_EXT) : iterate.f \
             CUTCELL.mod \
             VTK.mod \
             DASHBOARD.mod \
+            QMOM_KINETIC_EQUATION.mod \
             BC.mod \
             CONSTANT.mod 
 k_epsilon_prop.$(OBJ_EXT) : k_epsilon_prop.f \
@@ -3280,10 +3356,12 @@ read_namelist.$(OBJ_EXT) : read_namelist.f \
             POLYGON.mod \
             DASHBOARD.mod \
             STL.mod \
+            QMOM_KINETIC_EQUATION.mod \
             usrnlst.inc                                                  \
             namelist.inc                                                 \
             des/desnamelist.inc                                          \
-            cartesian_grid/cartesian_grid_namelist.inc                  
+            cartesian_grid/cartesian_grid_namelist.inc                   \
+            qmomk/qmomknamelist.inc                                     
 read_res0.$(OBJ_EXT) : read_res0.f \
             PARAM.mod \
             PARAM1.mod \
@@ -3862,7 +3940,8 @@ solve_vel_star.$(OBJ_EXT) : solve_vel_star.f \
             TMP_ARRAY1.mod \
             TMP_ARRAY.mod \
             COMPAR.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            QMOM_KINETIC_EQUATION.mod 
 source_granular_energy.$(OBJ_EXT) : source_granular_energy.f \
             PARAM.mod \
             PARAM1.mod \
@@ -4355,7 +4434,8 @@ time_march.$(OBJ_EXT) : time_march.f \
             MPI_UTILITY.mod \
             CUTCELL.mod \
             VTK.mod \
-            DASHBOARD.mod 
+            DASHBOARD.mod \
+            QMOM_KINETIC_EQUATION.mod 
 transfer.$(OBJ_EXT) : transfer.f \
             PARAM.mod \
             PARAM1.mod \
@@ -6207,6 +6287,155 @@ transport_coeff_ghd.$(OBJ_EXT) : ./GhdTheory/transport_coeff_ghd.f \
             TOLERANC.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./GhdTheory/transport_coeff_ghd.f 
+qmomk_allocate_arrays.$(OBJ_EXT) : ./qmomk/qmomk_allocate_arrays.f \
+            PARAM.mod \
+            PARAM1.mod \
+            INDICES.mod \
+            GEOMETRY.mod \
+            PHYSPROP.mod \
+            QMOM_KINETIC_EQUATION.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_allocate_arrays.f 
+qmomk_gas_drag.$(OBJ_EXT) : ./qmomk/qmomk_gas_drag.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            MATRIX.mod \
+            SCALES.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            VISC_G.mod \
+            RXNS.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            IS.mod \
+            TAU_G.mod \
+            BC.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            DISCRETELEMENT.mod \
+            QMOM_KINETIC_EQUATION.mod \
+            DRAG.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_gas_drag.f 
+qmomk_init_bc.$(OBJ_EXT) : ./qmomk/qmomk_init_bc.f \
+            PARAM.mod \
+            PARAM1.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            INDICES.mod \
+            BC.mod \
+            QMOM_KINETIC_EQUATION.mod \
+            QMOMK_QUADRATURE.mod \
+            QMOMK_BC.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_init_bc.f 
+qmomk_initial_conditions.$(OBJ_EXT) : ./qmomk/qmomk_initial_conditions.f \
+            PARAM.mod \
+            PARAM1.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            INDICES.mod \
+            QMOM_KINETIC_EQUATION.mod \
+            QMOMK_QUADRATURE.mod \
+            QMOMK_PARAMETERS.mod \
+            IC.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_initial_conditions.f 
+qmomk_init_namelist.$(OBJ_EXT) : ./qmomk/qmomk_init_namelist.f \
+            PARAM1.mod \
+            QMOM_KINETIC_EQUATION.mod \
+            qmomk/qmomknamelist.inc                                     
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_init_namelist.f 
+qmomk_make_arrays.$(OBJ_EXT) : ./qmomk/qmomk_make_arrays.f \
+            PARAM1.mod \
+            GEOMETRY.mod \
+            FUNITS.mod \
+            COMPAR.mod \
+            QMOM_KINETIC_EQUATION.mod \
+            RUN.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_make_arrays.f 
+qmomk_read_restart.$(OBJ_EXT) : ./qmomk/qmomk_read_restart.f \
+            PARAM.mod \
+            PARAM1.mod \
+            CONSTANT.mod \
+            FLDVAR.mod \
+            CONT.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            RUN.mod \
+            COMPAR.mod \
+            PHYSPROP.mod \
+            QMOM_KINETIC_EQUATION.mod \
+            QMOMK_QUADRATURE.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_read_restart.f 
+qmomk_set_bc.$(OBJ_EXT) : ./qmomk/qmomk_set_bc.f \
+            PARAM.mod \
+            PARAM1.mod \
+            CONSTANT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            INDICES.mod \
+            BC.mod \
+            QMOM_KINETIC_EQUATION.mod \
+            QMOMK_QUADRATURE.mod \
+            QMOMK_BC.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_set_bc.f 
+qmomk_time_march.$(OBJ_EXT) : ./qmomk/qmomk_time_march.f \
+            PARAM.mod \
+            PARAM1.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            OUTPUT.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            GEOMETRY.mod \
+            CONT.mod \
+            COEFF.mod \
+            TAU_G.mod \
+            TAU_S.mod \
+            VISC_G.mod \
+            VISC_S.mod \
+            FUNITS.mod \
+            VSHEAR.mod \
+            SCALARS.mod \
+            DRAG.mod \
+            RXNS.mod \
+            COMPAR.mod \
+            TIME_CPU.mod \
+            IS.mod \
+            INDICES.mod \
+            MATRIX.mod \
+            SENDRECV.mod \
+            QMOM_KINETIC_EQUATION.mod \
+            QMOMK_FLUXES.mod \
+            QMOMK_QUADRATURE.mod \
+            QMOMK_COLLISION.mod \
+            QMOMK_PARAMETERS.mod \
+            UR_FACS.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_time_march.f 
+qmomk_write_restart.$(OBJ_EXT) : ./qmomk/qmomk_write_restart.f \
+            PARAM1.mod \
+            QMOM_KINETIC_EQUATION.mod \
+            RUN.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./qmomk/qmomk_write_restart.f 
 get_values.$(OBJ_EXT) : ./thermochemical/get_values.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./thermochemical/get_values.f 
 readTherm.$(OBJ_EXT) : ./thermochemical/readTherm.f 
