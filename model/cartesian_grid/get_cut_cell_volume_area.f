@@ -1186,9 +1186,17 @@
       CALL CROSS_PRODUCT(COORD(2,:)-COORD(1,:),COORD(3,:)-COORD(1,:),NORMAL)
 
       NORM = DSQRT(NORMAL(1)**2 + NORMAL(2)**2 + NORMAL(3)**2)
-      IF(NORM==ZERO) RETURN         ! Two vertices are identical and there is no need to reorder
-      NORMAL = NORMAL / NORM
-
+      IF(NORM==ZERO) THEN
+         WRITE(*,*)'ERROR IN REORDER_POLYGON: NORMAL UNIT VECTOR HAS ZERO NORM'
+         WRITE(*,*)'THIS USUALLY HAPPENS WHEN NODES WERE IMPROPERLY MERGED.'           
+         WRITE(*,*)'TO PREVENT THIS, INCREASE TOL_SNAP, OR DECREASE TOL_MERGE.'
+         WRITE(*,*)'CURRENT VALUE OF TOL_SNAP  = ', TOL_SNAP
+         WRITE(*,*)'CURRENT VALUE OF TOL_MERGE = ', TOL_MERGE
+         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'               
+         CALL MFIX_EXIT(MYPE) 
+      ELSE
+         NORMAL = NORMAL / NORM
+      ENDIF
 !======================================================================
 !   Find longest component of normal vector
 !======================================================================
