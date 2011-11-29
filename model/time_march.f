@@ -31,6 +31,11 @@
 !  Purpose: To call Cartesian grid subroutines, and update dasboard    C
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C 
 !                                                                      C
+!  Revision Number: 5                                                  C
+!  Purpose: Incorporation of QMOM for the solution of the particle     C
+!  kinetic equation                                                    C
+!  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
+!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced: RUN_TYPE, TIME, DT, NSTEP, TSTOP, OUT_DT,     C
@@ -84,7 +89,9 @@
       USE cutcell
       USE vtk
       USE dashboard
-
+! QMOMK - Alberto Passalacqua
+      USE qmom_kinetic_equation
+! QMOMK - End
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -277,6 +284,10 @@
 ! rahul: make_arrays_des (along with check_des_data) is now
 ! called from mfix.f. This consolidated the various DEM
 ! intialization related calls to one place.  
+      IF (QMOMK) THEN
+          CALL QMOMK_MAKE_ARRAYS
+      END IF
+! QMOMK - End
 
 ! Calculate all the coefficients once before entering the time loop
       IF(TRIM(KT_TYPE) == UNDEFINED_C) CALL CALC_COEFF_ALL (0, IER) 
@@ -399,7 +410,7 @@
       IF (CALL_USR) CALL USR1 
 
 ! Remove solids from cells containing very small quantities of solids
-      IF(.NOT.DISCRETE_ELEMENT) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN
          IF(TRIM(KT_TYPE) == 'GHD') THEN
             CALL ADJUST_EPS_GHD
          ELSE 
@@ -513,7 +524,11 @@
          CALL WRITE_RES1 
 ! Pradeep Changing the routine name 
          IF(DISCRETE_ELEMENT) call des_write_restart !CALL WRITE_DES_RESTART
-         !IF(DISCRETE_ELEMENT) CALL WRITE_DES_RESTART
+	 ! QMOMK - Alberto Passsalacqua
+	 ! Storing QMOM restart data for the solution of the Boltzmann equation
+         IF(QMOMK) CALL QMOMK_WRITE_RESTART         
+         ! QMOMK - End
+
          RES_MSG = .FALSE. 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME 
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME 
@@ -678,6 +693,10 @@
 
 ! DES
       IF (DISCRETE_ELEMENT.AND.DES_CONTINUUM_COUPLED) CALL DES_TIME_MARCH
+
+! QMOMK - Alberto Passalacqua
+      IF (QMOMK) CALL QMOMK_TIME_MARCH
+!     END QMOMB
 
 ! CHEM & ISAT (Nan Xie)
 ! Advance the time step and continue

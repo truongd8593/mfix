@@ -27,6 +27,11 @@
 !     Purpose: To call solids drag Drag_SS only when not using DES        C
 !     Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                         C
+!     Revision Number: 5                                                  C
+!     Purpose: To incorporate calls and checks for QMOM for               C
+!     solution of the particle phase kinetic equation                     C
+!     Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
+!                                                                         C
 !     Literature/Document References:                                     C
 !                                                                         C 
 !     Variables referenced: IMAX2, JMAX2, KMAX2, U_g, V_g, W_g, MMAX      C
@@ -55,6 +60,11 @@
       USE drag
       USE compar
       USE discretelement
+
+! QMOMB - Alberto Passalacqua
+      USE qmom_kinetic_equation
+! QMOMB - End
+
       IMPLICIT NONE
 !-----------------------------------------------
 !     G l o b a l   P a r a m e t e r s
@@ -82,14 +92,14 @@
     
 
       DO M = 1, SMAX 
-         IF(.NOT.DES_INTERP_ON) THEN 
+         IF(.NOT.(DES_INTERP_ON .OR. QMOMK)) THEN  ! QMOMK - A.P. Added check
 ! des_interp_on is F if discrete_element is F
             IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN 
                CALL DRAG_GS (M, IER)
             ENDIF
          ENDIF
 
-         IF(.NOT.DISCRETE_ELEMENT) THEN 
+         IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN ! QMOMK - A.P. Added check
             IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                DO L = 1, MMAX
                   IF (DRAGD(L,M)) CALL CALC_IA_NONEP_DRAG_SS (L,M,IER)

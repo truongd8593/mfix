@@ -26,6 +26,11 @@
 !     Author:Jeff Dietiker                               Date: 01-Jul-09  C
 !     Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                         C
+!     Revision Number: 4                                                 C
+!     Purpose: Incorporation of QMOM for the solution of the particle     C
+!     kinetic equation                                                    C
+!     Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
+!	   							          C
 !     Literature/Document References:                                     C
 !                                                                         C
 !     Variables referenced: None                                          C
@@ -101,6 +106,9 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
+! QMOMK - Alberto Passalacqua
+      USE qmom_kinetic_equation
+! QMOMK - End
       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -172,7 +180,11 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 
-    
+      ! QMOMK - Alberto Passalacqua
+      ! Including namelist for QMOMK
+      INCLUDE 'qmomk/qmomknamelist.inc'
+      ! QMOMK - End
+
       E = UNDEFINED 
       RXN_FLAG = .FALSE. 
       READ_FLAG = .TRUE. 
@@ -330,6 +342,9 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
+! QMOMK - Alberto Passalacqua
+ 1040 FORMAT(1X,'$QMOMK_INPUT_DATA')
+! QMOMK - End
  1100 FORMAT(A) 
  1200 FORMAT(1X,'$END') 
  1300 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&

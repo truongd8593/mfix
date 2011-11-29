@@ -17,6 +17,11 @@
 !  and utilization of the dashboard                                    C
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
+!  Revision Number: 3                                                  C
+!  Purpose: Incorporation of QMOM for the solution of the particle     C
+!  kinetic equation                                                    C
+!  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
+!								       C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced:                                               C
@@ -58,6 +63,9 @@
       USE cutcell
       USE vtk
       USE dashboard
+! QMOMK - Alberto Passalacqua
+      USE qmom_kinetic_equation
+! QMOMK - End
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -296,7 +304,7 @@
 
 ! Solve solids volume fraction correction equation for close-packed
 ! solids phases
-      IF(.NOT.DISCRETE_ELEMENT) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN  ! QMOMK - A.P. - Added check
         IF (MMAX > 0) THEN
 
           IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN 
@@ -339,7 +347,7 @@
 
 ! Calculate P_star in cells where solids continuity equation is
 ! solved
-      IF(.NOT.DISCRETE_ELEMENT) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN    ! QMOMK - A.P. - Added check
         IF (MMAX > 0 .AND. .NOT.FRICTION) &
            CALL CALC_P_STAR (EP_G, P_STAR, IER)
       ENDIF

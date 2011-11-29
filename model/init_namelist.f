@@ -536,6 +536,10 @@
       bWrite_netCDF(:) = .false.
 
       CALL DES_INIT_NAMELIST
+
+      ! Initialize QMOMK namelist
+      CALL QMOMK_INIT_NAMELIST
+      ! QMOMK - End
       CALL USR_INIT_NAMELIST 
 
 ! JFD: MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION      

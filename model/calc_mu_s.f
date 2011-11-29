@@ -78,6 +78,9 @@
       USE compar
       USE indices
       USE geometry
+! QMOMK - Alberto Passalacqua
+      USE qmom_kinetic_equation
+! QMOMK - End
       Implicit NONE
 !-----------------------------------------------
 !     Local variables
@@ -125,19 +128,25 @@
      
      
 ! Viscous-flow stress tensor
-      IF(.NOT.GRANULAR_ENERGY) then
-         call gt_algebraic(M,IER) !algebraic granular energy equation
-      ELSE                        !granular energy transport equation
-          IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
-               CALL gt_pde_ia_nonep(M,IER)   ! complete polydisperse IA theory
-          ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
-               CALL gt_pde_gd_99(M,IER)      ! monodisperse GD theory
-          ELSEIF (TRIM(KT_TYPE) == 'GHD') THEN
+      ! QMOMK - Alberto Passalacqua
+      ! Added check to exclude both the algebraic and the PD equation
+      ! for the granular temperature
+      IF (.NOT. QMOMK) THEN
+         IF(.NOT.GRANULAR_ENERGY) then
+            call gt_algebraic(M,IER) !algebraic granular energy equation
+         ELSE                   !granular energy transport equation
+            IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+               CALL gt_pde_ia_nonep(M,IER) ! complete polydisperse IA theory
+            ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+               CALL gt_pde_gd_99(M,IER) ! monodisperse GD theory
+            ELSEIF (TRIM(KT_TYPE) == 'GHD') THEN
                CALL TRANSPORT_COEFF_GHD(M,IER) ! GHD theory for mixture temperature               
-          ELSE
-               CALL gt_pde(M,IER)   ! This is also used whith Simonin or Ahmadi models
-          ENDIF
+            ELSE
+               CALL gt_pde(M,IER) ! This is also used whith Simonin or Ahmadi models
+            ENDIF
+         ENDIF
       ENDIF
+      ! QMOMK - End
     
 ! Frictional stress tensors
       IF (SCHAEFFER .AND. CLOSE_PACKED(M)) call friction_schaeffer(M,IER) ! Schaeffer's Frictional Formulation

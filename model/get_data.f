@@ -25,6 +25,12 @@
 !  Author:   Aeolus Res. Inc.                         Date: 04-SEP-99  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
+!  Revision Number: 4                                                  C
+!  Purpose: Incorporation of QMOM for the solution of the particle     C
+!  kinetic equation                                                    C
+!  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
+!								       C
+!								       C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced: RUN_NAME, RUN_TYPE, ID_VERSION, ID_NODE       C
@@ -49,6 +55,9 @@
       USE discretelement
       USE leqsol
       USE parallel
+! QMOMK - Alberto Passalacqua
+      USE qmom_kinetic_equation
+! QMOMK - End
       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -141,6 +150,12 @@
 
       CALL ALLOCATE_ARRAYS    
 
+      ! QMOMK - Alberto Passalacqua
+      ! Allocating arrays for QMOMK
+      IF (QMOMK) THEN
+         CALL QMOMK_ALLOCATE_ARRAYS
+      END IF
+      ! QMOMK - End
       IF (RUN_NAME == UNDEFINED_C) THEN 
          WRITE (*, 1000) 
          CALL MFIX_EXIT(myPE) 

@@ -23,7 +23,12 @@
 !  Purpose: For Discrete element simulation, no need to call           C
 !   DES_CALC_D_E to caculate pressure correction coeff's. CALC_D_E     C
 !   already contains this spl case. Same for North and Top cases.      C
-
+!								       C
+!  Revision Number: 4                                                  C
+!  Purpose: Incorporation of QMOM for the solution of the particle     C
+!  kinetic equation                                                    C
+!  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
+!								       C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced:                                               C
@@ -63,6 +68,11 @@
       Use tmp_array,  VxF_ss => ArrayLM     !S. Dartevelle, LANL, MARCH 2004
       USE compar
       USE discretelement
+
+! QMOMK - Alberto Passalacqua
+      USE qmom_kinetic_equation
+! QMOMK - End
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -136,17 +146,18 @@
       
       CALL CONV_DIF_U_G (A_M, B_M, IER) 
       
-      IF(.NOT.DISCRETE_ELEMENT) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN  ! QMOMK - A.P. - Added check
          CALL CONV_DIF_U_S (A_M, B_M, IER) 
       END IF
 
       CALL SOURCE_U_G (A_M, B_M, IER) 
-      IF(.NOT.DISCRETE_ELEMENT) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN  ! QMOMK - A.P. - Added check
          CALL SOURCE_U_S (A_M, B_M, IER) 
       END IF
 
       IF (MMAX > 0) CALL VF_GS_X (VXF_GS, IER)
-      IF(.NOT.DISCRETE_ELEMENT .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
+      ! QMOMK - A.P. - Added check
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
          IF (MMAX > 0) CALL VF_SS_X (VXF_SS, IER)   !S. Dartevelle, LANL, Feb.2004
       END IF
 
@@ -156,7 +167,7 @@
          CALL CALC_D_E (A_M, VXF_GS, VXF_SS, D_E, IER)  !S. Dartevelle, LANL, Feb.2004
       ENDIF
   
-      IF(.NOT.DISCRETE_ELEMENT) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN  ! QMOMK - A.P. - Added check
          IF (MMAX > 0) CALL CALC_E_E (A_M, MCP, E_E, IER) 
          IF(TRIM(KT_TYPE) == 'GHD') THEN
 	   IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_U (U_G, U_S, VXF_GS, A_M, B_M, IER) 
@@ -166,7 +177,7 @@
       END IF
 
       CALL ADJUST_A_U_G (A_M, B_M, IER) 
-      IF(.NOT.DISCRETE_ELEMENT) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN  ! QMOMK - A.P. - Added check
          CALL ADJUST_A_U_S (A_M, B_M, IER)
       END IF 
       
@@ -174,6 +185,12 @@
       IF(DES_CONTINUUM_COUPLED) THEN
          UVEL = 1
          CALL GAS_DRAG(A_M, B_M, VXF_GS, IER, UVEL, VVEL, WVEL)
+         UVEL = 0
+      END IF
+
+      IF(QMOMK .AND. QMOMK_COUPLED) THEN
+         UVEL = 1
+         CALL QMOMK_GAS_DRAG(A_M, B_M, IER, UVEL, VVEL, WVEL)
          UVEL = 0
       END IF
 
@@ -245,18 +262,19 @@
 ! ----------------------------------------
       CALL CONV_DIF_V_G (A_M, B_M, IER) 
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-      IF(.NOT.DISCRETE_ELEMENT) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN  ! QMOMK - A.P. - Added check
          CALL CONV_DIF_V_S (A_M, B_M, IER) 
       END IF
 
       CALL SOURCE_V_G (A_M, B_M, IER) 
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-      IF(.NOT.DISCRETE_ELEMENT) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN ! QMOMK - A.P. - Added check
          CALL SOURCE_V_S (A_M, B_M, IER)
       END IF 
 
       IF (MMAX > 0) CALL VF_GS_Y (VXF_GS, IER)
-      IF(.NOT.DISCRETE_ELEMENT .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
+      ! QMOMK - A.P. - Added check
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
          IF (MMAX > 0) CALL VF_SS_Y (VXF_SS, IER)    !S. Dartevelle, LANL, Feb.2004
       END IF
 
@@ -287,6 +305,14 @@
          CALL GAS_DRAG(A_M, B_M, VXF_GS, IER, UVEL, VVEL, WVEL)
          VVEL = 0
       END IF
+
+      ! QMOMK - Alberto Passalacqua 
+      IF(QMOMK .AND. QMOMK_COUPLED) THEN
+         VVEL = 1
+         CALL QMOMK_GAS_DRAG(A_M, B_M, IER, UVEL, VVEL, WVEL)
+         VVEL = 0
+      END IF
+      ! QMOMK - End
       
       IF (MOMENTUM_Y_EQ(0)) THEN 
          CALL CALC_RESID_V (U_G, V_G, W_G, A_M, B_M, 0, NUM_RESID(RESID_V,0), &
@@ -357,7 +383,7 @@
         CALL CONV_DIF_W_G (A_M, B_M, IER) 
 
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-        IF(.NOT.DISCRETE_ELEMENT) THEN
+        IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN  ! QMOMK - A.P. - Added check
           CALL CONV_DIF_W_S (A_M, B_M, IER) 
         END IF
 
@@ -367,7 +393,7 @@
 
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
     
-        IF(.NOT.DISCRETE_ELEMENT) THEN    
+        IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN  ! QMOMK - A.P. - Added check
           CALL SOURCE_W_S (A_M, B_M, IER) 
         END IF
 
@@ -385,7 +411,7 @@
 	   CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER) !S. Dartevelle, LANL, Feb.2004
 	ENDIF
 
-        IF(.NOT.DISCRETE_ELEMENT) THEN
+        IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN ! QMOMK - A.P. - Added check
           IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T, IER) 
           IF(TRIM(KT_TYPE) == 'GHD') THEN
             IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_W (W_G, W_S, VXF_GS, A_M, B_M, IER)
@@ -405,6 +431,13 @@
             CALL GAS_DRAG(A_M, B_M, VXF_GS, IER, UVEL, VVEL, WVEL)
             WVEL = 0
           END IF
+          ! QMOMK - Alberto Passalacqua
+          IF(QMOMK .AND. QMOMK_COUPLED) THEN
+             WVEL = 1
+             CALL QMOMK_GAS_DRAG(A_M, B_M, IER, UVEL, VVEL, WVEL)  
+             WVEL = 0
+          END IF
+          ! QMOMK - End
         END IF
                                               
         IF (MOMENTUM_Z_EQ(0)) THEN 

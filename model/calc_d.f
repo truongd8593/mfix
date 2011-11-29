@@ -28,6 +28,11 @@
 !  Purpose: To incorporate Cartesian grid modifications                C
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
+!  Revision Number: 5                                                  C
+!  Purpose: Incorporation of QMOM for the solution of the particle     C
+!  kinetic equation                                                    C
+!  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
+!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced:                                               C
@@ -63,6 +68,11 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
+
+! QMOMK - Alberto Passalacqua
+      USE qmom_kinetic_equation
+! QMOMK - End
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -88,7 +98,7 @@
 !          Volume x average at momentum cell centers Solid-Solid Drag
       DOUBLE PRECISION VxF_ss(DIMENSION_3, DIMENSION_LM)           !S. Dartevelle, LANL, Feb.2004
 !          Usual Indices
-      INTEGER           LM, M, L, LpL, Lp, I, IJK, IJKE            !S. Dartevelle, LANL, Feb.2004
+      INTEGER           LM, M, L, LpL, Lp, I, IJK, IJKE, IN        !S. Dartevelle, LANL, Feb.2004
 !          Average solid volume fraction at momentum cell centers
       DOUBLE PRECISION  EPSA(DIMENSION_M)                          !S. Dartevelle, LANL, Feb.2004
 !          ratio of drag and A0 or A_solid and other sum of Solid-Solid drag
@@ -299,10 +309,21 @@
        IJKE = EAST_OF(IJK)
        EPGA = AVG_X(EP_G(IJK),EP_G(IJKE),I)
 
+       ! QMOMK - Alberto Passalacqua 
+       ! Added check for QMOMK
        SUM_VXF_GS = ZERO
-       DO M= 1, MMAX
+       IF (.NOT. QMOMK) THEN
+        DO M = 1, MMAX
          SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
-       END DO
+        END DO
+       ELSE
+        DO IN = 1, QMOMK_NN
+          DO M = 1, MMAX           
+            SUM_VXF_GS = SUM_VXF_GS + AVG_X(QMOMK_F_GS(IN,IJK,M),QMOMK_F_GS(IN,IJKE,M),I)*VOL_U(IJK)
+          END DO
+        END DO
+       END IF
+       ! QMOMK - End
 
        IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
          IF (MODEL_B) THEN
@@ -480,6 +501,10 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 
+! QMOMK - Alberto Passalacqua
+      USE qmom_kinetic_equation
+! QMOMK - End
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -504,7 +529,7 @@
 !          Volume x average at momentum cell centers Solid-Solid Drag
       DOUBLE PRECISION VxF_ss(DIMENSION_3, DIMENSION_LM)           !S. Dartevelle, LANL, Feb.2004
 !          Usual Indices
-      INTEGER           LM, M, L, LpL, Lp, J, IJK, IJKN            !S. Dartevelle, LANL, Feb.2004
+      INTEGER           LM, M, L, LpL, Lp, J, IJK, IJKN, IN        !S. Dartevelle, LANL, Feb.2004
 !          Average solid volume fraction at momentum cell centers
       DOUBLE PRECISION  EPSA(DIMENSION_M)                          !S. Dartevelle, LANL, Feb.2004
 !          ratio of drag and A0 or A_solid and other sum of Solid-Solid drag
@@ -714,10 +739,21 @@
        IJKN = NORTH_OF(IJK)
        EPGA = AVG_Y(EP_G(IJK),EP_G(IJKN),J)
 
+       ! QMOMK - Alberto Passalacqua
+       ! Added check for QMOMK
        SUM_VXF_GS = ZERO
-       DO M= 1, MMAX
+       IF (.NOT. QMOMK) THEN
+        DO M = 1, MMAX
          SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
-       END DO
+        END DO
+       ELSE
+        DO IN = 1, QMOMK_NN
+          DO M = 1, MMAX           
+            SUM_VXF_GS = SUM_VXF_GS + AVG_Y(QMOMK_F_GS(IN,IJK,M),QMOMK_F_GS(IN,IJKN,M),J)*VOL_V(IJK)
+          END DO
+        END DO
+       END IF
+       ! QMOMK - End
 
        IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
          IF (MODEL_B) THEN
@@ -894,6 +930,10 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 
+! QMOMK - Alberto Passalacqua
+      USE qmom_kinetic_equation
+! QMOMK - End
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -918,7 +958,7 @@
 !          Volume x average at momentum cell centers Solid-Solid Drag
       DOUBLE PRECISION VxF_ss(DIMENSION_3, DIMENSION_LM)           !S. Dartevelle, LANL, Feb.2004
 !          Usual Indices
-      INTEGER           LM, M, L, LpL, Lp, K, IJK, IJKT            !S. Dartevelle, LANL, Feb.2004
+      INTEGER           LM, M, L, LpL, Lp, K, IJK, IJKT, IN        !S. Dartevelle, LANL, Feb.2004
 !          Average solid volume fraction at momentum cell centers
       DOUBLE PRECISION  EPSA(DIMENSION_M)                          !S. Dartevelle, LANL, Feb.2004
 !          ratio of drag and A0 or A_solid and other sum of Solid-Solid drag
@@ -1128,10 +1168,21 @@
        IJKT = TOP_OF(IJK)
        EPGA = AVG_Z(EP_G(IJK),EP_G(IJKT),K)
 
+       ! QMOMK - Alberto Passalacqua
+       ! Added check for QMOMK
        SUM_VXF_GS = ZERO
-       DO M= 1, MMAX
+       IF (.NOT. QMOMK) THEN
+        DO M = 1, MMAX
          SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
-       END DO
+        END DO
+       ELSE      
+        DO IN = 1, QMOMK_NN
+          DO M = 1, MMAX           
+            SUM_VXF_GS = SUM_VXF_GS + AVG_Z(QMOMK_F_GS(IN,IJK,M),QMOMK_F_GS(IN,IJKT,M),K)*VOL_W(IJK)
+          END DO
+        END DO
+       END IF
+       ! QMOMK - End
 
        IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
          IF (MODEL_B) THEN
