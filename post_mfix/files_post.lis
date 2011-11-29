@@ -17,6 +17,7 @@ correl_mod.f
 ../model/kintheory_mod.f 
 ../model/leqsol_mod.f 
 ../model/machine_mod.f 
+../model/machine.f 
 ../model/chem/mchem_mod.f 
 ../model/mflux_mod.f 
 ../model/mfix_netcdf_mod.f 
@@ -105,7 +106,6 @@ ik_avg_out.f
 ../model/init_namelist.f 
 interp_res.f 
 ../model/line_too_big.f 
-machine.f 
 main_f.f
 ../model/make_upper_case.f 
 ../model/open_file.f 
@@ -193,3 +193,6 @@ post_precision_mod.f
 paralleldata_mod.f 
 usr_input_mod.f 
 ../model/des/mfix_pic_mod.f
+../model/qmomk/qmom_kinetic_equation_mod.f
+../model/qmomk/qmomk_parameters_mod.f
+../model/qmomk/qmomk_init_namelist.f

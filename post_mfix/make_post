@@ -781,6 +781,7 @@ read delete_files
  /bin/cp -f -p ../model/sc_p_g1.inc .
  /bin/cp -f -p ../model/sc_p_g2.inc .
  /bin/cp -f -p ../model/des/desnamelist.inc des/
+ /bin/cp -f -p ../model/qmomk/qmomknamelist.inc qmomk/
 
       
  case $MODULE_CODE in

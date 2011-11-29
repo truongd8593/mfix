@@ -74,6 +74,9 @@ post_mfix : \
     PARALLELDATA.mod \
     USR_INPUT.mod \
     MFIX_PIC.mod \
+    QMOM_KINETIC_EQUATION.mod \
+    QMOMK_PARAMETERS.mod \
+    machine.$(OBJ_EXT) \
     allocate_arrays.$(OBJ_EXT) \
     any_more_data.$(OBJ_EXT) \
     calc_cell2.$(OBJ_EXT) \
@@ -124,7 +127,6 @@ post_mfix : \
     init_namelist.$(OBJ_EXT) \
     interp_res.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
-    machine.$(OBJ_EXT) \
     main_f.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
     open_file.$(OBJ_EXT) \
@@ -197,6 +199,7 @@ post_mfix : \
     ornl_filt_c.$(OBJ_EXT) \
     ornl_zone.$(OBJ_EXT) \
     ornl_sym.$(OBJ_EXT) \
+    qmomk_init_namelist.$(OBJ_EXT) \
     
 	$(LINK_CMD) $(LINK_FLAGS) \
     ambm_mod.$(OBJ_EXT) \
@@ -218,6 +221,7 @@ post_mfix : \
     kintheory_mod.$(OBJ_EXT) \
     leqsol_mod.$(OBJ_EXT) \
     machine_mod.$(OBJ_EXT) \
+    machine.$(OBJ_EXT) \
     mchem_mod.$(OBJ_EXT) \
     mflux_mod.$(OBJ_EXT) \
     mfix_netcdf_mod.$(OBJ_EXT) \
@@ -306,7 +310,6 @@ post_mfix : \
     init_namelist.$(OBJ_EXT) \
     interp_res.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
-    machine.$(OBJ_EXT) \
     main_f.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
     open_file.$(OBJ_EXT) \
@@ -394,6 +397,9 @@ post_mfix : \
     paralleldata_mod.$(OBJ_EXT) \
     usr_input_mod.$(OBJ_EXT) \
     mfix_pic_mod.$(OBJ_EXT) \
+    qmom_kinetic_equation_mod.$(OBJ_EXT) \
+    qmomk_parameters_mod.$(OBJ_EXT) \
+    qmomk_init_namelist.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
 AMBM.mod : ../model/ambm_mod.f \
@@ -687,6 +693,19 @@ MFIX_PIC.mod : ../model/des/mfix_pic_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/mfix_pic_mod.f 
+QMOM_KINETIC_EQUATION.mod : ../model/qmomk/qmom_kinetic_equation_mod.f \
+            PARAM.mod \
+            PARAM1.mod \
+            QMOMK_PARAMETERS.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/qmomk/qmom_kinetic_equation_mod.f 
+QMOMK_PARAMETERS.mod : ../model/qmomk/qmomk_parameters_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/qmomk/qmomk_parameters_mod.f 
+machine.$(OBJ_EXT) : ../model/machine.f \
+            MACHINE.mod \
+            PARAM.mod \
+            RUN.mod \
+            FUNITS.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/machine.f 
 allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             PARAM.mod \
             PARAM1.mod \
@@ -773,6 +792,7 @@ calc_mu_s.$(OBJ_EXT) : ../model/calc_mu_s.f \
             COMPAR.mod \
             INDICES.mod \
             GEOMETRY.mod \
+            QMOM_KINETIC_EQUATION.mod \
             PARAM.mod \
             PARAM1.mod \
             TRACE.mod \
@@ -1205,11 +1225,6 @@ interp_res.$(OBJ_EXT) : interp_res.f \
             function.inc                                                
 line_too_big.$(OBJ_EXT) : ../model/line_too_big.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/line_too_big.f 
-machine.$(OBJ_EXT) : machine.f \
-            MACHINE.mod \
-            PARAM.mod \
-            RUN.mod \
-            FUNITS.mod 
 main_f.$(OBJ_EXT) : main_f.f \
             xforms.inc                                                  
 make_upper_case.$(OBJ_EXT) : ../model/make_upper_case.f 
@@ -1306,10 +1321,12 @@ read_namelist.$(OBJ_EXT) : ../model/read_namelist.f \
             POLYGON.mod \
             DASHBOARD.mod \
             STL.mod \
+            QMOM_KINETIC_EQUATION.mod \
             usrnlst.inc                                                  \
             namelist.inc                                                 \
             des/desnamelist.inc                                          \
-            cartesian_grid/cartesian_grid_namelist.inc                  
+            cartesian_grid/cartesian_grid_namelist.inc                   \
+            qmomk/qmomknamelist.inc                                     
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/read_namelist.f 
 read_res0.$(OBJ_EXT) : ../model/read_res0.f \
             PARAM.mod \
@@ -1590,9 +1607,7 @@ write_spx1.$(OBJ_EXT) : ../model/write_spx1.f \
             COMPAR.mod \
             MPI_UTILITY.mod \
             SENDRECV.mod \
-            function.inc                                                 \
-            ep_s1.inc                                                    \
-            ep_s2.inc                                                   
+            MFIX_NETCDF.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_spx1.f 
 usr_input.$(OBJ_EXT) : usr_input.f \
             USR_INPUT.mod \
@@ -1700,3 +1715,8 @@ ornl_zone.$(OBJ_EXT) : ornl_zone.f \
             USR_INPUT.mod \
             function.inc                                                
 ornl_sym.$(OBJ_EXT) : ornl_sym.f 
+qmomk_init_namelist.$(OBJ_EXT) : ../model/qmomk/qmomk_init_namelist.f \
+            PARAM1.mod \
+            QMOM_KINETIC_EQUATION.mod \
+            qmomk/qmomknamelist.inc                                     
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/qmomk/qmomk_init_namelist.f 
