@@ -700,12 +700,11 @@ QMOM_KINETIC_EQUATION.mod : ../model/qmomk/qmom_kinetic_equation_mod.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/qmomk/qmom_kinetic_equation_mod.f 
 QMOMK_PARAMETERS.mod : ../model/qmomk/qmomk_parameters_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/qmomk/qmomk_parameters_mod.f 
-machine.$(OBJ_EXT) : ../model/machine.f \
+machine.$(OBJ_EXT) : machine.f \
             MACHINE.mod \
             PARAM.mod \
             RUN.mod \
             FUNITS.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/machine.f 
 allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             PARAM.mod \
             PARAM1.mod \
