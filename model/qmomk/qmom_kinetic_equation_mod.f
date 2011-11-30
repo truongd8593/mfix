@@ -52,6 +52,8 @@ MODULE qmom_kinetic_equation
   LOGICAL QMOMK_COUPLED
   LOGICAL PRINT_QMOMK_DATA
 
+  
+  CHARACTER(64) QMOMK_TYPE 
   !     Strings
 
   !     Collision operator
