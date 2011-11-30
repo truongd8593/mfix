@@ -1,0 +1,138 @@
+! Run-control section                                                           
+  RUN_NAME              = 'Channel_QMOM_Bidisperse'             
+  DESCRIPTION           = 'Channel flow with bi-disperse particles'          
+  RUN_TYPE              = 'NEW'             
+  UNITS                 = 'SI'
+  TIME                  = 0.0                         
+  TSTOP                 = 20.0
+  DT                    = 1.0E-5
+  DT_MAX                = 1.0E-1
+  DT_MIN                = 1.0E-8
+  DT_FAC                = 0.9
+  DETECT_STALL          = .TRUE.
+
+  MOMENTUM_X_EQ(1)    = .FALSE. 
+  MOMENTUM_Y_EQ(1)    = .FALSE. 
+  GRANULAR_ENERGY     = .FALSE. 
+
+  MOMENTUM_X_EQ(2)    = .FALSE. 
+  MOMENTUM_Y_EQ(2)    = .FALSE. 
+
+  ENERGY_EQ           = .FALSE.                       
+  SPECIES_EQ          = .FALSE.    .FALSE.    .FALSE. 
+
+  MAX_NIT               = 200
+
+  CYCLIC_Y_PD           = .TRUE.
+  DELP_Y                = 400.0
+  FLUX_G                = 1.2
+
+ ! Numerical settings
+  DISCRETIZE           = 9*2
+  leq_it               = 9*200
+
+! Geometry Section                                                              
+  COORDINATES           = 'cartesian' 
+  XLENGTH               = 0.032                         
+  IMAX                  = 25                           
+  YLENGTH               = 0.30                         
+  JMAX                  = 60                          
+  NO_K                  = .TRUE.                        
+
+! Gas-phase Section                                                             
+  MU_g0                 = 1.8E-5                      
+  RO_g0                 = 1.2
+
+  
+! Solids-phase Section                                                          
+  MMAX                  = 2
+  RO_s(1)               = 2400                         
+  RO_s(2)               = 2400
+  D_p0(1)               = 120.0E-06
+  D_P0(2)               = 185.0E-06                            
+  e                     = 1.0
+  Phi                   = 30.0                          
+  EP_star               = 0.390      
+  C_f                   = 0.1
+  
+! Initial Conditions Section                                                    
+  IC_X_w(1)             =  0.0                          
+  IC_X_e(1)             =  0.032                          
+  IC_Y_s(1)             =  0.0
+  IC_Y_n(1)             =  0.30
+
+  IC_theta_m(1,1)       =  0.01
+  IC_theta_m(1,2)       =  0.01
+
+  IC_EP_g(1)            =  0.975     
+  
+  IC_ROP_s(1,1)         =  30
+  IC_ROP_s(1,2)         =  30
+  
+  IC_U_g(1)             =  0.0                          
+  IC_V_g(1)             =  0.0                         
+  
+  IC_U_s(1,1)           =  0.0                           
+  IC_V_s(1,1)           =  0.0                          
+  
+  IC_U_s(1,2)           =  0.0                           
+  IC_V_s(1,2)           =  0.0
+
+! Boundary Conditions Section                                                  
+  BC_X_w(1)             =  0.0                          
+  BC_X_e(1)             =  0.0                          
+  BC_Y_s(1)             =  0.0 
+  BC_Y_n(1)             =  0.3
+
+  BC_X_w(2)             =  0.032
+  BC_X_e(2)             =  0.032 
+  BC_Y_s(2)             =  0.0
+  BC_Y_n(2)             =  0.3
+
+  BC_TYPE(1)             = "NSW"
+  BC_TYPE(2)             = "NSW"
+
+  BC_Uw_g(1) = 0.0
+  BC_Vw_g(1) = 0.0
+
+  BC_Uw_g(2) = 0.0
+  BC_Vw_g(2) = 0.0
+
+  PHIP = 0.0
+
+! QMOMK Input
+  QMOMK = .TRUE.
+  QMOMK_COLLISIONS = 'Boltzmann'
+  QMOMK_COUPLED = .TRUE.
+  QMOMK_FLUXES_ORDER = 1
+  QMOMK_COLLISIONS_ORDER = 1
+  QMOMK_CFL = 0.1
+  QMOMK_COLL_FLUXES = .FALSE.
+
+!  Output Control                                                               
+  OUT_DT                = 10.                           
+  RES_DT                = 0.01                          
+  NLOG                  = 25                             
+  FULL_LOG              = .true.                        
+
+!SPX_DT values determine how often SPx files are written.  Here BUB02.SP1, which
+!contains void fraction (EP_g), is written every 0.01 s, BUB02.SP2, which contains
+! gas and solids pressure (P_g, P_star), is written every 0.1 s, and so forth.
+
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
+        !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
+        !                W_g  W_s
+  SPX_DT = 0.0001 0.0001  0.0001  0.0001 0.0001  100. 100.     0.01     0.01        
+
+!  Sweep Direction
+  LEQ_SWEEP(1) = 'ISIS'
+  LEQ_SWEEP(2) = 'ISIS'
+  LEQ_SWEEP(3) = 'ISIS'
+  LEQ_SWEEP(4) = 'ISIS'
+  LEQ_SWEEP(5) = 'ISIS' 
+  LEQ_SWEEP(6) = 'ISIS'
+  LEQ_SWEEP(7) = 'ISIS'
+  LEQ_SWEEP(8) = 'ISIS'
+  LEQ_SWEEP(9) = 'ISIS'
+
+ NODESI=1 NODESJ=1 NODESK=1

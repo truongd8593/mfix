@@ -1,0 +1,154 @@
+ !Run control
+ ! Run-control section                                                           
+ DESCRIPTION    = 'Channel flow with particles - QMOM - 2way'          
+ RUN_TYPE 	= 'NEW'             
+ UNITS 		= 'SI'
+ TIME  		= 0.0			!start time
+ DT_MIN         = 1.0E-06
+ RUN_NAME       = "Channel_QMOM_alpha_0_001"
+ DT             = 1.0e-5
+ DT_MAX         = 1.0
+ DT_FAC		= 0.95
+ TSTOP          = 5.0     
+
+ CYCLIC_Y_PD = .TRUE.
+ DELP_Y = 3000.0
+ FLUX_G = 2.42
+
+ ! Numerical settings
+ DISCRETIZE = 9*2
+ leq_it = 9*200
+ NORM_S = 0
+ NORM_G = 0
+ 
+ !Under-relaxation 
+ !Pressure
+ UR_FAC(1) = 0.6
+ 
+ !Solids volume fraction
+ UR_FAC(2) = 0.4
+ 
+ ! Excluding particle phase momentum  equations - Not necessary using QMOM
+ 
+ MOMENTUM_X_EQ(1) = .FALSE. 
+ MOMENTUM_Y_EQ(1) = .FALSE. 
+ MOMENTUM_Z_EQ(1) = .FALSE.
+ GRANULAR_ENERGY  = .FALSE. 
+ ENERGY_EQ 	  = .FALSE.		!do not solve energy eq
+ SPECIES_EQ 	  = .FALSE.    .FALSE. 	!do not solve species eq
+ !CLOSE_PACKED    = .FALSE.
+
+ GRAVITY = 9.81
+
+ ! Setting the number of dispersed phases
+ MMAX = 1
+
+ ! Gas phase properties
+ MU_g0    		=    1.73E-4
+ RO_g0    		=    1.2
+
+ ! Particle phase properties
+ RO_s    		=    1500
+ D_p0    		=    252.9E-06
+ C_e       		=    1			
+ e_w                    =    1.0
+ EP_star 		=    0.37    !void fraction at minimum fluidization
+ 
+ Phi    		=    28.0    !angle of internal friction
+ phi_w                  =    28.0
+ 
+ ! Geometry definition
+ COORDINATES 		= 'cartesian' 
+ XLENGTH                = 0.1    
+ IMAX                   = 20
+ YLENGTH                = 1.0
+ JMAX                   = 200
+ NO_K                   = .TRUE.
+ 
+ ! Initial conditions
+ IC_X_w(1)           	=     0.0
+ IC_X_e(1)           	=     0.1
+ IC_Y_s(1)           	=     0.0
+ IC_Y_n(1)           	=     1.0
+  
+ IC_EP_g           	=     0.999
+ 
+ IC_theta_m(1,1)        =     0.1
+ 
+ IC_U_g           	=     0.0       ! x-dir gas velocity
+ IC_V_g          	=     0.0	! y-dir gas velocity
+ IC_W_g                 =     0.0
+ IC_U_s(1,1)            =     0.0
+ IC_V_s(1,1)            =     0.0
+ IC_W_s(1,1)            =     0.0
+ IC_P_star              =     0.0
+
+! Boundary conditions
+ BC_X_w(1)           	=     0.0 
+ BC_X_e(1)           	=     0.0     
+ BC_Y_s(1)           	=     0.0    
+ BC_Y_n(1)           	=     1.0   
+
+ BC_X_w(2)           	=     0.1 
+ BC_X_e(2)           	=     0.1     
+ BC_Y_s(2)           	=     0.0    
+ BC_Y_n(2)           	=     1.0    
+ 
+ BC_TYPE(1)           	= "NSW"
+ BC_TYPE(2)           	= "NSW"
+
+ BC_Uw_g(1) = 0.0
+ BC_Vw_g(1) = 0.0
+ BC_Ww_g(1) = 0.0
+
+ BC_Uw_g(2) = 0.0
+ BC_Vw_g(2) = 0.0
+ BC_Ww_g(2) = 0.0
+
+ PHIP = 0.0
+ 
+! QMOMB Input
+  QMOMK = .TRUE.
+  QMOMK_COLLISIONS = 'BGK'
+  QMOMK_COUPLED = .TRUE.
+  QMOMK_COLLISIONS_ORDER = 0
+  QMOMK_CFL = 0.1
+  
+! End QMOMB
+
+! Output Control
+
+  RES_DT 		=    0.01
+  SPX_DT = .01 .01 .01 .01 .01 .01 .01 .01 .2     .1E+03 .1E+03
+  OUT_DT 		= 20.0		!write text file BUB01.OUT
+					!  every 0.1s
+  NLOG   		= 10 		!write logfile BUB01.LOG
+					!every 25 time steps
+  FULL_LOG 		= .TRUE. 	!display residuals on screen
+
+  CALL_USR              = .TRUE.
+  
+!SPX_DT values determine how often SPx files are written.  Here BUB01.SP1, which
+!contains void fraction (EP_g), is written every 0.01 s, BUB01.SP2, which contains
+! gas and solids pressure (P_g, P_star), is written every 0.1 s, and so forth.
+!
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
+        !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
+        !                W_g  W_s      
+                                                 
+!  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
+  
+  NODESI = 1   NODESJ = 1   NODESK = 1
+
+!  Sweep Direction
+
+LEQ_SWEEP(1) = 'ISIS' 
+LEQ_SWEEP(2) = 'ISIS'  
+LEQ_SWEEP(3) = 'ISIS' 
+LEQ_SWEEP(4) = 'ISIS'  
+LEQ_SWEEP(5) = 'ISIS'  
+LEQ_SWEEP(6) = 'ISIS'  
+LEQ_SWEEP(7) = 'ISIS' 
+LEQ_SWEEP(8) = 'ISIS'  
+LEQ_SWEEP(9) = 'ISIS'
+
