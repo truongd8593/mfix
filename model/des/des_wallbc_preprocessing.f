@@ -513,6 +513,11 @@
                                 !
                         IJK = FUNIJK(INEW,JNEW,KNEW) !this is the cell where the new bc will go 
 
+                        IF (.NOT.IS_ON_myPE_wobnd(INEW, JNEW, KNEW)) CYCLE
+                        !for periodic BC's, the east, bottom or southmost cells (i.e., i=1 
+                        !or j = 1, or k = 1, will be flagged as fluid
+                        !and the following fluid_at(IJK) test alone will not 
+                        !be enough to avoid replacement error below.
 !However, this IJK could also fall in a non-fluid cell for cut-cell and there
 !will be an error in finding the replacement. 
 !Therefore, if IJK is not a fluid cell then do not bother and cycle.
@@ -539,6 +544,7 @@
                               WRITE(UNIT_LOG, *) 'ERROR IN DES_CUT_CELL_PRE_PROCESSOR'
                               WRITE(UNIT_LOG, *) 'COULD NOT FIND AN OLDER WALL TO REPLACE FOR OUTFLOW BC CASE'
                               WRITE(UNIT_LOG, *) 'LOOKING FOR ', IJK_WALL, ' AS AN EXISTING BC FOR CELL ID', IJK
+                              
                               WRITE(*,*) 'ERROR WITH FINDING THE EXISTING WALL TO REPLACE FOR OUTFLOW CASE'
                               WRITE(*,*) 'SEE THE LOG FILE'
                   
