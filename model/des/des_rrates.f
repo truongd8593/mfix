@@ -1,26 +1,16 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: RRATES(IER)                                            !
-!  Purpose: Calculate reaction rates for various reactions in cell ijk !
+!  Module name: DES_RRATES(IER)                                        !
+!  Purpose: Calculate reaction rates for various reactions for each    !
+!  particle.                                                           !
 !                                                                      !
-!  Author:                                            Date:            !
+!  Author: J.Musser                                   Date: 16-May-11  !
 !  Reviewer:                                          Date:            !
 !                                                                      !
 !  Revision Number:                                                    !
 !  Purpose:                                                            !
 !  Author:                                            Date: dd-mmm-yy  !
 !  Reviewer:                                          Date: dd-mmm-yy  !
-!                                                                      !
-!  Literature/Document References:                                     !
-!                                                                      !
-!  Variables referenced: MMAX, IJK, T_g, T_s1, D_p, X_g, X_s, EP_g,    !
-!            P_g, HOR_g, HOR_s                                         !
-!                                                                      !
-!                                                                      !
-!  Variables modified: M, N, R_gp, R_sp, RoX_gc, RoX_sc, SUM_R_g,      !
-!                      SUM_R_s                                         !
-!                                                                      !
-!  Local variables:                                                    !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DES_RRATES(NP, INTERP_IJK, INTERP_WEIGHTS, FOCUS, &
@@ -97,49 +87,9 @@
 !......................................................................!
 ! Reaction specific variables:                                         !
 !``````````````````````````````````````````````````````````````````````!
-! Species indices of gas phase (for readability)
-!     Gas Species
-      INTEGER, PARAMETER :: N2  = 1   ! Nitrogen
-      INTEGER, PARAMETER :: O2  = 2   ! Oxygen
-      INTEGER, PARAMETER :: CO2 = 3   ! Carbon dioxide
-
-!     Solids Species
-!     - Phase 1
-      INTEGER, PARAMETER :: Carbon = 1
-      INTEGER, PARAMETER :: Ash = 2
-!     - Phase 2
-      INTEGER, PARAMETER :: Sand = 1
-
-! Concentration of gas phase species at particle (g/cm^3)
-      DOUBLE PRECISION Cg(NMAX(0))
-
-! Particle temperature
-      DOUBLE PRECISION Tp
-
-! Reaction Rates:
-!     a) Combustion:  C + O2 --> CO2
-      DOUBLE PRECISION RXNA, RXNAF, RXNAB
-
-! Binary diffusion coefficient of oxygen in air
-      DOUBLE PRECISION D_OXY
-
-! Surface area of particle
-      DOUBLE PRECISION A_S
-
-! Rate constats
-      DOUBLE PRECISION K_DIFF, K_A, K_EFF
-
-! Sherwood Number of a single particle
-      DOUBLE PRECISION Sh
-
-! Logical 
-      LOGICAL,SAVE:: FIRST_PASS = .TRUE.
-! Time to write output.
-      DOUBLE PRECISION, SAVE :: OUTPUT_TIME
 
 
-      LOGICAL NOISY
-
+                       
 !  Function subroutines
 !-----------------------------------------------
       LOGICAL COMPARE
@@ -169,21 +119,8 @@
       DES_R_sp(NP,:) = ZERO
       DES_R_sc(NP,:) = ZERO
 
-! Set the particle temperature
-      Tp = DES_T_s_NEW(NP)
 
-! Debug flag
-      NOISY = .FALSE.
-!      IF(PARTICLE_PHASE == 1 ) NOISY = .TRUE.
-      IF(NOISY)THEN
-         WRITE(*,"(//3X,A,I4,/3X,25('*'))")'NP: ',NP
-         WRITE(*,"(6X,A,A)")'CALLER: ', CALLER
-         WRITE(*,"(6X,A,I4)")'IJK: ',IJK
-         WRITE(*,"(6X,A,F14.8)")'Tp: ',Tp
-      ENDIF
-
-
-!  User input is required in sections 1,2,3.
+!  User input is required in sections A,1,2,3.
 
 !AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA!
 !                                                                      !
@@ -206,11 +143,6 @@
 ! Set the gas phase temperature. (REQUIRED - DO NOT DELETE)
       Tg = TO_PARTICLE(T_G)
 
-! Set the gas phase species values. (REQUIRED - DO NOT DELETE)
-      DO N=1,NMAX(0)
-         Cg(N) = TO_PARTICLE_2(X_g(:,N), ROP_g(:))
-      ENDDO
-
 
 !1111111111111111111111111111111111111111111111111111111111111111111111!
 !                                                                      !
@@ -228,46 +160,6 @@
 !                                                                      !
 !``````````````````````````````````````````````````````````````````````!
 
-! A) Combustion: 2C + O2 --> 2CO;  g/s
-      IF(PARTICLE_PHASE == 1 .AND. &
-        (DES_X_s(NP,Carbon) > ZERO) .AND. (Xg(O2) > ZERO)) THEN
-! Diffusion coefficient of O2 in air. (300K 1ATM) Mills, 1998 pp. 947
-         D_OXY = 0.188*10.0d0**(4) ! cm^2/sec
-! Surface area of unreacted core
-         A_S = 4.0d0*PI*CORE_RAD(NP)**2 ! cm^2
-! Calculate the Sherwood Number of the particle.
-         CALL N_Sh(Sh)
-! diffustion rate coefficient
-         k_DIFF = (Sh * D_OXY) / (2.0d0 * DES_RADIUS(NP))
-! rate of chemical reaction A :: Ea/R = 17950 K
-         k_A = 59500.0d0*Tp*EXP(-17950/Tp)
-! overall rate constant
-         k_EFF = 1.0d0 / (1.0d0/k_A + 1.0d0/k_DIFF)
-! Rate of forward reaction (first order)
-         RXNAF = A_S * k_EFF * Cg(O2) ! g/sec
-! No backward reaction
-         RXNAB = ZERO
-
-         IF(NOISY)THEN
-            WRITE(*,"(6X,A,F14.8)")'DES_RADIUS: ',DES_RADIUS(NP)
-            WRITE(*,"(6X,A,F14.8)")'N_Sh: ',Sh
-            WRITE(*,"(6X,A,F14.8)")'A_S: ',A_S
-            WRITE(*,"(6X,A,F14.8)")'k_DIFF: ',k_DIFF
-            WRITE(*,"(6X,A,F14.8)")'k_A: ',k_A
-            WRITE(*,"(6X,A,F14.8)")'k_EFF ',k_EFF
-         ENDIF
-
-      ELSE
-! Rate of forward reaction (first order)
-         RXNAF = ZERO
-! No backward reaction
-         RXNAB = ZERO
-      ENDIF
-
-      IF(NOISY)THEN
-         WRITE(*,"(6X,A,F14.8)")'RXNAF: ',RXNAF
-         WRITE(*,"(6X,A,F14.8)")'RXNAB: ',RXNAB
-      ENDIF
 
 
 !2222222222222222222222222222222222222222222222222222222222222222222222!
@@ -314,38 +206,11 @@
 !```````````````````````````````````````````````````````````````````````
       IF(CALLER == 'SOLIDS') THEN
 
-! CARBON
-!--------->
-         IF(DES_X_s(NP, CARBON) .GT. ZERO) DES_R_sc(NP, CARBON) = RXNAF
-
-         IF(NOISY) WRITE(*,"(6X,A,F14.8)")'DES_R_s: ',DES_R_sc(NP,CARBON)
            
 
 ! Gas species
 !```````````````````````````````````````````````````````````````````````
       ELSEIF(CALLER == 'GAS') THEN
-
-! O2
-!--------->
-         DES_R_gp(O2) = ZERO
-         IF(Xg(O2) .GT. ZERO) THEN
-            DES_RoX_gc(O2) = MW_g(O2) * &
-               (RXNAF / DES_MW_s(PARTICLE_PHASE,CARBON))
-         ELSE
-            DES_RoX_gc(O2) = 1.0D-9
-         ENDIF
-! CO2
-!---------->
-         DES_R_gp(CO2) = MW_g(CO2) * &
-            (RXNAF / DES_MW_s(PARTICLE_PHASE,CARBON))
-         DES_RoX_gc(CO2) = ZERO
-
-         IF(NOISY) THEN
-            WRITE(*,"(6X,A,F14.8)")'DES_R_gp(O2): ',DES_R_gp(O2)
-            WRITE(*,"(6X,A,F14.8)")'DES_RoX_gc(O2): ',DES_RoX_gc(O2)
-            WRITE(*,"(6X,A,F14.8)")'DES_R_gp(CO2): ',DES_R_gp(CO2)
-            WRITE(*,"(6X,A,F14.8)")'DES_RoX_gc(CO2): ',DES_RoX_gc(CO2)
-         ENDIF
 
       ENDIF
 
@@ -390,16 +255,8 @@
 !                                                                      !
 !``````````````````````````````````````````````````````````````````````!
 
-      IF(PARTICLE_PHASE == 1) THEN
-! Carbon from the particle combines with oxygen in the gas phase to
-! produce CO2. Thus, the rate of mass transfer from the particle to the
-! gas phase is equal to the rate of carbon consumption.
-         R_tmp(0, PARTICLE_PHASE) = RXNAF
-! All of the products of the reaction are transfered to the carbon
-! dioxide species in the gas phase.
-         X_tmp(0, PARTICLE_PHASE,:) = ZERO
-      	  X_tmp(0, PARTICLE_PHASE, CO2) = 1.0d0
-      ENDIF
+
+
 
 !======================================================================!
 ! <---------   No user input is required below this line   --------->  !
@@ -488,7 +345,7 @@
             HOR = ZERO
             DO N = 1, DES_NMAX(PARTICLE_PHASE)
                HOR = HOR + (DES_R_sp(NP,N) - DES_R_sc(NP,N)) * &
-                   DES_X_s(NP,N) * DES_CALC_H(NP,N)
+                   DES_X_s(NP, N) * DES_CALC_H(NP,N)
             ENDDO 
             HOR = HOR + RxH_xfr
             IF (UNITS == 'SI') HOR = 4183.925D0*HOR ! in J/kg K
@@ -516,19 +373,6 @@
       ENDIF
 
 
-      IF(CALLER == 'GAS') THEN
-
-         IF(FIRST_PASS) THEN
-            OUTPUT_TIME = 0.0d0
-            CALL WRITE_DES_RX
-            FIRST_PASS = .FALSE.
-         ENDIF
-
-         IF(OUTPUT_TIME .LE. S_TIME) THEN
-            CALL WRITE_DES_RX
-            OUTPUT_TIME = OUTPUT_TIME + 0.10d0
-         ENDIF
-      ENDIF
 
       RETURN
 
@@ -548,151 +392,6 @@
          ' (R_tmp) not specified',/1X,70('*')/) 
 
       CONTAINS
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!  Module name: WRITE_DES_RX                                           !
-!                                                                      !
-! 	THIS ROUTINE IS NOT DESIGNED TO BE CHECKED INTO CVS. IT IS STRICTLY !
-!  HERE FOR PRINTING MESSAGES USED FOR DEBUGGING AND V&V WORK.         !
-!                                                                      !
-!  Author: J.Musser                                                    !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE WRITE_DES_RX
-
-      USE run
-
-      IMPLICIT NONE
-
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-! file name
-      CHARACTER*64 :: FNAME
-! logical used for testing is the data file already exists
-      LOGICAL :: F_EXISTS
-! file unit for heat transfer data
-      INTEGER, PARAMETER :: RX_UNIT = 2035
-      INTEGER, PARAMETER :: RX2_UNIT = 2036
-      INTEGER, PARAMETER :: RX3_UNIT = 2037
-
-
-      FNAME = TRIM(RUN_NAME)//'_DES_RX.dat'
-      INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
-      IF (.NOT.F_EXISTS) THEN
-         OPEN(UNIT=RX_UNIT,FILE=FNAME,STATUS='NEW')
-      ELSE
-         OPEN(UNIT=RX_UNIT,FILE=FNAME,&
-            POSITION="APPEND",STATUS='OLD')
-      ENDIF
-      WRITE(RX_UNIT,*)S_TIME, SH, A_S, K_EFF
-      CLOSE(RX_UNIT)
-
-
-      FNAME = TRIM(RUN_NAME)//'_DES_RX2.dat'
-      INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
-      IF (.NOT.F_EXISTS) THEN
-         OPEN(UNIT=RX2_UNIT,FILE=FNAME,STATUS='NEW')
-      ELSE
-         OPEN(UNIT=RX2_UNIT,FILE=FNAME,&
-            POSITION="APPEND",STATUS='OLD')
-      ENDIF
-      WRITE(RX2_UNIT,*)DES_RoX_gc(O2), DES_R_gp(CO2)
-      CLOSE(RX2_UNIT)
-
-
-      FNAME = TRIM(RUN_NAME)//'_DES_RX3.dat'
-      INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
-      IF (.NOT.F_EXISTS) THEN
-         OPEN(UNIT=RX3_UNIT,FILE=FNAME,STATUS='NEW')
-      ELSE
-         OPEN(UNIT=RX3_UNIT,FILE=FNAME,&
-            POSITION="APPEND",STATUS='OLD')
-      ENDIF
-      WRITE(RX3_UNIT,*)S_TIME, HOR, RXNAF
-      CLOSE(RX3_UNIT)
-
-
-      END SUBROUTINE WRITE_DES_RX
-
-
-!----------------------------------------------------------------------!
-! Function: N_SH                                                       !
-!                                                                      !
-! Purpose: Calculate the Sherwood Number of a single particle.         !
-!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
-      SUBROUTINE N_Sh(Sh)
-
-      DOUBLE PRECISION, INTENT(OUT) :: Sh
-
-      INTEGER I, IMJK, IJMK, IJKM
-      DOUBLE PRECISION Sc1o3
-      DOUBLE PRECISION UGC, VGC, WGC
-      DOUBLE PRECISION VREL, N_Re, N_Sc
-
-! Slip velocity between the particle and fluid
-      DOUBLE PRECISION SLIP_VEL(3)
-
-! Functions
-!-----------------------------------------------      
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-
-! Initialize fluid cell variables
-      I =  PIJK(NP,1)
-      IJK   = PIJK(NP,4)
-      IMJK  = IM_OF(IJK)
-      IJMK  = JM_OF(IJK)
-      IJKM  = KM_OF(IJK)
-
-! Gas velocity in fluid cell
-      UGC = AVG_X_E(U_g(IMJK), U_g(IJK), I)
-      VGC = AVG_Y_N(V_g(IJMK), V_g(IJK))
-      WGC = AVG_Z_T(W_g(IJKM), W_g(IJK))
-
-! Calculate the slip velocity between the particle and fluid
-      SLIP_VEL(1) = UGC - DES_VEL_NEW(NP,1)
-      SLIP_VEL(2) = VGC - DES_VEL_NEW(NP,2)
-      IF(DIMN == 3) SLIP_VEL(3) = WGC - DES_VEL_NEW(NP,3)
-! Calculate the magnitude of the slip velocity
-      VREL = SQRT(DES_DOTPRDCT(SLIP_VEL,SLIP_VEL))
-
-! Schmidt Number
-      N_Sc = MU_g(IJK)/(RO_g(IJK)*D_OXY)
-! Reynods Number
-      N_Re = 2.0d0 * DES_RADIUS(NP) * VREL * RO_g(IJK) / MU_g(IJK)
-! Sherwood Number: Ranzy and Marshall, 1952
-      Sh = 2.0d0 + 0.60d0*(N_Re**(1.0d0/2.0d0))*(N_Sc**(1.0d0/3.0d0))
-
-      END SUBROUTINE N_Sh
-
-
-!----------------------------------------------------------------------!
-! Function: TO_PARTICLE_2                                              !
-!                                                                      !
-! Purpose: Interpolate scalar field variables to a particle's position.!
-!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
-      DOUBLE PRECISION FUNCTION TO_PARTICLE_2(FIELD1, FIELD2) RESULT(VALUE)
-! Field to be interpolated
-      DOUBLE PRECISION, INTENT(IN) :: FIELD1(DIMENSION_3)
-      DOUBLE PRECISION, INTENT(IN) :: FIELD2(DIMENSION_3)
-
-! Loop counter
-      INTEGER LC
-!     Initialize the result
-      VALUE = ZERO
-      IF(DES_INTERP_ON)THEN
-         DO LC=1, 2**DIMN
-            VALUE = VALUE + INTERP_WEIGHTS(LC)* &
-               (FIELD1(INTERP_IJK(LC))*FIELD2(INTERP_IJK(LC)))
-         ENDDO
-      ELSE
-! As a safe-guard, if DES_INTERP_ON = .FALSE., return the value of the
-! field variable associated with the fluid cell containing the
-! particle's center.
-         VALUE = FIELD1(PIJK(NP,4))*FIELD2(PIJK(NP,4))
-      ENDIF
-      RETURN
-      END FUNCTION TO_PARTICLE_2
 
 
 !----------------------------------------------------------------------!
