@@ -62,6 +62,17 @@
       if(dmp_log.and.debug_des) WRITE(unit_log,'(1X,A)')&
          '---------- START CHECK_DES_DATA ---------->'
 
+      IF (.NOT.DES_CONTINUUM_HYBRID) THEN
+! MMAX, D_p0 and RO_s are to be strictly associated with the continuum
+! model and are no longer to be used in the DEM. However, when not using
+! DES_CONTINUUM_HYBRID the current DEM code still assumes that the user
+! specifies MMAX, D_P0 and RO_S.  These are then linked to their
+! respective DES variables.  Note that valid values of MMAX, D_P0 and 
+! RO_s are ensured by check_data_04.
+         DES_MMAX = MMAX
+         DES_D_p0(:) = D_p0(:)
+         DES_RO_s(:) = RO_s(:)
+      ENDIF
 
       IF(COORDINATES == 'CYLINDRICAL') THEN
          if(dmp_log) WRITE (UNIT_LOG, 1000)

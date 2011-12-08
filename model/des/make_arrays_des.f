@@ -21,6 +21,9 @@
       use desmpi 
       use mpi_utility
       USE geometry 
+      USE des_ic
+      USE des_rxns
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -77,6 +80,8 @@
          omega_new(:,:)   = zero  
          des_pos_old(:,:) = des_pos_new(:,:)
          des_vel_old(:,:) = des_vel_new(:,:)
+! Set an initial radius for reacting particles
+         IF(ANY_DES_SPECIES_EQ) CORE_RAD(:) = DES_RADIUS(:)
       ELSEIF(RUN_TYPE == 'RESTART_1') THEN !  Read Restart
          IF(USE_COHESION) THEN
             if(dmp_log)write(unit_log,'(3X,A)') &
@@ -120,9 +125,18 @@
 !become less that zero if the particles outside the domain are not 
 !removed first 
 
+! J.Musser
+! Make the necessary calculations for the mass inflow/outflow boundary
+! conditions.  DTSOLID is needed so call is made after cfassign.f
+      CALL DES_INIT_BC
+
 !Pradeep: do_nsearch should be set before calling particle in cell  
       do_nsearch = .true.
       CALL PARTICLES_IN_CELL
+
+! J.Musser
+! Set initial conditions obtained from mfix.dat file. (ENERGY/SPECIES)
+      IF(RUN_TYPE == 'NEW' .AND. DES_IC_EXIST) CALL DES_SET_IC
       
 !rahul:
 !If cut-cell then remove the particles that are outside of the 

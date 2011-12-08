@@ -17,6 +17,8 @@ MODULE interpolation
   PRIVATE 
 
   PUBLIC:: set_interpolation_stencil,  set_interpolation_scheme, set_interpolation_pstencil, array_dot_product
+  PUBLIC:: INTERPOLATE_CC
+
 
   PUBLIC:: interpolator
   INTERFACE interpolator
@@ -80,6 +82,8 @@ MODULE interpolation
   DOUBLE PRECISION, DIMENSION(maxorder), TARGET :: xval, yval, zval
   DOUBLE PRECISION, DIMENSION(maxorder-1) :: dx, dy, dz
   DOUBLE PRECISION, DIMENSION(maxorder,maxorder,maxorder), TARGET :: weights
+
+
 
  CONTAINS
 
@@ -263,6 +267,328 @@ MODULE interpolation
     IF(PRESENT(ordernew)) ordernew = ordernewtmp
 
   END SUBROUTINE set_interpolation_stencil
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: SET_INTERPOLATION_STENCIL_CC                            !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!                                                                      !
+!  Author: J.Musser                                   Date:            !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE SET_INTERPOLATION_STENCIL_CC(NP, PC, IW, JS, KB, FOCUS)
+
+      USE discretelement
+      USE geometry
+      USE param1
+      
+      IMPLICIT NONE
+
+! I, J, K indices of the cell containing the particle.
+      INTEGER, INTENT(IN) :: PC(3)
+! particle number
+      INTEGER, INTENT(IN) :: NP
+
+! These values indicate the I,J,K starting indices used to select the
+! nodes for interpolation.
+      INTEGER, INTENT(OUT) :: IW, JS, KB
+! flag to tell whether local debugging was called in drag_fgs      
+      LOGICAL, INTENT(IN) :: FOCUS
+
+!-----------------------------------------------
+! Local variables
+!----------------------------------------------- 
+! indices
+      INTEGER I, J, K, II, JJ, KK
+      INTEGER I_SHIFT, J_SHIFT, K_SHIFT, IE, JN, KTP
+
+! Determine the shift index necessary to account for the quadrant of
+! the fluid cell where the particle is located.
+      IF( DES_POS_NEW(NP,1) <= XE(PC(1))-HALF*DX(PC(1)))THEN
+         I_SHIFT = 0
+      ELSE
+         I_SHIFT = 1
+      ENDIF
+      IF( DES_POS_NEW(NP,2) <= YN(PC(2))-HALF*DY(PC(2)))THEN
+         J_SHIFT = 0
+      ELSE
+         J_SHIFT = 1
+      ENDIF
+      IF(DIMN == 2) THEN
+         K_SHIFT = 0
+      ELSE
+         IF( DES_POS_NEW(NP,3) <= ZT(PC(3))-HALF*DZ(PC(3)))THEN
+            K_SHIFT = 0
+         ELSE
+            K_SHIFT = 1
+         ENDIF
+      ENDIF
+
+! Calculate the west and east I indices to be used.
+!-----------------------------------------------------------------------
+! Restrict the west I index to a minimum of 1
+      IW = MAX( 1, (PC(1) + I_SHIFT-1))
+! Restrict the east I index to a maximum of IMAX1
+      IE = MIN( IMAX2, PC(1) + I_SHIFT)
+      IF(.NOT.DES_PERIODIC_WALLS_X) THEN 
+! If the YZ walls are not periodic, ensure that the indices used for
+! interpolation stay within the domain. This may require a shift in the
+! indices for cells near the walls and interpolation schemes of high
+! order.
+         IF (IE .EQ. IMAX2) IW = IMAX2 - 1
+      ELSE 
+! If the YZ walls are periodic, the starting index can been less than 1.
+! This is accounted for when filling GSTENCIL. corrected later.
+         IF (IW .EQ. 1) IW = IE - 1
+      ENDIF
+
+! Calculate the south and north J indices to be used.
+!-----------------------------------------------------------------------
+! Restrict the south J index to a minimum of 1
+      JS = MAX( 1, PC(2)+ J_SHIFT - 1)
+! Restrict the north J index to a maximum of JMAX1
+      JN = MIN( JMAX2, PC(2) + J_SHIFT)
+      IF(.NOT.DES_PERIODIC_WALLS_Y) THEN
+! Shift indices for non periodic boundaries if needed.
+         IF (JN .EQ. JMAX2) JS = JMAX2 - 1
+      ELSE
+! Shift indices for periodic boundaries if needed.
+         IF (JS .EQ. 1 ) JS = JN - 1
+      ENDIF
+
+! Calculate the bottom and top K indices to be used.
+!-----------------------------------------------------------------------
+      IF(DIMN == 2) THEN
+! If 2 dimension simulation, set the bottom index to 1.
+         KB = 1
+      ELSE
+! Restric the bottom K index to a minimum  of 1
+         KB = MAX( 1, PC(3)+K_SHIFT-1)
+! Restric the top K index to a maximum  of KMAX1
+         KTP = MIN( KMAX2, PC(3) + K_SHIFT)
+         IF(.NOT.DES_PERIODIC_WALLS_Z) THEN 
+! Shift indices for non periodic boundaries if needed.
+            IF (KTP .EQ. KMAX1) KB = KTP - 1
+         ELSE
+! Shift indices for periodic boundaries if needed.
+            IF (KB .EQ. 1 ) KB = KTP - 1
+         ENDIF
+      ENDIF
+
+      RETURN
+      END SUBROUTINE SET_INTERPOLATION_STENCIL_CC
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  SUBROUTINE: INTERPOLATE_CC                                          !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!  Author: J.Musser                                   Date: 13-Jan-11  !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE INTERPOLATE_CC(NP, INTP_IJK, INTP_WEIGHTS, FOCUS)
+
+      USE compar
+      USE discretelement
+      USE geometry
+      USE indices
+      USE param
+      USE param1
+      
+      IMPLICIT NONE
+
+! Particle index number
+      INTEGER, INTENT(IN)  :: NP
+! Local debugging flag
+      LOGICAL, INTENT(IN)  :: FOCUS
+
+! IJK values of cells. These have already been adjusted for periodic
+! and non-periodic boundary conditions.
+      INTEGER, INTENT(INOUT)  :: INTP_IJK(2**DIMN)
+! Weights associated with the IJK cells in INTP_IJK
+      DOUBLE PRECISION, INTENT(INOUT)  :: INTP_WEIGHTS(2**DIMN)
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------      
+
+! Starting grid indices used in interpolation
+      INTEGER IW, JS, KB
+
+! Weights associated with the nodes used for interpolation. These values
+! only need to be returned with interpolating routine is invoked from
+! the continuum phase.
+      DOUBLE PRECISION, POINTER :: WEIGHTS_CC (:,:,:)
+! indices
+      INTEGER I, J, K, II, JJ, KK, IJK
+! Loop counter
+      INTEGER LC
+! geometery and field stencils for cell-center interpolations
+      DOUBLE PRECISION STNCL_GEMTY (2, 2, MAX(1, 2*(DIMN-2)), DIMN)
+      DOUBLE PRECISION STNCL_FEILD (2, 2, MAX(1, 2*(DIMN-2)))
+! Generic value. In the original interpolation routine, this would be
+! the value that was interpolated within the code. However, this routine
+! only needs to return the IJK indicies of the cells and the interpolation
+! weights. In order to satisfy the function interface of "interpolator"
+! is to send it is dummy value.
+      DOUBLE PRECISION INTERP_scalar
+! Interpolatin scheme. It is 'hard coded' so that only a second order
+! Lagrange polynomial is used. Higher order isn't necessary.
+      CHARACTER*5 :: INTP_SCHM = 'LPI'
+!-----------------------------------------------  
+
+      INCLUDE 'function.inc'
+
+! Obtain the starting cell index values for interpolation around
+! particle NP
+      CALL SET_INTERPOLATION_STENCIL_CC(NP, PIJK(NP,1:3), IW, JS, KB, &
+         FOCUS)
+
+      LC = 0
+      DO K = 1, (3-DIMN)*1+(DIMN-2)*2
+         DO J = 1, 2
+            DO I = 1, 2
+! increment the loop counter
+               LC = LC + 1
+! Shift loop indicies to the correct values
+               II = IW + I-1
+               JJ = JS + J-1
+               KK = KB + K-1
+! Adjust for boundary conditions.
+               IF (DES_PERIODIC_WALLS_X) THEN
+                  IF(II .LT. IMIN1)THEN
+! Shift from the east side of the domain to the west side.
+                     II = IMAX2 + (II-IMIN1)
+                     STNCL_GEMTY(I,J,K,1) = XE(II) - HALF*DX(II) - XLENGTH
+                  ELSEIF(II .GT. IMAX1) THEN
+! Shift for the west side of the domain to the east side.
+                     II = II - IMAX
+                     STNCL_GEMTY(I,J,K,1) = XLENGTH + XE(II) - HALF*DX(II)
+                  ELSE
+! No shift needed. Use actual node location.
+                     STNCL_GEMTY(I,J,K,1) = XE(II) - HALF*DX(II)
+                  ENDIF
+               ELSE
+! If the YZ plane is not periodic, calculate the position of the node. 
+                  STNCL_GEMTY(I,J,K,1) = XE(II) - HALF*DX(II)
+! Due to the restrictions on non periodic 1 <= II and II <= IMAX2.
+! Shift the II east/west to reflect the cell value at the boundary.
+                  IF(II .EQ. 1)THEN
+                     II = IMIN1
+                  ELSEIF(II .EQ. IMAX2)THEN
+                     II = IMAX1
+                  ENDIF
+               ENDIF
+               IF (DES_PERIODIC_WALLS_Y) THEN
+                  IF(JJ .LT. JMIN1) THEN
+! Shift from the north side of the domain to the south side.
+                     JJ = JMAX2 + (JJ-JMIN1)
+                     STNCL_GEMTY(I,J,K,2) = YN(JJ) - HALF*DY(JJ) - YLENGTH
+                  ELSEIF(JJ .GT. JMAX1) THEN
+! Shift from the south side of the domain to the north side.
+                     JJ = JJ - JMAX
+                     STNCL_GEMTY(I,J,K,2) = YLENGTH + YN(JJ) - HALF*DY(JJ)
+                  ELSE
+! No shift needed. Use the nodes actual position.
+                     STNCL_GEMTY(I,J,K,2) = YN(JJ) - HALF*DY(JJ)
+                  ENDIF
+               ELSE
+! If the XZ plane is not periodic, calculate the position of the node. 
+                  STNCL_GEMTY(I,J,K,2) = YN(JJ) - HALF*DY(JJ)
+! Due to the restrictions on non periodic 1 <= II and II <= IMAX2.
+! Shift the II east/west to reflect the cell value at the boundary.
+                  IF(JJ .EQ. 1)THEN
+                     JJ = JMIN1
+                  ELSEIF(JJ .EQ. JMAX2)THEN
+                     JJ = JMAX1
+                  ENDIF
+               ENDIF
+               IF (DIMN .EQ. 3) THEN
+                  IF (DES_PERIODIC_WALLS_Z) THEN
+                     IF(KK .LT. KMIN1) THEN
+! Shift from the top side of the domain to the bottom side.
+                        KK = KMAX1 + (KK-KMIN1)
+                        STNCL_GEMTY(I,J,K,3) = ZT(KK) - HALF*DZ(KK) - ZLENGTH
+                     ELSEIF(KK .GT. KMAX1) THEN
+! Shift from the bottom side of the domain to the top side.
+                        KK = KK - KMAX
+                        STNCL_GEMTY(I,J,K,3) = ZLENGTH + ZT(KK) - HALF*DZ(KK)
+                     ELSE
+! No shift needed. Use actual node location.
+                        STNCL_GEMTY(I,J,K,3) = ZT(KK) - HALF*DZ(KK)
+                     ENDIF
+                  ELSE
+! If the XY plane is not periodic, calculate the position of the node. 
+                     STNCL_GEMTY(I,J,K,3) = ZT(KK) - HALF*DZ(KK)
+! Due to the restrictions on non periodic 1 <= II and II <= IMAX2.
+! Shift the II east/west to reflect the cell value at the boundary.
+                     IF(KK .EQ. 1)THEN
+                        KK = KMIN1
+                     ELSEIF(KK .EQ. KMAX2)THEN
+                        KK = KMAX1
+                     ENDIF
+                  ENDIF
+               ELSE
+                  KK = 1
+               ENDIF
+! Store the IJK in the interp array
+               INTP_IJK(LC) = FUNIJK(II,JJ,KK)
+! Assign a dummy value for the feild variable
+               STNCL_FEILD(I,J,K) = 1.0d0
+            ENDDO
+         ENDDO
+      ENDDO
+
+! Call the interpolation routine. If the call to this routine originates
+! from the continuum phase, the interpolation weights are of interest.
+! Otherwise, the interpolated scalar value (INTERP_scalar) is desired.
+      IF(DIMN.EQ.2) THEN 
+         CALL interpolator( STNCL_GEMTY(1:2, 1:2, 1, 1:DIMN), &
+            STNCL_FEILD(1:2, 1:2, 1), DES_POS_NEW(NP,1:2), INTERP_scalar,&
+            2, INTP_SCHM, WEIGHTS_CC )
+      ELSE 
+         CALL interpolator( STNCL_GEMTY(1:2, 1:2, 1:2, 1:DIMN), &
+            STNCL_FEILD(1:2, 1:2, 1:2), DES_POS_NEW(NP,:), INTERP_scalar,&
+            2, INTP_SCHM, WEIGHTS_CC )  
+      ENDIF
+! Store interpolation weights in an array for calling routine.
+      LC = 0
+      DO K = 1, (3-DIMN)*1+(DIMN-2)*2
+         DO J = 1, 2
+            DO I = 1, 2
+! increment the loop counter
+               LC = LC + 1
+               INTP_WEIGHTS(LC) = WEIGHTS_CC(I,J,K)
+            ENDDO
+         ENDDO
+      ENDDO
+
+! Local debugging
+      IF(FOCUS .AND. DEBUG_DES)THEN
+         WRITE(*,"(3X,A,1X,A3,4X,A,I2)") &
+            'Interpolation Scheme:','LPI','Interpolation Order:',2
+         WRITE(*,"(3X,A,I5,3X,A,I6)")'Particle: ',NP,'IJK: ',PIJK(NP,4)
+         WRITE(*,"(/5X,'|',29('-'),'|')")
+         WRITE(*,"(5X,A)")'| Fluid Cell | Interp. Weight |'
+         WRITE(*,"(5X,'|',12('-'),'|',16('-'),'|')")
+         DO LC = 1, 2**DIMN
+            WRITE(*,"(5X,'|',2X,I8,2X,'|',2X,F12.10,2X,'|')")&
+               INTP_IJK(LC), INTP_WEIGHTS(LC)
+         ENDDO
+         WRITE(*,"(5X,'|',29('-'),'|'//)")
+      ENDIF ! Local Debugging
+
+      END SUBROUTINE INTERPOLATE_CC
+
+
+
 
   SUBROUTINE set_interpolation_pstencil(pc, ib,ie,jb,je,kb,ke, isch&
        &,dimprob, ordernew)

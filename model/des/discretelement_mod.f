@@ -243,7 +243,15 @@
       DOUBLE PRECISION pvel_mean, PVEL_StDev
 ! Constant input pressure gradient (currently unused?)
       DOUBLE PRECISION pgrad(3)
-            
+
+! Particle properties
+! particle diameters
+      DOUBLE PRECISION DES_D_P0 (DIM_M)
+! particle densities      
+      DOUBLE PRECISION DES_RO_s (DIM_M)
+! number of solids phases
+      INTEGER DES_MMAX
+
 ! Particle-particle and Particle-wall contact parameters
 !     Spring contants      
       DOUBLE PRECISION KN, KN_W  !Normal

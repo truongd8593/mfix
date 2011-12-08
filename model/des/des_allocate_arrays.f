@@ -23,6 +23,9 @@
       use desgrid 
       use desmpi
       USE mfix_pic
+      Use des_thermo
+      Use des_rxns
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -132,9 +135,6 @@
 ! J.Musser : Dynamic Particle Info
 ! pradeep: for parallel processing added another index (from 3 to 4)for ghost  
       ALLOCATE( PEA (NPARTICLES, 4) )
-
-! J.Musser: Allocate necessary arrays for discrete mass inlets      
-      IF(DES_BCMI /= 0 .OR. DES_BCMO /=0) CALL ALLOCATE_DES_MIO
 
 ! volume of nodes 
       ALLOCATE(DES_VOL_NODE(DIMENSION_3))
@@ -337,6 +337,69 @@
 ! Matrix location of particle 
          Allocate(  PART_GRID (NPARTICLES,4) )
       ENDIF
+
+! BEGIN Thermodynamic Allocation ---------------------------------------
+      IF(DES_ENERGY_EQ)THEN
+
+! Particle temperature
+         Allocate( DES_T_s_OLD( NPARTICLES ) )
+         Allocate( DES_T_s_NEW( NPARTICLES ) )
+! Specific heat
+         Allocate( DES_C_PS( NPARTICLES ) )
+! Species mass fractions comprising a particle. This array may not be
+! needed for all thermo problems.
+         Allocate( DES_X_s( NPARTICLES, MAX_DES_NMAX) )
+! Convection Specific arrays
+         IF(DES_CONV_EQ) &
+            Allocate( Qcv( NPARTICLES ) )
+! Conduction Specific arrays
+         IF(DES_COND_EQ_PP) &
+            Allocate( Qpp( NPARTICLES ) )
+! Conduction Specific arrays
+         IF(DES_COND_EQ_PFP) &
+            Allocate( Qpfp( NPARTICLES ) )
+! Radiation Specific arrays
+         IF(DES_RADI_EQ) &
+            Allocate( Qrd( NPARTICLES ) )
+! Stores number of neighbors based on neighbor search
+         IF(FIND_THERMO_NBRHD) &
+            Allocate( THERMO_NBRHD( NPARTICLES, MAXNEIGHBORS ) )
+! Allocate the history variables for Adams-Bashforth integration
+         IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') &
+            Allocate( Qtotal_OLD( NPARTICLES ) )
+      ENDIF
+!------------------------------------------ End Thermodynamic Allocation
+
+
+! BEGIN Species Allocation ---------------------------------------------
+      IF(ANY_DES_SPECIES_EQ)THEN
+! Rate of solids phase production for each species
+         Allocate( DES_R_sp( NPARTICLES, MAX_DES_NMAX) )
+! Rate of solids phase consumption for each species
+         Allocate( DES_R_sc( NPARTICLES, MAX_DES_NMAX) )
+! Allocate the history variables for Adams-Bashforth integration
+         IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') THEN
+! Rate of chnage of particle mass
+            Allocate( dMdt_OLD( NPARTICLES ) )
+! Rate of chnage of particle mass percent species
+            Allocate( dXdt_OLD( NPARTICLES, MAX_DES_NMAX) )
+         ENDIF
+
+! Energy generation from reaction (cal/sec)
+         Allocate( Qint( NPARTICLES ) )
+         IF( TRIM(REACTION_MODEL) == 'SHRINKING_CORE')THEN
+! Radius of unreacted core
+            Allocate( CORE_RAD( NPARTICLES ) )
+! Density of unreacted core
+            Allocate( CORE_RHO( NPARTICLES ) )
+! Allocate the history variables for Adams-Bashforth integration
+            IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') &
+! Rate of chnage of radius of unreacted core
+               Allocate( dRdt_OLD( NPARTICLES ) )
+         ENDIF
+      ENDIF
+!------------------------------------------------ End Species Allocation
+
       
       if(dmp_log.and.debug_des)write(unit_log,'(1X,A)')&
          '<---------- END DES_ALLOCATE_ARRAYS ----------'

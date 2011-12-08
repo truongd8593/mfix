@@ -45,7 +45,13 @@
       DOUBLE PRECISION DES_BC_U_s(DIMENSION_BC)
       DOUBLE PRECISION DES_BC_V_s(DIMENSION_BC)
       DOUBLE PRECISION DES_BC_W_s(DIMENSION_BC)
-
+! Temperature of incoming particles. Required for DES_ENERGY_EQ
+      DOUBLE PRECISION DES_BC_T_s (DIMENSION_IC, DIM_M)
+! Species mass fractions of incoming particles. Required for
+! DES_SPECIES_EQ.
+      DOUBLE PRECISION DES_BC_X_s (DIMENSION_IC, DIM_M, DIM_N_s)
+! Density of unreacted, shrinking core
+      DOUBLE PRECISION DES_BC_CORE_Rho(DIMENSION_IC, DIM_M)
 ! Macroscopic density of solids phases in a specified boundary region
       DOUBLE PRECISION DES_BC_ROP_s (DIMENSION_BC, DIM_M)
 

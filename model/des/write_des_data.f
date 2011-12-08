@@ -90,6 +90,8 @@
       use compar 
       use desmpi
       use cdist
+      Use des_thermo
+
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -287,6 +289,22 @@
             write (des_unit,"(15x,es12.6)") (real(2.d0*drootbuf(l)),l=1,lglocnt)
             write(des_unit,"(12x,a)") '</DataArray>'
          endif         
+
+!-----------------------
+! Write the temperature data.
+         IF((MYPE .EQ. PE_IO) .AND. DES_ENERGY_EQ) THEN
+            WRITE(DES_UNIT,"(12X,A)")&
+               '<DataArray type="Float32" Name="Temperature" format="ascii">'
+            PC = 1
+            DO L = 1, MAX_PIP
+               IF(PC .GT. PIP) EXIT
+               IF(.NOT.PEA(L,1)) CYCLE
+               WRITE (DES_UNIT,"(15X,ES12.6)") (real(DES_T_s_NEW(L)))
+               PC = PC + 1
+            END DO
+! Write end tag
+            WRITE(DES_UNIT,"(12X,A)") '</DataArray>'
+        ENDIF
 
 ! Write velocity data.
          ltemp_array = 0.0 

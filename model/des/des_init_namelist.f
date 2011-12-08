@@ -15,6 +15,9 @@
       USE discretelement
       USE mfix_pic
       USE des_bc
+      USE des_ic
+      USE des_thermo
+      USE des_rxns
       
       IMPLICIT NONE
 !-----------------------------------------------
@@ -125,7 +128,21 @@
       DES_BC_MASSFLOW_s(:,:) = UNDEFINED
       DES_BC_TYPE(:) = UNDEFINED_C
       DES_BC_ROP_s(:,:) = UNDEFINED
+      DES_BC_CORE_Rho(:,:) = UNDEFINED
+      DES_BC_T_s(:,:) = UNDEFINED
+      DES_BC_X_s(:,:,:) = UNDEFINED
       FORCE_ORD_BC = .FALSE.
+
+! J.Musser : des particle initial conditions
+      DES_IC_X_w(:) = UNDEFINED
+      DES_IC_X_e(:) = UNDEFINED
+      DES_IC_Y_s(:) = UNDEFINED
+      DES_IC_Y_n(:) = UNDEFINED
+      DES_IC_Z_b(:) = UNDEFINED
+      DES_IC_Z_t(:) = UNDEFINED
+      DES_IC_T_s(:,:) = UNDEFINED
+      DES_IC_X_s(:,:,:) = UNDEFINED
+      DES_IC_CORE_Rho(:,:) = UNDEFINED
 
       DTSOLID = UNDEFINED
       DTSOLID_FACTOR = 0.1D0
@@ -161,5 +178,30 @@
       FRIC_EXP_PIC = 2.5
       FRIC_NON_SING_FAC = 1E-07
       
+! J.Musser : des energy equations
+      DES_ENERGY_EQ = .FALSE.
+      DES_CONV_EQ = .TRUE.
+      DES_COND_EQ = .TRUE.
+      DES_RADI_EQ = .FALSE.
+      DES_COND_EQ_PFP = .TRUE.
+      DES_COND_EQ_PP  = .TRUE.
+
+      DES_CONV_CORR = 'RANZ_1952'
+
+      DES_MIN_COND_DIST = UNDEFINED
+      FLPC = 1.0d0/5.0d0
+      RDPC = 3.0d0
+
+      DES_K_s0(:) = UNDEFINED
+      DES_C_ps0(:) = UNDEFINED
+      DES_Em(:) = UNDEFINED
+
+! J.Musser : species equations (reactive chemistry)
+      DES_SPECIES_EQ(:) = .FALSE.
+      DES_NMAX(:) = UNDEFINED_I 
+      DES_MW_s(:DIM_M, :DIM_N_s) = UNDEFINED
+      DES_SPECIES_NAME(:) = UNDEFINED_C
+      REACTION_MODEL = 'SHRINKING_CORE'
+
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST

@@ -13,6 +13,7 @@
       USE discretelement
       USE geometry
       USE des_bc
+      USE des_thermo
 
       IMPLICIT NONE
 
@@ -250,6 +251,9 @@
                               NEIGHBOURS(PNO,NLIM) = LL
                            ENDIF
                         ENDIF  !contact condition
+! Determine if the particle is in the thermodynamic neighborhood of
+! the specified particle.
+                        IF(FIND_THERMO_NBRHD) CALL THERMO_NBR(PNO,LL,DIST)
 
                      ENDIF  !PNO.GT.LL
 

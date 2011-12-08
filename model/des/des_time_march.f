@@ -50,11 +50,15 @@
       USE cutcell 
       USE mppic_wallbc
       USE mfix_pic
+      Use des_thermo
+      Use des_rxns
+      Use interpolation
+
       IMPLICIT NONE
 !------------------------------------------------
 ! Local variables
 !------------------------------------------------
-      INTEGER NN, FACTOR, NP, IJK, I, J, K, BCV_I, LL
+      INTEGER NN, FACTOR, NP, IJK, I, J, K, BCV_I, LL, PC
 
 !     Local variables to keep track of time when dem restart and des
 !     write data need to be written when des_continuum_coupled is F
@@ -75,8 +79,15 @@
 !     temp
       DOUBLE PRECISION xpos,ypos, zpos, NORM_CF(3), DIST
 
+      INTEGER INTERP_IJK(2**DIMN)
+
+      DOUBLE PRECISION INTERP_WEIGHTS(2**DIMN)
       
       DOUBLE PRECISION :: DES_KE_VEC(DIMN)
+
+! Identifies that the indicated particle is of interest for debugging
+      LOGICAL FOCUS
+
 !-----------------------------------------------
 
       INCLUDE 'function.inc'
@@ -279,8 +290,65 @@
                !Update particle position, velocity            
             ENDIF
             
+!---------------------------------------------------------------------------->>>
+! Loop over all particles
+            PC = 1
+            DO NP = 1, MAX_PIP
+               IF(PC .GT. PIP) EXIT
+               IF(.NOT.PEA(NP,1)) CYCLE
+! Reset the debug flag
+               FOCUS = .FALSE.
+! Set the debugging flag
+               IF(DEBUG_DES .AND. NP.EQ.FOCUS_PARTICLE) FOCUS = .TRUE.
+
+! Calculate time dependent physical properties
+               CALL DES_PHYSICAL_PROP(NP, FOCUS)
+
+! Calculate cell-center interpolation weights and determine the 
+! associated IJK values for the cells accounting for boundary
+! conditions.
+               IF(DES_INTERP_ON .AND. &
+                  (ANY_DES_SPECIES_EQ .OR. DES_CONV_EQ)) THEN
+                  INTERP_IJK(:) = -1
+                  INTERP_WEIGHTS(:) = ZERO
+                  CALL INTERPOLATE_CC(NP, INTERP_IJK, INTERP_WEIGHTS, &
+                     FOCUS)
+               ENDIF
+! Calculate thermodynamic energy exchange
+               IF(DES_ENERGY_EQ) CALL CALC_THERMO_DES(NP, &
+                  INTERP_IJK, INTERP_WEIGHTS, FOCUS)
+
+! Calculate reaction rates and interphase mass transfer
+               IF(ANY_DES_SPECIES_EQ) CALL DES_RRATES(NP, &
+                  INTERP_IJK, INTERP_WEIGHTS, FOCUS, 'SOLIDS')
+! Increment the particle counter
+               PC = PC + 1
+            ENDDO
+!----------------------------------------------------------------------------<<<
 
             CALL CFNEWVALUES
+
+!---------------------------------------------------------------------------->>>
+! Loop over all particles
+            PC = 1
+            DO NP = 1, MAX_PIP
+               IF(PC .GT. PIP) EXIT
+               IF(.NOT.PEA(NP,1)) CYCLE
+! Reset the debug flag
+               FOCUS = .FALSE.
+! Set the debugging flag
+               IF(DEBUG_DES .AND. NP.EQ.FOCUS_PARTICLE) FOCUS = .TRUE.
+! Update particle temperature
+               IF(DES_ENERGY_EQ) &
+                  CALL DES_THERMO_NEWVALUES(NP, FOCUS)
+! Update particle from reactive chemistry process.
+               IF(DES_SPECIES_EQ(PIJK(NP,5))) &
+                  CALL DES_REACTION_MODEL(NP, FOCUS)
+! Increment the particle counter
+               PC = PC + 1
+            ENDDO
+!----------------------------------------------------------------------------<<<
+
 
 ! Impose the wall-particle boundary condition for mp-pic case 
             IF(MPPIC) CALL MPPIC_APPLY_WALLBC 
@@ -289,7 +357,7 @@
 ! For systems with inlets/outlets check to determine if a particle has
 ! fully entered or exited the domain.  If the former, remove the status
 ! of 'new' and if the latter, remove the particle.
-            IF (DES_MI) CALL DES_CHECK_PARTICLE
+            IF (DES_MIO) CALL DES_CHECK_PARTICLE
 ! pradeep: set do_nsearch before calling particle_in_Cell
             IF(NN.EQ.1 .OR. MOD(NN,NEIGHBOR_SEARCH_N).EQ.0) do_nsearch =.true. 
 

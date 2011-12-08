@@ -16,6 +16,8 @@
       USE param1
       USE discretelement
       use desgrid
+      Use des_thermo
+
       IMPLICIT NONE
 
 
@@ -24,6 +26,14 @@
       PPOS(:,:) = DES_POS_NEW(:,:)
       NEIGHBOURS(:,:) = -1
       NEIGHBOURS(:,1) = 0
+
+! J.Musser
+! Stores number of neighbors based on neighbor search
+      IF(FIND_THERMO_NBRHD) THEN
+         THERMO_NBRHD(:,:) = -1
+         THERMO_NBRHD(:,1) = 0
+      ENDIF
+
 
       IF (DES_NEIGHBOR_SEARCH.EQ.1) THEN
          CALL NSQUARE

@@ -22,6 +22,8 @@
       USE run
       use desgrid 
       use desmpi 
+      USE des_thermo
+      USE des_rxns
  
       IMPLICIT NONE
 !-----------------------------------------------
@@ -114,6 +116,36 @@
 
 !pradeep for parallel processin 
       iglobal_id = 0
+
+! J.Musser: Energy and Species Equation Arrays
+      IF(DES_ENERGY_EQ)THEN
+         DES_T_s_OLD(:) = UNDEFINED
+         DES_T_s_NEW(:) = UNDEFINED
+         DES_C_PS(:) = UNDEFINED
+         DES_X_s(:,:) = ZERO
+         IF(DES_CONV_EQ) Qcv(:) = ZERO
+         IF(DES_COND_EQ_PP) Qpp(:) = ZERO
+         IF(DES_COND_EQ_PFP) Qpfp(:) = ZERO
+         IF(DES_RADI_EQ) Qrd(:) = ZERO
+
+         IF(FIND_THERMO_NBRHD) THEN
+            THERMO_NBRHD(:,:) = -1
+            THERMO_NBRHD(:,1) = 0
+         ENDIF
+         IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') &
+            Qtotal_OLD(:) = ZERO
+      ENDIF
+
+      IF(ANY_DES_SPECIES_EQ)THEN
+         DES_R_sp(:,:) = ZERO
+         DES_R_sc(:,:) = ZERO
+         Qint(:) = ZERO
+         IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') THEN
+            dMdt_OLD(:) = ZERO
+            dXdt_OLD(:,:) = ZERO
+            dRdt_OLD(:) = ZERO
+         ENDIF
+      ENDIF
 
       RETURN
       END SUBROUTINE DES_INIT_ARRAYS 

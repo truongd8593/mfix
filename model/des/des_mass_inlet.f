@@ -28,6 +28,8 @@
       USE physprop
       use desgrid 
       use mpi_utility 
+      Use des_thermo
+      Use des_rxns
  
       IMPLICIT NONE
 
@@ -43,6 +45,7 @@
       INTEGER NP              ! Particle id. number
       INTEGER BCV_I, BCV      ! Boundary Condition ID
       INTEGER M               ! Mass phase of new particle
+      INTEGER N               ! Mass phase species index
 
 ! this variable temporarily stores the number ids of all particles 
 ! in the ijk location of interest
@@ -217,6 +220,38 @@
             PVOL(NP) = (4.0d0/3.0d0) * PI * DES_RADIUS(NP)**3
             PMASS(NP) = PVOL(NP) * RO_Sol(NP)
             OMOI(NP) = 5.d0 / (2.d0 * PMASS(NP) * DES_RADIUS(NP)**2) 
+
+! If solving the energy equations, set the temperature
+            IF(ANY_DES_SPECIES_EQ  .OR. DES_ENERGY_EQ ) THEN
+               DES_T_s_NEW(NP) = DES_BC_T_s(BCV_I,M)
+               DES_T_s_OLD(NP) = DES_T_s_NEW(NP)
+            ENDIF
+
+! Set the mass fractions of the incoming particle.
+            IF(ANY_DES_SPECIES_EQ  .OR. (DES_ENERGY_EQ .AND. &
+               DES_C_PS0(M) /= UNDEFINED) ) THEN
+               DO N=1,DES_NMAX(M)
+                  IF(DES_BC_X_s(BCV_I,M,N) /= UNDEFINED) THEN
+                     DES_X_s(NP,N) = DES_BC_X_s(BCV_I,M,N)
+                  ELSE
+                     DES_X_s(NP,N) = ZERO
+                  ENDIF
+               ENDDO
+            ENDIF
+
+! Set the core density of the incoming partilce
+            IF(DES_SPECIES_EQ(M) .AND. TRIM(REACTION_MODEL) == &
+               'SHRINKING_CORE') THEN
+               IF(DES_BC_CORE_RHO(BCV_I,M) /= UNDEFINED) THEN
+                  CORE_Rho(NP) = DES_BC_CORE_Rho(BCV_I,M)
+               ELSE
+                  CORE_Rho(NP) = RO_Sol(NP)
+               ENDIF
+               CORE_RAD(NP) = DES_RADIUS(NP)
+            ENDIF
+
+! Calculate time dependent physical properties
+            CALL DES_PHYSICAL_PROP(NP, .FALSE.)
 
 ! Set the initial position values based on mass inlet class
             DES_POS_NEW(NP,:) = lpar_pos
