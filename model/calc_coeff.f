@@ -29,6 +29,7 @@
       USE compar
       USE ur_facs 
       USE run
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -239,6 +240,9 @@
       USE rxns
       USE funits 
       USE compar
+      USE discretelement
+      USE des_rxns
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -262,8 +266,9 @@
          ELSE
             IER = 0 
             CALL RRATES (IER)              !rxns defined in rrates.f 
-
-            IF(IER .EQ. 1) THEN            !error: rrates.f has not been modified
+! If rrates.f has not been modified and there are no discrete (DES)
+! reactions, flag error and exit.
+            IF(IER .EQ. 1 .AND. .NOT.ANY_DES_SPECIES_EQ) THEN
               CALL START_LOG 
               IF(DMP_LOG)WRITE (UNIT_LOG, 1000)
               CALL END_LOG 
@@ -275,6 +280,9 @@
         !In case mass exchage w/o chemical rxn (e.g., evaporation) occur
         CALL RRATES (IER)           
       ENDIF 
+
+      IF(DISCRETE_ELEMENT .AND. ANY_DES_SPECIES_EQ) &
+         CALL CALC_RRATE_DES
 
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: CALC_COEFF',/,&

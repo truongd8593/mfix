@@ -92,6 +92,9 @@
       USE mfix_pic
       USE usr
       USE des_bc
+      USE des_ic
+      USE des_thermo
+      USE des_rxns
 !DISTIO
       USE cdist
 !=======================================================================

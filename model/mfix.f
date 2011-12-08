@@ -414,10 +414,11 @@
 ! This is because it is best to initialize DES once all the fluid and
 ! geometry information has been obtained and initial fields set. 
 ! RG 2/15/2011         
-
          CALL CHECK_DES_DATA
+         CALL CHECK_DES_RXNS
+         CALL CHECK_DES_THERMO
+         CALL CHECK_DES_IC
          CALL CHECK_DES_BC
-         
          CALL MAKE_ARRAYS_DES
          !STOP
       ELSE

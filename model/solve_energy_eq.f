@@ -52,6 +52,7 @@
       Use tmp_array1, VxGama => ARRAYm1
       USE compar   
       USE discretelement 
+      USE des_thermo
       USE mflux     
       IMPLICIT NONE
 !-----------------------------------------------
@@ -147,6 +148,9 @@
 
          ENDIF 
       END DO 
+! Account for heat transfer between the discrete particles and the gas phase.
+     IF( DES_CONV_EQ ) CALL DES_Hgm(S_C, S_P)
+
 
       CALL CONV_DIF_PHI (T_g, K_G, DISCRETIZE(6), U_G, V_G, W_G, CpxFlux_E, CpxFlux_N, CpxFlux_T, 0, A_M&
          , B_M, IER) 
