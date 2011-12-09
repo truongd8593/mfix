@@ -65,8 +65,11 @@ mfix.exe : \
     MCHEM.mod \
     DES_BC.mod \
     DESGRID.mod \
+    DES_IC.mod \
     DESMPI.mod \
     DESMPI_WRAPPER.mod \
+    DES_RXNS.mod \
+    DES_THERMO.mod \
     DISCRETELEMENT.mod \
     INTERPOLATION.mod \
     MFIX_PIC.mod \
@@ -398,6 +401,8 @@ mfix.exe : \
     unlinked_interaction_eval.$(OBJ_EXT) \
     update_search_grids.$(OBJ_EXT) \
     calc_force_des.$(OBJ_EXT) \
+    calc_rrate_des.$(OBJ_EXT) \
+    calc_thermo_des.$(OBJ_EXT) \
     cell_near_wall.$(OBJ_EXT) \
     cfassign.$(OBJ_EXT) \
     cffctowall.$(OBJ_EXT) \
@@ -411,6 +416,9 @@ mfix.exe : \
     cfwallposvel.$(OBJ_EXT) \
     check_des_bc.$(OBJ_EXT) \
     check_des_data.$(OBJ_EXT) \
+    check_des_ic.$(OBJ_EXT) \
+    check_des_rxns.$(OBJ_EXT) \
+    check_des_thermo.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
     des_check_particle.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
@@ -419,6 +427,14 @@ mfix.exe : \
     des_init_bc.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
     des_mass_inlet.$(OBJ_EXT) \
+    des_physical_prop.$(OBJ_EXT) \
+    des_reaction_model.$(OBJ_EXT) \
+    des_rrates.$(OBJ_EXT) \
+    des_set_ic.$(OBJ_EXT) \
+    des_thermo_cond.$(OBJ_EXT) \
+    des_thermo_conv.$(OBJ_EXT) \
+    des_thermo_newvalues.$(OBJ_EXT) \
+    des_thermo_rad.$(OBJ_EXT) \
     des_time_march.$(OBJ_EXT) \
     des_wallbc_preprocessing.$(OBJ_EXT) \
     drag_fgs.$(OBJ_EXT) \
@@ -433,6 +449,7 @@ mfix.exe : \
     particles_in_cell.$(OBJ_EXT) \
     quadtree.$(OBJ_EXT) \
     read_des_restart.$(OBJ_EXT) \
+    thermo_nbr.$(OBJ_EXT) \
     walledgecontact.$(OBJ_EXT) \
     wallfacecontact.$(OBJ_EXT) \
     wallnodecontact.$(OBJ_EXT) \
@@ -848,6 +865,8 @@ mfix.exe : \
     unlinked_interaction_eval.$(OBJ_EXT) \
     update_search_grids.$(OBJ_EXT) \
     calc_force_des.$(OBJ_EXT) \
+    calc_rrate_des.$(OBJ_EXT) \
+    calc_thermo_des.$(OBJ_EXT) \
     cell_near_wall.$(OBJ_EXT) \
     cfassign.$(OBJ_EXT) \
     cffctowall.$(OBJ_EXT) \
@@ -861,18 +880,32 @@ mfix.exe : \
     cfwallposvel.$(OBJ_EXT) \
     check_des_bc.$(OBJ_EXT) \
     check_des_data.$(OBJ_EXT) \
+    check_des_ic.$(OBJ_EXT) \
+    check_des_rxns.$(OBJ_EXT) \
+    check_des_thermo.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
     des_bc_mod.$(OBJ_EXT) \
     des_check_particle.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     desgrid_mod.$(OBJ_EXT) \
+    des_ic_mod.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
     des_init_bc.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
     des_mass_inlet.$(OBJ_EXT) \
     desmpi_mod.$(OBJ_EXT) \
     desmpi_wrapper_mod.$(OBJ_EXT) \
+    des_physical_prop.$(OBJ_EXT) \
+    des_reaction_model.$(OBJ_EXT) \
+    des_rrates.$(OBJ_EXT) \
+    des_rxns_mod.$(OBJ_EXT) \
+    des_set_ic.$(OBJ_EXT) \
+    des_thermo_cond.$(OBJ_EXT) \
+    des_thermo_conv.$(OBJ_EXT) \
+    des_thermo_mod.$(OBJ_EXT) \
+    des_thermo_newvalues.$(OBJ_EXT) \
+    des_thermo_rad.$(OBJ_EXT) \
     des_time_march.$(OBJ_EXT) \
     des_wallbc_preprocessing.$(OBJ_EXT) \
     discretelement_mod.$(OBJ_EXT) \
@@ -893,6 +926,7 @@ mfix.exe : \
     randomno_mod.$(OBJ_EXT) \
     read_des_restart.$(OBJ_EXT) \
     sendrecvnode_mod.$(OBJ_EXT) \
+    thermo_nbr.$(OBJ_EXT) \
     walledgecontact.$(OBJ_EXT) \
     wallfacecontact.$(OBJ_EXT) \
     wallnodecontact.$(OBJ_EXT) \
@@ -1229,8 +1263,12 @@ DESGRID.mod : ./des/desgrid_mod.f \
             DISCRETELEMENT.mod \
             CONSTANT.mod \
             DESMPI_WRAPPER.mod \
+            DES_THERMO.mod \
             des/desgrid_functions.inc                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/desgrid_mod.f 
+DES_IC.mod : ./des/des_ic_mod.f \
+            PARAM.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_ic_mod.f 
 DESMPI.mod : ./des/desmpi_mod.f \
             PARALLEL_MPI.mod \
             MPI_UTILITY.mod \
@@ -1251,6 +1289,12 @@ DESMPI_WRAPPER.mod : ./des/desmpi_wrapper_mod.f \
             MPI_UTILITY.mod \
             COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/desmpi_wrapper_mod.f 
+DES_RXNS.mod : ./des/des_rxns_mod.f \
+            PARAM.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_rxns_mod.f 
+DES_THERMO.mod : ./des/des_thermo_mod.f \
+            PARAM.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_thermo_mod.f 
 DISCRETELEMENT.mod : ./des/discretelement_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -1259,7 +1303,11 @@ INTERPOLATION.mod : ./des/interpolation_mod.f \
             CONSTANT.mod \
             DISCRETELEMENT.mod \
             GEOMETRY.mod \
-            PARAM.mod 
+            PARAM1.mod \
+            COMPAR.mod \
+            INDICES.mod \
+            PARAM.mod \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/interpolation_mod.f 
 MFIX_PIC.mod : ./des/mfix_pic_mod.f \
             PARAM.mod \
@@ -1653,7 +1701,9 @@ calc_coeff.$(OBJ_EXT) : calc_coeff.f \
             FUNITS.mod \
             COMPAR.mod \
             UR_FACS.mod \
-            RUN.mod 
+            RUN.mod \
+            DISCRETELEMENT.mod \
+            DES_RXNS.mod 
 calc_d.$(OBJ_EXT) : calc_d.f \
             PARAM.mod \
             PARAM1.mod \
@@ -1772,7 +1822,10 @@ calc_h.$(OBJ_EXT) : calc_h.f \
             PARAM1.mod \
             PHYSPROP.mod \
             FLDVAR.mod \
-            CONSTANT.mod 
+            CONSTANT.mod \
+            DES_RXNS.mod \
+            DES_THERMO.mod \
+            DISCRETELEMENT.mod 
 calc_k_cp.$(OBJ_EXT) : calc_k_cp.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2201,6 +2254,7 @@ check_data_30.$(OBJ_EXT) : check_data_30.f \
             FUNITS.mod \
             COMPAR.mod \
             MPI_UTILITY.mod \
+            DISCRETELEMENT.mod \
             function.inc                                                
 check_mass_balance.$(OBJ_EXT) : check_mass_balance.f \
             PARAM.mod \
@@ -3321,6 +3375,8 @@ read_database.$(OBJ_EXT) : read_database.f \
             COMPAR.mod \
             RXNS.mod \
             FUNITS.mod \
+            DISCRETELEMENT.mod \
+            DES_RXNS.mod \
             mfix_directory_path.inc                                     
 read_namelist.$(OBJ_EXT) : read_namelist.f \
             PARAM.mod \
@@ -3349,6 +3405,9 @@ read_namelist.$(OBJ_EXT) : read_namelist.f \
             MFIX_PIC.mod \
             USR.mod \
             DES_BC.mod \
+            DES_IC.mod \
+            DES_THERMO.mod \
+            DES_RXNS.mod \
             CDIST.mod \
             QUADRIC.mod \
             CUTCELL.mod \
@@ -3764,6 +3823,7 @@ solve_energy_eq.$(OBJ_EXT) : solve_energy_eq.f \
             TMP_ARRAY1.mod \
             COMPAR.mod \
             DISCRETELEMENT.mod \
+            DES_THERMO.mod \
             MFLUX.mod \
             radtn1.inc                                                   \
             ep_s1.inc                                                    \
@@ -5503,6 +5563,19 @@ calc_force_des.$(OBJ_EXT) : ./des/calc_force_des.f \
             COMPAR.mod \
             CONSTANT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_force_des.f 
+calc_rrate_des.$(OBJ_EXT) : ./des/calc_rrate_des.f \
+            DISCRETELEMENT.mod \
+            INTERPOLATION.mod \
+            PARAM1.mod \
+            RXNS.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_rrate_des.f 
+calc_thermo_des.$(OBJ_EXT) : ./des/calc_thermo_des.f \
+            DES_THERMO.mod \
+            DISCRETELEMENT.mod \
+            FLDVAR.mod \
+            INTERPOLATION.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_thermo_des.f 
 cell_near_wall.$(OBJ_EXT) : ./des/cell_near_wall.f \
             DISCRETELEMENT.mod \
             PARAM.mod \
@@ -5645,6 +5718,37 @@ check_des_data.$(OBJ_EXT) : ./des/check_des_data.f \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_data.f 
+check_des_ic.$(OBJ_EXT) : ./des/check_des_ic.f \
+            DES_IC.mod \
+            DISCRETELEMENT.mod \
+            PARAM.mod \
+            PARAM1.mod \
+            DES_THERMO.mod \
+            DES_RXNS.mod \
+            COMPAR.mod \
+            CONSTANT.mod \
+            FUNITS.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            PHYSPROP.mod \
+            RUN.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_ic.f 
+check_des_rxns.$(OBJ_EXT) : ./des/check_des_rxns.f \
+            COMPAR.mod \
+            DES_RXNS.mod \
+            DISCRETELEMENT.mod \
+            FUNITS.mod \
+            RUN.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_rxns.f 
+check_des_thermo.$(OBJ_EXT) : ./des/check_des_thermo.f \
+            COMPAR.mod \
+            DES_THERMO.mod \
+            DISCRETELEMENT.mod \
+            FUNITS.mod \
+            INTERPOLATION.mod \
+            PHYSPROP.mod \
+            RUN.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_thermo.f 
 des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             PARAM.mod \
             PARAM1.mod \
@@ -5659,6 +5763,8 @@ des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             DESGRID.mod \
             DESMPI.mod \
             MFIX_PIC.mod \
+            DES_THERMO.mod \
+            DES_RXNS.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_allocate_arrays.f 
 des_check_particle.$(OBJ_EXT) : ./des/des_check_particle.f \
@@ -5707,7 +5813,9 @@ des_init_arrays.$(OBJ_EXT) : ./des/des_init_arrays.f \
             DES_BC.mod \
             RUN.mod \
             DESGRID.mod \
-            DESMPI.mod 
+            DESMPI.mod \
+            DES_THERMO.mod \
+            DES_RXNS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_arrays.f 
 des_init_bc.$(OBJ_EXT) : ./des/des_init_bc.f \
             COMPAR.mod \
@@ -5727,6 +5835,9 @@ des_init_namelist.$(OBJ_EXT) : ./des/des_init_namelist.f \
             DISCRETELEMENT.mod \
             MFIX_PIC.mod \
             DES_BC.mod \
+            DES_IC.mod \
+            DES_THERMO.mod \
+            DES_RXNS.mod \
             des/desnamelist.inc                                         
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_init_namelist.f 
 des_mass_inlet.$(OBJ_EXT) : ./des/des_mass_inlet.f \
@@ -5741,8 +5852,98 @@ des_mass_inlet.$(OBJ_EXT) : ./des/des_mass_inlet.f \
             PHYSPROP.mod \
             DESGRID.mod \
             MPI_UTILITY.mod \
+            DES_THERMO.mod \
+            DES_RXNS.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_mass_inlet.f 
+des_physical_prop.$(OBJ_EXT) : ./des/des_physical_prop.f \
+            DES_RXNS.mod \
+            DES_THERMO.mod \
+            DISCRETELEMENT.mod \
+            FUNITS.mod \
+            PARAM.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            RUN.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_physical_prop.f 
+des_reaction_model.$(OBJ_EXT) : ./des/des_reaction_model.f \
+            CONSTANT.mod \
+            DES_RXNS.mod \
+            DES_THERMO.mod \
+            DISCRETELEMENT.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_reaction_model.f 
+des_rrates.$(OBJ_EXT) : ./des/des_rrates.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            FLDVAR.mod \
+            RXNS.mod \
+            ENERGY.mod \
+            GEOMETRY.mod \
+            RUN.mod \
+            INDICES.mod \
+            PHYSPROP.mod \
+            CONSTANT.mod \
+            FUNITS.mod \
+            TOLERANC.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            USR.mod \
+            DES_THERMO.mod \
+            DES_RXNS.mod \
+            DISCRETELEMENT.mod \
+            INTERPOLATION.mod \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                 \
+            usrnlst.inc                                                 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_rrates.f 
+des_set_ic.$(OBJ_EXT) : ./des/des_set_ic.f \
+            COMPAR.mod \
+            DES_THERMO.mod \
+            DISCRETELEMENT.mod \
+            DES_IC.mod \
+            DES_RXNS.mod \
+            FUNITS.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_set_ic.f 
+des_thermo_cond.$(OBJ_EXT) : ./des/des_thermo_cond.f \
+            CONSTANT.mod \
+            DES_THERMO.mod \
+            DISCRETELEMENT.mod \
+            FLDVAR.mod \
+            FUNITS.mod \
+            PARAM1.mod \
+            PHYSPROP.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_thermo_cond.f 
+des_thermo_conv.$(OBJ_EXT) : ./des/des_thermo_conv.f \
+            CONSTANT.mod \
+            DES_THERMO.mod \
+            DISCRETELEMENT.mod \
+            FLDVAR.mod \
+            INTERPOLATION.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            COMPAR.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            fun_avg2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_thermo_conv.f 
+des_thermo_newvalues.$(OBJ_EXT) : ./des/des_thermo_newvalues.f \
+            DES_THERMO.mod \
+            DES_RXNS.mod \
+            DISCRETELEMENT.mod \
+            PARAM1.mod \
+            PHYSPROP.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_thermo_newvalues.f 
+des_thermo_rad.$(OBJ_EXT) : ./des/des_thermo_rad.f \
+            CONSTANT.mod \
+            DES_THERMO.mod \
+            DISCRETELEMENT.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_thermo_rad.f 
 des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
             PARAM.mod \
             PARAM1.mod \
@@ -5773,6 +5974,9 @@ des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
             CUTCELL.mod \
             MPPIC_WALLBC.mod \
             MFIX_PIC.mod \
+            DES_THERMO.mod \
+            DES_RXNS.mod \
+            INTERPOLATION.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
@@ -5880,7 +6084,8 @@ grid_based_neighbor_search.$(OBJ_EXT) : ./des/grid_based_neighbor_search.f \
             PARAM1.mod \
             DISCRETELEMENT.mod \
             GEOMETRY.mod \
-            DES_BC.mod 
+            DES_BC.mod \
+            DES_THERMO.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/grid_based_neighbor_search.f 
 make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             PARAM1.mod \
@@ -5892,6 +6097,8 @@ make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             DESMPI.mod \
             MPI_UTILITY.mod \
             GEOMETRY.mod \
+            DES_IC.mod \
+            DES_RXNS.mod \
             CDIST.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/make_arrays_des.f 
@@ -5937,13 +6144,15 @@ neighbour.$(OBJ_EXT) : ./des/neighbour.f \
             PARAM1.mod \
             DISCRETELEMENT.mod \
             DESGRID.mod \
+            DES_THERMO.mod \
             COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/neighbour.f 
 nsquare.$(OBJ_EXT) : ./des/nsquare.f \
             PARAM1.mod \
             DISCRETELEMENT.mod \
             GEOMETRY.mod \
-            DES_BC.mod 
+            DES_BC.mod \
+            DES_THERMO.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/nsquare.f 
 octree.$(OBJ_EXT) : ./des/octree.f \
             RUN.mod \
@@ -6005,6 +6214,10 @@ read_des_restart.$(OBJ_EXT) : ./des/read_des_restart.f \
             CDIST.mod \
             MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/read_des_restart.f 
+thermo_nbr.$(OBJ_EXT) : ./des/thermo_nbr.f \
+            DES_THERMO.mod \
+            DISCRETELEMENT.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/thermo_nbr.f 
 walledgecontact.$(OBJ_EXT) : ./des/walledgecontact.f \
             DISCRETELEMENT.mod \
             PARAM.mod \
@@ -6065,6 +6278,7 @@ write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
             COMPAR.mod \
             DESMPI.mod \
             CDIST.mod \
+            DES_THERMO.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   
