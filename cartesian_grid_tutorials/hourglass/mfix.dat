@@ -1,5 +1,5 @@
 ! Run-control section                                                           
-                                                                               
+! Testing CVS                                                                               
   RUN_NAME              = 'HG'
   DESCRIPTION           = '2D hourglass - No Slip Wall'
   RUN_TYPE              = 'NEW'             
