@@ -196,3 +196,6 @@ usr_input_mod.f
 ../model/qmomk/qmom_kinetic_equation_mod.f
 ../model/qmomk/qmomk_parameters_mod.f
 ../model/qmomk/qmomk_init_namelist.f
+../model/des/des_ic_mod.f
+../model/des/des_thermo_mod.f
+../model/des/des_rxns_mod.f

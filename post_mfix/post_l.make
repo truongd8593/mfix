@@ -76,6 +76,9 @@ post_mfix : \
     mfix_pic.mod \
     qmom_kinetic_equation.mod \
     qmomk_parameters.mod \
+    des_ic.mod \
+    des_thermo.mod \
+    des_rxns.mod \
     machine.$(OBJ_EXT) \
     allocate_arrays.$(OBJ_EXT) \
     any_more_data.$(OBJ_EXT) \
@@ -400,6 +403,9 @@ post_mfix : \
     qmom_kinetic_equation_mod.$(OBJ_EXT) \
     qmomk_parameters_mod.$(OBJ_EXT) \
     qmomk_init_namelist.$(OBJ_EXT) \
+    des_ic_mod.$(OBJ_EXT) \
+    des_thermo_mod.$(OBJ_EXT) \
+    des_rxns_mod.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
 ambm.mod : ../model/ambm_mod.f \
@@ -700,6 +706,15 @@ qmom_kinetic_equation.mod : ../model/qmomk/qmom_kinetic_equation_mod.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/qmomk/qmom_kinetic_equation_mod.f 
 qmomk_parameters.mod : ../model/qmomk/qmomk_parameters_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/qmomk/qmomk_parameters_mod.f 
+des_ic.mod : ../model/des/des_ic_mod.f \
+            param.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_ic_mod.f 
+des_thermo.mod : ../model/des/des_thermo_mod.f \
+            param.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_thermo_mod.f 
+des_rxns.mod : ../model/des/des_rxns_mod.f \
+            param.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_rxns_mod.f 
 machine.$(OBJ_EXT) : machine.f \
             machine.mod \
             param.mod \
@@ -1313,6 +1328,9 @@ read_namelist.$(OBJ_EXT) : ../model/read_namelist.f \
             mfix_pic.mod \
             usr.mod \
             des_bc.mod \
+            des_ic.mod \
+            des_thermo.mod \
+            des_rxns.mod \
             cdist.mod \
             quadric.mod \
             cutcell.mod \
@@ -1673,6 +1691,9 @@ des_init_namelist.$(OBJ_EXT) : ../model/des/des_init_namelist.f \
             discretelement.mod \
             mfix_pic.mod \
             des_bc.mod \
+            des_ic.mod \
+            des_thermo.mod \
+            des_rxns.mod \
             des/desnamelist.inc                                         
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_init_namelist.f 
 ornl_header.$(OBJ_EXT) : ornl_header.f \
