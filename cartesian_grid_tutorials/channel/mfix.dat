@@ -1,6 +1,6 @@
  ! Skewed Channel Simulation                
  ! Run-control section                                                 
- 
+ ! testing CVS 
    RUN_NAME              = 'SC20'           
    DESCRIPTION           = 'Gas flow in a skewed channel (20 Deg) - NSW'
    RUN_TYPE              = 'new'             
