@@ -430,6 +430,10 @@
          PRINT_DES_DATA = .FALSE.
          MPPIC = .FALSE. 
          DES_ONEWAY_COUPLED = .false. 
+         USE_COHESION = .FALSE.
+         SQUARE_WELL = .FALSE.
+         VAN_DER_WAALS = .FALSE. 
+	 WALL_VDW_OUTER_CUTOFF = ZERO ! for the algorithm to work without cohesion
       ENDIF
 
 !DISTIO

@@ -324,18 +324,22 @@
 ! COHESION      
 ! Square-well potential parameters
       IF(USE_COHESION) THEN 
-         Allocate(  WELL_WIDTH (NPARTICLES) )
-         Allocate(  WELL_DEPTH (NPARTICLES) )
-! Does particle have at least one linked partner
-         Allocate(  IS_LINKED (NPARTICLES) )
-! Does particle have at least one aggloerated partner
-         Allocate(  IS_AGGLOMERATED (NPARTICLES) )
-! Array of linked partners
-         Allocate(  LINKS (NPARTICLES, MAXNEIGHBORS) )
-! Array of agglomerated partners
-         Allocate(  AGGS (NPARTICLES, MAXNEIGHBORS) )
+         IF(SQUARE_WELL)THEN ! these are used only with square-well method
+           Allocate(  WELL_WIDTH (NPARTICLES) )
+           Allocate(  WELL_DEPTH (NPARTICLES) )
 ! Matrix location of particle 
-         Allocate(  PART_GRID (NPARTICLES,4) )
+           Allocate(  PART_GRID (NPARTICLES,4) )
+         ENDIF
+         Allocate(  FCohesive (NPARTICLES,DIMN) )
+         Allocate(  PostCohesive (NPARTICLES) )
+! Does particle have at least one linked partner
+!         Allocate(  IS_LINKED (NPARTICLES) )       ! array not used
+! Does particle have at least one aggloerated partner
+!         Allocate(  IS_AGGLOMERATED (NPARTICLES) )       ! array not used
+! Array of linked partners
+!         Allocate(  LINKS (NPARTICLES, MAXNEIGHBORS) )       ! array not used
+! Array of agglomerated partners
+!         Allocate(  AGGS (NPARTICLES, MAXNEIGHBORS) )       ! array not used
       ENDIF
 
 ! BEGIN Thermodynamic Allocation ---------------------------------------

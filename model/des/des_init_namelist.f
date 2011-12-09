@@ -40,6 +40,8 @@
       TSUJI_DRAG = .FALSE.
       DES_INTG_METHOD = 'EULER'
       USE_COHESION = .FALSE.
+      SQUARE_WELL = .FALSE.
+      VAN_DER_WAALS = .FALSE.
       DES_CONTINUUM_HYBRID = .FALSE.
 
       DES_NEIGHBOR_SEARCH = 1
@@ -132,6 +134,18 @@
       DES_BC_T_s(:,:) = UNDEFINED
       DES_BC_X_s(:,:,:) = UNDEFINED
       FORCE_ORD_BC = .FALSE.
+! for cohesion
+      MASTER_WELL_DEPTH = UNDEFINED
+      MASTER_WALL_WELL_DEPTH = UNDEFINED
+      RADIUS_RATIO = UNDEFINED
+      WALL_RADIUS_RATIO = UNDEFINED
+      HAMAKER_CONSTANT = UNDEFINED
+      WALL_HAMAKER_CONSTANT = UNDEFINED
+      VDW_OUTER_CUTOFF = UNDEFINED
+      VDW_INNER_CUTOFF = UNDEFINED
+      WALL_VDW_OUTER_CUTOFF = ZERO ! important to set to zero in case of no cohesion.
+      WALL_VDW_INNER_CUTOFF = UNDEFINED
+      Asperities = ZERO
 
 ! J.Musser : des particle initial conditions
       DES_IC_X_w(:) = UNDEFINED

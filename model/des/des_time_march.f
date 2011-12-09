@@ -110,8 +110,8 @@
             if(do_nsearch) CALL NEIGHBOUR         
 
          
-! COHESION INITIALIZE
-            IF(USE_COHESION)THEN
+! COHESION INITIALIZE ! for VDW this is now done in make_arrays_des.f
+            IF(USE_COHESION .AND. .NOT.VAN_DER_WAALS)THEN
                CALL INITIALIZE_COHESION_PARAMETERS
                CALL INITIALIZE_COH_INT_SEARCH
             ENDIF

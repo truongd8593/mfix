@@ -83,11 +83,6 @@
 ! Set an initial radius for reacting particles
          IF(ANY_DES_SPECIES_EQ) CORE_RAD(:) = DES_RADIUS(:)
       ELSEIF(RUN_TYPE == 'RESTART_1') THEN !  Read Restart
-         IF(USE_COHESION) THEN
-            if(dmp_log)write(unit_log,'(3X,A)') &
-               'Restart 1 is not implemented with DES-COHESION'
-            CALL MFIX_EXIT(myPE)
-         END IF 
          call des_read_restart 
          if(dmp_log)write(unit_log,'(3X,A,G17.8)') 'DES_RES file read at Time= ', TIME
          imax_global_id = maxval(iglobal_id(1:pip))
@@ -100,6 +95,12 @@
          if(dmp_log)write(unit_log,'(3X,A)') 'Restart 2 is not implemented with DES'
          CALL MFIX_EXIT(myPE)
       ENDIF
+      IF(USE_COHESION .AND. VAN_DER_WAALS) THEN ! calculate these for all run types.
+         SURFACE_ENERGY = HAMAKER_CONSTANT/&
+                 (24d0*PI*VDW_INNER_CUTOFF*VDW_INNER_CUTOFF)
+         WALL_SURFACE_ENERGY = WALL_HAMAKER_CONSTANT/&
+                 (24d0*PI*WALL_VDW_INNER_CUTOFF*WALL_VDW_INNER_CUTOFF)
+      END IF 
 !set the global id for walls. this is required to handle particle-wall contact
       do lface = 1,dimn*2
          iglobal_id(max_pip+lface) = -lface 

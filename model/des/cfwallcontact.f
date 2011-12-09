@@ -37,6 +37,8 @@
       DOUBLE PRECISION :: LXE, LXW, LYN, LYS, LZT, LZB
 ! local variables 
       DOUBLE PRECISION :: A, OMEGA, OOMEGA2, ASINOMEGAT 
+! local variables: distance between particle surface and wall
+      DOUBLE PRECISION :: DistApart
 
 !-----------------------------------------------        
       ! assign temporary local variables for quick reference
@@ -82,12 +84,14 @@
          ENDIF         
       ENDIF
 
-
+!!!!!!!!!!!! modified for cohesive forces !!!!!!!!!!
+! Note that if no cohesion is used WALL_VDW_OUTER_CUTOFF = zero.
 ! west wall (X)
       IF(WALL.EQ.1) THEN
-         IF( (XPOS-LXW) <= DES_RADIUS(L) ) THEN
+         DistApart = XPOS-LXW-DES_RADIUS(L)
+	 IF( DistApart <= WALL_VDW_OUTER_CUTOFF ) THEN
             IF(DES_MO_X)THEN
-               CALL DES_MASS_OUTLET(L,'XW',WALLCONTACT)
+               CALL DES_MASS_OUTLET(L,'XW',WALLCONTACT,DistApart)
             ELSE
                WALLCONTACT = 1
             ENDIF
@@ -95,9 +99,10 @@
 
 ! east wall (X)
       ELSEIF(WALL.EQ.2) THEN
-         IF( (LXE-XPOS) <= DES_RADIUS(L) ) THEN
+         DistApart = LXE-XPOS-DES_RADIUS(L)
+         IF( DistApart <= WALL_VDW_OUTER_CUTOFF ) THEN
             IF(DES_MO_X)THEN
-               CALL DES_MASS_OUTLET(L,'XE',WALLCONTACT)
+               CALL DES_MASS_OUTLET(L,'XE',WALLCONTACT,DistApart)
             ELSE
                WALLCONTACT = 1
             ENDIF
@@ -105,9 +110,10 @@
 
 ! south wall (Y)
       ELSEIF(WALL.EQ.3) THEN
-         IF( (YPOS-(LYS+ASINOMEGAT)) <= DES_RADIUS(L) ) THEN
+         DistApart = YPOS-(LYS+ASINOMEGAT)-DES_RADIUS(L)
+         IF( DistApart <= WALL_VDW_OUTER_CUTOFF ) THEN
             IF(DES_MO_Y)THEN
-               CALL DES_MASS_OUTLET(L,'YS',WALLCONTACT)
+               CALL DES_MASS_OUTLET(L,'YS',WALLCONTACT,DistApart)
             ELSE
                WALLCONTACT = 1
             ENDIF
@@ -115,9 +121,10 @@
 
 ! north wall (Y)
       ELSEIF(WALL.EQ.4) THEN
-         IF( (LYN-YPOS) <= DES_RADIUS(L) ) THEN
+         DistApart = LYN-YPOS-DES_RADIUS(L)
+         IF( DistApart <= WALL_VDW_OUTER_CUTOFF ) THEN
             IF(DES_MO_Y)THEN
-               CALL DES_MASS_OUTLET(L,'YN',WALLCONTACT)
+               CALL DES_MASS_OUTLET(L,'YN',WALLCONTACT,DistApart)
             ELSE
                WALLCONTACT = 1
             ENDIF
@@ -125,9 +132,10 @@
 
 ! bottom wall (Z)
       ELSEIF(WALL.EQ.5) THEN
-         IF( (ZPOS-LZB) <= DES_RADIUS(L) ) THEN
+         DistApart = ZPOS-LZB-DES_RADIUS(L)
+         IF( DistApart <= WALL_VDW_OUTER_CUTOFF ) THEN
             IF(DES_MO_Z)THEN
-               CALL DES_MASS_OUTLET(L,'ZB',WALLCONTACT)
+               CALL DES_MASS_OUTLET(L,'ZB',WALLCONTACT,DistApart)
             ELSE
                WALLCONTACT = 1
             ENDIF
@@ -135,9 +143,10 @@
 
 ! top wall (Z)
       ELSEIF(WALL.EQ.6) THEN
-         IF( (LZT-ZPOS) <= DES_RADIUS(L) ) THEN
+         DistApart = LZT-ZPOS-DES_RADIUS(L)
+         IF( DistApart <= WALL_VDW_OUTER_CUTOFF ) THEN
             IF(DES_MO_Z)THEN
-               CALL DES_MASS_OUTLET(L,'ZT',WALLCONTACT)
+               CALL DES_MASS_OUTLET(L,'ZT',WALLCONTACT,DistApart)
             ELSE
                WALLCONTACT = 1
             ENDIF
@@ -150,7 +159,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_MASS_OUTLET(NP, BCC, WC)                           !
+!  Module name: DES_MASS_OUTLET(NP, BCC, WC, dist)                     !
 !                                                                      !
 !  Purpose:                                                            !
 !  Check if the particle's position overlaps the outlet position 
@@ -163,7 +172,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-      SUBROUTINE DES_MASS_OUTLET(NP, BCC, WC)
+      SUBROUTINE DES_MASS_OUTLET(NP, BCC, WC, dist)
 
       USE des_bc
       USE discretelement
@@ -180,6 +189,7 @@
 
       DOUBLE PRECISION XPOS, YPOS, ZPOS ! particle x,y,z position
       DOUBLE PRECISION RAD ! particle radius
+      DOUBLE PRECISION dist ! distance between particle surface and walls
  
       CHARACTER*2 BCC   ! Boundary condition class (Xw,Xe,Ys,Yn,Zb,Zt)
 
@@ -214,14 +224,14 @@
                   IF(DES_BC_Y_s(BCV) < (YPOS - RAD) .AND. &
                      DES_BC_Y_n(BCV) > (YPOS + RAD) )THEN
                      WC = 0
-                     PEA(NP,3) = .TRUE.
+                     IF(dist <= ZERO) PEA(NP,3) = .TRUE.
                   ENDIF
                ENDIF
                IF(BCC == 'YS' .OR. BCC == 'YN' )THEN
                   IF(DES_BC_X_w(BCV) < (XPOS - RAD) .AND. &
                      DES_BC_X_e(BCV) > (XPOS + RAD) )THEN
                      WC = 0
-                     PEA(NP,3) = .TRUE.
+                     IF(dist <= ZERO) PEA(NP,3) = .TRUE.
                   ENDIF
                ENDIF
 
@@ -233,7 +243,7 @@
                      DES_BC_Z_b(BCV) < (ZPOS - RAD) .AND. &
                      DES_BC_Z_t(BCV) > (ZPOS + RAD) )THEN
                      WC = 0
-                     PEA(NP,3) = .TRUE.
+                     IF(dist <= ZERO) PEA(NP,3) = .TRUE.
                   ENDIF
                ENDIF
                IF(BCC == 'YS' .OR. BCC == 'YN')THEN
@@ -242,7 +252,7 @@
                      DES_BC_Z_b(BCV) < (ZPOS - RAD) .AND. &
                      DES_BC_Z_t(BCV) > (ZPOS + RAD) )THEN
                      WC = 0
-                     PEA(NP,3) = .TRUE.
+                     IF(dist <= ZERO) PEA(NP,3) = .TRUE.
                   ENDIF
                ENDIF
                IF(BCC == 'ZB' .OR. BCC == 'ZT')THEN
@@ -251,7 +261,7 @@
                      DES_BC_Y_s(BCV) < (YPOS - RAD) .AND. &
                      DES_BC_Y_n(BCV) > (YPOS + RAD) )THEN
                      WC = 0
-                     PEA(NP,3) = .TRUE.
+                     IF(dist <= ZERO) PEA(NP,3) = .TRUE.
                   ENDIF
                ENDIF
 

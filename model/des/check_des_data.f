@@ -119,15 +119,15 @@
          ENDIF
       ENDIF
 
-
+!!!! code commented below to let users use cohesion
 ! if you want to run DEM with the existing cohesion implementation then
 ! comment out the following 4 lines; also note that this feature is
 ! unlikely to function correctly with the current version of DEM so
 ! proceed at your own risk
-      IF(USE_COHESION) THEN
-         if(dmp_log) WRITE(UNIT_LOG, 1035)
-         CALL MFIX_EXIT(myPE)
-      ENDIF
+!      IF(USE_COHESION) THEN
+!         if(dmp_log) WRITE(UNIT_LOG, 1035)
+!         CALL MFIX_EXIT(myPE)
+!      ENDIF
 
       IF ( (DES_PERIODIC_WALLS_X .OR. DES_PERIODIC_WALLS_Z .OR. &
             DES_PERIODIC_WALLS_Z) .AND. .NOT.DES_PERIODIC_WALLS) THEN

@@ -192,6 +192,21 @@
          end do
          write(des_unit,"(12x,a)") '</DataArray>'
 
+! Write the mag. of cohesive force scaled with the weight of the particle.         
+         if(use_cohesion) then
+	   write(des_unit,"(12x,a)")&
+              '<DataArray type="Float32" Name="cohesiveForce" format="ascii">'
+           pc = 1
+           do l = 1,max_pip
+              if(pc.gt.pip) exit
+              if(.not.pea(l,1)) cycle 
+              pc = pc+1
+              if(pea(l,4)) cycle 
+              write (des_unit,"(15x,es12.6)") (PostCohesive(l))
+           end do
+           write(des_unit,"(12x,a)") '</DataArray>'        
+         endif
+
 ! Write velocity data. Force to three dimensions. So for 2D runs, a 
 ! dummy value of zero is supplied as the 3rd point.
          write(des_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
@@ -289,6 +304,17 @@
             write (des_unit,"(15x,es12.6)") (real(2.d0*drootbuf(l)),l=1,lglocnt)
             write(des_unit,"(12x,a)") '</DataArray>'
          endif         
+
+! write scaled mag. of cohesive force 
+         if(use_cohesion) then
+           call des_gather(PostCohesive)
+           if (mype.eq.pe_io) then 
+              write(des_unit,"(12x,a)")&
+                 '<DataArray type="Float32" Name="Fcohesive" format="ascii">'
+              write (des_unit,"(15x,es12.6)") ((drootbuf(l)),l=1,lglocnt)
+              write(des_unit,"(12x,a)") '</DataArray>'
+           endif    
+         endif    ! for cohesion
 
 !-----------------------
 ! Write the temperature data.

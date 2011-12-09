@@ -532,6 +532,9 @@
 !     Square-well potential parameters
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WELL_WIDTH ! (PARTICLES)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WELL_DEPTH ! (PARTICLES)
+!     Store cohesive forces
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FCohesive ! particles, dimn
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PostCohesive ! particles, dimn
 
 !     Well depth read in from mfix.dat
       DOUBLE PRECISION MASTER_WELL_DEPTH
@@ -612,6 +615,7 @@
       DOUBLE PRECISION WALL_VDW_OUTER_CUTOFF
       DOUBLE PRECISION SURFACE_ENERGY
       DOUBLE PRECISION WALL_SURFACE_ENERGY
+      DOUBLE PRECISION Asperities ! average radius of asperities (default zero)
 
 !     Parameters to control Rhodes (2001) cohesion model (10/16/03)
       LOGICAL RHODES_COHESION

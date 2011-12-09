@@ -117,6 +117,12 @@
 !pradeep for parallel processin 
       iglobal_id = 0
 
+! cohesion VDW forces
+      IF(USE_COHESION) THEN
+         Fcohesive(:,:) = ZERO
+         PostCohesive (:) = ZERO
+      ENDIF
+
 ! J.Musser: Energy and Species Equation Arrays
       IF(DES_ENERGY_EQ)THEN
          DES_T_s_OLD(:) = UNDEFINED

@@ -24,7 +24,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------      
-      INTEGER I, J, LL, II, IW
+      INTEGER I, J, LL, II, IW, Idim
       INTEGER NI, NLIM, N_NOCON, NEIGH_L
       INTEGER OVERLAP_MAXP
       INTEGER WALLCONTACT, WALLCHECK
@@ -62,6 +62,8 @@
 ! local values used spring constants and damping coefficients
       DOUBLE PRECISION ETAN_DES, ETAN_DES_W, ETAT_DES, ETAT_DES_W,&
                        KN_DES, KN_DES_W, KT_DES, KT_DES_W
+! local values used for calculating cohesive forces
+      DOUBLE PRECISION FORCE_COH, EQ_RADIUS, DistApart, Norm_Dist, magGravity
 
 !-----------------------------------------------      
 ! Functions
@@ -85,6 +87,11 @@
          FC(:,:) = ZERO
          FN(:,:) = ZERO
          FT(:,:) = ZERO
+      ENDIF
+! initialize cohesive forces
+      IF(USE_COHESION) THEN
+        Fcohesive(:,:) = ZERO
+        PostCohesive (:) = ZERO
       ENDIF
 
 !     Calculate contact force and torque
@@ -197,6 +204,28 @@
                   R_LM = DES_RADIUS(LL) + DES_RADIUS(LL)
                   DIST(:) = DES_WALL_POS(IW,:) - DES_POS_NEW(LL,:)
                   DISTMOD = SQRT(DES_DOTPRDCT(DIST,DIST))
+
+! compute particle-wall VDW cohesive short-range forces
+		  IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
+		    DistApart = (DISTMOD-R_LM) ! distance between particle&wall surface
+		    IF(DistApart < WALL_VDW_OUTER_CUTOFF)THEN
+                      IF(DistApart > WALL_VDW_INNER_CUTOFF)THEN
+                         FORCE_COH = WALL_HAMAKER_CONSTANT * DES_RADIUS(LL) / &
+			             (6d0*DistApart**2) * &
+                                     ( Asperities/(Asperities+DES_RADIUS(LL)) + &
+			               ONE/(ONE+Asperities/DistApart)**2 )
+                      ELSE
+
+                         FORCE_COH = 4d0 * PI * WALL_SURFACE_ENERGY * DES_RADIUS(LL) * &
+		  	            ( Asperities/(Asperities+DES_RADIUS(LL)) + &
+			              ONE/(ONE+Asperities/VDW_INNER_CUTOFF)**2 )
+                      END IF                       
+                      DO Idim=1,DIMN
+                        Norm_Dist = DIST(Idim)/DISTMOD
+		        Fcohesive(LL, Idim) = Fcohesive(LL, Idim) + Norm_Dist*FORCE_COH
+                      END DO 
+                    ENDIF     
+		  ENDIF ! for using VDW cohesion model
 
                   IF(R_LM - DISTMOD.GT.SMALL_NUMBER) THEN 
                      
@@ -448,6 +477,30 @@
                   R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
                   DIST(:) = DES_POS_NEW(I,:) - DES_POS_NEW(LL,:)
                   DISTMOD = SQRT(DES_DOTPRDCT(DIST,DIST))
+
+! compute particle-particle VDW cohesive short-range forces	
+		  IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
+		    EQ_RADIUS = 2d0 * DES_RADIUS(LL)*DES_RADIUS(I) / &
+		               (DES_RADIUS(LL)+DES_RADIUS(I))  ! for use in cohesive force
+		    DistApart = (DISTMOD-R_LM) ! distance between particle surface
+		    IF(DistApart < VDW_OUTER_CUTOFF)THEN
+                      IF(DistApart > VDW_INNER_CUTOFF)THEN
+                         FORCE_COH = HAMAKER_CONSTANT * EQ_RADIUS / (12d0*DistApart**2) * &
+                                     ( Asperities/(Asperities+EQ_RADIUS) + &
+			               ONE/(ONE+Asperities/DistApart)**2 )
+                      ELSE
+
+                         FORCE_COH = 2d0 * PI * SURFACE_ENERGY * EQ_RADIUS * &
+		  	            ( Asperities/(Asperities+EQ_RADIUS) + &
+			              ONE/(ONE+Asperities/VDW_INNER_CUTOFF)**2 )
+                      END IF                       
+                      DO Idim=1,DIMN
+                        Norm_Dist = DIST(Idim)/DISTMOD
+		        Fcohesive(LL, Idim) = Fcohesive(LL, Idim) + Norm_Dist*FORCE_COH
+!		        Fcohesive(I, Idim) =  Fcohesive(I, Idim)  - Norm_Dist*FORCE_COH
+                      END DO 
+                    ENDIF     
+		  ENDIF ! for using VDW cohesion model
 !                  IF(DES_PERIODIC_WALLS) THEN
 !                     DES_POS_NEW(I,1) = TEMPX
 !                     DES_POS_NEW(I,2) = TEMPY
@@ -651,11 +704,31 @@
       IF(DES_CONTINUUM_COUPLED) THEN
          CALL DRAG_FGS
       ENDIF
-
+! cohesion part not called for VDW to use parallel and grid search capabilities 
+! now available in dem.
+! The square-well model is still available in the model/cohesion directory.
 ! COHESION
-      IF(USE_COHESION)THEN
+      IF(USE_COHESION .AND. .NOT.VAN_DER_WAALS)THEN
          CALL CALC_COHESIVE_FORCES
       ENDIF
+
+! COHESION ! just for post-processing mag. of cohesive forces on each particle
+      IF(USE_COHESION)THEN
+      pc = 1
+      magGravity = DSQRT(DES_DOTPRDCT(GRAV,GRAV))
+      DO LL = 1, MAX_PIP
+! pradeep skip ghost particles
+         if(pc.gt.pip) exit
+         if(.not.pea(ll,1)) cycle 
+         pc = pc+1
+         if(pea(ll,4)) cycle 
+          DO Idim=1,DIMN
+            PostCohesive(LL) =  PostCohesive(LL) + Fcohesive(LL, Idim)**2
+          ENDDO
+          if(magGravity> ZERO) PostCohesive(LL) =  DSQRT(PostCohesive(LL)) / &
+	                                           (PMASS(LL)*magGravity)
+        ENDDO 
+      ENDIF ! for cohesion model
       
 ! Update the old values of particle position and velocity with the new values computed
       CALL CFUPDATEOLD
