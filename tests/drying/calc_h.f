@@ -57,3 +57,45 @@
 
       RETURN  
       END FUNCTION CALC_H
+
+
+!VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV!
+! Function: DES_CALC_H                                                 !
+!                                                                      !
+! Purpose: Calculate the enthalpy for des_rrates subroutine.           !
+!                                                                      !
+!  Author: J.Musser                                   Date: 16-Jun-10  !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      DOUBLE PRECISION FUNCTION DES_CALC_H(NP, N)
+
+      USE constant
+      USE des_rxns
+      USE des_thermo
+      USE discretelement
+
+      IMPLICIT NONE
+
+! Particle index
+      INTEGER, INTENT(IN) :: NP
+! Species index
+      INTEGER, INTENT(IN) :: N
+! Index for the discrete solids phase of the particle
+      INTEGER M
+! Reference temperature
+      DOUBLE PRECISION ICpoR
+      DOUBLE PRECISION, EXTERNAL :: CALC_ICpoR
+
+      M = PIJK(NP,5)
+
+!     Enthalpy
+      ICpoR = CALC_ICpoR(DES_T_s_NEW(NP), DES_Thigh_s(M,N), &
+         DES_Tlow_s(M,N), DES_Tcom_s(M,N), DES_Ahigh_s(1,M,N), &
+         DES_Alow_s(1,M,N))
+
+       DES_CALC_H = (DES_HfrefoR_s(M,N)+(ICpoR-DES_IC_PsrefoR(M,N))) * &
+		        GAS_CONST_cal / DES_MW_s(M,N)
+
+      END FUNCTION DES_CALC_H
