@@ -15,6 +15,58 @@ vers="2010-1"
 P4_OPTIMIZE=1
 #
 
+# Show usage
+show_usage() {
+echo
+echo " ======================================================================"
+echo "  Usage:"
+echo ""
+echo "  Invoke make_mfix without arguments to go through the list of options."
+echo "  This is the standard input method where the user manually answers"
+echo "  questions to compile mfix. This is how mfix must be compiled initially."
+echo "  1) on unix machines     >  sh    mfix/model/make_mfix"
+echo "  2) on NT using PGI bash >  bash  mfix/model/make_mfix"
+echo ""
+echo "  Use the -repeat flag to recompile with the same options as the "
+echo "  last compilation. This flag allows users to skip the manual input"
+echo "  when regular input has been completed once."
+echo "  Example                 >  sh    mfix/model/make_mfix -repeat"
+echo ""
+echo "  Use the -clean flag before doing a fresh compilation. This option will"
+echo "  remove all .o, .a and .mod files from the model directory."
+echo "  This is useful when recompiling with a different compiler."
+echo "  make_mfix must be invoked again to compile mfix."
+echo "  Example                 >  sh    mfix/model/make_mfix -clean"
+echo "                          >  sh    mfix/model/make_mfix "
+echo ""
+echo "  Use the -help flag to display this help message."
+echo "  Example                 >  sh    mfix/model/make_mfix -help"
+echo ""
+echo "  Shortcuts: use -r instead of -repeat"
+echo "             use -c instead of -clean"
+echo "             use -h instead of -help"
+echo " ======================================================================"
+echo ""
+echo ""
+exit
+}
+
+
+MAXARGS=1
+
+
+# get the number of arguments 
+ARGC=$#
+
+ARG1=$1
+
+# Show usage and exit if too many arguments are given
+if [ $ARGC -gt $MAXARGS ]; then  
+  echo "Too many arguments (Maximum is $MAXARGS)"
+  echo
+  show_usage
+fi
+
 
 echo "*******************************************"
 echo
@@ -77,6 +129,59 @@ echo
 echo "MFIX directory is $mfix"
 echo
 
+input_needed=1
+
+case $ARG1 in
+  "-help"|"-h" )
+
+  show_usage
+
+  ;;
+
+  "-clean"|"-c" )
+
+  echo "Cleaning files from previous compilation..."
+  rm -f $mfix/*.o
+  rm -f $mfix/*.a
+  rm -f $mfix/*.mod
+  echo "Done."
+  exit
+
+  ;;
+
+  "-repeat"|"-r" )
+
+  if [ -e last_compilation_options ]; then
+   echo "Recompiling from previous known options..."
+   set `cat last_compilation_options` ; smp_version=$1 ; dmp_version=$2 ; dbg_version=$3 ; auto_compile=$4 ; mpi_include=$5 ; cygwin_compiler=$6 ; lnx_compiler=$7
+
+
+    echo "smp_version     = "$smp_version 
+    echo "dmp_version     = "$dmp_version 
+    echo "dbg_version     = "$dbg_version 
+    echo "auto_compile    = "$auto_compile 
+    echo "mpi_include     = "$mpi_include 
+    echo "cygwin_compiler = "$cygwin_compiler
+    echo "lnx_compiler    = "$lnx_compiler 
+    input_needed=0
+  
+  else
+   echo "No previous compilation options found."
+   exit
+  fi
+  ;;
+  
+  "") 
+#     Proceed with the regular user input
+  ;;
+
+  *)
+   echo "Unknown flag. Acceptable flags are -repeat, -r, -clean, -c, -help, -h."
+   exit
+
+
+  ;;
+esac
 
 
 ########################################################################
@@ -150,14 +255,15 @@ else
   echo "     CHARACTER(len=132) :: MFIX_PATH = '$mfix'" > mfix_directory_path.inc
 fi
 
+if test $input_needed = 1
+  then
+  echo -n "Do you need SMP version? (y/n) [no] "
+  read smp_version
 
-echo -n "Do you need SMP version? (y/n) [no] "
-read smp_version
-
-echo
-echo -n "Do you need DMP version? (y/n) [no] "
-read dmp_version
-
+  echo
+  echo -n "Do you need DMP version? (y/n) [no] "
+  read dmp_version
+fi
 #
 #------------------------------------------------------------------------
 # Define machine dependent flags and copy machine dependent files
@@ -205,30 +311,47 @@ then
   fi
 fi
 
-echo -n "Do you need debug version? (y/n) [no] "
-read dbg_version
-echo
-echo -n "Force re-compilation of source files in run directory? (y/n) [no] "
-read auto_compile
-  
+if test $input_needed = 1 
+then
+  echo -n "Do you need debug version? (y/n) [no] "
+  read dbg_version
+  echo
+  echo -n "Force re-compilation of source files in run directory? (y/n) [no] "
+  read auto_compile
+fi
+
+case $auto_compile in
+  y|Y|n|N) 
+  ;;
+
+  *) 
+  auto_compile="n"
+  ;;
+esac
+
+ 
 case $dmp_version in
   y|Y )
 
-  mpi_include="/usr/include"
+  if test $input_needed = 1
+  then
+    mpi_include="/usr/include"
 
-  echo
-  echo -n "checking for mpif.h in the default directory $mpi_include"
-            if test -f "$mpi_include/mpif.h"
-            then
-	        echo
-                echo -n "using mpif.h from $mpi_include"
-            else
-	        echo
-                echo -n "input the location of the directory where mpif.h resides: "
-                read mpi_include
-            fi
+    echo
+    echo -n "checking for mpif.h in the default directory $mpi_include"
+    if test -f "$mpi_include/mpif.h"
+    then
+      echo
+      echo -n "using mpif.h from $mpi_include"
+    else
+      echo
+      echo -n "input the location of the directory where mpif.h resides: "
+      read mpi_include
+    fi
+  fi
   ;;
   *)
+ dmp_version="n"
   mpi_include="$mfix/dmp_modules/mpi_donothing"
   echo " "
   echo " "
@@ -273,7 +396,7 @@ ln -sf "$mpi_include/mpif.h" .
 #  Check if the system is a Linux system, if yes then ask the user which 
 #  compiler to use    
 #
-
+    cygwin_compiler=2
     if test $opsys = "MINGW32_NT-5.1"
     then
        echo
@@ -286,8 +409,11 @@ ln -sf "$mpi_include/mpif.h" .
        echo " [1] g95"
        echo " [2] gfortran"       
        echo " "
-       echo -n "Select the compiler to compile MFIX? [2] "
-       read cygwin_compiler
+       if test $input_needed = 1
+       then
+         echo -n "Select the compiler to compile MFIX? [2] "
+         read cygwin_compiler
+       fi
        case $cygwin_compiler in
          1 )
            echo " "
@@ -295,6 +421,7 @@ ln -sf "$mpi_include/mpif.h" .
            opsys="MINGW32_NT-5.1-g95"
            ;;
          * )
+           cygwin_compiler=2
            echo " "
            echo "gfortran Compiler selected"
            opsys="MINGW32_NT-5.1-gfortran"
@@ -314,8 +441,11 @@ ln -sf "$mpi_include/mpif.h" .
        echo " [1] g95"
        echo " [2] gfortran"       
        echo " "
-       echo -n "Select the compiler to compile MFIX? [2] "
-       read cygwin_compiler
+       if test $input_needed = 1
+       then
+         echo -n "Select the compiler to compile MFIX? [2] "
+         read cygwin_compiler
+       fi
        case $cygwin_compiler in
          1 )
            echo " "
@@ -323,6 +453,7 @@ ln -sf "$mpi_include/mpif.h" .
            opsys="CYGWIN_NT-6.0-g95"
            ;;
          * )
+           cygwin_compiler=2
            echo " "
            echo "gfortran Compiler selected"
            opsys="CYGWIN_NT-6.0-gfortran"
@@ -342,8 +473,11 @@ ln -sf "$mpi_include/mpif.h" .
        echo " [1] g95"
        echo " [2] gfortran"       
        echo " "
-       echo -n "Select the compiler to compile MFIX? [2] "
-       read cygwin_compiler
+       if test $input_needed = 1
+       then
+         echo -n "Select the compiler to compile MFIX? [2] "
+         read cygwin_compiler
+       fi
        case $cygwin_compiler in
          1 )
            echo " "
@@ -351,6 +485,7 @@ ln -sf "$mpi_include/mpif.h" .
            opsys="CYGWIN_NT-5.1-g95"
            ;;
          * )
+           cygwin_compiler=2
            echo " "
            echo "gfortran Compiler selected"
            opsys="CYGWIN_NT-5.1-gfortran"
@@ -381,8 +516,11 @@ ln -sf "$mpi_include/mpif.h" .
        echo " [10] IBM Fortran Compiler (xlf90) on Blue Gene at ANL ALCF"
        echo " [11] gfortran"
        echo " "
-       echo -n "Select the compiler to compile MFIX? [1] "
-       read lnx_compiler
+       if test $input_needed = 1
+       then
+         echo -n "Select the compiler to compile MFIX? [1] "
+         read lnx_compiler
+       fi
        case $lnx_compiler in
          1 )
            echo " "
@@ -440,6 +578,7 @@ ln -sf "$mpi_include/mpif.h" .
            opsys="Linux_64_gfort"
            ;;
          *)
+           lnx_compiler=1
            echo " "
            echo "Intel Compiler selected"
            opsys="Linux_64_intel"
@@ -519,8 +658,11 @@ ln -sf "$mpi_include/mpif.h" .
        echo " [3] Intel Fortran Compiler version 10.X (ifort)"
        echo " [4] GNU Gfortran"
        echo " "
-       echo -n "Select the compiler to compile MFIX? [2] "
-       read lnx_compiler
+       if test $input_needed = 1
+       then
+         echo -n "Select the compiler to compile MFIX? [2] "
+         read lnx_compiler
+       fi
 
        case $lnx_compiler in
          1 )
@@ -544,6 +686,7 @@ ln -sf "$mpi_include/mpif.h" .
            opsys="Linux_gfortran"
            ;;
          *)
+           lnx_compiler=2
            echo " "
            echo "Intel Linux Fortran Compiler version 9.X selected"
            opsys="Linux_ifc9"
@@ -1971,6 +2114,7 @@ case $smp_version in
             fi
     ;;
   *)
+            smp_version="n"
             if test -f $smp_check
             then
                 /bin/rm -f *.o *.a *.mod *.exe
@@ -2040,6 +2184,7 @@ esac
                   /bin/cp -f $run_dir/$outfile $outfile
                   ;;
              *)
+                  auto_compile="n"
                   do_nothing="ok"
                   ;;
           esac
@@ -2103,6 +2248,7 @@ esac
                   /bin/cp -f $run_dir/$outfile $outfile
                   ;;
              *)
+                  auto_compile="n"
                   do_nothing="ok"
                   ;;
           esac
@@ -2193,6 +2339,7 @@ updatesubdir()
                   /bin/cp -f $run_dir/$subrun_dir/$outfile $outfile		  
                   ;;
              *)
+                  auto_compile="n"
                   do_nothing="ok"
                   ;;
           esac
@@ -2235,6 +2382,7 @@ updatesubdir()
                   /bin/cp -f $run_dir/$subrun_dir/$outfile $outfile
                   ;;
              *)
+                  auto_compile="n"
                   do_nothing="ok"
                   ;;
           esac
@@ -2356,6 +2504,7 @@ updatesubdir()
     LIB_FLAGS="$libs_d"
     ;;
   *)
+    dbg_version="n"
     FORT_FLAGS="$mp_flag $compile $preinline_flags"
     FORT_FLAGS2="$mp_flag $compile2 $preinline_flags"
     FORT_FLAGS3="$mp_flag $compile3 $preinline_flags"    
@@ -2727,6 +2876,22 @@ updatesubdir()
 # ----------------------------------
 # End of TAU related modifications
 # ----------------------------------
+
+# Save current compilationoptions in file last_compilation_options
+# Save current options for quick future compilations
+# using same options (use -repeat or -r flag)
+    echo $smp_version > last_compilation_options
+    echo $dmp_version >> last_compilation_options
+    echo $dbg_version >> last_compilation_options
+    echo $auto_compile >> last_compilation_options
+    echo $mpi_include >>  last_compilation_options
+    echo $cygwin_compiler >>  last_compilation_options
+    echo $lnx_compiler >>  last_compilation_options
+
+
+
+
+
   case $MODULE_CODE in
   0)
   	case $dmp_version in
@@ -2775,6 +2940,7 @@ updatesubdir()
     LIB_FLAGS="$libs_d"
     ;;
   *)
+    dbg_version="n"
     FORT_FLAGS="$mp_flag $compile $inline_flags"
     FORT_FLAGS2="$mp_flag $compile2 $inline_flags"
     FORT_FLAGS3="$mp_flag $compile3"    
