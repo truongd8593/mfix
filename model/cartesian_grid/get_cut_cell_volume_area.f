@@ -429,6 +429,8 @@
             AXY(IJK) = AREA_TOP
             Area_CUT(IJK) = CUT_AREA
 
+            DELH_Scalar(IJK) = DEL_H
+
             IF(NO_K) THEN
                VOL(IJK) = AXY(IJK) * ZLENGTH
             ELSE
@@ -1406,7 +1408,7 @@
                         HW   = ZERO
                         VELW = ZERO
                      ELSE                              ! partial slip
-                        AW   = ALPHA_CUT
+                        AW   = ONE !ALPHA_CUT
                         HW   = BC_HW_G(BCV)
                         VELW = BC_UW_G(BCV)
                      ENDIF
@@ -1444,7 +1446,7 @@
                         HW   = ZERO
                         VELW = ZERO
                      ELSE                              ! partial slip
-                        AW   = ALPHA_CUT
+                        AW   = ONE !ALPHA_CUT
                         HW   = BC_HW_G(BCV)
                         VELW = BC_VW_G(BCV)
                      ENDIF
@@ -1481,7 +1483,7 @@
                         HW   = ZERO
                         VELW = ZERO
                      ELSE                              ! partial slip
-                        AW   = ALPHA_CUT
+                        AW   = ONE !ALPHA_CUT
                         HW   = BC_HW_G(BCV)
                         VELW = BC_WW_G(BCV)
                      ENDIF

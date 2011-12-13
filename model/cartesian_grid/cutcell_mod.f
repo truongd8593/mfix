@@ -183,6 +183,9 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Y_W_tc
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Z_W_tc
 
+!     Distance to cut face in Scalar Cell
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DELH_Scalar
+
 
 !     Distance to cut face in U-Momentum Cell
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DELH_U

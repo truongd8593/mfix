@@ -138,6 +138,8 @@
       Allocate( Y_W_tc  (DIMENSION_3) )
       Allocate( Z_W_tc  (DIMENSION_3) )
 
+      Allocate( DELH_Scalar  (DIMENSION_3) )
+
       Allocate( DELH_U  (DIMENSION_3) )
       Allocate( Theta_Ue  (DIMENSION_3) )
       Allocate( Theta_Ue_bar (DIMENSION_3) )
