@@ -666,7 +666,11 @@
                A_M(IJK,B,M) = ZERO 
                A_M(IJK,0,M) = -ONE 
 
-               B_M(IJK,M) = - BC_V_s(BC_V_ID(IJK),M)  
+               IF(BC_V_s(BCV,M)/=UNDEFINED) THEN  
+                  B_M(IJK,M) = - BC_V_s(BCV,M)
+               ELSE
+                  B_M(IJK,M) = - BC_VELMAG_s(BCV,M)*NORMAL_V(IJK,2)
+               ENDIF
 
                IJKS = SOUTH_OF(IJK)
                IF(FLUID_AT(IJKS)) THEN
@@ -678,7 +682,12 @@
                   A_M(IJKS,T,M) = ZERO 
                   A_M(IJKS,B,M) = ZERO 
                   A_M(IJKS,0,M) = -ONE 
-                  B_M(IJKS,M) = - BC_V_s(BC_V_ID(IJK),M)  
+
+                  IF(BC_V_s(BCV,M)/=UNDEFINED) THEN  
+                     B_M(IJKS,M) = - BC_V_s(BCV,M)
+                  ELSE
+                     B_M(IJKS,M) = - BC_VELMAG_s(BCV,M)*NORMAL_V(IJK,2)
+                  ENDIF
 
                ENDIF
 
@@ -726,7 +735,11 @@
                A_M(IJK,B,M) = ZERO 
                A_M(IJK,0,M) = -ONE 
 
-               B_M(IJK,M) = - BC_V_s(BC_ID(IJK),M)  
+               IF(BC_V_s(BCV,M)/=UNDEFINED) THEN  
+                  B_M(IJK,M) = - BC_V_s(BCV,M)
+               ELSE
+                  B_M(IJK,M) = - BC_VELMAG_s(BCV,M)*NORMAL_S(IJK,2)
+               ENDIF
 
                IJKS = SOUTH_OF(IJK)
                IF(FLUID_AT(IJKS)) THEN
@@ -738,7 +751,12 @@
                   A_M(IJKS,T,M) = ZERO 
                   A_M(IJKS,B,M) = ZERO 
                   A_M(IJKS,0,M) = -ONE 
-                  B_M(IJKS,M) = - BC_V_s(BC_ID(IJK),M)  
+
+                  IF(BC_V_s(BCV,M)/=UNDEFINED) THEN  
+                     B_M(IJKS,M) = - BC_V_s(BCV,M)
+                  ELSE
+                     B_M(IJKS,M) = - BC_VELMAG_s(BCV,M)*NORMAL_S(IJK,2)
+                  ENDIF
 
                ENDIF
 

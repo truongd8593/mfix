@@ -130,6 +130,18 @@
 !                      z-component of solids phase velocity in a
 !                      specified boundary region
       DOUBLE PRECISION BC_W_s (DIMENSION_BC, DIM_M)
+! 
+! JFD: For cut cells, define the magnitude of velocity that will be enforced 
+!      perpendicular to the cut face, for CG_MI boundary condition
+!
+!                      magnitude of gas velocity in a specified
+!                      boundary region
+      DOUBLE PRECISION BC_VELMAG_g (DIMENSION_BC)
+!
+!                      magnitude of solids phase velocity in a
+!                      specified boundary region
+      DOUBLE PRECISION BC_VELMAG_s (DIMENSION_BC, DIM_M)
+
 !
 !                      Type of boundary: MASS_INFLOW, MASS_OUTFLOW,
 !                      P_INFLOW, P_OUTFLOW, FREE_SLIP_WALL, NO_SLIP_WALL

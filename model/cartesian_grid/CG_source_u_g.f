@@ -740,7 +740,11 @@
                A_M(IJK,B,M) = ZERO 
                A_M(IJK,0,M) = -ONE 
 
-               B_M(IJK,M) = - BC_U_g(BC_U_ID(IJK))
+               IF(BC_U_g(BCV)/=UNDEFINED) THEN
+                  B_M(IJK,M) = - BC_U_g(BCV)
+               ELSE
+                  B_M(IJK,M) = - BC_VELMAG_g(BCV)*NORMAL_U(IJK,1)  
+               ENDIF
 
 
                IJKW = WEST_OF(IJK)
@@ -753,7 +757,13 @@
                   A_M(IJKW,T,M) = ZERO 
                   A_M(IJKW,B,M) = ZERO 
                   A_M(IJKW,0,M) = -ONE 
-                  B_M(IJKW,M) = - BC_U_g(BC_U_ID(IJK))  
+
+                  IF(BC_U_g(BCV)/=UNDEFINED) THEN
+                     B_M(IJKW,M) = - BC_U_g(BCV)
+                  ELSE
+                     B_M(IJKW,M) = - BC_VELMAG_g(BCV)*NORMAL_U(IJK,1)  
+                  ENDIF
+
 
                ENDIF
 
@@ -798,7 +808,11 @@
                A_M(IJK,B,M) = ZERO 
                A_M(IJK,0,M) = -ONE 
 
-               B_M(IJK,M) = - BC_U_g(BC_ID(IJK))  
+               IF(BC_U_g(BCV)/=UNDEFINED) THEN
+                  B_M(IJK,M) = - BC_U_g(BCV)
+               ELSE
+                  B_M(IJK,M) = - BC_VELMAG_g(BCV)*NORMAL_S(IJK,1)  
+               ENDIF
 
 
                IJKW = WEST_OF(IJK)
@@ -811,7 +825,13 @@
                   A_M(IJKW,T,M) = ZERO 
                   A_M(IJKW,B,M) = ZERO 
                   A_M(IJKW,0,M) = -ONE 
-                  B_M(IJKW,M) = - BC_U_g(BC_ID(IJK))  
+
+                  IF(BC_U_g(BCV)/=UNDEFINED) THEN
+                     B_M(IJKW,M) = - BC_U_g(BCV)
+                  ELSE
+                     B_M(IJKW,M) = - BC_VELMAG_g(BCV)*NORMAL_S(IJK,1)  
+                  ENDIF
+
 
                ENDIF
 

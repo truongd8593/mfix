@@ -288,6 +288,35 @@
                   dquadric(Q) = Radius(Q)**2
                ENDIF
 
+            CASE ('SPHERE_INT')   ! The quadric is predefined as a sphere
+                                  ! Internal flow
+
+               IF( Radius(Q) <= ZERO) THEN
+                  WRITE(*,*)'INPUT ERROR: SPHERE:', Q, ' HAS INVALID RADIUS.'
+                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  CALL MFIX_EXIT(MYPE)             
+               ELSE
+                  lambda_x(Q) = ONE
+                  lambda_y(Q) = ONE
+                  lambda_z(Q) = ONE
+                  dquadric(Q) = -Radius(Q)**2
+               ENDIF
+ 
+           CASE ('SPHERE_EXT')   ! The quadric is predefined as a sphere
+                                  ! External flow
+
+               IF( Radius(Q) <= ZERO) THEN
+                  WRITE(*,*)'INPUT ERROR: SPHERE:', Q, ' HAS INVALID RADIUS.'
+                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  CALL MFIX_EXIT(MYPE)             
+               ELSE
+                  lambda_x(Q) = -ONE
+                  lambda_y(Q) = -ONE
+                  lambda_z(Q) = -ONE
+                  dquadric(Q) = Radius(Q)**2
+               ENDIF
+         
+
             CASE ('X_CONE')    ! The quadric is predefined as a cone, along x-axis
                                ! Internal flow
 
@@ -782,24 +811,30 @@
                IF (BC_U_G(BCV) == UNDEFINED) THEN 
                    IF (NO_I) THEN 
                        BC_U_G(BCV) = ZERO 
-                   ELSE 
-                       IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_U_g', BCV 
+                   ELSEIF(BC_VOLFLOW_g(BCV)==UNDEFINED.AND. &
+                          BC_MASSFLOW_g(BCV)==UNDEFINED.AND.&
+                          BC_VELMAG_g(BCV)==UNDEFINED) THEN
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 900) 'BC_U_g', BCV 
                        call mfix_exit(myPE)
                    ENDIF 
                ENDIF 
                IF (BC_V_G(BCV) == UNDEFINED) THEN 
                    IF (NO_J) THEN 
                        BC_V_G(BCV) = ZERO 
-                   ELSE 
-                       IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_V_g', BCV 
+                   ELSEIF(BC_VOLFLOW_g(BCV)==UNDEFINED.AND. &
+                          BC_MASSFLOW_g(BCV)==UNDEFINED.AND.&
+                          BC_VELMAG_g(BCV)==UNDEFINED) THEN
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 900) 'BC_V_g', BCV 
                        call mfix_exit(myPE)
                    ENDIF 
                ENDIF 
                IF (BC_W_G(BCV) == UNDEFINED) THEN 
                    IF (NO_K) THEN 
                        BC_W_G(BCV) = ZERO 
-                   ELSE 
-                       IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_W_g', BCV 
+                   ELSEIF(BC_VOLFLOW_g(BCV)==UNDEFINED.AND. &
+                          BC_MASSFLOW_g(BCV)==UNDEFINED.AND.&
+                          BC_VELMAG_g(BCV)==UNDEFINED) THEN
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 900) 'BC_W_g', BCV 
                        call mfix_exit(myPE)
                    ENDIF 
                ENDIF  
@@ -887,8 +922,10 @@
                   IF (BC_U_S(BCV,M) == UNDEFINED) THEN 
                      IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_I) THEN 
                         BC_U_S(BCV,M) = ZERO 
-                     ELSE 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_U_s', BCV, M 
+                   ELSEIF(BC_VOLFLOW_s(BCV,M)==UNDEFINED.AND. &
+                          BC_MASSFLOW_s(BCV,M)==UNDEFINED.AND.&
+                          BC_VELMAG_s(BCV,M)==UNDEFINED) THEN
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 910) 'BC_U_s', BCV, M 
                             call mfix_exit(myPE)
                      ENDIF 
                   ENDIF 
@@ -896,8 +933,10 @@
                   IF (BC_V_S(BCV,M) == UNDEFINED) THEN 
                      IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_J) THEN 
                         BC_V_S(BCV,M) = ZERO 
-                     ELSE 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_V_s', BCV, M 
+                   ELSEIF(BC_VOLFLOW_s(BCV,M)==UNDEFINED.AND. &
+                          BC_MASSFLOW_s(BCV,M)==UNDEFINED.AND.&
+                          BC_VELMAG_s(BCV,M)==UNDEFINED) THEN
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 910) 'BC_V_s', BCV, M 
                             call mfix_exit(myPE)
                      ENDIF 
                   ENDIF 
@@ -905,8 +944,10 @@
                   IF (BC_W_S(BCV,M) == UNDEFINED) THEN 
                      IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_K) THEN 
                         BC_W_S(BCV,M) = ZERO 
-                     ELSE 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_W_s', BCV, M 
+                   ELSEIF(BC_VOLFLOW_s(BCV,M)==UNDEFINED.AND. &
+                          BC_MASSFLOW_s(BCV,M)==UNDEFINED.AND.&
+                          BC_VELMAG_s(BCV,M)==UNDEFINED) THEN
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 910) 'BC_W_s', BCV, M 
                            call mfix_exit(myPE)
                      ENDIF 
                   ENDIF 
@@ -1046,6 +1087,15 @@
 
       RETURN  
 
+
+ 900 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
+         ') not specified',/1X'One of the following must be specified:',/1X,&
+         'BC_VOLFLOW_g, BC_MASSFLOW_g or BC_VELMAG_g',/1X,70('*')/) 
+
+ 910 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I1,&
+         ') not specified',/1X'One of the following must be specified:',/1X,&
+         'BC_VOLFLOW_g, BC_MASSFLOW_g or BC_VELMAG_g',/1X,70('*')/)
+
  1000 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
          ') not specified',/1X,70('*')/) 
  1001 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
@@ -1099,8 +1149,12 @@
  1410 FORMAT(I5,3X,I5,3X,I5) 
  1420 FORMAT(/1X,70('*')/) 
 
-      END SUBROUTINE CHECK_BC_FLAGS
+ 1500 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
+         ' Message: No initial or boundary condition specified',/&
+         '    I       J       K') 
 
+
+      END SUBROUTINE CHECK_BC_FLAGS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -1352,3 +1406,254 @@
 
       RETURN
       END
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CG_FLOW_TO_VEL                                         C
+!  Purpose: Convert flow to velocity bc's                              C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE CG_FLOW_TO_VEL
+    
+
+
+      USE physprop
+      USE scales
+      USE funits 
+
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE bc
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices  
+      USE compar
+      USE mpi_utility 
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE fldvar
+      USE vtk
+
+     
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+! 
+!     loop/variable indices 
+      INTEGER :: IJK, M, BCV
+      CHARACTER(LEN=9) :: BCT
+!     Volumetric flow rate computed from mass flow rate 
+      DOUBLE PRECISION :: VOLFLOW 
+!     Solids phase volume fraction 
+      DOUBLE PRECISION :: EPS 
+!     Average molecular weight 
+      DOUBLE PRECISION :: MW 
+!
+      INTEGER :: iproc,IERR
+! 
+!-----------------------------------------------
+!   E x t e r n a l   F u n c t i o n s
+!-----------------------------------------------
+      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW 
+      LOGICAL , EXTERNAL :: COMPARE 
+!-----------------------------------------------
+!
+
+      include "function.inc"
+
+     
+! Compute the Area of each boundary condition for cut cells
+
+       DO BCV = 1, DIMENSION_BC 
+          IF (BC_TYPE(BCV)(1:2)=='CG') BC_AREA(BCV) = ZERO
+       ENDDO
+
+      DO IJK = IJKSTART3, IJKEND3
+         IF(CUT_CELL_AT(IJK)) THEN              
+            BCV = BC_ID(IJK)
+            IF(BCV > 0 ) THEN
+               BCT = BC_TYPE(BCV)
+               BC_AREA(BCV) = BC_AREA(BCV) + Area_CUT(IJK)
+            ENDIF
+         ENDIF
+      END DO
+
+!      IF (myPE == PE_IO) THEN
+!          DO BCV = 1, DIMENSION_BC 
+!             IF (BC_DEFINED(BCV).OR.BC_TYPE(BCV)(1:2)=='CG') THEN 
+!                WRITE(*,100) 'BOUNDARY CONDITION ID   :',BCV
+!                WRITE(*,110) 'BOUNDARY CONDITION TYPE :',BC_TYPE(BCV)
+!                WRITE(*,120) 'BOUNDARY CONDITION AREA :',BC_AREA(BCV)
+!             ENDIF
+!          ENDDO
+!       ENDIF
+
+
+      DO BCV = 1, DIMENSION_BC 
+
+         IF (BC_TYPE(BCV)=='CG_MI') THEN
+
+            IF(BC_VELMAG_g(BCV)==UNDEFINED) THEN
+!
+!           If gas mass flow is defined convert it to volumetric flow
+!
+               IF (BC_MASSFLOW_G(BCV) /= UNDEFINED) THEN 
+                  IF (RO_G0 /= UNDEFINED) THEN 
+                     VOLFLOW = BC_MASSFLOW_G(BCV)/RO_G0 
+                  ELSE 
+                     IF (BC_P_G(BCV)/=UNDEFINED .AND. BC_T_G(BCV)/=UNDEFINED) &
+                        THEN 
+                        IF (MW_AVG == UNDEFINED) THEN 
+                           MW = CALC_MW(BC_X_G,DIMENSION_BC,BCV,NMAX(0),MW_G) 
+                        ELSE 
+                           MW = MW_AVG 
+                        ENDIF 
+                        VOLFLOW = BC_MASSFLOW_G(BCV)/EOSG(MW,(BC_P_G(BCV)-P_REF), &
+			                         BC_T_G(BCV))
+                     ELSE 
+                        IF (BC_TYPE(BCV) == 'CG_MO') THEN 
+                           IF (BC_MASSFLOW_G(BCV) == ZERO) THEN 
+                              VOLFLOW = ZERO 
+                           ENDIF 
+                        ELSE 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1020) BCV 
+                           call mfix_exit(myPE)  
+                        ENDIF 
+                     ENDIF 
+                  ENDIF 
+!
+!             If volumetric flow is also specified compare both
+!
+                  IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN 
+                     IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_G(BCV))) THEN 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) BCV, VOLFLOW, BC_VOLFLOW_G(BCV) 
+                        call mfix_exit(myPE)  
+                     ENDIF 
+                  ELSE 
+                     BC_VOLFLOW_G(BCV) = VOLFLOW 
+                  ENDIF 
+               ENDIF 
+!
+!           If gas volumetric flow is defined convert it to velocity
+!
+               IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN 
+                  IF (BC_EP_G(BCV) /= UNDEFINED) THEN 
+                     BC_VELMAG_g(BCV) = BC_VOLFLOW_G(BCV)/(BC_AREA(BCV)*BC_EP_G(BCV)) 
+                  ELSE 
+                     RETURN                      !Error caught in Check_data_07 
+                  ENDIF 
+               ENDIF 
+
+            ENDIF
+
+
+!
+!  Do flow conversions for solids phases
+!
+            DO M = 1, MMAX 
+
+               IF(BC_VELMAG_s(BCV,M)==UNDEFINED) THEN
+!
+!             If solids mass flow is defined convert it to volumetric flow
+!
+                  IF (BC_MASSFLOW_S(BCV,M) /= UNDEFINED) THEN 
+                     IF (RO_S(M) /= UNDEFINED) THEN 
+                        VOLFLOW = BC_MASSFLOW_S(BCV,M)/RO_S(M) 
+                     ELSE 
+                        RETURN                   !  This error will be caught in a previous routine 
+                     ENDIF 
+!
+!               If volumetric flow is also specified compare both
+!
+                     IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
+                        IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_S(BCV,M))) THEN 
+                           IF(DMP_LOG)WRITE(UNIT_LOG,1200)BCV,VOLFLOW,M,BC_VOLFLOW_S(BCV,M) 
+                           call mfix_exit(myPE)  
+                        ENDIF 
+                     ELSE 
+                        BC_VOLFLOW_S(BCV,M) = VOLFLOW 
+                     ENDIF 
+                  ENDIF 
+
+                  IF (BC_ROP_S(BCV,M)==UNDEFINED .AND. MMAX==1) BC_ROP_S(BCV,M)&
+                        = (ONE - BC_EP_G(BCV))*RO_S(M) 
+                  IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
+                     IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
+                        EPS = BC_ROP_S(BCV,M)/RO_S(M) 
+                        IF (EPS /= ZERO) THEN 
+                           BC_VELMAG_s(BCV,M) = BC_VOLFLOW_S(BCV,M)/(BC_AREA(BCV)*EPS) 
+                        ELSE 
+                           IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN 
+                              BC_VELMAG_s(BCV,M) = ZERO 
+                           ELSE 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1250) BCV, M 
+                              call mfix_exit(myPE)  
+                           ENDIF 
+                        ENDIF 
+                     ELSE 
+                        IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN 
+                           BC_VELMAG_s(BCV,M) = ZERO 
+                        ELSE 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1260) BCV, M 
+                           call mfix_exit(myPE)  
+                        ENDIF 
+                     ENDIF 
+                  ENDIF 
+
+               ENDIF
+            END DO 
+         ENDIF 
+      END DO 
+
+
+
+100         FORMAT(1X,A,I8)
+110         FORMAT(1X,A,A)
+120         FORMAT(1X,A,F14.8,/)
+130         FORMAT(1X,A,I8,F14.8,/)
+
+
+ 1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' Computed volumetric flow is not equal to specified value',/,&
+         ' Value computed from mass flow  = ',G14.7,/,&
+         ' Specified value (BC_VOLFLOW_g) = ',G14.7,/1X,70('*')/) 
+
+
+ 1020 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,&
+         '  BC_P_g, BC_T_g, and BC_X_g',/' should be specified',/1X,70('*')/) 
+
+
+ 1200 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' Computed volumetric flow is not equal to specified value',/,&
+         ' Value computed from mass flow  = ',G14.7,/,&
+         ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/) 
+
+ 1250 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' Non-zero vol. or mass flow specified with BC_ROP_s',&
+         I1,' = 0.',/1X,70('*')/) 
+ 1260 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' BC_ROP_s',I1,' not specified',/1X,70('*')/) 
+      RETURN
+
+      
+      END SUBROUTINE CG_FLOW_TO_VEL

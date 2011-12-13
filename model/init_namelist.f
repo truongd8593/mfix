@@ -436,6 +436,7 @@
          BC_U_G(LC) = UNDEFINED 
          BC_V_G(LC) = UNDEFINED 
          BC_W_G(LC) = UNDEFINED 
+         BC_VELMAG_G(LC) = UNDEFINED 
          BC_TYPE(LC) = UNDEFINED_C 
          BC_APPLY_TO_MPPIC(LC) = .true.
          BC_VOLFLOW_G(LC) = UNDEFINED 
@@ -463,6 +464,7 @@
          BC_U_S(LC,:DIM_M) = UNDEFINED 
          BC_V_S(LC,:DIM_M) = UNDEFINED 
          BC_W_S(LC,:DIM_M) = UNDEFINED 
+         BC_VELMAG_S(LC,:DIM_M) = UNDEFINED 
          BC_T_S(LC,:DIM_M) = UNDEFINED 
          BC_VOLFLOW_S(LC,:DIM_M) = UNDEFINED 
          BC_MASSFLOW_S(LC,:DIM_M) = UNDEFINED 

@@ -671,7 +671,11 @@
                A_M(IJK,B,M) = ZERO 
                A_M(IJK,0,M) = -ONE 
 
-               B_M(IJK,M) = - BC_U_s(BC_U_ID(IJK),M)
+               IF(BC_U_s(BCV,M)/=UNDEFINED) THEN
+                  B_M(IJK,M) = - BC_U_s(BCV,M)
+               ELSE
+                  B_M(IJK,M) = - BC_VELMAG_s(BCV,M)*NORMAL_U(IJK,1)  
+               ENDIF
 
                IJKW = WEST_OF(IJK)
                IF(FLUID_AT(IJKW)) THEN
@@ -683,9 +687,14 @@
                   A_M(IJKW,T,M) = ZERO 
                   A_M(IJKW,B,M) = ZERO 
                   A_M(IJKW,0,M) = -ONE 
-                  B_M(IJKW,M) = - BC_U_s(BC_U_ID(IJK),M)  
 
-                ENDIF
+                  IF(BC_U_s(BCV,M)/=UNDEFINED) THEN
+                     B_M(IJKW,M) = - BC_U_s(BCV,M)
+                  ELSE
+                     B_M(IJKW,M) = - BC_VELMAG_s(BCV,M)*NORMAL_U(IJK,1)  
+                  ENDIF
+
+               ENDIF
 
 
             CASE ('CG_PO')
@@ -729,7 +738,11 @@
                A_M(IJK,B,M) = ZERO 
                A_M(IJK,0,M) = -ONE 
 
-               B_M(IJK,M) = - BC_U_s(BC_ID(IJK),M)  
+               IF(BC_U_s(BCV,M)/=UNDEFINED) THEN
+                  B_M(IJK,M) = - BC_U_s(BCV,M)
+               ELSE
+                  B_M(IJK,M) = - BC_VELMAG_s(BCV,M)*NORMAL_S(IJK,1)  
+               ENDIF 
 
 
                IJKW = WEST_OF(IJK)
@@ -742,9 +755,14 @@
                   A_M(IJKW,T,M) = ZERO 
                   A_M(IJKW,B,M) = ZERO 
                   A_M(IJKW,0,M) = -ONE 
-                  B_M(IJKW,M) = - BC_U_s(BC_ID(IJK),M)  
 
-                ENDIF
+                  IF(BC_U_s(BCV,M)/=UNDEFINED) THEN
+                     B_M(IJKW,M) = - BC_U_s(BCV,M)
+                  ELSE
+                     B_M(IJKW,M) = - BC_VELMAG_s(BCV,M)*NORMAL_S(IJK,1)
+                  ENDIF
+
+               ENDIF
 
             CASE ('CG_PO')
 

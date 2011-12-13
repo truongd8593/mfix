@@ -182,25 +182,51 @@
       
             END DO 
 
-            U_G(IJK) = BC_U_G(L) 
-            V_G(IJK) = BC_V_G(L) 
-            W_G(IJK) = BC_W_G(L) 
+            IF(BC_U_g(L)/=UNDEFINED) THEN
+               U_G(IJK) =  BC_U_g(L)
+            ELSE
+               U_G(IJK) =  BC_VELMAG_g(L)*NORMAL_U(IJK,1)  
+            ENDIF
+
+            IF(BC_V_g(L)/=UNDEFINED) THEN
+               V_G(IJK) =  BC_V_g(L)
+            ELSE
+               V_G(IJK) =  BC_VELMAG_g(L)*NORMAL_V(IJK,2)  
+            ENDIF
+
+            IF(BC_W_g(L)/=UNDEFINED) THEN
+               W_G(IJK) =  BC_W_g(L)
+            ELSE
+               W_G(IJK) =  BC_VELMAG_g(L)*NORMAL_W(IJK,3)  
+            ENDIF
 
             IJKW = WEST_OF(IJK)
             IJKS = SOUTH_OF(IJK)
             IJKB = BOTTOM_OF(IJK)
 
             IF(FLUID_AT(IJKW)) THEN
-               U_G(IJKW) = BC_U_G(L)
+               IF(BC_U_g(L)/=UNDEFINED) THEN
+                  U_G(IJKW) =  BC_U_g(L)
+               ELSE
+                  U_G(IJKW) =  BC_VELMAG_g(L)*NORMAL_U(IJK,1)  
+               ENDIF
             ENDIF           
 
             IF(FLUID_AT(IJKS)) THEN
-               V_G(IJKS) = BC_V_G(L)
+               IF(BC_V_g(L)/=UNDEFINED) THEN
+                  V_G(IJKS) =  BC_V_g(L)
+               ELSE
+                  V_G(IJKS) =  BC_VELMAG_g(L)*NORMAL_V(IJK,2)  
+               ENDIF
             ENDIF           
 
             IF(FLUID_AT(IJKB)) THEN
-               W_G(IJKB) = BC_W_G(L)
-            ENDIF 
+               IF(BC_W_g(L)/=UNDEFINED) THEN
+                  W_G(IJKB) =  BC_W_g(L)
+               ELSE
+                  W_G(IJKB) =  BC_VELMAG_g(L)*NORMAL_W(IJK,3)  
+               ENDIF
+            ENDIF           
 
 !
             M = 1 
