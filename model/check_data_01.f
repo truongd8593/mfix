@@ -201,7 +201,7 @@
       ENDIF
       
       IF(Chi_scheme)THEN
-        IF(DISCRETIZE(7).NE.3 .and. DISCRETIZE(7).NE.5) THEN
+        IF(DISCRETIZE(7).NE.3 .and. DISCRETIZE(7).NE.6) THEN ! works with smart & muscl
            IF(DMP_LOG)WRITE (UNIT_LOG, 1503)
            CALL Mfix_exit(0) 
         ENDIF
