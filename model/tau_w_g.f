@@ -112,6 +112,7 @@
       DOUBLE PRECISION :: dvdz_at_N,dvdz_at_S
       DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
       DOUBLE PRECISION :: MU_GT_CUT,SSX_CUT,SSY_CUT
+      DOUBLE PRECISION :: UW_g,VW_g,WW_g
       INTEGER :: N_SUM
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT 
@@ -228,16 +229,28 @@
                      CASE ('CG_NSW')
                         CUT_TAU_WG = .TRUE.
                         NOC_WG     = .TRUE.
+                        UW_g = ZERO
+                        VW_g = ZERO
+                        WW_g = ZERO
                      CASE ('CG_FSW')
                         CUT_TAU_WG = .FALSE.
                         NOC_WG     = .FALSE.
+                        UW_g = ZERO
+                        VW_g = ZERO
+                        WW_g = ZERO
                      CASE('CG_PSW')
                         IF(BC_HW_G(BC_W_ID(IJK))==UNDEFINED) THEN   ! same as NSW
                            CUT_TAU_WG = .TRUE.
                            NOC_WG     = .TRUE.
+                           UW_g = BC_UW_G(BCV)
+                           VW_g = BC_VW_G(BCV)
+                           WW_g = BC_WW_G(BCV)
                         ELSEIF(BC_HW_G(BC_W_ID(IJK))==ZERO) THEN   ! same as FSW
                            CUT_TAU_WG = .FALSE.
                            NOC_WG     = .FALSE.
+                           UW_g = ZERO
+                           VW_g = ZERO
+                           WW_g = ZERO
                         ELSE                              ! partial slip
                            CUT_TAU_WG = .FALSE.
                            NOC_WG     = .FALSE.
@@ -273,7 +286,7 @@
 
                      dudz_at_E =  (U_G(IJKP) - U_G(IJK)) * ONEoDZ_T_U(IJK)
 
-                     IF(NOC_WG) dudz_at_E = dudz_at_E - (Ui * ONEoDZ_T_U(IJK)/DEL_H*(Sx*Nx+Sy*Ny))  
+                     IF(NOC_WG) dudz_at_E = dudz_at_E - ((Ui-UW_g) * ONEoDZ_T_U(IJK)/DEL_H*(Sx*Nx+Sy*Ny))  
 
                   ELSE
                      dudz_at_E =  ZERO
@@ -293,7 +306,7 @@
 
                      dudz_at_W =  (U_G(IMJKP) - U_G(IMJK)) * ONEoDZ_T_U(IMJK)
 
-                     IF(NOC_WG) dudz_at_W = dudz_at_W - (Ui * ONEoDZ_T_U(IMJK)/DEL_H*(Sx*Nx+Sy*Ny))    
+                     IF(NOC_WG) dudz_at_W = dudz_at_W - ((Ui-UW_g) * ONEoDZ_T_U(IMJK)/DEL_H*(Sx*Nx+Sy*Ny))    
 
                   ELSE
                      dudz_at_W =  ZERO
@@ -301,7 +314,7 @@
 
                   IF(U_NODE_AT_EB) THEN
                      CALL GET_DEL_H(IJK,'W_MOMENTUM',X_U(IJK),Y_U(IJK),Z_U(IJK),Del_H,Nx,Ny,Nz)
-                     SSX_CUT = - MU_GT_CUT * (U_G(IJK) - ZERO) / DEL_H * (Nz*Nx) * Area_W_CUT(IJK)   
+                     SSX_CUT = - MU_GT_CUT * (U_G(IJK) - UW_g) / DEL_H * (Nz*Nx) * Area_W_CUT(IJK)   
                   ELSE
                      SSX_CUT =  ZERO
                   ENDIF
@@ -334,7 +347,7 @@
 
                      dvdz_at_N =  (V_G(IJKP) - V_G(IJK)) * ONEoDZ_T_V(IJK)
 
-                     IF(NOC_WG) dvdz_at_N = dvdz_at_N - (Vi * ONEoDZ_T_V(IJK)/DEL_H*(Sx*Nx+Sy*Ny))      
+                     IF(NOC_WG) dvdz_at_N = dvdz_at_N - ((Vi-VW_g) * ONEoDZ_T_V(IJK)/DEL_H*(Sx*Nx+Sy*Ny))      
 
                   ELSE
                         dvdz_at_N =  ZERO
@@ -354,7 +367,7 @@
 
                      dvdz_at_S =  (V_G(IJMKP) - V_G(IJMK)) * ONEoDZ_T_V(IJMK)
 
-                     IF(NOC_WG) dvdz_at_S = dvdz_at_S - (Vi * ONEoDZ_T_V(IJMK)/DEL_H*(Sx*Nx+Sy*Ny))      
+                     IF(NOC_WG) dvdz_at_S = dvdz_at_S - ((Vi-VW_g) * ONEoDZ_T_V(IJMK)/DEL_H*(Sx*Nx+Sy*Ny))      
 
                   ELSE
                      dvdz_at_S =  ZERO
@@ -362,7 +375,7 @@
 
                   IF(V_NODE_AT_NB) THEN
                      CALL GET_DEL_H(IJK,'W_MOMENTUM',X_V(IJK),Y_V(IJK),Z_V(IJK),Del_H,Nx,Ny,Nz)
-                     SSY_CUT = - MU_GT_CUT * (V_G(IJK) - ZERO) / DEL_H * (Nz*Ny) * Area_W_CUT(IJK)   
+                     SSY_CUT = - MU_GT_CUT * (V_G(IJK) - VW_g) / DEL_H * (Nz*Ny) * Area_W_CUT(IJK)   
                   ELSE
                      SSY_CUT =  ZERO
                   ENDIF
@@ -378,7 +391,9 @@
 
                   SSZ = MU_GT(IJKT)*(W_G(IJKP)-W_G(IJK))*ONEoDZ_T_W(IJK)*AXY_W(IJK) - &
                         MU_GT(IJK)*(W_G(IJK)-W_G(IJKM))*OX(I)*ONEoDZ_T_W(IJKM)*AXY_W(IJKM) &
-                      - MU_GT_CUT * (W_g(IJK) - ZERO) / DEL_H * (Nz**2) * Area_W_CUT(IJK)       
+                      - MU_GT_CUT * (W_g(IJK) - WW_g) / DEL_H * (Nz**2) * Area_W_CUT(IJK)       
+
+
 
                END IF  ! CUT CELL
 

@@ -106,6 +106,7 @@
       DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
       DOUBLE PRECISION :: x_circle,y_circle,angle
       DOUBLE PRECISION :: MU_GT_CUT,SSX_CUT,SSZ_CUT
+      DOUBLE PRECISION :: UW_g,VW_g,WW_g
       INTEGER :: N_SUM 
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT 
@@ -220,16 +221,28 @@
                      CASE ('CG_NSW')
                         CUT_TAU_VG = .TRUE.
                         NOC_VG     = .TRUE.
+                        UW_g = ZERO
+                        VW_g = ZERO
+                        WW_g = ZERO
                      CASE ('CG_FSW')
                         CUT_TAU_VG = .FALSE.
                         NOC_VG     = .FALSE.
+                        UW_g = ZERO
+                        VW_g = ZERO
+                        WW_g = ZERO
                      CASE('CG_PSW')
                         IF(BC_HW_G(BC_V_ID(IJK))==UNDEFINED) THEN   ! same as NSW
                            CUT_TAU_VG = .TRUE.
                            NOC_VG     = .TRUE.
+                           UW_g = BC_UW_G(BCV)
+                           VW_g = BC_VW_G(BCV)
+                           WW_g = BC_WW_G(BCV)
                         ELSEIF(BC_HW_G(BC_V_ID(IJK))==ZERO) THEN   ! same as FSW
                            CUT_TAU_VG = .FALSE.
                            NOC_VG     = .FALSE.
+                           UW_g = ZERO
+                           VW_g = ZERO
+                           WW_g = ZERO
                         ELSE                              ! partial slip
                            CUT_TAU_VG = .FALSE.
                            NOC_VG     = .FALSE.
@@ -269,7 +282,7 @@
 
                      dudy_at_E =  (U_G(IJPK) - U_G(IJK)) * ONEoDY_N_U(IJK)
 
-                     IF(NOC_VG) dudy_at_E = dudy_at_E - (Ui * ONEoDY_N_U(IJK)/DEL_H*(Sx*Nx+Sz*Nz))        
+                     IF(NOC_VG) dudy_at_E = dudy_at_E - ((Ui-UW_g) * ONEoDY_N_U(IJK)/DEL_H*(Sx*Nx+Sz*Nz))        
 
                   ELSE
                      dudy_at_E =  ZERO
@@ -289,7 +302,7 @@
 
                      dudy_at_W =  (U_G(IMJPK) - U_G(IMJK)) * ONEoDY_N_U(IMJK)
 
-                     IF(NOC_VG) dudy_at_W = dudy_at_W - (Ui * ONEoDY_N_U(IMJK)/DEL_H*(Sx*Nx+Sz*Nz))    
+                     IF(NOC_VG) dudy_at_W = dudy_at_W - ((Ui-UW_g) * ONEoDY_N_U(IMJK)/DEL_H*(Sx*Nx+Sz*Nz))    
 
                   ELSE   
                      dudy_at_W =  ZERO
@@ -303,7 +316,7 @@
 
                  IF(U_NODE_AT_SE) THEN
                     CALL GET_DEL_H(IJK,'V_MOMENTUM',X_U(IJK),Y_U(IJK),Z_U(IJK),Del_H,Nx,Ny,Nz)
-                    SSX_CUT = - MU_GT_CUT * (U_G(IJK) - ZERO) / DEL_H * (Ny*Nx) * Area_V_CUT(IJK)        
+                    SSX_CUT = - MU_GT_CUT * (U_G(IJK) - UW_g) / DEL_H * (Ny*Nx) * Area_V_CUT(IJK)        
                  ELSE
                     SSX_CUT =  ZERO
                  ENDIF
@@ -319,7 +332,7 @@
 
                   SSY = MU_GT(IJKN)*(V_G(IJPK)-V_G(IJK))*ONEoDY_N_V(IJK)*AXZ_V(IJK) - MU_GT(&
                         IJK)*(V_G(IJK)-V_G(IJMK))*ONEoDY_N_V(IJMK)*AXZ_V(IJMK) &
-                      - MU_GT_CUT * (V_g(IJK) - ZERO) / DEL_H * (Ny**2) * Area_V_CUT(IJK)  
+                      - MU_GT_CUT * (V_g(IJK) - VW_g) / DEL_H * (Ny**2) * Area_V_CUT(IJK)  
 
 !           SSZ:
                   IF(DO_K) THEN  
@@ -343,7 +356,7 @@
 
                         dwdy_at_T =  (W_G(IJPK) - W_G(IJK)) * ONEoDY_N_W(IJK)
 
-                        IF(NOC_VG) dwdy_at_T = dwdy_at_T - (Wi * ONEoDY_N_W(IJK)/DEL_H*(Sx*Nx+Sz*Nz))    
+                        IF(NOC_VG) dwdy_at_T = dwdy_at_T - ((Wi-WW_g) * ONEoDY_N_W(IJK)/DEL_H*(Sx*Nx+Sz*Nz))    
 
                      ELSE
                         dwdy_at_T =  ZERO
@@ -363,7 +376,7 @@
 
                         dwdy_at_B =  (W_G(IJPKM) - W_G(IJKM)) * ONEoDY_N_W(IJKM)
 
-                        IF(NOC_VG) dwdy_at_B = dwdy_at_B - (Wi * ONEoDY_N_W(IJKM)/DEL_H*(Sx*Nx+Sz*Nz))        
+                        IF(NOC_VG) dwdy_at_B = dwdy_at_B - ((Wi-WW_g) * ONEoDY_N_W(IJKM)/DEL_H*(Sx*Nx+Sz*Nz))        
 
                      ELSE
                         dwdy_at_B =  ZERO
@@ -371,7 +384,7 @@
 
                      IF(W_NODE_AT_TS) THEN
                         CALL GET_DEL_H(IJK,'V_MOMENTUM',X_W(IJK),Y_W(IJK),Z_W(IJK),Del_H,Nx,Ny,Nz)
-                        SSZ_CUT = - MU_GT_CUT * (W_G(IJK) - ZERO) / DEL_H * (Ny*Nz) * Area_V_CUT(IJK)           
+                        SSZ_CUT = - MU_GT_CUT * (W_G(IJK) - WW_g) / DEL_H * (Ny*Nz) * Area_V_CUT(IJK)           
                      ELSE
                         SSZ_CUT =  ZERO
                      ENDIF
