@@ -52,6 +52,9 @@
       Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
       USE compar      
       USE mflux     
+
+      USE cutcell
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -266,7 +269,7 @@
 !
                IF (FLUID_AT(IJK)) THEN  
 !
-                   IF(WALL_AT(JP_OF(IJK)).OR.WALL_AT(JM_OF(IJK))) THEN 
+                  IF(WALL_AT(JP_OF(IJK)).OR.WALL_AT(JM_OF(IJK))) THEN 
                      A_M(IJK,1,M) = ZERO 
                      A_M(IJK,-1,M) = ZERO 
                      A_M(IJK,2,M) = ZERO 
@@ -277,7 +280,7 @@
                      B_M(IJK,M) =-((0.09D+0)**0.75*K_Turb_G(IJK)**1.5)/DY(J) &
                                  *2.0D+0/0.42D+0
 
-                   ELSE IF(WALL_AT(KP_OF(IJK)).OR.WALL_AT(KM_OF(IJK))) THEN 
+                  ELSE IF(WALL_AT(KP_OF(IJK)).OR.WALL_AT(KM_OF(IJK))) THEN 
                      A_M(IJK,1,M) = ZERO 
                      A_M(IJK,-1,M) = ZERO 
                      A_M(IJK,2,M) = ZERO 
@@ -287,23 +290,23 @@
                      A_M(IJK,0,M) = -ONE 
                      B_M(IJK,M) =-((0.09D+0)**0.75*K_Turb_G(IJK)**1.5)* &
                                   (ODZ(K)*OX(I)*2.0D+0)/0.42D+0
-                   ENDIF  !for identifying wall cells in J or K direction
+                  ENDIF  !for identifying wall cells in J or K direction
    
-                 IF(CYLINDRICAL) THEN
-                  IF (WALL_AT(IP_OF(IJK)))  THEN
-                   A_M(IJK,1,M) = ZERO 
-                   A_M(IJK,-1,M) = ZERO 
-                   A_M(IJK,2,M) = ZERO 
-                   A_M(IJK,-2,M) = ZERO 
-                   A_M(IJK,3,M) = ZERO 
-                   A_M(IJK,-3,M) = ZERO 
-                   A_M(IJK,0,M) = -ONE 
-                   B_M(IJK,M) =-((0.09D+0)**0.75*K_Turb_G(IJK)**1.5)/DX(I) &
-                               *2.0D+0/0.42D+0
+                  IF(CYLINDRICAL) THEN
+                     IF (WALL_AT(IP_OF(IJK)))  THEN
+                        A_M(IJK,1,M) = ZERO 
+                        A_M(IJK,-1,M) = ZERO 
+                        A_M(IJK,2,M) = ZERO 
+                        A_M(IJK,-2,M) = ZERO 
+                        A_M(IJK,3,M) = ZERO 
+                        A_M(IJK,-3,M) = ZERO 
+                        A_M(IJK,0,M) = -ONE 
+                        B_M(IJK,M) =-((0.09D+0)**0.75*K_Turb_G(IJK)**1.5)/DX(I) &
+                                    *2.0D+0/0.42D+0
 
                      ENDIF! for wall cells in I direction
 
-                 ELSE IF (WALL_AT(IP_OF(IJK)).OR.WALL_AT(IM_OF(IJK))) THEN
+                  ELSE IF (WALL_AT(IP_OF(IJK)).OR.WALL_AT(IM_OF(IJK))) THEN
                      A_M(IJK,1,M) = ZERO 
                      A_M(IJK,-1,M) = ZERO 
                      A_M(IJK,2,M) = ZERO 
@@ -315,6 +318,18 @@
                                    *2.0D+0/0.42D+0
 
                   ENDIF ! for cylindrical 
+
+                  IF(CUT_CELL_AT(IJK)) THEN 
+                     A_M(IJK,1,M) = ZERO 
+                     A_M(IJK,-1,M) = ZERO 
+                     A_M(IJK,2,M) = ZERO 
+                     A_M(IJK,-2,M) = ZERO 
+                     A_M(IJK,3,M) = ZERO 
+                     A_M(IJK,-3,M) = ZERO 
+                     A_M(IJK,0,M) = -ONE 
+
+                     B_M(IJK,M) =-((0.09D+0)**0.75*K_Turb_G(IJK)**1.5)/(0.42D+0*DELH_Scalar(IJK))
+                  ENDIF
 
 !			
                ENDIF  !for fluid at ijk
