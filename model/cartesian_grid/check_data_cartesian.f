@@ -30,7 +30,6 @@
       USE mpi_utility        
       USE bc
       USE DISCRETELEMENT
-      USE mfix_pic
 
       USE cutcell
       USE quadric
@@ -59,63 +58,56 @@
 
       IF(.NOT.CARTESIAN_GRID) RETURN
 
-      IF(GRANULAR_ENERGY) THEN
-         WRITE(*,*)'INPUT ERROR: CARTESIAN GRID OPTION NOT CURRENTLY'
-         WRITE(*,*)'AVALAIBLE WHEN SOLVING GRANULAR ENERGY EQUATION.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-         CALL MFIX_EXIT(MYPE)
-      ENDIF
+!      IF(GRANULAR_ENERGY) THEN
+!         WRITE(*,*)'INPUT ERROR: CARTESIAN GRID OPTION NOT CURRENTLY'
+!         WRITE(*,*)'AVALAIBLE WHEN SOLVING GRANULAR ENERGY EQUATION.'
+!         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+!         CALL MFIX_EXIT(MYPE)
+!      ENDIF
 
-      IF(DISCRETE_ELEMENT.AND.(.NOT.MPPIC)) THEN
-         WRITE(*,*)'INPUT ERROR: CARTESIAN GRID OPTION NOT CURRENTLY'
-         WRITE(*,*)'AVALAIBLE WITH SOFT_SPRING DISCRETE ELEMENT MODEL.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+      IF(DISCRETE_ELEMENT) THEN
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: CARTESIAN GRID OPTION NOT CURRENTLY'
+            WRITE(*,*)'AVALAIBLE WITH DISCRETE ELEMENT MODEL.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(COORDINATES=='CYLINDRICAL') THEN
-         WRITE(*,*)'INPUT ERROR: CARTESIAN GRID OPTION NOT AVAILABLE'
-         WRITE(*,*)'WITH CYLINDRICAL COORDINATE SYSTEM.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: CARTESIAN GRID OPTION NOT AVAILABLE'
+            WRITE(*,*)'WITH CYLINDRICAL COORDINATE SYSTEM.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
-      IF(USE_STL.AND.(.NOT.USE_MSH)) THEN
+      IF(USE_STL) THEN
          IF(DO_K) THEN 
             CALL GET_STL_DATA
          ELSE
-            WRITE(*,*) 'ERROR: STL METHOD VALID ONLY IN 3D.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*) 'ERROR: STL METHOD VALID ONLY IN 3D.'
+            ENDIF
             CALL MFIX_EXIT(MYPE) 
          ENDIF
          IF(N_QUADRIC > 0) THEN
-            WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND STL INPUT ARE SPECIFIED.'
-            WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND STL INPUT ARE SPECIFIED.'
+               WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
+            ENDIF
             CALL MFIX_EXIT(MYPE) 
          ENDIF
          IF(STL_BC_ID == UNDEFINED_I) THEN
-            WRITE(*,*) 'ERROR: STL_BC_ID NOT DEFINED.'
+         IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: STL_BC_ID NOT DEFINED.'
             CALL MFIX_EXIT(MYPE) 
          ENDIF
       ENDIF
-
-      IF(USE_MSH.AND.(.NOT.USE_STL)) THEN
-         IF(DO_K) THEN 
-            CALL GET_MSH_DATA
-         ELSE
-            WRITE(*,*) 'ERROR: MSH METHOD VALID ONLY IN 3D.'
-            CALL MFIX_EXIT(MYPE) 
-         ENDIF
-         IF(N_QUADRIC > 0) THEN
-            WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND MSH INPUT ARE SPECIFIED.'
-            WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
-            CALL MFIX_EXIT(MYPE) 
-         ENDIF
-      ENDIF
-
 
       IF(USE_POLYGON) THEN
          IF(DO_K) THEN 
-            WRITE(*,*) 'ERROR: POLYGON METHOD VALID ONLY IN 2D.'
+            IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: POLYGON METHOD VALID ONLY IN 2D.'
             CALL MFIX_EXIT(MYPE) 
          ELSE
             CALL GET_POLY_DATA
@@ -124,29 +116,37 @@
 
       IF(N_QUADRIC > 0) THEN
          IF(N_POLYGON > 0) THEN 
-            WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND POLYGON(S) DEFINED.'
-            WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND POLYGON(S) DEFINED.'
+               WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
+            ENDIF
             CALL MFIX_EXIT(MYPE) 
          ENDIF
          IF(N_USR_DEF > 0) THEN 
-            WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND USER-DEFINED FUNTION DEFINED.'
-            WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND USER-DEFINED FUNTION DEFINED.'
+               WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE.'
+            ENDIF
             CALL MFIX_EXIT(MYPE) 
          ENDIF
       ELSE
          IF((N_POLYGON > 0).AND.(N_USR_DEF > 0)) THEN 
-            WRITE(*,*) 'ERROR: POLYGON(S) AND USER-DEFINED FUNTION DEFINED.'
-            WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*) 'ERROR: POLYGON(S) AND USER-DEFINED FUNTION DEFINED.'
+               WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE.'
+            ENDIF
             CALL MFIX_EXIT(MYPE) 
          ENDIF
       ENDIF
 
       
       IF(N_QUADRIC > DIM_QUADRIC) THEN
-         WRITE(*,*)'INPUT ERROR: INVALID VALUE OF N_QUADRIC =', N_QUADRIC
-         WRITE(*,*)'MAXIMUM ACCEPTABLE VALUE IS DIM_QUADRIC =', DIM_QUADRIC
-         WRITE(*,*)'CHANGE MAXIMUM VALUE IN QUADRIC_MOD.F IF NECESSARY.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF N_QUADRIC =', N_QUADRIC
+            WRITE(*,*)'MAXIMUM ACCEPTABLE VALUE IS DIM_QUADRIC =', DIM_QUADRIC
+            WRITE(*,*)'CHANGE MAXIMUM VALUE IN QUADRIC_MOD.F IF NECESSARY.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
@@ -162,8 +162,10 @@
                norm = dsqrt(lambda_x(Q)**2 + lambda_y(Q)**2 + lambda_z(Q)**2)
 
                IF(norm < TOL_F) THEN
-                  WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, ' HAS ZERO COEFFICIENTS.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, ' HAS ZERO COEFFICIENTS.'
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
                   CALL MFIX_EXIT(MYPE)             
                ENDIF
 
@@ -180,8 +182,10 @@
                   lambda_y(Q) = lambda_y(Q) / norm
                   lambda_z(Q) = lambda_z(Q) / norm
                ELSE
-                  WRITE(*,*)'INPUT ERROR: PLANE:', Q, ' HAS ZERO NORMAL VECTOR.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: PLANE:', Q, ' HAS ZERO NORMAL VECTOR.'
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
                   CALL MFIX_EXIT(MYPE)             
                ENDIF
 
@@ -191,8 +195,10 @@
                                  ! Internal flow
 
                IF( Radius(Q) <= ZERO) THEN
-                  WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
                   CALL MFIX_EXIT(MYPE)             
                ELSE
                   lambda_x(Q) = ZERO
@@ -205,8 +211,10 @@
                                  ! Internal flow
 
                IF( Radius(Q) <= ZERO) THEN
-                  WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
                   CALL MFIX_EXIT(MYPE)             
                ELSE
                   lambda_x(Q) = ONE
@@ -219,8 +227,10 @@
                                  ! Internal flow
 
                IF( Radius(Q) <= ZERO) THEN
-                  WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
                   CALL MFIX_EXIT(MYPE)             
                ELSE
                   lambda_x(Q) = ONE
@@ -234,8 +244,10 @@
                                  ! External flow
 
                IF( Radius(Q) <= ZERO) THEN
-                  WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
                   CALL MFIX_EXIT(MYPE)             
                ELSE
                   lambda_x(Q) = ZERO
@@ -248,8 +260,10 @@
                                  ! External flow
 
                IF( Radius(Q) <= ZERO) THEN
-                  WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
                   CALL MFIX_EXIT(MYPE)             
                ELSE
                   lambda_x(Q) = -ONE
@@ -262,8 +276,10 @@
                                  ! External flow
 
                IF( Radius(Q) <= ZERO) THEN
-                  WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
                   CALL MFIX_EXIT(MYPE)             
                ELSE
                   lambda_x(Q) = -ONE
@@ -272,41 +288,14 @@
                   dquadric(Q) = Radius(Q)**2
                ENDIF
 
-            CASE ('SPHERE_INT')   ! The quadric is predefined as a sphere
-                                  ! Internal flow
-
-               IF( Radius(Q) <= ZERO) THEN
-                  WRITE(*,*)'INPUT ERROR: SPHERE:', Q, ' HAS INVALID RADIUS.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-                  CALL MFIX_EXIT(MYPE)             
-               ELSE
-                  lambda_x(Q) = ONE
-                  lambda_y(Q) = ONE
-                  lambda_z(Q) = ONE
-                  dquadric(Q) = -Radius(Q)**2
-               ENDIF
- 
-           CASE ('SPHERE_EXT')   ! The quadric is predefined as a sphere
-                                  ! External flow
-
-               IF( Radius(Q) <= ZERO) THEN
-                  WRITE(*,*)'INPUT ERROR: SPHERE:', Q, ' HAS INVALID RADIUS.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-                  CALL MFIX_EXIT(MYPE)             
-               ELSE
-                  lambda_x(Q) = -ONE
-                  lambda_y(Q) = -ONE
-                  lambda_z(Q) = -ONE
-                  dquadric(Q) = Radius(Q)**2
-               ENDIF
-
-
             CASE ('X_CONE')    ! The quadric is predefined as a cone, along x-axis
                                ! Internal flow
 
             IF(HALF_ANGLE(Q) <= ZERO .OR. HALF_ANGLE(Q) >= 90.0) THEN
-                  WRITE(*,*)'INPUT ERROR: CONE:', Q, ' HAS INCORRECT HALF-ANGLE.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: CONE:', Q, ' HAS INCORRECT HALF-ANGLE.'
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
                   CALL MFIX_EXIT(MYPE)             
                ELSE
                   tan_half_angle = DTAN(HALF_ANGLE(Q)/180.0*PI)
@@ -320,8 +309,10 @@
                                ! Internal flow
 
             IF(HALF_ANGLE(Q) <= ZERO .OR. HALF_ANGLE(Q) >= 90.0) THEN
-                  WRITE(*,*)'INPUT ERROR: CONE:', Q, ' HAS INCORRECT HALF-ANGLE.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: CONE:', Q, ' HAS INCORRECT HALF-ANGLE.'
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
                   CALL MFIX_EXIT(MYPE)             
                ELSE
                   tan_half_angle = DTAN(HALF_ANGLE(Q)/180.0*PI)
@@ -335,8 +326,10 @@
                                ! Internal flow
 
             IF(HALF_ANGLE(Q) <= ZERO .OR. HALF_ANGLE(Q) >= 90.0) THEN
-                  WRITE(*,*)'INPUT ERROR: CONE:', Q, ' HAS INCORRECT HALF-ANGLE.'
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: CONE:', Q, ' HAS INCORRECT HALF-ANGLE.'
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
                   CALL MFIX_EXIT(MYPE)             
                ELSE
                   tan_half_angle = DTAN(HALF_ANGLE(Q)/180.0*PI)
@@ -353,15 +346,19 @@
 
 
             CASE DEFAULT
-               WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, ' HAS INCORRECT FORM: ',quadric_form(Q)
-               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+               IF(MyPE == PE_IO) THEN
+                  WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, ' HAS INCORRECT FORM: ',quadric_form(Q)
+                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+               ENDIF
                CALL MFIX_EXIT(MYPE)             
 
          END SELECT
 
          IF(BC_ID_Q(Q) == UNDEFINED_I) THEN
-            WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, ' HAS NO ASSIGNED BC ID.'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, ' HAS NO ASSIGNED BC ID.'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
             CALL MFIX_EXIT(MYPE)
          ENDIF
 
@@ -372,10 +369,12 @@
 
 
          IF(N_GROUP > DIM_GROUP) THEN
-            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF N_GROUP =', N_GROUP
-            WRITE(*,*)'MAXIMUM ACCEPTABLE VALUE IS DIM_GROUP =', DIM_GROUP
-            WRITE(*,*)'CHANGE MAXIMUM VALUE IN QUADRIC_MOD.F IF NECESSARY.'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)'INPUT ERROR: INVALID VALUE OF N_GROUP =', N_GROUP
+               WRITE(*,*)'MAXIMUM ACCEPTABLE VALUE IS DIM_GROUP =', DIM_GROUP
+               WRITE(*,*)'CHANGE MAXIMUM VALUE IN QUADRIC_MOD.F IF NECESSARY.'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
             CALL MFIX_EXIT(MYPE)
          ENDIF
 
@@ -383,17 +382,21 @@
          DO I = 1,N_GROUP
 
             IF(GROUP_SIZE(I) < 1 .OR. GROUP_SIZE(I) > N_QUADRIC) THEN
-               WRITE(*,*)'INPUT ERROR: GROUP:', I, ' HAS INCORRECT SIZE:', GROUP_SIZE(I)
-               WRITE(*,*)'VALID GROUP SIZE RANGE IS:', 1, ' TO ', N_QUADRIC
-               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+              IF(MyPE == PE_IO) THEN
+                  WRITE(*,*)'INPUT ERROR: GROUP:', I, ' HAS INCORRECT SIZE:', GROUP_SIZE(I)
+                  WRITE(*,*)'VALID GROUP SIZE RANGE IS:', 1, ' TO ', N_QUADRIC
+                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+               ENDIF
                CALL MFIX_EXIT(MYPE)
             ENDIF
 
             DO J = 1,GROUP_SIZE(I)
                IF(GROUP_Q(I,J) < 1 .OR. GROUP_Q(I,J) > N_QUADRIC) THEN
-                  WRITE(*,*)'INPUT ERROR: GROUP_Q(', I,',',J, ') HAS INCORRECT VALUE:', GROUP_Q(I,J)
-                  WRITE(*,*)'VALID GROUP_Q RANGE IS:', 1, ' TO ', N_QUADRIC
-                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: GROUP_Q(', I,',',J, ') HAS INCORRECT VALUE:', GROUP_Q(I,J)
+                     WRITE(*,*)'VALID GROUP_Q RANGE IS:', 1, ' TO ', N_QUADRIC
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
                   CALL MFIX_EXIT(MYPE)
                ENDIF
             ENDDO
@@ -401,9 +404,11 @@
             GR = TRIM(GROUP_RELATION(I)) 
 
             IF(GR/='OR'.AND.GR/='AND'.AND.GR/='PIECEWISE') THEN
-               WRITE(*,*)'INPUT ERROR: GROUP:', I, ' HAS INCORRECT GROUP RELATION: ', GR
-               WRITE(*,*)'VALID GROUP RELATIONS ARE ''OR'',''AND'', AND ''PIECEWISE''. '
-               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+               IF(MyPE == PE_IO) THEN
+                  WRITE(*,*)'INPUT ERROR: GROUP:', I, ' HAS INCORRECT GROUP RELATION: ', GR
+                  WRITE(*,*)'VALID GROUP RELATIONS ARE ''OR'',''AND'', AND ''PIECEWISE''. '
+                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+               ENDIF
                CALL MFIX_EXIT(MYPE)
             ENDIF
 
@@ -414,9 +419,11 @@
             GR = TRIM(RELATION_WITH_PREVIOUS(I)) 
 
             IF(GR/='OR'.AND.GR/='AND') THEN
-               WRITE(*,*)'INPUT ERROR: GROUP:', I, ' HAS INCORRECT RELATION WITH PREVIOUS: ', GR
-               WRITE(*,*)'VALID GROUP RELATIONS ARE ''OR'', AND ''AND''. '
-               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+               IF(MyPE == PE_IO) THEN
+                  WRITE(*,*)'INPUT ERROR: GROUP:', I, ' HAS INCORRECT RELATION WITH PREVIOUS: ', GR
+                  WRITE(*,*)'VALID GROUP RELATIONS ARE ''OR'', AND ''AND''. '
+                  WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+               ENDIF
                CALL MFIX_EXIT(MYPE)
             ENDIF
          
@@ -426,151 +433,182 @@
 
 
       IF(TOL_SNAP(1)<ZERO.OR.TOL_SNAP(1)>HALF) THEN
-         WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SNAP IN X-DIRECTION =', TOL_SNAP(1)
-         WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 0.5.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SNAP IN X-DIRECTION =', TOL_SNAP(1)
+            WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 0.5.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF   
                 
       IF(TOL_SNAP(2)<ZERO.OR.TOL_SNAP(2)>HALF) THEN
-         WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SNAP IN Y-DIRECTION =', TOL_SNAP(2)
-         WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 0.5.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SNAP IN Y-DIRECTION =', TOL_SNAP(2)
+            WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 0.5.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF   
                 
       IF(TOL_SNAP(3)<ZERO.OR.TOL_SNAP(3)>HALF) THEN
-         WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SNAP IN Z-DIRECTION =', TOL_SNAP(3)
-         WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 0.5.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SNAP IN Z-DIRECTION =', TOL_SNAP(3)
+            WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 0.5.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF   
 
 
       IF(TOL_DELH<ZERO.OR.TOL_DELH>ONE) THEN
-         WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_DELH =', TOL_DELH
-         WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 1.0.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_DELH =', TOL_DELH
+            WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 1.0.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(TOL_SMALL_CELL<ZERO.OR.TOL_SMALL_CELL>ONE) THEN
-         WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SMALL_CELL =', TOL_SMALL_CELL
-         WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 1.0.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-         CALL MFIX_EXIT(MYPE)
-      ENDIF
-
-      IF(TOL_MERGE<ZERO.OR.TOL_MERGE>ONE) THEN
-         WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_MERGE =', TOL_MERGE
-         WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 1.0.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SMALL_CELL =', TOL_SMALL_CELL
+            WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 1.0.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(TOL_SMALL_AREA<ZERO.OR.TOL_SMALL_AREA>ONE) THEN
-         WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SMALL_AREA =', TOL_SMALL_AREA
-         WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 1.0.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SMALL_AREA =', TOL_SMALL_AREA
+            WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 1.0.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(ALPHA_MAX<ZERO) THEN
-         WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF ALPHA_MAX =', ALPHA_MAX
-         WRITE(*,*)'ACCEPTABLE VALUES ARE POSITIVE NUMBERS (E.G. 1.0).'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF ALPHA_MAX =', ALPHA_MAX
+            WRITE(*,*)'ACCEPTABLE VALUES ARE POSITIVE NUMBERS (E.G. 1.0).'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
 
       IF(TOL_F<ZERO) THEN
-         WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF TOL_F =', TOL_F
-         WRITE(*,*)'ACCEPTABLE VALUES ARE SMALL POSITIVE NUMBERS (E.G. 1.0E-9).'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF TOL_F =', TOL_F
+            WRITE(*,*)'ACCEPTABLE VALUES ARE SMALL POSITIVE NUMBERS (E.G. 1.0E-9).'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(TOL_POLY<ZERO) THEN
-         WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF TOL_POLY =', TOL_POLY
-         WRITE(*,*)'ACCEPTABLE VALUES ARE SMALL POSITIVE NUMBERS (E.G. 1.0E-9).'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF TOL_POLY =', TOL_POLY
+            WRITE(*,*)'ACCEPTABLE VALUES ARE SMALL POSITIVE NUMBERS (E.G. 1.0E-9).'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(ITERMAX_INT<0) THEN
-         WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF ITERMAX_INT =', ITERMAX_INT
-         WRITE(*,*)'ACCEPTABLE VALUES ARE LARGE POSITIVE INTEGERS (E.G. 10000).'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF ITERMAX_INT =', ITERMAX_INT
+            WRITE(*,*)'ACCEPTABLE VALUES ARE LARGE POSITIVE INTEGERS (E.G. 10000).'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(FAC_DIM_MAX_CUT_CELL<0.05.OR.FAC_DIM_MAX_CUT_CELL>ONE) THEN
-         WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF FAC_DIM_MAX_CUT_CELL =', FAC_DIM_MAX_CUT_CELL
-         WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.05 AND 1.0.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF FAC_DIM_MAX_CUT_CELL =', FAC_DIM_MAX_CUT_CELL
+            WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.05 AND 1.0.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(.NOT.CARTESIAN_GRID) THEN
          IF(WRITE_VTK_FILES) THEN
-            WRITE(*,*)'INPUT ERROR: VTK FILES CAN BE WRITTEN ONLY WHEN CARTESIAN GRID IS ACTIVATED.'
-            WRITE(*,*)'PLEASE SET WRITE_VTK_FILES = .FALSE. IN MFIX.DAT AND TRY AGAIN.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)'INPUT ERROR: VTK FILES CAN BE WRITTEN ONLY WHEN CARTESIAN GRID IS ACTIVATED.'
+               WRITE(*,*)'PLEASE SET WRITE_VTK_FILES = .FALSE. IN MFIX.DAT AND TRY AGAIN.'
+            ENDIF
             CALL MFIX_EXIT(MYPE) 
          ENDIF
       ENDIF
 
 
       IF(VTK_DT<ZERO) THEN
-         WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF VTK_DT =', VTK_DT
-         WRITE(*,*)'ACCEPTABLE VALUES ARE POSITIVE NUMBERS (E.G. 0.1).'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF VTK_DT =', VTK_DT
+            WRITE(*,*)'ACCEPTABLE VALUES ARE POSITIVE NUMBERS (E.G. 0.1).'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(FRAME<-1) THEN
-         WRITE(*,*)'INPUT ERROR: INALID VALUE OF FRAME =', FRAME
-         WRITE(*,*)'ACCEPTABLE VALUES ARE INTEGERS >= -1.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INALID VALUE OF FRAME =', FRAME
+            WRITE(*,*)'ACCEPTABLE VALUES ARE INTEGERS >= -1.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF((CG_SAFE_MODE(1)==1).AND.(PG_OPTION/=0)) THEN
          PG_OPTION = 0
-         WRITE(*,*)'WARNING: SAFE_MODE ACTIVATED FOR GAS PRESSURE, REVERTING TO PG_OPTION = 0'
+         IF(MyPE == PE_IO) WRITE(*,*)'WARNING: SAFE_MODE ACTIVATED FOR GAS PRESSURE, REVERTING TO PG_OPTION = 0'
       ENDIF
 
       IF(PG_OPTION <0 .OR. PG_OPTION>2) THEN
-         WRITE(*,*)'INPUT ERROR: INALID VALUE OF PG_OPTION =', PG_OPTION
-         WRITE(*,*)'ACCEPTABLE VALUES ARE 0,1,AND 2.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INALID VALUE OF PG_OPTION =', PG_OPTION
+            WRITE(*,*)'ACCEPTABLE VALUES ARE 0,1,AND 2.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(CG_UR_FAC(2)<ZERO.OR.CG_UR_FAC(2)>ONE) THEN
-         WRITE(*,*)'INPUT ERROR: INVALID VALUE OF CG_UR_FAC(2) =', CG_UR_FAC(2)
-         WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 1.0.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF CG_UR_FAC(2) =', CG_UR_FAC(2)
+            WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 1.0.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(BAR_WIDTH<10.OR.BAR_WIDTH>80) THEN
-         WRITE(*,*)'INPUT ERROR: INVALID VALUE OF BAR_WIDTH =', BAR_WIDTH
-         WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 10 AND 80.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF BAR_WIDTH =', BAR_WIDTH
+            WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 10 AND 80.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(BAR_RESOLUTION<ONE.OR.BAR_RESOLUTION>100.0) THEN
-         WRITE(*,*)'INPUT ERROR: INVALID VALUE OF BAR_RESOLUTION =', BAR_RESOLUTION
-         WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 100.0.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF BAR_RESOLUTION =', BAR_RESOLUTION
+            WRITE(*,*)'ACCEPTABLE VALUES ARE BETWEEN 0.0 AND 100.0.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
       IF(F_DASHBOARD<1) THEN
-         WRITE(*,*)'INPUT ERROR: INALID VALUE OF F_DASHBOARD =', F_DASHBOARD
-         WRITE(*,*)'ACCEPTABLE VALUES ARE INTEGERS >= 1.'
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INALID VALUE OF F_DASHBOARD =', F_DASHBOARD
+            WRITE(*,*)'ACCEPTABLE VALUES ARE INTEGERS >= 1.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
@@ -1134,9 +1172,11 @@
       QM1 = Q-1
       QP1 = Q+1
 
-      WRITE(*,*)' INFO FOR QUADRIC', Q
-      WRITE(*,*)' Defining Cone for Cylinder to Cylinder junction'
-      WRITE(*,*)' Between Quadrics ',QM1,' AND ', QP1
+      IF(MyPE == PE_IO) THEN
+         WRITE(*,*)' INFO FOR QUADRIC', Q
+         WRITE(*,*)' Defining Cone for Cylinder to Cylinder junction'
+         WRITE(*,*)' Between Quadrics ',QM1,' AND ', QP1
+      ENDIF
 
 
       IF((TRIM(QUADRIC_FORM(QM1))=='X_CYL_INT').AND.(TRIM(QUADRIC_FORM(QP1))=='X_CYL_INT')) THEN
@@ -1145,25 +1185,30 @@
 
          aligned = (t_y(QM1)==t_y(QP1)).AND.(t_z(QM1)==t_z(QP1)) 
          IF(.NOT.aligned) THEN
-            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
             call mfix_exit(myPE)
          ENDIF
 
          R1 = RADIUS(QM1)
          R2 = RADIUS(QP1)
          IF(R1==R2) THEN
-            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' HAVE THE SAME RADIUS'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' HAVE THE SAME RADIUS'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
             call mfix_exit(myPE)
          ENDIF
 
          x1 = clip_xmax(QM1)
          x2 = clip_xmin(QP1)
          IF(x2<=x1) THEN
-
-            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT CLIPPED PROPERLY'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT CLIPPED PROPERLY'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
             call mfix_exit(myPE)
          ENDIF
 
@@ -1182,8 +1227,10 @@
          t_y(Q) = t_y(QM1)
          t_z(Q) = t_z(QM1)
 
-         WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
-         WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
+            WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
+         ENDIF
 
 
       ELSEIF((TRIM(QUADRIC_FORM(QM1))=='Y_CYL_INT').AND.(TRIM(QUADRIC_FORM(QP1))=='Y_CYL_INT')) THEN
@@ -1192,25 +1239,30 @@
 
          aligned = (t_x(QM1)==t_x(QP1)).AND.(t_z(QM1)==t_z(QP1)) 
          IF(.NOT.aligned) THEN
-            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
             call mfix_exit(myPE)
          ENDIF
 
          R1 = RADIUS(QM1)
          R2 = RADIUS(QP1)
          IF(R1==R2) THEN
-            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' HAVE THE SAME RADIUS'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' HAVE THE SAME RADIUS'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
             call mfix_exit(myPE)
          ENDIF
 
          y1 = clip_ymax(QM1)
          y2 = clip_ymin(QP1)
          IF(y2<=y1) THEN
-
-            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT CLIPPED PROPERLY'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT CLIPPED PROPERLY'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
             call mfix_exit(myPE)
          ENDIF
 
@@ -1229,9 +1281,10 @@
          t_y(Q) = y1 - R1/tan_half_angle
          t_z(Q) = t_z(QM1)
 
-
-         WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
-         WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
+            WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
+         ENDIF
        
 
       ELSEIF((TRIM(QUADRIC_FORM(QM1))=='Z_CYL_INT').AND.(TRIM(QUADRIC_FORM(QP1))=='Z_CYL_INT')) THEN
@@ -1240,25 +1293,30 @@
 
          aligned = (t_x(QM1)==t_x(QP1)).AND.(t_y(QM1)==t_y(QP1)) 
          IF(.NOT.aligned) THEN
-            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
             call mfix_exit(myPE)
          ENDIF
 
          R1 = RADIUS(QM1)
          R2 = RADIUS(QP1)
          IF(R1==R2) THEN
-            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' HAVE THE SAME RADIUS'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' HAVE THE SAME RADIUS'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
             call mfix_exit(myPE)
          ENDIF
 
          z1 = clip_zmax(QM1)
          z2 = clip_zmin(QP1)
          IF(z2<=z1) THEN
-
-            WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT CLIPPED PROPERLY'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT CLIPPED PROPERLY'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
             call mfix_exit(myPE)
          ENDIF
 
@@ -1277,14 +1335,17 @@
          t_y(Q) = t_y(QM1)
          t_z(Q) = z1 - R1/tan_half_angle
 
-         WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
-         WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
+            WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
+         ENDIF
 
       ELSE
-         
-         WRITE(*,*) ' ERROR: C2C MUST BE DEFINED BETWEEN 2 CYLINDERS'
-         WRITE(*,*) ' QUADRIC:',QM1, ' IS ',  TRIM(QUADRIC_FORM(QM1))
-         WRITE(*,*) ' QUADRIC:',QP1, ' IS ',  TRIM(QUADRIC_FORM(QP1))
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*) ' ERROR: C2C MUST BE DEFINED BETWEEN 2 CYLINDERS'
+            WRITE(*,*) ' QUADRIC:',QM1, ' IS ',  TRIM(QUADRIC_FORM(QM1))
+            WRITE(*,*) ' QUADRIC:',QP1, ' IS ',  TRIM(QUADRIC_FORM(QP1))
+         ENDIF
          call mfix_exit(myPE)
 
       ENDIF
