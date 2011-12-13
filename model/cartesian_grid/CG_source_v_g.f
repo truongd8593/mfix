@@ -125,10 +125,13 @@
       DOUBLE PRECISION :: Vn,Vs,Ve,Vw, Vt,Vb
       DOUBLE PRECISION :: B_NOC
       DOUBLE PRECISION :: MU_GT_E,MU_GT_W,MU_GT_N,MU_GT_S,MU_GT_T,MU_GT_B,MU_GT_CUT
+      DOUBLE PRECISION :: VW_g
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !			virtual (added) mass
       DOUBLE PRECISION F_vir, ROP_MA, Vsn, Vss, U_se, Usc, Usw, Vse, Vsw, Wst, Wsb, Wsc, Vst, Vsb
+! Wall function
+      DOUBLE PRECISION :: W_F_Slip
 
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -181,19 +184,34 @@
             SELECT CASE (BCT)
                CASE ('CG_NSW')
                   NOC_VG = .TRUE.
+                  VW_g = ZERO
                   MU_GT_CUT = (VOL(IJK)*MU_GT(IJK) + VOL(IJKN)*MU_GT(IJKN))/(VOL(IJK) + VOL(IJKN))  
-                  A_M(IJK,0,M) = A_M(IJK,0,M)  - MU_GT_CUT * Area_V_CUT(IJK)/DELH_V(IJK)         
+
+                  IF(.NOT.K_EPSILON) THEN
+                     A_M(IJK,0,M) = A_M(IJK,0,M)  - MU_GT_CUT * Area_V_CUT(IJK)/DELH_V(IJK)         
+                  ELSE
+                     CALL Wall_Function(IJK,IJK,ONE/DELH_V(IJK),W_F_Slip)
+                     A_M(IJK,0,M) = A_M(IJK,0,M)  - MU_GT_CUT * Area_V_CUT(IJK)*(ONE-W_F_Slip)/DELH_V(IJK)         
+                  ENDIF
                CASE ('CG_FSW')
                   NOC_VG = .FALSE.
+                  VW_g = ZERO
                CASE('CG_PSW')
                   IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
                      NOC_VG = .TRUE.
+                     VW_g = BC_VW_G(BCV)
                      MU_GT_CUT = (VOL(IJK)*MU_GT(IJK) + VOL(IJKN)*MU_GT(IJKN))/(VOL(IJK) + VOL(IJKN))  
-                     A_M(IJK,0,M) = A_M(IJK,0,M)  - MU_GT_CUT * Area_V_CUT(IJK)/DELH_V(IJK)         
+                     A_M(IJK,0,M) = A_M(IJK,0,M)  - MU_GT_CUT * Area_V_CUT(IJK)/DELH_V(IJK)  
+                     B_M(IJK,M) = B_M(IJK,M) - MU_GT_CUT * VW_g * Area_V_CUT(IJK)/DELH_V(IJK)        
                   ELSEIF(BC_HW_G(BCV)==ZERO) THEN   ! same as FSW
                      NOC_VG = .FALSE.
+                     VW_g = ZERO
                   ELSE                              ! partial slip
                      NOC_VG = .FALSE.
+                     VW_g = BC_VW_G(BCV)
+                     MU_GT_CUT = (VOL(IJK)*MU_GT(IJK) + VOL(IJKN)*MU_GT(IJKN))/(VOL(IJK) + VOL(IJKN))  
+                     A_M(IJK,0,M) = A_M(IJK,0,M)  - MU_GT_CUT * Area_V_CUT(IJK)*(BC_HW_G(BCV))
+                     B_M(IJK,M) = B_M(IJK,M) - MU_GT_CUT * VW_g * Area_V_CUT(IJK)*(BC_HW_G(BCV))
                   ENDIF
                CASE ('NONE')
                   NOC_VG = .FALSE.
@@ -268,10 +286,10 @@
                MU_GT_S = MU_GT(IJKC)
 
 
-               B_NOC =     MU_GT_N * Axz_V(IJK)  * Vn * NOC_V_N(IJK)   *2.0d0&
-                       -   MU_GT_S * Axz_V(IJMK) * Vs * NOC_V_N(IJMK)  *2.0d0&
-                       +   MU_GT_E * Ayz_V(IJK)  * Ve * NOC_V_E(IJK)   &
-                       -   MU_GT_W * Ayz_V(IMJK) * Vw * NOC_V_E(IMJK)  
+               B_NOC =     MU_GT_N * Axz_V(IJK)  * (Vn-VW_g) * NOC_V_N(IJK)   *2.0d0&
+                       -   MU_GT_S * Axz_V(IJMK) * (Vs-VW_g) * NOC_V_N(IJMK)  *2.0d0&
+                       +   MU_GT_E * Ayz_V(IJK)  * (Ve-VW_g) * NOC_V_E(IJK)   &
+                       -   MU_GT_W * Ayz_V(IMJK) * (Vw-VW_g) * NOC_V_E(IMJK)  
 
                IF(DO_K) THEN
   
@@ -284,8 +302,8 @@
                   MU_GT_B = AVG_Y_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJKC),KM),&
                             AVG_Z_H(MU_GT(IJKBN),MU_GT(IJKN),KM),J)
 
-                  B_NOC = B_NOC + MU_GT_T * Axy_V(IJK)  * Vt * NOC_V_T(IJK)   &
-                                - MU_GT_B * Axy_V(IJKM) * Vb * NOC_V_T(IJKM) 
+                  B_NOC = B_NOC + MU_GT_T * Axy_V(IJK)  * (Vt-VW_g) * NOC_V_T(IJK)   &
+                                - MU_GT_B * Axy_V(IJKM) * (Vb-VW_g) * NOC_V_T(IJKM) 
 
                ENDIF
 
@@ -451,7 +469,7 @@
 ! 
 !                      Indices 
       INTEGER          I,  J, K, JM, I1, I2, J1, J2, K1, K2, IJK,& 
-                       IM, KM, IJKS, IJMK, IJPK 
+                       IM, KM, IJKS, IJMK, IJPK ,IMJK
 ! 
 !                      Solids phase 
       INTEGER          M 
@@ -515,6 +533,41 @@
 
                   B_M(IJK,M) = ZERO
 
+                  IF(K_EPSILON) THEN
+
+                     I = I_OF(IJK) 
+                     J = J_OF(IJK) 
+                     K = K_OF(IJK)
+
+                     IM = I - 1 
+                     JM = J - 1 
+                     KM = K - 1
+
+                  IF(DABS(NORMAL_V(IJK,2))/=ONE) THEN
+
+                     IF (V_MASTER_OF(IJK) == EAST_OF(IJK)) THEN 
+                        CALL Wall_Function(IJK,EAST_OF(IJK),ODX_E(I),W_F_Slip)
+                        A_M(IJK,E,M) = W_F_Slip
+                        A_M(IJK,0,M) = -ONE 
+                     ELSEIF (V_MASTER_OF(IJK) == WEST_OF(IJK)) THEN 
+                        CALL Wall_Function(IJK,WEST_OF(IJK),ODX_E(IM),W_F_Slip)
+                        A_M(IJK,W,M) = W_F_Slip
+                        A_M(IJK,0,M) = -ONE 
+                     ELSEIF (V_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN 
+                        A_M(IJK,N,M) = ONE 
+                     ELSEIF (V_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN 
+                        A_M(IJK,S,M) = ONE 
+                     ELSEIF (V_MASTER_OF(IJK) == TOP_OF(IJK)) THEN 
+                        A_M(IJK,T,M) = ONE 
+                     ELSEIF (V_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN 
+                        A_M(IJK,B,M) = ONE 
+                     ENDIF 
+
+                  ENDIF
+
+                  ENDIF
+
+
                ENDIF 
 
             CASE ('CG_FSW')
@@ -568,7 +621,7 @@
 
 
                   IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
-                     B_M(IJK,M) = ZERO
+                     B_M(IJK,M) = -BC_VW_G(BCV)
                   ELSEIF(BC_HW_G(BCV)==ZERO) THEN   ! same as FSW
                      B_M(IJK,M) = ZERO 
 
@@ -592,6 +645,60 @@
 
                   ELSE                              ! partial slip
 
+                     B_M(IJK,M) = ZERO 
+
+                     I = I_OF(IJK) 
+                     J = J_OF(IJK) 
+                     K = K_OF(IJK)
+
+                     IM = I - 1 
+                     JM = J - 1 
+                     KM = K - 1
+
+                     IMJK = FUNIJK(IM,J,K)
+
+                     IF(DABS(NORMAL_V(IJK,2))/=ONE) THEN
+
+                        IF (V_MASTER_OF(IJK) == EAST_OF(IJK)) THEN 
+!                          A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ODX_E(I)) 
+!                          A_M(IJK,E,M) = -(HALF*BC_HW_G(BCV)-ODX_E(I)) 
+!                          B_M(IJK,M) = -BC_HW_G(BCV)*BC_VW_G(BCV) 
+
+                           A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ONEoDX_E_V(IJK)) 
+                           A_M(IJK,E,M) = -(HALF*BC_HW_G(BCV)-ONEoDX_E_V(IJK)) 
+                           B_M(IJK,M) = -BC_HW_G(BCV)*BC_VW_G(BCV) 
+
+                        ELSEIF (V_MASTER_OF(IJK) == WEST_OF(IJK)) THEN 
+!                          A_M(IJK,W,M) = -(HALF*BC_HW_G(BCV)-ODX_E(IM)) 
+!                          A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ODX_E(IM)) 
+!                          B_M(IJK,M) = -BC_HW_G(BCV)*BC_VW_G(BCV) 
+
+                           A_M(IJK,W,M) = -(HALF*BC_HW_G(BCV)-ONEoDX_E_V(IMJK)) 
+                           A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ONEoDX_E_V(IMJK)) 
+                           B_M(IJK,M) = -BC_HW_G(BCV)*BC_VW_G(BCV) 
+
+
+                        ELSEIF (V_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN 
+
+                              A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ODY_N(J)) 
+                              A_M(IJK,N,M) = -(HALF*BC_HW_G(BCV)-ODY_N(J)) 
+                              B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV) 
+
+!                           print*,'vg master at north'
+                        ELSEIF (V_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN 
+
+                              A_M(IJK,S,M) = -(HALF*BC_HW_G(BCV)-ODY_N(JM)) 
+                              A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ODY_N(JM)) 
+                              B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV) 
+
+!                           print*,'vg master at south'
+                        ELSEIF (V_MASTER_OF(IJK) == TOP_OF(IJK)) THEN 
+                           A_M(IJK,T,M) = ONE 
+                        ELSEIF (V_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN 
+                           A_M(IJK,B,M) = ONE 
+                        ENDIF 
+
+                     ENDIF
 
 
 

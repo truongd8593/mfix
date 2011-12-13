@@ -126,6 +126,7 @@
       DOUBLE PRECISION :: P_CUT,z_plane,DH,Nx,Ny,Nz,B_NOC
       DOUBLE PRECISION :: x_circle,y_circle, Angle
       DOUBLE PRECISION :: MU_GT_E,MU_GT_W,MU_GT_N,MU_GT_S,MU_GT_T,MU_GT_B,MU_GT_CUT
+      DOUBLE PRECISION :: UW_g
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 
@@ -135,6 +136,8 @@
 
 !			virtual (added) mass
       DOUBLE PRECISION F_vir, ROP_MA, U_se, Usw, Vsn, Vss, Vsc, Usn, Uss, Wsb, Wst, Wse, Wsc, Usb, Ust
+! Wall function
+      DOUBLE PRECISION :: W_F_Slip
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -190,19 +193,34 @@
             SELECT CASE (BCT)
                CASE ('CG_NSW')
                   NOC_UG = .TRUE.
+                  UW_g = ZERO
                   MU_GT_CUT =  (VOL(IJK)*MU_GT(IJK) + VOL(IPJK)*MU_GT(IJKE))/(VOL(IJK) + VOL(IPJK))
-                  A_M(IJK,0,M) = A_M(IJK,0,M) - MU_GT_CUT * Area_U_CUT(IJK)/DELH_U(IJK) 
+
+                  IF(.NOT.K_EPSILON) THEN
+                     A_M(IJK,0,M) = A_M(IJK,0,M) - MU_GT_CUT * Area_U_CUT(IJK)/DELH_U(IJK) 
+                  ELSE
+                     CALL Wall_Function(IJK,IJK,ONE/DELH_U(IJK),W_F_Slip)
+                     A_M(IJK,0,M) = A_M(IJK,0,M)  - MU_GT_CUT * Area_U_CUT(IJK)*(ONE-W_F_Slip)/DELH_U(IJK)         
+                  ENDIF
                CASE ('CG_FSW')
                   NOC_UG = .FALSE.
+                  UW_g = ZERO
                CASE('CG_PSW')
                   IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
                      NOC_UG = .TRUE.
+                     UW_g = BC_UW_G(BCV)
                      MU_GT_CUT =  (VOL(IJK)*MU_GT(IJK) + VOL(IPJK)*MU_GT(IJKE))/(VOL(IJK) + VOL(IPJK))
                      A_M(IJK,0,M) = A_M(IJK,0,M) - MU_GT_CUT * Area_U_CUT(IJK)/DELH_U(IJK) 
+                     B_M(IJK,M) = B_M(IJK,M) - MU_GT_CUT * UW_g * Area_U_CUT(IJK)/DELH_U(IJK) 
                   ELSEIF(BC_HW_G(BCV)==ZERO) THEN   ! same as FSW
                      NOC_UG = .FALSE.
+                     UW_g = ZERO
                   ELSE                              ! partial slip
                      NOC_UG = .FALSE.
+                     UW_g = BC_UW_G(BCV)
+                     MU_GT_CUT =  (VOL(IJK)*MU_GT(IJK) + VOL(IPJK)*MU_GT(IJKE))/(VOL(IJK) + VOL(IPJK))
+                     A_M(IJK,0,M) = A_M(IJK,0,M) - MU_GT_CUT * Area_U_CUT(IJK)*(BC_HW_G(BCV))
+                     B_M(IJK,M) = B_M(IJK,M) - MU_GT_CUT * UW_g * Area_U_CUT(IJK)*(BC_HW_G(BCV))
                   ENDIF
                CASE ('NONE')
                   NOC_UG = .FALSE.
@@ -272,10 +290,10 @@
                MU_GT_S = AVG_X_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJKC),JM),&
                                  AVG_Y_H(MU_GT(IJKSE),MU_GT(IJKE),JM),I)
 
-               B_NOC =     MU_GT_E * Ayz_U(IJK)  * Ue * NOC_U_E(IJK)  *2.0d0&
-                       -   MU_GT_W * Ayz_U(IMJK) * Uw * NOC_U_E(IMJK) *2.0d0&
-                       +   MU_GT_N * Axz_U(IJK)  * Un * NOC_U_N(IJK)  &
-                       -   MU_GT_S * Axz_U(IJMK) * Us * NOC_U_N(IJMK) 
+               B_NOC =     MU_GT_E * Ayz_U(IJK)  * (Ue-UW_g) * NOC_U_E(IJK)  *2.0d0&
+                       -   MU_GT_W * Ayz_U(IMJK) * (Uw-UW_g) * NOC_U_E(IMJK) *2.0d0&
+                       +   MU_GT_N * Axz_U(IJK)  * (Un-UW_g) * NOC_U_N(IJK)  &
+                       -   MU_GT_S * Axz_U(IJMK) * (Us-UW_g) * NOC_U_N(IJMK) 
 
                IF(DO_K) THEN
 
@@ -288,8 +306,8 @@
                   MU_GT_B = AVG_X_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJKC),KM),&
                             AVG_Z_H(MU_GT(IJKBE),MU_GT(IJKE),KM),I)
 
-                  B_NOC = B_NOC  +   MU_GT_T * Axy_U(IJK)  * Ut * NOC_U_T(IJK)  &
-                                 -   MU_GT_B * Axy_U(IJKM) * Ub * NOC_U_T(IJKM) 
+                  B_NOC = B_NOC  +   MU_GT_T * Axy_U(IJK)  * (Ut-UW_g) * NOC_U_T(IJK)  &
+                                 -   MU_GT_B * Axy_U(IJKM) * (Ub-UW_g) * NOC_U_T(IJKM) 
                ENDIF
 
                B_M(IJK,M) = B_M(IJK,M)   +  B_NOC
@@ -455,7 +473,7 @@
 ! 
 !                      Indices 
       INTEGER          I,  J, K, IM, I1, I2, J1, J2, K1, K2, IJK,& 
-                       JM, KM, IJKW, IMJK, IP, IPJK 
+                       JM, KM, IJKW, IMJK, IP, IPJK ,IJMK,IJKM
 ! 
 !                      Solids phase 
       INTEGER          M 
@@ -476,7 +494,7 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 
-      INTEGER   IJKDB1,IJKDB2 
+      INTEGER   IJKDB1,IJKDB2
 
       LOGICAL :: PRINT_FLAG
 !-----------------------------------------------
@@ -519,6 +537,43 @@
                   A_M(IJK,0,M) = -ONE 
 
                   B_M(IJK,M) = ZERO
+
+                  IF(K_EPSILON) THEN
+
+                     I = I_OF(IJK) 
+                     J = J_OF(IJK) 
+                     K = K_OF(IJK)
+
+                     IM = I - 1 
+                     JM = J - 1 
+                     KM = K - 1
+
+                     IF(DABS(NORMAL_U(IJK,1))/=ONE) THEN
+
+                        IF (U_MASTER_OF(IJK) == EAST_OF(IJK)) THEN 
+                           CALL Wall_Function(IJK,EAST_OF(IJK),ODX_E(I),W_F_Slip)
+                           A_M(IJK,E,M) = W_F_Slip
+                           A_M(IJK,0,M) = -ONE 
+                        ELSEIF (U_MASTER_OF(IJK) == WEST_OF(IJK)) THEN 
+                           CALL Wall_Function(IJK,WEST_OF(IJK),ODX_E(IM),W_F_Slip)
+                           A_M(IJK,W,M) = W_F_Slip
+                           A_M(IJK,0,M) = -ONE 
+                        ELSEIF (U_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN 
+                           CALL Wall_Function(IJK,NORTH_OF(IJK),ODY_N(J),W_F_Slip)
+                           A_M(IJK,N,M) = W_F_Slip
+                           A_M(IJK,0,M) = -ONE 
+                        ELSEIF (U_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN 
+                           CALL Wall_Function(IJK,SOUTH_OF(IJK),ODY_N(JM),W_F_Slip)
+                           A_M(IJK,S,M) = W_F_Slip
+                           A_M(IJK,0,M) = -ONE 
+                        ELSEIF (U_MASTER_OF(IJK) == TOP_OF(IJK)) THEN 
+                           A_M(IJK,T,M) = ONE 
+                        ELSEIF (U_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN 
+                           A_M(IJK,B,M) = ONE 
+                        ENDIF 
+                     ENDIF
+
+                  ENDIF
 
                ENDIF
 
@@ -573,7 +628,7 @@
 
 
                   IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
-                     B_M(IJK,M) = ZERO
+                     B_M(IJK,M) = -BC_UW_G(BCV)
                   ELSEIF(BC_HW_G(BCV)==ZERO) THEN   ! same as FSW
                      B_M(IJK,M) = ZERO 
 
@@ -597,9 +652,79 @@
 
                   ELSE                              ! partial slip
 
+                     B_M(IJK,M) = ZERO 
+
+                     I = I_OF(IJK) 
+                     J = J_OF(IJK) 
+                     K = K_OF(IJK)
+
+                     IM = I - 1 
+                     JM = J - 1 
+                     KM = K - 1
+
+                     IMJK = FUNIJK(IM,J,K)
+                     IJMK = FUNIJK(I,JM,K)
+                     IJKM = FUNIJK(I,J,KM)
 
 
+                     IF(DABS(NORMAL_U(IJK,1))/=ONE) THEN
 
+                        IF (U_MASTER_OF(IJK) == EAST_OF(IJK)) THEN 
+                           A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ONEoDX_E_U(IJK)) 
+                           A_M(IJK,E,M) = -(HALF*BC_HW_G(BCV)-ONEoDX_E_U(IJK)) 
+                           B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV) 
+
+!                           A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ODX_E(I)) 
+!                           A_M(IJK,E,M) = -(HALF*BC_HW_G(BCV)-ODX_E(I)) 
+!                           B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV) 
+!                           print*,'ug master at east'
+                        ELSEIF (U_MASTER_OF(IJK) == WEST_OF(IJK)) THEN 
+                           A_M(IJK,W,M) = -(HALF*BC_HW_G(BCV)-ONEoDX_E_U(IMJK)) 
+                           A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ONEoDX_E_U(IMJK)) 
+                           B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV) 
+
+!                           A_M(IJK,W,M) = -(HALF*BC_HW_G(BCV)-ODX_E(IM)) 
+!                           A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ODX_E(IM)) 
+!                           B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV) 
+!                           print*,'ug master at west'
+                        ELSEIF (U_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN 
+
+                           A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ONEoDY_N_U(IJK)) 
+                           A_M(IJK,N,M) = -(HALF*BC_HW_G(BCV)-ONEoDY_N_U(IJK)) 
+                           B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV) 
+
+!                           A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ODY_N(J)) 
+!                           A_M(IJK,N,M) = -(HALF*BC_HW_G(BCV)-ODY_N(J)) 
+!                           B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV) 
+                        ELSEIF (U_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN 
+                           A_M(IJK,S,M) = -(HALF*BC_HW_G(BCV)-ONEoDY_N_U(IJMK)) 
+                           A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ONEoDY_N_U(IJMK)) 
+                           B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV) 
+
+!                           A_M(IJK,S,M) = -(HALF*BC_HW_G(BCV)-ODY_N(JM)) 
+!                           A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ODY_N(JM)) 
+!                           B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV) 
+                        ELSEIF (U_MASTER_OF(IJK) == TOP_OF(IJK)) THEN 
+                              A_M(IJK,0,M)=-(HALF*BC_HW_G(L)+ONEoDZ_T_U(IJK)) 
+                              A_M(IJK,T,M)=-(HALF*BC_HW_G(L)-ONEoDZ_T_U(IJK)) 
+                              B_M(IJK,M) = -BC_HW_G(L)*BC_UW_G(L) 
+
+!                              A_M(IJK,0,M)=-(HALF*BC_HW_G(L)+ODZ_T(K)*OX_E(I)) 
+!                              A_M(IJK,T,M)=-(HALF*BC_HW_G(L)-ODZ_T(K)*OX_E(I)) 
+!                              B_M(IJK,M) = -BC_HW_G(L)*BC_UW_G(L) 
+                        ELSEIF (U_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN 
+                              A_M(IJK,B,M) = -(HALF*BC_HW_G(L)-ONEoDZ_T_U(IJKM))
+                              A_M(IJK,0,M) = -(HALF*BC_HW_G(L)+ONEoDZ_T_U(IJKM))
+                              B_M(IJK,M) = -BC_HW_G(L)*BC_UW_G(L) 
+
+!                              A_M(IJK,B,M) = -(HALF*BC_HW_G(L)-ODZ_T(KM)*OX_E(I&
+!                                 )) 
+!                              A_M(IJK,0,M) = -(HALF*BC_HW_G(L)+ODZ_T(KM)*OX_E(I&
+!                                 )) 
+!                              B_M(IJK,M) = -BC_HW_G(L)*BC_UW_G(L) 
+                        ENDIF 
+
+                     ENDIF
 
                   ENDIF
 

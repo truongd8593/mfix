@@ -126,10 +126,15 @@
       DOUBLE PRECISION :: Ue,Uw,Un,Us,Ut,Ub
       DOUBLE PRECISION :: P_CUT,z_plane,DH,Nx,Ny,Nz,B_NOC
       DOUBLE PRECISION :: MU_S_E,MU_S_W,MU_S_N,MU_S_S,MU_S_T,MU_S_B,MU_S_CUT
+      DOUBLE PRECISION :: UW_s
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !			virtual (added) mass
       DOUBLE PRECISION F_vir, ROP_MA, Uge, Ugw, Vgw, Vge, Vgn, Vgs,Vgc, Ugn, Ugs, Wgb, Wgt, Wge, Wgc, Ugb, Ugt
+
+      DOUBLE PRECISION :: ep_star_avg,TH_avg,EPs_avg,F_2
+!                      radial distribution function 
+      DOUBLE PRECISION , EXTERNAL :: G_0CS
 
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -205,22 +210,42 @@
                   SELECT CASE (BCT)
                      CASE ('CG_NSW')
                         NOC_US = .TRUE.
+                        UW_s = ZERO
                         MU_S_CUT =  (VOL(IJK)*MU_S(IJK,M) + VOL(IPJK)*MU_S(IJKE,M))/(VOL(IJK) + VOL(IPJK))
                         A_M(IJK,0,M) = A_M(IJK,0,M) - MU_S_CUT * Area_U_CUT(IJK)/DELH_U(IJK)  
                      CASE ('CG_FSW')
                         NOC_US = .FALSE.
+                        UW_s = ZERO
                      CASE('CG_PSW')
-                        IF(BC_HW_S(BCV,M)==UNDEFINED) THEN   ! same as NSW
+                        IF(BC_JJ_PS(BCV)==1) THEN   ! Johnson-Jackson partial slip bc
+                           NOC_US = .FALSE.
+                           UW_s = BC_UW_S(BCV,M)
+                           CALL CG_CALC_GRBDRY(IJK, 'U_MOMENTUM', M, BCV, F_2)
+                           A_M(IJK,0,M) = A_M(IJK,0,M) - Area_U_CUT(IJK)*F_2
+                           B_M(IJK,M) = B_M(IJK,M) - Area_U_CUT(IJK)*F_2*UW_s
+                        ELSEIF(BC_HW_S(BCV,M)==UNDEFINED) THEN   ! same as NSW
                            NOC_US = .TRUE.
+                           UW_s = BC_UW_S(BCV,M)
                            MU_S_CUT =  (VOL(IJK)*MU_S(IJK,M) + VOL(IPJK)*MU_S(IJKE,M))/(VOL(IJK) + VOL(IPJK))
                            A_M(IJK,0,M) = A_M(IJK,0,M) - MU_S_CUT * Area_U_CUT(IJK)/DELH_U(IJK)  
+                           B_M(IJK,M) = B_M(IJK,M) - MU_S_CUT * UW_s * Area_U_CUT(IJK)/DELH_U(IJK) 
                         ELSEIF(BC_HW_S(BCV,M)==ZERO) THEN   ! same as FSW
                            NOC_US = .FALSE.
+                           UW_s = ZERO
                         ELSE                              ! partial slip
                            NOC_US = .FALSE.
+                           UW_s = BC_UW_S(BCV,M)
+                           MU_S_CUT =  (VOL(IJK)*MU_S(IJK,M) + VOL(IPJK)*MU_S(IJKE,M))/(VOL(IJK) + VOL(IPJK))
+                           A_M(IJK,0,M) = A_M(IJK,0,M) - MU_S_CUT * Area_U_CUT(IJK)*(BC_HW_S(BCV,M)) 
+                           B_M(IJK,M) = B_M(IJK,M) - MU_S_CUT * UW_s * Area_U_CUT(IJK)*(BC_HW_S(BCV,M))
                         ENDIF
+
+
+
                      CASE ('NONE')
                         NOC_US = .FALSE.
+
+
                   END SELECT 
 
                   IF(NOC_US)THEN
@@ -291,10 +316,10 @@
                                AVG_Y_H(MU_S(IJKSE,M),MU_S(IJKE,M),JM),I)
 
 
-                     B_NOC =   MU_S_E * Ayz_U(IJK)  * Ue * NOC_U_E(IJK)  *2.0d0&
-                           -   MU_S_W * Ayz_U(IMJK) * Uw * NOC_U_E(IMJK) *2.0d0&
-                           +   MU_S_N * Axz_U(IJK)  * Un * NOC_U_N(IJK)  &
-                           -   MU_S_S * Axz_U(IJMK) * Us * NOC_U_N(IJMK) 
+                     B_NOC =   MU_S_E * Ayz_U(IJK)  * (Ue-UW_s) * NOC_U_E(IJK)  *2.0d0&
+                           -   MU_S_W * Ayz_U(IMJK) * (Uw-UW_s) * NOC_U_E(IMJK) *2.0d0&
+                           +   MU_S_N * Axz_U(IJK)  * (Un-UW_s) * NOC_U_N(IJK)  &
+                           -   MU_S_S * Axz_U(IJMK) * (Us-UW_s) * NOC_U_N(IJMK) 
 
 
 
@@ -309,8 +334,8 @@
                         MU_S_B = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJKC,M),KM),&
                                  AVG_Z_H(MU_S(IJKBE,M),MU_S(IJKE,M),KM),I)
 
-                        B_NOC = B_NOC  +   MU_S_T * Axy_U(IJK)  * Ut * NOC_U_T(IJK)  &
-                                       -   MU_S_B * Axy_U(IJKM) * Ub * NOC_U_T(IJKM) 
+                        B_NOC = B_NOC  +   MU_S_T * Axy_U(IJK)  * (Ut-UW_s) * NOC_U_T(IJK)  &
+                                       -   MU_S_B * Axy_U(IJKM) * (Ub-UW_s) * NOC_U_T(IJKM) 
                      ENDIF
  
                      B_M(IJK,M) = B_M(IJK,M)   +  B_NOC
@@ -586,7 +611,7 @@
 
 
                   IF(BC_HW_S(BCV,M)==UNDEFINED) THEN   ! same as NSW
-                     B_M(IJK,M) = ZERO
+                     B_M(IJK,M) = -BC_UW_S(BCV,M)
                   ELSEIF(BC_HW_S(BCV,M)==ZERO) THEN   ! same as FSW
                      B_M(IJK,M) = ZERO 
 
@@ -608,11 +633,27 @@
 
                      ENDIF
 
-                  ELSE                              ! partial slip
+                  ELSE                              ! partial slip  (WARNING:currently same as FSW)
 
+                     B_M(IJK,M) = ZERO 
 
+                     IF(DABS(NORMAL_U(IJK,1))/=ONE) THEN
+ 
+                        IF (U_MASTER_OF(IJK) == EAST_OF(IJK)) THEN 
+                           A_M(IJK,E,M) = ONE 
+                        ELSEIF (U_MASTER_OF(IJK) == WEST_OF(IJK)) THEN 
+                           A_M(IJK,W,M) = ONE 
+                        ELSEIF (U_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN 
+                           A_M(IJK,N,M) = ONE 
+                        ELSEIF (U_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN 
+                           A_M(IJK,S,M) = ONE 
+                        ELSEIF (U_MASTER_OF(IJK) == TOP_OF(IJK)) THEN 
+                           A_M(IJK,T,M) = ONE 
+                        ELSEIF (U_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN 
+                           A_M(IJK,B,M) = ONE 
+                        ENDIF 
 
-
+                     ENDIF
 
                   ENDIF
 

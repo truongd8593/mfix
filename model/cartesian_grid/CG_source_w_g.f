@@ -125,10 +125,13 @@
       DOUBLE PRECISION :: We,Ww,Wn,Ws,Wt,Wb
       DOUBLE PRECISION :: B_NOC
       DOUBLE PRECISION :: MU_GT_E,MU_GT_W,MU_GT_N,MU_GT_S,MU_GT_T,MU_GT_B,MU_GT_CUT
+      DOUBLE PRECISION :: WW_g
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !			virtual (added) mass
       DOUBLE PRECISION F_vir, ROP_MA, U_se, Usw, Ust, Vsb, Vst, Wse, Wsw, Wsn, Wss, Wst, Wsb, Usc,Vsc,Vsn,Vss
+! Wall function
+      DOUBLE PRECISION :: W_F_Slip
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -180,19 +183,36 @@
             SELECT CASE (BCT)
                CASE ('CG_NSW')
                   NOC_WG = .TRUE.
+                  WW_g = ZERO
                   MU_GT_CUT =  (VOL(IJK)*MU_GT(IJK) + VOL(IJKT)*MU_GT(IJKT))/(VOL(IJK) + VOL(IJKT))
-                  A_M(IJK,0,M) = A_M(IJK,0,M) - MU_GT_CUT * Area_W_CUT(IJK)/DELH_W(IJK)
+
+                  IF(.NOT.K_EPSILON) THEN
+                     A_M(IJK,0,M) = A_M(IJK,0,M) - MU_GT_CUT * Area_W_CUT(IJK)/DELH_W(IJK)
+                  ELSE
+                     CALL Wall_Function(IJK,IJK,ONE/DELH_W(IJK),W_F_Slip)
+                     A_M(IJK,0,M) = A_M(IJK,0,M)  - MU_GT_CUT * Area_W_CUT(IJK)*(ONE-W_F_Slip)/DELH_W(IJK)         
+                  ENDIF
+
                CASE ('CG_FSW')
                   NOC_WG = .FALSE.
+                  WW_g = ZERO
                CASE('CG_PSW')
                   IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
                      NOC_WG = .TRUE.
+                     WW_g = BC_WW_G(BCV)
                      MU_GT_CUT = (VOL(IJK)*MU_GT(IJK) + VOL(IJKT)*MU_GT(IJKT))/(VOL(IJK) + VOL(IJKT))
                      A_M(IJK,0,M) = A_M(IJK,0,M) - MU_GT_CUT * Area_W_CUT(IJK)/DELH_W(IJK)
+                     B_M(IJK,M) = B_M(IJK,M) - MU_GT_CUT * WW_g * Area_W_CUT(IJK)/DELH_W(IJK) 
                   ELSEIF(BC_HW_G(BCV)==ZERO) THEN   ! same as FSW
                      NOC_WG = .FALSE.
+                     WW_g = ZERO
                   ELSE                              ! partial slip
                      NOC_WG = .FALSE.
+                     WW_g = BC_WW_G(BCV)
+                     MU_GT_CUT = (VOL(IJK)*MU_GT(IJK) + VOL(IJKT)*MU_GT(IJKT))/(VOL(IJK) + VOL(IJKT))
+                     A_M(IJK,0,M) = A_M(IJK,0,M) - MU_GT_CUT * Area_W_CUT(IJK)*(BC_HW_G(BCV))
+                     B_M(IJK,M) = B_M(IJK,M) - MU_GT_CUT * WW_g * Area_W_CUT(IJK)*(BC_HW_G(BCV))
+
                   ENDIF
                CASE ('NONE')
                   NOC_WG = .FALSE.
@@ -274,12 +294,12 @@
                MU_GT_T = MU_GT(IJKT)
                MU_GT_B = MU_GT(IJKC)
 
-               B_NOC =     MU_GT_E * Ayz_W(IJK)  * We * NOC_W_E(IJK)  &
-                       -   MU_GT_W * Ayz_W(IMJK) * Ww * NOC_W_E(IMJK) &
-                       +   MU_GT_N * Axz_W(IJK)  * Wn * NOC_W_N(IJK)  &
-                       -   MU_GT_S * Axz_W(IJMK) * Ws * NOC_W_N(IJMK) &
-                       +   MU_GT_T * Axy_W(IJK)  * Wt * NOC_W_T(IJK)  *2.0d0&
-                       -   MU_GT_B * Axy_W(IJKM) * Wb * NOC_W_T(IJKM) *2.0D0
+               B_NOC =     MU_GT_E * Ayz_W(IJK)  * (We-WW_g) * NOC_W_E(IJK)  &
+                       -   MU_GT_W * Ayz_W(IMJK) * (Ww-WW_g) * NOC_W_E(IMJK) &
+                       +   MU_GT_N * Axz_W(IJK)  * (Wn-WW_g) * NOC_W_N(IJK)  &
+                       -   MU_GT_S * Axz_W(IJMK) * (Ws-WW_g) * NOC_W_N(IJMK) &
+                       +   MU_GT_T * Axy_W(IJK)  * (Wt-WW_g) * NOC_W_T(IJK)  *2.0d0&
+                       -   MU_GT_B * Axy_W(IJKM) * (Wb-WW_g) * NOC_W_T(IJKM) *2.0D0
 
                B_M(IJK,M) = B_M(IJK,M)   +  B_NOC
             ENDIF
@@ -560,7 +580,7 @@
 
 
                   IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
-                     B_M(IJK,M) = ZERO
+                     B_M(IJK,M) = -BC_WW_G(BCV)
                   ELSEIF(BC_HW_G(BCV)==ZERO) THEN   ! same as FSW
                      B_M(IJK,M) = ZERO 
 
