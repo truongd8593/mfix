@@ -1662,6 +1662,9 @@
       Use vshear
       USE compar
       USE sendrecv
+
+      USE cutcell
+
       IMPLICIT NONE
 
 !-----------------------------------------------  
@@ -1747,6 +1750,9 @@
 !     
 !     Shear related reciprocal time scale
       DOUBLE PRECISION SRT
+
+
+
 !-----------------------------------------------          
 !     Functions
 !-----------------------------------------------          
@@ -1912,6 +1918,8 @@
      
 ! Find components of Mth solids phase continuum strain rate
 ! tensor, D_s, at center of THETA cell-(i, j, k)
+
+
             D_s(1,1) = ( U_s(IJK,M) - U_s(IMJK,M) ) * oDX(I)
             D_s(1,2) = HALF * ( (U_s_N - U_s_S) * oDY(J) +&
                 (V_s_E - V_s_W) * oDX(I) )
@@ -1925,6 +1933,16 @@
             D_s(3,2) = D_s(2,3)
             D_s(3,3) = ( W_s(IJK,M) - W_s(IJKM,M) ) * (oX(I)*oDZ(K)) +&
                 U_s_C * oX(I)
+
+!=======================================================================
+! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
+
+            IF(CUT_CELL_AT(IJK))  CALL CG_CALC_VEL_S_GRAD(IJK,M,D_s, IER) 
+
+!=======================================================================
+! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+!=======================================================================
 
 ! Calculate the trace of D_s
             trD_s_C(IJK,M) = D_s(1,1) + D_s(2,2) + D_s(3,3)
