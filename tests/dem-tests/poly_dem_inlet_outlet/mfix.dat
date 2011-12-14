@@ -18,7 +18,7 @@
   RUN_TYPE = 'new'
   UNITS = 'cgs'
   TIME  =0.0 
-  TSTOP = 5.0
+  TSTOP = 0.2
   DT = 1.0e-4
   DT_MAX = 2E-4
 
@@ -208,14 +208,18 @@
   DES_BC_ROP_s(1,1)      = 0.0125
   DES_BC_VOLFLOW_s(1,1)  = 0.00785   !15 particles/s, eps=0.00714, vel~5.50
   DES_BC_ROP_s(1,2)      = 0.0325
-  DES_BC_VOLFLOW_s(1,2)  = 0.02045   !20 particles/s, eps=0.01757, vel~4.82
+  DES_BC_VOLFLOW_s(1,2)  = 0.02045   !20 particles/s, eps=0.01757, vel~5.82
   DES_BC_ROP_s(1,3)      = 0.0950
   DES_BC_VOLFLOW_s(1,3)  = 0.05301   !30 particles/s, eps=0.0487,  vel~5.44
   DES_BC_ROP_s(1,4)      = 0.1000
   DES_BC_VOLFLOW_s(1,4)  = 0.05612   !20 particles/s, eps=0.0488,  vel~5.75
   DES_BC_ROP_s(1,5)      = 0.1500
   DES_BC_VOLFLOW_s(1,5)  = 0.06283   !15 particles/s, eps=0.0698,  vel~4.50
-
+! The indicated solids velocities are based on the specified bulk density, 
+! however, a uniform inlet velocity is actually employed for all incoming
+! particles and their bulk density is adjusted accordingly.  The values will
+! be reflected in the screen output.  Also, the cross sectional area used in
+! the calculations is based on the maximum particle diameter (in this case 0.2)
 
 ! DES MASS OUTLET
 ! -----------------------------
