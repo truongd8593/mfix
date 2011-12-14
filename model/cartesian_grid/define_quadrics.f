@@ -98,8 +98,9 @@
 
       IMPLICIT NONE
  
-      DOUBLE PRECISION x1,x2,x3
-      DOUBLE PRECISION f
+      DOUBLE PRECISION :: x1,x2,x3
+      DOUBLE PRECISION :: f,fq,fxe,fxw,fyn,fys,fzt,fzb,fclip
+      DOUBLE PRECISION :: fxmin,fxmax,fymin,fymax,fzmin,fzmax
       DOUBLE PRECISION, DIMENSION(1,3) :: X_VECTOR,XMT
       DOUBLE PRECISION, DIMENSION(3,1) :: TXMT
       DOUBLE PRECISION, DIMENSION(1,1) :: TEMP_1x1
@@ -112,11 +113,10 @@
 
       CLIP_X = (clip_xmin(Q_ID) <= x1).AND.( x1 <= clip_xmax(Q_ID))
       CLIP_Y = (clip_ymin(Q_ID) <= x2).AND.( x2 <= clip_ymax(Q_ID))
-      CLIP_Z = (clip_zmin(Q_ID) <= x3).AND.( x3 <= clip_zmax(Q_ID))      
+      CLIP_Z = (clip_zmin(Q_ID) <= x3).AND.( x3 <= clip_zmax(Q_ID))
 
       CLIP_FLAG = (CLIP_X.AND.CLIP_Y.AND.CLIP_Z)
 
-      IF (CLIP_FLAG) THEN
 
          IF(TRIM(quadric_form(Q_ID))=='PLANE') THEN
 
@@ -133,17 +133,82 @@
 
             f = TEMP_1x1(1,1) + dquadric(Q_ID)
 
-          ENDIF
+! Each clipping limit is treated as a plane. For example, fxmin is 
+! the equation of the plane describing x=xmin, and a value of fxmin
+! is compared with the current value of f to determine if the location
+! is part of the computational domain. The comparison (min of max)
+! follows the same logis as the 'AND' (max) , or 'OR' (min) 
+! logic when combining two quadrics.
 
-      ELSE
 
-         IF(FLUID_IN_CLIPPED_REGION(Q_ID)) THEN
-            f = -1.0 !-UNDEFINED
-         ELSE
-            f = 1.0 !UNDEFINED 
+            IF(FLUID_IN_CLIPPED_REGION(Q_ID)) THEN
+
+               IF(clip_xmin(Q_ID)/=UNDEFINED) THEN
+                  fxmin = -(clip_xmin(Q_ID)-x1)
+                  f = dmin1(f,fxmin)
+               ENDIF
+
+               IF(clip_xmax(Q_ID)/=UNDEFINED) THEN
+                  fxmax = -(x1-clip_xmax(Q_ID))
+                  f = dmin1(f,fxmax)
+               ENDIF
+
+               IF(clip_ymin(Q_ID)/=UNDEFINED) THEN
+                  fymin = -(clip_ymin(Q_ID)-x2)
+                  f = dmin1(f,fymin)
+               ENDIF
+
+               IF(clip_ymax(Q_ID)/=UNDEFINED) THEN
+                  fymax = -(x2-clip_ymax(Q_ID))
+                  f = dmin1(f,fymax)
+               ENDIF
+
+               IF(clip_zmin(Q_ID)/=UNDEFINED) THEN
+                  fzmin = -(clip_zmin(Q_ID)-x3)
+                  f = dmin1(f,fzmin)
+               ENDIF
+
+               IF(clip_zmax(Q_ID)/=UNDEFINED) THEN
+                  fzmax = -(x3-clip_zmax(Q_ID))
+                  f = dmin1(f,fzmax)
+               ENDIF
+
+            ELSE
+
+               IF(clip_xmin(Q_ID)/=UNDEFINED) THEN
+                  fxmin = clip_xmin(Q_ID)-x1
+                  f = dmax1(f,fxmin)
+               ENDIF
+
+               IF(clip_xmax(Q_ID)/=UNDEFINED) THEN
+                  fxmax = x1-clip_xmax(Q_ID)
+                  f = dmax1(f,fxmax)
+               ENDIF
+
+               IF(clip_ymin(Q_ID)/=UNDEFINED) THEN
+                  fymin = clip_ymin(Q_ID)-x2
+                  f = dmax1(f,fymin)
+               ENDIF
+
+               IF(clip_ymax(Q_ID)/=UNDEFINED) THEN
+                  fymax = x2-clip_ymax(Q_ID)
+                  f = dmax1(f,fymax)
+               ENDIF
+
+               IF(clip_zmin(Q_ID)/=UNDEFINED) THEN
+                  fzmin = clip_zmin(Q_ID)-x3
+                  f = dmax1(f,fzmin)
+               ENDIF
+
+               IF(clip_zmax(Q_ID)/=UNDEFINED) THEN
+                  fzmax = x3-clip_zmax(Q_ID)
+                  f = dmax1(f,fzmax)
+               ENDIF
+
+
+            ENDIF
+
          ENDIF
-      
-      ENDIF
 
       RETURN
       END SUBROUTINE GET_F_QUADRIC

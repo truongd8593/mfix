@@ -345,76 +345,69 @@
 
       CLIP_FLAG = (CLIP_FLAG1).AND.(CLIP_FLAG2)
 
-      if (CLIP_FLAG) then
-        if(DABS(f1)<TOL_F) then  ! ignore intersection at corner
-          xc = UNDEFINED
-          yc = UNDEFINED
-          zc = UNDEFINED
-          INTERSECT_FLAG = .FALSE.
-        elseif(DABS(f2)<TOL_F) then ! ignore intersection at corner
-          xc = UNDEFINED
-          yc = UNDEFINED
-          zc = UNDEFINED
-          INTERSECT_FLAG = .FALSE.
-        elseif(f1*f2 < ZERO) then
-          niter = 0
-          f3 = 2.0d0*TOL_F
-          do while (   (abs(f3) > TOL_F)   .AND.   (niter<ITERMAX_INT)       )
-           
-            t3 = t1 - f1*(t2-t1)/(f2-f1)
+      if(DABS(f1)<TOL_F) then  ! ignore intersection at corner
+        xc = UNDEFINED
+        yc = UNDEFINED
+        zc = UNDEFINED
+        INTERSECT_FLAG = .FALSE.
+      elseif(DABS(f2)<TOL_F) then ! ignore intersection at corner
+        xc = UNDEFINED
+        yc = UNDEFINED
+        zc = UNDEFINED
+        INTERSECT_FLAG = .FALSE.
+      elseif(f1*f2 < ZERO) then
+        niter = 0
+        f3 = 2.0d0*TOL_F
+        do while (   (abs(f3) > TOL_F)   .AND.   (niter<ITERMAX_INT)       )
+         
+          t3 = t1 - f1*(t2-t1)/(f2-f1)
 
-            x3 = x1 + t3 * (x2 - x1)
-            y3 = y1 + t3 * (y2 - y1)
-            z3 = z1 + t3 * (z2 - z1)
+          x3 = x1 + t3 * (x2 - x1)
+          y3 = y1 + t3 * (y2 - y1)
+          z3 = z1 + t3 * (z2 - z1)
 
-            CALL EVAL_F(METHOD,x3,y3,z3,Q_ID,f3,CLIP_FLAG3)
-            if(f1*f3<0) then
-              t2 = t3
-              f2 = f3
-            else 
-              t1 = t3
-              f1 = f3
-            endif   
-            niter = niter + 1
+          CALL EVAL_F(METHOD,x3,y3,z3,Q_ID,f3,CLIP_FLAG3)
+          if(f1*f3<0) then
+            t2 = t3
+            f2 = f3
+          else 
+            t1 = t3
+            f1 = f3
+          endif   
+          niter = niter + 1
 
-          end do
-          if (niter < ITERMAX_INT) then
-             xc = x3
-             yc = y3
-             zc = z3
-            INTERSECT_FLAG = .TRUE.
-          else
-             WRITE(*,*)'   Subroutine intersect_line:'
-             WRITE(*,*)   'Unable to find the intersection of quadric:',Q_ID
-             WRITE(*,1000)'between (x1,y1,z1)= ', xa,ya,za
-             WRITE(*,1000)'   and  (x2,y2,z2)= ', xb,yb,zb
-             CALL EVAL_F(METHOD,xa,ya,za,Q_ID,fa,CLIP_FLAG1)
-             CALL EVAL_F(METHOD,xb,yb,zb,Q_ID,fb,CLIP_FLAG1)
-             WRITE(*,1000)'f(x1,y1,z1) = ', fa
-             WRITE(*,1000)'f(x2,y2,z2) = ', fb
-             WRITE(*,1000)'Current Location (x3,y3,z3)= ', x3,y3,z3
-             WRITE(*,1000)'Current value of abs(f) = ', DABS(f3)
-             WRITE(*,1000)'Tolerance = ', TOL_F
-             WRITE(*,*)'Maximum number of iterations = ', ITERMAX_INT
-             WRITE(*,*)   'Please increase the intersection tolerance, '
-             WRITE(*,*)   'or the maximum number of iterations, and try again.'
-             WRITE(*,*)   'MFiX will exit now.'             
-             CALL MFIX_EXIT(myPE) 
-             x_intersection = UNDEFINED
-             INTERSECT_FLAG = .FALSE.
-
-          endif
+        end do
+        if (niter < ITERMAX_INT) then
+           xc = x3
+           yc = y3
+           zc = z3
+          INTERSECT_FLAG = .TRUE.
         else
-          xc = UNDEFINED
-          yc = UNDEFINED
-          zc = UNDEFINED
-          INTERSECT_FLAG = .FALSE.
+           WRITE(*,*)'   Subroutine intersect_line:'
+           WRITE(*,*)   'Unable to find the intersection of quadric:',Q_ID
+           WRITE(*,1000)'between (x1,y1,z1)= ', xa,ya,za
+           WRITE(*,1000)'   and  (x2,y2,z2)= ', xb,yb,zb
+           CALL EVAL_F(METHOD,xa,ya,za,Q_ID,fa,CLIP_FLAG1)
+           CALL EVAL_F(METHOD,xb,yb,zb,Q_ID,fb,CLIP_FLAG1)
+           WRITE(*,1000)'f(x1,y1,z1) = ', fa
+           WRITE(*,1000)'f(x2,y2,z2) = ', fb
+           WRITE(*,1000)'Current Location (x3,y3,z3)= ', x3,y3,z3
+           WRITE(*,1000)'Current value of abs(f) = ', DABS(f3)
+           WRITE(*,1000)'Tolerance = ', TOL_F
+           WRITE(*,*)'Maximum number of iterations = ', ITERMAX_INT
+           WRITE(*,*)   'Please increase the intersection tolerance, '
+           WRITE(*,*)   'or the maximum number of iterations, and try again.'
+           WRITE(*,*)   'MFiX will exit now.'             
+           CALL MFIX_EXIT(myPE) 
+           x_intersection = UNDEFINED
+           INTERSECT_FLAG = .FALSE.
+
         endif
       else
-          xc = UNDEFINED
-          yc = UNDEFINED
-          zc = UNDEFINED
-          INTERSECT_FLAG = .FALSE.
+        xc = UNDEFINED
+        yc = UNDEFINED
+        zc = UNDEFINED
+        INTERSECT_FLAG = .FALSE.
       endif
 
  1000 FORMAT(A,3(2X,G12.5)) 
