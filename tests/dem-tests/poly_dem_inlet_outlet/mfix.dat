@@ -1,7 +1,15 @@
 #
 # Simple system with a DEM mass polydisperse inlet and outlet
 #
-
+#
+# Additional information about the operation of the discrete
+# mass boundary conditions can be found in the following:
+#
+# J. Musser, M.A. Drunright-Clarke, and J. Galvin, "Development
+# of a discrete mass inflow boundary condition for MFIX." Journal
+# of Systemics, Cybernetics, and Informatics (JSCI), Volume 9,
+# Number 1, 2011, pg 94-98.
+#
 
 # Run-control section
 # -----------------------------
