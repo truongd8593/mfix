@@ -108,7 +108,7 @@
 
   BC_ID_Q(1) = 3 3 3 3 3 3 3
 
-  PG_OPTION = 1
+  PG_OPTION = 0
 
 
   PRINT_PROGRESS_BAR = .TRUE.
