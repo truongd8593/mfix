@@ -12,6 +12,8 @@
       INTEGER :: QUADRIC_ID
 !     form of quadric : 'normal' or one of the pre-defined quadrics
       CHARACTER (LEN=10), DIMENSION(DIM_QUADRIC) :: quadric_form
+!     Scale factor for quadrics
+      DOUBLE PRECISION :: quadric_scale
 !     Characteristic values of the quadrics
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: Lambda_x,Lambda_y,Lambda_z
 !     d - coefficient of the quadrics

@@ -129,6 +129,28 @@
             ENDIF
             CALL MFIX_EXIT(MYPE) 
          ENDIF
+         IF(QUADRIC_SCALE <= ZERO) THEN 
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*) 'ERROR: QUADRIC_SCALE MUST BE POSITIVE.'
+            ENDIF
+            CALL MFIX_EXIT(MYPE) 
+         ELSEIF(QUADRIC_SCALE /= ONE) THEN
+            DO Q = 1, N_QUADRIC
+               lambda_x(Q)  = lambda_x(Q)  * quadric_scale**2
+               lambda_y(Q)  = lambda_y(Q)  * quadric_scale**2
+               lambda_z(Q)  = lambda_z(Q)  * quadric_scale**2
+               Radius(Q)    = Radius(Q)    * quadric_scale
+               t_x(Q)       = t_x(Q)       * quadric_scale
+               t_y(Q)       = t_y(Q)       * quadric_scale
+               t_z(Q)       = t_z(Q)       * quadric_scale
+               clip_xmin(Q) = clip_xmin(Q) * quadric_scale
+               clip_xmax(Q) = clip_xmax(Q) * quadric_scale
+               clip_ymin(Q) = clip_ymin(Q) * quadric_scale
+               clip_ymax(Q) = clip_ymax(Q) * quadric_scale
+               clip_zmin(Q) = clip_zmin(Q) * quadric_scale
+               clip_zmax(Q) = clip_zmax(Q) * quadric_scale
+            ENDDO
+         ENDIF
       ELSE
          IF((N_POLYGON > 0).AND.(N_USR_DEF > 0)) THEN 
             IF(MyPE == PE_IO) THEN
@@ -159,6 +181,10 @@
     
             CASE ('NORMAL')       
 
+               lambda_x(Q) = lambda_x(Q)
+               lambda_y(Q) = lambda_y(Q)
+               lambda_z(Q) = lambda_z(Q)
+               
                norm = dsqrt(lambda_x(Q)**2 + lambda_y(Q)**2 + lambda_z(Q)**2)
 
                IF(norm < TOL_F) THEN

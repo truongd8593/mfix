@@ -50,6 +50,8 @@
 
       quadric_form = 'NORMAL'
 
+      quadric_scale = ONE
+
       lambda_x = ZERO
       lambda_y = ZERO
       lambda_z = ZERO
