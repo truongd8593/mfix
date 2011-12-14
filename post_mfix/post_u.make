@@ -203,6 +203,9 @@ post_mfix : \
     ornl_zone.$(OBJ_EXT) \
     ornl_sym.$(OBJ_EXT) \
     qmomk_init_namelist.$(OBJ_EXT) \
+    calc_trd_s.$(OBJ_EXT) \
+    get_delh.$(OBJ_EXT) \
+    define_quadrics.$(OBJ_EXT) \
     
 	$(LINK_CMD) $(LINK_FLAGS) \
     ambm_mod.$(OBJ_EXT) \
@@ -406,6 +409,9 @@ post_mfix : \
     des_ic_mod.$(OBJ_EXT) \
     des_thermo_mod.$(OBJ_EXT) \
     des_rxns_mod.$(OBJ_EXT) \
+    calc_trd_s.$(OBJ_EXT) \
+    get_delh.$(OBJ_EXT) \
+    define_quadrics.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
 AMBM.mod : ../model/ambm_mod.f \
@@ -819,6 +825,7 @@ calc_mu_s.$(OBJ_EXT) : ../model/calc_mu_s.f \
             VISC_G.mod \
             IS.mod \
             SENDRECV.mod \
+            CUTCELL.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                    \
@@ -1740,3 +1747,47 @@ qmomk_init_namelist.$(OBJ_EXT) : ../model/qmomk/qmomk_init_namelist.f \
             QMOM_KINETIC_EQUATION.mod \
             qmomk/qmomknamelist.inc                                     
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/qmomk/qmomk_init_namelist.f 
+calc_trd_s.$(OBJ_EXT) : ../model/calc_trd_s.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            GEOMETRY.mod \
+            FLDVAR.mod \
+            INDICES.mod \
+            PHYSPROP.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            BC.mod \
+            CUTCELL.mod \
+            QUADRIC.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/calc_trd_s.f 
+get_delh.$(OBJ_EXT) : ../model/cartesian_grid/get_delh.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_delh.f 
+define_quadrics.$(OBJ_EXT) : ../model/cartesian_grid/define_quadrics.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            VTK.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/define_quadrics.f 

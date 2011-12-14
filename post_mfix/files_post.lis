@@ -199,3 +199,6 @@ usr_input_mod.f
 ../model/des/des_ic_mod.f
 ../model/des/des_thermo_mod.f
 ../model/des/des_rxns_mod.f
+../model/calc_trd_s.f
+../model/cartesian_grid/get_delh.f
+../model/cartesian_grid/define_quadrics.f
