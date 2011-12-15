@@ -1,0 +1,160 @@
+#
+#  Steady developed flow -- use cyclic condition
+#
+#  S. Benyahia                  02-14-2004
+#
+#  Gas/solids flow in fully developed 1-D channel using Simonin
+#  model along with Jenkins BC
+#  
+#
+# Run-control section
+#
+  RUN_NAME = 'R'
+  DESCRIPTION = 'developed laminar flow'
+  RUN_TYPE = 'new'
+  UNITS = 'cgs'
+  TIME  =0.0  
+  TSTOP = 200.0
+  DT = 0.1
+  DT_MIN = 0.1
+  DT_FAC = 1
+  ENERGY_EQ = .FALSE.
+  SPECIES_EQ = .FALSE.    .FALSE.
+  MOMENTUM_X_eq(1) = .false. ! by not solving x-mom we obtain a steady-state.
+  momentum_y_eq(1) = .true.
+  MOMENTUM_X_eq(0) = .false.
+  momentum_y_eq(0) = .true.
+  GRANULAR_ENERGY = .T.
+
+  K_EPSILON = .T. ! Now must be set to true with Ahmad/Simonin models
+  AHMADI = .F.
+  JENKINS = .T.
+  SIMONIN = .T.
+
+  TOL_RESID  = 1d-4
+  NORM_g = 0.0d0
+  NORM_s = 0.0d0
+  MAX_NIT = 50
+
+  LEQ_IT = 9*300
+  LEQ_TOL = 9*1D-06
+
+  Flux_g = 0.6
+
+  GRAVITY = 980.
+#
+# Geometry Section
+#
+  COORDINATES = 'CARTESIAN'
+
+  XLENGTH  =   10.0    IMAX =  20 ! coarse grid
+  YLENGTH  = 10.0    JMAX = 1
+
+  NO_K     = .TRUE.
+  CYCLIC_Y_PD = .TRUE.
+  delp_y = 800.
+
+
+ 
+#
+# Gas-phase Section
+#
+
+  MU_g0 = 1.80E-04
+  MW_avg = 29.
+  Mu_gmax = 1.E+03 ! must specify Mu_gmax with K_epsilon model.
+     #
+#
+# Solids-phase Section
+#
+#
+                     DRAG_TYPE  = 'GIDASPOW'
+                     RO_S  =         2.4 
+                      D_p0 =         0.012
+                        C_e  =       0.95
+                      PHI  =        30.0 
+                  EP_STAR  =         0.36
+		  e_w      =         0.7  !particle-wall rest. coef.
+		  PHIP     =        0.2 !Specularite coef.
+                  phi_w    =       11.31 ! angle of internal friction to use with Jenkins BC
+#
+# Initial Conditions Section
+#
+       !              
+  IC_X_w(1)           =  0.0 
+  IC_X_e(1)           =  10.0 
+  IC_Y_s(1)           =  0.0 
+  IC_Y_n(1)           = 10.0
+ 
+  IC_EP_g(1)          =  0.97 
+ 
+  IC_U_g(1)           =   0.0
+  IC_V_g(1)           =  500.0         
+  IC_P_g(1) = 1013250.        
+  IC_T_g(1) = 298.
+ 
+  IC_U_s(1,1)           =   0.
+  IC_V_s(1,1)           =  410.0
+  
+  IC_Theta_m(1,1)     = 1000.
+  IC_K_Turb_G(1)      = 100.
+  IC_E_Turb_G(1)      = 1000.
+#
+###############################################
+#
+  BC_X_w(4) = 0.                                      
+  BC_X_e(4) = 0.                               
+  BC_Y_s(4) = 0.                                     
+  BC_Y_n(4) = 10.                
+  BC_TYPE(4) = 'PAR_SLIP_WALL'
+  !
+  BC_Uw_s(4,1) = 0.0 	
+  BC_Vw_s(4,1) = 0.0
+  BC_hw_s(4,1) = 0.0
+  BC_Uw_g(4) = 0.0
+  BC_Vw_g(4) = 0.0
+  BC_Ww_g(4) = 0.0
+  BC_Ww_s(4,1) = 0.0
+  BC_Thetaw_m(4,1) = 0. 
+  BC_C_Theta_m(4,1) = 0.   	    
+  BC_JJ_PS(4) = 1
+#
+###############################################
+#
+  BC_X_w(5) = 10.                                      
+  BC_X_e(5) = 10.                               
+  BC_Y_s(5) = 0.                                     
+  BC_Y_n(5) = 10.                
+  BC_TYPE(5) = 'PAR_SLIP_WALL'
+  ! 	
+!
+  BC_Uw_s(5,1) = 0.0
+  BC_Vw_s(5,1) = 0.0
+  BC_hw_s(5,1) = 0.0
+  BC_Uw_g(5) = 0.0
+  BC_Vw_g(5) = 0.0
+  BC_Ww_g(5) = 0.0
+  BC_Ww_s(5,1) = 0.0
+  BC_Thetaw_m(5,1) = 0.
+  BC_C_Theta_m(5,1) = 0. 
+  BC_JJ_PS(5) = 1
+###############################################
+#
+#  Output Control
+#
+  RES_DT = 0.1
+  OUT_DT = 10.
+        !
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g  theta  scalar rrate k_epsilon
+        !      P_star    V_g  V_s            T_s1 X_s
+        !                W_g  W_s            T_s2
+  SPX_DT = 0.1 0.1      0.1  0.1  100.      100. 100.    0.1   0.1 100. 0.1
+
+  NLOG   = 25
+  RESID_STRING = 'P0' 'P1' 'V0' 'V1' 'K0' 'G1'
+#  FULL_LOG = .TRUE.
+  
+# DMP control
+  
+  NODESI = 1  NODESJ = 1   NODESK = 1
+
