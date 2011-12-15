@@ -3,11 +3,11 @@ R
 T
 3
 4
-11 60
+100 200
 Y
 EP_g
-3
-1 42
+2
+1 22
 N
 2 2
 1 1
@@ -15,7 +15,7 @@ POST_EP_g_Ahmadi.dat
 
 
 Theta_m
-3
+2
 
 
 
@@ -24,7 +24,7 @@ POST_Th_Ahmadi.dat
 
 
 V_g
-3
+2
 
 
 
@@ -33,7 +33,7 @@ POST_V_g_Ahmadi.dat
 
 
 V_s
-3
+2
 
 
 
@@ -42,7 +42,7 @@ POST_V_s_Ahmadi.dat
 
 
 K_Turb_G
-3
+2
 
 
 
@@ -51,7 +51,7 @@ POST_K_Ahmadi.dat
 
 
 E_Turb_G
-3
+2
 
 
 

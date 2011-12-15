@@ -1,5 +1,5 @@
 #
-#  developed flow -- use cyclic condition
+#  Steady developed flow -- use cyclic condition
 #
 #  S. Benyahia                  02-14-2004
 #
@@ -11,32 +11,35 @@
 #
   RUN_NAME = 'R'
   DESCRIPTION = 'developed laminar flow'
-  RUN_TYPE = 'new'  !  'restart_1' ! 
+  RUN_TYPE = 'new'
   UNITS = 'cgs'
   TIME  =0.0  
-  TSTOP = 60.0
-  DT = 1.0e-4
-  DT_MIN = 1.0e-8
+  TSTOP = 200.0
+  DT = 0.1
+  DT_MIN = 0.1
+  DT_FAC = 1
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE.    .FALSE.
+  MOMENTUM_X_eq(1) = .false. ! by not solving x-mom we obtain a steady-state.
+  momentum_y_eq(1) = .true.
+  MOMENTUM_X_eq(0) = .false.
+  momentum_y_eq(0) = .true.
   GRANULAR_ENERGY = .T.
-
-  DISCRETIZE     =  9*2
-  DEF_COR = .TRUE.
 
   K_EPSILON = .T. ! Now must be set to true with Ahmad/Simonin models
   AHMADI = .T.
   JENKINS = .T.
   SIMONIN = .F.
-  TOL_RESID  = 2.E-4
-  UR_FAC(8) = 0.8
+
+  TOL_RESID  = 1d-4
   NORM_g = 0.0d0
   NORM_s = 0.0d0
+  MAX_NIT = 50
 
   LEQ_IT = 9*300
   LEQ_TOL = 9*1D-06
 
-  Flux_g = 0.592965 !for superficial gas velocity of 500 cm/s
+  Flux_g = 0.6
 
   GRAVITY = 980.
 #
@@ -44,14 +47,13 @@
 #
   COORDINATES = 'CARTESIAN'
 
-  XLENGTH  =   10.0    IMAX =  40 
+  XLENGTH  =   10.0    IMAX =  20 ! coarse grid
   YLENGTH  = 10.0    JMAX = 1
 
   NO_K     = .TRUE.
   CYCLIC_Y_PD = .TRUE.
   delp_y = 800.
 
-  MAX_NIT = 50
 
  
 #
