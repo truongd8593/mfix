@@ -242,7 +242,7 @@
 
 
 
-                     CASE ('NONE')
+                     CASE ('NONE', 'CG_MI')
                         NOC_US = .FALSE.
 
 

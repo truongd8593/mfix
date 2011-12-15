@@ -222,7 +222,7 @@
                      A_M(IJK,0,M) = A_M(IJK,0,M) - MU_GT_CUT * Area_U_CUT(IJK)*(BC_HW_G(BCV))
                      B_M(IJK,M) = B_M(IJK,M) - MU_GT_CUT * UW_g * Area_U_CUT(IJK)*(BC_HW_G(BCV))
                   ENDIF
-               CASE ('NONE')
+               CASE ('NONE', 'CG_MI')
                   NOC_UG = .FALSE.
             END SELECT 
 

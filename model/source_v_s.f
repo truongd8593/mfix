@@ -287,6 +287,17 @@
                     A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+ &
                                      A_M(IJK,S,M)+A_M(IJK,T,M)+A_M(IJK,B,M))
                   ENDIF
+
+               ELSEIF (BLOCKED_V_CELL_AT(IJK)) THEN 
+                  A_M(IJK,E,M) = ZERO 
+                  A_M(IJK,W,M) = ZERO 
+                  A_M(IJK,N,M) = ZERO 
+                  A_M(IJK,S,M) = ZERO 
+                  A_M(IJK,T,M) = ZERO 
+                  A_M(IJK,B,M) = ZERO 
+                  A_M(IJK,0,M) = -ONE 
+                  B_M(IJK,M) = ZERO 
+
 ! Normal case
                 ELSE 
 

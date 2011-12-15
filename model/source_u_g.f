@@ -206,7 +206,16 @@
             ELSE 
                B_M(IJK,M) = -U_G(IJK) 
             ENDIF 
-         ELSE 
+         ELSEIF (BLOCKED_U_CELL_AT(IJK)) THEN 
+            A_M(IJK,E,M) = ZERO 
+            A_M(IJK,W,M) = ZERO 
+            A_M(IJK,N,M) = ZERO 
+            A_M(IJK,S,M) = ZERO 
+            A_M(IJK,T,M) = ZERO 
+            A_M(IJK,B,M) = ZERO 
+            A_M(IJK,0,M) = -ONE 
+            B_M(IJK,M) = ZERO 
+         ELSE
 !
 !       Surface forces
 !

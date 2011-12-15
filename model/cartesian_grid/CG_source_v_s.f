@@ -241,7 +241,7 @@
                            B_M(IJK,M) = B_M(IJK,M) - MU_S_CUT * VW_s * Area_V_CUT(IJK)*(BC_HW_S(BCV,M))
                         ENDIF
 
-                     CASE ('NONE')
+                     CASE ('NONE', 'CG_MI')
                         NOC_VS = .FALSE.
 
                   END SELECT 
