@@ -4,6 +4,10 @@
 !           Usually this flag is true only for PE_IO.  All the PEs may be forced
 !           to write a log file by setting ENABLE_DMP_LOG to .true. in output_mod.f.
       LOGICAL :: DMP_LOG
+
+!               rrates debug file unit
+      integer   unit_rrates
+      parameter (unit_rrates = 43)
 !
 !              .DAT unit number
       INTEGER  UNIT_DAT
