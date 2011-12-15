@@ -230,7 +230,9 @@
                   F_G(GROUP,0) = MINVAL(F_G(GROUP,1:GS))
                ELSEIF(GR == 'PIECEWISE') THEN
                   CALL REASSSIGN_QUADRIC(x1,x2,x3,GROUP,Q_ID)
+                  CLIP_FLAG=.FALSE.
                   CALL GET_F_QUADRIC(x1,x2,x3,Q_ID,F_G(GROUP,0),CLIP_FLAG)
+                  CLIP_FLAG=.TRUE.
                ENDIF
 
             ENDDO

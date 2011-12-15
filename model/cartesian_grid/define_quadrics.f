@@ -111,11 +111,11 @@
 !======================================================================
 
 
-      CLIP_X = (clip_xmin(Q_ID) <= x1).AND.( x1 <= clip_xmax(Q_ID))
-      CLIP_Y = (clip_ymin(Q_ID) <= x2).AND.( x2 <= clip_ymax(Q_ID))
-      CLIP_Z = (clip_zmin(Q_ID) <= x3).AND.( x3 <= clip_zmax(Q_ID))
-
-      CLIP_FLAG = (CLIP_X.AND.CLIP_Y.AND.CLIP_Z)
+!       CLIP_X = (clip_xmin(Q_ID) <= x1).AND.( x1 <= clip_xmax(Q_ID))
+!       CLIP_Y = (clip_ymin(Q_ID) <= x2).AND.( x2 <= clip_ymax(Q_ID))
+!       CLIP_Z = (clip_zmin(Q_ID) <= x3).AND.( x3 <= clip_zmax(Q_ID))
+! 
+!       CLIP_FLAG = (CLIP_X.AND.CLIP_Y.AND.CLIP_Z)
 
 
          IF(TRIM(quadric_form(Q_ID))=='PLANE') THEN
@@ -133,13 +133,18 @@
 
             f = TEMP_1x1(1,1) + dquadric(Q_ID)
 
+
 ! Each clipping limit is treated as a plane. For example, fxmin is 
 ! the equation of the plane describing x=xmin, and a value of fxmin
 ! is compared with the current value of f to determine if the location
 ! is part of the computational domain. The comparison (min of max)
 ! follows the same logis as the 'AND' (max) , or 'OR' (min) 
 ! logic when combining two quadrics.
+! The clipping procedure is ignored when CLIP_FLAG is .FALSE.
+! This will happen when we are in a 'PIECEWISE' group
 
+
+            IF(.NOT.CLIP_FLAG) RETURN
 
             IF(FLUID_IN_CLIPPED_REGION(Q_ID)) THEN
 
