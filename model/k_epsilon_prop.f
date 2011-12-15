@@ -369,18 +369,18 @@
 
             ELSE  ! CUT_CELL       ! This is actually not used because of wall functions in cut cells
 
-               Tauij_gDUi_gODxj = 2D0*Mu_gas_t*(                             &
-                                  D_G(1,1) * UG(1,1)  +                      &
-                                  D_G(1,2) * UG(1,2)  +                      &      
-                                  D_G(1,3) * UG(1,3)  +                      &      
-                                  D_G(2,1) * UG(2,1)  +                      &
-                                  D_G(2,2) * UG(2,2)  +                      &
-                                  D_G(2,3) * UG(2,3)  +                      &
-                                  D_G(3,1) * UG(3,1)  +                      &
-                                  D_G(3,2) * UG(3,2)  +                      &
-                                  D_G(3,3) * UG(3,3)) -                      &
-                                  F2O3 * RO_G(IJK) * K_Turb_G(IJK)*Trace_g   &
-                                 - F2O3 * Mu_gas_t * Trace_g**2
+!               Tauij_gDUi_gODxj = 2D0*Mu_gas_t*(                             &
+!                                  D_G(1,1) * UG(1,1)  +                      &
+!                                  D_G(1,2) * UG(1,2)  +                      &      
+!                                  D_G(1,3) * UG(1,3)  +                      &      
+!                                  D_G(2,1) * UG(2,1)  +                      &
+!                                  D_G(2,2) * UG(2,2)  +                      &
+!                                  D_G(2,3) * UG(2,3)  +                      &
+!                                  D_G(3,1) * UG(3,1)  +                      &
+!                                  D_G(3,2) * UG(3,2)  +                      &
+!                                  D_G(3,3) * UG(3,3)) -                      &
+!                                  F2O3 * RO_G(IJK) * K_Turb_G(IJK)*Trace_g   &
+!                                 - F2O3 * Mu_gas_t * Trace_g**2
 
 
             ENDIF
