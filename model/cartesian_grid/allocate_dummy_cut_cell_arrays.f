@@ -36,6 +36,9 @@
       Allocate(  BC_V_ID (DIMENSION_3) )
       Allocate(  BC_W_ID (DIMENSION_3) )
  
+      Allocate(  BLOCKED_U_CELL_AT (DIMENSION_3) )
+      Allocate(  BLOCKED_V_CELL_AT (DIMENSION_3) )
+      Allocate(  BLOCKED_W_CELL_AT (DIMENSION_3) )
 
       CUT_TREATMENT_AT = .FALSE.
       CUT_U_TREATMENT_AT = .FALSE.
@@ -46,6 +49,10 @@
       CUT_U_CELL_AT = .FALSE.
       CUT_V_CELL_AT = .FALSE.
       CUT_W_CELL_AT = .FALSE.
+
+      BLOCKED_U_CELL_AT = .FALSE.
+      BLOCKED_V_CELL_AT = .FALSE.
+      BLOCKED_W_CELL_AT = .FALSE.
 
       BC_ID = 0
       BC_U_ID = 0
