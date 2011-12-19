@@ -80,6 +80,14 @@
       clip_zmin = - LARGE_NUMBER
       clip_zmax =   LARGE_NUMBER
 
+      piece_xmin = - LARGE_NUMBER
+      piece_xmax =   LARGE_NUMBER
+      piece_ymin = - LARGE_NUMBER
+      piece_ymax =   LARGE_NUMBER
+      piece_zmin = - LARGE_NUMBER
+      piece_zmax =   LARGE_NUMBER
+
+
       FLUID_IN_CLIPPED_REGION = .TRUE.
 
       BC_ID_Q = UNDEFINED_I
@@ -154,6 +162,24 @@
       WRITE_DASHBOARD = .FALSE.
       F_DASHBOARD = 1
       
+      CPX      = ZERO
+      NCX      = 0
+      ERX      = ONE
+      FIRST_DX = ZERO 
+      LAST_DX  = ZERO
+
+
+      CPY      = ZERO
+      NCY      = 0
+      ERY      = ONE
+      FIRST_DY = ZERO 
+      LAST_DY  = ZERO
+
+      CPZ      = ZERO
+      NCZ      = 0
+      ERZ      = ONE
+      FIRST_DZ = ZERO 
+      LAST_DZ  = ZERO
 
       RETURN
       END SUBROUTINE CARTESIAN_GRID_INIT_NAMELIST

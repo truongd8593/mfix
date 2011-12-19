@@ -57,6 +57,9 @@
 !-----------------------------------------------
       LOGICAL COMPARE 
 !-----------------------------------------------
+
+      CALL GET_DXYZ_FROM_CONTROL_POINTS
+
       IF (XMIN < ZERO .AND. DMP_LOG)WRITE (UNIT_LOG, 990) 
 !
 ! If no variation in a direction is considered, the number of cells in

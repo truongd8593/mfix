@@ -19,6 +19,7 @@
       Radius, Half_angle,n_x,n_y,n_z, &
       t_x, t_y, t_z, &
       clip_xmin, clip_xmax, clip_ymin, clip_ymax, clip_zmin, clip_zmax, &
+      piece_xmin, piece_xmax, piece_ymin, piece_ymax, piece_zmin, piece_zmax, &
       FLUID_IN_CLIPPED_REGION, &
       BC_ID_Q,&
       N_GROUP, GROUP_SIZE,GROUP_Q,GROUP_RELATION,RELATION_WITH_PREVIOUS, &
@@ -36,7 +37,10 @@
       CG_SAFE_MODE,PRINT_WARNINGS,&
       CG_UR_FAC,&
       PRINT_PROGRESS_BAR,BAR_WIDTH, BAR_CHAR, BAR_RESOLUTION,  &
-      WRITE_DASHBOARD, F_DASHBOARD
+      WRITE_DASHBOARD, F_DASHBOARD, &
+      CPX,CPY,CPZ,NCX,NCY,NCZ,ERX,ERY,ERZ, &
+      FIRST_DX,LAST_DX,FIRST_DY,LAST_DY,FIRST_DZ,LAST_DZ
+
      
 
 
