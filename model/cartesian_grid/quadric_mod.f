@@ -34,6 +34,8 @@
       DOUBLE PRECISION, DIMENSION(1,3,DIM_QUADRIC) :: T_QUADRIC
 !     Clipping range  of the quadrics
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: clip_xmin,clip_xmax,clip_ymin,clip_ymax,clip_zmin,clip_zmax
+!     Piecewise range  of the quadrics
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: piece_xmin,piece_xmax,piece_ymin,piece_ymax,piece_zmin,piece_zmax
 !     Clip flag
       LOGICAL, DIMENSION(DIM_QUADRIC) :: FLUID_IN_CLIPPED_REGION
 !     Boundary condition ID

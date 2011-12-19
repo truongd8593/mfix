@@ -457,5 +457,16 @@
 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::Ovol_around_node
 
+!     Snapping flag
+      LOGICAL,  DIMENSION(:), ALLOCATABLE ::  POTENTIAL_CUT_CELL_AT
+
+      INTEGER, PARAMETER :: MAX_CP = 100
+
+      DOUBLE PRECISION, DIMENSION(0:MAX_CP) ::  CPX,CPY,CPZ  ! Control point location
+      DOUBLE PRECISION, DIMENSION(MAX_CP)   ::  ERX,ERY,ERZ  ! Expansion Ratio
+      INTEGER, DIMENSION(MAX_CP)             ::  NCX,NCY,NCZ  ! Number of cell in a segment
+      DOUBLE PRECISION, DIMENSION(MAX_CP)   ::  FIRST_DX,LAST_DX! DX values at segment extremities
+      DOUBLE PRECISION, DIMENSION(MAX_CP)   ::  FIRST_DY,LAST_DY! DY values at segment extremities
+      DOUBLE PRECISION, DIMENSION(MAX_CP)   ::  FIRST_DZ,LAST_DZ! DZ values at segment extremities
 
       END MODULE cutcell
