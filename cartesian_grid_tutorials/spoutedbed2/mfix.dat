@@ -48,8 +48,8 @@
   t_x(1)          =  2.55              2.55        2.55           ! Translation in x direction
   t_y(1)          =  0.0            1.68627451     0.0            ! Translation in y direction
 
-  clip_ymin(1)    =  0.0               2.0         6.0
-  clip_ymax(1)    =  2.0               6.0
+  piece_ymin(2)    =                    2.0         6.0
+  piece_ymax(1)    =  2.0               6.0
 
 
 ! Quadrics 4 & 5: stabilizer main body
@@ -62,8 +62,8 @@
 
   theta_z(4)  = -60.0      60.0 
 
-  clip_xmax(4) =  2.55
-  clip_xmin(5) =  2.55
+  piece_xmax(4) =  2.55
+  piece_xmin(5) =  2.55
 
 
 ! Quadrics 6 & 7: planes used to trim stabilizer
