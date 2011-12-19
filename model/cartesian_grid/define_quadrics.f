@@ -111,11 +111,11 @@
 !======================================================================
 
 
-!       CLIP_X = (clip_xmin(Q_ID) <= x1).AND.( x1 <= clip_xmax(Q_ID))
-!       CLIP_Y = (clip_ymin(Q_ID) <= x2).AND.( x2 <= clip_ymax(Q_ID))
-!       CLIP_Z = (clip_zmin(Q_ID) <= x3).AND.( x3 <= clip_zmax(Q_ID))
-! 
-!       CLIP_FLAG = (CLIP_X.AND.CLIP_Y.AND.CLIP_Z)
+       CLIP_X = (clip_xmin(Q_ID) <= x1).AND.( x1 <= clip_xmax(Q_ID))
+       CLIP_Y = (clip_ymin(Q_ID) <= x2).AND.( x2 <= clip_ymax(Q_ID))
+       CLIP_Z = (clip_zmin(Q_ID) <= x3).AND.( x3 <= clip_zmax(Q_ID))
+ 
+       CLIP_FLAG = (CLIP_X.AND.CLIP_Y.AND.CLIP_Z)
 
 
          IF(TRIM(quadric_form(Q_ID))=='PLANE') THEN
@@ -133,6 +133,7 @@
 
             f = TEMP_1x1(1,1) + dquadric(Q_ID)
 
+         ENDIF
 
 ! Each clipping limit is treated as a plane. For example, fxmin is 
 ! the equation of the plane describing x=xmin, and a value of fxmin
@@ -144,76 +145,74 @@
 ! This will happen when we are in a 'PIECEWISE' group
 
 
-            IF(.NOT.CLIP_FLAG) RETURN
 
-            IF(FLUID_IN_CLIPPED_REGION(Q_ID)) THEN
+         IF(FLUID_IN_CLIPPED_REGION(Q_ID)) THEN
 
-               IF(clip_xmin(Q_ID)/=UNDEFINED) THEN
-                  fxmin = -(clip_xmin(Q_ID)-x1)
-                  f = dmin1(f,fxmin)
-               ENDIF
+            IF(clip_xmin(Q_ID)/=UNDEFINED) THEN
+               fxmin = -(clip_xmin(Q_ID)-x1)
+               f = dmin1(f,fxmin)
+            ENDIF
 
-               IF(clip_xmax(Q_ID)/=UNDEFINED) THEN
-                  fxmax = -(x1-clip_xmax(Q_ID))
-                  f = dmin1(f,fxmax)
-               ENDIF
+            IF(clip_xmax(Q_ID)/=UNDEFINED) THEN
+               fxmax = -(x1-clip_xmax(Q_ID))
+               f = dmin1(f,fxmax)
+            ENDIF
 
-               IF(clip_ymin(Q_ID)/=UNDEFINED) THEN
-                  fymin = -(clip_ymin(Q_ID)-x2)
-                  f = dmin1(f,fymin)
-               ENDIF
+            IF(clip_ymin(Q_ID)/=UNDEFINED) THEN
+               fymin = -(clip_ymin(Q_ID)-x2)
+               f = dmin1(f,fymin)
+            ENDIF
 
-               IF(clip_ymax(Q_ID)/=UNDEFINED) THEN
-                  fymax = -(x2-clip_ymax(Q_ID))
-                  f = dmin1(f,fymax)
-               ENDIF
+            IF(clip_ymax(Q_ID)/=UNDEFINED) THEN
+               fymax = -(x2-clip_ymax(Q_ID))
+               f = dmin1(f,fymax)
+            ENDIF
 
-               IF(clip_zmin(Q_ID)/=UNDEFINED) THEN
-                  fzmin = -(clip_zmin(Q_ID)-x3)
-                  f = dmin1(f,fzmin)
-               ENDIF
+            IF(clip_zmin(Q_ID)/=UNDEFINED) THEN
+               fzmin = -(clip_zmin(Q_ID)-x3)
+               f = dmin1(f,fzmin)
+            ENDIF
 
-               IF(clip_zmax(Q_ID)/=UNDEFINED) THEN
-                  fzmax = -(x3-clip_zmax(Q_ID))
-                  f = dmin1(f,fzmax)
-               ENDIF
+            IF(clip_zmax(Q_ID)/=UNDEFINED) THEN
+               fzmax = -(x3-clip_zmax(Q_ID))
+               f = dmin1(f,fzmax)
+            ENDIF
 
-            ELSE
+         ELSE
 
-               IF(clip_xmin(Q_ID)/=UNDEFINED) THEN
-                  fxmin = clip_xmin(Q_ID)-x1
-                  f = dmax1(f,fxmin)
-               ENDIF
+            IF(clip_xmin(Q_ID)/=UNDEFINED) THEN
+               fxmin = clip_xmin(Q_ID)-x1
+               f = dmax1(f,fxmin)
+            ENDIF
 
-               IF(clip_xmax(Q_ID)/=UNDEFINED) THEN
-                  fxmax = x1-clip_xmax(Q_ID)
-                  f = dmax1(f,fxmax)
-               ENDIF
+            IF(clip_xmax(Q_ID)/=UNDEFINED) THEN
+               fxmax = x1-clip_xmax(Q_ID)
+               f = dmax1(f,fxmax)
+            ENDIF
 
-               IF(clip_ymin(Q_ID)/=UNDEFINED) THEN
-                  fymin = clip_ymin(Q_ID)-x2
-                  f = dmax1(f,fymin)
-               ENDIF
+            IF(clip_ymin(Q_ID)/=UNDEFINED) THEN
+               fymin = clip_ymin(Q_ID)-x2
+               f = dmax1(f,fymin)
+            ENDIF
 
-               IF(clip_ymax(Q_ID)/=UNDEFINED) THEN
-                  fymax = x2-clip_ymax(Q_ID)
-                  f = dmax1(f,fymax)
-               ENDIF
+            IF(clip_ymax(Q_ID)/=UNDEFINED) THEN
+               fymax = x2-clip_ymax(Q_ID)
+               f = dmax1(f,fymax)
+            ENDIF
 
-               IF(clip_zmin(Q_ID)/=UNDEFINED) THEN
-                  fzmin = clip_zmin(Q_ID)-x3
-                  f = dmax1(f,fzmin)
-               ENDIF
+            IF(clip_zmin(Q_ID)/=UNDEFINED) THEN
+               fzmin = clip_zmin(Q_ID)-x3
+               f = dmax1(f,fzmin)
+            ENDIF
 
-               IF(clip_zmax(Q_ID)/=UNDEFINED) THEN
-                  fzmax = x3-clip_zmax(Q_ID)
-                  f = dmax1(f,fzmax)
-               ENDIF
-
-
+            IF(clip_zmax(Q_ID)/=UNDEFINED) THEN
+               fzmax = x3-clip_zmax(Q_ID)
+               f = dmax1(f,fzmax)
             ENDIF
 
          ENDIF
+
+
 
       RETURN
       END SUBROUTINE GET_F_QUADRIC
@@ -250,10 +249,10 @@
  
       DOUBLE PRECISION x1,x2,x3
       INTEGER :: I,Q_ID,GROUP,GS,P
-      LOGICAL :: CLIP_X,CLIP_Y,CLIP_Z,CLIP_FLAG
+      LOGICAL :: PIECE_X,PIECE_Y,PIECE_Z,PIECE_FLAG
       CHARACTER(LEN=9) :: GR
 
-!      Q_ID = 0
+      Q_ID = 0
 
       GS = GROUP_SIZE(GROUP)
       GR = TRIM(GROUP_RELATION(GROUP)) 
@@ -264,19 +263,19 @@
 
          I = GROUP_Q(GROUP,P)
 
-         CLIP_X = (clip_xmin(I) <= x1).AND.( x1 <= clip_xmax(I))
-         CLIP_Y = (clip_ymin(I) <= x2).AND.( x2 <= clip_ymax(I))
-         CLIP_Z = (clip_zmin(I) <= x3).AND.( x3 <= clip_zmax(I))      
+         PIECE_X = (piece_xmin(I) <= x1).AND.( x1 <= piece_xmax(I))
+         PIECE_Y = (piece_ymin(I) <= x2).AND.( x2 <= piece_ymax(I))
+         PIECE_Z = (piece_zmin(I) <= x3).AND.( x3 <= piece_zmax(I))      
 
-         CLIP_FLAG = (CLIP_X.AND.CLIP_Y.AND.CLIP_Z)
+         PIECE_FLAG = (PIECE_X.AND.PIECE_Y.AND.PIECE_Z)
 
-         IF (CLIP_FLAG) Q_ID = I
+         IF (PIECE_FLAG) Q_ID = I
 
       ENDDO
 
       IF(Q_ID == 0 ) THEN
          WRITE(*,*)' No Quadric defined at current location x,y,z=', x1,x2,x3 
-         WRITE(*,*)' Please Check clipping limits of quadric(s)'
+         WRITE(*,*)' Please Check piecewise limits of quadric(s)'
          WRITE(*,*)' Mfix will exit now.'
          CALL MFIX_EXIT(myPE)
       ENDIF
