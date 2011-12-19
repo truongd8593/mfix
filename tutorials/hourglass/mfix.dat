@@ -1,5 +1,5 @@
 ! Run-control section                                                           
-                                                                               
+
   RUN_NAME              = 'HG'
   DESCRIPTION           = '2D hourglass - No Slip Wall'
   RUN_TYPE              = 'NEW'             
@@ -50,8 +50,8 @@
   t_y(1) = 20.0                 ! Translation in y direction
   t_z(1) = 0.50                 ! Translation in z direction
 
-  clip_ymin(1) =  12.8158
-  clip_ymax(1) =  27.1842 
+  piece_ymin(1) =  12.8158
+  piece_ymax(1) =  27.1842 
 
 ! Second Quadric: circle of radius 10.0
 
@@ -64,7 +64,7 @@
   t_y(2) = 33.9194              ! Translation in y direction
   t_z(2) = 0.50                 ! Translation in z direction
 
-  clip_ymin(2) =  27.1842
+  piece_ymin(2) =  27.1842
 
 ! Third Quadric: circle of radius 10.0
 
@@ -77,7 +77,7 @@
   t_y(3) = 6.0806               ! Translation in y direction
   t_z(3) = 0.50                 ! Translation in z direction
 
-  clip_ymax(3) =  12.8158
+  piece_ymax(3) =  12.8158
 
 
   N_GROUP = 1
