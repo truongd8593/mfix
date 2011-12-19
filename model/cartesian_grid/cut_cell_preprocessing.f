@@ -232,9 +232,9 @@
                   F_G(GROUP,0) = MINVAL(F_G(GROUP,1:GS))
                ELSEIF(GR == 'PIECEWISE') THEN
                   CALL REASSSIGN_QUADRIC(x1,x2,x3,GROUP,Q_ID)
-                  CLIP_FLAG=.FALSE.
+!                  CLIP_FLAG=.FALSE.
                   CALL GET_F_QUADRIC(x1,x2,x3,Q_ID,F_G(GROUP,0),CLIP_FLAG)
-                  CLIP_FLAG=.TRUE.
+!                  CLIP_FLAG=.TRUE.
                ENDIF
 
             ENDDO
@@ -577,46 +577,64 @@
          ya = Y_NODE(4)
          za = Z_NODE(4)
 
-      N_int_z = 0
-      INTERSECT_Z(IJK) = .FALSE.
-      Q_ID = 1
-         CALL INTERSECT_LINE('QUADRIC',xa,ya,za,xb,yb,zb,Q_ID,INTERSECT_FLAG,xc,yc,zc)
-         IF ((INTERSECT_FLAG).AND.(zc/=Zi)) THEN
-            N_int_z = N_int_z + 1
-            INTERSECT_Z(IJK) = .TRUE.
-            zc_backup = Zi
-            Zi = zc            
+         N_int_z = 0
+         INTERSECT_Z(IJK) = .FALSE.
+         Q_ID = 1
+            CALL INTERSECT_LINE('QUADRIC',xa,ya,za,xb,yb,zb,Q_ID,INTERSECT_FLAG,xc,yc,zc)
+            IF ((INTERSECT_FLAG).AND.(zc/=Zi)) THEN
+               N_int_z = N_int_z + 1
+               INTERSECT_Z(IJK) = .TRUE.
+               zc_backup = Zi
+               Zi = zc            
+            ENDIF
+
+            IF(N_int_z /= 1) THEN
+               Zi = UNDEFINED
+               INTERSECT_Z(IJK) = .FALSE.
+            ENDIF
+
+         DO Q_ID = 1, N_POLYGON
+            CALL INTERSECT_LINE('POLYGON',xa,ya,za,xb,yb,zb,Q_ID,INTERSECT_Z(IJK),xc,yc,zc)
+            IF(INTERSECT_Z(IJK)) Zi = zc
+         ENDDO
+
+         DO Q_ID = 1, N_USR_DEF
+            CALL INTERSECT_LINE('USR_DEF',xa,ya,za,xb,yb,zb,Q_ID,INTERSECT_Z(IJK),xc,yc,zc)
+            IF(INTERSECT_Z(IJK)) Zi = zc
+         ENDDO
+
+   !      IF(USE_STL) THEN
+   !         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_Z(IJK),xc,yc,zc)
+   !         IF(INTERSECT_Z(IJK)) Zi = zc 
+   !      ENDIF
+
+         IF(TYPE_OF_CELL=='W_MOMENTUM') THEN
+            IF(SNAP(IJK)) THEN
+               INTERSECT_Z(IJK) = .TRUE.
+               K = K_OF(IJK) 
+               Zi = ZG_T(K)
+            ENDIF
          ENDIF
 
-         IF(N_int_z /= 1) THEN
-            Zi = UNDEFINED
-            INTERSECT_Z(IJK) = .FALSE.
-         ENDIF
-
-      DO Q_ID = 1, N_POLYGON
-         CALL INTERSECT_LINE('POLYGON',xa,ya,za,xb,yb,zb,Q_ID,INTERSECT_Z(IJK),xc,yc,zc)
-         IF(INTERSECT_Z(IJK)) Zi = zc
-      ENDDO
-
-      DO Q_ID = 1, N_USR_DEF
-         CALL INTERSECT_LINE('USR_DEF',xa,ya,za,xb,yb,zb,Q_ID,INTERSECT_Z(IJK),xc,yc,zc)
-         IF(INTERSECT_Z(IJK)) Zi = zc
-      ENDDO
-
-!      IF(USE_STL) THEN
-!         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_Z(IJK),xc,yc,zc)
-!         IF(INTERSECT_Z(IJK)) Zi = zc 
-!      ENDIF
-
-      IF(TYPE_OF_CELL=='W_MOMENTUM') THEN
-         IF(SNAP(IJK)) THEN
-            INTERSECT_Z(IJK) = .TRUE.
-            K = K_OF(IJK) 
-            Zi = ZG_T(K)
-         ENDIF
       ENDIF
 
+
+      IF(INTERSECT_X(IJK)) THEN
+         POTENTIAL_CUT_CELL_AT(IJK) = .TRUE.
+         POTENTIAL_CUT_CELL_AT(EAST_OF(IJK)) = .TRUE.
       ENDIF
+
+      IF(INTERSECT_Y(IJK)) THEN
+         POTENTIAL_CUT_CELL_AT(IJK) = .TRUE.
+         POTENTIAL_CUT_CELL_AT(NORTH_OF(IJK)) = .TRUE.
+      ENDIF
+
+
+      IF(INTERSECT_Z(IJK)) THEN
+         POTENTIAL_CUT_CELL_AT(IJK) = .TRUE.
+         POTENTIAL_CUT_CELL_AT(TOP_OF(IJK)) = .TRUE.
+      ENDIF
+
 
       RETURN
       

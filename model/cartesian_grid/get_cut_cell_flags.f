@@ -165,10 +165,17 @@
 
       END DO
 
+       NUMBER_OF_NODES = 0
+
+
+      CALL GET_POTENTIAL_CUT_CELLS
+
+!       POTENTIAL_CUT_CELL_AT=.TRUE.
 
       IF(.NOT.(USE_STL.OR.USE_MSH)) THEN
          DO IJK = IJKSTART3, IJKEND3
-            CALL INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
+            IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
+!            CALL INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
          END DO
       ELSE
          CALL CAD_INTERSECT('SCALAR',Xn_int,Ye_int,Zt_int)
@@ -181,6 +188,8 @@
 
 !         IF(INTERIOR_CELL_AT(IJK)) THEN
 
+          IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL CLEAN_INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
+
             CALL CLEAN_INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
 
 !         ENDIF
@@ -189,10 +198,11 @@
 
       call SEND_RECEIVE_1D_LOGICAL(SNAP,2)
 
-       NUMBER_OF_NODES = 0
+!        NUMBER_OF_NODES = 0
 
       DO IJK = IJKSTART3, IJKEND3
 
+          IF(POTENTIAL_CUT_CELL_AT(IJK))  THEN
 
          CALL WRITE_PROGRESS_BAR(IJK,IJKEND3 - IJKSTART3 + 1,'C')
 
@@ -322,6 +332,8 @@
             ENDIF
 
          ENDIF        ! Interior cell
+
+      ENDIF
       END DO          ! IJK Loop
 
 
@@ -655,6 +667,7 @@
 
       IF(.NOT.(USE_STL.OR.USE_MSH)) THEN
          DO IJK = IJKSTART3, IJKEND3
+!             IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
             CALL INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
          END DO
       ELSE
@@ -668,9 +681,8 @@
       DO IJK = IJKSTART3, IJKEND3
 
          IF(INTERIOR_CELL_AT(IJK)) THEN
-
-            CALL CLEAN_INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
-
+!             IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL CLEAN_INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
+             CALL CLEAN_INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
          ENDIF
 
       END DO
@@ -893,6 +905,7 @@
 
       IF(.NOT.(USE_STL.OR.USE_MSH)) THEN
          DO IJK = IJKSTART3, IJKEND3
+!             IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
             CALL INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
          END DO
       ELSE
@@ -906,7 +919,7 @@
       DO IJK = IJKSTART3, IJKEND3
 
          IF(INTERIOR_CELL_AT(IJK)) THEN
-
+!             IF(POTENTIAL_CUT_CELL_AT(IJK)) CALL CLEAN_INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
             CALL CLEAN_INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
 
          ENDIF
@@ -916,7 +929,6 @@
       NUMBER_OF_NEW_V_POINTS = 0
 
       DO IJK = IJKSTART3, IJKEND3
-
          CALL WRITE_PROGRESS_BAR(IJK,IJKEND3 - IJKSTART3 + 1,'C')
 
          IF(INTERIOR_CELL_AT(IJK)) THEN
@@ -1127,6 +1139,7 @@
       
       IF(.NOT.(USE_STL.OR.USE_MSH)) THEN
          DO IJK = IJKSTART3, IJKEND3
+!             IF(POTENTIAL_CUT_CELL_AT(IJK)) CALL INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
             CALL INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
          END DO
       ELSE
@@ -1140,8 +1153,8 @@
       DO IJK = IJKSTART3, IJKEND3
 
          IF(INTERIOR_CELL_AT(IJK)) THEN
-
-            CALL CLEAN_INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
+!             IF(POTENTIAL_CUT_CELL_AT(IJK)) CALL CLEAN_INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
+           CALL CLEAN_INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
 
          ENDIF
 
@@ -1768,3 +1781,255 @@
       
       END SUBROUTINE SET_GHOST_CELL_FLAGS
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: GET_POTENTIAL_CUT_CELLS                                  C
+!  Purpose: Set flags for scalar cut cells, based on intersection      C
+!  of the grid with the quadric(s)                                     C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE GET_POTENTIAL_CUT_CELLS
+
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices
+      USE compar
+      USE mpi_utility
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      Use vtk
+      USE polygon
+      USE stl
+
+      USE physprop
+      USE fldvar
+      USE scalars
+      USE funits
+      USE rxns
+
+      USE cutcell
+      USE quadric
+
+
+
+      IMPLICIT NONE
+      INTEGER :: IJK,I,J,K,II,JJ,KK
+      INTEGER :: I1,I2,J1,J2,K1,K2
+      INTEGER :: NODE,N_N1,N_N2
+      LOGICAL :: ALL_NEGATIVE,ALL_POSITIVE,CLIP_FLAG
+      INTEGER :: Q_ID,BCID
+
+      INTEGER :: IJK_NB,NUMBER_OF_POTENTIAL_CUT_CELLS
+
+      DOUBLE PRECISION :: xc,yc,zc,fc
+
+      LOGICAL, DIMENSION(DIMENSION_3) ::POSITIVE_F_AT
+
+      include "function.inc"
+
+
+      POTENTIAL_CUT_CELL_AT=.TRUE.
+
+
+      RETURN  ! This subroutine is currently disabled
+
+
+      IF(MyPE == PE_IO) THEN
+         WRITE(*,10)'ESTIMATING POTENTIAL SCALAR CUT CELLS...'
+      ENDIF
+10    FORMAT(1X,A)
+
+
+
+!======================================================================
+!  Evaluate f at cell center and store where f>0
+!======================================================================
+
+      DO IJK = IJKSTART3, IJKEND3
+
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
+
+         xc = XG_E(I) - HALF*DX(I)
+         yc = YG_N(J) - HALF*DY(J)
+
+         IF(DO_K) THEN
+            zc = ZG_T(K) - HALF*DZ(K)
+         ELSE
+            zc = zero
+         ENDIF
+
+          Q_ID = 1
+          CALL EVAL_F('QUADRIC',xc,yc,zc,Q_ID,fc,CLIP_FLAG)
+
+          CALL EVAL_F('POLYGON',xc,yc,zc,N_POLYGON,fc,CLIP_FLAG)
+
+          CALL EVAL_F('USR_DEF',xc,yc,zc,N_USR_DEF,Fc,CLIP_FLAG)
+
+          X_NODE(15) = xc
+          Y_NODE(15) = yc
+          Z_NODE(15) = zc
+          CALL EVAL_STL_FCT_AT('SCALAR',IJK,15,fc,CLIP_FLAG,BCID)
+
+
+
+          IF(fc>TOL_F) THEN
+             POSITIVE_F_AT(IJK)=.TRUE.
+          ELSE
+             POSITIVE_F_AT(IJK)=.FALSE.
+          ENDIF
+
+       ENDDO
+
+
+
+
+      DO IJK = IJKSTART3, IJKEND3
+
+         IF(INTERIOR_CELL_AT(IJK)) THEN
+
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+
+            I1 = MAX(I - 2,IMIN3)
+            I2 = MIN(I + 2,IMAX3)
+            J1 = MAX(J - 2,JMIN3)
+            J2 = MIN(J + 2,JMAX3)
+
+
+            IF(DO_K) THEN
+               K1 = MAX(K - 2,KMIN3)
+               K2 = MIN(K + 2,KMAX3)
+            ELSE
+               K1=K
+               K2=K
+            ENDIF
+
+            IF(POSITIVE_F_AT(IJK)) THEN
+               ALL_POSITIVE=.TRUE.
+               DO KK=K1,K2
+                  DO JJ=J1,J2
+                     DO II=I1,I2
+                        IJK_NB = FUNIJK(II,JJ,KK)
+                        IF(.NOT.POSITIVE_F_AT(IJK_NB)) THEN
+                           ALL_POSITIVE=.FALSE.
+                        ENDIF
+                     ENDDO
+                  ENDDO
+                ENDDO
+
+                IF(ALL_POSITIVE) THEN
+                   POTENTIAL_CUT_CELL_AT(IJK)=.FALSE.
+                   FLAG(IJK) = 100
+                   BLOCKED_CELL_AT(IJK) = .TRUE.               ! Blocked fluid cell
+                   STANDARD_CELL_AT(IJK) = .FALSE.
+                   AXY(IJK) = ZERO
+                   AXZ(IJK) = ZERO
+                   AYZ(IJK) = ZERO
+                   VOL(IJK) = ZERO
+ 
+                   AXY(BOTTOM_OF(IJK)) = ZERO
+                   AXZ(SOUTH_OF(IJK)) = ZERO
+                   AYZ(WEST_OF(IJK)) = ZERO
+                ENDIF
+
+            ELSE
+               ALL_NEGATIVE=.TRUE.
+               DO KK=K1,K2
+                  DO JJ=J1,J2
+                     DO II=I1,I2
+                        IJK_NB = FUNIJK(II,JJ,KK)
+                        IF(POSITIVE_F_AT(IJK_NB)) THEN
+                           ALL_NEGATIVE=.FALSE.
+                        ENDIF
+                     ENDDO
+                  ENDDO
+                ENDDO
+
+                IF(ALL_NEGATIVE) THEN
+                   POTENTIAL_CUT_CELL_AT(IJK)=.FALSE.
+                   BLOCKED_CELL_AT(IJK) = .FALSE.
+                   STANDARD_CELL_AT(IJK) = .TRUE.           ! Regular fluid cell
+                ENDIF
+
+            ENDIF
+
+            IF((FLAG(IJK)>=100).AND.(FLAG(IJK)<=102)) THEN
+               POTENTIAL_CUT_CELL_AT(IJK)=.FALSE.
+               BLOCKED_CELL_AT(IJK) = .TRUE.
+               STANDARD_CELL_AT(IJK) = .FALSE.          ! Blocked cell = wall cell
+            ENDIF
+
+         ENDIF
+
+      END DO
+
+
+      NUMBER_OF_POTENTIAL_CUT_CELLS = 0
+
+      IF(NO_K) THEN
+         N_N1 = 5
+         N_N2 = 8
+      ELSE
+         N_N1 = 1
+         N_N2 = 8
+      ENDIF
+
+      DO IJK=IJKSTART3,IJKEND3
+         IF(POTENTIAL_CUT_CELL_AT(IJK)) THEN
+            NUMBER_OF_POTENTIAL_CUT_CELLS = NUMBER_OF_POTENTIAL_CUT_CELLS + 1
+         ELSE
+            CALL GET_CELL_NODE_COORDINATES(IJK,'SCALAR')
+
+            IF(NO_K) THEN
+               NUMBER_OF_NODES(IJK) = 4
+               CONNECTIVITY(IJK,1) = IJK_OF_NODE(5)
+               CONNECTIVITY(IJK,2) = IJK_OF_NODE(6)
+               CONNECTIVITY(IJK,3) = IJK_OF_NODE(8)
+               CONNECTIVITY(IJK,4) = IJK_OF_NODE(7)
+            ELSE
+               NUMBER_OF_NODES(IJK) = 8
+               DO NODE = N_N1,N_N2
+                  CONNECTIVITY(IJK,NODE) = IJK_OF_NODE(NODE)
+               END DO
+            ENDIF
+
+            X_U(IJK) = X_NODE(8)
+            Y_U(IJK) = HALF * (Y_NODE(6) + Y_NODE(8))
+            Z_U(IJK) = HALF * (Z_NODE(4) + Z_NODE(8))
+
+            X_V(IJK) = HALF * (X_NODE(7) + X_NODE(8))
+            Y_V(IJK) = Y_NODE(8)
+            Z_V(IJK) = HALF * (Z_NODE(4) + Z_NODE(8))
+
+            X_W(IJK) = HALF * (X_NODE(7) + X_NODE(8))
+            Y_W(IJK) = HALF * (Y_NODE(6) + Y_NODE(8))
+            Z_W(IJK) = Z_NODE(8)
+
+         ENDIF
+      ENDDO
+
+
+
+!      call SEND_RECEIVE_1D_LOGICAL(SNAP,2)
+      IF(MyPE == PE_IO) THEN
+         WRITE(*,*)'DONE ESTIMATING POTENTIAL SCALAR CUT CELLS.',NUMBER_OF_POTENTIAL_CUT_CELLS,IJKEND3
+      ENDIF
+
+      RETURN
+      END SUBROUTINE GET_POTENTIAL_CUT_CELLS
