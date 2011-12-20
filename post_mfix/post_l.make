@@ -206,6 +206,9 @@ post_mfix : \
     calc_trd_s.$(OBJ_EXT) \
     get_delh.$(OBJ_EXT) \
     define_quadrics.$(OBJ_EXT) \
+    check_data_cartesian.$(OBJ_EXT) \
+    get_poly_data.$(OBJ_EXT) \
+    get_stl_data.$(OBJ_EXT) \
     
 	$(LINK_CMD) $(LINK_FLAGS) \
     ambm_mod.$(OBJ_EXT) \
@@ -412,6 +415,9 @@ post_mfix : \
     calc_trd_s.$(OBJ_EXT) \
     get_delh.$(OBJ_EXT) \
     define_quadrics.$(OBJ_EXT) \
+    check_data_cartesian.$(OBJ_EXT) \
+    get_poly_data.$(OBJ_EXT) \
+    get_stl_data.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
 ambm.mod : ../model/ambm_mod.f \
@@ -1791,3 +1797,78 @@ define_quadrics.$(OBJ_EXT) : ../model/cartesian_grid/define_quadrics.f \
             cutcell.mod \
             vtk.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/define_quadrics.f 
+check_data_cartesian.$(OBJ_EXT) : ../model/cartesian_grid/check_data_cartesian.f \
+            param.mod \
+            param1.mod \
+            constant.mod \
+            run.mod \
+            physprop.mod \
+            indices.mod \
+            scalars.mod \
+            funits.mod \
+            leqsol.mod \
+            compar.mod \
+            mpi_utility.mod \
+            bc.mod \
+            discretelement.mod \
+            cutcell.mod \
+            quadric.mod \
+            vtk.mod \
+            polygon.mod \
+            dashboard.mod \
+            stl.mod \
+            fldvar.mod \
+            scales.mod \
+            parallel.mod \
+            toleranc.mod \
+            geometry.mod \
+            sendrecv.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/check_data_cartesian.f 
+get_poly_data.$(OBJ_EXT) : ../model/cartesian_grid/get_poly_data.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            fldvar.mod \
+            run.mod \
+            scalars.mod \
+            funits.mod \
+            rxns.mod \
+            compar.mod \
+            mpi_utility.mod \
+            progress_bar.mod \
+            polygon.mod \
+            parallel.mod \
+            constant.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            sendrecv.mod \
+            quadric.mod \
+            cutcell.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_poly_data.f 
+get_stl_data.$(OBJ_EXT) : ../model/cartesian_grid/get_stl_data.f \
+            param.mod \
+            param1.mod \
+            physprop.mod \
+            fldvar.mod \
+            run.mod \
+            scalars.mod \
+            funits.mod \
+            rxns.mod \
+            compar.mod \
+            mpi_utility.mod \
+            progress_bar.mod \
+            stl.mod \
+            vtk.mod \
+            quadric.mod \
+            constant.mod \
+            bc.mod \
+            cutcell.mod \
+            parallel.mod \
+            toleranc.mod \
+            geometry.mod \
+            indices.mod \
+            sendrecv.mod \
+            stl.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_stl_data.f 

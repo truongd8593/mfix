@@ -53,7 +53,16 @@
         DES_BC_Z_b, DES_BC_Z_t, &
         DES_BC_VOLFLOW_s, DES_BC_MASSFLOW_s, &
         DES_BC_ROP_s, DES_BC_TYPE, &
-	FORCE_ORD_BC, &
+        DES_BC_T_s, DES_BC_X_s, &
+        DES_BC_CORE_Rho, &
+       	FORCE_ORD_BC, &
+!
+! DES initial condition information: J.Musser
+        DES_IC_X_w, DES_IC_X_e, &
+        DES_IC_Y_s, DES_IC_Y_n, &
+        DES_IC_Z_b, DES_IC_Z_t, &
+        DES_IC_T_s, DES_IC_X_s, &
+        DES_IC_CORE_Rho,        &
 !
 ! DES output control information
         DEBUG_DES, FOCUS_PARTICLE,&
@@ -66,7 +75,15 @@
 	MAX_LOG_STEP, VAN_DER_WAALS, HAMAKER_CONSTANT, VDW_INNER_CUTOFF,& 
         VDW_OUTER_CUTOFF, WALL_HAMAKER_CONSTANT,&
         WALL_VDW_INNER_CUTOFF, WALL_VDW_OUTER_CUTOFF,COHESION_DEBUG,&
-        MAX_LOG_STEP, MIN_LOG_STEP, COHESION_DEBUG_START,&
+        MAX_LOG_STEP, MIN_LOG_STEP, COHESION_DEBUG_START,Asperities,&
+!
+! DES Energy Equations: J.Musser
+ DES_ENERGY_EQ, DES_CONV_EQ, DES_COND_EQ, DES_RADI_EQ,&
+        DES_COND_EQ_PFP, DES_COND_EQ_PP, DES_CONV_CORR, FLPC, RDPC, & 
+        DES_K_s0, DES_C_ps0, DES_Em, DES_MIN_COND_DIST, &
+! DES Species Equations (reactive chemistry): J. Musser
+       DES_NMAX,  DES_MW_s, DES_SPECIES_EQ, &
+       DES_SPECIES_NAME, REACTION_MODEL, &
 !
 ! Obsolete Controls
         ANIMATION_WRITE_INTERVAL, ANIMATION_WRITE_COUNTER, TIME_FACTOR,&

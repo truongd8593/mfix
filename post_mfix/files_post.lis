@@ -202,3 +202,6 @@ usr_input_mod.f
 ../model/calc_trd_s.f
 ../model/cartesian_grid/get_delh.f
 ../model/cartesian_grid/define_quadrics.f
+../model/cartesian_grid/check_data_cartesian.f
+../model/cartesian_grid/get_poly_data.f
+../model/cartesian_grid/get_stl_data.f
