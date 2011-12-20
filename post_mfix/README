@@ -10,3 +10,10 @@ post_mfix version of function.inc.
 in interp_res.
 
 3.  DEALLOCATE_ARRAYS deallocates all arrays allocated in ALLOCATE_ARRAYS. Update this routine whenever ALLOCATE_ARRAYS is updated.
+
+4.  When new files or subtouines are added to mfix, follow this procedure to make sure post_mfix compiles:
+
+    4.1. Add new files required by post_mfix at the bottom of /mfix/post_mfix/files_post.lis
+    4.2. Go to  /mfix/tools, and compile mms_post:> ifort mms_post.f -o mms_post.exe 
+    4.3. Run make_make_post:> ./make_make_post
+    4.4. Go to /mfix/post_mfix and run make_post:> sh ./make_post 
