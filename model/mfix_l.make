@@ -1812,6 +1812,7 @@ calc_grbdry.$(OBJ_EXT) : calc_grbdry.f \
             compar.mod \
             toleranc.mod \
             mpi_utility.mod \
+            cutcell.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1929,6 +1930,7 @@ calc_mu_s.$(OBJ_EXT) : calc_mu_s.f \
             visc_g.mod \
             is.mod \
             sendrecv.mod \
+            cutcell.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                    \
@@ -3008,6 +3010,7 @@ k_epsilon_prop.$(OBJ_EXT) : k_epsilon_prop.f \
             compar.mod \
             tau_g.mod \
             sendrecv.mod \
+            cutcell.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -3897,6 +3900,7 @@ solve_k_epsilon_eq.$(OBJ_EXT) : solve_k_epsilon_eq.f \
             tmp_array.mod \
             compar.mod \
             mflux.mod \
+            cutcell.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                    \
@@ -5140,7 +5144,6 @@ check_data_cartesian.$(OBJ_EXT) : ./cartesian_grid/check_data_cartesian.f \
             mpi_utility.mod \
             bc.mod \
             discretelement.mod \
-            mfix_pic.mod \
             cutcell.mod \
             quadric.mod \
             vtk.mod \
@@ -5148,6 +5151,11 @@ check_data_cartesian.$(OBJ_EXT) : ./cartesian_grid/check_data_cartesian.f \
             dashboard.mod \
             stl.mod \
             fldvar.mod \
+            scales.mod \
+            parallel.mod \
+            toleranc.mod \
+            geometry.mod \
+            sendrecv.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/check_data_cartesian.f 
 cut_cell_preprocessing.$(OBJ_EXT) : ./cartesian_grid/cut_cell_preprocessing.f \
