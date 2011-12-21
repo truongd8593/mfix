@@ -136,7 +136,7 @@
                         DO Q_ID = 1, N_QUADRIC
                            CALL GET_F_QUADRIC(X_COPY,Y_COPY,Z_COPY,Q_ID,F_Q,CLIP_FLAG)
                            IF(DABS(F_Q) < F_MIN) THEN
-                              F_MIN = F_Q
+                              F_MIN = DABS(F_Q)
                               QID_FMIN = Q_ID
                            ENDIF
                         ENDDO
