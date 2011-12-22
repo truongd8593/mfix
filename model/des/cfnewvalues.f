@@ -70,22 +70,26 @@
          
          RETURN 
       ENDIF
-
-      PC = 1
+	  
+         DES_LOC_DEBUG = .FALSE.
+!!      PC = 1
+!$omp parallel do if(max_pip .ge. 10000) default(shared)        &
+!$omp private(l,d,dist,neighbor_search_dist)                    &
+!$omp reduction(.or.:do_nsearch) schedule (auto)                      	  
       DO L = 1, MAX_PIP
 ! pradeep skip ghost particles
-         if(pc.gt.pip) exit
+!!         if(pc.gt.pip) exit
          if(.not.pea(l,1)) cycle 
-         pc = pc+1
+!!         pc = pc+1
          if(pea(l,4)) cycle 
 
-         DES_LOC_DEBUG = .FALSE.
+
 ! If a particle is classified as new, then forces are ignored. 
 ! Classification from new to existing is performed in routine
 ! des_check_new_particle.f
          IF(.NOT.PEA(L,2))THEN 
             FC(L, :) = FC(L,:)/PMASS(L) + GRAV(:)
-	    IF(USE_COHESION .AND. VAN_DER_WAALS) FC(L, :) = FC(L,:) + Fcohesive(L, :)/PMASS(L)
+            IF(USE_COHESION .AND. VAN_DER_WAALS) FC(L, :) = FC(L,:) + Fcohesive(L, :)/PMASS(L)
          ELSE 
             FC(L,:) = ZERO
             TOW(L,:) = ZERO         
@@ -93,7 +97,8 @@
          
          
 ! Advance particle position, velocity
-         IF (TRIM(DES_INTG_METHOD) .EQ. 'EULER') THEN 
+!! comment out by Tingwen
+        IF (TRIM(DES_INTG_METHOD) .EQ. 'EULER') THEN 
 ! first-order method              
             DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + FC(L,:)*DTSOLID
             DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
@@ -105,7 +110,7 @@
 
             ELSEIF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') THEN
 ! T.Li:  second-order Adams-Bashforth scheme
-            DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
+           DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
                ( 3.d0*DES_VEL_OLD(L,:)-DES_VEL_OOLD(L,:) )*DTSOLID
             DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + 0.5d0*&
                ( 3.d0*FC(L,:)-DES_ACC_OLD(L,:) )*DTSOLID
@@ -242,9 +247,10 @@
          TOW(L,:) = ZERO
 
 
-         IF (DES_LOC_DEBUG) WRITE(*,1001)
+!         IF (DES_LOC_DEBUG) WRITE(*,1001)
       ENDDO
-
+!$omp end parallel do
+	  
  1000 FORMAT(3X,'---------- FROM CFNEWVALUES ---------->')
  1001 FORMAT(3X,'<---------- END CFNEWVALUES ----------')  
 
@@ -257,7 +263,12 @@
 
       RETURN
       END SUBROUTINE CFNEWVALUES
-     
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CFNEWVALUES_MPPIC_SINDER                               C
+!
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C     
       SUBROUTINE CFNEWVALUES_MPPIC_SINDER 
 
       USE param

@@ -88,10 +88,13 @@
 
       INTEGER :: EPG_MIN_LOC(1), EPS_MAX_LOC(1)
       DOUBLE PRECISION :: MASS_SOL(MMAX), MASS_SOL2(MMAX)
+!$      double precision omp_start1, omp_end1
+!$      double precision omp_get_wtime	      
 !-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
+
 
 ! following quantities are reset every call to particles_in_clel
       PIP_DEL_COUNT = 0 
@@ -109,19 +112,25 @@
 
 ! pradeep : Call exchange particles - this will exchange particle 
 ! crossing boundaries as well as updates ghost particles information
+!!$      omp_start1=omp_get_wtime()      
       call des_par_exchange 
- 
-      PC = 1
+!!$      omp_end1=omp_get_wtime()
+!!$      write(*,*)'des_par_exchange:',omp_end1 - omp_start1 
+!!      PC = 1
+!       by Tingwen      
+!!$      omp_start1=omp_get_wtime()  
+!$omp parallel do default(shared)                               &
+!$omp private(l,m,xpos,ypos,zpos,i,j,k,ijk_old,ijk) schedule (guided,50)  
       DO L = 1, MAX_PIP
 ! pradeep - skip ghost particles
-         if(pc.gt.pip) exit
+!!         if(pc.gt.pip) exit
          if(.not.pea(l,1)) cycle 
-         pc = pc+1
+!!         pc = pc+1
          if(pea(l,4)) cycle 
          
-         WTP = ONE
+!!         WTP = ONE
          
-         IF(MPPIC) WTP = DES_STAT_WT(L)
+!!         IF(MPPIC) WTP = DES_STAT_WT(L)
          IF(FIRST_PASS) THEN 
 ! Identify solid type based on diameter
             DO M = 1, MMAX
@@ -311,28 +320,71 @@
          end if
 
          !set i, j, k again since pijk may have changed for the MPPIC case
-         I = PIJK(L,1)
-         J = PIJK(L,2)
-         K = PIJK(L,3)
+!!         I = PIJK(L,1)
+!!         J = PIJK(L,2)
+!!         K = PIJK(L,3)
 
-         IJK = FUNIJK(I,J,K)
+!!         IJK = FUNIJK(I,J,K)
 
          ! set particle in cell info and compute aggregates 
-         PIJK(L,4) = IJK
-         PINC(IJK) = PINC(IJK) + 1
-         M = PIJK(L,5)
+!!         PIJK(L,4) = IJK
+!!         PINC(IJK) = PINC(IJK) + 1
+!!         M = PIJK(L,5)
          
          !IF(M.Eq.0) WRITE(*,*) 'M EQUAL =', M, L
-         SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) +  PVOL(L)*WTP!*0.4
-         DES_U_S(IJK,M) = DES_U_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,1)*WTP!*0.4
-         DES_V_S(IJK,M) = DES_V_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,2)*WTP!*0.4
-         IF(DIMN.EQ.3) DES_W_S(IJK,M) = DES_W_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,3)*WTP!*0.4
+!!         SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) +  PVOL(L)*WTP!*0.4
+!!         DES_U_S(IJK,M) = DES_U_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,1)*WTP!*0.4
+!!         DES_V_S(IJK,M) = DES_V_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,2)*WTP!*0.4
+!!         IF(DIMN.EQ.3) DES_W_S(IJK,M) = DES_W_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,3)*WTP!*0.4
 
          !SOLVOLINC(IJK_OLD,M) = SOLVOLINC(IJK_OLD,M) +  PVOL(L)*WTP*0.6
          !DES_U_S(IJK_OLD,M) = DES_U_S(IJK_OLD,M) + PVOL(L)*DES_VEL_NEW(L,1)*WTP*0.6
          !DES_V_S(IJK_OLD,M) = DES_V_S(IJK_OLD,M) + PVOL(L)*DES_VEL_NEW(L,2)*WTP*0.6
          !IF(DIMN.EQ.3) DES_W_S(IJK_OLD,M) = DES_W_S(IJK_OLD,M) + PVOL(L)*DES_VEL_NEW(L,3)*WTP*0.6
       enddo      ! end loop over l = 1,particles
+!$omp end parallel do 
+!!$      omp_end1=omp_get_wtime()
+!!$      write(*,*)'first_loop:',omp_end1 - omp_start1 
+
+!!$      omp_start1=omp_get_wtime()	  
+!!$omp single private(l,wtp,i,j,k,ijk,m) !,omp_tp1,omp_tp2,omp_tp3)
+         PC = 1
+      DO L = 1, MAX_PIP
+         if(pc.gt.pip) exit      
+         IF(.NOT.PEA(L,1)) CYCLE
+         PC = PC + 1
+         if(pea(l,4)) cycle 
+         WTP = ONE
+         
+         IF(MPPIC) WTP = DES_STAT_WT(L)
+         
+         I = PIJK(L,1)
+         J = PIJK(L,2)
+         K = PIJK(L,3)
+		 
+	 IJK = FUNIJK(I,J,K)
+		 
+         PIJK(L,4) = IJK
+         PINC(IJK) = PINC(IJK) + 1
+         M = PIJK(L,5)
+!         pijk(l,6)=0
+!         to mark if the particle is close to the walls	
+!         if(i.eq.istart1 .or. i.eq.iend1 .or. j.eq.jstart1 .or. j.eq.jend1   &
+!         .or. ((dimn.eq.3) .and. (k.eq.kend1 .or. k.eq.kstart1)))then
+!         pijk(l,6)=1
+!         endif
+         
+         !IF(M.Eq.0) WRITE(*,*) 'M EQUAL =', M, L
+         SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) +  PVOL(L)*WTP!*0.4
+         DES_U_S(IJK,M) = DES_U_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,1)*WTP!*0.4
+         DES_V_S(IJK,M) = DES_V_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,2)*WTP!*0.4
+         IF(DIMN.EQ.3) DES_W_S(IJK,M) = DES_W_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,3)*WTP!*0.4		 
+
+      ENDDO      ! end loop over L = 1,particles
+!!$omp end single   
+!!$omp end parallel do 
+!!$      omp_end1=omp_get_wtime()
+!!$      write(*,*)'second_loop:',omp_end1 - omp_start1 	  
 
       if (FIRST_PASS)then 
           if(dmp_log.and.debug_des) write(unit_log,'(3x,a)') &
@@ -362,6 +414,10 @@
 ! check all cells (including ghost cells); update entering/exiting 
 ! particle regions      
       MASS_SOL = ZERO 
+	  
+!!$      omp_start1=omp_get_wtime() 	  
+!$omp parallel do if(ijkend3 .ge. 2000) default(shared)           &
+!$omp private(ijk,npic) !schedule (guided,50)     
       do ijk = ijkstart3, ijkend3
          npic = pinc(ijk)
          if (associated(pic(ijk)%p)) then
@@ -373,9 +429,15 @@
             if (npic.gt.0) allocate(pic(ijk)%p(npic))
          endif
       enddo
+!$omp end parallel do 
+!!$      omp_end1=omp_get_wtime()
+!!$      write(*,*)'third_loop:',omp_end1 - omp_start1 
 
       particle_count(:) = 1
+!!$      omp_start1=omp_get_wtime() 
       PC = 1
+!!$omp parallel do default(shared)                               &
+!!$omp private(l,ijk,pos) !schedule (guided,50)     
       DO L = 1, MAX_PIP
 ! pradeep skip ghost particles 
          if(pc.gt.pip) exit
@@ -388,12 +450,18 @@
          pic(IJK)%p(pos) = L
          particle_count(IJK) = particle_count(IJK) + 1
       ENDDO
-
+!!$omp end parallel do 
+!!$      omp_end1=omp_get_wtime()
+!!$      write(*,*)'forth_loop:',omp_end1 - omp_start1 
+	
 ! Calculate the cell average solids velocity, the bulk density (if not
 ! des_interp_on and not first_pass), the void fraction, and average
 ! height of each solids phase
       tmp_num(:) = ZERO 
       tmp_den(:) = ZERO 
+!!$      omp_start1=omp_get_wtime() 
+!$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
+!$omp private(ijk,i,j,k,m,osolvol,ovol) !schedule (guided,50)     
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
          J = J_OF(IJK)
@@ -446,6 +514,9 @@
             ENDIF
          ENDDO   ! end loop over M=1,MMAX
       ENDDO     ! end loop over IJK=ijkstart3,ijkend3
+!$omp end parallel do 
+!!$      omp_end1=omp_get_wtime()
+!!$      write(*,*)'fifth_loop:',omp_end1 - omp_start1 
 
       IF(MPPIC) THEN 
          CALL MPPIC_COMPUTE_MEAN_FIELDS2
@@ -458,6 +529,12 @@
          if(dmp_log) write(unit_log,1001)
       end if 
       
+!!$      omp_end1=omp_get_wtime()
+!!$      write(*,*)'par_in_cell:',omp_end1 - omp_start1
+!      open (unit=100,file='p_in_c.txt',status='unknown')
+!      write(100,*)pijk,pinc,ROP_SO 
+!      close(100)
+      
       if(.not.mppic) then 
          RETURN 
       else
@@ -469,23 +546,23 @@
       !WRITE(*,'(A,10(2x,i5))') 'PINC in I, J, K = ', I_OF(IJK), J_OF(IJK), K_OF(IJK), PINC(IJK), PINC(IM_OF(IJK)), PINC(IP_OF(IJK))
       !WRITE(*,'(A,10(2x,g17.8))') 'EPS = ', EP_S(IJK,1), EP_S(IM_OF(IJK),1), EP_S(IP_OF(IJK),1)
 
-      EPG_MIN2 = MINVAL(EP_G(:))
-      epg_min_loc = MINLOC(EP_G(:))
-      IJK = epg_min_loc(1)
-      
-      EPS_MAX = MAXVAL(ROP_S(:,1))
-      eps_MAX = EPS_MAX/ro_s(1)
-      eps_max_loc = MAXLOC(ROP_S(:,1))
-      IJK2 = eps_max_loc(1)
-      I = I_OF(IJK)
-      J = J_OF(IJK)
-      K = K_OF(IJK)
-      IMJK = IM_OF(IJK)
-      IJMK = JM_OF(IJK)
-      IJKM = KM_OF(IJK)
-
-      UGC = HALF * (U_G(IJK) + U_G(IMJK))
-      VGC = HALF * (V_G(IJK) + V_G(IJMK))
+!!      EPG_MIN2 = MINVAL(EP_G(:))
+!!      epg_min_loc = MINLOC(EP_G(:))
+!!      IJK = epg_min_loc(1)
+!!      
+!!      EPS_MAX = MAXVAL(ROP_S(:,1))
+!!      eps_MAX = EPS_MAX/ro_s(1)
+!!      eps_max_loc = MAXLOC(ROP_S(:,1))
+!!      IJK2 = eps_max_loc(1)
+!!      I = I_OF(IJK)
+!!      J = J_OF(IJK)
+!!      K = K_OF(IJK)
+!!      IMJK = IM_OF(IJK)
+!!      IJMK = JM_OF(IJK)
+!!      IJKM = KM_OF(IJK)
+!!
+!!      UGC = HALF * (U_G(IJK) + U_G(IMJK))
+!!      VGC = HALF * (V_G(IJK) + V_G(IJMK))
       !WRITE(*,'(10x,A,4(2x,g17.8))') 'EPGMIN1, EPS_MAX = ', epg_min2, eps_max
       
       !WRITE(*,'(10x,A,4(2x,g17.8))') 'MASS_SOL  =  ', pip*pmass(1)*des_stat_wt(1), sum(mass_sol), sum(mass_sol2)
@@ -510,7 +587,8 @@
       endif
 
       !WRITE(*,*) 'SOLID MASS: BEFORE AND AFTER: = ', mass_sol(1:mmax), mass_sol2(1:mmax)
-      
+
+
 
 
  1000 FORMAT(3X,'---------- FROM PARTICLES_IN_CELL ---------->')

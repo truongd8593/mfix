@@ -53,7 +53,7 @@
       Use des_thermo
       Use des_rxns
       Use interpolation
-
+      
       IMPLICIT NONE
 !------------------------------------------------
 ! Local variables
@@ -84,16 +84,23 @@
       DOUBLE PRECISION INTERP_WEIGHTS(2**DIMN)
       
       DOUBLE PRECISION :: DES_KE_VEC(DIMN)
-
 ! Identifies that the indicated particle is of interest for debugging
       LOGICAL FOCUS
+      
+!!	  integer cnt1,cnt2
 
+!!$      double precision omp_start, omp_end
+!!$      double precision omp_des_start,omp_des_end
+!!$      double precision omp_get_wtime 
+!!$      double precision omp_des_now,omp_des_last        
+      
 !-----------------------------------------------
 
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
 
+!!$      omp_des_start=omp_get_wtime()
 ! initialization      
       TMP_DTS = ZERO
       IF(FIRST_PASS.AND..NOT.MPPIC) THEN 
@@ -234,8 +241,11 @@
          IF(DES_CONTINUUM_COUPLED)   CALL COMPUTE_PG_GRAD
       ENDIF 
 
-
+!!$    omp_start = omp_get_wtime()
       DO NN = 1, FACTOR 
+!!$      omp_des_now=omp_get_wtime()
+!!        call system_clock( count=cnt1 )
+
          IF(DES_CONTINUUM_COUPLED) THEN
             IF(S_TIME.GE.(TIME+DT)) EXIT
 ! If the current time in the discrete loop exceeds the current time in
@@ -285,11 +295,14 @@
                IF(DES_CONTINUUM_COUPLED)   CALL DRAG_FGS
                CALL CFUPDATEOLD
             ELSE 
-               CALL CALC_FORCE_DES
+!!$      omp_start=omp_get_wtime()
+            	    CALL CALC_FORCE_DES
                !cfupdateold is called from inside clac_force_des
-               !Update particle position, velocity            
+               !Update particle position, velocity
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'Calc_force_des:',omp_end - omp_start               
             ENDIF
-            
+    
 !---------------------------------------------------------------------------->>>
 ! Loop over all particles
             PC = 1
@@ -324,9 +337,13 @@
 ! Increment the particle counter
                PC = PC + 1
             ENDDO
-!----------------------------------------------------------------------------<<<
-
+!----------------------------------------------------------------------------<<<    
+            
+!!$      omp_start=omp_get_wtime()
             CALL CFNEWVALUES
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'Cfnewvalues:',omp_end - omp_start    
+    
 
 !---------------------------------------------------------------------------->>>
 ! Loop over all particles
@@ -350,8 +367,10 @@
 !----------------------------------------------------------------------------<<<
 
 
+	
 ! Impose the wall-particle boundary condition for mp-pic case 
             IF(MPPIC) CALL MPPIC_APPLY_WALLBC 
+	 
 
 
 ! For systems with inlets/outlets check to determine if a particle has
@@ -360,15 +379,18 @@
             IF (DES_MIO) CALL DES_CHECK_PARTICLE
 ! pradeep: set do_nsearch before calling particle_in_Cell
             IF(NN.EQ.1 .OR. MOD(NN,NEIGHBOR_SEARCH_N).EQ.0) do_nsearch =.true. 
-
+!!$      omp_start=omp_get_wtime()
             CALL PARTICLES_IN_CELL
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'Particles_in_cell:',omp_end - omp_start    
             
             !IF(MPPIC.and.(.not.MPPIC_SOLID_STRESS_SNIDER)) THEN 
             !   CALL MPPIC_COMPUTE_PS_GRAD            
             !   CALL MPPIC_APPLY_PS_GRAD
             !endif
             !IF(MPPIC) CALL MPPIC_APPLY_PS_GRAD
-            
+
+!!$      omp_start=omp_get_wtime()            
             if (do_nsearch.AND.(.NOT.MPPIC)) then 
                IF(DEBUG_DES) then 
                   if(dmp_log)write(unit_log,'(3X,A,I10,/,5X,A,I10)') &
@@ -376,6 +398,9 @@
                end if 
                call neighbour 
             end if 
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'Neighbor_search:',omp_end - omp_start	
+
 !            IF(NN.EQ.1 .OR. MOD(NN,NEIGHBOR_SEARCH_N).EQ.0) THEN 
 !               IF(DEBUG_DES) if(dmp_log)write(unit_log,'(3X,A,A,/,5X,A,I10)') &
 !                  'Calling NEIGHBOUR: NN=1 or ',&
@@ -475,7 +500,13 @@
                !'and MAX % overlap =', OVERLAP_MAX
          ENDIF
 
+!!         call system_clock( count=cnt2 )
+!!         write(*,*)'One_time_march:',cnt2-cnt1,'microseconds'	 
+!!$      omp_des_last=omp_get_wtime()
+!!$      write(*,*)'<--------DES_TIME_MARCH-',omp_des_last-omp_des_now,'SECONDS -------->'
       ENDDO     ! end do NN = 1, FACTOR
+!!$      omp_end = omp_get_wtime()
+!!$      write(*,*)'Total wall time:  ', omp_end-omp_start, '  Seconds' 
 
 ! When coupled, and if needed, reset the discrete time step accordingly
       IF(DT.LT.DTSOLID_TMP) THEN
@@ -537,6 +568,8 @@
          if(dimn.eq.3) call send_recv(des_w_s,2) 
          call send_recv(rop_s,2)
       end if 
+!!$      omp_des_end=omp_get_wtime()
+!!$      write(*,*)'          DES_TIME_MARCH: ',omp_des_end - omp_des_start,' SECONDS'
 
       CONTAINS
       
@@ -613,7 +646,6 @@
       WRITE(*,*) 'KE, THETA = ', DES_KE, THETA, NN !, DOT_PRODUCT(DES_VEL_AVG(:), DES_VEL_AVG(:))
       GLOBAL_GRAN_ENERGY(:) =  GLOBAL_GRAN_ENERGY(:)/DBLE(PIP)
       GLOBAL_GRAN_TEMP(:) =  GLOBAL_GRAN_TEMP(:)/DBLE(PI)
-
       RETURN
 
       END SUBROUTINE CALCULATE_GLOB_ENERGY 

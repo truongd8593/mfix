@@ -11,7 +11,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFSLIDEWALL(L, TANGNT)
+      SUBROUTINE CFSLIDEWALL(L, TANGNT,PARTICLE_SLIDE)
       
       USE discretelement
       USE param1
@@ -22,6 +22,7 @@
       INTEGER L, K
       DOUBLE PRECISION FTMD, FNMD, TANGNT(DIMN)
       DOUBLE PRECISION TMP_FT(DIMN), TMP_FN(DIMN)
+      logical PARTICLE_SLIDE
 
 !-----------------------------------------------      
 ! Functions

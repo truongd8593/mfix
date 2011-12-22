@@ -9,7 +9,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFWALLPOSVEL(L, IW)
+      SUBROUTINE CFWALLPOSVEL(L, IW, w_pos_l, w_vel_l)
 
       USE discretelement
       USE des_bc
@@ -40,13 +40,14 @@
       DOUBLE PRECISION A, OMEGA_W, OOMEGAW2, COSOMEGAT, SINOMEGAT
 ! local value for particle radius
       DOUBLE PRECISION DES_R
+      double precision w_pos_l(dimn),w_vel_l(dimn)
 
 !-----------------------------------------------      
      
 ! initialize wall velocity
-      DES_WALL_VEL(IW,1) = ZERO
-      DES_WALL_VEL(IW,2) = ZERO
-      IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = ZERO
+      w_vel_l(1) = ZERO
+      w_vel_l(2) = ZERO
+      IF(DIMN.EQ.3) w_vel_l(3) = ZERO
      
 ! initialize local values
       A = ZERO
@@ -74,15 +75,15 @@
 
 ! west wall; in 3D on yz plane (x=wx1->0)
       IF(IW.EQ.1) THEN
-         DES_WALL_POS(IW,1) = WX1 - DES_R
-         DES_WALL_POS(IW,2) = DES_POS_NEW(L,2)
-         IF(DIMN.EQ.3) DES_WALL_POS(IW,3) = DES_POS_NEW(L,3)
+         w_pos_l(1) = WX1 - DES_R
+         w_pos_l(2) = DES_POS_NEW(L,2)
+         IF(DIMN.EQ.3) w_pos_l(3) = DES_POS_NEW(L,3)
 
          IF(DES_F.NE.ZERO) THEN
          ELSE                 
-            DES_WALL_VEL(IW,1) = ZERO
-            DES_WALL_VEL(IW,2) = DES_BC_Vw_s(IW,M)
-            IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = DES_BC_Ww_s(IW,M)
+            w_vel_l(1) = ZERO
+            w_vel_l(2) = DES_BC_Vw_s(IW,M)
+            IF(DIMN.EQ.3) w_vel_l(3) = DES_BC_Ww_s(IW,M)
          ENDIF
 
          WALL_NORMAL(1,1) = -ONE
@@ -91,15 +92,15 @@
 
 ! east wall; in 3D on yz plane (x=ex2->xlength)
       ELSEIF(IW.EQ.2) THEN
-         DES_WALL_POS(IW,1) = EX2 + DES_R
-         DES_WALL_POS(IW,2) = DES_POS_NEW(L,2)
-         IF(DIMN.EQ.3) DES_WALL_POS(IW,3) = DES_POS_NEW(L,3)
+         w_pos_l(1) = EX2 + DES_R
+         w_pos_l(2) = DES_POS_NEW(L,2)
+         IF(DIMN.EQ.3) w_pos_l(3) = DES_POS_NEW(L,3)
 
          IF(DES_F.NE.ZERO) THEN
          ELSE                 
-            DES_WALL_VEL(IW,1) = ZERO
-            DES_WALL_VEL(IW,2) = DES_BC_Vw_s(IW,M)
-            IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = DES_BC_Ww_s(IW,M)
+            w_vel_l(1) = ZERO
+            w_vel_l(2) = DES_BC_Vw_s(IW,M)
+            IF(DIMN.EQ.3) w_vel_l(3) = DES_BC_Ww_s(IW,M)
          ENDIF
 
          WALL_NORMAL(2,1) = ONE
@@ -108,17 +109,17 @@
 
 ! bottom wall; in 3D on xz plane (y=by1->0)
       ELSEIF(IW.EQ.3) THEN
-         DES_WALL_POS(IW,1) = DES_POS_NEW(L,1)
-         DES_WALL_POS(IW,2) = BY1 - DES_R + (A*SINOMEGAT)
-         IF(DIMN.EQ.3) DES_WALL_POS(IW,3) = DES_POS_NEW(L,3)
+         w_pos_l(1) = DES_POS_NEW(L,1)
+         w_pos_l(2) = BY1 - DES_R + (A*SINOMEGAT)
+         IF(DIMN.EQ.3) w_pos_l(3) = DES_POS_NEW(L,3)
 
          IF(DES_F.NE.ZERO) THEN
-            DES_WALL_VEL(IW,1) = lid_vel
-            DES_WALL_VEL(IW,2) =  A*OMEGA_W*COSOMEGAT
+            w_vel_l(1) = lid_vel
+            w_vel_l(2) =  A*OMEGA_W*COSOMEGAT
          ELSE
-            DES_WALL_VEL(IW,1) = DES_BC_Uw_s(IW,M)
-            DES_WALL_VEL(IW,2) = ZERO
-            IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = DES_BC_Ww_s(IW,M)
+            w_vel_l(1) = DES_BC_Uw_s(IW,M)
+            w_vel_l(2) = ZERO
+            IF(DIMN.EQ.3) w_vel_l(3) = DES_BC_Ww_s(IW,M)
          ENDIF
 
          WALL_NORMAL(3,1) = ZERO
@@ -127,16 +128,16 @@
 
 ! top wall; in 3D on xz plane (y=ty2->ylength)
       ELSEIF(IW.EQ.4) THEN
-         DES_WALL_POS(IW,1) = DES_POS_NEW(L,1)
-         DES_WALL_POS(IW,2) = TY2 + DES_R
-         IF(DIMN.EQ.3) DES_WALL_POS(IW,3) = DES_POS_NEW(L,3)
+         w_pos_l(1) = DES_POS_NEW(L,1)
+         w_pos_l(2) = TY2 + DES_R
+         IF(DIMN.EQ.3) w_pos_l(3) = DES_POS_NEW(L,3)
 
          IF(DES_F.NE.ZERO) THEN
-            DES_WALL_VEL(IW,1) = -lid_vel
+            w_vel_l(1) = -lid_vel
          ELSE
-            DES_WALL_VEL(IW,1) = DES_BC_Uw_s(IW,M)
-            DES_WALL_VEL(IW,2) = ZERO
-            IF(DIMN.EQ.3) DES_WALL_VEL(IW,3) = DES_BC_Ww_s(IW,M)
+            w_vel_l(1) = DES_BC_Uw_s(IW,M)
+            w_vel_l(2) = ZERO
+            IF(DIMN.EQ.3) w_vel_l(3) = DES_BC_Ww_s(IW,M)
          ENDIF
 
          WALL_NORMAL(4,1) = ZERO
@@ -145,15 +146,15 @@
 
 ! south wall; in 3D on xy plane (z=sz1->0)
       ELSEIF(IW.EQ.5) THEN
-         DES_WALL_POS(IW,1) = DES_POS_NEW(L,1)
-         DES_WALL_POS(IW,2) = DES_POS_NEW(L,2)
-         DES_WALL_POS(IW,3) = SZ1 - DES_R
+         w_pos_l(1) = DES_POS_NEW(L,1)
+         w_pos_l(2) = DES_POS_NEW(L,2)
+         w_pos_l(3) = SZ1 - DES_R
 
          IF(DES_F.NE.ZERO) THEN
          ELSE
-            DES_WALL_VEL(IW,1) = DES_BC_Uw_s(IW,M)
-            DES_WALL_VEL(IW,2) = DES_BC_Vw_s(IW,M)
-            DES_WALL_VEL(IW,3) = ZERO 
+            w_vel_l(1) = DES_BC_Uw_s(IW,M)
+            w_vel_l(2) = DES_BC_Vw_s(IW,M)
+            w_vel_l(3) = ZERO 
          ENDIF
 
          WALL_NORMAL(5,1) = ZERO
@@ -162,15 +163,15 @@
 
 ! north wall; in 3D on xy plane (z=nz2->zlength)
       ELSEIF(IW.EQ.6) THEN
-         DES_WALL_POS(IW,1) = DES_POS_NEW(L,1)
-         DES_WALL_POS(IW,2) = DES_POS_NEW(L,2)
-         DES_WALL_POS(IW,3) = NZ2 + DES_R
+         w_pos_l(1) = DES_POS_NEW(L,1)
+         w_pos_l(2) = DES_POS_NEW(L,2)
+         w_pos_l(3) = NZ2 + DES_R
 
          IF(DES_F.NE.ZERO) THEN
          ELSE
-            DES_WALL_VEL(IW,1) = DES_BC_Uw_s(IW,M)
-            DES_WALL_VEL(IW,2) = DES_BC_Vw_s(IW,M)
-            DES_WALL_VEL(IW,3) = ZERO 
+            w_vel_l(1) = DES_BC_Uw_s(IW,M)
+            w_vel_l(2) = DES_BC_Vw_s(IW,M)
+            w_vel_l(3) = ZERO 
          ENDIF
 
          WALL_NORMAL(6,1) = ZERO

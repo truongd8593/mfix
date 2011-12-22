@@ -352,12 +352,19 @@
       logical, save :: first_pass = .true.
       integer :: lallocstat,lallocerr
       include 'des/desgrid_functions.inc' 
+!!$      double precision omp_start, omp_end
+!!$      double precision omp_get_wtime	      
+!       by Tingwen      
+!!$      omp_start=omp_get_wtime()
+      
 
 ! locate the particles including ghost cells
       lparcount = 1 
       lpic(:) = 0 
       if (plocate) then 
          dg_pijkprv(:)= dg_pijk(:)
+!!$omp parallel do default(shared)                               &
+!!$omp private(lcurpar,li,lj,lk,lijk) schedule (guided,20)  	 
          do lcurpar = 1,max_pip 
             if(lparcount.gt.pip) exit 
             if(.not.pea(lcurpar,1)) cycle 
@@ -371,8 +378,11 @@
             end if 
             dg_pijk(lcurpar) = dg_funijk(li,lj,lk)
             lijk = dg_pijk(lcurpar)
+!!$omp critical 			
             lpic(lijk) = lpic(lijk) + 1
+!!$omp end critical 
          end do 
+!!$omp end parallel do
       else 
          do lcurpar = 1,max_pip 
             if(lparcount.gt.pip) exit 
@@ -389,6 +399,9 @@
       end if 
       
 ! redfine the array of dg_pic 
+!!$      omp_start=omp_get_wtime()
+!$omp parallel do default(shared)                               &
+!$omp private(lijk,lcurpic) schedule (guided,50)  	 
       do lijk = dg_ijkstart2,dg_ijkend2
          lcurpic = lpic(lijk)
          if(dg_pic(lijk)%isize.ne.lcurpic) then 
@@ -397,6 +410,9 @@
             dg_pic(lijk)%isize = lcurpic 
          end if 
       end do 
+!$omp end parallel do
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'desgrid_pic:',omp_end - omp_start
 
 ! assign the particle info in pic array 
       lindx(:) = 1
@@ -409,7 +425,12 @@
          dg_pic(lijk)%p(lindx(lijk)) = lcurpar
          lindx(lijk) = lindx(lijk) +  1
       enddo
-
+     
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'desgrid_pic:',omp_end - omp_start  
+!      open (unit=100,file='desgrid.txt',status='unknown')
+!      write(100,*)lpic
+!      close(100)
       end subroutine   
 
 !------------------------------------------------------------------------
@@ -417,10 +438,10 @@
 ! Purpose          : This particles build the neigh list for the particles 
 !                    currently active in the system  
 !------------------------------------------------------------------------
-      subroutine desgrid_neigh_build () 
+      subroutine desgrid_neigh_build ()
 
       Use des_thermo
-
+      
       implicit none 
       include 'des/desgrid_functions.inc'
  
@@ -428,15 +449,27 @@
       integer lcurpar,lparcount,lmaxneigh,lkoffset
       integer lijk,lic,ljc,lkc,li,lj,lk,ltotpic,lpicloc,lneigh,lneighcnt
       double precision lsearch_rad,ldist,ldistvec(dimn)
+!!$      double precision omp_start, omp_end
+!!$      double precision omp_get_wtime	      
+!       by Tingwen      
+!!$      omp_start=omp_get_wtime()
 
 ! loop through neighbours and build the contact particles list for particles 
 ! present in the system
       lkoffset = dimn-2 
-      lparcount=1 
+!!      lparcount=1 
+
+!$omp   parallel do default(shared)                              &             
+!$omp   private(lcurpar,lneighcnt,lijk,lic,ljc,lkc,    		 &
+!$omp           li,lj,lk,ltotpic,lpicloc,lneigh,lsearch_rad,     &
+!$omp           ldistvec,ldist) schedule (dynamic,50)       
       do lcurpar =1,max_pip
-         if (lparcount.gt.pip) exit
+!     Tingwen Li
+!     lines to count particles in the system is disabled as it won't lead to any
+!     benefit in openmp parallel
+!!         if (lparcount.gt.pip) exit
          if (.not. pea(lcurpar,1)) cycle 
-         lparcount = lparcount +1 
+!!         lparcount = lparcount +1 
          if (pea(lcurpar,4)) cycle 
          lneighcnt = 0
          lijk = dg_pijk(lcurpar)
@@ -455,7 +488,7 @@
                ldistvec = des_pos_new(lcurpar,:)-des_pos_new(lneigh,:)
                ldist = sqrt(dot_product(ldistvec,ldistvec))
 ! J.Musser - Secondary list for heat transfer
-               IF(FIND_THERMO_NBRHD) CALL THERMO_NBR(lcurpar,lneigh,ldist)
+               IF(FIND_THERMO_NBRHD) CALL THERMO_NBR(lcurpar,lneigh,ldist)               
                if (ldist.gt.lsearch_rad) cycle 
                lneighcnt = lneighcnt + 1
                if(lneighcnt .gt. MN) then 
@@ -468,7 +501,14 @@
          end do 
          end do 
          end do 
-      end do    
+      end do 
+!$omp end parallel do         
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'desgrid_neigh_build:',omp_end - omp_start  
+!      open (unit=100,file='neighbours.txt',status='unknown')
+!      write(100,*)neighbours
+!      close(100)
+
       end subroutine 
 
 !------------------------------------------------------------------------

@@ -23,7 +23,7 @@
       use desgrid 
       use desmpi 
       USE des_thermo
-      USE des_rxns
+      USE des_rxns      
  
       IMPLICIT NONE
 !-----------------------------------------------
@@ -63,8 +63,8 @@
 
       PPOS(:,:) = ZERO
       GRAV(:) = ZERO
-      DES_WALL_POS(:,:) = UNDEFINED
-      DES_WALL_VEL(:,:) = UNDEFINED
+!      DES_WALL_POS(:,:) = UNDEFINED
+!      DES_WALL_VEL(:,:) = UNDEFINED
 
       NEIGHBOURS(:,:) = -1
       NEIGHBOURS(:,1) = 0
@@ -152,6 +152,7 @@
             dRdt_OLD(:) = ZERO
          ENDIF
       ENDIF
+
 
       RETURN
       END SUBROUTINE DES_INIT_ARRAYS 

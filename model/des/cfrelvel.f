@@ -21,8 +21,7 @@
 !
 !                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CFRELVEL(L, II, VRN, VRT, TANGNT, NORM, DIST_LI, &
-                          WALLCONTACT)
+      SUBROUTINE CFRELVEL(L, II, VRN, VRT, TANGNT, NORM, DIST_LI)
       
       USE discretelement
       USE param1
@@ -32,9 +31,6 @@
 ! Local variables
 !----------------------------------------------- 
       INTEGER L, II
-
-! marker for particle/wall contact (1=p/w)
-      INTEGER WALLCONTACT
 
       DOUBLE PRECISION TANGNT(DIMN), NORM(DIMN)
       DOUBLE PRECISION TANMOD, VRN, VRT
@@ -54,23 +50,8 @@
 !----------------------------------------------- 
 
 ! translational relative velocity 
-      IF (WALLCONTACT.EQ.1) THEN
-         VRELTRANS(:) = (DES_VEL_NEW(L,:) - DES_WALL_VEL(II,:))
-      ELSE
          VRELTRANS(:) = (DES_VEL_NEW(L,:) - DES_VEL_NEW(II,:))
-      ENDIF
 
-! rotational contribution  : v_rot
-      IF (WALLCONTACT.EQ.1) THEN
-! calculate the distance from the particle center to the wall
-         DIST_CL = DIST_LI - DES_RADIUS(L)
-         IF(DIMN.EQ.3) THEN
-            OMEGA_SUM(:) = OMEGA_NEW(L,:)*DIST_CL
-         ELSE
-            OMEGA_SUM(1) = OMEGA_NEW(L,1)*DIST_CL
-            OMEGA_SUM(2) = ZERO
-         ENDIF
-      ELSE
 ! calculate the distance from the particle center to the contact point,
 ! which is taken as the radical line
 ! dist_ci+dist_cl=dist_li; dist_ci^2+a^2=ri^2;  dist_cl^2+a^2=rl^2       
@@ -85,7 +66,6 @@
                OMEGA_NEW(II,1)*DIST_CI
             OMEGA_SUM(2) = ZERO
          ENDIF
-      ENDIF
 
       CALL DES_CROSSPRDCT(V_ROT, OMEGA_SUM, NORM)
 
@@ -114,3 +94,73 @@
       RETURN
       END SUBROUTINE CFRELVEL
 
+
+!==================================================================
+      SUBROUTINE CFRELVEL_WALL(l,w_vel_l,VRN,VRT,TANGNT,NORM,DIST_LI)
+      
+      USE discretelement
+      USE param1
+      IMPLICIT NONE     
+
+!-----------------------------------------------
+! Local variables
+!----------------------------------------------- 
+      INTEGER L
+
+      DOUBLE PRECISION w_vel_l(dimn)
+      DOUBLE PRECISION TANGNT(DIMN), NORM(DIMN)
+      DOUBLE PRECISION TANMOD, VRN, VRT
+      DOUBLE PRECISION VRELTRANS(DIMN)
+      DOUBLE PRECISION VSLIP(DIMN), &
+                       V_ROT(DIMN), OMEGA_SUM(DIMN)
+
+! distance between particles
+      DOUBLE PRECISION DIST_LI
+! distance from the contact point to the particle centers 
+      DOUBLE PRECISION DIST_CL 
+
+!----------------------------------------------- 
+! Functions
+!----------------------------------------------- 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+!----------------------------------------------- 
+
+! translational relative velocity 
+         VRELTRANS(:) = DES_VEL_NEW(L,:) - w_vel_l(:)
+
+! calculate the distance from the particle center to the wall
+         DIST_CL = DIST_LI - DES_RADIUS(L)
+         IF(DIMN.EQ.3) THEN
+            OMEGA_SUM(:) = OMEGA_NEW(L,:)*DIST_CL
+         ELSE
+            OMEGA_SUM(1) = OMEGA_NEW(L,1)*DIST_CL
+            OMEGA_SUM(2) = ZERO
+         ENDIF
+
+
+      CALL DES_CROSSPRDCT(V_ROT, OMEGA_SUM, NORM)
+
+! total relative velocity 
+      VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
+
+! normal component of relative velocity (scalar)
+      VRN = DES_DOTPRDCT(VRELTRANS,NORM)
+
+! slip velocity of the contact point 
+! Equation (8) in Tsuji et al. 1992      
+      VSLIP(:) =  VRELTRANS(:) - VRN*NORM(:)
+      
+! the magnitude of the tangential vector      
+      TANMOD = SQRT(DES_DOTPRDCT(VSLIP,VSLIP))     
+      IF(TANMOD.NE.ZERO) THEN
+! the unit vector in the tangential direction  
+         TANGNT(:) = VSLIP(:)/TANMOD
+      ELSE
+         TANGNT(:) = ZERO
+      ENDIF
+
+! tangential component of relative surface velocity (scalar)
+      VRT  = DES_DOTPRDCT(VRELTRANS,TANGNT)
+
+      RETURN
+      END SUBROUTINE CFRELVEL_WALL

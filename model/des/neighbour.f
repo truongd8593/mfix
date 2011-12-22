@@ -16,25 +16,33 @@
       USE param1
       USE discretelement
       use desgrid
-      Use des_thermo
-
+      Use des_thermo      
       IMPLICIT NONE
-
+	  integer np
+!!$      double precision omp_start, omp_end
+!!$      double precision omp_get_wtime
 
 ! J.Musser
 ! Reset PPOS and NEIGHBOURS back to initialized values
+!!$      omp_start=omp_get_wtime()
+!!$omp parallel do if(max_pip .ge. 10000) default(shared)        &
+!!$omp private(np) schedule (guided, 50)        
+!      do np=1,max_pip 
       PPOS(:,:) = DES_POS_NEW(:,:)
       NEIGHBOURS(:,:) = -1
       NEIGHBOURS(:,1) = 0
-
+      
 ! J.Musser
 ! Stores number of neighbors based on neighbor search
       IF(FIND_THERMO_NBRHD) THEN
          THERMO_NBRHD(:,:) = -1
          THERMO_NBRHD(:,1) = 0
       ENDIF
-
-
+      
+!	  end do
+!!$omp end parallel do
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'Neighbor_init:',omp_end - omp_start
       IF (DES_NEIGHBOR_SEARCH.EQ.1) THEN
          CALL NSQUARE
       ELSE

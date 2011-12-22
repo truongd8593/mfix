@@ -70,6 +70,10 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
+!!$      double precision omp_start, omp_end
+!!$      double precision omp_get_wtime	      
+!       by Tingwen      
+!!$      omp_start=omp_get_wtime()
       
       IF(DES_ONEWAY_COUPLED) THEN !do nothing 
          RETURN 
@@ -78,8 +82,12 @@
       AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
 
       IF(UV.EQ.1) THEN
-         DO M = 1, MMAX
+!!         DO M = 1, MMAX
+!$omp parallel do default(shared)                               &
+!$omp private(ijk,m,i,j,k,imjk,ijmk,imjmk,tmp_a,tmp_b,          &
+!$omp         ijkm,imjkm,ijmkm,imjmkm,vcell,usfcm) schedule (guided,50)       
             DO IJK = IJKSTART3, IJKEND3
+         DO M = 1, MMAX    
                IF(FLUID_AT(IJK)) THEN
                   I = I_OF(IJK)
                   J = J_OF(IJK)
@@ -121,10 +129,15 @@
                ENDIF
             ENDDO
          ENDDO
-
+!$omp end parallel do 
+	
       ELSEIF(VV.EQ.1) THEN
-         DO M = 1, MMAX
+!!         DO M = 1, MMAX
+!$omp parallel do default(shared)                               &
+!$omp private(ijk,m,i,j,k,imjk,ijmk,imjmk,tmp_a,tmp_b,          &
+!$omp         ijkm,imjkm,ijmkm,imjmkm,vcell,vsfcm) schedule (guided,50)   
             DO IJK = IJKSTART3, IJKEND3
+         DO M = 1, MMAX    
                IF(FLUID_AT(IJK)) THEN
                   I = I_OF(IJK)
                   J = J_OF(IJK)
@@ -166,10 +179,15 @@
                ENDIF
              ENDDO
           ENDDO
-
+!$omp end parallel do 
+          
       ELSE IF(WV.EQ.1) THEN
-         DO M = 1, MMAX
+!!         DO M = 1, MMAX
+!$omp parallel do default(shared)                               &
+!$omp private(ijk,m,i,j,k,imjk,ijmk,imjmk,tmp_a,tmp_b,          &
+!$omp         ijkm,imjkm,ijmkm,imjmkm,vcell,wsfcm) schedule (guided,50)   
             DO IJK = IJKSTART3, IJKEND3
+         DO M = 1, MMAX    
                IF(FLUID_AT(IJK)) THEN
                   I = I_OF(IJK)
                   J = J_OF(IJK)
@@ -209,7 +227,11 @@
                ENDIF
             ENDDO
          ENDDO
+!$omp end parallel do 
+	
       ENDIF
-
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'gas_drag:',omp_end - omp_start
+!!       get worse!!!!!
       RETURN
       END SUBROUTINE GAS_DRAG

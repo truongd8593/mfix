@@ -25,7 +25,7 @@
       USE mfix_pic
       Use des_thermo
       Use des_rxns
-
+      
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -210,6 +210,8 @@
 
 ! Accumulated spring force      
          Allocate(  PFT (NPARTICLES,MAXNEIGHBORS,DIMN) )
+! added by Tingwen to save the normal direction at previous time step
+	 Allocate(  PFN (NPARTICLES,MAXNEIGHBORS,DIMN) )
 ! Tracking variables for particle contact history
          Allocate(  PN (NPARTICLES, MAXNEIGHBORS) )
          Allocate(  PV (NPARTICLES, MAXNEIGHBORS) )
@@ -226,8 +228,8 @@
 !      ENDIF
     
 ! Temporary variables to store wall position, velocity and normal vector
-      Allocate(  DES_WALL_POS (NWALLS,DIMN) )
-      Allocate(  DES_WALL_VEL (NWALLS,DIMN) )
+!      Allocate(  DES_WALL_POS (NWALLS,DIMN) )
+!      Allocate(  DES_WALL_VEL (NWALLS,DIMN) )
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
 
 ! Variable that stores the particle in cell information (ID) on the
@@ -241,7 +243,9 @@
 ! Particles in a computational cell (for volume fraction)
       Allocate(  PINC (DIMENSION_3) )
 ! For each particle track its i,j,k location on computational grid
-! defined by imax, jmax and kmax in mfix.dat and phase no.         
+! defined by imax, jmax and kmax in mfix.dat and phase no.  
+! plus to mark if the particle is close to wall by Tingwen
+!      Allocate(  PIJK (NPARTICLES,6) )
       Allocate(  PIJK (NPARTICLES,5) )
 
 ! pradeep allocation of desgrid is moved to module desgrid

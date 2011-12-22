@@ -187,8 +187,8 @@
 
 ! Wall position, velocity and normal vector (used to temporarily store
 ! wall position and velocity)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_WALL_POS !(NWALLS,DIMN)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_WALL_VEL !(NWALLS,DIMN)
+!      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_WALL_POS !(NWALLS,DIMN)
+!      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_WALL_VEL !(NWALLS,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: WALL_NORMAL  !(NWALLS,DIMN)
 
 ! Wall vibration parameters
@@ -251,7 +251,7 @@
       DOUBLE PRECISION DES_RO_s (DIM_M)
 ! number of solids phases
       INTEGER DES_MMAX
-
+            
 ! Particle-particle and Particle-wall contact parameters
 !     Spring contants      
       DOUBLE PRECISION KN, KN_W  !Normal
@@ -276,9 +276,6 @@
 !     actual coeff of rest.'s rearranged 
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::  REAL_EN, REAL_ET   !(DES_MMAX,DES_MMAX)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  REAL_EN_WALL, REAL_ET_WALL   !(DES_MMAX)
-
-! Run time logic. is set to T when a sliding contact occurs
-      LOGICAL PARTICLE_SLIDE
 
 ! Hertzian model: T.Li
       DOUBLE PRECISION ew_young, vw_poisson
@@ -324,6 +321,8 @@
      
 ! Accumulated spring force
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT !(PARTICLES,DIMN,MAXNEIGHBORS)
+!     added by Tingwen to save the normal direction at previous time step
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN ! (PARTICLES,DIMN,MAXNEIGHBORS)
 
 ! Variables used to track/store particle contact history      
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN !(PARTICLES, MAXNEIGHBORS)
@@ -535,7 +534,7 @@
 !     Store cohesive forces
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FCohesive ! particles, dimn
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PostCohesive ! particles, dimn
-
+      
 !     Well depth read in from mfix.dat
       DOUBLE PRECISION MASTER_WELL_DEPTH
       DOUBLE PRECISION MASTER_WALL_WELL_DEPTH
@@ -615,7 +614,7 @@
       DOUBLE PRECISION WALL_VDW_OUTER_CUTOFF
       DOUBLE PRECISION SURFACE_ENERGY
       DOUBLE PRECISION WALL_SURFACE_ENERGY
-      DOUBLE PRECISION Asperities ! average radius of asperities (default zero)
+      DOUBLE PRECISION Asperities ! average radius of asperities (default zero)      
 
 !     Parameters to control Rhodes (2001) cohesion model (10/16/03)
       LOGICAL RHODES_COHESION

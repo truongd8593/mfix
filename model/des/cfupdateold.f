@@ -27,9 +27,12 @@
 
 !-----------------------------------------------
 
-      PC = 0
+!!      PC = 0
+!$omp parallel do if(max_pip .ge. 10000) default(shared)         &
+!$omp private(ll)                    &
+!$omp schedule (guided,50)                      	  
       DO LL = 1, MAX_PIP
-         if (pea(ll,1)) pc = pc + 1 
+!!         if (pea(ll,1)) pc = pc + 1 
          IF(.NOT.PEA(LL,1) .or. pea(ll,4)) CYCLE
 
          DES_VEL_OOLD(LL,:) = DES_VEL_OLD(LL,:)
@@ -37,9 +40,9 @@
          DES_VEL_OLD(LL,:)  = DES_VEL_NEW(LL,:)
          OMEGA_OLD(LL,:)    = OMEGA_NEW(LL,:)
 
-         IF(PC .eq. PIP) EXIT
+!!         IF(PC .eq. PIP) EXIT
       ENDDO
- 
+!$omp end parallel do 
 
       RETURN
 

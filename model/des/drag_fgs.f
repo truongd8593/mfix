@@ -327,6 +327,9 @@
       ENDDO
 
       IF(CALC_FC) THEN 
+!$omp parallel do default(shared)                                 &
+!$omp private(ijk,i,j,k,imjk,ijmk,ijkm,ijk_u,ijk_v,ijk_w,         &
+!$omp         ugc,vgc,wgc,velg_arr,vels_arr,m,oeps,eps) schedule (guided,50)               
          DO IJK = IJKSTART3, IJKEND3
             I = I_OF(IJK)
             J = J_OF(IJK)
@@ -425,6 +428,7 @@
                ENDDO
             ENDIF      ! end IF(PINC(IJK).GT.0)
          ENDDO         ! end do loop over ijk
+!$omp end parallel do          
       ENDIF            ! end IF(CALC_FC)
 !----------------------------------------------- 
 
@@ -433,12 +437,13 @@
 ! and gas-solids drag (this section is performed when drag is not interpolated -
 ! otherwise code further down is used for updating FC)
 !-----------------------------------------------
-      PC = 1              
+!!      PC = 1 
+!$omp parallel do private(np,ijk,m,ovol,oeps,eps,drag_force) schedule (guided,100)    
       DO NP = 1, MAX_PIP
 ! pradeep skip ghost particles
-         if(pc.gt.pip) exit
+!!         if(pc.gt.pip) exit
          if(.not.pea(np,1)) cycle 
-         pc = pc+1
+!!         pc = pc+1
          if(pea(np,4)) cycle 
          IJK = PIJK(NP,4)
          M = PIJK(NP,5)
@@ -475,7 +480,9 @@
          ENDIF
                
       ENDDO
-
+!$omp end parallel do
+!!       get worse!!!!!
+      
     end SUBROUTINE DES_CALC_PART_DRAG_FORCE_INTERP_OFF
     
     SUBROUTINE DRAG_FGS
@@ -576,9 +583,8 @@
       INTEGER  IJK_U, IJK_V, IJK_W, ICUR, JCUR, KCUR 
       
       INTEGER :: IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
-      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, velf_part(dimn)
+      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, velf_part(dimn)     
 
-      
 !
 !-----------------------------------------------   
 
@@ -589,12 +595,19 @@
       INCLUDE 'ep_s2.inc'
 !Rahul:
 !The drag force computation for interpolation off has been moved to 
-!a separate subroutine to make this routine more readable. 
+!a separate subroutine to make this routine more readable.
 
+!!$      double precision omp_start, omp_end
+!!$      double precision omp_get_wtime	      
+
+!       by Tingwen      
+!!$      omp_start=omp_get_wtime()
       IF(.NOT.DES_INTERP_ON) THEN 
          CALL DES_CALC_PART_DRAG_FORCE_INTERP_OFF
          RETURN 
       ENDIF
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'drag_interp_off:',omp_end - omp_start 
 
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
       AVG_FACTOR = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)   
@@ -618,8 +631,17 @@
       drag_am = ZERO
       drag_bm = ZERO
       wtbar = zero
-
-!Pradeep Changing from particles loop to cell loop 
+	
+!       by Tingwen      
+!!$      omp_start=omp_get_wtime()
+!Pradeep Changing from particles loop to cell loop
+! There is some issue associated to gstencil, vstencil which are allocable variables
+!!$omp parallel do default(shared)                                 &
+!!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,            &
+!!$omp         avg_factor,ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,        &
+!!$omp         gstencil,vstencil,ijpkp,ipjkp,ipjpkp,ijkp,nindx,    &
+!!$omp         focus,np,wtp,weightp,ovol,d_force,m,icur,jcur,kcur,vcell,   &
+!!$omp         drag_bm_tmp) schedule (guided,50)           	
       do ijk = ijkstart3,ijkend3
          if(.not.fluid_at(ijk) .or. pinc(ijk).eq.0) cycle 
          i = i_of(ijk)
@@ -630,6 +652,7 @@
          pcell(3) = (3-dimn)*1+(dimn-2)*(k-1)  ! =k-1 (in 3d) or =1 (in 2d)
          call set_interpolation_stencil(pcell,iw,ie,js,jn,kb,&
               ktp,interp_scheme,dimn,ordernew = onew) 
+!              write(*,*)'call set_int_stencil, onew:', onew
 
 !Compute velocity at grid nodes and set the geometric stencil 
          avg_factor = 0.25d0*(dimn-2) + 0.5d0*(3-dimn)
@@ -666,6 +689,7 @@
                enddo
             enddo
          enddo
+!         write(*,*) 'loop k'         
 
 !loop through particles in the cell  
          do nindx = 1,pinc(ijk)
@@ -674,7 +698,7 @@
             
             WTP = ONE
             IF(MPPIC) WTP = DES_STAT_WT(NP)
-            
+  
             if (dimn .eq. 2) then 
                call interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
                     vstencil(1:onew,1:onew,1,1:dimn), &
@@ -742,26 +766,36 @@
                         vcell = des_vol_node(cur_ijk)
                         
                         ovol = one/vcell
-                        drag_am(cur_ijk,m) = drag_am(cur_ijk,m) + &
-                             f_gp(np)*weightp(i,j,k)*ovol*wtp
 ! first remove the velocity component at this grid point from the vel_fp
                         drag_bm_tmp(1:dimn) = vel_fp(np, 1:dimn) - &
                              weightp(i,j,k)*vstencil(i,j,k, 1:dimn)
 ! now find the remaning drag force
                         drag_bm_tmp(1:dimn) = des_vel_new(np,1:dimn) !- drag_bm_tmp(1:dimn)
+
+!!$omp critical                 
+                        drag_am(cur_ijk,m) = drag_am(cur_ijk,m) + &
+                             f_gp(np)*weightp(i,j,k)*ovol*wtp
+!!! first remove the velocity component at this grid point from the vel_fp
+!!                        drag_bm_tmp(1:dimn) = vel_fp(np, 1:dimn) - &
+!!                             weightp(i,j,k)*vstencil(i,j,k, 1:dimn)
+!!! now find the remaning drag force
+!!                        drag_bm_tmp(1:dimn) = des_vel_new(np,1:dimn) !- drag_bm_tmp(1:dimn)
                         drag_bm(cur_ijk, 1:dimn,m) = &
                              drag_bm(cur_ijk,1:dimn,m) + &
                              f_gp(np) * drag_bm_tmp(1:dimn) * &
                              weightp(i,j,k)*ovol*wtp 
                         wtbar(cur_ijk,m) = wtbar(cur_ijk,m) + &
                              weightp(i,j,k) *ro_s(m)*ovol*pvol(np)*WTP
+!!$omp end critical                             
                      enddo
                   enddo
                enddo
             endif       ! if(.not.callfromdes)
          enddo          ! pinc(ijk) loop 
       end do            ! ijk loop
-
+!!$omp end parallel do
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'drag_interp:',omp_end - omp_start  
 
       if(.not.callfromdes) then 
 ! Pradeep at the interface drag_am,drag_bm,wtbar has to be added
@@ -769,6 +803,9 @@
 ! at the junction 
          call des_addnodevalues
          avg_factor = 0.125d0*(dimn-2) + 0.25d0*(3-dimn)
+!$omp parallel do default(shared)                               &
+!$omp private(ijk,i,j,k,imjk,ijmk,imjmk,ijkm,imjkm,ijmkm,       & 
+!$omp         imjmkm) schedule (guided,20)           
          do ijk = ijkstart3, ijkend3
             if(fluid_at(ijk)) then
                i = i_of(ijk)
@@ -800,6 +837,7 @@
                endif
             endif
          enddo  ! ijk loop 
+!$omp end parallel do !NOWAIT         
       endif     ! if(.not.callfromdes)
 !-----------------------------------------------  
 

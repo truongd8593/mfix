@@ -13,7 +13,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFSLIDE(L, TANGNT)
+      SUBROUTINE CFSLIDE(L, TANGNT,PARTICLE_SLIDE)
 
       USE param1
       USE discretelement
@@ -25,6 +25,7 @@
       INTEGER L
       DOUBLE PRECISION FTMD, FNMD, TANGNT(DIMN)
       DOUBLE PRECISION TMP_FT(DIMN), TMP_FN(DIMN)
+      logical PARTICLE_SLIDE
 
 !-----------------------------------------------      
 ! Functions
