@@ -51,7 +51,7 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !
-!!$omp  parallel do private( IMJK, IJMK, IJKM)
+!!!!$omp  parallel do private( IMJK, IJMK, IJKM)
       DO IJK = ijkstart3, ijkend3
       
          IF (.NOT.WALL_AT(IJK)) THEN 
@@ -78,7 +78,7 @@
       END DO 
       DO M = 1, MMAX 
 !
-!!$omp  parallel do private( ISV,  IMJK, IJMK, IJKM)
+!!!!$omp  parallel do private( ISV,  IMJK, IJMK, IJKM)
          DO IJK = ijkstart3, ijkend3
             IF (.NOT.WALL_AT(IJK)) THEN 
                IF (IP_AT_E(IJK)) THEN 

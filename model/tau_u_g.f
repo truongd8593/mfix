@@ -131,12 +131,12 @@
       INCLUDE 'ep_s2.inc'
 !
 !
-!!$omp  parallel do private( IJK, I, IJKE, EPGA, IP, J, JM, K, KM,  &
-!!$omp&  IPJK,IMJK,IJKN,IJKNE,IJKS,IJKSE,IPJMK,IJMK,IJKT,IJKTE,  &
-!!$omp&  IJKB,IJKBE,IJKM,IPJKM, &
-!!$omp&  SBV,  SSX,SSY,  EPMU_GTE,EPMU_GBE, SSZ, &
-!!$omp&  EPMUGA,DWOXDZ,VTZB )
-!!$omp&  schedule(static)
+!!!!$omp  parallel do private( IJK, I, IJKE, EPGA, IP, J, JM, K, KM,  &
+!!!!$omp&  IPJK,IMJK,IJKN,IJKNE,IJKS,IJKSE,IPJMK,IJMK,IJKT,IJKTE,  &
+!!!!$omp&  IJKB,IJKBE,IJKM,IPJKM, &
+!!!!$omp&  SBV,  SSX,SSY,  EPMU_GTE,EPMU_GBE, SSZ, &
+!!!!$omp&  EPMUGA,DWOXDZ,VTZB )
+!!!!$omp&  schedule(static)
       DO IJK = IJKSTART3, IJKEND3
          I = I_OF(IJK) 
          IJKE = EAST_OF(IJK) 

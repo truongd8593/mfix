@@ -83,7 +83,7 @@
         E_Turb_GO(:) = E_Turb_G(:)
       ENDIF
 
-!!$omp parallel do private(M,IJK,N)
+!!!!$omp parallel do private(M,IJK,N)
       DO M = 1, MMAX 
             ROP_SO(:,M) = ROP_S(:,M) 
 ! add by rong

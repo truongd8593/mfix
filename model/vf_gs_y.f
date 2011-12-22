@@ -58,7 +58,7 @@
       INCLUDE 'fun_avg2.inc'
 
       DO M = 1, MMAX
-!$omp parallel do private(J,IJK,IJKN)
+!!!$omp parallel do private(J,IJK,IJKN)
          DO IJK = ijkstart3, ijkend3
             IF (.NOT.IP_AT_N(IJK).and.(.not.DES_ONEWAY_COUPLED)) THEN
                J = J_OF(IJK)
@@ -134,7 +134,7 @@
     DO L = 1, MMAX
       LM = FUNLM(L,M)
 	  IF (L .NE. M) THEN
-!$omp  parallel do private(J,IJK,IJKN)
+!!!$omp  parallel do private(J,IJK,IJKN)
             DO IJK = ijkstart3, ijkend3
               IF (.NOT.IP_AT_N(IJK)) THEN
                 J = J_OF(IJK)

@@ -198,7 +198,7 @@
       if (use_doloop) then
 
 
-!$omp  parallel do private(ijk)
+!!!$omp  parallel do private(ijk)
          do ijk=ijkstart3,ijkend3
             R(ijk) = zero
             Rtilde(ijk) = zero
@@ -230,7 +230,7 @@
 !     
 !     Scale matrix to have unit diagonal
 !     
-!$omp parallel do private(ijk,i,j,k,oam,aijmax)
+!!!$omp parallel do private(ijk,i,j,k,oam,aijmax)
          do k = kstart2,kend2
             do i = istart2,iend2
                do j = jstart2,jend2
@@ -262,7 +262,7 @@
 
       if (use_doloop) then
 
-!$omp   parallel do private(ijk)
+!!!$omp   parallel do private(ijk)
          do ijk=ijkstart3,ijkend3
             R(ijk) = B_m(ijk) - R(ijk)
          enddo
@@ -274,7 +274,7 @@
          Rnorm0 = zero
          if (use_doloop) then
 
-!$omp          parallel do private(ijk) reduction(+:Rnorm0)
+!!!$omp          parallel do private(ijk) reduction(+:Rnorm0)
             do ijk=ijkstart3,ijkend3
                Rnorm0 = Rnorm0 + R(ijk)*R(ijk)
             enddo
@@ -290,7 +290,7 @@
 
       if (use_doloop) then
 
-!$omp   parallel do private(ijk)
+!!!$omp   parallel do private(ijk)
          do ijk=ijkstart3,ijkend3
             Rtilde(ijk) = R(ijk) + (2.0d0*Rtilde(ijk)-1.0d0)*1.0d-6*Rnorm0
          enddo
@@ -310,7 +310,7 @@
          if(is_serial) then
             if (use_doloop) then
                RtildexR = zero
-!$omp        parallel do private(ijk) reduction(+:RtildexR)
+!!!$omp        parallel do private(ijk) reduction(+:RtildexR)
                do ijk=ijkstart3,ijkend3
                   RtildexR = RtildexR + Rtilde(ijk) * R(ijk)
                enddo
@@ -343,7 +343,7 @@
 
          if (i .eq. 1) then
             if (use_doloop) then
-!$omp        parallel do private(ijk)
+!!!$omp        parallel do private(ijk)
                do ijk=ijkstart3,ijkend3
                   P(ijk) = R(ijk)
                enddo
@@ -353,7 +353,7 @@
          else
             beta(i-1) = ( rho(i-1)/rho(i-2) )*( alpha(i-1) / omega(i-1) )
             if (use_doloop) then
-!$omp        parallel do private(ijk)
+!!!$omp        parallel do private(ijk)
                do ijk=ijkstart3,ijkend3
                   P(ijk) = R(ijk) + beta(i-1)*( P(ijk) - omega(i-1)*V(ijk) )
                enddo
@@ -374,7 +374,7 @@
          if(is_serial) then
             if (use_doloop) then
                RtildexV = zero
-!$omp         parallel do private(ijk) reduction(+:RtildexV)
+!!!$omp         parallel do private(ijk) reduction(+:RtildexV)
                do ijk=ijkstart3,ijkend3
                   RtildexV = RtildexV + Rtilde(ijk) * V(ijk)
                enddo
@@ -390,7 +390,7 @@
          alpha(i) = rho(i-1) / RtildexV
 
          if (use_doloop) then
-!$omp     parallel do private(ijk)
+!!!$omp     parallel do private(ijk)
             do ijk=ijkstart3,ijkend3
                Svec(ijk) = R(ijk) - alpha(i) * V(ijk)
             enddo
@@ -406,7 +406,7 @@
             if(is_serial) then
                if (use_doloop) then
                   Snorm = zero
-!$omp       parallel do private(ijk) reduction(+:Snorm)
+!!!$omp       parallel do private(ijk) reduction(+:Snorm)
                   do ijk=ijkstart3,ijkend3
                      Snorm = Snorm + Svec(ijk) * Svec(ijk)
                   enddo
@@ -422,7 +422,7 @@
 
             if (Snorm <= TOLMIN) then
                if (use_doloop) then
-!$omp          parallel do private(ijk)
+!!!$omp          parallel do private(ijk)
                   do ijk=ijkstart3,ijkend3
                      Var(ijk) = Var(ijk) + alpha(i)*Phat(ijk)
                   enddo
@@ -440,7 +440,7 @@
 !     print*,'leq_bicgs, initial: ', Vname,' Vnorm ', Rnorm
 
                   if (use_doloop) then
-!$omp          parallel do private(ijk)
+!!!$omp          parallel do private(ijk)
                      do ijk=ijkstart3,ijkend3
                         R(ijk) = B_m(ijk) - R(ijk)
                      enddo
@@ -451,7 +451,7 @@
                   if(is_serial) then
                      if (use_doloop) then
                         Rnorm = zero
-!$omp            parallel do private(ijk) reduction(+:Rnorm)
+!!!$omp            parallel do private(ijk) reduction(+:Rnorm)
                         do ijk=ijkstart3,ijkend3
                            Rnorm = Rnorm + R(ijk)*R(ijk)
                         enddo
@@ -482,7 +482,7 @@
             if (use_doloop) then
                TxS = zero
                TxT = zero
-!$omp  parallel do private(ijk) reduction(+:TxS,TxT)
+!!!$omp  parallel do private(ijk) reduction(+:TxS,TxT)
                do ijk=ijkstart3,ijkend3
                   TxS = TxS + Tvec(ijk)  * Svec(ijk)
                   TxT = TxT + Tvec(ijk)  * Tvec(ijk)
@@ -505,7 +505,7 @@
          omega(i) = TxS / TxT
 
          if (use_doloop) then
-!$omp    parallel do private(ijk)
+!!!$omp    parallel do private(ijk)
             do ijk=ijkstart3,ijkend3
                Var(ijk) = Var(ijk) +                           &
                alpha(i)*Phat(ijk) + omega(i)*Shat(ijk)
@@ -521,7 +521,7 @@
             if(is_serial) then
                if (use_doloop) then
                   Rnorm = zero
-!$omp       parallel do private(ijk) reduction(+:Rnorm)
+!!!$omp       parallel do private(ijk) reduction(+:Rnorm)
                   do ijk=ijkstart3,ijkend3
                      Rnorm = Rnorm + R(ijk) * R(ijk)
                   enddo
@@ -564,7 +564,7 @@
       if (idebugl >= 1) then
          call MATVEC( Vname, Var, A_m, R )
          if (use_doloop) then
-!$omp  parallel do private(ijk)
+!!!$omp  parallel do private(ijk)
             do ijk=ijkstart3,ijkend3
                R(ijk) = R(ijk) - B_m(ijk)
             enddo
@@ -575,7 +575,7 @@
          if(is_serial) then
             if (use_doloop) then
                Rnorm = zero
-!$omp         parallel do private(ijk) reduction(+:Rnorm)
+!!!$omp         parallel do private(ijk) reduction(+:Rnorm)
                do ijk=ijkstart3,ijkend3
                   Rnorm = Rnorm + R(ijk) * R(ijk)
                enddo
@@ -792,7 +792,7 @@
       NEND = JEND
       NSTART = JSTART
 
-!!$omp parallel do private(j,ijk,im1jk,ip1jk,ijkm1,ijkp1)
+!!!!$omp parallel do private(j,ijk,im1jk,ip1jk,ijkm1,ijkp1)
       DO J=NSTART, NEND
 
 !     IJK = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K))
@@ -916,10 +916,10 @@
 
       if (do_k) then
 
-!$omp    parallel  do &
-!$omp&   private(     &
-!$omp&           ijk,i,j,k, &
-!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+!!!$omp    parallel  do &
+!!!$omp&   private(     &
+!!!$omp&           ijk,i,j,k, &
+!!!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
          do k = kstart,kend
             do i = istart,iend
                do j = jstart,jend
@@ -949,7 +949,7 @@
 
       else
          k = 1
-!$omp parallel do private(i,j,ijk,   im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+!!!$omp parallel do private(i,j,ijk,   im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
          do i = istart,iend
             do j = jstart,jend
 
@@ -1055,7 +1055,7 @@
 
       IF (SETGUESS) THEN
 
-!$omp   parallel do private(i,j,k,ijk)
+!!!$omp   parallel do private(i,j,k,ijk)
          do k = kstart3,kend3
             do i = istart3,iend3
                do j = jstart3,jend3
@@ -1089,7 +1089,7 @@
          IF (NO_K) THEN
 
             IF ( DO_ISWEEP ) THEN
-!$omp   parallel do private(I)
+!!!$omp   parallel do private(I)
                DO I=istart,iend
                   CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
                ENDDO
@@ -1108,7 +1108,7 @@
                ksize = k2-k1+1
 
                DO icase = 1, 2
-!$omp   parallel do private(K,J,JK)
+!!!$omp   parallel do private(K,J,JK)
                   DO JK=icase, ksize*jsize, 2
                      if (mod(jk,jsize).ne.0) then
                         k = int( jk/jsize ) + k1
@@ -1130,7 +1130,7 @@
                jsize = j2-j1+1
 
                DO icase = 1, 2
-!$omp   parallel do private(J,I,IJ)
+!!!$omp   parallel do private(J,I,IJ)
                   DO IJ=icase, jsize*isize, 2
                      if (mod(ij,isize).ne.0) then
                         j = int( ij/isize ) + j1
@@ -1152,7 +1152,7 @@
                ksize = k2-k1+1
 
                DO icase = 1, 2
-!$omp   parallel do private(K,I,IK)
+!!!$omp   parallel do private(K,I,IK)
                   DO IK=icase, ksize*isize, 2
                      if (mod(ik,isize).ne.0) then
                         k = int( ik/isize ) + k1
@@ -1177,7 +1177,7 @@
                ksize = k2-k1+1
 
                DO icase = 1, 2
-!$omp   parallel do private(K,I,IK)
+!!!$omp   parallel do private(K,I,IK)
                   DO IK=icase, ksize*isize, 2
                      if (mod(ik,isize).ne.0) then
                         k = int( ik/isize ) + k1
@@ -1201,7 +1201,7 @@
                ksize = k2-k1+1
 
                IF (DO_ISWEEP) THEN
-!$omp   parallel do private(K,I,IK)
+!!!$omp   parallel do private(K,I,IK)
                   DO IK=1, ksize*isize
                      if (mod(ik,isize).ne.0) then
                         k = int( ik/isize ) + k1
@@ -1214,7 +1214,7 @@
                ENDIF
 
                IF (DO_KSWEEP) THEN
-!$omp   parallel do private(K,I,IK)
+!!!$omp   parallel do private(K,I,IK)
                   DO IK=1, ksize*isize
                      if (mod(ik,ksize).ne.0) then
                         i = int( ik/ksize ) + i1
@@ -1230,7 +1230,7 @@
             ELSE
 
                IF (DO_ISWEEP) THEN
-!$omp   parallel do private(K,I)
+!!!$omp   parallel do private(K,I)
                   DO K=kstart,kend
                      DO I=istart,iend
                         CALL LEQ_IKSWEEP( I,K, Vname, Var, A_m, B_m )
@@ -1239,7 +1239,7 @@
                ENDIF
 
                IF (DO_KSWEEP) THEN
-!$omp   parallel do private(K,I)
+!!!$omp   parallel do private(K,I)
                   DO I=istart,iend
                      DO K=kstart,kend
                         CALL LEQ_IKSWEEP( I,K, Vname, Var, A_m, B_m )
@@ -1492,7 +1492,7 @@
          
          prod = 0.0d0
          
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
+!!!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
          do k = kstart1, kend1
             do i = istart1, iend1
                do j = jstart1, jend1
@@ -1524,7 +1524,7 @@
          if(myPE.eq.root) then
             prod = 0.0d0
             
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
+!!!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
             do k = kmin1, kmax1
                do i = imin1, imax1
                   do j = jmin1, jmax1
@@ -1575,7 +1575,7 @@
          
          prod(:) = 0.0d0
          
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
+!!!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
          do k = kstart1, kend1
             do i = istart1, iend1
                do j = jstart1, jend1
@@ -1611,7 +1611,7 @@
          if(myPE.eq.root) then
             prod = 0.0d0
             
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
+!!!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
             do k = kmin1, kmax1
                do i = imin1, imax1
                   do j = jmin1, jmax1
@@ -1684,7 +1684,7 @@
 
       if (use_doloop) then
 
-!$omp  parallel do private(ijk)
+!!!$omp  parallel do private(ijk)
          do ijk=ijkstart3,ijkend3
             var(ijk) = b_m(ijk)
          enddo
@@ -1741,7 +1741,7 @@
 
       if (use_doloop) then
 
-!$omp    parallel do private(ijk)
+!!!$omp    parallel do private(ijk)
          do ijk=ijkstart3,ijkend3
             var(ijk) = zero
          enddo
@@ -1751,7 +1751,7 @@
 
 !     diagonal scaling
 
-!$omp   parallel do private(i,j,k,ijk)
+!!!$omp   parallel do private(i,j,k,ijk)
       do k=kstart2,kend2
          do i=istart2,iend2
             do j=jstart2,jend2

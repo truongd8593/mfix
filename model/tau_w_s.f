@@ -127,14 +127,14 @@
       DO M = 1, MMAX 
         IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
 
-!!$omp  parallel do private( IJK, I, IJKE, EPSA, EPStmp  J,  K,   &
-!!$omp&  JM,IJKP,IJKNT,IJKS,IJKST,IJMKP,IJKTE,IJKTW,IMJKP,KP, &
-!!$omp&  DUODZ,VXZ, &
-!!$omp&  IM,IJKW, IPJK,&
-!!$omp&  IMJK,IJKN,IJMK,IJKT,  &
-!!$omp&  IJKM, &
-!!$omp&  SBV,  SSX,SSY,   SSZ) &
-!!$omp&  schedule(static)
+!!!!$omp  parallel do private( IJK, I, IJKE, EPSA, EPStmp  J,  K,   &
+!!!!$omp&  JM,IJKP,IJKNT,IJKS,IJKST,IJMKP,IJKTE,IJKTW,IMJKP,KP, &
+!!!!$omp&  DUODZ,VXZ, &
+!!!!$omp&  IM,IJKW, IPJK,&
+!!!!$omp&  IMJK,IJKN,IJMK,IJKT,  &
+!!!!$omp&  IJKM, &
+!!!!$omp&  SBV,  SSX,SSY,   SSZ) &
+!!!!$omp&  schedule(static)
 
         DO IJK = IJKSTART3, IJKEND3
             K = K_OF(IJK) 

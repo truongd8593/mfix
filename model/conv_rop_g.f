@@ -134,9 +134,9 @@
 !
 !  Calculate convection fluxes through each of the faces
 !
-!!$omp  parallel do private( J, K, IJK, IPJK, IJPK, IJKP, &
-!!$omp&  IMJK, IJMK, IJKM) &
-!!$omp&  schedule(static)
+!!!!$omp  parallel do private( J, K, IJK, IPJK, IJPK, IJKP, &
+!!!!$omp&  IMJK, IJMK, IJKM) &
+!!!!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3 
          IF (PHASE_4_P_G(IJK) /= 0) THEN 
             I = I_OF(IJK) 
@@ -265,9 +265,9 @@
 !
 !  Calculate convection fluxes through each of the faces
 !
-!!$omp  parallel do private( J, K, IJK, IPJK, IJPK, IJKP,  &
-!!$omp&  IMJK, IJMK, IJKM) &
-!!$omp&  schedule(static)
+!!!!$omp  parallel do private( J, K, IJK, IPJK, IJPK, IJKP,  &
+!!!!$omp&  IMJK, IJMK, IJKM) &
+!!!!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
          IF (PHASE_4_P_G(IJK) /= 0) THEN 
             I = I_OF(IJK) 

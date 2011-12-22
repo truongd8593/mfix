@@ -69,7 +69,7 @@
       SUM_VOL = ZERO 
 
 
-!!$omp   parallel do private(IJK) reduction(+:SUM_VOL,SUM_U_G)
+!!!!$omp   parallel do private(IJK) reduction(+:SUM_VOL,SUM_U_G)
       DO IJK = IJKSTART3, IJKEND3 
       IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK), J_OF(IJK), K_OF(IJK))) CYCLE
          IF (FLUID_AT(IJK)) THEN 
@@ -142,7 +142,7 @@
       SUM_AREA = ZERO 
 
 
-!!$omp   parallel do private(IJK) reduction(+:SUM_AREA,SUM_U_G)
+!!!!$omp   parallel do private(IJK) reduction(+:SUM_AREA,SUM_U_G)
       DO IJK = IJKSTART3, IJKEND3 
       IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK), J_OF(IJK), K_OF(IJK))) CYCLE
          IF (FLUID_AT(IJK)) THEN 

@@ -85,8 +85,8 @@
 
       IF (K_S0 /= UNDEFINED) RETURN  
 
-!!$omp parallel do private(IJK,B,R_km,BoR,L_rm,Kg_micro) &
-!!$omp& schedule(dynamic,chunk_size)
+!!!!$omp parallel do private(IJK,B,R_km,BoR,L_rm,Kg_micro) &
+!!!!$omp& schedule(dynamic,chunk_size)
       DO IJK = ijkstart3, ijkend3            
 
 ! All calculations are in CGS (1 cal = 4.183925J)

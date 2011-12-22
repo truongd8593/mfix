@@ -179,11 +179,11 @@
       END IF
 !     CHEM & ISAT end (nan xie)
 !
-!$omp    parallel do                                                   &
-!$omp&   private(I, J, K, IJK, IPJK, IJPK, IJKP,                &
-!$omp&           IMJK, IJMK, IJKM,                               &
-!$omp&           IJKE, IJKW, IJKN, IJKS, IJKT, IJKB,                   &
-!$omp&           K_P, SRC, bma, bme, bmw, bmn, bms, bmt, bmb, bmr )
+!!!$omp    parallel do                                                   &
+!!!$omp&   private(I, J, K, IJK, IPJK, IJPK, IJKP,                &
+!!!$omp&           IMJK, IJMK, IJKM,                               &
+!!!$omp&           IJKE, IJKW, IJKN, IJKS, IJKT, IJKB,                   &
+!!!$omp&           K_P, SRC, bma, bme, bmw, bmn, bms, bmt, bmb, bmr )
       DO IJK = ijkstart3, ijkend3
 !// Determine whehter IJK falls within 1 ghost layer........
        I = I_OF(IJK)
@@ -369,11 +369,11 @@
                   A_M(IJK,0,0) = -ONE            ! Equation is undefined. 
                   B_M(IJK,0) = ZERO              ! Use existing value 
                ELSE 
-!$omp             critical
+!!!$omp             critical
                   WRITE (LINE, '(A,I6,A,G12.5)') 'Error: At IJK = ', IJK, &
                      ' A = 0 and b = ', B_M(IJK,0) 
                   CALL WRITE_ERROR ('CONV_SOURCE_EPp0', LINE, 1) 
-!$omp             end critical
+!!!$omp             end critical
                ENDIF 
             ENDIF 
          ELSE 
@@ -520,7 +520,7 @@
 ! loezos
 ! update to true velocity
       IF (SHEAR) THEN
-!$omp parallel do private(IJK)  
+!!!$omp parallel do private(IJK)  
 	 DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN  
 	   V_S(IJK,m)=V_s(IJK,m)+VSH(IJK)	
@@ -545,10 +545,10 @@
 !
 !     Calculate convection-diffusion fluxes through each of the faces
 !
-!$omp parallel do                                                      &   
-!$omp&   private(I, J, K, IJK, IPJK, IJPK, IJKP,                &
-!$omp&           IMJK, IJMK, IJKM, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB, &
-!$omp&           K_P,ROP_SF,SRC, bma, bme, bmw, bmn, bms, bmt, bmb, bmr )
+!!!$omp parallel do                                                      &   
+!!!$omp&   private(I, J, K, IJK, IPJK, IJPK, IJKP,                &
+!!!$omp&           IMJK, IJMK, IJKM, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB, &
+!!!$omp&           K_P,ROP_SF,SRC, bma, bme, bmw, bmn, bms, bmt, bmb, bmr )
       DO IJK = ijkstart3, ijkend3
 !// Determine if IJK falls within 1 ghost layer........
        I = I_OF(IJK)
@@ -677,12 +677,12 @@
                   A_M(IJK,0,0) = -ONE            ! Equation is undefined. 
                   B_M(IJK,0) = ZERO              ! Use existing value 
                ELSE 
-!$omp             critical
+!!!$omp             critical
                   WRITE (LINE(1), '(A,I6,A,G12.5)') 'Error: At IJK = ', IJK, &
                      ' A = 0 and b = ', B_M(IJK,0) 
 !//SP Having problem to compile this statement on SGI
                   CALL WRITE_ERROR ('CONV_SOURCE_EPp1', LINE, 1) 
-!$omp             end critical
+!!!$omp             end critical
                ENDIF 
             ENDIF 
          ELSE 
@@ -700,7 +700,7 @@
 !
 ! loezos
       IF (SHEAR) THEN
-!$omp parallel do private(IJK)  
+!!!$omp parallel do private(IJK)  
 	 DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN  
 	   V_S(IJK,m)=V_s(IJK,m)-VSH(IJK)	

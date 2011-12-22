@@ -192,12 +192,12 @@
 !     Fluid phase
       M = 0 
       
-!$omp      parallel do                                                  &
-!$omp&     private(I,  J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN,     &
-!$omp&                    IJKNE, IJKP, IJKT, IJKTE, D_f,   &
-!$omp&                    IMJK, IM, IJKW,                               &
-!$omp&                    IJMK, JM, IPJMK, IJKS, IJKSE,                 &
-!$omp&                    IJKM, KM, IPJKM, IJKB, IJKBE)                 
+!!!$omp      parallel do                                                  &
+!!!$omp&     private(I,  J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN,     &
+!!!$omp&                    IJKNE, IJKP, IJKT, IJKTE, D_f,   &
+!!!$omp&                    IMJK, IM, IJKW,                               &
+!!!$omp&                    IJMK, JM, IPJMK, IJKS, IJKSE,                 &
+!!!$omp&                    IJKM, KM, IPJKM, IJKB, IJKBE)                 
       DO IJK = ijkstart3, ijkend3
 !
          IF (FLOW_AT_E(IJK)) THEN 
@@ -558,7 +558,7 @@
          CALL send_recv3(tmp4)
       ENDIF
 
-!$omp parallel do private(IJK,I,IP,IPJK,IJKE)
+!!!$omp parallel do private(IJK,I,IP,IPJK,IJKE)
        DO IJK = ijkstart3, ijkend3
 !
          I = I_OF(IJK) 
@@ -614,14 +614,14 @@
 !
 !  Calculate convection-diffusion fluxes through each of the faces
 !
-!$omp      parallel do                                                 &
-!$omp&     private(I,  J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN,    &
-!$omp&                    IJKNE, IJKP, IJKT, IJKTE,   D_f,  &
-!$omp&                    IMJK, IM, IJKW,                              &
-!$omp&                    IJMK, JM, IPJMK, IJKS, IJKSE,                &
-!$omp&                    IJKM, KM, IPJKM, IJKB, IJKBE, &
-!$omp&              MOM_HO, MOM_LO, EAST_DC,WEST_DC,NORTH_DC,&
-!$omp&              SOUTH_DC, TOP_DC,BOTTOM_DC)
+!!!$omp      parallel do                                                 &
+!!!$omp&     private(I,  J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN,    &
+!!!$omp&                    IJKNE, IJKP, IJKT, IJKTE,   D_f,  &
+!!!$omp&                    IMJK, IM, IJKW,                              &
+!!!$omp&                    IJMK, JM, IPJMK, IJKS, IJKSE,                &
+!!!$omp&                    IJKM, KM, IPJKM, IJKB, IJKBE, &
+!!!$omp&              MOM_HO, MOM_LO, EAST_DC,WEST_DC,NORTH_DC,&
+!!!$omp&              SOUTH_DC, TOP_DC,BOTTOM_DC)
       DO IJK = ijkstart3, ijkend3
 !
          IF (FLOW_AT_E(IJK)) THEN 
@@ -1012,7 +1012,7 @@
 !
 !  Calculate convection factors
 !
-!$omp parallel do private(IJK,I,IP,IPJK,IJKE)
+!!!$omp parallel do private(IJK,I,IP,IPJK,IJKE)
       DO IJK = ijkstart3, ijkend3
 !
          I = I_OF(IJK) 
@@ -1067,7 +1067,7 @@
 ! loezos      
 !update V to true velocity
       IF (SHEAR) THEN
-!$omp parallel do private(IJK)
+!!!$omp parallel do private(IJK)
 	 DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN  
 	   V(IJK)=V(IJK)+VSHE(IJK)	
@@ -1081,12 +1081,12 @@
 !
 !  Calculate convection-diffusion fluxes through each of the faces
 !
-!$omp      parallel do                                                 &
-!$omp&     private(I,  J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN,    &
-!$omp&                    IJKNE, IJKP, IJKT, IJKTE,   D_f,  &
-!$omp&                    IMJK, IM, IJKW,                              &
-!$omp&                    IJMK, JM, IPJMK, IJKS, IJKSE,                &
-!$omp&                    IJKM, KM, IPJKM, IJKB, IJKBE)
+!!!$omp      parallel do                                                 &
+!!!$omp&     private(I,  J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN,    &
+!!!$omp&                    IJKNE, IJKP, IJKT, IJKTE,   D_f,  &
+!!!$omp&                    IMJK, IM, IJKW,                              &
+!!!$omp&                    IJMK, JM, IPJMK, IJKS, IJKSE,                &
+!!!$omp&                    IJKM, KM, IPJKM, IJKB, IJKBE)
       DO IJK = ijkstart3, ijkend3
 !
          IF (FLOW_AT_E(IJK)) THEN 

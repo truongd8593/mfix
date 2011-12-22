@@ -83,7 +83,7 @@
       INCLUDE 'function.inc'
 !
 !
-!$omp    parallel do private(IJK)
+!!!$omp    parallel do private(IJK)
       DO ijk = IJKSTART3, IJKEND3
 !          IF(.NOT.IS_ON_myPE_OWNS(I_OF(IJK), J_OF(IJK), K_OF(IJK))) CYCLE      
           EP_G(ijk)   = 2.*EP_G(ijk) - EP_GO(ijk) 

@@ -56,7 +56,7 @@
           DO L = 1, MMAX
                LM = FUNLM(L,M)
                IF (L .NE. M) THEN
-!$omp  parallel do private(IJK)
+!!!$omp  parallel do private(IJK)
                     DO IJK = ijkstart3, ijkend3
                          IF (FLUID_AT(IJK)) THEN 
                               VXTC_SS(IJK,LM) = ED_ss_ip(IJK,LM)*VOL(IJK)

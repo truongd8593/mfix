@@ -110,10 +110,10 @@
       DO M = 1, SMAX 
          IF (HEAT_TR(0,M)) THEN 
 
-!!$omp  parallel do &
-!!$omp& private(I, IJK, M, EP_g2, Pr1o3, UGC, VGC, WGC, USCM, VSCM, &
-!!$omp&  WSCM, VREL, Re, LM, FAC ) &
-!!$omp& schedule(dynamic,chunk_size)
+!!!!$omp  parallel do &
+!!!!$omp& private(I, IJK, M, EP_g2, Pr1o3, UGC, VGC, WGC, USCM, VSCM, &
+!!!!$omp&  WSCM, VREL, Re, LM, FAC ) &
+!!!!$omp& schedule(dynamic,chunk_size)
             DO IJK = ijkstart3, ijkend3
  
                IF (FLUIDorP_FLOW_AT(IJK)) THEN 

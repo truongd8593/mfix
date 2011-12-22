@@ -82,8 +82,8 @@
       M = MCP 
       IF (CLOSE_PACKED(M)) THEN 
 !
-!$omp    parallel do &
-!$omp&   private( IJK, EPCOR )
+!!!$omp    parallel do &
+!!!$omp&   private( IJK, EPCOR )
          DO IJK = ijkstart3, ijkend3
             IF (FLUID_AT(IJK)) THEN 
                EPCOR = EP_S(IJK,M) + EPP(IJK) 
@@ -106,8 +106,8 @@
             ENDIF 
          END DO 
 
-!$omp    parallel do &
-!$omp&   private( IJK, PP_P, IJKE, IJKN, IJKT )
+!!!$omp    parallel do &
+!!!$omp&   private( IJK, PP_P, IJKE, IJKN, IJKT )
          DO IJK = ijkstart3, ijkend3
             IF (FLUID_AT(IJK)) THEN 
 !

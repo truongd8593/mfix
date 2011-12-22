@@ -190,7 +190,7 @@
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
 !
-!!$omp   parallel do private(IJK)
+!!!!$omp   parallel do private(IJK)
       CHECK_VEL_BOUND = .FALSE. !initialisation
       ALL_IS_ERROR    = .FALSE.
 !

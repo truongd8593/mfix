@@ -63,7 +63,7 @@
 !
       IF (RO_G0 == UNDEFINED) THEN 
 
-!!$omp parallel do private(IJK)  
+!!!!$omp parallel do private(IJK)  
          DO IJK = ijkstart3, ijkend3 
             IF (.NOT.WALL_AT(IJK)) THEN 
                RO_G(IJK) = EOSG(MW_MIX_G(IJK),P_G(IJK),T_G(IJK)) 
@@ -72,7 +72,7 @@
          END DO 
       ELSE 
 
-!!$omp   parallel do private(ijk)  
+!!!!$omp   parallel do private(ijk)  
          DO IJK = ijkstart3, ijkend3 
             IF (.NOT.WALL_AT(IJK)) THEN 
                RO_G(IJK) = RO_G0 

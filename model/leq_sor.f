@@ -85,7 +85,7 @@
 !
 !     Successive Over relaxation method
 !
-!$omp parallel do private(IJK,OAM)
+!!!$omp parallel do private(IJK,OAM)
       DO IJK = ijkstart3, ijkend3
 
          IF(.NOT.IS_ON_myPE_owns(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
@@ -108,7 +108,7 @@
 !  SOR procedure
 !
          IF (DO_K) THEN 
-!$omp parallel do private(IJK)
+!!!$omp parallel do private(IJK)
             DO IJK = ijkstart3, ijkend3
 
               IF(.NOT.IS_ON_myPE_owns(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
@@ -119,7 +119,7 @@
             END DO 
 
          ELSE 
-!$omp parallel do private(IJK)
+!!!$omp parallel do private(IJK)
            DO IJK = ijkstart3, ijkend3
 
              IF(.NOT.IS_ON_myPE_owns(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
@@ -133,7 +133,7 @@
 
       END DO 
 
-!$omp parallel do private(IJK)
+!!!$omp parallel do private(IJK)
       DO IJK = ijkstart3, ijkend3
         VAR(IJK) = VAR_tmp(IJK)
       END DO 

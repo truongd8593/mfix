@@ -122,11 +122,11 @@
 !
 !
 
-!!$omp  parallel do private( IJK, I, IJKE, EPGA,  J,  K, KM,  &
-!!$omp&  IMJK,IJKN,IJKNE,IJMK,IJKT,  &
-!!$omp&  JP,IM,IJPK,IJKW,IJKNW,IMJPK,IJKTN,IJKBN,IJPKM,IJKB,IJKM, &
-!!$omp&  SBV,  SSX,SSY,   SSZ)  &
-!!$omp&  schedule(static)
+!!!!$omp  parallel do private( IJK, I, IJKE, EPGA,  J,  K, KM,  &
+!!!!$omp&  IMJK,IJKN,IJKNE,IJMK,IJKT,  &
+!!!!$omp&  JP,IM,IJPK,IJKW,IJKNW,IMJPK,IJKTN,IJKBN,IJPKM,IJKB,IJKM, &
+!!!!$omp&  SBV,  SSX,SSY,   SSZ)  &
+!!!!$omp&  schedule(static)
       DO IJK = IJKSTART3, IJKEND3
          J = J_OF(IJK) 
          IJKN = NORTH_OF(IJK) 

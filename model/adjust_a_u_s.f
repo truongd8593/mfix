@@ -69,7 +69,7 @@
        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
          IF (MOMENTUM_X_EQ(M)) THEN 
 !
-!!$omp     parallel do private(I, IP, IJK, IJKE, IMJK )
+!!!!$omp     parallel do private(I, IP, IJK, IJKE, IMJK )
             DO IJK = ijkstart3, ijkend3
                IF (ABS(A_M(IJK,0,M)) < SMALL_NUMBER) THEN 
                   A_M(IJK,E,M) = ZERO 

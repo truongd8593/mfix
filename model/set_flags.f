@@ -95,8 +95,8 @@
 
 !make the wall cells adjacent to flow boundaries free-slip wall
 ! to avoid unphysical strain rates in fluid cells adjacent to the flow boundary 
-!!$omp  parallel do private( IJK) &
-!!$omp&  schedule(static)
+!!!!$omp  parallel do private( IJK) &
+!!!!$omp&  schedule(static)
       DO i = istart4, iend4
          DO j = jstart4, jend4
 	    DO k = kstart4, kend4
@@ -129,8 +129,8 @@
           END DO 
       END DO 
 !
-!!$omp  parallel do private( IJK) &
-!!$omp&  schedule(static)
+!!!!$omp  parallel do private( IJK) &
+!!!!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
 !
          SELECT CASE (TRIM(ICBC_FLAG(IJK)(1:1)))  
@@ -159,10 +159,10 @@
          CASE DEFAULT 
 
 !Access to only one thread at a time
-!!$omp       critical
+!!!!$omp       critical
             IF(DMP_LOG)WRITE (UNIT_LOG, 1000) IJK, ICBC_FLAG(IJK) 
             call mfix_exit(myPE)
-!!$omp       end critical
+!!!!$omp       end critical
          END SELECT 
 !
 !  Initialize flags for internal surfaces.  If the flag is greater than

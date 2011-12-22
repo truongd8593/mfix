@@ -90,8 +90,8 @@
 
       IER = 0 
 
-!$omp  parallel do private( Mcp, EPcp, SUM, Mf, M) &
-!$omp&  schedule(static)
+!!!$omp  parallel do private( Mcp, EPcp, SUM, Mf, M) &
+!!!$omp&  schedule(static)
 
       DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN 
@@ -138,9 +138,9 @@
                EP_G(IJK) = ONE - SUM 
 !efd
                IF (EP_G(IJK) < ZERO) THEN
-!$omp                  critical
+!!!$omp                  critical
                        IER = 1 
-!$omp                  end critical
+!!!$omp                  end critical
                ENDIF
                ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
             ELSE 

@@ -55,8 +55,8 @@
 !
       IF (MW_AVG /= UNDEFINED) RETURN  
 
-!!$omp parallel do private(ijk) &
-!!$omp schedule(dynamic,chunk_size)
+!!!!$omp parallel do private(ijk) &
+!!!!$omp schedule(dynamic,chunk_size)
       DO IJK = ijkstart3, ijkend3 
          IF (.NOT.WALL_AT(IJK)) MW_MIX_G(IJK) = CALC_MW(X_G,DIMENSION_3,IJK,NMAX(0)&
             ,MW_G) 

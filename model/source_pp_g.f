@@ -130,7 +130,7 @@
 ! loezos
 ! update to true velocity
       IF (SHEAR) THEN
-!$omp parallel do private(IJK) 
+!!!$omp parallel do private(IJK) 
 	 DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN  
 	   V_G(IJK)=V_G(IJK)+VSH(IJK)	
@@ -153,7 +153,7 @@
 !
 !  Calculate convection-diffusion fluxes through each of the faces
 !
-!$omp    parallel do private(IJK, IMJK, IJMK, IJKM, M)
+!!!$omp    parallel do private(IJK, IMJK, IJMK, IJKM, M)
       DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN 
             IMJK = IM_OF(IJK) 
@@ -237,11 +237,11 @@
                   A_M(IJK,0,0) = -ONE 
                   B_M(IJK,0) = ZERO 
                ELSE IF (RO_G0 .NE. UNDEFINED) THEN !This is an error only in incompressible flow 
-!$omp             critical
+!!!$omp             critical
                   WRITE (LINE, '(A,I6,A,I1,A,G12.5)') 'Error: At IJK = ', IJK, &
                      ' M = ', 0, ' A = 0 and b = ', B_M(IJK,0) 
                   CALL WRITE_ERROR ('SOURCE_Pp_g', LINE, 1) 
-!$omp             end critical
+!!!$omp             end critical
                ENDIF 
             ENDIF 
 !
@@ -259,7 +259,7 @@
 
 ! loezos
       IF (SHEAR) THEN
-!$omp parallel do private(IJK) 
+!!!$omp parallel do private(IJK) 
 	 DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN  
 	   V_G(IJK)=V_G(IJK)-VSH(IJK)	
@@ -276,9 +276,9 @@
 ! loezos
 !         CALL CALC_XSI(DISCRETIZE(1),ROP_G,U_G,V_G,W_G,XSI_E,XSI_N,XSI_T,incr) 
 	
-!$omp    parallel do                                                     &
-!$omp&   private(IJK,I,J,K,                                       &
-!$omp&            IMJK,IJMK,IJKM,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB)
+!!!$omp    parallel do                                                     &
+!!!$omp&   private(IJK,I,J,K,                                       &
+!!!$omp&            IMJK,IJMK,IJKM,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB)
          DO IJK = ijkstart3, ijkend3 
             IF (FLUID_AT(IJK)) THEN
 	       
@@ -329,8 +329,8 @@
 !     Remove the asymmetry in matrix caused by the pressure outlet or inlet boundaries. Because
 !     the P' at such boundaries is zero we may set the coefficient in the neighboring
 !     fluid cell to zero without affecting the linear equation set. 
-!$omp    parallel do                                                     &
-!$omp&   private(IJK,IMJK, IPJK, IJMK, IJPK, IJKM, IJKP)
+!!!$omp    parallel do                                                     &
+!!!$omp&   private(IJK,IMJK, IPJK, IJMK, IJPK, IJKM, IJKP)
       DO IJK = ijkstart3, ijkend3 
          IF (FLUID_AT(IJK)) THEN
             IMJK = IM_OF(IJK) 

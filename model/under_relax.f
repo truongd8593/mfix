@@ -70,7 +70,7 @@
       F1 = ONE/UR 
       F2 = F1 - ONE 
 !
-!$omp    parallel do private(IJK,AP)
+!!!$omp    parallel do private(IJK,AP)
       DO IJK = ijkstart3, ijkend3 
          IF (FLUID_AT(IJK)) THEN 
             AP = A_M(IJK,0,M) 
@@ -156,7 +156,7 @@
       F1 = ONE/UR 
       F2 = F1 - ONE 
 !
-!$omp    parallel do private(IJK,AP)
+!!!$omp    parallel do private(IJK,AP)
       DO IJK = ijkstart3, ijkend3 
          IF (FLOW_AT_E(IJK)) THEN 
             AP = A_M(IJK,0,M) 
@@ -242,7 +242,7 @@
       F1 = ONE/UR 
       F2 = F1 - ONE 
 !
-!$omp    parallel do private(IJK,AP)
+!!!$omp    parallel do private(IJK,AP)
       DO IJK = ijkstart3, ijkend3
          IF (FLOW_AT_N(IJK)) THEN 
             AP = A_M(IJK,0,M) 
@@ -328,7 +328,7 @@
       F1 = ONE/UR 
       F2 = F1 - ONE 
 !
-!$omp    parallel do private(IJK,AP)
+!!!$omp    parallel do private(IJK,AP)
       DO IJK = ijkstart3, ijkend3
          IF (FLOW_AT_T(IJK)) THEN 
             AP = A_M(IJK,0,M) 

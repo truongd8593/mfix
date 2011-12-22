@@ -42,7 +42,7 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
       
-!$omp  parallel do private(ijk)
+!!!$omp  parallel do private(ijk)
       DO IJK = IJKSTART3, IJKEND3 
       
          R_gp(IJK, :) = ZERO

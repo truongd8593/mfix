@@ -79,7 +79,7 @@
 !     
 !     
 !     
-!     !$omp parallel do private(ijk)
+!     !!!$omp parallel do private(ijk)
 !!!   HPF$ independent
 
       DO IJK = ijkstart3, ijkend3

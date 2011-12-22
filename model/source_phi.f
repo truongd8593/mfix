@@ -92,7 +92,7 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
-!$omp    parallel do private(IJK)
+!!!$omp    parallel do private(IJK)
       DO IJK = ijkstart3, ijkend3 
 !
          IF (FLUID_AT(IJK)) THEN 

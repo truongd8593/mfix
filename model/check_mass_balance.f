@@ -906,8 +906,8 @@
       
       SUM = ZERO
 !
-!!$omp$   parallel do private(IJK) &
-!!$omp&   reduction(+:SUM)
+!!!!$omp$   parallel do private(IJK) &
+!!!!$omp&   reduction(+:SUM)
       DO IJK = ijkstart3, ijkend3 
 	IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK), J_OF(IJK), K_OF(IJK))) cycle
           IF (FLUID_AT(IJK)) SUM = SUM + RO(IJK) * Xn(IJK) * VOL(IJK) 

@@ -166,10 +166,10 @@
 !     CHEM & ISAT end (nan xie)
 ! 
 !
-!$omp  parallel do private( I, J, K, IJK, IJKT, ISV, Sdp, V0, Vpm, Vmt, Vbf, &
-!$omp&  PGT, ROGA, IMJK, IJKP, IMJKP, IJKW, IJKTE, IJKTW, IM, IPJK,  &
-!$omp&  CTE, CTW, SXZB, EPMUOX, VXZA, VXZB, UGT, VCOA, VCOB, IJKE,&
-!$omp&  MUGA, ROPGA, EPGA, LINE) 
+!!!$omp  parallel do private( I, J, K, IJK, IJKT, ISV, Sdp, V0, Vpm, Vmt, Vbf, &
+!!!$omp&  PGT, ROGA, IMJK, IJKP, IMJKP, IJKW, IJKTE, IJKTW, IM, IPJK,  &
+!!!$omp&  CTE, CTW, SXZB, EPMUOX, VXZA, VXZB, UGT, VCOA, VCOB, IJKE,&
+!!!$omp&  MUGA, ROPGA, EPGA, LINE) 
       DO IJK = ijkstart3, ijkend3 
          I = I_OF(IJK) 
          J = J_OF(IJK) 

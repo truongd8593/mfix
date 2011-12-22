@@ -56,7 +56,7 @@
 !
 !  ---  Remember to include all the local variables here for parallel
 !  ---- processing
-!$omp  parallel do private(ijk, L)
+!!!$omp  parallel do private(ijk, L)
       DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN
            DO L = 1, NScalar 

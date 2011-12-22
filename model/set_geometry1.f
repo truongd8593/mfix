@@ -53,8 +53,8 @@
 !
 !                      Indices
 !
-!!$omp  parallel do private( I, J, K, IP, JP, KP, IJK)  &
-!!$omp  schedule(dynamic,chunk_size)
+!!!!$omp  parallel do private( I, J, K, IP, JP, KP, IJK)  &
+!!!!$omp  schedule(dynamic,chunk_size)
       DO IJK = ijkstart3, ijkend3
       
 !

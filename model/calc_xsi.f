@@ -103,7 +103,7 @@
       SELECT CASE (DISCR)                        !first order upwinding 
       CASE (:1)  
 !
-!$omp    parallel do private(IJK)
+!!!$omp    parallel do private(IJK)
          DO IJK = ijkstart3, ijkend3 
             XSI_E(IJK) = XSI(U(IJK),ZERO) 
             XSI_N(IJK) = XSI(V(IJK),ZERO) 
@@ -111,7 +111,7 @@
          END DO 
       CASE (2)                                   !Superbee 
 
-!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF)
+!!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF)
          DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -166,7 +166,7 @@
          END DO 
       CASE (3)                                   !SMART 
 !
-!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF)
+!!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF)
          DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -232,7 +232,7 @@
          END DO 
       CASE (4)                                   !ULTRA-QUICK 
 
-!$omp    parallel do private(IJK, I,J,K, IJKC,IJKD,IJKU, PHI_C,DWF,CF)
+!!!$omp    parallel do private(IJK, I,J,K, IJKC,IJKD,IJKU, PHI_C,DWF,CF)
          DO IJK = ijkstart3, ijkend3
             I = I_OF(IJK) 
             IF (U(IJK) >= ZERO) THEN 
@@ -295,10 +295,10 @@
          END DO 
       CASE (5)                                   !QUICKEST 
 
-!$omp    parallel do &
-!$omp&   private(IJK,I,J,K, IJKC,IJKD,IJKU, &
-!$omp&           ODXC,ODXUC, PHI_C,CF,DWF, &
-!$omp&           ODYC,ODYUC,  ODZC,ODZUC )
+!!!$omp    parallel do &
+!!!$omp&   private(IJK,I,J,K, IJKC,IJKD,IJKU, &
+!!!$omp&           ODXC,ODXUC, PHI_C,CF,DWF, &
+!!!$omp&           ODYC,ODYUC,  ODZC,ODZUC )
          DO IJK = ijkstart3, ijkend3
             I = I_OF(IJK) 
             IF (U(IJK) >= ZERO) THEN 
@@ -373,7 +373,7 @@
          END DO 
       CASE (6)                                   !MUSCL 
 
-!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF )
+!!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF )
          DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -440,7 +440,7 @@
       CASE (7)                                   !Van Leer 
 
 
-!$omp    parallel do private( IJK, IJKC,IJKD,IJKU,  PHI_C,DWF )
+!!!$omp    parallel do private( IJK, IJKC,IJKD,IJKU,  PHI_C,DWF )
          DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -494,7 +494,7 @@
          END DO 
       CASE (8)                                   !Minmod 
 
-!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF )
+!!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF )
          DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -603,9 +603,9 @@
 	IF (INCR .eq. 2) THEN			!V momentum balance
 	SRT=(2d0*V_sh/XLENGTH)
 
-!$omp    parallel do private(IJK, IJKC,IJKD,IJKU,DWFE,DWFN,DWFT,&
-!$omp&	PHICU,PHIDU,PHIUU,PHICV,PHIDV,PHIUV,PHICW,PHIDW,PHIUW,I)&
-!$omp&  shared(DISCR)
+!!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU,DWFE,DWFN,DWFT,&
+!!!$omp&	PHICU,PHIDU,PHIUU,PHICV,PHIDV,PHIUV,PHICW,PHIDW,PHIUW,I)&
+!!!$omp&  shared(DISCR)
         DO IJK = ijkstart3, ijkend3
 
 	I=I_OF(IJK)
@@ -681,9 +681,9 @@
 
 	ELSE IF (INCR .eq. 1) THEN  			!u momentum balance
 
-!$omp    parallel do private(IJK, IJKC,IJKD,IJKU,DWFE,DWFN,DWFT,&
-!$omp&	PHICU,PHIDU,PHIUU,PHICV,PHIDV,PHIUV,PHICW,PHIDW,PHIUW,I)&
-!$omp&  shared(DISCR)
+!!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU,DWFE,DWFN,DWFT,&
+!!!$omp&	PHICU,PHIDU,PHIUU,PHICV,PHIDV,PHIUV,PHICW,PHIDW,PHIUW,I)&
+!!!$omp&  shared(DISCR)
         DO IJK = ijkstart3, ijkend3
 
 	V(IJK)=V(IJK)+VSHE(IJK)
@@ -756,9 +756,9 @@
 
 	ELSE IF (INCR .eq. 0) THEN			!scalars and w momentum
 
-!$omp    parallel do private(IJK, IJKC,IJKD,IJKU,DWFE,DWFN,DWFT,&
-!$omp&	PHICU,PHIDU,PHIUU,PHICV,PHIDV,PHIUV,PHICW,PHIDW,PHIUW,I)&
-!$omp&  shared(DISCR)
+!!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU,DWFE,DWFN,DWFT,&
+!!!$omp&	PHICU,PHIDU,PHIUU,PHICV,PHIDV,PHIUV,PHICW,PHIDW,PHIUW,I)&
+!!!$omp&  shared(DISCR)
         DO IJK = ijkstart3, ijkend3
 
 	V(IJK)=V(IJK)+VSH(IJK)
@@ -1130,7 +1130,7 @@
       SELECT CASE (DISCR)                        !first order upwinding 
       CASE (:1)  
 !
-!$omp    parallel do private(IJK)
+!!!$omp    parallel do private(IJK)
          DO IJK = ijkstart3, ijkend3 
             CHI_E(IJK) = ZERO
             CHI_N(IJK) = ZERO
@@ -1139,7 +1139,7 @@
 !      CASE (2)                                   !Superbee 
       CASE (3)                                   !SMART 
 !
-!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C)
+!!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C)
          DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -1189,7 +1189,7 @@
 !      CASE (5)                                   !QUICKEST 
       CASE (6)                                   !MUSCL 
 
-!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C )
+!!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C )
          DO IJK = ijkstart3, ijkend3
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 

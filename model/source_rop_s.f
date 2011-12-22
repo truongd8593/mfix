@@ -90,9 +90,9 @@
 !
 !
 !
-!!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
-!!$omp&  Src, LINE) &
-!!$omp&  schedule(static)
+!!!!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
+!!!!$omp&  Src, LINE) &
+!!!!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
 !
          IF (FLUID_AT(IJK) .AND. PHASE_4_P_G(IJK)/=M .AND. PHASE_4_P_S(IJK)/=M&
@@ -124,11 +124,11 @@
                   A_M(IJK,0,M) = -ONE            ! Equation is undefined. 
                   B_M(IJK,M) = -ROP_S(IJK,M)     ! Use existing value 
                ELSE 
-!!$omp             critical
+!!!!$omp             critical
                   WRITE (LINE, '(A,I6,A,I1,A,G12.5)') 'Error: At IJK = ', IJK, &
                      ' M = ', M, ' A = 0 and b = ', B_M(IJK,M) 
                   CALL WRITE_ERROR ('SOURCE_ROP_s', LINE, 1) 
-!!$omp             end critical
+!!!!$omp             end critical
                ENDIF 
             ENDIF 
          ELSE 

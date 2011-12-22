@@ -60,8 +60,8 @@
 
       IF (DIF_s0  /= UNDEFINED) RETURN  
 
-!!$omp  parallel do private(n,ijk) &
-!!$omp& schedule(dynamic,chunk_size)
+!!!!$omp  parallel do private(n,ijk) &
+!!!!$omp& schedule(dynamic,chunk_size)
 
       DO N = 1, NMAX(M) 
          DO IJK = IJKSTART3, IJKEND3

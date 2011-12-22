@@ -161,11 +161,11 @@
 !
 !!       Find the number of processors used
 !
-!$omp  parallel
+!!!$omp  parallel
 !$      num_threads = omp_get_num_threads()
 !$      omp_id = omp_get_thread_num()
 !$      if(omp_id.eq.0) Write(*,*)' Number of threads used for SMP = ',  num_threads
-!$omp  end parallel
+!!!$omp  end parallel
 !
 !  Set machine dependent constants
 !

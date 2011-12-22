@@ -83,9 +83,9 @@
       INCLUDE 'fun_avg2.inc'
       
 
-!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
-!$omp&  a, bb,F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, den) &
-!$omp&  schedule(static)
+!!!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
+!!!$omp&  a, bb,F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, den) &
+!!!$omp&  schedule(static)
             DO IJK = ijkstart3, ijkend3
                IF (FLOW_AT_E(IJK)) THEN 
                  IMJK = IM_OF(IJK) 
@@ -293,9 +293,9 @@
 
       
  
-!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
-!$omp&  a, bb,F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, DEN) &
-!$omp&  schedule(static)
+!!!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
+!!!$omp&  a, bb,F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, DEN) &
+!!!$omp&  schedule(static)
 		
             DO IJK = ijkstart3, ijkend3
               IF (FLOW_AT_N(IJK)) THEN 
@@ -493,9 +493,9 @@
       INCLUDE 'fun_avg2.inc'
 
  
-!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, &
-!$omp&  a, bb, F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, DEN) &
-!$omp&  schedule(static)
+!!!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, &
+!!!$omp&  a, bb, F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, DEN) &
+!!!$omp&  schedule(static)
             DO IJK = ijkstart3, ijkend3 
                IF (FLOW_AT_T(IJK)) THEN 
                  IMJK = IM_OF(IJK) 

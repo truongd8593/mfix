@@ -54,8 +54,8 @@
 
 ! Pack the numerators and denominators into one vector for performing single global operation
 
-!$omp parallel do private( NN,M )&
-!$omp&  REDUCTION(+:LOCAL_INDEX)
+!!!$omp parallel do private( NN,M )&
+!!!$omp&  REDUCTION(+:LOCAL_INDEX)
       DO NN = 2, NRESID
          DO M = 0, DIMENSION_M
             LOCAL_INDEX = LOCAL_INDEX + 1
@@ -71,8 +71,8 @@
 
       LOCAL_INDEX = 0
 
-!$omp parallel do private( NN,M )&
-!$omp&  REDUCTION(+:LOCAL_INDEX)
+!!!$omp parallel do private( NN,M )&
+!!!$omp&  REDUCTION(+:LOCAL_INDEX)
       DO NN = 2, NRESID
          DO M = 0, DIMENSION_M
             LOCAL_INDEX = LOCAL_INDEX + 1
@@ -82,7 +82,7 @@
          ENDDO
       ENDDO
 
-!$omp parallel do private( NN,M )
+!!!$omp parallel do private( NN,M )
       DO NN = 2, NRESID
          DO M = 0, DIMENSION_M
             IF (DEN_RESID(NN,M) > ZERO) THEN 

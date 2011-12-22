@@ -275,7 +275,7 @@
 
 !//        TEMP(:) = B_M(:) - R(:)
 
-!$omp   parallel do private(ii,jj,kk,ijk)
+!!!$omp   parallel do private(ii,jj,kk,ijk)
         DO KK=KSTART,KEND
         DO JJ=JSTART,JEND
         DO II=ISTART,IEND
@@ -331,7 +331,7 @@
 !//             TEMP(:) = B_M(:) - R(:)
 
 
-!$omp           parallel do private(ii,jj,kk,ijk)
+!!!$omp           parallel do private(ii,jj,kk,ijk)
                 DO KK=KSTART,KEND
                 DO JJ=JSTART,JEND
                 DO II=ISTART,IEND
@@ -355,7 +355,7 @@
 
 !//		    V(:,1) = R(:) * INV_NORM_R
 
-!$omp               parallel do private(ii,jj,kk,ijk)
+!!!$omp               parallel do private(ii,jj,kk,ijk)
                     DO KK=KSTART,KEND
                     DO JJ=JSTART,JEND
                     DO II=ISTART,IEND
@@ -395,7 +395,7 @@
 !//			    WW(:) = WW(:) - H(K,I)*V(:,K)
 
 
-!$omp                       parallel do private(ii,jj,kk,ijk)
+!!!$omp                       parallel do private(ii,jj,kk,ijk)
                             DO KK=KSTART,KEND
                             DO JJ=JSTART,JEND
                             DO II=ISTART,IEND
@@ -419,7 +419,7 @@
 
                   INV_H_IP1_I = ONE / H(I+1,I)
 
-!$omp             parallel do private(ii,jj,kk,ijk)
+!!!$omp             parallel do private(ii,jj,kk,ijk)
                   DO KK=KSTART,KEND
                   DO JJ=JSTART,JEND
                   DO II=ISTART,IEND
@@ -545,7 +545,7 @@
 !//		        VAR(:)=VAR(:)+MATMUL(V(:,1:I),Y(1:I))
 
 
-!$omp                   parallel do private(ii,jj,kk,ijk)
+!!!$omp                   parallel do private(ii,jj,kk,ijk)
                         DO KK=KSTART,KEND
                         DO JJ=JSTART,JEND
                         DO II=ISTART,IEND
@@ -647,7 +647,7 @@
 !// 		 VAR(:) = VAR(:) + MATMUL( V(:,1:M), Y(1:M) )
 !//
 
-!$omp            parallel do private(ii,jj,kk,ijk)
+!!!$omp            parallel do private(ii,jj,kk,ijk)
                  DO KK=KSTART,KEND
                  DO JJ=JSTART,JEND
                  DO II=ISTART,IEND
@@ -666,7 +666,7 @@
 
 !//                TEMP(:) = B_M(:) - R(:)
 
-!$omp            parallel do private(ii,jj,kk,ijk)
+!!!$omp            parallel do private(ii,jj,kk,ijk)
                  DO KK=KSTART,KEND
                  DO JJ=JSTART,JEND
                  DO II=ISTART,IEND
@@ -725,7 +725,7 @@
 
 !//	    R(:) = R(:) - B_M(:)
 
-!$omp            parallel do private(ii,jj,kk,ijk)
+!!!$omp            parallel do private(ii,jj,kk,ijk)
             DO KK=KSTART,KEND
             DO JJ=JSTART,JEND
             DO II=ISTART,IEND

@@ -103,8 +103,8 @@
 
       IF (DIF_G0 /= UNDEFINED) RETURN  
          
-!!$omp  parallel do private(ijk) &
-!!$omp& schedule(dynamic,chunk_size)
+!!!!$omp  parallel do private(ijk) &
+!!!!$omp& schedule(dynamic,chunk_size)
 
 ! Default calculation of diffusivities
 ! Influence of gas temperature and gas pressure from Fuller relation

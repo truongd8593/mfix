@@ -139,7 +139,7 @@
 
       M = 1 ! for solids phase
 
-!!$omp parallel do private(ijk) schedule(dynamic,chunk_size)
+!!!!$omp parallel do private(ijk) schedule(dynamic,chunk_size)
       DO IJK = ijkstart3, ijkend3 
 
          IF (FLUID_AT(IJK)) THEN 
@@ -186,13 +186,13 @@
          ENDIF   ! end if (fluid_at(ijk))
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 
-!!$omp parallel do &
-!!$omp$ schedule(dynamic,chunk_size) &
-!!$omp$ private(IJK, I,J,K,IM,JM,KM, &
-!!$omp& IMJK,IPJK,IJMK,IJPK,IJKM,IJKP,IMJPK,IMJMK,IMJKP, &
-!!$omp& IMJKM,IPJKM,IPJMK,IJMKP,IJMKM,IJPKM, &
-!!$omp& U_G_N,U_G_S,U_G_T,U_G_B,V_G_E,V_G_W,V_G_T,V_G_B, &
-!!$omp$ W_G_N,W_G_S,W_G_E,W_G_W,  U_G_C,W_G_C, D_G,I2_DEVD_G )
+!!!!$omp parallel do &
+!!!!$omp$ schedule(dynamic,chunk_size) &
+!!!!$omp$ private(IJK, I,J,K,IM,JM,KM, &
+!!!!$omp& IMJK,IPJK,IJMK,IJPK,IJKM,IJKP,IMJPK,IMJMK,IMJKP, &
+!!!!$omp& IMJKM,IPJKM,IPJMK,IJMKP,IJMKM,IJPKM, &
+!!!!$omp& U_G_N,U_G_S,U_G_T,U_G_B,V_G_E,V_G_W,V_G_T,V_G_B, &
+!!!!$omp$ W_G_N,W_G_S,W_G_E,W_G_W,  U_G_C,W_G_C, D_G,I2_DEVD_G )
 
       DO IJK = ijkstart3, ijkend3
          IF ( FLUID_AT(IJK) .AND. L_SCALE(IJK)/=ZERO) THEN 

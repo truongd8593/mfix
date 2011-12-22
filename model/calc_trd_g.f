@@ -81,8 +81,8 @@
       INCLUDE 'function.inc'
 !
 !
-!!$omp  parallel do private( IJK, I,J,K, IM,IMJK,IJMK,IJKM ) &
-!!$omp& schedule(dynamic,chunk_size)
+!!!!$omp  parallel do private( IJK, I,J,K, IM,IMJK,IJMK,IJKM ) &
+!!!!$omp& schedule(dynamic,chunk_size)
       DO IJK = ijkstart3, ijkend3 
          IF (.NOT.WALL_AT(IJK)) THEN 
             I = I_OF(IJK) 
@@ -358,8 +358,8 @@
       INCLUDE 'function.inc'
 !
 !
-!!$omp  parallel do private( IJK, I,J,K, IM,IMJK,IJMK,IJKM ) &
-!!$omp& schedule(dynamic,chunk_size)
+!!!!$omp  parallel do private( IJK, I,J,K, IM,IMJK,IJMK,IJKM ) &
+!!!!$omp& schedule(dynamic,chunk_size)
 
       DELV = ZERO
 

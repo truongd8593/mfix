@@ -272,10 +272,10 @@
 !     
 !     
 !     
-!     !$omp  parallel do private( I,  IJK, IMJK, IJMK, IJKM, &
-!     !$omp&  USCM, VSCM, WSCM, &
-!     !$omp&  VREL, UGC, VGC, WGC, Re, V_rm, A, B) &
-!     !$omp&  schedule(static)
+!     !!!$omp  parallel do private( I,  IJK, IMJK, IJMK, IJKM, &
+!     !!!$omp&  USCM, VSCM, WSCM, &
+!     !!!$omp&  VREL, UGC, VGC, WGC, Re, V_rm, A, B) &
+!     !!!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
          IF (FLUIDorP_FLOW_AT(IJK)) THEN 
 !     

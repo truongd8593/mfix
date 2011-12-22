@@ -122,7 +122,7 @@
 
       if(do_transpose) then	
         allocate( A_mt(-3:3, ijkstart3:ijkend3 ))
-!$omp parallel do private(ijk,ii)
+!!!$omp parallel do private(ijk,ii)
         do ijk=ijkstart3,ijkend3
           do ii=-3,3
                A_mt(ii,ijk) = A_m(ijk,ii,M)

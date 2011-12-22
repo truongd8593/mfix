@@ -136,7 +136,7 @@
 ! loezos
 ! update to true velocity
         IF (SHEAR) THEN        
-!$omp  parallel do private(IJK)
+!!!$omp  parallel do private(IJK)
           DO IJK = IJKSTART3, IJKEND3
             IF (FLUID_AT(IJK)) THEN 
               V_S(IJK,m)=V_S(IJK,m)+VSH(IJK)
@@ -146,12 +146,12 @@
 ! loezos
 
 
-!!$omp  parallel do private( IJK, I, IJKE, EPSA, EPStmp, IP, J, JM, K, KM,  &
-!!$omp&  IPJK,IMJK,IJKN,IJKNE,IJKS,IJKSE,IPJMK,IJMK,IJKT,IJKTE,  &
-!!$omp&  IJKB,IJKBE,IJKM,IPJKM, &
-!!$omp&  SBV,  SSX,SSY,   SSZ, EPMU_STE,EPMU_SBE, &
-!!$omp&  EPMUSA,DWOXDZ,VTZB ) &
-!!$omp&  schedule(static)
+!!!!$omp  parallel do private( IJK, I, IJKE, EPSA, EPStmp, IP, J, JM, K, KM,  &
+!!!!$omp&  IPJK,IMJK,IJKN,IJKNE,IJKS,IJKSE,IPJMK,IJMK,IJKT,IJKTE,  &
+!!!!$omp&  IJKB,IJKBE,IJKM,IPJKM, &
+!!!!$omp&  SBV,  SSX,SSY,   SSZ, EPMU_STE,EPMU_SBE, &
+!!!!$omp&  EPMUSA,DWOXDZ,VTZB ) &
+!!!!$omp&  schedule(static)
 
         DO IJK = IJKSTART3, IJKEND3
             I = I_OF(IJK) 
@@ -485,7 +485,7 @@
 
 ! loezos 
         IF (SHEAR) THEN
-!$omp  parallel do private(IJK) 
+!!!$omp  parallel do private(IJK) 
           DO IJK = IJKSTART3, IJKEND3
             IF (FLUID_AT(IJK)) THEN   
               V_S(IJK,m)=V_S(IJK,m)-VSH(IJK)

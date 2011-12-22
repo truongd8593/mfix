@@ -84,9 +84,9 @@
 !     CHEM & ISAT end (nan xie)
 !
 !
-!!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
-!!$omp&  Src, LINE) &
-!!$omp&  schedule(static)
+!!!!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
+!!!!$omp&  Src, LINE) &
+!!!!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
 !
          IF (FLUID_AT(IJK) .AND. PHASE_4_P_G(IJK)/=0) THEN 
@@ -116,11 +116,11 @@
                   A_M(IJK,0,0) = -ONE 
                   B_M(IJK,0) = ZERO 
                ELSE 
-!!$omp             critical
+!!!!$omp             critical
                   WRITE (LINE, '(A,I6,A,I1,A,G12.5)') 'Error: At IJK = ', IJK, &
                      ' M = ', 0, ' A = 0 and b = ', B_M(IJK,0) 
                   CALL WRITE_ERROR ('SOURCE_ROP_g', LINE, 1) 
-!!$omp             end critical
+!!!!$omp             end critical
                ENDIF 
             ENDIF 
          ELSE 

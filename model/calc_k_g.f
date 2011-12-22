@@ -56,8 +56,8 @@
 
       IF (K_G0 /= UNDEFINED) RETURN  
 
-!!$omp parallel do private(ijk) &
-!!$omp& schedule(dynamic,chunk_size)
+!!!!$omp parallel do private(ijk) &
+!!!!$omp& schedule(dynamic,chunk_size)
 
       DO IJK = ijkstart3, ijkend3      
          IF (FLUID_AT(IJK)) THEN 

@@ -100,7 +100,7 @@
 
 
 !
-!$omp  parallel do private( IJK, IpJK, ImJK, IJpK, IJmK, IJKp, IJKm)
+!!!$omp  parallel do private( IJK, IpJK, ImJK, IJpK, IJmK, IJKp, IJKm)
       DO IJK = ijkstart3, ijkend3
 
             ImJK = IM_OF(IJK) 

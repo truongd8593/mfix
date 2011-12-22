@@ -173,10 +173,10 @@
             ENDIF
 
 
-!$omp  parallel do private( IJK, IJKE, ISV, Sdp, Sdps, V0, Vmt, Vbf, &
-!$omp&  I,PGE,DRO1,DRO2,DROA, IJKM,IPJK,IPJKM,  WSE,VCF,EPMUSA,VTZA, &
-!$omp&  EPSA, EPStmp, ROPSA, LINE,SUM_EPS_CP,MM) &
-!$omp&  schedule(static)
+!!!$omp  parallel do private( IJK, IJKE, ISV, Sdp, Sdps, V0, Vmt, Vbf, &
+!!!$omp&  I,PGE,DRO1,DRO2,DROA, IJKM,IPJK,IPJKM,  WSE,VCF,EPMUSA,VTZA, &
+!!!$omp&  EPSA, EPStmp, ROPSA, LINE,SUM_EPS_CP,MM) &
+!!!$omp&  schedule(static)
             DO IJK = ijkstart3, ijkend3 
 
 ! Wall or impermeable internal surface

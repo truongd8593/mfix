@@ -133,8 +133,8 @@
 
 !
 !  Interpolate the face value of density for calculating the convection fluxes 
-!$omp  parallel do private( IJK, IJKE, IJKN, IJKT, IJKW, IJKS, IJKB, IMJK, IJMK, IJKM) &
-!$omp&  schedule(static)
+!!!$omp  parallel do private( IJK, IJKE, IJKN, IJKT, IJKW, IJKS, IJKB, IMJK, IJMK, IJKM) &
+!!!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
 !
          IF (FLUID_AT(IJK)) THEN 
@@ -288,8 +288,8 @@
 !
 !  Calculate convection fluxes through each of the faces
 !
-!$omp  parallel do private(IJK, IJKE, IJKN, IJKT, IJKW, IJKS, IJKB, IMJK, IJMK, IJKM) &
-!$omp&  schedule(static)
+!!!$omp  parallel do private(IJK, IJKE, IJKN, IJKT, IJKW, IJKS, IJKB, IMJK, IJMK, IJKM) &
+!!!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3 
 !
          IF (FLUID_AT(IJK)) THEN 

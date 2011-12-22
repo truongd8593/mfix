@@ -94,7 +94,7 @@
         ENDDO
       ENDDO
 
-!!$omp  parallel do private( IJK, L, LM, M, N, LR, ID, stmw, ex, Tr, EP, RATE )
+!!!!$omp  parallel do private( IJK, L, LM, M, N, LR, ID, stmw, ex, Tr, EP, RATE )
       DO IJK = ijkstart3, ijkend3 
       
          IF (FLUID_AT(IJK)) THEN 

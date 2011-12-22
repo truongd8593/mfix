@@ -100,10 +100,10 @@
       LM = FUNLM(L,M)
    
 !
-!!$omp  parallel do private( I, L, M,  IJK, IMJK, IJMK, IJKM, &
-!!$omp&  USCM, VSCM, WSCM,D_PM, D_PL, D_PSUM, CONST,&
-!!$omp&  VREL, USCL, VSCL, WSCL) &
-!!$omp&  schedule(static)
+!!!!$omp  parallel do private( I, L, M,  IJK, IMJK, IJMK, IJKM, &
+!!!!$omp&  USCM, VSCM, WSCM,D_PM, D_PL, D_PSUM, CONST,&
+!!!!$omp&  VREL, USCL, VSCL, WSCL) &
+!!!!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
          
          IF (.NOT.WALL_AT(IJK)) THEN 

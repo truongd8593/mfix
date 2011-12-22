@@ -84,7 +84,7 @@
          ENDIF
       ENDIF
 
-!!$omp parallel do private(M,IJK,N)
+!!!!$omp parallel do private(M,IJK,N)
       DO M = 1, MMAX 
          IF (IJKMAX2 > 0) THEN 
             ROP_S(IJKSTART3:IJKEND3,M) = UNDEFINED 

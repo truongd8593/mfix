@@ -92,7 +92,7 @@ MODULE ChiScheme
 
         CALL CALC_CHI(DISCR, PHI(1,N), U, V, W, Chi_e_temp, Chi_n_temp, Chi_t_temp,0) 
 
-!$omp    parallel do private(IJK)
+!!!$omp    parallel do private(IJK)
         DO IJK = ijkstart3, ijkend3
           Chi_e(IJK) = MIN(Chi_e(IJK), Chi_e_temp(IJK))
           Chi_n(IJK) = MIN(Chi_n(IJK), Chi_n_temp(IJK))

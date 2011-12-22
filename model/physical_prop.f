@@ -97,7 +97,7 @@
 
 
 
-!$omp  parallel do private(IJK, MW, N)  
+!!!$omp  parallel do private(IJK, MW, N)  
       DO IJK = IJKSTART3, IJKEND3 
          IF (.NOT.WALL_AT(IJK)) THEN 
             TGX = T_g(IJK)
@@ -188,7 +188,7 @@
 ! if using a discrete element model then quantities related to the
 ! continuum solids phase do not need to be calculated
 
-!$omp  parallel do private(IJK)           
+!!!$omp  parallel do private(IJK)           
          DO IJK = IJKSTART3, IJKEND3 
             DO M=1,MMAX             
                IF (.NOT.WALL_AT(IJK)) THEN

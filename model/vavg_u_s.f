@@ -66,7 +66,7 @@
       SUM_U_S = ZERO 
       SUM_VOL = ZERO 
 
-!!$omp   parallel do private(IJK) reduction(+:SUM_VOL,SUM_U_S)
+!!!!$omp   parallel do private(IJK) reduction(+:SUM_VOL,SUM_U_S)
       DO IJK = IJKSTART3, IJKEND3
       IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK), J_OF(IJK), K_OF(IJK))) CYCLE
          IF (FLUID_AT(IJK)) THEN 

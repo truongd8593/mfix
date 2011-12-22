@@ -70,10 +70,10 @@
 
         IF(CLOSE_PACKED(M)) THEN
 
-!$omp     parallel do  firstprivate(M) &
-!$omp&    private( IJK, DEPs2G_0oDEPs, &
-!$omp&             Pc, DPcoDEPS,  Mu, Mu_b, Mu_zeta, ZETA, &
-!$omp&             F2, DF2oDEPs, Pf, Pfmax )
+!!!$omp     parallel do  firstprivate(M) &
+!!!$omp&    private( IJK, DEPs2G_0oDEPs, &
+!!!$omp&             Pc, DPcoDEPS,  Mu, Mu_b, Mu_zeta, ZETA, &
+!!!$omp&             F2, DF2oDEPs, Pf, Pfmax )
           DO 100 IJK = ijkstart3, ijkend3
             IF(.NOT.WALL_AT(IJK))THEN
  

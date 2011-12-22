@@ -160,10 +160,10 @@
       END IF
 !     CHEM & ISAT end (nan xie)
 !
-!$omp    parallel do private(I, IJK, IJKE, IJKM, IPJK, IPJKM,     &
-!$omp&                  ISV, Sdp, V0, Vpm, Vmt, Vbf,              &
-!$omp&                  Vcf, EPMUGA, VTZA, WGE, PGE, ROGA,        &
-!$omp&                  MUGA, ROPGA, EPGA )
+!!!$omp    parallel do private(I, IJK, IJKE, IJKM, IPJK, IPJKM,     &
+!!!$omp&                  ISV, Sdp, V0, Vpm, Vmt, Vbf,              &
+!!!$omp&                  Vcf, EPMUGA, VTZA, WGE, PGE, ROGA,        &
+!!!$omp&                  MUGA, ROPGA, EPGA )
       DO IJK = ijkstart3, ijkend3 
          I = I_OF(IJK) 
 	 J = J_OF(IJK)

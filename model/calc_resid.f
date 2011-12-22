@@ -101,14 +101,14 @@
       MAX_RESID = -ONE 
       NCELLS = 0 
 
-!$omp parallel do private( IJK )
+!!!$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
           RESID_IJK(IJK) = ZERO
       ENDDO
 !
-!$omp  parallel do private( IJK, IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
-!$omp&  NUM1, DEN1) &
-!$omp&  REDUCTION(+:NUM,DEN,NCELLS)  
+!!!$omp  parallel do private( IJK, IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
+!!!$omp&  NUM1, DEN1) &
+!!!$omp&  REDUCTION(+:NUM,DEN,NCELLS)  
       DO IJK = ijkstart3, ijkend3
 
       IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
@@ -310,17 +310,17 @@
       MAX_RESID = -ONE 
       NCELLS = 0 
 
-!$omp parallel do private( IJK )
+!!!$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
           RESID_IJK(IJK) = ZERO
       ENDDO
 
 !
-!$omp    parallel do &
-!$omp&   private(   IJK,     &
-!$omp&   IMJK,IJMK,IPJK,IJPK, IJKM,IJKP, &
-!$omp&   NUM1, DEN1) &
-!$omp&   REDUCTION(+:NUM, DEN,NCELLS)  
+!!!$omp    parallel do &
+!!!$omp&   private(   IJK,     &
+!!!$omp&   IMJK,IJMK,IPJK,IJPK, IJKM,IJKP, &
+!!!$omp&   NUM1, DEN1) &
+!!!$omp&   REDUCTION(+:NUM, DEN,NCELLS)  
       DO IJK = ijkstart3, ijkend3
       IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
          IF (FLUID_AT(IJK) .AND. ABS(VAR(IJK)) > TOL) THEN 
@@ -907,15 +907,15 @@
       MAX_RESID = -ONE 
       NCELLS = 0 
 !efd
-!$omp parallel do private( IJK )
+!!!$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
           RESID_IJK(IJK) = ZERO
       ENDDO
 
 !
-!$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
-!$omp&   NUM1, DEN1,VEL) &
-!$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
+!!!$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
+!!!$omp&   NUM1, DEN1,VEL) &
+!!!$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
       DO IJK = ijkstart3, ijkend3
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
       
@@ -1138,15 +1138,15 @@
       MAX_RESID = -ONE 
       NCELLS = 0 
 !efd
-!$omp parallel do private( IJK )
+!!!$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
           RESID_IJK(IJK) = ZERO
       ENDDO
 
 !
-!$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
-!$omp&  VEL,  NUM1, DEN1) &
-!$omp&  REDUCTION(+:NUM, DEN, NCELLS)  
+!!!$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
+!!!$omp&  VEL,  NUM1, DEN1) &
+!!!$omp&  REDUCTION(+:NUM, DEN, NCELLS)  
       DO IJK = ijkstart3, ijkend3 
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
 
@@ -1367,15 +1367,15 @@
       MAX_RESID = -ONE 
       NCELLS = 0 
 
-!$omp parallel do private( IJK )
+!!!$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
           RESID_IJK(IJK) = ZERO
       ENDDO
 
 !
-!$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
-!$omp&  VEL,  NUM1, DEN1) &
-!$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
+!!!$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
+!!!$omp&  VEL,  NUM1, DEN1) &
+!!!$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
       DO IJK = ijkstart3, ijkend3
       IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
       

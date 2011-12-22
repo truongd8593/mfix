@@ -1770,16 +1770,16 @@
       INCLUDE 's_pr2.inc'
 !----------------------------------------------- 
 
-!     !$omp  parallel do &
-!     !$omp& private(IMJPK, I, J, K, IJK,  IMJK, IPJK, IJMK, IJPK, IJKM, &
-!     !$omp&  IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT, IM, JM, KM, &
-!     !$omp&  U_s_N, U_s_S, U_s_T, U_s_B, V_s_E, V_s_W, V_s_T, V_s_B, W_s_N, &
-!     !$omp&  W_s_S, W_s_E, W_s_W, U_s_C, W_s_C, D_s, I2_devD_s, trD_s_C, &
-!     !$omp&  qxP_s, trD_s2, K_1m, K_2m, K_3m, K_4m, K_5m, aq, bq, cq, &
-!     !$omp&  DEP_soDX, DEP_soDY, DEP_soXDZ, M_s, I1, I2, &
-!     !$omp&  KTH_STAR,KTH,CHI,PFOPC,PC,ZETA,MU_ZETA,PF,&
-!     !$omp&  MU_STAR,MU_B,MU,M,IJPKM,IJMKM,IJMKP,IPJMK,IPJKM,IMJKM,IMJKP,IMJMK, &
-!     !$omp&  EP_sxSQRTHETA, EP_s2xTHETA )  
+!     !!!$omp  parallel do &
+!     !!!$omp& private(IMJPK, I, J, K, IJK,  IMJK, IPJK, IJMK, IJPK, IJKM, &
+!     !!!$omp&  IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT, IM, JM, KM, &
+!     !!!$omp&  U_s_N, U_s_S, U_s_T, U_s_B, V_s_E, V_s_W, V_s_T, V_s_B, W_s_N, &
+!     !!!$omp&  W_s_S, W_s_E, W_s_W, U_s_C, W_s_C, D_s, I2_devD_s, trD_s_C, &
+!     !!!$omp&  qxP_s, trD_s2, K_1m, K_2m, K_3m, K_4m, K_5m, aq, bq, cq, &
+!     !!!$omp&  DEP_soDX, DEP_soDY, DEP_soXDZ, M_s, I1, I2, &
+!     !!!$omp&  KTH_STAR,KTH,CHI,PFOPC,PC,ZETA,MU_ZETA,PF,&
+!     !!!$omp&  MU_STAR,MU_B,MU,M,IJPKM,IJMKM,IJMKP,IPJMK,IPJKM,IMJKM,IMJKP,IMJMK, &
+!     !!!$omp&  EP_sxSQRTHETA, EP_s2xTHETA )  
       
       Mu_s(:,M)     = ZERO
       LAMBDA_s(:,M) = ZERO

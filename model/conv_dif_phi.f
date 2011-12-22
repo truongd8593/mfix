@@ -212,12 +212,12 @@
 !  Calculate convection-diffusion fluxes through each of the faces
 !
 !
-!$omp      parallel do                                              &
-!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,         &
-!$omp&             IJKP, IJKT,  V_f, D_f,                    &
-!$omp&             IMJK, IM, IJKW,                                  &
-!$omp&             IJMK, JM, IJKS,                                  &
-!$omp&             IJKM, KM,  IJKB)                     
+!!!$omp      parallel do                                              &
+!!!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,         &
+!!!$omp&             IJKP, IJKT,  V_f, D_f,                    &
+!!!$omp&             IMJK, IM, IJKW,                                  &
+!!!$omp&             IJMK, JM, IJKS,                                  &
+!!!$omp&             IJKM, KM,  IJKB)                     
       DO IJK = ijkstart3, ijkend3
 !
        I = I_OF(IJK)
@@ -549,13 +549,13 @@
 !  Calculate convection-diffusion fluxes through each of the faces
 !
 !
-!$omp      parallel do                                              &
-!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,         &
-!$omp&             IJKP, IJKT,  V_f, D_f,                    &
-!$omp&             IMJK, IJKW,                                  &
-!$omp&             IJMK, IJKS,                                  &
-!$omp&             IJKM, IJKB, PHI_HO, PHI_LO,        &
-!$omp&             EAST_DC, WEST_DC, NORTH_DC, SOUTH_DC, TOP_DC, BOTTOM_DC)                     
+!!!$omp      parallel do                                              &
+!!!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,         &
+!!!$omp&             IJKP, IJKT,  V_f, D_f,                    &
+!!!$omp&             IMJK, IJKW,                                  &
+!!!$omp&             IJMK, IJKS,                                  &
+!!!$omp&             IJKM, IJKB, PHI_HO, PHI_LO,        &
+!!!$omp&             EAST_DC, WEST_DC, NORTH_DC, SOUTH_DC, TOP_DC, BOTTOM_DC)                     
 !
       DO IJK = ijkstart3, ijkend3
 !
@@ -874,12 +874,12 @@
 !
 !  Calculate convection-diffusion fluxes through each of the faces
 !
-!$omp      parallel do                                               &
-!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,          &
-!$omp&             IJKP, IJKT,    D_f,                        &
-!$omp&             IMJK, IM, IJKW,                                   &
-!$omp&             IJMK, JM,  IJKS,                                  &
-!$omp&             IJKM, KM,  IJKB )                      
+!!!$omp      parallel do                                               &
+!!!$omp&     private(I,  J, K,  IJK,  IPJK, IJPK, IJKE, IJKN,          &
+!!!$omp&             IJKP, IJKT,    D_f,                        &
+!!!$omp&             IMJK, IM, IJKW,                                   &
+!!!$omp&             IJMK, JM,  IJKS,                                  &
+!!!$omp&             IJKM, KM,  IJKB )                      
 !
 !
 !

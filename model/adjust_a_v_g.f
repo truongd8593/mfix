@@ -67,7 +67,7 @@
       M = 0 
       IF (.NOT.MOMENTUM_Y_EQ(0)) RETURN  
 !
-!!$omp parallel do private(IJK,IJKN,IJMK)
+!!!!$omp parallel do private(IJK,IJKN,IJMK)
       DO IJK = ijkstart3, ijkend3
          IF (ABS(A_M(IJK,0,M)) < SMALL_NUMBER) THEN 
             A_M(IJK,E,M) = ZERO 

@@ -62,7 +62,7 @@
 !      IJK = 1 
       IF (IJKMAX2A > 0) THEN 
        IF (USE_DOLOOP) THEN
-!$omp    parallel do private( IJK )
+!!!$omp    parallel do private( IJK )
          DO IJK = ijkstart3, ijkend3
            A_M(IJK,B,M) = ZERO
            A_M(IJK,S,M) = ZERO

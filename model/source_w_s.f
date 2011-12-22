@@ -172,12 +172,12 @@
               SUM_R_S = ZERO
             ENDIF
 
-!$omp  parallel do &
-!$omp& private(IJK, I, J, K, IJKT, EPSA, EPStmp, ISV, &
-!$omp& PGT,SDP,SDPS,   ROPSA,V0,VMT,   DRO1,DRO2,DROA,VBF, &
-!$omp& IMJK,IJKP,IMJKP,  UGT,VCOA,VCOB, &
-!$omp& IJKE,IJKW,IJKTE,IJKTW,IM,IPJK, &
-!$omp& CTE,CTW,SXZB,  EPMUOX,VXZA,VXZB )
+!!!$omp  parallel do &
+!!!$omp& private(IJK, I, J, K, IJKT, EPSA, EPStmp, ISV, &
+!!!$omp& PGT,SDP,SDPS,   ROPSA,V0,VMT,   DRO1,DRO2,DROA,VBF, &
+!!!$omp& IMJK,IJKP,IMJKP,  UGT,VCOA,VCOB, &
+!!!$omp& IJKE,IJKW,IJKTE,IJKTW,IM,IPJK, &
+!!!$omp& CTE,CTW,SXZB,  EPMUOX,VXZA,VXZB )
             DO IJK = ijkstart3, ijkend3 
                 I = I_OF(IJK) 
                 J = J_OF(IJK) 

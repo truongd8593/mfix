@@ -184,7 +184,7 @@
 !     ---------------------------------------------
       if (use_doloop) then
 
-!$omp  parallel do private(ijk)
+!!!$omp  parallel do private(ijk)
          do ijk=ijkstart3,ijkend3
             R(ijk) = zero
             Zvec(ijk) = zero
@@ -207,7 +207,7 @@
 !     
 !     Scale matrix to have unit diagonal
 !     
-!$omp parallel do private(ijk,i,j,k,oam,aijmax)
+!!!$omp parallel do private(ijk,i,j,k,oam,aijmax)
          do k = kstart2,kend2
             do i = istart2,iend2
                do j = jstart2,jend2
@@ -239,7 +239,7 @@
 
 !     if (use_doloop) then
 
-!!$omp   parallel do private(ijk)
+!!!!$omp   parallel do private(ijk)
 !        do ijk=ijkstart3,ijkend3
 !           Xinit(ijk) = Var(ijk)*(ONE + (2.0d0*Xinit(ijk)-1.0d0)*1.0d-6)
 !        enddo
@@ -258,7 +258,7 @@
 
       if (use_doloop) then
 
-!$omp   parallel do private(ijk)
+!!!$omp   parallel do private(ijk)
          do ijk=ijkstart3,ijkend3
             R(ijk) = B_m(ijk) - R(ijk)
          enddo
@@ -270,7 +270,7 @@
          Rnorm0 = zero
          if (use_doloop) then
 
-!$omp          parallel do private(ijk) reduction(+:Rnorm0)
+!!!$omp          parallel do private(ijk) reduction(+:Rnorm0)
             do ijk=ijkstart3,ijkend3
                Rnorm0 = Rnorm0 + R(ijk)*R(ijk)
             enddo
@@ -301,7 +301,7 @@
          if(is_serial) then
             if (use_doloop) then
                RxZ = zero
-!$omp        parallel do private(ijk) reduction(+:RxZ)
+!!!$omp        parallel do private(ijk) reduction(+:RxZ)
                do ijk=ijkstart3,ijkend3
                   RxZ = RxZ + R(ijk) * Zvec(ijk)
                enddo
@@ -337,7 +337,7 @@
 !
 
             if (use_doloop) then
-!$omp        parallel do private(ijk)
+!!!$omp        parallel do private(ijk)
                do ijk=ijkstart3,ijkend3
                   P(ijk) = Zvec(ijk)
                enddo
@@ -351,7 +351,7 @@
 !
             beta(i-1) = ( rho(i-1)/rho(i-2) )
             if (use_doloop) then
-!$omp        parallel do private(ijk)
+!!!$omp        parallel do private(ijk)
                do ijk=ijkstart3,ijkend3
                   P(ijk) = Zvec(ijk) + beta(i-1)* P(ijk)
                enddo
@@ -367,7 +367,7 @@
          if(is_serial) then
             if (use_doloop) then
                PxQ = zero
-!$omp         parallel do private(ijk) reduction(+:PxQ)
+!!!$omp         parallel do private(ijk) reduction(+:PxQ)
                do ijk=ijkstart3,ijkend3
                   PxQ = PxQ + P(ijk) * Q(ijk)
                enddo
@@ -386,7 +386,7 @@
 !     r = r - alpha*q : Line 13
 
          if (use_doloop) then
-!$omp     parallel do private(ijk)
+!!!$omp     parallel do private(ijk)
             do ijk=ijkstart3,ijkend3
                R(ijk) = R(ijk) - alpha(i) * Q(ijk)
                Var(ijk) = Var(ijk) + alpha(i) * P(ijk)
@@ -402,7 +402,7 @@
          if(is_serial) then
             if (use_doloop) then
                Rnorm = zero
-!$omp       parallel do private(ijk) reduction(+:Rnorm)
+!!!$omp       parallel do private(ijk) reduction(+:Rnorm)
                do ijk=ijkstart3,ijkend3
                   Rnorm = Rnorm + R(ijk) * R(ijk)
                enddo
@@ -444,7 +444,7 @@
       if (idebugl >= 1) then
          call MATVEC( Vname, Var, A_m, R )
          if (use_doloop) then
-!$omp  parallel do private(ijk)
+!!!$omp  parallel do private(ijk)
             do ijk=ijkstart3,ijkend3
                R(ijk) = R(ijk) - B_m(ijk)
             enddo
@@ -455,7 +455,7 @@
          if(is_serial) then
             if (use_doloop) then
                Rnorm = zero
-!$omp         parallel do private(ijk) reduction(+:Rnorm)
+!!!$omp         parallel do private(ijk) reduction(+:Rnorm)
                do ijk=ijkstart3,ijkend3
                   Rnorm = Rnorm + R(ijk) * R(ijk)
                enddo

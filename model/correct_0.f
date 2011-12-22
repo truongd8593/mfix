@@ -140,7 +140,7 @@
 !  Underrelax pressure correction.  Velocity corrections should not be
 !  underrelaxed, so that the continuity eq. is satisfied.
 !
-!$omp    parallel do private(IJK,IJKE,IJKN,IJKT)
+!!!$omp    parallel do private(IJK,IJKE,IJKN,IJKT)
       DO IJK = ijkstart3, ijkend3 
          IF (FLUIDORP_FLOW_AT(IJK)) THEN 
             P_G(IJK) = P_G(IJK) + UR_FAC*PP_G(IJK) 
@@ -253,7 +253,7 @@
 !  underrelaxed, so that the continuity eq. is satisfied.
 !
       DO M = 1, MMAX 
-!$omp    parallel do private(IJK,IJKE,IJKN,IJKT)
+!!!$omp    parallel do private(IJK,IJKE,IJKN,IJKT)
          DO IJK = ijkstart3, ijkend3
             IF (FLUIDORP_FLOW_AT(IJK)) THEN 
 !
