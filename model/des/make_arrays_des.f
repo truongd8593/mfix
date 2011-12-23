@@ -83,7 +83,9 @@
 ! Set an initial radius for reacting particles
          IF(ANY_DES_SPECIES_EQ) CORE_RAD(:) = DES_RADIUS(:)
       ELSEIF(RUN_TYPE == 'RESTART_1') THEN !  Read Restart
+          
          call des_read_restart 
+     
          if(dmp_log)write(unit_log,'(3X,A,G17.8)') 'DES_RES file read at Time= ', TIME
          imax_global_id = maxval(iglobal_id(1:pip))
          call global_all_max(imax_global_id)
@@ -107,12 +109,13 @@
       end do 
 !set particle properties - this code moved from cfassign   
       DO L = 1, MAX_PIP
-         IF(.NOT.PEA(L,1)) CYCLE      
+         IF(.NOT.PEA(L,1)) CYCLE  
+         IF(PEA(L,4)) CYCLE  
          PVOL(L) = (4.0D0/3.0D0)*PI*DES_RADIUS(L)**3
-         PMASS(L) = PVOL(L)*RO_SOL(L) 
+         PMASS(L) = PVOL(L)*RO_SOL(L)
          OMOI(L) = 2.5D0/(PMASS(L)*DES_RADIUS(L)**2) !ONE OVER MOI
       ENDDO
-
+ 
       IF(CARTESIAN_GRID) CALL CG_DEL_OUTOFDOMAIN_PARTS
 !the above call will delete the particles outside the domain.
 !it will then re-arrange the arrays such that the active particles
@@ -138,12 +141,12 @@
 ! J.Musser
 ! Set initial conditions obtained from mfix.dat file. (ENERGY/SPECIES)
       IF(RUN_TYPE == 'NEW' .AND. DES_IC_EXIST) CALL DES_SET_IC
-      
+
 !rahul:
 !If cut-cell then remove the particles that are outside of the 
 !cut-cell faces. Do this after particles_in_cell so that the particles are 
 !are already assigned grid id's
-      IF(TRIM(RUN_TYPE) == 'RESTART_1') THEN 
+      IF(TRIM(RUN_TYPE) == 'RESTART_1'.AND. CARTESIAN_GRID) THEN 
          open(1000, file='parts_out.dat', form="formatted")
          
          DO L = 1, PIP 
@@ -156,7 +159,6 @@
          close(1000, status = 'keep')
       ENDIF
 
-      
 
 ! Overrides initial particle velocity with velocities assigned from a
 ! Gaussian distribution based on usr specified standard deviation and

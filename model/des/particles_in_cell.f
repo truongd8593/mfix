@@ -348,6 +348,8 @@
 
 !!$      omp_start1=omp_get_wtime()	  
 !!$omp single private(l,wtp,i,j,k,ijk,m) !,omp_tp1,omp_tp2,omp_tp3)
+      if(first_pass)call des_par_exchange
+
          PC = 1
       DO L = 1, MAX_PIP
          if(pc.gt.pip) exit      

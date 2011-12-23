@@ -351,6 +351,9 @@
             DO NP = 1, MAX_PIP
                IF(PC .GT. PIP) EXIT
                IF(.NOT.PEA(NP,1)) CYCLE
+! Below line is added by Tingwe Not sure if it is necessary               
+!               if(pea(np,4))cycle 
+ 
 ! Reset the debug flag
                FOCUS = .FALSE.
 ! Set the debugging flag

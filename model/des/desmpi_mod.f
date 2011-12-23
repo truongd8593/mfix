@@ -1279,7 +1279,7 @@
 
 ! loop through contact list and find local particle number using neighbor list 
          pn(llocpar,1) = drecvbuf(lbuf,pface);ltmpbuf=lbuf+1 
-         pv(llocpar,0) = 0
+         pv(llocpar,1) = 0
          lcount = 0 
          do lcontactindx = 2,pn(llocpar,1)+1
             lcontactfound = .false.
