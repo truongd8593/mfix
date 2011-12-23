@@ -348,7 +348,7 @@
 
 !!$      omp_start1=omp_get_wtime()	  
 !!$omp single private(l,wtp,i,j,k,ijk,m) !,omp_tp1,omp_tp2,omp_tp3)
-      if(first_pass)call des_par_exchange
+!      if(first_pass)call des_par_exchange
 
          PC = 1
       DO L = 1, MAX_PIP
@@ -387,6 +387,7 @@
 !!$omp end parallel do 
 !!$      omp_end1=omp_get_wtime()
 !!$      write(*,*)'second_loop:',omp_end1 - omp_start1 	  
+      if(first_pass)call des_par_exchange
 
       if (FIRST_PASS)then 
           if(dmp_log.and.debug_des) write(unit_log,'(3x,a)') &
