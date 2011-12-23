@@ -1141,6 +1141,7 @@
 !
 !!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C)
          DO IJK = ijkstart3, ijkend3
+	  IF (.NOT.WALL_AT(IJK)) THEN ! no need to do these calculations for walls
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
                IJKD = EAST_OF(IJK) 
@@ -1153,7 +1154,7 @@
 !
             PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
-            CHI_E(IJK) = CHI4SMART(PHI_C)
+            CHI_E(IJK) = CHI4SMART(PHI_C,PHI(IJKU),PHI(IJKC),PHI(IJKD))
 !
             IF (V(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -1167,7 +1168,7 @@
 !
             PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
-            CHI_N(IJK) = CHI4SMART(PHI_C) 
+            CHI_N(IJK) = CHI4SMART(PHI_C,PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
             IF (DO_K) THEN 
                IF (W(IJK) >= ZERO) THEN 
@@ -1182,8 +1183,13 @@
 !
                PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
-               CHI_T(IJK) = CHI4SMART(PHI_C) 
+               CHI_T(IJK) = CHI4SMART(PHI_C,PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
             ENDIF 
+	  ELSE
+            CHI_E(IJK) = ZERO
+            CHI_N(IJK) = ZERO
+            CHI_T(IJK) = ZERO 
+	  ENDIF
          END DO 
 !      CASE (4)                                   !ULTRA-QUICK 
 !      CASE (5)                                   !QUICKEST 
@@ -1191,6 +1197,7 @@
 
 !!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C )
          DO IJK = ijkstart3, ijkend3
+	  IF (.NOT.WALL_AT(IJK)) THEN ! no need to do these calculations for walls
             IF (U(IJK) >= ZERO) THEN 
                IJKC = IJK 
                IJKD = EAST_OF(IJK) 
@@ -1203,7 +1210,7 @@
 !
             PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
-            CHI_E(IJK) = CHI4MUSCL(PHI_C) 
+            CHI_E(IJK) = CHI4MUSCL(PHI_C,PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
             IF (V(IJK) >= ZERO) THEN 
                IJKC = IJK 
@@ -1217,7 +1224,7 @@
 !
             PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
-            CHI_N(IJK) = CHI4MUSCL(PHI_C) 
+            CHI_N(IJK) = CHI4MUSCL(PHI_C,PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
             IF (DO_K) THEN 
                IF (W(IJK) >= ZERO) THEN 
@@ -1232,8 +1239,13 @@
 !
                PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
 !
-               CHI_T(IJK) = CHI4MUSCL(PHI_C) 
+               CHI_T(IJK) = CHI4MUSCL(PHI_C,PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
             ENDIF 
+	  ELSE
+            CHI_E(IJK) = ZERO
+            CHI_N(IJK) = ZERO
+            CHI_T(IJK) = ZERO 
+	  ENDIF ! for walls
          END DO 
 !      CASE (7)                                   !Van Leer 
 !      CASE (8)                                   !Minmod 

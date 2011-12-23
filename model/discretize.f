@@ -101,8 +101,10 @@
 !-----------------------------------------------
       DOUBLE PRECISION PHI_C, Chi 
 
-      if((ONE - PHI_C) > small_number)then
-        Chi_SMART = Chi * (3.D0/8.D0 - PHI_C/4.) / (ONE - PHI_C)
+      if(PHI_C < ONE)then
+        Chi_SMART = Chi * (3.D0/8.D0 - PHI_C/4.d0) / (ONE-PHI_C)
+      elseif(Chi == zero)then ! insures that all species equations uses the same chi
+        Chi_SMART = zero
       else
       Chi_SMART = ONE
       endif
@@ -110,7 +112,7 @@
       RETURN  
       END FUNCTION Chi_SMART 
       
-      DOUBLE PRECISION FUNCTION Chi4SMART (PHI_C) 
+      DOUBLE PRECISION FUNCTION Chi4SMART (PHI_C, PHIU, PHIC, PHID) 
 !	calculate CHI for SMART scheme
 !-----------------------------------------------
 !   M o d u l e s 
@@ -121,14 +123,18 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      DOUBLE PRECISION PHI_C 
+      DOUBLE PRECISION PHI_C , PHIU, PHIC, PHID
 
-      IF(PHI_C > ZERO .AND. PHI_C <= (1./6.D0))THEN
+      IF(PHI_C > ZERO .AND. PHI_C <= (1.D0/6.D0))THEN
         Chi4SMART = 16.D0 * PHI_C/(3.D0 - 2.D0 * PHI_C)
-      ELSEIF(PHI_C > (1./6.D0) .AND. PHI_C <= (5.D0/6.D0))THEN
+      ELSEIF(PHI_C > (1.D0/6.D0) .AND. PHI_C <= (5.D0/6.D0))THEN
         Chi4SMART = ONE
       ELSEIF(PHI_C > (5.D0/6.D0) .AND. PHI_C <= ONE)THEN
-        Chi4SMART = 8.D0*(ONE - PHI_C)/(3.D0 - 2.D0 * PHI_C)
+        Chi4SMART = 8.D0*(ONE-PHI_C)/(3.D0 - 2.D0 * PHI_C)
+      ELSEIF( (PHIU < 1d-15) .AND. (PHIC < 1d-15) .AND. (PHID < 1d-15) )THEN 
+      ! if a species Xg is less than machine precision, do not use its chi.
+      ! this will avoid calculating chi = 0 for a vanishing species.
+        Chi4SMART = LARGE_NUMBER
       ELSE
         Chi4SMART = ZERO
       ENDIF
@@ -265,16 +271,18 @@
 !-----------------------------------------------
       DOUBLE PRECISION PHI_C, Chi 
 
-      if((ONE - PHI_C) > small_number)then
+      if(PHI_C < ONE)then
         Chi_MUSCL = Chi /(4.D0 * (ONE - PHI_C))
+      elseif(Chi == zero)then ! insures that all species equations uses the same chi
+        Chi_MUSCL = zero
       else
-        Chi_MUSCL = ONE 
+        Chi_MUSCL = ONE
       endif
 
       RETURN  
       END FUNCTION Chi_MUSCL 
       
-      DOUBLE PRECISION FUNCTION Chi4MUSCL (PHI_C) 
+      DOUBLE PRECISION FUNCTION Chi4MUSCL (PHI_C, PHIU, PHIC, PHID) 
 !	calculate CHI for MUSCL scheme
 !-----------------------------------------------
 !   M o d u l e s 
@@ -285,14 +293,18 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      DOUBLE PRECISION PHI_C 
+      DOUBLE PRECISION PHI_C, PHIU, PHIC, PHID
 
-      IF(PHI_C > ZERO .AND. PHI_C <= (1./4.D0))THEN
+      IF(PHI_C > ZERO .AND. PHI_C <= 0.25d0)THEN
         Chi4MUSCL = 4.D0 * PHI_C
-      ELSEIF(PHI_C > (1./4.D0) .AND. PHI_C <= (3.D0/4.D0))THEN
+      ELSEIF(PHI_C > 0.25d0 .AND. PHI_C <= 0.75d0)THEN
         Chi4MUSCL = ONE
-      ELSEIF(PHI_C > (3./4.) .AND. PHI_C <= ONE)THEN
+      ELSEIF(PHI_C > 0.75d0 .AND. PHI_C <= ONE)THEN
         Chi4MUSCL = 4.D0*(ONE - PHI_C)
+      ELSEIF( (PHIU < 1d-15) .AND. (PHIC < 1d-15) .AND. (PHID < 1d-15) )THEN 
+      ! if a species Xg is less than machine precision, do not use its chi.
+      ! this will avoid calculating chi = 0 for a vanishing species.
+        Chi4MUSCL = LARGE_NUMBER
       ELSE
         Chi4MUSCL = ZERO
       ENDIF

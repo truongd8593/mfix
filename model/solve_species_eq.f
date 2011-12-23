@@ -90,6 +90,7 @@
 !     FOR CALL_DI or CALL_ISAT = .true.
       DOUBLE PRECISION SUM_R_G_temp(DIMENSION_3)
       DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)    
+      DOUBLE PRECISION X_s_temp(DIMENSION_3, DIMENSION_N_s) ! tmp array to pass to set_chi
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -178,6 +179,14 @@
       DO M = 1, SMAX 
 !
          IF (SPECIES_EQ(M)) THEN 
+           if(chi_scheme) then
+             DO LN = 1, NMAX(M)
+	       DO IJK = ijkstart3, ijkend3
+	          X_S_temp(IJK, LN) = X_S(IJK,M,LN)
+               ENDDO
+             ENDDO 
+	     call set_chi(DISCRETIZE(7), X_S_temp, NMAX(M), U_S(1,M), V_S(1,M), W_S(1,M), IER)
+           endif ! for chi_scheme
 !
 !
             DO LN = 1, NMAX(M) 
@@ -245,8 +254,9 @@
 !            call out_array(X_s(1,m,LN), 'X_s')
 !
             END DO 
-         ENDIF 
-      END DO 
+            if(chi_scheme) call unset_chi(IER)
+         ENDIF ! check for any species in phase m
+      END DO ! for m = 1, mmax
 !
 !     CHEM & ISAT begin (nan xie)
 !
