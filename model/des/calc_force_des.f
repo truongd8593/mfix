@@ -76,7 +76,7 @@
 ! local value for particle position
       DOUBLE PRECISION DES_POS_L(DIMN),DES_POS_I(DIMN)
       DOUBLE PRECISION DES_VEL_L(DIMN),DES_VEL_I(DIMN)
-      DOUBLE PRECISION DES_OME_L(DIMN),DES_OME_I(DIMN)
+!      DOUBLE PRECISION DES_OME_L(DIMN),DES_OME_I(DIMN)
       
 ! Run time logic. is set to T when a sliding contact occurs
       LOGICAL PARTICLE_SLIDE  
@@ -134,7 +134,7 @@
 !$omp   private(ll,fts1,fts2,fns1,fns2,ft_tmp,pft_tmp,            &
 !$omp          PARTICLE_SLIDE,nlim,                               &
 !$omp          des_r_l,des_r_i,des_pos_l,des_pos_i,               &
-!$omp          des_vel_l,des_vel_i,des_ome_l,des_ome_i,           &       
+!$omp          des_vel_l,des_vel_i,                               &   !des_ome_l,des_ome_i,    
 !$omp          n_nocon,ni,wallcheck,iw,wallcontact,i,             &
 !$omp          already_neighbours,neigh_l,                        &
 !$omp          w_pos_l,w_vel_l,                                   &
@@ -234,7 +234,7 @@
          DES_R_L=DES_RADIUS(LL)
          DES_POS_L(:)=DES_POS_NEW(LL,:)
          DES_VEL_L(:)=DES_VEL_NEW(LL,:)
-         DES_OME_L(:)=OMEGA_NEW(LL,:)
+!         DES_OME_L(:)=OMEGA_NEW(LL,:)
  
 ! Check particle LL for wall contacts
 !---------------------------------------------------------------------
@@ -529,7 +529,7 @@
          DES_R_I=DES_RADIUS(I)
          DES_POS_I(:)=DES_POS_NEW(I,:)
          DES_VEL_I(:)=DES_VEL_NEW(I,:)
-         DES_OME_I(:)=OMEGA_NEW(I,:)                  
+!         DES_OME_I(:)=OMEGA_NEW(I,:)                  
 !     Tingwen
 !     Did not look into the treatment for peroidic wall
 ! Pradeep particles will be copied for periodic boundaries 
