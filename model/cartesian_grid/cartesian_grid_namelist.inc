@@ -12,7 +12,7 @@
 !
        NAMELIST / CARTESIAN_GRID_INPUT_DATA /&
 
-      CARTESIAN_GRID , N_QUADRIC,USE_STL,USE_POLYGON,N_USR_DEF,&
+      CARTESIAN_GRID , N_QUADRIC,USE_STL,USE_MSH,USE_POLYGON,N_USR_DEF,&
       quadric_form, quadric_scale, &
       lambda_x, lambda_y, lambda_z, dquadric, &
       theta_x, theta_y, theta_z, &
