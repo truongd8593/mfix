@@ -103,3 +103,23 @@ sh ../../../model/make_mfix < ../in > compile.log
 ./mfix.exe > run.log
 echo "Finished on `date`"
 cd ..
+# Another case
+echo
+cd stl
+echo "********************************************************************"
+echo "11. stl"
+echo "Started on `date`"
+sh ../../../model/make_mfix < ../in > compile.log
+./mfix.exe > run.log
+echo "Finished on `date`"
+cd ..
+# Another case
+echo
+cd msh
+echo "********************************************************************"
+echo "12. msh"
+echo "Started on `date`"
+sh ../../../model/make_mfix < ../in > compile.log
+./mfix.exe > run.log
+echo "Finished on `date`"
+cd ..
