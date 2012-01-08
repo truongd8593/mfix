@@ -223,14 +223,14 @@ LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
       RETURN  
  1000 FORMAT(1X,'Message from: CHECK_VEL_BOUND',/& 
             'WARNING: velocity higher than maximum allowed velocity: ', &
-	    G12.5, '(to change this adjust the scale factor MAX_INLET_VEL_FAC)'/&
-	    'in this cell: ','I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
-	    '  ','Epg = ', G12.5, 'Ug = ', G12.5, 'Vg = ', G12.5, 'Wg = ', G12.5)  
+            G12.5, '(to change this adjust the scale factor MAX_INLET_VEL_FAC)'/&
+            'in this cell: ','I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
+            '  ','Epg = ', G12.5, 'Ug = ', G12.5, 'Vg = ', G12.5, 'Wg = ', G12.5)  
  1010 FORMAT(1X,'Message from: CHECK_VEL_BOUND',/& 
             'WARNING: velocity higher than maximum allowed velocity: ', &
-	    G12.5,/&
-	    'in this cell: ','I = ',I4,2X,' J = ',I4,2X,' K = ',I4,' M = ',I4, /&
-	    '  ','Eps = ', G12.5,'Us = ', G12.5, 'Vs = ', G12.5, 'Ws = ', G12.5)
+            G12.5,/&
+            'in this cell: ','I = ',I4,2X,' J = ',I4,2X,' K = ',I4,' M = ',I4, /&
+            '  ','Eps = ', G12.5,'Us = ', G12.5, 'Vs = ', G12.5, 'Ws = ', G12.5)
       END FUNCTION CHECK_VEL_BOUND 
 
 !// Comments on the modifications for DMP version implementation      

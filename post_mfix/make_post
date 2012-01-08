@@ -76,40 +76,57 @@ P4_OPTIMIZE=1
        echo " - Intel Fortran Compiler (IFORT - FCE for 64 bit)"
        echo " - Portland Group Linux Fortran Compiler (pgf90)"
        echo " - PathScale compiler (pathf90)"
+       echo " - gfortran"
        echo -n "Do you want to compile with Intel Compiler? (y/n) [yes] "
        read lnx_compiler
        case $lnx_compiler in
-         y|Y )
-           echo " "
-           echo "Intel Compiler selected"
-           opsys="Linux_64_intel"
-           ;;
-         n|N )
-           echo -n "Do you want to compile with Portland Group Compiler? (y/n) [yes] "
-           read lnx_compiler
-           case $lnx_compiler in
-             n|N )
-               echo " "
-               echo "PathScale Compiler selected"
-               opsys="Linux_64_pscale"
-               ;;
-             y|Y )
-               echo " "
-	       echo "Portland Group Linux Fortran Compiler selected"
-               opsys="Linux_64_pgi"
-	       ;;
-             *)
-               echo " "
-               ;;
-             esac
+            y|Y )
+                 echo " "
+                 echo "Intel Compiler selected"
+                 opsys="Linux_64_intel"
+                 ;;
 
-           ;;
-         *)
-           echo " "
-           echo "Intel Compiler selected"
-           opsys="Linux_64_intel"
-           ;;
+            n|N )
+                 echo -n "Do you want to compile with Portland Group Compiler? (y/n) [yes] "
+                 read lnx_compiler
+                 case $lnx_compiler in
+                      n|N )
+                           echo -n "Do you want to compile with PathScale Compiler? (y/n) [yes] "
+                           read lnx_compiler
+                           case $lnx_compiler in
+                           y|Y )
+                                echo " "
+                                echo "PathScale Compiler selected"
+                                opsys="Linux_64_pscale"
+                                ;;
+                           * )
+                                echo " "
+                                echo "gfortran selected"
+                                opsys="GFORTRAN_compile"
+                                ;;
+                           esac
+                           ;;
+
+                      y|Y )
+                            echo " "
+	                    echo "Portland Group Linux Fortran Compiler selected"
+                            opsys="Linux_64_pgi"
+	                    ;;
+                     *)
+                            echo " "
+                            ;;
+                 esac
+
+                 ;;
+           *)
+               echo " "
+               echo "Intel Compiler selected"
+               opsys="Linux_64_intel"
+               ;;
          esac
+
+
+
          if test $opsys = "Linux_64_pgi"
 	 then
            if [ "$PGI" ]
@@ -150,6 +167,7 @@ P4_OPTIMIZE=1
 
          fi
 
+
       else
 
        echo
@@ -161,7 +179,7 @@ P4_OPTIMIZE=1
        echo "=============================================================="
        echo " [1] Portland Group Linux Fortran Compiler (pgf90)"
        echo " [2] Intel Fortran Compiler version 9.X (ifort) "
-      #echo " [3] Intel Fortran Compiler version 10.X (ifort)"
+       echo " [3] gfortran"
        echo " "
        echo -n "Select the compiler to compile MFIX? [2] "
        read lnx_compiler
@@ -172,10 +190,10 @@ P4_OPTIMIZE=1
            echo "Portland Group Linux Fortran Compiler selected"
            opsys="Linux_pgi"
            ;;
-         33 )
+         3 )
            echo " "
-           echo "Intel Linux Fortran Compiler version 10.X selected"
-           opsys="Linux_ifc10"
+           echo "gfortran"
+           opsys="GFORTRAN_compile"
            ;;
          2 )
            echo " "
@@ -195,6 +213,23 @@ P4_OPTIMIZE=1
 
    
     case $opsys in
+
+        CYGWIN_NT-5.1   | CYGWIN_NT-6.0    | CYGWIN32_NT |    \
+        CYGWIN32_NT-4.0 | GFORTRAN_compile |                  \
+        MINGW32_NT-5.1)
+
+            mach_file="LINUX.F"
+
+            FORTRAN_CMD=gfortran
+            LINK_CMD=gfortran
+                                                                                 
+            OBJ_EXT=o
+            FORTRAN_EXT=f
+            compile_common="-c -I. -I$mpi_include -fconvert='big-endian' -ffree-form -ffree-line-length-0 "
+            compile=" -c -O -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 "
+            link="  "
+            MODULE_CODE=1
+            ;;
 
 	OSF1)
             mach_file="OSF1.F"
@@ -255,6 +290,7 @@ P4_OPTIMIZE=1
  	    MODULE_CODE=1
             ;;
 
+ 
     Linux_64_intel)
             mach_file="LINUX.F"
 
@@ -398,6 +434,8 @@ P4_OPTIMIZE=1
             MODULE_CODE=1
 
             ;;
+
+
 
     Linux_ifc9 | Linux_ifc10 )
 	    

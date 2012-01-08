@@ -248,7 +248,7 @@
 ! IJK value of cell containing particle NP
       INTEGER IJK
 ! Fluid cell indices
-      DOUBLE PRECISION I, IMJK, IJMK, IJKM
+      INTEGER I, IMJK, IJMK, IJKM
 ! Double precision value for 1/3
       DOUBLE PRECISION, PARAMETER  :: THIRD = (1.0d0/3.0d0)
 ! Prandtl Number

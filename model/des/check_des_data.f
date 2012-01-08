@@ -589,14 +589,14 @@
          
          if(dmp_log)write(unit_log,'(5X,A,I5,2X,A,G15.7)') 'MMAX = ', MMAX, &
            ' VOL_DOMAIN = ', VOL_DOMAIN
-         if(dmp_log)write(unit_log,'(5X,A,/7X,(ES15.7,2X,$))') 'D_P0(M) = ', &
+         if(dmp_log)write(unit_log,'(5X,A,/7X,(ES15.7,2X))') 'D_P0(M) = ', &
             D_P0(1:MMAX)
          if(dmp_log)write(unit_log,*)
-         if(dmp_log)write(unit_log,'(5X,A,/7X,(G15.8,2X,$))') &
+         if(dmp_log)write(unit_log,'(5X,A,/7X,(G15.8,2X))') &
             'VOL_FRAC(M) (solids volume fraction of phase M) = ', &
             VOL_FRAC(1:MMAX)
          if(dmp_log)write(unit_log,*)
-         if(dmp_log)write(unit_log,'(5X,A,/7X,(I10,2X,$))') &
+         if(dmp_log)write(unit_log,'(5X,A,/7X,(I10,2X))') &
             'PART_MPHASE(M) (number particles in phase M) = ', &
             PART_MPHASE(1:MMAX)
          if(dmp_log)write(unit_log,*)

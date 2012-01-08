@@ -181,8 +181,8 @@
          I2,' (',A,') not specified',/1X,70('*')/) 
  1001 FORMAT(/1X,70('*')//' From: CHECK_DATA_09',/' Error: ',&
          'Undefined molecular weight for ID: ',I2,/,&
-	 '  Total NMAX may be less than the items in SPECIES_NAME.',&
-	 /1X,70('*')/) 
+         '  Total NMAX may be less than the items in SPECIES_NAME.',&
+         /1X,70('*')/) 
  1010 FORMAT(/1X,70('*')//' From: CHECK_DATA_09',/' Error: ',&
          'Stoichiometry for reaction ',I2,' (',A,')',/1X,&
          'is not consistent with molecular weights',/1X,70('*')/) 

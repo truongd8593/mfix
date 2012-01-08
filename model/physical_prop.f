@@ -240,10 +240,10 @@
 
  1001       FORMAT(1X,'Message from: PHYSICAL_PROP',/& 
             'WARNING: Gas density negative in this cell: ', /&
-	    'I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
-	    'Values of variables: ','RO_g = ', G12.5, 2X, 'P_g = ', G12.5, 2X, 'T_g = ', G12.5, /&
+            'I = ',I4,2X,' J = ',I4,2X,' K = ',I4, /&
+            'Values of variables: ','RO_g = ', G12.5, 2X, 'P_g = ', G12.5, 2X, 'T_g = ', G12.5, /&
             'CUT CELL, SMALL CELL ?', 2(2x,L1), /&
             'East, North, and Top coodinate = ', 3(2x, g17.8), / & 
-	    'Suggestion: Lower UR_FAC(1) in mfix.dat')
+            'Suggestion: Lower UR_FAC(1) in mfix.dat')
 
       END SUBROUTINE PHYSICAL_PROP 
