@@ -2311,46 +2311,73 @@ updatesubdir()
    # if they do not exist
    #--------------------------------
     subrun_dir=$1
-    
-    echo ****
-    echo "Checking for modified user files under " $run_dir/$subrun_dir
-    echo ****  
+    echo "******************************************************"
+    echo "Checking for modified user files under the directory:"
+    echo $run_dir/$subrun_dir
 
-    cd $run_dir/$subrun_dir
-    echo
-    echo "Ignore messages such as \"Cannot access *.f or *.inc\""
-    for i in `ls *.f` 
-    do
+    echo "Ignore messages such as \"Cannot access *.f or *.inc or *.0*\""
+    if [ ! -d "$run_dir/$subrun_dir" ]; then
+	
+	echo "This sub-directory does not exist in this run directory" 
+	echo "So any backed up files from previous compilations will be reverted to as source files for this compilation"
+    else
+	cd $run_dir/$subrun_dir
+	for i in `ls *.f` 
+	  do
   
    # Is there a similar file in Mfix/model directory?
-      if test -r $mfix/$subrun_dir/$i 
-      then
+	  if test -r $mfix/$subrun_dir/$i 
+	      then
       # to make bckup copy "create new name" by add .0f extension, mfix.f-> mfix.0f
-        outfile=`echo $i | sed 's/\./\.0/'`
+	      outfile=`echo $i | sed 's/\./\.0/'`
 	
    # Is there default bckup copy of the file with *.0f extension under Mfix/model/subrun_dir directory?
    #   if not create one (if auto_compile is enabled)
    #   else do nothing
-        if test -r $mfix/$subrun_dir/$outfile
-        then
-          case $auto_compile in
-             y|Y)
-                  chmod u+w $outfile
-                  /bin/cp -f $run_dir/$subrun_dir/$outfile $outfile		  
-                  ;;
-             *)
-                  auto_compile="n"
-                  do_nothing="ok"
-                  ;;
-          esac
+	      if test -r $mfix/$subrun_dir/$outfile
+		  then
+		  case $auto_compile in
+		      y|Y)
+                      chmod u+w $outfile
+                      /bin/cp -f $run_dir/$subrun_dir/$outfile $outfile		  
+		      ;;
+		      *)
+		      auto_compile="n"
+		      do_nothing="ok"
+		      ;;
+                  esac
       
-         else
+		  else
    # Mfix/model directory does not have a default file. create a backup copy with .0f extension
-           /bin/cp -f $mfix/$subrun_dir/$i $mfix/$subrun_dir/$outfile
-         fi 
-       fi
-    done  
-
+		  /bin/cp -f $mfix/$subrun_dir/$i $mfix/$subrun_dir/$outfile
+	      fi 
+	  fi
+	done  
+	
+	for i in `ls *.inc` 
+	  do
+  
+#   Is there a similar file in Mfix/model/sub_directory?
+	  if test -r $mfix/$subrun_dir/$i 
+	      then
+	      outfile=`echo $i | sed 's/\./\.0/'`
+#      Is there default file Mfix/model/sub_directory?
+	      if test -r $mfix/$subrun_dir/$outfile
+		  then
+		  do_nothing="ok"
+      
+	      else
+#        Mfix/model/sub_directory does not have a default file. create one.
+		  /bin/cp -f $mfix/$subrun_dir/$i $mfix/$subrun_dir/$outfile
+	      fi
+       
+	  else
+	      /bin/cp -f $i $mfix/$subrun_dir/ 
+	      echo "Using nonMfix include file: $i in subdirectory: $subrun_dir"
+	  fi
+	done
+	
+    fi #if this subdirectory exists in this run_directory
    #------------------------------- Step 2
    #
    # After generating the backup copy of the original under model/subrun_dir (if it didn't exist) 
@@ -2361,8 +2388,11 @@ updatesubdir()
    # Loop through all *.0* files in mfix/model/$subrun_dir directory
      cd $mfix/$subrun_dir
 
-     echo
-     echo "Files from "$subrun_dir" under run directory used for making Mfix:"
+     if [ -d "$run_dir/$subrun_dir" ]; then
+	 echo
+	 echo "Files from "$subrun_dir" under run directory used for making Mfix:"
+     fi
+
      for i in `ls *.0*`
      do
   
@@ -2394,7 +2424,8 @@ updatesubdir()
    # User does not have the corresponding file
      else
 
-      # The .0f or .0inc file different from the .f or .inc file: copy *.0* file
+      # The .0f or .0inc file different from the .f or .inc file: copy *.0* file so that it is the 
+      # used for compilation
        cmp -s $i $outfile
        if test $? = 0
        then
@@ -2407,34 +2438,27 @@ updatesubdir()
      fi
     done
   echo  
-  
 }    # eof function updatesubdir
 
 #-----------
 #AIKE Check for subdirectories under run directory
+#UPDATED. Now checking for all the subdirectories so that backed up code 
+#from previous compilation is correctly reverted back. 
 #-----------
-  if test -d $run_dir/chem
-  then
-     updatesubdir chem  
-  fi
-  
-  if test -d $run_dir/dqmom
-  then
-     updatesubdir dqmom  
-  fi
-
-  if test -d $run_dir/des
-  then
-     updatesubdir des  
-  fi  
-
-#JFD Check for Cartesian Grid subdirectory under run directory
-  if test -d $run_dir/cartesian_grid
-  then
      updatesubdir cartesian_grid  
-  fi  
+     updatesubdir chem  
+     updatesubdir cohesion 
+     updatesubdir des  
+     updatesubdir des/mpi_donothing
+     updatesubdir dmp_modules
+     updatesubdir dmp_modules/mpi_donothing
+     updatesubdir dqmom 
+     updatesubdir GhdTheory
+     updatesubdir qmomk
+     updatesubdir thermochemical
+     
 
-
+echo "******************************************************"
   cd $mfix
 #
 #------------------------------------------------------------------------
