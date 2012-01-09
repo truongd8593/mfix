@@ -336,7 +336,8 @@
        yt = yi(i)
        yi(i) = yi(k)
        yi(k) = yt
- 2    enddo ! k
+ 2     continue
+      enddo ! k
 
 ! --- Scale components and reinvert yi for reverse FFT ---
       if (dir.lt.0) then
