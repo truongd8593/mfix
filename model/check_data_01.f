@@ -112,6 +112,9 @@
 ! number of solids phases
       SMAX = MMAX
       IF(TRIM(KT_TYPE) == 'GHD') SMAX = MMAX - 1
+      IF(TRIM(KT_TYPE) == 'GHD' .AND. SMAX > 2) THEN
+        IF(DMP_LOG)WRITE (UNIT_LOG, 1504)
+      ENDIF
 
 ! Sof: cannot use both Ahmadi and Simonin models at the same time.
       IF (AHMADI .AND. SIMONIN) &
@@ -152,6 +155,11 @@
             KT_TYPE /= 'GHD') &
             CALL ERROR_ROUTINE ('check_data_01', &
             'The only option for KT_TYPE is IA_NONEP, GD_99 or GHD',1,1)
+         IF(KT_TYPE == 'GHD') THEN
+	   IF(DRAG_TYPE /= 'WEN_YU' .AND. DRAG_TYPE /= 'HYS') &
+	     CALL ERROR_ROUTINE ('check_data_01', &
+            'The only option for DRAG_TYPE with GHD is: wen_yu or HYS',1,1)
+         ENDIF
       ENDIF
 
 ! sof: Check name of radial distribution function
@@ -221,4 +229,7 @@
  1503 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
          'Only schemes 3 and 5 are Chi-scheme enabled for',/&
          'species equations [DISCRETIZE(7)].',/1X,70('*')/) 
+ 1504 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
+         'GHD theory may not be valid for more than two solids phases',/&
+         'it requires further development.',/1X,70('*')/) 
       END SUBROUTINE CHECK_DATA_01 
