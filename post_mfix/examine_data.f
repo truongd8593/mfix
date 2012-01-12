@@ -385,7 +385,7 @@
       
 9     write (*,'(A,$)') ' Write output using user-supplied precision? (T/F) '
 !      read  (*,*) bPrecision
-        READ(*,'(1A60)',ERR=24) STRING
+        READ(*,'(1A60)',ERR=9) STRING
         IF(STRING(1:1) .EQ. '?') THEN
           CALL HELP(9)
           GOTO 9
