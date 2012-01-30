@@ -1,64 +1,81 @@
-Changes from MFIX2007-4 (Date: 12/31/2007) to MFIX2010-1 (Date: 02/02/2010)
-
-Changes in existing features:
------------------------------
-
-   * Bug fixes and enhancements:
-      o Solids inventory reporting problem for parallel runs
-      o Unit conversion from CGS to SI for dimensional quantities.
-      o Print format changes to accommodate processor counts > 100
-   * Enhancements:
-      o Semi-implicit treatment of IA conductivity term
-   * conducted extensive debugging and verification of the DEM code
-   * updated DEM test cases
-   * Updated documents:
-      o Equations document [1]
-      o Readme file [2]
-
+Changes from MFIX2010-1 (Date: 02/02/2010) to MFIX2012-1 (Date: 01/19/2012)
 
 New features added:
 -------------------
 
-   * HYS polydisperse drag model and test case
-      o The Holloway, Yin and Sundaresan (HYS) drag relation accounts for the effect of finite Reynolds 
-        number on the fluid-particle drag experienced by particles in polydisperse suspensions.
-      o The HYS drag model is described in mfix/doc/HYS_drag.pdf.
-   * DEM
-      o Expanded DEM code so particles of differing size and density can be modeled (polydispersity).
-      o Added a second order integration method (Adams Bashforth) to DEM as an option (DES_INTG_METHOD).
-      o Added the Hertzian collision model to DEM as an option (DES_COLL_MODEL).
-      o Created an updated user guide/document for the DEM code that includes a discussion on theory, numerics, and the verification tests [3]
-   * Cartesian Grid cut cell technique
-      o This new capability allows the definition of curved or sloping boundaries, instead of the usual stair-step representation.
-      o Computational cells are truncated at the wall to conform to the shape of the boundaries.
-      o The Cartesian grid technique is available for the Euler-Euler approach and includes no-slip 
-        and free-slip boundary conditions for either gas or solids phases.
-      o A user guide describing the utilization of the cut cell technique is located in mfix/doc/Cartesian_grid_user_guide.pdf [4].
-      o Some tutorials located at mfix/Cartesian_grid_tutorials illustrate the new capability.
-   * Distributed I/O 
-   * Option to compile using gfortran
+* DEM
+  o DMP Parallelization (MPI)
+  o SMP Parallelization (OpenMP)
+  o Mass inlet and outlet boundary conditions
+  o Heat transfer and DES reactive chemistry
+  o Cohesion van der Waals force calculation with/without Rumpf corrections to asperities on surface of particles
+
+* Virtual mass
+  O Virtual mass force acts to increase the inertia of the dispersed phase, which tends to stabilize simulations of bubbly gas-liquid flows
+
+* GHD (Garzo, Hrenya, and Dufty) granular kinetic theory
+  o The GHD model solves mixture momentum and granular energy equations instead of the individual solids phases equations
+
+* Cartesian Grid cut cell technique
+  o Partial slip boundary condition
+  o K-epsilon wall functions
+  o Energy equation
+  o Geometry input from STL file and Gambit msh file (3D)
+  
+* Quadrature method of moments (QMOM)
+  o Solves moment transport equations for the particle phase [1]
 
 
-Under development:
+
+Changes in existing features:
+-----------------------------
+
+* Bug fixes and enhancements:
+  o Gfortran compilation: various format statement and line continuation were modified to accommodate gfortran
+  o Chi scheme
+    - Bug fix: ensure species mass fractions add to one
+    - Enhancement: vanishing species no longer degrade the 2nd order scheme to FOU
+
+* Updated documents:
+  o Readme file [2]
+  o DEM documentation [3]
+  o Cartesian grid documentation [4]
+  o Summary of MFIX equations [5]
+
+
+
+Under Development:
 ------------------
 
-   * GHD (Garzó, Hrenya, and Dufty) granular kinetic theory 
-      o Code was updated with GHD granular kinetic theory and a simple shear flow case was added to tests/GHD to show how this model is used.
-      o The major difference between this theory and previous KT's that it solves mixture momentum and granular 
-        energy equations instead of the individual solids phases equations.
-      o Currently this theory is for granular flows (no fluid) and only simple wall BC can be applied (i.e. no slip, free slip)
-      o The effect of fluid-solid drag was included in the GHD theory.
-   * DEM
-      o Adding inlet/outlet capabilities to DEM
+* MPPIC: Multi-Phase Particle in Cell
+* Application of Cartesian cut-cell technique to DEM
+* Variable solids density
+
+
+
+Project Metrics:
+----------------
+
+* Change from 2010-1 Release:
+  o 50 new files
+  o Nearly 38,000 new lines of code (around 23,000 excluding comments and blank lines)
+
+* 2012-1 Total count:
+  o Files: 519 
+  o Lines: 181092
+  o Blank Lines: 23108
+  o Code Lines: 107651
+  o Comment Lines: 53285
+  o Statements: 80529
 
 
 
 References:
 -----------
+1.https://mfix.netl.doe.gov/documentation/qmomk_doc_2012-1.pdf
+2.https://mfix.netl.doe.gov/documentation/Readme.pdf
+3.https://mfix.netl.doe.gov/documentation/dem_doc_2012-1.pdf
+4.https://mfix.netl.doe.gov/documentation/Cartesian_grid_user_guide.pdf
+5.https://mfix.netl.doe.gov/documentation/MfixEquations2012-1.pdf
 
-1. S. Benyahia, M. Syamlal, T.J. O'Brien, "Summary of MFIX Equations", 
-   From URL https://mfix.netl.doe.gov/documentation/MfixEquations2005-4-4.pdf, August 2009. 
-2. https://mfix.netl.doe.gov/documentation/Readme.pdf 
-3. https://mfix.netl.doe.gov/documentation/dem_doc_2010.pdf
-4. http://mfix.netl.doe.gov/documentation/Cartesian_grid_user_guide.pdf 
 
