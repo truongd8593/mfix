@@ -262,7 +262,7 @@
          REWIND (UNIT=UNIT_TMP) 
 !     READ (UNIT_TMP,NML=INPUT_DATA,ERR=930,END=930)  ! Use this for FPS
          READ (UNIT_TMP, NML=INPUT_DATA, ERR=400, END=930) 
-         GO TO 430 
+         GO TO 440 
  400     CONTINUE 
          IF (POST == 1) GO TO 410 
          REWIND (UNIT=UNIT_TMP) !If called from POST_MFIX ignore the error 
@@ -271,7 +271,7 @@
          WRITE (UNIT_TMP, 1200) 
          REWIND (UNIT=UNIT_TMP) 
          READ (UNIT_TMP, NML=DES_INPUT_DATA, ERR=410, END=930) 
-         GO TO 430 
+         GO TO 440 
  410     CONTINUE 
          IF (POST == 1) GO TO 420 
          REWIND (UNIT=UNIT_TMP) !If called from POST_MFIX ignore the error 
@@ -280,7 +280,7 @@
          WRITE (UNIT_TMP, 1200) 
          REWIND (UNIT=UNIT_TMP) 
          READ (UNIT_TMP, NML=USR_INPUT_DATA, ERR=420, END=930) 
-         goto 430
+         GO TO 440
  420     CONTINUE 
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -291,11 +291,21 @@
          WRITE (UNIT_TMP, 1100) LINE_STRING(1:LINE_LEN) 
          WRITE (UNIT_TMP, 1200) 
          REWIND (UNIT=UNIT_TMP) 
-         READ (UNIT_TMP, NML=CARTESIAN_GRID_INPUT_DATA, ERR=930, END=930)  
+         READ (UNIT_TMP, NML=CARTESIAN_GRID_INPUT_DATA, ERR=430, END=930) 
+         GO TO 440 
  430     CONTINUE 
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
+! QMOMK - Alberto Passalacqua
+         IF (POST == 1) GO TO 440 
+         REWIND (UNIT=UNIT_TMP) !If called from POST_MFIX ignore the error 
+         WRITE (UNIT_TMP, 1040) 
+         WRITE (UNIT_TMP, 1100) LINE_STRING(1:LINE_LEN) 
+         WRITE (UNIT_TMP, 1200) 
+         REWIND (UNIT=UNIT_TMP) 
+         READ (UNIT_TMP, NML=QMOMK_INPUT_DATA, ERR=930, END=930)  
+ 440     CONTINUE 
          CLOSE(UNIT=UNIT_TMP) 
       ENDIF 
      
