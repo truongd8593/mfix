@@ -104,10 +104,8 @@
   QMOMK = .TRUE.
   QMOMK_COLLISIONS = 'Boltzmann'
   QMOMK_COUPLED = .TRUE.
-  QMOMK_FLUXES_ORDER = 1
   QMOMK_COLLISIONS_ORDER = 1
   QMOMK_CFL = 0.1
-  QMOMK_COLL_FLUXES = .FALSE.
 
 !  Output Control                                                               
   OUT_DT                = 10.                           
