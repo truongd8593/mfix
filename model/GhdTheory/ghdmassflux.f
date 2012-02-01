@@ -459,12 +459,15 @@
 !     species density at cell faces
       DOUBLE PRECISION ropsE, ropsN, ropsT,ropsmmE,ropsmmN,ropsmmT,niE,niN,niT
       DOUBLE PRECISION EPSA1,EPSA2,fluxpred
-      DOUBLE PRECISION EPSw, EPSe, EPSn, EPSs, EPSt, EPSb, Njc, njn,tmpdragc, tmpdragn, NjE, tmpdrage, NjT,tmpdragt
-      DOUBLE PRECISION tmpVel, counter,Mi,Ni,Mj,Nj,tmpdragx,tmpdragy,DIJFE,DIJFN,prefactorx,prefactory,tmpdragz,prefactorz,DIJFT
+      DOUBLE PRECISION EPSw, EPSe, EPSn, EPSs, EPSt, EPSb, Njc, njn,tmpdragc, &
+                       tmpdragn, NjE, tmpdrage, NjT,tmpdragt
+      DOUBLE PRECISION tmpVel, counter,Mi,Ni,Mj,Nj,tmpdragx,tmpdragy,DIJFE,DIJFN,&
+                       prefactorx,prefactory,tmpdragz,prefactorz,DIJFT
       integer ntrial, s, kk
       double precision tolx, tolf, epgN, rogN, mugN, Vg, Ur(smax), &
-		       vrelSq(smax), rosN(smax), dp(smax), DijN(smax,smax), JoiM(smax),beta_cell(smax),beta_ij_cell(smax,smax), &
-                       vel,velup(smax), DijN_H(smax,smax),DijN_A(smax,smax),U_sum,V_sum,tmpvelmix
+		       vrelSq(smax), rosN(smax), dp(smax), DijN(smax,smax), JoiM(smax),&
+		       beta_cell(smax),beta_ij_cell(smax,smax), vel,velup(smax), &
+                       DijN_H(smax,smax),DijN_A(smax,smax),U_sum,V_sum,tmpvelmix
 
 
 !
@@ -510,6 +513,16 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
             IF(.NOT.IP_AT_E(IJK) .OR. .NOT.SIP_AT_E(IJK)) THEN
+	      IF(RO_g0 == ZERO) THEN ! special case of a granular flow
+	       do s = 1, smax
+	        rosN(s) = AVG_X(ROP_S(IJK,s),ROP_S(IJKE,s),I)/ RO_S(s) ! this is ep_s
+		if(rosN(s) > zero_ep_s) then
+		   u_s(ijk,s) = u_s(ijk,mmax) + JoiX(IJK,s)/(rosN(s)*ro_s(s))
+	        else
+		   u_s(ijk,s) = u_s(ijk,mmax) ! case of zero flux
+		endif
+	       enddo 
+	      ELSE
 		 Vg   = U_g(ijk) - u_s(ijk,mmax)
 		 epgN = AVG_X(EP_g(IJK),EP_g(IJKE),I) 
 		 rogN = AVG_X(ROP_g(IJK),ROP_g(IJKE),I)
@@ -564,6 +577,7 @@
 		      JoiX(IJK,s) = rosN(s) * (u_s(ijk,s)-u_s(ijk,mmax))
                    ENDIF
 	         enddo
+	      ENDIF ! for a granular case (no gas and no drag)
             ENDIF
             if(smax==2) then ! only for binary, how to implement for smax > 2?
 	      JoiX(IJK,2)=-JoiX(IJK,1) 
@@ -573,6 +587,16 @@
 !!!!!      Now Compute Vs        
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             IF (.NOT.IP_AT_N(IJK) .OR. .NOT.SIP_AT_N(IJK)) THEN 
+	      IF(RO_g0 == ZERO) THEN ! special case of a granular flow
+	       do s = 1, smax
+	        rosN(s) = AVG_Y(ROP_S(IJK,s),ROP_S(IJKN,s),J)/ RO_S(s) ! this is ep_s
+		if(rosN(s) > zero_ep_s) then
+	          v_s(ijk,s) = v_s(ijk,mmax) + JoiY(IJK,s)/(rosN(s)*ro_s(s))
+	        else
+		   v_s(ijk,s) = v_s(ijk,mmax) ! case of zero flux
+		endif
+	       enddo 
+	      ELSE
 		 Vg   = V_g(ijk) - v_s(ijk,mmax)
 		 epgN = AVG_Y(EP_g(IJK),EP_g(IJKN),J)
 		 rogN = AVG_Y(ROP_g(IJK),ROP_g(IJKN),J)
@@ -628,6 +652,7 @@
 		      JoiY(IJK,s) = rosN(s) * (v_s(ijk,s)-v_s(ijk,mmax))
                    ENDIF
 	         enddo
+	      ENDIF ! for a granular case (no gas and no drag)
             ENDIF
             if(smax==2) then ! only for binary, how to implement for smax > 2?
               JoiY(IJK,2)=-JoiY(IJK,1)
@@ -637,6 +662,16 @@
 !!!!!      Finaly Compute Ws        
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	    IF(.NOT.NO_K .AND. (.NOT.IP_AT_T(IJK) .OR. .NOT.SIP_AT_T(IJK))) THEN
+	      IF(RO_g0 == ZERO) THEN ! special case of a granular flow
+	       do s = 1, smax
+	        rosN(s) = AVG_Z(ROP_S(IJK,s),ROP_S(IJKT,s),K)/ RO_S(s) ! this is ep_s
+		if(rosN(s) > zero_ep_s) then
+	           w_s(ijk,s) = w_s(ijk,mmax) + JoiZ(IJK,s)/(rosN(s)*ro_s(s))
+	        else
+		   w_s(ijk,s) = w_s(ijk,mmax) ! case of zero flux
+		endif
+	       enddo 
+	      ELSE
 		 Vg   = W_g(ijk) - W_s(ijk,mmax)
 		 epgN = AVG_Z(EP_g(IJK),EP_g(IJKT),K)
 		 rogN = AVG_Z(ROP_g(IJK),ROP_g(IJKT),K)
@@ -692,6 +727,7 @@
 		      JoiZ(IJK,s) = rosN(s) * (w_s(ijk,s)-w_s(ijk,mmax))
                    ENDIF
 	         enddo
+	      ENDIF ! for a granular case (no gas and no drag)
             ENDIF
             if(smax==2) then ! only for binary, how to implement for smax > 2?
               JoiZ(IJK,2)=-JoiZ(IJK,1)
