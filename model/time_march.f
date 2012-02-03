@@ -336,7 +336,7 @@
       IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN 
          IF(WRITE_VTK_FILES) THEN
 ! rahul: in order to write vtk files for cut-cell
-            CALL WRITE_VTK_FILE
+            CALL WRITE_VTU_FILE
          ENDIF 
          CALL DES_TIME_MARCH
          call CPU_TIME(CPU_STOP)
@@ -558,10 +558,10 @@
 ! Write vtk file, if needed
       IF(WRITE_VTK_FILES) THEN
          IF (DT == UNDEFINED) THEN 
-            IF (FINISH) CALL WRITE_VTK_FILE
+            IF (FINISH) CALL WRITE_VTU_FILE
          ELSEIF (VTK_TIME/=UNDEFINED .AND. TIME+0.1d0*DT>=VTK_TIME) THEN
             VTK_TIME = (INT((TIME + 0.1d0*DT)/VTK_DT)+1)*VTK_DT 
-            CALL WRITE_VTK_FILE
+            CALL WRITE_VTU_FILE
          ENDIF 
       ENDIF
 

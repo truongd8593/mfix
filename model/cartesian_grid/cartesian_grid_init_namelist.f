@@ -147,6 +147,8 @@
 
       FRAME = -1
 
+      VTU_DIR = '.'
+
       PG_OPTION = 0
 
       CG_SAFE_MODE = 0

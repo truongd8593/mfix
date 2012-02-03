@@ -1,5 +1,1098 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
+!  Module name: WRITE_VTU_FILE                                         C
+!  Purpose: Writes the cut cell grid in VTK format (Unstructured VTU)  C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE WRITE_VTU_FILE
+    
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices  
+      USE compar
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE fldvar
+      USE visc_s
+      USE physprop
+      USE pgcor
+      USE vtk
+      USE rxns      
+      USE output
+      USE scalars
+
+      USE mpi_utility     
+      USE parallel_mpi
+
+
+      USE pgcor
+      USE pscor
+      USE discretelement, Only : DES_CELLWISE_BCDATA, DISCRETE_ELEMENT
+      USE mfix_pic
+
+      IMPLICIT NONE
+      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
+      INTEGER :: I,J,K,L,M,N,IM,JM,KM,IP,JP,KP,IJK
+      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
+
+      INTEGER sw,se,ne,nw
+      INTEGER, DIMENSION(10) :: additional_node
+      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  X_OF
+      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Y_OF
+      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Z_OF
+      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_E_ADD_NODE
+      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_N_ADD_NODE
+      INTEGER :: SPECIES_COUNTER,LT
+
+      CHARACTER (LEN=32) :: SUBM,SUBN
+      CHARACTER (LEN=64) :: VAR_NAME
+
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC
+
+      include "function.inc"
+
+      IF(.NOT.CARTESIAN_GRID) RETURN
+
+      DX(IEND3+1) = DX(IEND3)
+      DY(JEND3+1) = DY(JEND3)
+      DZ(KEND3+1) = DZ(KEND3)
+
+!     Location of U-momentum cells for original (uncut grid)
+      IF (DO_I) THEN 
+        XG_E(1) = ZERO
+        DO I = IMIN1, IMAX2 
+           XG_E(I) = XG_E(I-1) + DX(I) 
+        END DO 
+      ENDIF
+
+!     Location of V-momentum cells for original (uncut grid)
+      IF (DO_J) THEN 
+        YG_N(1) = ZERO
+        DO J = JMIN1, JMAX2 
+           YG_N(J) = YG_N(J-1) + DY(J) 
+        END DO 
+      ENDIF
+
+!     Location of W-momentum cells for original (uncut grid)
+      IF (DO_K) THEN 
+        ZG_T(1) = ZERO
+        DO K = KMIN1, KMAX2 
+           ZG_T(K) = ZG_T(K-1) + DZ(K) 
+        END DO 
+      ELSE
+         ZG_T = ZERO
+      ENDIF
+
+      CALL OPEN_VTU_FILE
+      CALL OPEN_PVD_FILE
+
+      CALL WRITE_GEOMETRY_IN_VTU
+
+      DO L = 1, DIM_VTK_VAR
+
+         SELECT CASE (VTK_VAR(L))
+           
+            CASE (1)
+               CALL WRITE_SCALAR_IN_VTU('EP_G',EP_G)
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+             
+            CASE (2)
+               CALL WRITE_SCALAR_IN_VTU('P_G',P_G)
+               CALL WRITE_SCALAR_IN_VTU('P_S',P_S)
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+
+            CASE (3)
+               CALL WRITE_VECTOR_IN_VTU('Gas_Velocity',U_G,V_G,W_G)
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+            
+            CASE (4)
+               DO M = 1,MMAX
+                  WRITE(SUBM,*)M
+                  CALL WRITE_VECTOR_IN_VTU('Solids_Velocity_'//ADJUSTL(SUBM),U_S(:,M),V_S(:,M),W_S(:,M))
+               END DO
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+            
+            CASE (5)
+               DO M = 1,MMAX
+                  WRITE(SUBM,*)M
+                  CALL WRITE_SCALAR_IN_VTU('Solids_density_'//ADJUSTL(SUBM),ROP_S(:,M))
+               END DO
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+            
+            CASE (6)
+               CALL WRITE_SCALAR_IN_VTU('Gas_temperature',T_g)
+               DO M = 1,MMAX
+                  WRITE(SUBM,*)M
+                  CALL WRITE_SCALAR_IN_VTU('Solids_temperature_'//ADJUSTL(SUBM),T_S(:,M))
+               END DO
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+            
+            CASE (7)
+               SPECIES_COUNTER = 0
+               DO N = 1,NMAX(0)
+                  WRITE(SUBN,*)N
+                  SPECIES_COUNTER = SPECIES_COUNTER + 1
+                  VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
+                  LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
+                  VAR_NAME = VAR_NAME(1:LT)//'_Gas_mass_fractions_'//ADJUSTL(SUBN)
+                  CALL WRITE_SCALAR_IN_VTU(VAR_NAME,X_g(:,N))
+               END DO
+
+               DO M = 1, MMAX 
+                  WRITE(SUBM,*)M
+                  DO N = 1,NMAX(M)
+                     WRITE(SUBN,*)N
+                     SPECIES_COUNTER = SPECIES_COUNTER + 1
+                     VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
+                     LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
+                     VAR_NAME = VAR_NAME(1:LT)//'_Solids_mass_fractions_'//TRIM(ADJUSTL(SUBM))//'_'//ADJUSTL(SUBN)
+                  CALL WRITE_SCALAR_IN_VTU(VAR_NAME,X_g(:,N))
+                  END DO
+               END DO  
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+            
+            CASE (8)
+               DO M = 1,MMAX
+                  WRITE(SUBM,*)M
+                  CALL WRITE_SCALAR_IN_VTU('Granular_temperature_'//ADJUSTL(SUBM),Theta_m(:,M))
+               END DO
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+            
+            CASE (9)
+               SPECIES_COUNTER = 0
+               DO N = 1,NSCALAR
+                  WRITE(SUBN,*)N
+                  SPECIES_COUNTER = SPECIES_COUNTER + 1
+                  VAR_NAME = 'Scalar_'//ADJUSTL(SUBN)
+                  CALL WRITE_SCALAR_IN_VTU(VAR_NAME,Scalar(:,N))
+               END DO
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+
+            CASE (11)
+               IF(K_EPSILON) THEN
+                  CALL WRITE_SCALAR_IN_VTU('K_Turb_G',K_Turb_G)                
+                  CALL WRITE_SCALAR_IN_VTU('E_Turb_G',E_Turb_G)                                
+                  IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               ENDIF
+
+            CASE (12)
+               CALL CALC_VORTICITY
+
+               CALL WRITE_SCALAR_IN_VTU('VORTICITY_MAG',VORTICITY)                
+               CALL WRITE_SCALAR_IN_VTU('LAMBDA_2',LAMBDA2)                
+             
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+            
+            CASE (100)
+               IF(DISCRETE_ELEMENT.AND.MPPIC) THEN
+                  ALLOCATE( COUNT_DES_BC(DIMENSION_3))
+                  DO IJK = IJKSTART3, IJKEND3
+                     COUNT_DES_BC (IJK) = 0.d0
+                     COUNT_DES_BC (IJK) = DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC
+                  ENDDO
+                  CALL WRITE_SCALAR_IN_VTU('COUNT_BC',COUNT_DES_BC)
+                  DEALLOCATE(COUNT_DES_BC)
+               ELSE
+                  CALL WRITE_SCALAR_IN_VTU('PARTITION',PARTITION)
+               ENDIF
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+            CASE (101)
+       
+               Allocate(DP_BC_ID(DIMENSION_3))
+               DP_BC_ID = DFLOAT(BC_ID)
+               CALL WRITE_SCALAR_IN_VTU('BC_ID',DP_BC_ID)
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               DeAllocate(DP_BC_ID)
+
+            CASE (0) ! do nothing
+
+            CASE (UNDEFINED_I) ! do nothing
+
+            CASE DEFAULT
+
+               WRITE(*,30) ' Unknown VTK variable flag ',L,':',VTK_VAR(L)
+               WRITE(*,30) ' Available flags are : '
+               WRITE(*,30) ' 1 : Void fraction (EP_g)'
+               WRITE(*,30) ' 2 : Gas pressure, solids pressure (P_g, P_star)'
+               WRITE(*,30) ' 3 : Gas velocity (U_g, V_g, W_g)'
+               WRITE(*,30) ' 4 : Solids velocity (U_s, V_s, W_s)'
+               WRITE(*,30) ' 5 : Solids density (ROP_s)'
+               WRITE(*,30) ' 6 : Gas and solids temperature (T_g, T_s1, T_s2)'
+               WRITE(*,30) ' 7 : Gas and solids mass fractions (X_g, X-s)'
+               WRITE(*,30) ' 8 : Granular temperature (G)'
+               write(*,30) ' 9 : User defined scalars'
+!               write(*,30) '10 : Reaction Rates'
+               write(*,30) '11 : Turbulence quantities (k and ε)'
+               write(*,30) '12 : Gas Vorticity magnitude and Lambda_2 (VORTICITY, LAMBDA_2)'
+               write(*,30) '100: Processor assigned to scalar cell (Partition)'
+               write(*,30) '101: Boundary condition flag for scalar cell (BC_ID)'
+               write(*,30) 'MFiX will exit now.'
+               CALL MFIX_EXIT(myPE) 
+
+            END SELECT
+
+      END DO
+
+!      print*,'calling CLOSE_VTU_FILE from myPE=',myPE
+      CALL CLOSE_VTU_FILE
+      CALL UPDATE_AND_CLOSE_PVD_FILE
+
+      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+
+      IF (myPE == PE_IO.AND.TIME_DEPENDENT_FILENAME) THEN
+         OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
+         WRITE(VTU_FRAME_UNIT,*)FRAME
+         CLOSE(VTU_FRAME_UNIT)
+      ENDIF
+
+
+     IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,20)' DONE.'
+
+10    FORMAT(A,$)
+20    FORMAT(A,1X/)
+30    FORMAT(1X,A)    
+      RETURN
+      
+      END SUBROUTINE WRITE_VTU_FILE
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: OPEN_VTU_FILE                                          C
+!  Purpose: Open a vtu file and writes the header                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE OPEN_VTU_FILE
+    
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices  
+      USE compar
+      USE sendrecv
+      USE output
+      USE quadric
+      USE cutcell
+      USE fldvar
+      USE vtk
+      use cdist
+
+     
+      IMPLICIT NONE
+      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
+      INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
+      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
+      LOGICAL :: VTU_FRAME_FILE_EXISTS
+      INTEGER :: ISTAT 
+
+      include "function.inc"
+
+
+!      print*,'Entering Open_vtu_file from myPE=',MyPE, (myPE /= PE_IO.AND.(.NOT.BDIST_IO))
+
+      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN 
+
+
+      IF(TIME_DEPENDENT_FILENAME) THEN
+         INQUIRE(FILE=VTU_FRAME_FILENAME,EXIST=VTU_FRAME_FILE_EXISTS)
+         IF(VTU_FRAME_FILE_EXISTS) THEN
+            OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
+            READ(VTU_FRAME_UNIT,*)FRAME
+            CLOSE(VTU_FRAME_UNIT)
+         ENDIF
+         IF(RESET_FRAME_AT_TIME_ZERO.AND.TIME==ZERO) FRAME=-1
+         FRAME = FRAME + 1 
+      ENDIF
+
+
+
+! Define file name
+      IF (BDIST_IO) THEN 
+         IF(TIME_DEPENDENT_FILENAME) THEN
+            WRITE(VTU_FILENAME,20) TRIM(RUN_NAME),FRAME,MYPE
+         ELSE
+            WRITE(VTU_FILENAME,25) TRIM(RUN_NAME),MYPE
+         ENDIF
+      ELSE 
+         IF(MYPE.EQ.PE_IO) THEN 
+            IF(TIME_DEPENDENT_FILENAME) THEN
+               WRITE(VTU_FILENAME,30) TRIM(RUN_NAME),FRAME
+            ELSE
+               WRITE(VTU_FILENAME,35) TRIM(RUN_NAME)
+            ENDIF
+         END IF  
+      END IF 
+
+
+      IF(TRIM(VTU_DIR)/='.') VTU_FILENAME='./'//TRIM(VTU_DIR)//'/'//VTU_FILENAME
+
+!      print*,'From Open_vtu_file:',MyPE,BDIST_IO, TRIM(VTU_FILENAME)
+
+      IF (FULL_LOG) THEN
+         WRITE(*,10)' WRITING VTU FILE : ', TRIM(VTU_FILENAME),' .'
+      ENDIF
+
+
+      OPEN(UNIT = VTU_UNIT, FILE = TRIM(VTU_FILENAME),IOSTAT=ISTAT)
+
+      IF (ISTAT /= 0) THEN
+         IF(DMP_LOG) WRITE(UNIT_LOG, 1001) VTU_FILENAME, VTU_UNIT,VTU_DIR
+         IF(FULL_LOG.AND.myPE == PE_IO) WRITE(*, 1001) VTU_FILENAME, VTU_UNIT,VTU_DIR
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+
+ 1001 FORMAT(/1X,70('*')//, ' From: OPEN_VTU_FILE',/,' Message: ',          &
+         'Error opening vtu file. Terminating run.',/10X,          &
+         'File name:  ',A,/10X,                                         &
+         'DES_UNIT :  ',i4, /10X,                                       &
+         'PLEASE VERIFY THAT VTU_DIR EXISTS: ', A, &
+         /1X,70('*')/)
+
+
+      WRITE(VTU_UNIT,100) '<?xml version="1.0"?>'
+      WRITE(VTU_UNIT,110) '<!-- Time =',TIME,' sec. -->'
+      WRITE(VTU_UNIT,120) '<VTKFile type="UnstructuredGrid"',&
+               ' version="0.1" byte_order="LittleEndian">'
+
+      WRITE(VTU_UNIT,100) '  <UnstructuredGrid>'
+
+
+
+
+      IF (myPE == PE_IO.AND.BDIST_IO) THEN    ! Open .pvtu file that combines all *.vtu files for a given FRAME
+
+         IF(TIME_DEPENDENT_FILENAME) THEN
+            WRITE(PVTU_FILENAME,40) TRIM(RUN_NAME),FRAME
+         ELSE
+            WRITE(PVTU_FILENAME,45) TRIM(RUN_NAME)
+         ENDIF
+
+         IF(TRIM(VTU_DIR)/='.') PVTU_FILENAME='./'//TRIM(VTU_DIR)//'/'//PVTU_FILENAME
+
+         OPEN(UNIT = PVTU_UNIT, FILE = TRIM(PVTU_FILENAME))
+
+         WRITE(PVTU_UNIT,100) '<?xml version="1.0"?>'
+         WRITE(PVTU_UNIT,110) '<!-- Time =',TIME,' sec. -->'
+         WRITE(PVTU_UNIT,120) '<VTKFile type="PUnstructuredGrid"',&
+                  ' version="0.1" byte_order="LittleEndian">'
+
+         WRITE(PVTU_UNIT,100) '  <PUnstructuredGrid GhostLevel="0">'
+         WRITE(PVTU_UNIT,100) '      <PPoints>'
+         WRITE(PVTU_UNIT,100) '        <PDataArray type="Float32" NumberOfComponents="3" format="ascii"/>'
+         WRITE(PVTU_UNIT,100) '      </PPoints>'
+         WRITE(PVTU_UNIT,100) ''
+         WRITE(PVTU_UNIT,100) '      <PCellData Scalars="scalars">'
+
+
+      ENDIF
+
+
+
+
+
+
+
+
+
+!      print*,'leaving OPEN_VTU_FILE from myPE,VTU_UNIT=',myPE,VTU_UNIT
+
+
+100   FORMAT(A)
+110   FORMAT(A,E14.8,A)
+120   FORMAT(A,A)
+10    FORMAT(/1X,3A,$)
+20    FORMAT(A,"_",I4.4,"_",I5.5,".vtu")
+25    FORMAT(A,"_",I5.5,".vtu")
+30    FORMAT(A,"_",I4.4,".vtu")
+35    FORMAT(A,".vtu")
+40    FORMAT(A,"_",I4.4,".pvtu")
+45    FORMAT(A,".pvtu")
+
+      RETURN
+
+      END SUBROUTINE OPEN_VTU_FILE
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: OPEN_PVD_FILE                                          C
+!  Purpose: Open a PVD file and writes the header                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE OPEN_PVD_FILE
+    
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices  
+      USE compar
+      USE sendrecv
+      USE output
+      USE quadric
+      USE cutcell
+      USE fldvar
+      USE vtk
+
+     
+      IMPLICIT NONE
+      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
+      INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
+      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
+      LOGICAL :: PVD_EXISTS,VTU_FRAME_FILE_EXISTS
+
+      include "function.inc"
+
+      IF (myPE /= PE_IO) RETURN 
+
+
+      PVD_FILENAME = TRIM(RUN_NAME) // '.pvd'
+
+
+! First, check if the file already exists.
+
+      INQUIRE(FILE=PVD_FILENAME,EXIST=PVD_EXISTS)
+
+! The first time this subroutine is executed, properly initialize the pvd file
+
+      IF(.NOT.PVD_FILE_INITIALIZED) THEN
+
+         IF(RUN_TYPE == 'NEW')THEN
+            ! For a new run, the pvd file should not exist, and is created with appropriate header
+            IF (.NOT.PVD_EXISTS) THEN
+               OPEN(UNIT = PVD_UNIT, FILE = TRIM(PVD_FILENAME))
+               WRITE(PVD_UNIT,100) '<?xml version="1.0"?>'
+               WRITE(PVD_UNIT,100) '<VTKFile type="Collection" version="0.1" byte_order="LittleEndian">'
+               WRITE(PVD_UNIT,100) '<Collection>'
+!               CALL UPDATE_AND_CLOSE_PVD_FILE
+               PVD_FILE_INITIALIZED=.TRUE.
+            ELSE ! If the pvd file exists, print error message and exits
+               WRITE(*,1002) TRIM(PVD_FILENAME)
+               WRITE(UNIT_LOG, 1002) TRIM(PVD_FILENAME)
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ELSE
+            ! For a restart run, the pvd file must exist
+            IF (.NOT.PVD_EXISTS) THEN
+               ! If the pvd file does not exist, print error message and exits
+               WRITE(*,1003) TRIM(PVD_FILENAME)
+               WRITE(UNIT_LOG, 1003) TRIM(PVD_FILENAME)
+               CALL MFIX_EXIT(myPE)
+            ELSE 
+           ! If it already exists, go to the bottom of the file and prepare to append data (remove last two lines)
+               OPEN(UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
+               BACKSPACE(PVD_UNIT)
+               BACKSPACE(PVD_UNIT)
+               PVD_FILE_INITIALIZED=.TRUE.
+            ENDIF
+         ENDIF
+      ELSE ! When properly initialized, open the file and go to the bottom of the file and prepare to append data (remove last two lines)
+         OPEN(UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
+         BACKSPACE(PVD_UNIT)
+         BACKSPACE(PVD_UNIT)
+      ENDIF
+
+
+100   FORMAT(A)
+
+1002  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
+         A,' already exists in the run directory.',/10X,               &
+           'This is not allowed for a new run.',/10X,                   &
+         'Terminating run.',/1X,70('*')/)
+
+1003  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
+         A,' is missing from the  the run directory,',/10X,            &
+           ' and must be present for a restart run.',/10X,              &
+         'Terminating run.',/1X,70('*')/)
+
+1004  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
+         ' Current VTU frame is ',I,/10X,                              &
+         ' (from ',A,').',/1X,70('*')/)
+
+1005  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
+         ' Current VTU frame is ',I,/10X,                              &
+           ' (from mfix.dat).',/1X,70('*')/)
+
+
+
+      RETURN
+
+      END SUBROUTINE OPEN_PVD_FILE
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: WRITE_GEOMETRY_IN_VTU                                  C
+!  Purpose: Write Geometry and connectivity in a vtu file              C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE WRITE_GEOMETRY_IN_VTU
+    
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices  
+      USE compar
+      USE mpi_utility 
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE fldvar
+      USE vtk
+      USE cdist
+
+     
+      IMPLICIT NONE
+
+      INTEGER :: IJK,I,J,K,L
+      INTEGER :: IJK_OFFSET,OFFSET
+
+      INTEGER :: iproc,IERR
+      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
+      INTEGER :: CELL_TYPE
+
+      include "function.inc"
+
+      IF (myPE == PE_IO.AND.(.NOT.BDIST_IO)) THEN
+
+         NUMBER_OF_VTK_CELLS = NUMBER_OF_CELLS - NUMBER_OF_BLOCKED_CELLS
+
+         WRITE(VTU_UNIT,100) '    <Piece NumberOfPoints="',NUMBER_OF_POINTS,'" NumberOfCells="',NUMBER_OF_VTK_CELLS,'" >'
+         WRITE(VTU_UNIT,110) '      <Points>'
+         WRITE(VTU_UNIT,110) '        <DataArray type="Float32" NumberOfComponents="3" format="ascii">'
+
+         DO IJK = 1,IJKMAX3
+            WRITE(VTU_UNIT,120)XG_E(GLOBAL_I_OF(IJK)),YG_N(GLOBAL_J_OF(IJK)),ZG_T(GLOBAL_K_OF(IJK))
+         ENDDO
+         DO IJK = 1,GLOBAL_NUMBER_OF_NEW_POINTS
+            WRITE(VTU_UNIT,120)GLOBAL_X_NEW_POINT(IJK),GLOBAL_Y_NEW_POINT(IJK),GLOBAL_Z_NEW_POINT(IJK)
+         ENDDO
+
+         WRITE(VTU_UNIT,110) '        </DataArray>'
+         WRITE(VTU_UNIT,110) ''
+         WRITE(VTU_UNIT,110) '      </Points>'
+         WRITE(VTU_UNIT,110) ''
+         WRITE(VTU_UNIT,110) '      <Cells>'
+         WRITE(VTU_UNIT,110) '        <DataArray type="Int32" Name="connectivity" format="ascii">'
+
+         DO IJK = 1,IJKMAX3
+            IF (GLOBAL_INTERIOR_CELL_AT(IJK))      THEN
+               IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK)) WRITE(VTU_UNIT,130) (GLOBAL_CONNECTIVITY(IJK,L)-1,L=1,GLOBAL_NUMBER_OF_NODES(IJK))
+            ENDIF
+         END DO
+
+         WRITE(VTU_UNIT,110) '        </DataArray>'
+         WRITE(VTU_UNIT,110) ''
+         WRITE(VTU_UNIT,110) '        <DataArray type="Int32" Name="offsets" format="ascii">'
+
+         OFFSET = 0
+         DO IJK = 1,IJKMAX3
+            IF (GLOBAL_INTERIOR_CELL_AT(IJK))      THEN
+               IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK)) THEN
+                  OFFSET = OFFSET + GLOBAL_NUMBER_OF_NODES(IJK)
+                  WRITE(VTU_UNIT,140) OFFSET
+               ENDIF
+            ENDIF
+         END DO
+
+         WRITE(VTU_UNIT,110) '        </DataArray>'
+         WRITE(VTU_UNIT,110) ''
+         WRITE(VTU_UNIT,110) '        <DataArray type="UInt8" Name="types" format="ascii">'
+
+         IF(NO_K) THEN
+            CELL_TYPE = 7
+         ELSE
+            CELL_TYPE = 41
+         ENDIF
+
+         DO IJK = 1,IJKMAX3
+            IF (GLOBAL_INTERIOR_CELL_AT(IJK))  WRITE(VTU_UNIT,140) CELL_TYPE
+         END DO
+     
+
+      ELSEIF(BDIST_IO) THEN
+
+         NUMBER_OF_VTK_CELLS = NUMBER_OF_CELLS - NUMBER_OF_BLOCKED_CELLS
+
+         WRITE(VTU_UNIT,100) '    <Piece NumberOfPoints="',NUMBER_OF_POINTS,'" NumberOfCells="',NUMBER_OF_VTK_CELLS,'" >'
+         WRITE(VTU_UNIT,110) '      <Points>'
+         WRITE(VTU_UNIT,110) '        <DataArray type="Float32" NumberOfComponents="3" format="ascii">'
+
+         DO IJK = 1,IJKEND3
+            WRITE(VTU_UNIT,120)XG_E(I_OF(IJK)),YG_N(J_OF(IJK)),ZG_T(K_OF(IJK))
+         ENDDO
+         DO IJK = 1,NUMBER_OF_NEW_POINTS
+            WRITE(VTU_UNIT,120)X_NEW_POINT(IJK),Y_NEW_POINT(IJK),Z_NEW_POINT(IJK)
+         ENDDO
+
+         WRITE(VTU_UNIT,110) '        </DataArray>'
+         WRITE(VTU_UNIT,110) ''
+         WRITE(VTU_UNIT,110) '      </Points>'
+         WRITE(VTU_UNIT,110) ''
+         WRITE(VTU_UNIT,110) '      <Cells>'
+         WRITE(VTU_UNIT,110) '        <DataArray type="Int32" Name="connectivity" format="ascii">'
+
+         DO IJK = 1,IJKEND3
+            IF (INTERIOR_CELL_AT(IJK))      THEN
+               IF (.NOT.BLOCKED_CELL_AT(IJK)) WRITE(VTU_UNIT,130) (CONNECTIVITY(IJK,L)-1,L=1,NUMBER_OF_NODES(IJK))
+            ENDIF
+         END DO
+
+         WRITE(VTU_UNIT,110) '        </DataArray>'
+         WRITE(VTU_UNIT,110) ''
+         WRITE(VTU_UNIT,110) '        <DataArray type="Int32" Name="offsets" format="ascii">'
+
+         OFFSET = 0
+         DO IJK = 1,IJKEND3
+            IF (INTERIOR_CELL_AT(IJK))      THEN
+               IF (.NOT.BLOCKED_CELL_AT(IJK)) THEN
+                  OFFSET = OFFSET + NUMBER_OF_NODES(IJK)
+                  WRITE(VTU_UNIT,140) OFFSET
+               ENDIF
+            ENDIF
+         END DO
+
+         WRITE(VTU_UNIT,110) '        </DataArray>'
+         WRITE(VTU_UNIT,110) ''
+         WRITE(VTU_UNIT,110) '        <DataArray type="UInt8" Name="types" format="ascii">'
+
+         IF(NO_K) THEN
+            CELL_TYPE = 7
+         ELSE
+            CELL_TYPE = 41
+         ENDIF
+
+         DO IJK = 1,IJKMAX3
+            IF (INTERIOR_CELL_AT(IJK))  WRITE(VTU_UNIT,140) CELL_TYPE
+         END DO
+     
+
+
+      ENDIF
+
+
+
+      WRITE(VTU_UNIT,110) '        </DataArray>'
+      WRITE(VTU_UNIT,110) ''
+      WRITE(VTU_UNIT,110) '      </Cells>'
+      WRITE(VTU_UNIT,100) '      <CellData Scalars="scalars">'
+
+
+
+100   FORMAT(A,I8,A,I8,A)
+110   FORMAT(A)
+120   FORMAT(10X,3(E16.8E3,2X))
+130   FORMAT(10X,15(I8,2X))
+140   FORMAT(10X,I8)
+
+
+
+
+
+      RETURN
+      
+      END SUBROUTINE WRITE_GEOMETRY_IN_VTU
+
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: WRITE_SCALAR_IN_VTU                                    C
+!  Purpose: Write Scalar variable in a vtu file                        C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE WRITE_SCALAR_IN_VTU(VAR_NAME,VAR)
+    
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices  
+      USE compar
+      USE mpi_utility 
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE fldvar
+      USE vtk
+      USE cdist
+
+      IMPLICIT NONE
+      INTEGER :: I,IJK,L
+
+      CHARACTER (*) :: VAR_NAME
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VAR
+      DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
+
+      include "function.inc"
+
+      IF (.NOT.BDIST_IO) THEN
+
+         IF (myPE == PE_IO) THEN
+            allocate (GLOBAL_VAR(ijkmax3))     
+         ELSE
+            allocate (GLOBAL_VAR(1))     
+         ENDIF
+
+         call gather (VAR,GLOBAL_VAR,root) 
+
+
+         IF (myPE /= PE_IO) RETURN
+
+
+         DO I = 1,LEN_TRIM(VAR_NAME)
+            IF(VAR_NAME(I:I) == ' ') VAR_NAME(I:I) = '_'
+         ENDDO
+
+
+         WRITE(VTU_UNIT,110) '        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'" format="ascii">'
+         DO IJK = 1,IJKMAX3
+            IF (GLOBAL_INTERIOR_CELL_AT(IJK))      THEN
+               IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK))   WRITE(VTU_UNIT,120) GLOBAL_VAR(IJK)
+            ENDIF
+         ENDDO
+         WRITE(VTU_UNIT,100) '        </DataArray>'
+
+         Deallocate (GLOBAL_VAR)   
+
+
+      ELSE ! BDIST_IO=.TRUE.
+
+
+         DO I = 1,LEN_TRIM(VAR_NAME)
+            IF(VAR_NAME(I:I) == ' ') VAR_NAME(I:I) = '_'
+         ENDDO
+
+         WRITE(VTU_UNIT,110) '        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'" format="ascii">'
+         DO IJK = 1,IJKEND3
+            IF (INTERIOR_CELL_AT(IJK))      THEN
+               IF (.NOT.BLOCKED_CELL_AT(IJK))   WRITE(VTU_UNIT,120) VAR(IJK)
+            ENDIF
+         ENDDO
+         WRITE(VTU_UNIT,100) '        </DataArray>'
+
+         IF (myPE == PE_IO) THEN       ! Update pvtu file with variable name
+            WRITE(PVTU_UNIT,110) '        <PDataArray type="Float32" Name="',TRIM(VAR_NAME),'" format="ascii"/>'
+         ENDIF
+
+
+      ENDIF
+
+
+100   FORMAT(A)
+110   FORMAT(A,A,A)
+120   FORMAT(10X,E16.8E3)
+
+
+
+      RETURN
+      
+      END SUBROUTINE WRITE_SCALAR_IN_VTU
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: WRITE_VECTOR_IN_VTU                                    C
+!  Purpose: Write Vector variable in a vtu file                        C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE WRITE_VECTOR_IN_VTU(VAR_NAME,VARX,VARY,VARZ)
+    
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices  
+      USE compar
+      USE mpi_utility 
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE fldvar
+      USE vtk
+      USE cdist
+      
+      IMPLICIT NONE
+      INTEGER :: IJK,L
+
+      CHARACTER (*) :: VAR_NAME
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VARX,VARY,VARZ
+      DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VARX(:),GLOBAL_VARY(:),GLOBAL_VARZ(:)
+
+      include "function.inc"
+
+      IF (.NOT.BDIST_IO) THEN
+
+         IF (myPE == PE_IO) THEN
+            allocate (GLOBAL_VARX(ijkmax3))
+            allocate (GLOBAL_VARY(ijkmax3))     
+            allocate (GLOBAL_VARZ(ijkmax3))          
+         ELSE
+            allocate (GLOBAL_VARX(1))
+            allocate (GLOBAL_VARY(1))     
+            allocate (GLOBAL_VARZ(1))          
+         ENDIF
+
+         call gather (VARX,GLOBAL_VARX,root)
+         call gather (VARY,GLOBAL_VARY,root) 
+         call gather (VARZ,GLOBAL_VARZ,root)  
+
+         IF (myPE /= PE_IO) RETURN
+
+
+         WRITE(VTU_UNIT,110) '        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'" NumberOfComponents="3"  format="ascii">'
+         DO IJK = 1,IJKMAX3
+            IF (GLOBAL_INTERIOR_CELL_AT(IJK))      THEN
+               IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK))   WRITE(VTU_UNIT,120) GLOBAL_VARX(IJK),GLOBAL_VARY(IJK),GLOBAL_VARZ(IJK)
+            ENDIF
+         ENDDO
+         WRITE(VTU_UNIT,100) '        </DataArray>'
+
+         Deallocate (GLOBAL_VARX)
+         Deallocate (GLOBAL_VARY)   
+         Deallocate (GLOBAL_VARZ) 
+
+
+      ELSE ! BDIST_IO=.TRUE.
+
+
+         WRITE(VTU_UNIT,110) '        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'" NumberOfComponents="3"  format="ascii">'
+         DO IJK = 1,IJKEND3
+            IF (INTERIOR_CELL_AT(IJK))      THEN
+               IF (.NOT.BLOCKED_CELL_AT(IJK))   WRITE(VTU_UNIT,120) VARX(IJK),VARY(IJK),VARZ(IJK)
+            ENDIF
+         ENDDO
+         WRITE(VTU_UNIT,100) '        </DataArray>'
+
+         IF (myPE == PE_IO) THEN       ! Update pvtu file with variable name
+            WRITE(PVTU_UNIT,110) '        <PDataArray type="Float32" Name="',TRIM(VAR_NAME),'" NumberOfComponents="3"  format="ascii"/>'
+         ENDIF
+
+      ENDIF
+
+
+100   FORMAT(A)
+110   FORMAT(A,A,A)
+120   FORMAT(10X,3(E16.8E3,2X))
+
+
+
+
+
+
+      RETURN
+      
+      END SUBROUTINE WRITE_VECTOR_IN_VTU
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CLOSE_VTU_FILE                                         C
+!  Purpose: Close a vtu file                                           C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE CLOSE_VTU_FILE
+
+      USE compar
+      Use run
+      USE vtk
+      use cdist
+
+      IMPLICIT NONE
+    
+      INTEGER:: N
+      CHARACTER (LEN=32)  :: VTU_NAME
+
+      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN 
+
+!      print*,'VTU_UNIT,MyPE=',VTU_UNIT,MyPE
+
+
+      WRITE(VTU_UNIT,100) '      </CellData>'
+      WRITE(VTU_UNIT,100) '    </Piece>'
+      WRITE(VTU_UNIT,100) '  </UnstructuredGrid>'
+      WRITE(VTU_UNIT,100) '</VTKFile>'
+      CLOSE(VTU_UNIT)
+
+      IF (myPE == PE_IO.AND.BDIST_IO) THEN       ! Update pvtu file and close
+         WRITE(PVTU_UNIT,100) '      </PCellData>'
+
+
+         DO N = 0,NumPEs-1
+            IF(TIME_DEPENDENT_FILENAME) THEN
+               WRITE(VTU_NAME,20) TRIM(RUN_NAME),FRAME,N
+            ELSE
+               WRITE(VTU_NAME,25) TRIM(RUN_NAME),N
+            ENDIF
+
+            WRITE(PVTU_UNIT,110) '      <Piece Source="',TRIM(VTU_NAME),'"/>'
+         ENDDO
+
+
+         WRITE(PVTU_UNIT,100) '  </PUnstructuredGrid>'
+         WRITE(PVTU_UNIT,100) '</VTKFile>'
+      ENDIF
+
+
+
+
+20    FORMAT(A,"_",I4.4,"_",I5.5,".vtu")
+25    FORMAT(A,"_",I5.5,".vtu")
+
+100   FORMAT(A)
+110   FORMAT(A,A,A)
+
+
+
+      RETURN
+
+      END SUBROUTINE CLOSE_VTU_FILE
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: UPDATE_AND_CLOSE_PVD_FILE                              C
+!  Purpose: Updates and close a pvd file                               C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE UPDATE_AND_CLOSE_PVD_FILE
+    
+      USE compar
+      use cdist
+      USE run
+      USE vtk
+
+      IMPLICIT NONE
+
+      CHARACTER (LEN=32)  :: FILENAME
+
+      IF (myPE /= PE_IO) RETURN 
+
+
+      IF(.NOT.BDIST_IO) THEN
+         FILENAME=VTU_FILENAME
+      ELSE
+         IF(TIME_DEPENDENT_FILENAME) THEN
+            WRITE(FILENAME,40) TRIM(RUN_NAME),FRAME
+         ELSE
+            WRITE(FILENAME,45) TRIM(RUN_NAME)
+         ENDIF
+         IF(TRIM(VTU_DIR)/='.') FILENAME='./'//TRIM(VTU_DIR)//'/'//FILENAME
+      ENDIF
+
+
+
+
+! Write the data to the file
+         WRITE(PVD_UNIT,100)&
+         '<DataSet timestep="',TIME,'" ',& ! simulation time
+         'group="" part="0" ',& ! necessary file data
+         'file="',TRIM(FILENAME),'"/>' ! file name of vtp
+
+! Write the closing tags
+         WRITE(PVD_UNIT,110)'</Collection>'
+         WRITE(PVD_UNIT,110)'</VTKFile>'
+         
+         CLOSE(PVD_UNIT)
+
+
+40    FORMAT(A,"_",I4.4,".pvtu")
+45    FORMAT(A,".pvtu")
+100   FORMAT(6X,A,E14.8,5A)
+110   FORMAT(A)
+
+
+      RETURN
+
+      END SUBROUTINE UPDATE_AND_CLOSE_PVD_FILE
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
 !  Module name: WRITE_VTK_FILE                                         C
 !  Purpose: Writes the cut cell grid in VTK format                     C
 !                                                                      C

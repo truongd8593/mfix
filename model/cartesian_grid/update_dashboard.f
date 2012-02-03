@@ -113,7 +113,7 @@
       ELSE
       WRITE (111,15)' | CPU time used        = ',TLEFT,TUNIT,                                      '|'
       ENDIF
-      IF(WRITE_VTK_FILES) WRITE(111,10) ' | Latest vtk file      = ',VTK_FILENAME,                 '|'
+      IF(WRITE_VTK_FILES) WRITE(111,10) ' | Latest vtu file      = ',VTU_FILENAME,                 '|'
       IF(IS_SERIAL) THEN
          WRITE (111,30)' | Serial run                                                                  |'
       ELSE

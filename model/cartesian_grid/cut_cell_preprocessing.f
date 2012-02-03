@@ -30,6 +30,7 @@
       USE quadric
       USE cutcell
       USE vtk
+      use cdist
       
       USE fldvar
 
@@ -77,14 +78,8 @@
 
       CALL GATHER_DATA
 
-      IF(WRITE_VTK_FILES) THEN
+      IF(WRITE_VTK_FILES.AND.(.NOT.BDIST_IO)) THEN
          CALL WRITE_CUT_SURFACE_VTK
-         IF(NO_K) THEN
-            WRITE_ANI_CUTCELL = .TRUE.
-            CALL WRITE_VTK_FILE
-         ELSE
-            WRITE_ANI_CUTCELL = .FALSE.
-         ENDIF
       ENDIF
 
       CALL SET_3D_CUT_U_CELL_FLAGS 
