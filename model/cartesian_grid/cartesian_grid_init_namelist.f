@@ -141,9 +141,9 @@
       VTK_DT     = UNDEFINED
       VTK_VAR(1) = 1
       VTK_VAR(2) = 2
-      VTK_VAR(3) = 3
-      VTK_VAR(4) = 4
-      VTK_VAR(5:20) = UNDEFINED_I
+!      VTK_VAR(3) = 3
+!      VTK_VAR(4) = 4
+      VTK_VAR(3:20) = UNDEFINED_I
 
       FRAME = -1
 
