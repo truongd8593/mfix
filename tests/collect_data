@@ -1,242 +1,29 @@
 #!/bin/tcsh 
-rm -f */*.RES */*.SP* */*.LOG */*.OUT */*.vtk
-# Another case
-echo
-cd chi-scheme
+# Script to collect tun time for all the test cases in serial
+
+# set up test directory and model directory
+set `pwd` ; test_dir=$1
+
+# This scipts assumes that the tests were run with script run_serial
+# and that the file List_of_tests_to_run.txt exists.
+
+# For each test:
+#    go to the directory
+#    Search for "Total CPU time used" in run.log and display the run-time
+#    go back to home test directory
+
+set_count=0
+
+for test in `cat List_of_tests_to_run.txt`
+do
+
+   (( set_count = set_count + 1 ))
+   cd $test
+   echo "********************************************************************"
+   echo $set_count '  '  $test
+   grep "Total CPU time used" run.log
+   cd $test_dir
+
+done
+
 echo "********************************************************************"
-echo "chi-scheme"
-tail -20 out1
-cd ..
-# Another case
-echo
-cd cond_conv
-echo "********************************************************************"
-echo "cond_conv" 
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd conduction
-echo "********************************************************************"
-echo "conduction"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd conduction2
-echo "********************************************************************"
-echo "conduction2"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd cyclic-shear
-echo "********************************************************************"
-echo "cyclic-shear"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd Driven_Cavity_DES
-echo "********************************************************************"
-echo "Driven_Cavity_DES"
-tail -20 out1
-cd ..
-# Another case
-echo
-cd developed_pipe_flow
-echo "********************************************************************"
-echo "developed_pipe_flow"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd developed_pipe_flow1
-echo "********************************************************************"
-echo "developed_pipe_flow1"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd developed_slit_flow
-echo "********************************************************************"
-echo "developed_slit_flow"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd dmp_test
-echo "********************************************************************"
-echo "dmp_test"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd dmp_test_cyclic
-echo "********************************************************************"
-echo "dmp_test_cyclic"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd driven-cavity
-echo "********************************************************************"
-echo "driven-cavity"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd fluidBed1SI
-echo "********************************************************************"
-echo "fluidBed1SI"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd fluidBed1SIConstVisc
-echo "********************************************************************"
-echo "fluidBed1SIConstVisc"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd fluidBed1_cn
-echo "********************************************************************"
-echo "fluidBed1_cn"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd fluidBed1_4th
-echo "********************************************************************"
-echo "fluidBed1_4th"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd granular_shear
-echo "********************************************************************"
-echo "granular_shear"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd hopper
-echo "********************************************************************"
-echo "hopper"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd Kink_DES
-echo "********************************************************************"
-echo "Kink_DES"
-tail -20 out1
-cd ..
-# Another case
-echo
-cd ozone
-echo "********************************************************************"
-echo "ozone"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd packed-bed
-echo "********************************************************************"
-echo "packed-bed"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd phase-change
-echo "********************************************************************"
-echo "phase-change"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd periodic-flow-fixed-mass-flux
-echo "********************************************************************"
-echo "periodic-flow-fixed-mass-flux"
-tail -20 out1
-cd ..
-# Another case
-echo
-cd rotary-drum
-echo "********************************************************************"
-echo "rotary-drum"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd segregation
-echo "********************************************************************"
-echo "segregation"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd settling-tank
-echo "********************************************************************"
-echo "settling-tank"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd simple-2phase
-echo "********************************************************************"
-echo "simple-2phase"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd solid-body-rotation
-echo "********************************************************************"
-echo "solid-body-rotation"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd tsuji
-echo "********************************************************************"
-echo "tsuji"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd turbulent_pipe_flow
-echo "********************************************************************"
-echo "turbulent_pipe_flow"
-tail -20 out1
-cd ..
-# Another case
-echo
-cd 2Dfluidbed_VDW_high_coh
-echo "********************************************************************"
-echo "2Dfluidbed_VDW_high_coh"
-tail -20 out1
-cd ..
-# Another case
-echo
-cd driven_cavity_cohesion_VDW
-echo "********************************************************************"
-echo "driven_cavity_cohesion_VDW"
-tail -20 out1
-cd ..
-# Another case
-echo
-cd isat
-echo "********************************************************************"
-echo "isat"
-tail -20 out1
-cd ..
-# Another case
-echo
-cd dqmom
-echo "********************************************************************"
-echo "dqmom"
-tail -20 out1
-cd ..
-# Testing is over
-echo "Testing is over.  Check the output for timing and any errors"
