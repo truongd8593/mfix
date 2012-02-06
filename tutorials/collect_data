@@ -1,72 +1,29 @@
 #!/bin/tcsh 
-# Script to collect the timings of all the tutorial cases
-rm -f */*.RES */*.SP* */*.LOG */*.OUT */*/*.RES */*/*.SP* */*/*.LOG */*/*.OUT
-echo
-cd 3dCfb
+# Script to run all the tutorial cases in serial
+
+# set up tutorial directory and model directory
+set `pwd` ; tutorial_dir=$1
+
+# This scipts assumes that the tutorials were run with script run_serial
+# and that the file List_of_tutorials_to_run.txt exists.
+
+# For each tutorial:
+#    go to the directory
+#    Search for "Total CPU time used" in run.log and display the run-time for each tutorial
+#    go back to home tutorial directory
+
+set_count=0
+
+for tutorial in `cat List_of_tutorials_to_run.txt`
+do
+
+   (( set_count = set_count + 1 ))
+   cd $tutorial
+   echo "********************************************************************"
+   echo $set_count '  '  $tutorial
+   grep "Total CPU time used" run.log
+   cd $tutorial_dir
+
+done
+
 echo "********************************************************************"
-echo "3dCfb"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd 3dFluidbed
-echo "********************************************************************"
-echo "3dFluidbed"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd FluidBed_DES
-echo "********************************************************************"
-echo "FluidBed_DES"
-tail -20 out1
-cd ..
-# Another case
-echo
-cd fluidBed1
-echo "********************************************************************"
-echo "fluidbed1"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd fluidBed2
-echo "********************************************************************"
-echo "fluidbed2"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd reactor1a
-echo "********************************************************************"
-echo "reactor1a"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd reactor1b
-echo "********************************************************************"
-echo "reactor1b"
-tail -20 out1 
-cd ..
-# Another case
-echo
-cd SpoutedBedCombustor
-echo "********************************************************************"
-echo "SpoutedBedCombustor"
-tail -20 out1
-cd ..
-# Another case
-echo
-cd Fully_Developed_With_AhmadiModel
-echo "********************************************************************"
-echo "Fully_Developed_With_AhmadiModel"
-tail -20 out1
-cd ..
-# Another case
-echo
-cd Gidaspow_fbed_With_SimoninModel
-echo "********************************************************************"
-echo "Gidaspow_fbed_With_SimoninModel"
-tail -20 out1
-cd ..
