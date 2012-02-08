@@ -18,6 +18,9 @@
 
       SUBROUTINE CFASSIGN
 
+!-----------------------------------------------
+! Modules 
+!-----------------------------------------------
       USE param1
       USE physprop
       USE geometry
@@ -31,30 +34,34 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      INTEGER I, J, K, L
-      INTEGER IJK, M  ! needed for calling bfx_s, etc      
-      INTEGER COUNT_E
-      DOUBLE PRECISION MASS_I, MASS_J, &
-                       MASS_EFF, RED_MASS_EFF
-      DOUBLE PRECISION TCOLL, TCOLL_TMP
+      INTEGER :: I, J, K, L
+      INTEGER :: IJK, M  ! needed for calling bfx_s, etc      
+      INTEGER :: COUNT_E
+      DOUBLE PRECISION :: MASS_I, MASS_J, &
+                          MASS_EFF, RED_MASS_EFF
+      DOUBLE PRECISION :: TCOLL, TCOLL_TMP
 ! local variables for calculation of hertzian contact parameters
-      DOUBLE PRECISION R_EFF, E_EFF, G_MOD_EFF     
+      DOUBLE PRECISION :: R_EFF, E_EFF, G_MOD_EFF     
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'b_force1.inc'
       INCLUDE 'b_force2.inc'
+!-----------------------------------------------
 
+      IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(3X,A)') &
+         '---------- START CFASSIGN ---------->'
 
-      if(dmp_log.and.debug_des)write(unit_log,'(3X,A)') '---------- START CFASSIGN ---------->'
-      !compute the volume of nodes 
+! compute the volume of nodes - more description would be nice
       CALL compute_volume_of_nodes
 
       TCOLL = LARGE_NUMBER
 
 ! Set misc quantities defining the system
-! -------------------------------
+!----------------------------------------------------------------->>>
 ! Set boundary edges 
 ! In some instances wx1,ex2, etc have been used and in others
-! xlength,zero, etc are used.  todo: code should be modified for
+! xlength,zero, etc are used. the code should be modified for
 ! consistency throughout      
       WX1 = ZERO 
       EX2 = XLENGTH 
@@ -73,9 +80,9 @@
 ! Note : the quantities xe, zt cannot be readily replaced with the
 ! similar appearing variables x_e, z_t in main mfix code as they 
 ! are not the same.  also the variable y_n does not exist in main
-!  mfix code. each loop starts at 2 and goes to max+2 (i.e., imin1=2,
-! imax2=imax+2) 
-! Pradeep modifying the indices range to include one ghost cell, this avoids 
+! mfix code. 
+! Each loop starts at 2 and goes to max+2 (i.e., imin1=2, imax2=imax+2) 
+! However, the indices range to include ghost cells (0-imax2) to avoid 
 ! multiple if statements in particles_in_cell
       XE(IMIN2-1) = ZERO-DX(IMIN2)
       DO I = IMIN2, IMAX2
@@ -91,46 +98,31 @@
             ZT(K) = ZT(K-1) + DZ(K)
          ENDDO
       ENDIF
-! -------------------------------
 
-
-! If RESTART_1 is being used with DEM inlets/outlets, then it is possible
-! that the particle arrays have indices without data (without particles).
-! Skip 'empty' locations when populating the particle property arrays.
-      DO L = 1, MAX_PIP
-         IF(.NOT.PEA(L,1)) CYCLE      
-         PVOL(L) = (4.0d0/3.0d0)*Pi*DES_RADIUS(L)**3
-         PMASS(L) = PVOL(L)*RO_SOL(L) 
-         OMOI(L) = 2.5d0/(PMASS(L)*DES_RADIUS(L)**2) !one over MOI
-         !Rahul: the following two lines were added long time ago 
-         !to visualize some sort of mixing and shud have not 
-         !propogated to the CVS. However, as is the case with many
-         !other utilities, we can let it float around and use
-         !for our own specific purposes. 
-         !Im currently using it to write processor information
-         !with tecplot. 
-         MARK_PART(L) = 1
-         IF(DES_POS_NEW(L,2).LE.YLENGTH/2.d0) MARK_PART(L) = 0
-      ENDDO
-
+! used in octree and quadtree neighbor search algorithms      
       RADIUS_EQ = MAX_RADIUS*1.05d0
-      if(dmp_log)write(unit_log,'(5X,A,ES15.8)') '1.05*MAX_RADIUS = ', RADIUS_EQ
 
-      DO M = 1, MMAX 
-         DES_TAU_P(M) = RO_S(M)*(D_P0(M)**2.d0)/(18.d0*MU_g0)
-         IF(myPE.eq.pe_IO) WRITE(*,'(A, i2, A, g17.8)') 'TAU_P FOR', M,'th SOLID PHASE  = ', DES_TAU_P(M)
-      END DO
+! cohesion related routines      
+      IF(USE_COHESION .AND. VAN_DER_WAALS) THEN 
+         SURFACE_ENERGY = HAMAKER_CONSTANT/&
+            (24d0*PI*VDW_INNER_CUTOFF*VDW_INNER_CUTOFF)
+         WALL_SURFACE_ENERGY = WALL_HAMAKER_CONSTANT/&
+            (24d0*PI*WALL_VDW_INNER_CUTOFF*WALL_VDW_INNER_CUTOFF)
+      ENDIF 
+!-----------------------------------------------------------------<<<
 
-!-------------------------------------------------------        
+
 ! Calculate collision parameters
-!--------------------------------------------------------
-      IF(mype.eq.pe_IO.and..not.MPPIC) WRITE(unit_log,'(A)') 'SOFT-SPRING FOR PARTICLE-PARTICLE AND PARTICLE-WALL COLLISIONS'
+!----------------------------------------------------------------->>>
+      IF(DMP_LOG.AND..NOT.MPPIC) WRITE(UNIT_LOG,'(/2X,A,A)') &
+      'SOFT-SPRING FOR PARTICLE-PARTICLE AND PARTICLE-WALL COLLISIONS'
       
       IF (TRIM(DES_COLL_MODEL) == 'HERTZIAN') THEN 
 
-         IF(mype.eq.pe_IO.and..not.MPPIC) write(unit_log,'(5X,A)') 'COLLISION MODEL: Hertzian'
+         IF(DMP_LOG.AND..NOT.MPPIC) &
+            WRITE(UNIT_LOG,'(5X,A)') 'COLLISION MODEL: Hertzian'
 
-! particle-particle contact --------------------
+! particle-particle contact -------------------->
          DO I=1,MMAX
             G_MOD(I) = 0.5d0*e_young(I)/(1.d0+v_poisson(I)) ! shear modulus 
             if(dmp_log)write(unit_log,'(5X,A,I5,X,A,X,2(ES15.7))') &
@@ -185,15 +177,15 @@
                hert_kt(J,I) = hert_kt(I,J)
                
                TCOLL_TMP = PI/SQRT(hert_kn(I,J)/MASS_EFF - ((DES_ETAN(I,J)/MASS_EFF)**2)/4.d0)
-               TCOLL = MIN(TCOLL_TMP, TCOLL) 
                   
-               if(dmp_log)write(unit_log,'(5X,A,I5,X,I5,X,A,X,2(ES15.7))') &
-               'KN AND KT FOR PAIR ',&
-               I, J, '=', hert_kn(I,J), hert_kt(I,J)
+               IF(DMP_LOG) &
+                  WRITE(UNIT_LOG,'(5X,A,I5,X,I5,X,A,X,2(ES15.7))') &
+                  'KN AND KT FOR PAIR ',I, J, '=', &
+                  hert_kn(I,J), hert_kt(I,J)
             ENDDO
          ENDDO
 
-! particle-wall contact --------------------          
+! particle-wall contact -------------------->          
          COUNT_E = 0
          DO I = 1, MMAX
             COUNT_E = COUNT_E + 1  
@@ -226,8 +218,8 @@
          
       ELSE                      ! Linear spring-dashpot model
 
-         IF(DMP_LOG)WRITE(UNIT_LOG,'(5X,A)') &
-         'COLLISION MODEL: Linear Spring-Dashpot (default)'
+         IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A)') &
+            'COLLISION MODEL: Linear Spring-Dashpot (default)'
 
 ! User's input for KT_FAC and KT_W_FAC will be used, otherwise these values are
 ! estimated using set factors.  See following references: 
@@ -248,9 +240,10 @@
          ELSE
             KT_W = KT_W_FAC*KN_W
          ENDIF
-         if(dmp_log)write(unit_log,'(5X,A,ES17.10,2X,ES15.7)') 'KN AND KT = ', KN, KT
+         IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,ES17.10,2X,ES15.7)') &
+            'KN AND KT = ', KN, KT
 
-! particle-particle contact --------------------
+! particle-particle contact -------------------->
          COUNT_E = 0
          DO I = 1, MMAX
             DO J = I, MMAX
@@ -285,7 +278,7 @@
             ENDDO
          ENDDO
 
-! particle-wall contact --------------------     
+! particle-wall contact -------------------->     
          COUNT_E = 0 
          DO I = 1, MMAX
             COUNT_E = COUNT_E + 1  
@@ -310,12 +303,13 @@
             
             
             TCOLL_TMP = PI/SQRT(KN_W/MASS_EFF - ((DES_ETAN_WALL(I)/MASS_EFF)**2.d0)/4.d0)
-            !TCOLL = MIN(TCOLL_TMP, TCOLL)
          ENDDO
 
-      ENDIF                     ! endif des_coll_model = 'hertzian'
-      
+      ENDIF    ! end if/else(des_coll_model)
+!-----------------------------------------------------------------<<<
 
+
+! filling rest of arrays (symmetric matrix)
       DO I = 1, MMAX
          DO J = I, MMAX
             REAL_EN(J, I) = REAL_EN(I,J)
@@ -325,44 +319,58 @@
          ENDDO
       ENDDO
          
+! reporting information to logs         
       DO I = 1, MMAX
          DO J = I, MMAX
-            if(dmp_log)write(unit_log,'(5X,A,I10,2X,I10,A,2(ES15.7))') &
+         IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,I10,2X,I10,A,2(ES15.7))') &
             'ETAN AND ETAT FOR PAIR ',&
             I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
          ENDDO
       ENDDO
       DTSOLID = TCOLL/50.d0
 
-      IF(DMP_LOG.AND..NOT.MPPIC) THEN 
-         write(unit_log,'(5X,A,E17.10,2X,E17.10)') 'MIN TCOLL AND DTSOLID = ',&
-         TCOLL, DTSOLID
+      IF(DMP_LOG.AND..NOT.MPPIC) &
+         WRITE(UNIT_LOG,'(5X,A,E17.10,2X,E17.10)') &
+         'MIN TCOLL AND DTSOLID = ',TCOLL, DTSOLID
+        
          
-      ENDIF
-         
-         
-      IF(MPPIC)  THEN 
-         !DTSOLID = DTSOLID_FACTOR*HALF*MINVAL(DES_TAU_P(1:MMAX))
-         !GRAV = ZERO 
-         
-         !IF(mype.Eq.pe_IO) WRITE(*,*) 'FORCING GRAVITY TO ZERO FOR SOME MPPIC TESTING', GRAV
-	 DTSOLID = DTSOLID_FACTOR*MINVAL(DES_TAU_P(1:MMAX))
+      IF(MPPIC) THEN 
+         DO M = 1, MMAX 
+            DES_TAU_P(M) = RO_S(M)*(D_P0(M)**2.d0)/(18.d0*MU_g0)
+            IF(DMP_LOG) WRITE(UNIT_LOG,'(/2X,A,I2,A,G17.8)') &
+               'TAU_P FOR ', M,'th SOLID PHASE= ', DES_TAU_P(M)
+         ENDDO
+
+         DTSOLID = DTSOLID_FACTOR*MINVAL(DES_TAU_P(1:MMAX))
          DTPIC_TAUP = DTSOLID   !maximum dt for point-particles based on taup
 
          IF(DMP_LOG) THEN 
-            WRITE(unit_log,'(A)') 'POINT PARTICLE APPROXIMATION FOR PARTICLE-PARTICLE AND PARTICLE-WALL COLLISIONS'
-            WRITE(unit_log,'(A)') 'DTSOLID BASED ON PARTICLE TIME RESPONSE TAUP'
-            WRITE(unit_log,'(5X,A,E17.10,2X,E17.10)') 'DTSOLID = ', DTSOLID 
+            WRITE(UNIT_LOG,'(/2X,A,A,A)') 'MPPIC: POINT PARTICLE ',&
+               'APPROXIMATION FOR PARTICLE-PARTICLE AND ',&
+               'PARTICLE-WALL COLLISIONS'
+            WRITE(UNIT_LOG,'(2X,A)') &
+               'DTSOLID BASED ON PARTICLE TIME RESPONSE TAUP'
+            WRITE(UNIT_LOG,'(2X,A,E17.10)') 'DTSOLID = ', DTSOLID 
          ENDIF
-      END IF
-            
-      if(dmp_log.and.debug_des)write(unit_log,'(3X,A)') '<---------- END CFASSIGN ----------'
+      ENDIF
+      
+      IF(DMP_LOG.AND.DEBUG_DES) &
+         WRITE(UNIT_LOG,'(3X,A)') '<---------- END CFASSIGN ----------'
 
       RETURN
       END SUBROUTINE CFASSIGN
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+! subroutine: compute_volume_of_nodes
+! Purpose:  please provide more apt description
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
+
       SUBROUTINE compute_volume_of_nodes
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param
       USE param1
       USE parallel
@@ -376,21 +384,28 @@
       USE sendrecv
       USE discretelement
       USE cutcell
-      implicit none 
-      integer :: ijk , ipjk, ijpk, ipjpk, ijkp, ipjkp, ijpkp, ipjpkp, i, j,k 
+      implicit none
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
+      INTEGER :: I, J, K, IJK
+      integer :: ipjk, ijpk, ipjpk, ijkp, ipjkp, ijpkp, ipjpkp
       double precision :: vol_ijk, vol_ipjk, vol_ijpk, vol_ipjpk
       double precision :: vol_ijkp, vol_ipjkp, vol_ijpkp, vol_ipjpkp
       double precision :: avg_factor, zcor, vol_node_uncorr
       integer :: FLUID_IND, CUTCELL_IND, WALL_IND
       double precision :: vol_node_count, vol_node_actual_count
-      
       character*100 :: filename
+!-----------------------------------------------
+! Include statement functions      
+!-----------------------------------------------
       INCLUDE 'function.inc'
+!-----------------------------------------------            
       
       avg_factor = 0.125d0*(dimn-2) + 0.25d0*(3-dimn)
 
-      ! Pradeep: compute the volume at the grid nodes 
-      ! grid nodes start  from istart2 to iend1
+! compute the volume at the grid nodes 
+! grid nodes start  from istart2 to iend1
       if(dimn.eq.2) vol_node_count = 4.
       if(dimn.eq.3) vol_node_count = 8.
       do ijk = ijkstart3,ijkend3
@@ -482,9 +497,13 @@
       end do
       
       WRITE(filename,'(A,"_",I5.5,".dat")') 'VOL_NODE_',myPE
-      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
-      write(1000,*)'VARIABLES= ',' "I" ',' "J" ',' "K" ',' "FLUID" ', ' "CUTCELL" ', ' "WALL" ', ' "VOL_CELL" ', ' "VOL_NODE" ' , ' "VOL_NODE_RATIO" '
-      write(1000,*)'ZONE F=POINT, I=', (IEND2-ISTART2)+1,  ', J=', JEND2-JSTART2+1, ', K=', KEND2-KSTART2 + 1
+      OPEN(1000,file=TRIM(filename),form ='formatted',status='unknown')
+      write(1000,'(9(A,3X),A)') 'VARIABLES=',&
+         '"I"', '"J"', '"K"', '"FLUID"', '"CUTCELL"', '"WALL"', &
+         '"VOL_CELL"', '"VOL_NODE"', '"VOL_NODE_RATIO"'
+      write(1000,'(A,2X,3(A,I5,2X))') 'ZONE F=POINT, ',&
+         'I=', IEND2-ISTART2+1, ', J=', JEND2-JSTART2+1, &
+         ', K=', KEND2-KSTART2+1
       
       DO K=KSTART2, KEND2
          DO J=JSTART2, JEND2
@@ -500,13 +519,15 @@
                endif
                if(dimn.eq.2) zcor = zt(k)
                if(dimn.eq.3) zcor = zt(k-1) + dz(k)
-               !write(1000,'(3(2x,g17.8),2((2x,i4)),2( 2x, g17.8))') XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, fluid_ind, cutcell_ind, des_vol_node(ijk), des_vol_node_ratio(ijk) 
-               write(1000,'(3(2x,i10),2((2x,i4)),3( 2x, g17.8))') I, J, K,  fluid_ind, cutcell_ind, wall_ind, (vol(ijk)/(DX(I)*DY(J)*DZ(K)))*100., des_vol_node(ijk), des_vol_node_ratio(ijk) 
+               write(1000,'(3(2X,I10),2((2X,I4)),3(2X,G17.8))')&
+                  I, J, K, fluid_ind, cutcell_ind, wall_ind, &
+                  (vol(ijk)/(DX(I)*DY(J)*DZ(K)))*100., &
+                  des_vol_node(ijk), des_vol_node_ratio(ijk) 
             enddo
          enddo
       enddo
       close(1000, status='keep')
-      !stop 
-      
-    end SUBROUTINE compute_volume_of_nodes
+
+      RETURN      
+      END SUBROUTINE compute_volume_of_nodes
     
