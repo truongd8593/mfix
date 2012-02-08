@@ -129,11 +129,6 @@
 !become less that zero if the particles outside the domain are not 
 !removed first 
 
-! J.Musser
-! Make the necessary calculations for the mass inflow/outflow boundary
-! conditions.  DTSOLID is needed so call is made after cfassign.f
-      CALL DES_INIT_BC
-
 !Pradeep: do_nsearch should be set before calling particle in cell  
       do_nsearch = .true.
       CALL PARTICLES_IN_CELL
