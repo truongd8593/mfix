@@ -13,23 +13,31 @@
 
       SUBROUTINE CHECK_VDW_WALL_INTERACTION(I,J)
 
-!-----MODULES USED
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------      
       USE param1
       USE discretelement
       IMPLICIT NONE
-
-!-----LOCAL DUMMY VARIABLES
-      INTEGER I,J,N,K, II
-      INTEGER LINK
-      INTEGER CHECK_LINK
-      DOUBLE PRECISION RADIUS
-      DOUBLE PRECISION FORCE, RELPOS(DIMN)
-      DOUBLE PRECISION DIST
-      LOGICAL ALREADY_EXISTS
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------      
+! particle index   
+      INTEGER, INTENT(IN) :: I
+! 'wall' index based on calling routine
+      INTEGER, INTENT(IN) :: J
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------      
+      INTEGER :: N, K, II
+      DOUBLE PRECISION :: RADIUS
+      DOUBLE PRECISION :: FORCE, RELPOS(DIMN)
+      DOUBLE PRECISION :: DIST
+!-----------------------------------------------      
 
       IF(COHESION_DEBUG.gt.0)THEN
          PRINT *,'**START CHECK VAN DER WAALS WALL INTERACTION'
-      END IF
+      ENDIF
 
       IF(J.eq.PARTICLES+1)THEN !West wall
          DES_POS_NEW(J,1)=WX1
@@ -38,7 +46,7 @@
          DES_VEL_NEW(J,1)=ZERO
          DES_VEL_NEW(J,2)=ZERO
          IF(DIMN.EQ.3) DES_VEL_NEW(J,3)=ZERO
-      END IF         
+      ENDIF         
 
       IF(J.eq.PARTICLES+2)THEN !Bottom wall
          DES_POS_NEW(J,1)=DES_POS_NEW(I,1)
@@ -56,7 +64,7 @@
          DES_VEL_NEW(J,1)=ZERO
          DES_VEL_NEW(J,2)=ZERO
          IF(DIMN.EQ.3) DES_VEL_NEW(J,3)=ZERO
-      END IF  
+      ENDIF  
 
       IF(J.eq.PARTICLES+4)THEN !Top wall
          DES_POS_NEW(J,1)=DES_POS_NEW(I,1)
@@ -65,7 +73,7 @@
          DES_VEL_NEW(J,1)=ZERO
          DES_VEL_NEW(J,2)=ZERO
          IF(DIMN.EQ.3) DES_VEL_NEW(J,3)=ZERO
-      END IF  
+      ENDIF  
 
       IF(J.eq.PARTICLES+5)THEN !North wall
          DES_POS_NEW(J,1)=DES_POS_NEW(I,1)
@@ -74,7 +82,7 @@
          DES_VEL_NEW(J,1)=ZERO
          DES_VEL_NEW(J,2)=ZERO
          IF(DIMN.EQ.3) DES_VEL_NEW(J,3)=ZERO
-      END IF 
+      ENDIF 
 
       IF(J.eq.PARTICLES+6)THEN !South wall
          DES_POS_NEW(J,1)=DES_POS_NEW(I,1)
@@ -83,7 +91,7 @@
          DES_VEL_NEW(J,1)=ZERO
          DES_VEL_NEW(J,2)=ZERO
          IF(DIMN.EQ.3) DES_VEL_NEW(J,3)=ZERO
-      END IF 
+      ENDIF 
 
       IF(DIMN.EQ.3) THEN
          RADIUS=SQRT((DES_POS_NEW(J,1)-DES_POS_NEW(I,1))**2+&
@@ -92,30 +100,31 @@
       ELSE
          RADIUS=SQRT((DES_POS_NEW(J,1)-DES_POS_NEW(I,1))**2+&
                 (DES_POS_NEW(J,2)-DES_POS_NEW(I,2))**2)
-      END IF
+      ENDIF
 
       DIST=RADIUS-DES_RADIUS(I)
 
-      IF(DIST.lt.WALL_VDW_OUTER_CUTOFF)THEN
-         DO II=1,DIMN
-            RELPOS(II)=DES_POS_NEW(J,II)-DES_POS_NEW(I,II)
-         END DO
+      IF(DIST.LT.WALL_VDW_OUTER_CUTOFF)THEN
+         DO K=1,DIMN
+            RELPOS(K)=DES_POS_NEW(J,K)-DES_POS_NEW(I,K)
+         ENDDO
+
          IF(DIST.gt.WALL_VDW_INNER_CUTOFF)THEN
             FORCE=WALL_HAMAKER_CONSTANT*DES_RADIUS(I)/(6.d0*DIST*DIST)
          ELSE
             FORCE=4.d0*3.14*WALL_SURFACE_ENERGY*DES_RADIUS(I)
-         END IF !Long range or surface?
+         ENDIF !Long range or surface?
 
          DO K=1,DIMN
            FC(I,K)=FC(I,K)+RELPOS(K)/RADIUS*FORCE
            FC(J,K)=FC(J,K)-RELPOS(K)/RADIUS*FORCE
          END DO 
                     
-      END IF !Is particle within cutoff?
+      ENDIF !Is particle within cutoff?
 
 
       IF(COHESION_DEBUG.gt.0)THEN
          PRINT *,'**END CHECK VAN DER WAALS WALL INTERACTION'
-      END IF
+      ENDIF
 
       END SUBROUTINE CHECK_VDW_WALL_INTERACTION 
