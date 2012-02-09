@@ -299,6 +299,7 @@ mfix.exe : \
     tau_v_s.$(OBJ_EXT) \
     tau_w_g.$(OBJ_EXT) \
     tau_w_s.$(OBJ_EXT) \
+    test.$(OBJ_EXT) \
     test_lin_eq.$(OBJ_EXT) \
     time_march.$(OBJ_EXT) \
     transfer.$(OBJ_EXT) \
@@ -743,6 +744,7 @@ mfix.exe : \
     tau_v_s.$(OBJ_EXT) \
     tau_w_g.$(OBJ_EXT) \
     tau_w_s.$(OBJ_EXT) \
+    test.$(OBJ_EXT) \
     test_lin_eq.$(OBJ_EXT) \
     time_cpu_mod.$(OBJ_EXT) \
     time_march.$(OBJ_EXT) \
@@ -4458,6 +4460,7 @@ tau_w_s.$(OBJ_EXT) : tau_w_s.f \
             function.inc                                                 \
             fun_avg2.inc                                                 \
             ep_s2.inc                                                   
+test.$(OBJ_EXT) : test.f 
 test_lin_eq.$(OBJ_EXT) : test_lin_eq.f \
             param.mod \
             param1.mod \
@@ -5172,6 +5175,7 @@ cut_cell_preprocessing.$(OBJ_EXT) : ./cartesian_grid/cut_cell_preprocessing.f \
             quadric.mod \
             cutcell.mod \
             vtk.mod \
+            cdist.mod \
             fldvar.mod \
             polygon.mod \
             stl.mod 
@@ -5425,10 +5429,12 @@ vtk_out.$(OBJ_EXT) : ./cartesian_grid/vtk_out.f \
             rxns.mod \
             output.mod \
             scalars.mod \
+            mpi_utility.mod \
+            parallel_mpi.mod \
             pscor.mod \
             discretelement.mod \
             mfix_pic.mod \
-            mpi_utility.mod \
+            cdist.mod \
             polygon.mod \
             stl.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/vtk_out.f 
@@ -5646,7 +5652,6 @@ cfnewvalues.$(OBJ_EXT) : ./des/cfnewvalues.f \
             mppic_wallbc.mod \
             randomno.mod \
             cutcell.mod \
-            geometry.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
@@ -6213,10 +6218,10 @@ quadtree.$(OBJ_EXT) : ./des/quadtree.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/quadtree.f 
 read_des_restart.$(OBJ_EXT) : ./des/read_des_restart.f \
             param1.mod \
-            run.mod \
-            discretelement.mod \
-            des_bc.mod \
             compar.mod \
+            discretelement.mod \
+            run.mod \
+            des_bc.mod \
             desmpi.mod \
             machine.mod \
             cdist.mod \

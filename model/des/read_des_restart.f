@@ -1,98 +1,3 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: READ_DES_RESTART                                       C
-!  Purpose: Reading DES data for restart                               
-!                                                                      C
-!                                                                      C
-!  Author: Sreekanth Pannala                          Date: 09-Nov-06  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE READ_DES_RESTART
-
-      USE param1      
-      USE run
-      USE discretelement
-      USE des_bc
-
-      IMPLICIT NONE
-
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER BCV    ! Loop counter for no. of DES_BCMI
-      INTEGER ALL_SZ ! Size used to allocate derived data types
-
-      LOGICAL ASSOC  ! If a derived data type is associated
-!-----------------------------------------------
-
-      OPEN (UNIT=901,FILE=TRIM(RUN_NAME)//'_DES.RES',FORM='Unformatted',STATUS='unknown')
-
-      REWIND (901)
-
-      READ (901) PARTICLES
-      READ (901) VTP_FINDEX
-      READ (901) TECPLOT_FINDEX
-      READ (901) DTSOLID
-
-      READ (901) DES_POS_OLD
-      READ (901) DES_VEL_OLD
-      READ (901) OMEGA_OLD
-
-      READ (901) DES_RADIUS
-      READ (901) RO_Sol
-
-      READ (901) NEIGHBOURS
-
-! Needed for particle contact history in tangential direction
-      READ (901) PFT
-      READ (901) PN
-      READ (901) PV
-
-! J. Musser : DES boundary condition data
-      READ (901) PIP
-      READ (901) PEA
-
-! These arrays are allocated only if inlet exists
-      IF(DES_BCMI.NE.0)THEN
-         READ (901) DES_MI_TIME
-         READ (901) MI_FACTOR
-         READ (901) MI_WINDOW
-
-         DO BCV =1, DES_BCMI
-
-            READ (901) PARTICLE_PLCMNT(BCV)
-
-            IF(PARTICLE_PLCMNT(BCV) == 'ORDR')THEN
-
-               READ (901) ASSOC
-               IF(ASSOC)THEN
-                  READ (901) ALL_SZ
-                  ALLOCATE( MI_ORDER(BCV)%VALUE( ALL_SZ ) )
-                  READ (901) MI_ORDER(BCV)%VALUE
-               ENDIF
-
-               READ (901) ASSOC
-               IF(ASSOC)THEN
-                  READ (901) ALL_SZ
-                  ALLOCATE( I_OF_MI(BCV)%VALUE( ALL_SZ ) )
-                  READ (901) I_OF_MI(BCV)%VALUE
-               ENDIF
-
-               READ (901) ASSOC
-               IF(ASSOC)THEN
-                  READ (901) ALL_SZ
-                  ALLOCATE( J_OF_MI(BCV)%VALUE( ALL_SZ ) )
-                  READ (901) J_OF_MI(BCV)%VALUE
-               ENDIF
-
-            ENDIF  
-         ENDDO
-      ENDIF
-
-      END SUBROUTINE READ_DES_RESTART 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvc
 !                                                                    
 !  module name: des_read_restart                                      
@@ -103,7 +8,9 @@
 !            (based on bdist_io) flag 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^c
       subroutine des_read_restart
-
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       use param1      
       use compar
       use discretelement
@@ -123,9 +30,9 @@
       integer lproc,lparcnt,lglocnt,lscattercnts(0:numpes-1)
       integer,dimension(:),allocatable::ltemparr
       character(30) lfilename
-       
       integer lmax_pip 
 !-----------------------------------------------
+
       ltor_dimn = 1 + (dimn-2)*2 
  
 ! open the restart file  
@@ -142,6 +49,8 @@
          end if 
       end if 
 
+
+!----------------------------------------------------------------->>>
       if (bdist_IO) then 
          read(lres_unit,rec=1) pip,ighost_cnt,vtp_findex,tecplot_findex,dtsolid 
          pea(1:pip,1) = .true.
@@ -189,6 +98,7 @@
                call in_bin_512(lres_unit,pft(:,li,lj),pip,lnext_rec)
             end do 
          end do 
+
 ! read details for mass inlet and outlet parameters
          if(des_mi)then
             read (lres_unit,rec=lnext_rec) des_mi_time;lnext_rec=lnext_rec+1
@@ -217,11 +127,13 @@
                endif  
             enddo
          endif
+!-----------------------------------------------------------------<<<
+      else   ! else branch if not bdist_IO
+!----------------------------------------------------------------->>>
 
-       else 
-! for single file read the particle info first and then 
-!Read the global id and position and devlop the mapping between the reading order 
-!and local id and proc number 
+! for single file read the particle info first and then read the global
+! id and position and devlop the mapping between the reading order 
+! and local id and proc number 
          lglocnt = 10
          if(mype.eq.pe_io) read(lres_unit,rec=1) lglocnt,vtp_findex,tecplot_findex,dtsolid 
          call bcast(vtp_findex)
@@ -234,12 +146,12 @@
                call in_bin_512(lres_unit,dpar_pos(:,li),lglocnt,lnext_rec)
             end do
          end if 
+! this call to des_restart_map allocates and sets the restartmap,
+! sets pip, and sets pea(pip,1) to true          
          call des_restart_map(lglocnt) 
          deallocate(dpar_pos)
  
-!note: The above call to des_restart_map allocates sets the restartmap and sets pip 
-!and  sets pea(pip,1) to true 
-!set the paramters for scatter
+! set the parameters for scatter
          allocate(dprocbuf(pip),drootbuf(lglocnt),iprocbuf(pip),irootbuf(lglocnt))
          lscattercnts(:) = 0 
          lscattercnts(mype)=pip 
@@ -250,7 +162,7 @@
             idispls(lproc) = idispls(lproc-1) + iscattercnts(lproc-1)  
          end do 
 
-!Read the variables in the order it is written 
+! read the variables in the order it is written 
          call des_readscatter(lres_unit,iglobal_id,lglocnt,lnext_rec)
          do li = 2,4
             call des_readscatter(lres_unit,pea(:,li),lglocnt,lnext_rec)
@@ -265,7 +177,7 @@
          call des_readscatter(lres_unit,ro_sol,lglocnt,lnext_rec)
          IF(MPPIC) call des_readscatter(lres_unit,des_stat_wt,lglocnt,lnext_rec)
 
-!read neighbour and contact details 
+! read neighbour and contact details 
          call des_readscatter(lres_unit,neighbours(:,1),lglocnt,lnext_rec)
          call des_readscatter(lres_unit,pn(:,1),lglocnt,lnext_rec)
          do li = 2,maxneighbors
@@ -276,6 +188,7 @@
                call des_readscatter(lres_unit,pft(:,li,lj),lglocnt,lnext_rec)
             end do 
          end do 
+
 ! read details for mass inlet and outlet parameters
          if(des_mi) then 
             if(mype .eq. pe_io)then
@@ -334,13 +247,20 @@
             enddo
          endif
 
-
          deallocate (dprocbuf,drootbuf,iprocbuf,irootbuf,irestartmap)
-!Change neighbours and contact details from global id to local particle number 
+! Change neighbours and contact details from global id to local 
+! particle number 
          call des_restart_neigh
-      end if 
+
+      end if   ! end if/else bdist_io
+!-----------------------------------------------------------------<<<
+
+! setting old positions to new positions 
+! will higher order integration be incorrect since des_vel_oold will not
+! be the old value?
       omega_old(:,:) = omega_new(:,:) 
       des_pos_old(:,:) = des_pos_new(:,:)
       des_vel_old(:,:) = des_vel_new(:,:)
       if(bdist_io .or.mype .eq. pe_io) close(lres_unit)
+
       end subroutine des_read_restart 
