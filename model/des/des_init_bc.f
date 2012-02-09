@@ -46,11 +46,12 @@
 !-----------------------------------------------
 !   External functions
 !-----------------------------------------------
-      LOGICAL , EXTERNAL :: COMPARE 
+      LOGICAL, EXTERNAL :: COMPARE 
 !-----------------------------------------------
 
 
-      IF(DMP_LOG.and.debug_des) WRITE(*,'(3X,A)') '---------- START DES_INIT_BC ---------->'
+      IF(DMP_LOG.AND.DEBUG_DES) &
+         WRITE(*,'(3X,A)') '---------- START DES_INIT_BC ---------->'
 
 ! If one or more discrete mass inlets exist, calculate necessary
 ! data 
@@ -63,7 +64,7 @@
                DES_BC_MI_ID(BCV_I) = BCV
 
 ! Initialize temp variables
-!    Tthe number of mass phases at this inlet.  While a system may be
+!    The number of mass phases at this inlet.  While a system may be
 !    polydisperse, the inlet could consist of a single mass phase
                PHASE_CNT = 0
 !    The mass phase indices of incoming particles at this inlet
@@ -112,23 +113,15 @@
 
 ! For polydisperse inlets, construct the DES_POLY_LAYOUT array
                IF(DES_BC_POLY(BCV_I)) THEN
-!                  HOLD = 1
                   RANGE_BOT = 1
                   DO MM=1,PHASE_CNT - 1
                      M = PHASE_LIST(MM)
                      SCALED_VAL = dble(NUMFRAC_LIMIT)*(NPMpSEC(M)/NPpSEC)
                      RANGE_TOP = FLOOR(SCALED_VAL) + (RANGE_BOT-1)
-!                     DO I=HOLD,FLOOR(SCALED_VAL)+(HOLD-1)
-!                        DES_POLY_LAYOUT(BCV_I,I) = M
-!                     ENDDO
-                      DES_BC_POLY_LAYOUT(BCV_I,RANGE_BOT:RANGE_TOP) = M 
-                      RANGE_BOT = RANGE_TOP+1
-!                      HOLD = I
+                     DES_BC_POLY_LAYOUT(BCV_I,RANGE_BOT:RANGE_TOP) = M 
+                     RANGE_BOT = RANGE_TOP+1
                   ENDDO
                   M = PHASE_LIST(PHASE_CNT)
-!                  DO I=HOLD,NUMFRAC_LIMIT
-!                     DES_POLY_LAYOUT(BCV_I,I) = M
-!                  ENDDO
                   DES_BC_POLY_LAYOUT(BCV_I,RANGE_BOT:NUMFRAC_LIMIT) = M
 ! For monodisperse inlets, store the single mass phase used
                ELSE
@@ -199,7 +192,8 @@
       ENDIF
 
       
-      IF(DMP_LOG.and.debug_des)  WRITE(*,'(3X,A)') '<---------- END DES_INIT_BC ----------'
+      IF(DMP_LOG.AND.DEBUG_DES) &
+         WRITE(*,'(3X,A)') '<---------- END DES_INIT_BC ----------'
 
  1000 FORMAT(/5X,'For mass inlet BC: ', I3,/,&
          7X,'No. particles injected per solids time step = ', ES15.8,/,&
@@ -250,7 +244,6 @@
       INTEGER PHASE_LIST(MMAX)
 ! the length of each side of the inlet boundary
       DOUBLE PRECISION LEN1, LEN2
-
 ! Max diameter of incoming particles at bc
       DOUBLE PRECISION MAX_DIA
 ! temp value of DES_MI_CLASS for comparison tests
@@ -1341,7 +1334,7 @@
 
       ENDIF   ! endif dimn == 2
 
-! Verify that an inlet is not on a face that is connected to a periodic
+! Verify that an outlet is not on a face that is connected to a periodic
 ! boundary condition.  If so, write error message and exit.
 ! No Xew outlet with X direction periodic walls
       IF((DES_MO_CLASS(BCV_I) == 'XW' .OR. DES_MO_CLASS(BCV_I) == 'XE') &
@@ -1365,7 +1358,7 @@
          CALL MFIX_EXIT(myPE)
       ENDIF
 
- 1500 FORMAT(/1X,70('*')//,' From: DES_MI_CLASSIFY -',/10X,&
+ 1500 FORMAT(/1X,70('*')//,' From: DES_MO_CLASSIFY -',/10X,&
          'DEM outlets can not be placed on a periodic boundary.',/10X,&
          'Check DEM boundary condtion ',I2,' and ',A,'.',/1X,70('*')/)
 
