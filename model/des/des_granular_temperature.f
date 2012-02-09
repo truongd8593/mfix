@@ -14,6 +14,9 @@
 
       SUBROUTINE DES_GRANULAR_TEMPERATURE
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------       
       USE discretelement
       USE param
       USE param1
@@ -29,23 +32,26 @@
 ! Local Variables
 !-----------------------------------------------      
 ! indices
-      INTEGER I, J, K, IJK
+      INTEGER :: I, J, K, IJK
 ! 
-      INTEGER M, LL
+      INTEGER :: M, LL
 ! counter for no. of particles in phase m in cell ijk 
-      INTEGER NP_PHASE(DIMENSION_3, MMAX)
+      INTEGER :: NP_PHASE(DIMENSION_3, MMAX)
 ! temporary variable for mth phase granular temperature in cell ijk
-      DOUBLE PRECISION TEMP(DIMENSION_3, MMAX)
+      DOUBLE PRECISION :: TEMP(DIMENSION_3, MMAX)
 ! accounted for particles
-      INTEGER PC             
+      INTEGER :: PC             
 ! squared particle velocity v.v
-      DOUBLE PRECISION SQR_VEL
-!-----------------------------------------------      
-
+      DOUBLE PRECISION :: SQR_VEL
+!-----------------------------------------------
+! Include statement functions
+!----------------------------------------------- 
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
+!-----------------------------------------------
 
+      IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT      
 
 ! Calculate a local species granular temperature for current instant of
 ! time.  Note that the following calculation of species granular
@@ -59,9 +65,11 @@
       NP_PHASE(:,:) = ZERO
       PC = 0
       DO LL = 1, MAX_PIP
-! pradeep skipping ghost particles
-         if(pea(ll,1)) pc = pc + 1
-         IF(.NOT.PEA(LL,1) .or. pea(ll,4)) CYCLE    
+! skipping particles that do not exist
+         IF(.NOT.PEA(LL,1)) CYCLE
+         PC = PC + 1
+! skipping ghost particles         
+         IF(PEA(LL,4)) CYCLE    
 
          I = PIJK(LL,1)
          J = PIJK(LL,2)
@@ -112,9 +120,9 @@
 ! potential energy
       PC = 0
       DO LL = 1, MAX_PIP
-! pradeep skipping ghost particles
-         if(pea(ll,1)) pc = pc + 1
-         IF(.NOT.PEA(LL,1) .or. pea(ll,4)) CYCLE    
+         IF(PEA(LL,1)) PC = PC + 1
+! skipping ghost particles and particles that don't exist
+         IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE    
 
          SQR_VEL = ZERO
          DO I = 1, DIMN
@@ -140,9 +148,9 @@
       GLOBAL_GRAN_TEMP(:)  = ZERO
       PC = 0
       DO LL = 1, MAX_PIP
-! pradeep skipping ghost particles
-         if(pea(ll,1)) pc = pc + 1
-         IF(.NOT.PEA(LL,1) .or. pea(ll,4)) CYCLE    
+         IF(PEA(LL,1)) PC = PC + 1
+! skipping ghost particles and particles that don't exist
+         IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE    
 
          GLOBAL_GRAN_ENERGY(:) = GLOBAL_GRAN_ENERGY(:) + &
             0.5d0*PMASS(LL)*(DES_VEL_NEW(LL,:)-DES_VEL_AVG(:))**2
@@ -159,9 +167,19 @@
 
       END SUBROUTINE DES_GRANULAR_TEMPERATURE
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+!
+!  Module name: CALC_DES_BEDHEIGHT
+!  Purpose: Calculate an average bed height for each solids phase
+!  present
+!     
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       SUBROUTINE CALC_DES_BEDHEIGHT
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------      
       USE indices
       USE geometry      
       USE compar
@@ -170,29 +188,30 @@
       USE physprop
       USE fldvar
       IMPLICIT NONE
-
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------  
 ! particle index
-      INTEGER L
+      INTEGER :: L
 ! accounted for particles
-      INTEGER PC
+      INTEGER :: PC
 ! solids phase no.    
-      INTEGER M      
+      INTEGER :: M      
 ! ijk indices      
-      INTEGER I, J, K, IJK
+      INTEGER :: I, J, K, IJK
 ! average height of fluid cell 
-      DOUBLE PRECISION  hcell
+      DOUBLE PRECISION :: hcell
 ! height of particle (y-position)
-      DOUBLE PRECISION hpart      
+      DOUBLE PRECISION :: hpart      
 ! volume fraction of phase M in fluid cell
-      DOUBLE PRECISION EP_SM      
+      DOUBLE PRECISION :: EP_SM      
 ! tmp variables for calculations
       DOUBLE PRECISION :: tmp_num(MMAX), tmp_den(MMAX)
-
+!-----------------------------------------------
+! Include statement functions      
 !-----------------------------------------------
       INCLUDE 'function.inc'
+!-----------------------------------------------
 
 ! calculation of bed height following the formulation of Goldschmidt et
 ! al., Powder Technology 138, 2003, 135-159
@@ -220,9 +239,9 @@
 
       PC = 0
       DO L = 1, MAX_PIP
-! pradeep skipping ghost particles
          IF(PEA(L,1)) PC = PC + 1
-         IF(.NOT.PEA(L,1) .OR. PEA(L,4)) CYCLE    
+! skipping ghost particles and particles that don't exist
+         IF(.NOT.PEA(L,1) .OR. PEA(L,4)) CYCLE
          M = PIJK(L,5)
          hpart = DES_POS_NEW(L,2)
          tmp_num(M) = tmp_num(M) + hpart
