@@ -11,9 +11,25 @@
 !                    des_par_exchange; when do_nsearch is true ghost particles of the 
 !                    system will be updated, which will be later used to generate
 !                    neighbour list.
+
+! Contains following subroutines: 
+!    des_par_exchange
+!    desmpi_init, desmpi_setcomm, desmpi_sendrecv_init,
+!    desmpi_sendrecv_wait, desmpi_gatherv, desmpi_scatterv
+!    des_scatter_particle, des_restart_map, desmpi_check_sendrecvbuf,
+!    desmpi_pack_ghostpar, desmpi_unpack_ghostpar, desmpi_cleanup, 
+!    desmpi_pack_parcross, desmpi_unpack_parcross, des_addnodevalues,
+!    des_gather_d,l,i, des_gatherwrite_d,l,i, des_writepar_d,l,i
+!    des_scatter_d,l,i, des_readscatter_d,l,i, 
+!    des_restart_neigh, redim_par, des_dbgmpi    
+! Contains following functions:
+!    locate_par, exten_locate_par      
 !------------------------------------------------------------------------
       module desmpi 
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------       
       use parallel_mpi
       use mpi_utility
       use discretelement
@@ -25,10 +41,13 @@
       use desmpi_wrapper
       use sendrecvnode
       use mfix_pic
+!-----------------------------------------------  
+
 ! flags and constants for interfaces     
       integer,dimension(:),allocatable   :: ineighproc           
       logical,dimension(:),allocatable   :: iexchflag
-!offset for periodic boundaries 
+
+! offset for periodic boundaries 
       double precision,dimension(:,:),allocatable   :: dcycl_offset
 
 ! following variables used for sendrecv ghost particles and particle exchange
@@ -53,7 +72,7 @@
 ! variables used to read initial particle properties 
       double precision, dimension(:,:),allocatable:: dpar_pos,dpar_vel
       double precision, dimension(:),allocatable::dpar_den,dpar_rad
-!Variales used for reading restart file 
+! Variables used for reading restart file 
       integer,dimension(:),allocatable:: irestartmap 
       integer,dimension(:),allocatable  :: itempglobal_id 
      
@@ -73,13 +92,18 @@
       interface des_writepar 
          module procedure des_writepar_l,des_writepar_i,des_writepar_d
       end interface  
+
+
       contains 
+
+
+
 !------------------------------------------------------------------------
 ! Subroutine       : des_par_exchange   
-! Comments         : main subroutine controls entier exchange of particles
+! Comments         : main subroutine controls entire exchange of particles
 !                    between the processors
 ! Steps
-!  --> pin the particles 
+!  --> bin the particles 
 !  --> check if the send and recv buffer size is enough 
 !  --> particle crossing boundary - will take place in following order 
 !      a. top-bottom interface
@@ -97,24 +121,29 @@
 !------------------------------------------------------------------------
       subroutine des_par_exchange()
 
+!----------------------------------------------- 
       implicit none 
 
+!-----------------------------------------------       
 ! local variables 
+!-----------------------------------------------       
       integer linter,lface
       integer, save :: lcheckbuf = 0 
+!----------------------------------------------- 
 
 ! bin the particles and check the bufsize
       call desgrid_pic(plocate=.true.) 
 
-!mpi_all_reduce is expensive so avoiding  the check for  buffer size
-!further high factors are used for buffer and hence check at low frequency is enough 
+! mpi_all_reduce is expensive so avoiding the check for buffer size
+! further high factors are used for buffer and hence check at low 
+! frequency is enough 
       if (mod(lcheckbuf,100) .eq. 0) then 
          call desmpi_check_sendrecvbuf
          lcheckbuf = 0 
       end if 
       lcheckbuf = lcheckbuf + 1
       
-!call particle crossing the boundary exchange in T-B,N-S,E-W order   
+! call particle crossing the boundary exchange in T-B,N-S,E-W order   
       dsendbuf(1,:) = 0; drecvbuf(1,:) =0 
       ispot = 1                   
       do linter = dimn,1,-1
@@ -137,11 +166,12 @@
          end do 
       end do  
       call des_mpi_barrier
-!***********PRADEEP REMOVE START 
+
 !      call des_dbgmpi(5)
-!***********PRADEEP REMOVE START 
-      if (.not. mppic) then   
-!call ghost particle exchange in E-W, N-S, T-B order   
+
+
+      IF(.NOT.MPPIC) THEN
+! call ghost particle exchange in E-W, N-S, T-B order   
          dsendbuf(1,:) = 0; drecvbuf(1,:) =0 
          ighost_updated(:) = .false. 
          ispot = 1                   
@@ -166,15 +196,15 @@
          end do  
          if(do_nsearch) call desmpi_cleanup
          call des_mpi_barrier
-      end if 
-!***********PRADEEP REMOVE START 
+      ENDIF   ! end if(.not.mppic)
+
 !      call des_dbgmpi(2)
 !      call des_dbgmpi(3)
 !      call des_dbgmpi(4)
 !      call des_dbgmpi(6)
 !      call des_dbgmpi(7)
-!*********REMOVE END 
-      end subroutine
+
+      end subroutine des_par_exchange
 
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_init     
@@ -182,15 +212,17 @@
 !                    sets the flag related to periodic and processor interfaces 
 !------------------------------------------------------------------------
       subroutine desmpi_init 
-
+!----------------------------------------------- 
       implicit none 
-
+!----------------------------------------------- 
 ! local variables 
+!-----------------------------------------------       
       integer :: lpacketsize,ltordimn,lfaces,lfactor=4
       integer :: lmaxlen1,lmaxlen2,lmaxarea,lmaxghostpar
+!----------------------------------------------- 
 
-! determin initial size of send and recv buffer based on max_pip,total cells
-! max number of boundary cells, and the packet size 
+! determine initial size of send and recv buffer based on max_pip, 
+! total cells max number of boundary cells, and the packet size 
       ltordimn = (dimn-2)*2 + 1
       lpacketsize = 2*dimn + ltordimn+ 5  
       lfaces = dimn*2
@@ -224,29 +256,35 @@
       allocate(ighost_updated(max_pip))
 
 ! call node exchange init in case  
-     if(des_interp_on) call des_setnodeindices
+      if(des_interp_on) call des_setnodeindices
 
 ! set the communication flags 
       call desmpi_setcomm 
-! pradeep remove***********
+
 !      call des_dbgmpi(1)
-      end subroutine  
+
+      end subroutine desmpi_init
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_setcomm
 ! Purpose          : sets the flags required for interprocessor communication
 !------------------------------------------------------------------------
       subroutine desmpi_setcomm() 
-
+!----------------------------------------------- 
       implicit none
-
-!local variables 
+!----------------------------------------------- 
+! local variables 
+!-----------------------------------------------       
       integer lijkproc,liproc,ljproc,lkproc
       integer li,lj,lk,lis,lie,ljs,lje,lks,lke,lcount,lface,litmp,ljtmp,lktmp
       integer listart1,liend1,ljstart1,ljend1,lkstart1,lkend1
       integer listart2,liend2,ljstart2,ljend2,lkstart2,lkend2
-
+!----------------------------------------------- 
+! include statement functions      
+!-----------------------------------------------       
       include 'des/desgrid_functions.inc' 
+!----------------------------------------------- 
 
 ! set flags for interprocessor boundaries and set the corresponding to proc  
       lijkproc = mype 
@@ -320,7 +358,7 @@
       end if  
 
 ! For mass inlet and outlet, the cells where the particle injected are 
-! considered as part of the domain ; This avoids flagging newly injected particles
+! considered as part of the domain; This avoids flagging newly injected particles
 ! and outgoing particles as ghost particles PEA(:,4)
       listart1=dg_istart1;liend1=dg_iend1;listart2=dg_istart2;liend2=dg_iend2
       ljstart1=dg_jstart1;ljend1=dg_jend1;ljstart2=dg_jstart2;ljend2=dg_jend2
@@ -447,7 +485,7 @@
       irecvindices(1,lface) = lcount - 1 
 
       return 
-      end subroutine  
+      end subroutine desmpi_setcomm 
 
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_sendrecv_init 
@@ -457,15 +495,21 @@
 !                    debug - for printing debug statments
 !------------------------------------------------------------------------
       subroutine desmpi_sendrecv_init(pface,pdebug)
-
+!----------------------------------------------- 
       implicit none
-! dummy variable
+!----------------------------------------------- 
+! dummy variables
+!----------------------------------------------- 
       integer,intent(in) :: pface
       integer,intent(in),optional :: pdebug
+!----------------------------------------------- 
 ! local variables 
+!----------------------------------------------- 
       character(len=80), parameter :: name = 'desmpi_sendrecv_init'
       integer :: ldebug,ltag,lerr,lsource,ldest,lrecvface
       integer :: message_tag
+!----------------------------------------------- 
+
       message_tag(lsource,ldest,lrecvface) = lsource+numpes*ldest+numpes*numpes*lrecvface+100 
 
 ! set the debug flag 
@@ -490,7 +534,7 @@
          call mpi_check( name //':mpi_isend ', lerr )
       end if 
       return 
-      end subroutine 
+      end subroutine desmpi_sendrecv_init
 
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_sendrecv_wait 
@@ -500,14 +544,19 @@
 !                    debug - for printing debug statments
 !------------------------------------------------------------------------
       subroutine desmpi_sendrecv_wait(pface,pdebug)
-
+!----------------------------------------------- 
       implicit none
-! dummy variable
+!----------------------------------------------- 
+! dummy variables
+!----------------------------------------------- 
       integer,intent(in) :: pface
       integer,intent(in),optional :: pdebug
+!----------------------------------------------- 
 ! local variables 
+!----------------------------------------------- 
       character(len=80), parameter :: name = 'desmpi_sendrecv_wait'
       integer :: ldebug,ltag,lerr,lsource,ldest
+!----------------------------------------------- 
 
 ! set the debug flag 
       ldebug = 0
@@ -523,7 +572,9 @@
          call mpi_check( name //':mpi_wait-recv', lerr )
       end if 
       return 
-      end subroutine 
+      end subroutine desmpi_sendrecv_wait
+
+
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_scatterv     
 ! Purpose          : scatters the particle from PE_IO 
@@ -531,16 +582,19 @@
 !                    pdebug - optional flag for debugging
 !------------------------------------------------------------------------
       subroutine desmpi_scatterv(ptype,pdebug)
-
+!----------------------------------------------- 
       implicit none 
-
+!----------------------------------------------- 
 ! dummy variables 
+!----------------------------------------------- 
       integer, intent(in) :: ptype 
       integer, intent(in),optional :: pdebug 
-
+!----------------------------------------------- 
 ! local variables 
+!----------------------------------------------- 
       integer lroot,lidebug,lerr
       character(len=80), parameter :: name = 'desmpi_scatterv'
+!----------------------------------------------- 
 
       lroot = pe_io  
       if (.not. present(pdebug)) then
@@ -561,6 +615,7 @@
       return
       end subroutine desmpi_scatterv 
 
+
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_gatherv     
 ! Purpose          : gathers the particle from local proc to root proc
@@ -568,16 +623,19 @@
 !                    pdebug - optional flag for debugging
 !------------------------------------------------------------------------
       subroutine desmpi_gatherv(ptype,pdebug)
-
+!----------------------------------------------- 
       implicit none 
-
+!----------------------------------------------- 
 ! dummy variables 
+!----------------------------------------------- 
       integer, intent(in) :: ptype 
       integer, intent(in),optional :: pdebug 
-
+!----------------------------------------------- 
 ! local variables 
+!----------------------------------------------- 
       integer lroot,lidebug,lerr
       character(len=80), parameter :: name = 'des_gather'
+!----------------------------------------------- 
 
       lroot = pe_io  
       if (.not. present(pdebug)) then
@@ -597,6 +655,7 @@
       return
       end subroutine desmpi_gatherv 
 
+
 !------------------------------------------------------------------------
 ! Subroutine       : des_scatter_particle 
 ! Purpose          : Scatters the particles read from input file or 
@@ -606,12 +665,14 @@
 !                    Each proc receives its particles along with particle count   
 !------------------------------------------------------------------------
       subroutine des_scatter_particle
-
+!-----------------------------------------------
       implicit none 
-
+!-----------------------------------------------
 ! local variables
+!-----------------------------------------------
       integer lcurpar,lproc,lbuf,lpacketsize,lface
       integer lproc_parcnt(0:numpes-1),lpar_proc(particles)
+!-----------------------------------------------
 
 ! set the packet size for transfer  
       lpacketsize = 2*dimn + 2
@@ -667,7 +728,8 @@
       pip = lproc_parcnt(mype)
       if (pip .gt. max_pip) then 
          write(*,*) "From des_scatter_particle:"
-         write(*,*) "Particles in the processor ,",pip, " exceeds maximum pip,", max_pip 
+         write(*,*) "Particles in the processor ,",pip, &
+            " exceeds maximum pip,", max_pip 
          call des_mpi_stop
       end if 
       iscr_recvcnt = pip*lpacketsize
@@ -712,6 +774,7 @@
       deallocate (dprocbuf,drootbuf)
       end subroutine des_scatter_particle 
 
+
 !------------------------------------------------------------------------
 ! Subroutine       : des_restart_map 
 ! Purpose          : Scatters the particles read from restart file and 
@@ -720,16 +783,19 @@
 ! Parameters       : pglocnt - total particles read from restart file 
 !------------------------------------------------------------------------
       subroutine des_restart_map (pglocnt)
-
+!----------------------------------------------- 
       implicit none 
-
+!----------------------------------------------- 
 ! dummy variables
+!-----------------------------------------------
       integer pglocnt 
- 
+!-----------------------------------------------
 ! local variables
+!-----------------------------------------------
       integer lcurpar,lproc,lbuf,lpacketsize,lface
       integer lpar_cnt(0:numpes-1)
       double precision,dimension(0:numpes-1):: lxmin,lxmax,lymin,lymax,lzmin,lzmax 
+!-----------------------------------------------
 
 ! set the domain range for each processor
       do lproc= 0,numpes-1
@@ -813,7 +879,8 @@
       pip = lpar_cnt(mype)
       if (pip .gt. max_pip) then 
          write(*,*) "From des_restart_map:"
-         write(*,*) "Particles in the processor ,",pip, " exceeds maximum pip,", max_pip 
+         write(*,*) "Particles in the processor ,",pip, &
+            " exceeds maximum pip,", max_pip 
          call des_mpi_stop
       end if 
       iscr_recvcnt = pip*lpacketsize
@@ -852,6 +919,8 @@
       deallocate (drootbuf,dprocbuf)
 
       end subroutine des_restart_map 
+
+
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_check_sendrecvbuf 
 ! Purpose          : checks if the sendrecvbuf size is enough if not redefine
@@ -859,11 +928,14 @@
 !                     
 !------------------------------------------------------------------------
       subroutine desmpi_check_sendrecvbuf
-
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------      
 !local variables 
+!-----------------------------------------------      
       integer:: lijk,ltot_ind,lparcnt,lmaxcnt,lface,ltordimn,lpacketsize,lindx
       real :: lfactor = 1.5
+!-----------------------------------------------
 
       lmaxcnt = 0 
       ltordimn = (dimn-2)*2 + 1
@@ -884,7 +956,8 @@
          allocate(dsendbuf(imaxbuf,2*dimn),drecvbuf(imaxbuf,2*dimn))
       end if 
 
-      end subroutine 
+      end subroutine desmpi_check_sendrecvbuf
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_pack_ghostpar 
@@ -892,16 +965,22 @@
 ! Parameter        : face - value from 1 to 6 represents faces 
 !------------------------------------------------------------------------
       subroutine desmpi_pack_ghostpar(pface)
-
+!-----------------------------------------------
       implicit none 
-
+!-----------------------------------------------
 ! dummy variables
+!-----------------------------------------------      
       integer, intent(in) :: pface 
- 
-!local variables 
+!----------------------------------------------- 
+! local variables 
+!-----------------------------------------------      
       integer :: lijk,lindx,ltot_ind,lpicloc,lpar_cnt,lcurpar
       integer :: ltordimn,lpacketsize,lbuf
+!-----------------------------------------------
+! include statement functions
+!-----------------------------------------------      
       include 'des/desgrid_functions.inc'
+!-----------------------------------------------
 
       ltordimn = (dimn-2)*2 + 1
       lpacketsize = 2*dimn + ltordimn+ 5  
@@ -926,7 +1005,8 @@
       dsendbuf(1,pface)=lpar_cnt
       isendcnt(pface) = lpar_cnt*lpacketsize+ibufoffset
 
-      end subroutine
+      end subroutine desmpi_pack_ghostpar
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_unpack_ghostpar 
@@ -935,21 +1015,23 @@
 !                     
 !------------------------------------------------------------------------
       subroutine desmpi_unpack_ghostpar(pface)
-
+!-----------------------------------------------
       implicit none 
-
+!-----------------------------------------------
 ! dummy variables
+!-----------------------------------------------      
       integer, intent(in) :: pface 
-     
-!local variables 
+!-----------------------------------------------     
+! local variables 
+!-----------------------------------------------      
       integer :: lcurpar,lparid,lprvijk,lijk,lparijk,lparcnt,ltot_ind
       integer :: ltordimn,lpacketsize,lbuf,lindx,llocpar,lnewcnt,lpicloc
       logical,dimension(:),allocatable :: lfound 
       integer,dimension(:),allocatable :: lnewspot,lnewpic
+!-----------------------------------------------
 
 ! unpack the particles; if it already exists update the position 
 ! if not and do_nsearch is true then add to the particle array
-
       
       ltordimn = (dimn-2)*2 + 1
       lpacketsize = 2*dimn + ltordimn+ 5  
@@ -1023,7 +1105,7 @@
 !deallocate temporary variablies
       deallocate (lfound,lnewspot,lnewpic) 
 
-      end  subroutine 
+      end  subroutine desmpi_unpack_ghostpar 
 
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_cleanup
@@ -1031,8 +1113,14 @@
 ! Parameter        : 
 !------------------------------------------------------------------------
       subroutine desmpi_cleanup
-!local variable 
+!-----------------------------------------------
+      implicit none      
+!-----------------------------------------------      
+! local variables
+!-----------------------------------------------      
       integer ltot_ind,lface,lindx,lijk,lcurpar,lpicloc
+!-----------------------------------------------      
+
       do lface = 1,dimn*2
          if(.not.iexchflag(lface))cycle 
          ltot_ind = irecvindices(1,lface)
@@ -1051,7 +1139,7 @@
             end do  
          end do    
       end do 
-      end subroutine 
+      end subroutine desmpi_cleanup
 
 
 !------------------------------------------------------------------------
@@ -1060,17 +1148,25 @@
 ! Parameter        : pface - value from 1 to 6 represents faces 
 !------------------------------------------------------------------------
       subroutine desmpi_pack_parcross(pface)
-
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------      
 ! dummy variables
+!-----------------------------------------------      
       integer, intent(in) :: pface 
-!local variables 
+!-----------------------------------------------      
+! local variables 
+!-----------------------------------------------      
       integer :: ltot_ind,lindx,ijk
       integer :: lneighindx,lcontactindx,lneigh,lcontact,lijk,lpicloc,lparcnt,lcurpar
       integer :: lpacketsize,lbuf,ltordimn,ltmpbuf
 !      integer :: li,lj,lk,lijk 
+!-----------------------------------------------
+! include statement functions
+!-----------------------------------------------      
       include 'des/desgrid_functions.inc'
       include 'function.inc'
+!-----------------------------------------------
 
 ! pack the particle crossing the boundary 
       ltordimn = (dimn-2)*2 + 1 
@@ -1168,14 +1264,15 @@
       end do 
       dsendbuf(1,pface) = lparcnt 
       isendcnt(pface) = lparcnt*lpacketsize+ibufoffset
-! follwoing unused variables are not sent across the processor 
+
+! following unused variables are not sent across the processor 
 ! well_depth
 ! is_linked
-! is_agglomerated 
 ! links 
-! aggs 
 ! part_grid
-      end  subroutine 
+
+      end  subroutine desmpi_pack_parcross
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_unpack_parcross
@@ -1184,19 +1281,25 @@
 !                     
 !------------------------------------------------------------------------
       subroutine desmpi_unpack_parcross(pface)
-
+!-----------------------------------------------
       implicit none 
-      include 'des/desgrid_functions.inc'
- 
+!-----------------------------------------------
 ! dummy variables
+!-----------------------------------------------      
       integer, intent(in) :: pface 
-
-!local variables
+!-----------------------------------------------
+! local variables
+!-----------------------------------------------      
       integer :: lijk,lcurpar,lparcnt,llocpar,lparid,lparijk,lprvijk
       integer :: lneighindx,lneigh,lcontactindx,lcontactid,lcontact,lneighid,lneighijk,lneighprvijk 
       logical :: lfound
       integer :: lpacketsize,lbuf,ltordimn,ltmpbuf,lcount
       logical :: lcontactfound,lneighfound
+!-----------------------------------------------
+! include statement functions      
+!-----------------------------------------------            
+      include 'des/desgrid_functions.inc'
+!-----------------------------------------------      
 
 ! loop through particles and locate them and make changes 
       ltordimn = (dimn-2)*2 + 1 
@@ -1328,7 +1431,7 @@
 
       end do 
 
-      end  subroutine 
+      end  subroutine desmpi_unpack_parcross
 
 
 !------------------------------------------------------------------------
@@ -1339,16 +1442,22 @@
 !                    plocalno - localparticle number (output) 
 !------------------------------------------------------------------------
       function locate_par(pglobalid,pijk,plocalno)
-
+!-----------------------------------------------
       implicit none 
-      include 'des/desgrid_functions.inc'
-
+!----------------------------------------------- 
 ! dummy variables
+!----------------------------------------------- 
       logical :: locate_par 
       integer :: pglobalid,pijk,plocalno 
-
-!local variables
+!----------------------------------------------- 
+! local variables
+!----------------------------------------------- 
       integer :: lpicloc,lcurpar
+!----------------------------------------------- 
+! include statement functions
+!----------------------------------------------- 
+      include 'des/desgrid_functions.inc'
+!----------------------------------------------- 
 
       locate_par = .false.
       if (pijk .lt. dg_ijkstart2 .or. pijk .gt. dg_ijkend2) then 
@@ -1363,7 +1472,7 @@
          end if 
       end do 
       return 
-      end function 
+      end function locate_par 
 
 !------------------------------------------------------------------------
 ! Function         : exten_locate_par
@@ -1374,18 +1483,23 @@
 !                    plocalno - localparticle number (output) 
 !------------------------------------------------------------------------
       function exten_locate_par(pglobalid,pijk,plocalno)
-
+!----------------------------------------------- 
       implicit none 
-      include 'des/desgrid_functions.inc'
-
+!----------------------------------------------- 
 ! dummy variables
+!-----------------------------------------------
       logical :: exten_locate_par 
       integer :: pglobalid,pijk,plocalno 
-
-!local variables
+!-----------------------------------------------
+! local variables
+!-----------------------------------------------
       integer :: lpicloc,lcurpar
       integer :: lijk,li,lj,lk,lic,ljc,lkc,lkoffset
-
+!-----------------------------------------------
+! include statement functions      
+!-----------------------------------------------
+      include 'des/desgrid_functions.inc'
+!-----------------------------------------------
       exten_locate_par = .false.
       lic = dg_iof_lo(pijk)
       ljc = dg_jof_lo(pijk)
@@ -1408,7 +1522,9 @@
       end do 
       end do 
       return 
-      end function 
+      end function exten_locate_par
+
+
 !------------------------------------------------------------------------
 ! Subroutine       : des_addnodevalues 
 ! Purpose          : This routine is specially used for drag_fgs 
@@ -1420,18 +1536,23 @@
 ! Parameters       : None  
 !------------------------------------------------------------------------
       subroutine des_addnodevalues()
-
-      implicit none 
+!-----------------------------------------------
+      implicit none
+!-----------------------------------------------
 ! local variables 
+!-----------------------------------------------
       integer :: lm,ijk,lface,lijkmin,lijkmax
       integer :: linode,ljnode,lknode,lijknode
+!-----------------------------------------------
+! include statement functions      
+!-----------------------------------------------
       include 'function.inc'
+!-----------------------------------------------
 
-      
 ! fill the temporary buffer   
       do lm = 1,mmax
-      call des_exchangenode(wtbar(:,lm),padd=.true.)
-      call des_exchangenode(drag_am(:,lm),padd=.true.)
+         call des_exchangenode(wtbar(:,lm),padd=.true.)
+         call des_exchangenode(drag_am(:,lm),padd=.true.)
          do li =1,dimn
             call des_exchangenode(drag_bm(:,li,lm),padd=.true.)
          end do 
@@ -1480,78 +1601,11 @@
          end do 
          end do 
       end if 
-	
-      return 
-!Pradeep see the drag_fgs.f. The volume takes care of this. 
-! multiply drag by 2.0 for grid nodes on the boundary as it has only particles 
-! on one side(half when compared to interior grid points)
-!      do lface = 1, 2*dimn  
-!         if (iexchflag(lface)) cycle  
-!         select case (lface)
-!         case (1)
-!            linode = iend1
-!            do lk = kstart2,kend2
-!            do lj = jstart2,jend2
-!               lijknode = funijk(linode,lj,lk)
-!               drag_am(lijknode,:) = 2.0 * drag_am(lijknode,:) 
-!               wtbar(lijknode,:) = 2.0 * wtbar(lijknode,:)
-!               drag_bm(lijknode,1:dimn,:) = 2.0 *drag_bm(lijknode,1:dimn,:) 
-!            end do 
-!            end do 
-!         case (2) 
-!            linode = istart2
-!            do lk = kstart2,kend2
-!            do lj = jstart2,jend2
-!               lijknode = funijk(linode,lj,lk)
-!               drag_am(lijknode,:) = 2.0 * drag_am(lijknode,:) 
-!               wtbar(lijknode,:) = 2.0 * wtbar(lijknode,:)
-!               drag_bm(lijknode,1:dimn,:) = 2.0 *drag_bm(lijknode,1:dimn,:) 
-!            end do 
-!            end do 
-!         case (3)
-!            ljnode = jend1
-!            do lk = kstart2,kend2
-!            do li = istart2,iend2
-!               lijknode = funijk(li,ljnode,lk)
-!               drag_am(lijknode,:) = 2.0 * drag_am(lijknode,:) 
-!               wtbar(lijknode,:) = 2.0 * wtbar(lijknode,:)
-!               drag_bm(lijknode,1:dimn,:) = 2.0 *drag_bm(lijknode,1:dimn,:) 
-!            end do 
-!            end do 
-!         case (4) 
-!            ljnode = jstart2
-!            do lk = kstart2,kend2
-!            do li = istart2,iend2
-!               lijknode = funijk(li,ljnode,lk)
-!               drag_am(lijknode,:) = 2.0 * drag_am(lijknode,:) 
-!               wtbar(lijknode,:) = 2.0 * wtbar(lijknode,:)
-!               drag_bm(lijknode,1:dimn,:) = 2.0 *drag_bm(lijknode,1:dimn,:) 
-!            end do 
-!            end do 
-!         case (5) 
-!            lknode = kend1
-!            do li = istart2,iend2
-!            do lj = jstart2,jend2
-!               lijknode = funijk(li,lj,lknode)
-!               drag_am(lijknode,:) = 2.0 * drag_am(lijknode,:) 
-!               wtbar(lijknode,:) = 2.0 * wtbar(lijknode,:)
-!               drag_bm(lijknode,1:dimn,:) = 2.0 *drag_bm(lijknode,1:dimn,:) 
-!            end do 
-!            end do 
-!         case (6) 
-!            lknode = kstart2
-!            do li = istart2,iend2
-!            do lj = jstart2,jend2
-!               lijknode = funijk(li,lj,lknode)
-!               drag_am(lijknode,:) = 2.0 * drag_am(lijknode,:) 
-!               wtbar(lijknode,:) = 2.0 * wtbar(lijknode,:)
-!               drag_bm(lijknode,1:dimn,:) = 2.0 *drag_bm(lijknode,1:dimn,:) 
-!            end do 
-!            end do 
-!         end select  
-!      end do 
 
-      end subroutine 
+      return 
+
+      end subroutine des_addnodevalues
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_gather_d 
@@ -1560,12 +1614,17 @@
 !                    parray - array to be writen
 !------------------------------------------------------------------------
       subroutine des_gather_d(parray)
-      
+!-----------------------------------------------      
       implicit none 
+!-----------------------------------------------      
 ! dummy variables 
+!-----------------------------------------------      
       double precision, dimension(:) :: parray  
+!-----------------------------------------------      
 ! local variables 
+!-----------------------------------------------      
       integer :: lcurpar,lparcount,lcount
+!-----------------------------------------------
 
 ! pack the variables in case of 
       lparcount = 1; lcount = 0 
@@ -1578,21 +1637,27 @@
          dprocbuf(lcount) = parray(lcurpar)
       end do  
       call desmpi_gatherv(ptype=2)
-      end subroutine 
+      end subroutine des_gather_d
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_gather_l 
-! Purpose          : gathers integer array from local to root 
+! Purpose          : gathers logical array from local to root 
 ! Parameters       : 
 !                    parray - array to be writen
 !------------------------------------------------------------------------
       subroutine des_gather_l(parray)
-
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------      
 ! dummy variables 
+!-----------------------------------------------      
       logical, dimension(:) :: parray  
+!-----------------------------------------------
 ! local variables 
+!-----------------------------------------------      
       integer :: lcurpar,lparcount,lcount 
+!-----------------------------------------------
 
 ! pack the variables in proc buffer 
       lparcount = 1; lcount = 0  
@@ -1610,7 +1675,8 @@
       end do  
       call desmpi_gatherv(ptype=1)
       
-      end subroutine 
+      end subroutine des_gather_l
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_gather_i 
@@ -1622,14 +1688,19 @@
 !                    and neighbour terms)
 !------------------------------------------------------------------------
       subroutine des_gather_i(parray,ploc2glb)
-
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------      
 ! dummy variables 
+!-----------------------------------------------      
       integer, dimension(:) :: parray  
-      logical,optional :: ploc2glb  
+      logical,optional :: ploc2glb
+!-----------------------------------------------      
 ! local variables 
+!-----------------------------------------------      
       integer :: lcurpar,lparcount,lcount 
       logical :: lloc2glb
+!-----------------------------------------------
 
       if (present(ploc2glb)) then
          lloc2glb = ploc2glb 
@@ -1663,7 +1734,8 @@
       end if 
       call desmpi_gatherv(ptype=1)
       
-      end subroutine 
+      end subroutine des_gather_i
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_gatherwrite_d 
@@ -1679,15 +1751,21 @@
 !                    pconv2real   - convert to real    
 !------------------------------------------------------------------------
       subroutine des_gatherwrite_d (punit,parray,ptotsize,pnext_rec,pconv2real)
-
+!-----------------------------------------------
       implicit none 
-! dummy variables 
+!-----------------------------------------------      
+! dummy variables
+!-----------------------------------------------      
       integer :: punit,pnext_rec,ptotsize
       logical, optional :: pconv2real 
       double precision, dimension(:) :: parray  
-! local variables 
+!-----------------------------------------------      
+! local variables
+!-----------------------------------------------      
       real, dimension(ptotsize) :: lrealarray
-      logical lconv2real 
+      logical lconv2real
+!-----------------------------------------------
+
       if (present(pconv2real)) then 
          lconv2real = pconv2real 
       else 
@@ -1703,7 +1781,8 @@
          end if 
       end if 
 
-      end subroutine 
+      end subroutine des_gatherwrite_d
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_gatherwrite_l 
@@ -1715,15 +1794,18 @@
 !                    pnext_rec - next rec pointer for file   
 !------------------------------------------------------------------------
       subroutine des_gatherwrite_l(punit,parray,ptotsize,pnext_rec)
-
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------      
 ! dummy variables 
+!-----------------------------------------------      
       integer:: punit,pnext_rec,ptotsize
       logical, dimension(:) :: parray  
-! local variables 
+
       call des_gather(parray)
       if(mype.eq.pe_io) call out_bin_512i(punit,irootbuf,ptotsize,pnext_rec)
-      end subroutine 
+      end subroutine des_gatherwrite_l
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_gatherwrite_i 
@@ -1738,14 +1820,19 @@
 !                    and neighbour terms)
 !------------------------------------------------------------------------
       subroutine des_gatherwrite_i(punit,parray,ptotsize,pnext_rec,ploc2glb)
-
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------      
 ! dummy variables 
+!-----------------------------------------------      
       integer:: punit,pnext_rec,ptotsize
       integer, dimension(:) :: parray  
-      logical,optional :: ploc2glb  
+      logical,optional :: ploc2glb
+!-----------------------------------------------
 ! local variables 
+!-----------------------------------------------
       logical :: lloc2glb
+!-----------------------------------------------
 
       if (present(ploc2glb)) then
          lloc2glb = ploc2glb 
@@ -1754,7 +1841,8 @@
       end if 
       call des_gather(parray,lloc2glb)
       if(mype.eq.pe_io) call out_bin_512i(punit,irootbuf,ptotsize,pnext_rec)
-      end subroutine 
+      end subroutine des_gatherwrite_i
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_writepar_l
@@ -1765,14 +1853,19 @@
 !                    pnext_rec - next rec pointer for file   
 !------------------------------------------------------------------------
       subroutine des_writepar_l (punit,parray,ptotsize,pnext_rec)
-
-      implicit none 
-! dummy variables 
+!-----------------------------------------------
+      implicit none
+!-----------------------------------------------
+! dummy variables
+!-----------------------------------------------
       integer :: punit,pnext_rec,ptotsize
-      logical, dimension(:) :: parray  
-! local variables 
+      logical, dimension(:) :: parray
+!-----------------------------------------------
+! local variables
+!-----------------------------------------------
       integer, dimension(ptotsize) :: lintarray
       integer lparcount,lcurpar
+!-----------------------------------------------
 
       lparcount = 1
       do lcurpar = 1, max_pip 
@@ -1786,7 +1879,7 @@
          lparcount = lparcount +1 
       end do  
       call out_bin_512i(punit,lintarray,ptotsize,pnext_rec)
-      end subroutine 
+      end subroutine des_writepar_l
 
 
 !------------------------------------------------------------------------
@@ -1801,16 +1894,21 @@
 !                    and neighbour terms)
 !------------------------------------------------------------------------
       subroutine des_writepar_i (punit,parray,ptotsize,pnext_rec,ploc2glb)
-
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------      
 ! dummy variables 
+!-----------------------------------------------      
       integer :: punit,pnext_rec,ptotsize
       logical, optional :: ploc2glb 
       integer, dimension(:) :: parray  
-! local variables 
+!-----------------------------------------------      
+! local variables
+!-----------------------------------------------      
       integer, dimension(ptotsize) :: lintarray
       logical lloc2glb 
       integer lparcount,lcurpar
+!-----------------------------------------------
 
       if (present(ploc2glb)) then 
          lloc2glb = ploc2glb 
@@ -1834,7 +1932,7 @@
          end do  
       end if 
       call out_bin_512i(punit,lintarray,ptotsize,pnext_rec)
-      end subroutine 
+      end subroutine des_writepar_i
 
 
 !------------------------------------------------------------------------
@@ -1847,16 +1945,22 @@
 !                    pconv2real - convert to real    
 !------------------------------------------------------------------------
       subroutine des_writepar_d (punit,parray,ptotsize,pnext_rec,pconv2real)
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------      
 ! dummy variables 
+!-----------------------------------------------
       integer :: punit,pnext_rec,ptotsize
       logical, optional :: pconv2real 
       double precision, dimension(:) :: parray  
+!-----------------------------------------------
 ! local variables 
+!-----------------------------------------------
       double precision, dimension(ptotsize) :: ldblarray
       real, dimension(ptotsize) :: lrealarray
       logical lconv2real 
       integer lparcount,lcurpar
+!-----------------------------------------------
 
       if (present(pconv2real)) then 
          lconv2real = pconv2real 
@@ -1882,7 +1986,7 @@
          end do  
          call out_bin_512(punit,ldblarray,ptotsize,pnext_rec)
       end if 
-      end subroutine 
+      end subroutine des_writepar_d
 
 
 !------------------------------------------------------------------------
@@ -1892,18 +1996,25 @@
 ! Parameters       : parray - destination array 
 !------------------------------------------------------------------------
       subroutine des_scatter_i(parray)
+!-----------------------------------------------      
       implicit none 
+!-----------------------------------------------      
 ! dummy variables 
+!-----------------------------------------------
       integer, dimension(:) :: parray
+!-----------------------------------------------
 ! local variables 
+!-----------------------------------------------
       integer :: lcurpar
+!-----------------------------------------------
 
 ! scatter the variables and map into local particles array
       call desmpi_scatterv(ptype=1)
       do lcurpar = 1,pip 
          parray(lcurpar) = iprocbuf(lcurpar)
       end do  
-      end subroutine 
+      end subroutine des_scatter_i
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_scatter_l 
@@ -1912,11 +2023,17 @@
 ! Parameters       : parray - destination array 
 !------------------------------------------------------------------------
       subroutine des_scatter_l(parray)
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------
 ! dummy variables 
+!-----------------------------------------------
       logical, dimension(:) :: parray
+!-----------------------------------------------
 ! local variables 
+!-----------------------------------------------
       integer :: lcurpar
+!-----------------------------------------------
 
 ! scatter the variables and map into local particles array
       call desmpi_scatterv(ptype=1)
@@ -1927,7 +2044,7 @@
             parray(lcurpar) = .false.
          end if 
       end do  
-      end subroutine 
+      end subroutine des_scatter_l
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_scatter_d 
@@ -1937,19 +2054,25 @@
 !                    parray - destination array 
 !------------------------------------------------------------------------
       subroutine des_scatter_d(parray)
-
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------
 ! dummy variables 
+!-----------------------------------------------
       double precision, dimension(:) :: parray
+!-----------------------------------------------
 ! local variables 
+!-----------------------------------------------
       integer :: lcurpar
+!-----------------------------------------------
 
 ! scatter the variables and map into local particles array
       call desmpi_scatterv(ptype=2)
       do lcurpar = 1,pip 
          parray(lcurpar) = dprocbuf(lcurpar)
       end do  
-      end subroutine 
+      end subroutine des_scatter_d
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_readscatter_i 
@@ -1961,14 +2084,20 @@
 !                    pnext_rec - next rec pointer for file   
 !------------------------------------------------------------------------
       subroutine des_readscatter_i(punit,parray,ptotsize,pnext_rec)
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------
 ! dummy variables 
+!-----------------------------------------------
       integer:: punit,pnext_rec,ptotsize
       integer, dimension(:) :: parray  
-!local variables 
+!-----------------------------------------------
+! local variables 
+!-----------------------------------------------
       integer, dimension(ptotsize) :: larray  
       integer,dimension(0:numpes-1) :: lproc_parcnt
       integer :: lcurpar,lproc 
+!-----------------------------------------------
       if(mype.eq.pe_io) then 
          call in_bin_512i(punit,larray,ptotsize,pnext_rec)
          lproc_parcnt(:)= 0
@@ -1979,7 +2108,8 @@
          end do 
       end if 
       call des_scatter(parray)
-      end subroutine 
+      end subroutine des_readscatter_i
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_readscatter_l 
@@ -1991,14 +2121,20 @@
 !                    pnext_rec - next rec pointer for file   
 !------------------------------------------------------------------------
       subroutine des_readscatter_l(punit,parray,ptotsize,pnext_rec)
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------      
 ! dummy variables 
+!-----------------------------------------------
       integer:: punit,pnext_rec,ptotsize
       logical, dimension(:) :: parray  
-!local variables 
+!-----------------------------------------------
+! local variables 
+!-----------------------------------------------
       integer, dimension(ptotsize) :: larray  
       integer,dimension(0:numpes-1) :: lproc_parcnt
       integer :: lcurpar,lproc 
+!-----------------------------------------------
       if(mype.eq.pe_io) then 
          call in_bin_512i(punit,larray,ptotsize,pnext_rec)
          lproc_parcnt(:)= 0
@@ -2009,7 +2145,8 @@
          end do 
       end if 
       call des_scatter(parray)
-      end subroutine 
+      end subroutine des_readscatter_l
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_readscatter_d 
@@ -2021,14 +2158,20 @@
 !                    pnext_rec - next rec pointer for file   
 !------------------------------------------------------------------------
       subroutine des_readscatter_d(punit,parray,ptotsize,pnext_rec)
+!-----------------------------------------------
       implicit none 
+!-----------------------------------------------
 ! dummy variables 
+!-----------------------------------------------
       integer:: punit,pnext_rec,ptotsize
       double precision, dimension(:) :: parray  
-!local variables 
+!-----------------------------------------------
+! local variables 
+!-----------------------------------------------
       double precision, dimension(ptotsize) :: larray  
       integer,dimension(0:numpes-1) :: lproc_parcnt
       integer :: lcurpar,lproc
+!-----------------------------------------------
       if(mype.eq.pe_io) then 
          call in_bin_512(punit,larray,ptotsize,pnext_rec)
          lproc_parcnt(:)= 0
@@ -2039,7 +2182,8 @@
          end do 
       end if 
       call des_scatter(parray)
-      end subroutine 
+      end subroutine des_readscatter_d
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_restart_neigh 
@@ -2052,15 +2196,18 @@
 !                       and convert global numbers to local numbers
 ! Parameters       : none 
 !------------------------------------------------------------------------
-      subroutine des_restart_neigh
-      implicit none 
 
+      subroutine des_restart_neigh
+!-----------------------------------------------
+      implicit none 
+!-----------------------------------------------
 ! local variables 
+!-----------------------------------------------
       integer linter,lface
       integer lparcnt,lcurpar,lneigh,lneighid,lneighindx,lcontact,lcontactid,lcontactindx 
       integer lcurijk,lcount
       logical lneighfound,lcontactfound
-
+!-----------------------------------------------
 ! set do_nsearch true so that the ghost cell will be updated 
       do_nsearch = .true. 
       call desgrid_pic(plocate=.true.) 
@@ -2142,7 +2289,8 @@
          end do 
          pn(lcurpar,1) = lcount 
       end do 
-      end subroutine 
+      end subroutine des_restart_neigh
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : redim_par
@@ -2153,12 +2301,16 @@
 !                     
 !------------------------------------------------------------------------
       subroutine redim_par(pmaxpip)
+!-----------------------------------------------
 ! dummy variables 
+!-----------------------------------------------      
       integer :: pmaxpip 
+!-----------------------------------------------
+
       write(*,*) "Error:Number of particles", pmaxpip, "exceeded allowable particles", max_pip 
       write(*,*) "Suggestion:Increase Particles_factor in mfix.dat"  
       call des_mpi_stop
-      end  subroutine 
+      end  subroutine redim_par
 
 !------------------------------------------------------------------------
 ! subroutine       : des_dbgmpi 
@@ -2175,10 +2327,15 @@
 !                    7 - neighinfo
 !------------------------------------------------------------------------
       subroutine des_dbgmpi(ptype)
+!-----------------------------------------------
       implicit none  
+!-----------------------------------------------
 ! dummy variables 
+!-----------------------------------------------
       integer ptype 
+!-----------------------------------------------
 ! local varaiables 
+!-----------------------------------------------
       character (30) filename      
       integer lcurpar,lpacketsize,lface,lparcnt,lbuf,lindx,ltordimn
       integer lcurijk
@@ -2186,7 +2343,11 @@
       integer lstart,lsize
       double precision xpos,ypos
       integer li,lj,lparcount
+!-----------------------------------------------
+! include statement functions
+!-----------------------------------------------
       include 'des/desgrid_functions.inc' 
+!-----------------------------------------------
 
       write(filename,'("dbg_desmpi",I4.4,".dat")') mype 
       open(44,file=filename)
@@ -2345,7 +2506,7 @@
          write(44,*) "-----------------------------------------------"
       end select
       close(44) 
-      end subroutine 
+      end subroutine des_dbgmpi
 
 
       end module 

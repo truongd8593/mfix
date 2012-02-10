@@ -6,8 +6,16 @@
 ! Comments         : The variables are named similar to the fluid grid
 !                    more descriptions about naming could be found in 
 !                    compar_mod under dmp_modules folder
+!
+! Contains following subroutines:
+!    desgrid_init, desgrid_check, desgrid_pic,
+!    desgrid_neigh_build, des_dbggrid
 !------------------------------------------------------------------------
       module desgrid
+
+!-----------------------------------------------
+! Modules
+!----------------------------------------------- 
       use param1
       use funits
       use geometry
@@ -15,13 +23,14 @@
       use discretelement
       use constant
       use desmpi_wrapper
+!----------------------------------------------- 
 
 ! variables related to global block structure 
       integer  :: dg_imin1,dg_imin2,dg_jmin1,dg_jmin2,dg_kmin1,dg_kmin2, &
                   dg_imax1,dg_imax2,dg_jmax1,dg_jmax2,dg_kmax1,dg_kmax2 
 
 ! variables contain information of local indices of all processors
-     integer,dimension (:),allocatable ::  &
+      integer,dimension (:),allocatable ::  &
                   dg_istart1_all,dg_istart2_all,dg_iend1_all,dg_iend2_all, &
                   dg_jstart1_all,dg_jstart2_all,dg_jend1_all,dg_jend2_all, &
                   dg_kstart1_all,dg_kstart2_all,dg_kend1_all,dg_kend2_all, &
@@ -49,9 +58,13 @@
 
 ! constants required for functions computing local and global ijkvalues   
       integer dg_c1_gl,dg_c2_gl,dg_c3_gl,dg_c1_lo,dg_c2_lo,dg_c3_lo
-      integer, dimension(:), allocatable :: dg_c1_all,dg_c2_all,dg_c3_all     
+      integer, dimension(:), allocatable :: dg_c1_all,dg_c2_all,dg_c3_all
+
+
 
       contains 
+
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : desgrid_init 
@@ -61,13 +74,19 @@
 !------------------------------------------------------------------------
       subroutine desgrid_init()
       implicit none 
-
-! local varibles 
+!----------------------------------------------- 
+! Local varibles 
+!-----------------------------------------------       
       double precision :: ldomlen 
       double precision :: ltempdx,ltempdy,ltempdz 
       integer :: lijkproc,liproc,ljproc,lkproc,lis,lie,ljs,lje,lks,lke 
       integer :: lijk
+!----------------------------------------------- 
+! Include statement functions      
+!-----------------------------------------------       
       include 'des/desgrid_functions.inc' 
+!----------------------------------------------- 
+
 
 !set indices for all processors 
      allocate (dg_istart1_all(0:numpes-1),dg_istart2_all(0:numpes-1),dg_iend1_all(0:numpes-1),dg_iend2_all(0:numpes-1), &
@@ -208,7 +227,7 @@
       dg_c2_gl = dg_c1_gl*(dg_imax2-dg_imin2+1)
       dg_c3_gl = -dg_c1_gl*imin2-dg_c2_gl*kmin2-dg_jmin2+1
 
-!set local constants 
+! set local constants 
       dg_c1_lo = dg_c1_all(mype)
       dg_c2_lo = dg_c2_all(mype) 
       dg_c3_lo = dg_c3_all(mype)
@@ -221,17 +240,19 @@
 
 ! Confirmation checks 
       if (dg_ijkstart2.ne.1) then 
-         if (dmp_log) write(unit_log,'(A)') "Error in dg_funijk: dg_ijkstart2 is not correct"  
+         if (dmp_log) write(unit_log,'(A)')&
+            "Error in dg_funijk: dg_ijkstart2 is not correct"  
          call des_mpi_stop
       end if 
       if (dg_ijkend2.ne.dg_ijksize2) then 
-         if (dmp_log) write(unit_log,'(A)') "Error in dg_funijk: dg_ijkend2 is not correct"  
+         if (dmp_log) write(unit_log,'(A)') &
+            "Error in dg_funijk: dg_ijkend2 is not correct"  
          call des_mpi_stop
       end if 
        
 
 ! set the domain length and dx,dy and dz values used in particle_in_cell 
-! to pin the particles 
+! to bin the particles 
       dg_xstart = xe(istart2)
       dg_xend = xe(iend1)
       dg_ystart = yn(jstart2)
@@ -249,26 +270,31 @@
       end if 
 
 ! allocate the desgridsearch related variables  
-      allocate(dg_pic(dg_ijksize2)); dg_pic(:)%isize = 0
+      allocate(dg_pic(dg_ijksize2))
+      dg_pic(:)%isize = 0
       do lijk = 1,dg_ijksize2
          nullify(dg_pic(lijk)%p)
       end do 
-      allocate(dg_pijk(max_pip),dg_pijkprv(max_pip)) ;dg_pijk = 0;dg_pijkprv=0;
-!pradeep **************REMOVE
+      allocate(dg_pijk(max_pip),dg_pijkprv(max_pip))
+      dg_pijk = 0
+      dg_pijkprv=0
+
 !      call des_dbggrid 
-      end subroutine  
+      end subroutine desgrid_init 
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : desgrid_check 
-! Purpose          : checks the input parameter, if no user inout then 
+! Purpose          : checks the input parameter, if no user input then 
 !                    sets the grid size based on maximum diameter 
 !------------------------------------------------------------------------
       subroutine desgrid_check() 
-
       implicit none 
-    
-! local variables  
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------      
       double precision :: max_diam,tmp_factor,dl_tmp  
+!-----------------------------------------------  
 
       max_diam = 2.0d0*max_radius
       tmp_factor = 3.0d0*(max_diam)
@@ -281,7 +307,7 @@
       else
          dl_tmp = xlength/dble(desgridsearch_imax)
          if (dl_tmp < max_diam) then
-            if(dmp_log) write(unit_log,1037) 'x', 'x', 'i', 'i'                    
+            if(dmp_log) write(unit_log,1037) 'x', 'x', 'i', 'i'
             call mfix_exit(mype)
          endif
       endif
@@ -329,7 +355,8 @@
           'problems for the search method and detecting neighbors',/10X,&
           'Decrease desgridsearch_',A,'max in mfix.dat to coarsen ',&
           'grid.',/1X,70('*')/)
-      end subroutine  
+      end subroutine desgrid_check 
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : desgrid_pic
@@ -342,29 +369,29 @@
 !                    updated by this routine 
 !------------------------------------------------------------------------
       subroutine desgrid_pic(plocate)
-
-      implicit none 
-! dummy variables
-      logical plocate
-! local variables
+      implicit none
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------         
+      logical, INTENT(IN) :: plocate
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------         
       integer, dimension(dg_ijksize2) :: lpic,lindx 
       integer li,lj,lk,lijk,lcurpar,lparcount,lcurpic
       logical, save :: first_pass = .true.
       integer :: lallocstat,lallocerr
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------      
       include 'des/desgrid_functions.inc' 
-!!$      double precision omp_start, omp_end
-!!$      double precision omp_get_wtime	      
-!       by Tingwen      
-!!$      omp_start=omp_get_wtime()
-      
+!-----------------------------------------------      
 
 ! locate the particles including ghost cells
       lparcount = 1 
       lpic(:) = 0 
       if (plocate) then 
          dg_pijkprv(:)= dg_pijk(:)
-!!$omp parallel do default(shared)                               &
-!!$omp private(lcurpar,li,lj,lk,lijk) schedule (guided,20)  	 
          do lcurpar = 1,max_pip 
             if(lparcount.gt.pip) exit 
             if(.not.pea(lcurpar,1)) cycle 
@@ -378,11 +405,8 @@
             end if 
             dg_pijk(lcurpar) = dg_funijk(li,lj,lk)
             lijk = dg_pijk(lcurpar)
-!!$omp critical 			
             lpic(lijk) = lpic(lijk) + 1
-!!$omp end critical 
          end do 
-!!$omp end parallel do
       else 
          do lcurpar = 1,max_pip 
             if(lparcount.gt.pip) exit 
@@ -399,7 +423,6 @@
       end if 
       
 ! redfine the array of dg_pic 
-!!$      omp_start=omp_get_wtime()
 !$omp parallel do default(shared)                               &
 !$omp private(lijk,lcurpic) schedule (guided,50)  	 
       do lijk = dg_ijkstart2,dg_ijkend2
@@ -411,8 +434,7 @@
          end if 
       end do 
 !$omp end parallel do
-!!$      omp_end=omp_get_wtime()
-!!$      write(*,*)'desgrid_pic:',omp_end - omp_start
+
 
 ! assign the particle info in pic array 
       lindx(:) = 1
@@ -426,12 +448,12 @@
          lindx(lijk) = lindx(lijk) +  1
       enddo
      
-!!$      omp_end=omp_get_wtime()
-!!$      write(*,*)'desgrid_pic:',omp_end - omp_start  
 !      open (unit=100,file='desgrid.txt',status='unknown')
 !      write(100,*)lpic
 !      close(100)
-      end subroutine   
+      
+      end subroutine desgrid_pic   
+
 
 !------------------------------------------------------------------------
 ! subroutine       : desgrid_neigh_build ()  
@@ -440,36 +462,33 @@
 !------------------------------------------------------------------------
       subroutine desgrid_neigh_build ()
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       Use des_thermo
-      
       implicit none 
-      include 'des/desgrid_functions.inc'
- 
-! local variables 
-      integer lcurpar,lparcount,lmaxneigh,lkoffset
+!-----------------------------------------------      
+! Local variables 
+!-----------------------------------------------      
+      integer lcurpar,lmaxneigh,lkoffset
       integer lijk,lic,ljc,lkc,li,lj,lk,ltotpic,lpicloc,lneigh,lneighcnt
       double precision lsearch_rad,ldist,ldistvec(dimn)
-!!$      double precision omp_start, omp_end
-!!$      double precision omp_get_wtime	      
-!       by Tingwen      
-!!$      omp_start=omp_get_wtime()
+!-----------------------------------------------
+! Include statement functions      
+!-----------------------------------------------
+      include 'des/desgrid_functions.inc'
+!----------------------------------------------- 
 
 ! loop through neighbours and build the contact particles list for particles 
 ! present in the system
       lkoffset = dimn-2 
-!!      lparcount=1 
 
 !$omp   parallel do default(shared)                              &             
 !$omp   private(lcurpar,lneighcnt,lijk,lic,ljc,lkc,    		 &
 !$omp           li,lj,lk,ltotpic,lpicloc,lneigh,lsearch_rad,     &
 !$omp           ldistvec,ldist) schedule (dynamic,50)       
       do lcurpar =1,max_pip
-!     Tingwen Li
-!     lines to count particles in the system is disabled as it won't lead to any
-!     benefit in openmp parallel
-!!         if (lparcount.gt.pip) exit
          if (.not. pea(lcurpar,1)) cycle 
-!!         lparcount = lparcount +1 
          if (pea(lcurpar,4)) cycle 
          lneighcnt = 0
          lijk = dg_pijk(lcurpar)
@@ -488,11 +507,14 @@
                ldistvec = des_pos_new(lcurpar,:)-des_pos_new(lneigh,:)
                ldist = sqrt(dot_product(ldistvec,ldistvec))
 ! J.Musser - Secondary list for heat transfer
-               IF(FIND_THERMO_NBRHD) CALL THERMO_NBR(lcurpar,lneigh,ldist)               
+               IF(FIND_THERMO_NBRHD) CALL THERMO_NBR(lcurpar,lneigh,ldist)
                if (ldist.gt.lsearch_rad) cycle 
                lneighcnt = lneighcnt + 1
                if(lneighcnt .gt. MN) then 
-                  write(*,'("Particle ",I7," has more than allowed maximum (",I3,") neighbours")') iglobal_id(lcurpar),MN
+                  write(*,'(A,I7,A,I3,A)') 'Particle ', &
+                     IGLOBAL_ID(LCURPAR), &
+                     'has more than allowed maximum ', MN, &
+                     'neighbours'
                   call des_mpi_stop
                end if   
                neighbours(lcurpar,1) = lneighcnt 
@@ -502,26 +524,32 @@
          end do 
          end do 
       end do 
+
 !$omp end parallel do         
-!!$      omp_end=omp_get_wtime()
-!!$      write(*,*)'desgrid_neigh_build:',omp_end - omp_start  
 !      open (unit=100,file='neighbours.txt',status='unknown')
 !      write(100,*)neighbours
 !      close(100)
 
-      end subroutine 
+      end subroutine desgrid_neigh_build
+
 
 !------------------------------------------------------------------------
 ! subroutine       : des_dbggrid 
 ! Purpose          : For printing the indices used for desgrid  
 !------------------------------------------------------------------------
       subroutine des_dbggrid()
- 
       implicit none  
-! local varaiables 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------      
       integer lproc,liproc,ljproc,lkproc
-      character (30) filename      
+      character (30) filename
+!-----------------------------------------------
+! Include statement functions      
+!-----------------------------------------------      
       include 'des/desgrid_functions.inc'
+!-----------------------------------------------      
+
       write(filename,'("dbg_desgridn",I4.4,".dat")') mype 
       open(44,file=filename)
       do lproc = 0,numpes-1 
@@ -560,6 +588,6 @@
       write(44,*) "for k1:      ",dg_kmin1,dg_kmax1
       write(44,*) "for k2:      ",dg_kmin2,dg_kmax2
       close(44) 
-      end subroutine 
+      end subroutine des_dbggrid
 
       end module 

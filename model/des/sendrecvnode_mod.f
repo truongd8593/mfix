@@ -8,9 +8,14 @@
 !                    to iend1; mapping technique used in sendrecv mod is
 !                    not applicable to nodes; hence different techniques is 
 !                    employed
+! Contains subroutines:
+!    des_setnodeindices, des_exchangenode, des_dbgnodesr
 !------------------------------------------------------------------------
       module sendrecvnode
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------    
       use parallel_mpi
       use mpi_utility
       use discretelement
@@ -19,6 +24,7 @@
       use sendrecv
       use desmpi_wrapper
       use desgrid 
+!-----------------------------------------------
 
       integer :: itotalneigh,itotalindx
       integer,dimension(:),allocatable ::  itoproc,iprocsumindx,istartindx 
@@ -27,7 +33,10 @@
       integer,dimension(:),allocatable :: isendnodes
       double precision,dimension(:),allocatable :: dsendnodebuf,drecvnodebuf
       integer,dimension(:),allocatable :: irecvreqnode,isendreqnode
+
+
       contains 
+
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_setnodesindices     
@@ -35,9 +44,11 @@
 !                    to send and recv for grid node values 
 !------------------------------------------------------------------------
       subroutine des_setnodeindices  
-
+!----------------------------------------------- 
       implicit none
+!-----------------------------------------------       
 ! Local variables 
+!----------------------------------------------- 
       integer ijk,lijkproc,ljproc,lkproc
       integer li2,lj2,lk2
       integer liproc_start,liproc_end,ljproc_start,ljproc_end,lkproc_start,lkproc_end
@@ -45,9 +56,13 @@
       integer linode,ljnode,lknode
       integer linode_start,linode_end,ljnode_start,ljnode_end,lknode_start,lknode_end
       logical lpresent
+!----------------------------------------------- 
+! include statement functions      
+!----------------------------------------------- 
       include 'function.inc'
       include 'des/desgrid_functions.inc'
-      
+!----------------------------------------------- 
+
 ! set flags for interprocessor boundaries and set the corresponding to proc  
       liproc = iofproc(mype)
       ljproc = jofproc(mype)
@@ -175,9 +190,9 @@
       end do 
       end do 
       end do 
-! pradeep remove
+
 !      call  des_dbgnodesr()
-      end subroutine 
+      end subroutine des_setnodeindices  
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_exchangenode
@@ -189,15 +204,21 @@
 !                           else node values will be replaced
 !------------------------------------------------------------------------
       subroutine des_exchangenode(pvar,padd)
+!----------------------------------------------- 
       implicit none
+!----------------------------------------------- 
 ! dummy variables 
+!----------------------------------------------- 
       double precision,dimension(:),intent(inout) ::pvar
       logical:: padd
+!----------------------------------------------- 
 ! local variables 
+!----------------------------------------------- 
       character(len=80), parameter :: name = 'des_exchangenode'
       integer :: lindx,lcount,lcount2,lneigh,ltag,lerr,lsource,ldest
       integer :: lstart,lend,ltotal
       integer :: message_tag
+!----------------------------------------------- 
       message_tag(lsource,ldest) = lsource+numpes*ldest+200 
 
 ! steps pack the buffer call isend and irecv 
@@ -238,21 +259,27 @@
          end do 
       end if 
       return 
-      end subroutine 
+      end subroutine des_exchangenode
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_dbgnodesr
 ! Purpose          : For debugging prints the indices 
 !------------------------------------------------------------------------
       subroutine des_dbgnodesr()
+!----------------------------------------------- 
       implicit none 
-
+!----------------------------------------------- 
 ! local variables 
+!----------------------------------------------- 
       character (30) filename      
       integer ijk 
       integer lcount,lcount2,lstart,lend
- 
+!----------------------------------------------- 
+! include statement functions
+!----------------------------------------------- 
       include 'function.inc' 
+!----------------------------------------------- 
+
 ! pradeep remove print the flags
       write(filename,'("dbg_nodesr",I4.4,".dat")') mype 
       open(44,file=filename)
@@ -268,7 +295,7 @@
          write(44,*) "--------------------------------------------"
       end do  
       close (44)
-      end subroutine 
+      end subroutine des_dbgnodesr
 
       end module 
 
