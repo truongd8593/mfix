@@ -229,8 +229,6 @@
 
       IF(DES_BCMI /= 0 .OR. DES_BCMO /=0)THEN
          DES_MIO = .TRUE.
-! Allocate necessary arrays for discrete mass inlets
-         CALL ALLOCATE_DES_MIO
 
 ! Verify that either the nsquare or grid based neighbor searches are
 ! used, otherwise flag and exit
@@ -254,32 +252,33 @@
       IF(PARTICLES == UNDEFINED_I .AND. MAX_PIS /= UNDEFINED_I)THEN
          PARTICLES = 0
       ELSEIF(PARTICLES == UNDEFINED_I .AND. MAX_PIS == UNDEFINED_I)THEN
-         if(dmp_log)write(unit_log,'(3X,A)')&
-         'Either PARTICLES or MAX_PIS must specified in mfix.dat'
+         IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A)')&
+            'Either PARTICLES or MAX_PIS must specified in mfix.dat'
          CALL MFIX_EXIT(myPE)
       ELSEIF(PARTICLES == 0 .AND. MAX_PIS == UNDEFINED_I) THEN
-         if(dmp_log)write(unit_log,'(3x,A,/3X,A,A)')'Message from check_des_bc.f', &
-         'If starting with 0 PARTICLES, MAX_PIS must be ', &
-         'specified in mfix.dat'
+         IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,/3X,A,A)') &
+            'If starting with 0 PARTICLES, MAX_PIS must be ', &
+            'specified in mfix.dat'
          CALL MFIX_EXIT(myPE)         
       ENDIF 
 
       IF (.NOT.GENER_PART_CONFIG) THEN
          IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,I10)') &
-         'Total number of particles read from input file = ', PARTICLES
-         IF(mype.eq.pe_IO) WRITE(*,'(3X,A,I10)') &
-         'Total number of particles read from input file = ', PARTICLES
+            'Total number of particles read from input file = ', PARTICLES
+         IF(DMP_LOG) WRITE(*,'(3X,A,I10)') &
+            'Total number of particles read from input file = ', PARTICLES
       ENDIF
 
 ! If the system is started without any particles and an inlet is not
-! specified, the run is aborted.
-      IF(DES_BCMI == 0 .AND. PARTICLES == 0.AND.(.NOT.MPPIC))THEN
-         !With MPPIC, inlet outlet are based off the regular mfix declarations, 
-         !and des_bcmi could still be zero .
-         IF(DMP_LOG) WRITE(UNIT_LOG, 1009)
-         WRITE(*, 1009)
-         CALL MFIX_EXIT(myPE)
-      ELSEIF(PARTICLES == 0)THEN
+! specified, the run is likely aborted.
+! Inlet/outlet for MPPIC are based off the regular mfix declarations, 
+! and so des_bcmi could still be zero.
+      IF (PARTICLES == 0) THEN
+         IF(DES_BCMI == 0 .AND. (.NOT.MPPIC))THEN
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1009)
+            WRITE(*, 1009)
+           CALL MFIX_EXIT(myPE)
+         ENDIF
          WRITE(*,'(5X,A)') &
             'Run initiated with no particles in the system'
       ENDIF

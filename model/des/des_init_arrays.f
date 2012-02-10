@@ -11,6 +11,9 @@
     
       SUBROUTINE DES_INIT_ARRAYS
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param
       USE param1
       USE discretelement
@@ -24,21 +27,27 @@
       use desmpi 
       USE des_thermo
       USE des_rxns      
- 
       IMPLICIT NONE
 !-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER I
 
-!-----------------------------------------------
+! Pradeep: parallel processing
+      iglobal_id = 0
 
+! T.Li: Hertzian collision model
+      g_mod(:) = zero
+      hert_kn(:,:) = zero
+      hert_kwn(:) = zero
+      hert_kt(:,:) = zero
+      hert_kwt(:) = zero
+
+! particle properties      
       DES_RADIUS(:) = ZERO
       PMASS(:) = ZERO
       PVOL(:) = ZERO
       OMOI(:) = ZERO
       RO_Sol(:) = ZERO 
 
+! particle position, velocity, etc      
       DES_POS_OLD(:,:) = ZERO
       DES_POS_NEW(:,:) = ZERO
       DES_VEL_OLD(:,:) = ZERO
@@ -51,27 +60,34 @@
       OMEGA_NEW(:,:) = ZERO
       ROT_ACC_OLD(:,:) = ZERO
 
-      DES_U_s(:,:) = ZERO
-      DES_V_s(:,:) = ZERO
-      DES_W_s(:,:) = ZERO
-      SOLID_DRAG(:,:,:) = ZERO
-
       FC(:,:) = ZERO
       FN(:,:) = ZERO
       FT(:,:) = ZERO
       TOW(:,:) = ZERO
 
-      PPOS(:,:) = ZERO
-      GRAV(:) = ZERO
-!      DES_WALL_POS(:,:) = UNDEFINED
-!      DES_WALL_VEL(:,:) = UNDEFINED
-
-      NEIGHBOURS(:,:) = -1
-      NEIGHBOURS(:,1) = 0
       PN(:,:) = -1
       PN(:,1) = 0
       PV(:,:) = 1
       PFT(:,:,:) = ZERO
+      PPOS(:,:) = ZERO
+
+      PINC(:) = ZERO
+      PIJK(:,:) = ZERO
+
+! this could be made local to drag_fgs      
+      SOLID_DRAG(:,:,:) = ZERO
+      DES_U_s(:,:) = ZERO
+      DES_V_s(:,:) = ZERO
+      DES_W_s(:,:) = ZERO
+
+      XE(:) = ZERO
+      YN(:) = ZERO
+      ZT(:) = ZERO
+
+      GRAV(:) = ZERO
+
+      NEIGHBOURS(:,:) = -1
+      NEIGHBOURS(:,1) = 0
 
       IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. &
         DES_NEIGHBOR_SEARCH .EQ. 3) THEN
@@ -80,48 +96,18 @@
           PQUAD(:) = 0
       ENDIF      
 
-! pradeep desgrid related routines are moved to desgrid module
-!      IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN
-!         DESGRIDSEARCH_PIJK(:,:) = ZERO
-!      ENDIF
-
-
-      PINC(:) = ZERO
-      PIJK(:,:) = ZERO
-
-! pradeep removed this geometry is used to define des grid and setting zero here violates that 
-      XE(:) = ZERO
-      YN(:) = ZERO
-      ZT(:) = ZERO
-
-! J.Musser: DEM inlet/outlet
-      PEA(:,:) = .FALSE.
-! Pradeep not proper location for the following setting 
-! If RESTART_1, PEA will be read in from the restart file
-!      IF(RUN_TYPE == 'NEW') THEN
-!         DO I=1, PARTICLES
-!            PEA(I,1)=.TRUE.
-!         ENDDO
-!      ENDIF
-      DES_BC_U_s(:) = ZERO
-      DES_BC_V_s(:) = ZERO
-      DES_BC_W_s(:) = ZERO
-
-! T.Li : Hertzian collision model
-      g_mod(:) = zero
-      hert_kn(:,:) = zero
-      hert_kwn(:) = zero
-      hert_kt(:,:) = zero
-      hert_kwt(:) = zero
-
-!pradeep for parallel processin 
-      iglobal_id = 0
-
-! cohesion VDW forces
+! Cohesion VDW forces
       IF(USE_COHESION) THEN
          Fcohesive(:,:) = ZERO
          PostCohesive (:) = ZERO
       ENDIF
+
+! J.Musser: DEM particle tracking quantity
+      PEA(:,:) = .FALSE.
+! J.Musser: DEM inlet/outlet quantity      
+      DES_BC_U_s(:) = ZERO
+      DES_BC_V_s(:) = ZERO
+      DES_BC_W_s(:) = ZERO
 
 ! J.Musser: Energy and Species Equation Arrays
       IF(DES_ENERGY_EQ)THEN
@@ -152,7 +138,6 @@
             dRdt_OLD(:) = ZERO
          ENDIF
       ENDIF
-
 
       RETURN
       END SUBROUTINE DES_INIT_ARRAYS 

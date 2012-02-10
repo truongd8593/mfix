@@ -100,11 +100,11 @@
       DES_PERIODIC_WALLS_Y = .FALSE.
       DES_PERIODIC_WALLS_Z = .FALSE.
 
+! lees edwards bc keywords      
       DES_LE_BC = .FALSE.
       DES_LE_REL_VEL = UNDEFINED
       DES_LE_SHEAR_DIR = UNDEFINED_C
 
-      NON_RECT_BC=.FALSE.
       WALLDTSPLIT = .FALSE.
       WALLREFLECT = .FALSE.
 
@@ -134,11 +134,13 @@
       DES_BC_T_s(:,:) = UNDEFINED
       DES_BC_X_s(:,:,:) = UNDEFINED
       FORCE_ORD_BC = .FALSE.
-! for cohesion
+
+! for cohesion: squarewell
       MASTER_WELL_DEPTH = UNDEFINED
       MASTER_WALL_WELL_DEPTH = UNDEFINED
       RADIUS_RATIO = UNDEFINED
       WALL_RADIUS_RATIO = UNDEFINED
+! for cohesion: van der waals
       HAMAKER_CONSTANT = UNDEFINED
       WALL_HAMAKER_CONSTANT = UNDEFINED
       VDW_OUTER_CUTOFF = UNDEFINED
@@ -181,7 +183,6 @@
       DES_EPS_ZSTART = UNDEFINED 
       pvel_mean = zero 
       PVEL_StDev = zero 
-      pgrad(:) = zero 
 
       MAX_DES_BC_CELL = 4
       MPPIC_SOLID_STRESS_SNIDER = .false. 
