@@ -299,7 +299,6 @@ mfix.exe : \
     tau_v_s.$(OBJ_EXT) \
     tau_w_g.$(OBJ_EXT) \
     tau_w_s.$(OBJ_EXT) \
-    test.$(OBJ_EXT) \
     test_lin_eq.$(OBJ_EXT) \
     time_march.$(OBJ_EXT) \
     transfer.$(OBJ_EXT) \
@@ -744,7 +743,6 @@ mfix.exe : \
     tau_v_s.$(OBJ_EXT) \
     tau_w_g.$(OBJ_EXT) \
     tau_w_s.$(OBJ_EXT) \
-    test.$(OBJ_EXT) \
     test_lin_eq.$(OBJ_EXT) \
     time_cpu_mod.$(OBJ_EXT) \
     time_march.$(OBJ_EXT) \
@@ -4460,7 +4458,6 @@ tau_w_s.$(OBJ_EXT) : tau_w_s.f \
             function.inc                                                 \
             fun_avg2.inc                                                 \
             ep_s2.inc                                                   
-test.$(OBJ_EXT) : test.f 
 test_lin_eq.$(OBJ_EXT) : test_lin_eq.f \
             param.mod \
             param1.mod \
@@ -6085,13 +6082,9 @@ generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
             fldvar.mod \
             indices.mod \
             randomno.mod \
-            sendrecv.mod \
-            interpolation.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
-            ep_s2.inc                                                    \
-            fun_avg1.inc                                                 \
-            fun_avg2.inc                                                
+            ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/generate_particle_config.f 
 grid_based_neighbor_search.$(OBJ_EXT) : ./des/grid_based_neighbor_search.f \
             param1.mod \
