@@ -101,14 +101,7 @@
 
 ! used in octree and quadtree neighbor search algorithms      
       RADIUS_EQ = MAX_RADIUS*1.05d0
-
-! cohesion related routines      
-      IF(USE_COHESION .AND. VAN_DER_WAALS) THEN 
-         SURFACE_ENERGY = HAMAKER_CONSTANT/&
-            (24d0*PI*VDW_INNER_CUTOFF*VDW_INNER_CUTOFF)
-         WALL_SURFACE_ENERGY = WALL_HAMAKER_CONSTANT/&
-            (24d0*PI*WALL_VDW_INNER_CUTOFF*WALL_VDW_INNER_CUTOFF)
-      ENDIF 
+      INQC = INIT_QUAD_COUNT
 !-----------------------------------------------------------------<<<
 
 
@@ -405,7 +398,7 @@
       avg_factor = 0.125d0*(dimn-2) + 0.25d0*(3-dimn)
 
 ! compute the volume at the grid nodes 
-! grid nodes start  from istart2 to iend1
+! grid nodes start from istart2 to iend1
       if(dimn.eq.2) vol_node_count = 4.
       if(dimn.eq.3) vol_node_count = 8.
       do ijk = ijkstart3,ijkend3

@@ -26,13 +26,12 @@
       USE geometry 
       USE des_ic
       USE des_rxns
-
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------      
       INTEGER :: I, J, K, L, IJK, PC, SM_CELL 
-      INTEGER :: lface,lcurpar,lpip_all(0:numpes-1),lglobal_id 
+      INTEGER :: lface, lcurpar, lpip_all(0:numpes-1), lglobal_id 
       
 ! MPPIC related quantities      
       DOUBLE PRECISION :: DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ 
@@ -41,7 +40,6 @@
 !-----------------------------------------------      
       INCLUDE 'function.inc'
 !-----------------------------------------------
-
 
       CALL DES_ALLOCATE_ARRAYS
       CALL DES_INIT_ARRAYS
@@ -146,13 +144,11 @@
          IF(DES_POS_NEW(L,2).LE.YLENGTH/2.d0) MARK_PART(L) = 0         
       ENDDO
 
-
-
 ! This call will delete the particles outside the domain. It will then
 ! re-arrange the arrays such that the active particles are in a block.
 ! This works only for MPPIC as the cell information is added to 
 ! particles in generate_particle_config_mppic itself. For DEM particles,
-! the cell information is not added in generate_particle-config but is
+! the cell information is not added in generate_particle_config but is
 ! done only during first call to particles_in_cell. 
 ! Call this before particles_in_cell as EP_G is computed which 
 ! might become less than zero if the particles outside the domain 
@@ -166,13 +162,27 @@
 ! Set initial conditions obtained from mfix.dat file. (ENERGY/SPECIES)
       IF(RUN_TYPE == 'NEW' .AND. DES_IC_EXIST) CALL DES_SET_IC
 
+! Set parameters for cohesion models.  This call needs to be after the
+! particle's radius is assigned (i.e., after particles are identified).
+      IF(USE_COHESION) THEN
+         IF (SQUARE_WELL) THEN
+            CALL INITIALIZE_COHESION_PARAMETERS
+            CALL INITIALIZE_COH_INT_SEARCH
+         ELSEIF (VAN_DER_WAALS) THEN
+! Surface energy set so that force stays constant at inner cut off         
+            SURFACE_ENERGY=HAMAKER_CONSTANT/&
+               (24.d0*Pi*VDW_INNER_CUTOFF*VDW_INNER_CUTOFF)
+            WALL_SURFACE_ENERGY=WALL_HAMAKER_CONSTANT/&
+               (24.d0*Pi*WALL_VDW_INNER_CUTOFF*WALL_VDW_INNER_CUTOFF)
+         ENDIF
+      ENDIF
+
 ! If cut-cell then remove the particles that are outside of the cut-cell
-! faces.
-! Call this after particles_in_cell so that the particles are already
-! assigned grid id's.  I thought mppic sets grid id's in 
+! faces. Call this after particles_in_cell so that the particles are
+! already assigned grid id's.  Are MPPIC grid id's set in 
+! generate_particle_config.  If so, does this still need to be here?
       IF(TRIM(RUN_TYPE) == 'RESTART_1'.AND. CARTESIAN_GRID) THEN 
-         open(1000, file='parts_out.dat', form="formatted")
-         
+         open(1000, file='parts_out.dat', form="formatted")         
          DO L = 1, PIP 
             SM_CELL = 0.d0
             IF(.NOT.FLUID_AT(PIJK(L,4))) THEN 
@@ -249,7 +259,6 @@
       use desmpi 
       use cdist 
       use mpi_utility
-
       implicit none 
 !-----------------------------------------------
 ! Local variables
@@ -263,7 +272,6 @@
 ! local filename      
       character(30) lfilename 
 !-----------------------------------------------
-
 
 
       IF(DMP_LOG) WRITE(UNIT_LOG,'(3x,a,/,5x,a)') &
@@ -283,7 +291,9 @@
       ENDIF  
 
 ! Read the file
-! in the distribute IO first line of the file will be number of particles in that processor 
+!----------------------------------------------------------------->>>      
+! In distributed IO the first line of the file will be number of 
+! particles in that processor 
       IF (bdist_io) then 
          read(lunit,*) pip
          DO lcurpar = 1,pip
@@ -293,8 +303,11 @@
                (des_vel_new(lcurpar,k),k=1,dimn)
          ENDDO
 
+!-----------------------------------------------------------------<<<
+      ELSE   ! else branch if not bdist_IO
+!----------------------------------------------------------------->>>
+
 ! Read into temporary variable and scatter 
-      ELSE
          IF (mype .eq. pe_io) THEN
 ! temporary variable                 
             ALLOCATE (dpar_pos(particles,dimn))
@@ -314,7 +327,8 @@
          ENDIF 
          call des_scatter_particle
          IF(mype.eq.pe_io) deallocate (dpar_pos,dpar_vel,dpar_rad,dpar_den)
-      ENDIF 
+      ENDIF   ! end if/else bdist_io
+!-----------------------------------------------------------------<<<
 
       IF(bdist_io .or. mype.eq.pe_io) close(lunit)
 
