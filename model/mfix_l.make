@@ -5548,6 +5548,7 @@ check_vdw_wall_interaction.$(OBJ_EXT) : ./cohesion/check_vdw_wall_interaction.f 
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_vdw_wall_interaction.f 
 initialize_cohesion_parameters.$(OBJ_EXT) : ./cohesion/initialize_cohesion_parameters.f \
+            constant.mod \
             discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/initialize_cohesion_parameters.f 
 initialize_coh_int_search.$(OBJ_EXT) : ./cohesion/initialize_coh_int_search.f \

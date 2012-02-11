@@ -51,8 +51,8 @@
       ENDIF
 
       IF(VAN_DER_WAALS)THEN
-         largest_radius=0.5*(VDW_OUTER_CUTOFF+2*largest_radius)
-      END IF
+         largest_radius=0.5*(VDW_OUTER_CUTOFF+2.d0*largest_radius)
+      ENDIF
      
       largest_dimension=2.0*largest_radius
 

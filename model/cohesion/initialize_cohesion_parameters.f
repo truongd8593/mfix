@@ -13,45 +13,55 @@
 
       SUBROUTINE INITIALIZE_COHESION_PARAMETERS
 
-!-----MODULES USED
+!------------------------------------------------
+! Modules      
+!------------------------------------------------      
+      USE constant
       USE discretelement
-
-!-----LOCAL DUMMY VARIABLES
-      INTEGER i,j
+      IMPLICIT NONE
+!------------------------------------------------
+! Local variables
+!------------------------------------------------
+      INTEGER :: I,J
+!------------------------------------------------
 
       IF(COHESION_DEBUG.gt.0)THEN
-        PRINT *, '**START INITIALIZE COHESION PARAMETERS'
-      END IF
+        WRITE(*,*) '**START INITIALIZE COHESION PARAMETERS'
+      ENDIF
 
     
-!-----INITIALIZATIONS
-      DO i=1, PARTICLES+2*DIMN
-         IS_LINKED(i)=0
-         LINKS(i,1)=0
-         DO j=2,MAXNEIGHBORS
-           LINKS(i,j)=-1
-         END DO
-         WELL_WIDTH(i)=RADIUS_RATIO*DES_RADIUS(i)
-         WELL_DEPTH(i)=MASTER_WELL_DEPTH
-         IF(I.gt.PARTICLES)THEN ! Walls
-            WELL_WIDTH(i)=WALL_RADIUS_RATIO*DES_RADIUS(1)
-            WELL_DEPTH(i)=MASTER_WALL_WELL_DEPTH
-            PMASS(i)=99999999
-         END IF
-      END DO
+      IF (SQUARE_WELL) THEN
+         DO I=1, PARTICLES+2*DIMN
+            IS_LINKED(I)=0
+            LINKS(I,1)=0
+            DO J=2,MAXNEIGHBORS
+              LINKS(I,J)=-1
+            ENDDO
+            WELL_WIDTH(I)=RADIUS_RATIO*DES_RADIUS(I)
+            WELL_DEPTH(I)=MASTER_WELL_DEPTH
+            IF(I.GT.PARTICLES)THEN ! Walls
+               WELL_WIDTH(I)=WALL_RADIUS_RATIO*MAX_RADIUS
+               WELL_DEPTH(I)=MASTER_WALL_WELL_DEPTH
+               PMASS(I)=99999999.d0
+            ENDIF
+         ENDDO
+      ENDIF   ! square_well
 
-      !!surface energy set so that force stays constant at inner cut off
-      SURFACE_ENERGY=HAMAKER_CONSTANT/&
-             (24*3.14*VDW_INNER_CUTOFF*VDW_INNER_CUTOFF)
-      WALL_SURFACE_ENERGY=WALL_HAMAKER_CONSTANT/&
-             (24*3.14*WALL_VDW_INNER_CUTOFF*WALL_VDW_INNER_CUTOFF)
+      IF (VAN_DER_WAALS) THEN
+! Surface energy set so that force stays constant at inner cut off
+         SURFACE_ENERGY=HAMAKER_CONSTANT/&
+            (24.d0*Pi*VDW_INNER_CUTOFF*VDW_INNER_CUTOFF)
+         WALL_SURFACE_ENERGY=WALL_HAMAKER_CONSTANT/&
+            (24.d0*Pi*WALL_VDW_INNER_CUTOFF*WALL_VDW_INNER_CUTOFF)
+      ENDIF   ! end if van_der_waals
+
 
       MAX_PART_IN_GRID=3
 
-      IF(COHESION_DEBUG.gt.0)THEN
-        PRINT *, '**END INITIALIZE COHESION PARAMETERS'
-      END IF
 
-      
+      IF(COHESION_DEBUG.gt.0)THEN
+        WRITE(*,*) '**END INITIALIZE COHESION PARAMETERS'
+      ENDIF
+
 
       END SUBROUTINE INITIALIZE_COHESION_PARAMETERS
