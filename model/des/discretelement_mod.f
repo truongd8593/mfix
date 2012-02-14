@@ -282,8 +282,6 @@
       LOGICAL DES_PERIODIC_WALLS_Z
 
 
-
-
 ! Lees & Edwards wall BC (lost in current DEM)
 !----------------------------------------------------------------->>>       
 ! Logic for Lees & Edwards BC (T = turn on LE BC)
@@ -384,15 +382,13 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FN    !(PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FT    !(PARTICLES,DIMN)
 
-! There is no need to maintain FN and FT arrays. This can be accomplished by FTAN and FNORM. 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FTAN, FNORM ! (DIMN)
-
 ! Torque      
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW   !(PARTICLES,DIMN)
      
-! Accumulated spring force
+! Save the accumulated tangential displacement that occurs during 
+! collision (particle-particle or particle-wall)
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT !(PARTICLES,DIMN,MAXNEIGHBORS)
-!     added by Tingwen to save the normal direction at previous time step
+! Save the normal direction at previous time step
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN ! (PARTICLES,DIMN,MAXNEIGHBORS)
 
 ! Variables used to track/store particle contact history      

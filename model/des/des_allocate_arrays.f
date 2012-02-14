@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !                                                                    
-!  Module name: DES_ALLOCATE_ARRAYS                                     
+!  Subroutine: DES_ALLOCATE_ARRAYS                                     
 !  Purpose: allocate arrays for DES
 !  
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -163,8 +163,6 @@
       Allocate(  FC (NPARTICLES,DIMN) )
       Allocate(  FN (NPARTICLES,DIMN) )
       Allocate(  FT (NPARTICLES,DIMN) )
-      Allocate(  FTAN (DIMN) )
-      Allocate(  FNORM (DIMN) )
 
 ! Torque     
       IF(DIMN.EQ.3) THEN 
@@ -409,7 +407,7 @@
       
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: ALLOCATE_DES_MIO                                       !
+!  Subroutine: ALLOCATE_DES_MIO                                        !
 !                                                                      !
 !  Purpose:                                                            !
 !                                                                      !
