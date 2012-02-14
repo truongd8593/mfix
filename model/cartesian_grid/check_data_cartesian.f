@@ -511,7 +511,9 @@
          ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF   
-                
+             
+      IF(TOL_SNAP(2)==UNDEFINED) TOL_SNAP(2)=TOL_SNAP(1)
+   
       IF(TOL_SNAP(2)<ZERO.OR.TOL_SNAP(2)>HALF) THEN
          IF(MyPE == PE_IO) THEN
             WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SNAP IN Y-DIRECTION =', TOL_SNAP(2)
@@ -521,6 +523,8 @@
          CALL MFIX_EXIT(MYPE)
       ENDIF   
                 
+      IF(TOL_SNAP(3)==UNDEFINED) TOL_SNAP(3)=TOL_SNAP(1)
+
       IF(TOL_SNAP(3)<ZERO.OR.TOL_SNAP(3)>HALF) THEN
          IF(MyPE == PE_IO) THEN
             WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SNAP IN Z-DIRECTION =', TOL_SNAP(3)

@@ -835,7 +835,7 @@
 
       DFC_MAX = TOL_SNAP(3) * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
 
-      IF(INTERSECT_Y(IJK)) THEN
+      IF(INTERSECT_Z(IJK)) THEN
 
          DFC = DABS(Zi-Za) ! DISTANCE FROM CORNER (NODE 4)
 

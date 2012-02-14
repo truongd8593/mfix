@@ -101,7 +101,9 @@
       GROUP_RELATION = 'OR'
       RELATION_WITH_PREVIOUS = 'OR'
     
-      TOL_SNAP       = 0.00D0  ! 0% of original edge length
+      TOL_SNAP(1)    = 0.00D0  ! 0% of original edge length
+      TOL_SNAP(2)    = UNDEFINED
+      TOL_SNAP(3)    = UNDEFINED
       TOL_DELH       = 0.00D0  ! 0% of original Diagonal
       TOL_SMALL_CELL = 0.01D0  ! 1% of original cell volume
       TOL_MERGE      = 1.0D-12 ! fraction of original cell diagonal
