@@ -1,13 +1,16 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!  Module name: CFWALLCONTACT(WALL, L, WALLCONTACTI)               
-!  Purpose: DES - Checking for contact with walls
-!
-!
+!      
+!  Subroutine: CFWALLCONTACT(WALL, L, WALLCONTACT) 	 
+!  Purpose: Check if particle L is in contact with WALL.  If so, set 	 
+!           WALLCONTACT to 1, else WALLCONTACT is 0
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       SUBROUTINE CFWALLCONTACT(WALL, L, WALLCONTACT)
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param1
       USE constant
       USE parallel      
@@ -15,10 +18,9 @@
       Use discretelement      
       USE des_bc
       IMPLICIT NONE
-
-
-
-
+!-----------------------------------------------
+! Dummy arguments      
+!-----------------------------------------------
 ! Given wall ID number (1=west, 2=east, 3=south, 4=north, 5=bottom,
 ! 6=top)
       INTEGER, INTENT (IN) :: WALL
@@ -27,10 +29,9 @@
 ! Flag to indicate whether given particle is in contact with given wall
 ! (1=contact, 0 = no contact)
       INTEGER, INTENT (INOUT) :: WALLCONTACT
-
 !-----------------------------------------------
 ! Local variables
-
+!-----------------------------------------------
 ! local variables for x, y, z position of the particle
       DOUBLE PRECISION :: XPOS, YPOS, ZPOS      
 ! local variables to define system dimensions
@@ -39,9 +40,9 @@
       DOUBLE PRECISION :: A, OMEGA, OOMEGA2, ASINOMEGAT 
 ! local variables: distance between particle surface and wall
       DOUBLE PRECISION :: DistApart
+!-----------------------------------------------
 
-!-----------------------------------------------        
-      ! assign temporary local variables for quick reference
+! assign temporary local variables for quick reference
       LXE = EX2
       LXW = WX1
       LYN = TY2
@@ -84,12 +85,13 @@
          ENDIF         
       ENDIF
 
-!!!!!!!!!!!! modified for cohesive forces !!!!!!!!!!
 ! Note that if no cohesion is used WALL_VDW_OUTER_CUTOFF = zero.
 ! west wall (X)
       IF(WALL.EQ.1) THEN
          DistApart = XPOS-LXW-DES_RADIUS(L)
-	 IF( DistApart <= WALL_VDW_OUTER_CUTOFF ) THEN
+! consider wall contact calculations for particle wall distances less 
+! than the cutoff
+         IF( DistApart <= WALL_VDW_OUTER_CUTOFF ) THEN
             IF(DES_MO_X)THEN
                CALL DES_MASS_OUTLET(L,'XW',WALLCONTACT,DistApart)
             ELSE
@@ -159,7 +161,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_MASS_OUTLET(NP, BCC, WC, dist)                     !
+!  Subroutine: DES_MASS_OUTLET(NP, BCC, WC, dist)                      !
 !                                                                      !
 !  Purpose:                                                            !
 !  Check if the particle's position overlaps the outlet position 
@@ -174,24 +176,30 @@
 
       SUBROUTINE DES_MASS_OUTLET(NP, BCC, WC, dist)
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE des_bc
       USE discretelement
       USE param1
-
       IMPLICIT NONE
-
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! Particle ID Number
+      INTEGER, INTENT (IN) :: NP        
+! Wall contact value (0: No Contact, 1: Contact)      
+      INTEGER, INTENT (INOUT) :: WC
+! distance between particle surface and walls      
+      DOUBLE PRECISION, INTENT (IN) :: dist
+! Boundary condition class (Xw,Xe,Ys,Yn,Zb,Zt)      
+      CHARACTER*2, INTENT (IN) :: BCC   
 !-----------------------------------------------  
 ! Local variables
 !-----------------------------------------------
-      INTEGER NP        ! Particle ID Number
-      INTEGER WC        ! Wall contact value (0: No Contact, 1: Contact)
       INTEGER BCV_I, BCV
-
       DOUBLE PRECISION XPOS, YPOS, ZPOS ! particle x,y,z position
       DOUBLE PRECISION RAD ! particle radius
-      DOUBLE PRECISION dist ! distance between particle surface and walls
- 
-      CHARACTER*2 BCC   ! Boundary condition class (Xw,Xe,Ys,Yn,Zb,Zt)
 
 !-----------------------------------------------  
 
@@ -224,6 +232,9 @@
                   IF(DES_BC_Y_s(BCV) < (YPOS - RAD) .AND. &
                      DES_BC_Y_n(BCV) > (YPOS + RAD) )THEN
                      WC = 0
+! When using Van der Waals cohesion model this subroutine may be invoked for
+! particle wall distances greater than zero.  In such an event, the particle
+! should not be considered in contact with the wall/outlet.
                      IF(dist <= ZERO) PEA(NP,3) = .TRUE.
                   ENDIF
                ENDIF

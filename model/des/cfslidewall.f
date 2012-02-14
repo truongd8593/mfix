@@ -1,35 +1,43 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: CFSLIDEWALL(L, TANGNT)                                 C
-!>
-!!  Purpose: DES - Calculate slide between particles and walls 
-!<
-!                                                                      C
-!                                                                      C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+!
+!  Subroutine: CFSLIDEWALL
+!  Purpose: Check for Coulombs friction law - calculate sliding 
+!           friction
+!
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04 
+!  Reviewer:                                          Date:
+!
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       SUBROUTINE CFSLIDEWALL(L, TANGNT,PARTICLE_SLIDE)
       
-      USE discretelement
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param1
+      USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
-! Local Variables
+! Dummy arguments
+!-----------------------------------------------      
+! particle index no.      
+      INTEGER, INTENT(IN) :: L
+! tangent to the plane of contact      
+      DOUBLE PRECISION, INTENT(IN) :: TANGNT(DIMN)      
+! logic set to T when a sliding contact occurs 
+      LOGICAL, INTENT(INOUT) :: PARTICLE_SLIDE
 !-----------------------------------------------
-      INTEGER L, K
-      DOUBLE PRECISION FTMD, FNMD, TANGNT(DIMN)
+! Local variables
+!-----------------------------------------------
+! local variables for tangential and normal forces at point of contact
       DOUBLE PRECISION TMP_FT(DIMN), TMP_FN(DIMN)
-      logical PARTICLE_SLIDE
-
+! magnitude of tangential and normal forces
+      DOUBLE PRECISION FTMD, FNMD
 !-----------------------------------------------      
 ! Functions
-!-----------------------------------------------         
+!-----------------------------------------------     
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-      
-!----------------------------------------------- 
+!-----------------------------------------------     
 
       TMP_FN(:) = FN(L, :)
       TMP_FT(:) = FT(L, :)
