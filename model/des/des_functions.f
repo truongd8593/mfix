@@ -1,23 +1,32 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: DES_DOTPRDCT                                           C
-!  Purpose: Calculate Dot Product                                      C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
+!  Function: DES_DOTPRDCT
+!  Purpose: Calculate the dot product of two vectors and return the
+!           result
+!
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
       DOUBLE PRECISION FUNCTION DES_DOTPRDCT(XX,YY) 
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1  
       USE discretelement
       IMPLICIT NONE
- 
-      INTEGER II
-      DOUBLE PRECISION DOTP, XX(DIMN), YY(DIMN) 
- 
+!-----------------------------------------------
+! Dummy arguments      
+!-----------------------------------------------
+! vectors      
+      DOUBLE PRECISION, INTENT(IN) :: XX(DIMN), YY(DIMN) 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      INTEGER :: II
+      DOUBLE PRECISION :: DOTP
+!-----------------------------------------------
+
       DOTP = ZERO
 
       DO II = 1, DIMN
@@ -29,24 +38,32 @@
       END FUNCTION DES_DOTPRDCT 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: DES_CROSSPRDCT                                         C
-!  Purpose: Calculate Cross Product                                      C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
+!  Subroutine: DES_CROSSPRDCT
+!  Purpose: Calculate the cross product of two vectors that both have 
+!           either 2 or 3 elements and return the result in the first 
+!           argument
+!
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
       SUBROUTINE DES_CROSSPRDCT (AA, XX,YY) 
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1  
       USE discretelement
       IMPLICIT NONE
- 
-      DOUBLE PRECISION AA(DIMN), XX(DIMN), YY(DIMN) 
+!-----------------------------------------------
+! Dummy arguments      
+!-----------------------------------------------
+! sent vectors
+      DOUBLE PRECISION, INTENT(IN) :: XX(DIMN), YY(DIMN) 
+! returned result: cross product of vectors
+      DOUBLE PRECISION, INTENT(INOUT) :: AA(DIMN)
+!-----------------------------------------------      
  
       IF(DIMN.EQ.3) THEN
          AA(1) = XX(2)*YY(3) - XX(3)*YY(2) 
@@ -61,26 +78,30 @@
       END SUBROUTINE DES_CROSSPRDCT
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: DES_CROSSPRDCT                                         C
-!  Purpose: Calculate Cross Product                                      C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
+!  Subroutine: DES_CROSSPRDCT_3D
+!  Purpose: Calculate the cross product of two vectors that have 3 
+!           elements and return the result in the first argument
+!
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
       SUBROUTINE DES_CROSSPRDCT_3D (AA, XX,YY) 
-!
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1  
       USE discretelement
       IMPLICIT NONE
-      
+!-----------------------------------------------
+! Dummy arguments      
+!-----------------------------------------------
+! sent vectors
       DOUBLE PRECISION, INTENT(IN), DIMENSION(3) :: XX, YY
+! returned result: cross product of vectors
       DOUBLE PRECISION, INTENT(OUT), DIMENSION(3) :: AA
-      
+!-----------------------------------------------            
  
       AA(1) = XX(2)*YY(3) - XX(3)*YY(2) 
       AA(2) = XX(3)*YY(1) - XX(1)*YY(3) 
@@ -90,11 +111,9 @@
       END SUBROUTINE DES_CROSSPRDCT_3D
 
       
-      
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
-!  Module name: DES_GETINDEXFROMPOS
+!  Function: DES_GETINDEXFROMPOS
 !  Purpose: Knowing the current particle x, y, or z position determine
 !  the associated i, j or k index by searching a specific region defined
 !  by a lower and upper limit on the index that is known to contain
@@ -111,9 +130,8 @@
       USE compar  
       USE funits
       IMPLICIT NONE
-
 !-----------------------------------------------
-! Local Variables
+! Dummy arguments
 !----------------------------------------------- 
 ! given i, j, or k index values defining the upper and lower limits of
 ! the region in space known to contain the particle       
@@ -125,9 +143,11 @@
       DOUBLE PRECISION, DIMENSION(:), INTENT (IN) :: GRID_POS
 ! given axis (x, y, or z) and associated index (i, j, or k)
       CHARACTER*1, INTENT (IN) :: AXIS, AXIS_INDEX
+!-----------------------------------------------
+! Local Variables
+!----------------------------------------------- 
 ! index & loop counter
-      INTEGER IND 
-     
+      INTEGER IND      
 !----------------------------------------------- 
 
 ! error condition      
