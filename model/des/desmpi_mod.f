@@ -55,7 +55,7 @@
       integer,dimension(:),allocatable:: isendcnt
       integer,dimension(:),allocatable:: isendreq,irecvreq
       integer,parameter :: ibufoffset = 2
-      integer :: imaxbuf,ispot
+      integer :: imaxbuf, ispot
 
 ! following variables are used for gather and scatter 
       double precision, dimension(:), allocatable :: drootbuf,dprocbuf 
@@ -241,16 +241,27 @@
       imaxbuf = lmaxghostpar*lmaxarea*lpacketsize 
 
       allocate (isendindices(lmaxarea,lfaces),irecvindices(lmaxarea,lfaces))
-      isendindices =0; irecvindices=0
+      isendindices =0
+      irecvindices=0
+
       allocate (dsendbuf(imaxbuf,lfaces),drecvbuf(imaxbuf,lfaces), &
                 isendreq(lfaces),irecvreq(lfaces),isendcnt(lfaces)) 
-      dsendbuf=0.0;drecvbuf=0.0;isendreq =0;irecvreq=0;isendcnt=0;
+      dsendbuf=0.0
+      drecvbuf=0.0
+      isendreq =0
+      irecvreq=0
+      isendcnt=0
+
       allocate (dcycl_offset(lfaces,dimn),ineighproc(lfaces),iexchflag(lfaces))
-      ineighproc=0;iexchflag=.false.;dcycl_offset=0.0
+      ineighproc=0
+      iexchflag=.false.
+      dcycl_offset=0.0
       
 ! allocate variables related to scattergather 
       allocate(iscattercnts(0:numpes-1),idispls(0:numpes-1),igathercnts(0:numpes-1))
-      iscattercnts=0;idispls=0;igathercnts=0;
+      iscattercnts=0
+      idispls=0
+      igathercnts=0
       
 ! allocate variables related to ghost particles 
       allocate(ighost_updated(max_pip))
@@ -692,14 +703,13 @@
                      lpar_proc(lcurpar) = lproc 
                      lproc_parcnt(lproc) = lproc_parcnt(lproc) + 1
                      exit  
-                  end if 
-               end do 
+                  endif 
+               enddo 
                if (lpar_proc(lcurpar).eq.-1) then 
-                  write(*,'("Unable to locate the particle (no.",I7, &
-                                                & ") inside the domain ")')lcurpar 
+                  WRITE(*,500) lcurpar
                   call des_mpi_stop
-               end if 
-            end do 
+               endif 
+            enddo 
          else 
             do lcurpar = 1,particles 
                do lproc= 0,numpes-1
@@ -715,30 +725,27 @@
                   end if 
                end do 
                if (lpar_proc(lcurpar).eq.-1) then 
-                  write (*,'("Unable to locate the particle (no.",I7, &
-                                                & ") inside the domain ")')lcurpar 
+                  WRITE(*,501) lcurpar                       
                   call des_mpi_stop
-               end if 
-            end do 
-         end if  ! if (no_k)
-      end if ! if (my_pe.eq.pe_io)
+               endif 
+            enddo 
+         endif  ! if (no_k)
+      endif ! if (my_pe.eq.pe_io)
       call bcast(lproc_parcnt(0:numpes-1),pe_io)
 
 ! second pass: set and allocate scatter related variables  
       pip = lproc_parcnt(mype)
       if (pip .gt. max_pip) then 
-         write(*,*) "From des_scatter_particle:"
-         write(*,*) "Particles in the processor ,",pip, &
-            " exceeds maximum pip,", max_pip 
+         WRITE(*,502) pip, max_pip
          call des_mpi_stop
-      end if 
+      endif 
       iscr_recvcnt = pip*lpacketsize
       allocate (dprocbuf(iscr_recvcnt))
       if (mype.eq.pe_io) then 
          allocate (drootbuf(particles*lpacketsize))
       else 
          allocate (drootbuf(10))
-      end if 
+      endif 
 
 ! in the IO processor build the drootbuffer and idispls required
 ! for mpi communication 
@@ -758,11 +765,11 @@
             drootbuf(lbuf:lbuf+dimn-1) = dpar_pos(lcurpar,1:dimn); lbuf = lbuf + dimn
             drootbuf(lbuf:lbuf+dimn-1) = dpar_vel(lcurpar,1:dimn); lbuf = lbuf + dimn
             lproc_parcnt(lproc) = lproc_parcnt(lproc) + 1 
-         end do 
-      end if  
+         enddo 
+      endif  
       call desmpi_scatterv(ptype=2)
 
-!unpack the particles in each processor and set the pip
+! unpack the particles in each processor and set the pip
       do lcurpar = 1,pip       
          lbuf = (lcurpar-1)*lpacketsize+1
          des_radius(lcurpar) = dprocbuf(lbuf); lbuf = lbuf+1 
@@ -770,8 +777,20 @@
          des_pos_new(lcurpar,1:dimn) = dprocbuf(lbuf:lbuf+dimn-1); lbuf = lbuf+dimn
          des_vel_new(lcurpar,1:dimn) = dprocbuf(lbuf:lbuf+dimn-1); lbuf = lbuf+dimn
          pea(lcurpar,1) = .true.
-      end do 
+      enddo 
       deallocate (dprocbuf,drootbuf)
+
+ 500  FORMAT(/2X,'From: DES_SCATTER_PARTICLE: (0)',/2X,&
+         'ERROR: Unable to locate the particle (no. ',I10,&
+         ') inside the domain')
+ 501  FORMAT(/2X,'From: DES_SCATTER_PARTICLE: (1)',/2X,&
+         'ERROR: Unable to locate the particle (no. ',I10,&
+         ') inside the domain')
+ 502  FORMAT(/2X,'From: DES_SCATTER_PARTICLE: ',/2X,&
+         'ERROR: Particles in the processor ',I10,&
+         'exceeds MAX_PIP', I10) 
+
+      RETURN         
       end subroutine des_scatter_particle 
 
 
@@ -846,11 +865,10 @@
                   end if 
                end do 
                if (irestartmap(lcurpar).eq.-1) then 
-                  write(*,'("Unable to locate the particle (no.",I7, &
-                                               &  ") inside the domain ")')lcurpar 
+                  WRITE(*,600) lcurpar
                   call des_mpi_stop
-               end if 
-            end do 
+               endif 
+            enddo 
          else 
             do lcurpar = 1,pglocnt 
                do lproc= 0,numpes-1
@@ -866,30 +884,27 @@
                   end if 
                end do 
                if (irestartmap(lcurpar).eq.-1) then 
-                  write (*,'("Unable to locate the particle (no.",I7, &
-                                                &") inside the domain ")')lcurpar 
+                  WRITE(*,601) lcurpar
                   call des_mpi_stop
-               end if 
-            end do 
-         end if  ! if (no_k)
-      end if ! if (my_pe.eq.pe_io)
+               endif 
+            enddo 
+         endif  ! if (no_k)
+      endif ! if (my_pe.eq.pe_io)
       call bcast(lpar_cnt(0:numpes-1),pe_io)
 
 ! second pass: set and allocate scatter related variables  
       pip = lpar_cnt(mype)
       if (pip .gt. max_pip) then 
-         write(*,*) "From des_restart_map:"
-         write(*,*) "Particles in the processor ,",pip, &
-            " exceeds maximum pip,", max_pip 
+         WRITE(*,602) pip, max_pip
          call des_mpi_stop
-      end if 
+      endif 
       iscr_recvcnt = pip*lpacketsize
       allocate (dprocbuf(iscr_recvcnt))
       if (mype.eq.pe_io) then 
          allocate (drootbuf(pglocnt*lpacketsize))
       else 
          allocate (drootbuf(10))
-      end if 
+      endif 
 
 ! in the IO processor build the drootbuffer and idispls required
 ! for mpi communication 
@@ -899,25 +914,36 @@
          do lproc = 1,numpes-1 
             idispls(lproc) = idispls(lproc-1) + iscattercnts(lproc-1) 
             iscattercnts(lproc) = lpar_cnt(lproc)*lpacketsize 
-         end do 
+         enddo 
          lpar_cnt(:) = 0
          do lcurpar = 1,pglocnt
             lproc = irestartmap(lcurpar)
             lbuf = idispls(lproc)+lpar_cnt(lproc)*lpacketsize+1
             drootbuf(lbuf:lbuf+dimn-1) = dpar_pos(lcurpar,1:dimn); lbuf = lbuf + dimn
             lpar_cnt(lproc) = lpar_cnt(lproc) + 1 
-         end do 
-      end if  
+         enddo 
+      endif  
       call desmpi_scatterv(ptype=2)
 
-!unpack the particles in each processor and set the pip
+! unpack the particles in each processor and set the pip
       do lcurpar = 1,pip       
          lbuf = (lcurpar-1)*lpacketsize+1
          des_pos_new(lcurpar,1:dimn) = dprocbuf(lbuf:lbuf+dimn-1); lbuf = lbuf+dimn
          pea(lcurpar,1) = .true.
-      end do 
+      enddo 
       deallocate (drootbuf,dprocbuf)
 
+ 600  FORMAT(/2X,'From: DES_RESTART_MAP: (0)',/2X,&
+         'ERROR: Unable to locate the particle (no. ',I10,&
+         ') inside the domain')
+ 601  FORMAT(/2X,'From: DES_RESTART_MAP: (1)',/2X,&
+         'ERROR: Unable to locate the particle (no. ',I10,&
+         ') inside the domain')
+ 602  FORMAT(/2X,'From: DES_RESTART_MAP: ',/2X,&
+         'ERROR: Particles in the processor ',I10,&
+         'exceeds MAX_PIP', I10) 
+         
+      RETURN     
       end subroutine des_restart_map 
 
 
@@ -946,15 +972,16 @@
          do lindx = 2,ltot_ind+1
             lijk = isendindices(lindx,lface)
             lparcnt = lparcnt + dg_pic(lijk)%isize
-         end do 
+         enddo 
          if(lparcnt.gt.lmaxcnt) lmaxcnt = lparcnt
-      end do 
+      enddo 
+
       call global_all_max(lmaxcnt) 
       if (imaxbuf .lt. lmaxcnt*lpacketsize+ibufoffset) then 
          imaxbuf = lmaxcnt*lpacketsize*lfactor
          if(allocated(dsendbuf)) deallocate(dsendbuf,drecvbuf)
          allocate(dsendbuf(imaxbuf,2*dimn),drecvbuf(imaxbuf,2*dimn))
-      end if 
+      endif 
 
       end subroutine desmpi_check_sendrecvbuf
 
@@ -992,13 +1019,18 @@
             lbuf = lpar_cnt*lpacketsize+ibufoffset
             lcurpar = dg_pic(lijk)%p(lpicloc)
             dsendbuf(lbuf,pface) = iglobal_id(lcurpar);lbuf = lbuf +1 
-            dsendbuf(lbuf,pface) = dg_ijkconv(lijk,pface,ineighproc(pface));lbuf = lbuf +1 
-            dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface));lbuf = lbuf +1 
+            dsendbuf(lbuf,pface) = dg_ijkconv(lijk,pface,ineighproc(pface))
+            lbuf = lbuf +1 
+            dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface))
+            lbuf = lbuf +1 
             dsendbuf(lbuf,pface) = des_radius(lcurpar); lbuf = lbuf + 1 
             dsendbuf(lbuf,pface) = pijk(lcurpar,5); lbuf = lbuf + 1 
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(lcurpar,1:dimn)+dcycl_offset(pface,1:dimn); lbuf = lbuf + dimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(lcurpar,1:dimn); lbuf = lbuf + dimn
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(lcurpar,1:ltordimn); lbuf = lbuf + ltordimn
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(lcurpar,1:dimn)+dcycl_offset(pface,1:dimn)
+            lbuf = lbuf + dimn
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(lcurpar,1:dimn)
+            lbuf = lbuf + dimn
+            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(lcurpar,1:ltordimn)
+            lbuf = lbuf + ltordimn
             lpar_cnt = lpar_cnt + 1
          end do  
       end do    
@@ -1030,7 +1062,8 @@
       integer,dimension(:),allocatable :: lnewspot,lnewpic
 !-----------------------------------------------
 
-! unpack the particles; if it already exists update the position 
+! unpack the particles:
+! if it already exists update the position 
 ! if not and do_nsearch is true then add to the particle array
       
       ltordimn = (dimn-2)*2 + 1
@@ -1038,7 +1071,9 @@
       lparcnt = drecvbuf(1,pface) 
       lnewcnt = lparcnt 
       allocate (lfound(lparcnt),lnewspot(lparcnt),lnewpic(dg_ijksize2)) 
-      lfound(:) = .false. ; lnewspot(:) =0;lnewpic = 0   
+      lfound(:) = .false. 
+      lnewspot(:) =0
+      lnewpic = 0   
 
       do lcurpar = 1,lparcnt 
          lbuf = (lcurpar-1)*lpacketsize+ibufoffset
@@ -1049,24 +1084,29 @@
          lfound(lcurpar) = locate_par(lparid,lprvijk,llocpar)
          if (lparijk .ne. lprvijk .and. .not.lfound(lcurpar)) then 
             lfound(lcurpar) = locate_par(lparid,lparijk,llocpar) 
-         end if 
+         endif 
          if(lfound(lcurpar)) then  
             dg_pijk(llocpar) = lparijk
             dg_pijkprv(llocpar) = lprvijk
-            des_radius(llocpar) = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1                      
-            pijk(llocpar,5) = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1                      
+            des_radius(llocpar) = drecvbuf(lbuf,pface) 
+            lbuf = lbuf + 1
+            pijk(llocpar,5) = drecvbuf(lbuf,pface) 
+            lbuf = lbuf + 1
             des_pos_old(llocpar,:)= des_pos_new(llocpar,:)
             des_vel_old(llocpar,:)= des_vel_new(llocpar,:)
             omega_old(llocpar,:)= omega_new(llocpar,:)
-            des_pos_new(llocpar,1:dimn)= drecvbuf(lbuf:lbuf+dimn-1,pface); lbuf = lbuf + dimn 
-            des_vel_new(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface); lbuf = lbuf + dimn
-            omega_new(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface); lbuf = lbuf + ltordimn
+            des_pos_new(llocpar,1:dimn)= drecvbuf(lbuf:lbuf+dimn-1,pface)
+            lbuf = lbuf + dimn 
+            des_vel_new(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+            lbuf = lbuf + dimn
+            omega_new(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+            lbuf = lbuf + ltordimn
             ighost_updated(llocpar) = .true.
             lnewcnt = lnewcnt-1
          else 
             lnewpic(lparijk) = lnewpic(lparijk) + 1
-         end if 
-      end do 
+         endif 
+      enddo 
 
 ! if do_nsearch is on then add new particles and clean up ghost particles 
       if (do_nsearch) then 
@@ -1081,7 +1121,7 @@
             lprvijk = drecvbuf(lbuf,pface); lbuf = lbuf + 1 
             do while(pea(ispot,1))
                ispot = ispot + 1
-            end do  
+            enddo  
             pea(ispot,1) = .true.
             pea(ispot,2) = .false.
             pea(ispot,3) = .false.
@@ -1089,23 +1129,26 @@
             iglobal_id(ispot)  = lparid
             dg_pijk(ispot) = lparijk 
             dg_pijkprv(ispot) = lprvijk
-            des_radius(ispot) = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1                      
-            pijk(ispot,5) = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1                      
-            des_pos_new(ispot,1:dimn)= drecvbuf(lbuf:lbuf+dimn-1,pface); lbuf = lbuf + dimn 
-            des_vel_new(ispot,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface); lbuf = lbuf + dimn
-            omega_new(ispot,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface); lbuf = lbuf + ltordimn
+            des_radius(ispot) = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1
+            pijk(ispot,5) = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1 
+            des_pos_new(ispot,1:dimn)= drecvbuf(lbuf:lbuf+dimn-1,pface)
+            lbuf = lbuf + dimn 
+            des_vel_new(ispot,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+            lbuf = lbuf + dimn
+            omega_new(ispot,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+            lbuf = lbuf + ltordimn
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
             des_pos_old(ispot,1:dimn) = des_pos_new(ispot,1:dimn)
             des_vel_old(ispot,1:dimn) = des_vel_new(ispot,1:dimn)
             omega_old(ispot,1:ltordimn) = omega_new(ispot,1:ltordimn)
-         end do 
-      end if 
+         enddo 
+      endif 
 
 !deallocate temporary variablies
       deallocate (lfound,lnewspot,lnewpic) 
 
-      end  subroutine desmpi_unpack_ghostpar 
+      end subroutine desmpi_unpack_ghostpar 
 
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_cleanup
@@ -1132,10 +1175,17 @@
                pip = pip - 1
                ighost_cnt = ighost_cnt-1
                pea(lcurpar,1:4) = .false. 
-               fc(lcurpar,:) = 0.0; fn(lcurpar,:) = 0.0 ; ft(lcurpar,:) = 0.0
-               pn(lcurpar,:) = 0 ; pv(lcurpar,:) = 0 ; pft(lcurpar,:,:) = 0 
-               des_pos_new(lcurpar,:)=0;des_pos_old(lcurpar,:)=0;des_vel_new(lcurpar,:)=0;des_vel_old(lcurpar,:)=0
-               omega_new(lcurpar,:)=0;neighbours(lcurpar,:)=0
+               fc(lcurpar,:) = 0.0
+               fn(lcurpar,:) = 0.0 
+               ft(lcurpar,:) = 0.0
+               pn(lcurpar,:) = 0 ; pv(lcurpar,:) = 0 
+               pft(lcurpar,:,:) = 0 
+               des_pos_new(lcurpar,:)=0
+               des_pos_old(lcurpar,:)=0
+               des_vel_new(lcurpar,:)=0
+               des_vel_old(lcurpar,:)=0
+               omega_new(lcurpar,:)=0
+               neighbours(lcurpar,:)=0
             end do  
          end do    
       end do 
@@ -1158,9 +1208,9 @@
 ! local variables 
 !-----------------------------------------------      
       integer :: ltot_ind,lindx,ijk
-      integer :: lneighindx,lcontactindx,lneigh,lcontact,lijk,lpicloc,lparcnt,lcurpar
+      integer :: lneighindx,lcontactindx,lneigh,lcontact,lijk,&
+                 lpicloc,lparcnt,lcurpar
       integer :: lpacketsize,lbuf,ltordimn,ltmpbuf
-!      integer :: li,lj,lk,lijk 
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------      
@@ -1179,9 +1229,12 @@
             lcurpar = dg_pic(lijk)%p(lpicloc)
             if (pea(lcurpar,4)) cycle ! if ghost particle then cycle 
             lbuf = lparcnt*lpacketsize + ibufoffset
-            dsendbuf(lbuf,pface) = iglobal_id(lcurpar)  ;lbuf = lbuf+1 
-            dsendbuf(lbuf,pface) = dg_ijkconv(lijk,pface,ineighproc(pface));lbuf = lbuf+1 
-            dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface));lbuf = lbuf+1 
+            dsendbuf(lbuf,pface) = iglobal_id(lcurpar)  
+            lbuf = lbuf+1 
+            dsendbuf(lbuf,pface) = dg_ijkconv(lijk,pface,ineighproc(pface))
+            lbuf = lbuf+1 
+            dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface))
+            lbuf = lbuf+1 
             dsendbuf(lbuf,pface) = des_radius(lcurpar)  ;lbuf = lbuf+1 
             li = pijk(lcurpar,1) + icycoffset(pface,1) 
             lj = pijk(lcurpar,2) + icycoffset(pface,2) 
@@ -1189,7 +1242,8 @@
             dsendbuf(lbuf,pface) = li ; lbuf = lbuf+1
             dsendbuf(lbuf,pface) = lj ; lbuf = lbuf+1
             dsendbuf(lbuf,pface) = lk ; lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = funijk_proc(li,lj,lk,ineighproc(pface)) ; lbuf = lbuf+1  
+            dsendbuf(lbuf,pface) = funijk_proc(li,lj,lk,ineighproc(pface)) 
+            lbuf = lbuf+1  
             dsendbuf(lbuf,pface) = pijk(lcurpar,5) ;lbuf = lbuf+1
 !            dsendbuf(lbuf:lbuf+1,pface) = pea(lcurpar,2:3);lbuf=lbuf+2
             dsendbuf(lbuf:lbuf+1,pface) = 0
@@ -1199,37 +1253,58 @@
             dsendbuf(lbuf,pface) = pvol(lcurpar)        ;lbuf = lbuf+1 
             dsendbuf(lbuf,pface) = pmass(lcurpar)       ;lbuf = lbuf+1 
             dsendbuf(lbuf,pface) = omoi(lcurpar)        ;lbuf = lbuf+1 
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_old(lcurpar,1:dimn)+dcycl_offset(pface,1:dimn) ;lbuf = lbuf+dimn 
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(lcurpar,1:dimn)+dcycl_offset(pface,1:dimn) ;lbuf = lbuf+dimn 
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_old(lcurpar,1:dimn) ;lbuf = lbuf+dimn 
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(lcurpar,1:dimn) ;lbuf = lbuf+dimn 
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_old(lcurpar,1:ltordimn) ;lbuf = lbuf+ltordimn 
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(lcurpar,1:ltordimn) ;lbuf = lbuf+ltordimn 
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_oold(lcurpar,1:dimn) ;lbuf = lbuf+dimn 
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_acc_old(lcurpar,1:dimn) ;lbuf = lbuf+dimn 
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = rot_acc_old(lcurpar,1:ltordimn) ;lbuf = lbuf+ltordimn 
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = fc(lcurpar,1:dimn) ;lbuf = lbuf+dimn 
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = fn(lcurpar,1:dimn) ;lbuf = lbuf+dimn 
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = ft(lcurpar,1:dimn) ;lbuf = lbuf+dimn 
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = tow(lcurpar,1:ltordimn) ;lbuf = lbuf+ltordimn 
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_old(lcurpar,1:dimn)+dcycl_offset(pface,1:dimn) 
+            lbuf = lbuf+dimn 
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(lcurpar,1:dimn)+dcycl_offset(pface,1:dimn) 
+            lbuf = lbuf+dimn 
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_old(lcurpar,1:dimn) 
+            lbuf = lbuf+dimn 
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(lcurpar,1:dimn) 
+            lbuf = lbuf+dimn 
+            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_old(lcurpar,1:ltordimn) 
+            lbuf = lbuf+ltordimn 
+            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(lcurpar,1:ltordimn) 
+            lbuf = lbuf+ltordimn 
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_oold(lcurpar,1:dimn) 
+            lbuf = lbuf+dimn 
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_acc_old(lcurpar,1:dimn) 
+            lbuf = lbuf+dimn 
+            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = rot_acc_old(lcurpar,1:ltordimn) 
+            lbuf = lbuf+ltordimn 
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = fc(lcurpar,1:dimn) 
+            lbuf = lbuf+dimn 
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = fn(lcurpar,1:dimn) 
+            lbuf = lbuf+dimn 
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = ft(lcurpar,1:dimn) 
+            lbuf = lbuf+dimn 
+            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = tow(lcurpar,1:ltordimn) 
+            lbuf = lbuf+ltordimn 
 
 ! build the neighbour with global number and current and previous pijk 
-            dsendbuf(lbuf,pface) = neighbours(lcurpar,1);ltmpbuf = lbuf+1 
+            dsendbuf(lbuf,pface) = neighbours(lcurpar,1)
+            ltmpbuf = lbuf+1 
             do lneighindx = 2,neighbours(lcurpar,1)+1
                lneigh = neighbours(lcurpar,lneighindx)
-               dsendbuf(ltmpbuf,pface) = iglobal_id(lneigh) ; ltmpbuf = ltmpbuf+1
-               dsendbuf(ltmpbuf,pface) = dg_ijkconv(dg_pijk(lneigh),pface,ineighproc(pface)) ; ltmpbuf = ltmpbuf+1
-               dsendbuf(ltmpbuf,pface) = dg_ijkconv(dg_pijkprv(lneigh),pface,ineighproc(pface)) ; ltmpbuf = ltmpbuf+1
-            end do 
+               dsendbuf(ltmpbuf,pface) = iglobal_id(lneigh) 
+               ltmpbuf = ltmpbuf+1
+               dsendbuf(ltmpbuf,pface) = dg_ijkconv(dg_pijk(lneigh),pface,ineighproc(pface)) 
+               ltmpbuf = ltmpbuf+1
+               dsendbuf(ltmpbuf,pface) = dg_ijkconv(dg_pijkprv(lneigh),pface,ineighproc(pface)) 
+               ltmpbuf = ltmpbuf+1
+            enddo 
+
             lbuf = lbuf+3*maxneighbors 
 ! build contact list with global number 
             dsendbuf(lbuf,pface) = pn(lcurpar,1);ltmpbuf=lbuf+1 
             do lcontactindx = 2,pn(lcurpar,1)+1
                lcontact = pn(lcurpar,lcontactindx)
-               dsendbuf(ltmpbuf,pface) = iglobal_id(lcontact);ltmpbuf=ltmpbuf+1
-               dsendbuf(ltmpbuf,pface) = pv(lcurpar,lcontactindx);ltmpbuf=ltmpbuf+1
-               dsendbuf(ltmpbuf:ltmpbuf+dimn-1,pface) = pft(lcurpar,lcontactindx,1:dimn);ltmpbuf=ltmpbuf+dimn
-            end do 
+               dsendbuf(ltmpbuf,pface) = iglobal_id(lcontact)
+               ltmpbuf=ltmpbuf+1
+               dsendbuf(ltmpbuf,pface) = pv(lcurpar,lcontactindx)
+               ltmpbuf=ltmpbuf+1
+               dsendbuf(ltmpbuf:ltmpbuf+dimn-1,pface) = pft(lcurpar,lcontactindx,1:dimn)
+               ltmpbuf=ltmpbuf+dimn
+            enddo 
             lbuf = lbuf+(2+dimn)*maxneighbors 
 ! Pradeep remove ********************
 !             print * ,"--------------------------------------------------------------------"
@@ -1255,8 +1330,12 @@
                pea(lcurpar,4) = .true.
                ighost_cnt = ighost_cnt + 1
             end if 
-            fc(lcurpar,:) = 0.;fn(lcurpar,:) = 0.0;ft(lcurpar,:) = 0.0
-            neighbours(lcurpar,:)=0;pn(lcurpar,:) = 0;pv(lcurpar,:) = 0 
+            fc(lcurpar,:) = 0.
+            fn(lcurpar,:) = 0.0
+            ft(lcurpar,:) = 0.0
+            neighbours(lcurpar,:)=0
+            pn(lcurpar,:) = 0
+            pv(lcurpar,:) = 0 
             pft(lcurpar,:,:) = 0 
 
             lparcnt = lparcnt + 1 
@@ -1271,7 +1350,7 @@
 ! links 
 ! part_grid
 
-      end  subroutine desmpi_pack_parcross
+      end subroutine desmpi_pack_parcross
 
 
 !------------------------------------------------------------------------
@@ -1291,7 +1370,8 @@
 ! local variables
 !-----------------------------------------------      
       integer :: lijk,lcurpar,lparcnt,llocpar,lparid,lparijk,lprvijk
-      integer :: lneighindx,lneigh,lcontactindx,lcontactid,lcontact,lneighid,lneighijk,lneighprvijk 
+      integer :: lneighindx,lneigh,lcontactindx,lcontactid,lcontact,&
+                 lneighid,lneighijk,lneighprvijk 
       logical :: lfound
       integer :: lpacketsize,lbuf,ltordimn,ltmpbuf,lcount
       logical :: lcontactfound,lneighfound
@@ -1305,78 +1385,105 @@
       ltordimn = (dimn-2)*2 + 1 
       lpacketsize = 9*dimn + ltordimn*4 + maxneighbors * (dimn+5) + 15
       lparcnt = drecvbuf(1,pface)
-! in case of mppic make sure enough space available 
+
+! if mppic make sure enough space available 
       if(mppic .and. (max_pip-pip).lt.lparcnt) call redim_par(pip+lparcnt)
+
       do lcurpar =1,lparcnt 
          lfound = .false.
          lbuf = (lcurpar-1)*lpacketsize + ibufoffset
-         lparid  = drecvbuf(lbuf,pface) ;lbuf = lbuf+1 
-         lparijk = drecvbuf(lbuf,pface) ;lbuf = lbuf+1 
-         lprvijk = drecvbuf(lbuf,pface) ;lbuf = lbuf+1 
+         lparid  = drecvbuf(lbuf,pface) 
+         lbuf = lbuf+1 
+         lparijk = drecvbuf(lbuf,pface) 
+         lbuf = lbuf+1 
+         lprvijk = drecvbuf(lbuf,pface) 
+         lbuf = lbuf+1 
 
-! incase of mppic add the particles to free spot 
-! else locate the particles  
+! if mppic add the particles to free spots else locate the particles  
          if (mppic) then 
             do while(pea(ispot,1))
                ispot = ispot + 1
-            end do  
+            enddo  
             llocpar = ispot
          else 
             lfound  = locate_par(lparid,lprvijk,llocpar) 
             if (.not. lfound) then 
-               write (*,'("Unable to locate particles moving from ",I4.4," to ", I4.4)') &
-                           ineighproc(pface),mype 
+               WRITE(*,700) ineighproc(pface), mype 
                call des_mpi_stop
-            end if 
+            endif 
             ighost_cnt = ighost_cnt - 1
-         end if 
+         endif 
+
 ! convert the local particle from ghost to existing and update its position
          pea(llocpar,1) = .true.
          pea(llocpar,4) = .false.
          dg_pijk(llocpar) = lparijk
          dg_pijkprv(llocpar) = lprvijk
-         des_radius(llocpar)  = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1 
-         pijk(llocpar,1:5)    = drecvbuf(lbuf:lbuf+4,pface) ; lbuf = lbuf+5 
+         des_radius(llocpar)  = drecvbuf(lbuf,pface) 
+         lbuf = lbuf + 1 
+         pijk(llocpar,1:5)    = drecvbuf(lbuf:lbuf+4,pface) 
+         lbuf = lbuf+5 
 !         pea(llocpar,2:3)     = drecvbuf(lbuf:lbuf+1,pface) ; lbuf=lbuf+2
          pea(llocpar,2:3) = .false.
-         if (drecvbuf(lbuf,pface).eq.1) pea(llocpar,2) = .true.; lbuf = lbuf + 1
-         if (drecvbuf(lbuf,pface).eq.1) pea(llocpar,3) = .true.; lbuf = lbuf + 1
-         ro_sol(llocpar)      = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1 
-         pvol(llocpar)        = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1 
-         pmass(llocpar)       = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1 
-         omoi(llocpar)        = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1 
-         des_pos_old(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface); lbuf = lbuf + dimn 
-         des_pos_new(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface); lbuf = lbuf + dimn 
-         des_vel_old(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface); lbuf = lbuf + dimn 
-         des_vel_new(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface); lbuf = lbuf + dimn 
-         omega_old(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface) ; lbuf = lbuf + ltordimn 
-         omega_new(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface) ; lbuf = lbuf + ltordimn 
-         des_vel_oold(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface) ; lbuf = lbuf + dimn 
-         des_acc_old(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface);  lbuf = lbuf + dimn 
-         rot_acc_old(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface); lbuf = lbuf + ltordimn 
-         fc(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface); lbuf = lbuf + dimn 
-         fn(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface); lbuf = lbuf + dimn 
-         ft(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface); lbuf = lbuf + dimn 
-         tow(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface); lbuf = lbuf + ltordimn 
+         if (drecvbuf(lbuf,pface).eq.1) pea(llocpar,2) = .true. ; lbuf = lbuf + 1
+         if (drecvbuf(lbuf,pface).eq.1) pea(llocpar,3) = .true. ; lbuf = lbuf + 1
+         ro_sol(llocpar)      = drecvbuf(lbuf,pface) 
+         lbuf = lbuf + 1 
+         pvol(llocpar)        = drecvbuf(lbuf,pface) 
+         lbuf = lbuf + 1 
+         pmass(llocpar)       = drecvbuf(lbuf,pface) 
+         lbuf = lbuf + 1 
+         omoi(llocpar)        = drecvbuf(lbuf,pface) 
+         lbuf = lbuf + 1 
+         des_pos_old(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         lbuf = lbuf + dimn 
+         des_pos_new(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         lbuf = lbuf + dimn 
+         des_vel_old(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         lbuf = lbuf + dimn 
+         des_vel_new(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         lbuf = lbuf + dimn 
+         omega_old(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface) 
+         lbuf = lbuf + ltordimn 
+         omega_new(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface) 
+         lbuf = lbuf + ltordimn 
+         des_vel_oold(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface) 
+         lbuf = lbuf + dimn 
+         des_acc_old(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         lbuf = lbuf + dimn 
+         rot_acc_old(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+         lbuf = lbuf + ltordimn 
+         fc(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         lbuf = lbuf + dimn 
+         fn(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         lbuf = lbuf + dimn 
+         ft(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         lbuf = lbuf + dimn 
+         tow(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+         lbuf = lbuf + ltordimn 
 
 ! get the neighbour id based on its global number, current and previous pijk and extensive search 
-         neighbours(llocpar,1) = drecvbuf(lbuf,pface);ltmpbuf=lbuf +1 
+         neighbours(llocpar,1) = drecvbuf(lbuf,pface)
+         ltmpbuf=lbuf +1 
          lcount = 0 
          do lneighindx = 2,neighbours(llocpar,1)+1
             lneighfound = .false.
-            lneighid = drecvbuf(ltmpbuf,pface);ltmpbuf = ltmpbuf+1
-            lneighijk = drecvbuf(ltmpbuf,pface);ltmpbuf = ltmpbuf+1
-            lneighprvijk = drecvbuf(ltmpbuf,pface);ltmpbuf = ltmpbuf+1
+            lneighid = drecvbuf(ltmpbuf,pface)
+            ltmpbuf = ltmpbuf+1
+            lneighijk = drecvbuf(ltmpbuf,pface) 
+            ltmpbuf = ltmpbuf+1
+            lneighprvijk = drecvbuf(ltmpbuf,pface)
+            ltmpbuf = ltmpbuf+1
             lneighfound = locate_par(lneighid,lneighprvijk,lneigh) 
             if (.not.lneighfound) lneighfound = locate_par(lneighid,lneighijk,lneigh) 
             if (.not.lneighfound) lneighfound = exten_locate_par(lneighid,lparijk,lneigh)
             if (.not.lneighfound) then 
-               write(*,'("Warning:Unable to locate neighbour for particles crossing boundary")') 
+               WRITE(*,701)
                cycle
-            end if 
+            endif 
             lcount = lcount+1  
             neighbours(llocpar,lcount+1) = lneigh 
-         end do 
+         enddo 
          neighbours(llocpar,1) = lcount
          lbuf = lbuf+3*maxneighbors 
 
@@ -1386,30 +1493,32 @@
          lcount = 0 
          do lcontactindx = 2,pn(llocpar,1)+1
             lcontactfound = .false.
-            lcontactid = drecvbuf(ltmpbuf,pface);ltmpbuf=ltmpbuf+1
+            lcontactid = drecvbuf(ltmpbuf,pface)
+            ltmpbuf=ltmpbuf+1
             do lneighindx = 2,neighbours(llocpar,1)+1 
                if (iglobal_id(neighbours(llocpar,lneighindx)).eq.lcontactid) then 
                   lcontact = neighbours(llocpar,lneighindx) 
                   lcontactfound = .true.
                   exit 
-               end if 
-            end do 
+               endif 
+            enddo 
             if (.not.lcontactfound) then 
 !check for wall contact and if not print warning message
                if(lcontactid .lt. 0) then 
                   lcontact = max_pip + (-1) * lcontactid
                else 
-                  write(*,'("Warning:Unable to locate contact for particles crossing boundary")') 
-                  write(*,*)"Contact particle id =",lcontactid
+                  WRITE(*,702) lcontactid
                   ltmpbuf = ltmpbuf + 1 + dimn ! necessary as pv and pft not yet read for this particle   
                   cycle
-               end if  
-            end if 
+               endif  
+            endif 
             lcount = lcount+1 
             pn(llocpar,lcount+1) = lcontact   
-            pv(llocpar,lcount+1) = drecvbuf(ltmpbuf,pface);ltmpbuf=ltmpbuf+1
-            pft(llocpar,lcount+1,1:dimn) = drecvbuf(ltmpbuf:ltmpbuf+dimn-1,pface) ;ltmpbuf=ltmpbuf+dimn
-         end do 
+            pv(llocpar,lcount+1) = drecvbuf(ltmpbuf,pface)
+            ltmpbuf=ltmpbuf+1
+            pft(llocpar,lcount+1,1:dimn) = drecvbuf(ltmpbuf:ltmpbuf+dimn-1,pface) 
+            ltmpbuf=ltmpbuf+dimn
+         enddo 
          pn(llocpar,1)=lcount 
          lbuf = lbuf+(2+dimn)*maxneighbors 
 
@@ -1431,7 +1540,18 @@
 
       end do 
 
-      end  subroutine desmpi_unpack_parcross
+ 700 FORMAT(/2X,'From: DESMPI_UNPACK_PARCROSS: ',/2X,&
+         'ERROR: Unable to locate particles moving from ',I4.4,&
+         ' to ', I4.4) 
+ 701 FORMAT(/2X,'From: DESMPI_UNPACK_PARCROSS: ',/2X,&
+         'WARNING: Unable to locate neighbor for particles ',&
+         'crossing boundary') 
+ 702 FORMAT(/2X,'From: DESMPI_UNPACK_PARCROSS: ',/2X,&
+         'WARNING: Unable to locate neighbor for particles ',&
+         'crossing boundary.'/2X,'Contact particle ID =',I10) 
+
+
+      END SUBROUTINE desmpi_unpack_parcross
 
 
 !------------------------------------------------------------------------
@@ -1439,7 +1559,7 @@
 ! Purpose          : locates particle in ijk and returns true if found
 ! Parameter        : pglobalid - global id of the particle (input)
 !                    pijk - ijk of the cell (input)
-!                    plocalno - localparticle number (output) 
+!                    plocalno - local particle number (output) 
 !------------------------------------------------------------------------
       function locate_par(pglobalid,pijk,plocalno)
 !-----------------------------------------------
@@ -1462,15 +1582,17 @@
       locate_par = .false.
       if (pijk .lt. dg_ijkstart2 .or. pijk .gt. dg_ijkend2) then 
          return 
-      end if 
+      endif 
+
       do lpicloc = 1,dg_pic(pijk)%isize
          lcurpar = dg_pic(pijk)%p(lpicloc)
          if (iglobal_id(lcurpar) .eq. pglobalid) then 
             plocalno = lcurpar
             locate_par = .true.
             return
-         end if 
-      end do 
+         endif 
+      enddo 
+
       return 
       end function locate_par 
 
@@ -1504,7 +1626,11 @@
       lic = dg_iof_lo(pijk)
       ljc = dg_jof_lo(pijk)
       lkc = dg_kof_lo(pijk)
-      if(dimn.eq.2) then; lkoffset = 0 ; else; lkoffset =1 ; end if  
+      if(dimn.eq.2) then
+         lkoffset = 0 
+      else
+         lkoffset =1 
+      endif  
       do  lk = lkc-lkoffset,lkc+lkoffset
       do  lj = ljc-1,ljc+1
       do  li = lic-1,lic+1
@@ -1627,7 +1753,8 @@
 !-----------------------------------------------
 
 ! pack the variables in case of 
-      lparcount = 1; lcount = 0 
+      lparcount = 1
+      lcount = 0 
       do lcurpar = 1, max_pip 
          if (lparcount.gt.pip) exit
          if (.not. pea(lcurpar,1)) cycle 
@@ -1660,7 +1787,8 @@
 !-----------------------------------------------
 
 ! pack the variables in proc buffer 
-      lparcount = 1; lcount = 0  
+      lparcount = 1
+      lcount = 0  
       do lcurpar = 1, max_pip 
          if (lparcount.gt.pip) exit
          if (.not. pea(lcurpar,1)) cycle 
@@ -1708,7 +1836,8 @@
          lloc2glb = .false.
       end if 
 ! pack the variables in proc buffer 
-      lparcount = 1; lcount = 0  
+      lparcount = 1
+      lcount = 0  
       if (lloc2glb) then 
          do lcurpar = 1, max_pip 
             if (lparcount.gt.pip) exit
@@ -1801,6 +1930,7 @@
 !-----------------------------------------------      
       integer:: punit,pnext_rec,ptotsize
       logical, dimension(:) :: parray  
+!-----------------------------------------------
 
       call des_gather(parray)
       if(mype.eq.pe_io) call out_bin_512i(punit,irootbuf,ptotsize,pnext_rec)
@@ -2204,7 +2334,8 @@
 ! local variables 
 !-----------------------------------------------
       integer linter,lface
-      integer lparcnt,lcurpar,lneigh,lneighid,lneighindx,lcontact,lcontactid,lcontactindx 
+      integer lparcnt,lcurpar,lneigh,lneighid,lneighindx,lcontact,&
+              lcontactid,lcontactindx 
       integer lcurijk,lcount
       logical lneighfound,lcontactfound
 !-----------------------------------------------
@@ -2222,20 +2353,20 @@
             if(.not.iexchflag(lface))cycle 
             call desmpi_pack_ghostpar(lface)
             call desmpi_sendrecv_init(lface)
-         end do 
+         enddo 
          do lface = linter*2-1,linter*2
             if(.not.iexchflag(lface)) cycle
             call desmpi_sendrecv_wait(lface) 
             call desmpi_unpack_ghostpar(lface)
-         end do 
+         enddo 
 ! update pic required as particles in ghost cell can move between ghost cells
          do lface = linter*2-1,linter*2
             if(dsendbuf(1,lface).gt.0.or.drecvbuf(1,lface).gt.0) then
                call desgrid_pic(plocate=.false.)
                exit
-            end if  
-         end do 
-      end do  
+            endif  
+         enddo 
+      enddo  
       call des_mpi_barrier
 
 ! loop through particles neighbour and contact list and find the local particles number 
@@ -2253,14 +2384,15 @@
             lneighfound = .false.
             lneighid = neighbours(lcurpar,lneighindx) 
             lneighfound = locate_par(lneighid,lcurijk,lneigh) 
-            if (.not.lneighfound) lneighfound = exten_locate_par(lneighid,lcurijk,lneigh)
+            if (.not.lneighfound) lneighfound = &
+               exten_locate_par(lneighid,lcurijk,lneigh)
             if (.not.lneighfound) then 
-               write(*,'("Warning:Unable to locate neighbour during restart")') 
+               WRITE(*,800) 
                cycle
-            end if 
+            endif 
             lcount = lcount + 1
             neighbours(lcurpar,lcount+1) = lneigh 
-         end do 
+         enddo 
          neighbours(lcurpar,1) = lcount 
 
 ! loop through contact list and find local particle number using neighbor list 
@@ -2273,22 +2405,28 @@
                   lcontact = neighbours(lcurpar,lneighindx) 
                   lcontactfound = .true.
                   exit 
-               end if 
-            end do 
+               endif 
+            enddo 
             if (.not.lcontactfound) then 
-!check for wall contact and if not print warning message
+! check for wall contact and if not print warning message
                if(lcontactid .lt. 0) then 
                   lcontact = max_pip + (-1) * lcontactid
                else 
-                  write(*,'("Warning:Unable to locate contact particles during restart")') 
+                  WRITE(*,801) 
                   cycle
-               end if  
-            end if 
+               endif  
+            endif 
             lcount = lcount+1
             pn(lcurpar,lcount+1) = lcontact   
-         end do 
+         enddo 
          pn(lcurpar,1) = lcount 
-      end do 
+      enddo 
+
+ 800  FORMAT(/2X,'From: DES_RESTART_NEIGH: ',/2X,&
+         'WARNING: Unable to locate neighbor during restart (0)',/)
+ 801  FORMAT(/2X,'From: DES_RESTART_NEIGH: ',/2X,&
+         'WARNING: Unable to locate neighbor during restart (1)',/)
+
       end subroutine des_restart_neigh
 
 
@@ -2307,9 +2445,17 @@
       integer :: pmaxpip 
 !-----------------------------------------------
 
-      write(*,*) "Error:Number of particles", pmaxpip, "exceeded allowable particles", max_pip 
-      write(*,*) "Suggestion:Increase Particles_factor in mfix.dat"  
+      WRITE(*,900) pmaxpip, max_pip
       call des_mpi_stop
+
+ 900  FORMAT(/2X,'From: REDIM_PAR: ',/2X,&
+         'ERROR: Number of particles ',I10,/2X,&
+         'exceeds allowable particles (MAX_PIP)', I10,/2X,&
+         'Suggestion: increase PARTICLES_FACTOR in mfix.dat',/2X,&
+         'Comment: error may be the result of too many ',&
+         'particles moving',/2X,'across processors and/or ',&
+         'result of periodic treatment')
+
       end  subroutine redim_par
 
 !------------------------------------------------------------------------
@@ -2353,13 +2499,15 @@
       open(44,file=filename)
       select case(ptype)
       case (1) 
-         write(44,*) "------------------------------------------------------"
+         write(44,*)&
+            "------------------------------------------------------"
          write(44,*) "Flag Information" 
          do lface =1,dimn*2
             write(44,*) "details for face =" , lface  
             write(44,*) "Exchflag, cyclfac, neighproc" ,iexchflag(lface),ineighproc(lface) 
          end do 
-         write(44,*) "------------------------------------------------------"
+         write(44,*) &
+            "------------------------------------------------------"
       case (2) 
          ltordimn = 1 + 2*(dimn-2)
          lpacketsize = 2*dimn + ltordimn+ 5  
@@ -2367,11 +2515,14 @@
             if (.not.iexchflag(lface))cycle 
             lparcnt = dsendbuf(1,lface) 
             if (lparcnt .gt. 0) then
-               write(44,*) "------------------------------------------------------"
+               write(44,*) &
+                "------------------------------------------------------"
                write(44,*) "ghost send buffer for face", lface  
                write(44,*) "Number of particles in sendbuf",lparcnt 
-               write(44,*) "particle number global_id  ijk prvijk radius material new_pos new_vel omega_new"
-               write(44,*) "-----------------------------------------------------"
+               write(44,*) "particle number global_id ijk prvijk ",&
+                  "radius material new_pos new_vel omega_new"
+               write(44,*) &
+                "-----------------------------------------------------"
                do lcurpar = 1,lparcnt 
                   lbuf = (lcurpar-1) * lpacketsize + ibufoffset
                   write(44,*) lcurpar,(dsendbuf(lindx,lface),lindx=lbuf,lbuf+lpacketsize-1)
@@ -2385,11 +2536,14 @@
             if (.not.iexchflag(lface))cycle 
             lparcnt = drecvbuf(1,lface) 
             if (lparcnt .gt. 0) then
-               write(44,*) "------------------------------------------------------"
+               write(44,*) &
+                "------------------------------------------------------"
                write(44,*) "ghost recv buffer for face", lface  
                write(44,*) "Number of particles in recvbuf",lparcnt 
-               write(44,*) "particle number global_id  ijk prvijk radius material new_pos new_vel omega_new"
-               write(44,*) "-----------------------------------------------------"
+               write(44,*) "particle number global_id ijk prvijk ",&
+                  "radius material new_pos new_vel omega_new"
+               write(44,*) &
+                 "-----------------------------------------------------"
                do lcurpar = 1,lparcnt 
                   lbuf = (lcurpar-1) * lpacketsize + ibufoffset
                   write(44,*) lcurpar,(drecvbuf(lindx,lface),lindx=lbuf,lbuf+lpacketsize-1)
@@ -2397,11 +2551,14 @@
             end if 
          end do 
       case (4) 
-          write(44,*)"---------------------------------------------------------"
-          write(44,*)"Particle info"
+          write(44,*) &
+             "---------------------------------------------------------"
+          write(44,*) "Particle info"
           write(44,*) "max_pip,pip =" , max_pip,pip
-          write(44,*) "ghost position                        i       j     k    ijk"
-          write(44,*)"---------------------------------------------------------"
+          write(44,*) "ghost position                        ",& 
+             "i       j     k    ijk"
+          write(44,*) &
+             "---------------------------------------------------------"
           lparcount = 1 
           do lcurpar=1,max_pip
              if (lparcount.gt.pip) exit 
@@ -2419,52 +2576,66 @@
             if (.not.iexchflag(lface))cycle 
             lparcnt = dsendbuf(1,lface) 
             if (lparcnt .gt. 0) then
-               write(44,*) "------------------------------------------------------"
+               write(44,*) &
+                "------------------------------------------------------"
                write(44,*) "particle crossing info send buffer", lface  
                write(44,*) "Number of particles in sendbuf",lparcnt 
                do lcurpar = 1,lparcnt 
                   lbuf = (lcurpar-1) * lpacketsize + ibufoffset
                   write(44,*) "global_id  ijk prvijk radius  i,j,k, ijk"
-                  write(44,*) "-----------------------------------------------------"
+                  write(44,*) &
+                 "-----------------------------------------------------"
                   lsize = 8 
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1); lbuf = lbuf + lsize
+                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  lbuf = lbuf + lsize
 
                   write(44,*) "phase density vol mass omoi pos_old"
-                  write(44,*) "-----------------------------------------------------"
+                  write(44,*) &
+                 "-----------------------------------------------------"
                   lsize = 5+dimn 
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1); lbuf = lbuf + lsize
+                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  lbuf = lbuf + lsize
 
                   write(44,*) "pos_new     vel_old   vel_new"
-                  write(44,*) "-----------------------------------------------------"
+                  write(44,*) &
+                 "-----------------------------------------------------"
                   lsize = 3*dimn 
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1); lbuf = lbuf + lsize
+                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  lbuf = lbuf + lsize
 
                   write(44,*) "omega_old     omega_new   vel_oold"
-                  write(44,*) "-----------------------------------------------------"
+                  write(44,*) &
+                 "-----------------------------------------------------"
                   lsize = ltordimn*2 + dimn 
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1); lbuf = lbuf + lsize
+                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  lbuf = lbuf + lsize
 
                   write(44,*) "acc_old     rot_acc_old   fc "
-                  write(44,*) "-----------------------------------------------------"
+                  write(44,*) &
+                 "-----------------------------------------------------"
                   lsize = 2*dimn + ltordimn  
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1); lbuf = lbuf + lsize
+                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  lbuf = lbuf + lsize
 
                   write(44,*) "fn ft tow"
-                  write(44,*) "-----------------------------------------------------"
+                  write(44,*) &
+                 "-----------------------------------------------------"
                   lsize = 2*dimn + ltordimn 
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1); lbuf = lbuf + lsize
+                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  lbuf = lbuf + lsize
 
 ! print neighbour information 
                   lneighcnt =dsendbuf(lbuf,lface);lbuf = lbuf + 1
                   write(44,*) "total neighbour=",lneighcnt 
                   write(44,*) "neighbou",lneighcnt 
                   do lneighindx = 1, lneighcnt 
-                  lsize = 3 
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1); lbuf = lbuf + lsize
-                  end do  
-               end do 
-            end if 
-         end do 
+                     lsize = 3 
+                     write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                     lbuf = lbuf + lsize
+                  enddo  
+               enddo 
+            endif 
+         enddo 
       case (6) 
          write(44,*) "-----------------------------------------------"
          write(44,*) "at Time =",s_time 
