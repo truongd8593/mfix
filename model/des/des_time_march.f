@@ -182,13 +182,13 @@
             DTSOLID = DT
          ENDIF
          IF(DMP_LOG) WRITE(UNIT_LOG, 1999) factor, s_time, dt, dtsolid, pip
-         IF(mype.eq.pe_IO) WRITE(*, 1999) factor, s_time, dt, dtsolid, pip
+         IF(DMP_LOG) WRITE(*, 1999) factor, s_time, dt, dtsolid, pip
          
       ELSE
          FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID)) 
-         if(myPE.eq.pe_IO) write(*,'(1X,A)')&
+         IF(DMP_LOG) WRITE(*,'(1X,A)')&
             '---------- START DES_TIME_MARCH ---------->'
-         if(myPE.eq.pe_IO)write(*,'(3X,A,X,I10,X,A)') &
+         IF(DMP_LOG) WRITE(*,'(3X,A,X,I10,X,A)') &
             'DEM SIMULATION will be called', FACTOR, 'times'
 ! Initialization for des_spx_time, des_res_time         
          IF(RUN_TYPE .EQ. 'NEW') THEN
@@ -235,9 +235,9 @@
                DTSOLID = TIME + DT - S_TIME
             ENDIF 
             IF(DEBUG_DES) THEN
-              IF(mype.eq.pe_IO) write(*,'(3X,A,X,I10,X,A,X,ES15.7)') &
+              IF(DMP_LOG) write(*,'(3X,A,X,I10,X,A,X,ES15.7)') &
                   'DES-COUPLED LOOP NO. =', NN, ' S_TIME =', S_TIME 
-              IF(mype.eq.pe_IO) write(*,'(3X,A,X,ES15.7)') &
+              IF(DMP_LOG) write(*,'(3X,A,X,ES15.7)') &
                   'DTSOLID =', DTSOLID
             ENDIF
 ! Toggle flag so the mean fields are calculated only at the last DEM
@@ -250,7 +250,7 @@
             ENDIF
          ELSE   ! else if (des_continuum_coupled)
             IF(DEBUG_DES) THEN
-               IF(mype.eq.pe_IO) WRITE(*,'(3X,A,X,I10,X,A,X,ES15.7)') &
+               IF(DMP_LOG) WRITE(*,'(3X,A,X,I10,X,A,X,ES15.7)') &
                'DEM LOOP NO. =', NN, ' S_TIME =', S_TIME 
             ENDIF             
          ENDIF   ! end if/else (des_continuum_coupled) 
@@ -271,6 +271,7 @@
          DO NP = 1, MAX_PIP
             IF(PC .GT. PIP) EXIT
             IF(.NOT.PEA(NP,1)) CYCLE
+            IF(PEA(NP,4)) CYCLE
 
 ! Reset the debug flag
             FOCUS = .FALSE.
@@ -307,6 +308,7 @@
          DO NP = 1, MAX_PIP
             IF(PC .GT. PIP) EXIT
             IF(.NOT.PEA(NP,1)) CYCLE
+            IF(PEA(NP,4)) CYCLE            
 
 ! Reset the debug flag
             FOCUS = .FALSE.
