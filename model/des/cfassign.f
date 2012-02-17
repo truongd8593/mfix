@@ -356,7 +356,8 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 ! subroutine: compute_volume_of_nodes
-! Purpose:  please provide more apt description
+! Purpose:  please provide more apt description 
+! can the algorithm/logic of this routine be simplified?
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
 
       SUBROUTINE compute_volume_of_nodes
@@ -381,13 +382,22 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      INTEGER :: I, J, K, IJK
+! ijk index of fluid grid and corresponding i, j, k indices
+      integer :: ijk, iraw, jraw, kraw
+! i, j, k and (i+1, j+1, k+1) indices corrected for any 
+! cyclic ghost boundaries on fluid grid
+      INTEGER :: I, J, K, ip, jp, kp
       integer :: ipjk, ijpk, ipjpk, ijkp, ipjkp, ijpkp, ipjpkp
+! volume of indicated grid      
       double precision :: vol_ijk, vol_ipjk, vol_ijpk, vol_ipjpk
       double precision :: vol_ijkp, vol_ipjkp, vol_ijpkp, vol_ipjpkp
-      double precision :: avg_factor, zcor, vol_node_uncorr
-      integer :: FLUID_IND, CUTCELL_IND, WALL_IND
       double precision :: vol_node_count, vol_node_actual_count
+! weighting factor
+      double precision :: avg_factor 
+! not used?
+      double precision :: vol_node_uncorr      
+! used for reporting information
+      integer :: FLUID_IND, CUTCELL_IND, WALL_IND
       character*100 :: filename
 !-----------------------------------------------
 ! Include statement functions      
@@ -395,100 +405,127 @@
       INCLUDE 'function.inc'
 !-----------------------------------------------            
       
-      avg_factor = 0.125d0*(dimn-2) + 0.25d0*(3-dimn)
+      avg_factor = 0.125d0*(DIMN-2) + 0.25d0*(3-DIMN)
 
 ! compute the volume at the grid nodes 
 ! grid nodes start from istart2 to iend1
-      if(dimn.eq.2) vol_node_count = 4.
-      if(dimn.eq.3) vol_node_count = 8.
-      do ijk = ijkstart3,ijkend3
-         des_vol_node(ijk) = zero
-         i = i_of(ijk)
-         j = j_of(ijk)
-         k = k_of(ijk)
-         if(i.lt.istart2 .or. i.gt.iend1) cycle 
-         if(j.lt.jstart2 .or. j.gt.jend1) cycle 
-         if(k.lt.kstart2 .or. k.gt.kend1) cycle 
+      IF(DIMN.EQ.2) vol_node_count = 4.
+      IF(DIMN.EQ.3) vol_node_count = 8.
 
-         ipjk = funijk(i+1,j,k)
-         ijpk = funijk(i,j+1,k)
-         ipjpk = funijk(i+1,j+1,k)
-         
-         vol_ijk   = dx(i)*dy(j)*dz(k)
-         vol_ipjk  = dx(i+1)*dy(j)*dz(k)
-         vol_ijpk  = dx(i)*dy(j+1)*dz(k)
-         vol_ipjpk = dx(i+1)*dy(j+1)*dz(k)
+      DO ijk = ijkstart3,ijkend3
+         des_vol_node(ijk) = zero
+         iraw = i_of(ijk)
+         jraw = j_of(ijk)
+         kraw = k_of(ijk)
+
+! start at 1 (ghost cell) and go to last fluid cell. why start at a
+! ghost cell and not a fluid cell?
+         IF(iraw.LT.istart2 .OR. iraw.GT.iend1) CYCLE
+         IF(jraw.LT.jstart2 .OR. jraw.GT.jend1) CYCLE 
+         IF(kraw.LT.kstart2 .OR. kraw.GT.kend1) CYCLE 
+
+! this will force indices of ghost cells on cyclic borders back to 
+! the corresponding fluid cells. since we are using i, j, k indices and
+! not just a composite ijk index we need these to be shifted to account
+! for periodicity
+         I = imap_c(iraw)
+         J = jmap_c(jraw)
+         K = kmap_c(kraw)
+         IP = imap_c(iraw+1)  
+         JP = jmap_c(jraw+1)
+
+! using a function like ip_of(ijk) should work the same as getting funijk
+! of the shifted i, j, k indices.  however, small differences will
+! occur on the 'edges/corners'. so retaining the latter method at this
+! time. see j. galvin for discussion
+         ipjk = funijk(IP,J,K)
+         ijpk = funijk(I,JP,K)
+         ipjpk = funijk(IP,JP,K)
+
+! the existing variable vol(ijk) is not used here for cut-cell reasons
+! see r. garg for discussion
+         vol_ijk   = dx(I) *dy(J) *dz(K)
+         vol_ipjk  = dx(IP)*dy(J) *dz(K)
+         vol_ijpk  = dx(I) *dy(JP)*dz(K)
+         vol_ipjpk = dx(IP)*dy(JP)*dz(K)
          
          vol_node_uncorr = avg_factor*(vol_ijk + vol_ipjk + vol_ijpk + vol_ipjpk)
-
          vol_node_actual_count = vol_node_count 
 
-         if(.not.fluid_at(ijk))   then 
+         IF(.NOT.FLUID_AT(ijk)) THEN
             vol_node_actual_count = vol_node_actual_count - 1
             vol_ijk  = zero  
-         endif
+         ENDIF
 
-         if(.not.fluid_at(ipjk))    then 
+         IF(.NOT.FLUID_AT(ipjk)) THEN
             vol_node_actual_count = vol_node_actual_count - 1
             vol_ipjk  = zero 
-         endif
+         ENDIF
 
-         if(.not.fluid_at(ijpk))    then 
+         IF(.NOT.FLUID_AT(ijpk)) THEN
             vol_node_actual_count = vol_node_actual_count - 1
             vol_ijpk  = zero 
-         endif
+         ENDIF
 
-         if(.not.fluid_at(ipjpk))   then 
+         IF(.NOT.FLUID_AT(ipjpk)) THEN
             vol_node_actual_count = vol_node_actual_count - 1 
             vol_ipjpk = zero 
-         endif
+         ENDIF
          
-         des_vol_node(ijk) = avg_factor*(vol_ijk + vol_ipjk + vol_ijpk + vol_ipjpk)
+! this will have non-zero values for non-fluid cells at the
+! west/south/bottom borders but not for east/north/top borders?
+         des_vol_node(ijk) = avg_factor*(vol_ijk + vol_ipjk + &
+            vol_ijpk + vol_ipjpk)
 
-         if (dimn.eq.3) then  
-            ijkp = funijk(i,j,k+1)
-            ipjkp = funijk(i+1,j,k+1)
-            ijpkp = funijk(i,j+1,k+1)
-            ipjpkp = funijk(i+1,j+1,k+1)
+         IF (DIMN.EQ.3) THEN
+            KP     = kmap_c(kraw+1)                 
+            ijkp   = funijk(I, J, KP)
+            ipjkp  = funijk(IP,J, KP)
+            ijpkp  = funijk(I, JP,KP)
+            ipjpkp = funijk(IP,JP,KP)
             
-            vol_ijkp   = dx(i)*dy(j)*dz(k+1)
-            vol_ipjkp  = dx(i+1)*dy(j)*dz(k+1)
-            vol_ijpkp  = dx(i)*dy(j+1)*dz(k+1)
-            vol_ipjpkp = dx(i+1)*dy(j+1)*dz(k+1)
+            vol_ijkp   = dx(I) *dy(J) *dz(KP)
+            vol_ipjkp  = dx(IP)*dy(J) *dz(KP)
+            vol_ijpkp  = dx(I) *dy(JP)*dz(KP)
+            vol_ipjpkp = dx(IP)*dy(JP)*dz(KP)
 
-            vol_node_uncorr = avg_factor*(vol_node_uncorr + vol_ijkp + vol_ipjkp + vol_ijpkp + vol_ipjpkp)
+            vol_node_uncorr = avg_factor*(vol_node_uncorr + vol_ijkp + &
+               vol_ipjkp + vol_ijpkp + vol_ipjpkp)
 
-            if(.not.fluid_at(ijkp))   then 
+            IF(.NOT.FLUID_AT(ijkp)) THEN
                vol_node_actual_count = vol_node_actual_count - 1
                vol_ijkp   = zero 
-            endif
+            ENDIF
 
-            if(.not.fluid_at(ipjkp))   then 
+            IF(.NOT.FLUID_AT(ipjkp)) THEN
                vol_node_actual_count = vol_node_actual_count - 1
                vol_ipjkp  = zero 
-            endif
+            ENDIF
 
-            if(.not.fluid_at(ijpkp))   then 
+            IF(.NOT.FLUID_AT(ijpkp)) THEN
                vol_node_actual_count = vol_node_actual_count - 1
                vol_ijpkp  = zero 
-            endif
+            ENDIF
 
-            if(.not.fluid_at(ipjpkp))   then 
+            IF(.NOT.FLUID_AT(ipjpkp)) THEN
                vol_node_actual_count = vol_node_actual_count - 1
                vol_ipjpkp = zero 
-            endif
+            ENDIF
                         
-            des_vol_node(ijk) = des_vol_node(ijk) + avg_factor*(vol_ijkp + &
-            & vol_ipjpkp + vol_ijpkp + vol_ipjkp)
+            des_vol_node(ijk) = des_vol_node(ijk) + avg_factor*&
+               (vol_ijkp + vol_ipjpkp + vol_ijpkp + vol_ipjkp)
             
-         end if 
-         if(vol_node_actual_count.gt.zero) then 
+         ENDIF
+
+         IF(vol_node_actual_count.GT.zero) THEN
             DES_VOL_NODE_RATIO(ijk)  = vol_node_count/vol_node_actual_count
          ELSE
             DES_VOL_NODE_RATIO(ijk) = zero 
-         endif
-      end do
-      
+         ENDIF
+
+      ENDDO   ! end do ijk=ijkstart3,ijkend3
+
+! reporting information      
       WRITE(filename,'(A,"_",I5.5,".dat")') 'VOL_NODE_',myPE
       OPEN(1000,file=TRIM(filename),form ='formatted',status='unknown')
       write(1000,'(9(A,3X),A)') 'VARIABLES=',&
@@ -510,15 +547,13 @@
                if(cartesian_grid)then
                   IF(SCALAR_NODE_ATWALL(IJK)) WALL_IND = 1 
                endif
-               if(dimn.eq.2) zcor = zt(k)
-               if(dimn.eq.3) zcor = zt(k-1) + dz(k)
                write(1000,'(3(2X,I10),2((2X,I4)),3(2X,G17.8))')&
                   I, J, K, fluid_ind, cutcell_ind, wall_ind, &
                   (vol(ijk)/(DX(I)*DY(J)*DZ(K)))*100., &
                   des_vol_node(ijk), des_vol_node_ratio(ijk) 
-            enddo
-         enddo
-      enddo
+             ENDDO
+         ENDDO
+      ENDDO
       close(1000, status='keep')
 
       RETURN      
