@@ -530,23 +530,23 @@
 
 100   FORMAT(A)
 
-1002  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         A,' already exists in the run directory.',/10X,               &
-           'This is not allowed for a new run.',/10X,                   &
-         'Terminating run.',/1X,70('*')/)
+1002  FORMAT(/1X,70('*'),/,' From: OPEN_PVD_FILE',/,' Message: ',       &
+         A,' already exists in the run directory.',/,10X,               &
+           'This is not allowed for a new run.',/,10X,                   &
+         'Terminating run.',/,1X,70('*'),/)
 
-1003  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         A,' is missing from the  the run directory,',/10X,            &
-           ' and must be present for a restart run.',/10X,              &
-         'Terminating run.',/1X,70('*')/)
+1003  FORMAT(/1X,70('*'),/,' From: OPEN_PVD_FILE',/,' Message: ',       &
+         A,' is missing from the  the run directory,',/,10X,            &
+           ' and must be present for a restart run.',/,10X,              &
+         'Terminating run.',/,1X,70('*'),/)
 
-1004  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         ' Current VTU frame is ',I,/10X,                              &
-         ' (from ',A,').',/1X,70('*')/)
+1004  FORMAT(/1X,70('*'),/,' From: OPEN_PVD_FILE',/,' Message: ',       &
+         ' Current VTU frame is ',I10,/,10X,                             &
+         ' (from ',A,').',/,1X,70('*'),/)
 
-1005  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         ' Current VTU frame is ',I,/10X,                              &
-           ' (from mfix.dat).',/1X,70('*')/)
+1005  FORMAT(/1X,70('*'),/,' From: OPEN_PVD_FILE',/,' Message: ',       &
+         ' Current VTU frame is ',I10,/,10X,                             &
+           ' (from mfix.dat).',/,1X,70('*'),/)
 
 
 
