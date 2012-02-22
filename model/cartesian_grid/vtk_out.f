@@ -60,7 +60,7 @@
       CHARACTER (LEN=32) :: SUBM,SUBN
       CHARACTER (LEN=64) :: VAR_NAME
 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC,IJK_ARRAY
 
       include "function.inc"
 
@@ -209,13 +209,71 @@
                   CALL WRITE_SCALAR_IN_VTU('PARTITION',PARTITION)
                ENDIF
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+
             CASE (101)
-       
                Allocate(DP_BC_ID(DIMENSION_3))
                DP_BC_ID = DFLOAT(BC_ID)
                CALL WRITE_SCALAR_IN_VTU('BC_ID',DP_BC_ID)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
                DeAllocate(DP_BC_ID)
+ 
+            CASE(999)
+               Allocate(IJK_ARRAY(DIMENSION_3))
+               DO IJK = IJKSTART3, IJKEND3
+                  IJK_ARRAY(IJK) = DFLOAT(IJK)
+               ENDDO
+               CALL WRITE_SCALAR_IN_VTU('IJK',IJK_ARRAY)
+               DeAllocate(IJK_ARRAY)
+
+            CASE(1000)
+               CALL WRITE_VECTOR_IN_VTU('Scalar normal',NORMAL_S(:,1),NORMAL_S(:,2),NORMAL_S(:,3))
+
+            CASE (1001)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_1',DEBUG_CG(:,1))
+
+            CASE (1002)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_2',DEBUG_CG(:,2))
+
+            CASE (1003)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_3',DEBUG_CG(:,3))
+
+            CASE (1004)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_4',DEBUG_CG(:,4))
+
+            CASE (1005)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_5',DEBUG_CG(:,5))
+
+            CASE (1006)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_6',DEBUG_CG(:,6))
+
+            CASE (1007)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_7',DEBUG_CG(:,7))
+
+            CASE (1008)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_8',DEBUG_CG(:,8))
+
+            CASE (1009)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_9',DEBUG_CG(:,9))
+
+            CASE (1010)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_10',DEBUG_CG(:,10))
+
+            CASE (1011)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_11',DEBUG_CG(:,11))
+
+            CASE (1012)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_12',DEBUG_CG(:,12))
+
+            CASE (1013)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_13',DEBUG_CG(:,13))
+
+            CASE (1014)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_14',DEBUG_CG(:,14))
+
+            CASE (1015)
+               CALL WRITE_SCALAR_IN_VTU('DEBUG_15',DEBUG_CG(:,15))
+
+
 
             CASE (0) ! do nothing
 
@@ -530,23 +588,23 @@
 
 100   FORMAT(A)
 
-1002  FORMAT(/1X,70('*'),/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         A,' already exists in the run directory.',/,10X,               &
-           'This is not allowed for a new run.',/,10X,                   &
-         'Terminating run.',/,1X,70('*'),/)
+1002  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
+         A,' already exists in the run directory.',/10X,               &
+           'This is not allowed for a new run.',/10X,                   &
+         'Terminating run.',/1X,70('*')/)
 
-1003  FORMAT(/1X,70('*'),/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         A,' is missing from the  the run directory,',/,10X,            &
-           ' and must be present for a restart run.',/,10X,              &
-         'Terminating run.',/,1X,70('*'),/)
+1003  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
+         A,' is missing from the  the run directory,',/10X,            &
+           ' and must be present for a restart run.',/10X,              &
+         'Terminating run.',/1X,70('*')/)
 
-1004  FORMAT(/1X,70('*'),/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         ' Current VTU frame is ',I10,/,10X,                             &
-         ' (from ',A,').',/,1X,70('*'),/)
+1004  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
+         ' Current VTU frame is ',I,/10X,                              &
+         ' (from ',A,').',/1X,70('*')/)
 
-1005  FORMAT(/1X,70('*'),/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         ' Current VTU frame is ',I10,/,10X,                             &
-           ' (from mfix.dat).',/,1X,70('*'),/)
+1005  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
+         ' Current VTU frame is ',I,/10X,                              &
+           ' (from mfix.dat).',/1X,70('*')/)
 
 
 
