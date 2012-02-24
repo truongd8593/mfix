@@ -224,7 +224,7 @@
          CASE('U_MOMENTUM')
 
             IF(.NOT.CUT_U_CELL_AT(IJK)) THEN
-               WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H_DES:'
+               WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H:'
                WRITE(*,*)' U-MOMENTUM CELL',IJK,' IS NOT A CUT CELL'
                WRITE(*,*)' MFiX will exit now.'             
                CALL MFIX_EXIT(myPE) 
@@ -249,7 +249,7 @@
          CASE('V_MOMENTUM')
 
             IF(.NOT.CUT_V_CELL_AT(IJK)) THEN
-               WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H_DES:'
+               WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H:'
                WRITE(*,*)' V-MOMENTUM CELL',IJK,' IS NOT A CUT CELL'
                WRITE(*,*)' MFiX will exit now.'             
                CALL MFIX_EXIT(myPE) 
@@ -275,7 +275,7 @@
          CASE('W_MOMENTUM')
 
             IF(.NOT.CUT_W_CELL_AT(IJK)) THEN
-               WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H_DES:'
+               WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H:'
                WRITE(*,*)' W-MOMENTUM CELL',IJK,' IS NOT A CUT CELL'
                WRITE(*,*)' MFiX will exit now.'             
                CALL MFIX_EXIT(myPE) 
@@ -298,7 +298,7 @@
             ENDIF
 
          CASE DEFAULT
-            WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H_DES:'
+            WRITE(*,*)' EROR IN SUBROUTINE GET_DEL_H:'
             WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
             WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
             WRITE(*,*)'SCALAR' 
@@ -370,14 +370,8 @@
       INTEGER :: N_CUT_FACE_NODES
       DOUBLE PRECISION, DIMENSION(15,3) :: COORD_CUT_FACE_NODES
       DOUBLE PRECISION :: X_MEAN,Y_MEAN,Z_MEAN,F_MEAN
-      DOUBLE PRECISION, DIMENSION(3) :: N,V,N1,N2
-      DOUBLE PRECISION :: NORM,N1_dot_N2
-
-      INTEGER :: NODE, Q_ID
-
-      DOUBLE PRECISION :: F_Q
-      LOGICAL:: CLIP_FLAG
-    
+      DOUBLE PRECISION, DIMENSION(3) :: N,V
+      DOUBLE PRECISION :: NORM
 
       include "function.inc"
 
@@ -395,12 +389,12 @@
 ! Make sure there are a least three points along the plane
 !======================================================================
 
-        IF(N_CUT_FACE_NODES < 3) THEN
-           WRITE(*,*)' ERROR IN SUBROUTINE STORE_CUT_FACE_INFO:'
-           WRITE(*,*)' CUT FACE HAS LESS THAN 3 NODES.'
-           WRITE(*,*)' MFIX WILL EXIT NOW.'
-           CALL MFIX_EXIT(myPE)
-        END IF
+         IF(N_CUT_FACE_NODES < 3) THEN
+            WRITE(*,*)' ERROR IN SUBROUTINE STORE_CUT_FACE_INFO:'
+            WRITE(*,*)' CUT FACE HAS LESS THAN 3 NODES.'
+            WRITE(*,*)' MFIX WILL EXIT NOW.'
+            CALL MFIX_EXIT(myPE)
+         END IF
 
 !======================================================================
 !  Find tentative unit normal vector
@@ -408,15 +402,10 @@
 !  (unit vector must be pointing towards the fluid)
 !======================================================================
 
-
-
-        CALL CROSS_PRODUCT(COORD_CUT_FACE_NODES(2,:)-COORD_CUT_FACE_NODES(1,:),&
+         CALL CROSS_PRODUCT(COORD_CUT_FACE_NODES(2,:)-COORD_CUT_FACE_NODES(1,:),&
                             COORD_CUT_FACE_NODES(3,:)-COORD_CUT_FACE_NODES(1,:),N)
 
-     ENDIF
-
-
-
+      ENDIF
 
 
       NORM = DSQRT(N(1)**2 + N(2)**2 + N(3)**2)
@@ -429,39 +418,6 @@
 
       IF (DOT_PRODUCT(N,V) < ZERO) N = - N
 
-
-
-      IF(N_CUT_FACE_NODES > 3) THEN     ! FOR 3D geometry, check normal of plane defined by nodes 1,2, and 4
-
-         N1 = N  ! Keep copy of previous N (nodes 1,2,3)
-
-         CALL CROSS_PRODUCT(COORD_CUT_FACE_NODES(2,:)-COORD_CUT_FACE_NODES(1,:),&
-                             COORD_CUT_FACE_NODES(4,:)-COORD_CUT_FACE_NODES(1,:),N2)
-
-
-         NORM = DSQRT(N2(1)**2 + N2(2)**2 + N2(3)**2)
-         N2 = N2 / NORM
-
-         V(1) = X_MEAN - COORD_CUT_FACE_NODES(1,1)
-         V(2) = Y_MEAN - COORD_CUT_FACE_NODES(1,2)
-         V(3) = Z_MEAN - COORD_CUT_FACE_NODES(1,3)
-
-
-         IF (DOT_PRODUCT(N2,V) < ZERO) N2 = - N2
-
-
-      ENDIF
-
-      N1_dot_N2 = DOT_PRODUCT(N1,N2)
-      DEBUG_CG(IJK,1)=N1_dot_N2
-
-      IF(N1_dot_N2<0.99) THEN
-
-!         What should be done when the unit vectors are different ?
-
-      ENDIF
-
-
 !======================================================================
 ! Store unit normal vector and reference point       
 !======================================================================
@@ -471,8 +427,6 @@
 
             NORMAL_S(IJK,:) = N
             REFP_S(IJK,:)   = COORD_CUT_FACE_NODES(1,:)
-
-            CALL TEST_DEL_H(IJK,'SCALAR') ! test for negative del_H
 
          CASE('U_MOMENTUM')
 
@@ -504,116 +458,6 @@
       RETURN
       
       END SUBROUTINE STORE_CUT_FACE_INFO
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: TEST_DEL_H                                             C
-!  Purpose: tests the computation of wall distance                     C
-!           If a negative distance is detected, the normal vector      C
-!           is inverted                                                C
-!                                                                      C
-!  Author: Jeff Dietiker                              Date: 22-Feb-12  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Revision Number #                                  Date: ##-###-##  C
-!  Author: #                                                           C
-!  Purpose: #                                                          C
-!                                                                      C 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE TEST_DEL_H(IJK,TYPE_OF_CELL)
-    
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      
-      IMPLICIT NONE
-      CHARACTER (LEN=*) :: TYPE_OF_CELL
-      DOUBLE PRECISION:: X_COPY,Y_COPY,Z_COPY
-      INTEGER :: IJK
-      INTEGER :: NODE,N_N1,N_N2,N
-      DOUBLE PRECISION :: Del_H
-      DOUBLE PRECISION :: Nx,Ny,Nz
-
-      LOGICAL :: ALLOW_NEG_DIST = .TRUE.  ! forces GET_DEL_H_DES to output negative delh
-                                           ! i.e. do not let the subroutine overwrite negative values
-
-
-! This subroutine tests values of del_H for nodes defining a cut cell.
-! Only nodes that are in the fluid region are tested.
-! Nodes belonging to the cut face should return zero (or near zero) values and are not tested.
-! If a negative del_H is detected, the unit normal vector is reversed.
-
-      IF(NO_K) THEN
-         N_N1 = 5
-         N_N2 = 8
-      ELSE
-         N_N1 = 1
-         N_N2 = 8
-      ENDIF
-
-      CALL GET_CELL_NODE_COORDINATES(IJK,'SCALAR')
-
-      DO NODE = 1,NUMBER_OF_NODES(IJK)
-         IF(CONNECTIVITY(IJK,NODE)<=IJKEND3) THEN  ! node does not belong to the cut-face
-                                                    ! i.e. is in the fluid region
-
-            DO N = N_N1,N_N2                     ! get node coordinate
-               IF(CONNECTIVITY(IJK,NODE) == IJK_OF_NODE(N)) THEN
-                  X_COPY = X_NODE(N)
-                  Y_COPY = Y_NODE(N)
-                  Z_COPY = Z_NODE(N)
-                  EXIT
-               ENDIF
-            ENDDO
-
-!           Compute del_H
-            CALL GET_DEL_H_DES(IJK,TYPE_OF_CELL,X_COPY,Y_COPY,Z_COPY,Del_H,Nx,Ny,Nz, ALLOW_NEG_DIST) 
-
-
-            IF(DEL_H<ZERO) THEN
-
-
-               IF(PRINT_WARNINGS.AND.MyPE==PE_IO) THEN
-                  WRITE(*,*),' Warning: Negative delh detected in scalar cell :',IJK
-                  WRITE(*,*) ' Location (X,Y,Z) = ',X_COPY,Y_COPY,Z_COPY
-                  WRITE(*,*) ' Reverting unit normal vector.'
-               ENDIF
-
-               NORMAL_S(IJK,1) = -NORMAL_S(IJK,1)
-               NORMAL_S(IJK,2) = -NORMAL_S(IJK,2)
-               NORMAL_S(IJK,3) = -NORMAL_S(IJK,3)
-
-
-            ENDIF
-
-
-         ENDIF
-      ENDDO
-
-      RETURN
-
-      END SUBROUTINE TEST_DEL_H
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
