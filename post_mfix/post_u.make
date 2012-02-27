@@ -209,6 +209,24 @@ post_mfix : \
     check_data_cartesian.$(OBJ_EXT) \
     get_poly_data.$(OBJ_EXT) \
     get_stl_data.$(OBJ_EXT) \
+    get_connectivity.$(OBJ_EXT) \
+    cut_cell_preprocessing.$(OBJ_EXT) \
+    eval_usr_fct.$(OBJ_EXT) \
+    allocate_cut_cell_arrays.$(OBJ_EXT) \
+    allocate_dummy_cut_cell_arrays.$(OBJ_EXT) \
+    calc_vort_out.$(OBJ_EXT) \
+    deallocate_cut_cell_arrays.$(OBJ_EXT) \
+    get_alpha.$(OBJ_EXT) \
+    get_cut_cell_flags.$(OBJ_EXT) \
+    get_cut_cell_volume_area.$(OBJ_EXT) \
+    get_master.$(OBJ_EXT) \
+    get_poly_data.$(OBJ_EXT) \
+    get_stl_data.$(OBJ_EXT) \
+    set_Odxyz.$(OBJ_EXT) \
+    vtk_out.$(OBJ_EXT) \
+    write_progress_bar.$(OBJ_EXT) \
+    dmp_cartesian.$(OBJ_EXT) \
+    set_geometry1.$(OBJ_EXT) \
     
 	$(LINK_CMD) $(LINK_FLAGS) \
     ambm_mod.$(OBJ_EXT) \
@@ -418,6 +436,24 @@ post_mfix : \
     check_data_cartesian.$(OBJ_EXT) \
     get_poly_data.$(OBJ_EXT) \
     get_stl_data.$(OBJ_EXT) \
+    get_connectivity.$(OBJ_EXT) \
+    cut_cell_preprocessing.$(OBJ_EXT) \
+    eval_usr_fct.$(OBJ_EXT) \
+    allocate_cut_cell_arrays.$(OBJ_EXT) \
+    allocate_dummy_cut_cell_arrays.$(OBJ_EXT) \
+    calc_vort_out.$(OBJ_EXT) \
+    deallocate_cut_cell_arrays.$(OBJ_EXT) \
+    get_alpha.$(OBJ_EXT) \
+    get_cut_cell_flags.$(OBJ_EXT) \
+    get_cut_cell_volume_area.$(OBJ_EXT) \
+    get_master.$(OBJ_EXT) \
+    get_poly_data.$(OBJ_EXT) \
+    get_stl_data.$(OBJ_EXT) \
+    set_Odxyz.$(OBJ_EXT) \
+    vtk_out.$(OBJ_EXT) \
+    write_progress_bar.$(OBJ_EXT) \
+    dmp_cartesian.$(OBJ_EXT) \
+    set_geometry1.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
 AMBM.mod : ../model/ambm_mod.f \
@@ -1872,3 +1908,292 @@ get_stl_data.$(OBJ_EXT) : ../model/cartesian_grid/get_stl_data.f \
             SENDRECV.mod \
             STL.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_stl_data.f 
+get_connectivity.$(OBJ_EXT) : ../model/cartesian_grid/get_connectivity.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            POLYGON.mod \
+            STL.mod \
+            FLDVAR.mod \
+            VTK.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_connectivity.f 
+cut_cell_preprocessing.$(OBJ_EXT) : ../model/cartesian_grid/cut_cell_preprocessing.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            VTK.mod \
+            CDIST.mod \
+            FLDVAR.mod \
+            POLYGON.mod \
+            STL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/cut_cell_preprocessing.f 
+eval_usr_fct.$(OBJ_EXT) : ../model/cartesian_grid/eval_usr_fct.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            FLDVAR.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/eval_usr_fct.f 
+allocate_cut_cell_arrays.$(OBJ_EXT) : ../model/cartesian_grid/allocate_cut_cell_arrays.f \
+            PARAM.mod \
+            PARAM1.mod \
+            INDICES.mod \
+            CUTCELL.mod \
+            STL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/allocate_cut_cell_arrays.f 
+allocate_dummy_cut_cell_arrays.$(OBJ_EXT) : ../model/cartesian_grid/allocate_dummy_cut_cell_arrays.f \
+            PARAM.mod \
+            PARAM1.mod \
+            INDICES.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/allocate_dummy_cut_cell_arrays.f 
+calc_vort_out.$(OBJ_EXT) : ../model/cartesian_grid/calc_vort_out.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            FLDVAR.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/calc_vort_out.f 
+deallocate_cut_cell_arrays.$(OBJ_EXT) : ../model/cartesian_grid/deallocate_cut_cell_arrays.f \
+            PARAM.mod \
+            PARAM1.mod \
+            INDICES.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/deallocate_cut_cell_arrays.f 
+get_alpha.$(OBJ_EXT) : ../model/cartesian_grid/get_alpha.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            BC.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_alpha.f 
+get_cut_cell_flags.$(OBJ_EXT) : ../model/cartesian_grid/get_cut_cell_flags.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            VTK.mod \
+            POLYGON.mod \
+            STL.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            SCALARS.mod \
+            FUNITS.mod \
+            RXNS.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_cut_cell_flags.f 
+get_cut_cell_volume_area.$(OBJ_EXT) : ../model/cartesian_grid/get_cut_cell_volume_area.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            POLYGON.mod \
+            STL.mod \
+            BC.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_cut_cell_volume_area.f 
+get_master.$(OBJ_EXT) : ../model/cartesian_grid/get_master.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            BC.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_master.f 
+get_poly_data.$(OBJ_EXT) : ../model/cartesian_grid/get_poly_data.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            RUN.mod \
+            SCALARS.mod \
+            FUNITS.mod \
+            RXNS.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            PROGRESS_BAR.mod \
+            POLYGON.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_poly_data.f 
+get_stl_data.$(OBJ_EXT) : ../model/cartesian_grid/get_stl_data.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            RUN.mod \
+            SCALARS.mod \
+            FUNITS.mod \
+            RXNS.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            PROGRESS_BAR.mod \
+            STL.mod \
+            VTK.mod \
+            QUADRIC.mod \
+            CONSTANT.mod \
+            BC.mod \
+            CUTCELL.mod \
+            PARALLEL.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            SENDRECV.mod \
+            STL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_stl_data.f 
+set_Odxyz.$(OBJ_EXT) : ../model/cartesian_grid/set_Odxyz.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            VTK.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/set_Odxyz.f 
+vtk_out.$(OBJ_EXT) : ../model/cartesian_grid/vtk_out.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            FLDVAR.mod \
+            VISC_S.mod \
+            PHYSPROP.mod \
+            PGCOR.mod \
+            VTK.mod \
+            RXNS.mod \
+            OUTPUT.mod \
+            SCALARS.mod \
+            MPI_UTILITY.mod \
+            PARALLEL_MPI.mod \
+            PSCOR.mod \
+            DISCRETELEMENT.mod \
+            MFIX_PIC.mod \
+            CDIST.mod \
+            POLYGON.mod \
+            STL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/vtk_out.f 
+write_progress_bar.$(OBJ_EXT) : ../model/cartesian_grid/write_progress_bar.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            FLDVAR.mod \
+            RUN.mod \
+            SCALARS.mod \
+            FUNITS.mod \
+            RXNS.mod \
+            COMPAR.mod \
+            MPI_UTILITY.mod \
+            PROGRESS_BAR.mod \
+            PARALLEL.mod \
+            SENDRECV.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/write_progress_bar.f 
+dmp_cartesian.$(OBJ_EXT) : ../model/cartesian_grid/dmp_cartesian.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            QUADRIC.mod \
+            CUTCELL.mod \
+            MPI_UTILITY.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/dmp_cartesian.f 
+set_geometry1.$(OBJ_EXT) : ../model/set_geometry1.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            RUN.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_geometry1.f 
