@@ -1,16 +1,17 @@
-
-      SUBROUTINE Deallocate_ARRAYS 
-      
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !                                                                      
-!  Module name: DEDeallocate_ARRAYS                                     
-!  Purpose: deDeallocate arrays
+!  Module name: DEallocate_ARRAYS                                     
+!  Purpose: deallocate arrays
 !                                                                      C
 !  Author: M. Syamlal                                Date: 17-DEC-98 
 !  Reviewer: 
 !                                                                     
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+      SUBROUTINE Deallocate_ARRAYS
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1
@@ -43,17 +44,17 @@
       use kintheory
       use ghdtheory
       IMPLICIT NONE
-      
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
       INTEGER M
-      
+!-----------------------------------------------      
       
 !ambm
       Deallocate( A_m )
       Deallocate( B_m )
 
-
-!coeff
-      
+!coeff      
       Deallocate( DENSITY )
       Deallocate( PSIZE )
       Deallocate( SP_HEAT )
@@ -62,15 +63,14 @@
       Deallocate( DIFF )
       Deallocate( DRAGCOEF )
       Deallocate( HEAT_TR)
-      
+      Deallocate( GRAN_DISS)
+
 !cont
       Deallocate( DO_CONT )
-
 
 !drag
       Deallocate(  F_gs )
       Deallocate(  F_ss )
-
 
 !energy
       Deallocate(  HOR_g  )
@@ -132,13 +132,12 @@
         Deallocate(  E_Turb_G  )
       ENDIF
 
-
 !geometry
-      Deallocate(           FLAG  )
-      Deallocate(           FLAG_E  )
-      Deallocate(           FLAG_N  )
-      Deallocate(           FLAG_T  )
-      Deallocate(           ICBC_FLAG  )
+      Deallocate(  FLAG  )
+      Deallocate(  FLAG_E  )
+      Deallocate(  FLAG_N  )
+      Deallocate(  FLAG_T  )
+      Deallocate(  ICBC_FLAG  )
       Deallocate(  oDX  )
       Deallocate(  oDY  )
       Deallocate(  oDZ  )
@@ -177,20 +176,18 @@
       Deallocate(  VOL_W  )
 
 !indices
-      Deallocate(           STORE_LM  )
-      Deallocate(           CELL_CLASS  )
-      Deallocate(           I_OF  )
-      Deallocate(           J_OF  )
-      Deallocate(           K_OF  )
-      Deallocate(           Im1  )
-      Deallocate(           Ip1  )
-      Deallocate(           Jm1  )
-      Deallocate(           Jp1  )
-      Deallocate(           Km1  )
-      Deallocate(           Kp1  )
+      Deallocate(  STORE_LM  )
+      Deallocate(  CELL_CLASS  )
+      Deallocate(  I_OF  )
+      Deallocate(  J_OF  )
+      Deallocate(  K_OF  )
+      Deallocate(  Im1  )
+      Deallocate(  Ip1  )
+      Deallocate(  Jm1  )
+      Deallocate(  Jp1  )
+      Deallocate(  Km1  )
+      Deallocate(  Kp1  )
       
-
-
 !pgcor
       Deallocate(  d_e )
       Deallocate(  d_n )
@@ -240,18 +237,15 @@
       Deallocate(  SPECIES_N2IDs )
       
 !scalars
-      
       IF(DIMENSION_Scalar /= 0)then
         Deallocate(  Scalar_c  )
         Deallocate(  Scalar_p  )
-        Deallocate(  Dif_Scalar  )
-      
+        Deallocate(  Dif_Scalar  )      
       ENDIF
 
       Deallocate( N_sh )
 
 !dqmom
-
       deallocate(  D_p  )
       deallocate(  D_po )
       deallocate(  Source_a)
@@ -264,8 +258,6 @@
       deallocate(  omega)
       deaLLocate(  beta_a)
       deaLLocate(  ystart)
-!     deaLLocate(  g_a)
-
 
 !tau_g
       Deallocate(  TAU_U_g )
@@ -331,153 +323,140 @@
       Deallocate(  Xsi_n )
       Deallocate(  Xsi_t )
       
-
-!VSH
+!vshear
       Deallocate(  VSH )
-
-!VSHE
       Deallocate(  VSHE )
 
-!     University of Colorado, Hrenya Research Group
-!     Arising from kinetic theory of Iddir & Arastoopour (2005)
+!kintheory
+!additional general kinetic theory terms
+      Deallocate(  KTMOM_U_s)
+      Deallocate(  KTMOM_V_s)
+      Deallocate(  KTMOM_W_s)
+
+!kintheory
+!kinetic theory terms Iddir & Arastoopour (2005)
       IF (TRIM(KT_TYPE) == 'IA_NONEP') THEN      
-      Deallocate(    KTMOM_U_s)
-      Deallocate(    KTMOM_V_s)
-      Deallocate(    KTMOM_W_s)
-      Deallocate(    trD_s2_ip)
-      Deallocate(    MU_sM_ip)
-      Deallocate(    MU_sL_ip)
-      Deallocate(    XI_sM_ip)
-      Deallocate(    XI_sL_ip)
-      Deallocate(    Fnu_s_ip)
-      Deallocate(    FT_sM_ip)
-      Deallocate(    FT_sL_ip)
-      Deallocate(    Kth_sL_ip)
-      Deallocate(    Knu_sM_ip)
-      Deallocate(    Knu_sL_ip)
-      Deallocate(    Kvel_s_ip)
-      Deallocate(    EDvel_sL_ip)
-      Deallocate(    ED_ss_ip)
+        Deallocate(  trD_s2_ip)
+        Deallocate(  MU_sM_ip)
+        Deallocate(  MU_sL_ip)
+        Deallocate(  XI_sM_ip)
+        Deallocate(  XI_sL_ip)
+        Deallocate(  Fnu_s_ip)
+        Deallocate(  FT_sM_ip)
+        Deallocate(  FT_sL_ip)
+        Deallocate(  Kth_sL_ip)
+        Deallocate(  Knu_sM_ip)
+        Deallocate(  Knu_sL_ip)
+        Deallocate(  Kvel_s_ip)
+        Deallocate(  EDvel_sL_ip)
+        Deallocate(  ED_ss_ip)
       ENDIF
-      Deallocate(    GRAN_DISS)
+!kinetic theory terms Iddir & Arastoopour (2005) or Garzo Dufty (1999)      
       IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD99') THEN
-      Deallocate(    EDvel_sM_ip)
-      Deallocate(    EDT_s_ip)
+        Deallocate(  EDvel_sM_ip)
+        Deallocate(  EDT_s_ip)
       ENDIF
 
-!     GHD theory
+! ghdtheory
+! GHD theory
       IF (TRIM(KT_TYPE) == 'GHD') THEN      
-      Deallocate(    Flux_nE)
-      Deallocate(    Flux_nN)
-      Deallocate(    Flux_nT)
-      Deallocate(    Zeta0)
-      Deallocate(    ZetaU)
-      Deallocate(    DiT)
-      Deallocate(    DijF)
-      Deallocate(    Lij)
-      Deallocate(    Dij)
-      Deallocate(    DijQ)
-      Deallocate(    JoiX)
-      Deallocate(    JoiY)
-      Deallocate(    JoiZ)
-      Deallocate(    FiX)
-      Deallocate(    FiY)
-      Deallocate(    FiZ)
+         Deallocate(  Flux_nE)
+         Deallocate(  Flux_nN)
+         Deallocate(  Flux_nT)
+         Deallocate(  Zeta0)
+         Deallocate(  ZetaU)
+         Deallocate(  DiT)
+         Deallocate(  DijF)
+         Deallocate(  Lij)
+         Deallocate(  Dij)
+         Deallocate(  DijQ)
+         Deallocate(  JoiX)
+         Deallocate(  JoiY)
+         Deallocate(  JoiZ)
+         Deallocate(  FiX)
+         Deallocate(  FiY)
+         Deallocate(  FiZ)
       ENDIF
 
-
-!
 ! array allocation of add on packages, such as linear equation solvers
-!
 
 ! array allocation for higher order implementation
-      Deallocate(           FLAG3 )
-      Deallocate(           CELL_CLASS3 )
-      Deallocate(           I3_OF )
-      Deallocate(           J3_OF )
-      Deallocate(           K3_OF )
-      Deallocate(           Im1_3 )
-      Deallocate(           Ip1_3 )
-      Deallocate(           Jm1_3 )
-      Deallocate(           Jp1_3 )
-      Deallocate(           Km1_3 )
-      Deallocate(           Kp1_3 )
+      Deallocate(  FLAG3 )
+      Deallocate(  CELL_CLASS3 )
+      Deallocate(  I3_OF )
+      Deallocate(  J3_OF )
+      Deallocate(  K3_OF )
+      Deallocate(  Im1_3 )
+      Deallocate(  Ip1_3 )
+      Deallocate(  Jm1_3 )
+      Deallocate(  Jp1_3 )
+      Deallocate(  Km1_3 )
+      Deallocate(  Kp1_3 )
  
 !mflux
-      Deallocate(    Flux_gE)
-      Deallocate(    Flux_sE)
-      Deallocate(    Flux_gN)
-      Deallocate(    Flux_sN)
-      Deallocate(    Flux_gT)
-      Deallocate(    Flux_sT)
-      Deallocate(    ROP_gE)
-      Deallocate(    ROP_sE)
-      Deallocate(    ROP_gN)
-      Deallocate(    ROP_sN)
-      Deallocate(    ROP_gT)
-      Deallocate(    ROP_sT)
+      Deallocate(  Flux_gE)
+      Deallocate(  Flux_sE)
+      Deallocate(  Flux_gN)
+      Deallocate(  Flux_sN)
+      Deallocate(  Flux_gT)
+      Deallocate(  Flux_sT)
+      Deallocate(  ROP_gE)
+      Deallocate(  ROP_sE)
+      Deallocate(  ROP_gN)
+      Deallocate(  ROP_sN)
+      Deallocate(  ROP_gT)
+      Deallocate(  ROP_sT)
 
 !spill over from interp_res.f
+      deallocate( ijksize3_all )
+      deallocate( ijkstart3_all )
+      deallocate( ijkend3_all )
+      deallocate( ijksize4_all )
+      deallocate( ijkstart4_all )
+      deallocate( ijkend4_all )
 
-        deallocate( ijksize3_all )
-        deallocate( ijkstart3_all )
-        deallocate( ijkend3_all )
+      deallocate( istart_all)
+      deallocate( jstart_all )
+      deallocate( kstart_all )
+      deallocate( istart1_all )
+      deallocate( jstart1_all )
+      deallocate( kstart1_all )
+      deallocate( istart2_all )
+      deallocate( jstart2_all )
+      deallocate( kstart2_all )
+      deallocate( istart3_all )
+      deallocate( jstart3_all )
+      deallocate( kstart3_all )
+      deallocate( istart4_all )
+      deallocate( jstart4_all )
+      deallocate( kstart4_all )
 
-        deallocate( ijksize4_all )
-        deallocate( ijkstart4_all )
-        deallocate( ijkend4_all )
+      deallocate( iend_all )
+      deallocate( jend_all )
+      deallocate( kend_all )
+      deallocate( iend1_all )
+      deallocate( jend1_all )
+      deallocate( kend1_all )
+      deallocate( iend2_all )
+      deallocate( jend2_all )
+      deallocate( kend2_all )
+      deallocate( iend3_all )
+      deallocate( jend3_all )
+      deallocate( kend3_all )
+      deallocate( iend4_all )
+      deallocate( jend4_all )
+      deallocate( kend4_all )
 
-        deallocate( istart_all)
-        deallocate( jstart_all )
-        deallocate( kstart_all )
+      deallocate( displs )
 
-        deallocate( istart1_all )
-        deallocate( jstart1_all )
-        deallocate( kstart1_all )
+      deallocate( imap)
+      deallocate( jmap )
+      deallocate( kmap )
+      deallocate( imap_c )
+      deallocate( jmap_c )
+      deallocate( kmap_c )
 
-        deallocate( istart2_all )
-        deallocate( jstart2_all )
-        deallocate( kstart2_all )
-
-        deallocate( istart3_all )
-        deallocate( jstart3_all )
-        deallocate( kstart3_all )
-
-        deallocate( istart4_all )
-        deallocate( jstart4_all )
-        deallocate( kstart4_all )
-
-        deallocate( iend_all )
-        deallocate( jend_all )
-        deallocate( kend_all )
-
-        deallocate( iend1_all )
-        deallocate( jend1_all )
-        deallocate( kend1_all )
-
-        deallocate( iend2_all )
-        deallocate( jend2_all )
-        deallocate( kend2_all )
-
-        deallocate( iend3_all )
-        deallocate( jend3_all )
-        deallocate( kend3_all )
-
-        deallocate( iend4_all )
-        deallocate( jend4_all )
-        deallocate( kend4_all )
-
-        deallocate( displs )
-
-        deallocate( imap)
-        deallocate( jmap )
-        deallocate( kmap )
-
-        deallocate( imap_c )
-        deallocate( jmap_c )
-        deallocate( kmap_c )
-
-     
+   
       RETURN
       END SUBROUTINE Deallocate_ARRAYS 
       
