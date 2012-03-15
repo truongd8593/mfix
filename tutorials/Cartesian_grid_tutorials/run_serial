@@ -1,6 +1,6 @@
 #!/bin/tcsh 
 # Script to run all the tutorial cases in serial
-rm -f */*.RES */*.SP* */*.LOG */*.log */*.OUT */*.vtp */*.vtk */DASHBOARD.TXT
+rm -f */*.RES */*.SP* */*.LOG */*.log */*.OUT */*.vtp */*.vtk */*.pvd */*.vtu */VTU_FRAME_INDEX.TXT */DASHBOARD.TXT
 echo
 echo "Running all Cartesian grid tutorials. See run.log and DASBOARD.TXT (if available)"
 echo "for details about the run status, in each directory."
