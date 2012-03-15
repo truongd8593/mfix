@@ -599,11 +599,11 @@
          'Terminating run.',/1X,70('*')/)
 
 1004  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         ' Current VTU frame is ',I,/10X,                              &
+         ' Current VTU frame is ',I10,/10X,                              &
          ' (from ',A,').',/1X,70('*')/)
 
 1005  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         ' Current VTU frame is ',I,/10X,                              &
+         ' Current VTU frame is ',I10,/10X,                              &
            ' (from mfix.dat).',/1X,70('*')/)
 
 
@@ -1846,6 +1846,9 @@
 
       CHARACTER (LEN=32) :: FILENAME
 
+      LOGICAL :: CORNER_POINT
+      INTEGER :: NODE_OF_CORNER
+
       include "function.inc"
 
       IF(myPE/=0) RETURN
@@ -1880,13 +1883,15 @@
                   X_COPY = GLOBAL_X_NEW_POINT(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
                   Y_COPY = GLOBAL_Y_NEW_POINT(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
                   Z_COPY = GLOBAL_Z_NEW_POINT(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
+                  CORNER_POINT = .FALSE.
                ELSE                                   ! An existing point          
                   DO NODE = 1,8
+                  CORNER_POINT = .TRUE.
                      IF(GLOBAL_CONNECTIVITY(IJK,L) == IJK_OF_NODE(NODE)) THEN
+                        NODE_OF_CORNER = NODE
                         X_COPY = X_NODE(NODE)
                         Y_COPY = Y_NODE(NODE)
                         Z_COPY = Z_NODE(NODE)
-
 
                         IF (GLOBAL_SNAP(IJK_OF_NODE(NODE))) THEN ! One of the snapped corner point which now belongs to the cut face
                            N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1
@@ -1899,19 +1904,21 @@
 
                ENDIF
 
-               Q_ID = 1
 
-               CALL EVAL_F('QUADRIC',X_COPY,Y_COPY,Z_COPY,Q_ID,F_COPY,CLIP_FLAG)
 
-               CALL EVAL_F('POLYGON',X_COPY,Y_COPY,Z_COPY,N_POLYGON,F_COPY,CLIP_FLAG)
 
-               CALL EVAL_F('USR_DEF',X_COPY,Y_COPY,Z_COPY,N_USR_DEF,F_COPY,CLIP_FLAG)
+               IF(CORNER_POINT) THEN
+                  Q_ID = 1
 
-               X_NODE(15) = X_COPY
-               Y_NODE(15) = Y_COPY
-               Z_NODE(15) = Z_COPY
+                  CALL EVAL_F('QUADRIC',X_COPY,Y_COPY,Z_COPY,Q_ID,F_COPY,CLIP_FLAG)
 
-               CALL EVAL_STL_FCT_AT('SCALAR',IJK,15,F_COPY,CLIP_FLAG,BCID2)
+                  CALL EVAL_F('POLYGON',X_COPY,Y_COPY,Z_COPY,N_POLYGON,F_COPY,CLIP_FLAG)
+
+                  CALL EVAL_F('USR_DEF',X_COPY,Y_COPY,Z_COPY,N_USR_DEF,F_COPY,CLIP_FLAG)
+                  CALL EVAL_STL_FCT_AT('SCALAR',IJK,NODE_OF_CORNER,F_COPY,CLIP_FLAG,BCID2)
+               ELSE
+                  F_COPY = ZERO
+               ENDIF
 
                IF (ABS(F_COPY) < TOL_F ) THEN ! belongs to cut face
                   N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1

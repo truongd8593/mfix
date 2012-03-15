@@ -53,7 +53,7 @@
       DOUBLE PRECISION, DIMENSION(3) :: CENTROID_EAST,CENTROID_NORTH,CENTROID_TOP
       DOUBLE PRECISION, DIMENSION(3) :: CENTROID_WEST,CENTROID_SOUTH,CENTROID_BOTTOM
       DOUBLE PRECISION, DIMENSION(3) :: CENTROID_CUT
-      DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz,VOLUME      
+      DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz,VOLUME,NORM      
       DOUBLE PRECISION :: DIFFERENCE
       INTEGER :: N_NODES
       INTEGER :: NDIFF,SPACE
@@ -67,6 +67,9 @@
 
       LOGICAL :: CLIP_FLAG,INTERSECT_FLAG,PRINT_FLAG,INSIDE_FACET
       INTEGER :: BCID,N_BC,QID_FMIN,BCID2,NF
+
+      LOGICAL :: CORNER_POINT
+      INTEGER :: NODE_OF_CORNER
 
       include "function.inc"
 
@@ -117,9 +120,13 @@
             X_COPY = X_NP(CONNECT(IJK,L)-IJKEND3)
             Y_COPY = Y_NP(CONNECT(IJK,L)-IJKEND3)
             Z_COPY = Z_NP(CONNECT(IJK,L)-IJKEND3)
+            CORNER_POINT = .FALSE.
+
          ELSE                                   ! An existing point          
+            CORNER_POINT = .TRUE.
             DO NODE = N_N1,N_N2
                IF(CONNECT(IJK,L) == IJK_OF_NODE(NODE)) THEN
+                  NODE_OF_CORNER = NODE
                   X_COPY = X_NODE(NODE)
                   Y_COPY = Y_NODE(NODE)
                   Z_COPY = Z_NODE(NODE)
@@ -153,17 +160,21 @@
          Y_MEAN = Y_MEAN + Y_COPY
          Z_MEAN = Z_MEAN + Z_COPY
 
-         Q_ID = 1
-         CALL EVAL_F('QUADRIC',X_COPY,Y_COPY,Z_COPY,Q_ID,F_COPY,CLIP_FLAG)
 
-         CALL EVAL_F('POLYGON',X_COPY,Y_COPY,Z_COPY,N_POLYGON,F_COPY,CLIP_FLAG)
 
-         CALL EVAL_F('USR_DEF',X_COPY,Y_COPY,Z_COPY,N_USR_DEF,F_COPY,CLIP_FLAG)
 
-         X_NODE(15) = X_COPY
-         Y_NODE(15) = Y_COPY
-         Z_NODE(15) = Z_COPY
-         CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,15,F_COPY,CLIP_FLAG,BCID2)
+         IF(CORNER_POINT) THEN
+            Q_ID = 1
+            CALL EVAL_F('QUADRIC',X_COPY,Y_COPY,Z_COPY,Q_ID,F_COPY,CLIP_FLAG)
+
+            CALL EVAL_F('POLYGON',X_COPY,Y_COPY,Z_COPY,N_POLYGON,F_COPY,CLIP_FLAG)
+
+            CALL EVAL_F('USR_DEF',X_COPY,Y_COPY,Z_COPY,N_USR_DEF,F_COPY,CLIP_FLAG)
+            CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,NODE_OF_CORNER,F_COPY,CLIP_FLAG,BCID2)
+         ELSE
+            F_COPY = ZERO
+         ENDIF
+
 
 
          IF (DABS(F_COPY) < TOL_F ) THEN ! belongs to cut face
@@ -396,7 +407,6 @@
          ENDIF
       ENDIF
 
-
       CALL GET_POLYGON_AREA_AND_CENTROID(N_EAST_FACE_NODES,COORD_EAST_FACE_NODES,AREA_EAST,CENTROID_EAST)
 
       CALL GET_POLYGON_AREA_AND_CENTROID(N_NORTH_FACE_NODES,COORD_NORTH_FACE_NODES,AREA_NORTH,CENTROID_NORTH)
@@ -429,6 +439,29 @@
             AXY(IJK) = AREA_TOP
             Area_CUT(IJK) = CUT_AREA
 
+
+! Compute normal and store cut face info (normal vector and reference point)
+            NORMAL_S(IJK,1) = AREA_EAST  - AREA_WEST
+            NORMAL_S(IJK,2) = AREA_NORTH - AREA_SOUTH
+
+            IF(DO_K) THEN
+               NORMAL_S(IJK,3) = AREA_TOP   - AREA_BOTTOM
+            ELSE
+               NORMAL_S(IJK,3) = ZERO
+            ENDIF
+
+
+            NORM = DSQRT(NORMAL_S(IJK,1)**2 + NORMAL_S(IJK,2)**2 + NORMAL_S(IJK,3)**2)
+
+            IF(NORM==ZERO) NORM = UNDEFINED
+
+            NORMAL_S(IJK,:) = NORMAL_S(IJK,:) / NORM
+
+            REFP_S(IJK,:)   = CENTROID_CUT(:)
+
+  
+            CALL GET_DEL_H(IJK,TYPE_OF_CELL,X_MEAN,Y_MEAN,Z_MEAN,Del_H,Nx,Ny,Nz)
+            IF(DEL_H == UNDEFINED) DEL_H = ZERO
             DELH_Scalar(IJK) = DEL_H
 
             IF(NO_K) THEN
@@ -620,6 +653,31 @@
                Z_U_tc(IJK) = CENTROID_TOP(3)
             ENDIF
 
+
+! Compute normal and store cut face info (normal vector and reference point)
+            NORMAL_U(IJK,1) = AREA_EAST  - AREA_WEST
+            NORMAL_U(IJK,2) = AREA_NORTH - AREA_SOUTH
+
+            IF(DO_K) THEN
+               NORMAL_U(IJK,3) = AREA_TOP   - AREA_BOTTOM
+            ELSE
+               NORMAL_U(IJK,3) = ZERO
+            ENDIF
+
+
+            NORM = DSQRT(NORMAL_U(IJK,1)**2 + NORMAL_U(IJK,2)**2 + NORMAL_U(IJK,3)**2)
+
+            IF(NORM==ZERO) NORM = UNDEFINED
+
+            NORMAL_U(IJK,:) = NORMAL_U(IJK,:) / NORM
+
+            REFP_U(IJK,:)   = CENTROID_CUT(:)
+
+  
+            CALL GET_DEL_H(IJK,TYPE_OF_CELL,X_MEAN,Y_MEAN,Z_MEAN,Del_H,Nx,Ny,Nz)
+            IF(DEL_H == UNDEFINED) DEL_H = ZERO
+
+
             IF(NO_K) THEN
                VOL_U(IJK) = AXY_U(IJK) * ZLENGTH
             ELSE
@@ -750,6 +808,31 @@
                Z_V_tc(IJK) = CENTROID_TOP(3)
             ENDIF
 
+! Compute normal and store cut face info (normal vector and reference point)
+            NORMAL_V(IJK,1) = AREA_EAST  - AREA_WEST
+            NORMAL_V(IJK,2) = AREA_NORTH - AREA_SOUTH
+
+            IF(DO_K) THEN
+               NORMAL_V(IJK,3) = AREA_TOP   - AREA_BOTTOM
+            ELSE
+               NORMAL_V(IJK,3) = ZERO
+            ENDIF
+
+
+            NORM = DSQRT(NORMAL_V(IJK,1)**2 + NORMAL_V(IJK,2)**2 + NORMAL_V(IJK,3)**2)
+
+            IF(NORM==ZERO) NORM = UNDEFINED
+
+            NORMAL_V(IJK,:) = NORMAL_V(IJK,:) / NORM
+
+            REFP_V(IJK,:)   = CENTROID_CUT(:)
+
+  
+            CALL GET_DEL_H(IJK,TYPE_OF_CELL,X_MEAN,Y_MEAN,Z_MEAN,Del_H,Nx,Ny,Nz)
+            IF(DEL_H == UNDEFINED) DEL_H = ZERO
+
+
+
             IF(NO_K) THEN
                VOL_V(IJK) = AXY_V(IJK) * ZLENGTH
             ELSE
@@ -875,6 +958,24 @@
                Y_W_tc(IJK) = CENTROID_TOP(2)
                Z_W_tc(IJK) = CENTROID_TOP(3)
             ENDIF
+
+! Compute normal and store cut face info (normal vector and reference point)
+            NORMAL_W(IJK,1) = AREA_EAST  - AREA_WEST
+            NORMAL_W(IJK,2) = AREA_NORTH - AREA_SOUTH
+            NORMAL_W(IJK,3) = AREA_TOP   - AREA_BOTTOM
+
+
+            NORM = DSQRT(NORMAL_W(IJK,1)**2 + NORMAL_W(IJK,2)**2 + NORMAL_W(IJK,3)**2)
+
+            IF(NORM==ZERO) NORM = UNDEFINED
+
+            NORMAL_W(IJK,:) = NORMAL_W(IJK,:) / NORM
+
+            REFP_W(IJK,:)   = CENTROID_CUT(:)
+
+  
+            CALL GET_DEL_H(IJK,TYPE_OF_CELL,X_MEAN,Y_MEAN,Z_MEAN,Del_H,Nx,Ny,Nz)
+            IF(DEL_H == UNDEFINED) DEL_H = ZERO
 
 
 !          The cell is divided into pyramids having the same apex (Mean value of nodes)
@@ -1015,14 +1116,48 @@
       USE cutcell
       
       IMPLICIT NONE
-      INTEGER :: I,J,K,L,N,NP
+      INTEGER :: I,J,K,L,N,NP,NC,NEW_NP
       INTEGER :: LONGEST,LAST,LASTM
 
       DOUBLE PRECISION :: Xc,Yc,Zc,NORM,ANGLE,ANGLE_REF
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD
+      DOUBLE PRECISION, DIMENSION(15,3) :: COORD,COORD_BCK
       DOUBLE PRECISION, DIMENSION(3) :: NORMAL,SWAP,CP,SUMCP
       DOUBLE PRECISION, DIMENSION(3) :: R,SUM_AR,CENTROID,AV
       DOUBLE PRECISION :: AREA,A,SUM_A
+
+
+      LOGICAL, DIMENSION(15) :: KEEP
+      DOUBLE PRECISION, DIMENSION(15) :: D
+
+
+!======================================================================
+!   Remove duplicate points in the list
+!======================================================================
+      IF(.FALSE.) THEN
+      DO N=1,NP
+         D(N) = DSQRT(COORD(N,1)**2+COORD(N,2)**2+COORD(N,3)**2)
+         KEEP(N) = .TRUE.
+         COORD_BCK(N,:) = COORD(N,:)
+      ENDDO
+
+      DO N=1,NP-1
+         DO NC=N+1,NP
+            IF(DABS(D(N)-D(NC))<TOL_MERGE) KEEP(NC)=.FALSE.
+         ENDDO
+      ENDDO
+
+      NEW_NP = 0
+
+      DO N=1,NP
+         IF(KEEP(N)) THEN
+            NEW_NP = NEW_NP + 1
+            COORD(NEW_NP,:) = COORD_BCK(N,:)
+         ENDIF
+      ENDDO
+
+      NP = NEW_NP
+      ENDIF
+
 
       IF( NP < 2 ) THEN
          AREA = ZERO
@@ -1047,7 +1182,10 @@
 !           CALL MFIX_EXIT(myPE)  
          ENDIF
       ELSEIF( NP > 6 ) THEN
-         WRITE(*,*)'CRITICAL ERROR: POLYGON WITH MORE THAN 6 POINTS.'
+         WRITE(*,*)'CRITICAL ERROR: POLYGON WITH MORE THAN 6 POINTS.',NP
+         DO N=1,NP
+            print*,COORD(N,:)
+         ENDDO
          WRITE(*,*)'MFiX will exit now.'
          CALL MFIX_EXIT(myPE)  
       ENDIF
@@ -1138,16 +1276,47 @@
       USE cutcell
       
       IMPLICIT NONE
-      INTEGER :: I,J,K,L,N,NP
+      INTEGER :: I,J,K,L,N,NP,NC,NEW_NP
       INTEGER :: LONGEST,LAST,LASTM
       INTEGER :: I_SWAP
 
       DOUBLE PRECISION :: Xc,Yc,Zc,NORM,ANGLE,ANGLE_REF
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD
+      DOUBLE PRECISION, DIMENSION(15,3) :: COORD,COORD_BCK
       DOUBLE PRECISION, DIMENSION(3) :: NORMAL,SWAP,CP,SUMCP
       DOUBLE PRECISION, DIMENSION(3) :: R,SUM_AR,CENTROID,AV
       DOUBLE PRECISION :: AREA,A,SUM_A
 
+      LOGICAL, DIMENSION(15) :: KEEP
+      DOUBLE PRECISION, DIMENSION(15) :: D
+
+
+!======================================================================
+!   Remove duplicate points in the list
+!======================================================================
+      IF(.FALSE.) THEN
+      DO N=1,NP
+         D(N) = DSQRT(COORD(N,1)**2+COORD(N,2)**2+COORD(N,3)**2)
+         KEEP(N) = .TRUE.
+         COORD_BCK(N,:) = COORD(N,:)
+      ENDDO
+
+      DO N=1,NP-1
+         DO NC=N+1,NP
+            IF(DABS(D(N)-D(NC))<TOL_MERGE) KEEP(NC)=.FALSE.
+         ENDDO
+      ENDDO
+
+      NEW_NP = 0
+
+      DO N=1,NP
+         IF(KEEP(N)) THEN
+            NEW_NP = NEW_NP + 1
+            COORD(NEW_NP,:) = COORD_BCK(N,:)
+         ENDIF
+      ENDDO
+
+      NP = NEW_NP
+      ENDIF
 
 !======================================================================
 !   Exit if polygon has less than 3 vertices (no need to reorder)

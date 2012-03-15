@@ -469,4 +469,7 @@
       DOUBLE PRECISION, DIMENSION(MAX_CP)   ::  FIRST_DY,LAST_DY! DY values at segment extremities
       DOUBLE PRECISION, DIMENSION(MAX_CP)   ::  FIRST_DZ,LAST_DZ! DZ values at segment extremities
 
+
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  F_AT
+
       END MODULE cutcell

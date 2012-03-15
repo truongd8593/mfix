@@ -472,7 +472,7 @@
             NORMAL_S(IJK,:) = N
             REFP_S(IJK,:)   = COORD_CUT_FACE_NODES(1,:)
 
-            CALL TEST_DEL_H(IJK,'SCALAR') ! test for negative del_H
+            IF(DO_K) CALL TEST_DEL_H(IJK,'SCALAR') ! test for negative del_H
 
          CASE('U_MOMENTUM')
 
@@ -560,7 +560,7 @@
          N_N2 = 8
       ENDIF
 
-      CALL GET_CELL_NODE_COORDINATES(IJK,'SCALAR')
+      CALL GET_CELL_NODE_COORDINATES(IJK,TYPE_OF_CELL)
 
       DO NODE = 1,NUMBER_OF_NODES(IJK)
          IF(CONNECTIVITY(IJK,NODE)<=IJKEND3) THEN  ! node does not belong to the cut-face

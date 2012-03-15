@@ -101,7 +101,6 @@
 
             CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,NODE,F_NODE(NODE),CLIP_FLAG,BCID)
 
-
             IF (ABS(F_NODE(NODE)) < TOL_F ) THEN
                CORNER_INTERSECTION(NODE) = .TRUE.
                NUMBER_OF_CORNER_INTERSECTIONS = NUMBER_OF_CORNER_INTERSECTIONS + 1
@@ -304,7 +303,10 @@
                  WRITE(*,*)'REMOVING CUT CELL'
               ENDIF
 !              NUMBER_OF_CORNER_INTERSECTIONS = MAX_CORNER_INTERSECTIONS
-              NUMBER_OF_CORNER_INTERSECTIONS = -NUMBER_OF_EDGE_INTERSECTIONS ! Force the total number of intersections to be zero, and therefore, the cell will be considered as a non-cut cell
+!              NUMBER_OF_CORNER_INTERSECTIONS = -NUMBER_OF_EDGE_INTERSECTIONS ! Force the total number of intersections to be zero, and therefore, the cell will be considered as a non-cut cell
+              NUMBER_OF_CORNER_INTERSECTIONS = -NUMBER_OF_EDGE_INTERSECTIONS -1  ! Force the total number of intersections to be -one, and therefore, the cell will be considered as a non-cut cell
+
+
            ENDIF
          
             TOTAL_NUMBER_OF_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + NUMBER_OF_CORNER_INTERSECTIONS

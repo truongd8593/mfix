@@ -222,7 +222,8 @@
 
                   NF = NF + 1
 
-                  NORM_FACE(NF,:) = NORMAL
+                  NORM_FACE(NF,:) = NORMAL*OUT_MSH_VALUE  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
+
 
                   VERTEX(NF,1,1) = SCALE_MSH*V1x + TX_MSH  
                   VERTEX(NF,1,2) = SCALE_MSH*V1y + TY_MSH  
@@ -515,6 +516,8 @@
       OUT_STL_VALUE = OUT_MSH_VALUE
 
       CLOSE(333)
+
+
       RETURN  
 
 !======================================================================
@@ -645,7 +648,7 @@
       DOUBLE PRECISION ::v3x,v3y,v3z
       DOUBLE PRECISION ::x12,y12,z12,x13,y13,z13,dp,d12,d13
       DOUBLE PRECISION ::cos_angle,cos_small_angle
-      DOUBLE PRECISION ::n1,n2,n3
+      DOUBLE PRECISION ::n1,n2,n3,NORM
       DOUBLE PRECISION ::ABSTRANS
       CHARACTER(LEN=32) ::TEST_CHAR,BUFF_CHAR
 
@@ -691,6 +694,10 @@
             READ(333,*,ERR=920,END=930) BUFF_CHAR, V2x,V2y,V2z
             READ(333,*,ERR=920,END=930) BUFF_CHAR, V3x,V3y,V3z
 
+            N1 = N1 * OUT_STL_VALUE  ! Reverse unit vector if needed (this will switch fluid and blocked cells)
+            N2 = N2 * OUT_STL_VALUE
+            N3 = N3 * OUT_STL_VALUE
+
             x12 = V2x - V1x
             y12 = V2y - V1y
             z12 = V2z - V1z
@@ -715,8 +722,16 @@
             IF(DABS(cos_angle)>cos_small_angle) THEN
                IGNORE_CURRENT_FACET = .TRUE.    ! Ignore small facets
             ENDIF
-            IF(DABS((N1**2+N2**2+N3**2)-ONE)>0.1) IGNORE_CURRENT_FACET = .TRUE.  ! Ignore facets with normal vector that is not normalized
 
+            NORM = DSQRT(N1**2+N2**2+N3**2)
+
+            IF(NORM>TOL_STL) THEN
+               N1 = N1 /NORM
+               N2 = N2 /NORM
+               N3 = N3 /NORM
+            ELSE
+               IGNORE_CURRENT_FACET = .TRUE.  ! Ignore facets with zero normal vector
+            ENDIF
 
 
             IF(IGNORE_CURRENT_FACET) THEN    
@@ -826,159 +841,6 @@
  5000 FORMAT(1X,A,F10.4)
       END SUBROUTINE GET_STL_DATA
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: EVAL_STL_FCT                                           C
-!  Purpose: Assigns a value to f_stl at any given point (X1,X2,X3)     C
-!                                                                      C
-!  Author: Jeff Dietiker                              Date: 30-JAN-09  C
-!  Reviewer:                                          Date: **-***-**  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!                                                                      C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE EVAL_STL_FCT(X1,X2,X3,Q,f_stl,CLIP_FLAG,BCID)
-
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-
-      USE param 
-      USE param1 
-      USE physprop
-      USE fldvar
-      USE run
-      USE scalars
-      USE funits 
-      USE rxns
-      USE compar             
-      USE mpi_utility        
-      USE progress_bar
-      USE stl
-      IMPLICIT NONE
-
-      INTEGER :: POLY,V,N,NSKIP,N_FACES,CLOSEST_FACET,Q,BCID,C,COUNTER
-      LOGICAL :: PRESENT,KEEP_READING,CLIP_FLAG,INSIDE_FACET
-      LOGICAL :: X_OUT,Y_OUT,Z_OUT,POINT_IS_OUT,INTERSECT_FLAG
-      DOUBLE PRECISION :: X1,X2,X3,XV1,XV2,XV3,XC1,XC2,XC3,DC,xc,yc,zc
-      DOUBLE PRECISION :: RAY1,RAY2,RAY3
-      DOUBLE PRECISION :: XC1_COPY,XC2_COPY,XC3_COPY
-      DOUBLE PRECISION :: D(3),D_MIN,MINVAL_D,f_stl
-      DOUBLE PRECISION :: DIST_INT(0:1000),D_I
-      LOGICAL :: DUPLICATED_INTERSECTION
-      DOUBLE PRECISION :: VFP1,VFP2,VFP3,NF1,NF2,NF3,DP,two
-      INTEGER :: MINLOC_D(1),CLOSEST_VERTEX
-
-
-      IF(N_FACETS < 1) RETURN
-
-      BCID = -1
-
-      D_MIN = UNDEFINED
-      CLOSEST_FACET = 1
-
-      X_OUT = (X1<XMIN_STL).OR.(X1>XMAX_STL)
-      Y_OUT = (X2<YMIN_STL).OR.(X2>YMAX_STL)
-      Z_OUT = (X3<ZMIN_STL).OR.(X3>ZMAX_STL)
-
-      POINT_IS_OUT = X_OUT.OR.Y_OUT.OR.Z_OUT
-
-      IF(POINT_IS_OUT) THEN
-         f_stl = OUT_STL_VALUE
-         CLIP_FLAG = .TRUE.
-         BCID = -99
-      ENDIF
-
-
-
-      COUNTER = 0
-
-      DIST_INT(COUNTER) = -1.0D0
-
-      DO N = 1,N_FACETS
-
-         CALL IS_POINT_INSIDE_FACET(X1,X2,X3,N,INSIDE_FACET)
-
-         IF(INSIDE_FACET) THEN
-            f_stl = ZERO
-            CLIP_FLAG = .TRUE.
-            BCID = BC_ID_STL_FACE(N) 
-            RETURN
-         ENDIF
-
-
-         CALL GET_RAY_ORIGIN(X1,X2,X3,RAY1,RAY2,RAY3)
-
-         CALL INTERSECT_LINE_WITH_FACET(X1,X2,X3,RAY1,RAY2,RAY3,N,INTERSECT_FLAG,xc,yc,zc)
-
-         IF(INTERSECT_FLAG) THEN
-
-            D_I = DSQRT((X1-xc)**2+(X2-yc)**2+(X3-zc)**2)
-
-            DUPLICATED_INTERSECTION = .FALSE.
-            DO C = 0,COUNTER
-               IF(DABS(DIST_INT(C)-D_I)<TOL_STL) DUPLICATED_INTERSECTION = .TRUE.
-            ENDDO
-
-            IF(.NOT.DUPLICATED_INTERSECTION) THEN
-               COUNTER = COUNTER + 1
-               DIST_INT(COUNTER) = D_I
-            ENDIF
-
-
-         ENDIF
-
-      ENDDO
-
-      IF((COUNTER/2) * 2 == COUNTER) THEN    
-         f_stl = OUT_STL_VALUE    ! even ==> outside
-      ELSE                                   
-         f_stl = -OUT_STL_VALUE   ! odd  ==> inside
-      ENDIF
-
-
-      CLIP_FLAG = .TRUE.
-!      BCID = STL_BC_ID
-
-      RETURN  
-
-!======================================================================
-!     HERE IF AN ERROR OCCURED OPENNING/READING THE FILE
-!======================================================================
-!     
- 910  CONTINUE 
-      WRITE (*, 1500) 
-      CALL MFIX_EXIT(myPE) 
- 920  CONTINUE 
-      WRITE (*, 1600) 
-      CALL MFIX_EXIT(myPE) 
- 930  CONTINUE 
-      WRITE (*, 1700) 
-      CALL MFIX_EXIT(myPE) 
-!     
- 1500 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'Unable to open stl file',/1X,70('*')/) 
- 1600 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'Error while reading stl file',/1X,70('*')/) 
- 1700 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'End of file reached while reading stl file',/1X,70('*')/) 
- 2000 FORMAT(1X,A) 
- 2010 FORMAT(1X,A,I4,A)
-
-      END SUBROUTINE EVAL_STL_FCT
-
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -1046,240 +908,26 @@
 
       include "function.inc"
 
+      IF(NODE==15) print*,'Warning: eval stl at node 15'
+
       IF(N_FACETS < 1) RETURN
 
-!       IF(N_FACET_AT(IJK)=0) THEN
-!          WRITE(*,*)'ERROR IN EVAL_STL_FCT_AT: NO FACET INFORMATION FOR CELL:',IJK
-!          READ(*,*)
-!       ENDIF
-
       f_stl = UNDEFINED
-
-
-      IF(NODE/=0) THEN
-
-         DO N=1,N_FACET_AT(IJK)
-            NF=LIST_FACET_AT(IJK,N)
-            CALL IS_POINT_INSIDE_FACET(X_NODE(NODE),Y_NODE(NODE),Z_NODE(NODE),NF,INSIDE_FACET)
-            IF(INSIDE_FACET) THEN
-               f_stl = ZERO
-               RETURN
-            ENDIF
-         ENDDO 
-
-      ENDIF
-
 
       IJKC = IJK_OF_NODE(NODE)
 
       IF(NODE/=15.AND.NODE/=0) THEN
          IF(SNAP(IJKC)) THEN
             f_stl = ZERO
+!            print*,'stlfc snapped=',IJKC,NODE,F_AT(IJKC)
             RETURN
          ENDIF
       ENDIF
 
-      X1 = X_NODE(NODE)
-      X2 = Y_NODE(NODE)
-      X3 = Z_NODE(NODE)
 
-      COUNTER = 0
-      CURRENT_I = I_OF(IJKC)
-      CURRENT_J = J_OF(IJKC)
-      CURRENT_K = K_OF(IJKC)
+      f_stl = F_AT(IJKC)
 
-
-      IP = CURRENT_I + 1
-      JP = CURRENT_J + 1
-      KP = CURRENT_K + 1
-
-      IM = CURRENT_I - 1 
-      JM = CURRENT_J - 1 
-      KM = CURRENT_K - 1
-    
-      IMJK   = FUNIJK(IM,CURRENT_J,CURRENT_K)
-      IJMK   = FUNIJK(CURRENT_I,JM,CURRENT_K)
-      IJKM   = FUNIJK(CURRENT_I,CURRENT_J,KM)
-
-      IPJK   = FUNIJK(IP,CURRENT_J,CURRENT_K)
-      IJPK   = FUNIJK(CURRENT_I,JP,CURRENT_K)
-      IJKP   = FUNIJK(CURRENT_I,CURRENT_J,KP)
-
-
-
-      IF(NODE/=-1) THEN
-
-
-         SELECT CASE (TYPE_OF_CELL)
-            CASE('SCALAR')
-
-               SELECT CASE (TRIM(RAY_DIR))  
-                  CASE ('X-')
-                     IF(INTERSECT_X(IJKC).AND.(Xn_int(IJKC)<X1)) COUNTER = COUNTER + 1
-                     IF(SNAP(IMJK)) COUNTER = COUNTER + 1
-                  CASE ('X+')
-                     IF(INTERSECT_X(IJKC).AND.(Xn_int(IJKC)>X1)) COUNTER = COUNTER + 1
-                     IF(SNAP(IPJK)) COUNTER = COUNTER + 1                                             
-                  CASE ('Y-')  
-                     IF(INTERSECT_Y(IJKC).AND.(Ye_int(IJKC)<X2)) COUNTER = COUNTER + 1
-                     IF(SNAP(IJMK)) COUNTER = COUNTER + 1                                             
-                  CASE ('Y+')  
-                     IF(INTERSECT_Y(IJKC).AND.(Ye_int(IJKC)>X2)) COUNTER = COUNTER + 1
-                     IF(SNAP(IJPK)) COUNTER = COUNTER + 1                                             
-                  CASE ('Z-') 
-                     IF(INTERSECT_Z(IJKC).AND.(Zt_int(IJKC)<X3)) COUNTER = COUNTER + 1
-                     IF(SNAP(IJKM)) COUNTER = COUNTER + 1                                            
-                  CASE ('Z+') 
-                     IF(INTERSECT_Z(IJKC).AND.(Zt_int(IJKC)>X3)) COUNTER = COUNTER + 1
-                     IF(SNAP(IJKP)) COUNTER = COUNTER + 1                                             
-
-                  CASE DEFAULT
-                     WRITE(*,*)'INPUT ERROR: RAY_DIR HAS INCORRECT VALUE: ',RAY_DIR
-                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-                     CALL MFIX_EXIT(MYPE)
-               END SELECT
-
-
-            CASE('U_MOMENTUM')
-
-               SELECT CASE (TRIM(RAY_DIR))  
-                  CASE ('X-')
-                     IF(INTERSECT_X(IJKC).AND.(Xn_U_int(IJKC)<X1)) COUNTER = COUNTER + 1
-                  CASE ('X+')
-                     IF(INTERSECT_X(IJKC).AND.(Xn_U_int(IJKC)>X1)) COUNTER = COUNTER + 1
-                  CASE ('Y-')  
-                     IF(INTERSECT_Y(IJKC).AND.(Ye_U_int(IJKC)<X2)) COUNTER = COUNTER + 1
-                  CASE ('Y+')  
-                     IF(INTERSECT_Y(IJKC).AND.(Ye_U_int(IJKC)>X2)) COUNTER = COUNTER + 1
-                  CASE ('Z-') 
-                     IF(INTERSECT_Z(IJKC).AND.(Zt_U_int(IJKC)<X3)) COUNTER = COUNTER + 1
-                  CASE ('Z+') 
-                     IF(INTERSECT_Z(IJKC).AND.(Zt_U_int(IJKC)>X3)) COUNTER = COUNTER + 1
-
-                  CASE DEFAULT
-                     WRITE(*,*)'INPUT ERROR: RAY_DIR HAS INCORRECT VALUE: ',RAY_DIR
-                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-                     CALL MFIX_EXIT(MYPE)
-               END SELECT
-
-
-
-            CASE('V_MOMENTUM')
-
-               SELECT CASE (TRIM(RAY_DIR))  
-                  CASE ('X-')
-                     IF(INTERSECT_X(IJKC).AND.(Xn_V_int(IJKC)<X1)) COUNTER = COUNTER + 1
-                  CASE ('X+')
-                     IF(INTERSECT_X(IJKC).AND.(Xn_V_int(IJKC)>X1)) COUNTER = COUNTER + 1
-                  CASE ('Y-')  
-                     IF(INTERSECT_Y(IJKC).AND.(Ye_V_int(IJKC)<X2)) COUNTER = COUNTER + 1
-                  CASE ('Y+')  
-                     IF(INTERSECT_Y(IJKC).AND.(Ye_V_int(IJKC)>X2)) COUNTER = COUNTER + 1
-                  CASE ('Z-') 
-                     IF(INTERSECT_Z(IJKC).AND.(Zt_V_int(IJKC)<X3)) COUNTER = COUNTER + 1
-                  CASE ('Z+') 
-                     IF(INTERSECT_Z(IJKC).AND.(Zt_V_int(IJKC)>X3)) COUNTER = COUNTER + 1
-
-                  CASE DEFAULT
-                     WRITE(*,*)'INPUT ERROR: RAY_DIR HAS INCORRECT VALUE: ',RAY_DIR
-                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-                     CALL MFIX_EXIT(MYPE)
-               END SELECT
-
-            CASE('W_MOMENTUM')
-
-               SELECT CASE (TRIM(RAY_DIR))  
-                  CASE ('X-')
-                     IF(INTERSECT_X(IJKC).AND.(Xn_W_int(IJKC)<X1)) COUNTER = COUNTER + 1
-                  CASE ('X+')
-                     IF(INTERSECT_X(IJKC).AND.(Xn_W_int(IJKC)>X1)) COUNTER = COUNTER + 1
-                  CASE ('Y-')  
-                     IF(INTERSECT_Y(IJKC).AND.(Ye_W_int(IJKC)<X2)) COUNTER = COUNTER + 1
-                  CASE ('Y+')  
-                     IF(INTERSECT_Y(IJKC).AND.(Ye_W_int(IJKC)>X2)) COUNTER = COUNTER + 1
-                  CASE ('Z-') 
-                     IF(INTERSECT_Z(IJKC).AND.(Zt_W_int(IJKC)<X3)) COUNTER = COUNTER + 1
-                  CASE ('Z+') 
-                     IF(INTERSECT_Z(IJKC).AND.(Zt_W_int(IJKC)>X3)) COUNTER = COUNTER + 1
-
-                  CASE DEFAULT
-                     WRITE(*,*)'INPUT ERROR: RAY_DIR HAS INCORRECT VALUE: ',RAY_DIR
-                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-                     CALL MFIX_EXIT(MYPE)
-               END SELECT
-
-
-            CASE DEFAULT
-               WRITE(*,*)'SUBROUTINE: EVAL_STL_FCT_AT'
-               WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
-               WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
-               WRITE(*,*)'SCALAR' 
-               WRITE(*,*)'U_MOMENTUM' 
-               WRITE(*,*)'V_MOMENTUM' 
-               WRITE(*,*)'W_MOMENTUM' 
-               CALL MFIX_EXIT(myPE)
-         END SELECT
-
-      ENDIF
-
-
-      SELECT CASE (TRIM(RAY_DIR))  
-         CASE ('X-')
-            DO I=CURRENT_I-1,ISTART3,-1
-               IJKC = FUNIJK(I,CURRENT_J,CURRENT_K)
-               IF(INTERSECT_X(IJKC)) COUNTER = COUNTER + 1
-               IMJK = FUNIJK(I-1,CURRENT_J,CURRENT_K)
-               IF(SNAP(IMJK)) COUNTER = COUNTER + 1
-            ENDDO
-         CASE ('Y-')  
-            DO J=CURRENT_J-1,JSTART3,-1
-               IJKC = FUNIJK(CURRENT_I,J,CURRENT_K)
-               IF(INTERSECT_Y(IJKC)) COUNTER = COUNTER + 1
-               IJMK = FUNIJK(CURRENT_I,J-1,CURRENT_K)
-               IF(SNAP(IJMK)) COUNTER = COUNTER + 1
-            ENDDO
-         CASE ('Z-') 
-            DO K=CURRENT_K-1,KSTART3,-1
-               IJKC = FUNIJK(CURRENT_I,CURRENT_J,K)
-               IF(INTERSECT_Z(IJKC)) COUNTER = COUNTER + 1
-               IJKM = FUNIJK(CURRENT_I,CURRENT_J,K-1)
-               IF(SNAP(IJKM)) COUNTER = COUNTER + 1
-            ENDDO
-         CASE ('X+')                       
-            DO I=CURRENT_I+1,IEND3
-               IJKC = FUNIJK(I,CURRENT_J,CURRENT_K)
-               IF(INTERSECT_X(IJKC)) COUNTER = COUNTER + 1
-               IPJK = FUNIJK(I+1,CURRENT_J,CURRENT_K)
-               IF(SNAP(IPJK)) COUNTER = COUNTER + 1                
-            ENDDO
-         CASE ('Y+')  
-            DO J=CURRENT_J+1,JEND3
-               IJKC = FUNIJK(CURRENT_I,J,CURRENT_K)
-               IF(INTERSECT_Y(IJKC)) COUNTER = COUNTER + 1
-               IJPK = FUNIJK(CURRENT_I,J+1,CURRENT_K)
-               IF(SNAP(IJPK)) COUNTER = COUNTER + 1
-            ENDDO
-
-         CASE ('Z+') 
-            DO K=CURRENT_K+1,KEND3
-               IJKC = FUNIJK(CURRENT_I,CURRENT_J,K)
-               IF(INTERSECT_Z(IJKC)) COUNTER = COUNTER + 1
-               IJKP = FUNIJK(CURRENT_I,CURRENT_J,K+1)
-               IF(SNAP(IJKP)) COUNTER = COUNTER + 1
-            ENDDO
-
-          CASE DEFAULT
-            WRITE(*,*)'INPUT ERROR: RAY_DIR HAS INCORRECT VALUE: ',RAY_DIR
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-            CALL MFIX_EXIT(MYPE)
-      END SELECT
-
-
-      IF((COUNTER/2) * 2 == COUNTER) THEN    
-         f_stl = OUT_STL_VALUE    ! even ==> outside
-      ELSE                                   
-         f_stl = -OUT_STL_VALUE   ! odd  ==> inside
-      ENDIF
+      RETURN
 
 
       CLIP_FLAG = .TRUE.
@@ -1287,139 +935,8 @@
 
       RETURN  
 
-!======================================================================
-!     HERE IF AN ERROR OCCURED OPENNING/READING THE FILE
-!======================================================================
-!     
- 910  CONTINUE 
-      WRITE (*, 1500) 
-      CALL MFIX_EXIT(myPE) 
- 920  CONTINUE 
-      WRITE (*, 1600) 
-      CALL MFIX_EXIT(myPE) 
- 930  CONTINUE 
-      WRITE (*, 1700) 
-      CALL MFIX_EXIT(myPE) 
-!     
- 1500 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'Unable to open stl file',/1X,70('*')/) 
- 1600 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'Error while reading stl file',/1X,70('*')/) 
- 1700 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'End of file reached while reading stl file',/1X,70('*')/) 
- 2000 FORMAT(1X,A) 
- 2010 FORMAT(1X,A,I4,A)
 
       END SUBROUTINE EVAL_STL_FCT_AT
-
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: intersect_line_with_stl                                C
-!  Purpose: Finds the intersection between a facet                     C
-!           and the line (xa,ya,za) and (xb,yb,zb).                    C
-!                                                                      C
-!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Revision Number #                                  Date: ##-###-##  C
-!  Author: #                                                           C
-!  Purpose: #                                                          C
-!                                                                      C 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_FLAG,xc,yc,zc)
-    
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
-      USE STL
-      
-      IMPLICIT NONE
-      DOUBLE PRECISION:: xa,ya,za,xb,yb,zb,xc,yc,zc
-      DOUBLE PRECISION:: f1,f2
-      INTEGER :: N,BCID
-      LOGICAL :: CLIP_FLAG,CLIP_FLAG1,CLIP_FLAG2,INTERSECT_FLAG
-
-
-!======================================================================
-! This subroutine tries to find the intersection of a line AB with all  
-! facets defined in the stl file
-!
-!
-! 1) Verify that intersection is possible. Only facets and line AB that are
-!
-!======================================================================
-
-      CALL EVAL_STL_FCT(xa,ya,za,N_FACETS,f1,CLIP_FLAG1,BCID)
-      CALL EVAL_STL_FCT(xb,yb,zb,N_FACETS,f2,CLIP_FLAG2,BCID)
-
-      CLIP_FLAG = (CLIP_FLAG1).AND.(CLIP_FLAG2)
-
-      IF (CLIP_FLAG) THEN
-         IF(DABS(f1)<TOL_STL) THEN  ! ignore intersection at corner
-            xc = UNDEFINED
-            yc = UNDEFINED
-            zc = UNDEFINED
-            INTERSECT_FLAG = .FALSE.
-         ELSEIF(DABS(f2)<TOL_STL) THEN ! ignore intersection at corner
-            xc = UNDEFINED
-            yc = UNDEFINED
-            zc = UNDEFINED
-            INTERSECT_FLAG = .FALSE.
-         ELSEIF(f1*f2 < ZERO) THEN      ! There is at least one intersection point
-                                        ! Loop through all facets, find the first one that intersects the line and exit
-
-            DO N = 1, N_FACETS
-               CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
-               IF(INTERSECT_FLAG) EXIT
-            ENDDO
-
-            IF(.NOT.INTERSECT_FLAG) THEN
-!               WRITE(*,*)'   Subroutine intersect_line_with_stl:'
-!               WRITE(*,*)   'Unable to find the intersection of stl geometry'
-!               WRITE(*,1000)'between (x1,y1,z1)= ', xa,ya,za
-!               WRITE(*,1000)'   and  (x2,y2,z2)= ', xb,yb,zb
-!               WRITE(*,1000)'f(x1,y1,z1) = ', f1
-!               WRITE(*,1000)'f(x2,y2,z2) = ', f2
-!               WRITE(*,1000)'Tolerance = ', TOL_STL
-!               WRITE(*,*)   'MFiX will exit now.'             
-!               CALL MFIX_EXIT(myPE) 
-            xc = UNDEFINED
-            yc = UNDEFINED
-            zc = UNDEFINED
-            INTERSECT_FLAG = .FALSE.
-
-
-
-            ENDIF
-         ELSE                          ! f1 and f2 have same sign => no intersection
-            xc = UNDEFINED
-            yc = UNDEFINED
-            zc = UNDEFINED
-            INTERSECT_FLAG = .FALSE.
-         ENDIF
-      ELSE                            ! ignore clipped region (not active)
-          xc = UNDEFINED
-          yc = UNDEFINED
-          zc = UNDEFINED
-          INTERSECT_FLAG = .FALSE.
-      ENDIF
-
- 1000 FORMAT(A,3(2X,G12.5)) 
-
-
-      RETURN
-
-      END SUBROUTINE INTERSECT_LINE_WITH_STL
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -1460,6 +977,7 @@
       DOUBLE PRECISION :: Px,Py,Pz,V0x,V0y,V0z,V1x,V1y,V1z,V2x,V2y,V2z
       DOUBLE PRECISION :: dot00,dot01,dot02,dot11,dot12
       DOUBLE PRECISION :: t,u,v
+      DOUBLE PRECISION :: d_ac,d_bc
       LOGICAL :: INSIDE_FACET,INTERSECT_FLAG
 
 
@@ -1549,6 +1067,15 @@
 
          ENDIF
 
+      ENDIF
+
+
+      d_ac = dsqrt((xc-xa)**2 + (yc-ya)**2 + (zc-za)**2)
+      d_bc = dsqrt((xc-xb)**2 + (yc-yb)**2 + (zc-zb)**2)
+
+
+      IF(d_ac<TOL_STL.OR.d_bc<TOL_STL) THEN
+         INTERSECT_FLAG = .FALSE.             ! Exclude corner intersection
       ENDIF
 
 
@@ -1675,126 +1202,5 @@
       END SUBROUTINE IS_POINT_INSIDE_FACET
 
 
-
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: GET_RAY_ORIGIN                                         C
-!  Purpose: Defines the origin of the ray that is traced to            C
-!           determie if a point is inside or outside stl geometry      C
-!                                                                      C
-!  Author: Jeff Dietiker                              Date: 30-JAN-09  C
-!  Reviewer:                                          Date: **-***-**  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!                                                                      C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE GET_RAY_ORIGIN(X1,X2,X3,RAY1,RAY2,RAY3)
-
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-
-      USE param 
-      USE param1 
-      USE physprop
-      USE fldvar
-      USE run
-      USE scalars
-      USE funits 
-      USE rxns
-      USE compar             
-      USE mpi_utility        
-      USE progress_bar
-      USE stl
-      IMPLICIT NONE
-
-      DOUBLE PRECISION :: X1,X2,X3
-      DOUBLE PRECISION :: RAY1,RAY2,RAY3
-
-
-         SELECT CASE (TRIM(RAY_DIR))  
-            CASE ('X-')
-               RAY1 = -XLENGTH
-               RAY2 = X2
-               RAY3 = X3
-            CASE ('Y-')  
-               RAY1 = X1
-               RAY2 = -YLENGTH
-               RAY3 = X3
-            CASE ('Z-') 
-               RAY1 = X1
-               RAY2 = X2
-               RAY3 = -ZLENGTH
-
-            CASE ('X+')
-               RAY1 = 2.0D0*XLENGTH
-               RAY2 = X2
-               RAY3 = X3
-            CASE ('Y+')  
-               RAY1 = X1
-               RAY2 = 2.0D0*YLENGTH
-               RAY3 = X3
-            CASE ('Z+') 
-               RAY1 = X1
-               RAY2 = X2
-               RAY3 = 2.0D0*ZLENGTH
-
-
-!            CASE ('MIN')
-!               RAY1 = -XLENGTH
-!               RAY2 = -YLENGTH
-!               RAY3 = -ZLENGTH
-
-!            CASE ('MAX')  
-!               RAY1 = 2.0D0*XLENGTH
-!               RAY2 = 2.0D0*YLENGTH
-!               RAY3 = 2.0D0*ZLENGTH
-
-            CASE DEFAULT
-               WRITE(*,*)'INPUT ERROR: RAY_DIR HAS INCORRECT VALUE: ',RAY_DIR
-               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-               CALL MFIX_EXIT(MYPE)
-         END SELECT
-
-      RETURN  
-
-!======================================================================
-!     HERE IF AN ERROR OCCURED OPENNING/READING THE FILE
-!======================================================================
-!     
- 910  CONTINUE 
-      WRITE (*, 1500) 
-      CALL MFIX_EXIT(myPE) 
- 920  CONTINUE 
-      WRITE (*, 1600) 
-      CALL MFIX_EXIT(myPE) 
- 930  CONTINUE 
-      WRITE (*, 1700) 
-      CALL MFIX_EXIT(myPE) 
-!     
- 1500 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'Unable to open stl file',/1X,70('*')/) 
- 1600 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'Error while reading stl file',/1X,70('*')/) 
- 1700 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'End of file reached while reading stl file',/1X,70('*')/) 
- 2000 FORMAT(1X,A) 
- 2010 FORMAT(1X,A,I4,A)
-
-      END SUBROUTINE GET_RAY_ORIGIN
 
 

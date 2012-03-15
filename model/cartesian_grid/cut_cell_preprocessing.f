@@ -665,14 +665,16 @@
       USE quadric
       USE cutcell
       USE polygon
+      USE STL
       
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       INTEGER :: IJK,I,J,K,IM,JM,KM,IP,JP,KP
+      INTEGER :: BCID
       INTEGER :: IMJK,IPJK,IJMK,IJPK,IJKM,IJKP,IMJPK,IMJKP,IPJMK,IJMKP,IPJKM,IJPKM
       DOUBLE PRECISION :: xa,ya,za,xb,yb,zb,xc,yc,zc
       DOUBLE PRECISION :: Xi,Yi,Zi
-      DOUBLE PRECISION :: DFC,DFC_MAX,Fa,Fb
+      DOUBLE PRECISION :: DFC,DFC_MAX,Fa,Fb,F4,F6,F7,F8
       LOGICAL :: CLIP_FLAG
 
       include "function.inc"
@@ -767,8 +769,18 @@
                 
          ENDIF
 
+
+
+         CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,7,F7,CLIP_FLAG,BCID)
+         CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,8,F8,CLIP_FLAG,BCID)
+
+         IF(F7*F8>TOL_STL**2) INTERSECT_X(IJK)  = .FALSE.
+
+
       ENDIF
 
+
+      
 
 !======================================================================
 !  Clean Intersection with Edge 6 (node 6-8, Face East-Top):
@@ -779,6 +791,7 @@
       za = Z_NODE(6)
 
       DFC_MAX = TOL_SNAP(2) * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
+
 
       IF(INTERSECT_Y(IJK)) THEN
 
@@ -821,6 +834,13 @@
                 
          ENDIF
 
+
+         CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,6,F6,CLIP_FLAG,BCID)
+         CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,8,F8,CLIP_FLAG,BCID)
+
+
+         IF(F6*F8>TOL_STL**2) INTERSECT_Y(IJK)  = .FALSE.
+
       ENDIF
 
 
@@ -833,50 +853,55 @@
          ya = Y_NODE(4)
          za = Z_NODE(4)
 
-      DFC_MAX = TOL_SNAP(3) * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
+         DFC_MAX = TOL_SNAP(3) * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
 
-      IF(INTERSECT_Z(IJK)) THEN
+         IF(INTERSECT_Z(IJK)) THEN
 
-         DFC = DABS(Zi-Za) ! DISTANCE FROM CORNER (NODE 4)
+            DFC = DABS(Zi-Za) ! DISTANCE FROM CORNER (NODE 4)
 
-         IF(DFC < DFC_MAX) THEN
-            IF(PRINT_WARNINGS) THEN
-               WRITE(*,*)'MERGING Z-INTERSECTION ALONG EDGE 11 ONTO NODE 4'
-               WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
-            ENDIF 
+            IF(DFC < DFC_MAX) THEN
+               IF(PRINT_WARNINGS) THEN
+                  WRITE(*,*)'MERGING Z-INTERSECTION ALONG EDGE 11 ONTO NODE 4'
+                  WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
+               ENDIF 
 
-            INTERSECT_X(IJKM)  = .FALSE.
-            INTERSECT_X(IPJKM) = .FALSE.
-            INTERSECT_Y(IJKM)  = .FALSE.
-            INTERSECT_Y(IJPKM) = .FALSE.
-            INTERSECT_Z(IJK)  = .FALSE.
-            INTERSECT_Z(IJKM) = .FALSE.
-                
-            SNAP(IJKM) = .TRUE.
+               INTERSECT_X(IJKM)  = .FALSE.
+               INTERSECT_X(IPJKM) = .FALSE.
+               INTERSECT_Y(IJKM)  = .FALSE.
+               INTERSECT_Y(IJPKM) = .FALSE.
+               INTERSECT_Z(IJK)  = .FALSE.
+               INTERSECT_Z(IJKM) = .FALSE.
+                   
+               SNAP(IJKM) = .TRUE.
 
-         ENDIF
-
-
-         DFC = DABS(Zi-Zb) ! DISTANCE FROM CORNER (NODE 8)
-
-         IF(DFC < DFC_MAX) THEN
-            IF(PRINT_WARNINGS) THEN
-               WRITE(*,*)'MERGING Z-INTERSECTION ALONG EDGE 11 ONTO NODE 8'
-               WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
             ENDIF
 
-            INTERSECT_X(IJK)  = .FALSE.
-            INTERSECT_X(IPJK) = .FALSE.
-            INTERSECT_Y(IJK)  = .FALSE.
-            INTERSECT_Y(IJPK) = .FALSE.
-            INTERSECT_Z(IJK)  = .FALSE.
-            INTERSECT_Z(IJKP) = .FALSE.
 
-            SNAP(IJK) = .TRUE.
-                
+            DFC = DABS(Zi-Zb) ! DISTANCE FROM CORNER (NODE 8)
+
+            IF(DFC < DFC_MAX) THEN
+               IF(PRINT_WARNINGS) THEN
+                  WRITE(*,*)'MERGING Z-INTERSECTION ALONG EDGE 11 ONTO NODE 8'
+                  WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
+               ENDIF
+
+               INTERSECT_X(IJK)  = .FALSE.
+               INTERSECT_X(IPJK) = .FALSE.
+               INTERSECT_Y(IJK)  = .FALSE.
+               INTERSECT_Y(IJPK) = .FALSE.
+               INTERSECT_Z(IJK)  = .FALSE.
+               INTERSECT_Z(IJKP) = .FALSE.
+
+               SNAP(IJK) = .TRUE.
+                   
+            ENDIF
+
+            CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,4,F7,CLIP_FLAG,BCID)
+            CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,8,F8,CLIP_FLAG,BCID)
+
+            IF(F4*F8>TOL_STL**2) INTERSECT_Z(IJK)  = .FALSE.
+
          ENDIF
-
-      ENDIF
 
       ENDIF
 
@@ -946,10 +971,11 @@
       END SUBROUTINE CLOSE_CUT_CELL_FILES
 
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: INTERSECT                                              C
-!  Purpose: Intersects quadric with grid                               C
+!  Module name: CAD_INTERSECT                                          C
+!  Purpose: Intersects CAD (STL file or MSH file) geometry with grid   C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
 !  Reviewer:                                          Date:            C
@@ -983,7 +1009,7 @@
       INTEGER :: IJPKP,IPJKP,IPJPK
       DOUBLE PRECISION :: xa,ya,za,xb,yb,zb,xc,yc,zc,Fc
       DOUBLE PRECISION :: Xi,Yi,Zi,Xc_backup,Yc_backup,Zc_backup
-      LOGICAL :: INTERSECT_FLAG,CLIP_FLAG
+      LOGICAL :: INTERSECT_FLAG,CLIP_FLAG,INSIDE_FACET
 
       DOUBLE PRECISION :: X1,X2,Y1,Y2,Z1,Z2
 
@@ -992,6 +1018,9 @@
       INTEGER :: N,I1,I2,J1,J2,K1,K2
 
       DOUBLE PRECISION :: X_OFFSET, Y_OFFSET, Z_OFFSET
+
+      DOUBLE PRECISION, DIMENSION(3) :: N4,N6,N7,N8
+      DOUBLE PRECISION :: CURRENT_F,dotproduct
 
       include "function.inc"
 
@@ -1005,6 +1034,8 @@
       Xint = UNDEFINED
       Yint = UNDEFINED
       Zint = UNDEFINED
+
+      F_AT = UNDEFINED
 
 
       SELECT CASE (TYPE_OF_CELL)
@@ -1056,14 +1087,13 @@
          Z2 = MAXVAL(VERTEX(N,1:3,3))
 
 
-
          I1 = IEND3
          I2 = ISTART3
 
          IF(X2>=ZERO.AND.X1<=XLENGTH) THEN
             DO I = ISTART3, IEND3
                IP = I+1
-               IF(XG_E(I)+X_OFFSET*DX(IP)>=X1) THEN
+               IF(XG_E(I)+X_OFFSET*DX(IP)>=X1-TOL_STL) THEN
                   I1=I
                   EXIT
                ENDIF
@@ -1071,7 +1101,7 @@
 
             DO I = IEND3, ISTART3,-1
                IP = I+1
-               IF(XG_E(I)-DX(I)+X_OFFSET*DX(IP)<=X2) THEN
+               IF(XG_E(I)-DX(I)+X_OFFSET*DX(IP)<=X2+TOL_STL) THEN
                   I2=I
                   EXIT
                ENDIF
@@ -1085,7 +1115,7 @@
          IF(Y2>=ZERO.AND.Y1<=YLENGTH) THEN
             DO J = JSTART3, JEND3
                JP = J+1
-               IF(YG_N(J)+Y_OFFSET*DY(JP)>=Y1) THEN
+               IF(YG_N(J)+Y_OFFSET*DY(JP)>=Y1-TOL_STL) THEN
                   J1=J
                   EXIT
                ENDIF
@@ -1093,7 +1123,7 @@
 
             DO J = JEND3, JSTART3,-1
                JP=J+1
-               IF(YG_N(J)-DY(J)+Y_OFFSET*DY(JP)<=Y2) THEN
+               IF(YG_N(J)-DY(J)+Y_OFFSET*DY(JP)<=Y2+TOL_STL) THEN
                   J2=J
                   EXIT
                ENDIF
@@ -1106,7 +1136,8 @@
          IF(Z2>=ZERO.AND.Z1<=ZLENGTH) THEN
             DO K = KSTART3, KEND3
                KP=K+1
-               IF(ZG_T(K)+Z_OFFSET*DZ(KP)>=Z1) THEN
+
+               IF(ZG_T(K)+Z_OFFSET*DZ(KP)>=Z1-TOL_STL) THEN
                   K1=K
                   EXIT
                ENDIF
@@ -1114,13 +1145,12 @@
 
             DO K = KEND3, KSTART3,-1
                KP = K+1
-               IF(ZG_T(K)-DZ(K)+Z_OFFSET*DZ(KP)<=Z2) THEN
+               IF(ZG_T(K)-DZ(K)+Z_OFFSET*DZ(KP)<=Z2+TOL_STL) THEN
                   K2=K
                   EXIT
                ENDIF
             ENDDO
          ENDIF
-
 
 
          DO K=K1,K2
@@ -1129,26 +1159,20 @@
 
                   IJK = FUNIJK(I,J,K)
 
-                  IM = I - 1 
-                  JM = J - 1 
-                  KM = K - 1
-
                   IP = I + 1 
                   JP = J + 1 
                   KP = K + 1 
 
-                  IMJK = FUNIJK(IM,J,K)
-                  IPJK = FUNIJK(IP,J,K)
-                  IJMK = FUNIJK(I,JM,K)
-                  IJPK = FUNIJK(I,JP,K)
-                  IJKM = FUNIJK(I,J,KM)
-                  IJKP = FUNIJK(I,J,KP)
+                  IMJK = IM_OF(IJK)
+                  IPJK = IP_OF(IJK)    
+                  IJMK = JM_OF(IJK)
+                  IJPK = JP_OF(IJK)
+                  IJKM = KM_OF(IJK)
+                  IJKP = KP_OF(IJK)
 
-                  IJPKP = FUNIJK(I,JP,KP)
-                  IPJKP = FUNIJK(IP,J,KP)
-                  IPJPK = FUNIJK(IP,JP,K)
-                
-
+                  IJPKP = JP_OF(IJKP)
+                  IPJKP = IP_OF(IJKP)
+                  IPJPK = IP_OF(IJPK)
 
 !======================================================================
 !  Get coordinates of eight nodes
@@ -1167,10 +1191,58 @@
                   yb = Y_NODE(8)
                   zb = Z_NODE(8)
 
+! Check if intersection occurs at corners
+
+                  CALL IS_POINT_INSIDE_FACET(xa,ya,za,N,INSIDE_FACET)
+
+                  IF(INSIDE_FACET) THEN   ! corner intersection at node 7
+
+                     F_AT(IMJK) = ZERO
+
+                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+
+                     N8(1) = xb-xa
+                     N8(2) = yb-ya
+                     N8(3) = zb-za
+
+                     dotproduct = DOT_PRODUCT(N8,NORM_FACE(N,:)) 
+
+                     IF (DABS(dotproduct)>TOL_F) THEN
+                        IF (F_AT(IJK)==UNDEFINED) F_AT(IJK) = -dotproduct
+                     ENDIF
+
+                  ENDIF
+
+
+                  CALL IS_POINT_INSIDE_FACET(xb,yb,zb,N,INSIDE_FACET)
+
+                  IF(INSIDE_FACET) THEN   ! corner intersection at node 8
+
+                     F_AT(IJK) = ZERO
+
+                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+
+                     N7(1) = xa-xb
+                     N7(2) = ya-yb
+                     N7(3) = za-zb
+
+                     dotproduct = DOT_PRODUCT(N7,NORM_FACE(N,:)) 
+
+                     IF (DABS(dotproduct)>TOL_F) THEN
+                        IF (F_AT(IMJK)==UNDEFINED) F_AT(IMJK) = -dotproduct
+                     ENDIF
+
+                  ENDIF
+
+
+
+! Check intersection within line 7-8, excluding corners
+
 
                   INTERSECT_FLAG = .FALSE.
 
-                  CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                  IF(.NOT.INTERSECT_X(IJK)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+
 
                   IF(INTERSECT_FLAG) THEN
 
@@ -1178,7 +1250,7 @@
 
                         IF(DABS(Xint(IJK)-xc)>TOL_STL) THEN
 
-                           INTERSECT_X(IJK) = .FALSE.
+                           INTERSECT_X(IJK) = .FALSE.        ! Ignore intersections when two intersections are detected on the same edge
 
                         ENDIF                  
 
@@ -1187,29 +1259,26 @@
                         INTERSECT_X(IJK) = .TRUE.
                         Xint(IJK) = xc 
 
+! Set values at corners if they are not zero
+
+                        N7(1) = xa-xc
+                        N7(2) = ya-yc
+                        N7(3) = za-zc
+
+                        IF(DABS(F_AT(IMJK))>TOL_F)   F_AT(IMJK) = -DOT_PRODUCT(N7,NORM_FACE(N,:))  
+
+                        N8(1) = xb-xc
+                        N8(2) = yb-yc
+                        N8(3) = zb-zc
+
+                        IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(N,:))  
+
+
                         BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                        IF(JP<=J2) BC_ID(IJPK) = BC_ID_STL_FACE(N)
+                        IF(KP<=K2) BC_ID(IJKP) = BC_ID_STL_FACE(N) 
+                        IF(JP<=J2.AND.KP<=K2)BC_ID(IJPKP) = BC_ID_STL_FACE(N)  
 
-
-                        N_FACET_AT(IJK) = N_FACET_AT(IJK) + 1
-                        LIST_FACET_AT(IJK,N_FACET_AT(IJK)) = N
-
-                        IF(JP<=J2) THEN
-                           N_FACET_AT(IJPK) = N_FACET_AT(IJPK) + 1
-                           LIST_FACET_AT(IJPK,N_FACET_AT(IJPK)) = N
-                           BC_ID(IJPK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                        ENDIF
-                     
-                        IF(KP<=K2) THEN
-                           N_FACET_AT(IJKP) = N_FACET_AT(IJKP) + 1
-                           LIST_FACET_AT(IJKP,N_FACET_AT(IJKP)) = N
-                           BC_ID(IJKP) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                        ENDIF
-
-                        IF(JP<=J2.AND.KP<=K2) THEN
-                           N_FACET_AT(IJPKP) = N_FACET_AT(IJPKP) + 1
-                           LIST_FACET_AT(IJPKP,N_FACET_AT(IJPKP)) = N
-                           BC_ID(IJPKP) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                        ENDIF
                      ENDIF
 
                   ENDIF
@@ -1224,6 +1293,7 @@
 
 
 
+
 !======================================================================
 !  Intersection with Edge 6 (node 6-8, Face East-Top):
 !======================================================================
@@ -1231,9 +1301,60 @@
                   ya = Y_NODE(6)
                   za = Z_NODE(6)
 
+
+! Check if intersection occurs at corners
+
+                  CALL IS_POINT_INSIDE_FACET(xa,ya,za,N,INSIDE_FACET)
+
+                  IF(INSIDE_FACET) THEN   ! corner intersection at node 6
+
+                     F_AT(IJMK) = ZERO
+
+                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+
+                     N8(1) = xb-xa
+                     N8(2) = yb-ya
+                     N8(3) = zb-za
+
+                     dotproduct = DOT_PRODUCT(N8,NORM_FACE(N,:)) 
+
+                     IF (DABS(dotproduct)>TOL_F) THEN
+                        IF (F_AT(IJK)==UNDEFINED) F_AT(IJK) = -dotproduct
+                     ENDIF
+
+                  ENDIF
+
+
+                  CALL IS_POINT_INSIDE_FACET(xb,yb,zb,N,INSIDE_FACET)
+
+                  IF(INSIDE_FACET) THEN   ! corner intersection at node 8
+
+                     F_AT(IJK) = ZERO
+
+                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+
+                     N6(1) = xa-xb
+                     N6(2) = ya-yb
+                     N6(3) = za-zb
+
+                     dotproduct = DOT_PRODUCT(N6,NORM_FACE(N,:)) 
+
+                     IF (DABS(dotproduct)>TOL_F) THEN
+                        IF (F_AT(IJMK)==UNDEFINED) F_AT(IJMK) = -dotproduct
+                     ENDIF
+
+                  ENDIF
+
+
+
+! Check intersection within line 6-8, excluding corners
+
+
+
                   INTERSECT_FLAG = .FALSE.
 
-                  CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                  IF(.NOT.INTERSECT_Y(IJK)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+
 
                   IF(INTERSECT_FLAG) THEN
 
@@ -1241,7 +1362,7 @@
 
                         IF(DABS(Yint(IJK)-yc)>TOL_STL) THEN
 
-                           INTERSECT_Y(IJK) = .FALSE.
+                           INTERSECT_Y(IJK) = .FALSE. ! Ignore intersections when two intersections are detected on the same edge
 
                         ENDIF
 
@@ -1251,29 +1372,25 @@
                         INTERSECT_Y(IJK) = .TRUE.
                         Yint(IJK) = yc 
 
+! Set values at corners if they are not zero
+
+                        N6(1) = xa-xc
+                        N6(2) = ya-yc
+                        N6(3) = za-zc
+
+                        IF(DABS(F_AT(IJMK))>TOL_F)   F_AT(IJMK) = -DOT_PRODUCT(N6,NORM_FACE(N,:))  
+
+                        N8(1) = xb-xc
+                        N8(2) = yb-yc
+                        N8(3) = zb-zc
+
+                        IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(N,:))  
+
+
                         BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-
-                        N_FACET_AT(IJK) = N_FACET_AT(IJK) + 1
-                        LIST_FACET_AT(IJK,N_FACET_AT(IJK)) = N
-
-                        IF(IP<=I2) THEN
-                           N_FACET_AT(IPJK) = N_FACET_AT(IPJK) + 1
-                           LIST_FACET_AT(IPJK,N_FACET_AT(IPJK)) = N
-                           BC_ID(IPJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                        ENDIF
-
-                        IF(KP<=K2) THEN
-                           N_FACET_AT(IJKP) = N_FACET_AT(IJKP) + 1
-                           LIST_FACET_AT(IJKP,N_FACET_AT(IJKP)) = N
-                           BC_ID(IJKP) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                        ENDIF
-
-                        IF(IP<=I2.AND.KP<=K2) THEN
-                           N_FACET_AT(IPJKP) = N_FACET_AT(IPJKP) + 1
-                           LIST_FACET_AT(IPJKP,N_FACET_AT(IPJKP)) = N
-                           BC_ID(IPJKP) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                        ENDIF
-
+                        IF(IP<=I2) BC_ID(IPJK) = BC_ID_STL_FACE(N) 
+                        IF(KP<=K2) BC_ID(IJKP) = BC_ID_STL_FACE(N)
+                        IF(IP<=I2.AND.KP<=K2)BC_ID(IPJKP) = BC_ID_STL_FACE(N) 
 
                      ENDIF
 
@@ -1294,9 +1411,57 @@
                      ya = Y_NODE(4)
                      za = Z_NODE(4)
 
+! Check if intersection occurs at corners
+
+                     CALL IS_POINT_INSIDE_FACET(xa,ya,za,N,INSIDE_FACET)
+
+                     IF(INSIDE_FACET) THEN   ! corner intersection at node 4
+
+                        F_AT(IJKM) = ZERO
+
+                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+
+                        N8(1) = xb-xa
+                        N8(2) = yb-ya
+                        N8(3) = zb-za
+
+                        dotproduct = DOT_PRODUCT(N8,NORM_FACE(N,:)) 
+
+                        IF (DABS(dotproduct)>TOL_F) THEN
+                           IF (F_AT(IJK)==UNDEFINED) F_AT(IJK) = -dotproduct
+                        ENDIF
+
+                     ENDIF
+
+
+                     CALL IS_POINT_INSIDE_FACET(xb,yb,zb,N,INSIDE_FACET)
+
+                     IF(INSIDE_FACET) THEN   ! corner intersection at node 8
+
+                        F_AT(IJK) = ZERO
+
+                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+
+                        N4(1) = xa-xb
+                        N4(2) = ya-yb
+                        N4(3) = za-zb
+
+                        dotproduct = DOT_PRODUCT(N4,NORM_FACE(N,:)) 
+
+                        IF (DABS(dotproduct)>TOL_F) THEN
+                           IF (F_AT(IJKM)==UNDEFINED) F_AT(IJKM) = -dotproduct
+                        ENDIF
+
+                     ENDIF
+
+
+
+! Check intersection within line 4-8, excluding corners
+
+
                      INTERSECT_FLAG = .FALSE. 
 
-                     CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                     IF(.NOT.INTERSECT_Z(IJK)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
 
                      IF(INTERSECT_FLAG) THEN
 
@@ -1304,7 +1469,7 @@
 
                            IF(DABS(Zint(IJK)-zc)>TOL_STL) THEN
 
-                              INTERSECT_Z(IJK) = .FALSE.
+                              INTERSECT_Z(IJK) = .FALSE. ! Ignore intersections when two intersections are detected on the same edge
 
                            ENDIF
 
@@ -1314,28 +1479,26 @@
                            INTERSECT_Z(IJK) = .TRUE.
                            Zint(IJK) = zc 
 
+
+! Set values at corners if they are not zero
+
+                           N4(1) = xa-xc
+                           N4(2) = ya-yc
+                           N4(3) = za-zc
+
+                           IF(DABS(F_AT(IJKM))>TOL_F)   F_AT(IJKM) = -DOT_PRODUCT(N4,NORM_FACE(N,:))  
+
+                           N8(1) = xb-xc
+                           N8(2) = yb-yc
+                           N8(3) = zb-zc
+
+                           IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(N,:))  
+
+
                            BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-
-                           N_FACET_AT(IJK) = N_FACET_AT(IJK) + 1
-                           LIST_FACET_AT(IJK,N_FACET_AT(IJK)) = N
-
-                           IF(IP<=I2) THEN
-                              N_FACET_AT(IPJK) = N_FACET_AT(IPJK) + 1
-                              LIST_FACET_AT(IPJK,N_FACET_AT(IPJK)) = N
-                              BC_ID(IPJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                           ENDIF
-
-                           IF(JP<=J2) THEN
-                              N_FACET_AT(IJPK) = N_FACET_AT(IJPK) + 1
-                              LIST_FACET_AT(IJPK,N_FACET_AT(IJPK)) = N
-                              BC_ID(IJPK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                           ENDIF
-
-                           IF(IP<=I2.AND.JP<=J2) THEN
-                              N_FACET_AT(IPJPK) = N_FACET_AT(IPJPK) + 1
-                              LIST_FACET_AT(IPJPK,N_FACET_AT(IPJPK)) = N
-                              BC_ID(IPJPK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                           ENDIF
+                           IF(IP<=I2)  BC_ID(IPJK) = BC_ID_STL_FACE(N)    
+                           IF(JP<=J2) BC_ID(IJPK) = BC_ID_STL_FACE(N)  
+                           IF(IP<=I2.AND.JP<=J2) BC_ID(IPJPK) = BC_ID_STL_FACE(N) 
 
                         ENDIF
 
@@ -1359,10 +1522,85 @@
 
       ENDDO  ! Loop over facets
 
+      CURRENT_F = UNDEFINED
 
+
+
+! Overwrite small values to set them to zero
+
+      DO IJK = IJKSTART3, IJKEND3
+         IF(DABS(F_AT(IJK))<TOL_STL) THEN
+            F_AT(IJK)=ZERO
+
+         ENDIF
+      END DO
+
+! Propagates node values to all interior cells
+
+
+      DO I=ISTART3,IEND3
+         DO K=KSTART3,KEND3
+            DO J=JSTART3,JEND3
+               IJK=FUNIJK(I,J,K)
+               IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                  CURRENT_F = F_AT(IJK)
+                  EXIT                
+               ENDIF         
+            ENDDO
+            DO J=JSTART3,JEND3
+               IJK=FUNIJK(I,J,K)
+               IF(F_AT(IJK)==UNDEFINED) THEN
+                  F_AT(IJK)=CURRENT_F
+               ELSEIF(F_AT(IJK)/=ZERO) THEN
+                  CURRENT_F = F_AT(IJK)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+
+      DO J=JSTART3,JEND3
+         DO I=ISTART3,IEND3
+            DO K=KSTART3,KEND3
+               IJK=FUNIJK(I,J,K)
+               IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                  CURRENT_F = F_AT(IJK)
+                  EXIT                
+               ENDIF         
+            ENDDO
+            DO K=KSTART3,KEND3
+               IJK=FUNIJK(I,J,K)
+               IF(F_AT(IJK)==UNDEFINED) THEN
+                  F_AT(IJK)=CURRENT_F
+               ELSEIF(F_AT(IJK)/=ZERO) THEN
+                  CURRENT_F = F_AT(IJK)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+
+      DO K=KSTART3,KEND3
+         DO J=JSTART3,JEND3
+            DO I=ISTART3,IEND3
+               IJK=FUNIJK(I,J,K)
+               IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                  CURRENT_F = F_AT(IJK)
+                  EXIT                
+               ENDIF         
+            ENDDO
+            DO I=ISTART3,IEND3
+               IJK=FUNIJK(I,J,K)
+               IF(F_AT(IJK)==UNDEFINED) THEN
+                  F_AT(IJK)=CURRENT_F
+               ELSEIF(F_AT(IJK)/=ZERO) THEN
+                  CURRENT_F = F_AT(IJK)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
 
 
       RETURN
       
       END SUBROUTINE CAD_INTERSECT
+
 

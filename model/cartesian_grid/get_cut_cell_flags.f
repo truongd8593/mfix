@@ -261,10 +261,19 @@
 
                CALL EVAL_F('USR_DEF',X_NODE(0),Y_NODE(0),Z_NODE(0),N_USR_DEF,F_NODE(0),CLIP_FLAG)
 
-               CALL EVAL_STL_FCT_AT('SCALAR',IJK,0,F_NODE(0),CLIP_FLAG,BCID)
+!               CALL EVAL_STL_FCT_AT('SCALAR',IJK,0,F_NODE(0),CLIP_FLAG,BCID)
+
+               IF(USE_MSH.OR.USE_STL) THEN
+                  CALL EVAL_STL_FCT_AT('SCALAR',IJK,1,F_NODE(1),CLIP_FLAG,BCID)
+                  CALL EVAL_STL_FCT_AT('SCALAR',IJK,8,F_NODE(8),CLIP_FLAG,BCID)
+                  F_NODE(0) = HALF*(F_NODE(1)+F_NODE(8))
+               ENDIF
 
 
-               IF(F_NODE(0) < ZERO) THEN
+               IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
+               BC_ID(IJK) = 0
+
+               IF(F_NODE(0) < TOL_F) THEN
                   IF((FLAG(IJK)>=100).AND.(FLAG(IJK)<=102)) THEN
                      BLOCKED_CELL_AT(IJK) = .TRUE.
                      STANDARD_CELL_AT(IJK) = .FALSE.          ! Blocked cell = wall cell
@@ -284,8 +293,6 @@
                   AXY(BOTTOM_OF(IJK)) = ZERO
                   AXZ(SOUTH_OF(IJK)) = ZERO
                   AYZ(WEST_OF(IJK)) = ZERO
-
-
                ENDIF
 
                IF(NO_K) THEN
@@ -588,18 +595,6 @@
       print*,'==========================================================='
       
       
-
-
-
-
-
-
-
-
-
-
-
-
       RETURN
       END SUBROUTINE SET_3D_CUT_CELL_FLAGS
 
@@ -749,6 +744,9 @@
                CALL EVAL_F('USR_DEF',X_NODE(0),Y_NODE(0),Z_NODE(0),N_USR_DEF,F_NODE(0),CLIP_FLAG)
 
                CALL EVAL_STL_FCT_AT('U_MOMENTUM',IJK,0,F_NODE(0),CLIP_FLAG,BCID)
+
+               IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
+               BC_U_ID(IJK) = 0
 
                IF(F_NODE(0) < ZERO) THEN
                   BLOCKED_U_CELL_AT(IJK) = .FALSE.
@@ -988,6 +986,9 @@
 
                CALL EVAL_STL_FCT_AT('V_MOMENTUM',IJK,0,F_NODE(0),CLIP_FLAG,BCID)
 
+               IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
+               BC_V_ID(IJK) = 0
+
                IF(F_NODE(0) < ZERO) THEN
                   BLOCKED_V_CELL_AT(IJK) = .FALSE.
                   STANDARD_V_CELL_AT(IJK) = .TRUE.          ! Regular fluid cell
@@ -1209,6 +1210,9 @@
                CALL EVAL_F('USR_DEF',X_NODE(0),Y_NODE(0),Z_NODE(0),N_USR_DEF,F_NODE(0),CLIP_FLAG)
 
                CALL EVAL_STL_FCT_AT('W_MOMENTUM',IJK,0,F_NODE(0),CLIP_FLAG,BCID)
+
+               IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
+               BC_W_ID(IJK) = 0
 
                IF(F_NODE(0) < ZERO) THEN
                   BLOCKED_W_CELL_AT(IJK) = .FALSE.

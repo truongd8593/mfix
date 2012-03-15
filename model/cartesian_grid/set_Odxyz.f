@@ -58,15 +58,19 @@
          IF(I == ISTART3) THEN
             IJK2 = FUNIJK(ISTART1,J,K)
             IJK1 = FUNIJK(ISTART1-1,J,K)
-            ONEoDX_E_U(IJK) = ONE / (X_U(IJK2)-X_U(IJK1))
          ELSEIF(I == IEND3) THEN
             IJK2 = FUNIJK(IEND3,J,K)
             IJK1 = FUNIJK(IEND3-1,J,K)
-            ONEoDX_E_U(IJK) = ONE / (X_U(IJK2)-X_U(IJK1))
          ELSE
             IP = I + 1
-            IPJK = FUNIJK(IP,J,K)
-            ONEoDX_E_U(IJK) = ONE / (X_U(IPJK)-X_U(IJK))
+            IJK2 = FUNIJK(IP,J,K)
+            IJK1 = IJK
+         ENDIF
+
+         IF(X_U(IJK2)/=X_U(IJK1)) THEN
+            ONEoDX_E_U(IJK) = ONE / (X_U(IJK2)-X_U(IJK1))
+         ELSE
+            ONEoDX_E_U(IJK) = ZERO
          ENDIF
 
 !======================================================================
@@ -76,15 +80,19 @@
          IF(J == JSTART3) THEN
             IJK2 = FUNIJK(I,JSTART1,K)
             IJK1 = FUNIJK(I,JSTART1-1,K)
-            ONEoDY_N_U(IJK) = ONE / (Y_U(IJK2)-Y_U(IJK1))
          ELSEIF(J == JEND3) THEN
             IJK2 = FUNIJK(I,JEND3,K)
             IJK1 = FUNIJK(I,JEND3-1,K)
-            ONEoDY_N_U(IJK) = ONE / (Y_U(IJK2)-Y_U(IJK1))
          ELSE
             JP = J + 1
-            IJPK = FUNIJK(I,JP,K)
-            ONEoDY_N_U(IJK) = ONE / (Y_U(IJPK)-Y_U(IJK))
+            IJK2 = FUNIJK(I,JP,K)
+            IJK1 = IJK
+         ENDIF
+
+         IF(Y_U(IJK2)/=Y_U(IJK1)) THEN
+            ONEoDY_N_U(IJK) = ONE / (Y_U(IJK2)-Y_U(IJK1))
+         ELSE
+            ONEoDY_N_U(IJK) = ZERO
          ENDIF
 
 !======================================================================
@@ -95,16 +103,21 @@
             IF(K == KSTART3) THEN
                IJK2 = FUNIJK(I,J,KSTART1)
                IJK1 = FUNIJK(I,J,KSTART1-1)
-               ONEoDZ_T_U(IJK) = ONE / (Z_U(IJK2)-Z_U(IJK1))
             ELSEIF(K == KEND3) THEN
                IJK2 = FUNIJK(I,J,KEND3)
                IJK1 = FUNIJK(I,J,KEND3-1)
-               ONEoDZ_T_U(IJK) = ONE / (Z_U(IJK2)-Z_U(IJK1))
             ELSE
                KP = K + 1
-               IJKP = FUNIJK(I,J,KP)
-               ONEoDZ_T_U(IJK) = ONE / (Z_U(IJKP)-Z_U(IJK))
+               IJK2 = FUNIJK(I,J,KP)
+               IJK1 = IJK
             ENDIF
+
+            IF(Z_U(IJK2)/=Z_U(IJK1)) THEN
+               ONEoDZ_T_U(IJK) = ONE / (Z_U(IJK2)-Z_U(IJK1))
+            ELSE
+               ONEoDZ_T_U(IJK) = ZERO
+            ENDIF
+
          ELSE
             ONEoDZ_T_U = ONE / ZLENGTH
          ENDIF
@@ -177,15 +190,19 @@
          IF(I == ISTART3) THEN
             IJK2 = FUNIJK(ISTART1,J,K)
             IJK1 = FUNIJK(ISTART1-1,J,K)
-            ONEoDX_E_V(IJK) = ONE / (X_V(IJK2)-X_V(IJK1))
          ELSEIF(I == IEND3) THEN
             IJK2 = FUNIJK(IEND3,J,K)
             IJK1 = FUNIJK(IEND3-1,J,K)
-            ONEoDX_E_V(IJK) = ONE / (X_V(IJK2)-X_V(IJK1))
          ELSE
             IP = I + 1
-            IPJK = FUNIJK(IP,J,K)
-            ONEoDX_E_V(IJK) = ONE / (X_V(IPJK)-X_V(IJK))
+            IJK2 = FUNIJK(IP,J,K)
+            IJK1 = IJK
+         ENDIF
+
+         IF(X_V(IJK2)/=X_V(IJK1)) THEN
+            ONEoDX_E_V(IJK) = ONE / (X_V(IJK2)-X_V(IJK1))
+         ELSE
+            ONEoDX_E_V(IJK) = ZERO
          ENDIF
 
 !======================================================================
@@ -195,17 +212,20 @@
          IF(J == JSTART3) THEN
             IJK2 = FUNIJK(I,JSTART1,K)
             IJK1 = FUNIJK(I,JSTART1-1,K)
-            ONEoDY_N_V(IJK) = ONE / (Y_V(IJK2)-Y_V(IJK1))
          ELSEIF(J == JEND3) THEN
             IJK2 = FUNIJK(I,JEND3,K)
             IJK1 = FUNIJK(I,JEND3-1,K)
-            ONEoDY_N_V(IJK) = ONE / (Y_V(IJK2)-Y_V(IJK1))
          ELSE
             JP = J + 1
-            IJPK = FUNIJK(I,JP,K)
-            ONEoDY_N_V(IJK) = ONE / (Y_V(IJPK)-Y_V(IJK))
+            IJK2 = FUNIJK(I,JP,K)
+            IJK1 = IJK
          ENDIF
 
+         IF(Y_V(IJK2)/=Y_V(IJK1)) THEN
+            ONEoDY_N_V(IJK) = ONE / (Y_V(IJK2)-Y_V(IJK1))
+         ELSE
+            ONEoDY_N_V(IJK) = ZERO
+         ENDIF
 
 !======================================================================
 !  1/dz at Top face of V_Momentum cell
@@ -215,15 +235,19 @@
             IF(K == KSTART3) THEN
                IJK2 = FUNIJK(I,J,KSTART1)
                IJK1 = FUNIJK(I,J,KSTART1-1)
-               ONEoDZ_T_V(IJK) = ONE / (Z_V(IJK2)-Z_V(IJK1))
             ELSEIF(K == KEND3) THEN
                IJK2 = FUNIJK(I,J,KEND3)
                IJK1 = FUNIJK(I,J,KEND3-1)
-               ONEoDZ_T_V(IJK) = ONE / (Z_V(IJK2)-Z_V(IJK1))
             ELSE
                KP = K + 1
-               IJKP = FUNIJK(I,J,KP)
-               ONEoDZ_T_V(IJK) = ONE / (Z_V(IJKP)-Z_V(IJK))
+               IJK2 = FUNIJK(I,J,KP)
+               IJK1 = IJK
+            ENDIF
+
+            IF(Z_V(IJKP)/=Z_V(IJK)) THEN
+               ONEoDZ_T_V(IJK) = ONE / (Z_V(IJK2)-Z_V(IJK1))
+            ELSE
+               ONEoDZ_T_V(IJK) = ZERO
             ENDIF
 
          ELSE
@@ -298,17 +322,20 @@
          IF(I == ISTART3) THEN
             IJK2 = FUNIJK(ISTART1,J,K)
             IJK1 = FUNIJK(ISTART1-1,J,K)
-            ONEoDX_E_W(IJK) = ONE / (X_W(IJK2)-X_W(IJK1))
          ELSEIF(I == IEND3) THEN
             IJK2 = FUNIJK(IEND3,J,K)
             IJK1 = FUNIJK(IEND3-1,J,K)
-            ONEoDX_E_W(IJK) = ONE / (X_W(IJK2)-X_W(IJK1))
          ELSE
             IP = I + 1
-            IPJK = FUNIJK(IP,J,K)
-            ONEoDX_E_W(IJK) = ONE / (X_W(IPJK)-X_W(IJK))
+            IJK2 = FUNIJK(IP,J,K)
+            IJK1 =IJK
          ENDIF
 
+         IF(X_W(IJK2)/=X_W(IJK1)) THEN
+            ONEoDX_E_W(IJK) = ONE / (X_W(IJK2)-X_W(IJK1))
+         ELSE
+            ONEoDX_E_W(IJK) = ZERO
+         ENDIF
 !======================================================================
 !  1/dy at North face of V_Momentum cell
 !======================================================================
@@ -316,17 +343,20 @@
          IF(J == JSTART3) THEN
             IJK2 = FUNIJK(I,JSTART1,K)
             IJK1 = FUNIJK(I,JSTART1-1,K)
-            ONEoDY_N_W(IJK) = ONE / (Y_W(IJK2)-Y_W(IJK1))
          ELSEIF(J == JEND3) THEN
             IJK2 = FUNIJK(I,JEND3,K)
             IJK1 = FUNIJK(I,JEND3-1,K)
-            ONEoDY_N_W(IJK) = ONE / (Y_W(IJK2)-Y_W(IJK1))
          ELSE
             JP = J + 1
-            IJPK = FUNIJK(I,JP,K)
-            ONEoDY_N_W(IJK) = ONE / (Y_W(IJPK)-Y_W(IJK))
+            IJK2 = FUNIJK(I,JP,K)
+            IJK1 = IJK
          ENDIF
 
+         IF(Y_W(IJK2)/=Y_W(IJK1)) THEN
+            ONEoDY_N_W(IJK) = ONE / (Y_W(IJK2)-Y_W(IJK1))
+         ELSE
+            ONEoDY_N_W(IJK) = ZERO
+         ENDIF
 !         print*,'myPE,IJK,ONEoDY_N_W(IJK)=',myPE,IJK,ONEoDY_N_W(IJK)
 
 !======================================================================
@@ -336,17 +366,20 @@
          IF(K == KSTART3) THEN
             IJK2 = FUNIJK(I,J,KSTART1)
             IJK1 = FUNIJK(I,J,KSTART1-1)
-            ONEoDZ_T_W(IJK) = ONE / (Z_W(IJK2)-Z_W(IJK1))
          ELSEIF(K == KEND3) THEN
             IJK2 = FUNIJK(I,J,KEND3)
             IJK1 = FUNIJK(I,J,KEND3-1)
-            ONEoDZ_T_W(IJK) = ONE / (Z_W(IJK2)-Z_W(IJK1))
          ELSE
             KP = K + 1
-            IJKP = FUNIJK(I,J,KP)
-            ONEoDZ_T_W(IJK) = ONE / (Z_W(IJKP)-Z_W(IJK))
+            IJK2 = FUNIJK(I,J,KP)
+            IJK1 = IJK
          ENDIF
 
+         IF(Z_W(IJK2)/=Z_W(IJK1)) THEN
+            ONEoDZ_T_W(IJK) = ONE / (Z_W(IJK2)-Z_W(IJK1))
+         ELSE
+            ONEoDZ_T_W(IJK) = ZERO
+         ENDIF
 
       END DO
 
