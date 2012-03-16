@@ -268,7 +268,7 @@
 
 ! Solve solids volume fraction correction equation for close-packed
 ! solids phases
-      IF(.NOT.DISCRETE_ELEMENT .OR. QMOMK) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN
         IF (MMAX > 0) THEN
 
           IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN 
@@ -316,7 +316,7 @@
 
 ! Calculate P_star in cells where solids continuity equation is
 ! solved
-      IF(.NOT.DISCRETE_ELEMENT .OR. .NOT.QMOMK) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN
         IF (MMAX > 0 .AND. .NOT.FRICTION) &
            CALL CALC_P_STAR (EP_G, P_STAR, IER)
       ENDIF
