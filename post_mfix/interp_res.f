@@ -430,8 +430,8 @@
             ELSE
               W_s(IJK, M)   = ZERO
             ENDIF
-            IF(Theta_m_OLD(IJKV_OLD, M) .NE. UNDEFINED) THEN
-              Theta_m(IJK, M)   = Theta_m_OLD(IJKV_OLD, M)
+            IF(Theta_m_OLD(IJK_OLD, M) .NE. UNDEFINED) THEN
+              Theta_m(IJK, M)   = Theta_m_OLD(IJK_OLD, M)
             ELSE
               Theta_m(IJK, M)   = ZERO
             ENDIF
