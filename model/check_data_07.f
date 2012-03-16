@@ -67,7 +67,7 @@
 !-----------------------------------------------
 !
 !     error flag
-      LOGICAL ERROR
+      LOGICAL ERROR,RECOGNIZED_BC_TYPE
 !
 !     loop/variable indices
       INTEGER BCV , I , J , K , IJK, M, N
@@ -127,6 +127,23 @@
         IF (BC_TYPE(BCV) == 'CG_PSW') BC_DEFINED(BCV) = .FALSE. 
         IF (BC_TYPE(BCV) == 'CG_MI') BC_DEFINED(BCV) = .FALSE. 
         IF (BC_TYPE(BCV) == 'CG_PO') BC_DEFINED(BCV) = .FALSE. 
+
+        IF(BC_TYPE(BCV) /= UNDEFINED_C.AND.BC_TYPE(BCV) /= 'DUMMY') THEN
+            RECOGNIZED_BC_TYPE = .FALSE.
+            DO I = 1, DIM_BCTYPE 
+                VALID_BC_TYPE(I) = TRIM(VALID_BC_TYPE(I))
+                IF (VALID_BC_TYPE(I) == BC_TYPE(BCV)) THEN 
+                   RECOGNIZED_BC_TYPE = .TRUE.
+                   EXIT
+                ENDIF 
+            ENDDO 
+            
+            IF(.NOT.RECOGNIZED_BC_TYPE) THEN
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1001) BCV, BC_TYPE(BCV) 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1002) VALID_BC_TYPE 
+               call mfix_exit(myPE)
+            ENDIF
+         ENDIF
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
