@@ -16,12 +16,12 @@
 !  Purpose: To incorporate Cartesian grid modifications                C
 !  and utilization of the dashboard                                    C
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
-!                                                                      C
+!      
 !  Revision Number: 3                                                  C
 !  Purpose: Incorporation of QMOM for the solution of the particle     C
 !  kinetic equation                                                    C
 !  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
-!								       C
+!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced:                                               C
@@ -32,8 +32,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE ITERATE(IER, NIT) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
 
 !-----------------------------------------------
 ! Modules
@@ -63,84 +61,56 @@
       USE cutcell
       USE vtk
       USE dashboard
-! QMOMK - Alberto Passalacqua
       USE qmom_kinetic_equation
-! QMOMK - End
-
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
+! Error index 
+      INTEGER, INTENT(INOUT) :: IER 
+! Number of iterations 
+      INTEGER, INTENT(OUT) :: NIT 
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Local variables
 !-----------------------------------------------
-! 
-!                      Error index 
-      INTEGER          IER 
-! 
-!                      Number of iterations 
-      INTEGER          NIT 
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
- 
-!                      current cpu time used 
-      DOUBLE PRECISION CPU_NOW 
- 
-!                      MUSTIT = 0 implies complete convergence. 
-      INTEGER          MUSTIT 
- 
-!                      Sum of solids densities 
-      DOUBLE PRECISION SUM 
- 
-!                      Weight of solids in the reactor 
-      DOUBLE PRECISION SMASS 
- 
-!                      Heat loss from the reactor 
-      DOUBLE PRECISION HLOSS 
- 
-!                      phase index 
-      INTEGER          M 
- 
-!                      Normalization factor for gas pressure residual 
-      DOUBLE PRECISION NORMg 
- 
-!                      Normalization factor for solids pressure residual 
-      DOUBLE PRECISION NORMs 
- 
-!                      Set normalization factor for gas pressure residual 
-      LOGICAL          SETg 
- 
-!                      Set normalization factor for solids pressure residual 
-      LOGICAL          SETs 
- 
-!                      gas pressure residual 
-      DOUBLE PRECISION RESg 
- 
-!                      solids pressure residual 
-      DOUBLE PRECISION RESs 
-
-!                      average velocity
-      DOUBLE PRECISION Vavg 
+! current cpu time used 
+      DOUBLE PRECISION :: CPU_NOW 
+! cpu time left      
+      DOUBLE PRECISION :: TLEFT
+! flag indicating convergence status with MUSTIT = 0,1,2 implying
+! complete convergence, non-covergence and divergence respectively
+      INTEGER :: MUSTIT 
+! Normalization factor for gas & solids pressure residual 
+      DOUBLE PRECISION :: NORMg, NORMs
+! Set normalization factor for gas and solids pressure residual
+      LOGICAL :: SETg, SETs 
+! gas & solids pressure residual 
+      DOUBLE PRECISION :: RESg, RESs
+! Weight of solids in the reactor 
+      DOUBLE PRECISION :: SMASS 
+! Heat loss from the reactor 
+      DOUBLE PRECISION :: HLOSS 
+! phase index 
+      INTEGER :: M
+! average velocity
+      DOUBLE PRECISION :: Vavg 
   
-      DOUBLE PRECISION TLEFT 
-
-      DOUBLE PRECISION errorpercent(0:MMAX)
-       
-      LOGICAL          ABORT_IER
+      DOUBLE PRECISION :: errorpercent(0:MMAX)
+      LOGICAL :: ABORT_IER
       CHARACTER*4 TUNIT 
 !-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
+! External functions
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, VAVG_U_S, &
-                                     VAVG_V_S, VAVG_W_S 
-      EXTERNAL CPU_TIME   !use the subroutine from machine.f
+      DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
+                                    VAVG_U_S, VAVG_V_S, VAVG_W_S 
+!use the subroutine from machine.f
+      EXTERNAL CPU_TIME   
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
 !-----------------------------------------------
 
-
+! initializations      
       DT_prev = DT
       NIT = 0 
       RESG = ZERO 
@@ -185,12 +155,8 @@
                   ' Starting solids mass = ', SMASS, &
                   '    CPU time left = ', TLEFT, TUNIT 
             ENDIF
-
          ELSE 
-
             IF(myPE.eq.PE_IO) THEN
-!AE TIME 050801 add CN_ON check to print original timestep size
-!            IF (CN_ON) THEN
                IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
                    (CN_ON.AND.RUN_TYPE /= 'NEW' .AND.&
                     NSTEP >= (NSTEPRST+1))) THEN
@@ -203,7 +169,6 @@
                      '    CPU time left = ', TLEFT, TUNIT 
                ENDIF
             ENDIF
-            
          ENDIF   ! if/else(dt==undefined)
       ENDIF   ! if(full_log) 
 
@@ -215,23 +180,25 @@
       CALL CALC_MFLUX (IER)
       CALL SET_BC1
 
-! JFD: MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+! JFD: modification for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
 
 
 ! Begin iterations
-!------------------------------------------------------------------------------
+!-----------------------------------------------------------------
    50 CONTINUE 
       MUSTIT = 0 
       NIT = NIT + 1 
 
+! mechanism to set the normalization factor for the correction
+! after the first iteration to the corresponding residual found 
+! in the first iteration
       IF (.NOT.SETG) THEN 
          IF (RESG > SMALL_NUMBER) THEN 
             NORMG = RESG 
             SETG = .TRUE. 
          ENDIF 
       ENDIF 
-
       IF (.NOT.SETS) THEN 
          IF (RESS > SMALL_NUMBER) THEN 
             NORMS = RESS 
@@ -241,7 +208,7 @@
 
 ! Call user-defined subroutine to set quantities that need to be updated
 ! every iteration
-      IF (CALL_USR) CALL USR2       
+      IF (CALL_USR) CALL USR2 
 
 
 ! Calculate coefficients.  First turn off all flags.  Then explicitly set
@@ -267,7 +234,6 @@
          GRAN_DISS(:MMAX) = .TRUE.
       ENDIF
 
-
       CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
       CALL TRANSPORT_PROP (VISC, COND, DIFF, GRAN_DISS, IER) 
       CALL EXCHANGE (DRAGCOEF, HEAT_TR, WALL_TR, IER) 
@@ -278,10 +244,8 @@
 ! Diffusion coefficient and source terms for K & Epsilon Eq.
       IF(K_Epsilon) CALL K_Epsilon_PROP(IER)
 
-      
-! Solve starred velocitiy components
+! Solve starred velocity components
       CALL SOLVE_VEL_STAR (IER) 
-
 
 ! Calculate density and reaction rates. Do not change reaction rate anywhere
 ! else within this iteration loop.  Fluid density can be changed after the 
@@ -304,41 +268,46 @@
 
 ! Solve solids volume fraction correction equation for close-packed
 ! solids phases
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN  ! QMOMK - A.P. - Added check
+      IF(.NOT.DISCRETE_ELEMENT .OR. QMOMK) THEN
         IF (MMAX > 0) THEN
 
           IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN 
-! Sof: if secondary phase can overpack (i.e. bubbles) then solve
+! if second phase (m=1) can overpack (e.g., bubbles) then solve its
 ! continuity equation
-            CALL CALC_K_CP (K_CP, IER)
-            CALL SOLVE_EPP (NORMS, RESS, IER)
-            CALL CORRECT_1 (IER) 
+             CALL CALC_K_CP (K_CP, IER)
+             CALL SOLVE_EPP (NORMS, RESS, IER)
+             CALL CORRECT_1 (IER) 
           ELSE
-            DO M=1,SMAX ! mmax -> smax for GHD theory
-!   	      IF (M .EQ. MCP) THEN 
-! Volume fraction correction technique for multiparticle types is not
-! implemented.  This will only slow down convergence
-              IF (.FALSE.) THEN    
-                CALL CALC_K_CP (K_CP, IER)
-                CALL SOLVE_EPP (NORMS, RESS, IER)
-                CALL CORRECT_1 (IER) 
-              ELSE
-                CALL SOLVE_CONTINUITY(M,IER)
-              ENDIF
-            ENDDO
-          ENDIF
+             DO M=1,SMAX ! mmax -> smax for GHD theory
+! if one chooses to revert back to old mark_phase_4_cor wherein the
+! continuity of the gas phase can get marked to be solved then this 
+! loop should start at 0.
+
+!   	        IF (M .EQ. MCP) THEN             
+! Volume fraction correction technique for one of the solids phase
+! is not implemented.  This will only slow down convergence.
+               IF (.FALSE.) THEN    
+                  CALL CALC_K_CP (K_CP, IER)
+                  CALL SOLVE_EPP (NORMS, RESS, IER)
+                  CALL CORRECT_1 (IER) 
+               ELSE
+                  CALL SOLVE_CONTINUITY(M,IER)
+                ENDIF
+
+             ENDDO
+          ENDIF   ! end if/else (mmax==1 .and. mcp /= undefined)
 
           IF(TRIM(KT_TYPE) .eq. 'GHD') CALL ADJUST_EPS_GHD
           CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
 
           abort_ier = ier.eq.1
-          call global_all_or(abort_ier)
+          CALL global_all_or(abort_ier)
           IF (abort_ier) THEN 
               ier = 1
               MUSTIT = 2                           !indicates divergence 
               IF(FULL_LOG.and.myPE.eq.PE_IO) &
                  WRITE(*,6000)'Negative void fraction detected.'  ! JFD
-              IF(DT/=UNDEFINED)GO TO 1000 
+              IF(DT/=UNDEFINED) GOTO 1000 
           ENDIF 
 
         ENDIF  ! endif (mmax >0)
@@ -347,7 +316,7 @@
 
 ! Calculate P_star in cells where solids continuity equation is
 ! solved
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN    ! QMOMK - A.P. - Added check
+      IF(.NOT.DISCRETE_ELEMENT .OR. .NOT.QMOMK) THEN
         IF (MMAX > 0 .AND. .NOT.FRICTION) &
            CALL CALC_P_STAR (EP_G, P_STAR, IER)
       ENDIF
@@ -355,11 +324,12 @@
 ! Calculate the face values of densities.
       CALL CONV_ROP(IER)
 
-! Solve fluid pressure correction equation
-      IF (RO_G0 /= ZERO) CALL SOLVE_PP_G (NORMG, RESG, IER) 
-
+      IF (RO_G0 /= ZERO) THEN
+! Solve fluid pressure correction equation              
+         CALL SOLVE_PP_G (NORMG, RESG, IER) 
 ! Correct pressure, velocities, and density
-      IF (RO_G0 /= ZERO) CALL CORRECT_0 (IER) 
+         CALL CORRECT_0 (IER) 
+      ENDIF
      
       IF (RO_G0 == UNDEFINED) THEN
         PSIZE(1:MMAX)=.FALSE.
@@ -369,9 +339,9 @@
         IF (Neg_RHO_G) THEN
            MUSTIT = 2                              !indicates divergence 
            Neg_RHO_G = .FALSE.
-           IF(FULL_LOG.and.myPE.eq.PE_IO) &
+           IF(FULL_LOG.and.DMP_LOG) &
               WRITE(*,6000)'Negative gas density detected.' ! JFD
-           IF(DT/=UNDEFINED)GO TO 1000  
+           IF(DT/=UNDEFINED) GOTO 1000  
         ENDIF 
       ENDIF 
 
@@ -382,11 +352,11 @@
 ! functions will be used
       IF(.NOT. K_EPSILON) CALL SET_WALL_BC (IER) 
 
-! Calculate the face values of mass fluxes.
+! Calculate the face values of mass fluxes
       CALL CALC_MFLUX (IER)
       CALL SET_BC1
 
-! JFD: MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+! JFD: modification for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
 
 ! Solve energy equations
@@ -404,9 +374,7 @@
             IF(DT/=UNDEFINED) GOTO 1000 
          ENDIF
       ENDIF
-
       
-
 ! Solve species mass balance equations
       CALL SOLVE_SPECIES_EQ (IER) 
 
@@ -426,7 +394,7 @@
       CALL ACCUM_RESID ! Accumulating residuals from all the processors
       RESG = RESID(RESID_P,0)
       RESS = RESID(RESID_P,1)
-      call CALC_RESID_MB(1, errorpercent)
+      CALL CALC_RESID_MB(1, errorpercent)
       CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT, IER) 
       
       IF(CYCLIC)THEN
@@ -438,15 +406,17 @@
 
 !  If not converged continue iterations; else exit subroutine.
  1000 CONTINUE 
-
+!-----------------------------------------------------------------
 
 ! Display residuals
       IF (FULL_LOG) CALL DISPLAY_RESID (NIT, IER) 
 
-! Determine course of simulation: converge, diverge
+! Determine course of simulation: converge, non-converge, diverge?
       IF (MUSTIT == 0) THEN 
+! ---------------------------------------------------------------->>>              
          IF (DT==UNDEFINED .AND. NIT==1) GOTO 50   !Iterations converged 
 
+! Perform checks and dump to screen every NLOG time steps         
          IF (MOD(NSTEP,NLOG) == 0) THEN 
             CALL CPU_TIME (CPU_NOW)
             CPUOS = (CPU_NOW - CPU_NLOG)/(TIME - TIME_NLOG) 
@@ -468,7 +438,7 @@
                IF(DMP_LOG)WRITE (UNIT_LOG, 5001) TIME, DT, NIT, &
                   SMASS, CPU_NOW 
                IF (FULL_LOG .and. myPE.eq.PE_IO) &
-                       WRITE (*, 5001) TIME, DT, NIT, SMASS, CPU_NOW
+                  WRITE (*, 5001) TIME, DT, NIT, SMASS, CPU_NOW
             ENDIF 
 
             IF(DMP_LOG)WRITE (UNIT_LOG, 5002) (errorpercent(M), M=0,MMAX) 
@@ -513,7 +483,7 @@
             CALL END_LOG 
          ENDIF   ! end IF (MOD(NSTEP,NLOG) == 0)
 
-! JFD: MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+! JFD: modification for cartesian grid implementation
          IF(WRITE_DASHBOARD) THEN
             RUN_STATUS = 'In Progress...'
             N_DASHBOARD = N_DASHBOARD + 1 
@@ -524,21 +494,24 @@
             ENDIF
          ENDIF
 
-         IER = 0 
-         RETURN   ! for if mustit =0
+         IER = 0  
+         RETURN   ! for if mustit =0 (converged)
+! end converged: go back to time_march               
+! ----------------------------------------------------------------<<<
 
-! diverged or
+! diverged 
       ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN 
+! ---------------------------------------------------------------->>>
          IF (FULL_LOG) THEN 
             CALL START_LOG 
-            call CALC_RESID_MB(1, errorpercent)
+            CALL CALC_RESID_MB(1, errorpercent)
             IF(DMP_LOG) WRITE(UNIT_LOG,5200) TIME, DT, NIT, errorpercent(0) 
             CALL END_LOG 
 
-            IF (myPE.EQ.PE_IO) WRITE(*,5200) TIME, DT, NIT, errorpercent(0)   !//
+            IF (myPE.EQ.PE_IO) WRITE(*,5200) TIME, DT, NIT, errorpercent(0)
          ENDIF 
 
-! JFD: MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+! JFD: modification for cartesian grid implementation
          IF(WRITE_DASHBOARD) THEN
             RUN_STATUS = 'Diverged/stalled...'
             N_DASHBOARD = N_DASHBOARD + 1 
@@ -550,17 +523,21 @@
          ENDIF
 
          IER = 1 
-         RETURN  
+         RETURN  ! for if mustit =2 (diverged)
       ENDIF 
+! end diverged: go back to time_march, decrease time step, try again      
+! ----------------------------------------------------------------<<<
 
-
+! not converged (mustit = 1, !=0,2 )
+! ----------------------------------------------------------------<<<      
       IF (NIT < MAX_NIT) THEN 
          MUSTIT = 0 
          GOTO 50 
-      ENDIF 
+      ENDIF ! continue iterate
+! ----------------------------------------------------------------<<<
 
-!------------------------------------------------------------------------------
-! End iterations
+
+
 
       CALL GET_SMASS (SMASS) 
       IF (myPE.eq.PE_IO) WRITE(UNIT_OUT, 5100) TIME, DT, NIT, SMASS
@@ -568,11 +545,11 @@
       IF(DMP_LOG) WRITE(UNIT_LOG, 5100) TIME, DT, NIT, SMASS
       CALL END_LOG 
 
-! modified sof (06-23/2005) Mfix will not go the next time step if MAX_NIT is reached,
+! SOF: MFIX will not go the next time step if MAX_NIT is reached, 
 ! instead it will decrease the time step. (IER changed from 0 to 1)
-
       IER = 1
       RETURN  
+
 
  5000 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,' Sm=',G10.5,' Hl=',G12.5,&
          T84,'CPU=',F8.0,' s') 
@@ -595,17 +572,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE GET_TUNIT(TLEFT, TUNIT) 
 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
       IMPLICIT NONE
 !-----------------------------------------------
-! Variables
+! Dummy arguments
 !-----------------------------------------------
-      DOUBLE PRECISION TLEFT 
+      DOUBLE PRECISION, INTENT(INOUT) :: TLEFT 
       CHARACTER TUNIT*4 
 !-----------------------------------------------
 
@@ -625,16 +599,16 @@
 
 
 
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!  Purpose:  In the following module the mass flux across a periodic 
-!            domain with pressure drop is held constant at a 
+!  Purpose:  In the following subroutine the mass flux across a periodic
+!            domain with pressure drop is held constant at a
 !            user-specified value.  This module is activated only if 
 !            the user specifies a value for the keyword flux_g in the 
 !            mfix.dat file.
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       subroutine GoalSeekMassFlux(NIT, MUSTIT, doit)
+
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
@@ -645,32 +619,30 @@
       USE run
       USE time_cpu 
       IMPLICIT NONE
-
 !-----------------------------------------------
-! Variables      
+! Dummy arguments
+!-----------------------------------------------
+      INTEGER, INTENT(INOUT) :: NIT, MUSTIT
+      LOGICAL, INTENT(IN) :: doit      
+!-----------------------------------------------
+! Local Variables      
 !-----------------------------------------------
       INTEGER, PARAMETER :: MAXOUTIT = 500
       DOUBLE PRECISION, PARAMETER          :: omega = 0.9
       DOUBLE PRECISION, PARAMETER          :: TOL = 1E-03
-     
-      INTEGER :: NIT, MUSTIT
       INTEGER, SAVE :: OUTIT
-      
-      LOGICAL :: doit
       LOGICAL, SAVE :: firstPass = .true.
       
       DOUBLE PRECISION, SAVE  :: mdot_n, mdot_nm1, delp_n, delp_nm1, err
       DOUBLE PRECISION        :: mdot_0, delp_xyz 
-      
+     
       CHARACTER, SAVE :: Direction
-
 !-----------------------------------------------
 ! Functions      
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: VAVG_Flux_U_G, VAVG_Flux_V_G, &
                                      VAVG_Flux_W_G
       LOGICAL, EXTERNAL :: IsNan
-
 !-----------------------------------------------     
 
       IF(CYCLIC_X_MF)THEN
