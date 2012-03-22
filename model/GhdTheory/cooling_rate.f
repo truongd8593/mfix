@@ -31,7 +31,7 @@
 ! Initial guess for theta
 
       DO L = 1, s
-          xvec(L) = mi(L)*T / (m*Ti(L))
+          xvec(L) = mi(L) / m
       ENDDO
       
       CALL MNEWT(ntrial, xvec, s, tolx, tolf, &
