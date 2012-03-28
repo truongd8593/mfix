@@ -1135,11 +1135,11 @@
 
 
  900 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
-         ') not specified',/1X'One of the following must be specified:',/1X,&
+         ') not specified',/1X,'One of the following must be specified:',/1X,&
          'BC_VOLFLOW_g, BC_MASSFLOW_g or BC_VELMAG_g',/1X,70('*')/) 
 
  910 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I1,&
-         ') not specified',/1X'One of the following must be specified:',/1X,&
+         ') not specified',/1X,'One of the following must be specified:',/1X,&
          'BC_VOLFLOW_g, BC_MASSFLOW_g or BC_VELMAG_g',/1X,70('*')/)
 
  1000 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
