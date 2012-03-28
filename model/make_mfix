@@ -1200,6 +1200,7 @@ ln -sf "$mpi_include/mpif.h" .
             compile_d=" -g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk $compile_common"            link_d=" "
             compile=" -O -Mdalign $compile_common"
             compile2="-O1 -Mdalign $compile_common"
+            compile3="-O1 -Mdalign -c -I. -Mnosave -Mfixed -Mrecursive -Mreentrant -byteswapio "
             link="  "
             MODULE_CODE=1
                                                                                 
