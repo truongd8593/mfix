@@ -104,7 +104,12 @@
          CALL MPPIC_CHECK_IF_INSIDE_DOMAIN(NP)
 
          IF(.NOT.INSIDE_DOMAIN)THEN 
-            WRITE(1000,'(i10,6(2x,L1),9(2x,i10),6(2x, g17.8))') NP, CUT_CELL_AT(PIJK_OLD(4)), CUT_CELL_AT(PIJK_INT(4)), CUT_CELL_AT(PIJK(NP,4)), FLUID_AT(PIJK_OLD(4)), FLUID_AT(PIJK_INT(4)), FLUID_AT(PIJK(NP,4)), PIJK_OLD(1:4), PIJK_INT(4), PIJK(NP,1:4), (POS_INIT(IDIM), IDIM = 1, DIMN) , (DES_POS_NEW(NP,IDIM), IDIM = 1, DIMN)
+            WRITE(1000,'(i10,6(2x,L1),9(2x,i10),6(2x, g17.8))') NP, &
+            CUT_CELL_AT(PIJK_OLD(4)), CUT_CELL_AT(PIJK_INT(4)),     &
+            CUT_CELL_AT(PIJK(NP,4)), FLUID_AT(PIJK_OLD(4)),         &
+            FLUID_AT(PIJK_INT(4)), FLUID_AT(PIJK(NP,4)), PIJK_OLD(1:4),&
+            PIJK_INT(4), PIJK(NP,1:4), (POS_INIT(IDIM), IDIM = 1, DIMN) ,&
+            (DES_POS_NEW(NP,IDIM), IDIM = 1, DIMN)
             !IF(NP.Eq.2614) 
             write(1000,'(A, i10,2x,i3, 2(2x, L1))') 'IJK_CELL, REF COUNT, REF FROM ORIG?   =', IJK_CELL, REFLECT_COUNT, tmp_logical 
             
