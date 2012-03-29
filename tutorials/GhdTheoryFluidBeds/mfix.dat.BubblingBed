@@ -65,8 +65,8 @@
 
   MMAX = 2 !the code will internally modify mmax to 3 to solve for mixture.
   RO_s         = 2*2.5d0
-  D_p0(1)         = 0.065d0
-  D_p0(2)         = 0.017d0
+  D_p0(1)         = 0.05d0  ! note that large particle diameter ratios may not converge well.
+  D_p0(2)         = 0.025d0 ! also some convergence issues were reported with low C_e.
 !
  
   CLOSE_PACKED = 2*.TRUE.
