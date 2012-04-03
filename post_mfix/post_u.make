@@ -1943,6 +1943,7 @@ cut_cell_preprocessing.$(OBJ_EXT) : ../model/cartesian_grid/cut_cell_preprocessi
             CDIST.mod \
             FLDVAR.mod \
             POLYGON.mod \
+            STL.mod \
             STL.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/cut_cell_preprocessing.f 
 eval_usr_fct.$(OBJ_EXT) : ../model/cartesian_grid/eval_usr_fct.f \
