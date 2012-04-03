@@ -689,6 +689,14 @@
       J = J_OF(IJK) 
       K = K_OF(IJK) 
 
+      IF(I<IMIN1) RETURN
+      IF(I>IMAX1) RETURN
+      IF(J<JMIN1) RETURN
+      IF(J>JMAX1) RETURN
+      IF(K<KMIN1) RETURN
+      IF(K>KMAX1) RETURN
+
+
       IM = I - 1 
       JM = J - 1 
       KM = K - 1
@@ -895,7 +903,7 @@
             ENDIF
 
             IF(USE_STL.OR.USE_MSH) THEN
-               CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,4,F7,CLIP_FLAG,BCID)
+               CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,4,F4,CLIP_FLAG,BCID)
                CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,8,F8,CLIP_FLAG,BCID)
                IF(F4*F8>TOL_STL**2) INTERSECT_Z(IJK)  = .FALSE.
             ENDIF
@@ -903,6 +911,7 @@
          ENDIF
 
       ENDIF
+
 
       RETURN
       
@@ -1020,6 +1029,10 @@
 
       DOUBLE PRECISION, DIMENSION(3) :: N4,N6,N7,N8
       DOUBLE PRECISION :: CURRENT_F,dotproduct
+
+      INTEGER :: IJK2,CURRENT_I,CURRENT_J,CURRENT_K
+
+!      CHARACTER (LEN=3) :: CAD_PROPAGATE_ORDER
 
       include "function.inc"
 
@@ -1530,72 +1543,318 @@
       DO IJK = IJKSTART3, IJKEND3
          IF(DABS(F_AT(IJK))<TOL_STL) THEN
             F_AT(IJK)=ZERO
-
          ENDIF
       END DO
 
 ! Propagates node values to all interior cells
+! in order defined by CAD_PROPAGATE_ORDER (outer loop)
 
 
-      DO I=ISTART3,IEND3
-         DO K=KSTART3,KEND3
-            DO J=JSTART3,JEND3
-               IJK=FUNIJK(I,J,K)
-               IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
-                  CURRENT_F = F_AT(IJK)
-                  EXIT                
-               ENDIF         
-            ENDDO
-            DO J=JSTART3,JEND3
-               IJK=FUNIJK(I,J,K)
-               IF(F_AT(IJK)==UNDEFINED) THEN
-                  F_AT(IJK)=CURRENT_F
-               ELSEIF(F_AT(IJK)/=ZERO) THEN
-                  CURRENT_F = F_AT(IJK)
+
+      DO IJK = IJKSTART3, IJKEND3,-1   ! <-----------------------------   Disabled 
+
+         IF(F_AT(IJK)<ZERO) THEN
+
+            CURRENT_I = I_OF(IJK)
+            CURRENT_J = J_OF(IJK)
+            CURRENT_K = K_OF(IJK)
+
+            DO I=CURRENT_I-1,ISTART3,-1
+               IJK2 = FUNIJK(I,CURRENT_J,CURRENT_K)
+               IF(F_AT(IJK2)==UNDEFINED) THEN
+                  F_AT(IJK2)=-ONE
+               ELSE
+                  EXIT
                ENDIF
             ENDDO
-         ENDDO
-      ENDDO
 
-      DO J=JSTART3,JEND3
+            DO I=CURRENT_I+1,IEND3
+               IJK2 = FUNIJK(I,CURRENT_J,CURRENT_K)
+               IF(F_AT(IJK2)==UNDEFINED) THEN
+                  F_AT(IJK2)=-ONE
+               ELSE
+                  EXIT
+               ENDIF
+            ENDDO
+
+            DO J=CURRENT_J-1,JSTART3,-1
+               IJK2 = FUNIJK(CURRENT_I,J,CURRENT_K)
+               IF(F_AT(IJK2)==UNDEFINED) THEN
+                  F_AT(IJK2)=-ONE
+               ELSE
+                  EXIT
+               ENDIF
+            ENDDO
+
+            DO J=CURRENT_J+1,JEND3
+               IJK2 = FUNIJK(CURRENT_I,J,CURRENT_K)
+               IF(F_AT(IJK2)==UNDEFINED) THEN
+                  F_AT(IJK2)=-ONE
+               ELSE
+                  EXIT
+               ENDIF
+            ENDDO
+
+            DO K=CURRENT_K-1,KSTART3,-1
+               IJK2 = FUNIJK(CURRENT_I,CURRENT_J,K)
+               IF(F_AT(IJK2)==UNDEFINED) THEN
+                  F_AT(IJK2)=-ONE
+               ELSE
+                  EXIT
+               ENDIF
+            ENDDO
+
+            DO K=CURRENT_K+1,KEND3
+               IJK2 = FUNIJK(CURRENT_I,CURRENT_J,K)
+               IF(F_AT(IJK2)==UNDEFINED) THEN
+                  F_AT(IJK2)=-ONE
+               ELSE
+                  EXIT
+               ENDIF
+            ENDDO
+
+
+         ENDIF
+
+
+
+
+      END DO
+
+
+
+
+
+
+
+
+
+
+!  CAD_PROPAGATE_ORDER = 'KKK' !'KIJ'
+
+
+
+      SELECT CASE (CAD_PROPAGATE_ORDER)  
+
+      CASE ('IJK')  
+
          DO I=ISTART3,IEND3
             DO K=KSTART3,KEND3
-               IJK=FUNIJK(I,J,K)
-               IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
-                  CURRENT_F = F_AT(IJK)
-                  EXIT                
-               ENDIF         
-            ENDDO
-            DO K=KSTART3,KEND3
-               IJK=FUNIJK(I,J,K)
-               IF(F_AT(IJK)==UNDEFINED) THEN
-                  F_AT(IJK)=CURRENT_F
-               ELSEIF(F_AT(IJK)/=ZERO) THEN
-                  CURRENT_F = F_AT(IJK)
-               ENDIF
+               DO J=JSTART3,JEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                     EXIT                
+                  ENDIF         
+               ENDDO
+               DO J=JSTART3,JEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)==UNDEFINED) THEN
+                     F_AT(IJK)=CURRENT_F
+                  ELSEIF(F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                  ENDIF
+               ENDDO
             ENDDO
          ENDDO
-      ENDDO
 
-      DO K=KSTART3,KEND3
+         call send_recv(F_AT,2)
+
          DO J=JSTART3,JEND3
             DO I=ISTART3,IEND3
-               IJK=FUNIJK(I,J,K)
-               IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
-                  CURRENT_F = F_AT(IJK)
-                  EXIT                
-               ENDIF         
-            ENDDO
-            DO I=ISTART3,IEND3
-               IJK=FUNIJK(I,J,K)
-               IF(F_AT(IJK)==UNDEFINED) THEN
-                  F_AT(IJK)=CURRENT_F
-               ELSEIF(F_AT(IJK)/=ZERO) THEN
-                  CURRENT_F = F_AT(IJK)
-               ENDIF
+               DO K=KSTART3,KEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                     EXIT                
+                  ENDIF         
+               ENDDO
+               DO K=KSTART3,KEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)==UNDEFINED) THEN
+                     F_AT(IJK)=CURRENT_F
+                  ELSEIF(F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                  ENDIF
+               ENDDO
             ENDDO
          ENDDO
-      ENDDO
+
+         call send_recv(F_AT,2)
+
+         DO K=KSTART3,KEND3
+               DO J=JSTART3,JEND3
+                  DO I=ISTART3,IEND3
+                     IJK=FUNIJK(I,J,K)
+                     IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                        CURRENT_F = F_AT(IJK)
+                        EXIT                
+                     ENDIF         
+                  ENDDO
+                  DO I=ISTART3,IEND3
+                     IJK=FUNIJK(I,J,K)
+                     IF(F_AT(IJK)==UNDEFINED) THEN
+                        F_AT(IJK)=CURRENT_F
+                     ELSEIF(F_AT(IJK)/=ZERO) THEN
+                        CURRENT_F = F_AT(IJK)
+                     ENDIF
+                  ENDDO
+               ENDDO
+            ENDDO
+
+         call send_recv(F_AT,2)
+
+      CASE ('JKI')  
+
+         DO J=JSTART3,JEND3
+            DO I=ISTART3,IEND3
+               DO K=KSTART3,KEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                     EXIT                
+                  ENDIF         
+               ENDDO
+               DO K=KSTART3,KEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)==UNDEFINED) THEN
+                     F_AT(IJK)=CURRENT_F
+                  ELSEIF(F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDDO
+
+         call send_recv(F_AT,2)
+
+         DO K=KSTART3,KEND3
+            DO J=JSTART3,JEND3
+               DO I=ISTART3,IEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                     EXIT                
+                  ENDIF         
+               ENDDO
+               DO I=ISTART3,IEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)==UNDEFINED) THEN
+                     F_AT(IJK)=CURRENT_F
+                  ELSEIF(F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDDO
+
+         call send_recv(F_AT,2)
+
+         DO I=ISTART3,IEND3
+            DO K=KSTART3,KEND3
+               DO J=JSTART3,JEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                     EXIT                
+                  ENDIF         
+               ENDDO
+               DO J=JSTART3,JEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)==UNDEFINED) THEN
+                     F_AT(IJK)=CURRENT_F
+                  ELSEIF(F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDDO
+
+         call send_recv(F_AT,2)
+
+      CASE ('KIJ')  
+
+         DO K=KSTART3,KEND3
+            DO J=JSTART3,JEND3
+               DO I=ISTART3,IEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                     EXIT                
+                  ENDIF         
+               ENDDO
+               DO I=ISTART3,IEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)==UNDEFINED) THEN
+                     F_AT(IJK)=CURRENT_F
+                  ELSEIF(F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDDO
+
+         call send_recv(F_AT,2)
+
+         DO I=ISTART3,IEND3
+            DO K=KSTART3,KEND3
+               DO J=JSTART3,JEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                     EXIT                
+                  ENDIF         
+               ENDDO
+               DO J=JSTART3,JEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)==UNDEFINED) THEN
+                     F_AT(IJK)=CURRENT_F
+                  ELSEIF(F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDDO
+
+         call send_recv(F_AT,2)
+
+         DO J=JSTART3,JEND3
+            DO I=ISTART3,IEND3
+               DO K=KSTART3,KEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                     EXIT                
+                  ENDIF         
+               ENDDO
+               DO K=KSTART3,KEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)==UNDEFINED) THEN
+                     F_AT(IJK)=CURRENT_F
+                  ELSEIF(F_AT(IJK)/=ZERO) THEN
+                     CURRENT_F = F_AT(IJK)
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDDO
+
+         call send_recv(F_AT,2)
+
+         CASE DEFAULT
+            IF(myPE == PE_IO) THEN
+               WRITE(*,*)'CAD_INTERSECT.'
+               WRITE(*,*)'UNKNOWN CAD_PROPAGATE_ORDER:',CAD_PROPAGATE_ORDER
+               WRITE(*,*)'ACCEPTABLE VALUES:'
+               WRITE(*,*)'IJK'
+               WRITE(*,*)'JKI'
+               WRITE(*,*)'KIJ'
+            ENDIF
+!            CALL MFIX_EXIT(myPE)
+
+      END SELECT 
+
+
+!      call send_recv(F_AT,2)
 
 
       RETURN
