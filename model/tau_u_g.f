@@ -259,7 +259,7 @@
                         ENDIF
                      CASE ('NONE')
                         TAU_U_G(IJK) = ZERO 
-                        RETURN 
+                        CYCLE 
                   END SELECT 
 
                   IF(CUT_TAU_UG) THEN
@@ -455,6 +455,9 @@
             TAU_U_G(IJK) = ZERO 
          ENDIF 
       END DO 
+
+      call send_recv(tau_u_g,2)
+
       RETURN  
 
       END SUBROUTINE CALC_TAU_U_G 

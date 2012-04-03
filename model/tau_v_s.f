@@ -264,7 +264,7 @@
                           ENDIF
                        CASE ('NONE')
                           TAU_V_S(IJK,M) = ZERO 
-                          RETURN    
+                          CYCLE    
                     END SELECT 
 
                     IF(CUT_TAU_VS) THEN

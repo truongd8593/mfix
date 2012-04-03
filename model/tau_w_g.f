@@ -257,7 +257,7 @@
                         ENDIF
                      CASE ('NONE')
                         TAU_W_G(IJK) = ZERO 
-                        RETURN 
+                        CYCLE  
                   END SELECT 
 
                   IF(CUT_TAU_WG) THEN

@@ -288,7 +288,7 @@
 
                        CASE ('NONE')
                           TAU_U_S(IJK,M) = ZERO 
-                          RETURN  
+                          CYCLE   
                     END SELECT 
 
                     IF(CUT_TAU_US) THEN

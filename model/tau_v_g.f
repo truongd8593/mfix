@@ -249,7 +249,7 @@
                         ENDIF
                      CASE ('NONE')
                         TAU_V_G(IJK) = ZERO 
-                        RETURN  
+                        CYCLE  
                   END SELECT 
 
 
