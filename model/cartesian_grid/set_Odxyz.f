@@ -244,7 +244,7 @@
                IJK1 = IJK
             ENDIF
 
-            IF(Z_V(IJKP)/=Z_V(IJK)) THEN
+            IF(Z_V(IJK2)/=Z_V(IJK1)) THEN
                ONEoDZ_T_V(IJK) = ONE / (Z_V(IJK2)-Z_V(IJK1))
             ELSE
                ONEoDZ_T_V(IJK) = ZERO
