@@ -43,6 +43,7 @@
       LOGICAL, allocatable :: GLOBAL_STANDARD_CELL_AT(:)  
       LOGICAL, allocatable :: GLOBAL_CUT_CELL_AT(:)   
       LOGICAL, allocatable :: GLOBAL_SNAP(:)   
+      DOUBLE PRECISION, allocatable :: GLOBAL_F_AT(:)   
 
       double precision, allocatable :: GLOBAL_X_NEW_POINT(:)
       double precision, allocatable :: GLOBAL_Y_NEW_POINT(:) 
@@ -58,5 +59,7 @@
       LOGICAL :: WRITE_ANI_CUTCELL
 
       LOGICAL :: PVD_FILE_INITIALIZED=.FALSE.
+
+      INTEGER :: VTU_offset
 
       END MODULE vtk
