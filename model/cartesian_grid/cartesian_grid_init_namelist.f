@@ -132,6 +132,8 @@
       TZ_MSH = ZERO
       SCALE_MSH = ONE
 
+      CAD_PROPAGATE_ORDER = 'IJK'
+
       RAY_DIR = 'X-'
 
       SET_CORNER_CELLS = .FALSE.
