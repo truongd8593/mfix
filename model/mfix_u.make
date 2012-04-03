@@ -4567,6 +4567,7 @@ utilities.$(OBJ_EXT) : utilities.f \
             COMPAR.mod \
             TOLERANC.mod \
             MPI_UTILITY.mod \
+            CUTCELL.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -5175,6 +5176,7 @@ cut_cell_preprocessing.$(OBJ_EXT) : ./cartesian_grid/cut_cell_preprocessing.f \
             CDIST.mod \
             FLDVAR.mod \
             POLYGON.mod \
+            STL.mod \
             STL.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/cut_cell_preprocessing.f 
 deallocate_cut_cell_arrays.$(OBJ_EXT) : ./cartesian_grid/deallocate_cut_cell_arrays.f \
@@ -5663,8 +5665,8 @@ cfslide.$(OBJ_EXT) : ./des/cfslide.f \
             DISCRETELEMENT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfslide.f 
 cfslidewall.$(OBJ_EXT) : ./des/cfslidewall.f \
-            DISCRETELEMENT.mod \
-            PARAM1.mod 
+            PARAM1.mod \
+            DISCRETELEMENT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfslidewall.f 
 cfupdateold.$(OBJ_EXT) : ./des/cfupdateold.f \
             DISCRETELEMENT.mod \
