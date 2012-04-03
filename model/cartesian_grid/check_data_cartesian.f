@@ -95,10 +95,10 @@
             IF(MyPE == PE_IO) WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
             CALL MFIX_EXIT(MYPE) 
          ENDIF
-         IF(STL_BC_ID == UNDEFINED_I) THEN
-            IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: STL_BC_ID NOT DEFINED.'
-            CALL MFIX_EXIT(MYPE) 
-         ENDIF
+!         IF(STL_BC_ID == UNDEFINED_I) THEN
+!            IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: STL_BC_ID NOT DEFINED.'
+!            CALL MFIX_EXIT(MYPE) 
+!         ENDIF
       ENDIF
 
       IF(USE_MSH.AND.(.NOT.USE_STL)) THEN
