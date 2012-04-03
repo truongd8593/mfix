@@ -273,7 +273,8 @@
                IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
                BC_ID(IJK) = 0
 
-               IF(F_NODE(0) < TOL_F) THEN
+!               IF(F_NODE(0) < TOL_F) THEN
+               IF(F_NODE(0) < ZERO) THEN
                   IF((FLAG(IJK)>=100).AND.(FLAG(IJK)<=102)) THEN
                      BLOCKED_CELL_AT(IJK) = .TRUE.
                      STANDARD_CELL_AT(IJK) = .FALSE.          ! Blocked cell = wall cell
@@ -310,12 +311,31 @@
 
 
             ELSE IF(TOTAL_NUMBER_OF_INTERSECTIONS > MAX_INTERSECTIONS ) THEN
-               WRITE(*,*) 'TOO MANY INTERSECTIONS FOUND IN CELL IJK = ',IJK
-               WRITE(*,*) 'MAXIMUM NUMBER OF INTERSECTIONS = ',MAX_INTERSECTIONS
-               WRITE(*,*) 'TOTAL NUMBER OF INTERSECTIONS = ',TOTAL_NUMBER_OF_INTERSECTIONS
-               WRITE(*,*) 'MFIX WILL EXIT NOW.'
-               CALL MFIX_EXIT(MYPE) 
 
+               IF(PRINT_WARNINGS) THEN
+
+                  WRITE(*,*) 'TOO MANY INTERSECTIONS FOUND IN CELL IJK = ',IJK
+                  WRITE(*,*) 'MAXIMUM NUMBER OF INTERSECTIONS = ',MAX_INTERSECTIONS
+                  WRITE(*,*) 'TOTAL NUMBER OF INTERSECTIONS = ',TOTAL_NUMBER_OF_INTERSECTIONS
+                  WRITE(*,*) 'REMOVING SCALAR CELL FROM COMPUTATION.'
+!                  WRITE(*,*) 'MFIX WILL EXIT NOW.'
+!                  CALL MFIX_EXIT(MYPE) 
+
+               ENDIF
+
+               FLAG(IJK) = 100
+               BLOCKED_CELL_AT(IJK) = .TRUE.               ! Blocked fluid cell
+               STANDARD_CELL_AT(IJK) = .FALSE.
+               CUT_CELL_AT(IJK) = .FALSE.
+               AXY(IJK) = ZERO
+               AXZ(IJK) = ZERO
+               AYZ(IJK) = ZERO
+               VOL(IJK) = ZERO
+
+               AXY(BOTTOM_OF(IJK)) = ZERO
+               AXZ(SOUTH_OF(IJK)) = ZERO
+               AYZ(WEST_OF(IJK)) = ZERO
+ 
             ELSE                                         ! Cut cell
 
 
@@ -379,7 +399,7 @@
 !  node, that will be used to compute solids volume fraction for MPPIC
 !======================================================================
 
-      print*,'Removing duplicate nodes...'
+!      print*,'Removing duplicate nodes...'
 
       DO IJK = IJKSTART3, IJKEND3
          IF(CUT_CELL_AT(IJK)) THEN          ! for each cut cell, identify neibhor cells that are also cut cells
@@ -588,12 +608,16 @@
 
       ENDDO
 
-      print*,'==========================================================='
-      print*,'Total volume around nodes=',TOT_VOL_NODE
-      print*,'Total volume =',TOT_VOL_CELLS
-      print*,'The two volumes above should be the same.'
-      print*,'==========================================================='
-      
+      IF(TOT_VOL_CELLS>ZERO) THEN
+         IF(DABS(ONE-DABS(TOT_VOL_NODE/TOT_VOL_CELLS))>1.0D-6) THEN
+            WRITE(*,*),'==========================================================='
+            WRITE(*,*),'Total volume around nodes=',TOT_VOL_NODE
+            WRITE(*,*),'Total volume =',TOT_VOL_CELLS
+            WRITE(*,*),'The two volumes above should be the same.'
+            WRITE(*,*),'==========================================================='
+            CALL MFIX_EXIT(MYPE) 
+         ENDIF
+      ENDIF
       
       RETURN
       END SUBROUTINE SET_3D_CUT_CELL_FLAGS
@@ -788,11 +812,25 @@
                ENDIF
 
 
-            ELSE IF(TOTAL_NUMBER_OF_INTERSECTIONS > MAX_INTERSECTIONS ) THEN
-               WRITE(*,*) 'TOO MANY INTERSECTIONS FOUND IN U-CELL IJK = ',IJK
-               WRITE(*,*) 'TOTAL NUMBER OF INTERSECTIONS = ',TOTAL_NUMBER_OF_INTERSECTIONS
-               WRITE(*,*) 'MFIX WILL EXIT NOW.'
-               CALL MFIX_EXIT(MYPE) 
+            ELSE IF(TOTAL_NUMBER_OF_INTERSECTIONS > MAX_INTERSECTIONS) THEN
+
+               IF(PRINT_WARNINGS) THEN
+                  WRITE(*,*) 'TOO MANY INTERSECTIONS FOUND IN U-CELL IJK = ',IJK
+                  WRITE(*,*) 'MAXIMUM NUMBER OF INTERSECTIONS = ',MAX_INTERSECTIONS
+                  WRITE(*,*) 'TOTAL NUMBER OF INTERSECTIONS = ',TOTAL_NUMBER_OF_INTERSECTIONS
+                  WRITE(*,*) 'REMOVING U-CELL FROM COMPUTATION.'
+!                  WRITE(*,*) 'MFIX WILL EXIT NOW.'
+!                  CALL MFIX_EXIT(MYPE) 
+
+               ENDIF
+
+               BLOCKED_U_CELL_AT(IJK) = .TRUE.           ! Blocked fluid cell
+               STANDARD_U_CELL_AT(IJK) = .FALSE.
+               CUT_U_CELL_AT(IJK) = .FALSE.
+               AXY_U(IJK) = ZERO
+               AXZ_U(IJK) = ZERO
+               AYZ_U(IJK) = ZERO
+               VOL_U(IJK) = ZERO
 
             ELSE                                         ! Cut cell
 
@@ -1031,9 +1069,24 @@
 
 
             ELSE IF(TOTAL_NUMBER_OF_INTERSECTIONS > MAX_INTERSECTIONS ) THEN
-               WRITE(*,*) 'TOO MANY INTERSECTIONS FOUND IN V-CELL IJK = ',IJK
-               WRITE(*,*) 'MFIX WILL EXIT NOW.'
-               CALL MFIX_EXIT(MYPE) 
+
+               IF(PRINT_WARNINGS) THEN
+                  WRITE(*,*) 'TOO MANY INTERSECTIONS FOUND IN V-CELL IJK = ',IJK
+                  WRITE(*,*) 'MAXIMUM NUMBER OF INTERSECTIONS = ',MAX_INTERSECTIONS
+                  WRITE(*,*) 'TOTAL NUMBER OF INTERSECTIONS = ',TOTAL_NUMBER_OF_INTERSECTIONS
+                  WRITE(*,*) 'REMOVING V-CELL FROM COMPUTATION.'
+!                  WRITE(*,*) 'MFIX WILL EXIT NOW.'
+!                  CALL MFIX_EXIT(MYPE) 
+
+               ENDIF
+
+               BLOCKED_V_CELL_AT(IJK) = .TRUE.           ! Blocked fluid cell
+               STANDARD_V_CELL_AT(IJK) = .FALSE.
+               CUT_V_CELL_AT(IJK) = .FALSE.
+               AXY_V(IJK) = ZERO
+               AXZ_V(IJK) = ZERO
+               AYZ_V(IJK) = ZERO
+               VOL_V(IJK) = ZERO
 
             ELSE                                         ! Cut cell
 
@@ -1246,9 +1299,24 @@
                END DO
 
             ELSE IF(TOTAL_NUMBER_OF_INTERSECTIONS > 6 ) THEN
-               WRITE(*,*) 'TOO MANY INTERSECTIONS FOUND IN W-CELL IJK = ',IJK
-               WRITE(*,*) 'MFIX WILL EXIT NOW.'
-               CALL MFIX_EXIT(MYPE) 
+
+               IF(PRINT_WARNINGS) THEN
+                  WRITE(*,*) 'TOO MANY INTERSECTIONS FOUND IN W-CELL IJK = ',IJK
+                  WRITE(*,*) 'MAXIMUM NUMBER OF INTERSECTIONS = ',6
+                  WRITE(*,*) 'TOTAL NUMBER OF INTERSECTIONS = ',TOTAL_NUMBER_OF_INTERSECTIONS
+                  WRITE(*,*) 'REMOVING W-CELL FROM COMPUTATION.'
+!                  WRITE(*,*) 'MFIX WILL EXIT NOW.'
+!                  CALL MFIX_EXIT(MYPE)
+
+               ENDIF
+
+               BLOCKED_W_CELL_AT(IJK) = .TRUE.           ! Blocked fluid cell
+               STANDARD_W_CELL_AT(IJK) = .FALSE.
+               CUT_W_CELL_AT(IJK) = .FALSE.
+               AXY_W(IJK) = ZERO
+               AXZ_W(IJK) = ZERO
+               AYZ_W(IJK) = ZERO
+               VOL_W(IJK) = ZERO
 
             ELSE                                         ! Cut cell
 
@@ -1779,6 +1847,17 @@
          ENDIF   
 
       ENDIF
+
+
+      DO IJK = IJKSTART3, IJKEND3
+
+         IF(BLOCKED_U_CELL_AT(IJK)) FLAG_E(IJK)=100
+         IF(BLOCKED_V_CELL_AT(IJK)) FLAG_N(IJK)=100
+         IF(BLOCKED_W_CELL_AT(IJK)) FLAG_T(IJK)=100
+
+ 
+      ENDDO
+
 
       RETURN
 
