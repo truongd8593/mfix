@@ -441,7 +441,19 @@
       ENDIF
 
 ! Open File
-      OPEN(UNIT = VTU_UNIT, FILE = TRIM(VTU_FILENAME),FORM='BINARY',IOSTAT=ISTAT)
+!      OPEN(UNIT = VTU_UNIT, FILE = TRIM(VTU_FILENAME),FORM='BINARY',IOSTAT=ISTAT)
+
+
+      OPEN(UNIT     = VTU_UNIT,           &
+           FILE     = TRIM(VTU_FILENAME), &
+           FORM     = 'UNFORMATTED',      &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
+                                             ! use 'BINARY' if 'UNFORMATTED' is not supported 
+           ACCESS   = 'STREAM',           &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
+                                             ! use 'SEQUENTIAL' if 'STREAM' is not supported 
+           ACTION   = 'WRITE',            &
+           CONVERT  = 'BIG_ENDIAN',       &
+           IOSTAT=ISTAT)
+
 
       IF (ISTAT /= 0) THEN
          IF(DMP_LOG) WRITE(UNIT_LOG, 1001) VTU_FILENAME, VTU_UNIT,VTU_DIR
