@@ -106,7 +106,7 @@
 !     
       OPEN(UNIT=333, FILE='geometry.msh', STATUS='OLD', ERR=910) 
 
-      WRITE(*,2000)'MSH file opened. Starting reading data...'
+      IF(MyPE == PE_IO) WRITE(*,2000)'MSH file opened. Starting reading data...'
 
       OPEN(UNIT=444, FILE='checkgeometry.stl') 
       write(444,*)'solid vcg'      
@@ -191,8 +191,8 @@
             DO N = N1,N2
                READ(333,*)PPFACE
                IF(PPFACE<3.OR.PPFACE>4) THEN
-                  WRITE(*,*)PPFACE, 'POINTS PER FACE. EACH FACE MUST HAVE 3 OR 4 POINTS.'
-                  READ(*,*) 
+                  IF(MyPE == PE_IO) WRITE(*,*)PPFACE, 'POINTS PER FACE. EACH FACE MUST HAVE 3 OR 4 POINTS.'
+                  CALL MFIX_EXIT(MYPE)  
 
                ELSEIF(PPFACE==3) THEN
                   BACKSPACE(333)
@@ -283,7 +283,7 @@
 
                   NF = NF + 1
 
-                  NORM_FACE(NF,:) = NORMAL
+                  NORM_FACE(NF,:) = NORMAL*OUT_MSH_VALUE  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
 
                   VERTEX(NF,1,1) = SCALE_MSH*V1x + TX_MSH  
                   VERTEX(NF,1,2) = SCALE_MSH*V1y + TY_MSH  
@@ -330,7 +330,7 @@
 
                   NF = NF + 1
 
-                  NORM_FACE(NF,:) = NORMAL
+                  NORM_FACE(NF,:) = NORMAL*OUT_MSH_VALUE  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
 
                   VERTEX(NF,1,1) = SCALE_MSH*V1x + TX_MSH  
                   VERTEX(NF,1,2) = SCALE_MSH*V1y + TY_MSH  
@@ -385,10 +385,11 @@
 
       close(444)
 
-      WRITE(*,*) ' The file check_geometry.stl was sucessfully written.'
-      WRITE(*,*) ' This is the equivalent of geometry.msh in STL format,'
-      WRITE(*,*) ' and is provided for convenience (it is not used).'
-
+      IF(MyPE == PE_IO) THEN
+         WRITE(*,*) ' The file check_geometry.stl was sucessfully written.'
+         WRITE(*,*) ' This is the equivalent of geometry.msh in STL format,'
+         WRITE(*,*) ' and is provided for convenience (it is not used).'
+      ENDIF
 
 
 ! Reading Boundary condition labels
@@ -423,47 +424,48 @@
       ENDDO
 
 
+      IF(MyPE == PE_IO) THEN
 
-      WRITE(*,*)' Summary of data read from geometry.msh file:'
-      WRITE(*,*)'======================================================================'
-      WRITE(*,*)' DIMENSION   POINTS       FACES       ZONES'
-      WRITE(*,*)'======================================================================'
+         WRITE(*,*)' Summary of data read from geometry.msh file:'
+         WRITE(*,*)'======================================================================'
+         WRITE(*,*)' DIMENSION   POINTS       FACES       ZONES'
+         WRITE(*,*)'======================================================================'
 
-      WRITE(*,1020) GRID_DIMENSION,N_POINTS,N_FACES,N_FACE_ZONES
-      WRITE(*,*)''
-      WRITE(*,*)' BOUNDARY CONDITION DETECTED (INFO EXTRACTED FROM .MSH FILE):'
-      WRITE(*,*)'======================================================================'
-      WRITE(*,*)'  ZONE  BC_TYPE(MFIX)  FACES   BC_TYPE(GAMBIT)      BC LABEL'
-      WRITE(*,*)'======================================================================'
+         WRITE(*,1020) GRID_DIMENSION,N_POINTS,N_FACES,N_FACE_ZONES
+         WRITE(*,*)''
+         WRITE(*,*)' BOUNDARY CONDITION DETECTED (INFO EXTRACTED FROM .MSH FILE):'
+         WRITE(*,*)'======================================================================'
+         WRITE(*,*)'  ZONE  BC_TYPE(MFIX)  FACES   BC_TYPE(GAMBIT)      BC LABEL'
+         WRITE(*,*)'======================================================================'
 
-      N_FACES = 0
-      DO ZONE = 1,N_FACE_ZONES
-         IF(BC_ASSIGNED(ZONE)) THEN
-            ZID = FACE_ZONE_INFO(ZONE,1)
-            NFZ = FACE_ZONE_INFO(ZONE,3)-FACE_ZONE_INFO(ZONE,2) + 1
-            N_FACES = N_FACES + NFZ
-            L2=LEN(TRIM(BC_LABEL_TEXT(ZONE,2)))-4
-            WRITE(*,1000) ZID,BC_TYPE(ZID),NFZ,BC_LABEL_TEXT(ZONE,1),BC_LABEL_TEXT(ZONE,2)(1:L2)
-         ENDIF
-      ENDDO
+         N_FACES = 0
+         DO ZONE = 1,N_FACE_ZONES
+            IF(BC_ASSIGNED(ZONE)) THEN
+               ZID = FACE_ZONE_INFO(ZONE,1)
+               NFZ = FACE_ZONE_INFO(ZONE,3)-FACE_ZONE_INFO(ZONE,2) + 1
+               N_FACES = N_FACES + NFZ
+               L2=LEN(TRIM(BC_LABEL_TEXT(ZONE,2)))-4
+               WRITE(*,1000) ZID,BC_TYPE(ZID),NFZ,BC_LABEL_TEXT(ZONE,1),BC_LABEL_TEXT(ZONE,2)(1:L2)
+            ENDIF
+         ENDDO
 
-      WRITE(*,*)''
+         WRITE(*,*)''
 
-      DO ZONE = 1,N_FACE_ZONES
-         IF(.NOT.BC_ASSIGNED(ZONE)) THEN
-            ZID = FACE_ZONE_INFO(ZONE,1)
-            NFZ = FACE_ZONE_INFO(ZONE,3)-FACE_ZONE_INFO(ZONE,2) + 1
-            L2=LEN(TRIM(BC_LABEL_TEXT(ZONE,2)))-4
-            WRITE(*,1000) ZID,'NOT USED',NFZ,BC_LABEL_TEXT(ZONE,1),BC_LABEL_TEXT(ZONE,2)(1:L2)
-         ENDIF
-      ENDDO
+         DO ZONE = 1,N_FACE_ZONES
+            IF(.NOT.BC_ASSIGNED(ZONE)) THEN
+               ZID = FACE_ZONE_INFO(ZONE,1)
+               NFZ = FACE_ZONE_INFO(ZONE,3)-FACE_ZONE_INFO(ZONE,2) + 1
+               L2=LEN(TRIM(BC_LABEL_TEXT(ZONE,2)))-4
+               WRITE(*,1000) ZID,'NOT USED',NFZ,BC_LABEL_TEXT(ZONE,1),BC_LABEL_TEXT(ZONE,2)(1:L2)
+            ENDIF
+         ENDDO
 
-      WRITE(*,*)'======================================================================'
-      WRITE(*,*)' PLEASE VERIFY THAT BOUNDARY CONDITIONS ARE CORRECTLY ASSIGNED.'
-      WRITE(*,*)' MODIFY BC_TYPE IN mfix.dat IF NECESSARY.'
-      WRITE(*,*)''
+         WRITE(*,*)'======================================================================'
+         WRITE(*,*)' PLEASE VERIFY THAT BOUNDARY CONDITIONS ARE CORRECTLY ASSIGNED.'
+         WRITE(*,*)' MODIFY BC_TYPE IN mfix.dat IF NECESSARY.'
+         WRITE(*,*)''
 
-
+      ENDIF
 
 
       XMIN_MSH = MINVAL(VERTEX(1:N_FACES,:,1))
@@ -473,25 +475,25 @@
       ZMIN_MSH = MINVAL(VERTEX(1:N_FACES,:,3))
       ZMAX_MSH = MAXVAL(VERTEX(1:N_FACES,:,3))
 
+      IF(MyPE == PE_IO) THEN
+         WRITE(*,2000)'MSH file successfully read.'
+         WRITE(*,*)' Total number of faces used as boundary faces =',N_FACES
+         IF(N_QUAD2TRI>0) WRITE(*,*)' Number of quad faces split into triangles    =',N_QUAD2TRI
 
-      WRITE(*,2000)'MSH file successfully read.'
-      WRITE(*,*)' Total number of faces used as boundary faces =',N_FACES
-      IF(N_QUAD2TRI>0) WRITE(*,*)' Number of quad faces split into triangles    =',N_QUAD2TRI
 
-
-      WRITE(*,*)' RANGE OF MSH FILE:'
-      IF(SCALE_MSH/=ONE) THEN
-         WRITE(*,5000)' AFTER SCALING BY A FACTOR OF ',SCALE_MSH
+         WRITE(*,*)' RANGE OF MSH FILE:'
+         IF(SCALE_MSH/=ONE) THEN
+            WRITE(*,5000)' AFTER SCALING BY A FACTOR OF ',SCALE_MSH
+         ENDIF
+         ABSTRANS = dabs(TX_MSH)+dabs(TY_MSH)+dabs(TZ_MSH)
+         IF(ABSTRANS>TOL_MSH) THEN
+            WRITE(*,3000)' AFTER TRANSLATION OF (X,Y,Z)=',TX_MSH,TY_MSH,TZ_MSH
+         ENDIF
+         WRITE(*,4000)'X-RANGE = ', XMIN_MSH,XMAX_MSH
+         WRITE(*,4000)'Y-RANGE = ', YMIN_MSH,YMAX_MSH
+         WRITE(*,4000)'Z-RANGE = ', ZMIN_MSH,ZMAX_MSH
+         WRITE(*,4000)''
       ENDIF
-      ABSTRANS = dabs(TX_MSH)+dabs(TY_MSH)+dabs(TZ_MSH)
-      IF(ABSTRANS>TOL_MSH) THEN
-         WRITE(*,3000)' AFTER TRANSLATION OF (X,Y,Z)=',TX_MSH,TY_MSH,TZ_MSH
-      ENDIF
-      WRITE(*,4000)'X-RANGE = ', XMIN_MSH,XMAX_MSH
-      WRITE(*,4000)'Y-RANGE = ', YMIN_MSH,YMAX_MSH
-      WRITE(*,4000)'Z-RANGE = ', ZMIN_MSH,ZMAX_MSH
-      WRITE(*,4000)''
-
 
       XMIN_MSH = XMIN_MSH - 10.0*TOL_MSH
       XMAX_MSH = XMAX_MSH + 10.0*TOL_MSH
@@ -639,6 +641,7 @@
       USE vtk
       USE quadric
       USE constant
+      USE bc
       IMPLICIT NONE
 
       INTEGER :: POLY,V,N,NSKIP,IGNORED_FACETS
@@ -651,120 +654,197 @@
       DOUBLE PRECISION ::n1,n2,n3,NORM
       DOUBLE PRECISION ::ABSTRANS
       CHARACTER(LEN=32) ::TEST_CHAR,BUFF_CHAR
+      CHARACTER(LEN=32) ::geometryfile(DIMENSION_BC)
+
+      INTEGER :: BCV,NUMBER_OF_GEOMETRY_FILES
+      INTEGER :: BC_PATCH(DIMENSION_BC)
 
 
 
 
+      NUMBER_OF_GEOMETRY_FILES = 0
 
-      WRITE(*,2000) 'READING geometry from geometry.stl...'
+!     DETERMINE WHICH BOUNDARY CONDITIONS NEED STL FILE
+      DO BCV = 1, DIMENSION_BC 
 
-      INQUIRE(FILE='geometry.stl',EXIST=PRESENT)
-      IF(.NOT.PRESENT) THEN
+         IF(BC_TYPE(BCV)(1:2) == 'CG') THEN
+
+            NUMBER_OF_GEOMETRY_FILES = NUMBER_OF_GEOMETRY_FILES + 1
+
+            BC_PATCH(NUMBER_OF_GEOMETRY_FILES) = BCV
+            WRITE(geometryfile(NUMBER_OF_GEOMETRY_FILES),100) 'geometry_',BCV
+
+         ENDIF 
+      ENDDO 
+
+
+100  FORMAT(A,I4.4,".stl")
+
+
+! VERIFY THAT THERE IS AT LEAST ONE STL FILE TO READ
+
+      IF(NUMBER_OF_GEOMETRY_FILES==0) THEN
          IF(MyPE == PE_IO) THEN
-            WRITE(*,"('(PE ',I3,'): input data file, ',A11,' is missing: run aborted')") &
-            myPE,'geometry.stl'
+            WRITE(*,*) 'ERROR: NO CARTESIAN GRID BOUNDARY CONDITION SPECIFIED.'
+            WRITE(*,*) 'AT LEAST ONE BC_TYPE MUST START WITH CG (FOR EXAMPLE CG_NSW)'
+            WRITE(*,*) 'RUN ABORTED'
+            CALL MFIX_EXIT(MYPE) 
          ENDIF
-         CALL MFIX_EXIT(MYPE) 
+      ELSEIF(NUMBER_OF_GEOMETRY_FILES==1) THEN
+
+         INQUIRE(FILE='geometry.stl',EXIST=PRESENT)
+         IF(PRESENT) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*) 'The file geometry.stl exists.'
+            ENDIF
+
+            IF(STL_BC_ID==BC_PATCH(NUMBER_OF_GEOMETRY_FILES)) THEN
+               IF(MyPE == PE_IO) THEN
+                  WRITE(*,*) 'STL_BC_ID is compatible.'
+               ENDIF
+          
+               geometryfile(NUMBER_OF_GEOMETRY_FILES)='geometry.stl'
+            
+            ENDIF
+         ENDIF
+
       ENDIF
-!     
+
+
+! START READING EACH STAL FILE, ONE FOR EACH BC_TYPE
+
+      N_FACETS = 0
+      IGNORED_FACETS = 0
+
+
+      DO N = 1, NUMBER_OF_GEOMETRY_FILES
+
+         IF(MyPE == PE_IO) WRITE(*,2000) 'READING geometry from '//TRIM(geometryfile(N))//' ...'
+
+         INQUIRE(FILE=TRIM(geometryfile(N)),EXIST=PRESENT)
+         IF(.NOT.PRESENT) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,"('(PE ',I3,'): input data file, ',A11,' is missing: run aborted')") &
+               myPE,TRIM(geometryfile(N))
+            ENDIF
+            CALL MFIX_EXIT(MYPE) 
+         ENDIF
+
+
 !     
 !     OPEN geometry.stl ASCII FILE
 !     
-      OPEN(UNIT=333, FILE='geometry.stl', STATUS='OLD', ERR=910) 
+         OPEN(UNIT=333, FILE=TRIM(geometryfile(N)), STATUS='OLD', ERR=910) 
 
-      WRITE(*,2000)'STL file opened. Starting reading data...'
+!         WRITE(*,2000)'STL file opened. Starting reading data...'
 
-      KEEP_READING = .TRUE.
+         KEEP_READING = .TRUE.
       
-      N_FACETS = 0
-      IGNORED_FACETS = 0
-      
-      DO WHILE(KEEP_READING)
-      
-         READ(333,*,ERR=920,END=930) TEST_CHAR
+         DO WHILE(KEEP_READING)
+         
+            READ(333,*,ERR=920,END=930) TEST_CHAR
 
-         IF(TRIM(TEST_CHAR) == 'facet') THEN
- 
-            BACKSPACE(333)
-            IGNORE_CURRENT_FACET = .FALSE.
+            IF(TRIM(TEST_CHAR) == 'facet') THEN
+    
+               BACKSPACE(333)
+               IGNORE_CURRENT_FACET = .FALSE.
 
-            READ(333,*,ERR=920,END=930) BUFF_CHAR,BUFF_CHAR,N1,N2,N3  ! Read unit normal vector
-            READ(333,*,ERR=920,END=930) 
-            READ(333,*,ERR=920,END=930) BUFF_CHAR, V1x,V1y,V1z
-            READ(333,*,ERR=920,END=930) BUFF_CHAR, V2x,V2y,V2z
-            READ(333,*,ERR=920,END=930) BUFF_CHAR, V3x,V3y,V3z
+               READ(333,*,ERR=920,END=930) BUFF_CHAR,BUFF_CHAR,N1,N2,N3  ! Read unit normal vector
+               READ(333,*,ERR=920,END=930) 
+               READ(333,*,ERR=920,END=930) BUFF_CHAR, V1x,V1y,V1z
+               READ(333,*,ERR=920,END=930) BUFF_CHAR, V2x,V2y,V2z
+               READ(333,*,ERR=920,END=930) BUFF_CHAR, V3x,V3y,V3z
 
-            N1 = N1 * OUT_STL_VALUE  ! Reverse unit vector if needed (this will switch fluid and blocked cells)
-            N2 = N2 * OUT_STL_VALUE
-            N3 = N3 * OUT_STL_VALUE
+               N1 = N1 * OUT_STL_VALUE  ! Reverse unit vector if needed (this will switch fluid and blocked cells)
+               N2 = N2 * OUT_STL_VALUE
+               N3 = N3 * OUT_STL_VALUE
 
-            x12 = V2x - V1x
-            y12 = V2y - V1y
-            z12 = V2z - V1z
+               x12 = V2x - V1x
+               y12 = V2y - V1y
+               z12 = V2z - V1z
 
-            x13 = V3x - V1x
-            y13 = V3y - V1y
-            z13 = V3z - V1z
+               x13 = V3x - V1x
+               y13 = V3y - V1y
+               z13 = V3z - V1z
 
 
-            dp  = x12*x13 + y12*y13 + z12*z13
-            d12 = dsqrt(x12**2+y12**2+z12**2)
-            d13 = dsqrt(x13**2+y13**2+z13**2)
+               dp  = x12*x13 + y12*y13 + z12*z13
+               d12 = dsqrt(x12**2+y12**2+z12**2)
+               d13 = dsqrt(x13**2+y13**2+z13**2)
 
-            IF((d12*d13)>TOL_STL) THEN
-               cos_angle = dp/(d12*d13)
-            ELSE
-               cos_angle = ONE
+               IF((d12*d13)>TOL_STL) THEN
+                  cos_angle = dp/(d12*d13)
+               ELSE
+                  cos_angle = ONE
+               ENDIF
+
+               cos_small_angle = dcos(STL_SMALL_ANGLE / 180.0 * PI)
+
+               IF(DABS(cos_angle)>cos_small_angle) THEN
+                  IGNORE_CURRENT_FACET = .TRUE.    ! Ignore small facets
+               ENDIF
+
+               NORM = DSQRT(N1**2+N2**2+N3**2)
+
+               IF(NORM>TOL_STL) THEN
+                  N1 = N1 /NORM
+                  N2 = N2 /NORM
+                  N3 = N3 /NORM
+               ELSE
+                  IGNORE_CURRENT_FACET = .TRUE.  ! Ignore facets with zero normal vector
+               ENDIF
+
+
+               IF(IGNORE_CURRENT_FACET) THEN    
+                  IGNORED_FACETS = IGNORED_FACETS + 1
+               ELSE                                                      ! Save vertex coordinates for valid facets
+                                                                         ! and performs translation
+                  N_FACETS = N_FACETS + 1
+        
+                  NORM_FACE(N_FACETS,1) = N1
+                  NORM_FACE(N_FACETS,2) = N2
+                  NORM_FACE(N_FACETS,3) = N3
+
+                  VERTEX(N_FACETS,1,1) = SCALE_STL*V1x + TX_STL  
+                  VERTEX(N_FACETS,1,2) = SCALE_STL*V1y + TY_STL  
+                  VERTEX(N_FACETS,1,3) = SCALE_STL*V1z + TZ_STL  
+
+                  VERTEX(N_FACETS,2,1) = SCALE_STL*V2x + TX_STL  
+                  VERTEX(N_FACETS,2,2) = SCALE_STL*V2y + TY_STL  
+                  VERTEX(N_FACETS,2,3) = SCALE_STL*V2z + TZ_STL  
+
+                  VERTEX(N_FACETS,3,1) = SCALE_STL*V3x + TX_STL  
+                  VERTEX(N_FACETS,3,2) = SCALE_STL*V3y + TY_STL  
+                  VERTEX(N_FACETS,3,3) = SCALE_STL*V3z + TZ_STL  
+
+                  BC_ID_STL_FACE(N_FACETS) = BC_PATCH(N)
+
+
+               ENDIF
+    
+            ELSEIF(TRIM(TEST_CHAR) == 'endsolid') THEN
+    
+               KEEP_READING = .FALSE.
+    
             ENDIF
-
-            cos_small_angle = dcos(STL_SMALL_ANGLE / 180.0 * PI)
-
-            IF(DABS(cos_angle)>cos_small_angle) THEN
-               IGNORE_CURRENT_FACET = .TRUE.    ! Ignore small facets
-            ENDIF
-
-            NORM = DSQRT(N1**2+N2**2+N3**2)
-
-            IF(NORM>TOL_STL) THEN
-               N1 = N1 /NORM
-               N2 = N2 /NORM
-               N3 = N3 /NORM
-            ELSE
-               IGNORE_CURRENT_FACET = .TRUE.  ! Ignore facets with zero normal vector
-            ENDIF
+         
+         ENDDO
 
 
-            IF(IGNORE_CURRENT_FACET) THEN    
-               IGNORED_FACETS = IGNORED_FACETS + 1
-            ELSE                                                      ! Save vertex coordinates for valid facets
-                                                                      ! and performs translation
-               N_FACETS = N_FACETS + 1
-     
-               NORM_FACE(N_FACETS,1) = N1
-               NORM_FACE(N_FACETS,2) = N2
-               NORM_FACE(N_FACETS,3) = N3
 
-               VERTEX(N_FACETS,1,1) = SCALE_STL*V1x + TX_STL  
-               VERTEX(N_FACETS,1,2) = SCALE_STL*V1y + TY_STL  
-               VERTEX(N_FACETS,1,3) = SCALE_STL*V1z + TZ_STL  
+         CLOSE(333)
 
-               VERTEX(N_FACETS,2,1) = SCALE_STL*V2x + TX_STL  
-               VERTEX(N_FACETS,2,2) = SCALE_STL*V2y + TY_STL  
-               VERTEX(N_FACETS,2,3) = SCALE_STL*V2z + TZ_STL  
 
-               VERTEX(N_FACETS,3,1) = SCALE_STL*V3x + TX_STL  
-               VERTEX(N_FACETS,3,2) = SCALE_STL*V3y + TY_STL  
-               VERTEX(N_FACETS,3,3) = SCALE_STL*V3z + TZ_STL  
 
-            ENDIF
- 
-         ELSEIF(TRIM(TEST_CHAR) == 'endsolid') THEN
- 
-            KEEP_READING = .FALSE.
- 
-         ENDIF
-      
+
       ENDDO
+
+
+
+
+
+      
+
       
 
       XMIN_STL = MINVAL(VERTEX(1:N_FACETS,:,1))
@@ -774,24 +854,24 @@
       ZMIN_STL = MINVAL(VERTEX(1:N_FACETS,:,3))
       ZMAX_STL = MAXVAL(VERTEX(1:N_FACETS,:,3))
 
-
-      WRITE(*,2000)'STL file successfully read.'
-      WRITE(*,*)' Total number of facets read =',N_FACETS + IGNORED_FACETS
-      WRITE(*,*)' Number of valid facets      =',N_FACETS
-      WRITE(*,*)' Number of ignored facets    =',IGNORED_FACETS
-      WRITE(*,*)' RANGE OF STL FILE:'
-      IF(SCALE_STL/=ONE) THEN
-         WRITE(*,5000)' AFTER SCALING BY A FACTOR OF ',SCALE_STL
+      IF(MyPE == PE_IO) THEN
+         WRITE(*,2000)'STL file(s) successfully read.'
+         WRITE(*,*)' Total number of facets read =',N_FACETS + IGNORED_FACETS
+         WRITE(*,*)' Number of valid facets      =',N_FACETS
+         WRITE(*,*)' Number of ignored facets    =',IGNORED_FACETS
+         WRITE(*,*)' RANGE OF STL FILE:'
+         IF(SCALE_STL/=ONE) THEN
+            WRITE(*,5000)' AFTER SCALING BY A FACTOR OF ',SCALE_STL
+         ENDIF
+         ABSTRANS = dabs(TX_STL)+dabs(TY_STL)+dabs(TZ_STL)
+         IF(ABSTRANS>TOL_STL) THEN
+            WRITE(*,3000)' AFTER TRANSLATION OF (X,Y,Z)=',TX_STL,TY_STL,TZ_STL
+         ENDIF
+         WRITE(*,4000)'X-RANGE = ', XMIN_STL,XMAX_STL
+         WRITE(*,4000)'Y-RANGE = ', YMIN_STL,YMAX_STL
+         WRITE(*,4000)'Z-RANGE = ', ZMIN_STL,ZMAX_STL
+         WRITE(*,4000)''
       ENDIF
-      ABSTRANS = dabs(TX_STL)+dabs(TY_STL)+dabs(TZ_STL)
-      IF(ABSTRANS>TOL_STL) THEN
-         WRITE(*,3000)' AFTER TRANSLATION OF (X,Y,Z)=',TX_STL,TY_STL,TZ_STL
-      ENDIF
-      WRITE(*,4000)'X-RANGE = ', XMIN_STL,XMAX_STL
-      WRITE(*,4000)'Y-RANGE = ', YMIN_STL,YMAX_STL
-      WRITE(*,4000)'Z-RANGE = ', ZMIN_STL,ZMAX_STL
-      WRITE(*,4000)''
-
 
       XMIN_STL = XMIN_STL - 10.0*TOL_STL
       XMAX_STL = XMAX_STL + 10.0*TOL_STL
@@ -800,7 +880,7 @@
       ZMIN_STL = ZMIN_STL - 10.0*TOL_STL
       ZMAX_STL = ZMAX_STL + 10.0*TOL_STL
 
-      BC_ID_STL_FACE = STL_BC_ID
+
 
 !      IF(XMIN_STL<ZERO) XMIN_STL=ZERO 
 !      IF(XMAX_STL>XLENGTH) XMAX_STL=XLENGTH
@@ -810,7 +890,7 @@
 !      IF(ZMAX_STL>ZLENGTH) ZMAX_STL=ZLENGTH
 
 
-      CLOSE(333)
+
 
       RETURN  
 
@@ -916,13 +996,24 @@
 
       IJKC = IJK_OF_NODE(NODE)
 
-      IF(NODE/=15.AND.NODE/=0) THEN
-         IF(SNAP(IJKC)) THEN
-            f_stl = ZERO
-!            print*,'stlfc snapped=',IJKC,NODE,F_AT(IJKC)
-            RETURN
-         ENDIF
+      IF(IJKC>DIMENSION_3) THEN
+
+         print*,'myPE        =',myPE
+         print*,'DIMENSION_3 =',DIMENSION_3
+         print*,'IJKC        =',IJKC
+         print*,'IJK         =',IJK
+         print*,'I,J,K       =',I_OF(IJK),J_OF(IJK),K_OF(IJK)
+         print*,'NODE        =',NODE
+
       ENDIF
+
+!!      IF(NODE/=15.AND.NODE/=0) THEN
+!!         IF(SNAP(IJKC)) THEN
+!!            f_stl = ZERO
+!!!            print*,'stlfc snapped=',IJKC,NODE,F_AT(IJKC)
+!!            RETURN
+!!         ENDIF
+!!      ENDIF
 
 
       f_stl = F_AT(IJKC)
