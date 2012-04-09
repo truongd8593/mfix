@@ -88,7 +88,7 @@
 !----------------------------------------------- 
 
 
-!set indices for all processors 
+! set indices for all processors 
      allocate (dg_istart1_all(0:numpes-1),dg_istart2_all(0:numpes-1),dg_iend1_all(0:numpes-1),dg_iend2_all(0:numpes-1), &
                dg_jstart1_all(0:numpes-1),dg_jstart2_all(0:numpes-1),dg_jend1_all(0:numpes-1),dg_jend2_all(0:numpes-1), &
                dg_kstart1_all(0:numpes-1),dg_kstart2_all(0:numpes-1),dg_kend1_all(0:numpes-1),dg_kend2_all(0:numpes-1), &
@@ -99,7 +99,7 @@
      dg_isize_all=0;dg_jsize_all=0;dg_ksize_all=0
 
        
-!set grid size based on user input desgridsearch_<ijk>max 
+! set grid size based on user input desgridsearch_<ijk>max 
       ltempdx = xlength/desgridsearch_imax 
       ltempdy = ylength/desgridsearch_jmax 
       if (.not. no_k) then
@@ -298,16 +298,26 @@
 
       max_diam = 2.0d0*max_radius
       tmp_factor = 3.0d0*(max_diam)
+
+      IF (DESGRIDSEARCH_IMAX == UNDEFINED_I .OR. &
+          DESGRIDSEARCH_JMAX == UNDEFINED_I .OR. &
+          (DIMN.EQ.2 .AND. DESGRIDSEARCH_KMAX /= 1) .OR. &
+          (DIMN.EQ.3 .AND. DESGRIDSEARCH_KMAX == UNDEFINED_I)) THEN
+          IF(DMP_LOG) WRITE(UNIT_LOG,'(/2X,A)') &
+             'From: DESGRID_CHECK'
+      ENDIF
+
+
       if (desgridsearch_imax == undefined_i) then
          dl_tmp = xlength/tmp_factor
          desgridsearch_imax = int(dl_tmp)
          if (desgridsearch_imax <= 0) desgridsearch_imax = 1
-         if(dmp_log) write(unit_log,'(3x,a,i8)') &
+         if(dmp_log) write(unit_log,'(2X,A,I8)') &
             'desgridsearch_imax was set to ', desgridsearch_imax
       else
          dl_tmp = xlength/dble(desgridsearch_imax)
          if (dl_tmp < max_diam) then
-            if(dmp_log) write(unit_log,1037) 'x', 'x', 'i', 'i'
+            if(dmp_log) write(unit_log,1002) 'x', 'x', 'i', 'i'
             call mfix_exit(mype)
          endif
       endif
@@ -315,12 +325,12 @@
          dl_tmp = ylength/tmp_factor
          desgridsearch_jmax = int(dl_tmp)
          if (desgridsearch_jmax <= 0) desgridsearch_jmax = 1
-         if(dmp_log) write(unit_log,'(3x,a,i8)') &
+         if(dmp_log) write(unit_log,'(2X,A,I8)') &
             'desgridsearch_jmax was set to ', desgridsearch_jmax
       else
          dl_tmp = ylength/dble(desgridsearch_jmax)
          if (dl_tmp < max_diam) then
-            if(dmp_log) write(unit_log,1037) 'y', 'y', 'j', 'j'
+            if(dmp_log) write(unit_log,1002) 'y', 'y', 'j', 'j'
             call mfix_exit(mype)
          endif
       endif
@@ -329,7 +339,7 @@
             desgridsearch_kmax = 1
          elseif(desgridsearch_kmax /= 1) then
             desgridsearch_kmax = 1            
-            if(dmp_log) write(unit_log,'(3x,a,i8)') &
+            if(dmp_log) write(unit_log,'(2X,A,I8)') &
                'desgridsearch_kmax was set to ', desgridsearch_kmax
          endif            
       else
@@ -337,24 +347,27 @@
              dl_tmp = zlength/tmp_factor
              desgridsearch_kmax = int(dl_tmp)
              if (desgridsearch_kmax <= 0) desgridsearch_kmax = 1
-             if(dmp_log) write(unit_log,'(3x,a,i8)') &
+             if(dmp_log) write(unit_log,'(2X,A,I8)') &
                'desgridsearch_kmax was set to ', desgridsearch_kmax
          else
              dl_tmp = zlength/dble(desgridsearch_kmax)
              if (dl_tmp < max_diam) then
-                if(dmp_log) write(unit_log,1037) 'z', 'z', 'k', 'k'
+                if(dmp_log) write(unit_log,1002) 'z', 'z', 'k', 'k'
                 call mfix_exit(mype)
             endif
          endif
       endif   ! end if/else dimn == 2
 
- 1037 FORMAT(/1X,70('*')//' From: DESGRID_CHECK',/' Message: ',&
+
+
+ 1002 FORMAT(/1X,70('*')//' From: DESGRID_CHECK',/' Message: ',&
           'The neighbor search grid is too fine in the ',A, &
           '-direction',/10X,'with a particle diameter > ',A, &
           'length/desgridsearch_',A,'max. This will',/10X,'create ',&
           'problems for the search method and detecting neighbors',/10X,&
           'Decrease desgridsearch_',A,'max in mfix.dat to coarsen ',&
           'grid.',/1X,70('*')/)
+
       end subroutine desgrid_check 
 
 

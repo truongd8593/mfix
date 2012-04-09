@@ -89,10 +89,8 @@
 ! unclear why not replace with just full_log and dmp_log      
       PRINT_DES_SCREEN = (FULL_LOG.AND.myPE.EQ.pe_IO)
       PRINT_DES_SCREEN = .TRUE.
-      IF(DMP_LOG) WRITE(UNIT_LOG,*) 'FULL_LOG  = ',&
-         PRINT_DES_SCREEN, ' FOR DES ON IO PROC'
-      IF(mype.EQ.pe_IO) WRITE(*,*) 'FULL_LOG  = ',&
-         PRINT_DES_SCREEN, ' FOR DES ON IO PROC'
+      IF(DMP_LOG) WRITE(UNIT_LOG,1001) PRINT_DES_SCREEN
+      IF(DMP_LOG) WRITE(*,1001) PRINT_DES_SCREEN
 
 
 ! Check dimension
@@ -734,6 +732,9 @@
  1000 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'DES should only be run using CARTESIAN coordinates',&
          /1X,70('*')/)
+
+ 1001 FORMAT(/2X,'FULL_LOG = ',L3,' FOR DES ON IO PROC') 
+
  1002 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Direction of periodicity not defined in mfix.dat',&
          /1X,70('*')/)

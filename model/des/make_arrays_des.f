@@ -274,7 +274,7 @@
 !-----------------------------------------------
 
 
-      IF(DMP_LOG) WRITE(UNIT_LOG,'(3x,a,/,5x,a)') &
+      IF(DMP_LOG) WRITE(UNIT_LOG,'(/2X,A)') &
        'Reading particle configuration from the supplied input file'
 
       lunit = 10

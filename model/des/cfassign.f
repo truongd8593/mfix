@@ -1,15 +1,14 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-! Module name: CFASSIGN                                                C
-!
-! Purpose:
-! Assign the necessary values for DEM  computation. For example:
-! - assigning DEM boundaries from the values entered for MFIX input
-!   in mfix.datat
-! - assigning DEM gravity vector from MFIX input. 
-! - calculating DTSOLID based on particle properties: spring 
-!   coefficient, damping factor & mass 
-!      
+! Subroutine: CFASSIGN                                                 C
+!                                                                      C
+! Purpose:                                                             C
+! Assign the necessary values for DEM computation. For example:        C
+! - assigning DEM boundaries from the values entered for MFIX input    C
+!   in mfix.datat                                                      C
+! - assigning DEM gravity vector from MFIX input.                      C
+! - calculating DTSOLID based on particle properties: spring           C
+!   coefficient, damping factor & mass                                 C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C
@@ -113,12 +112,12 @@
       IF (TRIM(DES_COLL_MODEL) == 'HERTZIAN') THEN 
 
          IF(DMP_LOG.AND..NOT.MPPIC) &
-            WRITE(UNIT_LOG,'(5X,A)') 'COLLISION MODEL: Hertzian'
+            WRITE(UNIT_LOG,'(2X,A)') 'COLLISION MODEL: Hertzian'
 
 ! particle-particle contact -------------------->
          DO I=1,MMAX
             G_MOD(I) = 0.5d0*e_young(I)/(1.d0+v_poisson(I)) ! shear modulus 
-            if(dmp_log)write(unit_log,'(5X,A,I5,X,A,X,2(ES15.7))') &
+            if(dmp_log)write(unit_log,'(2X,A,I5,X,A,X,2(ES15.7))') &
                'E_YOUNG AND V_POISSON FOR M = ', I, '=',&
                E_YOUNG(I), V_POISSON(I) 
          ENDDO
@@ -172,7 +171,7 @@
                TCOLL_TMP = PI/SQRT(hert_kn(I,J)/MASS_EFF - ((DES_ETAN(I,J)/MASS_EFF)**2)/4.d0)
                   
                IF(DMP_LOG) &
-                  WRITE(UNIT_LOG,'(5X,A,I5,X,I5,X,A,X,2(ES15.7))') &
+                  WRITE(UNIT_LOG,'(2X,A,I5,X,I5,X,A,X,2(ES15.7))') &
                   'KN AND KT FOR PAIR ',I, J, '=', &
                   hert_kn(I,J), hert_kt(I,J)
             ENDDO
@@ -211,7 +210,7 @@
          
       ELSE                      ! Linear spring-dashpot model
 
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A)') &
+         IF(DMP_LOG) WRITE(UNIT_LOG,'(2X,A)') &
             'COLLISION MODEL: Linear Spring-Dashpot (default)'
 
 ! User's input for KT_FAC and KT_W_FAC will be used, otherwise these values are
@@ -233,7 +232,7 @@
          ELSE
             KT_W = KT_W_FAC*KN_W
          ENDIF
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,ES17.10,2X,ES15.7)') &
+         IF(DMP_LOG) WRITE(UNIT_LOG,'(2X,A,ES17.10,2X,ES15.7)') &
             'KN AND KT = ', KN, KT
 
 ! particle-particle contact -------------------->
@@ -315,7 +314,7 @@
 ! reporting information to logs         
       DO I = 1, MMAX
          DO J = I, MMAX
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,I10,2X,I10,A,2(ES15.7))') &
+         IF(DMP_LOG) WRITE(UNIT_LOG,'(2X,A,I10,2X,I10,A,2(ES15.7))') &
             'ETAN AND ETAT FOR PAIR ',&
             I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
          ENDDO
@@ -323,7 +322,7 @@
       DTSOLID = TCOLL/50.d0
 
       IF(DMP_LOG.AND..NOT.MPPIC) &
-         WRITE(UNIT_LOG,'(5X,A,E17.10,2X,E17.10)') &
+         WRITE(UNIT_LOG,'(2X,A,E17.10,2X,E17.10)') &
          'MIN TCOLL AND DTSOLID = ',TCOLL, DTSOLID
         
          

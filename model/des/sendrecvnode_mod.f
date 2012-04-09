@@ -96,7 +96,7 @@
       allocate (itoproc(itotalneigh),iprocsumindx(itotalneigh),istartindx(itotalneigh+1), & 
                 irecvreqnode(itotalneigh),isendreqnode(itotalneigh))
 
-!First loop to count the total index for each processor and count the 
+! First loop to count the total index for each processor and count the 
 ! neighbour processor
       itotalneigh = 0
       itoproc(:)=-1
@@ -109,7 +109,7 @@
          lk2 = mod(lk,nodesk);if(lk2.lt.0)lk2=nodesk-1
          lijkproc = procijk(li2,lj2,lk2)
          if (lijkproc.eq.mype) cycle 
-!check if the processor exits in the previous list 
+! check if the processor exits in the previous list 
          lpresent = .false.
          do lproc = 1,itotalneigh 
             if (lijkproc .eq.itoproc(lproc)) then 

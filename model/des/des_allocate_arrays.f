@@ -43,9 +43,12 @@
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)') &
          '---------- START DES_ALLOCATE_ARRAYS ---------->'
 
-      IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,I10)') &
+      IF(DMP_LOG) WRITE(UNIT_LOG,'(/2X,A)') & 
+         'From: DES_ALLOCATE_ARRAYS'
+      IF(DMP_LOG) WRITE(UNIT_LOG,'(2X,A,I10)') &
          'Total number of particles = ', PARTICLES      
-      IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,I5)') 'Dimension = ', DIMN
+      IF(DMP_LOG) WRITE(UNIT_LOG,'(2X,A,I5)') &
+         'Dimension = ', DIMN
 
 
       NWALLS = 2*DIMN
@@ -80,7 +83,7 @@
 ! max_pip adjusted to accomodate temporary variables used for walls 
       MAX_PIP = NPARTICLES - 2*NWALLS - 3
 
-      IF(DMP_LOG) WRITE(unit_log, 1003)  NPARTICLES, MAX_PIP
+      IF(DMP_LOG) WRITE(UNIT_LOG, 1003)  NPARTICLES, MAX_PIP
       IF(DMP_LOG) WRITE(*, 1003)  NPARTICLES, MAX_PIP 
 
 ! check if max_pip is less than maximum number of computational
@@ -384,18 +387,17 @@
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
          '<---------- END DES_ALLOCATE_ARRAYS ----------'
 
+
  1001 FORMAT(/1X,70('*')//' From: DES_ALLOCATE_ARRAYS',/,&
          ' Message: MAX_PIP',4X,I4,4X,&
          'is smaller than number of particles ',4x,i4,4x,/,& 
          'INCREASE PARTICLE FACTOR',/1X,70('*')/)
 
- 1002 FORMAT(/2X,'From: DES_ALLOCATE_ARRAYS',/2X,&
-         'Message: User supplied MAX_PIS =',I10,/2X,&
+ 1002 FORMAT(2X,'Message: User supplied MAX_PIS =',I10,/2X,&
          '> NPARTICLES (cummulative size of particle arrays) =',&
          I10,/2X,'Therefore, setting NPARTICLES to ',I10)
          
- 1003 FORMAT(/2X,'From: DES_ALLOCATE_ARRAYS',/2X,&
-         'Message: particle array size on each proc = ',I10,/2X,&
+ 1003 FORMAT(2X,'Message: particle array size on each proc = ',I10,/2X,&
          'Maximum physical particles (MAX_PIP) one each proc = ',&
          I10,/2X,'Note that this value of MAX_PIP is only ',&
          'relevant for a new run',/2X,'For restarts, max_pip ',&

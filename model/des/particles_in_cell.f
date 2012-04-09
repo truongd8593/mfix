@@ -371,7 +371,7 @@
 
       IF (FIRST_PASS) THEN
          IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(3X,A)') &
-            '---------- END FIRST PASS PARTICLES_IN_CELL ---------->'
+            '<---------- END FIRST PASS PARTICLES_IN_CELL ----------'
       ENDIF
 
 
