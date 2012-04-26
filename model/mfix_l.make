@@ -440,7 +440,6 @@ mfix.exe : \
     drag_fgs.$(OBJ_EXT) \
     gas_drag.$(OBJ_EXT) \
     generate_particle_config.$(OBJ_EXT) \
-    grid_based_neighbor_search.$(OBJ_EXT) \
     make_arrays_des.$(OBJ_EXT) \
     mppic_routines.$(OBJ_EXT) \
     neighbour.$(OBJ_EXT) \
@@ -912,7 +911,6 @@ mfix.exe : \
     drag_fgs.$(OBJ_EXT) \
     gas_drag.$(OBJ_EXT) \
     generate_particle_config.$(OBJ_EXT) \
-    grid_based_neighbor_search.$(OBJ_EXT) \
     interpolation_mod.$(OBJ_EXT) \
     make_arrays_des.$(OBJ_EXT) \
     mfix_pic_mod.$(OBJ_EXT) \
@@ -4567,7 +4565,6 @@ utilities.$(OBJ_EXT) : utilities.f \
             compar.mod \
             toleranc.mod \
             mpi_utility.mod \
-            cutcell.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -6089,13 +6086,6 @@ generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/generate_particle_config.f 
-grid_based_neighbor_search.$(OBJ_EXT) : ./des/grid_based_neighbor_search.f \
-            param1.mod \
-            discretelement.mod \
-            geometry.mod \
-            des_bc.mod \
-            des_thermo.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/grid_based_neighbor_search.f 
 make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             param1.mod \
             funits.mod \
