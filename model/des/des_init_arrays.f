@@ -1,8 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                         C 
-!     Module name: DES_INIT_NAMELIST                                      C
-!     Purpose: DES - initialize the des-namelist                          
-!                                                                         C
+!     Subrourtine: DES_INIT_ARRAYS                                        C
+!     Purpose: initialize arrays from des_allocate arrays                 C 
 !                                                                         C
 !     Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !     Reviewer:                                          Date:            C
@@ -74,11 +73,25 @@
       PINC(:) = ZERO
       PIJK(:,:) = ZERO
 
-! this could be made local to drag_fgs      
-      SOLID_DRAG(:,:,:) = ZERO
       DES_U_s(:,:) = ZERO
       DES_V_s(:,:) = ZERO
       DES_W_s(:,:) = ZERO
+      DES_ROP_S(:,:) = ZERO
+      DES_ROP_SO(:,:) = ZERO
+
+      P_FORCE(:,:) = ZERO
+
+      IF (DES_INTERP_ON) THEN
+         DRAG_AM(:,:) = ZERO
+         DRAG_BM(:,:,:) = ZERO
+      ENDIF
+
+      IF (DES_CONTINUUM_HYBRID) THEN
+         F_GDS(:,:) = ZERO
+         F_SDS(:,:,:) = ZERO
+         VXF_GDS(:,:) = ZERO
+         VXF_SDS(:,:,:) = ZERO
+      ENDIF
 
       XE(:) = ZERO
       YN(:) = ZERO

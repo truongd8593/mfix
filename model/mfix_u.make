@@ -448,6 +448,7 @@ mfix.exe : \
     particles_in_cell.$(OBJ_EXT) \
     quadtree.$(OBJ_EXT) \
     read_des_restart.$(OBJ_EXT) \
+    solid_drag.$(OBJ_EXT) \
     thermo_nbr.$(OBJ_EXT) \
     walledgecontact.$(OBJ_EXT) \
     wallfacecontact.$(OBJ_EXT) \
@@ -924,6 +925,7 @@ mfix.exe : \
     randomno_mod.$(OBJ_EXT) \
     read_des_restart.$(OBJ_EXT) \
     sendrecvnode_mod.$(OBJ_EXT) \
+    solid_drag.$(OBJ_EXT) \
     thermo_nbr.$(OBJ_EXT) \
     walledgecontact.$(OBJ_EXT) \
     wallfacecontact.$(OBJ_EXT) \
@@ -1716,6 +1718,7 @@ calc_d.$(OBJ_EXT) : calc_d.f \
             SENDRECV.mod \
             CUTCELL.mod \
             QMOM_KINETIC_EQUATION.mod \
+            DISCRETELEMENT.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -2066,6 +2069,7 @@ calc_vol_fr.$(OBJ_EXT) : calc_vol_fr.f \
             PSCOR.mod \
             COMPAR.mod \
             SENDRECV.mod \
+            DISCRETELEMENT.mod \
             ep_s1.inc                                                    \
             s_pr1.inc                                                    \
             function.inc                                                 \
@@ -2183,6 +2187,7 @@ check_data_06.$(OBJ_EXT) : check_data_06.f \
             MPI_UTILITY.mod \
             SENDRECV.mod \
             RXNS.mod \
+            DISCRETELEMENT.mod \
             function.inc                                                
 check_data_07.$(OBJ_EXT) : check_data_07.f \
             PARAM.mod \
@@ -2197,6 +2202,7 @@ check_data_07.$(OBJ_EXT) : check_data_07.f \
             SCALARS.mod \
             COMPAR.mod \
             SENDRECV.mod \
+            DISCRETELEMENT.mod \
             function.inc                                                
 check_data_08.$(OBJ_EXT) : check_data_08.f \
             PARAM.mod \
@@ -2237,6 +2243,7 @@ check_data_20.$(OBJ_EXT) : check_data_20.f \
             SCALARS.mod \
             COMPAR.mod \
             SENDRECV.mod \
+            DISCRETELEMENT.mod \
             function.inc                                                
 check_data_30.$(OBJ_EXT) : check_data_30.f \
             PARAM.mod \
@@ -2743,9 +2750,12 @@ drag_ss.$(OBJ_EXT) : drag_ss.f \
             COMPAR.mod \
             SENDRECV.mod \
             DRAG.mod \
+            DISCRETELEMENT.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
-            fun_avg2.inc                                                
+            fun_avg2.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
 eosg.$(OBJ_EXT) : eosg.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2782,7 +2792,8 @@ flow_to_vel.$(OBJ_EXT) : flow_to_vel.f \
             SCALES.mod \
             INDICES.mod \
             FUNITS.mod \
-            COMPAR.mod 
+            COMPAR.mod \
+            DISCRETELEMENT.mod 
 g_0.$(OBJ_EXT) : g_0.f \
             PARAM.mod \
             PARAM1.mod \
@@ -3207,10 +3218,12 @@ mfix.$(OBJ_EXT) : mfix.f \
             DISCRETELEMENT.mod \
             MFIX_PIC.mod \
             CDIST.mod \
+            MFIX_NETCDF.mod \
             FLDVAR.mod \
             CUTCELL.mod \
             QUADRIC.mod \
             DASHBOARD.mod \
+            QMOM_KINETIC_EQUATION.mod \
             PARALLEL.mod \
             MATRIX.mod \
             GEOMETRY.mod \
@@ -4491,13 +4504,13 @@ time_march.$(OBJ_EXT) : time_march.f \
             DISCRETELEMENT.mod \
             MCHEM.mod \
             LEQSOL.mod \
+            MPI_UTILITY.mod \
             CDIST.mod \
             MFIX_NETCDF.mod \
-            MPI_UTILITY.mod \
             CUTCELL.mod \
             VTK.mod \
-            DASHBOARD.mod \
-            QMOM_KINETIC_EQUATION.mod 
+            QMOM_KINETIC_EQUATION.mod \
+            DASHBOARD.mod 
 transfer.$(OBJ_EXT) : transfer.f \
             PARAM.mod \
             PARAM1.mod \
@@ -4846,6 +4859,7 @@ zero_norm_vel.$(OBJ_EXT) : zero_norm_vel.f \
             INDICES.mod \
             IS.mod \
             COMPAR.mod \
+            DISCRETELEMENT.mod \
             function.inc                                                
 allocate_cut_cell_arrays.$(OBJ_EXT) : ./cartesian_grid/allocate_cut_cell_arrays.f \
             PARAM.mod \
@@ -5724,6 +5738,7 @@ check_des_data.$(OBJ_EXT) : ./des/check_des_data.f \
             OUTPUT.mod \
             MFIX_PIC.mod \
             CUTCELL.mod \
+            QMOM_KINETIC_EQUATION.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   
@@ -6213,6 +6228,19 @@ read_des_restart.$(OBJ_EXT) : ./des/read_des_restart.f \
             CDIST.mod \
             MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/read_des_restart.f 
+solid_drag.$(OBJ_EXT) : ./des/solid_drag.f \
+            PARAM.mod \
+            PARAM1.mod \
+            MATRIX.mod \
+            GEOMETRY.mod \
+            PHYSPROP.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            DISCRETELEMENT.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/solid_drag.f 
 thermo_nbr.$(OBJ_EXT) : ./des/thermo_nbr.f \
             DES_THERMO.mod \
             DISCRETELEMENT.mod 

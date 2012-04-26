@@ -1,9 +1,9 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                    
-!  Subroutine: DES_ALLOCATE_ARRAYS                                     
-!  Purpose: allocate arrays for DES
-!  
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: DES_ALLOCATE_ARRAYS                                     C
+!  Purpose: allocate arrays for DES                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE DES_ALLOCATE_ARRAYS 
                                                                    
@@ -90,8 +90,8 @@
 ! particles for the MPPIC case if so, stop the code after printing
 ! the error message
       IF(GENER_PART_CONFIG.AND.MPPIC) THEN 
-         IF(MAX_PIP.LT. SUM(PART_MPHASE(1:MMAX))) THEN 
-            IF(DMP_LOG) WRITE(UNIT_LOG,1001) MAX_PIP, SUM(PART_MPHASE(1:MMAX))
+         IF(MAX_PIP.LT. SUM(PART_MPHASE(1:DES_MMAX))) THEN 
+            IF(DMP_LOG) WRITE(UNIT_LOG,1001) MAX_PIP, SUM(PART_MPHASE(1:DES_MMAX))
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDIF
@@ -113,24 +113,24 @@
 
 
 ! T. Li: Hertzian collision model
-      allocate(hert_kn(MMAX,MMAX))
-      allocate(hert_kt(MMAX,MMAX))
-      allocate(hert_kwn(MMAX))
-      allocate(hert_kwt(MMAX)) 
-      allocate(g_mod(MMAX))
+      allocate(hert_kn(DES_MMAX,DES_MMAX))
+      allocate(hert_kt(DES_MMAX,DES_MMAX))
+      allocate(hert_kwn(DES_MMAX))
+      allocate(hert_kwt(DES_MMAX)) 
+      allocate(g_mod(DES_MMAX))
       
 ! Coefficients of normal restitution
-      ALLOCATE(REAL_EN(MMAX,MMAX)) 
-      ALLOCATE(REAL_EN_WALL(MMAX))
+      ALLOCATE(REAL_EN(DES_MMAX,DES_MMAX)) 
+      ALLOCATE(REAL_EN_WALL(DES_MMAX))
 
 ! Coefficients of tangential restitution (needed for hertzian model)      
-      ALLOCATE(REAL_ET(MMAX,MMAX)) 
-      ALLOCATE(REAL_ET_WALL(MMAX)) 
+      ALLOCATE(REAL_ET(DES_MMAX,DES_MMAX)) 
+      ALLOCATE(REAL_ET_WALL(DES_MMAX)) 
 
 ! normal and tangential dampening factors
-      ALLOCATE(DES_ETAN(MMAX,MMAX))
-      ALLOCATE(DES_ETAT(MMAX,MMAX))
-      ALLOCATE(DES_ETAN_WALL(MMAX), DES_ETAT_WALL(MMAX))
+      ALLOCATE(DES_ETAN(DES_MMAX,DES_MMAX))
+      ALLOCATE(DES_ETAT(DES_MMAX,DES_MMAX))
+      ALLOCATE(DES_ETAN_WALL(DES_MMAX), DES_ETAT_WALL(DES_MMAX))
       
 ! Particle attributes
 ! Radius, density, mass, moment of inertia           
@@ -226,9 +226,9 @@
       Allocate(  PIJK (NPARTICLES,5) )
 
       IF(DES_INTERP_ON) THEN
-         ALLOCATE(DRAG_AM(DIMENSION_3, MMAX))
-         ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, MMAX))
-         ALLOCATE(WTBAR(DIMENSION_3,  MMAX))
+         ALLOCATE(DRAG_AM(DIMENSION_3, DES_MMAX))
+         ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, DES_MMAX))
+         ALLOCATE(WTBAR(DIMENSION_3, DES_MMAX))
          ALLOCATE(VEL_FP(NPARTICLES,3))
          ALLOCATE(F_gp(NPARTICLES ))  
          F_gp(1:NPARTICLES)  = ZERO
@@ -237,13 +237,10 @@
 ! force due to gas-pressure gradient 
       ALLOCATE(P_FORCE(DIMENSION_3,DIMN))
       
-! Drag exerted by the gas on solids
-      Allocate(  SOLID_DRAG (DIMENSION_3, MMAX, DIMN) )
-     
 ! Volume averaged solids volume in a computational fluid cell      
-      Allocate(  DES_U_s (DIMENSION_3, MMAX) )
-      Allocate(  DES_V_s (DIMENSION_3, MMAX) )
-      Allocate(  DES_W_s (DIMENSION_3, MMAX) )
+      Allocate(  DES_U_s (DIMENSION_3, DES_MMAX) )
+      Allocate(  DES_V_s (DIMENSION_3, DES_MMAX) )
+      Allocate(  DES_W_s (DIMENSION_3, DES_MMAX) )
 
 ! Volume of nodes 
       ALLOCATE(DES_VOL_NODE(DIMENSION_3))
@@ -251,15 +248,26 @@
 ! on the wall or being outside the domain 
       ALLOCATE(DES_VOL_NODE_RATIO(DIMENSION_3))
 
+! Variables for hybrid model
+      IF (DES_CONTINUUM_HYBRID) THEN
+         ALLOCATE(F_GDS(DIMENSION_3,DES_MMAX))
+         ALLOCATE(F_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
+         ALLOCATE(VXF_GDS(DIMENSION_3,DES_MMAX))
+         ALLOCATE(VXF_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
+      ENDIF
+! Bulk density in a computational fluid cell / for communication with
+! MFIX continuum
+      ALLOCATE( DES_ROP_S(DIMENSION_3, DES_MMAX) )      
+      ALLOCATE( DES_ROP_SO(DIMENSION_3, DES_MMAX) ) 
 
 ! MP-PIC related 
       IF(MPPIC) THEN 
 ! mppic requries the following but if des_interp_on is false
 ! then these quantities will not be allocated               
          IF (.NOT.DES_INTERP_ON) THEN
-            ALLOCATE(DRAG_AM(DIMENSION_3, MMAX))
-            ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, MMAX))
-            ALLOCATE(WTBAR(DIMENSION_3,  MMAX))
+            ALLOCATE(DRAG_AM(DIMENSION_3, DES_MMAX))
+            ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, DES_MMAX))
+            ALLOCATE(WTBAR(DIMENSION_3,  DES_MMAX))
             ALLOCATE(VEL_FP(NPARTICLES,3))
             ALLOCATE(F_gp(NPARTICLES ))  
             F_gp(1:NPARTICLES)  = ZERO
@@ -275,7 +283,7 @@
 
 
 ! Granular temperature in a computational fluid cell
-      Allocate(DES_THETA (DIMENSION_3, MMAX) )      
+      Allocate(DES_THETA (DIMENSION_3, DES_MMAX) )      
 
 ! Averaged velocity obtained by averaging over all the particles
       ALLOCATE(DES_VEL_AVG(DIMN) )
@@ -288,7 +296,7 @@
       ALLOCATE(MARK_PART(NPARTICLES))
 
 ! variable for bed height of solids phase M      
-      ALLOCATE(BED_HEIGHT(MMAX))
+      ALLOCATE(BED_HEIGHT(DES_MMAX))
 
 
 

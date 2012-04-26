@@ -1,14 +1,15 @@
- !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CHECK_DES_DATA                                         C
-!  Purpose: DES - Check user input Data   
+!  Subroutine: CHECK_DES_DATA                                          C
+!  Purpose: DES - Check user input Data                                C
 !                                                                      C
 !                                                                      C
 !  Author: S. Benyahia                                Date: 10-Nov-08  C
 !  Reviewer:                                                           C
-!  Comments: All user's input data are checked here                    C
-!  Revision : Some of the checks made in des_allocate_arrays are moved 
-!             here. In addition write statments are now made to log file
+!  Comments: Most all user's input data are checked here               C
+!  Revision : Some of the checks made in des_allocate_arrays are       C
+!             moved here. In addition write statments are now made to  C
+!             log file                                                 C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -33,6 +34,7 @@
       USE output 
       USE mfix_pic
       USE cutcell
+      USE qmom_kinetic_equation
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -79,6 +81,55 @@
          DES_D_p0(:) = D_p0(:)
          DES_RO_s(:) = RO_s(:)
       ENDIF
+
+      IF (DES_MMAX == UNDEFINED_I) THEN
+         IF (DMP_LOG) WRITE(UNIT_LOG, 1090)
+         CALL MFIX_EXIT(myPE)
+      ELSE
+! The following checks on DES_mmax, density and diameter are similar to
+! those in check_data_04.  If .not.des_continuum_hybrid then these
+! checks are basically redundant, however, they will facilitate a move
+! to make DEM operate separately from MFIX's check_data_04.  
+! ---------------------------------------------------------------->>>    
+! Check mmax: 
+         IF (DES_MMAX<0 .OR. DES_MMAX>DIM_M) THEN 
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1070)
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+! Check for valid diameter values. 
+! Valid diameters are needed: 1) when using gener_part_config the
+! diameters are used to identify the number of particles in a given
+! solids phase and 2) to identify which solids phase each particle
+! belongs in (this sorting is conducted in particles_in_cell)
+         DO M = 1,DES_MMAX
+            IF (DES_D_P0(M)<ZERO .OR. DES_D_P0(M)==UNDEFINED) THEN
+               IF(DMP_LOG) WRITE(UNIT_LOG, 1043)
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ENDDO
+         DO M = DES_MMAX+1, DIM_M
+            IF (DES_D_P0(M) /= UNDEFINED) THEN
+               IF(DMP_LOG) WRITE(UNIT_LOG, 1044)
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ENDDO
+! Check for valid density values
+         DO M = 1,DES_MMAX
+            IF (DES_RO_S(M)<ZERO .OR. DES_RO_S(M)==UNDEFINED) THEN
+               IF(DMP_LOG) WRITE(UNIT_LOG, 1071)
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ENDDO
+         DO M = DES_MMAX+1, DIM_M
+            IF (DES_RO_S(M) /= UNDEFINED) THEN
+               IF(DMP_LOG) WRITE(UNIT_LOG, 1072)
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ENDDO
+      ENDIF   ! end if/else(des_mmax==undefined_i)
+! End checks on DES_MMAX, density and diameter      
+! ----------------------------------------------------------------<<<
+
 
       IF(COORDINATES == 'CYLINDRICAL') THEN
          IF(DMP_LOG) WRITE (UNIT_LOG, 1000)
@@ -285,7 +336,7 @@
                  IF(DMP_LOG) WRITE (UNIT_LOG, 1033)
               ENDIF
             ENDIF
-            DO M = 1, MMAX
+            DO M = 1, DES_MMAX
                IF(E_YOUNG(M) == UNDEFINED) THEN
                   IF(DMP_LOG) WRITE (UNIT_LOG, 1022)
                   CALL MFIX_EXIT(myPE)
@@ -300,26 +351,26 @@
                ENDIF
             ENDDO
 ! check particle-particle tangential restitution coefficient      
-            DO M = 1, MMAX+MMAX*(MMAX-1)/2
+            DO M = 1, DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
                IF(DES_ET_INPUT(M) == UNDEFINED) THEN
-                  IF(DMP_LOG) WRITE (UNIT_LOG, 1024) MMAX+MMAX*(MMAX-1)/2
+                  IF(DMP_LOG) WRITE (UNIT_LOG, 1024) DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
                   CALL MFIX_EXIT(myPE)
                ENDIF
             ENDDO
-            DO M = 1, MMAX+MMAX*(MMAX-1)/2
+            DO M = 1, DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
                IF(DES_ET_INPUT(M) > ONE .OR. DES_ET_INPUT(M) < ZERO) THEN
                   IF(DMP_LOG) WRITE (UNIT_LOG, 1025)
                   CALL MFIX_EXIT(myPE)
                ENDIF
             ENDDO
 ! check particle-wall tangential restitution coefficient
-            DO M = 1, MMAX
+            DO M = 1, DES_MMAX
                IF(DES_ET_WALL_INPUT(M) == UNDEFINED) THEN
                   IF(DMP_LOG) WRITE (UNIT_LOG, 1026)
                   CALL MFIX_EXIT(myPE)
                ENDIF
             ENDDO
-            DO M = 1, MMAX
+            DO M = 1, DES_MMAX
                IF(DES_ET_WALL_INPUT(M) > ONE .OR. DES_ET_WALL_INPUT(M) < ZERO) THEN
                   IF(DMP_LOG) WRITE (UNIT_LOG, 1027)
                   CALL MFIX_EXIT(myPE)
@@ -376,12 +427,12 @@
             ENDIF
 ! if following are assigned warn user they are discarded
             FLAG_WARN = .FALSE.
-            DO M = 1, MMAX+MMAX*(MMAX-1)/2
+            DO M = 1, DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
                IF(DES_ET_INPUT(M) .NE. UNDEFINED) FLAG_WARN = .TRUE.
             ENDDO
             IF (FLAG_WARN) WRITE(UNIT_LOG,1031)
             FLAG_WARN = .FALSE.
-            DO M = 1, MMAX
+            DO M = 1, DES_MMAX
                IF(DES_ET_WALL_INPUT(M) .NE. UNDEFINED) FLAG_WARN = .TRUE.
             ENDDO
             IF (FLAG_WARN) WRITE(UNIT_LOG,1032)
@@ -390,13 +441,13 @@
          ENDIF   ! end if/else(des_coll_model.eq.hertzian)
 
 ! check particle-particle normal restitution coefficient      
-         DO M = 1, MMAX+MMAX*(MMAX-1)/2
+         DO M = 1, DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
             IF(DES_EN_INPUT(M) == UNDEFINED) THEN
-               IF(DMP_LOG) WRITE (UNIT_LOG, 1008) MMAX+MMAX*(MMAX-1)/2
+               IF(DMP_LOG) WRITE (UNIT_LOG, 1008) DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDDO
-         DO M = 1, MMAX+MMAX*(MMAX-1)/2
+         DO M = 1, DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
             IF(DES_EN_INPUT(M) > ONE .OR. DES_EN_INPUT(M) < ZERO) THEN
                IF(DMP_LOG) WRITE (UNIT_LOG, 1012)
                CALL MFIX_EXIT(myPE)
@@ -406,8 +457,14 @@
 ! check particle-wall normal restitution coefficient (moved below)
 
 ! check coefficient friction 
-         IF(MEW > ONE .OR. MEW_W > ONE .OR. MEW < ZERO .OR. MEW_W < ZERO) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1014)
+         IF(MEW /= UNDEFINED .AND. MEW_W /= UNDEFINED) THEN
+            IF (MEW> ONE .OR. MEW_W > ONE .OR. &
+                MEW < ZERO .OR. MEW_W < ZERO) THEN
+               IF(DMP_LOG) WRITE (UNIT_LOG, 1014)
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ELSE
+            WRITE(UNIT_LOG, 1035)
             CALL MFIX_EXIT(myPE)
          ENDIF
 
@@ -418,96 +475,59 @@
 
 ! check particle-wall normal restitution coefficient (needed by all
 ! current collision models and MPPIC)
-      DO M = 1, MMAX
+      DO M = 1, DES_MMAX
          IF(DES_EN_WALL_INPUT(M) == UNDEFINED) THEN
             IF(DMP_LOG) WRITE (UNIT_LOG, 1009)
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDDO
-      DO M = 1, MMAX
+      DO M = 1, DES_MMAX
          IF(DES_EN_WALL_INPUT(M) > ONE .OR. DES_EN_WALL_INPUT(M) < ZERO) THEN
             IF(DMP_LOG) WRITE (UNIT_LOG, 1013)
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDDO
 
-! Overwrite user's input in case of DEM (no fluid)
-      IF(.NOT.DES_CONTINUUM_COUPLED) DES_INTERP_ON = .FALSE.
+      IF (DES_CONTINUUM_HYBRID) THEN
+! DES_CONTINUUM_HYBRID does not work with GHD or QMOMK
+         IF (TRIM(KT_TYPE)=='GHD') THEN
+            WRITE(UNIT_LOG, 1091)
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+         IF (QMOMK) THEN
+            WRITE(UNIT_LOG, 1092)
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+      ENDIF
+
+      IF (MPPIC .AND. DES_CONTINUUM_HYBRID) THEN
+         WRITE(UNIT_LOG, 1093)
+         CALL MFIX_EXIT(myPE)
+      ENDIF         
       
 
+      IF(DES_CONTINUUM_COUPLED) THEN
+         IF(TSUJI_DRAG .AND. TRIM(DRAG_TYPE) /= 'SYAM_OBRIEN') THEN
 ! TSUJI drag option only available with syam_obrien drag model
-      IF(DES_CONTINUUM_COUPLED .AND. TSUJI_DRAG .AND. &
-         TRIM(DRAG_TYPE) /= 'SYAM_OBRIEN') THEN
-         IF(DMP_LOG) WRITE(UNIT_LOG, 1056)
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1056)
+         ENDIF  
+      ELSE
+! Overwrite user's input in case of DEM (no fluid)
+         DES_INTERP_ON = .FALSE. 
       ENDIF
-
-
-      IF(MPPIC) THEN 
-         IF(MPPIC_SOLID_STRESS_SNIDER) WRITE(UNIT_LOG,*) &
-            'USING THE SNIDER MODEL FOR SOLID STRESS AND THE ',&
-            'INTEGRATION APPROACH'
-         IF(MPPIC_SOLID_STRESS_SNIDER.AND.PRINT_DES_SCREEN) &
-            WRITE(*,*) 'USING THE SNIDER MODEL FOR SOLID STRESS AND ',&
-            'THE INTEGRATION APPROACH'
-      ENDIF
-
-
-! The following checks on mmax, density and diameter are similar to
-! those in check_data_04.  These checks are basically redundant,
-! however, they will facilitate a move to make DEM operate separately
-! from MFIX's check_data_04.  
-! ---------------------------------------------------------------->>>    
-! Check mmax: 
-! Note check_data_04 operates on assumption that dimension_m can 
-! exceed mmax where in fact is defined as the maximum of mmax and 1.
-      IF (MMAX<0 .OR. MMAX>DIM_M) THEN 
-         IF(DMP_LOG) WRITE(UNIT_LOG, 1070)
-         CALL MFIX_EXIT(myPE)
-      ENDIF
-! Check for valid diameter values. 
-! Valid diameters are needed: 1) when using gener_part_config the
-! diameters are used to identify the number of particles in a given
-! solids phase and 2) to identify which solids phase each particle
-! belongs in (this sorting is conducted in particles_in_cell)
-      DO M = 1,MMAX
-         IF (D_P0(M)<ZERO .OR. D_P0(M)==UNDEFINED) THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG, 1043)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDDO
-      DO M = MMAX+1, DIM_M
-         IF (D_P0(M) /= UNDEFINED) THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG, 1044)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDDO
-! Check for valid density values
-      DO M = 1,MMAX
-         IF (RO_S(M)<ZERO .OR. RO_S(M)==UNDEFINED) THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG, 1071)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDDO
-      DO M = MMAX+1, DIM_M
-         IF (RO_S(M) /= UNDEFINED) THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG, 1072)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDDO
-! End checks on MMAX, density and diameter      
-! ----------------------------------------------------------------<<<
 
 
 ! Determine the maximum particle size in the system (MAX_RADIUS), which
 ! in turn is used for various tasks        
       MAX_DIAM = ZERO
       MIN_DIAM = LARGE_NUMBER
-      DO M = 1,MMAX
-         MAX_DIAM = MAX(MAX_DIAM, D_P0(M))
-         MIN_DIAM = MIN(MIN_DIAM, D_P0(M))
+      DO M = 1,DES_MMAX
+         MAX_DIAM = MAX(MAX_DIAM, DES_D_P0(M))
+         MIN_DIAM = MIN(MIN_DIAM, DES_D_P0(M))
        ENDDO
       MAX_RADIUS = 0.5d0*MAX_DIAM
       MIN_RADIUS = 0.5d0*MIN_DIAM
+
 
 ! Check that the depth of the simulation in 2D exceeds the largest 
 ! particle size to ensure correct calculation of volume fraction.  This
@@ -565,7 +585,7 @@
 
 ! Check for quantities needed for gener_part_config option and make sure
 ! they are physically realistic
-         DO M = 1, MMAX
+         DO M = 1, DES_MMAX
             IF(VOL_FRAC(M) == UNDEFINED) THEN
                IF(DMP_LOG) WRITE(UNIT_LOG, 1049) 
                CALL MFIX_EXIT(myPE)
@@ -604,12 +624,12 @@
 ! then dz(1) is set to zlength (and vice versa).  If both are defined
 ! they must be equal.
          IF(DIMN.EQ.2) THEN 
-            IF (MMAX.EQ.1) THEN
+            IF (DES_MMAX.EQ.1) THEN
 ! Warn the user if the domain depth is not equal to the particle
 ! diameter as it may cause problems for coupled simulations.
 ! The user should also be aware of this when interpreting
 ! volume/void fraction calculations (including bulk density).
-               IF(.NOT.COMPARE(ZLENGTH,D_P0(1))) THEN
+               IF(.NOT.COMPARE(ZLENGTH,DES_D_P0(1))) THEN
                   IF(DMP_LOG) WRITE(UNIT_LOG, 1054)
                   WRITE(*,1054)
                ENDIF
@@ -625,26 +645,26 @@
             VOL_DOMAIN = DES_EPS_XSTART*DES_EPS_YSTART*DES_EPS_ZSTART
          ENDIF
 
-         DO M = 1, MMAX
+         DO M = 1, DES_MMAX
             PART_MPHASE(M) = FLOOR((6.D0*VOL_FRAC(M)*VOL_DOMAIN)/&
-               (PI*(D_P0(M)**3)))
+               (PI*(DES_D_P0(M)**3)))
          ENDDO
          PARTICLES = 0
-         PARTICLES = SUM(PART_MPHASE(1:MMAX))
+         PARTICLES = SUM(PART_MPHASE(1:DES_MMAX))
 
 ! Local reporting for the user 
          IF(DMP_LOG) WRITE(*,'(/3X,A,/)') &
             'Particle configuration will automatically be generated'
          IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,I5,2X,A,G15.7)') &
-           'MMAX = ', MMAX, ' VOL_DOMAIN = ', VOL_DOMAIN
+           'DES_MMAX = ', DES_MMAX, ' VOL_DOMAIN = ', VOL_DOMAIN
          IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,/7X,(ES15.7,2X))') &
-            'D_P0(M) = ', D_P0(1:MMAX)
+            'D_P0(M) = ', D_P0(1:DES_MMAX)
          IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,/7X,(G15.8,2X))') &
             'VOL_FRAC(M) (solids volume fraction of phase M) = ', &
-            VOL_FRAC(1:MMAX)
+            VOL_FRAC(1:DES_MMAX)
          IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,/7X,(I10,2X))') &
             'PART_MPHASE(M) (number particles in phase M) = ', &
-            PART_MPHASE(1:MMAX)
+            PART_MPHASE(1:DES_MMAX)
       ENDIF 
 ! ----------------------------------------------------------------<<< 
 
@@ -652,6 +672,13 @@
 ! Check quantities related to MPPIC      
 ! ---------------------------------------------------------------->>>
       IF(MPPIC) THEN 
+         IF(MPPIC_SOLID_STRESS_SNIDER) WRITE(UNIT_LOG,*) &
+            'USING THE SNIDER MODEL FOR SOLID STRESS AND THE ',&
+            'INTEGRATION APPROACH'
+         IF(MPPIC_SOLID_STRESS_SNIDER.AND.PRINT_DES_SCREEN) &
+            WRITE(*,*) 'USING THE SNIDER MODEL FOR SOLID STRESS AND ',&
+            'THE INTEGRATION APPROACH'
+              
 ! cnp_array(ijk, 0) will contain the cumulative number of real 
 ! particles later in the handling of inflow BC for MPPIC. See 
 ! the mppic_mi_bc in mppic_wallbc_mod.f 
@@ -659,8 +686,8 @@
          CNP_ARRAY(:, :) = 0
 
          IF(GENER_PART_CONFIG) THEN
-            ALLOCATE(RNP_PIC(MMAX))
-            ALLOCATE(CNP_PIC(MMAX))
+            ALLOCATE(RNP_PIC(DES_MMAX))
+            ALLOCATE(CNP_PIC(DES_MMAX))
             RNP_PIC = ZERO
             CNP_PIC = ZERO 
             IF(DIMN.EQ.2) THEN 
@@ -691,7 +718,7 @@
                      IF(EP_G(IJK).GE.1.d0-DIL_EP_s) CYCLE 
                      VOLIJK = VOL(IJK)
                      VOLIJK_UNCUT = DX(I)*DY(J)*DZ(K) 
-                     DO M = 1, MMAX
+                     DO M = 1, DES_MMAX
                         REAL_PARTS(M) = 6.d0*EP_S(IJK,M)*VOLIJK/&
                            (PI*(D_p0(M)**3.d0))
                         IF(CONSTANTNPC) THEN 
@@ -709,8 +736,8 @@
                   ENDDO
                ENDDO
             ENDDO
-            PART_MPHASE(1:MMAX) = CNP_PIC(1:MMAX)
-            PARTICLES = SUM(PART_MPHASE(1:MMAX))
+            PART_MPHASE(1:DES_MMAX) = CNP_PIC(1:DES_MMAX)
+            PARTICLES = SUM(PART_MPHASE(1:DES_MMAX))
             CALL global_all_sum(PARTICLES)
          ENDIF !  end if(gener_part_config)
 
@@ -854,6 +881,9 @@
          /10X,'EULER (default/undefined) or ADAMS_BASHFORTH',&
          /1X,70('*')/)
 
+ 1035 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'Friction coefficients (MEW and MEW_w) must be ',&
+         'specified in mfix.dat',/1X,70('*')/)
 
  1036 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          '2D coupled simulation with a particle diameter > ZLENGTH.',/10X,&
@@ -998,7 +1028,20 @@
          'undefined',/10X, 'but must be defined when ',&
          'VAN_DER_WAALS=T',/1X,70('*')/)
 
-                     
+ 1090 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'DES_MMAX not defined in mfix.dat. It must be defined',/10X,&
+         'when using DES_CONTINUUM_HYBRID',/1X,70('*')/)
+
+ 1091 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'KT_TYPE cannot be set to GHD when using ',&
+         'DES_CONTINUUM_HYBRID.',/1X,70('*')/)
+ 1092 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'QMOMK cannot be TRUE when using ',&
+         'DES_CONTINUUM_HYBRID.',/1X,70('*')/)
+ 1093 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'MPPIC and DES_CONTINUUM_HYBRID cannot both be TRUE.',&
+         /1X,70('*')/)
+
  2001 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Looks like a 3-D case (IMAX, JMAX & KMAX all >1) ',&
          'but DIMN equal to ',I1,/1X,70('*')/)

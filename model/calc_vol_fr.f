@@ -39,6 +39,7 @@
       USE pscor
       USE compar 
       USE sendrecv 
+      USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -125,6 +126,13 @@
                DO M = 1, MMAX 
                   IF (CLOSE_PACKED(M) .AND. M/=MCPl) SUMVF = SUMVF + EP_S(IJK,M) 
                ENDDO 
+! sum of solids volume fraction from the DEM
+               IF (DES_CONTINUUM_HYBRID) THEN
+                  DO M = 1,DES_MMAX
+                     EPS = DES_ROP_S(IJK,M)/DES_RO_S(M)
+                     SUMVF = SUMVF + EPS
+                  ENDDO
+               ENDIF
                ROP_S(IJK,MCPl) = (EPCP - SUMVF)*RO_S(MCPl) 
             ENDIF 
 !-----------------------------------------------------------------<<<
@@ -175,6 +183,13 @@
               ENDDO 
             ENDIF   ! end if/else trim(kt_type)=='ghd'
 
+! sum of solids volume fraction from the DEM
+            IF (DES_CONTINUUM_HYBRID) THEN
+               DO M = 1,DES_MMAX
+                  EPS = DES_ROP_S(IJK,M)/DES_RO_S(M)
+                  SUMVF = SUMVF + EPS
+               ENDDO
+            ENDIF
 
             IF (0 == MF) THEN 
 ! if no gas phase continuity was solved in the current cell then correct

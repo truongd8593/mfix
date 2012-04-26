@@ -1,20 +1,19 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                         C  
-!     Module name: DES_TIME_MARCH                                         C
-!
-!     Purpose: Called in model/time_march.f to do DES calcs
-!     Main DEM driver routine
-!
-!                                                                         C
-!     Author: Jay Boyalakuntla                           Date: 21-Jun-04  C
-!     Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C
-!     Reviewer: Rahul Garg                               Date: 01-Aug-07  C
-!     Comments: Changed the calling rules to neighbor search routines     C
-!     Pradeep: do_nsearch has to be set for calling neighbour. Since this C 
-!              this flag is used during exchange it has to be set before  C
-!              calling particle in cell
-!                                                                         C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!     Subroutine: DES_TIME_MARCH                                       C
+!                                                                      C
+!     Purpose: Called in model/time_march.f to do DES calculations     C
+!              Main DEM driver routine                                 C
+!                                                                      C
+!                                                                      C
+!     Author: Jay Boyalakuntla                        Date: 21-Jun-04  C
+!     Reviewer: Sreekanth Pannala                     Date: 09-Nov-06  C
+!     Reviewer: Rahul Garg                            Date: 01-Aug-07  C
+!     Pradeep: do_nsearch has to be set for calling neighbour. Since   C
+!              this flag is used during exchange it has to be set      C
+!              before calling particle in cell                         C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE DES_TIME_MARCH
      

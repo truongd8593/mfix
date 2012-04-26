@@ -87,6 +87,10 @@
       e_young(:) = undefined
       v_poisson(:) = undefined
 
+      DES_D_P0(:) = UNDEFINED
+      DES_RO_S(:) = UNDEFINED
+      DES_MMAX = UNDEFINED_I
+
       DIMN = UNDEFINED_I  
       WX1 = UNDEFINED
       EX2 = UNDEFINED

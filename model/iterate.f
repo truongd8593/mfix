@@ -1,8 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: ITERATE(IER, NIT)                                      C
+!  Subroutine: ITERATE                                                 C
 !  Purpose: This module controls the iterations for solving equations  C
-!           Version 2.0                                                C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 12-APR-96  C
 !  Reviewer:                                          Date:            C
@@ -26,7 +25,6 @@
 !                                                                      C
 !  Variables referenced:                                               C
 !  Variables modified:                                                 C
-!                                                                      C
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
@@ -94,7 +92,6 @@
       INTEGER :: M
 ! average velocity
       DOUBLE PRECISION :: Vavg 
-  
       DOUBLE PRECISION :: errorpercent(0:MMAX)
       LOGICAL :: ABORT_IER
       CHARACTER*4 TUNIT 
@@ -102,15 +99,15 @@
 ! External functions
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
-                                    VAVG_U_S, VAVG_V_S, VAVG_W_S 
-!use the subroutine from machine.f
+                                    VAVG_U_S, VAVG_V_S, VAVG_W_S
+! use the subroutine from machine.f
       EXTERNAL CPU_TIME   
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
 !-----------------------------------------------
 
-! initializations      
+! initializations
       DT_prev = DT
       NIT = 0 
       RESG = ZERO 
@@ -193,7 +190,7 @@
 ! mechanism to set the normalization factor for the correction
 ! after the first iteration to the corresponding residual found 
 ! in the first iteration
-      IF (.NOT.SETG) THEN 
+      IF (.NOT.SETG) THEN
          IF (RESG > SMALL_NUMBER) THEN 
             NORMG = RESG 
             SETG = .TRUE. 
@@ -268,7 +265,8 @@
 
 ! Solve solids volume fraction correction equation for close-packed
 ! solids phases
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
+         DES_CONTINUUM_HYBRID) THEN
         IF (MMAX > 0) THEN
 
           IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN 
@@ -283,7 +281,7 @@
 ! continuity of the gas phase can get marked to be solved then this 
 ! loop should start at 0.
 
-!   	        IF (M .EQ. MCP) THEN             
+!   	        IF (M .EQ. MCP) THEN
 ! Volume fraction correction technique for one of the solids phase
 ! is not implemented.  This will only slow down convergence.
                IF (.FALSE.) THEN    
@@ -292,7 +290,7 @@
                   CALL CORRECT_1 (IER) 
                ELSE
                   CALL SOLVE_CONTINUITY(M,IER)
-                ENDIF
+               ENDIF
 
              ENDDO
           ENDIF   ! end if/else (mmax==1 .and. mcp /= undefined)
@@ -316,7 +314,8 @@
 
 ! Calculate P_star in cells where solids continuity equation is
 ! solved
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
+         DES_CONTINUUM_HYBRID) THEN
         IF (MMAX > 0 .AND. .NOT.FRICTION) &
            CALL CALC_P_STAR (EP_G, P_STAR, IER)
       ENDIF
@@ -325,7 +324,7 @@
       CALL CONV_ROP(IER)
 
       IF (RO_G0 /= ZERO) THEN
-! Solve fluid pressure correction equation              
+! Solve fluid pressure correction equation
          CALL SOLVE_PP_G (NORMG, RESG, IER) 
 ! Correct pressure, velocities, and density
          CALL CORRECT_0 (IER) 
@@ -363,7 +362,8 @@
       IF (ENERGY_EQ) CALL SOLVE_ENERGY_EQ (IER) 
 
 ! Solve granular energy equation
-      IF(.NOT.DISCRETE_ELEMENT) THEN
+      IF(.NOT.DISCRETE_ELEMENT .OR. &
+         DES_CONTINUUM_HYBRID) THEN
          IER = 0
          IF (GRANULAR_ENERGY) CALL SOLVE_GRANULAR_ENERGY (IER) 
          ABORT_IER = IER.eq.1
@@ -412,11 +412,11 @@
       IF (FULL_LOG) CALL DISPLAY_RESID (NIT, IER) 
 
 ! Determine course of simulation: converge, non-converge, diverge?
-      IF (MUSTIT == 0) THEN 
-! ---------------------------------------------------------------->>>              
+      IF (MUSTIT == 0) THEN
+! ---------------------------------------------------------------->>>
          IF (DT==UNDEFINED .AND. NIT==1) GOTO 50   !Iterations converged 
 
-! Perform checks and dump to screen every NLOG time steps         
+! Perform checks and dump to screen every NLOG time steps
          IF (MOD(NSTEP,NLOG) == 0) THEN 
             CALL CPU_TIME (CPU_NOW)
             CPUOS = (CPU_NOW - CPU_NLOG)/(TIME - TIME_NLOG) 
@@ -494,13 +494,13 @@
             ENDIF
          ENDIF
 
-         IER = 0  
+         IER = 0
          RETURN   ! for if mustit =0 (converged)
-! end converged: go back to time_march               
+! end converged: go back to time_march
 ! ----------------------------------------------------------------<<<
 
-! diverged 
-      ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN 
+! diverged
+      ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN
 ! ---------------------------------------------------------------->>>
          IF (FULL_LOG) THEN 
             CALL START_LOG 
@@ -524,12 +524,12 @@
 
          IER = 1 
          RETURN  ! for if mustit =2 (diverged)
-      ENDIF 
+      ENDIF
 ! end diverged: go back to time_march, decrease time step, try again      
 ! ----------------------------------------------------------------<<<
 
 ! not converged (mustit = 1, !=0,2 )
-! ----------------------------------------------------------------<<<      
+! ---------------------------------------------------------------->>>
       IF (NIT < MAX_NIT) THEN 
          MUSTIT = 0 
          GOTO 50 
@@ -623,7 +623,7 @@
 ! Dummy arguments
 !-----------------------------------------------
       INTEGER, INTENT(INOUT) :: NIT, MUSTIT
-      LOGICAL, INTENT(IN) :: doit      
+      LOGICAL, INTENT(IN) :: doit
 !-----------------------------------------------
 ! Local Variables      
 !-----------------------------------------------
@@ -632,16 +632,16 @@
       DOUBLE PRECISION, PARAMETER          :: TOL = 1E-03
       INTEGER, SAVE :: OUTIT
       LOGICAL, SAVE :: firstPass = .true.
-      
+
       DOUBLE PRECISION, SAVE  :: mdot_n, mdot_nm1, delp_n, delp_nm1, err
       DOUBLE PRECISION        :: mdot_0, delp_xyz 
-     
+
       CHARACTER, SAVE :: Direction
 !-----------------------------------------------
 ! Functions      
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: VAVG_Flux_U_G, VAVG_Flux_V_G, &
-                                     VAVG_Flux_W_G
+                                    VAVG_Flux_W_G
       LOGICAL, EXTERNAL :: IsNan
 !-----------------------------------------------     
 

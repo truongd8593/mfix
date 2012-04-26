@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: TRANSPORT_PROP(VISC, COND, DIFF, GRAN_DISS, IER)       C
+!  Subroutine: TRANSPORT_PROP                                          C
 !  Purpose: Calculate transport properties that vary with time         C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 17-JUL-92  C
@@ -15,16 +15,14 @@
 !                                                                      C
 !  Variables referenced: None                                          C
 !  Variables modified: None                                            C
-!                                                                      C
 !  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE TRANSPORT_PROP(VISC, COND, DIFF, GRAN_DISS, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -38,25 +36,21 @@
       USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
+! Flags to tell whether to calculate or not
+      LOGICAL, INTENT(IN) ::  VISC(0:DIMENSION_M), &
+                              COND(0:DIMENSION_M), &
+                              DIFF(0:DIMENSION_M)
+! Flags to tell whether to calculate or not
+      LOGICAL, INTENT(IN) :: GRAN_DISS(0:DIMENSION_M)
+!  Error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Local variables
 !-----------------------------------------------
-
-!                       Error index
-      INTEGER          IER
-
-!                      Phase index
-      INTEGER          M
-
-!                      Flags to tell whether to calculate or not
-      LOGICAL          VISC(0:DIMENSION_M), COND(0:DIMENSION_M), &
-                       DIFF(0:DIMENSION_M)
-
-!                      Flags to tell whether to calculate or not
-      LOGICAL          GRAN_DISS(0:DIMENSION_M)         
-                
+! Phase index
+      INTEGER :: M                
 !-----------------------------------------------
 
 ! Fluid viscosity
@@ -69,7 +63,7 @@
       IF (DIFF(0)) CALL CALC_DIF_G (IER) 
 
 
-      IF (.NOT. DISCRETE_ELEMENT) THEN
+      IF (.NOT. DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
          DO M = 1, MMAX 
 ! Solids conductivity
             IF (COND(M)) CALL CALC_K_S (M, IER) 
@@ -89,7 +83,7 @@
                ENDIF
             ENDIF
          ENDDO   ! end do (m=1,mmax)
-      ENDIF   ! end if (.not.discrete_element)
+      ENDIF   ! end if (.not.discrete_element .or des_continuum_hybrid)
       
       RETURN  
       END SUBROUTINE TRANSPORT_PROP 

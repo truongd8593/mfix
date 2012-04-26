@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CHECK_DATA_04                                          C
+!  Subroutine: CHECK_DATA_04                                           C
 !  Purpose: check the solid phase input section                        C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 02-DEC-91  C
@@ -13,19 +13,16 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced: MMAX, D_p, RO_s, EP_star                      C
-!  Variables modified: None                                            C
-!                                                                      C
-!  Local variables: LC                                                 C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE CHECK_DATA_04 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -37,41 +34,48 @@
       USE funits 
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
+! Local variables
 !-----------------------------------------------
       INTEGER :: LC, N
       CHARACTER*85 LONG_STRING      
 !-----------------------------------------------
 
+      IF (DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_HYBRID) THEN
+! override possible user settings on the following continuum flags
+
+! Set close_packed to true to prevent possible issues stemming from the
+! pressure correction equation.  Specifically, if closed_packed is false
+! then a mixture pressure correction equation is invoked and this is not
+! correctly setup for DEM.  To do so would require ensuring that
+! 1) the solids phase continuum quantities used in these equations are
+!    correctly set based on their DEM counterparts and 
+! 2) the pressure correction coefficients for such solids phases are 
+!    also calculated (currently these calculations are turned off 
+!    when using DEM)
+         CLOSE_PACKED(:) = .TRUE. 
+         MOMENTUM_X_EQ(1:DIM_M) = .FALSE.
+         MOMENTUM_Y_EQ(1:DIM_M) = .FALSE.
+         MOMENTUM_Z_EQ(1:DIM_M) = .FALSE. 
+
+! This quantity needs to be set until additional subroutines can be more
+! thoroughly turned off when DEM is invoked
+         NMAX(1:DIM_M) = 1
+
+! The quantities checked in this routine are generally specific to the
+! continuum model and not needed for the DEM.  So in the DEM the user
+! should not need to specify such quantities.  However, valid values of
+! mmax, d_p0 and ro_s are still needed for dem.  The corresponding of
+! those quantities are now done in check_des_data
+         RETURN
+      ENDIF
+
 
 ! Check MMAX
-      IF (MMAX<0 .OR. MMAX>DIMENSION_M) THEN 
+      IF (MMAX<0 .OR. MMAX>DIM_M) THEN 
          CALL ERROR_ROUTINE ('check_data_04', &
             'MMAX not specified or unphysical', 0, 2) 
-            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) MMAX, DIMENSION_M 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) MMAX, DIM_M 
          CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
-      ENDIF 
-
-      IF (MMAX > 0) THEN 
-         IF (C_E == UNDEFINED) CALL ERROR_ROUTINE ('check_data_04', &
-            'Coefficient of restitution (C_e) not specified', 1, 1) 
-         IF (C_F==UNDEFINED .AND. MMAX>=2 .AND. KT_TYPE .EQ. UNDEFINED_C) &
-            CALL ERROR_ROUTINE ('check_data_04',&
-               'Coefficient of friction (C_f) not specified',1,1) 
-
-         IF ((FRICTION .OR. SCHAEFFER) .AND. (PHI == UNDEFINED)) &
-            CALL ERROR_ROUTINE ('check_data_04', &
-               'Angle of internal friction (Phi) not specified',1,1)
-         LONG_STRING = 'Angle of wall-particle friction (Phi_w) &
-            &not specified'
-         IF ((FRICTION .OR. JENKINS) .AND. (PHI_W == UNDEFINED)) &
-             CALL ERROR_ROUTINE ('check_data_04',TRIM(LONG_STRING),1,1)
       ENDIF 
 
 ! Check D_p0
@@ -84,7 +88,7 @@
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       ENDDO 
-      DO LC = SMAX + 1, DIMENSION_M 
+      DO LC = SMAX + 1, DIM_M 
          IF (D_P0(LC) /= UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
                'too many D_p0 values specified', 0, 2) 
@@ -103,7 +107,7 @@
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       ENDDO 
-      DO LC = SMAX + 1, DIMENSION_M 
+      DO LC = SMAX + 1, DIM_M 
          IF (RO_S(LC) /= UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
                'too many RO_s values specified', 0, 2) 
@@ -120,6 +124,22 @@
                CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
             ENDIF 
          ENDDO 
+      ENDIF 
+
+      IF (MMAX > 0) THEN 
+         IF (C_E == UNDEFINED) CALL ERROR_ROUTINE ('check_data_04', &
+            'Coefficient of restitution (C_e) not specified', 1, 1) 
+         IF (C_F==UNDEFINED .AND. MMAX>=2 .AND. KT_TYPE .EQ. UNDEFINED_C) &
+            CALL ERROR_ROUTINE ('check_data_04',&
+               'Coefficient of friction (C_f) not specified',1,1) 
+
+         IF ((FRICTION .OR. SCHAEFFER) .AND. (PHI == UNDEFINED)) &
+            CALL ERROR_ROUTINE ('check_data_04', &
+               'Angle of internal friction (Phi) not specified',1,1)
+            LONG_STRING = 'Angle of wall-particle friction (Phi_w) &
+               &not specified'
+         IF ((FRICTION .OR. JENKINS) .AND. (PHI_W == UNDEFINED)) &
+             CALL ERROR_ROUTINE ('check_data_04',TRIM(LONG_STRING),1,1)
       ENDIF 
 
 ! Check EP_star
@@ -171,9 +191,9 @@
                NMAX(LC) = 1 
             ENDIF 
          ENDIF 
-         IF (NMAX(LC) > DIMENSION_N_S) THEN 
+         IF (NMAX(LC) > DIM_N_S) THEN 
             CALL ERROR_ROUTINE ('check_data_04', 'NMAX is too large', 0, 2) 
-               IF(DMP_LOG)WRITE (UNIT_LOG, 1050) LC, NMAX, DIMENSION_N_S 
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1050) LC, NMAX, DIM_N_S 
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       ENDDO 
@@ -189,7 +209,7 @@
                   !CALL ERROR_ROUTINE (' ', ' ', 1, 3) no need to abort as they will be read from database
                ENDIF 
             ENDDO 
-            DO N = NMAX(LC) + 1, DIMENSION_N_S 
+            DO N = NMAX(LC) + 1, DIM_N_S 
                IF (MW_S(LC,N) /= UNDEFINED) THEN 
                   CALL ERROR_ROUTINE ('check_data_04', &
                      'MW_s defined for N > NMAX(m)', 0, 2) 
@@ -236,10 +256,10 @@
       RETURN  
 
  1000 FORMAT(1X,/,1X,'MMAX        in  mfix.dat = ',I6,/,1X,&
-         'DIMENSION_M in  param.inc  = ',I6,/) 
+         'DIM_M in  param.inc  = ',I6,/) 
  1045 FORMAT(1X,/,1X,'NMAX is not specified for solids phase',I2) 
  1050 FORMAT(1X,/,1X,'NMAX(',I2,')   in  mfix.dat = ',I6,/,1X,&
-         'DIMENSION_N_s in  param.inc  = ',I6,/) 
+         'DIM_N_s in  param.inc  = ',I6,/) 
  1100 FORMAT(1X,/,1X,'D_p0(',I2,') in mfix.dat = ',G12.5) 
  1200 FORMAT(1X,/,1X,'D_p0(',I2,') = ',G12.5,/,1X,'MMAX in mfix = ',I2,/) 
  1300 FORMAT(1X,/,1X,'RO_s(',I2,') in mfix.dat = ',G12.5) 

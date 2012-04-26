@@ -1,7 +1,6 @@
-!
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: MFIX                                                   C
+!  Subroutine: MFIX                                                    C
 !  Purpose: The main module in the MFIX program                        C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 29-JAN-92  C
@@ -39,13 +38,11 @@
 !  Local variables:       CPU1, CPUTIME_USED,L                         C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       PROGRAM MFIX 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -58,187 +55,153 @@
       USE parallel_mpi
       USE discretelement
       USE mfix_pic
-
-!DISTIO      
-      USE cdist      
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+      USE cdist
+      USE MFIX_netcdf
       USE fldvar
       USE cutcell
       USE quadric
       USE dashboard
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-
-
+      USE qmom_kinetic_equation
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Local variables
 !-----------------------------------------------
+! Final value of CPU time.
+      DOUBLE PRECISION :: CPU1
+! CPU time used for the computations.
+      DOUBLE PRECISION :: CPUTIME_USED
+! CPU time unit.
+      CHARACTER(LEN=4) :: TUNIT
+! Save TIME in input file for RESTART_2
+      DOUBLE PRECISION :: TIME_SAVE
+! Temporary storage for DT
+      DOUBLE PRECISION :: DT_tmp
+! loop counter
+      INTEGER :: L
+! variable needed for including function.inc
+       INTEGER :: IJK 
+! Error index
+      INTEGER :: IER
+! DISTIO variable for specifying the mfix version 
+      CHARACTER :: version*512      
 
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                       Final value of CPU time.
-       DOUBLE PRECISION CPU1
-!
-!                       CPU time used for the computations.
-       DOUBLE PRECISION CPUTIME_USED
-! JFD
-!                       CPU time unit.
-      CHARACTER(LEN=4)  :: TUNIT
-!
-!                       Save TIME in input file for RESTART_2
-       DOUBLE PRECISION TIME_SAVE
-!
-!                       Temporary storage for DT
-       DOUBLE PRECISION DT_tmp
-!
-!                       loop counter
-      INTEGER           L
-!
-!                      Error index
-      INTEGER          IER
-!DISTIO
-      character :: version*512      
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      external cpu_time
-!-----------------------------------------------
-!
 !$      INTEGER num_threads, threads_specified, omp_id
 !$      INTEGER mp_numthreads, omp_get_num_threads
 !$      INTEGER omp_get_thread_num      
-      INTEGER IJK
+
+!-----------------------------------------------
+! External functions
+!-----------------------------------------------
+      external cpu_time
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
+!-----------------------------------------------
 
-!DISTIO
-      ! note: the value below for version must be the same as
-      !       the value of version in mfix.f
-      !       If you change it in this subroutine, you must
-      !       change it in write_res0.f also
-      !   
-      !       The value should also be consistent with the check
-      !       in read_res0
-      
-	version = 'RES = 01.6'
+! DISTIO
+! If you change the value below in this subroutine, you must also
+! change it in write_res0.f and the value should also be consistent
+! with the check in read_res0
+      version = 'RES = 01.6'
 
-	bDoing_postmfix = .false.
-	
-!// 010 Initialize MPI & get ranks & total PEs employed
-    call parallel_init
+      bDoing_postmfix = .false.
+
+      call parallel_init
     
-    ! we want only PE_IO to write out common error messages
-    if(enable_dmp_log)then
-      dmp_log = .true.
-    elseif(mype == pe_io) then
-      dmp_log = .true.
-    else
-      dmp_log = .false.
-    endif
-!
+! we want only PE_IO to write out common error messages
+      if(enable_dmp_log)then
+         dmp_log = .true.
+      elseif(mype == pe_io) then
+         dmp_log = .true.
+      else
+         dmp_log = .false.
+      endif
+
 ! set the version.release of the software
-!
       ID_VERSION = '2012-1'
 
-!
+
 ! set automatic restart flag to false
 !      AUTOMATIC_RESTART = .FALSE.
 !      ITER_RESTART      = 1
-!
-!!   Specify the number of processors to be used
-!
+
+! specify the number of processors to be used
 !$      WRITE(*,'(A,$)') 'Enter the number of threads to be used for SMP: '
 !$      READ(*,*) threads_specified
 !$      call omp_set_num_threads(threads_specified)
-!
-!!       Find the number of processors used
-!
-!!!$omp  parallel
+
+! Find the number of processors used
+!!$omp  parallel
 !$      num_threads = omp_get_num_threads()
 !$      omp_id = omp_get_thread_num()
 !$      if(omp_id.eq.0) Write(*,*)' Number of threads used for SMP = ',  num_threads
-!!!$omp  end parallel
-!
-!  Set machine dependent constants
-!
+!!$omp  end parallel
+
+
+! Set machine dependent constants
       CALL MACHINE_CONS 
-!
-!  Get the date and time.
-!      They give the unique run_id in binary output files
-!
+
+! Get the date and time. They give the unique run_id in binary output
+! files
       CALL GET_RUN_ID 
-!
-!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
-!            timestamp at the beginning of execution
+
+! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch 
+! queue terminates. timestep at the beginning of execution
       CALL CPU_TIME (CPU00)
-!
-!   Read input data, check data, do computations for IC and BC locations
-!   and flows, and set geometry parameters such as X, X_E, DToDX, etc.
-!
+
+! Read input data, check data, do computations for IC and BC locations
+! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
       CALL GET_DATA 
 
-
-
-!
-!  Initialize all field variables as undefined
-!
+! Initialize all field variables as undefined
       CALL INIT_FVARS 
 
-!
-!  Set the flags for identifying computational cells
-!
+! Set the flags for identifying computational cells
       CALL SET_FLAGS 
 
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+! JFD: cartesian grid implementation
       CALL CHECK_DATA_CARTESIAN
       IF(CARTESIAN_GRID) THEN
          CALL CUT_CELL_PREPROCESSING
       ELSE
          CALL ALLOCATE_DUMMY_CUT_CELL_ARRAYS
       ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-!
-!  Set constant physical properties
-!
+
+! Set constant physical properties
       CALL SET_CONSTPROP 
       
-!
-!
-!  Write the initial part of the standard output file
-!
+! Write the initial part of the standard output file
       CALL WRITE_OUT0
       CALL WRITE_FLAGS 
 
-!
-!  Write the initial part of the special output file(s)
-!
+! Write the initial part of the special output file(s)
       CALL WRITE_USR0 
       
-!$
 !$    CALL START_LOG 
 !$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '  
 !$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' Number of processors used = ', threads_specified  
 !$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '  
 !$    CALL END_LOG 
 
-!
 !  setup for PC quickwin application
-!
       CALL PC_QUICKWIN 
-!
+
+
+
   101 CONTINUE
+
+
+
+! if not netcdf writes asked for ... globally turn off netcdf
+      if (MFIX_usingNETCDF()) then
+         bGlobalNetcdf = .false.
+         do L = 1,20
+            if (bWrite_netcdf(L)) bGlobalNetcdf = .true.
+         enddo
+      endif
+
+
       IF(AUTOMATIC_RESTART) THEN
          RUN_TYPE = 'RESTART_1'
          AUTOMATIC_RESTART = .FALSE.
@@ -250,238 +213,188 @@
          CALL SET_FLAGS
          CALL SET_CONSTPROP
       ENDIF
-!
+
       DT_TMP = DT 
       SELECT CASE (TRIM(RUN_TYPE))  
-      CASE ('NEW')  
-!
-!  Write the initial part of the restart files
-!
-         CALL WRITE_RES0 
 
+      CASE ('NEW')  
+! Write the initial part of the restart files
+         CALL WRITE_RES0 
          DO L = 1, N_SPX 
             CALL WRITE_SPX0 (L, 0) 
-         END DO 
-      CASE ('RESTART_1')  
-!
+         ENDDO 
+
+       CASE ('RESTART_1')  
 ! Read the time-dependant part of the restart file
-!
          CALL READ_RES1 
-!
          CALL START_LOG 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1010) TIME, NSTEP 
          CALL END_LOG 
          if (myPE == PE_IO) WRITE (UNIT_OUT, 1010) TIME, NSTEP 
          IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP 
-!
+
       CASE ('RESTART_2')  
-!
          TIME_SAVE = TIME 
-!DISTIO
+! DISTIO
          if (myPE .ne. PE_IO .and. bDist_IO .and. bStart_with_one_res) then
              write (unit_res,rec=1) version
              write (unit_res,rec=2) 4
              write (unit_res,rec=3) 4
-         end if	 
-	 
+         endif 
+ 
          CALL READ_RES1 
          TIME = TIME_SAVE 
-!
          CALL START_LOG 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1010) TIME, NSTEP 
          CALL END_LOG 
          if (myPE == PE_IO) WRITE (UNIT_OUT, 1010) TIME, NSTEP 
          IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP 
-!
          CALL WRITE_RES0 
          CALL WRITE_RES1 
          DO L = 1, N_SPX 
             CALL WRITE_SPX0 (L, 0) 
             CALL WRITE_SPX1 (L, 0) 
          END DO 
+         call write_netcdf(0,0,time)
+
       CASE DEFAULT 
-!
          CALL START_LOG 
-         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' MFIX: Do not know how to process' 
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) &
+            ' MFIX: Do not know how to process' 
          IF(DMP_LOG)WRITE (UNIT_LOG, *) ' RUN_TYPE in data file' 
          CALL END_LOG 
          call mfix_exit(myPE)  
-!
+
       END SELECT 
-!
-       call MPI_Barrier(MPI_COMM_WORLD,mpierr)   !//AIKEPARDBG
+
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)   
 
       IF (DT_TMP /= UNDEFINED) THEN 
          DT = MAX(DT_MIN,MIN(DT_MAX,DT)) 
-!
       ELSE 
          DT = DT_TMP 
-!
       ENDIF 
-!
-!  Set arrays for computing indices
-!
+
+! Set arrays for computing indices
       CALL SET_INCREMENTS 
-!
-!
-!  Set arrays for computing indices for higher order scheme
-!
+
+! Set arrays for computing indices for higher order scheme
       CALL SET_INCREMENTS3 
-!
-!  Set the flags for wall surfaces impermeable and identify flow boundaries
-!  using FLAG_E, FLAG_N, and FLAG_T
-!
+
+! Set the flags for wall surfaces impermeable and identify flow 
+! boundaries using FLAG_E, FLAG_N, and FLAG_T
       CALL SET_FLAGS1 
 
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-!
-!  Calculate cell volumes and face areas
-!
+! Calculate cell volumes and face areas
       IF(.NOT.CARTESIAN_GRID)  THEN
          CALL SET_GEOMETRY1 
        ELSE
          CALL SET_GEOMETRY
        ENDIF
-!
-!  Find corner cells and set their face areas to zero
-!
+
+! Find corner cells and set their face areas to zero
       IF(.NOT.CARTESIAN_GRID)  THEN
          CALL GET_CORNER_CELLS (IER) 
       ELSE
          IF (SET_CORNER_CELLS)  CALL GET_CORNER_CELLS (IER)
       ENDIF
 
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-!
-!  Set initial conditions
-!
+
+! Set initial conditions
       CALL SET_IC 
 
-!
-!  Set boundary conditions
-!
+! Set boundary conditions
       CALL ZERO_NORM_VEL 
       CALL SET_BC0 
 
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+! JFD: cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_BC0 
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-!
-!  Set gas mixture molecular weight
-!
+
+! Set gas mixture molecular weight
       CALL SET_MW_MIX_G 
 
-
-!
-!  Set the pressure field for a fluidized bed
-!
+! Set the pressure field for a fluidized bed
       IF (RUN_TYPE == 'NEW') CALL SET_FLUIDBED_P 
 
-!
-!  Initialize gas densities
-!
+! Initialize gas densities
       CALL SET_RO_G 
 
-!
-!  Initialize time dependent boundary conditions
-!
+! Initialize time dependent boundary conditions
       CALL SET_BC1 
 
-!
-!  Check the field variable data and report errors.
-!
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      IF(.NOT.CARTESIAN_GRID)      CALL CHECK_DATA_20
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+! Check the field variable data and report errors.
+      IF(.NOT.CARTESIAN_GRID)  CALL CHECK_DATA_20
 
-
-
-! Set constants and allocate/initialize DEM variables
+! Initialization of DEM quantities: set initial conditions (bulk
+! density, velocities), boundary conditions (mass inlet/outlet),
+! physical constants, PIC, ..
+! This is best perform once all the fluid geometry information has been
+! obtained and initial fields set.
       IF(DISCRETE_ELEMENT) THEN
-! moving all of DES related initializations from get_data.f to here.
-! This is because it is best to initialize DES once all the fluid and
-! geometry information has been obtained and initial fields set. 
-! RG 2/15/2011         
          CALL CHECK_DES_DATA
          CALL CHECK_DES_RXNS
          CALL CHECK_DES_THERMO
          CALL CHECK_DES_IC
          CALL CHECK_DES_BC
          CALL MAKE_ARRAYS_DES
-         !STOP
       ELSE
 ! If discrete_element is .false. then overwrite the following user DES
-! logicals which may be set to true in the input file 
+! logicals which may be set to true in the input file.  Only need to set
+! those that may impact continuum aspects 
          DES_CONTINUUM_COUPLED = .FALSE.
          DES_INTERP_ON = .FALSE.
+         DES_CONTINUUM_HYBRID = .FALSE.
          TSUJI_DRAG = .FALSE.
          PRINT_DES_DATA = .FALSE.
          MPPIC = .FALSE. 
          DES_ONEWAY_COUPLED = .false. 
-         USE_COHESION = .FALSE.
-         SQUARE_WELL = .FALSE.
-         VAN_DER_WAALS = .FALSE. 
-	 WALL_VDW_OUTER_CUTOFF = ZERO ! for the algorithm to work without cohesion
       ENDIF
 
-!DISTIO
-! for creating files needed by post_mfix with distributed IO
+      IF (QMOMK) THEN
+          CALL QMOMK_MAKE_ARRAYS
+      ENDIF
+      
 
-!AEOLUS DEBUG PRINT 
-    if (DBGPRN_LAYOUT .or. bdist_io) then
+! AEOLUS: debug prints 
+      if (DBGPRN_LAYOUT .or. bdist_io) then
 !     write (*,*) myPE , ' E.4 ... version = ' , version(1:33)
-      call debug_write_layout(1,ier)
-      call write_parallel_info(1,ier)
-    endif
-!
-!  Initializations for CPU time calculations in iterate
-!
+         call debug_write_layout(1,ier)
+         call write_parallel_info(1,ier)
+      endif
+
+! Initializations for CPU time calculations in iterate
       CPUOS = 0. 
       CALL CPU_TIME (CPU1) 
       CPU_NLOG = CPU1 
       TIME_NLOG = TIME - DT 
 
-!  Get the initial value of CPU time
-!
+! Get the initial value of CPU time
       CALL CPU_TIME (CPU0) 
-!
-!  Find the solution of the equations from TIME to TSTOP at
-!  intervals of DT
-!
-      CALL TIME_MARCH
-      IF(AUTO_RESTART.AND.AUTOMATIC_RESTART.AND.ITER_RESTART.LE.10) GOTO 101
 
-!  Call user-defined subroutine after time-loop.
+! Find the solution of the equations from TIME to TSTOP at
+! intervals of DT
+      CALL TIME_MARCH
+      IF(AUTO_RESTART.AND.AUTOMATIC_RESTART&
+         .AND.ITER_RESTART.LE.10) GOTO 101
+
+! Call user-defined subroutine after time-loop.
       IF (CALL_USR) CALL USR3
-!
-!  Get the final value of CPU time.  The difference gives the
-!  CPU time used for the computations.
-!
+
+! Get the final value of CPU time.  The difference gives the
+! CPU time used for the computations.
       CALL CPU_TIME (CPU1) 
-!
-!  Compute the CPU time and write it out in the .OUT file.
-!
+
+! Compute the CPU time and write it out in the .OUT file.
       CPUTIME_USED = CPU1 - CPU0 - CPU_IO
       if(myPE.eq.root) then
-      WRITE(*,*) '************** CPU TIME for IO **********************',CPU_IO
+      WRITE(*,*) &
+         '************** CPU TIME for IO **********************',&
+         CPU_IO
       endif
       CALL WRITE_OUT3 (CPUTIME_USED) 
 
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+
+! JFD: cartesian grid implementation
       IF(WRITE_DASHBOARD) THEN
          IF(DT>=DT_MIN) THEN
             RUN_STATUS = 'Complete.'
@@ -492,11 +405,8 @@
          CALL UPDATE_DASHBOARD(0,CPUTIME_USED,TUNIT)
       ENDIF
       IF(CARTESIAN_GRID)  CALL CLOSE_CUT_CELL_FILES
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
 
-!// Finalize and terminate MPI
+! Finalize and terminate MPI
       call parallel_fin
             
       STOP  
@@ -504,15 +414,15 @@
  1010 FORMAT(/1X,70('*')//' From: MFIX',/&
          ' Message: Read in data from .RES file for TIME = ',G12.5,/&
          ' Time step number (NSTEP) =',I7,/1X,70('*')/) 
+
       END PROGRAM MFIX 
       
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: debug_write(debuglvl, ier )                            C
-!  Purpose: Write out full geometry index setup information for the case C
+!  Purpose: Write out full geometry index setup information for the
+!  case
 !                                                                      C
 !  Author: Aytekin Gel                                Date: 19-SEP-03  C
 !  Reviewer:                                          Date:            C
@@ -526,11 +436,11 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE debug_write_layout(debuglvl, IER)
 
 !-----------------------------------------------
-!   M o d u l e s
+! Modules
 !-----------------------------------------------
       USE param
       USE param1
@@ -543,45 +453,41 @@
       USE sendrecv3      
       USE indices
       USE leqsol
-!DISTIO      
       USE cdist      
       USE funits
-      USE run       ! added for AMG input parameters entered in mfix.dat
-!AE AMG 091503
+      USE run
       USE time_cpu
-!      USE hypre
       IMPLICIT NONE
-      
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Dummy arguments
 !-----------------------------------------------
+! Error indicator
+      INTEGER :: IER
+! debug level
+      INTEGER :: debuglvl
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
+! phase index
+      INTEGER :: M
+! indices      
+      INTEGER :: i, j, k, ijk, ijk_GL, ijk_PROC, ijk_IO
 !
-!                      Error indicator
-      INTEGER ::          IER
-!                      phase index
-      INTEGER ::          M
-!                      debug level
-      INTEGER ::          debuglvl
-      
-      INTEGER ::      i,j,k,ijk,ijk_GL,ijk_PROC,ijk_IO
-!
-      integer :: i_of_g,j_of_g,k_of_g
-      integer :: indxA,indxA_gl,indxB,indxB_gl,indxC,indxC_gl
-      integer :: indxD,indxD_gl,indxE,indxE_gl,indxF,indxF_gl
-      integer :: indxG,indxG_gl,indxH,indxH_gl      
+      integer :: i_of_g, j_of_g, k_of_g
+      integer :: indxA, indxA_gl, indxB, indxB_gl, indxC, indxC_gl
+      integer :: indxD, indxD_gl, indxE, indxE_gl, indxF, indxF_gl
+      integer :: indxG, indxG_gl, indxH, indxH_gl      
 !            
       logical :: amgdbg = .TRUE.
-
       
       character fname*80
-!
+!-----------------------------------------------
       INCLUDE 'function.inc'
       
-  
-       k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
-       i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1))) &
-                     - 1)/(jmax3-jmin3+1)) + imin3
-       j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
+      k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
+      i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)* &
+                           (jmax3-jmin3+1))) - 1)/(jmax3-jmin3+1)) + imin3
+      j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
                      (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + jmin3  
                       
 
@@ -603,7 +509,7 @@
       write (11,*) ' '
  
 
-      if (AMGDBG .or. bDist_IO) then
+    IF (AMGDBG .OR. bDist_IO) THEN
       write(11,"('BLK1: Running from istart3,iend3 .AND. jstart3, jend3 .AND. kstart3, kend3')")
       write(11,"(' (   i ,    j,     k) =>    ijk      ijk_GL     ijk_PROC    ijk_IO')") 
       write(11,"(' ====================      =====     =======    ========    ======')")
@@ -616,9 +522,9 @@
              ijk_IO = FUNIJK_IO(i,j,k)            
              write(11,"(' (',I4,' , ',I4,' , ',I4,') => ',4(I8,' , '))") &
                                          i,j,k,ijk,ijk_GL,ijk_PROC,ijk_IO
-          END DO
-        END DO
-      END DO
+          ENDDO
+        ENDDO
+      ENDDO
 
       write(11,"(/,/,'BLK2: Print out Bottom, South, West, East, North, Top neighbors')")
       write(11,"(' (   i ,    j,     k) =>    ijk    ijk_GL    B_of    S_of    W_of    E_of    N_of    T_of')") 
@@ -631,9 +537,9 @@
              write(11,"(' (',I4,' , ',I4,' , ',I4,') => ',2(I7,' , '),6(I7,2X))") &
                                          i,j,k,ijk,ijk_GL,bottom_of(ijk),south_of(ijk),west_of(ijk),&
                                          east_of(ijk),north_of(ijk),top_of(ijk)
-          END DO
-        END DO
-      END DO
+          ENDDO
+        ENDDO
+      ENDDO
 
       write(11,"(/,/,'BLK3: Print out km, jm, im, ip, jp, kp neighbors')")      
       write(11,"(' (   i ,    j,     k) =>    ijk    ijk_GL    km_of   jm_of   im_of   ip_of   jp_of   kp_of')") 
@@ -646,9 +552,9 @@
              write(11,"(' (',I4,' , ',I4,' , ',I4,') => ',2(I7,' , '),6(I7,2X))") &
                                          i,j,k,ijk,ijk_GL,km_of(ijk),jm_of(ijk),im_of(ijk),&
                                          ip_of(ijk),jp_of(ijk),kp_of(ijk)
-          END DO
-        END DO
-      END DO
+          ENDDO
+        ENDDO
+      ENDDO
 
       write(11,"(/,'BLK4a: Active Fluid Cells:FLUID_AT(ijk)=.T.',/,&
      &           ' (   i ,    j,     k) =>    ijk  [   x ,     ,     z]')") 
@@ -663,7 +569,7 @@
 !          write(11,"(' (',I4,' , ',I4,' , ',I4,') => ',I8)") I,J,K,ijk
            write(11,"(' (',I4,' , ',I4,' , ',I4,') => ',I8,' [',E12.5,',',E12.5,' ]')") I,J,K,ijk,X(i),Z(k)
          ENDIF
-      END DO
+      ENDDO
 
       write(11,"(/,'BLK4b: Cells that are (.NOT.WALL_AT(IJK)) = .T.',/,&
      &           ' (   i ,    j,     k) =>    ijk  [   x ,     ,     z]')")
@@ -677,7 +583,7 @@
 !          write(11,"(' (',I4,' , ',I4,' , ',I4,') => ',I8)") I,J,K,ijk
            write(11,"(' (',I4,' , ',I4,' , ',I4,') => ',I8,' [',E12.5,',',E12.5,' ]')") I,J,K,ijk,X(i),Z(k)
          ENDIF
-      END DO
+      ENDDO
 
       DO k = kstart3, kend3 
         DO i = istart3,iend3
@@ -716,10 +622,9 @@
              if (i == iend2 .AND. j == jend2) then 
                  indxC = ijk
                  indxC_gl = ijk_GL
-             endif                       
-
-          END DO
-        END DO
+             endif
+          ENDDO
+        ENDDO
         write(11,"('BLK5:')")
         write(11,"(57('='))")
         write(11,"('k= ',I5,/,57('='))") k
@@ -741,7 +646,7 @@
 !                                         i,j,k,ijk,ijk_GL,bottom_of(ijk),south_of(ijk),west_of(ijk),&
 !                                        east_of(ijk),north_of(ijk),top_of(ijk)
 
-      END DO
+      ENDDO
   
 !      write(UNIT_LOG,"(/,' (   i ,    j,     k) =>    ijk (Active Fluid)')") 
 !      write(UNIT_LOG,"(' ====================      =====')")
@@ -757,14 +662,12 @@
 !      END DO
 
 
-      endif     ! if (AMGDBG) branch
+    endif   ! end if(amgdbg .or. bdist_io)
             
       M = 0 
 !      CALL WRITE_AB_M (A_M, B_M, IJKMAX2, M, IER)      
-      
 
-
-      if (AMGDBG .or. bDist_IO) then
+    IF (AMGDBG .OR. bDist_IO) THEN
       write(11,"(/,/,'BLK6: ========= ORIGINAL MFIX VARIABLES ===========')")
       write(11,"('PE ',I5,': imin1  = ',I6,3X,'imax1= ',I6,/,'PE ',I5,': jmin1  = ',I6,3X,'jmax1= ',I6)") & 
              myPE,imin1,imax1,myPE,jmin1,jmax1
@@ -824,16 +727,20 @@
              myPE,istart3,iend3,myPE,jstart3,jend3
       write(11,"('PE ',I5,': kstart3= ',I6,3X,'kend3= ',I6,/,'----------------------')") & 
              myPE,kstart3,kend3
-      endif     ! if (AMGDBG) branch
+
+    ENDIF   ! end if(amgdbg .or. bdist_io)
       
       close(unit=11)
 
 
-      return
-      
-      
+      RETURN      
       END SUBROUTINE DEBUG_WRITE_LAYOUT
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE write_parallel_info(debuglvl, IER)
 
@@ -852,41 +759,41 @@
       USE indices
       USE leqsol
       USE funits
-      USE run       ! added for AMG input parameters entered in mfix.dat
-!AE AMG 091503
+      USE run       
       USE time_cpu
-!      USE hypre
       IMPLICIT NONE
-      
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Dummy arguments
 !-----------------------------------------------
+! Error indicator
+      INTEGER :: IER
+! debug level
+      INTEGER :: debuglvl
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
+! phase index
+      INTEGER :: M
+! indices      
+      INTEGER :: i, j, k, ijk, ijk_GL, ijk_PROC, ijk_IO
 !
-!                      Error indicator
-      INTEGER ::          IER
-!                      phase index
-      INTEGER ::          M
-!                      debug level
-      INTEGER ::          debuglvl
-      
-      INTEGER ::      i,j,k,ijk,ijk_GL,ijk_PROC,ijk_IO
-!
-      integer :: i_of_g,j_of_g,k_of_g
-      integer :: indxA,indxA_gl,indxB,indxB_gl,indxC,indxC_gl
-      integer :: indxD,indxD_gl,indxE,indxE_gl,indxF,indxF_gl
-      integer :: indxG,indxG_gl,indxH,indxH_gl      
+      integer :: i_of_g, j_of_g, k_of_g
+      integer :: indxA, indxA_gl, indxB, indxB_gl, indxC, indxC_gl
+      integer :: indxD, indxD_gl, indxE, indxE_gl, indxF, indxF_gl
+      integer :: indxG, indxG_gl, indxH, indxH_gl      
 !            
       logical :: amgdbg = .TRUE.
       
       character fname*80
-!
+!-----------------------------------------------
+
       INCLUDE 'function.inc'
       
   
-       k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
-       i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1))) &
+      k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
+      i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1))) &
                      - 1)/(jmax3-jmin3+1)) + imin3
-       j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
+      j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
                      (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + jmin3  
                       
 !DISTIO
@@ -897,12 +804,10 @@
       open (unit=11,file=fname,status='unknown')
       
       write (11,*) myPe , ' = myPE'
- 
   
-       write (11,*) myPE , istart3,iend3
-       write (11,*) myPE , jstart3,jend3
-       write (11,*) myPE , kstart3,kend3
-
+      write (11,*) myPE , istart3,iend3
+      write (11,*) myPE , jstart3,jend3
+      write (11,*) myPE , kstart3,kend3
       
       write(11,"('BLK1: Running from istart3,iend3 .AND. jstart3, jend3 .AND. kstart3, kend3')")
       write(11,"(' (   i ,    j,     k)       ijk      ijk_GL     ijk_PROC    ijk_IO')") 
@@ -916,19 +821,15 @@
              ijk_IO = FUNIJK_IO(i,j,k)            
              write(11,"('  ',I4,'   ',I4,'   ',I4,'     ',4(I8,'   '))" ) &
                                          i,j,k,ijk,ijk_GL,ijk_PROC,ijk_IO
-          END DO
-        END DO
-      END DO
+          ENDDO
+        ENDDO
+      ENDDO
 
-            
       M = 0 
 !      CALL WRITE_AB_M (A_M, B_M, IJKMAX2, M, IER)      
       
-
-
       close(unit=11)
 
-
-      return
+      RETURN
       END SUBROUTINE write_parallel_info
 

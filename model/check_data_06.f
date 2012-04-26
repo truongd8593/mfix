@@ -1,7 +1,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CHECK_DATA_06                                          C
+!  Subroutine: CHECK_DATA_06                                           C
 !  Purpose: check the initial conditions input section                 C
+!     - check geometry of any specified IC region                      C
+!     - check specification of physical quantities                     C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 02-DEC-91  C
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 27-JAN-92  C
@@ -13,22 +15,16 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced: IC_X_w, IC_X_e, IC_Y_s, IC_Y_n, IC_Z_b        C
-!                        IC_Z_t, DX, IMAX, DY, JMAX, DZ, KMAX          C
-!                         IMIN1, IMAX1, JMIN1, JMAX1, KMIN1, KMAX1     C
-!  Variables modified: IC_DEFINED, IC_I_w, IC_I_e, IC_J_s, IC_J_n      C
-!                      IC_K_b, IC_k_t, ICBC_FLAG                       C
-!                                                                      C
-!  Local variables:  ICV, I_w, I_e, J_s, J_n, K_b, K_t, L4              C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE CHECK_DATA_06 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -44,35 +40,35 @@
       USE mpi_utility      
       USE sendrecv    
       USE rxns
-      
+      USE discretelement      
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
+! Local variables
 !-----------------------------------------------
 !
-!    ICV,I,J,k,L4 - loop/variable indices
+!    ICV,I,J,K  - loop/variable indices
 !    I_w,I_e    -  cell indices in X direction from IC_X_e,IC_X_w
 !    J_s,J_n    -  cell indices in Y direction from IC_Y_s,IC_Y_n
 !    K_b,K_t    -  cell indices in Z direction from IC_Z_b,IC_Z_t
 !    IC2 - Last two digits of IC
-!
-      INTEGER I_w , I_e , J_s , J_n , K_b , K_t , ICV
-      INTEGER I, J, k, IJK, IC2, M, N, IER
-!
+
+      INTEGER :: ICV
+      INTEGER :: IC2
+      INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
+      INTEGER :: I, J, K, IJK
+      INTEGER :: M, N, IER
       DOUBLE PRECISION SUM, SUM_EP, old_value, DP_TMP(MMAX)
 
 !-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
+! External functions
 !-----------------------------------------------
       LOGICAL , EXTERNAL :: COMPARE 
 !-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
+!-----------------------------------------------
+
 
 ! Read thermochemical database
       If(.not.database_read .and. species_name(1) /= UNDEFINED_C) &
@@ -81,7 +77,6 @@
 
 ! Initialize the icbc_flag array.  If not a NEW run then do not
 ! check the initial conditions.
-
        DO K = Kstart3, Kend3       
          DO J = Jstart3, Jend3 
            DO I = Istart3, Iend3 
@@ -137,7 +132,7 @@
                       = 'S--' 
                ENDIF 
 
-!              corner cells are wall cells
+! corner cells are wall cells
                IF ((I==IMIN3 .OR. I==IMIN2 .OR. I==IMAX2 .OR. I==IMAX3) .AND. &
                    (J==JMIN3 .OR. J==JMIN2 .OR. J==JMAX2 .OR. J==JMIN3) .AND. &
                    (K==KMIN3 .OR. K==KMIN2 .OR. K==KMAX2 .OR. K==KMAX3)) THEN 
@@ -150,6 +145,7 @@
       ENDDO 
 
       
+! Check geometry of any specified IC region      
       DO ICV = 1, DIMENSION_IC 
          IC_DEFINED(ICV) = .FALSE. 
          IF (IC_X_W(ICV) /= UNDEFINED) IC_DEFINED(ICV) = .TRUE. 
@@ -164,7 +160,9 @@
          IF (IC_J_N(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
          IF (IC_K_B(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
          IF (IC_K_T(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
+
          IF (IC_DEFINED(ICV)) THEN 
+
             IF (IC_X_W(ICV)==UNDEFINED .AND. IC_I_W(ICV)==UNDEFINED_I) THEN 
                IF (NO_I) THEN 
                   IC_X_W(ICV) = ZERO 
@@ -214,8 +212,9 @@
                   call mfix_exit(myPE) 
                ENDIF 
             ENDIF 
-         ENDIF 
-      ENDDO 
+
+         ENDIF   ! end if (ic_defined(icv))
+      ENDDO   ! end loop over (icv = 1,dimension_ic)
 
 
       DO ICV = 1, DIMENSION_IC 
@@ -272,13 +271,16 @@
                IC_K_T(ICV) = K_T 
             ENDIF 
          ENDIF 
-      ENDDO 
+
+      ENDDO   ! end loop over (icv=1,dimension_ic)
 
       
-      DO ICV = 1, DIMENSION_IC 
-         IF (IC_DEFINED(ICV)) THEN 
 
-!   For Restart runs IC is defined only if IC_TYPE='PATCH'
+      DO ICV = 1, DIMENSION_IC 
+
+         IF (IC_DEFINED(ICV)) THEN 
+!----------------------------------------------------------------->>>
+! For restart runs IC is defined only if IC_TYPE='PATCH'
             IF (RUN_TYPE/='NEW' .AND. IC_TYPE(ICV)/='PATCH') THEN 
                IC_DEFINED(ICV) = .FALSE. 
                CYCLE  
@@ -295,10 +297,13 @@
             IF (IC_K_T(ICV)<KMIN1 .OR. IC_K_T(ICV)>KMAX1) GO TO 900 
 
 
-!  If a 'PATCH' need not check whether all the variables are specified
+! If IC_TYPE is 'PATCH' then do not need to check whether all the
+! variables are specified (otherwise check)
             IF (IC_TYPE(ICV) /= 'PATCH') THEN 
 
-!  Check the specification of physical quantities
+! Check the specification of physical quantities 
+! GAS PHASE Quantities
+! -------------------------------------------->>>
                IF (IC_U_G(ICV) == UNDEFINED) THEN 
                   IF (NO_I) THEN 
                      IC_U_G(ICV) = ZERO 
@@ -307,7 +312,6 @@
                      call mfix_exit(myPE) 
                   ENDIF 
                ENDIF 
-
                IF (IC_V_G(ICV) == UNDEFINED) THEN 
                   IF (NO_J) THEN 
                      IC_V_G(ICV) = ZERO 
@@ -324,7 +328,7 @@
                      call mfix_exit(myPE) 
                   ENDIF 
                ENDIF 
-       
+
                IF (IC_EP_G(ICV) == UNDEFINED) THEN 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_EP_g', ICV 
                   call mfix_exit(myPE) 
@@ -346,7 +350,7 @@
                   IF (IC_GAMA_RG(ICV) < ZERO) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1001) 'IC_GAMA_Rg', ICV 
                      call mfix_exit(myPE) 
-                  ELSE IF (IC_GAMA_RG(ICV) > ZERO) THEN 
+                  ELSEIF (IC_GAMA_RG(ICV) > ZERO) THEN 
                      IF (IC_T_RG(ICV) == UNDEFINED) THEN 
                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_T_Rg', ICV 
                        call mfix_exit(myPE) 
@@ -354,22 +358,24 @@
                   ENDIF 
                ENDIF 
 
+! if gas species are defined, calculate sum of the mass fractions
                SUM = ZERO 
                DO N = 1, NMAX(0) 
                   IF (IC_X_G(ICV,N) /= UNDEFINED) SUM = SUM + IC_X_G(ICV,N) 
-               END DO 
+               ENDDO 
+! if no gas species are defined then warn user
                DO N = 1, NMAX(0) 
                   IF (IC_X_G(ICV,N) == UNDEFINED) THEN 
-                     IF (.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)WRITE (UNIT_LOG, 1050) ICV, N 
+                     IF (.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)&
+                        WRITE (UNIT_LOG, 1050) ICV, N 
                      IC_X_G(ICV,N) = ZERO 
                   ENDIF 
-               END DO 
-
-
+               ENDDO 
+! if sum of gas phase species mass fraction not 1....
                IF (.NOT.COMPARE(ONE,SUM)) THEN 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1055) ICV 
-                  IF (SPECIES_EQ(0) .OR. RO_G0==UNDEFINED .AND. MW_AVG==&
-                     UNDEFINED) then
+                  IF (SPECIES_EQ(0) .OR. RO_G0==UNDEFINED .AND. &
+                      MW_AVG==UNDEFINED) THEN
                      call mfix_exit(myPE)  
                   ENDIF
                ENDIF 
@@ -390,105 +396,162 @@
                      call mfix_exit(myPE) 
                   ENDIF
                ENDIF
+! GAS PHASE Quantities               
+! --------------------------------------------<<<
 
-               SUM_EP = IC_EP_G(ICV) 
-               DO M = 1, SMAX 
-                  IF (IC_ROP_S(ICV,M) == UNDEFINED) THEN 
-                     IF (IC_EP_G(ICV) == ONE) THEN 
-                        IC_ROP_S(ICV,M) = ZERO 
-                     ELSE IF (SMAX == 1) THEN 
-                        IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*RO_S(M) 
-                     ELSE 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_ROP_s', ICV, M 
-                        call mfix_exit(myPE) 
-                     ENDIF 
-                  ENDIF 
-                  SUM_EP = SUM_EP + IC_ROP_S(ICV,M)/RO_S(M) 
-                  SUM = ZERO 
-                  DO N = 1, NMAX(M) 
-                     IF(IC_X_S(ICV,M,N)/=UNDEFINED)SUM=SUM+IC_X_S(ICV,M,N) 
-                  ENDDO 
-                  IF (IC_ROP_S(ICV,M)==ZERO .AND. SUM==ZERO) THEN 
-                     IC_X_S(ICV,M,1) = ONE 
-                     SUM = ONE 
-                  ENDIF 
-                  DO N = 1, NMAX(M) 
-                     IF (IC_X_S(ICV,M,N) == UNDEFINED) THEN 
-                        IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)WRITE (UNIT_LOG, 1110)ICV,M,N 
-                        IC_X_S(ICV,M,N) = ZERO 
-                     ENDIF 
-                  ENDDO 
 
-                  IF (.NOT.COMPARE(ONE,SUM)) THEN 
+! SOLIDS PHASE Quantities               
+! -------------------------------------------->>>
+               IF (.NOT. DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT &
+                   .AND. DES_CONTINUUM_HYBRID)) THEN
+
+                  SUM_EP = IC_EP_G(ICV) 
+                  DO M = 1, SMAX 
+
+                     IF (.NOT.DES_CONTINUUM_HYBRID) THEN
+                        IF (IC_ROP_S(ICV,M) == UNDEFINED) THEN 
+                           IF (IC_EP_G(ICV) == ONE) THEN 
+                              IC_ROP_S(ICV,M) = ZERO 
+                           ELSEIF (SMAX == 1) THEN 
+                              IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*RO_S(M)
+                           ELSE 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+                                 'IC_ROP_s', ICV, M 
+                              call mfix_exit(myPE) 
+                           ENDIF 
+                        ENDIF 
+                     ELSE
+! bulk density must be explicitly defined for hybrid model 
+                        IF (IC_ROP_S(ICV,M) == UNDEFINED) THEN 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+                              'IC_ROP_s', ICV, M 
+                           call mfix_exit(myPE) 
+                        ENDIF
+                     ENDIF
+
+! sum of void fraction and solids volume fractions                  
+                     SUM_EP = SUM_EP + IC_ROP_S(ICV,M)/RO_S(M) 
+
+! if solids phase M species are defined, calculate sum of the mass fractions                  
+                     SUM = ZERO 
+                     DO N = 1, NMAX(M) 
+                        IF(IC_X_S(ICV,M,N)/=UNDEFINED) &
+                           SUM=SUM+IC_X_S(ICV,M,N) 
+                     ENDDO
+! if no solids M present and no species are defined for phase M then set
+! mass fraction of species 1 to one                
+                     IF (IC_ROP_S(ICV,M)==ZERO .AND. SUM==ZERO) THEN 
+                        IC_X_S(ICV,M,1) = ONE 
+                        SUM = ONE 
+                     ENDIF 
+! if no solids species for phase M are defined, warn user (only if
+! solids phase M is present)
+                     DO N = 1, NMAX(M) 
+                        IF (IC_X_S(ICV,M,N) == UNDEFINED) THEN 
+                           IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)&
+                              WRITE (UNIT_LOG, 1110)ICV,M,N 
+                           IC_X_S(ICV,M,N) = ZERO 
+                        ENDIF 
+                     ENDDO
+! if sum of solids phase M species mass fraction not 1...
+                     IF (.NOT.COMPARE(ONE,SUM)) THEN 
                         IF(DMP_LOG)WRITE (UNIT_LOG, 1120) ICV, M 
                         IF (SPECIES_EQ(M)) call mfix_exit(myPE)  
-                  ENDIF 
-                  IF (IC_U_S(ICV,M) == UNDEFINED) THEN 
-                     IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_I) THEN 
-                        IC_U_S(ICV,M) = ZERO 
-                     ELSE 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_U_s', ICV, M 
-                        call mfix_exit(myPE) 
                      ENDIF 
-                  ENDIF 
 
-                  IF (IC_V_S(ICV,M) == UNDEFINED) THEN 
-                     IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_J) THEN 
-                        IC_V_S(ICV,M) = ZERO 
-                     ELSE 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_V_s', ICV, M 
-                        call mfix_exit(myPE) 
-                     ENDIF 
-                  ENDIF 
-                  IF (IC_W_S(ICV,M) == UNDEFINED) THEN 
-                     IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_K) THEN 
-                        IC_W_S(ICV,M) = ZERO 
-                     ELSE 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_W_s', ICV, M 
-                        call mfix_exit(myPE) 
-                     ENDIF 
-                  ENDIF 
-
-                  IF (ENERGY_EQ .AND. IC_T_S(ICV,M)==UNDEFINED) THEN 
-                     IF (IC_ROP_S(ICV,M) == ZERO) THEN 
-                        IC_T_S(ICV,M) = IC_T_G(ICV) 
-                     ELSE 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_T_s', ICV, M 
-                        call mfix_exit(myPE) 
-                     ENDIF 
-                  ENDIF 
-
-                  IF (GRANULAR_ENERGY .AND. IC_THETA_M(ICV,M)==UNDEFINED) THEN 
-                     IF (IC_ROP_S(ICV,M) == ZERO) THEN 
-                        IC_THETA_M(ICV,M) = ZERO 
-                     ELSE 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_Theta_m', ICV, M 
-                        call mfix_exit(myPE) 
-                     ENDIF 
-                  ENDIF 
-
-                  IF (ENERGY_EQ) THEN 
-                     IF (IC_GAMA_RS(ICV,M) < ZERO) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1101) 'IC_GAMA_Rs', ICV, M 
-                        call mfix_exit(myPE) 
-                     ELSE IF (IC_GAMA_RS(ICV,M) > ZERO) THEN 
-                        IF (IC_T_RS(ICV,M) == UNDEFINED) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'IC_T_Rs', ICV, M 
+                     IF (IC_U_S(ICV,M) == UNDEFINED) THEN 
+                        IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_I) THEN 
+                           IC_U_S(ICV,M) = ZERO 
+                        ELSE 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+                              'IC_U_s', ICV, M 
                            call mfix_exit(myPE) 
                         ENDIF 
                      ENDIF 
-                  ENDIF 
-               ENDDO   ! end loop over smax 
+                     IF (IC_V_S(ICV,M) == UNDEFINED) THEN 
+                        IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_J) THEN 
+                           IC_V_S(ICV,M) = ZERO 
+                        ELSE 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+                              'IC_V_s', ICV, M 
+                           call mfix_exit(myPE) 
+                        ENDIF 
+                     ENDIF 
+                     IF (IC_W_S(ICV,M) == UNDEFINED) THEN 
+                        IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_K) THEN 
+                           IC_W_S(ICV,M) = ZERO 
+                        ELSE 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+                              'IC_W_s', ICV, M 
+                           call mfix_exit(myPE) 
+                        ENDIF 
+                     ENDIF 
 
-               IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1125) ICV 
+                     IF (ENERGY_EQ .AND. IC_T_S(ICV,M)==UNDEFINED) THEN 
+                        IF (IC_ROP_S(ICV,M) == ZERO) THEN 
+                           IC_T_S(ICV,M) = IC_T_G(ICV) 
+                        ELSE 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+                              'IC_T_s', ICV, M 
+                           call mfix_exit(myPE) 
+                        ENDIF 
+                     ENDIF 
+
+                     IF (GRANULAR_ENERGY .AND. &
+                         IC_THETA_M(ICV,M)==UNDEFINED) THEN 
+                        IF (IC_ROP_S(ICV,M) == ZERO) THEN 
+                           IC_THETA_M(ICV,M) = ZERO 
+                        ELSE 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+                              'IC_Theta_m', ICV, M 
+                           call mfix_exit(myPE) 
+                        ENDIF 
+                     ENDIF 
+   
+                     IF (ENERGY_EQ) THEN 
+                        IF (IC_GAMA_RS(ICV,M) < ZERO) THEN 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1101) &
+                              'IC_GAMA_Rs', ICV, M 
+                           call mfix_exit(myPE) 
+                        ELSEIF (IC_GAMA_RS(ICV,M) > ZERO) THEN 
+                           IF (IC_T_RS(ICV,M) == UNDEFINED) THEN 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+                                 'IC_T_Rs', ICV, M 
+                              call mfix_exit(myPE) 
+                           ENDIF 
+                        ENDIF 
+                     ENDIF 
+                  ENDDO   ! end loop over (m=1,smax)
+
+! check sum of gas void fraction and all solids volume fractions
+                  IF (.NOT.DES_CONTINUUM_HYBRID) THEN
+                     IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1125) ICV 
+                           call mfix_exit(myPE)
+                     ENDIF 
+                  ELSE
+! sum_ep not necessarily one at this point since discrete particles
+! present in hybrid model
+                     IF (SUM_EP>ONE .OR. SUM_EP<ZERO) THEN 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1130) ICV 
+                        call mfix_exit(myPE)
+                     ENDIF
+                  ENDIF                    
+
+               ELSE   ! else branch if(.not.discrete_element)
+                  SUM_EP = IC_EP_G(ICV)                        
+                  IF (SUM_EP>ONE .OR. SUM_EP<ZERO) THEN 
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1130) ICV 
                      call mfix_exit(myPE)
-               ENDIF 
+                  ENDIF
+               ENDIF   !  end if/else (.not.discrete_element)
+! SOLIDS PHASE Quantities
+! --------------------------------------------<<<
+
+            ENDIF      ! end if (ic_type(icv) /= 'patch')
+
 
 !  Set ICBC flag
-            ENDIF      ! end if ic_type != patch branch
-
-
             DO K = IC_K_B(ICV), IC_K_T(ICV) 
                DO J = IC_J_S(ICV), IC_J_N(ICV) 
                   DO I = IC_I_W(ICV), IC_I_E(ICV) 
@@ -497,14 +560,19 @@
                      ICBC_FLAG(IJK)(1:1) = '.' 
                      IC2 = MOD(ICV,100) 
                      WRITE (ICBC_FLAG(IJK)(2:3), 1150) IC2 
-                  END DO 
-               END DO 
-            END DO 
-            
-         ELSE                             ! for if IC_DEFINED branch
+                  ENDDO 
+               ENDDO 
+            ENDDO 
 
-!  Check whether physical quantities are specified for undefined
-!  initial conditions
+!-----------------------------------------------------------------<<<
+         ELSE      ! else branch if(ic_defined(icv))
+!----------------------------------------------------------------->>>
+
+! Check whether physical quantities are specified for undefined
+! initial conditions and if so flag error
+
+! GAS PHASE quantities
+! -------------------------------------------->>>                
             IF (IC_U_G(ICV) /= UNDEFINED) THEN 
                 IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_U_g', ICV 
                 call mfix_exit(myPE) 
@@ -534,14 +602,14 @@
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_X_g', ICV 
                   call mfix_exit(myPE) 
                ENDIF 
-            END DO 
+            ENDDO 
     
             DO N = 1, NScalar 
                IF (IC_Scalar(ICV,N) /= UNDEFINED) THEN 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 'IC_Scalar', ICV 
                   CALL MFIX_EXIT(myPE)
                ENDIF 
-            END DO 
+            ENDDO 
     
             IF( K_Epsilon ) THEN
                IF (IC_K_Turb_G(ICV) /= UNDEFINED) THEN 
@@ -554,51 +622,62 @@
                   CALL MFIX_EXIT(myPE)
                ENDIF 
             ENDIF
-            
-            DO M = 1, DIMENSION_M 
-               IF (IC_ROP_S(ICV,M) /= UNDEFINED) THEN 
-                   IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_ROP_s', ICV, M 
-                   call mfix_exit(myPE) 
-               ENDIF 
-               DO N = 1, DIMENSION_N_S 
-                  IF (IC_X_S(ICV,M,N) /= UNDEFINED) THEN 
-                      IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_X_s', ICV, M
+! GAS PHASE quantities
+! --------------------------------------------<<<
+
+! SOLIDS PHASE quantities
+! -------------------------------------------->>>
+            IF (.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT .AND. &
+                DES_CONTINUUM_HYBRID)) THEN
+
+               DO M = 1, DIMENSION_M 
+                  IF (IC_ROP_S(ICV,M) /= UNDEFINED) THEN 
+                      IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_ROP_s', ICV, M 
                       call mfix_exit(myPE) 
                   ENDIF 
-               END DO 
-               IF (IC_U_S(ICV,M) /= UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_U_s', ICV, M 
-                     call mfix_exit(myPE) 
-               ENDIF 
-               IF (IC_V_S(ICV,M) /= UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_V_s', ICV, M 
-                     call mfix_exit(myPE) 
-               ENDIF 
-               IF (IC_W_S(ICV,M) /= UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_W_s', ICV, M 
-                     call mfix_exit(myPE) 
-               ENDIF 
-               IF (IC_T_S(ICV,M) /= UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_T_s', ICV, M 
-                     call mfix_exit(myPE) 
-               ENDIF 
-               IF (IC_T_RS(ICV,M) /= UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_T_Rs', ICV, M
-                     call mfix_exit(myPE) 
-               ENDIF 
-            ENDDO  ! end loop over dimension_M
-         ENDIF     ! end if  IC_DEFINED branch
-      ENDDO        ! end loop over dimension_IC
+                  DO N = 1, DIMENSION_N_S 
+                     IF (IC_X_S(ICV,M,N) /= UNDEFINED) THEN 
+                         IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_X_s', ICV, M
+                         call mfix_exit(myPE) 
+                     ENDIF 
+                  ENDDO 
+                  IF (IC_U_S(ICV,M) /= UNDEFINED) THEN 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_U_s', ICV, M 
+                        call mfix_exit(myPE) 
+                  ENDIF 
+                  IF (IC_V_S(ICV,M) /= UNDEFINED) THEN 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_V_s', ICV, M 
+                        call mfix_exit(myPE) 
+                  ENDIF 
+                  IF (IC_W_S(ICV,M) /= UNDEFINED) THEN 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_W_s', ICV, M 
+                        call mfix_exit(myPE) 
+                  ENDIF 
+                  IF (IC_T_S(ICV,M) /= UNDEFINED) THEN 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_T_s', ICV, M 
+                        call mfix_exit(myPE) 
+                  ENDIF 
+                  IF (IC_T_RS(ICV,M) /= UNDEFINED) THEN 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 'IC_T_Rs', ICV, M
+                        call mfix_exit(myPE) 
+                  ENDIF 
+               ENDDO  ! end loop over (m=1,dimension_m)
+            ENDIF   ! end if (.not.discrete_element)
+! SOLIDS PHASE Quantities
+! --------------------------------------------<<<
 
-!//SP Send Receive
+         ENDIF     ! end if/else (ic_defined(icv) 
+!-----------------------------------------------------------------<<<
+      ENDDO        ! end loop over (icv=1,dimension_IC)
+
       call send_recv(icbc_flag,2)
 
 
       RETURN  
-!
-! here if error in indices
-!
+
+! if error in indices go here:
   900 CONTINUE 
+
       CALL ERROR_ROUTINE ('check_data_06', 'Invalid IC region specified', 0, 2) 
          IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IC number = ', ICV
          IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IC_I_w(ICV) = ', IC_I_W(ICV) 
@@ -608,7 +687,7 @@
          IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IC_K_b(ICV) = ', IC_K_B(ICV) 
          IF(DMP_LOG)WRITE (UNIT_LOG, *) ' IC_K_t(ICV) = ', IC_K_T(ICV) 
       CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
-!
+
  1000 FORMAT(/1X,70('*')//' From: CHECK_DATA_06',/' Message: ',A,'(',I2,&
          ') not specified',/1X,70('*')/) 
  1001 FORMAT(/1X,70('*')//' From: CHECK_DATA_06',/' Message: ',A,'(',I2,&
@@ -632,6 +711,10 @@
          '*')/) 
  1125 FORMAT(/1X,70('*')//' From: CHECK_DATA_06',/' Message: IC number:',I2,&
          ' - Sum of volume fractions is NOT equal to one',/1X,70('*')/) 
+
+ 1130 FORMAT(/1X,70('*')//' From: CHECK_DATA_06',/' Message: IC number:',I2,&
+         ' - void fraction is unphysical (>1 or <0)',/1X,70('*')/) 
+
  1150 FORMAT(I2.2) 
  1200 FORMAT(/1X,70('*')//' From: CHECK_DATA_06',/' Message: ',A,'(',I2,&
          ') specified',' for an undefined IC region',/1X,70('*')/) 
@@ -639,9 +722,4 @@
          ') specified',' for an undefined IC region',/1X,70('*')/) 
       END SUBROUTINE CHECK_DATA_06 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization    
-!// 220 Use local FUNIJK for triple DO i,j,k loop
-!// 350 Changed do loop limits: 1,kmax2->kmin3,kmax3 
-!// 360 Check if i,j,k resides on current processor
-!// 990 Replace STOP with exitMPI to terminate all processors
+

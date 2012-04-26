@@ -56,6 +56,7 @@
       USE sendrecv
       USE cutcell
       USE qmom_kinetic_equation
+      USE discretelement      
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -73,7 +74,7 @@
 ! Note that the D_e coefficients for phases M>0 are generally not used 
 ! unless the solids phase has close_packed=F, in which case the d_e 
 ! coefficients for that phase are employed in a 'mixture' pressure
-! correction equation
+! correction equation and for correcting velocities
       DOUBLE PRECISION, INTENT(INOUT) :: d_e(DIMENSION_3, 0:DIMENSION_M)
 !-----------------------------------------------
 ! Local variables
@@ -108,6 +109,8 @@
       DOUBLE PRECISION :: other_denominator(DIMENSION_M)
 ! sum of Solid L - All other Solid VolxDrag but M
       DOUBLE PRECISION :: SUM_VXF_SS_wt_M
+! Temporary variable to store A matrix for local manipulation
+      DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -121,6 +124,23 @@
 ! Initializing
       Pass1 = .FALSE.
       Pass2 = .FALSE.
+      AM0(:,:) = A_M(:,0,:)
+
+      IF (DES_CONTINUUM_HYBRID) THEN
+! modify center coefficient to account for contribution from discrete phases.
+! recall the center coefficient is negative.              
+         DO IJK = ijkstart3, ijkend3              
+            DO DM=1,DES_MMAX
+               AM0(IJK,0) = AM0(IJK,0) - VXF_GDS(IJK,DM)
+            ENDDO
+            DO M = 1,MMAX
+               DO DM=1,DES_MMAX
+                  AM0(IJK,M) = AM0(IJK,M) - VXF_SDS(IJK,M,DM)
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDIF
+         
 
 ! Determine which calculations are needed      
       DO M = 1, MMAX
@@ -174,29 +194,29 @@
         other_ratio_1  = ZERO
         DO M= 1, MMAX
            other_ratio_1 = other_ratio_1 +&
-                      ( VXF_GS(IJK,M)*( (-A_M(IJK,0,M))+SUM_VXF_SS(M) )/&
-                                      ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
+                      ( VXF_GS(IJK,M)*( (-AM0(IJK,M))+SUM_VXF_SS(M) )/&
+                                      ( (-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
                       )
         ENDDO
 
 ! Model B        
         IF (MODEL_B) THEN   
 ! Linking velocity correction coefficient to pressure - GAS Phase
-          IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
+          IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
             IF(.NOT.CARTESIAN_GRID) THEN
-               D_E(IJK,0) = P_SCALE*AYZ(IJK)/( (-A_M(IJK,0,0))+other_ratio_1 )
+               D_E(IJK,0) = P_SCALE*AYZ(IJK)/( (-AM0(IJK,0))+other_ratio_1 )
             ELSE
-               D_E(IJK,0) = P_SCALE         /( (-A_M(IJK,0,0))+other_ratio_1 )
+               D_E(IJK,0) = P_SCALE         /( (-AM0(IJK,0))+other_ratio_1 )
             ENDIF
           ELSE
              D_E(IJK,0) = ZERO
           ENDIF
 ! Linking velocity correction coefficient to pressure - SOLID Phase
           DO M = 1, MMAX
-            IF ( MOMENTUM_X_EQ(M) .AND. (  ((-A_M(IJK,0,M))>SMALL_NUMBER) .OR. &
+            IF ( MOMENTUM_X_EQ(M) .AND. (  ((-AM0(IJK,M))>SMALL_NUMBER) .OR. &
                  (VXF_GS(IJK,M)>SMALL_NUMBER) ) ) THEN
                D_E(IJK,M) = D_E(IJK,0)*(&
-                                VXF_GS(IJK,M)/((-A_M(IJK,0,M))+VXF_GS(IJK,M))&
+                                VXF_GS(IJK,M)/((-AM0(IJK,M))+VXF_GS(IJK,M))&
                             )
             ELSE
                D_E(IJK,M) = ZERO
@@ -208,10 +228,10 @@
           FOA1 = ZERO
           DO M= 1, MMAX
             FOA1 = FOA1 + (EPSA(M)*VXF_GS(IJK,M)/&
-                             ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
+                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
                           )
-            other_denominator(M) = VXF_GS(IJK,M)*( ((-A_M(IJK,0,0))+(SUM_VXF_GS - VXF_GS(IJK,M)))/&
-                                                   ((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)&
+            other_denominator(M) = VXF_GS(IJK,M)*( ((-AM0(IJK,0))+(SUM_VXF_GS - VXF_GS(IJK,M)))/&
+                                                   ((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)&
                                                  )
             numeratorxEP(M) = ZERO
             denominator(M)  = ZERO
@@ -220,7 +240,7 @@
                 LM = FUNLM(L,M)
                 numeratorxEP(M) = numeratorxEP(M) + (&
                                                       VXF_SS(IJK,LM)*EPSA(L)/&
-                                                      ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
+                                                      ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
                                                     ) 
                 SUM_VXF_SS_wt_M = ZERO
                 DO Lp = 1, MMAX
@@ -231,37 +251,37 @@
                 ENDDO
                 denominator(M) = denominator(M) + (&
                                                      VXF_SS(IJK,LM)*(&
-                                                       ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
-                                                       ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
+                                                       ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
+                                                       ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
                                                      )&
                                                   )
               ENDIF
             ENDDO  ! end do (l=1,mmax)
           ENDDO   ! end do (m=1,mmax)
 ! Linking velocity correction coefficient to pressure - GAS Phase
-          IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
+          IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
             IF(.NOT.CARTESIAN_GRID) THEN
-               D_E(IJK,0) = P_SCALE*AYZ(IJK)*(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+               D_E(IJK,0) = P_SCALE*AYZ(IJK)*(EPGA+FOA1)/( (-AM0(IJK,0))+other_ratio_1 )
             ELSE
-               D_E(IJK,0) = P_SCALE         *(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+               D_E(IJK,0) = P_SCALE         *(EPGA+FOA1)/( (-AM0(IJK,0))+other_ratio_1 )
             ENDIF
           ELSE
             D_E(IJK,0) = ZERO
           ENDIF
 ! Linking velocity correction coefficient to pressure - SOLID Phase
           DO M = 1, MMAX
-            IF ( MOMENTUM_X_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER)        .OR. &
+            IF ( MOMENTUM_X_EQ(M) .AND. ( (-AM0(IJK,M)>SMALL_NUMBER)        .OR. &
                  (other_denominator(M)>SMALL_NUMBER) .OR. &
                  (denominator(M)>SMALL_NUMBER) ) ) THEN
               IF(.NOT.CARTESIAN_GRID) THEN
                  D_E(IJK,M) = P_SCALE*AYZ(IJK)*(&
-                           ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                           ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+                           ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+                           ( (-AM0(IJK,M))+other_denominator(M)+denominator(M) )&
                                                     )
               ELSE
                  D_E(IJK,M) = P_SCALE           *(&
-                           ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                           ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+                           ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+                           ( (-AM0(IJK,M))+other_denominator(M)+denominator(M) )&
                                                     )
               ENDIF
             ELSE
@@ -309,18 +329,18 @@
            ENDDO
        ENDIF
 
-       IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
+       IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
          IF (MODEL_B) THEN
             IF(.NOT.CARTESIAN_GRID) THEN
-               D_E(IJK,0) = P_SCALE*AYZ(IJK)/((-A_M(IJK,0,0))+SUM_VXF_GS)
+               D_E(IJK,0) = P_SCALE*AYZ(IJK)/((-AM0(IJK,0))+SUM_VXF_GS)
             ELSE
-               D_E(IJK,0) = P_SCALE         /((-A_M(IJK,0,0))+SUM_VXF_GS)
+               D_E(IJK,0) = P_SCALE         /((-AM0(IJK,0))+SUM_VXF_GS)
             ENDIF
          ELSE
             IF(.NOT.CARTESIAN_GRID) THEN
-               D_E(IJK,0) = P_SCALE*AYZ(IJK)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+               D_E(IJK,0) = P_SCALE*AYZ(IJK)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
             ELSE
-               D_E(IJK,0) = P_SCALE         *EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+               D_E(IJK,0) = P_SCALE         *EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
             ENDIF
          ENDIF   !end if/else branch Model_B/Model_A 
        ELSE
@@ -368,7 +388,7 @@
              LM = FUNLM(L,M)
              numeratorxEP(M) = numeratorxEP(M) + (&
                                                     VXF_SS(IJK,LM)*EPSA(L)/&
-                                                   ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
+                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
                                                   )
              SUM_VXF_SS_wt_M = ZERO
              DO Lp = 1, MMAX
@@ -379,8 +399,8 @@
              ENDDO
              denominator(M) = denominator(M) + (&
                                                   VXF_SS(IJK,LM)*(&
-                                                   ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
-                                                   ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
+                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
+                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
                                                                  )&
                                                 )
            ENDIF
@@ -389,15 +409,15 @@
 
 ! Linking velocity correction coefficient to pressure - SOLID Phase (Model_A only)
        DO M = 1, MMAX
-         IF ( MOMENTUM_X_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER) .OR. &
+         IF ( MOMENTUM_X_EQ(M) .AND. ( (-AM0(IJK,M)>SMALL_NUMBER) .OR. &
               (VXF_GS(IJK,M)>SMALL_NUMBER) .OR. &
               (denominator(M)>SMALL_NUMBER) ) ) THEN
             IF(.NOT.CARTESIAN_GRID) THEN
                D_E(IJK,M) = P_SCALE*AYZ(IJK)*( EPSA(M) + numeratorxEP(M) )/&
-                                             ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+                                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+denominator(M) )
             ELSE
                D_E(IJK,M) = P_SCALE         *( EPSA(M) + numeratorxEP(M) )/&
-                                             ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+                                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+denominator(M) )
             ENDIF
          ELSE
            D_E(IJK,M) = ZERO
@@ -472,6 +492,7 @@
       USE sendrecv
       USE cutcell
       USE qmom_kinetic_equation
+      USE discretelement      
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -520,6 +541,8 @@
       DOUBLE PRECISION :: other_denominator(DIMENSION_M)
 ! sum of Solid L - All other Solid VolxDrag but M
       DOUBLE PRECISION :: SUM_VXF_SS_wt_M
+! Temporary variable to store A matrix for local manipulation
+      DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -533,6 +556,21 @@
 ! initializing
       Pass1 = .FALSE.
       Pass2 = .FALSE.
+      AM0(:,:) = A_M(:,0,:)
+
+      IF (DES_CONTINUUM_HYBRID) THEN
+         DO IJK = ijkstart3, ijkend3              
+            DO DM=1,DES_MMAX
+               AM0(IJK,0) = AM0(IJK,0) - VXF_GDS(IJK,DM)
+            ENDDO
+            DO M = 1,MMAX
+               DO DM=1,DES_MMAX
+                  AM0(IJK,M) = AM0(IJK,M) - VXF_SDS(IJK,M,DM)
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDIF
+
 
 ! Determine which calculations are needed      
       DO M = 1, MMAX
@@ -585,29 +623,29 @@
         other_ratio_1  = ZERO
         DO M= 1, MMAX
           other_ratio_1 = other_ratio_1 +&
-                      ( VXF_GS(IJK,M)*( (-A_M(IJK,0,M))+SUM_VXF_SS(M) )/&
-                                      ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
+                      ( VXF_GS(IJK,M)*( (-AM0(IJK,M))+SUM_VXF_SS(M) )/&
+                                      ( (-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
                       )
         ENDDO
 
 ! Model B       
         IF (MODEL_B) THEN   
 ! Linking velocity correction coefficient to pressure - GAS Phase
-          IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
+          IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
             IF(.NOT.CARTESIAN_GRID) THEN
-               D_N(IJK,0) = P_SCALE*AXZ(IJK)/( (-A_M(IJK,0,0))+other_ratio_1 )
+               D_N(IJK,0) = P_SCALE*AXZ(IJK)/( (-AM0(IJK,0))+other_ratio_1 )
             ELSE
-               D_N(IJK,0) = P_SCALE         /( (-A_M(IJK,0,0))+other_ratio_1 )
+               D_N(IJK,0) = P_SCALE         /( (-AM0(IJK,0))+other_ratio_1 )
             ENDIF
           ELSE
             D_N(IJK,0) = ZERO
           ENDIF
 ! Linking velocity correction coefficient to pressure - SOLID Phase
           DO M = 1, MMAX
-            IF( MOMENTUM_Y_EQ(M) .AND. (  ((-A_M(IJK,0,M))>SMALL_NUMBER) .OR. &
+            IF( MOMENTUM_Y_EQ(M) .AND. (  ((-AM0(IJK,M))>SMALL_NUMBER) .OR. &
                 (VXF_GS(IJK,M)>SMALL_NUMBER) ) ) THEN
               D_N(IJK,M) = D_N(IJK,0)*(&
-                                       VXF_GS(IJK,M)/((-A_M(IJK,0,M))+VXF_GS(IJK,M))&
+                                       VXF_GS(IJK,M)/((-AM0(IJK,M))+VXF_GS(IJK,M))&
                                       )
             ELSE
               D_N(IJK,M) = ZERO
@@ -619,10 +657,10 @@
           FOA1 = ZERO
           DO M= 1, MMAX
             FOA1 = FOA1 + (EPSA(M)*VXF_GS(IJK,M)/&
-                             ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
+                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
                           )
-            other_denominator(M) = VXF_GS(IJK,M)*( ((-A_M(IJK,0,0))+(SUM_VXF_GS - VXF_GS(IJK,M)))/&
-                                                   ((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)&
+            other_denominator(M) = VXF_GS(IJK,M)*( ((-AM0(IJK,0))+(SUM_VXF_GS - VXF_GS(IJK,M)))/&
+                                                   ((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)&
                                                  )
             numeratorxEP(M) = ZERO
             denominator(M)  = ZERO
@@ -631,7 +669,7 @@
                 LM = FUNLM(L,M)
                 numeratorxEP(M) = numeratorxEP(M) + (&
                                                       VXF_SS(IJK,LM)*EPSA(L)/&
-                                                      ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
+                                                      ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
                                                      ) 
                 SUM_VXF_SS_wt_M = ZERO
                 DO Lp = 1, MMAX
@@ -642,37 +680,37 @@
                 ENDDO
                 denominator(M) = denominator(M) + (&
                                                      VXF_SS(IJK,LM)*(&
-                                                     ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
-                                                     ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
+                                                     ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
+                                                     ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
                                                                     )&
                                                    )
               ENDIF
             ENDDO  ! end do (l=1,mmax)
           ENDDO   ! end do (m=1,mmax)
 ! Linking velocity correction coefficient to pressure - GAS Phase
-          IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
+          IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
             IF(.NOT.CARTESIAN_GRID) THEN
-               D_N(IJK,0) = P_SCALE*AXZ(IJK)*(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 ) 
+               D_N(IJK,0) = P_SCALE*AXZ(IJK)*(EPGA+FOA1)/( (-AM0(IJK,0))+other_ratio_1 ) 
             ELSE
-               D_N(IJK,0) = P_SCALE          *(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+               D_N(IJK,0) = P_SCALE          *(EPGA+FOA1)/( (-AM0(IJK,0))+other_ratio_1 )
             ENDIF
           ELSE
             D_N(IJK,0) = ZERO
           ENDIF
 ! Linking velocity correction coefficient to pressure - SOLID Phase
           DO M = 1, MMAX
-            IF ( MOMENTUM_Y_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER) .OR. &
+            IF ( MOMENTUM_Y_EQ(M) .AND. ( (-AM0(IJK,M)>SMALL_NUMBER) .OR. &
                  (other_denominator(M)>SMALL_NUMBER) .OR. &
                  (denominator(M)>SMALL_NUMBER) ) ) THEN
               IF(.NOT.CARTESIAN_GRID) THEN
                 D_N(IJK,M) = P_SCALE*AXZ(IJK)*(&
-                           ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                           ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+                           ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+                           ( (-AM0(IJK,M))+other_denominator(M)+denominator(M) )&
                                                )
               ELSE
                 D_N(IJK,M) = P_SCALE         *(&
-                         ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                         ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+                         ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+                         ( (-AM0(IJK,M))+other_denominator(M)+denominator(M) )&
                                               )
               ENDIF
             ELSE
@@ -719,18 +757,18 @@
            ENDDO
        ENDIF
 
-       IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
+       IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
          IF (MODEL_B) THEN
             IF(.NOT.CARTESIAN_GRID) THEN
-               D_N(IJK,0) = P_SCALE*AXZ(IJK)/((-A_M(IJK,0,0))+SUM_VXF_GS)
+               D_N(IJK,0) = P_SCALE*AXZ(IJK)/((-AM0(IJK,0))+SUM_VXF_GS)
             ELSE
-               D_N(IJK,0) = P_SCALE         /((-A_M(IJK,0,0))+SUM_VXF_GS)
+               D_N(IJK,0) = P_SCALE         /((-AM0(IJK,0))+SUM_VXF_GS)
             ENDIF
          ELSE
             IF(.NOT.CARTESIAN_GRID) THEN
-               D_N(IJK,0) = P_SCALE*AXZ(IJK)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+               D_N(IJK,0) = P_SCALE*AXZ(IJK)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
             ELSE
-               D_N(IJK,0) = P_SCALE         *EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+               D_N(IJK,0) = P_SCALE         *EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
             ENDIF
          ENDIF   !end if/else branch Model_B/Model_A 
        ELSE
@@ -777,7 +815,7 @@
              LM = FUNLM(L,M)
              numeratorxEP(M) = numeratorxEP(M) + (&
                                                     VXF_SS(IJK,LM)*EPSA(L)/&
-                                                   ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
+                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
                                                   )
              SUM_VXF_SS_wt_M = ZERO
              DO Lp = 1, MMAX
@@ -788,8 +826,8 @@
              ENDDO
              denominator(M) = denominator(M) + (&
                                                   VXF_SS(IJK,LM)*(&
-                                                   ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
-                                                   ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
+                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
+                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
                                                                  )&
                                                 )
            ENDIF
@@ -798,15 +836,15 @@
 
 ! Linking velocity correction coefficient to pressure - SOLID Phase (Model_A only)
        DO M = 1, MMAX
-         IF ( MOMENTUM_Y_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER) .OR. &
+         IF ( MOMENTUM_Y_EQ(M) .AND. ( (-AM0(IJK,M)>SMALL_NUMBER) .OR. &
               (VXF_GS(IJK,M)>SMALL_NUMBER) .OR. &
               (denominator(M)>SMALL_NUMBER) ) ) THEN
             IF(.NOT.CARTESIAN_GRID) THEN
                D_N(IJK,M) = P_SCALE*AXZ(IJK)*( EPSA(M) + numeratorxEP(M) )/&
-                                             ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+                                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+denominator(M) )
             ELSE
                D_N(IJK,M) = P_SCALE         *( EPSA(M) + numeratorxEP(M) )/&
-                                             ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+                                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+denominator(M) )
             ENDIF
          ELSE
            D_N(IJK,M) = ZERO
@@ -881,6 +919,7 @@
       USE sendrecv
       USE cutcell
       USE qmom_kinetic_equation
+      USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -929,6 +968,8 @@
       DOUBLE PRECISION :: other_denominator(DIMENSION_M)
 ! sum of Solid L - All other Solid VolxDrag but M
       DOUBLE PRECISION :: SUM_VXF_SS_wt_M
+! Temporary variable to store A matrix for local manipulation
+      DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -942,6 +983,21 @@
 ! initializing
       Pass1 = .FALSE.
       Pass2 = .FALSE.
+      AM0(:,:) = A_M(:,0,:)
+
+      IF (DES_CONTINUUM_HYBRID) THEN
+         DO IJK = ijkstart3, ijkend3              
+            DO DM=1,DES_MMAX
+               AM0(IJK,0) = AM0(IJK,0) - VXF_GDS(IJK,DM)
+            ENDDO
+            DO M = 1,MMAX
+               DO DM=1,DES_MMAX
+                  AM0(IJK,M) = AM0(IJK,M) - VXF_SDS(IJK,M,DM)
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDIF
+
 
 ! Determine which calculations are needed      
       DO M = 1, MMAX
@@ -995,29 +1051,29 @@
         other_ratio_1  = ZERO
         DO M= 1, MMAX
           other_ratio_1 = other_ratio_1 +&
-                       ( VXF_GS(IJK,M)*( (-A_M(IJK,0,M))+SUM_VXF_SS(M) )/&
-                                       ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
+                       ( VXF_GS(IJK,M)*( (-AM0(IJK,M))+SUM_VXF_SS(M) )/&
+                                       ( (-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
                        )
         ENDDO
 
 ! Model B
         IF (MODEL_B) THEN   
 ! Linking velocity correction coefficient to pressure - GAS Phase
-          IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
+          IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
              IF(.NOT.CARTESIAN_GRID) THEN
-                D_T(IJK,0) = P_SCALE*AXY(IJK)/( (-A_M(IJK,0,0))+other_ratio_1 )
+                D_T(IJK,0) = P_SCALE*AXY(IJK)/( (-AM0(IJK,0))+other_ratio_1 )
              ELSE
-                D_T(IJK,0) = P_SCALE         /( (-A_M(IJK,0,0))+other_ratio_1 )
+                D_T(IJK,0) = P_SCALE         /( (-AM0(IJK,0))+other_ratio_1 )
              ENDIF
           ELSE
              D_T(IJK,0) = ZERO
           ENDIF
 ! Linking velocity correction coefficient to pressure - SOLID Phase
           DO M = 1, MMAX
-             IF ( MOMENTUM_Z_EQ(M) .AND. (  ((-A_M(IJK,0,M))>SMALL_NUMBER) .OR. &
+             IF ( MOMENTUM_Z_EQ(M) .AND. (  ((-AM0(IJK,M))>SMALL_NUMBER) .OR. &
                   (VXF_GS(IJK,M)>SMALL_NUMBER) ) ) THEN
                D_T(IJK,M) = D_T(IJK,0)*(&
-                                        VXF_GS(IJK,M)/((-A_M(IJK,0,M))+VXF_GS(IJK,M))&
+                                        VXF_GS(IJK,M)/((-AM0(IJK,M))+VXF_GS(IJK,M))&
                                        )
              ELSE
                D_T(IJK,M) = ZERO
@@ -1028,10 +1084,10 @@
           FOA1 = ZERO
           DO M= 1, MMAX
             FOA1 = FOA1 + (EPSA(M)*VXF_GS(IJK,M)/&
-                              ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
+                              ( (-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
                            )
-            other_denominator(M) = VXF_GS(IJK,M)*( ((-A_M(IJK,0,0))+(SUM_VXF_GS - VXF_GS(IJK,M)))/&
-                                                   ((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)&
+            other_denominator(M) = VXF_GS(IJK,M)*( ((-AM0(IJK,0))+(SUM_VXF_GS - VXF_GS(IJK,M)))/&
+                                                   ((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)&
                                                   )
             numeratorxEP(M) = ZERO
             denominator(M)  = ZERO
@@ -1040,7 +1096,7 @@
                 LM = FUNLM(L,M)
                 numeratorxEP(M) = numeratorxEP(M) + (&
                                                      VXF_SS(IJK,LM)*EPSA(L)/&
-                                                     ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
+                                                     ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
                                                      ) 
                 SUM_VXF_SS_wt_M = ZERO
                 DO Lp = 1, MMAX
@@ -1051,37 +1107,37 @@
                 ENDDO
                 denominator(M) = denominator(M) + (&
                                                       VXF_SS(IJK,LM)*(&
-                                                      ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
-                                                      ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
+                                                      ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
+                                                      ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
                                                                      )&
                                                    )
               ENDIF
             ENDDO  ! end do (l=1,mmax)
           ENDDO   ! end do (m=1,mmax)
 ! Linking velocity correction coefficient to pressure - GAS Phase
-          IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
+          IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
             IF(.NOT.CARTESIAN_GRID) THEN
-               D_T(IJK,0) = P_SCALE*AXY(IJK)*(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+               D_T(IJK,0) = P_SCALE*AXY(IJK)*(EPGA+FOA1)/( (-AM0(IJK,0))+other_ratio_1 )
             ELSE
-               D_T(IJK,0) = P_SCALE         *(EPGA+FOA1)/( (-A_M(IJK,0,0))+other_ratio_1 )
+               D_T(IJK,0) = P_SCALE         *(EPGA+FOA1)/( (-AM0(IJK,0))+other_ratio_1 )
             ENDIF
           ELSE
             D_T(IJK,0) = ZERO
           ENDIF
 ! Linking velocity correction coefficient to pressure - SOLID Phase
           DO M = 1, MMAX
-            IF ( MOMENTUM_Z_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER) .OR. &
+            IF ( MOMENTUM_Z_EQ(M) .AND. ( (-AM0(IJK,M)>SMALL_NUMBER) .OR. &
                  (other_denominator(M)>SMALL_NUMBER) .OR. &
                  (denominator(M)>SMALL_NUMBER) ) ) THEN
               IF(.NOT.CARTESIAN_GRID) THEN
                  D_T(IJK,M) = P_SCALE*AXY(IJK)*(&
-                          ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                          ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+                          ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+                          ( (-AM0(IJK,M))+other_denominator(M)+denominator(M) )&
                                                      )
               ELSE
                  D_T(IJK,M) = P_SCALE        *(&
-                         ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                         ( (-A_M(IJK,0,M))+other_denominator(M)+denominator(M) )&
+                         ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
+                         ( (-AM0(IJK,M))+other_denominator(M)+denominator(M) )&
                                                     )
               ENDIF
 
@@ -1129,18 +1185,18 @@
           ENDDO
        ENDIF
 
-       IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
+       IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
          IF (MODEL_B) THEN
             IF(.NOT.CARTESIAN_GRID) THEN
-               D_T(IJK,0) = P_SCALE*AXY(IJK)/((-A_M(IJK,0,0))+SUM_VXF_GS)
+               D_T(IJK,0) = P_SCALE*AXY(IJK)/((-AM0(IJK,0))+SUM_VXF_GS)
             ELSE
-               D_T(IJK,0) = P_SCALE         /((-A_M(IJK,0,0))+SUM_VXF_GS)
+               D_T(IJK,0) = P_SCALE         /((-AM0(IJK,0))+SUM_VXF_GS)
             ENDIF
          ELSE
             IF(.NOT.CARTESIAN_GRID) THEN
-               D_T(IJK,0) = P_SCALE*AXY(IJK)*EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+               D_T(IJK,0) = P_SCALE*AXY(IJK)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
             ELSE
-               D_T(IJK,0) = P_SCALE         *EPGA/((-A_M(IJK,0,0))+SUM_VXF_GS)
+               D_T(IJK,0) = P_SCALE         *EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
             ENDIF
          ENDIF   !end if/else branch Model_B/Model_A 
        ELSE
@@ -1188,7 +1244,7 @@
              LM = FUNLM(L,M)
              numeratorxEP(M) = numeratorxEP(M) + (&
                                                     VXF_SS(IJK,LM)*EPSA(L)/&
-                                                   ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
+                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
                                                   )
              SUM_VXF_SS_wt_M = ZERO
              DO Lp = 1, MMAX
@@ -1199,8 +1255,8 @@
              ENDDO
              denominator(M) = denominator(M) + (&
                                                   VXF_SS(IJK,LM)*(&
-                                                   ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
-                                                   ( (-A_M(IJK,0,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
+                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
+                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
                                                                  )&
                                                 )
            ENDIF
@@ -1209,15 +1265,15 @@
 
 ! Linking velocity correction coefficient to pressure - SOLID Phase (Model_A only)
        DO M = 1, MMAX
-         IF ( MOMENTUM_Z_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER) .OR. &
+         IF ( MOMENTUM_Z_EQ(M) .AND. ( (-AM0(IJK,M)>SMALL_NUMBER) .OR. &
               (VXF_GS(IJK,M)>SMALL_NUMBER) .OR. &
               (denominator(M)>SMALL_NUMBER) ) ) THEN
             IF(.NOT.CARTESIAN_GRID) THEN
                D_T(IJK,M) = P_SCALE*AXY(IJK)*( EPSA(M) + numeratorxEP(M) )/&
-                                             ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+                                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+denominator(M) )
             ELSE
              D_T(IJK,M) = P_SCALE         *( EPSA(M) + numeratorxEP(M) )/&
-                                          ( (-A_M(IJK,0,M))+VXF_GS(IJK,M)+denominator(M) )
+                                          ( (-AM0(IJK,M))+VXF_GS(IJK,M)+denominator(M) )
             ENDIF
          ELSE
            D_T(IJK,M) = ZERO

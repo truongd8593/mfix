@@ -448,6 +448,7 @@ mfix.exe : \
     particles_in_cell.$(OBJ_EXT) \
     quadtree.$(OBJ_EXT) \
     read_des_restart.$(OBJ_EXT) \
+    solid_drag.$(OBJ_EXT) \
     thermo_nbr.$(OBJ_EXT) \
     walledgecontact.$(OBJ_EXT) \
     wallfacecontact.$(OBJ_EXT) \
@@ -924,6 +925,7 @@ mfix.exe : \
     randomno_mod.$(OBJ_EXT) \
     read_des_restart.$(OBJ_EXT) \
     sendrecvnode_mod.$(OBJ_EXT) \
+    solid_drag.$(OBJ_EXT) \
     thermo_nbr.$(OBJ_EXT) \
     walledgecontact.$(OBJ_EXT) \
     wallfacecontact.$(OBJ_EXT) \
@@ -1716,6 +1718,7 @@ calc_d.$(OBJ_EXT) : calc_d.f \
             sendrecv.mod \
             cutcell.mod \
             qmom_kinetic_equation.mod \
+            discretelement.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -2066,6 +2069,7 @@ calc_vol_fr.$(OBJ_EXT) : calc_vol_fr.f \
             pscor.mod \
             compar.mod \
             sendrecv.mod \
+            discretelement.mod \
             ep_s1.inc                                                    \
             s_pr1.inc                                                    \
             function.inc                                                 \
@@ -2183,6 +2187,7 @@ check_data_06.$(OBJ_EXT) : check_data_06.f \
             mpi_utility.mod \
             sendrecv.mod \
             rxns.mod \
+            discretelement.mod \
             function.inc                                                
 check_data_07.$(OBJ_EXT) : check_data_07.f \
             param.mod \
@@ -2197,6 +2202,7 @@ check_data_07.$(OBJ_EXT) : check_data_07.f \
             scalars.mod \
             compar.mod \
             sendrecv.mod \
+            discretelement.mod \
             function.inc                                                
 check_data_08.$(OBJ_EXT) : check_data_08.f \
             param.mod \
@@ -2237,6 +2243,7 @@ check_data_20.$(OBJ_EXT) : check_data_20.f \
             scalars.mod \
             compar.mod \
             sendrecv.mod \
+            discretelement.mod \
             function.inc                                                
 check_data_30.$(OBJ_EXT) : check_data_30.f \
             param.mod \
@@ -2743,9 +2750,12 @@ drag_ss.$(OBJ_EXT) : drag_ss.f \
             compar.mod \
             sendrecv.mod \
             drag.mod \
+            discretelement.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
-            fun_avg2.inc                                                
+            fun_avg2.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
 eosg.$(OBJ_EXT) : eosg.f \
             param.mod \
             param1.mod \
@@ -2782,7 +2792,8 @@ flow_to_vel.$(OBJ_EXT) : flow_to_vel.f \
             scales.mod \
             indices.mod \
             funits.mod \
-            compar.mod 
+            compar.mod \
+            discretelement.mod 
 g_0.$(OBJ_EXT) : g_0.f \
             param.mod \
             param1.mod \
@@ -3207,10 +3218,12 @@ mfix.$(OBJ_EXT) : mfix.f \
             discretelement.mod \
             mfix_pic.mod \
             cdist.mod \
+            mfix_netcdf.mod \
             fldvar.mod \
             cutcell.mod \
             quadric.mod \
             dashboard.mod \
+            qmom_kinetic_equation.mod \
             parallel.mod \
             matrix.mod \
             geometry.mod \
@@ -4491,13 +4504,13 @@ time_march.$(OBJ_EXT) : time_march.f \
             discretelement.mod \
             mchem.mod \
             leqsol.mod \
+            mpi_utility.mod \
             cdist.mod \
             mfix_netcdf.mod \
-            mpi_utility.mod \
             cutcell.mod \
             vtk.mod \
-            dashboard.mod \
-            qmom_kinetic_equation.mod 
+            qmom_kinetic_equation.mod \
+            dashboard.mod 
 transfer.$(OBJ_EXT) : transfer.f \
             param.mod \
             param1.mod \
@@ -4846,6 +4859,7 @@ zero_norm_vel.$(OBJ_EXT) : zero_norm_vel.f \
             indices.mod \
             is.mod \
             compar.mod \
+            discretelement.mod \
             function.inc                                                
 allocate_cut_cell_arrays.$(OBJ_EXT) : ./cartesian_grid/allocate_cut_cell_arrays.f \
             param.mod \
@@ -5724,6 +5738,7 @@ check_des_data.$(OBJ_EXT) : ./des/check_des_data.f \
             output.mod \
             mfix_pic.mod \
             cutcell.mod \
+            qmom_kinetic_equation.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   
@@ -6213,6 +6228,19 @@ read_des_restart.$(OBJ_EXT) : ./des/read_des_restart.f \
             cdist.mod \
             mpi_utility.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/read_des_restart.f 
+solid_drag.$(OBJ_EXT) : ./des/solid_drag.f \
+            param.mod \
+            param1.mod \
+            matrix.mod \
+            geometry.mod \
+            physprop.mod \
+            indices.mod \
+            compar.mod \
+            discretelement.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/solid_drag.f 
 thermo_nbr.$(OBJ_EXT) : ./des/thermo_nbr.f \
             des_thermo.mod \
             discretelement.mod 
