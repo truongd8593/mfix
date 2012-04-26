@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: TIME_MARCH                                             C
+!  Subroutine: TIME_MARCH                                              C
 !  Purpose: Controlling module for time marching and finding the       C
 !           solution of equations from TIME to TSTOP at intervals of   C
 !           DT, updating the b.c.'s, and creating output.              C
@@ -25,33 +25,28 @@
 !                                                                      C
 !  Revision Number: 3                                                  C
 !  Purpose: To call ISAT to calculate chemical rxns                    C
-!  Author: Nan Xie                                    Date: 02-Aug-04  C 
+!  Author: Nan Xie                                    Date: 02-Aug-04  C
 !                                                                      C
 !  Revision Number: 4                                                  C
 !  Purpose: To call Cartesian grid subroutines, and update dasboard    C
-!  Author: Jeff Dietiker                              Date: 01-Jul-09  C 
+!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !  Revision Number: 5                                                  C
 !  Purpose: Incorporation of QMOM for the solution of the particle     C
-!  kinetic equation                                                    C
+!           kinetic equation                                           C
 !  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: RUN_TYPE, TIME, DT, NSTEP, TSTOP, OUT_DT,     C
-!                        RES_DT, USR_DT, SPX_DT                        C
-!                                                                      C
+!  Variables referenced:                                               C
 !  Variables modified: TIME, NSTEP                                     C
+!  Local variables:                                                    C
 !                                                                      C
-!  Local variables: OUT_TIME, RES_TIME, USR_TIME, SPX_TIME, USR_TIME,  C
-!                   L, FINISH                                          C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE TIME_MARCH 
-!...  Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...  Switches: -xf
+
 !-----------------------------------------------
-!     M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -79,96 +74,69 @@
       USE discretelement  
       USE mchem
       USE leqsol
-! netcdf
+      use mpi_utility
       USE cdist
       USE MFIX_netcdf
-! AEOLUS: stop trigger mechanism to terminate MFIX normally before
-! batch queue terminates
-      use mpi_utility
-! JFD modification: cartesian grid implementation 
       USE cutcell
       USE vtk
-      USE dashboard
-! QMOMK - Alberto Passalacqua
       USE qmom_kinetic_equation
-! QMOMK - End
+      USE dashboard
       IMPLICIT NONE
-
 !-----------------------------------------------
-!     G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-
-!-----------------------------------------------
-!     L o c a l   P a r a m e t e r s
+! Local parameters
 !-----------------------------------------------
       DOUBLE PRECISION, PARAMETER :: ONEMEG = 1048576
-  
 !-----------------------------------------------
-!     L o c a l   V a r i a b l e s
+! Local variables
 !-----------------------------------------------
-     
 ! Flag to indicate one pass through iterate for steady 
 ! state conditions. 
-      LOGICAL          FINISH 
-     
+      LOGICAL :: FINISH 
 ! Time at which standard output is to be written 
-      DOUBLE PRECISION OUT_TIME 
-     
+      DOUBLE PRECISION :: OUT_TIME 
 ! Time at which restart file is to be written 
-      DOUBLE PRECISION RES_TIME 
-     
+      DOUBLE PRECISION :: RES_TIME 
 ! Time at which REAL restart file is to be written 
-      DOUBLE PRECISION SPX_TIME(N_SPX) 
-     
+      DOUBLE PRECISION :: SPX_TIME(N_SPX) 
 ! Disk space needed for one variable and each SPX file
-      DOUBLE PRECISION DISK_ONE, DISK(N_SPX) 
-
+      DOUBLE PRECISION :: DISK_ONE, DISK(N_SPX) 
 ! Total Disk space 
-      DOUBLE PRECISION DISK_TOT 
-     
+      DOUBLE PRECISION :: DISK_TOT 
 ! number SPX writes 
-      INTEGER          ISPX 
+      INTEGER :: ISPX 
       
-      LOGICAL          RES_MSG, SPX_MSG 
-     
+      LOGICAL :: RES_MSG, SPX_MSG 
 ! Time at which special output is to be written 
-      DOUBLE PRECISION USR_TIME (DIMENSION_USR) 
-     
+      DOUBLE PRECISION :: USR_TIME (DIMENSION_USR) 
 ! Loop indices 
-      INTEGER          L, M , I
-     
+      INTEGER :: L, M , I, IJK
 ! Error index 
-      INTEGER          IER 
-
+      INTEGER :: IER 
 ! Number of iterations 
-      INTEGER          NIT, NIT_TOTAL 
-     
+      INTEGER :: NIT, NIT_TOTAL 
 ! used for activating check_data_30 
-      INTEGER          NCHECK, DNCHECK,ijk 
-
+      INTEGER :: NCHECK, DNCHECK
 ! dummy logical variable for initializing adjust_dt 
-      LOGICAL          dummy 
+      LOGICAL :: dummy 
 
-      CHARACTER        EXT_END*35 
-
-! use function vavg_v_g to catch NaN's 
-      DOUBLE PRECISION VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg     
-
-! use function MAX_VEL_INLET to compute max. velocity at inlet
-      DOUBLE PRECISION MAX_VEL_INLET
-
+      CHARACTER  EXT_END*35 
 ! AEOLUS : stop trigger mechanism to terminate MFIX normally before
 ! batch queue terminates
-      DOUBLE PRECISION CPU_STOP 
-      LOGICAL AlreadyThere
-      LOGICAL eofBATCHQ
+      DOUBLE PRECISION :: CPU_STOP 
+      LOGICAL :: AlreadyThere
+      LOGICAL :: eofBATCHQ
 ! not used remove after verification
-      INTEGER CHKBATCHQ_FLAG
-      logical :: bWrite_netCDF_files
+      INTEGER :: CHKBATCHQ_FLAG
+      LOGICAL :: bWrite_netCDF_files
      
 !-----------------------------------------------
-!     E x t e r n a l   F u n c t i o n s
+! External functions
 !-----------------------------------------------
+! use function MAX_VEL_INLET to compute max. velocity at inlet
+      DOUBLE PRECISION :: MAX_VEL_INLET
+! use function vavg_v_g to catch NaN's 
+      DOUBLE PRECISION :: VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg     
+
       LOGICAL , EXTERNAL :: ADJUST_DT 
 !-----------------------------------------------
      
@@ -274,20 +242,6 @@
          CALL ZERO_ARRAY (F_gs(1,M), IER)
       ENDDO
 
-! DES 
-! This call to make_arrays_des has now been moved ahead of calc_coeff_all 
-! so that on the call to des/drag_fgs.f, the particle in cell info and also
-! Ep_s are known.  Rahul Garg 
-!      IF(DISCRETE_ELEMENT) THEN
-!         CALL MAKE_ARRAYS_DES
-!      END IF
-! rahul: make_arrays_des (along with check_des_data) is now
-! called from mfix.f. This consolidated the various DEM
-! intialization related calls to one place.  
-      IF (QMOMK) THEN
-          CALL QMOMK_MAKE_ARRAYS
-      END IF
-! QMOMK - End
 
 ! Calculate all the coefficients once before entering the time loop
       IF(TRIM(KT_TYPE) == UNDEFINED_C) CALL CALC_COEFF_ALL (0, IER) 
@@ -324,7 +278,8 @@
       Call check_mass_balance (0)
 
 ! sof modification: now it's only needed to do this once before time-loop     
-! Mark the phase whose continuity will be used for forming Pp_g and Pp_s eqs.
+! Mark the phase whose continuity will be solved and used to correct
+! void/volume fraction in calc_vol_fr (see subroutine for details)
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
           DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S, IER) 
 
@@ -333,17 +288,16 @@
 ! The TIME loop begins here.............................................
  100  CONTINUE
       
-      IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN 
+      IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN
          IF(WRITE_VTK_FILES) THEN
-! rahul: in order to write vtk files for cut-cell
             CALL WRITE_VTU_FILE
          ENDIF 
          CALL DES_TIME_MARCH
-         call CPU_TIME(CPU_STOP)
-! pradeep added  finalize
+         CALL CPU_TIME(CPU_STOP)
          CPU_STOP = CPU_STOP - CPU00
-         if(mype.eq.pe_io)write(*,"('Elapsed CPU time = ',E15.6,' sec')") CPU_STOP
-         call parallel_fin  
+         IF(myPE.EQ.PE_IO) &
+            write(*,"('Elapsed CPU time = ',E15.6,' sec')") CPU_STOP
+         CALL PARALLEL_FIN
          STOP
       ENDIF 
 
@@ -369,18 +323,10 @@
                   (CPU_STOP+TERM_BUFFER), &
                   ' sec >= Allocated Wallclock ',&
                   BATCH_WALLCLOCK, ' sec'
-!               write(*,'(A,A,E10.2,A)') 'Buffer CPU time before ',&
-!                  'triggering abort = ', TERM_BUFFER, ' sec'
-!               write(*,'(A,E10.2,A,E10.2,A)') &
-!                  'Elapsed+Buffer CPU time = ', (CPU_STOP+TERM_BUFFER), &
-!                  ' sec >= Allocated Wallclock ', &
-!                  BATCH_WALLCLOCK, ' sec'
                write(*,'(A,A,/)') '=============== REQUESTED CPU ',&
                   'TIME LIMIT REACHED ==========='
                eofBATCHQ = .TRUE.
                CHKBATCHQ_FLAG = 1
-!              FINISH = .TRUE.	  
-!              DT = UNDEFINED
             ENDIF 
         
             INQUIRE(file="MFIX.STOP",exist=AlreadyThere)
@@ -391,15 +337,11 @@
                   'working directory, terminating MFIX run'
                write(*,'(A,A)') '  Please DO NOT FORGET to erase ',&
                   'MFIX.STOP file before next run'
-!               write(*,'(A,E10.2,A)') '  Elapsed CPU time = ',&
-!                 CPU_STOP, ' sec'
                write(*,*) ' Elapsed CPU time = ',CPU_STOP,' sec'
                write(*,'(A,A,/)') '=============== MFIX STOP ',&
                   'SIGNAL DETECTED ==========='
                eofBATCHQ = .TRUE.
                CHKBATCHQ_FLAG = 1
-!              FINISH = .TRUE.
-!              DT = UNDEFINED          
                AlreadyThere = .FALSE.
             ENDIF
          ENDIF     ! myPE = PE_IO
@@ -410,7 +352,8 @@
       IF (CALL_USR) CALL USR1 
 
 ! Remove solids from cells containing very small quantities of solids
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK)) THEN
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
+         DES_CONTINUUM_HYBRID) THEN
          IF(TRIM(KT_TYPE) == 'GHD') THEN
             CALL ADJUST_EPS_GHD
          ELSE 
@@ -419,11 +362,12 @@
       ENDIF
 
      
-! sof modification: uncomment code below and modify MARK_PHASE_4_COR to use
-! previous MFIX algorithm. Oct. 18 2010.
-! Mark the phase whose continuity will be used for forming Pp_g and Pp_s eqs.
-!      CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP, DO_P_S, &
-!          SWITCH_4_P_G, SWITCH_4_P_S, IER) 
+! sof modification: uncomment code below and modify MARK_PHASE_4_COR to
+! use previous MFIX algorithm. Nov 22 2010.
+! Mark the phase whose continuity will be solved and used to correct
+! void/volume fraction in calc_vol_fr (see subroutine for details)
+!      CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
+!           DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S, IER) 
 
 ! Set wall boundary conditions and transient flow b.c.'s
       CALL SET_BC1 
@@ -473,7 +417,14 @@
             bWrite_netCDF_files = .true.
             DISK_TOT = DISK_TOT + DISK(L) 
             ISPX = ISPX + 1 
-            IF(DISCRETE_ELEMENT.AND.L.EQ.1.AND.PRINT_DES_DATA) CALL WRITE_DES_DATA
+! remove this redundant call here to write_des_data in case of new 
+! coupled runs that contain at least a particle and involve some initial
+! settling of the system.  
+! the call made in des_time_march is a better call for capturing the
+! initial state of such a des continuum coupled system
+            IF(DISCRETE_ELEMENT.AND.PRINT_DES_DATA .AND. L.EQ.1 .AND. &
+               .NOT.(TRIM(RUN_TYPE)=='NEW' .AND. PARTICLES /=0 .AND. &
+                     NFACTOR >0 .AND. TIME == ZERO)) CALL WRITE_DES_DATA
      
             IF (SPX_MSG) THEN 
                IF (RES_MSG) THEN 
@@ -522,13 +473,8 @@
               .OR. eofBATCHQ) THEN 
          RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT 
          CALL WRITE_RES1 
-! Pradeep Changing the routine name 
-         IF(DISCRETE_ELEMENT) call des_write_restart !CALL WRITE_DES_RESTART
-	 ! QMOMK - Alberto Passsalacqua
-	 ! Storing QMOM restart data for the solution of the Boltzmann equation
+         IF(DISCRETE_ELEMENT) CALL DES_WRITE_RESTART
          IF(QMOMK) CALL QMOMK_WRITE_RESTART         
-         ! QMOMK - End
-
          RES_MSG = .FALSE. 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME 
          IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME 
@@ -600,23 +546,24 @@
 ! Calculate coefficients
       CALL CALC_COEFF_ALL (0, IER) 
      
-! Calculate the trace of the stress tensor
+! Calculate the trace of the stress tensor (gas phase; m=0)
       CALL CALC_TRD_G (TRD_G, IER) 
-      IF (.NOT.DISCRETE_ELEMENT) CALL CALC_TRD_S (TRD_S, IER)
 
-! Calculate the cross terms of the stress tensor
+! Calculate the cross terms of the stress tensor (gas phase; m=0)
       CALL CALC_TAU_U_G (TAU_U_G, IER) 
       CALL CALC_TAU_V_G (TAU_V_G, IER) 
       CALL CALC_TAU_W_G (TAU_W_G, IER) 
-      IF (.NOT.DISCRETE_ELEMENT) THEN
+
+      IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+! Calculate the cross terms of the stress tensor (solids phases; m>0)
+         CALL CALC_TRD_S (TRD_S, IER)
+! Calculate the trace of the stress tensor (solids phases; m>0)
          CALL CALC_TAU_U_S (TAU_U_S, IER) 
          CALL CALC_TAU_V_S (TAU_V_S, IER) 
          CALL CALC_TAU_W_S (TAU_W_S, IER) 
-      ENDIF
 
 ! Calculate additional solid phase momentum source terms 
 ! that arise from kinetic theory constitutive relations
-      IF (.NOT.DISCRETE_ELEMENT) THEN
          CALL CALC_KTMOMSOURCE_U_S (IER)
          CALL CALC_KTMOMSOURCE_V_S (IER)
          CALL CALC_KTMOMSOURCE_W_S (IER)
@@ -632,16 +579,15 @@
          CALL CHECK_DATA_30 
       ENDIF 
 
-! AE TIME 041601 Double the timestep for 2nd order accurate time implementation
-! IF ((CN_ON.AND.NSTEP>1)) THEN
+! Double the timestep for 2nd order accurate time implementation
       IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
-      (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
+          (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
          DT = 0.5d0*DT
          ODT = ODT * 2.0d0
       ENDIF
       
 ! Check for maximum velocity at inlet to avoid convergence problems 
-      MAX_INLET_VEL = 100.0d0*MAX_VEL_INLET ()
+      MAX_INLET_VEL = 100.0d0*MAX_VEL_INLET()
 ! if no inlet velocity is specified, use an upper limit defined in 
 ! toleranc_mod.f
       IF(MAX_INLET_VEL == ZERO) THEN
@@ -694,11 +640,12 @@
 ! DES
       IF (DISCRETE_ELEMENT.AND.DES_CONTINUUM_COUPLED) CALL DES_TIME_MARCH
 
-! QMOMK - Alberto Passalacqua
-      IF (QMOMK) CALL QMOMK_TIME_MARCH
-!     END QMOMB
 
-! CHEM & ISAT (Nan Xie)
+! Alberto Passalacqua: QMOMK  
+      IF (QMOMK) CALL QMOMK_TIME_MARCH
+
+
+! Nan Xie: CHEM & ISAT 
 ! Advance the time step and continue
       IF (CALL_ISAT .OR. CALL_DI) THEN 
          CALL MCHEM_TIME_MARCH
@@ -707,18 +654,12 @@
 
 
 ! Advance the time step and continue
-! AE TIME 041601 Double the timestep for 2nd order accurate time implementation
-! IF (CN_ON.AND.NSTEP>1) then 
       IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
-      (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
+          (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
+! Double the timestep for 2nd order accurate time implementation
          DT = 2.d0*DT      
          ODT = ODT * 0.5d0
-      ENDIF      
-
-! AE TIME 043001 Perform the explicit extrapolation for CN implementation
-! IF (CN_ON.AND.NSTEP>1) then
-      IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
-      (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
+! Perform the explicit extrapolation for CN implementation
          CALL CN_EXTRAPOL
       ENDIF
 
