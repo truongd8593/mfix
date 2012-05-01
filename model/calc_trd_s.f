@@ -355,6 +355,7 @@
 !!!!$omp& schedule(dynamic,chunk_size)
 
       DELV = ZERO
+      D_s  = ZERO
 
       IF (.NOT.CUT_CELL_AT(IJK)) RETURN
 
