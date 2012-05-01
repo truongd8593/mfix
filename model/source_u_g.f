@@ -1012,14 +1012,23 @@
 !-----------------------------------------------
 !
 !
-	C_mu = 0.09D+0
-	Kappa = 0.42D+0
-	
-		W_F_Slip = (ONE - ONE/ODX_WF* RO_g(IJK2)*C_mu**0.25   &
-			   *SQRT(K_Turb_G(IJK2))/MU_gT(IJK2)	      &
-			   *Kappa/LOG(9.81D+0/(ODX_WF*2.D+0)*         &
-			    RO_g(IJK2)*C_mu**0.25*                    &
-			   SQRT(K_Turb_G(IJK2))/MU_g(IJK2)))
+        C_mu = 0.09D+0
+        Kappa = 0.42D+0
+
+        IF(DABS(ODX_WF)>1.0D-5) THEN   ! Avoid division by near-zero
+                                       ! This can occur when del_h
+                                       ! is undefined for some bad cut-cells.
+                                       ! Will probably need user-defined tolerance.
+
+           W_F_Slip = (ONE - ONE/ODX_WF* RO_g(IJK2)*C_mu**0.25    &
+                       *SQRT(K_Turb_G(IJK2))/MU_gT(IJK2)          &
+                       *Kappa/LOG(9.81D+0/(ODX_WF*2.D+0)*         &
+                        RO_g(IJK2)*C_mu**0.25*                    &
+                        SQRT(K_Turb_G(IJK2))/MU_g(IJK2)))
+        ELSE
+           W_F_Slip = ONE  ! Should it be set to another value in this case?
+        ENDIF
+
 !
       RETURN  
       END SUBROUTINE Wall_Function
