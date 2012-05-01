@@ -158,7 +158,11 @@
        J = J_OF(IJK) 
        K = K_OF(IJK) 
 
-       Diagonal = dsqrt(DX(I)**2 + DY(J)**2 + DZ(K)**2)
+       IF(NO_K) THEN
+          Diagonal = dsqrt(DX(I)**2 + DY(J)**2 )
+       ELSE
+          Diagonal = dsqrt(DX(I)**2 + DY(J)**2 + DZ(K)**2)
+       ENDIF
 
       IF (DEL_H <= TOL_DELH * Diagonal) THEN
 
