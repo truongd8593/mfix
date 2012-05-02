@@ -1573,7 +1573,7 @@
       SUBROUTINE GET_CG_F2(g0,EPS,EPG, ep_star_avg, &
                                      g0EPs_avg,TH,Mu_g_avg,RO_g_avg,&
                                      DP_avg,K_12_avg, Tau_12_avg, Tau_1_avg, &
-                                     VREL, VSLIP, M)
+                                     VREL, VSLIP, M,F_2)
 
 !-----------------------------------------------
 ! Modules
