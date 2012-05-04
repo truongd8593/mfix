@@ -59,7 +59,6 @@
 #
   NMAX(1)=0
   DRAG_TYPE             = 'WEN_YU'
-#  USE_DEF_LAM_HYS = .F.
 #  LAM_HYS = 0.0001d0 
   
   FRICTION = .TRUE.
