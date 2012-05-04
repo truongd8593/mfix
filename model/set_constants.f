@@ -1,8 +1,6 @@
-!TO DO
-!  define ep_s_max as an input variable... Done (sof).
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SET_CONSTANTS                                          C
+!  Subroutine: SET_CONSTANTS                                           C
 !  Purpose: This module sets all the constants                         C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 30-JAN-92  C
@@ -15,29 +13,26 @@
 !  Revision Number: 2                                                  C
 !  Purpose: Add K_scale                                                C
 !  Author: W. Sams                                    Date: 03-MAY-93  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Revision Number: 3                                                  C
 !  Purpose: Add to_SI to change from CGS to SI in some routines        C
 !  Author: S. Dartevelle                              Date: 03-MAY-02  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced: UNITS                                         C
+!  Variables modified: GRAVITY, GAS_CONST, K_scale, Pi, SQRT_Pi,       C
+!                      ETA, tan_phi_w, sin_phi, sin2_phi, f_phi        C
+!                      lam_hys                                         C
 !                                                                      C
-!  Variables modified: G, GAS_CONST, K_scale, Pi, SQRT_Pi, SQRT_3,     C
-!                      ETA, D_p3, oD_p3, MASS_s                        C
-!                                                                      C
-!  Local variables: IJK                                                C
+!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE SET_CONSTANTS 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -54,68 +49,55 @@
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: IJK, M 
+! Local variables
 !-----------------------------------------------
 
-
+!-----------------------------------------------
 
 ! Note that the cell flags are not set when this routine is called.
 
+
 ! For GHD theory
 ! Increase MMAX by one to serve as 'mixture' phase
-! Automatically set SPECIES_EQ(MMAX) = .FALSE.      
+! Automatically set SPECIES_EQ(MMAX) = .FALSE.
       IF(TRIM(KT_TYPE) == 'GHD') THEN
-          MMAX = MMAX + 1
-          SPECIES_EQ(MMAX) = .FALSE.
+         MMAX = MMAX + 1
+         SPECIES_EQ(MMAX) = .FALSE.
       ENDIF
-
-! For multiple particle types
-! commented by sof (05-04-2005) ep_s_max(MMAX) will be defined in mfix.dat
-!       ep_s_max(1) = MAX_SOLID_1_PACKING  ! maximum packing volume fraction for spheres, typically 0.6
-!	ep_s_max(2) = MAX_SOLID_2_PACKING  ! maximum packing volume fraction for solids, typically 0.6
-
-! refer to Syam's dissertation
-        ep_s_max_ratio(1,2) = ep_s_max(1)/(ep_s_max(1)+(1.-ep_s_max(1))*ep_s_max(2)) 
 
 ! Dimensionless constants
       PI = 4.D0*ATAN(ONE) 
       SQRT_PI = SQRT(PI) 
       K_SCALE = .08D0 
-      EP_S_CP = 1.D0 - EP_STAR 
       ETA = (1D0 + C_E)*0.5D0 
 
 ! Plastic regime stress
 ! Angle given in degree but calculated in radian within the fortran codes
-      if(mmax > 0) then
+      IF(MMAx > 0) THEN
         TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
         SIN_PHI = SIN(PHI*PI/180.D0) 
         SIN2_PHI = SIN_PHI*SIN_PHI 
         F_PHI = (3.0D0 - 2.0D0*SIN2_PHI)/3.0D0 
-      endif
+      ENDIF
 
 ! Enter the value of all constants in various units (CGS or SI)
       IF (UNITS == 'SI') THEN
          IF (GRAVITY == UNDEFINED) GRAVITY = 9.80665D0 ! m/s2
          GAS_CONST = 8314.56D0                     !Pa.m3/kmol.K, or kg m2/s2 kmol K (Perry and Green, 1984)
          to_SI = 0.1D0                             !to convert dyne/cm2 to Pa, see s_pr2.inc, see calc_mu_g.f
-      ELSE IF (UNITS == 'CGS') THEN
+         IF (LAM_HYS == UNDEFINED) LAM_HYS = 0.000001d0    ! m
+      ELSEIF (UNITS == 'CGS') THEN
          IF (GRAVITY == UNDEFINED) GRAVITY = 980.665D0 !cm/s2
          GAS_CONST = 8314.56D4                   !g.cm2/s2.mol.K
          to_SI = ONE                             !does not do anything in CGS,  see s_pr2.inc, see calc_mu_g.f
+         IF (LAM_HYS == UNDEFINED) LAM_HYS = 0.0001d0    ! cm
       ELSE 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1000) UNITS
          CALL MFIX_EXIT(myPE) 
       ENDIF 
 
       RETURN  
- 1000 FORMAT(/70('*')//'From: SET_CONSTANTS'/'Message: Unknown UNITS: ',1A16,/70&
-         ('*')/) 
+ 1000 FORMAT(/1X,70('*')//'From: SET_CONSTANTS',/&
+         ' Message: Unknown UNITS: ',1A16,/1X,70('*')/)
+
       END SUBROUTINE SET_CONSTANTS 

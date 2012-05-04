@@ -1,122 +1,81 @@
       NAMELIST / INPUT_DATA /&
-!
+
 ! 1.1 Run control section
-!
+! ---------------------------------------------------------------->>>
              RUN_NAME, DESCRIPTION, UNITS, RUN_TYPE, TIME, TSTOP,&
-             DT, ENERGY_EQ, DEF_COR, C_FAC, FPFOI, SPECIES_EQ, &
-             CALL_USR, MODEL_B, DT_MAX, DT_MIN, DT_FAC, DETECT_STALL,&
-             MOMENTUM_X_EQ, MOMENTUM_Y_EQ,MOMENTUM_Z_EQ, DISCRETIZE,&
-             GRANULAR_ENERGY,& 
-	     NScalar, Phase4Scalar, &
-	     K_Epsilon, Added_Mass, M_AM, Call_DQMOM,&
-! sof 02-01-05 (modified Nov-16-05)
-	     SIMONIN, AHMADI, JENKINS, YU_STANDISH, FEDORS_LANDEL,&
-             nRR, chi_scheme, &
-! start anuj 4/20
-             FRICTION, SAVAGE,&
-! end anuj 4/20
-
-! sof (02/16/2005)
-             SCHAEFFER,&
-! end sof
-
-! blending switch
+	     Dt, DT_MAX, DT_MIN, DT_FAC, DETECT_STALL,&
+             AUTO_RESTART,&	     
+             ENERGY_EQ, SPECIES_EQ, CALL_USR, &
+             MOMENTUM_X_EQ, MOMENTUM_Y_EQ, MOMENTUM_Z_EQ, &
+	     Call_DQMOM, AGGREGATION_EFF,BREAKAGE_EFF, NScalar, &
+	     Phase4Scalar, &
+	     K_Epsilon, SIMONIN, AHMADI, JENKINS, & 
+             FRICTION, SAVAGE, SCHAEFFER,&
              BLENDING_STRESS, TANH_BLEND, SIGM_BLEND, &
-! residual calculation
-             DEBUG_RESID, &
-
-! start peter 7/15
              SHEAR, V_sh,&
-! end peter 7/15
+             DRAG_TYPE, MODEL_B, lam_HYS, drag_c1, drag_d1, &
+             GRANULAR_ENERGY, KT_TYPE, RDF_TYPE, &
+             YU_STANDISH, FEDORS_LANDEL, Added_Mass, M_AM, &
 
-! begin bill 7/10/09
-             DRAG_TYPE, use_def_lam_HYS, lam_HYS, &
-! end bill 7/10/09
+! AEOLUS: see run_mod for details
+             CHK_BATCHQ_END, BATCH_WALLCLOCK, TERM_BUFFER,&
 
-! start jeg
-             KT_TYPE, &
-             RDF_TYPE, &
-! end jeg
+! ----------------------------------------------------------------<<<
 
-!AE TIME 043001  added new logical flag var for 2nd order time into NAMELIST
-            CN_ON,&
-!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
-!  flag variable to check for end of batch queue when set to TRUE
-!      check performed at the beginning of each time step and termination of
-!      mfix triggered after saving all files if condition is met
-             CHK_BATCHQ_END,&
-!  variable to store the total wall clock duration of the batch queue session 
-!  wall clock time specified in seconds
-!  for jaguarcnl@NCCS max wall clock limit is 2.5 hr limit up to 512 processors
-             BATCH_WALLCLOCK,&
-!  variable to set a buffer time before the batch queue session ends to
-!  make sure once MFIX is triggered to shutdown, there is sufficient time
-!  to save files, make copies to HPSS storage before batch queue time runs out
-!  Current logic in MFIX checks for
-!    if CPU_TIME > (BATCH_WALLCLOCK - TERM_BUFFER) then save all .RES .SP files
-!                                                  and trigger shutdown
-             TERM_BUFFER,&
-
-!
 ! 1.2 Output control section
-!
+! ---------------------------------------------------------------->>>
              RES_DT, SPX_DT , OUT_DT, &
              USR_DT, USR_TYPE, USR_VAR, USR_FORMAT, USR_EXT,&
              USR_X_w , USR_X_e , USR_Y_s , USR_Y_n ,&
              USR_Z_b , USR_Z_t, NLOG, FULL_LOG, RESID_STRING,&
 	     report_mass_balance_dt, &
-!AEOLUS added the flag variable to debug print whole index layout 
-             DBGPRN_LAYOUT, &
-!AEOLUS added the flag variable to enable all processors printout their own *.LOG file instead of root only 
-             ENABLE_DMP_LOG, &
-!
+! AEOLUS: see output_mod for details
+             DBGPRN_LAYOUT, ENABLE_DMP_LOG, &
+             nRR, &
+! ----------------------------------------------------------------<<<
+
+
 ! 1.3 Physical and numerical parameters section
+! ---------------------------------------------------------------->>>
 !            (e, r_p, and C_e are same)
+             GRAVITY, P_ref, P_scale, &
              e, C_e, r_p, C_f, C, C_NAME, Phi, Phi_w, L_scale0, MU_gmax,&
-             TOL_RESID, TOL_DIVERGE, TOL_RESID_Scalar, MAX_NIT, LEQ_IT, LEQ_METHOD, LEQ_SWEEP,&
-	     LEQ_TOL, DO_TRANSPOSE, V_ex,&
-             P_ref, P_scale, UR_FAC, UR_F_gs, UR_Kth_sml,&
-	     GRAVITY, TOL_RESID_T, TOL_RESID_X,&
-	     TOL_RESID_Th, MAX_INLET_VEL_FAC, &
-             NORM_g, NORM_s, PHIP, e_w, EPS_f_min, & !EPS_max,
-	     drag_c1, drag_d1, &
+             PHIP, e_w, EPS_f_min, V_ex, SEGREGATION_SLOPE_COEFFICIENT,&
+	     ep_s_max, M_MAX,&
+             MAX_NIT, NORM_g, NORM_s, &
+	     TOL_RESID, TOL_RESID_T, TOL_RESID_X,&
+	     TOL_RESID_Th, TOL_RESID_Scalar, TOL_DIVERGE, &
+	     MAX_INLET_VEL_FAC, &
+             DISCRETIZE, LEQ_IT, LEQ_METHOD, &
+	     LEQ_SWEEP, LEQ_TOL, LEQ_PC, DO_TRANSPOSE, &
+	     UR_FAC, UR_F_gs, UR_Kth_sml, &	     
+             DEF_COR, FPFOI, C_FAC, &
+             chi_scheme, CN_ON, &
+! ----------------------------------------------------------------<<<
 
-! start GERA 8/15/03
-             SEGREGATION_SLOPE_COEFFICIENT, ep_s_max,&
-! modified by sof, removed MAX_SOLID_1_PACKING and MAX_SOLID_2_PACKING
-! end GERA 8/15/03     
-
-! start sof 5/04/05 (for rearanging indices from coarsest to finest particles)
-             M_MAX,&
-! end sof 5/04/05      
-
-! start sof 5/04/05 Adding automatic_restart
-             AUTO_RESTART,&
-! end sof 5/04/05    
-	     	     
-! start rong
-             AGGREGATION_EFF,BREAKAGE_EFF,&
-! end rong 
 
 ! 1.4 Geometry and discretization section
-!
+! ---------------------------------------------------------------->>>
              COORDINATES, IMAX, DX, XMIN, XLENGTH, JMAX, DY, YLENGTH,&
              KMAX, DZ, ZLENGTH, NO_I, NO_J, NO_K,&
              CYCLIC_X, CYCLIC_Y, CYCLIC_Z, CYCLIC_X_PD, CYCLIC_Y_PD,&
              CYCLIC_Z_PD, &
-!
+! ----------------------------------------------------------------<<<
+
 ! 1.5 Gas phase section
-!
+! ---------------------------------------------------------------->>>
              RO_g0, MU_g0, MW_AVG, MW_g, K_g0, C_pg0, DIF_g0,&
-!
+! ----------------------------------------------------------------<<<
+
 ! 1.6 Solids phase section
-!
+! ---------------------------------------------------------------->>>
              MU_s0, D_p0, RO_s, EP_star, MMAX, NMAX, MW_s, CLOSE_PACKED,&
              K_s0, C_ps0, DIF_s0,&
+! ----------------------------------------------------------------<<<
 
-!
+
 ! 1.7 Initial conditions section
-!
+! ---------------------------------------------------------------->>>
              IC_X_w, IC_X_e, IC_Y_s, IC_Y_n, IC_Z_b, IC_Z_t,&
              IC_I_w, IC_I_e, IC_J_s, IC_J_n, IC_K_b, IC_K_t,&
              IC_EP_g, IC_P_g, IC_ROP_s, IC_T_g, IC_T_s,&
@@ -124,15 +83,16 @@
              IC_X_g, IC_X_s, IC_TYPE, IC_P_star, IC_L_scale,&
              IC_GAMA_Rg, IC_T_Rg, IC_GAMA_Rs, IC_T_Rs,&
              IC_Theta_m, IC_Scalar, IC_K_Turb_G, IC_E_Turb_G, &
-!
+! ----------------------------------------------------------------<<<
+
 ! 1.8 Boundary conditions section
-!
+! ---------------------------------------------------------------->>>
              BC_X_w, BC_X_e, BC_Y_s, BC_Y_n, BC_Z_b, BC_Z_t,&
              BC_I_w, BC_I_e, BC_J_s, BC_J_n, BC_K_b, BC_K_t,&
              BC_EP_g, BC_P_g, BC_RO_g, BC_ROP_g, BC_ROP_s,&
              BC_T_g, BC_T_s,&
              BC_U_g, BC_U_s, BC_V_g, BC_V_s, BC_W_g, BC_W_s, BC_VELMAG_G,BC_VELMAG_S,&
-        BC_TYPE,BC_APPLY_TO_MPPIC, BC_VOLFLOW_g, BC_VOLFLOW_s, BC_MASSFLOW_g, &
+             BC_TYPE,BC_APPLY_TO_MPPIC, BC_VOLFLOW_g, BC_VOLFLOW_s, BC_MASSFLOW_g, &
              BC_MASSFLOW_s, BC_X_g, BC_X_s,&
              BC_DT_0, BC_Jet_g0, BC_DT_h, BC_Jet_gh, BC_DT_l, &
              BC_Jet_gl,&
@@ -143,47 +103,40 @@
              BC_C_T_s,&
              BC_hw_X_g, BC_hw_X_s, BC_Xw_g, BC_Xw_s, BC_C_X_g,&
              BC_C_X_s,&
-!start kapil anuj 01/19/98
              BC_JJ_PS,&
              BC_hw_Theta_m, BC_Thetaw_m, BC_C_Theta_m,&
              BC_Theta_m,&
-!end   kapil anuj 01/19/98
              BC_hw_Scalar, BC_Scalarw, BC_C_Scalar,&
              BC_Scalar,&
 	     BC_K_Turb_G, BC_E_Turb_G, &
 	     Flux_g, &
-!
+! ----------------------------------------------------------------<<<
+
 ! 1.9 Internal surfaces section
-!
+! ---------------------------------------------------------------->>>
              IS_X_w, IS_X_e, IS_Y_s, IS_Y_n, IS_Z_b, IS_Z_t,&
              IS_I_w, IS_I_e, IS_J_s, IS_J_n, IS_K_b, IS_K_t,&
              IS_TYPE, IS_PC, IS_VEL_s,&
-!
+! ----------------------------------------------------------------<<<
+
 ! 1.10 Chemical reactions
-!
+! ---------------------------------------------------------------->>>
              SPECIES_NAME, &
-! CHEM & ISAT begin (nan xie)
 	     CALL_DI, CALL_GROW, CALL_ISAT, ISATdt,&
-! CHEM & ISAT end (nan xie)
-!
-! 1.11 distributed parallel
-!
+! ----------------------------------------------------------------<<<
+
+! 1.11 parallel related
+! ---------------------------------------------------------------->>>
              NODESI , NODESJ , NODESK, &
-!	     
-! 1.12 Preconditioner
-!
-	     LEQ_PC, &
-!
-! 1.13 Parallel related
-!
-	     IS_SERIAL, USE_DOLOOP, minimize_dotproducts, icheck_bicgs, &
+             DEBUG_RESID, &
+	     IS_SERIAL, USE_DOLOOP, minimize_dotproducts, &
+	     icheck_bicgs, &
              solver_statistics, opt_parallel , &
 
-! 1.14 Distributed IO (version 1) related variables
-
+! Distributed IO (version 1) related variables
              bDist_IO , bStart_with_one_RES , &
+! ----------------------------------------------------------------<<<
 
-! 1.15 netCDF related
-
+! Misc
              bWrite_netCDF
 

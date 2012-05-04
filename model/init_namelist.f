@@ -9,6 +9,7 @@
 !  Revision Number: 1                                                  C
 !  Purpose: Initialize Phi and Phi_w                                   C
 !  Author: M. Syamlal                                 Date: 11-FEB-93  C
+!                                                                      C
 !  Revision Number: 2                                                  C
 !  Purpose: Add L_scale0, L_scale                                      C
 !  Author: W. Sams                                    Date: 04-MAY-94  C
@@ -24,38 +25,17 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced: None                                          C
-!  Variables modified: RUN_NAME, DESCRIPTION, UNITS, RUN_TYPE, TIME    C
-!                      TSTOP, DT, RES_DT, SPX_DT, OUT_DT, NLOG         C
-!                      COORDINATES, IMAX, DX, XLENGTH, JMAX, DY        C
-!                      YLENGTH, KMAX, DZ, ZLENGTH, MMAX, D_p0, RO_s    C
-!                      L_scale0, L_scale, EP_star, MU_g0, MW_AVG       C
-!                      IC_X_w, IC_X_e, IC_Y_s, IC_Y_n, IC_Z_b, IC_Z_t  C
-!                      IC_I_w, IC_I_e, IC_J_s, IC_J_n, IC_K_b, IC_K_t  C
-!                      IC_EP_g, IC_P_g, IC_ROP_s, IC_T_g, IC_T_s      C
-!                       IC_U_g, IC_U_s, IC_V_g, IC_V_s, IC_W_g C
-!                      IC_W_s, BC_X_w, BC_X_e, BC_Y_s, BC_Y_n, BC_Z_b  C
-!                      BC_Z_t, BC_I_w, BC_I_e, BC_J_s, BC_J_n, BC_K_b  C
-!                      BC_K_t, BC_EP_g, BC_P_g, BC_RO_g, BC_ROP_g      C
-!                      BC_ROP_s, BC_T_g, BC_T_s,  BC_U_g      C
-!                      BC_U_s, BC_V_g,BC_V_s, BC_W_g, BC_W_s, BC_TYPE  C
-!                      BC_VOLFLOW_g, BC_VOLFLOW_s, BC_MASSFLOW_g       C
-!                      BC_MASSFLOW_s, BC_DT_0, BC_Jet_g0, BC_DT_h      C
-!                      BC_Jet_gh, BC_DT_l, BC_Jet_gl, NO_I, NO_J, NO_K C
-!                      RO_g0, MU_gmax                                  C
-!                                                                      C
-!  Local variables:  LC, LCM                                           C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE INIT_NAMELIST 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
 
+      SUBROUTINE INIT_NAMELIST 
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param 
       USE param1 
       USE run
@@ -77,27 +57,20 @@
       USE scalars
       USE compar
       USE parallel
-!DISTIO
       USE cdist      
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Local variables
 !-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!              loop counters
+! loop counters
       INTEGER :: LC, LCM, M, N 
-!
-!                      Coefficient of restitution (old symbol)
-      DOUBLE PRECISION :: E 
+! Coefficient of restitution (old symbol)
+      DOUBLE PRECISION :: E       
 !-----------------------------------------------
-!
+! Include statement functions
+!-----------------------------------------------      
       INCLUDE 'namelist.inc'
-
+!-----------------------------------------------
 
 ! INITIALIZE THE RUN CONTROL SECTION
       RUN_NAME = UNDEFINED_C 
@@ -106,7 +79,8 @@
       RUN_TYPE = UNDEFINED_C 
       TIME = UNDEFINED 
       TSTOP = UNDEFINED 
-!AEOLUS STOP Trigger mechanism to terminate MFIX normally before batch queue terminates
+! AEOLUS: STOP Trigger mechanism to terminate MFIX normally before 
+!         batch queue terminates
       CHK_BATCHQ_END = .FALSE. 
       BATCH_WALLCLOCK = 9000.0    ! set to 2.5 hrs for jaguarcnl w/ nproc<=512
       TERM_BUFFER = 180.0         ! set to 3 minutes prior to end of job
@@ -159,15 +133,15 @@
       bDist_IO            = .false.
       bStart_with_one_RES = .false.
 
- 
 ! loezos:
       SHEAR = .FALSE.
 
       DRAG_TYPE = 'SYAM_OBRIEN'
       drag_c1 = 0.8d0
       drag_d1 = 2.65d0
+      LAM_HYS = UNDEFINED
 
-!AE TIME 041601 Set the default to 1st order accurate time implementation
+! AE: 041601 Set the default to 1st order accurate time implementation
       CN_ON = .FALSE.
               
       IF (DIM_M + 1 > 0) THEN 
@@ -255,12 +229,6 @@
 ! coefficient of restitution
       r_p(:DIM_M, :DIM_M) = UNDEFINED
 
-! modified by sof (05-04-2005)
-!      MAX_SOLID_1_PACKING=0.6
-!      MAX_SOLID_2_PACKING=0.6
-! eps_max: not needed anymore (sof, Nov-17-2005) 
-!      EPS_MAX = 0.65D0      
-
 ! rong
       AGGREGATION_EFF=0.D0
       BREAKAGE_EFF=0.D0
@@ -318,9 +286,11 @@
       icheck_bicgs = 1
       solver_statistics = .FALSE.
       opt_parallel = .FALSE.
-!AEOLUS set default value for new variable to debug print whole index layout 
+! AEOLUS: set default value for new variable to debug print whole 
+!         index layout 
       DBGPRN_LAYOUT = .FALSE.
-!AEOLUS set default value for enabling all processors write out their *.LOG invidually 
+! AEOLUS: set default value for enabling all processors write out
+!         their *.LOG invidually 
       ENABLE_DMP_LOG = .FALSE.
       UR_FAC(1)  = 0.8D0             !pressure 
       UR_FAC(2)  = 0.5D0             !rho, ep 
@@ -351,7 +321,6 @@
       RO_S(:DIM_M) = UNDEFINED 
       NMAX(1:DIM_M) = UNDEFINED_I 
       CLOSE_PACKED(:DIM_M) = .TRUE. 
-!      MW_S(1,1+:DIM_N_S+) = UNDEFINED 
       MW_S = UNDEFINED
       EP_STAR = UNDEFINED 
 
@@ -457,7 +426,7 @@
          BC_TW_G(LC) = UNDEFINED 
          BC_C_T_G(LC) = UNDEFINED 
 
-! kapil&anuj: 01/19/98
+! Kapil & Anuj: 01/19/98
          BC_JJ_PS(LC) = UNDEFINED_I 
 
          BC_ROP_S(LC,:DIM_M) = UNDEFINED 
@@ -529,7 +498,7 @@
       IS_SERIAL = .TRUE.
       USE_DOLOOP = .FALSE.
 
-! nan xie: CHEM & ISAT
+! Nan Xie: CHEM & ISAT
       CALL_DI = .FALSE.
       CALL_GROW = .FALSE.
       CALL_ISAT = .FALSE.  
@@ -539,9 +508,9 @@
 
       CALL DES_INIT_NAMELIST
 
-      ! Initialize QMOMK namelist
+! Initialize QMOMK namelist
       CALL QMOMK_INIT_NAMELIST
-      ! QMOMK - End
+
       CALL USR_INIT_NAMELIST 
 
 ! JFD: MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION      

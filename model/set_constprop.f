@@ -1,20 +1,18 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SET_CONSTProp                                          C
+!  Subroutine: SET_CONSTProp                                           C
 !  Purpose: This module sets all the constant physical properties      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 12-MAY-97  C
 !                                                                      C
-!  Local variables: IJK
+!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE SET_CONSTPROP 
 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -33,18 +31,16 @@
       use kintheory
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Local variables
 !-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
+! indices      
       INTEGER :: IJK, M, N, I, J
-      DOUBLE PRECISION SUM, SUM_EP, old_value, DP_TMP(MMAX)
+      DOUBLE PRECISION old_value, DP_TMP(MMAX)
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
+!-----------------------------------------------
 
 ! Initialize transport coefficients to zero everywhere
       MU_gt(:) = ZERO
@@ -64,11 +60,11 @@
       ELSE 
          RECALC_VISC_G = .FALSE. 
       ENDIF 
-!
+
 ! Set default value for virtual mass coefficient
       Cv = HALF
 
-! variables for Iddir & Arastoopour (2005) kinetic theory
+! Variables for Iddir & Arastoopour (2005) kinetic theory
 ! EDvel_sM_ip & EDT_s_ip are also used for Garzy & Dufty (1999) 
 ! kinetic theory
       IF (TRIM(KT_TYPE) == 'IA_NONEP') THEN
@@ -109,7 +105,8 @@
                IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0 
             ENDIF
          ENDIF 
-      END DO 
+      ENDDO 
+
 
       DO M = 1, MMAX 
          DO IJK = ijkstart3, ijkend3
@@ -120,7 +117,6 @@
                ALPHA_S(IJK,M) = ZERO 
                K_S(IJK,M) = ZERO 
                C_PS(IJK,M) = ZERO 
-! add by rong
                D_p(IJK,M)=D_P0(M)
             ELSE 
                IF (C_PS0 /= UNDEFINED) C_PS(IJK,M) = C_PS0 
@@ -134,12 +130,14 @@
                   IF (K_S0 /= UNDEFINED) K_S(IJK,M) = K_S0 
                   IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
                ENDIF
-! add by rong; modified by sof (June 17 2005)
                IF (D_P0(M)/=UNDEFINED)  D_P(IJK,M)=D_P0(M)
             ENDIF 
+
 ! set ep_star_array to user input ep_star in all cells. sof--> Nov-17-05
             EP_star_array(ijk) = ep_star
-
+            IF(EP_S_MAX(M) == UNDEFINED) EP_S_MAX(M) = ONE-EP_STAR
+! this probably should not be used anymore            
+            EP_S_CP = 1.D0 - EP_STAR
 
 ! initializing Sreekanth blending stress parameters (sof)
 ! changed blend_start to 0.99*ep_star from 0.97*ep_star [ceaf 2006-03-17]
@@ -156,11 +154,10 @@
                ep_g_blend_end(ijk)   = ep_star_array(ijk)
             ENDIF
 
-            IF(EP_S_MAX(M) == UNDEFINED) EP_S_MAX(M) = ONE-EP_STAR
-
          ENDDO   ! end loop over ijk
       ENDDO      ! end loop over MMAX
-      
+
+
       IF (RO_G0 == ZERO) THEN 
          IF (MMAX > 0) THEN 
             IF (IJKMAX2 > 0) THEN 
@@ -169,44 +166,45 @@
          ENDIF 
       ENDIF 
      
-     
-! start sof modifications: 05/04-2005
-! initializing the new indexing system
+
+! sof 05/04-2005: initializing the new indexing system
 ! this doesn't need to be done if no correlation is used to compute ep_star
-      IF(YU_STANDISH .OR. FEDORS_LANDEL) THEN
-         IF(.NOT. CALL_DQMOM) THEN
-            DO I = 1, MMAX
-               IF(D_P0(I) == UNDEFINED) RETURN
-               DP_TMP(I) = D_P0(I)
-               M_MAX(I) = I
-            ENDDO
+      IF(YU_STANDISH .OR. FEDORS_LANDEL .AND. .NOT. CALL_DQMOM) THEN
 
-! rearrange the indices from coarsest particles to finest to be used in CALC_ep_star
-! I did this here because it may need to be done for auto_restart
-            DO I = 1, MMAX
-               DO J = I, MMAX                  
-                  IF(DP_TMP(I) < DP_TMP(J)) THEN
-                     old_value = DP_TMP(I)
-                     DP_TMP(I) = DP_TMP(J)
-                     DP_TMP(J) = old_value
-                  ENDIF                  
-               ENDDO
-            ENDDO
+! refer to Syam's dissertation
+         IF (SMAX == 2) THEN
+            ep_s_max_ratio(1,2) = ep_s_max(1)/&
+               (ep_s_max(1)+(1.-ep_s_max(1))*ep_s_max(2)) 
+         ENDIF
+         DO I = 1, MMAX
+            IF(D_P0(I) == UNDEFINED) RETURN
+            DP_TMP(I) = D_P0(I)
+            M_MAX(I) = I
+         ENDDO
 
-            DO I = 1, MMAX
-               DO J = 1, MMAX
-                  IF(DP_TMP(I) == D_P0(J) .AND. D_P0(I) .NE. D_P0(J)) THEN
-                     M_MAX(I) = J 
-                  ENDIF
-               ENDDO
+! rearrange the indices from coarsest particles to finest to be 
+! used in CALC_ep_star. Done here because it may need to be done
+! for auto_restart
+         DO I = 1, MMAX
+            DO J = I, MMAX                  
+               IF(DP_TMP(I) < DP_TMP(J)) THEN
+                  old_value = DP_TMP(I)
+                  DP_TMP(I) = DP_TMP(J)
+                  DP_TMP(J) = old_value
+               ENDIF                  
             ENDDO
-         ENDIF    ! if.not. call_dqmom
-      ENDIF       ! if Yu-standish or Fedors-Landel
+         ENDDO
+         DO I = 1, MMAX
+            DO J = 1, MMAX
+               IF(DP_TMP(I) == D_P0(J) .AND. D_P0(I) .NE. D_P0(J)) THEN
+                  M_MAX(I) = J 
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDIF    ! if Yu-standish or Fedors-Landel and .not. call_dqmom
 
 
       RETURN  
       END SUBROUTINE SET_CONSTPROP 
 
-!//   Comments on the modifications for DMP version implementation      
-!//   001 Include header file and common declarations for parallelization
-!//   120 Replaced the index for initialization: e.g. in DIF_G :ijkmax2 --> IJKSTART3:IJKEND3
+

@@ -431,19 +431,19 @@
             ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW_PCF') THEN
 !
                phis = ZERO
-	       DO IM = 1, SMAX
-	         phis = phis + EP_S(IJK,IM)
-	       ENDDO 
+               DO IM = 1, SMAX
+                 phis = phis + EP_S(IJK,IM)
+               ENDDO 
                D_p_av = ZERO
                tmp_sum = ZERO
-	       tmp_fac = ZERO
-	       DO IM = 1, SMAX
+               tmp_fac = ZERO
+               DO IM = 1, SMAX
                  IF (phis .GT. ZERO) THEN
                    tmp_fac = EP_S(IJK,Im)/phis
                    tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
                  ELSE
                    tmp_sum = tmp_sum + ONE/ D_p(IJK,Im) ! not important, but will avoid NaN's in empty cells
-		 ENDIF
+                 ENDIF
                ENDDO 
                D_p_av = ONE / tmp_sum
 
@@ -533,19 +533,19 @@
             ELSE IF(TRIM(DRAG_TYPE).EQ.'GIDASPOW_BLEND_PCF') THEN
 !
                phis = ZERO
-	       DO IM = 1, SMAX
-	         phis = phis + EP_S(IJK,IM)
-	       ENDDO 
+               DO IM = 1, SMAX
+                 phis = phis + EP_S(IJK,IM)
+               ENDDO 
                D_p_av = ZERO
                tmp_sum = ZERO
-	       tmp_fac = ZERO
-	       DO IM = 1, SMAX
+               tmp_fac = ZERO
+               DO IM = 1, SMAX
                  IF (phis .GT. ZERO) THEN
                    tmp_fac = EP_S(IJK,Im)/phis
                    tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
                  ELSE
                    tmp_sum = tmp_sum + ONE/ D_p(IJK,Im) ! not important, but will avoid NaN's in empty cells
-		 ENDIF
+                 ENDIF
                ENDDO 
                D_p_av = ONE / tmp_sum
 
@@ -630,19 +630,19 @@
             ELSE IF(TRIM(DRAG_TYPE).EQ.'WEN_YU_PCF') then
 !
                phis = ZERO
-	       DO IM = 1, SMAX
-	         phis = phis + EP_S(IJK,IM)
-	       ENDDO 
+               DO IM = 1, SMAX
+                 phis = phis + EP_S(IJK,IM)
+               ENDDO 
                D_p_av = ZERO
                tmp_sum = ZERO
-	       tmp_fac = ZERO
-	       DO IM = 1, SMAX
+               tmp_fac = ZERO
+               DO IM = 1, SMAX
                  IF (phis .GT. ZERO) THEN
                    tmp_fac = EP_S(IJK,Im)/phis
                    tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
                  ELSE
                    tmp_sum = tmp_sum + ONE/ D_p(IJK,Im) ! not important, but will avoid NaN's in empty cells
-		 ENDIF
+                 ENDIF
                ENDDO 
                D_p_av = ONE / tmp_sum
 
@@ -705,51 +705,51 @@
             ELSE IF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL') THEN
 !     
                F_STOKES = 18D0*Mu*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
-	       
+       
                phis = ZERO
-	       DO IM = 1, SMAX
-	         phis = phis + EP_S(IJK,IM) ! this is slightly /= one-ep_g due to round-off
-	       ENDDO 
+               DO IM = 1, SMAX
+                 phis = phis + EP_S(IJK,IM) ! this is slightly /= one-ep_g due to round-off
+               ENDDO 
                w = EXP(-10.0D0*(0.4D0-phis)/phis)
-	   
+   
                IF(phis > 0.01D0 .AND. phis < 0.4D0) THEN
                     F_0 = (1.0D0-w) *                                             &
                          (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis   &
                          *LOG(phis) + 17.14D0*phis) / (1.0D0 + 0.681D0*           &
                          phis - 8.48D0*phis*phis + 8.16D0*phis**3) + w *          &
                          10.0D0*phis/(1.0D0-phis)**3
-	               
+               
                ELSE IF(phis >= 0.4D0) THEN
                     F_0 = 10.0D0*phis/(1.0D0-phis)**3
                ENDIF
-	   
+   
                IF(phis > 0.01D0 .AND. phis <= 0.1D0) THEN
                     F_1 = dsqrt(2.0D0/phis) / 40.0D0
                ELSE IF(phis > 0.1D0) THEN
                     F_1 = 0.11D0 + 5.1D-04 * exp(11.6D0*phis)
                ENDIF
-	   
+   
                IF(phis < 0.4D0) THEN
                     F_2 = (1.0D0-w) *                                            &
                          (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis  &
                          *LOG(phis) + 17.89D0*phis) / (1.0D0 + 0.681D0*          &
                          phis - 11.03D0*phis*phis + 15.41D0*phis**3)+ w *        &
                          10.0D0*phis/(1.0D0-phis)**3
-	   
+   
                ELSE
                     F_2 = 10.0D0*phis/(1.0D0-phis)**3
                ENDIF
-	   
+   
                IF(phis < 0.0953D0) THEN
                     F_3 = 0.9351D0*phis + 0.03667D0
                ELSE
                     F_3 = 0.0673D0 + 0.212D0*phis +0.0232D0/(1.0-phis)**5
                ENDIF
-	   
+   
                Re_Trans_1 = (F_2 - 1.0D0)/(3.0D0/8.0D0 - F_3)
                Re_Trans_2 = (F_3 + dsqrt(F_3*F_3 - 4.0D0*F_1 &
                     *(F_0-F_2))) / (2.0D0*F_1)
-	   
+   
                IF(phis <= 0.01D0 .AND. Re_kh <= Re_Trans_1) THEN
                     F = 1.0D0 + 3.0D0/8.0D0*Re_kh
                ELSE IF(phis > 0.01D0 .AND. Re_kh <= Re_Trans_2) THEN
@@ -760,7 +760,7 @@
                ELSE
                     F = zero
                ENDIF
-	   
+   
 !              This is a check for phis (or eps_(ijk,m)) to be within physical range
                IF(phis <= ZERO .OR. phis > ONE) F = zero
 !
@@ -783,62 +783,62 @@
             ELSE IF(TRIM(DRAG_TYPE).EQ.'KOCH_HILL_PCF') THEN
 !     
                F_STOKES = 18D0*Mu*EP_g(IJK)*EP_g(IJK)/D_p(IJK,M)**2
-	       
+       
                phis = ZERO
-	       DO IM = 1, SMAX
-	         phis = phis + EP_S(IJK,IM)
-	       ENDDO 
+               DO IM = 1, SMAX
+                 phis = phis + EP_S(IJK,IM)
+               ENDDO 
                D_p_av = ZERO
                tmp_sum = ZERO
-	       tmp_fac = ZERO
-	       DO IM = 1, SMAX
+               tmp_fac = ZERO
+               DO IM = 1, SMAX
                  IF (phis .GT. ZERO) THEN
                    tmp_fac = EP_S(IJK,Im)/phis
                    tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
                  ELSE
                    tmp_sum = tmp_sum + ONE/ D_p(IJK,Im) ! not important, but will avoid NaN's in empty cells
-		 ENDIF
+                 ENDIF
                ENDDO 
                D_p_av = ONE / tmp_sum
 
                Y_i = D_p(IJK,M)/D_p_av
 
                w = EXP(-10.0D0*(0.4D0-phis)/phis)
-	   
+   
                IF(phis > 0.01D0 .AND. phis < 0.4D0) THEN
                     F_0 = (1.0D0-w) *                                             &
                          (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis   &
                          *LOG(phis) + 17.14D0*phis) / (1.0D0 + 0.681D0*           &
                          phis - 8.48D0*phis*phis + 8.16D0*phis**3) + w *          &
                          10.0D0*phis/(1.0D0-phis)**3
-	               
+               
                ELSE IF(phis >= 0.4D0) THEN
                     F_0 = 10.0D0*phis/(1.0D0-phis)**3
                ENDIF
-	   
+   
                IF(phis > 0.01D0 .AND. phis <= 0.1D0) THEN
                     F_1 = dsqrt(2.0D0/phis) / 40.0D0
                ELSE IF(phis > 0.1D0) THEN
                     F_1 = 0.11D0 + 5.1D-04 * exp(11.6D0*phis)
                ENDIF
-	   
+ 
                IF(phis < 0.4D0) THEN
                     F_2 = (1.0D0-w) *                                            &
                          (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + 135.0D0/64.0D0*phis  &
                          *LOG(phis) + 17.89D0*phis) / (1.0D0 + 0.681D0*          &
                          phis - 11.03D0*phis*phis + 15.41D0*phis**3)+ w *        &
                          10.0D0*phis/(1.0D0-phis)**3
-	   
+   
                ELSE
                     F_2 = 10.0D0*phis/(1.0D0-phis)**3
                ENDIF
-	   
+   
                IF(phis < 0.0953D0) THEN
                     F_3 = 0.9351D0*phis + 0.03667D0
                ELSE
                     F_3 = 0.0673D0 + 0.212D0*phis +0.0232D0/(1.0-phis)**5
                ENDIF
-	   
+   
                Re_Trans_1 = (F_2 - 1.0D0)/(3.0D0/8.0D0 - F_3)
                Re_Trans_2 = (F_3 + dsqrt(F_3*F_3 - 4.0D0*F_1 &
                     *(F_0-F_2))) / (2.0D0*F_1)
@@ -850,7 +850,7 @@
                ELSE
                     RE_kh = LARGE_NUMBER
                ENDIF
-	   
+
                IF(phis <= 0.01D0 .AND. Re_kh <= Re_Trans_1) THEN
                     F = 1.0D0 + 3.0D0/8.0D0*Re_kh
                ELSE IF(phis > 0.01D0 .AND. Re_kh <= Re_Trans_2) THEN
@@ -861,7 +861,7 @@
                ELSE
                     F = zero
                ENDIF
-	   
+   
 !              This is a check for phis (or eps_(ijk,m)) to be within physical range
                IF(phis <= ZERO .OR. phis > ONE) F = zero
 !
@@ -875,7 +875,7 @@
 
                FA = FA_cor * F
                FB = FB_cor * F 
-	      
+      
                IF(Re_kh == ZERO) THEN
                     FA = ZERO
                     FB = ZERO
@@ -902,30 +902,30 @@
                F_STOKES = 18D0*Mu*EP_g(IJK)/D_p(IJK,M)**2 
 	       
                phis = ZERO
-	       DO IM = 1, SMAX
-	         phis = phis + EP_S(IJK,IM)
-	       ENDDO 
+               DO IM = 1, SMAX
+                 phis = phis + EP_S(IJK,IM)
+               ENDDO 
                D_p_av = ZERO
                tmp_sum = ZERO
-	       tmp_fac = ZERO
-	       DO IM = 1, SMAX
+               tmp_fac = ZERO
+               DO IM = 1, SMAX
                  IF (phis .GT. ZERO) THEN
                    tmp_fac = EP_S(IJK,Im)/phis
                    tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
                  ELSE
                    tmp_sum = tmp_sum + ONE/ D_p(IJK,Im) ! not important, but will avoid NaN's in empty cells
-		 ENDIF
+                 ENDIF
                ENDDO 
                D_p_av = ONE / tmp_sum
 
                Y_i = D_p(IJK,M)/D_p_av
 
-               IF (Mu > ZERO) THEN	      
+               IF (Mu > ZERO) THEN      
                     RE = D_p_av*VREL*ROP_G(IJK)/Mu
                ELSE
                     RE = LARGE_NUMBER
                ENDIF
-	      
+      
                F = 10d0 * phis / EP_g(IJK)**2 + EP_g(IJK)**2 * (ONE+1.5d0*DSQRT(phis))
                F = F + 0.413d0*Re/(24d0*EP_g(IJK)**2) * (ONE/EP_G(IJK) + 3d0*EP_G(IJK) &
                     *phis + 8.4d0/Re**0.343) / (ONE+10**(3d0*phis)/Re**(0.5+2*phis))
@@ -943,7 +943,7 @@
             
                FA = FA_cor * F
                FB = FB_cor * F 
-	      
+      
                IF(Re == ZERO) THEN
                     FA = ZERO
                     FB = ZERO
@@ -963,155 +963,103 @@
 
 !-------------------------- Begin HYS drag relation -----------------------------
 
-	ELSE IF(TRIM(DRAG_TYPE).EQ.'HYS') THEN
-	
-        	F_STOKES = 18D0*Mu*EP_s(IJK,M)*EP_g(IJK)/D_p(IJK,M)**2 
-                F_gstmp = ZERO 
+        ELSE IF(TRIM(DRAG_TYPE).EQ.'HYS') THEN
+
+                F_STOKES = 18D0*Mu*EP_s(IJK,M)*EP_g(IJK)/D_p(IJK,M)**2 
+
                 phis = ZERO
-	        
                 DO IM = 1, SMAX
+                  phis = phis + EP_S(IJK,IM)
+                ENDDO
 
-	          phis = phis + EP_S(IJK,IM)
-
-	        ENDDO 		
-
-		D_p_av = ZERO
                 tmp_sum = ZERO
-	        tmp_fac = ZERO
-
-	        DO IM = 1, SMAX
+                tmp_fac = ZERO
+                DO IM = 1, SMAX
                  IF (phis .GT. ZERO) THEN
-
                    tmp_fac = EP_S(IJK,Im)/phis
                    tmp_sum = tmp_sum + tmp_fac/D_p(IJK,Im)
-
                  ELSE
-
                    tmp_sum = tmp_sum + ONE/ D_p(IJK,Im) ! not important, but will avoid NaN's in empty cells
-
-		 ENDIF
+                 ENDIF
                ENDDO 
 
                D_p_av = ONE / tmp_sum
-               Y_i = ZERO
                Y_i = D_p(IJK,M)/D_p_av
-	       a_YS = 1d0 - 2.66d0*phis + 9.096d0*phis**2 - 11.338d0*phis**3 
+               a_YS = 1d0 - 2.66d0*phis + 9.096d0*phis**2 - 11.338d0*phis**3 
 
-!	       Calculate smallest particle diameter in the mixture
-	       min_D_p= MIN(D_p(IJK,1),D_p(IJK,2))
+! Calculate smallest particle diameter in the mixture
+               min_D_p= D_p(IJK,1)
+               IF (SMAX > 1) THEN
+                  DO IM=2,SMAX
+                     min_D_p = MIN(min_D_p,D_p(IJK,IM))
+                  ENDDO
+               ENDIF
 
-!	       Calculate smallest diameter if number of particle types is greater than 2
-	       IF (SMAX > 2) THEN
-		  DO IM=3,SMAX
-		     min_D_p = MIN(min_D_p,D_p(IJK,IM))
-		  ENDDO
-	       ENDIF
+! Calculate the prefactor of the off-diagonal friction coefficient
+               alpha_YS = 1.313d0*LOG10(min_D_p/lam_HYS) - 1.249d0
 
-!		Calculate the prefactor of the off-diagonal friction coefficient
-!		Use default value of lamdba if there are no particle asparities
-	       IF (use_def_lam_HYS)THEN
-                  IF (TRIM(UNITS).EQ.'CGS')THEN
 
-		     lam_HYS = 0.0001d0
-		     alpha_YS = 1.313d0*LOG10(min_D_p/lam_HYS) - 1.249d0
+! Calculate velocity components of each species
+                USCM_HYS = ZERO
+                VSCM_HYS = ZERO
+                WSCM_HYS = ZERO
+                IF(phis > ZERO) THEN
+                  DO IM = 1, SMAX
+                   USCM_HYS = USCM_HYS + EP_S(IJK,Im)*(UGC - AVG_X_E(U_S(IMJK,Im),U_S(IJK,Im),I))
+                   VSCM_HYS = VSCM_HYS + EP_S(IJK,Im)*(VGC - AVG_Y_N(V_S(IJMK,Im),V_S(IJK,Im)))
+                   WSCM_HYS = WSCM_HYS + EP_S(IJK,Im)*(WGC - AVG_Z_T(W_S(IJKM,Im),W_S(IJK,Im))) 
+                  ENDDO 
+                  USCM_HYS = USCM_HYS/phis
+                  VSCM_HYS = VSCM_HYS/phis
+                  WSCM_HYS = WSCM_HYS/phis
+                ENDIF
+                VREL_poly = SQRT(USCM_HYS**2 + VSCM_HYS**2 + WSCM_HYS**2)
 
-		  ELSEIF (TRIM(UNITS).EQ.'SI')THEN
-
-		     lam_HYS = 0.000001d0
-		     alpha_YS = 1.313d0*LOG10(min_D_p/lam_HYS) - 1.249d0
-
-		  ENDIF
-	        ELSE
-
-		   alpha_YS = 1.313d0*LOG10(min_D_p/lam_HYS) - 1.249d0
-
-		ENDIF
-
-!	Calculate velocity components of each species
-		USCM_HYS = ZERO
-		VSCM_HYS = ZERO	
-		WSCM_HYS = ZERO
-		 
-		IF(phis > ZERO) THEN
-		  DO IM = 1, SMAX
-
-	           USCM_HYS = USCM_HYS + EP_S(IJK,Im)*(UGC - AVG_X_E(U_S(IMJK,Im),U_S(IJK,Im),I))
-		   VSCM_HYS = VSCM_HYS + EP_S(IJK,Im)*(VGC - AVG_Y_N(V_S(IJMK,Im),V_S(IJK,Im)))
-		   WSCM_HYS = WSCM_HYS + EP_S(IJK,Im)*(WGC - AVG_Z_T(W_S(IJKM,Im),W_S(IJK,Im))) 
-                   
-	          ENDDO 
-		
-		  USCM_HYS = USCM_HYS/phis
-		  VSCM_HYS = VSCM_HYS/phis
-		  WSCM_HYS = WSCM_HYS/phis
-		ENDIF
-		
-		VREL_poly = SQRT(USCM_HYS**2 + VSCM_HYS**2 + WSCM_HYS**2)
-		
-		IF (Mu > ZERO) THEN	      
-
+                IF (Mu > ZERO) THEN
                     RE = D_p_av*VREL_poly*ROP_G(IJK)/Mu
-
                 ELSE
-
- 		    RE = LARGE_NUMBER
-
+                    RE = LARGE_NUMBER
                 ENDIF
 
-!	Beetstra correction for monodisperse drag
+! Beetstra correction for monodisperse drag
                 F_D_BVK = ZERO
-
-		F = 10d0 * phis / EP_g(IJK)**2 + EP_g(IJK)**2 * (ONE+1.5d0*DSQRT(phis))
-
-        	IF(RE > ZERO) F_D_BVK = F + 0.413d0*Re/(24d0*EP_g(IJK)**2) * &
-                	(ONE/EP_G(IJK) + 3d0*EP_G(IJK) *phis + 8.4d0/Re**0.343d0) &
-			 / (ONE+10**(3d0*phis)/Re**(0.5d0+2*phis))
-	
-!	YS correction for polydisperse drag
-		beta_i_HYS = ZERO
-                F_YS = ZERO
-
-		F_YS = 1d0/EP_g(IJK) + (F_D_BVK - 1d0/EP_g(IJK))*(a_YS*Y_i+(1d0-a_YS)*Y_i**2)
-		F_YS = F_YS*F_STOKES
-		beta_i_HYS = F_YS
+                F = 10d0 * phis / EP_g(IJK)**2 + EP_g(IJK)**2 * (ONE+1.5d0*DSQRT(phis))
+                IF(RE > ZERO) F_D_BVK = F + 0.413d0*Re/(24d0*EP_g(IJK)**2) * &
+                        (ONE/EP_G(IJK) + 3d0*EP_G(IJK) *phis + 8.4d0/Re**0.343d0) &
+                         / (ONE+10**(3d0*phis)/Re**(0.5d0+2*phis))
+        
+! YS correction for polydisperse drag
+                F_YS = 1d0/EP_g(IJK) + (F_D_BVK - 1d0/EP_g(IJK))*(a_YS*Y_i+(1d0-a_YS)*Y_i**2)
+                F_YS = F_YS*F_STOKES
+                beta_i_HYS = F_YS
               
-	
-		DO j = 1,SMAX
+                DO j = 1,SMAX
+                  IF (j /= M)THEN
+                      Y_i_temp = D_p(IJK,j)/D_p_av
+                      FSTOKES_j = 18D0*Mu*EP_s(IJK,j)*EP_g(IJK)/D_p(IJK,j)**2 
 
-	   	   IF (j /= M)THEN
+                      beta_j_HYS = 1d0/EP_g(IJK) + (F_D_BVK - 1d0/EP_g(IJK))*(a_YS*Y_i_temp+(1d0-a_YS)*Y_i_temp**2)
+                      beta_j_HYS = beta_j_HYS*FSTOKES_j
 
-		      beta_j_HYS = ZERO
-		      Y_i_temp = ZERO
-		      FSTOKES_j = ZERO
-		      Y_i_temp = D_p(IJK,j)/D_p_av
-		      
-		      beta_j_HYS = 1d0/EP_g(IJK) + (F_D_BVK - 1d0/EP_g(IJK))*(a_YS*Y_i_temp+(1d0-a_YS)*Y_i_temp**2)
-		      FSTOKES_j = 18D0*Mu*EP_s(IJK,j)*EP_g(IJK)/D_p(IJK,j)**2 
-		      
-		      beta_j_HYS = beta_j_HYS*FSTOKES_j
-                      
-!	Calculate off-diagonal friction coefficient
-                      
-		      beta_ij(IJK,M,j) = ZERO
-                      
-!	This if statement prevents NaN values from appearing for beta_ij
-                      IF ((EP_S(IJK,M) > ZERO) .AND. (EP_S(IJK,j) > ZERO)) beta_ij(IJK,M,j) = &
-		       (2d0*alpha_YS*EP_S(IJK,M)*EP_S(IJK,j))/(EP_S(IJK,M)/beta_i_HYS + EP_S(IJK,j)/beta_j_HYS)
+! Calculate off-diagonal friction coefficient
+                       beta_ij(IJK,M,j) = ZERO
+
+! This if statement prevents NaN values from appearing for beta_ij
+                      IF ((EP_S(IJK,M) > ZERO) .AND. (EP_S(IJK,j) > ZERO)) &
+                         beta_ij(IJK,M,j) = &
+                         (2d0*alpha_YS*EP_S(IJK,M)*EP_S(IJK,j))/&
+                         (EP_S(IJK,M)/beta_i_HYS + EP_S(IJK,j)/beta_j_HYS)
                       
                       F_YS = F_YS + beta_ij(IJK,M,j)
-	   
-	            ENDIF
-		ENDDO
 
-		IF (Model_B)THEN
+                    ENDIF
+                ENDDO
 
-	   	   F_gstmp = F_YS/EP_g(IJK)
-
-	   	ELSE
-
-	           F_gstmp = F_YS
-
-		ENDIF
+                IF (Model_B)THEN
+                   F_gstmp = F_YS/EP_g(IJK)
+                ELSE
+                   F_gstmp = F_YS
+                ENDIF
 
 
 !***************************END HYS drag relation**************************************
