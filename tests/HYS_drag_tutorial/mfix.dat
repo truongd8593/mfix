@@ -63,7 +63,6 @@
   NMAX(1)=0
   MU_s0 = 1.8E-4
   DRAG_TYPE             = 'HYS'		!Holloway, Yin, and Sundaresan drag model
-  USE_DEF_LAM_HYS = .F.
   LAM_HYS = 0.0001d0 
   
   SCHAEFFER = .F. !no frictional viscosity will be used in this simulation
