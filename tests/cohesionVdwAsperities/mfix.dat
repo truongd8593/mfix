@@ -146,7 +146,6 @@
  DISCRETE_ELEMENT  = .TRUE. !use discrete particle model for solids   
  WALLDTSPLIT  = .TRUE. !treat wall interaction as a particle-particle interaction   
  DES_CONTINUUM_COUPLED = .F. !couple gas and solid flow together   
- TSUJI_DRAG  = .FALSE. !use tsuji drag correlation   
  PRINT_DES_DATA  = .TRUE. !print DEM output  
  DES_RES_DT    = 0.00001
  DES_SPX_DT    = 0.00001   

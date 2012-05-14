@@ -20,6 +20,8 @@
   ENERGY_EQ 		= .FALSE.		!do not solve energy eq
   SPECIES_EQ 		= .FALSE.    .FALSE. 	!do not solve species eq
 
+  DRAG_TYPE = 'GIDASPOW'
+
   MOMENTUM_X_EQ(1) = .FALSE.
   MOMENTUM_Y_EQ(1) = .FALSE.
   MOMENTUM_Z_EQ(1) = .FALSE.
@@ -145,7 +147,6 @@ FOCUS_PARTICLE=4004
 DISCRETE_ELEMENT = .TRUE.
 WALLDTSPLIT = .TRUE.
 DES_CONTINUUM_COUPLED = .TRUE.
-TSUJI_DRAG = .TRUE.
 
 ! End DES Input
 

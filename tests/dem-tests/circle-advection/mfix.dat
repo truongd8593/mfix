@@ -85,7 +85,6 @@
   DES_INTERP_ON=.TRUE.
   NFACTOR = 0
   WALLDTSPLIT = .TRUE.
-  !TSUJI_DRAG = .TRUE.
   DRAG_TYPE = 'WEN_YU'
               
   PARTICLES = 64    ! Number of particles; also hard coded

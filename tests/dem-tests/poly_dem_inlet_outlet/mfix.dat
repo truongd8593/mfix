@@ -185,9 +185,6 @@
                        ! but accounting for wall properties; must be true 
                        ! for DEM [FALSE]
 
-  TSUJI_DRAG = .F.    ! use tsuji drag correlation; specific to syam_obrien 
-                      ! drag model only valid for coupled case [FALSE]
-
   DIMN = 2    ! if no_k, then DIMN is set to 2 otherwise it undefined by default
 
   PARTICLES = 0       ! starting with an empty system

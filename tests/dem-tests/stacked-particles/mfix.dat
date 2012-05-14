@@ -124,10 +124,6 @@
 ! accounting for wall properties; must be true for DEM [FALSE]
   WALLDTSPLIT = .T  
 
-! use tsuji drag correlation; specific to syam_obrien drag model
-! only valid for coupled case [FALSE]
-  TSUJI_DRAG = .F.        
-
   PARTICLES = 2 
 
   DIMN = 2                 ! if no_k set to 2 otherwise undefined

@@ -131,8 +131,6 @@
   !DES_INTERP_ON = .TRUE.       ! false by default
   DES_CONTINUUM_COUPLED = .F.   ! false by default
   WALLDTSPLIT = .TRUE.          ! false by default (must be true for DEM)
-  TSUJI_DRAG = .F.              ! false by default (only for coupled case)
-                                ! specific to syam_obrien drag model
   DIMN = 3
   GRAVITY=980.0d0
 

@@ -135,8 +135,6 @@
   !DES_INTERP_ON = .TRUE.       ! [default=.false.]
   !DES_CONTINUUM_COUPLED = .T.  ! [default=.false.]
   WALLDTSPLIT = .TRUE.          ! [default=.false.] (must be true for DEM)
-  TSUJI_DRAG = .F.              ! [default=.false.] (only used for coupled case)
-                                ! specific to syam_obrien drag model
   NFACTOR = 500    ! no. time steps for system settling before real sim 
                    ! only relevant when coupled
   

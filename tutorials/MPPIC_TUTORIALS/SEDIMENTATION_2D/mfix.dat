@@ -135,7 +135,6 @@
  
 !  DES Logicals
   DRAG_TYPE = 'GIDASPOW'
-  TSUJI_DRAG = .FALSE.
 
 ! End DES Input
 
