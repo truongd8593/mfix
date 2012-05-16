@@ -2732,7 +2732,7 @@ drag_gs.$(OBJ_EXT) : drag_gs.f \
             SENDRECV.mod \
             DISCRETELEMENT.mod \
             UR_FACS.mod \
-            MFIX_PIC.mod \
+            FUNITS.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
