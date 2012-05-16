@@ -142,7 +142,7 @@
 
                
                CASE (6)
-                  CALL WRITE_SCALAR_IN_VTU_BIN('Gas_temperature',T_g)
+                  CALL WRITE_SCALAR_IN_VTU_BIN('Gas_temperature',T_g,PASS)
                   DO M = 1,MMAX
                      WRITE(SUBM,*)M
                      CALL WRITE_SCALAR_IN_VTU_BIN('Solids_temperature_'//ADJUSTL(SUBM),T_S(:,M),PASS)
@@ -194,7 +194,7 @@
                   DO R = 1,nRR
                      WRITE(SUBR,*)R
                      VAR_NAME = 'RRates_'//ADJUSTL(SUBR)
-                     CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,ReactionRates(:, R))
+                     CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,ReactionRates(:, R),PASS)
                   END DO
 
 
