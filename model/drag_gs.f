@@ -236,68 +236,77 @@
             DPM = DP_loc(M)
 
 ! determine the drag coefficient
-            SELECT CASE(TRIM(DRAG_TYPE))
-            CASE ('SYAM_OBRIEN')
-               CALL DRAG_SYAM_OBRIEN(DgA,EPG,Mu,ROg,VREL,&
-                   DPM)
-            CASE ('GIDASPOW') 
-               CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,&
+            IF (EP_SM <= ZERO) THEN 
+               DgA = ZERO 
+            ELSEIF (EPg == ZERO) THEN  
+! this case will already be caught in most drag subroutines whenever
+! RE==0 (for correlations in which RE includes EPg). however, this will
+! prevent potential divisions by zero in some models by setting it now.           
+               DgA = ZERO   
+            ELSE
+               SELECT CASE(TRIM(DRAG_TYPE))
+               CASE ('SYAM_OBRIEN')
+                  CALL DRAG_SYAM_OBRIEN(DgA,EPG,Mu,ROg,VREL,&
+                      DPM)
+               CASE ('GIDASPOW') 
+                  CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,&
+                       DPM)
+               CASE ('GIDASPOW_PCF')
+                  CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,&
+                       DPA)
+               CASE ('GIDASPOW_BLEND')
+                  CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
                     DPM)
-            CASE ('GIDASPOW_PCF')
-               CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                    DPA)
-            CASE ('GIDASPOW_BLEND')
-               CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                    DPM)
-            CASE ('GIDASPOW_BLEND_PCF')
-               CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                    DPA)
-            CASE ('WEN_YU')
-               CALL DRAG_WEN_YU(DgA,EPg,Mu,ROPg,VREL,&
-                    DPM)
-            CASE ('WEN_YU_PCF')
-               CALL DRAG_WEN_YU(DgA,EPg,Mu,ROPg,VREL,&
-                    DPA)
-            CASE ('KOCH_HILL')
-               CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,&
-                    DPM,DPM,phis)
-            CASE ('KOCH_HILL_PCF')
-               CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,&
-                    DPM,DPA,phis)
-            CASE ('BVK')
-               CALL DRAG_BVK(DgA,EPg,Mu,ROPg,VREL,&
-                    DPM,DPA,phis)
-            CASE ('HYS')
+               CASE ('GIDASPOW_BLEND_PCF')
+                  CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
+                       DPA)
+               CASE ('WEN_YU')
+                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROPg,VREL,&
+                       DPM)
+               CASE ('WEN_YU_PCF')
+                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROPg,VREL,&
+                       DPA)
+               CASE ('KOCH_HILL')
+                  CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,&
+                       DPM,DPM,phis)
+               CASE ('KOCH_HILL_PCF')
+                  CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,&
+                       DPM,DPA,phis)
+               CASE ('BVK')
+                  CALL DRAG_BVK(DgA,EPg,Mu,ROPg,VREL,&
+                       DPM,DPA,phis)
+               CASE ('HYS')
 ! calculate velocity components of each solids phase
-               USCM_HYS = ZERO
-               VSCM_HYS = ZERO
-               WSCM_HYS = ZERO
-               IF(phis > ZERO) THEN
-                  DO L = 1, MAXM
-                     USCM_HYS = USCM_HYS + EPs_loc(L)*(UGC - &
-                        AVG_X_E(U_S(IMJK,L),U_S(IJK,L),I))
-                     VSCM_HYS = VSCM_HYS + EPs_loc(L)*(VGC - &
-                        AVG_Y_N(V_S(IJMK,L),V_S(IJK,L)))
-                     WSCM_HYS = WSCM_HYS + EPs_loc(L)*(WGC - &
-                        AVG_Z_T(W_S(IJKM,L),W_S(IJK,L)))
-                  ENDDO 
-                  USCM_HYS = USCM_HYS/phis
-                  VSCM_HYS = VSCM_HYS/phis
-                  WSCM_HYS = WSCM_HYS/phis
-               ENDIF
+                  USCM_HYS = ZERO
+                  VSCM_HYS = ZERO
+                  WSCM_HYS = ZERO
+                  IF(phis > ZERO) THEN
+                     DO L = 1, MAXM
+                        USCM_HYS = USCM_HYS + EPs_loc(L)*(UGC - &
+                           AVG_X_E(U_S(IMJK,L),U_S(IJK,L),I))
+                        VSCM_HYS = VSCM_HYS + EPs_loc(L)*(VGC - &
+                           AVG_Y_N(V_S(IJMK,L),V_S(IJK,L)))
+                        WSCM_HYS = WSCM_HYS + EPs_loc(L)*(WGC - &
+                           AVG_Z_T(W_S(IJKM,L),W_S(IJK,L)))
+                     ENDDO 
+                     USCM_HYS = USCM_HYS/phis
+                     VSCM_HYS = VSCM_HYS/phis
+                     WSCM_HYS = WSCM_HYS/phis
+                  ENDIF
 ! magnitude of gas-solids relative velocity
-               VREL = SQRT(USCM_HYS**2 +VSCM_HYS**2 +WSCM_HYS**2)
-               CALL DRAG_HYS(DgA,EPg,Mu,ROPg,VREL,&
-                    DP_loc(:),DPA,Y_i,EPs_loc(:),phis,M,IJK,MAXM)
-            CASE DEFAULT
-               CALL START_LOG 
-               IF(.NOT.DMP_LOG) call open_pe_log(ier)
-               IF(DMP_LOG) WRITE (*, '(A,A)') &
-                  'Unknown DRAG_TYPE: ', DRAG_TYPE
-               WRITE (UNIT_LOG, '(A,A)') 'Unknown DRAG_TYPE: ', DRAG_TYPE
-               CALL END_LOG 
-               CALL mfix_exit(myPE)  
-            END SELECT   ! end selection of drag_type
+                  VREL = SQRT(USCM_HYS**2 +VSCM_HYS**2 +WSCM_HYS**2)
+                  CALL DRAG_HYS(DgA,EPg,Mu,ROPg,VREL,&
+                       DP_loc(:),DPA,Y_i,EPs_loc(:),phis,M,IJK,MAXM)
+               CASE DEFAULT
+                  CALL START_LOG 
+                  IF(.NOT.DMP_LOG) call open_pe_log(ier)
+                  IF(DMP_LOG) WRITE (*, '(A,A)') &
+                     'Unknown DRAG_TYPE: ', DRAG_TYPE
+                  WRITE (UNIT_LOG, '(A,A)') 'Unknown DRAG_TYPE: ', DRAG_TYPE
+                  CALL END_LOG 
+                  CALL mfix_exit(myPE)  
+               END SELECT   ! end selection of drag_type
+            ENDIF   ! end if/elseif/else (ep_sm <= zero, ep_g==0)
 
 
 ! Modify drag coefficient to account for possible corrections and
@@ -310,13 +319,6 @@
                   F_gstmp = DgA
                ENDIF
             ELSE
-               IF (EP_SM <= ZERO) THEN 
-                  DgA = ZERO 
-               ELSEIF (EPg == ZERO) THEN  
-! this case will already be caught in most drag subroutines whenever
-! RE==0 (for correlations in which RE includes EPg)
-                  DgA = ZERO   
-               ENDIF 
                IF(TRIM(DRAG_TYPE) == 'GIDASPOW_PCF' .OR. &
                   TRIM(DRAG_TYPE) == 'GIDASPOW_BLEND_PCF' .OR. &
                   TRIM(DRAG_TYPE) == 'WEN_YU_PCF' .OR. &
@@ -338,6 +340,7 @@
                   ENDIF
                   DgA = ONE/(Y_i*Y_i) * DgA * F_cor 
                ENDIF
+
 ! Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
                IF(Model_B)THEN
                   F_gstmp = DgA * EP_SM/EPg
