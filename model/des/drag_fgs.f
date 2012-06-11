@@ -326,10 +326,10 @@
       DOUBLE PRECISION :: USC, VSC, WSC
 ! average fluid and solid velocity in array form
       DOUBLE PRECISION :: VELG_ARR(DIMN), &
-                          VELDS_ARR(DIMN, DIM_M), &
-                          VELCS_ARR(DIMN, DIM_M)
+                          VELDS_ARR(DIMN, DES_MMAX), &
+                          VELCS_ARR(DIMN, MMAX)
 ! local drag force
-      DOUBLE PRECISION :: SOLID_DRAG (DIMENSION_3, DIM_M, DIMN)
+      DOUBLE PRECISION :: SOLID_DRAG (DIMENSION_3, DES_MMAX, DIMN)
       DOUBLE PRECISION :: D_FORCE(DIMN)
 ! index of solid phase that particle NP belongs to      
       INTEGER :: M
@@ -457,8 +457,7 @@
             ENDIF   ! end if(des_continuum_hybrid)
 
             DO M = 1, DES_MMAX
-!               EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
-               EP_SM = EP_S(IJK,M)
+               EP_SM = EP_S(IJK,M) !DES_ROP_S(IJK,M)/DES_RO_S(M)
                IF(EP_SM.GT.ZERO) THEN
                   IF (.NOT.DES_CONTINUUM_HYBRID) THEN
                      SOLID_DRAG(IJK,M,:) = -F_GS(IJK,M)*&
@@ -478,8 +477,7 @@
                ENDIF  ! end if ep_sm>0
 
                IF(MPPIC) THEN
-!                 EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
-                  EP_SM = EP_S(IJK,M)
+                  EP_SM = EP_S(IJK,M) !DES_ROP_S(IJK,M)/DES_RO_S(M)
                   IF(EP_SM.GT.ZERO) THEN
                      IF(MPPIC_PDRAG_IMPLICIT) THEN
 ! implicit treatment for drag term
@@ -517,7 +515,7 @@
          OVOL = ONE/VOL(IJK)
 
          IF(MPPIC) THEN 
-            EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
+            EP_SM = EP_S(IJK,M) !DES_ROP_S(IJK,M)/DES_RO_S(M)
             OEPS = ONE/EP_SM
             IF(EP_SM.GT.zero) THEN
                OEPS = ONE/EP_SM
@@ -1087,8 +1085,7 @@
 
       IJK = PIJK(KK,4)
       M = PIJK(KK,5)
-!      EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)      
-      EP_SM = EP_S(IJK,M)
+      EP_SM = EP_S(IJK,M) !DES_ROP_S(IJK,M)/DES_RO_S(M)      
       PART_DIAM = 2.D0*DES_RADIUS(KK)
       PART_VOL = PVOL(KK)      
       
