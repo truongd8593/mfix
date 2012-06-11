@@ -45,7 +45,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-!
+
 !    ICV,I,J,K  - loop/variable indices
 !    I_w,I_e    -  cell indices in X direction from IC_X_e,IC_X_w
 !    J_s,J_n    -  cell indices in Y direction from IC_Y_s,IC_Y_n
@@ -62,7 +62,7 @@
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
-      LOGICAL , EXTERNAL :: COMPARE 
+      LOGICAL, EXTERNAL :: COMPARE 
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -87,14 +87,14 @@
                   ICBC_FLAG(IJK) = '.--' 
                ENDIF 
 
+! If at domain boundaries then set default values (wall or, if
+! specified, cyclic)               
                IF (DO_K) THEN 
                   IF (K==KMIN3 .OR. K==KMIN2 .OR. &
                       K==KMAX2 .OR. K==KMAX3) THEN 
-
                      IF (CYCLIC_Z_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
-
-                     ELSE IF (CYCLIC_Z) THEN 
+                     ELSEIF (CYCLIC_Z) THEN 
                         ICBC_FLAG(IJK) = 'c--' 
                      ELSE 
                         ICBC_FLAG(IJK) = 'W--' 
@@ -105,11 +105,9 @@
                IF (DO_J) THEN 
                   IF (J==JMIN3 .OR. J==JMIN2 .OR. &
                       J==JMAX2 .OR. J==JMAX3) THEN 
-
                      IF (CYCLIC_Y_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
-
-                     ELSE IF (CYCLIC_Y) THEN 
+                     ELSEIF (CYCLIC_Y) THEN 
                         ICBC_FLAG(IJK) = 'c--' 
                      ELSE 
                         ICBC_FLAG(IJK) = 'W--' 
@@ -122,14 +120,14 @@
                       I==IMAX2 .OR. I==IMAX3) THEN 
                      IF (CYCLIC_X_PD) THEN 
                         ICBC_FLAG(IJK) = 'C--' 
-                     ELSE IF (CYCLIC_X) THEN 
+                     ELSEIF (CYCLIC_X) THEN 
                         ICBC_FLAG(IJK) = 'c--' 
                      ELSE 
                         ICBC_FLAG(IJK) = 'W--' 
                      ENDIF 
                   ENDIF 
-                  IF (I==1 .AND. CYLINDRICAL .AND. XMIN==ZERO) ICBC_FLAG(IJK)&
-                      = 'S--' 
+                  IF (I==1 .AND. CYLINDRICAL .AND. XMIN==ZERO) &
+                     ICBC_FLAG(IJK) = 'S--' 
                ENDIF 
 
 ! corner cells are wall cells
@@ -140,11 +138,12 @@
           
                ENDIF 
        
-            ENDDO 
-         ENDDO 
-      ENDDO 
+            ENDDO   ! end do loop (i=istart3, iend3)
+         ENDDO   ! end do loop (j=jstart3, jend3)
+      ENDDO   ! end do loop (k=kstart3, kend3)
 
       
+
 ! Check geometry of any specified IC region      
       DO ICV = 1, DIMENSION_IC 
          IC_DEFINED(ICV) = .FALSE. 
@@ -402,8 +401,7 @@
 
 ! SOLIDS PHASE Quantities               
 ! -------------------------------------------->>>
-               IF (.NOT. DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT &
-                   .AND. DES_CONTINUUM_HYBRID)) THEN
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
 
                   SUM_EP = IC_EP_G(ICV) 
                   DO M = 1, SMAX 
@@ -523,22 +521,27 @@
                      ENDIF 
                   ENDDO   ! end loop over (m=1,smax)
 
-! check sum of gas void fraction and all solids volume fractions
+! check sum of gas void fraction and all solids volume fractions                  
                   IF (.NOT.DES_CONTINUUM_HYBRID) THEN
                      IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1125) ICV 
                            call mfix_exit(myPE)
                      ENDIF 
                   ELSE
-! sum_ep not necessarily one at this point since discrete particles
-! present in hybrid model
+! in hybrid model discrete particles are present but are not yet known
+! to the system so sum_ep is not necessarily one at this point
                      IF (SUM_EP>ONE .OR. SUM_EP<ZERO) THEN 
                         IF(DMP_LOG)WRITE (UNIT_LOG, 1130) ICV 
                         call mfix_exit(myPE)
                      ENDIF
-                  ENDIF                    
+                  ENDIF
 
-               ELSE   ! else branch if(.not.discrete_element)
+! else branch if(.not.discrete_element.or.des_continuum_hybrid)
+! i.e., discrete_element=T and des_continuum_hybrid=F                  
+               ELSE   
+
+! at this point the volume fraction of discrete particles is not known
+! so only checks on ep_g can be conducted                       
                   SUM_EP = IC_EP_G(ICV)                        
                   IF (SUM_EP>ONE .OR. SUM_EP<ZERO) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1130) ICV 
@@ -627,8 +630,7 @@
 
 ! SOLIDS PHASE quantities
 ! -------------------------------------------->>>
-            IF (.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT .AND. &
-                DES_CONTINUUM_HYBRID)) THEN
+            IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
 
                DO M = 1, DIMENSION_M 
                   IF (IC_ROP_S(ICV,M) /= UNDEFINED) THEN 
@@ -662,7 +664,7 @@
                         call mfix_exit(myPE) 
                   ENDIF 
                ENDDO  ! end loop over (m=1,dimension_m)
-            ENDIF   ! end if (.not.discrete_element)
+            ENDIF   ! end if (.not.discrete_element.or.des_continuum_hybrid)
 ! SOLIDS PHASE Quantities
 ! --------------------------------------------<<<
 
@@ -719,7 +721,8 @@
  1200 FORMAT(/1X,70('*')//' From: CHECK_DATA_06',/' Message: ',A,'(',I2,&
          ') specified',' for an undefined IC region',/1X,70('*')/) 
  1300 FORMAT(/1X,70('*')//' From: CHECK_DATA_06',/' Message: ',A,'(',I2,',',I1,&
-         ') specified',' for an undefined IC region',/1X,70('*')/) 
+         ') specified',' for an undefined IC region',/1X,70('*')/)
+
       END SUBROUTINE CHECK_DATA_06 
 
 
