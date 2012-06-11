@@ -1,46 +1,43 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: EXCHANGE(DRAG, HEAT_TR, IER)                           C
-!  Purpose: Calculate interphase mass, momentum, and energy exchange   C
+!  SUBROUTINE: EXCHANGE                                                C
+!  Purpose: Calls routines to drive calculations of the interphase     C
+!           mass, momentum, and energy exchange coefficients/terms     C
+!           if directed to do so by the corresponding flags            C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 25-APR-96  C
 !  Reviewer:                                          Date:            C
-!                                                                      C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced:                                               C
 !  Variables modified:                                                 C
-!                                                                      C
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE EXCHANGE(DRAG, HEAT_TR, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Module
 !-----------------------------------------------
       USE param 
       USE param1 
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER IER 
-
 ! Flag for exchange functions
-      LOGICAL, DIMENSION(0:DIMENSION_M,0:DIMENSION_M) :: DRAG, HEAT_TR 
+      LOGICAL, INTENT(IN) :: DRAG(0:DIMENSION_M,0:DIMENSION_M),&
+                             HEAT_TR(0:DIMENSION_M,0:DIMENSION_M) 
+! Error index
+      INTEGER, INTENT(INOUT) :: IER 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
 ! Currently unused flag
       LOGICAL WALL_TR
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
 !-----------------------------------------------
 
 

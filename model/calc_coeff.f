@@ -1,8 +1,12 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CALC_COEFF_ALL(FLAG, IER)                              C
-!  Purpose: Calculate all physical and transport properties, 
-!           reaction rates and exchange rates.                         C
+!  Subroutine: CALC_COEFF_ALL                                          C
+!  Purpose: Sets logical values of local flags that in turn tells the  C
+!           code whether to perform the indicated type of calculation  C
+!           if the value of the flag is true.  Specifically this       C
+!           routine directs calculation of all physical and transport  C
+!           properties, reaction rates and exchange rates.             C
+!                                                                      C
 !  Author: M. Syamlal                                 Date: 25-AUG-05  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
@@ -11,7 +15,6 @@
 !                                                                      C
 !  Variables referenced:                                               C
 !  Variables modified:                                                 C
-!                                                                      C
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
@@ -19,7 +22,7 @@
       SUBROUTINE CALC_COEFF_ALL(FLAG, IER) 
 
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -29,52 +32,42 @@
       USE compar
       USE ur_facs 
       USE run
-
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
+! FLAG = 0, overwrite the coeff arrays, as for example at
+!           the beginning of a time step
+! FLAG = 1, do not overwrite
+      INTEGER, INTENT(IN) :: FLAG
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Local variables
+!-----------------------------------------------
+! Flags to tell whether to calculate or not
+      LOGICAL :: DENSITY(0:DIMENSION_M), PSIZE(0:DIMENSION_M),&
+                 SP_HEAT(0:DIMENSION_M)
+! Flags to tell whether to calculate or not
+      LOGICAL :: VISC(0:DIMENSION_M), COND(0:DIMENSION_M),&
+                 DIFF(0:DIMENSION_M)
+! Flag for Reaction rates
+      LOGICAL :: RRATE
+! Flag for exchange functions
+      LOGICAL :: DRAGCOEF(0:DIMENSION_M, 0:DIMENSION_M),&
+                 HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
+                 WALL_TR
+! Flags to tell whether to calculate or not:
+! a granular energy dissipation term
+      LOGICAL :: GRAN_DISS(0:DIMENSION_M)
+! Temporary storage 
+      DOUBLE PRECISION :: UR_F_gstmp, UR_kth_smltmp
 !-----------------------------------------------
 
-!                      FLAG = 0, overwrite the coeff arrays, as for example at
-!                              the beginning of a time step
-!                      FLAG = 1, do not overwrite
-      INTEGER          FLAG
-
-!                      Error index
-      INTEGER          IER
-
-!                      Flags to tell whether to calculate or not
-      LOGICAL          DENSITY(0:DIMENSION_M), PSIZE(0:DIMENSION_M),&
-                       SP_HEAT(0:DIMENSION_M)
-
-!                      Flags to tell whether to calculate or not
-      LOGICAL          VISC(0:DIMENSION_M), COND(0:DIMENSION_M),&
-                       DIFF(0:DIMENSION_M)
-
-!                      Flag for Reaction rates
-      LOGICAL          RRATE
-
-!                      Flag for exchange functions
-      LOGICAL          DRAGCOEF(0:DIMENSION_M, 0:DIMENSION_M),&
-                       HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
-                       WALL_TR
-
-!                      Flags to tell whether to calculate or not:
-!                      a granular energy dissipation term
-      LOGICAL          GRAN_DISS(0:DIMENSION_M)
-     
-!     Temporary storage 
-      DOUBLE PRECISION UR_F_gstmp, UR_kth_smltmp
-!-----------------------------------------------
-      
-      IF(FLAG == 0) then
-        ! First set any under relaxation factors for coefficient calculations
-        ! to 1 and change them to user defined values after the call to
-        ! calc_coefficient
-
+! First set any under relaxation factors for coefficient calculations
+! to 1 and change them to user defined values after the call to
+! calc_coefficient
+      IF(FLAG == 0) THEN
         UR_F_gstmp = UR_F_gs
         UR_F_gs = ONE
         UR_Kth_smltmp = UR_Kth_sml
@@ -85,13 +78,12 @@
       IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
       DENSITY(:MMAX) = .TRUE. 
  
-! start rong
+! Rong
       IF (Call_DQMOM) THEN
          PSIZE(:MMAX) = .TRUE. 
       ELSE
-        PSIZE(:MMAX) = .FALSE.
+         PSIZE(:MMAX) = .FALSE.         
       ENDIF
-! end rong
 
       IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP' .OR. TRIM(KT_TYPE) .EQ. 'GD_99') THEN
           GRAN_DISS(:MMAX) = .TRUE.
@@ -109,9 +101,12 @@
          COND(:MMAX) = .FALSE. 
          HEAT_TR(:MMAX,:MMAX) = .FALSE. 
       ENDIF 
+
       VISC(:MMAX) = .TRUE. 
       DIFF(:MMAX) = .FALSE.
+      
       IF (ANY_SPECIES_EQ) DIFF(:MMAX) = .TRUE. 
+      
       DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
       IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
       IF (MU_S0 /= UNDEFINED) VISC(1:MMAX) = .FALSE. 
@@ -119,25 +114,24 @@
       CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
           GRAN_DISS, RRATE, DRAGCOEF, HEAT_TR, WALL_TR, IER)
 
-      IF(FLAG == 0) then
-        !Now restore all underrelaxation factors for coefficient
-        ! calculations to their original value
+! Now restore all underrelaxation factors for coefficient
+! calculations to their original value
+      IF(FLAG == 0) THEN
         UR_F_gs = UR_F_gstmp
         UR_Kth_sml = UR_Kth_smltmp
       ENDIF
      
       RETURN  
       END SUBROUTINE CALC_COEFF_ALL
-!-----------------------------------------------
 
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CALC_COEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF,   C
-!       RRATE, DRAG, HEAT_TR, WALL_TR, IER)                            C
-!  Purpose: Calculate physical and transport properties, reaction ratesC
-!           and exchange rates.                                        C
+!  Subroutine: CALC_COEFF                                              C
+!  Purpose: Calculate physical and transport properties, reaction      C
+!           rates and exchange rates as directed by the respective     C
+!           flags                                                      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 23-APR-96  C
 !  Reviewer:                                          Date:            C
@@ -147,7 +141,6 @@
 !                                                                      C
 !  Variables referenced:                                               C
 !  Variables modified:                                                 C
-!                                                                      C
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
@@ -155,11 +148,8 @@
       SUBROUTINE CALC_COEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
             GRAN_DISS, RRATE,DRAG, HEAT_TR, WALL_TR, IER) 
 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -169,38 +159,31 @@
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
+! density, particle size, specific heat
+      LOGICAL, INTENT(INOUT) :: DENSITY(0:DIMENSION_M),&
+                                PSIZE(0:DIMENSION_M),&
+                                SP_HEAT(0:DIMENSION_M)
+! vicosity, conductivity, diffusivity
+      LOGICAL, INTENT(INOUT) :: VISC(0:DIMENSION_M), &
+                                COND(0:DIMENSION_M),&
+                                DIFF(0:DIMENSION_M)
+! reaction rates
+      LOGICAL, INTENT(INOUT) :: RRATE
+! exchange functions
+      LOGICAL, INTENT(INOUT) :: DRAG(0:DIMENSION_M, 0:DIMENSION_M),&
+                                HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
+                                WALL_TR
+! a granular energy dissipation term
+      LOGICAL, INTENT(INOUT) :: GRAN_DISS(0:DIMENSION_M)
+! error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Local variables      
 !-----------------------------------------------
-!
-!                      Error index
-      INTEGER          IER
-!
-!                      Loop indices
-      INTEGER          L, M
-!
-!                      Flags to tell whether to calculate or not
-      LOGICAL          DENSITY(0:DIMENSION_M), PSIZE(0:DIMENSION_M),&
-                       SP_HEAT(0:DIMENSION_M)
-!
-!                      Flags to tell whether to calculate or not
-      LOGICAL          VISC(0:DIMENSION_M), COND(0:DIMENSION_M),&
-                       DIFF(0:DIMENSION_M)
-!
-!                      Flag for Reaction rates
-      LOGICAL          RRATE
-!
-!                      Flag for exchange functions
-      LOGICAL          DRAG(0:DIMENSION_M, 0:DIMENSION_M),&
-                       HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
-                       WALL_TR
-!
-!                      Flags to tell whether to calculate or not:
-!                      a granular energy dissipation term
-      LOGICAL          GRAN_DISS(0:DIMENSION_M)
-!
+! Loop indices
+      INTEGER :: L, M
 !-----------------------------------------------
 
 ! Calculate physical properties
@@ -222,18 +205,21 @@
 
       RETURN  
       END SUBROUTINE CALC_COEFF 
-!-----------------------------------------------
 
 
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: CALC_RRATE                                              C
+!  Purpose: if rrate then calculate reaction rates and interphase      C
+!           mass transfer. if present, calculate discrete reactions    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE CALC_RRATE(RRATE) 
 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -242,24 +228,21 @@
       USE compar
       USE discretelement
       USE des_rxns
-
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
+! reaction rates
+      LOGICAL, INTENT(IN) :: RRATE
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Local variables
 !-----------------------------------------------
-!
-!                      Error index
-      INTEGER          IER
-!
-!                      Flag for Reaction rates
-      LOGICAL          RRATE
+! error index
+      INTEGER :: IER
 !-----------------------------------------------
+
 
 ! Calculate reaction rates and interphase mass transfer
-
       IF (RRATE) THEN 
          IF (NO_OF_RXNS > 0) THEN 
             CALL RRATES0 (IER)             !rxns defined in mfix.dat and rrates0.f 
@@ -277,7 +260,7 @@
 
          ENDIF
       ELSE
-        !In case mass exchage w/o chemical rxn (e.g., evaporation) occur
+! In case mass exchage w/o chemical rxn (e.g., evaporation) occur
         CALL RRATES (IER)           
       ENDIF 
 
@@ -291,14 +274,20 @@
          ' Copy the file mfix/model/rrates.f into the run directory ',/,&
          ' and remove the initial section that returns IER=1.'&
          ,/1X,70('*')/) 
+
       END SUBROUTINE CALC_RRATE 
-!-----------------------------------------------
 
 
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
-      SUBROUTINE TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
-           GRAN_DISS, RRATE, DRAG, HEAT_TR, WALL_TR, IER) 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: TurnoffCoeff                                            C
+!  Purpose: Reset all flags to false                                   C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      SUBROUTINE TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, &
+           DIFF, GRAN_DISS, RRATE, DRAG, HEAT_TR, WALL_TR, IER) 
 
 !----------------------------------------------- 
 ! Modules 
@@ -308,38 +297,34 @@
       USE physprop
       IMPLICIT NONE
 !----------------------------------------------- 
+! Dummy arguments
+!-----------------------------------------------
+! density, particle size distribution, specific heat      
+      LOGICAL, INTENT(INOUT) :: DENSITY(0:DIMENSION_M),&
+                                PSIZE(0:DIMENSION_M),&
+                                SP_HEAT(0:DIMENSION_M)
+! viscosity, conductivity, diffusivity                                
+      LOGICAL, INTENT(INOUT) :: VISC(0:DIMENSION_M), &
+                                COND(0:DIMENSION_M),&
+                                DIFF(0:DIMENSION_M)
+! reaction rates
+      LOGICAL, INTENT(INOUT) :: RRATE
+! exchange functions
+      LOGICAL, INTENT(INOUT) :: DRAG(0:DIMENSION_M, 0:DIMENSION_M),&
+                                HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
+                                WALL_TR
+! a granular energy dissipation term
+      LOGICAL, INTENT(INOUT) :: GRAN_DISS(0:DIMENSION_M)
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
+!----------------------------------------------- 
 ! Variables/Arguments
 !----------------------------------------------- 
-!
-!                      Error index
-      INTEGER          IER
-!
-!                      Loop indices
-      INTEGER          L, M
-!
-!                      Flags to tell whether to calculate or not
-      LOGICAL          DENSITY(0:DIMENSION_M), PSIZE(0:DIMENSION_M),&
-                       SP_HEAT(0:DIMENSION_M)
-!
-!                      Flags to tell whether to calculate or not
-      LOGICAL          VISC(0:DIMENSION_M), COND(0:DIMENSION_M),&
-                       DIFF(0:DIMENSION_M)
-!
-!                      Flag for Reaction rates
-      LOGICAL          RRATE
-!
-!                      Flag for exchange functions
-      LOGICAL          DRAG(0:DIMENSION_M, 0:DIMENSION_M),&
-                       HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
-                       WALL_TR
-!
-!                      Flags to tell whether to calculate or not:
-!                      a granular energy dissipation term
-      LOGICAL          GRAN_DISS(0:DIMENSION_M)
+! Loop indices
+      INTEGER :: L, M
 !-----------------------------------------------
 
-!     Reset all flags
-
+! Reset all flags
       RRATE = .FALSE. 
       WALL_TR = .FALSE. 
       DENSITY(:MMAX) = .FALSE. 
@@ -354,4 +339,3 @@
 
       RETURN  
       END SUBROUTINE TurnOffCOEFF 
-!-----------------------------------------------         

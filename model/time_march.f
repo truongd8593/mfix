@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: TIME_MARCH                                              C
+!  SUBROUTINE: TIME_MARCH                                              C
 !  Purpose: Controlling module for time marching and finding the       C
 !           solution of equations from TIME to TSTOP at intervals of   C
 !           DT, updating the b.c.'s, and creating output.              C
@@ -244,7 +244,11 @@
 
 
 ! Calculate all the coefficients once before entering the time loop
-      IF(TRIM(KT_TYPE) == UNDEFINED_C) CALL CALC_COEFF_ALL (0, IER) 
+      IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED)) THEN
+! do not calculate unneeded coefficients in granular simulations 
+      ELSEIF(TRIM(KT_TYPE) == UNDEFINED_C) THEN
+         CALL CALC_COEFF_ALL (0, IER) 
+      ENDIF
 
      
 ! Remove undefined values at wall cells for scalars
@@ -283,11 +287,8 @@
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
           DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S, IER) 
 
- 
-
-! The TIME loop begins here.............................................
- 100  CONTINUE
-      
+! uncoupled discrete element simulations do not need to be within
+! the two fluid model time-loop
       IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN
          IF(WRITE_VTK_FILES) THEN
             CALL WRITE_VTU_FILE
@@ -300,6 +301,10 @@
          CALL PARALLEL_FIN
          STOP
       ENDIF 
+
+! The TIME loop begins here.............................................
+ 100  CONTINUE
+      
 
 ! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch 
 ! queue terminates

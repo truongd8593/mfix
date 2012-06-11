@@ -1,7 +1,8 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: TRANSPORT_PROP                                          C
-!  Purpose: Calculate transport properties that vary with time         C
+!  SUBROUTINE: TRANSPORT_PROP                                          C
+!  Purpose: Calculate the indicated transport properties that vary     C
+!           with time if directed to do so by the corresponding flag   C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 17-JUL-92  C
 !  Reviewer: P. Nicoletti                             Date: 11-DEC-92  C
@@ -62,8 +63,10 @@
 ! Fluid diffusivity
       IF (DIFF(0)) CALL CALC_DIF_G (IER) 
 
-
-      IF (.NOT. DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+! note that the code could be changed so that the logical flags
+! directing this routine are appropriately set for the discrete_element
+! case
+      IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
          DO M = 1, MMAX 
 ! Solids conductivity
             IF (COND(M)) CALL CALC_K_S (M, IER) 
